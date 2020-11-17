@@ -166,6 +166,7 @@ set(ENTITY_SRC
 )
 
 set(ALL_SRC	
+	${MISC_HDR}
 	${WEAPON_SRC} ${WEAPON_HDR}
 	${HUD_SRC} ${HUD_HDR}
 	${VGUI_SRC} ${VGUI_HDR}
@@ -174,7 +175,7 @@ set(ALL_SRC
 	${GAME_SRC} ${GAME_HDR}
 	${RENDER_SRC} ${RENDER_HDR}
 	${ENTITY_SRC} ${ENTITY_HDR}
-	${MISC_HDR}
+	
 )
 
 include_directories(../dlls)
@@ -200,7 +201,8 @@ if(MSVC)
 	target_link_libraries(${CLIENT_DLL_NAME} 
 		${CMAKE_CURRENT_SOURCE_DIR}/../utils/vgui/lib/win32_vc6/vgui.lib
 		wsock32
-		${CMAKE_CURRENT_SOURCE_DIR}/../lib/public/sdl2.lib)
+		${CMAKE_CURRENT_SOURCE_DIR}/../lib/public/sdl2.lib
+	)
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
 		VS_DEBUGGER_COMMAND "${ENGINE_DIR}/${ENGINE_EXE}"

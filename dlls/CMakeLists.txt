@@ -70,21 +70,56 @@ set(MONSTER_SHARE_SRC
 set(PLAYER_HDR
 	client.h
 	player.h
+	player_util.h
 	spectator.h
 )
 set(PLAYER_SRC
 	client.cpp
 	player.cpp
+	player_util.cpp
 	observer.cpp
 	spectator.cpp
 	../game_shared/voice_gamemgr.cpp
 )
 
+set(TRIGGER_HDR
+	triggers/CBaseTrigger.h
+	triggers/CFireAndDie.h
+	triggers/CTriggerMultiple.h
+)
+set(TRIGGER_SRC
+	triggers/CAutoTrigger.cpp
+	triggers/CBaseTrigger.cpp
+	triggers/CChangeLevel.cpp
+	triggers/CFrictionModifier.cpp
+	triggers/CFireAndDie.cpp
+	triggers/CLadder.cpp
+	triggers/CMultiManager.cpp
+	triggers/CRenderFxManager.cpp
+	triggers/CTriggerCamera.cpp
+	triggers/CTargetCDAudio.cpp
+	triggers/CTriggerCDAudio.cpp
+	triggers/CTriggerChangeTarget.cpp
+	triggers/CTriggerCounter.cpp
+	triggers/CTriggerEndSection.cpp
+	triggers/CTriggerGravity.cpp
+	triggers/CTriggerHurt.cpp
+	triggers/CTriggerMonsterJump.cpp
+	triggers/CTriggerMultiple.cpp
+	triggers/CTriggerPush.cpp
+	triggers/CTriggerRelay.cpp
+	triggers/CTriggerSave.cpp
+	triggers/CTriggerTeleport.cpp
+	triggers/CTriggerVolume.cpp
+)
+
 set(ENTITY_HDR
+	bodyque.h
 	cbase.h
 	decals.h
 	doors.h
 	effects.h
+	ent_globals.h
 	explode.h
 	func_break.h
 	items.h
@@ -93,12 +128,19 @@ set(ENTITY_HDR
 	scriptevent.h
 	soundent.h
 	trains.h
+	../engine/progdefs.h
+	../engine/edict.h
+	../common/const.h
 )
 set(ENTITY_SRC
 	bmodels.cpp
 	buttons.cpp
 	doors.cpp
 	cbase.cpp
+	CCorpse.cpp
+	CDecal.cpp
+	CGlobalState.cpp
+	CWorld.cpp
 	effects.cpp
 	explode.cpp
 	func_break.cpp
@@ -118,8 +160,6 @@ set(ENTITY_SRC
 	sound.cpp
 	soundent.cpp
 	subs.cpp
-	triggers.cpp
-	world.cpp
 )
 
 set(WEAPON_HDR
@@ -180,6 +220,7 @@ set(ALL_SRC
 	${MONSTER_SHARE_SRC}
 	${PLAYER_SRC} ${PLAYER_HDR}
 	${ENTITY_SRC} ${ENTITY_HDR}
+	${TRIGGER_HDR} ${TRIGGER_SRC}
 	${WEAPON_SRC} ${WEAPON_HDR}
 	${UTIL_SRC} ${UTIL_HDR}
 	${GAME_SRC} ${GAME_HDR}
@@ -195,31 +236,39 @@ include_directories(../public)
 
 add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
+
+target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS)
+
 add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${ENGINE_DIR}/${PROJECT_NAME}/dlls/
 )
 
 if(MSVC)
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${CMAKE_CURRENT_SOURCE_DIR}/hl.def") 
+	
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		VS_DEBUGGER_COMMAND "${ENGINE_DIR}/${ENGINE_EXE}"
 		VS_DEBUGGER_WORKING_DIRECTORY "${ENGINE_DIR}"
 		VS_DEBUGGER_COMMAND_ARGUMENTS "-steam -dev -console -game opencoop -sv_cheats 1 -maxplayers 2 +map c2a1"
 	)
 	
-	source_group("Header Files\\Monsters" FILES ${MONSTER_HDR})	
-	source_group("Header Files\\Entities" FILES ${ENTITY_HDR})	
-	source_group("Header Files\\Player" FILES ${PLAYER_HDR})	
-	source_group("Header Files\\Game" FILES ${GAME_HDR})	
-	source_group("Header Files\\Util" FILES ${UTIL_HDR})	
-	source_group("Header Files\\Weapon" FILES ${WEAPON_HDR})	
 	
-	source_group("Source Files\\Monsters" FILES ${MONSTER_SRC})	
-	source_group("Source Files\\Monsters\\common" FILES ${MONSTER_SHARE_SRC})	
-	source_group("Source Files\\Player" FILES ${PLAYER_SRC})	
-	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})	
-	source_group("Source Files\\Weapons" FILES ${WEAPON_SRC})	
-	source_group("Source Files\\Util" FILES ${UTIL_SRC})	
-	source_group("Source Files\\Game" FILES ${GAME_SRC})	
+	source_group("Header Files\\Entities" FILES ${ENTITY_HDR})
+	source_group("Header Files\\Entities\\Monsters" FILES ${MONSTER_HDR})
+	source_group("Header Files\\Entities\\Triggers" FILES ${TRIGGER_HDR})
+	source_group("Header Files\\Entities\\Weapon" FILES ${WEAPON_HDR})
+	source_group("Header Files\\Player" FILES ${PLAYER_HDR})
+	source_group("Header Files\\Game" FILES ${GAME_HDR})
+	source_group("Header Files\\Util" FILES ${UTIL_HDR})
+	
+	source_group("Source Files\\Player" FILES ${PLAYER_SRC})
+	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})
+	source_group("Source Files\\Entities\\Monsters" FILES ${MONSTER_SRC})
+	source_group("Source Files\\Entities\\Monsters\\common" FILES ${MONSTER_SHARE_SRC})
+	source_group("Source Files\\Entities\\Triggers" FILES ${TRIGGER_SRC})
+	source_group("Source Files\\Entities\\Weapons" FILES ${WEAPON_SRC})
+	source_group("Source Files\\Util" FILES ${UTIL_SRC})
+	source_group("Source Files\\Game" FILES ${GAME_SRC})
 
 else()
 	message(FATAL_ERROR "TODO: Linux/mac support")
