@@ -663,56 +663,7 @@ class CSound;
 #include "basemonster.h"
 
 
-const char *ButtonSound( int sound );				// get string of button sound number
 
-
-//
-// Generic Button
-//
-class CBaseButton : public CBaseToggle
-{
-public:
-	void Spawn( void );
-	virtual void Precache( void );
-	void RotSpawn( void );
-	virtual void KeyValue( KeyValueData* pkvd);
-
-	void ButtonActivate( );
-	void SparkSoundCache( void );
-
-	void EXPORT ButtonShot( void );
-	void EXPORT ButtonTouch( CBaseEntity *pOther );
-	void EXPORT ButtonSpark ( void );
-	void EXPORT TriggerAndWait( void );
-	void EXPORT ButtonReturn( void );
-	void EXPORT ButtonBackHome( void );
-	void EXPORT ButtonUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	virtual int		TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
-	
-	enum BUTTON_CODE { BUTTON_NOTHING, BUTTON_ACTIVATE, BUTTON_RETURN };
-	BUTTON_CODE	ButtonResponseToTouch( void );
-	
-	static	TYPEDESCRIPTION m_SaveData[];
-	// Buttons that don't take damage can be IMPULSE used
-	virtual int	ObjectCaps( void ) { return (CBaseToggle:: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | (pev->takedamage?0:FCAP_IMPULSE_USE); }
-
-	BOOL	m_fStayPushed;	// button stays pushed in until touched again?
-	BOOL	m_fRotating;		// a rotating button?  default is a sliding button.
-
-	string_t m_strChangeTarget;	// if this field is not null, this is an index into the engine string array.
-							// when this button is touched, it's target entity's TARGET field will be set
-							// to the button's ChangeTarget. This allows you to make a func_train switch paths, etc.
-
-	locksound_t m_ls;			// door lock sounds
-	
-	BYTE	m_bLockedSound;		// ordinals from entity selection
-	BYTE	m_bLockedSentence;	
-	BYTE	m_bUnlockedSound;	
-	BYTE	m_bUnlockedSentence;
-	int		m_sounds;
-};
 
 //
 // Weapons 
