@@ -36,6 +36,7 @@
 #include "game.h"
 #include "pm_shared.h"
 #include "hltv.h"
+#include "CFuncTrackTrain.h"
 
 // #define DUCKFIX
 
