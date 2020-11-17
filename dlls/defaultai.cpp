@@ -21,7 +21,7 @@
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"defaultai.h"
-#include	"soundent.h"
+#include	"env/CSoundEnt.h"
 #include	"nodes.h"
 #include	"scripted.h"
 

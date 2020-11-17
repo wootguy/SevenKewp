@@ -20,7 +20,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
-#include "soundent.h"
+#include "env/CSoundEnt.h"
 
 // For holograms, make them not solid so the player can walk through them
 #define	SF_GENERICMONSTER_NOTSOLID					4 

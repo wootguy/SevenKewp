@@ -21,7 +21,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
-#include	"soundent.h"
+#include	"env/CSoundEnt.h"
 #include	"decals.h"
 
 #define		ROACH_IDLE				0

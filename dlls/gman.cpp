@@ -21,7 +21,7 @@
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"weapons.h"
-#include "soundent.h"
+#include "env/CSoundEnt.h"
 
 //=========================================================
 // Monster's Anim Events Go Here

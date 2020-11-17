@@ -6,6 +6,8 @@
 #include "CBasePlatTrain.h"
 #include "CFuncPlat.h"
 #include "CFuncTrackTrain.h"
+#include "path/CPathCorner.h"
+#include "path/CPathTrack.h"
 
 class CFuncTrain : public CBasePlatTrain
 {

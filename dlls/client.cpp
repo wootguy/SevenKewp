@@ -30,7 +30,7 @@
 #include "player.h"
 #include "spectator.h"
 #include "client.h"
-#include "soundent.h"
+#include "env/CSoundEnt.h"
 #include "gamerules.h"
 #include "game.h"
 #include "customentity.h"

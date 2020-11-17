@@ -1,3 +1,5 @@
+#include "path/CPathTrack.h"
+
 // Tracktrain spawn flags
 #define SF_TRACKTRAIN_NOPITCH		0x0001
 #define SF_TRACKTRAIN_NOCONTROL		0x0002

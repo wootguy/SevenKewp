@@ -21,7 +21,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"weapons.h"
-#include	"soundent.h"
+#include	"env/CSoundEnt.h"
 #include	"hornet.h"
 #include	"gamerules.h"
 
