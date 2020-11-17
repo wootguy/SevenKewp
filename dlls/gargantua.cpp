@@ -29,7 +29,7 @@
 #include	"soundent.h"
 #include	"decals.h"
 #include	"explode.h"
-#include	"func_break.h"
+#include	"CBreakable.h"
 
 //=========================================================
 // Gargantua Monster

@@ -6,7 +6,7 @@
 #include "effects.h"
 #include "weapons.h"
 #include "decals.h"
-#include "func_break.h"
+#include "CBreakable.h"
 #include "shake.h"
 
 class CBubbling : public CBaseEntity

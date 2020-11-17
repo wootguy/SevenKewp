@@ -161,24 +161,50 @@ set(TRIGGER_SRC
 
 set(FUNC_HDR
 	func/CBaseButton.h
+	func/CBasePlatTrain.h
+	func/CBreakable.h
 	func/func_util.h
 	func/CBaseDoor.h
+	func/CFuncPlat.h
+	func/CFuncPlatRot.h
+	func/CFuncTank.h
+	func/CFuncTrackChange.h
+	func/CFuncTrackTrain.h
 	func/CFuncWall.h
+	func/CPlatTrigger.h
+	func/trains.h
 )
 set(FUNC_SRC
 	func/CBaseButton.cpp
 	func/CBaseDoor.cpp
+	func/CBasePlatTrain.cpp
+	func/CBreakable.cpp
 	func/CButtonTarget.cpp
 	func/func_util.cpp
-	func/CMomentaryDoor.cpp
-	func/CMomentaryRotButton.cpp
 	func/CFuncConveyor.cpp
 	func/CFuncIllusionary.cpp
 	func/CFuncMonsterClip.cpp
 	func/CFuncPendulum.cpp
+	func/CFuncPlat.cpp
+	func/CFuncPlatRot.cpp
 	func/CFuncRotating.cpp
+	func/CFuncTank.cpp
+	func/CFuncTankControls.cpp
+	func/CFuncTankGun.cpp
+	func/CFuncTankLaser.cpp
+	func/CFuncTankMortar.cpp
+	func/CFuncTrackChange.cpp
+	func/CFuncTrackTrain.cpp
+	func/CFuncTrain.cpp
+	func/CFuncTrainControls.cpp
 	func/CFuncWall.cpp
 	func/CFuncWallToggle.cpp
+	func/CGunTarget.cpp
+	func/CMomentaryDoor.cpp
+	func/CMomentaryRotButton.cpp
+	func/CPlatTrigger.cpp
+	func/CPushable.cpp
+	func/CRecharge.cpp
 	func/CRotButton.cpp
 	func/CRotDoor.cpp
 )
@@ -188,12 +214,10 @@ set(ENTITY_HDR
 	cbase.h
 	decals.h
 	ent_globals.h
-	func_break.h
 	nodes.h
 	scripted.h
 	scriptevent.h
 	soundent.h
-	trains.h
 	../engine/progdefs.h
 	../engine/edict.h
 	../common/const.h
@@ -205,9 +229,6 @@ set(ENTITY_SRC
 	CGlobalState.cpp
 	CPointEntity.cpp
 	CWorld.cpp
-	func_break.cpp
-	func_tank.cpp
-	h_battery.cpp
 	h_cine.cpp
 	lights.cpp
 	monstermaker.cpp
@@ -215,7 +236,6 @@ set(ENTITY_SRC
 	nodes.cpp
 	pathcorner.cpp
 	airtank.cpp
-	plats.cpp
 	scripted.cpp
 	sound.cpp
 	soundent.cpp
