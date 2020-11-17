@@ -1,0 +1,2 @@
+
+void PlayCDTrack(int iTrack);
