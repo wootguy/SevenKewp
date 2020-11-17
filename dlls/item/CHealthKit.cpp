@@ -19,7 +19,7 @@
 #include "weapons.h"
 #include "nodes.h"
 #include "player.h"
-#include "items.h"
+#include "CItem.h"
 #include "gamerules.h"
 
 extern int gmsgItemPickup;
