@@ -762,5 +762,3 @@ CBaseEntity * CBaseEntity::Create( const char *szName, const Vector &vecOrigin, 
 	DispatchSpawn( pEntity->edict() );
 	return pEntity;
 }
-
-

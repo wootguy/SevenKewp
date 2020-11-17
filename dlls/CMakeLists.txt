@@ -83,14 +83,48 @@ set(PLAYER_SRC
 )
 
 set(ENV_HDR
+	env/CBeam.h
+	env/CGibShooter.h
+	env/CLaser.h
+	env/CSprite.h
 	env/explode.h
 )
-
 set(ENV_SRC
+	env/CBeam.cpp
+	env/CBlood.cpp
+	env/CBubbling.cpp
+	env/CEnvBeverage.cpp
 	env/CEnvExplosion.cpp
+	env/CEnvFunnel.cpp
+	env/CGibShooter.cpp
 	env/CEnvGlobal.cpp
+	env/CEnvShooter.cpp
 	env/CEnvSpark.cpp
+	env/CFade.cpp
+	env/CGlow.cpp
+	env/CLaser.cpp
+	env/CLightning.cpp
+	env/CMessage.cpp
+	env/CShake.cpp
 	env/CShower.cpp
+	env/CSprite.cpp
+	env/CTestEffect.cpp
+	env/effects.h
+)
+
+set(ITEM_HDR
+	item/CItem.h
+)
+set(ITEM_SRC
+	item/CHealthKit.cpp
+	item/CItem.cpp
+	item/CItemAntidote.cpp
+	item/CItemBattery.cpp
+	item/CItemLongJump.cpp
+	item/CItemSecurity.cpp
+	item/CItemSoda.cpp
+	item/CItemSuit.cpp
+	item/CWorldItem.cpp
 )
 
 set(TRIGGER_HDR
@@ -153,10 +187,8 @@ set(ENTITY_HDR
 	bodyque.h
 	cbase.h
 	decals.h
-	effects.h
 	ent_globals.h
 	func_break.h
-	items.h
 	nodes.h
 	scripted.h
 	scriptevent.h
@@ -171,14 +203,12 @@ set(ENTITY_SRC
 	CCorpse.cpp
 	CDecal.cpp
 	CGlobalState.cpp
+	CPointEntity.cpp
 	CWorld.cpp
-	effects.cpp
 	func_break.cpp
 	func_tank.cpp
 	h_battery.cpp
 	h_cine.cpp
-	healthkit.cpp
-	items.cpp
 	lights.cpp
 	monstermaker.cpp
 	mortar.cpp
@@ -251,6 +281,7 @@ set(ALL_SRC
 	${PLAYER_SRC} ${PLAYER_HDR}
 	${ENTITY_SRC} ${ENTITY_HDR}
 	${ENV_SRC} ${ENV_HDR}
+	${ITEM_SRC} ${ITEM_HDR}
 	${FUNC_HDR} ${FUNC_SRC}
 	${TRIGGER_HDR} ${TRIGGER_SRC}
 	${WEAPON_SRC} ${WEAPON_HDR}
@@ -291,6 +322,7 @@ if(MSVC)
 	source_group("Header Files\\Entities" FILES ${ENTITY_HDR})
 	source_group("Header Files\\Entities\\env" FILES ${ENV_HDR})
 	source_group("Header Files\\Entities\\func" FILES ${FUNC_HDR})
+	source_group("Header Files\\Entities\\item" FILES ${ITEM_HDR})
 	source_group("Header Files\\Entities\\monster" FILES ${MONSTER_HDR})
 	source_group("Header Files\\Entities\\trigger" FILES ${TRIGGER_HDR})
 	source_group("Header Files\\Entities\\weapon" FILES ${WEAPON_HDR})
@@ -302,6 +334,7 @@ if(MSVC)
 	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})
 	source_group("Source Files\\Entities\\env" FILES ${ENV_SRC})
 	source_group("Source Files\\Entities\\func" FILES ${FUNC_SRC})
+	source_group("Source Files\\Entities\\item" FILES ${ITEM_SRC})
 	source_group("Source Files\\Entities\\monster" FILES ${MONSTER_SRC})
 	source_group("Source Files\\Entities\\monster\\common" FILES ${MONSTER_SHARE_SRC})
 	source_group("Source Files\\Entities\\trigger" FILES ${TRIGGER_SRC})

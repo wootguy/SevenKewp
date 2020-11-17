@@ -22,7 +22,7 @@
 #include	"weapons.h"
 #include	"gamerules.h"
 #include	"skill.h"
-#include	"items.h"
+#include	"item/CItem.h"
 
 extern DLL_GLOBAL CGameRules	*g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;

@@ -12,18 +12,14 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#ifndef ITEMS_H
-#define ITEMS_H
+#ifndef EFFECTS_H
+#define EFFECTS_H
 
+#define SF_MESSAGE_ONCE			0x0001		// Fade in, not out
+#define SF_MESSAGE_ALL			0x0002		// Send to all clients
 
-class CItem : public CBaseEntity
-{
-public:
-	void	Spawn( void );
-	CBaseEntity*	Respawn( void );
-	void	EXPORT ItemTouch( CBaseEntity *pOther );
-	void	EXPORT Materialize( void );
-	virtual BOOL MyTouch( CBasePlayer *pPlayer ) { return FALSE; };
-};
+#include "env/CSprite.h"
+#include "env/CBeam.h"
+#include "env/CLaser.h"
 
-#endif // ITEMS_H
+#endif		//EFFECTS_H
