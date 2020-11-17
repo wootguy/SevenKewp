@@ -13,7 +13,7 @@
 *
 ****/
 //=========================================================
-// Soundent.h - the entity that spawns when the world 
+// env/CSoundEnt.h - the entity that spawns when the world 
 // spawns, and handles the world's active and free sound
 // lists.
 //=========================================================

@@ -26,7 +26,7 @@
 #include	"defaultai.h"
 #include	"scripted.h"
 #include	"weapons.h"
-#include	"soundent.h"
+#include	"env/CSoundEnt.h"
 
 //=========================================================
 // Monster's Anim Events Go Here

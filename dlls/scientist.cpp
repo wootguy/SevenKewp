@@ -25,7 +25,7 @@
 #include	"defaultai.h"
 #include	"scripted.h"
 #include	"animation.h"
-#include	"soundent.h"
+#include	"env/CSoundEnt.h"
 
 
 #define		NUM_SCIENTIST_HEADS		4 // four heads available for scientist model

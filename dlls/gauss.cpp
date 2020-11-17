@@ -21,7 +21,7 @@
 #include "weapons.h"
 #include "nodes.h"
 #include "player.h"
-#include "soundent.h"
+#include "env/CSoundEnt.h"
 #include "shake.h"
 #include "gamerules.h"
 

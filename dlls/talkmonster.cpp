@@ -20,7 +20,7 @@
 #include	"talkmonster.h"
 #include	"defaultai.h"
 #include	"scripted.h"
-#include	"soundent.h"
+#include	"env/CSoundEnt.h"
 #include	"animation.h"
 
 //=========================================================

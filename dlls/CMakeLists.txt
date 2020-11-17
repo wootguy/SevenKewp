@@ -29,6 +29,7 @@ set(MONSTER_SRC
 	bigmomma.cpp
 	bloater.cpp
 	bullsquid.cpp
+	CMonsterMaker.cpp
 	controller.cpp
 	gargantua.cpp
 	genericmonster.cpp
@@ -86,29 +87,40 @@ set(ENV_HDR
 	env/CBeam.h
 	env/CGibShooter.h
 	env/CLaser.h
+	env/CLight.h
+	env/CSoundEnt.h
 	env/CSprite.h
 	env/explode.h
 )
 set(ENV_SRC
+	env/CAmbientGeneric.cpp
 	env/CBeam.cpp
 	env/CBlood.cpp
 	env/CBubbling.cpp
+	env/CCorpse.cpp
+	env/CDecal.cpp
 	env/CEnvBeverage.cpp
 	env/CEnvExplosion.cpp
 	env/CEnvFunnel.cpp
-	env/CGibShooter.cpp
 	env/CEnvGlobal.cpp
+	env/CEnvLight.cpp
 	env/CEnvShooter.cpp
+	env/CEnvSound.cpp
 	env/CEnvSpark.cpp
 	env/CFade.cpp
+	env/CGibShooter.cpp
 	env/CGlow.cpp
 	env/CLaser.cpp
+	env/CLight.cpp
 	env/CLightning.cpp
 	env/CMessage.cpp
 	env/CShake.cpp
 	env/CShower.cpp
+	env/CSoundEnt.cpp
+	env/CSpeaker.cpp
 	env/CSprite.cpp
 	env/CTestEffect.cpp
+	env/decals.h
 	env/effects.h
 )
 
@@ -116,6 +128,7 @@ set(ITEM_HDR
 	item/CItem.h
 )
 set(ITEM_SRC
+	item/CAirtank.cpp
 	item/CHealthKit.cpp
 	item/CItem.cpp
 	item/CItemAntidote.cpp
@@ -172,7 +185,6 @@ set(FUNC_HDR
 	func/CFuncTrackTrain.h
 	func/CFuncWall.h
 	func/CPlatTrigger.h
-	func/trains.h
 )
 set(FUNC_SRC
 	func/CBaseButton.cpp
@@ -184,6 +196,7 @@ set(FUNC_SRC
 	func/CFuncConveyor.cpp
 	func/CFuncIllusionary.cpp
 	func/CFuncMonsterClip.cpp
+	func/CFuncMortarField.cpp
 	func/CFuncPendulum.cpp
 	func/CFuncPlat.cpp
 	func/CFuncPlatRot.cpp
@@ -212,34 +225,32 @@ set(FUNC_SRC
 set(ENTITY_HDR
 	bodyque.h
 	cbase.h
-	decals.h
 	ent_globals.h
 	nodes.h
 	scripted.h
 	scriptevent.h
-	soundent.h
 	../engine/progdefs.h
 	../engine/edict.h
 	../common/const.h
 )
 set(ENTITY_SRC
 	cbase.cpp
-	CCorpse.cpp
-	CDecal.cpp
 	CGlobalState.cpp
 	CPointEntity.cpp
 	CWorld.cpp
 	h_cine.cpp
-	lights.cpp
-	monstermaker.cpp
-	mortar.cpp
 	nodes.cpp
-	pathcorner.cpp
-	airtank.cpp
 	scripted.cpp
-	sound.cpp
-	soundent.cpp
 	subs.cpp
+)
+
+set(PATH_HDR
+	path/CPathCorner.h
+	path/CPathTrack.h
+)
+set(PATH_SRC
+	path/CPathCorner.cpp
+	path/CPathTrack.cpp
 )
 
 set(WEAPON_HDR
@@ -253,6 +264,7 @@ set(WEAPON_SRC
 	ggrenade.cpp
 	handgrenade.cpp	
 	hornetgun.cpp
+	mortar.cpp
 	mp5.cpp
 	python.cpp
 	rpg.cpp
@@ -292,6 +304,7 @@ set(GAME_SRC
 	multiplay_gamerules.cpp
 	singleplay_gamerules.cpp
 	skill.cpp
+	sound.cpp
 	teamplay_gamerules.cpp
 )
 
@@ -303,6 +316,7 @@ set(ALL_SRC
 	${ENV_SRC} ${ENV_HDR}
 	${ITEM_SRC} ${ITEM_HDR}
 	${FUNC_HDR} ${FUNC_SRC}
+	${PATH_HDR} ${PATH_SRC}
 	${TRIGGER_HDR} ${TRIGGER_SRC}
 	${WEAPON_SRC} ${WEAPON_HDR}
 	${UTIL_SRC} ${UTIL_HDR}
@@ -344,6 +358,7 @@ if(MSVC)
 	source_group("Header Files\\Entities\\func" FILES ${FUNC_HDR})
 	source_group("Header Files\\Entities\\item" FILES ${ITEM_HDR})
 	source_group("Header Files\\Entities\\monster" FILES ${MONSTER_HDR})
+	source_group("Header Files\\Entities\\path" FILES ${PATH_HDR})
 	source_group("Header Files\\Entities\\trigger" FILES ${TRIGGER_HDR})
 	source_group("Header Files\\Entities\\weapon" FILES ${WEAPON_HDR})
 	source_group("Header Files\\Player" FILES ${PLAYER_HDR})
@@ -357,6 +372,7 @@ if(MSVC)
 	source_group("Source Files\\Entities\\item" FILES ${ITEM_SRC})
 	source_group("Source Files\\Entities\\monster" FILES ${MONSTER_SRC})
 	source_group("Source Files\\Entities\\monster\\common" FILES ${MONSTER_SHARE_SRC})
+	source_group("Source Files\\Entities\\path" FILES ${PATH_SRC})
 	source_group("Source Files\\Entities\\trigger" FILES ${TRIGGER_SRC})
 	source_group("Source Files\\Entities\\weapon" FILES ${WEAPON_SRC})
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})

@@ -25,7 +25,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"weapons.h"
-#include	"soundent.h"
+#include	"env/CSoundEnt.h"
 
 
 #define ACT_T_IDLE		1010

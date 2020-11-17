@@ -7,6 +7,7 @@
 #include "CFuncPlat.h"
 #include "CFuncPlatRot.h"
 #include "CFuncTrackChange.h"
+#include "path/CPathCorner.h"
 
 // ----------------------------------------------------------
 //

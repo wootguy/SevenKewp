@@ -24,7 +24,7 @@
 #include "scripted.h"
 #include "nodes.h"
 #include "defaultai.h"
-#include "soundent.h"
+#include "env/CSoundEnt.h"
 
 extern CGraph WorldGraph;
 

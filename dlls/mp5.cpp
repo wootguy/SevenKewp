@@ -20,7 +20,7 @@
 #include "weapons.h"
 #include "nodes.h"
 #include "player.h"
-#include "soundent.h"
+#include "env/CSoundEnt.h"
 #include "gamerules.h"
 
 enum mp5_e
