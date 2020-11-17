@@ -82,6 +82,17 @@ set(PLAYER_SRC
 	../game_shared/voice_gamemgr.cpp
 )
 
+set(ENV_HDR
+	env/explode.h
+)
+
+set(ENV_SRC
+	env/CEnvExplosion.cpp
+	env/CEnvGlobal.cpp
+	env/CEnvSpark.cpp
+	env/CShower.cpp
+)
+
 set(TRIGGER_HDR
 	triggers/CBaseTrigger.h
 	triggers/CFireAndDie.h
@@ -95,6 +106,7 @@ set(TRIGGER_SRC
 	triggers/CFireAndDie.cpp
 	triggers/CLadder.cpp
 	triggers/CMultiManager.cpp
+	triggers/CMultiSource.cpp
 	triggers/CRenderFxManager.cpp
 	triggers/CTriggerCamera.cpp
 	triggers/CTargetCDAudio.cpp
@@ -113,14 +125,36 @@ set(TRIGGER_SRC
 	triggers/CTriggerVolume.cpp
 )
 
+set(FUNC_HDR
+	func/CBaseButton.h
+	func/func_util.h
+	func/CBaseDoor.h
+	func/CFuncWall.h
+)
+set(FUNC_SRC
+	func/CBaseButton.cpp
+	func/CBaseDoor.cpp
+	func/CButtonTarget.cpp
+	func/func_util.cpp
+	func/CMomentaryDoor.cpp
+	func/CMomentaryRotButton.cpp
+	func/CFuncConveyor.cpp
+	func/CFuncIllusionary.cpp
+	func/CFuncMonsterClip.cpp
+	func/CFuncPendulum.cpp
+	func/CFuncRotating.cpp
+	func/CFuncWall.cpp
+	func/CFuncWallToggle.cpp
+	func/CRotButton.cpp
+	func/CRotDoor.cpp
+)
+
 set(ENTITY_HDR
 	bodyque.h
 	cbase.h
 	decals.h
-	doors.h
 	effects.h
 	ent_globals.h
-	explode.h
 	func_break.h
 	items.h
 	nodes.h
@@ -133,16 +167,12 @@ set(ENTITY_HDR
 	../common/const.h
 )
 set(ENTITY_SRC
-	bmodels.cpp
-	buttons.cpp
-	doors.cpp
 	cbase.cpp
 	CCorpse.cpp
 	CDecal.cpp
 	CGlobalState.cpp
 	CWorld.cpp
 	effects.cpp
-	explode.cpp
 	func_break.cpp
 	func_tank.cpp
 	h_battery.cpp
@@ -220,6 +250,8 @@ set(ALL_SRC
 	${MONSTER_SHARE_SRC}
 	${PLAYER_SRC} ${PLAYER_HDR}
 	${ENTITY_SRC} ${ENTITY_HDR}
+	${ENV_SRC} ${ENV_HDR}
+	${FUNC_HDR} ${FUNC_SRC}
 	${TRIGGER_HDR} ${TRIGGER_SRC}
 	${WEAPON_SRC} ${WEAPON_HDR}
 	${UTIL_SRC} ${UTIL_HDR}
@@ -233,6 +265,9 @@ include_directories(../engine)
 include_directories(../game_shared)
 include_directories(../pm_shared)
 include_directories(../public)
+include_directories(env)
+include_directories(func)
+include_directories(trigger)
 
 add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
@@ -254,19 +289,23 @@ if(MSVC)
 	
 	
 	source_group("Header Files\\Entities" FILES ${ENTITY_HDR})
-	source_group("Header Files\\Entities\\Monsters" FILES ${MONSTER_HDR})
-	source_group("Header Files\\Entities\\Triggers" FILES ${TRIGGER_HDR})
-	source_group("Header Files\\Entities\\Weapon" FILES ${WEAPON_HDR})
+	source_group("Header Files\\Entities\\env" FILES ${ENV_HDR})
+	source_group("Header Files\\Entities\\func" FILES ${FUNC_HDR})
+	source_group("Header Files\\Entities\\monster" FILES ${MONSTER_HDR})
+	source_group("Header Files\\Entities\\trigger" FILES ${TRIGGER_HDR})
+	source_group("Header Files\\Entities\\weapon" FILES ${WEAPON_HDR})
 	source_group("Header Files\\Player" FILES ${PLAYER_HDR})
 	source_group("Header Files\\Game" FILES ${GAME_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})
 	
 	source_group("Source Files\\Player" FILES ${PLAYER_SRC})
 	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})
-	source_group("Source Files\\Entities\\Monsters" FILES ${MONSTER_SRC})
-	source_group("Source Files\\Entities\\Monsters\\common" FILES ${MONSTER_SHARE_SRC})
-	source_group("Source Files\\Entities\\Triggers" FILES ${TRIGGER_SRC})
-	source_group("Source Files\\Entities\\Weapons" FILES ${WEAPON_SRC})
+	source_group("Source Files\\Entities\\env" FILES ${ENV_SRC})
+	source_group("Source Files\\Entities\\func" FILES ${FUNC_SRC})
+	source_group("Source Files\\Entities\\monster" FILES ${MONSTER_SRC})
+	source_group("Source Files\\Entities\\monster\\common" FILES ${MONSTER_SHARE_SRC})
+	source_group("Source Files\\Entities\\trigger" FILES ${TRIGGER_SRC})
+	source_group("Source Files\\Entities\\weapon" FILES ${WEAPON_SRC})
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})
 	source_group("Source Files\\Game" FILES ${GAME_SRC})
 
