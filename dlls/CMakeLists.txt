@@ -29,6 +29,7 @@ set(MONSTER_SRC
 	bigmomma.cpp
 	bloater.cpp
 	bullsquid.cpp
+	CFurniture.cpp
 	CMonsterMaker.cpp
 	controller.cpp
 	gargantua.cpp
@@ -66,6 +67,11 @@ set(MONSTER_SHARE_SRC
 	squadmonster.cpp
 	talkmonster.cpp
 	tempmonster.cpp
+)
+set(MONSTER_SCRIPTED_SRC
+	CCineAI.cpp
+	CCineMonster.cpp
+	CScriptedSentence.cpp
 )
 
 set(PLAYER_HDR
@@ -235,12 +241,13 @@ set(ENTITY_HDR
 )
 set(ENTITY_SRC
 	cbase.cpp
+	CBaseDelay.cpp
+	CBaseDMStart.cpp
+	CBaseToggle.cpp
 	CGlobalState.cpp
+	CNullEntity.cpp
 	CPointEntity.cpp
 	CWorld.cpp
-	h_cine.cpp
-	nodes.cpp
-	scripted.cpp
 	subs.cpp
 )
 
@@ -251,6 +258,7 @@ set(PATH_HDR
 set(PATH_SRC
 	path/CPathCorner.cpp
 	path/CPathTrack.cpp
+	nodes.cpp
 )
 
 set(WEAPON_HDR
@@ -309,8 +317,7 @@ set(GAME_SRC
 )
 
 set(ALL_SRC
-	${MONSTER_SRC} ${MONSTER_HDR}
-	${MONSTER_SHARE_SRC}
+	${MONSTER_SRC} ${MONSTER_SHARE_SRC} ${MONSTER_SCRIPTED_SRC} ${MONSTER_HDR}
 	${PLAYER_SRC} ${PLAYER_HDR}
 	${ENTITY_SRC} ${ENTITY_HDR}
 	${ENV_SRC} ${ENV_HDR}
@@ -372,6 +379,7 @@ if(MSVC)
 	source_group("Source Files\\Entities\\item" FILES ${ITEM_SRC})
 	source_group("Source Files\\Entities\\monster" FILES ${MONSTER_SRC})
 	source_group("Source Files\\Entities\\monster\\common" FILES ${MONSTER_SHARE_SRC})
+	source_group("Source Files\\Entities\\monster\\scripted" FILES ${MONSTER_SCRIPTED_SRC})
 	source_group("Source Files\\Entities\\path" FILES ${PATH_SRC})
 	source_group("Source Files\\Entities\\trigger" FILES ${TRIGGER_SRC})
 	source_group("Source Files\\Entities\\weapon" FILES ${WEAPON_SRC})
