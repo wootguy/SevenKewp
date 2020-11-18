@@ -7,71 +7,76 @@ set(MISC_HDR
 )
 
 set(MONSTER_HDR
-	activity.h
-	activitymap.h
-	animation.h
-	basemonster.h
-	defaultai.h
-	flyingmonster.h
-	hornet.h
-	monsterevent.h
-	monsters.h
-	schedule.h
-	squadmonster.h
-	talkmonster.h
+	monster/activity.h
+	monster/activitymap.h
+	monster/CBaseMonster.h
+	monster/bodyque.h
+	monster/defaultai.h
+	monster/CBaseTurret.h
+	monster/CFlyingMonster.h
+	monster/CHornet.h
+	monster/monsterevent.h
+	monster/monsters.h
+	monster/schedule.h
+	monster/CSquadMonster.h
+	monster/CTalkMonster.h
 )
 set(MONSTER_SRC
-	aflock.cpp
-	agrunt.cpp
-	apache.cpp
-	barnacle.cpp
-	barney.cpp
-	bigmomma.cpp
-	bloater.cpp
-	bullsquid.cpp
-	CFurniture.cpp
-	CMonsterMaker.cpp
-	controller.cpp
-	gargantua.cpp
-	genericmonster.cpp
-	gman.cpp
-	h_cycler.cpp
-	hassassin.cpp
-	headcrab.cpp
-	hgrunt.cpp
-	hornet.cpp
-	houndeye.cpp
-	ichthyosaur.cpp
-	islave.cpp
-	leech.cpp
-	nihilanth.cpp
-	osprey.cpp
-	rat.cpp
-	roach.cpp
-	scientist.cpp
-	tentacle.cpp
-	turret.cpp
-	xen.cpp
-	zombie.cpp
+	monster/CActAnimating.cpp
+	monster/CAGrunt.cpp
+	monster/CApache.cpp
+	monster/CBarnacle.cpp
+	monster/CBarney.cpp
+	monster/CBaseAnimating.cpp
+	monster/CBaseMonster.cpp
+	monster/CBaseTurret.cpp
+	monster/CBigMomma.cpp
+	monster/CBloater.cpp
+	monster/CBullsquid.cpp
+	monster/CDeadHEV.cpp
+	monster/CFlockingFlyerFlock.cpp
+	monster/CFlyingMonster.cpp
+	monster/CFurniture.cpp
+	monster/CMiniTurret.cpp
+	monster/CMonsterMaker.cpp
+	monster/CController.cpp
+	monster/CGargantua.cpp
+	monster/CGenericMonster.cpp
+	monster/CGMan.cpp
+	monster/CCycler.cpp
+	monster/CHAssassin.cpp
+	monster/CHeadCrab.cpp
+	monster/CHGrunt.cpp
+	monster/CHornet.cpp
+	monster/CHoundeye.cpp
+	monster/CIchthyosaur.cpp
+	monster/CISlave.cpp
+	monster/CLeech.cpp
+	monster/CNihilanth.cpp
+	monster/COsprey.cpp
+	monster/CRat.cpp
+	monster/CRoach.cpp
+	monster/CScientist.cpp
+	monster/CSentry.cpp
+	monster/CSquadMonster.cpp
+	monster/CTalkMonster.cpp
+	monster/CTentacle.cpp
+	monster/CTurret.cpp
+	monster/CXenHair.cpp
+	monster/CXenPLight.cpp
+	monster/CXenSpore.cpp
+	monster/CXenTree.cpp
+	monster/CZombie.cpp
+	monster/tempmonster.cpp
 )
-set(MONSTER_SHARE_SRC
-	animating.cpp
-	animation.cpp
-	combat.cpp
-	defaultai.cpp
-	flyingmonster.cpp
-	h_ai.cpp
-	monsters.cpp
-	monsterstate.cpp
-	schedule.cpp
-	squadmonster.cpp
-	talkmonster.cpp
-	tempmonster.cpp
+set(MONSTER_AI_SRC
+	monster/defaultai.cpp
+	monster/h_ai.cpp
 )
 set(MONSTER_SCRIPTED_SRC
-	CCineAI.cpp
-	CCineMonster.cpp
-	CScriptedSentence.cpp
+	monster/CCineAI.cpp
+	monster/CCineMonster.cpp
+	monster/CScriptedSentence.cpp
 )
 
 set(PLAYER_HDR
@@ -82,7 +87,6 @@ set(PLAYER_HDR
 )
 set(PLAYER_SRC
 	client.cpp
-	player.cpp
 	player_util.cpp
 	observer.cpp
 	spectator.cpp
@@ -91,17 +95,21 @@ set(PLAYER_SRC
 
 set(ENV_HDR
 	env/CBeam.h
+	env/CBloodSplat.h
 	env/CGibShooter.h
 	env/CLaser.h
 	env/CLight.h
 	env/CSoundEnt.h
+	env/CSprayCan.h
 	env/CSprite.h
 	env/explode.h
+	../engine/shake.h
 )
 set(ENV_SRC
 	env/CAmbientGeneric.cpp
 	env/CBeam.cpp
 	env/CBlood.cpp
+	env/CBloodSplat.cpp
 	env/CBubbling.cpp
 	env/CCorpse.cpp
 	env/CDecal.cpp
@@ -114,6 +122,7 @@ set(ENV_SRC
 	env/CEnvSound.cpp
 	env/CEnvSpark.cpp
 	env/CFade.cpp
+	env/CGib.cpp
 	env/CGibShooter.cpp
 	env/CGlow.cpp
 	env/CLaser.cpp
@@ -124,6 +133,7 @@ set(ENV_SRC
 	env/CShower.cpp
 	env/CSoundEnt.cpp
 	env/CSpeaker.cpp
+	env/CSprayCan.cpp
 	env/CSprite.cpp
 	env/CTestEffect.cpp
 	env/decals.h
@@ -157,10 +167,13 @@ set(TRIGGER_SRC
 	triggers/CChangeLevel.cpp
 	triggers/CFrictionModifier.cpp
 	triggers/CFireAndDie.cpp
+	triggers/CInfoIntermission.cpp
 	triggers/CLadder.cpp
 	triggers/CMultiManager.cpp
 	triggers/CMultiSource.cpp
 	triggers/CRenderFxManager.cpp
+	triggers/CRevertSaved.cpp
+	triggers/CStripWeapons.cpp
 	triggers/CTriggerCamera.cpp
 	triggers/CTargetCDAudio.cpp
 	triggers/CTriggerCDAudio.cpp
@@ -229,7 +242,6 @@ set(FUNC_SRC
 )
 
 set(ENTITY_HDR
-	bodyque.h
 	cbase.h
 	ent_globals.h
 	nodes.h
@@ -241,8 +253,10 @@ set(ENTITY_HDR
 )
 set(ENTITY_SRC
 	cbase.cpp
+	CBaseEntity.cpp
 	CBaseDelay.cpp
 	CBaseDMStart.cpp
+	CBasePlayer.cpp
 	CBaseToggle.cpp
 	CGlobalState.cpp
 	CNullEntity.cpp
@@ -282,6 +296,7 @@ set(WEAPON_SRC
 	tripmine.cpp
 	weapons.cpp
 	wpn_shared/hl_wpn_glock.cpp
+	combat.cpp
 )
 
 set(UTIL_HDR
@@ -298,12 +313,15 @@ set(UTIL_SRC
 )
 
 set(GAME_HDR
+	animation.h
 	gamerules.h
 	saverestore.h
 	skill.h
 	teamplay_gamerules.h
+	user_messages.h
 )
 set(GAME_SRC
+	animation.cpp
 	game.cpp
 	gamerules.cpp
 	globals.cpp
@@ -314,10 +332,11 @@ set(GAME_SRC
 	skill.cpp
 	sound.cpp
 	teamplay_gamerules.cpp
+	user_messages.cpp
 )
 
 set(ALL_SRC
-	${MONSTER_SRC} ${MONSTER_SHARE_SRC} ${MONSTER_SCRIPTED_SRC} ${MONSTER_HDR}
+	${MONSTER_SRC} ${MONSTER_AI_SRC} ${MONSTER_SCRIPTED_SRC} ${MONSTER_HDR}
 	${PLAYER_SRC} ${PLAYER_HDR}
 	${ENTITY_SRC} ${ENTITY_HDR}
 	${ENV_SRC} ${ENV_HDR}
@@ -331,7 +350,6 @@ set(ALL_SRC
 	${MISC_HDR}
 )
 
-include_directories(.)
 include_directories(../common)
 include_directories(../engine)
 include_directories(../game_shared)
@@ -339,10 +357,15 @@ include_directories(../pm_shared)
 include_directories(../public)
 include_directories(env)
 include_directories(func)
-include_directories(trigger)
+include_directories(triggers)
+include_directories(monster)
+include_directories(item)
+include_directories(path)
+include_directories(.)
 
 add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
+target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
 
 target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS)
 
@@ -378,7 +401,7 @@ if(MSVC)
 	source_group("Source Files\\Entities\\func" FILES ${FUNC_SRC})
 	source_group("Source Files\\Entities\\item" FILES ${ITEM_SRC})
 	source_group("Source Files\\Entities\\monster" FILES ${MONSTER_SRC})
-	source_group("Source Files\\Entities\\monster\\common" FILES ${MONSTER_SHARE_SRC})
+	source_group("Source Files\\Entities\\monster\\ai" FILES ${MONSTER_AI_SRC})
 	source_group("Source Files\\Entities\\monster\\scripted" FILES ${MONSTER_SCRIPTED_SRC})
 	source_group("Source Files\\Entities\\path" FILES ${PATH_SRC})
 	source_group("Source Files\\Entities\\trigger" FILES ${TRIGGER_SRC})

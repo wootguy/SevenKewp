@@ -95,4 +95,24 @@ extern Schedule_t slWalkToScript[];
 extern Schedule_t slRunToScript[];
 extern Schedule_t slWaitScript[];
 
+// other
+extern Schedule_t slAmbush[];
+extern Schedule_t slActiveIdle[];
+extern Schedule_t slAlertSmallFlinch[];
+extern Schedule_t slInvestigateSound[];
+extern Schedule_t slStandoff[];
+extern Schedule_t slArmWeapon[];
+extern Schedule_t slPrimaryMeleeAttack[];
+extern Schedule_t slSecondaryMeleeAttack[];
+extern Schedule_t slSpecialAttack1[];
+extern Schedule_t slSpecialAttack2[];
+extern Schedule_t slChaseEnemyFailed[];
+extern Schedule_t slVictoryDance[];
+extern Schedule_t slBarnacleVictimGrab[];
+extern Schedule_t slBarnacleVictimChomp[];
+extern Schedule_t slFaceScript[];
+extern Schedule_t slCower[];
+extern Schedule_t slTakeCoverFromOrigin[];
+extern Schedule_t slTakeCoverFromEnemy[];
+
 #endif		// DEFAULTAI_H

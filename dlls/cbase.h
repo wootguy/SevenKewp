@@ -44,10 +44,10 @@ CBaseEntity
 
 #include "archtypes.h"     // DAL
 #include "saverestore.h"
-#include "schedule.h"
+#include "monster/schedule.h"
 
 #ifndef MONSTEREVENT_H
-#include "monsterevent.h"
+#include "monster/monsterevent.h"
 #endif
 
 #include "Platform.h"
@@ -73,6 +73,7 @@ extern void SaveReadFields( SAVERESTOREDATA *pSaveData, const char *pname, void 
 extern void SaveGlobalState( SAVERESTOREDATA *pSaveData );
 extern void RestoreGlobalState( SAVERESTOREDATA *pSaveData );
 extern void ResetGlobalState( void );
+extern void SetObjectCollisionBox(entvars_t* pev);
 
 typedef enum { USE_OFF = 0, USE_ON = 1, USE_SET = 2, USE_TOGGLE = 3 } USE_TYPE;
 
@@ -660,7 +661,7 @@ class CBaseMonster;
 class CCineMonster;
 class CSound;
 
-#include "basemonster.h"
+#include "monster/CBaseMonster.h"
 
 
 

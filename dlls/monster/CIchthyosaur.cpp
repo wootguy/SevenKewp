@@ -23,7 +23,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
-#include    "flyingmonster.h"
+#include    "CFlyingMonster.h"
 #include	"nodes.h"
 #include	"env/CSoundEnt.h"
 #include	"animation.h"
