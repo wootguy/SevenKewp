@@ -1,3 +1,7 @@
+# SevenKewp
+
+This will probably be abandoned in a few months and never touched again. I just want to learn how to make a mod, mostly.
+
 # Building the source
 ### Windows users:
 1. Install CMake and Visual Studio
