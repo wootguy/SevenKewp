@@ -19,7 +19,7 @@
 #include "cbase.h"
 #include "weapons.h"
 #include "monster/monsters.h"
-#include "player.h"
+#include "CBasePlayer.h"
 #include "gamerules.h"
 
 

@@ -4,19 +4,19 @@ set(WEAPON_HDR
 set(WEAPON_SRC
 	hl/hl_weapons.cpp
 	../dlls/wpn_shared/hl_wpn_glock.cpp
-	../dlls/crossbow.cpp
-	../dlls/crowbar.cpp
-	../dlls/egon.cpp
-	../dlls/gauss.cpp
-	../dlls/handgrenade.cpp
-	../dlls/hornetgun.cpp
-	../dlls/mp5.cpp
-	../dlls/python.cpp
-	../dlls/rpg.cpp
-	../dlls/satchel.cpp
-	../dlls/shotgun.cpp
-	../dlls/squeakgrenade.cpp
-	../dlls/tripmine.cpp
+	../dlls/weapon/CCrossbow.cpp
+	../dlls/weapon/CCrowbar.cpp
+	../dlls/weapon/CEgon.cpp
+	../dlls/weapon/CGauss.cpp
+	../dlls/weapon/CHandGrenade.cpp
+	../dlls/weapon/CHgun.cpp
+	../dlls/weapon/CMP5.cpp
+	../dlls/weapon/CPython.cpp
+	../dlls/weapon/CRpg.cpp
+	../dlls/weapon/CSatchel.cpp
+	../dlls/weapon/CShotgun.cpp
+	../dlls/weapon/CSqueakGrenade.cpp
+	../dlls/weapon/CTripmine.cpp
 	com_weapons.cpp
 )
 

@@ -17,9 +17,9 @@
 #include "util.h"
 #include "cbase.h"
 #include "monster/monsters.h"
-#include "weapons.h"
+#include "weapon/weapons.h"
 #include "nodes.h"
-#include "player.h"
+#include "CBasePlayer.h"
 
 enum glock_e {
 	GLOCK_IDLE1 = 0,

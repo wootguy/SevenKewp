@@ -79,20 +79,6 @@ set(MONSTER_SCRIPTED_SRC
 	monster/CScriptedSentence.cpp
 )
 
-set(PLAYER_HDR
-	client.h
-	player.h
-	player_util.h
-	spectator.h
-)
-set(PLAYER_SRC
-	client.cpp
-	player_util.cpp
-	observer.cpp
-	spectator.cpp
-	../game_shared/voice_gamemgr.cpp
-)
-
 set(ENV_HDR
 	env/CBeam.h
 	env/CBloodSplat.h
@@ -159,6 +145,7 @@ set(ITEM_SRC
 set(TRIGGER_HDR
 	triggers/CBaseTrigger.h
 	triggers/CFireAndDie.h
+	triggers/CRuleEntity.h
 	triggers/CTriggerMultiple.h
 )
 set(TRIGGER_SRC
@@ -167,12 +154,21 @@ set(TRIGGER_SRC
 	triggers/CChangeLevel.cpp
 	triggers/CFrictionModifier.cpp
 	triggers/CFireAndDie.cpp
+	triggers/CGameCounter.cpp
+	triggers/CGameEnd.cpp
+	triggers/CGamePlayerHurt.cpp
+	triggers/CGamePlayerTeam.cpp
+	triggers/CGamePlayerZone.cpp
+	triggers/CGameScore.cpp
+	triggers/CGameTeamMaster.cpp
+	triggers/CGameText.cpp
 	triggers/CInfoIntermission.cpp
 	triggers/CLadder.cpp
 	triggers/CMultiManager.cpp
 	triggers/CMultiSource.cpp
 	triggers/CRenderFxManager.cpp
 	triggers/CRevertSaved.cpp
+	triggers/CRuleEntity.cpp
 	triggers/CStripWeapons.cpp
 	triggers/CTriggerCamera.cpp
 	triggers/CTargetCDAudio.cpp
@@ -245,6 +241,8 @@ set(ENTITY_HDR
 	cbase.h
 	ent_globals.h
 	nodes.h
+	CBasePlayer.h
+	CBaseSpectator.h
 	scripted.h
 	scriptevent.h
 	../engine/progdefs.h
@@ -257,6 +255,7 @@ set(ENTITY_SRC
 	CBaseDelay.cpp
 	CBaseDMStart.cpp
 	CBasePlayer.cpp
+	CBaseSpectator.cpp
 	CBaseToggle.cpp
 	CGlobalState.cpp
 	CNullEntity.cpp
@@ -276,36 +275,42 @@ set(PATH_SRC
 )
 
 set(WEAPON_HDR
-	weapons.h
+	weapon/weapons.h
 )
 set(WEAPON_SRC
-	crossbow.cpp
-	crowbar.cpp
-	egon.cpp
-	gauss.cpp
-	ggrenade.cpp
-	handgrenade.cpp	
-	hornetgun.cpp
-	mortar.cpp
-	mp5.cpp
-	python.cpp
-	rpg.cpp
-	satchel.cpp
-	shotgun.cpp
-	squeakgrenade.cpp
-	tripmine.cpp
-	weapons.cpp
+	weapon/CBasePlayerAmmo.cpp
+	weapon/CBasePlayerItem.cpp
+	weapon/CBasePlayerWeapon.cpp
+	weapon/CCrossbow.cpp
+	weapon/CCrowbar.cpp
+	weapon/CEgon.cpp
+	weapon/CGauss.cpp
+	weapon/CGrenade.cpp
+	weapon/CHandGrenade.cpp	
+	weapon/CHgun.cpp
+	weapon/CMortar.cpp
+	weapon/CMP5.cpp
+	weapon/CPython.cpp
+	weapon/CRpg.cpp
+	weapon/CSatchel.cpp
+	weapon/CShotgun.cpp
+	weapon/CSqueakGrenade.cpp
+	weapon/CTripmine.cpp
+	weapon/CWeaponBox.cpp
+	weapon/weapons.cpp
 	wpn_shared/hl_wpn_glock.cpp
-	combat.cpp
+	weapon/combat.cpp
 )
 
 set(UTIL_HDR
 	plane.h
+	player_util.h
 	util.h
 	vector.h
 )
 set(UTIL_SRC
 	plane.cpp
+	player_util.cpp
 	util.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
@@ -314,6 +319,7 @@ set(UTIL_SRC
 
 set(GAME_HDR
 	animation.h
+	client.h
 	gamerules.h
 	saverestore.h
 	skill.h
@@ -322,22 +328,22 @@ set(GAME_HDR
 )
 set(GAME_SRC
 	animation.cpp
+	client.cpp
 	game.cpp
 	gamerules.cpp
 	globals.cpp
 	h_export.cpp
-	maprules.cpp
 	multiplay_gamerules.cpp
 	singleplay_gamerules.cpp
 	skill.cpp
 	sound.cpp
 	teamplay_gamerules.cpp
 	user_messages.cpp
+	../game_shared/voice_gamemgr.cpp
 )
 
 set(ALL_SRC
 	${MONSTER_SRC} ${MONSTER_AI_SRC} ${MONSTER_SCRIPTED_SRC} ${MONSTER_HDR}
-	${PLAYER_SRC} ${PLAYER_HDR}
 	${ENTITY_SRC} ${ENTITY_HDR}
 	${ENV_SRC} ${ENV_HDR}
 	${ITEM_SRC} ${ITEM_HDR}
@@ -361,6 +367,7 @@ include_directories(triggers)
 include_directories(monster)
 include_directories(item)
 include_directories(path)
+include_directories(weapon)
 include_directories(.)
 
 add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
@@ -391,11 +398,9 @@ if(MSVC)
 	source_group("Header Files\\Entities\\path" FILES ${PATH_HDR})
 	source_group("Header Files\\Entities\\trigger" FILES ${TRIGGER_HDR})
 	source_group("Header Files\\Entities\\weapon" FILES ${WEAPON_HDR})
-	source_group("Header Files\\Player" FILES ${PLAYER_HDR})
 	source_group("Header Files\\Game" FILES ${GAME_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})
 	
-	source_group("Source Files\\Player" FILES ${PLAYER_SRC})
 	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})
 	source_group("Source Files\\Entities\\env" FILES ${ENV_SRC})
 	source_group("Source Files\\Entities\\func" FILES ${FUNC_SRC})

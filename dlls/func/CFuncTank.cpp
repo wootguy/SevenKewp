@@ -4,7 +4,7 @@
 #include "effects.h"
 #include "weapons.h"
 #include "explode.h"
-#include "player.h"
+#include "CBasePlayer.h"
 #include "CFuncTank.h"
 
 

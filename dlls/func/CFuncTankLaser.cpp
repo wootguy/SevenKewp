@@ -5,7 +5,7 @@
 #include "weapons.h"
 #include "explode.h"
 #include "CFuncTank.h"
-#include "player.h"
+#include "CBasePlayer.h"
 
 class CFuncTankLaser : public CFuncTank
 {

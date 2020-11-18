@@ -1,7 +1,7 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
-#include "player.h"
+#include "CBasePlayer.h"
 #include "gamerules.h"
 #include "game.h"
 #include "CBaseDMStart.h"
