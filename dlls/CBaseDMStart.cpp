@@ -6,15 +6,19 @@
 #include "game.h"
 #include "CBaseDMStart.h"
 
+#define FL_START_OFF 2
+
 DLL_GLOBAL CBaseEntity* g_pLastSpawn;
 
 class CBaseDMStart : public CPointEntity
 {
 public:
-	void		KeyValue(KeyValueData* pkvd);
+	void		Spawn(void);
+	void		Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	BOOL		IsTriggered(CBaseEntity* pEntity);
 
 private:
+	bool isActive = false;
 };
 
 // These are the new entry points to entities. 
@@ -22,22 +26,19 @@ LINK_ENTITY_TO_CLASS(info_player_deathmatch, CBaseDMStart);
 LINK_ENTITY_TO_CLASS(info_player_start, CPointEntity);
 LINK_ENTITY_TO_CLASS(info_landmark, CPointEntity);
 
-void CBaseDMStart::KeyValue(KeyValueData* pkvd)
+void CBaseDMStart::Spawn()
 {
-	if (FStrEq(pkvd->szKeyName, "master"))
-	{
-		pev->netname = ALLOC_STRING(pkvd->szValue);
-		pkvd->fHandled = TRUE;
-	}
-	else
-		CPointEntity::KeyValue(pkvd);
+	isActive = !(pev->spawnflags & FL_START_OFF);
+}
+
+void CBaseDMStart::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	isActive = useType == USE_TOGGLE ? !isActive : useType == USE_ON;
 }
 
 BOOL CBaseDMStart::IsTriggered(CBaseEntity* pEntity)
 {
-	BOOL master = UTIL_IsMasterTriggered(pev->netname, pEntity);
-
-	return master;
+	return isActive;
 }
 
 /*
