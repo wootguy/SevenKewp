@@ -22,7 +22,7 @@
 #include	"util.h"
 #include	"cbase.h"
 #include	"monsters.h"
-#include	"spectator.h"
+#include	"CBaseSpectator.h"
 
 /*
 ===========

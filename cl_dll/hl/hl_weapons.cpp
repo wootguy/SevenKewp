@@ -16,9 +16,9 @@
 #include "util.h"
 #include "cbase.h"
 #include "monster/monsters.h"
-#include "weapons.h"
+#include "weapon/weapons.h"
 #include "nodes.h"
-#include "player.h"
+#include "CBasePlayer.h"
 
 #include "usercmd.h"
 #include "entity_state.h"

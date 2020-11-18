@@ -8,7 +8,9 @@
 #include	"game.h"
 #include	"weapons.h"
 #include	"skill.h"
+#include	"nodes.h"
 
+extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 
 // Global Savedata for Delay
@@ -667,5 +669,73 @@ void CBaseEntity::TraceBleed(float flDamage, Vector vecDir, TraceResult* ptr, in
 		{
 			UTIL_BloodDecalTrace(&Bloodtr, BloodColor());
 		}
+	}
+}
+
+
+// This updates global tables that need to know about entities being removed
+void CBaseEntity::UpdateOnRemove(void)
+{
+	int	i;
+
+	if (FBitSet(pev->flags, FL_GRAPHED))
+	{
+		// this entity was a LinkEnt in the world node graph, so we must remove it from
+		// the graph since we are removing it from the world.
+		for (i = 0; i < WorldGraph.m_cLinks; i++)
+		{
+			if (WorldGraph.m_pLinkPool[i].m_pLinkEnt == pev)
+			{
+				// if this link has a link ent which is the same ent that is removing itself, remove it!
+				WorldGraph.m_pLinkPool[i].m_pLinkEnt = NULL;
+			}
+		}
+	}
+	if (pev->globalname)
+		gGlobalState.EntitySetState(pev->globalname, GLOBAL_DEAD);
+}
+
+// Convenient way to delay removing oneself
+void CBaseEntity::SUB_Remove(void)
+{
+	UpdateOnRemove();
+	if (pev->health > 0)
+	{
+		// this situation can screw up monsters who can't tell their entity pointers are invalid.
+		pev->health = 0;
+		ALERT(at_aiconsole, "SUB_Remove called on entity with health > 0\n");
+	}
+
+	REMOVE_ENTITY(ENT(pev));
+}
+
+// Convenient way to explicitly do nothing (passed to functions that require a method)
+void CBaseEntity::SUB_DoNothing(void)
+{
+}
+
+/*
+==============================
+SUB_UseTargets
+
+If self.delay is set, a DelayedUse entity will be created that will actually
+do the SUB_UseTargets after that many seconds have passed.
+
+Removes all entities with a targetname that match self.killtarget,
+and removes them, so some events can remove other triggers.
+
+Search for (string)targetname in all entities that
+match (string)self.target and call their .use function (if they have one)
+
+==============================
+*/
+void CBaseEntity::SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, float value)
+{
+	//
+	// fire targets
+	//
+	if (!FStringNull(pev->target))
+	{
+		FireTargets(STRING(pev->target), pActivator, this, useType, value);
 	}
 }

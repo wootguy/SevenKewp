@@ -20,7 +20,7 @@
 #include "monster/monsters.h"
 #include "weapons.h"
 #include "nodes.h"
-#include "player.h"
+#include "CBasePlayer.h"
 #include "monster/CHornet.h"
 #include "gamerules.h"
 

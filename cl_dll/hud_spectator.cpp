@@ -1892,7 +1892,7 @@ void CHudSpectator::CheckSettings()
 
 	// if we are a real player on server don't allow inset window
 	// in First Person mode since this is our resticted forcecamera mode 2
-	// team number 3 = SPECTATOR see player.h
+	// team number 3 = SPECTATOR see CBasePlayer.h
 
 	if ( ( (g_iTeamNumber == 1) || (g_iTeamNumber == 2)) && (g_iUser1 == OBS_IN_EYE) )
 		m_pip->value = INSET_OFF;

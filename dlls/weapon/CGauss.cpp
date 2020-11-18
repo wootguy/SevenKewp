@@ -20,7 +20,7 @@
 #include "monster/monsters.h"
 #include "weapons.h"
 #include "nodes.h"
-#include "player.h"
+#include "CBasePlayer.h"
 #include "env/CSoundEnt.h"
 #include "shake.h"
 #include "gamerules.h"

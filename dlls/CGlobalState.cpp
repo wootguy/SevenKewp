@@ -2,7 +2,7 @@
 #include "util.h"
 #include "cbase.h"
 #include "decals.h"
-#include "player.h"
+#include "CBasePlayer.h"
 #include "ent_globals.h"
 
 CGlobalState					gGlobalState;
