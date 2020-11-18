@@ -17,7 +17,7 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
-#include	"flyingmonster.h"
+#include	"CFlyingMonster.h"
 
 #define FLYING_AE_FLAP		(8)
 #define FLYING_AE_FLAPSOUND	(9)

@@ -17,11 +17,11 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
-#include "monsters.h"
+#include "monster/monsters.h"
 #include "weapons.h"
 #include "nodes.h"
 #include "player.h"
-#include "hornet.h"
+#include "monster/CHornet.h"
 #include "gamerules.h"
 
 

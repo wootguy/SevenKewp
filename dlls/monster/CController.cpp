@@ -25,7 +25,7 @@
 #include	"effects.h"
 #include	"schedule.h"
 #include	"weapons.h"
-#include	"squadmonster.h"
+#include	"CSquadMonster.h"
 
 //=========================================================
 // Monster's Anim Events Go Here

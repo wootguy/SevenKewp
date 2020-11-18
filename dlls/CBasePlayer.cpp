@@ -37,6 +37,10 @@
 #include "pm_shared.h"
 #include "hltv.h"
 #include "CFuncTrackTrain.h"
+#include "user_messages.h"
+#include "CSprayCan.h"
+#include "CBloodSplat.h"
+#include "CBaseDMStart.h"
 
 // #define DUCKFIX
 
@@ -45,14 +49,13 @@ extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL	BOOL	g_fDrawLines;
 int gEvilImpulse101;
 extern DLL_GLOBAL int		g_iSkillLevel, gDisplayTitle;
-
+extern float g_flWeaponCheat;
 
 BOOL gInitHUD = TRUE;
 
 extern void CopyToBodyQue(entvars_t* pev);
 extern void respawn(entvars_t *pev, BOOL fCopyCorpse);
 extern Vector VecBModelOrigin(entvars_t *pevBModel );
-extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
 // the world node graph
 extern CGraph	WorldGraph;
@@ -68,6 +71,36 @@ extern CGraph	WorldGraph;
 
 #define	FLASH_DRAIN_TIME	 1.2 //100 units/3 minutes
 #define	FLASH_CHARGE_TIME	 0.2 // 100 units/20 seconds  (seconds per unit)
+
+#define CLIMB_SHAKE_FREQUENCY	22	// how many frames in between screen shakes when climbing
+#define	MAX_CLIMB_SPEED			200	// fastest vertical climbing speed possible
+#define	CLIMB_SPEED_DEC			15	// climbing deceleration rate
+#define	CLIMB_PUNCH_X			-7  // how far to 'punch' client X axis when climbing
+#define CLIMB_PUNCH_Z			7	// how far to 'punch' client Z axis when climbing
+
+#define DOT_1DEGREE   0.9998476951564
+#define DOT_2DEGREE   0.9993908270191
+#define DOT_3DEGREE   0.9986295347546
+#define DOT_4DEGREE   0.9975640502598
+#define DOT_5DEGREE   0.9961946980917
+#define DOT_6DEGREE   0.9945218953683
+#define DOT_7DEGREE   0.9925461516413
+#define DOT_8DEGREE   0.9902680687416
+#define DOT_9DEGREE   0.9876883405951
+#define DOT_10DEGREE  0.9848077530122
+#define DOT_15DEGREE  0.9659258262891
+#define DOT_20DEGREE  0.9396926207859
+#define DOT_25DEGREE  0.9063077870367
+
+#define ARMOR_RATIO	 0.2	// Armor Takes 80% of the damage
+#define ARMOR_BONUS  0.5	// Each Point of Armor is work 1/x points of health
+
+#define GEIGERDELAY 0.25
+#define SUITUPDATETIME	3.5
+#define AIRTIME	12		// lung full of air lasts this many seconds
+#define SUITFIRSTUPDATETIME 0.1
+
+#define	PLAYER_SEARCH_RADIUS	(float)64 // +use distance
 
 // Global Savedata for player
 TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] = 
@@ -146,101 +179,10 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	//DEFINE_FIELD( CBasePlayer, m_fOnTarget, FIELD_BOOLEAN ), // Don't need to restore
 	//DEFINE_FIELD( CBasePlayer, m_nCustomSprayFrames, FIELD_INTEGER ), // Don't need to restore
 	
-};	
+};
 
-
-int giPrecacheGrunt = 0;
-int gmsgShake = 0;
-int gmsgFade = 0;
-int gmsgSelAmmo = 0;
-int gmsgFlashlight = 0;
-int gmsgFlashBattery = 0;
-int gmsgResetHUD = 0;
-int gmsgInitHUD = 0;
-int gmsgShowGameTitle = 0;
-int gmsgCurWeapon = 0;
-int gmsgHealth = 0;
-int gmsgDamage = 0;
-int gmsgBattery = 0;
-int gmsgTrain = 0;
-int gmsgLogo = 0;
-int gmsgWeaponList = 0;
-int gmsgAmmoX = 0;
-int gmsgHudText = 0;
-int gmsgDeathMsg = 0;
-int gmsgScoreInfo = 0;
-int gmsgTeamInfo = 0;
-int gmsgTeamScore = 0;
-int gmsgGameMode = 0;
-int gmsgMOTD = 0;
-int gmsgServerName = 0;
-int gmsgAmmoPickup = 0;
-int gmsgWeapPickup = 0;
-int gmsgItemPickup = 0;
-int gmsgHideWeapon = 0;
-int gmsgSetCurWeap = 0;
-int gmsgSayText = 0;
-int gmsgTextMsg = 0;
-int gmsgSetFOV = 0;
-int gmsgShowMenu = 0;
-int gmsgGeigerRange = 0;
-int gmsgTeamNames = 0;
-
-int gmsgStatusText = 0;
-int gmsgStatusValue = 0; 
-
-
-
-void LinkUserMessages( void )
-{
-	// Already taken care of?
-	if ( gmsgSelAmmo )
-	{
-		return;
-	}
-
-	gmsgSelAmmo = REG_USER_MSG("SelAmmo", sizeof(SelAmmo));
-	gmsgCurWeapon = REG_USER_MSG("CurWeapon", 3);
-	gmsgGeigerRange = REG_USER_MSG("Geiger", 1);
-	gmsgFlashlight = REG_USER_MSG("Flashlight", 2);
-	gmsgFlashBattery = REG_USER_MSG("FlashBat", 1);
-	gmsgHealth = REG_USER_MSG( "Health", 1 );
-	gmsgDamage = REG_USER_MSG( "Damage", 12 );
-	gmsgBattery = REG_USER_MSG( "Battery", 2);
-	gmsgTrain = REG_USER_MSG( "Train", 1);
-	//gmsgHudText = REG_USER_MSG( "HudTextPro", -1 );
-	gmsgHudText = REG_USER_MSG( "HudText", -1 ); // we don't use the message but 3rd party addons may!
-	gmsgSayText = REG_USER_MSG( "SayText", -1 );
-	gmsgTextMsg = REG_USER_MSG( "TextMsg", -1 );
-	gmsgWeaponList = REG_USER_MSG("WeaponList", -1);
-	gmsgResetHUD = REG_USER_MSG("ResetHUD", 1);		// called every respawn
-	gmsgInitHUD = REG_USER_MSG("InitHUD", 0 );		// called every time a new player joins the server
-	gmsgShowGameTitle = REG_USER_MSG("GameTitle", 1);
-	gmsgDeathMsg = REG_USER_MSG( "DeathMsg", -1 );
-	gmsgScoreInfo = REG_USER_MSG( "ScoreInfo", 9 );
-	gmsgTeamInfo = REG_USER_MSG( "TeamInfo", -1 );  // sets the name of a player's team
-	gmsgTeamScore = REG_USER_MSG( "TeamScore", -1 );  // sets the score of a team on the scoreboard
-	gmsgGameMode = REG_USER_MSG( "GameMode", 1 );
-	gmsgMOTD = REG_USER_MSG( "MOTD", -1 );
-	gmsgServerName = REG_USER_MSG( "ServerName", -1 );
-	gmsgAmmoPickup = REG_USER_MSG( "AmmoPickup", 2 );
-	gmsgWeapPickup = REG_USER_MSG( "WeapPickup", 1 );
-	gmsgItemPickup = REG_USER_MSG( "ItemPickup", -1 );
-	gmsgHideWeapon = REG_USER_MSG( "HideWeapon", 1 );
-	gmsgSetFOV = REG_USER_MSG( "SetFOV", 1 );
-	gmsgShowMenu = REG_USER_MSG( "ShowMenu", -1 );
-	gmsgShake = REG_USER_MSG("ScreenShake", sizeof(ScreenShake));
-	gmsgFade = REG_USER_MSG("ScreenFade", sizeof(ScreenFade));
-	gmsgAmmoX = REG_USER_MSG("AmmoX", 2);
-	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
-
-	gmsgStatusText = REG_USER_MSG("StatusText", -1);
-	gmsgStatusValue = REG_USER_MSG("StatusValue", 3); 
-
-}
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer );
-
 
 
 void CBasePlayer :: Pain( void )
@@ -437,10 +379,6 @@ void CBasePlayer :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector 
 	type will cause the damage time countdown to be reset.  Thus the ongoing effects of poison, radiation
 	etc are implemented with subsequent calls to TakeDamage using DMG_GENERIC.
 */
-
-#define ARMOR_RATIO	 0.2	// Armor Takes 80% of the damage
-#define ARMOR_BONUS  0.5	// Each Point of Armor is work 1/x points of health
-
 int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	// have suit diagnose the problem - ie: report damage type
@@ -946,7 +884,6 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
-
 // Set the activity based on an event or current state
 void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 {
@@ -1137,14 +1074,11 @@ void CBasePlayer::TabulateAmmo()
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
 }
 
-
 /*
 ===========
 WaterMove
 ============
 */
-#define AIRTIME	12		// lung full of air lasts this many seconds
-
 void CBasePlayer::WaterMove()
 {
 	int air;
@@ -1258,7 +1192,6 @@ void CBasePlayer::WaterMove()
 		pev->dmgtime = 0;
 	}
 }
-
 
 // TRUE if the player is attached to a ladder
 BOOL CBasePlayer::IsOnLadder( void )
@@ -1488,8 +1421,6 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 // 
 // PlayerUse - handles USE keypress
 //
-#define	PLAYER_SEARCH_RADIUS	(float)64
-
 void CBasePlayer::PlayerUse ( void )
 {
 	if ( IsObserver() )
@@ -1598,8 +1529,6 @@ void CBasePlayer::PlayerUse ( void )
 	}
 }
 
-
-
 void CBasePlayer::Jump()
 {
 	Vector		vecWallCheckDir;// direction we're tracing a line to find a wall when walljumping
@@ -1649,8 +1578,6 @@ void CBasePlayer::Jump()
 	}
 }
 
-
-
 // This is a glorious hack to find free space when you've crouched into some solid space
 // Our crouching collisions do not work correctly for some reason and this is easier
 // than fixing the problem :(
@@ -1688,7 +1615,6 @@ int  CBasePlayer::Classify ( void )
 	return CLASS_PLAYER;
 }
 
-
 void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 {
 	// Positive score always adds
@@ -1716,7 +1642,6 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 		WRITE_SHORT( g_pGameRules->GetTeamIndex( m_szTeamName ) + 1 );
 	MESSAGE_END();
 }
-
 
 void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore )
 {
@@ -1832,20 +1757,6 @@ void CBasePlayer::UpdateStatusBar()
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-#define CLIMB_SHAKE_FREQUENCY	22	// how many frames in between screen shakes when climbing
-#define	MAX_CLIMB_SPEED			200	// fastest vertical climbing speed possible
-#define	CLIMB_SPEED_DEC			15	// climbing deceleration rate
-#define	CLIMB_PUNCH_X			-7  // how far to 'punch' client X axis when climbing
-#define CLIMB_PUNCH_Z			7	// how far to 'punch' client Z axis when climbing
 
 void CBasePlayer::PreThink(void)
 {
@@ -1984,6 +1895,7 @@ void CBasePlayer::PreThink(void)
 		pev->velocity = g_vecZero;
 	}
 }
+
 /* Time based Damage works as follows: 
 	1) There are several types of timebased damage:
 
@@ -2040,28 +1952,7 @@ void CBasePlayer::PreThink(void)
 
 //#define PARALYZE_DURATION	30		// number of 2 second intervals to take damage
 //#define PARALYZE_DAMAGE		0.0		// damage to take each 2 second interval
-
-//#define NERVEGAS_DURATION	16
-//#define NERVEGAS_DAMAGE		5.0
-
-//#define POISON_DURATION		25
-//#define POISON_DAMAGE		2.0
-
-//#define RADIATION_DURATION	50
-//#define RADIATION_DAMAGE	1.0
-
-//#define ACID_DURATION		10
-//#define ACID_DAMAGE			5.0
-
-//#define SLOWBURN_DURATION	2
-//#define SLOWBURN_DAMAGE		1.0
-
-//#define SLOWFREEZE_DURATION	1.0
-//#define SLOWFREEZE_DAMAGE	3.0
-
 /* */
-
-
 void CBasePlayer::CheckTimeBasedDamage() 
 {
 	int i;
@@ -2227,9 +2118,6 @@ Things powered by the battery
 */
 
 // if in range of radiation source, ping geiger counter
-
-#define GEIGERDELAY 0.25
-
 void CBasePlayer :: UpdateGeigerCounter( void )
 {
 	BYTE range;
@@ -2266,10 +2154,6 @@ CheckSuitUpdate
 Play suit update if it's time
 ================
 */
-
-#define SUITUPDATETIME	3.5
-#define SUITFIRSTUPDATETIME 0.1
-
 void CBasePlayer::CheckSuitUpdate()
 {
 	int i;
@@ -2331,7 +2215,6 @@ void CBasePlayer::CheckSuitUpdate()
 // sentence name ie: !HEV_AA0.  If iNoRepeat is specified in
 // seconds, then we won't repeat playback of this word or sentence
 // for at least that number of seconds.
-
 void CBasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeatTime)
 {
 	int i;
@@ -2442,7 +2325,6 @@ CheckPowerups(entvars_t *pev)
 
 	pev->modelindex = g_ulModelIndexPlayer;    // don't use eyes
 }
-
 
 //=========================================================
 // UpdatePlayerSound - updates the position of the player's
@@ -2562,7 +2444,6 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 	// UTIL_ParticleEffect ( pev->origin + gpGlobals->v_forward * iVolume, g_vecZero, 255, 25 );
 	//ALERT ( at_console, "%d/%d\n", iVolume, m_iTargetVolume );
 }
-
 
 void CBasePlayer::PostThink()
 {
@@ -2726,128 +2607,6 @@ pt_end:
 	m_afButtonLast = pev->button;
 }
 
-
-// checks if the spot is clear of players
-BOOL IsSpawnPointValid( CBaseEntity *pPlayer, CBaseEntity *pSpot )
-{
-	CBaseEntity *ent = NULL;
-
-	if ( !pSpot->IsTriggered( pPlayer ) )
-	{
-		return FALSE;
-	}
-
-	while ( (ent = UTIL_FindEntityInSphere( ent, pSpot->pev->origin, 128 )) != NULL )
-	{
-		// if ent is a client, don't spawn on 'em
-		if ( ent->IsPlayer() && ent != pPlayer )
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
-
-DLL_GLOBAL CBaseEntity	*g_pLastSpawn;
-inline int FNullEnt( CBaseEntity *ent ) { return (ent == NULL) || FNullEnt( ent->edict() ); }
-
-/*
-============
-EntSelectSpawnPoint
-
-Returns the entity to spawn at
-
-USES AND SETS GLOBAL g_pLastSpawn
-============
-*/
-edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
-{
-	CBaseEntity *pSpot;
-	edict_t		*player;
-
-	player = pPlayer->edict();
-
-// choose a info_player_deathmatch point
-	if (g_pGameRules->IsCoOp())
-	{
-		pSpot = UTIL_FindEntityByClassname( g_pLastSpawn, "info_player_coop");
-		if ( !FNullEnt(pSpot) )
-			goto ReturnSpot;
-		pSpot = UTIL_FindEntityByClassname( g_pLastSpawn, "info_player_start");
-		if ( !FNullEnt(pSpot) ) 
-			goto ReturnSpot;
-	}
-	else if ( g_pGameRules->IsDeathmatch() )
-	{
-		pSpot = g_pLastSpawn;
-		// Randomize the start spot
-		for ( int i = RANDOM_LONG(1,5); i > 0; i-- )
-			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
-		if ( FNullEnt( pSpot ) )  // skip over the null point
-			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
-
-		CBaseEntity *pFirstSpot = pSpot;
-
-		do 
-		{
-			if ( pSpot )
-			{
-				// check if pSpot is valid
-				if ( IsSpawnPointValid( pPlayer, pSpot ) )
-				{
-					if ( pSpot->pev->origin == Vector( 0, 0, 0 ) )
-					{
-						pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
-						continue;
-					}
-
-					// if so, go to pSpot
-					goto ReturnSpot;
-				}
-			}
-			// increment pSpot
-			pSpot = UTIL_FindEntityByClassname( pSpot, "info_player_deathmatch" );
-		} while ( pSpot != pFirstSpot ); // loop if we're not back to the start
-
-		// we haven't found a place to spawn yet,  so kill any guy at the first spawn point and spawn there
-		if ( !FNullEnt( pSpot ) )
-		{
-			CBaseEntity *ent = NULL;
-			while ( (ent = UTIL_FindEntityInSphere( ent, pSpot->pev->origin, 128 )) != NULL )
-			{
-				// if ent is a client, kill em (unless they are ourselves)
-				if ( ent->IsPlayer() && !(ent->edict() == player) )
-					ent->TakeDamage( VARS(INDEXENT(0)), VARS(INDEXENT(0)), 300, DMG_GENERIC );
-			}
-			goto ReturnSpot;
-		}
-	}
-
-	// If startspot is set, (re)spawn there.
-	if ( FStringNull( gpGlobals->startspot ) || !strlen(STRING(gpGlobals->startspot)))
-	{
-		pSpot = UTIL_FindEntityByClassname(NULL, "info_player_start");
-		if ( !FNullEnt(pSpot) )
-			goto ReturnSpot;
-	}
-	else
-	{
-		pSpot = UTIL_FindEntityByTargetname( NULL, STRING(gpGlobals->startspot) );
-		if ( !FNullEnt(pSpot) )
-			goto ReturnSpot;
-	}
-
-ReturnSpot:
-	if ( FNullEnt( pSpot ) )
-	{
-		ALERT(at_error, "PutClientInServer: no info_player_start on level");
-		return INDEXENT(0);
-	}
-
-	g_pLastSpawn = pSpot;
-	return pSpot->edict();
-}
-
 void CBasePlayer::Spawn( void )
 {
 	pev->classname		= MAKE_STRING("player");
@@ -2941,7 +2700,6 @@ void CBasePlayer::Spawn( void )
 	g_pGameRules->PlayerSpawn( this );
 }
 
-
 void CBasePlayer :: Precache( void )
 {
 	// in the event that the player JUST spawned, and the level node graph
@@ -2985,7 +2743,6 @@ void CBasePlayer :: Precache( void )
 		m_fInitHUD = TRUE;
 }
 
-
 int CBasePlayer::Save( CSave &save )
 {
 	if ( !CBaseMonster::Save(save) )
@@ -2994,7 +2751,6 @@ int CBasePlayer::Save( CSave &save )
 	return save.WriteFields( "PLAYER", this, m_playerSaveData, ARRAYSIZE(m_playerSaveData) );
 }
 
-
 //
 // Marks everything as new so the player will resend this to the hud.
 //
@@ -3002,7 +2758,6 @@ void CBasePlayer::RenewItems(void)
 {
 
 }
-
 
 int CBasePlayer::Restore( CRestore &restore )
 {
@@ -3066,8 +2821,6 @@ int CBasePlayer::Restore( CRestore &restore )
 
 	return status;
 }
-
-
 
 void CBasePlayer::SelectNextItem( int iItem )
 {
@@ -3163,7 +2916,6 @@ void CBasePlayer::SelectItem(const char *pstr)
 	}
 }
 
-
 void CBasePlayer::SelectLastItem(void)
 {
 	if (!m_pLastItem)
@@ -3211,7 +2963,6 @@ void CBasePlayer::SelectPrevItem( int iItem )
 {
 }
 
-
 const char *CBasePlayer::TeamID( void )
 {
 	if ( pev == NULL )		// Not fully connected yet
@@ -3220,105 +2971,6 @@ const char *CBasePlayer::TeamID( void )
 	// return their team name
 	return m_szTeamName;
 }
-
-
-//==============================================
-// !!!UNDONE:ultra temporary SprayCan entity to apply
-// decal frame at a time. For PreAlpha CD
-//==============================================
-class CSprayCan : public CBaseEntity
-{
-public:
-	void	Spawn ( entvars_t *pevOwner );
-	void	Think( void );
-
-	virtual int	ObjectCaps( void ) { return FCAP_DONT_SAVE; }
-};
-
-void CSprayCan::Spawn ( entvars_t *pevOwner )
-{
-	pev->origin = pevOwner->origin + Vector ( 0 , 0 , 32 );
-	pev->angles = pevOwner->v_angle;
-	pev->owner = ENT(pevOwner);
-	pev->frame = 0;
-
-	pev->nextthink = gpGlobals->time + 0.1;
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/sprayer.wav", 1, ATTN_NORM);
-}
-
-void CSprayCan::Think( void )
-{
-	TraceResult	tr;	
-	int playernum;
-	int nFrames;
-	CBasePlayer *pPlayer;
-	
-	pPlayer = (CBasePlayer *)GET_PRIVATE(pev->owner);
-
-	if (pPlayer)
-		nFrames = pPlayer->GetCustomDecalFrames();
-	else
-		nFrames = -1;
-
-	playernum = ENTINDEX(pev->owner);
-	
-	// ALERT(at_console, "Spray by player %i, %i of %i\n", playernum, (int)(pev->frame + 1), nFrames);
-
-	UTIL_MakeVectors(pev->angles);
-	UTIL_TraceLine ( pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, & tr);
-
-	// No customization present.
-	if (nFrames == -1)
-	{
-		UTIL_DecalTrace( &tr, DECAL_LAMBDA6 );
-		UTIL_Remove( this );
-	}
-	else
-	{
-		UTIL_PlayerDecalTrace( &tr, playernum, pev->frame, TRUE );
-		// Just painted last custom frame.
-		if ( pev->frame++ >= (nFrames - 1))
-			UTIL_Remove( this );
-	}
-
-	pev->nextthink = gpGlobals->time + 0.1;
-}
-
-class	CBloodSplat : public CBaseEntity
-{
-public:
-	void	Spawn ( entvars_t *pevOwner );
-	void	Spray ( void );
-};
-
-void CBloodSplat::Spawn ( entvars_t *pevOwner )
-{
-	pev->origin = pevOwner->origin + Vector ( 0 , 0 , 32 );
-	pev->angles = pevOwner->v_angle;
-	pev->owner = ENT(pevOwner);
-
-	SetThink ( &CBloodSplat::Spray );
-	pev->nextthink = gpGlobals->time + 0.1;
-}
-
-void CBloodSplat::Spray ( void )
-{
-	TraceResult	tr;	
-	
-	if ( g_Language != LANGUAGE_GERMAN )
-	{
-		UTIL_MakeVectors(pev->angles);
-		UTIL_TraceLine ( pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, & tr);
-
-		UTIL_BloodDecalTrace( &tr, BLOOD_COLOR_RED );
-	}
-	SetThink ( &CBloodSplat::SUB_Remove );
-	pev->nextthink = gpGlobals->time + 0.1;
-}
-
-//==============================================
-
-
 
 void CBasePlayer::GiveNamedItem( const char *pszName )
 {
@@ -3339,8 +2991,6 @@ void CBasePlayer::GiveNamedItem( const char *pszName )
 	DispatchTouch( pent, ENT( pev ) );
 }
 
-
-
 CBaseEntity *FindEntityForward( CBaseEntity *pMe )
 {
 	TraceResult tr;
@@ -3355,12 +3005,10 @@ CBaseEntity *FindEntityForward( CBaseEntity *pMe )
 	return NULL;
 }
 
-
 BOOL CBasePlayer :: FlashlightIsOn( void )
 {
 	return FBitSet(pev->effects, EF_DIMLIGHT);
 }
-
 
 void CBasePlayer :: FlashlightTurnOn( void )
 {
@@ -3382,7 +3030,6 @@ void CBasePlayer :: FlashlightTurnOn( void )
 
 	}
 }
-
 
 void CBasePlayer :: FlashlightTurnOff( void )
 {
@@ -3425,8 +3072,6 @@ void CBasePlayer :: ForceClientDllUpdate( void )
 ImpulseCommands
 ============
 */
-extern float g_flWeaponCheat;
-
 void CBasePlayer::ImpulseCommands( )
 {
 	TraceResult	tr;// UNDONE: kill me! This is temporary for PreAlpha CDs
@@ -3742,8 +3387,6 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 	return FALSE;
 }
 
-
-
 int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem )
 {
 	if (m_pActiveItem == pItem)
@@ -3780,7 +3423,6 @@ int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem )
 	}
 	return FALSE;
 }
-
 
 //
 // Returns the unique ID for the ammo, or -1 if error
@@ -3827,7 +3469,6 @@ int CBasePlayer :: GiveAmmo( int iCount, const char *szName, int iMax )
 	return i;
 }
 
-
 /*
 ============
 ItemPreFrame
@@ -3851,7 +3492,6 @@ void CBasePlayer::ItemPreFrame()
 
 	m_pActiveItem->ItemPreFrame( );
 }
-
 
 /*
 ============
@@ -4181,7 +3821,6 @@ void CBasePlayer :: UpdateClientData( void )
 	}
 }
 
-
 //=========================================================
 // FBecomeProne - Overridden for the player to set the proper
 // physics flags when a barnacle grabs player.
@@ -4211,7 +3850,6 @@ void CBasePlayer :: BarnacleVictimReleased ( void )
 	m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
 }
 
-
 //=========================================================
 // Illumination 
 // return player light level plus virtual muzzle flash
@@ -4226,7 +3864,6 @@ int CBasePlayer :: Illumination( void )
 	return iIllum;
 }
 
-
 void CBasePlayer :: EnableControl(BOOL fControl)
 {
 	if (!fControl)
@@ -4235,21 +3872,6 @@ void CBasePlayer :: EnableControl(BOOL fControl)
 		pev->flags &= ~FL_FROZEN;
 
 }
-
-
-#define DOT_1DEGREE   0.9998476951564
-#define DOT_2DEGREE   0.9993908270191
-#define DOT_3DEGREE   0.9986295347546
-#define DOT_4DEGREE   0.9975640502598
-#define DOT_5DEGREE   0.9961946980917
-#define DOT_6DEGREE   0.9945218953683
-#define DOT_7DEGREE   0.9925461516413
-#define DOT_8DEGREE   0.9902680687416
-#define DOT_9DEGREE   0.9876883405951
-#define DOT_10DEGREE  0.9848077530122
-#define DOT_15DEGREE  0.9659258262891
-#define DOT_20DEGREE  0.9396926207859
-#define DOT_25DEGREE  0.9063077870367
 
 //=========================================================
 // Autoaim
@@ -4335,7 +3957,6 @@ Vector CBasePlayer :: GetAutoaimVector( float flDelta )
 	UTIL_MakeVectors( pev->v_angle + pev->punchangle + m_vecAutoAim );
 	return gpGlobals->v_forward;
 }
-
 
 Vector CBasePlayer :: AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  )
 {
@@ -4460,7 +4081,6 @@ Vector CBasePlayer :: AutoaimDeflection( Vector &vecSrc, float flDist, float flD
 	return Vector( 0, 0, 0 );
 }
 
-
 void CBasePlayer :: ResetAutoaim( )
 {
 	if (m_vecAutoAim.x != 0 || m_vecAutoAim.y != 0)
@@ -4499,7 +4119,6 @@ int CBasePlayer :: GetCustomDecalFrames( void )
 {
 	return m_nCustomSprayFrames;
 }
-
 
 //=========================================================
 // DropPlayerItem - drop the named item, or if no name,
@@ -4665,222 +4284,3 @@ BOOL CBasePlayer :: SwitchWeapon( CBasePlayerItem *pWeapon )
 
 	return TRUE;
 }
-
-//=========================================================
-// Dead HEV suit prop
-//=========================================================
-class CDeadHEV : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	int	Classify ( void ) { return	CLASS_HUMAN_MILITARY; }
-
-	void KeyValue( KeyValueData *pkvd );
-
-	int	m_iPose;// which sequence to display	-- temporary, don't need to save
-	static const char *m_szPoses[4];
-};
-
-const char *CDeadHEV::m_szPoses[] = { "deadback", "deadsitting", "deadstomach", "deadtable" };
-
-void CDeadHEV::KeyValue( KeyValueData *pkvd )
-{
-	if (FStrEq(pkvd->szKeyName, "pose"))
-	{
-		m_iPose = atoi(pkvd->szValue);
-		pkvd->fHandled = TRUE;
-	}
-	else 
-		CBaseMonster::KeyValue( pkvd );
-}
-
-LINK_ENTITY_TO_CLASS( monster_hevsuit_dead, CDeadHEV );
-
-//=========================================================
-// ********** DeadHEV SPAWN **********
-//=========================================================
-void CDeadHEV :: Spawn( void )
-{
-	PRECACHE_MODEL("models/player.mdl");
-	SET_MODEL(ENT(pev), "models/player.mdl");
-
-	pev->effects		= 0;
-	pev->yaw_speed		= 8;
-	pev->sequence		= 0;
-	pev->body			= 1;
-	m_bloodColor		= BLOOD_COLOR_RED;
-
-	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
-
-	if (pev->sequence == -1)
-	{
-		ALERT ( at_console, "Dead hevsuit with bad pose\n" );
-		pev->sequence = 0;
-		pev->effects = EF_BRIGHTFIELD;
-	}
-
-	// Corpses have less health
-	pev->health			= 8;
-
-	MonsterInitDead();
-}
-
-
-class CStripWeapons : public CPointEntity
-{
-public:
-	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-
-private:
-};
-
-LINK_ENTITY_TO_CLASS( player_weaponstrip, CStripWeapons );
-
-void CStripWeapons :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{
-	CBasePlayer *pPlayer = NULL;
-
-	if ( pActivator && pActivator->IsPlayer() )
-	{
-		pPlayer = (CBasePlayer *)pActivator;
-	}
-	else if ( !g_pGameRules->IsDeathmatch() )
-	{
-		pPlayer = (CBasePlayer *)CBaseEntity::Instance( g_engfuncs.pfnPEntityOfEntIndex( 1 ) );
-	}
-
-	if ( pPlayer )
-		pPlayer->RemoveAllItems( FALSE );
-}
-
-
-class CRevertSaved : public CPointEntity
-{
-public:
-	void	Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void	EXPORT MessageThink( void );
-	void	EXPORT LoadThink( void );
-	void	KeyValue( KeyValueData *pkvd );
-
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	inline	float	Duration( void ) { return pev->dmg_take; }
-	inline	float	HoldTime( void ) { return pev->dmg_save; }
-	inline	float	MessageTime( void ) { return m_messageTime; }
-	inline	float	LoadTime( void ) { return m_loadTime; }
-
-	inline	void	SetDuration( float duration ) { pev->dmg_take = duration; }
-	inline	void	SetHoldTime( float hold ) { pev->dmg_save = hold; }
-	inline	void	SetMessageTime( float time ) { m_messageTime = time; }
-	inline	void	SetLoadTime( float time ) { m_loadTime = time; }
-
-private:
-	float	m_messageTime;
-	float	m_loadTime;
-};
-
-LINK_ENTITY_TO_CLASS( player_loadsaved, CRevertSaved );
-
-TYPEDESCRIPTION	CRevertSaved::m_SaveData[] = 
-{
-	DEFINE_FIELD( CRevertSaved, m_messageTime, FIELD_FLOAT ),	// These are not actual times, but durations, so save as floats
-	DEFINE_FIELD( CRevertSaved, m_loadTime, FIELD_FLOAT ),
-};
-
-IMPLEMENT_SAVERESTORE( CRevertSaved, CPointEntity );
-
-void CRevertSaved :: KeyValue( KeyValueData *pkvd )
-{
-	if (FStrEq(pkvd->szKeyName, "duration"))
-	{
-		SetDuration( atof(pkvd->szValue) );
-		pkvd->fHandled = TRUE;
-	}
-	else if (FStrEq(pkvd->szKeyName, "holdtime"))
-	{
-		SetHoldTime( atof(pkvd->szValue) );
-		pkvd->fHandled = TRUE;
-	}
-	else if (FStrEq(pkvd->szKeyName, "messagetime"))
-	{
-		SetMessageTime( atof(pkvd->szValue) );
-		pkvd->fHandled = TRUE;
-	}
-	else if (FStrEq(pkvd->szKeyName, "loadtime"))
-	{
-		SetLoadTime( atof(pkvd->szValue) );
-		pkvd->fHandled = TRUE;
-	}
-	else 
-		CPointEntity::KeyValue( pkvd );
-}
-
-void CRevertSaved :: Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{
-	UTIL_ScreenFadeAll( pev->rendercolor, Duration(), HoldTime(), pev->renderamt, FFADE_OUT );
-	pev->nextthink = gpGlobals->time + MessageTime();
-	SetThink( &CRevertSaved::MessageThink );
-}
-
-
-void CRevertSaved :: MessageThink( void )
-{
-	UTIL_ShowMessageAll( STRING(pev->message) );
-	float nextThink = LoadTime() - MessageTime();
-	if ( nextThink > 0 ) 
-	{
-		pev->nextthink = gpGlobals->time + nextThink;
-		SetThink( &CRevertSaved::LoadThink );
-	}
-	else
-		LoadThink();
-}
-
-
-void CRevertSaved :: LoadThink( void )
-{
-	if ( !gpGlobals->deathmatch )
-	{
-		SERVER_COMMAND("reload\n");
-	}
-}
-
-
-//=========================================================
-// Multiplayer intermission spots.
-//=========================================================
-class CInfoIntermission:public CPointEntity
-{
-	void Spawn( void );
-	void Think( void );
-};
-
-void CInfoIntermission::Spawn( void )
-{
-	UTIL_SetOrigin( pev, pev->origin );
-	pev->solid = SOLID_NOT;
-	pev->effects = EF_NODRAW;
-	pev->v_angle = g_vecZero;
-
-	pev->nextthink = gpGlobals->time + 2;// let targets spawn!
-
-}
-
-void CInfoIntermission::Think ( void )
-{
-	edict_t *pTarget;
-
-	// find my target
-	pTarget = FIND_ENTITY_BY_TARGETNAME( NULL, STRING(pev->target) );
-
-	if ( !FNullEnt(pTarget) )
-	{
-		pev->v_angle = UTIL_VecToAngles( (pTarget->v.origin - pev->origin).Normalize() );
-		pev->v_angle.x = -pev->v_angle.x;
-	}
-}
-
-LINK_ENTITY_TO_CLASS( info_intermission, CInfoIntermission );
-

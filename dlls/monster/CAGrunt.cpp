@@ -21,10 +21,10 @@
 #include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
-#include	"squadmonster.h"
+#include	"CSquadMonster.h"
 #include	"weapons.h"
 #include	"env/CSoundEnt.h"
-#include	"hornet.h"
+#include	"CHornet.h"
 
 //=========================================================
 // monster-specific schedule types

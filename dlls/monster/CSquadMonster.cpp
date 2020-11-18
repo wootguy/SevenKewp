@@ -22,7 +22,7 @@
 #include "monsters.h"
 #include "animation.h"
 #include "saverestore.h"
-#include "squadmonster.h"
+#include "CSquadMonster.h"
 #include "plane.h"
 
 //=========================================================

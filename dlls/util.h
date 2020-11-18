@@ -18,7 +18,7 @@
 // Misc utility code
 //
 #ifndef ACTIVITY_H
-#include "activity.h"
+#include "monster/activity.h"
 #endif
 
 #ifndef ENGINECALLBACK_H
