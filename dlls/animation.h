@@ -23,8 +23,17 @@
 
 extern int IsSoundEvent( int eventNumber );
 
+// Ranomly pick a sequence tagged with the given activity
 int LookupActivity( void *pmodel, entvars_t *pev, int activity );
+
+// Pick the sequence with the heaviest random chance
 int LookupActivityHeaviest( void *pmodel, entvars_t *pev, int activity );
+
+// Find the n'th sequence tagged with the given activity. If the offset is greater than
+// the number of sequences tagged with this activity, then the last found sequence is returned.
+int LookupActivityWithOffset(void* pmodel, entvars_t* pev, int activity, int offset);
+
+
 int LookupSequence( void *pmodel, const char *label );
 void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed );
 int GetSequenceFlags( void *pmodel, entvars_t *pev );

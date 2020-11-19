@@ -1,0 +1,419 @@
+#include "extdll.h"
+#include "util.h"
+#include "cbase.h"
+#include "monsters.h"
+#include "schedule.h"
+#include "animation.h"
+#include "CSprite.h"
+#include "weapons.h"
+#include "decals.h"
+
+// TODO:
+// eat corpse only if can route to it
+// range attack when cant reach target
+// override idle when attacked
+// override route to node if there's a direct route to the player, or player no longer near the node
+
+#define EVENT_ATTACK1_LEFT 1
+#define EVENT_ATTACK1_RIGHT 2
+#define EVENT_GRAB_BLOOD 3
+#define EVENT_THROW_BLOOD 4
+#define EVENT_ATTACK2_SWING0 19
+#define EVENT_ATTACK2_SWING1 20
+#define EVENT_ATTACK2_SWING2 21
+#define EVENT_ATTACK2_SWING3 22
+#define EVENT_PLAY_SOUND 1011
+
+#define MELEE_ATTACK1_DISTANCE 80 
+#define MELEE_ATTACK2_DISTANCE 56 // the one where it tries to eat you
+#define MELEE_CHASE_DISTANCE 600 // don't waste time with ranged attack within this distance
+
+#define MELEE_ATTACK1_SEQUENCE_OFFSET 0
+#define MELEE_ATTACK2_SEQUENCE_OFFSET 1 // second ATTACK1 sequence in the model should be gonna-eat-you one
+
+#define GONOME_SPIT_SPRITE "sprites/blood_chnk.spr" 
+
+#define GRAB_BLOOD_SOUND "barnacle/bcl_chew2.wav" // this is new in sven co-op
+
+static int iGonomeSpitSprite;
+
+class CGonome : public CBaseMonster
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	void SetYawSpeed( void );
+	int Classify ( void );
+	void HandleAnimEvent( MonsterEvent_t *pEvent );
+	BOOL CheckMeleeAttack1(float flDot, float flDist);
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+	int LookupActivity(int activity);
+	void Killed(entvars_t* pevAttacker, int iGib);
+	Schedule_t* GetScheduleOfType(int Type);
+	void MonsterThink(void);
+
+private:
+	float m_rangeAttackCooldown; // next time a range attack can be considered
+	float m_nextBloodSound; // next time the grabbing blood sound should be played (should really be an animation event)
+	CSprite* m_handBlood;
+
+	static const char* pAttackSounds[];
+	static const char* pAttackHitSounds[];
+	static const char* pAttackMissSounds[];
+	static const char* pEventSounds[];
+};
+
+class CGonomeSpit : public CBaseEntity
+{
+public:
+	void Spawn(void);
+
+	static void Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity);
+	void Touch(CBaseEntity* pOther);
+	void EXPORT Animate(void);
+
+	int  m_maxFrame;
+};
+
+
+LINK_ENTITY_TO_CLASS(monster_gonome, CGonome);
+LINK_ENTITY_TO_CLASS(gonomespit, CGonomeSpit);
+
+const char* CGonome::pAttackHitSounds[] =
+{
+	"zombie/claw_strike1.wav",
+	"zombie/claw_strike2.wav",
+	"zombie/claw_strike3.wav",
+};
+
+const char* CGonome::pAttackMissSounds[] =
+{
+	"zombie/claw_miss1.wav",
+	"zombie/claw_miss2.wav",
+};
+
+const char* CGonome::pEventSounds[] =
+{
+	"gonome/gonome_melee1.wav",
+	"gonome/gonome_melee2.wav",
+	"gonome/gonome_idle1.wav",
+	"gonome/gonome_pain1.wav",
+	"gonome/gonome_pain4.wav",
+	"gonome/gonome_eat.wav",
+	"gonome/gonome_death2.wav",
+	"gonome/gonome_death3.wav",
+	"gonome/gonome_death4.wav",
+
+	// not actually event sounds but wtv
+	"bullchicken/bc_acid1.wav",
+	"bullchicken/bc_spithit1.wav",
+	"bullchicken/bc_spithit2.wav",
+};
+
+
+int	CGonome:: Classify ( void )
+{
+	return CLASS_ALIEN_MONSTER;
+}
+
+void CGonome:: SetYawSpeed ( void )
+{
+	int ys;
+
+	switch ( m_Activity )
+	{
+	case ACT_IDLE:
+	default:
+		ys = 1000;
+	}
+
+	pev->yaw_speed = ys;
+}
+
+void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
+{
+	switch( pEvent->event )
+	{
+	case EVENT_PLAY_SOUND:
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pEvent->options, 1.0, ATTN_NORM, 0, 100);
+		break;
+	case EVENT_ATTACK1_LEFT:
+	case EVENT_ATTACK1_RIGHT:
+	case EVENT_ATTACK2_SWING0:
+	case EVENT_ATTACK2_SWING1:
+	case EVENT_ATTACK2_SWING2:
+	case EVENT_ATTACK2_SWING3:
+	{
+		bool isAttack2 = pEvent->event >= EVENT_ATTACK2_SWING0;
+		bool isLeftSwing = pEvent->event == EVENT_ATTACK1_LEFT;
+		float attackDistance = isAttack2 ? MELEE_ATTACK2_DISTANCE : MELEE_ATTACK1_DISTANCE;
+		float damage = isAttack2 ? gSkillData.gonomeDmgOneBite : gSkillData.gonomeDmgOneSlash;
+		CBaseEntity* pHurt = CheckTraceHullAttack(attackDistance, damage, DMG_SLASH);
+
+		if (pHurt)
+		{
+			if (pHurt->pev->flags & (FL_MONSTER | FL_CLIENT))
+			{
+				if (isAttack2) {
+					pHurt->pev->punchangle.x = 18;
+				} else {
+					pHurt->pev->punchangle.x = 5;
+					pHurt->pev->punchangle.z = isLeftSwing ? 18 : -18;
+					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * (isLeftSwing ? -100 : 100);
+				}
+			}
+			// Play a random attack hit sound
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackHitSounds) - 1)], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+		}
+		else // Play a random attack miss sound
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackMissSounds) - 1)], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+		break;
+	}
+	case EVENT_GRAB_BLOOD:
+	{
+		m_handBlood->TurnOn();
+
+		Vector handOrigin, handAngles;
+		GetAttachment(0, handOrigin, handAngles);
+
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, handOrigin);
+			WRITE_BYTE(TE_BLOODSPRITE);
+			WRITE_COORD(handOrigin.x);
+			WRITE_COORD(handOrigin.y);
+			WRITE_COORD(handOrigin.z);
+			WRITE_SHORT(g_sModelIndexBloodSpray);
+			WRITE_SHORT(g_sModelIndexBloodDrop);
+			WRITE_BYTE(BLOOD_COLOR_RED);
+			WRITE_BYTE(4); // size
+		MESSAGE_END();
+
+		break;
+	}
+	case EVENT_THROW_BLOOD:
+	{
+		if (m_handBlood)
+			m_handBlood->TurnOff();
+
+		Vector handOrigin, handAngles;
+		GetAttachment(0, handOrigin, handAngles);
+
+		UTIL_MakeVectors(pev->angles);
+		Vector vecThrowDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - handOrigin).Normalize();
+		vecThrowDir.x += RANDOM_FLOAT(-0.01, 0.01);
+		vecThrowDir.y += RANDOM_FLOAT(-0.01, 0.01);
+		vecThrowDir.z += RANDOM_FLOAT(-0.01, 0.01);
+		
+		CGonomeSpit::Shoot(pev, handOrigin, vecThrowDir * 1200);
+
+		STOP_SOUND(ENT(pev), CHAN_WEAPON, GRAB_BLOOD_SOUND);
+		m_rangeAttackCooldown = gpGlobals->time + RANDOM_FLOAT(4, 6);
+		break;
+	}
+	default:
+		CBaseMonster::HandleAnimEvent( pEvent );
+		break;
+	}
+}
+
+void CGonome::Spawn()
+{
+	Precache( );
+
+	SET_MODEL(ENT(pev), "models/gonome.mdl");
+	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 72 ) );
+
+	pev->solid			= SOLID_SLIDEBOX;
+	pev->movetype		= MOVETYPE_STEP;
+	m_bloodColor		= BLOOD_COLOR_YELLOW;
+	pev->health			= gSkillData.gonomeHealth;
+	pev->view_ofs		= Vector ( 0, 0, 0 );// position of the eyes relative to monster's origin.
+	m_flFieldOfView		= 0.0;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_MonsterState		= MONSTERSTATE_NONE;
+
+	MonsterInit();
+
+	m_handBlood = CSprite::SpriteCreate(GONOME_SPIT_SPRITE, pev->origin, TRUE);
+	m_handBlood->SetScale(0.3f);
+	m_handBlood->SetTransparency(kRenderTransAlpha, 255, 255, 255, 255, 0);
+	m_handBlood->SetAttachment(edict(), 1);
+	m_handBlood->TurnOff();
+}
+
+void CGonome::Precache()
+{
+	PRECACHE_MODEL("models/gonome.mdl");
+	iGonomeSpitSprite = PRECACHE_MODEL(GONOME_SPIT_SPRITE);
+
+	for (int i = 0; i < ARRAYSIZE(pAttackHitSounds); i++)
+		PRECACHE_SOUND((char*)pAttackHitSounds[i]);
+
+	for (int i = 0; i < ARRAYSIZE(pAttackMissSounds); i++)
+		PRECACHE_SOUND((char*)pAttackMissSounds[i]);
+
+	for (int i = 0; i < ARRAYSIZE(pEventSounds); i++)
+		PRECACHE_SOUND((char*)pEventSounds[i]);
+
+	PRECACHE_SOUND(GRAB_BLOOD_SOUND);
+}
+
+BOOL CGonome::CheckMeleeAttack1(float flDot, float flDist)
+{
+	if (flDist <= MELEE_ATTACK1_DISTANCE) {
+		if (flDist <= MELEE_ATTACK2_DISTANCE) {
+			SetConditions(bits_COND_CAN_MELEE_ATTACK2);
+		}
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+BOOL CGonome::CheckRangeAttack1(float flDot, float flDist)
+{
+	if (flDist > MELEE_CHASE_DISTANCE && m_rangeAttackCooldown < gpGlobals->time)
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void CGonome::Killed(entvars_t* pevAttacker, int iGib)
+{
+	UTIL_Remove(m_handBlood);
+	m_handBlood = NULL;
+	CBaseMonster::Killed(pevAttacker, iGib);
+}
+
+Schedule_t* CGonome::GetScheduleOfType(int Type) {
+	m_nextBloodSound = 0;
+	if (m_handBlood)
+		m_handBlood->TurnOff();
+
+	if (Type == SCHED_RANGE_ATTACK1) {
+		// starting to grab blood
+		m_nextBloodSound = gpGlobals->time + 0.3;
+	}
+
+	return CBaseMonster::GetScheduleOfType(Type);
+}
+
+void CGonome::MonsterThink(void) {
+	if (m_nextBloodSound && m_nextBloodSound <= gpGlobals->time) {
+		m_nextBloodSound = 0;
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, GRAB_BLOOD_SOUND, 0.5, ATTN_NORM, 0, 90);
+	}
+
+	CBaseMonster::MonsterThink();
+}
+
+// HACK
+// Both types of melee attack animations are tagged with ATTACK1,
+// so sequence selection is hardcoded here. The second attack 
+// animation probably should have been tagged with ATTACK2.
+int CGonome::LookupActivity(int activity)
+{
+	ASSERT(activity != 0);
+	void* pmodel = GET_MODEL_PTR(ENT(pev));
+	int offset = 0;
+
+	switch(activity) {
+	case ACT_MELEE_ATTACK1:
+		offset = HasConditions(bits_COND_CAN_MELEE_ATTACK2) ? MELEE_ATTACK2_SEQUENCE_OFFSET : MELEE_ATTACK1_SEQUENCE_OFFSET;
+		return ::LookupActivityWithOffset(pmodel, pev, activity, offset);
+	default:
+		return ::LookupActivity(pmodel, pev, activity);
+	}
+}
+
+//
+// Gonome spit
+//
+
+void CGonomeSpit::Spawn(void)
+{
+	pev->movetype = MOVETYPE_FLY;
+	pev->classname = MAKE_STRING("gonomespit");
+
+	pev->solid = SOLID_BBOX;
+	pev->rendermode = kRenderTransAlpha;
+	pev->renderamt = 255;
+
+	SET_MODEL(ENT(pev), GONOME_SPIT_SPRITE);
+	pev->frame = 0;
+	pev->scale = 0.3f;
+
+	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
+
+	m_maxFrame = (float)MODEL_FRAMES(pev->modelindex) - 1;
+}
+
+void CGonomeSpit::Animate(void)
+{
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	if (pev->frame++)
+	{
+		if (pev->frame > m_maxFrame)
+		{
+			pev->frame = 0;
+		}
+	}
+}
+
+void CGonomeSpit::Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity)
+{
+	CGonomeSpit* pSpit = GetClassPtr((CGonomeSpit*)NULL);
+	pSpit->Spawn();
+
+	UTIL_SetOrigin(pSpit->pev, vecStart);
+	pSpit->pev->velocity = vecVelocity;
+	pSpit->pev->owner = ENT(pevOwner);
+
+	pSpit->SetThink(&CGonomeSpit::Animate);
+	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+}
+
+void CGonomeSpit::Touch(CBaseEntity* pOther)
+{
+	TraceResult tr;
+	int		iPitch;
+
+	// splat sound
+	iPitch = RANDOM_FLOAT(90, 110);
+
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "bullchicken/bc_acid1.wav", 1, ATTN_NORM, 0, iPitch);
+
+	switch (RANDOM_LONG(0, 1))
+	{
+	case 0:
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "bullchicken/bc_spithit1.wav", 1, ATTN_NORM, 0, iPitch);
+		break;
+	case 1:
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "bullchicken/bc_spithit2.wav", 1, ATTN_NORM, 0, iPitch);
+		break;
+	}
+
+	if (!pOther->pev->takedamage)
+	{
+		// make a splat on the wall
+		UTIL_TraceLine(pev->origin, pev->origin + pev->velocity * 10, dont_ignore_monsters, ENT(pev), &tr);
+		UTIL_DecalTrace(&tr, DECAL_BLOOD1 + RANDOM_LONG(0, 5));
+	}
+
+	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+		WRITE_BYTE(TE_BLOODSPRITE);
+		WRITE_COORD(pev->origin.x);
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_SHORT(g_sModelIndexBloodSpray);
+		WRITE_SHORT(g_sModelIndexBloodDrop);
+		WRITE_BYTE(BLOOD_COLOR_RED);
+		WRITE_BYTE(10);	// size
+	MESSAGE_END();
+
+	pOther->TakeDamage(pev, pev, gSkillData.gonomeDmgGuts, DMG_GENERIC);
+
+	SetThink(&CGonomeSpit::SUB_Remove);
+	pev->nextthink = gpGlobals->time;
+}

@@ -135,6 +135,11 @@ struct skilldata_t
 	float plrStomach;
 	float plrLeg;
 	float plrArm;
+
+	float gonomeHealth;
+	float gonomeDmgOneSlash;
+	float gonomeDmgOneBite;
+	float gonomeDmgGuts;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;

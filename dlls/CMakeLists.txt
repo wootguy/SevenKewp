@@ -43,6 +43,7 @@ set(MONSTER_SRC
 	monster/CGargantua.cpp
 	monster/CGenericMonster.cpp
 	monster/CGMan.cpp
+	monster/CGonome.cpp
 	monster/CCycler.cpp
 	monster/CHAssassin.cpp
 	monster/CHeadCrab.cpp
