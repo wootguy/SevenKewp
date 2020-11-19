@@ -14,6 +14,5 @@ Forked from: [halflife-updated](https://github.com/Solokiller/halflife-updated)
     cmake .. -A Win32
     cmake --build . --config Release
     ```
-1. Open your `Half-Life` or `Sven Co-op` folder, then create a new folder inside named `sevenkewp`.
-1. Copy everything inside `SevenKewp/SevenKewp_Data` to the `sevenkewp` folder.
+1. Copy the `sevenkewp` folder to your `Half-Life` or `Sven Co-op` folder.
 1. Add `-game sevenkewp` to the launch options of Half-Life or Sven Co-op. Launch the game and then type `map sc_test` in console to test out the mod.

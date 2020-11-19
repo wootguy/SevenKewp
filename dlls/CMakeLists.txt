@@ -382,9 +382,9 @@ target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
 target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS)
 
 add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${ENGINE_DIR}/${PROJECT_NAME}/dlls/
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/SevenKewp_Data/dlls
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${PROJECT_SOURCE_DIR}/SevenKewp_Data/dlls/
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/dlls/
+	COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls/
 )
 
 if(MSVC)
@@ -393,7 +393,7 @@ if(MSVC)
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		VS_DEBUGGER_COMMAND "${ENGINE_DIR}/${ENGINE_EXE}"
 		VS_DEBUGGER_WORKING_DIRECTORY "${ENGINE_DIR}"
-		VS_DEBUGGER_COMMAND_ARGUMENTS "-steam -dev -console -game opencoop -sv_cheats 1 -maxplayers 2 +map c2a1"
+		VS_DEBUGGER_COMMAND_ARGUMENTS "-steam -console -game ${GAMEDIR_NAME} +developer 2 +map sc_test -sv_cheats 1 -maxplayers 32"
 	)
 	
 	

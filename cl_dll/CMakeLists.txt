@@ -194,9 +194,9 @@ add_library(${CLIENT_DLL_NAME} SHARED ${ALL_SRC})
 target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DCLIENT_DLL -DCLIENT_WEAPONS -DHL_DLL)
 
 add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${ENGINE_DIR}/${PROJECT_NAME}/cl_dlls/
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/SevenKewp_Data/cl_dlls
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/SevenKewp_Data/cl_dlls/
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/cl_dlls/
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
 )
 
 
@@ -210,7 +210,7 @@ if(MSVC)
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
 		VS_DEBUGGER_COMMAND "${ENGINE_DIR}/${ENGINE_EXE}"
 		VS_DEBUGGER_WORKING_DIRECTORY "${ENGINE_DIR}"
-		VS_DEBUGGER_COMMAND_ARGUMENTS "-steam -dev -console -game opencoop -sv_cheats 1 -maxplayers 2 +map c2a1"
+		VS_DEBUGGER_COMMAND_ARGUMENTS "-steam -dev -console -game ${GAMEDIR_NAME} -sv_cheats 1 -maxplayers 2 +map c2a1"
 	)
 	
 	source_group("Header Files\\Entities" FILES ${ENTITY_HDR})	
