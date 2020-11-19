@@ -10,9 +10,10 @@ set(MONSTER_HDR
 	monster/activity.h
 	monster/activitymap.h
 	monster/CBaseMonster.h
+	monster/CBaseHGrunt.h
+	monster/CBaseTurret.h
 	monster/bodyque.h
 	monster/defaultai.h
-	monster/CBaseTurret.h
 	monster/CFlyingMonster.h
 	monster/CHornet.h
 	monster/monsterevent.h
@@ -28,6 +29,7 @@ set(MONSTER_SRC
 	monster/CBarnacle.cpp
 	monster/CBarney.cpp
 	monster/CBaseAnimating.cpp
+	monster/CBaseHGrunt.cpp
 	monster/CBaseMonster.cpp
 	monster/CBaseTurret.cpp
 	monster/CBigMomma.cpp
@@ -48,6 +50,7 @@ set(MONSTER_SRC
 	monster/CHAssassin.cpp
 	monster/CHeadCrab.cpp
 	monster/CHGrunt.cpp
+	monster/CHGruntOp4.cpp
 	monster/CHornet.cpp
 	monster/CHoundeye.cpp
 	monster/CIchthyosaur.cpp
