@@ -302,6 +302,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrStomach = GetSkillCvar( "sk_player_stomach" );
 	gSkillData.plrLeg = GetSkillCvar( "sk_player_leg" );
 	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
+
+	gSkillData.gonomeHealth = GetSkillCvar( "sk_gonome_health" );
+	gSkillData.gonomeDmgOneSlash = GetSkillCvar( "sk_gonome_dmg_one_slash" );
+	gSkillData.gonomeDmgOneBite = GetSkillCvar( "sk_gonome_dmg_one_bite" );
+	gSkillData.gonomeDmgGuts = GetSkillCvar( "sk_gonome_dmg_guts" );
 }
 
 //=========================================================

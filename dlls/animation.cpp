@@ -102,6 +102,37 @@ int LookupActivity( void *pmodel, entvars_t *pev, int activity )
 }
 
 
+int LookupActivityWithOffset(void* pmodel, entvars_t* pev, int activity, int offset)
+{
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
+		return 0;
+
+	mstudioseqdesc_t* pseqdesc;
+
+	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
+
+	int weighttotal = 0;
+	int seq = ACTIVITY_NOT_AVAILABLE;
+	int currentOffset = 0;
+	for (int i = 0; i < pstudiohdr->numseq; i++)
+	{
+		if (pseqdesc[i].activity == activity)
+		{
+			seq = i;
+			if (currentOffset == offset) {
+				break;
+			}
+			currentOffset++;
+		}
+	}
+
+	return seq;
+}
+
+
 int LookupActivityHeaviest( void *pmodel, entvars_t *pev, int activity )
 {
 	studiohdr_t *pstudiohdr;
