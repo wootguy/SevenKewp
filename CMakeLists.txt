@@ -5,8 +5,9 @@ set(ENGINE_EXE "hl.exe" CACHE STRING "Name of the executable that starts the hal
 
 set(SERVER_DLL_NAME "server")
 set(CLIENT_DLL_NAME "client")
+set(GAMEDIR_NAME "sevenkewp")
 
-project(opencoop)
+project(sevenkewp)
 
 add_subdirectory(dlls) # server project
 add_subdirectory(cl_dll) # client project
