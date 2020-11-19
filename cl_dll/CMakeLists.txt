@@ -68,6 +68,7 @@ set(VGUI_HDR
 )
 set(VGUI_SRC
 	vgui_ClassMenu.cpp
+	vgui_ConsolePanel.cpp
 	vgui_ControlConfigPanel.cpp
 	vgui_CustomObjects.cpp
 	vgui_int.cpp
@@ -194,6 +195,8 @@ target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DCLIENT_DLL -DCLIENT_WEAP
 
 add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${ENGINE_DIR}/${PROJECT_NAME}/cl_dlls/
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/SevenKewp_Data/cl_dlls
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/SevenKewp_Data/cl_dlls/
 )
 
 
