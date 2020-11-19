@@ -1,0 +1,3 @@
+[submodule "SevenKewp_data"]
+	path = SevenKewp_data
+	url = https://github.com/wootguy/SevenKewp_data.git
