@@ -1,26 +1,26 @@
-#include "extdll.h"
-#include "plane.h"
-#include "util.h"
-#include "cbase.h"
-#include "monsters.h"
-#include "schedule.h"
-#include "animation.h"
-#include "CSquadMonster.h"
-#include "weapons.h"
-#include "CTalkMonster.h"
-#include "env/CSoundEnt.h"
-#include "effects.h"
-#include "customentity.h"
-#include "CBaseHGrunt.h"
+#include	"extdll.h"
+#include	"plane.h"
+#include	"util.h"
+#include	"cbase.h"
+#include	"monsters.h"
+#include	"schedule.h"
+#include	"animation.h"
+#include	"CSquadMonster.h"
+#include	"weapons.h"
+#include	"CTalkMonster.h"
+#include	"env/CSoundEnt.h"
+#include	"effects.h"
+#include	"customentity.h"
+#include	"CBaseHGrunt.h"
 
-#define	SENTENCE_VOLUME (float)0.35 // volume of grunt sentences
+#define	SENTENCE_VOLUME (float)0.8 // volume of grunt sentences
 
-class CHGrunt : public CBaseHGrunt
+class CHGruntOp4 : public CBaseHGrunt
 {
 public:
 	void Spawn(void);
 	void Precache(void);
-	int Classify(void);
+	int	Classify(void);
 	void PainSound(void);
 	void DeathSound(void);
 	void IdleSound(void);
@@ -32,48 +32,51 @@ private:
 	static const char* pGruntSentences[];
 };
 
-LINK_ENTITY_TO_CLASS(monster_human_grunt, CHGrunt);
+LINK_ENTITY_TO_CLASS(monster_human_grunt_ally, CHGruntOp4);
 
-const char* CHGrunt::pPainSounds[] =
+const char* CHGruntOp4::pPainSounds[] =
 {
-	"hgrunt/gr_pain1.wav",
-	"hgrunt/gr_pain2.wav",
-	"hgrunt/gr_pain3.wav",
-	"hgrunt/gr_pain4.wav",
-	"hgrunt/gr_pain5.wav"
+	"fgrunt/pain1.wav",
+	"fgrunt/pain2.wav",
+	"fgrunt/pain3.wav",
+	"fgrunt/pain4.wav",
+	"fgrunt/pain5.wav"
 };
 
-const char* CHGrunt::pDeathSounds[] =
+const char* CHGruntOp4::pDeathSounds[] =
 {
-	"hgrunt/gr_die1.wav",
-	"hgrunt/gr_pain2.wav",
-	"hgrunt/gr_pain3.wav"
+	"fgrunt/death1.wav",
+	"fgrunt/death2.wav",
+	"fgrunt/death3.wav",
+	"fgrunt/death4.wav",
+	"fgrunt/death5.wav",
+	"fgrunt/death6.wav"
 };
 
-const char* CHGrunt::pGruntSentences[] =
+const char* CHGruntOp4::pGruntSentences[] =
 {
-	"HG_GREN", // grenade scared grunt
-	"HG_ALERT", // sees player
-	"HG_MONSTER", // sees monster
-	"HG_COVER", // running to cover
-	"HG_THROW", // about to throw grenade
-	"HG_CHARGE",  // running out to get the enemy
-	"HG_TAUNT", // say rude things
+	"FG_GREN", // grenade scared grunt
+	"FG_ALERT", // sees player
+	"FG_MONSTER", // sees monster
+	"FG_COVER", // running to cover
+	"FG_THROW", // about to throw grenade
+	"FG_CHARGE",  // running out to get the enemy
+	"FG_TAUNT", // say rude things
 };
 
-void CHGrunt::Spawn() {
-	BaseSpawn("models/hgrunt.mdl");
+void CHGruntOp4::Spawn() {
+	BaseSpawn("models/hgrunt_opforf.mdl");
 
 	// get voice pitch
 	if (RANDOM_LONG(0, 1))
-		m_voicePitch = 109 + RANDOM_LONG(0, 7);
+		m_voicePitch = 95 - RANDOM_LONG(0, 7);
 	else
 		m_voicePitch = 100;
 }
 
-void CHGrunt::Precache()
+void CHGruntOp4::Precache()
 {
-	PRECACHE_MODEL("models/hgrunt.mdl");
+	PRECACHE_MODEL("models/hgrunt_opforf.mdl");
 
 	for (int i = 0; i < ARRAYSIZE(pPainSounds); i++)
 		PRECACHE_SOUND((char*)pPainSounds[i]);
@@ -84,12 +87,12 @@ void CHGrunt::Precache()
 	BasePrecache();
 }
 
-int	CHGrunt::Classify(void)
+int	CHGruntOp4::Classify(void)
 {
-	return	CLASS_HUMAN_MILITARY;
+	return CLASS_PLAYER_ALLY;
 }
 
-void CHGrunt::PainSound(void)
+void CHGruntOp4::PainSound(void)
 {
 	if (gpGlobals->time > m_flNextPainTime)
 	{
@@ -98,12 +101,12 @@ void CHGrunt::PainSound(void)
 	}
 }
 
-void CHGrunt::DeathSound(void)
+void CHGruntOp4::DeathSound(void)
 {
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, pDeathSounds[RANDOM_LONG(0, ARRAYSIZE(pDeathSounds) - 1)], 1, ATTN_NORM);
 }
 
-void CHGrunt::IdleSound(void)
+void CHGruntOp4::IdleSound(void)
 {
 	if (FOkToSpeak() && (g_fGruntQuestion || RANDOM_LONG(0, 1)))
 	{
@@ -113,15 +116,15 @@ void CHGrunt::IdleSound(void)
 			switch (RANDOM_LONG(0, 2))
 			{
 			case 0: // check in
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_CHECK", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), "FG_CHECK", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fGruntQuestion = 1;
 				break;
 			case 1: // question
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_QUEST", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), "FG_QUEST", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fGruntQuestion = 2;
 				break;
 			case 2: // statement
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_IDLE", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), "FG_IDLE", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 		}
@@ -130,10 +133,10 @@ void CHGrunt::IdleSound(void)
 			switch (g_fGruntQuestion)
 			{
 			case 1: // check in
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_CLEAR", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), "FG_CLEAR", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
-			case 2: // question 
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_ANSWER", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+			case 2: // question
+				SENTENCEG_PlayRndSz(ENT(pev), "FG_ANSWER", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 			g_fGruntQuestion = 0;
@@ -142,7 +145,7 @@ void CHGrunt::IdleSound(void)
 	}
 }
 
-void CHGrunt::PlaySentenceSound(int sentenceType) {
+void CHGruntOp4::PlaySentenceSound(int sentenceType) {
 	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[sentenceType], SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 }
 
@@ -152,7 +155,7 @@ void CHGrunt::PlaySentenceSound(int sentenceType) {
 // repelling down a line.
 //=========================================================
 
-class CHGruntRepel : public CBaseMonster
+class CHGruntOp4Repel : public CBaseMonster
 {
 public:
 	void Spawn(void);
@@ -161,23 +164,23 @@ public:
 	int m_iSpriteTexture;	// Don't save, precache
 };
 
-LINK_ENTITY_TO_CLASS(monster_grunt_repel, CHGruntRepel);
+LINK_ENTITY_TO_CLASS(monster_grunt_ally_repel, CHGruntOp4Repel);
 
-void CHGruntRepel::Spawn(void)
+void CHGruntOp4Repel::Spawn(void)
 {
 	Precache();
 	pev->solid = SOLID_NOT;
 
-	SetUse(&CHGruntRepel::RepelUse);
+	SetUse(&CHGruntOp4Repel::RepelUse);
 }
 
-void CHGruntRepel::Precache(void)
+void CHGruntOp4Repel::Precache(void)
 {
 	UTIL_PrecacheOther("monster_human_grunt");
 	m_iSpriteTexture = PRECACHE_MODEL("sprites/rope.spr");
 }
 
-void CHGruntRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+void CHGruntOp4Repel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
 	TraceResult tr;
 	UTIL_TraceLine(pev->origin, pev->origin + Vector(0, 0, -4096.0), dont_ignore_monsters, ENT(pev), &tr);
@@ -209,7 +212,7 @@ void CHGruntRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 //=========================================================
 // DEAD HGRUNT PROP
 //=========================================================
-class CDeadHGrunt : public CBaseMonster
+class CDeadHGruntOp4 : public CBaseMonster
 {
 public:
 	void Spawn(void);
@@ -221,9 +224,9 @@ public:
 	static const char* m_szPoses[3];
 };
 
-const char* CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
+const char* CDeadHGruntOp4::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
-void CDeadHGrunt::KeyValue(KeyValueData* pkvd)
+void CDeadHGruntOp4::KeyValue(KeyValueData* pkvd)
 {
 	if (FStrEq(pkvd->szKeyName, "pose"))
 	{
@@ -234,9 +237,9 @@ void CDeadHGrunt::KeyValue(KeyValueData* pkvd)
 		CBaseMonster::KeyValue(pkvd);
 }
 
-LINK_ENTITY_TO_CLASS(monster_hgrunt_dead, CDeadHGrunt);
+LINK_ENTITY_TO_CLASS(monster_human_grunt_ally_dead, CDeadHGruntOp4);
 
-void CDeadHGrunt::Spawn(void)
+void CDeadHGruntOp4::Spawn(void)
 {
 	PRECACHE_MODEL("models/hgrunt.mdl");
 	SET_MODEL(ENT(pev), "models/hgrunt.mdl");
