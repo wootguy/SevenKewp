@@ -3148,22 +3148,18 @@ void CBasePlayer::ImpulseCommands( )
 	pev->impulse = 0;
 }
 
+#define RETURN_IF_CHEATS_DISABLED() if (CVAR_GET_FLOAT("sv_cheats") == 0) return;
 //=========================================================
 //=========================================================
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
 {
-#if !defined( HLDEMO_BUILD )
-	if ( g_flWeaponCheat == 0.0 )
-	{
-		return;
-	}
-
 	CBaseEntity *pEntity;
 	TraceResult tr;
 
 	switch ( iImpulse )
 	{
 	case 76:
+		RETURN_IF_CHEATS_DISABLED()
 		{
 			if (!giPrecacheGrunt)
 			{
@@ -3180,6 +3176,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 
 
 	case 101:
+		RETURN_IF_CHEATS_DISABLED()
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
 		GiveNamedItem( "item_battery" );
@@ -3193,7 +3190,6 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "ammo_ARgrenades" );
 		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
-#ifndef OEM_BUILD
 		GiveNamedItem( "weapon_357" );
 		GiveNamedItem( "ammo_357" );
 		GiveNamedItem( "weapon_crossbow" );
@@ -3206,16 +3202,17 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_satchel" );
 		GiveNamedItem( "weapon_snark" );
 		GiveNamedItem( "weapon_hornetgun" );
-#endif
 		gEvilImpulse101 = FALSE;
 		break;
 
 	case 102:
+		RETURN_IF_CHEATS_DISABLED()
 		// Gibbage!!!
 		CGib::SpawnRandomGibs( pev, 1, 1 );
 		break;
 
 	case 103:
+		RETURN_IF_CHEATS_DISABLED()
 		// What the hell are you doing?
 		pEntity = FindEntityForward( this );
 		if ( pEntity )
@@ -3227,11 +3224,13 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 
 	case 104:
+		RETURN_IF_CHEATS_DISABLED()
 		// Dump all of the global state varaibles (and global entity names)
 		gGlobalState.DumpGlobals();
 		break;
 
 	case	105:// player makes no sound for monsters to hear.
+		RETURN_IF_CHEATS_DISABLED()
 		{
 			if ( m_fNoPlayerSound )
 			{
@@ -3247,6 +3246,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		}
 
 	case 106:
+		RETURN_IF_CHEATS_DISABLED()
 		// Give me the classname and targetname of this entity.
 		pEntity = FindEntityForward( this );
 		if ( pEntity )
@@ -3269,6 +3269,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		break;
 
 	case 107:
+		RETURN_IF_CHEATS_DISABLED()
 		{
 			TraceResult tr;
 
@@ -3285,27 +3286,32 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		}
 		break;
 	case	195:// show shortest paths for entire level to nearest node
+		RETURN_IF_CHEATS_DISABLED()
 		{
 			Create("node_viewer_fly", pev->origin, pev->angles);
 		}
 		break;
 	case	196:// show shortest paths for entire level to nearest node
+		RETURN_IF_CHEATS_DISABLED()
 		{
 			Create("node_viewer_large", pev->origin, pev->angles);
 		}
 		break;
 	case	197:// show shortest paths for entire level to nearest node
+		RETURN_IF_CHEATS_DISABLED()
 		{
 			Create("node_viewer_human", pev->origin, pev->angles);
 		}
 		break;
 	case	199:// show nearest node and all connections
+		RETURN_IF_CHEATS_DISABLED()
 		{
 			ALERT ( at_console, "%d\n", WorldGraph.FindNearestNode ( pev->origin, bits_NODE_GROUP_REALM ) );
 			WorldGraph.ShowNodeConnections ( WorldGraph.FindNearestNode ( pev->origin, bits_NODE_GROUP_REALM ) );
 		}
 		break;
 	case	202:// Random blood splatter
+		RETURN_IF_CHEATS_DISABLED()
 		UTIL_MakeVectors(pev->v_angle);
 		UTIL_TraceLine ( pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128, ignore_monsters, ENT(pev), & tr);
 
@@ -3316,6 +3322,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		}
 		break;
 	case	203:// remove creature.
+		RETURN_IF_CHEATS_DISABLED()
 		pEntity = FindEntityForward( this );
 		if ( pEntity )
 		{
@@ -3324,7 +3331,6 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		}
 		break;
 	}
-#endif	// HLDEMO_BUILD
 }
 
 //
