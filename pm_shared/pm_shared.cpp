@@ -2423,46 +2423,17 @@ void PM_NoClip()
 	}
 	wishvel[2] += pmove->cmd.upmove;
 
+	// prevent sticking to the ground when noclip is enabled while on the ground
+	if (pmove->onground != -1 && fabs(wishvel[2]) > 10) {
+		pmove->origin[2] += wishvel[2] > 0 ? 2.0f : -2.0f;
+	}
+
 	VectorMA (pmove->origin, pmove->frametime, wishvel, pmove->origin);
-	
+
 	// Zero out the velocity so that we don't accumulate a huge downward velocity from
 	//  gravity, etc.
 	VectorClear( pmove->velocity );
 
-}
-
-// Only allow bunny jumping up to 1.7x server / player maxspeed setting
-#define BUNNYJUMP_MAX_SPEED_FACTOR 1.7f
-
-//-----------------------------------------------------------------------------
-// Purpose: Corrects bunny jumping ( where player initiates a bunny jump before other
-//  movement logic runs, thus making onground == -1 thus making PM_Friction get skipped and
-//  running PM_AirMove, which doesn't crop velocity to maxspeed like the ground / other
-//  movement logic does.
-//-----------------------------------------------------------------------------
-void PM_PreventMegaBunnyJumping( void )
-{
-	// Current player speed
-	float spd;
-	// If we have to crop, apply this cropping fraction to velocity
-	float fraction;
-	// Speed at which bunny jumping is limited
-	float maxscaledspeed;
-
-	maxscaledspeed = BUNNYJUMP_MAX_SPEED_FACTOR * pmove->maxspeed;
-
-	// Don't divide by zero
-	if ( maxscaledspeed <= 0.0f )
-		return;
-
-	spd = Length( pmove->velocity );
-
-	if ( spd <= maxscaledspeed )
-		return;
-
-	fraction = ( maxscaledspeed / spd ) * 0.65; //Returns the modifier for the velocity
-	
-	VectorScale( pmove->velocity, fraction, pmove->velocity ); //Crop it down!.
 }
 
 /*
@@ -2555,8 +2526,6 @@ void PM_Jump (void)
 
 	// In the air now.
     pmove->onground = -1;
-
-	PM_PreventMegaBunnyJumping();
 
 	if ( tfc )
 	{

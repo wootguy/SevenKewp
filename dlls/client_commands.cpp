@@ -291,6 +291,43 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	}
 }
 
+#define ABORT_IF_CHEATS_DISABLED(cheatName) \
+if (CVAR_GET_FLOAT("sv_cheats") == 0) {\
+	CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs(cheatName " N/A: Cheats disabled\n")); \
+	return false; \
+}
+
+bool CheatCommand(edict_t* pEntity) {
+	const char* pcmd = CMD_ARGV(0);
+	const char* pstr;
+
+	entvars_t* pev = &pEntity->v;
+
+	if (FStrEq(pcmd, "cl_noclip")) {
+		ABORT_IF_CHEATS_DISABLED("No clip");
+		pev->movetype = pev->movetype == MOVETYPE_NOCLIP ? MOVETYPE_WALK : MOVETYPE_NOCLIP;
+		char * newMode = pev->movetype == MOVETYPE_NOCLIP ? "ON" : "OFF";
+		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No clip is %s\n", newMode));
+	}
+	else if (FStrEq(pcmd, "godmode")) {
+		ABORT_IF_CHEATS_DISABLED("God mode");
+		pev->takedamage = pev->takedamage == DAMAGE_NO ? DAMAGE_YES : DAMAGE_NO;
+		char* newMode = pev->takedamage == DAMAGE_NO ? "ON" : "OFF";
+		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("God mode is %s\n", newMode));
+	}
+	else if (FStrEq(pcmd, "cl_notarget")) {
+		ABORT_IF_CHEATS_DISABLED("No target");
+		pev->flags ^= FL_NOTARGET;
+		char* newMode = pev->flags & FL_NOTARGET ? "ON" : "OFF";
+		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No target is %s\n", newMode));
+	}
+	else {
+		return false;
+	}
+
+	return true;
+}
+
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
 void ClientCommand(edict_t* pEntity)
 {
@@ -303,7 +340,10 @@ void ClientCommand(edict_t* pEntity)
 
 	entvars_t* pev = &pEntity->v;
 
-	if (FStrEq(pcmd, "say"))
+	if (CheatCommand(pEntity)) {
+		return;
+	}
+	else if (FStrEq(pcmd, "say"))
 	{
 		Host_Say(pEntity, 0);
 	}
