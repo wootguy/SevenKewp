@@ -330,6 +330,7 @@ set(GAME_HDR
 set(GAME_SRC
 	animation.cpp
 	client.cpp
+	client_commands.cpp
 	game.cpp
 	gamerules.cpp
 	globals.cpp
