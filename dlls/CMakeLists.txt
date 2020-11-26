@@ -26,6 +26,7 @@ set(MONSTER_SRC
 	monster/CActAnimating.cpp
 	monster/CAGrunt.cpp
 	monster/CApache.cpp
+	monster/CBabyVoltigore.cpp
 	monster/CBarnacle.cpp
 	monster/CBarney.cpp
 	monster/CBaseAnimating.cpp
