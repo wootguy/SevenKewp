@@ -66,6 +66,7 @@ set(MONSTER_SRC
 	monster/CTalkMonster.cpp
 	monster/CTentacle.cpp
 	monster/CTurret.cpp
+	monster/CVoltigore.cpp
 	monster/CXenHair.cpp
 	monster/CXenPLight.cpp
 	monster/CXenSpore.cpp
@@ -393,7 +394,7 @@ if(MSVC)
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		VS_DEBUGGER_COMMAND "${ENGINE_DIR}/${ENGINE_EXE}"
 		VS_DEBUGGER_WORKING_DIRECTORY "${ENGINE_DIR}"
-		VS_DEBUGGER_COMMAND_ARGUMENTS "-steam -console -game ${GAMEDIR_NAME} +developer 2 +map sc_test -sv_cheats 1 -maxplayers 32"
+		VS_DEBUGGER_COMMAND_ARGUMENTS "${GAME_ARGS}"
 	)
 	
 	

@@ -454,6 +454,12 @@ cvar_t	sk_gonome_dmg_one_slash	= { "sk_gonome_dmg_one_slash1", "30" };
 cvar_t	sk_gonome_dmg_one_bite	= { "sk_gonome_dmg_one_bite1", "15" };
 cvar_t	sk_gonome_dmg_guts		= { "sk_gonome_dmg_guts1", "15" };
 
+// Voltigore
+cvar_t	sk_voltigore_health = { "sk_voltigore_health1", "350" };
+cvar_t	sk_voltigore_dmg_punch = { "sk_voltigore_dmg_punch1", "30" };
+cvar_t	sk_voltigore_dmg_beam = { "sk_voltigore_dmg_beam1", "40" };
+cvar_t	sk_voltigore_dmg_explode = { "sk_voltigore_dmg_explode1", "200" };
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -894,6 +900,11 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&sk_gonome_dmg_one_slash);
 	CVAR_REGISTER(&sk_gonome_dmg_guts);
 	CVAR_REGISTER(&sk_gonome_dmg_one_bite);
+
+	CVAR_REGISTER(&sk_voltigore_health);
+	CVAR_REGISTER(&sk_voltigore_dmg_punch);
+	CVAR_REGISTER(&sk_voltigore_dmg_beam);
+	CVAR_REGISTER(&sk_voltigore_dmg_explode);
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
