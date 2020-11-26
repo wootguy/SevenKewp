@@ -11,7 +11,6 @@
 // TODO:
 // new classification for racex
 // accurate beam color/width and sprite size
-// alert/idle sounds
 
 #define EVENT_SHOOT_ORB 1
 #define EVENT_SLASH_BOTH 12
@@ -59,6 +58,10 @@ public:
 	void ShowChargeBeam();
 	void HideChargeBeam();
 
+	void PainSound(void);
+	void AlertSound(void);
+	void IdleSound(void);
+
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
 	CSprite* m_handShock;
@@ -68,6 +71,8 @@ private:
 
 	static const char* pAttackHitSounds[];
 	static const char* pAttackMissSounds[];
+	static const char* pIdleSounds[];
+	static const char* pAlertSounds[];
 	static const char* pPainSounds[];
 	static const char* pEventSounds[];
 };
@@ -104,6 +109,20 @@ const char* CVoltigore::pAttackMissSounds[] =
 {
 	"zombie/claw_miss1.wav",
 	"zombie/claw_miss2.wav",
+};
+
+const char* CVoltigore::pIdleSounds[] =
+{
+	"voltigore/voltigore_idle1.wav",
+	"voltigore/voltigore_idle2.wav",
+	"voltigore/voltigore_idle3.wav"
+};
+
+const char* CVoltigore::pAlertSounds[] =
+{
+	"voltigore/voltigore_alert1.wav",
+	"voltigore/voltigore_alert2.wav",
+	"voltigore/voltigore_alert3.wav"
 };
 
 const char* CVoltigore::pPainSounds[] =
@@ -273,6 +292,12 @@ void CVoltigore::Precache()
 	for (int i = 0; i < ARRAYSIZE(pAttackMissSounds); i++)
 		PRECACHE_SOUND((char*)pAttackMissSounds[i]);
 
+	for (int i = 0; i < ARRAYSIZE(pIdleSounds); i++)
+		PRECACHE_SOUND((char*)pIdleSounds[i]);
+
+	for (int i = 0; i < ARRAYSIZE(pAlertSounds); i++)
+		PRECACHE_SOUND((char*)pAlertSounds[i]);
+
 	for (int i = 0; i < ARRAYSIZE(pPainSounds); i++)
 		PRECACHE_SOUND((char*)pPainSounds[i]);
 
@@ -355,7 +380,6 @@ void CVoltigore::ExplodeThink(void) {
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
-
 void CVoltigore::Killed(entvars_t* pevAttacker, int iGib)
 {
 	if (pev->deadflag != DEAD_NO)
@@ -405,6 +429,28 @@ Schedule_t* CVoltigore::GetScheduleOfType(int Type) {
 	return CBaseMonster::GetScheduleOfType(Type);
 }
 
+void CVoltigore::PainSound(void)
+{
+	int pitch = 100 + RANDOM_LONG(0, 9);
+
+	if (RANDOM_LONG(0, 5) < 2)
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pPainSounds[RANDOM_LONG(0, ARRAYSIZE(pPainSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CVoltigore::AlertSound(void)
+{
+	int pitch = 100 + RANDOM_LONG(0, 9);
+
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pAlertSounds[RANDOM_LONG(0, ARRAYSIZE(pAlertSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CVoltigore::IdleSound(void)
+{
+	int pitch = 100 + RANDOM_LONG(-5, 5);
+
+	// Play a random idle sound
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pIdleSounds[RANDOM_LONG(0, ARRAYSIZE(pIdleSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+}
 
 //
 // voltigore shock
@@ -465,7 +511,7 @@ void CVoltigoreShock::Shock(void)
 	entvars_t* pevOwner = pev->owner ? VARS(pev->owner) : NULL;
 
 	// TODO: damage and class ignore
-	RadiusDamage(pev->origin, pev, pevOwner, gSkillData.voltigoreDmgBeam, 128, 0, DMG_SHOCK);
+	RadiusDamage(pev->origin, pev, pevOwner, gSkillData.voltigoreDmgBeam, 128, CLASS_ALIEN_MONSTER, DMG_SHOCK);
 	shocksLeft--;
 }
 
