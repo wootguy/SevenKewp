@@ -140,6 +140,11 @@ struct skilldata_t
 	float gonomeDmgOneSlash;
 	float gonomeDmgOneBite;
 	float gonomeDmgGuts;
+
+	float voltigoreHealth;
+	float voltigoreDmgPunch;
+	float voltigoreDmgBeam;
+	float voltigoreDmgExplode;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;

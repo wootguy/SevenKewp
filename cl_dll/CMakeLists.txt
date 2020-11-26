@@ -210,7 +210,7 @@ if(MSVC)
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
 		VS_DEBUGGER_COMMAND "${ENGINE_DIR}/${ENGINE_EXE}"
 		VS_DEBUGGER_WORKING_DIRECTORY "${ENGINE_DIR}"
-		VS_DEBUGGER_COMMAND_ARGUMENTS "-steam -dev -console -game ${GAMEDIR_NAME} -sv_cheats 1 -maxplayers 2 +map c2a1"
+		VS_DEBUGGER_COMMAND_ARGUMENTS "${GAME_ARGS}"
 	)
 	
 	source_group("Header Files\\Entities" FILES ${ENTITY_HDR})	
