@@ -16,7 +16,6 @@
 // attack crouching players or players on head
 // fade out corpse
 // check fov
-// alert/idle sounds
 
 #define EVENT_ATTACK1_LEFT 1
 #define EVENT_ATTACK1_RIGHT 2
@@ -56,6 +55,10 @@ public:
 	Schedule_t* GetScheduleOfType(int Type);
 	void MonsterThink(void);
 
+	void PainSound(void);
+	void AlertSound(void);
+	void IdleSound(void);
+
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
 	float m_nextBloodSound; // next time the grabbing blood sound should be played (should really be an animation event)
@@ -64,6 +67,8 @@ private:
 	static const char* pAttackSounds[];
 	static const char* pAttackHitSounds[];
 	static const char* pAttackMissSounds[];
+	static const char* pIdleSounds[];
+	static const char* pPainSounds[];
 	static const char* pEventSounds[];
 };
 
@@ -96,13 +101,25 @@ const char* CGonome::pAttackMissSounds[] =
 	"zombie/claw_miss2.wav",
 };
 
+const char* CGonome::pIdleSounds[] =
+{
+	"gonome/gonome_idle1.wav",
+	"gonome/gonome_idle2.wav",
+	"gonome/gonome_idle3.wav"
+};
+
+const char* CGonome::pPainSounds[] =
+{
+	"gonome/gonome_pain1.wav",
+	"gonome/gonome_pain2.wav",
+	"gonome/gonome_pain3.wav",
+	"gonome/gonome_pain4.wav"
+};
+
 const char* CGonome::pEventSounds[] =
 {
 	"gonome/gonome_melee1.wav",
 	"gonome/gonome_melee2.wav",
-	"gonome/gonome_idle1.wav",
-	"gonome/gonome_pain1.wav",
-	"gonome/gonome_pain4.wav",
 	"gonome/gonome_eat.wav",
 	"gonome/gonome_death2.wav",
 	"gonome/gonome_death3.wav",
@@ -254,6 +271,12 @@ void CGonome::Precache()
 	for (int i = 0; i < ARRAYSIZE(pAttackMissSounds); i++)
 		PRECACHE_SOUND((char*)pAttackMissSounds[i]);
 
+	for (int i = 0; i < ARRAYSIZE(pIdleSounds); i++)
+		PRECACHE_SOUND((char*)pIdleSounds[i]);
+
+	for (int i = 0; i < ARRAYSIZE(pPainSounds); i++)
+		PRECACHE_SOUND((char*)pPainSounds[i]);
+
 	for (int i = 0; i < ARRAYSIZE(pEventSounds); i++)
 		PRECACHE_SOUND((char*)pEventSounds[i]);
 
@@ -328,6 +351,28 @@ int CGonome::LookupActivity(int activity)
 	default:
 		return ::LookupActivity(pmodel, pev, activity);
 	}
+}
+
+void CGonome::PainSound(void)
+{
+	int pitch = 100 + RANDOM_LONG(0, 9);
+
+	if (RANDOM_LONG(0, 5) < 2)
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pPainSounds[RANDOM_LONG(0, ARRAYSIZE(pPainSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CGonome::AlertSound(void)
+{
+	int pitch = 100 + RANDOM_LONG(0, 9);
+
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pPainSounds[RANDOM_LONG(0, ARRAYSIZE(pPainSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CGonome::IdleSound(void)
+{
+	int pitch = 100 + RANDOM_LONG(-5, 5);
+
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pIdleSounds[RANDOM_LONG(0, ARRAYSIZE(pIdleSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
 }
 
 //
