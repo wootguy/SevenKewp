@@ -13,6 +13,10 @@
 // range attack when cant reach target
 // override idle when attacked
 // override route to node if there's a direct route to the player, or player no longer near the node
+// attack crouching players or players on head
+// fade out corpse
+// check fov
+// alert/idle sounds
 
 #define EVENT_ATTACK1_LEFT 1
 #define EVENT_ATTACK1_RIGHT 2

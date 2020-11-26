@@ -294,7 +294,7 @@ void Host_Say(edict_t* pEntity, int teamonly)
 #define ABORT_IF_CHEATS_DISABLED(cheatName) \
 if (CVAR_GET_FLOAT("sv_cheats") == 0) {\
 	CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs(cheatName " N/A: Cheats disabled\n")); \
-	return false; \
+	return true; \
 }
 
 bool CheatCommand(edict_t* pEntity) {
