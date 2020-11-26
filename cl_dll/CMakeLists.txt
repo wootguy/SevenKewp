@@ -199,8 +199,13 @@ add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
 )
 
-
 if(MSVC)
+	if (USE_AUTOHOTKEY_SCRIPT)
+		add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
+			COMMAND start ${CMAKE_CURRENT_SOURCE_DIR}/../resize_console.ahk
+		)
+	endif()
+	
 	target_link_libraries(${CLIENT_DLL_NAME} 
 		${CMAKE_CURRENT_SOURCE_DIR}/../utils/vgui/lib/win32_vc6/vgui.lib
 		wsock32
