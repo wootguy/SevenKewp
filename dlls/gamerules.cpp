@@ -341,6 +341,9 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrDmgSpore = GetSkillCvar("sk_plr_spore");
 
 	gSkillData.plrDmgShockRifle = GetSkillCvar("sk_plr_shockrifle");
+
+	gSkillData.otisHealth = GetSkillCvar("sk_otis_health");
+	gSkillData.otisDmgBullet = GetSkillCvar("sk_otis_bullet");
 }
 
 //=========================================================

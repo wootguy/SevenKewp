@@ -496,6 +496,10 @@ cvar_t	sk_plr_spore = { "sk_plr_spore1", "100" };
 // player shockrifle attack
 cvar_t	sk_plr_shockrifle = { "sk_plr_shockrifle1", "15" };
 
+// otis
+cvar_t	sk_otis_health = { "sk_otis_health1", "65" };
+cvar_t	sk_otis_bullet = { "sk_otis_bullet1", "34" };
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -970,6 +974,9 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&sk_plr_spore);
 
 	CVAR_REGISTER(&sk_plr_shockrifle);
+
+	CVAR_REGISTER(&sk_otis_health);
+	CVAR_REGISTER(&sk_otis_bullet);
 
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
