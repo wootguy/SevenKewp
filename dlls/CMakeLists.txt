@@ -10,19 +10,21 @@ set(MISC_HDR
 set(MONSTER_HDR
 	monster/activity.h
 	monster/activitymap.h
+	monster/bodyque.h
 	monster/CBaseMonster.h
 	monster/CBaseHGrunt.h
 	monster/CBaseTurret.h
-	monster/bodyque.h
-	monster/defaultai.h
 	monster/CFlyingMonster.h
 	monster/CGargantua.h
 	monster/CHornet.h
+	monster/COFAllyMonster.cpp
+	monster/COFSquadTalkMonster.cpp
+	monster/CSquadMonster.h
+	monster/CTalkMonster.h
+	monster/defaultai.h
 	monster/monsterevent.h
 	monster/monsters.h
 	monster/schedule.h
-	monster/CSquadMonster.h
-	monster/CTalkMonster.h
 )
 set(MONSTER_SRC
 	monster/CActAnimating.cpp
@@ -54,6 +56,7 @@ set(MONSTER_SRC
 	monster/CHAssassin.cpp
 	monster/CHeadCrab.cpp
 	monster/CHGrunt.cpp
+	monster/CHGruntAlly.cpp
 	monster/CHGruntOp4.cpp
 	monster/CHornet.cpp
 	monster/CHoundeye.cpp
@@ -62,6 +65,10 @@ set(MONSTER_SRC
 	monster/CLeech.cpp
 	monster/CMassn.cpp
 	monster/CNihilanth.cpp
+	monster/COFAllyMonster.cpp
+	monster/COFMedicAlly.cpp
+	monster/COFSquadTalkMonster.cpp
+	monster/COFTorchAlly.cpp
 	monster/COsprey.cpp
 	monster/COtis.cpp
 	monster/CPitdrone.cpp
