@@ -312,6 +312,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.voltigoreDmgPunch = GetSkillCvar("sk_voltigore_dmg_punch");
 	gSkillData.voltigoreDmgBeam = GetSkillCvar("sk_voltigore_dmg_beam");
 	gSkillData.voltigoreDmgExplode = GetSkillCvar("sk_voltigore_dmg_explode");
+
+	gSkillData.torHealth = GetSkillCvar("sk_tor_health");
+	gSkillData.torDmgPunch = GetSkillCvar("sk_tor_punch");
+	gSkillData.torDmgEnergyBeam = GetSkillCvar("sk_tor_energybeam");
+	gSkillData.torDmgSonicBlast = GetSkillCvar("sk_tor_sonicblast");
 }
 
 //=========================================================
