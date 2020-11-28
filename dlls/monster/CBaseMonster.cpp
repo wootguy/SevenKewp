@@ -494,6 +494,8 @@ void CBaseMonster::MonsterThink(void)
 
 	RunAI();
 
+	UpdateShockEffect();
+
 	float flInterval = StudioFrameAdvance(); // animate
 // start or end a fidget
 // This needs a better home -- switching animations over time should be encapsulated on a per-activity basis
@@ -2168,22 +2170,25 @@ int CBaseMonster::TaskIsRunning(void)
 //=========================================================
 int CBaseMonster::IRelationship(CBaseEntity* pTarget)
 {
-	static int iEnemy[14][14] =
-	{			 //   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN
-		/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO	},
-		/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL	},
-		/*PLAYER*/		{ R_NO	,R_DL	,R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_DL,	R_DL	},
-		/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_NO	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO	},
-		/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO	},
-		/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO	},
-		/*ALIENPASSIVE*/{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO	},
-		/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO	},
-		/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO	},
-		/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO	},
-		/*INSECT*/		{ R_FR	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO	},
-		/*PLAYERALLY*/	{ R_NO	,R_DL	,R_AL	,R_AL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_NO	},
-		/*PBIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_DL	},
-		/*ABIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_NO	,R_NO	,R_DL,	R_DL,	R_NO	}
+	//TODO: need to update the entries for military ally & race x
+	static int iEnemy[16][16] =
+	{				//   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN	HMILA	RACEX
+		/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
+		/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL,	R_DL,	R_DL	},
+		/*PLAYER*/		{ R_NO	,R_DL	,R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_DL,	R_DL,	R_NO,	R_DL	},
+		/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_NO	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO,	R_DL,	R_FR	},
+		/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO,	R_HT,	R_HT	},
+		/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_NO	},
+		/*ALIENPASSIVE*/{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
+		/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_NO	},
+		/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_NO	},
+		/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_NO	},
+		/*INSECT*/		{ R_FR	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO,	R_FR,	R_NO	},
+		/*PLAYERALLY*/	{ R_NO	,R_DL	,R_AL	,R_AL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_NO,	R_DL,	R_DL	},
+		/*PBIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_DL,	R_DL,	R_DL	},
+		/*ABIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_NO	,R_NO	,R_DL,	R_DL,	R_NO,	R_DL,	R_DL	},
+		/*HUMMILALLY*/	{ R_NO	,R_DL	,R_AL	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_AL,	R_DL	},
+		/*RACEX*/		{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_DL,	R_DL,	R_NO	}
 	};
 
 	return iEnemy[Classify()][pTarget->Classify()];
@@ -6458,5 +6463,67 @@ void CBaseMonster::FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 			StopFollowing(TRUE);
 			StopFollowingSound();
 		}
+	}
+}
+
+void CBaseMonster::AddShockEffect(float r, float g, float b, float size, float flShockDuration)
+{
+	if (pev->deadflag == DEAD_NO)
+	{
+		if (m_fShockEffect)
+		{
+			m_flShockDuration += flShockDuration;
+		}
+		else
+		{
+			m_iOldRenderMode = pev->rendermode;
+			m_iOldRenderFX = pev->renderfx;
+			m_OldRenderColor.x = pev->rendercolor.x;
+			m_OldRenderColor.y = pev->rendercolor.y;
+			m_OldRenderColor.z = pev->rendercolor.z;
+			m_flOldRenderAmt = pev->renderamt;
+
+			pev->rendermode = kRenderNormal;
+
+			pev->renderfx = kRenderFxGlowShell;
+			pev->rendercolor.x = r;
+			pev->rendercolor.y = g;
+			pev->rendercolor.z = b;
+			pev->renderamt = size;
+
+			m_fShockEffect = true;
+			m_flShockDuration = flShockDuration;
+			m_flShockTime = gpGlobals->time;
+		}
+	}
+}
+
+void CBaseMonster::UpdateShockEffect()
+{
+	if (m_fShockEffect && (gpGlobals->time - m_flShockTime > m_flShockDuration))
+	{
+		pev->rendermode = m_iOldRenderMode;
+		pev->renderfx = m_iOldRenderFX;
+		pev->rendercolor.x = m_OldRenderColor.x;
+		pev->rendercolor.y = m_OldRenderColor.y;
+		pev->rendercolor.z = m_OldRenderColor.z;
+		pev->renderamt = m_flOldRenderAmt;
+		m_flShockDuration = 0;
+		m_fShockEffect = false;
+	}
+}
+
+void CBaseMonster::ClearShockEffect()
+{
+	if (m_fShockEffect)
+	{
+		pev->rendermode = m_iOldRenderMode;
+		pev->renderfx = m_iOldRenderFX;
+		pev->rendercolor.x = m_OldRenderColor.x;
+		pev->rendercolor.y = m_OldRenderColor.y;
+		pev->rendercolor.z = m_OldRenderColor.z;
+		pev->renderamt = m_flOldRenderAmt;
+		m_flShockDuration = 0;
+		m_fShockEffect = false;
 	}
 }

@@ -67,6 +67,8 @@ set(MONSTER_SRC
 	monster/CRoach.cpp
 	monster/CScientist.cpp
 	monster/CSentry.cpp
+	monster/CShockRoach.cpp
+	monster/CShockTrooper.cpp
 	monster/CSquadMonster.cpp
 	monster/CTalkMonster.cpp
 	monster/CTentacle.cpp
@@ -99,6 +101,8 @@ set(ENV_HDR
 	env/CSoundEnt.h
 	env/CSprayCan.h
 	env/CSprite.h
+	env/decals.h
+	env/effects.h
 	env/explode.h
 	../engine/shake.h
 )
@@ -133,8 +137,6 @@ set(ENV_SRC
 	env/CSprayCan.cpp
 	env/CSprite.cpp
 	env/CTestEffect.cpp
-	env/decals.h
-	env/effects.h
 )
 
 set(ITEM_HDR
@@ -288,6 +290,8 @@ set(PATH_SRC
 )
 
 set(WEAPON_HDR
+	weapon/CShockBeam.h
+	weapon/CSpore.h
 	weapon/weapons.h
 )
 set(WEAPON_SRC
@@ -306,7 +310,9 @@ set(WEAPON_SRC
 	weapon/CPython.cpp
 	weapon/CRpg.cpp
 	weapon/CSatchel.cpp
+	weapon/CShockBeam.cpp
 	weapon/CShotgun.cpp
+	weapon/CSpore.cpp
 	weapon/CSqueakGrenade.cpp
 	weapon/CTripmine.cpp
 	weapon/CWeaponBox.cpp

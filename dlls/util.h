@@ -57,6 +57,13 @@ inline edict_t *FIND_ENTITY_BY_TARGET(edict_t *entStart, const char *pszName)
 #define WRITEKEY_VECTOR(pf, szKeyName, flX, flY, flZ)							\
 		ENGINE_FPRINTF(pf, "\"%s\" \"%f %f %f\"\n", szKeyName, flX, flY, flZ)
 
+inline void WRITE_COORD_VECTOR(const Vector& vec)
+{
+	WRITE_COORD(vec.x);
+	WRITE_COORD(vec.y);
+	WRITE_COORD(vec.z);
+}
+
 // Keeps clutter down a bit, when using a float as a bit-vector
 #define SetBits(flBitVector, bits)		((flBitVector) = (int)(flBitVector) | (bits))
 #define ClearBits(flBitVector, bits)	((flBitVector) = (int)(flBitVector) & ~(bits))
