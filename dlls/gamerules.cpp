@@ -317,6 +317,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.torDmgPunch = GetSkillCvar("sk_tor_punch");
 	gSkillData.torDmgEnergyBeam = GetSkillCvar("sk_tor_energybeam");
 	gSkillData.torDmgSonicBlast = GetSkillCvar("sk_tor_sonicblast");
+
+	gSkillData.babyGargHealth = GetSkillCvar("sk_babygargantua_health");
+	gSkillData.babyGargDmgSlash = GetSkillCvar("sk_babygargantua_dmg_slash");
+	gSkillData.babyGargDmgFire = GetSkillCvar("sk_babygargantua_dmg_fire");
+	gSkillData.babyGargDmgStomp = GetSkillCvar("sk_babygargantua_dmg_stomp");
 }
 
 //=========================================================

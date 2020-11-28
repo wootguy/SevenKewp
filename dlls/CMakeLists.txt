@@ -16,6 +16,7 @@ set(MONSTER_HDR
 	monster/bodyque.h
 	monster/defaultai.h
 	monster/CFlyingMonster.h
+	monster/CGargantua.h
 	monster/CHornet.h
 	monster/monsterevent.h
 	monster/monsters.h
@@ -27,6 +28,7 @@ set(MONSTER_SRC
 	monster/CActAnimating.cpp
 	monster/CAGrunt.cpp
 	monster/CApache.cpp
+	monster/CBabyGarg.cpp
 	monster/CBabyVoltigore.cpp
 	monster/CBarnacle.cpp
 	monster/CBarney.cpp

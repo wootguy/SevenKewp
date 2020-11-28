@@ -150,6 +150,11 @@ struct skilldata_t
 	float torDmgPunch;
 	float torDmgEnergyBeam;
 	float torDmgSonicBlast;
+
+	float babyGargHealth;
+	float babyGargDmgSlash;
+	float babyGargDmgFire;
+	float babyGargDmgStomp;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;
