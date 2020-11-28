@@ -160,6 +160,20 @@ struct skilldata_t
 	float pitdroneDmgBite;
 	float pitdroneDmgWhip;
 	float pitdroneDmgSpit;
+
+	float shocktrooperHealth;
+	float shocktrooperDmgKick;
+	float shocktrooperMaxCharge;
+	float shocktrooperRechargeSpeed;
+	float shocktrooperGrenadeSpeed;
+
+	float shockroachHealth;
+	float shockroachDmgBite;
+	float shockroachLifespan;
+
+	float plrDmgSpore;
+
+	float plrDmgShockRifle;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;

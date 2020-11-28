@@ -327,6 +327,20 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.pitdroneDmgBite = GetSkillCvar("sk_pitdrone_dmg_bite");
 	gSkillData.pitdroneDmgWhip = GetSkillCvar("sk_pitdrone_dmg_whip");
 	gSkillData.pitdroneDmgSpit = GetSkillCvar("sk_pitdrone_dmg_spit");
+
+	gSkillData.shocktrooperHealth = GetSkillCvar("sk_shocktrooper_health");
+	gSkillData.shocktrooperDmgKick = GetSkillCvar("sk_shocktrooper_kick");
+	gSkillData.shocktrooperMaxCharge = GetSkillCvar("sk_shocktrooper_maxcharge");
+	gSkillData.shocktrooperRechargeSpeed = GetSkillCvar("sk_shocktrooper_rechargespeed");
+	gSkillData.shocktrooperGrenadeSpeed = GetSkillCvar("sk_shocktrooper_grenadespeed");
+
+	gSkillData.shockroachHealth = GetSkillCvar("sk_shockroach_health");
+	gSkillData.shockroachDmgBite = GetSkillCvar("sk_shockroach_dmg_bite");
+	gSkillData.shockroachLifespan = GetSkillCvar("sk_shockroach_lifespan");
+
+	gSkillData.plrDmgSpore = GetSkillCvar("sk_plr_spore");
+
+	gSkillData.plrDmgShockRifle = GetSkillCvar("sk_plr_shockrifle");
 }
 
 //=========================================================

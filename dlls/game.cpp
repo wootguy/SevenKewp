@@ -478,6 +478,23 @@ cvar_t	sk_pitdrone_dmg_bite = { "sk_pitdrone_dmg_bite1", "25" };
 cvar_t	sk_pitdrone_dmg_whip = { "sk_pitdrone_dmg_whip1", "25" };
 cvar_t	sk_pitdrone_dmg_spit = { "sk_pitdrone_dmg_spit1", "15" };
 
+// shock trooper
+cvar_t	sk_shocktrooper_health = { "sk_shocktrooper_health1", "200" };
+cvar_t	sk_shocktrooper_kick = { "sk_shocktrooper_kick1", "12" };
+cvar_t	sk_shocktrooper_maxcharge = { "sk_shocktrooper_maxcharge1", "10" };
+cvar_t	sk_shocktrooper_rechargespeed = { "sk_shocktrooper_rechargespeed1", "5" };
+cvar_t	sk_shocktrooper_grenadespeed = { "sk_shocktrooper_grenadespeed1", "800" };
+
+// shock roach
+cvar_t	sk_shockroach_health = { "sk_shockroach_health1", "20" };
+cvar_t	sk_shockroach_dmg_bite = { "sk_shockroach_dmg_bite1", "20" };
+cvar_t	sk_shockroach_lifespan = { "sk_shockroach_lifespan1", "20" };
+
+// player spore
+cvar_t	sk_plr_spore = { "sk_plr_spore1", "100" };
+
+// player shockrifle attack
+cvar_t	sk_plr_shockrifle = { "sk_plr_shockrifle1", "15" };
 
 // END Cvars for Skill Level settings
 
@@ -939,6 +956,21 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&sk_pitdrone_dmg_bite);
 	CVAR_REGISTER(&sk_pitdrone_dmg_whip);
 	CVAR_REGISTER(&sk_pitdrone_dmg_spit);
+
+	CVAR_REGISTER(&sk_shocktrooper_health);
+	CVAR_REGISTER(&sk_shocktrooper_kick);
+	CVAR_REGISTER(&sk_shocktrooper_maxcharge);
+	CVAR_REGISTER(&sk_shocktrooper_rechargespeed);
+	CVAR_REGISTER(&sk_shocktrooper_grenadespeed);
+
+	CVAR_REGISTER(&sk_shockroach_health);
+	CVAR_REGISTER(&sk_shockroach_dmg_bite);
+	CVAR_REGISTER(&sk_shockroach_lifespan);
+
+	CVAR_REGISTER(&sk_plr_spore);
+
+	CVAR_REGISTER(&sk_plr_shockrifle);
+
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

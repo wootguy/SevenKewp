@@ -110,7 +110,15 @@ public:
 
 	Vector				m_HackedGunPos;	// HACK until we can query end of gun
 
-	float		m_useTime;						// Don't allow +USE until this time
+	float				m_useTime;						// Don't allow +USE until this time
+	float				m_flShockDuration;
+	float				m_fShockEffect;
+	float				m_flShockTime;
+
+	int					m_iOldRenderMode;
+	int					m_iOldRenderFX;
+	float				m_flOldRenderAmt;
+	Vector				m_OldRenderColor;
 
 // Scripted sequence Info
 	SCRIPTSTATE			m_scriptState;		// internal cinematic state
@@ -351,6 +359,10 @@ public:
 	virtual void	StartFollowingSound() {}
 	virtual void	StopFollowingSound() {}
 	virtual void	CantFollowSound() {}
+
+	void AddShockEffect(float r, float g, float b, float size, float flShockDuration);
+	void UpdateShockEffect();
+	void ClearShockEffect();
 };
 
 
