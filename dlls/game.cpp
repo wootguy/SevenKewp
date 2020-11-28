@@ -472,6 +472,12 @@ cvar_t	sk_babygargantua_dmg_slash = { "sk_babygargantua_dmg_slash1", "25" };
 cvar_t	sk_babygargantua_dmg_fire = { "sk_babygargantua_dmg_fire1", "2" };
 cvar_t	sk_babygargantua_dmg_stomp = { "sk_babygargantua_dmg_stomp1", "50" };
 
+// pit drone
+cvar_t	sk_pitdrone_health = { "sk_pitdrone_health1", "60" };
+cvar_t	sk_pitdrone_dmg_bite = { "sk_pitdrone_dmg_bite1", "25" };
+cvar_t	sk_pitdrone_dmg_whip = { "sk_pitdrone_dmg_whip1", "25" };
+cvar_t	sk_pitdrone_dmg_spit = { "sk_pitdrone_dmg_spit1", "15" };
+
 
 // END Cvars for Skill Level settings
 
@@ -928,6 +934,11 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&sk_babygargantua_dmg_slash);
 	CVAR_REGISTER(&sk_babygargantua_dmg_fire);
 	CVAR_REGISTER(&sk_babygargantua_dmg_stomp);
+
+	CVAR_REGISTER(&sk_pitdrone_health);
+	CVAR_REGISTER(&sk_pitdrone_dmg_bite);
+	CVAR_REGISTER(&sk_pitdrone_dmg_whip);
+	CVAR_REGISTER(&sk_pitdrone_dmg_spit);
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

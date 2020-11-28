@@ -322,6 +322,11 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.babyGargDmgSlash = GetSkillCvar("sk_babygargantua_dmg_slash");
 	gSkillData.babyGargDmgFire = GetSkillCvar("sk_babygargantua_dmg_fire");
 	gSkillData.babyGargDmgStomp = GetSkillCvar("sk_babygargantua_dmg_stomp");
+
+	gSkillData.pitdroneHealth = GetSkillCvar("sk_pitdrone_health");
+	gSkillData.pitdroneDmgBite = GetSkillCvar("sk_pitdrone_dmg_bite");
+	gSkillData.pitdroneDmgWhip = GetSkillCvar("sk_pitdrone_dmg_whip");
+	gSkillData.pitdroneDmgSpit = GetSkillCvar("sk_pitdrone_dmg_spit");
 }
 
 //=========================================================
