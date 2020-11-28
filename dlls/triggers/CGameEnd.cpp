@@ -3,7 +3,6 @@
 #include "util.h"
 #include "gamerules.h"
 #include "cbase.h"
-#include "CBasePlayer.h"
 #include "CRuleEntity.h"
 
 // CGameEnd / game_end	-- Ends the game in MP

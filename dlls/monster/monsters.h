@@ -16,6 +16,8 @@
 #include "skill.h"
 #define MONSTERS_H
 
+#include "monster/CBaseMonster.h"
+
 /*
 
 ===== monsters.h ========================================================

@@ -4,7 +4,6 @@
 #include "CBasePlayer.h"
 #include "trains.h"
 #include "nodes.h"
-#include "monsters.h"
 #include "shake.h"
 #include "decals.h"
 #include "gamerules.h"

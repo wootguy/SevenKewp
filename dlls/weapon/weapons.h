@@ -16,6 +16,7 @@
 #define WEAPONS_H
 
 #include "env/effects.h"
+#include "monster/CBaseMonster.h"
 
 class CBasePlayer;
 extern int gmsgWeapPickup;
