@@ -2015,7 +2015,8 @@ void CBaseMonster::MonsterInit(void)
 
 	SetThink(&CBaseMonster::MonsterInitThink);
 	pev->nextthink = gpGlobals->time + 0.1;
-	SetUse(&CBaseMonster::MonsterUse);
+	//SetUse(&CBaseMonster::MonsterUse);
+	SetUse(&CBaseMonster::FollowerUse);
 }
 
 //=========================================================
@@ -4611,7 +4612,11 @@ Schedule_t* CBaseMonster::m_scheduleList[] =
 	slTakeCoverFromOrigin,
 	slTakeCoverFromBestSound,
 	slTakeCoverFromEnemy,
-	slFail
+	slFail,
+
+	slFaceTarget,
+	slFollow,
+	slStopFollowing
 };
 
 //=========================================================
@@ -5902,6 +5907,42 @@ void CBaseMonster::StartTask(Task_t* pTask)
 		TaskComplete();
 		break;
 
+	case TASK_CANT_FOLLOW:
+		StopFollowing(FALSE);
+		TaskComplete();
+		CantFollowSound();
+		break;
+
+	case TASK_WALK_PATH_FOR_UNITS:
+		m_movementActivity = ACT_WALK;
+		break;
+
+	case TASK_MOVE_AWAY_PATH:
+	{
+		Vector dir = pev->angles;
+		dir.y = pev->ideal_yaw + 180;
+		Vector move;
+
+		UTIL_MakeVectorsPrivate(dir, move, NULL, NULL);
+		dir = pev->origin + move * pTask->flData;
+		if (MoveToLocation(ACT_WALK, 2, dir))
+		{
+			TaskComplete();
+		}
+		else if (FindCover(pev->origin, pev->view_ofs, 0, CoverRadius()))
+		{
+			// then try for plain ole cover
+			m_flMoveWaitFinished = gpGlobals->time + 2;
+			TaskComplete();
+		}
+		else
+		{
+			// nowhere to go?
+			TaskFail();
+		}
+	}
+	break;
+
 	default:
 	{
 		ALERT(at_aiconsole, "No StartTask entry for %d\n", (SHARED_TASKS)pTask->iTask);
@@ -5949,6 +5990,24 @@ Schedule_t* CBaseMonster::GetSchedule(void)
 	}
 	case MONSTERSTATE_IDLE:
 	{
+		if (m_hEnemy == NULL && IsFollowing())
+		{
+			if (!m_hTargetEnt->IsAlive())
+			{
+				// UNDONE: Comment about the recently dead player here?
+				StopFollowing(FALSE);
+				break;
+			}
+			else
+			{
+				if (HasConditions(bits_COND_CLIENT_PUSH))
+				{
+					//return GetScheduleOfType(SCHED_MOVE_AWAY_FOLLOW);
+				}
+				return GetScheduleOfType(SCHED_TARGET_FACE);
+			}
+		}
+
 		if (HasConditions(bits_COND_HEAR_SOUND))
 		{
 			return GetScheduleOfType(SCHED_ALERT_FACE);
@@ -6297,6 +6356,18 @@ Schedule_t* CBaseMonster::GetScheduleOfType(int Type)
 	{
 		return slFail;
 	}
+	case SCHED_TARGET_FACE:
+	{
+		return &slFaceTarget[0];
+	}
+	case SCHED_TARGET_CHASE:
+	{
+		return &slFollow[0];
+	}
+	case SCHED_CANT_FOLLOW:
+	{
+		return &slStopFollowing[0];
+	}
 	default:
 	{
 		ALERT(at_console, "GetScheduleOfType()\nNo CASE for Schedule Type %d!\n", Type);
@@ -6307,4 +6378,85 @@ Schedule_t* CBaseMonster::GetScheduleOfType(int Type)
 	}
 
 	return NULL;
+}
+
+
+//
+// Monster following
+//
+
+void CBaseMonster::StopFollowing(BOOL clearSchedule)
+{
+	if (IsFollowing())
+	{
+		if (m_movementGoal == MOVEGOAL_TARGETENT)
+			RouteClear(); // Stop him from walking toward the player
+		m_hTargetEnt = NULL;
+		if (clearSchedule)
+			ClearSchedule();
+		if (m_hEnemy != NULL)
+			m_IdealMonsterState = MONSTERSTATE_COMBAT;
+	}
+}
+
+
+void CBaseMonster::StartFollowing(CBaseEntity* pLeader)
+{
+	if (m_pCine)
+		m_pCine->CancelScript();
+
+	if (m_hEnemy != NULL)
+		m_IdealMonsterState = MONSTERSTATE_ALERT;
+
+	m_hTargetEnt = pLeader;
+	ClearConditions(bits_COND_CLIENT_PUSH);
+	ClearSchedule();
+
+	StartFollowingSound();
+}
+
+
+BOOL CBaseMonster::CanFollow(void)
+{
+	if (m_MonsterState == MONSTERSTATE_SCRIPT)
+	{
+		if (!m_pCine->CanInterrupt())
+			return FALSE;
+	}
+
+	if (!IsAlive())
+		return FALSE;
+
+	return !IsFollowing();
+}
+
+
+void CBaseMonster::FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	// Don't allow use during a scripted_sentence
+	if (m_useTime > gpGlobals->time)
+		return;
+
+	if (pCaller != NULL && pCaller->IsPlayer())
+	{
+		// Pre-disaster followers can't be used
+		if (pev->spawnflags & SF_MONSTER_PREDISASTER)
+		{
+			DeclineFollowing();
+		}
+		else if (CanFollow())
+		{
+			if (m_afMemory & bits_MEMORY_PROVOKED)
+				ALERT(at_console, "I'm not following you, you evil person!\n");
+			else
+			{
+				StartFollowing(pCaller);
+			}
+		}
+		else
+		{
+			StopFollowing(TRUE);
+			StopFollowingSound();
+		}
+	}
 }

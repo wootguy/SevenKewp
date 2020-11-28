@@ -26,6 +26,19 @@ public:
 	void IdleSound(void);
 	void PlaySentenceSound(int sentenceType);
 
+	int	ObjectCaps(void) { return CBaseHGrunt::ObjectCaps() | FCAP_IMPULSE_USE; }
+
+	void StartFollowingSound() {
+		SENTENCEG_PlayRndSz(ENT(pev), "FG_OK", SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+	}
+	void StopFollowingSound() {
+		SENTENCEG_PlayRndSz(ENT(pev), "FG_WAIT", SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+	}
+	void CantFollowSound() {
+		SENTENCEG_PlayRndSz(ENT(pev), "FG_STOP", SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+	}
+
+
 private:
 	static const char* pPainSounds[];
 	static const char* pDeathSounds[];

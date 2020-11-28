@@ -115,4 +115,9 @@ extern Schedule_t slCower[];
 extern Schedule_t slTakeCoverFromOrigin[];
 extern Schedule_t slTakeCoverFromEnemy[];
 
+// following
+extern Schedule_t slFollow[];
+extern Schedule_t slFaceTarget[];
+extern Schedule_t slStopFollowing[];
+
 #endif		// DEFAULTAI_H

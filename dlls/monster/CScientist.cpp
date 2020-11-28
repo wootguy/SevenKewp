@@ -33,7 +33,7 @@ enum { HEAD_GLASSES = 0, HEAD_EINSTEIN = 1, HEAD_LUTHER = 2, HEAD_SLICK = 3 };
 
 enum
 {
-	SCHED_HIDE = LAST_TALKMONSTER_SCHEDULE + 1,
+	SCHED_HIDE = LAST_COMMON_SCHEDULE + 1,
 	SCHED_FEAR,
 	SCHED_PANIC,
 	SCHED_STARTLE,
@@ -127,18 +127,18 @@ IMPLEMENT_SAVERESTORE( CScientist, CTalkMonster );
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
-Task_t	tlFollow[] =
+Task_t	tlSciFollow[] =
 {
 	{ TASK_SET_FAIL_SCHEDULE,	(float)SCHED_CANT_FOLLOW },	// If you fail, bail out of follow
 	{ TASK_MOVE_TO_TARGET_RANGE,(float)128		},	// Move within 128 of target ent (client)
 //	{ TASK_SET_SCHEDULE,		(float)SCHED_TARGET_FACE },
 };
 
-Schedule_t	slFollow[] =
+Schedule_t	slSciFollow[] =
 {
 	{
-		tlFollow,
-		ARRAYSIZE ( tlFollow ),
+		tlSciFollow,
+		ARRAYSIZE (tlSciFollow),
 		bits_COND_NEW_ENEMY |
 		bits_COND_LIGHT_DAMAGE |
 		bits_COND_HEAVY_DAMAGE |
@@ -189,23 +189,6 @@ Schedule_t	slFaceTargetScared[] =
 	},
 };
 
-Task_t	tlStopFollowing[] =
-{
-	{ TASK_CANT_FOLLOW,		(float)0 },
-};
-
-Schedule_t	slStopFollowing[] =
-{
-	{
-		tlStopFollowing,
-		ARRAYSIZE ( tlStopFollowing ),
-		0,
-		0,
-		"StopFollowing"
-	},
-};
-
-
 Task_t	tlHeal[] =
 {
 	{ TASK_MOVE_TO_TARGET_RANGE,(float)50		},	// Move within 60 of target ent (client)
@@ -229,7 +212,7 @@ Schedule_t	slHeal[] =
 };
 
 
-Task_t	tlFaceTarget[] =
+Task_t	tlSciFaceTarget[] =
 {
 	{ TASK_STOP_MOVING,			(float)0		},
 	{ TASK_FACE_TARGET,			(float)0		},
@@ -237,11 +220,11 @@ Task_t	tlFaceTarget[] =
 	{ TASK_SET_SCHEDULE,		(float)SCHED_TARGET_CHASE },
 };
 
-Schedule_t	slFaceTarget[] =
+Schedule_t	slSciFaceTarget[] =
 {
 	{
-		tlFaceTarget,
-		ARRAYSIZE ( tlFaceTarget ),
+		tlSciFaceTarget,
+		ARRAYSIZE (tlSciFaceTarget),
 		bits_COND_CLIENT_PUSH |
 		bits_COND_NEW_ENEMY |
 		bits_COND_HEAR_SOUND,
@@ -406,8 +389,8 @@ Schedule_t	slFear[] =
 
 DEFINE_CUSTOM_SCHEDULES( CScientist )
 {
-	slFollow,
-	slFaceTarget,
+	slSciFollow,
+	slSciFaceTarget,
 	slIdleSciStand,
 	slFear,
 	slScientistCover,
@@ -844,12 +827,12 @@ Schedule_t* CScientist :: GetScheduleOfType ( int Type )
 		psched = CTalkMonster::GetScheduleOfType(Type);
 
 		if (psched == slIdleStand)
-			return slFaceTarget;	// override this for different target face behavior
+			return slSciFaceTarget;	// override this for different target face behavior
 		else
 			return psched;
 
 	case SCHED_TARGET_CHASE:
-		return slFollow;
+		return slSciFollow;
 	
 	case SCHED_CANT_FOLLOW:
 		return slStopFollowing;
