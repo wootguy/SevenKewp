@@ -466,6 +466,13 @@ cvar_t	sk_tor_punch = { "sk_tor_punch1", "55" };
 cvar_t	sk_tor_energybeam = { "sk_tor_energybeam1", "3" };
 cvar_t	sk_tor_sonicblast = { "sk_tor_sonicblast1", "15" };
 
+// baby garg
+cvar_t	sk_babygargantua_health = { "sk_babygargantua_health1", "600" };
+cvar_t	sk_babygargantua_dmg_slash = { "sk_babygargantua_dmg_slash1", "25" };
+cvar_t	sk_babygargantua_dmg_fire = { "sk_babygargantua_dmg_fire1", "2" };
+cvar_t	sk_babygargantua_dmg_stomp = { "sk_babygargantua_dmg_stomp1", "50" };
+
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -916,6 +923,11 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&sk_tor_punch);
 	CVAR_REGISTER(&sk_tor_energybeam);
 	CVAR_REGISTER(&sk_tor_sonicblast);
+
+	CVAR_REGISTER(&sk_babygargantua_health);
+	CVAR_REGISTER(&sk_babygargantua_dmg_slash);
+	CVAR_REGISTER(&sk_babygargantua_dmg_fire);
+	CVAR_REGISTER(&sk_babygargantua_dmg_stomp);
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
