@@ -1,5 +1,6 @@
 
 set(MISC_HDR
+	../engine/studio.h
 	../common/Platform.h
 	cdll_dll.h
 	enginecallback.h
@@ -66,6 +67,7 @@ set(MONSTER_SRC
 	monster/CSquadMonster.cpp
 	monster/CTalkMonster.cpp
 	monster/CTentacle.cpp
+	monster/CTor.cpp
 	monster/CTurret.cpp
 	monster/CVoltigore.cpp
 	monster/CXenHair.cpp
@@ -251,8 +253,10 @@ set(ENTITY_HDR
 	CBaseSpectator.h
 	scripted.h
 	scriptevent.h
+	../engine/progs.h
 	../engine/progdefs.h
 	../engine/edict.h
+	../engine/customentity.h
 	../common/const.h
 )
 set(ENTITY_SRC
@@ -326,6 +330,8 @@ set(UTIL_SRC
 set(GAME_HDR
 	animation.h
 	client.h
+	../engine/custom.h
+	../engine/eiface.h
 	gamerules.h
 	saverestore.h
 	skill.h

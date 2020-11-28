@@ -460,6 +460,12 @@ cvar_t	sk_voltigore_dmg_punch = { "sk_voltigore_dmg_punch1", "30" };
 cvar_t	sk_voltigore_dmg_beam = { "sk_voltigore_dmg_beam1", "40" };
 cvar_t	sk_voltigore_dmg_explode = { "sk_voltigore_dmg_explode1", "200" };
 
+// Tor
+cvar_t	sk_tor_health = { "sk_tor_health1", "800" };
+cvar_t	sk_tor_punch = { "sk_tor_punch1", "55" };
+cvar_t	sk_tor_energybeam = { "sk_tor_energybeam1", "3" };
+cvar_t	sk_tor_sonicblast = { "sk_tor_sonicblast1", "15" };
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -905,6 +911,11 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&sk_voltigore_dmg_punch);
 	CVAR_REGISTER(&sk_voltigore_dmg_beam);
 	CVAR_REGISTER(&sk_voltigore_dmg_explode);
+
+	CVAR_REGISTER(&sk_tor_health);
+	CVAR_REGISTER(&sk_tor_punch);
+	CVAR_REGISTER(&sk_tor_energybeam);
+	CVAR_REGISTER(&sk_tor_sonicblast);
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );

@@ -16,6 +16,8 @@
 #ifndef BASEMONSTER_H
 #define BASEMONSTER_H
 
+extern entvars_t* g_pevLastInflictor;
+
 //
 // generic Monster
 //
@@ -129,6 +131,7 @@ public:
 	void Listen ( void );
 
 	virtual BOOL	IsAlive( void ) { return (pev->deadflag != DEAD_DEAD); }
+	virtual	BOOL	IsMonster(void) { return TRUE; }
 	virtual BOOL	ShouldFadeOnDeath( void );
 
 // Basic Monster AI functions
