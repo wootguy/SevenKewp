@@ -342,8 +342,16 @@ void CGameRules::RefreshSkillData ( void )
 
 	gSkillData.plrDmgShockRifle = GetSkillCvar("sk_plr_shockrifle");
 
+	gSkillData.plrDmgShockRifle = GetSkillCvar("sk_plr_shockrifle");
+
+	gSkillData.plrDmg556 = GetSkillCvar("sk_556_bullet");
+
 	gSkillData.otisHealth = GetSkillCvar("sk_otis_health");
 	gSkillData.otisDmgBullet = GetSkillCvar("sk_otis_bullet");
+
+	gSkillData.massassinHealth = GetSkillCvar("sk_massassin_health");
+	gSkillData.massassinGrenadeSpeed = GetSkillCvar("sk_massassin_grenadespeed");
+	gSkillData.massassinDmgKick = GetSkillCvar("sk_massassin_kick");
 }
 
 //=========================================================

@@ -483,7 +483,7 @@ cvar_t	sk_shocktrooper_health = { "sk_shocktrooper_health1", "200" };
 cvar_t	sk_shocktrooper_kick = { "sk_shocktrooper_kick1", "12" };
 cvar_t	sk_shocktrooper_maxcharge = { "sk_shocktrooper_maxcharge1", "10" };
 cvar_t	sk_shocktrooper_rechargespeed = { "sk_shocktrooper_rechargespeed1", "5" };
-cvar_t	sk_shocktrooper_grenadespeed = { "sk_shocktrooper_grenadespeed1", "800" };
+cvar_t	sk_shocktrooper_grenadespeed = { "sk_shocktrooper_grenadespeed1", "500" };
 
 // shock roach
 cvar_t	sk_shockroach_health = { "sk_shockroach_health1", "20" };
@@ -496,9 +496,17 @@ cvar_t	sk_plr_spore = { "sk_plr_spore1", "100" };
 // player shockrifle attack
 cvar_t	sk_plr_shockrifle = { "sk_plr_shockrifle1", "15" };
 
+// 556 bullet (shared with monsters and players)
+cvar_t	sk_556_bullet = { "sk_556_bullet", "15" };
+
 // otis
 cvar_t	sk_otis_health = { "sk_otis_health1", "65" };
 cvar_t	sk_otis_bullet = { "sk_otis_bullet1", "34" };
+
+// male assassin
+cvar_t	sk_massassin_health = { "sk_massassin_health1", "100" };
+cvar_t	sk_massassin_grenadespeed = { "sk_massassin_grenadespeed1", "500" };
+cvar_t	sk_massassin_kick = { "sk_massassin_kick1", "12" };
 
 // END Cvars for Skill Level settings
 
@@ -975,8 +983,14 @@ void GameDLLInit( void )
 
 	CVAR_REGISTER(&sk_plr_shockrifle);
 
+	CVAR_REGISTER(&sk_556_bullet);
+
 	CVAR_REGISTER(&sk_otis_health);
 	CVAR_REGISTER(&sk_otis_bullet);
+	
+	CVAR_REGISTER(&sk_massassin_health);
+	CVAR_REGISTER(&sk_massassin_grenadespeed);
+	CVAR_REGISTER(&sk_massassin_kick);
 
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
