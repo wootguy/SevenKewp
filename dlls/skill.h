@@ -175,8 +175,14 @@ struct skilldata_t
 
 	float plrDmgShockRifle;
 
+	float plrDmg556;
+
 	float otisHealth;
 	float otisDmgBullet;
+
+	float massassinHealth;
+	float massassinGrenadeSpeed;
+	float massassinDmgKick;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;

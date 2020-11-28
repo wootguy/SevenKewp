@@ -60,6 +60,7 @@ set(MONSTER_SRC
 	monster/CIchthyosaur.cpp
 	monster/CISlave.cpp
 	monster/CLeech.cpp
+	monster/CMassn.cpp
 	monster/CNihilanth.cpp
 	monster/COsprey.cpp
 	monster/COtis.cpp
