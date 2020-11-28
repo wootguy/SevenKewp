@@ -45,7 +45,10 @@ private:
 	static const char* pGruntSentences[];
 };
 
-LINK_ENTITY_TO_CLASS(monster_human_grunt_ally, CHGruntOp4);
+
+// Disabled this class in favor of Solokiller's ally grunt code
+// https://github.com/Solokiller/halflife-op4/tree/dev/dlls
+//LINK_ENTITY_TO_CLASS(monster_human_grunt_ally, CHGruntOp4);
 
 const char* CHGruntOp4::pPainSounds[] =
 {
@@ -177,7 +180,7 @@ public:
 	int m_iSpriteTexture;	// Don't save, precache
 };
 
-LINK_ENTITY_TO_CLASS(monster_grunt_ally_repel, CHGruntOp4Repel);
+//LINK_ENTITY_TO_CLASS(monster_grunt_ally_repel, CHGruntOp4Repel);
 
 void CHGruntOp4Repel::Spawn(void)
 {
@@ -250,7 +253,7 @@ void CDeadHGruntOp4::KeyValue(KeyValueData* pkvd)
 		CBaseMonster::KeyValue(pkvd);
 }
 
-LINK_ENTITY_TO_CLASS(monster_human_grunt_ally_dead, CDeadHGruntOp4);
+//LINK_ENTITY_TO_CLASS(monster_human_grunt_ally_dead, CDeadHGruntOp4);
 
 void CDeadHGruntOp4::Spawn(void)
 {
