@@ -5,7 +5,6 @@
 #include "weapons.h"
 #include "explode.h"
 #include "CFuncTank.h"
-#include "CBasePlayer.h"
 
 class CFuncTankMortar : public CFuncTank
 {

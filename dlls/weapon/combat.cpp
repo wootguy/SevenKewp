@@ -23,7 +23,6 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
-#include "monsters.h"
 #include "env/CSoundEnt.h"
 #include "decals.h"
 #include "animation.h"

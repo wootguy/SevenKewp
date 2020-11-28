@@ -19,10 +19,10 @@
 #include	"extdll.h"
 #include	"util.h"
 #include	"cbase.h"
-#include	"monsters.h"
 #include	"nodes.h"
 #include	"animation.h"
 #include	"CBaseDoor.h"
+#include "monster/CBaseMonster.h"
 
 #if !defined ( _WIN32 )
 #include <sys/stat.h>

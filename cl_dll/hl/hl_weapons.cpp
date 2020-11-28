@@ -15,7 +15,6 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
-#include "monster/monsters.h"
 #include "weapon/weapons.h"
 #include "nodes.h"
 #include "CBasePlayer.h"

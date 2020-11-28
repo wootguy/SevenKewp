@@ -3,6 +3,7 @@
 #include "cbase.h"
 #include "decals.h"
 #include "explode.h"
+#include "monster/CBaseMonster.h"
 
 class CEnvExplosion : public CBaseMonster
 {

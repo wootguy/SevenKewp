@@ -662,9 +662,6 @@ class CBaseMonster;
 class CCineMonster;
 class CSound;
 
-#include "monster/CBaseMonster.h"
-
-
 
 
 //

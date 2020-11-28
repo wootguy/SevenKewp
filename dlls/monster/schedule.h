@@ -73,6 +73,10 @@ typedef enum
 		SCHED_BARNACLE_VICTIM_CHOMP,
 		SCHED_AISCRIPT,
 		SCHED_FAIL,
+		SCHED_CANT_FOLLOW,
+		SCHED_MOVE_AWAY,		// Try to get out of the player's way
+		SCHED_MOVE_AWAY_FOLLOW,	// same, but follow afterward
+		SCHED_MOVE_AWAY_FAIL,	// Turn back toward player
 
 		LAST_COMMON_SCHEDULE			// Leave this at the bottom
 } SCHEDULE_TYPE;
@@ -172,6 +176,9 @@ typedef enum
 		TASK_REMEMBER,
 		TASK_FORGET,
 		TASK_WAIT_FOR_MOVEMENT,			// wait until MovementIsComplete()
+		TASK_CANT_FOLLOW,
+		TASK_MOVE_AWAY_PATH,
+		TASK_WALK_PATH_FOR_UNITS,
 		LAST_COMMON_TASK, // LEAVE THIS AT THE BOTTOM!! (sjb)
 } SHARED_TASKS;
 

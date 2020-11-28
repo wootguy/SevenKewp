@@ -4,6 +4,7 @@
 #include "monsters.h"
 #include "schedule.h"
 #include "env/CSoundEnt.h"
+#include "monster/CBaseMonster.h"
 
 // TODO:
 // skill values (sven doesn't have any for this monster?)

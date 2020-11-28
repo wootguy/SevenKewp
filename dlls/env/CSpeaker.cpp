@@ -2,7 +2,6 @@
 #include "util.h"
 #include "cbase.h"
 #include "weapons.h"
-#include "CBasePlayer.h"
 #include "CTalkMonster.h"
 #include "gamerules.h"
 
