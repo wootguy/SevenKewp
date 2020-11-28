@@ -37,8 +37,6 @@
 #define bit_saidHeard			(1<<6)
 #define bit_saidSmelled			(1<<7)
 
-#define TLK_CFRIENDS		3
-
 typedef enum
 {
 	TLK_ANSWER = 0,
@@ -63,24 +61,9 @@ typedef enum
 	TLK_CGROUPS,					// MUST be last entry
 } TALKGROUPNAMES;
 
-
 enum
 {
-	SCHED_CANT_FOLLOW = LAST_COMMON_SCHEDULE + 1,
-	SCHED_MOVE_AWAY,		// Try to get out of the player's way
-	SCHED_MOVE_AWAY_FOLLOW,	// same, but follow afterward
-	SCHED_MOVE_AWAY_FAIL,	// Turn back toward player
-
-	LAST_TALKMONSTER_SCHEDULE,		// MUST be last
-};
-
-enum
-{
-	TASK_CANT_FOLLOW = LAST_COMMON_TASK + 1,
-	TASK_MOVE_AWAY_PATH,
-	TASK_WALK_PATH_FOR_UNITS,
-
-	TASK_TLK_RESPOND,		// say my response
+	TASK_TLK_RESPOND = LAST_COMMON_TASK + 1,		// say my response
 	TASK_TLK_SPEAK,			// question or remark
 	TASK_TLK_HELLO,			// Try to say hello to player
 	TASK_TLK_HEADRESET,		// reset head position
@@ -137,15 +120,10 @@ public:
 	void			ShutUpFriends( void );
 	BOOL			IsTalking( void );
 	void			Talk( float flDuration );	
-	// For following
-	BOOL			CanFollow( void );
-	BOOL			IsFollowing( void ) { return m_hTargetEnt != NULL && m_hTargetEnt->IsPlayer(); }
-	void			StopFollowing( BOOL clearSchedule );
-	void			StartFollowing( CBaseEntity *pLeader );
-	virtual void	DeclineFollowing( void ) {}
-	void			LimitFollowers( CBaseEntity *pPlayer, int maxFollowers );
 
-	void EXPORT		FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	// following
+	virtual void StopFollowing(BOOL clearSchedule);
+	virtual void StartFollowing(CBaseEntity* pLeader);
 	
 	virtual void	SetAnswerQuestion( CTalkMonster *pSpeaker );
 	virtual int		FriendNumber( int arrayNumber )	{ return arrayNumber; }
@@ -162,7 +140,6 @@ public:
 	int			m_nSpeak;						// number of times initiated talking
 	int			m_voicePitch;					// pitch of voice for this head
 	const char	*m_szGrp[TLK_CGROUPS];			// sentence group names
-	float		m_useTime;						// Don't allow +USE until this time
 	int			m_iszUse;						// Custom +USE sentence group (follow)
 	int			m_iszUnUse;						// Custom +USE sentence group (stop following)
 
@@ -174,8 +151,6 @@ public:
 };
 
 
-// Clients can push talkmonsters out of their way
-#define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
 // Don't see a client right now.
 #define		bits_COND_CLIENT_UNSEEN		( bits_COND_SPECIAL2 )
 

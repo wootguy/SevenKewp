@@ -18,6 +18,10 @@
 
 extern entvars_t* g_pevLastInflictor;
 
+// Clients can push talkmonsters out of their way
+#define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
+#define TLK_CFRIENDS		3
+
 //
 // generic Monster
 //
@@ -105,6 +109,8 @@ public:
 	string_t			m_iszTriggerTarget;// name of target that should be fired. 
 
 	Vector				m_HackedGunPos;	// HACK until we can query end of gun
+
+	float		m_useTime;						// Don't allow +USE until this time
 
 // Scripted sequence Info
 	SCRIPTSTATE			m_scriptState;		// internal cinematic state
@@ -323,8 +329,6 @@ public:
 	virtual void AlertSound ( void ) { return; };
 	virtual void IdleSound ( void ) { return; };
 	virtual void PainSound ( void ) { return; };
-	
-	virtual void StopFollowing( BOOL clearSchedule ) {}
 
 	inline void	Remember( int iMemory ) { m_afMemory |= iMemory; }
 	inline void	Forget( int iMemory ) { m_afMemory &= ~iMemory; }
@@ -335,6 +339,18 @@ public:
 	BOOL CineCleanup( );
 
 	CBaseEntity* DropItem ( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
+
+	// For following
+	BOOL			CanFollow(void);
+	BOOL			IsFollowing(void) { return m_hTargetEnt != NULL && m_hTargetEnt->IsPlayer(); }
+	virtual void	StopFollowing(BOOL clearSchedule);
+	virtual void	StartFollowing(CBaseEntity* pLeader);
+	void			DeclineFollowing(void) {}
+	void EXPORT		FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+
+	virtual void	StartFollowingSound() {}
+	virtual void	StopFollowingSound() {}
+	virtual void	CantFollowSound() {}
 };
 
 

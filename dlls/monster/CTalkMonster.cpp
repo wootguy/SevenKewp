@@ -446,39 +446,9 @@ void CTalkMonster :: StartTask( Task_t *pTask )
 		break;
 
 	case TASK_CANT_FOLLOW:
-		StopFollowing( FALSE );
-		PlaySentence( m_szGrp[TLK_STOP], RANDOM_FLOAT(2, 2.5), VOL_NORM, ATTN_NORM );
+		StopFollowing(FALSE);
+		PlaySentence(m_szGrp[TLK_STOP], RANDOM_FLOAT(2, 2.5), VOL_NORM, ATTN_NORM);
 		TaskComplete();
-		break;
-
-	case TASK_WALK_PATH_FOR_UNITS:
-		m_movementActivity = ACT_WALK;
-		break;
-
-	case TASK_MOVE_AWAY_PATH:
-		{
-			Vector dir = pev->angles;
-			dir.y = pev->ideal_yaw + 180;
-			Vector move;
-
-			UTIL_MakeVectorsPrivate( dir, move, NULL, NULL );
-			dir = pev->origin + move * pTask->flData;
-			if ( MoveToLocation( ACT_WALK, 2, dir ) )
-			{
-				TaskComplete();
-			}
-			else if ( FindCover( pev->origin, pev->view_ofs, 0, CoverRadius() ) )
-			{
-				// then try for plain ole cover
-				m_flMoveWaitFinished = gpGlobals->time + 2;
-				TaskComplete();
-			}
-			else
-			{
-				// nowhere to go?
-				TaskFail();
-			}
-		}
 		break;
 
 	case TASK_PLAY_SCRIPT:
@@ -634,7 +604,7 @@ void CTalkMonster :: Killed( entvars_t *pevAttacker, int iGib )
 	if ( (pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE )
 	{
 		AlertFriends();
-		LimitFollowers( CBaseEntity::Instance(pevAttacker), 0 );
+		//LimitFollowers( CBaseEntity::Instance(pevAttacker), 0 );
 	}
 
 	m_hTargetEnt = NULL;
@@ -715,34 +685,6 @@ void CTalkMonster::ShutUpFriends( void )
 			if ( pMonster )
 			{
 				pMonster->SentenceStop();
-			}
-		}
-	}
-}
-
-
-// UNDONE: Keep a follow time in each follower, make a list of followers in this function and do LRU
-// UNDONE: Check this in Restore to keep restored monsters from joining a full list of followers
-void CTalkMonster::LimitFollowers( CBaseEntity *pPlayer, int maxFollowers )
-{
-	CBaseEntity *pFriend = NULL;
-	int i, count;
-
-	count = 0;
-	// for each friend in this bsp...
-	for ( i = 0; i < TLK_CFRIENDS; i++ )
-	{
-		while (pFriend = EnumFriends( pFriend, i, FALSE ))
-		{
-			CBaseMonster *pMonster = pFriend->MyMonsterPointer();
-			if ( pMonster )
-			{
-				if ( pMonster->m_hTargetEnt == pPlayer )
-				{
-					count++;
-					if ( count > maxFollowers )
-						pMonster->StopFollowing( TRUE );
-				}
 			}
 		}
 	}
@@ -1361,90 +1303,6 @@ int CTalkMonster::IRelationship( CBaseEntity *pTarget )
 }
 
 
-void CTalkMonster::StopFollowing( BOOL clearSchedule )
-{
-	if ( IsFollowing() )
-	{
-		if ( !(m_afMemory & bits_MEMORY_PROVOKED) )
-		{
-			PlaySentence( m_szGrp[TLK_UNUSE], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
-			m_hTalkTarget = m_hTargetEnt;
-		}
-
-		if ( m_movementGoal == MOVEGOAL_TARGETENT )
-			RouteClear(); // Stop him from walking toward the player
-		m_hTargetEnt = NULL;
-		if ( clearSchedule )
-			ClearSchedule();
-		if ( m_hEnemy != NULL )
-			m_IdealMonsterState = MONSTERSTATE_COMBAT;
-	}
-}
-
-
-void CTalkMonster::StartFollowing( CBaseEntity *pLeader )
-{
-	if ( m_pCine )
-		m_pCine->CancelScript();
-
-	if ( m_hEnemy != NULL )
-		m_IdealMonsterState = MONSTERSTATE_ALERT;
-
-	m_hTargetEnt = pLeader;
-	PlaySentence( m_szGrp[TLK_USE], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
-	m_hTalkTarget = m_hTargetEnt;
-	ClearConditions( bits_COND_CLIENT_PUSH );
-	ClearSchedule();
-}
-
-
-BOOL CTalkMonster::CanFollow( void )
-{
-	if ( m_MonsterState == MONSTERSTATE_SCRIPT )
-	{
-		if ( !m_pCine->CanInterrupt() )
-			return FALSE;
-	}
-	
-	if ( !IsAlive() )
-		return FALSE;
-
-	return !IsFollowing();
-}
-
-
-void CTalkMonster :: FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{
-	// Don't allow use during a scripted_sentence
-	if ( m_useTime > gpGlobals->time )
-		return;
-
-	if ( pCaller != NULL && pCaller->IsPlayer() )
-	{
-		// Pre-disaster followers can't be used
-		if ( pev->spawnflags & SF_MONSTER_PREDISASTER )
-		{
-			DeclineFollowing();
-		}
-		else if ( CanFollow() )
-		{
-			LimitFollowers( pCaller , 1 );
-
-			if ( m_afMemory & bits_MEMORY_PROVOKED )
-				ALERT( at_console, "I'm not following you, you evil person!\n" );
-			else
-			{
-				StartFollowing( pCaller );
-				SetBits(m_bitsSaid, bit_saidHelloPlayer);	// Don't say hi after you've started following
-			}
-		}
-		else
-		{
-			StopFollowing( TRUE );
-		}
-	}
-}
-
 void CTalkMonster::KeyValue( KeyValueData *pkvd )
 {
 	if (FStrEq(pkvd->szKeyName, "UseSentence"))
@@ -1470,3 +1328,24 @@ void CTalkMonster::Precache( void )
 		m_szGrp[TLK_UNUSE] = STRING( m_iszUnUse );
 }
 
+
+void CTalkMonster::StopFollowing(BOOL clearSchedule)
+{
+	if (IsFollowing() && !(m_afMemory & bits_MEMORY_PROVOKED))
+	{
+		PlaySentence(m_szGrp[TLK_UNUSE], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE);
+		m_hTalkTarget = m_hTargetEnt;
+	}
+
+	CBaseMonster::StopFollowing(clearSchedule);
+}
+
+
+void CTalkMonster::StartFollowing(CBaseEntity* pLeader)
+{
+	PlaySentence(m_szGrp[TLK_USE], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE);
+	m_hTalkTarget = m_hTargetEnt;
+	SetBits(m_bitsSaid, bit_saidHelloPlayer);	// Don't say hi after you've started following
+
+	CBaseMonster::StartFollowing(pLeader);
+}

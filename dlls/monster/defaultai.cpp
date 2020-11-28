@@ -978,3 +978,66 @@ Schedule_t	slTakeCoverFromEnemy[] =
 	},
 };
 
+
+Task_t	tlFollow[] =
+{
+	{ TASK_SET_FAIL_SCHEDULE,	(float)SCHED_CANT_FOLLOW },	// If you fail, bail out of follow
+	{ TASK_MOVE_TO_TARGET_RANGE,(float)128		},	// Move within 128 of target ent (client)
+	{ TASK_SET_SCHEDULE,		(float)SCHED_TARGET_FACE },
+};
+
+Schedule_t	slFollow[] =
+{
+	{
+		tlFollow,
+		ARRAYSIZE(tlFollow),
+		bits_COND_NEW_ENEMY |
+		bits_COND_LIGHT_DAMAGE |
+		bits_COND_HEAVY_DAMAGE |
+		bits_COND_HEAR_SOUND |
+		bits_COND_PROVOKED,
+		bits_SOUND_DANGER,
+		"Follow"
+	},
+};
+
+
+Task_t	tlFaceTarget[] =
+{
+	{ TASK_SET_ACTIVITY,		(float)ACT_IDLE },
+	{ TASK_FACE_TARGET,			(float)0		},
+	{ TASK_SET_ACTIVITY,		(float)ACT_IDLE },
+	{ TASK_SET_SCHEDULE,		(float)SCHED_TARGET_CHASE },
+};
+
+Schedule_t	slFaceTarget[] =
+{
+	{
+		tlFaceTarget,
+		ARRAYSIZE(tlFaceTarget),
+		bits_COND_CLIENT_PUSH |
+		bits_COND_NEW_ENEMY |
+		bits_COND_LIGHT_DAMAGE |
+		bits_COND_HEAVY_DAMAGE |
+		bits_COND_HEAR_SOUND |
+		bits_COND_PROVOKED,
+		bits_SOUND_DANGER,
+		"FaceTarget"
+	},
+};
+
+Task_t	tlStopFollowing[] =
+{
+	{ TASK_CANT_FOLLOW,		(float)0 },
+};
+
+Schedule_t	slStopFollowing[] =
+{
+	{
+		tlStopFollowing,
+		ARRAYSIZE(tlStopFollowing),
+		0,
+		0,
+		"StopFollowing"
+	},
+};
