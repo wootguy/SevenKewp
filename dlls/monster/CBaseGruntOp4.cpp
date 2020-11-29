@@ -8,7 +8,7 @@
 #include "animation.h"
 #include "weapons.h"
 #include "CTalkSquadMonster.h"
-#include "CBaseGruntAlly.h"
+#include "CBaseGruntOp4.h"
 #include "CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
@@ -16,7 +16,7 @@
 
 int g_fAllyQuestion;				// true if an idle grunt asked a question. Cleared when someone answers.
 
-const char* CBaseGruntAlly::pGruntSentences[] =
+const char* CBaseGruntOp4::pGruntSentences[] =
 {
 	"FG_GREN", // grenade scared grunt
 	"FG_ALERT", // sees player
@@ -27,16 +27,16 @@ const char* CBaseGruntAlly::pGruntSentences[] =
 	"FG_TAUNT", // say rude things
 };
 
-void CBaseGruntAlly::PlaySentenceSound(int sentenceType) {
+void CBaseGruntOp4::PlaySentenceSound(int sentenceType) {
 	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[m_iSentence], ALLY_GRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 }
 
-int	CBaseGruntAlly::Classify(void)
+int	CBaseGruntOp4::Classify(void)
 {
 	return	CLASS_HUMAN_MILITARY_FRIENDLY;
 }
 
-int CBaseGruntAlly::ISoundMask(void)
+int CBaseGruntOp4::ISoundMask(void)
 {
 	return	bits_SOUND_WORLD |
 		bits_SOUND_COMBAT |
@@ -47,7 +47,7 @@ int CBaseGruntAlly::ISoundMask(void)
 		bits_SOUND_GARBAGE;
 }
 
-BOOL CBaseGruntAlly::CheckRangeAttack1(float flDot, float flDist)
+BOOL CBaseGruntOp4::CheckRangeAttack1(float flDot, float flDist)
 {
 	//Only if we have a weapon
 	if (pev->weapons)
@@ -88,7 +88,7 @@ BOOL CBaseGruntAlly::CheckRangeAttack1(float flDot, float flDist)
 	return FALSE;
 }
 
-void CBaseGruntAlly::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
+void CBaseGruntOp4::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
 {
 	// check for helmet shot
 	if (ptr->iHitgroup == 11)
@@ -118,7 +118,7 @@ void CBaseGruntAlly::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector 
 	CTalkSquadMonster::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 }
 
-int CBaseGruntAlly::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
+int CBaseGruntOp4::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
 	Forget(bits_MEMORY_INCOVER);
 
@@ -174,7 +174,7 @@ int CBaseGruntAlly::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, 
 	return ret;
 }
 
-void CBaseGruntAlly::IdleSound(void)
+void CBaseGruntOp4::IdleSound(void)
 {
 	if (FOkToSpeak() && (g_fAllyQuestion || RANDOM_LONG(0, 1)))
 	{
@@ -213,7 +213,7 @@ void CBaseGruntAlly::IdleSound(void)
 	}
 }
 
-void CBaseGruntAlly::AlertSound()
+void CBaseGruntOp4::AlertSound()
 {
 	if (m_hEnemy && FOkToSpeak())
 	{
@@ -221,7 +221,7 @@ void CBaseGruntAlly::AlertSound()
 	}
 }
 
-void CBaseGruntAlly::PainSound(void)
+void CBaseGruntOp4::PainSound(void)
 {
 	if (gpGlobals->time > m_flNextPainTime)
 	{
@@ -263,7 +263,7 @@ void CBaseGruntAlly::PainSound(void)
 	}
 }
 
-void CBaseGruntAlly::DeathSound(void)
+void CBaseGruntOp4::DeathSound(void)
 {
 	switch (RANDOM_LONG(0, 5))
 	{
@@ -288,12 +288,12 @@ void CBaseGruntAlly::DeathSound(void)
 	}
 }
 
-void CBaseGruntAlly::DeclineFollowing()
+void CBaseGruntOp4::DeclineFollowing()
 {
 	PlaySentence("FG_POK", 2, VOL_NORM, ATTN_NORM);
 }
 
-void CBaseGruntAlly::Precache()
+void CBaseGruntOp4::Precache()
 {
 	PRECACHE_SOUND("fgrunt/death1.wav");
 	PRECACHE_SOUND("fgrunt/death2.wav");
@@ -316,7 +316,7 @@ void CBaseGruntAlly::Precache()
 	TalkInit();
 }
 
-void CBaseGruntAlly::TalkInit()
+void CBaseGruntOp4::TalkInit()
 {
 	CTalkSquadMonster::TalkInit();
 
@@ -348,7 +348,7 @@ void CBaseGruntAlly::TalkInit()
 	m_voicePitch = 100;
 }
 
-Schedule_t* CBaseGruntAlly::GetMonsterStateSchedule(void) {
+Schedule_t* CBaseGruntOp4::GetMonsterStateSchedule(void) {
 	switch (m_MonsterState)
 	{
 	case MONSTERSTATE_COMBAT:
@@ -511,12 +511,12 @@ Schedule_t* CBaseGruntAlly::GetMonsterStateSchedule(void) {
 	return CTalkSquadMonster::GetSchedule();
 }
 
-int CBaseGruntAlly::ObjectCaps()
+int CBaseGruntOp4::ObjectCaps()
 {
 	return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
 }
 
-void CBaseGruntAlly::Killed(entvars_t* pevAttacker, int iGib)
+void CBaseGruntOp4::Killed(entvars_t* pevAttacker, int iGib)
 {
 	if (m_MonsterState != MONSTERSTATE_DEAD) //TODO: skip this for medic?
 	{

@@ -13,7 +13,7 @@ set(MONSTER_HDR
 	monster/bodyque.h
 	monster/CAGrunt.h
 	monster/CBaseGrunt.h
-	monster/CBaseGruntAlly.h
+	monster/CBaseGruntOp4.h
 	monster/CBaseMonster.h
 	monster/CBaseTurret.h
 	monster/CFlyingMonster.h
@@ -35,7 +35,7 @@ set(MONSTER_SRC
 	monster/CBarney.cpp
 	monster/CBaseAnimating.cpp
 	monster/CBaseGrunt.cpp
-	monster/CBaseGruntAlly.cpp
+	monster/CBaseGruntOp4.cpp
 	monster/CBaseMonster.cpp
 	monster/CBaseTurret.cpp
 	monster/CBigMomma.cpp
@@ -56,7 +56,9 @@ set(MONSTER_SRC
 	monster/CHAssassin.cpp
 	monster/CHeadCrab.cpp
 	monster/CHGrunt.cpp
-	monster/CHGruntAlly.cpp
+	monster/CHGruntOp4.cpp
+	monster/CHGruntOp4Medic.cpp
+	monster/CHGruntOp4Torch.cpp
 	monster/CHornet.cpp
 	monster/CHoundeye.cpp
 	monster/CIchthyosaur.cpp
@@ -64,8 +66,6 @@ set(MONSTER_SRC
 	monster/CLeech.cpp
 	monster/CMassn.cpp
 	monster/CNihilanth.cpp
-	monster/COFMedicAlly.cpp
-	monster/COFTorchAlly.cpp
 	monster/COsprey.cpp
 	monster/COtis.cpp
 	monster/CPitdrone.cpp

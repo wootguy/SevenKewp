@@ -4,7 +4,7 @@
 //#define	ALLY_GRUNT_SENTENCE_VOLUME	(float)0.35 // volume of grunt sentences
 #define	ALLY_GRUNT_SENTENCE_VOLUME	(float)1.0 // volume of grunt sentences
 
-class CBaseGruntAlly : public CBaseGrunt {
+class CBaseGruntOp4 : public CBaseGrunt {
 public:
 	int	Classify(void);
 	int ISoundMask(void);
