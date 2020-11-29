@@ -118,15 +118,8 @@ void CBaseHGrunt :: GibMonster ( void )
 	{// throw a gun if the grunt has one
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 		
-		CBaseEntity *pGun;
-		if (FBitSet( pev->weapons, HGRUNT_SHOTGUN ))
-		{
-			pGun = DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
-		}
-		else
-		{
-			pGun = DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
-		}
+		CBaseEntity *pGun = DropGun(vecGunPos, vecGunAngles);
+		
 		if ( pGun )
 		{
 			pGun->pev->velocity = Vector (RANDOM_FLOAT(-100,100), RANDOM_FLOAT(-100,100), RANDOM_FLOAT(200,300));
@@ -145,6 +138,17 @@ void CBaseHGrunt :: GibMonster ( void )
 	}
 
 	CBaseMonster :: GibMonster();
+}
+
+CBaseEntity* CBaseHGrunt::DropGun(Vector pos, Vector angles) {
+	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
+	{
+		return DropItem("weapon_shotgun", pos, angles);
+	}
+	else
+	{
+		return DropItem("weapon_9mmAR", pos, angles);
+	}
 }
 
 //=========================================================
@@ -1581,7 +1585,34 @@ void CBaseHGrunt :: SetActivity ( Activity NewActivity )
 	int	iSequence = ACTIVITY_NOT_AVAILABLE;
 	void *pmodel = GET_MODEL_PTR( ENT(pev) );
 
-	switch ( NewActivity)
+	iSequence = GetActivitySequence(NewActivity);
+	
+	m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
+
+	// Set to the desired anim, or default anim if the desired is not present
+	if ( iSequence > ACTIVITY_NOT_AVAILABLE )
+	{
+		if ( pev->sequence != iSequence || !m_fSequenceLoops )
+		{
+			pev->frame = 0;
+		}
+
+		pev->sequence		= iSequence;	// Set to the reset anim (if it's there)
+		ResetSequenceInfo( );
+		SetYawSpeed();
+	}
+	else
+	{
+		// Not available try to get default anim
+		ALERT ( at_console, "%s has no sequence for act:%d\n", STRING(pev->classname), NewActivity );
+		pev->sequence		= 0;	// Set to the reset anim (if it's there)
+	}
+}
+
+int CBaseHGrunt::GetActivitySequence(Activity NewActivity) {
+	int iSequence = ACTIVITY_NOT_AVAILABLE;
+
+	switch (NewActivity)
 	{
 	case ACT_RANGE_ATTACK1:
 		// grunt is either shooting standing or shooting crouched
@@ -1659,27 +1690,8 @@ void CBaseHGrunt :: SetActivity ( Activity NewActivity )
 		iSequence = LookupActivity ( NewActivity );
 		break;
 	}
-	
-	m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
 
-	// Set to the desired anim, or default anim if the desired is not present
-	if ( iSequence > ACTIVITY_NOT_AVAILABLE )
-	{
-		if ( pev->sequence != iSequence || !m_fSequenceLoops )
-		{
-			pev->frame = 0;
-		}
-
-		pev->sequence		= iSequence;	// Set to the reset anim (if it's there)
-		ResetSequenceInfo( );
-		SetYawSpeed();
-	}
-	else
-	{
-		// Not available try to get default anim
-		ALERT ( at_console, "%s has no sequence for act:%d\n", STRING(pev->classname), NewActivity );
-		pev->sequence		= 0;	// Set to the reset anim (if it's there)
-	}
+	return iSequence;
 }
 
 //=========================================================
