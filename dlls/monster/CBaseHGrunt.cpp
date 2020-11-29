@@ -2096,3 +2096,75 @@ Schedule_t* CBaseHGrunt :: GetScheduleOfType ( int Type )
 	}
 }
 
+
+void CBaseRepel::Spawn(void) {
+	Precache();
+	pev->solid = SOLID_NOT;
+	SetUse(&CBaseRepel::RepelUse);
+}
+
+void CBaseRepel::Precache(void) {
+	UTIL_PrecacheOther(GetMonsterType());
+	m_iSpriteTexture = PRECACHE_MODEL("sprites/rope.spr");
+}
+
+void CBaseRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {
+	TraceResult tr;
+	UTIL_TraceLine(pev->origin, pev->origin + Vector(0, 0, -4096.0), dont_ignore_monsters, ENT(pev), &tr);
+	/*
+	if ( tr.pHit && Instance( tr.pHit )->pev->solid != SOLID_BSP)
+		return NULL;
+	*/
+
+	CBaseEntity* pEntity = Create(GetMonsterType(), pev->origin, pev->angles);
+	CBaseMonster* pGrunt = pEntity->MyMonsterPointer();
+	pGrunt->pev->movetype = MOVETYPE_FLY;
+	pGrunt->pev->velocity = Vector(0, 0, RANDOM_FLOAT(-196, -128));
+	pGrunt->SetActivity(ACT_GLIDE);
+	// UNDONE: position?
+	pGrunt->m_vecLastPosition = tr.vecEndPos;
+
+	CBeam* pBeam = CBeam::BeamCreate("sprites/rope.spr", 10);
+	pBeam->PointEntInit(pev->origin + Vector(0, 0, 112), pGrunt->entindex());
+	pBeam->SetFlags(BEAM_FSOLID);
+	pBeam->SetColor(255, 255, 255);
+	pBeam->SetThink(&CBeam::SUB_Remove);
+	pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
+
+	UTIL_Remove(this);
+}
+
+void CBaseDead::BaseSpawn(const char* model)
+{
+	PRECACHE_MODEL(model);
+	SET_MODEL(ENT(pev), model);
+
+	pev->effects = 0;
+	pev->yaw_speed = 8;
+	pev->sequence = 0;
+	m_bloodColor = BLOOD_COLOR_RED;
+
+	pev->sequence = GetPoseSequence();
+
+	if (pev->sequence == -1)
+	{
+		ALERT(at_console, "Dead hgrunt with bad pose\n");
+	}
+
+	// Corpses have less health
+	pev->health = 8;
+
+	MonsterInitDead();
+}
+
+
+void CBaseDead::KeyValue(KeyValueData* pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "pose"))
+	{
+		m_iPose = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseMonster::KeyValue(pkvd);
+}

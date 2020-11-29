@@ -32,7 +32,25 @@ private:
 	static const char* pGruntSentences[];
 };
 
+class CHGruntRepel : public CBaseRepel
+{
+public:
+	const char* GetMonsterType() { return "monster_human_grunt"; };
+};
+
+class CDeadHGrunt : public CBaseDead
+{
+public:
+	void Spawn(void);
+	int	Classify(void) { return	CLASS_HUMAN_MILITARY; }
+	int GetPoseSequence() { return LookupSequence(m_szPoses[m_iPose]); }
+
+	static const char* m_szPoses[3];
+};
+
 LINK_ENTITY_TO_CLASS(monster_human_grunt, CHGrunt);
+LINK_ENTITY_TO_CLASS(monster_grunt_repel, CHGruntRepel);
+LINK_ENTITY_TO_CLASS(monster_hgrunt_dead, CDeadHGrunt);
 
 const char* CHGrunt::pPainSounds[] =
 {
@@ -60,6 +78,8 @@ const char* CHGrunt::pGruntSentences[] =
 	"HG_CHARGE",  // running out to get the enemy
 	"HG_TAUNT", // say rude things
 };
+
+const char* CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
 void CHGrunt::Spawn() {
 	BaseSpawn("models/hgrunt.mdl");
@@ -147,114 +167,10 @@ void CHGrunt::PlaySentenceSound(int sentenceType) {
 }
 
 
-//=========================================================
-// CBaseHGruntRepel - when triggered, spawns a monster_human_grunt
-// repelling down a line.
-//=========================================================
-
-class CHGruntRepel : public CBaseMonster
-{
-public:
-	void Spawn(void);
-	void Precache(void);
-	void EXPORT RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	int m_iSpriteTexture;	// Don't save, precache
-};
-
-LINK_ENTITY_TO_CLASS(monster_grunt_repel, CHGruntRepel);
-
-void CHGruntRepel::Spawn(void)
-{
-	Precache();
-	pev->solid = SOLID_NOT;
-
-	SetUse(&CHGruntRepel::RepelUse);
-}
-
-void CHGruntRepel::Precache(void)
-{
-	UTIL_PrecacheOther("monster_human_grunt");
-	m_iSpriteTexture = PRECACHE_MODEL("sprites/rope.spr");
-}
-
-void CHGruntRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
-{
-	TraceResult tr;
-	UTIL_TraceLine(pev->origin, pev->origin + Vector(0, 0, -4096.0), dont_ignore_monsters, ENT(pev), &tr);
-	/*
-	if ( tr.pHit && Instance( tr.pHit )->pev->solid != SOLID_BSP)
-		return NULL;
-	*/
-
-	CBaseEntity* pEntity = Create("monster_human_grunt", pev->origin, pev->angles);
-	CBaseMonster* pGrunt = pEntity->MyMonsterPointer();
-	pGrunt->pev->movetype = MOVETYPE_FLY;
-	pGrunt->pev->velocity = Vector(0, 0, RANDOM_FLOAT(-196, -128));
-	pGrunt->SetActivity(ACT_GLIDE);
-	// UNDONE: position?
-	pGrunt->m_vecLastPosition = tr.vecEndPos;
-
-	CBeam* pBeam = CBeam::BeamCreate("sprites/rope.spr", 10);
-	pBeam->PointEntInit(pev->origin + Vector(0, 0, 112), pGrunt->entindex());
-	pBeam->SetFlags(BEAM_FSOLID);
-	pBeam->SetColor(255, 255, 255);
-	pBeam->SetThink(&CBeam::SUB_Remove);
-	pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
-
-	UTIL_Remove(this);
-}
-
-
-
-//=========================================================
-// DEAD HGRUNT PROP
-//=========================================================
-class CDeadHGrunt : public CBaseMonster
-{
-public:
-	void Spawn(void);
-	int	Classify(void) { return	CLASS_HUMAN_MILITARY; }
-
-	void KeyValue(KeyValueData* pkvd);
-
-	int	m_iPose;// which sequence to display	-- temporary, don't need to save
-	static const char* m_szPoses[3];
-};
-
-const char* CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
-
-void CDeadHGrunt::KeyValue(KeyValueData* pkvd)
-{
-	if (FStrEq(pkvd->szKeyName, "pose"))
-	{
-		m_iPose = atoi(pkvd->szValue);
-		pkvd->fHandled = TRUE;
-	}
-	else
-		CBaseMonster::KeyValue(pkvd);
-}
-
-LINK_ENTITY_TO_CLASS(monster_hgrunt_dead, CDeadHGrunt);
-
 void CDeadHGrunt::Spawn(void)
 {
-	PRECACHE_MODEL("models/hgrunt.mdl");
-	SET_MODEL(ENT(pev), "models/hgrunt.mdl");
-
-	pev->effects = 0;
-	pev->yaw_speed = 8;
-	pev->sequence = 0;
+	CBaseDead::BaseSpawn("models/hgrunt.mdl");
 	m_bloodColor = BLOOD_COLOR_RED;
-
-	pev->sequence = LookupSequence(m_szPoses[m_iPose]);
-
-	if (pev->sequence == -1)
-	{
-		ALERT(at_console, "Dead hgrunt with bad pose\n");
-	}
-
-	// Corpses have less health
-	pev->health = 8;
 
 	// map old bodies onto new bodies
 	switch (pev->body)
@@ -284,6 +200,4 @@ void CDeadHGrunt::Spawn(void)
 		SetBodygroup(GUN_GROUP, GUN_NONE);
 		break;
 	}
-
-	MonsterInitDead();
 }
