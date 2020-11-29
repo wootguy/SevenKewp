@@ -14,9 +14,9 @@
 ****/
 
 //=========================================================
-// CSquadMonster - for any monster that forms squads.
+// CTalkSquadMonster - for any monster that forms squads.
 //=========================================================
-class COFSquadTalkMonster : public CTalkMonster
+class COFSquadTalkMonster : public CTalkSquadMonster
 {
 public:
 	// squad leader info

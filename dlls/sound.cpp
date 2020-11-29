@@ -21,7 +21,7 @@
 #include "cbase.h"
 #include "weapons.h"
 #include "CBasePlayer.h"
-#include "CTalkMonster.h"
+#include "CTalkSquadMonster.h"
 #include "gamerules.h"
 
 #if !defined ( _WIN32 )

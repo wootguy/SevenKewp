@@ -25,7 +25,7 @@
 #include	"effects.h"
 #include	"schedule.h"
 #include	"weapons.h"
-#include	"CSquadMonster.h"
+#include	"CTalkSquadMonster.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -38,7 +38,7 @@
 
 #define CONTROLLER_FLINCH_DELAY			2		// at most one flinch every n secs
 
-class CController : public CSquadMonster
+class CController : public CTalkSquadMonster
 {
 public:
 	virtual int		Save( CSave &save );
@@ -111,7 +111,7 @@ TYPEDESCRIPTION	CController::m_SaveData[] =
 	DEFINE_ARRAY( CController, m_iBallCurrent, FIELD_INTEGER, 2 ),
 	DEFINE_FIELD( CController, m_vecEstVelocity, FIELD_VECTOR ),
 };
-IMPLEMENT_SAVERESTORE( CController, CSquadMonster );
+IMPLEMENT_SAVERESTORE( CController, CTalkSquadMonster );
 
 
 const char *CController::pAttackSounds[] = 
@@ -210,7 +210,7 @@ void CController::Killed( entvars_t *pevAttacker, int iGib )
 		m_pBall[1] = NULL;
 	}
 
-	CSquadMonster::Killed( pevAttacker, iGib );
+	CTalkSquadMonster::Killed( pevAttacker, iGib );
 }
 
 
@@ -227,7 +227,7 @@ void CController::GibMonster( void )
 		UTIL_Remove( m_pBall[1] );
 		m_pBall[1] = NULL;
 	}
-	CSquadMonster::GibMonster( );
+	CTalkSquadMonster::GibMonster( );
 }
 
 
@@ -491,7 +491,7 @@ DEFINE_CUSTOM_SCHEDULES( CController )
 	slControllerFail,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CController, CSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CController, CTalkSquadMonster );
 
 
 
@@ -503,7 +503,7 @@ void CController :: StartTask ( Task_t *pTask )
 	switch ( pTask->iTask )
 	{
 	case TASK_RANGE_ATTACK1:
-		CSquadMonster :: StartTask ( pTask );
+		CTalkSquadMonster :: StartTask ( pTask );
 		break;
 	case TASK_GET_PATH_TO_ENEMY_LKP:
 		{
@@ -542,7 +542,7 @@ void CController :: StartTask ( Task_t *pTask )
 			break;
 		}
 	default:
-		CSquadMonster :: StartTask ( pTask );
+		CTalkSquadMonster :: StartTask ( pTask );
 		break;
 	}
 }
@@ -684,7 +684,7 @@ void CController :: RunTask ( Task_t *pTask )
 			m_fInCombat = FALSE;
 		}
 
-		CSquadMonster :: RunTask ( pTask );
+		CTalkSquadMonster :: RunTask ( pTask );
 
 		if (!m_fInCombat)
 		{
@@ -715,7 +715,7 @@ void CController :: RunTask ( Task_t *pTask )
 		}
 		break;
 	default: 
-		CSquadMonster :: RunTask ( pTask );
+		CTalkSquadMonster :: RunTask ( pTask );
 		break;
 	}
 }
@@ -754,7 +754,7 @@ Schedule_t *CController :: GetSchedule ( void )
 		break;
 	}
 
-	return CSquadMonster :: GetSchedule();
+	return CTalkSquadMonster :: GetSchedule();
 }
 
 

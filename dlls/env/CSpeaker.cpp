@@ -2,7 +2,7 @@
 #include "util.h"
 #include "cbase.h"
 #include "weapons.h"
-#include "CTalkMonster.h"
+#include "CTalkSquadMonster.h"
 #include "gamerules.h"
 
 class CSpeaker : public CBaseEntity
@@ -78,9 +78,9 @@ void CSpeaker::SpeakerThink(void)
 
 
 	// Wait for the talkmonster to finish first.
-	if (gpGlobals->time <= CTalkMonster::g_talkWaitTime)
+	if (gpGlobals->time <= CTalkSquadMonster::g_talkWaitTime)
 	{
-		pev->nextthink = CTalkMonster::g_talkWaitTime + RANDOM_FLOAT(5, 10);
+		pev->nextthink = CTalkSquadMonster::g_talkWaitTime + RANDOM_FLOAT(5, 10);
 		return;
 	}
 
@@ -126,7 +126,7 @@ void CSpeaker::SpeakerThink(void)
 		pev->nextthink = gpGlobals->time +
 			RANDOM_FLOAT(ANNOUNCE_MINUTES_MIN * 60.0, ANNOUNCE_MINUTES_MAX * 60.0);
 
-		CTalkMonster::g_talkWaitTime = gpGlobals->time + 5;		// time delay until it's ok to speak: used so that two NPCs don't talk at once
+		CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + 5;		// time delay until it's ok to speak: used so that two NPCs don't talk at once
 	}
 
 	return;

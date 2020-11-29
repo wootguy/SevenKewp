@@ -36,10 +36,10 @@
 #include	"schedule.h"
 #include "defaultai.h"
 #include	"animation.h"
-#include	"CSquadMonster.h"
+#include	"CTalkSquadMonster.h"
 #include	"weapons.h"
-#include	"CTalkMonster.h"
-#include "CTalkMonster.h"
+#include	"CTalkSquadMonster.h"
+#include "CTalkSquadMonster.h"
 #include "COFSquadTalkMonster.h"
 #include	"CSoundEnt.h"
 #include	"effects.h"
@@ -420,7 +420,7 @@ int COFMedicAlly :: ISoundMask ( void )
 BOOL COFMedicAlly :: FOkToSpeak( void )
 {
 // if someone else is talking, don't speak
-	if (gpGlobals->time <= CTalkMonster::g_talkWaitTime)
+	if (gpGlobals->time <= CTalkSquadMonster::g_talkWaitTime)
 		return FALSE;
 
 	if ( pev->spawnflags & SF_MONSTER_GAG )
@@ -443,7 +443,7 @@ BOOL COFMedicAlly :: FOkToSpeak( void )
 //=========================================================
 void COFMedicAlly :: JustSpoke( void )
 {
-	CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.5, 2.0);
+	CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.5, 2.0);
 	m_iSentence = MEDIC_SENT_NONE;
 }
 
@@ -1197,7 +1197,7 @@ void COFMedicAlly :: Spawn()
 		m_voicePitch = 95;
 	}
 
-	CTalkMonster::g_talkWaitTime = 0;
+	CTalkSquadMonster::g_talkWaitTime = 0;
 
 	MonsterInit();
 

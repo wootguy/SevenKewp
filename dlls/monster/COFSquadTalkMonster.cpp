@@ -22,9 +22,9 @@
 #include "monsters.h"
 #include "animation.h"
 #include "saverestore.h"
-#include "CTalkMonster.h"
-#include "CSquadMonster.h"
-#include "CTalkMonster.h"
+#include "CTalkSquadMonster.h"
+#include "CTalkSquadMonster.h"
+#include "CTalkSquadMonster.h"
 #include "COFSquadTalkMonster.h"
 #include "plane.h"
 
@@ -626,7 +626,7 @@ Schedule_t *COFSquadTalkMonster::GetScheduleOfType( int iType )
 
 void COFSquadTalkMonster::FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	CTalkMonster::FollowerUse( pActivator, pCaller, useType, value );
+	CTalkSquadMonster::FollowerUse( pActivator, pCaller, useType, value );
 }
 
 COFSquadTalkMonster* COFSquadTalkMonster::MySquadMedic()

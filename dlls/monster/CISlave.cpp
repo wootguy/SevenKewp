@@ -20,7 +20,7 @@
 #include	"util.h"
 #include	"cbase.h"
 #include	"monsters.h"
-#include	"CSquadMonster.h"
+#include	"CTalkSquadMonster.h"
 #include	"schedule.h"
 #include	"effects.h"
 #include	"weapons.h"
@@ -39,7 +39,7 @@ extern DLL_GLOBAL int		g_iSkillLevel;
 
 #define		ISLAVE_MAX_BEAMS	8
 
-class CISlave : public CSquadMonster
+class CISlave : public CTalkSquadMonster
 {
 public:
 	void Spawn( void );
@@ -111,7 +111,7 @@ TYPEDESCRIPTION	CISlave::m_SaveData[] =
 
 };
 
-IMPLEMENT_SAVERESTORE( CISlave, CSquadMonster );
+IMPLEMENT_SAVERESTORE( CISlave, CTalkSquadMonster );
 
 
 
@@ -271,7 +271,7 @@ int CISlave :: ISoundMask ( void)
 void CISlave::Killed( entvars_t *pevAttacker, int iGib )
 {
 	ClearBeams( );
-	CSquadMonster::Killed( pevAttacker, iGib );
+	CTalkSquadMonster::Killed( pevAttacker, iGib );
 }
 
 //=========================================================
@@ -444,7 +444,7 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 
 		default:
-			CSquadMonster::HandleAnimEvent( pEvent );
+			CTalkSquadMonster::HandleAnimEvent( pEvent );
 			break;
 	}
 }
@@ -459,7 +459,7 @@ BOOL CISlave :: CheckRangeAttack1 ( float flDot, float flDist )
 		return FALSE;
 	}
 
-	return CSquadMonster::CheckRangeAttack1( flDot, flDist );
+	return CTalkSquadMonster::CheckRangeAttack1( flDot, flDist );
 }
 
 //=========================================================
@@ -515,7 +515,7 @@ void CISlave :: StartTask ( Task_t *pTask )
 {
 	ClearBeams( );
 
-	CSquadMonster :: StartTask ( pTask );
+	CTalkSquadMonster :: StartTask ( pTask );
 }
 
 
@@ -588,7 +588,7 @@ int CISlave :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 		return 0;
 
 	m_afMemory |= bits_MEMORY_PROVOKED;
-	return CSquadMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
+	return CTalkSquadMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 }
 
 
@@ -597,7 +597,7 @@ void CISlave::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	if (bitsDamageType & DMG_SHOCK)
 		return;
 
-	CSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+	CTalkSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
 
@@ -635,7 +635,7 @@ DEFINE_CUSTOM_SCHEDULES( CISlave )
 	slSlaveAttack1,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CISlave, CSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CISlave, CTalkSquadMonster );
 
 
 //=========================================================
@@ -693,7 +693,7 @@ Schedule_t *CISlave :: GetSchedule( void )
 		}
 		break;
 	}
-	return CSquadMonster::GetSchedule( );
+	return CTalkSquadMonster::GetSchedule( );
 }
 
 
@@ -704,7 +704,7 @@ Schedule_t *CISlave :: GetScheduleOfType ( int Type )
 	case SCHED_FAIL:
 		if (HasConditions( bits_COND_CAN_MELEE_ATTACK1 ))
 		{
-			return CSquadMonster :: GetScheduleOfType( SCHED_MELEE_ATTACK1 ); ;
+			return CTalkSquadMonster :: GetScheduleOfType( SCHED_MELEE_ATTACK1 ); ;
 		}
 		break;
 	case SCHED_RANGE_ATTACK1:
@@ -712,7 +712,7 @@ Schedule_t *CISlave :: GetScheduleOfType ( int Type )
 	case SCHED_RANGE_ATTACK2:
 		return slSlaveAttack1;
 	}
-	return CSquadMonster :: GetScheduleOfType( Type );
+	return CTalkSquadMonster :: GetScheduleOfType( Type );
 }
 
 

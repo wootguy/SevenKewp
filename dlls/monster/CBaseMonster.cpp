@@ -10,7 +10,7 @@
 #include "nodes.h"
 #include "saverestore.h"
 #include "scripted.h"
-#include "CSquadMonster.h"
+#include "CTalkSquadMonster.h"
 #include "gamerules.h"
 #include "defaultai.h"
 
@@ -2911,7 +2911,7 @@ void CBaseMonster::ReportAIState(void)
 			ALERT(level, ": In stopped anim. ");
 	}
 
-	CSquadMonster* pSquadMonster = MySquadMonsterPointer();
+	CTalkSquadMonster* pSquadMonster = MyTalkSquadMonsterPointer();
 
 	if (pSquadMonster)
 	{

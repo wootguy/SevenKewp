@@ -85,7 +85,7 @@ enum HGRUNT_SENTENCE_TYPES
 
 extern int g_fGruntQuestion; // true if an idle grunt asked a question. Cleared when someone answers.
 
-class CBaseHGrunt : public CSquadMonster
+class CBaseHGrunt : public CTalkSquadMonster
 {
 public:
 	void BaseSpawn(const char* model);

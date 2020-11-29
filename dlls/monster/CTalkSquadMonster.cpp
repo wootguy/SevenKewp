@@ -12,45 +12,53 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#include	"extdll.h"
-#include	"util.h"
-#include	"cbase.h"
-#include	"monsters.h"
-#include	"schedule.h"
-#include	"CTalkMonster.h"
-#include	"defaultai.h"
-#include	"scripted.h"
-#include	"env/CSoundEnt.h"
-#include	"animation.h"
+#include "extdll.h"
+#include "util.h"
+#include "cbase.h"
+#include "monsters.h"
+#include "schedule.h"
+#include "CTalkSquadMonster.h"
+#include "defaultai.h"
+#include "scripted.h"
+#include "env/CSoundEnt.h"
+#include "animation.h"
+#include "plane.h"
 
-//=========================================================
-// Talking monster base class
-// Used for scientists and barneys
-//=========================================================
-float	CTalkMonster::g_talkWaitTime = 0;		// time delay until it's ok to speak: used so that two NPCs don't talk at once
+extern Schedule_t	slChaseEnemyFailed[];
+
+float	CTalkSquadMonster::g_talkWaitTime = 0;		// time delay until it's ok to speak: used so that two NPCs don't talk at once
 
 // NOTE: m_voicePitch & m_szGrp should be fixed up by precache each save/restore
 
-TYPEDESCRIPTION	CTalkMonster::m_SaveData[] = 
+TYPEDESCRIPTION	CTalkSquadMonster::m_SaveData[] = 
 {
-	DEFINE_FIELD( CTalkMonster, m_bitsSaid, FIELD_INTEGER ),
-	DEFINE_FIELD( CTalkMonster, m_nSpeak, FIELD_INTEGER ),
+	DEFINE_FIELD( CTalkSquadMonster, m_bitsSaid, FIELD_INTEGER ),
+	DEFINE_FIELD( CTalkSquadMonster, m_nSpeak, FIELD_INTEGER ),
 
 	// Recalc'ed in Precache()
-	//	DEFINE_FIELD( CTalkMonster, m_voicePitch, FIELD_INTEGER ),
-	//	DEFINE_FIELD( CTalkMonster, m_szGrp, FIELD_??? ),
-	DEFINE_FIELD( CTalkMonster, m_useTime, FIELD_TIME ),
-	DEFINE_FIELD( CTalkMonster, m_iszUse, FIELD_STRING ),
-	DEFINE_FIELD( CTalkMonster, m_iszUnUse, FIELD_STRING ),
-	DEFINE_FIELD( CTalkMonster, m_flLastSaidSmelled, FIELD_TIME ),
-	DEFINE_FIELD( CTalkMonster, m_flStopTalkTime, FIELD_TIME ),
-	DEFINE_FIELD( CTalkMonster, m_hTalkTarget, FIELD_EHANDLE ),
+	//	DEFINE_FIELD( CTalkSquadMonster, m_voicePitch, FIELD_INTEGER ),
+	//	DEFINE_FIELD( CTalkSquadMonster, m_szGrp, FIELD_??? ),
+	DEFINE_FIELD( CTalkSquadMonster, m_useTime, FIELD_TIME ),
+	DEFINE_FIELD( CTalkSquadMonster, m_iszUse, FIELD_STRING ),
+	DEFINE_FIELD( CTalkSquadMonster, m_iszUnUse, FIELD_STRING ),
+	DEFINE_FIELD( CTalkSquadMonster, m_flLastSaidSmelled, FIELD_TIME ),
+	DEFINE_FIELD( CTalkSquadMonster, m_flStopTalkTime, FIELD_TIME ),
+	DEFINE_FIELD( CTalkSquadMonster, m_hTalkTarget, FIELD_EHANDLE ),
+
+	DEFINE_FIELD(CTalkSquadMonster, m_hSquadLeader, FIELD_EHANDLE),
+	DEFINE_ARRAY(CTalkSquadMonster, m_hSquadMember, FIELD_EHANDLE, MAX_SQUAD_MEMBERS - 1),
+
+	// DEFINE_FIELD( CTalkSquadMonster, m_afSquadSlots, FIELD_INTEGER ), // these need to be reset after transitions!
+	DEFINE_FIELD(CTalkSquadMonster, m_fEnemyEluded, FIELD_BOOLEAN),
+	DEFINE_FIELD(CTalkSquadMonster, m_flLastEnemySightTime, FIELD_TIME),
+
+	DEFINE_FIELD(CTalkSquadMonster, m_iMySlot, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE( CTalkMonster, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CTalkSquadMonster, CBaseMonster );
 
 // array of friend names
-const char *CTalkMonster::m_szFriends[TLK_CFRIENDS] = 
+const char *CTalkSquadMonster::m_szFriends[TLK_CFRIENDS] = 
 {
 	"monster_barney",
 	"monster_scientist",
@@ -343,7 +351,7 @@ Schedule_t	slTlkIdleEyecontact[] =
 };
 
 
-DEFINE_CUSTOM_SCHEDULES( CTalkMonster )
+DEFINE_CUSTOM_SCHEDULES( CTalkSquadMonster )
 {
 	slIdleResponse,
 	slIdleSpeak,
@@ -358,10 +366,10 @@ DEFINE_CUSTOM_SCHEDULES( CTalkMonster )
 	slTlkIdleEyecontact,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CTalkMonster, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CTalkSquadMonster, CBaseMonster );
 
 
-void CTalkMonster :: SetActivity ( Activity newActivity )
+void CTalkSquadMonster :: SetActivity ( Activity newActivity )
 {
 	if (newActivity == ACT_IDLE && IsTalking() )
 		newActivity = ACT_SIGNAL3;
@@ -373,7 +381,7 @@ void CTalkMonster :: SetActivity ( Activity newActivity )
 }
 
 
-void CTalkMonster :: StartTask( Task_t *pTask )
+void CTalkSquadMonster :: StartTask( Task_t *pTask )
 {
 	switch ( pTask->iTask )
 	{
@@ -462,7 +470,7 @@ void CTalkMonster :: StartTask( Task_t *pTask )
 }
 
 
-void CTalkMonster :: RunTask( Task_t *pTask )
+void CTalkSquadMonster :: RunTask( Task_t *pTask )
 {
 	switch( pTask->iTask )
 	{
@@ -598,7 +606,7 @@ void CTalkMonster :: RunTask( Task_t *pTask )
 }
 
 
-void CTalkMonster :: Killed( entvars_t *pevAttacker, int iGib )
+void CTalkSquadMonster :: Killed( entvars_t *pevAttacker, int iGib )
 {
 	// If a client killed me (unless I was already Barnacle'd), make everyone else mad/afraid of him
 	if ( (pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE )
@@ -611,12 +619,19 @@ void CTalkMonster :: Killed( entvars_t *pevAttacker, int iGib )
 	// Don't finish that sentence
 	StopTalking();
 	SetUse( NULL );
+
+	VacateSlot();
+	if (InSquad())
+	{
+		MySquadLeader()->SquadRemove(this);
+	}
+
 	CBaseMonster::Killed( pevAttacker, iGib );
 }
 
 
 
-CBaseEntity	*CTalkMonster::EnumFriends( CBaseEntity *pPrevious, int listNumber, BOOL bTrace )
+CBaseEntity	*CTalkSquadMonster::EnumFriends( CBaseEntity *pPrevious, int listNumber, BOOL bTrace )
 {
 	CBaseEntity *pFriend = pPrevious;
 	const char *pszFriend;
@@ -649,7 +664,7 @@ CBaseEntity	*CTalkMonster::EnumFriends( CBaseEntity *pPrevious, int listNumber, 
 }
 
 
-void CTalkMonster::AlertFriends( void )
+void CTalkSquadMonster::AlertFriends( void )
 {
 	CBaseEntity *pFriend = NULL;
 	int i;
@@ -671,7 +686,7 @@ void CTalkMonster::AlertFriends( void )
 
 
 
-void CTalkMonster::ShutUpFriends( void )
+void CTalkSquadMonster::ShutUpFriends( void )
 {
 	CBaseEntity *pFriend = NULL;
 	int i;
@@ -691,7 +706,7 @@ void CTalkMonster::ShutUpFriends( void )
 }
 
 
-float CTalkMonster::TargetDistance( void )
+float CTalkSquadMonster::TargetDistance( void )
 {
 	// If we lose the player, or he dies, return a really large distance
 	if ( m_hTargetEnt == NULL || !m_hTargetEnt->IsAlive() )
@@ -705,7 +720,7 @@ float CTalkMonster::TargetDistance( void )
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
 //=========================================================
-void CTalkMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
+void CTalkSquadMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{		
@@ -725,14 +740,14 @@ void CTalkMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	}
 }
 
-// monsters derived from ctalkmonster should call this in precache()
+// monsters derived from CTalkSquadMonster should call this in precache()
 
-void CTalkMonster :: TalkInit( void )
+void CTalkSquadMonster :: TalkInit( void )
 {
 	// every new talking monster must reset this global, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
 
-	CTalkMonster::g_talkWaitTime = 0;
+	CTalkSquadMonster::g_talkWaitTime = 0;
 
 	m_voicePitch = 100;
 }	
@@ -741,7 +756,7 @@ void CTalkMonster :: TalkInit( void )
 // Scan for nearest, visible friend. If fPlayer is true, look for
 // nearest player
 //=========================================================
-CBaseEntity *CTalkMonster :: FindNearestFriend(BOOL fPlayer)
+CBaseEntity *CTalkSquadMonster :: FindNearestFriend(BOOL fPlayer)
 {
 	CBaseEntity *pFriend = NULL;
 	CBaseEntity *pNearest = NULL;
@@ -809,13 +824,13 @@ CBaseEntity *CTalkMonster :: FindNearestFriend(BOOL fPlayer)
 	return pNearest;
 }
 
-int CTalkMonster :: GetVoicePitch( void )
+int CTalkSquadMonster :: GetVoicePitch( void )
 {
 	return m_voicePitch + RANDOM_LONG(0,3);
 }
 
 
-void CTalkMonster :: Touch( CBaseEntity *pOther )
+void CTalkSquadMonster :: Touch( CBaseEntity *pOther )
 {
 	// Did the player touch me?
 	if ( pOther->IsPlayer() )
@@ -844,7 +859,7 @@ void CTalkMonster :: Touch( CBaseEntity *pOther )
 // IdleRespond
 // Respond to a previous question
 //=========================================================
-void CTalkMonster :: IdleRespond( void )
+void CTalkSquadMonster :: IdleRespond( void )
 {
 	int pitch = GetVoicePitch();
 	
@@ -852,7 +867,7 @@ void CTalkMonster :: IdleRespond( void )
 	PlaySentence( m_szGrp[TLK_ANSWER], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
 }
 
-int CTalkMonster :: FOkToSpeak( void )
+int CTalkSquadMonster :: FOkToSpeak( void )
 {
 	// if in the grip of a barnacle, don't speak
 	if ( m_MonsterState == MONSTERSTATE_PRONE || m_IdealMonsterState == MONSTERSTATE_PRONE )
@@ -867,7 +882,7 @@ int CTalkMonster :: FOkToSpeak( void )
 	}
 
 	// if someone else is talking, don't speak
-	if (gpGlobals->time <= CTalkMonster::g_talkWaitTime)
+	if (gpGlobals->time <= CTalkSquadMonster::g_talkWaitTime)
 		return FALSE;
 
 	if ( pev->spawnflags & SF_MONSTER_GAG )
@@ -888,7 +903,7 @@ int CTalkMonster :: FOkToSpeak( void )
 }
 
 
-int CTalkMonster::CanPlaySentence( BOOL fDisregardState ) 
+int CTalkSquadMonster::CanPlaySentence( BOOL fDisregardState ) 
 { 
 	if ( fDisregardState )
 		return CBaseMonster::CanPlaySentence( fDisregardState );
@@ -898,7 +913,7 @@ int CTalkMonster::CanPlaySentence( BOOL fDisregardState )
 //=========================================================
 // FIdleStare
 //=========================================================
-int CTalkMonster :: FIdleStare( void )
+int CTalkSquadMonster :: FIdleStare( void )
 {
 	if (!FOkToSpeak())
 		return FALSE;
@@ -913,7 +928,7 @@ int CTalkMonster :: FIdleStare( void )
 // IdleHello
 // Try to greet player first time he's seen
 //=========================================================
-int CTalkMonster :: FIdleHello( void )
+int CTalkSquadMonster :: FIdleHello( void )
 {
 	if (!FOkToSpeak())
 		return FALSE;
@@ -946,7 +961,7 @@ int CTalkMonster :: FIdleHello( void )
 
 
 // turn head towards supplied origin
-void CTalkMonster :: IdleHeadTurn( Vector &vecFriend )
+void CTalkSquadMonster :: IdleHeadTurn( Vector &vecFriend )
 {
 	 // turn head in desired direction only if ent has a turnable head
 	if (m_afCapability & bits_CAP_TURN_HEAD)
@@ -965,7 +980,7 @@ void CTalkMonster :: IdleHeadTurn( Vector &vecFriend )
 // FIdleSpeak
 // ask question of nearby friend, or make statement
 //=========================================================
-int CTalkMonster :: FIdleSpeak ( void )
+int CTalkSquadMonster :: FIdleSpeak ( void )
 { 
 	// try to start a conversation, or make statement
 	int pitch;
@@ -1048,7 +1063,7 @@ int CTalkMonster :: FIdleSpeak ( void )
 		//SENTENCEG_PlayRndSz( ENT(pev), szQuestionGroup, 1.0, ATTN_IDLE, 0, pitch );
 
 		// force friend to answer
-		CTalkMonster *pTalkMonster = (CTalkMonster *)pFriend;
+		CTalkSquadMonster *pTalkMonster = (CTalkSquadMonster *)pFriend;
 		m_hTalkTarget = pFriend;
 		pTalkMonster->SetAnswerQuestion( this ); // UNDONE: This is EVIL!!!
 		pTalkMonster->m_flStopTalkTime = m_flStopTalkTime;
@@ -1074,11 +1089,11 @@ int CTalkMonster :: FIdleSpeak ( void )
 
 	// didn't speak
 	Talk( 0 );
-	CTalkMonster::g_talkWaitTime = 0;
+	CTalkSquadMonster::g_talkWaitTime = 0;
 	return FALSE;
 }
 
-void CTalkMonster::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener )
+void CTalkSquadMonster::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener )
 {
 	if ( !bConcurrent )
 		ShutUpFriends();
@@ -1090,14 +1105,14 @@ void CTalkMonster::PlayScriptedSentence( const char *pszSentence, float duration
 	m_hTalkTarget = pListener;
 }
 
-void CTalkMonster::PlaySentence( const char *pszSentence, float duration, float volume, float attenuation )
+void CTalkSquadMonster::PlaySentence( const char *pszSentence, float duration, float volume, float attenuation )
 {
 	if ( !pszSentence )
 		return;
 
 	Talk ( duration );
 
-	CTalkMonster::g_talkWaitTime = gpGlobals->time + duration + 2.0;
+	CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + duration + 2.0;
 	if ( pszSentence[0] == '!' )
 		EMIT_SOUND_DYN( edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, GetVoicePitch());
 	else
@@ -1111,7 +1126,7 @@ void CTalkMonster::PlaySentence( const char *pszSentence, float duration, float 
 // Talk - set a timer that tells us when the monster is done
 // talking.
 //=========================================================
-void CTalkMonster :: Talk( float flDuration )
+void CTalkSquadMonster :: Talk( float flDuration )
 {
 	if ( flDuration <= 0 )
 	{
@@ -1125,14 +1140,14 @@ void CTalkMonster :: Talk( float flDuration )
 }
 
 // Prepare this talking monster to answer question
-void CTalkMonster :: SetAnswerQuestion( CTalkMonster *pSpeaker )
+void CTalkSquadMonster :: SetAnswerQuestion( CTalkSquadMonster *pSpeaker )
 {
 	if ( !m_pCine )
 		ChangeSchedule( slIdleResponse );
 	m_hTalkTarget = (CBaseMonster *)pSpeaker;
 }
 
-int CTalkMonster :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
+int CTalkSquadMonster :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
 	if ( IsAlive() )
 	{
@@ -1144,7 +1159,7 @@ int CTalkMonster :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker,
 			if (pFriend && pFriend->IsAlive())
 			{
 				// only if not dead or dying!
-				CTalkMonster *pTalkMonster = (CTalkMonster *)pFriend;
+				CTalkSquadMonster *pTalkMonster = (CTalkSquadMonster *)pFriend;
 				pTalkMonster->ChangeSchedule( slIdleStopShooting );
 			}
 		}
@@ -1153,10 +1168,14 @@ int CTalkMonster :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker,
 }
 
 
-Schedule_t* CTalkMonster :: GetScheduleOfType ( int Type )
+Schedule_t* CTalkSquadMonster :: GetScheduleOfType ( int Type )
 {
 	switch( Type )
 	{
+	case SCHED_CHASE_ENEMY_FAILED:
+	{
+		return &slChaseEnemyFailed[0];
+	}
 	case SCHED_MOVE_AWAY:
 		return slMoveAway;
 
@@ -1186,7 +1205,7 @@ Schedule_t* CTalkMonster :: GetScheduleOfType ( int Type )
 			if (!FBitSet(m_bitsSaid, bit_saidWoundLight) && (pev->health <= (pev->max_health * 0.75)))
 			{
 				//SENTENCEG_PlayRndSz( ENT(pev), m_szGrp[TLK_WOUND], 1.0, ATTN_IDLE, 0, GetVoicePitch() );
-				//CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(2.8, 3.2);
+				//CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(2.8, 3.2);
 				PlaySentence( m_szGrp[TLK_WOUND], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
 				SetBits(m_bitsSaid, bit_saidWoundLight);
 				return slIdleStand;
@@ -1195,7 +1214,7 @@ Schedule_t* CTalkMonster :: GetScheduleOfType ( int Type )
 			else if (!FBitSet(m_bitsSaid, bit_saidWoundHeavy) && (pev->health <= (pev->max_health * 0.5)))
 			{
 				//SENTENCEG_PlayRndSz( ENT(pev), m_szGrp[TLK_MORTAL], 1.0, ATTN_IDLE, 0, GetVoicePitch() );
-				//CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(2.8, 3.2);
+				//CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(2.8, 3.2);
 				PlaySentence( m_szGrp[TLK_MORTAL], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
 				SetBits(m_bitsSaid, bit_saidWoundHeavy);
 				return slIdleStand;
@@ -1237,7 +1256,7 @@ Schedule_t* CTalkMonster :: GetScheduleOfType ( int Type )
 			}
 
 
-			// NOTE - caller must first CTalkMonster::GetScheduleOfType, 
+			// NOTE - caller must first CTalkSquadMonster::GetScheduleOfType, 
 			// then check result and decide what to return ie: if sci gets back
 			// slIdleStand, return slIdleSciStand
 		}
@@ -1250,7 +1269,7 @@ Schedule_t* CTalkMonster :: GetScheduleOfType ( int Type )
 //=========================================================
 // IsTalking - am I saying a sentence right now?
 //=========================================================
-BOOL CTalkMonster :: IsTalking( void )
+BOOL CTalkSquadMonster :: IsTalking( void )
 {
 	if ( m_flStopTalkTime > gpGlobals->time )
 	{
@@ -1263,7 +1282,7 @@ BOOL CTalkMonster :: IsTalking( void )
 //=========================================================
 // If there's a player around, watch him.
 //=========================================================
-void CTalkMonster :: PrescheduleThink ( void )
+void CTalkSquadMonster :: PrescheduleThink ( void )
 {
 	if ( !HasConditions ( bits_COND_SEE_CLIENT ) )
 	{
@@ -1272,7 +1291,7 @@ void CTalkMonster :: PrescheduleThink ( void )
 }
 
 // try to smell something
-void CTalkMonster :: TrySmellTalk( void )
+void CTalkSquadMonster :: TrySmellTalk( void )
 {
 	if ( !FOkToSpeak() )
 		return;
@@ -1294,7 +1313,7 @@ void CTalkMonster :: TrySmellTalk( void )
 
 
 
-int CTalkMonster::IRelationship( CBaseEntity *pTarget )
+int CTalkSquadMonster::IRelationship( CBaseEntity *pTarget )
 {
 	if ( pTarget->IsPlayer() )
 		if ( m_afMemory & bits_MEMORY_PROVOKED )
@@ -1303,7 +1322,7 @@ int CTalkMonster::IRelationship( CBaseEntity *pTarget )
 }
 
 
-void CTalkMonster::KeyValue( KeyValueData *pkvd )
+void CTalkSquadMonster::KeyValue( KeyValueData *pkvd )
 {
 	if (FStrEq(pkvd->szKeyName, "UseSentence"))
 	{
@@ -1320,7 +1339,7 @@ void CTalkMonster::KeyValue( KeyValueData *pkvd )
 }
 
 
-void CTalkMonster::Precache( void )
+void CTalkSquadMonster::Precache( void )
 {
 	if ( m_iszUse )
 		m_szGrp[TLK_USE] = STRING( m_iszUse );
@@ -1329,7 +1348,7 @@ void CTalkMonster::Precache( void )
 }
 
 
-void CTalkMonster::StopFollowing(BOOL clearSchedule)
+void CTalkSquadMonster::StopFollowing(BOOL clearSchedule)
 {
 	if (IsFollowing() && !(m_afMemory & bits_MEMORY_PROVOKED))
 	{
@@ -1341,7 +1360,7 @@ void CTalkMonster::StopFollowing(BOOL clearSchedule)
 }
 
 
-void CTalkMonster::StartFollowing(CBaseEntity* pLeader)
+void CTalkSquadMonster::StartFollowing(CBaseEntity* pLeader)
 {
 	PlaySentence(m_szGrp[TLK_USE], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE);
 	m_hTalkTarget = m_hTargetEnt;
@@ -1349,3 +1368,553 @@ void CTalkMonster::StartFollowing(CBaseEntity* pLeader)
 
 	CBaseMonster::StartFollowing(pLeader);
 }
+
+
+
+
+
+
+//=========================================================
+// OccupySlot - if any slots of the passed slots are 
+// available, the monster will be assigned to one.
+//=========================================================
+BOOL CTalkSquadMonster::OccupySlot(int iDesiredSlots)
+{
+	int i;
+	int iMask;
+	int iSquadSlots;
+
+	if (!InSquad())
+	{
+		return TRUE;
+	}
+
+	if (SquadEnemySplit())
+	{
+		// if the squad members aren't all fighting the same enemy, slots are disabled
+		// so that a squad member doesn't get stranded unable to engage his enemy because
+		// all of the attack slots are taken by squad members fighting other enemies.
+		m_iMySlot = bits_SLOT_SQUAD_SPLIT;
+		return TRUE;
+	}
+
+	CTalkSquadMonster* pSquadLeader = MySquadLeader();
+
+	if (!(iDesiredSlots ^ pSquadLeader->m_afSquadSlots))
+	{
+		// none of the desired slots are available. 
+		return FALSE;
+	}
+
+	iSquadSlots = pSquadLeader->m_afSquadSlots;
+
+	for (i = 0; i < NUM_SLOTS; i++)
+	{
+		iMask = 1 << i;
+		if (iDesiredSlots & iMask) // am I looking for this bit?
+		{
+			if (!(iSquadSlots & iMask))	// Is it already taken?
+			{
+				// No, use this bit
+				pSquadLeader->m_afSquadSlots |= iMask;
+				m_iMySlot = iMask;
+				//				ALERT ( at_aiconsole, "Took slot %d - %d\n", i, m_hSquadLeader->m_afSquadSlots );
+				return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
+}
+
+//=========================================================
+// VacateSlot 
+//=========================================================
+void CTalkSquadMonster::VacateSlot()
+{
+	if (m_iMySlot != bits_NO_SLOT && InSquad())
+	{
+		//		ALERT ( at_aiconsole, "Vacated Slot %d - %d\n", m_iMySlot, m_hSquadLeader->m_afSquadSlots );
+		MySquadLeader()->m_afSquadSlots &= ~m_iMySlot;
+		m_iMySlot = bits_NO_SLOT;
+	}
+}
+
+//=========================================================
+// ScheduleChange
+//=========================================================
+void CTalkSquadMonster::ScheduleChange(void)
+{
+	VacateSlot();
+}
+
+// These functions are still awaiting conversion to CTalkSquadMonster 
+//=========================================================
+//
+// SquadRemove(), remove pRemove from my squad.
+// If I am pRemove, promote m_pSquadNext to leader
+//
+//=========================================================
+void CTalkSquadMonster::SquadRemove(CTalkSquadMonster* pRemove)
+{
+	ASSERT(pRemove != NULL);
+	ASSERT(this->IsLeader());
+	ASSERT(pRemove->m_hSquadLeader == this);
+
+	// If I'm the leader, get rid of my squad
+	if (pRemove == MySquadLeader())
+	{
+		for (int i = 0; i < MAX_SQUAD_MEMBERS - 1; i++)
+		{
+			CTalkSquadMonster* pMember = MySquadMember(i);
+			if (pMember)
+			{
+				pMember->m_hSquadLeader = NULL;
+				m_hSquadMember[i] = NULL;
+			}
+		}
+	}
+	else
+	{
+		CTalkSquadMonster* pSquadLeader = MySquadLeader();
+		if (pSquadLeader)
+		{
+			for (int i = 0; i < MAX_SQUAD_MEMBERS - 1; i++)
+			{
+				if (pSquadLeader->m_hSquadMember[i] == this)
+				{
+					pSquadLeader->m_hSquadMember[i] = NULL;
+					break;
+				}
+			}
+		}
+	}
+
+	pRemove->m_hSquadLeader = NULL;
+}
+
+//=========================================================
+//
+// SquadAdd(), add pAdd to my squad
+//
+//=========================================================
+BOOL CTalkSquadMonster::SquadAdd(CTalkSquadMonster* pAdd)
+{
+	ASSERT(pAdd != NULL);
+	ASSERT(!pAdd->InSquad());
+	ASSERT(this->IsLeader());
+
+	for (int i = 0; i < MAX_SQUAD_MEMBERS - 1; i++)
+	{
+		if (m_hSquadMember[i] == NULL)
+		{
+			m_hSquadMember[i] = pAdd;
+			pAdd->m_hSquadLeader = this;
+			return TRUE;
+		}
+	}
+	return FALSE;
+	// should complain here
+}
+
+
+//=========================================================
+// 
+// SquadPasteEnemyInfo - called by squad members that have
+// current info on the enemy so that it can be stored for 
+// members who don't have current info.
+//
+//=========================================================
+void CTalkSquadMonster::SquadPasteEnemyInfo(void)
+{
+	CTalkSquadMonster* pSquadLeader = MySquadLeader();
+	if (pSquadLeader)
+		pSquadLeader->m_vecEnemyLKP = m_vecEnemyLKP;
+}
+
+//=========================================================
+//
+// SquadCopyEnemyInfo - called by squad members who don't
+// have current info on the enemy. Reads from the same fields
+// in the leader's data that other squad members write to,
+// so the most recent data is always available here.
+//
+//=========================================================
+void CTalkSquadMonster::SquadCopyEnemyInfo(void)
+{
+	CTalkSquadMonster* pSquadLeader = MySquadLeader();
+	if (pSquadLeader)
+		m_vecEnemyLKP = pSquadLeader->m_vecEnemyLKP;
+}
+
+//=========================================================
+// 
+// SquadMakeEnemy - makes everyone in the squad angry at
+// the same entity.
+//
+//=========================================================
+void CTalkSquadMonster::SquadMakeEnemy(CBaseEntity* pEnemy)
+{
+	if (!InSquad())
+		return;
+
+	if (!pEnemy)
+	{
+		ALERT(at_console, "ERROR: SquadMakeEnemy() - pEnemy is NULL!\n");
+		return;
+	}
+
+	CTalkSquadMonster* pSquadLeader = MySquadLeader();
+	for (int i = 0; i < MAX_SQUAD_MEMBERS; i++)
+	{
+		CTalkSquadMonster* pMember = pSquadLeader->MySquadMember(i);
+		if (pMember)
+		{
+			// reset members who aren't activly engaged in fighting
+			if (pMember->m_hEnemy != pEnemy && !pMember->HasConditions(bits_COND_SEE_ENEMY))
+			{
+				if (pMember->m_hEnemy != NULL)
+				{
+					// remember their current enemy
+					pMember->PushEnemy(pMember->m_hEnemy, pMember->m_vecEnemyLKP);
+				}
+				// give them a new enemy
+				pMember->m_hEnemy = pEnemy;
+				pMember->m_vecEnemyLKP = pEnemy->pev->origin;
+				pMember->SetConditions(bits_COND_NEW_ENEMY);
+			}
+		}
+	}
+}
+
+
+//=========================================================
+//
+// SquadCount(), return the number of members of this squad
+// callable from leaders & followers
+//
+//=========================================================
+int CTalkSquadMonster::SquadCount(void)
+{
+	if (!InSquad())
+		return 0;
+
+	CTalkSquadMonster* pSquadLeader = MySquadLeader();
+	int squadCount = 0;
+	for (int i = 0; i < MAX_SQUAD_MEMBERS; i++)
+	{
+		if (pSquadLeader->MySquadMember(i) != NULL)
+			squadCount++;
+	}
+
+	return squadCount;
+}
+
+
+//=========================================================
+//
+// SquadRecruit(), get some monsters of my classification and
+// link them as a group.  returns the group size
+//
+//=========================================================
+int CTalkSquadMonster::SquadRecruit(int searchRadius, int maxMembers)
+{
+	int squadCount;
+	int iMyClass = Classify();// cache this monster's class
+
+
+	// Don't recruit if I'm already in a group
+	if (InSquad())
+		return 0;
+
+	if (maxMembers < 2)
+		return 0;
+
+	// I am my own leader
+	m_hSquadLeader = this;
+	squadCount = 1;
+
+	CBaseEntity* pEntity = NULL;
+
+	if (!FStringNull(pev->netname))
+	{
+		// I have a netname, so unconditionally recruit everyone else with that name.
+		pEntity = UTIL_FindEntityByString(pEntity, "netname", STRING(pev->netname));
+		while (pEntity)
+		{
+			CTalkSquadMonster* pRecruit = pEntity->MyTalkSquadMonsterPointer();
+
+			if (pRecruit)
+			{
+				if (!pRecruit->InSquad() && pRecruit->Classify() == iMyClass && pRecruit != this)
+				{
+					// minimum protection here against user error.in worldcraft. 
+					if (!SquadAdd(pRecruit))
+						break;
+					squadCount++;
+				}
+			}
+
+			pEntity = UTIL_FindEntityByString(pEntity, "netname", STRING(pev->netname));
+		}
+	}
+	else
+	{
+		while ((pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, searchRadius)) != NULL)
+		{
+			CTalkSquadMonster* pRecruit = pEntity->MyTalkSquadMonsterPointer();
+			if (pRecruit) {
+				println("Potential squad member!");
+			}
+
+			if (pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_pCine)
+			{
+				// Can we recruit this guy?
+				if (!pRecruit->InSquad() && pRecruit->Classify() == iMyClass &&
+					((iMyClass != CLASS_ALIEN_MONSTER) || FStrEq(STRING(pev->classname), STRING(pRecruit->pev->classname))) &&
+					FStringNull(pRecruit->pev->netname))
+				{
+					TraceResult tr;
+					UTIL_TraceLine(pev->origin + pev->view_ofs, pRecruit->pev->origin + pev->view_ofs, ignore_monsters, pRecruit->edict(), &tr);// try to hit recruit with a traceline.
+					if (tr.flFraction == 1.0)
+					{
+						if (!SquadAdd(pRecruit))
+							break;
+
+						squadCount++;
+					}
+				}
+			}
+		}
+	}
+
+	// no single member squads
+	if (squadCount == 1)
+	{
+		m_hSquadLeader = NULL;
+	}
+
+	return squadCount;
+}
+
+//=========================================================
+// CheckEnemy
+//=========================================================
+int CTalkSquadMonster::CheckEnemy(CBaseEntity* pEnemy)
+{
+	int iUpdatedLKP;
+
+	iUpdatedLKP = CBaseMonster::CheckEnemy(m_hEnemy);
+
+	// communicate with squad members about the enemy IF this individual has the same enemy as the squad leader.
+	if (InSquad() && (CBaseEntity*)m_hEnemy == MySquadLeader()->m_hEnemy)
+	{
+		if (iUpdatedLKP)
+		{
+			// have new enemy information, so paste to the squad.
+			SquadPasteEnemyInfo();
+		}
+		else
+		{
+			// enemy unseen, copy from the squad knowledge.
+			SquadCopyEnemyInfo();
+		}
+	}
+
+	return iUpdatedLKP;
+}
+
+//=========================================================
+// StartMonster
+//=========================================================
+void CTalkSquadMonster::StartMonster(void)
+{
+	CBaseMonster::StartMonster();
+
+	if ((m_afCapability & bits_CAP_SQUAD) && !InSquad())
+	{
+		if (!FStringNull(pev->netname))
+		{
+			// if I have a groupname, I can only recruit if I'm flagged as leader
+			if (!(pev->spawnflags & SF_SQUADMONSTER_LEADER))
+			{
+				return;
+			}
+		}
+
+		// try to form squads now.
+		int iSquadSize = SquadRecruit(1024, 4);
+
+		if (iSquadSize)
+		{
+			ALERT(at_aiconsole, "Squad of %d %s formed\n", iSquadSize, STRING(pev->classname));
+		}
+
+		if (IsLeader() && FClassnameIs(pev, "monster_human_grunt"))
+		{
+			SetBodygroup(1, 1); // UNDONE: truly ugly hack
+			pev->skin = 0;
+		}
+
+	}
+}
+
+//=========================================================
+// NoFriendlyFire - checks for possibility of friendly fire
+//
+// Builds a large box in front of the grunt and checks to see 
+// if any squad members are in that box. 
+//=========================================================
+BOOL CTalkSquadMonster::NoFriendlyFire(void)
+{
+	if (!InSquad())
+	{
+		return TRUE;
+	}
+
+	CPlane	backPlane;
+	CPlane  leftPlane;
+	CPlane	rightPlane;
+
+	Vector	vecLeftSide;
+	Vector	vecRightSide;
+	Vector	v_left;
+
+	//!!!BUGBUG - to fix this, the planes must be aligned to where the monster will be firing its gun, not the direction it is facing!!!
+
+	if (m_hEnemy != NULL)
+	{
+		UTIL_MakeVectors(UTIL_VecToAngles(m_hEnemy->Center() - pev->origin));
+	}
+	else
+	{
+		// if there's no enemy, pretend there's a friendly in the way, so the grunt won't shoot.
+		return FALSE;
+	}
+
+	//UTIL_MakeVectors ( pev->angles );
+
+	vecLeftSide = pev->origin - (gpGlobals->v_right * (pev->size.x * 1.5));
+	vecRightSide = pev->origin + (gpGlobals->v_right * (pev->size.x * 1.5));
+	v_left = gpGlobals->v_right * -1;
+
+	leftPlane.InitializePlane(gpGlobals->v_right, vecLeftSide);
+	rightPlane.InitializePlane(v_left, vecRightSide);
+	backPlane.InitializePlane(gpGlobals->v_forward, pev->origin);
+
+	/*
+		ALERT ( at_console, "LeftPlane: %f %f %f : %f\n", leftPlane.m_vecNormal.x, leftPlane.m_vecNormal.y, leftPlane.m_vecNormal.z, leftPlane.m_flDist );
+		ALERT ( at_console, "RightPlane: %f %f %f : %f\n", rightPlane.m_vecNormal.x, rightPlane.m_vecNormal.y, rightPlane.m_vecNormal.z, rightPlane.m_flDist );
+		ALERT ( at_console, "BackPlane: %f %f %f : %f\n", backPlane.m_vecNormal.x, backPlane.m_vecNormal.y, backPlane.m_vecNormal.z, backPlane.m_flDist );
+	*/
+
+	CTalkSquadMonster* pSquadLeader = MySquadLeader();
+	for (int i = 0; i < MAX_SQUAD_MEMBERS; i++)
+	{
+		CTalkSquadMonster* pMember = pSquadLeader->MySquadMember(i);
+		if (pMember && pMember != this)
+		{
+
+			if (backPlane.PointInFront(pMember->pev->origin) &&
+				leftPlane.PointInFront(pMember->pev->origin) &&
+				rightPlane.PointInFront(pMember->pev->origin))
+			{
+				// this guy is in the check volume! Don't shoot!
+				return FALSE;
+			}
+		}
+	}
+
+	return TRUE;
+}
+
+//=========================================================
+// GetIdealState - surveys the Conditions information available
+// and finds the best new state for a monster.
+//=========================================================
+MONSTERSTATE CTalkSquadMonster::GetIdealState(void)
+{
+	int	iConditions;
+
+	iConditions = IScheduleFlags();
+
+	// If no schedule conditions, the new ideal state is probably the reason we're in here.
+	switch (m_MonsterState)
+	{
+	case MONSTERSTATE_IDLE:
+	case MONSTERSTATE_ALERT:
+		if (HasConditions(bits_COND_NEW_ENEMY) && InSquad())
+		{
+			SquadMakeEnemy(m_hEnemy);
+		}
+		break;
+	}
+
+	return CBaseMonster::GetIdealState();
+}
+
+//=========================================================
+// FValidateCover - determines whether or not the chosen
+// cover location is a good one to move to. (currently based
+// on proximity to others in the squad)
+//=========================================================
+BOOL CTalkSquadMonster::FValidateCover(const Vector& vecCoverLocation)
+{
+	if (!InSquad())
+	{
+		return TRUE;
+	}
+
+	if (SquadMemberInRange(vecCoverLocation, 128))
+	{
+		// another squad member is too close to this piece of cover.
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+//=========================================================
+// SquadEnemySplit- returns TRUE if not all squad members
+// are fighting the same enemy. 
+//=========================================================
+BOOL CTalkSquadMonster::SquadEnemySplit(void)
+{
+	if (!InSquad())
+		return FALSE;
+
+	CTalkSquadMonster* pSquadLeader = MySquadLeader();
+	CBaseEntity* pEnemy = pSquadLeader->m_hEnemy;
+
+	for (int i = 0; i < MAX_SQUAD_MEMBERS; i++)
+	{
+		CTalkSquadMonster* pMember = pSquadLeader->MySquadMember(i);
+		if (pMember != NULL && pMember->m_hEnemy != NULL && pMember->m_hEnemy != pEnemy)
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+//=========================================================
+// FValidateCover - determines whether or not the chosen
+// cover location is a good one to move to. (currently based
+// on proximity to others in the squad)
+//=========================================================
+BOOL CTalkSquadMonster::SquadMemberInRange(const Vector& vecLocation, float flDist)
+{
+	if (!InSquad())
+		return FALSE;
+
+	CTalkSquadMonster* pSquadLeader = MySquadLeader();
+
+	for (int i = 0; i < MAX_SQUAD_MEMBERS; i++)
+	{
+		CTalkSquadMonster* pSquadMember = pSquadLeader->MySquadMember(i);
+		if (pSquadMember && (vecLocation - pSquadMember->pev->origin).Length2D() <= flDist)
+			return TRUE;
+	}
+	return FALSE;
+}
+

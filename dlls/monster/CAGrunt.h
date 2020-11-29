@@ -1,4 +1,4 @@
-#include	"CSquadMonster.h"
+#include	"CTalkSquadMonster.h"
 
 //=========================================================
 // monster-specific schedule types
@@ -40,7 +40,7 @@ enum
 
 #define		AGRUNT_MELEE_DIST	100
 
-class CAGrunt : public CSquadMonster
+class CAGrunt : public CTalkSquadMonster
 {
 public:
 	void Spawn(void);
