@@ -57,7 +57,6 @@ set(MONSTER_SRC
 	monster/CHeadCrab.cpp
 	monster/CHGrunt.cpp
 	monster/CHGruntAlly.cpp
-	monster/CHGruntOp4.cpp
 	monster/CHornet.cpp
 	monster/CHoundeye.cpp
 	monster/CIchthyosaur.cpp

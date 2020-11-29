@@ -13,8 +13,6 @@
 #include "effects.h"
 #include "customentity.h"
 
-extern DLL_GLOBAL int		g_iSkillLevel;
-
 #define	GRUNT_MP5_CLIP_SIZE				36 // how many bullets in a clip? - NOTE: 3 round burst sound, so keep as 3 * x!
 #define GRUNT_SHOTGUN_CLIP_SIZE			8
 #define GRUNT_SAW_CLIP_SIZE				36

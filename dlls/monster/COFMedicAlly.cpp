@@ -15,8 +15,6 @@
 #include "customentity.h"
 #include "explode.h"
 
-extern DLL_GLOBAL int		g_iSkillLevel;
-
 #define	MEDIC_DEAGLE_CLIP_SIZE			9 // how many bullets in a clip?
 #define	MEDIC_GLOCK_CLIP_SIZE			9 // how many bullets in a clip?
 #define TORCH_BEAM_SPRITE "sprites/xbeam3.spr"
