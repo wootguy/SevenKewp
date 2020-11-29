@@ -454,6 +454,11 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum)
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
 						   int flags, int pitch)
 {
+	if (pitch <= 0 || pitch > 255) {
+		println("Warning: Invalid pitch passed to EMIT_SOUND_DYN: %d", pitch);
+		pitch = 100; // using a negative pitch crashes the engine
+	}
+	
 	if (sample && *sample == '!')
 	{
 		char name[32];

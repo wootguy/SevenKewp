@@ -1923,8 +1923,11 @@ BOOL CTalkSquadMonster::SquadMemberInRange(const Vector& vecLocation, float flDi
 
 CTalkSquadMonster* CTalkSquadMonster::MySquadMedic()
 {
-	for (auto& member : m_hSquadMember)
+	for (CBaseEntity* member : m_hSquadMember)
 	{
+		if (!member) {
+			continue;
+		}
 		CTalkSquadMonster* pMember = member->MyTalkSquadMonsterPointer();
 
 		if (pMember && FClassnameIs(pMember->pev, "monster_human_medic_ally"))

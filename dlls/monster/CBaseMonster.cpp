@@ -16,6 +16,8 @@
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
+//#define DEBUG_MONSTER // uncomment to enable verbose logging
+
 // Global Savedata for monster
 // UNDONE: Save schedule data?  Can this be done?  We may
 // lose our enemy pointer or other data (goal ent, target, etc)
@@ -4698,8 +4700,8 @@ void CBaseMonster::ChangeSchedule(Schedule_t* pNewSchedule)
 
 	// this is very useful code if you can isolate a test case in a level with a single monster. It will notify
 	// you of every schedule selection the monster makes.
-#if 0
-	if (FClassnameIs(pev, "monster_human_grunt"))
+#ifdef DEBUG_MONSTER
+	if (FClassnameIs(pev, "monster_human_medic_ally"))
 	{
 		Task_t* pTask = GetTask();
 
@@ -4866,6 +4868,9 @@ void CBaseMonster::MaintainSchedule(void)
 			Task_t* pTask = GetTask();
 			ASSERT(pTask != NULL);
 			TaskBegin();
+			#ifdef DEBUG_MONSTER
+				println("Running task %s with data %f", GetTaskName(pTask->iTask), pTask->flData);
+			#endif
 			StartTask(pTask);
 		}
 
@@ -5970,6 +5975,106 @@ Task_t* CBaseMonster::GetTask(void)
 	else
 	{
 		return &m_pSchedule->pTasklist[m_iScheduleIndex];
+	}
+}
+
+const char* GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_INVALID: return "TASK_INVALID";
+	case TASK_WAIT: return "TASK_WAIT";
+	case TASK_WAIT_FACE_ENEMY: return "TASK_WAIT_FACE_ENEMY";
+	case TASK_WAIT_PVS: return "TASK_WAIT_PVS";
+	case TASK_SUGGEST_STATE: return "TASK_SUGGEST_STATE";
+	case TASK_WALK_TO_TARGET: return "TASK_WALK_TO_TARGET";
+	case TASK_RUN_TO_TARGET: return "TASK_RUN_TO_TARGET";
+	case TASK_MOVE_TO_TARGET_RANGE: return "TASK_MOVE_TO_TARGET_RANGE";
+	case TASK_GET_PATH_TO_ENEMY: return "TASK_GET_PATH_TO_ENEMY";
+	case TASK_GET_PATH_TO_ENEMY_LKP: return "TASK_GET_PATH_TO_ENEMY_LKP";
+	case TASK_GET_PATH_TO_ENEMY_CORPSE: return "TASK_GET_PATH_TO_ENEMY_CORPSE";
+	case TASK_GET_PATH_TO_LEADER: return "TASK_GET_PATH_TO_LEADER";
+	case TASK_GET_PATH_TO_SPOT: return "TASK_GET_PATH_TO_SPOT";
+	case TASK_GET_PATH_TO_TARGET: return "TASK_GET_PATH_TO_TARGET";
+	case TASK_GET_PATH_TO_HINTNODE: return "TASK_GET_PATH_TO_HINTNODE";
+	case TASK_GET_PATH_TO_LASTPOSITION: return "TASK_GET_PATH_TO_LASTPOSITION";
+	case TASK_GET_PATH_TO_BESTSOUND: return "TASK_GET_PATH_TO_BESTSOUND";
+	case TASK_GET_PATH_TO_BESTSCENT: return "TASK_GET_PATH_TO_BESTSCENT";
+	case TASK_RUN_PATH: return "TASK_RUN_PATH";
+	case TASK_WALK_PATH: return "TASK_WALK_PATH";
+	case TASK_STRAFE_PATH: return "TASK_STRAFE_PATH";
+	case TASK_CLEAR_MOVE_WAIT: return "TASK_CLEAR_MOVE_WAIT";
+	case TASK_STORE_LASTPOSITION: return "TASK_STORE_LASTPOSITION";
+	case TASK_CLEAR_LASTPOSITION: return "TASK_CLEAR_LASTPOSITION";
+	case TASK_PLAY_ACTIVE_IDLE: return "TASK_PLAY_ACTIVE_IDLE";
+	case TASK_FIND_HINTNODE: return "TASK_FIND_HINTNODE";
+	case TASK_CLEAR_HINTNODE: return "TASK_CLEAR_HINTNODE";
+	case TASK_SMALL_FLINCH: return "TASK_SMALL_FLINCH";
+	case TASK_FACE_IDEAL: return "TASK_FACE_IDEAL";
+	case TASK_FACE_ROUTE: return "TASK_FACE_ROUTE";
+	case TASK_FACE_ENEMY: return "TASK_FACE_ENEMY";
+	case TASK_FACE_HINTNODE: return "TASK_FACE_HINTNODE";
+	case TASK_FACE_TARGET: return "TASK_FACE_TARGET";
+	case TASK_FACE_LASTPOSITION: return "TASK_FACE_LASTPOSITION";
+	case TASK_RANGE_ATTACK1: return "TASK_RANGE_ATTACK1";
+	case TASK_RANGE_ATTACK2: return "TASK_RANGE_ATTACK2";
+	case TASK_MELEE_ATTACK1: return "TASK_MELEE_ATTACK1";
+	case TASK_MELEE_ATTACK2: return "TASK_MELEE_ATTACK2";
+	case TASK_RELOAD: return "TASK_RELOAD";
+	case TASK_RANGE_ATTACK1_NOTURN: return "TASK_RANGE_ATTACK1_NOTURN";
+	case TASK_RANGE_ATTACK2_NOTURN: return "TASK_RANGE_ATTACK2_NOTURN";
+	case TASK_MELEE_ATTACK1_NOTURN: return "TASK_MELEE_ATTACK1_NOTURN";
+	case TASK_MELEE_ATTACK2_NOTURN: return "TASK_MELEE_ATTACK2_NOTURN";
+	case TASK_RELOAD_NOTURN: return "TASK_RELOAD_NOTURN";
+	case TASK_SPECIAL_ATTACK1: return "TASK_SPECIAL_ATTACK1";
+	case TASK_SPECIAL_ATTACK2: return "TASK_SPECIAL_ATTACK2";
+	case TASK_CROUCH: return "TASK_CROUCH";
+	case TASK_STAND: return "TASK_STAND";
+	case TASK_GUARD: return "TASK_GUARD";
+	case TASK_STEP_LEFT: return "TASK_STEP_LEFT";
+	case TASK_STEP_RIGHT: return "TASK_STEP_RIGHT";
+	case TASK_STEP_FORWARD: return "TASK_STEP_FORWARD";
+	case TASK_STEP_BACK: return "TASK_STEP_BACK";
+	case TASK_DODGE_LEFT: return "TASK_DODGE_LEFT";
+	case TASK_DODGE_RIGHT: return "TASK_DODGE_RIGHT";
+	case TASK_SOUND_ANGRY: return "TASK_SOUND_ANGRY";
+	case TASK_SOUND_DEATH: return "TASK_SOUND_DEATH";
+	case TASK_SET_ACTIVITY: return "TASK_SET_ACTIVITY";
+	case TASK_SET_SCHEDULE: return "TASK_SET_SCHEDULE";
+	case TASK_SET_FAIL_SCHEDULE: return "TASK_SET_FAIL_SCHEDULE";
+	case TASK_CLEAR_FAIL_SCHEDULE: return "TASK_CLEAR_FAIL_SCHEDULE";
+	case TASK_PLAY_SEQUENCE: return "TASK_PLAY_SEQUENCE";
+	case TASK_PLAY_SEQUENCE_FACE_ENEMY: return "TASK_PLAY_SEQUENCE_FACE_ENEMY";
+	case TASK_PLAY_SEQUENCE_FACE_TARGET: return "TASK_PLAY_SEQUENCE_FACE_TARGET";
+	case TASK_SOUND_IDLE: return "TASK_SOUND_IDLE";
+	case TASK_SOUND_WAKE: return "TASK_SOUND_WAKE";
+	case TASK_SOUND_PAIN: return "TASK_SOUND_PAIN";
+	case TASK_SOUND_DIE: return "TASK_SOUND_DIE";
+	case TASK_FIND_COVER_FROM_BEST_SOUND: return "TASK_FIND_COVER_FROM_BEST_SOUND";// tries lateral cover first: return ""; then node cover
+	case TASK_FIND_COVER_FROM_ENEMY: return "TASK_FIND_COVER_FROM_ENEMY";// tries lateral cover first: return ""; then node cover
+	case TASK_FIND_LATERAL_COVER_FROM_ENEMY: return "TASK_FIND_LATERAL_COVER_FROM_ENEMY";
+	case TASK_FIND_NODE_COVER_FROM_ENEMY: return "TASK_FIND_NODE_COVER_FROM_ENEMY";
+	case TASK_FIND_NEAR_NODE_COVER_FROM_ENEMY: return "TASK_FIND_NEAR_NODE_COVER_FROM_ENEMY";// data for this one is the MAXIMUM acceptable distance to the cover.
+	case TASK_FIND_FAR_NODE_COVER_FROM_ENEMY: return "TASK_FIND_FAR_NODE_COVER_FROM_ENEMY";// data for this one is there MINIMUM aceptable distance to the cover.
+	case TASK_FIND_COVER_FROM_ORIGIN: return "TASK_FIND_COVER_FROM_ORIGIN";
+	case TASK_EAT: return "TASK_EAT";
+	case TASK_DIE: return "TASK_DIE";
+	case TASK_WAIT_FOR_SCRIPT: return "TASK_WAIT_FOR_SCRIPT";
+	case TASK_PLAY_SCRIPT: return "TASK_PLAY_SCRIPT";
+	case TASK_ENABLE_SCRIPT: return "TASK_ENABLE_SCRIPT";
+	case TASK_PLANT_ON_SCRIPT: return "TASK_PLANT_ON_SCRIPT";
+	case TASK_FACE_SCRIPT: return "TASK_FACE_SCRIPT";
+	case TASK_WAIT_RANDOM: return "TASK_WAIT_RANDOM";
+	case TASK_WAIT_INDEFINITE: return "TASK_WAIT_INDEFINITE";
+	case TASK_STOP_MOVING: return "TASK_STOP_MOVING";
+	case TASK_TURN_LEFT: return "TASK_TURN_LEFT";
+	case TASK_TURN_RIGHT: return "TASK_TURN_RIGHT";
+	case TASK_REMEMBER: return "TASK_REMEMBER";
+	case TASK_FORGET: return "TASK_FORGET";
+	case TASK_WAIT_FOR_MOVEMENT: return "TASK_WAIT_FOR_MOVEMENT";			// wait until MovementIsComplete()
+	case TASK_CANT_FOLLOW: return "TASK_CANT_FOLLOW";
+	case TASK_MOVE_AWAY_PATH: return "TASK_MOVE_AWAY_PATH";
+	case TASK_WALK_PATH_FOR_UNITS: return "TASK_WALK_PATH_FOR_UNITS";
+	default:
+		return "Unknown";
 	}
 }
 
