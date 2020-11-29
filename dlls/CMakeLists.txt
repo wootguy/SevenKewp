@@ -13,7 +13,7 @@ set(MONSTER_HDR
 	monster/bodyque.h
 	monster/CAGrunt.h
 	monster/CBaseMonster.h
-	monster/CBaseHGrunt.h
+	monster/CBaseGrunt.h
 	monster/CBaseTurret.h
 	monster/CFlyingMonster.h
 	monster/CGargantua.h
@@ -33,7 +33,7 @@ set(MONSTER_SRC
 	monster/CBarnacle.cpp
 	monster/CBarney.cpp
 	monster/CBaseAnimating.cpp
-	monster/CBaseHGrunt.cpp
+	monster/CBaseGrunt.cpp
 	monster/CBaseMonster.cpp
 	monster/CBaseTurret.cpp
 	monster/CBigMomma.cpp
