@@ -10,7 +10,7 @@
 #include "weapons.h"
 #include "CTalkSquadMonster.h"
 #include "CTalkSquadMonster.h"
-#include "CBaseHGrunt.h"
+#include "CBaseGrunt.h"
 #include "CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
@@ -84,7 +84,7 @@ enum HGruntAllyWeapon
 };
 }
 
-class CHGruntAlly : public CBaseHGrunt
+class CHGruntAlly : public CBaseGrunt
 {
 public:
 	void Spawn( void );
@@ -532,7 +532,7 @@ void CHGruntAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			break;
 
 		default:
-			CBaseHGrunt::HandleAnimEvent( pEvent );
+			CBaseGrunt::HandleAnimEvent( pEvent );
 			break;
 	}
 }
@@ -765,7 +765,7 @@ int CHGruntAlly::GetActivitySequence(Activity NewActivity) {
 		}
 		break;
 	default:
-		iSequence = CBaseHGrunt::GetActivitySequence(NewActivity);
+		iSequence = CBaseGrunt::GetActivitySequence(NewActivity);
 		break;
 	}
 
@@ -933,7 +933,7 @@ Schedule_t *CHGruntAlly :: GetMonsterStateSchedule( void )
 	}
 	
 	// no special cases here, call the base class
-	return CBaseHGrunt::GetMonsterStateSchedule();
+	return CBaseGrunt::GetMonsterStateSchedule();
 }
 
 Schedule_t* CHGruntAlly :: GetScheduleOfType ( int Type ) 
@@ -984,7 +984,7 @@ Schedule_t* CHGruntAlly :: GetScheduleOfType ( int Type )
 
 	default:
 		{
-			return CBaseHGrunt:: GetScheduleOfType ( Type );
+			return CBaseGrunt:: GetScheduleOfType ( Type );
 		}
 	}
 }

@@ -11,11 +11,11 @@
 #include	"env/CSoundEnt.h"
 #include	"effects.h"
 #include	"customentity.h"
-#include	"CBaseHGrunt.h"
+#include	"CBaseGrunt.h"
 
 #define	SENTENCE_VOLUME (float)0.8 // volume of grunt sentences
 
-class CHGruntOp4 : public CBaseHGrunt
+class CHGruntOp4 : public CBaseGrunt
 {
 public:
 	void Spawn(void);
@@ -26,7 +26,7 @@ public:
 	void IdleSound(void);
 	void PlaySentenceSound(int sentenceType);
 
-	int	ObjectCaps(void) { return CBaseHGrunt::ObjectCaps() | FCAP_IMPULSE_USE; }
+	int	ObjectCaps(void) { return CBaseGrunt::ObjectCaps() | FCAP_IMPULSE_USE; }
 
 	void StartFollowingSound() {
 		SENTENCEG_PlayRndSz(ENT(pev), "FG_OK", SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);

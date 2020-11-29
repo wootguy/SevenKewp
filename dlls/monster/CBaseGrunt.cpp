@@ -41,30 +41,30 @@
 #include	"env/CSoundEnt.h"
 #include	"effects.h"
 #include	"customentity.h"
-#include	"CBaseHGrunt.h"
+#include	"CBaseGrunt.h"
 #include	"defaultai.h"
 
 int g_fGruntQuestion;
 
 extern DLL_GLOBAL int		g_iSkillLevel;
 
-TYPEDESCRIPTION	CBaseHGrunt::m_SaveData[] = 
+TYPEDESCRIPTION	CBaseGrunt::m_SaveData[] = 
 {
-	DEFINE_FIELD( CBaseHGrunt, m_flNextGrenadeCheck, FIELD_TIME ),
-	DEFINE_FIELD( CBaseHGrunt, m_flNextPainTime, FIELD_TIME ),
-//	DEFINE_FIELD( CBaseHGrunt, m_flLastEnemySightTime, FIELD_TIME ), // don't save, go to zero
-	DEFINE_FIELD( CBaseHGrunt, m_vecTossVelocity, FIELD_VECTOR ),
-	DEFINE_FIELD( CBaseHGrunt, m_fThrowGrenade, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBaseHGrunt, m_fStanding, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBaseHGrunt, m_fFirstEncounter, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CBaseHGrunt, m_cClipSize, FIELD_INTEGER ),
-	DEFINE_FIELD( CBaseHGrunt, m_voicePitch, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseGrunt, m_flNextGrenadeCheck, FIELD_TIME ),
+	DEFINE_FIELD( CBaseGrunt, m_flNextPainTime, FIELD_TIME ),
+//	DEFINE_FIELD( CBaseGrunt, m_flLastEnemySightTime, FIELD_TIME ), // don't save, go to zero
+	DEFINE_FIELD( CBaseGrunt, m_vecTossVelocity, FIELD_VECTOR ),
+	DEFINE_FIELD( CBaseGrunt, m_fThrowGrenade, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseGrunt, m_fStanding, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseGrunt, m_fFirstEncounter, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseGrunt, m_cClipSize, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseGrunt, m_voicePitch, FIELD_INTEGER ),
 //  DEFINE_FIELD( CShotgun, m_iBrassShell, FIELD_INTEGER ),
 //  DEFINE_FIELD( CShotgun, m_iShotgunShell, FIELD_INTEGER ),
-	DEFINE_FIELD( CBaseHGrunt, m_iSentence, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseGrunt, m_iSentence, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CBaseHGrunt, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CBaseGrunt, CTalkSquadMonster );
 
 //=========================================================
 // Speak Sentence - say your cued up sentence.
@@ -78,7 +78,7 @@ IMPLEMENT_SAVERESTORE( CBaseHGrunt, CTalkSquadMonster );
 // may still fail but in most cases, well after the grunt has 
 // started moving.
 //=========================================================
-void CBaseHGrunt :: SpeakSentence( void )
+void CBaseGrunt :: SpeakSentence( void )
 {
 	if ( m_iSentence == HGRUNT_SENT_NONE )
 	{
@@ -97,7 +97,7 @@ void CBaseHGrunt :: SpeakSentence( void )
 // IRelationship - overridden because Alien Grunts are 
 // Human Grunt's nemesis.
 //=========================================================
-int CBaseHGrunt::IRelationship ( CBaseEntity *pTarget )
+int CBaseGrunt::IRelationship ( CBaseEntity *pTarget )
 {
 	if ( FClassnameIs( pTarget->pev, "monster_alien_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) )
 	{
@@ -110,7 +110,7 @@ int CBaseHGrunt::IRelationship ( CBaseEntity *pTarget )
 //=========================================================
 // GibMonster - make gun fly through the air.
 //=========================================================
-void CBaseHGrunt :: GibMonster ( void )
+void CBaseGrunt :: GibMonster ( void )
 {
 	Vector	vecGunPos;
 	Vector	vecGunAngles;
@@ -141,7 +141,7 @@ void CBaseHGrunt :: GibMonster ( void )
 	CBaseMonster :: GibMonster();
 }
 
-CBaseEntity* CBaseHGrunt::DropGun(Vector pos, Vector angles) {
+CBaseEntity* CBaseGrunt::DropGun(Vector pos, Vector angles) {
 	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
 	{
 		return DropItem("weapon_shotgun", pos, angles);
@@ -157,7 +157,7 @@ CBaseEntity* CBaseHGrunt::DropGun(Vector pos, Vector angles) {
 // hear the DANGER sound that is made by hand grenades and
 // other dangerous items.
 //=========================================================
-int CBaseHGrunt :: ISoundMask ( void )
+int CBaseGrunt :: ISoundMask ( void )
 {
 	return	bits_SOUND_WORLD	|
 			bits_SOUND_COMBAT	|
@@ -168,7 +168,7 @@ int CBaseHGrunt :: ISoundMask ( void )
 //=========================================================
 // someone else is talking - don't speak
 //=========================================================
-BOOL CBaseHGrunt :: FOkToSpeak( void )
+BOOL CBaseGrunt :: FOkToSpeak( void )
 {
 // if someone else is talking, don't speak
 	if (gpGlobals->time <= CTalkSquadMonster::g_talkWaitTime)
@@ -192,7 +192,7 @@ BOOL CBaseHGrunt :: FOkToSpeak( void )
 
 //=========================================================
 //=========================================================
-void CBaseHGrunt :: JustSpoke( void )
+void CBaseGrunt :: JustSpoke( void )
 {
 	CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.5, 2.0);
 	m_iSentence = HGRUNT_SENT_NONE;
@@ -202,7 +202,7 @@ void CBaseHGrunt :: JustSpoke( void )
 // PrescheduleThink - this function runs after conditions
 // are collected and before scheduling code is run.
 //=========================================================
-void CBaseHGrunt :: PrescheduleThink ( void )
+void CBaseGrunt :: PrescheduleThink ( void )
 {
 	if ( InSquad() && m_hEnemy != NULL )
 	{
@@ -234,7 +234,7 @@ void CBaseHGrunt :: PrescheduleThink ( void )
 // this is a bad bug. Friendly machine gun fire avoidance
 // will unecessarily prevent the throwing of a grenade as well.
 //=========================================================
-BOOL CBaseHGrunt :: FCanCheckAttacks ( void )
+BOOL CBaseGrunt :: FCanCheckAttacks ( void )
 {
 	if ( !HasConditions( bits_COND_ENEMY_TOOFAR ) )
 	{
@@ -250,7 +250,7 @@ BOOL CBaseHGrunt :: FCanCheckAttacks ( void )
 //=========================================================
 // CheckMeleeAttack1
 //=========================================================
-BOOL CBaseHGrunt :: CheckMeleeAttack1 ( float flDot, float flDist )
+BOOL CBaseGrunt :: CheckMeleeAttack1 ( float flDot, float flDist )
 {
 	CBaseMonster *pEnemy;
 
@@ -281,7 +281,7 @@ BOOL CBaseHGrunt :: CheckMeleeAttack1 ( float flDot, float flDist )
 // occluded (throw grenade over wall, etc). We must 
 // disqualify the machine gun attack if the enemy is occluded.
 //=========================================================
-BOOL CBaseHGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
+BOOL CBaseGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 {
 	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire() )
 	{
@@ -311,7 +311,7 @@ BOOL CBaseHGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 // CheckRangeAttack2 - this checks the Grunt's grenade
 // attack. 
 //=========================================================
-BOOL CBaseHGrunt :: CheckRangeAttack2 ( float flDot, float flDist )
+BOOL CBaseGrunt :: CheckRangeAttack2 ( float flDot, float flDist )
 {
 	if (! FBitSet(pev->weapons, (HGRUNT_HANDGRENADE | HGRUNT_GRENADELAUNCHER)))
 	{
@@ -441,7 +441,7 @@ BOOL CBaseHGrunt :: CheckRangeAttack2 ( float flDot, float flDist )
 //=========================================================
 // TraceAttack - make sure we're not taking it in the helmet
 //=========================================================
-void CBaseHGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
+void CBaseGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
 	// check for helmet shot
 	if (ptr->iHitgroup == 11)
@@ -469,7 +469,7 @@ void CBaseHGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector 
 // needs to forget that he is in cover if he's hurt. (Obviously
 // not in a safe place anymore).
 //=========================================================
-int CBaseHGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+int CBaseGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	Forget( bits_MEMORY_INCOVER );
 
@@ -480,7 +480,7 @@ int CBaseHGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.
 //=========================================================
-void CBaseHGrunt :: SetYawSpeed ( void )
+void CBaseGrunt :: SetYawSpeed ( void )
 {
 	int ys;
 
@@ -527,7 +527,7 @@ void CBaseHGrunt :: SetYawSpeed ( void )
 // CheckAmmo - overridden for the grunt because he actually
 // uses ammo! (base class doesn't)
 //=========================================================
-void CBaseHGrunt :: CheckAmmo ( void )
+void CBaseGrunt :: CheckAmmo ( void )
 {
 	if ( m_cAmmoLoaded <= 0 )
 	{
@@ -539,14 +539,14 @@ void CBaseHGrunt :: CheckAmmo ( void )
 // Classify - indicates this monster's place in the 
 // relationship table.
 //=========================================================
-int	CBaseHGrunt :: Classify ( void )
+int	CBaseGrunt :: Classify ( void )
 {
 	return	CLASS_HUMAN_MILITARY;
 }
 
 //=========================================================
 //=========================================================
-CBaseEntity *CBaseHGrunt :: Kick( void )
+CBaseEntity *CBaseGrunt :: Kick( void )
 {
 	TraceResult tr;
 
@@ -570,7 +570,7 @@ CBaseEntity *CBaseHGrunt :: Kick( void )
 // GetGunPosition	return the end of the barrel
 //=========================================================
 
-Vector CBaseHGrunt :: GetGunPosition( )
+Vector CBaseGrunt :: GetGunPosition( )
 {
 	if (m_fStanding )
 	{
@@ -585,7 +585,7 @@ Vector CBaseHGrunt :: GetGunPosition( )
 //=========================================================
 // Shoot
 //=========================================================
-void CBaseHGrunt :: Shoot ( void )
+void CBaseGrunt :: Shoot ( void )
 {
 	if (m_hEnemy == NULL)
 	{
@@ -612,7 +612,7 @@ void CBaseHGrunt :: Shoot ( void )
 //=========================================================
 // Shoot
 //=========================================================
-void CBaseHGrunt :: Shotgun ( void )
+void CBaseGrunt :: Shotgun ( void )
 {
 	if (m_hEnemy == NULL)
 	{
@@ -640,7 +640,7 @@ void CBaseHGrunt :: Shotgun ( void )
 // HandleAnimEvent - catches the monster-specific messages
 // that occur when tagged animation frames are played.
 //=========================================================
-void CBaseHGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
+void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	Vector	vecShootDir;
 	Vector	vecShootOrigin;
@@ -777,7 +777,7 @@ void CBaseHGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 // Spawn
 //=========================================================
-void CBaseHGrunt::BaseSpawn(const char* model)
+void CBaseGrunt::BaseSpawn(const char* model)
 {
 	Precache( );
 
@@ -843,7 +843,7 @@ void CBaseHGrunt::BaseSpawn(const char* model)
 	MonsterInit();
 }
 
-void CBaseHGrunt::BasePrecache() {
+void CBaseGrunt::BasePrecache() {
 	m_iBrassShell = PRECACHE_MODEL("models/shell.mdl");// brass shell
 	m_iShotgunShell = PRECACHE_MODEL("models/shotgunshell.mdl");
 
@@ -860,7 +860,7 @@ void CBaseHGrunt::BasePrecache() {
 //=========================================================
 // start task
 //=========================================================
-void CBaseHGrunt :: StartTask ( Task_t *pTask )
+void CBaseGrunt :: StartTask ( Task_t *pTask )
 {
 	m_iTaskStatus = TASKSTATUS_RUNNING;
 
@@ -911,7 +911,7 @@ void CBaseHGrunt :: StartTask ( Task_t *pTask )
 //=========================================================
 // RunTask
 //=========================================================
-void CBaseHGrunt :: RunTask ( Task_t *pTask )
+void CBaseGrunt :: RunTask ( Task_t *pTask )
 {
 	switch ( pTask->iTask )
 	{
@@ -1551,7 +1551,7 @@ Schedule_t	slGruntRepelLand[] =
 };
 
 
-DEFINE_CUSTOM_SCHEDULES( CBaseHGrunt )
+DEFINE_CUSTOM_SCHEDULES( CBaseGrunt )
 {
 	slGruntFail,
 	slGruntCombatFail,
@@ -1576,12 +1576,12 @@ DEFINE_CUSTOM_SCHEDULES( CBaseHGrunt )
 	slGruntRepelLand,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CBaseHGrunt, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CBaseGrunt, CTalkSquadMonster );
 
 //=========================================================
 // SetActivity 
 //=========================================================
-void CBaseHGrunt :: SetActivity ( Activity NewActivity )
+void CBaseGrunt :: SetActivity ( Activity NewActivity )
 {
 	int	iSequence = ACTIVITY_NOT_AVAILABLE;
 	void *pmodel = GET_MODEL_PTR( ENT(pev) );
@@ -1610,7 +1610,7 @@ void CBaseHGrunt :: SetActivity ( Activity NewActivity )
 	}
 }
 
-int CBaseHGrunt::GetActivitySequence(Activity NewActivity) {
+int CBaseGrunt::GetActivitySequence(Activity NewActivity) {
 	int iSequence = ACTIVITY_NOT_AVAILABLE;
 
 	switch (NewActivity)
@@ -1695,7 +1695,7 @@ int CBaseHGrunt::GetActivitySequence(Activity NewActivity) {
 	return iSequence;
 }
 
-Schedule_t* CBaseHGrunt::GetNewSquadEnemySchedule(void) {
+Schedule_t* CBaseGrunt::GetNewSquadEnemySchedule(void) {
 	MySquadLeader()->m_fEnemyEluded = FALSE;
 
 	if (!IsLeader())
@@ -1738,7 +1738,7 @@ Schedule_t* CBaseHGrunt::GetNewSquadEnemySchedule(void) {
 	}
 }
 
-Schedule_t* CBaseHGrunt::GetShootSchedule(void) {
+Schedule_t* CBaseGrunt::GetShootSchedule(void) {
 	if (InSquad())
 	{
 		// if the enemy has eluded the squad and a squad member has just located the enemy
@@ -1768,7 +1768,7 @@ Schedule_t* CBaseHGrunt::GetShootSchedule(void) {
 	}
 }
 
-Schedule_t* CBaseHGrunt::GetLightDamageSchedule(void) {
+Schedule_t* CBaseGrunt::GetLightDamageSchedule(void) {
 	// if hurt:
 	// 90% chance of taking cover
 	// 10% chance of flinch.
@@ -1793,7 +1793,7 @@ Schedule_t* CBaseHGrunt::GetLightDamageSchedule(void) {
 	}
 }
 
-Schedule_t* CBaseHGrunt::GetEnemyOccludedSchedule(void) {
+Schedule_t* CBaseGrunt::GetEnemyOccludedSchedule(void) {
 	if (HasConditions(bits_COND_CAN_RANGE_ATTACK2) && OccupySlot(bits_SLOTS_HGRUNT_GRENADE))
 	{
 		//!!!KELLY - this grunt is about to throw or fire a grenade at the player. Great place for "fire in the hole"  "frag out" etc
@@ -1831,7 +1831,7 @@ Schedule_t* CBaseHGrunt::GetEnemyOccludedSchedule(void) {
 	}
 }
 
-Schedule_t* CBaseHGrunt::GetMonsterStateSchedule(void) {
+Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 	switch (m_MonsterState)
 	{
 	case MONSTERSTATE_COMBAT:
@@ -1895,7 +1895,7 @@ Schedule_t* CBaseHGrunt::GetMonsterStateSchedule(void) {
 	return CTalkSquadMonster::GetSchedule();
 }
 
-Schedule_t *CBaseHGrunt :: GetSchedule( void )
+Schedule_t *CBaseGrunt :: GetSchedule( void )
 {
 	// clear old sentence
 	m_iSentence = HGRUNT_SENT_NONE;
@@ -1959,7 +1959,7 @@ Schedule_t *CBaseHGrunt :: GetSchedule( void )
 
 //=========================================================
 //=========================================================
-Schedule_t* CBaseHGrunt :: GetScheduleOfType ( int Type ) 
+Schedule_t* CBaseGrunt :: GetScheduleOfType ( int Type ) 
 {
 	switch	( Type )
 	{
@@ -2179,7 +2179,7 @@ void CBaseRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	// UNDONE: position?
 	pGrunt->m_vecLastPosition = tr.vecEndPos;
 
-	CBaseHGrunt* baseGrunt = static_cast<CBaseHGrunt*>(pEntity->MyTalkSquadMonsterPointer());
+	CBaseGrunt* baseGrunt = static_cast<CBaseGrunt*>(pEntity->MyTalkSquadMonsterPointer());
 
 	if (baseGrunt)
 	{

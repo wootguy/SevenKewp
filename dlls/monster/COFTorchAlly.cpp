@@ -8,7 +8,7 @@
 #include "animation.h"
 #include "weapons.h"
 #include "CTalkSquadMonster.h"
-#include "CBaseHGrunt.h"
+#include "CBaseGrunt.h"
 #include "CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
@@ -65,7 +65,7 @@ enum TorchAllyWeaponFlag
 #define TORCH_AE_ACTIVATE_TORCH		20
 #define TORCH_AE_DEACTIVATE_TORCH	21
 
-class COFTorchAlly : public CBaseHGrunt
+class COFTorchAlly : public CBaseGrunt
 {
 public:
 	void Spawn( void );
@@ -537,7 +537,7 @@ void COFTorchAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			}
 
 		default:
-			CBaseHGrunt::HandleAnimEvent( pEvent );
+			CBaseGrunt::HandleAnimEvent( pEvent );
 			break;
 	}
 }
@@ -713,7 +713,7 @@ int COFTorchAlly::GetActivitySequence(Activity NewActivity)
 		}
 		break;
 	default:
-		iSequence = CBaseHGrunt::GetActivitySequence( NewActivity );
+		iSequence = CBaseGrunt::GetActivitySequence( NewActivity );
 		break;
 	}
 	
@@ -908,7 +908,7 @@ Schedule_t* COFTorchAlly :: GetScheduleOfType ( int Type )
 		}
 	default:
 		{
-			return CBaseHGrunt::GetScheduleOfType ( Type );
+			return CBaseGrunt::GetScheduleOfType ( Type );
 		}
 	}
 }

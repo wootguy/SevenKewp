@@ -108,7 +108,7 @@ extern Schedule_t	slGruntRepelLand[];
 
 extern int g_fGruntQuestion; // true if an idle grunt asked a question. Cleared when someone answers.
 
-class CBaseHGrunt : public CTalkSquadMonster
+class CBaseGrunt : public CTalkSquadMonster
 {
 public:
 	void BaseSpawn(const char* model);

@@ -11,7 +11,7 @@
 #include "CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
-#include "CBaseHGrunt.h"
+#include "CBaseGrunt.h"
 
 
 #define	MASSASSIN_MP5_CLIP_SIZE			36 // how many bullets in a clip? - NOTE: 3 round burst sound, so keep as 3 * x!
@@ -58,7 +58,7 @@ enum MAssassinWeaponFlag
 };
 }
 
-class CMassn : public CBaseHGrunt
+class CMassn : public CBaseGrunt
 {
 public:
 	void Spawn( void );
@@ -118,7 +118,7 @@ BOOL CMassn :: CheckRangeAttack1 ( float flDot, float flDist )
 {
 	if( pev->weapons )
 	{
-		return CBaseHGrunt::CheckRangeAttack1(flDot, flDist);
+		return CBaseGrunt::CheckRangeAttack1(flDot, flDist);
 	}
 
 	return FALSE;
@@ -241,7 +241,7 @@ void CMassn :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 
 		default:
-			CBaseHGrunt::HandleAnimEvent( pEvent );
+			CBaseGrunt::HandleAnimEvent( pEvent );
 			break;
 	}
 }
@@ -339,7 +339,7 @@ int CMassn::GetActivitySequence(Activity NewActivity) {
 		}
 		break;
 	default:
-		iSequence = CBaseHGrunt::GetActivitySequence(NewActivity);
+		iSequence = CBaseGrunt::GetActivitySequence(NewActivity);
 		break;
 	}
 

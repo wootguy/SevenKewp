@@ -11,11 +11,11 @@
 #include "env/CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
-#include "CBaseHGrunt.h"
+#include "CBaseGrunt.h"
 
 #define	SENTENCE_VOLUME (float)0.35 // volume of grunt sentences
 
-class CHGrunt : public CBaseHGrunt
+class CHGrunt : public CBaseGrunt
 {
 public:
 	void Spawn(void);

@@ -9,7 +9,7 @@
 #include "CTalkSquadMonster.h"
 #include "weapons.h"
 #include "CTalkSquadMonster.h"
-#include "CBaseHGrunt.h"
+#include "CBaseGrunt.h"
 #include "CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
@@ -76,7 +76,7 @@ enum
 	SCHED_MEDIC_ALLY_HEAL_ALLY = LAST_BASE_GRUNT_SCHEDULE + 1,
 };
 
-class COFMedicAlly : public CBaseHGrunt
+class COFMedicAlly : public CBaseGrunt
 {
 public:
 	void Spawn( void );
@@ -564,7 +564,7 @@ void COFMedicAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			break;
 
 		default:
-			CBaseHGrunt::HandleAnimEvent( pEvent );
+			CBaseGrunt::HandleAnimEvent( pEvent );
 			break;
 	}
 }
@@ -796,7 +796,7 @@ void COFMedicAlly :: RunTask ( Task_t *pTask )
 
 	default:
 		{
-			CBaseHGrunt:: RunTask( pTask );
+			CBaseGrunt:: RunTask( pTask );
 			break;
 		}
 	}
@@ -953,7 +953,7 @@ DEFINE_CUSTOM_SCHEDULES( COFMedicAlly )
 	slMedicAllyHealTarget,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( COFMedicAlly, CBaseHGrunt );
+IMPLEMENT_CUSTOM_SCHEDULES( COFMedicAlly, CBaseGrunt );
 
 
 int COFMedicAlly::GetActivitySequence(Activity NewActivity)
@@ -976,7 +976,7 @@ int COFMedicAlly::GetActivitySequence(Activity NewActivity)
 		}
 		break;
 	default:
-		iSequence = CBaseHGrunt::GetActivitySequence(NewActivity);
+		iSequence = CBaseGrunt::GetActivitySequence(NewActivity);
 		break;
 	}
 	
@@ -1250,7 +1250,7 @@ Schedule_t* COFMedicAlly :: GetScheduleOfType ( int Type )
 
 	default:
 		{
-			return CBaseHGrunt::GetScheduleOfType ( Type );
+			return CBaseGrunt::GetScheduleOfType ( Type );
 		}
 	}
 }
