@@ -145,7 +145,7 @@ public:
 class CHGruntAllyRepel : public CBaseRepel
 {
 public:
-	const char* GetMonsterType() { return "monster_male_assassin"; };
+	const char* GetMonsterType() { return "monster_human_grunt_ally"; };
 };
 
 class CDeadHGruntAlly : public CBaseDead
