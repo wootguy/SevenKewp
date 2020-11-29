@@ -241,6 +241,21 @@ public:
 	BOOL FValidateCover(const Vector& vecCoverLocation);
 
 	MONSTERSTATE GetIdealState(void);
+
+	//
+	// opposing force
+	//
+
+	EHANDLE m_hWaitMedic;
+	float m_flMedicWaitTime;
+	float m_flLastHitByPlayer;
+	int m_iPlayerHits;
+
+	CTalkSquadMonster* MySquadMedic();
+
+	CTalkSquadMonster* FindSquadMedic(int searchRadius);
+
+	BOOL HealMe(CTalkSquadMonster* pTarget);
 };
 
 

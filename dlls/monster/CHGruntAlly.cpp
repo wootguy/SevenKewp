@@ -40,7 +40,7 @@
 #include	"weapons.h"
 #include	"CTalkSquadMonster.h"
 #include "CTalkSquadMonster.h"
-#include "COFSquadTalkMonster.h"
+#include "CTalkSquadMonster.h"
 #include	"CSoundEnt.h"
 #include	"effects.h"
 #include	"customentity.h"
@@ -170,7 +170,7 @@ enum
 //=========================================================
 #define bits_COND_GRUNT_NOFIRE	( bits_COND_SPECIAL1 )
 
-class CHGruntAlly : public COFSquadTalkMonster
+class CHGruntAlly : public CTalkSquadMonster
 {
 public:
 	void Spawn( void );
@@ -225,7 +225,7 @@ public:
 
 	MONSTERSTATE GetIdealState()
 	{
-		return COFSquadTalkMonster::GetIdealState();
+		return CTalkSquadMonster::GetIdealState();
 	}
 
 	CUSTOM_SCHEDULES;
@@ -283,7 +283,7 @@ TYPEDESCRIPTION	CHGruntAlly::m_SaveData[] =
 	DEFINE_FIELD( CHGruntAlly, m_iGruntTorso, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CHGruntAlly, COFSquadTalkMonster );
+IMPLEMENT_SAVERESTORE( CHGruntAlly, CTalkSquadMonster );
 
 const char *CHGruntAlly::pGruntSentences[] = 
 {
@@ -342,7 +342,7 @@ void CHGruntAlly :: GibMonster ( void )
 {
 	if( m_hWaitMedic )
 	{
-		COFSquadTalkMonster* pMedic = m_hWaitMedic->MySquadTalkMonsterPointer();
+		CTalkSquadMonster* pMedic = m_hWaitMedic->MyTalkSquadMonsterPointer();
 
 		if( pMedic->pev->deadflag != DEAD_NO )
 			m_hWaitMedic = nullptr;
@@ -725,7 +725,7 @@ void CHGruntAlly :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector 
 		flDamage*= 0.5;
 	}
 
-	COFSquadTalkMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+	CTalkSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
 
@@ -739,7 +739,7 @@ int CHGruntAlly :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 	Forget( bits_MEMORY_INCOVER );
 
 	// make sure friends talk about it if player hurts talkmonsters...
-	int ret = COFSquadTalkMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	int ret = CTalkSquadMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 
 	if( pev->deadflag != DEAD_NO )
 		return ret;
@@ -1145,7 +1145,7 @@ void CHGruntAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		}
 
 		default:
-			COFSquadTalkMonster::HandleAnimEvent( pEvent );
+			CTalkSquadMonster::HandleAnimEvent( pEvent );
 			break;
 	}
 }
@@ -1300,7 +1300,7 @@ void CHGruntAlly :: Precache()
 	m_iBrassShell = PRECACHE_MODEL ("models/shell.mdl");// brass shell
 	m_iShotgunShell = PRECACHE_MODEL ("models/shotgunshell.mdl");
 
-	COFSquadTalkMonster::Precache();
+	CTalkSquadMonster::Precache();
 }	
 
 //=========================================================
@@ -1329,7 +1329,7 @@ void CHGruntAlly :: StartTask ( Task_t *pTask )
 	case TASK_RUN_PATH:
 		// grunt no longer assumes he is covered if he moves
 		Forget( bits_MEMORY_INCOVER );
-		COFSquadTalkMonster::StartTask( pTask );
+		CTalkSquadMonster::StartTask( pTask );
 		break;
 
 	case TASK_RELOAD:
@@ -1341,7 +1341,7 @@ void CHGruntAlly :: StartTask ( Task_t *pTask )
 
 	case TASK_FACE_IDEAL:
 	case TASK_FACE_ENEMY:
-		COFSquadTalkMonster:: StartTask( pTask );
+		CTalkSquadMonster:: StartTask( pTask );
 		if (pev->movetype == MOVETYPE_FLY)
 		{
 			m_IdealActivity = ACT_GLIDE;
@@ -1349,7 +1349,7 @@ void CHGruntAlly :: StartTask ( Task_t *pTask )
 		break;
 
 	default: 
-		COFSquadTalkMonster:: StartTask( pTask );
+		CTalkSquadMonster:: StartTask( pTask );
 		break;
 	}
 }
@@ -1375,7 +1375,7 @@ void CHGruntAlly :: RunTask ( Task_t *pTask )
 		}
 	default:
 		{
-			COFSquadTalkMonster:: RunTask( pTask );
+			CTalkSquadMonster:: RunTask( pTask );
 			break;
 		}
 	}
@@ -2175,7 +2175,7 @@ DEFINE_CUSTOM_SCHEDULES( CHGruntAlly )
 	slGruntAllyRepelLand,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CHGruntAlly, COFSquadTalkMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CHGruntAlly, CTalkSquadMonster );
 
 //=========================================================
 // SetActivity 
@@ -2379,7 +2379,7 @@ Schedule_t *CHGruntAlly :: GetSchedule( void )
 
 			if( m_hWaitMedic )
 			{
-				COFSquadTalkMonster* pMedic = m_hWaitMedic->MySquadTalkMonsterPointer();
+				CTalkSquadMonster* pMedic = m_hWaitMedic->MyTalkSquadMonsterPointer();
 
 				if( pMedic->pev->deadflag != DEAD_NO )
 					m_hWaitMedic = nullptr;
@@ -2642,7 +2642,7 @@ Schedule_t *CHGruntAlly :: GetSchedule( void )
 	}
 	
 	// no special cases here, call the base class
-	return COFSquadTalkMonster:: GetSchedule();
+	return CTalkSquadMonster:: GetSchedule();
 }
 
 //=========================================================
@@ -2805,7 +2805,7 @@ Schedule_t* CHGruntAlly :: GetScheduleOfType ( int Type )
 
 	case SCHED_TARGET_FACE:
 		{
-			auto pSchedule = COFSquadTalkMonster::GetScheduleOfType( SCHED_TARGET_FACE );
+			auto pSchedule = CTalkSquadMonster::GetScheduleOfType( SCHED_TARGET_FACE );
 
 			if( pSchedule == slIdleStand )
 				return slGruntAllyFaceTarget;
@@ -2814,7 +2814,7 @@ Schedule_t* CHGruntAlly :: GetScheduleOfType ( int Type )
 
 	case SCHED_IDLE_STAND:
 		{
-			auto pSchedule = COFSquadTalkMonster::GetScheduleOfType( SCHED_IDLE_STAND );
+			auto pSchedule = CTalkSquadMonster::GetScheduleOfType( SCHED_IDLE_STAND );
 
 			if( pSchedule == slIdleStand )
 				return slGruntAllyIdleStand;
@@ -2830,7 +2830,7 @@ Schedule_t* CHGruntAlly :: GetScheduleOfType ( int Type )
 
 	default:
 		{
-			return COFSquadTalkMonster:: GetScheduleOfType ( Type );
+			return CTalkSquadMonster:: GetScheduleOfType ( Type );
 		}
 	}
 }
@@ -2842,7 +2842,7 @@ int CHGruntAlly::ObjectCaps()
 
 void CHGruntAlly::TalkInit()
 {
-	COFSquadTalkMonster::TalkInit();
+	CTalkSquadMonster::TalkInit();
 
 	m_szGrp[ TLK_ANSWER ] = "FG_ANSWER";
 	m_szGrp[ TLK_QUESTION ] = "FG_QUESTION";
@@ -2939,7 +2939,7 @@ void CHGruntAlly::KeyValue( KeyValueData *pkvd )
 		pkvd->fHandled = TRUE;
 	}
 	else
-		COFSquadTalkMonster::KeyValue( pkvd );
+		CTalkSquadMonster::KeyValue( pkvd );
 }
 
 void CHGruntAlly::Killed( entvars_t* pevAttacker, int iGib )
@@ -2956,7 +2956,7 @@ void CHGruntAlly::Killed( entvars_t* pevAttacker, int iGib )
 
 	if( m_hWaitMedic )
 	{
-		COFSquadTalkMonster* v4 = m_hWaitMedic->MySquadTalkMonsterPointer();
+		CTalkSquadMonster* v4 = m_hWaitMedic->MyTalkSquadMonsterPointer();
 		if( v4->pev->deadflag )
 			m_hWaitMedic = nullptr;
 		else
@@ -2964,7 +2964,7 @@ void CHGruntAlly::Killed( entvars_t* pevAttacker, int iGib )
 	}
 
 	SetUse( nullptr );
-	COFSquadTalkMonster::Killed( pevAttacker, iGib );
+	CTalkSquadMonster::Killed( pevAttacker, iGib );
 }
 
 //=========================================================
@@ -3035,7 +3035,7 @@ void CHGruntAllyRepel::RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller,
 	*/
 
 	CBaseEntity *pEntity = Create( "monster_human_grunt_ally", pev->origin, pev->angles );
-	auto pGrunt = static_cast<CHGruntAlly*>( pEntity->MySquadTalkMonsterPointer( ) );
+	auto pGrunt = static_cast<CHGruntAlly*>( pEntity->MyTalkSquadMonsterPointer( ) );
 
 	if( pGrunt )
 	{
