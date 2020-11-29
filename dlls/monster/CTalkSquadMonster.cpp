@@ -1918,3 +1918,44 @@ BOOL CTalkSquadMonster::SquadMemberInRange(const Vector& vecLocation, float flDi
 	return FALSE;
 }
 
+
+
+
+CTalkSquadMonster* CTalkSquadMonster::MySquadMedic()
+{
+	for (auto& member : m_hSquadMember)
+	{
+		CTalkSquadMonster* pMember = member->MyTalkSquadMonsterPointer();
+
+		if (pMember && FClassnameIs(pMember->pev, "monster_human_medic_ally"))
+		{
+			return pMember;
+		}
+	}
+
+	return nullptr;
+}
+
+CTalkSquadMonster* CTalkSquadMonster::FindSquadMedic(int searchRadius)
+{
+	for (CBaseEntity* pEntity = nullptr; (pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, searchRadius)); )
+	{
+		CTalkSquadMonster* pMonster = pEntity->MyTalkSquadMonsterPointer();
+
+		if (pMonster
+			&& pMonster != this
+			&& pMonster->IsAlive()
+			&& !pMonster->m_pCine
+			&& FClassnameIs(pMonster->pev, "monster_human_medic_ally"))
+		{
+			return pMonster;
+		}
+	}
+
+	return nullptr;
+}
+
+BOOL CTalkSquadMonster::HealMe(CTalkSquadMonster* pTarget)
+{
+	return false;
+}

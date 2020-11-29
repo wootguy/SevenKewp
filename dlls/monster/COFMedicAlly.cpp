@@ -40,7 +40,7 @@
 #include	"weapons.h"
 #include	"CTalkSquadMonster.h"
 #include "CTalkSquadMonster.h"
-#include "COFSquadTalkMonster.h"
+#include "CTalkSquadMonster.h"
 #include	"CSoundEnt.h"
 #include	"effects.h"
 #include	"customentity.h"
@@ -155,7 +155,7 @@ enum
 //=========================================================
 #define bits_COND_GRUNT_NOFIRE	( bits_COND_SPECIAL1 )
 
-class COFMedicAlly : public COFSquadTalkMonster
+class COFMedicAlly : public CTalkSquadMonster
 {
 public:
 	void Spawn( void );
@@ -207,7 +207,7 @@ public:
 
 	void MonsterThink() override;
 
-	BOOL HealMe( COFSquadTalkMonster* pTarget );
+	BOOL HealMe( CTalkSquadMonster* pTarget );
 
 	void HealOff();
 
@@ -217,7 +217,7 @@ public:
 
 	MONSTERSTATE GetIdealState()
 	{
-		return COFSquadTalkMonster::GetIdealState();
+		return CTalkSquadMonster::GetIdealState();
 	}
 
 	CUSTOM_SCHEDULES;
@@ -307,7 +307,7 @@ TYPEDESCRIPTION	COFMedicAlly::m_SaveData[] =
 	DEFINE_FIELD( COFMedicAlly, m_flLastShot, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( COFMedicAlly, COFSquadTalkMonster );
+IMPLEMENT_SAVERESTORE( COFMedicAlly, CTalkSquadMonster );
 
 const char *COFMedicAlly::pMedicSentences[] = 
 {
@@ -729,7 +729,7 @@ void COFMedicAlly :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector
 		flDamage*= 0.5;
 	}
 
-	COFSquadTalkMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+	CTalkSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
 
@@ -741,7 +741,7 @@ void COFMedicAlly :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector
 int COFMedicAlly :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	// make sure friends talk about it if player hurts talkmonsters...
-	int ret = COFSquadTalkMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	int ret = CTalkSquadMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 
 	if( !IsAlive() || pev->deadflag == DEAD_DYING )
 		return ret;
@@ -1101,7 +1101,7 @@ void COFMedicAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		}
 
 		default:
-			COFSquadTalkMonster::HandleAnimEvent( pEvent );
+			CTalkSquadMonster::HandleAnimEvent( pEvent );
 			break;
 	}
 }
@@ -1250,7 +1250,7 @@ void COFMedicAlly :: Precache()
 
 	m_iBrassShell = PRECACHE_MODEL( "models/shell.mdl" );
 
-	COFSquadTalkMonster::Precache();
+	CTalkSquadMonster::Precache();
 }	
 
 //=========================================================
@@ -1279,7 +1279,7 @@ void COFMedicAlly :: StartTask ( Task_t *pTask )
 	case TASK_RUN_PATH:
 		// grunt no longer assumes he is covered if he moves
 		Forget( bits_MEMORY_INCOVER );
-		COFSquadTalkMonster::StartTask( pTask );
+		CTalkSquadMonster::StartTask( pTask );
 		break;
 
 	case TASK_RELOAD:
@@ -1291,7 +1291,7 @@ void COFMedicAlly :: StartTask ( Task_t *pTask )
 
 	case TASK_FACE_IDEAL:
 	case TASK_FACE_ENEMY:
-		COFSquadTalkMonster:: StartTask( pTask );
+		CTalkSquadMonster:: StartTask( pTask );
 		if (pev->movetype == MOVETYPE_FLY)
 		{
 			m_IdealActivity = ACT_GLIDE;
@@ -1313,12 +1313,12 @@ void COFMedicAlly :: StartTask ( Task_t *pTask )
 	case TASK_WAIT_FOR_MOVEMENT:
 		{
 			if( !m_fHealing )
-				return COFSquadTalkMonster::StartTask( pTask );
+				return CTalkSquadMonster::StartTask( pTask );
 
 			if( m_hTargetEnt )
 			{
 				CBaseEntity* pTarget = m_hTargetEnt;
-				COFSquadTalkMonster* pTargetMonster = pTarget->MySquadTalkMonsterPointer();
+				CTalkSquadMonster* pTargetMonster = pTarget->MyTalkSquadMonsterPointer();
 
 				if( pTargetMonster )
 					pTargetMonster->m_hWaitMedic = nullptr;
@@ -1338,7 +1338,7 @@ void COFMedicAlly :: StartTask ( Task_t *pTask )
 
 				m_fHealActive = false;
 
-				return COFSquadTalkMonster::StartTask( pTask );
+				return CTalkSquadMonster::StartTask( pTask );
 			}
 
 			m_fHealing = false;
@@ -1358,7 +1358,7 @@ void COFMedicAlly :: StartTask ( Task_t *pTask )
 		}
 
 	default: 
-		COFSquadTalkMonster:: StartTask( pTask );
+		CTalkSquadMonster:: StartTask( pTask );
 		break;
 	}
 }
@@ -1425,7 +1425,7 @@ void COFMedicAlly :: RunTask ( Task_t *pTask )
 
 	default:
 		{
-			COFSquadTalkMonster:: RunTask( pTask );
+			CTalkSquadMonster:: RunTask( pTask );
 			break;
 		}
 	}
@@ -2304,7 +2304,7 @@ DEFINE_CUSTOM_SCHEDULES( COFMedicAlly )
 	slMedicAllyHealTarget,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( COFMedicAlly, COFSquadTalkMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( COFMedicAlly, CTalkSquadMonster );
 
 //=========================================================
 // SetActivity 
@@ -2484,7 +2484,7 @@ Schedule_t *COFMedicAlly :: GetSchedule( void )
 
 			if( m_hWaitMedic )
 			{
-				COFSquadTalkMonster* pMedic = m_hWaitMedic->MySquadTalkMonsterPointer();
+				CTalkSquadMonster* pMedic = m_hWaitMedic->MyTalkSquadMonsterPointer();
 
 				if( pMedic->pev->deadflag != DEAD_NO )
 					m_hWaitMedic = nullptr;
@@ -2740,7 +2740,7 @@ Schedule_t *COFMedicAlly :: GetSchedule( void )
 	}
 	
 	// no special cases here, call the base class
-	return COFSquadTalkMonster:: GetSchedule();
+	return CTalkSquadMonster:: GetSchedule();
 }
 
 //=========================================================
@@ -2896,7 +2896,7 @@ Schedule_t* COFMedicAlly :: GetScheduleOfType ( int Type )
 
 	case SCHED_TARGET_FACE:
 		{
-			auto pSchedule = COFSquadTalkMonster::GetScheduleOfType( SCHED_TARGET_FACE );
+			auto pSchedule = CTalkSquadMonster::GetScheduleOfType( SCHED_TARGET_FACE );
 
 			if( pSchedule == slIdleStand )
 				return slMedicAllyFaceTarget;
@@ -2905,7 +2905,7 @@ Schedule_t* COFMedicAlly :: GetScheduleOfType ( int Type )
 
 	case SCHED_IDLE_STAND:
 		{
-			auto pSchedule = COFSquadTalkMonster::GetScheduleOfType( SCHED_IDLE_STAND );
+			auto pSchedule = CTalkSquadMonster::GetScheduleOfType( SCHED_IDLE_STAND );
 
 			if( pSchedule == slIdleStand )
 				return slMedicAllyIdleStand;
@@ -2924,7 +2924,7 @@ Schedule_t* COFMedicAlly :: GetScheduleOfType ( int Type )
 
 	default:
 		{
-			return COFSquadTalkMonster:: GetScheduleOfType ( Type );
+			return CTalkSquadMonster:: GetScheduleOfType ( Type );
 		}
 	}
 }
@@ -2937,7 +2937,7 @@ int COFMedicAlly::ObjectCaps()
 
 void COFMedicAlly::TalkInit()
 {
-	COFSquadTalkMonster::TalkInit();
+	CTalkSquadMonster::TalkInit();
 
 	m_szGrp[ TLK_ANSWER ] = "FG_ANSWER";
 	m_szGrp[ TLK_QUESTION ] = "FG_QUESTION";
@@ -2988,7 +2988,7 @@ void COFMedicAlly::KeyValue( KeyValueData *pkvd )
 		pkvd->fHandled = true;
 	}
 	else
-		COFSquadTalkMonster::KeyValue( pkvd );
+		CTalkSquadMonster::KeyValue( pkvd );
 }
 
 
@@ -2996,7 +2996,7 @@ void COFMedicAlly::Killed( entvars_t* pevAttacker, int iGib )
 {
 	if( m_hTargetEnt != nullptr )
 	{
-		auto pSquadMonster = m_hTargetEnt->MySquadTalkMonsterPointer();
+		auto pSquadMonster = m_hTargetEnt->MyTalkSquadMonsterPointer();
 
 		if( pSquadMonster )
 			pSquadMonster->m_hWaitMedic = nullptr;
@@ -3017,7 +3017,7 @@ void COFMedicAlly::Killed( entvars_t* pevAttacker, int iGib )
 
 	SetUse( nullptr );
 
-	COFSquadTalkMonster::Killed( pevAttacker, iGib );
+	CTalkSquadMonster::Killed( pevAttacker, iGib );
 }
 
 void COFMedicAlly::MonsterThink()
@@ -3032,16 +3032,16 @@ void COFMedicAlly::MonsterThink()
 		FollowerUse( pPlayer, pPlayer, USE_TOGGLE, 0 );
 	}
 
-	COFSquadTalkMonster::MonsterThink();
+	CTalkSquadMonster::MonsterThink();
 }
 
-BOOL COFMedicAlly::HealMe( COFSquadTalkMonster* pTarget )
+BOOL COFMedicAlly::HealMe( CTalkSquadMonster* pTarget )
 {
 	if( pTarget )
 	{
 		if( m_hTargetEnt && !m_hTargetEnt->IsPlayer() )
 		{
-			auto pCurrentTarget = m_hTargetEnt->MySquadTalkMonsterPointer();
+			auto pCurrentTarget = m_hTargetEnt->MyTalkSquadMonsterPointer();
 
 			if( pCurrentTarget && pCurrentTarget->MySquadLeader() == MySquadLeader() )
 			{
@@ -3064,7 +3064,7 @@ BOOL COFMedicAlly::HealMe( COFSquadTalkMonster* pTarget )
 	{
 		if( m_hTargetEnt )
 		{
-			auto v14 = m_hTargetEnt->MySquadTalkMonsterPointer();
+			auto v14 = m_hTargetEnt->MyTalkSquadMonsterPointer();
 			if( v14 )
 				v14->m_hWaitMedic = nullptr;
 		}
@@ -3099,7 +3099,7 @@ void COFMedicAlly::HealerActivate( CBaseMonster* pTarget )
 {
 	if( m_hTargetEnt )
 	{
-		auto pMonster = m_hTargetEnt->MySquadTalkMonsterPointer();
+		auto pMonster = m_hTargetEnt->MyTalkSquadMonsterPointer();
 
 		if( pMonster )
 			pMonster->m_hWaitMedic = nullptr;
@@ -3127,7 +3127,7 @@ void COFMedicAlly::HealerActivate( CBaseMonster* pTarget )
 
 		m_hTargetEnt = pTarget;
 
-		auto pMonster = pTarget->MySquadTalkMonsterPointer();
+		auto pMonster = pTarget->MyTalkSquadMonsterPointer();
 
 		if( pMonster )
 			pMonster->m_hWaitMedic = this;
@@ -3171,7 +3171,7 @@ void COFMedicAlly::HealerUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE
 			
 			m_fHealing = false;
 
-			auto pMonster = m_hTargetEnt->MySquadTalkMonsterPointer();
+			auto pMonster = m_hTargetEnt->MyTalkSquadMonsterPointer();
 
 			if( pMonster )
 				pMonster->m_hWaitMedic = nullptr;
@@ -3310,7 +3310,7 @@ void COFMedicAllyRepel::RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller
 
 	//TODO: needs to be torch
 	CBaseEntity *pEntity = Create( "monster_human_grunt_ally", pev->origin, pev->angles );
-	auto pGrunt = static_cast<COFMedicAlly*>( pEntity->MySquadTalkMonsterPointer( ) );
+	auto pGrunt = static_cast<COFMedicAlly*>( pEntity->MyTalkSquadMonsterPointer( ) );
 
 	if( pGrunt )
 	{
