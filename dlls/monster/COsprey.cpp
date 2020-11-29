@@ -103,9 +103,13 @@ public:
 
 	int m_iDoLeftSmokePuff;
 	int m_iDoRightSmokePuff;
+
+	const char* defaultModel;
+	const char* replenishMonster;
 };
 
 LINK_ENTITY_TO_CLASS( monster_osprey, COsprey );
+LINK_ENTITY_TO_CLASS( monster_blkop_osprey, COsprey );
 
 TYPEDESCRIPTION	COsprey::m_SaveData[] = 
 {
@@ -149,7 +153,7 @@ void COsprey :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), "models/osprey.mdl");
+	SET_MODEL(ENT(pev), defaultModel);
 	UTIL_SetSize(pev, Vector( -400, -400, -100), Vector(400, 400, 32));
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -183,9 +187,13 @@ void COsprey :: Spawn( void )
 
 void COsprey::Precache( void )
 {
-	UTIL_PrecacheOther( "monster_human_grunt" );
+	bool isBlkOps = FClassnameIs(pev, "monster_blkop_osprey");
+	defaultModel = isBlkOps ? "models/blkop_osprey.mdl" : "models/osprey.mdl";
+	replenishMonster = isBlkOps ? "monster_male_assassin" : "monster_human_grunt";
 
-	PRECACHE_MODEL("models/osprey.mdl");
+	UTIL_PrecacheOther(replenishMonster);
+
+	PRECACHE_MODEL(defaultModel);
 	PRECACHE_MODEL("models/HVR.mdl");
 
 	PRECACHE_SOUND("apache/ap_rotor4.wav");
@@ -194,9 +202,16 @@ void COsprey::Precache( void )
 	m_iSpriteTexture = PRECACHE_MODEL( "sprites/rope.spr" );
 
 	m_iExplode	= PRECACHE_MODEL( "sprites/fexplo.spr" );
-	m_iTailGibs = PRECACHE_MODEL( "models/osprey_tailgibs.mdl" );
-	m_iBodyGibs = PRECACHE_MODEL( "models/osprey_bodygibs.mdl" );
-	m_iEngineGibs = PRECACHE_MODEL( "models/osprey_enginegibs.mdl" );
+
+	if (isBlkOps) {
+		m_iTailGibs = PRECACHE_MODEL("models/blkop_tailgibs.mdl");
+		m_iBodyGibs = PRECACHE_MODEL("models/blkop_bodygibs.mdl");
+		m_iEngineGibs = PRECACHE_MODEL("models/blkop_enginegibs.mdl");
+	} else {
+		m_iTailGibs = PRECACHE_MODEL("models/osprey_tailgibs.mdl");
+		m_iBodyGibs = PRECACHE_MODEL("models/osprey_bodygibs.mdl");
+		m_iEngineGibs = PRECACHE_MODEL("models/osprey_enginegibs.mdl");
+	}
 }
 
 void COsprey::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -209,7 +224,7 @@ void COsprey :: FindAllThink( void )
 	CBaseEntity *pEntity = NULL;
 
 	m_iUnits = 0;
-	while (m_iUnits < MAX_CARRY && (pEntity = UTIL_FindEntityByClassname( pEntity, "monster_human_grunt" )) != NULL)
+	while (m_iUnits < MAX_CARRY && (pEntity = UTIL_FindEntityByClassname( pEntity, replenishMonster)) != NULL)
 	{
 		if (pEntity->IsAlive())
 		{
@@ -298,7 +313,7 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 			{
 				m_hGrunt[i]->SUB_StartFadeOut( );
 			}
-			pEntity = Create( "monster_human_grunt", vecSrc, pev->angles );
+			pEntity = Create(replenishMonster, vecSrc, pev->angles );
 			pGrunt = pEntity->MyMonsterPointer( );
 			pGrunt->pev->movetype = MOVETYPE_FLY;
 			pGrunt->pev->velocity = Vector( 0, 0, RANDOM_FLOAT( -196, -128 ) );
@@ -392,7 +407,7 @@ void COsprey::FlyThink( void )
 		UpdateGoal( );
 	}
 
-	if (gpGlobals->time > m_startTime + m_dTime)
+	if (m_pGoalEnt && gpGlobals->time > m_startTime + m_dTime)
 	{
 		if (m_pGoalEnt->pev->speed == 0)
 		{

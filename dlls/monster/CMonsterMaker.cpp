@@ -197,13 +197,6 @@ void CMonsterMaker::MakeMonster( void )
 		ALERT ( at_console, "NULL Ent in MonsterMaker!\n" );
 		return;
 	}
-	
-	// If I have a target, fire!
-	if ( !FStringNull ( pev->target ) )
-	{
-		// delay already overloaded for this entity, so can't call SUB_UseTargets()
-		FireTargets( STRING(pev->target), this, this, USE_TOGGLE, 0 );
-	}
 
 	pevCreate = VARS( pent );
 	pevCreate->origin = pev->origin;
@@ -231,6 +224,13 @@ void CMonsterMaker::MakeMonster( void )
 		// Disable this forever.  Don't kill it because it still gets death notices
 		SetThink( NULL );
 		SetUse( NULL );
+	}
+
+	// If I have a target, fire!
+	if (!FStringNull(pev->target))
+	{
+		// delay already overloaded for this entity, so can't call SUB_UseTargets()
+		FireTargets(STRING(pev->target), this, this, USE_TOGGLE, 0);
 	}
 }
 

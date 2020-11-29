@@ -12,8 +12,6 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#ifndef OEM_BUILD
-
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -87,8 +85,12 @@ class CApache : public CBaseMonster
 
 	int m_iDoSmokePuff;
 	CBeam *m_pBeam;
+
+	const char* defaultModel;
 };
+
 LINK_ENTITY_TO_CLASS( monster_apache, CApache );
+LINK_ENTITY_TO_CLASS( monster_blkop_apache, CApache );
 
 TYPEDESCRIPTION	CApache::m_SaveData[] = 
 {
@@ -121,7 +123,7 @@ void CApache :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), "models/apache.mdl");
+	SET_MODEL(ENT(pev), defaultModel);
 	UTIL_SetSize( pev, Vector( -32, -32, -64 ), Vector( 32, 32, 0 ) );
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -154,7 +156,9 @@ void CApache :: Spawn( void )
 
 void CApache::Precache( void )
 {
-	PRECACHE_MODEL("models/apache.mdl");
+	defaultModel = FClassnameIs(pev, "monster_blkop_apache") ? "models/blkop_apache.mdl" : "models/apache.mdl";
+
+	PRECACHE_MODEL(defaultModel);
 
 	PRECACHE_SOUND("apache/ap_rotor1.wav");
 	PRECACHE_SOUND("apache/ap_rotor2.wav");
@@ -1045,6 +1049,3 @@ void CApacheHVR :: AccelerateThink( void  )
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }
-
-
-#endif
