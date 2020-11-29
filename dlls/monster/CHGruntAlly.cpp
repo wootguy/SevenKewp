@@ -39,7 +39,7 @@
 #include	"CSquadMonster.h"
 #include	"weapons.h"
 #include	"CTalkMonster.h"
-#include "COFAllyMonster.h"
+#include "CTalkMonster.h"
 #include "COFSquadTalkMonster.h"
 #include	"CSoundEnt.h"
 #include	"effects.h"
@@ -414,7 +414,7 @@ int CHGruntAlly :: ISoundMask ( void )
 BOOL CHGruntAlly :: FOkToSpeak( void )
 {
 // if someone else is talking, don't speak
-	if (gpGlobals->time <= COFAllyMonster::g_talkWaitTime)
+	if (gpGlobals->time <= CTalkMonster::g_talkWaitTime)
 		return FALSE;
 
 	if ( pev->spawnflags & SF_MONSTER_GAG )
@@ -437,7 +437,7 @@ BOOL CHGruntAlly :: FOkToSpeak( void )
 //=========================================================
 void CHGruntAlly :: JustSpoke( void )
 {
-	COFAllyMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.5, 2.0);
+	CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.5, 2.0);
 	m_iSentence = HGRUNT_SENT_NONE;
 }
 
@@ -1244,7 +1244,7 @@ void CHGruntAlly :: Spawn()
 	m_iSawShell = PRECACHE_MODEL( "models/saw_shell.mdl" );
 	m_iSawLink = PRECACHE_MODEL( "models/saw_link.mdl" );
 
-	COFAllyMonster::g_talkWaitTime = 0;
+	CTalkMonster::g_talkWaitTime = 0;
 
 	m_flMedicWaitTime = gpGlobals->time;
 

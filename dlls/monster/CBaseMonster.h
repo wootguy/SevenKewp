@@ -353,7 +353,7 @@ public:
 	BOOL			IsFollowing(void) { return m_hTargetEnt != NULL && m_hTargetEnt->IsPlayer(); }
 	virtual void	StopFollowing(BOOL clearSchedule);
 	virtual void	StartFollowing(CBaseEntity* pLeader);
-	void			DeclineFollowing(void) {}
+	virtual void	DeclineFollowing(void) {}
 	void EXPORT		FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 
 	virtual void	StartFollowingSound() {}
