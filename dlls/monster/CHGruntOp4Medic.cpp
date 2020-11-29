@@ -9,7 +9,7 @@
 #include "CTalkSquadMonster.h"
 #include "weapons.h"
 #include "CTalkSquadMonster.h"
-#include "CBaseGruntAlly.h"
+#include "CBaseGruntOp4.h"
 #include "CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
@@ -71,7 +71,7 @@ enum
 	SCHED_MEDIC_ALLY_HEAL_ALLY = LAST_BASE_GRUNT_SCHEDULE + 1,
 };
 
-class COFMedicAlly : public CBaseGruntAlly
+class CHGruntOp4Medic : public CBaseGruntOp4
 {
 public:
 	void Spawn( void );
@@ -141,50 +141,50 @@ public:
 	float m_flLastShot;
 };
 
-class CHGruntAllyRepel : public CBaseRepel
+class CHGruntOp4Repel : public CBaseRepel
 {
 public:
 	const char* GetMonsterType() { return "monster_human_medic_ally"; };
 };
 
-LINK_ENTITY_TO_CLASS(monster_human_medic_ally, COFMedicAlly);
-LINK_ENTITY_TO_CLASS(monster_medic_ally_repel, CHGruntAllyRepel);
+LINK_ENTITY_TO_CLASS(monster_human_medic_ally, CHGruntOp4Medic);
+LINK_ENTITY_TO_CLASS(monster_medic_ally_repel, CHGruntOp4Repel);
 
-TYPEDESCRIPTION	COFMedicAlly::m_SaveData[] = 
+TYPEDESCRIPTION	CHGruntOp4Medic::m_SaveData[] = 
 {
-	DEFINE_FIELD( COFMedicAlly, m_lastAttackCheck, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_flNextGrenadeCheck, FIELD_TIME ),
-	DEFINE_FIELD( COFMedicAlly, m_flNextPainTime, FIELD_TIME ),
-//	DEFINE_FIELD( COFMedicAlly, m_flLastEnemySightTime, FIELD_TIME ), // don't save, go to zero
-	DEFINE_FIELD( COFMedicAlly, m_vecTossVelocity, FIELD_VECTOR ),
-	DEFINE_FIELD( COFMedicAlly, m_fThrowGrenade, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_fStanding, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_fFirstEncounter, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_cClipSize, FIELD_INTEGER ),
-//	DEFINE_FIELD( COFMedicAlly, m_voicePitch, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_lastAttackCheck, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_flNextGrenadeCheck, FIELD_TIME ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_flNextPainTime, FIELD_TIME ),
+//	DEFINE_FIELD( CHGruntOp4Medic, m_flLastEnemySightTime, FIELD_TIME ), // don't save, go to zero
+	DEFINE_FIELD( CHGruntOp4Medic, m_vecTossVelocity, FIELD_VECTOR ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_fThrowGrenade, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_fStanding, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_fFirstEncounter, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_cClipSize, FIELD_INTEGER ),
+//	DEFINE_FIELD( CHGruntOp4Medic, m_voicePitch, FIELD_INTEGER ),
 //  DEFINE_FIELD( CShotgun, m_iBrassShell, FIELD_INTEGER ),
 //  DEFINE_FIELD( CShotgun, m_iShotgunShell, FIELD_INTEGER ),
-	DEFINE_FIELD( COFMedicAlly, m_iSentence, FIELD_INTEGER ),
-	DEFINE_FIELD( COFMedicAlly, m_flFollowCheckTime, FIELD_FLOAT ),
-	DEFINE_FIELD( COFMedicAlly, m_fFollowChecking, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_fFollowChecked, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_flLastRejectAudio, FIELD_FLOAT ),
-	DEFINE_FIELD( COFMedicAlly, m_iBlackOrWhite, FIELD_INTEGER ),
-	DEFINE_FIELD( COFMedicAlly, m_iHealCharge, FIELD_INTEGER ),
-	DEFINE_FIELD( COFMedicAlly, m_fUseHealing, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_fHealing, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_flLastUseTime, FIELD_TIME ),
-	DEFINE_FIELD( COFMedicAlly, m_hNewTargetEnt, FIELD_EHANDLE ),
-	DEFINE_FIELD( COFMedicAlly, m_fGunHolstered, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_fHypoHolstered, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_fHealActive, FIELD_BOOLEAN ),
-	DEFINE_FIELD( COFMedicAlly, m_iWeaponIdx, FIELD_INTEGER ),
-	DEFINE_FIELD( COFMedicAlly, m_flLastShot, FIELD_TIME ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_iSentence, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_flFollowCheckTime, FIELD_FLOAT ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_fFollowChecking, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_fFollowChecked, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_flLastRejectAudio, FIELD_FLOAT ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_iBlackOrWhite, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_iHealCharge, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_fUseHealing, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_fHealing, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_flLastUseTime, FIELD_TIME ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_hNewTargetEnt, FIELD_EHANDLE ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_fGunHolstered, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_fHypoHolstered, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_fHealActive, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_iWeaponIdx, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGruntOp4Medic, m_flLastShot, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( COFMedicAlly, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CHGruntOp4Medic, CTalkSquadMonster );
 
-void COFMedicAlly :: GibMonster ( void )
+void CHGruntOp4Medic :: GibMonster ( void )
 {
 	Vector	vecGunPos;
 	Vector	vecGunAngles;
@@ -220,7 +220,7 @@ void COFMedicAlly :: GibMonster ( void )
 	CBaseMonster :: GibMonster();
 }
 
-void COFMedicAlly :: Shoot ( void )
+void CHGruntOp4Medic :: Shoot ( void )
 {
 	//Limit fire rate
 	if (m_hEnemy == NULL || gpGlobals->time - m_flLastShot <= 0.11 )
@@ -260,7 +260,7 @@ void COFMedicAlly :: Shoot ( void )
 	m_flLastShot = gpGlobals->time;
 }
 
-void COFMedicAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
+void CHGruntOp4Medic :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	Vector	vecShootDir;
 	Vector	vecShootOrigin;
@@ -345,7 +345,7 @@ void COFMedicAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	}
 }
 
-void COFMedicAlly :: Spawn()
+void CHGruntOp4Medic :: Spawn()
 {
 	BaseSpawn("models/hgrunt_medic.mdl");
 
@@ -416,7 +416,7 @@ void COFMedicAlly :: Spawn()
 
 	CTalkSquadMonster::g_talkWaitTime = 0;
 
-	SetUse( &COFMedicAlly::HealerUse );
+	SetUse( &CHGruntOp4Medic::HealerUse );
 
 	// get voice pitch
 	m_voicePitch = 105;
@@ -424,7 +424,7 @@ void COFMedicAlly :: Spawn()
 	canHaveGrenadeLauncher = false;
 }
 
-void COFMedicAlly :: Precache()
+void CHGruntOp4Medic :: Precache()
 {
 	PRECACHE_MODEL("models/hgrunt_medic.mdl");
 
@@ -436,10 +436,10 @@ void COFMedicAlly :: Precache()
 
 	PRECACHE_SOUND( "fgrunt/medic.wav" );
 
-	CBaseGruntAlly::Precache();
+	CBaseGruntOp4::Precache();
 }	
 
-void COFMedicAlly :: StartTask ( Task_t *pTask )
+void CHGruntOp4Medic :: StartTask ( Task_t *pTask )
 {
 	m_iTaskStatus = TASKSTATUS_RUNNING;
 
@@ -510,7 +510,7 @@ void COFMedicAlly :: StartTask ( Task_t *pTask )
 	}
 }
 
-void COFMedicAlly :: RunTask ( Task_t *pTask )
+void CHGruntOp4Medic :: RunTask ( Task_t *pTask )
 {
 	switch ( pTask->iTask )
 	{
@@ -637,7 +637,7 @@ Schedule_t	slMedicAllyHealTarget[] =
 	},
 };
 
-DEFINE_CUSTOM_SCHEDULES( COFMedicAlly )
+DEFINE_CUSTOM_SCHEDULES( CHGruntOp4Medic )
 {
 	slMedicAllyNewHealTarget,
 	slMedicAllyDrawNeedle,
@@ -645,9 +645,9 @@ DEFINE_CUSTOM_SCHEDULES( COFMedicAlly )
 	slMedicAllyHealTarget,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( COFMedicAlly, CBaseGrunt );
+IMPLEMENT_CUSTOM_SCHEDULES( CHGruntOp4Medic, CBaseGrunt );
 
-int COFMedicAlly::GetActivitySequence(Activity NewActivity)
+int CHGruntOp4Medic::GetActivitySequence(Activity NewActivity)
 {
 	int	iSequence = ACTIVITY_NOT_AVAILABLE;
 
@@ -674,7 +674,7 @@ int COFMedicAlly::GetActivitySequence(Activity NewActivity)
 	return iSequence;
 }
 
-Schedule_t *COFMedicAlly :: GetSchedule( void )
+Schedule_t *CHGruntOp4Medic :: GetSchedule( void )
 {
 
 	// clear old sentence
@@ -753,10 +753,10 @@ Schedule_t *COFMedicAlly :: GetSchedule( void )
 		}
 	}
 	
-	return CBaseGruntAlly::GetMonsterStateSchedule();
+	return CBaseGruntOp4::GetMonsterStateSchedule();
 }
 
-Schedule_t* COFMedicAlly :: GetScheduleOfType ( int Type ) 
+Schedule_t* CHGruntOp4Medic :: GetScheduleOfType ( int Type ) 
 {
 	switch	( Type )
 	{
@@ -794,13 +794,13 @@ Schedule_t* COFMedicAlly :: GetScheduleOfType ( int Type )
 	}
 }
 
-int COFMedicAlly::ObjectCaps()
+int CHGruntOp4Medic::ObjectCaps()
 {
 	//Allow healing the player by continuously using
 	return FCAP_ACROSS_TRANSITION | FCAP_CONTINUOUS_USE;
 }
 
-void COFMedicAlly::KeyValue( KeyValueData *pkvd )
+void CHGruntOp4Medic::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "head" ) )
 	{
@@ -811,7 +811,7 @@ void COFMedicAlly::KeyValue( KeyValueData *pkvd )
 		CTalkSquadMonster::KeyValue( pkvd );
 }
 
-void COFMedicAlly::Killed( entvars_t* pevAttacker, int iGib )
+void CHGruntOp4Medic::Killed( entvars_t* pevAttacker, int iGib )
 {
 	if (m_hTargetEnt != NULL)
 	{
@@ -821,10 +821,10 @@ void COFMedicAlly::Killed( entvars_t* pevAttacker, int iGib )
 			pSquadMonster->m_hWaitMedic = NULL;
 	}
 
-	CBaseGruntAlly::Killed( pevAttacker, iGib );
+	CBaseGruntOp4::Killed( pevAttacker, iGib );
 }
 
-void COFMedicAlly::MonsterThink()
+void CHGruntOp4Medic::MonsterThink()
 {
 	if( m_fFollowChecking && !m_fFollowChecked && gpGlobals->time - m_flFollowCheckTime > 0.5 )
 	{
@@ -839,7 +839,7 @@ void COFMedicAlly::MonsterThink()
 	CTalkSquadMonster::MonsterThink();
 }
 
-BOOL COFMedicAlly::HealMe( CTalkSquadMonster* pTarget )
+BOOL CHGruntOp4Medic::HealMe( CTalkSquadMonster* pTarget )
 {
 	if( pTarget )
 	{
@@ -885,7 +885,7 @@ BOOL COFMedicAlly::HealMe( CTalkSquadMonster* pTarget )
 	return false;
 }
 
-void COFMedicAlly::HealOff()
+void CHGruntOp4Medic::HealOff()
 {
 	m_fHealing = false;
 
@@ -899,7 +899,7 @@ void COFMedicAlly::HealOff()
 	pev->nextthink = 0;
 }
 
-void COFMedicAlly::HealerActivate( CBaseMonster* pTarget )
+void CHGruntOp4Medic::HealerActivate( CBaseMonster* pTarget )
 {
 	if( m_hTargetEnt )
 	{
@@ -946,7 +946,7 @@ void COFMedicAlly::HealerActivate( CBaseMonster* pTarget )
 	}
 }
 
-void COFMedicAlly::HealerUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
+void CHGruntOp4Medic::HealerUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value )
 {
 	if( m_useTime > gpGlobals->time
 		|| m_flLastUseTime > gpGlobals->time

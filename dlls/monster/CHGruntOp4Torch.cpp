@@ -8,7 +8,7 @@
 #include "animation.h"
 #include "weapons.h"
 #include "CTalkSquadMonster.h"
-#include "CBaseGruntAlly.h"
+#include "CBaseGruntOp4.h"
 #include "CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
@@ -53,7 +53,7 @@ enum TorchAllyWeaponFlag
 #define TORCH_AE_ACTIVATE_TORCH		20
 #define TORCH_AE_DEACTIVATE_TORCH	21
 
-class COFTorchAlly : public CBaseGruntAlly
+class COFTorchAlly : public CBaseGruntOp4
 {
 public:
 	void Spawn( void );
@@ -187,7 +187,7 @@ void COFTorchAlly :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector
 		ExplosionCreate( ptr->vecEndPos, pev->angles, edict(), 100, true );
 	}
 
-	CBaseGruntAlly::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+	CBaseGruntOp4::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
 void COFTorchAlly :: Shoot ( void )
@@ -393,7 +393,7 @@ void COFTorchAlly :: Precache()
 	PRECACHE_SOUND( "fgrunt/torch_light.wav" );
 	PRECACHE_SOUND( "fgrunt/torch_cut_loop.wav" );
 
-	CBaseGruntAlly::Precache();
+	CBaseGruntOp4::Precache();
 }	
 
 int COFTorchAlly::GetActivitySequence(Activity NewActivity)
@@ -466,7 +466,7 @@ void COFTorchAlly::Killed( entvars_t* pevAttacker, int iGib )
 		m_pTorchBeam = nullptr;
 	}
 
-	CBaseGruntAlly::Killed( pevAttacker, iGib );
+	CBaseGruntOp4::Killed( pevAttacker, iGib );
 }
 
 void COFTorchAlly::MonsterThink()

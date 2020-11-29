@@ -8,7 +8,7 @@
 #include "animation.h"
 #include "weapons.h"
 #include "CTalkSquadMonster.h"
-#include "CBaseGruntAlly.h"
+#include "CBaseGruntOp4.h"
 #include "CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
@@ -77,7 +77,7 @@ enum HGruntAllyWeapon
 };
 }
 
-class CHGruntAlly : public CBaseGruntAlly
+class CHGruntAlly : public CBaseGruntOp4
 {
 public:
 	void Spawn( void );
@@ -402,7 +402,7 @@ void CHGruntAlly :: Precache()
 	m_iSawShell = PRECACHE_MODEL("models/saw_shell.mdl");
 	m_iSawLink = PRECACHE_MODEL("models/saw_link.mdl");
 
-	CBaseGruntAlly::Precache();
+	CBaseGruntOp4::Precache();
 }	
 
 int CHGruntAlly::GetActivitySequence(Activity NewActivity) {
