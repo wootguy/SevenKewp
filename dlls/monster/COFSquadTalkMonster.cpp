@@ -24,7 +24,7 @@
 #include "saverestore.h"
 #include "CTalkMonster.h"
 #include "CSquadMonster.h"
-#include "COFAllyMonster.h"
+#include "CTalkMonster.h"
 #include "COFSquadTalkMonster.h"
 #include "plane.h"
 
@@ -626,7 +626,7 @@ Schedule_t *COFSquadTalkMonster::GetScheduleOfType( int iType )
 
 void COFSquadTalkMonster::FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	COFAllyMonster::FollowerUse( pActivator, pCaller, useType, value );
+	CTalkMonster::FollowerUse( pActivator, pCaller, useType, value );
 }
 
 COFSquadTalkMonster* COFSquadTalkMonster::MySquadMedic()

@@ -17,8 +17,7 @@ set(MONSTER_HDR
 	monster/CFlyingMonster.h
 	monster/CGargantua.h
 	monster/CHornet.h
-	monster/COFAllyMonster.cpp
-	monster/COFSquadTalkMonster.cpp
+	monster/COFSquadTalkMonster.h
 	monster/CSquadMonster.h
 	monster/CTalkMonster.h
 	monster/defaultai.h
@@ -65,7 +64,6 @@ set(MONSTER_SRC
 	monster/CLeech.cpp
 	monster/CMassn.cpp
 	monster/CNihilanth.cpp
-	monster/COFAllyMonster.cpp
 	monster/COFMedicAlly.cpp
 	monster/COFSquadTalkMonster.cpp
 	monster/COFTorchAlly.cpp
