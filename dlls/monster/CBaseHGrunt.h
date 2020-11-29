@@ -78,10 +78,32 @@ enum HGRUNT_SENTENCE_TYPES
 	HGRUNT_SENT_TAUNT,
 };
 
+extern Schedule_t	slGruntFail[];
+extern Schedule_t	slGruntCombatFail[];
+extern Schedule_t	slGruntVictoryDance[];
+extern Schedule_t slGruntEstablishLineOfFire[];
+extern Schedule_t	slGruntFoundEnemy[];
+extern Schedule_t	slGruntCombatFace[];
+extern Schedule_t	slGruntSignalSuppress[];
+extern Schedule_t	slGruntSuppress[];
+extern Schedule_t	slGruntWaitInCover[];
+extern Schedule_t	slGruntTakeCover[];
+extern Schedule_t	slGruntGrenadeCover[];
+extern Schedule_t	slGruntTossGrenadeCover[];
+extern Schedule_t	slGruntTakeCoverFromBestSound[];
+extern Schedule_t slGruntHideReload[];
+extern Schedule_t	slGruntSweep[];
+extern Schedule_t	slGruntRangeAttack1A[];
+extern Schedule_t	slGruntRangeAttack1B[];
+extern Schedule_t	slGruntRangeAttack2[];
+extern Schedule_t	slGruntRepel[];
+extern Schedule_t	slGruntRepelAttack[];
+extern Schedule_t	slGruntRepelLand[];
+
 //=========================================================
 // monster-specific conditions
 //=========================================================
-#define bits_COND_GRUNT_NOFIRE	( bits_COND_SPECIAL1 )
+#define bits_COND_GRUNT_NOFIRE	( bits_COND_SPECIAL2 )
 
 extern int g_fGruntQuestion; // true if an idle grunt asked a question. Cleared when someone answers.
 
@@ -116,6 +138,11 @@ public:
 	int Restore(CRestore& restore);
 
 	CBaseEntity* Kick(void);
+	virtual Schedule_t* GetMonsterStateSchedule(void);
+	Schedule_t* GetNewSquadEnemySchedule(void);
+	Schedule_t* GetShootSchedule(void);
+	Schedule_t* GetLightDamageSchedule(void);
+	Schedule_t* GetEnemyOccludedSchedule(void);
 	Schedule_t* GetSchedule(void);
 	Schedule_t* GetScheduleOfType(int Type);
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
@@ -148,17 +175,23 @@ public:
 	int		m_iShotgunShell;
 
 	int		m_iSentence;
+
+	int m_iGruntHead;
 };
 
 class CBaseRepel : public CBaseMonster {
 public:
 	void Spawn(void);
 	void Precache(void);
+	void KeyValue(KeyValueData* pkvd);
 	void EXPORT RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual const char* GetMonsterType() { return "monster_human_grunt"; }
 
 	const char* monsterType;
 	int m_iSpriteTexture;	// Don't save, precache
+	int m_iGruntHead;
+	int m_iszUse;
+	int m_iszUnUse;
 };
 
 class CBaseDead : public CBaseMonster {
@@ -170,4 +203,5 @@ public:
 	void KeyValue(KeyValueData* pkvd);
 
 	int	m_iPose;// which sequence to display	-- temporary, don't need to save
+	int m_iGruntHead;
 };

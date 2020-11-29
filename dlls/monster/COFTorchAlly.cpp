@@ -1111,7 +1111,7 @@ void COFTorchAlly :: Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_RED;
 	pev->effects		= 0;
-	pev->health			= gSkillData.hgruntHealth;
+	pev->health			= gSkillData.hgruntHealth*10;
 	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_flNextGrenadeCheck = gpGlobals->time + 1;
@@ -1148,7 +1148,7 @@ void COFTorchAlly :: Spawn()
 	else
 	{
 		weaponIndex = TorchAllyWeapon::Torch;
-		m_cClipSize = 0;
+		m_cClipSize = TORCH_DEAGLE_CLIP_SIZE;
 		m_fGunHolstered = true;
 		m_fTorchHolstered = false;
 	}
