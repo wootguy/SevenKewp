@@ -100,13 +100,15 @@ public:
 	BOOL CheckRangeAttack2(float flDot, float flDist);
 	void CheckAmmo(void);
 	void SetActivity(Activity NewActivity);
+	virtual int GetActivitySequence(Activity NewActivity);
 	void StartTask(Task_t* pTask);
 	void RunTask(Task_t* pTask);
 	Vector GetGunPosition(void);
 	void Shoot(void);
 	void Shotgun(void);
 	void PrescheduleThink(void);
-	void GibMonster(void);
+	virtual void GibMonster(void);
+	virtual CBaseEntity* DropGun(Vector pos, Vector angles);
 	void SpeakSentence(void);
 	virtual void PlaySentenceSound(int sentenceType) {}
 
