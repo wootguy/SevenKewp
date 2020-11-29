@@ -68,7 +68,6 @@ public:
 	void CheckAmmo ( void );
 	int GetActivitySequence(Activity NewActivity);
 	void DeathSound( void );
-	void PlaySentenceSound(int sentenceType) {} // assassins don't speak
 	void Shoot ( void );
 	CBaseEntity* DropGun(Vector pos, Vector angles);
 
@@ -82,7 +81,27 @@ public:
 	int m_iAssassinHead;
 };
 
-LINK_ENTITY_TO_CLASS( monster_male_assassin, CMassn );
+class CMassnRepel : public CBaseRepel
+{
+public:
+	const char* GetMonsterType() { return "monster_male_assassin"; };
+};
+
+class CDeadMassn : public CBaseDead
+{
+public:
+	void Spawn(void);
+	int	Classify(void) { return	CLASS_HUMAN_MILITARY; }
+	int GetPoseSequence() { return LookupSequence(m_szPoses[m_iPose]); }
+
+	static const char* m_szPoses[3];
+};
+
+LINK_ENTITY_TO_CLASS(monster_male_assassin, CMassn);
+LINK_ENTITY_TO_CLASS(monster_assassin_dead, CMassnRepel);
+LINK_ENTITY_TO_CLASS(monster_massassin_dead, CDeadMassn);
+
+const char* CDeadMassn::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
 CBaseEntity* CMassn::DropGun(Vector pos, Vector angles) {
 	if (FBitSet(pev->weapons, MAssassinWeaponFlag::MP5))
@@ -343,117 +362,11 @@ void CMassn::KeyValue( KeyValueData* pkvd )
 		CSquadMonster::KeyValue( pkvd );
 }
 
-//=========================================================
-// CMassnRepel - when triggered, spawns a monster_male_assassin
-// repelling down a line.
-//=========================================================
 
-class CMassnRepel : public CBaseMonster
+void CDeadMassn::Spawn(void)
 {
-public:
-	void Spawn( void );
-	void Precache( void );
-	void EXPORT RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	int m_iSpriteTexture;	// Don't save, precache
-};
-
-LINK_ENTITY_TO_CLASS( monster_assassin_repel, CMassnRepel );
-
-void CMassnRepel::Spawn( void )
-{
-	Precache( );
-	pev->solid = SOLID_NOT;
-
-	SetUse( &CMassnRepel::RepelUse );
-}
-
-void CMassnRepel::Precache( void )
-{
-	UTIL_PrecacheOther( "monster_male_assassin" );
-	m_iSpriteTexture = PRECACHE_MODEL( "sprites/rope.spr" );
-}
-
-void CMassnRepel::RepelUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{
-	TraceResult tr;
-	UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, -4096.0), dont_ignore_monsters, ENT(pev), &tr);
-	/*
-	if ( tr.pHit && Instance( tr.pHit )->pev->solid != SOLID_BSP) 
-		return NULL;
-	*/
-
-	CBaseEntity *pEntity = Create( "monster_male_assassin", pev->origin, pev->angles );
-	CBaseMonster *pGrunt = pEntity->MyMonsterPointer( );
-	pGrunt->pev->movetype = MOVETYPE_FLY;
-	pGrunt->pev->velocity = Vector( 0, 0, RANDOM_FLOAT( -196, -128 ) );
-	pGrunt->SetActivity( ACT_GLIDE );
-	// UNDONE: position?
-	pGrunt->m_vecLastPosition = tr.vecEndPos;
-
-	CBeam *pBeam = CBeam::BeamCreate( "sprites/rope.spr", 10 );
-	pBeam->PointEntInit( pev->origin + Vector(0,0,112), pGrunt->entindex() );
-	pBeam->SetFlags( BEAM_FSOLID );
-	pBeam->SetColor( 255, 255, 255 );
-	pBeam->SetThink( &CBeam::SUB_Remove );
-	pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
-
-	UTIL_Remove( this );
-}
-
-
-
-//=========================================================
-// DEAD MALE ASSASSIN PROP
-//=========================================================
-class CDeadMOFAssassin : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	int	Classify ( void ) { return	CLASS_HUMAN_MILITARY; }
-
-	void KeyValue( KeyValueData *pkvd );
-
-	int	m_iPose;// which sequence to display	-- temporary, don't need to save
-	static char *m_szPoses[3];
-};
-
-char *CDeadMOFAssassin::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
-
-void CDeadMOFAssassin::KeyValue( KeyValueData *pkvd )
-{
-	if (FStrEq(pkvd->szKeyName, "pose"))
-	{
-		m_iPose = atoi(pkvd->szValue);
-		pkvd->fHandled = TRUE;
-	}
-	else 
-		CBaseMonster::KeyValue( pkvd );
-}
-
-LINK_ENTITY_TO_CLASS( monster_massassin_dead, CDeadMOFAssassin );
-
-//=========================================================
-// ********** DeadMOFAssassin SPAWN **********
-//=========================================================
-void CDeadMOFAssassin:: Spawn( void )
-{
-	PRECACHE_MODEL("models/massn.mdl");
-	SET_MODEL(ENT(pev), "models/massn.mdl");
-
-	pev->effects		= 0;
-	pev->yaw_speed		= 8;
-	pev->sequence		= 0;
-	m_bloodColor		= BLOOD_COLOR_RED;
-
-	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
-
-	if (pev->sequence == -1)
-	{
-		ALERT ( at_console, "Dead hgrunt with bad pose\n" );
-	}
-
-	// Corpses have less health
-	pev->health			= 8;
+	CBaseDead::BaseSpawn("models/hgrunt.mdl");
+	m_bloodColor = BLOOD_COLOR_RED;
 
 	// map old bodies onto new bodies
 	//TODO: verify these
@@ -484,6 +397,4 @@ void CDeadMOFAssassin:: Spawn( void )
 		SetBodygroup( MAssassinBodygroup::Weapons, MAssassinWeapon::None );
 		break;
 	}
-
-	MonsterInitDead();
 }

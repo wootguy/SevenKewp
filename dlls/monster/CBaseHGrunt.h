@@ -149,3 +149,25 @@ public:
 
 	int		m_iSentence;
 };
+
+class CBaseRepel : public CBaseMonster {
+public:
+	void Spawn(void);
+	void Precache(void);
+	void EXPORT RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	virtual const char* GetMonsterType() { return "monster_human_grunt"; }
+
+	const char* monsterType;
+	int m_iSpriteTexture;	// Don't save, precache
+};
+
+class CBaseDead : public CBaseMonster {
+public:
+	void BaseSpawn(const char* model);
+	virtual int	Classify(void) { return	CLASS_HUMAN_MILITARY; }
+	virtual int GetPoseSequence() { return -1; }
+
+	void KeyValue(KeyValueData* pkvd);
+
+	int	m_iPose;// which sequence to display	-- temporary, don't need to save
+};
