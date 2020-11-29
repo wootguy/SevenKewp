@@ -14,8 +14,6 @@
 #include "customentity.h"
 #include "explode.h"
 
-extern DLL_GLOBAL int		g_iSkillLevel;
-
 #define	TORCH_DEAGLE_CLIP_SIZE			8 // how many bullets in a clip?
 #define TORCH_BEAM_SPRITE "sprites/xbeam3.spr"
 
@@ -48,14 +46,7 @@ enum TorchAllyWeaponFlag
 };
 }
 
-#define		TORCH_AE_RELOAD		( 2 )
-#define		TORCH_AE_KICK			( 3 )
-#define		TORCH_AE_SHOOT			( 4 )
-#define		TORCH_AE_GREN_TOSS		( 7 )
-#define		TORCH_AE_GREN_DROP		( 9 )
-#define		TORCH_AE_CAUGHT_ENEMY	( 10) // grunt established sight with an enemy (player only) that had previously eluded the squad.
-#define		TORCH_AE_DROP_GUN		( 11) // grunt (probably dead) is dropping his mp5.
-
+#define	TORCH_AE_SHOOT				4
 #define TORCH_AE_HOLSTER_TORCH		17
 #define TORCH_AE_HOLSTER_GUN		18
 #define TORCH_AE_HOLSTER_BOTH		19
@@ -237,7 +228,7 @@ void COFTorchAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	//TODO: add remaining torch grunt events
 	switch( pEvent->event )
 	{
-		case TORCH_AE_DROP_GUN:
+		case HGRUNT_AE_DROP_GUN:
 			{
 				//If we don't have a gun equipped
 				//TODO: why is it checking like this?
@@ -257,7 +248,7 @@ void COFTorchAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			}
 			break;
 
-		case TORCH_AE_GREN_DROP:
+		case HGRUNT_AE_GREN_DROP:
 		{
 			UTIL_MakeVectors( pev->angles );
 			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + gpGlobals->v_up * 6, g_vecZero, 3 );
