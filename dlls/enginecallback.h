@@ -87,7 +87,24 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 #define CVAR_SET_FLOAT	(*g_engfuncs.pfnCVarSetFloat)
 #define CVAR_SET_STRING	(*g_engfuncs.pfnCVarSetString)
 #define CVAR_GET_POINTER (*g_engfuncs.pfnCVarGetPointer)
-#define ALERT			(*g_engfuncs.pfnAlertMessage)
+
+#if defined(WIN32) && (_DEBUG)
+inline void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
+	static char log_line[4096];
+
+	va_list vl;
+	va_start(vl, format);
+	vsnprintf(log_line, 4096, format, vl);
+	va_end(vl);
+
+	OutputDebugString(log_line);
+	g_engfuncs.pfnAlertMessage(target, log_line);
+}
+#define ALERT		DEBUG_MSG
+#else
+#define ALERT (*g_engfuncs.pfnAlertMessage)
+#endif
+
 #define print(...)	{ALERT(at_console, __VA_ARGS__);}
 #define println(...)	{ALERT(at_console, __VA_ARGS__); ALERT(at_console, "\n");}
 #define ENGINE_FPRINTF	(*g_engfuncs.pfnEngineFprintf)

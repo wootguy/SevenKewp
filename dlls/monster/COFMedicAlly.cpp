@@ -968,7 +968,7 @@ void COFMedicAlly :: Shoot ( void )
 
 	const auto random = RANDOM_LONG( 0, 20 );
 
-	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, pszSoundName, VOL_NORM, ATTN_NORM, 0, random <= 10 ? random - 5 : 0 + 100 );
+	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, pszSoundName, VOL_NORM, ATTN_NORM, 0, (random <= 10 ? random - 5 : 0) + 100 );
 
 	pev->effects |= EF_MUZZLEFLASH;
 	
