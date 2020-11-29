@@ -115,21 +115,21 @@ public:
 	void BasePrecache();
 	void SetYawSpeed(void);
 	int  Classify(void);
-	int ISoundMask(void);
+	virtual int ISoundMask(void);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	BOOL FCanCheckAttacks(void);
-	BOOL CheckMeleeAttack1(float flDot, float flDist);
-	BOOL CheckRangeAttack1(float flDot, float flDist);
-	BOOL CheckRangeAttack2(float flDot, float flDist);
-	void CheckAmmo(void);
-	void SetActivity(Activity NewActivity);
+	virtual BOOL CheckMeleeAttack1(float flDot, float flDist);
+	virtual BOOL CheckRangeAttack1(float flDot, float flDist);
+	virtual BOOL CheckRangeAttack2(float flDot, float flDist);
+	virtual void CheckAmmo(void);
+	virtual void SetActivity(Activity NewActivity);
 	virtual int GetActivitySequence(Activity NewActivity);
 	void StartTask(Task_t* pTask);
 	void RunTask(Task_t* pTask);
 	Vector GetGunPosition(void);
-	void Shoot(void);
+	virtual void Shoot(void);
 	void Shotgun(void);
-	void PrescheduleThink(void);
+	virtual void PrescheduleThink(void);
 	virtual void GibMonster(void);
 	virtual CBaseEntity* DropGun(Vector pos, Vector angles);
 	void SpeakSentence(void);
@@ -144,10 +144,10 @@ public:
 	Schedule_t* GetShootSchedule(void);
 	Schedule_t* GetLightDamageSchedule(void);
 	Schedule_t* GetEnemyOccludedSchedule(void);
-	Schedule_t* GetSchedule(void);
-	Schedule_t* GetScheduleOfType(int Type);
-	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	virtual Schedule_t* GetSchedule(void);
+	virtual Schedule_t* GetScheduleOfType(int Type);
+	virtual void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
+	virtual int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 
 	int IRelationship(CBaseEntity* pTarget);
 

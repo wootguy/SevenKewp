@@ -855,6 +855,8 @@ void CBaseGrunt::BasePrecache() {
 	PRECACHE_SOUND("weapons/glauncher.wav");
 	PRECACHE_SOUND("weapons/sbarrel1.wav");
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
+
+	CTalkSquadMonster::Precache();
 }
 
 //=========================================================
