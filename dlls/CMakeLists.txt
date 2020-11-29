@@ -11,6 +11,7 @@ set(MONSTER_HDR
 	monster/activity.h
 	monster/activitymap.h
 	monster/bodyque.h
+	monster/CAGrunt.h
 	monster/CBaseMonster.h
 	monster/CBaseHGrunt.h
 	monster/CBaseTurret.h
@@ -18,8 +19,7 @@ set(MONSTER_HDR
 	monster/CGargantua.h
 	monster/CHornet.h
 	monster/COFSquadTalkMonster.h
-	monster/CSquadMonster.h
-	monster/CTalkMonster.h
+	monster/CTalkSquadMonster.h
 	monster/defaultai.h
 	monster/monsterevent.h
 	monster/monsters.h
@@ -76,8 +76,7 @@ set(MONSTER_SRC
 	monster/CSentry.cpp
 	monster/CShockRoach.cpp
 	monster/CShockTrooper.cpp
-	monster/CSquadMonster.cpp
-	monster/CTalkMonster.cpp
+	monster/CTalkSquadMonster.cpp
 	monster/CTentacle.cpp
 	monster/CTor.cpp
 	monster/CTurret.cpp

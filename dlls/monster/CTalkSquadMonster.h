@@ -12,16 +12,16 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#ifndef TALKMONSTER_H
-#define TALKMONSTER_H
+#ifndef TALKSQUADMONSTER_H
+#define TALKSQUADMONSTER_H
 
 #ifndef MONSTERS_H
 #include "monsters.h"
 #endif
 
 //=========================================================
-// Talking monster base class
-// Used for scientists and barneys
+// Combination of the Talk and Squad monster base classes
+// Used for scientists, barneys, grunts, op4 grunts, etc.
 //=========================================================
 
 #define TALKRANGE_MIN 500.0				// don't talk to anyone farther away than this
@@ -59,7 +59,7 @@ typedef enum
 	TLK_MORTAL,
 
 	TLK_CGROUPS,					// MUST be last entry
-} TALKGROUPNAMES;
+} TALKSQUADGROUPNAMES;
 
 enum
 {
@@ -78,7 +78,41 @@ enum
 	LAST_TALKMONSTER_TASK,			// MUST be last
 };
 
-class CTalkMonster : public CBaseMonster
+
+#define	SF_SQUADMONSTER_LEADER	32
+
+#define bits_NO_SLOT		0
+
+// HUMAN GRUNT SLOTS
+#define bits_SLOT_HGRUNT_ENGAGE1	( 1 << 0 )
+#define bits_SLOT_HGRUNT_ENGAGE2	( 1 << 1 )
+#define bits_SLOTS_HGRUNT_ENGAGE	( bits_SLOT_HGRUNT_ENGAGE1 | bits_SLOT_HGRUNT_ENGAGE2 )
+
+#define bits_SLOT_HGRUNT_GRENADE1	( 1 << 2 ) 
+#define bits_SLOT_HGRUNT_GRENADE2	( 1 << 3 ) 
+#define bits_SLOTS_HGRUNT_GRENADE	( bits_SLOT_HGRUNT_GRENADE1 | bits_SLOT_HGRUNT_GRENADE2 )
+
+// ALIEN GRUNT SLOTS
+#define bits_SLOT_AGRUNT_HORNET1	( 1 << 4 )
+#define bits_SLOT_AGRUNT_HORNET2	( 1 << 5 )
+#define bits_SLOT_AGRUNT_CHASE		( 1 << 6 )
+#define bits_SLOTS_AGRUNT_HORNET	( bits_SLOT_AGRUNT_HORNET1 | bits_SLOT_AGRUNT_HORNET2 )
+
+// HOUNDEYE SLOTS
+#define bits_SLOT_HOUND_ATTACK1		( 1 << 7 )
+#define bits_SLOT_HOUND_ATTACK2		( 1 << 8 )
+#define bits_SLOT_HOUND_ATTACK3		( 1 << 9 )
+#define bits_SLOTS_HOUND_ATTACK		( bits_SLOT_HOUND_ATTACK1 | bits_SLOT_HOUND_ATTACK2 | bits_SLOT_HOUND_ATTACK3 )
+
+// global slots
+#define bits_SLOT_SQUAD_SPLIT		( 1 << 10 )// squad members don't all have the same enemy
+
+#define NUM_SLOTS			11// update this every time you add/remove a slot.
+
+#define	MAX_SQUAD_MEMBERS	5
+
+
+class CTalkSquadMonster : public CBaseMonster
 {
 public:
 	void			TalkInit( void );				
@@ -125,7 +159,7 @@ public:
 	virtual void StopFollowing(BOOL clearSchedule);
 	virtual void StartFollowing(CBaseEntity* pLeader);
 	
-	virtual void	SetAnswerQuestion( CTalkMonster *pSpeaker );
+	virtual void	SetAnswerQuestion(CTalkSquadMonster* pSpeaker );
 	virtual int		FriendNumber( int arrayNumber )	{ return arrayNumber; }
 
 	virtual int		Save( CSave &save );
@@ -148,6 +182,65 @@ public:
 
 	EHANDLE		m_hTalkTarget;	// who to look at while talking
 	CUSTOM_SCHEDULES;
+
+
+	// 
+	// squad functions 
+	//
+
+	// squad leader info
+	EHANDLE	m_hSquadLeader;		// who is my leader
+	EHANDLE	m_hSquadMember[MAX_SQUAD_MEMBERS - 1];	// valid only for leader
+	int		m_afSquadSlots;
+	float	m_flLastEnemySightTime; // last time anyone in the squad saw the enemy
+	BOOL	m_fEnemyEluded;
+
+	// squad member info
+	int		m_iMySlot;// this is the behaviour slot that the monster currently holds in the squad. 
+
+	int  CheckEnemy(CBaseEntity* pEnemy);
+	void StartMonster(void);
+	void VacateSlot(void);
+	void ScheduleChange(void);
+	BOOL OccupySlot(int iDesiredSlot);
+	BOOL NoFriendlyFire(void);
+
+	// squad functions still left in base class
+	CTalkSquadMonster* MySquadLeader()
+	{
+		CTalkSquadMonster* pSquadLeader = (CTalkSquadMonster*)((CBaseEntity*)m_hSquadLeader);
+		if (pSquadLeader != NULL)
+			return pSquadLeader;
+		return this;
+	}
+	CTalkSquadMonster* MySquadMember(int i)
+	{
+		if (i >= MAX_SQUAD_MEMBERS - 1)
+			return this;
+		else
+			return (CTalkSquadMonster*)((CBaseEntity*)m_hSquadMember[i]);
+	}
+	int	InSquad(void) { return m_hSquadLeader != NULL; }
+	int IsLeader(void) { return m_hSquadLeader == this; }
+	int SquadJoin(int searchRadius);
+	int SquadRecruit(int searchRadius, int maxMembers);
+	int	SquadCount(void);
+	void SquadRemove(CTalkSquadMonster* pRemove);
+	void SquadUnlink(void);
+	BOOL SquadAdd(CTalkSquadMonster* pAdd);
+	void SquadDisband(void);
+	void SquadAddConditions(int iConditions);
+	void SquadMakeEnemy(CBaseEntity* pEnemy);
+	void SquadPasteEnemyInfo(void);
+	void SquadCopyEnemyInfo(void);
+	BOOL SquadEnemySplit(void);
+	BOOL SquadMemberInRange(const Vector& vecLocation, float flDist);
+
+	virtual CTalkSquadMonster* MyTalkSquadMonsterPointer(void) { return this; }
+
+	BOOL FValidateCover(const Vector& vecCoverLocation);
+
+	MONSTERSTATE GetIdealState(void);
 };
 
 

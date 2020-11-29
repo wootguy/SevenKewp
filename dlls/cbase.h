@@ -105,7 +105,7 @@ typedef void (CBaseEntity::*USEPTR)( CBaseEntity *pActivator, CBaseEntity *pCall
 class CBaseEntity;
 class CBaseMonster;
 class CBasePlayerItem;
-class CSquadMonster;
+class CTalkSquadMonster;
 class COFSquadTalkMonster;
 
 
@@ -172,7 +172,7 @@ public:
 	virtual void	TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
 	virtual BOOL    IsTriggered( CBaseEntity *pActivator ) {return TRUE;}
 	virtual CBaseMonster *MyMonsterPointer( void ) { return NULL;}
-	virtual CSquadMonster *MySquadMonsterPointer( void ) { return NULL;}
+	virtual CTalkSquadMonster * MyTalkSquadMonsterPointer( void ) { return NULL;}
 	virtual COFSquadTalkMonster* MySquadTalkMonsterPointer(void) { return NULL; }
 	virtual	int		GetToggleState( void ) { return TS_AT_TOP; }
 	virtual void	AddPoints( int score, BOOL bAllowNegativeScore ) {}

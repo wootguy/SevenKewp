@@ -40,7 +40,7 @@ TYPEDESCRIPTION	CAGrunt::m_SaveData[] =
 	DEFINE_FIELD( CAGrunt, m_iLastWord, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CAGrunt, CSquadMonster );
+IMPLEMENT_SAVERESTORE( CAGrunt, CTalkSquadMonster );
 
 const char *CAGrunt::pAttackHitSounds[] = 
 {
@@ -105,7 +105,7 @@ int CAGrunt::IRelationship ( CBaseEntity *pTarget )
 		return R_NM;
 	}
 
-	return CSquadMonster :: IRelationship( pTarget );
+	return CTalkSquadMonster :: IRelationship( pTarget );
 }
 
 //=========================================================
@@ -482,7 +482,7 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 
 	default:
-		CSquadMonster::HandleAnimEvent( pEvent );
+		CTalkSquadMonster::HandleAnimEvent( pEvent );
 		break;
 	}
 }
@@ -802,7 +802,7 @@ DEFINE_CUSTOM_SCHEDULES( CAGrunt )
 	slAGruntThreatDisplay,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CAGrunt, CSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CAGrunt, CTalkSquadMonster );
 
 //=========================================================
 // FCanCheckAttacks - this is overridden for alien grunts
@@ -969,7 +969,7 @@ void CAGrunt :: StartTask ( Task_t *pTask )
 		break;
 
 	default:
-		CSquadMonster :: StartTask ( pTask );
+		CTalkSquadMonster :: StartTask ( pTask );
 		break;
 	}
 }
@@ -1043,7 +1043,7 @@ Schedule_t *CAGrunt :: GetSchedule ( void )
 		}
 	}
 
-	return CSquadMonster :: GetSchedule();
+	return CTalkSquadMonster :: GetSchedule();
 }
 
 //=========================================================
@@ -1104,6 +1104,6 @@ Schedule_t* CAGrunt :: GetScheduleOfType ( int Type )
 
 	}
 
-	return CSquadMonster :: GetScheduleOfType( Type );
+	return CTalkSquadMonster :: GetScheduleOfType( Type );
 }
 

@@ -23,7 +23,7 @@
 #include	"schedule.h"
 #include	"animation.h"
 #include	"nodes.h"
-#include	"CSquadMonster.h"
+#include	"CTalkSquadMonster.h"
 #include	"env/CSoundEnt.h"
 #include	"game.h"
 
@@ -73,7 +73,7 @@ enum
 #define		HOUND_AE_HOPBACK		6
 #define		HOUND_AE_CLOSE_EYE		7
 
-class CHoundeye : public CSquadMonster
+class CHoundeye : public CTalkSquadMonster
 {
 public:
 	void Spawn( void );
@@ -120,7 +120,7 @@ TYPEDESCRIPTION	CHoundeye::m_SaveData[] =
 	DEFINE_FIELD( CHoundeye, m_vecPackCenter, FIELD_POSITION_VECTOR ),
 };
 
-IMPLEMENT_SAVERESTORE( CHoundeye, CSquadMonster );
+IMPLEMENT_SAVERESTORE( CHoundeye, CTalkSquadMonster );
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -166,11 +166,11 @@ BOOL CHoundeye :: FCanActiveIdle ( void )
 {
 	if ( InSquad() )
 	{
-		CSquadMonster *pSquadLeader = MySquadLeader();
+		CTalkSquadMonster *pSquadLeader = MySquadLeader();
 
 		for (int i = 0; i < MAX_SQUAD_MEMBERS;i++)
 		{
-			CSquadMonster *pMember = pSquadLeader->MySquadMember(i);
+			CTalkSquadMonster *pMember = pSquadLeader->MySquadMember(i);
 			 
 			if ( pMember != NULL && pMember != this && pMember->m_iHintNode != NO_NODE )
 			{
@@ -264,7 +264,7 @@ void CHoundeye :: SetActivity ( Activity NewActivity )
 	}
 	else
 	{
-		CSquadMonster :: SetActivity ( NewActivity );
+		CTalkSquadMonster :: SetActivity ( NewActivity );
 	}
 }
 
@@ -318,7 +318,7 @@ void CHoundeye :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			break;
 
 		default:
-			CSquadMonster::HandleAnimEvent( pEvent );
+			CTalkSquadMonster::HandleAnimEvent( pEvent );
 			break;
 	}
 }
@@ -718,7 +718,7 @@ void CHoundeye :: StartTask ( Task_t *pTask )
 			if ( InSquad() )
 			{
 				// see if there is a battery to connect to. 
-				CSquadMonster *pSquad = m_pSquadLeader;
+				CTalkSquadMonster *pSquad = m_pSquadLeader;
 
 				while ( pSquad )
 				{
@@ -763,7 +763,7 @@ void CHoundeye :: StartTask ( Task_t *pTask )
 		}
 	default: 
 		{
-			CSquadMonster :: StartTask(pTask);
+			CTalkSquadMonster :: StartTask(pTask);
 			break;
 		}
 	}
@@ -835,7 +835,7 @@ void CHoundeye :: RunTask ( Task_t *pTask )
 		}
 	default:
 		{
-			CSquadMonster :: RunTask(pTask);
+			CTalkSquadMonster :: RunTask(pTask);
 			break;
 		}
 	}
@@ -868,7 +868,7 @@ void CHoundeye::PrescheduleThink ( void )
 	// if you are the leader, average the origins of each pack member to get an approximate center.
 	if ( IsLeader() )
 	{
-		CSquadMonster *pSquadMember;
+		CTalkSquadMonster *pSquadMember;
 		int iSquadCount = 0;
 
 		for (int i = 0; i < MAX_SQUAD_MEMBERS; i++)
@@ -1143,7 +1143,7 @@ DEFINE_CUSTOM_SCHEDULES( CHoundeye )
 	slHoundCombatFailNoPVS,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CHoundeye, CSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CHoundeye, CTalkSquadMonster );
 
 //=========================================================
 // GetScheduleOfType 
@@ -1195,7 +1195,7 @@ Schedule_t* CHoundeye :: GetScheduleOfType ( int Type )
 			}
 			else
 			{
-				return CSquadMonster :: GetScheduleOfType( Type );
+				return CTalkSquadMonster :: GetScheduleOfType( Type );
 			}
 		}
 	case SCHED_RANGE_ATTACK1:
@@ -1243,12 +1243,12 @@ Schedule_t* CHoundeye :: GetScheduleOfType ( int Type )
 			}
 			else
 			{
-				return CSquadMonster :: GetScheduleOfType ( Type );
+				return CTalkSquadMonster :: GetScheduleOfType ( Type );
 			}
 		}
 	default:
 		{
-			return CSquadMonster :: GetScheduleOfType ( Type );
+			return CTalkSquadMonster :: GetScheduleOfType ( Type );
 		}
 	}
 }
@@ -1300,5 +1300,5 @@ Schedule_t *CHoundeye :: GetSchedule( void )
 		}
 	}
 
-	return CSquadMonster :: GetSchedule();
+	return CTalkSquadMonster :: GetSchedule();
 }

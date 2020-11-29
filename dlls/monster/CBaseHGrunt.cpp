@@ -35,9 +35,9 @@
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"animation.h"
-#include	"CSquadMonster.h"
+#include	"CTalkSquadMonster.h"
 #include	"weapons.h"
-#include	"CTalkMonster.h"
+#include	"CTalkSquadMonster.h"
 #include	"env/CSoundEnt.h"
 #include	"effects.h"
 #include	"customentity.h"
@@ -63,7 +63,7 @@ TYPEDESCRIPTION	CBaseHGrunt::m_SaveData[] =
 	DEFINE_FIELD( CBaseHGrunt, m_iSentence, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CBaseHGrunt, CSquadMonster );
+IMPLEMENT_SAVERESTORE( CBaseHGrunt, CTalkSquadMonster );
 
 //=========================================================
 // Speak Sentence - say your cued up sentence.
@@ -103,7 +103,7 @@ int CBaseHGrunt::IRelationship ( CBaseEntity *pTarget )
 		return R_NM;
 	}
 
-	return CSquadMonster::IRelationship( pTarget );
+	return CTalkSquadMonster::IRelationship( pTarget );
 }
 
 //=========================================================
@@ -170,7 +170,7 @@ int CBaseHGrunt :: ISoundMask ( void )
 BOOL CBaseHGrunt :: FOkToSpeak( void )
 {
 // if someone else is talking, don't speak
-	if (gpGlobals->time <= CTalkMonster::g_talkWaitTime)
+	if (gpGlobals->time <= CTalkSquadMonster::g_talkWaitTime)
 		return FALSE;
 
 	if ( pev->spawnflags & SF_MONSTER_GAG )
@@ -193,7 +193,7 @@ BOOL CBaseHGrunt :: FOkToSpeak( void )
 //=========================================================
 void CBaseHGrunt :: JustSpoke( void )
 {
-	CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.5, 2.0);
+	CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.5, 2.0);
 	m_iSentence = HGRUNT_SENT_NONE;
 }
 
@@ -459,7 +459,7 @@ void CBaseHGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector 
 		// it's head shot anyways
 		ptr->iHitgroup = HITGROUP_HEAD;
 	}
-	CSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+	CTalkSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
 
@@ -472,7 +472,7 @@ int CBaseHGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 {
 	Forget( bits_MEMORY_INCOVER );
 
-	return CSquadMonster :: TakeDamage ( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	return CTalkSquadMonster :: TakeDamage ( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
 //=========================================================
@@ -768,7 +768,7 @@ void CBaseHGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		}
 
 		default:
-			CSquadMonster::HandleAnimEvent( pEvent );
+			CTalkSquadMonster::HandleAnimEvent( pEvent );
 			break;
 	}
 }
@@ -835,7 +835,7 @@ void CBaseHGrunt::BaseSpawn(const char* model)
 		pev->skin = 1; // alway dark skin
 	}
 
-	CTalkMonster::g_talkWaitTime = 0;
+	CTalkSquadMonster::g_talkWaitTime = 0;
 
 	m_voicePitch = 100;
 
@@ -882,7 +882,7 @@ void CBaseHGrunt :: StartTask ( Task_t *pTask )
 	case TASK_RUN_PATH:
 		// grunt no longer assumes he is covered if he moves
 		Forget( bits_MEMORY_INCOVER );
-		CSquadMonster ::StartTask( pTask );
+		CTalkSquadMonster ::StartTask( pTask );
 		break;
 
 	case TASK_RELOAD:
@@ -894,7 +894,7 @@ void CBaseHGrunt :: StartTask ( Task_t *pTask )
 
 	case TASK_FACE_IDEAL:
 	case TASK_FACE_ENEMY:
-		CSquadMonster :: StartTask( pTask );
+		CTalkSquadMonster :: StartTask( pTask );
 		if (pev->movetype == MOVETYPE_FLY)
 		{
 			m_IdealActivity = ACT_GLIDE;
@@ -902,7 +902,7 @@ void CBaseHGrunt :: StartTask ( Task_t *pTask )
 		break;
 
 	default: 
-		CSquadMonster :: StartTask( pTask );
+		CTalkSquadMonster :: StartTask( pTask );
 		break;
 	}
 }
@@ -928,7 +928,7 @@ void CBaseHGrunt :: RunTask ( Task_t *pTask )
 		}
 	default:
 		{
-			CSquadMonster :: RunTask( pTask );
+			CTalkSquadMonster :: RunTask( pTask );
 			break;
 		}
 	}
@@ -1575,7 +1575,7 @@ DEFINE_CUSTOM_SCHEDULES( CBaseHGrunt )
 	slGruntRepelLand,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CBaseHGrunt, CSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CBaseHGrunt, CTalkSquadMonster );
 
 //=========================================================
 // SetActivity 
@@ -1940,7 +1940,7 @@ Schedule_t *CBaseHGrunt :: GetSchedule( void )
 	}
 	
 	// no special cases here, call the base class
-	return CSquadMonster :: GetSchedule();
+	return CTalkSquadMonster :: GetSchedule();
 }
 
 //=========================================================
@@ -2091,7 +2091,7 @@ Schedule_t* CBaseHGrunt :: GetScheduleOfType ( int Type )
 		}
 	default:
 		{
-			return CSquadMonster :: GetScheduleOfType ( Type );
+			return CTalkSquadMonster :: GetScheduleOfType ( Type );
 		}
 	}
 }

@@ -21,7 +21,7 @@
 #include	"util.h"
 #include	"cbase.h"
 #include	"monsters.h"
-#include	"CTalkMonster.h"
+#include	"CTalkSquadMonster.h"
 #include	"schedule.h"
 #include	"defaultai.h"
 #include	"scripted.h"
@@ -70,7 +70,7 @@ enum OtisHead
 };
 }
 
-class COtis : public CTalkMonster
+class COtis : public CTalkSquadMonster
 {
 public:
 	void Spawn( void );
@@ -84,7 +84,7 @@ public:
 	
 	void RunTask( Task_t *pTask );
 	void StartTask( Task_t *pTask );
-	virtual int	ObjectCaps( void ) { return CTalkMonster :: ObjectCaps() | FCAP_IMPULSE_USE; }
+	virtual int	ObjectCaps( void ) { return CTalkSquadMonster :: ObjectCaps() | FCAP_IMPULSE_USE; }
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	
@@ -138,7 +138,7 @@ TYPEDESCRIPTION	COtis::m_SaveData[] =
 	DEFINE_FIELD( COtis, m_iOtisHead, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( COtis, CTalkMonster );
+IMPLEMENT_SAVERESTORE( COtis, CTalkSquadMonster );
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -252,11 +252,11 @@ DEFINE_CUSTOM_SCHEDULES( COtis )
 };
 
 
-IMPLEMENT_CUSTOM_SCHEDULES( COtis, CTalkMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( COtis, CTalkSquadMonster );
 
 void COtis :: StartTask( Task_t *pTask )
 {
-	CTalkMonster::StartTask( pTask );	
+	CTalkSquadMonster::StartTask( pTask );	
 }
 
 void COtis :: RunTask( Task_t *pTask )
@@ -268,10 +268,10 @@ void COtis :: RunTask( Task_t *pTask )
 		{
 			pev->framerate = 1.5;
 		}
-		CTalkMonster::RunTask( pTask );
+		CTalkSquadMonster::RunTask( pTask );
 		break;
 	default:
-		CTalkMonster::RunTask( pTask );
+		CTalkSquadMonster::RunTask( pTask );
 		break;
 	}
 }
@@ -444,7 +444,7 @@ void COtis :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 
 	default:
-		CTalkMonster::HandleAnimEvent( pEvent );
+		CTalkSquadMonster::HandleAnimEvent( pEvent );
 	}
 }
 
@@ -511,14 +511,14 @@ void COtis :: Precache()
 	// every new otis must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
 	TalkInit();
-	CTalkMonster::Precache();
+	CTalkSquadMonster::Precache();
 }	
 
 // Init talk data
 void COtis :: TalkInit()
 {
 	
-	CTalkMonster::TalkInit();
+	CTalkSquadMonster::TalkInit();
 
 	// scientists speach group names (group names are in sentences.txt)
 
@@ -553,7 +553,7 @@ void COtis :: TalkInit()
 int COtis :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
 	// make sure friends talk about it if player hurts talkmonsters...
-	int ret = CTalkMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
+	int ret = CTalkSquadMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 	if ( !IsAlive() || pev->deadflag == DEAD_DYING )
 		return ret;
 
@@ -650,7 +650,7 @@ void COtis::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, 
 		break;
 	}
 
-	CTalkMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+	CTalkSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
 
@@ -670,7 +670,7 @@ void COtis::Killed( entvars_t *pevAttacker, int iGib )
 	}
 
 	SetUse( NULL );	
-	CTalkMonster::Killed( pevAttacker, iGib );
+	CTalkSquadMonster::Killed( pevAttacker, iGib );
 }
 
 //=========================================================
@@ -695,7 +695,7 @@ Schedule_t* COtis :: GetScheduleOfType ( int Type )
 	case SCHED_TARGET_FACE:
 		// call base class default so that otis will talk
 		// when 'used' 
-		psched = CTalkMonster::GetScheduleOfType(Type);
+		psched = CTalkSquadMonster::GetScheduleOfType(Type);
 
 		if (psched == slIdleStand)
 			return slOtFaceTarget;	// override this for different target face behavior
@@ -708,7 +708,7 @@ Schedule_t* COtis :: GetScheduleOfType ( int Type )
 	case SCHED_IDLE_STAND:
 		// call base class default so that scientist will talk
 		// when standing during idle
-		psched = CTalkMonster::GetScheduleOfType(Type);
+		psched = CTalkSquadMonster::GetScheduleOfType(Type);
 
 		if (psched == slIdleStand)
 		{
@@ -719,7 +719,7 @@ Schedule_t* COtis :: GetScheduleOfType ( int Type )
 			return psched;	
 	}
 
-	return CTalkMonster::GetScheduleOfType( Type );
+	return CTalkSquadMonster::GetScheduleOfType( Type );
 }
 
 //=========================================================
@@ -804,12 +804,12 @@ Schedule_t *COtis :: GetSchedule ( void )
 		break;
 	}
 	
-	return CTalkMonster::GetSchedule();
+	return CTalkSquadMonster::GetSchedule();
 }
 
 MONSTERSTATE COtis :: GetIdealState ( void )
 {
-	return CTalkMonster::GetIdealState();
+	return CTalkSquadMonster::GetIdealState();
 }
 
 

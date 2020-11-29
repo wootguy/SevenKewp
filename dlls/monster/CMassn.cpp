@@ -5,9 +5,9 @@
 #include "monsters.h"
 #include "schedule.h"
 #include "animation.h"
-#include "CSquadMonster.h"
+#include "CTalkSquadMonster.h"
 #include "weapons.h"
-#include "CTalkMonster.h"
+#include "CTalkSquadMonster.h"
 #include "CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
@@ -133,7 +133,7 @@ void CMassn :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDi
 		ptr->iHitgroup = HITGROUP_HEAD;
 	}
 
-	CSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+	CTalkSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
 void CMassn :: CheckAmmo ( void )
@@ -359,7 +359,7 @@ void CMassn::KeyValue( KeyValueData* pkvd )
 		pkvd->fHandled = true;
 	}
 	else
-		CSquadMonster::KeyValue( pkvd );
+		CTalkSquadMonster::KeyValue( pkvd );
 }
 
 
