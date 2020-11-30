@@ -9,21 +9,6 @@
 #define HGRUNT_NUM_HEADS				2 // how many grunt heads are there? 
 #define HGRUNT_MINIMUM_HEADSHOT_DAMAGE	15 // must do at least this much damage in one shot to head to score a headshot kill
 
-#define HGRUNT_9MMAR				( 1 << 0)
-#define HGRUNT_HANDGRENADE			( 1 << 1)
-#define HGRUNT_GRENADELAUNCHER		( 1 << 2)
-#define HGRUNT_SHOTGUN				( 1 << 3)
-
-#define HEAD_GROUP					1
-#define HEAD_GRUNT					0
-#define HEAD_COMMANDER				1
-#define HEAD_SHOTGUN				2
-#define HEAD_M203					3
-#define GUN_GROUP					2
-#define GUN_MP5						0
-#define GUN_SHOTGUN					1
-#define GUN_NONE					2
-
 //=========================================================
 // Monster's Anim Events Go Here
 //=========================================================
@@ -80,6 +65,24 @@ enum HGRUNT_SENTENCE_TYPES
 	HGRUNT_SENT_TAUNT,
 };
 
+// each monster handles weapon flags differently. This unites those flags into a bitfield
+// that all monsters can interpret the same way
+enum MONSTER_EQUIPMENT
+{
+	MEQUIP_MP5				= 1 << 0,
+	MEQUIP_HAND_GRENADE		= 1 << 1,
+	MEQUIP_GRENADE_LAUNCHER = 1 << 2,
+	MEQUIP_SHOTGUN			= 1 << 3,
+	MEQUIP_SAW				= 1 << 4,
+	MEQUIP_SNIPER			= 1 << 5,
+	MEQUIP_GLOCK			= 1 << 6,
+	MEQUIP_DEAGLE			= 1 << 7,
+	MEQUIP_NEEDLE			= 1 << 8, // for healing
+	MEQUIP_HELMET			= 1 << 8,
+};
+
+#define ANY_RANGED_WEAPON (MEQUIP_MP5 | MEQUIP_SHOTGUN | MEQUIP_SAW | MEQUIP_SNIPER | MEQUIP_GLOCK | MEQUIP_DEAGLE)
+
 extern Schedule_t	slGruntFail[];
 extern Schedule_t	slGruntCombatFail[];
 extern Schedule_t	slGruntVictoryDance[];
@@ -129,11 +132,17 @@ public:
 	void RunTask(Task_t* pTask);
 	virtual const char* GetTaskName(int taskIdx);
 	Vector GetGunPosition(void);
-	virtual void Shoot(void);
-	void Shotgun(void);
+	bool HasEquipment(int equipItems);
+	void Shoot(bool firstRound);
+	void ShootMp5(Vector& vecShootOrigin, Vector& vecShootDir);
+	void ShootSniper(Vector& vecShootOrigin, Vector& vecShootDir);
+	void ShootShotgun(Vector& vecShootOrigin, Vector& vecShootDir);
+	void ShootSaw(Vector& vecShootOrigin, Vector& vecShootDir);
+	void ShootGlock(Vector& vecShootOrigin, Vector& vecShootDir);
+	void ShootDeagle(Vector& vecShootOrigin, Vector& vecShootDir);
 	virtual void PrescheduleThink(void);
 	virtual void GibMonster(void);
-	virtual CBaseEntity* DropGun(Vector pos, Vector angles);
+	virtual void DropEquipment(int attachmentIdx, bool randomToss);
 	void SpeakSentence(void);
 	virtual void PlaySentenceSound(int sentenceType) {}
 
@@ -172,14 +181,23 @@ public:
 	BOOL	m_fFirstEncounter;// only put on the handsign show in the squad's first encounter.
 	int		m_cClipSize;
 
+	float m_flLastShot;
+
 	int m_voicePitch;
 
-	int		m_iBrassShell;
-	int		m_iShotgunShell;
+	int	m_iBrassShell;
+	int m_iShotgunShell;
+	int m_iSawShell;
+	int m_iSawLink;
 
 	int		m_iSentence;
 
 	int m_iGruntHead;
+
+	int m_iEquipment; // bitfield of MONSTER_EQUIPMENT
+
+private:
+	void DropEquipmentToss(const char* cname, Vector vecGunPos, Vector vecGunAngles, bool randomToss);
 };
 
 class CBaseRepel : public CBaseMonster {

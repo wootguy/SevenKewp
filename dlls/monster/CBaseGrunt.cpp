@@ -1,33 +1,3 @@
-/***
-*
-*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
-*	All Rights Reserved.
-*
-*   This source code contains proprietary and confidential information of
-*   Valve LLC and its suppliers.  Access to this code is restricted to
-*   persons who have executed a written SDK license with Valve.  Any access,
-*   use or distribution of this code by or to any unlicensed person is illegal.
-*
-****/
-//=========================================================
-// hgrunt
-//=========================================================
-
-//=========================================================
-// Hit groups!	
-//=========================================================
-/*
-
-  1 - Head
-  2 - Stomach
-  3 - Gun
-
-*/
-
-
 #include	"extdll.h"
 #include	"plane.h"
 #include	"util.h"
@@ -112,44 +82,8 @@ int CBaseGrunt::IRelationship ( CBaseEntity *pTarget )
 //=========================================================
 void CBaseGrunt :: GibMonster ( void )
 {
-	Vector	vecGunPos;
-	Vector	vecGunAngles;
-
-	if ( GetBodygroup( 2 ) != 2 )
-	{// throw a gun if the grunt has one
-		GetAttachment( 0, vecGunPos, vecGunAngles );
-		
-		CBaseEntity *pGun = DropGun(vecGunPos, vecGunAngles);
-		
-		if ( pGun )
-		{
-			pGun->pev->velocity = Vector (RANDOM_FLOAT(-100,100), RANDOM_FLOAT(-100,100), RANDOM_FLOAT(200,300));
-			pGun->pev->avelocity = Vector ( 0, RANDOM_FLOAT( 200, 400 ), 0 );
-		}
-	
-		if (FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ))
-		{
-			pGun = DropItem( "ammo_ARgrenades", vecGunPos, vecGunAngles );
-			if ( pGun )
-			{
-				pGun->pev->velocity = Vector (RANDOM_FLOAT(-100,100), RANDOM_FLOAT(-100,100), RANDOM_FLOAT(200,300));
-				pGun->pev->avelocity = Vector ( 0, RANDOM_FLOAT( 200, 400 ), 0 );
-			}
-		}
-	}
-
-	CBaseMonster :: GibMonster();
-}
-
-CBaseEntity* CBaseGrunt::DropGun(Vector pos, Vector angles) {
-	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
-	{
-		return DropItem("weapon_shotgun", pos, angles);
-	}
-	else
-	{
-		return DropItem("weapon_9mmAR", pos, angles);
-	}
+	DropEquipment(0, true);
+	CBaseMonster::GibMonster();
 }
 
 //=========================================================
@@ -283,6 +217,10 @@ BOOL CBaseGrunt :: CheckMeleeAttack1 ( float flDot, float flDist )
 //=========================================================
 BOOL CBaseGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 {
+	if (!HasEquipment(ANY_RANGED_WEAPON)) {
+		return FALSE;
+	}
+
 	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire() )
 	{
 		TraceResult	tr;
@@ -313,7 +251,7 @@ BOOL CBaseGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 //=========================================================
 BOOL CBaseGrunt :: CheckRangeAttack2 ( float flDot, float flDist )
 {
-	if (! FBitSet(pev->weapons, (HGRUNT_HANDGRENADE | HGRUNT_GRENADELAUNCHER)))
+	if (!HasEquipment(MEQUIP_HAND_GRENADE | MEQUIP_GRENADE_LAUNCHER))
 	{
 		return FALSE;
 	}
@@ -342,7 +280,7 @@ BOOL CBaseGrunt :: CheckRangeAttack2 ( float flDot, float flDist )
 	
 	Vector vecTarget;
 
-	if (FBitSet( pev->weapons, HGRUNT_HANDGRENADE))
+	if (HasEquipment(MEQUIP_HAND_GRENADE))
 	{
 		// find feet
 		if (RANDOM_LONG(0,1))
@@ -389,7 +327,7 @@ BOOL CBaseGrunt :: CheckRangeAttack2 ( float flDot, float flDist )
 	}
 
 		
-	if (FBitSet( pev->weapons, HGRUNT_HANDGRENADE))
+	if (HasEquipment(MEQUIP_HAND_GRENADE))
 	{
 		Vector vecToss = VecCheckToss( pev, GetGunPosition(), vecTarget, 0.5 );
 
@@ -447,7 +385,7 @@ void CBaseGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector v
 	if (ptr->iHitgroup == 11)
 	{
 		// make sure we're wearing one
-		if (GetBodygroup( 1 ) == HEAD_GRUNT && (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB)))
+		if (HasEquipment(MEQUIP_HELMET) && (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB)))
 		{
 			// absorb damage
 			flDamage -= 20;
@@ -460,6 +398,7 @@ void CBaseGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector v
 		// it's head shot anyways
 		ptr->iHitgroup = HITGROUP_HEAD;
 	}
+
 	CTalkSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
@@ -529,7 +468,7 @@ void CBaseGrunt :: SetYawSpeed ( void )
 //=========================================================
 void CBaseGrunt :: CheckAmmo ( void )
 {
-	if ( m_cAmmoLoaded <= 0 )
+	if ( HasEquipment(ANY_RANGED_WEAPON) && m_cAmmoLoaded <= 0 )
 	{
 		SetConditions(bits_COND_NO_AMMO_LOADED);
 	}
@@ -582,58 +521,177 @@ Vector CBaseGrunt :: GetGunPosition( )
 	}
 }
 
-//=========================================================
-// Shoot
-//=========================================================
-void CBaseGrunt :: Shoot ( void )
-{
-	if (m_hEnemy == NULL)
-	{
-		return;
-	}
-
-	Vector vecShootOrigin = GetGunPosition();
-	Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
-
-	UTIL_MakeVectors ( pev->angles );
-
-	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40,90) + gpGlobals->v_up * RANDOM_FLOAT(75,200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
-	EjectBrass ( vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL); 
-	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5 ); // shoot +-5 degrees
-
-	pev->effects |= EF_MUZZLEFLASH;
-	
-	m_cAmmoLoaded--;// take away a bullet!
-
-	Vector angDir = UTIL_VecToAngles( vecShootDir );
-	SetBlending( 0, angDir.x );
+bool CBaseGrunt::HasEquipment(int equipItems) {
+	return m_iEquipment & equipItems;
 }
 
 //=========================================================
 // Shoot
 //=========================================================
-void CBaseGrunt :: Shotgun ( void )
+void CBaseGrunt::Shoot(bool firstRound)
 {
-	if (m_hEnemy == NULL)
-	{
+	if (m_hEnemy == NULL) {
 		return;
-	}
+	}	
 
 	Vector vecShootOrigin = GetGunPosition();
-	Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
+	Vector vecShootDir = ShootAtEnemy(vecShootOrigin);
 
+	bool didShoot = true;
+
+	if (HasEquipment(MEQUIP_MP5)) {
+		ShootMp5(vecShootOrigin, vecShootDir);
+		if (firstRound) {
+			// the first round of the three round burst plays the sound and puts a sound in the world sound list.
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_LONG(0, 1) ? "hgrunt/gr_mgun1.wav" : "hgrunt/gr_mgun2.wav", 1, ATTN_NORM);
+		}
+	}
+	else if (HasEquipment(MEQUIP_SNIPER) && gpGlobals->time - m_flLastShot > 0.11) {
+		ShootSniper(vecShootOrigin, vecShootDir);
+	}
+	else if (HasEquipment(MEQUIP_SHOTGUN)) {
+		ShootShotgun(vecShootOrigin, vecShootDir);
+	}
+	else if (HasEquipment(MEQUIP_SAW)) {
+		ShootSaw(vecShootOrigin, vecShootDir);
+	}
+	else if (HasEquipment(MEQUIP_GLOCK) && gpGlobals->time - m_flLastShot > 0.11) {
+		ShootGlock(vecShootOrigin, vecShootDir);
+	}
+	else if (HasEquipment(MEQUIP_DEAGLE) && gpGlobals->time - m_flLastShot > 0.11) {
+		ShootDeagle(vecShootOrigin, vecShootDir);
+	}
+	else {
+		didShoot = false;
+	}
+
+	if (didShoot) {
+		pev->effects |= EF_MUZZLEFLASH;
+	
+		m_cAmmoLoaded--;// take away a bullet!
+
+		Vector angDir = UTIL_VecToAngles( vecShootDir );
+		SetBlending( 0, angDir.x );
+
+		m_flLastShot = gpGlobals->time;
+
+		if (firstRound) {
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
+		}
+	}
+}
+
+void CBaseGrunt::ShootMp5(Vector& vecShootOrigin, Vector& vecShootDir)
+{
+	UTIL_MakeVectors(pev->angles);
+
+	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40, 90) + gpGlobals->v_up * RANDOM_FLOAT(75, 200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
+	EjectBrass(vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL);
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5); // shoot +-5 degrees;
+}
+
+void CBaseGrunt::ShootSniper(Vector& vecShootOrigin, Vector& vecShootDir) {
+	//TODO: why is this 556? is 762 too damaging?
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 2048, BULLET_PLAYER_556);
+}
+
+//=========================================================
+// Shoot
+//=========================================================
+void CBaseGrunt ::ShootShotgun(Vector& vecShootOrigin, Vector& vecShootDir)
+{
 	UTIL_MakeVectors ( pev->angles );
 
 	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40,90) + gpGlobals->v_up * RANDOM_FLOAT(75,200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
 	EjectBrass ( vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iShotgunShell, TE_BOUNCE_SHOTSHELL); 
 	FireBullets(gSkillData.hgruntShotgunPellets, vecShootOrigin, vecShootDir, VECTOR_CONE_15DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 0 ); // shoot +-7.5 degrees
 
-	pev->effects |= EF_MUZZLEFLASH;
-	
-	m_cAmmoLoaded--;// take away a bullet!
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sbarrel1.wav", 1, ATTN_NORM);
+}
 
-	Vector angDir = UTIL_VecToAngles( vecShootDir );
-	SetBlending( 0, angDir.x );
+void CBaseGrunt::ShootSaw(Vector& vecShootOrigin, Vector& vecShootDir)
+{
+	UTIL_MakeVectors(pev->angles);
+
+	switch (RANDOM_LONG(0, 1))
+	{
+	case 0:
+	{
+		auto vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(75, 200) + gpGlobals->v_up * RANDOM_FLOAT(150, 200) + gpGlobals->v_forward * 25.0;
+		EjectBrass(vecShootOrigin - vecShootDir * 6, vecShellVelocity, pev->angles.y, m_iSawLink, TE_BOUNCE_SHELL);
+		break;
+	}
+
+	case 1:
+	{
+		auto vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(100, 250) + gpGlobals->v_up * RANDOM_FLOAT(100, 150) + gpGlobals->v_forward * 25.0;
+		EjectBrass(vecShootOrigin - vecShootDir * 6, vecShellVelocity, pev->angles.y, m_iSawShell, TE_BOUNCE_SHELL);
+		break;
+	}
+	}
+
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_5DEGREES, 8192, BULLET_PLAYER_556, 2); // shoot +-5 degrees
+
+	switch (RANDOM_LONG(0, 2))
+	{
+	case 0: EMIT_SOUND_DYN(edict(), CHAN_WEAPON, "weapons/saw_fire1.wav", VOL_NORM, ATTN_NORM, 0, RANDOM_LONG(0, 15) + 94); break;
+	case 1: EMIT_SOUND_DYN(edict(), CHAN_WEAPON, "weapons/saw_fire2.wav", VOL_NORM, ATTN_NORM, 0, RANDOM_LONG(0, 15) + 94); break;
+	case 2: EMIT_SOUND_DYN(edict(), CHAN_WEAPON, "weapons/saw_fire3.wav", VOL_NORM, ATTN_NORM, 0, RANDOM_LONG(0, 15) + 94); break;
+	}
+}
+
+void CBaseGrunt::ShootGlock(Vector& vecShootOrigin, Vector& vecShootDir) {
+	UTIL_MakeVectors(pev->angles);
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM); // shoot +-5 degrees
+
+	const auto random = RANDOM_LONG(0, 20);
+	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, "weapons/pl_gun3.wav", VOL_NORM, ATTN_NORM, 0, (random <= 10 ? random - 5 : 0) + 100);
+}
+
+void CBaseGrunt::ShootDeagle(Vector& vecShootOrigin, Vector& vecShootDir) {
+	UTIL_MakeVectors(pev->angles);
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_PLAYER_357); // shoot +-5 degrees
+
+	const auto random = RANDOM_LONG(0, 20);
+	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, "weapons/desert_eagle_fire.wav", VOL_NORM, ATTN_NORM, 0, (random <= 10 ? random - 5 : 0) + 100);
+}
+
+void CBaseGrunt::DropEquipmentToss(const char* cname, Vector vecGunPos, Vector vecGunAngles, bool randomToss) {
+	CBaseEntity* item = DropItem(cname, vecGunPos, vecGunAngles);
+
+	if (randomToss && item) {
+		item->pev->velocity = Vector(RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(200, 300));
+		item->pev->avelocity = Vector(0, RANDOM_FLOAT(200, 400), 0);
+	}
+}
+
+void CBaseGrunt::DropEquipment(int attachmentIdx, bool randomToss) {
+	Vector	vecGunPos;
+	Vector	vecGunAngles;
+	GetAttachment(attachmentIdx, vecGunPos, vecGunAngles);
+
+	// now spawn a gun.
+	if (HasEquipment(MEQUIP_MP5)) {
+		DropEquipmentToss("weapon_9mmAR", vecGunPos, vecGunAngles, randomToss);
+	}
+	if (HasEquipment(MEQUIP_SHOTGUN)) {
+		DropEquipmentToss("weapon_shotgun", vecGunPos, vecGunAngles, randomToss);
+	}
+	if (HasEquipment(MEQUIP_GRENADE_LAUNCHER)) {
+		DropEquipmentToss("ammo_ARgrenades", BodyTarget(pev->origin), vecGunAngles, randomToss);
+	}
+	if (HasEquipment(MEQUIP_SAW)) {
+		DropEquipmentToss("weapon_m249", vecGunPos, vecGunAngles, randomToss);
+	}
+	if (HasEquipment(MEQUIP_DEAGLE)) {
+		DropEquipmentToss("weapon_eagle", vecGunPos, vecGunAngles, randomToss);
+	}
+	if (HasEquipment(MEQUIP_GLOCK)) {
+		DropEquipmentToss("weapon_9mmhandgun", vecGunPos, vecGunAngles, randomToss);
+	}
+	if (HasEquipment(MEQUIP_SNIPER)) {
+		DropEquipmentToss("weapon_sniperrifle", vecGunPos, vecGunAngles, randomToss);
+	}
 }
 
 //=========================================================
@@ -642,40 +700,23 @@ void CBaseGrunt :: Shotgun ( void )
 //=========================================================
 void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
-	Vector	vecShootDir;
-	Vector	vecShootOrigin;
-
 	switch( pEvent->event )
 	{
 		case HGRUNT_AE_DROP_GUN:
-			{
-			Vector	vecGunPos;
-			Vector	vecGunAngles;
-
-			GetAttachment( 0, vecGunPos, vecGunAngles );
-
-			// switch to body group with no gun.
-			SetBodygroup( GUN_GROUP, GUN_NONE );
-
-			// now spawn a gun.
-			if (FBitSet( pev->weapons, HGRUNT_SHOTGUN ))
-			{
-				 DropItem( "weapon_shotgun", vecGunPos, vecGunAngles );
-			}
-			else
-			{
-				 DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
-			}
-			if (FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ))
-			{
-				DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
-			}
-
-			}
+			DropEquipment(0, false);
 			break;
 
 		case HGRUNT_AE_RELOAD:
-			EMIT_SOUND( ENT(pev), CHAN_WEAPON, "hgrunt/gr_reload1.wav", 1, ATTN_NORM );
+			if (HasEquipment(MEQUIP_SAW)) {
+				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/saw_reload.wav", 1, ATTN_NORM);
+			}
+			else if (HasEquipment(MEQUIP_DEAGLE)) {
+				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/desert_eagle_reload.wav", 1, ATTN_NORM);
+			}
+			else {
+				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "hgrunt/gr_reload1.wav", 1, ATTN_NORM);
+			}
+			
 			m_cAmmoLoaded = m_cClipSize;
 			ClearConditions(bits_COND_NO_AMMO_LOADED);
 			break;
@@ -712,35 +753,12 @@ void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		break;
 
 		case HGRUNT_AE_BURST1:
-		{
-			if ( FBitSet( pev->weapons, HGRUNT_9MMAR ))
-			{
-				Shoot();
-
-				// the first round of the three round burst plays the sound and puts a sound in the world sound list.
-				if ( RANDOM_LONG(0,1) )
-				{
-					EMIT_SOUND( ENT(pev), CHAN_WEAPON, "hgrunt/gr_mgun1.wav", 1, ATTN_NORM );
-				}
-				else
-				{
-					EMIT_SOUND( ENT(pev), CHAN_WEAPON, "hgrunt/gr_mgun2.wav", 1, ATTN_NORM );
-				}
-			}
-			else
-			{
-				Shotgun( );
-
-				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sbarrel1.wav", 1, ATTN_NORM );
-			}
-		
-			CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
-		}
-		break;
+			Shoot(true);
+			break;
 
 		case HGRUNT_AE_BURST2:
 		case HGRUNT_AE_BURST3:
-			Shoot();
+			Shoot(false);
 			break;
 
 		case HGRUNT_AE_KICK:
@@ -802,58 +820,36 @@ void CBaseGrunt::BaseSpawn(const char* model)
 
 	m_HackedGunPos = Vector ( 0, 0, 55 );
 
-	if (pev->weapons == 0)
-	{
-		// initialize to original values
-		pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
-		// pev->weapons = HGRUNT_SHOTGUN;
-		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
-	}
-
-	if (FBitSet( pev->weapons, HGRUNT_SHOTGUN ))
-	{
-		SetBodygroup( GUN_GROUP, GUN_SHOTGUN );
-		m_cClipSize		= 8;
-	}
-	else
-	{
-		m_cClipSize		= GRUNT_CLIP_SIZE;
-	}
-	m_cAmmoLoaded		= m_cClipSize;
-
-	if (RANDOM_LONG( 0, 99 ) < 80)
-		pev->skin = 0;	// light skin
-	else
-		pev->skin = 1;	// dark skin
-
-	if (FBitSet( pev->weapons, HGRUNT_SHOTGUN ))
-	{
-		SetBodygroup( HEAD_GROUP, HEAD_SHOTGUN);
-	}
-	else if (FBitSet( pev->weapons, HGRUNT_GRENADELAUNCHER ))
-	{
-		SetBodygroup( HEAD_GROUP, HEAD_M203 );
-		pev->skin = 1; // alway dark skin
-	}
-
 	CTalkSquadMonster::g_talkWaitTime = 0;
 
 	m_voicePitch = 100;
 
 	MonsterInit();
+
+	m_iEquipment = 0;
 }
 
 void CBaseGrunt::BasePrecache() {
 	m_iBrassShell = PRECACHE_MODEL("models/shell.mdl");// brass shell
 	m_iShotgunShell = PRECACHE_MODEL("models/shotgunshell.mdl");
+	m_iSawShell = PRECACHE_MODEL("models/saw_shell.mdl");
+	m_iSawLink = PRECACHE_MODEL("models/saw_link.mdl");
 
 	// 9mmAR burst fire
 	PRECACHE_SOUND("hgrunt/gr_mgun1.wav");
 	PRECACHE_SOUND("hgrunt/gr_mgun2.wav");
-	
-	PRECACHE_SOUND("hgrunt/gr_reload1.wav");
 	PRECACHE_SOUND("weapons/glauncher.wav");
 	PRECACHE_SOUND("weapons/sbarrel1.wav");
+	PRECACHE_SOUND("hgrunt/gr_reload1.wav");
+	
+	PRECACHE_SOUND("weapons/saw_fire1.wav");
+	PRECACHE_SOUND("weapons/saw_fire2.wav");
+	PRECACHE_SOUND("weapons/saw_fire3.wav");
+	PRECACHE_SOUND("weapons/saw_reload.wav");
+
+	PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
+	PRECACHE_SOUND("weapons/desert_eagle_reload.wav");
+	
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 
 	CTalkSquadMonster::Precache();
@@ -1629,7 +1625,7 @@ int CBaseGrunt::GetActivitySequence(Activity NewActivity) {
 	{
 	case ACT_RANGE_ATTACK1:
 		// grunt is either shooting standing or shooting crouched
-		if (FBitSet( pev->weapons, HGRUNT_9MMAR))
+		if (HasEquipment(MEQUIP_MP5))
 		{
 			if ( m_fStanding )
 			{
@@ -1659,7 +1655,7 @@ int CBaseGrunt::GetActivitySequence(Activity NewActivity) {
 	case ACT_RANGE_ATTACK2:
 		// grunt is going to a secondary long range attack. This may be a thrown 
 		// grenade or fired grenade, we must determine which and pick proper sequence
-		if ( pev->weapons & HGRUNT_HANDGRENADE )
+		if (HasEquipment(MEQUIP_HAND_GRENADE))
 		{
 			// get toss anim
 			iSequence = LookupSequence( "throwgrenade" );
@@ -1881,7 +1877,7 @@ Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 		}
 		// can grenade launch
 
-		else if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER) && HasConditions(bits_COND_CAN_RANGE_ATTACK2) && OccupySlot(bits_SLOTS_HGRUNT_GRENADE))
+		else if (HasEquipment(MEQUIP_GRENADE_LAUNCHER) && HasConditions(bits_COND_CAN_RANGE_ATTACK2) && OccupySlot(bits_SLOTS_HGRUNT_GRENADE))
 		{
 			// shoot a grenade if you can
 			return GetScheduleOfType(SCHED_RANGE_ATTACK2);

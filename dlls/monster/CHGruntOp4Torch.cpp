@@ -46,7 +46,6 @@ enum TorchAllyWeaponFlag
 };
 }
 
-#define	TORCH_AE_SHOOT				4
 #define TORCH_AE_HOLSTER_TORCH		17
 #define TORCH_AE_HOLSTER_GUN		18
 #define TORCH_AE_HOLSTER_BOTH		19
@@ -60,7 +59,6 @@ public:
 	void Precache( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int GetActivitySequence(Activity NewActivity);
-	void Shoot ( void );
 	void GibMonster( void );
 
 	int	Save( CSave &save ); 
@@ -94,8 +92,6 @@ public:
 	BOOL m_fTorchActive;
 
 	CBeam* m_pTorchBeam;
-
-	float m_flLastShot;
 };
 
 class COFTorchAllyRepel : public CBaseRepel
@@ -146,25 +142,8 @@ void COFTorchAlly :: GibMonster ( void )
 			pMedic->HealMe( nullptr );
 	}
 
-	Vector	vecGunPos;
-	Vector	vecGunAngles;
-
-	//TODO: probably the wrong logic, but it was in the original
-	if ( GetBodygroup( TorchAllyBodygroup::Weapons ) != TorchAllyWeapon::DesertEagle )
-	{// throw a gun if the grunt has one
-		GetAttachment( 0, vecGunPos, vecGunAngles );
-		
-		CBaseEntity *pGun = DropItem( "weapon_eagle", vecGunPos, vecGunAngles );
-
-		if ( pGun )
-		{
-			pGun->pev->velocity = Vector (RANDOM_FLOAT(-100,100), RANDOM_FLOAT(-100,100), RANDOM_FLOAT(200,300));
-			pGun->pev->avelocity = Vector ( 0, RANDOM_FLOAT( 200, 400 ), 0 );
-		}
-
-		//Note: this wasn't in the original
-		SetBodygroup( TorchAllyBodygroup::Weapons, TorchAllyWeapon::None );
-	}
+	DropEquipment(0, true);
+	SetBodygroup(TorchAllyBodygroup::Weapons, TorchAllyWeapon::None);
 
 	if( m_fTorchActive )
 	{
@@ -190,74 +169,20 @@ void COFTorchAlly :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector
 	CBaseGruntOp4::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
-void COFTorchAlly :: Shoot ( void )
-{
-	//Limit fire rate
-	if (m_hEnemy == NULL || gpGlobals->time - m_flLastShot <= 0.11 )
-	{
-		return;
-	}
-
-	Vector vecShootOrigin = GetGunPosition();
-	Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
-
-	UTIL_MakeVectors ( pev->angles );
-
-	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_PLAYER_357, 0 ); // shoot +-5 degrees
-
-	const auto random = RANDOM_LONG( 0, 20 );
-
-	const auto pitch = random <= 10 ? random + 95 : 100;
-
-	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, "weapons/desert_eagle_fire.wav", VOL_NORM, ATTN_NORM, 0, pitch );
-
-	pev->effects |= EF_MUZZLEFLASH;
-	
-	m_cAmmoLoaded--;// take away a bullet!
-
-	Vector angDir = UTIL_VecToAngles( vecShootDir );
-	SetBlending( 0, angDir.x );
-
-	m_flLastShot = gpGlobals->time;
-}
-
 void COFTorchAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
-	Vector	vecShootDir;
-	Vector	vecShootOrigin;
 	//TODO: add remaining torch grunt events
 	switch( pEvent->event )
 	{
 		case HGRUNT_AE_DROP_GUN:
-			{
-				//If we don't have a gun equipped
-				//TODO: why is it checking like this?
-				if( GetBodygroup( TorchAllyBodygroup::Weapons ) != TorchAllyWeapon::DesertEagle )
-				{
-					Vector	vecGunPos;
-					Vector	vecGunAngles;
-
-					GetAttachment( 0, vecGunPos, vecGunAngles );
-
-					// switch to body group with no gun.
-					SetBodygroup( TorchAllyBodygroup::Weapons, TorchAllyWeapon::None );
-
-					// now spawn a gun.
-					DropItem( "weapon_eagle", vecGunPos, vecGunAngles );
-				}
-			}
+			DropEquipment(0, false);
+			SetBodygroup( TorchAllyBodygroup::Weapons, TorchAllyWeapon::None );
 			break;
 
 		case HGRUNT_AE_GREN_DROP:
 		{
 			UTIL_MakeVectors( pev->angles );
 			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + gpGlobals->v_up * 6, g_vecZero, 3 );
-		}
-		break;
-
-		case TORCH_AE_SHOOT:
-		{
-			Shoot();
 		}
 		break;
 
@@ -377,18 +302,20 @@ void COFTorchAlly :: Spawn()
 
 	// get voice pitch
 	m_voicePitch = 95;
-	canHaveGrenadeLauncher = false;
 
 	SetUse( &COFTorchAlly::FollowerUse );
+
+	// set base equipment flags
+	if (FBitSet(pev->weapons, TorchAllyWeaponFlag::DesertEagle)) {
+		m_iEquipment |= MEQUIP_DEAGLE;
+	}
+	m_iEquipment |= MEQUIP_HELMET;
 }
 
 void COFTorchAlly :: Precache()
 {
 	PRECACHE_MODEL("models/hgrunt_torch.mdl");
 	PRECACHE_MODEL( TORCH_BEAM_SPRITE );
-
-	PRECACHE_SOUND( "weapons/desert_eagle_fire.wav" );
-	PRECACHE_SOUND( "weapons/desert_eagle_reload.wav" );
 
 	PRECACHE_SOUND( "fgrunt/torch_light.wav" );
 	PRECACHE_SOUND( "fgrunt/torch_cut_loop.wav" );

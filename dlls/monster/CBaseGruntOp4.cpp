@@ -50,7 +50,7 @@ int CBaseGruntOp4::ISoundMask(void)
 BOOL CBaseGruntOp4::CheckRangeAttack1(float flDot, float flDist)
 {
 	//Only if we have a weapon
-	if (pev->weapons)
+	if (HasEquipment(ANY_RANGED_WEAPON))
 	{
 		// not valid for medic/torch, but this flag bit is unused for them
 		const auto maxDistance = pev->weapons & HAS_SHOTGUN_FLAG ? 640 : 1024;
@@ -90,32 +90,15 @@ BOOL CBaseGruntOp4::CheckRangeAttack1(float flDot, float flDist)
 
 void CBaseGruntOp4::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
 {
-	// check for helmet shot
-	if (ptr->iHitgroup == 11)
-	{
-		// make sure we're wearing one
-		//TODO: disabled for ally
-		if (/*GetBodygroup( HGruntAllyBodygroup::Head ) == HGruntAllyHead::GasMask &&*/ (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_CLUB)))
-		{
-			// absorb damage
-			flDamage -= 20;
-			if (flDamage <= 0)
-			{
-				UTIL_Ricochet(ptr->vecEndPos, 1.0);
-				flDamage = 0.01;
-			}
-		}
-		// it's head shot anyways
-		ptr->iHitgroup = HITGROUP_HEAD;
-	}
 	//PCV absorbs some damage types
-	else if ((ptr->iHitgroup == HITGROUP_CHEST || ptr->iHitgroup == HITGROUP_STOMACH)
+	if ((ptr->iHitgroup == HITGROUP_CHEST || ptr->iHitgroup == HITGROUP_STOMACH)
 		&& (bitsDamageType & (DMG_BLAST | DMG_BULLET | DMG_SLASH)))
 	{
 		flDamage *= 0.5;
 	}
 
-	CTalkSquadMonster::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
+	// should probably skip the CBaseGrunt TraceAttack since op4 grunt models have no helmet hitboxes
+	CBaseGrunt::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 }
 
 int CBaseGruntOp4::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
@@ -411,7 +394,7 @@ Schedule_t* CBaseGruntOp4::GetMonsterStateSchedule(void) {
 			return GetScheduleOfType(SCHED_MELEE_ATTACK1);
 		}
 		// can grenade launch
-		else if (canHaveGrenadeLauncher && FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER) && HasConditions(bits_COND_CAN_RANGE_ATTACK2) && OccupySlot(bits_SLOTS_HGRUNT_GRENADE))
+		else if (HasEquipment(MEQUIP_GRENADE_LAUNCHER) && HasConditions(bits_COND_CAN_RANGE_ATTACK2) && OccupySlot(bits_SLOTS_HGRUNT_GRENADE))
 		{
 			// shoot a grenade if you can
 			return GetScheduleOfType(SCHED_RANGE_ATTACK2);

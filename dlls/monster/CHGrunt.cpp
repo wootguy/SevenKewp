@@ -13,6 +13,21 @@
 #include "customentity.h"
 #include "CBaseGrunt.h"
 
+#define HEAD_GROUP					1
+#define HEAD_GRUNT					0
+#define HEAD_COMMANDER				1
+#define HEAD_SHOTGUN				2
+#define HEAD_M203					3
+#define GUN_GROUP					2
+#define GUN_MP5						0
+#define GUN_SHOTGUN					1
+#define GUN_NONE					2
+
+#define HGRUNT_9MMAR				( 1 << 0)
+#define HGRUNT_HANDGRENADE			( 1 << 1)
+#define HGRUNT_GRENADELAUNCHER		( 1 << 2)
+#define HGRUNT_SHOTGUN				( 1 << 3)
+
 #define	SENTENCE_VOLUME (float)0.35 // volume of grunt sentences
 
 class CHGrunt : public CBaseGrunt
@@ -25,6 +40,7 @@ public:
 	void DeathSound(void);
 	void IdleSound(void);
 	void PlaySentenceSound(int sentenceType);
+	void HandleAnimEvent(MonsterEvent_t* pEvent);
 
 private:
 	static const char* pPainSounds[];
@@ -89,6 +105,57 @@ void CHGrunt::Spawn() {
 		m_voicePitch = 109 + RANDOM_LONG(0, 7);
 	else
 		m_voicePitch = 100;
+
+	if (pev->weapons == 0)
+	{
+		// initialize to original values
+		pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
+		// pev->weapons = HGRUNT_SHOTGUN;
+		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
+	}
+
+	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
+	{
+		SetBodygroup(GUN_GROUP, GUN_SHOTGUN);
+		m_cClipSize = 8;
+	}
+	else
+	{
+		m_cClipSize = GRUNT_CLIP_SIZE;
+	}
+	m_cAmmoLoaded = m_cClipSize;
+
+	if (RANDOM_LONG(0, 99) < 80)
+		pev->skin = 0;	// light skin
+	else
+		pev->skin = 1;	// dark skin
+
+	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
+	{
+		SetBodygroup(HEAD_GROUP, HEAD_SHOTGUN);
+	}
+	else if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER))
+	{
+		SetBodygroup(HEAD_GROUP, HEAD_M203);
+		pev->skin = 1; // alway dark skin
+	}
+
+	// set base equipment flags
+	if (FBitSet(pev->weapons, HGRUNT_9MMAR)) {
+		m_iEquipment |= MEQUIP_MP5;
+	}
+	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN)) {
+		m_iEquipment |= MEQUIP_SHOTGUN;
+	}
+	if (FBitSet(pev->weapons, HGRUNT_HANDGRENADE)) {
+		m_iEquipment |= MEQUIP_HAND_GRENADE;
+	}
+	if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER)) {
+		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
+	}
+	if (GetBodygroup(1) == HEAD_GRUNT) {
+		m_iEquipment |= MEQUIP_HELMET;
+	}
 }
 
 void CHGrunt::Precache()
@@ -166,6 +233,22 @@ void CHGrunt::PlaySentenceSound(int sentenceType) {
 	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[sentenceType], SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 }
 
+void CHGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
+{
+	Vector	vecShootDir;
+	Vector	vecShootOrigin;
+
+	switch (pEvent->event)
+	{
+	case HGRUNT_AE_DROP_GUN:
+		DropEquipment(0, true);
+		SetBodygroup(GUN_GROUP, GUN_NONE);
+		break;
+	default:
+		CBaseGrunt::HandleAnimEvent(pEvent);
+		break;
+	}
+}
 
 void CDeadHGrunt::Spawn(void)
 {
