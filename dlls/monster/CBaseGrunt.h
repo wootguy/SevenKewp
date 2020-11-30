@@ -142,6 +142,7 @@ public:
 	void ShootDeagle(Vector& vecShootOrigin, Vector& vecShootDir);
 	virtual void PrescheduleThink(void);
 	virtual void GibMonster(void);
+	virtual void Killed(entvars_t* pevAttacker, int iGib);
 	virtual void DropEquipment(int attachmentIdx, bool randomToss);
 	void SpeakSentence(void);
 	virtual void PlaySentenceSound(int sentenceType) {}
@@ -182,6 +183,7 @@ public:
 	int		m_cClipSize;
 
 	float m_flLastShot;
+	BOOL m_lastAttackCheck;
 
 	int m_voicePitch;
 
@@ -195,6 +197,12 @@ public:
 	int m_iGruntHead;
 
 	int m_iEquipment; // bitfield of MONSTER_EQUIPMENT
+
+	virtual void InitAiFlags();
+	// AI behavior flags
+	bool waitForEnemyFire; // wait for the enemy to attack before shooting
+	bool runFromHeavyDamage; // take cover if taking heavy damage
+	bool canCallMedic; // can this grunt call out for a medic
 
 private:
 	void DropEquipmentToss(const char* cname, Vector vecGunPos, Vector vecGunAngles, bool randomToss);

@@ -204,7 +204,7 @@ public:
 	void VacateSlot(void);
 	void ScheduleChange(void);
 	BOOL OccupySlot(int iDesiredSlot);
-	BOOL NoFriendlyFire(void);
+	virtual BOOL NoFriendlyFire(void);
 
 	// squad functions still left in base class
 	CTalkSquadMonster* MySquadLeader()
@@ -251,6 +251,8 @@ public:
 	float m_flMedicWaitTime;
 	float m_flLastHitByPlayer;
 	int m_iPlayerHits;
+	float m_flPlayerDamage;
+	bool canBeMadAtPlayer; // grunt will retaliate on too much friendly fire
 
 	CTalkSquadMonster* MySquadMedic();
 
