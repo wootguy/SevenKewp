@@ -61,8 +61,12 @@ IMPLEMENT_SAVERESTORE( CTalkSquadMonster, CBaseMonster );
 const char *CTalkSquadMonster::m_szFriends[TLK_CFRIENDS] = 
 {
 	"monster_barney",
+	"monster_otis",
 	"monster_scientist",
 	"monster_sitting_scientist",
+	"monster_human_grunt_ally",
+	"monster_human_medic_ally",
+	"monster_human_torch_ally"
 };
 
 
@@ -78,7 +82,7 @@ Task_t	tlIdleResponse[] =
 	{ TASK_TLK_RESPOND,		(float)0		},// Wait and then say my response
 	{ TASK_TLK_IDEALYAW,	(float)0		},// look at who I'm talking to
 	{ TASK_FACE_IDEAL,		(float)0		}, 
-	{ TASK_SET_ACTIVITY,	(float)ACT_SIGNAL3	},
+	{ TASK_SET_ACTIVITY,	(float)ACT_IDLE	},
 	{ TASK_TLK_EYECONTACT,	(float)0		},// Wait until speaker is done
 };
 
@@ -101,7 +105,7 @@ Task_t	tlIdleSpeak[] =
 	{ TASK_TLK_SPEAK,		(float)0		},// question or remark
 	{ TASK_TLK_IDEALYAW,	(float)0		},// look at who I'm talking to
 	{ TASK_FACE_IDEAL,		(float)0		}, 
-	{ TASK_SET_ACTIVITY,	(float)ACT_SIGNAL3	},
+	{ TASK_SET_ACTIVITY,	(float)ACT_IDLE	},
 	{ TASK_TLK_EYECONTACT,	(float)0		},
 	{ TASK_WAIT_RANDOM,		(float)0.5		},
 };
@@ -122,7 +126,7 @@ Schedule_t	slIdleSpeak[] =
 
 Task_t	tlIdleSpeakWait[] =
 {
-	{ TASK_SET_ACTIVITY,	(float)ACT_SIGNAL3	},// Stop and talk
+	{ TASK_SET_ACTIVITY,	(float)ACT_IDLE	},// Stop and talk
 	{ TASK_TLK_SPEAK,		(float)0		},// question or remark
 	{ TASK_TLK_EYECONTACT,	(float)0		},// 
 	{ TASK_WAIT,			(float)2		},// wait - used when sci is in 'use' mode to keep head turned
@@ -144,7 +148,7 @@ Schedule_t	slIdleSpeakWait[] =
 
 Task_t	tlIdleHello[] =
 {
-	{ TASK_SET_ACTIVITY,	(float)ACT_SIGNAL3	},// Stop and talk
+	{ TASK_SET_ACTIVITY,	(float)ACT_IDLE	},// Stop and talk
 	{ TASK_TLK_HELLO,		(float)0		},// Try to say hello to player
 	{ TASK_TLK_EYECONTACT,	(float)0		},
 	{ TASK_WAIT,			(float)0.5		},// wait a bit
@@ -274,7 +278,7 @@ Task_t	tlTlkIdleWatchClientStare[] =
 	{ TASK_TLK_STARE,			(float)0		},
 	{ TASK_TLK_IDEALYAW,		(float)0		},// look at who I'm talking to
 	{ TASK_FACE_IDEAL,			(float)0		}, 
-	{ TASK_SET_ACTIVITY,		(float)ACT_SIGNAL3	},
+	{ TASK_SET_ACTIVITY,		(float)ACT_IDLE	},
 	{ TASK_TLK_EYECONTACT,		(float)0		},
 };
 
@@ -332,7 +336,7 @@ Task_t	tlTlkIdleEyecontact[] =
 {
 	{ TASK_TLK_IDEALYAW,	(float)0		},// look at who I'm talking to
 	{ TASK_FACE_IDEAL,		(float)0		}, 
-	{ TASK_SET_ACTIVITY,	(float)ACT_SIGNAL3	},
+	{ TASK_SET_ACTIVITY,	(float)ACT_IDLE	},
 	{ TASK_TLK_EYECONTACT,	(float)0		},// Wait until speaker is done
 };
 
@@ -371,12 +375,6 @@ IMPLEMENT_CUSTOM_SCHEDULES( CTalkSquadMonster, CBaseMonster );
 
 void CTalkSquadMonster :: SetActivity ( Activity newActivity )
 {
-	if (newActivity == ACT_IDLE && IsTalking() )
-		newActivity = ACT_SIGNAL3;
-	
-	if ( newActivity == ACT_SIGNAL3 && (LookupActivity ( ACT_SIGNAL3 ) == ACTIVITY_NOT_AVAILABLE))
-		newActivity = ACT_IDLE;
-
 	CBaseMonster::SetActivity( newActivity );
 }
 
@@ -605,6 +603,23 @@ void CTalkSquadMonster :: RunTask( Task_t *pTask )
 	}
 }
 
+const char* CTalkSquadMonster::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+		case TASK_TLK_RESPOND: return "TASK_TLK_RESPOND";
+		case TASK_TLK_SPEAK: return "TASK_TLK_SPEAK";
+		case TASK_TLK_HELLO: return "TASK_TLK_HELLO";
+		case TASK_TLK_HEADRESET: return "TASK_TLK_HEADRESET";
+		case TASK_TLK_STOPSHOOTING: return "TASK_TLK_STOPSHOOTING";
+		case TASK_TLK_STARE: return "TASK_TLK_STARE";
+		case TASK_TLK_LOOK_AT_CLIENT: return "TASK_TLK_LOOK_AT_CLIENT";
+		case TASK_TLK_CLIENT_STARE: return "TASK_TLK_CLIENT_STARE";
+		case TASK_TLK_EYECONTACT: return "TASK_TLK_EYECONTACT";
+		case TASK_TLK_IDEALYAW: return "TASK_TLK_IDEALYAW";
+		case TASK_FACE_PLAYER: return "TASK_FACE_PLAYER";
+		default:
+			return CBaseMonster::GetTaskName(taskIdx);
+	}
+}
 
 void CTalkSquadMonster :: Killed( entvars_t *pevAttacker, int iGib )
 {

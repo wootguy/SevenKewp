@@ -16,7 +16,7 @@
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
-//#define DEBUG_MONSTER // uncomment to enable verbose logging
+//#define DEBUG_MONSTER "monster_human_grunt_ally" // uncomment to enable verbose logging
 
 // Global Savedata for monster
 // UNDONE: Save schedule data?  Can this be done?  We may
@@ -4701,8 +4701,7 @@ void CBaseMonster::ChangeSchedule(Schedule_t* pNewSchedule)
 	// this is very useful code if you can isolate a test case in a level with a single monster. It will notify
 	// you of every schedule selection the monster makes.
 #ifdef DEBUG_MONSTER
-	if (FClassnameIs(pev, "monster_human_medic_ally"))
-	{
+	if (FClassnameIs(pev, DEBUG_MONSTER)) {
 		Task_t* pTask = GetTask();
 
 		if (pTask)
@@ -4869,7 +4868,9 @@ void CBaseMonster::MaintainSchedule(void)
 			ASSERT(pTask != NULL);
 			TaskBegin();
 			#ifdef DEBUG_MONSTER
-				println("Running task %s with data %f", GetTaskName(pTask->iTask), pTask->flData);
+			if (FClassnameIs(pev, DEBUG_MONSTER)) {
+				println("    Start Task %s with data %f", GetTaskName(pTask->iTask), pTask->flData);
+			}
 			#endif
 			StartTask(pTask);
 		}
@@ -5978,7 +5979,7 @@ Task_t* CBaseMonster::GetTask(void)
 	}
 }
 
-const char* GetTaskName(int taskIdx) {
+const char* CBaseMonster::GetTaskName(int taskIdx) {
 	switch (taskIdx) {
 	case TASK_INVALID: return "TASK_INVALID";
 	case TASK_WAIT: return "TASK_WAIT";

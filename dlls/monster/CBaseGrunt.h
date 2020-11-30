@@ -62,9 +62,10 @@ enum
 //=========================================================
 enum
 {
-	TASK_GRUNT_FACE_TOSS_DIR = LAST_COMMON_TASK + 1,
+	TASK_GRUNT_FACE_TOSS_DIR = LAST_TALKMONSTER_TASK + 1,
 	TASK_GRUNT_SPEAK_SENTENCE,
 	TASK_GRUNT_CHECK_FIRE,
+	LAST_BASE_GRUNT_TASK
 };
 
 enum HGRUNT_SENTENCE_TYPES
@@ -126,6 +127,7 @@ public:
 	virtual int GetActivitySequence(Activity NewActivity);
 	void StartTask(Task_t* pTask);
 	void RunTask(Task_t* pTask);
+	virtual const char* GetTaskName(int taskIdx);
 	Vector GetGunPosition(void);
 	virtual void Shoot(void);
 	void Shotgun(void);
