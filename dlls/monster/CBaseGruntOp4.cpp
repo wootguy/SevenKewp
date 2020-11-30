@@ -25,6 +25,9 @@ const char* CBaseGruntOp4::pGruntSentences[] =
 	"FG_THROW", // about to throw grenade
 	"FG_CHARGE",  // running out to get the enemy
 	"FG_TAUNT", // say rude things
+	"FG_SHOT", // attacked by player
+	"FG_MAD", // friendly fire revenge
+	"FG_KILL"
 };
 
 void CBaseGruntOp4::InitAiFlags(void) {
@@ -35,7 +38,7 @@ void CBaseGruntOp4::InitAiFlags(void) {
 }
 
 void CBaseGruntOp4::PlaySentenceSound(int sentenceType) {
-	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[m_iSentence], ALLY_GRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[sentenceType], ALLY_GRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 }
 
 int	CBaseGruntOp4::Classify(void)

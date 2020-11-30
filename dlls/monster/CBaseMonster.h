@@ -228,7 +228,8 @@ public:
 
 		BOOL FGetNodeRoute ( Vector vecDest );
 		
-		inline void TaskComplete( void ) { if ( !HasConditions(bits_COND_TASK_FAILED) ) m_iTaskStatus = TASKSTATUS_COMPLETE; }
+		void TaskComplete( void );
+		virtual void OnTaskComplete( Task_t taskId ) { }
 		void MovementComplete( void );
 		inline void TaskFail( void ) { SetConditions(bits_COND_TASK_FAILED); }
 		inline void TaskBegin( void ) { m_iTaskStatus = TASKSTATUS_RUNNING; }

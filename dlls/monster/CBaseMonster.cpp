@@ -1215,7 +1215,8 @@ void CBaseMonster::SetActivity(Activity NewActivity)
 	else
 	{
 		// Not available try to get default anim
-		ALERT(at_aiconsole, "%s has no sequence for act:%d\n", STRING(pev->classname), NewActivity);
+		const char* actName = NewActivity < ACT_LAST ? activity_map[NewActivity].name : "Unknown";
+		ALERT(at_aiconsole, "%s has no sequence for act %s (%d)\n", STRING(pev->classname), actName, NewActivity);
 		pev->sequence = 0;	// Set to the reset anim (if it's there)
 	}
 
@@ -2132,6 +2133,13 @@ void CBaseMonster::StartMonster(void)
 	}
 }
 
+void CBaseMonster::TaskComplete() {
+	if (!HasConditions(bits_COND_TASK_FAILED)) {
+		m_iTaskStatus = TASKSTATUS_COMPLETE;
+		if (m_pSchedule && m_iScheduleIndex < m_pSchedule->cTasks)
+			OnTaskComplete(m_pSchedule->pTasklist[m_iScheduleIndex]);
+	}
+}
 
 void CBaseMonster::MovementComplete(void)
 {
@@ -4848,7 +4856,8 @@ void CBaseMonster::MaintainSchedule(void)
 				else
 					pNewSchedule = GetScheduleOfType(SCHED_FAIL);
 				// schedule was invalid because the current task failed to start or complete
-				ALERT(at_aiconsole, "Schedule Failed at %d!\n", m_iScheduleIndex);
+				ALERT(at_aiconsole, "Schedule %s Failed at %s (%d)!\n", m_pSchedule->pName,
+					GetTaskName(m_pSchedule->pTasklist[m_iScheduleIndex].iTask), m_iScheduleIndex);
 				ChangeSchedule(pNewSchedule);
 			}
 			else

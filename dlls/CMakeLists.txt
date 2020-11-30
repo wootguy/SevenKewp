@@ -40,6 +40,7 @@ set(MONSTER_SRC
 	monster/CBaseTurret.cpp
 	monster/CBigMomma.cpp
 	monster/CBloater.cpp
+	monster/CBodyGuard.cpp
 	monster/CBullsquid.cpp
 	monster/CDeadHEV.cpp
 	monster/CFlockingFlyerFlock.cpp
