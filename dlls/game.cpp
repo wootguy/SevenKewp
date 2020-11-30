@@ -497,7 +497,7 @@ cvar_t	sk_plr_spore = { "sk_plr_spore1", "100" };
 cvar_t	sk_plr_shockrifle = { "sk_plr_shockrifle1", "15" };
 
 // 556 bullet (shared with monsters and players)
-cvar_t	sk_556_bullet = { "sk_556_bullet", "15" };
+cvar_t	sk_556_bullet = { "sk_556_bullet1", "15" };
 
 // otis
 cvar_t	sk_otis_health = { "sk_otis_health1", "65" };

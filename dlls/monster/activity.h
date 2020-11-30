@@ -95,6 +95,7 @@ typedef enum {
 	ACT_FLINCH_RIGHTARM,
 	ACT_FLINCH_LEFTLEG,
 	ACT_FLINCH_RIGHTLEG,
+	ACT_LAST
 } Activity;
 
 

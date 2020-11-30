@@ -441,16 +441,16 @@ int CBaseGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 				&& ((m_afMemory & bits_MEMORY_SUSPICIOUS) || IsFacing(pevAttacker, pev->origin)))
 			{
 				// Alright, now I'm pissed!
-				PlaySentence("FG_MAD", 4, VOL_NORM, ATTN_NORM);
+				PlaySentenceSound(HGRUNT_SENT_MAD);
 
 				Remember(bits_MEMORY_PROVOKED);
 				StopFollowing(TRUE);
-				ALERT(at_console, "HGrunt Ally is now MAD!\n");
+				ALERT(at_console, "Monster is now MAD!\n");
 			}
 			else
 			{
 				// Hey, be careful with that
-				PlaySentence("FG_SHOT", 4, VOL_NORM, ATTN_NORM);
+				PlaySentenceSound(HGRUNT_SENT_SHOT);
 				Remember(bits_MEMORY_SUSPICIOUS);
 
 				if (4.0 > gpGlobals->time - m_flLastHitByPlayer)
@@ -460,12 +460,12 @@ int CBaseGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 
 				m_flLastHitByPlayer = gpGlobals->time;
 
-				ALERT(at_console, "HGrunt Ally is now SUSPICIOUS!\n");
+				ALERT(at_console, "Monster is now SUSPICIOUS!\n");
 			}
 		}
 		else if (!m_hEnemy->IsPlayer())
 		{
-			PlaySentence("FG_SHOT", 4, VOL_NORM, ATTN_NORM);
+			PlaySentenceSound(HGRUNT_SENT_SHOT);
 		}
 	}
 
@@ -577,14 +577,18 @@ void CBaseGrunt::Shoot(bool firstRound)
 	Vector vecShootOrigin = GetGunPosition();
 	Vector vecShootDir = ShootAtEnemy(vecShootOrigin);
 
-	bool didShoot = true;
-
 	if (HasEquipment(MEQUIP_MP5)) {
 		ShootMp5(vecShootOrigin, vecShootDir);
 		if (firstRound) {
 			// the first round of the three round burst plays the sound and puts a sound in the world sound list.
 			EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_LONG(0, 1) ? "hgrunt/gr_mgun1.wav" : "hgrunt/gr_mgun2.wav", 1, ATTN_NORM);
 		}
+	}
+	else if (HasEquipment(MEQUIP_AKIMBO_UZIS)) {
+		ShootUzis(vecShootOrigin, vecShootDir);
+	}
+	else if (HasEquipment(MEQUIP_MINIGUN)) {
+		ShootMinigun(vecShootOrigin, vecShootDir);
 	}
 	else if (HasEquipment(MEQUIP_SNIPER) && gpGlobals->time - m_flLastShot > 0.11) {
 		ShootSniper(vecShootOrigin, vecShootDir);
@@ -602,22 +606,20 @@ void CBaseGrunt::Shoot(bool firstRound)
 		ShootDeagle(vecShootOrigin, vecShootDir);
 	}
 	else {
-		didShoot = false;
+		return;
 	}
 
-	if (didShoot) {
-		pev->effects |= EF_MUZZLEFLASH;
+	pev->effects |= EF_MUZZLEFLASH;
 	
-		m_cAmmoLoaded--;// take away a bullet!
+	m_cAmmoLoaded--;// take away a bullet!
 
-		Vector angDir = UTIL_VecToAngles( vecShootDir );
-		SetBlending( 0, angDir.x );
+	Vector angDir = UTIL_VecToAngles( vecShootDir );
+	SetBlending( 0, angDir.x );
 
-		m_flLastShot = gpGlobals->time;
+	m_flLastShot = gpGlobals->time;
 
-		if (firstRound) {
-			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
-		}
+	if (firstRound) {
+		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
 	}
 }
 
@@ -630,9 +632,47 @@ void CBaseGrunt::ShootMp5(Vector& vecShootOrigin, Vector& vecShootDir)
 	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5); // shoot +-5 degrees;
 }
 
+void CBaseGrunt::ShootUzis(Vector& vecShootOrigin, Vector& vecShootDir) {
+	UTIL_MakeVectors(pev->angles);
+
+	Vector	leftShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40, 90) + gpGlobals->v_up * RANDOM_FLOAT(75, 200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
+	Vector	rightShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40, 90)*-1 + gpGlobals->v_up * RANDOM_FLOAT(75, 200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
+	EjectBrass(vecShootOrigin - vecShootDir * 24, leftShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL);
+	EjectBrass(vecShootOrigin - vecShootDir * 24, rightShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL);
+	FireBullets(2, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5); // shoot +-5 degrees;
+	
+	const char* sound = RANDOM_LONG(0, 1) ? "weapons/uzi/fire_both1.wav" : "weapons/uzi/fire_both2.wav";
+	EMIT_SOUND(ENT(pev), CHAN_STATIC, sound, 1, ATTN_NORM);
+}
+
+void CBaseGrunt::ShootMinigun(Vector& vecShootOrigin, Vector& vecShootDir) {
+	UTIL_MakeVectors(pev->angles);
+
+	int channel = CHAN_WEAPON;
+	switch(RANDOM_LONG(0, 3)) {
+	case 0:
+		channel = CHAN_WEAPON;
+		break;
+	case 1:
+		channel = CHAN_ITEM;
+		break;
+	case 2:
+		channel = CHAN_BODY;
+		break;
+	}
+
+	const char* sound = RANDOM_LONG(0,1) == 0 ? "hassault/hw_shoot2.wav" : "hassault/hw_shoot3.wav";
+
+	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40, 90) + gpGlobals->v_up * RANDOM_FLOAT(75, 200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
+	EjectBrass(vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL);
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_556);
+	EMIT_SOUND(ENT(pev), channel, sound, 1, ATTN_NORM);
+}
+
 void CBaseGrunt::ShootSniper(Vector& vecShootOrigin, Vector& vecShootDir) {
 	//TODO: why is this 556? is 762 too damaging?
 	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 2048, BULLET_PLAYER_556);
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sniper_fire.wav", 1, ATTN_NORM);
 }
 
 void CBaseGrunt ::ShootShotgun(Vector& vecShootOrigin, Vector& vecShootDir)
@@ -729,6 +769,27 @@ void CBaseGrunt::DropEquipment(int attachmentIdx, bool randomToss) {
 	if (HasEquipment(MEQUIP_SNIPER)) {
 		DropEquipmentToss("weapon_sniperrifle", vecGunPos, vecGunAngles, randomToss);
 	}
+	if (HasEquipment(MEQUIP_MINIGUN)) {
+		DropEquipmentToss("weapon_minigun", vecGunPos, vecGunAngles, randomToss);
+	}
+	if (HasEquipment(MEQUIP_AKIMBO_UZIS)) {
+		DropEquipmentToss("weapon_uziakimbo", vecGunPos, vecGunAngles, randomToss);
+	}
+}
+
+void CBaseGrunt::Reload() {
+	if (HasEquipment(MEQUIP_SAW)) {
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/saw_reload.wav", 1, ATTN_NORM);
+	}
+	else if (HasEquipment(MEQUIP_DEAGLE)) {
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/desert_eagle_reload.wav", 1, ATTN_NORM);
+	}
+	else {
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "hgrunt/gr_reload1.wav", 1, ATTN_NORM);
+	}
+
+	m_cAmmoLoaded = m_cClipSize;
+	ClearConditions(bits_COND_NO_AMMO_LOADED);
 }
 
 void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
@@ -740,18 +801,7 @@ void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			break;
 
 		case HGRUNT_AE_RELOAD:
-			if (HasEquipment(MEQUIP_SAW)) {
-				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/saw_reload.wav", 1, ATTN_NORM);
-			}
-			else if (HasEquipment(MEQUIP_DEAGLE)) {
-				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/desert_eagle_reload.wav", 1, ATTN_NORM);
-			}
-			else {
-				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "hgrunt/gr_reload1.wav", 1, ATTN_NORM);
-			}
-			
-			m_cAmmoLoaded = m_cClipSize;
-			ClearConditions(bits_COND_NO_AMMO_LOADED);
+			Reload();
 			break;
 
 		case HGRUNT_AE_GREN_TOSS:
@@ -886,6 +936,16 @@ void CBaseGrunt::BasePrecache() {
 	PRECACHE_SOUND("weapons/saw_fire2.wav");
 	PRECACHE_SOUND("weapons/saw_fire3.wav");
 	PRECACHE_SOUND("weapons/saw_reload.wav");
+
+	PRECACHE_SOUND("weapons/uzi/fire_both1.wav");
+	PRECACHE_SOUND("weapons/uzi/fire_both2.wav");
+
+	PRECACHE_SOUND("weapons/sniper_fire.wav");
+
+	PRECACHE_SOUND("hassault/hw_shoot2.wav");
+	PRECACHE_SOUND("hassault/hw_shoot3.wav");
+	PRECACHE_SOUND("hassault/hw_spinup.wav");
+	PRECACHE_SOUND("hassault/hw_spindown.wav");
 
 	PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
 	PRECACHE_SOUND("weapons/desert_eagle_reload.wav");
@@ -1644,7 +1704,8 @@ void CBaseGrunt :: SetActivity ( Activity NewActivity )
 	else
 	{
 		// Not available try to get default anim
-		ALERT ( at_console, "%s has no sequence for act:%d\n", STRING(pev->classname), NewActivity );
+		const char* actName = NewActivity < ACT_LAST ? activity_map[NewActivity].name : "Unknown";
+		ALERT(at_aiconsole, "%s has no sequence for act %s (%d)\n", STRING(pev->classname), actName, NewActivity);
 		pev->sequence		= 0;	// Set to the reset anim (if it's there)
 	}
 }
@@ -1881,7 +1942,7 @@ Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 			if (FOkToSpeak())
 			{
 				// TODO: not all monsters have this sentence
-				PlaySentence("FG_KILL", 4, VOL_NORM, ATTN_NORM);
+				PlaySentenceSound(HGRUNT_SENT_KILL);
 			}
 
 			// call base class, all code to handle dead enemies is centralized there.

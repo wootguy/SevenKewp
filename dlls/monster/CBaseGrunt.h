@@ -63,6 +63,9 @@ enum HGRUNT_SENTENCE_TYPES
 	HGRUNT_SENT_THROW,
 	HGRUNT_SENT_CHARGE,
 	HGRUNT_SENT_TAUNT,
+	HGRUNT_SENT_MAD,
+	HGRUNT_SENT_SHOT,
+	HGRUNT_SENT_KILL,
 };
 
 // each monster handles weapon flags differently. This unites those flags into a bitfield
@@ -77,11 +80,14 @@ enum MONSTER_EQUIPMENT
 	MEQUIP_SNIPER			= 1 << 5,
 	MEQUIP_GLOCK			= 1 << 6,
 	MEQUIP_DEAGLE			= 1 << 7,
-	MEQUIP_NEEDLE			= 1 << 8, // for healing
-	MEQUIP_HELMET			= 1 << 8,
+	MEQUIP_MINIGUN			= 1 << 8,
+	MEQUIP_AKIMBO_UZIS		= 1 << 9,
+	MEQUIP_NEEDLE			= 1 << 10, // for healing
+	MEQUIP_HELMET			= 1 << 11,
 };
 
-#define ANY_RANGED_WEAPON (MEQUIP_MP5 | MEQUIP_SHOTGUN | MEQUIP_SAW | MEQUIP_SNIPER | MEQUIP_GLOCK | MEQUIP_DEAGLE)
+#define ANY_RANGED_WEAPON (MEQUIP_MP5 | MEQUIP_SHOTGUN | MEQUIP_SAW | MEQUIP_SNIPER \
+						  | MEQUIP_GLOCK | MEQUIP_DEAGLE | MEQUIP_MINIGUN | MEQUIP_AKIMBO_UZIS)
 
 extern Schedule_t	slGruntFail[];
 extern Schedule_t	slGruntCombatFail[];
@@ -128,18 +134,21 @@ public:
 	virtual void CheckAmmo(void);
 	virtual void SetActivity(Activity NewActivity);
 	virtual int GetActivitySequence(Activity NewActivity);
-	void StartTask(Task_t* pTask);
+	virtual void StartTask(Task_t* pTask);
 	void RunTask(Task_t* pTask);
 	virtual const char* GetTaskName(int taskIdx);
 	Vector GetGunPosition(void);
 	bool HasEquipment(int equipItems);
 	void Shoot(bool firstRound);
 	void ShootMp5(Vector& vecShootOrigin, Vector& vecShootDir);
+	void ShootUzis(Vector& vecShootOrigin, Vector& vecShootDir);
 	void ShootSniper(Vector& vecShootOrigin, Vector& vecShootDir);
+	void ShootMinigun(Vector& vecShootOrigin, Vector& vecShootDir);
 	void ShootShotgun(Vector& vecShootOrigin, Vector& vecShootDir);
 	void ShootSaw(Vector& vecShootOrigin, Vector& vecShootDir);
 	void ShootGlock(Vector& vecShootOrigin, Vector& vecShootDir);
 	void ShootDeagle(Vector& vecShootOrigin, Vector& vecShootDir);
+	void Reload();
 	virtual void PrescheduleThink(void);
 	virtual void GibMonster(void);
 	virtual void Killed(entvars_t* pevAttacker, int iGib);
@@ -184,8 +193,6 @@ public:
 
 	float m_flLastShot;
 	BOOL m_lastAttackCheck;
-
-	int m_voicePitch;
 
 	int	m_iBrassShell;
 	int m_iShotgunShell;

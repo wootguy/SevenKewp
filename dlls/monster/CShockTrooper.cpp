@@ -1865,7 +1865,8 @@ void CShockTrooper :: SetActivity ( Activity NewActivity )
 	else
 	{
 		// Not available try to get default anim
-		ALERT ( at_console, "%s has no sequence for act:%d\n", STRING(pev->classname), NewActivity );
+		const char* actName = NewActivity < ACT_LAST ? activity_map[NewActivity].name : "Unknown";
+		ALERT(at_aiconsole, "%s has no sequence for act %s (%d)\n", STRING(pev->classname), actName, NewActivity);
 		pev->sequence		= 0;	// Set to the reset anim (if it's there)
 	}
 }
