@@ -100,7 +100,7 @@ public:
 
 	void HealOff();
 
-	void HealerUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
+	void EXPORT HealerUse( CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value );
 
 	void HealerActivate( CBaseMonster* pTarget );
 
@@ -398,7 +398,7 @@ void CHGruntOp4Medic :: StartTask ( Task_t *pTask )
 		}
 
 	default: 
-		CTalkSquadMonster:: StartTask( pTask );
+		CBaseGrunt::StartTask( pTask );
 		break;
 	}
 }
@@ -449,7 +449,7 @@ void CHGruntOp4Medic :: RunTask ( Task_t *pTask )
 
 	default:
 		{
-			CBaseGrunt:: RunTask( pTask );
+			CBaseGrunt::RunTask( pTask );
 			break;
 		}
 	}
