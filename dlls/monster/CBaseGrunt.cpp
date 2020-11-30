@@ -63,10 +63,6 @@ void CBaseGrunt :: SpeakSentence( void )
 	}
 }
 
-//=========================================================
-// IRelationship - overridden because Alien Grunts are 
-// Human Grunt's nemesis.
-//=========================================================
 int CBaseGrunt::IRelationship ( CBaseEntity *pTarget )
 {
 	if ( FClassnameIs( pTarget->pev, "monster_alien_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) )
@@ -77,9 +73,6 @@ int CBaseGrunt::IRelationship ( CBaseEntity *pTarget )
 	return CTalkSquadMonster::IRelationship( pTarget );
 }
 
-//=========================================================
-// GibMonster - make gun fly through the air.
-//=========================================================
 void CBaseGrunt :: GibMonster ( void )
 {
 	DropEquipment(0, true);
@@ -99,9 +92,6 @@ int CBaseGrunt :: ISoundMask ( void )
 			bits_SOUND_DANGER;
 }
 
-//=========================================================
-// someone else is talking - don't speak
-//=========================================================
 BOOL CBaseGrunt :: FOkToSpeak( void )
 {
 // if someone else is talking, don't speak
@@ -124,18 +114,12 @@ BOOL CBaseGrunt :: FOkToSpeak( void )
 	return TRUE;
 }
 
-//=========================================================
-//=========================================================
 void CBaseGrunt :: JustSpoke( void )
 {
 	CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT(1.5, 2.0);
 	m_iSentence = HGRUNT_SENT_NONE;
 }
 
-//=========================================================
-// PrescheduleThink - this function runs after conditions
-// are collected and before scheduling code is run.
-//=========================================================
 void CBaseGrunt :: PrescheduleThink ( void )
 {
 	if ( InSquad() && m_hEnemy != NULL )
@@ -181,9 +165,6 @@ BOOL CBaseGrunt :: FCanCheckAttacks ( void )
 }
 
 
-//=========================================================
-// CheckMeleeAttack1
-//=========================================================
 BOOL CBaseGrunt :: CheckMeleeAttack1 ( float flDot, float flDist )
 {
 	CBaseMonster *pEnemy;
@@ -246,8 +227,7 @@ BOOL CBaseGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 }
 
 //=========================================================
-// CheckRangeAttack2 - this checks the Grunt's grenade
-// attack. 
+// CheckRangeAttack2 - this checks the Grunt's grenade attack. 
 //=========================================================
 BOOL CBaseGrunt :: CheckRangeAttack2 ( float flDot, float flDist )
 {
@@ -402,7 +382,6 @@ void CBaseGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector v
 	CTalkSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
-
 //=========================================================
 // TakeDamage - overridden for the grunt because the grunt
 // needs to forget that he is in cover if he's hurt. (Obviously
@@ -415,10 +394,6 @@ int CBaseGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	return CTalkSquadMonster :: TakeDamage ( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
-//=========================================================
-// SetYawSpeed - allows each sequence to have a different
-// turn rate associated with it.
-//=========================================================
 void CBaseGrunt :: SetYawSpeed ( void )
 {
 	int ys;
@@ -474,17 +449,11 @@ void CBaseGrunt :: CheckAmmo ( void )
 	}
 }
 
-//=========================================================
-// Classify - indicates this monster's place in the 
-// relationship table.
-//=========================================================
 int	CBaseGrunt :: Classify ( void )
 {
 	return	CLASS_HUMAN_MILITARY;
 }
 
-//=========================================================
-//=========================================================
 CBaseEntity *CBaseGrunt :: Kick( void )
 {
 	TraceResult tr;
@@ -505,10 +474,6 @@ CBaseEntity *CBaseGrunt :: Kick( void )
 	return NULL;
 }
 
-//=========================================================
-// GetGunPosition	return the end of the barrel
-//=========================================================
-
 Vector CBaseGrunt :: GetGunPosition( )
 {
 	if (m_fStanding )
@@ -525,9 +490,6 @@ bool CBaseGrunt::HasEquipment(int equipItems) {
 	return m_iEquipment & equipItems;
 }
 
-//=========================================================
-// Shoot
-//=========================================================
 void CBaseGrunt::Shoot(bool firstRound)
 {
 	if (m_hEnemy == NULL) {
@@ -595,9 +557,6 @@ void CBaseGrunt::ShootSniper(Vector& vecShootOrigin, Vector& vecShootDir) {
 	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 2048, BULLET_PLAYER_556);
 }
 
-//=========================================================
-// Shoot
-//=========================================================
 void CBaseGrunt ::ShootShotgun(Vector& vecShootOrigin, Vector& vecShootDir)
 {
 	UTIL_MakeVectors ( pev->angles );
@@ -694,10 +653,6 @@ void CBaseGrunt::DropEquipment(int attachmentIdx, bool randomToss) {
 	}
 }
 
-//=========================================================
-// HandleAnimEvent - catches the monster-specific messages
-// that occur when tagged animation frames are played.
-//=========================================================
 void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
@@ -792,9 +747,6 @@ void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	}
 }
 
-//=========================================================
-// Spawn
-//=========================================================
 void CBaseGrunt::BaseSpawn(const char* model)
 {
 	Precache( );
@@ -855,9 +807,6 @@ void CBaseGrunt::BasePrecache() {
 	CTalkSquadMonster::Precache();
 }
 
-//=========================================================
-// start task
-//=========================================================
 void CBaseGrunt :: StartTask ( Task_t *pTask )
 {
 	m_iTaskStatus = TASKSTATUS_RUNNING;
@@ -906,9 +855,6 @@ void CBaseGrunt :: StartTask ( Task_t *pTask )
 	}
 }
 
-//=========================================================
-// RunTask
-//=========================================================
 void CBaseGrunt :: RunTask ( Task_t *pTask )
 {
 	switch ( pTask->iTask )
@@ -1586,9 +1532,6 @@ DEFINE_CUSTOM_SCHEDULES( CBaseGrunt )
 
 IMPLEMENT_CUSTOM_SCHEDULES( CBaseGrunt, CTalkSquadMonster );
 
-//=========================================================
-// SetActivity 
-//=========================================================
 void CBaseGrunt :: SetActivity ( Activity NewActivity )
 {
 	int	iSequence = ACTIVITY_NOT_AVAILABLE;
@@ -1965,8 +1908,6 @@ Schedule_t *CBaseGrunt :: GetSchedule( void )
 	return GetMonsterStateSchedule();
 }
 
-//=========================================================
-//=========================================================
 Schedule_t* CBaseGrunt :: GetScheduleOfType ( int Type ) 
 {
 	switch	( Type )
@@ -2139,6 +2080,7 @@ Schedule_t* CBaseGrunt :: GetScheduleOfType ( int Type )
 }
 
 
+
 void CBaseRepel::Spawn(void) {
 	Precache();
 	pev->solid = SOLID_NOT;
@@ -2243,6 +2185,7 @@ void CBaseDead::BaseSpawn(const char* model)
 
 	MonsterInitDead();
 }
+
 
 
 void CBaseDead::KeyValue(KeyValueData* pkvd)
