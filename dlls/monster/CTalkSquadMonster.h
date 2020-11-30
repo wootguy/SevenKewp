@@ -136,6 +136,7 @@ public:
 	Schedule_t		*GetScheduleOfType ( int Type );
 	void			StartTask( Task_t *pTask );
 	void			RunTask( Task_t *pTask );
+	virtual const char* GetTaskName(int taskIdx);
 	void			HandleAnimEvent( MonsterEvent_t *pEvent );
 	void			PrescheduleThink( void );
 	

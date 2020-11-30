@@ -937,6 +937,16 @@ void CBaseGrunt :: RunTask ( Task_t *pTask )
 	}
 }
 
+const char* CBaseGrunt::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_GRUNT_FACE_TOSS_DIR: return "TASK_GRUNT_FACE_TOSS_DIR";
+	case TASK_GRUNT_SPEAK_SENTENCE: return "TASK_GRUNT_SPEAK_SENTENCE";
+	case TASK_GRUNT_CHECK_FIRE: return "TASK_GRUNT_CHECK_FIRE";
+	default:
+		return CTalkSquadMonster::GetTaskName(taskIdx);
+	}
+}
+
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================

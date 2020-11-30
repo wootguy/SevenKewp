@@ -20,7 +20,7 @@ extern entvars_t* g_pevLastInflictor;
 
 // Clients can push talkmonsters out of their way
 #define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
-#define TLK_CFRIENDS		3
+#define TLK_CFRIENDS		7
 
 //
 // generic Monster
@@ -202,6 +202,7 @@ public:
 		void MaintainSchedule ( void );
 		virtual void StartTask ( Task_t *pTask );
 		virtual void RunTask ( Task_t *pTask );
+		virtual const char* GetTaskName(int taskIdx);
 		virtual Schedule_t *GetScheduleOfType( int Type );
 		virtual Schedule_t *GetSchedule( void );
 		virtual void ScheduleChange( void ) {}

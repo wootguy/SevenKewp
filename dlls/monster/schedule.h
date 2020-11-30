@@ -294,6 +294,4 @@ struct WayPoint_t
 
 #define bits_COND_CAN_ATTACK			(bits_COND_CAN_RANGE_ATTACK1 | bits_COND_CAN_MELEE_ATTACK1 | bits_COND_CAN_RANGE_ATTACK2 | bits_COND_CAN_MELEE_ATTACK2)
 
-const char * GetTaskName(int taskIdx);
-
 #endif	// SCHEDULE_H
