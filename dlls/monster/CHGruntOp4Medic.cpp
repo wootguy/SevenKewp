@@ -79,7 +79,6 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void StartTask ( Task_t *pTask );
 	void RunTask ( Task_t *pTask );
-	void Shoot ( void );
 	void GibMonster( void );
 
 	int	Save( CSave &save ); 
@@ -137,8 +136,6 @@ public:
 	BOOL m_fHealActive;
 
 	int m_iWeaponIdx;
-
-	float m_flLastShot;
 };
 
 class CHGruntOp4Repel : public CBaseRepel
@@ -186,138 +183,27 @@ IMPLEMENT_SAVERESTORE( CHGruntOp4Medic, CTalkSquadMonster );
 
 void CHGruntOp4Medic :: GibMonster ( void )
 {
-	Vector	vecGunPos;
-	Vector	vecGunAngles;
-
-	//TODO: probably the wrong logic, but it was in the original
-	if( m_iWeaponIdx != MedicAllyWeapon::None )
-	{// throw a gun if the grunt has one
-		GetAttachment( 0, vecGunPos, vecGunAngles );
-
-		CBaseEntity *pGun;
-		
-		if( pev->weapons & MedicAllyWeaponFlag::Glock )
-		{
-			pGun = DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
-		}
-		else if( pev->weapons & MedicAllyWeaponFlag::DesertEagle )
-		{
-			pGun = DropItem( "weapon_eagle", vecGunPos, vecGunAngles );
-		}
-
-		if( pGun )
-		{
-			pGun->pev->velocity = Vector( RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( -100, 100 ), RANDOM_FLOAT( 200, 300 ) );
-			pGun->pev->avelocity = Vector( 0, RANDOM_FLOAT( 200, 400 ), 0 );
-		}
-
-		m_iWeaponIdx = MedicAllyWeapon::None;
-
-		//Note: this wasn't in the original
-		SetBodygroup( MedicAllyBodygroup::Weapons, MedicAllyWeapon::None );
-	}
+	DropEquipment(0, true);
+	m_iWeaponIdx = MedicAllyWeapon::None;
+	SetBodygroup( MedicAllyBodygroup::Weapons, MedicAllyWeapon::None );
 
 	CBaseMonster :: GibMonster();
 }
 
-void CHGruntOp4Medic :: Shoot ( void )
-{
-	//Limit fire rate
-	if (m_hEnemy == NULL || gpGlobals->time - m_flLastShot <= 0.11 )
-	{
-		return;
-	}
-
-	Vector vecShootOrigin = GetGunPosition();
-	Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
-
-	UTIL_MakeVectors ( pev->angles );
-
-	const char* pszSoundName;
-
-	if( pev->weapons & MedicAllyWeaponFlag::Glock )
-	{
-		FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_MONSTER_9MM ); // shoot +-5 degrees
-		pszSoundName = "weapons/pl_gun3.wav";
-	}
-	else if( pev->weapons & MedicAllyWeaponFlag::DesertEagle )
-	{
-		FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_PLAYER_357 ); // shoot +-5 degrees
-		pszSoundName = "weapons/desert_eagle_fire.wav";
-	}
-
-	const auto random = RANDOM_LONG( 0, 20 );
-
-	EMIT_SOUND_DYN( edict(), CHAN_WEAPON, pszSoundName, VOL_NORM, ATTN_NORM, 0, (random <= 10 ? random - 5 : 0) + 100 );
-
-	pev->effects |= EF_MUZZLEFLASH;
-	
-	m_cAmmoLoaded--;// take away a bullet!
-
-	Vector angDir = UTIL_VecToAngles( vecShootDir );
-	SetBlending( 0, angDir.x );
-
-	m_flLastShot = gpGlobals->time;
-}
-
 void CHGruntOp4Medic :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
-	Vector	vecShootDir;
-	Vector	vecShootOrigin;
-	//TODO: add remaining torch grunt events
 	switch( pEvent->event )
 	{
 		case HGRUNT_AE_DROP_GUN:
-			{
-				Vector	vecGunPos;
-				Vector	vecGunAngles;
-
-				GetAttachment( 0, vecGunPos, vecGunAngles );
-
-				// switch to body group with no gun.
-				SetBodygroup( MedicAllyBodygroup::Weapons, MedicAllyWeapon::None );
-
-				// now spawn a gun.
-				if( pev->weapons & MedicAllyWeaponFlag::Glock )
-				{
-					DropItem( "weapon_9mmhandgun", vecGunPos, vecGunAngles );
-				}
-				else
-				{
-					DropItem( "weapon_eagle", vecGunPos, vecGunAngles );
-				}
-
-				m_iWeaponIdx = MedicAllyWeapon::None;
-			}
-			break;
-
-		case HGRUNT_AE_RELOAD:
-
-			if( pev->weapons & MedicAllyWeaponFlag::DesertEagle )
-			{
-				EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "weapons/desert_eagle_reload.wav", 1, ATTN_NORM );
-			}
-			else
-			{
-				EMIT_SOUND( ENT( pev ), CHAN_WEAPON, "hgrunt/gr_reload1.wav", 1, ATTN_NORM );
-			}
-
-			m_cAmmoLoaded = m_cClipSize;
-			ClearConditions(bits_COND_NO_AMMO_LOADED);
+			DropEquipment(0, false);
+			SetBodygroup( MedicAllyBodygroup::Weapons, MedicAllyWeapon::None );
+			m_iWeaponIdx = MedicAllyWeapon::None;
 			break;
 
 		case HGRUNT_AE_GREN_DROP:
-		{
 			UTIL_MakeVectors( pev->angles );
 			CGrenade::ShootTimed( pev, pev->origin + gpGlobals->v_forward * 17 - gpGlobals->v_right * 27 + gpGlobals->v_up * 6, g_vecZero, 3 );
-		}
-		break;
-
-		case MEDIC_AE_SHOOT:
-		{
-			Shoot();
-		}
-		break;
+			break;
 
 		case MEDIC_AE_HOLSTER_GUN:
 			SetBodygroup( MedicAllyBodygroup::Weapons, MedicAllyWeapon::None );
@@ -421,15 +307,22 @@ void CHGruntOp4Medic :: Spawn()
 	// get voice pitch
 	m_voicePitch = 105;
 
-	canHaveGrenadeLauncher = false;
+	// set base equipment flags
+	if (FBitSet(pev->weapons, MedicAllyWeaponFlag::Glock)) {
+		m_iEquipment |= MEQUIP_GLOCK;
+	}
+	if (FBitSet(pev->weapons, MedicAllyWeaponFlag::DesertEagle)) {
+		m_iEquipment |= MEQUIP_DEAGLE;
+	}
+	if (FBitSet(pev->weapons, MedicAllyWeaponFlag::Needle)) {
+		m_iEquipment |= MEQUIP_NEEDLE;
+	}
+	m_iEquipment |= MEQUIP_HELMET;
 }
 
 void CHGruntOp4Medic :: Precache()
 {
 	PRECACHE_MODEL("models/hgrunt_medic.mdl");
-
-	PRECACHE_SOUND( "weapons/desert_eagle_fire.wav" );
-	PRECACHE_SOUND( "weapons/desert_eagle_reload.wav" );
 
 	PRECACHE_SOUND( "fgrunt/medic_give_shot.wav" );
 	PRECACHE_SOUND( "fgrunt/medical.wav" );

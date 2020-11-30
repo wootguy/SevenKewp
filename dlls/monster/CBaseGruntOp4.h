@@ -10,7 +10,7 @@ public:
 	int ISoundMask(void);
 	BOOL CheckRangeAttack1(float flDot, float flDist);
 	void PlaySentenceSound(int sentenceType);
-	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
+	virtual void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	void IdleSound(void);
 	void AlertSound();
@@ -28,6 +28,4 @@ public:
 	float m_flPlayerDamage;
 
 	static const char* pGruntSentences[];
-
-	bool canHaveGrenadeLauncher; // TODO: every grunt should use the same weapon flags
 };

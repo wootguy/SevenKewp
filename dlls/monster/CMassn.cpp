@@ -64,18 +64,13 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );
-	void CheckAmmo ( void );
 	int GetActivitySequence(Activity NewActivity);
 	void DeathSound( void );
-	void Shoot ( void );
-	CBaseEntity* DropGun(Vector pos, Vector angles);
 
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 
 	void KeyValue( KeyValueData* pkvd ) override;
 
-	float m_flLastShot;
 	float m_flStandGroundRange;
 
 	int m_iAssassinHead;
@@ -103,27 +98,6 @@ LINK_ENTITY_TO_CLASS(monster_massassin_dead, CDeadMassn);
 
 const char* CDeadMassn::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
-CBaseEntity* CMassn::DropGun(Vector pos, Vector angles) {
-	if (FBitSet(pev->weapons, MAssassinWeaponFlag::MP5))
-	{
-		return DropItem("weapon_9mmAR", pos, angles);
-	}
-	else
-	{
-		return DropItem("weapon_sniperrifle", pos, angles);
-	}
-}
-
-BOOL CMassn :: CheckRangeAttack1 ( float flDot, float flDist )
-{
-	if( pev->weapons )
-	{
-		return CBaseGrunt::CheckRangeAttack1(flDot, flDist);
-	}
-
-	return FALSE;
-}
-
 void CMassn :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
 	// check for helmet shot
@@ -136,109 +110,14 @@ void CMassn :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDi
 	CTalkSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
 
-void CMassn :: CheckAmmo ( void )
-{
-	if ( pev->weapons && m_cAmmoLoaded <= 0 )
-	{
-		SetConditions(bits_COND_NO_AMMO_LOADED);
-	}
-}
-
-void CMassn :: Shoot ( void )
-{
-	if (m_hEnemy == NULL)
-	{
-		return;
-	}
-
-	if( FBitSet( pev->weapons, MAssassinWeaponFlag::SniperRifle ) && gpGlobals->time - m_flLastShot <= 0.11 )
-	{
-		return;
-	}
-
-	Vector vecShootOrigin = GetGunPosition();
-	Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
-
-	UTIL_MakeVectors ( pev->angles );
-
-	if( FBitSet( pev->weapons, MAssassinWeaponFlag::MP5 ) )
-	{
-		Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT( 40, 90 ) + gpGlobals->v_up * RANDOM_FLOAT( 75, 200 ) + gpGlobals->v_forward * RANDOM_FLOAT( -40, 40 );
-		EjectBrass( vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL );
-		FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5 ); // shoot +-5 degrees
-	}
-	else
-	{
-		//TODO: why is this 556? is 762 too damaging?
-		FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 2048, BULLET_PLAYER_556 );
-	}
-
-	pev->effects |= EF_MUZZLEFLASH;
-	
-	m_cAmmoLoaded--;// take away a bullet!
-
-	Vector angDir = UTIL_VecToAngles( vecShootDir );
-	SetBlending( 0, angDir.x );
-}
-
 void CMassn :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
-	Vector	vecShootDir;
-	Vector	vecShootOrigin;
-
 	switch( pEvent->event )
 	{
 		case HGRUNT_AE_DROP_GUN:
-			{
-			Vector	vecGunPos;
-			Vector	vecGunAngles;
-
-			GetAttachment( 0, vecGunPos, vecGunAngles );
-
-			// switch to body group with no gun.
+			DropEquipment(0, false);
 			SetBodygroup( MAssassinBodygroup::Weapons, MAssassinWeapon::None );
-
-			// now spawn a gun.
-			if (FBitSet( pev->weapons, MAssassinWeaponFlag::MP5 ))
-			{
-				 DropItem( "weapon_9mmAR", vecGunPos, vecGunAngles );
-			}
-			else
-			{
-				 DropItem( "weapon_sniperrifle", vecGunPos, vecGunAngles );
-			}
-			if (FBitSet( pev->weapons, MAssassinWeaponFlag::GrenadeLauncher ))
-			{
-				DropItem( "ammo_ARgrenades", BodyTarget( pev->origin ), vecGunAngles );
-			}
-
-			}
 			break;
-
-		case HGRUNT_AE_BURST1:
-		{
-			Shoot();
-
-			if ( FBitSet( pev->weapons, MAssassinWeaponFlag::MP5 ))
-			{
-				// the first round of the three round burst plays the sound and puts a sound in the world sound list.
-				if ( RANDOM_LONG(0,1) )
-				{
-					EMIT_SOUND( ENT(pev), CHAN_WEAPON, "hgrunt/gr_mgun1.wav", 1, ATTN_NORM );
-				}
-				else
-				{
-					EMIT_SOUND( ENT(pev), CHAN_WEAPON, "hgrunt/gr_mgun2.wav", 1, ATTN_NORM );
-				}
-			}
-			else
-			{
-				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sniper_fire.wav", 1, ATTN_NORM );
-			}
-		
-			CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
-		}
-		break;
 
 		default:
 			CBaseGrunt::HandleAnimEvent( pEvent );
@@ -255,6 +134,10 @@ void CMassn :: Spawn()
 	if( m_iAssassinHead == MAssassinHead::Random )
 	{
 		m_iAssassinHead = RANDOM_LONG( MAssassinHead::White, MAssassinHead::ThermalVision );
+	}
+
+	if (pev->weapons == 0) { // default equipment
+		pev->weapons = MAssassinWeaponFlag::MP5 | MAssassinWeaponFlag::HandGrenade;
 	}
 
 	auto weaponModel = MAssassinWeapon::None;
@@ -291,6 +174,20 @@ void CMassn :: Spawn()
 		m_voicePitch = 109 + RANDOM_LONG(0, 7);
 	else
 		m_voicePitch = 100;
+
+	// set base equipment flags
+	if (FBitSet(pev->weapons, MAssassinWeaponFlag::MP5)) {
+		m_iEquipment |= MEQUIP_MP5;
+	}
+	if (FBitSet(pev->weapons, MAssassinWeaponFlag::SniperRifle)) {
+		m_iEquipment |= MEQUIP_SNIPER;
+	}
+	if (FBitSet(pev->weapons, MAssassinWeaponFlag::HandGrenade)) {
+		m_iEquipment |= MEQUIP_HAND_GRENADE;
+	}
+	if (FBitSet(pev->weapons, MAssassinWeaponFlag::GrenadeLauncher)) {
+		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
+	}
 }
 
 void CMassn :: Precache()
