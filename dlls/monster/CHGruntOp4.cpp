@@ -77,7 +77,7 @@ enum HGruntAllyWeapon
 };
 }
 
-class CHGruntAlly : public CBaseGruntOp4
+class CHGruntOp4 : public CBaseGruntOp4
 {
 public:
 	void Spawn( void );
@@ -105,7 +105,7 @@ public:
 	int m_iGruntTorso;
 };
 
-class CHGruntAllyRepel : public CBaseRepel
+class CHGruntOp4Repel : public CBaseRepel
 {
 public:
 	const char* GetMonsterType() { return "monster_human_grunt_ally"; };
@@ -123,33 +123,33 @@ public:
 
 char* CDeadHGruntAlly::m_szPoses[] = { "deadstomach", "deadside", "deadsitting", "dead_on_back", "hgrunt_dead_stomach", "dead_headcrabed", "dead_canyon" };
 
-LINK_ENTITY_TO_CLASS(monster_human_grunt_ally, CHGruntAlly);
-LINK_ENTITY_TO_CLASS(monster_grunt_ally_repel, CHGruntAllyRepel);
+LINK_ENTITY_TO_CLASS(monster_human_grunt_ally, CHGruntOp4);
+LINK_ENTITY_TO_CLASS(monster_grunt_ally_repel, CHGruntOp4Repel);
 LINK_ENTITY_TO_CLASS(monster_human_grunt_ally_dead, CDeadHGruntAlly);
 
-TYPEDESCRIPTION	CHGruntAlly::m_SaveData[] = 
+TYPEDESCRIPTION	CHGruntOp4::m_SaveData[] = 
 {
-	DEFINE_FIELD( CHGruntAlly, m_flPlayerDamage, FIELD_FLOAT ),
-	DEFINE_FIELD( CHGruntAlly, m_flNextGrenadeCheck, FIELD_TIME ),
-	DEFINE_FIELD( CHGruntAlly, m_flNextPainTime, FIELD_TIME ),
-//	DEFINE_FIELD( CHGruntAlly, m_flLastEnemySightTime, FIELD_TIME ), // don't save, go to zero
-	DEFINE_FIELD( CHGruntAlly, m_vecTossVelocity, FIELD_VECTOR ),
-	DEFINE_FIELD( CHGruntAlly, m_fThrowGrenade, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CHGruntAlly, m_fStanding, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CHGruntAlly, m_fFirstEncounter, FIELD_BOOLEAN ),
-	DEFINE_FIELD( CHGruntAlly, m_cClipSize, FIELD_INTEGER ),
-//	DEFINE_FIELD( CHGruntAlly, m_voicePitch, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGruntOp4, m_flPlayerDamage, FIELD_FLOAT ),
+	DEFINE_FIELD( CHGruntOp4, m_flNextGrenadeCheck, FIELD_TIME ),
+	DEFINE_FIELD( CHGruntOp4, m_flNextPainTime, FIELD_TIME ),
+//	DEFINE_FIELD( CHGruntOp4, m_flLastEnemySightTime, FIELD_TIME ), // don't save, go to zero
+	DEFINE_FIELD( CHGruntOp4, m_vecTossVelocity, FIELD_VECTOR ),
+	DEFINE_FIELD( CHGruntOp4, m_fThrowGrenade, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4, m_fStanding, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4, m_fFirstEncounter, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CHGruntOp4, m_cClipSize, FIELD_INTEGER ),
+//	DEFINE_FIELD( CHGruntOp4, m_voicePitch, FIELD_INTEGER ),
 //  DEFINE_FIELD( CShotgun, m_iBrassShell, FIELD_INTEGER ),
 //  DEFINE_FIELD( CShotgun, m_iShotgunShell, FIELD_INTEGER ),
-	DEFINE_FIELD( CHGruntAlly, m_iSentence, FIELD_INTEGER ),
-	DEFINE_FIELD( CHGruntAlly, m_iWeaponIdx, FIELD_INTEGER ),
-	DEFINE_FIELD( CHGruntAlly, m_iGruntHead, FIELD_INTEGER ),
-	DEFINE_FIELD( CHGruntAlly, m_iGruntTorso, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGruntOp4, m_iSentence, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGruntOp4, m_iWeaponIdx, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGruntOp4, m_iGruntHead, FIELD_INTEGER ),
+	DEFINE_FIELD( CHGruntOp4, m_iGruntTorso, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CHGruntAlly, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CHGruntOp4, CTalkSquadMonster );
 
-void CHGruntAlly :: GibMonster ( void )
+void CHGruntOp4 :: GibMonster ( void )
 {
 	if( m_hWaitMedic )
 	{
@@ -168,7 +168,7 @@ void CHGruntAlly :: GibMonster ( void )
 	CBaseMonster :: GibMonster();
 }
 
-void CHGruntAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
+void CHGruntOp4 :: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
@@ -184,7 +184,7 @@ void CHGruntAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	}
 }
 
-void CHGruntAlly :: Spawn()
+void CHGruntOp4 :: Spawn()
 {
 	BaseSpawn("models/hgrunt_opfor.mdl");
 
@@ -264,7 +264,7 @@ void CHGruntAlly :: Spawn()
 	// get voice pitch
 	m_voicePitch = 100;
 
-	SetUse( &CHGruntAlly::FollowerUse );
+	SetUse( &CHGruntOp4::FollowerUse );
 
 	// set base equipment flags
 	if (FBitSet(pev->weapons, HGruntAllyWeaponFlag::MP5)) {
@@ -284,13 +284,13 @@ void CHGruntAlly :: Spawn()
 	}
 }
 
-void CHGruntAlly :: Precache()
+void CHGruntOp4 :: Precache()
 {
 	PRECACHE_MODEL("models/hgrunt_opfor.mdl");
 	CBaseGruntOp4::Precache();
 }	
 
-int CHGruntAlly::GetActivitySequence(Activity NewActivity) {
+int CHGruntOp4::GetActivitySequence(Activity NewActivity) {
 	int iSequence = ACTIVITY_NOT_AVAILABLE;
 
 	switch (NewActivity)
@@ -345,7 +345,7 @@ int CHGruntAlly::GetActivitySequence(Activity NewActivity) {
 	return iSequence;
 }
 
-Schedule_t* CHGruntAlly :: GetScheduleOfType ( int Type ) 
+Schedule_t* CHGruntOp4 :: GetScheduleOfType ( int Type ) 
 {
 	switch	( Type )
 	{
@@ -398,7 +398,7 @@ Schedule_t* CHGruntAlly :: GetScheduleOfType ( int Type )
 	}
 }
 
-void CHGruntAlly::KeyValue( KeyValueData *pkvd )
+void CHGruntOp4::KeyValue( KeyValueData *pkvd )
 {
 	if( FStrEq( pkvd->szKeyName, "head" ) )
 	{
