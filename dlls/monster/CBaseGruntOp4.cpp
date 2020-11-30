@@ -27,6 +27,13 @@ const char* CBaseGruntOp4::pGruntSentences[] =
 	"FG_TAUNT", // say rude things
 };
 
+void CBaseGruntOp4::InitAiFlags(void) {
+	canBeMadAtPlayer = true;
+	waitForEnemyFire = true;
+	runFromHeavyDamage = true;
+	canCallMedic = true;
+}
+
 void CBaseGruntOp4::PlaySentenceSound(int sentenceType) {
 	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[m_iSentence], ALLY_GRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 }
@@ -47,45 +54,8 @@ int CBaseGruntOp4::ISoundMask(void)
 		bits_SOUND_GARBAGE;
 }
 
-BOOL CBaseGruntOp4::CheckRangeAttack1(float flDot, float flDist)
-{
-	//Only if we have a weapon
-	if (HasEquipment(ANY_RANGED_WEAPON))
-	{
-		// not valid for medic/torch, but this flag bit is unused for them
-		const auto maxDistance = pev->weapons & HAS_SHOTGUN_FLAG ? 640 : 1024;
-
-		//Friendly fire is allowed
-		if (!HasConditions(bits_COND_ENEMY_OCCLUDED) && flDist <= maxDistance && flDot >= 0.5 /*&& NoFriendlyFire()*/)
-		{
-			TraceResult	tr;
-
-			CBaseEntity* pEnemy = m_hEnemy;
-
-			if (!pEnemy->IsPlayer() && flDist <= 64)
-			{
-				// kick nonclients, but don't shoot at them.
-				return FALSE;
-			}
-
-			//TODO: kinda odd that this doesn't use GetGunPosition like the original
-			Vector vecSrc = pev->origin + Vector(0, 0, 55);
-
-			//Fire at last known position, adjusting for target origin being offset from entity origin
-			const auto targetOrigin = pEnemy->BodyTarget(vecSrc);
-
-			const auto targetPosition = targetOrigin - pEnemy->pev->origin + m_vecEnemyLKP;
-
-			// verify that a bullet fired from the gun will hit the enemy before the world.
-			UTIL_TraceLine(vecSrc, targetPosition, dont_ignore_monsters, ENT(pev), &tr);
-
-			m_lastAttackCheck = tr.flFraction == 1.0 ? true : tr.pHit && GET_PRIVATE(tr.pHit) == pEnemy;
-
-			return m_lastAttackCheck;
-		}
-	}
-
-	return FALSE;
+BOOL CBaseGruntOp4::NoFriendlyFire(void) {
+	return TRUE; // friendly fire is allowed
 }
 
 void CBaseGruntOp4::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
@@ -99,62 +69,6 @@ void CBaseGruntOp4::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector v
 
 	// should probably skip the CBaseGrunt TraceAttack since op4 grunt models have no helmet hitboxes
 	CBaseGrunt::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
-}
-
-int CBaseGruntOp4::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
-{
-	Forget(bits_MEMORY_INCOVER);
-
-	// make sure friends talk about it if player hurts talkmonsters...
-	int ret = CTalkSquadMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
-
-	if (pev->deadflag != DEAD_NO)
-		return ret;
-
-	if (m_MonsterState != MONSTERSTATE_PRONE && (pevAttacker->flags & FL_CLIENT))
-	{
-		Forget(bits_MEMORY_INCOVER);
-
-		m_flPlayerDamage += flDamage;
-
-		// This is a heurstic to determine if the player intended to harm me
-		// If I have an enemy, we can't establish intent (may just be crossfire)
-		if (m_hEnemy == NULL)
-		{
-			// If the player was facing directly at me, or I'm already suspicious, get mad
-			if (gpGlobals->time - m_flLastHitByPlayer < 4.0 && m_iPlayerHits > 2
-				&& ((m_afMemory & bits_MEMORY_SUSPICIOUS) || IsFacing(pevAttacker, pev->origin)))
-			{
-				// Alright, now I'm pissed!
-				PlaySentence("FG_MAD", 4, VOL_NORM, ATTN_NORM);
-
-				Remember(bits_MEMORY_PROVOKED);
-				StopFollowing(TRUE);
-				ALERT(at_console, "HGrunt Ally is now MAD!\n");
-			}
-			else
-			{
-				// Hey, be careful with that
-				PlaySentence("FG_SHOT", 4, VOL_NORM, ATTN_NORM);
-				Remember(bits_MEMORY_SUSPICIOUS);
-
-				if (4.0 > gpGlobals->time - m_flLastHitByPlayer)
-					++m_iPlayerHits;
-				else
-					m_iPlayerHits = 0;
-
-				m_flLastHitByPlayer = gpGlobals->time;
-
-				ALERT(at_console, "HGrunt Ally is now SUSPICIOUS!\n");
-			}
-		}
-		else if (!m_hEnemy->IsPlayer())
-		{
-			PlaySentence("FG_SHOT", 4, VOL_NORM, ATTN_NORM);
-		}
-	}
-
-	return ret;
 }
 
 void CBaseGruntOp4::IdleSound(void)
@@ -331,195 +245,7 @@ void CBaseGruntOp4::TalkInit()
 	m_voicePitch = 100;
 }
 
-Schedule_t* CBaseGruntOp4::GetMonsterStateSchedule(void) {
-	switch (m_MonsterState)
-	{
-	case MONSTERSTATE_COMBAT:
-	{
-		// dead enemy
-		if (HasConditions(bits_COND_ENEMY_DEAD))
-		{
-			if (FOkToSpeak())
-			{
-				PlaySentence("FG_KILL", 4, VOL_NORM, ATTN_NORM);
-			}
-
-			// call base class, all code to handle dead enemies is centralized there.
-			return CBaseMonster::GetSchedule();
-		}
-
-		if (m_hWaitMedic)
-		{
-			CTalkSquadMonster* pMedic = m_hWaitMedic->MyTalkSquadMonsterPointer();
-
-			if (pMedic->pev->deadflag != DEAD_NO)
-				m_hWaitMedic = nullptr;
-			else
-				pMedic->HealMe(nullptr);
-
-			m_flMedicWaitTime = gpGlobals->time + 5.0;
-		}
-
-		// new enemy
-		//Do not fire until fired upon
-		if (HasAllConditions(bits_COND_NEW_ENEMY | bits_COND_LIGHT_DAMAGE))
-		{
-			if (InSquad()) {
-				return GetNewSquadEnemySchedule();
-			}
-
-			return GetScheduleOfType(SCHED_SMALL_FLINCH);
-		}
-
-		else if (HasConditions(bits_COND_HEAVY_DAMAGE))
-			return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
-		// no ammo
-				//Only if the grunt has a weapon
-		else if (pev->weapons && HasConditions(bits_COND_NO_AMMO_LOADED))
-		{
-			//!!!KELLY - this individual just realized he's out of bullet ammo. 
-			// He's going to try to find cover to run to and reload, but rarely, if 
-			// none is available, he'll drop and reload in the open here. 
-			return GetScheduleOfType(SCHED_GRUNT_COVER_AND_RELOAD);
-		}
-
-		// damaged just a little
-		else if (HasConditions(bits_COND_LIGHT_DAMAGE))
-		{
-			return GetLightDamageSchedule();
-		}
-		// can kick
-		else if (HasConditions(bits_COND_CAN_MELEE_ATTACK1))
-		{
-			return GetScheduleOfType(SCHED_MELEE_ATTACK1);
-		}
-		// can grenade launch
-		else if (HasEquipment(MEQUIP_GRENADE_LAUNCHER) && HasConditions(bits_COND_CAN_RANGE_ATTACK2) && OccupySlot(bits_SLOTS_HGRUNT_GRENADE))
-		{
-			// shoot a grenade if you can
-			return GetScheduleOfType(SCHED_RANGE_ATTACK2);
-		}
-		// can shoot
-		else if (HasConditions(bits_COND_CAN_RANGE_ATTACK1))
-		{
-			return GetShootSchedule();
-		}
-		// can't see enemy
-		else if (HasConditions(bits_COND_ENEMY_OCCLUDED))
-		{
-			return GetEnemyOccludedSchedule();
-		}
-
-		//Only if not following a player
-		if (!m_hTargetEnt || !m_hTargetEnt->IsPlayer())
-		{
-			if (HasConditions(bits_COND_SEE_ENEMY) && !HasConditions(bits_COND_CAN_RANGE_ATTACK1))
-			{
-				return GetScheduleOfType(SCHED_GRUNT_ESTABLISH_LINE_OF_FIRE);
-			}
-		}
-
-		//Don't fall through to idle schedules
-		break;
-	}
-
-	case MONSTERSTATE_ALERT:
-	case MONSTERSTATE_IDLE:
-		if (HasConditions(bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE))
-		{
-			// flinch if hurt
-			return GetScheduleOfType(SCHED_SMALL_FLINCH);
-		}
-
-		//if we're not waiting on a medic and we're hurt, call out for a medic
-		if (!m_hWaitMedic
-			&& gpGlobals->time > m_flMedicWaitTime
-			&& pev->health <= 20.0)
-		{
-			auto pMedic = MySquadMedic();
-
-			if (!pMedic)
-			{
-				pMedic = FindSquadMedic(1024);
-			}
-
-			if (pMedic)
-			{
-				if (pMedic->pev->deadflag == DEAD_NO)
-				{
-					ALERT(at_aiconsole, "Injured Grunt found Medic\n");
-
-					if (pMedic->HealMe(this))
-					{
-						ALERT(at_aiconsole, "Injured Grunt called for Medic\n");
-
-						EMIT_SOUND_DYN(edict(), CHAN_VOICE, "fgrunt/medic.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
-
-						JustSpoke();
-						m_flMedicWaitTime = gpGlobals->time + 5.0;
-					}
-				}
-			}
-		}
-
-		if (m_hEnemy == NULL && IsFollowing())
-		{
-			if (!m_hTargetEnt->IsAlive())
-			{
-				// UNDONE: Comment about the recently dead player here?
-				StopFollowing(FALSE);
-				break;
-			}
-			else
-			{
-				if (HasConditions(bits_COND_CLIENT_PUSH))
-				{
-					return GetScheduleOfType(SCHED_MOVE_AWAY_FOLLOW);
-				}
-				return GetScheduleOfType(SCHED_TARGET_FACE);
-			}
-		}
-
-		if (HasConditions(bits_COND_CLIENT_PUSH))
-		{
-			return GetScheduleOfType(SCHED_MOVE_AWAY);
-		}
-
-		// try to say something about smells
-		TrySmellTalk();
-		break;
-	}
-
-	// no special cases here, call the base class
-	return CTalkSquadMonster::GetSchedule();
-}
-
 int CBaseGruntOp4::ObjectCaps()
 {
 	return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
-}
-
-void CBaseGruntOp4::Killed(entvars_t* pevAttacker, int iGib)
-{
-	if (m_MonsterState != MONSTERSTATE_DEAD) //TODO: skip this for medic?
-	{
-		if (HasMemory(bits_MEMORY_SUSPICIOUS) || IsFacing(pevAttacker, pev->origin))
-		{
-			Remember(bits_MEMORY_PROVOKED);
-
-			StopFollowing(true);
-		}
-	}
-
-	if (m_hWaitMedic)
-	{
-		CTalkSquadMonster* v4 = m_hWaitMedic->MyTalkSquadMonsterPointer();
-		if (v4->pev->deadflag)
-			m_hWaitMedic = nullptr;
-		else
-			v4->HealMe(nullptr);
-	}
-
-	SetUse(nullptr);
-	CTalkSquadMonster::Killed(pevAttacker, iGib);
 }

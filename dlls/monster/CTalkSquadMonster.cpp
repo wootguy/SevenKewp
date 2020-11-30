@@ -624,7 +624,7 @@ const char* CTalkSquadMonster::GetTaskName(int taskIdx) {
 void CTalkSquadMonster :: Killed( entvars_t *pevAttacker, int iGib )
 {
 	// If a client killed me (unless I was already Barnacle'd), make everyone else mad/afraid of him
-	if ( (pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE )
+	if (canBeMadAtPlayer && (pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE )
 	{
 		AlertFriends();
 		//LimitFollowers( CBaseEntity::Instance(pevAttacker), 0 );

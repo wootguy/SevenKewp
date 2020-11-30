@@ -6,12 +6,12 @@
 
 class CBaseGruntOp4 : public CBaseGrunt {
 public:
+	void InitAiFlags(void);
 	int	Classify(void);
 	int ISoundMask(void);
-	BOOL CheckRangeAttack1(float flDot, float flDist);
+	BOOL NoFriendlyFire(void);
 	void PlaySentenceSound(int sentenceType);
 	virtual void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	void IdleSound(void);
 	void AlertSound();
 	void PainSound(void);
@@ -19,13 +19,7 @@ public:
 	void DeclineFollowing();
 	virtual void Precache();
 	void TalkInit();
-	Schedule_t* GetMonsterStateSchedule(void);
 	virtual int ObjectCaps();
-	virtual void Killed(entvars_t* pevAttacker, int iGib);
-
-
-	BOOL m_lastAttackCheck;
-	float m_flPlayerDamage;
 
 	static const char* pGruntSentences[];
 };

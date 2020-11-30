@@ -79,6 +79,31 @@ void CBaseGrunt :: GibMonster ( void )
 	CBaseMonster::GibMonster();
 }
 
+void CBaseGrunt::Killed(entvars_t* pevAttacker, int iGib)
+{
+	if (m_MonsterState != MONSTERSTATE_DEAD) //TODO: skip this for medic?
+	{
+		if (HasMemory(bits_MEMORY_SUSPICIOUS) || IsFacing(pevAttacker, pev->origin))
+		{
+			Remember(bits_MEMORY_PROVOKED);
+
+			StopFollowing(true);
+		}
+	}
+
+	if (m_hWaitMedic)
+	{
+		CTalkSquadMonster* medic = m_hWaitMedic->MyTalkSquadMonsterPointer();
+		if (medic->pev->deadflag)
+			m_hWaitMedic = NULL;
+		else
+			medic->HealMe(NULL);
+	}
+
+	SetUse(NULL);
+	CTalkSquadMonster::Killed(pevAttacker, iGib);
+}
+
 //=========================================================
 // ISoundMask - Overidden for human grunts because they 
 // hear the DANGER sound that is made by hand grenades and
@@ -221,6 +246,10 @@ BOOL CBaseGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 		{
 			return TRUE;
 		}
+		
+		m_lastAttackCheck = tr.flFraction == 1.0 ? true : tr.pHit && GET_PRIVATE(tr.pHit) == m_hEnemy;
+
+		return m_lastAttackCheck;
 	}
 
 	return FALSE;
@@ -391,7 +420,56 @@ int CBaseGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 {
 	Forget( bits_MEMORY_INCOVER );
 
-	return CTalkSquadMonster :: TakeDamage ( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	// make sure friends talk about it if player hurts talkmonsters...
+	int ret = CTalkSquadMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
+
+	if (pev->deadflag != DEAD_NO || !canBeMadAtPlayer)
+		return ret;
+
+	if (m_MonsterState != MONSTERSTATE_PRONE && (pevAttacker->flags & FL_CLIENT))
+	{
+		Forget(bits_MEMORY_INCOVER);
+
+		m_flPlayerDamage += flDamage;
+
+		// This is a heurstic to determine if the player intended to harm me
+		// If I have an enemy, we can't establish intent (may just be crossfire)
+		if (m_hEnemy == NULL)
+		{
+			// If the player was facing directly at me, or I'm already suspicious, get mad
+			if (gpGlobals->time - m_flLastHitByPlayer < 4.0 && m_iPlayerHits > 2
+				&& ((m_afMemory & bits_MEMORY_SUSPICIOUS) || IsFacing(pevAttacker, pev->origin)))
+			{
+				// Alright, now I'm pissed!
+				PlaySentence("FG_MAD", 4, VOL_NORM, ATTN_NORM);
+
+				Remember(bits_MEMORY_PROVOKED);
+				StopFollowing(TRUE);
+				ALERT(at_console, "HGrunt Ally is now MAD!\n");
+			}
+			else
+			{
+				// Hey, be careful with that
+				PlaySentence("FG_SHOT", 4, VOL_NORM, ATTN_NORM);
+				Remember(bits_MEMORY_SUSPICIOUS);
+
+				if (4.0 > gpGlobals->time - m_flLastHitByPlayer)
+					++m_iPlayerHits;
+				else
+					m_iPlayerHits = 0;
+
+				m_flLastHitByPlayer = gpGlobals->time;
+
+				ALERT(at_console, "HGrunt Ally is now SUSPICIOUS!\n");
+			}
+		}
+		else if (!m_hEnemy->IsPlayer())
+		{
+			PlaySentence("FG_SHOT", 4, VOL_NORM, ATTN_NORM);
+		}
+	}
+
+	return ret;
 }
 
 void CBaseGrunt :: SetYawSpeed ( void )
@@ -779,6 +857,16 @@ void CBaseGrunt::BaseSpawn(const char* model)
 	MonsterInit();
 
 	m_iEquipment = 0;
+
+	InitAiFlags();
+}
+
+void CBaseGrunt::InitAiFlags() {
+	// default to HL Grunt AI
+	canBeMadAtPlayer = false;
+	waitForEnemyFire = false;
+	runFromHeavyDamage = false;
+	canCallMedic = false;
 }
 
 void CBaseGrunt::BasePrecache() {
@@ -1790,15 +1878,49 @@ Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 		// dead enemy
 		if (HasConditions(bits_COND_ENEMY_DEAD))
 		{
+			if (FOkToSpeak())
+			{
+				// TODO: not all monsters have this sentence
+				PlaySentence("FG_KILL", 4, VOL_NORM, ATTN_NORM);
+			}
+
 			// call base class, all code to handle dead enemies is centralized there.
 			return CBaseMonster::GetSchedule();
 		}
 
-		// new enemy
-		if (HasConditions(bits_COND_NEW_ENEMY) && InSquad())
+		if (m_hWaitMedic)
 		{
-			return GetNewSquadEnemySchedule();
+			CTalkSquadMonster* pMedic = m_hWaitMedic->MyTalkSquadMonsterPointer();
+
+			if (pMedic->pev->deadflag != DEAD_NO)
+				m_hWaitMedic = NULL;
+			else
+				pMedic->HealMe(NULL);
+
+			m_flMedicWaitTime = gpGlobals->time + 5.0;
 		}
+
+		// new enemy
+		//Do not fire until fired upon
+		if (waitForEnemyFire) {
+			if (HasAllConditions(bits_COND_NEW_ENEMY | bits_COND_LIGHT_DAMAGE))
+			{
+				if (InSquad()) {
+					return GetNewSquadEnemySchedule();
+				}
+
+				return GetScheduleOfType(SCHED_SMALL_FLINCH);
+			}
+		} else {
+			if (HasAllConditions(bits_COND_NEW_ENEMY))
+			{
+				return GetNewSquadEnemySchedule();
+			}
+		}
+
+		if (runFromHeavyDamage && HasConditions(bits_COND_HEAVY_DAMAGE))
+			return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
+
 		// no ammo
 		else if (HasConditions(bits_COND_NO_AMMO_LOADED))
 		{
@@ -1836,10 +1958,82 @@ Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 			return GetEnemyOccludedSchedule();
 		}
 
-		if (HasConditions(bits_COND_SEE_ENEMY) && !HasConditions(bits_COND_CAN_RANGE_ATTACK1))
+		//Only if not following a player
+		if (!m_hTargetEnt || !m_hTargetEnt->IsPlayer()) // TODO: does this added condition change HL grunt behavior?
 		{
-			return GetScheduleOfType(SCHED_GRUNT_ESTABLISH_LINE_OF_FIRE);
+			if (HasConditions(bits_COND_SEE_ENEMY) && !HasConditions(bits_COND_CAN_RANGE_ATTACK1))
+			{
+				return GetScheduleOfType(SCHED_GRUNT_ESTABLISH_LINE_OF_FIRE);
+			}
 		}
+	}
+
+	case MONSTERSTATE_ALERT:
+	case MONSTERSTATE_IDLE:
+	{
+		// TODO: do these custons schedules work ok for vanilla HL grunts? these are all op4 specific
+
+		if (HasConditions(bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE))
+		{
+			// flinch if hurt
+			return GetScheduleOfType(SCHED_SMALL_FLINCH);
+		}
+
+		//if we're not waiting on a medic and we're hurt, call out for a medic
+		if (canCallMedic && !m_hWaitMedic && gpGlobals->time > m_flMedicWaitTime && pev->health <= 20.0)
+		{
+			auto pMedic = MySquadMedic();
+
+			if (!pMedic)
+			{
+				pMedic = FindSquadMedic(1024);
+			}
+
+			if (pMedic)
+			{
+				if (pMedic->pev->deadflag == DEAD_NO)
+				{
+					ALERT(at_aiconsole, "Injured Grunt found Medic\n");
+
+					if (pMedic->HealMe(this))
+					{
+						ALERT(at_aiconsole, "Injured Grunt called for Medic\n");
+
+						EMIT_SOUND_DYN(edict(), CHAN_VOICE, "fgrunt/medic.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+
+						JustSpoke();
+						m_flMedicWaitTime = gpGlobals->time + 5.0;
+					}
+				}
+			}
+		}
+
+		if (m_hEnemy == NULL && IsFollowing())
+		{
+			if (!m_hTargetEnt->IsAlive())
+			{
+				// UNDONE: Comment about the recently dead player here?
+				StopFollowing(FALSE);
+				break;
+			}
+			else
+			{
+				if (HasConditions(bits_COND_CLIENT_PUSH))
+				{
+					return GetScheduleOfType(SCHED_MOVE_AWAY_FOLLOW);
+				}
+				return GetScheduleOfType(SCHED_TARGET_FACE);
+			}
+		}
+
+		if (HasConditions(bits_COND_CLIENT_PUSH))
+		{
+			return GetScheduleOfType(SCHED_MOVE_AWAY);
+		}
+
+		// try to say something about smells
+		TrySmellTalk();
+		break;
 	}
 	}
 
