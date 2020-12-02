@@ -74,48 +74,326 @@ typedef void *(*CLIENTFACTORY)(); // this should be CreateInterfaceFn but that m
 // Pointers to the exported client functions themselves
 typedef struct
 {
+	/**
+	*	Called to initialize the client library.
+	*	@param pEngineFuncs Pointer to the engine functions interface;
+	*	@param iVersion Interface version. Must match CLDLL_INTERFACE_VERSION.
+	*	@return true on success, false otherwise. If iVersion does not match CLDLL_INTERFACE_VERSION, return false.
+	*	@see CLDLL_INTERFACE_VERSION
+	*/
 	INITIALIZE_FUNC						pInitFunc;
+
+	/**
+	*	Called to initialize the client library. This occurs after the engine has loaded the client and has initialized all other systems.
+	*/
 	HUD_INIT_FUNC						pHudInitFunc;
+
+	/**
+	*	Called after a connection to a server has been established.
+	*/
 	HUD_VIDINIT_FUNC					pHudVidInitFunc;
+
+	/**
+	*	Called to redraw the HUD.
+	*	@param flCurrentTime Current game time.
+	*	@param bIsIntermission Whether we're currently in intermission or not.
+	*	@return Ignored. true on success, false otherwise.
+	*/
 	HUD_REDRAW_FUNC						pHudRedrawFunc;
+
+	/**
+	*	Called every frame while running a map.
+	*	@param pCLData Client data.
+	*	@param flCurrentTime Current game time.
+	*	@return true if client data was updated, false otherwise.
+	*/
 	HUD_UPDATECLIENTDATA_FUNC			pHudUpdateClientDataFunc;
+
+	/**
+	*	Obsolete. Is never called.
+	*/
 	HUD_RESET_FUNC						pHudResetFunc;
+
+	/**
+	*	Run client side player movement and physics code.
+	*	@param ppmove Player movement data.
+	*	@param server Whether this is the server or client running movement.
+	*/
 	HUD_CLIENTMOVE_FUNC					pClientMove;
+
+	/**
+	*	Initializes the client side player movement code.
+	*	@param ppmove Player movement data.
+	*/
 	HUD_CLIENTMOVEINIT_FUNC				pClientMoveInit;
+
+	/**
+	*	Gets the texture type for a given texture name.
+	*	Never called by the engine itself.
+	*	@param pszName Texture name.
+	*	@return Texture type.
+	*/
 	HUD_TEXTURETYPE_FUNC				pClientTextureType;
+
+	/**
+	*	Called when mouse input is activated.
+	*/
 	HUD_IN_ACTIVATEMOUSE_FUNC			pIN_ActivateMouse;
+
+	/**
+	*	Called when mouse input is deactivated.
+	*/
 	HUD_IN_DEACTIVATEMOUSE_FUNC			pIN_DeactivateMouse;
+
+	/**
+	*	Called when a mouse event has occurred.
+	*	@param mstate Bit vector containing new mouse button states.
+	*/
 	HUD_IN_MOUSEEVENT_FUNC				pIN_MouseEvent;
+
+	/**
+	*	Clears all mouse button states.
+	*/
 	HUD_IN_CLEARSTATES_FUNC				pIN_ClearStates;
+
+	/**
+	*	Called to accumulate relative mouse movement.
+	*/
 	HUD_IN_ACCUMULATE_FUNC				pIN_Accumulate;
+
+	/**
+	*	Creates a movement command to send to the server.
+	*	@param frametime Delta time between the last and current frame.
+	*	@param cmd Command to fill in.
+	*	@param bActive if bActive == 1 then we are 1) not playing back demos ( where our commands are ignored ) and
+	*					2 ) we have finished signing on to server
+	*/
 	HUD_CL_CREATEMOVE_FUNC				pCL_CreateMove;
+
+	/**
+	*	@return Whether the client is currently in third person mode.
+	*/
 	HUD_CL_ISTHIRDPERSON_FUNC			pCL_IsThirdPerson;
+
+	/**
+	*	Gets the camera offset.
+	*	@param[ out ] ofs Offset.
+	*/
 	HUD_CL_GETCAMERAOFFSETS_FUNC		pCL_GetCameraOffsets;
+
+	/**
+	*	Finds a key by name.
+	*	@param pszName Key name.
+	*	@return Key, or null if it couldn't be found.
+	*/
 	HUD_KB_FIND_FUNC					pFindKey;
+
+	/**
+	*	Runs camera think.
+	*/
 	HUD_CAMTHINK_FUNC					pCamThink;
+
+	/**
+	*	Calculates view data.
+	*/
 	HUD_CALCREF_FUNC					pCalcRefdef;
+
+	/**
+	*	Called when the engine has created a client side copy of an entity.
+	*	@param type Entity type. @see EntityType
+	*	@param ent Entity.
+	*	@param pszModelName Name of the model that the entity is using. Same as ent->model->name. Is an empty string if it has no model.
+	*	@return true to add it to the list of visible entities, false to filter it out.
+	*/
 	HUD_ADDENTITY_FUNC					pAddEntity;
+
+	/**
+	*	Gives us a chance to add additional entities to the render this frame.
+	*/
 	HUD_CREATEENTITIES_FUNC				pCreateEntities;
+
+	/**
+	*	Lets the client draw non-transparent geometry.
+	*/
 	HUD_DRAWNORMALTRIS_FUNC				pDrawNormalTriangles;
+
+	/**
+	*	Lets the client draw transparent geometry.
+	*/
 	HUD_DRAWTRANSTRIS_FUNC				pDrawTransparentTriangles;
+
+	/**
+	*	A studiomodel event has occured while advancing an entity's frame.
+	*	@param event Event.
+	*	@param entity Entity whose frame is being advanced.
+	*/
 	HUD_STUDIOEVENT_FUNC				pStudioEvent;
+
+	/**
+	*	Client calls this during prediction, after it has moved the player and updated any info changed into to->
+	*	time is the current client clock based on prediction
+	*	cmd is the command that caused the movement, etc
+	*	bRunFuncs is true if this is the first time we've predicted this command.  If so, sounds and effects should play, otherwise, they should
+	*	be ignored
+	*	@param from Old state.
+	*	@param to New state.
+	*	@param cmd Command that was ran.
+	*	@param bRunFuncs Whether to play sounds and effects.
+	*	@param time Current time.
+	*	@param random_seed Shared random seed.
+	*/
 	HUD_POSTRUNCMD_FUNC					pPostRunCmd;
+
+	/**
+	*	Called when the client shuts down. The library is freed after this call.
+	*/
 	HUD_SHUTDOWN_FUNC					pShutdown;
+
+	/**
+	*	The server sends us our origin with extra precision as part of the clientdata structure, not during the normal
+	*	playerstate update in entity_state_t.  In order for these overrides to eventually get to the appropriate playerstate
+	*	structure, we need to copy them into the state structure at this point.
+	*	@param state Player entity state.
+	*	@param client Player client state.
+	*/
 	HUD_TXFERLOCALOVERRIDES_FUNC		pTxferLocalOverrides;
+
+	/**
+	*	We have received entity_state_t for this player over the network.  We need to copy appropriate fields to the
+	*	playerstate structure.
+	*	@param dst Destination state.
+	*	@param src Source state.
+	*/
 	HUD_PROCESSPLAYERSTATE_FUNC			pProcessPlayerState;
+
+	/**
+	*	Because we can predict an arbitrary number of frames before the server responds with an update, we need to be able to copy client side prediction data in
+	*	from the state that the server ack'd receiving, which can be anywhere along the predicted frame path ( i.e., we could predict 20 frames into the future and the server ack's
+	*	up through 10 of those frames, so we need to copy persistent client-side only state from the 10th predicted frame to the slot the server
+	*	update is occupying. )
+	*	@param ps Current player entity state.
+	*	@param pps Current predicted player entity state.
+	*	@param pcd Current client state.
+	*	@param ppcd Current predicted player entity state.
+	*	@param wd Current weapon data list.
+	*	@param pwd Current predicted weapon data list.
+	*/
 	HUD_TXFERPREDICTIONDATA_FUNC		pTxferPredictionData;
+
+	/**
+	*	Called by the engine while playing back a demo. The engine wants us to parse some data from the demo stream.
+	*	@param size Buffer size, in bytes.
+	*	@param buffer Buffer.
+	*/
 	HUD_DEMOREAD_FUNC					pReadDemoBuffer;
+
+	/**
+	*	Return 1 if the packet is valid.  Set response_buffer_size if you want to send a response packet.  Incoming, it holds the max
+	*	size of the response_buffer, so you must zero it out if you choose not to respond.
+	*	@param net_from Address of the sender.
+	*	@param args Command arguments.
+	*	@param response_buffer Buffer to write responses to.
+	*	@param response_buffer_size Buffer size.
+	*	@return true if the packet is valid, false otherwise.
+	*/
 	HUD_CONNECTIONLESS_FUNC				pConnectionlessPacket;
+
+	/**
+	*	Gets hull bounds for physics.
+	*	@param hullnumber Hull number. @see Hull::Hull
+	*	@param[ out ] mins Minimum bounds.
+	*	@param[ out ] maxs Maximum bounds.
+	*	@return true if the bounds were set, false otherwise.
+	*/
 	HUD_GETHULLBOUNDS_FUNC				pGetHullBounds;
+
+	/**
+	*	Called every frame that the client library is loaded.
+	*	@param flFrameTime Time between the last and current frame.
+	*/
 	HUD_FRAME_FUNC						pHudFrame;
+
+	/**
+	*	Called when a key has changed state.
+	*	@param bDown Whether they key is down or not.
+	*	@param keynum Key number. @see KeyNum
+	*	@param pszCurrentBinding Command bound to this key.
+	*	@return true to allow engine to process the key, otherwise, act on it as needed.
+	*/
 	HUD_KEY_EVENT_FUNC					pKeyEvent;
+
+	/**
+	*	Simulation and cleanup of temporary entities.
+	*	@param flFrameTime Time between the last and current frame.
+	*	@param flClientTime Current client time.
+	*	@param flCLGravity Client side gravity.
+	*	@param ppTempEntFree List of free temporary entities.
+	*	@param ppTempEntActive List of active temporary entities.
+	*	@param pAddVisibleEnt Callback to add visible entities.
+	*	@param pTmpPlaySound Callback to play sounds for temporary entities.
+	*/
 	HUD_TEMPENTUPDATE_FUNC				pTempEntUpdate;
+
+	/**
+	*	If you specify negative numbers for beam start and end point entities, then
+	*	the engine will call back into this function requesting a pointer to a cl_entity_t
+	*	object that describes the entity to attach the beam onto.
+	*
+	*	Indices must start at 1, not zero.
+	*	@param index Entity index.
+	*	@return Entity.
+	*/
 	HUD_GETUSERENTITY_FUNC				pGetUserEntity;
+
+	/**
+	*	Called when a player starts or stops talking.
+	*	Possibly null on old client dlls.
+	*	@param entindex Player index. 1 based. Is -1 when it's the local player, -2 if the server has acknowledged the local player is talking.
+	*	@param bTalking Whether the player is currently talking or not.
+	*/
 	HUD_VOICESTATUS_FUNC				pVoiceStatus;		// Possibly null on old client dlls.
+
+	/**
+	*	Called when a director event message was received.
+	*	Should be parsed like a user message.
+	*	Possibly null on old client dlls.
+	*	@param iSize Size of the buffer.
+	*	@param pbuf Buffer.
+	*/
 	HUD_DIRECTORMESSAGE_FUNC			pDirectorMessage;	// Possibly null on old client dlls.
+
+	/**
+	*	Export this function for the engine to use the studio renderer class to render objects.
+	*	Not used by all clients.
+	*	@param version Interface version. Must be STUDIO_INTERFACE_VERSION. Return false if it doesn't match.
+	*	@param[ out ] ppinterface Pointer to a pointer that should contain the studio interface.
+	*	@param pstudio Engine studio interface.
+	*	@return true if the requested interface was available, false otherwise.
+	*	@see STUDIO_INTERFACE_VERSION
+	*/
 	HUD_STUDIO_INTERFACE_FUNC			pStudioInterface;	// Not used by all clients
+
+	/**
+	*	Gets the chat input position.
+	*	Not used by all clients.
+	*	@param x X position.
+	*	@param y Y position.
+	*/
 	HUD_CHATINPUTPOSITION_FUNC			pChatInputPosition;	// Not used by all clients
+
+	/**
+	*	Doesn't appear to be called.
+	*	Not used by all clients.
+	*/
 	HUD_GETPLAYERTEAM					pGetPlayerTeam; // Not used by all clients
+
+	/**
+	*	This should be CreateInterfaceFn but that means including interface.h
+	*	which is a C++ file and some of the client files a C only...
+	*	so we return a void * which we then do a typecast on later.
+	*
+	*	Never actually called, but must be provided in order for CreateInterface to be called.
+	*/
 	CLIENTFACTORY						pClientFactory;
 } cldll_func_t;
 
@@ -357,139 +635,990 @@ typedef void					(*pfnEngSrc_pfnVguiWrap2_GetMouseDelta_t) ( int *x, int *y );
 // Pointers to the exported engine functions themselves
 typedef struct cl_enginefuncs_s
 {
+	/**
+	*	Loads a sprite by name.
+	*	A maximum of 256 HUD sprites can be loaded at the same time.
+	*	@param pszPicName Name of the sprite to load. Must include the sprites directory name and the extension.
+	*	@return Handle to the sprite.
+	*/
 	pfnEngSrc_pfnSPR_Load_t					pfnSPR_Load;
+
+	/**
+	*	Gets the number of frames in the sprite.
+	*	@param hPic Handle to the sprite.
+	*	@return Frame count.
+	*/
 	pfnEngSrc_pfnSPR_Frames_t				pfnSPR_Frames;
+
+	/**
+	*	Gets the height of a given sprite frame.
+	*	@param hPic Handle to the sprite.
+	*	@param frame Frame number.
+	*	@return Height in pixels.
+	*/
 	pfnEngSrc_pfnSPR_Height_t				pfnSPR_Height;
+
+	/**
+	*	Gets the width of a given sprite frame.
+	*	@param hPic Handle to the sprite.
+	*	@param frame Frame number.
+	*	@return Width in pixels.
+	*/
 	pfnEngSrc_pfnSPR_Width_t				pfnSPR_Width;
+	
+	/**
+	*	Sets the sprite to draw, and its color.
+	*	@param hPic Handle to the sprite.
+	*	@param r Red color. [ 0, 255 ].
+	*	@param g Green color. [ 0, 255 ].
+	*	@param b Blue color. [ 0, 255 ].
+	*/
 	pfnEngSrc_pfnSPR_Set_t					pfnSPR_Set;
+
+	/**
+	*	Draws the current sprite as solid.
+	*	@param frame Frame to draw.
+	*	@param x Left coordinate.
+	*	@param y Top coordinate.
+	*	@param prc Optional. Defines the rectangle of the sprite frame to draw.
+	*	@see pfnSPR_Set
+	*/
 	pfnEngSrc_pfnSPR_Draw_t					pfnSPR_Draw;
+
+	/**
+	*	Draws the current sprite with color index255 not drawn (transparent).
+	*	@param frame Frame to draw.
+	*	@param x Left coordinate.
+	*	@param y Top coordinate.
+	*	@param prc Optional. Defines the rectangle of the sprite frame to draw.
+	*	@see pfnSPR_Set
+	*/
 	pfnEngSrc_pfnSPR_DrawHoles_t			pfnSPR_DrawHoles;
+
+	/**
+	*	Draws the current sprite, adds the sprites RGB values to the background (additive translucency).
+	*	@param frame Frame to draw.
+	*	@param x Left coordinate.
+	*	@param y Top coordinate.
+	*	@param prc Optional. Defines the rectangle of the sprite frame to draw.
+	*	@see pfnSPR_Set
+	*/
 	pfnEngSrc_pfnSPR_DrawAdditive_t			pfnSPR_DrawAdditive;
+
+	/**
+	*	Dets a clipping rect for HUD sprites. (0,0) is the top-left hand corner of the screen.
+	*	@param x Left coordinate of the box.
+	*	@param y Top coordinate of the box.
+	*	@param width Width of the box.
+	*	@param height Height of the box.
+	*/
 	pfnEngSrc_pfnSPR_EnableScissor_t		pfnSPR_EnableScissor;
+
+	/**
+	*	Disables the scissor box.
+	*/
 	pfnEngSrc_pfnSPR_DisableScissor_t		pfnSPR_DisableScissor;
+
+	/**
+	*	Loads a sprite list. This is a text file defining a list of HUD elements.
+	*	Free the returned list with COM_FreeFile.
+	*	@param pszName Name of the file to load. Should include the sprites directory and the extension.
+	*	@param[ out ] piCount Optional. Pointer to a variable that will contain the number of entries in the list.
+	*	@return List of sprites.
+	*/
 	pfnEngSrc_pfnSPR_GetList_t				pfnSPR_GetList;
+
+	/**
+	*	Fills the given rectangle with a given color.
+	*	@param x Left coordinate.
+	*	@param y Top coordinate.
+	*	@param width Width of the rectangle.
+	*	@param height Height of the rectangle.
+	*	@param r Red color. [ 0, 255 ].
+	*	@param g Green color. [ 0, 255 ].
+	*	@param b Blue color. [ 0, 255 ].
+	*	@param a Alpha value. [ 0, 255 ].
+	*/
 	pfnEngSrc_pfnFillRGBA_t					pfnFillRGBA;
+
+	/**
+	*	Gets screen info.
+	*	The SCREENINFO::iSize member must be set to sizeof( SCREENINFO ).
+	*	@param psrcinfo Pointer to a SCREENINFO instance that will receive the information.
+	*	@return Number of bytes that have been written. 0 if nothing was written.
+	*/
 	pfnEngSrc_pfnGetScreenInfo_t			pfnGetScreenInfo;
+
+	/**
+	*	Sets the crosshair sprite.
+	*	@param hPic Handle to the sprite.
+	*	@param rc Rectangle that defines the crosshair box to draw.
+	*	@param r Red color. [ 0, 255 ].
+	*	@param g Green color. [ 0, 255 ].
+	*	@param b Blue color. [ 0, 255 ].
+	*/
 	pfnEngSrc_pfnSetCrosshair_t				pfnSetCrosshair;
+
+	/**
+	*	Registers a new cvar. Avoid calling with the same name more than once.
+	*	@param pszName Name of the cvar. Must point to a string that will exist for the rest of the program's lifetime.
+	*	@param pszValue Value to set. Can be a temporary string.
+	*	@param flags CVar flags.
+	*	@return Pointer to the cvar.
+	*/
 	pfnEngSrc_pfnRegisterVariable_t			pfnRegisterVariable;
+
+	/**
+	*	Gets the float value of a cvar.
+	*	@param pszName CVar name.
+	*	@return Value, or 0 if the cvar doesn't exist.
+	*/
 	pfnEngSrc_pfnGetCvarFloat_t				pfnGetCvarFloat;
+
+	/**
+	*	Gets the string value of a cvar.
+	*	@param pszName CVar name.
+	*	@return Value, or nullptr if the cvar doesn't exist.
+	*/
 	pfnEngSrc_pfnGetCvarString_t			pfnGetCvarString;
+
+	/**
+	*	Adds a new command.
+	*	@param pszCmdName Command name. Must point to a string that will exist for the rest of the program's lifetime.
+	*	@param pCallback Callback to invoke when the command is executed. If null, forwards the command to the server.
+	*	@return true in all cases.
+	*/
 	pfnEngSrc_pfnAddCommand_t				pfnAddCommand;
+
+	/**
+	*	Hooks a user message.
+	*	@param pszMsgName Name of the message. Can be a temporary string.
+	*	@param pfn Callback to invoke when the message is received.
+	*	@return true if the command was already registered with the same callback, false otherwise.
+	*/
 	pfnEngSrc_pfnHookUserMsg_t				pfnHookUserMsg;
+
+	/**
+	*	Sends a command to the server.
+	*	@param pszCmdString Command string.
+	*	@return false in all cases.
+	*/
 	pfnEngSrc_pfnServerCmd_t				pfnServerCmd;
+
+	/**
+	*	Enqueues a command for execution for the local client.
+	*	@param pszCmdString Command string.
+	*	@return true if the command was enqueued, false otherwise.
+	*/
 	pfnEngSrc_pfnClientCmd_t				pfnClientCmd;
+
+	/**
+	*	Gets player info.
+	*	@param ent_num 1 based player entity index.
+	*	@param pinfo Structure that will contain the player's information.
+	*/
 	pfnEngSrc_pfnGetPlayerInfo_t			pfnGetPlayerInfo;
+
+	/**
+	*	Plays a sound by name.
+	*	@param pszSound Name of the sound.
+	*	@param volume Volume to play at. [ 0, 1 ].
+	*/
 	pfnEngSrc_pfnPlaySoundByName_t			pfnPlaySoundByName;
+
+	/**
+	*	Plays a sound by index.
+	*	@param iSound Index of the sound.
+	*	@param volume Volume to play at. [ 0, 1 ].
+	*/
 	pfnEngSrc_pfnPlaySoundByIndex_t			pfnPlaySoundByIndex;
+
+	/**
+	*	Converts angles to directional vectors.
+	*	Superseded by AngleVectors.
+	*	@param vecAngles Angles.
+	*	@param[ out ] forward Forward vector.
+	*	@param[ out ] right Right vector.
+	*	@param[ out ] up Up vector.
+	*	@see AngleVectors
+	*/
 	pfnEngSrc_pfnAngleVectors_t				pfnAngleVectors;
+
+	/**
+	*	Gets a text message, defined in titles.txt.
+	*	@param pszName Text message name.
+	*					Must be either a message defined in titles.txt, or one of the following:
+	*					__DEMOMESSAGE__
+	*					__NETMESSAGE__1
+	*					__NETMESSAGE__2
+	*					__NETMESSAGE__3
+	*					__NETMESSAGE__4
+	*	@return Text message, or null if no text message could be retrieved.
+	*/
 	pfnEngSrc_pfnTextMessageGet_t			pfnTextMessageGet;
+
+	/**
+	*	Draws a single character.
+	*	@param x Left position.
+	*	@param y Top position.
+	*	@param number Character to draw.
+	*	@param r Red color. [ 0, 255 ].
+	*	@param g Green color. [ 0, 255 ].
+	*	@param b Blue color. [ 0, 255 ].
+	*	@return Total width of the drawn character.
+	*/
 	pfnEngSrc_pfnDrawCharacter_t			pfnDrawCharacter;
+
+	/**
+	*	Draws a string.
+	*	@param x Left position.
+	*	@param y Top position.
+	*	@param pszString String to draw.
+	*	@return Total width of the drawn string.
+	*/
 	pfnEngSrc_pfnDrawConsoleString_t		pfnDrawConsoleString;
+
+	/**
+	*	Sets the text color.
+	*	@param r Red color. [ 0, 1 ].
+	*	@param g Green color. [ 0, 1 ].
+	*	@param b Blue color. [ 0, 1 ].
+	*/
 	pfnEngSrc_pfnDrawSetTextColor_t			pfnDrawSetTextColor;
+
+	/**
+	*	Gets the length in pixels of a string if it were drawn onscreen.
+	*	@param pszString String to check.
+	*	@param piLength Pointer to a variable that will contain the total width of the string.
+	*	@param piHeight Pointer to a variable that will contain the height of the string.
+	*/
 	pfnEngSrc_pfnDrawConsoleStringLen_t		pfnDrawConsoleStringLen;
+
+	/**
+	*	Prints a string to the console.
+	*	@param pszString String to print.
+	*/
 	pfnEngSrc_pfnConsolePrint_t				pfnConsolePrint;
+
+	/**
+	*	Prints a string to the center of the screen.
+	*	@param pszString String to print.
+	*/
 	pfnEngSrc_pfnCenterPrint_t				pfnCenterPrint;
+
+	/**
+	*	@return The center of the screen's X axis.
+	*/
 	pfnEngSrc_GetWindowCenterX_t			GetWindowCenterX;
+
+	/**
+	*	@return The center of the screen's Y axis.
+	*/
 	pfnEngSrc_GetWindowCenterY_t			GetWindowCenterY;
+
+	/**
+	*	Gets the view angles.
+	*	@param[ out ] vecAngles Will contain the view angles.
+	*/
 	pfnEngSrc_GetViewAngles_t				GetViewAngles;
+
+	/**
+	*	Sets the view angles.
+	*	@param vecAngles Angles to set.
+	*/
 	pfnEngSrc_SetViewAngles_t				SetViewAngles;
+
+	/**
+	*	@return The maximum number of clients that can be connected to the current server.
+	*/
 	pfnEngSrc_GetMaxClients_t				GetMaxClients;
+
+	/**
+	*	Sets the value of a cvar.
+	*	@param pszCVarName Name of the cvar.
+	*	@param value Value to set.
+	*/
 	pfnEngSrc_Cvar_SetValue_t				Cvar_SetValue;
+
+	/**
+	*	@return the number of arguments in the command that is currently being executed.
+	*/
 	pfnEngSrc_Cmd_Argc_t					Cmd_Argc;
+
+	/**
+	*	@param arg Argument index.
+	*	@return Argument at the given index.
+	*/
 	pfnEngSrc_Cmd_Argv_t					Cmd_Argv;
+
+	/**
+	*	Prints to the console.
+	*	@param pszFormat Format string.
+	*	@param ... Arguments.
+	*/
 	pfnEngSrc_Con_Printf_t					Con_Printf;
+
+	/**
+	*	Prints to the console if developer mode is enabled.
+	*	@param pszFormat Format string.
+	*	@param ... Arguments.
+	*/
 	pfnEngSrc_Con_DPrintf_t					Con_DPrintf;
+
+	/**
+	*	Prints to the notify area.
+	*	@param pos Position in the notify list to set this message to. [ 0, 32 [.
+	*	@param pszFormat Format string.
+	*	@param ... Arguments.
+	*/
 	pfnEngSrc_Con_NPrintf_t					Con_NPrintf;
+
+	/**
+	*	Prints to the notify area.
+	*	@param info Notify print info.
+	*	@param pszFormat Format string.
+	*	@param ... Arguments.
+	*/
 	pfnEngSrc_Con_NXPrintf_t				Con_NXPrintf;
+
+	/**
+	*	Given a key, gets the physics value.
+	*	@param pszKey Key.
+	*	@return Pointer to the value, or an empty string if the key couldn't be found.
+	*/
 	pfnEngSrc_PhysInfo_ValueForKey_t		PhysInfo_ValueForKey;
+
+	/**
+	*	Given a key, gets the server info value.
+	*	@param pszKey Key.
+	*	@return Pointer to the value, or an empty string if the key couldn't be found.
+	*/
 	pfnEngSrc_ServerInfo_ValueForKey_t		ServerInfo_ValueForKey;
+
+	/**
+	*	@return The client's maximum speed.
+	*/
 	pfnEngSrc_GetClientMaxspeed_t			GetClientMaxspeed;
+
+	/**
+	*	Checks if the given parameter was provided on the command line.
+	*	@param pszParm Parameter to check.
+	*	@param[ out ] ppszNext Optional. If the parameter was provided, points to the value for the given parameter.
+	*	@return Parameter index in the argument vector. 0 if it wasn't found.
+	*/
 	pfnEngSrc_CheckParm_t					CheckParm;
+
+	/**
+	*	Triggers a key event.
+	*	@param key Key number. @see KeyNum.
+	*	@param bDown Whether the key is down or up.
+	*/
 	pfnEngSrc_Key_Event_t					Key_Event;
+
+	/**
+	*	Gets the mouse position on-screen.
+	*	@param mx X position.
+	*	@param my Y position.
+	*/
 	pfnEngSrc_GetMousePosition_t			GetMousePosition;
+
+	/**
+	*	@return Whether the player is currently noclipping.
+	*/
 	pfnEngSrc_IsNoClipping_t				IsNoClipping;
+
+	/**
+	*	Note: do not call until a map has been loaded. Will access invalid memory otherwise, and return a garbage pointer.
+	*	Will be valid if called after HUD_VidInit has returned.
+	*	@return The entity that represents the local player.
+	*/
 	pfnEngSrc_GetLocalPlayer_t				GetLocalPlayer;
+
+	/**
+	*	@return The entity that represents the player's viewmodel.
+	*/
 	pfnEngSrc_GetViewModel_t				GetViewModel;
+
+	/**
+	*	Gets an entity by index. Note: do not call until a map has been loaded. Will return a null pointer otherwise.
+	*	Will be valid if called after HUD_VidInit has returned.
+	*	@param idx Index. 0 based.
+	*	@return The entity, or null if the index is invalid.
+	*/
 	pfnEngSrc_GetEntityByIndex_t			GetEntityByIndex;
+
+	/**
+	*	@return Current client time.
+	*/
 	pfnEngSrc_GetClientTime_t				GetClientTime;
+
+	/**
+	*	Calculates the current shake settings.
+	*/
 	pfnEngSrc_V_CalcShake_t					V_CalcShake;
+
+	/**
+	*	Applies the shake settings.
+	*	@param[ in, out ] vecOrigin Original origin. Will contain the new origin.
+	*	@param[ in, out ] vecAngles Original angles. Will contain the new angles.
+	*	@param flFactor Factor by which to multiply the shake.
+	*/
 	pfnEngSrc_V_ApplyShake_t				V_ApplyShake;
+
+	/**
+	*	Gets the contents of the given point.
+	*	The real contents can contain water current data.
+	*	@param vecPoint Point to check.
+	*	@param piTruecontents The real contents.
+	*	@return Contents.
+	*/
 	pfnEngSrc_PM_PointContents_t			PM_PointContents;
+
+	/**
+	*	Gets the index of the water entity at the given position.
+	*	@param vecPosition Position to look for the entity.
+	*	@return Entity index. -1 if no water entity was found.
+	*/
 	pfnEngSrc_PM_WaterEntity_t				PM_WaterEntity;
+
+	/**
+	*	Performs a traceline.
+	*	@param vecStart Starting point.
+	*	@param vecEnd End point.
+	*	@param flags Flags.
+	*	@param usehull Hull to use. @see Hull::Hull
+	*	@param ignore_pe Index of the entity to ignore. -1 if none should be ignored.
+	*	@return Pointer to a statically allocated trace result instance.
+	*/
 	pfnEngSrc_PM_TraceLine_t				PM_TraceLine;
+
+	/**
+	*	Loads a model.
+	*	@param pszModelName Name of the model to load. Starts in the game directory, must include the extension.
+	*	@param[ out ] piIndex Optional. Will contain the index of the model. -1 if loading failed.
+	*	@return Pointer to the model.
+	*/
 	pfnEngSrc_CL_LoadModel_t				CL_LoadModel;
+
+	/**
+	*	Creates a new visible entity.
+	*	@param type Entity type. @see EntityType
+	*	@param ent Entity.
+	*	@return true if the entity was successfully added, false otherwise.
+	*/
 	pfnEngSrc_CL_CreateVisibleEntity_t		CL_CreateVisibleEntity;
+
+	/**
+	*	Gets the model that is represented by the given sprite handle.
+	*	@param hSprite Handle to the sprite.
+	*	@return Pointer to the model, or null if the handle is invalid.
+	*/
 	pfnEngSrc_GetSpritePointer_t			GetSpritePointer;
+
+	/**
+	*	Plays a sound by name at a given location.
+	*	@param pszSoundName Name of the sound.
+	*	@param volume Sound volume. [ 0, 1 ].
+	*	@param vecOrigin Location where the sound should be played.
+	*/
 	pfnEngSrc_pfnPlaySoundByNameAtLocation_t	pfnPlaySoundByNameAtLocation;
+
+	/**
+	*	Precaches an event.
+	*	@param type Type. Must be 1.
+	*	@param pszName Name of the event.
+	*	@return Event index, or 0 if the event couldn't be found.
+	*/
 	pfnEngSrc_pfnPrecacheEvent_t			pfnPrecacheEvent;
+
+	/**
+	*	@param flags Event flags.
+	*	@param pInvoker Client that triggered the event.
+	*	@param eventindex Event index. @see pfnPrecacheEvent
+	*	@param delay Delay before the event should be run.
+	*	@param origin If not g_vecZero, this is the origin parameter sent to the clients.
+	*	@param angles If not g_vecZero, this is the angles parameter sent to the clients.
+	*	@param fparam1 Float parameter 1.
+	*	@param fparam2 Float parameter 2.
+	*	@param iparam1 Integer parameter 1.
+	*	@param iparam2 Integer parameter 2.
+	*	@param bparam1 Boolean parameter 1.
+	*	@param bparam2 Boolean parameter 2.
+	*/
 	pfnEngSrc_pfnPlaybackEvent_t			pfnPlaybackEvent;
+
+	/**
+	*	Sets the weapon animation and body.
+	*	@param iAnim Animation index.
+	*	@param body Body to set.
+	*/
 	pfnEngSrc_pfnWeaponAnim_t				pfnWeaponAnim;
+
+	/**
+	*	Generates a random float number in the range [ flLow, flLow ].
+	*	@param flLow Lower bound.
+	*	@param flHigh Higher bound.
+	*	@return Random number.
+	*/
 	pfnEngSrc_pfnRandomFloat_t				pfnRandomFloat;
+
+	/**
+	*	Generates a random long number in the range [ lLow, lHigh ].
+	*	@param lLow Lower bound.
+	*	@param lHigh Higher bound.
+	*	@return Random number, or lLow if lHigh is smaller than or equal to lLow.
+	*/
 	pfnEngSrc_pfnRandomLong_t				pfnRandomLong;
+
+	/**
+	*	Adds a hook for an event.
+	*	@param pszName Name of the event.
+	*	@param pEventHook Hook to invoke when the event is triggered.
+	*/
 	pfnEngSrc_pfnHookEvent_t				pfnHookEvent;
+
+	/**
+	*	@return Whether the console is currently visible.
+	*/
 	pfnEngSrc_Con_IsVisible_t				Con_IsVisible;
+
+	/**
+	*	@return Name of the game/mod directory.
+	*/
 	pfnEngSrc_pfnGetGameDirectory_t			pfnGetGameDirectory;
+
+	/**
+	*	Gets a cvar by name.
+	*	@param pszName Name of the cvar.
+	*	@return Pointer to the cvar, or null if it couldn't be found.
+	*/
 	pfnEngSrc_pfnGetCvarPointer_t			pfnGetCvarPointer;
+
+	/**
+	*	Gets the name of the key that is bound to the given command.
+	*	@param pszBinding Command.
+	*	@return Key name, or "<UNKNOWN KEYNUM>" if it couldn't be found.
+	*/
 	pfnEngSrc_Key_LookupBinding_t			Key_LookupBinding;
+
+	/**
+	*	@return The name of the level that is currently loaded. Has the format "maps/%s.bsp", where %s is the level name.
+	*/
 	pfnEngSrc_pfnGetLevelName_t				pfnGetLevelName;
+
+	/**
+	*	Gets the current screen fade settings.
+	*	@param fade Structure that will contain the result.
+	*/
 	pfnEngSrc_pfnGetScreenFade_t			pfnGetScreenFade;
+
+	/**
+	*	Sets the current screen fade settings.
+	*	@param fade Structure that contains the new settings.
+	*/
 	pfnEngSrc_pfnSetScreenFade_t			pfnSetScreenFade;
+
+	/**
+	*	@return The root VGUI1 panel to use for the viewport.
+	*/
 	pfnEngSrc_VGui_GetPanel_t				VGui_GetPanel;
+
+	/**
+	*	Paints the VGUI1 viewport background.
+	*	Only safe to call from inside subclass of Panel::paintBackground.
+	*	@param extents Viewport extents. Contains x1 y1 x2 y2 coordinates.
+	*/
 	pfnEngSrc_VGui_ViewportPaintBackground_t	VGui_ViewportPaintBackground;
+
+	/**
+	*	Loads a file.
+	*	@param pszPath Path to the file.
+	*	@param usehunk Hunk to use. Must always be 5.
+	*	@param[ out ] piLength Optional. Length of the file, in bytes. 0 if the file couldn't be loaded.
+	*	@return Pointer to buffer, or null if the file couldn't be loaded.
+	*/
 	pfnEngSrc_COM_LoadFile_t				COM_LoadFile;
+
+	/**
+	*	Parses the given data.
+	*	@param pszData Data to parse.
+	*	@param[ out ] pszToken Destination buffer for the token. Should be at least 1024 characters large.
+	*	@return Pointer to the next character to parse.
+	*/
 	pfnEngSrc_COM_ParseFile_t				COM_ParseFile;
+
+	/**
+	*	Frees the given buffer. Calls free() on it.
+	*	@param pBuffer Buffer to free. Can be null, in which case nothing is done.
+	*/
 	pfnEngSrc_COM_FreeFile_t				COM_FreeFile;
+	
+	/**
+	*	Triangle API. Used to draw 3D geometry.
+	*/
 	struct triangleapi_s		*pTriAPI;
+
+	/**
+	*	Effects API.
+	*/
 	struct efx_api_s			*pEfxAPI;
+
+	/**
+	*	Event API.
+	*/
 	struct event_api_s			*pEventAPI;
+
+	/**
+	*	Demo API.
+	*/
 	struct demo_api_s			*pDemoAPI;
+
+	/**
+	*	Networking API.
+	*/
 	struct net_api_s			*pNetAPI;
+
+	/**
+	*	Voice Tweak API.
+	*/
 	struct IVoiceTweak_s		*pVoiceTweak;
+
+	/**
+	*	@return Whether this client is in spectator only mode (HLTV).
+	*/
 	pfnEngSrc_IsSpectateOnly_t				IsSpectateOnly;
+
+	/**
+	*	Loads a map sprite. Either a TGA or BMP file is required.
+	*	@param pszFileName Name of the file.
+	*	@return Pointer to the model, or null if the model could not be loaded.
+	*/
 	pfnEngSrc_LoadMapSprite_t				LoadMapSprite;
+
+	/**
+	*	Adds a directory to the PLATFORM search path.
+	*	@param pszBaseDir Directory to add.
+	*	@param pszAppName Ignored.
+	*/
 	pfnEngSrc_COM_AddAppDirectoryToSearchPath_t		COM_AddAppDirectoryToSearchPath;
+
+	/**
+	*	Converts a relative path to an absolute path.
+	*	@param pszFileName Name of the file whose path to make absolute.
+	*	@param[ out ] pszNameOutBuffer Destination buffer.
+	*	@param nameOutBufferSize Size of the destination buffer, in bytes.
+	*/
 	pfnEngSrc_COM_ExpandFilename_t			COM_ExpandFilename;
+
+	/**
+	*	Given a key, gets the info value.
+	*	@param playerNum Player number. 1 based.
+	*	@param pszKey Key.
+	*	@return Pointer to the value, or an empty string if the key couldn't be found.
+	*/
 	pfnEngSrc_PlayerInfo_ValueForKey_t		PlayerInfo_ValueForKey;
+
+	/**
+	*	Sets the value for a key in the local player's info key buffer.
+	*	@param pszKey Key whose value to set.
+	*	@param pszValue Value to set.
+	*/
 	pfnEngSrc_PlayerInfo_SetValueForKey_t	PlayerInfo_SetValueForKey;
+
+	/**
+	*	Gets the given player's unique ID.
+	*	@param iPlayer 1 based player index.
+	*	@param[ out ] playerID Will contain the player's unique ID.
+	*	@return true on success, false otherwise.
+	*/
 	pfnEngSrc_GetPlayerUniqueID_t			GetPlayerUniqueID;
+
+	/**
+	*	Obsolete.
+	*	@return 0 in all cases.
+	*/
 	pfnEngSrc_GetTrackerIDForPlayer_t		GetTrackerIDForPlayer;
+
+	/**
+	*	Obsolete.
+	*	@return 0 in all cases.
+	*/
 	pfnEngSrc_GetPlayerForTrackerID_t		GetPlayerForTrackerID;
+
+	/**
+	*	Sends a command to the server unreliably.
+	*	@param pszCmdString Command string.
+	*	@return true if the message was written, false otherwise.
+	*/
 	pfnEngSrc_pfnServerCmdUnreliable_t		pfnServerCmdUnreliable;
+
+	/**
+	*	Gets the mouse position.
+	*	@param ppt Structure that will contain the mouse position.
+	*/
 	pfnEngSrc_GetMousePos_t					pfnGetMousePos;
+
+	/**
+	*	Sets the mouse position.
+	*	@param x X position.
+	*	@param y Y position.
+	*/
 	pfnEngSrc_SetMousePos_t					pfnSetMousePos;
+
+	/**
+	*	Obsolete.
+	*/
 	pfnEngSrc_SetMouseEnable_t				pfnSetMouseEnable;
+
+	/**
+	*	@return The first cvar in the list.
+	*/
 	pfnEngSrc_GetFirstCVarPtr_t				GetFirstCvarPtr;
+
+	/**
+	*	@return The first command function handle.
+	*/
 	pfnEngSrc_GetFirstCmdFunctionHandle_t	GetFirstCmdFunctionHandle;
+
+	/**
+	*	Gets the next command function handle.
+	*	@param cmdhandle Handle to the command function just before the handle to get.
+	*	@return Next handle, or 0 if it was the last handle.
+	*/
 	pfnEngSrc_GetNextCmdFunctionHandle_t	GetNextCmdFunctionHandle;
+
+	/**
+	*	Gets the command function name.
+	*	@param cmdhandle Handle to the command.
+	*	@return Command name.
+	*/
 	pfnEngSrc_GetCmdFunctionName_t			GetCmdFunctionName;
+
+	/**
+	*	@return The old client time.
+	*/
 	pfnEngSrc_GetClientOldTime_t			hudGetClientOldTime;
+
+	/**
+	*	@return Server gravity value. Only valid if this is a listen server.
+	*/
 	pfnEngSrc_GetServerGravityValue_t		hudGetServerGravityValue;
+
+	/**
+	*	Gets a model by index.
+	*	@param index Model index. Must be valid.
+	*	@return Model pointer.
+	*/
 	pfnEngSrc_GetModelByIndex_t				hudGetModelByIndex;
+
+	/**
+	*	Sets the filter mode.
+	*	Filtering will essentially overlay a single color on top of the entire viewport, with the exception of the HUD.
+	*	This works like Counter-Strike's night vision (though that uses a different implementation).
+	*	@param bMode Whether to filter or not.
+	*/
 	pfnEngSrc_pfnSetFilterMode_t			pfnSetFilterMode;
+
+	/**
+	*	Sets the filter color.
+	*	@param r Red color. [ 0, 1 ].
+	*	@param g Green color. [ 0, 1 ].
+	*	@param b Blue color. [ 0, 1 ].
+	*/
 	pfnEngSrc_pfnSetFilterColor_t			pfnSetFilterColor;
+
+	/**
+	*	Sets the filter brightness.
+	*	@param brightness Brightness.
+	*/
 	pfnEngSrc_pfnSetFilterBrightness_t		pfnSetFilterBrightness;
+
+	/**
+	*	Gets the sequence that has the given entry name.
+	*	@param pszFileName Ignored.
+	*	@param pszEntryName Entry name.
+	*	@return Sequence, or null if no such sequence exists.
+	*/
 	pfnEngSrc_pfnSequenceGet_t				pfnSequenceGet;
+
+	/**
+	*	Draws the current sprite as solid.
+	*	@param frame Frame to draw.
+	*	@param x Left coordinate.
+	*	@param y Top coordinate.
+	*	@param prc Optional. Defines the rectangle of the sprite frame to draw.
+	*	@param src glBlendFunc source value.
+	*	@param dest glBlendFunc destination value.
+	*	@param w Overrides the sprite frame's width.
+	*	@param h Overrides the sprite frame's height.
+	*	@see pfnSPR_Set
+	*/
 	pfnEngSrc_pfnSPR_DrawGeneric_t			pfnSPR_DrawGeneric;
+
+	/**
+	*	Picks a sentence from the given group.
+	*	@param pszGroupName Group from which to select a sentence.
+	*	@param pickMethod Ignored.
+	*	@param piPicked If not null, this is set to the index of the sentence that was picked.
+	*	@return Sentence that was picked, or null if there is no group by that name, or no sentences in the group.
+	*/
 	pfnEngSrc_pfnSequencePickSentence_t		pfnSequencePickSentence;
+
+	/**
+	*	Draws a complete string.
+	*	@param x Left coordinate.
+	*	@param y Top coordinate.
+	*	@param pszString String to draw.
+	*	@param r Red color. [ 0, 255 ].
+	*	@param g Green color. [ 0, 255 ].
+	*	@param b Blue color. [ 0, 255 ].
+	*	@return Total width of the string.
+	*/
 	pfnEngSrc_pfnDrawString_t				pfnDrawString;
+
+	/**
+	*	Draws a complete string in reverse.
+	*	@param x Left coordinate.
+	*	@param y Top coordinate.
+	*	@param pszString String to draw.
+	*	@param r Red color. [ 0, 255 ].
+	*	@param g Green color. [ 0, 255 ].
+	*	@param b Blue color. [ 0, 255 ].
+	*	@return Total width of the string.
+	*/
 	pfnEngSrc_pfnDrawStringReverse_t				pfnDrawStringReverse;
+
+	/**
+	*	Given a key, gets the info value for the local player.
+	*	@param pszKey Key.
+	*	@return Pointer to the value, or an empty string if the key couldn't be found.
+	*/
 	pfnEngSrc_LocalPlayerInfo_ValueForKey_t		LocalPlayerInfo_ValueForKey;
+
+	/**
+	*	Draws a single character using the specified font.
+	*	@param x Left coordinate.
+	*	@param y Top coordinate.
+	*	@param ch Character to draw.
+	*	@param font Font to use.
+	*	@return Total width of the character.
+	*/
 	pfnEngSrc_pfnVGUI2DrawCharacter_t		pfnVGUI2DrawCharacter;
+
+	/**
+	*	Draws a single character using the specified font, using additive rendering.
+	*	@param x Left coordinate.
+	*	@param y Top coordinate.
+	*	@param ch Character to draw.
+	*	@param r Red color. [ 0, 255 ].
+	*	@param g Green color. [ 0, 255 ].
+	*	@param b Blue color. [ 0, 255 ].
+	*	@param font Font to use.
+	*	@return Total width of the character.
+	*/
 	pfnEngSrc_pfnVGUI2DrawCharacterAdd_t	pfnVGUI2DrawCharacterAdd;
+
+	/**
+	*	Gets the approximate wave play length of the given file.
+	*	@param pszFileName Name of the file to query.
+	*	@return Approximate wave play length.
+	*/
 	pfnEngSrc_COM_GetApproxWavePlayLength	COM_GetApproxWavePlayLength;
+
+	/**
+	*	Gets the career UI, if it exists.
+	*	@return Career UI. Cast to ICareerUI*. Can be null.
+	*/
 	pfnEngSrc_pfnGetCareerUI_t				pfnGetCareerUI;
+
+	/**
+	*	Sets a cvar's string value.
+	*	@param pszCVarName CVar name.
+	*	@param pszValue Value to set.
+	*/
 	pfnEngSrc_Cvar_Set_t					Cvar_Set;
+
+	/**
+	*	@return Whether this is a Condition Zero career match.
+	*/
 	pfnEngSrc_pfnIsPlayingCareerMatch_t		pfnIsCareerMatch;
+
+	/**
+	*	Plays a sound by name, with pitch. Uses the bot channel CHAN_BOT.
+	*	@param pszSoundName Name of the sound to play.
+	*	@param volume Volume. [ 0, 1 ].
+	*	@param pitch Pitch. [ 0, 255 ].
+	*/
 	pfnEngSrc_pfnPlaySoundVoiceByName_t	pfnPlaySoundVoiceByName;
+
+	/**
+	*	Sets a music track to play.
+	*	@param pszFileName Name of the file to play.
+	*	@param bLooping Whether the track should look or not.
+	*/
 	pfnEngSrc_pfnPrimeMusicStream_t		pfnPrimeMusicStream;
+
+	/**
+	*	@return The absolute time since the last call to GetAbsoluteTime.
+	*/
 	pfnEngSrc_GetAbsoluteTime_t				GetAbsoluteTime;
+
+	/**
+	*	Processes the tutor message decay buffer.
+	*	@param pBuffer Buffer.
+	*	@param bufferLength Size of the buffer, in bytes.
+	*/
 	pfnEngSrc_pfnProcessTutorMessageDecayBuffer_t		pfnProcessTutorMessageDecayBuffer;
+
+	/**
+	*	Constructs the tutor message decay buffer.
+	*	@param pBuffer Buffer.
+	*	@param bufferLength Size of the buffer, in bytes.
+	*/
 	pfnEngSrc_pfnConstructTutorMessageDecayBuffer_t		pfnConstructTutorMessageDecayBuffer;
+
+	/**
+	*	Resets tutor message decay data.
+	*/
 	pfnEngSrc_pfnResetTutorMessageDecayData_t		pfnResetTutorMessageDecayData;
+
+	/**
+	*	Plays a sound by name, with pitch.
+	*	@param pszSoundName Name of the sound to play.
+	*	@param volume Volume. [ 0, 1 ].
+	*	@param pitch Pitch. [ 0, 255 ].
+	*/
 	pfnEngSrc_pfnPlaySoundByNameAtPitch_t	pfnPlaySoundByNameAtPitch;
+
+	/**
+	*	Fills the given rectangle with a given color.
+	*	Blends with existing pixel data.
+	*	@param x Left coordinate.
+	*	@param y Top coordinate.
+	*	@param width Width of the rectangle.
+	*	@param height Height of the rectangle.
+	*	@param r Red color. [ 0, 255 ].
+	*	@param g Green color. [ 0, 255 ].
+	*	@param b Blue color. [ 0, 255 ].
+	*	@param a Alpha value. [ 0, 255 ].
+	*/
 	pfnEngSrc_pfnFillRGBABlend_t					pfnFillRGBABlend;
+
+	/**
+	*	@return The app ID.
+	*/
 	pfnEngSrc_pfnGetAppID_t					pfnGetAppID;
+
+	/**
+	*	@return The list of command aliases.
+	*/
 	pfnEngSrc_pfnGetAliases_t				pfnGetAliasList;
+
+	/**
+	*	Gets the accumulated mouse delta. The delta is reset in this call only.
+	*	@param x X offset.
+	*	@param y Y offset.
+	*/
 	pfnEngSrc_pfnVguiWrap2_GetMouseDelta_t pfnVguiWrap2_GetMouseDelta;
 } cl_enginefunc_t;
 
