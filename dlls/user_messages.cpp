@@ -44,6 +44,8 @@ int gmsgTeamNames = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
+int gmsgToxicCloud = 0;
+
 
 
 void LinkUserMessages(void)
@@ -92,4 +94,5 @@ void LinkUserMessages(void)
 	gmsgStatusText = REG_USER_MSG("StatusText", -1);
 	gmsgStatusValue = REG_USER_MSG("StatusValue", 3);
 
+	gmsgToxicCloud = REG_USER_MSG("ToxicCloud", 4);
 }

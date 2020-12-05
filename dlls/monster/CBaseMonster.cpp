@@ -16,7 +16,7 @@
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
-//#define DEBUG_MONSTER "monster_human_grunt_ally" // uncomment to enable verbose logging
+#define DEBUG_MONSTER "monster_chumtoad" // uncomment to enable verbose logging
 
 // Global Savedata for monster
 // UNDONE: Save schedule data?  Can this be done?  We may
@@ -1197,6 +1197,12 @@ void CBaseMonster::SetActivity(Activity NewActivity)
 	int	iSequence;
 
 	iSequence = LookupActivity(NewActivity);
+
+	#ifdef DEBUG_MONSTER
+	if (FClassnameIs(pev, DEBUG_MONSTER)) {
+		println("        SetActivity %s", activity_map[NewActivity].name);
+	}
+	#endif
 
 	// Set to the desired anim, or default anim if the desired is not present
 	if (iSequence > ACTIVITY_NOT_AVAILABLE)

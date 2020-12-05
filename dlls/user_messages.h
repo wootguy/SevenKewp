@@ -39,4 +39,6 @@ extern int gmsgTeamNames;
 extern int gmsgStatusText;
 extern int gmsgStatusValue;
 
+extern int gmsgToxicCloud;
+
 void LinkUserMessages(void);

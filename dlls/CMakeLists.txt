@@ -42,6 +42,7 @@ set(MONSTER_SRC
 	monster/CBloater.cpp
 	monster/CBodyGuard.cpp
 	monster/CBullsquid.cpp
+	monster/CChumtoad.cpp
 	monster/CDeadHEV.cpp
 	monster/CFlockingFlyerFlock.cpp
 	monster/CFlyingMonster.cpp
