@@ -348,7 +348,7 @@ void CBaseEntity::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vec
 
 		int blood = BloodColor();
 
-		if (blood != DONT_BLEED)
+		if ((bitsDamageType & DMG_BLOOD) && blood != DONT_BLEED)
 		{
 			SpawnBlood(vecOrigin, blood, flDamage);// a little surface blood.
 			TraceBleed(flDamage, vecDir, ptr, bitsDamageType);
