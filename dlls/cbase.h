@@ -614,11 +614,20 @@ public:
 #define DMG_SLOWFREEZE		(1 << 22)	// in a subzero freezer
 #define DMG_MORTAR			(1 << 23)	// Hit by air raid (done to distinguish grenade from mortar)
 
+// sven-specific damages
+#define DMG_SNIPER			(1 << 24)	// hit by a Sniper
+#define DMG_MEDKITHEAL		(1 << 25)	// medkit healing
+#define DMG_LAUNCH			(1 << 26)	// launch into air
+#define DMG_SHOCK_GLOW		(1 << 27)	// shock glow effect
+
 // these are the damage types that are allowed to gib corpses
 #define DMG_GIB_CORPSE		( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB )
 
 // these are the damage types that have client hud art
 #define DMG_SHOWNHUD		(DMG_POISON | DMG_ACID | DMG_FREEZE | DMG_SLOWFREEZE | DMG_DROWN | DMG_BURN | DMG_SLOWBURN | DMG_NERVEGAS | DMG_RADIATION | DMG_SHOCK)
+
+// damage types that draw blood from the victim
+#define DMG_BLOOD (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB | DMG_ACID | DMG_MORTAR | DMG_SNIPER)
 
 // NOTE: tweak these values based on gameplay feedback:
 
