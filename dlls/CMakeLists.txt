@@ -63,6 +63,7 @@ set(MONSTER_SRC
 	monster/CHGruntOp4Torch.cpp
 	monster/CHornet.cpp
 	monster/CHoundeye.cpp
+	monster/CHWGrunt.cpp
 	monster/CIchthyosaur.cpp
 	monster/CISlave.cpp
 	monster/CLeech.cpp

@@ -163,6 +163,10 @@ void CBaseGrunt :: PrescheduleThink ( void )
 			}
 		}
 	}
+
+	if (suppressOccludedTarget && m_hEnemy != NULL && !HasConditions(bits_COND_ENEMY_OCCLUDED)) {
+		m_flLastEnemySightTime = gpGlobals->time;
+	}
 }
 
 //=========================================================
@@ -577,6 +581,11 @@ void CBaseGrunt::Shoot(bool firstRound)
 	Vector vecShootOrigin = GetGunPosition();
 	Vector vecShootDir = ShootAtEnemy(vecShootOrigin);
 
+	if (shellEjectAttachment >= 0) {
+		Vector vecAngles;
+		GetAttachment(shellEjectAttachment, vecShootOrigin, vecAngles);
+	}
+
 	if (HasEquipment(MEQUIP_MP5)) {
 		ShootMp5(vecShootOrigin, vecShootDir);
 		if (firstRound) {
@@ -604,6 +613,9 @@ void CBaseGrunt::Shoot(bool firstRound)
 	}
 	else if (HasEquipment(MEQUIP_DEAGLE) && gpGlobals->time - m_flLastShot > 0.11) {
 		ShootDeagle(vecShootOrigin, vecShootDir);
+	}
+	else if (HasEquipment(MEQUIP_357) && gpGlobals->time - m_flLastShot > 0.11) {
+		Shoot357(vecShootOrigin, vecShootDir);
 	}
 	else {
 		return;
@@ -733,48 +745,74 @@ void CBaseGrunt::ShootDeagle(Vector& vecShootOrigin, Vector& vecShootDir) {
 	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, "weapons/desert_eagle_fire.wav", VOL_NORM, ATTN_NORM, 0, (random <= 10 ? random - 5 : 0) + 100);
 }
 
-void CBaseGrunt::DropEquipmentToss(const char* cname, Vector vecGunPos, Vector vecGunAngles, bool randomToss) {
+void CBaseGrunt::Shoot357(Vector& vecShootOrigin, Vector& vecShootDir) {
+	UTIL_MakeVectors(pev->angles);
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_PLAYER_357); // shoot +-5 degrees
+
+	const char* sound = RANDOM_LONG(0, 1) == 0 ? "weapons/357_shot1.wav" : "weapons/357_shot2.wav";
+	const auto random = RANDOM_LONG(0, 20);
+	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, sound, VOL_NORM, ATTN_NORM, 0, (random <= 10 ? random - 5 : 0) + 100);
+}
+
+void CBaseGrunt::DropEquipmentToss(const char* cname, Vector vecGunPos, Vector vecGunAngles, Vector velocity, Vector aVelocity) {
 	CBaseEntity* item = DropItem(cname, vecGunPos, vecGunAngles);
 
-	if (randomToss && item) {
-		item->pev->velocity = Vector(RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(200, 300));
-		item->pev->avelocity = Vector(0, RANDOM_FLOAT(200, 400), 0);
+	if (item) {
+		item->pev->velocity = velocity;
+		item->pev->avelocity = aVelocity;
 	}
 }
 
-void CBaseGrunt::DropEquipment(int attachmentIdx, bool randomToss) {
+void CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity, Vector aVelocity) {
 	Vector	vecGunPos;
 	Vector	vecGunAngles;
 	GetAttachment(attachmentIdx, vecGunPos, vecGunAngles);
 
+	int equipmentToDrop = m_iEquipment & equipMask;
+
 	// now spawn a gun.
-	if (HasEquipment(MEQUIP_MP5)) {
-		DropEquipmentToss("weapon_9mmAR", vecGunPos, vecGunAngles, randomToss);
+	if (equipmentToDrop & MEQUIP_MP5) {
+		DropEquipmentToss("weapon_9mmAR", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
-	if (HasEquipment(MEQUIP_SHOTGUN)) {
-		DropEquipmentToss("weapon_shotgun", vecGunPos, vecGunAngles, randomToss);
+	if (equipmentToDrop & MEQUIP_SHOTGUN) {
+		DropEquipmentToss("weapon_shotgun", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
-	if (HasEquipment(MEQUIP_GRENADE_LAUNCHER)) {
-		DropEquipmentToss("ammo_ARgrenades", BodyTarget(pev->origin), vecGunAngles, randomToss);
+	if (equipmentToDrop & MEQUIP_GRENADE_LAUNCHER) {
+		DropEquipmentToss("ammo_ARgrenades", BodyTarget(pev->origin), vecGunAngles, velocity, aVelocity);
 	}
-	if (HasEquipment(MEQUIP_SAW)) {
-		DropEquipmentToss("weapon_m249", vecGunPos, vecGunAngles, randomToss);
+	if (equipmentToDrop & MEQUIP_SAW) {
+		DropEquipmentToss("weapon_m249", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
-	if (HasEquipment(MEQUIP_DEAGLE)) {
-		DropEquipmentToss("weapon_eagle", vecGunPos, vecGunAngles, randomToss);
+	if (equipmentToDrop & MEQUIP_DEAGLE) {
+		DropEquipmentToss("weapon_eagle", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
-	if (HasEquipment(MEQUIP_GLOCK)) {
-		DropEquipmentToss("weapon_9mmhandgun", vecGunPos, vecGunAngles, randomToss);
+	if (equipmentToDrop & MEQUIP_GLOCK) {
+		DropEquipmentToss("weapon_9mmhandgun", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
-	if (HasEquipment(MEQUIP_SNIPER)) {
-		DropEquipmentToss("weapon_sniperrifle", vecGunPos, vecGunAngles, randomToss);
+	if (equipmentToDrop & MEQUIP_SNIPER) {
+		DropEquipmentToss("weapon_sniperrifle", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
-	if (HasEquipment(MEQUIP_MINIGUN)) {
-		DropEquipmentToss("weapon_minigun", vecGunPos, vecGunAngles, randomToss);
+	if (equipmentToDrop & MEQUIP_MINIGUN) {
+		//DropEquipmentToss("weapon_minigun", vecGunPos, vecGunAngles, velocity, aVelocity);
+		DropEquipmentToss("weapon_9mmAR", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
-	if (HasEquipment(MEQUIP_AKIMBO_UZIS)) {
-		DropEquipmentToss("weapon_uziakimbo", vecGunPos, vecGunAngles, randomToss);
+	if (equipmentToDrop & MEQUIP_AKIMBO_UZIS) {
+		DropEquipmentToss("weapon_uziakimbo", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
+
+	m_iEquipment &= ~equipmentToDrop;
+}
+
+void CBaseGrunt::DropEquipment(int attachmentIdx, bool randomToss) {
+	Vector velocity = Vector(0,0,0);
+	Vector aVelocity = Vector(0,0,0);
+
+	if (randomToss) {
+		velocity = Vector(RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(200, 300));
+		aVelocity = Vector(0, RANDOM_FLOAT(200, 400), 0);
+	}
+
+	DropEquipment(attachmentIdx, MEQUIP_EVERYTHING, velocity, aVelocity);
 }
 
 void CBaseGrunt::Reload() {
@@ -790,6 +828,14 @@ void CBaseGrunt::Reload() {
 
 	m_cAmmoLoaded = m_cClipSize;
 	ClearConditions(bits_COND_NO_AMMO_LOADED);
+}
+
+void CBaseGrunt::PointAtEnemy() {
+	Vector vecShootOrigin = GetGunPosition();
+	Vector vecShootDir = ShootAtEnemy(vecShootOrigin);
+
+	Vector angDir = UTIL_VecToAngles(vecShootDir);
+	SetBlending(0, angDir.x);
 }
 
 void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
@@ -908,6 +954,8 @@ void CBaseGrunt::BaseSpawn(const char* model)
 
 	m_iEquipment = 0;
 
+	shellEjectAttachment = -1;
+
 	InitAiFlags();
 }
 
@@ -917,6 +965,8 @@ void CBaseGrunt::InitAiFlags() {
 	waitForEnemyFire = false;
 	runFromHeavyDamage = false;
 	canCallMedic = false;
+	suppressOccludedTarget = false;
+	maxSuppressTime = 3.0f;
 }
 
 void CBaseGrunt::BasePrecache() {
@@ -949,6 +999,9 @@ void CBaseGrunt::BasePrecache() {
 
 	PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
 	PRECACHE_SOUND("weapons/desert_eagle_reload.wav");
+
+	PRECACHE_SOUND("weapons/357_shot1.wav");
+	PRECACHE_SOUND("weapons/357_shot2.wav");
 	
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 
@@ -1508,10 +1561,7 @@ Schedule_t	slGruntRangeAttack1A[] =
 };
 
 
-//=========================================================
-// primary range attack. Overriden because base class stops attacking when the enemy is occluded.
-// grunt's grenade toss requires the enemy be occluded.
-//=========================================================
+// Range attack with an "angry idle" animation instead of crouching
 Task_t	tlGruntRangeAttack1B[] =
 {
 	{ TASK_STOP_MOVING,				(float)0		},
@@ -1544,6 +1594,42 @@ Schedule_t	slGruntRangeAttack1B[] =
 		
 		bits_SOUND_DANGER,
 		"Range Attack1B"
+	},
+};
+
+// Range attack with no crouching/idle animations (for bodyguard/hwgrunt)
+Task_t	tlGruntRangeAttack1C[] =
+{
+	{ TASK_STOP_MOVING,			(float)0		},
+	{ TASK_FACE_ENEMY,			(float)0		},
+	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
+	{ TASK_RANGE_ATTACK1,		(float)0		},
+	{ TASK_FACE_ENEMY,			(float)0		},
+	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
+	{ TASK_RANGE_ATTACK1,		(float)0		},
+	{ TASK_FACE_ENEMY,			(float)0		},
+	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
+	{ TASK_RANGE_ATTACK1,		(float)0		},
+	{ TASK_FACE_ENEMY,			(float)0		},
+	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
+	{ TASK_RANGE_ATTACK1,		(float)0		},
+};
+
+Schedule_t	slGruntRangeAttack1C[] =
+{
+	{
+		tlGruntRangeAttack1C,
+		ARRAYSIZE(tlGruntRangeAttack1C),
+		bits_COND_NEW_ENEMY |
+		bits_COND_ENEMY_DEAD |
+		bits_COND_HEAVY_DAMAGE |
+		bits_COND_ENEMY_OCCLUDED |
+		bits_COND_HEAR_SOUND |
+		bits_COND_GRUNT_NOFIRE |
+		bits_COND_NO_AMMO_LOADED,
+
+		bits_SOUND_DANGER,
+		"Range Attack"
 	},
 };
 
@@ -1652,6 +1738,48 @@ Schedule_t	slGruntRepelLand[] =
 	},
 };
 
+Task_t	tlMinigunSpinup[] =
+{
+	{ TASK_STOP_MOVING,			(float)0		},
+	{ TASK_FACE_ENEMY,			(float)0		},
+	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
+	{ TASK_PLAY_SEQUENCE,		(float)ACT_THREAT_DISPLAY	},
+};
+
+Schedule_t	slMinigunSpinup[] =
+{
+	{
+		tlMinigunSpinup,
+		ARRAYSIZE(tlMinigunSpinup),
+		bits_COND_NEW_ENEMY |
+		bits_COND_ENEMY_DEAD |
+		bits_COND_HEAVY_DAMAGE |
+		bits_COND_ENEMY_OCCLUDED |
+		bits_COND_HEAR_SOUND |
+		bits_COND_GRUNT_NOFIRE |
+		bits_COND_NO_AMMO_LOADED,
+
+		bits_SOUND_DANGER,
+		"Minigun spinup"
+	},
+};
+
+Task_t	tlMinigunSpindown[] =
+{
+	{ TASK_PLAY_SEQUENCE,		(float)ACT_DISARM	},
+};
+
+Schedule_t	slMinigunSpindown[] =
+{
+	{
+		tlMinigunSpindown,
+		ARRAYSIZE(tlMinigunSpindown),
+		0,
+
+		0,
+		"Minigun spindown"
+	},
+};
 
 DEFINE_CUSTOM_SCHEDULES( CBaseGrunt )
 {
@@ -1672,10 +1800,13 @@ DEFINE_CUSTOM_SCHEDULES( CBaseGrunt )
 	slGruntSweep,
 	slGruntRangeAttack1A,
 	slGruntRangeAttack1B,
+	slGruntRangeAttack1C,
 	slGruntRangeAttack2,
 	slGruntRepel,
 	slGruntRepelAttack,
 	slGruntRepelLand,
+	slMinigunSpinup,
+	slMinigunSpindown
 };
 
 IMPLEMENT_CUSTOM_SCHEDULES( CBaseGrunt, CTalkSquadMonster );
@@ -1894,6 +2025,10 @@ Schedule_t* CBaseGrunt::GetLightDamageSchedule(void) {
 }
 
 Schedule_t* CBaseGrunt::GetEnemyOccludedSchedule(void) {
+	if (suppressOccludedTarget && gpGlobals->time - m_flLastEnemySightTime < maxSuppressTime) {
+		return GetScheduleOfType(SCHED_RANGE_ATTACK1);
+	}
+
 	if (HasConditions(bits_COND_CAN_RANGE_ATTACK2) && OccupySlot(bits_SLOTS_HGRUNT_GRENADE))
 	{
 		//!!!KELLY - this grunt is about to throw or fire a grenade at the player. Great place for "fire in the hole"  "frag out" etc
@@ -2171,7 +2306,7 @@ Schedule_t* CBaseGrunt :: GetScheduleOfType ( int Type )
 		{
 			if ( InSquad() )
 			{
-				if ( g_iSkillLevel == SKILL_HARD && HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) && OccupySlot( bits_SLOTS_HGRUNT_GRENADE ) )
+				if ( g_iSkillLevel == SKILL_HARD && HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) && HasEquipment(MEQUIP_HAND_GRENADE) && OccupySlot( bits_SLOTS_HGRUNT_GRENADE ) )
 				{
 					if (FOkToSpeak())
 					{
@@ -2187,13 +2322,13 @@ Schedule_t* CBaseGrunt :: GetScheduleOfType ( int Type )
 			}
 			else
 			{
-				if ( RANDOM_LONG(0,1) )
+				if ( HasEquipment(MEQUIP_HAND_GRENADE) && RANDOM_LONG(0,1) )
 				{
-					return &slGruntTakeCover[ 0 ];
+					return &slGruntGrenadeCover[0];
 				}
 				else
 				{
-					return &slGruntGrenadeCover[ 0 ];
+					return &slGruntTakeCover[0];
 				}
 			}
 		}
