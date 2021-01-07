@@ -80,14 +80,18 @@ enum MONSTER_EQUIPMENT
 	MEQUIP_SNIPER			= 1 << 5,
 	MEQUIP_GLOCK			= 1 << 6,
 	MEQUIP_DEAGLE			= 1 << 7,
-	MEQUIP_MINIGUN			= 1 << 8,
-	MEQUIP_AKIMBO_UZIS		= 1 << 9,
-	MEQUIP_NEEDLE			= 1 << 10, // for healing
-	MEQUIP_HELMET			= 1 << 11,
+	MEQUIP_357				= 1 << 8,
+	MEQUIP_MINIGUN			= 1 << 9,
+	MEQUIP_AKIMBO_UZIS		= 1 << 10,
+	MEQUIP_NEEDLE			= 1 << 11, // for healing
+	MEQUIP_HELMET			= 1 << 12,
 };
 
+#define MEQUIP_EVERYTHING 0xffffffff
+
 #define ANY_RANGED_WEAPON (MEQUIP_MP5 | MEQUIP_SHOTGUN | MEQUIP_SAW | MEQUIP_SNIPER \
-						  | MEQUIP_GLOCK | MEQUIP_DEAGLE | MEQUIP_MINIGUN | MEQUIP_AKIMBO_UZIS)
+						  | MEQUIP_GLOCK | MEQUIP_DEAGLE | MEQUIP_357 | MEQUIP_MINIGUN \
+						  | MEQUIP_AKIMBO_UZIS)
 
 extern Schedule_t	slGruntFail[];
 extern Schedule_t	slGruntCombatFail[];
@@ -106,10 +110,13 @@ extern Schedule_t slGruntHideReload[];
 extern Schedule_t	slGruntSweep[];
 extern Schedule_t	slGruntRangeAttack1A[];
 extern Schedule_t	slGruntRangeAttack1B[];
+extern Schedule_t	slGruntRangeAttack1C[];
 extern Schedule_t	slGruntRangeAttack2[];
 extern Schedule_t	slGruntRepel[];
 extern Schedule_t	slGruntRepelAttack[];
 extern Schedule_t	slGruntRepelLand[];
+extern Schedule_t	slMinigunSpinup[];
+extern Schedule_t	slMinigunSpindown[];
 
 //=========================================================
 // monster-specific conditions
@@ -148,11 +155,14 @@ public:
 	void ShootSaw(Vector& vecShootOrigin, Vector& vecShootDir);
 	void ShootGlock(Vector& vecShootOrigin, Vector& vecShootDir);
 	void ShootDeagle(Vector& vecShootOrigin, Vector& vecShootDir);
+	void Shoot357(Vector& vecShootOrigin, Vector& vecShootDir);
 	void Reload();
+	void PointAtEnemy();
 	virtual void PrescheduleThink(void);
 	virtual void GibMonster(void);
 	virtual void Killed(entvars_t* pevAttacker, int iGib);
 	virtual void DropEquipment(int attachmentIdx, bool randomToss);
+	virtual void DropEquipment(int attachmentIdx, int equipMask, Vector velocity, Vector aVelocity);
 	void SpeakSentence(void);
 	virtual void PlaySentenceSound(int sentenceType) {}
 
@@ -206,13 +216,18 @@ public:
 	int m_iEquipment; // bitfield of MONSTER_EQUIPMENT
 
 	virtual void InitAiFlags();
-	// AI behavior flags
+	// AI behavior flags (TODO: make this a bitfield)
 	bool waitForEnemyFire; // wait for the enemy to attack before shooting
 	bool runFromHeavyDamage; // take cover if taking heavy damage
-	bool canCallMedic; // can this grunt call out for a medic
+	bool canCallMedic; // call out for a medic when injured
+	bool suppressOccludedTarget; // keep firing at the last known target position if the target is behind cover
+
+	float maxSuppressTime; // max time to shoot at a wall the target took cover behind
+
+	int shellEjectAttachment;
 
 private:
-	void DropEquipmentToss(const char* cname, Vector vecGunPos, Vector vecGunAngles, bool randomToss);
+	void DropEquipmentToss(const char* cname, Vector vecGunPos, Vector vecGunAngles, Vector velocity, Vector aVelocity);
 };
 
 class CBaseRepel : public CBaseMonster {

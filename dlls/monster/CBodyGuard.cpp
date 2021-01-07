@@ -64,7 +64,6 @@ public:
 	void TalkInit();
 	int ObjectCaps();
 	void OnTaskComplete(Task_t task);
-	void PointAtEnemy();
 
 	void PrescheduleThink(void);
 
@@ -140,13 +139,6 @@ void CBodyGuard::HandleAnimEvent(MonsterEvent_t* pEvent)
 		SetBodygroup(2, 0);
 		break;
 
-	case 5001:
-		// model missing events for shooting on this animation
-		if (HasEquipment(MEQUIP_MINIGUN)) {
-			Shoot(false);
-		}
-		break;
-
 	case BG_SHOOT_UZIS_EVENT1:
 	case BG_SHOOT_UZIS_EVENT2:
 	case BG_SHOOT_UZIS_EVENT3:
@@ -162,6 +154,8 @@ void CBodyGuard::HandleAnimEvent(MonsterEvent_t* pEvent)
 }
 
 void CBodyGuard::PrescheduleThink(void) {
+	CBaseGrunt::PrescheduleThink();
+
 	if (pev->sequence == minigunShootSeq && gpGlobals->time >= nextMinigunShoot) {
 		pev->nextthink = nextMinigunShoot = gpGlobals->time + 0.07f;
 		Shoot(false);
@@ -180,21 +174,10 @@ void CBodyGuard::OnTaskComplete(Task_t task) {
 			case ACT_RELOAD:
 				Reload();
 				break;
-			case ACT_THREAT_DISPLAY:
-				minigunIsSpinning = true;
-				break;
 			default:
 				break;
 		}		
 	}
-}
-
-void CBodyGuard::PointAtEnemy() {
-	Vector vecShootOrigin = GetGunPosition();
-	Vector vecShootDir = ShootAtEnemy(vecShootOrigin);
-
-	Vector angDir = UTIL_VecToAngles(vecShootDir);
-	SetBlending(0, angDir.x);
 }
 
 void CBodyGuard::Spawn()
@@ -280,91 +263,9 @@ void CBodyGuard::InitAiFlags() {
 	canCallMedic = false;
 }
 
-// overriding the default grunt range attack to prevent setting ACT_CROUCH and IDLE_ANGRY activities,
-// which don't exist in the bodyguard model
-Task_t	tlBodyGuardRangeAttack[] =
-{
-	{ TASK_STOP_MOVING,			(float)0		},
-	{ TASK_FACE_ENEMY,			(float)0		},
-	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
-	{ TASK_RANGE_ATTACK1,		(float)0		},
-	{ TASK_FACE_ENEMY,			(float)0		},
-	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
-	{ TASK_RANGE_ATTACK1,		(float)0		},
-	{ TASK_FACE_ENEMY,			(float)0		},
-	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
-	{ TASK_RANGE_ATTACK1,		(float)0		},
-	{ TASK_FACE_ENEMY,			(float)0		},
-	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
-	{ TASK_RANGE_ATTACK1,		(float)0		},
-};
-
-Schedule_t	slBodyGuardRangeAttack[] =
-{
-	{
-		tlBodyGuardRangeAttack,
-		ARRAYSIZE(tlBodyGuardRangeAttack),
-		bits_COND_NEW_ENEMY |
-		bits_COND_ENEMY_DEAD |
-		bits_COND_HEAVY_DAMAGE |
-		bits_COND_ENEMY_OCCLUDED |
-		bits_COND_HEAR_SOUND |
-		bits_COND_GRUNT_NOFIRE |
-		bits_COND_NO_AMMO_LOADED,
-
-		bits_SOUND_DANGER,
-		"Range Attack"
-	},
-};
-
-Task_t	tlMinigunSpinup[] =
-{
-	{ TASK_STOP_MOVING,			(float)0		},
-	{ TASK_FACE_ENEMY,			(float)0		},
-	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
-	{ TASK_PLAY_SEQUENCE,		(float)ACT_THREAT_DISPLAY	},
-};
-
-Schedule_t	slMinigunSpinup[] =
-{
-	{
-		tlMinigunSpinup,
-		ARRAYSIZE(tlMinigunSpinup),
-		bits_COND_NEW_ENEMY |
-		bits_COND_ENEMY_DEAD |
-		bits_COND_HEAVY_DAMAGE |
-		bits_COND_ENEMY_OCCLUDED |
-		bits_COND_HEAR_SOUND |
-		bits_COND_GRUNT_NOFIRE |
-		bits_COND_NO_AMMO_LOADED,
-
-		bits_SOUND_DANGER,
-		"Minigun spinup"
-	},
-};
-
-Task_t	tlMinigunSpindown[] =
-{
-	{ TASK_PLAY_SEQUENCE,		(float)ACT_DISARM	},
-};
-
-Schedule_t	slMinigunSpindown[] =
-{
-	{
-		tlMinigunSpindown,
-		ARRAYSIZE(tlMinigunSpindown),
-		0,
-
-		0,
-		"Minigun spindown"
-	},
-};
-
 DEFINE_CUSTOM_SCHEDULES(CBodyGuard)
 {
-	slBodyGuardRangeAttack,
-	slMinigunSpinup,
-	slMinigunSpindown
+	slGruntRangeAttack1B
 };
 
 IMPLEMENT_CUSTOM_SCHEDULES(CBodyGuard, CBaseGrunt);
@@ -376,9 +277,10 @@ Schedule_t* CBodyGuard::GetScheduleOfType(int Type)
 	{
 	case SCHED_RANGE_ATTACK1:
 		if (HasEquipment(MEQUIP_MINIGUN) && !minigunIsSpinning) {
+			minigunIsSpinning = true;
 			return &slMinigunSpinup[0];
 		}
-		return &slBodyGuardRangeAttack[0]; // no crouching or angry idle animations
+		return &slGruntRangeAttack1C[0]; // prevent crouching or angry idle animations
 	default:
 		if (minigunIsSpinning) {
 			minigunIsSpinning = false;
@@ -459,6 +361,9 @@ int CBodyGuard::GetActivitySequence(Activity NewActivity) {
 }
 
 void CBodyGuard::PlaySentenceSound(int sentenceType) {
+	if (sentenceType >= ARRAYSIZE(pGruntSentences)) {
+		return;
+	}
 	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[sentenceType], SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 }
 

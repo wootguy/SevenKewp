@@ -230,6 +230,9 @@ void CHGrunt::IdleSound(void)
 }
 
 void CHGrunt::PlaySentenceSound(int sentenceType) {
+	if (sentenceType >= ARRAYSIZE(pGruntSentences)) {
+		return;
+	}
 	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[sentenceType], SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 }
 
