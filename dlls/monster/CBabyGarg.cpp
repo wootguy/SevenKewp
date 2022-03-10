@@ -18,7 +18,7 @@ public:
 	void Spawn(void);
 	void Precache(void);
 
-	void CBabyGarg::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	void SetObjectCollisionBox(void)
 	{

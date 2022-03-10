@@ -593,7 +593,7 @@ void CTor::SlamAttack() {
 			pushDir.z = 0;
 
 			float launchPower = 1.0f - ((delta.Length() - 64) * 0.5f / SLAM_ATTACK_RADIUS);
-			launchPower = max(0.7f, launchPower);
+			launchPower = fmaxf(0.7f, launchPower);
 			float pushPower = 1.0f - launchPower;
 
 			Vector launchForce = Vector(0, 0, 1) * 1000 * launchPower;

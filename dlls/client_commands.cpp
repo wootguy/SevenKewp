@@ -306,19 +306,19 @@ bool CheatCommand(edict_t* pEntity) {
 	if (FStrEq(pcmd, "cl_noclip")) {
 		ABORT_IF_CHEATS_DISABLED("No clip");
 		pev->movetype = pev->movetype == MOVETYPE_NOCLIP ? MOVETYPE_WALK : MOVETYPE_NOCLIP;
-		char * newMode = pev->movetype == MOVETYPE_NOCLIP ? "ON" : "OFF";
+		const char* newMode = pev->movetype == MOVETYPE_NOCLIP ? "ON" : "OFF";
 		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No clip is %s\n", newMode));
 	}
 	else if (FStrEq(pcmd, "godmode")) {
 		ABORT_IF_CHEATS_DISABLED("God mode");
 		pev->takedamage = pev->takedamage == DAMAGE_NO ? DAMAGE_YES : DAMAGE_NO;
-		char* newMode = pev->takedamage == DAMAGE_NO ? "ON" : "OFF";
+		const char* newMode = pev->takedamage == DAMAGE_NO ? "ON" : "OFF";
 		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("God mode is %s\n", newMode));
 	}
 	else if (FStrEq(pcmd, "cl_notarget")) {
 		ABORT_IF_CHEATS_DISABLED("No target");
 		pev->flags ^= FL_NOTARGET;
-		char* newMode = pev->flags & FL_NOTARGET ? "ON" : "OFF";
+		const char* newMode = pev->flags & FL_NOTARGET ? "ON" : "OFF";
 		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No target is %s\n", newMode));
 	}
 	else {
