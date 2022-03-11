@@ -213,12 +213,13 @@ if(UNIX)
 		dl
 		pthread
 		stdc++
+		SDL2
 		:vgui.so
 	)
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32" LINK_FLAGS "-m32 -L ../../linux/release"
+		COMPILE_FLAGS "-m32" LINK_FLAGS "-m32 -L ../../linux/release -L ../../linux"
 	)
 
 elseif(MSVC)
