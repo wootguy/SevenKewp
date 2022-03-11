@@ -180,6 +180,7 @@ set(ALL_SRC
 )
 
 include_directories(../dlls)
+include_directories(../dlls/env)
 include_directories(.)
 include_directories(../public)
 include_directories(../common)
@@ -193,19 +194,41 @@ add_library(${CLIENT_DLL_NAME} SHARED ${ALL_SRC})
 
 target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DCLIENT_DLL -DCLIENT_WEAPONS -DHL_DLL)
 
-add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/cl_dlls/
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
-)
+if (USE_AUTOHOTKEY_SCRIPT)
+	add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
+		COMMAND start ${CMAKE_CURRENT_SOURCE_DIR}/../resize_console.ahk
+	)
+endif()
 
-if(MSVC)
-	if (USE_AUTOHOTKEY_SCRIPT)
-		add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
-			COMMAND start ${CMAKE_CURRENT_SOURCE_DIR}/../resize_console.ahk
-		)
-	endif()
+if(UNIX)
+
+	add_definitions(-DLINUX)
+
+	add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
+	    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls
+	    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
+	)
+
+	target_link_libraries(${CLIENT_DLL_NAME} 
+		dl
+		pthread
+		stdc++
+		:vgui.so
+	)
+
+	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
+		PREFIX ""
+		COMPILE_FLAGS "-m32" LINK_FLAGS "-m32 -L ../../linux/release"
+	)
+
+elseif(MSVC)
 	
+	add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
+	    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/cl_dlls/
+	    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls
+	    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
+	)
+
 	target_link_libraries(${CLIENT_DLL_NAME} 
 		${CMAKE_CURRENT_SOURCE_DIR}/../utils/vgui/lib/win32_vc6/vgui.lib
 		wsock32
@@ -217,7 +240,7 @@ if(MSVC)
 		VS_DEBUGGER_WORKING_DIRECTORY "${ENGINE_DIR}"
 		VS_DEBUGGER_COMMAND_ARGUMENTS "${GAME_ARGS}"
 	)
-	
+
 	source_group("Header Files\\Entities" FILES ${ENTITY_HDR})	
 	source_group("Header Files\\Weapons" FILES ${WEAPON_HDR})	
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})	
@@ -237,5 +260,5 @@ if(MSVC)
 	source_group("Source Files\\Render" FILES ${RENDER_SRC})	
 
 else()
-	message(FATAL_ERROR "TODO: Linux/mac support")
+	message(FATAL_ERROR "TODO: Mac support")
 endif()

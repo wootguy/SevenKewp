@@ -9,6 +9,10 @@ set(CLIENT_DLL_NAME "client")
 set(GAMEDIR_NAME "sevenkewp")
 set(GAME_ARGS "-steam -console -game ${GAMEDIR_NAME} +developer 2 +map sc_test -sv_cheats 1 -maxplayers 32")
 
+if (UNIX)
+	set(CMAKE_CXX_COMPILER "g++")
+endif()
+
 project(sevenkewp)
 
 add_subdirectory(dlls) # server project

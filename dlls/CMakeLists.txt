@@ -406,19 +406,31 @@ target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
 
 target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS)
 
-add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/dlls/
-	COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls/
-)
+if(UNIX)
 
-if(MSVC)
+	add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls
+		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls/
+	)
+
+	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
+		PREFIX ""
+		COMPILE_FLAGS "-m32" LINK_FLAGS "-m32"
+	)
+
+elseif(MSVC)
+
+	add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
+		#COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/dlls/
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls
+		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls/
+	)
+
 	if (USE_AUTOHOTKEY_SCRIPT)
 		add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
 			COMMAND start ${CMAKE_CURRENT_SOURCE_DIR}/../resize_console.ahk
 		)
 	endif()
-
 
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${CMAKE_CURRENT_SOURCE_DIR}/hl.def") 
 	
@@ -454,5 +466,5 @@ if(MSVC)
 	source_group("Source Files\\Game" FILES ${GAME_SRC})
 
 else()
-	message(FATAL_ERROR "TODO: Linux/mac support")
+	message(FATAL_ERROR "TODO: Mac support")
 endif()

@@ -142,7 +142,7 @@ int CHud :: MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
 
 void ToxicCloudCallback(tempent_s* tempent, float frametime, float curtime) {
 	tempent->entity.origin = tempent->entity.origin + tempent->entity.curstate.velocity*frametime;
-	tempent->entity.curstate.scale = min(15.0f, tempent->entity.curstate.scale + 10*frametime);
+	tempent->entity.curstate.scale = fminf(15.0f, tempent->entity.curstate.scale + 10*frametime);
 	tempent->entity.angles.z += 100*frametime;
 
 	float timeLeft = tempent->die - curtime;
