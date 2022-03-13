@@ -58,9 +58,10 @@ void CFurniture::Spawn()
 }
 
 //=========================================================
-// ID's Furniture as neutral (noone will attack it)
+// ID's Furniture as neutral (noone will attack it, unless
+// overridden)
 //=========================================================
 int CFurniture::Classify(void)
 {
-	return	CLASS_NONE;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_NONE;
 }

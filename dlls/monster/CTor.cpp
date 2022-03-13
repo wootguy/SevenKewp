@@ -210,7 +210,7 @@ IMPLEMENT_CUSTOM_SCHEDULES(CTor, CBaseMonster);
 
 int	CTor::Classify(void)
 {
-	return CLASS_ALIEN_MONSTER;
+	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
 }
 
 void CTor::SetYawSpeed(void)

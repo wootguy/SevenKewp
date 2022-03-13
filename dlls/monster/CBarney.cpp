@@ -261,7 +261,7 @@ int CBarney :: ISoundMask ( void)
 //=========================================================
 int	CBarney :: Classify ( void )
 {
-	return	CLASS_PLAYER_ALLY;
+	return	m_Classify ? CTalkSquadMonster::Classify() : CLASS_PLAYER_ALLY;
 }
 
 //=========================================================

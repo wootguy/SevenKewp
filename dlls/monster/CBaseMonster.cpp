@@ -25,6 +25,7 @@
 // to just pick a new one when we start up again.
 TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 {
+	DEFINE_FIELD(CBaseMonster, m_Classify, FIELD_INTEGER ),
 	DEFINE_FIELD(CBaseMonster, m_hEnemy, FIELD_EHANDLE),
 	DEFINE_FIELD(CBaseMonster, m_hTargetEnt, FIELD_EHANDLE),
 	DEFINE_ARRAY(CBaseMonster, m_hOldEnemy, FIELD_EHANDLE, MAX_OLD_ENEMIES),
@@ -2181,6 +2182,27 @@ int CBaseMonster::TaskIsRunning(void)
 }
 
 //=========================================================
+// Classify - indicates this monster's place in the
+// relationship table.
+//=========================================================
+int	CBaseMonster :: Classify ( void )
+{
+	return m_Classify;
+}
+
+//=========================================================
+// SetClassify - sets/changes the monster's classify and
+// clears its current schedule to make it pick a new target
+// according to its new class.
+//=========================================================
+void CBaseMonster::SetClassify ( int iNewClassify )
+{
+	m_Classify = iNewClassify;
+	ClearSchedule();
+	m_hEnemy = NULL;
+}
+
+//=========================================================
 // IRelationship - returns an integer that describes the 
 // relationship between two types of monster.
 //=========================================================
@@ -2962,7 +2984,12 @@ void CBaseMonster::ReportAIState(void)
 //=========================================================
 void CBaseMonster::KeyValue(KeyValueData* pkvd)
 {
-	if (FStrEq(pkvd->szKeyName, "TriggerTarget"))
+	if (FStrEq(pkvd->szKeyName, "classify"))
+	{
+		SetClassify(atoi(pkvd->szValue));
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "TriggerTarget"))
 	{
 		m_iszTriggerTarget = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;

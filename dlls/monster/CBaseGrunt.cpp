@@ -533,7 +533,7 @@ void CBaseGrunt :: CheckAmmo ( void )
 
 int	CBaseGrunt :: Classify ( void )
 {
-	return	CLASS_HUMAN_MILITARY;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY;
 }
 
 CBaseEntity *CBaseGrunt :: Kick( void )

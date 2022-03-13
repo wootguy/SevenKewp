@@ -300,7 +300,7 @@ int COtis :: ISoundMask ( void)
 //=========================================================
 int	COtis :: Classify ( void )
 {
-	return	CLASS_PLAYER_ALLY;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_PLAYER_ALLY;
 }
 
 //=========================================================

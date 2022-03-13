@@ -746,7 +746,7 @@ void CShockTrooper :: CheckAmmo ( void )
 //=========================================================
 int	CShockTrooper :: Classify ( void )
 {
-	return CLASS_ALIEN_RACE_X;
+	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_RACE_X;
 }
 
 //=========================================================

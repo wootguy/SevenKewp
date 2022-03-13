@@ -409,7 +409,7 @@ int CPitdrone :: ISoundMask ( void )
 //=========================================================
 int	CPitdrone :: Classify ( void )
 {
-	return	CLASS_ALIEN_PREDATOR;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREDATOR;
 }
 
 //=========================================================

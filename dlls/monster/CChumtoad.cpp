@@ -31,7 +31,7 @@ public:
 	void PrescheduleThink();
 	void StartTask(Task_t* pTask);
 	Schedule_t* GetScheduleOfType(int Type);
-	
+
 	BOOL CheckRangeAttack1(float flDot, float flDist) { return FALSE; }
 	BOOL CheckRangeAttack2(float flDot, float flDist) { return FALSE; }
 	BOOL CheckMeleeAttack1(float flDot, float flDist);
@@ -75,7 +75,7 @@ void CChumtoad::Precache()
 
 int	CChumtoad::Classify(void)
 {
-	return CLASS_ALIEN_MONSTER;
+	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
 }
 
 void CChumtoad::SetYawSpeed(void)

@@ -43,7 +43,7 @@ void CBaseGruntOp4::PlaySentenceSound(int sentenceType) {
 
 int	CBaseGruntOp4::Classify(void)
 {
-	return	CLASS_PLAYER_ALLY;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_PLAYER_ALLY;
 }
 
 int CBaseGruntOp4::ISoundMask(void)
