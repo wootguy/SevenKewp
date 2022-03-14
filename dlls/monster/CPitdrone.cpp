@@ -296,8 +296,8 @@ int CPitdrone::IgnoreConditions ( void )
 
 int CPitdrone::IRelationship ( CBaseEntity *pTarget )
 {
-	//Always mark pit drones as allies
-	if ( FClassnameIs ( pTarget->pev, "monster_pitdrone" ) )
+	// Mark pit drones as allies, but only if we're on the same class
+	if ( FClassnameIs ( pTarget->pev, "monster_pitdrone" ) && ( Classify() == pTarget->Classify() ) )
 	{
 		return R_AL;
 	}

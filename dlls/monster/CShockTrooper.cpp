@@ -286,10 +286,12 @@ void CShockTrooper :: SpeakSentence( void )
 //=========================================================
 int CShockTrooper::IRelationship ( CBaseEntity *pTarget )
 {
-	if ( FClassnameIs( pTarget->pev, "monster_alien_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) )
-	{
-		return R_NM;
-	}
+	// TODO: This is clearly just copied from Human Grunt and may not really apply to Shock Trooper.
+	// Should the Shock Trooper have nemeses or just don't override this method at all?
+	//if ( FClassnameIs( pTarget->pev, "monster_alien_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) )
+	//{
+	//	return R_NM;
+	//}
 
 	return CTalkSquadMonster::IRelationship( pTarget );
 }
