@@ -44,6 +44,7 @@ public:
 	
 		// these fields have been added in the process of reworking the state machine. (sjb)
 		int				m_Classify;		// Classify, to let mappers override the default
+		BOOL				m_IsPlayerAlly;		// Toggles player ally status (shortcut to override Classify)
 		EHANDLE				m_hEnemy;		 // the entity that the monster is fighting.
 		EHANDLE				m_hTargetEnt;	 // the entity that the monster is trying to reach
 		EHANDLE				m_hOldEnemy[ MAX_OLD_ENEMIES ];

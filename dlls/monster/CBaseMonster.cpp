@@ -26,6 +26,7 @@
 TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 {
 	DEFINE_FIELD(CBaseMonster, m_Classify, FIELD_INTEGER ),
+	DEFINE_FIELD(CBaseMonster, m_IsPlayerAlly, FIELD_BOOLEAN ),
 	DEFINE_FIELD(CBaseMonster, m_hEnemy, FIELD_EHANDLE),
 	DEFINE_FIELD(CBaseMonster, m_hTargetEnt, FIELD_EHANDLE),
 	DEFINE_ARRAY(CBaseMonster, m_hOldEnemy, FIELD_EHANDLE, MAX_OLD_ENEMIES),
@@ -2986,7 +2987,16 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 {
 	if (FStrEq(pkvd->szKeyName, "classify"))
 	{
-		SetClassify(atoi(pkvd->szValue));
+		// Is Player Ally? overrides Classify and we don't know which keyvalue is handled first
+		if (!m_IsPlayerAlly)
+			SetClassify(atoi(pkvd->szValue));
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "is_player_ally"))
+	{
+		m_IsPlayerAlly = atoi(pkvd->szValue);
+		if (m_IsPlayerAlly)
+			SetClassify(CLASS_PLAYER_ALLY);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "TriggerTarget"))
