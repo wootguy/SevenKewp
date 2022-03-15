@@ -110,7 +110,7 @@ public:
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void Activate( void );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	int	Classify( void ) { return CLASS_INSECT; }
+	int	Classify( void ) { return m_Classify ? CBaseMonster::Classify() : CLASS_INSECT; }
 	int IRelationship( CBaseEntity *pTarget );
 
 	virtual int		Save( CSave &save );

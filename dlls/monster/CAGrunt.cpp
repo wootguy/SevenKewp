@@ -100,12 +100,17 @@ const char *CAGrunt::pAlertSounds[] =
 //=========================================================
 int CAGrunt::IRelationship ( CBaseEntity *pTarget )
 {
-	if ( FClassnameIs( pTarget->pev, "monster_human_grunt" ) )
+	// Only override if there is at least a dislike relationship already,
+	// because level designers may override the class.
+
+	int r = CTalkSquadMonster :: IRelationship( pTarget );
+
+	if ( (r >= R_DL) && FClassnameIs( pTarget->pev, "monster_human_grunt" ) )
 	{
 		return R_NM;
 	}
-
-	return CTalkSquadMonster :: IRelationship( pTarget );
+	else
+		return r;
 }
 
 //=========================================================
@@ -303,7 +308,7 @@ void CAGrunt :: PainSound ( void )
 //=========================================================
 int	CAGrunt :: Classify ( void )
 {
-	return	CLASS_ALIEN_MILITARY;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MILITARY;
 }
 
 //=========================================================

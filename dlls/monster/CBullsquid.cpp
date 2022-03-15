@@ -425,7 +425,7 @@ int CBullsquid :: ISoundMask ( void )
 //=========================================================
 int	CBullsquid :: Classify ( void )
 {
-	return	CLASS_ALIEN_PREDATOR;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREDATOR;
 }
 
 //=========================================================

@@ -241,7 +241,7 @@ typedef enum
 //=========================================================
 int	CTentacle :: Classify ( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
 }
 
 //

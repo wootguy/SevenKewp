@@ -25,6 +25,8 @@
 // to just pick a new one when we start up again.
 TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 {
+	DEFINE_FIELD(CBaseMonster, m_Classify, FIELD_INTEGER ),
+	DEFINE_FIELD(CBaseMonster, m_IsPlayerAlly, FIELD_BOOLEAN ),
 	DEFINE_FIELD(CBaseMonster, m_hEnemy, FIELD_EHANDLE),
 	DEFINE_FIELD(CBaseMonster, m_hTargetEnt, FIELD_EHANDLE),
 	DEFINE_ARRAY(CBaseMonster, m_hOldEnemy, FIELD_EHANDLE, MAX_OLD_ENEMIES),
@@ -2181,6 +2183,27 @@ int CBaseMonster::TaskIsRunning(void)
 }
 
 //=========================================================
+// Classify - indicates this monster's place in the
+// relationship table.
+//=========================================================
+int	CBaseMonster :: Classify ( void )
+{
+	return m_Classify;
+}
+
+//=========================================================
+// SetClassify - sets/changes the monster's classify and
+// clears its current schedule to make it pick a new target
+// according to its new class.
+//=========================================================
+void CBaseMonster::SetClassify ( int iNewClassify )
+{
+	m_Classify = iNewClassify;
+	ClearSchedule();
+	m_hEnemy = NULL;
+}
+
+//=========================================================
 // IRelationship - returns an integer that describes the 
 // relationship between two types of monster.
 //=========================================================
@@ -2918,14 +2941,109 @@ void CBaseMonster::ReportAIState(void)
 	else
 		ALERT(level, "No enemy");
 
+	ALERT( level, "\nClassify: " );
+	switch( Classify() )
+	{
+		case 0:
+			{
+				ALERT( level, "None" );
+				break;
+			}
+		case 1:
+			{
+				ALERT( level, "Machine" );
+				break;
+			}
+		case 2:
+			{
+				ALERT( level, "Black Mesa - Player" );
+				break;
+			}
+		case 11:
+			{
+				ALERT( level, "Black Mesa - Player Ally" );
+				break;
+			}
+		case 3:
+			{
+				ALERT( level, "Black Mesa - Human Passive" );
+				break;
+			}
+		case 4:
+			{
+				ALERT( level, "Human Military Force" );
+				break;
+			}
+		case 5:
+			{
+				ALERT( level, "Alien - Military" );
+				break;
+			}
+		case 6:
+			{
+				ALERT( level, "Alien - Passive" );
+				break;
+			}
+		case 7:
+			{
+				ALERT( level, "Alien - Monster" );
+				break;
+			}
+		case 8:
+			{
+				ALERT( level, "Alien - Prey" );
+				break;
+			}
+		case 9:
+			{
+				ALERT( level, "Alien - Predator" );
+				break;
+			}
+		case 10:
+			{
+				ALERT( level, "Insect" );
+				break;
+			}
+		case 12:
+			{
+				ALERT( level, "Bioweapon - Player" );
+				break;
+			}
+		case 13:
+			{
+				ALERT( level, "Bioweapon - Alien" );
+				break;
+			}
+		case 14:
+			{
+				ALERT( level, "Human Military Force - Friendly" );
+				break;
+			}
+		case 15:
+			{
+				ALERT( level, "Alien - Race X" );
+				break;
+			}
+		case 99:
+			{
+				ALERT( level, "Barnacle" );
+				break;
+			}
+		default:
+			ALERT( level, "Unknown - %d", Classify() );
+	}
+	if (m_IsPlayerAlly)
+		ALERT( level, "\n\tPlayer Ally set!" );
+
 	if (IsMoving())
 	{
-		ALERT(level, " Moving ");
+		ALERT(level, "\n Moving ");
 		if (m_flMoveWaitFinished > gpGlobals->time)
 			ALERT(level, ": Stopped for %.2f. ", m_flMoveWaitFinished - gpGlobals->time);
 		else if (m_IdealActivity == GetStoppedActivity())
 			ALERT(level, ": In stopped anim. ");
 	}
+	ALERT( level, "\n" );
 
 	CTalkSquadMonster* pSquadMonster = MyTalkSquadMonsterPointer();
 
@@ -2962,7 +3080,21 @@ void CBaseMonster::ReportAIState(void)
 //=========================================================
 void CBaseMonster::KeyValue(KeyValueData* pkvd)
 {
-	if (FStrEq(pkvd->szKeyName, "TriggerTarget"))
+	if (FStrEq(pkvd->szKeyName, "classify"))
+	{
+		// Is Player Ally? overrides Classify and we don't know which keyvalue is handled first
+		if (!m_IsPlayerAlly)
+			SetClassify(atoi(pkvd->szValue));
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "is_player_ally"))
+	{
+		m_IsPlayerAlly = atoi(pkvd->szValue);
+		if (m_IsPlayerAlly)
+			SetClassify(CLASS_PLAYER_ALLY);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "TriggerTarget"))
 	{
 		m_iszTriggerTarget = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;

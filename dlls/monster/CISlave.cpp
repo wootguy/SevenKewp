@@ -147,7 +147,7 @@ const char *CISlave::pDeathSounds[] =
 //=========================================================
 int	CISlave :: Classify ( void )
 {
-	return	CLASS_ALIEN_MILITARY;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MILITARY;
 }
 
 

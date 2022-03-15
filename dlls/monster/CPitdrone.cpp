@@ -296,8 +296,8 @@ int CPitdrone::IgnoreConditions ( void )
 
 int CPitdrone::IRelationship ( CBaseEntity *pTarget )
 {
-	//Always mark pit drones as allies
-	if ( FClassnameIs ( pTarget->pev, "monster_pitdrone" ) )
+	// Mark pit drones as allies, but only if we're on the same class
+	if ( FClassnameIs ( pTarget->pev, "monster_pitdrone" ) && ( Classify() == pTarget->Classify() ) )
 	{
 		return R_AL;
 	}
@@ -409,7 +409,7 @@ int CPitdrone :: ISoundMask ( void )
 //=========================================================
 int	CPitdrone :: Classify ( void )
 {
-	return	CLASS_ALIEN_PREDATOR;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREDATOR;
 }
 
 //=========================================================
