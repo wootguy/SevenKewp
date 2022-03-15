@@ -33,7 +33,7 @@ class CApache : public CBaseMonster
 
 	void Spawn( void );
 	void Precache( void );
-	int  Classify( void ) { return CLASS_HUMAN_MILITARY; };
+	int  Classify( void ) { return m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY; };
 	int  BloodColor( void ) { return DONT_BLEED; }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );

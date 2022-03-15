@@ -159,7 +159,7 @@ int CHAssassin :: ISoundMask ( void)
 //=========================================================
 int	CHAssassin :: Classify ( void )
 {
-	return	CLASS_HUMAN_MILITARY;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY;
 }
 
 //=========================================================

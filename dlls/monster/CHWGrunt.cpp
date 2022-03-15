@@ -65,7 +65,6 @@ class CHWGrunt : public CBaseGrunt
 public:
 	void Spawn(void);
 	void Precache(void);
-	int Classify(void);
 	void InitAiFlags();
 	void PainSound(void);
 	void DeathSound(void);
@@ -189,11 +188,6 @@ void CHWGrunt::Precache()
 		PRECACHE_SOUND((char*)pDeathSounds[i]);
 
 	BasePrecache();
-}
-
-int	CHWGrunt::Classify(void)
-{
-	return	CLASS_HUMAN_MILITARY;
 }
 
 void CHWGrunt::InitAiFlags() {

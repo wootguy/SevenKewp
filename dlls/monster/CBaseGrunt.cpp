@@ -65,12 +65,17 @@ void CBaseGrunt :: SpeakSentence( void )
 
 int CBaseGrunt::IRelationship ( CBaseEntity *pTarget )
 {
-	if ( FClassnameIs( pTarget->pev, "monster_alien_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) )
+	// Only override if there is at least a dislike relationship already,
+	// because level designers may override the class.
+
+	int r = CTalkSquadMonster :: IRelationship( pTarget );
+
+	if ( (r >= R_DL) && ( FClassnameIs( pTarget->pev, "monster_alien_grunt" ) || ( FClassnameIs( pTarget->pev,  "monster_gargantua" ) ) ) )
 	{
 		return R_NM;
 	}
-
-	return CTalkSquadMonster::IRelationship( pTarget );
+	else
+		return r;
 }
 
 void CBaseGrunt :: GibMonster ( void )
@@ -533,7 +538,7 @@ void CBaseGrunt :: CheckAmmo ( void )
 
 int	CBaseGrunt :: Classify ( void )
 {
-	return	CLASS_HUMAN_MILITARY;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY;
 }
 
 CBaseEntity *CBaseGrunt :: Kick( void )

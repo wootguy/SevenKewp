@@ -43,7 +43,11 @@ void CBaseGruntOp4::PlaySentenceSound(int sentenceType) {
 
 int	CBaseGruntOp4::Classify(void)
 {
-	return	CLASS_PLAYER_ALLY;
+	// Is Player Ally? works inverted for friendly monsters
+	if (m_IsPlayerAlly)
+		return CLASS_HUMAN_MILITARY;
+	else
+		return m_Classify ? CTalkSquadMonster::Classify() : CLASS_PLAYER_ALLY;
 }
 
 int CBaseGruntOp4::ISoundMask(void)

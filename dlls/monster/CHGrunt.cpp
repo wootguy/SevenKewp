@@ -173,7 +173,7 @@ void CHGrunt::Precache()
 
 int	CHGrunt::Classify(void)
 {
-	return	CLASS_HUMAN_MILITARY;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY;
 }
 
 void CHGrunt::PainSound(void)
