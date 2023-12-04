@@ -254,7 +254,7 @@ void CTentacle :: Spawn( )
 	pev->solid			= SOLID_BBOX;
 	pev->movetype		= MOVETYPE_FLY;
 	pev->effects		= 0;
-	pev->health			= 75;
+	pev->health			= 4000;
 	pev->sequence		= 0;
 
 	SET_MODEL(ENT(pev), GetModel());
@@ -274,7 +274,7 @@ void CTentacle :: Spawn( )
 	ResetSequenceInfo( );
 	m_iDir = 1;
 
-	pev->yaw_speed = 18;
+	pev->yaw_speed = 50;
 	m_flInitialYaw = pev->angles.y;
 	pev->ideal_yaw = m_flInitialYaw;
 
@@ -562,7 +562,7 @@ void CTentacle :: Cycle( void )
 			m_iGoalAnim = TENTACLE_ANIM_Pit_Idle;
 			if (pev->sequence == TENTACLE_ANIM_Pit_Idle)
 			{
-				pev->health = 75;
+				pev->health = 4000;
 			}
 		}
 		else if ( m_flSoundTime > gpGlobals->time )
