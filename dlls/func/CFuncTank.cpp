@@ -363,21 +363,34 @@ void CFuncTank::TrackTarget(void)
 {
 	TraceResult tr;
 	int numPvsClients;
-	edict_t* pPlayer = UTIL_ClientsInPVS(edict(), numPvsClients);
 	BOOL updateTime = FALSE, lineOfSight;
-	Vector angles, direction, targetPosition, barrelEnd;
+	Vector angles, direction, targetPosition;
 	edict_t* pTarget;
+	Vector barrelEnd = BarrelPosition();
 
-	// target the closest player
-	edict_t* bestPlayer = pPlayer;
-	float bestDist = 9e99;
-	while (!FNullEnt(pPlayer)) {
-		float dist = (pev->origin - pPlayer->v.origin).Length();
-		if (dist < bestDist) {
-			bestPlayer = pPlayer;
-			bestDist = dist;
+	// target player that is most aligned with the tank aim direction
+	edict_t* pPlayer = INDEXENT(0);
+	edict_t* bestPlayer = INDEXENT(0);
+	Vector forward, right, up;
+	UTIL_MakeVectorsPrivate(pev->angles, forward, right, up);
+	float bestDot = -1.0f;
+
+	for (int i = 1; i < gpGlobals->maxClients; i++) {
+		pPlayer = INDEXENT(i);
+		if (!IsValidPlayer(pPlayer) || pPlayer->v.deadflag != DEAD_NO) {
+			continue;
 		}
-		pPlayer = pPlayer->v.chain;
+
+		Vector dir = (pPlayer->v.origin - pev->origin).Normalize();
+		float dot = DotProduct(forward, dir);
+
+		UTIL_TraceLine(barrelEnd, pPlayer->v.origin, ignore_monsters, edict(), &tr);
+		bool hasLineOfSight = tr.flFraction > 0.99f;
+
+		if (hasLineOfSight && dot > bestDot) {
+			bestPlayer = pPlayer;
+			bestDot = dot;
+		}
 	}
 	pPlayer = bestPlayer;
 
@@ -399,7 +412,7 @@ void CFuncTank::TrackTarget(void)
 		if (FNullEnt(pPlayer))
 		{
 			if (IsActive())
-				pev->nextthink = pev->ltime + 2;	// Wait 2 secs
+				pev->nextthink = pev->ltime + 0.5f;	// idle
 			return;
 		}
 		pTarget = FindTarget(pPlayer);
