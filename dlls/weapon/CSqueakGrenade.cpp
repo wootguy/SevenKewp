@@ -47,6 +47,7 @@ class CSqueakGrenade : public CGrenade
 	void Spawn( void );
 	void Precache( void );
 	int  Classify( void );
+	int IRelationship(CBaseEntity* pTarget);
 	void EXPORT SuperBounceTouch( CBaseEntity *pOther );
 	void EXPORT HuntThink( void );
 	int  BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
@@ -107,6 +108,20 @@ int CSqueakGrenade :: Classify ( void )
 	}
 
 	return CLASS_ALIEN_BIOWEAPON;
+}
+
+int CSqueakGrenade::IRelationship(CBaseEntity* pTarget)
+{
+	// don't attack friendly players
+	CBaseEntity* owner = (CBaseEntity*)GET_PRIVATE(m_hOwner.Get());
+	if (!FNullEnt(owner->edict())) {
+		CBaseMonster* mon = owner->MyMonsterPointer();
+		if (mon && mon->IsPlayer() && pTarget->entindex() != owner->entindex()) {
+			return mon->IRelationship(pTarget);
+		}
+	}
+
+	return CBaseMonster::IRelationship(pTarget);
 }
 
 void CSqueakGrenade :: Spawn( void )

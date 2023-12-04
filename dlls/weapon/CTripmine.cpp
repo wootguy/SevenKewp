@@ -21,6 +21,7 @@
 #include "CBasePlayer.h"
 #include "effects.h"
 #include "gamerules.h"
+#include "game.h"
 
 #define	TRIPMINE_PRIMARY_VOLUME		450
 
@@ -329,7 +330,8 @@ void CTripmineGrenade::Killed( entvars_t *pevAttacker, int iGib )
 {
 	pev->takedamage = DAMAGE_NO;
 	
-	if ( pevAttacker && ( pevAttacker->flags & FL_CLIENT ) )
+	pev->owner = m_pRealOwner;
+	if (friendlyfire.value && pevAttacker && ( pevAttacker->flags & FL_CLIENT ) )
 	{
 		// some client has destroyed this mine, he'll get credit for any kills
 		pev->owner = ENT( pevAttacker );
