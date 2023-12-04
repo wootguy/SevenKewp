@@ -23,7 +23,18 @@
 
 #include "CShockBeam.h"
 
-LINK_ENTITY_TO_CLASS( shock_beam, CShockBeam );
+#ifndef CLIENT_DLL
+TYPEDESCRIPTION CShockBeam::m_SaveData[] =
+{
+	DEFINE_FIELD(CShockBeam, m_pBeam1, FIELD_CLASSPTR),
+	DEFINE_FIELD(CShockBeam, m_pBeam2, FIELD_CLASSPTR),
+	DEFINE_FIELD(CShockBeam, m_pSprite, FIELD_CLASSPTR),
+};
+
+IMPLEMENT_SAVERESTORE(CShockBeam, CShockBeam::BaseClass);
+#endif
+
+LINK_ENTITY_TO_CLASS(shock_beam, CShockBeam);
 
 void CShockBeam::Precache()
 {
@@ -109,9 +120,9 @@ void CShockBeam::Spawn()
 
 void CShockBeam::FlyThink()
 {
-	if( pev->waterlevel == 3 )
+	if (pev->waterlevel == 3)
 	{
-		SetThink( &CShockBeam::WaterExplodeThink );
+		SetThink(&CShockBeam::WaterExplodeThink);
 	}
 
 	pev->nextthink = gpGlobals->time + 0.01;

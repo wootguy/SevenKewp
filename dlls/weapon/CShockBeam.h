@@ -38,6 +38,13 @@ public:
 
 	static CShockBeam* CreateShockBeam( const Vector& vecOrigin, const Vector& vecAngles, CBaseEntity* pOwner );
 
+#ifndef CLIENT_DLL
+	int Save(CSave& save) override;
+	int Restore(CRestore& restore) override;
+
+	static TYPEDESCRIPTION m_SaveData[];
+#endif
+
 private:
 	void Explode();
 
