@@ -63,6 +63,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker );
+LINK_ENTITY_TO_CLASS( squadmaker, CMonsterMaker );
 
 TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] = 
 {
@@ -73,6 +74,8 @@ TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 	DEFINE_FIELD( CMonsterMaker, m_iMaxLiveChildren, FIELD_INTEGER ),
 	DEFINE_FIELD( CMonsterMaker, m_fActive, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CMonsterMaker, m_fFadeChildren, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CMonsterMaker, m_iTriggerCondition, FIELD_INTEGER),
+	DEFINE_FIELD( CMonsterMaker, m_iszTriggerTarget, FIELD_STRING),
 };
 
 
@@ -94,6 +97,17 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 	else if ( FStrEq(pkvd->szKeyName, "monstertype") )
 	{
 		m_iszMonsterClassname = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	// TODO: ripent the maps or something. This is duplicated in CBaseMonster
+	else if (FStrEq(pkvd->szKeyName, "trigger_target"))
+	{
+		m_iszTriggerTarget = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "trigger_condition"))
+	{
+		m_iTriggerCondition = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -196,6 +210,11 @@ void CMonsterMaker::MakeMonster( void )
 	{
 		ALERT ( at_console, "NULL Ent in MonsterMaker!\n" );
 		return;
+	}
+	CBaseMonster* mon = ((CBaseEntity*)GET_PRIVATE(pent))->MyMonsterPointer();
+	if (mon) {
+		mon->m_iszTriggerTarget = m_iszTriggerTarget;
+		mon->m_iTriggerCondition = m_iTriggerCondition;
 	}
 
 	pevCreate = VARS( pent );
