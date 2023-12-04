@@ -233,7 +233,7 @@ void CHGruntOp4Medic :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void CHGruntOp4Medic :: Spawn()
 {
-	BaseSpawn("models/hgrunt_medic.mdl");
+	BaseSpawn();
 
 	m_afCapability		= bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP | bits_CAP_HEAR;
 
@@ -322,7 +322,8 @@ void CHGruntOp4Medic :: Spawn()
 
 void CHGruntOp4Medic :: Precache()
 {
-	PRECACHE_MODEL("models/hgrunt_medic.mdl");
+	m_defaultModel = "models/hgrunt_medic.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND( "fgrunt/medic_give_shot.wav" );
 	PRECACHE_SOUND( "fgrunt/medical.wav" );

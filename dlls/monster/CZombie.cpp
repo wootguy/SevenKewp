@@ -274,16 +274,7 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 void CZombie :: Spawn()
 {
 	Precache( );
-
-	if (!strcmp(STRING(pev->classname), "monster_zombie_barney")) {
-		SET_MODEL(ENT(pev), "models/zombie_barney.mdl");
-	}
-	else if (!strcmp(STRING(pev->classname), "monster_zombie_soldier")) {
-		SET_MODEL(ENT(pev), "models/zombie_soldier.mdl");
-	}
-	else {
-		SET_MODEL(ENT(pev), "models/zombie.mdl");
-	}
+	SET_MODEL(ENT(pev), GetModel());
 
 	
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
@@ -308,14 +299,16 @@ void CZombie :: Precache()
 	int i;
 
 	if (!strcmp(STRING(pev->classname), "monster_zombie_barney")) {
-		PRECACHE_MODEL("models/zombie_barney.mdl");
+		m_defaultModel = "models/zombie_barney.mdl";
 	}
 	else if (!strcmp(STRING(pev->classname), "monster_zombie_soldier")) {
-		PRECACHE_MODEL("models/zombie_soldier.mdl");
+		m_defaultModel = "models/zombie_soldier.mdl";
 	}
 	else {
-		PRECACHE_MODEL("models/zombie.mdl");
+		m_defaultModel = "models/zombie.mdl";
 	}
+
+	PRECACHE_MODEL(GetModel());
 
 	for ( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
 		PRECACHE_SOUND((char *)pAttackHitSounds[i]);

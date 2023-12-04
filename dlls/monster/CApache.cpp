@@ -85,8 +85,6 @@ class CApache : public CBaseMonster
 
 	int m_iDoSmokePuff;
 	CBeam *m_pBeam;
-
-	const char* defaultModel;
 };
 
 LINK_ENTITY_TO_CLASS( monster_apache, CApache );
@@ -123,7 +121,7 @@ void CApache :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), defaultModel);
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize( pev, Vector( -32, -32, -64 ), Vector( 32, 32, 0 ) );
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -156,9 +154,9 @@ void CApache :: Spawn( void )
 
 void CApache::Precache( void )
 {
-	defaultModel = FClassnameIs(pev, "monster_blkop_apache") ? "models/blkop_apache.mdl" : "models/apache.mdl";
+	m_defaultModel = FClassnameIs(pev, "monster_blkop_apache") ? "models/blkop_apache.mdl" : "models/apache.mdl";
 
-	PRECACHE_MODEL(defaultModel);
+	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND("apache/ap_rotor1.wav");
 	PRECACHE_SOUND("apache/ap_rotor2.wav");

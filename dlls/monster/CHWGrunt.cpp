@@ -136,7 +136,7 @@ const char* CHWGrunt::pGruntSentences[] =
 };
 
 void CHWGrunt::Spawn() {
-	BaseSpawn("models/hwgrunt.mdl");
+	BaseSpawn();
 
 	m_voicePitch = 85 + RANDOM_LONG(0,10);
 
@@ -179,7 +179,8 @@ void CHWGrunt::Spawn() {
 
 void CHWGrunt::Precache()
 {
-	PRECACHE_MODEL("models/hwgrunt.mdl");
+	m_defaultModel = "models/hwgrunt.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	for (int i = 0; i < ARRAYSIZE(pPainSounds); i++)
 		PRECACHE_SOUND((char*)pPainSounds[i]);

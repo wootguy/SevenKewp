@@ -128,7 +128,7 @@ extern int g_fGruntQuestion; // true if an idle grunt asked a question. Cleared 
 class CBaseGrunt : public CTalkSquadMonster
 {
 public:
-	void BaseSpawn(const char* model);
+	void BaseSpawn();
 	void BasePrecache();
 	void SetYawSpeed(void);
 	int  Classify(void);

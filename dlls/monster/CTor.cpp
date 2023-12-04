@@ -494,7 +494,7 @@ void CTor::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/tor.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector(-24, -24, 0), Vector(24, 24, 88));
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -514,7 +514,8 @@ void CTor::Spawn()
 
 void CTor::Precache()
 {
-	PRECACHE_MODEL("models/tor.mdl");
+	m_defaultModel = "models/tor.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(SHOOT_BEAM_SPRITE);
 	PRECACHE_MODEL(PORTAL_BEAM_SPRITE);
 	PRECACHE_MODEL(PORTAL_SPRITE);

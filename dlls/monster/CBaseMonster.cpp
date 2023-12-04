@@ -6783,3 +6783,7 @@ void CBaseMonster::ClearShockEffect()
 		m_fShockEffect = false;
 	}
 }
+
+const char* CBaseMonster::GetModel() {
+	return pev->model ? STRING(pev->model) : m_defaultModel;
+}

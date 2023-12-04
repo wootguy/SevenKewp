@@ -281,7 +281,7 @@ void CHAssassin :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/hassassin.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -308,7 +308,8 @@ void CHAssassin :: Spawn()
 //=========================================================
 void CHAssassin :: Precache()
 {
-	PRECACHE_MODEL("models/hassassin.mdl");
+	m_defaultModel = "models/hassassin.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND("weapons/pl_gun1.wav");
 	PRECACHE_SOUND("weapons/pl_gun2.wav");

@@ -110,6 +110,11 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		m_iTriggerCondition = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "new_model"))
+	{
+		pev->model = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseMonster::KeyValue( pkvd );
 }
@@ -211,6 +216,8 @@ void CMonsterMaker::MakeMonster( void )
 		ALERT ( at_console, "NULL Ent in MonsterMaker!\n" );
 		return;
 	}
+
+	pent->v.model = pev->model;
 	CBaseMonster* mon = ((CBaseEntity*)GET_PRIVATE(pent))->MyMonsterPointer();
 	if (mon) {
 		mon->m_iszTriggerTarget = m_iszTriggerTarget;

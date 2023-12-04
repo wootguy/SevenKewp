@@ -662,7 +662,7 @@ void CPitdrone :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/pit_drone.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 48 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -704,7 +704,8 @@ void CPitdrone :: Spawn()
 //=========================================================
 void CPitdrone :: Precache()
 {
-	PRECACHE_MODEL("models/pit_drone.mdl");
+	m_defaultModel = "models/pit_drone.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL( "models/pit_drone_gibs.mdl" );
 
 	UTIL_PrecacheOther( "pitdronespike" );

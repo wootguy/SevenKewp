@@ -949,7 +949,7 @@ void CShockTrooper :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/strooper.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector( -24, -24, 0 ), Vector( 24, 24, 72 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -993,7 +993,8 @@ void CShockTrooper :: Spawn()
 //=========================================================
 void CShockTrooper :: Precache()
 {
-	PRECACHE_MODEL("models/strooper.mdl");
+	m_defaultModel = "models/strooper.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL( "models/strooper_gibs.mdl" );
 
 	PRECACHE_SOUND( "weapons/shock_fire.wav" );

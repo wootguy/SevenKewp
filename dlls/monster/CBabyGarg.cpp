@@ -115,7 +115,7 @@ void CBabyGarg::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/babygarg.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector(-32, -32, 0), Vector(32, 32, 64));
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -153,8 +153,11 @@ void CBabyGarg::Precache()
 {
 	int i;
 
-	PRECACHE_MODEL("models/babygarg.mdl");
-	PRECACHE_MODEL("models/babygargf.mdl");
+	m_defaultModel = "models/babygarg.mdl";
+	PRECACHE_MODEL(GetModel());
+	
+	// TODO: Friendly variant, but just as a skin to reduce model count
+	//PRECACHE_MODEL("models/babygargf.mdl");
 
 	for (i = 0; i < ARRAYSIZE(pBeamAttackSounds); i++)
 		PRECACHE_SOUND((char*)pBeamAttackSounds[i]);

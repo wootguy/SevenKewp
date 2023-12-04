@@ -182,7 +182,7 @@ void CBodyGuard::OnTaskComplete(Task_t task) {
 
 void CBodyGuard::Spawn()
 {
-	BaseSpawn("models/bgman.mdl");
+	BaseSpawn();
 
 	m_afCapability = bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP | bits_CAP_HEAR;
 
@@ -251,7 +251,8 @@ void CBodyGuard::Precache()
 	for (int i = 0; i < ARRAYSIZE(pDeathSounds); i++)
 		PRECACHE_SOUND((char*)pDeathSounds[i]);
 
-	PRECACHE_MODEL("models/bgman.mdl");
+	m_defaultModel = "models/bgman.mdl";
+	PRECACHE_MODEL(GetModel());
 	CBaseGrunt::Precache();
 }
 

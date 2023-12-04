@@ -283,7 +283,7 @@ void CNihilanth :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(edict(), "models/nihilanth.mdl");
+	SET_MODEL(edict(), GetModel());
 	// UTIL_SetSize(pev, Vector( -300, -300, 0), Vector(300, 300, 512));
 	UTIL_SetSize(pev, Vector( -32, -32, 0), Vector(32, 32, 64));
 	UTIL_SetOrigin( pev, pev->origin );
@@ -328,7 +328,8 @@ void CNihilanth :: Spawn( void )
 
 void CNihilanth::Precache( void )
 {
-	PRECACHE_MODEL("models/nihilanth.mdl");
+	m_defaultModel = "models/nihilanth.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL("sprites/lgtning.spr");
 	UTIL_PrecacheOther( "nihilanth_energy_ball" );
 	UTIL_PrecacheOther( "monster_alien_controller" );

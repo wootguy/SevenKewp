@@ -330,7 +330,7 @@ void CHoundeye :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/houndeye.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector ( -16, -16, 0 ), Vector ( 16, 16, 36 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -353,7 +353,8 @@ void CHoundeye :: Spawn()
 //=========================================================
 void CHoundeye :: Precache()
 {
-	PRECACHE_MODEL("models/houndeye.mdl");
+	m_defaultModel = "models/houndeye.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND("houndeye/he_alert1.wav");
 	PRECACHE_SOUND("houndeye/he_alert2.wav");

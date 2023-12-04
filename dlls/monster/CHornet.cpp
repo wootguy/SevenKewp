@@ -90,7 +90,7 @@ void CHornet :: Spawn( void )
 		m_flFlySpeed = HORNET_ORANGE_SPEED;
 	}
 
-	SET_MODEL(ENT( pev ), "models/hornet.mdl");
+	SET_MODEL(ENT( pev ), GetModel());
 	UTIL_SetSize( pev, Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );
 
 	SetTouch( &CHornet::DieTouch );
@@ -117,7 +117,8 @@ void CHornet :: Spawn( void )
 
 void CHornet :: Precache()
 {
-	PRECACHE_MODEL("models/hornet.mdl");
+	m_defaultModel = "models/hornet.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND( "agrunt/ag_fire1.wav" );
 	PRECACHE_SOUND( "agrunt/ag_fire2.wav" );

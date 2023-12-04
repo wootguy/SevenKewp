@@ -186,7 +186,7 @@ void CHGruntOp4 :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void CHGruntOp4 :: Spawn()
 {
-	BaseSpawn("models/hgrunt_opfor.mdl");
+	BaseSpawn();
 
 	m_afCapability		= bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP | bits_CAP_HEAR;
 
@@ -286,7 +286,8 @@ void CHGruntOp4 :: Spawn()
 
 void CHGruntOp4 :: Precache()
 {
-	PRECACHE_MODEL("models/hgrunt_opfor.mdl");
+	m_defaultModel = "models/hgrunt_opfor.mdl";
+	PRECACHE_MODEL(GetModel());
 	CBaseGruntOp4::Precache();
 }	
 

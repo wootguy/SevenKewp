@@ -240,7 +240,7 @@ void CGonome::Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/gonome.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 72 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -262,7 +262,8 @@ void CGonome::Spawn()
 
 void CGonome::Precache()
 {
-	PRECACHE_MODEL("models/gonome.mdl");
+	m_defaultModel = "models/gonome.mdl";
+	PRECACHE_MODEL(GetModel());
 	iGonomeSpitSprite = PRECACHE_MODEL(GONOME_SPIT_SPRITE);
 
 	for (int i = 0; i < ARRAYSIZE(pAttackHitSounds); i++)

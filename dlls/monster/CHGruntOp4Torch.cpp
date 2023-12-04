@@ -256,7 +256,7 @@ void COFTorchAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void COFTorchAlly :: Spawn()
 {
-	BaseSpawn("models/hgrunt_torch.mdl");
+	BaseSpawn();
 
 	m_afCapability		= bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP | bits_CAP_HEAR;
 
@@ -314,7 +314,8 @@ void COFTorchAlly :: Spawn()
 
 void COFTorchAlly :: Precache()
 {
-	PRECACHE_MODEL("models/hgrunt_torch.mdl");
+	m_defaultModel = "models/hgrunt_torch.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL( TORCH_BEAM_SPRITE );
 
 	PRECACHE_SOUND( "fgrunt/torch_light.wav" );

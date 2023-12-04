@@ -98,7 +98,7 @@ const char* CHGrunt::pGruntSentences[] =
 const char* CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
 void CHGrunt::Spawn() {
-	BaseSpawn("models/hgrunt.mdl");
+	BaseSpawn();
 
 	// get voice pitch
 	if (RANDOM_LONG(0, 1))
@@ -160,7 +160,8 @@ void CHGrunt::Spawn() {
 
 void CHGrunt::Precache()
 {
-	PRECACHE_MODEL("models/hgrunt.mdl");
+	m_defaultModel = "models/hgrunt.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	for (int i = 0; i < ARRAYSIZE(pPainSounds); i++)
 		PRECACHE_SOUND((char*)pPainSounds[i]);

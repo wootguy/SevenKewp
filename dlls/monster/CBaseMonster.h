@@ -126,6 +126,8 @@ public:
 	SCRIPTSTATE			m_scriptState;		// internal cinematic state
 	CCineMonster		*m_pCine;
 
+	const char* m_defaultModel;
+
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
 	
@@ -369,6 +371,9 @@ public:
 	void AddShockEffect(float r, float g, float b, float size, float flShockDuration);
 	void UpdateShockEffect();
 	void ClearShockEffect();
+
+	// returns a custom model if set, otherwise the default model
+	const char* GetModel();
 };
 
 
