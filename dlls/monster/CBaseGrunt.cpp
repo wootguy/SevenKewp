@@ -926,11 +926,11 @@ void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	}
 }
 
-void CBaseGrunt::BaseSpawn(const char* model)
+void CBaseGrunt::BaseSpawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), model);
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -2560,8 +2560,9 @@ void CBaseRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 
 void CBaseDead::BaseSpawn(const char* model)
 {
-	PRECACHE_MODEL(model);
-	SET_MODEL(ENT(pev), model);
+	m_defaultModel = model;
+	PRECACHE_MODEL(GetModel());
+	SET_MODEL(ENT(pev), GetModel());
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;

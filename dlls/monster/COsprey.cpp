@@ -104,7 +104,6 @@ public:
 	int m_iDoLeftSmokePuff;
 	int m_iDoRightSmokePuff;
 
-	const char* defaultModel;
 	const char* replenishMonster;
 };
 
@@ -153,7 +152,7 @@ void COsprey :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), defaultModel);
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector( -400, -400, -100), Vector(400, 400, 32));
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -188,12 +187,12 @@ void COsprey :: Spawn( void )
 void COsprey::Precache( void )
 {
 	bool isBlkOps = FClassnameIs(pev, "monster_blkop_osprey");
-	defaultModel = isBlkOps ? "models/blkop_osprey.mdl" : "models/osprey.mdl";
+	m_defaultModel = isBlkOps ? "models/blkop_osprey.mdl" : "models/osprey.mdl";
 	replenishMonster = isBlkOps ? "monster_male_assassin" : "monster_human_grunt";
 
 	UTIL_PrecacheOther(replenishMonster);
 
-	PRECACHE_MODEL(defaultModel);
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL("models/HVR.mdl");
 
 	PRECACHE_SOUND("apache/ap_rotor4.wav");

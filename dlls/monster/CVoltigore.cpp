@@ -228,7 +228,7 @@ void CVoltigore::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/voltigore.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector(-32, -32, 0), Vector(32, 32, 64));
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -279,7 +279,8 @@ void CVoltigore::HideChargeBeam() {
 
 void CVoltigore::Precache()
 {
-	PRECACHE_MODEL("models/voltigore.mdl");
+	m_defaultModel = "models/voltigore.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(GIB_MODEL);
 	PRECACHE_MODEL(BEAM_SPRITE);
 	PRECACHE_MODEL(SHOCK_SPRITE);

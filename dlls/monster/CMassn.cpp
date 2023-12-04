@@ -127,7 +127,7 @@ void CMassn :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void CMassn :: Spawn()
 {
-	BaseSpawn("models/massn.mdl");
+	BaseSpawn();
 
 	pev->health			= gSkillData.massassinHealth;
 
@@ -192,7 +192,8 @@ void CMassn :: Spawn()
 
 void CMassn :: Precache()
 {
-	PRECACHE_MODEL("models/massn.mdl");
+	m_defaultModel = "models/massn.mdl";
+	PRECACHE_MODEL(GetModel());
 	
 	PRECACHE_SOUND( "hgrunt/gr_die1.wav" );
 	PRECACHE_SOUND( "hgrunt/gr_die2.wav" );

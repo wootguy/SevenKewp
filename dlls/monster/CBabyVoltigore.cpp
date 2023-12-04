@@ -166,7 +166,7 @@ void CBabyVoltigore::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/baby_voltigore.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 36));
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -182,7 +182,8 @@ void CBabyVoltigore::Spawn()
 
 void CBabyVoltigore::Precache()
 {
-	PRECACHE_MODEL("models/baby_voltigore.mdl");
+	m_defaultModel = "models/baby_voltigore.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	for (int i = 0; i < ARRAYSIZE(pAttackHitSounds); i++)
 		PRECACHE_SOUND((char*)pAttackHitSounds[i]);

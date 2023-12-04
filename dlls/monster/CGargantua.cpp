@@ -526,7 +526,7 @@ void CGargantua :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/garg.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -567,7 +567,8 @@ void CGargantua :: Precache()
 {
 	int i;
 
-	PRECACHE_MODEL("models/garg.mdl");
+	m_defaultModel = "models/garg.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	for ( i = 0; i < ARRAYSIZE( pBeamAttackSounds ); i++ )
 		PRECACHE_SOUND((char *)pBeamAttackSounds[i]);

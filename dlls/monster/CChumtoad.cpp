@@ -49,7 +49,7 @@ void CChumtoad::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/chumtoad.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 12, 36));
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -67,7 +67,8 @@ void CChumtoad::Spawn()
 
 void CChumtoad::Precache()
 {
-	PRECACHE_MODEL("models/chumtoad.mdl");
+	m_defaultModel = "models/chumtoad.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(TOXIC_SPRITE);
 	PRECACHE_SOUND(TOXIC_SOUND);
 	PRECACHE_SOUND(TOXIC_SOUND2);

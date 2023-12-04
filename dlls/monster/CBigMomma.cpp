@@ -659,7 +659,7 @@ void CBigMomma :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/big_mom.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -678,7 +678,8 @@ void CBigMomma :: Spawn()
 //=========================================================
 void CBigMomma :: Precache()
 {
-	PRECACHE_MODEL("models/big_mom.mdl");
+	m_defaultModel = "models/big_mom.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND_ARRAY( pChildDieSounds );
 	PRECACHE_SOUND_ARRAY( pSackSounds );

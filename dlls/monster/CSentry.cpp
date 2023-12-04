@@ -27,13 +27,14 @@ LINK_ENTITY_TO_CLASS(monster_sentry, CSentry);
 void CSentry::Precache()
 {
 	CBaseTurret::Precache();
-	PRECACHE_MODEL("models/sentry.mdl");
+	m_defaultModel = "models/sentry.mdl";
+	PRECACHE_MODEL(GetModel());
 }
 
 void CSentry::Spawn()
 {
 	Precache();
-	SET_MODEL(ENT(pev), "models/sentry.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	pev->health = gSkillData.sentryHealth;
 	m_HackedGunPos = Vector(0, 0, 48);
 	pev->view_ofs.z = 48;

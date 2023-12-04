@@ -71,7 +71,7 @@ void CRat :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/bigrat.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize( pev, Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -90,7 +90,8 @@ void CRat :: Spawn()
 //=========================================================
 void CRat :: Precache()
 {
-	PRECACHE_MODEL("models/bigrat.mdl");
+	m_defaultModel = "models/bigrat.mdl";
+	PRECACHE_MODEL(GetModel());
 }	
 
 //=========================================================

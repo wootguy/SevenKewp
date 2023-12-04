@@ -22,7 +22,7 @@ LINK_ENTITY_TO_CLASS(monster_miniturret, CMiniTurret);
 void CMiniTurret::Spawn()
 {
 	Precache();
-	SET_MODEL(ENT(pev), "models/miniturret.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	pev->health = gSkillData.miniturretHealth;
 	m_HackedGunPos = Vector(0, 0, 12.75);
 	m_flMaxSpin = 0;
@@ -42,7 +42,8 @@ void CMiniTurret::Spawn()
 void CMiniTurret::Precache()
 {
 	CBaseTurret::Precache();
-	PRECACHE_MODEL("models/miniturret.mdl");
+	m_defaultModel = "models/miniturret.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_SOUND("weapons/hks1.wav");
 	PRECACHE_SOUND("weapons/hks2.wav");
 	PRECACHE_SOUND("weapons/hks3.wav");

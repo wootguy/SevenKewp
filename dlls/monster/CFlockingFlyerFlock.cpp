@@ -160,7 +160,8 @@ void CFlockingFlyerFlock :: Spawn( )
 void CFlockingFlyerFlock :: Precache( )
 {
 	//PRECACHE_MODEL("models/aflock.mdl");		
-	PRECACHE_MODEL("models/boid.mdl");		
+	m_defaultModel = "models/boid.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	PrecacheFlockSounds();
 }
@@ -239,7 +240,8 @@ void CFlockingFlyer :: Spawn( )
 void CFlockingFlyer :: Precache( )
 {
 	//PRECACHE_MODEL("models/aflock.mdl");
-	PRECACHE_MODEL("models/boid.mdl");
+	m_defaultModel = "models/boid.mdl";
+	PRECACHE_MODEL(GetModel());
 	CFlockingFlyerFlock::PrecacheFlockSounds();
 }
 
@@ -330,7 +332,7 @@ void CFlockingFlyer :: SpawnCommonCode( )
 	m_flFieldOfView	= 0.2;
 
 	//SET_MODEL(ENT(pev), "models/aflock.mdl");
-	SET_MODEL(ENT(pev), "models/boid.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 
 //	UTIL_SetSize(pev, Vector(0,0,0), Vector(0,0,0));
 	UTIL_SetSize(pev, Vector(-5,-5,0), Vector(5,5,2));

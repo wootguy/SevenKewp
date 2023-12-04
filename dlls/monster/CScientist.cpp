@@ -111,8 +111,6 @@ private:
 	float m_painTime;
 	float m_healTime;
 	float m_fearTime;
-
-	const char* defaultModel;
 };
 
 LINK_ENTITY_TO_CLASS( monster_scientist, CScientist );
@@ -648,7 +646,7 @@ void CScientist :: Spawn( void )
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), defaultModel);
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -684,9 +682,9 @@ void CScientist :: Spawn( void )
 //=========================================================
 void CScientist :: Precache( void )
 {
-	defaultModel = FClassnameIs(pev, "monster_scientist") ? "models/scientist.mdl" : "models/cleansuit_scientist.mdl";
+	m_defaultModel = FClassnameIs(pev, "monster_scientist") ? "models/scientist.mdl" : "models/cleansuit_scientist.mdl";
 
-	PRECACHE_MODEL(defaultModel);
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_SOUND("scientist/sci_pain1.wav");
 	PRECACHE_SOUND("scientist/sci_pain2.wav");
 	PRECACHE_SOUND("scientist/sci_pain3.wav");

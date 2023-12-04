@@ -41,7 +41,7 @@ LINK_ENTITY_TO_CLASS(monster_turret, CTurret);
 void CTurret::Spawn()
 {
 	Precache();
-	SET_MODEL(ENT(pev), "models/turret.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	pev->health = gSkillData.turretHealth;
 	m_HackedGunPos = Vector(0, 0, 12.75);
 	m_flMaxSpin = TURRET_MAXSPIN;
@@ -67,7 +67,8 @@ void CTurret::Spawn()
 void CTurret::Precache()
 {
 	CBaseTurret::Precache();
-	PRECACHE_MODEL("models/turret.mdl");
+	m_defaultModel = "models/turret.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(TURRET_GLOW_SPRITE);
 }
 

@@ -499,7 +499,7 @@ void CAGrunt :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/agrunt.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector(-32, -32, 0), Vector(32, 32, 64));
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -527,7 +527,8 @@ void CAGrunt :: Precache()
 {
 	int i;
 
-	PRECACHE_MODEL("models/agrunt.mdl");
+	m_defaultModel = "models/agrunt.mdl";
+	PRECACHE_MODEL(GetModel());
 
 	for ( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
 		PRECACHE_SOUND((char *)pAttackHitSounds[i]);
