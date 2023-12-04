@@ -964,7 +964,7 @@ BOOL CHalfLifeMultiplay::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerIte
 {
 	if ( weaponstay.value > 0 )
 	{
-		if ( pItem->iFlags() & ITEM_FLAG_LIMITINWORLD )
+		if ( (pItem->iFlags() & ITEM_FLAG_LIMITINWORLD) || (pItem->pev->spawnflags & SF_NORESPAWN))
 			return CGameRules::CanHavePlayerItem( pPlayer, pItem );
 
 		// check if the player already has this weapon

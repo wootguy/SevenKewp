@@ -232,7 +232,7 @@ void CHWGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir
 
 void CHWGrunt::DropMinigun(Vector vecDir) {
 	Vector launchDir = Vector(vecDir.x * 200, vecDir.y * 200, 400);
-	DropEquipment(2, MEQUIP_MINIGUN, launchDir, Vector(0, RANDOM_FLOAT(200, 400), 0));
+	//DropEquipment(2, MEQUIP_MINIGUN, launchDir, Vector(0, RANDOM_FLOAT(200, 400), 0));
 	m_cClipSize = m_cAmmoLoaded = secondaryClipSize;
 	m_IdealActivity = ACT_SMALL_FLINCH;
 	SetBodygroup(GUN_GROUP, secondaryBody);
@@ -388,7 +388,7 @@ void CHWGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 		PickupMinigun();
 		break;
 	case HGRUNT_AE_DROP_GUN:
-		DropEquipment(0, true);
+		DropEquipment(0, false);
 		SetBodygroup(GUN_GROUP, GUN_NONE);
 		break;
 	default:
