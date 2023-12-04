@@ -4,8 +4,7 @@
 #include "effects.h"
 #include "weapons.h"
 #include "explode.h"
-#include "CFunkTank.h"
-#include "player.h"
+#include "CFuncTank.h"
 
 class CFuncTankRocket : public CFuncTank
 {

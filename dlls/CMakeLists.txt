@@ -243,6 +243,7 @@ set(FUNC_SRC
 	func/CFuncTankGun.cpp
 	func/CFuncTankLaser.cpp
 	func/CFuncTankMortar.cpp
+	func/CFuncTankRocket.cpp
 	func/CFuncTrackChange.cpp
 	func/CFuncTrackTrain.cpp
 	func/CFuncTrain.cpp
