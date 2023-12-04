@@ -2448,33 +2448,47 @@ CBaseEntity* CBaseMonster::BestVisibleEnemy(void)
 	int			iBestRelationship;
 
 	iNearest = 8192;// so first visible entity will become the closest.
+	float bestDot = -1;
 	pNextEnt = m_pLink;
 	pReturn = NULL;
 	iBestRelationship = R_NO;
 
+	Vector forward, right, up;
+	UTIL_MakeVectorsPrivate(pev->angles, forward, right, up);
+	Vector flatOri = Vector(pev->origin.x, pev->origin.y, 0);
+
 	while (pNextEnt != NULL)
 	{
-		if (pNextEnt->IsAlive())
+		int iRel = IRelationship(pNextEnt);
+
+		if (pNextEnt->IsAlive() && iRel >= iBestRelationship)
 		{
-			if (IRelationship(pNextEnt) > iBestRelationship)
+			Vector flatTargetOri = Vector(pNextEnt->pev->origin.x, pNextEnt->pev->origin.y, 0);
+			Vector delta = (flatTargetOri - flatOri).Normalize();
+			float dot = DotProduct(forward, delta);
+			iDist = (pNextEnt->pev->origin - pev->origin).Length();
+
+			if (iRel > iBestRelationship)
 			{
 				// this entity is disliked MORE than the entity that we 
 				// currently think is the best visible enemy. No need to do 
 				// a distance check, just get mad at this one for now.
 				iBestRelationship = IRelationship(pNextEnt);
-				iNearest = (pNextEnt->pev->origin - pev->origin).Length();
+				iNearest = iDist;
+				bestDot = dot;
 				pReturn = pNextEnt;
 			}
-			else if (IRelationship(pNextEnt) == iBestRelationship)
+			else if (iRel == iBestRelationship)
 			{
 				// this entity is disliked just as much as the entity that
 				// we currently think is the best visible enemy, so we only
-				// get mad at it if it is closer.
-				iDist = (pNextEnt->pev->origin - pev->origin).Length();
+				// get mad at it if it is significantly closer or about the
+				// same distance but better aligned with our current aim direction
 
-				if (iDist <= iNearest)
+				if (iDist < iNearest - 128 || (iDist < iNearest + 128 && dot > bestDot))
 				{
 					iNearest = iDist;
+					bestDot = dot;
 					iBestRelationship = IRelationship(pNextEnt);
 					pReturn = pNextEnt;
 				}
