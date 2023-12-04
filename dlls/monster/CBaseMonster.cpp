@@ -5645,7 +5645,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	{
 		Activity newActivity;
 
-		if ((m_hTargetEnt->pev->origin - pev->origin).Length() < 1)
+		if (!m_hTargetEnt || (m_hTargetEnt->pev->origin - pev->origin).Length() < 1)
 			TaskComplete();
 		else
 		{
@@ -6681,7 +6681,7 @@ BOOL CBaseMonster::CanFollow(void)
 {
 	if (m_MonsterState == MONSTERSTATE_SCRIPT)
 	{
-		if (!m_pCine->CanInterrupt())
+		if (m_pCine && !m_pCine->CanInterrupt())
 			return FALSE;
 	}
 
