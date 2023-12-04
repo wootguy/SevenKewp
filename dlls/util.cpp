@@ -2601,3 +2601,36 @@ int	CRestore::BufferCheckZString( const char *string )
 	return 0;
 }
 
+std::vector<std::string> splitString(std::string str, const char* delimitters)
+{
+	std::vector<std::string> split;
+	size_t start = 0;
+	size_t end = str.find_first_of(delimitters);
+
+	while (end != std::string::npos)
+	{
+		split.push_back(str.substr(start, end - start));
+		start = end + 1;
+		end = str.find_first_of(delimitters, start);
+	}
+
+	split.push_back(str.substr(start));
+
+	return split;
+}
+
+std::string toLowerCase(std::string str) {
+	std::string out = str;
+
+	for (int i = 0; str[i]; i++) {
+		out[i] = tolower(str[i]);
+	}
+
+	return out;
+}
+
+std::string trimSpaces(std::string s) {
+	int start = s.find_first_not_of(" \t\n\r");
+	int end = s.find_last_not_of(" \t\n\r");
+	return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
+}

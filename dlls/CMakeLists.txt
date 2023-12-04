@@ -165,6 +165,7 @@ set(ITEM_SRC
 
 set(TRIGGER_HDR
 	triggers/CBaseTrigger.h
+	triggers/CGamePlayerEquip.h
 	triggers/CFireAndDie.h
 	triggers/CRuleEntity.h
 	triggers/CTriggerMultiple.h

@@ -27,6 +27,7 @@
 #include	"item/CItem.h"
 #include	"voice_gamemgr.h"
 #include	"hltv.h"
+#include "CGamePlayerEquip.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -562,6 +563,14 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 	pPlayer->pev->weapons |= (1<<WEAPON_SUIT);
 	
 	addDefault = TRUE;
+
+	for (int i = 0; i < MAX_EQUIP; i++) {
+		if (!g_mapEquipment[i].itemName) {
+			break;
+		}
+		equipPlayerWithItem(pPlayer, STRING(g_mapEquipment[i].itemName), g_mapEquipment[i].count);
+		addDefault = FALSE;
+	}
 
 	while ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ))
 	{
