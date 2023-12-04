@@ -592,6 +592,60 @@ CBaseEntity	*UTIL_PlayerByIndex( int playerIndex )
 	return pPlayer;
 }
 
+edict_t* UTIL_ClientsInPVS(edict_t* edict, int& playerCount) {
+	// TODO: reimplement engine func so that it only iterates 32 edicts
+	edict_t* pvsents = UTIL_EntitiesInPVS(edict);
+	playerCount = 0;
+
+	if (FNullEnt(pvsents)) {
+		return pvsents;
+	}
+
+	edict_t* newList = INDEXENT(0);
+	edict_t* lastPlr = newList;
+	edict_t* ed = pvsents;
+
+	// unlink edicts which aren't clients
+	while (!FNullEnt(ed)) {
+		if (ed->v.flags & FL_CLIENT) {
+			if (FNullEnt(newList)) {
+				newList = ed;
+			}
+			else {
+				lastPlr->v.chain = ed;
+			}
+
+			lastPlr = ed;
+			ed = ed->v.chain;
+			playerCount++;
+		}
+		else {
+			ed = ed->v.chain;
+			lastPlr->v.chain = ed;
+		}
+	}
+	lastPlr->v.chain = INDEXENT(0);
+
+	return newList;
+}
+
+bool UTIL_IsClientInPVS(edict_t* edict) {
+	// TODO: reimplement engine func so that it only iterates 32 edicts
+	edict_t* ed = UTIL_EntitiesInPVS(edict);
+
+	while (!FNullEnt(ed)) {
+		if (ed->v.flags & FL_CLIENT) {
+			return true;
+		}
+		ed = ed->v.chain;
+	}
+
+	return false;
+}
+
+bool IsValidPlayer(edict_t* edict) {
+	return edict && (edict->v.flags & FL_CLIENT) && STRING(edict->v.netname)[0] != '\0';
+}
 
 void UTIL_MakeVectors( const Vector &vecAngles )
 {

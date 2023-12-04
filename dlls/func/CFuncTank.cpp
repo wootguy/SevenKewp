@@ -362,10 +362,24 @@ void CFuncTank::Think(void)
 void CFuncTank::TrackTarget(void)
 {
 	TraceResult tr;
-	edict_t* pPlayer = FIND_CLIENT_IN_PVS(edict());
+	int numPvsClients;
+	edict_t* pPlayer = UTIL_ClientsInPVS(edict(), numPvsClients);
 	BOOL updateTime = FALSE, lineOfSight;
 	Vector angles, direction, targetPosition, barrelEnd;
 	edict_t* pTarget;
+
+	// target the closest player
+	edict_t* bestPlayer = pPlayer;
+	float bestDist = 9e99;
+	while (!FNullEnt(pPlayer)) {
+		float dist = (pev->origin - pPlayer->v.origin).Length();
+		if (dist < bestDist) {
+			bestPlayer = pPlayer;
+			bestDist = dist;
+		}
+		pPlayer = pPlayer->v.chain;
+	}
+	pPlayer = bestPlayer;
 
 	// Get a position to aim for
 	if (m_pController)

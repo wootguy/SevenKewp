@@ -113,22 +113,25 @@ void CGib::SpawnHeadGib(entvars_t* pevVictim)
 	{
 		pGib->pev->origin = pevVictim->origin + pevVictim->view_ofs;
 
-		edict_t* pentPlayer = FIND_CLIENT_IN_PVS(pGib->edict());
+		int numPvsPlayers;
+		edict_t* pvsPlayers = UTIL_ClientsInPVS(pGib->edict(), numPvsPlayers);
 
-		if (RANDOM_LONG(0, 100) <= 5 && pentPlayer)
+		// 5% chance head will be thrown at player's face (or your face in particular, in co-op).
+		if (numPvsPlayers && RANDOM_LONG(0, 100) <= 5 * numPvsPlayers)
 		{
-			// 5% chance head will be thrown at player's face.
-			entvars_t* pevPlayer;
+			int pickPlayer = RANDOM_LONG(0, numPvsPlayers - 1);
+			edict_t* plr = pvsPlayers;
+			for (int i = 0; i < pickPlayer; i++) {
+				plr = pvsPlayers->v.chain;
+			}
 
-			pevPlayer = VARS(pentPlayer);
+			entvars_t* pevPlayer = VARS(plr);
 			pGib->pev->velocity = ((pevPlayer->origin + pevPlayer->view_ofs) - pGib->pev->origin).Normalize() * 300;
 			pGib->pev->velocity.z += 100;
 		}
-		else
-		{
+		else {
 			pGib->pev->velocity = Vector(RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(200, 300));
 		}
-
 
 		pGib->pev->avelocity.x = RANDOM_FLOAT(100, 200);
 		pGib->pev->avelocity.y = RANDOM_FLOAT(100, 300);

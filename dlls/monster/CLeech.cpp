@@ -563,7 +563,7 @@ void CLeech::SwimThink( void )
 	float			targetYaw = 0;
 	CBaseEntity		*pTarget;
 
-	if ( FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) )
+	if (!UTIL_IsClientInPVS(edict()))
 	{
 		pev->nextthink = gpGlobals->time + RANDOM_FLOAT(1,1.5);
 		pev->velocity = g_vecZero;
