@@ -305,14 +305,15 @@ BOOL CHalfLifeMultiplay::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerI
 		// player doesn't have an active item!
 		return TRUE;
 	}
+	CBasePlayerItem* item = (CBasePlayerItem*)pPlayer->m_pActiveItem.GetEntity();
 
-	if ( !pPlayer->m_pActiveItem->CanHolster() )
+	if ( !item->CanHolster() )
 	{
 		// can't put away the active item.
 		return FALSE;
 	}
 
-	if ( pWeapon->iWeight() > pPlayer->m_pActiveItem->iWeight() )
+	if ( pWeapon->iWeight() > item->iWeight() )
 	{
 		return TRUE;
 	}
@@ -339,7 +340,7 @@ BOOL CHalfLifeMultiplay :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerI
 
 	for ( i = 0 ; i < MAX_ITEM_TYPES ; i++ )
 	{
-		pCheck = pPlayer->m_rgpPlayerItems[ i ];
+		pCheck = (CBasePlayerItem*)pPlayer->m_rgpPlayerItems[i].GetEntity();
 
 		while ( pCheck )
 		{
@@ -700,7 +701,7 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 				
 				if ( pPlayer->m_pActiveItem )
 				{
-					killer_weapon_name = pPlayer->m_pActiveItem->pszName();
+					killer_weapon_name = ((CBasePlayerItem*)pPlayer->m_pActiveItem.GetEntity())->pszName();
 				}
 			}
 			else
@@ -960,7 +961,7 @@ BOOL CHalfLifeMultiplay::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerIte
 		// check if the player already has this weapon
 		for ( int i = 0 ; i < MAX_ITEM_TYPES ; i++ )
 		{
-			CBasePlayerItem *it = pPlayer->m_rgpPlayerItems[i];
+			CBasePlayerItem *it = (CBasePlayerItem*)pPlayer->m_rgpPlayerItems[i].GetEntity();
 
 			while ( it != NULL )
 			{

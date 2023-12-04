@@ -167,7 +167,7 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 {
 	BOOL bSend = FALSE;
 	int state = 0;
-	if (pPlayer->m_pActiveItem == this)
+	if (pPlayer->m_pActiveItem.GetEntity() == this)
 	{
 		if (pPlayer->m_fOnTarget)
 			state = WEAPON_IS_ONTARGET;
@@ -182,10 +182,10 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 	}
 
 	// This is the current or last weapon, so the state will need to be updated
-	if (this == pPlayer->m_pActiveItem ||
-		this == pPlayer->m_pClientActiveItem)
+	if (this == pPlayer->m_pActiveItem.GetEntity() ||
+		this == pPlayer->m_pClientActiveItem.GetEntity())
 	{
-		if (pPlayer->m_pActiveItem != pPlayer->m_pClientActiveItem)
+		if (pPlayer->m_pActiveItem.GetEntity() != pPlayer->m_pClientActiveItem.GetEntity())
 		{
 			bSend = TRUE;
 		}
