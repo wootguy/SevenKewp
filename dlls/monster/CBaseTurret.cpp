@@ -98,6 +98,19 @@ void CBaseTurret::Spawn()
 	SetBoneController(1, 0);
 	m_flFieldOfView = VIEW_FIELD_FULL;
 	// m_flSightRange = TURRET_RANGE;
+
+	// sounds don't work if the turret if the origin is perfectly aligned to a surface (bug with PAS?)
+	// so move it away a little bit
+	const float PAS_EPSILON = 0.1f; // just a guess that worked for me
+	TraceResult trUp, trDown;
+	TRACE_LINE(pev->origin, pev->origin + Vector(0, 0, 1), ignore_monsters, NULL, &trUp);
+	TRACE_LINE(pev->origin, pev->origin - Vector(0, 0, 1), ignore_monsters, NULL, &trDown);
+	if (trUp.flFraction <= PAS_EPSILON) {
+		UTIL_SetOrigin(pev, pev->origin - Vector(0, 0, PAS_EPSILON));
+	}
+	else if (trDown.flFraction <= PAS_EPSILON) {
+		UTIL_SetOrigin(pev, pev->origin + Vector(0, 0, PAS_EPSILON));
+	}
 }
 
 void CBaseTurret::Precache()
