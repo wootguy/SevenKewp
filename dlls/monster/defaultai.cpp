@@ -88,6 +88,7 @@ Schedule_t	slIdleTrigger[] =
 	{ 
 		tlIdleStand1,
 		ARRAYSIZE ( tlIdleStand1 ), 
+		bits_COND_NEW_ENEMY |
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
@@ -209,7 +210,7 @@ Schedule_t slWakeAngry[] =
 	{
 		tlWakeAngry1,
 		ARRAYSIZE ( tlWakeAngry1 ),
-		0,
+		bits_COND_NEW_ENEMY,
 		0,
 		"Wake Angry"
 	}
