@@ -177,11 +177,13 @@ set(TRIGGER_SRC
 	triggers/CFireAndDie.cpp
 	triggers/CGameCounter.cpp
 	triggers/CGameEnd.cpp
+	triggers/CGamePlayerEquip.cpp
 	triggers/CGamePlayerHurt.cpp
 	triggers/CGamePlayerTeam.cpp
 	triggers/CGamePlayerZone.cpp
 	triggers/CGameScore.cpp
 	triggers/CGameTeamMaster.cpp
+	triggers/CGameTeamSet.cpp
 	triggers/CGameText.cpp
 	triggers/CInfoIntermission.cpp
 	triggers/CLadder.cpp
