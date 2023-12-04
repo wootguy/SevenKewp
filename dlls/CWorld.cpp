@@ -14,7 +14,6 @@
 #include "bodyque.h"
 
 extern CGraph WorldGraph;
-extern CBaseEntity* g_pLastSpawn;
 extern CSoundEnt* pSoundEnt;
 DLL_GLOBAL edict_t* g_pBodyQueueHead;
 extern DLL_GLOBAL	int			gDisplayTitle;
@@ -46,8 +45,6 @@ void CWorld::Spawn(void)
 
 void CWorld::Precache(void)
 {
-	g_pLastSpawn = NULL;
-
 #if 1
 	CVAR_SET_STRING("sv_gravity", "800"); // 67ft/sec
 	CVAR_SET_STRING("sv_stepsize", "18");
