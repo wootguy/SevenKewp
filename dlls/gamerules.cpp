@@ -25,6 +25,14 @@
 #include	"teamplay_gamerules.h"
 #include	"skill.h"
 #include	"game.h"
+#include "CGamePlayerEquip.h"
+
+#include <sstream>
+#include <string>
+#include <fstream>
+#include <set>
+
+using namespace std;
 
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
@@ -354,14 +362,120 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.massassinDmgKick = GetSkillCvar("sk_massassin_kick");
 }
 
+void execMapCfg() {
+	static set<string> whitelistCommands = {
+		"sv_gravity",
+		"sv_friction",
+		"sv_accelerate",
+		"sv_airaccelerate",
+		"sv_bounce",
+		"sv_maxspeed",
+		"sv_maxvelocity",
+		"sv_newunit",
+		"sv_rollspeed",
+		"sv_stepsize",
+		"sv_stopspeed",
+		"sv_wateraccelerate",
+		"sv_wateramp",
+		"sv_waterfriction",
+		"mp_decals",
+		"mp_falldamage",
+		"mp_flashlight",
+		"mp_footsteps",
+		"mp_forcerespawn",
+		"mp_fraglimit",
+		"mp_fragsleft",
+		"mp_timelimit",
+		"mp_weaponstay",
+		"mp_friendlyfire"
+	};
+
+	static set<string> itemNames = {
+		"weapon_crossbow",
+		"weapon_crowbar",
+		"weapon_egon",
+		"weapon_gauss",
+		"weapon_handgrenade",
+		"weapon_hornetgun",
+		"weapon_mp5",
+		"weapon_9mmAR",
+		"weapon_python",
+		"weapon_357",
+		"weapon_rpg",
+		"weapon_satchel",
+		"weapon_shotgun",
+		"weapon_snark",
+		"weapon_tripmine",
+		"weapon_glock",
+		"weapon_9mmhandgun",
+		"ammo_crossbow",
+		"ammo_egonclip",
+		"ammo_gaussclip",
+		"ammo_mp5clip",
+		"ammo_9mmAR",
+		"ammo_9mmbox",
+		"ammo_mp5grenades",
+		"ammo_ARgrenades",
+		"ammo_357",
+		"ammo_rpgclip",
+		"ammo_buckshot",
+		"ammo_glockclip",
+		"ammo_9mm",
+		"ammo_9mmclip",
+		"item_longjump"
+	};
+	
+	string cfgPath = "maps/" + string(STRING(gpGlobals->mapname)) + ".cfg";
+	int length;
+	char* cfgFile = (char*)LOAD_FILE_FOR_ME(cfgPath.c_str(), &length);
+	
+	std::stringstream data_stream(cfgFile);
+	string line;
+
+	memset(g_mapEquipment, 0, sizeof(EquipItem) * MAX_EQUIP);
+
+	int equipIdx = 0;
+
+	while (std::getline(data_stream, line))
+	{
+		vector<string> parts = splitString(line, " \t");
+		string name = trimSpaces(toLowerCase(parts[0]));
+
+		if (parts.size() > 1 && whitelistCommands.find(name) != whitelistCommands.end()) {
+			string value = trimSpaces(parts[1]);
+			SERVER_COMMAND(UTIL_VarArgs("%s %s\n", name.c_str(), value.c_str()));
+			SERVER_EXECUTE();
+		}
+		else if (itemNames.find(name) != itemNames.end()) {
+			if (equipIdx >= MAX_EQUIP) {
+				ALERT(at_error, "Failed to add equipment '%s'. Max equipment reached.\n", line.c_str());
+				continue;
+			}
+
+			int amount = 1;
+			if (parts.size() > 1) {
+				amount = atoi(parts[1].c_str());
+			}
+
+			g_mapEquipment[equipIdx].itemName = ALLOC_STRING(name.c_str());
+			g_mapEquipment[equipIdx].count = amount;
+			equipIdx++;
+		}
+	}
+
+	FREE_FILE(cfgFile);
+}
+
 //=========================================================
 // instantiate the proper game rules object
 //=========================================================
 
 CGameRules *InstallGameRules( void )
 {
-	SERVER_COMMAND( "exec game.cfg\n" );
+	SERVER_COMMAND( "exec server.cfg\n" );
 	SERVER_EXECUTE( );
+
+	execMapCfg();
 
 	if ( !gpGlobals->deathmatch )
 	{
@@ -392,6 +506,4 @@ CGameRules *InstallGameRules( void )
 		}
 	}
 }
-
-
 

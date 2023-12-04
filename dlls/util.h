@@ -24,6 +24,10 @@
 #ifndef ENGINECALLBACK_H
 #include "enginecallback.h"
 #endif
+
+#include <vector>
+#include <string>
+
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
 extern globalvars_t				*gpGlobals;
@@ -546,3 +550,9 @@ int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
+
+std::vector<std::string> splitString(std::string str, const char* delimitters);
+
+std::string toLowerCase(std::string str);
+
+std::string trimSpaces(std::string s);
