@@ -570,29 +570,18 @@ void CGargantua :: Precache()
 	m_defaultModel = "models/garg.mdl";
 	PRECACHE_MODEL(GetModel());
 
-	for ( i = 0; i < ARRAYSIZE( pBeamAttackSounds ); i++ )
-		PRECACHE_SOUND((char *)pBeamAttackSounds[i]);
+	// should not be affected by mp_soundvariety
+	PRECACHE_SOUND(pBeamAttackSounds[0]);
+	PRECACHE_SOUND(pBeamAttackSounds[1]);
+	PRECACHE_SOUND(pBeamAttackSounds[2]);
 
-	for ( i = 0; i < ARRAYSIZE( pFootSounds ); i++ )
-		PRECACHE_SOUND((char *)pFootSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND((char *)pIdleSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND((char *)pAlertSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND((char *)pPainSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pStompSounds ); i++ )
-		PRECACHE_SOUND((char *)pStompSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pBreatheSounds ); i++ )
-		PRECACHE_SOUND((char *)pBreatheSounds[i]);
+	PRECACHE_SOUND_ARRAY(pFootSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pAttackSounds);
+	PRECACHE_SOUND_ARRAY(pStompSounds);
+	PRECACHE_SOUND_ARRAY(pBreatheSounds);
 
 	PrecacheCommon();
 }	
@@ -1052,11 +1041,11 @@ void CGargantua::AlertSound() {
 */
 
 void CGargantua::PainSound() {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pPainSounds[RANDOM_LONG(0, ARRAYSIZE(pPainSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, PITCH_NORM);
 }
 
 void CGargantua::AttackSound() {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pAttackSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_GARG, 0, PITCH_NORM);
 }
 
 void CGargantua::BeamSound(int idx) {
@@ -1068,15 +1057,15 @@ void CGargantua::BeamSound(int idx) {
 }
 
 void CGargantua::FootSound() {
-	EMIT_SOUND_DYN(edict(), CHAN_BODY, pFootSounds[RANDOM_LONG(0, ARRAYSIZE(pFootSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG(-10, 10));
+	EMIT_SOUND_DYN(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(pFootSounds), 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG(-10, 10));
 }
 
 void CGargantua::StompSound() {
-	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, pStompSounds[RANDOM_LONG(0, ARRAYSIZE(pStompSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG(-10, 10));
+	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pStompSounds), 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG(-10, 10));
 }
 
 void CGargantua::BreatheSound() {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, pBreatheSounds[RANDOM_LONG(0, ARRAYSIZE(pBreatheSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG(-10, 10));
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBreatheSounds), 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG(-10, 10));
 }
 
 

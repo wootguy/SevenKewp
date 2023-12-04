@@ -135,6 +135,9 @@ const char* CVoltigore::pPainSounds[] =
 
 const char* CVoltigore::pEventSounds[] =
 {
+	// TODO: move these out of the model so that mp_soundvariety can limit them
+	//       also test if model sounds can use PrecacheGeneric instead of PrecacheSound,
+	//       because that could lead to big savings
 	"voltigore/voltigore_attack_melee1.wav",
 	"voltigore/voltigore_attack_melee2.wav",
 	"voltigore/voltigore_attack_shock.wav",
@@ -194,10 +197,10 @@ void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
 				}
 			}
 			// Play a random attack hit sound
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackHitSounds) - 1)], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackHitSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
 		}
 		else // Play a random attack miss sound
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackMissSounds) - 1)], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackMissSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
 		break;
 	}
 	case EVENT_SHOOT_ORB:
@@ -287,23 +290,12 @@ void CVoltigore::Precache()
 	PRECACHE_MODEL(SPORE_EXPLODE_SPRITE);
 	sporeExplodeSprIdx = PRECACHE_MODEL(SPORE_EXPLODE_SPRITE2);
 
-	for (int i = 0; i < ARRAYSIZE(pAttackHitSounds); i++)
-		PRECACHE_SOUND((char*)pAttackHitSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pAttackMissSounds); i++)
-		PRECACHE_SOUND((char*)pAttackMissSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pIdleSounds); i++)
-		PRECACHE_SOUND((char*)pIdleSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pAlertSounds); i++)
-		PRECACHE_SOUND((char*)pAlertSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pPainSounds); i++)
-		PRECACHE_SOUND((char*)pPainSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pEventSounds); i++)
-		PRECACHE_SOUND((char*)pEventSounds[i]);
+	PRECACHE_SOUND_ARRAY(pAttackHitSounds);
+	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pEventSounds);
 	
 	PRECACHE_SOUND(SPORE_EXPLODE_SOUND);
 	PRECACHE_SOUND(SHOCK_SOUND);
@@ -435,14 +427,14 @@ void CVoltigore::PainSound(void)
 	int pitch = 100 + RANDOM_LONG(0, 9);
 
 	if (RANDOM_LONG(0, 5) < 2)
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pPainSounds[RANDOM_LONG(0, ARRAYSIZE(pPainSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM, 0, pitch);
 }
 
 void CVoltigore::AlertSound(void)
 {
 	int pitch = 100 + RANDOM_LONG(0, 9);
 
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pAlertSounds[RANDOM_LONG(0, ARRAYSIZE(pAlertSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), 1.0, ATTN_NORM, 0, pitch);
 }
 
 void CVoltigore::IdleSound(void)
@@ -450,7 +442,7 @@ void CVoltigore::IdleSound(void)
 	int pitch = 100 + RANDOM_LONG(-5, 5);
 
 	// Play a random idle sound
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pIdleSounds[RANDOM_LONG(0, ARRAYSIZE(pIdleSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), 1.0, ATTN_NORM, 0, pitch);
 }
 
 //

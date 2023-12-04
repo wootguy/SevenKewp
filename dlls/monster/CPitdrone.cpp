@@ -266,8 +266,67 @@ public:
 	float m_flNextSpikeTime;// last time the pit drone used the spike attack.
 	int m_iInitialAmmo;
 	float m_flNextEatTime;
+
+private:
+	static const char* pAlertSounds[];
+	static const char* pSpikeSounds[];
+	static const char* pTalkSounds[];
+	static const char* pDieSounds[];
+	static const char* pHuntSounds[];
+	static const char* pIdleSounds[];
+	static const char* pPainSounds[];
+	static const char* pBiteSounds[];
 };
 LINK_ENTITY_TO_CLASS( monster_pitdrone, CPitdrone );
+
+const char* CPitdrone::pAlertSounds[] =
+{
+	"pitdrone/pit_drone_alert1.wav",
+	"pitdrone/pit_drone_alert2.wav",
+	"pitdrone/pit_drone_alert3.wav",
+};
+const char* CPitdrone::pSpikeSounds[] =
+{
+	"pitdrone/pit_drone_attack_spike1.wav",
+	"pitdrone/pit_drone_attack_spike2.wav",
+};
+const char* CPitdrone::pTalkSounds[] =
+{
+	"pitdrone/pit_drone_communicate1.wav",
+	"pitdrone/pit_drone_communicate2.wav",
+	"pitdrone/pit_drone_communicate3.wav",
+	"pitdrone/pit_drone_communicate4.wav",
+};
+const char* CPitdrone::pDieSounds[] =
+{
+	"pitdrone/pit_drone_die1.wav",
+	"pitdrone/pit_drone_die2.wav",
+	"pitdrone/pit_drone_die3.wav",
+};
+const char* CPitdrone::pHuntSounds[] =
+{
+	"pitdrone/pit_drone_hunt1.wav",
+	"pitdrone/pit_drone_hunt2.wav",
+	"pitdrone/pit_drone_hunt3.wav",
+};
+const char* CPitdrone::pIdleSounds[] =
+{
+	"pitdrone/pit_drone_idle1.wav",
+	"pitdrone/pit_drone_idle2.wav",
+	"pitdrone/pit_drone_idle3.wav",
+};
+const char* CPitdrone::pPainSounds[] =
+{
+	"pitdrone/pit_drone_pain1.wav",
+	"pitdrone/pit_drone_pain2.wav",
+	"pitdrone/pit_drone_pain3.wav",
+	"pitdrone/pit_drone_pain4.wav",
+};
+const char* CPitdrone::pBiteSounds[] =
+{
+	"pitdrone/bc_bite2.wav",
+	"pitdrone/bc_bite3.wav",
+};
 
 TYPEDESCRIPTION	CPitdrone::m_SaveData[] = 
 {
@@ -417,6 +476,7 @@ int	CPitdrone :: Classify ( void )
 //=========================================================
 void CPitdrone :: IdleSound ( void )
 {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), 1, ATTN_NORM, 0, PITCH_NORM);
 }
 
 //=========================================================
@@ -426,21 +486,7 @@ void CPitdrone :: PainSound ( void )
 {
 	int iPitch = RANDOM_LONG( 85, 120 );
 
-	switch ( RANDOM_LONG(0,3) )
-	{
-	case 0:	
-		EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "pitdrone/pit_drone_pain1.wav", 1, ATTN_NORM, 0, iPitch );	
-		break;
-	case 1:	
-		EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "pitdrone/pit_drone_pain2.wav", 1, ATTN_NORM, 0, iPitch );	
-		break;
-	case 2:	
-		EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "pitdrone/pit_drone_pain3.wav", 1, ATTN_NORM, 0, iPitch );	
-		break;
-	case 3:	
-		EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "pitdrone/pit_drone_pain4.wav", 1, ATTN_NORM, 0, iPitch );	
-		break;
-	}
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM, 0, iPitch);
 }
 
 //=========================================================
@@ -450,19 +496,7 @@ void CPitdrone :: AlertSound ( void )
 {
 	int iPitch = RANDOM_LONG( 140, 160 );
 
-	//TODO: the random was never adjusted to match the newly added sound
-	switch ( RANDOM_LONG ( 0, 1  ) )
-	{
-	case 0:
-		EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "pitdrone/pit_drone_alert1.wav", 1, ATTN_NORM, 0, iPitch );	
-		break;
-	case 1:
-		EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "pitdrone/pit_drone_alert2.wav", 1, ATTN_NORM, 0, iPitch );	
-		break;
-	case 2:
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_VOICE, "pitdrone/pit_drone_alert3.wav", 1, ATTN_NORM, 0, iPitch );
-		break;
-	}
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), 1, ATTN_NORM, 0, iPitch);
 }
 
 //=========================================================
@@ -607,15 +641,7 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				{
 					// croonchy bite sound
 					iPitch = RANDOM_FLOAT( 90, 110 );
-					switch ( RANDOM_LONG( 0, 1 ) )
-					{
-					case 0:
-						EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "bullchicken/bc_bite2.wav", 1, ATTN_NORM, 0, iPitch );	
-						break;
-					case 1:
-						EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "bullchicken/bc_bite3.wav", 1, ATTN_NORM, 0, iPitch );	
-						break;
-					}
+					EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pBiteSounds), 1, ATTN_NORM, 0, iPitch);
 
 					
 					//pHurt->pev->punchangle.x = RANDOM_LONG(0,34) - 5;
@@ -714,34 +740,18 @@ void CPitdrone :: Precache()
 
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 
-	PRECACHE_SOUND( "pitdrone/pit_drone_alert1.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_alert2.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_alert3.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_attack_spike1.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_attack_spike2.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_communicate1.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_communicate2.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_communicate3.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_communicate4.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_die1.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_die2.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_die3.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_hunt1.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_hunt2.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_hunt3.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_idle1.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_idle2.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_idle3.wav" );
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
+	PRECACHE_SOUND_ARRAY(pSpikeSounds);
+	PRECACHE_SOUND_ARRAY(pTalkSounds);
+	PRECACHE_SOUND_ARRAY(pDieSounds);
+	PRECACHE_SOUND_ARRAY(pHuntSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pBiteSounds);
+
 	PRECACHE_SOUND( "pitdrone/pit_drone_melee_attack1.wav" );
 	PRECACHE_SOUND( "pitdrone/pit_drone_melee_attack2.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_pain1.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_pain2.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_pain3.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_pain4.wav" );
 	PRECACHE_SOUND( "pitdrone/pit_drone_run_on_grate.wav" );
-	PRECACHE_SOUND( "bullchicken/bc_bite2.wav" );
-	PRECACHE_SOUND( "bullchicken/bc_bite3.wav" );
-
 }
 
 //========================================================

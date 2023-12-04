@@ -54,8 +54,25 @@ public:
 	BOOL  m_fTongueExtended;
 	BOOL  m_fLiftingPrey;
 	float m_flTongueAdj;
+
+private:
+	static const char* pChewSounds[];
+	static const char* pDieSounds[];
 };
 LINK_ENTITY_TO_CLASS( monster_barnacle, CBarnacle );
+
+const char* CBarnacle::pChewSounds[] =
+{
+	"barnacle/bcl_chew1.wav",
+	"barnacle/bcl_chew2.wav",
+	"barnacle/bcl_chew3.wav",
+};
+
+const char* CBarnacle::pDieSounds[] =
+{
+	"barnacle/bcl_die1.wav",
+	"barnacle/bcl_die3.wav",
+};
 
 TYPEDESCRIPTION	CBarnacle::m_SaveData[] = 
 {
@@ -226,12 +243,8 @@ void CBarnacle :: BarnacleThink ( void )
 			// bite prey every once in a while
 			if ( pVictim && ( RANDOM_LONG(0,49) == 0 ) )
 			{
-				switch ( RANDOM_LONG(0,2) )
-				{
-				case 0:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_chew1.wav", 1, ATTN_NORM );	break;
-				case 1:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_chew2.wav", 1, ATTN_NORM );	break;
-				case 2:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_chew3.wav", 1, ATTN_NORM );	break;
-				}
+
+				EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pChewSounds), 1, ATTN_NORM);
 
 				pVictim->BarnacleVictimBitten( pev );
 			}
@@ -258,12 +271,7 @@ void CBarnacle :: BarnacleThink ( void )
 			CGib::SpawnRandomGibs( pev, 1, 1 );
 			m_cGibs--;
 
-			switch ( RANDOM_LONG(0,2) )
-			{
-			case 0:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_chew1.wav", 1, ATTN_NORM );	break;
-			case 1:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_chew2.wav", 1, ATTN_NORM );	break;
-			case 2:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_chew3.wav", 1, ATTN_NORM );	break;
-			}
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pChewSounds), 1, ATTN_NORM);
 		}
 
 		pTouchEnt = TongueTouchEnt( &flLength );
@@ -338,11 +346,7 @@ void CBarnacle :: Killed( entvars_t *pevAttacker, int iGib )
 
 //	CGib::SpawnRandomGibs( pev, 4, 1 );
 
-	switch ( RANDOM_LONG ( 0, 1 ) )
-	{
-	case 0:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_die1.wav", 1, ATTN_NORM );	break;
-	case 1:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_die3.wav", 1, ATTN_NORM );	break;
-	}
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pDieSounds), 1, ATTN_NORM);
 	
 	SetActivity ( ACT_DIESIMPLE );
 	SetBoneController( 0, 0 );
@@ -378,13 +382,11 @@ void CBarnacle :: Precache()
 	m_defaultModel = "models/barnacle.mdl";
 	PRECACHE_MODEL(GetModel());
 
+	PRECACHE_SOUND_ARRAY(pChewSounds);
+	PRECACHE_SOUND_ARRAY(pDieSounds);
+
 	PRECACHE_SOUND("barnacle/bcl_alert2.wav");//happy, lifting food up
 	PRECACHE_SOUND("barnacle/bcl_bite3.wav");//just got food to mouth
-	PRECACHE_SOUND("barnacle/bcl_chew1.wav");
-	PRECACHE_SOUND("barnacle/bcl_chew2.wav");
-	PRECACHE_SOUND("barnacle/bcl_chew3.wav");
-	PRECACHE_SOUND("barnacle/bcl_die1.wav" );
-	PRECACHE_SOUND("barnacle/bcl_die3.wav" );
 }	
 
 //=========================================================

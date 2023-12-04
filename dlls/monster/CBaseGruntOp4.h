@@ -21,5 +21,8 @@ public:
 	void TalkInit();
 	virtual int ObjectCaps();
 
+private:
 	static const char* pGruntSentences[];
+	static const char* pPainSounds[];
+	static const char* pDieSounds[];
 };

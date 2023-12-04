@@ -31,6 +31,19 @@ int iHornetPuff;
 
 LINK_ENTITY_TO_CLASS( hornet, CHornet );
 
+const char* CHornet::pBuzzSounds[] =
+{
+	"hornet/ag_buzz1.wav",
+	"hornet/ag_buzz2.wav",
+	"hornet/ag_buzz3.wav",
+};
+const char* CHornet::pHitSounds[] =
+{
+	"hornet/ag_hornethit1.wav",
+	"hornet/ag_hornethit2.wav",
+	"hornet/ag_hornethit3.wav",
+};
+
 //=========================================================
 // Save/Restore
 //=========================================================
@@ -120,17 +133,14 @@ void CHornet :: Precache()
 	m_defaultModel = "models/hornet.mdl";
 	PRECACHE_MODEL(GetModel());
 
+	// TODO: These could be a sound array to make use of mp_soundvariety.
+	// The weapon will need updating in addition to alien grunts
 	PRECACHE_SOUND( "agrunt/ag_fire1.wav" );
 	PRECACHE_SOUND( "agrunt/ag_fire2.wav" );
 	PRECACHE_SOUND( "agrunt/ag_fire3.wav" );
 
-	PRECACHE_SOUND( "hornet/ag_buzz1.wav" );
-	PRECACHE_SOUND( "hornet/ag_buzz2.wav" );
-	PRECACHE_SOUND( "hornet/ag_buzz3.wav" );
-
-	PRECACHE_SOUND( "hornet/ag_hornethit1.wav" );
-	PRECACHE_SOUND( "hornet/ag_hornethit2.wav" );
-	PRECACHE_SOUND( "hornet/ag_hornethit3.wav" );
+	PRECACHE_SOUND_ARRAY(pBuzzSounds);
+	PRECACHE_SOUND_ARRAY(pHitSounds);
 
 	iHornetPuff = PRECACHE_MODEL( "sprites/muz1.spr" );
 	iHornetTrail = PRECACHE_MODEL("sprites/laserbeam.spr");
@@ -300,12 +310,7 @@ void CHornet :: TrackTarget ( void )
 	
 	if ( flDelta < 0.5 )
 	{// hafta turn wide again. play sound
-		switch (RANDOM_LONG(0,2))
-		{
-		case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
-		case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz2.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
-		case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz3.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
-		}
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBuzzSounds), HORNET_BUZZ_VOLUME, ATTN_NORM);
 	}
 
 	if ( flDelta <= 0 && m_iHornetType == HORNET_TYPE_RED )
@@ -357,12 +362,7 @@ void CHornet :: TrackTarget ( void )
 				WRITE_BYTE( 128 );			// brightness
 			MESSAGE_END();
 
-			switch (RANDOM_LONG(0,2))
-			{
-			case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz1.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
-			case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz2.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
-			case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_buzz3.wav", HORNET_BUZZ_VOLUME, ATTN_NORM);	break;
-			}
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBuzzSounds), HORNET_BUZZ_VOLUME, ATTN_NORM);
 			pev->velocity = pev->velocity * 2;
 			pev->nextthink = gpGlobals->time + 1.0;
 			// don't attack again
@@ -410,12 +410,7 @@ void CHornet::DieTouch ( CBaseEntity *pOther )
 	if ( pOther && pOther->pev->takedamage )
 	{// do the damage
 
-		switch (RANDOM_LONG(0,2))
-		{// buzz when you plug someone
-			case 0:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit1.wav", 1, ATTN_NORM);	break;
-			case 1:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit2.wav", 1, ATTN_NORM);	break;
-			case 2:	EMIT_SOUND( ENT(pev), CHAN_VOICE, "hornet/ag_hornethit3.wav", 1, ATTN_NORM);	break;
-		}
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pHitSounds), 1, ATTN_NORM);
 			
 		pOther->TakeDamage( pev, VARS( pev->owner ), pev->dmg, DMG_BULLET );
 	}

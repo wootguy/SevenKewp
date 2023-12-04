@@ -74,6 +74,9 @@ public:
 	float m_flStandGroundRange;
 
 	int m_iAssassinHead;
+
+private:
+	static const char* pDieSounds[];
 };
 
 class CMassnRepel : public CBaseRepel
@@ -95,6 +98,13 @@ public:
 LINK_ENTITY_TO_CLASS(monster_male_assassin, CMassn);
 LINK_ENTITY_TO_CLASS(monster_assassin_dead, CMassnRepel);
 LINK_ENTITY_TO_CLASS(monster_massassin_dead, CDeadMassn);
+
+const char* CMassn::pDieSounds[] =
+{
+	"hgrunt/gr_die1.wav",
+	"hgrunt/gr_die2.wav",
+	"hgrunt/gr_die3.wav",
+};
 
 const char* CDeadMassn::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
@@ -195,27 +205,14 @@ void CMassn :: Precache()
 	m_defaultModel = "models/massn.mdl";
 	PRECACHE_MODEL(GetModel());
 	
-	PRECACHE_SOUND( "hgrunt/gr_die1.wav" );
-	PRECACHE_SOUND( "hgrunt/gr_die2.wav" );
-	PRECACHE_SOUND( "hgrunt/gr_die3.wav" );
+	PRECACHE_SOUND_ARRAY(pDieSounds);
 
 	BasePrecache();
 }	
 
 void CMassn :: DeathSound ( void )
 {
-	switch ( RANDOM_LONG(0,2) )
-	{
-	case 0:	
-		EMIT_SOUND( ENT(pev), CHAN_VOICE, "hgrunt/gr_die1.wav", 1, ATTN_IDLE );	
-		break;
-	case 1:
-		EMIT_SOUND( ENT(pev), CHAN_VOICE, "hgrunt/gr_die2.wav", 1, ATTN_IDLE );	
-		break;
-	case 2:
-		EMIT_SOUND( ENT(pev), CHAN_VOICE, "hgrunt/gr_die3.wav", 1, ATTN_IDLE );	
-		break;
-	}
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1, ATTN_IDLE);
 }
 
 int CMassn::GetActivitySequence(Activity NewActivity) {

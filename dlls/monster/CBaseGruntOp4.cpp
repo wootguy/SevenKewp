@@ -30,6 +30,26 @@ const char* CBaseGruntOp4::pGruntSentences[] =
 	"FG_KILL"
 };
 
+const char* CBaseGruntOp4::pPainSounds[] =
+{
+	"fgrunt/pain1.wav",
+	"fgrunt/pain2.wav",
+	"fgrunt/pain3.wav",
+	"fgrunt/pain4.wav",
+	"fgrunt/pain5.wav",
+	"fgrunt/pain6.wav",
+};
+
+const char* CBaseGruntOp4::pDieSounds[] =
+{
+	"fgrunt/death1.wav",
+	"fgrunt/death2.wav",
+	"fgrunt/death3.wav",
+	"fgrunt/death4.wav",
+	"fgrunt/death5.wav",
+	"fgrunt/death6.wav",
+};
+
 void CBaseGruntOp4::InitAiFlags(void) {
 	canBeMadAtPlayer = true;
 	waitForEnemyFire = true;
@@ -141,27 +161,7 @@ void CBaseGruntOp4::PainSound(void)
 			}
 		}
 #endif 
-		switch (RANDOM_LONG(0, 7))
-		{
-		case 0:
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/pain3.wav", 1, ATTN_NORM);
-			break;
-		case 1:
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/pain4.wav", 1, ATTN_NORM);
-			break;
-		case 2:
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/pain5.wav", 1, ATTN_NORM);
-			break;
-		case 3:
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/pain1.wav", 1, ATTN_NORM);
-			break;
-		case 4:
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/pain2.wav", 1, ATTN_NORM);
-			break;
-		case 5:
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/pain6.wav", 1, ATTN_NORM);
-			break;
-		}
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
 
 		m_flNextPainTime = gpGlobals->time + 1;
 	}
@@ -169,27 +169,7 @@ void CBaseGruntOp4::PainSound(void)
 
 void CBaseGruntOp4::DeathSound(void)
 {
-	switch (RANDOM_LONG(0, 5))
-	{
-	case 0:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/death1.wav", 1, ATTN_IDLE);
-		break;
-	case 1:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/death2.wav", 1, ATTN_IDLE);
-		break;
-	case 2:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/death3.wav", 1, ATTN_IDLE);
-		break;
-	case 3:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/death4.wav", 1, ATTN_IDLE);
-		break;
-	case 4:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/death5.wav", 1, ATTN_IDLE);
-		break;
-	case 5:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "fgrunt/death6.wav", 1, ATTN_IDLE);
-		break;
-	}
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1, ATTN_IDLE);
 }
 
 void CBaseGruntOp4::DeclineFollowing()
@@ -199,19 +179,8 @@ void CBaseGruntOp4::DeclineFollowing()
 
 void CBaseGruntOp4::Precache()
 {
-	PRECACHE_SOUND("fgrunt/death1.wav");
-	PRECACHE_SOUND("fgrunt/death2.wav");
-	PRECACHE_SOUND("fgrunt/death3.wav");
-	PRECACHE_SOUND("fgrunt/death4.wav");
-	PRECACHE_SOUND("fgrunt/death5.wav");
-	PRECACHE_SOUND("fgrunt/death6.wav");
-
-	PRECACHE_SOUND("fgrunt/pain1.wav");
-	PRECACHE_SOUND("fgrunt/pain2.wav");
-	PRECACHE_SOUND("fgrunt/pain3.wav");
-	PRECACHE_SOUND("fgrunt/pain4.wav");
-	PRECACHE_SOUND("fgrunt/pain5.wav");
-	PRECACHE_SOUND("fgrunt/pain6.wav");
+	PRECACHE_SOUND_ARRAY(pDieSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
 
 	PRECACHE_SOUND("fgrunt/medic.wav");
 

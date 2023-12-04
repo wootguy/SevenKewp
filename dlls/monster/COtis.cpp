@@ -123,6 +123,24 @@ public:
 	float	m_flPlayerDamage;// how much pain has the player inflicted on me?
 
 	CUSTOM_SCHEDULES;
+
+private:
+	static const char* pPainSounds[];
+	static const char* pDieSounds[];
+};
+
+// TODO: is he supposed to be using barney sounds?
+const char* COtis::pPainSounds[] =
+{
+	"barney/ba_pain1.wav",
+	"barney/ba_pain2.wav",
+	"barney/ba_pain3.wav",
+};
+const char* COtis::pDieSounds[] =
+{
+	"barney/ba_die1.wav",
+	"barney/ba_die2.wav",
+	"barney/ba_die3.wav",
 };
 
 LINK_ENTITY_TO_CLASS( monster_otis, COtis );
@@ -500,18 +518,10 @@ void COtis :: Precache()
 	m_defaultModel = "models/otis.mdl";
 	PRECACHE_MODEL(GetModel());
 
-	PRECACHE_SOUND("barney/ba_attack1.wav" );
-	PRECACHE_SOUND("barney/ba_attack2.wav" );
-
 	PRECACHE_SOUND( "weapons/de_shot1.wav" );
 
-	PRECACHE_SOUND("barney/ba_pain1.wav");
-	PRECACHE_SOUND("barney/ba_pain2.wav");
-	PRECACHE_SOUND("barney/ba_pain3.wav");
-
-	PRECACHE_SOUND("barney/ba_die1.wav");
-	PRECACHE_SOUND("barney/ba_die2.wav");
-	PRECACHE_SOUND("barney/ba_die3.wav");
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pDieSounds);
 	
 	// every new otis must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -606,12 +616,7 @@ void COtis :: PainSound ( void )
 	
 	m_painTime = gpGlobals->time + RANDOM_FLOAT(0.5, 0.75);
 
-	switch (RANDOM_LONG(0,2))
-	{
-	case 0: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "barney/ba_pain1.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	case 1: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "barney/ba_pain2.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	case 2: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "barney/ba_pain3.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	}
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM, 0, GetVoicePitch());
 }
 
 //=========================================================
@@ -619,12 +624,7 @@ void COtis :: PainSound ( void )
 //=========================================================
 void COtis :: DeathSound ( void )
 {
-	switch (RANDOM_LONG(0,2))
-	{
-	case 0: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "barney/ba_die1.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	case 1: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "barney/ba_die2.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	case 2: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "barney/ba_die3.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	}
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1, ATTN_NORM, 0, GetVoicePitch());
 }
 
 
