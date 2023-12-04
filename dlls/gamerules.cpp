@@ -425,14 +425,18 @@ void execMapCfg() {
 		"item_longjump"
 	};
 	
+	memset(g_mapEquipment, 0, sizeof(EquipItem) * MAX_EQUIP);
+
 	string cfgPath = "maps/" + string(STRING(gpGlobals->mapname)) + ".cfg";
 	int length;
 	char* cfgFile = (char*)LOAD_FILE_FOR_ME(cfgPath.c_str(), &length);
 	
+	if (!cfgFile) {
+		return;
+	}
+
 	std::stringstream data_stream(cfgFile);
 	string line;
-
-	memset(g_mapEquipment, 0, sizeof(EquipItem) * MAX_EQUIP);
 
 	int equipIdx = 0;
 
