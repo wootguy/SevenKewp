@@ -20,6 +20,7 @@ public:
 
 	float m_flRadius;
 	float m_flRoomtype;
+	int clientIdx;
 };
 
 LINK_ENTITY_TO_CLASS(env_sound, CEnvSound);
@@ -93,14 +94,26 @@ BOOL FEnvSoundInRange(entvars_t* pev, entvars_t* pevTarget, float* pflRange)
 
 void CEnvSound::Think(void)
 {
-	// get pointer to client if visible; FIND_CLIENT_IN_PVS will
-	// cycle through visible clients on consecutive calls.
-
-	edict_t* pentPlayer = FIND_CLIENT_IN_PVS(edict());
-	CBasePlayer* pPlayer = NULL;
-
-	if (FNullEnt(pentPlayer))
+	if (!UTIL_IsClientInPVS(edict()))
 		goto env_sound_Think_slow; // no player in pvs of sound entity, slow it down
+
+	// cycle through players on each think (0.64s update delay per player, for 32 players)
+	edict_t* pentPlayer = NULL;
+	for (int i = 0; i < 32; i++) {
+		clientIdx = (clientIdx + 1) % gpGlobals->maxClients;
+		edict_t* ent = INDEXENT(clientIdx + 1);
+
+		if (IsValidPlayer(ent)) {
+			pentPlayer = ent;
+			break;
+		}
+	}
+
+	if (!pentPlayer) {
+		goto env_sound_Think_slow;
+	}
+
+	CBasePlayer* pPlayer = NULL;
 
 	pPlayer = GetClassPtr((CBasePlayer*)VARS(pentPlayer));
 	float flRange;
@@ -175,7 +188,7 @@ void CEnvSound::Think(void)
 	// not in range. do nothing, fall through to think_fast...
 
 env_sound_Think_fast:
-	pev->nextthink = gpGlobals->time + 0.25;
+	pev->nextthink = gpGlobals->time + 0.02;
 	return;
 
 env_sound_Think_slow:

@@ -54,8 +54,6 @@ void CTriggerHurt::Spawn(void)
 
 void CTriggerHurt::RadiationThink(void)
 {
-
-	edict_t* pentPlayer;
 	CBasePlayer* pPlayer = NULL;
 	float flRange;
 	entvars_t* pevTarget;
@@ -75,19 +73,20 @@ void CTriggerHurt::RadiationThink(void)
 	pev->origin = (pev->absmin + pev->absmax) * 0.5;
 	pev->view_ofs = pev->view_ofs * 0.0;
 
-	pentPlayer = FIND_CLIENT_IN_PVS(edict());
+	int numPvsPlayers;
+	edict_t* pvsPlayer = UTIL_ClientsInPVS(edict(), numPvsPlayers);
 
 	pev->origin = origin;
 	pev->view_ofs = view_ofs;
 
 	// reset origin
 
-	if (!FNullEnt(pentPlayer))
+	while (!FNullEnt(pvsPlayer))
 	{
 
-		pPlayer = GetClassPtr((CBasePlayer*)VARS(pentPlayer));
+		pPlayer = GetClassPtr((CBasePlayer*)VARS(pvsPlayer));
 
-		pevTarget = VARS(pentPlayer);
+		pevTarget = VARS(pvsPlayer);
 
 		// get range to player;
 
@@ -103,6 +102,8 @@ void CTriggerHurt::RadiationThink(void)
 
 		if (pPlayer->m_flgeigerRange >= flRange)
 			pPlayer->m_flgeigerRange = flRange;
+
+		pvsPlayer = pvsPlayer->v.chain;
 	}
 
 	pev->nextthink = gpGlobals->time + 0.25;

@@ -222,7 +222,10 @@ extern CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, f
 extern CBaseEntity	*UTIL_PlayerByIndex( int playerIndex );
 
 #define UTIL_EntitiesInPVS(pent)			(*g_engfuncs.pfnEntitiesInPVS)(pent)
-extern void			UTIL_MakeVectors		(const Vector &vecAngles);
+extern edict_t*		UTIL_ClientsInPVS(edict_t* edict, int& playerCount);
+extern bool			UTIL_IsClientInPVS(edict_t* edict); // faster than UTIL_ClientsInPVS
+extern void			UTIL_MakeVectors(const Vector& vecAngles);
+extern bool			IsValidPlayer(edict_t* edict); // true if edict is a connected player
 
 // Pass in an array of pointers and an array size, it fills the array and returns the number inserted
 extern int			UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &center, float radius );
