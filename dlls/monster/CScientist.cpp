@@ -111,10 +111,21 @@ private:
 	float m_painTime;
 	float m_healTime;
 	float m_fearTime;
+
+	static const char* pPainSounds[];
 };
 
 LINK_ENTITY_TO_CLASS( monster_scientist, CScientist );
 LINK_ENTITY_TO_CLASS( monster_cleansuit_scientist, CScientist );
+
+const char* CScientist::pPainSounds[] =
+{
+	"scientist/sci_pain1.wav",
+	"scientist/sci_pain2.wav",
+	"scientist/sci_pain3.wav",
+	"scientist/sci_pain4.wav",
+	"scientist/sci_pain5.wav",
+};
 
 TYPEDESCRIPTION	CScientist::m_SaveData[] = 
 {
@@ -685,11 +696,8 @@ void CScientist :: Precache( void )
 	m_defaultModel = FClassnameIs(pev, "monster_scientist") ? "models/scientist.mdl" : "models/cleansuit_scientist.mdl";
 
 	PRECACHE_MODEL(GetModel());
-	PRECACHE_SOUND("scientist/sci_pain1.wav");
-	PRECACHE_SOUND("scientist/sci_pain2.wav");
-	PRECACHE_SOUND("scientist/sci_pain3.wav");
-	PRECACHE_SOUND("scientist/sci_pain4.wav");
-	PRECACHE_SOUND("scientist/sci_pain5.wav");
+
+	PRECACHE_SOUND_ARRAY(pPainSounds);
 
 	// every new scientist must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -782,14 +790,7 @@ void CScientist :: PainSound ( void )
 	
 	m_painTime = gpGlobals->time + RANDOM_FLOAT(0.5, 0.75);
 
-	switch (RANDOM_LONG(0,4))
-	{
-	case 0: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "scientist/sci_pain1.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	case 1: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "scientist/sci_pain2.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	case 2: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "scientist/sci_pain3.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	case 3: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "scientist/sci_pain4.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	case 4: EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "scientist/sci_pain5.wav", 1, ATTN_NORM, 0, GetVoicePitch()); break;
-	}
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM, 0, GetVoicePitch());
 }
 
 //=========================================================

@@ -77,6 +77,7 @@ public:
 	float nextMinigunShoot;
 	bool minigunIsSpinning;
 
+private:
 	static const char* pGruntSentences[];
 	static const char* pPainSounds[];
 	static const char* pDeathSounds[];
@@ -245,11 +246,8 @@ void CBodyGuard::Spawn()
 
 void CBodyGuard::Precache()
 {
-	for (int i = 0; i < ARRAYSIZE(pPainSounds); i++)
-		PRECACHE_SOUND((char*)pPainSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pDeathSounds); i++)
-		PRECACHE_SOUND((char*)pDeathSounds[i]);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pDeathSounds);
 
 	m_defaultModel = "models/bgman.mdl";
 	PRECACHE_MODEL(GetModel());
@@ -405,14 +403,14 @@ void CBodyGuard::PainSound(void)
 {
 	if (gpGlobals->time > m_flNextPainTime)
 	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pPainSounds[RANDOM_LONG(0, ARRAYSIZE(pPainSounds) - 1)], 1.0, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM, 0, m_voicePitch);
 		m_flNextPainTime = gpGlobals->time + 1;
 	}
 }
 
 void CBodyGuard::DeathSound(void)
 {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pDeathSounds[RANDOM_LONG(0, ARRAYSIZE(pDeathSounds) - 1)], 1.0, ATTN_NORM, 0, m_voicePitch);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1.0, ATTN_NORM, 0, m_voicePitch);
 }
 
 void CBodyGuard::DeclineFollowing()

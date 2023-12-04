@@ -384,10 +384,10 @@ void execMapCfg() {
 		"mp_footsteps",
 		"mp_forcerespawn",
 		"mp_fraglimit",
-		"mp_fragsleft",
 		"mp_timelimit",
 		"mp_weaponstay",
-		"mp_friendlyfire"
+		"mp_friendlyfire",
+		"mp_soundvariety"
 	};
 
 	static set<string> itemNames = {

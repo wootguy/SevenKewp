@@ -98,4 +98,7 @@ public:
 
 	float	m_flPingTime;	// Time until the next ping, used when searching
 	float	m_flSpinUpTime;	// Amount of time until the barrel should spin down when searching
+
+private:
+	static const char* pDieSounds[];
 };

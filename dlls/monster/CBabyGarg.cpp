@@ -11,6 +11,7 @@
 #define BABYGARG_FLAME_LENGTH 130
 #define BABYGARG_FLAME_WIDTH 120
 #define BABYGARG_FLAME_WIDTH2 70
+#define BABYGARG_PITCH 180 // babygarg sounds are garg sounds pitched up
 
 class CBabyGarg : public CGargantua
 {
@@ -50,65 +51,65 @@ LINK_ENTITY_TO_CLASS(monster_babygarg, CBabyGarg);
 
 const char* CBabyGarg::pBeamAttackSounds[] =
 {
-	"babygarg/gar_flameoff1.wav",
-	"babygarg/gar_flameon1.wav",
-	"babygarg/gar_flamerun1.wav",
+	"garg/gar_flameoff1.wav",
+	"garg/gar_flameon1.wav",
+	"garg/gar_flamerun1.wav",
 };
 
 const char* CBabyGarg::pFootSounds[] =
 {
-	"babygarg/gar_step1.wav",
-	"babygarg/gar_step2.wav",
+	"garg/gar_step1.wav",
+	"garg/gar_step2.wav",
 };
 
 
 const char* CBabyGarg::pIdleSounds[] =
 {
-	"babygarg/gar_idle1.wav",
-	"babygarg/gar_idle2.wav",
-	"babygarg/gar_idle3.wav",
-	"babygarg/gar_idle4.wav",
-	"babygarg/gar_idle5.wav",
+	"garg/gar_idle1.wav",
+	"garg/gar_idle2.wav",
+	"garg/gar_idle3.wav",
+	"garg/gar_idle4.wav",
+	"garg/gar_idle5.wav",
 };
 
 
 const char* CBabyGarg::pAttackSounds[] =
 {
-	"babygarg/gar_attack1.wav",
-	"babygarg/gar_attack2.wav",
-	"babygarg/gar_attack3.wav",
+	"garg/gar_attack1.wav",
+	"garg/gar_attack2.wav",
+	"garg/gar_attack3.wav",
 };
 
 const char* CBabyGarg::pAlertSounds[] =
 {
-	"babygarg/gar_alert1.wav",
-	"babygarg/gar_alert2.wav",
-	"babygarg/gar_alert3.wav",
+	"garg/gar_alert1.wav",
+	"garg/gar_alert2.wav",
+	"garg/gar_alert3.wav",
 };
 
 const char* CBabyGarg::pPainSounds[] =
 {
-	"babygarg/gar_pain1.wav",
-	"babygarg/gar_pain2.wav",
-	"babygarg/gar_pain3.wav",
+	"garg/gar_pain1.wav",
+	"garg/gar_pain2.wav",
+	"garg/gar_pain3.wav",
 };
 
 const char* CBabyGarg::pStompSounds[] =
 {
-	"babygarg/gar_stomp1.wav",
+	"garg/gar_stomp1.wav",
 };
 
 const char* CBabyGarg::pBreatheSounds[] =
 {
-	"babygarg/gar_breathe1.wav",
-	"babygarg/gar_breathe2.wav",
-	"babygarg/gar_breathe3.wav",
+	"garg/gar_breathe1.wav",
+	"garg/gar_breathe2.wav",
+	"garg/gar_breathe3.wav",
 };
 
 const char* CBabyGarg::pDeathSounds[] =
 {
-	"babygarg/gar_die1.wav",
-	"babygarg/gar_die2.wav"
+	"garg/gar_die1.wav",
+	"garg/gar_die2.wav"
 };
 
 void CBabyGarg::Spawn()
@@ -159,32 +160,19 @@ void CBabyGarg::Precache()
 	// TODO: Friendly variant, but just as a skin to reduce model count
 	//PRECACHE_MODEL("models/babygargf.mdl");
 
-	for (i = 0; i < ARRAYSIZE(pBeamAttackSounds); i++)
-		PRECACHE_SOUND((char*)pBeamAttackSounds[i]);
+	// should not be affected by mp_soundvariety
+	PRECACHE_SOUND(pBeamAttackSounds[0]);
+	PRECACHE_SOUND(pBeamAttackSounds[1]);
+	PRECACHE_SOUND(pBeamAttackSounds[2]);
 
-	for (i = 0; i < ARRAYSIZE(pFootSounds); i++)
-		PRECACHE_SOUND((char*)pFootSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pIdleSounds); i++)
-		PRECACHE_SOUND((char*)pIdleSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pAlertSounds); i++)
-		PRECACHE_SOUND((char*)pAlertSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pPainSounds); i++)
-		PRECACHE_SOUND((char*)pPainSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pAttackSounds); i++)
-		PRECACHE_SOUND((char*)pAttackSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pStompSounds); i++)
-		PRECACHE_SOUND((char*)pStompSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pBreatheSounds); i++)
-		PRECACHE_SOUND((char*)pBreatheSounds[i]);
-
-	for (i = 0; i < ARRAYSIZE(pDeathSounds); i++)
-		PRECACHE_SOUND((char*)pDeathSounds[i]);
+	PRECACHE_SOUND_ARRAY(pFootSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pAttackSounds);
+	PRECACHE_SOUND_ARRAY(pStompSounds);
+	PRECACHE_SOUND_ARRAY(pBreatheSounds);
+	PRECACHE_SOUND_ARRAY(pDeathSounds);
 
 	PrecacheCommon();
 }
@@ -199,35 +187,35 @@ int CBabyGarg::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float
 
 void CBabyGarg::Killed(entvars_t* pevAttacker, int iGib)
 {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pDeathSounds[RANDOM_LONG(0, ARRAYSIZE(pDeathSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
 	CGargantua::Killed(pevAttacker, GIB_NEVER);
 }
 
 void CBabyGarg::PainSound() {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pPainSounds[RANDOM_LONG(0, ARRAYSIZE(pPainSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
 }
 
 void CBabyGarg::AttackSound() {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pAttackSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
 }
 
 void CBabyGarg::BeamSound(int idx) {
 	if (idx == 1) {
-		EMIT_SOUND_DYN(edict(), CHAN_BODY, pBeamAttackSounds[1], 1.0, ATTN_NORM, 0, PITCH_NORM);
+		EMIT_SOUND_DYN(edict(), CHAN_BODY, pBeamAttackSounds[1], 1.0, ATTN_NORM, 0, BABYGARG_PITCH);
 	}
 	else {
-		EMIT_SOUND_DYN(edict(), CHAN_WEAPON, pBeamAttackSounds[idx], 1.0, ATTN_NORM, 0, PITCH_NORM);
+		EMIT_SOUND_DYN(edict(), CHAN_WEAPON, pBeamAttackSounds[idx], 1.0, ATTN_NORM, 0, BABYGARG_PITCH);
 	}
 }
 
 void CBabyGarg::FootSound() {
-	EMIT_SOUND_DYN(edict(), CHAN_BODY, pFootSounds[RANDOM_LONG(0, ARRAYSIZE(pFootSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG(-10, 10));
+	EMIT_SOUND_DYN(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(pFootSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH + RANDOM_LONG(-10, 10));
 }
 
 void CBabyGarg::StompSound() {
-	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, pStompSounds[RANDOM_LONG(0, ARRAYSIZE(pStompSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG(-10, 10));
+	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pStompSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH + RANDOM_LONG(-10, 10));
 }
 
 void CBabyGarg::BreatheSound() {
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, pBreatheSounds[RANDOM_LONG(0, ARRAYSIZE(pBreatheSounds) - 1)], 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG(-10, 10));
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBreatheSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH + RANDOM_LONG(-10, 10));
 }

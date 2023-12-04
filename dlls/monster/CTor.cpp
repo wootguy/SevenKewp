@@ -271,17 +271,17 @@ void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
 				}
 			}
 			// Play a random attack hit sound
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, pAttackHitSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackHitSounds) - 1)], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackHitSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
 		}
 		else // Play a random attack miss sound
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, pAttackMissSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackMissSounds) - 1)], 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackMissSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
 		break;
 	}
 	case EVENT_STEP_LEFT:
 	case EVENT_STEP_RIGHT:
 	{
 		int pitch = pEvent->event == EVENT_STEP_RIGHT ? 100 : 120;
-		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, pRunSounds[RANDOM_LONG(0, ARRAYSIZE(pRunSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, RANDOM_SOUND_ARRAY(pRunSounds), 1.0, ATTN_NORM, 0, pitch);
 		break;
 	}
 	default:
@@ -521,29 +521,14 @@ void CTor::Precache()
 	PRECACHE_MODEL(PORTAL_SPRITE);
 	slamSpriteIdx = PRECACHE_MODEL(SHOCK_WAVE_SPRITE);
 
-	for (int i = 0; i < ARRAYSIZE(pAttackHitSounds); i++)
-		PRECACHE_SOUND((char*)pAttackHitSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pAttackMissSounds); i++)
-		PRECACHE_SOUND((char*)pAttackMissSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pAttackSounds); i++)
-		PRECACHE_SOUND((char*)pAttackSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pIdleSounds); i++)
-		PRECACHE_SOUND((char*)pIdleSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pAlertSounds); i++)
-		PRECACHE_SOUND((char*)pAlertSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pPainSounds); i++)
-		PRECACHE_SOUND((char*)pPainSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pRunSounds); i++)
-		PRECACHE_SOUND((char*)pRunSounds[i]);
-
-	for (int i = 0; i < ARRAYSIZE(pSlamSounds); i++)
-		PRECACHE_SOUND((char*)pSlamSounds[i]);
+	PRECACHE_SOUND_ARRAY(pAttackHitSounds);
+	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
+	PRECACHE_SOUND_ARRAY(pAttackSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pRunSounds);
+	PRECACHE_SOUND_ARRAY(pSlamSounds);
 
 	PRECACHE_SOUND(SHOOT_SOUND);
 	PRECACHE_SOUND(SUMMON_SOUND);
@@ -558,14 +543,14 @@ void CTor::PainSound(void)
 	int pitch = 100 + RANDOM_LONG(0, 9);
 
 	if (RANDOM_LONG(0, 5) < 2)
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pPainSounds[RANDOM_LONG(0, ARRAYSIZE(pPainSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM, 0, pitch);
 }
 
 void CTor::AlertSound(void)
 {
 	int pitch = 100 + RANDOM_LONG(0, 9);
 
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pAlertSounds[RANDOM_LONG(0, ARRAYSIZE(pAlertSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), 1.0, ATTN_NORM, 0, pitch);
 }
 
 void CTor::IdleSound(void)
@@ -573,14 +558,14 @@ void CTor::IdleSound(void)
 	int pitch = 100 + RANDOM_LONG(-5, 5);
 
 	// Play a random idle sound
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pIdleSounds[RANDOM_LONG(0, ARRAYSIZE(pIdleSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), 1.0, ATTN_NORM, 0, pitch);
 }
 
 void CTor::AttackSound(void) {
 	int pitch = 100 + RANDOM_LONG(-5, 5);
 
 	// Play a random attack sound
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pAttackSounds[RANDOM_LONG(0, ARRAYSIZE(pAttackSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_NORM, 0, pitch);
 }
 
 void CTor::SlamAttack() {
@@ -610,7 +595,7 @@ void CTor::SlamAttack() {
 	}
 
 	int pitch = 100 + RANDOM_LONG(-5, 5);
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pSlamSounds[RANDOM_LONG(0, ARRAYSIZE(pSlamSounds) - 1)], 1.0, ATTN_NORM, 0, pitch);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pSlamSounds), 1.0, ATTN_NORM, 0, pitch);
 
 	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
 		WRITE_BYTE(TE_BEAMCYLINDER);

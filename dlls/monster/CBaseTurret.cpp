@@ -40,6 +40,13 @@ TYPEDESCRIPTION	CBaseTurret::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE(CBaseTurret, CBaseMonster);
 
+const char* CBaseTurret::pDieSounds[] =
+{
+	"turret/tu_die.wav",
+	"turret/tu_die2.wav",
+	"turret/tu_die3.wav",
+};
+
 void CBaseTurret::KeyValue(KeyValueData* pkvd)
 {
 	if (FStrEq(pkvd->szKeyName, "maxsleep"))
@@ -115,12 +122,12 @@ void CBaseTurret::Spawn()
 
 void CBaseTurret::Precache()
 {
+	PRECACHE_SOUND_ARRAY(pDieSounds);
+
 	PRECACHE_SOUND("turret/tu_fire1.wav");
 	PRECACHE_SOUND("turret/tu_ping.wav");
 	PRECACHE_SOUND("turret/tu_active2.wav");
-	PRECACHE_SOUND("turret/tu_die.wav");
-	PRECACHE_SOUND("turret/tu_die2.wav");
-	PRECACHE_SOUND("turret/tu_die3.wav");
+	
 	// PRECACHE_SOUND ("turret/tu_retract.wav"); // just use deploy sound to save memory
 	PRECACHE_SOUND("turret/tu_deploy.wav");
 	PRECACHE_SOUND("turret/tu_spinup.wav");
@@ -614,14 +621,7 @@ void CBaseTurret::TurretDeath(void)
 	{
 		pev->deadflag = DEAD_DEAD;
 
-		float flRndSound = RANDOM_FLOAT(0, 1);
-
-		if (flRndSound <= 0.33)
-			EMIT_SOUND(ENT(pev), CHAN_BODY, "turret/tu_die.wav", 1.0, ATTN_NORM);
-		else if (flRndSound <= 0.66)
-			EMIT_SOUND(ENT(pev), CHAN_BODY, "turret/tu_die2.wav", 1.0, ATTN_NORM);
-		else
-			EMIT_SOUND(ENT(pev), CHAN_BODY, "turret/tu_die3.wav", 1.0, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_BODY, RANDOM_SOUND_ARRAY(pDieSounds), 1.0, ATTN_NORM);
 
 		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "turret/tu_active2.wav", 0, 0, SND_STOP, 100);
 

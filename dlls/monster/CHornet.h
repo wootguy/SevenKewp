@@ -54,5 +54,9 @@ public:
 	float			m_flStopAttack;
 	int				m_iHornetType;
 	float			m_flFlySpeed;
+
+private:
+	static const char* pBuzzSounds[];
+	static const char* pHitSounds[];
 };
 
