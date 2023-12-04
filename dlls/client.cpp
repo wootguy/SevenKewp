@@ -1198,7 +1198,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 		if ( pl->m_rgpPlayerItems[ i ] )
 		{
 			// there's a weapon here. Should I pack it?
-			CBasePlayerItem *pPlayerItem = pl->m_rgpPlayerItems[ i ];
+			CBasePlayerItem *pPlayerItem = (CBasePlayerItem*)pl->m_rgpPlayerItems[i].GetEntity();
 
 			while ( pPlayerItem )
 			{
@@ -1330,11 +1330,11 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 			cd->ammo_cells		= pl->ammo_uranium;
 			cd->vuser2.x		= pl->ammo_hornets;
 			
+			CBasePlayerItem* activeItem = (CBasePlayerItem*)pl->m_pActiveItem.GetEntity();
 
-			if ( pl->m_pActiveItem )
+			if (activeItem)
 			{
-				CBasePlayerWeapon *gun;
-				gun = (CBasePlayerWeapon *)pl->m_pActiveItem->GetWeaponPtr();
+				CBasePlayerWeapon* gun = (CBasePlayerWeapon*)activeItem->GetWeaponPtr();
 				if ( gun && gun->UseDecrement() )
 				{
 					ItemInfo II;
@@ -1348,10 +1348,10 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 					cd->vuser4.y	= pl->m_rgAmmo[gun->m_iPrimaryAmmoType];
 					cd->vuser4.z	= pl->m_rgAmmo[gun->m_iSecondaryAmmoType];
 					
-					if ( pl->m_pActiveItem->m_iId == WEAPON_RPG )
+					if (gun->m_iId == WEAPON_RPG )
 					{
-						cd->vuser2.y = ( ( CRpg * )pl->m_pActiveItem)->m_fSpotActive;
-						cd->vuser2.z = ( ( CRpg * )pl->m_pActiveItem)->m_cActiveRockets;
+						cd->vuser2.y = ( ( CRpg * )gun)->m_fSpotActive;
+						cd->vuser2.z = ( ( CRpg * )gun)->m_cActiveRockets;
 					}
 				}
 			}

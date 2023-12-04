@@ -75,7 +75,8 @@ BOOL CHalfLifeRules::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerItem 
 		return TRUE;
 	}
 
-	if ( !pPlayer->m_pActiveItem->CanHolster() )
+	CBasePlayerItem* item = (CBasePlayerItem*)pPlayer->m_pActiveItem.GetEntity();
+	if ( !item->CanHolster() )
 	{
 		return FALSE;
 	}
