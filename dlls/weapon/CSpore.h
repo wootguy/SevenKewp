@@ -74,7 +74,7 @@ private:
 	bool m_bPuked;
 	bool m_bIsAI;
 
-	CSprite* m_pSprite;
+	EHANDLE m_hSprite;
 };
 
 #endif
