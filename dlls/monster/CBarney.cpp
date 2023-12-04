@@ -308,7 +308,7 @@ void CBarney :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys*2; // 2x vanilla speed
 }
 
 
