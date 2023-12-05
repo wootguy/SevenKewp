@@ -206,6 +206,7 @@ set(TRIGGER_SRC
 	triggers/CTriggerMultiple.cpp
 	triggers/CTriggerOnce.cpp
 	triggers/CTriggerPush.cpp
+	triggers/CTriggerRandom.cpp
 	triggers/CTriggerRelay.cpp
 	triggers/CTriggerSave.cpp
 	triggers/CTriggerTeleport.cpp
