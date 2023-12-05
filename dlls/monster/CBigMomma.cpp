@@ -407,7 +407,7 @@ void CBigMomma :: KeyValue( KeyValueData *pkvd )
 //=========================================================
 int	CBigMomma :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+	return	CBaseMonster::Classify(CLASS_ALIEN_MONSTER);
 }
 
 const char* CBigMomma::DisplayName() {

@@ -815,6 +815,6 @@ int CBaseTurret::MoveTurret(void)
 int	CBaseTurret::Classify(void)
 {
 	if (m_iOn || m_iAutoStart)
-		return	m_Classify ? CBaseMonster::Classify() : CLASS_MACHINE;
+		return	CBaseMonster::Classify(CLASS_MACHINE);
 	return CLASS_NONE;
 }

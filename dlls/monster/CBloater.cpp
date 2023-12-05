@@ -58,7 +58,7 @@ LINK_ENTITY_TO_CLASS( monster_bloater, CBloater );
 //=========================================================
 int	CBloater :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+	return	CBaseMonster::Classify(CLASS_ALIEN_MONSTER);
 }
 
 const char* CBloater::DisplayName() {

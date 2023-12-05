@@ -70,7 +70,7 @@ IMPLEMENT_SAVERESTORE( CGMan, CBaseMonster );
 //=========================================================
 int	CGMan :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_NONE;
+	return	CBaseMonster::Classify(CLASS_NONE);
 }
 
 const char* CGMan::DisplayName() {

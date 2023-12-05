@@ -182,7 +182,7 @@ IMPLEMENT_SAVERESTORE( CHoundeye, CTalkSquadMonster );
 //=========================================================
 int	CHoundeye :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+	return	CBaseMonster::Classify(CLASS_ALIEN_MONSTER);
 }
 
 const char* CHoundeye::DisplayName() {

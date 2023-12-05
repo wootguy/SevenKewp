@@ -43,7 +43,7 @@ LINK_ENTITY_TO_CLASS( monster_rat, CRat );
 //=========================================================
 int	CRat :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_INSECT;
+	return	CBaseMonster::Classify(CLASS_INSECT);
 }
 
 const char* CRat::DisplayName() {

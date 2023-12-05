@@ -95,7 +95,7 @@ const char* CBabyVoltigore::pRunSounds[] =
 
 int	CBabyVoltigore::Classify(void)
 {
-	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+	return CBaseMonster::Classify(CLASS_ALIEN_MONSTER);
 }
 
 const char* CBabyVoltigore::DisplayName() {
@@ -110,7 +110,7 @@ void CBabyVoltigore::SetYawSpeed(void)
 	{
 	case ACT_IDLE:
 	default:
-		ys = 1000;
+		ys = 180;
 	}
 
 	pev->yaw_speed = ys;

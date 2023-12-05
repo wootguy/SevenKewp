@@ -99,7 +99,13 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		m_iszMonsterClassname = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
-	// TODO: ripent the maps or something. This is duplicated in CBaseMonster
+	else if (FStrEq(pkvd->szKeyName, "new_model"))
+	{
+		pev->model = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+
+	// TODO: ripent the maps or something. This key logic is duplicated in CBaseMonster
 	else if (FStrEq(pkvd->szKeyName, "trigger_target"))
 	{
 		m_iszTriggerTarget = ALLOC_STRING(pkvd->szValue);
@@ -110,11 +116,12 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		m_iTriggerCondition = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
-	else if (FStrEq(pkvd->szKeyName, "new_model"))
+	else if (FStrEq(pkvd->szKeyName, "respawn_as_playerally"))
 	{
-		pev->model = ALLOC_STRING(pkvd->szValue);
+		m_IsPlayerAlly = atoi(pkvd->szValue) != 0;
 		pkvd->fHandled = TRUE;
 	}
+
 	else
 		CBaseMonster::KeyValue( pkvd );
 }
@@ -172,6 +179,10 @@ void CMonsterMaker :: Precache( void )
 	CBaseMonster::Precache();
 
 	UTIL_PrecacheOther( STRING( m_iszMonsterClassname ) );
+
+	if (pev->model) {
+		PRECACHE_MODEL(STRING(pev->model));
+	}
 }
 
 //=========================================================
@@ -226,6 +237,8 @@ void CMonsterMaker::MakeMonster( void )
 		mon->m_iszTriggerTarget = m_iszTriggerTarget;
 		mon->m_iTriggerCondition = m_iTriggerCondition;
 		mon->m_displayName = m_displayName;
+		mon->m_Classify = m_Classify;
+		mon->m_IsPlayerAlly = m_IsPlayerAlly;
 	}
 
 	pevCreate = VARS( pent );

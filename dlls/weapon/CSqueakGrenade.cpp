@@ -107,7 +107,7 @@ int CSqueakGrenade :: Classify ( void )
 		m_iMyClass = 0;
 	}
 
-	return CLASS_ALIEN_BIOWEAPON;
+	return CBaseMonster::Classify(CLASS_ALIEN_BIOWEAPON);
 }
 
 int CSqueakGrenade::IRelationship(CBaseEntity* pTarget)

@@ -323,7 +323,7 @@ int	COtis :: Classify ( void )
 	if (m_IsPlayerAlly)
 		return CLASS_HUMAN_MILITARY;
 	else
-		return m_Classify ? CTalkSquadMonster::Classify() : CLASS_PLAYER_ALLY;
+		return CBaseMonster::Classify(CLASS_PLAYER_ALLY);
 }
 
 const char* COtis::DisplayName() {

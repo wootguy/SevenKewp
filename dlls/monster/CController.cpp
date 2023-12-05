@@ -158,7 +158,7 @@ const char *CController::pDeathSounds[] =
 //=========================================================
 int	CController :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MILITARY;
+	return	CBaseMonster::Classify(CLASS_ALIEN_MILITARY);
 }
 
 const char* CController::DisplayName() {

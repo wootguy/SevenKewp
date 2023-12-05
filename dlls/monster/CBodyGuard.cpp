@@ -369,7 +369,7 @@ void CBodyGuard::PlaySentenceSound(int sentenceType) {
 
 int	CBodyGuard::Classify(void)
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY;
+	return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY);
 }
 
 const char* CBodyGuard::DisplayName() {

@@ -309,7 +309,7 @@ void CAGrunt :: PainSound ( void )
 //=========================================================
 int	CAGrunt :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MILITARY;
+	return CBaseMonster::Classify(CLASS_ALIEN_MILITARY);
 }
 
 const char* CAGrunt::DisplayName() {

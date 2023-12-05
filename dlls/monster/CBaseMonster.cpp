@@ -2188,7 +2188,42 @@ int CBaseMonster::TaskIsRunning(void)
 //=========================================================
 int	CBaseMonster :: Classify ( void )
 {
-	return m_Classify;
+	return Classify(CLASS_NONE);
+}
+
+int CBaseMonster::Classify(int defaultClassify) {
+	// custom class keyvalue has priority over everything else
+	if (m_Classify)
+		return m_Classify;
+
+	// if player ally is set, then ally status towards players is inverted
+	if (m_IsPlayerAlly) {
+		bool isDefaultPlayerAlly = IRelationship(defaultClassify, CLASS_PLAYER) == R_AL;
+
+		if (isDefaultPlayerAlly) {
+			// if the monster is allied by default, then isPlayerAlly makes it hostile.
+			// choose whether the hostile class should be alien or human
+			switch (defaultClassify) {
+			case CLASS_NONE:
+			case CLASS_MACHINE:
+			case CLASS_PLAYER:
+			case CLASS_HUMAN_PASSIVE:
+			case CLASS_HUMAN_MILITARY:
+			case CLASS_PLAYER_ALLY:
+			case CLASS_HUMAN_MILITARY_FRIENDLY:
+				return CLASS_HUMAN_MILITARY; // human ally -> human enemy
+			default:
+				return CLASS_ALIEN_MILITARY; // alien ally -> alien enemy
+			}
+		}
+		else {
+			// doesn't matter what type of enemy it was before, there's a special ally class for this
+			return CLASS_PLAYER_ALLY;
+		}
+	}
+
+	// no overridess set, return the default class
+	return defaultClassify;
 }
 
 //=========================================================
@@ -2209,6 +2244,10 @@ void CBaseMonster::SetClassify ( int iNewClassify )
 //=========================================================
 int CBaseMonster::IRelationship(CBaseEntity* pTarget)
 {
+	return IRelationship(Classify(), pTarget->Classify());
+}
+
+int CBaseMonster::IRelationship(int attackerClass, int victimClass) {
 	//TODO: need to update the entries for military ally & race x
 	static int iEnemy[16][16] =
 	{				//   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN	HMILA	RACEX
@@ -2230,7 +2269,7 @@ int CBaseMonster::IRelationship(CBaseEntity* pTarget)
 		/*RACEX*/		{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_DL,	R_DL,	R_NO	}
 	};
 
-	return iEnemy[Classify()][pTarget->Classify()];
+	return iEnemy[attackerClass][victimClass];
 }
 
 //=========================================================
@@ -3096,16 +3135,12 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 {
 	if (FStrEq(pkvd->szKeyName, "classify"))
 	{
-		// Is Player Ally? overrides Classify and we don't know which keyvalue is handled first
-		if (!m_IsPlayerAlly)
-			SetClassify(atoi(pkvd->szValue));
+		SetClassify(atoi(pkvd->szValue));
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "is_player_ally"))
 	{
-		m_IsPlayerAlly = atoi(pkvd->szValue);
-		if (m_IsPlayerAlly)
-			SetClassify(CLASS_PLAYER_ALLY);
+		m_IsPlayerAlly = atoi(pkvd->szValue) != 0;
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "TriggerTarget"))

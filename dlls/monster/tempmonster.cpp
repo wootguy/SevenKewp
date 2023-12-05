@@ -67,7 +67,7 @@ void CMyMonster :: Precache()
 
 int	CMyMonster::Classify(void)
 {
-	return CLASS_ALIEN_MONSTER;
+	return CBaseMonster::Classify(CLASS_ALIEN_MONSTER);
 }
 
 void CMyMonster::SetYawSpeed(void)

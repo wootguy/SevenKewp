@@ -26,7 +26,7 @@ public:
 
 	void Spawn() override;
 
-	int Classify() override { return CLASS_NONE; }
+	int Classify() override { return CBaseMonster::Classify(CLASS_NONE); }
 
 	void EXPORT FlyThink();
 

@@ -63,5 +63,5 @@ void CFurniture::Spawn()
 //=========================================================
 int CFurniture::Classify(void)
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_NONE;
+	return	CBaseMonster::Classify(CLASS_NONE);
 }

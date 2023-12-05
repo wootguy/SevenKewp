@@ -59,7 +59,7 @@ class CDeadHGrunt : public CBaseDead
 {
 public:
 	void Spawn(void);
-	int	Classify(void) { return	CLASS_HUMAN_MILITARY; }
+	int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
 	int GetPoseSequence() { return LookupSequence(m_szPoses[m_iPose]); }
 
 	static const char* m_szPoses[3];
@@ -172,7 +172,7 @@ void CHGrunt::Precache()
 
 int	CHGrunt::Classify(void)
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY;
+	return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY);
 }
 
 const char* CHGrunt::DisplayName() {

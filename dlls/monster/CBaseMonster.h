@@ -163,8 +163,11 @@ public:
 		virtual void MonsterThink( void );
 		void EXPORT	CallMonsterThink( void ) { this->MonsterThink(); }
 		virtual int Classify ( void );
+		// returns classification accounting for override keys
+		int Classify ( int defaultClassify );
 		virtual void SetClassify ( int iNewClassify );
 		virtual int IRelationship ( CBaseEntity *pTarget );
+		static int IRelationship ( int attackerClass, int victimClass );
 		virtual void MonsterInit ( void );
 		virtual void MonsterInitDead( void );	// Call after animation/pose is set up
 		virtual void BecomeDead( void );

@@ -90,7 +90,7 @@ class CDeadMassn : public CBaseDead
 {
 public:
 	void Spawn(void);
-	int	Classify(void) { return	CLASS_HUMAN_MILITARY; }
+	int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
 	int GetPoseSequence() { return LookupSequence(m_szPoses[m_iPose]); }
 
 	static const char* m_szPoses[3];
