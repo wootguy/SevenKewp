@@ -110,10 +110,10 @@ void CBabyVoltigore::SetYawSpeed(void)
 	{
 	case ACT_IDLE:
 	default:
-		ys = 180;
+		ys = 90;
 	}
 
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 void CBabyVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)

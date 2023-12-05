@@ -517,7 +517,7 @@ void CGargantua :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys*2;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 

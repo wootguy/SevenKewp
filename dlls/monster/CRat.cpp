@@ -66,7 +66,7 @@ void CRat :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 //=========================================================

@@ -148,7 +148,7 @@ void CZombie :: SetYawSpeed ( void )
 	}
 #endif
 
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 int CZombie :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )

@@ -391,7 +391,7 @@ BOOL CIchthyosaur :: CheckRangeAttack1 ( float flDot, float flDist )
 //=========================================================
 void CIchthyosaur :: SetYawSpeed ( void )
 {
-	pev->yaw_speed = 100;
+	pev->yaw_speed = 100 * gSkillData.yawspeedMult;
 }
 
 

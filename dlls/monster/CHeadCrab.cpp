@@ -209,7 +209,7 @@ void CHeadCrab :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys*2; // 2x vanilla speed
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 //=========================================================
@@ -545,7 +545,7 @@ const char* CBabyCrab::DisplayName() {
 
 void CBabyCrab :: SetYawSpeed ( void )
 {
-	pev->yaw_speed = 120;
+	pev->yaw_speed = 120 * gSkillData.yawspeedMult;
 }
 
 

@@ -153,7 +153,7 @@ void CGonome:: SetYawSpeed ( void )
 		ys = 180;
 	}
 
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )

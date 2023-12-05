@@ -430,7 +430,7 @@ void CBigMomma :: SetYawSpeed ( void )
 	default:
 		ys = 90;
 	}
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 //=========================================================

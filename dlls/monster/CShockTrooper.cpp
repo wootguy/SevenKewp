@@ -755,7 +755,7 @@ void CShockTrooper::SetYawSpeed()
 		break;
 	}
 
-	pev->yaw_speed = ys*2;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 void CShockTrooper::IdleSound()

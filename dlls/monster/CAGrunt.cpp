@@ -330,10 +330,11 @@ void CAGrunt :: SetYawSpeed ( void )
 	case ACT_TURN_RIGHT:
 		ys = 110;
 		break;
-	default:			ys = 100;
+	default:
+		ys = 100;
 	}
 
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 //=========================================================
