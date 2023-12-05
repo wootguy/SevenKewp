@@ -4237,9 +4237,18 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		pev->velocity = pev->velocity + vecDir * -DamageForce(flDamage);
 	}
 
+	float oldHealth = pev->health;
+
 	// do the damage
 	pev->health -= flTake;
 
+	// give points proportional to how much damage was dealt, ignoring overkill damage
+	if (pevAttacker && (pevAttacker->flags & FL_CLIENT)) {
+		const float MONSTER_POINTS_PER_HP = 0.01f; // how many points to give per hitpoint of damage dealt
+		float newHealth = max(0, pev->health);
+		float damageAmt = max(0, oldHealth - newHealth);
+		pevAttacker->frags += damageAmt * MONSTER_POINTS_PER_HP;
+	}
 
 	// HACKHACK Don't kill monsters in a script.  Let them break their scripts first
 	if (m_MonsterState == MONSTERSTATE_SCRIPT)

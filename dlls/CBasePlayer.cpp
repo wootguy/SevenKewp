@@ -2563,6 +2563,7 @@ void CBasePlayer::PostThink()
 	UpdatePlayerSound();
 
 	//UpdateMonsterInfo();
+	UpdateScore();
 
 pt_end:
 #if defined( CLIENT_WEAPONS )
@@ -4653,3 +4654,19 @@ void CBasePlayer::UpdateMonsterInfo() {
 	}
 }
 */
+
+void CBasePlayer::UpdateScore() {
+	if (m_lastScore == (int)pev->frags || g_engfuncs.pfnTime() - m_lastScoreUpdate < 0.1f) {
+		return;
+	}
+	m_lastScoreUpdate = g_engfuncs.pfnTime();
+	m_lastScore = pev->frags;
+
+	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+	WRITE_BYTE(ENTINDEX(edict()));
+	WRITE_SHORT(m_lastScore);
+	WRITE_SHORT(m_iDeaths);
+	WRITE_SHORT(0);
+	WRITE_SHORT(-1);
+	MESSAGE_END();
+}
