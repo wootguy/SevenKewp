@@ -360,6 +360,8 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.massassinHealth = GetSkillCvar("sk_massassin_health");
 	gSkillData.massassinGrenadeSpeed = GetSkillCvar("sk_massassin_grenadespeed");
 	gSkillData.massassinDmgKick = GetSkillCvar("sk_massassin_kick");
+
+	gSkillData.yawspeedMult = GetSkillCvar("sk_yawspeed_mult");
 }
 
 void execMapCfg() {

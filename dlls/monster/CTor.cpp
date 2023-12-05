@@ -226,10 +226,10 @@ void CTor::SetYawSpeed(void)
 	{
 	case ACT_IDLE:
 	default:
-		ys = 1000;
+		ys = 180;
 	}
 
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)

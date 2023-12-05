@@ -172,7 +172,7 @@ void CVoltigore::SetYawSpeed(void)
 		ys = 180;
 	}
 
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)

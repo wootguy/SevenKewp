@@ -512,6 +512,9 @@ cvar_t	sk_massassin_health = { "sk_massassin_health1", "100" };
 cvar_t	sk_massassin_grenadespeed = { "sk_massassin_grenadespeed1", "500" };
 cvar_t	sk_massassin_kick = { "sk_massassin_kick1", "12" };
 
+// turn speed multiplier (all monsters)
+cvar_t	sk_yawspeed_mult = { "sk_yawspeed_mult1","0" };
+
 // END Cvars for Skill Level settings
 
 // Register your console variables here
@@ -996,6 +999,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER(&sk_massassin_health);
 	CVAR_REGISTER(&sk_massassin_grenadespeed);
 	CVAR_REGISTER(&sk_massassin_kick);
+
+	CVAR_REGISTER(&sk_yawspeed_mult);
 
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 

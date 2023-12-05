@@ -331,7 +331,7 @@ void CBarney :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys*2; // 2x vanilla speed
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 

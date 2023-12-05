@@ -95,7 +95,7 @@ void CChumtoad::SetYawSpeed(void)
 		ys = 90;
 	}
 
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys * gSkillData.yawspeedMult;
 }
 
 void CChumtoad::HandleAnimEvent(MonsterEvent_t* pEvent)

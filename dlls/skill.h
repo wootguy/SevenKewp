@@ -183,6 +183,8 @@ struct skilldata_t
 	float massassinHealth;
 	float massassinGrenadeSpeed;
 	float massassinDmgKick;
+
+	float yawspeedMult;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;
