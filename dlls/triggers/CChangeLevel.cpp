@@ -158,10 +158,6 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 
 	ASSERT(!FStrEq(m_szMapName, ""));
 
-	// Don't work in deathmatch
-	if (g_pGameRules->IsDeathmatch())
-		return;
-
 	// Some people are firing these multiple times in a frame, disable
 	if (gpGlobals->time == pev->dmgtime)
 		return;
@@ -170,11 +166,13 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 
 
 	CBaseEntity* pPlayer = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
+	/*
 	if (!InTransitionVolume(pPlayer, m_szLandmarkName))
 	{
 		ALERT(at_aiconsole, "Player isn't in the transition volume %s, aborting\n", m_szLandmarkName);
 		return;
 	}
+	*/
 
 	// Create an entity to fire the changetarget
 	if (m_changeTarget)
@@ -195,6 +193,7 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 
 	m_hActivator = pActivator;
 	SUB_UseTargets(pActivator, USE_TOGGLE, 0);
+	/*
 	st_szNextSpot[0] = 0;	// Init landmark to NULL
 
 	// look for a landmark entity		
@@ -207,6 +206,10 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 	//	ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT(at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot);
 	CHANGE_LEVEL(st_szNextMap, st_szNextSpot);
+	*/
+
+	ALERT(at_console, "CHANGE LEVEL: %s\n", st_szNextMap);
+	CHANGE_LEVEL(st_szNextMap, NULL);
 }
 
 //
