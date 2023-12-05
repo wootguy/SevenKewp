@@ -61,36 +61,36 @@ const char* CBabyVoltigore::pAttackMissSounds[] =
 
 const char* CBabyVoltigore::pAttackSounds[] =
 {
-	"voltigore/voltigore_attack_melee1.wav",
-	"voltigore/voltigore_attack_melee2.wav"
+	MOD_SND_FOLDER "voltigore/voltigore_attack_melee1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_attack_melee2.wav"
 };
 
 const char* CBabyVoltigore::pIdleSounds[] =
 {
-	"voltigore/voltigore_idle1.wav",
-	"voltigore/voltigore_idle2.wav",
-	"voltigore/voltigore_idle3.wav"
+	MOD_SND_FOLDER "voltigore/voltigore_idle1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_idle2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_idle3.wav"
 };
 
 const char* CBabyVoltigore::pAlertSounds[] =
 {
-	"voltigore/voltigore_alert1.wav",
-	"voltigore/voltigore_alert2.wav",
-	"voltigore/voltigore_alert3.wav"
+	MOD_SND_FOLDER "voltigore/voltigore_alert1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_alert2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_alert3.wav"
 };
 
 const char* CBabyVoltigore::pPainSounds[] =
 {
-	"voltigore/voltigore_pain1.wav",
-	"voltigore/voltigore_pain2.wav",
-	"voltigore/voltigore_pain3.wav",
-	"voltigore/voltigore_pain4.wav"
+	MOD_SND_FOLDER "voltigore/voltigore_pain1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_pain2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_pain3.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_pain4.wav"
 };
 
 const char* CBabyVoltigore::pRunSounds[] =
 {
-	"voltigore/voltigore_run_grunt1.wav",
-	"voltigore/voltigore_run_grunt2.wav"
+	MOD_SND_FOLDER "voltigore/voltigore_run_grunt1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_run_grunt2.wav"
 };
 
 int	CBabyVoltigore::Classify(void)
@@ -187,7 +187,7 @@ void CBabyVoltigore::Spawn()
 
 void CBabyVoltigore::Precache()
 {
-	m_defaultModel = "models/baby_voltigore.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "baby_voltigore.mdl";
 	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND_ARRAY(pAttackHitSounds);

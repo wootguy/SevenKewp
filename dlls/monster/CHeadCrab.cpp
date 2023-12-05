@@ -505,7 +505,19 @@ LINK_ENTITY_TO_CLASS( monster_babycrab, CBabyCrab );
 
 void CBabyCrab :: Spawn( void )
 {
-	CHeadCrab::Spawn();
+	Precache();
+
+	pev->solid = SOLID_SLIDEBOX;
+	pev->movetype = MOVETYPE_STEP;
+	m_bloodColor = BLOOD_COLOR_GREEN;
+	pev->effects = 0;
+	pev->view_ofs = Vector(0, 0, 20);// position of the eyes relative to monster's origin.
+	pev->yaw_speed = 5;//!!! should we put this in the monster's changeanim function since turn rates may vary with state/anim?
+	m_flFieldOfView = 0.0; // vanilla = 0.5
+	m_MonsterState = MONSTERSTATE_NONE;
+
+	MonsterInit();
+
 	SET_MODEL(ENT(pev), GetModel());
 	pev->rendermode = kRenderTransTexture;
 	pev->renderamt = 192;
@@ -516,9 +528,10 @@ void CBabyCrab :: Spawn( void )
 
 void CBabyCrab :: Precache( void )
 {
+	CHeadCrab::Precache();
+
 	m_defaultModel = "models/baby_headcrab.mdl";
 	PRECACHE_MODEL(GetModel());
-	CHeadCrab::Precache();
 }
 
 int	CBabyCrab::Classify(void)

@@ -189,7 +189,7 @@ void COsprey :: Spawn( void )
 void COsprey::Precache( void )
 {
 	bool isBlkOps = FClassnameIs(pev, "monster_blkop_osprey");
-	m_defaultModel = isBlkOps ? "models/blkop_osprey.mdl" : "models/osprey.mdl";
+	m_defaultModel = isBlkOps ? MOD_MDL_FOLDER "blkop_osprey.mdl" : "models/osprey.mdl";
 	replenishMonster = isBlkOps ? "monster_male_assassin" : "monster_human_grunt";
 
 	UTIL_PrecacheOther(replenishMonster);
@@ -205,9 +205,9 @@ void COsprey::Precache( void )
 	m_iExplode	= PRECACHE_MODEL( "sprites/fexplo.spr" );
 
 	if (isBlkOps) {
-		m_iTailGibs = PRECACHE_MODEL("models/blkop_tailgibs.mdl");
-		m_iBodyGibs = PRECACHE_MODEL("models/blkop_bodygibs.mdl");
-		m_iEngineGibs = PRECACHE_MODEL("models/blkop_enginegibs.mdl");
+		m_iTailGibs = PRECACHE_MODEL(MOD_MDL_FOLDER "blkop_tailgibs.mdl");
+		m_iBodyGibs = PRECACHE_MODEL(MOD_MDL_FOLDER "blkop_bodygibs.mdl");
+		m_iEngineGibs = PRECACHE_MODEL(MOD_MDL_FOLDER "blkop_enginegibs.mdl");
 	} else {
 		m_iTailGibs = PRECACHE_MODEL("models/osprey_tailgibs.mdl");
 		m_iBodyGibs = PRECACHE_MODEL("models/osprey_bodygibs.mdl");

@@ -41,7 +41,7 @@ void CShockBeam::Precache()
 	PRECACHE_MODEL( "sprites/flare3.spr" );
 	PRECACHE_MODEL( "sprites/lgtning.spr" );
 	PRECACHE_MODEL( "sprites/glow01.spr" );
-	PRECACHE_MODEL( "models/shock_effect.mdl" );
+	PRECACHE_MODEL(MOD_MDL_FOLDER "shock_effect.mdl" );
 	PRECACHE_SOUND( "weapons/shock_impact.wav" );
 }
 
@@ -52,7 +52,7 @@ void CShockBeam::Spawn()
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL( edict(), "models/shock_effect.mdl" );
+	SET_MODEL( edict(), MOD_MDL_FOLDER "shock_effect.mdl" );
 
 	UTIL_SetOrigin( pev, pev->origin );
 

@@ -102,17 +102,17 @@ const char* CBodyGuard::pGruntSentences[] =
 
 const char* CBodyGuard::pPainSounds[] =
 {
-	"bodyguard/pain1.wav",
-	"bodyguard/pain2.wav",
-	"bodyguard/pain3.wav",
-	"bodyguard/pain4.wav"
+	MOD_SND_FOLDER "bodyguard/pain1.wav",
+	MOD_SND_FOLDER "bodyguard/pain2.wav",
+	MOD_SND_FOLDER "bodyguard/pain3.wav",
+	MOD_SND_FOLDER "bodyguard/pain4.wav"
 };
 
 const char* CBodyGuard::pDeathSounds[] =
 {
-	"bodyguard/die1.wav",
-	"bodyguard/die2.wav",
-	"bodyguard/die3.wav"
+	MOD_SND_FOLDER "bodyguard/die1.wav",
+	MOD_SND_FOLDER "bodyguard/die2.wav",
+	MOD_SND_FOLDER "bodyguard/die3.wav"
 };
 
 void CBodyGuard::GibMonster(void)
@@ -250,7 +250,7 @@ void CBodyGuard::Precache()
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
 
-	m_defaultModel = "models/bgman.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "bgman.mdl";
 	PRECACHE_MODEL(GetModel());
 	CBaseGrunt::Precache();
 }
@@ -284,7 +284,7 @@ Schedule_t* CBodyGuard::GetScheduleOfType(int Type)
 	default:
 		if (minigunIsSpinning) {
 			minigunIsSpinning = false;
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 			return &slMinigunSpindown[0];
 		}
 		return CBaseGrunt::GetScheduleOfType(Type);
@@ -295,7 +295,7 @@ void CBodyGuard::SetActivity(Activity NewActivity) {
 	CBaseGrunt::SetActivity(NewActivity);
 
 	if (NewActivity == ACT_THREAT_DISPLAY) {
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spinup.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "hassault/hw_spinup.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 		PointAtEnemy();
 	}
 }

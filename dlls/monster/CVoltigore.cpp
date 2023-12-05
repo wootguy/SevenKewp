@@ -23,10 +23,10 @@
 
 #define SHOCK_SPRITE "sprites/blueflare2.spr"
 #define BEAM_SPRITE "sprites/lgtning.spr"
-#define GIB_MODEL "models/vgibs.mdl"
-#define SPORE_EXPLODE_SPRITE "sprites/spore_exp_01.spr"
-#define SPORE_EXPLODE_SPRITE2 "sprites/tinyspit.spr"
-#define SPORE_EXPLODE_SOUND "weapons/splauncher_impact.wav"
+#define GIB_MODEL MOD_MDL_FOLDER "vgibs.mdl"
+#define SPORE_EXPLODE_SPRITE MOD_SPR_FOLDER "spore_exp_01.spr"
+#define SPORE_EXPLODE_SPRITE2 MOD_SPR_FOLDER "tinyspit.spr"
+#define SPORE_EXPLODE_SOUND MOD_SND_FOLDER "weapons/splauncher_impact.wav"
 #define SHOCK_SOUND "debris/beamstart1.wav"
 
 #define HEAD_ATTACHEMENT 1
@@ -114,43 +114,41 @@ const char* CVoltigore::pAttackMissSounds[] =
 
 const char* CVoltigore::pIdleSounds[] =
 {
-	"voltigore/voltigore_idle1.wav",
-	"voltigore/voltigore_idle2.wav",
-	"voltigore/voltigore_idle3.wav"
+	MOD_SND_FOLDER "voltigore/voltigore_idle1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_idle2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_idle3.wav"
 };
 
 const char* CVoltigore::pAlertSounds[] =
 {
-	"voltigore/voltigore_alert1.wav",
-	"voltigore/voltigore_alert2.wav",
-	"voltigore/voltigore_alert3.wav"
+	MOD_SND_FOLDER "voltigore/voltigore_alert1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_alert2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_alert3.wav"
 };
 
 const char* CVoltigore::pPainSounds[] =
 {
-	"voltigore/voltigore_pain1.wav",
-	"voltigore/voltigore_pain2.wav",
-	"voltigore/voltigore_pain3.wav",
-	"voltigore/voltigore_pain4.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_pain1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_pain2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_pain3.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_pain4.wav",
 };
 
 const char* CVoltigore::pEventSounds[] =
 {
 	// TODO: move these out of the model so that mp_soundvariety can limit them
-	//       also test if model sounds can use PrecacheGeneric instead of PrecacheSound,
-	//       because that could lead to big savings
-	"voltigore/voltigore_attack_melee1.wav",
-	"voltigore/voltigore_attack_melee2.wav",
-	"voltigore/voltigore_attack_shock.wav",
-	"voltigore/voltigore_run_grunt1.wav",
-	"voltigore/voltigore_run_grunt2.wav",
-	"voltigore/voltigore_footstep1.wav",
-	"voltigore/voltigore_footstep2.wav",
-	"voltigore/voltigore_footstep3.wav",
-	"voltigore/voltigore_die1.wav",
-	"voltigore/voltigore_die2.wav",
-	"voltigore/voltigore_die3.wav",
-	"voltigore/voltigore_eat.wav"
+	MOD_SND_FOLDER "voltigore/voltigore_attack_melee1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_attack_melee2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_attack_shock.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_run_grunt1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_run_grunt2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_footstep1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_footstep2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_footstep3.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_die1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_die2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_die3.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_eat.wav"
 };
 
 
@@ -287,7 +285,7 @@ void CVoltigore::HideChargeBeam() {
 
 void CVoltigore::Precache()
 {
-	m_defaultModel = "models/voltigore.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "voltigore.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(GIB_MODEL);
 	PRECACHE_MODEL(BEAM_SPRITE);
@@ -300,7 +298,10 @@ void CVoltigore::Precache()
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
 	PRECACHE_SOUND_ARRAY(pPainSounds);
-	PRECACHE_SOUND_ARRAY(pEventSounds);
+
+	// not affected by mp_soundvariety (but should be)
+	for (int i = 0; i < ARRAYSIZE(pEventSounds); i++) \
+		PRECACHE_SOUND((char*)pEventSounds[i]);
 	
 	PRECACHE_SOUND(SPORE_EXPLODE_SOUND);
 	PRECACHE_SOUND(SHOCK_SOUND);

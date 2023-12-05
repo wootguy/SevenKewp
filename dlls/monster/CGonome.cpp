@@ -34,7 +34,7 @@
 #define MELEE_ATTACK1_SEQUENCE_OFFSET 0
 #define MELEE_ATTACK2_SEQUENCE_OFFSET 1 // second ATTACK1 sequence in the model should be gonna-eat-you one
 
-#define GONOME_SPIT_SPRITE "sprites/blood_chnk.spr" 
+#define GONOME_SPIT_SPRITE MOD_SPR_FOLDER "blood_chnk.spr" 
 
 #define GRAB_BLOOD_SOUND "barnacle/bcl_chew2.wav" // this is new in sven co-op
 
@@ -103,30 +103,28 @@ const char* CGonome::pAttackMissSounds[] =
 
 const char* CGonome::pIdleSounds[] =
 {
-	"gonome/gonome_idle1.wav",
-	"gonome/gonome_idle2.wav",
-	"gonome/gonome_idle3.wav"
+	MOD_SND_FOLDER "gonome/gonome_idle1.wav",
+	MOD_SND_FOLDER "gonome/gonome_idle2.wav",
+	MOD_SND_FOLDER "gonome/gonome_idle3.wav"
 };
 
 const char* CGonome::pPainSounds[] =
 {
-	"gonome/gonome_pain1.wav",
-	"gonome/gonome_pain2.wav",
-	"gonome/gonome_pain3.wav",
-	"gonome/gonome_pain4.wav"
+	MOD_SND_FOLDER "gonome/gonome_pain1.wav",
+	MOD_SND_FOLDER "gonome/gonome_pain2.wav",
+	MOD_SND_FOLDER "gonome/gonome_pain3.wav",
+	MOD_SND_FOLDER "gonome/gonome_pain4.wav"
 };
 
 const char* CGonome::pEventSounds[] =
 {
 	// TODO: move these out of the model so that mp_soundvariety can limit them
-	//       also test if model sounds can use PrecacheGeneric instead of PrecacheSound,
-	//       because that could lead to big savings
-	"gonome/gonome_melee1.wav",
-	"gonome/gonome_melee2.wav",
-	"gonome/gonome_eat.wav",
-	"gonome/gonome_death2.wav",
-	"gonome/gonome_death3.wav",
-	"gonome/gonome_death4.wav",
+	MOD_SND_FOLDER "gonome/gonome_melee1.wav",
+	MOD_SND_FOLDER "gonome/gonome_melee2.wav",
+	MOD_SND_FOLDER "gonome/gonome_eat.wav",
+	MOD_SND_FOLDER "gonome/gonome_death2.wav",
+	MOD_SND_FOLDER "gonome/gonome_death3.wav",
+	MOD_SND_FOLDER "gonome/gonome_death4.wav"
 
 	// not actually event sounds but wtv
 	"bullchicken/bc_acid1.wav",
@@ -269,7 +267,7 @@ void CGonome::Spawn()
 
 void CGonome::Precache()
 {
-	m_defaultModel = "models/gonome.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "gonome.mdl";
 	PRECACHE_MODEL(GetModel());
 	iGonomeSpitSprite = PRECACHE_MODEL(GONOME_SPIT_SPRITE);
 
@@ -277,7 +275,10 @@ void CGonome::Precache()
 	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
 	PRECACHE_SOUND_ARRAY(pPainSounds);
-	PRECACHE_SOUND_ARRAY(pEventSounds);
+
+	// not affected by mp_soundvariety (but should be)
+	for (int i = 0; i < ARRAYSIZE(pEventSounds); i++) \
+		PRECACHE_SOUND((char*)pEventSounds[i]);
 
 	PRECACHE_SOUND(GRAB_BLOOD_SOUND);
 }

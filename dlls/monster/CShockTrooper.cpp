@@ -231,19 +231,19 @@ LINK_ENTITY_TO_CLASS(monster_shocktrooper, CShockTrooper);
 
 const char* CShockTrooper::pPainSounds[] =
 {
-	"shocktrooper/shock_trooper_pain1.wav",
-	"shocktrooper/shock_trooper_pain2.wav",
-	"shocktrooper/shock_trooper_pain3.wav",
-	"shocktrooper/shock_trooper_pain4.wav",
-	"shocktrooper/shock_trooper_pain5.wav",
+	MOD_SND_FOLDER "shocktrooper/shock_trooper_pain1.wav",
+	MOD_SND_FOLDER "shocktrooper/shock_trooper_pain2.wav",
+	MOD_SND_FOLDER "shocktrooper/shock_trooper_pain3.wav",
+	MOD_SND_FOLDER "shocktrooper/shock_trooper_pain4.wav",
+	MOD_SND_FOLDER "shocktrooper/shock_trooper_pain5.wav",
 };
 
 const char* CShockTrooper::pDieSounds[] =
 {
-	"shocktrooper/shock_trooper_die1.wav",
-	"shocktrooper/shock_trooper_die2.wav",
-	"shocktrooper/shock_trooper_die3.wav",
-	"shocktrooper/shock_trooper_die4.wav",
+	MOD_SND_FOLDER "shocktrooper/shock_trooper_die1.wav",
+	MOD_SND_FOLDER "shocktrooper/shock_trooper_die2.wav",
+	MOD_SND_FOLDER "shocktrooper/shock_trooper_die3.wav",
+	MOD_SND_FOLDER "shocktrooper/shock_trooper_die4.wav",
 };
 
 TYPEDESCRIPTION CShockTrooper::m_SaveData[] =
@@ -360,7 +360,7 @@ void CShockTrooper::GibMonster()
 
 	if (CVAR_GET_FLOAT("violence_agibs") != 0) // Should never get here, but someone might call it directly
 	{
-		CGib::SpawnRandomGibs( pev, 6, "models/strooper_gibs.mdl", 8, 0 );	// Throw alien gibs
+		CGib::SpawnRandomGibs( pev, 6, MOD_MDL_FOLDER "strooper_gibs.mdl", 8, 0 );	// Throw alien gibs
 	}
 
 	// don't remove players!
@@ -932,7 +932,7 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 		Shoot();
 
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_fire.wav", 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "weapons/shock_fire.wav", 1, ATTN_NORM);
 
 		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
 	}
@@ -976,7 +976,7 @@ void CShockTrooper::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/strooper.mdl");
+	SET_MODEL(ENT(pev), MOD_MDL_FOLDER "strooper.mdl");
 	UTIL_SetSize(pev, Vector(-24, -24, 0), Vector(24, 24, 72));
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -1020,11 +1020,12 @@ void CShockTrooper::Spawn()
 //=========================================================
 void CShockTrooper::Precache()
 {
-	PRECACHE_MODEL("models/strooper.mdl");
-	PRECACHE_MODEL("models/strooper_gibs.mdl");
+	m_defaultModel = MOD_MDL_FOLDER "strooper.mdl";
+	PRECACHE_MODEL(GetModel());
+	PRECACHE_MODEL(MOD_MDL_FOLDER "strooper_gibs.mdl");
 
-	PRECACHE_SOUND("weapons/shock_fire.wav");
-	PRECACHE_SOUND("shocktrooper/shock_trooper_attack.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/shock_fire.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/shock_trooper_attack.wav");
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDieSounds);
@@ -1039,7 +1040,7 @@ void CShockTrooper::Precache()
 	UTIL_PrecacheOther("shock_beam");
 	UTIL_PrecacheOther("spore");
 
-	iShockTrooperMuzzleFlash = PRECACHE_MODEL("sprites/muzzle_shock.spr");
+	iShockTrooperMuzzleFlash = PRECACHE_MODEL(MOD_SPR_FOLDER "muzzle_shock.spr");
 }
 
 //=========================================================
@@ -2360,8 +2361,9 @@ LINK_ENTITY_TO_CLASS(monster_ShockTrooper_dead, CDeadShockTrooper);
 //=========================================================
 void CDeadShockTrooper::Spawn()
 {
-	PRECACHE_MODEL("models/strooper.mdl");
-	SET_MODEL(ENT(pev), "models/strooper.mdl");
+	m_defaultModel = MOD_MDL_FOLDER "strooper.mdl";
+	PRECACHE_MODEL(GetModel());
+	SET_MODEL(ENT(pev), GetModel());
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;

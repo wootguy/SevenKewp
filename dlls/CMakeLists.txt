@@ -354,6 +354,7 @@ set(GAME_HDR
 	client.h
 	../engine/custom.h
 	../engine/eiface.h
+	game.h
 	gamerules.h
 	saverestore.h
 	skill.h
