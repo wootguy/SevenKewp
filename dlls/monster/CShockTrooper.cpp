@@ -1082,7 +1082,7 @@ void CShockTrooper::Precache()
 	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_charge0.wav");
 	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_gren0.wav");
 	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_alert0.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_monster0.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_monst0.wav");
 	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_throw0.wav");
 	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_taunt0.wav");
 
