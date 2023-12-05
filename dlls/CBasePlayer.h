@@ -330,6 +330,9 @@ public:
 	char m_SbarString1[ SBAR_STRING_SIZE ];
 	
 	float m_flNextChatTime;
+	float m_lastScoreUpdate;
+	int m_lastScore;
+	void UpdateScore();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();
