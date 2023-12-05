@@ -116,7 +116,7 @@ class CDeadHGruntAlly : public CBaseDead
 {
 public:
 	void Spawn(void);
-	int	Classify(void) { return	CLASS_HUMAN_MILITARY_FRIENDLY; }
+	int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY_FRIENDLY); }
 	int GetPoseSequence() { return LookupSequence(m_szPoses[m_iPose]); }
 
 	static char* m_szPoses[7];

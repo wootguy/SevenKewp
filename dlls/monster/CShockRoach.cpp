@@ -170,7 +170,7 @@ const char *COFShockRoach::pBiteSounds[] =
 //=========================================================
 int	COFShockRoach :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREY;
+	return	CBaseMonster::Classify(CLASS_ALIEN_PREY);
 }
 
 const char* COFShockRoach::DisplayName() {

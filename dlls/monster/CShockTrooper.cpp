@@ -779,7 +779,7 @@ void CShockTrooper::CheckAmmo()
 //=========================================================
 int CShockTrooper::Classify()
 {
-	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_RACE_X;
+	return CBaseMonster::Classify(CLASS_ALIEN_RACE_X);
 }
 
 const char* CShockTrooper::DisplayName() {
@@ -2332,7 +2332,7 @@ class CDeadShockTrooper : public CBaseMonster
 {
 public:
 	void Spawn() override;
-	int Classify() override { return CLASS_HUMAN_MILITARY; }
+	int Classify() override { return CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
 
 	void KeyValue(KeyValueData* pkvd) override;
 

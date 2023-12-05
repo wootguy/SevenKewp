@@ -65,8 +65,6 @@ public:
 	void Precache() override;
 	void Spawn( void );
 
-	int Classify() override { return CLASS_NONE; }
-
 	static void Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, Vector vecAngles );
 	void EXPORT SpikeTouch( CBaseEntity *pOther );
 
@@ -469,7 +467,7 @@ int CPitdrone :: ISoundMask ( void )
 //=========================================================
 int	CPitdrone :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREDATOR;
+	return	CBaseMonster::Classify(CLASS_ALIEN_PREDATOR);
 }
 
 const char* CPitdrone::DisplayName() {

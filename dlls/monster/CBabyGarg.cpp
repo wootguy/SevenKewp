@@ -18,7 +18,7 @@ class CBabyGarg : public CGargantua
 public:
 	void Spawn(void);
 	void Precache(void);
-	int  Classify(void) { return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER; }
+	int  Classify(void) { return CBaseMonster::Classify(CLASS_ALIEN_MONSTER); }
 	const char* getDisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Baby Gargantua"; }
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);

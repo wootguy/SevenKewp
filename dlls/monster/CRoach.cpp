@@ -76,7 +76,7 @@ int CRoach :: ISoundMask ( void )
 //=========================================================
 int	CRoach :: Classify ( void )
 {
-	return m_Classify ? CBaseMonster::Classify() : CLASS_INSECT;
+	return CBaseMonster::Classify(CLASS_INSECT);
 }
 
 const char* CRoach::DisplayName() {

@@ -14,7 +14,7 @@ class CDeadHEV : public CBaseMonster
 {
 public:
 	void Spawn(void);
-	int	Classify(void) { return	CLASS_HUMAN_MILITARY; }
+	int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
 
 	void KeyValue(KeyValueData* pkvd);
 

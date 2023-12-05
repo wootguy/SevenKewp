@@ -211,7 +211,7 @@ IMPLEMENT_CUSTOM_SCHEDULES(CTor, CBaseMonster);
 
 int	CTor::Classify(void)
 {
-	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MILITARY;
+	return CBaseMonster::Classify(CLASS_ALIEN_MILITARY);
 }
 
 const char* CTor::DisplayName() {

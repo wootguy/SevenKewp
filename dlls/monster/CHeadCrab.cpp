@@ -157,7 +157,7 @@ const char *CHeadCrab::pBiteSounds[] =
 //=========================================================
 int	CHeadCrab :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREY;
+	return	CBaseMonster::Classify(CLASS_ALIEN_PREY);
 }
 
 const char* CHeadCrab::DisplayName() {
@@ -523,7 +523,7 @@ void CBabyCrab :: Precache( void )
 
 int	CBabyCrab::Classify(void)
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREY;
+	return	CBaseMonster::Classify(CLASS_ALIEN_PREY);
 }
 
 const char* CBabyCrab::DisplayName() {

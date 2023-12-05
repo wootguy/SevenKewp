@@ -248,7 +248,7 @@ public:
 class CBaseDead : public CBaseMonster {
 public:
 	void BaseSpawn(const char* model);
-	virtual int	Classify(void) { return	CLASS_HUMAN_MILITARY; }
+	virtual int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
 	virtual int GetPoseSequence() { return -1; }
 
 	void KeyValue(KeyValueData* pkvd);

@@ -584,11 +584,7 @@ void CScientist :: RunTask( Task_t *pTask )
 //=========================================================
 int	CScientist :: Classify ( void )
 {
-	// Is Player Ally? works inverted for friendly monsters
-	if (m_IsPlayerAlly)
-		return CLASS_HUMAN_MILITARY;
-	else
-		return m_Classify ? CTalkSquadMonster::Classify() : CLASS_HUMAN_PASSIVE;
+	return CBaseMonster::Classify(CLASS_HUMAN_PASSIVE);
 }
 
 const char* CScientist::DisplayName() {
@@ -1252,7 +1248,7 @@ void CSittingScientist :: Precache( void )
 //=========================================================
 int	CSittingScientist :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_PASSIVE;
+	return	CBaseMonster::Classify(CLASS_HUMAN_PASSIVE);
 }
 
 

@@ -327,7 +327,7 @@ IMPLEMENT_CUSTOM_SCHEDULES(CIchthyosaur, CFlyingMonster);
 //=========================================================
 int	CIchthyosaur :: Classify ( void )
 {
-	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+	return	CBaseMonster::Classify(CLASS_ALIEN_MONSTER);
 }
 
 const char* CIchthyosaur::DisplayName() {
