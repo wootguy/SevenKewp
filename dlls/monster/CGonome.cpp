@@ -108,6 +108,7 @@ const char* CGonome::pIdleSounds[] =
 	MOD_SND_FOLDER "gonome/gonome_idle3.wav"
 };
 
+// TODO: these are used in the model, so mp_soundvariety will break them
 const char* CGonome::pPainSounds[] =
 {
 	MOD_SND_FOLDER "gonome/gonome_pain1.wav",

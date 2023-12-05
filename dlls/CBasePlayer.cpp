@@ -2724,6 +2724,14 @@ void CBasePlayer::Spawn( void )
 	
 	m_flNextChatTime = gpGlobals->time;
 
+	// reset sound environment to default
+	if (m_flLastSetRoomtype) {
+		m_flLastSetRoomtype = 0;
+		MESSAGE_BEGIN(MSG_ONE, SVC_ROOMTYPE, NULL, edict());
+		WRITE_SHORT(0);
+		MESSAGE_END();
+	}
+
 	g_pGameRules->PlayerSpawn( this );
 }
 

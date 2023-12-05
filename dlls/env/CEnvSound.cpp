@@ -172,6 +172,8 @@ void CEnvSound::Think(void)
 
 			//CLIENT_COMMAND(pentPlayer, "room_type %f", m_flRoomtype);
 
+			pPlayer->m_flLastSetRoomtype = m_flRoomtype;
+
 			MESSAGE_BEGIN(MSG_ONE, SVC_ROOMTYPE, NULL, pentPlayer);		// use the magic #1 for "one client"
 			WRITE_SHORT((short)m_flRoomtype);					// sequence number
 			MESSAGE_END();
