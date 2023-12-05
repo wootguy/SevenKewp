@@ -119,7 +119,7 @@ void CCycler :: Spawn( )
 	pev->movetype		= MOVETYPE_NONE;
 	pev->takedamage		= DAMAGE_YES;
 	pev->effects		= 0;
-	pev->health			= 80000;// no cycler should die
+	if (!pev->health) pev->health = 80000;// no cycler should die
 	pev->yaw_speed		= 5;
 	pev->ideal_yaw		= pev->angles.y;
 	ChangeYaw( 360 );

@@ -159,9 +159,10 @@ void COsprey :: Spawn( void )
 
 	pev->flags |= FL_MONSTER;
 	pev->takedamage		= DAMAGE_YES;
-	m_flRightHealth		= 200;
-	m_flLeftHealth		= 200;
-	pev->health			= 400;
+	
+	if (!pev->health) pev->health = 400;
+	m_flRightHealth = pev->health / 2;
+	m_flLeftHealth = pev->health / 2;
 
 	m_flFieldOfView = 0; // 180 degrees
 

@@ -291,7 +291,7 @@ void CNihilanth :: Spawn( void )
 
 	pev->flags			|= FL_MONSTER;
 	pev->takedamage		= DAMAGE_AIM;
-	pev->health			= gSkillData.nihilanthHealth;
+	if (!pev->health) pev->health = gSkillData.nihilanthHealth;
 	pev->view_ofs		= Vector( 0, 0, 300 );
 
 	m_flFieldOfView = -1; // 360 degrees

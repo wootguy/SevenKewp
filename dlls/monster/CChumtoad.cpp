@@ -56,7 +56,7 @@ void CChumtoad::Spawn()
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_GREEN;
-	pev->health = 100;
+	if (!pev->health) pev->health = 100;
 	pev->view_ofs = Vector(0, 0, 0);// position of the eyes relative to monster's origin.
 	m_MonsterState = MONSTERSTATE_NONE;
 	m_afCapability = bits_CAP_MELEE_ATTACK1;

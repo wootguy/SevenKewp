@@ -177,7 +177,7 @@ void CBabyVoltigore::Spawn()
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_GREEN;
-	pev->health = 80;
+	if (!pev->health) pev->health = 80;
 	pev->view_ofs = Vector(0, 0, 0);// position of the eyes relative to monster's origin.
 	m_flFieldOfView = 0.0;
 	m_MonsterState = MONSTERSTATE_NONE;

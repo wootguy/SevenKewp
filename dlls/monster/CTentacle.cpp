@@ -103,6 +103,7 @@ public:
 
 	Vector m_vecPrevSound;
 	float m_flPrevSoundTime;
+	float m_spawnHealth;
 
 	static const char *pHitSilo[];
 	static const char *pHitDirt[];
@@ -259,8 +260,10 @@ void CTentacle :: Spawn( )
 	pev->solid			= SOLID_BBOX;
 	pev->movetype		= MOVETYPE_FLY;
 	pev->effects		= 0;
-	pev->health			= 4000;
+	if (!pev->health) pev->health = 4000;
 	pev->sequence		= 0;
+
+	m_spawnHealth = pev->health;
 
 	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
@@ -567,7 +570,7 @@ void CTentacle :: Cycle( void )
 			m_iGoalAnim = TENTACLE_ANIM_Pit_Idle;
 			if (pev->sequence == TENTACLE_ANIM_Pit_Idle)
 			{
-				pev->health = 4000;
+				pev->health = m_spawnHealth;
 			}
 		}
 		else if ( m_flSoundTime > gpGlobals->time )

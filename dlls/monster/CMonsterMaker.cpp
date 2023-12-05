@@ -218,6 +218,9 @@ void CMonsterMaker::MakeMonster( void )
 	}
 
 	pent->v.model = pev->model;
+	if (pev->health) {
+		pent->v.health = pev->health;
+	}
 	CBaseMonster* mon = ((CBaseEntity*)GET_PRIVATE(pent))->MyMonsterPointer();
 	if (mon) {
 		mon->m_iszTriggerTarget = m_iszTriggerTarget;

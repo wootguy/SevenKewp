@@ -517,9 +517,7 @@ void CGargantua :: SetYawSpeed ( void )
 		break;
 	}
 
-	ys = 1000;
-
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys*2;
 }
 
 
@@ -536,7 +534,7 @@ void CGargantua :: Spawn()
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
-	pev->health			= gSkillData.gargantuaHealth;
+	if (!pev->health) pev->health = gSkillData.gargantuaHealth;
 	//pev->view_ofs		= Vector ( 0, 0, 96 );// taken from mdl file
 	m_flFieldOfView		= -0.2;// width of forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
