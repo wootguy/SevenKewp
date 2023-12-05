@@ -50,6 +50,7 @@ public:
 	void BarneyFirePistol( void );
 	void AlertSound( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	
 	void RunTask( Task_t *pTask );
@@ -284,6 +285,10 @@ int	CBarney :: Classify ( void )
 		return CLASS_HUMAN_MILITARY;
 	else
 		return m_Classify ? CTalkSquadMonster::Classify() : CLASS_PLAYER_ALLY;
+}
+
+const char* CBarney::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Barney";
 }
 
 //=========================================================

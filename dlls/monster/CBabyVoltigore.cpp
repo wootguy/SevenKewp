@@ -24,6 +24,7 @@ public:
 	void Precache(void);
 	void SetYawSpeed(void);
 	int Classify(void);
+	const char* DisplayName();
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	Schedule_t* GetScheduleOfType(int Type);
 	int IgnoreConditions(void);
@@ -95,6 +96,10 @@ const char* CBabyVoltigore::pRunSounds[] =
 int	CBabyVoltigore::Classify(void)
 {
 	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+}
+
+const char* CBabyVoltigore::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Baby Voltigore";
 }
 
 void CBabyVoltigore::SetYawSpeed(void)

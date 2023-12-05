@@ -47,6 +47,7 @@ public:
 	void SetYawSpeed( void );
 	int	 ISoundMask( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	int  IRelationship( CBaseEntity *pTarget );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
@@ -150,6 +151,9 @@ int	CISlave :: Classify ( void )
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MILITARY;
 }
 
+const char* CISlave::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Alien Slave";
+}
 
 int CISlave::IRelationship( CBaseEntity *pTarget )
 {

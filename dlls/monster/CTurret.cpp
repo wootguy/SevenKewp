@@ -13,6 +13,7 @@ class CTurret : public CBaseTurret
 public:
 	void Spawn(void);
 	void Precache(void);
+	const char* DisplayName();
 	// Think functions
 	void SpinUpCall(void);
 	void SpinDownCall(void);
@@ -70,6 +71,10 @@ void CTurret::Precache()
 	m_defaultModel = "models/turret.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(TURRET_GLOW_SPRITE);
+}
+
+const char* CTurret::DisplayName() {
+	return m_displayName ? CTurret::DisplayName() : "Turret";
 }
 
 void CTurret::Shoot(Vector& vecSrc, Vector& vecDirToEnemy)

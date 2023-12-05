@@ -79,6 +79,7 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void SetYawSpeed ( void );
 	void WarmUpSound ( void );
@@ -182,6 +183,10 @@ IMPLEMENT_SAVERESTORE( CHoundeye, CTalkSquadMonster );
 int	CHoundeye :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+}
+
+const char* CHoundeye::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Houndeye";
 }
 
 //=========================================================

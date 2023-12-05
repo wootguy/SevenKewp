@@ -73,7 +73,7 @@ typedef enum
 	PLAYER_ATTACK1,
 } PLAYER_ANIM;
 
-#define MAX_ID_RANGE 2048
+#define MAX_ID_RANGE 4096
 #define SBAR_STRING_SIZE 128
 
 enum sbar_data
@@ -331,6 +331,11 @@ public:
 	
 	float m_flNextChatTime;
 	
+	// for sven-style monster info
+	//void UpdateMonsterInfo();
+	//float m_lastMonsterInfoMsg;
+	//float m_lastMonsterInfoTrace;
+	//char m_lastMonsterInfoText[128];
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

@@ -63,6 +63,7 @@ class CMassn : public CBaseGrunt
 public:
 	void Spawn( void );
 	void Precache( void );
+	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Male Assassin"; }
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int GetActivitySequence(Activity NewActivity);
 	void DeathSound( void );

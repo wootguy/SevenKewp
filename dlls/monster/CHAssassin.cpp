@@ -68,6 +68,7 @@ public:
 	void Precache( void );
 	void SetYawSpeed ( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	int  ISoundMask ( void);
 	void Shoot( void );
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
@@ -160,6 +161,10 @@ int CHAssassin :: ISoundMask ( void)
 int	CHAssassin :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY;
+}
+
+const char* CHAssassin::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Female Assassin";
 }
 
 //=========================================================

@@ -182,6 +182,10 @@ int CHornet::Classify ( void )
 	return	CLASS_ALIEN_BIOWEAPON;
 }
 
+const char* CHornet::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Hornet";
+}
+
 //=========================================================
 // StartTrack - starts a hornet out tracking its target
 //=========================================================

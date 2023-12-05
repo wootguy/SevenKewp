@@ -193,6 +193,7 @@ public:
 
 	void SetYawSpeed( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void LayHeadcrab( void );
 
@@ -407,6 +408,10 @@ void CBigMomma :: KeyValue( KeyValueData *pkvd )
 int	CBigMomma :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+}
+
+const char* CBigMomma::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Big Momma";
 }
 
 //=========================================================

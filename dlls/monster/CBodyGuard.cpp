@@ -54,6 +54,7 @@ public:
 
 	void PlaySentenceSound(int sentenceType);
 	int	Classify(void);
+	const char* DisplayName();
 	int ISoundMask(void);
 	BOOL NoFriendlyFire(void) { return TRUE; } // friendly fire is allowed
 	void IdleSound(void);
@@ -369,6 +370,10 @@ void CBodyGuard::PlaySentenceSound(int sentenceType) {
 int	CBodyGuard::Classify(void)
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY;
+}
+
+const char* CBodyGuard::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Body Guard";
 }
 
 int CBodyGuard::ISoundMask(void)

@@ -74,6 +74,7 @@ public:
 	int CanPlaySequence( BOOL fDisregardState ) { return TRUE; };
 
 	int Classify( void );
+	const char* DisplayName();
 
 	int Level( float dz );
 	int MyLevel( void );
@@ -242,6 +243,10 @@ typedef enum
 int	CTentacle :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+}
+
+const char* CTentacle::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Tentacle";
 }
 
 //

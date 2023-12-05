@@ -80,6 +80,7 @@ public:
 	void OtisFirePistol( void );
 	void AlertSound( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	
 	void RunTask( Task_t *pTask );
@@ -323,6 +324,10 @@ int	COtis :: Classify ( void )
 		return CLASS_HUMAN_MILITARY;
 	else
 		return m_Classify ? CTalkSquadMonster::Classify() : CLASS_PLAYER_ALLY;
+}
+
+const char* COtis::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Otis";
 }
 
 //=========================================================

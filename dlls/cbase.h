@@ -198,6 +198,7 @@ public:
 	virtual	BOOL	IsPlayer( void ) { return FALSE; }
 	virtual BOOL	IsNetClient( void ) { return FALSE; }
 	virtual const char *TeamID( void ) { return ""; }
+	virtual const char* DisplayName() { return STRING(pev->classname); }
 
 
 //	virtual void	SetActivator( CBaseEntity *pActivator ) {}

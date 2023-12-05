@@ -486,6 +486,10 @@ int	CGargantua :: Classify ( void )
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
 }
 
+const char* CGargantua::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Gargantua";
+}
+
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.

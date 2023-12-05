@@ -34,6 +34,7 @@ public:
 	void Precache( void );
 	void SetYawSpeed( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int ISoundMask ( void );
 
@@ -70,6 +71,10 @@ IMPLEMENT_SAVERESTORE( CGMan, CBaseMonster );
 int	CGMan :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_NONE;
+}
+
+const char* CGMan::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "G-Man";
 }
 
 //=========================================================

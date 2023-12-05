@@ -36,6 +36,7 @@ public:
 	void Precache( void );
 	void SetYawSpeed( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int ISoundMask ( void );
 };
@@ -48,6 +49,10 @@ LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster );
 int	CGenericMonster :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_PLAYER_ALLY;
+}
+
+const char* CGenericMonster::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Monster";
 }
 
 //=========================================================

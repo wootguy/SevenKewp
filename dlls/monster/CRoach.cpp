@@ -49,6 +49,7 @@ public:
 	float	m_flLastLightLevel;
 	float	m_flNextSmellTime;
 	int		Classify ( void );
+	const char* DisplayName();
 	void	Look ( int iDistance );
 	int		ISoundMask ( void );
 	
@@ -76,6 +77,10 @@ int CRoach :: ISoundMask ( void )
 int	CRoach :: Classify ( void )
 {
 	return m_Classify ? CBaseMonster::Classify() : CLASS_INSECT;
+}
+
+const char* CRoach::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Roach";
 }
 
 //=========================================================

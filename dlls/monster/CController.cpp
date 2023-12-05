@@ -49,6 +49,7 @@ public:
 	void Precache( void );
 	void SetYawSpeed( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 
 	void RunAI( void );
@@ -158,6 +159,10 @@ const char *CController::pDeathSounds[] =
 int	CController :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MILITARY;
+}
+
+const char* CController::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Alien Controller";
 }
 
 //=========================================================

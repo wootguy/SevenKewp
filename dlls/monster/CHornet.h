@@ -36,6 +36,7 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	int	 Classify ( void );
+	const char* DisplayName();
 	int  IRelationship ( CBaseEntity *pTarget );
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );

@@ -35,6 +35,7 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	int  Classify( void ) { return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MILITARY; };
+	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Nihilanth"; }
 	int  BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );

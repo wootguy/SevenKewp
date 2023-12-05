@@ -43,6 +43,7 @@ public:
 	void Precache(void);
 	void SetYawSpeed(void);
 	int Classify(void);
+	const char* DisplayName();
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	BOOL CheckMeleeAttack1(float flDot, float flDist);
 	BOOL CheckRangeAttack1(float flDot, float flDist);
@@ -156,6 +157,10 @@ const char* CVoltigore::pEventSounds[] =
 int	CVoltigore::Classify(void)
 {
 	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+}
+
+const char* CVoltigore::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Voltigore";
 }
 
 void CVoltigore::SetYawSpeed(void)

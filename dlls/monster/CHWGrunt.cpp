@@ -65,6 +65,8 @@ class CHWGrunt : public CBaseGrunt
 public:
 	void Spawn(void);
 	void Precache(void);
+	int  Classify(void);
+	const char* DisplayName();
 	void InitAiFlags();
 	void PainSound(void);
 	void DeathSound(void);
@@ -186,6 +188,15 @@ void CHWGrunt::Precache()
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
 
 	BasePrecache();
+}
+
+int	CHWGrunt::Classify(void)
+{
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY;
+}
+
+const char* CHWGrunt::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Heavy Weapons Grunt";
 }
 
 void CHWGrunt::InitAiFlags() {

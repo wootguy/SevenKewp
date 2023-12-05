@@ -87,6 +87,7 @@ public:
 	void AlertSound( void );
 	void PrescheduleThink( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	BOOL CheckRangeAttack2 ( float flDot, float flDist );
@@ -157,6 +158,10 @@ const char *CHeadCrab::pBiteSounds[] =
 int	CHeadCrab :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREY;
+}
+
+const char* CHeadCrab::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Headcrab";
 }
 
 //=========================================================
@@ -487,6 +492,8 @@ class CBabyCrab : public CHeadCrab
 public:
 	void Spawn( void );
 	void Precache( void );
+	int  Classify(void);
+	const char* DisplayName();
 	void SetYawSpeed ( void );
 	float GetDamageAmount( void ) { return gSkillData.headcrabDmgBite * 0.3; }
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
@@ -514,6 +521,14 @@ void CBabyCrab :: Precache( void )
 	CHeadCrab::Precache();
 }
 
+int	CBabyCrab::Classify(void)
+{
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREY;
+}
+
+const char* CBabyCrab::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Baby Headcrab";
+}
 
 void CBabyCrab :: SetYawSpeed ( void )
 {

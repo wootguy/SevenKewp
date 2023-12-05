@@ -39,6 +39,7 @@ public:
 	void Precache( void );
 	CBaseEntity *TongueTouchEnt ( float *pflLength );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void EXPORT BarnacleThink ( void );
 	void EXPORT WaitTillDead ( void );
@@ -93,7 +94,11 @@ IMPLEMENT_SAVERESTORE( CBarnacle, CBaseMonster );
 //=========================================================
 int	CBarnacle :: Classify ( void )
 {
-	return	CLASS_ALIEN_MONSTER;
+	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+}
+
+const char* CBarnacle::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Barnacle";
 }
 
 //=========================================================

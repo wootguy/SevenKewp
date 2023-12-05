@@ -56,6 +56,7 @@ public:
 	void  Precache( void );
 	void  SetYawSpeed( void );
 	int   Classify( void );
+	const char* DisplayName();
 	void  HandleAnimEvent( MonsterEvent_t *pEvent );
 	CUSTOM_SCHEDULES;
 
@@ -329,6 +330,9 @@ int	CIchthyosaur :: Classify ( void )
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
 }
 
+const char* CIchthyosaur::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Ichthyosaur";
+}
 
 //=========================================================
 // CheckMeleeAttack1

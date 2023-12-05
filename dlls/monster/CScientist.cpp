@@ -71,6 +71,7 @@ public:
 
 	void SetYawSpeed( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void RunTask( Task_t *pTask );
 	void StartTask( Task_t *pTask );
@@ -590,6 +591,9 @@ int	CScientist :: Classify ( void )
 		return m_Classify ? CTalkSquadMonster::Classify() : CLASS_HUMAN_PASSIVE;
 }
 
+const char* CScientist::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Scientist";
+}
 
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different

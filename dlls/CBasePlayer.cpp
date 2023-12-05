@@ -1704,14 +1704,28 @@ void CBasePlayer::UpdateStatusBar()
 			if (pEntity->Classify() == CLASS_PLAYER )
 			{
 				newSBarState[ SBAR_ID_TARGETNAME ] = ENTINDEX( pEntity->edict() );
-				strcpy( sbuf1, "1 %p1\n2 Health: %i2%%\n3 Armor: %i3%%" );
+				strcpy( sbuf1, "1 Player: %p1" );
+				strcpy( sbuf0, "2 Health: %i2%%\n3 Armor: %i3%%" );
 
-				// allies and medics get to see the targets health
-				if ( g_pGameRules->PlayerRelationship( this, pEntity ) == GR_TEAMMATE )
-				{
-					newSBarState[ SBAR_ID_TARGETHEALTH ] = 100 * (pEntity->pev->health / pEntity->pev->max_health);
-					newSBarState[ SBAR_ID_TARGETARMOR ] = pEntity->pev->armorvalue; //No need to get it % based since 100 it's the max.
-				}
+				newSBarState[ SBAR_ID_TARGETHEALTH ] = 100 * (pEntity->pev->health / pEntity->pev->max_health);
+				newSBarState[ SBAR_ID_TARGETARMOR ] = pEntity->pev->armorvalue; //No need to get it % based since 100 it's the max.
+
+				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+			}
+			else if (pEntity->IsMonster() && pEntity->IsAlive()) {
+				
+				const char* name = pEntity->DisplayName();
+				int hp = roundf(pEntity->pev->health);
+
+				int irel = IRelationship(pEntity);
+				bool isFriendly = irel == R_NO || irel == R_AL;
+				const char* srel = isFriendly ? "Friend" : "Enemy";
+
+				strcpy(sbuf1, UTIL_VarArgs("1 %s: %s", srel, name));
+				strcpy(sbuf0, UTIL_VarArgs("2 Health: %d", hp));
+
+				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
+				newSBarState[SBAR_ID_TARGETHEALTH] = hp;
 
 				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			}
@@ -2547,6 +2561,8 @@ void CBasePlayer::PostThink()
 	CheckPowerups(pev);
 
 	UpdatePlayerSound();
+
+	//UpdateMonsterInfo();
 
 pt_end:
 #if defined( CLIENT_WEAPONS )
@@ -4568,3 +4584,72 @@ void CBasePlayer::Observer_SetMode(int iMode)
 
 	m_iObserverLastMode = iMode;
 }
+
+/*
+// sven-style monster info
+// TODO: try fixing the forced text fadeout
+void CBasePlayer::UpdateMonsterInfo() {
+	
+	if (g_engfuncs.pfnTime() - m_lastMonsterInfoTrace < 0.1f) {
+		return;
+	}
+	m_lastMonsterInfoTrace = g_engfuncs.pfnTime();
+
+	UTIL_MakeVectors(pev->v_angle + pev->punchangle);
+	Vector aimDir = gpGlobals->v_forward;
+
+	TraceResult tr;
+	TRACE_LINE(GetGunPosition(), GetGunPosition() + aimDir * 4096, dont_ignore_monsters, edict(), &tr);
+
+	CBaseEntity* phit = CBaseEntity::Instance(tr.pHit);
+	bool isLivingMonster = phit->IsMonster() && phit->IsAlive();
+
+	if (!FNullEnt(phit) && isLivingMonster) {
+		hudtextparms_t params;
+		memset(&params, 0, sizeof(hudtextparms_t));
+		params.effect = 0;
+		params.fadeinTime = 0;
+		params.fadeoutTime = 0.1;
+		params.holdTime = 1.5f;
+		params.x = 0.04;
+		params.y = 0.582;
+		params.channel = 3;
+
+		int rel = IRelationship(phit);
+		bool isFriendly = rel == R_AL || rel == R_NO;
+
+		const char* relStr = "";
+		const char* displayName = STRING(phit->pev->classname);
+		if (phit->IsPlayer()) {
+			params.r1 = 6;
+			params.g1 = 170;
+			params.b1 = 94;
+			relStr = "Player: ";
+		} else if (isFriendly) {
+			params.r1 = 6;
+			params.g1 = 170;
+			params.b1 = 94;
+			relStr = "Friend: ";
+		} else {
+			params.r1 = 255;
+			params.g1 = 16;
+			params.b1 = 16;
+			relStr = "Enemy: ";
+		}
+
+		int hp = ceilf(phit->pev->health);
+		const char* infoText = UTIL_VarArgs("%s%s\nHealth: %d", relStr, displayName, hp);
+		
+		float timeSinceLastMsg = g_engfuncs.pfnTime() - m_lastMonsterInfoMsg;
+		
+		if (strncmp(infoText, m_lastMonsterInfoText, 128) || timeSinceLastMsg > 1.0f) {
+			UTIL_HudMessage(this, params, m_lastMonsterInfoText);
+			m_lastMonsterInfoMsg = g_engfuncs.pfnTime();
+			ALERT(at_console, "SEND MSG %f\n", m_lastMonsterInfoMsg);
+		}
+		
+		strncpy(m_lastMonsterInfoText, infoText, 128);
+		m_lastMonsterInfoText[128 - 1] = '\0';
+	}
+}
+*/
