@@ -131,6 +131,7 @@ public:
 	void Precache() override;
 	void SetYawSpeed() override;
 	int Classify() override;
+	const char* DisplayName();
 	int ISoundMask() override;
 	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
 	BOOL FCanCheckAttacks() override;
@@ -778,7 +779,11 @@ void CShockTrooper::CheckAmmo()
 //=========================================================
 int CShockTrooper::Classify()
 {
-	return CLASS_ALIEN_RACE_X;
+	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_RACE_X;
+}
+
+const char* CShockTrooper::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Shock Trooper";
 }
 
 //=========================================================
@@ -2226,7 +2231,7 @@ void CShockTrooper::MonsterThink()
 	{
 		if (m_cAmmoLoaded < m_cClipSize)
 		{
-			++m_cAmmoLoaded;
+			m_cAmmoLoaded = m_cClipSize;
 			m_flLastChargeTime = gpGlobals->time;
 			ALERT(at_aiconsole, "Shocktrooper Reload: %d\n", m_cAmmoLoaded);
 		}

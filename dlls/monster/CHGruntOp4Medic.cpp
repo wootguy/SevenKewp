@@ -76,6 +76,7 @@ class CHGruntOp4Medic : public CBaseGruntOp4
 public:
 	void Spawn( void );
 	void Precache( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void StartTask ( Task_t *pTask );
 	void RunTask ( Task_t *pTask );
@@ -332,6 +333,10 @@ void CHGruntOp4Medic :: Precache()
 
 	CBaseGruntOp4::Precache();
 }	
+
+const char* CHGruntOp4Medic::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Medic Grunt";
+}
 
 void CHGruntOp4Medic :: StartTask ( Task_t *pTask )
 {

@@ -57,6 +57,7 @@ public:
 	void Precache(void);
 	void SetYawSpeed(void);
 	int Classify(void);
+	const char* DisplayName();
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	Schedule_t* GetScheduleOfType(int Type);
 	void MonsterThink(void);
@@ -211,6 +212,10 @@ IMPLEMENT_CUSTOM_SCHEDULES(CTor, CBaseMonster);
 int	CTor::Classify(void)
 {
 	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MILITARY;
+}
+
+const char* CTor::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Tor";
 }
 
 void CTor::SetYawSpeed(void)

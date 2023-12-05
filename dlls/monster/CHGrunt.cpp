@@ -36,6 +36,7 @@ public:
 	void Spawn(void);
 	void Precache(void);
 	int Classify(void);
+	const char* DisplayName();
 	void PainSound(void);
 	void DeathSound(void);
 	void IdleSound(void);
@@ -172,6 +173,10 @@ void CHGrunt::Precache()
 int	CHGrunt::Classify(void)
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_HUMAN_MILITARY;
+}
+
+const char* CHGrunt::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Human Grunt";
 }
 
 void CHGrunt::PainSound(void)

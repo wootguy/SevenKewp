@@ -41,6 +41,7 @@ public:
 	void Precache( void );
 	void SetYawSpeed( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int IgnoreConditions ( void );
 
@@ -115,6 +116,20 @@ const char *CZombie::pPainSounds[] =
 int	CZombie :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+}
+
+const char* CZombie::DisplayName() {
+	if (m_displayName)
+		return CBaseMonster::DisplayName();
+	
+	if (!strcmp(STRING(pev->classname), "monster_zombie_barney")) {
+		return "Zombie Barney";
+	}
+	else if (!strcmp(STRING(pev->classname), "monster_zombie_soldier")) {
+		return "Zombie Soldier";
+	}
+	
+	return "Zombie";
 }
 
 //=========================================================

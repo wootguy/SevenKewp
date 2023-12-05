@@ -33,6 +33,7 @@ public:
 	void Precache( void );
 	void SetYawSpeed( void );
 	int  Classify ( void );
+	const char* DisplayName();
 };
 LINK_ENTITY_TO_CLASS( monster_rat, CRat );
 
@@ -43,6 +44,10 @@ LINK_ENTITY_TO_CLASS( monster_rat, CRat );
 int	CRat :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_INSECT;
+}
+
+const char* CRat::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Rat";
 }
 
 //=========================================================

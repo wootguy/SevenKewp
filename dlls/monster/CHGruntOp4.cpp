@@ -82,6 +82,7 @@ class CHGruntOp4 : public CBaseGruntOp4
 public:
 	void Spawn( void );
 	void Precache( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void GibMonster( void );
 
@@ -290,6 +291,10 @@ void CHGruntOp4 :: Precache()
 	PRECACHE_MODEL(GetModel());
 	CBaseGruntOp4::Precache();
 }	
+
+const char* CHGruntOp4::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Grunt";
+}
 
 int CHGruntOp4::GetActivitySequence(Activity NewActivity) {
 	int iSequence = ACTIVITY_NOT_AVAILABLE;

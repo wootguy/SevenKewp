@@ -148,7 +148,7 @@ public:
 	virtual void RunAI ( void );// core ai function!	
 	void Listen ( void );
 
-	virtual BOOL	IsAlive( void ) { return (pev->deadflag != DEAD_DEAD); }
+	virtual BOOL	IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual	BOOL	IsMonster(void) { return TRUE; }
 	virtual BOOL	ShouldFadeOnDeath( void );
 
@@ -374,6 +374,9 @@ public:
 
 	// returns a custom model if set, otherwise the default model
 	const char* GetModel();
+
+	string_t m_displayName;
+	const char* DisplayName();
 };
 
 

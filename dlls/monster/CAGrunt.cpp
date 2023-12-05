@@ -312,6 +312,10 @@ int	CAGrunt :: Classify ( void )
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MILITARY;
 }
 
+const char* CAGrunt::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Alien Grunt";
+}
+
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.

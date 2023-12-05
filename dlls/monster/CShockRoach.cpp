@@ -88,6 +88,7 @@ public:
 	void AlertSound( void );
 	void PrescheduleThink( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	BOOL CheckRangeAttack2 ( float flDot, float flDist );
@@ -170,6 +171,10 @@ const char *COFShockRoach::pBiteSounds[] =
 int	COFShockRoach :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREY;
+}
+
+const char* COFShockRoach::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Shock Roach";
 }
 
 //=========================================================

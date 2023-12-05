@@ -26,6 +26,7 @@ public:
 	void Spawn(void);
 	void Precache(void);
 	int Classify(void);
+	const char* DisplayName();
 	void SetYawSpeed(void);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	void PrescheduleThink();
@@ -77,6 +78,10 @@ void CChumtoad::Precache()
 int	CChumtoad::Classify(void)
 {
 	return m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+}
+
+const char* CChumtoad::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Chumtoad";
 }
 
 void CChumtoad::SetYawSpeed(void)

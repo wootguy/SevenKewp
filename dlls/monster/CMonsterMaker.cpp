@@ -222,6 +222,7 @@ void CMonsterMaker::MakeMonster( void )
 	if (mon) {
 		mon->m_iszTriggerTarget = m_iszTriggerTarget;
 		mon->m_iTriggerCondition = m_iTriggerCondition;
+		mon->m_displayName = m_displayName;
 	}
 
 	pevCreate = VARS( pent );

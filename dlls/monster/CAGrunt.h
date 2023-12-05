@@ -47,6 +47,7 @@ public:
 	void Precache(void);
 	void SetYawSpeed(void);
 	int  Classify(void);
+	const char* DisplayName();
 	int  ISoundMask(void);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	void SetObjectCollisionBox(void)

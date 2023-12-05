@@ -73,7 +73,8 @@ public:
 	virtual void Precache(void);
 	void PrecacheCommon(void);
 	void SetYawSpeed(void);
-	int  Classify(void);
+	virtual int  Classify(void);
+	virtual const char* DisplayName();
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);

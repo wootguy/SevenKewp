@@ -3118,6 +3118,11 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 		m_iTriggerCondition = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "displayname"))
+	{
+		m_displayName = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 	{
 		CBaseToggle::KeyValue(pkvd);
@@ -6801,4 +6806,8 @@ void CBaseMonster::ClearShockEffect()
 
 const char* CBaseMonster::GetModel() {
 	return pev->model ? STRING(pev->model) : m_defaultModel;
+}
+
+const char* CBaseMonster::DisplayName() {
+	return m_displayName ? STRING(m_displayName) : CBaseEntity::DisplayName();
 }

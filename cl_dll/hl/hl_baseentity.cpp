@@ -241,6 +241,7 @@ int CBaseMonster::Save( class CSave & ) { return 1; }
 void CBaseMonster::StopFollowing(BOOL clearSchedule) {}
 void CBaseMonster::StartFollowing(CBaseEntity* pLeader) {}
 const char* CBaseMonster::GetTaskName(int taskIdx) {return "";}
+const const char* CBaseMonster::DisplayName() {return "";}
 
 int TrainSpeed(int iSpeed, int iMax) { 	return 0; }
 void CBasePlayer :: DeathSound( void ) { }

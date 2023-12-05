@@ -236,6 +236,7 @@ public:
 	void SetYawSpeed( void );
 	int  ISoundMask( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void IdleSound( void );
 	void PainSound( void );
@@ -469,6 +470,10 @@ int CPitdrone :: ISoundMask ( void )
 int	CPitdrone :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_PREDATOR;
+}
+
+const char* CPitdrone::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Pit Drone";
 }
 
 //=========================================================

@@ -57,6 +57,7 @@ class COFTorchAlly : public CBaseGruntOp4
 public:
 	void Spawn( void );
 	void Precache( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int GetActivitySequence(Activity NewActivity);
 	void GibMonster( void );
@@ -322,7 +323,11 @@ void COFTorchAlly :: Precache()
 	PRECACHE_SOUND( "fgrunt/torch_cut_loop.wav" );
 
 	CBaseGruntOp4::Precache();
-}	
+}
+
+const char* COFTorchAlly::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Torch Grunt";
+}
 
 int COFTorchAlly::GetActivitySequence(Activity NewActivity)
 {

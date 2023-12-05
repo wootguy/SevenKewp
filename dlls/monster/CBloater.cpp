@@ -36,6 +36,7 @@ public:
 	void Precache( void );
 	void SetYawSpeed( void );
 	int  Classify ( void );
+	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 
 	void PainSound( void );
@@ -58,6 +59,10 @@ LINK_ENTITY_TO_CLASS( monster_bloater, CBloater );
 int	CBloater :: Classify ( void )
 {
 	return	m_Classify ? CBaseMonster::Classify() : CLASS_ALIEN_MONSTER;
+}
+
+const char* CBloater::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Bloater";
 }
 
 //=========================================================

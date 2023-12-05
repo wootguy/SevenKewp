@@ -14,6 +14,7 @@ class CSentry : public CBaseTurret
 public:
 	void Spawn();
 	void Precache(void);
+	const char* DisplayName();
 	// other functions
 	void Shoot(Vector& vecSrc, Vector& vecDirToEnemy);
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
@@ -29,6 +30,10 @@ void CSentry::Precache()
 	CBaseTurret::Precache();
 	m_defaultModel = "models/sentry.mdl";
 	PRECACHE_MODEL(GetModel());
+}
+
+const char* CSentry::DisplayName() {
+	return m_displayName ? CBaseMonster::DisplayName() : "Sentry Turret";
 }
 
 void CSentry::Spawn()
