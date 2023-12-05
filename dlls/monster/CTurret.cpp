@@ -74,7 +74,7 @@ void CTurret::Precache()
 }
 
 const char* CTurret::DisplayName() {
-	return m_displayName ? CTurret::DisplayName() : "Turret";
+	return m_displayName ? CBaseMonster::DisplayName() : "Turret";
 }
 
 void CTurret::Shoot(Vector& vecSrc, Vector& vecDirToEnemy)
