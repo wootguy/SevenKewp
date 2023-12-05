@@ -58,7 +58,7 @@ extern DLL_GLOBAL int g_iSkillLevel;
 #define HGRUNT_DMG_HEADSHOT (DMG_BULLET | DMG_CLUB) // damage types that can kill a grunt with a single headshot.
 #define HGRUNT_NUM_HEADS 2							// how many grunt heads are there?
 #define HGRUNT_MINIMUM_HEADSHOT_DAMAGE 15			// must do at least this much damage in one shot to head to score a headshot kill
-#define ShockTrooper_SENTENCE_VOLUME (float)0.35	// volume of grunt sentences
+#define ShockTrooper_SENTENCE_VOLUME (float)0.5	// volume of grunt sentences
 
 #define HGRUNT_9MMAR (1 << 0)
 #define HGRUNT_HANDGRENADE (1 << 1)
@@ -225,6 +225,7 @@ public:
 	static const char* pGruntSentences[];
 	static const char* pPainSounds[];
 	static const char* pDieSounds[]; // TODO: unused?
+	static const char* pAlertSounds[];
 };
 
 LINK_ENTITY_TO_CLASS(monster_shocktrooper, CShockTrooper);
@@ -245,6 +246,14 @@ const char* CShockTrooper::pDieSounds[] =
 	MOD_SND_FOLDER "shocktrooper/shock_trooper_die3.wav",
 	MOD_SND_FOLDER "shocktrooper/shock_trooper_die4.wav",
 };
+
+const char* CShockTrooper::pAlertSounds[] =
+{
+	MOD_SND_FOLDER "shocktrooper/st_alert0.wav",
+	MOD_SND_FOLDER "shocktrooper/st_alert1.wav",
+	MOD_SND_FOLDER "shocktrooper/st_alert2.wav",
+};
+
 
 TYPEDESCRIPTION CShockTrooper::m_SaveData[] =
 {
@@ -311,7 +320,34 @@ void CShockTrooper::SpeakSentence()
 
 	if (FOkToSpeak())
 	{
-		SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[m_iSentence], ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+		//SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[m_iSentence], ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+		
+		// custom sentences can't be sent to vanilla Half-Life clients, so sentences are combined
+		// into wav files and played normally
+		switch (m_iSentence) {
+		case 0:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_gren0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			break;
+		case 1:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_alert0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			break;
+		case 2:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_monster0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			break;
+		case 3:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_cover0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			break;
+		case 4:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			break;
+		case 5:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_charge0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			break;
+		case 6:
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			break;
+		}
+
 		JustSpoke();
 	}
 }
@@ -719,7 +755,7 @@ void CShockTrooper::SetYawSpeed()
 		break;
 	}
 
-	pev->yaw_speed = ys;
+	pev->yaw_speed = ys*2;
 }
 
 void CShockTrooper::IdleSound()
@@ -732,15 +768,18 @@ void CShockTrooper::IdleSound()
 			switch (RANDOM_LONG(0, 2))
 			{
 			case 0: // check in
-				SENTENCEG_PlayRndSz(ENT(pev), "ST_CHECK", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				//SENTENCEG_PlayRndSz(ENT(pev), "ST_CHECK", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_check0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fShockTrooperQuestion = 1;
 				break;
 			case 1: // question
-				SENTENCEG_PlayRndSz(ENT(pev), "ST_QUEST", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				//SENTENCEG_PlayRndSz(ENT(pev), "ST_QUEST", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_quest0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fShockTrooperQuestion = 2;
 				break;
 			case 2: // statement
-				SENTENCEG_PlayRndSz(ENT(pev), "ST_IDLE", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				//SENTENCEG_PlayRndSz(ENT(pev), "ST_IDLE", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_idle0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 		}
@@ -749,10 +788,12 @@ void CShockTrooper::IdleSound()
 			switch (g_fShockTrooperQuestion)
 			{
 			case 1: // check in
-				SENTENCEG_PlayRndSz(ENT(pev), "ST_CLEAR", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				//SENTENCEG_PlayRndSz(ENT(pev), "ST_CLEAR", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_clear0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			case 2: // question
-				SENTENCEG_PlayRndSz(ENT(pev), "ST_ANSWER", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				//SENTENCEG_PlayRndSz(ENT(pev), "ST_ANSWER", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_answer0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 			g_fShockTrooperQuestion = 0;
@@ -1029,6 +1070,24 @@ void CShockTrooper::Precache()
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDieSounds);
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
+
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_check0.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_quest0.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_idle0.wav");
+
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_clear0.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_answer0.wav");
+
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_charge0.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_gren0.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_alert0.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_monster0.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_throw0.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_taunt0.wav");
+
+	// TODO: why isn't this used?
+	// PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_cover0.wav");
 
 	// get voice pitch
 	if (RANDOM_LONG(0, 1))
@@ -1880,7 +1939,8 @@ Schedule_t* CShockTrooper::GetSchedule()
 
 				if (FOkToSpeak())
 				{
-					SENTENCEG_PlayRndSz(ENT(pev), "ST_GREN", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					//SENTENCEG_PlayRndSz(ENT(pev), "ST_GREN", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_gren0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 					JustSpoke();
 				}
 				return GetScheduleOfType(SCHED_TAKE_COVER_FROM_BEST_SOUND);
@@ -1929,14 +1989,15 @@ Schedule_t* CShockTrooper::GetSchedule()
 					{
 						if ((m_hEnemy != NULL) && m_hEnemy->IsPlayer())
 							// player
-							SENTENCEG_PlayRndSz(ENT(pev), "ST_ALERT", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+							//SENTENCEG_PlayRndSz(ENT(pev), "ST_ALERT", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+						EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 						else if ((m_hEnemy != NULL) &&
 							(m_hEnemy->Classify() != CLASS_PLAYER_ALLY) &&
 							(m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE) &&
 							(m_hEnemy->Classify() != CLASS_MACHINE))
 							// monster
-							SENTENCEG_PlayRndSz(ENT(pev), "ST_MONST", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-
+							//SENTENCEG_PlayRndSz(ENT(pev), "ST_MONST", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+							EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_monst0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 						JustSpoke();
 					}
 
@@ -2030,7 +2091,8 @@ Schedule_t* CShockTrooper::GetSchedule()
 				//!!!KELLY - this grunt is about to throw or fire a grenade at the player. Great place for "fire in the hole"  "frag out" etc
 				if (FOkToSpeak())
 				{
-					SENTENCEG_PlayRndSz(ENT(pev), "ST_THROW", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					//SENTENCEG_PlayRndSz(ENT(pev), "ST_THROW", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 					JustSpoke();
 				}
 				return GetScheduleOfType(SCHED_RANGE_ATTACK2);
@@ -2055,7 +2117,8 @@ Schedule_t* CShockTrooper::GetSchedule()
 				// grunt's covered position. Good place for a taunt, I guess?
 				if (FOkToSpeak() && RANDOM_LONG(0, 1))
 				{
-					SENTENCEG_PlayRndSz(ENT(pev), "ST_TAUNT", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					//SENTENCEG_PlayRndSz(ENT(pev), "ST_TAUNT", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 					JustSpoke();
 				}
 				return GetScheduleOfType(SCHED_STANDOFF);
@@ -2087,7 +2150,8 @@ Schedule_t* CShockTrooper::GetScheduleOfType(int Type)
 			{
 				if (FOkToSpeak())
 				{
-					SENTENCEG_PlayRndSz(ENT(pev), "ST_THROW", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					//SENTENCEG_PlayRndSz(ENT(pev), "ST_THROW", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 					JustSpoke();
 				}
 				return slShockTrooperTossGrenadeCover;
