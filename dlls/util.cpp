@@ -2634,3 +2634,29 @@ std::string trimSpaces(std::string s) {
 	int end = s.find_last_not_of(" \t\n\r");
 	return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
 }
+
+bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins2, const Vector& maxs2) {
+	return  (maxs1.x >= mins2.x && mins1.x <= maxs2.x) &&
+		(maxs1.y >= mins2.y && mins1.y <= maxs2.y) &&
+		(maxs1.z >= mins2.z && mins1.z <= maxs2.z);
+}
+
+float clampf(float val, float min, float max) {
+	if (val < min) {
+		return min;
+	}
+	if (val > max) {
+		return max;
+	}
+	return val;
+}
+
+int clampi(int val, int min, int max) {
+	if (val < min) {
+		return min;
+	}
+	if (val > max) {
+		return max;
+	}
+	return val;
+}

@@ -567,3 +567,9 @@ std::vector<std::string> splitString(std::string str, const char* delimitters);
 std::string toLowerCase(std::string str);
 
 std::string trimSpaces(std::string s);
+
+bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins2, const Vector& maxs2);
+
+float clampf(float val, float min, float max);
+
+int clampi(int val, int min, int max);
