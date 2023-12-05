@@ -321,6 +321,53 @@ bool CheatCommand(edict_t* pEntity) {
 		const char* newMode = pev->flags & FL_NOTARGET ? "ON" : "OFF";
 		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No target is %s\n", newMode));
 	}
+	else if (FStrEq(pcmd, "trigger")) {
+		ABORT_IF_CHEATS_DISABLED("Trigger");
+		
+		const char* target = CMD_ARGV(1);
+		CBaseEntity* world = (CBaseEntity*)GET_PRIVATE(INDEXENT(0));
+		int count = 0;
+
+		string_t lastTriggerClass = 0;
+
+		if (target[0] != '\0') {
+			edict_t* pTarget = NULL;
+			while (!FNullEnt(pTarget = FIND_ENTITY_BY_TARGETNAME(pTarget, target))) {
+				CBaseEntity* ent = CBaseEntity::Instance(pTarget);
+				if (ent) {
+					ent->Use(world, world, USE_TOGGLE, 0);
+					count++;
+					lastTriggerClass = ent->pev->classname;
+				}
+			}
+		}
+		else {
+			UTIL_MakeVectors(pev->v_angle + pev->punchangle);
+			Vector aimDir = gpGlobals->v_forward;
+			Vector vecSrc = pev->origin + pev->view_ofs;
+
+			TraceResult tr;
+			TRACE_LINE(vecSrc, vecSrc + aimDir * 4096, dont_ignore_monsters, pEntity, &tr);
+
+			CBaseEntity* activator = CBaseEntity::Instance(pEntity);
+			CBaseEntity* phit = CBaseEntity::Instance(tr.pHit);
+			if (activator && phit && !FNullEnt(tr.pHit)) {
+				phit->Use(activator, activator, USE_TOGGLE, 0);
+				count++;
+				lastTriggerClass = phit->pev->classname;
+			}
+		}
+
+		if (count > 1 || !lastTriggerClass) {
+			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("Triggered %d entities\n", count));
+		}
+		else if (count == 1) {
+			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("Triggered a %s\n", STRING(lastTriggerClass)));
+		}
+		else {
+			CLIENT_PRINTF(pEntity, print_center, "Nothing was triggered\n");
+		}
+	}
 	else {
 		return false;
 	}
