@@ -138,9 +138,8 @@ void CMassn :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void CMassn :: Spawn()
 {
+	if (!pev->health) pev->health = gSkillData.massassinHealth;
 	BaseSpawn();
-
-	pev->health			= gSkillData.massassinHealth;
 
 	if( m_iAssassinHead == MAssassinHead::Random )
 	{
