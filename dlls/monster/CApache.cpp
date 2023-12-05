@@ -155,7 +155,7 @@ void CApache :: Spawn( void )
 
 void CApache::Precache( void )
 {
-	m_defaultModel = FClassnameIs(pev, "monster_blkop_apache") ? "models/blkop_apache.mdl" : "models/apache.mdl";
+	m_defaultModel = FClassnameIs(pev, "monster_blkop_apache") ? MOD_MDL_FOLDER "blkop_apache.mdl" : "models/apache.mdl";
 
 	PRECACHE_MODEL(GetModel());
 

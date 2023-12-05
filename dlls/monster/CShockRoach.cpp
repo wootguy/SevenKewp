@@ -136,32 +136,32 @@ IMPLEMENT_CUSTOM_SCHEDULES( COFShockRoach, CBaseMonster );
 
 const char *COFShockRoach::pIdleSounds[] = 
 {
-	"shockroach/shock_idle1.wav",
-	"shockroach/shock_idle2.wav",
-	"shockroach/shock_idle3.wav",
+	MOD_SND_FOLDER "shockroach/shock_idle1.wav",
+	MOD_SND_FOLDER "shockroach/shock_idle2.wav",
+	MOD_SND_FOLDER "shockroach/shock_idle3.wav",
 };
 const char *COFShockRoach::pAlertSounds[] = 
 {
-	"shockroach/shock_angry.wav",
+	MOD_SND_FOLDER "shockroach/shock_angry.wav",
 };
 const char *COFShockRoach::pPainSounds[] = 
 {
-	"shockroach/shock_flinch.wav",
+	MOD_SND_FOLDER "shockroach/shock_flinch.wav",
 };
 const char *COFShockRoach::pAttackSounds[] = 
 {
-	"shockroach/shock_jump1.wav",
-	"shockroach/shock_jump2.wav",
+	MOD_SND_FOLDER "shockroach/shock_jump1.wav",
+	MOD_SND_FOLDER "shockroach/shock_jump2.wav",
 };
 
 const char *COFShockRoach::pDeathSounds[] = 
 {
-	"shockroach/shock_die.wav",
+	MOD_SND_FOLDER "shockroach/shock_die.wav",
 };
 
 const char *COFShockRoach::pBiteSounds[] = 
 {
-	"shockroach/shock_bite.wav",
+	MOD_SND_FOLDER "shockroach/shock_bite.wav",
 };
 
 //=========================================================
@@ -291,7 +291,7 @@ void COFShockRoach :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/w_shock_rifle.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector(-12, -12, 0), Vector(12, 12, 4));
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -322,9 +322,9 @@ void COFShockRoach :: Precache()
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
 	PRECACHE_SOUND_ARRAY(pBiteSounds);
 
-	PRECACHE_SOUND( "shockroach/shock_walk.wav" );
+	PRECACHE_SOUND(MOD_SND_FOLDER "shockroach/shock_walk.wav" );
 
-	m_defaultModel = "models/w_shock_rifle.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "w_shock_rifle.mdl";
 	PRECACHE_MODEL(GetModel());
 }	
 

@@ -37,12 +37,12 @@ LINK_ENTITY_TO_CLASS(spore, CSpore);
 
 void CSpore::Precache()
 {
-	PRECACHE_MODEL( "models/spore.mdl" );
+	PRECACHE_MODEL( MOD_MDL_FOLDER "spore.mdl" );
 	PRECACHE_MODEL( "sprites/glow01.spr" );
 
-	m_iBlow = PRECACHE_MODEL( "sprites/spore_exp_01.spr" );
-	m_iBlowSmall = PRECACHE_MODEL( "sprites/spore_exp_c_01.spr" );
-	m_iSpitSprite = m_iTrail = PRECACHE_MODEL( "sprites/tinyspit.spr" );
+	m_iBlow = PRECACHE_MODEL(MOD_SPR_FOLDER "spore_exp_01.spr" );
+	m_iBlowSmall = PRECACHE_MODEL(MOD_SPR_FOLDER "spore_exp_c_01.spr" );
+	m_iSpitSprite = m_iTrail = PRECACHE_MODEL(MOD_SPR_FOLDER "tinyspit.spr" );
 
 	PRECACHE_SOUND( "weapons/splauncher_impact.wav" );
 	PRECACHE_SOUND( "weapons/splauncher_bounce.wav" );
@@ -59,7 +59,7 @@ void CSpore::Spawn()
 
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL( edict(), "models/spore.mdl" );
+	SET_MODEL( edict(), MOD_MDL_FOLDER "spore.mdl" );
 
 	UTIL_SetSize( pev, g_vecZero, g_vecZero );
 

@@ -202,7 +202,7 @@ void CMassn :: Spawn()
 
 void CMassn :: Precache()
 {
-	m_defaultModel = "models/massn.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "massn.mdl";
 	PRECACHE_MODEL(GetModel());
 	
 	PRECACHE_SOUND_ARRAY(pDieSounds);

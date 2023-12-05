@@ -32,22 +32,22 @@ const char* CBaseGruntOp4::pGruntSentences[] =
 
 const char* CBaseGruntOp4::pPainSounds[] =
 {
-	"fgrunt/pain1.wav",
-	"fgrunt/pain2.wav",
-	"fgrunt/pain3.wav",
-	"fgrunt/pain4.wav",
-	"fgrunt/pain5.wav",
-	"fgrunt/pain6.wav",
+	MOD_SND_FOLDER "fgrunt/pain1.wav",
+	MOD_SND_FOLDER "fgrunt/pain2.wav",
+	MOD_SND_FOLDER "fgrunt/pain3.wav",
+	MOD_SND_FOLDER "fgrunt/pain4.wav",
+	MOD_SND_FOLDER "fgrunt/pain5.wav",
+	MOD_SND_FOLDER "fgrunt/pain6.wav",
 };
 
 const char* CBaseGruntOp4::pDieSounds[] =
 {
-	"fgrunt/death1.wav",
-	"fgrunt/death2.wav",
-	"fgrunt/death3.wav",
-	"fgrunt/death4.wav",
-	"fgrunt/death5.wav",
-	"fgrunt/death6.wav",
+	MOD_SND_FOLDER "fgrunt/death1.wav",
+	MOD_SND_FOLDER "fgrunt/death2.wav",
+	MOD_SND_FOLDER "fgrunt/death3.wav",
+	MOD_SND_FOLDER "fgrunt/death4.wav",
+	MOD_SND_FOLDER "fgrunt/death5.wav",
+	MOD_SND_FOLDER "fgrunt/death6.wav",
 };
 
 void CBaseGruntOp4::InitAiFlags(void) {

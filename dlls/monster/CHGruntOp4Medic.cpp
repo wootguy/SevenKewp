@@ -323,13 +323,13 @@ void CHGruntOp4Medic :: Spawn()
 
 void CHGruntOp4Medic :: Precache()
 {
-	m_defaultModel = "models/hgrunt_medic.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "hgrunt_medic.mdl";
 	PRECACHE_MODEL(GetModel());
 
-	PRECACHE_SOUND( "fgrunt/medic_give_shot.wav" );
-	PRECACHE_SOUND( "fgrunt/medical.wav" );
+	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/medic_give_shot.wav" );
+	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/medical.wav" );
 
-	PRECACHE_SOUND( "fgrunt/medic.wav" );
+	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/medic.wav" );
 
 	CBaseGruntOp4::Precache();
 }	
@@ -350,7 +350,7 @@ void CHGruntOp4Medic :: StartTask ( Task_t *pTask )
 
 			if( !m_fHealAudioPlaying )
 			{
-				EMIT_SOUND( edict(), CHAN_WEAPON, "fgrunt/medic_give_shot.wav", VOL_NORM, ATTN_NORM);
+				EMIT_SOUND( edict(), CHAN_WEAPON, MOD_SND_FOLDER "fgrunt/medic_give_shot.wav", VOL_NORM, ATTN_NORM);
 				m_fHealAudioPlaying = true;
 			}
 			break;
@@ -372,7 +372,7 @@ void CHGruntOp4Medic :: StartTask ( Task_t *pTask )
 				m_fHealing = false;
 				m_fUseHealing = false;
 
-				STOP_SOUND( edict(), CHAN_WEAPON, "fgrunt/medic_give_shot.wav" );
+				STOP_SOUND( edict(), CHAN_WEAPON, MOD_SND_FOLDER "fgrunt/medic_give_shot.wav" );
 
 				m_fFollowChecked = false;
 				m_fFollowChecking = false;
@@ -390,7 +390,7 @@ void CHGruntOp4Medic :: StartTask ( Task_t *pTask )
 			m_fHealing = false;
 			m_fUseHealing = false;
 
-			STOP_SOUND( edict(), CHAN_WEAPON, "fgrunt/medic_give_shot.wav" );
+			STOP_SOUND( edict(), CHAN_WEAPON, MOD_SND_FOLDER "fgrunt/medic_give_shot.wav" );
 
 			m_fFollowChecked = false;
 			m_fFollowChecking = false;
@@ -839,7 +839,7 @@ void CHGruntOp4Medic::HealerActivate( CBaseMonster* pTarget )
 
 		ClearSchedule();
 
-		EMIT_SOUND( edict(), CHAN_VOICE, "fgrunt/medical.wav", VOL_NORM, ATTN_NORM );
+		EMIT_SOUND( edict(), CHAN_VOICE, MOD_SND_FOLDER "fgrunt/medical.wav", VOL_NORM, ATTN_NORM );
 
 		ChangeSchedule( slMedicAllyDrawNeedle );
 	}

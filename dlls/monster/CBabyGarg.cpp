@@ -36,6 +36,8 @@ public:
 	void StompSound();
 	void BreatheSound();
 
+	float m_lastPainSound;
+
 private:
 	static const char* pBeamAttackSounds[];
 	static const char* pFootSounds[];
@@ -155,7 +157,7 @@ void CBabyGarg::Precache()
 {
 	int i;
 
-	m_defaultModel = "models/babygarg.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "babygarg.mdl";
 	PRECACHE_MODEL(GetModel());
 	
 	// TODO: Friendly variant, but just as a skin to reduce model count
@@ -188,12 +190,15 @@ int CBabyGarg::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float
 
 void CBabyGarg::Killed(entvars_t* pevAttacker, int iGib)
 {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1.0, ATTN_GARG, 0, 250);
 	CGargantua::Killed(pevAttacker, GIB_NEVER);
 }
 
 void CBabyGarg::PainSound() {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
+	if (gpGlobals->time - m_lastPainSound > 3.0f) {
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
+		m_lastPainSound = gpGlobals->time;
+	}
 }
 
 void CBabyGarg::AttackSound() {

@@ -88,11 +88,11 @@ IMPLEMENT_SAVERESTORE( CPitdroneSpike, CBaseEntity );
 
 void CPitdroneSpike::Precache()
 {
-	PRECACHE_MODEL( "models/pit_drone_spike.mdl" );
+	PRECACHE_MODEL(MOD_MDL_FOLDER "pit_drone_spike.mdl" );
 	PRECACHE_SOUND( "weapons/xbow_hitbod1.wav" );
 	PRECACHE_SOUND( "weapons/xbox_hit1.wav" );
 
-	iSpikeTrail = PRECACHE_MODEL( "sprites/spike_trail.spr" );
+	iSpikeTrail = PRECACHE_MODEL(MOD_SPR_FOLDER "spike_trail.spr" );
 }
 
 void CPitdroneSpike:: Spawn( void )
@@ -105,7 +105,7 @@ void CPitdroneSpike:: Spawn( void )
 	pev->flags |= FL_MONSTER;
 	pev->health = 1;
 
-	SET_MODEL(ENT(pev), "models/pit_drone_spike.mdl");
+	SET_MODEL(ENT(pev), MOD_MDL_FOLDER "pit_drone_spike.mdl");
 	pev->frame = 0;
 	pev->scale = 0.5;
 
@@ -280,51 +280,51 @@ LINK_ENTITY_TO_CLASS( monster_pitdrone, CPitdrone );
 
 const char* CPitdrone::pAlertSounds[] =
 {
-	"pitdrone/pit_drone_alert1.wav",
-	"pitdrone/pit_drone_alert2.wav",
-	"pitdrone/pit_drone_alert3.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_alert1.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_alert2.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_alert3.wav",
 };
 const char* CPitdrone::pSpikeSounds[] =
 {
-	"pitdrone/pit_drone_attack_spike1.wav",
-	"pitdrone/pit_drone_attack_spike2.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_attack_spike1.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_attack_spike2.wav",
 };
 const char* CPitdrone::pTalkSounds[] =
 {
-	"pitdrone/pit_drone_communicate1.wav",
-	"pitdrone/pit_drone_communicate2.wav",
-	"pitdrone/pit_drone_communicate3.wav",
-	"pitdrone/pit_drone_communicate4.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_communicate1.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_communicate2.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_communicate3.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_communicate4.wav",
 };
 const char* CPitdrone::pDieSounds[] =
 {
-	"pitdrone/pit_drone_die1.wav",
-	"pitdrone/pit_drone_die2.wav",
-	"pitdrone/pit_drone_die3.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_die1.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_die2.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_die3.wav",
 };
 const char* CPitdrone::pHuntSounds[] =
 {
-	"pitdrone/pit_drone_hunt1.wav",
-	"pitdrone/pit_drone_hunt2.wav",
-	"pitdrone/pit_drone_hunt3.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_hunt1.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_hunt2.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_hunt3.wav",
 };
 const char* CPitdrone::pIdleSounds[] =
 {
-	"pitdrone/pit_drone_idle1.wav",
-	"pitdrone/pit_drone_idle2.wav",
-	"pitdrone/pit_drone_idle3.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_idle1.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_idle2.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_idle3.wav",
 };
 const char* CPitdrone::pPainSounds[] =
 {
-	"pitdrone/pit_drone_pain1.wav",
-	"pitdrone/pit_drone_pain2.wav",
-	"pitdrone/pit_drone_pain3.wav",
-	"pitdrone/pit_drone_pain4.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_pain1.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_pain2.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_pain3.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_pain4.wav",
 };
 const char* CPitdrone::pBiteSounds[] =
 {
-	"pitdrone/bc_bite2.wav",
-	"pitdrone/bc_bite3.wav",
+	MOD_SND_FOLDER "pitdrone/bc_bite2.wav",
+	MOD_SND_FOLDER "pitdrone/bc_bite3.wav",
 };
 
 TYPEDESCRIPTION	CPitdrone::m_SaveData[] = 
@@ -733,9 +733,9 @@ void CPitdrone :: Spawn()
 //=========================================================
 void CPitdrone :: Precache()
 {
-	m_defaultModel = "models/pit_drone.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "pit_drone.mdl";
 	PRECACHE_MODEL(GetModel());
-	PRECACHE_MODEL( "models/pit_drone_gibs.mdl" );
+	PRECACHE_MODEL(MOD_MDL_FOLDER "pit_drone_gibs.mdl" );
 
 	UTIL_PrecacheOther( "pitdronespike" );
 	
@@ -752,9 +752,9 @@ void CPitdrone :: Precache()
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pBiteSounds);
 
-	PRECACHE_SOUND( "pitdrone/pit_drone_melee_attack1.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_melee_attack2.wav" );
-	PRECACHE_SOUND( "pitdrone/pit_drone_run_on_grate.wav" );
+	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_melee_attack1.wav" );
+	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_melee_attack2.wav" );
+	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_run_on_grate.wav" );
 }
 
 //========================================================
@@ -1236,7 +1236,7 @@ void CPitdrone::GibMonster()
 	if( CVAR_GET_FLOAT( "violence_agibs" ) != 0 )	// Should never get here, but someone might call it directly
 	{
 		//Note: the original doesn't check for German censorship
-		CGib::SpawnRandomGibs( pev, 6, "models/pit_drone_gibs.mdl", 7, 0 );	// Throw alien gibs
+		CGib::SpawnRandomGibs( pev, 6, MOD_MDL_FOLDER "pit_drone_gibs.mdl", 7, 0 );	// Throw alien gibs
 	}
 
 	// don't remove players!

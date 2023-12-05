@@ -39,13 +39,13 @@
 #define MAX_ALLOWED_CHILDREN 3
 
 #define SHOCK_WAVE_SPRITE "sprites/shockwave.spr"
-#define SHOOT_SOUND "tor/tor-staff-discharge.wav"
+#define SHOOT_SOUND MOD_SND_FOLDER "tor/tor-staff-discharge.wav"
 #define SHOOT_BEAM_SPRITE "sprites/xenobeam.spr"
 #define PORTAL_SPRITE "sprites/exit1.spr"
 #define PORTAL_BEAM_SPRITE "sprites/lgtning.spr"
 #define PORTAL_SOUND "debris/beamstart8.wav"
 #define PORTAL_SOUND2 "debris/beamstart7.wav"
-#define SUMMON_SOUND "tor/tor-summon.wav"
+#define SUMMON_SOUND MOD_SND_FOLDER "tor/tor-summon.wav"
 #define SUMMON_CLASSNAME "monster_alien_grunt"
 
 int slamSpriteIdx = 0;
@@ -148,30 +148,30 @@ const char* CTor::pAttackMissSounds[] =
 
 const char* CTor::pAttackSounds[] =
 {
-	"tor/tor-attack1.wav",
-	"tor/tor-attack2.wav"
+	MOD_SND_FOLDER "tor/tor-attack1.wav",
+	MOD_SND_FOLDER "tor/tor-attack2.wav"
 };
 
 const char* CTor::pIdleSounds[] =
 {
-	"tor/tor-idle.wav",
-	"tor/tor-idle2.wav",
-	"tor/tor-idle3.wav"
+	MOD_SND_FOLDER "tor/tor-idle.wav",
+	MOD_SND_FOLDER "tor/tor-idle2.wav",
+	MOD_SND_FOLDER "tor/tor-idle3.wav"
 };
 
 const char* CTor::pAlertSounds[] =
 {
-	"tor/tor-alerted.wav"
+	MOD_SND_FOLDER "tor/tor-alerted.wav"
 };
 
 const char* CTor::pPainSounds[] =
 {
-	"tor/tor-pain.wav"
+	MOD_SND_FOLDER "tor/tor-pain.wav"
 };
 
 const char* CTor::pRunSounds[] =
 {
-	"tor/tor-foot.wav"
+	MOD_SND_FOLDER "tor/tor-foot.wav"
 };
 
 const char* CTor::pSlamSounds[] =
@@ -519,7 +519,7 @@ void CTor::Spawn()
 
 void CTor::Precache()
 {
-	m_defaultModel = "models/tor.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "tor.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(SHOOT_BEAM_SPRITE);
 	PRECACHE_MODEL(PORTAL_BEAM_SPRITE);

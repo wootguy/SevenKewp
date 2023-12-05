@@ -427,7 +427,7 @@ void COtis :: OtisFirePistol ( void )
 		pitchShift = 0;
 	else
 		pitchShift -= 5;
-	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "weapons/de_shot1.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
+	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "weapons/de_shot1.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
 
 	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
 
@@ -520,10 +520,10 @@ void COtis :: Spawn()
 //=========================================================
 void COtis :: Precache()
 {
-	m_defaultModel = "models/otis.mdl";
+	m_defaultModel = MOD_MDL_FOLDER "otis.mdl";
 	PRECACHE_MODEL(GetModel());
 
-	PRECACHE_SOUND( "weapons/de_shot1.wav" );
+	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/de_shot1.wav" );
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDieSounds);
