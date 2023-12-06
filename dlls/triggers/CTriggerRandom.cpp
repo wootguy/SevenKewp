@@ -103,6 +103,22 @@ void CTriggerRandom::Spawn(void)
 	if (pev->spawnflags & (SF_START_ON | SF_TRIGGER_ONCE | SF_TIMED)) {
 		ALERT(at_error, "trigger_random: timed mode not implemented\n");
 	}
+
+	// in sven, if you leave a target blank, it will be removed from the possible targets
+	// so you can't ever trigger nothing. If you list 2 targets with a 4 target count,
+	// then the target count becomes 2 and the empty slots are ignored. This doesn't
+	// apply to slots that come after the specified target_count. So if you have a 4
+	// target count, then list 1 blank followed by 4 targets, then only the first 3 targets are used.
+	string_t newTargets[MAX_RANDOM_TARGETS];
+	int newCount = 0;
+	for (int i = 0; i < target_count; i++) {
+		if (targets[i]) {
+			newTargets[newCount++] = targets[i];
+		}
+	}
+	memset(targets, 0, MAX_RANDOM_TARGETS * sizeof(string_t));
+	memcpy(targets, newTargets, newCount * sizeof(string_t));
+	target_count = newCount;
 }
 
 void CTriggerRandom::TimedThink() {
