@@ -261,7 +261,7 @@ void UTIL_PrecacheOtherWeapon( const char *szClassname )
 	pent = CREATE_NAMED_ENTITY( MAKE_STRING( szClassname ) );
 	if ( FNullEnt( pent ) )
 	{
-		ALERT ( at_console, "NULL Ent in UTIL_PrecacheOtherWeapon\n" );
+		ALERT ( at_console, UTIL_VarArgs("NULL Ent '%s' in UTIL_PrecacheOtherWeapon\n", szClassname) );
 		return;
 	}
 	

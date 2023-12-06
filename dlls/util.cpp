@@ -1635,7 +1635,7 @@ void UTIL_PrecacheOther( const char *szClassname )
 	pent = CREATE_NAMED_ENTITY( MAKE_STRING( szClassname ) );
 	if ( FNullEnt( pent ) )
 	{
-		ALERT ( at_console, "NULL Ent in UTIL_PrecacheOther\n" );
+		ALERT ( at_console, UTIL_VarArgs("NULL Ent '%s' in UTIL_PrecacheOther\n", szClassname) );
 		return;
 	}
 	

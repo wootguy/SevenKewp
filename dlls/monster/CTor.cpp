@@ -696,7 +696,7 @@ void CTor::SpawnGrunt() {
 
 	if (FNullEnt(pent))
 	{
-		ALERT(at_console, "NULL Ent spawned by TOR!\n");
+		ALERT(at_console, UTIL_VarArgs("NULL Ent '%s' spawned by TOR!\n", summon_cname));
 		return;
 	}
 

@@ -125,7 +125,7 @@ const char* CGonome::pEventSounds[] =
 	MOD_SND_FOLDER "gonome/gonome_eat.wav",
 	MOD_SND_FOLDER "gonome/gonome_death2.wav",
 	MOD_SND_FOLDER "gonome/gonome_death3.wav",
-	MOD_SND_FOLDER "gonome/gonome_death4.wav"
+	MOD_SND_FOLDER "gonome/gonome_death4.wav",
 
 	// not actually event sounds but wtv
 	"bullchicken/bc_acid1.wav",
