@@ -132,6 +132,7 @@ private:
 };
 
 LINK_ENTITY_TO_CLASS(monster_alien_tor, CTor);
+LINK_ENTITY_TO_CLASS(monster_kingpin, CTor);
 
 const char* CTor::pAttackHitSounds[] =
 {

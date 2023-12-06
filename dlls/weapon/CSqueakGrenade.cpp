@@ -114,7 +114,7 @@ int CSqueakGrenade::IRelationship(CBaseEntity* pTarget)
 {
 	// don't attack friendly players
 	CBaseEntity* owner = m_hOwner.GetEntity();
-	if (!FNullEnt(owner->edict())) {
+	if (owner && !FNullEnt(owner->edict())) {
 		CBaseMonster* mon = owner->MyMonsterPointer();
 		if (mon && mon->IsPlayer() && pTarget->entindex() != owner->entindex()) {
 			return mon->IRelationship(pTarget);

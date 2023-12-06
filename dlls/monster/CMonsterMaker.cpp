@@ -393,6 +393,7 @@ void CMonsterMaker::MakeMonster( void )
 	pent->v.renderamt = pev->renderamt;
 	pent->v.renderfx = pev->renderfx;
 	pent->v.rendercolor = pev->rendercolor;
+	pent->v.weapons = pev->weapons;
 
 	CBaseMonster* mon = ((CBaseEntity*)GET_PRIVATE(pent))->MyMonsterPointer();
 	if (mon) {

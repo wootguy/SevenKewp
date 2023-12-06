@@ -357,7 +357,13 @@ class CMP5AmmoGrenade : public CBasePlayerAmmo
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
-		int bResult = (pOther->GiveAmmo( AMMO_M203BOX_GIVE, "ARgrenades", M203_GRENADE_MAX_CARRY ) != -1);
+		// nerf nade ammo spawned by spores
+		int giveAmount = AMMO_M203BOX_GIVE;
+		if (!strcmp(STRING(pev->classname), "weapon_sporelauncher") || !strcmp(STRING(pev->classname), "ammo_sporeclip") || !strcmp(STRING(pev->classname), "ammo_spore") ) {
+			giveAmount = 1;
+		}
+
+		int bResult = (pOther->GiveAmmo(giveAmount, "ARgrenades", M203_GRENADE_MAX_CARRY) != -1);
 
 		if (bResult)
 		{
