@@ -74,6 +74,7 @@ set(MONSTER_SRC
 	monster/CPitdrone.cpp
 	monster/CRat.cpp
 	monster/CRoach.cpp
+	monster/CRoboGrunt.cpp
 	monster/CScientist.cpp
 	monster/CSentry.cpp
 	monster/CShockRoach.cpp

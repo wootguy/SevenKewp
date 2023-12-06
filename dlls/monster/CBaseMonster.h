@@ -326,6 +326,7 @@ public:
 	void		 CallGibMonster( void );
 	virtual BOOL	HasHumanGibs( void );
 	virtual BOOL	HasAlienGibs( void );
+	virtual BOOL	IsMachine( void );
 	virtual void	FadeMonster( void );	// Called instead of GibMonster() when gibs are disabled
 
 	Vector ShootAtEnemy( const Vector &shootOrigin );

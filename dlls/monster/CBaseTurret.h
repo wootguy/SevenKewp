@@ -28,6 +28,7 @@ public:
 	virtual void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	virtual int	 TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	virtual int	 Classify(void);
+	BOOL IsMachine() { return 1; } // ignore classification overrides
 
 	int BloodColor(void) { return DONT_BLEED; }
 	void GibMonster(void) {}	// UNDONE: Throw turret gibs?
