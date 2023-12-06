@@ -224,7 +224,7 @@ void CMonsterMaker::MakeMonster( void )
 
 	if ( FNullEnt( pent ) )
 	{
-		ALERT ( at_console, "NULL Ent in MonsterMaker!\n" );
+		ALERT ( at_console, UTIL_VarArgs("NULL Ent '%s' in MonsterMaker!\n", STRING(m_iszMonsterClassname)) );
 		return;
 	}
 
@@ -232,6 +232,12 @@ void CMonsterMaker::MakeMonster( void )
 	if (pev->health) {
 		pent->v.health = pev->health;
 	}
+
+	pent->v.rendermode = pev->rendermode;
+	pent->v.renderamt = pev->renderamt;
+	pent->v.renderfx = pev->renderfx;
+	pent->v.rendercolor = pev->rendercolor;
+
 	CBaseMonster* mon = ((CBaseEntity*)GET_PRIVATE(pent))->MyMonsterPointer();
 	if (mon) {
 		mon->m_iszTriggerTarget = m_iszTriggerTarget;

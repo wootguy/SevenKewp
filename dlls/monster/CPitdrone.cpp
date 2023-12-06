@@ -90,7 +90,7 @@ void CPitdroneSpike::Precache()
 {
 	PRECACHE_MODEL(MOD_MDL_FOLDER "pit_drone_spike.mdl" );
 	PRECACHE_SOUND( "weapons/xbow_hitbod1.wav" );
-	PRECACHE_SOUND( "weapons/xbox_hit1.wav" );
+	PRECACHE_SOUND( "weapons/xbow_hit1.wav" );
 
 	iSpikeTrail = PRECACHE_MODEL(MOD_SPR_FOLDER "spike_trail.spr" );
 }
@@ -323,8 +323,8 @@ const char* CPitdrone::pPainSounds[] =
 };
 const char* CPitdrone::pBiteSounds[] =
 {
-	MOD_SND_FOLDER "pitdrone/bc_bite2.wav",
-	MOD_SND_FOLDER "pitdrone/bc_bite3.wav",
+	"bullchicken/bc_bite2.wav",
+	"bullchicken/bc_bite3.wav",
 };
 
 TYPEDESCRIPTION	CPitdrone::m_SaveData[] = 
