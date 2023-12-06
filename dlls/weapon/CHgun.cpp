@@ -50,6 +50,8 @@ BOOL CHgun::IsUseable( void )
 
 void CHgun::Spawn( )
 {
+	pev->classname = MAKE_STRING("weapon_hornetgun"); // hack to allow for alternate names
+	
 	Precache( );
 	m_iId = WEAPON_HORNETGUN;
 	SET_MODEL(ENT(pev), "models/w_hgun.mdl");

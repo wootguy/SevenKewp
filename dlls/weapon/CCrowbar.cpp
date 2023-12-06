@@ -45,6 +45,8 @@ enum gauss_e {
 
 void CCrowbar::Spawn( )
 {
+	pev->classname = MAKE_STRING("weapon_crowbar"); // hack to allow for alternate names
+
 	Precache( );
 	m_iId = WEAPON_CROWBAR;
 	SET_MODEL(ENT(pev), "models/w_crowbar.mdl");

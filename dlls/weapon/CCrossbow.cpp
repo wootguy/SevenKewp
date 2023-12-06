@@ -239,6 +239,8 @@ LINK_ENTITY_TO_CLASS( weapon_crossbow, CCrossbow );
 
 void CCrossbow::Spawn( )
 {
+	pev->classname = MAKE_STRING("weapon_crossbow"); // hack to allow for alternate names
+
 	Precache( );
 	m_iId = WEAPON_CROSSBOW;
 	SET_MODEL(ENT(pev), "models/w_crossbow.mdl");
@@ -542,6 +544,7 @@ class CCrossbowAmmo : public CBasePlayerAmmo
 	}
 };
 LINK_ENTITY_TO_CLASS( ammo_crossbow, CCrossbowAmmo );
+LINK_ENTITY_TO_CLASS( ammo_762, CCrossbowAmmo );
 
 
 
