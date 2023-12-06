@@ -38,7 +38,7 @@ public:
 	int BloodColor(void) { return DONT_BLEED; }
 	void GibMonster(void);
 	void Killed(entvars_t* pevAttacker, int iGib);
-	void ExplodeThink(void);
+	void EXPORT ExplodeThink(void);
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	void DeathSound(void);
 	void IdleSound(void);
