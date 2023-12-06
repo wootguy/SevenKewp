@@ -358,15 +358,15 @@ bool CheatCommand(edict_t* pEntity) {
 			}
 		}
 
-		if (count > 1 || !lastTriggerClass) {
+		if (count > 1) {
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/wpn_denyselect.wav", 0.4, ATTN_NORM);
 			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("Triggered %d entities\n", count));
 		}
 		else if (count == 1) {
 			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("Triggered a %s\n", STRING(lastTriggerClass)));
 		}
-		else {
-			CLIENT_PRINTF(pEntity, print_center, "Nothing was triggered\n");
-		}
+		
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, count > 0 ? "common/wpn_select.wav" : "common/wpn_denyselect.wav", 0.4, ATTN_NORM);
 	}
 	else {
 		return false;

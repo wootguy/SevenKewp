@@ -97,7 +97,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS(monster_male_assassin, CMassn);
-LINK_ENTITY_TO_CLASS(monster_assassin_dead, CMassnRepel);
+LINK_ENTITY_TO_CLASS(monster_assassin_repel, CMassnRepel);
 LINK_ENTITY_TO_CLASS(monster_massassin_dead, CDeadMassn);
 
 const char* CMassn::pDieSounds[] =

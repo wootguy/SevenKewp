@@ -2513,12 +2513,6 @@ void CBaseRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 
 	CBaseEntity* pEntity = Create(GetMonsterType(), pev->origin, pev->angles);
 	CBaseMonster* pGrunt = pEntity->MyMonsterPointer();
-	pGrunt->pev->movetype = MOVETYPE_FLY;
-	pGrunt->pev->velocity = Vector(0, 0, RANDOM_FLOAT(-196, -128));
-	pGrunt->SetActivity(ACT_GLIDE);
-	// UNDONE: position?
-	pGrunt->m_vecLastPosition = tr.vecEndPos;
-
 	CBaseGrunt* baseGrunt = static_cast<CBaseGrunt*>(pEntity->MyTalkSquadMonsterPointer());
 
 	if (baseGrunt)
@@ -2542,6 +2536,24 @@ void CBaseRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 		//Run logic to set up body groups (Spawn was already called once by Create above)
 		baseGrunt->Spawn();
 	}
+
+	pGrunt->pev->movetype = MOVETYPE_FLY;
+	pGrunt->pev->velocity = Vector(0, 0, RANDOM_FLOAT(-196, -128));
+	pGrunt->SetActivity(ACT_GLIDE);
+	// UNDONE: position?
+	pGrunt->m_vecLastPosition = tr.vecEndPos;
+
+	// copy settings from parent
+	pGrunt->pev->rendermode = pev->rendermode;
+	pGrunt->pev->renderamt = pev->renderamt;
+	pGrunt->pev->renderfx = pev->renderfx;
+	pGrunt->pev->rendercolor = pev->rendercolor;
+	pGrunt->m_iszTriggerTarget = m_iszTriggerTarget;
+	pGrunt->m_iTriggerCondition = m_iTriggerCondition;
+	pGrunt->m_displayName = m_displayName;
+	pGrunt->m_Classify = m_Classify;
+	pGrunt->m_IsPlayerAlly = m_IsPlayerAlly;
+	pGrunt->pev->owner = pev->owner; // required for repel grunts spawned by monstermaker
 
 	CBeam* pBeam = CBeam::BeamCreate("sprites/rope.spr", 10);
 	pBeam->PointEntInit(pev->origin + Vector(0, 0, 112), pGrunt->entindex());

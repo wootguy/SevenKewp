@@ -233,6 +233,8 @@ void CMonsterMaker::MakeMonster( void )
 		pent->v.health = pev->health;
 	}
 
+	// TODO: Repel monsters need to do this setting-copy stuff too.
+	// make a generic function that they all use instead of duplicating codes
 	pent->v.rendermode = pev->rendermode;
 	pent->v.renderamt = pev->renderamt;
 	pent->v.renderfx = pev->renderfx;
