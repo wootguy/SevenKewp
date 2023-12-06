@@ -310,6 +310,8 @@ class CMP5AmmoClip : public CBasePlayerAmmo
 };
 LINK_ENTITY_TO_CLASS( ammo_mp5clip, CMP5AmmoClip );
 LINK_ENTITY_TO_CLASS( ammo_9mmAR, CMP5AmmoClip );
+LINK_ENTITY_TO_CLASS(ammo_556clip, CMP5AmmoClip);
+LINK_ENTITY_TO_CLASS(ammo_uziclip, CMP5AmmoClip);
 
 
 
@@ -337,6 +339,7 @@ class CMP5Chainammo : public CBasePlayerAmmo
 	}
 };
 LINK_ENTITY_TO_CLASS( ammo_9mmbox, CMP5Chainammo );
+LINK_ENTITY_TO_CLASS( ammo_556, CMP5Chainammo );
 
 
 class CMP5AmmoGrenade : public CBasePlayerAmmo
@@ -366,20 +369,8 @@ class CMP5AmmoGrenade : public CBasePlayerAmmo
 LINK_ENTITY_TO_CLASS( ammo_mp5grenades, CMP5AmmoGrenade );
 LINK_ENTITY_TO_CLASS( ammo_ARgrenades, CMP5AmmoGrenade );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+LINK_ENTITY_TO_CLASS( weapon_sporelauncher, CMP5AmmoGrenade );
+LINK_ENTITY_TO_CLASS( ammo_sporeclip, CMP5AmmoGrenade );
+LINK_ENTITY_TO_CLASS( ammo_spore, CMP5AmmoGrenade );
 
 

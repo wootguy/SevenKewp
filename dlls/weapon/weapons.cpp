@@ -54,6 +54,19 @@ MULTIDAMAGE gMultiDamage;
 
 #define TRACER_FREQ		4			// Tracers fire every fourth bullet
 
+// TODO: implement all these weapons instead of remapping them to half-life guns
+LINK_ENTITY_TO_CLASS(weapon_uzi, CMP5);
+LINK_ENTITY_TO_CLASS(weapon_uziakimbo, CMP5);
+LINK_ENTITY_TO_CLASS(weapon_m16, CMP5);
+LINK_ENTITY_TO_CLASS(weapon_m249, CMP5);
+LINK_ENTITY_TO_CLASS(weapon_minigun, CMP5);
+LINK_ENTITY_TO_CLASS(weapon_pipewrench, CCrowbar);
+LINK_ENTITY_TO_CLASS(weapon_grapple, CCrowbar);
+LINK_ENTITY_TO_CLASS(weapon_medkit, CCrowbar);
+LINK_ENTITY_TO_CLASS(weapon_eagle, CPython);
+LINK_ENTITY_TO_CLASS(weapon_sniperrifle, CCrossbow);
+LINK_ENTITY_TO_CLASS(weapon_displacer, CEgon);
+LINK_ENTITY_TO_CLASS(weapon_shockrifle, CHgun);
 
 //=========================================================
 // MaxAmmoCarry - pass in a name and this function will tell

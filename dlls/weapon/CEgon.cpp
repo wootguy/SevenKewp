@@ -53,6 +53,8 @@ LINK_ENTITY_TO_CLASS( weapon_egon, CEgon );
 
 void CEgon::Spawn( )
 {
+	pev->classname = MAKE_STRING("weapon_egon"); // hack to allow for alternate names
+
 	Precache( );
 	m_iId = WEAPON_EGON;
 	SET_MODEL(ENT(pev), "models/w_egon.mdl");
