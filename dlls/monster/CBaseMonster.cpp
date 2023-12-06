@@ -3798,6 +3798,11 @@ BOOL CBaseMonster::HasAlienGibs(void)
 	return FALSE;
 }
 
+BOOL CBaseMonster::IsMachine(void)
+{
+	return Classify() == CLASS_MACHINE;
+}
+
 void CBaseMonster::FadeMonster(void)
 {
 	StopAnimation();
@@ -3818,11 +3823,40 @@ void CBaseMonster::GibMonster(void)
 	TraceResult	tr;
 	BOOL		gibbed = FALSE;
 
-	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM);
-
-	// only humans throw skulls !!!UNDONE - eventually monsters will have their own sets of gibs
-	if (HasHumanGibs())
+	if (!IsMachine())
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM);
+	
+	if (IsMachine())
 	{
+		Vector position = pev->origin;
+		position.z += (pev->absmax.z - pev->absmin.z) * 0.5f;
+		Vector size = (pev->absmax - pev->absmin);
+		Vector vecVelocity = Vector(0, 0, 150);
+		int gibModelId = PRECACHE_MODEL((char*)"models/computergibs.mdl");
+
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, position);
+		WRITE_BYTE(TE_BREAKMODEL);
+		WRITE_COORD(position.x);
+		WRITE_COORD(position.y);
+		WRITE_COORD(position.z);
+		WRITE_COORD(size.x);
+		WRITE_COORD(size.y);
+		WRITE_COORD(size.z);
+		WRITE_COORD(vecVelocity.x);
+		WRITE_COORD(vecVelocity.y);
+		WRITE_COORD(vecVelocity.z);
+		WRITE_BYTE(30); // randomization
+		WRITE_SHORT(gibModelId); // model id#
+		WRITE_BYTE(0);	// let client decide # of shards
+		WRITE_BYTE(25);// duration 2.5 seconds
+		WRITE_BYTE(BREAK_METAL); // flags
+		MESSAGE_END();
+
+		gibbed = TRUE;
+	}
+	else if (HasHumanGibs())
+	{
+		// only humans throw skulls !!!UNDONE - eventually monsters will have their own sets of gibs
 		if (CVAR_GET_FLOAT("violence_hgibs") != 0)	// Only the player will ever get here
 		{
 			CGib::SpawnHeadGib(pev);
