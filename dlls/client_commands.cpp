@@ -450,11 +450,11 @@ void ClientCommand(edict_t* pEntity)
 			pPlayer->StartObserver(pev->origin, VARS(pentSpawnSpot)->angles);
 
 			// notify other clients of player switching to spectator mode
-			UTIL_ClientPrintAll(HUD_PRINTNOTIFY, UTIL_VarArgs("%s switched to spectator mode\n",
+			UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s switched to spectator mode\n",
 				(pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "unconnected"));
 		}
 		else
-			ClientPrint(pev, HUD_PRINTCONSOLE, "Spectator mode is disabled.\n");
+			UTIL_ClientPrint(pEntity, print_console, "Spectator mode is disabled.\n");
 
 	}
 	else if (FStrEq(pcmd, "specmode"))	// new spectator mode
@@ -490,6 +490,6 @@ void ClientCommand(edict_t* pEntity)
 		command[127] = '\0';
 
 		// tell the user they entered an unknown command
-		ClientPrint(&pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs("Unknown command: %s\n", command));
+		UTIL_ClientPrint(pEntity, print_console, UTIL_VarArgs("Unknown command: %s\n", command));
 	}
 }

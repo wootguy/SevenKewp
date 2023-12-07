@@ -945,40 +945,18 @@ void UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage )
 
 					 
 extern int gmsgTextMsg, gmsgSayText;
-void UTIL_ClientPrintAll( int msg_dest, const char *msg_name, const char *param1, const char *param2, const char *param3, const char *param4 )
+void UTIL_ClientPrintAll( int msg_dest, const char *msg )
 {
-	MESSAGE_BEGIN( MSG_ALL, gmsgTextMsg );
-		WRITE_BYTE( msg_dest );
-		WRITE_STRING( msg_name );
-
-		if ( param1 )
-			WRITE_STRING( param1 );
-		if ( param2 )
-			WRITE_STRING( param2 );
-		if ( param3 )
-			WRITE_STRING( param3 );
-		if ( param4 )
-			WRITE_STRING( param4 );
-
-	MESSAGE_END();
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		edict_t* ent = INDEXENT(i);
+		if (IsValidPlayer(ent))
+			CLIENT_PRINTF(ent, (PRINT_TYPE)msg_dest, msg);
+	}
 }
 
-void ClientPrint( entvars_t *client, int msg_dest, const char *msg_name, const char *param1, const char *param2, const char *param3, const char *param4 )
+void UTIL_ClientPrint( edict_t* client, int msg_dest, const char * msg)
 {
-	MESSAGE_BEGIN( MSG_ONE, gmsgTextMsg, NULL, client );
-		WRITE_BYTE( msg_dest );
-		WRITE_STRING( msg_name );
-
-		if ( param1 )
-			WRITE_STRING( param1 );
-		if ( param2 )
-			WRITE_STRING( param2 );
-		if ( param3 )
-			WRITE_STRING( param3 );
-		if ( param4 )
-			WRITE_STRING( param4 );
-
-	MESSAGE_END();
+	CLIENT_PRINTF(client, (PRINT_TYPE)msg_dest, msg);
 }
 
 void UTIL_SayText( const char *pText, CBaseEntity *pEntity )
