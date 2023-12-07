@@ -55,11 +55,12 @@ edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
 
 	std::vector<CBaseEntity*> enabledSpawns;
 	std::vector<CBaseEntity*> clearSpawns;
+	std::vector<CBaseEntity*> legacySpawns;
 
 	const int SPAWN_ENT_TYPES = 4;
 	const char* spawn_ent_names[SPAWN_ENT_TYPES] = {
-		"info_player_deathmatch",
 		"info_player_start",
+		"info_player_deathmatch",
 		"info_player_dm2",
 		"info_player_coop"
 	};
@@ -67,6 +68,10 @@ edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
 	for (int i = 0; i < SPAWN_ENT_TYPES; i++) {
 		pSpot = NULL;
 		while (!FNullEnt(pSpot = UTIL_FindEntityByClassname(pSpot, spawn_ent_names[i]))) {
+			if (i == 0) {
+				legacySpawns.push_back(pSpot);
+				continue;
+			}
 			if (pSpot->IsTriggered(pPlayer)) {
 				enabledSpawns.push_back(pSpot);
 				
@@ -77,11 +82,19 @@ edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
 		}
 	}
 
+	// Spawn point priority:
+	// 1. Any non-legacy spawn point which is both enabled and unblocked
+	// 2. Any non-legacy spawn point which is enabled
+	// 3. Any legacy spawn point (info_player_start)
+
 	if (clearSpawns.size()) {
 		pSpot = clearSpawns[RANDOM_LONG(0, clearSpawns.size()-1)];
 	}
 	else if (enabledSpawns.size()) {
 		pSpot = enabledSpawns[RANDOM_LONG(0, enabledSpawns.size() - 1)];
+	}
+	else if (legacySpawns.size()) {
+		pSpot = legacySpawns[RANDOM_LONG(0, legacySpawns.size() - 1)];
 	}
 	else {
 		ALERT(at_error, "PutClientInServer: no info_player_start on level");
