@@ -420,7 +420,7 @@ int UTIL_EntitiesInBox( CBaseEntity **pList, int listMax, const Vector &mins, co
 		if ( flagMask && !(pEdict->v.flags & flagMask) )	// Does it meet the criteria?
 			continue;
 
-		if (ignoreDead && pEdict->v.deadflag != DEAD_NO)
+		if (ignoreDead && pEdict->v.deadflag >= DEAD_DEAD)
 			continue;
 
 		if ( mins.x > pEdict->v.absmax.x ||
