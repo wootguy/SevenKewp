@@ -195,6 +195,11 @@ void CFuncPlat::Blocked(CBaseEntity* pOther)
 	// Hurt the blocker a little
 	pOther->TakeDamage(pev, pev, 1, DMG_CRUSH);
 
+	if (pOther->IsMonster() && !pOther->IsAlive()) {
+		// don't let corpses block anything
+		pOther->Killed(pev, GIB_ALWAYS);
+	}
+
 	if (pev->noiseMovement)
 		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
 

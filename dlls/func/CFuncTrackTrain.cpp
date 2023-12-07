@@ -93,6 +93,12 @@ void CFuncTrackTrain::Blocked(CBaseEntity* pOther)
 		pevOther->velocity = (pevOther->origin - pev->origin).Normalize() * pev->dmg;
 
 	ALERT(at_aiconsole, "TRAIN(%s): Blocked by %s (dmg:%.2f)\n", STRING(pev->targetname), STRING(pOther->pev->classname), pev->dmg);
+	
+	if (pOther->IsMonster() && !pOther->IsAlive()) {
+		// don't let corpses block anything
+		pOther->Killed(pev, GIB_ALWAYS);
+	}
+	
 	if (pev->dmg <= 0)
 		return;
 	// we can't hurt this thing, so we're not concerned with it
