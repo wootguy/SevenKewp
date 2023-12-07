@@ -48,7 +48,6 @@ void CTriggerRandom::KeyValue(KeyValueData* pkvd)
 	}
 	else if (FStrEq(pkvd->szKeyName, "min_delay"))
 	{
-		ALERT(at_console, "trigger_random: Timed mode not implemented\n");
 		min_delay = max(0, atof(pkvd->szValue));
 		pkvd->fHandled = TRUE;
 	}
@@ -98,10 +97,6 @@ void CTriggerRandom::Spawn(void)
 	if ((pev->spawnflags & SF_TIMED) && (pev->spawnflags & SF_START_ON)) {
 		SetThink(&CTriggerRandom::TimedThink);
 		pev->nextthink = gpGlobals->time + RANDOM_FLOAT(min_delay, max_delay);
-	}
-
-	if (pev->spawnflags & (SF_START_ON | SF_TRIGGER_ONCE | SF_TIMED)) {
-		ALERT(at_error, "trigger_random: timed mode not implemented\n");
 	}
 
 	// in sven, if you leave a target blank, it will be removed from the possible targets
@@ -177,7 +172,6 @@ void CTriggerRandom::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 	isActive = useType == USE_TOGGLE ? !isActive : useType;
 
 	if (pev->spawnflags & SF_TIMED) {
-		ALERT(at_console, "random time %s triggered %d\n", STRING(pev->targetname), isActive);
 		if (isActive) {
 			SetThink(&CTriggerRandom::TimedThink);
 			pev->nextthink = gpGlobals->time + RANDOM_FLOAT(min_delay, max_delay);
