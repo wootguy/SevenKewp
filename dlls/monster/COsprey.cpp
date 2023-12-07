@@ -528,9 +528,7 @@ int COsprey::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 
 void COsprey :: Killed( entvars_t *pevAttacker, int iGib )
 {
-	CBaseMonster::Killed(pevAttacker, GIB_NEVER); // for monstermaker death notice
-	pev->deadflag = DEAD_DYING;
-	FCheckAITrigger();
+	CBaseMonster::Killed(pevAttacker, GIB_NEVER); // for monstermaker death notice + death trigger
 
 	pev->movetype = MOVETYPE_TOSS;
 	pev->gravity = 0.3;

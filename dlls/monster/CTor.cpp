@@ -716,7 +716,7 @@ void CTor::SpawnGrunt() {
 	EMIT_SOUND_DYN(ENT(ent->pev), CHAN_ITEM, PORTAL_SOUND2, 1.0, ATTN_NORM, 0, 100);
 
 	CBaseEntity* pList[256]; // only telefrag a max of 256 entites. SHOULD be way more than enough...
-	int count = UTIL_EntitiesInBox(pList, 256, agrunt->pev->absmin, agrunt->pev->absmax, FL_MONSTER | FL_CLIENT);
+	int count = UTIL_EntitiesInBox(pList, 256, agrunt->pev->absmin, agrunt->pev->absmax, FL_MONSTER | FL_CLIENT, true);
 	for (int i = 0; i < count; i++)
 	{
 		if (pList[i]->entindex() == agrunt->entindex() || pList[i]->pev->takedamage == DAMAGE_NO) {

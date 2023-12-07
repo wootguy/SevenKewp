@@ -266,7 +266,7 @@ public:
 			Vector maxs = pev->origin + Vector( 32, 32, 0 );
 
 			CBaseEntity *pList[2];
-			int count = UTIL_EntitiesInBox( pList, 2, mins, maxs, FL_MONSTER );
+			int count = UTIL_EntitiesInBox( pList, 2, mins, maxs, FL_MONSTER, true);
 			for ( int i = 0; i < count; i++ )
 			{
 				if ( pList[i] != this )	// Don't hurt yourself!
@@ -456,7 +456,7 @@ void CBigMomma :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			Vector maxs = center + Vector( 64, 64, 64 );
 
 			CBaseEntity *pList[8];
-			int count = UTIL_EntitiesInBox( pList, 8, mins, maxs, FL_MONSTER|FL_CLIENT );
+			int count = UTIL_EntitiesInBox( pList, 8, mins, maxs, FL_MONSTER|FL_CLIENT, false);
 			CBaseEntity *pHurt = NULL;
 
 			for ( int i = 0; i < count && !pHurt; i++ )

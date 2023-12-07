@@ -420,7 +420,7 @@ CBaseEntity *CBarnacle :: TongueTouchEnt ( float *pflLength )
 	mins.z -= length;
 
 	CBaseEntity *pList[10];
-	int count = UTIL_EntitiesInBox( pList, 10, mins, maxs, (FL_CLIENT|FL_MONSTER) );
+	int count = UTIL_EntitiesInBox( pList, 10, mins, maxs, (FL_CLIENT|FL_MONSTER), true);
 	if ( count )
 	{
 		for ( int i = 0; i < count; i++ )

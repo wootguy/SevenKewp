@@ -141,7 +141,7 @@ void CXenTree::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 		CBaseEntity* pList[8];
 		BOOL sound = FALSE;
-		int count = UTIL_EntitiesInBox(pList, 8, m_pTrigger->pev->absmin, m_pTrigger->pev->absmax, FL_MONSTER | FL_CLIENT);
+		int count = UTIL_EntitiesInBox(pList, 8, m_pTrigger->pev->absmin, m_pTrigger->pev->absmax, FL_MONSTER | FL_CLIENT, false);
 		Vector forward;
 
 		UTIL_MakeVectorsPrivate(pev->angles, forward, NULL, NULL);
