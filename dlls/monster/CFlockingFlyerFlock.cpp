@@ -321,6 +321,7 @@ void CFlockingFlyer :: FallHack( void )
 //=========================================================
 void CFlockingFlyer :: SpawnCommonCode( )
 {
+	Precache();
 	pev->deadflag	= DEAD_NO;
 	pev->classname	= MAKE_STRING("monster_flyer");
 	pev->solid		= SOLID_SLIDEBOX;

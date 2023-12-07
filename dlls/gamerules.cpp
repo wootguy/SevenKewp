@@ -410,6 +410,19 @@ void execMapCfg() {
 		"weapon_tripmine",
 		"weapon_glock",
 		"weapon_9mmhandgun",
+		"weapon_uzi",
+		"weapon_uziakimbo",
+		"weapon_m16",
+		"weapon_m249",
+		"weapon_pipewrench",
+		"weapon_minigun",
+		"weapon_grapple",
+		"weapon_medkit",
+		"weapon_eagle",
+		"weapon_sniperrifle",
+		"weapon_displacer",
+		"weapon_shockrifle",
+
 		"ammo_crossbow",
 		"ammo_egonclip",
 		"ammo_gaussclip",
@@ -424,9 +437,16 @@ void execMapCfg() {
 		"ammo_glockclip",
 		"ammo_9mm",
 		"ammo_9mmclip",
-		"item_longjump"
+		"ammo_556",
+		"ammo_556clip",
+		"ammo_762",
+		"ammo_uziclip",
+		"ammo_spore",
+		"ammo_sporeclip",
+
+		"item_longjump",
 	};
-	
+
 	memset(g_mapEquipment, 0, sizeof(EquipItem) * MAX_EQUIP);
 
 	string cfgPath = "maps/" + string(STRING(gpGlobals->mapname)) + ".cfg";
