@@ -10,6 +10,7 @@
 //	Flag: All players					SF_ENVTEXT_ALLPLAYERS
 //
 #define SF_ENVTEXT_ALLPLAYERS			0x0001
+#define SF_NO_CONSOLE_ECHO				0x0002
 
 
 class CGameText : public CRulePointEntity
@@ -118,12 +119,20 @@ void CGameText::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 	if (MessageToAll())
 	{
 		UTIL_HudMessageAll(m_textParms, MessageGet());
+
+		if (!(pev->spawnflags & SF_NO_CONSOLE_ECHO)) {
+			UTIL_ClientPrintAll(print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", MessageGet()));
+		}
 	}
 	else
 	{
 		if (pActivator->IsNetClient())
 		{
 			UTIL_HudMessage(pActivator, m_textParms, MessageGet());
+
+			if (pActivator && !(pev->spawnflags & SF_NO_CONSOLE_ECHO)) {
+				UTIL_ClientPrint(pActivator->edict(), print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", MessageGet()));
+			}
 		}
 	}
 }

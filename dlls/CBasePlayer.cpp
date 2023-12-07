@@ -4570,7 +4570,7 @@ void CBasePlayer::Observer_SetMode(int iMode)
 		// if we didn't find a valid target switch to roaming
 		if (m_hObserverTarget == NULL)
 		{
-			ClientPrint(pev, HUD_PRINTCENTER, "#Spec_NoTarget");
+			UTIL_ClientPrint(edict(), print_center, "#Spec_NoTarget");
 			pev->iuser1 = OBS_ROAMING;
 		}
 	}
@@ -4589,7 +4589,7 @@ void CBasePlayer::Observer_SetMode(int iMode)
 
 	char modemsg[16];
 	sprintf(modemsg, "#Spec_Mode%i", pev->iuser1);
-	ClientPrint(pev, HUD_PRINTCENTER, modemsg);
+	UTIL_ClientPrint(edict(), print_center, modemsg);
 
 	m_iObserverLastMode = iMode;
 }

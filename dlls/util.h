@@ -300,10 +300,10 @@ extern void			UTIL_BubbleTrail( Vector from, Vector to, int count );
 extern void			UTIL_PrecacheOther( const char *szClassname );
 
 // prints a message to each client
-extern void			UTIL_ClientPrintAll( int msg_dest, const char *msg_name, const char *param1 = NULL, const char *param2 = NULL, const char *param3 = NULL, const char *param4 = NULL );
+extern void			UTIL_ClientPrintAll( int msg_dest, const char *msg);
 inline void			UTIL_CenterPrintAll( const char *msg_name, const char *param1 = NULL, const char *param2 = NULL, const char *param3 = NULL, const char *param4 = NULL ) 
 {
-	UTIL_ClientPrintAll( HUD_PRINTCENTER, msg_name, param1, param2, param3, param4 );
+	UTIL_ClientPrintAll( print_center, msg_name );
 }
 
 class CBasePlayerItem;
@@ -311,7 +311,7 @@ class CBasePlayer;
 extern BOOL UTIL_GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
 
 // prints messages through the HUD
-extern void ClientPrint( entvars_t *client, int msg_dest, const char *msg_name, const char *param1 = NULL, const char *param2 = NULL, const char *param3 = NULL, const char *param4 = NULL );
+extern void UTIL_ClientPrint(edict_t* client, int msg_dest, const char *msg );
 
 // prints a message to the HUD say (chat)
 extern void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
