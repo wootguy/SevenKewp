@@ -48,6 +48,7 @@ public:
 	void Spawn( void );
 	void Precache( void );
 	int  Classify( void ) { return CBaseMonster::Classify(CLASS_MACHINE); };
+	BOOL IsMachine() { return 1; } // ignore classification overrides
 	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Osprey"; }
 	int  BloodColor( void ) { return DONT_BLEED; }
 	void Killed( entvars_t *pevAttacker, int iGib );
@@ -527,6 +528,10 @@ int COsprey::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 
 void COsprey :: Killed( entvars_t *pevAttacker, int iGib )
 {
+	CBaseMonster::Killed(pevAttacker, GIB_NEVER); // for monstermaker death notice
+	pev->deadflag = DEAD_DYING;
+	FCheckAITrigger();
+
 	pev->movetype = MOVETYPE_TOSS;
 	pev->gravity = 0.3;
 	pev->velocity = m_velocity;

@@ -34,6 +34,7 @@ class CApache : public CBaseMonster
 	void Spawn( void );
 	void Precache( void );
 	int  Classify( void ) { return CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
+	BOOL IsMachine() { return 1; } // ignore classification overrides
 	const char* getDisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Apache"; }
 	int  BloodColor( void ) { return DONT_BLEED; }
 	void Killed( entvars_t *pevAttacker, int iGib );
@@ -197,6 +198,10 @@ void CApache::StartupUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 void CApache :: Killed( entvars_t *pevAttacker, int iGib )
 {
+	CBaseMonster::Killed(pevAttacker, GIB_NEVER); // for monstermaker death notice
+	pev->deadflag = DEAD_DYING;
+	FCheckAITrigger();
+
 	pev->movetype = MOVETYPE_TOSS;
 	pev->gravity = 0.3;
 
