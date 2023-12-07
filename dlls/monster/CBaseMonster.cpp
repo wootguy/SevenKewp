@@ -294,7 +294,7 @@ void CBaseMonster::Look(int iDistance)
 		Vector delta = Vector(iDistance, iDistance, iDistance);
 
 		// Find only monsters/clients in box, NOT limited to PVS
-		int count = UTIL_EntitiesInBox(pList, 100, pev->origin - delta, pev->origin + delta, FL_CLIENT | FL_MONSTER);
+		int count = UTIL_EntitiesInBox(pList, 100, pev->origin - delta, pev->origin + delta, FL_CLIENT | FL_MONSTER, false);
 		for (int i = 0; i < count; i++)
 		{
 			pSightEnt = pList[i];
@@ -4150,6 +4150,14 @@ void CBaseMonster::Killed(entvars_t* pevAttacker, int iGib)
 	m_IdealMonsterState = MONSTERSTATE_DEAD;
 	// Make sure this condition is fired too (TakeDamage breaks out before this happens on death)
 	SetConditions(bits_COND_LIGHT_DAMAGE);
+
+	// force ai trigger now to prevent buggy AI softlocking maps
+	int oldDeadFlag = pev->deadflag;
+	if (pev->deadflag == DEAD_NO) {
+		pev->deadflag = DEAD_DYING;
+	}
+	FCheckAITrigger();
+	pev->deadflag = oldDeadFlag; // animate normally if AI isn't dead yet
 
 	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
 	CBaseEntity* pOwner = CBaseEntity::Instance(pev->owner);

@@ -362,7 +362,7 @@ void CMonsterMaker::MakeMonster( void )
 
 	if (m_blockedSpawnMode != SPAWN_BLOCK_IGNORE) {
 		CBaseEntity* pList[2];
-		int count = UTIL_EntitiesInBox(pList, 2, mins, maxs, FL_CLIENT | FL_MONSTER);
+		int count = UTIL_EntitiesInBox(pList, 2, mins, maxs, FL_CLIENT | FL_MONSTER, true);
 		if (count)
 		{
 			// don't build a stack of monsters!

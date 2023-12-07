@@ -198,9 +198,7 @@ void CApache::StartupUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 
 void CApache :: Killed( entvars_t *pevAttacker, int iGib )
 {
-	CBaseMonster::Killed(pevAttacker, GIB_NEVER); // for monstermaker death notice
-	pev->deadflag = DEAD_DYING;
-	FCheckAITrigger();
+	CBaseMonster::Killed(pevAttacker, GIB_NEVER); // for monstermaker death notice + death trigger
 
 	pev->movetype = MOVETYPE_TOSS;
 	pev->gravity = 0.3;
