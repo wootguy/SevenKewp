@@ -64,6 +64,11 @@ void CFuncTrain::Blocked(CBaseEntity* pOther)
 
 	m_flActivateFinished = gpGlobals->time + 0.5;
 
+	if (pOther->IsMonster() && !pOther->IsAlive()) {
+		// don't let corpses block anything
+		pOther->Killed(pev, GIB_ALWAYS);
+	}
+
 	pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
 }
 

@@ -148,6 +148,10 @@ void CPendulum::Stop(void)
 
 void CPendulum::Blocked(CBaseEntity* pOther)
 {
+	if (pOther->IsMonster() && !pOther->IsAlive()) {
+		// don't let corpses block anything
+		pOther->Killed(pev, GIB_ALWAYS);
+	}
 	m_time = gpGlobals->time;
 }
 

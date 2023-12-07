@@ -458,6 +458,11 @@ void CFuncRotating::RotatingUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 void CFuncRotating::Blocked(CBaseEntity* pOther)
 
 {
+	if (pOther->IsMonster() && !pOther->IsAlive()) {
+		// don't let corpses block anything
+		pOther->Killed(pev, GIB_ALWAYS);
+	}
+
 	pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
 }
 
