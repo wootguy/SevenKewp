@@ -2253,7 +2253,7 @@ int CBaseMonster::IRelationship(int attackerClass, int victimClass) {
 	{				//   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN	HMILA	RACEX
 		/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL,	R_DL,	R_DL	},
-		/*PLAYER*/		{ R_NO	,R_DL	,R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_DL,	R_DL,	R_NO,	R_DL	},
+		/*PLAYER*/		{ R_NO	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_AL,	R_DL,	R_DL,	R_NO,	R_DL	},
 		/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_NO	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO,	R_DL,	R_FR	},
 		/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO,	R_HT,	R_HT	},
 		/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_HT	},
@@ -4224,7 +4224,7 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	float	flTake;
 	Vector	vecDir;
 
-	if (!pev->takedamage)
+	if (IsImmune(pevAttacker))
 		return 0;
 
 	if (!IsAlive())
@@ -6896,4 +6896,26 @@ const char* CBaseMonster::GetModel() {
 
 const char* CBaseMonster::DisplayName() {
 	return m_displayName ? STRING(m_displayName) : CBaseEntity::DisplayName();
+}
+
+bool CBaseMonster::IsImmune(entvars_t* attacker) {
+	if (!pev->takedamage) {
+		return true;
+	}
+
+	if (pev->flags & FL_CLIENT) {
+		return false;
+	}
+
+	if (mp_npckill.value == 0 || killnpc.value == 0) {
+		// disallow ally NPCs to be damaged by anything
+		return IRelationship(Classify(), CLASS_PLAYER) == R_AL;
+	}
+	else if (mp_npckill.value == 2 && !FNullEnt(attacker)) {
+		// disallow ally NPCs to be damaged by ally classes
+		CBaseEntity* ent = CBaseEntity::Instance(attacker);
+		return ent && IRelationship(Classify(), CLASS_PLAYER) == R_AL && IRelationship(ent) == R_AL;
+	}
+
+	return false;
 }

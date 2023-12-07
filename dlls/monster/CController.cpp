@@ -186,6 +186,9 @@ void CController :: SetYawSpeed ( void )
 
 int CController :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	if (IsImmune(pevAttacker))
+		return 0;
+
 	// HACK HACK -- until we fix this.
 	if ( IsAlive() )
 		PainSound();

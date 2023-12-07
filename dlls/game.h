@@ -40,7 +40,13 @@ extern cvar_t	teamlist;
 extern cvar_t	teamoverride;
 extern cvar_t	defaultteam;
 extern cvar_t	allowmonsters;
+
+// limits monster sound variety to save precache slots.
+// 0 disables. 1+ = max sounds per action (death/pain/idle/etc.)
 extern cvar_t	soundvariety;
+
+extern cvar_t	mp_npckill;
+extern cvar_t	killnpc; // legacy setting. When set to 0, makes scientists and barneys invulnerable
 
 // Engine Cvars
 extern cvar_t	*g_psv_gravity;

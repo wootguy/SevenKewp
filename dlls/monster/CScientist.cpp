@@ -755,6 +755,8 @@ void CScientist :: TalkInit()
 
 int CScientist :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType)
 {
+	if (IsImmune(pevAttacker))
+		return 0;
 
 	if ( pevInflictor && pevInflictor->flags & FL_CLIENT )
 	{

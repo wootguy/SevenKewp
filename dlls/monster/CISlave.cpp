@@ -581,6 +581,9 @@ void CISlave :: Precache()
 
 int CISlave :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
+	if (IsImmune(pevAttacker))
+		return 0;
+
 	// don't slash one of your own
 	if ((bitsDamageType & DMG_SLASH) && pevAttacker && IRelationship( Instance(pevAttacker) ) < R_DL)
 		return 0;

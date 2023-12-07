@@ -529,6 +529,9 @@ BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 
 int CBarney :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
+	if (IsImmune(pevAttacker))
+		return 0;
+
 	// make sure friends talk about it if player hurts talkmonsters...
 	int ret = CTalkSquadMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 	if ( !IsAlive() || pev->deadflag == DEAD_DYING )
