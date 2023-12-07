@@ -427,6 +427,9 @@ void CBaseGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector v
 //=========================================================
 int CBaseGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	if (IsImmune(pevAttacker))
+		return 0;
+
 	Forget( bits_MEMORY_INCOVER );
 
 	// make sure friends talk about it if player hurts talkmonsters...

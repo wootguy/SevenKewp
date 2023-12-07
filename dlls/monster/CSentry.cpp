@@ -72,7 +72,7 @@ void CSentry::Shoot(Vector& vecSrc, Vector& vecDirToEnemy)
 
 int CSentry::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
-	if (!pev->takedamage)
+	if (IsImmune(pevAttacker))
 		return 0;
 
 	if (!m_iOn)

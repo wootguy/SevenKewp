@@ -994,6 +994,9 @@ void CTentacle :: HitTouch( CBaseEntity *pOther )
 
 int CTentacle::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
 {
+	if (IsImmune(pevAttacker))
+		return 0;
+
 	if (flDamage > pev->health)
 	{
 		pev->health = 1;

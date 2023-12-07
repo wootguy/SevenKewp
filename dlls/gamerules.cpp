@@ -389,7 +389,9 @@ void execMapCfg() {
 		"mp_timelimit",
 		"mp_weaponstay",
 		"mp_friendlyfire",
-		"mp_soundvariety"
+		"mp_soundvariety",
+		"killnpc",
+		"mp_npckill",
 	};
 
 	static set<string> itemNames = {

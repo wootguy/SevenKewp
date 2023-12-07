@@ -153,6 +153,9 @@ void CZombie :: SetYawSpeed ( void )
 
 int CZombie :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	if (IsImmune(pevAttacker))
+		return 0;
+
 	// Take 30% damage from bullets
 	if ( bitsDamageType == DMG_BULLET )
 	{

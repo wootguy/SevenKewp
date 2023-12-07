@@ -1164,6 +1164,9 @@ void CTalkSquadMonster :: SetAnswerQuestion( CTalkSquadMonster *pSpeaker )
 
 int CTalkSquadMonster :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
+	if (IsImmune(pevAttacker))
+		return 0;
+
 	if ( IsAlive() )
 	{
 		// if player damaged this entity, have other friends talk about it

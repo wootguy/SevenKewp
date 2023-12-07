@@ -706,6 +706,9 @@ void CShockTrooper::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector v
 //=========================================================
 int CShockTrooper::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
+	if (IsImmune(pevAttacker))
+		return 0;
+
 	Forget(bits_MEMORY_INCOVER);
 
 	return CTalkSquadMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);

@@ -1235,6 +1235,9 @@ void CNihilanth::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 
 int CNihilanth :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
 {
+	if (IsImmune(pevAttacker))
+		return 0;
+
 	if (pevInflictor->owner == edict())
 		return 0;
 

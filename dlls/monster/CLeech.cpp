@@ -305,6 +305,9 @@ void CLeech::Precache( void )
 
 int CLeech::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	if (IsImmune(pevAttacker))
+		return 0;
+
 	pev->velocity = g_vecZero;
 
 	// Nudge the leech away from the damage

@@ -381,6 +381,9 @@ public:
 
 	string_t m_displayName;
 	const char* DisplayName();
+
+	// handles mp_npckill/killnpc cvars and takedamage key
+	bool IsImmune(entvars_t* attacker);
 };
 
 

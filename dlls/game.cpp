@@ -39,9 +39,10 @@ cvar_t	teamoverride = {"mp_teamoverride","1" };
 cvar_t	defaultteam = {"mp_defaultteam","0" };
 cvar_t	allowmonsters={"mp_allowmonsters","1", FCVAR_SERVER };
 
-// limits monster sound variety to save precache slots.
-// 0 disables. 1+ = max sounds per action (death/pain/idle/etc.)
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER };
+
+cvar_t	mp_npckill = { "mp_npckill", "1", FCVAR_SERVER };
+cvar_t	killnpc = { "killnpc", "1", FCVAR_SERVER };
 
 cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators
 
@@ -549,6 +550,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&defaultteam);
 	CVAR_REGISTER (&allowmonsters);
 	CVAR_REGISTER (&soundvariety);
+	CVAR_REGISTER (&mp_npckill);
+	CVAR_REGISTER (&killnpc);
 
 	CVAR_REGISTER (&mp_chattime);
 

@@ -650,7 +650,8 @@ void CGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 
 int CGargantua::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	ALERT( at_aiconsole, "CGargantua::TakeDamage\n");
+	if (IsImmune(pevAttacker))
+		return 0;
 
 	if ( IsAlive() )
 	{
