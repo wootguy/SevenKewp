@@ -833,11 +833,74 @@ void UTIL_ScreenFade( CBaseEntity *pEntity, const Vector &color, float fadeTime,
 	UTIL_ScreenFadeWrite( fade, pEntity );
 }
 
+// client crashes if lines are longer than ~80 characters
+// server crashes if sending text > 511 characters
+// so truncate and insert newlines to prevent that
+const char* BreakupLongLines(const char* pMessage) {
+	static char tmp[512];
+	static char tmp2[512];
+
+	if (strlen(pMessage) >= 512) {
+		strncpy(tmp, pMessage, 511);
+		tmp[511] = 0;
+		pMessage = tmp;
+	}
+
+	int len = strlen(pMessage);
+
+	if (len >= 79) {
+		int lastNewline = 0;
+		int lastSpace = 0;
+		int lastSpaceIdx = 0;
+		int idx = 0;
+
+		for (int i = 0; i < len; i++) {
+			if (pMessage[i] == '\n') {
+				lastNewline = i;
+			}
+			if (pMessage[i] == ' ' || pMessage[i] == '\t') {
+				lastSpace = i;
+				lastSpaceIdx = idx;
+			}
+			if (i - lastNewline >= 79) {
+				if (idx + 1 >= 511) {
+					break;
+				}
+
+				if (i - lastSpaceIdx < 60) {
+					// was there a somewhat recent space? Break the line
+					// and reiterate from there so that words stay intact
+					i = lastSpace;
+					lastNewline = i;
+					idx = lastSpaceIdx;
+					tmp2[idx++] = '\n';
+					continue;
+				}
+
+				tmp2[idx++] = '\n';
+				tmp2[idx++] = pMessage[i];
+				lastNewline = i;
+			}
+			else {
+				if (idx >= 511) {
+					break;
+				}
+				tmp2[idx++] = pMessage[i];
+			}
+			tmp2[idx] = 0;
+		}
+		pMessage = tmp2;
+	}
+
+	return pMessage;
+}
 
 void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage )
 {
 	if ( !pEntity || !pEntity->IsNetClient() )
 		return;
+
+	pMessage = BreakupLongLines(pMessage);
 
 	MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, NULL, pEntity->edict() );
 		WRITE_BYTE( TE_TEXTMESSAGE );
@@ -863,18 +926,8 @@ void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, con
 
 		if ( textparms.effect == 2 )
 			WRITE_SHORT( FixedUnsigned16( textparms.fxTime, 1<<8 ) );
-		
-		if ( strlen( pMessage ) < 512 )
-		{
-			WRITE_STRING( pMessage );
-		}
-		else
-		{
-			char tmp[512];
-			strncpy( tmp, pMessage, 511 );
-			tmp[511] = 0;
-			WRITE_STRING( tmp );
-		}
+
+		WRITE_STRING( pMessage );
 	MESSAGE_END();
 }
 
@@ -982,7 +1035,7 @@ void UTIL_ShowMessage( const char *pString, CBaseEntity *pEntity )
 		return;
 
 	MESSAGE_BEGIN( MSG_ONE, gmsgHudText, NULL, pEntity->edict() );
-	WRITE_STRING( pString );
+	WRITE_STRING( BreakupLongLines(pString) );
 	MESSAGE_END();
 }
 
