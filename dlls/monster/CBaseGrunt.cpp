@@ -781,20 +781,19 @@ void CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity
 		DropEquipmentToss("ammo_ARgrenades", BodyTarget(pev->origin), vecGunAngles, velocity, aVelocity);
 	}
 	if (equipmentToDrop & MEQUIP_SAW) {
-		DropEquipmentToss("weapon_m249", vecGunPos, vecGunAngles, velocity, aVelocity);
+		//DropEquipmentToss("weapon_m249", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
 	if (equipmentToDrop & MEQUIP_DEAGLE) {
-		DropEquipmentToss("weapon_eagle", vecGunPos, vecGunAngles, velocity, aVelocity);
+		//DropEquipmentToss("weapon_eagle", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
 	if (equipmentToDrop & MEQUIP_GLOCK) {
 		DropEquipmentToss("weapon_9mmhandgun", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
 	if (equipmentToDrop & MEQUIP_SNIPER) {
-		DropEquipmentToss("weapon_sniperrifle", vecGunPos, vecGunAngles, velocity, aVelocity);
+		//DropEquipmentToss("weapon_sniperrifle", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
 	if (equipmentToDrop & MEQUIP_MINIGUN) {
 		//DropEquipmentToss("weapon_minigun", vecGunPos, vecGunAngles, velocity, aVelocity);
-		DropEquipmentToss("weapon_9mmAR", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
 	if (equipmentToDrop & MEQUIP_AKIMBO_UZIS) {
 		DropEquipmentToss("weapon_uziakimbo", vecGunPos, vecGunAngles, velocity, aVelocity);
