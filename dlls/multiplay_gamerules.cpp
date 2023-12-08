@@ -202,11 +202,8 @@ void CHalfLifeMultiplay :: Think ( void )
 		m_flIntermissionEndTime = g_flIntermissionStartTime + mp_chattime.value;
 
 		// check to see if we should change levels now
-		if ( m_flIntermissionEndTime < gpGlobals->time )
-		{
-			if ( m_iEndIntermissionButtonHit  // check that someone has pressed a key, or the max intermission time is over
-				|| ( ( g_flIntermissionStartTime + MAX_INTERMISSION_TIME ) < gpGlobals->time) ) 
-				ChangeLevel(); // intermission is over
+		if ( m_flIntermissionEndTime < gpGlobals->time ) {
+			ChangeLevel();
 		}
 
 		return;
@@ -542,10 +539,6 @@ void CHalfLifeMultiplay :: PlayerThink( CBasePlayer *pPlayer )
 {
 	if ( g_fGameOver )
 	{
-		// check for button presses
-		if ( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
-			m_iEndIntermissionButtonHit = TRUE;
-
 		// clear attack/use commands from player
 		pPlayer->m_afButtonPressed = 0;
 		pPlayer->pev->button = 0;
@@ -1166,7 +1159,6 @@ void CHalfLifeMultiplay :: GoToIntermission( void )
 	g_flIntermissionStartTime = gpGlobals->time;
 
 	g_fGameOver = TRUE;
-	m_iEndIntermissionButtonHit = FALSE;
 }
 
 #define MAX_RULE_BUFFER 1024
