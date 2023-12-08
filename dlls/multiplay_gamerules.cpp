@@ -1161,15 +1161,13 @@ void CHalfLifeMultiplay :: GoToIntermission( void )
 	g_fGameOver = TRUE;
 }
 
-#define MAX_RULE_BUFFER 1024
+
 
 typedef struct mapcycle_item_s
 {
 	struct mapcycle_item_s *next;
-
 	char mapname[ 32 ];
-	int  minplayers, maxplayers;
-	char rulebuffer[ MAX_RULE_BUFFER ];
+	int seriesIdx; // order in map series
 } mapcycle_item_t;
 
 typedef struct mapcycle_s
@@ -1320,8 +1318,8 @@ Parses mapcycle.txt file into mapcycle_t structure
 */
 int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 {
-	char szBuffer[ MAX_RULE_BUFFER ];
-	char szMap[ 32 ];
+	const int MAX_MAP_NAME_LEN = 32;
+	char szMap[MAX_MAP_NAME_LEN];
 	int length;
 	char *pFileList;
 	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( filename, &length );
@@ -1330,77 +1328,36 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 
 	if ( pFileList && length )
 	{
-		// the first map name in the file becomes the default
-		while ( 1 )
+		int seriesIdx = 0;
+
+		while (pFileList)
 		{
-			hasbuffer = 0;
-			memset( szBuffer, 0, MAX_RULE_BUFFER );
-
-			pFileList = COM_Parse( pFileList );
-			if ( strlen( com_token ) <= 0 )
-				break;
-
-			strcpy( szMap, com_token );
-
-			// Any more tokens on this line?
-			if ( COM_TokenWaiting( pFileList ) )
-			{
-				pFileList = COM_Parse( pFileList );
-				if ( strlen( com_token ) > 0 )
-				{
-					hasbuffer = 1;
-					strcpy( szBuffer, com_token );
-				}
+			if (seriesIdx != 0 && !COM_TokenWaiting(pFileList)) {
+				seriesIdx = 0; // end of line
 			}
 
-			// Check map
-			if ( IS_MAP_VALID( szMap ) )
-			{
-				// Create entry
-				char *s;
+			pFileList = COM_Parse(pFileList);
 
-				item = new mapcycle_item_s;
-
-				strcpy( item->mapname, szMap );
-
-				item->minplayers = 0;
-				item->maxplayers = 0;
-
-				memset( item->rulebuffer, 0, MAX_RULE_BUFFER );
-
-				if ( hasbuffer )
-				{
-					s = g_engfuncs.pfnInfoKeyValue( szBuffer, "minplayers" );
-					if ( s && s[0] )
-					{
-						item->minplayers = atoi( s );
-						item->minplayers = V_max( item->minplayers, 0 );
-						item->minplayers = V_min( item->minplayers, gpGlobals->maxClients );
-					}
-					s = g_engfuncs.pfnInfoKeyValue( szBuffer, "maxplayers" );
-					if ( s && s[0] )
-					{
-						item->maxplayers = atoi( s );
-						item->maxplayers = V_max( item->maxplayers, 0 );
-						item->maxplayers = V_min( item->maxplayers, gpGlobals->maxClients );
-					}
-
-					// Remove keys
-					//
-					g_engfuncs.pfnInfo_RemoveKey( szBuffer, "minplayers" );
-					g_engfuncs.pfnInfo_RemoveKey( szBuffer, "maxplayers" );
-
-					strcpy( item->rulebuffer, szBuffer );
-				}
-
-				item->next = cycle->items;
-				cycle->items = item;
-			}
-			else
-			{
-				ALERT( at_console, "Skipping %s from mapcycle, not a valid map\n", szMap );
+			if (strlen(com_token) <= 0) {
+				seriesIdx = 0;
+				continue;
 			}
 
+			strncpy(szMap, com_token, MAX_MAP_NAME_LEN);
+			szMap[MAX_MAP_NAME_LEN - 1] = 0;
+
+			if (!IS_MAP_VALID(szMap)) {
+				ALERT(at_console, "Skipping %s from mapcycle, not a valid map\n", szMap);
+				continue;
+			}
+
+			// Create entry
+			item = new mapcycle_item_s;
+			strcpy(item->mapname, szMap);
+			item->mapname[31] = 0;
+			item->seriesIdx = seriesIdx++;
+			item->next = cycle->items;
+			cycle->items = item;
 		}
 
 		FREE_FILE( aFileList );
@@ -1528,24 +1485,11 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 	static char szPreviousMapCycleFile[ 256 ];
 	static mapcycle_t mapcycle;
 
-	char szNextMap[32];
-	char szFirstMapInList[32];
-	char szCommands[ 1500 ];
-	char szRules[ 1500 ];
-	int minplayers = 0, maxplayers = 0;
-	strcpy( szFirstMapInList, "hldm1" );  // the absolute default level is hldm1
-
-	int	curplayers;
 	BOOL do_cycle = TRUE;
 
 	// find the map to change to
 	char *mapcfile = (char*)CVAR_GET_STRING( "mapcyclefile" );
 	ASSERT( mapcfile != NULL );
-
-	szCommands[ 0 ] = '\0';
-	szRules[ 0 ] = '\0';
-
-	curplayers = CountPlayers();
 
 	// Has the map cycle filename changed?
 	if ( stricmp( mapcfile, szPreviousMapCycleFile ) )
@@ -1561,93 +1505,47 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 		}
 	}
 
+	// restart map if no cycle defined
+	const char* current_map = STRING(gpGlobals->mapname);
+	const char* next_map = STRING(gpGlobals->mapname);
+
 	if ( do_cycle && mapcycle.items )
 	{
-		BOOL keeplooking = FALSE;
-		BOOL found = FALSE;
+		bool found = false;
 		mapcycle_item_s *item;
-
-		// Assume current map
-		strcpy( szNextMap, STRING(gpGlobals->mapname) );
-		strcpy( szFirstMapInList, STRING(gpGlobals->mapname) );
 
 		// Traverse list
 		for ( item = mapcycle.next_item; item->next != mapcycle.next_item; item = item->next )
 		{
-			keeplooking = FALSE;
-
 			ASSERT( item != NULL );
 
-			if ( item->minplayers != 0 )
-			{
-				if ( curplayers >= item->minplayers )
-				{
-					found = TRUE;
-					minplayers = item->minplayers;
+			// find current map in list and continue from there.
+			// Don't simply increment mapcycle.next_item because
+			// admins/votes can change to levels out of order
+			if (item && !strcmp(item->mapname, current_map)) {
+				if (!IS_MAP_VALID(item->next->mapname)) {
+					ALERT(at_error, "Invalid map in cycle: '%s'\n", item->next->mapname);
+					continue;
 				}
-				else
-				{
-					keeplooking = TRUE;
-				}
+				mapcycle.next_item = item->next;
+				next_map = item->next->mapname;
+				found = true;
+				break;
 			}
-
-			if ( item->maxplayers != 0 )
-			{
-				if ( curplayers <= item->maxplayers )
-				{
-					found = TRUE;
-					maxplayers = item->maxplayers;
-				}
-				else
-				{
-					keeplooking = TRUE;
-				}
-			}
-
-			if ( keeplooking )
-				continue;
-
-			found = TRUE;
-			break;
+			
 		}
 
-		if ( !found )
-		{
-			item = mapcycle.next_item;
-		}			
-		
-		// Increment next item pointer
-		mapcycle.next_item = item->next;
-
-		// Perform logic on current item
-		strcpy( szNextMap, item->mapname );
-
-		ExtractCommandString( item->rulebuffer, szCommands );
-		strcpy( szRules, item->rulebuffer );
-	}
-
-	if ( !IS_MAP_VALID(szNextMap) )
-	{
-		strcpy( szNextMap, szFirstMapInList );
+		if (!found) {
+			next_map = mapcycle.items->mapname;
+			ALERT(at_console, "Unable to find map '%s' in list. Restarting the map cycle.\n", current_map);
+		}
 	}
 
 	g_fGameOver = TRUE;
 
-	ALERT( at_console, "CHANGE LEVEL: %s\n", szNextMap );
-	if ( minplayers || maxplayers )
-	{
-		ALERT( at_console, "PLAYER COUNT:  min %i max %i current %i\n", minplayers, maxplayers, curplayers );
-	}
-	if ( strlen( szRules ) > 0 )
-	{
-		ALERT( at_console, "RULES:  %s\n", szRules );
-	}
+	ALERT( at_console, "CHANGE LEVEL: %s\n", next_map);
 	
-	CHANGE_LEVEL( szNextMap, NULL );
-	if ( strlen( szCommands ) > 0 )
-	{
-		SERVER_COMMAND( szCommands );
-	}
+	CHANGE_LEVEL(next_map, NULL );
 }
 
 #define MAX_MOTD_CHUNK	  60
