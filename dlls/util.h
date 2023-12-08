@@ -573,3 +573,12 @@ bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins
 float clampf(float val, float min, float max);
 
 int clampi(int val, int min, int max);
+
+// returns 0 if the file doesn't exist
+uint64_t getFileModifiedTime(const char* path);
+
+bool fileExists(const char* path);
+
+// searches game directories in order (e.g. valve/path, valve_downloads/path)
+// returns an empty string if the file can't be found
+std::string getGameFilePath(const char* path);

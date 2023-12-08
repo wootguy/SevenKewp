@@ -1483,6 +1483,7 @@ Server is changing to a new level, check mapcycle.txt for map name and setup inf
 void CHalfLifeMultiplay :: ChangeLevel( void )
 {
 	static char szPreviousMapCycleFile[ 256 ];
+	static uint64_t lastMapCycleModifyTime = 0;
 	static mapcycle_t mapcycle;
 
 	BOOL do_cycle = TRUE;
@@ -1491,16 +1492,31 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 	char *mapcfile = (char*)CVAR_GET_STRING( "mapcyclefile" );
 	ASSERT( mapcfile != NULL );
 
+	bool shouldReloadMapCycle = lastMapCycleModifyTime == 0;
+
 	// Has the map cycle filename changed?
-	if ( stricmp( mapcfile, szPreviousMapCycleFile ) )
-	{
+	if (stricmp(mapcfile, szPreviousMapCycleFile)) {
 		strcpy( szPreviousMapCycleFile, mapcfile );
+		shouldReloadMapCycle = true;
+	}
 
-		DestroyMapCycle( &mapcycle );
+	if (!shouldReloadMapCycle) {
+		uint64_t modifyTime = getFileModifiedTime(getGameFilePath(mapcfile).c_str());
+		if (modifyTime && modifyTime != lastMapCycleModifyTime) {
+			if (lastMapCycleModifyTime) {
+				ALERT(at_console, "Map cycle '%s' modified. Reloading.\n", mapcfile);
+			}
+			lastMapCycleModifyTime = modifyTime;
+			shouldReloadMapCycle = true;
+		}
+	}
+	
+	if (shouldReloadMapCycle) {
+		DestroyMapCycle(&mapcycle);
 
-		if ( !ReloadMapCycleFile( mapcfile, &mapcycle ) || ( !mapcycle.items ) )
+		if (!ReloadMapCycleFile(mapcfile, &mapcycle) || (!mapcycle.items))
 		{
-			ALERT( at_console, "Unable to load map cycle file %s\n", mapcfile );
+			ALERT(at_console, "Unable to load map cycle file %s\n", mapcfile);
 			do_cycle = FALSE;
 		}
 	}
