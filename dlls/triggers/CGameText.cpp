@@ -126,11 +126,11 @@ void CGameText::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 	}
 	else
 	{
-		if (pActivator->IsNetClient())
+		if (pActivator && pActivator->IsNetClient())
 		{
 			UTIL_HudMessage(pActivator, m_textParms, MessageGet());
 
-			if (pActivator && !(pev->spawnflags & SF_NO_CONSOLE_ECHO)) {
+			if (!(pev->spawnflags & SF_NO_CONSOLE_ECHO)) {
 				UTIL_ClientPrint(pActivator->edict(), print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", MessageGet()));
 			}
 		}
