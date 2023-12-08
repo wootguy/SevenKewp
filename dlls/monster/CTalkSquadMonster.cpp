@@ -1681,9 +1681,9 @@ int CTalkSquadMonster::SquadRecruit(int searchRadius, int maxMembers)
 		while ((pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, searchRadius)) != NULL)
 		{
 			CTalkSquadMonster* pRecruit = pEntity->MyTalkSquadMonsterPointer();
-			if (pRecruit) {
-				println("Potential squad member!");
-			}
+			//if (pRecruit) {
+			//	println("Potential squad member!");
+			//}
 
 			if (pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_pCine)
 			{
