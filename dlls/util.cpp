@@ -586,7 +586,7 @@ CBaseEntity	*UTIL_PlayerByIndex( int playerIndex )
 	if ( playerIndex > 0 && playerIndex <= gpGlobals->maxClients )
 	{
 		edict_t *pPlayerEdict = INDEXENT( playerIndex );
-		if ( pPlayerEdict && !pPlayerEdict->free )
+		if ( IsValidPlayer(pPlayerEdict) && !pPlayerEdict->free )
 		{
 			pPlayer = CBaseEntity::Instance( pPlayerEdict );
 		}

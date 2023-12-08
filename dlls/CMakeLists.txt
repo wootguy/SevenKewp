@@ -191,6 +191,7 @@ set(TRIGGER_SRC
 	triggers/CLadder.cpp
 	triggers/CMultiManager.cpp
 	triggers/CMultiSource.cpp
+	triggers/CPlayerRespawnZone.cpp
 	triggers/CRenderFxManager.cpp
 	triggers/CRevertSaved.cpp
 	triggers/CRuleEntity.cpp
