@@ -40,6 +40,7 @@ extern cvar_t	teamlist;
 extern cvar_t	teamoverride;
 extern cvar_t	defaultteam;
 extern cvar_t	allowmonsters;
+extern cvar_t	mp_nextmap; // map which will load after the next intermission
 
 // limits monster sound variety to save precache slots.
 // 0 disables. 1+ = max sounds per action (death/pain/idle/etc.)

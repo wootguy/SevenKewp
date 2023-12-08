@@ -326,6 +326,23 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	// Link user messages here to make sure first client can get them...
 	LinkUserMessages();
+
+	const char* current_map = STRING(gpGlobals->mapname);
+	mapcycle_item_t* cycleMap = g_pGameRules->GetMapCyleMap(current_map);
+
+	if (cycleMap) {
+		CVAR_SET_STRING("mp_nextmap", cycleMap->next->mapname);
+	}
+	else {
+		if (g_pGameRules->mapcycle.items) {
+			ALERT(at_console, "Map '%s' not in map cycle. Restarting map cycle.\n", current_map);
+			CVAR_SET_STRING("mp_nextmap", g_pGameRules->mapcycle.items->mapname);
+		}
+		else {
+			ALERT(at_console, "Map cycle empty. Clearning mp_nextmap.\n");
+			CVAR_SET_STRING("mp_nextmap", "");
+		}
+	}
 }
 
 

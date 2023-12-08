@@ -79,6 +79,7 @@ CHalfLifeMultiplay :: CHalfLifeMultiplay()
 	RefreshSkillData();
 	m_flIntermissionEndTime = 0;
 	g_flIntermissionStartTime = 0;
+	mapcycle.items = NULL;
 	
 	// 11/8/98
 	// Modified by YWB:  Server .cfg file is now a cvar, so that 
@@ -1163,19 +1164,6 @@ void CHalfLifeMultiplay :: GoToIntermission( void )
 
 
 
-typedef struct mapcycle_item_s
-{
-	struct mapcycle_item_s *next;
-	char mapname[ 32 ];
-	int seriesIdx; // order in map series
-} mapcycle_item_t;
-
-typedef struct mapcycle_s
-{
-	struct mapcycle_item_s *items;
-	struct mapcycle_item_s *next_item;
-} mapcycle_t;
-
 /*
 ==============
 DestroyMapCycle
@@ -1201,7 +1189,6 @@ void DestroyMapCycle( mapcycle_t *cycle )
 		delete cycle->items;
 	}
 	cycle->items = NULL;
-	cycle->next_item = NULL;
 }
 
 static char com_token[ 1500 ];
@@ -1324,7 +1311,7 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 	char *pFileList;
 	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( filename, &length );
 	int hasbuffer;
-	mapcycle_item_s *item, *newlist = NULL, *next;
+	mapcycle_item_t *item, *newlist = NULL, *next;
 
 	if ( pFileList && length )
 	{
@@ -1352,7 +1339,7 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 			}
 
 			// Create entry
-			item = new mapcycle_item_s;
+			item = new mapcycle_item_t;
 			strcpy(item->mapname, szMap);
 			item->mapname[31] = 0;
 			item->seriesIdx = seriesIdx++;
@@ -1388,8 +1375,6 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 		item = item->next;
 	}
 	item->next = cycle->items;
-	
-	cycle->next_item = item->next;
 
 	return 1;
 }
@@ -1473,6 +1458,32 @@ void ExtractCommandString( char *s, char *szCommand )
 	}
 }
 
+mapcycle_item_t* CHalfLifeMultiplay::GetMapCyleMap(const char* current_map) {
+	if (!mapcycle.items && !ReloadMapCycleFile((char*)CVAR_GET_STRING("mapcyclefile"), &mapcycle)) {
+		return NULL;
+	}
+
+	mapcycle_item_t* item;
+
+	// Traverse list
+	int i = 0;
+	for (item = mapcycle.items; item != mapcycle.items || i == 0; item = item->next, i++)
+	{
+		ASSERT(item != NULL);
+
+		if (item && !strcmp(item->mapname, current_map)) {
+			if (!IS_MAP_VALID(item->mapname)) {
+				ALERT(at_error, "Invalid map in cycle: '%s'\n", item->next->mapname);
+				continue;
+			}
+			return item;
+		}
+
+	}
+
+	return NULL;
+}
+
 /*
 ==============
 ChangeLevel
@@ -1484,7 +1495,6 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 {
 	static char szPreviousMapCycleFile[ 256 ];
 	static uint64_t lastMapCycleModifyTime = 0;
-	static mapcycle_t mapcycle;
 
 	BOOL do_cycle = TRUE;
 
@@ -1525,35 +1535,29 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 	const char* current_map = STRING(gpGlobals->mapname);
 	const char* next_map = STRING(gpGlobals->mapname);
 
-	if ( do_cycle && mapcycle.items )
+	const char* nextmapcvar = CVAR_GET_STRING("mp_nextmap");
+	bool nextMapCvarSet = strlen(nextmapcvar) > 0;
+
+	if (!IS_MAP_VALID(nextmapcvar)) {
+		ALERT(at_error, "Ignoring invalid mp_nextmap '%s'\n", nextmapcvar);
+		nextMapCvarSet = false;
+	}
+
+	if (nextMapCvarSet) {
+		next_map = nextmapcvar;
+	}
+
+	if ( do_cycle && mapcycle.items && !nextMapCvarSet )
 	{
 		bool found = false;
-		mapcycle_item_s *item;
+		mapcycle_item_t* item = GetMapCyleMap(current_map);
 
-		// Traverse list
-		for ( item = mapcycle.next_item; item->next != mapcycle.next_item; item = item->next )
-		{
-			ASSERT( item != NULL );
-
-			// find current map in list and continue from there.
-			// Don't simply increment mapcycle.next_item because
-			// admins/votes can change to levels out of order
-			if (item && !strcmp(item->mapname, current_map)) {
-				if (!IS_MAP_VALID(item->next->mapname)) {
-					ALERT(at_error, "Invalid map in cycle: '%s'\n", item->next->mapname);
-					continue;
-				}
-				mapcycle.next_item = item->next;
-				next_map = item->next->mapname;
-				found = true;
-				break;
-			}
-			
+		if (item) {
+			next_map = item->next->mapname;
 		}
-
-		if (!found) {
+		else {
 			next_map = mapcycle.items->mapname;
-			ALERT(at_console, "Unable to find map '%s' in list. Restarting the map cycle.\n", current_map);
+			ALERT(at_console, "Invalid map '%s' in map cycle file. Restarting the map cycle.\n", current_map);
 		}
 	}
 
