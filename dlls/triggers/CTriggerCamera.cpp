@@ -8,9 +8,12 @@
 #include "CBaseTrigger.h"
 #include "path/CPathCorner.h"
 
-#define SF_CAMERA_PLAYER_POSITION	1
-#define SF_CAMERA_PLAYER_TARGET		2
-#define SF_CAMERA_PLAYER_TAKECONTROL 4
+#define SF_CAMERA_PLAYER_POSITION	1 // camera position starts at the activator
+#define SF_CAMERA_PLAYER_TARGET		2 // camera follows the activator
+#define SF_CAMERA_PLAYER_TAKECONTROL 4 // freeze viewers
+#define SF_CAMERA_ALL_PLAYERS 8 // force everyone to view, dead or alive
+#define SF_CAMERA_FORCE_VIEW 16 // activator is forced to view even if dead ("all players" also does this)
+#define SF_CAMERA_PLAYER_INVULNERABLE 256 // disable viewer damage while camera is active
 
 class CTriggerCamera : public CBaseDelay
 {
@@ -20,6 +23,7 @@ public:
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void EXPORT FollowTarget(void);
 	void Move(void);
+	void TogglePlayerViews(bool enabled);
 
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
@@ -104,7 +108,40 @@ void CTriggerCamera::KeyValue(KeyValueData* pkvd)
 		CBaseDelay::KeyValue(pkvd);
 }
 
+void CTriggerCamera::TogglePlayerViews(bool enabled) {
+	bool freezePlayers = pev->spawnflags & SF_CAMERA_PLAYER_TAKECONTROL;
+	bool immunePlayers = pev->spawnflags & SF_CAMERA_PLAYER_INVULNERABLE;
+	bool forceView = pev->spawnflags & SF_CAMERA_FORCE_VIEW;
 
+	BOOL controlState = freezePlayers && enabled ? FALSE : TRUE;
+	int takedamageState = immunePlayers && enabled ? DAMAGE_NO : DAMAGE_YES;
+
+	if (pev->spawnflags & SF_CAMERA_ALL_PLAYERS) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
+			edict_t* ent = INDEXENT(i);
+			CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(ent);
+
+			if (!IsValidPlayer(ent) || !plr) {
+				break;
+			}
+
+			plr->EnableControl(controlState);
+			plr->pev->takedamage = takedamageState;
+			SET_VIEW(plr->edict(), enabled ? edict() : plr->edict());
+		}
+	}
+	else if (IsValidPlayer(m_hPlayer.GetEdict())) {
+		CBasePlayer* plr = (CBasePlayer*)m_hPlayer.GetEntity();
+
+		if (enabled && !forceView && !plr->IsAlive()) {
+			return;
+		}
+
+		plr->EnableControl(controlState);
+		plr->pev->takedamage = takedamageState;
+		SET_VIEW(m_hPlayer->edict(), enabled ? edict() : plr->edict());
+	}
+}
 
 void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
@@ -144,12 +181,6 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 		return;
 	}
 
-
-	if (FBitSet(pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL))
-	{
-		((CBasePlayer*)pActivator)->EnableControl(FALSE);
-	}
-
 	if (m_sPath)
 	{
 		m_pentPath = Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_sPath)));
@@ -182,9 +213,9 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 		pev->velocity = Vector(0, 0, 0);
 	}
 
-	SET_VIEW(pActivator->edict(), edict());
+	TogglePlayerViews(true);
 
-	SET_MODEL(ENT(pev), STRING(pActivator->pev->model));
+	SET_MODEL(ENT(pev), STRING(pActivator->pev->model)); // TODO: wtf?
 
 	// follow the player down
 	SetThink(&CTriggerCamera::FollowTarget);
@@ -202,11 +233,8 @@ void CTriggerCamera::FollowTarget()
 
 	if (m_hTarget == NULL || m_flReturnTime < gpGlobals->time)
 	{
-		if (m_hPlayer->IsAlive())
-		{
-			SET_VIEW(m_hPlayer->edict(), m_hPlayer->edict());
-			((CBasePlayer*)((CBaseEntity*)m_hPlayer))->EnableControl(TRUE);
-		}
+		TogglePlayerViews(false);
+
 		SUB_UseTargets(this, USE_TOGGLE, 0);
 		pev->avelocity = Vector(0, 0, 0);
 		m_state = 0;
