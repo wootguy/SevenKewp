@@ -27,6 +27,8 @@
 #define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )
 #define	SF_MONSTERMAKER_CYCLIC		4 // drop one monster every time fired.
 #define SF_MONSTERMAKER_MONSTERCLIP	8 // Children are blocked by monsterclip
+#define SF_MONSTERMAKER_PRISONER	16 // Children are prisoners
+#define SF_MONSTERMAKER_WAIT_SCRIPT	128 // Children wait for a scripted sequence
 
 #define MAX_XENMAKER_BEAMS 64 // each beam will need a TE message so don't go too crazy...
 #define XENMAKER_SOUND1 "debris/beamstart7.wav"
@@ -412,6 +414,9 @@ void CMonsterMaker::MakeMonster( void )
 	// Children hit monsterclip brushes
 	if ( pev->spawnflags & SF_MONSTERMAKER_MONSTERCLIP )
 		SetBits( pevCreate->spawnflags, SF_MONSTER_HITMONSTERCLIP );
+
+	// copy prisoner/script flags to child
+	pevCreate->spawnflags |= pev->spawnflags & (SF_MONSTERMAKER_PRISONER | SF_MONSTERMAKER_WAIT_SCRIPT);
 
 	DispatchSpawn( ENT( pevCreate ) );
 	pevCreate->owner = edict();
