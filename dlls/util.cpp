@@ -31,6 +31,16 @@
 #include "weapons.h"
 #include "gamerules.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#ifndef WIN32
+#include <unistd.h>
+#endif
+
+#ifdef WIN32
+#define stat _stat
+#endif
+
 float UTIL_WeaponTimeBase( void )
 {
 #if defined( CLIENT_WEAPONS )
@@ -2693,4 +2703,40 @@ int clampi(int val, int min, int max) {
 		return max;
 	}
 	return val;
+}
+
+uint64_t getFileModifiedTime(const char* path) {
+	struct stat result;
+	if (stat(path, &result) == 0) {
+		return result.st_mtime;
+	}
+
+	return 0;
+}
+
+bool fileExists(const char* path) {
+	FILE* file = fopen(path, "r");
+	if (file) {
+		fclose(file);
+		return true;
+	}
+	return false;
+}
+
+std::string getGameFilePath(const char* path) {
+	static char gameDir[MAX_PATH];
+	GET_GAME_DIR(gameDir);
+
+	std::string searchPaths[2] = {
+		gameDir + std::string("/") + path,
+		gameDir + std::string("_downloads/") + path,
+	};
+
+	for (int i = 0; i < 2; i++) {
+		if (fileExists(searchPaths[i].c_str())) {
+			return searchPaths[i];
+		}
+	}
+
+	return "";
 }
