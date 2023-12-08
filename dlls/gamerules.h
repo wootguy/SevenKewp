@@ -56,9 +56,23 @@ enum
 	GR_NEUTRAL,
 };
 
+struct mapcycle_item_t
+{
+	mapcycle_item_t* next;
+	char mapname[32];
+	int seriesIdx; // order in map series
+};
+
+struct mapcycle_t
+{
+	struct mapcycle_item_t* items;
+};
+
 class CGameRules
 {
 public:
+	mapcycle_t mapcycle;
+
 	virtual void RefreshSkillData( void );// fill skill data struct with proper values
 	virtual void Think( void ) = 0;// GR_Think - runs every server frame, should handle any timer tasks, periodic events, etc.
 	virtual BOOL IsAllowedToSpawn( CBaseEntity *pEntity ) = 0;  // Can this item spawn (eg monsters don't spawn in deathmatch).
@@ -157,6 +171,8 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) {}
+
+	virtual mapcycle_item_t* GetMapCyleMap(const char* map) { return NULL;  }
 };
 
 extern CGameRules *InstallGameRules( void );
@@ -348,6 +364,9 @@ public:
 
 	// Immediately end a multiplayer game
 	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
+
+	// finds the map cycle item for the given map name
+	virtual mapcycle_item_t* GetMapCyleMap(const char* map);
 
 protected:
 	virtual void ChangeLevel( void );
