@@ -1020,7 +1020,7 @@ void CShockTrooper::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), MOD_MDL_FOLDER "strooper.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector(-24, -24, 0), Vector(24, 24, 72));
 
 	pev->solid = SOLID_SLIDEBOX;
