@@ -6,6 +6,8 @@
 #include "CBasePlayer.h"
 #include "weapons.h"
 #include "CGamePlayerEquip.h"
+#include "string"
+#include "map"
 
 LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip);
 
@@ -78,25 +80,60 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 	// Players getting spawnkilled rapidly in a full server leads to crashes and overflows.
 	// This also reduces noise when spawning.
 
+	static std::map<std::string, const char*> itemNameRemap = {
+		{"weapon_mp5", "weapon_9mmAR"},
+		{"weapon_uzi", "weapon_9mmAR"},
+		{"weapon_uziakimbo", "weapon_9mmAR"},
+		{"weapon_m16", "weapon_9mmAR"},
+		{"weapon_m249", "weapon_9mmAR"},
+		{"weapon_minigun", "weapon_9mmAR"},
+		{"weapon_pipewrench", "weapon_crowbar"},
+		{"weapon_grapple", "weapon_crowbar"},
+		{"weapon_medkit", "weapon_crowbar"},
+		{"weapon_eagle", "weapon_357"},
+		{"weapon_python", "weapon_357"},
+		{"weapon_sniperrifle", "weapon_crossbow"},
+		{"weapon_displacer", "weapon_egon"},
+		{"weapon_shockrifle", "weapon_hornetgun"},
+
+		{"ammo_mp5clip", "ammo_9mmAR"},
+		{"ammo_556clip", "ammo_9mmAR"},
+		{"ammo_uziclip", "ammo_9mmAR"},
+		{"ammo_556", "ammo_9mmbox"},
+		{"ammo_glockclip", "ammo_9mmclip"},
+		{"ammo_9mm", "ammo_9mmclip"},
+		{"ammo_egonclip", "ammo_gaussclip"},
+		{"ammo_mp5grenades", "ammo_ARgrenades"},
+		{"ammo_spore", "ammo_ARgrenades"},
+		{"weapon_sporelauncher", "ammo_ARgrenades"},
+		{"ammo_sporeclip", "ammo_ARgrenades"},
+		{"ammo_spore", "ammo_ARgrenades"},
+		{"ammo_762", "ammo_crossbow"},
+	};
+
+	if (itemNameRemap.find(itemName) != itemNameRemap.end()) {
+		itemName = itemNameRemap[itemName];
+	}
+
 	if (!strcmp(itemName, "ammo_357")) {
 		pPlayer->GiveAmmo(AMMO_357BOX_GIVE * count, "357", _357_MAX_CARRY);
 	}
 	else if (!strcmp(itemName, "ammo_crossbow")) {
 		pPlayer->GiveAmmo(AMMO_CROSSBOWCLIP_GIVE * count, "bolts", BOLT_MAX_CARRY);
 	}
-	else if (!strcmp(itemName, "ammo_gaussclip") || !strcmp(itemName, "ammo_egonclip")) {
+	else if (!strcmp(itemName, "ammo_gaussclip")) {
 		pPlayer->GiveAmmo(AMMO_URANIUMBOX_GIVE * count, "uranium", URANIUM_MAX_CARRY);
 	}
-	else if (!strcmp(itemName, "ammo_glockclip") || !strcmp(itemName, "ammo_9mmclip") || !strcmp(itemName, "ammo_9mm")) {
+	else if (!strcmp(itemName, "ammo_9mmclip")) {
 		pPlayer->GiveAmmo(AMMO_GLOCKCLIP_GIVE * count, "9mm", _9MM_MAX_CARRY);
 	}
-	else if (!strcmp(itemName, "ammo_mp5clip") || !strcmp(itemName, "ammo_9mmAR")) {
+	else if (!strcmp(itemName, "ammo_9mmAR")) {
 		pPlayer->GiveAmmo(AMMO_MP5CLIP_GIVE * count, "9mm", _9MM_MAX_CARRY);
 	}
 	else if (!strcmp(itemName, "ammo_9mmbox")) {
 		pPlayer->GiveAmmo(AMMO_CHAINBOX_GIVE * count, "9mm", _9MM_MAX_CARRY);
 	}
-	else if (!strcmp(itemName, "ammo_mp5grenades") || !strcmp(itemName, "ammo_ARgrenades")) {
+	else if (!strcmp(itemName, "ammo_ARgrenades")) {
 		pPlayer->GiveAmmo(AMMO_M203BOX_GIVE * count, "ARgrenades", M203_GRENADE_MAX_CARRY);
 	}
 	else if (!strcmp(itemName, "ammo_rpgclip")) {
@@ -143,7 +180,8 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 	}
 	else {
 		for (int j = 0; j < count; j++) {
-			pPlayer->GiveNamedItem(itemName);
+			if (!pPlayer->HasNamedPlayerItem(itemName))
+				pPlayer->GiveNamedItem(itemName);
 		}
 	}
 }
