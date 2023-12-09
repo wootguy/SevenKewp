@@ -509,7 +509,7 @@ void CMonsterMaker :: XenmakerEffect() {
 	WRITE_COORD(position.y);
 	WRITE_COORD(position.z);
 	WRITE_SHORT(xen->m_xenSpriteIdx);
-	WRITE_BYTE(min(255, xen->m_flStartSpriteScale*10));
+	WRITE_BYTE(V_min(255, xen->m_flStartSpriteScale*10));
 	WRITE_BYTE(m_iStartSpriteAlpha);
 	MESSAGE_END();
 

@@ -4287,8 +4287,8 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	// give points proportional to how much damage was dealt, ignoring overkill damage
 	if (pevAttacker && (pevAttacker->flags & FL_CLIENT)) {
 		const float MONSTER_POINTS_PER_HP = 0.01f; // how many points to give per hitpoint of damage dealt
-		float newHealth = max(0, pev->health);
-		float damageAmt = max(0, oldHealth - newHealth);
+		float newHealth = V_max(0, pev->health);
+		float damageAmt = V_max(0, oldHealth - newHealth);
 		pevAttacker->frags += damageAmt * MONSTER_POINTS_PER_HP;
 	}
 

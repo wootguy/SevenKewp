@@ -518,12 +518,12 @@ void EMIT_GROUPID_SUIT(edict_t *entity, int isentenceg);
 void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 
 // macros for precaching sound arrays and selecting random sounds which are affected my mp_soundvariety
-#define RANDOM_SOUND_ARRAY_IDX( array ) RANDOM_LONG(0,(soundvariety.value > 0 ? min(ARRAYSIZE( (array) ), soundvariety.value) : ARRAYSIZE( (array) ))-1)
+#define RANDOM_SOUND_ARRAY_IDX( array ) RANDOM_LONG(0,(soundvariety.value > 0 ? V_min(ARRAYSIZE( (array) ), soundvariety.value) : ARRAYSIZE( (array) ))-1)
 #define PRECACHE_SOUND_ARRAY( a ) \
 	{ \
 		int count = ARRAYSIZE( (a) ); \
 		if (soundvariety.value > 0) { \
-			count = min(soundvariety.value, count); \
+			count = V_min(soundvariety.value, count); \
 		} \
 		for (int i = 0; i <count; i++ ) \
 			PRECACHE_SOUND((char *) (a) [i]); \
