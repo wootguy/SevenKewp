@@ -1793,6 +1793,8 @@ void CBasePlayer::PreThink(void)
 
 	g_pGameRules->PlayerThink( this );
 
+	UpdateShockEffect();
+
 	if ( g_fGameOver )
 		return;         // intermission or finale
 
@@ -2653,6 +2655,11 @@ void CBasePlayer::Spawn( void )
 	pev->dmg_save		= 0;
 	pev->friction		= 1.0;
 	pev->gravity		= 1.0;
+	pev->rendermode = 0;
+	pev->renderamt = 0;
+	pev->renderfx = 0;
+	pev->rendercolor = Vector(0,0,0);
+
 	m_bitsHUDDamage		= -1;
 	m_bitsDamageType	= 0;
 	m_afPhysicsFlags	= 0;
