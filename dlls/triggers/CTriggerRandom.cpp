@@ -48,12 +48,12 @@ void CTriggerRandom::KeyValue(KeyValueData* pkvd)
 	}
 	else if (FStrEq(pkvd->szKeyName, "min_delay"))
 	{
-		min_delay = max(0, atof(pkvd->szValue));
+		min_delay = V_max(0, atof(pkvd->szValue));
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "max_delay"))
 	{
-		max_delay = max(0, atof(pkvd->szValue));
+		max_delay = V_max(0, atof(pkvd->szValue));
 		pkvd->fHandled = TRUE;
 	}
 	else {

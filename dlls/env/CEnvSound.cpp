@@ -94,11 +94,15 @@ BOOL FEnvSoundInRange(entvars_t* pev, entvars_t* pevTarget, float* pflRange)
 
 void CEnvSound::Think(void)
 {
+	edict_t* pentPlayer = NULL;
+	CBasePlayer* pPlayer = NULL;
+	float flRange;
+
 	if (!UTIL_IsClientInPVS(edict()))
 		goto env_sound_Think_slow; // no player in pvs of sound entity, slow it down
 
 	// cycle through players on each think (0.64s update delay per player, for 32 players)
-	edict_t* pentPlayer = NULL;
+	
 	for (int i = 0; i < 32; i++) {
 		clientIdx = (clientIdx + 1) % gpGlobals->maxClients;
 		edict_t* ent = INDEXENT(clientIdx + 1);
@@ -113,10 +117,7 @@ void CEnvSound::Think(void)
 		goto env_sound_Think_slow;
 	}
 
-	CBasePlayer* pPlayer = NULL;
-
 	pPlayer = GetClassPtr((CBasePlayer*)VARS(pentPlayer));
-	float flRange;
 
 	// check to see if this is the sound entity that is 
 	// currently affecting this player

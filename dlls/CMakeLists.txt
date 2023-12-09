@@ -425,7 +425,7 @@ if(UNIX)
 
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32" LINK_FLAGS "-m32"
+		COMPILE_FLAGS "-m32 -g -w -O2" LINK_FLAGS "-m32 -g"
 	)
 
 elseif(MSVC)
