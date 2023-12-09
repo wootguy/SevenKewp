@@ -894,8 +894,9 @@ LINK_ENTITY_TO_CLASS( monster_otis_dead, CDeadOtis );
 //=========================================================
 void CDeadOtis:: Spawn( )
 {
-	PRECACHE_MODEL("models/otis.mdl");
-	SET_MODEL(ENT(pev), "models/otis.mdl");
+	m_defaultModel = MOD_MDL_FOLDER "otis.mdl";
+	PRECACHE_MODEL(GetModel());
+	SET_MODEL(ENT(pev), GetModel());
 
 	pev->effects		= 0;
 	pev->yaw_speed		= 8;
