@@ -328,6 +328,9 @@ int CTripmineGrenade :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttac
 
 void CTripmineGrenade::Killed( entvars_t *pevAttacker, int iGib )
 {
+	if (pev->takedamage == DAMAGE_NO) {
+		return; // killed again before DelayDeathThink was called. Just wait.
+	}
 	pev->takedamage = DAMAGE_NO;
 	
 	pev->owner = m_pRealOwner;
