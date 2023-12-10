@@ -555,15 +555,14 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 	CBaseEntity	*pWeaponEntity = NULL;
 
 	pPlayer->pev->weapons |= (1<<WEAPON_SUIT);
-	
-	addDefault = TRUE;
+
+	addDefault = !g_mapCfgExists;
 
 	for (int i = 0; i < MAX_EQUIP; i++) {
 		if (!g_mapEquipment[i].itemName) {
 			break;
 		}
 		equipPlayerWithItem(pPlayer, STRING(g_mapEquipment[i].itemName), g_mapEquipment[i].count);
-		addDefault = FALSE;
 	}
 
 	while ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ))
