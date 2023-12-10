@@ -455,6 +455,8 @@ void execMapCfg() {
 	int length;
 	char* cfgFile = (char*)LOAD_FILE_FOR_ME(cfgPath.c_str(), &length);
 	
+	g_mapCfgExists = cfgFile;
+
 	if (!cfgFile) {
 		return;
 	}
