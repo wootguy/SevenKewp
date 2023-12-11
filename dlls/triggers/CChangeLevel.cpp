@@ -61,6 +61,10 @@ void CChangeLevel::KeyValue(KeyValueData* pkvd)
 		if (strlen(pkvd->szValue) >= cchMapNameMost)
 			ALERT(at_error, "Map name '%s' too long (32 chars)\n", pkvd->szValue);
 		strcpy(m_szMapName, pkvd->szValue);
+
+		// lower case map names for linux servers (prevents fastdl/plugin problems)
+		for (char* p = m_szMapName; *p; ++p) *p = tolower(*p);
+
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "landmark"))
