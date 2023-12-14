@@ -141,6 +141,9 @@ void CBaseTrigger::MultiWaitOver(void)
 	//		pev->solid		= SOLID_BBOX;
 	//		}
 	SetThink(NULL);
+
+	// retouch to check if stationary entity is touching the trigger
+	gpGlobals->force_retouch++;
 }
 
 
