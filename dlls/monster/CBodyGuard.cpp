@@ -217,6 +217,8 @@ void CBodyGuard::Spawn()
 	case 6:
 		m_iEquipment |= MEQUIP_SNIPER;
 		m_cClipSize = SNIPER_CLIP_SIZE;
+		m_flDistTooFar = 4096.0;
+		m_flDistLook = 4096.0;
 		break;
 	case 7:
 		m_iEquipment |= MEQUIP_MINIGUN;
