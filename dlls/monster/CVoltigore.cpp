@@ -23,9 +23,9 @@
 
 #define SHOCK_SPRITE "sprites/blueflare2.spr"
 #define BEAM_SPRITE "sprites/lgtning.spr"
-#define GIB_MODEL MOD_MDL_FOLDER "vgibs.mdl"
-#define SPORE_EXPLODE_SPRITE MOD_SPR_FOLDER "spore_exp_01.spr"
-#define SPORE_EXPLODE_SPRITE2 MOD_SPR_FOLDER "tinyspit.spr"
+#define GIB_MODEL "models/vgibs.mdl"
+#define SPORE_EXPLODE_SPRITE "sprites/spore_exp_01.spr"
+#define SPORE_EXPLODE_SPRITE2 "sprites/tinyspit.spr"
 #define SPORE_EXPLODE_SOUND MOD_SND_FOLDER "weapons/splauncher_impact.wav"
 #define SHOCK_SOUND "debris/beamstart1.wav"
 
@@ -285,7 +285,7 @@ void CVoltigore::HideChargeBeam() {
 
 void CVoltigore::Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "voltigore.mdl";
+	m_defaultModel = "models/voltigore.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(GIB_MODEL);
 	PRECACHE_MODEL(BEAM_SPRITE);

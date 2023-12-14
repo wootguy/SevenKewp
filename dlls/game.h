@@ -16,11 +16,12 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include <map>
+#include <string>
+
 extern void GameDLLInit( void );
 
 // subfolders created to separate mod files from vanilla HL files
-#define MOD_MDL_FOLDER "models/hlcoop/"
-#define MOD_SPR_FOLDER "sprites/hlcoop/"
 #define MOD_SND_FOLDER "hlcoop/"
 
 extern cvar_t	displaysoundlist;
@@ -53,5 +54,7 @@ extern cvar_t	killnpc; // legacy setting. When set to 0, makes scientists and ba
 extern cvar_t	*g_psv_gravity;
 extern cvar_t	*g_psv_aim;
 extern cvar_t	*g_footsteps;
+
+extern std::map<std::string, std::string> g_modelReplacements;
 
 #endif		// GAME_H

@@ -317,10 +317,10 @@ void CZombie :: Precache()
 	int i;
 
 	if (!strcmp(STRING(pev->classname), "monster_zombie_barney")) {
-		m_defaultModel = MOD_MDL_FOLDER "zombie_barney.mdl";
+		m_defaultModel = "models/zombie_barney.mdl";
 	}
 	else if (!strcmp(STRING(pev->classname), "monster_zombie_soldier")) {
-		m_defaultModel = MOD_MDL_FOLDER "zombie_soldier.mdl";
+		m_defaultModel = "models/zombie_soldier.mdl";
 	}
 	else {
 		m_defaultModel = "models/zombie.mdl";

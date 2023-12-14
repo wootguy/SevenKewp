@@ -157,7 +157,7 @@ void CBabyGarg::Precache()
 {
 	int i;
 
-	m_defaultModel = MOD_MDL_FOLDER "babygarg.mdl";
+	m_defaultModel = "models/babygarg.mdl";
 	PRECACHE_MODEL(GetModel());
 	
 	// TODO: Friendly variant, but just as a skin to reduce model count

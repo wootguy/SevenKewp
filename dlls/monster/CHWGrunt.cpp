@@ -181,7 +181,7 @@ void CHWGrunt::Spawn() {
 
 void CHWGrunt::Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "hwgrunt.mdl";
+	m_defaultModel = "models/hwgrunt.mdl";
 	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);

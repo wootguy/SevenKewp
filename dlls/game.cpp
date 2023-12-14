@@ -519,6 +519,8 @@ cvar_t	sk_yawspeed_mult = { "sk_yawspeed_mult1","0" };
 
 // END Cvars for Skill Level settings
 
+std::map<std::string, std::string> g_modelReplacements;
+
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit( void )

@@ -187,7 +187,7 @@ void CBabyVoltigore::Spawn()
 
 void CBabyVoltigore::Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "baby_voltigore.mdl";
+	m_defaultModel = "models/baby_voltigore.mdl";
 	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND_ARRAY(pAttackHitSounds);

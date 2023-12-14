@@ -323,7 +323,7 @@ void CHGruntOp4Medic :: Spawn()
 
 void CHGruntOp4Medic :: Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "hgrunt_medic.mdl";
+	m_defaultModel = "models/hgrunt_medic.mdl";
 	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/medic_give_shot.wav" );

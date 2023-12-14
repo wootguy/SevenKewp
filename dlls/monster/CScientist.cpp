@@ -693,7 +693,7 @@ void CScientist :: Spawn( void )
 //=========================================================
 void CScientist :: Precache( void )
 {
-	m_defaultModel = FClassnameIs(pev, "monster_scientist") ? "models/scientist.mdl" : MOD_MDL_FOLDER "cleansuit_scientist.mdl";
+	m_defaultModel = FClassnameIs(pev, "monster_scientist") ? "models/scientist.mdl" : "models/cleansuit_scientist.mdl";
 
 	PRECACHE_MODEL(GetModel());
 

@@ -34,7 +34,7 @@
 #define MELEE_ATTACK1_SEQUENCE_OFFSET 0
 #define MELEE_ATTACK2_SEQUENCE_OFFSET 1 // second ATTACK1 sequence in the model should be gonna-eat-you one
 
-#define GONOME_SPIT_SPRITE MOD_SPR_FOLDER "blood_chnk.spr" 
+#define GONOME_SPIT_SPRITE "sprites/blood_chnk.spr" 
 
 #define GRAB_BLOOD_SOUND "barnacle/bcl_chew2.wav" // this is new in sven co-op
 
@@ -268,7 +268,7 @@ void CGonome::Spawn()
 
 void CGonome::Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "gonome.mdl";
+	m_defaultModel = "models/gonome.mdl";
 	PRECACHE_MODEL(GetModel());
 	iGonomeSpitSprite = PRECACHE_MODEL(GONOME_SPIT_SPRITE);
 

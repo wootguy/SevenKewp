@@ -28,6 +28,8 @@
 #include <vector>
 #include <string>
 #include "game.h"
+#include <map>
+#include <string>
 
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
@@ -562,6 +564,15 @@ float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 float UTIL_WeaponTimeBase( void );
 
+#ifdef CLIENT_DLL
+#define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
+#define SET_MODEL		(*g_engfuncs.pfnSetModel)
+#else
+// engine wrapper which handles global replacement logic
+int PRECACHE_MODEL(const char* model);
+void SET_MODEL(edict_t* edict, const char* model);
+#endif
+
 std::vector<std::string> splitString(std::string str, const char* delimitters);
 
 std::string toLowerCase(std::string str);
@@ -582,3 +593,7 @@ bool fileExists(const char* path);
 // searches game directories in order (e.g. valve/path, valve_downloads/path)
 // returns an empty string if the file can't be found
 std::string getGameFilePath(const char* path);
+
+// loads a global model/sound replacement file
+// format: "file_path" "replacement_file_path"
+std::map<std::string, std::string> loadReplacementFile(const char* path);

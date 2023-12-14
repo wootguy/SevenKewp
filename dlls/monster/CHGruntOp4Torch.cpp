@@ -315,7 +315,7 @@ void COFTorchAlly :: Spawn()
 
 void COFTorchAlly :: Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "hgrunt_torch.mdl";
+	m_defaultModel = "models/hgrunt_torch.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL( TORCH_BEAM_SPRITE );
 

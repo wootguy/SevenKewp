@@ -4,7 +4,7 @@ set(ENGINE_DIR "D:/Steam/steamapps/common/Half-Life" CACHE STRING "Path to your 
 set(ENGINE_EXE "hl.exe" CACHE STRING "Name of the executable that starts the half-life engine")
 option(USE_AUTOHOTKEY_SCRIPT "Disable this if you don't have AutoHotkey installed" )
 
-set(SERVER_DLL_NAME "server")
+set(SERVER_DLL_NAME "sevenkewp")
 set(CLIENT_DLL_NAME "client")
 set(GAMEDIR_NAME "sevenkewp")
 set(GAME_ARGS "-steam -console -game ${GAMEDIR_NAME} +developer 2 +map sc_test -sv_cheats 1 -maxplayers 32")
