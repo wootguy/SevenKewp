@@ -92,6 +92,11 @@ void CBreakable::KeyValue(KeyValueData* pkvd)
 		ExplosionSetMagnitude(atoi(pkvd->szValue));
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "displayname"))
+	{
+		m_displayName = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else if (FStrEq(pkvd->szKeyName, "lip"))
 		pkvd->fHandled = TRUE;
 	else
