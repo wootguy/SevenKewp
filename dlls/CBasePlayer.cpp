@@ -1729,6 +1729,19 @@ void CBasePlayer::UpdateStatusBar()
 
 				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			}
+			else if (pEntity->IsBreakable()) {
+
+				const char* name = pEntity->DisplayName();
+				int hp = roundf(pEntity->pev->health);
+
+				strcpy(sbuf1, UTIL_VarArgs("1 %s", name));
+				strcpy(sbuf0, UTIL_VarArgs("2 Health: %d", hp));
+
+				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
+				newSBarState[SBAR_ID_TARGETHEALTH] = hp;
+
+				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+			}
 		}
 		else if ( m_flStatusBarDisappearDelay > gpGlobals->time )
 		{

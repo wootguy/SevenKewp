@@ -197,6 +197,7 @@ public:
 	virtual	BOOL	IsMonster( void ) { return FALSE; }
 	virtual	BOOL	IsPlayer( void ) { return FALSE; }
 	virtual BOOL	IsNetClient( void ) { return FALSE; }
+	virtual BOOL	IsBreakable( void ) { return FALSE; }
 	virtual const char *TeamID( void ) { return ""; }
 	virtual const char* DisplayName() { return STRING(pev->classname); }
 

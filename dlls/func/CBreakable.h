@@ -16,6 +16,7 @@ public:
 	void EXPORT BreakTouch(CBaseEntity* pOther);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void DamageSound(void);
+	const char* DisplayName() { return m_displayName ? STRING(m_displayName) : "Breakable"; }
 
 	// breakables use an overridden takedamage
 	virtual int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
@@ -55,6 +56,7 @@ public:
 	float		m_angle;
 	int			m_iszGibModel;
 	int			m_iszSpawnObject;
+	string_t	m_displayName;
 };
 
 #endif	// FUNC_BREAK_H
