@@ -8,7 +8,6 @@
 class CBaseTrigger : public CBaseToggle
 {
 public:
-	void EXPORT TeleportTouch(CBaseEntity* pOther);
 	void KeyValue(KeyValueData* pkvd);
 	void EXPORT MultiTouch(CBaseEntity* pOther);
 	void EXPORT HurtTouch(CBaseEntity* pOther);
