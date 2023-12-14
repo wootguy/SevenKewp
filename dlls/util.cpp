@@ -31,6 +31,7 @@
 #include "weapons.h"
 #include "gamerules.h"
 
+#include <fstream>
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef WIN32
@@ -2643,6 +2644,95 @@ int	CRestore::BufferCheckZString( const char *string )
 			return 1;
 	}
 	return 0;
+}
+
+std::map<std::string, std::string> loadReplacementFile(const char* path) {
+	std::map<std::string, std::string> replacements;
+
+	std::string fpath = getGameFilePath(path);
+	std::ifstream infile(fpath);
+
+	int lineNum = 0;
+	std::string line;
+	while (std::getline(infile, line))
+	{
+		lineNum++;
+		std::string paths[2];
+
+		line = trimSpaces(line);
+		if (line.empty()) {
+			continue;
+		}
+
+		int quotedPaths = 0;
+		for (int i = 0; i < 2; i++) {
+			int startQuote = line.find('"');
+			if (startQuote == -1) {
+				break;
+			}
+
+			int endQuote = line.find('"', startQuote + 1);
+			if (endQuote != -1) {
+				paths[i] = trimSpaces(line.substr(startQuote + 1, (endQuote - startQuote)-1));
+				line = line.substr(endQuote + 1);
+				quotedPaths++;
+			}
+			else {
+				ALERT(at_warning, "%s line %d: Missing end quote\n", fpath.c_str(), lineNum);
+				break;
+			}
+		}
+		
+		if (quotedPaths < 2) {
+			// one or more paths is not surrounded with quotes
+			// assume the paths have no spaces and just get the next X strings
+			
+			// in case there were an odd number of quotes
+			line.erase(std::remove(line.begin(), line.end(), '"'), line.end());
+			
+			std::vector<std::string> parts = splitString(line, " \t");
+			std::vector<std::string> nonemptyParts;
+			for (int i = 0; i < parts.size(); i++) {
+				if (parts[i].size()) {
+					nonemptyParts.push_back(parts[i]);
+				}
+			}
+
+			if (quotedPaths == 0 && nonemptyParts.size() >= 2) {
+				paths[0] = nonemptyParts[0];
+				paths[1] = nonemptyParts[1];
+			}
+			else if (quotedPaths == 1 && nonemptyParts.size() >= 1) {
+				paths[1] = nonemptyParts[0];
+			}
+			else {
+				ALERT(at_warning, "%s line %d: Missing path(s)\n", fpath.c_str(), lineNum);
+				continue;
+			}
+		}
+		
+		replacements[paths[0]] = paths[1];
+		//ALERT(at_console, "REP: %s -> %s\n", paths[0].c_str(), paths[1].c_str());
+	}
+
+	return replacements;
+}
+
+int PRECACHE_MODEL(const char* model) {
+	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
+		return g_engfuncs.pfnPrecacheModel(g_modelReplacements[model].c_str());
+	}
+
+	return g_engfuncs.pfnPrecacheModel(model);
+}
+
+void SET_MODEL(edict_t* edict, const char* model) {
+	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
+		g_engfuncs.pfnSetModel(edict, g_modelReplacements[model].c_str());
+	}
+	else {
+		g_engfuncs.pfnSetModel(edict, model);
+	}
 }
 
 std::vector<std::string> splitString(std::string str, const char* delimitters)

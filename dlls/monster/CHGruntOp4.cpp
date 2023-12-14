@@ -287,7 +287,7 @@ void CHGruntOp4 :: Spawn()
 
 void CHGruntOp4 :: Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "hgrunt_opfor.mdl";
+	m_defaultModel = "models/hgrunt_opfor.mdl";
 	PRECACHE_MODEL(GetModel());
 	CBaseGruntOp4::Precache();
 }	
@@ -423,7 +423,7 @@ void CHGruntOp4::KeyValue( KeyValueData *pkvd )
 
 void CDeadHGruntAlly:: Spawn( void )
 {
-	CBaseDead::BaseSpawn(MOD_MDL_FOLDER "hgrunt_opfor.mdl");
+	CBaseDead::BaseSpawn("models/hgrunt_opfor.mdl");
 	m_bloodColor = BLOOD_COLOR_RED;
 
 	if( pev->weapons & HGruntAllyWeaponFlag::MP5 )

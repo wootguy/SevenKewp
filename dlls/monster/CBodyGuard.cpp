@@ -250,7 +250,7 @@ void CBodyGuard::Precache()
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
 
-	m_defaultModel = MOD_MDL_FOLDER "bgman.mdl";
+	m_defaultModel = "models/bgman.mdl";
 	PRECACHE_MODEL(GetModel());
 	CBaseGrunt::Precache();
 }

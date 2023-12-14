@@ -974,8 +974,8 @@ void CBaseGrunt::InitAiFlags() {
 void CBaseGrunt::BasePrecache() {
 	m_iBrassShell = PRECACHE_MODEL("models/shell.mdl");// brass shell
 	m_iShotgunShell = PRECACHE_MODEL("models/shotgunshell.mdl");
-	m_iSawShell = PRECACHE_MODEL(MOD_MDL_FOLDER "saw_shell.mdl");
-	m_iSawLink = PRECACHE_MODEL(MOD_MDL_FOLDER "saw_link.mdl");
+	m_iSawShell = PRECACHE_MODEL("models/saw_shell.mdl");
+	m_iSawLink = PRECACHE_MODEL("models/saw_link.mdl");
 
 	// 9mmAR burst fire
 	PRECACHE_SOUND("hgrunt/gr_mgun1.wav");

@@ -192,7 +192,7 @@ void CRoboGrunt::Spawn() {
 
 void CRoboGrunt::Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "rgrunt.mdl";
+	m_defaultModel = "models/rgrunt.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL("models/computergibs.mdl");
 

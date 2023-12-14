@@ -520,7 +520,7 @@ void COtis :: Spawn()
 //=========================================================
 void COtis :: Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "otis.mdl";
+	m_defaultModel = "models/otis.mdl";
 	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/de_shot1.wav" );
@@ -894,7 +894,7 @@ LINK_ENTITY_TO_CLASS( monster_otis_dead, CDeadOtis );
 //=========================================================
 void CDeadOtis:: Spawn( )
 {
-	m_defaultModel = MOD_MDL_FOLDER "otis.mdl";
+	m_defaultModel = "models/otis.mdl";
 	PRECACHE_MODEL(GetModel());
 	SET_MODEL(ENT(pev), GetModel());
 

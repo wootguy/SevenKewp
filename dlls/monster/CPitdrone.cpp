@@ -88,11 +88,11 @@ IMPLEMENT_SAVERESTORE( CPitdroneSpike, CBaseEntity );
 
 void CPitdroneSpike::Precache()
 {
-	PRECACHE_MODEL(MOD_MDL_FOLDER "pit_drone_spike.mdl" );
+	PRECACHE_MODEL("models/pit_drone_spike.mdl" );
 	PRECACHE_SOUND( "weapons/xbow_hitbod1.wav" );
 	PRECACHE_SOUND( "weapons/xbow_hit1.wav" );
 
-	iSpikeTrail = PRECACHE_MODEL(MOD_SPR_FOLDER "spike_trail.spr" );
+	iSpikeTrail = PRECACHE_MODEL("sprites/spike_trail.spr" );
 }
 
 void CPitdroneSpike:: Spawn( void )
@@ -105,7 +105,7 @@ void CPitdroneSpike:: Spawn( void )
 	pev->flags |= FL_MONSTER;
 	pev->health = 1;
 
-	SET_MODEL(ENT(pev), MOD_MDL_FOLDER "pit_drone_spike.mdl");
+	SET_MODEL(ENT(pev), "models/pit_drone_spike.mdl");
 	pev->frame = 0;
 	pev->scale = 0.5;
 
@@ -733,9 +733,9 @@ void CPitdrone :: Spawn()
 //=========================================================
 void CPitdrone :: Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "pit_drone.mdl";
+	m_defaultModel = "models/pit_drone.mdl";
 	PRECACHE_MODEL(GetModel());
-	PRECACHE_MODEL(MOD_MDL_FOLDER "pit_drone_gibs.mdl" );
+	PRECACHE_MODEL("models/pit_drone_gibs.mdl" );
 
 	UTIL_PrecacheOther( "pitdronespike" );
 	
@@ -1236,7 +1236,7 @@ void CPitdrone::GibMonster()
 	if( CVAR_GET_FLOAT( "violence_agibs" ) != 0 )	// Should never get here, but someone might call it directly
 	{
 		//Note: the original doesn't check for German censorship
-		CGib::SpawnRandomGibs( pev, 6, MOD_MDL_FOLDER "pit_drone_gibs.mdl", 7, 0 );	// Throw alien gibs
+		CGib::SpawnRandomGibs( pev, 6, "models/pit_drone_gibs.mdl", 7, 0 );	// Throw alien gibs
 	}
 
 	// don't remove players!

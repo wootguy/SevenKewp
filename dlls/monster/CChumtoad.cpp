@@ -8,7 +8,7 @@
 
 #define TOXIC_SOUND "ambience/disgusting.wav"
 #define TOXIC_SOUND2 "doors/aliendoor1.wav"
-#define TOXIC_SPRITE MOD_SPR_FOLDER "puff1.spr"
+#define TOXIC_SPRITE "sprites/puff1.spr"
 
 #define TOXIC_START_DISTANCE 200
 
@@ -68,7 +68,7 @@ void CChumtoad::Spawn()
 
 void CChumtoad::Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "chumtoad.mdl";
+	m_defaultModel = "models/chumtoad.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(TOXIC_SPRITE);
 	PRECACHE_SOUND(TOXIC_SOUND);

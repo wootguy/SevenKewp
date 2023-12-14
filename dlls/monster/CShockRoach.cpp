@@ -324,7 +324,7 @@ void COFShockRoach :: Precache()
 
 	PRECACHE_SOUND(MOD_SND_FOLDER "shockroach/shock_walk.wav" );
 
-	m_defaultModel = MOD_MDL_FOLDER "w_shock_rifle.mdl";
+	m_defaultModel = "models/w_shock_rifle.mdl";
 	PRECACHE_MODEL(GetModel());
 }	
 

@@ -520,7 +520,7 @@ void CTor::Spawn()
 
 void CTor::Precache()
 {
-	m_defaultModel = MOD_MDL_FOLDER "tor.mdl";
+	m_defaultModel = "models/tor.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(SHOOT_BEAM_SPRITE);
 	PRECACHE_MODEL(PORTAL_BEAM_SPRITE);
