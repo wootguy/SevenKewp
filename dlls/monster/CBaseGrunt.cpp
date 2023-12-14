@@ -691,8 +691,8 @@ void CBaseGrunt::ShootMinigun(Vector& vecShootOrigin, Vector& vecShootDir) {
 
 void CBaseGrunt::ShootSniper(Vector& vecShootOrigin, Vector& vecShootDir) {
 	//TODO: why is this 556? is 762 too damaging?
-	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 2048, BULLET_PLAYER_556);
-	EMIT_SOUND(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "weapons/sniper_fire.wav", 1, ATTN_NORM);
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_556);
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "weapons/sniper_fire.wav", 1, 0.4);
 }
 
 void CBaseGrunt ::ShootShotgun(Vector& vecShootOrigin, Vector& vecShootDir)

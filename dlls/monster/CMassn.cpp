@@ -161,6 +161,8 @@ void CMassn :: Spawn()
 	{
 		weaponModel = MAssassinWeapon::SniperRifle;
 		m_cClipSize = MASSN_SNIPER_CLIP_SIZE;
+		m_flDistTooFar = 4096.0;
+		m_flDistLook = 4096.0;
 	}
 	else
 	{
@@ -176,8 +178,6 @@ void CMassn :: Spawn()
 	m_flLastShot = gpGlobals->time;
 
 	pev->skin = 0;
-
-	MonsterInit();
 
 	// get voice pitch
 	if (RANDOM_LONG(0, 1))
