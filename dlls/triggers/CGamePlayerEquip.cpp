@@ -82,6 +82,7 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 	// This also reduces noise when spawning.
 
 	static std::map<std::string, const char*> itemNameRemap = {
+		{"weapon_9mmar", "weapon_9mmAR"},
 		{"weapon_mp5", "weapon_9mmAR"},
 		{"weapon_uzi", "weapon_9mmAR"},
 		{"weapon_uziakimbo", "weapon_9mmAR"},
@@ -90,7 +91,6 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 		{"weapon_minigun", "weapon_9mmAR"},
 		{"weapon_pipewrench", "weapon_crowbar"},
 		{"weapon_grapple", "weapon_crowbar"},
-		{"weapon_medkit", "weapon_crowbar"},
 		{"weapon_eagle", "weapon_357"},
 		{"weapon_python", "weapon_357"},
 		{"weapon_sniperrifle", "weapon_crossbow"},
@@ -98,6 +98,7 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 		{"weapon_shockrifle", "weapon_hornetgun"},
 		{"weapon_glock", "weapon_9mmhandgun"},
 
+		{"ammo_9mmar", "ammo_9mmAR"},
 		{"ammo_mp5clip", "ammo_9mmAR"},
 		{"ammo_556clip", "ammo_9mmAR"},
 		{"ammo_uziclip", "ammo_9mmAR"},
@@ -107,14 +108,17 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 		{"ammo_egonclip", "ammo_gaussclip"},
 		{"ammo_mp5grenades", "ammo_ARgrenades"},
 		{"ammo_spore", "ammo_ARgrenades"},
+		{"ammo_argrenades", "ammo_ARgrenades"},
 		{"weapon_sporelauncher", "ammo_ARgrenades"},
 		{"ammo_sporeclip", "ammo_ARgrenades"},
 		{"ammo_spore", "ammo_ARgrenades"},
 		{"ammo_762", "ammo_crossbow"},
 	};
 
-	if (itemNameRemap.find(itemName) != itemNameRemap.end()) {
-		itemName = itemNameRemap[itemName];
+	std::string itemLower = toLowerCase(itemName);
+	
+	if (itemNameRemap.find(itemLower) != itemNameRemap.end()) {
+		itemName = itemNameRemap[itemLower];
 	}
 
 	if (!strcmp(itemName, "ammo_357")) {

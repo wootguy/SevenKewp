@@ -50,7 +50,7 @@ void CSentry::Spawn()
 	m_iRetractHeight = 64;
 	m_iDeployHeight = 64;
 	m_iMinPitch = -60;
-	UTIL_SetSize(pev, Vector(-16, -16, -m_iRetractHeight), Vector(16, 16, m_iRetractHeight));
+	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, m_iRetractHeight));
 
 	SetTouch(&CSentry::SentryTouch);
 	SetThink(&CSentry::Initialize);

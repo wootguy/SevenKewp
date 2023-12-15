@@ -1729,7 +1729,7 @@ void CBasePlayer::UpdateStatusBar()
 
 				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			}
-			else if (pEntity->IsBreakable()) {
+			else if (pEntity->IsBreakable() && !(pEntity->pev->spawnflags & SF_BREAK_TRIGGER_ONLY)) {
 
 				const char* name = pEntity->DisplayName();
 				int hp = roundf(pEntity->pev->health);

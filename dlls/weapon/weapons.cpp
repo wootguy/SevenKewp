@@ -62,7 +62,6 @@ LINK_ENTITY_TO_CLASS(weapon_m249, CMP5);
 LINK_ENTITY_TO_CLASS(weapon_minigun, CMP5);
 LINK_ENTITY_TO_CLASS(weapon_pipewrench, CCrowbar);
 LINK_ENTITY_TO_CLASS(weapon_grapple, CCrowbar);
-LINK_ENTITY_TO_CLASS(weapon_medkit, CCrowbar);
 LINK_ENTITY_TO_CLASS(weapon_eagle, CPython);
 LINK_ENTITY_TO_CLASS(weapon_sniperrifle, CCrossbow);
 LINK_ENTITY_TO_CLASS(weapon_displacer, CEgon);

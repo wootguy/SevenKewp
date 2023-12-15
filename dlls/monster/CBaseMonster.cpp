@@ -2193,8 +2193,12 @@ int	CBaseMonster :: Classify ( void )
 
 int CBaseMonster::Classify(int defaultClassify) {
 	// custom class keyvalue has priority over everything else
-	if (m_Classify)
+	if (m_Classify) {
+		if (m_Classify == -1) {
+			return CLASS_NONE; // -1 is used so that 0 can indicate no classification override was set
+		}
 		return m_Classify;
+	}
 
 	// if player ally is set, then ally status towards players is inverted
 	if (m_IsPlayerAlly) {
@@ -2210,7 +2214,6 @@ int CBaseMonster::Classify(int defaultClassify) {
 			case CLASS_HUMAN_PASSIVE:
 			case CLASS_HUMAN_MILITARY:
 			case CLASS_PLAYER_ALLY:
-			case CLASS_HUMAN_MILITARY_FRIENDLY:
 				return CLASS_HUMAN_MILITARY; // human ally -> human enemy
 			default:
 				return CLASS_ALIEN_MILITARY; // alien ally -> alien enemy
@@ -2250,23 +2253,23 @@ int CBaseMonster::IRelationship(CBaseEntity* pTarget)
 int CBaseMonster::IRelationship(int attackerClass, int victimClass) {
 	//TODO: need to update the entries for military ally & race x
 	static int iEnemy[16][16] =
-	{				//   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN	HMILA	RACEX
+	{				//   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN	RACEX	RACEXP
 		/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL,	R_DL,	R_DL	},
-		/*PLAYER*/		{ R_NO	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_AL,	R_DL,	R_DL,	R_NO,	R_DL	},
-		/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_NO	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO,	R_DL,	R_FR	},
+		/*PLAYER*/		{ R_NO	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_AL,	R_DL,	R_DL,	R_DL,	R_DL	},
+		/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_NO	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO,	R_FR,	R_FR	},
 		/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO,	R_HT,	R_HT	},
-		/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_HT	},
+		/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_HT,	R_HT	},
 		/*ALIENPASSIVE*/{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
-		/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_NO	},
-		/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_NO	},
+		/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_NO,	R_NO	},
+		/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_DL	},
-		/*INSECT*/		{ R_FR	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO,	R_FR,	R_NO	},
+		/*INSECT*/		{ R_FR	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*PLAYERALLY*/	{ R_NO	,R_DL	,R_AL	,R_AL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_NO,	R_DL,	R_DL	},
 		/*PBIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_DL,	R_DL,	R_DL	},
 		/*ABIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_NO	,R_NO	,R_DL,	R_DL,	R_NO,	R_DL,	R_DL	},
-		/*HUMMILALLY*/	{ R_NO	,R_DL	,R_AL	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_AL,	R_DL	},
-		/*RACEX*/		{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_HT	,R_DL	,R_NO	,R_NO	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_AL	}
+		/*RACEX*/		{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_HT	,R_DL	,R_NO	,R_NO	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_AL,	R_AL	},
+		/*RACEX (pit)*/	{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_HT	,R_DL	,R_NO	,R_NO	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_AL,	R_AL	}
 	};
 
 	return iEnemy[attackerClass][victimClass];
@@ -5102,9 +5105,15 @@ void CBaseMonster::MaintainSchedule(void)
 					pNewSchedule = GetScheduleOfType(m_failSchedule);
 				else
 					pNewSchedule = GetScheduleOfType(SCHED_FAIL);
+
 				// schedule was invalid because the current task failed to start or complete
-				ALERT(at_aiconsole, "Schedule %s Failed at %s (%d)!\n", m_pSchedule->pName,
-					GetTaskName(m_pSchedule->pTasklist[m_iScheduleIndex].iTask), m_iScheduleIndex);
+				if (m_pSchedule && m_pSchedule->pTasklist && m_iScheduleIndex < m_pSchedule->cTasks) {
+					ALERT(at_aiconsole, "Schedule %s Failed at %s (%d)!\n", m_pSchedule->pName,
+						GetTaskName(m_pSchedule->pTasklist[m_iScheduleIndex].iTask), m_iScheduleIndex);
+				}
+				else {
+					ALERT(at_aiconsole, "Schedule %u Failed at %d!\n", (uint32_t)m_pSchedule, m_iScheduleIndex);
+				}
 				ChangeSchedule(pNewSchedule);
 			}
 			else

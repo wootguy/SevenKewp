@@ -238,9 +238,10 @@ void COsprey :: FindAllThink( void )
 
 	if (m_iUnits == 0)
 	{
-		ALERT( at_console, "osprey error: no grunts to resupply\n");
-		UTIL_Remove( this );
-		return;
+		m_iUnits = 4;
+		ALERT( at_console, "osprey warning: no grunts to resupply (assuming 4)\n");
+		//UTIL_Remove( this );
+		//return;
 	}
 	SetThink( &COsprey::FlyThink );
 	pev->nextthink = gpGlobals->time + 0.1;
