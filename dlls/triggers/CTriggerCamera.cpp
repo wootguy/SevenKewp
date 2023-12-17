@@ -13,6 +13,7 @@
 #define SF_CAMERA_PLAYER_TAKECONTROL 4 // freeze viewers
 #define SF_CAMERA_ALL_PLAYERS 8 // force everyone to view, dead or alive
 #define SF_CAMERA_FORCE_VIEW 16 // activator is forced to view even if dead ("all players" also does this)
+#define SF_CAMERA_NO_INSTANT_TURN 32 // if enabled, smoothly rotate to face targets
 #define SF_CAMERA_PLAYER_INVULNERABLE 256 // disable viewer damage while camera is active
 
 class CTriggerCamera : public CBaseDelay
@@ -225,9 +226,6 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 
 void CTriggerCamera::FollowTarget()
 {
-	if (m_hPlayer == NULL)
-		return;
-
 	if (m_hTarget == NULL || m_flReturnTime < gpGlobals->time)
 	{
 		TogglePlayerViews(false);
@@ -241,28 +239,32 @@ void CTriggerCamera::FollowTarget()
 	Vector vecGoal = UTIL_VecToAngles(m_hTarget->pev->origin - pev->origin);
 	vecGoal.x = -vecGoal.x;
 
-	if (pev->angles.y > 360)
-		pev->angles.y -= 360;
+	if (pev->spawnflags & SF_CAMERA_NO_INSTANT_TURN) {
+		if (pev->angles.y > 360)
+			pev->angles.y -= 360;
 
-	if (pev->angles.y < 0)
-		pev->angles.y += 360;
+		if (pev->angles.y < 0)
+			pev->angles.y += 360;
 
-	float dx = vecGoal.x - pev->angles.x;
-	float dy = vecGoal.y - pev->angles.y;
+		float dx = vecGoal.x - pev->angles.x;
+		float dy = vecGoal.y - pev->angles.y;
 
-	if (dx < -180)
-		dx += 360;
-	if (dx > 180)
-		dx = dx - 360;
+		if (dx < -180)
+			dx += 360;
+		if (dx > 180)
+			dx = dx - 360;
 
-	if (dy < -180)
-		dy += 360;
-	if (dy > 180)
-		dy = dy - 360;
+		if (dy < -180)
+			dy += 360;
+		if (dy > 180)
+			dy = dy - 360;
 
-	pev->avelocity.x = dx * 40 * gpGlobals->frametime;
-	pev->avelocity.y = dy * 40 * gpGlobals->frametime;
-
+		pev->avelocity.x = dx * 40 * gpGlobals->frametime;
+		pev->avelocity.y = dy * 40 * gpGlobals->frametime;
+	}
+	else {
+		pev->angles = vecGoal;
+	}
 
 	if (!(FBitSet(pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL)))
 	{
