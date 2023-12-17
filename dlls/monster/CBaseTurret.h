@@ -49,7 +49,7 @@ public:
 	// virtual float SpinDown(void) { return 0;}
 	// virtual float Retire(void) { return 0;}
 
-	void EXPORT Deploy(void);
+	virtual void EXPORT Deploy(void);
 	void EXPORT Retire(void);
 
 	void EXPORT Initialize(void);
