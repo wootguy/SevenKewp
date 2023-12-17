@@ -30,6 +30,7 @@
 #include "CBasePlayer.h"
 #include "weapons.h"
 #include "gamerules.h"
+#include <algorithm>
 
 #include <fstream>
 #include <sys/types.h>
