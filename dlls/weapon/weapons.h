@@ -23,6 +23,7 @@ extern int gmsgWeapPickup;
 
 void DeactivateSatchels( CBasePlayer *pOwner );
 int MaxAmmoCarry(int iszName);
+void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* mins, float* maxs, edict_t* pEntity);
 
 // Contact Grenade / Timed grenade / Satchel Charge
 class CGrenade : public CBaseMonster
@@ -80,6 +81,7 @@ public:
 #define WEAPON_TRIPMINE			13
 #define	WEAPON_SATCHEL			14
 #define	WEAPON_SNARK			15
+#define	WEAPON_GRAPPLE			16
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -93,6 +95,7 @@ public:
 
 // weapon weight factors (for auto-switching)   (-1 = noswitch)
 #define CROWBAR_WEIGHT		0
+#define GRAPPLE_WEIGHT		0
 #define GLOCK_WEIGHT		10
 #define PYTHON_WEIGHT		15
 #define MP5_WEIGHT			15
@@ -333,6 +336,7 @@ public:
 	virtual BOOL ShouldWeaponIdle( void ) {return FALSE; };
 	virtual void Holster( int skiplocal = 0 );
 	virtual BOOL UseDecrement( void ) { return FALSE; };
+	virtual BOOL IsClientWeapon() { return TRUE; }; // true if the client DLL predicts this weapon
 	
 	int	PrimaryAmmoIndex(); 
 	int	SecondaryAmmoIndex(); 

@@ -569,8 +569,10 @@ float UTIL_WeaponTimeBase( void );
 #define SET_MODEL		(*g_engfuncs.pfnSetModel)
 #else
 // engine wrapper which handles global replacement logic
+int PRECACHE_GENERIC(const char* path);
 int PRECACHE_MODEL(const char* model);
 void SET_MODEL(edict_t* edict, const char* model);
+const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
 #endif
 
 std::vector<std::string> splitString(std::string str, const char* delimitters);
