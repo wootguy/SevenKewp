@@ -31,6 +31,7 @@
 #include <string>
 #include <fstream>
 #include <set>
+#include <algorithm>
 
 using namespace std;
 
@@ -490,9 +491,12 @@ void execMapCfg() {
 	{
 		vector<string> parts = splitString(line, " \t");
 		string name = trimSpaces(toLowerCase(parts[0]));
+		string value = parts.size() > 1 ? trimSpaces(parts[1]) : "";
+
+		// strip quotes from value
+		value.erase(std::remove(value.begin(), value.end(), '"'), value.end());
 
 		if (parts.size() > 1 && whitelistCommands.find(name) != whitelistCommands.end()) {
-			string value = trimSpaces(parts[1]);
 			SERVER_COMMAND(UTIL_VarArgs("%s %s\n", name.c_str(), value.c_str()));
 			SERVER_EXECUTE();
 		}
@@ -502,13 +506,8 @@ void execMapCfg() {
 				continue;
 			}
 
-			int amount = 1;
-			if (parts.size() > 1) {
-				amount = atoi(parts[1].c_str());
-			}
-
 			g_mapEquipment[equipIdx].itemName = ALLOC_STRING(name.c_str());
-			g_mapEquipment[equipIdx].count = amount;
+			g_mapEquipment[equipIdx].count = value.size() ? atoi(value.c_str()) : 1;
 			equipIdx++;
 		}
 	}
