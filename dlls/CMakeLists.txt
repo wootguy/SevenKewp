@@ -212,6 +212,7 @@ set(TRIGGER_SRC
 	triggers/CTriggerRelay.cpp
 	triggers/CTriggerRespawn.cpp
 	triggers/CTriggerSave.cpp
+	triggers/CTriggerSetOrigin.cpp
 	triggers/CTriggerTeleport.cpp
 	triggers/CTriggerVolume.cpp
 )
