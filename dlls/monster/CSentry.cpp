@@ -20,6 +20,7 @@ public:
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	void EXPORT SentryTouch(CBaseEntity* pOther);
 	void EXPORT SentryDeath(void);
+	void Deploy(void);
 
 };
 
@@ -174,4 +175,14 @@ void CSentry::SentryDeath(void)
 		pev->framerate = 0;
 		SetThink(NULL);
 	}
+}
+
+void CSentry::Deploy(void)
+{
+	CBaseTurret::Deploy();
+
+	// undo hitbox extension
+	pev->maxs.z = m_iDeployHeight;
+	pev->mins.z = 0;
+	UTIL_SetSize(pev, pev->mins, pev->maxs);
 }
