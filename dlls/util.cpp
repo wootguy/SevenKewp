@@ -2719,6 +2719,14 @@ std::map<std::string, std::string> loadReplacementFile(const char* path) {
 	return replacements;
 }
 
+int PRECACHE_GENERIC(const char* path) {
+	if (g_modelReplacements.find(path) != g_modelReplacements.end()) {
+		return g_engfuncs.pfnPrecacheGeneric(g_modelReplacements[path].c_str());
+	}
+
+	return g_engfuncs.pfnPrecacheGeneric(path);
+}
+
 int PRECACHE_MODEL(const char* model) {
 	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
 		return g_engfuncs.pfnPrecacheModel(g_modelReplacements[model].c_str());
@@ -2734,6 +2742,14 @@ void SET_MODEL(edict_t* edict, const char* model) {
 	else {
 		g_engfuncs.pfnSetModel(edict, model);
 	}
+}
+
+const char* GET_MODEL(const char* model) {
+	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
+		return g_modelReplacements[model].c_str();
+	}
+
+	return model;
 }
 
 std::vector<std::string> splitString(std::string str, const char* delimitters)

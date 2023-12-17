@@ -308,6 +308,8 @@ set(PATH_SRC
 
 set(WEAPON_HDR
 	weapon/CShockBeam.h
+	weapon/CGrapple.h
+	weapon/CGrappleTip.h
 	weapon/CSpore.h
 	weapon/weapons.h
 )
@@ -320,6 +322,8 @@ set(WEAPON_SRC
 	weapon/CEgon.cpp
 	weapon/CGauss.cpp
 	weapon/CGrenade.cpp
+	weapon/CGrapple.cpp
+	weapon/CGrappleTip.cpp
 	weapon/CHandGrenade.cpp	
 	weapon/CHgun.cpp
 	weapon/CMortar.cpp
@@ -442,6 +446,7 @@ elseif(MSVC)
 		)
 	endif()
 
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W0") 
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${CMAKE_CURRENT_SOURCE_DIR}/hl.def") 
 	
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES

@@ -431,6 +431,12 @@ void ClientCommand(edict_t* pEntity)
 	{
 		GetClassPtr((CBasePlayer*)pev)->SelectItem((char*)CMD_ARGV(1));
 	}
+	else if (((pstr = strstr(pcmd, "hlcoop/weapon_")) != NULL) && (pstr == pcmd))
+	{
+		// custom weapon was selected (weapon name includes a folder path to force clients to load HUD files from there)
+		const char* wepCname = pstr + strlen("hlcoop/");
+		GetClassPtr((CBasePlayer*)pev)->SelectItem(wepCname);
+	}
 	else if (((pstr = strstr(pcmd, "weapon_")) != NULL) && (pstr == pcmd))
 	{
 		GetClassPtr((CBasePlayer*)pev)->SelectItem(pcmd);

@@ -229,7 +229,7 @@ void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 	m_pPlayer->pev->weaponanim = iAnim;
 
 #if defined( CLIENT_WEAPONS )
-	if (skiplocal && ENGINE_CANSKIP(m_pPlayer->edict()))
+	if (skiplocal && IsClientWeapon() && ENGINE_CANSKIP(m_pPlayer->edict()))
 		return;
 #endif
 
@@ -349,8 +349,8 @@ BOOL CBasePlayerWeapon::DefaultDeploy(const char* szViewModel, const char* szWea
 		return FALSE;
 
 	m_pPlayer->TabulateAmmo();
-	m_pPlayer->pev->viewmodel = MAKE_STRING(szViewModel);
-	m_pPlayer->pev->weaponmodel = MAKE_STRING(szWeaponModel);
+	m_pPlayer->pev->viewmodel = MAKE_STRING(GET_MODEL(szViewModel));
+	m_pPlayer->pev->weaponmodel = MAKE_STRING(GET_MODEL(szWeaponModel));
 	strcpy(m_pPlayer->m_szAnimExtention, szAnimExt);
 	SendWeaponAnim(iAnim, skiplocal, body);
 
