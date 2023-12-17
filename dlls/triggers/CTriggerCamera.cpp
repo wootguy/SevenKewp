@@ -74,6 +74,9 @@ void CTriggerCamera::Spawn(void)
 	pev->renderamt = 0;								// The engine won't draw this model if this is set to 0 and blending is on
 	pev->rendermode = kRenderTransTexture;
 
+	// views won't update if camera doesn't have a model, even if invisible
+	SET_MODEL(ENT(pev), "models/player.mdl");
+
 	m_initialSpeed = pev->speed;
 	if (m_acceleration == 0)
 		m_acceleration = 500;
@@ -155,10 +158,6 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 		m_flReturnTime = gpGlobals->time;
 		return;
 	}
-	if (!pActivator || !pActivator->IsPlayer())
-	{
-		pActivator = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
-	}
 
 	m_hPlayer = pActivator;
 
@@ -200,7 +199,7 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 	}
 
 	// copy over player information
-	if (FBitSet(pev->spawnflags, SF_CAMERA_PLAYER_POSITION))
+	if (m_hPlayer && FBitSet(pev->spawnflags, SF_CAMERA_PLAYER_POSITION))
 	{
 		UTIL_SetOrigin(pev, pActivator->pev->origin + pActivator->pev->view_ofs);
 		pev->angles.x = -pActivator->pev->angles.x;
@@ -214,8 +213,6 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 	}
 
 	TogglePlayerViews(true);
-
-	SET_MODEL(ENT(pev), STRING(pActivator->pev->model)); // TODO: wtf?
 
 	// follow the player down
 	SetThink(&CTriggerCamera::FollowTarget);
