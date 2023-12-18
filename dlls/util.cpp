@@ -707,6 +707,21 @@ void UTIL_EmitAmbientSound( edict_t *entity, const Vector &vecOrigin, const char
 		EMIT_AMBIENT_SOUND(entity, rgfl, samp, vol, attenuation, fFlags, pitch);
 }
 
+void UTIL_PlayGlobalMp3(const char* path, edict_t* target) {
+	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
+	// surround with ; to prevent multiple commands being joined when sent in the same frame(?)
+	// this fixes music sometimes not loading/starting/stopping
+	WRITE_STRING(UTIL_VarArgs(";mp3 play sound/%s;", path));
+	MESSAGE_END();
+}
+
+void UTIL_StopGlobalMp3(edict_t* target) {
+	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
+	WRITE_STRING(";mp3 stop;");
+	//WRITE_STRING(";cd fadeout;"); // blocked by cl_filterstuffcmd
+	MESSAGE_END();
+}
+
 static unsigned short FixedUnsigned16( float value, float scale )
 {
 	int output;

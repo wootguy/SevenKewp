@@ -4,6 +4,8 @@
 #include "weapons.h"
 #include "gamerules.h"
 
+#include <string>
+
 // runtime pitch shift and volume fadein/out structure
 // NOTE: IF YOU CHANGE THIS STRUCT YOU MUST CHANGE THE SAVE/RESTORE VERSION NUMBER
 // SEE BELOW (in the typedescription for the class)
@@ -107,6 +109,9 @@ public:
 
 	BOOL	m_fActive;	// only TRUE when the entity is playing a looping sound
 	BOOL	m_fLooping;	// TRUE when the sound played will loop
+
+	// use the mp3 player for music, if an mp3 file is used with the "play everywhere" flag
+	bool m_isGlobalMp3;
 };
 
 LINK_ENTITY_TO_CLASS(ambient_generic, CAmbientGeneric);
@@ -189,6 +194,9 @@ void CAmbientGeneric::Spawn(void)
 		m_fLooping = FALSE;
 	else
 		m_fLooping = TRUE;
+	
+	m_isGlobalMp3 = strstr(szSoundFile, ".mp3") == szSoundFile + (strlen(szSoundFile) - 4);
+	
 	Precache();
 }
 
@@ -199,6 +207,8 @@ void CAmbientGeneric::Precache(void)
 
 	if (!FStringNull(pev->message) && strlen(szSoundFile) > 1)
 	{
+		if (m_isGlobalMp3)
+			PRECACHE_GENERIC((std::string("sound/") + szSoundFile).c_str());
 		if (*szSoundFile != '!')
 			PRECACHE_SOUND(szSoundFile);
 	}
@@ -213,8 +223,14 @@ void CAmbientGeneric::Precache(void)
 	}
 	if (m_fActive)
 	{
-		UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
-			(m_dpv.vol * 0.01), m_flAttenuation, SND_SPAWNING, m_dpv.pitch);
+		if (m_isGlobalMp3) {
+			UTIL_PlayGlobalMp3(szSoundFile);
+		}
+		else {
+			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
+				(m_dpv.vol * 0.01), m_flAttenuation, SND_SPAWNING, m_dpv.pitch);
+		}
+		
 
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
@@ -263,8 +279,13 @@ void CAmbientGeneric::RampThink(void)
 			m_dpv.spindown = 0;				// done with ramp down
 
 			// shut sound off
-			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
-				0, 0, SND_STOP, 0);
+			if (m_isGlobalMp3) {
+				UTIL_StopGlobalMp3();
+			}
+			else {
+				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
+			}
+			
 
 			// return without setting nextthink
 			return;
@@ -305,8 +326,13 @@ void CAmbientGeneric::RampThink(void)
 			m_dpv.fadeout = 0;				// done with ramp down
 
 			// shut sound off
-			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
-				0, 0, SND_STOP, 0);
+			if (m_isGlobalMp3) {
+				UTIL_StopGlobalMp3();
+			}
+			else {
+				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
+			}
+			
 
 			// return without setting nextthink
 			return;
@@ -401,7 +427,7 @@ void CAmbientGeneric::RampThink(void)
 	// Send update to playing sound only if we actually changed
 	// pitch or volume in this routine.
 
-	if (flags && fChanged)
+	if (flags && fChanged && !m_isGlobalMp3)
 	{
 		if (pitch == PITCH_NORM)
 			pitch = PITCH_NORM + 1; // don't send 'no pitch' !
@@ -514,7 +540,7 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 	}
 	// Directly change pitch if arg passed. Only works if sound is already playing.
 
-	if (useType == USE_SET && m_fActive)		// Momentary buttons will pass down a float in here
+	if (useType == USE_SET && m_fActive && !m_isGlobalMp3)		// Momentary buttons will pass down a float in here
 	{
 
 		fraction = value;
@@ -580,9 +606,15 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 				m_dpv.fadein = 0;
 				pev->nextthink = gpGlobals->time + 0.1;
 			}
-			else
-				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
-					0, 0, SND_STOP, 0);
+			else {
+				if (m_isGlobalMp3) {
+					UTIL_StopGlobalMp3();
+				}
+				else {
+					UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
+				}
+			}
+				
 		}
 	}
 	else
@@ -595,17 +627,29 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 
 		if (m_fLooping)
 			m_fActive = TRUE;
-		else
+		else {
 			// shut sound off now - may be interrupting a long non-looping sound
-			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
-				0, 0, SND_STOP, 0);
+			if (m_isGlobalMp3) {
+				UTIL_StopGlobalMp3();
+			}
+			else {
+				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
+			}
+		}
+			
 
 		// init all ramp params for startup
 
 		InitModulationParms();
 
-		UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
-			(m_dpv.vol * 0.01), m_flAttenuation, 0, m_dpv.pitch);
+		if (m_isGlobalMp3) {
+			UTIL_PlayGlobalMp3(szSoundFile);
+		}
+		else {
+			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
+				(m_dpv.vol * 0.01), m_flAttenuation, 0, m_dpv.pitch);
+		}
+		
 
 		pev->nextthink = gpGlobals->time + 0.1;
 
