@@ -2769,9 +2769,12 @@ void CBasePlayer::Spawn( void )
 		MESSAGE_END();
 	}
 
-	// view can be set to null if the level changes while a camera is active
+	// view can be set to null(?) if the level changes while a camera is active
 	// which means you won't see any entities in the next level
-	SET_VIEW(edict(), edict());
+	if (!m_hActiveCamera) {
+		SET_VIEW(edict(), edict());
+	}
+	
 
 	g_pGameRules->PlayerSpawn( this );
 }

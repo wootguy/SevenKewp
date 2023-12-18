@@ -25,6 +25,7 @@ public:
 	void EXPORT FollowTarget(void);
 	void Move(void);
 	void TogglePlayerViews(bool enabled);
+	void TogglePlayerView(CBasePlayer* plr, bool enabled);
 
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
@@ -43,6 +44,7 @@ public:
 	float m_initialSpeed;
 	float m_acceleration;
 	float m_deceleration;
+	float m_turnspeed;
 	int	  m_state;
 
 };
@@ -83,6 +85,8 @@ void CTriggerCamera::Spawn(void)
 		m_acceleration = 500;
 	if (m_deceleration == 0)
 		m_deceleration = 500;
+	if (m_turnspeed == 0)
+		m_turnspeed = 40;
 }
 
 
@@ -108,17 +112,34 @@ void CTriggerCamera::KeyValue(KeyValueData* pkvd)
 		m_deceleration = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "turnspeed"))
+	{
+		m_turnspeed = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseDelay::KeyValue(pkvd);
 }
 
-void CTriggerCamera::TogglePlayerViews(bool enabled) {
-	bool freezePlayers = pev->spawnflags & SF_CAMERA_PLAYER_TAKECONTROL;
-	bool immunePlayers = pev->spawnflags & SF_CAMERA_PLAYER_INVULNERABLE;
-	bool forceView = pev->spawnflags & SF_CAMERA_FORCE_VIEW;
+void CTriggerCamera::TogglePlayerView(CBasePlayer* plr, bool enabled) {
+	if (pev->spawnflags & SF_CAMERA_PLAYER_TAKECONTROL) {
+		plr->EnableControl(enabled ? FALSE : TRUE);
+	}
 
-	BOOL controlState = freezePlayers && enabled ? FALSE : TRUE;
-	int takedamageState = immunePlayers && enabled ? DAMAGE_NO : DAMAGE_YES;
+	if (pev->spawnflags & SF_CAMERA_PLAYER_INVULNERABLE) {
+		plr->pev->takedamage = enabled ? DAMAGE_NO : DAMAGE_YES;
+	}
+
+	if (!enabled && plr->m_hActiveCamera.GetEntity() != this) {
+		return; // don't reset player's view if another camera interrupted this one
+	}
+
+	SET_VIEW(plr->edict(), enabled ? edict() : plr->edict());
+	plr->m_hActiveCamera = enabled ? this : NULL;
+}
+
+void CTriggerCamera::TogglePlayerViews(bool enabled) {
+	bool forceView = pev->spawnflags & SF_CAMERA_FORCE_VIEW;
 
 	if (pev->spawnflags & SF_CAMERA_ALL_PLAYERS) {
 		for (int i = 1; i <= gpGlobals->maxClients; i++) {
@@ -129,9 +150,7 @@ void CTriggerCamera::TogglePlayerViews(bool enabled) {
 				break;
 			}
 
-			plr->EnableControl(controlState);
-			plr->pev->takedamage = takedamageState;
-			SET_VIEW(plr->edict(), enabled ? edict() : plr->edict());
+			TogglePlayerView(plr, enabled);
 		}
 	}
 	else if (IsValidPlayer(m_hPlayer.GetEdict())) {
@@ -141,9 +160,7 @@ void CTriggerCamera::TogglePlayerViews(bool enabled) {
 			return;
 		}
 
-		plr->EnableControl(controlState);
-		plr->pev->takedamage = takedamageState;
-		SET_VIEW(m_hPlayer->edict(), enabled ? edict() : plr->edict());
+		TogglePlayerView(plr, enabled);
 	}
 }
 
@@ -259,18 +276,11 @@ void CTriggerCamera::FollowTarget()
 		if (dy > 180)
 			dy = dy - 360;
 
-		pev->avelocity.x = dx * 40 * gpGlobals->frametime;
-		pev->avelocity.y = dy * 40 * gpGlobals->frametime;
+		pev->avelocity.x = dx * m_turnspeed * gpGlobals->frametime;
+		pev->avelocity.y = dy * m_turnspeed * gpGlobals->frametime;
 	}
 	else {
 		pev->angles = vecGoal;
-	}
-
-	if (!(FBitSet(pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL)))
-	{
-		pev->velocity = pev->velocity * 0.8;
-		if (pev->velocity.Length() < 10.0)
-			pev->velocity = g_vecZero;
 	}
 
 	pev->nextthink = gpGlobals->time;
@@ -281,8 +291,15 @@ void CTriggerCamera::FollowTarget()
 void CTriggerCamera::Move()
 {
 	// Not moving on a path, return
-	if (!m_pentPath)
+	if (!m_pentPath) {
+		if (!(FBitSet(pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL)))
+		{
+			pev->velocity = pev->velocity * 0.8;
+			if (pev->velocity.Length() < 10.0)
+				pev->velocity = g_vecZero;
+		}
 		return;
+	}
 
 	// Subtract movement from the previous frame
 	m_moveDistance -= pev->speed * gpGlobals->frametime;
@@ -323,5 +340,9 @@ void CTriggerCamera::Move()
 		pev->speed = UTIL_Approach(m_targetSpeed, pev->speed, m_acceleration * gpGlobals->frametime);
 
 	float fraction = 2 * gpGlobals->frametime;
+
+	// the last bit carries over velocity from the previous frame, for spline-like movement.
+	// This causes the camera to overshoot/undershoot its target because m_moveDistance
+	// is intialized with a linear distance while the actual path travelled is curved.
 	pev->velocity = ((pev->movedir * pev->speed) * fraction) + (pev->velocity * (1 - fraction));
 }
