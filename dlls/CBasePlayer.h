@@ -97,6 +97,7 @@ public:
 	void	Observer_CheckTarget();
 	void	Observer_CheckProperties();
 	EHANDLE	m_hObserverTarget;
+	EHANDLE m_hActiveCamera; // camera the player is currently viewing
 	float	m_flNextObserverInput;
 	int		m_iObserverWeapon;	// weapon of current tracked target
 	int		m_iObserverLastMode;// last used observer mode
