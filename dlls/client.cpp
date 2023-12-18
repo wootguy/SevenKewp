@@ -201,6 +201,9 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->SetCustomDecalFrames(-1); // Assume none;
 	pPlayer->m_flLastSetRoomtype = -1; // fixup room type if joining from another server
 
+	// stop any music if playing
+	UTIL_StopGlobalMp3(pEntity);
+
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn() ;
 
