@@ -514,6 +514,10 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 {
 	Vector	vecTemp;
 
+	if ((pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) && !(bitsDamageType & (DMG_BLAST | DMG_MORTAR))) {
+		return 0;
+	}
+
 	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
 	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin). 
 	if (pevAttacker == pevInflictor)
