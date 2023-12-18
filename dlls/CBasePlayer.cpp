@@ -1734,7 +1734,15 @@ void CBasePlayer::UpdateStatusBar()
 				const char* name = pEntity->DisplayName();
 				int hp = roundf(pEntity->pev->health);
 
-				strcpy(sbuf1, UTIL_VarArgs("1 %s", name));
+				const char* hint = "";
+				if (pEntity->pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) {
+					hint = " (explosives only)";
+				}
+				else if (pEntity->pev->spawnflags & SF_BREAK_CROWBAR) {
+					hint = " (use crowbar)";
+				}
+
+				strcpy(sbuf1, UTIL_VarArgs("1 %s%s", name, hint));
 				strcpy(sbuf0, UTIL_VarArgs("2 Health: %d", hp));
 
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
