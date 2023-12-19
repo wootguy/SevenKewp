@@ -3124,8 +3124,8 @@ void CGraph :: ComputeStaticRoutingTables( void )
 						}
 						else
 						{
-							Routes[FROM_TO(iFrom, iTo)] = iFrom;
-							Routes[FROM_TO(iTo, iFrom)] = iTo;
+							Routes[FROM_TO(iFrom, iTo)] = iTo;
+							Routes[FROM_TO(iTo, iFrom)] = iFrom;
 						}
 					}
 				}
