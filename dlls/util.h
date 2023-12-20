@@ -35,6 +35,13 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, ent
 
 extern globalvars_t				*gpGlobals;
 
+struct RGBA {
+	uint8_t r, g, b, a;
+
+	RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r(r), g(g), b(b), a(a) {}
+	RGBA(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b), a(255) {}
+};
+
 // Use this instead of ALLOC_STRING on constant strings
 #define STRING(offset)		((const char *)(gpGlobals->pStringBase + (unsigned int)(offset)))
 #define MAKE_STRING(str)	((uint64)(str) - (uint64)(STRING(0)))
@@ -462,6 +469,7 @@ extern DLL_GLOBAL int			g_Language;
 
 // func_pushable (it's also func_breakable, so don't collide with those flags)
 #define SF_PUSH_BREAKABLE		128
+#define SF_PUSH_LIFTABLE		1024
 
 #define SF_LIGHT_START_OFF		1
 
@@ -607,3 +615,5 @@ std::string getGameFilePath(const char* path);
 // loads a global model/sound replacement file
 // format: "file_path" "replacement_file_path"
 std::map<std::string, std::string> loadReplacementFile(const char* path);
+
+void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType=MSG_BROADCAST, edict_t* dest=NULL);

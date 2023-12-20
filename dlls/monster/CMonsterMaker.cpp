@@ -369,10 +369,10 @@ void CMonsterMaker::MakeMonster( void )
 		{
 			// don't build a stack of monsters!
 			if (m_blockedSpawnMode == SPAWN_BLOCK_WAIT) {
-				ALERT(at_console, "monstermaker: SPAWN_BLOCK_WAIT mode not implemented!");
-			} else {
-				return;
+				pev->nextthink = gpGlobals->time + 0.05f; // recheck quickly
 			}
+
+			return;
 		}
 	}
 
