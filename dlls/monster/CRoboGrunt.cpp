@@ -303,7 +303,7 @@ void CRoboGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 	if (flDamage > 0) {
 		UTIL_Ricochet(ptr->vecEndPos, 1.0);
 
-		if (IsAlive())
+		if (IsAlive() && !(bitsDamageType & DMG_ENERGYBEAM))
 			flDamage *= 0.1;
 		else if (RANDOM_LONG(0, 10) == 0) { // 10% chance damage triggers explosion on death
 			GibMonster();
