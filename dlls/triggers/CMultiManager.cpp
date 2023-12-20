@@ -40,6 +40,7 @@ public:
 	float	m_startTime;// Time we started firing
 	int		m_iTargetName[MAX_MULTI_TARGETS];// list if indexes into global string array
 	float	m_flTargetDelay[MAX_MULTI_TARGETS];// delay (in seconds) from time of manager fire to target fire
+	uint8_t	m_triggerMode[MAX_MULTI_TARGETS];// trigger mode for the target (on/off/toggle)
 private:
 	inline BOOL IsClone(void) { return (pev->spawnflags & SF_MULTIMAN_CLONE) ? TRUE : FALSE; }
 	inline BOOL ShouldClone(void)
@@ -85,9 +86,16 @@ void CMultiManager::KeyValue(KeyValueData* pkvd)
 		{
 			char tmp[128];
 
+			int triggerMode = USE_TOGGLE;
+			const char* triggerTypeSep = strstr(pkvd->szValue, "#");
+			if (triggerTypeSep && triggerTypeSep != pkvd->szValue + strlen(pkvd->szValue)) {
+				triggerMode = atoi(triggerTypeSep + 1);
+			}
+
 			UTIL_StripToken(pkvd->szKeyName, tmp);
 			m_iTargetName[m_cTargets] = ALLOC_STRING(tmp);
 			m_flTargetDelay[m_cTargets] = atof(pkvd->szValue);
+			m_triggerMode[m_cTargets] = triggerMode;
 			m_cTargets++;
 			pkvd->fHandled = TRUE;
 		}
@@ -145,7 +153,18 @@ void CMultiManager::ManagerThink(void)
 	time = gpGlobals->time - m_startTime;
 	while (m_index < m_cTargets && m_flTargetDelay[m_index] <= time)
 	{
-		FireTargets(STRING(m_iTargetName[m_index]), m_hActivator, this, USE_TOGGLE, 0);
+		const char* targetName = STRING(m_iTargetName[m_index]);
+
+		if (m_triggerMode[m_index] == 2) { // USE_SET(2) means KILL in this context
+			edict_t* pentKillTarget = NULL;
+			while (!FNullEnt(pentKillTarget = FIND_ENTITY_BY_TARGETNAME(pentKillTarget, targetName))) {
+				UTIL_Remove(CBaseEntity::Instance(pentKillTarget));
+			}
+		}
+		else {
+			FireTargets(targetName, m_hActivator, this, (USE_TYPE)m_triggerMode[m_index], 0);
+		}
+
 		m_index++;
 	}
 
@@ -175,6 +194,7 @@ CMultiManager* CMultiManager::Clone(void)
 	pMulti->m_cTargets = m_cTargets;
 	memcpy(pMulti->m_iTargetName, m_iTargetName, sizeof(m_iTargetName));
 	memcpy(pMulti->m_flTargetDelay, m_flTargetDelay, sizeof(m_flTargetDelay));
+	memcpy(pMulti->m_triggerMode, m_triggerMode, sizeof(m_triggerMode));
 
 	return pMulti;
 }
@@ -209,7 +229,7 @@ void CMultiManager::ManagerReport(void)
 
 	for (cIndex = 0; cIndex < m_cTargets; cIndex++)
 	{
-		ALERT(at_console, "%s %f\n", STRING(m_iTargetName[cIndex]), m_flTargetDelay[cIndex]);
+		ALERT(at_console, "%s %f %d\n", STRING(m_iTargetName[cIndex]), m_flTargetDelay[cIndex], m_triggerMode[cIndex]);
 	}
 }
 #endif
