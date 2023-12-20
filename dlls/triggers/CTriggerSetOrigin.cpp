@@ -25,6 +25,9 @@
 // to the center of the copypointer).
 #define SF_SKIP_INITIAL_SET			1024
 
+// TODO: test if sven entity scans for ents every frame or if it caches them
+#define MAX_TARGETS 512 // 512 = max visible ents for an area. Doubtful a mapper would go beyond that.
+
 class CTriggerSetOrigin : public CPointEntity
 {
 public:
@@ -43,10 +46,12 @@ public:
 	bool m_invertAngleZ;
 
 	EHANDLE m_hCopyEnt;
-	EHANDLE m_hTarget;
+	EHANDLE m_hTargets[MAX_TARGETS];
+	Vector m_lockOffsets[MAX_TARGETS];
+	Vector m_lockOffsetAngles[MAX_TARGETS];
+	int m_targetCount;
 	bool m_isActive;
-	Vector m_lockOffset;
-	Vector m_lockOffsetAngles;
+	
 };
 
 LINK_ENTITY_TO_CLASS(trigger_setorigin, CTriggerSetOrigin);
@@ -95,12 +100,21 @@ void CTriggerSetOrigin::Spawn(void)
 
 void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	m_isActive = useType == USE_TOGGLE ? !m_isActive : useType == USE_ON; // TODO: test that it respects useType
+	m_isActive = useType == USE_TOGGLE ? !m_isActive : useType == USE_ON;
 
 	m_hCopyEnt = m_copyPointer ? UTIL_FindEntityByTargetname(NULL, STRING(m_copyPointer)) : NULL;
-	m_hTarget = pev->target ? UTIL_FindEntityByTargetname(NULL, STRING(pev->target)) : NULL;
+
+	m_targetCount = 0;
+	edict_t* ent = NULL;
+	while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(pev->target)))) {
+		if (m_targetCount >= MAX_TARGETS) {
+			ALERT(at_console, "trigger_setorigin (%s): Max target count exceeded!", STRING(pev->targetname));
+			break;
+		}
+		m_hTargets[m_targetCount++] = CBaseEntity::Instance(ent);
+	}
 	
-	if (FNullEnt(m_hCopyEnt.GetEdict()) || FNullEnt(m_hTarget.GetEdict())) {
+	if (FNullEnt(m_hCopyEnt.GetEdict()) || m_targetCount == 0) {
 		if (pev->spawnflags & SF_SET_ONCE) {
 			UTIL_Remove(this);
 		}
@@ -109,14 +123,17 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 
 	if (pev->spawnflags & SF_LOCK_OFFSETS) {
 
-		if (pev->spawnflags & SF_SKIP_INITIAL_SET) {
-			m_lockOffset = m_hTarget->pev->origin - m_hCopyEnt->pev->origin;
-		}
-		else {
-			m_lockOffset = Vector(0, 0, 0); // TODO: just guessing after reading docs
+		for (int i = 0; i < m_targetCount; i++) {
+			if (pev->spawnflags & SF_SKIP_INITIAL_SET) {
+				m_lockOffsets[i] = m_hTargets[i]->pev->origin - m_hCopyEnt->pev->origin;
+			}
+			else {
+				m_lockOffsets[i] = Vector(0, 0, 0); // TODO: just guessing after reading docs
+			}
+
+			m_lockOffsetAngles[i] = m_hTargets[i]->pev->angles - m_hCopyEnt->pev->angles;
 		}
 		
-		m_lockOffsetAngles = m_hTarget->pev->angles - m_hCopyEnt->pev->angles;
 	}
 
 	UpdateEntity();
@@ -144,33 +161,43 @@ void CTriggerSetOrigin::ConstantModeThink() {
 }
 
 void CTriggerSetOrigin::UpdateEntity() {
-	if (FNullEnt(m_hCopyEnt.GetEdict()) || FNullEnt(m_hTarget.GetEdict())) {
+	if (FNullEnt(m_hCopyEnt.GetEdict())) {
 		return;
 	}
 
-	if (pev->spawnflags & (SF_COPY_X_AXIS | SF_LOCK_OFFSETS)) {
-		m_hTarget->pev->origin.x = m_hCopyEnt->pev->origin.x + m_offset.x + m_lockOffset.x;
-	}
-	if (pev->spawnflags & (SF_COPY_Y_AXIS | SF_LOCK_OFFSETS)) {
-		m_hTarget->pev->origin.y = m_hCopyEnt->pev->origin.y + m_offset.y + m_lockOffset.y;
-	}
-	if (pev->spawnflags & (SF_COPY_Z_AXIS | SF_LOCK_OFFSETS)) {
-		m_hTarget->pev->origin.z = m_hCopyEnt->pev->origin.z + m_offset.z + m_lockOffset.z;
-	}
+	for (int i = 0; i < m_targetCount; i++) {
+		if (FNullEnt(m_hTargets[i].GetEdict())) {
+			continue;
+		}
 
-	if (pev->spawnflags & (SF_COPY_X_ANGLE | SF_LOCK_OFFSETS)) {
-		float v = m_hCopyEnt->pev->angles.x;
-		m_hTarget->pev->angles.x = (m_invertAngleX ? -v : v) + m_angleoffset.x + m_lockOffsetAngles.x;
-	}
-	if (pev->spawnflags & (SF_COPY_Y_ANGLE | SF_LOCK_OFFSETS)) {
-		float v = m_hCopyEnt->pev->angles.y;
-		m_hTarget->pev->angles.y = (m_invertAngleY ? -v : v) + m_angleoffset.y + m_lockOffsetAngles.y;
-	}
-	if (pev->spawnflags & (SF_COPY_Z_ANGLE | SF_LOCK_OFFSETS)) {
-		float v = m_hCopyEnt->pev->angles.z;
-		m_hTarget->pev->angles.z = (m_invertAngleZ ? -v : v) + m_angleoffset.z + m_lockOffsetAngles.z;
-	}
+		entvars_t* targetPev = m_hTargets[i]->pev;
+		Vector& lockOffset = m_lockOffsets[i];
+		Vector& lockOffsetAngles = m_lockOffsetAngles[i];
 
-	// TODO: might not be needed but I know this has fixed bugs in the past
-	UTIL_SetOrigin(m_hTarget->pev, m_hTarget->pev->origin);
+		if (pev->spawnflags & (SF_COPY_X_AXIS | SF_LOCK_OFFSETS)) {
+			targetPev->origin.x = m_hCopyEnt->pev->origin.x + m_offset.x + lockOffset.x;
+		}
+		if (pev->spawnflags & (SF_COPY_Y_AXIS | SF_LOCK_OFFSETS)) {
+			targetPev->origin.y = m_hCopyEnt->pev->origin.y + m_offset.y + lockOffset.y;
+		}
+		if (pev->spawnflags & (SF_COPY_Z_AXIS | SF_LOCK_OFFSETS)) {
+			targetPev->origin.z = m_hCopyEnt->pev->origin.z + m_offset.z + lockOffset.z;
+		}
+
+		if (pev->spawnflags & (SF_COPY_X_ANGLE | SF_LOCK_OFFSETS)) {
+			float v = m_hCopyEnt->pev->angles.x;
+			targetPev->angles.x = (m_invertAngleX ? -v : v) + m_angleoffset.x + lockOffsetAngles.x;
+		}
+		if (pev->spawnflags & (SF_COPY_Y_ANGLE | SF_LOCK_OFFSETS)) {
+			float v = m_hCopyEnt->pev->angles.y;
+			targetPev->angles.y = (m_invertAngleY ? -v : v) + m_angleoffset.y + lockOffsetAngles.y;
+		}
+		if (pev->spawnflags & (SF_COPY_Z_ANGLE | SF_LOCK_OFFSETS)) {
+			float v = m_hCopyEnt->pev->angles.z;
+			targetPev->angles.z = (m_invertAngleZ ? -v : v) + m_angleoffset.z + lockOffsetAngles.z;
+		}
+
+		// TODO: might not be needed but I know this has fixed bugs in the past
+		UTIL_SetOrigin(m_hTargets[i]->pev, m_hTargets[i]->pev->origin);
+	}
 }
