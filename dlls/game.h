@@ -43,6 +43,10 @@ extern cvar_t	defaultteam;
 extern cvar_t	allowmonsters;
 extern cvar_t	mp_nextmap; // map which will load after the next intermission
 
+// if a map cfg asks for a default max speed (320 for Half-Life, 270 for Sven Co-op),
+// then ignore the command and use whatever was set up by the server.cfg
+extern cvar_t	mp_prefer_server_maxspeed;
+
 // limits monster sound variety to save precache slots.
 // 0 disables. 1+ = max sounds per action (death/pain/idle/etc.)
 extern cvar_t	soundvariety;

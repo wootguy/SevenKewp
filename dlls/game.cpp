@@ -39,6 +39,7 @@ cvar_t	teamoverride = {"mp_teamoverride","1" };
 cvar_t	defaultteam = {"mp_defaultteam","0" };
 cvar_t	allowmonsters={"mp_allowmonsters","1", FCVAR_SERVER };
 cvar_t	mp_nextmap={"mp_nextmap","", FCVAR_SERVER };
+cvar_t	mp_prefer_server_maxspeed={"mp_prefer_server_maxspeed","1", FCVAR_SERVER };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER };
 
@@ -556,6 +557,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_npckill);
 	CVAR_REGISTER (&killnpc);
 	CVAR_REGISTER (&mp_nextmap);
+	CVAR_REGISTER (&mp_prefer_server_maxspeed);
 
 	CVAR_REGISTER (&mp_chattime);
 
