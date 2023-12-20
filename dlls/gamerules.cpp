@@ -386,6 +386,9 @@ void loadReplacementFiles() {
 }
 
 void execMapCfg() {
+	// Map CFGs are low trust so only whitelisted commands are allowed.
+	// Server owners shouldn't have to check each map for things like "rcon_password HAHA_GOT_YOU"
+
 	static set<string> whitelistCommands = {
 		"sv_gravity",
 		"sv_friction",
@@ -497,8 +500,15 @@ void execMapCfg() {
 		value.erase(std::remove(value.begin(), value.end(), '"'), value.end());
 
 		if (parts.size() > 1 && whitelistCommands.find(name) != whitelistCommands.end()) {
+			if (mp_prefer_server_maxspeed.value == 1 && name == "sv_maxspeed") {
+				int maxspeed = atoi(value.c_str());
+				if (maxspeed == 270 || maxspeed == 320) { // default speeds for Half-Life (320) and Sven Co-op (270)
+					ALERT(at_console, "mp_prefer_server_maxspeed: Ignoring \"sv_maxspeed %d\" set by map cfg.\n", maxspeed);
+					continue;
+				}
+			}
+
 			SERVER_COMMAND(UTIL_VarArgs("%s %s\n", name.c_str(), value.c_str()));
-			SERVER_EXECUTE();
 		}
 		else if (itemNames.find(name) != itemNames.end()) {
 			if (equipIdx >= MAX_EQUIP) {
@@ -515,17 +525,54 @@ void execMapCfg() {
 	FREE_FILE(cfgFile);
 }
 
+void execServerCfg() {
+	int length;
+	char* cfgFile = (char*)LOAD_FILE_FOR_ME("server.cfg", &length);
+
+	if (!cfgFile) {
+		return;
+	}
+
+	std::stringstream data_stream(cfgFile);
+	string line;
+
+	int equipIdx = 0;
+
+	// not just doing "exec server.cfg" so that commands remain in order after parsing other CFGs.
+	while (std::getline(data_stream, line)) {
+		SERVER_COMMAND(UTIL_VarArgs("%s\n", line.c_str()));
+	}
+
+	FREE_FILE(cfgFile);
+}
+
+void execCfgs() {
+	// CFG execution must be done without mixing "exec asdf.cfg" and individual commands
+	// so that commands are executed in the correct order (map.cfg after server.cfg).
+	// The engine automatically exec's the "servercfgfile" cfg on the first server start,
+	// throwing another wrench into this system. Disable that with '+servercfg ""' on the
+	// server command line. The server CFG must run every map change to reset vars from the
+	// previous map, and respond to changes without a hard restart.
+	// 
+	// How do commands run out of order?
+	// Whenever "exec file.cfg" is called, it's command are moved to the back of the command list,
+	// meaning the order you call SERVER_COMMAND doesn't match the actual execution order. Commands
+	// are run one per frame, so you can't hackfix this by adding a delay to an important CFG either.
+
+	execServerCfg();
+	execMapCfg();
+
+	SERVER_EXECUTE();
+}
+
 //=========================================================
 // instantiate the proper game rules object
 //=========================================================
 
 CGameRules *InstallGameRules( void )
 {
-	SERVER_COMMAND( "exec server.cfg\n" );
-	SERVER_EXECUTE( );
-
+	execCfgs();
 	loadReplacementFiles();
-	execMapCfg();
 
 	if ( !gpGlobals->deathmatch )
 	{
