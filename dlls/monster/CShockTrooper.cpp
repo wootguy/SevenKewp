@@ -1088,9 +1088,7 @@ void CShockTrooper::Precache()
 	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_monst0.wav");
 	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_throw0.wav");
 	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_taunt0.wav");
-
-	// TODO: why isn't this used?
-	// PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_cover0.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_cover0.wav");
 
 	// get voice pitch
 	if (RANDOM_LONG(0, 1))

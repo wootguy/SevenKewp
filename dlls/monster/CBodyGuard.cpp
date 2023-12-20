@@ -188,8 +188,8 @@ void CBodyGuard::Spawn()
 
 	m_afCapability = bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP | bits_CAP_HEAR;
 
-	if (pev->weapons < 0 || pev->weapons > 7) {
-		pev->weapons = RANDOM_LONG(0, 7);
+	if (pev->weapons <= 0 || pev->weapons > 7) {
+		pev->weapons = RANDOM_LONG(1, 7);
 	}
 
 	switch(pev->weapons)

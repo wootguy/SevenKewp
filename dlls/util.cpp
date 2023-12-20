@@ -2862,3 +2862,27 @@ std::string getGameFilePath(const char* path) {
 
 	return "";
 }
+
+void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, edict_t* dest)
+{
+	MESSAGE_BEGIN(msgType, SVC_TEMPENTITY, NULL, dest);
+	WRITE_BYTE(TE_BEAMPOINTS);
+	WRITE_COORD(start.x);
+	WRITE_COORD(start.y);
+	WRITE_COORD(start.z);
+	WRITE_COORD(end.x);
+	WRITE_COORD(end.y);
+	WRITE_COORD(end.z);
+	WRITE_SHORT(g_engfuncs.pfnModelIndex("sprites/laserbeam.spr"));
+	WRITE_BYTE(0);
+	WRITE_BYTE(0);
+	WRITE_BYTE(life);
+	WRITE_BYTE(16);
+	WRITE_BYTE(0);
+	WRITE_BYTE(c.r);
+	WRITE_BYTE(c.g);
+	WRITE_BYTE(c.b);
+	WRITE_BYTE(c.a); // actually brightness
+	WRITE_BYTE(0);
+	MESSAGE_END();
+}

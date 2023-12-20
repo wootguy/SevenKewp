@@ -223,6 +223,11 @@ void CBaseTrigger::HurtTouch(CBaseEntity* pOther)
 	if ((pev->spawnflags & SF_TRIGGER_HURT_NO_CLIENTS) && pOther->IsPlayer())
 		return;
 
+	if (pOther->IsMonster()) {
+		// monsters only Touch() when moving, so force checks while a monster is here
+		gpGlobals->force_retouch++;
+	}
+
 	// HACKHACK -- In multiplayer, players touch this based on packet receipt.
 	// So the players who send packets later aren't always hurt.  Keep track of
 	// how much time has passed and whether or not you've touched that player
