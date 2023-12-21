@@ -5,12 +5,19 @@
 #include "CBreakable.h"
 #include "decals.h"
 #include "explode.h"
+#include "CBasePlayer.h"
 
 // how fast players can move pushables by touch/use
 #define PUSH_SPEED 100
 
 // how often to apply push vectors
 #define PUSH_THINK_DELAY 0.05f
+
+// how fast pushables track the lifting position
+#define PUSH_LIFT_SPEED 20
+
+// max movement speed of pushable in lift mode
+#define PUSH_LIFT_MAX_SPEED 400
 
 class CPushable : public CBreakable
 {
@@ -19,6 +26,9 @@ public:
 	void	Precache(void);
 	void	Touch(CBaseEntity* pOther);
 	void	Move();
+	void	Lift();
+	void	StopLift();
+	void	StartLift(CBasePlayer* lifter);
 	void	UpdatePushDir(CBaseEntity* pMover, int push);
 	void	KeyValue(KeyValueData* pkvd);
 	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
@@ -27,7 +37,7 @@ public:
 	void    PostMove(bool clampSpeed); // clamps velocity and plays movement sounds
 	//	virtual void	SetActivator( CBaseEntity *pActivator ) { m_pPusher = pActivator; }
 
-	virtual int	ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_CONTINUOUS_USE; }
+	virtual int	ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE; }
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
 
@@ -47,6 +57,9 @@ public:
 	Vector m_playerPushDir[32]; // push direction from every player touching/using the pushable
 	Vector m_entPushDir; // push direction from other entities
 	bool m_wasPushed;
+
+	bool m_ignoreLiftUse[32]; // true if use key was held while moving
+	EHANDLE m_hLifter; // player who is lifting the pushable
 };
 
 TYPEDESCRIPTION	CPushable::m_SaveData[] =
@@ -150,6 +163,38 @@ void CPushable::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 		return;
 	}
 
+	int eidx = pActivator->entindex() % 32;
+	CBasePlayer* plr = (CBasePlayer*)pActivator;
+	bool isMoving = plr->pev->button & (IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT);
+	bool releasedUseKey = value == 0;
+	bool notHoldingOtherPushable = !plr->m_pPushable || plr->m_pPushable.GetEntity() == this;
+	bool wasMovingWithUse = m_ignoreLiftUse[eidx] || isMoving;
+	bool isCurrentLifter = m_hLifter.GetEntity() == plr;
+
+	if (isMoving && !releasedUseKey) {
+		// player wants to move the pushable normally, so don't lift after the move finishes
+		m_ignoreLiftUse[eidx] = true;
+	}
+
+	if (releasedUseKey && (!wasMovingWithUse || isCurrentLifter) && notHoldingOtherPushable) {
+		if (m_hLifter) {
+			CBasePlayer* oldLifter = (CBasePlayer*)m_hLifter.GetEntity();
+			StopLift();
+
+			if (oldLifter != plr) {
+				// stealing from someone else
+				StartLift(plr);
+			}
+		}
+		else {
+			StartLift(plr);
+		}
+	}
+
+	if (releasedUseKey) {
+		m_ignoreLiftUse[eidx] = false;
+	}
+
 	if (pActivator->pev->velocity != g_vecZero) {
 		UpdatePushDir(pActivator, 0);
 	}
@@ -165,10 +210,23 @@ void CPushable::Touch(CBaseEntity* pOther)
 }
 
 void CPushable::MoveThink() {
-	if (m_wasPushed && !mp_objectboost.value)
+	if (!m_hLifter && pev->movetype == MOVETYPE_FLY) {
+		StopLift();
+	}
+
+	if (m_hLifter) {
+		Lift();
+	}
+	else if (m_wasPushed && !mp_objectboost.value)
 		Move();
 
 	m_lastMove = gpGlobals->time;
+
+	if (pev->velocity == g_vecZero && (pev->flags & FL_ONGROUND) && !FNullEnt(pev->groundentity)) {
+		// don't let velocity stay at 0 in case ground entity is moved out from under the pushable,
+		// otherwise it will float in the air.
+		pev->velocity.z += 0.000001f;
+	}
 
 	// push forces are applied at a constant delay to prevent clients with high FPS
 	// launching pushables into space.
@@ -205,12 +263,16 @@ void CPushable::UpdatePushDir(CBaseEntity* pOther, int push) {
 
 	if (playerTouch)
 	{
-		if (!(pevToucher->flags & FL_ONGROUND))	// Don't push away from jumping/falling players unless in water
+		if (!(pevToucher->flags & FL_ONGROUND))
 		{
-			if (pev->waterlevel < 1)
-				goto objectboost;
-			else
+			// Don't push away from jumping/falling players unless in water or if the
+			// pushable glitched up a wall and someone is trying to pull it down
+			if (pev->waterlevel >= 1)
 				factor = 0.1;
+			else if (pevToucher->absmax.z < pev->absmin.z)
+				factor = 1;
+			else
+				goto objectboost;
 		}
 		else
 			factor = 1;
@@ -287,6 +349,52 @@ void CPushable::PostMove(bool clampSpeed) {
 		else
 			STOP_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound]);
 	}
+}
+
+void CPushable::Lift() {
+	CBasePlayer* plr = (CBasePlayer*)m_hLifter.GetEntity();
+
+	Vector min = pev->absmin;
+	Vector max = pev->absmax;
+	Vector size = max - min;
+	Vector center = min + size * 0.5f;
+
+	float maxObjectDiag = (Vector(size.x, size.y, size.z) * 0.5f).Length();
+	float maxPlrDiag = Vector(16, 16, 36).Length();
+	float liftDist = (maxObjectDiag + maxPlrDiag);
+
+	UTIL_MakeVectors(plr->pev->v_angle + plr->pev->punchangle);
+	Vector targetPos = plr->GetGunPosition() + gpGlobals->v_forward * liftDist;
+	Vector deltaPos = targetPos - center;
+
+	if (!m_hLifter->IsAlive() || deltaPos.Length() > 64) {
+		StopLift();
+		return;
+	}
+
+	float deltaTime = clampf(gpGlobals->time - m_lastMove, 0, 0.5f);
+	float timeScale = deltaTime / PUSH_THINK_DELAY;
+
+	pev->velocity = deltaPos * PUSH_LIFT_SPEED * timeScale;
+
+	if (pev->velocity.Length() > PUSH_LIFT_MAX_SPEED) {
+		pev->velocity = pev->velocity.Normalize() * PUSH_LIFT_MAX_SPEED;
+	}
+}
+
+void CPushable::StopLift() {
+	if (m_hLifter) {
+		CBasePlayer* plr = (CBasePlayer*)m_hLifter.GetEntity();
+		plr->m_pPushable = NULL;
+	}
+	m_hLifter = NULL;
+	pev->movetype = MOVETYPE_PUSHSTEP;
+}
+
+void CPushable::StartLift(CBasePlayer* lifter) {
+	lifter->m_pPushable = this;
+	m_hLifter = lifter;
+	pev->movetype = MOVETYPE_FLY;
 }
 
 #if 0

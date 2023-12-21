@@ -759,11 +759,7 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 
 	m_pLastItem = NULL;
 
-	if ( m_pTank != NULL )
-	{
-		m_pTank->Use( this, this, USE_OFF, 0 );
-		m_pTank = NULL;
-	}
+	ReleaseControlledObjects();
 
 	int i;
 	CBasePlayerItem *pPendingItem;
@@ -819,11 +815,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	g_pGameRules->PlayerKilled( this, pevAttacker, g_pevLastInflictor );
 
-	if ( m_pTank != NULL )
-	{
-		m_pTank->Use( this, this, USE_OFF, 0 );
-		m_pTank = NULL;
-	}
+	ReleaseControlledObjects();
 
 	// this client isn't going to be thinking for a while, so reset the sound until they respawn
 	pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( edict() ) );
@@ -1082,6 +1074,19 @@ void CBasePlayer::TabulateAmmo()
 	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
 	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
+}
+
+void CBasePlayer::ReleaseControlledObjects() {
+	if (m_pTank)
+	{
+		m_pTank->Use(this, this, USE_OFF, 0);
+		m_pTank = NULL;
+	}
+	if (m_pPushable)
+	{
+		m_pPushable->Use(this, this, USE_OFF, 0);
+		m_pPushable = NULL;
+	}
 }
 
 /*
@@ -1370,11 +1375,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	if (m_pActiveItem)
 		((CBasePlayerItem*)m_pActiveItem.GetEntity())->Holster();
 
-	if ( m_pTank != NULL )
-	{
-		m_pTank->Use( this, this, USE_OFF, 0 );
-		m_pTank = NULL;
-	}
+	ReleaseControlledObjects();
 
 	// clear out the suit message cache so we don't keep chattering
 	SetSuitUpdate(NULL, FALSE, 0);
@@ -1472,6 +1473,15 @@ void CBasePlayer::PlayerUse ( void )
 					return;
 				}
 			}
+		}
+	}
+
+	if (m_afButtonReleased & IN_USE) {
+		if (m_pPushable != NULL) {
+			// Stop lifting the pushable
+			m_pPushable->Use(this, this, USE_OFF, 0);
+			m_pPushable = NULL;
+			return;
 		}
 	}
 

@@ -167,6 +167,7 @@ public:
 	BOOL				m_fWeapon;				// Set this to FALSE to force a reset of the current weapon HUD info
 
 	EHANDLE				m_pTank;				// the tank which the player is currently controlling,  NULL if no tank
+	EHANDLE				m_pPushable;			// the pushable which the player is currently lifting,  NULL if no tank
 	float				m_fDeadTime;			// the time at which the player died  (used in PlayerDeathThink())
 
 	BOOL			m_fNoPlayerSound;	// a debugging feature. Player makes no sound if this is true. 
@@ -316,6 +317,9 @@ public:
 	int GetCustomDecalFrames( void );
 
 	void TabulateAmmo( void );
+
+	// stop control over tanks and pushables
+	void ReleaseControlledObjects();
 
 	float m_flStartCharge;
 	float m_flAmmoStartCharge;
