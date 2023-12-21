@@ -123,10 +123,13 @@ void CMultiManager::Spawn(void)
 				// Swap out of order elements
 				int name = m_iTargetName[i];
 				float delay = m_flTargetDelay[i];
+				int mode = m_triggerMode[i];
 				m_iTargetName[i] = m_iTargetName[i - 1];
 				m_flTargetDelay[i] = m_flTargetDelay[i - 1];
+				m_triggerMode[i] = m_triggerMode[i - 1];
 				m_iTargetName[i - 1] = name;
 				m_flTargetDelay[i - 1] = delay;
+				m_triggerMode[i - 1] = mode;
 				swapped = 1;
 			}
 		}

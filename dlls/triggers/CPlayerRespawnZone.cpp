@@ -71,7 +71,7 @@ void CPlayerRespawnZone::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 			// Despite the entity name, players are not actually respawned.
 			// Players are merely teleported to active spawn points
 			edict_t* spawnPoint = EntSelectSpawnPoint(pPlayer);
-			if (spawnPoint) {
+			if (!FNullEnt(spawnPoint)) {
 				pPlayer->pev->origin = spawnPoint->v.origin;
 				pPlayer->pev->angles = spawnPoint->v.angles;
 				pPlayer->pev->fixangle = 1; // force view angles

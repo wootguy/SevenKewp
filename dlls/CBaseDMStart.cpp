@@ -67,19 +67,27 @@ edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
 		"info_player_coop"
 	};
 
+	bool shouldDisableLegacySpawns = false;
+
 	for (int i = 0; i < SPAWN_ENT_TYPES; i++) {
 		pSpot = NULL;
 		while (!FNullEnt(pSpot = UTIL_FindEntityByClassname(pSpot, spawn_ent_names[i]))) {
-			if (i == 0) {
-				legacySpawns.push_back(pSpot);
-				continue;
-			}
 			if (pSpot->IsTriggered(pPlayer)) {
+				if (i == 0) {
+					legacySpawns.push_back(pSpot);
+					continue;
+				}
+
 				enabledSpawns.push_back(pSpot);
 				
 				if (IsSpawnPointClear(pPlayer, pSpot)) {
 					clearSpawns.push_back(pSpot);
 				}
+			}
+
+			if (i != 0) {
+				// if any normal spawn is present, then disable info_player_start
+				shouldDisableLegacySpawns = true;
 			}
 		}
 	}
@@ -95,11 +103,10 @@ edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
 	else if (enabledSpawns.size()) {
 		pSpot = enabledSpawns[RANDOM_LONG(0, enabledSpawns.size() - 1)];
 	}
-	else if (legacySpawns.size()) {
+	else if (!shouldDisableLegacySpawns && legacySpawns.size()) {
 		pSpot = legacySpawns[RANDOM_LONG(0, legacySpawns.size() - 1)];
 	}
 	else {
-		ALERT(at_error, "PutClientInServer: no info_player_start on level");
 		return INDEXENT(0);
 	}
 
