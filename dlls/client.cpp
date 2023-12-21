@@ -138,6 +138,17 @@ void ClientDisconnect( edict_t *pEntity )
 // called by ClientKill and DeadThink
 void respawn(entvars_t* pev, BOOL fCopyCorpse)
 {
+	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(ENT(pev));
+	edict_t* spawnSpot = g_pGameRules->GetPlayerSpawnSpot(plr);
+
+	if (FNullEnt(spawnSpot)) {
+		if (gpGlobals->time - plr->m_lastSpawnMessage > 0.5f) {
+			CLIENT_PRINTF(plr->edict(), print_center, "No spawn points available");
+			plr->m_lastSpawnMessage = gpGlobals->time;
+		}
+		return;
+	}
+
 	if (gpGlobals->coop || gpGlobals->deathmatch)
 	{
 		if ( fCopyCorpse )

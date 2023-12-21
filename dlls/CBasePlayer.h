@@ -339,6 +339,8 @@ public:
 	float m_lastScoreUpdate;
 	int m_lastScore;
 	void UpdateScore();
+
+	float m_lastSpawnMessage;
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

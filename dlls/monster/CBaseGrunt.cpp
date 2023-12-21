@@ -533,7 +533,7 @@ void CBaseGrunt :: SetYawSpeed ( void )
 //=========================================================
 void CBaseGrunt :: CheckAmmo ( void )
 {
-	if ( HasEquipment(ANY_RANGED_WEAPON) && m_cAmmoLoaded <= 0 && m_cClipSize > 0 )
+	if ( HasEquipment(ANY_RANGED_WEAPON) && m_cAmmoLoaded <= 0 )
 	{
 		SetConditions(bits_COND_NO_AMMO_LOADED);
 	}
