@@ -6,16 +6,25 @@
 #include "decals.h"
 #include "explode.h"
 
+// how fast players can move pushables by touch/use
+#define PUSH_SPEED 100
+
+// how often to apply push vectors
+#define PUSH_THINK_DELAY 0.05f
+
 class CPushable : public CBreakable
 {
 public:
 	void	Spawn(void);
 	void	Precache(void);
 	void	Touch(CBaseEntity* pOther);
-	void	Move(CBaseEntity* pMover, int push);
+	void	Move();
+	void	UpdatePushDir(CBaseEntity* pMover, int push);
 	void	KeyValue(KeyValueData* pkvd);
 	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void	EXPORT StopSound(void);
+	void	EXPORT MoveThink(void);
+	void    PostMove(bool clampSpeed); // clamps velocity and plays movement sounds
 	//	virtual void	SetActivator( CBaseEntity *pActivator ) { m_pPusher = pActivator; }
 
 	virtual int	ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_CONTINUOUS_USE; }
@@ -33,6 +42,11 @@ public:
 	int		m_lastSound;	// no need to save/restore, just keeps the same sound from playing twice in a row
 	float	m_maxSpeed;
 	float	m_soundTime;
+	float   m_lastMove;
+
+	Vector m_playerPushDir[32]; // push direction from every player touching/using the pushable
+	Vector m_entPushDir; // push direction from other entities
+	bool m_wasPushed;
 };
 
 TYPEDESCRIPTION	CPushable::m_SaveData[] =
@@ -62,12 +76,15 @@ void CPushable::Spawn(void)
 	if (pev->friction > 399)
 		pev->friction = 399;
 
-	m_maxSpeed = 400 - pev->friction;
+	m_maxSpeed = V_max(10, 400 - pev->friction); // pushables should always be moveable
 	SetBits(pev->flags, FL_FLOAT);
 	pev->friction = 0;
 
 	pev->origin.z += 1;	// Pick up off of the floor
 	UTIL_SetOrigin(pev, pev->origin);
+
+	SetThink(&CPushable::MoveThink);
+	pev->nextthink = gpGlobals->time;
 
 	// Multiply by area of the box's cross-section (assume 1000 units^3 standard volume)
 	pev->skin = (pev->skin * (pev->maxs.x - pev->mins.x) * (pev->maxs.y - pev->mins.y)) * 0.0005;
@@ -133,8 +150,9 @@ void CPushable::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 		return;
 	}
 
-	if (pActivator->pev->velocity != g_vecZero)
-		Move(pActivator, 0);
+	if (pActivator->pev->velocity != g_vecZero) {
+		UpdatePushDir(pActivator, 0);
+	}
 }
 
 
@@ -143,76 +161,131 @@ void CPushable::Touch(CBaseEntity* pOther)
 	if (FClassnameIs(pOther->pev, "worldspawn"))
 		return;
 
-	Move(pOther, 1);
+	UpdatePushDir(pOther, 1);
 }
 
+void CPushable::MoveThink() {
+	if (m_wasPushed && !mp_objectboost.value)
+		Move();
 
-void CPushable::Move(CBaseEntity* pOther, int push)
-{
+	m_lastMove = gpGlobals->time;
+
+	// push forces are applied at a constant delay to prevent clients with high FPS
+	// launching pushables into space.
+	pev->nextthink = gpGlobals->time + PUSH_THINK_DELAY;
+}
+
+void CPushable::UpdatePushDir(CBaseEntity* pOther, int push) {
 	entvars_t* pevToucher = pOther->pev;
 	int playerTouch = 0;
+
+	m_wasPushed = true;
+
+	int eidx = pOther->entindex() % 32;
+	Vector& pushDir = pOther->IsPlayer() ? m_playerPushDir[eidx] : m_entPushDir;
+
+	float factor = 0.25f;
 
 	// Is entity standing on this pushable ?
 	if (FBitSet(pevToucher->flags, FL_ONGROUND) && pevToucher->groundentity && VARS(pevToucher->groundentity) == pev)
 	{
 		// Only push if floating
 		if (pev->waterlevel > 0)
-			pev->velocity.z += pevToucher->velocity.z * 0.1;
+			pushDir.z += pevToucher->velocity.z * 0.1;
 
-		return;
+		goto objectboost;
 	}
-
 
 	if (pOther->IsPlayer())
 	{
 		if (push && !(pevToucher->button & (IN_FORWARD | IN_USE)))	// Don't push unless the player is pushing forward and NOT use (pull)
-			return;
+			goto objectboost;
 		playerTouch = 1;
 	}
-
-	float factor;
 
 	if (playerTouch)
 	{
 		if (!(pevToucher->flags & FL_ONGROUND))	// Don't push away from jumping/falling players unless in water
 		{
 			if (pev->waterlevel < 1)
-				return;
+				goto objectboost;
 			else
 				factor = 0.1;
 		}
 		else
 			factor = 1;
 	}
-	else
-		factor = 0.25;
 
-	pev->velocity.x += pevToucher->velocity.x * factor;
-	pev->velocity.y += pevToucher->velocity.y * factor;
+	pushDir.x += pevToucher->velocity.x * factor;
+	pushDir.y += pevToucher->velocity.y * factor;
 
+objectboost:
+	if (mp_objectboost.value) {
+		// classic broken physics which adds uncapped velocity every client frame
+		// which gives extreme speed boosts at high FPS, both to the pushable and player.
+		pev->velocity = pev->velocity + pushDir;
+
+		if (playerTouch) {
+			pevToucher->velocity.x = pev->velocity.x;
+			pevToucher->velocity.y = pev->velocity.y;
+		}
+
+		pushDir = g_vecZero;
+		PostMove(false);
+	}
+}
+
+void CPushable::Move()
+{
+	m_wasPushed = false;
+
+	Vector combinedPushDir = m_entPushDir;
+
+	for (int i = 0; i < 32; i++) {
+		if (m_playerPushDir[i] == g_vecZero) {
+			continue;
+		}
+
+		combinedPushDir = combinedPushDir + m_playerPushDir[i].Normalize();
+	}
+
+	if (combinedPushDir == g_vecZero) {
+		return;
+	}
+
+	float deltaTime = clampf(gpGlobals->time - m_lastMove, 0, 0.5f);
+	float timeScale = deltaTime / PUSH_THINK_DELAY;
+
+	combinedPushDir = combinedPushDir.Normalize() * PUSH_SPEED * timeScale;
+
+	pev->velocity = pev->velocity + combinedPushDir;
+
+	memset(&m_playerPushDir, 0, sizeof(Vector) * 32);
+	m_entPushDir = g_vecZero;
+
+	PostMove(true);
+}
+
+void CPushable::PostMove(bool clampSpeed) {
 	float length = sqrt(pev->velocity.x * pev->velocity.x + pev->velocity.y * pev->velocity.y);
-	if (push && (length > MaxSpeed()))
+	if (clampSpeed && length > MaxSpeed())
 	{
 		pev->velocity.x = (pev->velocity.x * MaxSpeed() / length);
 		pev->velocity.y = (pev->velocity.y * MaxSpeed() / length);
 	}
-	if (playerTouch)
+
+	if ((gpGlobals->time - m_soundTime) > 0.7)
 	{
-		pevToucher->velocity.x = pev->velocity.x;
-		pevToucher->velocity.y = pev->velocity.y;
-		if ((gpGlobals->time - m_soundTime) > 0.7)
+		m_soundTime = gpGlobals->time;
+		if (length > 10 && FBitSet(pev->flags, FL_ONGROUND))
 		{
-			m_soundTime = gpGlobals->time;
-			if (length > 0 && FBitSet(pev->flags, FL_ONGROUND))
-			{
-				m_lastSound = RANDOM_LONG(0, 2);
-				EMIT_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5, ATTN_NORM);
-				//			SetThink( StopSound );
-				//			pev->nextthink = pev->ltime + 0.1;
-			}
-			else
-				STOP_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound]);
+			m_lastSound = RANDOM_LONG(0, 2);
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5, ATTN_NORM);
+			//			SetThink( StopSound );
+			//			pev->nextthink = pev->ltime + 0.1;
 		}
+		else
+			STOP_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound]);
 	}
 }
 
