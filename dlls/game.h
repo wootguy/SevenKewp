@@ -65,4 +65,8 @@ extern cvar_t	*g_footsteps;
 
 extern std::map<std::string, std::string> g_modelReplacements;
 
+// per-monster sound replacement maps
+// should be a class member, but I'm afraid of the bugs that will come from using non-POD class members
+extern std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
+
 #endif		// GAME_H

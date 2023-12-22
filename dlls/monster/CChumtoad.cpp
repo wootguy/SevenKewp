@@ -68,6 +68,8 @@ void CChumtoad::Spawn()
 
 void CChumtoad::Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/chumtoad.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(TOXIC_SPRITE);

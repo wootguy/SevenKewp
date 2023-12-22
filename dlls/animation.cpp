@@ -13,7 +13,7 @@
 *
 ****/
 
-#include "Platform.h"
+#include "extdll.h"
 
 // hack into header files that we can ship
 typedef int qboolean;
@@ -43,6 +43,9 @@ typedef unsigned char byte;
 #ifndef ENGINECALLBACK_H
 #include "enginecallback.h"
 #endif
+
+
+#include "util.h"
 
 extern globalvars_t				*gpGlobals;
 
@@ -239,7 +242,7 @@ void SequencePrecache( void *pmodel, const char *pSequenceName )
 					ALERT( at_error, "Bad sound event %d in sequence %s :: %s (sound is \"%s\")\n", pevent[i].event, pstudiohdr->name, pSequenceName, pevent[i].options );
 				}
 
-				PRECACHE_SOUND( (char *)(gpGlobals->pStringBase + ALLOC_STRING(pevent[i].options) ) );
+				PRECACHE_SOUND_ENT( NULL, (char *)(gpGlobals->pStringBase + ALLOC_STRING(pevent[i].options) ) );
 			}
 		}
 	}

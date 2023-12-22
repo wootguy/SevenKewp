@@ -1689,7 +1689,7 @@ BOOL UTIL_IsValidEntity( edict_t *pent )
 }
 
 
-void UTIL_PrecacheOther( const char *szClassname )
+void UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::string> keys)
 {
 	edict_t	*pent;
 
@@ -1701,8 +1701,19 @@ void UTIL_PrecacheOther( const char *szClassname )
 	}
 	
 	CBaseEntity *pEntity = CBaseEntity::Instance (VARS( pent ));
-	if (pEntity)
-		pEntity->Precache( );
+
+	if (pEntity) {
+		for (auto item : keys) {
+			KeyValueData dat;
+			dat.fHandled = false;
+			dat.szClassName = (char*)STRING(pEntity->pev->classname);
+			dat.szKeyName = (char*)item.first.c_str();
+			dat.szValue = (char*)item.second.c_str();
+			pEntity->KeyValue(&dat);
+		}
+
+		pEntity->Precache();
+	}
 	REMOVE_ENTITY(pent);
 }
 
@@ -2397,7 +2408,7 @@ int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCou
 								if ( pTest->fieldType == FIELD_MODELNAME )
 									PRECACHE_MODEL( (char *)STRING( string ) );
 								else if ( pTest->fieldType == FIELD_SOUNDNAME )
-									PRECACHE_SOUND( (char *)STRING( string ) );
+									PRECACHE_SOUND_ENT(NULL, (char *)STRING( string ) );
 							}
 						}
 					break;
@@ -2668,6 +2679,11 @@ std::map<std::string, std::string> loadReplacementFile(const char* path) {
 	std::string fpath = getGameFilePath(path);
 	std::ifstream infile(fpath);
 
+	if (fpath.empty() || !infile.is_open()) {
+		ALERT(at_console, "Failed to load replacement file: %s\n", path);
+		return replacements;
+	}
+
 	int lineNum = 0;
 	std::string line;
 	while (std::getline(infile, line))
@@ -2740,6 +2756,17 @@ int PRECACHE_GENERIC(const char* path) {
 	}
 
 	return g_engfuncs.pfnPrecacheGeneric(path);
+}
+
+int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
+	if (ent && ent->IsMonster() && !g_monsterSoundReplacements.empty()) {
+		std::map<std::string, std::string>& replacementMap = g_monsterSoundReplacements[ent->entindex()];
+		if (replacementMap.find(path) != replacementMap.end()) {
+			path = replacementMap[path].c_str();
+		}
+	}
+
+	return g_engfuncs.pfnPrecacheSound(path);
 }
 
 int PRECACHE_MODEL(const char* model) {

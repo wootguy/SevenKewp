@@ -458,6 +458,15 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		println("Warning: Invalid pitch passed to EMIT_SOUND_DYN: %d", pitch);
 		pitch = 100; // using a negative pitch crashes the engine
 	}
+
+	if (entity->v.flags & FL_MONSTER) {
+		int eidx = ENTINDEX(entity);
+
+		if (g_monsterSoundReplacements[eidx].find(sample) != g_monsterSoundReplacements[eidx].end()) {
+			sample = g_monsterSoundReplacements[eidx][sample].c_str();
+		}
+	}
+	
 	
 	if (sample && *sample == '!')
 	{

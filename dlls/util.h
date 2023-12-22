@@ -312,7 +312,7 @@ extern void			UTIL_Bubbles( Vector mins, Vector maxs, int count );
 extern void			UTIL_BubbleTrail( Vector from, Vector to, int count );
 
 // allows precacheing of other entities
-extern void			UTIL_PrecacheOther( const char *szClassname );
+extern void			UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::string> keys=std::map<std::string, std::string>() );
 
 // prints a message to each client
 extern void			UTIL_ClientPrintAll( int msg_dest, const char *msg);
@@ -543,7 +543,7 @@ void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 		if (soundvariety.value > 0) { \
 			count = V_min(soundvariety.value, count); \
 		} \
-		for (int i = 0; i <count; i++ ) \
+		for (int i = 0; i < count; i++ ) \
 			PRECACHE_SOUND((char *) (a) [i]); \
 	}
 
@@ -583,12 +583,16 @@ float UTIL_WeaponTimeBase( void );
 #ifdef CLIENT_DLL
 #define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
 #define SET_MODEL		(*g_engfuncs.pfnSetModel)
+#define PRECACHE_SOUND		(*g_engfuncs.pfnPrecacheSound)
 #else
-// engine wrapper which handles global replacement logic
+// engine wrappers which handle model/sound replacement logic
 int PRECACHE_GENERIC(const char* path);
+int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path);
 int PRECACHE_MODEL(const char* model);
 void SET_MODEL(edict_t* edict, const char* model);
 const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
+
+#define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
 #endif
 
 std::vector<std::string> splitString(std::string str, const char* delimitters);

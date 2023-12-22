@@ -287,9 +287,9 @@ void CHGruntOp4 :: Spawn()
 
 void CHGruntOp4 :: Precache()
 {
+	CBaseGruntOp4::Precache();
 	m_defaultModel = "models/hgrunt_opfor.mdl";
 	PRECACHE_MODEL(GetModel());
-	CBaseGruntOp4::Precache();
 }	
 
 const char* CHGruntOp4::DisplayName() {

@@ -202,12 +202,11 @@ void CMassn :: Spawn()
 
 void CMassn :: Precache()
 {
+	BasePrecache();
 	m_defaultModel = "models/massn.mdl";
 	PRECACHE_MODEL(GetModel());
 	
 	PRECACHE_SOUND_ARRAY(pDieSounds);
-
-	BasePrecache();
 }	
 
 void CMassn :: DeathSound ( void )

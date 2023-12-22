@@ -315,14 +315,14 @@ void COFTorchAlly :: Spawn()
 
 void COFTorchAlly :: Precache()
 {
+	CBaseGruntOp4::Precache();
+
 	m_defaultModel = "models/hgrunt_torch.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL( TORCH_BEAM_SPRITE );
 
 	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/torch_light.wav" );
 	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/torch_cut_loop.wav" );
-
-	CBaseGruntOp4::Precache();
 }
 
 const char* COFTorchAlly::DisplayName() {

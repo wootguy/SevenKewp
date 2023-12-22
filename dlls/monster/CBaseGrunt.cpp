@@ -972,6 +972,8 @@ void CBaseGrunt::InitAiFlags() {
 }
 
 void CBaseGrunt::BasePrecache() {
+	CTalkSquadMonster::Precache();
+
 	m_iBrassShell = PRECACHE_MODEL("models/shell.mdl");// brass shell
 	m_iShotgunShell = PRECACHE_MODEL("models/shotgunshell.mdl");
 	m_iSawShell = PRECACHE_MODEL("models/saw_shell.mdl");
@@ -1006,8 +1008,6 @@ void CBaseGrunt::BasePrecache() {
 	PRECACHE_SOUND("weapons/357_shot2.wav");
 	
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
-
-	CTalkSquadMonster::Precache();
 }
 
 void CBaseGrunt :: StartTask ( Task_t *pTask )
@@ -2480,6 +2480,7 @@ void CBaseRepel::Spawn(void) {
 }
 
 void CBaseRepel::Precache(void) {
+	CBaseMonster::Precache();
 	UTIL_PrecacheOther(GetMonsterType());
 	m_iSpriteTexture = PRECACHE_MODEL("sprites/rope.spr");
 }

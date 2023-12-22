@@ -520,6 +520,8 @@ void CTor::Spawn()
 
 void CTor::Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/tor.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(SHOOT_BEAM_SPRITE);

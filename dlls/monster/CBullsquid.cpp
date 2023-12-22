@@ -715,6 +715,8 @@ void CBullsquid :: Spawn()
 //=========================================================
 void CBullsquid :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/bullsquid.mdl";
 	PRECACHE_MODEL(GetModel());
 	

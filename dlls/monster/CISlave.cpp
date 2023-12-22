@@ -553,6 +553,8 @@ void CISlave :: Spawn()
 //=========================================================
 void CISlave :: Precache()
 {
+	CBaseMonster::Precache();
+
 	int i;
 
 	m_defaultModel = "models/islave.mdl";

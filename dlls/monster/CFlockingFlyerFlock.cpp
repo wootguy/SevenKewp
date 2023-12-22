@@ -169,11 +169,11 @@ void CFlockingFlyerFlock :: Precache( )
 
 void CFlockingFlyerFlock :: PrecacheFlockSounds( void )
 {
-	PRECACHE_SOUND("boid/boid_alert1.wav" );
-	PRECACHE_SOUND("boid/boid_alert2.wav" );
+	PRECACHE_SOUND_ENT(NULL, "boid/boid_alert1.wav" );
+	PRECACHE_SOUND_ENT(NULL, "boid/boid_alert2.wav" );
 
-	PRECACHE_SOUND("boid/boid_idle1.wav" );
-	PRECACHE_SOUND("boid/boid_idle2.wav" );
+	PRECACHE_SOUND_ENT(NULL, "boid/boid_idle1.wav" );
+	PRECACHE_SOUND_ENT(NULL, "boid/boid_idle2.wav" );
 }
 
 //=========================================================
@@ -239,6 +239,8 @@ void CFlockingFlyer :: Spawn( )
 //=========================================================
 void CFlockingFlyer :: Precache( )
 {
+	CBaseMonster::Precache();
+
 	//PRECACHE_MODEL("models/aflock.mdl");
 	m_defaultModel = "models/boid.mdl";
 	PRECACHE_MODEL(GetModel());

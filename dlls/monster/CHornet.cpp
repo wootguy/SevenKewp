@@ -130,6 +130,8 @@ void CHornet :: Spawn( void )
 
 void CHornet :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/hornet.mdl";
 	PRECACHE_MODEL(GetModel());
 

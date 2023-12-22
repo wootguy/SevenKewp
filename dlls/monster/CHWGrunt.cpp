@@ -181,13 +181,13 @@ void CHWGrunt::Spawn() {
 
 void CHWGrunt::Precache()
 {
+	BasePrecache();
+
 	m_defaultModel = "models/hwgrunt.mdl";
 	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
-
-	BasePrecache();
 }
 
 int	CHWGrunt::Classify(void)

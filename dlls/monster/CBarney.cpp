@@ -459,6 +459,8 @@ void CBarney :: Spawn()
 //=========================================================
 void CBarney :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/barney.mdl";
 	PRECACHE_MODEL(GetModel());
 

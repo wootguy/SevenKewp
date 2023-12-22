@@ -293,6 +293,8 @@ void CLeech::AlertSound( void )
 
 void CLeech::Precache( void )
 {
+	CBaseMonster::Precache();
+
 	int i;
 
 	m_defaultModel = "models/leech.mdl";

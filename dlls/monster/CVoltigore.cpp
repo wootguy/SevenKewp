@@ -285,6 +285,8 @@ void CVoltigore::HideChargeBeam() {
 
 void CVoltigore::Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/voltigore.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL(GIB_MODEL);

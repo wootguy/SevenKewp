@@ -95,6 +95,8 @@ void CRat :: Spawn()
 //=========================================================
 void CRat :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/bigrat.mdl";
 	PRECACHE_MODEL(GetModel());
 }	

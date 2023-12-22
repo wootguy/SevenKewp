@@ -329,6 +329,8 @@ void CNihilanth :: Spawn( void )
 
 void CNihilanth::Precache( void )
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/nihilanth.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL("sprites/lgtning.spr");

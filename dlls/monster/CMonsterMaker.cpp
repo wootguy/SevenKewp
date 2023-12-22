@@ -319,7 +319,13 @@ void CMonsterMaker :: Precache( void )
 {
 	CBaseMonster::Precache();
 
-	UTIL_PrecacheOther( STRING( m_iszMonsterClassname ) );
+	std::map<std::string, std::string> keys;
+	if (m_soundReplacementPath)
+		keys["soundlist"] = STRING(m_soundReplacementPath);
+	if (m_IsPlayerAlly)
+		keys["is_player_ally"] = STRING(m_IsPlayerAlly);
+
+	UTIL_PrecacheOther( STRING( m_iszMonsterClassname ), keys );
 
 	if (pev->model) {
 		PRECACHE_MODEL(STRING(pev->model));
@@ -404,6 +410,8 @@ void CMonsterMaker::MakeMonster( void )
 		mon->m_displayName = m_displayName;
 		mon->m_Classify = m_Classify;
 		mon->m_IsPlayerAlly = m_IsPlayerAlly;
+		mon->m_soundReplacementPath = m_soundReplacementPath;
+		g_monsterSoundReplacements[mon->entindex()] = g_monsterSoundReplacements[entindex()];
 	}
 
 	pevCreate = VARS( pent );

@@ -384,6 +384,8 @@ void CBarnacle :: WaitTillDead ( void )
 //=========================================================
 void CBarnacle :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/barnacle.mdl";
 	PRECACHE_MODEL(GetModel());
 

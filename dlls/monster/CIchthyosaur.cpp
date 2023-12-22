@@ -517,6 +517,8 @@ void CIchthyosaur :: Spawn()
 //=========================================================
 void CIchthyosaur :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/icky.mdl";
 	PRECACHE_MODEL(GetModel());
 

@@ -531,6 +531,7 @@ void CAGrunt :: Spawn()
 //=========================================================
 void CAGrunt :: Precache()
 {
+	CBaseMonster::Precache();
 	int i;
 
 	m_defaultModel = "models/agrunt.mdl";

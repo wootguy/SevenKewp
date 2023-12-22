@@ -192,6 +192,8 @@ void CRoboGrunt::Spawn() {
 
 void CRoboGrunt::Precache()
 {
+	BasePrecache();
+
 	m_defaultModel = "models/rgrunt.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL("models/computergibs.mdl");
@@ -209,8 +211,6 @@ void CRoboGrunt::Precache()
 	PRECACHE_SOUND_ARRAY(pQuestSounds);
 	PRECACHE_SOUND_ARRAY(pTauntSounds);
 	PRECACHE_SOUND_ARRAY(pThrowSounds);
-
-	BasePrecache();
 }
 
 int	CRoboGrunt::Classify(void)

@@ -1359,6 +1359,8 @@ void CTalkSquadMonster::KeyValue( KeyValueData *pkvd )
 
 void CTalkSquadMonster::Precache( void )
 {
+	CBaseMonster::Precache();
+
 	if ( m_iszUse )
 		m_szGrp[TLK_USE] = STRING( m_iszUse );
 	if ( m_iszUnUse )
