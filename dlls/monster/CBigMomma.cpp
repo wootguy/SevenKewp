@@ -25,6 +25,7 @@
 #include	"decals.h"
 #include	"weapons.h"
 #include	"game.h"
+#include "animation.h"
 
 #define SF_INFOBM_RUN		0x0001
 #define SF_INFOBM_WAIT		0x0002
@@ -180,6 +181,7 @@ public:
 	void KeyValue( KeyValueData *pkvd );
 	void Activate( void );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void GibMonster();
 
 	void		RunTask( Task_t *pTask );
 	void		StartTask( Task_t *pTask );
@@ -265,6 +267,10 @@ public:
 			Vector mins = pev->origin - Vector( 32, 32, 0 );
 			Vector maxs = pev->origin + Vector( 32, 32, 0 );
 
+			if (!ActivityHasEvent(ACT_MELEE_ATTACK2, BIG_AE_LAY_CRAB)) {
+				return FALSE;
+			}
+
 			CBaseEntity *pList[2];
 			int count = UTIL_EntitiesInBox( pList, 2, mins, maxs, FL_MONSTER, true);
 			for ( int i = 0; i < count; i++ )
@@ -303,6 +309,8 @@ public:
 	static const char *pAlertSounds[];
 	static const char *pPainSounds[];
 	static const char *pFootSounds[];
+
+	bool m_mapHasMommaPath;
 
 	CUSTOM_SCHEDULES;
 
@@ -594,7 +602,7 @@ int CBigMomma :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	if ( bitsDamageType & DMG_ACID )
 		flDamage = 0;
 
-	if ( !HasMemory(bits_MEMORY_PATH_FINISHED) )
+	if ( m_mapHasMommaPath && !HasMemory(bits_MEMORY_PATH_FINISHED) )
 	{
 		if ( pev->health <= flDamage )
 		{
@@ -605,6 +613,22 @@ int CBigMomma :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	}
 
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
+}
+
+void CBigMomma::GibMonster()
+{
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM);
+
+	if (CVAR_GET_FLOAT("violence_agibs") != 0)
+	{
+		CGib::SpawnRandomGibs(pev, 1, "models/bm_sack.mdl", 1, 0);
+		CGib::SpawnRandomGibs(pev, 1, "models/bm_shell.mdl", 1, 0);
+		CGib::SpawnRandomGibs(pev, 4, "models/bm_leg.mdl", 1, 0);
+	}
+
+	// don't remove players!
+	SetThink(&CBaseMonster::SUB_Remove);
+	pev->nextthink = gpGlobals->time;
 }
 
 void CBigMomma :: LayHeadcrab( void )
@@ -678,6 +702,8 @@ void CBigMomma :: Spawn()
 	m_flFieldOfView		= 0.3;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 
+	m_mapHasMommaPath = !FNullEnt(FIND_ENTITY_BY_CLASSNAME(NULL, "info_bigmomma"));
+
 	MonsterInit();
 }
 
@@ -690,6 +716,11 @@ void CBigMomma :: Precache()
 
 	m_defaultModel = "models/big_mom.mdl";
 	PRECACHE_MODEL(GetModel());
+
+	// TODO: combine these into one model
+	PRECACHE_MODEL("models/bm_sack.mdl");
+	PRECACHE_MODEL("models/bm_leg.mdl");
+	PRECACHE_MODEL("models/bm_shell.mdl");
 
 	PRECACHE_SOUND_ARRAY( pChildDieSounds );
 	PRECACHE_SOUND_ARRAY( pSackSounds );
@@ -910,7 +941,7 @@ BOOL CBigMomma::ShouldGoToNode( void )
 {
 	if ( HasMemory( bits_MEMORY_ADVANCE_NODE ) )
 	{
-		if ( m_nodeTime < gpGlobals->time )
+		if ( m_nodeTime < gpGlobals->time && m_mapHasMommaPath )
 			return TRUE;
 	}
 	return FALSE;

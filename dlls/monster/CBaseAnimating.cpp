@@ -317,3 +317,8 @@ void CBaseAnimating :: SetSequenceBox( void )
 	}
 }
 
+bool CBaseAnimating::ActivityHasEvent(int activity, int event)
+{
+	return ::ActivityHasEvent(GET_MODEL_PTR(ENT(pev)), activity, event);
+}
+
