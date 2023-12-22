@@ -344,12 +344,17 @@ set(WEAPON_SRC
 )
 
 set(UTIL_HDR
+	Bsp.h
+	bsptypes.h
+	bsplimits.h
 	plane.h
 	player_util.h
 	util.h
 	vector.h
 )
 set(UTIL_SRC
+	Bsp.cpp
+	bsptypes.cpp
 	plane.cpp
 	player_util.cpp
 	util.cpp

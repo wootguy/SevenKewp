@@ -29,11 +29,29 @@
 #include <string>
 #include "game.h"
 #include <map>
+#include <set>
 #include <string>
+#include "Bsp.h"
 
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
 extern globalvars_t				*gpGlobals;
+
+// resources that were successfully precached
+extern std::map<std::string, std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
+extern std::set<std::string> g_precachedSounds;
+extern std::set<std::string> g_precachedGeneric;
+
+// resources that attempted to precache but may have been replaced with a failure model
+extern std::set<std::string> g_tryPrecacheModels;
+extern std::set<std::string> g_tryPrecacheSounds;
+extern std::set<std::string> g_tryPrecacheGeneric;
+
+#define NOT_PRECACHED_MODEL "models/hlcoop/not_precached.mdl"
+#define NOT_PRECACHED_SOUND "common/null.wav"
+#define MAX_PRECACHE 512
+
+extern Bsp g_bsp;
 
 struct RGBA {
 	uint8_t r, g, b, a;
@@ -584,6 +602,7 @@ float UTIL_WeaponTimeBase( void );
 #define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
 #define SET_MODEL		(*g_engfuncs.pfnSetModel)
 #define PRECACHE_SOUND		(*g_engfuncs.pfnPrecacheSound)
+#define MODEL_INDEX		(*g_engfuncs.pfnModelIndex)
 #else
 // engine wrappers which handle model/sound replacement logic
 int PRECACHE_GENERIC(const char* path);
@@ -591,6 +610,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path);
 int PRECACHE_MODEL(const char* model);
 void SET_MODEL(edict_t* edict, const char* model);
 const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
+int MODEL_INDEX(const char* model);
 
 #define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
 #endif
@@ -598,6 +618,8 @@ const char* GET_MODEL(const char* model); // return replacement model, if one ex
 std::vector<std::string> splitString(std::string str, const char* delimitters);
 
 std::string toLowerCase(std::string str);
+
+std::string toUpperCase(std::string str);
 
 std::string trimSpaces(std::string s);
 

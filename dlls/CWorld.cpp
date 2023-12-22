@@ -103,6 +103,8 @@ void CWorld::Precache(void)
 	PRECACHE_SOUND("common/bodydrop3.wav");// dead bodies hitting the ground (animation events)
 	PRECACHE_SOUND("common/bodydrop4.wav");
 
+	PRECACHE_MODEL(NOT_PRECACHED_MODEL);
+
 	g_Language = (int)CVAR_GET_FLOAT("sv_language");
 	if (g_Language == LANGUAGE_GERMAN)
 	{

@@ -74,6 +74,14 @@ unsigned int seed_table[ 256 ] =
 	25678, 18555, 13256, 23316, 22407, 16727, 991, 9236, 5373, 29402, 6117, 15241, 27715, 19291, 19888, 19847
 };
 
+std::map<std::string, std::string> g_precachedModels;
+std::set<std::string> g_precachedSounds;
+std::set<std::string> g_precachedGeneric;
+std::set<std::string> g_tryPrecacheModels;
+std::set<std::string> g_tryPrecacheSounds;
+std::set<std::string> g_tryPrecacheGeneric;
+Bsp g_bsp;
+
 unsigned int U_Random( void ) 
 { 
 	glSeed *= 69069; 
@@ -2743,7 +2751,7 @@ std::map<std::string, std::string> loadReplacementFile(const char* path) {
 			}
 		}
 		
-		replacements[paths[0]] = paths[1];
+		replacements[toLowerCase(paths[0])] = toLowerCase(paths[1]);
 		//ALERT(at_console, "REP: %s -> %s\n", paths[0].c_str(), paths[1].c_str());
 	}
 
@@ -2751,14 +2759,28 @@ std::map<std::string, std::string> loadReplacementFile(const char* path) {
 }
 
 int PRECACHE_GENERIC(const char* path) {
+	std::string lowerPath = toLowerCase(path);
+	path = lowerPath.c_str();
+
 	if (g_modelReplacements.find(path) != g_modelReplacements.end()) {
-		return g_engfuncs.pfnPrecacheGeneric(g_modelReplacements[path].c_str());
+		path = g_modelReplacements[path].c_str();
 	}
 
-	return g_engfuncs.pfnPrecacheGeneric(path);
+	g_tryPrecacheGeneric.insert(path);
+
+	if (g_precachedGeneric.size() < MAX_PRECACHE) {
+		g_precachedGeneric.insert(path);
+		return g_engfuncs.pfnPrecacheGeneric(path);
+	}
+	else {
+		return -1;
+	}
 }
 
 int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
+	std::string lowerPath = toLowerCase(path);
+	path = lowerPath.c_str();
+
 	if (ent && ent->IsMonster() && !g_monsterSoundReplacements.empty()) {
 		std::map<std::string, std::string>& replacementMap = g_monsterSoundReplacements[ent->entindex()];
 		if (replacementMap.find(path) != replacementMap.end()) {
@@ -2766,32 +2788,89 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 		}
 	}
 
-	return g_engfuncs.pfnPrecacheSound(path);
+	g_tryPrecacheSounds.insert(path);
+
+	if (g_tryPrecacheSounds.size() < MAX_PRECACHE) {
+		g_precachedSounds.insert(path);
+		return g_engfuncs.pfnPrecacheSound(path);
+	}
+	else {
+		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
+	}
 }
 
-int PRECACHE_MODEL(const char* model) {
-	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
-		return g_engfuncs.pfnPrecacheModel(g_modelReplacements[model].c_str());
+int PRECACHE_MODEL(const char* path) {
+	std::string lowerPath = toLowerCase(path);
+	path = lowerPath.c_str();
+
+	if (g_modelReplacements.find(path) != g_modelReplacements.end()) {
+		path = g_modelReplacements[path].c_str();
 	}
 
-	return g_engfuncs.pfnPrecacheModel(model);
+	// loading BSP here because ServerActivate is not soon enough and GameDLLInit is only called once
+	if (!g_bsp.loaded) {
+		std::string mapPath = getGameFilePath((std::string("maps/") + STRING(gpGlobals->mapname) + ".bsp").c_str());
+		g_bsp.load_lumps(mapPath);
+	}
+
+	g_tryPrecacheModels.insert(path);
+
+	// not sure what the +1 is for. The world model should be included in the model count.
+	if (g_tryPrecacheModels.size() + g_bsp.modelCount + 1 < MAX_PRECACHE) {
+		if (g_precachedModels.find(path) == g_precachedModels.end())
+			g_precachedModels[path] = path;
+		return g_engfuncs.pfnPrecacheModel(path);
+	}
+	else {
+		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
+	}
+	
 }
 
 void SET_MODEL(edict_t* edict, const char* model) {
+	if (model && model[0] == '*') {
+		// BSP model. No special handling.
+		g_engfuncs.pfnSetModel(edict, model);
+		return;
+	}
+
+	std::string lowerPath = toLowerCase(model);
+	model = lowerPath.c_str();
+
 	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
+		model = g_modelReplacements[model].c_str();
 		g_engfuncs.pfnSetModel(edict, g_modelReplacements[model].c_str());
 	}
-	else {
-		g_engfuncs.pfnSetModel(edict, model);
+	
+	if (g_precachedModels.find(model) == g_precachedModels.end()) {
+		model = NOT_PRECACHED_MODEL;
 	}
+
+	g_engfuncs.pfnSetModel(edict, model);
 }
 
 const char* GET_MODEL(const char* model) {
+	std::string lowerPath = toLowerCase(model);
+	model = lowerPath.c_str();
+
 	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
-		return g_modelReplacements[model].c_str();
+		model = g_modelReplacements[model].c_str();
+	}
+
+	if (g_precachedModels.find(model) == g_precachedModels.end()) {
+		model = NOT_PRECACHED_MODEL;
+	}
+	else {
+		model = g_precachedModels[model].c_str();
 	}
 
 	return model;
+}
+
+int MODEL_INDEX(const char* model) {
+	std::string lowerPath = toLowerCase(model);
+	model = lowerPath.c_str();
+	return g_engfuncs.pfnModelIndex(model);
 }
 
 std::vector<std::string> splitString(std::string str, const char* delimitters)
@@ -2817,6 +2896,16 @@ std::string toLowerCase(std::string str) {
 
 	for (int i = 0; str[i]; i++) {
 		out[i] = tolower(str[i]);
+	}
+
+	return out;
+}
+
+std::string toUpperCase(std::string str) {
+	std::string out = str;
+
+	for (int i = 0; str[i]; i++) {
+		out[i] = toupper(str[i]);
 	}
 
 	return out;
