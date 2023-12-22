@@ -193,7 +193,7 @@ int CBabyGarg::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float
 void CBabyGarg::Killed(entvars_t* pevAttacker, int iGib)
 {
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1.0, ATTN_GARG, 0, 250);
-	CBaseMonster::Killed(pevAttacker, iGib);
+	CBaseMonster::Killed(pevAttacker, pev->deadflag == DEAD_DEAD ? iGib : GIB_NEVER);
 }
 
 void CBabyGarg::PainSound() {

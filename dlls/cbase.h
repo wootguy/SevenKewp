@@ -488,6 +488,7 @@ public:
 	int GetBodygroup( int iGroup );
 	int ExtractBbox( int sequence, float *mins, float *maxs );
 	void SetSequenceBox( void );
+	bool ActivityHasEvent(int activity, int event);
 
 	// animation needs
 	float				m_flFrameRate;		// computed FPS for current sequence

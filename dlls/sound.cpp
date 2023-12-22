@@ -454,10 +454,11 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum)
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
 						   int flags, int pitch)
 {
-	if (pitch <= 0 || pitch > 255) {
-		println("Warning: Invalid pitch passed to EMIT_SOUND_DYN: %d", pitch);
-		pitch = 100; // using a negative pitch crashes the engine
-	}
+	// prevent invalid values crashing the engine
+	volume = clampf(volume, 0, 1.0f);
+	attenuation = clampf(attenuation, 0, 4.0f);
+	channel = clampi(channel, 0, 7);
+	pitch = clampi(pitch, 0, 255);
 
 	if (entity->v.flags & FL_MONSTER) {
 		int eidx = ENTINDEX(entity);
