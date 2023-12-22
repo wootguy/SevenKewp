@@ -168,6 +168,7 @@ public:
 		virtual void SetClassify ( int iNewClassify );
 		virtual int IRelationship ( CBaseEntity *pTarget );
 		static int IRelationship ( int attackerClass, int victimClass );
+		virtual void Precache ( void ); // handles replacement file logic
 		virtual void MonsterInit ( void );
 		virtual void MonsterInitDead( void );	// Call after animation/pose is set up
 		virtual void BecomeDead( void );
@@ -381,6 +382,8 @@ public:
 
 	string_t m_displayName;
 	const char* DisplayName();
+
+	string_t m_soundReplacementPath;
 
 	// handles mp_npckill/killnpc cvars and takedamage key
 	bool IsImmune(entvars_t* attacker);

@@ -686,6 +686,8 @@ void CBigMomma :: Spawn()
 //=========================================================
 void CBigMomma :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/big_mom.mdl";
 	PRECACHE_MODEL(GetModel());
 

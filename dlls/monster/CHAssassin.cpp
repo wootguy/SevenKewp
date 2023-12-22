@@ -313,6 +313,8 @@ void CHAssassin :: Spawn()
 //=========================================================
 void CHAssassin :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/hassassin.mdl";
 	PRECACHE_MODEL(GetModel());
 

@@ -390,6 +390,8 @@ void CController :: Spawn()
 //=========================================================
 void CController :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/controller.mdl";
 	PRECACHE_MODEL(GetModel());
 

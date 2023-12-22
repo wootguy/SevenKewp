@@ -60,6 +60,8 @@ void CMyMonster :: Spawn()
 
 void CMyMonster :: Precache()
 {
+	CBaseMonster::Precache();
+
 	PRECACHE_SOUND("mysound.wav");
 
 	PRECACHE_MODEL("models/mymodel.mdl");

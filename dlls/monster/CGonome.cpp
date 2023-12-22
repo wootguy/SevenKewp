@@ -268,6 +268,8 @@ void CGonome::Spawn()
 
 void CGonome::Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/gonome.mdl";
 	PRECACHE_MODEL(GetModel());
 	iGonomeSpitSprite = PRECACHE_MODEL(GONOME_SPIT_SPRITE);

@@ -143,6 +143,7 @@ void CGMan :: Spawn()
 //=========================================================
 void CGMan :: Precache()
 {
+	CBaseMonster::Precache();
 	m_defaultModel = "models/gman.mdl";
 	PRECACHE_MODEL( GetModel() );
 }	

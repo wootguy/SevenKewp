@@ -520,6 +520,8 @@ void COtis :: Spawn()
 //=========================================================
 void COtis :: Precache()
 {
+	CTalkSquadMonster::Precache();
+
 	m_defaultModel = "models/otis.mdl";
 	PRECACHE_MODEL(GetModel());
 
@@ -531,7 +533,6 @@ void COtis :: Precache()
 	// every new otis must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
 	TalkInit();
-	CTalkSquadMonster::Precache();
 }	
 
 // Init talk data

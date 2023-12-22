@@ -411,6 +411,8 @@ void CHoundeye :: Spawn()
 //=========================================================
 void CHoundeye :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/houndeye.mdl";
 	PRECACHE_MODEL(GetModel());
 

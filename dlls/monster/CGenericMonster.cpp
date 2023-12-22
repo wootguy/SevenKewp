@@ -138,6 +138,7 @@ void CGenericMonster :: Spawn()
 //=========================================================
 void CGenericMonster :: Precache()
 {
+	CBaseMonster::Precache();
 	PRECACHE_MODEL( (char *)STRING(pev->model) );
 }	
 

@@ -189,6 +189,8 @@ void COsprey :: Spawn( void )
 
 void COsprey::Precache( void )
 {
+	CBaseMonster::Precache();
+
 	bool isBlkOps = FClassnameIs(pev, "monster_blkop_osprey");
 	m_defaultModel = isBlkOps ? "models/blkop_osprey.mdl" : "models/osprey.mdl";
 	replenishMonster = isBlkOps ? "monster_male_assassin" : "monster_human_grunt";

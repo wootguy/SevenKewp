@@ -1064,6 +1064,8 @@ void CShockTrooper::Spawn()
 //=========================================================
 void CShockTrooper::Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/strooper.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL("models/strooper_gibs.mdl");
@@ -2358,6 +2360,7 @@ void CShockTrooperRepel::Spawn()
 
 void CShockTrooperRepel::Precache()
 {
+	CBaseMonster::Precache();
 	UTIL_PrecacheOther("monster_shocktrooper");
 	m_iSpriteTexture = PRECACHE_MODEL("sprites/rope.spr");
 }

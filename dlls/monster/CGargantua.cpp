@@ -567,6 +567,8 @@ void CGargantua :: Spawn()
 //=========================================================
 void CGargantua :: Precache()
 {
+	CBaseMonster::Precache();
+
 	int i;
 
 	m_defaultModel = "models/garg.mdl";

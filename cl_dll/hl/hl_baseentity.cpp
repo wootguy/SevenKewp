@@ -243,6 +243,7 @@ void CBaseMonster::StartFollowing(CBaseEntity* pLeader) {}
 const char* CBaseMonster::GetTaskName(int taskIdx) {return "";}
 const char* CBaseMonster::DisplayName() {return "";}
 BOOL CBaseMonster::IsMachine() {return 0;}
+void CBaseMonster::Precache() {}
 
 int TrainSpeed(int iSpeed, int iMax) { 	return 0; }
 void CBasePlayer :: DeathSound( void ) { }

@@ -175,12 +175,12 @@ void CBaseGruntOp4::DeclineFollowing()
 
 void CBaseGruntOp4::Precache()
 {
+	BasePrecache();
+
 	PRECACHE_SOUND_ARRAY(pDieSounds);
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 
 	PRECACHE_SOUND("fgrunt/medic.wav");
-
-	BasePrecache();
 
 	TalkInit();
 }

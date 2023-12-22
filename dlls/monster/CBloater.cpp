@@ -218,6 +218,7 @@ void CBloater :: Spawn()
 //=========================================================
 void CBloater :: Precache()
 {
+	CBaseMonster::Precache();
 	m_defaultModel = "models/floater.mdl";
 	PRECACHE_MODEL(GetModel());
 }	

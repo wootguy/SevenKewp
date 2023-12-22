@@ -302,6 +302,8 @@ void CTentacle :: Spawn( )
 
 void CTentacle :: Precache( )
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/tentacle2.mdl";
 	PRECACHE_MODEL(GetModel());
 

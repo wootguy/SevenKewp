@@ -155,6 +155,8 @@ void CBabyGarg::Spawn()
 
 void CBabyGarg::Precache()
 {
+	CBaseMonster::Precache();
+
 	int i;
 
 	m_defaultModel = "models/babygarg.mdl";

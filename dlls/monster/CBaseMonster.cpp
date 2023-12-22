@@ -18,6 +18,8 @@
 
 #define DEBUG_MONSTER "monster_chumtoad" // uncomment to enable verbose logging
 
+std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
+
 // Global Savedata for monster
 // UNDONE: Save schedule data?  Can this be done?  We may
 // lose our enemy pointer or other data (goal ent, target, etc)
@@ -1978,6 +1980,34 @@ void CBaseMonster::MoveExecute(CBaseEntity* pTargetEnt, const Vector& vecDir, fl
 	// ALERT( at_console, "dist %f\n", m_flGroundSpeed * pev->framerate * flInterval );
 }
 
+void CBaseMonster::Precache(void) {
+	if (g_monsterSoundReplacements.empty())
+		g_monsterSoundReplacements.resize(gpGlobals->maxEntities);
+
+	int eidx = entindex();
+	if (m_soundReplacementPath) {
+		const char* filePath = UTIL_VarArgs("sound/%s/%s",
+			STRING(gpGlobals->mapname), STRING(m_soundReplacementPath));
+
+		g_monsterSoundReplacements[eidx] = loadReplacementFile(filePath);
+	}
+	else {
+		g_monsterSoundReplacements[eidx].clear();
+	}
+
+	for (auto item : g_monsterSoundReplacements[eidx]) {
+		
+		// sentences aren't precached by monster code, so precache the replacement here
+		if (item.first.size() && item.first[0] == '!') {
+			if (item.second.size() && item.second[0] == '!') {
+				ALERT(at_console, "Monster sentence replacment not implemented.\n");
+				continue;
+			}
+			
+			PRECACHE_SOUND(item.second.c_str());
+		}
+	}
+}
 
 //=========================================================
 // MonsterInit - after a monster is spawned, it needs to 
@@ -3159,6 +3189,11 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "displayname"))
 	{
 		m_displayName = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "soundlist"))
+	{
+		m_soundReplacementPath = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else

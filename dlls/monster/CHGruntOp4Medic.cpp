@@ -323,6 +323,8 @@ void CHGruntOp4Medic :: Spawn()
 
 void CHGruntOp4Medic :: Precache()
 {
+	CBaseGruntOp4::Precache();
+
 	m_defaultModel = "models/hgrunt_medic.mdl";
 	PRECACHE_MODEL(GetModel());
 
@@ -330,8 +332,6 @@ void CHGruntOp4Medic :: Precache()
 	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/medical.wav" );
 
 	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/medic.wav" );
-
-	CBaseGruntOp4::Precache();
 }	
 
 const char* CHGruntOp4Medic::DisplayName() {

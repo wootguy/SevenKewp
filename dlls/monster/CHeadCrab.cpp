@@ -305,6 +305,8 @@ void CHeadCrab :: Spawn()
 //=========================================================
 void CHeadCrab :: Precache()
 {
+	CBaseMonster::Precache();
+
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
 	PRECACHE_SOUND_ARRAY(pPainSounds);

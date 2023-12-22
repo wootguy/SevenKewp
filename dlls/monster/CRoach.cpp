@@ -152,6 +152,8 @@ void CRoach :: Spawn()
 //=========================================================
 void CRoach :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/roach.mdl";
 	PRECACHE_MODEL(GetModel());
 

@@ -733,6 +733,8 @@ void CPitdrone :: Spawn()
 //=========================================================
 void CPitdrone :: Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/pit_drone.mdl";
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL("models/pit_drone_gibs.mdl" );

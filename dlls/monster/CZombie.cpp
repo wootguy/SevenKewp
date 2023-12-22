@@ -314,6 +314,8 @@ void CZombie :: Spawn()
 //=========================================================
 void CZombie :: Precache()
 {
+	CBaseMonster::Precache();
+
 	int i;
 
 	if (!strcmp(STRING(pev->classname), "monster_zombie_barney")) {

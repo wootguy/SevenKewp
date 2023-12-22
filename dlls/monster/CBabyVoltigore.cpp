@@ -187,6 +187,8 @@ void CBabyVoltigore::Spawn()
 
 void CBabyVoltigore::Precache()
 {
+	CBaseMonster::Precache();
+
 	m_defaultModel = "models/baby_voltigore.mdl";
 	PRECACHE_MODEL(GetModel());
 

@@ -410,18 +410,18 @@ void W_Precache(void)
 	PRECACHE_MODEL ("models/grenade.mdl");
 	PRECACHE_MODEL ("sprites/explode1.spr");
 
-	PRECACHE_SOUND ("weapons/debris1.wav");// explosion aftermaths
-	PRECACHE_SOUND ("weapons/debris2.wav");// explosion aftermaths
-	PRECACHE_SOUND ("weapons/debris3.wav");// explosion aftermaths
+	PRECACHE_SOUND_ENT(NULL, "weapons/debris1.wav");// explosion aftermaths
+	PRECACHE_SOUND_ENT(NULL, "weapons/debris2.wav");// explosion aftermaths
+	PRECACHE_SOUND_ENT(NULL, "weapons/debris3.wav");// explosion aftermaths
 
-	PRECACHE_SOUND ("weapons/grenade_hit1.wav");//grenade
-	PRECACHE_SOUND ("weapons/grenade_hit2.wav");//grenade
-	PRECACHE_SOUND ("weapons/grenade_hit3.wav");//grenade
+	PRECACHE_SOUND_ENT(NULL, "weapons/grenade_hit1.wav");//grenade
+	PRECACHE_SOUND_ENT(NULL, "weapons/grenade_hit2.wav");//grenade
+	PRECACHE_SOUND_ENT(NULL, "weapons/grenade_hit3.wav");//grenade
 
-	PRECACHE_SOUND ("weapons/bullet_hit1.wav");	// hit by bullet
-	PRECACHE_SOUND ("weapons/bullet_hit2.wav");	// hit by bullet
+	PRECACHE_SOUND_ENT(NULL, "weapons/bullet_hit1.wav");	// hit by bullet
+	PRECACHE_SOUND_ENT(NULL, "weapons/bullet_hit2.wav");	// hit by bullet
 	
-	PRECACHE_SOUND ("items/weapondrop1.wav");// weapon falls to the ground
+	PRECACHE_SOUND_ENT(NULL, "items/weapondrop1.wav");// weapon falls to the ground
 
 }
 

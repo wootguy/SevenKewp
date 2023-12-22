@@ -122,6 +122,8 @@ void CBaseTurret::Spawn()
 
 void CBaseTurret::Precache()
 {
+	CBaseMonster::Precache();
+
 	PRECACHE_SOUND_ARRAY(pDieSounds);
 
 	PRECACHE_SOUND("turret/tu_fire1.wav");
