@@ -501,7 +501,7 @@ void CTor::Spawn()
 	Precache();
 
 	SET_MODEL(ENT(pev), GetModel());
-	UTIL_SetSize(pev, Vector(-24, -24, 0), Vector(24, 24, 88));
+	SetSize(Vector(-24, -24, 0), Vector(24, 24, 88));
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;

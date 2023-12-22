@@ -53,7 +53,7 @@ void CTurret::Spawn()
 	m_iRetractHeight = 16;
 	m_iDeployHeight = 32;
 	m_iMinPitch = -15;
-	UTIL_SetSize(pev, Vector(-32, -32, -m_iRetractHeight), Vector(32, 32, m_iRetractHeight));
+	SetSize(Vector(-32, -32, -m_iRetractHeight), Vector(32, 32, m_iRetractHeight));
 
 	SetThink(&CTurret::Initialize);
 

@@ -104,7 +104,7 @@ void CHornet :: Spawn( void )
 	}
 
 	SET_MODEL(ENT( pev ), GetModel());
-	UTIL_SetSize( pev, Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );
+	SetSize(Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );
 
 	SetTouch( &CHornet::DieTouch );
 	SetThink( &CHornet::StartTrack );

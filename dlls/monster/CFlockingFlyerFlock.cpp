@@ -338,7 +338,7 @@ void CFlockingFlyer :: SpawnCommonCode( )
 	SET_MODEL(ENT(pev), GetModel());
 
 //	UTIL_SetSize(pev, Vector(0,0,0), Vector(0,0,0));
-	UTIL_SetSize(pev, Vector(-5,-5,0), Vector(5,5,2));
+	SetSize(Vector(-5,-5,0), Vector(5,5,2));
 }
 
 //=========================================================

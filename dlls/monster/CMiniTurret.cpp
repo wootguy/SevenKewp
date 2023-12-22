@@ -33,7 +33,7 @@ void CMiniTurret::Spawn()
 	m_iRetractHeight = 16;
 	m_iDeployHeight = 32;
 	m_iMinPitch = -15;
-	UTIL_SetSize(pev, Vector(-16, -16, -m_iRetractHeight), Vector(16, 16, m_iRetractHeight));
+	SetSize(Vector(-16, -16, -m_iRetractHeight), Vector(16, 16, m_iRetractHeight));
 
 	SetThink(&CMiniTurret::Initialize);
 	pev->nextthink = gpGlobals->time + 0.3;

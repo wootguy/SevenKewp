@@ -155,7 +155,7 @@ void COsprey :: Spawn( void )
 	pev->solid = SOLID_BBOX;
 
 	SET_MODEL(ENT(pev), GetModel());
-	UTIL_SetSize(pev, Vector( -400, -400, -100), Vector(400, 400, 32));
+	SetSize(Vector( -400, -400, -100), Vector(400, 400, 32));
 	UTIL_SetOrigin( pev, pev->origin );
 
 	pev->flags |= FL_MONSTER;

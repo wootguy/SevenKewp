@@ -127,6 +127,10 @@ public:
 	CCineMonster		*m_pCine;
 
 	const char* m_defaultModel;
+	string_t m_displayName;
+	string_t m_soundReplacementPath;
+	Vector m_maxHullSize;
+	Vector m_minHullSize;
 
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
@@ -380,13 +384,12 @@ public:
 	// returns a custom model if set, otherwise the default model
 	const char* GetModel();
 
-	string_t m_displayName;
 	const char* DisplayName();
-
-	string_t m_soundReplacementPath;
 
 	// handles mp_npckill/killnpc cvars and takedamage key
 	bool IsImmune(entvars_t* attacker);
+
+	void SetSize(Vector defaultMins, Vector defaultMaxs);
 };
 
 

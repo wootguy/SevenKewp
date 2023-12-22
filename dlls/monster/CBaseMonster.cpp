@@ -3196,6 +3196,16 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 		m_soundReplacementPath = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "minhullsize"))
+	{
+		UTIL_StringToVector(m_minHullSize, pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "maxhullsize"))
+	{
+		UTIL_StringToVector(m_maxHullSize, pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 	{
 		CBaseToggle::KeyValue(pkvd);
@@ -6965,4 +6975,11 @@ bool CBaseMonster::IsImmune(entvars_t* attacker) {
 	}
 
 	return false;
+}
+
+void CBaseMonster::SetSize(Vector defaultMins, Vector defaultMaxs) {
+	Vector min = m_minHullSize != g_vecZero ? m_minHullSize : defaultMins;
+	Vector max = m_maxHullSize != g_vecZero ? m_maxHullSize : defaultMaxs;
+
+	UTIL_SetSize(pev, min, max);
 }

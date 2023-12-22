@@ -266,7 +266,7 @@ void CTentacle :: Spawn( )
 	m_spawnHealth = pev->health;
 
 	SET_MODEL(ENT(pev), GetModel());
-	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
+	SetSize(Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->takedamage		= DAMAGE_AIM;
 	pev->flags			|= FL_MONSTER;
@@ -1037,7 +1037,7 @@ void CTentacleMaw :: Spawn( )
 {
 	Precache( );
 	SET_MODEL(ENT(pev), "models/maw.mdl");
-	UTIL_SetSize(pev, Vector(-32, -32, 0), Vector(32, 32, 64));
+	SetSize(Vector(-32, -32, 0), Vector(32, 32, 64));
 
 	pev->solid			= SOLID_NOT;
 	pev->movetype		= MOVETYPE_STEP;
