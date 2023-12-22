@@ -33,6 +33,7 @@ int LookupActivityHeaviest( void *pmodel, entvars_t *pev, int activity );
 // the number of sequences tagged with this activity, then the last found sequence is returned.
 int LookupActivityWithOffset(void* pmodel, entvars_t* pev, int activity, int offset);
 
+bool ActivityHasEvent(void* pmodel, int activity, int event);
 
 int LookupSequence( void *pmodel, const char *label );
 void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed );
