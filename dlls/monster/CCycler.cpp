@@ -108,7 +108,7 @@ void CCycler :: GenericCyclerSpawn(const char *szModel, Vector vecMin, Vector ve
 
 	CCycler::Spawn( );
 
-	UTIL_SetSize(pev, vecMin, vecMax);
+	SetSize(vecMin, vecMax);
 }
 
 

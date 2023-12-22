@@ -51,7 +51,7 @@ void CSentry::Spawn()
 	m_iRetractHeight = 64;
 	m_iDeployHeight = 64;
 	m_iMinPitch = -60;
-	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, m_iRetractHeight));
+	SetSize(Vector(-16, -16, 0), Vector(16, 16, m_iRetractHeight));
 
 	SetTouch(&CSentry::SentryTouch);
 	SetThink(&CSentry::Initialize);
@@ -184,5 +184,5 @@ void CSentry::Deploy(void)
 	// undo hitbox extension
 	pev->maxs.z = m_iDeployHeight;
 	pev->mins.z = 0;
-	UTIL_SetSize(pev, pev->mins, pev->maxs);
+	SetSize(pev->mins, pev->maxs);
 }

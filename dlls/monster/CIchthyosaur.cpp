@@ -481,7 +481,7 @@ void CIchthyosaur :: Spawn()
 	Precache( );
 
 	SET_MODEL(ENT(pev), GetModel());
-	UTIL_SetSize( pev, Vector( -32, -32, -32 ), Vector( 32, 32, 32 ) );
+	SetSize(Vector( -32, -32, -32 ), Vector( 32, 32, 32 ) );
 
 	pev->solid			= SOLID_BBOX;
 	pev->movetype		= MOVETYPE_FLY;
