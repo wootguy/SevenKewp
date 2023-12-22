@@ -307,6 +307,14 @@ void ServerDeactivate( void )
 	g_serveractive = 0;
 
 	g_monsterSoundReplacements.clear();
+	g_bsp.delete_lumps();
+
+	g_precachedGeneric.clear();
+	g_precachedModels.clear();
+	g_precachedSounds.clear();
+	g_tryPrecacheGeneric.clear();
+	g_tryPrecacheModels.clear();
+	g_tryPrecacheSounds.clear();
 
 	// Peform any shutdown operations here...
 	//
@@ -359,6 +367,41 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		else {
 			ALERT(at_console, "Map cycle empty. Clearning mp_nextmap.\n");
 			CVAR_SET_STRING("mp_nextmap", "");
+		}
+	}
+
+	ALERT(at_console, "Precache stats: %d models (%d MDL, %d BSP), %d sounds, %d generic\n",
+		g_tryPrecacheModels.size() + g_bsp.modelCount, g_tryPrecacheModels.size(), g_bsp.modelCount, 
+		g_tryPrecacheSounds.size(), g_tryPrecacheGeneric.size());
+
+	if (g_tryPrecacheModels.size() > g_precachedModels.size()) {
+		ALERT(at_error, "Model precache overflow (%d / %d). The following models were not precached:\n",
+			g_tryPrecacheModels.size() + g_bsp.modelCount, MAX_PRECACHE);
+
+		for (std::string item : g_tryPrecacheModels) {
+			if (!g_precachedModels.count(item)) {
+				ALERT(at_console, "    %s\n", item.c_str());
+			}
+		}
+	}
+	if (g_tryPrecacheSounds.size() > g_precachedSounds.size()) {
+		ALERT(at_error, "Sound precache overflow (%d / %d). The following sounds were not precached:\n",
+			g_tryPrecacheSounds.size(), MAX_PRECACHE);
+
+		for (std::string item : g_tryPrecacheSounds) {
+			if (!g_precachedSounds.count(item)) {
+				ALERT(at_console, "    %s\n", item.c_str());
+			}
+		}
+	}
+	if (g_tryPrecacheGeneric.size() > g_precachedGeneric.size()) {
+		ALERT(at_error, "Generic precache overflow (%d / %d). The following resources were not precached:\n",
+			g_tryPrecacheGeneric.size(), MAX_PRECACHE);
+
+		for (std::string item : g_tryPrecacheGeneric) {
+			if (!g_precachedGeneric.count(item)) {
+				ALERT(at_console, "    %s\n", item.c_str());
+			}
 		}
 	}
 }
@@ -432,113 +475,113 @@ void StartFrame( void )
 void ClientPrecache( void )
 {
 	// setup precaches always needed
-	g_engfuncs.pfnPrecacheSound("player/sprayer.wav");			// spray paint sound for PreAlpha
+	PRECACHE_SOUND_ENT(NULL, "player/sprayer.wav");			// spray paint sound for PreAlpha
 	
-	// g_engfuncs.pfnPrecacheSound("player/pl_jumpland2.wav");		// UNDONE: play 2x step sound
+	// PRECACHE_SOUND_ENT(NULL, "player/pl_jumpland2.wav");		// UNDONE: play 2x step sound
 	
-	g_engfuncs.pfnPrecacheSound("player/pl_fallpain2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_fallpain3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_fallpain2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_fallpain3.wav");
 	
-	g_engfuncs.pfnPrecacheSound("player/pl_step1.wav");		// walk on concrete
-	g_engfuncs.pfnPrecacheSound("player/pl_step2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_step3.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_step4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_step1.wav");		// walk on concrete
+	PRECACHE_SOUND_ENT(NULL, "player/pl_step2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_step3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_step4.wav");
 
-	g_engfuncs.pfnPrecacheSound("common/npc_step1.wav");		// NPC walk on concrete
-	g_engfuncs.pfnPrecacheSound("common/npc_step2.wav");
-	g_engfuncs.pfnPrecacheSound("common/npc_step3.wav");
-	g_engfuncs.pfnPrecacheSound("common/npc_step4.wav");
+	PRECACHE_SOUND_ENT(NULL, "common/npc_step1.wav");		// NPC walk on concrete
+	PRECACHE_SOUND_ENT(NULL, "common/npc_step2.wav");
+	PRECACHE_SOUND_ENT(NULL, "common/npc_step3.wav");
+	PRECACHE_SOUND_ENT(NULL, "common/npc_step4.wav");
 
-	g_engfuncs.pfnPrecacheSound("player/pl_metal1.wav");		// walk on metal
-	g_engfuncs.pfnPrecacheSound("player/pl_metal2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_metal3.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_metal4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_metal1.wav");		// walk on metal
+	PRECACHE_SOUND_ENT(NULL, "player/pl_metal2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_metal3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_metal4.wav");
 
-	g_engfuncs.pfnPrecacheSound("player/pl_dirt1.wav");		// walk on dirt
-	g_engfuncs.pfnPrecacheSound("player/pl_dirt2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_dirt3.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_dirt4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_dirt1.wav");		// walk on dirt
+	PRECACHE_SOUND_ENT(NULL, "player/pl_dirt2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_dirt3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_dirt4.wav");
 
-	g_engfuncs.pfnPrecacheSound("player/pl_duct1.wav");		// walk in duct
-	g_engfuncs.pfnPrecacheSound("player/pl_duct2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_duct3.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_duct4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_duct1.wav");		// walk in duct
+	PRECACHE_SOUND_ENT(NULL, "player/pl_duct2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_duct3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_duct4.wav");
 
-	g_engfuncs.pfnPrecacheSound("player/pl_grate1.wav");		// walk on grate
-	g_engfuncs.pfnPrecacheSound("player/pl_grate2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_grate3.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_grate4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_grate1.wav");		// walk on grate
+	PRECACHE_SOUND_ENT(NULL, "player/pl_grate2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_grate3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_grate4.wav");
 
-	g_engfuncs.pfnPrecacheSound("player/pl_slosh1.wav");		// walk in shallow water
-	g_engfuncs.pfnPrecacheSound("player/pl_slosh2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_slosh3.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_slosh4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_slosh1.wav");		// walk in shallow water
+	PRECACHE_SOUND_ENT(NULL, "player/pl_slosh2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_slosh3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_slosh4.wav");
 
-	g_engfuncs.pfnPrecacheSound("player/pl_tile1.wav");		// walk on tile
-	g_engfuncs.pfnPrecacheSound("player/pl_tile2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_tile3.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_tile4.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_tile5.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_tile1.wav");		// walk on tile
+	PRECACHE_SOUND_ENT(NULL, "player/pl_tile2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_tile3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_tile4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_tile5.wav");
 
-	g_engfuncs.pfnPrecacheSound("player/pl_swim1.wav");		// breathe bubbles
-	g_engfuncs.pfnPrecacheSound("player/pl_swim2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_swim3.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_swim4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_swim1.wav");		// breathe bubbles
+	PRECACHE_SOUND_ENT(NULL, "player/pl_swim2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_swim3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_swim4.wav");
 
-	g_engfuncs.pfnPrecacheSound("player/pl_ladder1.wav");	// climb ladder rung
-	g_engfuncs.pfnPrecacheSound("player/pl_ladder2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_ladder3.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_ladder4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_ladder1.wav");	// climb ladder rung
+	PRECACHE_SOUND_ENT(NULL, "player/pl_ladder2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_ladder3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_ladder4.wav");
 
-	g_engfuncs.pfnPrecacheSound("player/pl_wade1.wav");		// wade in water
-	g_engfuncs.pfnPrecacheSound("player/pl_wade2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_wade3.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_wade4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_wade1.wav");		// wade in water
+	PRECACHE_SOUND_ENT(NULL, "player/pl_wade2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_wade3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_wade4.wav");
 
-	g_engfuncs.pfnPrecacheSound("debris/wood1.wav");			// hit wood texture
-	g_engfuncs.pfnPrecacheSound("debris/wood2.wav");
-	g_engfuncs.pfnPrecacheSound("debris/wood3.wav");
+	PRECACHE_SOUND_ENT(NULL, "debris/wood1.wav");			// hit wood texture
+	PRECACHE_SOUND_ENT(NULL, "debris/wood2.wav");
+	PRECACHE_SOUND_ENT(NULL, "debris/wood3.wav");
 
-	g_engfuncs.pfnPrecacheSound("plats/train_use1.wav");		// use a train
+	PRECACHE_SOUND_ENT(NULL, "plats/train_use1.wav");		// use a train
 
-	g_engfuncs.pfnPrecacheSound("buttons/spark5.wav");		// hit computer texture
-	g_engfuncs.pfnPrecacheSound("buttons/spark6.wav");
-	g_engfuncs.pfnPrecacheSound("debris/glass1.wav");
-	g_engfuncs.pfnPrecacheSound("debris/glass2.wav");
-	g_engfuncs.pfnPrecacheSound("debris/glass3.wav");
+	PRECACHE_SOUND_ENT(NULL, "buttons/spark5.wav");		// hit computer texture
+	PRECACHE_SOUND_ENT(NULL, "buttons/spark6.wav");
+	PRECACHE_SOUND_ENT(NULL, "debris/glass1.wav");
+	PRECACHE_SOUND_ENT(NULL, "debris/glass2.wav");
+	PRECACHE_SOUND_ENT(NULL, "debris/glass3.wav");
 
-	g_engfuncs.pfnPrecacheSound( SOUND_FLASHLIGHT_ON );
-	g_engfuncs.pfnPrecacheSound( SOUND_FLASHLIGHT_OFF );
+	PRECACHE_SOUND_ENT(NULL,  SOUND_FLASHLIGHT_ON );
+	PRECACHE_SOUND_ENT(NULL,  SOUND_FLASHLIGHT_OFF );
 
 // player gib sounds
-	g_engfuncs.pfnPrecacheSound("common/bodysplat.wav");
+	PRECACHE_SOUND_ENT(NULL, "common/bodysplat.wav");
 
 // player pain sounds
-	g_engfuncs.pfnPrecacheSound("player/pl_pain2.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_pain4.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_pain5.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_pain6.wav");
-	g_engfuncs.pfnPrecacheSound("player/pl_pain7.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_pain2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_pain4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_pain5.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_pain6.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/pl_pain7.wav");
 
 	PRECACHE_MODEL("models/player.mdl");
 
 	// hud sounds
 
-	g_engfuncs.pfnPrecacheSound("common/wpn_hudoff.wav");
-	g_engfuncs.pfnPrecacheSound("common/wpn_hudon.wav");
-	g_engfuncs.pfnPrecacheSound("common/wpn_moveselect.wav");
-	g_engfuncs.pfnPrecacheSound("common/wpn_select.wav");
-	g_engfuncs.pfnPrecacheSound("common/wpn_denyselect.wav");
+	PRECACHE_SOUND_ENT(NULL, "common/wpn_hudoff.wav");
+	PRECACHE_SOUND_ENT(NULL, "common/wpn_hudon.wav");
+	PRECACHE_SOUND_ENT(NULL, "common/wpn_moveselect.wav");
+	PRECACHE_SOUND_ENT(NULL, "common/wpn_select.wav");
+	PRECACHE_SOUND_ENT(NULL, "common/wpn_denyselect.wav");
 
 
 	// geiger sounds
 
-	g_engfuncs.pfnPrecacheSound("player/geiger6.wav");
-	g_engfuncs.pfnPrecacheSound("player/geiger5.wav");
-	g_engfuncs.pfnPrecacheSound("player/geiger4.wav");
-	g_engfuncs.pfnPrecacheSound("player/geiger3.wav");
-	g_engfuncs.pfnPrecacheSound("player/geiger2.wav");
-	g_engfuncs.pfnPrecacheSound("player/geiger1.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/geiger6.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/geiger5.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/geiger4.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/geiger3.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/geiger2.wav");
+	PRECACHE_SOUND_ENT(NULL, "player/geiger1.wav");
 
 	if (giPrecacheGrunt)
 		UTIL_PrecacheOther("monster_human_grunt");
