@@ -247,6 +247,19 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		m_IsPlayerAlly = atoi(pkvd->szValue) != 0;
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "TriggerTarget"))
+	{
+		// prevent base class key overriding the monstermaker key
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "TriggerCondition"))
+	{
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "is_player_ally"))
+	{
+		pkvd->fHandled = TRUE;
+	}
 
 	else
 		CBaseMonster::KeyValue( pkvd );
