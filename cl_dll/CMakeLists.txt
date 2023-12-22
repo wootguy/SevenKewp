@@ -241,6 +241,8 @@ elseif(MSVC)
 		VS_DEBUGGER_WORKING_DIRECTORY "${ENGINE_DIR}"
 		VS_DEBUGGER_COMMAND_ARGUMENTS "${GAME_ARGS}"
 	)
+	
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W0") 
 
 	source_group("Header Files\\Entities" FILES ${ENTITY_HDR})	
 	source_group("Header Files\\Weapons" FILES ${WEAPON_HDR})	
