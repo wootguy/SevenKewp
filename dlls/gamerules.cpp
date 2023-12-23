@@ -544,6 +544,11 @@ void execServerCfg() {
 
 	// not just doing "exec server.cfg" so that commands remain in order after parsing other CFGs.
 	while (std::getline(data_stream, line)) {
+		line = trimSpaces(line);
+		if (line.empty() || line[0] == '/') {
+			continue;
+		}
+
 		SERVER_COMMAND(UTIL_VarArgs("%s\n", line.c_str()));
 	}
 

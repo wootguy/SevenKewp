@@ -311,6 +311,7 @@ void ServerDeactivate( void )
 
 	g_precachedGeneric.clear();
 	g_precachedModels.clear();
+	g_missingModels.clear();
 	g_precachedSounds.clear();
 	g_tryPrecacheGeneric.clear();
 	g_tryPrecacheModels.clear();
