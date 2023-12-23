@@ -163,36 +163,38 @@ void CPushable::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 		return;
 	}
 
-	int eidx = pActivator->entindex() % 32;
-	CBasePlayer* plr = (CBasePlayer*)pActivator;
-	bool isMoving = plr->pev->button & (IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT);
-	bool releasedUseKey = value == 0;
-	bool notHoldingOtherPushable = !plr->m_pPushable || plr->m_pPushable.GetEntity() == this;
-	bool wasMovingWithUse = m_ignoreLiftUse[eidx] || isMoving;
-	bool isCurrentLifter = m_hLifter.GetEntity() == plr;
+	if (pev->spawnflags & SF_PUSH_LIFTABLE) {
+		int eidx = pActivator->entindex() % 32;
+		CBasePlayer* plr = (CBasePlayer*)pActivator;
+		bool isMoving = plr->pev->button & (IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT);
+		bool releasedUseKey = value == 0;
+		bool notHoldingOtherPushable = !plr->m_pPushable || plr->m_pPushable.GetEntity() == this;
+		bool wasMovingWithUse = m_ignoreLiftUse[eidx] || isMoving;
+		bool isCurrentLifter = m_hLifter.GetEntity() == plr;
 
-	if (isMoving && !releasedUseKey) {
-		// player wants to move the pushable normally, so don't lift after the move finishes
-		m_ignoreLiftUse[eidx] = true;
-	}
+		if (isMoving && !releasedUseKey) {
+			// player wants to move the pushable normally, so don't lift after the move finishes
+			m_ignoreLiftUse[eidx] = true;
+		}
 
-	if (releasedUseKey && (!wasMovingWithUse || isCurrentLifter) && notHoldingOtherPushable) {
-		if (m_hLifter) {
-			CBasePlayer* oldLifter = (CBasePlayer*)m_hLifter.GetEntity();
-			StopLift();
+		if (releasedUseKey && (!wasMovingWithUse || isCurrentLifter) && notHoldingOtherPushable) {
+			if (m_hLifter) {
+				CBasePlayer* oldLifter = (CBasePlayer*)m_hLifter.GetEntity();
+				StopLift();
 
-			if (oldLifter != plr) {
-				// stealing from someone else
+				if (oldLifter != plr) {
+					// stealing from someone else
+					StartLift(plr);
+				}
+			}
+			else {
 				StartLift(plr);
 			}
 		}
-		else {
-			StartLift(plr);
-		}
-	}
 
-	if (releasedUseKey) {
-		m_ignoreLiftUse[eidx] = false;
+		if (releasedUseKey) {
+			m_ignoreLiftUse[eidx] = false;
+		}
 	}
 
 	if (pActivator->pev->velocity != g_vecZero) {

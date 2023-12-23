@@ -75,6 +75,7 @@ unsigned int seed_table[ 256 ] =
 };
 
 std::map<std::string, std::string> g_precachedModels;
+std::set<std::string> g_missingModels;
 std::set<std::string> g_precachedSounds;
 std::set<std::string> g_precachedGeneric;
 std::set<std::string> g_tryPrecacheModels;
@@ -2813,10 +2814,20 @@ int PRECACHE_MODEL(const char* path) {
 		g_bsp.load_lumps(mapPath);
 	}
 
+	bool alreadyPrecached = g_precachedModels.find(path) != g_precachedModels.end();
+	if (!alreadyPrecached && getGameFilePath(path).empty()) {
+		if (!g_missingModels.count(path)) {
+			ALERT(at_error, "Model preache failed. File not found: %s\n", path);
+			g_missingModels.insert(path);
+		}
+		
+		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
+	}
+
 	g_tryPrecacheModels.insert(path);
 
-	// not sure what the +1 is for. The world model should be included in the model count.
-	if (g_tryPrecacheModels.size() + g_bsp.modelCount + 1 < MAX_PRECACHE) {
+	// not sure what the +2 is for. Tested with sc_darknebula.
+	if (g_tryPrecacheModels.size() + g_bsp.modelCount + 2 < MAX_PRECACHE) {
 		if (g_precachedModels.find(path) == g_precachedModels.end())
 			g_precachedModels[path] = path;
 		return g_engfuncs.pfnPrecacheModel(path);
@@ -2839,7 +2850,6 @@ void SET_MODEL(edict_t* edict, const char* model) {
 
 	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
 		model = g_modelReplacements[model].c_str();
-		g_engfuncs.pfnSetModel(edict, g_modelReplacements[model].c_str());
 	}
 	
 	if (g_precachedModels.find(model) == g_precachedModels.end()) {

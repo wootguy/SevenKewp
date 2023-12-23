@@ -162,14 +162,20 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 
 	ASSERT(!FStrEq(m_szMapName, ""));
 
+	if (!IS_MAP_VALID(m_szMapName)) {
+		UTIL_ClientPrintAll(print_center, UTIL_VarArgs("Next map not found:\n%s", m_szMapName));
+		return;
+	}
+
 	// Some people are firing these multiple times in a frame, disable
 	if (gpGlobals->time == pev->dmgtime)
 		return;
 
 	pev->dmgtime = gpGlobals->time;
 
-
+	// TODO: this may fail
 	CBaseEntity* pPlayer = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
+	
 	/*
 	if (!InTransitionVolume(pPlayer, m_szLandmarkName))
 	{
@@ -187,7 +193,8 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 			// Set target and delay
 			pFireAndDie->pev->target = m_changeTarget;
 			pFireAndDie->m_flDelay = m_changeTargetDelay;
-			pFireAndDie->pev->origin = pPlayer->pev->origin;
+			if (pPlayer)
+				pFireAndDie->pev->origin = pPlayer->pev->origin;
 			// Call spawn
 			DispatchSpawn(pFireAndDie->edict());
 		}

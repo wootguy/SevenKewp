@@ -39,6 +39,7 @@ extern globalvars_t				*gpGlobals;
 
 // resources that were successfully precached
 extern std::map<std::string, std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
+extern std::set<std::string> g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
 extern std::set<std::string> g_precachedSounds;
 extern std::set<std::string> g_precachedGeneric;
 

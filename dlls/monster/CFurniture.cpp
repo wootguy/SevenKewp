@@ -63,5 +63,6 @@ void CFurniture::Spawn()
 //=========================================================
 int CFurniture::Classify(void)
 {
-	return	CBaseMonster::Classify(CLASS_NONE);
+	//return	CBaseMonster::Classify(CLASS_NONE);
+	return CLASS_NONE; // don't ever let monsters attack objects
 }
