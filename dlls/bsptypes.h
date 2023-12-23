@@ -2,6 +2,7 @@
 #include "extdll.h"
 #include "bsplimits.h"
 #include <vector>
+#include <cstdint>
 
 #define BSP_MODEL_uint8_tS 64 // size of a BSP model in uint8_ts
 
