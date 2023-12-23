@@ -76,7 +76,7 @@ bool Bsp::load_lumps(string fpath)
 		}
 		else
 		{
-			lumps[i] = new byte[header.lump[i].nLength];
+			lumps[i] = new uint8_t[header.lump[i].nLength];
 			fin.read((char*)lumps[i], header.lump[i].nLength);
 		}
 	}	
