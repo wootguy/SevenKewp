@@ -906,6 +906,8 @@ int CApache :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 		flDamage *= 2;
 	}
 
+	GiveScorePoints(pevAttacker, flDamage);
+
 	/*
 	if ( (bitsDamageType & DMG_BULLET) && flDamage > 50)
 	{

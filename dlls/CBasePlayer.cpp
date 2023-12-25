@@ -2731,7 +2731,14 @@ void CBasePlayer::Spawn( void )
 	m_flFallVelocity = 0;
 
 	g_pGameRules->SetDefaultPlayerTeam( this );
-	g_pGameRules->GetPlayerSpawnSpot( this );
+	edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( this );
+
+	pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
+	pev->v_angle = g_vecZero;
+	pev->velocity = g_vecZero;
+	pev->angles = VARS(pentSpawnSpot)->angles;
+	pev->punchangle = g_vecZero;
+	pev->fixangle = TRUE;
 
     SET_MODEL(ENT(pev), "models/player.mdl");
     g_ulModelIndexPlayer = pev->modelindex;

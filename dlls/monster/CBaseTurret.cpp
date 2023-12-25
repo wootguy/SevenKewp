@@ -700,6 +700,8 @@ int CBaseTurret::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	if (!m_iOn)
 		flDamage /= 10.0;
 
+	GiveScorePoints(pevAttacker, flDamage);
+
 	pev->health -= flDamage;
 	if (pev->health <= 0)
 	{

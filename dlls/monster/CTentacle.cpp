@@ -999,6 +999,8 @@ int CTentacle::TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	if (IsImmune(pevAttacker))
 		return 0;
 
+	GiveScorePoints(pevAttacker, flDamage);
+
 	if (flDamage > pev->health)
 	{
 		pev->health = 1;

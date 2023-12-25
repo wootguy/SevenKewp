@@ -83,6 +83,8 @@ int CSentry::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float f
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 
+	GiveScorePoints(pevAttacker, flDamage);
+
 	pev->health -= flDamage;
 	if (pev->health <= 0)
 	{
