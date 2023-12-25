@@ -455,6 +455,13 @@ void ClientCommand(edict_t* pEntity)
 			edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot(pPlayer);
 			pPlayer->StartObserver(pev->origin, VARS(pentSpawnSpot)->angles);
 
+			pPlayer->pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
+			pPlayer->pev->v_angle = g_vecZero;
+			pPlayer->pev->velocity = g_vecZero;
+			pPlayer->pev->angles = VARS(pentSpawnSpot)->angles;
+			pPlayer->pev->punchangle = g_vecZero;
+			pPlayer->pev->fixangle = TRUE;
+
 			// notify other clients of player switching to spectator mode
 			UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s switched to spectator mode\n",
 				(pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "unconnected"));

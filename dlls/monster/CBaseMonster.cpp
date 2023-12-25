@@ -3304,7 +3304,7 @@ BOOL CBaseMonster::FCheckAITrigger(void)
 	if (fFireTarget)
 	{
 		// fire the target, then set the trigger conditions to NONE so we don't fire again
-		ALERT(at_aiconsole, "AI Trigger Fire Target\n");
+		ALERT(at_aiconsole, "Fired death target: %s\n", STRING(m_iszTriggerTarget));
 		FireTargets(STRING(m_iszTriggerTarget), this, this, USE_TOGGLE, 0);
 		m_iTriggerCondition = AITRIGGER_NONE;
 		return TRUE;
@@ -3871,6 +3871,11 @@ void CBaseMonster::GibMonster(void)
 	TraceResult	tr;
 	BOOL		gibbed = FALSE;
 
+	if (!HasMemory(bits_MEMORY_KILLED)) {
+		// make sure death triggers are called (in case GibMonster was called directly)
+		Killed(pev, GIB_NEVER);
+	}
+
 	if (!IsMachine())
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM);
 	
@@ -4327,18 +4332,10 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		pev->velocity = pev->velocity + vecDir * -DamageForce(flDamage);
 	}
 
-	float oldHealth = pev->health;
+	GiveScorePoints(pevAttacker, flTake);
 
 	// do the damage
 	pev->health -= flTake;
-
-	// give points proportional to how much damage was dealt, ignoring overkill damage
-	if (pevAttacker && (pevAttacker->flags & FL_CLIENT)) {
-		const float MONSTER_POINTS_PER_HP = 0.01f; // how many points to give per hitpoint of damage dealt
-		float newHealth = V_max(0, pev->health);
-		float damageAmt = V_max(0, oldHealth - newHealth);
-		pevAttacker->frags += damageAmt * MONSTER_POINTS_PER_HP;
-	}
 
 	// HACKHACK Don't kill monsters in a script.  Let them break their scripts first
 	if (m_MonsterState == MONSTERSTATE_SCRIPT)
@@ -4455,6 +4452,21 @@ int CBaseMonster::DeadTakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker
 	}
 
 	return 1;
+}
+
+void CBaseMonster::GiveScorePoints(entvars_t* pevAttacker, float damageDealt) {
+	if (!pevAttacker)
+		return;
+
+	CBaseMonster* attackMon = CBaseEntity::Instance(ENT(pevAttacker))->MyMonsterPointer();
+	
+	// give points proportional to how much damage will be dealt, ignoring overkill damage
+	if (attackMon && (pevAttacker->flags & FL_CLIENT) && pev->health > 0) {
+		const float MONSTER_POINTS_PER_HP = 0.01f; // how many points to give per hitpoint of damage dealt
+		float damageAmt = V_min(damageDealt, pev->health);
+		bool isFriendly = attackMon->IRelationship(this) == R_AL;
+		pevAttacker->frags += damageAmt * (isFriendly ? -1 : 1) * MONSTER_POINTS_PER_HP;
+	}
 }
 
 float CBaseMonster::DamageForce(float damage)

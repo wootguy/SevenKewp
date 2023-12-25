@@ -71,20 +71,7 @@ BOOL CGameRules::CanHaveAmmo( CBasePlayer *pPlayer, const char *pszAmmoName, int
 //=========================================================
 edict_t *CGameRules :: GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 {
-	edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer );
-	
-	if (FNullEnt(pentSpawnSpot)) {
-		return pentSpawnSpot; // don't spawn into the void
-	}
-
-	pPlayer->pev->origin = VARS(pentSpawnSpot)->origin + Vector(0,0,1);
-	pPlayer->pev->v_angle  = g_vecZero;
-	pPlayer->pev->velocity = g_vecZero;
-	pPlayer->pev->angles = VARS(pentSpawnSpot)->angles;
-	pPlayer->pev->punchangle = g_vecZero;
-	pPlayer->pev->fixangle = TRUE;
-	
-	return pentSpawnSpot;
+	return EntSelectSpawnPoint( pPlayer );
 }
 
 //=========================================================
