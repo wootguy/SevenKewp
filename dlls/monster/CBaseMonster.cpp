@@ -4455,10 +4455,8 @@ int CBaseMonster::DeadTakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker
 }
 
 void CBaseMonster::GiveScorePoints(entvars_t* pevAttacker, float damageDealt) {
-	if (!pevAttacker)
-		return;
-
-	CBaseMonster* attackMon = CBaseEntity::Instance(ENT(pevAttacker))->MyMonsterPointer();
+	CBaseEntity* baseEnt = CBaseEntity::Instance(pevAttacker);
+	CBaseMonster* attackMon = baseEnt ? baseEnt->MyMonsterPointer() : NULL;
 	
 	// give points proportional to how much damage will be dealt, ignoring overkill damage
 	if (attackMon && (pevAttacker->flags & FL_CLIENT) && pev->health > 0) {
