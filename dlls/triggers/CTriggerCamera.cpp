@@ -147,7 +147,7 @@ void CTriggerCamera::TogglePlayerViews(bool enabled) {
 			CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(ent);
 
 			if (!IsValidPlayer(ent) || !plr) {
-				break;
+				continue;
 			}
 
 			TogglePlayerView(plr, enabled);
