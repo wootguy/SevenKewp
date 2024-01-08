@@ -200,7 +200,7 @@ public:
 	int		m_iMySlot;// this is the behaviour slot that the monster currently holds in the squad. 
 
 	int  CheckEnemy(CBaseEntity* pEnemy);
-	void StartMonster(void);
+	virtual void StartMonster(void);
 	void VacateSlot(void);
 	void ScheduleChange(void);
 	BOOL OccupySlot(int iDesiredSlot);
