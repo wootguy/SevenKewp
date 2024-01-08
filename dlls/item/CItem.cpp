@@ -24,6 +24,10 @@ void CItem::Spawn(void)
 
 extern int gEvilImpulse101;
 
+BOOL CItem::ShouldRespawn() {
+	return g_pGameRules->ItemShouldRespawn(this) == GR_ITEM_RESPAWN_YES;
+}
+
 void CItem::ItemTouch(CBaseEntity* pOther)
 {
 	// if it's not a player, ignore
@@ -48,7 +52,7 @@ void CItem::ItemTouch(CBaseEntity* pOther)
 
 		// player grabbed the item. 
 		g_pGameRules->PlayerGotItem(pPlayer, this);
-		if (g_pGameRules->ItemShouldRespawn(this) == GR_ITEM_RESPAWN_YES)
+		if (ShouldRespawn())
 		{
 			Respawn();
 		}

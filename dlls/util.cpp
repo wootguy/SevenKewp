@@ -3165,8 +3165,7 @@ WavInfo getWaveFileInfo(const char* path) {
 		read = fread(&chunk, sizeof(WAVE_CHUNK_HEADER), 1, file);
 		
 		if (!read) {
-			ALERT(at_error, "    Invalid WAVE chunk: %s\n", fpath.c_str());
-			goto cleanup;
+			break; // end of file
 		}
 
 		std::string chunkName = std::string((const char*)chunk.name, 4);

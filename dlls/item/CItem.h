@@ -25,6 +25,7 @@ public:
 	void	EXPORT ItemTouch(CBaseEntity* pOther);
 	void	EXPORT Materialize(void);
 	virtual BOOL MyTouch(CBasePlayer* pPlayer) { return FALSE; };
+	virtual BOOL ShouldRespawn();
 	const char* GetModel();
 
 	const char* m_defaultModel;
