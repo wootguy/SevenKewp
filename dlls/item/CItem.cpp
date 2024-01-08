@@ -87,3 +87,7 @@ void CItem::Materialize(void)
 
 	SetTouch(&CItem::ItemTouch);
 }
+
+const char* CItem::GetModel() {
+	return pev->model ? STRING(pev->model) : m_defaultModel;
+}

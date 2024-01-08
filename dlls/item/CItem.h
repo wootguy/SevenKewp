@@ -25,6 +25,9 @@ public:
 	void	EXPORT ItemTouch(CBaseEntity* pOther);
 	void	EXPORT Materialize(void);
 	virtual BOOL MyTouch(CBasePlayer* pPlayer) { return FALSE; };
+	const char* GetModel();
+
+	const char* m_defaultModel;
 };
 
 #endif // ITEMS_H
