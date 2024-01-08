@@ -38,6 +38,9 @@ public:
 	float m_flVolume;
 	float m_pitch;
 	int	  m_sounds;
+
+	float m_lastPitch;
+	float m_nextSoundUpdate;
 };
 
 TYPEDESCRIPTION	CFuncRotating::m_SaveData[] =
@@ -321,6 +324,7 @@ void CFuncRotating::RampPitchVol(int fUp)
 
 	EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseRunning),
 		fvol, m_flAttenuation, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);
+	m_lastPitch = pitch;
 
 }
 
@@ -344,6 +348,7 @@ void CFuncRotating::SpinUp(void)
 		pev->avelocity = pev->movedir * pev->speed;// set speed in case we overshot
 		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseRunning),
 			m_flVolume, m_flAttenuation, SND_CHANGE_PITCH | SND_CHANGE_VOL, FANPITCHMAX);
+		m_lastPitch = FANPITCHMAX;
 
 		SetThink(&CFuncRotating::Rotate);
 		Rotate();
@@ -386,6 +391,8 @@ void CFuncRotating::SpinDown(void)
 		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseRunning /* Stop */),
 			0, 0, SND_STOP, m_pitch);
 
+		m_lastPitch = -1;
+
 		SetThink(&CFuncRotating::Rotate);
 		Rotate();
 	}
@@ -397,7 +404,17 @@ void CFuncRotating::SpinDown(void)
 
 void CFuncRotating::Rotate(void)
 {
-	pev->nextthink = pev->ltime + 10;
+	if (gpGlobals->time > m_nextSoundUpdate && m_lastPitch != -1) {
+		// stagger in case multiple are running (smaller network packets, less loud)
+		m_nextSoundUpdate = gpGlobals->time + RANDOM_FLOAT(3.0f, 6.0f);
+
+		// update sound occasionally so that new joiners can hear it
+		// (client will start the sound if not playing, or else do nothing)
+		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseRunning),
+			m_flVolume, m_flAttenuation, SND_CHANGE_PITCH | SND_CHANGE_VOL, m_lastPitch);
+	}
+
+	pev->nextthink = pev->ltime + 1.0f;
 }
 
 //=========================================================
@@ -422,6 +439,7 @@ void CFuncRotating::RotatingUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 			SetThink(&CFuncRotating::SpinUp);
 			EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseRunning),
 				0.01, m_flAttenuation, 0, FANPITCHMIN);
+			m_lastPitch = FANPITCHMIN;
 
 			pev->nextthink = pev->ltime + 0.1;
 		}
@@ -443,6 +461,7 @@ void CFuncRotating::RotatingUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 		{
 			EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseRunning),
 				m_flVolume, m_flAttenuation, 0, FANPITCHMAX);
+			m_lastPitch = FANPITCHMAX;
 			pev->avelocity = pev->movedir * pev->speed;
 
 			SetThink(&CFuncRotating::Rotate);

@@ -217,11 +217,19 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->SetCustomDecalFrames(-1); // Assume none;
 	pPlayer->m_flLastSetRoomtype = -1; // fixup room type if joining from another server
 
-	// stop any music if playing
-	UTIL_StopGlobalMp3(pEntity);
+	if (g_mp3Command.size()) {
+		// start global music
+		MESSAGE_BEGIN(MSG_ONE, SVC_STUFFTEXT, NULL, pEntity);
+		WRITE_STRING(g_mp3Command.c_str());
+		MESSAGE_END();
+	}
+	else {
+		// stop any music from the previous map/server
+		UTIL_StopGlobalMp3(pEntity);
+	}
 
 	// Allocate a CBasePlayer for pev, and call spawn
-	pPlayer->Spawn() ;
+	pPlayer->Spawn();
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;
@@ -321,6 +329,7 @@ void ServerDeactivate( void )
 	g_tryPrecacheGeneric.clear();
 	g_tryPrecacheModels.clear();
 	g_tryPrecacheSounds.clear();
+	g_mp3Command = "";
 
 	// Peform any shutdown operations here...
 	//
