@@ -459,6 +459,10 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 	attenuation = clampf(attenuation, 0, 4.0f);
 	channel = clampi(channel, 0, 7);
 	pitch = clampi(pitch, 0, 255);
+	
+	if (!sample || sample[0] == '\0') {
+		return;
+	}
 
 	if (entity->v.flags & FL_MONSTER) {
 		int eidx = ENTINDEX(entity);
