@@ -809,6 +809,8 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 {
 	CSound *pSound;
 
+	m_lastKillTime = gpGlobals->time;
+
 	// Holster weapon immediately, to allow it to cleanup
 	if ( m_pActiveItem )
 		((CBasePlayerItem*)m_pActiveItem.GetEntity())->Holster();
@@ -1236,6 +1238,22 @@ void CBasePlayer::PlayerDeathThink(void)
 		PackDeadPlayerItems();
 	}
 
+	float deadTime = gpGlobals->time - m_lastKillTime;
+	if (deadTime < mp_respawndelay.value + 1.0f) {
+		if (gpGlobals->time - m_lastSpawnMessage > 0.2f) {
+			int timeLeft = (int)ceilf(mp_respawndelay.value - deadTime);
+			const char* msg = UTIL_VarArgs("Respawn allowed in %d seconds", timeLeft);
+
+			if (deadTime >= mp_respawndelay.value) {
+				msg = "You can respawn now!";
+			} else if (timeLeft == 1) {
+				msg = "Respawn allowed in 1 second";
+			}
+
+			CLIENT_PRINTF(edict(), print_center, msg);
+			m_lastSpawnMessage = gpGlobals->time;
+		}
+	}
 
 	if (pev->modelindex && (!m_fSequenceFinished) && (pev->deadflag == DEAD_DYING))
 	{
@@ -2777,6 +2795,10 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 	
 	m_flNextChatTime = gpGlobals->time;
+
+	// clear respawn text
+	// (also prevents bug where last printed text shows during intermission)
+	CLIENT_PRINTF(edict(), print_center, "");
 
 	// reset sound environment to default
 	if (m_flLastSetRoomtype) {

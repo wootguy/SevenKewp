@@ -47,6 +47,8 @@ extern cvar_t	mp_nextmap; // map which will load after the next intermission
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
 extern cvar_t	mp_objectboost;
 
+extern cvar_t	mp_respawndelay;
+
 // if a map cfg asks for a default max speed (320 for Half-Life, 270 for Sven Co-op),
 // then ignore the command and use whatever was set up by the server.cfg
 extern cvar_t	mp_prefer_server_maxspeed;

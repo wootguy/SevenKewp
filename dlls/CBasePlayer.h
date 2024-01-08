@@ -341,6 +341,7 @@ public:
 	void UpdateScore();
 
 	float m_lastSpawnMessage;
+	float m_lastKillTime;
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();
