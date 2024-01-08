@@ -143,8 +143,8 @@ void COFTorchAlly :: GibMonster ( void )
 			pMedic->HealMe( nullptr );
 	}
 
-	DropEquipment(0, true);
-	SetBodygroup(TorchAllyBodygroup::Weapons, TorchAllyWeapon::None);
+	if (DropEquipment(0, true))
+		SetBodygroup(TorchAllyBodygroup::Weapons, TorchAllyWeapon::None);
 
 	if( m_fTorchActive )
 	{
@@ -176,8 +176,8 @@ void COFTorchAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	switch( pEvent->event )
 	{
 		case HGRUNT_AE_DROP_GUN:
-			DropEquipment(0, false);
-			SetBodygroup( TorchAllyBodygroup::Weapons, TorchAllyWeapon::None );
+			if (DropEquipment(0, false))
+				SetBodygroup( TorchAllyBodygroup::Weapons, TorchAllyWeapon::None );
 			break;
 
 		case HGRUNT_AE_GREN_DROP:

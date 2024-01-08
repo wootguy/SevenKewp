@@ -236,7 +236,7 @@ BOOL CBaseGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 		return FALSE;
 	}
 
-	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire() )
+	if ( !HasConditions( bits_COND_ENEMY_OCCLUDED ) && flDist <= maxShootDist && flDot >= 0.5 && NoFriendlyFire() )
 	{
 		TraceResult	tr;
 
@@ -685,7 +685,7 @@ void CBaseGrunt::ShootMinigun(Vector& vecShootOrigin, Vector& vecShootDir) {
 
 	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40, 90) + gpGlobals->v_up * RANDOM_FLOAT(75, 200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
 	EjectBrass(vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL);
-	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_556);
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_556, 2);
 	EMIT_SOUND(ENT(pev), channel, sound, 1, ATTN_NORM);
 }
 
@@ -766,22 +766,26 @@ void CBaseGrunt::DropEquipmentToss(const char* cname, Vector vecGunPos, Vector v
 	}
 }
 
-void CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity, Vector aVelocity) {
+bool CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity, Vector aVelocity) {
 	Vector	vecGunPos;
 	Vector	vecGunAngles;
 	GetAttachment(attachmentIdx, vecGunPos, vecGunAngles);
 
 	int equipmentToDrop = m_iEquipment & equipMask;
+	bool droppedAnything = false;
 
 	// now spawn a gun.
 	if (equipmentToDrop & MEQUIP_MP5) {
 		DropEquipmentToss("weapon_9mmAR", vecGunPos, vecGunAngles, velocity, aVelocity);
+		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_SHOTGUN) {
 		DropEquipmentToss("weapon_shotgun", vecGunPos, vecGunAngles, velocity, aVelocity);
+		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_GRENADE_LAUNCHER) {
 		DropEquipmentToss("ammo_ARgrenades", BodyTarget(pev->origin), vecGunAngles, velocity, aVelocity);
+		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_SAW) {
 		//DropEquipmentToss("weapon_m249", vecGunPos, vecGunAngles, velocity, aVelocity);
@@ -791,6 +795,7 @@ void CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity
 	}
 	if (equipmentToDrop & MEQUIP_GLOCK) {
 		DropEquipmentToss("weapon_9mmhandgun", vecGunPos, vecGunAngles, velocity, aVelocity);
+		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_SNIPER) {
 		//DropEquipmentToss("weapon_sniperrifle", vecGunPos, vecGunAngles, velocity, aVelocity);
@@ -800,12 +805,15 @@ void CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity
 	}
 	if (equipmentToDrop & MEQUIP_AKIMBO_UZIS) {
 		DropEquipmentToss("weapon_uziakimbo", vecGunPos, vecGunAngles, velocity, aVelocity);
+		droppedAnything = true;
 	}
 
 	m_iEquipment &= ~equipmentToDrop;
+
+	return droppedAnything;
 }
 
-void CBaseGrunt::DropEquipment(int attachmentIdx, bool randomToss) {
+bool CBaseGrunt::DropEquipment(int attachmentIdx, bool randomToss) {
 	Vector velocity = Vector(0,0,0);
 	Vector aVelocity = Vector(0,0,0);
 
@@ -814,7 +822,7 @@ void CBaseGrunt::DropEquipment(int attachmentIdx, bool randomToss) {
 		aVelocity = Vector(0, RANDOM_FLOAT(200, 400), 0);
 	}
 
-	DropEquipment(attachmentIdx, MEQUIP_EVERYTHING, velocity, aVelocity);
+	return DropEquipment(attachmentIdx, MEQUIP_EVERYTHING, velocity, aVelocity);
 }
 
 void CBaseGrunt::Reload() {
@@ -969,6 +977,7 @@ void CBaseGrunt::InitAiFlags() {
 	canCallMedic = false;
 	suppressOccludedTarget = false;
 	maxSuppressTime = 3.0f;
+	maxShootDist = 2048;
 }
 
 void CBaseGrunt::BasePrecache() {
@@ -1753,15 +1762,12 @@ Schedule_t	slMinigunSpinup[] =
 	{
 		tlMinigunSpinup,
 		ARRAYSIZE(tlMinigunSpinup),
-		bits_COND_NEW_ENEMY |
 		bits_COND_ENEMY_DEAD |
 		bits_COND_HEAVY_DAMAGE |
 		bits_COND_ENEMY_OCCLUDED |
-		bits_COND_HEAR_SOUND |
-		bits_COND_GRUNT_NOFIRE |
-		bits_COND_NO_AMMO_LOADED,
+		bits_COND_GRUNT_NOFIRE,
 
-		bits_SOUND_DANGER,
+		0,
 		"Minigun spinup"
 	},
 };

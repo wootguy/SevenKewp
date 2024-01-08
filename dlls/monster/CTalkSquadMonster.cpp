@@ -848,7 +848,7 @@ int CTalkSquadMonster :: GetVoicePitch( void )
 void CTalkSquadMonster :: Touch( CBaseEntity *pOther )
 {
 	// Did the player touch me?
-	if ( pOther->IsPlayer() )
+	if ( pOther->IsPlayer() && IRelationship(pOther) <= R_NO)
 	{
 		// Ignore if pissed at player
 		if ( m_afMemory & bits_MEMORY_PROVOKED )

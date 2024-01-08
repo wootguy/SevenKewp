@@ -184,9 +184,10 @@ IMPLEMENT_SAVERESTORE( CHGruntOp4Medic, CTalkSquadMonster );
 
 void CHGruntOp4Medic :: GibMonster ( void )
 {
-	DropEquipment(0, true);
+	
 	m_iWeaponIdx = MedicAllyWeapon::None;
-	SetBodygroup( MedicAllyBodygroup::Weapons, MedicAllyWeapon::None );
+	if (DropEquipment(0, true))
+		SetBodygroup( MedicAllyBodygroup::Weapons, MedicAllyWeapon::None );
 
 	CBaseMonster :: GibMonster();
 }
@@ -196,8 +197,8 @@ void CHGruntOp4Medic :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	switch( pEvent->event )
 	{
 		case HGRUNT_AE_DROP_GUN:
-			DropEquipment(0, false);
-			SetBodygroup( MedicAllyBodygroup::Weapons, MedicAllyWeapon::None );
+			if (DropEquipment(0, false))
+				SetBodygroup( MedicAllyBodygroup::Weapons, MedicAllyWeapon::None );
 			m_iWeaponIdx = MedicAllyWeapon::None;
 			break;
 

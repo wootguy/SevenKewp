@@ -137,8 +137,8 @@ void CBodyGuard::HandleAnimEvent(MonsterEvent_t* pEvent)
 	switch (pEvent->event)
 	{
 	case HGRUNT_AE_DROP_GUN:
-		DropEquipment(0, false);
-		SetBodygroup(2, 0);
+		if (DropEquipment(0, false))
+			SetBodygroup(2, 0);
 		break;
 
 	case BG_SHOOT_UZIS_EVENT1:
@@ -219,6 +219,7 @@ void CBodyGuard::Spawn()
 		m_cClipSize = SNIPER_CLIP_SIZE;
 		m_flDistTooFar = 4096.0;
 		m_flDistLook = 4096.0;
+		maxShootDist = 4096.0;
 		break;
 	case 7:
 		m_iEquipment |= MEQUIP_MINIGUN;
@@ -264,6 +265,7 @@ void CBodyGuard::InitAiFlags() {
 	waitForEnemyFire = false;
 	runFromHeavyDamage = false;
 	canCallMedic = false;
+	maxShootDist = 2048;
 }
 
 DEFINE_CUSTOM_SCHEDULES(CBodyGuard)

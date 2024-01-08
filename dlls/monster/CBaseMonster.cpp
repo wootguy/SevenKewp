@@ -16,7 +16,7 @@
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
-//#define DEBUG_MONSTER "monster_bigmomma" // uncomment to enable verbose logging
+//#define DEBUG_MONSTER "monster_hwgrunt" // uncomment to enable verbose logging
 
 std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
 
@@ -5035,7 +5035,7 @@ void CBaseMonster::ChangeSchedule(Schedule_t* pNewSchedule)
 				pName = "Unknown";
 			}
 
-			ALERT(at_aiconsole, "%s: picked schedule %s\n", STRING(pev->classname), pName);
+			ALERT(at_console, "%s: picked schedule %s\n", STRING(pev->classname), pName);
 		}
 	}
 #endif// 0

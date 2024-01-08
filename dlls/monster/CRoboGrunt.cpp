@@ -303,9 +303,9 @@ void CRoboGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 	if (flDamage > 0) {
 		UTIL_Ricochet(ptr->vecEndPos, 1.0);
 
-		if (IsAlive() && !(bitsDamageType & DMG_ENERGYBEAM))
-			flDamage *= 0.1;
-		else if (RANDOM_LONG(0, 10) == 0) { // 10% chance damage triggers explosion on death
+		if (pev->deadflag != DEAD_DEAD && !(bitsDamageType & DMG_ENERGYBEAM))
+			flDamage *= 0.2;
+		else if (RANDOM_LONG(0, 4) == 0) { // 25% chance damage triggers explosion on death
 			GibMonster();
 		}
 	}
@@ -401,8 +401,8 @@ void CRoboGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 	switch (pEvent->event)
 	{
 	case HGRUNT_AE_DROP_GUN:
-		DropEquipment(0, false);
-		SetBodygroup(GUN_GROUP, GUN_NONE);
+		if (DropEquipment(0, false))
+			SetBodygroup(GUN_GROUP, GUN_NONE);
 		break;
 	default:
 		CBaseGrunt::HandleAnimEvent(pEvent);
