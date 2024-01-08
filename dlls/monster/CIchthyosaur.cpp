@@ -92,6 +92,7 @@ public:
 	float VectorToPitch( const Vector &vec);
 	float FlPitchDiff( void );
 	float ChangePitch( int speed );
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	Vector m_SaveVelocity;
 	float m_idealDist;

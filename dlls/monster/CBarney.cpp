@@ -73,6 +73,7 @@ public:
 
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	void Killed( entvars_t *pevAttacker, int iGib );
+	const char* GetDeathNoticeWeapon() { return "weapon_9mmhandgun"; }
 	
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );

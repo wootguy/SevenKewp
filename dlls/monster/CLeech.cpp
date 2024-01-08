@@ -113,6 +113,7 @@ public:
 	int	Classify( void ) { return CBaseMonster::Classify(CLASS_INSECT); }
 	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Leech"; }
 	int IRelationship( CBaseEntity *pTarget );
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );

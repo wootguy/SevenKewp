@@ -38,6 +38,8 @@ public:
 
 	static CShockBeam* CreateShockBeam( const Vector& vecOrigin, const Vector& vecAngles, CBaseEntity* pOwner );
 
+	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
+
 #ifndef CLIENT_DLL
 	int Save(CSave& save) override;
 	int Restore(CRestore& restore) override;

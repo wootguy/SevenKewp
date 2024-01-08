@@ -70,6 +70,8 @@ public:
 
 	void EXPORT StartTrail();
 
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];

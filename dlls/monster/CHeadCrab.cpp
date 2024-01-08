@@ -97,6 +97,7 @@ public:
 	virtual int GetVoicePitch( void ) { return 100; }
 	virtual float GetSoundVolue( void ) { return 1.0; }
 	Schedule_t* GetScheduleOfType ( int Type );
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	CUSTOM_SCHEDULES;
 

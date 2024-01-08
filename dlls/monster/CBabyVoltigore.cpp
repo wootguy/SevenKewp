@@ -28,6 +28,7 @@ public:
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	Schedule_t* GetScheduleOfType(int Type);
 	int IgnoreConditions(void);
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	void PainSound(void);
 	void AlertSound(void);

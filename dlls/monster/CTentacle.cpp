@@ -75,6 +75,7 @@ public:
 
 	int Classify( void );
 	const char* DisplayName();
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	int Level( float dz );
 	int MyLevel( void );

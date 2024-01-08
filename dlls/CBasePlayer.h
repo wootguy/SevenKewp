@@ -342,6 +342,7 @@ public:
 
 	float m_lastSpawnMessage;
 	float m_lastKillTime;
+	bool m_deathMessageSent;
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

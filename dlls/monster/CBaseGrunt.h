@@ -163,6 +163,7 @@ public:
 	virtual void Killed(entvars_t* pevAttacker, int iGib);
 	virtual bool DropEquipment(int attachmentIdx, bool randomToss);
 	virtual bool DropEquipment(int attachmentIdx, int equipMask, Vector velocity, Vector aVelocity);
+	virtual const char* GetDeathNoticeWeapon(); // for player death notice icons
 	void SpeakSentence(void);
 	virtual void PlaySentenceSound(int sentenceType) {}
 

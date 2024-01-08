@@ -68,6 +68,7 @@ public:
 	int LookupActivity(int activity);
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	void DeathNotice(entvars_t* pevChild);
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	void PainSound(void);
 	void AlertSound(void);

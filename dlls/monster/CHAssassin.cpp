@@ -83,6 +83,7 @@ public:
 	void RunTask ( Task_t *pTask );
 	void DeathSound ( void );
 	void IdleSound ( void );
+	const char* GetDeathNoticeWeapon() { return "weapon_9mmhandgun"; }
 	CUSTOM_SCHEDULES;
 
 	int	Save( CSave &save ); 

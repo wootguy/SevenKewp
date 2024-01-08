@@ -99,6 +99,7 @@ public:
 	BOOL FCanActiveIdle ( void );
 	Schedule_t *GetScheduleOfType ( int Type );
 	Schedule_t *GetSchedule( void );
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	int	Save( CSave &save ); 
 	int Restore( CRestore &restore );

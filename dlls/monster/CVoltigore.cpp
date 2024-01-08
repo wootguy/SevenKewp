@@ -62,6 +62,7 @@ public:
 	void PainSound(void);
 	void AlertSound(void);
 	void IdleSound(void);
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered

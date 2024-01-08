@@ -73,6 +73,7 @@ public:
 
 	void PainSound( void );
 	void DeathSound( void );
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	static const char *pAttackSounds[];	// vocalization: play sometimes when he launches an attack
 	static const char *pBallSounds[];	// the sound of the lightening ball launch
