@@ -589,6 +589,11 @@ void CBigMomma :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 		EMIT_SOUND_ARRAY_DYN( CHAN_VOICE, pPainSounds );
 	}
 
+	if (ptr->iHitgroup == HITGROUP_HEAD) {
+		// not much of a boss monster if sack shots count as head shots (3k hp gone in 5s)
+		ptr->iHitgroup = HITGROUP_STOMACH;
+	}
+
 
 	CBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
