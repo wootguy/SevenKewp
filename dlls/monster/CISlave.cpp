@@ -78,6 +78,8 @@ public:
 	void ZapBeam( int side );
 	void BeamGlow( void );
 
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+
 	int m_iBravery;
 
 	CBeam *m_pBeam[ISLAVE_MAX_BEAMS];

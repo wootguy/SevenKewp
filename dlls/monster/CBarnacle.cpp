@@ -47,6 +47,7 @@ public:
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	float m_flAltitude;

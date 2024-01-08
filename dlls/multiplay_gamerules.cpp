@@ -613,6 +613,8 @@ int CHalfLifeMultiplay :: IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *p
 //=========================================================
 void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor )
 {
+	pVictim->m_deathMessageSent = true;
+
 	DeathNotice( pVictim, pKiller, pInflictor );
 
 	pVictim->m_iDeaths += 1;
@@ -714,8 +716,11 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	}
 	else
 	{
-		if (pevInflictor)
-			killer_weapon_name = STRING( pevInflictor->classname );
+		if (pevInflictor) {
+			CBaseEntity* Inflictor = CBaseEntity::Instance(pevInflictor);
+			if (Inflictor)
+				killer_weapon_name = Inflictor->GetDeathNoticeWeapon();
+		}
 	}
 
 	// strip the monster_* or weapon_* from the inflictor's classname

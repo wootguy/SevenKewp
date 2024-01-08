@@ -118,6 +118,8 @@ public:
 	virtual void FootSound();
 	virtual void StompSound();
 	virtual void BreatheSound();
+
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 	
 
 	virtual int		Save(CSave& save);

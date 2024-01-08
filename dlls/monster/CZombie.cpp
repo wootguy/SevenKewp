@@ -63,6 +63,8 @@ public:
 	BOOL CheckRangeAttack1 ( float flDot, float flDist ) { return FALSE; }
 	BOOL CheckRangeAttack2 ( float flDot, float flDist ) { return FALSE; }
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 };
 
 LINK_ENTITY_TO_CLASS( monster_zombie, CZombie );

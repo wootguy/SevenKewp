@@ -108,6 +108,7 @@ public:
 	static CBMortar *Shoot( edict_t *pOwner, Vector vecStart, Vector vecVelocity );
 	void Touch( CBaseEntity *pOther );
 	void EXPORT Animate( void );
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );

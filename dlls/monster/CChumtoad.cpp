@@ -32,6 +32,7 @@ public:
 	void PrescheduleThink();
 	void StartTask(Task_t* pTask);
 	Schedule_t* GetScheduleOfType(int Type);
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	BOOL CheckRangeAttack1(float flDot, float flDist) { return FALSE; }
 	BOOL CheckRangeAttack2(float flDot, float flDist) { return FALSE; }

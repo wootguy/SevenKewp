@@ -39,6 +39,7 @@ class CApache : public CBaseMonster
 	int  BloodColor( void ) { return DONT_BLEED; }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
+	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
 
 	void SetObjectCollisionBox( void )
 	{

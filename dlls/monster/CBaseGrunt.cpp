@@ -825,6 +825,25 @@ bool CBaseGrunt::DropEquipment(int attachmentIdx, bool randomToss) {
 	return DropEquipment(attachmentIdx, MEQUIP_EVERYTHING, velocity, aVelocity);
 }
 
+const char* CBaseGrunt::GetDeathNoticeWeapon() {
+	if (HasEquipment(MEQUIP_MP5 | MEQUIP_SAW | MEQUIP_MINIGUN | MEQUIP_AKIMBO_UZIS)) {
+		return "weapon_9mmAR";
+	}
+	if (HasEquipment(MEQUIP_SNIPER)) {
+		return "weapon_crossbow";
+	}
+	if (HasEquipment(MEQUIP_SHOTGUN)) {
+		return "weapon_shotgun";
+	}
+	if (HasEquipment(MEQUIP_DEAGLE)) {
+		return "weapon_357";
+	}
+	if (HasEquipment(MEQUIP_GLOCK)) {
+		return "weapon_9mmhandgun";
+	}
+	return "weapon_crowbar";
+}
+
 void CBaseGrunt::Reload() {
 	if (HasEquipment(MEQUIP_SAW)) {
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "weapons/saw_reload.wav", 1, ATTN_NORM);

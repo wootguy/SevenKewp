@@ -105,6 +105,8 @@ public:
 	void Killed( entvars_t *pevAttacker, int iGib );
 
 	void KeyValue( KeyValueData* pkvd ) override;
+
+	const char* GetDeathNoticeWeapon() { return "weapon_357"; }
 	
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );

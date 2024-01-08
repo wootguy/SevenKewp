@@ -809,6 +809,10 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 {
 	CSound *pSound;
 
+	if (m_deathMessageSent) {
+		return; // don't repeat kill messages when gibbed
+	}
+
 	m_lastKillTime = gpGlobals->time;
 
 	// Holster weapon immediately, to allow it to cleanup
@@ -2747,6 +2751,7 @@ void CBasePlayer::Spawn( void )
 
 // dont let uninitialized value here hurt the player
 	m_flFallVelocity = 0;
+	m_deathMessageSent = false;
 
 	g_pGameRules->SetDefaultPlayerTeam( this );
 	edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( this );

@@ -55,6 +55,7 @@ public:
 	void Killed(entvars_t* pevAttacker, int iGib);
 	Schedule_t* GetScheduleOfType(int Type);
 	void MonsterThink(void);
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	void PainSound(void);
 	void AlertSound(void);
