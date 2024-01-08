@@ -329,6 +329,7 @@ void ServerDeactivate( void )
 	g_tryPrecacheGeneric.clear();
 	g_tryPrecacheModels.clear();
 	g_tryPrecacheSounds.clear();
+	g_wavInfos.clear();
 	g_mp3Command = "";
 
 	// Peform any shutdown operations here...

@@ -35,6 +35,11 @@
 
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
+struct WavInfo {
+	int durationMillis;
+	bool isLooped; // sound is looped with cue points
+};
+
 extern globalvars_t				*gpGlobals;
 
 // resources that were successfully precached
@@ -47,6 +52,8 @@ extern std::set<std::string> g_precachedGeneric;
 extern std::set<std::string> g_tryPrecacheModels;
 extern std::set<std::string> g_tryPrecacheSounds;
 extern std::set<std::string> g_tryPrecacheGeneric;
+
+extern std::map<std::string, WavInfo> g_wavInfos; // cached wav info, cleared on map change
 
 #define NOT_PRECACHED_MODEL "models/hlcoop/not_precached.mdl"
 #define NOT_PRECACHED_SOUND "common/null.wav"
@@ -647,3 +654,5 @@ std::string getGameFilePath(const char* path);
 std::map<std::string, std::string> loadReplacementFile(const char* path);
 
 void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType=MSG_BROADCAST, edict_t* dest=NULL);
+
+WavInfo getWaveFileInfo(const char* path);

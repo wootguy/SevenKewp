@@ -115,15 +115,23 @@ void CAmbientGeneric::Spawn(void)
 
 	m_fActive = FALSE;
 
-	m_fLooping = m_playmode == PLAYMODE_LOOP || m_playmode == PLAYMODE_LOOP_LINEAR;
-
 	if (FBitSet(pev->spawnflags, AMBIENT_SOUND_NOT_LOOPING))
 		m_fLooping = FALSE;
 	else
 		m_fLooping = TRUE;
+
+	bool forcedLoop = m_playmode == PLAYMODE_LOOP || m_playmode == PLAYMODE_LOOP_LINEAR;
 	
-	m_isGlobalMp3 = strstr(szSoundFile, ".mp3") == szSoundFile + (strlen(szSoundFile) - 4);
+	m_isGlobalMp3 = toLowerCase(szSoundFile).find(".mp3") == strlen(szSoundFile) - 4;
 	
+	if (toLowerCase(szSoundFile).find(".wav") == strlen(szSoundFile) - 4) {
+		m_isLoopingWave = forcedLoop || (m_fLooping && getWaveFileInfo(szSoundFile).isLooped);
+	}
+
+	if (forcedLoop) {
+		m_fLooping = TRUE;
+	}
+
 	Precache();
 }
 
@@ -183,11 +191,12 @@ void CAmbientGeneric::RampThink(void)
 
 	if (!m_dpv.spinup && !m_dpv.spindown && !m_dpv.fadein && !m_dpv.fadeout && !m_dpv.lfotype) {
 
-		bool forceLoop = m_playmode == PLAYMODE_LOOP || m_playmode == PLAYMODE_LOOP_LINEAR;
-		if (m_fActive && m_fLooping && forceLoop) {
-			// periodically update the sound so that the client restarts it when it stops
+		if (m_fActive && m_isLoopingWave) {
+			// periodically update the sound so that the client restarts it when it stops,
+			// and also so new joiners can hear it
 			// TODO: This sends lots of useless network data.
-			//       Better to do this only when the sound is nearly finished.
+			//       Better do this only when the sound is nearly finished if it's a looping wave without cue points,
+			//       and only on client join if it has cue points.
 			pev->nextthink = gpGlobals->time + 1.0f;
 			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
 				(vol * 0.01), m_flAttenuation, SND_CHANGE_PITCH, pitch);
