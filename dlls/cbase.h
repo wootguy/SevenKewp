@@ -108,7 +108,7 @@ class CBasePlayerItem;
 class CTalkSquadMonster;
 
 
-#define	SF_NORESPAWN	( 1 << 30 )// !!!set this bit on guns and stuff that should never respawn.
+#define	SF_NORESPAWN	( 1 << 10 )// !!!set this bit on guns and stuff that should never respawn.
 
 //
 // EHANDLE. Safe way to point to CBaseEntities who may die between frames

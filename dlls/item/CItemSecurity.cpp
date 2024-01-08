@@ -25,6 +25,7 @@ class CItemSecurity : public CItem
 		pPlayer->m_rgItems[ITEM_SECURITY] += 1;
 		return TRUE;
 	}
+	BOOL ShouldRespawn() { return FALSE; }
 };
 
 LINK_ENTITY_TO_CLASS(item_security, CItemSecurity);
