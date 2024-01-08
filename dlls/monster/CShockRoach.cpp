@@ -374,6 +374,7 @@ void COFShockRoach :: LeapTouch ( CBaseEntity *pOther )
 	}
 
 	//Give the player a shock rifle if they don't have one
+	/*
 	if( pOther->IsPlayer() )
 	{
 		auto pPlayer = static_cast<CBasePlayer*>( pOther );
@@ -386,6 +387,7 @@ void COFShockRoach :: LeapTouch ( CBaseEntity *pOther )
 			return;
 		}
 	}
+	*/
 
 	// Don't hit if back on ground
 	if ( !FBitSet( pev->flags, FL_ONGROUND ) )
