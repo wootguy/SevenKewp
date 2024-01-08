@@ -42,6 +42,7 @@ public:
 	void IdleSound(void);
 	void PlaySentenceSound(int sentenceType);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
+	void StartMonster(void);
 
 private:
 	static const char* pPainSounds[];
@@ -154,7 +155,7 @@ void CHGrunt::Spawn() {
 	if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER)) {
 		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
 	}
-	if (GetBodygroup(1) == HEAD_GRUNT) {
+	if (GetBodygroup(HEAD_GROUP) == HEAD_GRUNT) {
 		m_iEquipment |= MEQUIP_HELMET;
 	}
 }
@@ -168,6 +169,18 @@ void CHGrunt::Precache()
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
+}
+
+void CHGrunt::StartMonster(void)
+{
+	CTalkSquadMonster::StartMonster();
+
+	if (IsLeader())
+	{
+		SetBodygroup(HEAD_GROUP, HEAD_GRUNT);
+		pev->skin = 0;
+		m_iEquipment &= ~MEQUIP_HELMET;
+	}
 }
 
 int	CHGrunt::Classify(void)
