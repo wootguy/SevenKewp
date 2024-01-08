@@ -3,59 +3,9 @@
 #include "cbase.h"
 #include "weapons.h"
 #include "gamerules.h"
+#include "CAmbientGeneric.h"
 
 #include <string>
-
-// runtime pitch shift and volume fadein/out structure
-// NOTE: IF YOU CHANGE THIS STRUCT YOU MUST CHANGE THE SAVE/RESTORE VERSION NUMBER
-// SEE BELOW (in the typedescription for the class)
-typedef struct dynpitchvol
-{
-	// NOTE: do not change the order of these parameters 
-	// NOTE: unless you also change order of rgdpvpreset array elements!
-	int preset;
-
-	int pitchrun;		// pitch shift % when sound is running 0 - 255
-	int pitchstart;		// pitch shift % when sound stops or starts 0 - 255
-	int spinup;			// spinup time 0 - 100
-	int spindown;		// spindown time 0 - 100
-
-	int volrun;			// volume change % when sound is running 0 - 10
-	int volstart;		// volume change % when sound stops or starts 0 - 10
-	int fadein;			// volume fade in time 0 - 100
-	int fadeout;		// volume fade out time 0 - 100
-
-						// Low Frequency Oscillator
-	int	lfotype;		// 0) off 1) square 2) triangle 3) random
-	int lforate;		// 0 - 1000, how fast lfo osciallates
-
-	int lfomodpitch;	// 0-100 mod of current pitch. 0 is off.
-	int lfomodvol;		// 0-100 mod of current volume. 0 is off.
-
-	int cspinup;		// each trigger hit increments counter and spinup pitch
-
-
-	int	cspincount;
-
-	int pitch;
-	int spinupsav;
-	int spindownsav;
-	int pitchfrac;
-
-	int vol;
-	int fadeinsav;
-	int fadeoutsav;
-	int volfrac;
-
-	int	lfofrac;
-	int	lfomult;
-
-
-} dynpitchvol_t;
-
-#define CDPVPRESETMAX 27
-
-// presets for runtime pitch and vol modulation of ambient sounds
 
 dynpitchvol_t rgdpvpreset[CDPVPRESETMAX] =
 {
@@ -87,31 +37,6 @@ dynpitchvol_t rgdpvpreset[CDPVPRESETMAX] =
 	{25,180,	100,	50,		60,		10,		1,		40,		60,		2,		90,		100,	100,	0,		0,0,0,0,0,0,0,0,0,0},
 	{26,60,		 60,	0,		0,		10,		1,		40,		70,		3,		80,		20,		50,		0,		0,0,0,0,0,0,0,0,0,0},
 	{27,128,	 90,	10,		10,		10,		1,		20,		40,		1,		5,		10,		20,		0,		0,0,0,0,0,0,0,0,0,0}
-};
-
-class CAmbientGeneric : public CBaseEntity
-{
-public:
-	void KeyValue(KeyValueData* pkvd);
-	void Spawn(void);
-	void Precache(void);
-	void EXPORT ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	void EXPORT RampThink(void);
-	void InitModulationParms(void);
-
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
-	static	TYPEDESCRIPTION m_SaveData[];
-	virtual int	ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
-
-	float m_flAttenuation;		// attenuation value
-	dynpitchvol_t m_dpv;
-
-	BOOL	m_fActive;	// only TRUE when the entity is playing a looping sound
-	BOOL	m_fLooping;	// TRUE when the sound played will loop
-
-	// use the mp3 player for music, if an mp3 file is used with the "play everywhere" flag
-	bool m_isGlobalMp3;
 };
 
 LINK_ENTITY_TO_CLASS(ambient_generic, CAmbientGeneric);
@@ -190,6 +115,8 @@ void CAmbientGeneric::Spawn(void)
 
 	m_fActive = FALSE;
 
+	m_fLooping = m_playmode == PLAYMODE_LOOP || m_playmode == PLAYMODE_LOOP_LINEAR;
+
 	if (FBitSet(pev->spawnflags, AMBIENT_SOUND_NOT_LOOPING))
 		m_fLooping = FALSE;
 	else
@@ -224,13 +151,17 @@ void CAmbientGeneric::Precache(void)
 	if (m_fActive)
 	{
 		if (m_isGlobalMp3) {
-			UTIL_PlayGlobalMp3(szSoundFile);
+			UTIL_PlayGlobalMp3(szSoundFile, m_fLooping);
 		}
 		else {
+			// SND_SPAWNING sounds are sent to clients when they join
+			// but for some reason they don't play. The sound messages
+			// need to be delayed
+			/*
 			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
 				(m_dpv.vol * 0.01), m_flAttenuation, SND_SPAWNING, m_dpv.pitch);
+			*/
 		}
-		
 
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
@@ -250,8 +181,20 @@ void CAmbientGeneric::RampThink(void)
 	int fChanged = 0;		// FALSE if pitch and vol remain unchanged this round
 	int	prev;
 
-	if (!m_dpv.spinup && !m_dpv.spindown && !m_dpv.fadein && !m_dpv.fadeout && !m_dpv.lfotype)
+	if (!m_dpv.spinup && !m_dpv.spindown && !m_dpv.fadein && !m_dpv.fadeout && !m_dpv.lfotype) {
+
+		bool forceLoop = m_playmode == PLAYMODE_LOOP || m_playmode == PLAYMODE_LOOP_LINEAR;
+		if (m_fActive && m_fLooping && forceLoop) {
+			// periodically update the sound so that the client restarts it when it stops
+			// TODO: This sends lots of useless network data.
+			//       Better to do this only when the sound is nearly finished.
+			pev->nextthink = gpGlobals->time + 1.0f;
+			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
+				(vol * 0.01), m_flAttenuation, SND_CHANGE_PITCH, pitch);
+		}
+
 		return;						// no ramps or lfo, stop thinking
+	}
 
 	// ==============
 	// pitch envelope
@@ -643,7 +586,7 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 		InitModulationParms();
 
 		if (m_isGlobalMp3) {
-			UTIL_PlayGlobalMp3(szSoundFile);
+			UTIL_PlayGlobalMp3(szSoundFile, m_fLooping);
 		}
 		else {
 			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
@@ -655,9 +598,9 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 
 	}
 }
+
 // KeyValue - load keyvalue pairs into member data of the
 // ambient generic. NOTE: called BEFORE spawn!
-
 void CAmbientGeneric::KeyValue(KeyValueData* pkvd)
 {
 	// NOTE: changing any of the modifiers in this code
@@ -807,6 +750,11 @@ void CAmbientGeneric::KeyValue(KeyValueData* pkvd)
 		if (m_dpv.cspinup > 100) m_dpv.cspinup = 100;
 		if (m_dpv.cspinup < 0) m_dpv.cspinup = 0;
 
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "playmode"))
+	{
+		m_playmode = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else

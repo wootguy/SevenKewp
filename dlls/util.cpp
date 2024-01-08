@@ -83,6 +83,8 @@ std::set<std::string> g_tryPrecacheSounds;
 std::set<std::string> g_tryPrecacheGeneric;
 Bsp g_bsp;
 
+std::string g_mp3Command;
+
 unsigned int U_Random( void ) 
 { 
 	glSeed *= 69069; 
@@ -700,8 +702,48 @@ void UTIL_MakeInvVectors( const Vector &vec, globalvars_t *pgv )
 	SWAP(pgv->v_right.z, pgv->v_up.y, tmp);
 }
 
+// rehlds
+#define MAX_SOUND_INDEX_BITS	9
+#define MAX_SOUNDS				(1<<MAX_SOUND_INDEX_BITS)
+#define svc_spawnstaticsound	29
 
-void UTIL_EmitAmbientSound( edict_t *entity, const Vector &vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch )
+// copied from rehlds
+void ambientsound_msg(edict_t* entity, float* pos, const char* samp, float vol, float attenuation, 
+	int fFlags, int pitch, int msgDst, edict_t* dest)
+{
+	int i;
+	int soundnum;
+
+	if (samp[0] == '!')
+	{
+		fFlags |= SND_SENTENCE;
+		soundnum = atoi(samp + 1);
+		if (soundnum >= CVOXFILESENTENCEMAX)
+		{
+			ALERT(at_error, "invalid sentence number: %s", &samp[1]);
+			return;
+		}
+	}
+	else
+	{
+		soundnum = PRECACHE_SOUND_ENT(NULL, samp);
+	}
+
+	MESSAGE_BEGIN(msgDst, svc_spawnstaticsound, pos, dest);
+	WRITE_COORD(pos[0]);
+	WRITE_COORD(pos[1]);
+	WRITE_COORD(pos[2]);
+
+	WRITE_SHORT(soundnum);
+	WRITE_BYTE(vol * 255.0);
+	WRITE_BYTE(attenuation * 64.0);
+	WRITE_SHORT(ENTINDEX(entity));
+	WRITE_BYTE(pitch);
+	WRITE_BYTE(fFlags);
+	MESSAGE_END();
+}
+
+void UTIL_EmitAmbientSound( edict_t *entity, const Vector &vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest)
 {
 	float rgfl[3];
 	vecOrigin.CopyToArray(rgfl);
@@ -709,22 +751,39 @@ void UTIL_EmitAmbientSound( edict_t *entity, const Vector &vecOrigin, const char
 	if (samp && *samp == '!')
 	{
 		char name[32];
-		if (SENTENCEG_Lookup(samp, name) >= 0)
-			EMIT_AMBIENT_SOUND(entity, rgfl, name, vol, attenuation, fFlags, pitch);
+		if (SENTENCEG_Lookup(samp, name) >= 0) {
+			if (dest) {
+				ambientsound_msg(entity, rgfl, name, vol, attenuation, fFlags, pitch, MSG_ONE, dest);
+			}
+			else {
+				EMIT_AMBIENT_SOUND(entity, rgfl, name, vol, attenuation, fFlags, pitch);
+			}
+			
+		}
 	}
-	else
-		EMIT_AMBIENT_SOUND(entity, rgfl, samp, vol, attenuation, fFlags, pitch);
+	else {
+		if (dest) {
+			ambientsound_msg(entity, rgfl, samp, vol, attenuation, fFlags, pitch, MSG_ONE, dest);
+		}
+		else {
+			EMIT_AMBIENT_SOUND(entity, rgfl, samp, vol, attenuation, fFlags, pitch);
+		}
+	}
 }
 
-void UTIL_PlayGlobalMp3(const char* path, edict_t* target) {
-	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
+void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target) {
 	// surround with ; to prevent multiple commands being joined when sent in the same frame(?)
 	// this fixes music sometimes not loading/starting/stopping
-	WRITE_STRING(UTIL_VarArgs(";mp3 play sound/%s;", path));
+	g_mp3Command = UTIL_VarArgs(";mp3 %s sound/%s;", (loop ? "loop" : "play"), path);
+	
+	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
+	WRITE_STRING(g_mp3Command.c_str());
 	MESSAGE_END();
 }
 
 void UTIL_StopGlobalMp3(edict_t* target) {
+	g_mp3Command = "";
+
 	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
 	WRITE_STRING(";mp3 stop;");
 	//WRITE_STRING(";cd fadeout;"); // blocked by cl_filterstuffcmd

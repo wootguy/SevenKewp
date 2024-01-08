@@ -54,6 +54,8 @@ extern std::set<std::string> g_tryPrecacheGeneric;
 
 extern Bsp g_bsp;
 
+extern std::string g_mp3Command; // current global mp3 command
+
 struct RGBA {
 	uint8_t r, g, b, a;
 
@@ -273,7 +275,7 @@ extern void			UTIL_MakeAimVectors		( const Vector &vecAngles ); // like MakeVect
 extern void			UTIL_MakeInvVectors		( const Vector &vec, globalvars_t *pgv );
 
 extern void			UTIL_SetOrigin			( entvars_t* pev, const Vector &vecOrigin );
-extern void			UTIL_EmitAmbientSound	( edict_t *entity, const Vector &vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch );
+extern void			UTIL_EmitAmbientSound	( edict_t *entity, const Vector &vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest=NULL);
 extern void			UTIL_ParticleEffect		( const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount );
 extern void			UTIL_ScreenShake		( const Vector &center, float amplitude, float frequency, float duration, float radius );
 extern void			UTIL_ScreenShakeAll		( const Vector &center, float amplitude, float frequency, float duration );
@@ -283,7 +285,7 @@ extern void			UTIL_ScreenFadeAll		( const Vector &color, float fadeTime, float h
 extern void			UTIL_ScreenFade			( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags );
 
 // leave target NULL to play music for all players
-extern void UTIL_PlayGlobalMp3(const char* path, edict_t* target=NULL);
+extern void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target=NULL);
 
 // leave target NULL to stop music for all players
 extern void UTIL_StopGlobalMp3(edict_t* target=NULL);
@@ -427,6 +429,7 @@ extern DLL_GLOBAL int			g_Language;
 #define SPEAKER_START_SILENT			1	// wait for trigger 'on' to start announcements
 
 #define SND_SPAWNING		(1<<8)		// duplicated in protocol.h we're spawing, used in some cases for ambients 
+#define SND_SENTENCE		(1<<4)
 #define SND_STOP			(1<<5)		// duplicated in protocol.h stop sound
 #define SND_CHANGE_VOL		(1<<6)		// duplicated in protocol.h change sound vol
 #define SND_CHANGE_PITCH	(1<<7)		// duplicated in protocol.h change sound pitch
