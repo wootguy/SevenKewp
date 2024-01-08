@@ -81,6 +81,7 @@ std::set<std::string> g_precachedGeneric;
 std::set<std::string> g_tryPrecacheModels;
 std::set<std::string> g_tryPrecacheSounds;
 std::set<std::string> g_tryPrecacheGeneric;
+std::map<std::string, WavInfo> g_wavInfos;
 Bsp g_bsp;
 
 std::string g_mp3Command;
@@ -3070,4 +3071,152 @@ void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, 
 	WRITE_BYTE(c.a); // actually brightness
 	WRITE_BYTE(0);
 	MESSAGE_END();
+}
+
+// WAVE file header format
+#pragma pack(push, 1)
+struct RIFF_HEADER {
+	uint8_t riff[4];		// RIFF string
+	uint32_t overall_size;	// overall size of file in bytes
+	uint8_t wave[4];		// WAVE string
+};
+
+struct RIFF_FMT_PCM {
+	uint16_t format_type;		// format type. 1-PCM, 3- IEEE float, 6 - 8bit A law, 7 - 8bit mu law
+	uint16_t channels;			// no.of channels
+	uint32_t sample_rate;		// sampling rate (blocks per second)
+	uint32_t byterate;			// SampleRate * NumChannels * BitsPerSample/8
+	uint16_t block_align;		// NumChannels * BitsPerSample/8
+	uint16_t bits_per_sample;	// bits per sample, 8- 8bits, 16- 16 bits etc
+};
+
+struct WAVE_CHUNK_FMT {
+	// common format fields
+	uint16_t format_type;		// format type. 1-PCM, 3- IEEE float, 6 - 8bit A law, 7 - 8bit mu law
+	uint16_t channels;			// no.of channels
+	uint32_t sample_rate;		// sampling rate (blocks per second)
+	uint32_t byterate;			// SampleRate * NumChannels * BitsPerSample/8
+	uint16_t block_align;		// NumChannels * BitsPerSample/8
+	uint16_t bits_per_sample;	// bits per sample, 8- 8bits, 16- 16 bits etc
+
+	// non-pcm format field
+	uint16_t cbSize;			// size of the extension
+
+	// extensible format fields
+	uint16_t validBitsPerSample;
+	uint32_t dwChannelMask;
+	uint8_t subFormat[16];
+};
+
+struct WAVE_CHUNK_CUE {
+	uint32_t numCuePoints;
+	// data follows - 24 bytes per cue point
+};
+
+struct WAVE_CHUNK_HEADER {
+	uint8_t name[4];
+	uint32_t size;
+};
+#pragma pack(pop)
+
+WavInfo getWaveFileInfo(const char* path) {
+	if (g_wavInfos.find(path) != g_wavInfos.end()) {
+		return g_wavInfos[path];
+	}
+
+	std::string fpath = getGameFilePath(UTIL_VarArgs("sound/%s", path));
+
+	WavInfo info;
+	info.durationMillis = 0;
+	info.isLooped = false;
+
+	int sampleRate = 0;
+	int bytesPerSample = 0;
+	int read = 0;
+	FILE* file;
+
+	if (!fpath.size()) {
+		ALERT(at_error, "Missing WAVE file: %s\n", fpath.c_str());
+		goto cleanup;
+	}
+
+	// open file
+	file = fopen(fpath.c_str(), "rb");
+	if (file == NULL) {
+		ALERT(at_error, "Failed to open WAVE file: %s\n", fpath.c_str());
+		goto cleanup;
+	}
+
+	{
+		RIFF_HEADER header;
+		read = fread(&header, sizeof(RIFF_HEADER), 1, file);
+
+		if (!read || strncmp((const char*)header.riff, "RIFF", 4)
+			|| strncmp((const char*)header.wave, "WAVE", 4)) {
+			ALERT(at_error, "Invalid WAVE header: %s\n", fpath.c_str());
+			goto cleanup;
+		}
+	}
+
+	//ALERT(at_console, "%s\n", path);
+
+	while (1) {
+		WAVE_CHUNK_HEADER chunk;
+		read = fread(&chunk, sizeof(WAVE_CHUNK_HEADER), 1, file);
+		
+		if (!read) {
+			ALERT(at_error, "    Invalid WAVE chunk: %s\n", fpath.c_str());
+			goto cleanup;
+		}
+
+		std::string chunkName = std::string((const char*)chunk.name, 4);
+		//ALERT(at_console, "    Read chunk %s (%d)\n", chunkName.c_str(), chunk.size);
+
+		if (chunkName == "fmt ") {
+
+			if (chunk.size == 16 || chunk.size == 18 || chunk.size == 40) {
+				WAVE_CHUNK_FMT cdata;
+				read = fread(&cdata, chunk.size, 1, file);
+
+				bytesPerSample = cdata.channels * (cdata.bits_per_sample / 8);
+				sampleRate = cdata.sample_rate;
+
+				if (!read || !bytesPerSample || !sampleRate) {
+					ALERT(at_error, "Invalid WAVE fmt chunk: %s\n", fpath.c_str());
+					goto cleanup;
+				}
+			}
+			else {
+				ALERT(at_error, "Invalid WAVE fmt chunk: %s\n", fpath.c_str());
+				goto cleanup;
+			}
+		}
+		else if (chunkName == "data") {
+			if (bytesPerSample && sampleRate && chunk.size) {
+				int numSamples = chunk.size / bytesPerSample;
+				info.durationMillis = ((float)numSamples / sampleRate) * 1000.0f;
+			}
+
+			fseek(file, chunk.size, SEEK_CUR);
+		}
+		else if (chunkName == "cue ") {
+			WAVE_CHUNK_CUE cdata;
+			read = fread(&cdata, sizeof(WAVE_CHUNK_CUE), 1, file);
+
+			if (!read) {
+				ALERT(at_error, "Invalid WAVE cue chunk: %s\n", fpath.c_str());
+				goto cleanup;
+			}
+			
+			info.isLooped = cdata.numCuePoints > 0;
+			fseek(file, chunk.size - sizeof(WAVE_CHUNK_CUE), SEEK_CUR);
+		}
+		else {
+			fseek(file, chunk.size, SEEK_CUR);
+		}
+	}
+
+cleanup:
+	g_wavInfos[path] = info;
+	return info;
 }

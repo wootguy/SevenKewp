@@ -87,6 +87,7 @@ public:
 	// use the mp3 player for music, if an mp3 file is used with the "play everywhere" flag
 	bool m_isGlobalMp3;
 	bool m_isLoopingMp3;
+	bool m_isLoopingWave; // wave uses cue points to loop, or is forced to loop by playmode
 
 	int m_playmode;
 };
