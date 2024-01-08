@@ -12,12 +12,13 @@ class CItemSecurity : public CItem
 	void Spawn(void)
 	{
 		Precache();
-		SET_MODEL(ENT(pev), "models/w_security.mdl");
+		SET_MODEL(ENT(pev), GetModel());
 		CItem::Spawn();
 	}
 	void Precache(void)
 	{
-		PRECACHE_MODEL("models/w_security.mdl");
+		m_defaultModel = "models/w_security.mdl";
+		PRECACHE_MODEL(GetModel());
 	}
 	BOOL MyTouch(CBasePlayer* pPlayer)
 	{

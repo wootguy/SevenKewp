@@ -14,12 +14,13 @@ class CItemSuit : public CItem
 	void Spawn(void)
 	{
 		Precache();
-		SET_MODEL(ENT(pev), "models/w_suit.mdl");
+		SET_MODEL(ENT(pev), GetModel());
 		CItem::Spawn();
 	}
 	void Precache(void)
 	{
-		PRECACHE_MODEL("models/w_suit.mdl");
+		m_defaultModel = "models/w_suit.mdl";
+		PRECACHE_MODEL(GetModel());
 	}
 	BOOL MyTouch(CBasePlayer* pPlayer)
 	{

@@ -12,12 +12,13 @@ class CItemBattery : public CItem
 	void Spawn(void)
 	{
 		Precache();
-		SET_MODEL(ENT(pev), "models/w_battery.mdl");
+		SET_MODEL(ENT(pev), GetModel());
 		CItem::Spawn();
 	}
 	void Precache(void)
 	{
-		PRECACHE_MODEL("models/w_battery.mdl");
+		m_defaultModel = "models/w_battery.mdl";
+		PRECACHE_MODEL(GetModel());
 		PRECACHE_SOUND("items/gunpickup2.wav");
 	}
 	BOOL MyTouch(CBasePlayer* pPlayer)
