@@ -247,8 +247,8 @@ void CHGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 	switch (pEvent->event)
 	{
 	case HGRUNT_AE_DROP_GUN:
-		DropEquipment(0, false);
-		SetBodygroup(GUN_GROUP, GUN_NONE);
+		if (DropEquipment(0, false))
+			SetBodygroup(GUN_GROUP, GUN_NONE);
 		break;
 	default:
 		CBaseGrunt::HandleAnimEvent(pEvent);

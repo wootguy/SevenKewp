@@ -162,9 +162,9 @@ void CHGruntOp4 :: GibMonster ( void )
 			pMedic->HealMe( nullptr );
 	}
 
-	DropEquipment(0, true);
 	m_iWeaponIdx = HGruntAllyWeapon::None;
-	SetBodygroup(HGruntAllyBodygroup::Weapons, HGruntAllyWeapon::None);
+	if (DropEquipment(0, true))
+		SetBodygroup(HGruntAllyBodygroup::Weapons, HGruntAllyWeapon::None);
 
 	CBaseMonster :: GibMonster();
 }
@@ -174,8 +174,8 @@ void CHGruntOp4 :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	switch( pEvent->event )
 	{
 		case HGRUNT_AE_DROP_GUN:
-			DropEquipment(0, false);
-			SetBodygroup( HGruntAllyBodygroup::Weapons, HGruntAllyWeapon::None );
+			if (DropEquipment(0, false))
+				SetBodygroup( HGruntAllyBodygroup::Weapons, HGruntAllyWeapon::None );
 			m_iWeaponIdx = HGruntAllyWeapon::None;
 			break;
 

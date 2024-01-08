@@ -15,16 +15,12 @@
 
 // TODO:
 // - spinup has too much delay
-// - turn while spinning up/down?
 // - can shoot you while not looking at you
 // - abort route to minigun if moved or picked up
 // - routing to minigun fails a lot
 // - sometimes plays a minigun anim while turning with pistol
-// - drop a minigun instead of 9mmAR when weapon_minigun exists
 // - minigun looks broken while being picked up
 // - reloads minigun if secondary empty
-// - doesn't die immediately if shot while spinning up
-// - runs away too much and is barely a threat in general
 
 #define GUN_GROUP					1
 
@@ -174,6 +170,7 @@ void CHWGrunt::Spawn() {
 	nextMinigunShoot = 0;
 	nextFindMinigunTime = 0;
 	shellEjectAttachment = 1;
+	m_flDistTooFar = 1536;
 
 	minigunShootSeq = LookupSequence("attack");
 	minigunSpinupSeq = LookupSequence("spinup");
@@ -206,6 +203,7 @@ void CHWGrunt::InitAiFlags() {
 	canCallMedic = false;
 	suppressOccludedTarget = true;
 	maxSuppressTime = 3.0f;
+	maxShootDist = 2048;
 }
 
 void CHWGrunt::PainSound(void)
@@ -232,7 +230,8 @@ void CHWGrunt::PlaySentenceSound(int sentenceType) {
 void CHWGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) {
 	
 	if (HasEquipment(MEQUIP_MINIGUN) && bitsDamageType & DMG_BLAST && flDamage > 50) {
-		DropMinigun(vecDir);
+		// TODO: Add minigun player weapon
+		//DropMinigun(vecDir);
 	}
 
 	CBaseGrunt::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
@@ -320,6 +319,15 @@ Schedule_t* CHWGrunt::GetScheduleOfType(int Type)
 		return &slGruntFail[0];
 	case SCHED_COWER:
 		return &slGruntFail[0];
+	case SCHED_SMALL_FLINCH:
+	case SCHED_COMBAT_FACE:
+	case SCHED_DIE:
+		return CBaseGrunt::GetScheduleOfType(Type);
+	case SCHED_TAKE_COVER_FROM_BEST_SOUND:
+		if (minigunIsSpinning)
+			return CBaseMonster::GetSchedule(); // don't take cover from sounds (too slow to react)
+		else
+			return CBaseGrunt::GetScheduleOfType(Type);
 	default:
 		if (minigunIsSpinning) {
 			minigunIsSpinning = false;
@@ -396,8 +404,8 @@ void CHWGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 		PickupMinigun();
 		break;
 	case HGRUNT_AE_DROP_GUN:
-		DropEquipment(0, false);
-		SetBodygroup(GUN_GROUP, GUN_NONE);
+		if (DropEquipment(0, false))
+			SetBodygroup(GUN_GROUP, GUN_NONE);
 		break;
 	default:
 		CBaseGrunt::HandleAnimEvent(pEvent);
@@ -441,6 +449,24 @@ Schedule_t* CHWGrunt::GetMonsterStateSchedule(void) {
 	{
 		return GetScheduleOfType(SCHED_HWGRUNT_FIND_MINIGUN);
 	}
+
+
+	if (HasConditions(bits_COND_HEAVY_DAMAGE))
+	{
+		// flinch for heavy damage but not too often
+		if (RANDOM_LONG(0, 2) == 0) {
+			return GetScheduleOfType(SCHED_SMALL_FLINCH);
+		}
+		else {
+			return CTalkSquadMonster::GetSchedule();
+		}
+	}
+	else if (HasConditions(bits_COND_LIGHT_DAMAGE))
+	{
+		// never flinch or retreat from light damage
+		return CTalkSquadMonster::GetSchedule();
+	}
+	
 
 	return CBaseGrunt::GetMonsterStateSchedule();
 }

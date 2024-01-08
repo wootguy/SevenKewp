@@ -161,8 +161,8 @@ public:
 	virtual void PrescheduleThink(void);
 	virtual void GibMonster(void);
 	virtual void Killed(entvars_t* pevAttacker, int iGib);
-	virtual void DropEquipment(int attachmentIdx, bool randomToss);
-	virtual void DropEquipment(int attachmentIdx, int equipMask, Vector velocity, Vector aVelocity);
+	virtual bool DropEquipment(int attachmentIdx, bool randomToss);
+	virtual bool DropEquipment(int attachmentIdx, int equipMask, Vector velocity, Vector aVelocity);
 	void SpeakSentence(void);
 	virtual void PlaySentenceSound(int sentenceType) {}
 
@@ -225,6 +225,8 @@ public:
 	float maxSuppressTime; // max time to shoot at a wall the target took cover behind
 
 	int shellEjectAttachment;
+
+	float maxShootDist; // max range for primary weapon (not grenades)
 
 private:
 	void DropEquipmentToss(const char* cname, Vector vecGunPos, Vector vecGunAngles, Vector velocity, Vector aVelocity);
