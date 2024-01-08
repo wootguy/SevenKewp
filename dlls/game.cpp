@@ -41,6 +41,7 @@ cvar_t	allowmonsters={"mp_allowmonsters","1", FCVAR_SERVER };
 cvar_t	mp_nextmap={"mp_nextmap","", FCVAR_SERVER };
 cvar_t	mp_prefer_server_maxspeed={"mp_prefer_server_maxspeed","1", FCVAR_SERVER };
 cvar_t	mp_objectboost ={"mp_objectboost","0", FCVAR_SERVER };
+cvar_t	mp_respawndelay ={"mp_respawndelay","3", FCVAR_SERVER };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER };
 
@@ -560,6 +561,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_nextmap);
 	CVAR_REGISTER (&mp_prefer_server_maxspeed);
 	CVAR_REGISTER (&mp_objectboost);
+	CVAR_REGISTER (&mp_respawndelay);
 
 	CVAR_REGISTER (&mp_chattime);
 

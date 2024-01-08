@@ -149,6 +149,11 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 		return;
 	}
 
+	float deadTime = gpGlobals->time - plr->m_lastKillTime;
+	if (deadTime < mp_respawndelay.value) {
+		return;
+	}
+
 	if (gpGlobals->coop || gpGlobals->deathmatch)
 	{
 		if ( fCopyCorpse )
