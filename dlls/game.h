@@ -65,7 +65,9 @@ extern cvar_t	*g_psv_gravity;
 extern cvar_t	*g_psv_aim;
 extern cvar_t	*g_footsteps;
 
-extern std::map<std::string, std::string> g_modelReplacements;
+extern std::map<std::string, std::string> g_modelReplacementsMap; // model replacements for the current map
+extern std::map<std::string, std::string> g_modelReplacementsMod; // model replacements for this mode
+extern std::map<std::string, std::string> g_modelReplacements; // combined model replacements
 
 // per-monster sound replacement maps
 // should be a class member, but I'm afraid of the bugs that will come from using non-POD class members
