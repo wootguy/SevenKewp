@@ -7,6 +7,10 @@
 
 #include <string>
 
+#define SF_MUSIC_START_SILENT 1
+#define SF_MUSIC_LOOP 2
+#define SF_MUSIC_ACTIVATOR_ONLY 4
+
 dynpitchvol_t rgdpvpreset[CDPVPRESETMAX] =
 {
 	// pitch	pstart	spinup	spindwn	volrun	volstrt	fadein	fadeout	lfotype	lforate	modptch modvol	cspnup		
@@ -46,6 +50,8 @@ dynpitchvol_t rgdpvpreset[CDPVPRESETMAX] =
 EHANDLE g_lastMp3PlayerEnt;
 
 LINK_ENTITY_TO_CLASS(ambient_generic, CAmbientGeneric);
+LINK_ENTITY_TO_CLASS(ambient_music, CAmbientGeneric);
+
 TYPEDESCRIPTION	CAmbientGeneric::m_SaveData[] =
 {
 	DEFINE_FIELD(CAmbientGeneric, m_flAttenuation, FIELD_FLOAT),
@@ -67,34 +73,48 @@ IMPLEMENT_SAVERESTORE(CAmbientGeneric, CBaseEntity);
 //
 void CAmbientGeneric::Spawn(void)
 {
-	/*
+	bool forcedLoop = false;
+
+	if (FStrEq(STRING(pev->classname), "ambient_music")) {
+		m_flAttenuation = ATTN_NONE;
+		m_activatorOnly = pev->spawnflags & SF_MUSIC_ACTIVATOR_ONLY;
+		forcedLoop = pev->spawnflags & SF_MUSIC_LOOP;
+
+		if (m_activatorOnly) {
+			ALERT(at_error, "Activator only music not implemented!\n");
+		}
+	}
+	else {
+		/*
 			-1 : "Default"
 			0  : "Everywhere"
 			200 : "Small Radius"
 			125 : "Medium Radius"
 			80  : "Large Radius"
-	*/
+		*/
+		if (FBitSet(pev->spawnflags, AMBIENT_SOUND_EVERYWHERE))
+		{
+			m_flAttenuation = ATTN_NONE;
+		}
+		else if (FBitSet(pev->spawnflags, AMBIENT_SOUND_SMALLRADIUS))
+		{
+			m_flAttenuation = ATTN_IDLE;
+		}
+		else if (FBitSet(pev->spawnflags, AMBIENT_SOUND_MEDIUMRADIUS))
+		{
+			m_flAttenuation = ATTN_STATIC;
+		}
+		else if (FBitSet(pev->spawnflags, AMBIENT_SOUND_LARGERADIUS))
+		{
+			m_flAttenuation = ATTN_NORM;
+		}
+		else
+		{// if the designer didn't set a sound attenuation, default to one.
+			m_flAttenuation = ATTN_STATIC;
+		}
 
-	if (FBitSet(pev->spawnflags, AMBIENT_SOUND_EVERYWHERE))
-	{
-		m_flAttenuation = ATTN_NONE;
-	}
-	else if (FBitSet(pev->spawnflags, AMBIENT_SOUND_SMALLRADIUS))
-	{
-		m_flAttenuation = ATTN_IDLE;
-	}
-	else if (FBitSet(pev->spawnflags, AMBIENT_SOUND_MEDIUMRADIUS))
-	{
-		m_flAttenuation = ATTN_STATIC;
-	}
-	else if (FBitSet(pev->spawnflags, AMBIENT_SOUND_LARGERADIUS))
-	{
-		m_flAttenuation = ATTN_NORM;
-	}
-	else
-	{// if the designer didn't set a sound attenuation, default to one.
-		m_flAttenuation = ATTN_STATIC;
-	}
+		forcedLoop = m_playmode == PLAYMODE_LOOP || m_playmode == PLAYMODE_LOOP_LINEAR;
+	}	
 
 	char* szSoundFile = (char*)STRING(pev->message);
 
@@ -125,8 +145,6 @@ void CAmbientGeneric::Spawn(void)
 		m_fLooping = FALSE;
 	else
 		m_fLooping = TRUE;
-
-	bool forcedLoop = m_playmode == PLAYMODE_LOOP || m_playmode == PLAYMODE_LOOP_LINEAR;
 	
 	m_isGlobalMp3 = toLowerCase(szSoundFile).find(".mp3") == strlen(szSoundFile) - 4;
 	
@@ -144,7 +162,6 @@ void CAmbientGeneric::Spawn(void)
 	Precache();
 }
 
-
 void CAmbientGeneric::Precache(void)
 {
 	char* szSoundFile = (char*)STRING(pev->message);
@@ -159,7 +176,13 @@ void CAmbientGeneric::Precache(void)
 	// init all dynamic modulation parms
 	InitModulationParms();
 
-	if (!FBitSet(pev->spawnflags, AMBIENT_SOUND_START_SILENT))
+	bool startSilent = FBitSet(pev->spawnflags, AMBIENT_SOUND_START_SILENT);
+
+	if (FStrEq(STRING(pev->classname), "ambient_music")) {
+		startSilent = FBitSet(pev->spawnflags, SF_MUSIC_START_SILENT);
+	}
+
+	if (!startSilent)
 	{
 		// start the sound ASAP
 		if (m_fLooping)

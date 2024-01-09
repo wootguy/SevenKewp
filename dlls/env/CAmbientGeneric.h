@@ -88,6 +88,7 @@ public:
 	bool m_isGlobalMp3;
 	bool m_isLoopingMp3;
 	bool m_isLoopingWave; // wave uses cue points to loop, or is forced to loop by playmode
+	bool m_activatorOnly;
 
 	int m_playmode;
 };
