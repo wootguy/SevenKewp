@@ -522,6 +522,8 @@ cvar_t	sk_yawspeed_mult = { "sk_yawspeed_mult1","0" };
 
 // END Cvars for Skill Level settings
 
+std::map<std::string, std::string> g_modelReplacementsMod;
+std::map<std::string, std::string> g_modelReplacementsMap;
 std::map<std::string, std::string> g_modelReplacements;
 
 // Register your console variables here

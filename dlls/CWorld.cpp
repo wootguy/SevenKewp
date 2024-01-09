@@ -43,6 +43,37 @@ void CWorld::Spawn(void)
 	g_flWeaponCheat = CVAR_GET_FLOAT("sv_cheats");  // Is the impulse 101 command allowed?
 }
 
+void CWorld::loadReplacementFiles() {
+	const char* gmrPath = "hlcoop.gmr";
+	static uint64_t lastEditTime = 0;
+
+	std::string path = getGameFilePath(gmrPath);
+
+	if (path.empty()) {
+		g_modelReplacementsMod.clear();
+		ALERT(at_warning, "Missing replacement file: %s\n", gmrPath);
+		return;
+	}
+
+	uint64_t editTime = getFileModifiedTime(path.c_str());
+
+	if (lastEditTime != editTime) {
+		lastEditTime = editTime;
+		g_modelReplacementsMod = loadReplacementFile(gmrPath);
+	}
+
+	g_modelReplacementsMap.clear();
+	if (m_globalModelList) {
+		const char* mapGmrPath = UTIL_VarArgs("models/%s/%s", STRING(gpGlobals->mapname), STRING(m_globalModelList));
+		g_modelReplacementsMap = loadReplacementFile(mapGmrPath);
+	}
+
+	// map models have priority over mod models
+	g_modelReplacements.clear();
+	g_modelReplacements.insert(g_modelReplacementsMap.begin(), g_modelReplacementsMap.end());
+	g_modelReplacements.insert(g_modelReplacementsMod.begin(), g_modelReplacementsMod.end());
+}
+
 void CWorld::Precache(void)
 {
 #if 1
@@ -62,6 +93,7 @@ void CWorld::Precache(void)
 	}
 
 	g_pGameRules = InstallGameRules();
+	loadReplacementFiles();
 
 	//!!!UNDONE why is there so much Spawn code in the Precache function? I'll just keep it here 
 
@@ -301,6 +333,11 @@ void CWorld::KeyValue(KeyValueData* pkvd)
 		{
 			pev->spawnflags |= SF_WORLD_FORCETEAM;
 		}
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "globalmodellist"))
+	{
+		m_globalModelList = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else

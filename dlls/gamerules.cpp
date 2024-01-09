@@ -356,26 +356,6 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.yawspeedMult = GetSkillCvar("sk_yawspeed_mult");
 }
 
-void loadReplacementFiles() {
-	const char* gmrPath = "hlcoop.gmr";
-	static uint64_t lastEditTime = 0;
-
-	string path = getGameFilePath(gmrPath);
-
-	if (path.empty()) {
-		g_modelReplacements.clear();
-		ALERT(at_warning, "Missing replacement file: %s\n", gmrPath);
-		return;
-	}
-
-	uint64_t editTime = getFileModifiedTime(path.c_str());
-
-	if (lastEditTime != editTime) {
-		lastEditTime = editTime;
-		g_modelReplacements = loadReplacementFile(gmrPath);
-	}
-}
-
 void execMapCfg() {
 	// Map CFGs are low trust so only whitelisted commands are allowed.
 	// Server owners shouldn't have to check each map for things like "rcon_password HAHA_GOT_YOU"
@@ -568,7 +548,6 @@ void execCfgs() {
 CGameRules *InstallGameRules( void )
 {
 	execCfgs();
-	loadReplacementFiles();
 
 	if ( !gpGlobals->deathmatch )
 	{
