@@ -65,7 +65,7 @@ void CGauss::Spawn( )
 {
 	Precache( );
 	m_iId = WEAPON_GAUSS;
-	SET_MODEL(ENT(pev), "models/w_gauss.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
 
 	m_iDefaultAmmo = GAUSS_DEFAULT_GIVE;
 
@@ -75,9 +75,10 @@ void CGauss::Spawn( )
 
 void CGauss::Precache( void )
 {
-	PRECACHE_MODEL("models/w_gauss.mdl");
-	PRECACHE_MODEL("models/v_gauss.mdl");
-	PRECACHE_MODEL("models/p_gauss.mdl");
+	m_defaultModelV = "models/v_gauss.mdl";
+	m_defaultModelP = "models/p_gauss.mdl";
+	m_defaultModelW = "models/w_gauss.mdl";
+	CBasePlayerWeapon::Precache();
 
 	PRECACHE_SOUND("items/9mmclip1.wav");
 
@@ -127,7 +128,7 @@ int CGauss::GetItemInfo(ItemInfo *p)
 BOOL CGauss::Deploy( )
 {
 	m_pPlayer->m_flPlayAftershock = 0.0;
-	return DefaultDeploy( "models/v_gauss.mdl", "models/p_gauss.mdl", GAUSS_DRAW, "gauss" );
+	return DefaultDeploy(GetModelV(), GetModelP(), GAUSS_DRAW, "gauss" );
 }
 
 void CGauss::Holster( int skiplocal /* = 0 */ )

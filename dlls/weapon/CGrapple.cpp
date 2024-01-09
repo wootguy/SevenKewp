@@ -37,7 +37,7 @@ void CGrapple::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_GRAPPLE;
-	SET_MODEL(ENT(pev), "models/w_bgrap.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
 	m_iClip = -1;
 
 	FallInit();// get ready to fall down.
@@ -45,10 +45,10 @@ void CGrapple::Spawn()
 
 void CGrapple::Precache()
 {
+	m_defaultModelV = "models/v_bgrap.mdl";
+	m_defaultModelP = "models/p_bgrap.mdl";
+	m_defaultModelW = "models/w_bgrap.mdl";
 	CBasePlayerWeapon::Precache();
-	PRECACHE_MODEL("models/v_bgrap.mdl");
-	PRECACHE_MODEL("models/w_bgrap.mdl");
-	PRECACHE_MODEL("models/p_bgrap.mdl");
 
 	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/bgrapple_release.wav");
 	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/bgrapple_impact.wav");
@@ -81,7 +81,7 @@ void CGrapple::Precache()
 
 BOOL CGrapple::Deploy()
 {
-	return DefaultDeploy("models/v_bgrap.mdl", "models/p_bgrap.mdl", BGRAPPLE_UP, "gauss");
+	return DefaultDeploy(GetModelV(), GetModelP(), BGRAPPLE_UP, "gauss");
 }
 
 void CGrapple::Holster(int skiplocal)

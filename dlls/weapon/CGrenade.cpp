@@ -152,6 +152,9 @@ void CGrenade::Killed( entvars_t *pevAttacker, int iGib )
 	Detonate( );
 }
 
+const char* CGrenade::GetModel() {
+	return pev->model ? STRING(pev->model) : m_defaultModel;
+}
 
 // Timed grenade, this think is called when time runs out.
 void CGrenade::DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -348,7 +351,8 @@ void CGrenade:: Spawn( void )
 	
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), "models/grenade.mdl");
+	m_defaultModel = "models/w_grenade.mdl";
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 
 	pev->dmg = 100;
@@ -383,10 +387,12 @@ CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector v
 }
 
 
-CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time )
+CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time, const char* model )
 {
 	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
 	pGrenade->Spawn();
+	if (model)
+		SET_MODEL(pGrenade->edict(), model);
 	UTIL_SetOrigin( pGrenade->pev, vecStart );
 	pGrenade->pev->velocity = vecVelocity;
 	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
@@ -416,7 +422,7 @@ CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector v
 	pGrenade->pev->gravity = 0.5;
 	pGrenade->pev->friction = 0.8;
 
-	SET_MODEL(ENT(pGrenade->pev), "models/w_grenade.mdl");
+	SET_MODEL(ENT(pGrenade->pev), pGrenade->GetModel());
 	pGrenade->pev->dmg = 100;
 
 	return pGrenade;
@@ -431,7 +437,8 @@ CGrenade * CGrenade :: ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart,
 	
 	pGrenade->pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pGrenade->pev), "models/grenade.mdl");	// Change this to satchel charge model
+	pGrenade->m_defaultModel = "models/w_satchel.mdl";
+	SET_MODEL(ENT(pGrenade->pev), pGrenade->GetModel());	// Change this to satchel charge model
 
 	UTIL_SetSize(pGrenade->pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 

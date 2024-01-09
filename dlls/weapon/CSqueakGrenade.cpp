@@ -131,7 +131,7 @@ void CSqueakGrenade :: Spawn( void )
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), "models/w_squeak.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector( -4, -4, 0), Vector(4, 4, 8));
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -163,7 +163,8 @@ void CSqueakGrenade :: Spawn( void )
 
 void CSqueakGrenade::Precache( void )
 {
-	PRECACHE_MODEL("models/w_squeak.mdl");
+	m_defaultModel = "models/w_squeak.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_SOUND("squeek/sqk_blast1.wav");
 	PRECACHE_SOUND("common/bodysplat.wav");
 	PRECACHE_SOUND("squeek/sqk_die1.wav");
@@ -431,7 +432,7 @@ void CSqueak::Spawn( )
 {
 	Precache( );
 	m_iId = WEAPON_SNARK;
-	SET_MODEL(ENT(pev), "models/w_sqknest.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
 
 	FallInit();//get ready to fall down.
 
@@ -445,9 +446,11 @@ void CSqueak::Spawn( )
 
 void CSqueak::Precache( void )
 {
-	PRECACHE_MODEL("models/w_sqknest.mdl");
-	PRECACHE_MODEL("models/v_squeak.mdl");
-	PRECACHE_MODEL("models/p_squeak.mdl");
+	m_defaultModelV = "models/v_squeak.mdl";
+	m_defaultModelP = "models/p_squeak.mdl";
+	m_defaultModelW = "models/w_sqknest.mdl";
+	CBasePlayerWeapon::Precache();
+
 	PRECACHE_SOUND("squeek/sqk_hunt2.wav");
 	PRECACHE_SOUND("squeek/sqk_hunt3.wav");
 	UTIL_PrecacheOther("monster_snark");
@@ -487,7 +490,7 @@ BOOL CSqueak::Deploy( )
 
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 
-	return DefaultDeploy( "models/v_squeak.mdl", "models/p_squeak.mdl", SQUEAK_UP, "squeak" );
+	return DefaultDeploy(GetModelV(), GetModelP(), SQUEAK_UP, "squeak" );
 }
 
 

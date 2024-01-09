@@ -127,7 +127,7 @@ void CRpgRocket :: Spawn( void )
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), "models/rpgrocket.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -166,7 +166,8 @@ void CRpgRocket :: RocketTouch ( CBaseEntity *pOther )
 //=========================================================
 void CRpgRocket :: Precache( void )
 {
-	PRECACHE_MODEL("models/rpgrocket.mdl");
+	m_defaultModel = "models/rpgrocket.mdl";
+	PRECACHE_MODEL(GetModel());
 	m_iTrail = PRECACHE_MODEL("sprites/smoke.spr");
 	PRECACHE_SOUND ("weapons/rocket1.wav");
 }
@@ -335,7 +336,7 @@ void CRpg::Spawn( )
 	Precache( );
 	m_iId = WEAPON_RPG;
 
-	SET_MODEL(ENT(pev), "models/w_rpg.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
 	m_fSpotActive = 1;
 
 #ifdef CLIENT_DLL
@@ -361,6 +362,10 @@ void CRpg::Precache( void )
 	PRECACHE_MODEL("models/w_rpg.mdl");
 	PRECACHE_MODEL("models/v_rpg.mdl");
 	PRECACHE_MODEL("models/p_rpg.mdl");
+	m_defaultModelV = "models/v_rpg.mdl";
+	m_defaultModelP = "models/p_rpg.mdl";
+	m_defaultModelW = "models/w_rpg.mdl";
+	CBasePlayerWeapon::Precache();
 
 	PRECACHE_SOUND("items/9mmclip1.wav");
 
@@ -407,10 +412,10 @@ BOOL CRpg::Deploy( )
 {
 	if ( m_iClip == 0 )
 	{
-		return DefaultDeploy( "models/v_rpg.mdl", "models/p_rpg.mdl", RPG_DRAW_UL, "rpg" );
+		return DefaultDeploy(GetModelV(), GetModelP(), RPG_DRAW_UL, "rpg" );
 	}
 
-	return DefaultDeploy( "models/v_rpg.mdl", "models/p_rpg.mdl", RPG_DRAW1, "rpg" );
+	return DefaultDeploy(GetModelV(), GetModelP(), RPG_DRAW1, "rpg" );
 }
 
 

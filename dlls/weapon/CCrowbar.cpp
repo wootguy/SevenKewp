@@ -49,7 +49,7 @@ void CCrowbar::Spawn( )
 
 	Precache( );
 	m_iId = WEAPON_CROWBAR;
-	SET_MODEL(ENT(pev), "models/w_crowbar.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
 	m_iClip = -1;
 
 	FallInit();// get ready to fall down.
@@ -58,9 +58,11 @@ void CCrowbar::Spawn( )
 
 void CCrowbar::Precache( void )
 {
-	PRECACHE_MODEL("models/v_crowbar.mdl");
-	PRECACHE_MODEL("models/w_crowbar.mdl");
-	PRECACHE_MODEL("models/p_crowbar.mdl");
+	m_defaultModelV = "models/v_crowbar.mdl";
+	m_defaultModelP = "models/p_crowbar.mdl";
+	m_defaultModelW = "models/w_crowbar.mdl";
+	CBasePlayerWeapon::Precache();
+
 	PRECACHE_SOUND("weapons/cbar_hit1.wav");
 	PRECACHE_SOUND("weapons/cbar_hit2.wav");
 	PRECACHE_SOUND("weapons/cbar_hitbod1.wav");
@@ -90,7 +92,7 @@ int CCrowbar::GetItemInfo(ItemInfo *p)
 
 BOOL CCrowbar::Deploy( )
 {
-	return DefaultDeploy( "models/v_crowbar.mdl", "models/p_crowbar.mdl", CROWBAR_DRAW, "crowbar" );
+	return DefaultDeploy(GetModelV(), GetModelP(), CROWBAR_DRAW, "crowbar" );
 }
 
 void CCrowbar::Holster( int skiplocal /* = 0 */ )
