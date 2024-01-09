@@ -6,13 +6,34 @@
 #include "CItem.h"
 #include "gamerules.h"
 
+#define SF_ITEM_TOUCH_ONLY 128 // Pick this item up only by touching it.
+#define SF_ITEM_USE_ONLY 256 // Pick this item up only by using it ('USE' key).
+#define SF_ITEM_USE_WITHOUT_LOS 512 // Player can pick up this item even when it's not within his line of sight.
+
 void CItem::Spawn(void)
 {
-	pev->movetype = MOVETYPE_TOSS;
-	pev->solid = SOLID_TRIGGER;
 	UTIL_SetOrigin(pev, pev->origin);
-	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
-	SetTouch(&CItem::ItemTouch);
+	SetSize(Vector(-16, -16, 0), Vector(16, 16, 16));
+
+	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
+		SetTouch(&CItem::ItemTouch);
+	
+	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
+		SetUse(&CItem::ItemUse);
+
+	if (!pev->movetype) {
+		pev->movetype = MOVETYPE_TOSS;
+	}
+	else if (pev->movetype == -1) {
+		pev->movetype = MOVETYPE_NONE;
+	}
+
+	if (!pev->solid) {
+		pev->solid = SOLID_TRIGGER;
+	}
+	else if (pev->solid == -1) {
+		pev->solid = SOLID_NOT;
+	}
 
 	if (DROP_TO_FLOOR(ENT(pev)) == 0)
 	{
@@ -21,6 +42,31 @@ void CItem::Spawn(void)
 		return;
 	}
 }
+
+void CItem::KeyValue(KeyValueData* pkvd) {
+	if (FStrEq(pkvd->szKeyName, "minhullsize"))
+	{
+		UTIL_StringToVector(m_minHullSize, pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "maxhullsize"))
+	{
+		UTIL_StringToVector(m_maxHullSize, pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+	{
+		CBaseEntity::KeyValue(pkvd);
+	}
+}
+
+void CItem::SetSize(Vector defaultMins, Vector defaultMaxs) {
+	Vector min = m_minHullSize != g_vecZero ? m_minHullSize : defaultMins;
+	Vector max = m_maxHullSize != g_vecZero ? m_maxHullSize : defaultMaxs;
+
+	UTIL_SetSize(pev, min, max);
+}
+
 
 extern int gEvilImpulse101;
 
@@ -64,6 +110,26 @@ void CItem::ItemTouch(CBaseEntity* pOther)
 	else if (gEvilImpulse101)
 	{
 		UTIL_Remove(this);
+	}
+}
+
+void CItem::ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	if (pCaller && pCaller->IsPlayer()) {
+
+		if (!(pev->spawnflags & SF_ITEM_USE_WITHOUT_LOS)) {
+			TraceResult tr;
+			TRACE_LINE(pCaller->pev->origin + pCaller->pev->view_ofs, pev->origin, dont_ignore_monsters, pCaller->edict(), &tr);
+			
+			bool hitItemSurface = tr.pHit && tr.pHit != edict();
+			bool enteredItemBox = boxesIntersect(pev->absmin, pev->absmax, tr.vecEndPos, tr.vecEndPos);
+			if (!hitItemSurface && !enteredItemBox) {
+				ALERT(at_console, "Can't use item not in LOS\n");
+				return;
+			}
+		}
+
+		ItemTouch(pCaller);
 	}
 }
 
