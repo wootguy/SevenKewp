@@ -243,7 +243,7 @@ void CCrossbow::Spawn( )
 
 	Precache( );
 	m_iId = WEAPON_CROSSBOW;
-	SET_MODEL(ENT(pev), "models/w_crossbow.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
 
 	m_iDefaultAmmo = CROSSBOW_DEFAULT_GIVE;
 
@@ -264,9 +264,10 @@ int CCrossbow::AddToPlayer( CBasePlayer *pPlayer )
 
 void CCrossbow::Precache( void )
 {
-	PRECACHE_MODEL("models/w_crossbow.mdl");
-	PRECACHE_MODEL("models/v_crossbow.mdl");
-	PRECACHE_MODEL("models/p_crossbow.mdl");
+	m_defaultModelV = "models/v_crossbow.mdl";
+	m_defaultModelP = "models/p_crossbow.mdl";
+	m_defaultModelW = "models/w_crossbow.mdl";
+	CBasePlayerWeapon::Precache();
 
 	PRECACHE_SOUND("weapons/xbow_fire1.wav");
 	PRECACHE_SOUND("weapons/xbow_reload1.wav");
@@ -298,8 +299,8 @@ int CCrossbow::GetItemInfo(ItemInfo *p)
 BOOL CCrossbow::Deploy( )
 {
 	if (m_iClip)
-		return DefaultDeploy( "models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW1, "bow" );
-	return DefaultDeploy( "models/v_crossbow.mdl", "models/p_crossbow.mdl", CROSSBOW_DRAW2, "bow" );
+		return DefaultDeploy( GetModelV(), GetModelP(), CROSSBOW_DRAW1, "bow" );
+	return DefaultDeploy( GetModelV(), GetModelP(), CROSSBOW_DRAW2, "bow" );
 }
 
 void CCrossbow::Holster( int skiplocal /* = 0 */ )

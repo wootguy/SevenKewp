@@ -47,6 +47,36 @@ BOOL CanAttack(float attack_time, float curtime, BOOL isPredicted)
 	}
 }
 
+void CBasePlayerWeapon::KeyValue(KeyValueData* pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "wpn_v_model"))
+	{
+		m_customModelV = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if(FStrEq(pkvd->szKeyName, "wpn_p_model"))
+	{
+		m_customModelP = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "wpn_w_model"))
+	{
+		m_customModelW = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBasePlayerItem::KeyValue(pkvd);
+}
+
+void CBasePlayerWeapon::Precache() {
+	if (GetModelV())
+		PRECACHE_MODEL(GetModelV());
+	if (GetModelW())
+		PRECACHE_MODEL(GetModelW());
+	if (GetModelP())
+		PRECACHE_MODEL(GetModelP());
+}
+
 void CBasePlayerWeapon::ItemPostFrame(void)
 {
 	if ((m_fInReload) && (m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase()))
@@ -480,6 +510,21 @@ void CBasePlayerWeapon::RetireWeapon(void)
 	g_pGameRules->GetNextBestWeapon(m_pPlayer, this);
 }
 
+CBaseEntity* CBasePlayerWeapon::Respawn(void)
+{
+	CBaseEntity* pNewWeapon = CBasePlayerItem::Respawn();
+
+	CBasePlayerWeapon* wep = pNewWeapon->GetWeaponPtr();
+	if (wep) {
+		wep->m_customModelV = m_customModelV;
+		wep->m_customModelP = m_customModelP;
+		wep->m_customModelW = m_customModelW;
+		SET_MODEL(wep->edict(), GetModelW());
+	}
+
+	return pNewWeapon;
+}
+
 //=========================================================================
 // GetNextAttackDelay - An accurate way of calcualting the next attack time.
 //=========================================================================
@@ -511,6 +556,17 @@ float CBasePlayerWeapon::GetNextAttackDelay(float delay)
 	return flNextAttack;
 }
 
+const char* CBasePlayerWeapon::GetModelV() {
+	return m_customModelV ? STRING(m_customModelV) : m_defaultModelV;
+}
+
+const char* CBasePlayerWeapon::GetModelP() {
+	return m_customModelP ? STRING(m_customModelP) : m_defaultModelP;
+}
+
+const char* CBasePlayerWeapon::GetModelW() {
+	return m_customModelW ? STRING(m_customModelW) : m_defaultModelW;
+}
 
 void CBasePlayerWeapon::PrintState(void)
 {

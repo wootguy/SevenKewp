@@ -22,6 +22,7 @@
 #include "cbase.h"
 #include "monsters.h"
 #include "saverestore.h"
+#include "weapons.h"
 
 // Monstermaker spawnflags
 #define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )
@@ -91,6 +92,10 @@ public:
 	float m_nextXenSound;
 
 	string_t m_xenmakerTemplate; // grab xenmaker settings from another entity
+
+	string_t m_weaponModelV;
+	string_t m_weaponModelP;
+	string_t m_weaponModelW;
 };
 
 LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker );
@@ -143,6 +148,21 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 	else if (FStrEq(pkvd->szKeyName, "xenmaker"))
 	{
 		m_xenmakerTemplate = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "wpn_v_model"))
+	{
+		m_weaponModelV = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "wpn_p_model"))
+	{
+		m_weaponModelP = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "wpn_w_model"))
+	{
+		m_weaponModelW = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 
@@ -344,6 +364,16 @@ void CMonsterMaker :: Precache( void )
 		PRECACHE_MODEL(STRING(pev->model));
 	}
 
+	if (m_weaponModelV) {
+		PRECACHE_MODEL(STRING(m_weaponModelV));
+	}
+	if (m_weaponModelP) {
+		PRECACHE_MODEL(STRING(m_weaponModelP));
+	}
+	if (m_weaponModelW) {
+		PRECACHE_MODEL(STRING(m_weaponModelW));
+	}
+
 	if (!strcmp(STRING(pev->classname), "env_xenmaker")) {
 		m_xenSpriteIdx = PRECACHE_MODEL("sprites/fexplo1.spr");
 		m_xenBeamSpriteIdx = PRECACHE_MODEL("sprites/laserbeam.spr");
@@ -425,6 +455,13 @@ void CMonsterMaker::MakeMonster( void )
 		mon->m_IsPlayerAlly = m_IsPlayerAlly;
 		mon->m_soundReplacementPath = m_soundReplacementPath;
 		g_monsterSoundReplacements[mon->entindex()] = g_monsterSoundReplacements[entindex()];
+	}
+
+	CBasePlayerWeapon* wep = ((CBaseEntity*)GET_PRIVATE(pent))->GetWeaponPtr();
+	if (wep) {
+		wep->m_customModelV = m_weaponModelV;
+		wep->m_customModelP = m_weaponModelP;
+		wep->m_customModelW = m_weaponModelW;
 	}
 
 	pevCreate = VARS( pent );

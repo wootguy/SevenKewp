@@ -44,7 +44,7 @@ void CShotgun::Spawn( )
 {
 	Precache( );
 	m_iId = WEAPON_SHOTGUN;
-	SET_MODEL(ENT(pev), "models/w_shotgun.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
 
 	m_iDefaultAmmo = SHOTGUN_DEFAULT_GIVE;
 
@@ -54,9 +54,10 @@ void CShotgun::Spawn( )
 
 void CShotgun::Precache( void )
 {
-	PRECACHE_MODEL("models/v_shotgun.mdl");
-	PRECACHE_MODEL("models/w_shotgun.mdl");
-	PRECACHE_MODEL("models/p_shotgun.mdl");
+	m_defaultModelV = "models/v_shotgun.mdl";
+	m_defaultModelP = "models/p_shotgun.mdl";
+	m_defaultModelW = "models/w_shotgun.mdl";
+	CBasePlayerWeapon::Precache();
 
 	m_iShell = PRECACHE_MODEL ("models/shotgunshell.mdl");// shotgun shell
 
@@ -112,7 +113,7 @@ int CShotgun::GetItemInfo(ItemInfo *p)
 
 BOOL CShotgun::Deploy( )
 {
-	return DefaultDeploy( "models/v_shotgun.mdl", "models/p_shotgun.mdl", SHOTGUN_DRAW, "shotgun" );
+	return DefaultDeploy(GetModelV(), GetModelP(), SHOTGUN_DRAW, "shotgun" );
 }
 
 void CShotgun::PrimaryAttack()

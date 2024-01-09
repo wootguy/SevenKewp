@@ -94,7 +94,8 @@ void CGrenade::Explode( Vector, Vector ) { }
 void CGrenade::Explode( TraceResult *, int ) { }
 void CGrenade::Killed( entvars_t *, int ) { }
 void CGrenade::Spawn( void ) { }
-CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time ){ return 0; }
+const char* CGrenade::GetModel(void) { return 0; }
+CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time, const char* model ){ return 0; }
 CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity ){ return 0; }
 void CGrenade::DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ){ }
 
@@ -352,6 +353,12 @@ void CBasePlayerAmmo::Materialize( void ) { }
 void CBasePlayerAmmo :: DefaultTouch( CBaseEntity *pOther ) { }
 int CBasePlayerWeapon::ExtractAmmo( CBasePlayerWeapon *pWeapon ) { return 0; }
 int CBasePlayerWeapon::ExtractClipAmmo( CBasePlayerWeapon *pWeapon ) { return 0; }	
-void CBasePlayerWeapon::RetireWeapon( void ) { }
+void CBasePlayerWeapon::RetireWeapon(void) { }
+void CBasePlayerWeapon::KeyValue(KeyValueData* pkvd) {}
+void CBasePlayerWeapon::Precache() {}
+CBaseEntity* CBasePlayerWeapon::Respawn() { return NULL;  }
+const char* CBasePlayerWeapon::GetModelV() { return 0; }
+const char* CBasePlayerWeapon::GetModelP() { return 0; }
+const char* CBasePlayerWeapon::GetModelW() { return 0; }
 void CSoundEnt::InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration ) {}
 void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType ){}

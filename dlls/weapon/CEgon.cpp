@@ -57,7 +57,7 @@ void CEgon::Spawn( )
 
 	Precache( );
 	m_iId = WEAPON_EGON;
-	SET_MODEL(ENT(pev), "models/w_egon.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
 
 	m_iDefaultAmmo = EGON_DEFAULT_GIVE;
 
@@ -67,9 +67,10 @@ void CEgon::Spawn( )
 
 void CEgon::Precache( void )
 {
-	PRECACHE_MODEL("models/w_egon.mdl");
-	PRECACHE_MODEL("models/v_egon.mdl");
-	PRECACHE_MODEL("models/p_egon.mdl");
+	m_defaultModelV = "models/v_egon.mdl";
+	m_defaultModelP = "models/p_egon.mdl";
+	m_defaultModelW = "models/w_egon.mdl";
+	CBasePlayerWeapon::Precache();
 
 	PRECACHE_MODEL("models/w_9mmclip.mdl");
 	PRECACHE_SOUND("items/9mmclip1.wav");
@@ -92,7 +93,7 @@ BOOL CEgon::Deploy( void )
 {
 	m_deployed = FALSE;
 	m_fireState = FIRE_OFF;
-	return DefaultDeploy( "models/v_egon.mdl", "models/p_egon.mdl", EGON_DRAW, "egon" );
+	return DefaultDeploy(GetModelV(), GetModelP(), EGON_DRAW, "egon");
 }
 
 int CEgon::AddToPlayer( CBasePlayer *pPlayer )

@@ -100,7 +100,7 @@ void CTripmineGrenade :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_NOT;
 
-	SET_MODEL(ENT(pev), "models/v_tripmine.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	pev->frame = 0;
 	pev->body = 3;
 	pev->sequence = TRIPMINE_WORLD;
@@ -146,7 +146,8 @@ void CTripmineGrenade :: Spawn( void )
 
 void CTripmineGrenade :: Precache( void )
 {
-	PRECACHE_MODEL("models/v_tripmine.mdl");
+	m_defaultModel = "models/v_tripmine.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_SOUND("weapons/mine_deploy.wav");
 	PRECACHE_SOUND("weapons/mine_activate.wav");
 	PRECACHE_SOUND("weapons/mine_charge.wav");
@@ -363,7 +364,7 @@ void CTripmine::Spawn( )
 {
 	Precache( );
 	m_iId = WEAPON_TRIPMINE;
-	SET_MODEL(ENT(pev), "models/v_tripmine.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
 	pev->frame = 0;
 	pev->body = 3;
 	pev->sequence = TRIPMINE_GROUND;
@@ -386,8 +387,11 @@ void CTripmine::Spawn( )
 
 void CTripmine::Precache( void )
 {
-	PRECACHE_MODEL ("models/v_tripmine.mdl");
-	PRECACHE_MODEL ("models/p_tripmine.mdl");
+	m_defaultModelV = "models/v_tripmine.mdl";
+	m_defaultModelP = "models/p_tripmine.mdl";
+	m_defaultModelW = "models/v_tripmine.mdl";
+	CBasePlayerWeapon::Precache();
+
 	UTIL_PrecacheOther( "monster_tripmine" );
 
 	m_usTripFire = PRECACHE_EVENT( 1, "events/tripfire.sc" );
@@ -413,7 +417,7 @@ int CTripmine::GetItemInfo(ItemInfo *p)
 BOOL CTripmine::Deploy( )
 {
 	//pev->body = 0;
-	return DefaultDeploy( "models/v_tripmine.mdl", "models/p_tripmine.mdl", TRIPMINE_DRAW, "trip" );
+	return DefaultDeploy(GetModelV(), GetModelP(), TRIPMINE_DRAW, "trip" );
 }
 
 
@@ -463,6 +467,7 @@ void CTripmine::PrimaryAttack( void )
 			Vector angles = UTIL_VecToAngles( tr.vecPlaneNormal );
 
 			CBaseEntity *pEnt = CBaseEntity::Create( "monster_tripmine", tr.vecEndPos + tr.vecPlaneNormal * 8, angles, m_pPlayer->edict() );
+			SET_MODEL(pEnt->edict(), GetModelW());
 
 			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 

@@ -33,7 +33,7 @@ public:
 
 	typedef enum { SATCHEL_DETONATE = 0, SATCHEL_RELEASE } SATCHELCODE;
 
-	static CGrenade *ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time );
+	static CGrenade *ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time, const char* model=NULL);
 	static CGrenade *ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
 	static CGrenade *ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
@@ -55,6 +55,10 @@ public:
 	virtual int	BloodColor( void ) { return DONT_BLEED; }
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 	const char* GetDeathNoticeWeapon() { return "monster_grenade"; }
+
+	const char* GetModel();
+
+	const char* m_defaultModel;
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };
@@ -239,7 +243,7 @@ public:
 	void EXPORT FallThink ( void );// when an item is first spawned, this think is run to determine when the object has hit the ground.
 	void EXPORT Materialize( void );// make a weapon visible and tangible
 	void EXPORT AttemptToMaterialize( void );  // the weapon desires to become visible and tangible, if the game rules allow for it
-	CBaseEntity* Respawn ( void );// copy a weapon
+	virtual CBaseEntity* Respawn ( void );// copy a weapon
 	void FallInit( void );
 	void CheckRespawn( void );
 	virtual int GetItemInfo(ItemInfo *p) { return 0; };	// returns 0 if struct not filled out
@@ -262,8 +266,6 @@ public:
 	virtual int SecondaryAmmoIndex() { return -1; };
 
 	virtual int UpdateClientData( CBasePlayer *pPlayer ) { return 0; }
-
-	virtual CBasePlayerItem *GetWeaponPtr( void ) { return NULL; };
 
 	static ItemInfo ItemInfoArray[ MAX_WEAPONS ];
 	static AmmoInfo AmmoInfoArray[ MAX_AMMO_SLOTS ];
@@ -293,6 +295,8 @@ public:
 class CBasePlayerWeapon : public CBasePlayerItem
 {
 public:
+	virtual void KeyValue(KeyValueData* pkvd);
+	void Precache();
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	
@@ -344,8 +348,13 @@ public:
 
 	void PrintState( void );
 
-	virtual CBasePlayerItem *GetWeaponPtr( void ) { return (CBasePlayerItem *)this; };
+	virtual CBasePlayerWeapon*GetWeaponPtr( void ) { return this; };
+	virtual CBaseEntity* Respawn(void);// copy a weapon
 	float GetNextAttackDelay( float delay );
+
+	const char* GetModelV();
+	const char* GetModelP();
+	const char* GetModelW();
 
 	float m_flPumpTime;
 	int		m_fInSpecialReload;									// Are we in the middle of a reload for the shotguns
@@ -365,6 +374,12 @@ public:
 	float	m_flPrevPrimaryAttack;
 	float	m_flLastFireTime;			
 
+	const char* m_defaultModelV;
+	const char* m_defaultModelP;
+	const char* m_defaultModelW;
+	string_t m_customModelV;
+	string_t m_customModelP;
+	string_t m_customModelW;
 };
 
 

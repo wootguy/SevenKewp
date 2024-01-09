@@ -72,7 +72,7 @@ void CSatchelCharge :: Spawn( void )
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), "models/w_satchel.mdl");
+	SET_MODEL(ENT(pev), GetModel());
 	//UTIL_SetSize(pev, Vector( -16, -16, -4), Vector(16, 16, 32));	// Old box -- size of headcrab monsters/players get blocked by this
 	UTIL_SetSize(pev, Vector( -4, -4, -4), Vector(4, 4, 4));	// Uses point-sized, and can be stepped over
 	UTIL_SetOrigin( pev, pev->origin );
@@ -151,7 +151,8 @@ void CSatchelCharge :: SatchelThink( void )
 
 void CSatchelCharge :: Precache( void )
 {
-	PRECACHE_MODEL("models/grenade.mdl");
+	m_defaultModel = "models/w_satchel.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_SOUND("weapons/g_bounce1.wav");
 	PRECACHE_SOUND("weapons/g_bounce2.wav");
 	PRECACHE_SOUND("weapons/g_bounce3.wav");
@@ -226,11 +227,13 @@ void CSatchel::Spawn( )
 
 void CSatchel::Precache( void )
 {
-	PRECACHE_MODEL("models/v_satchel.mdl");
 	PRECACHE_MODEL("models/v_satchel_radio.mdl");
-	PRECACHE_MODEL("models/w_satchel.mdl");
-	PRECACHE_MODEL("models/p_satchel.mdl");
 	PRECACHE_MODEL("models/p_satchel_radio.mdl");
+
+	m_defaultModelV = "models/v_satchel.mdl";
+	m_defaultModelP = "models/p_satchel.mdl";
+	m_defaultModelW = "models/w_satchel.mdl";
+	CBasePlayerWeapon::Precache();
 
 	UTIL_PrecacheOther( "monster_satchel" );
 }
@@ -298,7 +301,7 @@ BOOL CSatchel::Deploy( )
 	if ( m_chargeReady )
 		return DefaultDeploy( "models/v_satchel_radio.mdl", "models/p_satchel_radio.mdl", SATCHEL_RADIO_DRAW, "hive" );
 	else
-		return DefaultDeploy( "models/v_satchel.mdl", "models/p_satchel.mdl", SATCHEL_DRAW, "trip" );
+		return DefaultDeploy(GetModelV(), GetModelP(), SATCHEL_DRAW, "trip" );
 
 	
 	return TRUE;
@@ -393,6 +396,7 @@ void CSatchel::Throw( void )
 
 #ifndef CLIENT_DLL
 		CBaseEntity *pSatchel = Create( "monster_satchel", vecSrc, Vector( 0, 0, 0), m_pPlayer->edict() );
+		SET_MODEL(pSatchel->edict(), GetModelW());
 		pSatchel->pev->velocity = vecThrow;
 		pSatchel->pev->avelocity.y = 400;
 

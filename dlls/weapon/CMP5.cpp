@@ -51,7 +51,7 @@ void CMP5::Spawn( )
 {
 	pev->classname = MAKE_STRING("weapon_9mmAR"); // hack to allow for old names
 	Precache( );
-	SET_MODEL(ENT(pev), "models/w_9mmAR.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
 	m_iId = WEAPON_MP5;
 
 	m_iDefaultAmmo = MP5_DEFAULT_GIVE;
@@ -62,9 +62,10 @@ void CMP5::Spawn( )
 
 void CMP5::Precache( void )
 {
-	PRECACHE_MODEL("models/v_9mmAR.mdl");
-	PRECACHE_MODEL("models/w_9mmAR.mdl");
-	PRECACHE_MODEL("models/p_9mmAR.mdl");
+	m_defaultModelV = "models/v_9mmAR.mdl";
+	m_defaultModelP = "models/p_9mmAR.mdl";
+	m_defaultModelW = "models/w_9mmAR.mdl";
+	CBasePlayerWeapon::Precache();
 
 	m_iShell = PRECACHE_MODEL ("models/shell.mdl");// brass shellTE_MODEL
 
@@ -120,7 +121,7 @@ int CMP5::AddToPlayer( CBasePlayer *pPlayer )
 
 BOOL CMP5::Deploy( )
 {
-	return DefaultDeploy( "models/v_9mmAR.mdl", "models/p_9mmAR.mdl", MP5_DEPLOY, "mp5" );
+	return DefaultDeploy(GetModelV(), GetModelP(), MP5_DEPLOY, "mp5" );
 }
 
 
