@@ -21,14 +21,20 @@ class CItem : public CBaseEntity
 {
 public:
 	void	Spawn(void);
+	void	KeyValue(KeyValueData* pkvd);
 	CBaseEntity* Respawn(void);
 	void	EXPORT ItemTouch(CBaseEntity* pOther);
 	void	EXPORT Materialize(void);
+	void	EXPORT ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual BOOL MyTouch(CBasePlayer* pPlayer) { return FALSE; };
 	virtual BOOL ShouldRespawn();
 	const char* GetModel();
+	void SetSize(Vector defaultMins, Vector defaultMaxs);
 
 	const char* m_defaultModel;
+
+	Vector m_minHullSize;
+	Vector m_maxHullSize;
 };
 
 #endif // ITEMS_H

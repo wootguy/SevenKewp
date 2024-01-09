@@ -158,6 +158,7 @@ set(ITEM_SRC
 	item/CItem.cpp
 	item/CItemAntidote.cpp
 	item/CItemBattery.cpp
+	item/CItemGeneric.cpp
 	item/CItemLongJump.cpp
 	item/CItemSecurity.cpp
 	item/CItemSoda.cpp
@@ -441,11 +442,11 @@ if(UNIX)
 
 elseif(MSVC)
 
-	add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
+	#add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
 		#COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/dlls/
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls
-		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls/
-	)
+	#	COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls
+	#	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls/
+	#)
 
 	if (USE_AUTOHOTKEY_SCRIPT)
 		add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
