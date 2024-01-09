@@ -247,7 +247,9 @@ void CTriggerCamera::FollowTarget()
 	{
 		TogglePlayerViews(false);
 
-		SUB_UseTargets(this, USE_TOGGLE, 0);
+		// TODO: do sven cameras exclude certain ents or just never trigger their targets?
+		//SUB_UseTargets(this, USE_TOGGLE, 0);
+		
 		pev->avelocity = Vector(0, 0, 0);
 		m_state = 0;
 		return;

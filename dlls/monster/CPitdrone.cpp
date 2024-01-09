@@ -1096,7 +1096,9 @@ Schedule_t *CPitdrone :: GetSchedule( void )
 
 			if( HasConditions( bits_COND_SEE_HATE ) && m_iInitialAmmo != -1 )
 			{
-				return GetScheduleOfType( SCHED_PITDRONE_COVER_AND_RELOAD );
+				int ammoSubModel = GetBodygroup(PitdroneBodygroup::Weapons);
+				if (ammoSubModel == 0)
+					return GetScheduleOfType( SCHED_PITDRONE_COVER_AND_RELOAD );
 			}
 
 			if ( HasConditions( bits_COND_CAN_RANGE_ATTACK1 ) )

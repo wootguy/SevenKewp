@@ -363,7 +363,10 @@ void CGrenade:: Spawn( void )
 CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity )
 {
 	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
+
+	pGrenade->pev->model = MAKE_STRING("models/grenade.mdl");
 	pGrenade->Spawn();
+
 	// contact grenades arc lower
 	pGrenade->pev->gravity = 0.5;// lower gravity since grenade is aerodynamic and engine doesn't know it.
 	UTIL_SetOrigin( pGrenade->pev, vecStart );
@@ -391,8 +394,6 @@ CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector v
 {
 	CGrenade *pGrenade = GetClassPtr( (CGrenade *)NULL );
 	pGrenade->Spawn();
-	if (model)
-		SET_MODEL(pGrenade->edict(), model);
 	UTIL_SetOrigin( pGrenade->pev, vecStart );
 	pGrenade->pev->velocity = vecVelocity;
 	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
@@ -422,7 +423,7 @@ CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector v
 	pGrenade->pev->gravity = 0.5;
 	pGrenade->pev->friction = 0.8;
 
-	SET_MODEL(ENT(pGrenade->pev), pGrenade->GetModel());
+	SET_MODEL(ENT(pGrenade->pev), model ? model : pGrenade->GetModel());
 	pGrenade->pev->dmg = 100;
 
 	return pGrenade;
