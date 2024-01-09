@@ -775,20 +775,30 @@ void UTIL_EmitAmbientSound( edict_t *entity, const Vector &vecOrigin, const char
 void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target) {
 	// surround with ; to prevent multiple commands being joined when sent in the same frame(?)
 	// this fixes music sometimes not loading/starting/stopping
-	g_mp3Command = UTIL_VarArgs(";mp3 %s sound/%s;", (loop ? "loop" : "play"), path);
+	std::string mp3Command = UTIL_VarArgs(";mp3 %s sound/%s;", (loop ? "loop" : "play"), path);
 	
 	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
-	WRITE_STRING(g_mp3Command.c_str());
+	WRITE_STRING(mp3Command.c_str());
 	MESSAGE_END();
+
+	if (!target) {
+		g_mp3Command = mp3Command;
+		//ALERT(at_console, "MP3 Command: '%s'\n", g_mp3Command.c_str());
+	}
 }
 
 void UTIL_StopGlobalMp3(edict_t* target) {
-	g_mp3Command = "";
+	const char* cmd = ";mp3 stop;";
 
 	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
-	WRITE_STRING(";mp3 stop;");
+	WRITE_STRING(cmd);
 	//WRITE_STRING(";cd fadeout;"); // blocked by cl_filterstuffcmd
 	MESSAGE_END();
+
+	if (!target) {
+		g_mp3Command = "";
+		//ALERT(at_console, "MP3 Command: '%s'\n", cmd);
+	}
 }
 
 static unsigned short FixedUnsigned16( float value, float scale )
@@ -3133,7 +3143,7 @@ WavInfo getWaveFileInfo(const char* path) {
 	int sampleRate = 0;
 	int bytesPerSample = 0;
 	int read = 0;
-	FILE* file;
+	FILE* file = NULL;
 
 	if (!fpath.size()) {
 		ALERT(at_error, "Missing WAVE file: %s\n", fpath.c_str());
@@ -3217,5 +3227,8 @@ WavInfo getWaveFileInfo(const char* path) {
 
 cleanup:
 	g_wavInfos[path] = info;
+	if (file) {
+		fclose(file);
+	}
 	return info;
 }

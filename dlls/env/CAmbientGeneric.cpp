@@ -39,6 +39,12 @@ dynpitchvol_t rgdpvpreset[CDPVPRESETMAX] =
 	{27,128,	 90,	10,		10,		10,		1,		20,		40,		1,		5,		10,		20,		0,		0,0,0,0,0,0,0,0,0,0}
 };
 
+// Last entity that started global MP3 playback.
+// This is used to prevent other entities stopping each other from playing.
+// If another entity starts playing music, all others are stopped automatically because the client
+// can only play one track at a time (no more overlapping music :>)
+EHANDLE g_lastMp3PlayerEnt;
+
 LINK_ENTITY_TO_CLASS(ambient_generic, CAmbientGeneric);
 TYPEDESCRIPTION	CAmbientGeneric::m_SaveData[] =
 {
@@ -131,6 +137,9 @@ void CAmbientGeneric::Spawn(void)
 	if (forcedLoop) {
 		m_fLooping = TRUE;
 	}
+	if (m_isGlobalMp3) {
+		m_fLooping = forcedLoop;
+	}
 
 	Precache();
 }
@@ -159,6 +168,7 @@ void CAmbientGeneric::Precache(void)
 	if (m_fActive)
 	{
 		if (m_isGlobalMp3) {
+			g_lastMp3PlayerEnt = this;
 			UTIL_PlayGlobalMp3(szSoundFile, m_fLooping);
 		}
 		else {
@@ -232,7 +242,8 @@ void CAmbientGeneric::RampThink(void)
 
 			// shut sound off
 			if (m_isGlobalMp3) {
-				UTIL_StopGlobalMp3();
+				if (g_lastMp3PlayerEnt.GetEntity() == this)
+					UTIL_StopGlobalMp3();
 			}
 			else {
 				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
@@ -279,7 +290,8 @@ void CAmbientGeneric::RampThink(void)
 
 			// shut sound off
 			if (m_isGlobalMp3) {
-				UTIL_StopGlobalMp3();
+				if (g_lastMp3PlayerEnt.GetEntity() == this)
+					UTIL_StopGlobalMp3();
 			}
 			else {
 				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
@@ -560,7 +572,8 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 			}
 			else {
 				if (m_isGlobalMp3) {
-					UTIL_StopGlobalMp3();
+					if (g_lastMp3PlayerEnt.GetEntity() == this)
+						UTIL_StopGlobalMp3();
 				}
 				else {
 					UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
@@ -577,12 +590,13 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 		// playing from a previous trigger press, it will be shut off
 		// and then restarted.
 
-		if (m_fLooping)
+		if (m_fLooping || m_isGlobalMp3)
 			m_fActive = TRUE;
 		else {
 			// shut sound off now - may be interrupting a long non-looping sound
 			if (m_isGlobalMp3) {
-				UTIL_StopGlobalMp3();
+				if (g_lastMp3PlayerEnt.GetEntity() == this)
+					UTIL_StopGlobalMp3();
 			}
 			else {
 				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
@@ -596,6 +610,7 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 
 		if (m_isGlobalMp3) {
 			UTIL_PlayGlobalMp3(szSoundFile, m_fLooping);
+			g_lastMp3PlayerEnt = this;
 		}
 		else {
 			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
