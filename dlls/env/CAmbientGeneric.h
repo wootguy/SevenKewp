@@ -72,6 +72,7 @@ public:
 	void EXPORT ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void EXPORT RampThink(void);
 	void InitModulationParms(void);
+	void InitSoundForNewJoiner(edict_t* target);
 
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
@@ -83,12 +84,17 @@ public:
 
 	BOOL	m_fActive;	// only TRUE when the entity is playing a looping sound
 	BOOL	m_fLooping;	// TRUE when the sound played will loop
+	bool m_forceLoop; // true if mapper wants the sound to loop even if the file has no cue points
+	bool m_forceOnce; // true if mapper wants the sound to play once even if the file has cue points
 
 	// use the mp3 player for music, if an mp3 file is used with the "play everywhere" flag
 	bool m_isGlobalMp3;
 	bool m_isLoopingMp3;
-	bool m_isLoopingWave; // wave uses cue points to loop, or is forced to loop by playmode
 	bool m_activatorOnly;
 
 	int m_playmode;
+	
+	bool m_isWav;
+	WavInfo m_wavInfo;
+	float m_lastPlayTime;
 };

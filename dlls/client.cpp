@@ -230,6 +230,7 @@ void ClientPutInServer( edict_t *pEntity )
 
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();
+	pPlayer->m_initSoundTime = gpGlobals->time + 1.0f;
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;

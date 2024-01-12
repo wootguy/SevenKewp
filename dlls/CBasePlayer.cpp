@@ -41,6 +41,7 @@
 #include "CSprayCan.h"
 #include "CBloodSplat.h"
 #include "CBaseDMStart.h"
+#include "CAmbientGeneric.h"
 
 // #define DUCKFIX
 
@@ -1845,6 +1846,24 @@ void CBasePlayer::PreThink(void)
 	m_afButtonReleased = buttonsChanged & (~pev->button);	// The ones not down are "released"
 
 	g_pGameRules->PlayerThink( this );
+
+	if (m_initSoundTime && gpGlobals->time >= m_initSoundTime) {
+		m_initSoundTime = 0;
+		edict_t* ent = NULL;
+
+		while (!FNullEnt(ent = FIND_ENTITY_BY_CLASSNAME(ent, "ambient_generic"))) {
+			CAmbientGeneric* ambient = (CAmbientGeneric*)GET_PRIVATE(ent);
+			if (ambient)
+				ambient->InitSoundForNewJoiner(edict());
+		}
+
+		ent = NULL;
+		while (!FNullEnt(ent = FIND_ENTITY_BY_CLASSNAME(ent, "ambient_music"))) {
+			CAmbientGeneric* ambient = (CAmbientGeneric*)GET_PRIVATE(ent);
+			if (ambient)
+				ambient->InitSoundForNewJoiner(edict());
+		}
+	}
 
 	UpdateShockEffect();
 
