@@ -73,12 +73,10 @@ IMPLEMENT_SAVERESTORE(CAmbientGeneric, CBaseEntity);
 //
 void CAmbientGeneric::Spawn(void)
 {
-	bool forcedLoop = false;
-
 	if (FStrEq(STRING(pev->classname), "ambient_music")) {
 		m_flAttenuation = ATTN_NONE;
 		m_activatorOnly = pev->spawnflags & SF_MUSIC_ACTIVATOR_ONLY;
-		forcedLoop = pev->spawnflags & SF_MUSIC_LOOP;
+		m_forceLoop = pev->spawnflags & SF_MUSIC_LOOP;
 
 		if (m_activatorOnly) {
 			ALERT(at_error, "Activator only music not implemented!\n");
@@ -113,7 +111,8 @@ void CAmbientGeneric::Spawn(void)
 			m_flAttenuation = ATTN_STATIC;
 		}
 
-		forcedLoop = m_playmode == PLAYMODE_LOOP || m_playmode == PLAYMODE_LOOP_LINEAR;
+		m_forceLoop = m_playmode == PLAYMODE_LOOP || m_playmode == PLAYMODE_LOOP_LINEAR;
+		m_forceOnce = m_playmode == PLAYMODE_ONCE || m_playmode == PLAYMODE_ONCE_LINEAR;
 	}	
 
 	char* szSoundFile = (char*)STRING(pev->message);
@@ -140,23 +139,29 @@ void CAmbientGeneric::Spawn(void)
 	SetUse(&CAmbientGeneric::ToggleUse);
 
 	m_fActive = FALSE;
-
-	if (FBitSet(pev->spawnflags, AMBIENT_SOUND_NOT_LOOPING))
-		m_fLooping = FALSE;
-	else
-		m_fLooping = TRUE;
+	m_fLooping = (!FBitSet(pev->spawnflags, AMBIENT_SOUND_NOT_LOOPING) && !m_forceOnce) || m_forceLoop;
 	
 	m_isGlobalMp3 = toLowerCase(szSoundFile).find(".mp3") == strlen(szSoundFile) - 4;
 	
 	if (toLowerCase(szSoundFile).find(".wav") == strlen(szSoundFile) - 4) {
-		m_isLoopingWave = forcedLoop || (m_fLooping && getWaveFileInfo(szSoundFile).isLooped);
+		m_wavInfo = getWaveFileInfo(szSoundFile);
+		m_isWav = true;
+
+		if (m_forceLoop && !m_wavInfo.isLooped) {
+			// prefer using cue points because then the sound won't reset whenever the player
+			// enters the audible range. Also network usage will be reduced from server not needing
+			// to send loop/start messages every second.
+			ALERT(at_console, "ambient_generic forced loop mode on unlooped WAVE: %s\n", szSoundFile);
+		}
+		if (m_forceOnce && m_wavInfo.isLooped) {
+			// prefer removing cue points to prevent sound looping for a fraction of a second
+			// due to client/server lag
+			ALERT(at_console, "ambient_generic forced play-once mode on looped WAVE: %s\n", szSoundFile);
+		}
 	}
 
-	if (forcedLoop) {
-		m_fLooping = TRUE;
-	}
 	if (m_isGlobalMp3) {
-		m_fLooping = forcedLoop;
+		m_fLooping = m_forceLoop;
 	}
 
 	Precache();
@@ -222,19 +227,45 @@ void CAmbientGeneric::RampThink(void)
 	int fChanged = 0;		// FALSE if pitch and vol remain unchanged this round
 	int	prev;
 
-	if (!m_dpv.spinup && !m_dpv.spindown && !m_dpv.fadein && !m_dpv.fadeout && !m_dpv.lfotype) {
+	if (m_isWav && ((m_wavInfo.isLooped && m_forceOnce) || (!m_wavInfo.isLooped && m_forceLoop))) {
+		// forcing a looped sound to play once, or an unlooped sound to loop
+		float endTime = m_lastPlayTime + (m_wavInfo.durationMillis / 1000.0f);
+		float timeLeft = endTime - g_engfuncs.pfnTime();
 
-		if (m_fActive && m_isLoopingWave) {
-			// periodically update the sound so that the client restarts it when it stops,
-			// and also so new joiners can hear it
-			// TODO: This sends lots of useless network data.
-			//       Better do this only when the sound is nearly finished if it's a looping wave without cue points,
-			//       and only on client join if it has cue points.
-			pev->nextthink = gpGlobals->time + 1.0f;
+		if (m_forceLoop && m_fActive) {
+			// restart the sound when it stops
 			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
 				(vol * 0.01), m_flAttenuation, SND_CHANGE_PITCH, pitch);
+
+			if (timeLeft <= 0) {
+				m_lastPlayTime = g_engfuncs.pfnTime();
+			}
+			
+			if (m_flAttenuation == 0) {
+				pev->nextthink = gpGlobals->time + timeLeft;
+			}
+			else {
+				// periodically send sound messages because the client will not start
+				// the sound unless they are close enough to hear it.
+				// TODO: only send messages while they're within the audible range
+				//       and only repeat those messages for a few seconds to account for ping
+				pev->nextthink = gpGlobals->time + V_min(1.0f, timeLeft);
+			}	
 		}
 
+		if (m_forceOnce && m_lastPlayTime) {
+			if (timeLeft <= 0) {
+				// stop the sound loop
+				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
+				m_lastPlayTime = 0;
+			}
+			else {
+				pev->nextthink = gpGlobals->time + timeLeft;
+			}
+		}
+	}
+
+	if (!m_dpv.spinup && !m_dpv.spindown && !m_dpv.fadein && !m_dpv.fadeout && !m_dpv.lfotype) {
 		return;						// no ramps or lfo, stop thinking
 	}
 
@@ -640,7 +671,7 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 				(m_dpv.vol * 0.01), m_flAttenuation, 0, m_dpv.pitch);
 		}
 		
-
+		m_lastPlayTime = g_engfuncs.pfnTime();
 		pev->nextthink = gpGlobals->time + 0.1;
 
 	}
@@ -804,6 +835,23 @@ void CAmbientGeneric::KeyValue(KeyValueData* pkvd)
 		m_playmode = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "volume"))
+	{
+		pev->health = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseEntity::KeyValue(pkvd);
+}
+
+void CAmbientGeneric::InitSoundForNewJoiner(edict_t* target) {
+	if (m_isWav && m_fActive && m_fLooping) {
+		char* szSoundFile = (char*)STRING(pev->message);
+		int pitch = m_dpv.pitch;
+		int vol = m_dpv.vol;
+
+		UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
+			(vol * 0.01), m_flAttenuation, SND_CHANGE_VOL, pitch, target);
+	}
+	// mp3 audio is initiliazed elsewhere, don't play here
 }
