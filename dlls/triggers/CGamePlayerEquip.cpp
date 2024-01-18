@@ -88,6 +88,7 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 		{"weapon_uziakimbo", "weapon_9mmAR"},
 		{"weapon_m16", "weapon_9mmAR"},
 		{"weapon_m249", "weapon_9mmAR"},
+		{"weapon_saw", "weapon_9mmAR"},
 		{"weapon_minigun", "weapon_9mmAR"},
 		{"weapon_pipewrench", "weapon_crowbar"},
 		{"weapon_eagle", "weapon_357"},

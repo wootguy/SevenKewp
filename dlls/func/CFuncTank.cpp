@@ -560,7 +560,7 @@ void CFuncTank::Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* 
 	{
 		if (m_iszSpriteSmoke)
 		{
-			CSprite* pSprite = CSprite::SpriteCreate(STRING(m_iszSpriteSmoke), barrelEnd, TRUE);
+			CSprite* pSprite = CSprite::SpriteCreate(GET_MODEL(STRING(m_iszSpriteSmoke)), barrelEnd, TRUE);
 			pSprite->AnimateAndDie(RANDOM_FLOAT(15.0, 20.0));
 			pSprite->SetTransparency(kRenderTransAlpha, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, 255, kRenderFxNone);
 			pSprite->pev->velocity.z = RANDOM_FLOAT(40, 80);
@@ -568,7 +568,7 @@ void CFuncTank::Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* 
 		}
 		if (m_iszSpriteFlash)
 		{
-			CSprite* pSprite = CSprite::SpriteCreate(STRING(m_iszSpriteFlash), barrelEnd, TRUE);
+			CSprite* pSprite = CSprite::SpriteCreate(GET_MODEL(STRING(m_iszSpriteFlash)), barrelEnd, TRUE);
 			pSprite->AnimateAndDie(60);
 			pSprite->SetTransparency(kRenderTransAdd, 255, 255, 255, 255, kRenderFxNoDissipation);
 			pSprite->SetScale(m_spriteScale);

@@ -10,6 +10,7 @@ class CScriptedSentence : public CBaseToggle
 {
 public:
 	void Spawn(void);
+	void Precache();
 	void KeyValue(KeyValueData* pkvd);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void EXPORT FindThink(void);
@@ -120,6 +121,8 @@ void CScriptedSentence::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 
 void CScriptedSentence::Spawn(void)
 {
+	Precache();
+
 	pev->solid = SOLID_NOT;
 
 	m_active = TRUE;
@@ -156,6 +159,11 @@ void CScriptedSentence::Spawn(void)
 		m_flVolume = 1.0;
 }
 
+void CScriptedSentence::Precache(void) {
+	if (m_iszSentence && STRING(m_iszSentence)[0] == '+') {
+		PRECACHE_SOUND(STRING(m_iszSentence) + 1);
+	}
+}
 
 void CScriptedSentence::FindThink(void)
 {

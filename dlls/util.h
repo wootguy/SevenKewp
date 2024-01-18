@@ -614,6 +614,7 @@ float UTIL_WeaponTimeBase( void );
 #define SET_MODEL		(*g_engfuncs.pfnSetModel)
 #define PRECACHE_SOUND		(*g_engfuncs.pfnPrecacheSound)
 #define MODEL_INDEX		(*g_engfuncs.pfnModelIndex)
+#define GET_MODEL(model) model
 #else
 // engine wrappers which handle model/sound replacement logic
 int PRECACHE_GENERIC(const char* path);
@@ -633,6 +634,8 @@ std::string toLowerCase(std::string str);
 std::string toUpperCase(std::string str);
 
 std::string trimSpaces(std::string s);
+
+std::string replaceString(std::string subject, std::string search, std::string replace);
 
 bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins2, const Vector& maxs2);
 

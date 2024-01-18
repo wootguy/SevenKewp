@@ -809,6 +809,9 @@ CBaseEntity *CTalkSquadMonster :: FindNearestFriend(BOOL fPlayer)
 				// don't talk to self or dead people
 				continue;
 
+			if (IRelationship(pFriend) != R_AL)
+				continue; // don't talk to enemies
+
 			CBaseMonster *pMonster = pFriend->MyMonsterPointer();
 
 			// If not a monster for some reason, or in a script, or prone

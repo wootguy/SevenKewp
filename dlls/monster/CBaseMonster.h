@@ -121,6 +121,7 @@ public:
 	int					m_iOldRenderFX;
 	float				m_flOldRenderAmt;
 	Vector				m_OldRenderColor;
+	int m_localMoveCheckType;
 
 // Scripted sequence Info
 	SCRIPTSTATE			m_scriptState;		// internal cinematic state

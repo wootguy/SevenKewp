@@ -749,6 +749,14 @@ void UTIL_EmitAmbientSound( edict_t *entity, const Vector &vecOrigin, const char
 	float rgfl[3];
 	vecOrigin.CopyToArray(rgfl);
 
+	if (entity->v.flags & FL_MONSTER) {
+		int eidx = ENTINDEX(entity);
+
+		if (g_monsterSoundReplacements[eidx].find(samp) != g_monsterSoundReplacements[eidx].end()) {
+			samp = g_monsterSoundReplacements[eidx][samp].c_str();
+		}
+	}
+
 	if (samp && *samp == '!')
 	{
 		char name[32];
@@ -783,7 +791,7 @@ void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target) {
 
 	if (!target) {
 		g_mp3Command = mp3Command;
-		//ALERT(at_console, "MP3 Command: '%s'\n", g_mp3Command.c_str());
+		ALERT(at_console, "MP3 Command: '%s'\n", g_mp3Command.c_str());
 	}
 }
 
@@ -797,7 +805,7 @@ void UTIL_StopGlobalMp3(edict_t* target) {
 
 	if (!target) {
 		g_mp3Command = "";
-		//ALERT(at_console, "MP3 Command: '%s'\n", cmd);
+		ALERT(at_console, "MP3 Command: '%s'\n", cmd);
 	}
 }
 
@@ -2852,11 +2860,18 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
 
-	if (ent && ent->IsMonster() && !g_monsterSoundReplacements.empty()) {
+	if (ent && ent->IsMonster() && g_monsterSoundReplacements.size() >= ent->entindex()) {
 		std::map<std::string, std::string>& replacementMap = g_monsterSoundReplacements[ent->entindex()];
 		if (replacementMap.find(path) != replacementMap.end()) {
 			path = replacementMap[path].c_str();
 		}
+	}
+
+	if (lowerPath.find(" ") != -1) {
+		// files with spaces causes clients to hang at "Verifying resources"
+		// and the file doesn't download
+		ALERT(at_error, "Precached file with spaces: '%s'\n", path);
+		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
 	}
 
 	g_tryPrecacheSounds.insert(path);
@@ -2887,7 +2902,7 @@ int PRECACHE_MODEL(const char* path) {
 	bool alreadyPrecached = g_precachedModels.find(path) != g_precachedModels.end();
 	if (!alreadyPrecached && getGameFilePath(path).empty()) {
 		if (!g_missingModels.count(path)) {
-			ALERT(at_error, "Model preache failed. File not found: %s\n", path);
+			ALERT(at_error, "Model precache failed. File not found: %s\n", path);
 			g_missingModels.insert(path);
 		}
 		
@@ -2997,6 +3012,16 @@ std::string trimSpaces(std::string s) {
 	return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
 }
 
+std::string replaceString(std::string subject, std::string search, std::string replace) {
+	size_t pos = 0;
+	while ((pos = subject.find(search, pos)) != std::string::npos)
+	{
+		subject.replace(pos, search.length(), replace);
+		pos += replace.length();
+	}
+	return subject;
+}
+
 bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins2, const Vector& maxs2) {
 	return  (maxs1.x >= mins2.x && mins1.x <= maxs2.x) &&
 		(maxs1.y >= mins2.y && mins1.y <= maxs2.y) &&
@@ -3086,9 +3111,9 @@ void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, 
 // WAVE file header format
 #pragma pack(push, 1)
 struct RIFF_HEADER {
-	uint8_t riff[4];		// RIFF string
+	char riff[4];		// RIFF string
 	uint32_t overall_size;	// overall size of file in bytes
-	uint8_t wave[4];		// WAVE string
+	char wave[4];		// WAVE string
 };
 
 struct RIFF_FMT_PCM {
@@ -3118,9 +3143,45 @@ struct WAVE_CHUNK_FMT {
 	uint8_t subFormat[16];
 };
 
-struct WAVE_CHUNK_CUE {
+struct WAVE_CUE_HEADER {
 	uint32_t numCuePoints;
-	// data follows - 24 bytes per cue point
+	// WAVE_CUE structs follow
+};
+
+struct WAVE_CUE {
+	uint32_t id; // A unique number for the point used by other chunks to identify the cue point. For example, a playlist chunk creates a playlist by referring to cue points, which themselves define points somewhere in the file
+	uint32_t position; // If there is no playlist chunk, this value is zero. If there is a playlist chunk, this value is the sample at which the cue point should occur
+	char dataChunkId[4]; // Either "data" or "slnt" depending on whether the cue occurs in a data chunk or in a silent chunk
+	uint32_t chunkStart; // The position of the start of the data chunk that contains the cue point. If there is a wave list chunk, this value is the byte position of the chunk that contains the cue. If there is no wave list chunk, there is only one data chunk in the file and this value is zero
+	uint32_t blockStart; // The byte position of the cue in the "data" or "slnt" chunk. If this is an uncompressed PCM file, this is counted from the beginning of the chunk's data. If this is a compressed file, the byte position can be counted from the last byte from which one can start decompressing to find the cue
+	uint32_t sampleStart; // The position of the cue in number of bytes from the start of the block
+};
+
+struct WAVE_LIST_HEADER {
+	char listType[4];
+};
+
+struct WAVE_LIST_INFO_HEADER {
+	char infoType[4];
+	uint32_t textSize;
+};
+
+struct WAVE_ADTL_HEADER {
+	char adtlType[4];
+	uint32_t subSize;
+	uint32_t cueId;
+	// ascii text follows, if "labl" or "note" chunk
+};
+
+// for "ltxt" adtl chunks
+struct WAVE_CUE_LABEL {
+	uint32_t sampleLength;
+	uint32_t purposeId;
+	uint16_t country;
+	uint16_t lang;
+	uint16_t dialect;
+	uint16_t codePage;
+	// ascii text follows
 };
 
 struct WAVE_CHUNK_HEADER {
@@ -3142,11 +3203,13 @@ WavInfo getWaveFileInfo(const char* path) {
 
 	int sampleRate = 0;
 	int bytesPerSample = 0;
+	int numSamples = 0;
 	int read = 0;
+	int fsize = 0;
 	FILE* file = NULL;
 
 	if (!fpath.size()) {
-		ALERT(at_error, "Missing WAVE file: %s\n", fpath.c_str());
+		ALERT(at_error, "Missing WAVE file: %s\n", path);
 		goto cleanup;
 	}
 
@@ -3156,6 +3219,10 @@ WavInfo getWaveFileInfo(const char* path) {
 		ALERT(at_error, "Failed to open WAVE file: %s\n", fpath.c_str());
 		goto cleanup;
 	}
+
+	fseek(file, 0, SEEK_END);
+	fsize = ftell(file);
+	fseek(file, 0, SEEK_SET);
 
 	{
 		RIFF_HEADER header;
@@ -3170,7 +3237,13 @@ WavInfo getWaveFileInfo(const char* path) {
 
 	//ALERT(at_console, "%s\n", path);
 
+	static char infoText[512];
+
 	while (1) {
+		if (ftell(file) + 8 >= fsize) {
+			break;
+		}
+
 		WAVE_CHUNK_HEADER chunk;
 		read = fread(&chunk, sizeof(WAVE_CHUNK_HEADER), 1, file);
 		
@@ -3180,6 +3253,8 @@ WavInfo getWaveFileInfo(const char* path) {
 
 		std::string chunkName = std::string((const char*)chunk.name, 4);
 		//ALERT(at_console, "    Read chunk %s (%d)\n", chunkName.c_str(), chunk.size);
+
+		int seekSize = ((chunk.size + 1) / 2) * 2; // round up to nearest word size
 
 		if (chunkName == "fmt ") {
 
@@ -3202,26 +3277,103 @@ WavInfo getWaveFileInfo(const char* path) {
 		}
 		else if (chunkName == "data") {
 			if (bytesPerSample && sampleRate && chunk.size) {
-				int numSamples = chunk.size / bytesPerSample;
+				numSamples = chunk.size / bytesPerSample;
 				info.durationMillis = ((float)numSamples / sampleRate) * 1000.0f;
 			}
 
-			fseek(file, chunk.size, SEEK_CUR);
+			fseek(file, seekSize, SEEK_CUR);
 		}
 		else if (chunkName == "cue ") {
-			WAVE_CHUNK_CUE cdata;
-			read = fread(&cdata, sizeof(WAVE_CHUNK_CUE), 1, file);
+			WAVE_CUE_HEADER cdata;
+			read = fread(&cdata, sizeof(WAVE_CUE_HEADER), 1, file);
 
 			if (!read) {
 				ALERT(at_error, "Invalid WAVE cue chunk: %s\n", fpath.c_str());
 				goto cleanup;
 			}
-			
+
+			// How cue points work:
+			// 1  cue point  = loop starts at the cue point and ends at an equal distance from the end
+			// 2  cue points = loop starts at the 1st cue and ends at the 2nd cue
+			// 3+ cue points = same as 2 and the extras are ignored
+			//
+			// All fields besides "sampleStart" are ignored
+			// inverted cue points will crash the client
+			// (possible with 1 cue point if placed after the middle of the file)
+			/*
+			std::string cueString = "        cue points: ";
+			for (int i = 0; i < cdata.numCuePoints; i++) {
+				WAVE_CUE cue;
+				read = fread(&cue, sizeof(WAVE_CUE), 1, file);
+
+				std::string dataChunkId = std::string(cue.dataChunkId, 4);
+				if (!read || (dataChunkId != "data" && dataChunkId != "slnt")) {
+					ALERT(at_error, "Invalid WAVE cue chunk: %s\n", fpath.c_str());
+					goto cleanup;
+				}
+
+				float sampTime = sampleRate ? cue.sampleStart / (float)sampleRate : 0;
+				cueString += UTIL_VarArgs("%.2f  ", sampTime);
+			}
+			cueString += "\n";
+			ALERT(at_console, cueString.c_str());
+			*/
 			info.isLooped = cdata.numCuePoints > 0;
-			fseek(file, chunk.size - sizeof(WAVE_CHUNK_CUE), SEEK_CUR);
 		}
+		/*
+		else if (chunkName == "LIST") {
+			WAVE_LIST_HEADER cdata;
+			read = fread(&cdata, sizeof(WAVE_LIST_HEADER), 1, file);
+
+			if (!read) {
+				ALERT(at_error, "Invalid WAVE list chunk: %s\n", fpath.c_str());
+				goto cleanup;
+			}
+
+			std::string listType = std::string(cdata.listType, 4);
+
+			ALERT(at_console, "        type: %s\n", listType.c_str());
+			if (!strncmp(cdata.listType, "INFO", 4)) {
+				WAVE_LIST_INFO_HEADER iheader;
+				read = fread(&iheader, sizeof(WAVE_LIST_INFO_HEADER), 1, file);
+
+				if (!read) {
+					ALERT(at_error, "Invalid WAVE list chunk: %s\n", fpath.c_str());
+					goto cleanup;
+				}
+
+				std::string infoType = std::string(iheader.infoType, 4);
+
+				int readSize = V_min(511, iheader.textSize);
+				read = fread(infoText, readSize, 1, file);
+				infoText[readSize] = '\0';
+
+				ALERT(at_console, "        %s (%d): %s\n", infoType.c_str(), iheader.textSize, infoText);
+			}
+			else if (!strncmp(cdata.listType, "adtl", 4)) {
+				WAVE_ADTL_HEADER aheader;
+				read = fread(&aheader, sizeof(WAVE_ADTL_HEADER), 1, file);
+
+				std::string adtlType = std::string(aheader.adtlType, 4);
+
+				if (!strncmp(aheader.adtlType, "labl", 4) || !strncmp(aheader.adtlType, "note", 4)) {
+					int headerSize = sizeof(WAVE_ADTL_HEADER) + sizeof(WAVE_LIST_INFO_HEADER) + sizeof(WAVE_LIST_HEADER) + 4;
+					int readSize = V_min(511, chunk.size - headerSize);
+					read = fread(infoText, readSize, 1, file);
+					infoText[readSize] = '\0';
+					ALERT(at_console, "        %s for %d (%d): %s\n", adtlType.c_str(), aheader.cueId, readSize, infoText);
+				}
+				else if (!strncmp(aheader.adtlType, "ltxt", 4)) {
+					WAVE_CUE_LABEL lheader;
+					read = fread(&aheader, sizeof(WAVE_CUE_LABEL), 1, file);
+				}
+			}
+
+			fseek(file, chunk.size - sizeof(WAVE_LIST_HEADER), SEEK_CUR);
+		}
+		*/
 		else {
-			fseek(file, chunk.size, SEEK_CUR);
+			fseek(file, seekSize, SEEK_CUR);
 		}
 	}
 

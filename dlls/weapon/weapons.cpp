@@ -59,6 +59,7 @@ LINK_ENTITY_TO_CLASS(weapon_uzi, CMP5);
 LINK_ENTITY_TO_CLASS(weapon_uziakimbo, CMP5);
 LINK_ENTITY_TO_CLASS(weapon_m16, CMP5);
 LINK_ENTITY_TO_CLASS(weapon_m249, CMP5);
+LINK_ENTITY_TO_CLASS(weapon_saw, CMP5);
 LINK_ENTITY_TO_CLASS(weapon_minigun, CMP5);
 LINK_ENTITY_TO_CLASS(weapon_pipewrench, CCrowbar);
 LINK_ENTITY_TO_CLASS(weapon_eagle, CPython);

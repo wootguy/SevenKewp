@@ -219,6 +219,7 @@ void CTripmineGrenade :: PowerupThink( void  )
 	{
 		// make solid
 		pev->solid = SOLID_BBOX;
+		UTIL_SetSize(pev, Vector(-8, -8, -8), Vector(8, 8, 8));
 		UTIL_SetOrigin( pev, pev->origin );
 
 		MakeBeam( );

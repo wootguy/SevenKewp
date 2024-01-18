@@ -325,7 +325,9 @@ void CController :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				WRITE_COORD( 32 ); // decay
 			MESSAGE_END();
 
-			CBaseMonster *pBall = (CBaseMonster*)Create( "controller_head_ball", vecStart, pev->angles, edict() );
+			const char* soundlist = m_soundReplacementPath ? STRING(m_soundReplacementPath) : "";
+			std::map<std::string, std::string> keys = { {"soundlist", soundlist} };
+			CBaseMonster *pBall = (CBaseMonster*)Create( "controller_head_ball", vecStart, pev->angles, edict(), keys);
 
 			pBall->pev->velocity = Vector( 0, 0, 32 );
 			pBall->m_hEnemy = m_hEnemy;
@@ -389,23 +391,30 @@ void CController :: Spawn()
 //=========================================================
 // Precache - precaches all resources this monster needs
 //=========================================================
-void CController :: Precache()
+void CController::Precache()
 {
 	CBaseMonster::Precache();
 
 	m_defaultModel = "models/controller.mdl";
 	PRECACHE_MODEL(GetModel());
 
-	PRECACHE_SOUND_ARRAY( pAttackSounds );
-	PRECACHE_SOUND_ARRAY( pIdleSounds );
-	PRECACHE_SOUND_ARRAY( pAlertSounds );
-	PRECACHE_SOUND_ARRAY( pPainSounds );
-	PRECACHE_SOUND_ARRAY( pDeathSounds );
+	PRECACHE_SOUND_ARRAY(pAttackSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pDeathSounds);
 
-	PRECACHE_MODEL( "sprites/xspark4.spr");
+	PRECACHE_MODEL("sprites/xspark4.spr");
 
-	UTIL_PrecacheOther( "controller_energy_ball" );
-	UTIL_PrecacheOther( "controller_head_ball" );
+	UTIL_PrecacheOther("controller_energy_ball");
+
+	// precached here instead of in head_ball so that per-monster sound replacement works
+	PRECACHE_SOUND("debris/zap4.wav");
+	PRECACHE_SOUND("weapons/electro4.wav");
+
+	const char* soundlist = m_soundReplacementPath ? STRING(m_soundReplacementPath) : "";
+	std::map<std::string, std::string> keys = { {"soundlist", soundlist} };
+	UTIL_PrecacheOther( "controller_head_ball", keys);
 }	
 
 //=========================================================
@@ -1167,6 +1176,8 @@ LINK_ENTITY_TO_CLASS( controller_head_ball, CControllerHeadBall );
 
 void CControllerHeadBall :: Spawn( void )
 {
+	m_hOwner = Instance(pev->owner);
+
 	Precache( );
 	// motor
 	pev->movetype = MOVETYPE_FLY;
@@ -1190,13 +1201,13 @@ void CControllerHeadBall :: Spawn( void )
 
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	m_hOwner = Instance( pev->owner );
 	pev->dmgtime = gpGlobals->time;
 }
 
 
 void CControllerHeadBall :: Precache( void )
 {
+	CBaseMonster::Precache();
 	PRECACHE_MODEL("sprites/xspark1.spr");
 	PRECACHE_SOUND("debris/zap4.wav");
 	PRECACHE_SOUND("weapons/electro4.wav");
@@ -1266,7 +1277,10 @@ void CControllerHeadBall :: HuntThink( void  )
 			WRITE_BYTE( 10 );		// speed
 		MESSAGE_END();
 
+		int oldFlags = pev->flags;
+		pev->flags |= FL_MONSTER; // HACK: consider this entity for sound replacement
 		UTIL_EmitAmbientSound( ENT(pev), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
+		pev->flags = pev->flags;
 
 		m_flNextAttack = gpGlobals->time + 3.0;
 

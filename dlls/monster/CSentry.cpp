@@ -31,6 +31,10 @@ void CSentry::Precache()
 	CBaseTurret::Precache();
 	m_defaultModel = "models/sentry.mdl";
 	PRECACHE_MODEL(GetModel());
+
+	PRECACHE_SOUND("weapons/hks1.wav");
+	PRECACHE_SOUND("weapons/hks2.wav");
+	PRECACHE_SOUND("weapons/hks3.wav");
 }
 
 const char* CSentry::DisplayName() {

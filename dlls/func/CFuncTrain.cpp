@@ -157,6 +157,10 @@ void CFuncTrain::Next(void)
 		return;
 	}
 
+	if (ENT(m_pevCurrentTarget) == pTarg->edict()) {
+		return; // prevent infinite recursion
+	}
+
 	// Save last target in case we need to find it again
 	pev->message = pev->target;
 

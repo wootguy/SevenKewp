@@ -20,6 +20,13 @@
 
 std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
 
+enum LOCAL_MOVE_CHECK_TYPES {
+	LOCAL_MOVE_CHECK_ROUTE_SIMPLIFY,
+	LOCAL_MOVE_CHECK_BUILD_ROUTE,
+	LOCAL_MOVE_CHECK_TRIANGULATE,
+	LOCAL_MOVE_CHECK_MOVE
+};
+
 // Global Savedata for monster
 // UNDONE: Save schedule data?  Can this be done?  We may
 // lose our enemy pointer or other data (goal ent, target, etc)
@@ -826,6 +833,8 @@ void CBaseMonster::RouteSimplify(CBaseEntity* pTargetEnt)
 		return;
 	}
 
+	m_localMoveCheckType = LOCAL_MOVE_CHECK_ROUTE_SIMPLIFY;
+
 	outCount = 0;
 	vecStart = pev->origin;
 	for (i = 0; i < count - 1; i++)
@@ -1291,6 +1300,28 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 
 	vecStartPos = pev->origin;
 
+	static cvar_t* dev = CVAR_GET_POINTER("developer");
+
+	if (dev->value == 255) {
+		switch (m_localMoveCheckType) {
+		case LOCAL_MOVE_CHECK_ROUTE_SIMPLIFY:
+			te_debug_beam(vecStart, vecEnd, 2, RGBA(0, 64, 0));
+			break;
+		case LOCAL_MOVE_CHECK_BUILD_ROUTE:
+			te_debug_beam(vecStart, vecEnd, 2, RGBA(0, 64, 0));
+			break;
+		case LOCAL_MOVE_CHECK_TRIANGULATE:
+			te_debug_beam(vecStart, vecEnd, 2, RGBA(0, 0, 64));
+			break;
+		case LOCAL_MOVE_CHECK_MOVE:
+			te_debug_beam(vecStart, vecEnd, 2, RGBA(64, 0, 0));
+			break;
+		default:
+			//te_debug_beam(vecStart, vecEnd, 2, RGBA(64, 64, 64));
+			break;
+		}
+	}
+	
 
 	flYaw = UTIL_VecToYaw(vecEnd - vecStart);// build a yaw that points to the goal.
 	flDist = (vecEnd - vecStart).Length2D();// get the distance.
@@ -1350,6 +1381,8 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 //					fReturn = TRUE;
 //				else
 				iReturn = LOCALMOVE_INVALID;
+				//if (!FNullEnt(gpGlobals->trace_ent))
+				//	ALERT(at_aiconsole, "Local move blocked by %s\n", STRING(gpGlobals->trace_ent->v.classname));
 				break;
 			}
 
@@ -1529,6 +1562,8 @@ BOOL CBaseMonster::BuildRoute(const Vector& vecGoal, int iMoveFlag, CBaseEntity*
 	m_Route[0].vecLocation = vecGoal;
 	m_Route[0].iType = iMoveFlag | bits_MF_IS_GOAL;
 
+	m_localMoveCheckType = LOCAL_MOVE_CHECK_BUILD_ROUTE;
+
 	// check simple local move
 	iLocalMove = CheckLocalMove(pev->origin, vecGoal, pTarget, &flDist);
 
@@ -1705,6 +1740,8 @@ BOOL CBaseMonster::FTriangulate(const Vector& vecStart, const Vector& vecEnd, fl
 		}
 #endif
 
+		m_localMoveCheckType = LOCAL_MOVE_CHECK_TRIANGULATE;
+
 		if (CheckLocalMove(pev->origin, vecRight, pTargetEnt, NULL) == LOCALMOVE_VALID)
 		{
 			if (CheckLocalMove(vecRight, vecFarSide, pTargetEnt, NULL) == LOCALMOVE_VALID)
@@ -1850,6 +1887,8 @@ void CBaseMonster::Move(float flInterval)
 	{
 		pTargetEnt = m_hTargetEnt;
 	}
+
+	m_localMoveCheckType = LOCAL_MOVE_CHECK_MOVE;
 
 	// !!!BUGBUG - CheckDist should be derived from ground speed.
 	// If this fails, it should be because of some dynamic entity blocking this guy.
@@ -3372,6 +3411,8 @@ BOOL CBaseMonster::FindLateralCover(const Vector& vecThreat, const Vector& vecVi
 
 	vecLeftTest = vecRightTest = pev->origin;
 
+	m_localMoveCheckType = 5;
+
 	for (i = 0; i < COVER_CHECKS; i++)
 	{
 		vecLeftTest = vecLeftTest - vecStepRight;
@@ -3462,6 +3503,8 @@ void CBaseMonster::PlaySentence(const char* pszSentence, float duration, float v
 	{
 		if (pszSentence[0] == '!')
 			EMIT_SOUND_DYN(edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, PITCH_NORM);
+		else if (pszSentence[0] == '+')
+			EMIT_SOUND_DYN(edict(), CHAN_VOICE, pszSentence+1, volume, attenuation, 0, PITCH_NORM);
 		else
 			SENTENCEG_PlayRndSz(edict(), pszSentence, volume, attenuation, 0, PITCH_NORM);
 	}
@@ -5800,7 +5843,9 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	}
 	case TASK_MOVE_TO_TARGET_RANGE:
 	{
-		if ((m_hTargetEnt->pev->origin - pev->origin).Length() < 1)
+		if (!m_hTargetEnt)
+			TaskFail();
+		else if ((m_hTargetEnt->pev->origin - pev->origin).Length() < 1)
 			TaskComplete();
 		else
 		{
