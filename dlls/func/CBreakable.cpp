@@ -443,6 +443,7 @@ void CBreakable::BreakTouch(CBaseEntity* pOther)
 		// play creaking sound here.
 		DamageSound();
 
+		m_hActivator = pOther;
 		SetThink(&CBreakable::Die);
 		SetTouch(NULL);
 
@@ -471,6 +472,7 @@ void CBreakable::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 		UTIL_MakeVectors(pev->angles);
 		g_vecAttackDir = gpGlobals->v_forward;
 
+		m_hActivator = pActivator;
 		Die();
 	}
 }
@@ -554,6 +556,7 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	if (pev->health <= 0)
 	{
 		Killed(pevAttacker, GIB_NORMAL);
+		m_hActivator = Instance(pevAttacker);
 		Die();
 		return 0;
 	}
@@ -567,7 +570,7 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 }
 
 
-void CBreakable::Die(void)
+void CBreakable::Die()
 {
 	Vector vecSpot;// shard origin
 	Vector vecVelocity;// shard velocity
@@ -729,7 +732,7 @@ void CBreakable::Die(void)
 
 	pev->solid = SOLID_NOT;
 	// Fire targets on break
-	SUB_UseTargets(NULL, USE_TOGGLE, 0);
+	SUB_UseTargets(m_hActivator.GetEntity(), USE_TOGGLE, 0);
 
 	SetThink(&CBreakable::SUB_Remove);
 	pev->nextthink = pev->ltime + 0.1;

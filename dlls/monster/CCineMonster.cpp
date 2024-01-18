@@ -525,13 +525,22 @@ void CCineMonster::DelayStart(int state)
 			CCineMonster* pTarget = GetClassPtr((CCineMonster*)VARS(pentCine));
 			if (state)
 			{
-				pTarget->m_iDelay++;
+				//pTarget->m_iDelay++;
+				pTarget->m_iDelay = 1;
 			}
 			else
 			{
-				pTarget->m_iDelay--;
-				if (pTarget->m_iDelay <= 0)
-					pTarget->m_startTime = gpGlobals->time + 0.05;
+				// TODO: why was this done originally? seems like it was to allow multiple
+				// monsters to use it at the same time, preventing the sequence playing until
+				// they all arrive. But that isn't possible? they would need to somehow
+				// occupy the same space. FindEntity only ever returns the first monster
+				// found anyway?? iDelay is never reset if the monster is interrupted, so
+				// the sequence breaks when treating this as a counter.
+				//pTarget->m_iDelay--;
+				//if (pTarget->m_iDelay <= 0)
+
+				pTarget->m_iDelay = 0;
+				pTarget->m_startTime = gpGlobals->time + 0.05;
 			}
 		}
 		pentCine = FIND_ENTITY_BY_TARGETNAME(pentCine, STRING(pev->targetname));

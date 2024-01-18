@@ -1688,18 +1688,13 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 
 void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore )
 {
-	int index = entindex();
-
 	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
 		CBaseEntity *pPlayer = UTIL_PlayerByIndex( i );
 
-		if ( pPlayer && i != index )
+		if (pPlayer && IRelationship( pPlayer ) == R_AL )
 		{
-			if ( g_pGameRules->PlayerRelationship( this, pPlayer ) == GR_TEAMMATE )
-			{
-				pPlayer->AddPoints( score, bAllowNegativeScore );
-			}
+			pPlayer->AddPoints( score, bAllowNegativeScore );
 		}
 	}
 }

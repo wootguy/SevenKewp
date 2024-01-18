@@ -90,6 +90,7 @@ public:
 	int m_xenSpriteIdx;
 	int m_xenBeamSpriteIdx;
 	float m_nextXenSound;
+	int m_changeRenderMode;
 
 	string_t m_xenmakerTemplate; // grab xenmaker settings from another entity
 
@@ -163,6 +164,11 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 	else if (FStrEq(pkvd->szKeyName, "wpn_w_model"))
 	{
 		m_weaponModelW = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "change_rendermode"))
+	{
+		m_changeRenderMode = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 
@@ -440,11 +446,13 @@ void CMonsterMaker::MakeMonster( void )
 
 	// TODO: Repel monsters need to do this setting-copy stuff too.
 	// make a generic function that they all use instead of duplicating codes
-	pent->v.rendermode = pev->rendermode;
-	pent->v.renderamt = pev->renderamt;
-	pent->v.renderfx = pev->renderfx;
-	pent->v.rendercolor = pev->rendercolor;
-	pent->v.weapons = pev->weapons;
+	if (m_changeRenderMode) {
+		pent->v.rendermode = pev->rendermode;
+		pent->v.renderamt = pev->renderamt;
+		pent->v.renderfx = pev->renderfx;
+		pent->v.rendercolor = pev->rendercolor;
+		pent->v.weapons = pev->weapons;
+	}
 
 	CBaseMonster* mon = ((CBaseEntity*)GET_PRIVATE(pent))->MyMonsterPointer();
 	if (mon) {

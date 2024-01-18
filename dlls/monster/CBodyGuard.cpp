@@ -250,7 +250,7 @@ void CBodyGuard::Spawn()
 
 void CBodyGuard::Precache()
 {
-	CBaseGrunt::Precache();
+	CBaseGrunt::BasePrecache();
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDeathSounds);

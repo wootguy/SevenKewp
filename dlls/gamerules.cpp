@@ -411,6 +411,7 @@ void execMapCfg() {
 		"weapon_uziakimbo",
 		"weapon_m16",
 		"weapon_m249",
+		"weapon_saw",
 		"weapon_pipewrench",
 		"weapon_minigun",
 		"weapon_grapple",

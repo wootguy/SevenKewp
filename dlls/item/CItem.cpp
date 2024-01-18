@@ -35,12 +35,20 @@ void CItem::Spawn(void)
 		pev->solid = SOLID_NOT;
 	}
 
-	if (DROP_TO_FLOOR(ENT(pev)) == 0)
-	{
-		ALERT(at_error, "Item %s fell out of level at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
-		UTIL_Remove(this);
-		return;
+	if (pev->movetype == MOVETYPE_TOSS) {
+		int dropResult = DROP_TO_FLOOR(ENT(pev));
+
+		if (dropResult == 0)
+		{
+			ALERT(at_error, "Item %s fell out of level at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
+			UTIL_Remove(this);
+			return;
+		}
+		else if (dropResult == -1) {
+			ALERT(at_error, "Item %s spawned inside solid at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
+		}
 	}
+	
 }
 
 void CItem::KeyValue(KeyValueData* pkvd) {
