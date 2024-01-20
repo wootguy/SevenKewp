@@ -30,7 +30,7 @@ public:
 
 	entvars_t* m_pevCurrentTarget;
 	int			m_sounds;
-	BOOL		m_activated;
+	int		m_activated; // 0 = never activated, 1 = activated, 2 = toggled off after activate
 };
 
 LINK_ENTITY_TO_CLASS(func_train, CFuncTrain);
@@ -80,6 +80,7 @@ void CFuncTrain::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 		// Move toward my target
 		pev->spawnflags &= ~SF_TRAIN_WAIT_RETRIGGER;
 		Next();
+		m_activated = 1;
 	}
 	else
 	{
@@ -91,6 +92,7 @@ void CFuncTrain::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 		pev->velocity = g_vecZero;
 		if (pev->noiseStopMoving)
 			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+		m_activated = 2;
 	}
 }
 
@@ -157,7 +159,7 @@ void CFuncTrain::Next(void)
 		return;
 	}
 
-	if (ENT(m_pevCurrentTarget) == pTarg->edict()) {
+	if (m_activated != 2 && ENT(m_pevCurrentTarget) == pTarg->edict()) {
 		return; // prevent infinite recursion
 	}
 
@@ -206,7 +208,7 @@ void CFuncTrain::Activate(void)
 	// Not yet active, so teleport to first target
 	if (!m_activated)
 	{
-		m_activated = TRUE;
+		m_activated = 1;
 		entvars_t* pevTarg = VARS(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target)));
 
 		pev->target = pevTarg->target;
@@ -258,7 +260,7 @@ void CFuncTrain::Spawn(void)
 	UTIL_SetSize(pev, pev->mins, pev->maxs);
 	UTIL_SetOrigin(pev, pev->origin);
 
-	m_activated = FALSE;
+	m_activated = 0;
 
 	if (m_volume == 0)
 		m_volume = 0.85;
