@@ -243,7 +243,7 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 	}
 
 	if (m_pNext)
-		m_pNext->UpdateClientData(pPlayer);
+		((CBasePlayerItem*)m_pNext.GetEntity())->UpdateClientData(pPlayer);
 
 	return 1;
 }

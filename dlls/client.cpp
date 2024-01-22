@@ -1328,7 +1328,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 //						item->m_flPumpTime				= V_max( gun->m_flPumpTime, -0.001 );
 					}
 				}
-				pPlayerItem = pPlayerItem->m_pNext;
+				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
 			}
 		}
 	}

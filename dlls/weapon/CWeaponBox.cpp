@@ -78,7 +78,7 @@ void CWeaponBox::Kill(void)
 		{
 			pWeapon->SetThink(&CBasePlayerItem::SUB_Remove);
 			pWeapon->pev->nextthink = gpGlobals->time + 0.1;
-			pWeapon = pWeapon->m_pNext;
+			pWeapon = (CBasePlayerItem*)pWeapon->m_pNext.GetEntity();
 		}
 	}
 
@@ -143,7 +143,7 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 				//ALERT ( at_console, "trying to give %s\n", STRING( m_rgpPlayerItems[ i ]->pev->classname ) );
 
 				pItem = m_rgpPlayerItems[i];
-				m_rgpPlayerItems[i] = m_rgpPlayerItems[i]->m_pNext;// unlink this weapon from the box
+				m_rgpPlayerItems[i] = (CBasePlayerItem*)m_rgpPlayerItems[i]->m_pNext.GetEntity();// unlink this weapon from the box
 
 				if (pPlayer->AddPlayerItem(pItem))
 				{
@@ -287,7 +287,7 @@ BOOL CWeaponBox::HasWeapon(CBasePlayerItem* pCheckItem)
 		{
 			return TRUE;
 		}
-		pItem = pItem->m_pNext;
+		pItem = (CBasePlayerItem*)pItem->m_pNext.GetEntity();
 	}
 
 	return FALSE;
