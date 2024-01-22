@@ -368,7 +368,7 @@ BOOL CHalfLifeMultiplay :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerI
 				}
 			}
 
-			pCheck = pCheck->m_pNext;
+			pCheck = (CBasePlayerItem*)pCheck->m_pNext.GetEntity();
 		}
 	}
 
@@ -978,7 +978,7 @@ BOOL CHalfLifeMultiplay::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerIte
 					return FALSE;
 				}
 
-				it = it->m_pNext;
+				it = (CBasePlayerItem*)it->m_pNext.GetEntity();
 			}
 		}
 	}

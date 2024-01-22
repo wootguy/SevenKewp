@@ -13,7 +13,7 @@ extern int gEvilImpulse101;
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
 {
 	DEFINE_FIELD(CBasePlayerItem, m_pPlayer, FIELD_CLASSPTR),
-	DEFINE_FIELD(CBasePlayerItem, m_pNext, FIELD_CLASSPTR),
+	DEFINE_FIELD(CBasePlayerItem, m_pNext, FIELD_EHANDLE),
 	//DEFINE_FIELD( CBasePlayerItem, m_fKnown, FIELD_INTEGER ),Reset to zero on load
 	DEFINE_FIELD(CBasePlayerItem, m_iId, FIELD_INTEGER),
 	// DEFINE_FIELD( CBasePlayerItem, m_iIdPrimary, FIELD_INTEGER ),

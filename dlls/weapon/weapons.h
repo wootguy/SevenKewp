@@ -271,7 +271,7 @@ public:
 	static AmmoInfo AmmoInfoArray[ MAX_AMMO_SLOTS ];
 
 	CBasePlayer	*m_pPlayer;
-	CBasePlayerItem *m_pNext;
+	EHANDLE m_pNext;
 	int		m_iId;												// WEAPON_???
 
 	virtual int iItemSlot( void ) { return 0; }			// return 0 to MAX_ITEMS_SLOTS, used in hud

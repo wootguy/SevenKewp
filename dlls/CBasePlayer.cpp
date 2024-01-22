@@ -674,7 +674,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 					break;
 				}
 
-				pPlayerItem = pPlayerItem->m_pNext;
+				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
 			}
 		}
 	}
@@ -770,7 +770,7 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 		while (m_pActiveItem)
 		{
 			CBasePlayerItem* item = (CBasePlayerItem*)m_pActiveItem.GetEntity();
-			pPendingItem = item->m_pNext;
+			pPendingItem = (CBasePlayerItem*)item->m_pNext.GetEntity();
 			item->Drop( );
 			m_pActiveItem = pPendingItem;
 		}
@@ -2682,7 +2682,7 @@ pt_end:
 					
 				}
 
-				pPlayerItem = pPlayerItem->m_pNext;
+				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
 			}
 		}
 	}
@@ -2972,7 +2972,7 @@ void CBasePlayer::SelectNextItem( int iItem )
 	if (pItem == activeItem)
 	{
 		// select the next one in the chain
-		pItem = activeItem->m_pNext;
+		pItem = (CBasePlayerItem*)activeItem->m_pNext.GetEntity();;
 		if (! pItem)
 		{
 			return;
@@ -2981,7 +2981,7 @@ void CBasePlayer::SelectNextItem( int iItem )
 		CBasePlayerItem *pLast;
 		pLast = pItem;
 		while (pLast->m_pNext)
-			pLast = pLast->m_pNext;
+			pLast = (CBasePlayerItem*)pLast->m_pNext.GetEntity();
 
 		// relink chain
 		pLast->m_pNext = activeItem;
@@ -3024,7 +3024,7 @@ void CBasePlayer::SelectItem(const char *pstr)
 			{
 				if (FClassnameIs(pItem->pev, pstr))
 					break;
-				pItem = pItem->m_pNext;
+				pItem = (CBasePlayerItem*)pItem->m_pNext.GetEntity();
 			}
 		}
 
@@ -3513,7 +3513,7 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 			}
 			return FALSE;
 		}
-		pInsert = pInsert->m_pNext;
+		pInsert = (CBasePlayerItem*)pInsert->m_pNext.GetEntity();
 	}
 
 
@@ -3565,9 +3565,9 @@ int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem )
 	}
 	else
 	{
-		while (pPrev && pPrev->m_pNext != pItem)
+		while (pPrev && pPrev->m_pNext.GetEntity() != pItem)
 		{
-			pPrev = pPrev->m_pNext;
+			pPrev = (CBasePlayerItem*)pPrev->m_pNext.GetEntity();
 		}
 		if (pPrev)
 		{
@@ -4324,7 +4324,7 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 				}
 			}
 
-			pWeapon = pWeapon->m_pNext; 
+			pWeapon = (CBasePlayerItem*)pWeapon->m_pNext.GetEntity();
 		}
 
 		
@@ -4387,7 +4387,7 @@ BOOL CBasePlayer::HasPlayerItem( CBasePlayerItem *pCheckItem )
 		{
 			return TRUE;
 		}
-		pItem = pItem->m_pNext;
+		pItem = (CBasePlayerItem*)pItem->m_pNext.GetEntity();
 	}
 
 	return FALSE;
@@ -4411,7 +4411,7 @@ BOOL CBasePlayer::HasNamedPlayerItem( const char *pszItemName )
 			{
 				return TRUE;
 			}
-			pItem = pItem->m_pNext;
+			pItem = (CBasePlayerItem*)pItem->m_pNext.GetEntity();
 		}
 	}
 
