@@ -226,7 +226,15 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 		GetAttachment(0, handOrigin, handAngles);
 
 		UTIL_MakeVectors(pev->angles);
-		Vector vecThrowDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - handOrigin).Normalize();
+		Vector vecThrowDir;
+
+		if (m_hEnemy) {
+			vecThrowDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - handOrigin).Normalize();
+		}
+		else {
+			vecThrowDir = gpGlobals->v_forward;
+		}
+
 		vecThrowDir.x += RANDOM_FLOAT(-0.01, 0.01);
 		vecThrowDir.y += RANDOM_FLOAT(-0.01, 0.01);
 		vecThrowDir.z += RANDOM_FLOAT(-0.01, 0.01);
