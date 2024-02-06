@@ -197,6 +197,7 @@ public:
 	void SetYawSpeed( void );
 	int  Classify ( void );
 	const char* DisplayName();
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void LayHeadcrab( void );
 

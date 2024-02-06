@@ -159,6 +159,7 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 		if ( fCopyCorpse )
 		{
 			// make a copy of the dead body for appearances sake
+			pev->effects &= ~EF_DIMLIGHT; // turn off flashlight
 			CopyToBodyQue(pev);
 		}
 
