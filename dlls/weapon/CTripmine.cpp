@@ -53,7 +53,8 @@ class CTripmineGrenade : public CGrenade
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	
+	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Tripmine"; }
+
 	void EXPORT WarningThink( void );
 	void EXPORT PowerupThink( void );
 	void EXPORT BeamBreakThink( void );

@@ -721,6 +721,10 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 			if (Inflictor)
 				killer_weapon_name = Inflictor->GetDeathNoticeWeapon();
 		}
+
+		// max_players is 64 on the client, but >32 slots are unused(?) so this should be empty
+		// changes "committed suicide with X" client message to "killed with X"
+		killer_index = 60;
 	}
 
 	// strip the monster_* or weapon_* from the inflictor's classname
@@ -746,80 +750,36 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	if ( pVictim->pev == pKiller )  
 	{
 		// killed self
-
-		// team match?
-		if ( g_teamplay )
-		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" committed suicide with \"%s\"\n",  
-				STRING( pVictim->pev->netname ), 
-				GETPLAYERUSERID( pVictim->edict() ),
-				GETPLAYERAUTHID( pVictim->edict() ),
-				g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pVictim->edict() ), "model" ),
-				killer_weapon_name );		
-		}
-		else
-		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%i>\" committed suicide with \"%s\"\n",  
-				STRING( pVictim->pev->netname ), 
-				GETPLAYERUSERID( pVictim->edict() ),
-				GETPLAYERAUTHID( pVictim->edict() ),
-				GETPLAYERUSERID( pVictim->edict() ),
-				killer_weapon_name );		
-		}
+		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" committed suicide with \"%s\"\n",  
+			STRING( pVictim->pev->netname ), 
+			GETPLAYERUSERID( pVictim->edict() ),
+			GETPLAYERAUTHID( pVictim->edict() ),
+			GETPLAYERUSERID( pVictim->edict() ),
+			killer_weapon_name );		
 	}
 	else if ( pKiller->flags & FL_CLIENT )
 	{
-		// team match?
-		if ( g_teamplay )
-		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" killed \"%s<%i><%s><%s>\" with \"%s\"\n",  
-				STRING( pKiller->netname ),
-				GETPLAYERUSERID( ENT(pKiller) ),
-				GETPLAYERAUTHID( ENT(pKiller) ),
-				g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( ENT(pKiller) ), "model" ),
-				STRING( pVictim->pev->netname ),
-				GETPLAYERUSERID( pVictim->edict() ),
-				GETPLAYERAUTHID( pVictim->edict() ),
-				g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pVictim->edict() ), "model" ),
-				killer_weapon_name );
-		}
-		else
-		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%i>\" killed \"%s<%i><%s><%i>\" with \"%s\"\n",  
-				STRING( pKiller->netname ),
-				GETPLAYERUSERID( ENT(pKiller) ),
-				GETPLAYERAUTHID( ENT(pKiller) ),
-				GETPLAYERUSERID( ENT(pKiller) ),
-				STRING( pVictim->pev->netname ),
-				GETPLAYERUSERID( pVictim->edict() ),
-				GETPLAYERAUTHID( pVictim->edict() ),
-				GETPLAYERUSERID( pVictim->edict() ),
-				killer_weapon_name );
-		}
+		// killed by other player
+		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" killed \"%s<%i><%s><%i>\" with \"%s\"\n",  
+			STRING( pKiller->netname ),
+			GETPLAYERUSERID( ENT(pKiller) ),
+			GETPLAYERAUTHID( ENT(pKiller) ),
+			GETPLAYERUSERID( ENT(pKiller) ),
+			STRING( pVictim->pev->netname ),
+			GETPLAYERUSERID( pVictim->edict() ),
+			GETPLAYERAUTHID( pVictim->edict() ),
+			GETPLAYERUSERID( pVictim->edict() ),
+			killer_weapon_name );
 	}
 	else
 	{ 
-		// killed by the world
-
-		// team match?
-		if ( g_teamplay )
-		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" committed suicide with \"%s\" (world)\n",
-				STRING( pVictim->pev->netname ), 
-				GETPLAYERUSERID( pVictim->edict() ), 
-				GETPLAYERAUTHID( pVictim->edict() ),
-				g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pVictim->edict() ), "model" ),
-				killer_weapon_name );		
-		}
-		else
-		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%i>\" committed suicide with \"%s\" (world)\n",
-				STRING( pVictim->pev->netname ), 
-				GETPLAYERUSERID( pVictim->edict() ), 
-				GETPLAYERAUTHID( pVictim->edict() ),
-				GETPLAYERUSERID( pVictim->edict() ),
-				killer_weapon_name );		
-		}
+		// killed by a monster or world
+		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" killed by \"%s\"\n",
+			STRING( pVictim->pev->netname ), 
+			GETPLAYERUSERID( pVictim->edict() ), 
+			GETPLAYERAUTHID( pVictim->edict() ),
+			GETPLAYERUSERID( pVictim->edict() ),
+			Killer->DisplayName());
 	}
 
 	MESSAGE_BEGIN( MSG_SPEC, SVC_DIRECTOR );

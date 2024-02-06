@@ -1747,9 +1747,17 @@ void CBasePlayer::UpdateStatusBar()
 
 				int irel = IRelationship(pEntity);
 				bool isFriendly = irel == R_NO || irel == R_AL;
-				const char* srel = isFriendly ? "Friend" : "Enemy";
 
-				strcpy(sbuf1, UTIL_VarArgs("1 %s: %s", srel, name));
+				const char* srel = "";
+
+				if (irel == R_AL) {
+					srel = "Friend: ";
+				}
+				else if (irel == R_DL || irel == R_HT || irel == R_NM) {
+					srel = "Enemy: ";
+				}
+
+				strcpy(sbuf1, UTIL_VarArgs("1 %s%s", srel, name));
 				strcpy(sbuf0, UTIL_VarArgs("2 Health: %d", hp));
 
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());

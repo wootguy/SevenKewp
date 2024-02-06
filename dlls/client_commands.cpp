@@ -259,8 +259,9 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	WRITE_STRING(text);
 	MESSAGE_END();
 
-	// echo to server console
-	g_engfuncs.pfnServerPrint(text);
+	// echo to server console for listen servers, dedicated servers should have logs enabled
+	if (!IS_DEDICATED_SERVER())
+		g_engfuncs.pfnServerPrint(text);
 
 	const char* temp;
 	if (teamonly)

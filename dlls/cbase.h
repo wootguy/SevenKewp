@@ -759,6 +759,7 @@ public:
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );
 	void loadReplacementFiles();
+	const char* getDisplayName() { return "World"; }
 
 	string_t m_globalModelList;
 };
