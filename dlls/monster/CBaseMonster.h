@@ -386,7 +386,7 @@ public:
 	// returns a custom model if set, otherwise the default model
 	const char* GetModel();
 
-	const char* DisplayName();
+	virtual const char* DisplayName();
 
 	// handles mp_npckill/killnpc cvars and takedamage key
 	bool IsImmune(entvars_t* attacker);
