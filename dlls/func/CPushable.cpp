@@ -36,6 +36,7 @@ public:
 	void	EXPORT MoveThink(void);
 	void    PostMove(bool clampSpeed); // clamps velocity and plays movement sounds
 	//	virtual void	SetActivator( CBaseEntity *pActivator ) { m_pPusher = pActivator; }
+	BOOL	IsBreakable() { return pev->spawnflags & SF_PUSH_BREAKABLE; }
 
 	virtual int	ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE; }
 	virtual int		Save(CSave& save);
@@ -207,6 +208,11 @@ void CPushable::Touch(CBaseEntity* pOther)
 {
 	if (FClassnameIs(pOther->pev, "worldspawn"))
 		return;
+
+	if (pOther->IsMonster() && pOther->pev->deadflag == DEAD_DEAD) {
+		// don't let corpses block pushables
+		pOther->Killed(pev, GIB_ALWAYS);
+	}
 
 	UpdatePushDir(pOther, 1);
 }
