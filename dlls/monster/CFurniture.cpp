@@ -39,7 +39,7 @@ void CFurniture::Spawn()
 {
 	PRECACHE_MODEL((char*)STRING(pev->model));
 	SET_MODEL(ENT(pev), STRING(pev->model));
-	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+	SetSize(g_vecZero, g_vecZero);
 
 	pev->movetype = MOVETYPE_NONE;
 	pev->solid = SOLID_BBOX;
