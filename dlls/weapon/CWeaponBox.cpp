@@ -52,8 +52,10 @@ void CWeaponBox::Spawn(void)
 {
 	Precache();
 
-	pev->movetype = MOVETYPE_TOSS;
+	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_TRIGGER;
+
+	m_spawnTime = gpGlobals->time;
 
 	UTIL_SetSize(pev, g_vecZero, g_vecZero);
 
@@ -92,9 +94,24 @@ void CWeaponBox::Kill(void)
 //=========================================================
 void CWeaponBox::Touch(CBaseEntity* pOther)
 {
-	if (!(pev->flags & FL_ONGROUND))
-	{
-		return;
+	if (pOther->IsBSPModel()) {
+		if (pev->velocity.Length() > 100) {
+			pev->velocity = pev->velocity * 0.5f;
+			if (RANDOM_LONG(0, 1)) {
+				pev->avelocity.x *= -1;
+				pev->avelocity.z *= -1;
+			}
+		}
+		else {
+			pev->movetype = MOVETYPE_TOSS;
+			pev->avelocity = Vector(0, 0, 0);
+		}
+
+		int channel = (m_lastSoundChannel++ % 2) == 1 ? CHAN_VOICE : CHAN_ITEM;
+		EMIT_SOUND_DYN(ENT(pev), channel, "items/weapondrop1.wav", 0.7f, ATTN_IDLE, 0, RANDOM_LONG(90, 110));
+
+		pev->angles.x = 0;
+		pev->angles.z = 0;
 	}
 
 	if (!pOther->IsPlayer())
@@ -111,6 +128,13 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 
 	CBasePlayer* pPlayer = (CBasePlayer*)pOther;
 	int i;
+
+	if (pev->owner && ENTINDEX(pOther->edict()) == ENTINDEX(pev->owner)) {
+		// owner picking the weapon back up
+		if (gpGlobals->time - m_spawnTime < 0.5f) {
+			return; // don't instantly pick up item again while it's being thrown
+		}
+	}
 
 	// dole out ammo
 	for (i = 0; i < MAX_AMMO_SLOTS; i++)

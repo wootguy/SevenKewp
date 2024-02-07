@@ -42,6 +42,7 @@
 #include "CBloodSplat.h"
 #include "CBaseDMStart.h"
 #include "CAmbientGeneric.h"
+#include "game.h"
 
 // #define DUCKFIX
 
@@ -721,7 +722,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	pWeaponBox->pev->angles.z = 0;
 
 	pWeaponBox->SetThink( &CWeaponBox::Kill );
-	pWeaponBox->pev->nextthink = gpGlobals->time + 120;
+	pWeaponBox->pev->nextthink = gpGlobals->time + item_despawn_time.value;
 
 // back these two lists up to their first elements
 	iPA = 0;
@@ -740,12 +741,19 @@ void CBasePlayer::PackDeadPlayerItems( void )
 		// weapon unhooked from the player. Pack it into der box.
 		pWeaponBox->PackWeapon( rgpPackWeapons[ iPW ] );
 
+		if (iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE) {
+			SET_MODEL(pWeaponBox->edict(), rgpPackWeapons[iPW]->GetModelW());
+		}
+
 		iPW++;
 	}
 
 	pWeaponBox->pev->velocity = pev->velocity * 1.2;// weaponbox has player's velocity, then some.
+	pWeaponBox->pev->avelocity = Vector(0, 256, 256);
 
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
+
+	CleanupWeaponboxes();
 }
 
 void CBasePlayer::RemoveAllItems( BOOL removeSuit )
@@ -2743,6 +2751,8 @@ void CBasePlayer::Spawn( void )
 	pev->renderamt = 0;
 	pev->renderfx = 0;
 	pev->rendercolor = Vector(0,0,0);
+	m_lastDropTime = 0;
+	memset(m_nextItemPickups, 0, sizeof(float) * MAX_ITEM_TYPES);
 
 	m_bitsHUDDamage		= -1;
 	m_bitsDamageType	= 0;
@@ -4284,16 +4294,43 @@ int CBasePlayer :: GetCustomDecalFrames( void )
 	return m_nCustomSprayFrames;
 }
 
+void CBasePlayer::CleanupWeaponboxes(void)
+{
+	edict_t* ent = NULL;
+	CBaseEntity* oldestBox = NULL;
+	float oldestTime = FLT_MAX;
+	int totalBoxes = 0;
+	int thisEntIdx = ENTINDEX(edict());
+	while (!FNullEnt(ent = FIND_ENTITY_BY_CLASSNAME(ent, "weaponbox"))) {
+		CWeaponBox* oldbox = (CWeaponBox*)GET_PRIVATE(ent);
+		if (oldbox && ent->v.owner && ENTINDEX(ent->v.owner) == thisEntIdx) {
+			totalBoxes++;
+			if (oldbox->m_spawnTime < oldestTime) {
+				oldestBox = oldbox;
+				oldestTime = oldbox->m_spawnTime;
+			}
+		}
+	}
+
+	if (totalBoxes > max_item_drops.value) {
+		UTIL_Remove(oldestBox);
+	}
+}
+
 //=========================================================
 // DropPlayerItem - drop the named item, or if no name,
 // the active item. 
 //=========================================================
 void CBasePlayer::DropPlayerItem ( char *pszItemName )
 {
-	if ( !g_pGameRules->IsMultiplayer() || (weaponstay.value > 0) )
+	if ( !g_pGameRules->IsMultiplayer() )
 	{
 		// no dropping in single player.
 		return;
+	}
+
+	if (gpGlobals->time - m_lastDropTime < 0.2f) {
+		return; // cooldown
 	}
 
 	if ( !strlen( pszItemName ) )
@@ -4340,19 +4377,38 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 		// item we want to drop and hit a BREAK;  pWeapon is the item.
 		if ( pWeapon )
 		{
-			if ( !g_pGameRules->GetNextBestWeapon( this, pWeapon ) )
-				return; // can't drop the item they asked for, may be our last item or something we can't holster
+			if ( !g_pGameRules->GetNextBestWeapon( this, pWeapon ) && !pWeapon->CanHolster())
+				return; // can't drop the item they asked for, may be something we can't holster
 
-			UTIL_MakeVectors ( pev->angles ); 
+			m_lastDropTime = gpGlobals->time;
+
+			UTIL_MakeVectors ( pev->v_angle ); 
 
 			pev->weapons &= ~(1<<pWeapon->m_iId);// take item off hud
 
 			CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, edict() );
 			pWeaponBox->pev->angles.x = 0;
 			pWeaponBox->pev->angles.z = 0;
+			pWeaponBox->pev->avelocity = Vector(0, 256, 256);
+
+			if (!strcmp(STRING(pWeapon->pev->classname), "weapon_9mmAR")) {
+				// mp5 bounces look better with X rotations
+				pWeaponBox->pev->avelocity = Vector(256, 256, 0);
+			}
+
 			pWeaponBox->PackWeapon( pWeapon );
-			pWeaponBox->pev->velocity = gpGlobals->v_forward * 300 + gpGlobals->v_forward * 100;
+			pWeaponBox->pev->velocity = pev->velocity + gpGlobals->v_forward * 400;
 			
+			CBasePlayerWeapon* wep = pWeapon->GetWeaponPtr();
+			if (wep)
+				SET_MODEL(pWeaponBox->edict(), wep->GetModelW());
+
+			// prevent players dropping at pickup points to get more ammo
+			m_nextItemPickups[pWeapon->m_iId] = gpGlobals->time + item_repick_time.value;
+
+			pWeaponBox->SetThink(&CWeaponBox::Kill);
+			pWeaponBox->pev->nextthink = gpGlobals->time + item_despawn_time.value;
+
 			// drop half of the ammo for this weapon.
 			int	iAmmoIndex;
 
@@ -4376,6 +4432,8 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 				}
 
 			}
+
+			CleanupWeaponboxes();
 
 			return;// we're done, so stop searching with the FOR loop.
 		}

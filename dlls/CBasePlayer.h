@@ -206,6 +206,8 @@ public:
 
 	int m_nCustomSprayFrames;// Custom clan logo frames for this player
 	float	m_flNextDecalTime;// next time this player can spray a decal
+	float	m_lastDropTime; // last time player dropped a weapon
+	float	m_nextItemPickups[MAX_WEAPONS]; // next time player can pick up a weapon
 
 	char m_szTeamName[TEAM_NAME_LENGTH];
 
@@ -315,6 +317,8 @@ public:
 
 	void SetCustomDecalFrames( int nFrames );
 	int GetCustomDecalFrames( void );
+
+	void CleanupWeaponboxes(void);
 
 	void TabulateAmmo( void );
 

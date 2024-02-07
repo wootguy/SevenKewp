@@ -177,6 +177,14 @@ void CBasePlayerItem::DefaultTouch(CBaseEntity* pOther)
 		return;
 	}
 
+	if (!gEvilImpulse101) {
+		if (gpGlobals->time < pPlayer->m_nextItemPickups[m_iId]) {
+			return;
+		}
+
+		pPlayer->m_nextItemPickups[m_iId] = gpGlobals->time + item_repick_time.value;
+	}
+
 	if (pOther->AddPlayerItem(this))
 	{
 		AttachToPlayer(pPlayer);
