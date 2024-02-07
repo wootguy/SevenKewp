@@ -76,6 +76,7 @@ void CMP5::Precache( void )
 
 	PRECACHE_SOUND("items/clipinsert1.wav");
 	PRECACHE_SOUND("items/cliprelease1.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/9mmar_reload.wav"); // combined reload sound for less network usage and code
 
 	PRECACHE_SOUND ("weapons/hks1.wav");// H to the K
 	PRECACHE_SOUND ("weapons/hks2.wav");// H to the K
@@ -252,7 +253,14 @@ void CMP5::Reload( void )
 	if ( m_pPlayer->ammo_9mm <= 0 )
 		return;
 
-	DefaultReload( MP5_MAX_CLIP, MP5_RELOAD, 1.5 );
+	if (DefaultReload(MP5_MAX_CLIP, MP5_RELOAD, 1.5)) {
+		// send reload sound to everyone except the reloader
+		// because the reloading client plays sounds via model events
+		edict_t* plr = ENT(m_pPlayer->pev);
+		uint32_t messageTargets = 0xffffffff & ~PLRBIT(plr);
+		StartSound(plr, CHAN_ITEM, MOD_SND_FOLDER "weapons/9mmar_reload.wav", 1.0f,
+			ATTN_IDLE, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
+	}
 }
 
 

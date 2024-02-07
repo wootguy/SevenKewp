@@ -32,6 +32,7 @@
 #include <set>
 #include <string>
 #include "Bsp.h"
+#include "mstream.h"
 
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
@@ -54,6 +55,8 @@ extern std::set<std::string> g_tryPrecacheSounds;
 extern std::set<std::string> g_tryPrecacheGeneric;
 
 extern std::map<std::string, WavInfo> g_wavInfos; // cached wav info, cleared on map change
+
+extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 
 #define NOT_PRECACHED_MODEL "models/hlcoop/not_precached.mdl"
 #define NOT_PRECACHED_SOUND "common/null.wav"
@@ -178,12 +181,14 @@ inline entvars_t *VARS(edict_t *pent)
 	return &pent->v; 
 }
 
-inline entvars_t* VARS(EOFFSET eoffset)				{ return VARS(ENT(eoffset)); }
+inline entvars_t* VARS(EOFFSET eoffset)			{ return VARS(ENT(eoffset)); }
 inline int	  ENTINDEX(edict_t *pEdict)			{ return (*g_engfuncs.pfnIndexOfEdict)(pEdict); }
 inline edict_t* INDEXENT( int iEdictNum )		{ return (*g_engfuncs.pfnPEntityOfEntIndex)(iEdictNum); }
+inline uint32_t PLRBIT(edict_t* pEdict)			{ return 1 << (ENTINDEX(pEdict) & 31); }
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent ) {
 	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ENT(ent));
 }
+void WRITE_BYTES(uint8_t* bytes, int count);
 
 // Testing the three types of "entity" for nullity
 #define eoNullEntity 0
@@ -435,6 +440,10 @@ extern DLL_GLOBAL int			g_Language;
 
 #define SPEAKER_START_SILENT			1	// wait for trigger 'on' to start announcements
 
+#define SND_FL_VOLUME		(1<<0)		// send volume (set automatically)
+#define SND_FL_ATTENUATION	(1<<1)		// send attenuation (set automatically)
+#define SND_FL_LARGE_INDEX	(1<<2)		// send large entity index (set automatically)
+#define SND_FL_PITCH		(1<<3)		// send pitch (set automatically)
 #define SND_SPAWNING		(1<<8)		// duplicated in protocol.h we're spawing, used in some cases for ambients 
 #define SND_SENTENCE		(1<<4)
 #define SND_STOP			(1<<5)		// duplicated in protocol.h stop sound
@@ -549,6 +558,10 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
 						   int flags, int pitch);
 
+// play the sound for players with bits contained in messageTargets
+// a player bit = 1 << (ENTINDEX(player_edict) % 31)
+void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets);
 
 inline void EMIT_SOUND(edict_t *entity, int channel, const char *sample, float volume, float attenuation)
 {

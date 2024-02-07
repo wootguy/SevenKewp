@@ -704,8 +704,6 @@ void UTIL_MakeInvVectors( const Vector &vec, globalvars_t *pgv )
 }
 
 // rehlds
-#define MAX_SOUND_INDEX_BITS	9
-#define MAX_SOUNDS				(1<<MAX_SOUND_INDEX_BITS)
 #define svc_spawnstaticsound	29
 
 // copied from rehlds
@@ -742,6 +740,23 @@ void ambientsound_msg(edict_t* entity, float* pos, const char* samp, float vol, 
 	WRITE_BYTE(pitch);
 	WRITE_BYTE(fFlags);
 	MESSAGE_END();
+}
+
+void WRITE_BYTES(uint8_t* bytes, int count) {
+	int longCount = count / 4;
+	int byteCount = count % 4;
+
+	int32_t* longPtr = (int32_t*)bytes;
+	for (int i = 0; i < longCount; i++) {
+		WRITE_LONG(*longPtr);
+		longPtr++;
+	}
+
+	uint8_t* bytePtr = bytes + longCount*4;
+	for (int i = 0; i < byteCount; i++) {
+		WRITE_BYTE(*bytePtr);
+		bytePtr++;
+	}
 }
 
 void UTIL_EmitAmbientSound( edict_t *entity, const Vector &vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest)
@@ -2845,6 +2860,16 @@ int PRECACHE_GENERIC(const char* path) {
 		path = g_modelReplacements[path].c_str();
 	}
 
+	if (g_serveractive) {
+		if (g_precachedGeneric.find(path) != g_precachedGeneric.end()) {
+			return g_engfuncs.pfnPrecacheGeneric(path);
+		}
+		else {
+			ALERT(at_error, "PrecacheGeneric failed: %s\n", path);
+			return -1;
+		}
+	}
+
 	g_tryPrecacheGeneric.insert(path);
 
 	if (g_precachedGeneric.size() < MAX_PRECACHE) {
@@ -2872,6 +2897,16 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 		// and the file doesn't download
 		ALERT(at_error, "Precached file with spaces: '%s'\n", path);
 		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
+	}
+
+	if (g_serveractive) {
+		if (g_precachedSounds.find(path) != g_precachedSounds.end()) {
+			return g_engfuncs.pfnPrecacheSound(path);
+		}
+		else {
+			ALERT(at_error, "PrecacheSound failed: %s\n", path);
+			return -1;
+		}
 	}
 
 	g_tryPrecacheSounds.insert(path);
@@ -2907,6 +2942,16 @@ int PRECACHE_MODEL(const char* path) {
 		}
 		
 		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
+	}
+
+	if (g_serveractive) {
+		if (g_tryPrecacheModels.find(path) != g_tryPrecacheModels.end()) {
+			return g_engfuncs.pfnPrecacheModel(path);
+		}
+		else {
+			ALERT(at_error, "PrecacheModel failed: %s\n", path);
+			return -1;
+		}
 	}
 
 	g_tryPrecacheModels.insert(path);

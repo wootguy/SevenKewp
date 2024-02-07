@@ -451,6 +451,91 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum)
 	return -1;
 }
 
+// rehlds
+#define DEFAULT_SOUND_PACKET_VOLUME 255
+#define DEFAULT_SOUND_PACKET_ATTENUATION 1.0f
+#define DEFAULT_SOUND_PACKET_PITCH 100
+#define svc_sound 6
+#define MAX_EDICT_BITS 11
+
+void StartSound(edict_t* entity, int channel, const char* sample, float fvolume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets)
+{
+	int sound_num;
+	int field_mask;
+
+	field_mask = fFlags;
+
+	if (*sample == '!')
+	{
+		field_mask |= SND_SENTENCE;
+		sound_num = atoi(sample + 1);
+		if (sound_num >= CVOXFILESENTENCEMAX)
+		{
+			ALERT(at_console, "%s: invalid sentence number: %s\n", __func__, sample + 1);
+			return;
+		}
+	}
+	else if (*sample == '#')
+	{
+		field_mask |= SND_SENTENCE;
+		sound_num = atoi(sample + 1) + CVOXFILESENTENCEMAX;
+	}
+	else
+	{
+		sound_num = PRECACHE_SOUND_ENT(NULL, sample); // TODO: abort if not precached
+	}
+
+	int ent = ENTINDEX(entity);
+	int volume = clampf(fvolume, 0, 1.0f) * 255;
+	
+	if (volume != DEFAULT_SOUND_PACKET_VOLUME)
+		field_mask |= SND_FL_VOLUME;
+	if (attenuation != DEFAULT_SOUND_PACKET_ATTENUATION)
+		field_mask |= SND_FL_ATTENUATION;
+	if (pitch != DEFAULT_SOUND_PACKET_PITCH)
+		field_mask |= SND_FL_PITCH;
+	if (sound_num > 255)
+		field_mask |= SND_FL_LARGE_INDEX;
+
+	const int maxStartSoundMessageSz = 16;
+	static uint8_t msgbuffer[maxStartSoundMessageSz];
+
+	memset(msgbuffer, 0, maxStartSoundMessageSz);
+	mstream bitbuffer((char*)msgbuffer, 16);
+
+	bitbuffer.writeBits(field_mask, 9);
+	if (field_mask & SND_FL_VOLUME)
+		bitbuffer.writeBits(volume, 8);
+	if (field_mask & SND_FL_ATTENUATION)
+		bitbuffer.writeBits((uint32)(attenuation * 64.0f), 8);
+	bitbuffer.writeBits(channel, 3);
+	bitbuffer.writeBits(ent, MAX_EDICT_BITS);
+	bitbuffer.writeBits(sound_num, (field_mask & SND_FL_LARGE_INDEX) ? 16 : 8);
+	bitbuffer.writeBitVec3Coord(origin);
+	if (field_mask & SND_FL_PITCH)
+		bitbuffer.writeBits(pitch, 8);
+
+	if (bitbuffer.eom()) {
+		ALERT(at_error, "StartSound bit buffer overflow\n");
+	}
+
+	int msgSz = bitbuffer.tell() + 1;
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		edict_t* ent = INDEXENT(i);
+		uint32_t playerBit = PLRBIT(ent);
+
+		if (!(messageTargets & playerBit) || !IsValidPlayer(ent)) {
+			continue;
+		}
+
+		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, svc_sound, NULL, ent);
+		WRITE_BYTES(msgbuffer, msgSz);
+		MESSAGE_END();
+	}
+}
+
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
 						   int flags, int pitch)
 {
