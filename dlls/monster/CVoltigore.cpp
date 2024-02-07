@@ -62,7 +62,9 @@ public:
 	void PainSound(void);
 	void AlertSound(void);
 	void IdleSound(void);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	const char* GetDeathNoticeWeapon() {
+		return IsAlive() ? "weapon_crowbar" : "grenade";
+	}
 
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
@@ -88,6 +90,7 @@ public:
 	void Touch(CBaseEntity* pOther);
 	void EXPORT Fly(void);
 	void EXPORT Shock(void);
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 private:
 	CBeam* m_pBeam[SHOCK_FLY_BEAMS];
