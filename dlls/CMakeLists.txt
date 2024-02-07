@@ -352,6 +352,7 @@ set(UTIL_HDR
 	plane.h
 	player_util.h
 	util.h
+	mstream.h
 	vector.h
 )
 set(UTIL_SRC
@@ -360,6 +361,7 @@ set(UTIL_SRC
 	plane.cpp
 	player_util.cpp
 	util.cpp
+	mstream.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
 	../pm_shared/pm_shared.cpp

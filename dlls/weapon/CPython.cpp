@@ -233,7 +233,14 @@ void CPython::Reload( void )
 	bUseScope = g_pGameRules->IsMultiplayer();
 #endif
 
-	DefaultReload( 6, PYTHON_RELOAD, 2.0, bUseScope );
+	if (DefaultReload(6, PYTHON_RELOAD, 2.0, bUseScope)) {
+		// send reload sound to everyone except the reloader
+		// because the reloading client plays sounds via model events
+		edict_t* plr = ENT(m_pPlayer->pev);
+		uint32_t messageTargets = 0xffffffff & ~PLRBIT(plr);
+		StartSound(plr, CHAN_ITEM, "weapons/357_reload1.wav", 1.0f,
+			ATTN_IDLE, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
+	}
 }
 
 

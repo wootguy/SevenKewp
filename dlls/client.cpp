@@ -308,7 +308,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	g_pGameRules->ClientUserInfoChanged( GetClassPtr((CBasePlayer *)&pEntity->v), infobuffer );
 }
 
-static int g_serveractive = 0;
+int g_serveractive = 0;
 
 void ServerDeactivate( void )
 {
@@ -422,6 +422,8 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			}
 		}
 	}
+
+	ALERT(at_console, "server activateed!");
 }
 
 

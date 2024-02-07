@@ -61,6 +61,7 @@ void CGlock::Precache( void )
 
 	PRECACHE_SOUND("items/9mmclip1.wav");
 	PRECACHE_SOUND("items/9mmclip2.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/glock_reload.wav");
 
 	PRECACHE_SOUND ("weapons/pl_gun1.wav");//silenced handgun
 	PRECACHE_SOUND ("weapons/pl_gun2.wav");//silenced handgun
@@ -176,15 +177,14 @@ void CGlock::Reload( void )
 	if ( m_pPlayer->ammo_9mm <= 0 )
 		 return;
 
-	int iResult;
+	if (DefaultReload(17, m_iClip ? GLOCK_RELOAD_NOT_EMPTY : GLOCK_RELOAD, 1.5)) {
+		// send reload sound to everyone except the reloader
+		// because the reloading client plays sounds via model events
+		edict_t* plr = ENT(m_pPlayer->pev);
+		uint32_t messageTargets = 0xffffffff & ~PLRBIT(plr);
+		StartSound(plr, CHAN_ITEM, MOD_SND_FOLDER "weapons/glock_reload.wav", 1.0f,
+			ATTN_IDLE, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
 
-	if (m_iClip == 0)
-		iResult = DefaultReload( 17, GLOCK_RELOAD, 1.5 );
-	else
-		iResult = DefaultReload( 17, GLOCK_RELOAD_NOT_EMPTY, 1.5 );
-
-	if (iResult)
-	{
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 	}
 }
