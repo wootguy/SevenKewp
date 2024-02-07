@@ -404,8 +404,29 @@ void CGrapple::SecondaryAttack()
 	{
 		UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
 
-		m_pPlayer->pev->movetype = MOVETYPE_WALK;
-		ClearBits(m_pPlayer->pev->flags, FL_IMMUNE_LAVA);
+		if (m_pTip) {
+			m_pPlayer->pev->movetype = MOVETYPE_TOSS;
+			ClearBits(m_pPlayer->pev->flags, FL_IMMUNE_LAVA);
+
+			if (!(m_pPlayer->pev->flags & (FL_PARTIALGROUND | FL_ONGROUND))) {
+				Vector delta = (m_pTip->pev->origin - m_pPlayer->pev->origin);
+				delta.z = 0;
+				if (delta.Length() > 450) {
+					delta = delta.Normalize() * 450;
+				}
+
+				m_pPlayer->pev->velocity.x = delta.x;
+				m_pPlayer->pev->velocity.y = delta.y;
+			}
+
+			if (m_pPlayer->pev->velocity.z < -350) {
+				m_pPlayer->pev->velocity.z = -350;
+			}
+		}
+		else {
+			m_pPlayer->pev->movetype = MOVETYPE_WALK;
+			ClearBits(m_pPlayer->pev->flags, FL_IMMUNE_LAVA);
+		}
 	}
 }
 
@@ -462,6 +483,7 @@ void CGrapple::EndAttack()
 		m_pPlayer->SetAnimation(PLAYER_IDLE);
 	}
 
+	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.1f;
 	m_pPlayer->pev->movetype = MOVETYPE_WALK;
 	ClearBits(m_pPlayer->pev->flags, FL_IMMUNE_LAVA);
 }
@@ -547,4 +569,16 @@ int CGrapple::GetItemInfo(ItemInfo* p)
 	p->iId = WEAPON_GRAPPLE;
 	p->iWeight = GRAPPLE_WEIGHT;
 	return 1;
+}
+
+int CGrapple::AddToPlayer(CBasePlayer* pPlayer)
+{
+	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
+		WRITE_BYTE(m_iId);
+		MESSAGE_END();
+		return TRUE;
+	}
+	return FALSE;
 }
