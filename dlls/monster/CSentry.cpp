@@ -51,6 +51,8 @@ void CSentry::Spawn()
 	m_flMaxWait = 1E6;
 	m_flMaxSpin = 1E6;
 
+	DROP_TO_FLOOR(edict());
+
 	CBaseTurret::Spawn();
 	m_iRetractHeight = 64;
 	m_iDeployHeight = 64;
