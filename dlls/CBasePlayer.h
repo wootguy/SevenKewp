@@ -98,10 +98,12 @@ public:
 	void	Observer_CheckProperties();
 	EHANDLE	m_hObserverTarget;
 	EHANDLE m_hActiveCamera; // camera the player is currently viewing
+	EHANDLE m_hViewEntity; // entity which the player's view is currently attached to
 	float	m_flNextObserverInput;
 	int		m_iObserverWeapon;	// weapon of current tracked target
 	int		m_iObserverLastMode;// last used observer mode
 	int		IsObserver() { return pev->iuser1; };
+	BOOL	IsFirstPerson() { return m_hViewEntity.GetEdict() == edict(); }
 
 	int					random_seed;    // See that is shared between client & server for shared weapons code
 

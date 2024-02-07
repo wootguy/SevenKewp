@@ -54,6 +54,9 @@ extern int giPrecacheGrunt;
 extern int gmsgSayText;
 extern int g_teamplay;
 
+// client index that is receiving AddFullToPack calls
+int g_packClientIdx = 0;
+
 void LinkUserMessages( void );
 
 /*
@@ -760,6 +763,10 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 		return;
 	}
 
+	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(pClient);
+	if (plr)
+		plr->m_hViewEntity.Set(pView);
+
 	org = pView->v.origin + pView->v.view_ofs;
 	if ( pView->v.flags & FL_DUCKING )
 	{
@@ -768,6 +775,8 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 
 	*pvs = ENGINE_SET_PVS ( (float *)&org );
 	*pas = ENGINE_SET_PAS ( (float *)&org );
+
+	g_packClientIdx = ENTINDEX(pClient);
 }
 
 #include "entity_state.h"
@@ -959,6 +968,13 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 //		
 		state->usehull      = ( ent->v.flags & FL_DUCKING ) ? 1 : 0;
 		state->health		= ent->v.health;
+
+		if (g_packClientIdx == e) {
+			// clients invert their own player model angle for some reason
+			// TODO: fix this in a client mod
+			state->angles.x = ent->v.v_angle.x;
+		}
+		
 	}
 
 	return 1;
