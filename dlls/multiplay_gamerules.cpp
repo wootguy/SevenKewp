@@ -779,7 +779,7 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 			GETPLAYERUSERID( pVictim->edict() ), 
 			GETPLAYERAUTHID( pVictim->edict() ),
 			GETPLAYERUSERID( pVictim->edict() ),
-			Killer->DisplayName());
+			Killer ? Killer->DisplayName() : STRING(pKiller->classname));
 	}
 
 	MESSAGE_BEGIN( MSG_SPEC, SVC_DIRECTOR );
