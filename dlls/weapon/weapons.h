@@ -482,6 +482,8 @@ public:
 	int	m_rgAmmo[MAX_AMMO_SLOTS];// ammo quantities
 
 	int m_cAmmoTypes;// how many ammo types packed into this box (if packed by a level designer)
+	float m_spawnTime;
+	int m_lastSoundChannel;
 };
 
 #ifdef CLIENT_DLL
