@@ -44,6 +44,7 @@ public:
 	void IdleSound(void);
 	void PlaySentenceSound(int sentenceType);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
+	const char* GetDeathNoticeWeapon();
 
 	float m_explodeTime;
 
@@ -222,9 +223,17 @@ const char* CRoboGrunt::DisplayName() {
 	return m_displayName ? CBaseMonster::DisplayName() : "Robot Grunt";
 }
 
+const char* CRoboGrunt::GetDeathNoticeWeapon() {
+	return !IsAlive() ? "grenade" : CBaseGrunt::GetDeathNoticeWeapon();
+}
+
 void CRoboGrunt::GibMonster(void)
 {
-	ExplosionCreate(pev->origin + Vector(0, 0, 8), pev->angles, edict(), 90, true);
+	int magnitude = 90;
+	ExplosionCreate(pev->origin + Vector(0, 0, 8), pev->angles, edict(), magnitude, false);
+
+	// damage done separately so that attacker is set
+	::RadiusDamage(pev->origin, pev, pev, magnitude, magnitude * 2.5, CLASS_NONE, DMG_BLAST);
 	CBaseGrunt::GibMonster();
 }
 

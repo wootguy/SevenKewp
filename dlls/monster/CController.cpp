@@ -1165,6 +1165,7 @@ class CControllerHeadBall : public CBaseMonster
 	void EXPORT BounceTouch( CBaseEntity *pOther );
 	void MovetoTarget( Vector vecTarget );
 	void Crawl( void );
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 	int m_iTrail;
 	int m_flNextAttack;
 	Vector m_vecIdeal;
