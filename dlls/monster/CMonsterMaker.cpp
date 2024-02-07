@@ -493,6 +493,11 @@ void CMonsterMaker::MakeMonster( void )
 		pevCreate->targetname = pev->netname;
 	}
 
+	// unstuck monsters if spawned inside the ceiling
+	if (!WALK_MOVE(pent, 0, 0, WALKMOVE_NORMAL)) {
+		DROP_TO_FLOOR(pent);
+	}
+
 	m_cLiveChildren++;// count this monster
 	m_cNumMonsters--;
 
