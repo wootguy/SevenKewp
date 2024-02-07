@@ -362,3 +362,7 @@ const char* CBasePlayerWeapon::GetModelP() { return 0; }
 const char* CBasePlayerWeapon::GetModelW() { return 0; }
 void CSoundEnt::InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration ) {}
 void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType ){}
+void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets) {}
+edict_t* EHANDLE::GetEdict(void) { return 0; }
+CBaseEntity* EHANDLE::GetEntity(void) { return 0; }
