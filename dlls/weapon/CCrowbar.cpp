@@ -134,6 +134,20 @@ int CCrowbar::Swing( int fFirst )
 	Vector vecSrc	= m_pPlayer->GetGunPosition( );
 	Vector vecEnd	= vecSrc + gpGlobals->v_forward * 32;
 
+	// solidfy nearby corpses so they can be gibbed
+	// TODO: This is expensive. Try to fix the bug where players have laggy movement on corpses instead.
+	// For some reason the shocktrooper on auspices has no laggy movement when player walks on it,
+	// though it seems like the bbox is set incorrectly (much higher than 2 units).
+	static edict_t* nearbyCorpses[256];
+	int numNearbyCorpses = 0;
+	edict_t* ent = NULL;
+	while (!FNullEnt(ent = FIND_ENTITY_IN_SPHERE(ent, vecSrc, 64))) {
+		if ((ent->v.flags & FL_MONSTER) && ent->v.deadflag == DEAD_DEAD && ent->v.solid == SOLID_NOT) {
+			nearbyCorpses[numNearbyCorpses++] = ent;
+			ent->v.solid = SOLID_BBOX;
+		}
+	}
+
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
@@ -151,6 +165,12 @@ int CCrowbar::Swing( int fFirst )
 		}
 	}
 #endif
+
+	//ALERT(at_console, "solidfied %d nearby corpses\n", numNearbyCorpses);
+	// revert back to nonsolid so that the player doesn't get gibbed by a door or have laggy movement
+	for (int i = 0; i < numNearbyCorpses; i++) {
+		nearbyCorpses[i]->v.solid = SOLID_NOT;
+	}
 
 	// disabled client prediction to stop doubling sounds/animations
 	if (fFirst) {
@@ -225,7 +245,7 @@ int CCrowbar::Swing( int fFirst )
 				}
 				m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
 				if ( !pEntity->IsAlive() )
-					  return TRUE;
+					  return TRUE; // rapid crowbar bug :D
 				else
 					  flVol = 0.1;
 
