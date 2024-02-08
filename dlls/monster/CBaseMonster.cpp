@@ -5432,6 +5432,10 @@ void CBaseMonster::RunTask(Task_t* pTask)
 			else // !!!HACKHACK - put monster in a thin, wide bounding box until we fix the solid type/bounding volume problem
 				UTIL_SetSize(pev, Vector(pev->mins.x, pev->mins.y, pev->mins.z), Vector(pev->maxs.x, pev->maxs.y, pev->mins.z + 2));
 
+			// corpses cause laggy movement when walking over them, so make them nonsolid
+			// gibbing with crowbar is handled in the weapon code
+			pev->solid = SOLID_NOT;
+
 			if (ShouldFadeOnDeath())
 			{
 				// this monster was created by a monstermaker... fade the corpse out.
