@@ -22,13 +22,19 @@ public:
 	uint64_t read(void * dest, uint64_t bytes);
 
 	// returns 0-1 for bit that was read, or -1 for EOM 
-	int readBit();
+	uint32_t readBit();
+
+	uint32_t readBits(uint8_t bitCount);
+
+	Vector readBitVec3Coord();
+	
+	float readBitCoord();
 
 	// returns number of bytes that could be written into the buffer
 	uint64_t write(void * src, uint64_t bytes);
 
 	// write a 0 or 1 bit, partially filling a byte. Returns true on success.
-	bool writeBit(uint8_t value);
+	bool writeBit(bool value);
 
 	// write bitCount bits from value. Returns bits written
 	uint8_t writeBits(uint32_t value, uint8_t bitCount);
