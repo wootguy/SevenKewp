@@ -455,7 +455,6 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum)
 #define DEFAULT_SOUND_PACKET_VOLUME 255
 #define DEFAULT_SOUND_PACKET_ATTENUATION 1.0f
 #define DEFAULT_SOUND_PACKET_PITCH 100
-#define svc_sound 6
 #define MAX_EDICT_BITS 11
 
 void StartSound(edict_t* entity, int channel, const char* sample, float fvolume, float attenuation,
@@ -521,6 +520,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 	}
 
 	int msgSz = bitbuffer.tell() + 1;
+	bool anyMessagesWritten = false;
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		edict_t* ent = INDEXENT(i);
@@ -530,9 +530,16 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 			continue;
 		}
 
-		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, svc_sound, NULL, ent);
+		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, ent);
 		WRITE_BYTES(msgbuffer, msgSz);
 		MESSAGE_END();
+		anyMessagesWritten = true;
+	}
+
+	if (anyMessagesWritten && mp_debugmsg.value > 1) {
+		ALERT(at_logged, "[DEBUG] StartSound(%d, %d, \"%s\", 0x%X, 0x%X, 0x%X, %d, (0x%X 0x%X 0x%X), 0x%X)\n",
+			(int)(entity ? ENTINDEX(entity) : 0), channel, sample, *(int*)&fvolume, *(int*)&attenuation, fFlags, pitch,
+			*(int*)&origin[0], *(int*)&origin[1], *(int*)&origin[2], messageTargets);
 	}
 }
 

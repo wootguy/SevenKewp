@@ -45,6 +45,7 @@ cvar_t	mp_nextmap={"mp_nextmap","", FCVAR_SERVER };
 cvar_t	mp_prefer_server_maxspeed={"mp_prefer_server_maxspeed","1", FCVAR_SERVER };
 cvar_t	mp_objectboost ={"mp_objectboost","0", FCVAR_SERVER };
 cvar_t	mp_respawndelay ={"mp_respawndelay","3", FCVAR_SERVER };
+cvar_t	mp_debugmsg ={"mp_debugmsg","0", FCVAR_SERVER };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER };
 
@@ -529,10 +530,24 @@ std::map<std::string, std::string> g_modelReplacementsMod;
 std::map<std::string, std::string> g_modelReplacementsMap;
 std::map<std::string, std::string> g_modelReplacements;
 
+void test_command() {
+	int entIdx = 1;
+	int channel = 3;
+	const char* sample = "hlcoop/weapons/glock_reload.wav";
+	uint32_t vol = 0x3F4CCCCD;
+	uint32_t attn = 0x3F4CCCCD;
+	int flags = 0;
+	int pitch = 103;
+	uint32_t origin[3] = { 0x448A6000, 0xC5442000, 0xC45D3470 };
+	Vector ori = Vector(*(float*)&origin[0], *(float*)&origin[1], *(float*)&origin[2]);
+	StartSound(INDEXENT(entIdx), channel, sample, *(float*)&vol, *(float*)&attn, flags, pitch, ori, 0xFFFFFFFF);
+}
+
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit( void )
 {
+	g_engfuncs.pfnAddServerCommand("test", test_command);
 	// Register cvars here:
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
@@ -570,6 +585,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_prefer_server_maxspeed);
 	CVAR_REGISTER (&mp_objectboost);
 	CVAR_REGISTER (&mp_respawndelay);
+	CVAR_REGISTER (&mp_debugmsg);
 
 	CVAR_REGISTER (&mp_chattime);
 
