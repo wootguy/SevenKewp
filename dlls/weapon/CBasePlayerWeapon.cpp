@@ -419,13 +419,10 @@ BOOL CBasePlayerWeapon::PlayEmptySound(void)
 	{
 		// send sound to all players except the shooter, who is predicting the sound locally
 		edict_t* plr = m_pPlayer->edict();
-		//uint32_t messageTargets = 0xffffffff & ~PLRBIT(plr);
-		uint32_t messageTargets = 0xffffffff;
-		//StartSound(plr, CHAN_WEAPON, "weapons/357_cock1.wav", 0.8f,
-		//	ATTN_NORM, 0, 100, m_pPlayer->pev->origin, messageTargets);
-		EMIT_SOUND(plr, CHAN_WEAPON, "weapons/357_cock1.wav", 0.8f, ATTN_NORM);
+		uint32_t messageTargets = 0xffffffff & ~PLRBIT(plr);
+		StartSound(plr, CHAN_WEAPON, "weapons/357_cock1.wav", 0.8f,
+			ATTN_NORM, 0, 100, m_pPlayer->pev->origin, messageTargets);
 
-		//m_iPlayEmptySound = 1;
 		m_iPlayEmptySound = 0;
 		return 0;
 	}

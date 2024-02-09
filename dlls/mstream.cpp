@@ -42,7 +42,7 @@ uint64_t mstream::read( void * dest, uint64_t bytes )
 	return bytes;
 }
 
-int mstream::readBit()
+uint32_t mstream::readBit()
 {
 	if (eomFlag)
 		return -1;
@@ -57,7 +57,52 @@ int mstream::readBit()
 		currentBit = 0;
 	}
 
-	return *((uint8_t*)pos) & (1 << currentBit) != 0;
+	return (*((uint8_t*)pos) & (1 << currentBit++)) != 0;
+}
+
+uint32_t mstream::readBits(uint8_t bitCount)
+{
+	uint32_t val = 0;
+
+	for (int i = 0; i < bitCount; i++) {
+		// TODO: read a byte if position and bitcount allow
+		val |= readBit() << i;
+	}
+
+	return val;
+}
+
+Vector mstream::readBitVec3Coord() {
+	bool xflag = readBit();
+	bool yflag = readBit();
+	bool zflag = readBit();
+
+	Vector vout = g_vecZero;
+
+	if (xflag)
+		vout[0] = readBitCoord();
+	if (yflag)
+		vout[1] = readBitCoord();
+	if (zflag)
+		vout[2] = readBitCoord();
+
+	return vout;
+}
+
+float mstream::readBitCoord() {
+	bool hasIntVal = readBit();
+	bool hasFracVal = readBit();
+
+	if (hasIntVal || hasFracVal) {
+		int signBit = readBit();
+		int intVal = hasIntVal ? readBits(12) : 0;
+		int fracVal = hasFracVal ? readBits(3) : 0;
+
+		float ret = (float)intVal + ((float)fracVal / 8.0f);
+		return signBit ? -ret : ret;
+	}
+
+	return 0;
 }
 
 uint64_t mstream::write( void * src, uint64_t bytes )
@@ -76,7 +121,7 @@ uint64_t mstream::write( void * src, uint64_t bytes )
 	return bytes;
 }
 
-bool mstream::writeBit(uint8_t value) {
+bool mstream::writeBit(bool value) {
 	if (eomFlag)
 		return 0;
 
@@ -113,7 +158,7 @@ uint8_t mstream::writeBits(uint32_t value, uint8_t bitCount) {
 bool mstream::writeBitCoord(const float f) {
 	int signbit = f <= -0.125;
 	int intval = abs((int32)f);
-	int fractval = abs((int32)f * 8) & 7;
+	int fractval = (int32_t)abs(f * 8) & 7;
 
 	writeBit(intval);
 	writeBit(fractval);
