@@ -41,4 +41,6 @@ extern int gmsgStatusValue;
 
 extern int gmsgToxicCloud;
 
+// Note: also update msgTypeStr() in util.cpp when adding new messages
+
 void LinkUserMessages(void);

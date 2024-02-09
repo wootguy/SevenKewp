@@ -103,13 +103,6 @@ inline edict_t *FIND_ENTITY_BY_TARGET(edict_t *entStart, const char *pszName)
 #define WRITEKEY_VECTOR(pf, szKeyName, flX, flY, flZ)							\
 		ENGINE_FPRINTF(pf, "\"%s\" \"%f %f %f\"\n", szKeyName, flX, flY, flZ)
 
-inline void WRITE_COORD_VECTOR(const Vector& vec)
-{
-	WRITE_COORD(vec.x);
-	WRITE_COORD(vec.y);
-	WRITE_COORD(vec.z);
-}
-
 // Keeps clutter down a bit, when using a float as a bit-vector
 #define SetBits(flBitVector, bits)		((flBitVector) = (int)(flBitVector) | (bits))
 #define ClearBits(flBitVector, bits)	((flBitVector) = (int)(flBitVector) & ~(bits))
@@ -484,15 +477,69 @@ extern DLL_GLOBAL int			g_Language;
 #define VEC_DUCK_HULL_MAX	Vector( 16,  16,  18)
 #define VEC_DUCK_VIEW		Vector( 0, 0, 12 )
 
-#define SVC_STUFFTEXT		9
-#define SVC_TEMPENTITY		23
-#define SVC_INTERMISSION	30
-#define SVC_CDTRACK			32
-#define SVC_WEAPONANIM		35
-#define SVC_ROOMTYPE		37
-#define	SVC_DIRECTOR		51
-
-
+typedef enum svc_commands_e
+{
+	SVC_BAD,
+	SVC_NOP,
+	SVC_DISCONNECT,
+	SVC_EVENT,
+	SVC_VERSION,
+	SVC_SETVIEW,
+	SVC_SOUND,
+	SVC_TIME,
+	SVC_PRINT,
+	SVC_STUFFTEXT,
+	SVC_SETANGLE,
+	SVC_SERVERINFO,
+	SVC_LIGHTSTYLE,
+	SVC_UPDATEUSERINFO,
+	SVC_DELTADESCRIPTION,
+	SVC_CLIENTDATA,
+	SVC_STOPSOUND,
+	SVC_PINGS,
+	SVC_PARTICLE,
+	SVC_DAMAGE,
+	SVC_SPAWNSTATIC,
+	SVC_EVENT_RELIABLE,
+	SVC_SPAWNBASELINE,
+	SVC_TEMPENTITY,
+	SVC_SETPAUSE,
+	SVC_SIGNONNUM,
+	SVC_CENTERPRINT,
+	SVC_KILLEDMONSTER,
+	SVC_FOUNDSECRET,
+	SVC_SPAWNSTATICSOUND,
+	SVC_INTERMISSION,
+	SVC_FINALE,
+	SVC_CDTRACK,
+	SVC_RESTORE,
+	SVC_CUTSCENE,
+	SVC_WEAPONANIM,
+	SVC_DECALNAME,
+	SVC_ROOMTYPE,
+	SVC_ADDANGLE,
+	SVC_NEWUSERMSG,
+	SVC_PACKETENTITIES,
+	SVC_DELTAPACKETENTITIES,
+	SVC_CHOKE,
+	SVC_RESOURCELIST,
+	SVC_NEWMOVEVARS,
+	SVC_RESOURCEREQUEST,
+	SVC_CUSTOMIZATION,
+	SVC_CROSSHAIRANGLE,
+	SVC_SOUNDFADE,
+	SVC_FILETXFERFAILED,
+	SVC_HLTV,
+	SVC_DIRECTOR,
+	SVC_VOICEINIT,
+	SVC_VOICEDATA,
+	SVC_SENDEXTRAINFO,
+	SVC_TIMESCALE,
+	SVC_RESOURCELOCATION,
+	SVC_SENDCVARVALUE,
+	SVC_SENDCVARVALUE2,
+	SVC_EXEC
+};
 
 // triggers
 #define	SF_TRIGGER_ALLOWMONSTERS	1// monsters allowed to fire this trigger
@@ -629,6 +676,18 @@ float UTIL_WeaponTimeBase( void );
 #define PRECACHE_SOUND		(*g_engfuncs.pfnPrecacheSound)
 #define MODEL_INDEX		(*g_engfuncs.pfnModelIndex)
 #define GET_MODEL(model) model
+inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL) {
+	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ed);
+}
+#define MESSAGE_END		(*g_engfuncs.pfnMessageEnd)
+#define WRITE_BYTE		(*g_engfuncs.pfnWriteByte)
+#define WRITE_CHAR		(*g_engfuncs.pfnWriteChar)
+#define WRITE_SHORT		(*g_engfuncs.pfnWriteShort)
+#define WRITE_LONG		(*g_engfuncs.pfnWriteLong)
+#define WRITE_ANGLE		(*g_engfuncs.pfnWriteAngle)
+#define WRITE_COORD		(*g_engfuncs.pfnWriteCoord)
+#define WRITE_STRING	(*g_engfuncs.pfnWriteString)
+#define WRITE_ENTITY	(*g_engfuncs.pfnWriteEntity)
 #else
 // engine wrappers which handle model/sound replacement logic
 int PRECACHE_GENERIC(const char* path);
@@ -637,9 +696,32 @@ int PRECACHE_MODEL(const char* model);
 void SET_MODEL(edict_t* edict, const char* model);
 const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
 int MODEL_INDEX(const char* model);
-
 #define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
+
+void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL);
+void MESSAGE_END();
+void WRITE_BYTE(int iValue);
+void WRITE_CHAR(int iValue);
+void WRITE_SHORT(int iValue);
+void WRITE_LONG(int iValue);
+void WRITE_ANGLE(float fValue);
+void WRITE_COORD(float iValue);
+void WRITE_STRING(const char* sValue);
+void WRITE_ENTITY(int iValue);
 #endif
+
+inline void WRITE_COORD_VECTOR(const Vector& vec)
+{
+	WRITE_COORD(vec.x);
+	WRITE_COORD(vec.y);
+	WRITE_COORD(vec.z);
+}
+
+// write the most recent X seconds of message history for debugging client disconnects 
+// due to malformed network messages.
+// reason = reason for writing the message history
+void writeNetworkMessageHistory(std::string reason);
+void clearNetworkMessageHistory();
 
 std::vector<std::string> splitString(std::string str, const char* delimitters);
 

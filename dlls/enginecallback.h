@@ -72,6 +72,8 @@ extern enginefuncs_t g_engfuncs;
 #define RANDOM_FLOAT	(*g_engfuncs.pfnRandomFloat)
 #define GETPLAYERAUTHID	(*g_engfuncs.pfnGetPlayerAuthId)
 
+// overridden in util.h
+/*
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NULL, edict_t *ed = NULL ) {
 	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ed);
 }
@@ -84,6 +86,7 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 #define WRITE_COORD		(*g_engfuncs.pfnWriteCoord)
 #define WRITE_STRING	(*g_engfuncs.pfnWriteString)
 #define WRITE_ENTITY	(*g_engfuncs.pfnWriteEntity)
+*/
 #define CVAR_REGISTER	(*g_engfuncs.pfnCVarRegister)
 #define CVAR_GET_FLOAT	(*g_engfuncs.pfnCVarGetFloat)
 #define CVAR_GET_STRING	(*g_engfuncs.pfnCVarGetString)

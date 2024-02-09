@@ -105,6 +105,11 @@ GLOBALS ASSUMED SET:  g_fGameOver
 */
 void ClientDisconnect( edict_t *pEntity )
 {
+	if (mp_debugmsg.value) {
+		writeNetworkMessageHistory(std::string(STRING(pEntity->v.netname)) 
+			+ " dropped on map " + STRING(gpGlobals->mapname));
+	}
+
 	if (g_fGameOver)
 		return;
 
@@ -335,6 +340,7 @@ void ServerDeactivate( void )
 	g_tryPrecacheModels.clear();
 	g_tryPrecacheSounds.clear();
 	g_wavInfos.clear();
+	clearNetworkMessageHistory();
 	g_mp3Command = "";
 
 	// Peform any shutdown operations here...
