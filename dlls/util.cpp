@@ -3355,7 +3355,7 @@ void log_msg(msg_info& msg) {
 			argStr += UTIL_VarArgs(" S-%X", msg.parts[i].iValue);
 			break;
 		case MFUNC_LONG:
-			argStr += UTIL_VarArgs(" L(%X)", msg.parts[i].iValue);
+			argStr += UTIL_VarArgs(" L-%X", msg.parts[i].iValue);
 			break;
 		case MFUNC_ANGLE:
 			argStr += UTIL_VarArgs(" A-%X", *(int*)&msg.parts[i].fValue);
