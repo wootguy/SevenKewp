@@ -431,8 +431,6 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			}
 		}
 	}
-
-	ALERT(at_console, "server activateed!");
 }
 
 

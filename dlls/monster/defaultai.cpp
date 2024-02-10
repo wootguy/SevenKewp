@@ -524,7 +524,7 @@ Schedule_t	slPrimaryMeleeAttack[] =
 		ARRAYSIZE ( tlPrimaryMeleeAttack1 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
-		bits_COND_LIGHT_DAMAGE		|
+		//bits_COND_LIGHT_DAMAGE		|	// TODO: may want to selectively disable this per monster
 		bits_COND_HEAVY_DAMAGE		|
 		bits_COND_ENEMY_OCCLUDED,
 		0,

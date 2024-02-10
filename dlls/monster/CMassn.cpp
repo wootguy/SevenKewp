@@ -169,6 +169,7 @@ void CMassn :: Spawn()
 	{
 		weaponModel = MAssassinWeapon::None;
 		m_cClipSize = 0;
+		runFromHeavyDamage = false;
 	}
 
 	SetBodygroup( MAssassinBodygroup::Heads, m_iAssassinHead );

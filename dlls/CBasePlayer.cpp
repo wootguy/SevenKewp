@@ -743,6 +743,11 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 		if (iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE) {
 			SET_MODEL(pWeaponBox->edict(), rgpPackWeapons[iPW]->GetModelW());
+
+			if (!strcmp(STRING(rgpPackWeapons[iPW]->pev->classname), "weapon_tripmine")) {
+				pWeaponBox->pev->body = 3;
+				pWeaponBox->pev->sequence = TRIPMINE_GROUND;
+			}
 		}
 
 		iPW++;
@@ -4400,8 +4405,13 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 			pWeaponBox->pev->velocity = pev->velocity + gpGlobals->v_forward * 400;
 			
 			CBasePlayerWeapon* wep = pWeapon->GetWeaponPtr();
-			if (wep)
+			if (wep) {
 				SET_MODEL(pWeaponBox->edict(), wep->GetModelW());
+				if (!strcmp(STRING(pWeapon->pev->classname), "weapon_tripmine")) {
+					pWeaponBox->pev->body = 3;
+					pWeaponBox->pev->sequence = TRIPMINE_GROUND;
+				}
+			}
 
 			// prevent players dropping at pickup points to get more ammo
 			m_nextItemPickups[pWeapon->m_iId] = gpGlobals->time + item_repick_time.value;
