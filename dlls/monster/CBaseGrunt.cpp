@@ -2153,8 +2153,8 @@ Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 			return GetScheduleOfType(SCHED_GRUNT_COVER_AND_RELOAD);
 		}
 
-		// damaged just a little
-		else if (HasConditions(bits_COND_LIGHT_DAMAGE))
+		// damaged just a little (melee grunts don't care)
+		else if (HasConditions(bits_COND_LIGHT_DAMAGE) && HasEquipment(ANY_RANGED_WEAPON))
 		{
 			return GetLightDamageSchedule();
 		}

@@ -525,6 +525,12 @@ int CGraph::NextNodeInRoute( int iCurrentNode, int iDest, int iHull, int iCap )
 	//
 	while (nCount > 0)
 	{
+		int routeIdx = pRoute - m_pRouteInfo;
+		if (routeIdx >= m_nRouteInfo) {
+			ALERT(at_console, "Corrupt route from node %d to %d\n", iCurrentNode, iDest);
+			return iCurrentNode;
+		}
+
 		char ch = *pRoute++;
 		//ALERT(at_aiconsole, "C(%d)", ch);
 		if (ch < 0)
@@ -3122,8 +3128,8 @@ void CGraph :: ComputeStaticRoutingTables( void )
 						}
 						else
 						{
-							Routes[FROM_TO(iFrom, iTo)] = iTo;
-							Routes[FROM_TO(iTo, iFrom)] = iFrom;
+							Routes[FROM_TO(iFrom, iTo)] = iFrom;
+							Routes[FROM_TO(iTo, iFrom)] = iTo;
 						}
 					}
 				}

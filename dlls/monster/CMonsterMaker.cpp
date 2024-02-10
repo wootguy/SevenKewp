@@ -443,6 +443,7 @@ void CMonsterMaker::MakeMonster( void )
 	if (pev->health) {
 		pent->v.health = pev->health;
 	}
+	pent->v.weapons = pev->weapons;
 
 	// TODO: Repel monsters need to do this setting-copy stuff too.
 	// make a generic function that they all use instead of duplicating codes
@@ -451,7 +452,6 @@ void CMonsterMaker::MakeMonster( void )
 		pent->v.renderamt = pev->renderamt;
 		pent->v.renderfx = pev->renderfx;
 		pent->v.rendercolor = pev->rendercolor;
-		pent->v.weapons = pev->weapons;
 	}
 
 	CBaseMonster* mon = ((CBaseEntity*)GET_PRIVATE(pent))->MyMonsterPointer();

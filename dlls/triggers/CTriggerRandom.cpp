@@ -126,6 +126,7 @@ void CTriggerRandom::TimedThink() {
 	if (pev->spawnflags & SF_TRIGGER_ONCE) {
 		SetThink(NULL);
 		pev->nextthink = 0;
+		isActive = false;
 		return;
 	}
 
