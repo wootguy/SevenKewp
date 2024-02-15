@@ -3364,7 +3364,12 @@ void log_msg(msg_info& msg) {
 			argStr += UTIL_VarArgs(" F-%X", *(int*)&msg.parts[i].fValue);
 			break;
 		case MFUNC_STRING:
-			argStr += UTIL_VarArgs(" \"%s\"", msg.parts[i].sValue);
+			if (msg.parts[i].sValue >= g_msgStrPool && msg.parts[i].sValue < g_msgStrPool + 512) {
+				argStr += UTIL_VarArgs(" \"%s\"", msg.parts[i].sValue);
+			}
+			else {
+				argStr += UTIL_VarArgs(" \"\"");
+			}
 			break;
 		case MFUNC_ENTITY:
 			argStr += UTIL_VarArgs(" E-%X", msg.parts[i].iValue);

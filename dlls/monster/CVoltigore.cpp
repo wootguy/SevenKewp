@@ -68,9 +68,9 @@ public:
 
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
-	CSprite* m_handShock;
-	CBeam* m_pBeam[SHOCK_CHARGE_BEAMS];
-	CBeam* m_pDeathBeam[SHOCK_DEATH_BEAMS];
+	EHANDLE m_handShock;
+	EHANDLE m_pBeam[SHOCK_CHARGE_BEAMS];
+	EHANDLE m_pDeathBeam[SHOCK_DEATH_BEAMS];
 	float explodeTime;
 
 	static const char* pAttackHitSounds[];
@@ -93,7 +93,7 @@ public:
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 private:
-	CBeam* m_pBeam[SHOCK_FLY_BEAMS];
+	EHANDLE m_pBeam[SHOCK_FLY_BEAMS];
 	int beamUpdateIdx;
 	int shocksLeft;
 };
@@ -251,19 +251,21 @@ void CVoltigore::Spawn()
 
 	MonsterInit();
 
-	m_handShock = CSprite::SpriteCreate(SHOCK_SPRITE, pev->origin, FALSE);
-	m_handShock->SetScale(0.3f);
-	m_handShock->SetTransparency(kRenderTransAdd, 255, 255, 255, 255, 0);
-	m_handShock->SetAttachment(edict(), SHOCK_ATTACHMENT);
+	CSprite* sprite = CSprite::SpriteCreate(SHOCK_SPRITE, pev->origin, FALSE);
+	sprite->SetScale(0.3f);
+	sprite->SetTransparency(kRenderTransAdd, 255, 255, 255, 255, 0);
+	sprite->SetAttachment(edict(), SHOCK_ATTACHMENT);
+	m_handShock = sprite;
 
 	for (int i = 0; i < SHOCK_CHARGE_BEAMS; i++ ) {
-		m_pBeam[i] = CBeam::BeamCreate(BEAM_SPRITE, 30);
-		m_pBeam[i]->EntsInit(entindex(), entindex());
-		m_pBeam[i]->SetStartAttachment(i+1); // head, left hand, right hand
-		m_pBeam[i]->SetEndAttachment(4);
-		m_pBeam[i]->SetColor(255, 16, 128);
-		m_pBeam[i]->SetBrightness(255);
-		m_pBeam[i]->SetNoise(80);
+		CBeam* beam = CBeam::BeamCreate(BEAM_SPRITE, 30);
+		beam->EntsInit(entindex(), entindex());
+		beam->SetStartAttachment(i+1); // head, left hand, right hand
+		beam->SetEndAttachment(4);
+		beam->SetColor(255, 16, 128);
+		beam->SetBrightness(255);
+		beam->SetNoise(80);
+		m_pBeam[i] = beam;
 	}
 
 	HideChargeBeam();
@@ -274,8 +276,10 @@ void CVoltigore::ShowChargeBeam() {
 		if (m_pBeam[i])
 			m_pBeam[i]->pev->effects &= ~EF_NODRAW;
 	}
-	if (m_handShock)
-		m_handShock->TurnOn();
+
+	CSprite* sprite = (CSprite*)m_handShock.GetEntity();
+	if (sprite)
+		sprite->TurnOn();
 }
 
 void CVoltigore::HideChargeBeam() {
@@ -283,8 +287,10 @@ void CVoltigore::HideChargeBeam() {
 		if (m_pBeam[i])
 			m_pBeam[i]->pev->effects |= EF_NODRAW;
 	}
-	if (m_handShock)
-		m_handShock->TurnOff();
+
+	CSprite* sprite = (CSprite*)m_handShock.GetEntity();
+	if (sprite)
+		sprite->TurnOff();
 }
 
 void CVoltigore::Precache()
@@ -398,11 +404,12 @@ void CVoltigore::Killed(entvars_t* pevAttacker, int iGib)
 	}
 
 	for (int i = 0; i < SHOCK_DEATH_BEAMS; i++) {
-		m_pDeathBeam[i] = CBeam::BeamCreate(BEAM_SPRITE, 30);
-		m_pDeathBeam[i]->PointsInit(RandomBeamPoint(pev), pev->origin + Vector(0,0,32));
-		m_pDeathBeam[i]->SetColor(255, 16, 128);
-		m_pDeathBeam[i]->SetBrightness(128);
-		m_pDeathBeam[i]->SetNoise(80);
+		CBeam* beam = CBeam::BeamCreate(BEAM_SPRITE, 30);
+		beam->PointsInit(RandomBeamPoint(pev), pev->origin + Vector(0,0,32));
+		beam->SetColor(255, 16, 128);
+		beam->SetBrightness(128);
+		beam->SetNoise(80);
+		m_pDeathBeam[i] = beam;
 	}
 
 	CBaseMonster::Killed(pevAttacker, GIB_NEVER);
@@ -478,11 +485,13 @@ void CVoltigoreShock::Spawn(void)
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 
 	for (int i = 0; i < SHOCK_FLY_BEAMS; i++) {
-		m_pBeam[i] = CBeam::BeamCreate(BEAM_SPRITE, 30);
-		m_pBeam[i]->PointEntInit(RandomBeamPoint(pev), entindex());
-		m_pBeam[i]->SetColor(255, 16, 128);
-		m_pBeam[i]->SetBrightness(255);
-		m_pBeam[i]->SetNoise(80);
+		CBeam* beam = CBeam::BeamCreate(BEAM_SPRITE, 30);
+		beam->PointEntInit(RandomBeamPoint(pev), entindex());
+		beam->SetColor(255, 16, 128);
+		beam->SetBrightness(255);
+		beam->SetNoise(80);
+
+		m_pBeam[i] = beam;
 	}
 
 	EMIT_SOUND(ENT(pev), CHAN_BODY, SHOCK_SOUND, 1, 0.6f);
@@ -493,7 +502,9 @@ void CVoltigoreShock::Fly(void)
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	for (int i = 0; i < 2; i++) {
-		m_pBeam[beamUpdateIdx]->PointEntInit(RandomBeamPoint(pev), entindex());
+		CBeam* beam = (CBeam*)m_pBeam[beamUpdateIdx].GetEntity();
+		if (beam)
+			beam->PointEntInit(RandomBeamPoint(pev), entindex());
 		beamUpdateIdx = (beamUpdateIdx + 1) % SHOCK_FLY_BEAMS;
 	}
 }
