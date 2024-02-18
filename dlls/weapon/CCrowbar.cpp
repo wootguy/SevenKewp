@@ -97,6 +97,10 @@ BOOL CCrowbar::Deploy( )
 
 void CCrowbar::Holster( int skiplocal /* = 0 */ )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	SendWeaponAnim( CROWBAR_HOLSTER );
 }
@@ -126,6 +130,10 @@ void CCrowbar::SwingAgain( void )
 
 int CCrowbar::Swing( int fFirst )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
 	int fDidHit = FALSE;
 
 	TraceResult tr;

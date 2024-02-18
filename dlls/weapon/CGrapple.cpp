@@ -86,6 +86,10 @@ BOOL CGrapple::Deploy()
 
 void CGrapple::Holster(int skiplocal)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
 	SendWeaponAnim(BGRAPPLE_DOWN);
@@ -98,6 +102,10 @@ void CGrapple::Holster(int skiplocal)
 
 void CGrapple::WeaponIdle()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	ResetEmptySound();
 
 	if (m_flTimeWeaponIdle <= UTIL_WeaponTimeBase())
@@ -135,6 +143,10 @@ void CGrapple::WeaponIdle()
 
 void CGrapple::PrimaryAttack()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if (m_bMissed)
 	{
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.1;
@@ -394,6 +406,10 @@ void CGrapple::PrimaryAttack()
 void CGrapple::SecondaryAttack()
 {
 #ifndef CLIENT_DLL
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if (m_pTip && m_pTip->IsStuck() &&
 		(!m_pTip->GetGrappleTarget() || m_pTip->GetGrappleTarget()->IsPlayer()))
 	{
@@ -433,6 +449,10 @@ void CGrapple::SecondaryAttack()
 void CGrapple::Fire(const Vector& vecOrigin, const Vector& vecDir)
 {
 #ifndef CLIENT_DLL
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	Vector vecSrc = vecOrigin;
 
 	Vector vecEnd = vecSrc + vecDir * 2048.0;
@@ -457,6 +477,10 @@ void CGrapple::Fire(const Vector& vecOrigin, const Vector& vecDir)
 
 void CGrapple::EndAttack()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_FireState = FireState::OFF;
 
 	SendWeaponAnim(BGRAPPLE_FIREREACHED);
@@ -491,6 +515,10 @@ void CGrapple::EndAttack()
 void CGrapple::CreateEffect()
 {
 #ifndef CLIENT_DLL
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	DestroyEffect();
 
 	m_pTip = GetClassPtr((CGrappleTip*)NULL);

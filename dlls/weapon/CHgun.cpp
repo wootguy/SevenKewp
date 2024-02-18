@@ -121,6 +121,10 @@ BOOL CHgun::Deploy( )
 
 void CHgun::Holster( int skiplocal /* = 0 */ )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	SendWeaponAnim( HGUN_DOWN );
 
@@ -134,6 +138,10 @@ void CHgun::Holster( int skiplocal /* = 0 */ )
 
 void CHgun::PrimaryAttack()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	Reload( );
 
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
@@ -184,6 +192,10 @@ void CHgun::PrimaryAttack()
 
 void CHgun::SecondaryAttack( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	Reload();
 
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
@@ -267,6 +279,10 @@ void CHgun::SecondaryAttack( void )
 
 void CHgun::Reload( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= HORNET_MAX_CARRY)
 		return;
 
@@ -280,6 +296,10 @@ void CHgun::Reload( void )
 
 void CHgun::WeaponIdle( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	Reload( );
 
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())

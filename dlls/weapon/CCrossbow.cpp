@@ -305,6 +305,10 @@ BOOL CCrossbow::Deploy( )
 
 void CCrossbow::Holster( int skiplocal /* = 0 */ )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_fInReload = FALSE;// cancel any reload in progress.
 
 	if ( m_fInZoom )
@@ -338,6 +342,10 @@ void CCrossbow::PrimaryAttack( void )
 // this function only gets called in multiplayer
 void CCrossbow::FireSniperBolt()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_flNextPrimaryAttack = GetNextAttackDelay(0.75);
 
 	if (m_iClip == 0)
@@ -382,6 +390,10 @@ void CCrossbow::FireSniperBolt()
 
 void CCrossbow::FireBolt()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	TraceResult tr;
 
 	if (m_iClip == 0)
@@ -449,6 +461,10 @@ void CCrossbow::FireBolt()
 
 void CCrossbow::SecondaryAttack()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if ( m_pPlayer->pev->fov != 0 )
 	{
 		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0; // 0 means reset to default fov
@@ -467,6 +483,10 @@ void CCrossbow::SecondaryAttack()
 
 void CCrossbow::Reload( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if ( m_pPlayer->ammo_bolts <= 0 )
 		return;
 
@@ -484,6 +504,10 @@ void CCrossbow::Reload( void )
 
 void CCrossbow::WeaponIdle( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_pPlayer->GetAutoaimVector( AUTOAIM_2DEGREES );  // get the autoaim vector but ignore it;  used for autoaim crosshair in DM
 
 	ResetEmptySound( );

@@ -94,6 +94,10 @@ BOOL CHandGrenade::CanHolster( void )
 
 void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 
 	if ( m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ] )
@@ -113,6 +117,10 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 
 void CHandGrenade::PrimaryAttack()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if ( !m_flStartThrow && m_pPlayer->m_rgAmmo[ m_iPrimaryAmmoType ] > 0 )
 	{
 		m_flStartThrow = gpGlobals->time;
@@ -126,6 +134,10 @@ void CHandGrenade::PrimaryAttack()
 
 void CHandGrenade::WeaponIdle( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if ( m_flReleaseThrow == 0 && m_flStartThrow )
 		 m_flReleaseThrow = gpGlobals->time;
 
