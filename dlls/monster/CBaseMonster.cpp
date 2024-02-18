@@ -7021,7 +7021,7 @@ bool CBaseMonster::IsImmune(entvars_t* attacker) {
 	}
 
 	// mp_npckill has priority over killnpc if not set to the default value
-	int npcKillValue = (int)mp_npckill.value != 1 ? (int)mp_npckill.value : clampi(killnpc.value, 0, 1);
+	int npcKillValue = (int)mp_npckill.value != 1 ? (int)mp_npckill.value : killnpc.value;
 
 	if (!npcKillValue) {
 		// disallow ally NPCs to be damaged by anything

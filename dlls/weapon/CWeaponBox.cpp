@@ -94,7 +94,7 @@ void CWeaponBox::Kill(void)
 //=========================================================
 void CWeaponBox::Touch(CBaseEntity* pOther)
 {
-	if (pOther->IsBSPModel()) {
+	if (pev->movetype == MOVETYPE_BOUNCE && pOther->IsBSPModel()) {
 		if (pev->velocity.Length() > 100) {
 			pev->velocity = pev->velocity * 0.5f;
 			if (RANDOM_LONG(0, 1)) {

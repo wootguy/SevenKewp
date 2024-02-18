@@ -252,6 +252,7 @@ public:
 	Schedule_t *GetScheduleOfType ( int Type );
 	int IRelationship ( CBaseEntity *pTarget );
 	int IgnoreConditions ( void );
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	void CheckAmmo() override;
 	void GibMonster() override;

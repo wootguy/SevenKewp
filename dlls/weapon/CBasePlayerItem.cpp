@@ -182,7 +182,8 @@ void CBasePlayerItem::DefaultTouch(CBaseEntity* pOther)
 			return;
 		}
 
-		pPlayer->m_nextItemPickups[m_iId] = gpGlobals->time + item_repick_time.value;
+		if (!(iFlags() & ITEM_FLAG_LIMITINWORLD))
+			pPlayer->m_nextItemPickups[m_iId] = gpGlobals->time + item_repick_time.value;
 	}
 
 	if (pOther->AddPlayerItem(this))
