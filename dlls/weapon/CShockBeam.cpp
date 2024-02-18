@@ -26,9 +26,9 @@
 #ifndef CLIENT_DLL
 TYPEDESCRIPTION CShockBeam::m_SaveData[] =
 {
-	DEFINE_FIELD(CShockBeam, m_pBeam1, FIELD_CLASSPTR),
-	DEFINE_FIELD(CShockBeam, m_pBeam2, FIELD_CLASSPTR),
-	DEFINE_FIELD(CShockBeam, m_pSprite, FIELD_CLASSPTR),
+	DEFINE_FIELD(CShockBeam, m_hBeam1, FIELD_EHANDLE),
+	DEFINE_FIELD(CShockBeam, m_hBeam2, FIELD_EHANDLE),
+	DEFINE_FIELD(CShockBeam, m_hSprite, FIELD_EHANDLE),
 };
 
 IMPLEMENT_SAVERESTORE(CShockBeam, CShockBeam::BaseClass);
@@ -61,7 +61,8 @@ void CShockBeam::Spawn()
 	SetTouch( &CShockBeam::BallTouch );
 	SetThink( &CShockBeam::FlyThink );
 
-	m_pSprite = CSprite::SpriteCreate( "sprites/flare3.spr", pev->origin, false );
+	CSprite* m_pSprite = CSprite::SpriteCreate( "sprites/flare3.spr", pev->origin, false );
+	m_hSprite = m_pSprite;
 
 	m_pSprite->SetTransparency( kRenderTransAdd, 255, 255, 255, 255, kRenderFxDistort );
 
@@ -69,7 +70,8 @@ void CShockBeam::Spawn()
 
 	m_pSprite->SetAttachment( edict(), 0 );
 
-	m_pBeam1 = CBeam::BeamCreate( "sprites/lgtning.spr", 60 );
+	CBeam* m_pBeam1 = CBeam::BeamCreate( "sprites/lgtning.spr", 60 );
+	m_hBeam1 = m_pBeam1;
 
 	if( m_pBeam1 )
 	{
@@ -94,7 +96,8 @@ void CShockBeam::Spawn()
 			return;
 		}
 
-		m_pBeam2 = CBeam::BeamCreate( "sprites/lgtning.spr", 20 );
+		CBeam* m_pBeam2 = CBeam::BeamCreate( "sprites/lgtning.spr", 20 );
+		m_hBeam2 = m_pBeam2;
 
 		if( m_pBeam2 )
 		{
@@ -205,22 +208,22 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 
 void CShockBeam::Explode()
 {
-	if( m_pSprite )
+	if( m_hSprite )
 	{
-		UTIL_Remove( m_pSprite );
-		m_pSprite = nullptr;
+		UTIL_Remove(m_hSprite);
+		m_hSprite = nullptr;
 	}
 
-	if( m_pBeam1 )
+	if( m_hBeam1 )
 	{
-		UTIL_Remove( m_pBeam1 );
-		m_pBeam1 = nullptr;
+		UTIL_Remove(m_hBeam1);
+		m_hBeam1 = nullptr;
 	}
 
-	if( m_pBeam2 )
+	if( m_hBeam2 )
 	{
-		UTIL_Remove( m_pBeam2 );
-		m_pBeam2 = nullptr;
+		UTIL_Remove(m_hBeam2);
+		m_hBeam2 = nullptr;
 	}
 
 	pev->dmg = 40;

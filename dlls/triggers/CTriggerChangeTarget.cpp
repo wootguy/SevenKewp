@@ -59,7 +59,7 @@ void CTriggerChangeTarget::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		CBaseMonster* pMonster = pTarget->MyMonsterPointer();
 		if (pMonster)
 		{
-			pMonster->m_pGoalEnt = NULL;
+			pMonster->m_hGoalEnt = NULL;
 		}
 	}
 }

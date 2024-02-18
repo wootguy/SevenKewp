@@ -92,7 +92,7 @@ public:
 	BOOL m_fTorchHolstered;
 	BOOL m_fTorchActive;
 
-	CBeam* m_pTorchBeam;
+	EHANDLE m_hTorchBeam;
 };
 
 class COFTorchAllyRepel : public CBaseRepel
@@ -149,8 +149,8 @@ void COFTorchAlly :: GibMonster ( void )
 	if( m_fTorchActive )
 	{
 		m_fTorchActive = false;
-		UTIL_Remove( m_pTorchBeam );
-		m_pTorchBeam = nullptr;
+		UTIL_Remove(m_hTorchBeam);
+		m_hTorchBeam = nullptr;
 	}
 
 	CBaseMonster :: GibMonster();
@@ -214,7 +214,7 @@ void COFTorchAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case TORCH_AE_ACTIVATE_TORCH:
 			{
 				m_fTorchActive = true;
-				m_pTorchBeam = CBeam::BeamCreate( TORCH_BEAM_SPRITE, 5 );
+				CBeam* m_pTorchBeam = CBeam::BeamCreate( TORCH_BEAM_SPRITE, 5 );
 
 				if( m_pTorchBeam )
 				{
@@ -234,17 +234,18 @@ void COFTorchAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 					m_pTorchBeam->pev->spawnflags |= SF_BEAM_SPARKEND;
 					m_pTorchBeam->DoSparks( vecTorchPos, vecTorchPos );
+					m_hTorchBeam = m_pTorchBeam;
 				}
 				break;
 			}
 
 		case TORCH_AE_DEACTIVATE_TORCH:
 			{
-				if( m_pTorchBeam )
+				if(m_hTorchBeam)
 				{
 					m_fTorchActive = false;
-					UTIL_Remove( m_pTorchBeam );
-					m_pTorchBeam = nullptr;
+					UTIL_Remove(m_hTorchBeam);
+					m_hTorchBeam = nullptr;
 				}
 				break;
 			}
@@ -395,8 +396,8 @@ void COFTorchAlly::Killed( entvars_t* pevAttacker, int iGib )
 	if( m_fTorchActive )
 	{
 		m_fTorchActive = false;
-		UTIL_Remove( m_pTorchBeam );
-		m_pTorchBeam = nullptr;
+		UTIL_Remove(m_hTorchBeam);
+		m_hTorchBeam = nullptr;
 	}
 
 	CBaseGruntOp4::Killed( pevAttacker, iGib );
@@ -404,6 +405,8 @@ void COFTorchAlly::Killed( entvars_t* pevAttacker, int iGib )
 
 void COFTorchAlly::MonsterThink()
 {
+	CBeam* m_pTorchBeam = (CBeam*)m_hTorchBeam.GetEntity();
+
 	if( m_fTorchActive && m_pTorchBeam )
 	{
 		Vector vecTorchPos;

@@ -106,7 +106,7 @@ public:
 	void FlameUpdate(void);
 	void FlameControls(float angleX, float angleY);
 	void FlameDestroy(void);
-	inline BOOL FlameIsOn(void) { return m_pFlame[0] != NULL; }
+	inline BOOL FlameIsOn(void) { return m_hFlame[0] != 0; }
 
 	void FlameDamage(Vector vecStart, Vector vecEnd, entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int iClassIgnore, int bitsDamageType);
 
@@ -131,8 +131,8 @@ public:
 protected:
 	CBaseEntity* GargantuaCheckTraceHullAttack(float flDist, int iDamage, int iDmgType);
 
-	CSprite* m_pEyeGlow;		// Glow around the eyes
-	CBeam* m_pFlame[4];		// Flame beams
+	EHANDLE m_hEyeGlow;		// Glow around the eyes
+	EHANDLE m_hFlame[4];		// Flame beams
 
 	int			m_eyeBrightness;	// Brightness target
 	float		m_seeTime;			// Time to attack (when I see the enemy, I set this)

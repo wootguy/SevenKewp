@@ -132,7 +132,9 @@ void CBabyGarg::Spawn()
 
 	MonsterInit();
 	
-	m_pEyeGlow = CSprite::SpriteCreate(GARG_EYE_SPRITE_NAME, pev->origin, FALSE);
+	m_hEyeGlow = CSprite::SpriteCreate(GARG_EYE_SPRITE_NAME, pev->origin, FALSE);
+	CSprite* m_pEyeGlow = (CSprite*)m_hEyeGlow.GetEntity();
+
 	m_pEyeGlow->SetTransparency(kRenderGlow, 255, 255, 255, 0, kRenderFxNoDissipation);
 	m_pEyeGlow->SetAttachment(edict(), 1);
 	m_pEyeGlow->SetScale(0.5);

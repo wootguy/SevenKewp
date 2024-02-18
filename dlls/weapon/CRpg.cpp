@@ -111,8 +111,8 @@ CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBa
 	pRocket->pev->angles = vecAngles;
 	pRocket->Spawn();
 	pRocket->SetTouch( &CRpgRocket::RocketTouch );
-	pRocket->m_pLauncher = pLauncher;// remember what RPG fired me. 
-	pRocket->m_pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
+	pRocket->m_hLauncher = pLauncher;// remember what RPG fired me. 
+	pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
 	pRocket->pev->owner = pOwner->edict();
 
 	return pRocket;
@@ -152,6 +152,7 @@ void CRpgRocket :: Spawn( void )
 //=========================================================
 void CRpgRocket :: RocketTouch ( CBaseEntity *pOther )
 {
+	CRpg* m_pLauncher = (CRpg*)m_hLauncher.GetEntity();
 	if ( m_pLauncher )
 	{
 		// my launcher is still around, tell it I'm dead.
@@ -320,8 +321,9 @@ void CRpg::Reload( void )
 	}
 
 #ifndef CLIENT_DLL
-	if ( m_pSpot && m_fSpotActive )
+	if ( m_hSpot && m_fSpotActive )
 	{
+		CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 		m_pSpot->Suspend( 2.1 );
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.1;
 	}
@@ -447,10 +449,11 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 	SendWeaponAnim( RPG_HOLSTER1 );
 
 #ifndef CLIENT_DLL
+	CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 	if (m_pSpot)
 	{
 		m_pSpot->Killed( NULL, GIB_NEVER );
-		m_pSpot = NULL;
+		m_hSpot = NULL;
 	}
 #endif
 
@@ -512,10 +515,11 @@ void CRpg::SecondaryAttack()
 	m_fSpotActive = ! m_fSpotActive;
 
 #ifndef CLIENT_DLL
+	CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 	if (!m_fSpotActive && m_pSpot)
 	{
 		m_pSpot->Killed( NULL, GIB_NORMAL );
-		m_pSpot = NULL;
+		m_hSpot = NULL;
 	}
 #endif
 
@@ -579,10 +583,11 @@ void CRpg::UpdateSpot( void )
 
 	if (m_fSpotActive)
 	{
-		if (!m_pSpot)
+		if (!m_hSpot)
 		{
-			m_pSpot = CLaserSpot::CreateSpot();
+			m_hSpot = CLaserSpot::CreateSpot();
 		}
+		CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 		Vector vecSrc = m_pPlayer->GetGunPosition( );;

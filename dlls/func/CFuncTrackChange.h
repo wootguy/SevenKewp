@@ -46,10 +46,10 @@ public:
 	virtual void	OverrideReset(void);
 
 
-	CPathTrack* m_trackTop;
-	CPathTrack* m_trackBottom;
+	EHANDLE m_hTrackTop;
+	EHANDLE m_hTrackBottom;
 
-	CFuncTrackTrain* m_train;
+	EHANDLE m_hTrain;
 
 	int				m_trackTopName;
 	int				m_trackBottomName;

@@ -119,7 +119,7 @@ void HUD_PrepEntity( CBaseEntity *pEntity, CBasePlayer *pWeaponOwner )
 	{
 		ItemInfo info;
 		
-		((CBasePlayerWeapon *)pEntity)->m_pPlayer = pWeaponOwner;
+		((CBasePlayerWeapon *)pEntity)->m_hPlayer = pWeaponOwner;
 		
 		((CBasePlayerWeapon *)pEntity)->GetItemInfo( &info );
 
@@ -146,6 +146,7 @@ CBasePlayerWeapon :: DefaultReload
 */
 BOOL CBasePlayerWeapon :: DefaultReload( int iClipSize, int iAnim, float fDelay, int body )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
 
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		return FALSE;
@@ -173,6 +174,8 @@ CBasePlayerWeapon :: CanDeploy
 */
 BOOL CBasePlayerWeapon :: CanDeploy( void ) 
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+
 	BOOL bHasAmmo = 0;
 
 	if ( !pszAmmo1() )
@@ -209,6 +212,8 @@ CBasePlayerWeapon :: DefaultDeploy
 */
 BOOL CBasePlayerWeapon :: DefaultDeploy(const char *szViewModel, const char *szWeaponModel, int iAnim, const char *szAnimExt, int skiplocal, int	body )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+
 	if ( !CanDeploy() )
 		return FALSE;
 
@@ -259,6 +264,8 @@ Put away weapon
 */
 void CBasePlayerWeapon::Holster( int skiplocal /* = 0 */ )
 { 
+	CBasePlayer* m_pPlayer = GetPlayer();
+
 	m_fInReload = FALSE; // cancel any reload in progress.
 	g_irunninggausspred = false;
 	m_pPlayer->pev->viewmodel = 0; 
@@ -273,6 +280,8 @@ Animate weapon model
 */
 void CBasePlayerWeapon::SendWeaponAnim( int iAnim, int skiplocal, int body )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+
 	m_pPlayer->pev->weaponanim = iAnim;
 	
 	HUD_SendWeaponAnim( iAnim, body, 0 );
@@ -323,6 +332,8 @@ Handles weapon firing, reloading, etc.
 */
 void CBasePlayerWeapon::ItemPostFrame( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+
 	if ((m_fInReload) && (m_pPlayer->m_flNextAttack <= 0.0))
 	{
 #if 0 // FIXME, need ammo on client to make this work right

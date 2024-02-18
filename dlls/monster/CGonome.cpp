@@ -64,7 +64,7 @@ public:
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
 	float m_nextBloodSound; // next time the grabbing blood sound should be played (should really be an animation event)
-	CSprite* m_handBlood;
+	EHANDLE m_hHandBlood;
 
 	static const char* pAttackHitSounds[];
 	static const char* pAttackMissSounds[];
@@ -199,7 +199,9 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 	}
 	case EVENT_GRAB_BLOOD:
 	{
-		m_handBlood->TurnOn();
+		CSprite* handBlood = (CSprite*)m_hHandBlood.GetEntity();
+		if (handBlood)
+			handBlood->TurnOn();
 
 		Vector handOrigin, handAngles;
 		GetAttachment(0, handOrigin, handAngles);
@@ -219,8 +221,9 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 	}
 	case EVENT_THROW_BLOOD:
 	{
-		if (m_handBlood)
-			m_handBlood->TurnOff();
+		CSprite* handBlood = (CSprite*)m_hHandBlood.GetEntity();
+		if (handBlood)
+			handBlood->TurnOff();
 
 		Vector handOrigin, handAngles;
 		GetAttachment(0, handOrigin, handAngles);
@@ -268,11 +271,12 @@ void CGonome::Spawn()
 
 	MonsterInit();
 
-	m_handBlood = CSprite::SpriteCreate(GONOME_SPIT_SPRITE, pev->origin, TRUE);
-	m_handBlood->SetScale(0.3f);
-	m_handBlood->SetTransparency(kRenderTransAlpha, 255, 255, 255, 255, 0);
-	m_handBlood->SetAttachment(edict(), 1);
-	m_handBlood->TurnOff();
+	CSprite* handBlood = CSprite::SpriteCreate(GONOME_SPIT_SPRITE, pev->origin, TRUE);
+	handBlood->SetScale(0.3f);
+	handBlood->SetTransparency(kRenderTransAlpha, 255, 255, 255, 255, 0);
+	handBlood->SetAttachment(edict(), 1);
+	handBlood->TurnOff();
+	m_hHandBlood = handBlood;
 }
 
 void CGonome::Precache()
@@ -319,15 +323,17 @@ BOOL CGonome::CheckRangeAttack1(float flDot, float flDist)
 
 void CGonome::Killed(entvars_t* pevAttacker, int iGib)
 {
-	UTIL_Remove(m_handBlood);
-	m_handBlood = NULL;
+	UTIL_Remove(m_hHandBlood);
+	m_hHandBlood = NULL;
 	CBaseMonster::Killed(pevAttacker, iGib);
 }
 
 Schedule_t* CGonome::GetScheduleOfType(int Type) {
 	m_nextBloodSound = 0;
-	if (m_handBlood)
-		m_handBlood->TurnOff();
+
+	CSprite* handBlood = (CSprite*)m_hHandBlood.GetEntity();
+	if (handBlood)
+		handBlood->TurnOff();
 
 	if (Type == SCHED_RANGE_ATTACK1) {
 		// starting to grab blood

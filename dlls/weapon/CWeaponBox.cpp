@@ -14,7 +14,7 @@ TYPEDESCRIPTION	CWeaponBox::m_SaveData[] =
 {
 	DEFINE_ARRAY(CWeaponBox, m_rgAmmo, FIELD_INTEGER, MAX_AMMO_SLOTS),
 	DEFINE_ARRAY(CWeaponBox, m_rgiszAmmo, FIELD_STRING, MAX_AMMO_SLOTS),
-	DEFINE_ARRAY(CWeaponBox, m_rgpPlayerItems, FIELD_CLASSPTR, MAX_ITEM_TYPES),
+	DEFINE_ARRAY(CWeaponBox, m_rghPlayerItems, FIELD_EHANDLE, MAX_ITEM_TYPES),
 	DEFINE_FIELD(CWeaponBox, m_cAmmoTypes, FIELD_INTEGER),
 };
 
@@ -74,7 +74,7 @@ void CWeaponBox::Kill(void)
 	// destroy the weapons
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
-		pWeapon = m_rgpPlayerItems[i];
+		pWeapon = (CBasePlayerItem*)m_rghPlayerItems[i].GetEntity();
 
 		while (pWeapon)
 		{
@@ -157,17 +157,17 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 	// to deploy a better weapon that the player may pick up because he has no ammo for it.
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
-		if (m_rgpPlayerItems[i])
+		if (m_rghPlayerItems[i])
 		{
 			CBasePlayerItem* pItem;
 
 			// have at least one weapon in this slot
-			while (m_rgpPlayerItems[i])
+			while (m_rghPlayerItems[i])
 			{
 				//ALERT ( at_console, "trying to give %s\n", STRING( m_rgpPlayerItems[ i ]->pev->classname ) );
 
-				pItem = m_rgpPlayerItems[i];
-				m_rgpPlayerItems[i] = (CBasePlayerItem*)m_rgpPlayerItems[i]->m_pNext.GetEntity();// unlink this weapon from the box
+				pItem = (CBasePlayerItem*)m_rghPlayerItems[i].GetEntity();
+				m_rghPlayerItems[i] = pItem->m_pNext.GetEntity();// unlink this weapon from the box
 
 				if (pPlayer->AddPlayerItem(pItem))
 				{
@@ -207,16 +207,16 @@ BOOL CWeaponBox::PackWeapon(CBasePlayerItem* pWeapon)
 
 	int iWeaponSlot = pWeapon->iItemSlot();
 
-	if (m_rgpPlayerItems[iWeaponSlot])
+	if (m_rghPlayerItems[iWeaponSlot])
 	{
 		// there's already one weapon in this slot, so link this into the slot's column
-		pWeapon->m_pNext = m_rgpPlayerItems[iWeaponSlot];
-		m_rgpPlayerItems[iWeaponSlot] = pWeapon;
+		pWeapon->m_pNext = m_rghPlayerItems[iWeaponSlot].GetEntity();
+		m_rghPlayerItems[iWeaponSlot] = pWeapon;
 	}
 	else
 	{
 		// first weapon we have for this slot
-		m_rgpPlayerItems[iWeaponSlot] = pWeapon;
+		m_rghPlayerItems[iWeaponSlot] = pWeapon;
 		pWeapon->m_pNext = NULL;
 	}
 
@@ -306,7 +306,7 @@ int CWeaponBox::GiveAmmo(int iCount, const char* szName, int iMax, int* pIndex/*
 //=========================================================
 BOOL CWeaponBox::HasWeapon(CBasePlayerItem* pCheckItem)
 {
-	CBasePlayerItem* pItem = m_rgpPlayerItems[pCheckItem->iItemSlot()];
+	CBasePlayerItem* pItem = (CBasePlayerItem*)m_rghPlayerItems[pCheckItem->iItemSlot()].GetEntity();
 
 	while (pItem)
 	{
@@ -329,7 +329,7 @@ BOOL CWeaponBox::IsEmpty(void)
 
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
-		if (m_rgpPlayerItems[i])
+		if (m_rghPlayerItems[i])
 		{
 			return FALSE;
 		}

@@ -48,13 +48,13 @@ LINK_ENTITY_TO_CLASS(monster_gargantua, CGargantua);
 
 TYPEDESCRIPTION	CGargantua::m_SaveData[] = 
 {
-	DEFINE_FIELD( CGargantua, m_pEyeGlow, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CGargantua, m_hEyeGlow, FIELD_EHANDLE ),
 	DEFINE_FIELD( CGargantua, m_eyeBrightness, FIELD_INTEGER ),
 	DEFINE_FIELD( CGargantua, m_seeTime, FIELD_TIME ),
 	DEFINE_FIELD( CGargantua, m_flameTime, FIELD_TIME ),
 	DEFINE_FIELD( CGargantua, m_streakTime, FIELD_TIME ),
 	DEFINE_FIELD( CGargantua, m_painSoundTime, FIELD_TIME ),
-	DEFINE_ARRAY( CGargantua, m_pFlame, FIELD_CLASSPTR, 4 ),
+	DEFINE_ARRAY( CGargantua, m_hFlame, FIELD_EHANDLE, 4 ),
 	DEFINE_FIELD( CGargantua, m_flameX, FIELD_FLOAT ),
 	DEFINE_FIELD( CGargantua, m_flameY, FIELD_FLOAT ),
 };
@@ -229,6 +229,8 @@ void CGargantua::EyeOff( void )
 
 void CGargantua::EyeUpdate( void )
 {
+	CSprite* m_pEyeGlow = (CSprite*)m_hEyeGlow.GetEntity();
+
 	if ( m_pEyeGlow )
 	{
 		m_pEyeGlow->pev->renderamt = UTIL_Approach( m_eyeBrightness, m_pEyeGlow->pev->renderamt, 26 );
@@ -271,11 +273,14 @@ void CGargantua :: FlameCreate( void )
 	
 	for ( i = 0; i < 4; i++ )
 	{
+		CBeam* flame = NULL;
 		if ( i < 2 )
-			m_pFlame[i] = CBeam::BeamCreate( GARG_BEAM_SPRITE_NAME, flameWidth );
+			flame = CBeam::BeamCreate( GARG_BEAM_SPRITE_NAME, flameWidth );
 		else
-			m_pFlame[i] = CBeam::BeamCreate( GARG_BEAM_SPRITE2, flameWidth2);
-		if ( m_pFlame[i] )
+			flame = CBeam::BeamCreate( GARG_BEAM_SPRITE2, flameWidth2);
+		m_hFlame[i] = flame;
+
+		if (flame)
 		{
 			int attach = i%2;
 			// attachment is 0 based in GetAttachment
@@ -284,16 +289,16 @@ void CGargantua :: FlameCreate( void )
 			Vector vecEnd = (gpGlobals->v_forward * flameLength) + posGun;
 			UTIL_TraceLine( posGun, vecEnd, dont_ignore_monsters, edict(), &trace );
 
-			m_pFlame[i]->PointEntInit( trace.vecEndPos, entindex() );
+			flame->PointEntInit( trace.vecEndPos, entindex() );
 			if ( i < 2 )
-				m_pFlame[i]->SetColor( 255, 130, 90 );
+				flame->SetColor( 255, 130, 90 );
 			else
-				m_pFlame[i]->SetColor( 0, 120, 255 );
-			m_pFlame[i]->SetBrightness( 190 );
-			m_pFlame[i]->SetFlags( BEAM_FSHADEIN );
-			m_pFlame[i]->SetScrollRate( 20 );
+				flame->SetColor( 0, 120, 255 );
+			flame->SetBrightness( 190 );
+			flame->SetFlags( BEAM_FSHADEIN );
+			flame->SetScrollRate( 20 );
 			// attachment is 1 based in SetEndAttachment
-			m_pFlame[i]->SetEndAttachment( attach + 2 );
+			flame->SetEndAttachment( attach + 2 );
 			CSoundEnt::InsertSound( bits_SOUND_COMBAT, posGun, 384, 0.3 );
 		}
 	}
@@ -332,7 +337,10 @@ void CGargantua :: FlameUpdate( void )
 
 	for ( i = 0; i < 2; i++ )
 	{
-		if ( m_pFlame[i] )
+		CBeam* flame1 = (CBeam*)m_hFlame[i].GetEntity();
+		CBeam* flame2 = (CBeam*)m_hFlame[i + 2].GetEntity();
+
+		if (flame1 && flame2)
 		{
 			Vector vecAim = pev->angles;
 			vecAim.x += m_flameX;
@@ -345,8 +353,8 @@ void CGargantua :: FlameUpdate( void )
 
 			UTIL_TraceLine( vecStart, vecEnd, dont_ignore_monsters, edict(), &trace );
 
-			m_pFlame[i]->SetStartPos( trace.vecEndPos );
-			m_pFlame[i+2]->SetStartPos( (vecStart * 0.6) + (trace.vecEndPos * 0.4) );
+			flame1->SetStartPos( trace.vecEndPos );
+			flame2->SetStartPos( (vecStart * 0.6) + (trace.vecEndPos * 0.4) );
 
 			if ( trace.flFraction != 1.0 && gpGlobals->time > m_streakTime )
 			{
@@ -454,10 +462,10 @@ void CGargantua :: FlameDestroy( void )
 	BeamSound(0);
 	for ( i = 0; i < 4; i++ )
 	{
-		if ( m_pFlame[i] )
+		if (m_hFlame[i])
 		{
-			UTIL_Remove( m_pFlame[i] );
-			m_pFlame[i] = NULL;
+			UTIL_Remove(m_hFlame[i]);
+			m_hFlame[i] = NULL;
 		}
 	}
 }
@@ -541,7 +549,9 @@ void CGargantua :: Spawn()
 
 	MonsterInit();
 
-	m_pEyeGlow = CSprite::SpriteCreate( GARG_EYE_SPRITE_NAME, pev->origin, FALSE );
+	m_hEyeGlow = CSprite::SpriteCreate( GARG_EYE_SPRITE_NAME, pev->origin, FALSE );
+	CSprite* m_pEyeGlow = (CSprite*)m_hEyeGlow.GetEntity();
+
 	m_pEyeGlow->SetTransparency( kRenderGlow, 255, 255, 255, 0, kRenderFxNoDissipation );
 	m_pEyeGlow->SetAttachment( edict(), 1 );
 	EyeOff();
@@ -695,8 +705,8 @@ void CGargantua::DeathEffect( void )
 void CGargantua::Killed( entvars_t *pevAttacker, int iGib )
 {
 	EyeOff();
-	UTIL_Remove( m_pEyeGlow );
-	m_pEyeGlow = NULL;
+	UTIL_Remove( m_hEyeGlow );
+	m_hEyeGlow = NULL;
 	CBaseMonster::Killed( pevAttacker, pev->deadflag == DEAD_DEAD ? iGib : GIB_NEVER);
 }
 

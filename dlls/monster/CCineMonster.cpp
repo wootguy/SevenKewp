@@ -315,7 +315,7 @@ void CCineMonster::PossessEntity(void)
 		}
 #endif
 
-		pTarget->m_pGoalEnt = this;
+		pTarget->m_hGoalEnt = this;
 		pTarget->m_pCine = this;
 		pTarget->m_hTargetEnt = this;
 

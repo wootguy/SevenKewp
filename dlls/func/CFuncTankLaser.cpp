@@ -20,14 +20,14 @@ public:
 	static	TYPEDESCRIPTION m_SaveData[];
 
 private:
-	CLaser* m_pLaser;
+	EHANDLE m_hLaser;
 	float	m_laserTime;
 };
 LINK_ENTITY_TO_CLASS(func_tanklaser, CFuncTankLaser);
 
 TYPEDESCRIPTION	CFuncTankLaser::m_SaveData[] =
 {
-	DEFINE_FIELD(CFuncTankLaser, m_pLaser, FIELD_CLASSPTR),
+	DEFINE_FIELD(CFuncTankLaser, m_hLaser, FIELD_EHANDLE),
 	DEFINE_FIELD(CFuncTankLaser, m_laserTime, FIELD_TIME),
 };
 
@@ -35,7 +35,8 @@ IMPLEMENT_SAVERESTORE(CFuncTankLaser, CFuncTank);
 
 void CFuncTankLaser::Activate(void)
 {
-	if (!GetLaser())
+	CLaser* m_pLaser = GetLaser();
+	if (!m_pLaser)
 	{
 		UTIL_Remove(this);
 		ALERT(at_error, "Laser tank with no env_laser!\n");
@@ -61,30 +62,30 @@ void CFuncTankLaser::KeyValue(KeyValueData* pkvd)
 
 CLaser* CFuncTankLaser::GetLaser(void)
 {
-	if (m_pLaser)
-		return m_pLaser;
+	if (m_hLaser)
+		return (CLaser*)m_hLaser.GetEntity();
 
-	edict_t* pentLaser;
-
-	pentLaser = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->message));
+	edict_t* pentLaser = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->message));
 	while (!FNullEnt(pentLaser))
 	{
 		// Found the landmark
 		if (FClassnameIs(pentLaser, "env_laser"))
 		{
-			m_pLaser = (CLaser*)CBaseEntity::Instance(pentLaser);
-			break;
+			m_hLaser = (CLaser*)CBaseEntity::Instance(pentLaser);
+			return (CLaser*)m_hLaser.GetEntity();
 		}
 		else
 			pentLaser = FIND_ENTITY_BY_TARGETNAME(pentLaser, STRING(pev->message));
 	}
 
-	return m_pLaser;
+	return NULL;
 }
 
 
 void CFuncTankLaser::Think(void)
 {
+	CLaser* m_pLaser = (CLaser*)m_hLaser.GetEntity();
+
 	if (m_pLaser && (gpGlobals->time > m_laserTime))
 		m_pLaser->TurnOff();
 
@@ -96,8 +97,9 @@ void CFuncTankLaser::Fire(const Vector& barrelEnd, const Vector& forward, entvar
 {
 	int i;
 	TraceResult tr;
+	CLaser* m_pLaser = GetLaser();
 
-	if (m_fireLast != 0 && GetLaser())
+	if (m_fireLast != 0 && m_pLaser)
 	{
 		// TankTrace needs gpGlobals->v_up, etc.
 		UTIL_MakeAimVectors(pev->angles);

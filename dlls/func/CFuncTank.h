@@ -75,7 +75,7 @@ public:
 
 
 protected:
-	CBasePlayer* m_pController;
+	EHANDLE		m_hController;
 	float		m_flNextAttack;
 	Vector		m_vecControllerUsePos;
 

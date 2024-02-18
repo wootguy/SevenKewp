@@ -9,7 +9,7 @@
 
 TYPEDESCRIPTION	CFuncTrackTrain::m_SaveData[] =
 {
-	DEFINE_FIELD(CFuncTrackTrain, m_ppath, FIELD_CLASSPTR),
+	DEFINE_FIELD(CFuncTrackTrain, m_hPath, FIELD_EHANDLE),
 	DEFINE_FIELD(CFuncTrackTrain, m_length, FIELD_FLOAT),
 	DEFINE_FIELD(CFuncTrackTrain, m_height, FIELD_FLOAT),
 	DEFINE_FIELD(CFuncTrackTrain, m_speed, FIELD_FLOAT),
@@ -239,6 +239,8 @@ void CFuncTrackTrain::UpdateSound(void)
 
 void CFuncTrackTrain::Next(void)
 {
+	CPathTrack* m_ppath = (CPathTrack*)m_hPath.GetEntity();
+
 	float time = 0.5;
 
 	if (!pev->speed)
@@ -317,7 +319,7 @@ void CFuncTrackTrain::Next(void)
 			else
 				pFire = m_ppath;
 
-			m_ppath = pnext;
+			m_hPath = m_ppath = pnext;
 			// Fire the pass target if there is one
 			if (pFire->pev->message)
 			{
@@ -378,7 +380,7 @@ void CFuncTrackTrain::DeadEnd(void)
 	// Fire the dead-end target if there is one
 	CPathTrack* pTrack, * pNext;
 
-	pTrack = m_ppath;
+	pTrack = (CPathTrack*)m_hPath.GetEntity();
 
 	ALERT(at_aiconsole, "TRAIN(%s): Dead end ", STRING(pev->targetname));
 	// Find the dead end path node
@@ -452,7 +454,8 @@ BOOL CFuncTrackTrain::OnControls(entvars_t* pevTest)
 
 void CFuncTrackTrain::Find(void)
 {
-	m_ppath = CPathTrack::Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target)));
+	CPathTrack* m_ppath = CPathTrack::Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target)));
+	m_hPath = m_ppath;
 	if (!m_ppath)
 		return;
 
@@ -460,7 +463,7 @@ void CFuncTrackTrain::Find(void)
 	if (!FClassnameIs(pevTarget, "path_track"))
 	{
 		ALERT(at_error, "func_track_train must be on a path of path_track\n");
-		m_ppath = NULL;
+		m_hPath = NULL;
 		return;
 	}
 
@@ -525,7 +528,7 @@ void CFuncTrackTrain::NearestPath(void)
 			pNearest = pTrack;
 	}
 
-	m_ppath = (CPathTrack*)pNearest;
+	m_hPath = (CPathTrack*)pNearest;
 
 	if (pev->speed != 0)
 	{

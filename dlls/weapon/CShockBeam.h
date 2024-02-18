@@ -51,10 +51,10 @@ private:
 	void Explode();
 
 public:
-	CBeam* m_pBeam1;
-	CBeam* m_pBeam2;
+	EHANDLE m_hBeam1;
+	EHANDLE m_hBeam2;
 
-	CSprite* m_pSprite;
+	EHANDLE m_hSprite;
 
 	int m_iBeams;
 };

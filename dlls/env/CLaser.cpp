@@ -12,7 +12,7 @@ LINK_ENTITY_TO_CLASS(env_laser, CLaser);
 
 TYPEDESCRIPTION	CLaser::m_SaveData[] =
 {
-	DEFINE_FIELD(CLaser, m_pSprite, FIELD_CLASSPTR),
+	DEFINE_FIELD(CLaser, m_hSprite, FIELD_EHANDLE),
 	DEFINE_FIELD(CLaser, m_iszSpriteName, FIELD_STRING),
 	DEFINE_FIELD(CLaser, m_firePosition, FIELD_POSITION_VECTOR),
 };
@@ -34,11 +34,12 @@ void CLaser::Spawn(void)
 
 	PointsInit(pev->origin, pev->origin);
 
-	if (!m_pSprite && m_iszSpriteName)
-		m_pSprite = CSprite::SpriteCreate(STRING(m_iszSpriteName), pev->origin, TRUE);
+	if (!m_hSprite && m_iszSpriteName)
+		m_hSprite = CSprite::SpriteCreate(STRING(m_iszSpriteName), pev->origin, TRUE);
 	else
-		m_pSprite = NULL;
+		m_hSprite = NULL;
 
+	CSprite* m_pSprite = (CSprite*)m_hSprite.GetEntity();
 	if (m_pSprite)
 		m_pSprite->SetTransparency(kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx);
 
@@ -115,6 +116,8 @@ void CLaser::TurnOff(void)
 {
 	pev->effects |= EF_NODRAW;
 	pev->nextthink = 0;
+
+	CSprite* m_pSprite = (CSprite*)m_hSprite.GetEntity();
 	if (m_pSprite)
 		m_pSprite->TurnOff();
 }
@@ -123,10 +126,12 @@ void CLaser::TurnOff(void)
 void CLaser::TurnOn(void)
 {
 	pev->effects &= ~EF_NODRAW;
-	if (m_pSprite)
-		m_pSprite->TurnOn();
 	pev->dmgtime = gpGlobals->time;
 	pev->nextthink = gpGlobals->time;
+
+	CSprite* m_pSprite = (CSprite*)m_hSprite.GetEntity();
+	if (m_pSprite)
+		m_pSprite->TurnOn();
 }
 
 
@@ -150,6 +155,8 @@ void CLaser::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType
 void CLaser::FireAtPoint(TraceResult& tr)
 {
 	SetEndPos(tr.vecEndPos);
+
+	CSprite* m_pSprite = (CSprite*)m_hSprite.GetEntity();
 	if (m_pSprite)
 		UTIL_SetOrigin(m_pSprite->pev, tr.vecEndPos);
 

@@ -31,7 +31,7 @@ TYPEDESCRIPTION	CFuncTank::m_SaveData[] =
 	DEFINE_FIELD(CFuncTank, m_bulletType, FIELD_INTEGER),
 	DEFINE_FIELD(CFuncTank, m_sightOrigin, FIELD_VECTOR),
 	DEFINE_FIELD(CFuncTank, m_spread, FIELD_INTEGER),
-	DEFINE_FIELD(CFuncTank, m_pController, FIELD_CLASSPTR),
+	DEFINE_FIELD(CFuncTank, m_hController, FIELD_EHANDLE),
 	DEFINE_FIELD(CFuncTank, m_vecControllerUsePos, FIELD_VECTOR),
 	DEFINE_FIELD(CFuncTank, m_flNextAttack, FIELD_TIME),
 	DEFINE_FIELD(CFuncTank, m_iBulletDamage, FIELD_INTEGER),
@@ -218,6 +218,8 @@ BOOL CFuncTank::OnControls(entvars_t* pevTest)
 
 BOOL CFuncTank::StartControl(CBasePlayer* pController)
 {
+	CBasePlayer* m_pController = (CBasePlayer*)m_hController.GetEntity();
+
 	if (m_pController != NULL)
 		return FALSE;
 
@@ -230,18 +232,18 @@ BOOL CFuncTank::StartControl(CBasePlayer* pController)
 
 	ALERT(at_console, "using TANK!\n");
 
-	m_pController = pController;
-	if (m_pController->m_pActiveItem)
+	m_hController = pController;
+	if (pController->m_pActiveItem)
 	{
-		CBasePlayerItem* item = (CBasePlayerItem*)m_pController->m_pActiveItem.GetEntity();
+		CBasePlayerItem* item = (CBasePlayerItem*)pController->m_pActiveItem.GetEntity();
 		item->Holster();
-		m_pController->pev->weaponmodel = 0;
-		m_pController->pev->viewmodel = 0;
+		pController->pev->weaponmodel = 0;
+		pController->pev->viewmodel = 0;
 
 	}
 
-	m_pController->m_iHideHUD |= HIDEHUD_WEAPONS;
-	m_vecControllerUsePos = m_pController->pev->origin;
+	pController->m_iHideHUD |= HIDEHUD_WEAPONS;
+	m_vecControllerUsePos = pController->pev->origin;
 
 	pev->nextthink = pev->ltime + 0.1;
 
@@ -250,6 +252,8 @@ BOOL CFuncTank::StartControl(CBasePlayer* pController)
 
 void CFuncTank::StopControl()
 {
+	CBasePlayer* m_pController = (CBasePlayer*)m_hController.GetEntity();
+
 	// TODO: bring back the controllers current weapon
 	if (!m_pController)
 		return;
@@ -262,7 +266,7 @@ void CFuncTank::StopControl()
 	m_pController->m_iHideHUD &= ~HIDEHUD_WEAPONS;
 
 	pev->nextthink = 0;
-	m_pController = NULL;
+	m_hController = NULL;
 
 	if (IsActive())
 		pev->nextthink = pev->ltime + 1.0;
@@ -271,6 +275,8 @@ void CFuncTank::StopControl()
 // Called each frame by the player's ItemPostFrame
 void CFuncTank::ControllerPostFrame(void)
 {
+	CBasePlayer* m_pController = (CBasePlayer*)m_hController.GetEntity();
+
 	ASSERT(m_pController != NULL);
 
 	if (gpGlobals->time < m_flNextAttack)
@@ -297,6 +303,8 @@ void CFuncTank::ControllerPostFrame(void)
 
 void CFuncTank::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	CBasePlayer* m_pController = (CBasePlayer*)m_hController.GetEntity();
+
 	if (pev->spawnflags & SF_TANK_CANCONTROL)
 	{  // player controlled turret
 
@@ -367,6 +375,7 @@ void CFuncTank::TrackTarget(void)
 	Vector angles, direction, targetPosition;
 	edict_t* pTarget;
 	Vector barrelEnd = BarrelPosition();
+	CBasePlayer* m_pController = (CBasePlayer*)m_hController.GetEntity();
 
 	// target player that is most aligned with the tank aim direction
 	edict_t* pPlayer = INDEXENT(0);

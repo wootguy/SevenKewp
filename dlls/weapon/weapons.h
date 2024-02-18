@@ -503,7 +503,7 @@ public:
 	BOOL PackWeapon( CBasePlayerItem *pWeapon );
 	BOOL PackAmmo( int iszName, int iCount );
 	
-	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES];// one slot for each 
+	EHANDLE m_rghPlayerItems[MAX_ITEM_TYPES];// one slot for each 
 
 	int m_rgiszAmmo[MAX_AMMO_SLOTS];// ammo names
 	int	m_rgAmmo[MAX_AMMO_SLOTS];// ammo quantities
@@ -759,7 +759,7 @@ public:
 	void UpdateSpot( void );
 	BOOL ShouldWeaponIdle( void ) { return TRUE; };
 
-	CLaserSpot *m_pSpot;
+	EHANDLE m_hSpot;
 	int m_fSpotActive;
 	int m_cActiveRockets;// how many missiles in flight from this launcher right now?
 
@@ -792,7 +792,7 @@ public:
 
 	int m_iTrail;
 	float m_flIgniteTime;
-	CRpg *m_pLauncher;// pointer back to the launcher that fired me. 
+	EHANDLE m_hLauncher;// pointer back to the launcher that fired me. 
 };
 
 class CGauss : public CBasePlayerWeapon
@@ -885,9 +885,9 @@ public:
 	
 	enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
 
-	CBeam				*m_pBeam;
-	CBeam				*m_pNoise;
-	CSprite				*m_pSprite;
+	EHANDLE m_hBeam;
+	EHANDLE m_hNoise;
+	EHANDLE m_hSprite;
 
 	virtual BOOL UseDecrement( void )
 	{ 

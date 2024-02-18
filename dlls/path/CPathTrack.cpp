@@ -8,9 +8,9 @@
 TYPEDESCRIPTION	CPathTrack::m_SaveData[] =
 {
 	DEFINE_FIELD(CPathTrack, m_length, FIELD_FLOAT),
-	DEFINE_FIELD(CPathTrack, m_pnext, FIELD_CLASSPTR),
-	DEFINE_FIELD(CPathTrack, m_paltpath, FIELD_CLASSPTR),
-	DEFINE_FIELD(CPathTrack, m_pprevious, FIELD_CLASSPTR),
+	DEFINE_FIELD(CPathTrack, m_hNext, FIELD_EHANDLE),
+	DEFINE_FIELD(CPathTrack, m_hAltpath, FIELD_CLASSPTR),
+	DEFINE_FIELD(CPathTrack, m_hPrevious, FIELD_EHANDLE),
 	DEFINE_FIELD(CPathTrack, m_altName, FIELD_STRING),
 };
 
@@ -36,7 +36,7 @@ void CPathTrack::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 	int on;
 
 	// Use toggles between two paths
-	if (m_paltpath)
+	if (m_hAltpath)
 	{
 		on = !FBitSet(pev->spawnflags, SF_PATH_ALTERNATE);
 		if (ShouldToggle(useType, on))
@@ -71,11 +71,12 @@ void CPathTrack::Link(void)
 		pentTarget = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target));
 		if (!FNullEnt(pentTarget))
 		{
-			m_pnext = CPathTrack::Instance(pentTarget);
+			CPathTrack* next = CPathTrack::Instance(pentTarget);
+			m_hNext = next;
 
-			if (m_pnext)		// If no next pointer, this is the end of a path
+			if (next)		// If no next pointer, this is the end of a path
 			{
-				m_pnext->SetPrevious(this);
+				next->SetPrevious(this);
 			}
 		}
 		else
@@ -88,11 +89,12 @@ void CPathTrack::Link(void)
 		pentTarget = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_altName));
 		if (!FNullEnt(pentTarget))
 		{
-			m_paltpath = CPathTrack::Instance(pentTarget);
+			CPathTrack* alt = CPathTrack::Instance(pentTarget);
+			m_hAltpath = alt;
 
-			if (m_paltpath)		// If no next pointer, this is the end of a path
+			if (alt)		// If no next pointer, this is the end of a path
 			{
-				m_paltpath->SetPrevious(this);
+				alt->SetPrevious(this);
 			}
 		}
 	}
@@ -104,8 +106,8 @@ void CPathTrack::Spawn(void)
 	pev->solid = SOLID_TRIGGER;
 	UTIL_SetSize(pev, Vector(-8, -8, -8), Vector(8, 8, 8));
 
-	m_pnext = NULL;
-	m_pprevious = NULL;
+	m_hNext = NULL;
+	m_hPrevious = NULL;
 	// DEBUGGING CODE
 #if PATH_SPARKLE_DEBUG
 	SetThink(Sparkle);
@@ -144,20 +146,20 @@ void CPathTrack::Project(CPathTrack* pstart, CPathTrack* pend, Vector* origin, f
 
 CPathTrack* CPathTrack::GetNext(void)
 {
-	if (m_paltpath && FBitSet(pev->spawnflags, SF_PATH_ALTERNATE) && !FBitSet(pev->spawnflags, SF_PATH_ALTREVERSE))
-		return m_paltpath;
+	if (m_hAltpath && FBitSet(pev->spawnflags, SF_PATH_ALTERNATE) && !FBitSet(pev->spawnflags, SF_PATH_ALTREVERSE))
+		return (CPathTrack*)m_hAltpath.GetEntity();
 
-	return m_pnext;
+	return (CPathTrack*)m_hNext.GetEntity();
 }
 
 
 
 CPathTrack* CPathTrack::GetPrevious(void)
 {
-	if (m_paltpath && FBitSet(pev->spawnflags, SF_PATH_ALTERNATE) && FBitSet(pev->spawnflags, SF_PATH_ALTREVERSE))
-		return m_paltpath;
+	if (m_hAltpath && FBitSet(pev->spawnflags, SF_PATH_ALTERNATE) && FBitSet(pev->spawnflags, SF_PATH_ALTREVERSE))
+		return (CPathTrack*)m_hAltpath.GetEntity();
 
-	return m_pprevious;
+	return (CPathTrack*)m_hPrevious.GetEntity();
 }
 
 
@@ -166,7 +168,7 @@ void CPathTrack::SetPrevious(CPathTrack* pprev)
 {
 	// Only set previous if this isn't my alternate path
 	if (pprev && !FStrEq(STRING(pprev->pev->targetname), STRING(m_altName)))
-		m_pprevious = pprev;
+		m_hPrevious = pprev;
 }
 
 

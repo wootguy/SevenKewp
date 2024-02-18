@@ -87,7 +87,6 @@ class CApache : public CBaseMonster
 	float m_flGoalSpeed;
 
 	int m_iDoSmokePuff;
-	CBeam *m_pBeam;
 };
 
 LINK_ENTITY_TO_CLASS( monster_apache, CApache );
@@ -110,7 +109,6 @@ TYPEDESCRIPTION	CApache::m_SaveData[] =
 //	DEFINE_FIELD( CApache, m_iSpriteTexture, FIELD_INTEGER ),
 //	DEFINE_FIELD( CApache, m_iExplode, FIELD_INTEGER ),
 //	DEFINE_FIELD( CApache, m_iBodyGibs, FIELD_INTEGER ),
-	DEFINE_FIELD( CApache, m_pBeam, FIELD_CLASSPTR ),
 	DEFINE_FIELD( CApache, m_flGoalSpeed, FIELD_FLOAT ),
 	DEFINE_FIELD( CApache, m_iDoSmokePuff, FIELD_INTEGER ),
 };
@@ -455,13 +453,13 @@ void CApache :: HuntThink( void )
 
 	ShowDamage( );
 
-	if ( m_pGoalEnt == NULL && !FStringNull(pev->target) )// this monster has a target
+	if ( !m_hGoalEnt && !FStringNull(pev->target) )// this monster has a target
 	{
-		m_pGoalEnt = UTIL_FindEntityByTargetname( NULL, STRING( pev->target ) );
-		if (m_pGoalEnt)
+		m_hGoalEnt = UTIL_FindEntityByTargetname( NULL, STRING( pev->target ) );
+		if (m_hGoalEnt)
 		{
-			m_posDesired = m_pGoalEnt->pev->origin;
-			UTIL_MakeAimVectors( m_pGoalEnt->pev->angles );
+			m_posDesired = m_hGoalEnt->pev->origin;
+			UTIL_MakeAimVectors(m_hGoalEnt->pev->angles );
 			m_vecGoal = gpGlobals->v_forward;
 		}
 	}
@@ -496,17 +494,17 @@ void CApache :: HuntThink( void )
 
 	float flLength = (pev->origin - m_posDesired).Length();
 
-	if (m_pGoalEnt)
+	if (m_hGoalEnt)
 	{
 		// ALERT( at_console, "%.0f\n", flLength );
 
 		if (flLength < 128)
 		{
-			m_pGoalEnt = UTIL_FindEntityByTargetname( NULL, STRING( m_pGoalEnt->pev->target ) );
-			if (m_pGoalEnt)
+			m_hGoalEnt = UTIL_FindEntityByTargetname( NULL, STRING(m_hGoalEnt->pev->target ) );
+			if (m_hGoalEnt)
 			{
-				m_posDesired = m_pGoalEnt->pev->origin;
-				UTIL_MakeAimVectors( m_pGoalEnt->pev->angles );
+				m_posDesired = m_hGoalEnt->pev->origin;
+				UTIL_MakeAimVectors(m_hGoalEnt->pev->angles );
 				m_vecGoal = gpGlobals->v_forward;
 				flLength = (pev->origin - m_posDesired).Length();
 			}
@@ -861,14 +859,6 @@ BOOL CApache :: FireGun( )
 		}
 #endif
 		return TRUE;
-	}
-	else
-	{
-		if (m_pBeam)
-		{
-			UTIL_Remove( m_pBeam );
-			m_pBeam = NULL;
-		}
 	}
 	return FALSE;
 }
