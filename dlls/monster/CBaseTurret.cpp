@@ -11,7 +11,7 @@ TYPEDESCRIPTION	CBaseTurret::m_SaveData[] =
 	DEFINE_FIELD(CBaseTurret, m_flMaxSpin, FIELD_FLOAT),
 	DEFINE_FIELD(CBaseTurret, m_iSpin, FIELD_INTEGER),
 
-	DEFINE_FIELD(CBaseTurret, m_pEyeGlow, FIELD_CLASSPTR),
+	DEFINE_FIELD(CBaseTurret, m_hEyeGlow, FIELD_EHANDLE),
 	DEFINE_FIELD(CBaseTurret, m_eyeBrightness, FIELD_INTEGER),
 	DEFINE_FIELD(CBaseTurret, m_iDeployHeight, FIELD_INTEGER),
 	DEFINE_FIELD(CBaseTurret, m_iRetractHeight, FIELD_INTEGER),
@@ -219,6 +219,8 @@ void CBaseTurret::Ping(void)
 
 void CBaseTurret::EyeOn()
 {
+	CSprite* m_pEyeGlow = (CSprite*)m_hEyeGlow.GetEntity();
+
 	if (m_pEyeGlow)
 	{
 		if (m_eyeBrightness != 255)
@@ -231,6 +233,8 @@ void CBaseTurret::EyeOn()
 
 void CBaseTurret::EyeOff()
 {
+	CSprite* m_pEyeGlow = (CSprite*)m_hEyeGlow.GetEntity();
+
 	if (m_pEyeGlow)
 	{
 		if (m_eyeBrightness > 0)

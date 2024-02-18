@@ -106,8 +106,6 @@ public:
 	float m_flMinSpeed;
 	float m_flMaxDist;
 
-	CBeam *m_pBeam;
-
 	float m_flNextAlert;
 
 	static const char *pIdleSounds[];

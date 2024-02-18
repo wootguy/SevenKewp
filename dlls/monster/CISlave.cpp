@@ -82,7 +82,7 @@ public:
 
 	int m_iBravery;
 
-	CBeam *m_pBeam[ISLAVE_MAX_BEAMS];
+	EHANDLE m_hBeam[ISLAVE_MAX_BEAMS];
 
 	int m_iBeams;
 	float m_flNextAttack;
@@ -104,7 +104,7 @@ TYPEDESCRIPTION	CISlave::m_SaveData[] =
 {
 	DEFINE_FIELD( CISlave, m_iBravery, FIELD_INTEGER ),
 
-	DEFINE_ARRAY( CISlave, m_pBeam, FIELD_CLASSPTR, ISLAVE_MAX_BEAMS ),
+	DEFINE_ARRAY( CISlave, m_hBeam, FIELD_EHANDLE, ISLAVE_MAX_BEAMS ),
 	DEFINE_FIELD( CISlave, m_iBeams, FIELD_INTEGER ),
 	DEFINE_FIELD( CISlave, m_flNextAttack, FIELD_TIME ),
 
@@ -754,16 +754,18 @@ void CISlave :: ArmBeam( int side )
 
 	DecalGunshot( &tr, BULLET_PLAYER_CROWBAR );
 
-	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/lgtning.spr", 30 );
-	if (!m_pBeam[m_iBeams])
+	CBeam* beam = CBeam::BeamCreate( "sprites/lgtning.spr", 30 );
+	if (!beam)
 		return;
 
-	m_pBeam[m_iBeams]->PointEntInit( tr.vecEndPos, entindex( ) );
-	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
-	// m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
-	m_pBeam[m_iBeams]->SetColor( 96, 128, 16 );
-	m_pBeam[m_iBeams]->SetBrightness( 64 );
-	m_pBeam[m_iBeams]->SetNoise( 80 );
+	beam->PointEntInit( tr.vecEndPos, entindex( ) );
+	beam->SetEndAttachment( side < 0 ? 2 : 1 );
+	// beam->SetColor( 180, 255, 96 );
+	beam->SetColor( 96, 128, 16 );
+	beam->SetBrightness( 64 );
+	beam->SetNoise( 80 );
+	m_hBeam[m_iBeams] = beam;
+
 	m_iBeams++;
 }
 
@@ -779,9 +781,11 @@ void CISlave :: BeamGlow( )
 
 	for (int i = 0; i < m_iBeams; i++)
 	{
-		if (m_pBeam[i]->GetBrightness() != 255) 
+		CBeam* beam = (CBeam*)m_hBeam[i].GetEntity();
+
+		if (beam && beam->GetBrightness() != 255)
 		{
-			m_pBeam[i]->SetBrightness( b );
+			beam->SetBrightness( b );
 		}
 	}
 }
@@ -801,15 +805,16 @@ void CISlave :: WackBeam( int side, CBaseEntity *pEntity )
 	if (pEntity == NULL)
 		return;
 
-	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/lgtning.spr", 30 );
-	if (!m_pBeam[m_iBeams])
+	CBeam* beam = CBeam::BeamCreate( "sprites/lgtning.spr", 30 );
+	if (!beam)
 		return;
 
-	m_pBeam[m_iBeams]->PointEntInit( pEntity->Center(), entindex( ) );
-	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
-	m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
-	m_pBeam[m_iBeams]->SetBrightness( 255 );
-	m_pBeam[m_iBeams]->SetNoise( 80 );
+	beam->PointEntInit( pEntity->Center(), entindex( ) );
+	beam->SetEndAttachment( side < 0 ? 2 : 1 );
+	beam->SetColor( 180, 255, 96 );
+	beam->SetBrightness( 255 );
+	beam->SetNoise( 80 );
+	m_hBeam[m_iBeams] = beam;
 	m_iBeams++;
 }
 
@@ -831,15 +836,16 @@ void CISlave :: ZapBeam( int side )
 	vecAim = vecAim + side * gpGlobals->v_right * RANDOM_FLOAT( 0, deflection ) + gpGlobals->v_up * RANDOM_FLOAT( -deflection, deflection );
 	UTIL_TraceLine ( vecSrc, vecSrc + vecAim * 1024, dont_ignore_monsters, ENT( pev ), &tr);
 
-	m_pBeam[m_iBeams] = CBeam::BeamCreate( "sprites/lgtning.spr", 50 );
-	if (!m_pBeam[m_iBeams])
+	CBeam* beam = CBeam::BeamCreate( "sprites/lgtning.spr", 50 );
+	if (!beam)
 		return;
 
-	m_pBeam[m_iBeams]->PointEntInit( tr.vecEndPos, entindex( ) );
-	m_pBeam[m_iBeams]->SetEndAttachment( side < 0 ? 2 : 1 );
-	m_pBeam[m_iBeams]->SetColor( 180, 255, 96 );
-	m_pBeam[m_iBeams]->SetBrightness( 255 );
-	m_pBeam[m_iBeams]->SetNoise( 20 );
+	beam->PointEntInit( tr.vecEndPos, entindex( ) );
+	beam->SetEndAttachment( side < 0 ? 2 : 1 );
+	beam->SetColor( 180, 255, 96 );
+	beam->SetBrightness( 255 );
+	beam->SetNoise( 20 );
+	m_hBeam[m_iBeams] = beam;
 	m_iBeams++;
 
 	pEntity = CBaseEntity::Instance(tr.pHit);
@@ -858,10 +864,10 @@ void CISlave :: ClearBeams( )
 {
 	for (int i = 0; i < ISLAVE_MAX_BEAMS; i++)
 	{
-		if (m_pBeam[i])
+		if (m_hBeam[i])
 		{
-			UTIL_Remove( m_pBeam[i] );
-			m_pBeam[i] = NULL;
+			UTIL_Remove(m_hBeam[i] );
+			m_hBeam[i] = NULL;
 		}
 	}
 	m_iBeams = 0;

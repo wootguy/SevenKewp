@@ -74,9 +74,8 @@ private:
 	void DestroyEffect();
 
 private:
-	CGrappleTip* m_pTip = nullptr;
-
-	CBeam* m_pBeam;
+	EHANDLE m_hTip;
+	EHANDLE m_hBeam;
 
 	float m_flShootTime;
 	float m_flDamageTime;

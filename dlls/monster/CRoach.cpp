@@ -424,7 +424,7 @@ void CRoach :: Look ( int iDistance )
 		return;
 	}
 
-	m_pLink = NULL;
+	m_hLink = NULL;
 	pPreviousEnt = this;
 
 	// Does sphere also limit itself to PVS?
@@ -439,8 +439,8 @@ void CRoach :: Look ( int iDistance )
 			{
 				// NULL the Link pointer for each ent added to the link list. If other ents follow, the will overwrite
 				// this value. If this ent happens to be the last, the list will be properly terminated.
-				pPreviousEnt->m_pLink = pSightEnt;
-				pSightEnt->m_pLink = NULL;
+				pPreviousEnt->m_hLink = pSightEnt;
+				pSightEnt->m_hLink = NULL;
 				pPreviousEnt = pSightEnt;
 
 				// don't add the Enemy's relationship to the conditions. We only want to worry about conditions when

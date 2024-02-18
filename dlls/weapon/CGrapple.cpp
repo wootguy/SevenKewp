@@ -156,6 +156,8 @@ void CGrapple::PrimaryAttack()
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
 
 #ifndef CLIENT_DLL
+	CGrappleTip* m_pTip = (CGrappleTip*)m_hTip.GetEntity();
+
 	if (m_pTip)
 	{
 		if (m_pTip->IsStuck())
@@ -410,6 +412,7 @@ void CGrapple::SecondaryAttack()
 	if (!m_pPlayer)
 		return;
 
+	CGrappleTip* m_pTip = (CGrappleTip*)m_hTip.GetEntity();
 	if (m_pTip && m_pTip->IsStuck() &&
 		(!m_pTip->GetGrappleTarget() || m_pTip->GetGrappleTarget()->IsPlayer()))
 	{
@@ -521,7 +524,8 @@ void CGrapple::CreateEffect()
 
 	DestroyEffect();
 
-	m_pTip = GetClassPtr((CGrappleTip*)NULL);
+	CGrappleTip* m_pTip = GetClassPtr((CGrappleTip*)NULL);
+	m_hTip = m_pTip;
 
 	m_pTip->Spawn();
 
@@ -539,9 +543,10 @@ void CGrapple::CreateEffect()
 
 	m_pTip->SetPosition(vecOrigin, vecAngles, m_pPlayer);
 
-	if (!m_pBeam)
+	if (!m_hBeam)
 	{
-		m_pBeam = CBeam::BeamCreate("sprites/tongue.spr", 16);
+		CBeam* m_pBeam = CBeam::BeamCreate("sprites/tongue.spr", 16);
+		m_hBeam = m_pBeam;
 
 		m_pBeam->EntsInit(m_pTip->entindex(), m_pPlayer->entindex());
 
@@ -559,24 +564,26 @@ void CGrapple::CreateEffect()
 void CGrapple::UpdateEffect()
 {
 #ifndef CLIENT_DLL
-	if (!m_pBeam || !m_pTip)
+	if (!m_hBeam || !m_hTip)
 		CreateEffect();
 #endif
 }
 
 void CGrapple::DestroyEffect()
 {
-	if (m_pBeam)
+	if (m_hBeam)
 	{
-		UTIL_Remove(m_pBeam);
-		m_pBeam = nullptr;
+		UTIL_Remove(m_hBeam);
+		m_hBeam = NULL;
 	}
 
 #ifndef CLIENT_DLL
+	CGrappleTip* m_pTip = (CGrappleTip*)m_hTip.GetEntity();
+
 	if (m_pTip)
 	{
 		m_pTip->Killed(nullptr, GIB_NEVER);
-		m_pTip = nullptr;
+		m_hTip = NULL;
 	}
 #endif
 }

@@ -291,7 +291,7 @@ void CBaseMonster::Look(int iDistance)
 	// DON'T let visibility information from last frame sit around!
 	ClearConditions(bits_COND_SEE_HATE | bits_COND_SEE_DISLIKE | bits_COND_SEE_ENEMY | bits_COND_SEE_FEAR | bits_COND_SEE_NEMESIS | bits_COND_SEE_CLIENT);
 
-	m_pLink = NULL;
+	m_hLink = NULL;
 
 	CBaseEntity* pSightEnt = NULL;// the current visible entity that we're dealing with
 
@@ -340,8 +340,8 @@ void CBaseMonster::Look(int iDistance)
 						iSighted |= bits_COND_SEE_CLIENT;
 					}
 
-					pSightEnt->m_pLink = m_pLink;
-					m_pLink = pSightEnt;
+					pSightEnt->m_hLink = m_hLink;
+					m_hLink = pSightEnt;
 
 					if (pSightEnt == m_hEnemy)
 					{
@@ -636,7 +636,7 @@ BOOL CBaseMonster::FRefreshRoute(void)
 	case MOVEGOAL_PATHCORNER:
 	{
 		// monster is on a path_corner loop
-		pPathCorner = m_pGoalEnt;
+		pPathCorner = m_hGoalEnt;
 		i = 0;
 
 		while (pPathCorner && i < ROUTE_SIZE)
@@ -1482,7 +1482,7 @@ void CBaseMonster::AdvanceRoute(float distance)
 		{
 			// If we've just passed a path_corner, advance m_pGoalEnt
 			if ((m_Route[m_iRouteIndex].iType & ~bits_MF_NOT_TO_MASK) == bits_MF_TO_PATHCORNER)
-				m_pGoalEnt = m_pGoalEnt->GetNextTarget();
+				m_hGoalEnt = m_hGoalEnt->GetNextTarget();
 
 			// IF both waypoints are nodes, then check for a link for a door and operate it.
 			//
@@ -2154,16 +2154,16 @@ void CBaseMonster::StartMonster(void)
 	if (!FStringNull(pev->target))// this monster has a target
 	{
 		// Find the monster's initial target entity, stash it
-		m_pGoalEnt = CBaseEntity::Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target)));
+		m_hGoalEnt = CBaseEntity::Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target)));
 
-		if (!m_pGoalEnt)
+		if (!m_hGoalEnt)
 		{
 			ALERT(at_error, "ReadyMonster()--%s couldn't find target %s\n", STRING(pev->classname), STRING(pev->target));
 		}
 		else
 		{
 			// Monster will start turning towards his destination
-			MakeIdealYaw(m_pGoalEnt->pev->origin);
+			MakeIdealYaw(m_hGoalEnt->pev->origin);
 
 			// JAY: How important is this error message?  Big Momma doesn't obey this rule, so I took it out.
 #if 0
@@ -2560,7 +2560,7 @@ CBaseEntity* CBaseMonster::BestVisibleEnemy(void)
 
 	iNearest = 8192;// so first visible entity will become the closest.
 	float bestDot = -1;
-	pNextEnt = m_pLink;
+	pNextEnt = m_hLink;
 	pReturn = NULL;
 	iBestRelationship = R_NO;
 
@@ -2606,7 +2606,7 @@ CBaseEntity* CBaseMonster::BestVisibleEnemy(void)
 			}
 		}
 
-		pNextEnt = pNextEnt->m_pLink;
+		pNextEnt = pNextEnt->m_hLink;
 	}
 
 	return pReturn;
@@ -3756,7 +3756,7 @@ BOOL CBaseMonster::CineCleanup()
 	}
 	m_pCine = NULL;
 	m_hTargetEnt = NULL;
-	m_pGoalEnt = NULL;
+	m_hGoalEnt = NULL;
 	if (pev->deadflag == DEAD_DYING)
 	{
 		// last frame of death animation?

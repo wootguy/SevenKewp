@@ -12,9 +12,9 @@ LINK_ENTITY_TO_CLASS(func_trackchange, CFuncTrackChange);
 
 TYPEDESCRIPTION	CFuncTrackChange::m_SaveData[] =
 {
-	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackTop, FIELD_CLASSPTR),
-	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackBottom, FIELD_CLASSPTR),
-	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_train, FIELD_CLASSPTR),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_hTrackTop, FIELD_EHANDLE),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_hTrackBottom, FIELD_EHANDLE),
+	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_hTrain, FIELD_EHANDLE),
 	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackTopName, FIELD_STRING),
 	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trackBottomName, FIELD_STRING),
 	DEFINE_GLOBAL_FIELD(CFuncTrackChange, m_trainName, FIELD_STRING),
@@ -112,23 +112,25 @@ void CFuncTrackChange::Find(void)
 	target = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_trackTopName));
 	if (!FNullEnt(target))
 	{
-		m_trackTop = CPathTrack::Instance(target);
+		CPathTrack* top = CPathTrack::Instance(target);
+		m_hTrackTop = top;
 		target = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_trackBottomName));
 		if (!FNullEnt(target))
 		{
-			m_trackBottom = CPathTrack::Instance(target);
+			CPathTrack* bottom = CPathTrack::Instance(target);
+			m_hTrackBottom = bottom;
 			target = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_trainName));
 			if (!FNullEnt(target))
 			{
-				m_train = CFuncTrackTrain::Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_trainName)));
-				if (!m_train)
+				m_hTrain = CFuncTrackTrain::Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_trainName)));
+				if (!m_hTrain)
 				{
 					ALERT(at_error, "Can't find train for track change! %s\n", STRING(m_trainName));
 					return;
 				}
 				Vector center = (pev->absmin + pev->absmax) * 0.5;
-				m_trackBottom = m_trackBottom->Nearest(center);
-				m_trackTop = m_trackTop->Nearest(center);
+				m_hTrackBottom = bottom->Nearest(center);
+				m_hTrackTop = top->Nearest(center);
 				UpdateAutoTargets(m_toggle_state);
 				SetThink(NULL);
 				return;
@@ -150,12 +152,15 @@ void CFuncTrackChange::Find(void)
 
 TRAIN_CODE CFuncTrackChange::EvaluateTrain(CPathTrack* pcurrent)
 {
+	CFuncTrackTrain* m_train = (CFuncTrackTrain*)m_hTrain.GetEntity();
+
 	// Go ahead and work, we don't have anything to switch, so just be an elevator
 	if (!pcurrent || !m_train)
 		return TRAIN_SAFE;
 
-	if (m_train->m_ppath == pcurrent || (pcurrent->m_pprevious && m_train->m_ppath == pcurrent->m_pprevious) ||
-		(pcurrent->m_pnext && m_train->m_ppath == pcurrent->m_pnext))
+	if (m_train->m_hPath.GetEntity() == pcurrent || 
+		(pcurrent->m_hPrevious && m_train->m_hPath.GetEntity() == pcurrent->m_hPrevious.GetEntity()) ||
+		(pcurrent->m_hNext && m_train->m_hPath.GetEntity() == pcurrent->m_hNext.GetEntity()))
 	{
 		if (m_train->pev->speed != 0)
 			return TRAIN_BLOCKING;
@@ -176,6 +181,11 @@ TRAIN_CODE CFuncTrackChange::EvaluateTrain(CPathTrack* pcurrent)
 
 void CFuncTrackChange::UpdateTrain(Vector& dest)
 {
+	CFuncTrackTrain* m_train = (CFuncTrackTrain*)m_hTrain.GetEntity();
+	if (!m_train) {
+		return;
+	}
+
 	float time = (pev->nextthink - pev->ltime);
 
 	m_train->pev->velocity = pev->velocity;
@@ -201,6 +211,8 @@ void CFuncTrackChange::UpdateTrain(Vector& dest)
 
 void CFuncTrackChange::GoDown(void)
 {
+	CFuncTrackTrain* m_train = (CFuncTrackTrain*)m_hTrain.GetEntity();
+
 	if (m_code == TRAIN_BLOCKING)
 		return;
 
@@ -224,10 +236,10 @@ void CFuncTrackChange::GoDown(void)
 	// Otherwise, rotate first, move second
 
 	// If the train is moving with the platform, update it
-	if (m_code == TRAIN_FOLLOWING)
+	if (m_code == TRAIN_FOLLOWING && m_train)
 	{
 		UpdateTrain(m_start);
-		m_train->m_ppath = NULL;
+		m_train->m_hPath = NULL;
 	}
 }
 
@@ -237,6 +249,8 @@ void CFuncTrackChange::GoDown(void)
 //
 void CFuncTrackChange::GoUp(void)
 {
+	CFuncTrackTrain* m_train = (CFuncTrackTrain*)m_hTrain.GetEntity();
+
 	if (m_code == TRAIN_BLOCKING)
 		return;
 
@@ -261,10 +275,10 @@ void CFuncTrackChange::GoUp(void)
 	// Otherwise, move first, rotate second
 
 	// If the train is moving with the platform, update it
-	if (m_code == TRAIN_FOLLOWING)
+	if (m_code == TRAIN_FOLLOWING && m_train)
 	{
 		UpdateTrain(m_end);
-		m_train->m_ppath = NULL;
+		m_train->m_hPath = NULL;
 	}
 }
 
@@ -272,6 +286,9 @@ void CFuncTrackChange::GoUp(void)
 // Normal track change
 void CFuncTrackChange::UpdateAutoTargets(int toggleState)
 {
+	CPathTrack* m_trackTop = (CPathTrack*)m_hTrackTop.GetEntity();
+	CPathTrack* m_trackBottom = (CPathTrack*)m_hTrackBottom.GetEntity();
+
 	if (!m_trackTop || !m_trackBottom)
 		return;
 
@@ -289,6 +306,9 @@ void CFuncTrackChange::UpdateAutoTargets(int toggleState)
 
 void CFuncTrackChange::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	CPathTrack* m_trackTop = (CPathTrack*)m_hTrackTop.GetEntity();
+	CPathTrack* m_trackBottom = (CPathTrack*)m_hTrackBottom.GetEntity();
+
 	if (m_toggle_state != TS_AT_TOP && m_toggle_state != TS_AT_BOTTOM)
 		return;
 
@@ -323,8 +343,11 @@ void CFuncTrackChange::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TY
 //
 void CFuncTrackChange::HitBottom(void)
 {
+	CFuncTrackTrain* m_train = (CFuncTrackTrain*)m_hTrain.GetEntity();
+	CPathTrack* m_trackBottom = (CPathTrack*)m_hTrackBottom.GetEntity();
+
 	CFuncPlatRot::HitBottom();
-	if (m_code == TRAIN_FOLLOWING)
+	if (m_code == TRAIN_FOLLOWING && m_train)
 	{
 		//		UpdateTrain();
 		m_train->SetTrack(m_trackBottom);
@@ -343,8 +366,11 @@ void CFuncTrackChange::HitBottom(void)
 //
 void CFuncTrackChange::HitTop(void)
 {
+	CFuncTrackTrain* m_train = (CFuncTrackTrain*)m_hTrain.GetEntity();
+	CPathTrack* m_trackTop = (CPathTrack*)m_hTrackTop.GetEntity();
+
 	CFuncPlatRot::HitTop();
-	if (m_code == TRAIN_FOLLOWING)
+	if (m_code == TRAIN_FOLLOWING && m_train)
 	{
 		//		UpdateTrain();
 		m_train->SetTrack(m_trackTop);

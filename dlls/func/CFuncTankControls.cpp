@@ -18,13 +18,13 @@ public:
 	virtual int	Restore(CRestore& restore);
 	static TYPEDESCRIPTION m_SaveData[];
 
-	CFuncTank* m_pTank;
+	EHANDLE m_hTank;
 };
 LINK_ENTITY_TO_CLASS(func_tankcontrols, CFuncTankControls);
 
 TYPEDESCRIPTION	CFuncTankControls::m_SaveData[] =
 {
-	DEFINE_FIELD(CFuncTankControls, m_pTank, FIELD_CLASSPTR),
+	DEFINE_FIELD(CFuncTankControls, m_hTank, FIELD_EHANDLE),
 };
 
 IMPLEMENT_SAVERESTORE(CFuncTankControls, CBaseEntity);
@@ -37,10 +37,10 @@ int	CFuncTankControls::ObjectCaps(void)
 
 void CFuncTankControls::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 { // pass the Use command onto the controls
-	if (m_pTank)
-		m_pTank->Use(pActivator, pCaller, useType, value);
+	if (m_hTank)
+		m_hTank->Use(pActivator, pCaller, useType, value);
 
-	ASSERT(m_pTank != NULL);	// if this fails,  most likely means save/restore hasn't worked properly
+	ASSERT(m_hTank != NULL);	// if this fails,  most likely means save/restore hasn't worked properly
 }
 
 
@@ -59,7 +59,7 @@ void CFuncTankControls::Think(void)
 		return;
 	}
 
-	m_pTank = (CFuncTank*)Instance(pTarget);
+	m_hTank = (CFuncTank*)Instance(pTarget);
 }
 
 void CFuncTankControls::Spawn(void)

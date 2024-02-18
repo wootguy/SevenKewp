@@ -12,7 +12,9 @@
 //
 void CPlatTrigger::SpawnInsideTrigger(CFuncPlat* pPlatform)
 {
-	m_pPlatform = pPlatform;
+	m_hPlatform = pPlatform;
+	CFuncPlat* m_pPlatform = (CFuncPlat*)m_hPlatform.GetEntity();
+
 	// Create trigger entity, "point" it at the owning platform, give it a touch method
 	pev->solid = SOLID_TRIGGER;
 	pev->movetype = MOVETYPE_NONE;
@@ -41,6 +43,8 @@ void CPlatTrigger::SpawnInsideTrigger(CFuncPlat* pPlatform)
 //
 void CPlatTrigger::Touch(CBaseEntity* pOther)
 {
+	CFuncPlat* m_pPlatform = (CFuncPlat*)m_hPlatform.GetEntity();
+
 	// Ignore touches by non-players
 	entvars_t* pevToucher = pOther->pev;
 	if (!FClassnameIs(pevToucher, "player"))

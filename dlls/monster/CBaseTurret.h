@@ -72,7 +72,7 @@ public:
 	float m_flMaxSpin;		// Max time to spin the barrel w/o a target
 	int m_iSpin;
 
-	CSprite* m_pEyeGlow;
+	EHANDLE m_hEyeGlow;
 	int		m_eyeBrightness;
 
 	int	m_iDeployHeight;

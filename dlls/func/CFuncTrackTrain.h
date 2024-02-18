@@ -23,7 +23,7 @@ public:
 
 	void		NextThink(float thinkTime, BOOL alwaysThink);
 
-	void SetTrack(CPathTrack* track) { m_ppath = track->Nearest(pev->origin); }
+	void SetTrack(CPathTrack* track) { m_hPath = track->Nearest(pev->origin); }
 	void SetControls(entvars_t* pevControls);
 	BOOL OnControls(entvars_t* pev);
 
@@ -40,7 +40,7 @@ public:
 
 	virtual void	OverrideReset(void);
 
-	CPathTrack* m_ppath;
+	EHANDLE		m_hPath;
 	float		m_length;
 	float		m_height;
 	float		m_speed;

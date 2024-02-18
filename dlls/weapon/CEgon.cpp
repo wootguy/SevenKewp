@@ -185,8 +185,9 @@ void CEgon::Attack( void )
 	// don't fire underwater
 	if ( m_pPlayer->pev->waterlevel == 3 )
 	{
-		
-		if ( m_fireState != FIRE_OFF || m_pBeam )
+		CBeam* beam = (CBeam*)m_hBeam.GetEntity();
+
+		if ( m_fireState != FIRE_OFF || beam)
 		{
 			EndAttack();
 		}
@@ -291,6 +292,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 
 	if ( g_pGameRules->IsMultiplayer() )
 	{
+		CSprite* m_pSprite = (CSprite*)m_hSprite.GetEntity();
 		if ( m_pSprite && pEntity->pev->takedamage )
 		{
 			m_pSprite->pev->effects &= ~EF_NODRAW;
@@ -410,10 +412,14 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, float timeBlend )
 {
 #ifndef CLIENT_DLL
-	if ( !m_pBeam )
+	if ( !m_hBeam )
 	{
 		CreateEffect();
 	}
+
+	CBeam* m_pBeam = (CBeam*)m_hBeam.GetEntity();
+	CBeam* m_pNoise = (CBeam*)m_hNoise.GetEntity();
+	CSprite* m_pSprite = (CSprite*)m_hSprite.GetEntity();
 
 	m_pBeam->SetStartPos( endPoint );
 	m_pBeam->SetBrightness( 255 - (timeBlend*180) );
@@ -445,7 +451,7 @@ void CEgon::CreateEffect( void )
 
 	DestroyEffect();
 
-	m_pBeam = CBeam::BeamCreate( EGON_BEAM_SPRITE, 40 );
+	CBeam* m_pBeam = CBeam::BeamCreate( EGON_BEAM_SPRITE, 40 );
 	m_pBeam->PointEntInit( pev->origin, m_pPlayer->entindex() );
 	m_pBeam->SetFlags( BEAM_FSINE );
 	m_pBeam->SetEndAttachment( 1 );
@@ -453,7 +459,7 @@ void CEgon::CreateEffect( void )
 	m_pBeam->pev->flags |= FL_SKIPLOCALHOST;
 	m_pBeam->pev->owner = m_pPlayer->edict();
 
-	m_pNoise = CBeam::BeamCreate( EGON_BEAM_SPRITE, 55 );
+	CBeam*  m_pNoise = CBeam::BeamCreate( EGON_BEAM_SPRITE, 55 );
 	m_pNoise->PointEntInit( pev->origin, m_pPlayer->entindex() );
 	m_pNoise->SetScrollRate( 25 );
 	m_pNoise->SetBrightness( 100 );
@@ -462,7 +468,7 @@ void CEgon::CreateEffect( void )
 	m_pNoise->pev->flags |= FL_SKIPLOCALHOST;
 	m_pNoise->pev->owner = m_pPlayer->edict();
 
-	m_pSprite = CSprite::SpriteCreate( EGON_FLARE_SPRITE, pev->origin, FALSE );
+	CSprite* m_pSprite = CSprite::SpriteCreate( EGON_FLARE_SPRITE, pev->origin, FALSE );
 	m_pSprite->pev->scale = 1.0;
 	m_pSprite->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation );
 	m_pSprite->pev->spawnflags |= SF_SPRITE_TEMPORARY;
@@ -483,6 +489,10 @@ void CEgon::CreateEffect( void )
 		m_pNoise->SetColor( 80, 120, 255 );
 		m_pNoise->SetNoise( 2 );
 	}
+
+	m_hBeam = m_pBeam;
+	m_hNoise = m_pNoise;
+	m_hSprite = m_pSprite;
 #endif
 
 }
@@ -492,23 +502,25 @@ void CEgon::DestroyEffect( void )
 {
 
 #ifndef CLIENT_DLL
-	if ( m_pBeam )
+	if ( m_hBeam )
 	{
-		UTIL_Remove( m_pBeam );
-		m_pBeam = NULL;
+		UTIL_Remove(m_hBeam);
+		m_hBeam = NULL;
 	}
-	if ( m_pNoise )
+	if ( m_hNoise )
 	{
-		UTIL_Remove( m_pNoise );
-		m_pNoise = NULL;
+		UTIL_Remove(m_hNoise);
+		m_hNoise = NULL;
 	}
+
+	CSprite* m_pSprite = (CSprite*)m_hSprite.GetEntity();
 	if ( m_pSprite )
 	{
 		if ( m_fireMode == FIRE_WIDE )
 			m_pSprite->Expand( 10, 500 );
 		else
 			UTIL_Remove( m_pSprite );
-		m_pSprite = NULL;
+		m_hSprite = NULL;
 	}
 #endif
 

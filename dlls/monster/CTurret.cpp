@@ -57,9 +57,10 @@ void CTurret::Spawn()
 
 	SetThink(&CTurret::Initialize);
 
-	m_pEyeGlow = CSprite::SpriteCreate(TURRET_GLOW_SPRITE, pev->origin, FALSE);
-	m_pEyeGlow->SetTransparency(kRenderGlow, 255, 0, 0, 0, kRenderFxNoDissipation);
-	m_pEyeGlow->SetAttachment(edict(), 2);
+	CSprite* eye = CSprite::SpriteCreate(TURRET_GLOW_SPRITE, pev->origin, FALSE);
+	m_hEyeGlow = eye;
+	eye->SetTransparency(kRenderGlow, 255, 0, 0, 0, kRenderFxNoDissipation);
+	eye->SetAttachment(edict(), 2);
 	m_eyeBrightness = 0;
 
 	pev->nextthink = gpGlobals->time + 0.3;

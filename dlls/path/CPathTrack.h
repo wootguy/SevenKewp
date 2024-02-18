@@ -41,9 +41,9 @@ public:
 
 	float		m_length;
 	string_t	m_altName;
-	CPathTrack* m_pnext;
-	CPathTrack* m_pprevious;
-	CPathTrack* m_paltpath;
+	EHANDLE m_hNext;
+	EHANDLE m_hPrevious;
+	EHANDLE m_hAltpath;
 };
 
 #endif

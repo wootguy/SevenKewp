@@ -118,7 +118,7 @@ public:
 
 	float m_flAdj;
 
-	CSprite *m_pBall;
+	EHANDLE m_hBall;
 
 	char m_szRechargerTarget[64];
 	char m_szDrawUse[64];
@@ -157,7 +157,7 @@ TYPEDESCRIPTION	CNihilanth::m_SaveData[] =
 	DEFINE_ARRAY( CNihilanth, m_hSphere, FIELD_EHANDLE, N_SPHERES ),
 	DEFINE_FIELD( CNihilanth, m_iActiveSpheres, FIELD_INTEGER ),
 	DEFINE_FIELD( CNihilanth, m_flAdj, FIELD_FLOAT ),
-	DEFINE_FIELD( CNihilanth, m_pBall, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CNihilanth, m_hBall, FIELD_EHANDLE ),
 	DEFINE_ARRAY( CNihilanth, m_szRechargerTarget, FIELD_CHARACTER, 64 ),
 	DEFINE_ARRAY( CNihilanth, m_szDrawUse, FIELD_CHARACTER, 64 ),
 	DEFINE_ARRAY( CNihilanth, m_szTeleportUse, FIELD_CHARACTER, 64 ),
@@ -463,6 +463,7 @@ void CNihilanth :: DyingThink( void )
 		pev->sequence = LookupSequence( "die1" );
 	}
 
+	CSprite* m_pBall = (CSprite*)m_hBall.GetEntity();
 	if (m_pBall)
 	{
 		if (m_pBall->pev->renderamt > 0)
@@ -685,9 +686,9 @@ void CNihilanth :: NextActivity( )
 
 	if (m_irritation >= 2)
 	{
-		if (m_pBall == NULL)
+		if (!m_hBall)
 		{
-			m_pBall = CSprite::SpriteCreate( "sprites/tele1.spr", pev->origin, TRUE );
+			CSprite* m_pBall = CSprite::SpriteCreate( "sprites/tele1.spr", pev->origin, TRUE );
 			if (m_pBall)
 			{
 				m_pBall->SetTransparency( kRenderTransAdd, 255, 255, 255, 255, kRenderFxNoDissipation );
@@ -695,10 +696,11 @@ void CNihilanth :: NextActivity( )
 				m_pBall->SetScale( 4.0 );
 				m_pBall->pev->framerate = 10.0;
 				m_pBall->TurnOn( );
+				m_hBall = m_pBall;
 			}
 		}
 
-		if (m_pBall)
+		if (m_hBall)
 		{
 			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 				WRITE_BYTE( TE_ELIGHT );
