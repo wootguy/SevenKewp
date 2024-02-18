@@ -494,7 +494,8 @@ void CMonsterMaker::MakeMonster( void )
 	}
 
 	// unstuck monsters if spawned inside the ceiling
-	if (!WALK_MOVE(pent, 0, 0, WALKMOVE_NORMAL)) {
+	// (unless it's a barnacle/turret or smth that doesn't move)
+	if (pev->movetype == MOVETYPE_STEP && !WALK_MOVE(pent, 0, 0, WALKMOVE_NORMAL)) {
 		DROP_TO_FLOOR(pent);
 	}
 

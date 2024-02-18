@@ -2757,7 +2757,7 @@ void CBasePlayer::Spawn( void )
 	pev->renderfx = 0;
 	pev->rendercolor = Vector(0,0,0);
 	m_lastDropTime = 0;
-	memset(m_nextItemPickups, 0, sizeof(float) * MAX_ITEM_TYPES);
+	memset(m_nextItemPickups, 0, sizeof(float) * MAX_WEAPONS);
 
 	m_bitsHUDDamage		= -1;
 	m_bitsDamageType	= 0;
@@ -4414,7 +4414,9 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 			}
 
 			// prevent players dropping at pickup points to get more ammo
-			m_nextItemPickups[pWeapon->m_iId] = gpGlobals->time + item_repick_time.value;
+			// unless the pickup point already has a cooldown via the LIMITINWORLD flag
+			if (!(pWeapon->iFlags() & ITEM_FLAG_LIMITINWORLD))
+				m_nextItemPickups[pWeapon->m_iId] = gpGlobals->time + item_repick_time.value;
 
 			pWeaponBox->SetThink(&CWeaponBox::Kill);
 			pWeaponBox->pev->nextthink = gpGlobals->time + item_despawn_time.value;

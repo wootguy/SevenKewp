@@ -82,6 +82,9 @@ public:
 	void Poop ( void );
 	BOOL FPathBlocked( void );
 	//void KeyValue( KeyValueData *pkvd );
+	const char* DisplayName() {
+		return m_displayName ? CBaseMonster::DisplayName() : "Flyer Flock";
+	}
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
