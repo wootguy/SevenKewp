@@ -106,6 +106,10 @@ void CGlock::PrimaryAttack( void )
 
 void CGlock::GlockFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if (m_iClip <= 0)
 	{
 		if (m_fFireOnEmpty)
@@ -174,21 +178,22 @@ void CGlock::GlockFire( float flSpread , float flCycleTime, BOOL fUseAutoAim )
 
 void CGlock::Reload( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if ( m_pPlayer->ammo_9mm <= 0 )
 		 return;
 
 	if (DefaultReload(17, m_iClip ? GLOCK_RELOAD_NOT_EMPTY : GLOCK_RELOAD, 1.5)) {
 		// send reload sound to everyone except the reloader if they're in first-person mode,
 		// because the reloading client will play sounds via model events
-		CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(m_pPlayer->edict());
-		if (plr) {
-			uint32_t messageTargets = 0xffffffff;
-			if (plr->IsFirstPerson()) {
-				messageTargets &= ~PLRBIT(plr->edict());
-			}
-			StartSound(plr->edict(), CHAN_ITEM, MOD_SND_FOLDER "weapons/glock_reload.wav", 0.8f,
-				ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
+		uint32_t messageTargets = 0xffffffff;
+		if (m_pPlayer->IsFirstPerson()) {
+			messageTargets &= ~PLRBIT(m_pPlayer->edict());
 		}
+		StartSound(m_pPlayer->edict(), CHAN_ITEM, MOD_SND_FOLDER "weapons/glock_reload.wav", 0.8f,
+			ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
 
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 	}
@@ -198,6 +203,10 @@ void CGlock::Reload( void )
 
 void CGlock::WeaponIdle( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	ResetEmptySound( );
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );

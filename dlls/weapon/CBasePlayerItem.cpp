@@ -12,7 +12,7 @@ extern int gEvilImpulse101;
 
 TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
 {
-	DEFINE_FIELD(CBasePlayerItem, m_pPlayer, FIELD_CLASSPTR),
+	DEFINE_FIELD(CBasePlayerItem, m_hPlayer, FIELD_EHANDLE),
 	DEFINE_FIELD(CBasePlayerItem, m_pNext, FIELD_EHANDLE),
 	//DEFINE_FIELD( CBasePlayerItem, m_fKnown, FIELD_INTEGER ),Reset to zero on load
 	DEFINE_FIELD(CBasePlayerItem, m_iId, FIELD_INTEGER),
@@ -197,6 +197,10 @@ void CBasePlayerItem::DefaultTouch(CBaseEntity* pOther)
 
 void CBasePlayerItem::DestroyItem(void)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if (m_pPlayer)
 	{
 		// if attached to a player, remove. 
@@ -208,7 +212,7 @@ void CBasePlayerItem::DestroyItem(void)
 
 int CBasePlayerItem::AddToPlayer(CBasePlayer* pPlayer)
 {
-	m_pPlayer = pPlayer;
+	m_hPlayer = pPlayer;
 
 	return TRUE;
 }
@@ -229,6 +233,10 @@ void CBasePlayerItem::Kill(void)
 
 void CBasePlayerItem::Holster(int skiplocal /* = 0 */)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_pPlayer->pev->viewmodel = 0;
 	m_pPlayer->pev->weaponmodel = 0;
 }

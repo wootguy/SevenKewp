@@ -118,6 +118,10 @@ BOOL CPython::Deploy( )
 
 void CPython::Holster( int skiplocal /* = 0 */ )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_fInReload = FALSE;// cancel any reload in progress.
 
 	if ( m_fInZoom )
@@ -132,6 +136,10 @@ void CPython::Holster( int skiplocal /* = 0 */ )
 
 void CPython::SecondaryAttack( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 #ifdef CLIENT_DLL
 	if ( !bIsMultiplayer() )
 #else
@@ -157,6 +165,10 @@ void CPython::SecondaryAttack( void )
 
 void CPython::PrimaryAttack()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
@@ -217,6 +229,10 @@ void CPython::PrimaryAttack()
 
 void CPython::Reload( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if ( m_pPlayer->ammo_357 <= 0 )
 		return;
 
@@ -236,21 +252,22 @@ void CPython::Reload( void )
 	if (DefaultReload(6, PYTHON_RELOAD, 2.0, bUseScope)) {
 		// send reload sound to everyone except the reloader if they're in first-person mode,
 		// because the reloading client will play sounds via model events
-		CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(m_pPlayer->edict());
-		if (plr) {
-			uint32_t messageTargets = 0xffffffff;
-			if (plr->IsFirstPerson()) {
-				messageTargets &= ~PLRBIT(plr->edict());
-			}
-			StartSound(plr->edict(), CHAN_ITEM, "weapons/357_reload1.wav", 0.8f,
-				ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
+		uint32_t messageTargets = 0xffffffff;
+		if (m_pPlayer->IsFirstPerson()) {
+			messageTargets &= ~PLRBIT(m_pPlayer->edict());
 		}
+		StartSound(m_pPlayer->edict(), CHAN_ITEM, "weapons/357_reload1.wav", 0.8f,
+			ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
 	}
 }
 
 
 void CPython::WeaponIdle( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	ResetEmptySound( );
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_10DEGREES );

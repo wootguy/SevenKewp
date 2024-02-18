@@ -79,6 +79,10 @@ void CBasePlayerWeapon::Precache() {
 
 void CBasePlayerWeapon::ItemPostFrame(void)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if ((m_fInReload) && (m_pPlayer->m_flNextAttack <= UTIL_WeaponTimeBase()))
 	{
 		// complete the reload. 
@@ -251,6 +255,10 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 
 void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if (UseDecrement())
 		skiplocal = 1;
 	else
@@ -271,6 +279,10 @@ void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 
 BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, char* szName, int iMaxClip, int iMaxCarry)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
 	int iIdAmmo;
 
 	if (iMaxClip < 1)
@@ -309,6 +321,10 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, char* szName, int iMaxClip, i
 
 BOOL CBasePlayerWeapon::AddSecondaryAmmo(int iCount, char* szName, int iMax)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
 	int iIdAmmo;
 
 	iIdAmmo = m_pPlayer->GiveAmmo(iCount, szName, iMax);
@@ -331,6 +347,10 @@ BOOL CBasePlayerWeapon::AddSecondaryAmmo(int iCount, char* szName, int iMax)
 //=========================================================
 BOOL CBasePlayerWeapon::IsUseable(void)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
 	if (m_iClip <= 0)
 	{
 		if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] <= 0 && iMaxAmmo1() != -1)
@@ -345,6 +365,10 @@ BOOL CBasePlayerWeapon::IsUseable(void)
 
 BOOL CBasePlayerWeapon::CanDeploy(void)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
 	BOOL bHasAmmo = 0;
 
 	if (!pszAmmo1())
@@ -375,6 +399,10 @@ BOOL CBasePlayerWeapon::CanDeploy(void)
 
 BOOL CBasePlayerWeapon::DefaultDeploy(const char* szViewModel, const char* szWeaponModel, int iAnim, const char* szAnimExt, int skiplocal /* = 0 */, int body)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
 	if (!CanDeploy())
 		return FALSE;
 
@@ -394,6 +422,10 @@ BOOL CBasePlayerWeapon::DefaultDeploy(const char* szViewModel, const char* szWea
 
 BOOL CBasePlayerWeapon::DefaultReload(int iClipSize, int iAnim, float fDelay, int body)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		return FALSE;
 
@@ -415,6 +447,10 @@ BOOL CBasePlayerWeapon::DefaultReload(int iClipSize, int iAnim, float fDelay, in
 
 BOOL CBasePlayerWeapon::PlayEmptySound(void)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
 	if (m_iPlayEmptySound)
 	{
 		// send sound to all players except the shooter, who is predicting the sound locally
@@ -450,6 +486,10 @@ int CBasePlayerWeapon::SecondaryAmmoIndex(void)
 
 void CBasePlayerWeapon::Holster(int skiplocal /* = 0 */)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_fInReload = FALSE; // cancel any reload in progress.
 	m_pPlayer->pev->viewmodel = 0;
 	m_pPlayer->pev->weaponmodel = 0;
@@ -499,7 +539,11 @@ int CBasePlayerWeapon::ExtractClipAmmo(CBasePlayerWeapon* pWeapon)
 		iAmmo = m_iClip;
 	}
 
-	return pWeapon->m_pPlayer->GiveAmmo(iAmmo, pszAmmo1(), iMaxAmmo1()); // , &m_iPrimaryAmmoType
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
+	return m_pPlayer->GiveAmmo(iAmmo, pszAmmo1(), iMaxAmmo1()); // , &m_iPrimaryAmmoType
 }
 
 //=========================================================
@@ -507,6 +551,10 @@ int CBasePlayerWeapon::ExtractClipAmmo(CBasePlayerWeapon* pWeapon)
 //=========================================================
 void CBasePlayerWeapon::RetireWeapon(void)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	// first, no viewmodel at all.
 	m_pPlayer->pev->viewmodel = iStringNull;
 	m_pPlayer->pev->weaponmodel = iStringNull;

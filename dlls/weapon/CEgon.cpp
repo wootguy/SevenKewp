@@ -112,6 +112,10 @@ int CEgon::AddToPlayer( CBasePlayer *pPlayer )
 
 void CEgon::Holster( int skiplocal /* = 0 */ )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	SendWeaponAnim( EGON_HOLSTER );
 
@@ -150,6 +154,10 @@ float CEgon::GetDischargeInterval( void )
 
 BOOL CEgon::HasAmmo( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
 	if ( m_pPlayer->ammo_uranium <= 0 )
 		return FALSE;
 
@@ -158,6 +166,10 @@ BOOL CEgon::HasAmmo( void )
 
 void CEgon::UseAmmo( int count )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if ( m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= count )
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= count;
 	else
@@ -166,6 +178,10 @@ void CEgon::UseAmmo( int count )
 
 void CEgon::Attack( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	// don't fire underwater
 	if ( m_pPlayer->pev->waterlevel == 3 )
 	{
@@ -249,6 +265,10 @@ void CEgon::PrimaryAttack( void )
 
 void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	Vector vecDest = vecOrigSrc + vecDir * 2048;
 	edict_t		*pentIgnore;
 	TraceResult tr;
@@ -418,8 +438,11 @@ void CEgon::UpdateEffect( const Vector &startPoint, const Vector &endPoint, floa
 
 void CEgon::CreateEffect( void )
 {
-
 #ifndef CLIENT_DLL
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	DestroyEffect();
 
 	m_pBeam = CBeam::BeamCreate( EGON_BEAM_SPRITE, 40 );
@@ -495,6 +518,10 @@ void CEgon::DestroyEffect( void )
 
 void CEgon::WeaponIdle( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	ResetEmptySound( );
 
 	if ( m_flTimeWeaponIdle > gpGlobals->time )
@@ -526,6 +553,10 @@ void CEgon::WeaponIdle( void )
 
 void CEgon::EndAttack( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	bool bMakeNoise = false;
 		
 	if ( m_fireState != FIRE_OFF ) //Checking the button just in case!.

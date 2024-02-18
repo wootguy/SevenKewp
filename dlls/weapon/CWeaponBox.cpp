@@ -187,15 +187,18 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 //=========================================================
 BOOL CWeaponBox::PackWeapon(CBasePlayerItem* pWeapon)
 {
+	CBasePlayer* plr = (CBasePlayer*)pWeapon->m_hPlayer.GetEntity();
+	if (!plr) return 0;
+
 	// is one of these weapons already packed in this box?
 	if (HasWeapon(pWeapon))
 	{
 		return FALSE;// box can only hold one of each weapon type
 	}
 
-	if (pWeapon->m_pPlayer)
+	if (plr)
 	{
-		if (!pWeapon->m_pPlayer->RemovePlayerItem(pWeapon))
+		if (!plr->RemovePlayerItem(pWeapon))
 		{
 			// failed to unhook the weapon from the player!
 			return FALSE;
@@ -226,7 +229,7 @@ BOOL CWeaponBox::PackWeapon(CBasePlayerItem* pWeapon)
 	pWeapon->pev->owner = edict();
 	pWeapon->SetThink(NULL);// crowbar may be trying to swing again, etc.
 	pWeapon->SetTouch(NULL);
-	pWeapon->m_pPlayer = NULL;
+	pWeapon->m_hPlayer = NULL;
 
 	//ALERT ( at_console, "packed %s\n", STRING(pWeapon->pev->classname) );
 

@@ -128,6 +128,10 @@ BOOL CMP5::Deploy( )
 
 void CMP5::PrimaryAttack()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
@@ -198,6 +202,10 @@ void CMP5::PrimaryAttack()
 
 void CMP5::SecondaryAttack( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	// don't fire underwater
 	if (m_pPlayer->pev->waterlevel == 3)
 	{
@@ -250,27 +258,32 @@ void CMP5::SecondaryAttack( void )
 
 void CMP5::Reload( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if ( m_pPlayer->ammo_9mm <= 0 )
 		return;
 
 	if (DefaultReload(MP5_MAX_CLIP, MP5_RELOAD, 1.5)) {
 		// send reload sound to everyone except the reloader if they're in first-person mode,
 		// because the reloading client will play sounds via model events
-		CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(m_pPlayer->edict());
-		if (plr) {
-			uint32_t messageTargets = 0xffffffff;
-			if (plr->IsFirstPerson()) {
-				messageTargets &= ~PLRBIT(plr->edict());
-			}
-			StartSound(plr->edict(), CHAN_ITEM, MOD_SND_FOLDER "weapons/9mmar_reload.wav", 0.8f,
-				ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
+		uint32_t messageTargets = 0xffffffff;
+		if (m_pPlayer->IsFirstPerson()) {
+			messageTargets &= ~PLRBIT(m_pPlayer->edict());
 		}
+		StartSound(m_pPlayer->edict(), CHAN_ITEM, MOD_SND_FOLDER "weapons/9mmar_reload.wav", 0.8f,
+			ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
 	}
 }
 
 
 void CMP5::WeaponIdle( void )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	ResetEmptySound( );
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );

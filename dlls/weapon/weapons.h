@@ -282,7 +282,22 @@ public:
 	static ItemInfo ItemInfoArray[ MAX_WEAPONS ];
 	static AmmoInfo AmmoInfoArray[ MAX_AMMO_SLOTS ];
 
-	CBasePlayer	*m_pPlayer;
+#ifdef CLIENT_DLL
+	CBasePlayer* m_hPlayer;
+
+	inline CBasePlayer* GetPlayer() {
+		return m_hPlayer;
+	}
+
+#else
+	EHANDLE	m_hPlayer;
+
+	inline CBasePlayer* GetPlayer() {
+		return (CBasePlayer*)m_hPlayer.GetEntity();
+	}
+#endif
+	
+
 	EHANDLE m_pNext;
 	int		m_iId;												// WEAPON_???
 
