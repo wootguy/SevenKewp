@@ -296,7 +296,9 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 
 	// ALERT( at_console, "." );
 	
+	lagcomp_begin(m_pPlayer);
 	UTIL_TraceLine( vecOrigSrc, vecDest, dont_ignore_monsters, pentIgnore, &tr );
+	lagcomp_end();
 
 	if (tr.fAllSolid)
 		return;
