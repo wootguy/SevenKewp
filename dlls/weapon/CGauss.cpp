@@ -437,6 +437,8 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 //	ALERT( at_console, "%f %f\n", tr.flFraction, flMaxFrac );
 
 #ifndef CLIENT_DLL
+	lagcomp_begin(m_pPlayer);
+
 	while (flDamage > 10 && nMaxHits > 0)
 	{
 		nMaxHits--;
@@ -568,6 +570,8 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 			pentIgnore = ENT( pEntity->pev );
 		}
 	}
+	
+	lagcomp_end();
 #endif
 	// ALERT( at_console, "%d bytes\n", nTotal );
 }

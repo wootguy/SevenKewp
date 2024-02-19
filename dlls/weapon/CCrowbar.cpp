@@ -157,6 +157,8 @@ int CCrowbar::Swing( int fFirst )
 		}
 	}
 
+	lagcomp_begin(m_pPlayer);
+
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
 #ifndef CLIENT_DLL
@@ -174,6 +176,8 @@ int CCrowbar::Swing( int fFirst )
 		}
 	}
 #endif
+
+	lagcomp_end();
 
 	//ALERT(at_console, "solidfied %d nearby corpses\n", numNearbyCorpses);
 	// revert back to nonsolid so that the player doesn't get gibbed by a door or have laggy movement

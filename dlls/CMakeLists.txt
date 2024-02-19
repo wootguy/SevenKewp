@@ -385,6 +385,7 @@ set(UTIL_HDR
 	player_util.h
 	util.h
 	mstream.h
+	lagcomp.h
 	vector.h
 )
 set(UTIL_SRC
@@ -394,6 +395,7 @@ set(UTIL_SRC
 	player_util.cpp
 	util.cpp
 	mstream.cpp
+	lagcomp.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
 	../pm_shared/pm_shared.cpp

@@ -9,6 +9,7 @@
 #include	"weapons.h"
 #include	"skill.h"
 #include	"nodes.h"
+#include "lagcomp.h"
 
 extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;
@@ -245,7 +246,7 @@ CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, co
 		dat.szClassName = (char*)STRING(pEntity->pev->classname);
 		dat.szKeyName = (char*)item.first.c_str();
 		dat.szValue = (char*)item.second.c_str();
-		pEntity->KeyValue(&dat);
+		DispatchKeyValue(pent, &dat);
 	}
 
 	DispatchSpawn(pEntity->edict());
@@ -542,6 +543,13 @@ Go to the trouble of combining multiple pellets into a single damage call.
 This version is used by Players, uses the random seed generator to sync client and server side shots.
 ================
 */
+
+/*
+EHANDLE g_debugMonster;
+EHANDLE g_debugCycler;
+#include "basemonster.h"
+*/
+
 Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t* pevAttacker, int shared_rand)
 {
 	static int tracerCount;
@@ -576,6 +584,58 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		if (tr.flFraction != 1.0)
 		{
 			CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+			
+			// lag compensation debug code (shows a trace and monster state for misses)
+			/*
+			if (pEntity->IsMonster()) {
+				hudtextparms_t params;
+				params.r1 = 255;
+				params.g1 = 255;
+				params.b1 = 255;
+				params.a1 = 255;
+				params.channel = 1;
+				params.fadeinTime = 0;
+				params.fadeoutTime = 0.1f;
+				params.x = -1;
+				params.y = -1;
+				params.effect = 0;
+
+				UTIL_HudMessage(this, params, "X");
+				g_debugMonster = pEntity;
+			}
+			else {
+				hudtextparms_t params;
+				params.r1 = 255;
+				params.g1 = 255;
+				params.b1 = 255;
+				params.a1 = 255;
+				params.channel = 2;
+				params.fadeinTime = 0;
+				params.fadeoutTime = 0.5f;
+				params.x = -1;
+				params.y = 0.55;
+				params.effect = 0;
+
+				UTIL_HudMessage(this, params, "MISS");
+				
+				if (g_debugMonster) {
+					UTIL_Remove(g_debugCycler);
+					CBaseEntity* debugMon = g_debugMonster;
+					std::map<std::string, std::string> keys;
+					keys["model"] = STRING(debugMon->pev->model);
+					CBaseMonster* cycler = (CBaseMonster*)Create("cycler", debugMon->pev->origin, debugMon->pev->angles, 0, keys);
+					cycler->pev->solid = SOLID_NOT;
+					cycler->pev->sequence = debugMon->pev->sequence;
+					cycler->pev->frame = debugMon->pev->frame;
+					cycler->ResetSequenceInfo();
+					cycler->pev->framerate = 0.0000001f;
+					
+					
+					g_debugCycler = cycler;
+					te_debug_beam(vecSrc, tr.vecEndPos, 1, RGBA(255, 0, 0), MSG_BROADCAST, NULL);
+				}
+			}
+			*/
 
 			if (iDamage)
 			{

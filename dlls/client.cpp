@@ -349,6 +349,8 @@ void ServerDeactivate( void )
 	//
 }
 
+#include "lagcomp.h"
+
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
 	int				i;
@@ -498,6 +500,8 @@ void StartFrame( void )
 
 	gpGlobals->teamplay = teamplay.value;
 	g_ulFrameCount++;
+
+	lagcomp_update();
 }
 
 

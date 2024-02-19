@@ -171,6 +171,8 @@ void CShotgun::PrimaryAttack()
 
 	Vector vecDir;
 
+	lagcomp_begin(m_pPlayer);
+
 #ifdef CLIENT_DLL
 	if ( bIsMultiplayer() )
 #else
@@ -184,6 +186,8 @@ void CShotgun::PrimaryAttack()
 		// regular old, untouched spread. 
 		vecDir = m_pPlayer->FireBulletsPlayer( 6, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
+
+	lagcomp_end();
 
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSingleFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 
@@ -249,6 +253,8 @@ void CShotgun::SecondaryAttack( void )
 
 	Vector vecDir;
 	
+	lagcomp_begin(m_pPlayer);
+
 #ifdef CLIENT_DLL
 	if ( bIsMultiplayer() )
 #else
@@ -263,6 +269,8 @@ void CShotgun::SecondaryAttack( void )
 		// untouched default single player
 		vecDir = m_pPlayer->FireBulletsPlayer( 12, vecSrc, vecAiming, VECTOR_CONE_10DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
 	}
+
+	lagcomp_end();
 		
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usDoubleFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, vecDir.x, vecDir.y, 0, 0, 0, 0 );
 

@@ -371,3 +371,6 @@ void StartSound(edict_t* entity, int channel, const char* sample, float volume, 
 	int fFlags, int pitch, const float* origin, uint32_t messageTargets) {}
 edict_t* EHANDLE::GetEdict(void) { return 0; }
 CBaseEntity* EHANDLE::GetEntity(void) { return 0; }
+
+void lagcomp_begin(CBasePlayer* plr) {}
+void lagcomp_end() {}

@@ -438,8 +438,20 @@ edict_t * EHANDLE::GetEdict( void )
 { 
 	if (m_pent)
 	{
-		if (m_pent->serialnumber == m_serialnumber) 
-			return m_pent; 
+		if (m_pent->serialnumber == m_serialnumber) {
+			/*
+			byte* edicts = (byte*)ENT(0);
+			byte* endEdicts = edicts + sizeof(edict_t)*gpGlobals->maxEntities;
+			bool inRange = (byte*)m_pent >= edicts && (byte*)m_pent < endEdicts;
+			bool aligned = (((byte*)m_pent - edicts) % sizeof(edict_t)) == 0;
+
+			if (inRange && aligned)
+				return m_pent;
+			else
+				ALERT(at_console, "EHANDLE corruption! m_pent points to 0x%08X\n", (uint32_t)m_pent);
+			*/
+			return m_pent;
+		}
 		else
 			return NULL;
 	}
