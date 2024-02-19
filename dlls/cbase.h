@@ -25,6 +25,7 @@ CBaseEntity
 				CBasePlayer
 				CBaseGroup
 */
+#pragma once
 
 #define		MAX_PATH_SIZE	10 // max number of nodes available for a path.
 

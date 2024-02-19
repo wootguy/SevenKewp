@@ -20,6 +20,7 @@
 #include "skill.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "effects.h"
 
 #include "CShockBeam.h"
 

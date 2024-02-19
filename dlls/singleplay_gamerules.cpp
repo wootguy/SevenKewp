@@ -19,10 +19,11 @@
 #include	"util.h"
 #include	"cbase.h"
 #include	"CBasePlayer.h"
-#include	"weapons.h"
 #include	"gamerules.h"
 #include	"skill.h"
 #include	"item/CItem.h"
+#include	"CBasePlayerAmmo.h"
+#include	"CBasePlayerItem.h"
 
 extern DLL_GLOBAL CGameRules	*g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;

@@ -4,7 +4,6 @@
 #include "monsters.h"
 #include "customentity.h"
 #include "effects.h"
-#include "weapons.h"
 #include "decals.h"
 #include "CBreakable.h"
 #include "shake.h"

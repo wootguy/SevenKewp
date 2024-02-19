@@ -7,6 +7,7 @@
 #include "CSprite.h"
 #include "weapons.h"
 #include "decals.h"
+#include "effects.h"
 
 // TODO:
 // new classification for racex

@@ -20,6 +20,7 @@
 #include "nodes.h"
 #include "CBasePlayer.h"
 #include "gamerules.h"
+#include "weapon/CShotgun.h"
 
 // special deathmatch shotgun spreads
 #define VECTOR_CONE_DM_SHOTGUN	Vector( 0.08716, 0.04362, 0.00  )// 10 degrees by 5 degrees
@@ -37,6 +38,18 @@ enum shotgun_e {
 	SHOTGUN_IDLE4,
 	SHOTGUN_IDLE_DEEP
 };
+
+#ifndef CLIENT_DLL
+TYPEDESCRIPTION	CShotgun::m_SaveData[] =
+{
+	DEFINE_FIELD(CShotgun, m_flNextReload, FIELD_TIME),
+	DEFINE_FIELD(CShotgun, m_fInSpecialReload, FIELD_INTEGER),
+	DEFINE_FIELD(CShotgun, m_flNextReload, FIELD_TIME),
+	// DEFINE_FIELD( CShotgun, m_iShell, FIELD_INTEGER ),
+	DEFINE_FIELD(CShotgun, m_flPumpTime, FIELD_TIME),
+};
+IMPLEMENT_SAVERESTORE(CShotgun, CBasePlayerWeapon);
+#endif
 
 LINK_ENTITY_TO_CLASS( weapon_shotgun, CShotgun );
 
@@ -386,32 +399,3 @@ void CShotgun::WeaponIdle( void )
 		}
 	}
 }
-
-
-
-class CShotgunAmmo : public CBasePlayerAmmo
-{
-	void Spawn( void )
-	{ 
-		Precache( );
-		SET_MODEL(ENT(pev), "models/w_shotbox.mdl");
-		CBasePlayerAmmo::Spawn( );
-	}
-	void Precache( void )
-	{
-		PRECACHE_MODEL ("models/w_shotbox.mdl");
-		PRECACHE_SOUND("items/9mmclip1.wav");
-	}
-	BOOL AddAmmo( CBaseEntity *pOther ) 
-	{ 
-		if (pOther->GiveAmmo( AMMO_BUCKSHOTBOX_GIVE, "buckshot", BUCKSHOT_MAX_CARRY ) != -1)
-		{
-			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
-			return TRUE;
-		}
-		return FALSE;
-	}
-};
-LINK_ENTITY_TO_CLASS( ammo_buckshot, CShotgunAmmo );
-
-

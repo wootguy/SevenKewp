@@ -27,6 +27,7 @@
 #include "animation.h"
 #include "weapons.h"
 #include "CBasePlayer.h"
+#include "CBasePlayerWeapon.h"
 
 
 #define TEMP_FOR_SCREEN_SHOTS

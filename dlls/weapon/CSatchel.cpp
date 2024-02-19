@@ -22,6 +22,7 @@
 #include "nodes.h"
 #include "CBasePlayer.h"
 #include "gamerules.h"
+#include "weapon/CSatchel.h"
 
 enum satchel_e {
 	SATCHEL_IDLE1 = 0,
@@ -38,21 +39,16 @@ enum satchel_radio_e {
 	SATCHEL_RADIO_HOLSTER
 };
 
-
-
-class CSatchelCharge : public CGrenade
+#ifndef CLIENT_DLL
+TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 {
-	void Spawn( void );
-	void Precache( void );
-	void BounceSound( void );
-
-	void EXPORT SatchelSlide( CBaseEntity *pOther );
-	void EXPORT SatchelThink( void );
-
-public:
-	void Deactivate( void );
+	DEFINE_FIELD(CSatchel, m_chargeReady, FIELD_INTEGER),
 };
-LINK_ENTITY_TO_CLASS( monster_satchel, CSatchelCharge );
+IMPLEMENT_SAVERESTORE(CSatchel, CBasePlayerWeapon);
+#endif
+
+LINK_ENTITY_TO_CLASS(weapon_satchel, CSatchel);
+LINK_ENTITY_TO_CLASS(monster_satchel, CSatchelCharge);
 
 //=========================================================
 // Deactivate - do whatever it is we do to an orphaned 
@@ -167,9 +163,6 @@ void CSatchelCharge :: BounceSound( void )
 	case 2:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/g_bounce3.wav", 1, ATTN_NORM);	break;
 	}
 }
-
-
-LINK_ENTITY_TO_CLASS( weapon_satchel, CSatchel );
 
 
 //=========================================================
@@ -499,26 +492,26 @@ void CSatchel::WeaponIdle( void )
 //
 // Made this global on purpose.
 //=========================================================
-void DeactivateSatchels( CBasePlayer *pOwner )
+void DeactivateSatchels(CBasePlayer* pOwner)
 {
-	edict_t *pFind; 
+	edict_t* pFind;
 
-	pFind = FIND_ENTITY_BY_CLASSNAME( NULL, "monster_satchel" );
+	pFind = FIND_ENTITY_BY_CLASSNAME(NULL, "monster_satchel");
 
-	while ( !FNullEnt( pFind ) )
+	while (!FNullEnt(pFind))
 	{
-		CBaseEntity *pEnt = CBaseEntity::Instance( pFind );
-		CSatchelCharge *pSatchel = (CSatchelCharge *)pEnt;
+		CBaseEntity* pEnt = CBaseEntity::Instance(pFind);
+		CSatchelCharge* pSatchel = (CSatchelCharge*)pEnt;
 
-		if ( pSatchel )
+		if (pSatchel)
 		{
-			if ( pSatchel->pev->owner == pOwner->edict() )
+			if (pSatchel->pev->owner == pOwner->edict())
 			{
 				pSatchel->Deactivate();
 			}
 		}
 
-		pFind = FIND_ENTITY_BY_CLASSNAME( pFind, "monster_satchel" );
+		pFind = FIND_ENTITY_BY_CLASSNAME(pFind, "monster_satchel");
 	}
 }
 

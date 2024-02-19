@@ -19,7 +19,8 @@
 #include "weapons.h"
 #include "nodes.h"
 #include "CBasePlayer.h"
-
+#include "weapon/CHandGrenade.h"
+#include "weapon/CGrenade.h"
 
 #define	HANDGRENADE_PRIMARY_VOLUME		450
 

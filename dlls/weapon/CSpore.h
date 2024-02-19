@@ -15,6 +15,8 @@
 #ifndef WEAPONS_CSPORE_H
 #define WEAPONS_CSPORE_H
 
+#include "CGrenade.h"
+
 enum SporeAnim
 {
 	SPORE_IDLE = 0,

@@ -22,9 +22,7 @@
 #include "nodes.h"
 #include "CBasePlayer.h"
 #include "gamerules.h"
-
-
-
+#include "weapon/CRpg.h"
 
 enum rpg_e {
 	RPG_IDLE = 0,
@@ -44,6 +42,20 @@ LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg );
 #ifndef CLIENT_DLL
 
 LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot );
+
+TYPEDESCRIPTION	CRpg::m_SaveData[] =
+{
+	DEFINE_FIELD(CRpg, m_fSpotActive, FIELD_INTEGER),
+	DEFINE_FIELD(CRpg, m_cActiveRockets, FIELD_INTEGER),
+};
+IMPLEMENT_SAVERESTORE(CRpg, CBasePlayerWeapon);
+
+TYPEDESCRIPTION	CRpgRocket::m_SaveData[] =
+{
+	DEFINE_FIELD(CRpgRocket, m_flIgniteTime, FIELD_TIME),
+	DEFINE_FIELD(CRpgRocket, m_hLauncher, FIELD_EHANDLE),
+};
+IMPLEMENT_SAVERESTORE(CRpgRocket, CGrenade);
 
 //=========================================================
 //=========================================================
@@ -601,31 +613,5 @@ void CRpg::UpdateSpot( void )
 #endif
 
 }
-
-
-class CRpgAmmo : public CBasePlayerAmmo
-{
-	void Spawn( void )
-	{ 
-		Precache( );
-		SET_MODEL(ENT(pev), "models/w_rpgammo.mdl");
-		CBasePlayerAmmo::Spawn( );
-	}
-	void Precache( void )
-	{
-		PRECACHE_MODEL ("models/w_rpgammo.mdl");
-		PRECACHE_SOUND("items/9mmclip1.wav");
-	}
-	BOOL AddAmmo( CBaseEntity *pOther ) 
-	{
-		if (pOther->GiveAmmo(AMMO_RPGCLIP_GIVE, "rockets", ROCKET_MAX_CARRY ) != -1)
-		{
-			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
-			return TRUE;
-		}
-		return FALSE;
-	}
-};
-LINK_ENTITY_TO_CLASS( ammo_rpgclip, CRpgAmmo );
 
 #endif

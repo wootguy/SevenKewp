@@ -24,7 +24,7 @@
 #include "env/CSoundEnt.h"
 #include "shake.h"
 #include "gamerules.h"
-
+#include "weapon/CGauss.h"
 
 #define	GAUSS_PRIMARY_CHARGE_VOLUME	256// how loud gauss is while charging
 #define GAUSS_PRIMARY_FIRE_VOLUME	450// how loud gauss is when discharged
@@ -40,6 +40,18 @@ enum gauss_e {
 	GAUSS_HOLSTER,
 	GAUSS_DRAW
 };
+
+#ifndef CLIENT_DLL
+TYPEDESCRIPTION	CGauss::m_SaveData[] =
+{
+	DEFINE_FIELD(CGauss, m_fInAttack, FIELD_INTEGER),
+	//	DEFINE_FIELD( CGauss, m_flStartCharge, FIELD_TIME ),
+	//	DEFINE_FIELD( CGauss, m_flPlayAftershock, FIELD_TIME ),
+	//	DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
+		DEFINE_FIELD(CGauss, m_fPrimaryFire, FIELD_BOOLEAN),
+};
+IMPLEMENT_SAVERESTORE(CGauss, CBasePlayerWeapon);
+#endif
 
 LINK_ENTITY_TO_CLASS( weapon_gauss, CGauss );
 
@@ -560,9 +572,6 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	// ALERT( at_console, "%d bytes\n", nTotal );
 }
 
-
-
-
 void CGauss::WeaponIdle( void )
 {
 	CBasePlayer* m_pPlayer = GetPlayer();
@@ -618,35 +627,5 @@ void CGauss::WeaponIdle( void )
 		
 	}
 }
-
-
-
-
-
-
-class CGaussAmmo : public CBasePlayerAmmo
-{
-	void Spawn( void )
-	{ 
-		Precache( );
-		SET_MODEL(ENT(pev), "models/w_gaussammo.mdl");
-		CBasePlayerAmmo::Spawn( );
-	}
-	void Precache( void )
-	{
-		PRECACHE_MODEL ("models/w_gaussammo.mdl");
-		PRECACHE_SOUND("items/9mmclip1.wav");
-	}
-	BOOL AddAmmo( CBaseEntity *pOther ) 
-	{ 
-		if (pOther->GiveAmmo( AMMO_URANIUMBOX_GIVE, "uranium", URANIUM_MAX_CARRY ) != -1)
-		{
-			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
-			return TRUE;
-		}
-		return FALSE;
-	}
-};
-LINK_ENTITY_TO_CLASS( ammo_gaussclip, CGaussAmmo );
 
 #endif

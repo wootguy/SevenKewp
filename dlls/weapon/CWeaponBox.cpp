@@ -7,6 +7,8 @@
 #include "env/CSoundEnt.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "CWeaponBox.h"
+#include "CBasePlayerItem.h"
 
 LINK_ENTITY_TO_CLASS(weaponbox, CWeaponBox);
 

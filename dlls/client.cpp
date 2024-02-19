@@ -39,6 +39,8 @@
 #include "usercmd.h"
 #include "netadr.h"
 #include "pm_shared.h"
+#include "CBasePlayerItem.h"
+#include "CRpg.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>

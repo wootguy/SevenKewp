@@ -30,6 +30,21 @@
 #include "../com_weapons.h"
 #include "../demo.h"
 
+#include "weapon/CGlock.h"
+#include "weapon/CCrowbar.h"
+#include "weapon/CPython.h"
+#include "weapon/CMP5.h"
+#include "weapon/CCrossbow.h"
+#include "weapon/CShotgun.h"
+#include "weapon/CRpg.h"
+#include "weapon/CGauss.h"
+#include "weapon/CEgon.h"
+#include "weapon/CHgun.h"
+#include "weapon/CHandGrenade.h"
+#include "weapon/CSatchel.h"
+#include "weapon/CTripmine.h"
+#include "weapon/CSqueak.h"
+
 extern globalvars_t *gpGlobals;
 extern int g_iUser1;
 

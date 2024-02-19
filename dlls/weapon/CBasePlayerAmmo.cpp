@@ -1,11 +1,11 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
-#include "weapons.h"
 #include "nodes.h"
 #include "env/CSoundEnt.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "CBasePlayerAmmo.h"
 
 extern int gEvilImpulse101;
 

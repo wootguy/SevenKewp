@@ -24,6 +24,7 @@
 #include "effects.h"
 #include "customentity.h"
 #include "gamerules.h"
+#include "weapon/CEgon.h"
 
 #define	EGON_PRIMARY_VOLUME		450
 #define EGON_BEAM_SPRITE		"sprites/xbeam1.spr"
@@ -49,7 +50,23 @@ enum egon_e {
 	EGON_HOLSTER
 };
 
+#ifndef CLIENT_DLL
+TYPEDESCRIPTION	CEgon::m_SaveData[] =
+{
+	//	DEFINE_FIELD( CEgon, m_pBeam, FIELD_CLASSPTR ),
+	//	DEFINE_FIELD( CEgon, m_pNoise, FIELD_CLASSPTR ),
+	//	DEFINE_FIELD( CEgon, m_pSprite, FIELD_CLASSPTR ),
+		DEFINE_FIELD(CEgon, m_shootTime, FIELD_TIME),
+		DEFINE_FIELD(CEgon, m_fireState, FIELD_INTEGER),
+		DEFINE_FIELD(CEgon, m_fireMode, FIELD_INTEGER),
+		DEFINE_FIELD(CEgon, m_shakeTime, FIELD_TIME),
+		DEFINE_FIELD(CEgon, m_flAmmoUseTime, FIELD_TIME),
+};
+IMPLEMENT_SAVERESTORE(CEgon, CBasePlayerWeapon);
+#endif
+
 LINK_ENTITY_TO_CLASS( weapon_egon, CEgon );
+LINK_ENTITY_TO_CLASS(weapon_displacer, CEgon); // TODO: implement
 
 void CEgon::Spawn( )
 {
@@ -583,32 +600,5 @@ void CEgon::EndAttack( void )
 
 	DestroyEffect();
 }
-
-
-
-class CEgonAmmo : public CBasePlayerAmmo
-{
-	void Spawn( void )
-	{ 
-		Precache( );
-		SET_MODEL(ENT(pev), "models/w_chainammo.mdl");
-		CBasePlayerAmmo::Spawn( );
-	}
-	void Precache( void )
-	{
-		PRECACHE_MODEL ("models/w_chainammo.mdl");
-		PRECACHE_SOUND("items/9mmclip1.wav");
-	}
-	BOOL AddAmmo( CBaseEntity *pOther ) 
-	{ 
-		if (pOther->GiveAmmo( AMMO_URANIUMBOX_GIVE, "uranium", URANIUM_MAX_CARRY ) != -1)
-		{
-			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
-			return TRUE;
-		}
-		return FALSE;
-	}
-};
-LINK_ENTITY_TO_CLASS( ammo_egonclip, CEgonAmmo );
 
 #endif

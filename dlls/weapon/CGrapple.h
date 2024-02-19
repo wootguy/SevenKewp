@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "weapons.h"
 #include "vector.h"
+#include "CBasePlayerWeapon.h"
 
 class CGrappleTip;
 

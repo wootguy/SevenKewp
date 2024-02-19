@@ -19,7 +19,7 @@
 #include "skill.h"
 #include "CSoundEnt.h"
 #include "decals.h"
-
+#include "effects.h"
 #include "CSpore.h"
 
 #ifndef CLIENT_DLL

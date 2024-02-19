@@ -22,6 +22,7 @@
 #include "gamerules.h"
 #include "customentity.h"
 //#include "UserMessages.h"
+#include "effects.h"
 
 #ifndef CLIENT_DLL
 #include "CGrappleTip.h"

@@ -23,6 +23,7 @@
 #include "monsters.h"
 #include "saverestore.h"
 #include "weapons.h"
+#include "CBasePlayerWeapon.h"
 
 // Monstermaker spawnflags
 #define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )

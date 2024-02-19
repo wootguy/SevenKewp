@@ -43,6 +43,10 @@
 #include "CBaseDMStart.h"
 #include "CAmbientGeneric.h"
 #include "game.h"
+#include "CWeaponBox.h"
+#include "CBasePlayerWeapon.h"
+#include "CItem.h"
+#include "CTripmine.h"
 
 // #define DUCKFIX
 

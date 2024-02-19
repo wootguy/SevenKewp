@@ -7,6 +7,7 @@
 #include "env/CSoundEnt.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "CBasePlayerItem.h"
 
 extern int gEvilImpulse101;
 

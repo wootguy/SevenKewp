@@ -30,6 +30,7 @@
 #include "env/CSoundEnt.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "CBasePlayerWeapon.h"
 
 extern CGraph	WorldGraph;
 extern int gEvilImpulse101;
@@ -53,19 +54,6 @@ AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
 MULTIDAMAGE gMultiDamage;
 
 #define TRACER_FREQ		4			// Tracers fire every fourth bullet
-
-// TODO: implement all these weapons instead of remapping them to half-life guns
-LINK_ENTITY_TO_CLASS(weapon_uzi, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_uziakimbo, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_m16, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_m249, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_saw, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_minigun, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_pipewrench, CCrowbar);
-LINK_ENTITY_TO_CLASS(weapon_eagle, CPython);
-LINK_ENTITY_TO_CLASS(weapon_sniperrifle, CCrossbow);
-LINK_ENTITY_TO_CLASS(weapon_displacer, CEgon);
-LINK_ENTITY_TO_CLASS(weapon_shockrifle, CHgun);
 
 //=========================================================
 // MaxAmmoCarry - pass in a name and this function will tell
@@ -469,57 +457,3 @@ void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* mins, fl
 		}
 	}
 }
-
-TYPEDESCRIPTION	CRpg::m_SaveData[] = 
-{
-	DEFINE_FIELD( CRpg, m_fSpotActive, FIELD_INTEGER ),
-	DEFINE_FIELD( CRpg, m_cActiveRockets, FIELD_INTEGER ),
-};
-IMPLEMENT_SAVERESTORE( CRpg, CBasePlayerWeapon );
-
-TYPEDESCRIPTION	CRpgRocket::m_SaveData[] = 
-{
-	DEFINE_FIELD( CRpgRocket, m_flIgniteTime, FIELD_TIME ),
-	DEFINE_FIELD( CRpgRocket, m_hLauncher, FIELD_EHANDLE ),
-};
-IMPLEMENT_SAVERESTORE( CRpgRocket, CGrenade );
-
-TYPEDESCRIPTION	CShotgun::m_SaveData[] = 
-{
-	DEFINE_FIELD( CShotgun, m_flNextReload, FIELD_TIME ),
-	DEFINE_FIELD( CShotgun, m_fInSpecialReload, FIELD_INTEGER ),
-	DEFINE_FIELD( CShotgun, m_flNextReload, FIELD_TIME ),
-	// DEFINE_FIELD( CShotgun, m_iShell, FIELD_INTEGER ),
-	DEFINE_FIELD( CShotgun, m_flPumpTime, FIELD_TIME ),
-};
-IMPLEMENT_SAVERESTORE( CShotgun, CBasePlayerWeapon );
-
-TYPEDESCRIPTION	CGauss::m_SaveData[] = 
-{
-	DEFINE_FIELD( CGauss, m_fInAttack, FIELD_INTEGER ),
-//	DEFINE_FIELD( CGauss, m_flStartCharge, FIELD_TIME ),
-//	DEFINE_FIELD( CGauss, m_flPlayAftershock, FIELD_TIME ),
-//	DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
-	DEFINE_FIELD( CGauss, m_fPrimaryFire, FIELD_BOOLEAN ),
-};
-IMPLEMENT_SAVERESTORE( CGauss, CBasePlayerWeapon );
-
-TYPEDESCRIPTION	CEgon::m_SaveData[] = 
-{
-//	DEFINE_FIELD( CEgon, m_pBeam, FIELD_CLASSPTR ),
-//	DEFINE_FIELD( CEgon, m_pNoise, FIELD_CLASSPTR ),
-//	DEFINE_FIELD( CEgon, m_pSprite, FIELD_CLASSPTR ),
-	DEFINE_FIELD( CEgon, m_shootTime, FIELD_TIME ),
-	DEFINE_FIELD( CEgon, m_fireState, FIELD_INTEGER ),
-	DEFINE_FIELD( CEgon, m_fireMode, FIELD_INTEGER ),
-	DEFINE_FIELD( CEgon, m_shakeTime, FIELD_TIME ),
-	DEFINE_FIELD( CEgon, m_flAmmoUseTime, FIELD_TIME ),
-};
-IMPLEMENT_SAVERESTORE( CEgon, CBasePlayerWeapon );
-
-TYPEDESCRIPTION	CSatchel::m_SaveData[] = 
-{
-	DEFINE_FIELD( CSatchel, m_chargeReady, FIELD_INTEGER ),
-};
-IMPLEMENT_SAVERESTORE( CSatchel, CBasePlayerWeapon );
-

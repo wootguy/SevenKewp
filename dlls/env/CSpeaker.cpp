@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
-#include "weapons.h"
 #include "CTalkSquadMonster.h"
 #include "gamerules.h"
 

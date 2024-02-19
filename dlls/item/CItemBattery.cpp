@@ -1,11 +1,12 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
-#include "weapons.h"
 #include "CBasePlayer.h"
 #include "skill.h"
 #include "CItem.h"
 #include "gamerules.h"
+
+#define MAX_NORMAL_BATTERY	100
 
 class CItemBattery : public CItem
 {
