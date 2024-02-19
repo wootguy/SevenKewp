@@ -7,6 +7,7 @@
 #include "env/CSoundEnt.h"
 #include "decals.h"
 #include "gamerules.h"
+#include "CBasePlayerWeapon.h"
 
 extern int gmsgCurWeapon;
 

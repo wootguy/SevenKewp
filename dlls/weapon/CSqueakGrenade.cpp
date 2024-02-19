@@ -23,6 +23,8 @@
 #include "CBasePlayer.h"
 #include "env/CSoundEnt.h"
 #include "gamerules.h"
+#include "weapon/CSqueak.h"
+#include "weapon/CGrenade.h"
 
 enum w_squeak_e {
 	WSQUEAK_IDLE1 = 0,

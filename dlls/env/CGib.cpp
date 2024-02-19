@@ -5,7 +5,6 @@
 #include "env/CSoundEnt.h"
 #include "decals.h"
 #include "animation.h"
-#include "weapons.h"
 #include "CBreakable.h"
 
 #define GERMAN_GIB_COUNT		4

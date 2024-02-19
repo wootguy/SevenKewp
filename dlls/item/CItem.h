@@ -17,6 +17,14 @@
 
 extern int gmsgItemPickup;
 
+// constant items
+#define ITEM_HEALTHKIT		1
+#define ITEM_ANTIDOTE		2
+#define ITEM_SECURITY		3
+#define ITEM_BATTERY		4
+
+#define MAX_NORMAL_BATTERY	100
+
 class CItem : public CBaseEntity
 {
 public:

@@ -314,10 +314,26 @@ set(WEAPON_HDR
 	weapon/CGrapple.h
 	weapon/CGrappleTip.h
 	weapon/CSpore.h
+	weapon/CBasePlayerItem.h
+	weapon/CBasePlayerWeapon.h
+	weapon/CWeaponBox.h
+	weapon/CGlock.h
+	weapon/CCrowbar.h
+	weapon/CPython.h
+	weapon/CMP5.h
+	weapon/CCrossbow.h
+	weapon/CShotgun.h
+	weapon/CRpg.h
+	weapon/CGauss.h
+	weapon/CEgon.h
+	weapon/CHgun.h
+	weapon/CHandGrenade.h
+	weapon/CSatchel.h
+	weapon/CTripmine.h
+	weapon/CSqueak.h
 	weapon/weapons.h
 )
 set(WEAPON_SRC
-	weapon/CBasePlayerAmmo.cpp
 	weapon/CBasePlayerItem.cpp
 	weapon/CBasePlayerWeapon.cpp
 	weapon/CCrossbow.cpp
@@ -343,6 +359,22 @@ set(WEAPON_SRC
 	weapon/weapons.cpp
 	wpn_shared/hl_wpn_glock.cpp
 	weapon/combat.cpp
+)
+set(AMMO_HDR
+	weapon/CBasePlayerAmmo.h
+	weapon/ammo.h
+)
+set(AMMO_SRC
+	weapon/CBasePlayerAmmo.cpp
+	weapon/CCrossbowAmmo.cpp
+	weapon/CGaussAmmo.cpp
+	weapon/CGlockAmmo.cpp
+	weapon/CMP5AmmoBox.cpp
+	weapon/CMP5AmmoClip.cpp
+	weapon/CMP5AmmoGrenade.cpp
+	weapon/CPythonAmmo.cpp
+	weapon/CRpgAmmo.cpp
+	weapon/CShotgunAmmo.cpp
 )
 
 set(UTIL_HDR
@@ -405,6 +437,7 @@ set(ALL_SRC
 	${PATH_HDR} ${PATH_SRC}
 	${TRIGGER_HDR} ${TRIGGER_SRC}
 	${WEAPON_SRC} ${WEAPON_HDR}
+	${AMMO_SRC} ${AMMO_HDR}
 	${UTIL_SRC} ${UTIL_HDR}
 	${GAME_SRC} ${GAME_HDR}
 	${MISC_HDR}
@@ -474,6 +507,7 @@ elseif(MSVC)
 	source_group("Header Files\\Entities\\path" FILES ${PATH_HDR})
 	source_group("Header Files\\Entities\\trigger" FILES ${TRIGGER_HDR})
 	source_group("Header Files\\Entities\\weapon" FILES ${WEAPON_HDR})
+	source_group("Header Files\\Entities\\weapon\\ammo" FILES ${AMMO_HDR})
 	source_group("Header Files\\Game" FILES ${GAME_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})
 	
@@ -487,6 +521,7 @@ elseif(MSVC)
 	source_group("Source Files\\Entities\\path" FILES ${PATH_SRC})
 	source_group("Source Files\\Entities\\trigger" FILES ${TRIGGER_SRC})
 	source_group("Source Files\\Entities\\weapon" FILES ${WEAPON_SRC})
+	source_group("Source Files\\Entities\\weapon\\ammo" FILES ${AMMO_SRC})
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})
 	source_group("Source Files\\Game" FILES ${GAME_SRC})
 

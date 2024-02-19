@@ -20,12 +20,12 @@
 #include	"util.h"
 #include	"cbase.h"
 #include	"CBasePlayer.h"
-#include	"weapons.h"
 #include	"gamerules.h"
 #include	"teamplay_gamerules.h"
 #include	"skill.h"
 #include	"game.h"
 #include "CGamePlayerEquip.h"
+#include "CBasePlayerItem.h"
 
 #include <sstream>
 #include <string>

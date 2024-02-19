@@ -13,6 +13,7 @@
 #include	"customentity.h"
 #include	"CBaseGrunt.h"
 #include	"defaultai.h"
+#include	"weapon/CGrenade.h"
 
 int g_fGruntQuestion;
 

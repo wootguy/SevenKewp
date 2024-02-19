@@ -22,6 +22,8 @@
 #include "effects.h"
 #include "gamerules.h"
 #include "game.h"
+#include "weapon/CTripmine.h"
+#include "weapon/CGrenade.h"
 
 #define	TRIPMINE_PRIMARY_VOLUME		450
 

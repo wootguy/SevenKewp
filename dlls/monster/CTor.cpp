@@ -10,6 +10,7 @@
 #include "CSoundEnt.h"
 #include "CAGrunt.h"
 #include "CBaseMonster.h"
+#include "effects.h"
 
 // TODO:
 // range attack if can't reach target

@@ -6,6 +6,7 @@
 #include "explode.h"
 #include "CBasePlayer.h"
 #include "CFuncTank.h"
+#include "CBasePlayerItem.h"
 
 
 TYPEDESCRIPTION	CFuncTank::m_SaveData[] =

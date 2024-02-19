@@ -14,6 +14,7 @@
 #include "effects.h"
 #include "customentity.h"
 #include "explode.h"
+#include "CGrenade.h"
 
 #define	MEDIC_DEAGLE_CLIP_SIZE			9 // how many bullets in a clip?
 #define	MEDIC_GLOCK_CLIP_SIZE			9 // how many bullets in a clip?

@@ -26,7 +26,7 @@
 #include "nodes.h"
 #include "env/CSoundEnt.h"
 #include "decals.h"
-
+#include "weapon/CGrenade.h"
 
 //===================grenade
 

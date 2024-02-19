@@ -13,6 +13,7 @@
 #include "effects.h"
 #include "customentity.h"
 #include "explode.h"
+#include "CGrenade.h"
 
 #define	TORCH_DEAGLE_CLIP_SIZE			8 // how many bullets in a clip?
 #define TORCH_BEAM_SPRITE "sprites/xbeam3.spr"

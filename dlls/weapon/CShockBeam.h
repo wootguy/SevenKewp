@@ -16,6 +16,8 @@
 #ifndef WEAPONS_CSHOCKBEAM_H
 #define WEAPONS_CSHOCKBEAM_H
 
+#include "CGrenade.h"
+
 //TODO: this class needs save/restore for the effects so they can be cleaned up if a save occurs while this is in flight
 class CShockBeam : public CGrenade
 {

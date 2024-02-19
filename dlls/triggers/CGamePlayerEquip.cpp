@@ -8,6 +8,15 @@
 #include "CGamePlayerEquip.h"
 #include "string"
 #include "map"
+#include "CCrossbow.h"
+#include "CPython.h"
+#include "CGlock.h"
+#include "CRpg.h"
+#include "CMP5.h"
+#include "CTripmine.h"
+#include "CSatchel.h"
+#include "CHandGrenade.h"
+#include "CSqueak.h"
 
 LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip);
 

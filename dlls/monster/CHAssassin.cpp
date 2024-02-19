@@ -27,6 +27,7 @@
 #include	"weapons.h"
 #include	"env/CSoundEnt.h"
 #include	"game.h"
+#include "CGrenade.h"
 
 extern DLL_GLOBAL int  g_iSkillLevel;
 

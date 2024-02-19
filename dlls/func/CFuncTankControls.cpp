@@ -2,7 +2,6 @@
 #include "util.h"
 #include "cbase.h"
 #include "effects.h"
-#include "weapons.h"
 #include "explode.h"
 #include "CFuncTank.h"
 

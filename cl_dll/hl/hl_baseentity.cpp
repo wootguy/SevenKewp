@@ -29,6 +29,11 @@ This file contains "stubs" of class member implementations so that we can predic
 #include	"nodes.h"
 #include	"env/CSoundEnt.h"
 #include	"skill.h"
+#include	"weapon/CBasePlayerAmmo.h"
+#include	"weapon/CBasePlayerItem.h"
+#include	"weapon/CBasePlayerWeapon.h"
+#include	"weapon/CGrenade.h"
+#include	"env/effects.h"
 
 // Globals used by game logic
 const Vector g_vecZero = Vector( 0, 0, 0 );

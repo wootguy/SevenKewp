@@ -27,6 +27,7 @@
 #include "weapons.h"
 #include "decals.h"
 #include "env/CSoundEnt.h"
+#include "weapon/CGrenade.h"
 
 class CMortar : public CGrenade
 {

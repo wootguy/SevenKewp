@@ -28,6 +28,9 @@
 #include	"voice_gamemgr.h"
 #include	"hltv.h"
 #include "CGamePlayerEquip.h"
+#include "CBasePlayerAmmo.h"
+#include "CBasePlayerItem.h"
+#include "CSatchel.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
