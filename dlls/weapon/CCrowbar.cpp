@@ -153,7 +153,7 @@ int CCrowbar::Swing( int fFirst )
 		if ((ent->v.flags & FL_MONSTER) && ent->v.deadflag == DEAD_DEAD && ent->v.solid == SOLID_NOT) {
 			nearbyCorpses[numNearbyCorpses++] = ent;
 			ent->v.solid = SOLID_BBOX;
-			UTIL_SetOrigin(&ent->v, pev->origin);
+			UTIL_SetOrigin(&ent->v, ent->v.origin);
 		}
 	}
 
