@@ -237,6 +237,7 @@ void Host_Say(edict_t* pEntity, int teamonly)
 		if (g_VoiceGameMgr.PlayerHasBlockedPlayer(client, player))
 			continue;
 
+		/*
 		if (!player->IsObserver() && teamonly && g_pGameRules->PlayerRelationship(client, CBaseEntity::Instance(pEntity)) != GR_TEAMMATE)
 			continue;
 
@@ -244,6 +245,7 @@ void Host_Say(edict_t* pEntity, int teamonly)
 		if (player->IsObserver() && teamonly)
 			if (!client->IsObserver())
 				continue;
+		*/
 
 		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, client->pev);
 		WRITE_BYTE(ENTINDEX(pEntity));
