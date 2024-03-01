@@ -20,6 +20,7 @@ public:
 	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	void EXPORT SentryTouch(CBaseEntity* pOther);
 	void EXPORT SentryDeath(void);
+	void EXPORT DropInit(void);
 	void Deploy(void);
 
 };
@@ -51,8 +52,6 @@ void CSentry::Spawn()
 	m_flMaxWait = 1E6;
 	m_flMaxSpin = 1E6;
 
-	DROP_TO_FLOOR(edict());
-
 	CBaseTurret::Spawn();
 	m_iRetractHeight = 64;
 	m_iDeployHeight = 64;
@@ -60,8 +59,15 @@ void CSentry::Spawn()
 	SetSize(Vector(-16, -16, 0), Vector(16, 16, m_iRetractHeight));
 
 	SetTouch(&CSentry::SentryTouch);
-	SetThink(&CSentry::Initialize);
+	SetThink(&CSentry::DropInit);
 	pev->nextthink = gpGlobals->time + 0.3;
+}
+
+void CSentry::DropInit() {
+	// not doing this in Spawn() in case a func_wall floor spawns after the sentry during map init
+	DROP_TO_FLOOR(edict());
+
+	Initialize();
 }
 
 void CSentry::Shoot(Vector& vecSrc, Vector& vecDirToEnemy)
