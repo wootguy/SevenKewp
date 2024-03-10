@@ -423,19 +423,24 @@ void CFuncTank::TrackTarget(void)
 		{
 			if (IsActive())
 				pev->nextthink = pev->ltime + 0.5f;	// idle
+			m_fireLast = 0;
 			return;
 		}
 		pTarget = FindTarget(pPlayer);
-		if (!pTarget)
+		if (!pTarget) {
+			m_fireLast = 0;
 			return;
+		}
 
 		// Calculate angle needed to aim at target
 		barrelEnd = BarrelPosition();
 		targetPosition = pTarget->v.origin + pTarget->v.view_ofs;
 		float range = (targetPosition - barrelEnd).Length();
 
-		if (!InRange(range))
+		if (!InRange(range)) {
+			m_fireLast = 0;
 			return;
+		}
 
 		UTIL_TraceLine(barrelEnd, targetPosition, dont_ignore_monsters, edict(), &tr);
 

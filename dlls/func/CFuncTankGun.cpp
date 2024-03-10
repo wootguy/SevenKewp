@@ -51,5 +51,7 @@ void CFuncTankGun::Fire(const Vector& barrelEnd, const Vector& forward, entvars_
 	}
 	else
 		CFuncTank::Fire(barrelEnd, forward, pevAttacker);
+
+	PLAY_DISTANT_SOUND(edict(), DISTANT_357);
 }
 
