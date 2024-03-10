@@ -387,6 +387,8 @@ void execMapCfg() {
 		"mp_soundvariety",
 		"killnpc",
 		"mp_npckill",
+		"startarmor",
+		"starthealth",
 	};
 
 	static set<string> itemNames = {

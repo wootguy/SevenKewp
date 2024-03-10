@@ -45,6 +45,8 @@ extern cvar_t	teamoverride;
 extern cvar_t	defaultteam;
 extern cvar_t	allowmonsters;
 extern cvar_t	mp_nextmap; // map which will load after the next intermission
+extern cvar_t	mp_starthealth;
+extern cvar_t	mp_startarmor;
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
