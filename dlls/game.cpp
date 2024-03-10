@@ -46,6 +46,8 @@ cvar_t	mp_prefer_server_maxspeed={"mp_prefer_server_maxspeed","1", FCVAR_SERVER 
 cvar_t	mp_objectboost ={"mp_objectboost","0", FCVAR_SERVER };
 cvar_t	mp_respawndelay ={"mp_respawndelay","3", FCVAR_SERVER };
 cvar_t	mp_debugmsg ={"mp_debugmsg","0", FCVAR_SERVER };
+cvar_t	mp_starthealth ={"starthealth","0", FCVAR_SERVER };
+cvar_t	mp_startarmor ={"startarmor","0", FCVAR_SERVER };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER };
 
@@ -586,6 +588,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_objectboost);
 	CVAR_REGISTER (&mp_respawndelay);
 	CVAR_REGISTER (&mp_debugmsg);
+	CVAR_REGISTER (&mp_starthealth);
+	CVAR_REGISTER (&mp_startarmor);
 
 	CVAR_REGISTER (&mp_chattime);
 
