@@ -206,6 +206,8 @@ void CCrossbowBolt::ExplodeThink( void )
 		WRITE_BYTE( TE_EXPLFLAG_NONE );
 	MESSAGE_END();
 
+	PLAY_DISTANT_SOUND(edict(), DISTANT_556);
+
 	entvars_t *pevOwner;
 
 	if ( pev->owner )

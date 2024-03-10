@@ -660,17 +660,8 @@ edict_t* UTIL_ClientsInPVS(edict_t* edict, int& playerCount) {
 }
 
 bool UTIL_IsClientInPVS(edict_t* edict) {
-	// TODO: reimplement engine func so that it only iterates 32 edicts
-	edict_t* ed = UTIL_EntitiesInPVS(edict);
-
-	while (!FNullEnt(ed)) {
-		if (ed->v.flags & FL_CLIENT) {
-			return true;
-		}
-		ed = ed->v.chain;
-	}
-
-	return false;
+	CBaseEntity* ent = (CBaseEntity*)GET_PRIVATE(edict);
+	return ent && ent->m_visiblePlayers;
 }
 
 bool IsValidPlayer(edict_t* edict) {

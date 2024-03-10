@@ -135,6 +135,8 @@ void CEnvExplosion::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 		MESSAGE_END();
 	}
 
+	PLAY_DISTANT_SOUND(edict(), DISTANT_BOOM);
+
 	// do damage
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NODAMAGE))
 	{

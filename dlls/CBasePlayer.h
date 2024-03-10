@@ -213,6 +213,9 @@ public:
 
 	char m_szTeamName[TEAM_NAME_LENGTH];
 
+	unsigned char* m_lastPvs; // only valid during AddToFullPack
+	unsigned char* m_lastPas; // only valid during AddToFullPack
+
 	virtual void Spawn( void );
 	void Pain( void );
 

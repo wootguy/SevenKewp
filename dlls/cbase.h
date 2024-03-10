@@ -362,6 +362,9 @@ public:
 
 	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
 	int m_fireState;
+
+	uint32_t m_audiblePlayers; // players in the audible set of this entity (invalid for invisible ents)
+	uint32_t m_visiblePlayers; // players in the visible set of this entity (invalid for invisible ents)
 };
 
 

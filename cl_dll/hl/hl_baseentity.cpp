@@ -374,3 +374,4 @@ CBaseEntity* EHANDLE::GetEntity(void) { return 0; }
 
 void lagcomp_begin(CBasePlayer* plr) {}
 void lagcomp_end() {}
+void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {}

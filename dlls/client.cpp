@@ -136,6 +136,22 @@ void ClientDisconnect( edict_t *pEntity )
 		}
 	}
 
+	edict_t* edicts = ENT(0);
+	uint32_t plrbit = PLRBIT(pEntity);
+
+	// remove visibility flags for all entities
+	for (int i = 1; i < gpGlobals->maxEntities; i++)
+	{
+		if (edicts[i].free)
+			continue;
+
+		CBaseEntity* ent = (CBaseEntity*)GET_PRIVATE(&edicts[i]);
+		if (ent) {
+			ent->m_visiblePlayers &= ~plrbit;
+			ent->m_audiblePlayers &= ~plrbit;
+		}
+	}
+
 // since the edict doesn't get deleted, fix it so it doesn't interfere.
 	pEntity->v.takedamage = DAMAGE_NO;// don't attract autoaim
 	pEntity->v.solid = SOLID_NOT;// nonsolid
@@ -773,10 +789,6 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 		return;
 	}
 
-	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(pClient);
-	if (plr)
-		plr->m_hViewEntity.Set(pView);
-
 	org = pView->v.origin + pView->v.view_ofs;
 	if ( pView->v.flags & FL_DUCKING )
 	{
@@ -785,6 +797,13 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 
 	*pvs = ENGINE_SET_PVS ( (float *)&org );
 	*pas = ENGINE_SET_PAS ( (float *)&org );
+
+	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(pClient);
+	if (plr) {
+		plr->m_hViewEntity.Set(pView);
+		plr->m_lastPas = *pas;
+		plr->m_lastPvs = *pvs;
+	}
 
 	g_packClientIdx = ENTINDEX(pClient);
 }
@@ -808,6 +827,14 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 {
 	int					i;
 
+	CBaseEntity* baseent = (CBaseEntity*)GET_PRIVATE(ent);
+	if (!baseent)
+		return 0; // should never happen?
+
+	uint32_t plrbit = PLRBIT(host);
+	baseent->m_audiblePlayers &= ~plrbit;
+	baseent->m_visiblePlayers &= ~plrbit;
+
 	// don't send if flagged for NODRAW and it's not the host getting the message
 	if ( ( ent->v.effects & EF_NODRAW ) &&
 		 ( ent != host ) )
@@ -823,16 +850,22 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		return 0;
 	}
 
-	// Ignore if not the host and not touching a PVS/PAS leaf
-	// If pSet is NULL, then the test will always succeed and the entity will be added to the update
-	if ( ent != host )
-	{
-		if ( !ENGINE_CHECK_VISIBILITY( (const struct edict_s *)ent, pSet ) )
-		{
-			return 0;
-		}
+	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(host);
+	if (!plr)
+		return 0; // should never happen?
+
+	if (ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPas)) {
+		baseent->m_audiblePlayers |= plrbit;
 	}
 
+	if (ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPvs)) {
+		baseent->m_visiblePlayers |= plrbit;
+	}
+	else if(ent != host) {
+		// Ignore if not the host and not touching a PVS leaf
+		// If pSet is NULL, then the test will always succeed and the entity will be added to the update
+		return 0;
+	}
 
 	// Don't send entity to local client if the client says it's predicting the entity itself.
 	if ( ent->v.flags & FL_SKIPLOCALHOST )

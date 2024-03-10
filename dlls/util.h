@@ -622,6 +622,16 @@ inline void STOP_SOUND(edict_t *entity, int channel, const char *sample)
 	EMIT_SOUND_DYN(entity, channel, sample, 0, 0, SND_STOP, PITCH_NORM);
 }
 
+enum distant_sound_types {
+	DISTANT_9MM, // light tapping noise
+	DISTANT_357, // deeper tap
+	DISTANT_556, // deep tap / small explosion
+	DISTANT_BOOM // big explosion
+};
+
+// conditionally plays a special distant sound clip for players for very loud sounds that should be heard everywhere
+void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType);
+
 void EMIT_SOUND_SUIT(edict_t *entity, const char *sample);
 void EMIT_GROUPID_SUIT(edict_t *entity, int isentenceg);
 void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);

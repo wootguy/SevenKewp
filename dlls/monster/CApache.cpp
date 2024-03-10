@@ -839,6 +839,7 @@ BOOL CApache :: FireGun( )
 #if 1
 		FireBullets( 1, posGun, vecGun, VECTOR_CONE_4DEGREES, 8192, BULLET_MONSTER_12MM, 1 );
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "turret/tu_fire1.wav", 1, 0.3);
+		PLAY_DISTANT_SOUND(edict(), DISTANT_357);
 #else
 		static float flNext;
 		TraceResult tr;
