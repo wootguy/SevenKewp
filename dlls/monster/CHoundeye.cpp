@@ -589,6 +589,7 @@ void CHoundeye :: SonicAttack ( void )
 		WRITE_BYTE( 0 );		// speed
 	MESSAGE_END();
 
+	PLAY_DISTANT_SOUND(edict(), DISTANT_BOOM);
 
 	CBaseEntity *pEntity = NULL;
 	// iterate on all entities in the vicinity.

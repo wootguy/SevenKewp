@@ -112,6 +112,8 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		case 2:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/debris3.wav", 0.55, ATTN_NORM);	break;
 	}
 
+	PLAY_DISTANT_SOUND(edict(), DISTANT_BOOM);
+
 	pev->effects |= EF_NODRAW;
 	SetThink( &CGrenade::Smoke );
 	pev->velocity = g_vecZero;

@@ -577,6 +577,79 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		EMIT_SOUND_DYN2(entity, channel, sample, volume, attenuation, flags, pitch);
 }
 
+void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
+	CBaseEntity* baseEmitter = (CBaseEntity*)GET_PRIVATE(emitter);
+	if (!baseEmitter) {
+		return;
+	}
+
+	const char* sample = "";
+	float volume = 1.0f;
+	float minRange = 768.0f;
+
+	switch (soundType) {
+	case DISTANT_9MM:
+		sample = MOD_SND_FOLDER "weapons/distant/crack_9mm.wav";
+		volume = 0.25f;
+		break;
+	case DISTANT_357:
+		sample = MOD_SND_FOLDER "weapons/distant/crack_357.wav";
+		break;
+	case DISTANT_556:
+		sample = MOD_SND_FOLDER "weapons/distant/crack_556.wav";
+		break;
+	case DISTANT_BOOM: {
+		minRange = 2048.0f;
+
+		switch (RANDOM_LONG(0, 2))
+		{
+		case 0:
+			sample = MOD_SND_FOLDER "weapons/distant/explode3.wav";
+			break;
+		case 1:
+			sample = MOD_SND_FOLDER "weapons/distant/explode4.wav";
+			break;
+		case 2:
+			sample = MOD_SND_FOLDER "weapons/distant/explode5.wav";
+			break;
+		}
+		break;
+	}
+	default:
+		ALERT(at_error, "Invalid distant sound type %d\n", soundType);
+		return;
+	}	
+	
+	uint32_t pbits = 0;
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		edict_t* ent = INDEXENT(i);
+		CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(ent);
+		uint32_t pbit = PLRBIT(ent);
+
+		if (ent == emitter || !plr) {
+			continue;
+		}
+
+		// if listener is in the audible set and too close, don't play the sound.
+		// otherwise, the player may be close, but on the other side of a wall, so they should hear the sound
+		if ((baseEmitter->m_audiblePlayers & pbit) && (ent->v.origin - emitter->v.origin).Length() < minRange) {
+			continue;
+		}
+
+		pbits |= pbit;
+	}
+
+	if (pbits) {
+		// TODO: dynamic attenuation
+		float attn = 0.1f;
+		
+		// randomize pitch per entity, so you get a better idea of how many players/npcs are shooting
+		int pitch = 95 + ((ENTINDEX(emitter) * 7) % 11);
+
+		StartSound(NULL, CHAN_STATIC, sample, volume, attn, 0, pitch, emitter->v.origin, pbits);
+	}
+}
+
 // play a specific sentence over the HEV suit speaker - just pass player entity, and !sentencename
 
 void EMIT_SOUND_SUIT(edict_t *entity, const char *sample)

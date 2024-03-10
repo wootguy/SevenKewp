@@ -572,6 +572,8 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	}
 	
 	lagcomp_end();
+
+	PLAY_DISTANT_SOUND(edict(), DISTANT_357);
 #endif
 	// ALERT( at_console, "%d bytes\n", nTotal );
 }

@@ -80,6 +80,8 @@ void CSentry::Shoot(Vector& vecSrc, Vector& vecDirToEnemy)
 	case 1: EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/hks2.wav", 1, ATTN_NORM); break;
 	case 2: EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/hks3.wav", 1, ATTN_NORM); break;
 	}
+	PLAY_DISTANT_SOUND(edict(), DISTANT_9MM);
+
 	pev->effects = pev->effects | EF_MUZZLEFLASH;
 }
 

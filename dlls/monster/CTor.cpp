@@ -629,6 +629,8 @@ void CTor::SlamAttack() {
 		WRITE_BYTE(255); //brightness
 		WRITE_BYTE(0);		// speed
 	MESSAGE_END();
+
+	PLAY_DISTANT_SOUND(edict(), DISTANT_BOOM);
 }
 
 bool CTor::GetSummonPos(Vector& pos) {
