@@ -131,148 +131,148 @@ void CGameRules::RefreshSkillData ( void )
 	ALERT ( at_console, "\nGAME SKILL LEVEL:%d\n",iSkill );
 
 	//Agrunt		
-	gSkillData.agruntHealth = GetSkillCvar( "sk_agrunt_health" );
-	gSkillData.agruntDmgPunch = GetSkillCvar( "sk_agrunt_dmg_punch");
+	gSkillData.agruntHealth = CVAR_GET_FLOAT( "sk_agrunt_health" );
+	gSkillData.agruntDmgPunch = CVAR_GET_FLOAT( "sk_agrunt_dmg_punch");
 
 	// Apache 
-	gSkillData.apacheHealth = GetSkillCvar( "sk_apache_health");
+	gSkillData.apacheHealth = CVAR_GET_FLOAT( "sk_apache_health");
 
 	// Barney
-	gSkillData.barneyHealth = GetSkillCvar( "sk_barney_health");
+	gSkillData.barneyHealth = CVAR_GET_FLOAT( "sk_barney_health");
 
 	// Big Momma
-	gSkillData.bigmommaHealthFactor = GetSkillCvar( "sk_bigmomma_health_factor" );
-	gSkillData.bigmommaDmgSlash = GetSkillCvar( "sk_bigmomma_dmg_slash" );
-	gSkillData.bigmommaDmgBlast = GetSkillCvar( "sk_bigmomma_dmg_blast" );
-	gSkillData.bigmommaRadiusBlast = GetSkillCvar( "sk_bigmomma_radius_blast" );
+	gSkillData.bigmommaHealthFactor = CVAR_GET_FLOAT( "sk_bigmomma_health_factor" );
+	gSkillData.bigmommaDmgSlash = CVAR_GET_FLOAT( "sk_bigmomma_dmg_slash" );
+	gSkillData.bigmommaDmgBlast = CVAR_GET_FLOAT( "sk_bigmomma_dmg_blast" );
+	gSkillData.bigmommaRadiusBlast = CVAR_GET_FLOAT( "sk_bigmomma_radius_blast" );
 
 	// Bullsquid
-	gSkillData.bullsquidHealth = GetSkillCvar( "sk_bullsquid_health");
-	gSkillData.bullsquidDmgBite = GetSkillCvar( "sk_bullsquid_dmg_bite");
-	gSkillData.bullsquidDmgWhip = GetSkillCvar( "sk_bullsquid_dmg_whip");
-	gSkillData.bullsquidDmgSpit = GetSkillCvar( "sk_bullsquid_dmg_spit");
+	gSkillData.bullsquidHealth = CVAR_GET_FLOAT( "sk_bullsquid_health");
+	gSkillData.bullsquidDmgBite = CVAR_GET_FLOAT( "sk_bullsquid_dmg_bite");
+	gSkillData.bullsquidDmgWhip = CVAR_GET_FLOAT( "sk_bullsquid_dmg_whip");
+	gSkillData.bullsquidDmgSpit = CVAR_GET_FLOAT( "sk_bullsquid_dmg_spit");
 
 	// Gargantua
-	gSkillData.gargantuaHealth = GetSkillCvar( "sk_gargantua_health");
-	gSkillData.gargantuaDmgSlash = GetSkillCvar( "sk_gargantua_dmg_slash");
-	gSkillData.gargantuaDmgFire = GetSkillCvar( "sk_gargantua_dmg_fire");
-	gSkillData.gargantuaDmgStomp = GetSkillCvar( "sk_gargantua_dmg_stomp");
+	gSkillData.gargantuaHealth = CVAR_GET_FLOAT( "sk_gargantua_health");
+	gSkillData.gargantuaDmgSlash = CVAR_GET_FLOAT( "sk_gargantua_dmg_slash");
+	gSkillData.gargantuaDmgFire = CVAR_GET_FLOAT( "sk_gargantua_dmg_fire");
+	gSkillData.gargantuaDmgStomp = CVAR_GET_FLOAT( "sk_gargantua_dmg_stomp");
 
 	// Hassassin
-	gSkillData.hassassinHealth = GetSkillCvar( "sk_hassassin_health");
+	gSkillData.hassassinHealth = CVAR_GET_FLOAT( "sk_hassassin_health");
 
 	// Headcrab
-	gSkillData.headcrabHealth = GetSkillCvar( "sk_headcrab_health");
-	gSkillData.headcrabDmgBite = GetSkillCvar( "sk_headcrab_dmg_bite");
+	gSkillData.headcrabHealth = CVAR_GET_FLOAT( "sk_headcrab_health");
+	gSkillData.headcrabDmgBite = CVAR_GET_FLOAT( "sk_headcrab_dmg_bite");
 
 	// Hgrunt 
-	gSkillData.hgruntHealth = GetSkillCvar( "sk_hgrunt_health");
-	gSkillData.hgruntDmgKick = GetSkillCvar( "sk_hgrunt_kick");
-	gSkillData.hgruntShotgunPellets = GetSkillCvar( "sk_hgrunt_pellets");
-	gSkillData.hgruntGrenadeSpeed = GetSkillCvar( "sk_hgrunt_gspeed");
+	gSkillData.hgruntHealth = CVAR_GET_FLOAT( "sk_hgrunt_health");
+	gSkillData.hgruntDmgKick = CVAR_GET_FLOAT( "sk_hgrunt_kick");
+	gSkillData.hgruntShotgunPellets = CVAR_GET_FLOAT( "sk_hgrunt_pellets");
+	gSkillData.hgruntGrenadeSpeed = CVAR_GET_FLOAT( "sk_hgrunt_gspeed");
 
 	// Houndeye
-	gSkillData.houndeyeHealth = GetSkillCvar( "sk_houndeye_health");
-	gSkillData.houndeyeDmgBlast = GetSkillCvar( "sk_houndeye_dmg_blast");
+	gSkillData.houndeyeHealth = CVAR_GET_FLOAT( "sk_houndeye_health");
+	gSkillData.houndeyeDmgBlast = CVAR_GET_FLOAT( "sk_houndeye_dmg_blast");
 
 	// ISlave
-	gSkillData.slaveHealth = GetSkillCvar( "sk_islave_health");
-	gSkillData.slaveDmgClaw = GetSkillCvar( "sk_islave_dmg_claw");
-	gSkillData.slaveDmgClawrake = GetSkillCvar( "sk_islave_dmg_clawrake");
-	gSkillData.slaveDmgZap = GetSkillCvar( "sk_islave_dmg_zap");
+	gSkillData.slaveHealth = CVAR_GET_FLOAT( "sk_islave_health");
+	gSkillData.slaveDmgClaw = CVAR_GET_FLOAT( "sk_islave_dmg_claw");
+	gSkillData.slaveDmgClawrake = CVAR_GET_FLOAT( "sk_islave_dmg_clawrake");
+	gSkillData.slaveDmgZap = CVAR_GET_FLOAT( "sk_islave_dmg_zap");
 
 	// Icthyosaur
-	gSkillData.ichthyosaurHealth = GetSkillCvar( "sk_ichthyosaur_health");
-	gSkillData.ichthyosaurDmgShake = GetSkillCvar( "sk_ichthyosaur_shake");
+	gSkillData.ichthyosaurHealth = CVAR_GET_FLOAT( "sk_ichthyosaur_health");
+	gSkillData.ichthyosaurDmgShake = CVAR_GET_FLOAT( "sk_ichthyosaur_shake");
 
 	// Leech
-	gSkillData.leechHealth = GetSkillCvar( "sk_leech_health");
+	gSkillData.leechHealth = CVAR_GET_FLOAT( "sk_leech_health");
 
-	gSkillData.leechDmgBite = GetSkillCvar( "sk_leech_dmg_bite");
+	gSkillData.leechDmgBite = CVAR_GET_FLOAT( "sk_leech_dmg_bite");
 
 	// Controller
-	gSkillData.controllerHealth = GetSkillCvar( "sk_controller_health");
-	gSkillData.controllerDmgZap = GetSkillCvar( "sk_controller_dmgzap");
-	gSkillData.controllerSpeedBall = GetSkillCvar( "sk_controller_speedball");
-	gSkillData.controllerDmgBall = GetSkillCvar( "sk_controller_dmgball");
+	gSkillData.controllerHealth = CVAR_GET_FLOAT( "sk_controller_health");
+	gSkillData.controllerDmgZap = CVAR_GET_FLOAT( "sk_controller_dmgzap");
+	gSkillData.controllerSpeedBall = CVAR_GET_FLOAT( "sk_controller_speedball");
+	gSkillData.controllerDmgBall = CVAR_GET_FLOAT( "sk_controller_dmgball");
 
 	// Nihilanth
-	gSkillData.nihilanthHealth = GetSkillCvar( "sk_nihilanth_health");
-	gSkillData.nihilanthZap = GetSkillCvar( "sk_nihilanth_zap");
+	gSkillData.nihilanthHealth = CVAR_GET_FLOAT( "sk_nihilanth_health");
+	gSkillData.nihilanthZap = CVAR_GET_FLOAT( "sk_nihilanth_zap");
 
 	// Scientist
-	gSkillData.scientistHealth = GetSkillCvar( "sk_scientist_health");
+	gSkillData.scientistHealth = CVAR_GET_FLOAT( "sk_scientist_health");
 
 	// Snark
-	gSkillData.snarkHealth = GetSkillCvar( "sk_snark_health");
-	gSkillData.snarkDmgBite = GetSkillCvar( "sk_snark_dmg_bite");
-	gSkillData.snarkDmgPop = GetSkillCvar( "sk_snark_dmg_pop");
+	gSkillData.snarkHealth = CVAR_GET_FLOAT( "sk_snark_health");
+	gSkillData.snarkDmgBite = CVAR_GET_FLOAT( "sk_snark_dmg_bite");
+	gSkillData.snarkDmgPop = CVAR_GET_FLOAT( "sk_snark_dmg_pop");
 
 	// Zombie
-	gSkillData.zombieHealth = GetSkillCvar( "sk_zombie_health");
-	gSkillData.zombieDmgOneSlash = GetSkillCvar( "sk_zombie_dmg_one_slash");
-	gSkillData.zombieDmgBothSlash = GetSkillCvar( "sk_zombie_dmg_both_slash");
+	gSkillData.zombieHealth = CVAR_GET_FLOAT( "sk_zombie_health");
+	gSkillData.zombieDmgOneSlash = CVAR_GET_FLOAT( "sk_zombie_dmg_one_slash");
+	gSkillData.zombieDmgBothSlash = CVAR_GET_FLOAT( "sk_zombie_dmg_both_slash");
 
 	//Turret
-	gSkillData.turretHealth = GetSkillCvar( "sk_turret_health");
+	gSkillData.turretHealth = CVAR_GET_FLOAT( "sk_turret_health");
 
 	// MiniTurret
-	gSkillData.miniturretHealth = GetSkillCvar( "sk_miniturret_health");
+	gSkillData.miniturretHealth = CVAR_GET_FLOAT( "sk_miniturret_health");
 	
 	// Sentry Turret
-	gSkillData.sentryHealth = GetSkillCvar( "sk_sentry_health");
+	gSkillData.sentryHealth = CVAR_GET_FLOAT( "sk_sentry_health");
 
 // PLAYER WEAPONS
 
 	// Crowbar whack
-	gSkillData.plrDmgCrowbar = GetSkillCvar( "sk_plr_crowbar");
+	gSkillData.plrDmgCrowbar = CVAR_GET_FLOAT( "sk_plr_crowbar");
 
 	// Glock Round
-	gSkillData.plrDmg9MM = GetSkillCvar( "sk_plr_9mm_bullet");
+	gSkillData.plrDmg9MM = CVAR_GET_FLOAT( "sk_plr_9mm_bullet");
 
 	// 357 Round
-	gSkillData.plrDmg357 = GetSkillCvar( "sk_plr_357_bullet");
+	gSkillData.plrDmg357 = CVAR_GET_FLOAT( "sk_plr_357_bullet");
 
 	// MP5 Round
-	gSkillData.plrDmgMP5 = GetSkillCvar( "sk_plr_9mmAR_bullet");
+	gSkillData.plrDmgMP5 = CVAR_GET_FLOAT( "sk_plr_9mmAR_bullet");
 
 	// M203 grenade
-	gSkillData.plrDmgM203Grenade = GetSkillCvar( "sk_plr_9mmAR_grenade");
+	gSkillData.plrDmgM203Grenade = CVAR_GET_FLOAT( "sk_plr_9mmAR_grenade");
 
 	// Shotgun buckshot
-	gSkillData.plrDmgBuckshot = GetSkillCvar( "sk_plr_buckshot");
+	gSkillData.plrDmgBuckshot = CVAR_GET_FLOAT( "sk_plr_buckshot");
 
 	// Crossbow
-	gSkillData.plrDmgCrossbowClient = GetSkillCvar( "sk_plr_xbow_bolt_client");
-	gSkillData.plrDmgCrossbowMonster = GetSkillCvar( "sk_plr_xbow_bolt_monster");
+	gSkillData.plrDmgCrossbowClient = CVAR_GET_FLOAT( "sk_plr_xbow_bolt_client");
+	gSkillData.plrDmgCrossbowMonster = CVAR_GET_FLOAT( "sk_plr_xbow_bolt_monster");
 
 	// RPG
-	gSkillData.plrDmgRPG = GetSkillCvar( "sk_plr_rpg");
+	gSkillData.plrDmgRPG = CVAR_GET_FLOAT( "sk_plr_rpg");
 
 	// Gauss gun
-	gSkillData.plrDmgGauss = GetSkillCvar( "sk_plr_gauss");
+	gSkillData.plrDmgGauss = CVAR_GET_FLOAT( "sk_plr_gauss");
 
 	// Egon Gun
-	gSkillData.plrDmgEgonNarrow = GetSkillCvar( "sk_plr_egon_narrow");
-	gSkillData.plrDmgEgonWide = GetSkillCvar( "sk_plr_egon_wide");
+	gSkillData.plrDmgEgonNarrow = CVAR_GET_FLOAT( "sk_plr_egon_narrow");
+	gSkillData.plrDmgEgonWide = CVAR_GET_FLOAT( "sk_plr_egon_wide");
 
 	// Hand Grendade
-	gSkillData.plrDmgHandGrenade = GetSkillCvar( "sk_plr_hand_grenade");
+	gSkillData.plrDmgHandGrenade = CVAR_GET_FLOAT( "sk_plr_hand_grenade");
 
 	// Satchel Charge
-	gSkillData.plrDmgSatchel = GetSkillCvar( "sk_plr_satchel");
+	gSkillData.plrDmgSatchel = CVAR_GET_FLOAT( "sk_plr_satchel");
 
 	// Tripmine
-	gSkillData.plrDmgTripmine = GetSkillCvar( "sk_plr_tripmine");
+	gSkillData.plrDmgTripmine = CVAR_GET_FLOAT( "sk_plr_tripmine");
 
 	// MONSTER WEAPONS
-	gSkillData.monDmg12MM = GetSkillCvar( "sk_12mm_bullet");
-	gSkillData.monDmgMP5 = GetSkillCvar ("sk_9mmAR_bullet" );
-	gSkillData.monDmg9MM = GetSkillCvar( "sk_9mm_bullet");
-	gSkillData.monDmg762 = GetSkillCvar( "sk_762_bullet");
+	gSkillData.monDmg12MM = CVAR_GET_FLOAT( "sk_12mm_bullet");
+	gSkillData.monDmgMP5 = CVAR_GET_FLOAT ("sk_9mmAR_bullet" );
+	gSkillData.monDmg9MM = CVAR_GET_FLOAT( "sk_9mm_bullet");
+	gSkillData.monDmg762 = CVAR_GET_FLOAT( "sk_762_bullet");
 
 	// MONSTER HORNET
-	gSkillData.monDmgHornet = GetSkillCvar( "sk_hornet_dmg");
+	gSkillData.monDmgHornet = CVAR_GET_FLOAT( "sk_hornet_dmg");
 
 	// PLAYER HORNET
 // Up to this point, player hornet damage and monster hornet damage were both using
@@ -284,75 +284,75 @@ void CGameRules::RefreshSkillData ( void )
 
 
 	// HEALTH/CHARGE
-	gSkillData.suitchargerCapacity = GetSkillCvar( "sk_suitcharger" );
-	gSkillData.batteryCapacity = GetSkillCvar( "sk_battery" );
-	gSkillData.healthchargerCapacity = GetSkillCvar ( "sk_healthcharger" );
-	gSkillData.healthkitCapacity = GetSkillCvar ( "sk_healthkit" );
-	gSkillData.scientistHeal = GetSkillCvar ( "sk_scientist_heal" );
+	gSkillData.suitchargerCapacity = CVAR_GET_FLOAT( "sk_suitcharger" );
+	gSkillData.batteryCapacity = CVAR_GET_FLOAT( "sk_battery" );
+	gSkillData.healthchargerCapacity = CVAR_GET_FLOAT ( "sk_healthcharger" );
+	gSkillData.healthkitCapacity = CVAR_GET_FLOAT ( "sk_healthkit" );
+	gSkillData.scientistHeal = CVAR_GET_FLOAT ( "sk_scientist_heal" );
 
 	// monster damage adj
-	gSkillData.monHead = GetSkillCvar( "sk_monster_head" );
-	gSkillData.monChest = GetSkillCvar( "sk_monster_chest" );
-	gSkillData.monStomach = GetSkillCvar( "sk_monster_stomach" );
-	gSkillData.monLeg = GetSkillCvar( "sk_monster_leg" );
-	gSkillData.monArm = GetSkillCvar( "sk_monster_arm" );
+	gSkillData.monHead = CVAR_GET_FLOAT( "sk_monster_head" );
+	gSkillData.monChest = CVAR_GET_FLOAT( "sk_monster_chest" );
+	gSkillData.monStomach = CVAR_GET_FLOAT( "sk_monster_stomach" );
+	gSkillData.monLeg = CVAR_GET_FLOAT( "sk_monster_leg" );
+	gSkillData.monArm = CVAR_GET_FLOAT( "sk_monster_arm" );
 
 	// player damage adj
-	gSkillData.plrHead = GetSkillCvar( "sk_player_head" );
-	gSkillData.plrChest = GetSkillCvar( "sk_player_chest" );
-	gSkillData.plrStomach = GetSkillCvar( "sk_player_stomach" );
-	gSkillData.plrLeg = GetSkillCvar( "sk_player_leg" );
-	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
+	gSkillData.plrHead = CVAR_GET_FLOAT( "sk_player_head" );
+	gSkillData.plrChest = CVAR_GET_FLOAT( "sk_player_chest" );
+	gSkillData.plrStomach = CVAR_GET_FLOAT( "sk_player_stomach" );
+	gSkillData.plrLeg = CVAR_GET_FLOAT( "sk_player_leg" );
+	gSkillData.plrArm = CVAR_GET_FLOAT( "sk_player_arm" );
 
-	gSkillData.gonomeHealth = GetSkillCvar( "sk_gonome_health" );
-	gSkillData.gonomeDmgOneSlash = GetSkillCvar( "sk_gonome_dmg_one_slash" );
-	gSkillData.gonomeDmgOneBite = GetSkillCvar( "sk_gonome_dmg_one_bite" );
-	gSkillData.gonomeDmgGuts = GetSkillCvar( "sk_gonome_dmg_guts" );
+	gSkillData.gonomeHealth = CVAR_GET_FLOAT( "sk_gonome_health" );
+	gSkillData.gonomeDmgOneSlash = CVAR_GET_FLOAT( "sk_gonome_dmg_one_slash" );
+	gSkillData.gonomeDmgOneBite = CVAR_GET_FLOAT( "sk_gonome_dmg_one_bite" );
+	gSkillData.gonomeDmgGuts = CVAR_GET_FLOAT( "sk_gonome_dmg_guts" );
 
-	gSkillData.voltigoreHealth = GetSkillCvar("sk_voltigore_health");
-	gSkillData.voltigoreDmgPunch = GetSkillCvar("sk_voltigore_dmg_punch");
-	gSkillData.voltigoreDmgBeam = GetSkillCvar("sk_voltigore_dmg_beam");
-	gSkillData.voltigoreDmgExplode = GetSkillCvar("sk_voltigore_dmg_explode");
+	gSkillData.voltigoreHealth = CVAR_GET_FLOAT("sk_voltigore_health");
+	gSkillData.voltigoreDmgPunch = CVAR_GET_FLOAT("sk_voltigore_dmg_punch");
+	gSkillData.voltigoreDmgBeam = CVAR_GET_FLOAT("sk_voltigore_dmg_beam");
+	gSkillData.voltigoreDmgExplode = CVAR_GET_FLOAT("sk_voltigore_dmg_explode");
 
-	gSkillData.torHealth = GetSkillCvar("sk_tor_health");
-	gSkillData.torDmgPunch = GetSkillCvar("sk_tor_punch");
-	gSkillData.torDmgEnergyBeam = GetSkillCvar("sk_tor_energybeam");
-	gSkillData.torDmgSonicBlast = GetSkillCvar("sk_tor_sonicblast");
+	gSkillData.torHealth = CVAR_GET_FLOAT("sk_tor_health");
+	gSkillData.torDmgPunch = CVAR_GET_FLOAT("sk_tor_punch");
+	gSkillData.torDmgEnergyBeam = CVAR_GET_FLOAT("sk_tor_energybeam");
+	gSkillData.torDmgSonicBlast = CVAR_GET_FLOAT("sk_tor_sonicblast");
 
-	gSkillData.babyGargHealth = GetSkillCvar("sk_babygargantua_health");
-	gSkillData.babyGargDmgSlash = GetSkillCvar("sk_babygargantua_dmg_slash");
-	gSkillData.babyGargDmgFire = GetSkillCvar("sk_babygargantua_dmg_fire");
-	gSkillData.babyGargDmgStomp = GetSkillCvar("sk_babygargantua_dmg_stomp");
+	gSkillData.babyGargHealth = CVAR_GET_FLOAT("sk_babygargantua_health");
+	gSkillData.babyGargDmgSlash = CVAR_GET_FLOAT("sk_babygargantua_dmg_slash");
+	gSkillData.babyGargDmgFire = CVAR_GET_FLOAT("sk_babygargantua_dmg_fire");
+	gSkillData.babyGargDmgStomp = CVAR_GET_FLOAT("sk_babygargantua_dmg_stomp");
 
-	gSkillData.pitdroneHealth = GetSkillCvar("sk_pitdrone_health");
-	gSkillData.pitdroneDmgBite = GetSkillCvar("sk_pitdrone_dmg_bite");
-	gSkillData.pitdroneDmgWhip = GetSkillCvar("sk_pitdrone_dmg_whip");
-	gSkillData.pitdroneDmgSpit = GetSkillCvar("sk_pitdrone_dmg_spit");
+	gSkillData.pitdroneHealth = CVAR_GET_FLOAT("sk_pitdrone_health");
+	gSkillData.pitdroneDmgBite = CVAR_GET_FLOAT("sk_pitdrone_dmg_bite");
+	gSkillData.pitdroneDmgWhip = CVAR_GET_FLOAT("sk_pitdrone_dmg_whip");
+	gSkillData.pitdroneDmgSpit = CVAR_GET_FLOAT("sk_pitdrone_dmg_spit");
 
-	gSkillData.shocktrooperHealth = GetSkillCvar("sk_shocktrooper_health");
-	gSkillData.shocktrooperDmgKick = GetSkillCvar("sk_shocktrooper_kick");
-	gSkillData.shocktrooperMaxCharge = GetSkillCvar("sk_shocktrooper_maxcharge");
-	gSkillData.shocktrooperRechargeSpeed = GetSkillCvar("sk_shocktrooper_rechargespeed");
-	gSkillData.shocktrooperGrenadeSpeed = GetSkillCvar("sk_shocktrooper_grenadespeed");
+	gSkillData.shocktrooperHealth = CVAR_GET_FLOAT("sk_shocktrooper_health");
+	gSkillData.shocktrooperDmgKick = CVAR_GET_FLOAT("sk_shocktrooper_kick");
+	gSkillData.shocktrooperMaxCharge = CVAR_GET_FLOAT("sk_shocktrooper_maxcharge");
+	gSkillData.shocktrooperRechargeSpeed = CVAR_GET_FLOAT("sk_shocktrooper_rechargespeed");
+	gSkillData.shocktrooperGrenadeSpeed = CVAR_GET_FLOAT("sk_shocktrooper_grenadespeed");
 
-	gSkillData.shockroachHealth = GetSkillCvar("sk_shockroach_health");
-	gSkillData.shockroachDmgBite = GetSkillCvar("sk_shockroach_dmg_bite");
-	gSkillData.shockroachLifespan = GetSkillCvar("sk_shockroach_lifespan");
+	gSkillData.shockroachHealth = CVAR_GET_FLOAT("sk_shockroach_health");
+	gSkillData.shockroachDmgBite = CVAR_GET_FLOAT("sk_shockroach_dmg_bite");
+	gSkillData.shockroachLifespan = CVAR_GET_FLOAT("sk_shockroach_lifespan");
 
-	gSkillData.plrDmgSpore = GetSkillCvar("sk_plr_spore");
+	gSkillData.plrDmgSpore = CVAR_GET_FLOAT("sk_plr_spore");
 
-	gSkillData.plrDmgShockRifle = GetSkillCvar("sk_plr_shockrifle");
+	gSkillData.plrDmgShockRifle = CVAR_GET_FLOAT("sk_plr_shockrifle");
 
-	gSkillData.plrDmg556 = GetSkillCvar("sk_556_bullet");
+	gSkillData.plrDmg556 = CVAR_GET_FLOAT("sk_556_bullet");
 
-	gSkillData.otisHealth = GetSkillCvar("sk_otis_health");
-	gSkillData.otisDmgBullet = GetSkillCvar("sk_otis_bullet");
+	gSkillData.otisHealth = CVAR_GET_FLOAT("sk_otis_health");
+	gSkillData.otisDmgBullet = CVAR_GET_FLOAT("sk_otis_bullet");
 
-	gSkillData.massassinHealth = GetSkillCvar("sk_massassin_health");
-	gSkillData.massassinGrenadeSpeed = GetSkillCvar("sk_massassin_grenadespeed");
-	gSkillData.massassinDmgKick = GetSkillCvar("sk_massassin_kick");
+	gSkillData.massassinHealth = CVAR_GET_FLOAT("sk_massassin_health");
+	gSkillData.massassinGrenadeSpeed = CVAR_GET_FLOAT("sk_massassin_grenadespeed");
+	gSkillData.massassinDmgKick = CVAR_GET_FLOAT("sk_massassin_kick");
 
-	gSkillData.yawspeedMult = GetSkillCvar("sk_yawspeed_mult");
+	gSkillData.yawspeedMult = CVAR_GET_FLOAT("sk_yawspeed_mult");
 }
 
 void execMapCfg() {
