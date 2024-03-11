@@ -90,6 +90,7 @@ inline edict_t *FIND_ENTITY_BY_TARGETNAME(edict_t *entStart, const char *pszName
 }	
 
 // for doing a reverse lookup. Say you have a door, and want to find its button.
+// Only checks the "target" keyvalue, so this skips multi_manager and other types of target keys
 inline edict_t *FIND_ENTITY_BY_TARGET(edict_t *entStart, const char *pszName) 
 {
 	return FIND_ENTITY_BY_STRING(entStart, "target", pszName);

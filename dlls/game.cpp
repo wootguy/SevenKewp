@@ -16,6 +16,9 @@
 #include "eiface.h"
 #include "util.h"
 #include "game.h"
+#include "cbase.h"
+#include "CBaseMonster.h"
+#include "skill.h"
 
 cvar_t	displaysoundlist = {"displaysoundlist","0"};
 
@@ -48,6 +51,9 @@ cvar_t	mp_respawndelay ={"mp_respawndelay","3", FCVAR_SERVER };
 cvar_t	mp_debugmsg ={"mp_debugmsg","0", FCVAR_SERVER };
 cvar_t	mp_starthealth ={"starthealth","0", FCVAR_SERVER };
 cvar_t	mp_startarmor ={"startarmor","0", FCVAR_SERVER };
+cvar_t	mp_bulletsponges ={"mp_bulletsponges","1", FCVAR_SERVER };
+cvar_t	mp_bulletspongemax ={"mp_bulletspongemax","4", FCVAR_SERVER };
+cvar_t	mp_maxmonsterrespawns ={"mp_maxmonsterrespawns","-1", FCVAR_SERVER };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER };
 
@@ -532,6 +538,9 @@ std::map<std::string, std::string> g_modelReplacementsMod;
 std::map<std::string, std::string> g_modelReplacementsMap;
 std::map<std::string, std::string> g_modelReplacements;
 
+NerfStats g_nerfStats;
+bool g_cfgsExecuted;
+
 void test_command() {
 	int entIdx = 1;
 	int channel = 3;
@@ -545,11 +554,16 @@ void test_command() {
 	StartSound(INDEXENT(entIdx), channel, sample, *(float*)&vol, *(float*)&attn, flags, pitch, ori, 0xFFFFFFFF);
 }
 
+void cfg_exec_finished() {
+	g_cfgsExecuted = true;
+}
+
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit( void )
 {
 	g_engfuncs.pfnAddServerCommand("test", test_command);
+	g_engfuncs.pfnAddServerCommand("cfg_exec_finished", cfg_exec_finished);
 	// Register cvars here:
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
@@ -590,6 +604,9 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_debugmsg);
 	CVAR_REGISTER (&mp_starthealth);
 	CVAR_REGISTER (&mp_startarmor);
+	CVAR_REGISTER (&mp_bulletsponges);
+	CVAR_REGISTER (&mp_bulletspongemax);
+	CVAR_REGISTER (&mp_maxmonsterrespawns);
 
 	CVAR_REGISTER (&mp_chattime);
 

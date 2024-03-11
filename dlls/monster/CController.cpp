@@ -380,7 +380,6 @@ void CController :: Spawn()
 	pev->movetype		= MOVETYPE_FLY;
 	pev->flags			|= FL_FLY;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
-	if (!pev->health) pev->health = gSkillData.controllerHealth;
 	pev->view_ofs		= Vector( 0, 0, -2 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_FULL;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;

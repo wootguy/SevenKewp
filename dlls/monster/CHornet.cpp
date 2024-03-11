@@ -78,7 +78,7 @@ void CHornet :: Spawn( void )
 	pev->solid		= SOLID_BBOX;
 	pev->takedamage = DAMAGE_YES;
 	pev->flags		|= FL_MONSTER;
-	if (!pev->health) pev->health = 1;// weak!
+	SetHealth();// weak!
 	
 	if ( g_pGameRules->IsMultiplayer() )
 	{

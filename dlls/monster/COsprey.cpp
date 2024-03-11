@@ -161,7 +161,7 @@ void COsprey :: Spawn( void )
 	pev->flags |= FL_MONSTER;
 	pev->takedamage		= DAMAGE_YES;
 	
-	if (!pev->health) pev->health = 400;
+	SetHealth();
 	m_flRightHealth = pev->health / 2;
 	m_flLeftHealth = pev->health / 2;
 

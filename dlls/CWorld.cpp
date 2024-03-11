@@ -157,7 +157,7 @@ void CWorld::Precache(void)
 	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/distant/crack_357.wav");
 	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/distant/crack_556.wav");
 	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/distant/explode3.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/distant/explode4.wav");
+	//PRECACHE_SOUND(MOD_SND_FOLDER "weapons/distant/explode4.wav");
 	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/distant/explode5.wav");
 	//
 	// Setup light animation tables. 'a' is total darkness, 'z' is maxbright.

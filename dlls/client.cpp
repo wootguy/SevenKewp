@@ -41,6 +41,8 @@
 #include "pm_shared.h"
 #include "CBasePlayerItem.h"
 #include "CRpg.h"
+#include "CMonsterMaker.h"
+#include "skill.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -335,6 +337,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 }
 
 int g_serveractive = 0;
+bool g_monstersNerfed = false;
 
 void ServerDeactivate( void )
 {
@@ -360,6 +363,10 @@ void ServerDeactivate( void )
 	g_wavInfos.clear();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";
+	g_monstersNerfed = false;
+	g_cfgsExecuted = false;
+
+	memset(&g_nerfStats, 0, sizeof(NerfStats));
 
 	// Peform any shutdown operations here...
 	//
@@ -394,6 +401,13 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		else
 		{
 			ALERT( at_console, "Can't instance %s\n", STRING(pEdictList[i].v.classname) );
+			continue;
+		}
+
+		// nerf monster health/spawners now that all entities have spawned (can check/update connections)
+		CBaseMonster* monster = pClass->MyMonsterPointer();
+		if (monster) {
+			pClass->MyMonsterPointer()->Nerf();
 		}
 	}
 
@@ -453,7 +467,6 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	}
 }
 
-
 /*
 ================
 PlayerPreThink
@@ -502,6 +515,56 @@ void ParmsChangeLevel( void )
 		pSaveData->connectionCount = BuildChangeList( pSaveData->levelList, MAX_LEVEL_CONNECTIONS );
 }
 
+void NerfMonsters() {
+	UpdateSkillData();
+
+	edict_t* edicts = ENT(0);
+
+	for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++)
+	{
+		if (edicts[i].free || !edicts[i].pvPrivateData)
+			continue;
+
+		CBaseEntity* pClass = CBaseEntity::Instance(&edicts[i]);
+		if (!pClass) {
+			continue;
+		}
+
+		// nerf monster health/spawners now that all entities have spawned (can check/update connections)
+		CBaseMonster* monster = pClass->MyMonsterPointer();
+		if (monster) {
+			pClass->MyMonsterPointer()->Nerf();
+		}
+	}
+
+	std::string healthStat;
+	std::string npcCountStat;
+
+	if (mp_bulletsponges.value != 1) {
+		healthStat = UTIL_VarArgs("%dk -> %dk",
+			(g_nerfStats.totalMonsterHealth + g_nerfStats.nerfedMonsterHealth) / 1000,
+			g_nerfStats.totalMonsterHealth / 1000);
+	}
+	else {
+		healthStat = UTIL_VarArgs("%dk",
+			g_nerfStats.totalMonsterHealth / 1000);
+	}
+
+	if (mp_maxmonsterrespawns.value >= 0) {
+		npcCountStat = UTIL_VarArgs("%d%s -> %d%s",
+			g_nerfStats.nerfedMonsterSpawns + g_nerfStats.totalMonsters,
+			(g_nerfStats.skippedMonsterInfiniSpawns + g_nerfStats.nerfedMonsterInfiniSpawns) ? "+" : "",
+			g_nerfStats.totalMonsters,
+			g_nerfStats.skippedMonsterInfiniSpawns ? "+" : "");
+	}
+	else {
+		npcCountStat = UTIL_VarArgs("%d%s",
+			g_nerfStats.totalMonsters,
+			g_nerfStats.skippedMonsterInfiniSpawns ? "+" : "");
+	}
+
+	ALERT(at_logged, "Enemy stats: %s health, %s npcs\n", healthStat.c_str(), npcCountStat.c_str());
+}
 
 //
 // GLOBALS ASSUMED SET:  g_ulFrameCount
@@ -516,6 +579,11 @@ void StartFrame( void )
 
 	gpGlobals->teamplay = teamplay.value;
 	g_ulFrameCount++;
+
+	if (!g_monstersNerfed && g_cfgsExecuted && g_serveractive) {
+		NerfMonsters();
+		g_monstersNerfed = true;
+	}
 
 	lagcomp_update();
 }

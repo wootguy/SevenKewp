@@ -24,81 +24,7 @@
 #include "saverestore.h"
 #include "weapons.h"
 #include "CBasePlayerWeapon.h"
-
-// Monstermaker spawnflags
-#define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )
-#define	SF_MONSTERMAKER_CYCLIC		4 // drop one monster every time fired.
-#define SF_MONSTERMAKER_MONSTERCLIP	8 // Children are blocked by monsterclip
-#define SF_MONSTERMAKER_PRISONER	16 // Children are prisoners
-#define SF_MONSTERMAKER_WAIT_SCRIPT	128 // Children wait for a scripted sequence
-
-#define MAX_XENMAKER_BEAMS 64 // each beam will need a TE message so don't go too crazy...
-#define XENMAKER_SOUND1 "debris/beamstart7.wav"
-#define XENMAKER_SOUND2 "debris/beamstart2.wav"
-
-enum blocked_spawn_modes {
-	SPAWN_BLOCK_LEGACY, // fail the spawn if blocked
-	SPAWN_BLOCK_WAIT, // wait for the blockage to clear, then spawn
-	SPAWN_BLOCK_IGNORE // spawn even if blocked (xenmaker mode)
-};
-
-//=========================================================
-// MonsterMaker - this ent creates monsters during the game.
-//=========================================================
-class CMonsterMaker : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void KeyValue( KeyValueData* pkvd);
-	void EXPORT ToggleUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void EXPORT CyclicUse ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void EXPORT MakerThink ( void );
-	void DeathNotice ( entvars_t *pevChild );// monster maker children use this to tell the monster maker that they have died.
-	void MakeMonster( void );
-	void XenmakerEffect();
-
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
-
-	static	TYPEDESCRIPTION m_SaveData[];
-	
-	string_t m_iszMonsterClassname;// classname of the monster(s) that will be created.
-	
-	int	 m_cNumMonsters;// max number of monsters this ent can create
-
-	
-	int  m_cLiveChildren;// how many monsters made by this monster maker that are currently alive
-	int	 m_iMaxLiveChildren;// max number of monsters that this maker may have out at one time.
-
-	float m_flGround; // z coord of the ground under me, used to make sure no monsters are under the maker when it drops a new child
-
-	BOOL m_fActive;
-	BOOL m_fFadeChildren;// should we make the children fadeout?
-
-	int m_blockedSpawnMode;
-
-	// env_xenmaker effect settings
-	float m_flBeamRadius;
-	int m_iBeamAlpha;
-	int m_iBeamCount;
-	Vector m_vBeamColor;
-	float m_flLightRadius;
-	Vector m_vLightColor;
-	float m_flStartSpriteFramerate;
-	float m_flStartSpriteScale;
-	int m_iStartSpriteAlpha;
-	int m_xenSpriteIdx;
-	int m_xenBeamSpriteIdx;
-	float m_nextXenSound;
-	int m_changeRenderMode;
-
-	string_t m_xenmakerTemplate; // grab xenmaker settings from another entity
-
-	string_t m_weaponModelV;
-	string_t m_weaponModelP;
-	string_t m_weaponModelW;
-};
+#include "CMonsterMaker.h"
 
 LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker );
 LINK_ENTITY_TO_CLASS( squadmaker, CMonsterMaker );
@@ -292,6 +218,9 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		CBaseMonster::KeyValue( pkvd );
 }
 
+int CMonsterMaker::Classify(void) {
+	return CBaseMonster::Classify(DefaultClassify(STRING(m_iszMonsterClassname)));
+}
 
 void CMonsterMaker :: Spawn( )
 {
@@ -311,8 +240,11 @@ void CMonsterMaker :: Spawn( )
 		}
 		
 		pev->spawnflags = SF_MONSTERMAKER_CYCLIC;
+		m_cNumMonsters = -1;
 		m_blockedSpawnMode = SPAWN_BLOCK_IGNORE;
 	}
+
+	pev->classname = MAKE_STRING("monstermaker");
 
 	if ( !FStringNull ( pev->targetname ) )
 	{
@@ -678,4 +610,148 @@ void CMonsterMaker :: DeathNotice ( entvars_t *pevChild )
 	}
 }
 
+void CMonsterMaker::Nerf() {
+	const char* spawnCname = STRING(m_iszMonsterClassname);
 
+	if (strstr(spawnCname, "monster_") != spawnCname) {
+		return; // doesn't spawn monsters
+	}
+
+	int clazz = Classify();
+
+	if (IRelationship(CLASS_PLAYER, clazz) <= R_NO || !strcmp(spawnCname, "monster_snark")) {
+		return; // don't care about nerfing friendlies/insects/snarks
+	}
+
+	CBaseMonster::Nerf(); // reduce health
+
+	int maxNerfedSpawnCount = mp_maxmonsterrespawns.value + 1.5f;
+	bool isCyclic = pev->targetname && (pev->spawnflags & SF_MONSTERMAKER_CYCLIC);
+	bool spawnsTooMany = (m_cNumMonsters < 0 || m_cNumMonsters > maxNerfedSpawnCount);
+
+	if (mp_maxmonsterrespawns.value >= 0 && spawnsTooMany) {
+		bool shouldNerf = true;
+		if (m_iszTriggerTarget) {
+			if (m_cNumMonsters > 0) {
+				edict_t* ent = NULL;
+				while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
+					if (strcmp(STRING(ent->v.classname), "game_counter") && strcmp(STRING(ent->v.classname), "trigger_counter")) {
+						ALERT(at_console, "Not nerfing %d count %s maker (triggers '%s')\n",
+							m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget));
+						shouldNerf = false;
+						break;
+					}
+				}
+
+				if (shouldNerf) {
+					ent = NULL;
+					int reducedCount = m_cNumMonsters - maxNerfedSpawnCount;
+					while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
+						if (!strcmp(STRING(ent->v.classname), "game_counter")) {
+							ent->v.health -= reducedCount;
+							ALERT(at_console, "Reduced game_counter %s limit by %d (%d total)\n",
+								STRING(m_iszTriggerTarget), reducedCount, (int)ent->v.health);
+						}
+						else if (strcmp(STRING(ent->v.classname), "trigger_counter")) {
+							CBaseToggle* trig = (CBaseToggle*)GET_PRIVATE(ent);
+							if (trig) {
+								trig->m_cTriggersLeft -= reducedCount;
+								ALERT(at_console, "Reduced trigger_counter %s limit by %d (%d total)\n",
+									STRING(m_iszTriggerTarget), reducedCount, (int)trig->m_cTriggersLeft);
+							}
+						}
+					}
+				}
+			}
+			else {
+				ALERT(at_console, "Not nerfing %d count %s maker (infinitely triggers '%s')\n",
+					m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget));
+				shouldNerf = false;
+			}			
+		}
+		else if (pev->spawnflags & (SF_MONSTERMAKER_PRISONER | SF_MONSTERMAKER_WAIT_SCRIPT)) {
+			ALERT(at_console, "Not nerfing %d count %s maker (prisoner/scripted)\n",
+				m_cNumMonsters, STRING(m_iszMonsterClassname));
+			shouldNerf = false;
+		}
+		/*
+		else if (pev->targetname) {
+			// if the spawner can be turned off, then allow infinite spawns (svencooprpg)
+			int neededTriggers = (pev->spawnflags & SF_MONSTERMAKER_START_ON) ? 1 : 2;
+			int foundTriggers = 0;
+			const char* foundRepeatTrigger = NULL;
+
+			edict_t* edicts = ENT(0);
+			for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++)
+			{
+				edict_t* ent = &edicts[i];
+				if (ent->free)
+					continue;
+
+				const char* cname = STRING(ent->v.classname);
+				CBaseEntity* pent = (CBaseEntity*)GET_PRIVATE(ent);
+				if (!pent)
+					continue;
+
+				if (!pent->HasTarget(pev->targetname)) {
+					continue;
+				}
+				
+				if (!strcmp(cname, "trigger_once") || !strcmp(cname, "func_breakable")) {
+					foundTriggers++;
+				}
+				else if (!strcmp(cname, "func_button")) {
+					CBaseToggle* toggle = (CBaseToggle*)GET_PRIVATE(ent);
+					if (toggle && toggle->m_flWait < 0) {
+						foundTriggers++;
+					}
+					else {
+						foundRepeatTrigger = cname;
+						break;
+					}
+				}
+				else {
+					foundRepeatTrigger = cname;
+					break;
+				}
+			}
+
+			if (foundRepeatTrigger) {
+				ALERT(at_console, "Not nerfing %d count %s maker (can be triggered on/off by '%s')\n",
+					m_cNumMonsters, STRING(m_iszMonsterClassname), foundRepeatTrigger);
+				shouldNerf = false;
+			}
+			else if (foundTriggers >= neededTriggers) {
+				ALERT(at_console, "Not nerfing %d count %s maker (can be triggered %d times as '%s')\n",
+					m_cNumMonsters, STRING(m_iszMonsterClassname), foundTriggers, STRING(pev->targetname));
+				shouldNerf = false;
+			}
+		}
+		*/
+		if (shouldNerf) {
+			ALERT(at_console, "Nerf %s maker '%s' count: %d -> %d\n", STRING(m_iszMonsterClassname),
+				STRING(pev->targetname), m_cNumMonsters, maxNerfedSpawnCount);
+			if (m_cNumMonsters < 0) {
+				g_nerfStats.nerfedMonsterInfiniSpawns++;
+			}
+			else {
+				g_nerfStats.nerfedMonsterSpawns += m_cNumMonsters - maxNerfedSpawnCount;
+			}
+			
+			m_cNumMonsters = maxNerfedSpawnCount;
+		}
+		else {
+			if (m_cNumMonsters > 0) {
+				g_nerfStats.skippedMonsterSpawns += m_cNumMonsters - maxNerfedSpawnCount;
+			}
+		}
+	}
+
+	if (m_cNumMonsters > 0) {
+		g_nerfStats.totalMonsters += m_cNumMonsters - 1; // CBaseMonster::Nerf increments this too
+		g_nerfStats.totalMonsterHealth += (m_cNumMonsters - 1) * pev->health;
+	}
+	else {
+		g_nerfStats.skippedMonsterInfiniSpawns++;
+	}
+}

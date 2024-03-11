@@ -13,6 +13,7 @@
 #include "CTalkSquadMonster.h"
 #include "gamerules.h"
 #include "defaultai.h"
+#include "CMonsterMaker.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -2065,6 +2066,8 @@ void CBaseMonster::MonsterInit(void)
 		return;
 	}
 
+	SetHealth();
+
 	// Set fields common to all monsters
 	pev->effects = 0;
 	pev->takedamage = DAMAGE_AIM;
@@ -2297,6 +2300,83 @@ int CBaseMonster::Classify(int defaultClassify) {
 	// no overridess set, return the default class
 	return defaultClassify;
 }
+
+int CBaseMonster::DefaultClassify(const char* monstertype) {
+	// Keep this map in sync with each monster's Classify method
+	static std::map<std::string, int> classMap = {
+		{"hornet", CLASS_ALIEN_BIOWEAPON},
+		{"monster_alien_babyvoltigore", CLASS_ALIEN_MONSTER},
+		{"monster_alien_controller", CLASS_ALIEN_MILITARY},
+		{"monster_alien_grunt", CLASS_ALIEN_MILITARY},
+		{"monster_alien_slave", CLASS_ALIEN_MILITARY},
+		{"monster_alien_tor", CLASS_HUMAN_MILITARY},
+		{"monster_alien_voltigore", CLASS_ALIEN_MONSTER},
+		{"monster_apache", CLASS_HUMAN_MILITARY},
+		{"monster_assassin_repel", CLASS_HUMAN_MILITARY},
+		{"monster_babycrab", CLASS_ALIEN_PREY},
+		{"monster_babygarg", CLASS_ALIEN_MONSTER},
+		{"monster_barnacle", CLASS_ALIEN_MONSTER},
+		{"monster_barney", CLASS_PLAYER_ALLY},
+		{"monster_bigmomma", CLASS_ALIEN_MONSTER},
+		{"monster_blkop_osprey", CLASS_MACHINE},
+		{"monster_blkop_apache", CLASS_HUMAN_MILITARY},
+		{"monster_bloater", CLASS_ALIEN_MONSTER},
+		{"monster_bodyguard", CLASS_PLAYER_ALLY},
+		{"monster_bullchicken", CLASS_ALIEN_PREDATOR},
+		{"monster_chumtoad", CLASS_ALIEN_MONSTER},
+		{"monster_cleansuit_scientist", CLASS_HUMAN_PASSIVE},
+		{"monster_cockroach", CLASS_INSECT},
+		{"monster_gargantua", CLASS_ALIEN_MONSTER},
+		{"monster_generic", CLASS_PLAYER_ALLY},
+		{"monster_gonome", CLASS_ALIEN_MONSTER},
+		{"monster_grunt_ally_repel", CLASS_PLAYER_ALLY},
+		{"monster_grunt_repel", CLASS_HUMAN_MILITARY},
+		{"monster_headcrab", CLASS_ALIEN_PREY},
+		{"monster_houndeye", CLASS_ALIEN_MONSTER},
+		{"monster_human_assassin", CLASS_HUMAN_MILITARY},
+		{"monster_human_grunt", CLASS_HUMAN_MILITARY},
+		{"monster_human_grunt_ally", CLASS_PLAYER_ALLY},
+		{"monster_human_medic_ally", CLASS_PLAYER_ALLY},
+		{"monster_human_torch_ally", CLASS_PLAYER_ALLY},
+		{"monster_hwgrunt", CLASS_HUMAN_MILITARY},
+		{"monster_hwgrunt_repel", CLASS_HUMAN_MILITARY},
+		{"monster_ichthyosaur", CLASS_ALIEN_MONSTER},
+		{"monster_kingpin", CLASS_ALIEN_MILITARY},
+		{"monster_leech", CLASS_INSECT},
+		{"monster_male_assassin", CLASS_HUMAN_MILITARY},
+		{"monster_medic_ally_repel", CLASS_PLAYER_ALLY},
+		{"monster_miniturret", CLASS_MACHINE},
+		{"monster_nihilanth", CLASS_ALIEN_MILITARY},
+		{"monster_osprey", CLASS_MACHINE},
+		{"monster_otis", CLASS_PLAYER_ALLY},
+		{"monster_pitdrone", CLASS_ALIEN_PREDATOR},
+		{"monster_rat", CLASS_INSECT},
+		{"monster_robogrunt", CLASS_MACHINE},
+		{"monster_robogrunt_repel", CLASS_MACHINE},
+		{"monster_scientist", CLASS_HUMAN_PASSIVE},
+		{"monster_sentry", CLASS_MACHINE},
+		{"monster_shockroach", CLASS_ALIEN_PREY},
+		{"monster_shocktrooper", CLASS_ALIEN_RACE_X},
+		{"monster_sitting_scientist", CLASS_HUMAN_PASSIVE},
+		{"monster_snark", CLASS_ALIEN_BIOWEAPON},
+		{"monster_sqknest", CLASS_ALIEN_BIOWEAPON},
+		{"monster_stukabat", CLASS_ALIEN_MILITARY},
+		{"monster_tentacle", CLASS_ALIEN_MONSTER},
+		{"monster_torch_ally_repel", CLASS_PLAYER_ALLY},
+		{"monster_turret", CLASS_MACHINE},
+		{"monster_zombie", CLASS_ALIEN_MONSTER},
+		{"monster_zombie_barney", CLASS_ALIEN_MONSTER},
+		{"monster_zombie_soldier", CLASS_ALIEN_MONSTER},
+		{"player", CLASS_PLAYER}
+	};
+
+	if (classMap.find(monstertype) != classMap.end()) {
+		return classMap[monstertype];
+	}
+
+	return CLASS_NONE;
+}
+
 
 //=========================================================
 // SetClassify - sets/changes the monster's classify and
@@ -7041,4 +7121,126 @@ void CBaseMonster::SetSize(Vector defaultMins, Vector defaultMaxs) {
 	Vector max = m_maxHullSize != g_vecZero ? m_maxHullSize : defaultMaxs;
 
 	UTIL_SetSize(pev, min, max);
+}
+
+void CBaseMonster::SetHealth() {
+	if (!pev->health)
+		pev->health = GetDefaultHealth(STRING(pev->classname));
+}
+
+void CBaseMonster::Nerf() {
+	const char* monstertype = STRING(pev->classname);
+	string_t monstername = pev->targetname;
+	bool isGlowing = pev->renderfx == kRenderFxGlowShell && pev->renderamt > 0;
+	bool isMonsterMaker = !strcmp(monstertype, "monstermaker");
+
+	if (isMonsterMaker) {
+		CMonsterMaker* maker = (CMonsterMaker*)this;
+		monstertype = STRING(maker->m_iszMonsterClassname);
+		monstername = pev->netname;
+		if (!maker->m_changeRenderMode) {
+			isGlowing = false;
+		}
+	}
+
+	if (IRelationship(CLASS_PLAYER, Classify()) <= R_NO && !IsMachine()) {
+		return; // don't care about friendlies
+	}
+
+	if (!IsAlive()) {
+		return;
+	}
+
+	float defaultHealth = GetDefaultHealth(monstertype);
+
+	if (defaultHealth <= 0) {
+		return; // no default health defined for this entity
+	}
+
+	if (pev->health <= defaultHealth) {
+		// less health than normal is always ok
+	}
+	else if (mp_bulletsponges.value == 0) {
+		// extra health is never allowed
+		g_nerfStats.nerfedMonsterHealth += pev->health - defaultHealth;
+		pev->health = defaultHealth;
+	}
+	else if (mp_bulletsponges.value == 2) {
+		// extra health is allowed if there's a good reason for it (custom appearance, special logic)
+
+		bool shouldNerf = true;
+		bool shouldPartialNerf = true;
+
+		bool hasCustomModel = pev->model;
+		if (!isMonsterMaker) {
+			// ignore models that were swapped by the default model replacement file
+			hasCustomModel = m_defaultModel && strcmp(STRING(pev->model), m_defaultModel)
+				&& g_modelReplacementsMod.find(m_defaultModel) != g_modelReplacementsMod.end()
+				&& g_modelReplacementsMod[m_defaultModel] != STRING(pev->model);
+		}
+
+		if (m_iszTriggerTarget) {
+			// check if the monster triggers something special (like a game_end, but not a monster counter)
+			edict_t* ent = NULL;
+			while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
+				const char* cname = STRING(ent->v.classname);
+				if (strcmp(cname, "game_counter") && strcmp(cname, "trigger_counter")) {
+					ALERT(at_console, "Not nerfing %d hp %s (triggers '%s' %s)\n", (int)pev->health, monstertype, STRING(m_iszTriggerTarget), cname);
+					shouldNerf = false;
+					break;
+				}
+			}
+		}
+		if (monstername && !IsTurret() && strstr(monstertype, "_osprey") == NULL && strstr(monstertype, "_apache") == NULL && !FNullEnt(FIND_ENTITY_BY_TARGET(NULL, STRING(monstername)))) {
+			// sc_tetris has a boss that connects alien controllers with beams
+			// turrets/ospreys/apaches can be toggled on/off and often have a name
+			ALERT(at_console, "Not nerfing %d hp %s (has name '%s')\n", (int)pev->health, monstertype, STRING(monstername));
+			shouldNerf = false;
+		}
+		else if (hasCustomModel || isGlowing) {
+			// this monster looks special for some reason, makes sense for hp to be different
+			ALERT(at_console, "Not nerfing %d hp %s (custom appearance)\n", (int)pev->health, monstertype);
+			shouldNerf = false;
+		}
+		
+		if (pev->health >= 90000) {
+			// monster is meant to be invincible
+			ALERT(at_console, "Not nerfing %d hp %s (probably meant to be invincible)\n", (int)pev->health, monstertype);
+			shouldNerf = false;
+			shouldPartialNerf = false;
+		}
+
+		if (shouldNerf) {
+			// There is likely no good reason for this monster to have extra health
+			ALERT(at_console, "Nerf %s hp: %d -> %d.\n", monstertype, (int)pev->health, (int)defaultHealth);
+			g_nerfStats.nerfedMonsterHealth += pev->health - defaultHealth;
+			pev->health = defaultHealth;
+		}
+		else {
+			if (shouldPartialNerf && mp_bulletspongemax.value >= 1) {
+				float maxspongehp = defaultHealth * mp_bulletspongemax.value;
+				if (pev->health > maxspongehp) {
+					ALERT(at_console, "Partially nerf %s hp: %d -> %d\n", monstertype, (int)pev->health, (int)maxspongehp);
+					g_nerfStats.nerfedMonsterHealth += pev->health - maxspongehp;
+					pev->health = maxspongehp;
+				}
+			}
+
+			g_nerfStats.skippedMonsterHealth += pev->health - defaultHealth;
+		}
+	}
+	else {
+		// allow the custom extra health
+	}
+
+	if (IRelationship(CLASS_PLAYER, Classify()) > R_NO || (IsTurret() && !m_IsPlayerAlly)) {
+		float healthStatMult = 1.0f;
+
+		if (strstr(monstertype, "monster_robogrunt") == monstertype) {
+			healthStatMult = 5.0f; // robo grunts effectively have 5x hp due to damage resistance
+		}
+
+		g_nerfStats.totalMonsterHealth += pev->health * healthStatMult;
+		g_nerfStats.totalMonsters++;
+	}
 }
