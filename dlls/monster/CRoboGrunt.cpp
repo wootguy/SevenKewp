@@ -314,7 +314,7 @@ void CRoboGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 
 		if (pev->deadflag != DEAD_DEAD) {
 			if (!(bitsDamageType & DMG_ENERGYBEAM))
-				flDamage *= 0.2;
+				flDamage *= 0.2; // Note: This magic value is also used in SetHealth for monster stats
 		}
 		else if (RANDOM_LONG(0, 4) == 0) { // 25% chance damage triggers explosion on death
 			GibMonster();

@@ -385,6 +385,9 @@ void execMapCfg() {
 		"mp_weaponstay",
 		"mp_friendlyfire",
 		"mp_soundvariety",
+		"mp_bulletsponges",
+		"mp_bulletspongemax",
+		"mp_maxmonsterrespawns",
 		"killnpc",
 		"mp_npckill",
 		"startarmor",
@@ -540,6 +543,7 @@ void execCfgs() {
 
 	execServerCfg();
 	execMapCfg();
+	SERVER_COMMAND("cfg_exec_finished\n");
 
 	SERVER_EXECUTE();
 }

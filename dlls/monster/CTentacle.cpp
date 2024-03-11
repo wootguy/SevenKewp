@@ -261,7 +261,7 @@ void CTentacle :: Spawn( )
 	pev->solid			= SOLID_BBOX;
 	pev->movetype		= MOVETYPE_FLY;
 	pev->effects		= 0;
-	if (!pev->health) pev->health = 4000;
+	SetHealth();
 	pev->sequence		= 0;
 
 	m_spawnHealth = pev->health;

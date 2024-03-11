@@ -43,7 +43,6 @@ void CFurniture::Spawn()
 
 	pev->movetype = MOVETYPE_NONE;
 	pev->solid = SOLID_BBOX;
-	if (!pev->health) pev->health = 80000;
 	pev->takedamage = DAMAGE_AIM;
 	pev->effects = 0;
 	pev->yaw_speed = 0;

@@ -46,7 +46,6 @@ void CSentry::Spawn()
 {
 	Precache();
 	SET_MODEL(ENT(pev), GetModel());
-	if (!pev->health) pev->health = gSkillData.sentryHealth;
 	m_HackedGunPos = Vector(0, 0, 48);
 	pev->view_ofs.z = 48;
 	m_flMaxWait = 1E6;

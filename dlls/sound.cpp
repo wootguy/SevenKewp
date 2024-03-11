@@ -601,17 +601,17 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 	case DISTANT_BOOM: {
 		minRange = 2048.0f;
 
-		switch (RANDOM_LONG(0, 2))
+		switch (RANDOM_LONG(0, 1))
 		{
 		case 0:
 			sample = MOD_SND_FOLDER "weapons/distant/explode3.wav";
 			break;
 		case 1:
-			sample = MOD_SND_FOLDER "weapons/distant/explode4.wav";
-			break;
-		case 2:
 			sample = MOD_SND_FOLDER "weapons/distant/explode5.wav";
 			break;
+		//case 2:
+		//	sample = MOD_SND_FOLDER "weapons/distant/explode4.wav";
+		//	break;
 		}
 		break;
 	}

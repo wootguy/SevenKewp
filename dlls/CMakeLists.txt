@@ -19,6 +19,7 @@ set(MONSTER_HDR
 	monster/CFlyingMonster.h
 	monster/CGargantua.h
 	monster/CHornet.h
+	monster/CMonsterMaker.h
 	monster/CTalkSquadMonster.h
 	monster/defaultai.h
 	monster/monsterevent.h

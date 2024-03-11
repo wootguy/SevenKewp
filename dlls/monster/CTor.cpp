@@ -508,7 +508,6 @@ void CTor::Spawn()
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = BLOOD_COLOR_GREEN;
-	if (!pev->health) pev->health = gSkillData.torHealth;
 	pev->view_ofs = Vector(0, 0, 0);// position of the eyes relative to monster's origin.
 	m_flFieldOfView = 0.0;
 	m_MonsterState = MONSTERSTATE_NONE;
