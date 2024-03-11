@@ -77,6 +77,9 @@ cvar_t	sk_agrunt_dmg_punch = {"sk_agrunt_dmg_punch","0"};
 // Apache
 cvar_t	sk_apache_health = {"sk_apache_health","0"};
 
+// Osprey
+cvar_t	sk_osprey_health = {"sk_osprey_health","0"};
+
 // Barney
 cvar_t	sk_barney_health = {"sk_barney_health","0"};
 
@@ -88,7 +91,7 @@ cvar_t	sk_bullsquid_dmg_spit = {"sk_bullsquid_dmg_spit","0"};
 
 
 // Big Momma
-cvar_t	sk_bigmomma_health_factor = {"sk_bigmomma_health_factor","1.0"};
+cvar_t	sk_bigmomma_health = {"sk_bigmomma_health","1.0"};
 cvar_t	sk_bigmomma_dmg_slash = {"sk_bigmomma_dmg_slash","50"};
 cvar_t	sk_bigmomma_dmg_blast = {"sk_bigmomma_dmg_blast","100"};
 cvar_t	sk_bigmomma_radius_blast = {"sk_bigmomma_radius_blast","250"};
@@ -98,6 +101,9 @@ cvar_t	sk_gargantua_health = {"sk_gargantua_health","0"};
 cvar_t	sk_gargantua_dmg_slash = {"sk_gargantua_dmg_slash","0"};
 cvar_t	sk_gargantua_dmg_fire = {"sk_gargantua_dmg_fire","0"};
 cvar_t	sk_gargantua_dmg_stomp = {"sk_gargantua_dmg_stomp","0"};
+
+// Babygarg
+cvar_t	sk_babygarg_health = {"sk_babygarg_health","0"};
 
 
 // Hassassin
@@ -114,6 +120,9 @@ cvar_t	sk_hgrunt_health = {"sk_hgrunt_health","0"};
 cvar_t	sk_hgrunt_kick = {"sk_hgrunt_kick","0"};
 cvar_t	sk_hgrunt_pellets = {"sk_hgrunt_pellets","0"};
 cvar_t	sk_hgrunt_gspeed = {"sk_hgrunt_gspeed","0"};
+
+// heavy weapons grunt
+cvar_t	sk_hwgrunt_health = {"sk_hwgrunt_health","0"};
 
 // Houndeye
 cvar_t	sk_houndeye_health = {"sk_houndeye_health","0"};
@@ -184,6 +193,7 @@ cvar_t	sk_plr_9mmAR_grenade = {"sk_plr_9mmAR_grenade","0"};
 cvar_t	sk_plr_buckshot = {"sk_plr_buckshot","0"};
 cvar_t	sk_plr_xbow_bolt_client = {"sk_plr_xbow_bolt_client","0"};
 cvar_t	sk_plr_xbow_bolt_monster = {"sk_plr_xbow_bolt_monster","0"};
+cvar_t	sk_plr_xbow_sniper_bullet = {"sk_plr_xbow_sniper_bullet","0"};
 cvar_t	sk_plr_rpg = {"sk_plr_rpg","0"};
 cvar_t	sk_plr_gauss = {"sk_plr_gauss","0"};
 cvar_t	sk_plr_egon_narrow = {"sk_plr_egon_narrow","0"};
@@ -364,6 +374,9 @@ void GameDLLInit( void )
 	// Apache
 	CVAR_REGISTER ( &sk_apache_health );// {"sk_apache_health","0"};
 
+	// Osprey
+	CVAR_REGISTER ( &sk_osprey_health);// {"sk_apache_health","0"};
+
 	// Barney
 	CVAR_REGISTER ( &sk_barney_health );// {"sk_barney_health","0"};
 
@@ -374,7 +387,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER ( &sk_bullsquid_dmg_spit );// {"sk_bullsquid_dmg_spit","0"};
 
 	// Big Momma
-	CVAR_REGISTER ( &sk_bigmomma_health_factor );// {"sk_bigmomma_health_factor","1.0"};
+	CVAR_REGISTER ( &sk_bigmomma_health );// {"sk_bigmomma_health_factor","1.0"};
 	CVAR_REGISTER ( &sk_bigmomma_dmg_slash );// {"sk_bigmomma_dmg_slash","50"};
 	CVAR_REGISTER ( &sk_bigmomma_dmg_blast );// {"sk_bigmomma_dmg_blast","100"};
 	CVAR_REGISTER ( &sk_bigmomma_radius_blast );// {"sk_bigmomma_radius_blast","250"};
@@ -384,6 +397,9 @@ void GameDLLInit( void )
 	CVAR_REGISTER ( &sk_gargantua_dmg_slash );// {"sk_gargantua_dmg_slash","0"};
 	CVAR_REGISTER ( &sk_gargantua_dmg_fire );// {"sk_gargantua_dmg_fire","0"};
 	CVAR_REGISTER ( &sk_gargantua_dmg_stomp );// {"sk_gargantua_dmg_stomp","0"};
+
+	// Babygarg
+	CVAR_REGISTER(&sk_babygarg_health);// {"sk_gargantua_health","0"};
 
 	// Hassassin
 	CVAR_REGISTER ( &sk_hassassin_health );// {"sk_hassassin_health","0"};
@@ -397,6 +413,9 @@ void GameDLLInit( void )
 	CVAR_REGISTER ( &sk_hgrunt_kick );// {"sk_hgrunt_kick","0"};
 	CVAR_REGISTER ( &sk_hgrunt_pellets );
 	CVAR_REGISTER ( &sk_hgrunt_gspeed );
+
+	// hwgrunt
+	CVAR_REGISTER ( &sk_hwgrunt_health);
 
 	// Houndeye
 	CVAR_REGISTER ( &sk_houndeye_health );// {"sk_houndeye_health","0"};
@@ -457,6 +476,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER ( &sk_plr_buckshot );// {"sk_plr_buckshot","0"};
 	CVAR_REGISTER ( &sk_plr_xbow_bolt_monster );// {"sk_plr_xbow_bolt","0"};
 	CVAR_REGISTER ( &sk_plr_xbow_bolt_client );// {"sk_plr_xbow_bolt","0"};
+	CVAR_REGISTER ( &sk_plr_xbow_sniper_bullet);// {"sk_plr_xbow_bolt","0"};
 	CVAR_REGISTER ( &sk_plr_rpg );// {"sk_plr_rpg","0"};
 	CVAR_REGISTER ( &sk_plr_gauss );// {"sk_plr_gauss","0"};
 	CVAR_REGISTER ( &sk_plr_egon_narrow );// {"sk_plr_egon_narrow","0"};
