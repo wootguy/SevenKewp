@@ -113,6 +113,7 @@ struct skilldata_t
 	float monDmg9MM;
 	float monDmgMP5;
 	float monDmg12MM;
+	float monDmg762;
 	float monDmgHornet;
 
 // health/suit charge
