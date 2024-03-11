@@ -516,8 +516,6 @@ void ParmsChangeLevel( void )
 }
 
 void NerfMonsters() {
-	UpdateSkillData();
-
 	edict_t* edicts = ENT(0);
 
 	for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++)

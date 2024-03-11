@@ -191,8 +191,7 @@ struct skilldata_t
 extern	DLL_GLOBAL	skilldata_t	gSkillData;
 
 extern DLL_GLOBAL int		g_iSkillLevel;
-
-void UpdateSkillData();
+extern std::map<std::string, float> g_defaultMonsterHealth;
 
 float GetDefaultHealth(const char* monstertype);
 
