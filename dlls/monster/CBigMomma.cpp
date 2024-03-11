@@ -793,8 +793,9 @@ void CBigMomma::NodeReach( void )
 	if ( !pTarget )
 		return;
 
-	if ( pTarget->pev->health )
-		pev->max_health = pev->health = pTarget->pev->health * gSkillData.bigmommaHealthFactor;
+	if (pTarget->pev->health) {
+		pev->max_health = pev->health = gSkillData.bigmommaHealth;
+	}
 
 	if ( !HasMemory( bits_MEMORY_FIRED_NODE ) )
 	{

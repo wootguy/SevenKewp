@@ -26,10 +26,12 @@ struct skilldata_t
 	float agruntDmgPunch;
 
 	float apacheHealth;
+
+	float ospreyHealth;
 	
 	float barneyHealth;
 
-	float bigmommaHealthFactor;		// Multiply each node's health by this
+	float bigmommaHealth;		// Multiply each node's health by this
 	float bigmommaDmgSlash;			// melee attack damage
 	float bigmommaDmgBlast;			// mortar attack damage
 	float bigmommaRadiusBlast;		// mortar attack radius
@@ -44,6 +46,8 @@ struct skilldata_t
 	float gargantuaDmgFire;
 	float gargantuaDmgStomp;
 
+	float babygargHealth;
+
 	float hassassinHealth;
 
 	float headcrabHealth;
@@ -53,6 +57,8 @@ struct skilldata_t
 	float hgruntDmgKick;
 	float hgruntShotgunPellets;
 	float hgruntGrenadeSpeed;
+
+	float hwgruntHealth;
 
 	float houndeyeHealth;
 	float houndeyeDmgBlast;
@@ -100,6 +106,7 @@ struct skilldata_t
 	float plrDmgBuckshot;
 	float plrDmgCrossbowClient;
 	float plrDmgCrossbowMonster;
+	float plrDmgCrossbowSniper;
 	float plrDmgRPG;
 	float plrDmgGauss;
 	float plrDmgEgonNarrow;

@@ -137,11 +137,14 @@ void CGameRules::RefreshSkillData ( void )
 	// Apache 
 	gSkillData.apacheHealth = CVAR_GET_FLOAT( "sk_apache_health");
 
+	// Osprey
+	gSkillData.ospreyHealth = CVAR_GET_FLOAT( "sk_osprey_health");
+
 	// Barney
 	gSkillData.barneyHealth = CVAR_GET_FLOAT( "sk_barney_health");
 
 	// Big Momma
-	gSkillData.bigmommaHealthFactor = CVAR_GET_FLOAT( "sk_bigmomma_health_factor" );
+	gSkillData.bigmommaHealth = CVAR_GET_FLOAT( "sk_bigmomma_health" );
 	gSkillData.bigmommaDmgSlash = CVAR_GET_FLOAT( "sk_bigmomma_dmg_slash" );
 	gSkillData.bigmommaDmgBlast = CVAR_GET_FLOAT( "sk_bigmomma_dmg_blast" );
 	gSkillData.bigmommaRadiusBlast = CVAR_GET_FLOAT( "sk_bigmomma_radius_blast" );
@@ -158,6 +161,9 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.gargantuaDmgFire = CVAR_GET_FLOAT( "sk_gargantua_dmg_fire");
 	gSkillData.gargantuaDmgStomp = CVAR_GET_FLOAT( "sk_gargantua_dmg_stomp");
 
+	// Babygarg
+	gSkillData.babygargHealth = CVAR_GET_FLOAT("sk_babygarg_health");
+
 	// Hassassin
 	gSkillData.hassassinHealth = CVAR_GET_FLOAT( "sk_hassassin_health");
 
@@ -170,6 +176,9 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.hgruntDmgKick = CVAR_GET_FLOAT( "sk_hgrunt_kick");
 	gSkillData.hgruntShotgunPellets = CVAR_GET_FLOAT( "sk_hgrunt_pellets");
 	gSkillData.hgruntGrenadeSpeed = CVAR_GET_FLOAT( "sk_hgrunt_gspeed");
+
+	// HWGrunt
+	gSkillData.hwgruntHealth = CVAR_GET_FLOAT( "sk_hwgrunt_health");
 
 	// Houndeye
 	gSkillData.houndeyeHealth = CVAR_GET_FLOAT( "sk_houndeye_health");
@@ -245,6 +254,7 @@ void CGameRules::RefreshSkillData ( void )
 	// Crossbow
 	gSkillData.plrDmgCrossbowClient = CVAR_GET_FLOAT( "sk_plr_xbow_bolt_client");
 	gSkillData.plrDmgCrossbowMonster = CVAR_GET_FLOAT( "sk_plr_xbow_bolt_monster");
+	gSkillData.plrDmgCrossbowSniper = CVAR_GET_FLOAT( "sk_plr_xbow_sniper_bullet");
 
 	// RPG
 	gSkillData.plrDmgRPG = CVAR_GET_FLOAT( "sk_plr_rpg");
@@ -367,11 +377,11 @@ void CGameRules::RefreshSkillData ( void )
 	g_defaultMonsterHealth["monster_apache"] = gSkillData.apacheHealth;
 	g_defaultMonsterHealth["monster_assassin_repel"] = gSkillData.massassinHealth;
 	g_defaultMonsterHealth["monster_babycrab"] = gSkillData.headcrabHealth * 0.25;
-	g_defaultMonsterHealth["monster_babygarg"] = gSkillData.gargantuaHealth * 0.5f;
+	g_defaultMonsterHealth["monster_babygarg"] = gSkillData.babygargHealth;
 	g_defaultMonsterHealth["monster_barnacle"] = 50;
 	g_defaultMonsterHealth["monster_barney"] = gSkillData.barneyHealth;
-	g_defaultMonsterHealth["monster_bigmomma"] = 150 * gSkillData.bigmommaHealthFactor;
-	g_defaultMonsterHealth["monster_blkop_osprey"] = 400;
+	g_defaultMonsterHealth["monster_bigmomma"] = gSkillData.bigmommaHealth;
+	g_defaultMonsterHealth["monster_blkop_osprey"] = gSkillData.ospreyHealth;
 	g_defaultMonsterHealth["monster_blkop_apache"] = gSkillData.apacheHealth;
 	g_defaultMonsterHealth["monster_bloater"] = 40;
 	g_defaultMonsterHealth["monster_bodyguard"] = gSkillData.hgruntHealth;
@@ -394,8 +404,8 @@ void CGameRules::RefreshSkillData ( void )
 	g_defaultMonsterHealth["monster_human_grunt_ally"] = gSkillData.hgruntHealth;
 	g_defaultMonsterHealth["monster_human_medic_ally"] = gSkillData.hgruntHealth;
 	g_defaultMonsterHealth["monster_human_torch_ally"] = gSkillData.hgruntHealth;
-	g_defaultMonsterHealth["monster_hwgrunt"] = gSkillData.hgruntHealth;
-	g_defaultMonsterHealth["monster_hwgrunt_repel"] = gSkillData.hgruntHealth;
+	g_defaultMonsterHealth["monster_hwgrunt"] = gSkillData.hwgruntHealth;
+	g_defaultMonsterHealth["monster_hwgrunt_repel"] = gSkillData.hwgruntHealth;
 	g_defaultMonsterHealth["monster_ichthyosaur"] = gSkillData.ichthyosaurHealth;
 	g_defaultMonsterHealth["monster_kingpin"] = gSkillData.torHealth;
 	g_defaultMonsterHealth["monster_leech"] = gSkillData.leechHealth;
@@ -403,7 +413,7 @@ void CGameRules::RefreshSkillData ( void )
 	g_defaultMonsterHealth["monster_medic_ally_repel"] = gSkillData.hgruntHealth;
 	g_defaultMonsterHealth["monster_miniturret"] = gSkillData.miniturretHealth;
 	g_defaultMonsterHealth["monster_nihilanth"] = gSkillData.nihilanthHealth;
-	g_defaultMonsterHealth["monster_osprey"] = 400;
+	g_defaultMonsterHealth["monster_osprey"] = gSkillData.ospreyHealth;
 	g_defaultMonsterHealth["monster_otis"] = gSkillData.otisHealth;
 	g_defaultMonsterHealth["monster_pitdrone"] = gSkillData.pitdroneHealth;
 	g_defaultMonsterHealth["monster_rat"] = 8;
