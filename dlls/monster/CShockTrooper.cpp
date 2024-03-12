@@ -150,6 +150,12 @@ public:
 	void GibMonster() override;
 	void SpeakSentence();
 
+	void SetObjectCollisionBox(void)
+	{
+		pev->absmin = pev->origin + Vector(-24, -24, 0);
+		pev->absmax = pev->origin + Vector(24, 24, 88);
+	}
+
 	BOOL Save(CSave& save) override;
 	BOOL Restore(CRestore& restore) override;
 

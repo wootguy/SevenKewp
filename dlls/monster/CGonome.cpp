@@ -57,6 +57,12 @@ public:
 	void MonsterThink(void);
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
+	void SetObjectCollisionBox(void)
+	{
+		pev->absmin = pev->origin + Vector(-24, -24, 0);
+		pev->absmax = pev->origin + Vector(24, 24, 88);
+	}
+
 	void PainSound(void);
 	void AlertSound(void);
 	void IdleSound(void);
@@ -259,7 +265,7 @@ void CGonome::Spawn()
 	Precache( );
 
 	SET_MODEL(ENT(pev), GetModel());
-	SetSize(Vector( -16, -16, 0 ), Vector( 16, 16, 88 ) );
+	SetSize(Vector( -16, -16, 0 ), Vector( 16, 16, 72 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;

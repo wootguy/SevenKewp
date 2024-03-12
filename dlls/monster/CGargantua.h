@@ -153,6 +153,7 @@ protected:
 	float slashDamage;
 	float fireDamage;
 	float stompDamage;
+	float m_lastPainSound;
 
 	static const char* pRicSounds[];
 	static const char* pAttackHitSounds[];
