@@ -13,6 +13,7 @@
 #include "effects.h"
 #include "customentity.h"
 #include "explode.h"
+#include "game.h"
 
 int g_fAllyQuestion;				// true if an idle grunt asked a question. Cleared when someone answers.
 
@@ -263,6 +264,40 @@ const char* CBaseGruntOp4::pClearSounds[] =
 	MOD_SND_FOLDER "fgrunt/area.wav",
 };
 
+void CBaseGruntOp4::ShuffleSoundArrays() {
+	if (g_shuffledMonsterSounds.count(STRING(pev->classname))) {
+		return;
+	}
+	g_shuffledMonsterSounds.insert(STRING(pev->classname));
+
+	SHUFFLE_SOUND_ARRAY(pPainSounds);
+	SHUFFLE_SOUND_ARRAY(pDieSounds);
+	SHUFFLE_SOUND_ARRAY(pGrenSounds);
+	SHUFFLE_SOUND_ARRAY(pAlertSounds);
+	SHUFFLE_SOUND_ARRAY(pMonsterSounds);
+	SHUFFLE_SOUND_ARRAY(pCoverSounds);
+	SHUFFLE_SOUND_ARRAY(pThrowSounds);
+	SHUFFLE_SOUND_ARRAY(pChargeSounds);
+	SHUFFLE_SOUND_ARRAY(pTauntSounds);
+	SHUFFLE_SOUND_ARRAY(pShotSounds);
+	SHUFFLE_SOUND_ARRAY(pMadSounds);
+	SHUFFLE_SOUND_ARRAY(pKillSounds);
+	SHUFFLE_SOUND_ARRAY(pOkSounds);
+	SHUFFLE_SOUND_ARRAY(pWaitSounds);
+	SHUFFLE_SOUND_ARRAY(pAttackSounds)
+	SHUFFLE_SOUND_ARRAY(pCheckSounds);
+	SHUFFLE_SOUND_ARRAY(pClearSounds);
+	SHUFFLE_SOUND_ARRAY(pIdleSounds);
+	SHUFFLE_SOUND_ARRAY(pStopSounds);
+	SHUFFLE_SOUND_ARRAY(pScaredSounds);
+	SHUFFLE_SOUND_ARRAY(pHelloSounds);
+	SHUFFLE_SOUND_ARRAY(pCureSounds);
+	SHUFFLE_SOUND_ARRAY(pAnswerSounds);
+	SHUFFLE_SOUND_ARRAY(pQuestionSounds);
+	SHUFFLE_SOUND_ARRAY(pPokSounds);
+	SHUFFLE_SOUND_ARRAY(pWoundSounds);
+	SHUFFLE_SOUND_ARRAY(pMortalSounds);
+}
 
 void CBaseGruntOp4::InitAiFlags(void) {
 	canBeMadAtPlayer = true;
@@ -393,8 +428,17 @@ void CBaseGruntOp4::Precache()
 {
 	BasePrecache();
 
+	ShuffleSoundArrays();
+
 	PRECACHE_SOUND_ARRAY(pDieSounds);
 	PRECACHE_SOUND_ARRAY(pPainSounds);
+
+	int oldSoundVariety = soundvariety.value;
+	
+	// speech requires so many sounds that any requested limit in sound variety should
+	// reduce speech arrays to 1 instantly
+	soundvariety.value = soundvariety.value > 0 ? 1 : soundvariety.value;
+
 	PRECACHE_SOUND_ARRAY(pGrenSounds);
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
 	PRECACHE_SOUND_ARRAY(pMonsterSounds);
@@ -405,21 +449,26 @@ void CBaseGruntOp4::Precache()
 	PRECACHE_SOUND_ARRAY(pShotSounds);
 	PRECACHE_SOUND_ARRAY(pMadSounds);
 	PRECACHE_SOUND_ARRAY(pKillSounds);
-	PRECACHE_SOUND_ARRAY(pAnswerSounds);
-	PRECACHE_SOUND_ARRAY(pQuestionSounds);
+	PRECACHE_SOUND_ARRAY(pAttackSounds)
+	PRECACHE_SOUND_ARRAY(pCheckSounds);
+	PRECACHE_SOUND_ARRAY(pClearSounds);
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
-	PRECACHE_SOUND_ARRAY(pOkSounds);
-	PRECACHE_SOUND_ARRAY(pWaitSounds);
 	PRECACHE_SOUND_ARRAY(pStopSounds);
 	PRECACHE_SOUND_ARRAY(pScaredSounds);
 	PRECACHE_SOUND_ARRAY(pHelloSounds);
 	PRECACHE_SOUND_ARRAY(pCureSounds);
+	PRECACHE_SOUND_ARRAY(pAnswerSounds);
+	PRECACHE_SOUND_ARRAY(pQuestionSounds);
+	PRECACHE_SOUND_ARRAY(pPokSounds);
 	PRECACHE_SOUND_ARRAY(pWoundSounds);
 	PRECACHE_SOUND_ARRAY(pMortalSounds);
-	PRECACHE_SOUND_ARRAY(pAttackSounds);
-	PRECACHE_SOUND_ARRAY(pPokSounds);
-	PRECACHE_SOUND_ARRAY(pCheckSounds);
-	PRECACHE_SOUND_ARRAY(pClearSounds);
+
+	// follow/unfollow sounds should have more variety because players activate them often
+	soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 3) ? 3 : soundvariety.value;
+	PRECACHE_SOUND_ARRAY(pOkSounds);
+	PRECACHE_SOUND_ARRAY(pWaitSounds);
+
+	soundvariety.value = oldSoundVariety;
 
 	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/medic.wav");
 
@@ -436,6 +485,9 @@ void CBaseGruntOp4::PlaySentence(const char* pszSentence, float duration, float 
 	CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + duration + 2.0;
 
 	const char* sample = "";
+
+	int oldSoundVariety = soundvariety.value;
+	soundvariety.value = soundvariety.value > 0 ? 1 : soundvariety.value;
 
 	if (!strcmp(pszSentence, "FG_GREN")) {
 		sample = RANDOM_SOUND_ARRAY(pGrenSounds);
@@ -477,9 +529,11 @@ void CBaseGruntOp4::PlaySentence(const char* pszSentence, float duration, float 
 		sample = RANDOM_SOUND_ARRAY(pIdleSounds);
 	}
 	else if (!strcmp(pszSentence, "FG_OK")) {
+		soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 3) ? 3 : soundvariety.value;
 		sample = RANDOM_SOUND_ARRAY(pOkSounds);
 	}
 	else if (!strcmp(pszSentence, "FG_WAIT")) {
+		soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 3) ? 3 : soundvariety.value;
 		sample = RANDOM_SOUND_ARRAY(pWaitSounds);
 	}
 	else if (!strcmp(pszSentence, "FG_STOP")) {
@@ -516,6 +570,8 @@ void CBaseGruntOp4::PlaySentence(const char* pszSentence, float duration, float 
 		ALERT(at_console, "Invalid sentence: %s\n", pszSentence);
 		return;
 	}
+
+	soundvariety.value = oldSoundVariety;
 
 	EMIT_SOUND_DYN(edict(), CHAN_VOICE, sample, volume, attenuation, 0, GetVoicePitch());
 

@@ -18,6 +18,7 @@
 
 #include <map>
 #include <string>
+#include <set>
 
 extern void GameDLLInit( void );
 
@@ -96,6 +97,7 @@ extern std::map<std::string, std::string> g_modelReplacements; // combined model
 // per-monster sound replacement maps
 // should be a class member, but I'm afraid of the bugs that will come from using non-POD class members
 extern std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
+extern std::set<std::string> g_shuffledMonsterSounds; // classes that had their sounds shuffled this map
 
 extern bool g_cfgsExecuted; // set to true after server and map cfgs are executed
 

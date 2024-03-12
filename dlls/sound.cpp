@@ -695,6 +695,20 @@ void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname)
 		SENTENCEG_PlayRndSz(entity, groupname, fvol, ATTN_NORM, 0, pitch);
 }
 
+void UTIL_ShuffleSoundArray(const char** arr, size_t n) {
+	if (n > 1)
+	{
+		size_t i;
+		for (i = 0; i < n - 1; i++)
+		{
+			size_t j = RANDOM_LONG(i + 1, n - 1);
+			const char* t = arr[j];
+			arr[j] = arr[i];
+			arr[i] = t;
+		}
+	}
+}
+
 // ===================== MATERIAL TYPE DETECTION, MAIN ROUTINES ========================
 // 
 // Used to detect the texture the player is standing on, map the
