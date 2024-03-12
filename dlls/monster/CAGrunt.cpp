@@ -395,6 +395,24 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			UTIL_MakeVectors ( pHornet->pev->angles );
 			pHornet->pev->velocity = gpGlobals->v_forward * 300;
 			
+			if (gSkillData.sk_agrunt_hornet_mode == 1 && HasConditions(bits_COND_SEE_ENEMY) && m_hEnemy) {
+				// shoot fast hornets in a straight line instead of slowly tracking targets
+				Vector predictedTargetOri = m_hEnemy->pev->origin;
+				float hornetSpeed = 1200;
+
+				if (m_hEnemy->pev->velocity.Length() > 10) {
+					// lead the shot to account for hornet travel time
+					Vector targetDelta = m_vecEnemyLKP - pHornet->pev->origin;
+					float predictedTravelTime = targetDelta.Length() / hornetSpeed;
+					predictedTargetOri = m_hEnemy->pev->origin + m_hEnemy->pev->velocity * predictedTravelTime;
+				}
+
+				Vector direction = (predictedTargetOri - pHornet->pev->origin).Normalize();
+				pHornet->pev->angles = UTIL_VecToAngles(direction);
+				pHornet->pev->velocity = direction * hornetSpeed;
+				pHornet->SetThink(&CHornet::StartDart);
+				pHornet->pev->nextthink = gpGlobals->time;
+			}			
 			
 			
 			switch ( RANDOM_LONG ( 0 , 2 ) )

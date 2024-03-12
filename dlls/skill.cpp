@@ -34,6 +34,7 @@ skill_cvar_t skill_cvars[] = {
 	// Agrunt
 	DECL_SKILL_CVAR(sk_agrunt_health),
 	DECL_SKILL_CVAR(sk_agrunt_dmg_punch),
+	DECL_SKILL_CVAR(sk_agrunt_hornet_mode),
 
 	// Apache
 	DECL_SKILL_CVAR(sk_apache_health),
