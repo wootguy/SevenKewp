@@ -450,24 +450,6 @@ Schedule_t* CHWGrunt::GetMonsterStateSchedule(void) {
 		return GetScheduleOfType(SCHED_HWGRUNT_FIND_MINIGUN);
 	}
 
-
-	if (HasConditions(bits_COND_HEAVY_DAMAGE))
-	{
-		// flinch for heavy damage but not too often
-		if (RANDOM_LONG(0, 2) == 0) {
-			return GetScheduleOfType(SCHED_SMALL_FLINCH);
-		}
-		else {
-			return CTalkSquadMonster::GetSchedule();
-		}
-	}
-	else if (HasConditions(bits_COND_LIGHT_DAMAGE))
-	{
-		// never flinch or retreat from light damage
-		return CTalkSquadMonster::GetSchedule();
-	}
-	
-
 	return CBaseGrunt::GetMonsterStateSchedule();
 }
 

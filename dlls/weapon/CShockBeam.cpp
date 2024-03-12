@@ -51,7 +51,7 @@ void CShockBeam::Spawn()
 	Precache();
 
 	pev->movetype = MOVETYPE_FLY;
-	pev->solid = SOLID_BBOX;
+	pev->solid = SOLID_TRIGGER;
 
 	SET_MODEL( edict(), "models/shock_effect.mdl" );
 
