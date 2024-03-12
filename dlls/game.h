@@ -76,6 +76,7 @@ extern cvar_t	killnpc; // legacy setting. When set to 0, makes scientists and ba
 extern cvar_t	*g_psv_gravity;
 extern cvar_t	*g_psv_aim;
 extern cvar_t	*g_footsteps;
+extern cvar_t	*g_developer;
 
 struct NerfStats {
 	int nerfedMonsterHealth;

@@ -122,7 +122,7 @@ BOOL CCineAI::StartSequence(CBaseMonster* pTarget, int iszSeq, BOOL completeOnEm
 
 	if (pTarget->pev->sequence == -1)
 	{
-		ALERT(at_error, "%s: unknown aiscripted sequence \"%s\"\n", STRING(pTarget->pev->targetname), STRING(iszSeq));
+		ALERT(at_warning, "%s: unknown aiscripted sequence \"%s\"\n", STRING(pTarget->pev->targetname), STRING(iszSeq));
 		pTarget->pev->sequence = 0;
 		// return FALSE;
 	}

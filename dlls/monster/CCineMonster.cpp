@@ -396,7 +396,7 @@ BOOL CCineMonster::StartSequence(CBaseMonster* pTarget, int iszSeq, BOOL complet
 	pTarget->pev->sequence = pTarget->LookupSequence(STRING(iszSeq));
 	if (pTarget->pev->sequence == -1)
 	{
-		ALERT(at_error, "%s: unknown scripted sequence \"%s\"\n", STRING(pTarget->pev->targetname), STRING(iszSeq));
+		ALERT(at_warning, "%s: unknown scripted sequence \"%s\"\n", STRING(pTarget->pev->targetname), STRING(iszSeq));
 		pTarget->pev->sequence = 0;
 		// return FALSE;
 	}
