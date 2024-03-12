@@ -4739,8 +4739,11 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 		}
 
 		if (bitsDamageType & DMG_BLOOD) {
-			SpawnBlood(ptr->vecEndPos, BloodColor(), flDamage);// a little surface blood.
-			TraceBleed(flDamage, vecDir, ptr, bitsDamageType);
+			// headshots should always show big blood, no matter how little damage was done.
+			// The idea is that blood size should be used primarly as an indicator that you hit the weak point.
+			float bloodSize = ptr->iHitgroup == HITGROUP_HEAD ? V_max(flDamage, 30) : flDamage;
+			SpawnBlood(ptr->vecEndPos, BloodColor(), bloodSize);
+			TraceBleed(bloodSize, vecDir, ptr, bitsDamageType);
 		}
 
 		AddMultiDamage(pevAttacker, this, flDamage, bitsDamageType);
