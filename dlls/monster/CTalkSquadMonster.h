@@ -27,6 +27,7 @@
 #define TALKRANGE_MIN 500.0				// don't talk to anyone farther away than this
 
 #define TLK_STARE_DIST	128				// anyone closer than this and looking at me is probably staring at me.
+#define TLK_CFRIENDS	8
 
 #define bit_saidDamageLight		(1<<0)	// bits so we don't repeat key sentences
 #define bit_saidDamageMedium	(1<<1)
