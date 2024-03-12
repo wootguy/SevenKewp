@@ -23,7 +23,7 @@
 skilldata_t	gSkillData;
 std::map<std::string, float> g_defaultMonsterHealth;
 
-#define DECL_SKILL_CVAR(name) {{#name, "0"}, offsetof(gSkillData, name)}
+#define DECL_SKILL_CVAR(name) {{#name, "0"}, offsetof(skilldata_t, name)}
 
 struct skill_cvar_t {
 	cvar_t cvar;
