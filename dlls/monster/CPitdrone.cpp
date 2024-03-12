@@ -143,7 +143,7 @@ void CPitdroneSpike::SpikeTouch( CBaseEntity *pOther )
 	}
 	else
 	{
-		pOther->TakeDamage( pev, pev, gSkillData.pitdroneDmgSpit, DMG_GENERIC );
+		pOther->TakeDamage( pev, pev, gSkillData.sk_pitdrone_dmg_spit, DMG_GENERIC );
 		EMIT_SOUND_DYN( edict(), CHAN_VOICE, "weapons/xbow_hitbod1.wav", VOL_NORM, ATTN_NORM, 0, iPitch );
 	}
 
@@ -526,7 +526,7 @@ void CPitdrone :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 //=========================================================
@@ -598,7 +598,7 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case PITDRONE_AE_BITE:
 		{
 			// SOUND HERE!
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.pitdroneDmgBite, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_pitdrone_dmg_bite, DMG_SLASH );
 			
 			if ( pHurt )
 			{
@@ -612,7 +612,7 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 		case PITDRONE_AE_TAILWHIP:
 		{
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.pitdroneDmgWhip, DMG_CLUB | DMG_ALWAYSGIB );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_pitdrone_dmg_whip, DMG_CLUB | DMG_ALWAYSGIB );
 			if ( pHurt ) 
 			{
 				pHurt->pev->punchangle.z = -20;

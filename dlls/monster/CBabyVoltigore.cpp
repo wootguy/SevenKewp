@@ -114,7 +114,7 @@ void CBabyVoltigore::SetYawSpeed(void)
 		ys = 90;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 void CBabyVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
@@ -125,7 +125,7 @@ void CBabyVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
 	case EVENT_SLASH_RIGHT:
 	{
 		bool isRightSwing = pEvent->event == EVENT_SLASH_RIGHT;
-		float damage = gSkillData.voltigoreDmgPunch * 0.5f;
+		float damage = gSkillData.sk_voltigore_dmg_punch * 0.5f;
 		CBaseEntity* pHurt = CheckTraceHullAttack(MELEE_ATTACK1_DISTANCE, damage, DMG_SLASH);
 
 		if (pHurt)

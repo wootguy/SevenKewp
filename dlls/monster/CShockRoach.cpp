@@ -94,7 +94,7 @@ public:
 	BOOL CheckRangeAttack2 ( float flDot, float flDist );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
-	virtual float GetDamageAmount( void ) { return gSkillData.shockroachDmgBite; }
+	virtual float GetDamageAmount( void ) { return gSkillData.sk_shockroach_dmg_bite; }
 	virtual int GetVoicePitch( void ) { return 100; }
 	virtual float GetSoundVolue( void ) { return 1.0; }
 	Schedule_t* GetScheduleOfType ( int Type );
@@ -216,7 +216,7 @@ void COFShockRoach :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 //=========================================================
@@ -531,7 +531,7 @@ void COFShockRoach::MonsterThink()
 		m_fRoachSolid = true;
 	}
 
-	if( lifeTime >= gSkillData.shockroachLifespan )
+	if( lifeTime >= gSkillData.sk_shockroach_lifespan )
 		TakeDamage( pev, pev, pev->health, DMG_NEVERGIB );
 
 	CBaseMonster::MonsterThink();

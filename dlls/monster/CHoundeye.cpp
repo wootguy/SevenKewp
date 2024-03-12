@@ -289,7 +289,7 @@ void CHoundeye :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 //=========================================================
@@ -606,12 +606,12 @@ void CHoundeye :: SonicAttack ( void )
 				if ( SquadCount() > 1 )
 				{
 					// squad gets attack bonus.
-					flAdjustedDamage = gSkillData.houndeyeDmgBlast + gSkillData.houndeyeDmgBlast * ( HOUNDEYE_SQUAD_BONUS * ( SquadCount() - 1 ) );
+					flAdjustedDamage = gSkillData.sk_houndeye_dmg_blast + gSkillData.sk_houndeye_dmg_blast * ( HOUNDEYE_SQUAD_BONUS * ( SquadCount() - 1 ) );
 				}
 				else
 				{
 					// solo
-					flAdjustedDamage = gSkillData.houndeyeDmgBlast;
+					flAdjustedDamage = gSkillData.sk_houndeye_dmg_blast;
 				}
 
 				flDist = (pEntity->Center() - pev->origin).Length();

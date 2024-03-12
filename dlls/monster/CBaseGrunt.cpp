@@ -323,7 +323,7 @@ BOOL CBaseGrunt :: CheckRangeAttack2 ( float flDot, float flDist )
 		vecTarget = m_vecEnemyLKP + (m_hEnemy->BodyTarget( pev->origin ) - m_hEnemy->pev->origin);
 		// estimate position
 		if (HasConditions( bits_COND_SEE_ENEMY))
-			vecTarget = vecTarget + ((vecTarget - pev->origin).Length() / gSkillData.hgruntGrenadeSpeed) * m_hEnemy->pev->velocity;
+			vecTarget = vecTarget + ((vecTarget - pev->origin).Length() / gSkillData.sk_hgrunt_gspeed) * m_hEnemy->pev->velocity;
 	}
 
 	// are any of my squad members near the intended grenade impact area?
@@ -369,7 +369,7 @@ BOOL CBaseGrunt :: CheckRangeAttack2 ( float flDot, float flDist )
 	}
 	else
 	{
-		Vector vecToss = VecCheckThrow( pev, GetGunPosition(), vecTarget, gSkillData.hgruntGrenadeSpeed, 0.5 );
+		Vector vecToss = VecCheckThrow( pev, GetGunPosition(), vecTarget, gSkillData.sk_hgrunt_gspeed, 0.5 );
 
 		if ( vecToss != g_vecZero )
 		{
@@ -525,7 +525,7 @@ void CBaseGrunt :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 //=========================================================
@@ -705,7 +705,7 @@ void CBaseGrunt ::ShootShotgun(Vector& vecShootOrigin, Vector& vecShootDir)
 
 	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40,90) + gpGlobals->v_up * RANDOM_FLOAT(75,200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
 	EjectBrass ( vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iShotgunShell, TE_BOUNCE_SHOTSHELL); 
-	FireBullets(gSkillData.hgruntShotgunPellets, vecShootOrigin, vecShootDir, VECTOR_CONE_15DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 0 ); // shoot +-7.5 degrees
+	FireBullets(gSkillData.sk_hgrunt_pellets, vecShootOrigin, vecShootDir, VECTOR_CONE_15DEGREES, 2048, BULLET_PLAYER_BUCKSHOT, 0 ); // shoot +-7.5 degrees
 
 	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sbarrel1.wav", 1, ATTN_NORM);
 	PLAY_DISTANT_SOUND(edict(), DISTANT_556);
@@ -938,7 +938,7 @@ void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				UTIL_MakeVectors( pev->angles );
 				pHurt->pev->punchangle.x = 15;
 				pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * 100 + gpGlobals->v_up * 50;
-				pHurt->TakeDamage( pev, pev, gSkillData.hgruntDmgKick, DMG_CLUB );
+				pHurt->TakeDamage( pev, pev, gSkillData.sk_hgrunt_kick, DMG_CLUB );
 			}
 		}
 		break;

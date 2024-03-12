@@ -93,7 +93,7 @@ public:
 	BOOL CheckRangeAttack2 ( float flDot, float flDist );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
-	virtual float GetDamageAmount( void ) { return gSkillData.headcrabDmgBite; }
+	virtual float GetDamageAmount( void ) { return gSkillData.sk_headcrab_dmg_bite; }
 	virtual int GetVoicePitch( void ) { return 100; }
 	virtual float GetSoundVolue( void ) { return 1.0; }
 	Schedule_t* GetScheduleOfType ( int Type );
@@ -210,7 +210,7 @@ void CHeadCrab :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 //=========================================================
@@ -497,7 +497,7 @@ public:
 	int  Classify(void);
 	const char* DisplayName();
 	void SetYawSpeed ( void );
-	float GetDamageAmount( void ) { return gSkillData.headcrabDmgBite * 0.3; }
+	float GetDamageAmount( void ) { return gSkillData.sk_headcrab_dmg_bite * 0.3; }
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	Schedule_t* GetScheduleOfType ( int Type );
 	virtual int GetVoicePitch( void ) { return PITCH_NORM + RANDOM_LONG(40,50); }
@@ -545,7 +545,7 @@ const char* CBabyCrab::DisplayName() {
 
 void CBabyCrab :: SetYawSpeed ( void )
 {
-	pev->yaw_speed = 120 * gSkillData.yawspeedMult;
+	pev->yaw_speed = 120 * gSkillData.sk_yawspeed_mult;
 }
 
 

@@ -183,7 +183,7 @@ void CController :: SetYawSpeed ( void )
 	}
 #endif
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 int CController :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
@@ -670,9 +670,9 @@ void CController :: RunTask ( Task_t *pTask )
 				{
 					m_vecEstVelocity = m_vecEstVelocity * 0.8;
 				}
-				vecDir = Intersect( vecSrc, m_hEnemy->BodyTarget( pev->origin ), m_vecEstVelocity, gSkillData.controllerSpeedBall );
+				vecDir = Intersect( vecSrc, m_hEnemy->BodyTarget( pev->origin ), m_vecEstVelocity, gSkillData.sk_controller_speedball );
 				float delta = 0.03490; // +-2 degree
-				vecDir = vecDir + Vector( RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ) ) * gSkillData.controllerSpeedBall;
+				vecDir = vecDir + Vector( RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ) ) * gSkillData.sk_controller_speedball;
 
 				vecSrc = vecSrc + vecDir * (gpGlobals->time - m_flShootTime);
 				CBaseMonster *pBall = (CBaseMonster*)Create( "controller_energy_ball", vecSrc, pev->angles, edict() );
@@ -1256,7 +1256,7 @@ void CControllerHeadBall :: HuntThink( void  )
 		if (pEntity != NULL && pEntity->pev->takedamage)
 		{
 			ClearMultiDamage( );
-			pEntity->TraceAttack( m_hOwner->pev, gSkillData.controllerDmgZap, pev->velocity, &tr, DMG_SHOCK );
+			pEntity->TraceAttack( m_hOwner->pev, gSkillData.sk_controller_dmgzap, pev->velocity, &tr, DMG_SHOCK );
 			ApplyMultiDamage( pev, m_hOwner->pev );
 		}
 
@@ -1441,7 +1441,7 @@ void CControllerZapBall::ExplodeTouch( CBaseEntity *pOther )
 		}
 
 		ClearMultiDamage( );
-		pOther->TraceAttack(pevOwner, gSkillData.controllerDmgBall, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM ); 
+		pOther->TraceAttack(pevOwner, gSkillData.sk_controller_dmgball, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM ); 
 		ApplyMultiDamage( pevOwner, pevOwner );
 
 		UTIL_EmitAmbientSound( ENT(pev), tr.vecEndPos, "weapons/electro4.wav", 0.3, ATTN_NORM, 0, RANDOM_LONG( 90, 99 ) );

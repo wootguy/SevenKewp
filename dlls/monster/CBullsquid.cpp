@@ -170,7 +170,7 @@ void CSquidSpit :: Touch ( CBaseEntity *pOther )
 	}
 	else
 	{
-		pOther->TakeDamage ( pev, pev, gSkillData.bullsquidDmgSpit, DMG_GENERIC );
+		pOther->TakeDamage ( pev, pev, gSkillData.sk_bullsquid_dmg_spit, DMG_GENERIC );
 	}
 
 	SetThink ( &CSquidSpit::SUB_Remove );
@@ -421,7 +421,7 @@ BOOL CBullsquid :: CheckRangeAttack1 ( float flDot, float flDist )
 //=========================================================
 BOOL CBullsquid :: CheckMeleeAttack1 ( float flDot, float flDist )
 {
-	if ( m_hEnemy->pev->health <= gSkillData.bullsquidDmgWhip && flDist <= 85 && flDot >= 0.7 )
+	if ( m_hEnemy->pev->health <= gSkillData.sk_bullsquid_dmg_whip && flDist <= 85 && flDot >= 0.7 )
 	{
 		return TRUE;
 	}
@@ -545,7 +545,7 @@ void CBullsquid :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 //=========================================================
@@ -604,7 +604,7 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case BSQUID_AE_BITE:
 		{
 			// SOUND HERE!
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.bullsquidDmgBite, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_bullsquid_dmg_bite, DMG_SLASH );
 			
 			if ( pHurt )
 			{
@@ -618,7 +618,7 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 		case BSQUID_AE_TAILWHIP:
 		{
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.bullsquidDmgWhip, DMG_CLUB | DMG_ALWAYSGIB );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_bullsquid_dmg_whip, DMG_CLUB | DMG_ALWAYSGIB );
 			if ( pHurt ) 
 			{
 				pHurt->pev->punchangle.z = -20;

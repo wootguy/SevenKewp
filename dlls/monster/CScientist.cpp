@@ -618,7 +618,7 @@ void CScientist :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 //=========================================================
@@ -1073,7 +1073,7 @@ void CScientist::Heal( void )
 	if ( target.Length() > 100 )
 		return;
 
-	m_hTargetEnt->TakeHealth( gSkillData.scientistHeal, DMG_GENERIC );
+	m_hTargetEnt->TakeHealth( gSkillData.sk_scientist_heal, DMG_GENERIC );
 	// Don't heal again for 1 minute
 	m_healTime = gpGlobals->time + 60;
 }

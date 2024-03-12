@@ -344,7 +344,7 @@ void CLeech::HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			
 			if ( DotProduct(dir, face) > 0.9 )		// Only take damage if the leech is facing the prey
-				pEnemy->TakeDamage( pev, pev, gSkillData.leechDmgBite, DMG_SLASH );
+				pEnemy->TakeDamage( pev, pev, gSkillData.sk_leech_dmg_bite, DMG_SLASH );
 		}
 		m_stateTime -= 2;
 		break;

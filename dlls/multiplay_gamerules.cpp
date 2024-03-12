@@ -121,14 +121,6 @@ BOOL CHalfLifeMultiplay::ClientCommand( CBasePlayer *pPlayer, const char *pcmd )
 	return CGameRules::ClientCommand(pPlayer, pcmd);
 }
 
-//=========================================================
-//=========================================================
-void CHalfLifeMultiplay::RefreshSkillData( void )
-{
-// load all default values
-	CGameRules::RefreshSkillData();
-}
-
 // longest the intermission can last, in seconds
 #define MAX_INTERMISSION_TIME		120
 
