@@ -24,6 +24,7 @@ struct skilldata_t
 	// Agrunt
 	float sk_agrunt_health;
 	float sk_agrunt_dmg_punch;
+	float sk_agrunt_hornet_mode;
 
 	// Apache
 	float sk_apache_health;
