@@ -188,7 +188,7 @@ void CHAssassin :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 

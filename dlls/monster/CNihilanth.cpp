@@ -358,7 +358,7 @@ void CNihilanth :: PainSound( void )
 	
 	m_flNextPainSound = gpGlobals->time + RANDOM_FLOAT( 2, 5 );
 
-	if (pev->health > gSkillData.nihilanthHealth / 2)
+	if (pev->health > gSkillData.sk_nihilanth_health / 2)
 	{
 		EMIT_SOUND( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pLaughSounds ), 1.0, 0.2 ); 
 	}
@@ -718,7 +718,7 @@ void CNihilanth :: NextActivity( )
 		}
 	}
 
-	if ((pev->health < gSkillData.nihilanthHealth / 2 || m_iActiveSpheres < N_SPHERES / 2) && m_hRecharger == NULL && m_iLevel <= 9)
+	if ((pev->health < gSkillData.sk_nihilanth_health / 2 || m_iActiveSpheres < N_SPHERES / 2) && m_hRecharger == NULL && m_iLevel <= 9)
 	{
 		char szName[128];
 
@@ -804,7 +804,7 @@ void CNihilanth :: NextActivity( )
 	{
 		if (m_flLastSeen + 5 > gpGlobals->time && flDist < 256 && flDot > 0)
 		{
-			if (m_irritation >= 2 && pev->health < gSkillData.nihilanthHealth / 2.0)
+			if (m_irritation >= 2 && pev->health < gSkillData.sk_nihilanth_health / 2.0)
 			{
 				pev->sequence = LookupSequence( "attack1_open" );
 			}
@@ -861,9 +861,9 @@ void CNihilanth :: HuntThink( void )
 	// ALERT( at_console, "health %.0f\n", pev->health );
 
 	// if damaged, try to abosorb some spheres
-	if (pev->health < gSkillData.nihilanthHealth && AbsorbSphere( ))
+	if (pev->health < gSkillData.sk_nihilanth_health && AbsorbSphere( ))
 	{
-		pev->health += gSkillData.nihilanthHealth / N_SPHERES;
+		pev->health += gSkillData.sk_nihilanth_health / N_SPHERES;
 	}
 
 	// get new sequence
@@ -873,7 +873,7 @@ void CNihilanth :: HuntThink( void )
 		pev->frame = 0;
 		NextActivity( );
 		ResetSequenceInfo( );
-		pev->framerate = 2.0 - 1.0 * (pev->health / gSkillData.nihilanthHealth);
+		pev->framerate = 2.0 - 1.0 * (pev->health / gSkillData.sk_nihilanth_health);
 	}
 
 	// look for current enemy	
@@ -1273,7 +1273,7 @@ void CNihilanth::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 	{
 		Vector vecBlood = (ptr->vecEndPos - pev->origin).Normalize( );
 
-		UTIL_BloodStream( ptr->vecEndPos, vecBlood, BloodColor(), flDamage + (100 - 100 * (pev->health / gSkillData.nihilanthHealth)));
+		UTIL_BloodStream( ptr->vecEndPos, vecBlood, BloodColor(), flDamage + (100 - 100 * (pev->health / gSkillData.sk_nihilanth_health)));
 	}
 
 	// SpawnBlood(ptr->vecEndPos, BloodColor(), flDamage * 5.0);// a little surface blood.
@@ -1496,7 +1496,7 @@ void CNihilanthHVR :: ZapThink( void  )
 		if (pEntity != NULL && pEntity->pev->takedamage)
 		{
 			ClearMultiDamage( );
-			pEntity->TraceAttack( pev, gSkillData.nihilanthZap, pev->velocity, &tr, DMG_SHOCK );
+			pEntity->TraceAttack( pev, gSkillData.sk_nihilanth_zap, pev->velocity, &tr, DMG_SHOCK );
 			ApplyMultiDamage( pev, pev );
 		}
 

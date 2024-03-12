@@ -618,7 +618,7 @@ BOOL CShockTrooper::CheckRangeAttack2(float flDot, float flDist)
 		vecTarget = m_vecEnemyLKP + (m_hEnemy->BodyTarget(pev->origin) - m_hEnemy->pev->origin);
 		// estimate position
 		if (HasConditions(bits_COND_SEE_ENEMY))
-			vecTarget = vecTarget + ((vecTarget - pev->origin).Length() / gSkillData.shocktrooperGrenadeSpeed) * m_hEnemy->pev->velocity;
+			vecTarget = vecTarget + ((vecTarget - pev->origin).Length() / gSkillData.sk_shocktrooper_grenadespeed) * m_hEnemy->pev->velocity;
 	}
 
 	// are any of my squad members near the intended grenade impact area?
@@ -664,7 +664,7 @@ BOOL CShockTrooper::CheckRangeAttack2(float flDot, float flDist)
 	}
 	else
 	{
-		Vector vecToss = VecCheckThrow(pev, GetGunPosition(), vecTarget, gSkillData.shocktrooperGrenadeSpeed, 0.5);
+		Vector vecToss = VecCheckThrow(pev, GetGunPosition(), vecTarget, gSkillData.sk_shocktrooper_grenadespeed, 0.5);
 
 		if (vecToss != g_vecZero)
 		{
@@ -758,7 +758,7 @@ void CShockTrooper::SetYawSpeed()
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 void CShockTrooper::IdleSound()
@@ -992,7 +992,7 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 			UTIL_MakeVectors(pev->angles);
 			pHurt->pev->punchangle.x = 15;
 			pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * 100 + gpGlobals->v_up * 50;
-			pHurt->TakeDamage(pev, pev, gSkillData.shocktrooperDmgKick, DMG_CLUB);
+			pHurt->TakeDamage(pev, pev, gSkillData.sk_shocktrooper_kick, DMG_CLUB);
 		}
 	}
 	break;
@@ -1044,7 +1044,7 @@ void CShockTrooper::Spawn()
 
 	pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
 
-	m_cClipSize = gSkillData.shocktrooperMaxCharge;
+	m_cClipSize = gSkillData.sk_shocktrooper_maxcharge;
 	m_cAmmoLoaded = m_cClipSize;
 
 	m_flLastChargeTime = m_flLastBlinkTime = m_flLastBlinkInterval = gpGlobals->time;
@@ -2294,7 +2294,7 @@ Schedule_t* CShockTrooper::GetScheduleOfType(int Type)
 
 void CShockTrooper::MonsterThink()
 {
-	if (gpGlobals->time - m_flLastChargeTime >= gSkillData.shocktrooperRechargeSpeed)
+	if (gpGlobals->time - m_flLastChargeTime >= gSkillData.sk_shocktrooper_rechargespeed)
 	{
 		if (m_cAmmoLoaded < m_cClipSize)
 		{

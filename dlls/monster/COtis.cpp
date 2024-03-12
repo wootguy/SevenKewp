@@ -372,7 +372,7 @@ void COtis :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 
@@ -420,7 +420,7 @@ void COtis :: OtisFirePistol ( void )
 	SetBlending( 0, angDir.x );
 	pev->effects = EF_MUZZLEFLASH;
 
-	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, gSkillData.otisDmgBullet );
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, gSkillData.sk_otis_bullet );
 	
 	int pitchShift = RANDOM_LONG( 0, 20 );
 	

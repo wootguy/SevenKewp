@@ -4718,21 +4718,21 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 		case HITGROUP_GENERIC:
 			break;
 		case HITGROUP_HEAD:
-			flDamage *= gSkillData.monHead;
+			flDamage *= gSkillData.sk_monster_head;
 			break;
 		case HITGROUP_CHEST:
-			flDamage *= gSkillData.monChest;
+			flDamage *= gSkillData.sk_monster_chest;
 			break;
 		case HITGROUP_STOMACH:
-			flDamage *= gSkillData.monStomach;
+			flDamage *= gSkillData.sk_monster_stomach;
 			break;
 		case HITGROUP_LEFTARM:
 		case HITGROUP_RIGHTARM:
-			flDamage *= gSkillData.monArm;
+			flDamage *= gSkillData.sk_monster_arm;
 			break;
 		case HITGROUP_LEFTLEG:
 		case HITGROUP_RIGHTLEG:
-			flDamage *= gSkillData.monLeg;
+			flDamage *= gSkillData.sk_monster_leg;
 			break;
 		default:
 			break;

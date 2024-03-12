@@ -390,7 +390,7 @@ BOOL CIchthyosaur :: CheckRangeAttack1 ( float flDot, float flDist )
 //=========================================================
 void CIchthyosaur :: SetYawSpeed ( void )
 {
-	pev->yaw_speed = 100 * gSkillData.yawspeedMult;
+	pev->yaw_speed = 100 * gSkillData.sk_yawspeed_mult;
 }
 
 
@@ -452,7 +452,7 @@ void CIchthyosaur :: HandleAnimEvent( MonsterEvent_t *pEvent )
 						pHurt->pev->angles.z = 0;
 						pHurt->pev->fixangle = TRUE;
 					}
-					pHurt->TakeDamage( pev, pev, gSkillData.ichthyosaurDmgShake, DMG_SLASH );
+					pHurt->TakeDamage( pev, pev, gSkillData.sk_ichthyosaur_shake, DMG_SLASH );
 				}
 			}
 			BiteSound();

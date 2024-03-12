@@ -232,7 +232,7 @@ void CTor::SetYawSpeed(void)
 		ys = 180;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
@@ -262,7 +262,7 @@ void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
 	case EVENT_STAFF_STAB:
 	{
 		bool isRightSwing = pEvent->event == EVENT_STAFF_SWING;
-		CBaseEntity* pHurt = CheckTraceHullAttack(MELEE_ATTACK_DISTANCE, gSkillData.torDmgPunch, DMG_SLASH);
+		CBaseEntity* pHurt = CheckTraceHullAttack(MELEE_ATTACK_DISTANCE, gSkillData.sk_tor_punch, DMG_SLASH);
 
 		if (pHurt)
 		{
@@ -348,7 +348,7 @@ void CTor::MonsterThink(void) {
 
 				CBaseEntity* phit = CBaseEntity::Instance(tr.pHit);
 				if (phit) {
-					phit->TakeDamage(pev, pev, gSkillData.torDmgEnergyBeam, DMG_ENERGYBEAM);
+					phit->TakeDamage(pev, pev, gSkillData.sk_tor_energybeam, DMG_ENERGYBEAM);
 
 					if (phit->IsMonster()) {
 						phit->pev->velocity.z += (phit->pev->flags & FL_ONGROUND) ? 200 : 200;
@@ -595,7 +595,7 @@ void CTor::SlamAttack() {
 			Vector pushForce = pushDir * 1000 * pushPower;
 
 			pEntity->pev->velocity = pEntity->pev->velocity + launchForce + pushForce;
-			pEntity->TakeDamage(pev, pev, gSkillData.torDmgSonicBlast * launchPower, DMG_SONIC);
+			pEntity->TakeDamage(pev, pev, gSkillData.sk_tor_sonicblast * launchPower, DMG_SONIC);
 
 			if (pEntity->IsPlayer()) {
 				pEntity->pev->punchangle.x = 10;

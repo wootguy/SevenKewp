@@ -244,7 +244,7 @@ void CHGruntOp4Medic :: Spawn()
 	pev->body = 0;
 
 	m_flLastUseTime = 0;
-	m_iHealCharge = gSkillData.scientistHeal;
+	m_iHealCharge = gSkillData.sk_scientist_heal;
 	m_fGunHolstered = false;
 	m_fHypoHolstered = true;
 	m_fHealActive = false;

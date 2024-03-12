@@ -440,7 +440,7 @@ void CBigMomma :: SetYawSpeed ( void )
 	default:
 		ys = 90;
 	}
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 //=========================================================
@@ -480,7 +480,7 @@ void CBigMomma :: HandleAnimEvent( MonsterEvent_t *pEvent )
 					
 			if ( pHurt )
 			{
-				pHurt->TakeDamage( pev, pev, gSkillData.bigmommaDmgSlash, DMG_CRUSH | DMG_SLASH );
+				pHurt->TakeDamage( pev, pev, gSkillData.sk_bigmomma_dmg_slash, DMG_CRUSH | DMG_SLASH );
 				pHurt->pev->punchangle.x = 15;
 				switch( pEvent->event )
 				{
@@ -794,7 +794,7 @@ void CBigMomma::NodeReach( void )
 		return;
 
 	if (pTarget->pev->health) {
-		pev->max_health = pev->health = gSkillData.bigmommaHealth;
+		pev->max_health = pev->health = gSkillData.sk_bigmomma_health;
 	}
 
 	if ( !HasMemory( bits_MEMORY_FIRED_NODE ) )
@@ -1293,7 +1293,7 @@ void CBMortar::Touch( CBaseEntity *pOther )
 	if ( pev->owner )
 		pevOwner = VARS(pev->owner);
 
-	RadiusDamage( pev->origin, pev, pevOwner, gSkillData.bigmommaDmgBlast, gSkillData.bigmommaRadiusBlast, CLASS_NONE, DMG_ACID );
+	RadiusDamage( pev->origin, pev, pevOwner, gSkillData.sk_bigmomma_dmg_blast, gSkillData.sk_bigmomma_radius_blast, CLASS_NONE, DMG_ACID );
 	UTIL_Remove( this );
 }
 

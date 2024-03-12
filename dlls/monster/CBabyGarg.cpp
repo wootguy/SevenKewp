@@ -150,9 +150,9 @@ void CBabyGarg::Spawn()
 	meleeAttackHeight = 64;
 	sparkSpeed = 200;
 
-	slashDamage = gSkillData.babyGargDmgSlash;
-	fireDamage = gSkillData.babyGargDmgFire;
-	stompDamage = gSkillData.babyGargDmgStomp;
+	slashDamage = gSkillData.sk_babygargantua_dmg_slash;
+	fireDamage = gSkillData.sk_babygargantua_dmg_fire;
+	stompDamage = gSkillData.sk_babygargantua_dmg_stomp;
 }
 
 void CBabyGarg::Precache()

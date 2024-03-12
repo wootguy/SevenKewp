@@ -304,7 +304,7 @@ void CISlave :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 //=========================================================
@@ -321,7 +321,7 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case ISLAVE_AE_CLAW:
 		{
 			// SOUND HERE!
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.slaveDmgClaw, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_islave_dmg_claw, DMG_SLASH );
 			if ( pHurt )
 			{
 				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
@@ -342,7 +342,7 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 		case ISLAVE_AE_CLAWRAKE:
 		{
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.slaveDmgClawrake, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_islave_dmg_clawrake, DMG_SLASH );
 			if ( pHurt )
 			{
 				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
@@ -850,7 +850,7 @@ void CISlave :: ZapBeam( int side )
 	pEntity = CBaseEntity::Instance(tr.pHit);
 	if (pEntity != NULL && pEntity->pev->takedamage)
 	{
-		pEntity->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK );
+		pEntity->TraceAttack( pev, gSkillData.sk_islave_dmg_zap, vecAim, &tr, DMG_SHOCK );
 	}
 	UTIL_EmitAmbientSound( ENT(pev), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
 }

@@ -160,7 +160,7 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 
 		ClearMultiDamage();
 
-		const auto damage = gSkillData.plrDmgShockRifle;
+		const auto damage = gSkillData.sk_plr_shockrifle;
 
 		auto bitsDamageTypes = DMG_ALWAYSGIB | DMG_SHOCK;
 

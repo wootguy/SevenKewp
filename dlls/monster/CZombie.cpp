@@ -150,7 +150,7 @@ void CZombie :: SetYawSpeed ( void )
 	}
 #endif
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 int CZombie :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
@@ -218,7 +218,7 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			// do stuff for this event.
 	//		ALERT( at_console, "Slash right!\n" );
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgOneSlash, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_zombie_dmg_one_slash, DMG_SLASH );
 			if ( pHurt )
 			{
 				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
@@ -242,7 +242,7 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			// do stuff for this event.
 	//		ALERT( at_console, "Slash left!\n" );
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgOneSlash, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_zombie_dmg_one_slash, DMG_SLASH );
 			if ( pHurt )
 			{
 				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
@@ -264,7 +264,7 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case ZOMBIE_AE_ATTACK_BOTH:
 		{
 			// do stuff for this event.
-			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.zombieDmgBothSlash, DMG_SLASH );
+			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_zombie_dmg_both_slash, DMG_SLASH );
 			if ( pHurt )
 			{
 				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )

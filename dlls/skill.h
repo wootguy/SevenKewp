@@ -18,188 +18,219 @@
 
 struct skilldata_t
 {
-
+	int firstMember; // dummy var used for addressing other members
 	int iSkillLevel; // game skill level
 
-// Monster Health & Damage
-	float	agruntHealth;
-	float agruntDmgPunch;
+	// Agrunt
+	float sk_agrunt_health;
+	float sk_agrunt_dmg_punch;
 
-	float apacheHealth;
+	// Apache
+	float sk_apache_health;
 
-	float ospreyHealth;
-	
-	float barneyHealth;
+	// Osprey
+	float sk_osprey_health;
 
-	float barnacleHealth;
-	float barnaclePullSpeed;
+	// Barney
+	float sk_barney_health;
 
-	float bigmommaHealth;		// Multiply each node's health by this
-	float bigmommaDmgSlash;			// melee attack damage
-	float bigmommaDmgBlast;			// mortar attack damage
-	float bigmommaRadiusBlast;		// mortar attack radius
+	// Barnacle
+	float sk_barnacle_health;
+	float sk_barnacle_pullspeed;
 
-	float bullsquidHealth;
-	float bullsquidDmgBite;
-	float bullsquidDmgWhip;
-	float bullsquidDmgSpit;
+	// Bullsquid
+	float sk_bullsquid_health;
+	float sk_bullsquid_dmg_bite;
+	float sk_bullsquid_dmg_whip;
+	float sk_bullsquid_dmg_spit;
 
-	float gargantuaHealth;
-	float gargantuaDmgSlash;
-	float gargantuaDmgFire;
-	float gargantuaDmgStomp;
+	// Big Momma
+	float sk_bigmomma_health;
+	float sk_bigmomma_dmg_slash;
+	float sk_bigmomma_dmg_blast;
+	float sk_bigmomma_radius_blast;
 
-	float hassassinHealth;
+	// Gargantua
+	float sk_gargantua_health;
+	float sk_gargantua_dmg_slash;
+	float sk_gargantua_dmg_fire;
+	float sk_gargantua_dmg_stomp;
 
-	float headcrabHealth;
-	float headcrabDmgBite;
+	// Hassassin
+	float sk_hassassin_health;
 
-	float hgruntHealth;
-	float hgruntDmgKick;
-	float hgruntShotgunPellets;
-	float hgruntGrenadeSpeed;
+	// Headcrab
+	float sk_headcrab_health;
+	float sk_headcrab_dmg_bite;
 
-	float hwgruntHealth;
+	// Hgrunt
+	float sk_hgrunt_health;
+	float sk_hgrunt_kick;
+	float sk_hgrunt_pellets;
+	float sk_hgrunt_gspeed;
 
-	float houndeyeHealth;
-	float houndeyeDmgBlast;
+	// HWGrunt
+	float sk_hwgrunt_health;
 
-	float slaveHealth;
-	float slaveDmgClaw;
-	float slaveDmgClawrake;
-	float slaveDmgZap;
+	// Houndeye
+	float sk_houndeye_health;
+	float sk_houndeye_dmg_blast;
 
-	float ichthyosaurHealth;
-	float ichthyosaurDmgShake;
+	// ISlave
+	float sk_islave_health;
+	float sk_islave_dmg_claw;
+	float sk_islave_dmg_clawrake;
+	float sk_islave_dmg_zap;
 
-	float leechHealth;
-	float leechDmgBite;
+	// Icthyosaur
+	float sk_ichthyosaur_health;
+	float sk_ichthyosaur_shake;
 
-	float controllerHealth;
-	float controllerDmgZap;
-	float controllerSpeedBall;
-	float controllerDmgBall;
+	// Leech
+	float sk_leech_health;
+	float sk_leech_dmg_bite;
 
-	float nihilanthHealth;
-	float nihilanthZap;
+	// Controller
+	float sk_controller_health;
+	float sk_controller_dmgzap;
+	float sk_controller_speedball;
+	float sk_controller_dmgball;
 
-	float scientistHealth;
+	// Nihilanth
+	float sk_nihilanth_health;
+	float sk_nihilanth_zap;
 
-	float snarkHealth;
-	float snarkDmgBite;
-	float snarkDmgPop;
+	// Scientist
+	float sk_scientist_health;
 
-	float zombieHealth;
-	float zombieDmgOneSlash;
-	float zombieDmgBothSlash;
+	// Snark
+	float sk_snark_health;
+	float sk_snark_dmg_bite;
+	float sk_snark_dmg_pop;
 
-	float turretHealth;
-	float miniturretHealth;
-	float sentryHealth;
+	// Zombie
+	float sk_zombie_health;
+	float sk_zombie_dmg_one_slash;
+	float sk_zombie_dmg_both_slash;
 
+	// Turrets
+	float sk_turret_health;
+	float sk_miniturret_health;
+	float sk_sentry_health;
 
-// Player Weapons
-	float plrDmgCrowbar;
-	float plrDmg9MM;
-	float plrDmg357;
-	float plrDmgMP5;
-	float plrDmgM203Grenade;
-	float plrDmgBuckshot;
-	float plrDmgCrossbowClient;
-	float plrDmgCrossbowMonster;
-	float plrDmgCrossbowSniper;
-	float plrDmgRPG;
-	float plrDmgGauss;
-	float plrDmgEgonNarrow;
-	float plrDmgEgonWide;
-	float plrDmgHornet;
-	float plrDmgHandGrenade;
-	float plrDmgSatchel;
-	float plrDmgTripmine;
-	
-// weapons shared by monsters
-	float monDmg9MM;
-	float monDmgMP5;
-	float monDmg12MM;
-	float monDmg762;
-	float monDmgHornet;
+	// Gonome
+	float sk_gonome_health;
+	float sk_gonome_dmg_one_slash;
+	float sk_gonome_dmg_one_bite;
+	float sk_gonome_dmg_guts;
 
-// health/suit charge
-	float suitchargerCapacity;
-	float batteryCapacity;
-	float healthchargerCapacity;
-	float healthkitCapacity;
-	float scientistHeal;
+	// Voltigore
+	float sk_voltigore_health;
+	float sk_voltigore_dmg_punch;
+	float sk_voltigore_dmg_beam;
+	float sk_voltigore_dmg_explode;
 
-// monster damage adj
-	float monHead;
-	float monChest;
-	float monStomach;
-	float monLeg;
-	float monArm;
+	// Tor
+	float sk_tor_health;
+	float sk_tor_punch;
+	float sk_tor_energybeam;
+	float sk_tor_sonicblast;
 
-// player damage adj
-	float plrHead;
-	float plrChest;
-	float plrStomach;
-	float plrLeg;
-	float plrArm;
+	// Baby garg
+	float sk_babygargantua_health;
+	float sk_babygargantua_dmg_slash;
+	float sk_babygargantua_dmg_fire;
+	float sk_babygargantua_dmg_stomp;
 
-	float gonomeHealth;
-	float gonomeDmgOneSlash;
-	float gonomeDmgOneBite;
-	float gonomeDmgGuts;
+	// Pit drone
+	float sk_pitdrone_health;
+	float sk_pitdrone_dmg_bite;
+	float sk_pitdrone_dmg_whip;
+	float sk_pitdrone_dmg_spit;
 
-	float voltigoreHealth;
-	float voltigoreDmgPunch;
-	float voltigoreDmgBeam;
-	float voltigoreDmgExplode;
+	// Shock trooper
+	float sk_shocktrooper_health;
+	float sk_shocktrooper_kick;
+	float sk_shocktrooper_maxcharge;
+	float sk_shocktrooper_rechargespeed;
+	float sk_shocktrooper_grenadespeed;
 
-	float torHealth;
-	float torDmgPunch;
-	float torDmgEnergyBeam;
-	float torDmgSonicBlast;
+	// Shock roach
+	float sk_shockroach_health;
+	float sk_shockroach_dmg_bite;
+	float sk_shockroach_lifespan;
 
-	float babyGargHealth;
-	float babyGargDmgSlash;
-	float babyGargDmgFire;
-	float babyGargDmgStomp;
+	// Otis
+	float sk_otis_health;
+	float sk_otis_bullet;
 
-	float pitdroneHealth;
-	float pitdroneDmgBite;
-	float pitdroneDmgWhip;
-	float pitdroneDmgSpit;
+	// Male assassin
+	float sk_massassin_health;
+	float sk_massassin_grenadespeed;
+	float sk_massassin_kick;
 
-	float shocktrooperHealth;
-	float shocktrooperDmgKick;
-	float shocktrooperMaxCharge;
-	float shocktrooperRechargeSpeed;
-	float shocktrooperGrenadeSpeed;
+	// Player weapons
+	float sk_plr_crowbar;
+	float sk_plr_9mm_bullet;
+	float sk_plr_357_bullet;
+	float sk_plr_9mmAR_bullet;
+	float sk_plr_9mmAR_grenade;
+	float sk_plr_buckshot;
+	float sk_plr_xbow_bolt_client;
+	float sk_plr_xbow_bolt_monster;
+	float sk_plr_xbow_sniper_bullet;
+	float sk_plr_rpg;
+	float sk_plr_gauss;
+	float sk_plr_egon_narrow;
+	float sk_plr_egon_wide;
+	float sk_plr_hand_grenade;
+	float sk_plr_satchel;
+	float sk_plr_tripmine;
+	float sk_plr_spore;
+	float sk_plr_shockrifle;
+	float sk_plr_hornet;
 
-	float shockroachHealth;
-	float shockroachDmgBite;
-	float shockroachLifespan;
+	// World weapons
+	float sk_12mm_bullet;
+	float sk_9mmAR_bullet;
+	float sk_9mm_bullet;
+	float sk_762_bullet;
+	float sk_hornet_dmg;
+	float sk_556_bullet;
 
-	float plrDmgSpore;
+	// Health/Charge
+	float sk_suitcharger;
+	float sk_battery;
+	float sk_healthcharger;
+	float sk_healthkit;
+	float sk_scientist_heal;
 
-	float plrDmgShockRifle;
+	// Monster damage adjusters
+	float sk_monster_head;
+	float sk_monster_chest;
+	float sk_monster_stomach;
+	float sk_monster_arm;
+	float sk_monster_leg;
 
-	float plrDmg556;
+	// Player damage adjusters
+	float sk_player_head;
+	float sk_player_chest;
+	float sk_player_stomach;
+	float sk_player_arm;
+	float sk_player_leg;
 
-	float otisHealth;
-	float otisDmgBullet;
-
-	float massassinHealth;
-	float massassinGrenadeSpeed;
-	float massassinDmgKick;
-
-	float yawspeedMult;
+	// Mosnter turn speed multiplier
+	float sk_yawspeed_mult;
 };
 
 extern	DLL_GLOBAL	skilldata_t	gSkillData;
 
 extern DLL_GLOBAL int		g_iSkillLevel;
 extern std::map<std::string, float> g_defaultMonsterHealth;
+
+void RefreshSkillData();
+
+void RegisterSkillCvars();
 
 float GetDefaultHealth(const char* monstertype);
 

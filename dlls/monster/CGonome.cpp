@@ -155,7 +155,7 @@ void CGonome:: SetYawSpeed ( void )
 		ys = 180;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
@@ -175,7 +175,7 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 		bool isAttack2 = pEvent->event >= EVENT_ATTACK2_SWING0;
 		bool isLeftSwing = pEvent->event == EVENT_ATTACK1_LEFT;
 		float attackDistance = isAttack2 ? MELEE_ATTACK2_DISTANCE : MELEE_ATTACK1_DISTANCE;
-		float damage = isAttack2 ? gSkillData.gonomeDmgOneBite : gSkillData.gonomeDmgOneSlash;
+		float damage = isAttack2 ? gSkillData.sk_gonome_dmg_one_bite : gSkillData.sk_gonome_dmg_one_slash;
 		CBaseEntity* pHurt = CheckTraceHullAttack(attackDistance, damage, DMG_SLASH);
 
 		if (pHurt)
@@ -478,7 +478,7 @@ void CGonomeSpit::Touch(CBaseEntity* pOther)
 		WRITE_BYTE(10);	// size
 	MESSAGE_END();
 
-	pOther->TakeDamage(pev, pev, gSkillData.gonomeDmgGuts, DMG_GENERIC);
+	pOther->TakeDamage(pev, pev, gSkillData.sk_gonome_dmg_guts, DMG_GENERIC);
 
 	SetThink(&CGonomeSpit::SUB_Remove);
 	pev->nextthink = gpGlobals->time;

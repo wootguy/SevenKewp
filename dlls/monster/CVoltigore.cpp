@@ -177,7 +177,7 @@ void CVoltigore::SetYawSpeed(void)
 		ys = 180;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
@@ -188,7 +188,7 @@ void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
 	case EVENT_SLASH_RIGHT:
 	{
 		bool isRightSwing = pEvent->event == EVENT_SLASH_RIGHT;
-		float damage = gSkillData.voltigoreDmgPunch;
+		float damage = gSkillData.sk_voltigore_dmg_punch;
 		CBaseEntity* pHurt = CheckTraceHullAttack(MELEE_ATTACK1_DISTANCE, damage, DMG_SLASH);
 
 		if (pHurt)
@@ -379,7 +379,7 @@ void CVoltigore::ExplodeThink(void) {
 			WRITE_BYTE(noise);
 		MESSAGE_END();
 
-		::RadiusDamage(pev->origin, pev, pev, gSkillData.voltigoreDmgExplode, 512, 0, DMG_POISON | DMG_ACID);
+		::RadiusDamage(pev->origin, pev, pev, gSkillData.sk_voltigore_dmg_explode, 512, 0, DMG_POISON | DMG_ACID);
 
 		SetThink(&CVoltigoreShock::SUB_Remove);
 		pev->nextthink = gpGlobals->time;
@@ -527,7 +527,7 @@ void CVoltigoreShock::Shock(void)
 	entvars_t* pevOwner = pev->owner ? VARS(pev->owner) : NULL;
 
 	// TODO: damage and class ignore
-	RadiusDamage(pev->origin, pev, pevOwner, gSkillData.voltigoreDmgBeam, 128, CLASS_ALIEN_MONSTER, DMG_SHOCK);
+	RadiusDamage(pev->origin, pev, pevOwner, gSkillData.sk_voltigore_dmg_beam, 128, CLASS_ALIEN_MONSTER, DMG_SHOCK);
 	shocksLeft--;
 }
 

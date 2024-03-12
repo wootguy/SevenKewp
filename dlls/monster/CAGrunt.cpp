@@ -332,7 +332,7 @@ void CAGrunt :: SetYawSpeed ( void )
 		ys = 100;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 //=========================================================
@@ -432,7 +432,7 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 	case AGRUNT_AE_LEFT_PUNCH:
 		{
-			CBaseEntity *pHurt = CheckTraceHullAttack( AGRUNT_MELEE_DIST, gSkillData.agruntDmgPunch, DMG_CLUB );
+			CBaseEntity *pHurt = CheckTraceHullAttack( AGRUNT_MELEE_DIST, gSkillData.sk_agrunt_dmg_punch, DMG_CLUB );
 			
 			if ( pHurt )
 			{
@@ -462,7 +462,7 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 	case AGRUNT_AE_RIGHT_PUNCH:
 		{
-			CBaseEntity *pHurt = CheckTraceHullAttack( AGRUNT_MELEE_DIST, gSkillData.agruntDmgPunch, DMG_CLUB );
+			CBaseEntity *pHurt = CheckTraceHullAttack( AGRUNT_MELEE_DIST, gSkillData.sk_agrunt_dmg_punch, DMG_CLUB );
 
 			if ( pHurt )
 			{

@@ -525,7 +525,7 @@ void CGargantua :: SetYawSpeed ( void )
 		break;
 	}
 
-	pev->yaw_speed = ys * gSkillData.yawspeedMult;
+	pev->yaw_speed = ys * gSkillData.sk_yawspeed_mult;
 }
 
 
@@ -565,9 +565,9 @@ void CGargantua :: Spawn()
 	meleeAttackHeight = 64;
 	sparkSpeed = 400;
 
-	slashDamage = gSkillData.gargantuaDmgSlash;
-	fireDamage = gSkillData.gargantuaDmgFire;
-	stompDamage = gSkillData.gargantuaDmgStomp;
+	slashDamage = gSkillData.sk_gargantua_dmg_slash;
+	fireDamage = gSkillData.sk_gargantua_dmg_fire;
+	stompDamage = gSkillData.sk_gargantua_dmg_stomp;
 }
 
 

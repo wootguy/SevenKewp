@@ -204,8 +204,8 @@ void CBarnacle :: BarnacleThink ( void )
 			vecNewEnemyOrigin.x -= 6 * cos(m_hEnemy->pev->angles.y * M_PI/180.0);	
 			vecNewEnemyOrigin.y -= 6 * sin(m_hEnemy->pev->angles.y * M_PI/180.0);
 
-			m_flAltitude -= gSkillData.barnaclePullSpeed;
-			vecNewEnemyOrigin.z += gSkillData.barnaclePullSpeed;
+			m_flAltitude -= gSkillData.sk_barnacle_pullspeed;
+			vecNewEnemyOrigin.z += gSkillData.sk_barnacle_pullspeed;
 
 			if ( fabs( pev->origin.z - ( vecNewEnemyOrigin.z + m_hEnemy->pev->view_ofs.z - 8 ) ) < BARNACLE_BODY_HEIGHT )
 			{
@@ -311,7 +311,7 @@ void CBarnacle :: BarnacleThink ( void )
 			if ( m_flAltitude < flLength )
 			{
 				// if tongue is higher than is should be, lower it kind of slowly.
-				m_flAltitude += gSkillData.barnaclePullSpeed;
+				m_flAltitude += gSkillData.sk_barnacle_pullspeed;
 				m_fTongueExtended = FALSE;
 			}
 			else

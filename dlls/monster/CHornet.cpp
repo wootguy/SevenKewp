@@ -115,12 +115,12 @@ void CHornet :: Spawn( void )
 
 	if ( !FNullEnt(pev->owner) && (pev->owner->v.flags & FL_CLIENT) )
 	{
-		pev->dmg = gSkillData.plrDmgHornet;
+		pev->dmg = gSkillData.sk_plr_hornet;
 	}
 	else
 	{
 		// no real owner, or owner isn't a client. 
-		pev->dmg = gSkillData.monDmgHornet;
+		pev->dmg = gSkillData.sk_hornet_dmg;
 	}
 	
 	pev->nextthink = gpGlobals->time + 0.1;
