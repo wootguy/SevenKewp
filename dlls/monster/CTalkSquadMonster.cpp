@@ -66,7 +66,8 @@ const char *CTalkSquadMonster::m_szFriends[TLK_CFRIENDS] =
 	"monster_sitting_scientist",
 	"monster_human_grunt_ally",
 	"monster_human_medic_ally",
-	"monster_human_torch_ally"
+	"monster_human_torch_ally",
+	"monster_bodyguard",
 };
 
 

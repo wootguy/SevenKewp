@@ -20,7 +20,6 @@ extern entvars_t* g_pevLastInflictor;
 
 // Clients can push talkmonsters out of their way
 #define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
-#define TLK_CFRIENDS		7
 
 //
 // generic Monster
