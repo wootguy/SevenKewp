@@ -37,8 +37,6 @@ public:
 	void StompSound();
 	void BreatheSound();
 
-	float m_lastPainSound;
-
 private:
 	static const char* pBeamAttackSounds[];
 	static const char* pFootSounds[];
@@ -194,7 +192,8 @@ int CBabyGarg::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float
 
 void CBabyGarg::Killed(entvars_t* pevAttacker, int iGib)
 {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1.0, ATTN_GARG, 0, 250);
+	if (pev->deadflag != DEAD_DEAD)
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1.0, ATTN_GARG, 0, 250);
 	CGargantua::Killed(pevAttacker, iGib);
 }
 

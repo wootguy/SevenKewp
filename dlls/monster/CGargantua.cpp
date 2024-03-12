@@ -1055,7 +1055,10 @@ void CGargantua::AlertSound() {
 */
 
 void CGargantua::PainSound() {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, PITCH_NORM);
+	if (gpGlobals->time - m_lastPainSound > 3.0f) {
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, PITCH_NORM);
+		m_lastPainSound = gpGlobals->time;
+	}
 }
 
 void CGargantua::AttackSound() {

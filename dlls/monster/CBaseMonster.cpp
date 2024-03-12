@@ -5513,11 +5513,12 @@ void CBaseMonster::RunTask(Task_t* pTask)
 				UTIL_SetSize(pev, Vector(-4, -4, 0), Vector(4, 4, 1));
 			}
 			else // !!!HACKHACK - put monster in a thin, wide bounding box until we fix the solid type/bounding volume problem
-				UTIL_SetSize(pev, Vector(pev->mins.x, pev->mins.y, pev->mins.z), Vector(pev->maxs.x, pev->maxs.y, pev->mins.z + 2));
+				UTIL_SetSize(pev, Vector(-128, -128, 0), Vector(128, 128, 64)); // large box in case death animation places monster off center
 
 			// corpses cause laggy movement when walking over them, so make them nonsolid
 			// gibbing with crowbar is handled in the weapon code
 			pev->solid = SOLID_NOT;
+			UTIL_SetOrigin(pev, pev->origin);
 
 			if (ShouldFadeOnDeath())
 			{

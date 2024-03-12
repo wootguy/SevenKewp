@@ -413,7 +413,16 @@ void DispatchObjectCollsionBox( edict_t *pent )
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE(pent);
 	if (pEntity)
 	{
-		pEntity->SetObjectCollisionBox();
+		if (pEntity->IsAlive()) {
+			pEntity->SetObjectCollisionBox();
+		}
+		else {
+			// dead monsters have all have the same giant collision box for hit detections
+			// outside of the normal bbox (monsters sometimes die in positions far away from their origin)
+			pEntity->pev->absmin = pEntity->pev->origin + pEntity->pev->mins;
+			pEntity->pev->absmax = pEntity->pev->origin + pEntity->pev->maxs;
+		}
+		
 	}
 	else
 		SetObjectCollisionBox( &pent->v );
@@ -504,6 +513,7 @@ void SetObjectCollisionBox( entvars_t *pev )
 	if ( (pev->solid == SOLID_BSP) && 
 		 (pev->angles.x || pev->angles.y|| pev->angles.z) )
 	{	// expand for rotation
+		// TODO: this might explain why some objects get blocked by things very far away
 		float		max, v;
 		int			i;
 
