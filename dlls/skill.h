@@ -31,6 +31,9 @@ struct skilldata_t
 	
 	float barneyHealth;
 
+	float barnacleHealth;
+	float barnaclePullSpeed;
+
 	float bigmommaHealth;		// Multiply each node's health by this
 	float bigmommaDmgSlash;			// melee attack damage
 	float bigmommaDmgBlast;			// mortar attack damage
@@ -45,8 +48,6 @@ struct skilldata_t
 	float gargantuaDmgSlash;
 	float gargantuaDmgFire;
 	float gargantuaDmgStomp;
-
-	float babygargHealth;
 
 	float hassassinHealth;
 

@@ -143,6 +143,10 @@ void CGameRules::RefreshSkillData ( void )
 	// Barney
 	gSkillData.barneyHealth = CVAR_GET_FLOAT( "sk_barney_health");
 
+	// Barnacle
+	gSkillData.barnacleHealth = CVAR_GET_FLOAT( "sk_barnacle_health");
+	gSkillData.barnaclePullSpeed = CVAR_GET_FLOAT( "sk_barnacle_pullspeed");
+
 	// Big Momma
 	gSkillData.bigmommaHealth = CVAR_GET_FLOAT( "sk_bigmomma_health" );
 	gSkillData.bigmommaDmgSlash = CVAR_GET_FLOAT( "sk_bigmomma_dmg_slash" );
@@ -160,9 +164,6 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.gargantuaDmgSlash = CVAR_GET_FLOAT( "sk_gargantua_dmg_slash");
 	gSkillData.gargantuaDmgFire = CVAR_GET_FLOAT( "sk_gargantua_dmg_fire");
 	gSkillData.gargantuaDmgStomp = CVAR_GET_FLOAT( "sk_gargantua_dmg_stomp");
-
-	// Babygarg
-	gSkillData.babygargHealth = CVAR_GET_FLOAT("sk_babygarg_health");
 
 	// Hassassin
 	gSkillData.hassassinHealth = CVAR_GET_FLOAT( "sk_hassassin_health");
@@ -285,12 +286,7 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.monDmgHornet = CVAR_GET_FLOAT( "sk_hornet_dmg");
 
 	// PLAYER HORNET
-// Up to this point, player hornet damage and monster hornet damage were both using
-// monDmgHornet to determine how much damage to do. In tuning the hivehand, we now need
-// to separate player damage and monster hivehand damage. Since it's so late in the project, we've
-// added plrDmgHornet to the SKILLDATA struct, but not to the engine CVar list, so it's inaccesible
-// via SKILLS.CFG. Any player hivehand tuning must take place in the code. (sjb)
-	gSkillData.plrDmgHornet = 7;
+	gSkillData.plrDmgHornet = CVAR_GET_FLOAT( "sk_plr_hornet" );
 
 
 	// HEALTH/CHARGE
@@ -377,8 +373,8 @@ void CGameRules::RefreshSkillData ( void )
 	g_defaultMonsterHealth["monster_apache"] = gSkillData.apacheHealth;
 	g_defaultMonsterHealth["monster_assassin_repel"] = gSkillData.massassinHealth;
 	g_defaultMonsterHealth["monster_babycrab"] = gSkillData.headcrabHealth * 0.25;
-	g_defaultMonsterHealth["monster_babygarg"] = gSkillData.babygargHealth;
-	g_defaultMonsterHealth["monster_barnacle"] = 50;
+	g_defaultMonsterHealth["monster_babygarg"] = gSkillData.babyGargHealth;
+	g_defaultMonsterHealth["monster_barnacle"] = gSkillData.barnacleHealth;
 	g_defaultMonsterHealth["monster_barney"] = gSkillData.barneyHealth;
 	g_defaultMonsterHealth["monster_bigmomma"] = gSkillData.bigmommaHealth;
 	g_defaultMonsterHealth["monster_blkop_osprey"] = gSkillData.ospreyHealth;
@@ -424,7 +420,7 @@ void CGameRules::RefreshSkillData ( void )
 	g_defaultMonsterHealth["monster_shockroach"] = gSkillData.shockroachHealth;
 	g_defaultMonsterHealth["monster_shocktrooper"] = gSkillData.shocktrooperHealth;
 	g_defaultMonsterHealth["monster_sitting_scientist"] = gSkillData.scientistHealth;
-	g_defaultMonsterHealth["monster_snark"] = 100;
+	g_defaultMonsterHealth["monster_snark"] = gSkillData.snarkHealth;
 	g_defaultMonsterHealth["monster_sqknest"] = 100;
 	g_defaultMonsterHealth["monster_stukabat"] = gSkillData.controllerHealth;
 	g_defaultMonsterHealth["monster_tentacle"] = 4000;

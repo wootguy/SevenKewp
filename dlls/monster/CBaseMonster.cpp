@@ -4564,7 +4564,7 @@ int CBaseMonster::DeadTakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker
 	// kill the corpse if enough damage was done to destroy the corpse and the damage is of a type that is allowed to destroy the corpse.
 	if (bitsDamageType & DMG_GIB_CORPSE)
 	{
-		if (pev->health <= flDamage)
+		if (pev->health <= flDamage || (bitsDamageType & DMG_BLAST))
 		{
 			pev->health = -50;
 			Killed(pevAttacker, GIB_ALWAYS);
