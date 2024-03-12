@@ -732,7 +732,7 @@ void CBaseGrunt::ShootSaw(Vector& vecShootOrigin, Vector& vecShootDir)
 	}
 	}
 
-	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_5DEGREES, 8192, BULLET_PLAYER_556, 2); // shoot +-5 degrees
+	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 8192, BULLET_PLAYER_556, 2); // shoot +-5 degrees
 
 	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, MOD_SND_FOLDER "weapons/saw_fire1.wav", VOL_NORM, ATTN_NORM, 0, RANDOM_LONG(0, 15) + 94);
 	PLAY_DISTANT_SOUND(edict(), DISTANT_556);

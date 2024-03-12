@@ -107,6 +107,8 @@ public:
 	void KeyValue( KeyValueData* pkvd ) override;
 
 	const char* GetDeathNoticeWeapon() { return "weapon_357"; }
+
+	void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation);
 	
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
@@ -130,6 +132,19 @@ public:
 private:
 	static const char* pPainSounds[];
 	static const char* pDieSounds[];
+	static const char* pAnswerSounds[];
+	static const char* pQuestionSounds[];
+	static const char* pIdleSounds[];
+	static const char* pOkSounds[];
+	static const char* pWaitSounds[];
+	static const char* pScaredSounds[];
+	static const char* pHelloSounds[];
+	static const char* pSmellSounds[];
+	static const char* pWoundSounds[];
+	static const char* pMortalSounds[];
+	static const char* pMadSounds[];
+	static const char* pShotSounds[];
+	static const char* pKillSounds[];
 };
 
 // TODO: is he supposed to be using barney sounds?
@@ -144,6 +159,135 @@ const char* COtis::pDieSounds[] =
 	"barney/ba_die1.wav",
 	"barney/ba_die2.wav",
 	"barney/ba_die3.wav",
+};
+const char* COtis::pAnswerSounds[] =
+{
+	MOD_SND_FOLDER "otis/yes.wav",
+	MOD_SND_FOLDER "otis/no.wav",
+	MOD_SND_FOLDER "otis/dontask.wav",
+	MOD_SND_FOLDER "otis/yessir.wav",
+	MOD_SND_FOLDER "otis/youbet.wav",
+	MOD_SND_FOLDER "otis/alright.wav",
+	MOD_SND_FOLDER "otis/yup.wav",
+	MOD_SND_FOLDER "otis/yeah.wav",
+	MOD_SND_FOLDER "otis/noway.wav",
+	MOD_SND_FOLDER "otis/doubt.wav",
+	MOD_SND_FOLDER "otis/breath.wav",
+	MOD_SND_FOLDER "otis/dontguess.wav",
+	MOD_SND_FOLDER "otis/nope.wav",
+	MOD_SND_FOLDER "otis/nosir.wav",
+	MOD_SND_FOLDER "otis/suppose.wav",
+	MOD_SND_FOLDER "otis/hell.wav",
+	MOD_SND_FOLDER "otis/cantfigure.wav",
+	MOD_SND_FOLDER "otis/maybe.wav",
+	MOD_SND_FOLDER "otis/talkmuch.wav",
+	MOD_SND_FOLDER "otis/dejavu.wav",
+};
+
+const char* COtis::pQuestionSounds[] =
+{
+	MOD_SND_FOLDER "otis/beer.wav",
+	MOD_SND_FOLDER "otis/rightdirection.wav",
+	MOD_SND_FOLDER "otis/getanyworse.wav",
+	MOD_SND_FOLDER "otis/gladof.wav",
+	MOD_SND_FOLDER "otis/aliencombat.wav",
+	MOD_SND_FOLDER "otis/somethingmoves.wav",
+	MOD_SND_FOLDER "otis/noise.wav",
+};
+
+const char* COtis::pIdleSounds[] =
+{
+	MOD_SND_FOLDER "otis/mom.wav",
+	MOD_SND_FOLDER "otis/aliens.wav",
+	MOD_SND_FOLDER "otis/wuss.wav",
+	MOD_SND_FOLDER "otis/bridge.wav",
+	MOD_SND_FOLDER "otis/closet.wav",
+	MOD_SND_FOLDER "otis/cousin.wav",
+	MOD_SND_FOLDER "otis/mall.wav",
+};
+
+const char* COtis::pOkSounds[] =
+{
+	MOD_SND_FOLDER "otis/reputation.wav",
+	MOD_SND_FOLDER "otis/live.wav",
+	MOD_SND_FOLDER "otis/together.wav",
+	MOD_SND_FOLDER "otis/letsgo.wav",
+	MOD_SND_FOLDER "otis/diealone.wav",
+	MOD_SND_FOLDER "otis/joinyou.wav",
+	MOD_SND_FOLDER "otis/teamup.wav",
+};
+
+const char* COtis::pWaitSounds[] =
+{
+	MOD_SND_FOLDER "otis/help.wav",
+	MOD_SND_FOLDER "otis/go_on.wav",
+	MOD_SND_FOLDER "otis/slowingyoudown.wav",
+	MOD_SND_FOLDER "otis/illwait.wav",
+	MOD_SND_FOLDER "otis/seeya.wav",
+	MOD_SND_FOLDER "otis/standguard.wav",
+	MOD_SND_FOLDER "otis/notalone.wav",
+};
+
+const char* COtis::pScaredSounds[] =
+{
+	MOD_SND_FOLDER "otis/donthurtem.wav",
+	MOD_SND_FOLDER "otis/leavealone.wav",
+};
+
+const char* COtis::pHelloSounds[] =
+{
+	MOD_SND_FOLDER "otis/hello.wav",
+	MOD_SND_FOLDER "otis/hiya.wav",
+	MOD_SND_FOLDER "otis/hey.wav",
+	MOD_SND_FOLDER "otis/soldier.wav",
+};
+
+const char* COtis::pSmellSounds[] =
+{
+	MOD_SND_FOLDER "otis/ass.wav",
+	MOD_SND_FOLDER "otis/chili.wav",
+	MOD_SND_FOLDER "otis/janitor.wav",
+};
+
+const char* COtis::pWoundSounds[] =
+{
+	MOD_SND_FOLDER "otis/imhit.wav",
+	MOD_SND_FOLDER "otis/virgin.wav",
+};
+
+const char* COtis::pMortalSounds[] =
+{
+	MOD_SND_FOLDER "otis/imdead.wav",
+	MOD_SND_FOLDER "otis/hitbad.wav",
+};
+
+const char* COtis::pMadSounds[] =
+{
+	MOD_SND_FOLDER "otis/bully.wav",
+	MOD_SND_FOLDER "otis/somuch.wav",
+	MOD_SND_FOLDER "otis/dontmake.wav",
+	MOD_SND_FOLDER "otis/tomb.wav",
+};
+
+const char* COtis::pShotSounds[] =
+{
+	MOD_SND_FOLDER "otis/watchit.wav",
+	MOD_SND_FOLDER "otis/damn.wav",
+	MOD_SND_FOLDER "otis/friends.wav",
+	MOD_SND_FOLDER "otis/chump.wav",
+	MOD_SND_FOLDER "otis/watchit.wav",
+	MOD_SND_FOLDER "otis/onry.wav",
+};
+
+const char* COtis::pKillSounds[] =
+{
+	MOD_SND_FOLDER "otis/gotone.wav",
+	MOD_SND_FOLDER "otis/another.wav",
+	MOD_SND_FOLDER "otis/buttugly.wav",
+	MOD_SND_FOLDER "otis/seethat.wav",
+	MOD_SND_FOLDER "otis/close.wav",
+	MOD_SND_FOLDER "otis/firepl.wav",
+	MOD_SND_FOLDER "otis/bring.wav",
 };
 
 LINK_ENTITY_TO_CLASS( monster_otis, COtis );
@@ -530,7 +674,20 @@ void COtis :: Precache()
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDieSounds);
-	
+	PRECACHE_SOUND_ARRAY(pAnswerSounds);
+	PRECACHE_SOUND_ARRAY(pQuestionSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pOkSounds);
+	PRECACHE_SOUND_ARRAY(pWaitSounds);
+	PRECACHE_SOUND_ARRAY(pScaredSounds);
+	PRECACHE_SOUND_ARRAY(pHelloSounds);
+	PRECACHE_SOUND_ARRAY(pSmellSounds);
+	PRECACHE_SOUND_ARRAY(pWoundSounds);
+	PRECACHE_SOUND_ARRAY(pMortalSounds);
+	PRECACHE_SOUND_ARRAY(pMadSounds);
+	PRECACHE_SOUND_ARRAY(pShotSounds);
+	PRECACHE_SOUND_ARRAY(pKillSounds);
+
 	// every new otis must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
 	TalkInit();
@@ -547,21 +704,21 @@ void COtis :: TalkInit()
 	m_szGrp[TLK_ANSWER]  =	"OT_ANSWER";
 	m_szGrp[TLK_QUESTION] =	"OT_QUESTION";
 	m_szGrp[TLK_IDLE] =		"OT_IDLE";
-	m_szGrp[TLK_STARE] =		"OT_STARE";
+	m_szGrp[TLK_STARE] = NULL; // "OT_STARE";
 	m_szGrp[TLK_USE] =		"OT_OK";
 	m_szGrp[TLK_UNUSE] =	"OT_WAIT";
-	m_szGrp[TLK_STOP] =		"OT_STOP";
+	m_szGrp[TLK_STOP] = NULL; // "OT_STOP";
 
 	m_szGrp[TLK_NOSHOOT] =	"OT_SCARED";
 	m_szGrp[TLK_HELLO] =	"OT_HELLO";
 
-	m_szGrp[TLK_PLHURT1] =	"!BA_CUREA";
-	m_szGrp[TLK_PLHURT2] =	"!BA_CUREB"; 
-	m_szGrp[TLK_PLHURT3] =	"!BA_CUREC";
+	m_szGrp[TLK_PLHURT1] = NULL; // "!BA_CUREA";
+	m_szGrp[TLK_PLHURT2] = NULL; // "!BA_CUREB";
+	m_szGrp[TLK_PLHURT3] = NULL; // "!BA_CUREC";
 
 	m_szGrp[TLK_PHELLO] =	NULL;	//"OT_PHELLO";		// UNDONE
 	m_szGrp[TLK_PIDLE] =	NULL;	//"OT_PIDLE";			// UNDONE
-	m_szGrp[TLK_PQUESTION] = "OT_PQUEST";		// UNDONE
+	m_szGrp[TLK_PQUESTION] = NULL; // "OT_PQUEST";		// UNDONE
 
 	m_szGrp[TLK_SMELL] =	"OT_SMELL";
 	
@@ -570,6 +727,67 @@ void COtis :: TalkInit()
 
 	// get voice for head - just one otis voice for now
 	m_voicePitch = 100;
+}
+
+void COtis::PlaySentence(const char* pszSentence, float duration, float volume, float attenuation)
+{
+	if (!pszSentence)
+		return;
+
+	Talk(duration);
+
+	CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + duration + 2.0;
+	
+	const char* sample = "";
+
+	if (!strcmp(pszSentence, "OT_ANSWER")) {
+		sample = RANDOM_SOUND_ARRAY(pAnswerSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_QUESTION")) {
+		sample = RANDOM_SOUND_ARRAY(pQuestionSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_IDLE")) {
+		sample = RANDOM_SOUND_ARRAY(pIdleSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_OK")) {
+		sample = RANDOM_SOUND_ARRAY(pOkSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_WAIT")) {
+		sample = RANDOM_SOUND_ARRAY(pWaitSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_SCARED")) {
+		sample = RANDOM_SOUND_ARRAY(pScaredSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_HELLO")) {
+		sample = RANDOM_SOUND_ARRAY(pHelloSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_SMELL")) {
+		sample = RANDOM_SOUND_ARRAY(pSmellSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_WOUND")) {
+		sample = RANDOM_SOUND_ARRAY(pWoundSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_MORTAL")) {
+		sample = RANDOM_SOUND_ARRAY(pMortalSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_MAD")) {
+		sample = RANDOM_SOUND_ARRAY(pMadSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_SHOT")) {
+		sample = RANDOM_SOUND_ARRAY(pShotSounds);
+	}
+	else if (!strcmp(pszSentence, "OT_KILL")) {
+		sample = RANDOM_SOUND_ARRAY(pKillSounds);
+	}
+	else {
+		ALERT(at_console, "Invalid sentence: %s\n", pszSentence);
+		return;
+	}
+
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, sample, volume, attenuation, 0, GetVoicePitch());
+
+	// If you say anything, don't greet the player - you may have already spoken to them
+	SetBits(m_bitsSaid, bit_saidHelloPlayer);
 }
 
 int COtis :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)

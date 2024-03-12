@@ -624,7 +624,7 @@ const char* CTalkSquadMonster::GetTaskName(int taskIdx) {
 void CTalkSquadMonster :: Killed( entvars_t *pevAttacker, int iGib )
 {
 	// If a client killed me (unless I was already Barnacle'd), make everyone else mad/afraid of him
-	if (canBeMadAtPlayer && (pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE )
+	if ((pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE )
 	{
 		AlertFriends();
 		//LimitFollowers( CBaseEntity::Instance(pevAttacker), 0 );
@@ -659,6 +659,11 @@ CBaseEntity	*CTalkSquadMonster::EnumFriends( CBaseEntity *pPrevious, int listNum
 		if (pFriend == this || !pFriend->IsAlive())
 			// don't talk to self or dead people
 			continue;
+
+		if (IRelationship(pFriend) > R_NO) {
+			continue; // don't talk to enemies
+		}
+
 		if ( bTrace )
 		{
 			vecCheck = pFriend->pev->origin;
@@ -689,9 +694,8 @@ void CTalkSquadMonster::AlertFriends( void )
 	{
 		while (pFriend = EnumFriends( pFriend, i, TRUE ))
 		{
-			CBaseMonster *pMonster = pFriend->MyMonsterPointer();
-			if ( pMonster->IsAlive() )
-			{
+			CTalkSquadMonster* pMonster = pFriend->MyTalkSquadMonsterPointer();
+			if (pMonster && pMonster->IsAlive() && pMonster->canBeMadAtPlayer) {
 				// don't provoke a friend that's playing a death animation. They're a goner
 				pMonster->m_afMemory |= bits_MEMORY_PROVOKED;
 			}
