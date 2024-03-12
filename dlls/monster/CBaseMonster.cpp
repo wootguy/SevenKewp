@@ -20,6 +20,7 @@
 //#define DEBUG_MONSTER "monster_hwgrunt" // uncomment to enable verbose logging
 
 std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
+std::set<std::string> g_shuffledMonsterSounds;
 
 enum LOCAL_MOVE_CHECK_TYPES {
 	LOCAL_MOVE_CHECK_ROUTE_SIMPLIFY,

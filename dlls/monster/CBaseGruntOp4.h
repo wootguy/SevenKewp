@@ -21,6 +21,7 @@ public:
 	void TalkInit();
 	virtual int ObjectCaps();
 	void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation);
+	void ShuffleSoundArrays();
 
 private:
 	static const char* pGruntSentences[];

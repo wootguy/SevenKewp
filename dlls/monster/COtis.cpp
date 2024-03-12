@@ -108,8 +108,9 @@ public:
 
 	const char* GetDeathNoticeWeapon() { return "weapon_357"; }
 
+	void ShuffleSoundArrays();
 	void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation);
-	
+
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -670,15 +671,19 @@ void COtis :: Precache()
 	m_defaultModel = "models/otis.mdl";
 	PRECACHE_MODEL(GetModel());
 
+	ShuffleSoundArrays();
+
 	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/de_shot1.wav" );
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDieSounds);
+
+	int oldSoundVariety = soundvariety.value;
+	soundvariety.value = soundvariety.value > 0 ? 1 : soundvariety.value;
+
 	PRECACHE_SOUND_ARRAY(pAnswerSounds);
 	PRECACHE_SOUND_ARRAY(pQuestionSounds);
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
-	PRECACHE_SOUND_ARRAY(pOkSounds);
-	PRECACHE_SOUND_ARRAY(pWaitSounds);
 	PRECACHE_SOUND_ARRAY(pScaredSounds);
 	PRECACHE_SOUND_ARRAY(pHelloSounds);
 	PRECACHE_SOUND_ARRAY(pSmellSounds);
@@ -687,6 +692,13 @@ void COtis :: Precache()
 	PRECACHE_SOUND_ARRAY(pMadSounds);
 	PRECACHE_SOUND_ARRAY(pShotSounds);
 	PRECACHE_SOUND_ARRAY(pKillSounds);
+
+	// follow/unfollow sounds should have more variety because players activate them often
+	soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 3) ? 3 : soundvariety.value;
+	PRECACHE_SOUND_ARRAY(pOkSounds);
+	PRECACHE_SOUND_ARRAY(pWaitSounds);
+
+	soundvariety.value = oldSoundVariety;
 
 	// every new otis must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
@@ -729,6 +741,27 @@ void COtis :: TalkInit()
 	m_voicePitch = 100;
 }
 
+void COtis::ShuffleSoundArrays() {
+	if (g_shuffledMonsterSounds.count(STRING(pev->classname))) {
+		return;
+	}
+	g_shuffledMonsterSounds.insert(STRING(pev->classname));
+
+	SHUFFLE_SOUND_ARRAY(pAnswerSounds);
+	SHUFFLE_SOUND_ARRAY(pQuestionSounds);
+	SHUFFLE_SOUND_ARRAY(pIdleSounds);
+	SHUFFLE_SOUND_ARRAY(pOkSounds);
+	SHUFFLE_SOUND_ARRAY(pWaitSounds);
+	SHUFFLE_SOUND_ARRAY(pScaredSounds);
+	SHUFFLE_SOUND_ARRAY(pHelloSounds);
+	SHUFFLE_SOUND_ARRAY(pSmellSounds);
+	SHUFFLE_SOUND_ARRAY(pWoundSounds);
+	SHUFFLE_SOUND_ARRAY(pMortalSounds);
+	SHUFFLE_SOUND_ARRAY(pMadSounds);
+	SHUFFLE_SOUND_ARRAY(pShotSounds);
+	SHUFFLE_SOUND_ARRAY(pKillSounds);
+}
+
 void COtis::PlaySentence(const char* pszSentence, float duration, float volume, float attenuation)
 {
 	if (!pszSentence)
@@ -740,6 +773,9 @@ void COtis::PlaySentence(const char* pszSentence, float duration, float volume, 
 	
 	const char* sample = "";
 
+	int oldSoundVariety = soundvariety.value;
+	soundvariety.value = soundvariety.value > 0 ? 1 : soundvariety.value;
+
 	if (!strcmp(pszSentence, "OT_ANSWER")) {
 		sample = RANDOM_SOUND_ARRAY(pAnswerSounds);
 	}
@@ -750,9 +786,11 @@ void COtis::PlaySentence(const char* pszSentence, float duration, float volume, 
 		sample = RANDOM_SOUND_ARRAY(pIdleSounds);
 	}
 	else if (!strcmp(pszSentence, "OT_OK")) {
+		soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 2) ? 3 : soundvariety.value;
 		sample = RANDOM_SOUND_ARRAY(pOkSounds);
 	}
 	else if (!strcmp(pszSentence, "OT_WAIT")) {
+		soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 2) ? 3 : soundvariety.value;
 		sample = RANDOM_SOUND_ARRAY(pWaitSounds);
 	}
 	else if (!strcmp(pszSentence, "OT_SCARED")) {
@@ -783,6 +821,8 @@ void COtis::PlaySentence(const char* pszSentence, float duration, float volume, 
 		ALERT(at_console, "Invalid sentence: %s\n", pszSentence);
 		return;
 	}
+
+	soundvariety.value = oldSoundVariety;
 
 	EMIT_SOUND_DYN(edict(), CHAN_VOICE, sample, volume, attenuation, 0, GetVoicePitch());
 
