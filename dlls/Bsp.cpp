@@ -36,7 +36,7 @@ bool Bsp::load_lumps(string fpath)
 	valid = true;
 
 	if (!fileExists(fpath.c_str())) {
-		ALERT(at_error, "%s not found\n", fpath.c_str());
+		ALERT(at_error, "BSP load failed. %s not found\n", fpath.c_str());
 		valid = false;
 		return false;
 	}

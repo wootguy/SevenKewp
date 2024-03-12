@@ -3889,3 +3889,19 @@ cleanup:
 	}
 	return info;
 }
+
+void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
+	static char log_line[4096];
+
+	va_list vl;
+	va_start(vl, format);
+	vsnprintf(log_line, 4096, format, vl);
+	va_end(vl);
+
+	OutputDebugString(log_line);
+	g_engfuncs.pfnAlertMessage(target, log_line);
+
+	if (target == at_error && g_developer->value == 0) {
+		g_engfuncs.pfnServerPrint(log_line);
+	}
+}

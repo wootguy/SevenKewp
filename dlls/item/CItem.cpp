@@ -39,12 +39,12 @@ void CItem::Spawn(void)
 
 		if (dropResult == 0)
 		{
-			ALERT(at_error, "Item %s fell out of level at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
+			ALERT(at_warning, "Item %s fell out of level at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
 			UTIL_Remove(this);
 			return;
 		}
 		else if (dropResult == -1) {
-			ALERT(at_error, "Item %s spawned inside solid at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
+			ALERT(at_warning, "Item %s spawned inside solid at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
 		}
 	}
 	

@@ -411,7 +411,7 @@ CSound* CBaseMonster::PBestSound(void)
 	{
 		ALERT(at_aiconsole, "ERROR! monster %s has no audible sounds!\n", STRING(pev->classname));
 #if _DEBUG
-		ALERT(at_error, "NULL Return from PBestSound\n");
+		ALERT(at_warning, "NULL Return from PBestSound\n");
 #endif
 		return NULL;
 	}
@@ -439,7 +439,7 @@ CSound* CBaseMonster::PBestSound(void)
 		return pSound;
 	}
 #if _DEBUG
-	ALERT(at_error, "NULL Return from PBestSound\n");
+	ALERT(at_warning, "NULL Return from PBestSound\n");
 #endif
 	return NULL;
 }
@@ -462,7 +462,7 @@ CSound* CBaseMonster::PBestScent(void)
 	{
 		ALERT(at_aiconsole, "ERROR! PBestScent() has empty soundlist!\n");
 #if _DEBUG
-		ALERT(at_error, "NULL Return from PBestSound\n");
+		ALERT(at_warning, "NULL Return from PBestSound\n");
 #endif
 		return NULL;
 	}
@@ -491,7 +491,7 @@ CSound* CBaseMonster::PBestScent(void)
 		return pSound;
 	}
 #if _DEBUG
-	ALERT(at_error, "NULL Return from PBestScent\n");
+	ALERT(at_warning, "NULL Return from PBestScent\n");
 #endif
 	return NULL;
 }
@@ -548,7 +548,7 @@ void CBaseMonster::MonsterThink(void)
 	else
 	{
 		if (!TaskIsRunning() && !TaskIsComplete())
-			ALERT(at_error, "Schedule stalled!!\n");
+			ALERT(at_warning, "Schedule stalled!!\n");
 	}
 #endif
 }
@@ -2146,7 +2146,7 @@ void CBaseMonster::StartMonster(void)
 		// Try to move the monster to make sure it's not stuck in a brush.
 		if (!WALK_MOVE(ENT(pev), 0, 0, WALKMOVE_NORMAL))
 		{
-			ALERT(at_error, "Monster %s stuck in wall--level design error\n", STRING(pev->classname));
+			ALERT(at_warning, "Monster %s stuck in wall--level design error\n", STRING(pev->classname));
 			//pev->effects = EF_BRIGHTFIELD;
 		}
 	}
@@ -2162,7 +2162,7 @@ void CBaseMonster::StartMonster(void)
 
 		if (!m_hGoalEnt)
 		{
-			ALERT(at_error, "ReadyMonster()--%s couldn't find target %s\n", STRING(pev->classname), STRING(pev->target));
+			ALERT(at_warning, "ReadyMonster()--%s couldn't find target %s\n", STRING(pev->classname), STRING(pev->target));
 		}
 		else
 		{
@@ -2236,7 +2236,7 @@ void CBaseMonster::MovementComplete(void)
 		break;
 
 	case TASKSTATUS_RUNNING_TASK:
-		ALERT(at_error, "Movement completed twice!\n");
+		ALERT(at_warning, "Movement completed twice!\n");
 		break;
 
 	case TASKSTATUS_COMPLETE:

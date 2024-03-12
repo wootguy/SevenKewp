@@ -95,17 +95,7 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 #define CVAR_GET_POINTER (*g_engfuncs.pfnCVarGetPointer)
 
 #if defined(WIN32) && (_DEBUG)
-inline void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
-	static char log_line[4096];
-
-	va_list vl;
-	va_start(vl, format);
-	vsnprintf(log_line, 4096, format, vl);
-	va_end(vl);
-
-	OutputDebugString(log_line);
-	g_engfuncs.pfnAlertMessage(target, log_line);
-}
+void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
 #define ALERT		DEBUG_MSG
 #else
 #define ALERT (*g_engfuncs.pfnAlertMessage)

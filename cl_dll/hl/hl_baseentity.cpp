@@ -376,3 +376,6 @@ void CBaseMonster::Nerf() {}
 void lagcomp_begin(CBasePlayer* plr) {}
 void lagcomp_end() {}
 void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {}
+
+
+void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {}
