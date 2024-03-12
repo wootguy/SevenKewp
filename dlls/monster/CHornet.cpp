@@ -75,7 +75,7 @@ void CHornet :: Spawn( void )
 	Precache();
 
 	pev->movetype	= MOVETYPE_FLY;
-	pev->solid		= SOLID_BBOX;
+	pev->solid		= SOLID_TRIGGER;
 	pev->takedamage = DAMAGE_YES;
 	pev->flags		|= FL_MONSTER;
 	SetHealth();// weak!
@@ -349,7 +349,7 @@ void CHornet :: TrackTarget ( void )
 
 	pev->angles = UTIL_VecToAngles (pev->velocity);
 
-	pev->solid = SOLID_BBOX;
+	pev->solid = SOLID_TRIGGER;
 
 	// if hornet is close to the enemy, jet in a straight line for a half second.
 	// (only in the single player game)

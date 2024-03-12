@@ -61,6 +61,8 @@ public:
 	const char* DisplayName();
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	Schedule_t* GetScheduleOfType(int Type);
+	Schedule_t* GetMonsterStateSchedule(void);
+
 	void MonsterThink(void);
 	BOOL CheckRangeAttack1(float flDot, float flDist);
 	BOOL CheckRangeAttack2(float flDot, float flDist);
@@ -194,9 +196,9 @@ Task_t	tlSummonAttack[] =
 {
 	{ TASK_STOP_MOVING,				0			},
 	{ TASK_RANGE_ATTACK2,			(float)0	},
-	{ TASK_FIND_COVER_FROM_ENEMY,	(float)0	},
-	{ TASK_RUN_PATH,				(float)0	},
-	{ TASK_WAIT_FOR_MOVEMENT,		(float)0	}
+	//{ TASK_FIND_COVER_FROM_ENEMY,	(float)0	},
+	//{ TASK_RUN_PATH,				(float)0	},
+	//{ TASK_WAIT_FOR_MOVEMENT,		(float)0	}
 };
 
 Schedule_t	slSummonAttack[] =
@@ -313,6 +315,28 @@ Schedule_t* CTor::GetScheduleOfType(int Type) {
 	}
 
 	return CBaseMonster::GetScheduleOfType(Type);
+}
+
+Schedule_t* CTor::GetMonsterStateSchedule(void) {
+	if (HasConditions(bits_COND_HEAVY_DAMAGE))
+	{
+		// flinch for heavy damage but not too often
+		if (RANDOM_LONG(0, 2) == 0) {
+			return GetScheduleOfType(SCHED_SMALL_FLINCH);
+		}
+		else {
+			ClearConditions(bits_COND_HEAVY_DAMAGE);
+			return CBaseMonster::GetSchedule();
+		}
+	}
+	else if (HasConditions(bits_COND_LIGHT_DAMAGE))
+	{
+		ClearConditions(bits_COND_LIGHT_DAMAGE);
+		// never flinch or retreat from light damage
+		return CBaseMonster::GetSchedule();
+	}
+
+	CBaseMonster::GetSchedule();
 }
 
 void CTor::MonsterThink(void) {

@@ -417,7 +417,7 @@ void CVoltigore::Killed(entvars_t* pevAttacker, int iGib)
 	if (ShouldGibMonster(iGib)) {
 		explodeTime = gpGlobals->time + 0.1;
 	} else {
-		explodeTime = gpGlobals->time + RANDOM_FLOAT(4, 7);
+		explodeTime = gpGlobals->time + RANDOM_FLOAT(4, 6);
 	}
 	
 	SetThink(&CVoltigore::ExplodeThink);

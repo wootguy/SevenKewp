@@ -2102,6 +2102,28 @@ Schedule_t* CBaseGrunt::GetEnemyOccludedSchedule(void) {
 }
 
 Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
+	if (HasEquipment(MEQUIP_MINIGUN)) {
+		// flinch and run away less while holding a minigun
+
+		if (HasConditions(bits_COND_HEAVY_DAMAGE))
+		{
+			// flinch for heavy damage but not too often
+			if (RANDOM_LONG(0, 2) == 0) {
+				return GetScheduleOfType(SCHED_SMALL_FLINCH);
+			}
+			else {
+				ClearConditions(bits_COND_HEAVY_DAMAGE);
+				return CTalkSquadMonster::GetSchedule();
+			}
+		}
+		else if (HasConditions(bits_COND_LIGHT_DAMAGE))
+		{
+			ClearConditions(bits_COND_LIGHT_DAMAGE);
+			// never flinch or retreat from light damage
+			return CTalkSquadMonster::GetSchedule();
+		}
+	}
+
 	switch (m_MonsterState)
 	{
 	case MONSTERSTATE_COMBAT:

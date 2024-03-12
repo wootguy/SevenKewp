@@ -649,19 +649,7 @@ void COtis::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, 
 			flDamage = flDamage / 2;
 		}
 		break;
-		//TODO: Otis doesn't have a helmet, probably don't want his dome being bulletproof
-	case 10:
-		if (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_CLUB))
-		{
-			flDamage -= 20;
-			if (flDamage <= 0)
-			{
-				UTIL_Ricochet( ptr->vecEndPos, 1.0 );
-				flDamage = 0.01;
-			}
-		}
-		// always a head shot
-		ptr->iHitgroup = HITGROUP_HEAD;
+	default:
 		break;
 	}
 

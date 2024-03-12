@@ -229,6 +229,11 @@ const char* CRoboGrunt::GetDeathNoticeWeapon() {
 
 void CRoboGrunt::GibMonster(void)
 {
+	if (m_explodeTime == 0) {
+		return;
+	}
+	pev->takedamage = DAMAGE_NO; // don't gib again from the explosion damage coming now
+
 	int magnitude = 90;
 	ExplosionCreate(pev->origin + Vector(0, 0, 8), pev->angles, edict(), magnitude, false);
 
