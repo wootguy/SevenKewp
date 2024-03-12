@@ -76,6 +76,7 @@ private:
 	static const char* pAttackMissSounds[];
 	static const char* pIdleSounds[];
 	static const char* pPainSounds[];
+	static const char* pDieSounds[];
 	static const char* pEventSounds[];
 };
 
@@ -115,7 +116,6 @@ const char* CGonome::pIdleSounds[] =
 	MOD_SND_FOLDER "gonome/gonome_idle3.wav"
 };
 
-// TODO: these are used in the model, so mp_soundvariety will break them
 const char* CGonome::pPainSounds[] =
 {
 	MOD_SND_FOLDER "gonome/gonome_pain1.wav",
@@ -124,15 +124,18 @@ const char* CGonome::pPainSounds[] =
 	MOD_SND_FOLDER "gonome/gonome_pain4.wav"
 };
 
-const char* CGonome::pEventSounds[] =
+const char* CGonome::pDieSounds[] =
 {
-	// TODO: move these out of the model so that mp_soundvariety can limit them
-	MOD_SND_FOLDER "gonome/gonome_melee1.wav",
-	MOD_SND_FOLDER "gonome/gonome_melee2.wav",
-	MOD_SND_FOLDER "gonome/gonome_eat.wav",
 	MOD_SND_FOLDER "gonome/gonome_death2.wav",
 	MOD_SND_FOLDER "gonome/gonome_death3.wav",
 	MOD_SND_FOLDER "gonome/gonome_death4.wav",
+};
+
+const char* CGonome::pEventSounds[] =
+{
+	MOD_SND_FOLDER "gonome/gonome_melee1.wav",
+	MOD_SND_FOLDER "gonome/gonome_melee2.wav",
+	MOD_SND_FOLDER "gonome/gonome_eat.wav",
 
 	// not actually event sounds but wtv
 	"bullchicken/bc_acid1.wav",
@@ -296,6 +299,7 @@ void CGonome::Precache()
 	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
 	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pDieSounds);
 
 	// not affected by mp_soundvariety (but should be)
 	for (int i = 0; i < ARRAYSIZE(pEventSounds); i++) \
@@ -330,6 +334,10 @@ void CGonome::Killed(entvars_t* pevAttacker, int iGib)
 {
 	UTIL_Remove(m_hHandBlood);
 	m_hHandBlood = NULL;
+
+	if (!ShouldGibMonster(iGib))
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(0, 9));
+
 	CBaseMonster::Killed(pevAttacker, iGib);
 }
 

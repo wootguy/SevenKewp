@@ -255,6 +255,7 @@ public:
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	void CheckAmmo() override;
+	void Killed(entvars_t* pevAttacker, int iGib) override;
 	void GibMonster() override;
 	void KeyValue( KeyValueData* pkvd ) override;
 
@@ -271,10 +272,9 @@ public:
 
 private:
 	static const char* pAlertSounds[];
-	static const char* pSpikeSounds[];
-	static const char* pTalkSounds[];
+	//static const char* pTalkSounds[];
 	static const char* pDieSounds[];
-	static const char* pHuntSounds[];
+	//static const char* pHuntSounds[];
 	static const char* pIdleSounds[];
 	static const char* pPainSounds[];
 	static const char* pBiteSounds[];
@@ -287,11 +287,7 @@ const char* CPitdrone::pAlertSounds[] =
 	MOD_SND_FOLDER "pitdrone/pit_drone_alert2.wav",
 	MOD_SND_FOLDER "pitdrone/pit_drone_alert3.wav",
 };
-const char* CPitdrone::pSpikeSounds[] =
-{
-	MOD_SND_FOLDER "pitdrone/pit_drone_attack_spike1.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_attack_spike2.wav",
-};
+/*
 const char* CPitdrone::pTalkSounds[] =
 {
 	MOD_SND_FOLDER "pitdrone/pit_drone_communicate1.wav",
@@ -299,17 +295,18 @@ const char* CPitdrone::pTalkSounds[] =
 	MOD_SND_FOLDER "pitdrone/pit_drone_communicate3.wav",
 	MOD_SND_FOLDER "pitdrone/pit_drone_communicate4.wav",
 };
-const char* CPitdrone::pDieSounds[] =
-{
-	MOD_SND_FOLDER "pitdrone/pit_drone_die1.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_die2.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_die3.wav",
-};
 const char* CPitdrone::pHuntSounds[] =
 {
 	MOD_SND_FOLDER "pitdrone/pit_drone_hunt1.wav",
 	MOD_SND_FOLDER "pitdrone/pit_drone_hunt2.wav",
 	MOD_SND_FOLDER "pitdrone/pit_drone_hunt3.wav",
+};
+*/
+const char* CPitdrone::pDieSounds[] =
+{
+	MOD_SND_FOLDER "pitdrone/pit_drone_die1.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_die2.wav",
+	MOD_SND_FOLDER "pitdrone/pit_drone_die3.wav",
 };
 const char* CPitdrone::pIdleSounds[] =
 {
@@ -752,17 +749,17 @@ void CPitdrone :: Precache()
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
-	PRECACHE_SOUND_ARRAY(pSpikeSounds);
-	PRECACHE_SOUND_ARRAY(pTalkSounds);
+	//PRECACHE_SOUND_ARRAY(pTalkSounds); // TODO: use these?
+	//PRECACHE_SOUND_ARRAY(pHuntSounds); // TODO: Precache hunt3 sound if animations is used in the map
 	PRECACHE_SOUND_ARRAY(pDieSounds);
-	PRECACHE_SOUND_ARRAY(pHuntSounds);
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pBiteSounds);
 
 	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_melee_attack1.wav" );
 	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_melee_attack2.wav" );
-	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_run_on_grate.wav" );
+	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_attack_spike1.wav");
+	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_eat.wav" );
 }
 
 //========================================================
@@ -1237,6 +1234,14 @@ void CPitdrone::CheckAmmo()
 	{
 		SetConditions( bits_COND_NO_AMMO_LOADED );
 	}
+}
+
+void CPitdrone::Killed(entvars_t* pevAttacker, int iGib)
+{
+	if (!ShouldGibMonster(iGib))
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(0, 9));
+
+	CBaseMonster::Killed(pevAttacker, iGib);
 }
 
 void CPitdrone::GibMonster()

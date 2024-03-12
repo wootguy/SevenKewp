@@ -79,6 +79,7 @@ private:
 	static const char* pIdleSounds[];
 	static const char* pAlertSounds[];
 	static const char* pPainSounds[];
+	static const char* pDieSounds[];
 	static const char* pEventSounds[];
 };
 
@@ -139,9 +140,16 @@ const char* CVoltigore::pPainSounds[] =
 	MOD_SND_FOLDER "voltigore/voltigore_pain4.wav",
 };
 
+const char* CVoltigore::pDieSounds[] =
+{
+	MOD_SND_FOLDER "voltigore/voltigore_die1.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_die2.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_die3.wav",
+};
+
 const char* CVoltigore::pEventSounds[] =
 {
-	// TODO: move these out of the model so that mp_soundvariety can limit them
+	// TODO: combine movement sounds?
 	MOD_SND_FOLDER "voltigore/voltigore_attack_melee1.wav",
 	MOD_SND_FOLDER "voltigore/voltigore_attack_melee2.wav",
 	MOD_SND_FOLDER "voltigore/voltigore_attack_shock.wav",
@@ -150,10 +158,9 @@ const char* CVoltigore::pEventSounds[] =
 	MOD_SND_FOLDER "voltigore/voltigore_footstep1.wav",
 	MOD_SND_FOLDER "voltigore/voltigore_footstep2.wav",
 	MOD_SND_FOLDER "voltigore/voltigore_footstep3.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_die1.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_die2.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_die3.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_eat.wav"
+	MOD_SND_FOLDER "voltigore/voltigore_eat.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_communicate3.wav",
+	MOD_SND_FOLDER "voltigore/voltigore_attack_shock.wav",
 };
 
 
@@ -310,6 +317,7 @@ void CVoltigore::Precache()
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
 	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pDieSounds);
 
 	// not affected by mp_soundvariety (but should be)
 	for (int i = 0; i < ARRAYSIZE(pEventSounds); i++) \
@@ -418,6 +426,7 @@ void CVoltigore::Killed(entvars_t* pevAttacker, int iGib)
 		explodeTime = gpGlobals->time + 0.1;
 	} else {
 		explodeTime = gpGlobals->time + RANDOM_FLOAT(4, 6);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(0, 9));
 	}
 	
 	SetThink(&CVoltigore::ExplodeThink);
