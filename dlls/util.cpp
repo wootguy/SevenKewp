@@ -2843,6 +2843,40 @@ std::map<std::string, std::string> loadReplacementFile(const char* path) {
 	return replacements;
 }
 
+char PM_FindTextureType(char* name);
+
+void LoadBsp() {
+	std::string mapPath = getGameFilePath((std::string("maps/") + STRING(gpGlobals->mapname) + ".bsp").c_str());
+	g_bsp.load_lumps(mapPath);
+
+	if (g_bsp.textures) {
+		for (int i = 0; i < g_bsp.textureCount; i++) {
+			int32_t texOffset = ((int32_t*)g_bsp.textures)[i + 1];
+
+			if (texOffset == -1) {
+				continue;
+			}
+
+			BSPMIPTEX& tex = *((BSPMIPTEX*)(g_bsp.textures + texOffset));
+
+			switch (PM_FindTextureType(tex.szName)) {
+				case CHAR_TEX_CONCRETE: g_textureStats.tex_concrete = true; break;
+				case CHAR_TEX_METAL: g_textureStats.tex_metal = true; break;
+				case CHAR_TEX_DIRT: g_textureStats.tex_dirt = true; break;
+				case CHAR_TEX_VENT: g_textureStats.tex_duct = true; break;
+				case CHAR_TEX_GRATE: g_textureStats.tex_grate = true; break;
+				case CHAR_TEX_TILE: g_textureStats.tex_tile = true; break;
+				case CHAR_TEX_SLOSH: g_textureStats.tex_water = true; break;
+				case CHAR_TEX_WOOD: g_textureStats.tex_wood = true; break;
+				case CHAR_TEX_COMPUTER: g_textureStats.tex_computer = true; break;
+				case CHAR_TEX_GLASS: g_textureStats.tex_glass = true; break;
+				case CHAR_TEX_FLESH: g_textureStats.tex_flesh = true; break;
+				default: break;
+			}
+		}
+	}
+}
+
 int PRECACHE_GENERIC(const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
@@ -2921,8 +2955,7 @@ int PRECACHE_MODEL(const char* path) {
 
 	// loading BSP here because ServerActivate is not soon enough and GameDLLInit is only called once
 	if (!g_bsp.loaded) {
-		std::string mapPath = getGameFilePath((std::string("maps/") + STRING(gpGlobals->mapname) + ".bsp").c_str());
-		g_bsp.load_lumps(mapPath);
+		LoadBsp();
 	}
 
 	bool alreadyPrecached = g_precachedModels.find(path) != g_precachedModels.end();

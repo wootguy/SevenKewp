@@ -91,6 +91,24 @@ struct NerfStats {
 
 extern NerfStats g_nerfStats;
 
+// flags texture types that are present in the current map
+// used to conditionally precache step/impact sounds
+struct TextureTypeStats {
+	bool tex_concrete;
+	bool tex_metal;
+	bool tex_dirt;
+	bool tex_duct;
+	bool tex_grate;
+	bool tex_tile;
+	bool tex_water;
+	bool tex_wood;
+	bool tex_computer;
+	bool tex_glass;
+	bool tex_flesh;
+};
+
+extern TextureTypeStats g_textureStats;
+
 extern std::map<std::string, std::string> g_modelReplacementsMap; // model replacements for the current map
 extern std::map<std::string, std::string> g_modelReplacementsMod; // model replacements for this mod
 extern std::map<std::string, std::string> g_modelReplacements; // combined model replacements

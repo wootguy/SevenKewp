@@ -36,6 +36,11 @@ void CLadder::Precache(void)
 		pev->renderamt = 0;
 	}
 	pev->effects &= ~EF_NODRAW;
+
+	PRECACHE_SOUND("player/pl_ladder1.wav");
+	PRECACHE_SOUND("player/pl_ladder2.wav");
+	PRECACHE_SOUND("player/pl_ladder3.wav");
+	PRECACHE_SOUND("player/pl_ladder4.wav");
 }
 
 

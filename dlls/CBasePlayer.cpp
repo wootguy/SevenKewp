@@ -190,21 +190,6 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer );
 
-
-void CBasePlayer :: Pain( void )
-{
-	float	flRndSound;//sound randomizer
-
-	flRndSound = RANDOM_FLOAT ( 0 , 1 ); 
-	
-	if ( flRndSound <= 0.33 )
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM);
-	else if ( flRndSound <= 0.66 )	
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM);
-	else
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM);
-}
-
 /* 
  *
  */
@@ -302,6 +287,9 @@ void CBasePlayer :: DeathSound( void )
 	*/
 
 	// temporarily using pain sounds for death sounds
+	// Note: disabled because they never worked. CHAN_VOICE is immediately overwritten with the HEV suit sound.
+	// Change the sound channel to hear gordon's voice.
+	/*
 	switch (RANDOM_LONG(1,5)) 
 	{
 	case 1: 
@@ -314,6 +302,7 @@ void CBasePlayer :: DeathSound( void )
 		EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM);
 		break;
 	}
+	*/
 
 	// play one of the suit death alarms
 	EMIT_GROUPNAME_SUIT(ENT(pev), "HEV_DEAD");
