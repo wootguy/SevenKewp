@@ -114,6 +114,7 @@ extern std::map<std::string, std::string> g_modelReplacementsMod; // model repla
 extern std::map<std::string, std::string> g_modelReplacements; // combined model replacements
 
 extern std::set<std::string> g_mapWeapons; // weapons which should be precached (don't use aliases here)
+extern std::map<std::string, const char*> g_itemNameRemap;
 
 // per-monster sound replacement maps
 // should be a class member, but I'm afraid of the bugs that will come from using non-POD class members
@@ -121,5 +122,8 @@ extern std::vector<std::map<std::string, std::string>> g_monsterSoundReplacement
 extern std::set<std::string> g_shuffledMonsterSounds; // classes that had their sounds shuffled this map
 
 extern bool g_cfgsExecuted; // set to true after server and map cfgs are executed
+
+// mark a palyer weapon for precaching (alias names are ok)
+void AddPrecacheWeapon(std::string wepName);
 
 #endif		// GAME_H

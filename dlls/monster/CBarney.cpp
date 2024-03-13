@@ -474,7 +474,7 @@ void CBarney :: Precache()
 	TalkInit();
 	CTalkSquadMonster::Precache();
 
-	g_mapWeapons.insert("weapon_9mmhandgun");
+	AddPrecacheWeapon("weapon_9mmhandgun");
 }	
 
 // Init talk data

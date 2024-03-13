@@ -739,7 +739,7 @@ void COtis :: TalkInit()
 	// get voice for head - just one otis voice for now
 	m_voicePitch = 100;
 
-	g_mapWeapons.insert("weapon_357"); // weapon dropped on death
+	AddPrecacheWeapon("weapon_357"); // weapon dropped on death
 }
 
 void COtis::ShuffleSoundArrays() {

@@ -1025,16 +1025,16 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 		PRECACHE_SOUND("hgrunt/gr_mgun1.wav");
 		PRECACHE_SOUND("hgrunt/gr_mgun2.wav");
 
-		g_mapWeapons.insert("weapon_9mmAR");
+		AddPrecacheWeapon("weapon_9mmAR");
 	}
 	if (equipment & MEQUIP_GRENADE_LAUNCHER) {
 		PRECACHE_SOUND("weapons/glauncher.wav");
-		g_mapWeapons.insert("weapon_9mmAR");
+		AddPrecacheWeapon("weapon_9mmAR");
 	}
 	if (equipment & MEQUIP_SHOTGUN) {
 		PRECACHE_SOUND("weapons/sbarrel1.wav");
 
-		g_mapWeapons.insert("weapon_shotgun");
+		AddPrecacheWeapon("weapon_shotgun");
 	}
 	if (equipment & MEQUIP_SAW) {
 		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire1.wav");
@@ -1042,26 +1042,26 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire3.wav");
 		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_reload.wav");
 
-		//g_mapWeapons.insert("weapon_9mmAR");
+		//AddPrecacheWeapon("weapon_9mmAR");
 	}
 	if (equipment & MEQUIP_357) {
 		PRECACHE_SOUND("weapons/357_shot1.wav");
 		PRECACHE_SOUND("weapons/357_shot2.wav");
-		g_mapWeapons.insert("weapon_357");
+		AddPrecacheWeapon("weapon_357");
 	}
 	if (equipment & MEQUIP_DEAGLE) {
 		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/desert_eagle_fire.wav");
 		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/desert_eagle_reload.wav");
 	}
 	if (equipment & MEQUIP_GLOCK) {
-		g_mapWeapons.insert("weapon_9mmhandgun");
+		AddPrecacheWeapon("weapon_9mmhandgun");
 	}
 	if (equipment & MEQUIP_SNIPER) {
 		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/sniper_fire.wav");
-		//g_mapWeapons.insert("weapon_9mmAR");
+		//AddPrecacheWeapon("weapon_9mmAR");
 	}
 	if (equipment & MEQUIP_MINIGUN) {
-		//g_mapWeapons.insert("weapon_9mmAR");
+		//AddPrecacheWeapon("weapon_9mmAR");
 		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_shoot2.wav");
 		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_shoot3.wav");
 		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_spinup.wav");
@@ -1071,7 +1071,7 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/uzi/fire_both1.wav");
 		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/uzi/fire_both2.wav");
 
-		g_mapWeapons.insert("weapon_9mmAR");
+		AddPrecacheWeapon("weapon_9mmAR");
 	}
 }
 

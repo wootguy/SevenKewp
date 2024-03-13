@@ -211,8 +211,8 @@ void execMapCfg() {
 
 	if (!cfgFile) {
 		// precache default equipment
-		g_mapWeapons.insert("weapon_crowbar");
-		g_mapWeapons.insert("weapon_9mmhandgun");
+		AddPrecacheWeapon("weapon_crowbar");
+		AddPrecacheWeapon("weapon_9mmhandgun");
 		return;
 	}
 
@@ -250,7 +250,7 @@ void execMapCfg() {
 			g_mapEquipment[equipIdx].itemName = ALLOC_STRING(name.c_str());
 			g_mapEquipment[equipIdx].count = value.size() ? atoi(value.c_str()) : 1;
 
-			g_mapWeapons.insert(name);
+			AddPrecacheWeapon(name);
 
 			equipIdx++;
 		}
