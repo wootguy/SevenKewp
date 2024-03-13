@@ -625,11 +625,6 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			}
 		}
 	}
-	/*
-	for (std::string item : g_tryPrecacheSounds) {
-		ALERT(at_console, "    %s\n", item.c_str());
-	}
-	*/
 }
 
 /*

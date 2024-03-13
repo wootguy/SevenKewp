@@ -4006,8 +4006,8 @@ void CBaseMonster::GibMonster(void)
 	if (IsMachine())
 	{
 		Vector position = pev->origin;
-		position.z += (pev->absmax.z - pev->absmin.z) * 0.5f;
-		Vector size = (pev->absmax - pev->absmin);
+		position.z += (pev->maxs.z - pev->mins.z) * 0.5f;
+		Vector size = (pev->maxs - pev->mins);
 		Vector vecVelocity = Vector(0, 0, 150);
 		int gibModelId = PRECACHE_MODEL((char*)"models/computergibs.mdl");
 
@@ -4565,9 +4565,9 @@ int CBaseMonster::DeadTakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker
 	// kill the corpse if enough damage was done to destroy the corpse and the damage is of a type that is allowed to destroy the corpse.
 	if (bitsDamageType & DMG_GIB_CORPSE)
 	{
-		if (pev->health <= flDamage || (bitsDamageType & DMG_BLAST))
+		if (pev->health <= flDamage || ((bitsDamageType & DMG_BLAST) && flDamage > 0))
 		{
-			pev->health = -50;
+			pev->health = -49; // controls gib velocity
 			Killed(pevAttacker, GIB_ALWAYS);
 			return 0;
 		}
@@ -5514,7 +5514,7 @@ void CBaseMonster::RunTask(Task_t* pTask)
 				UTIL_SetSize(pev, Vector(-4, -4, 0), Vector(4, 4, 1));
 			}
 			else // !!!HACKHACK - put monster in a thin, wide bounding box until we fix the solid type/bounding volume problem
-				UTIL_SetSize(pev, Vector(-128, -128, 0), Vector(128, 128, 64)); // large box in case death animation places monster off center
+				UTIL_SetSize(pev, pev->mins, Vector(pev->maxs.x, pev->maxs.y, 2)); // >1 unit to prevent collision issues
 
 			// corpses cause laggy movement when walking over them, so make them nonsolid
 			// gibbing with crowbar is handled in the weapon code
