@@ -2902,7 +2902,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 
 	g_tryPrecacheSounds.insert(path);
 
-	if (g_tryPrecacheSounds.size() < MAX_PRECACHE) {
+	if (g_tryPrecacheSounds.size() <= MAX_PRECACHE_SOUND) {
 		g_precachedSounds.insert(path);
 		return g_engfuncs.pfnPrecacheSound(path);
 	}
@@ -2948,7 +2948,7 @@ int PRECACHE_MODEL(const char* path) {
 	g_tryPrecacheModels.insert(path);
 
 	// not sure what the +2 is for. Tested with sc_darknebula.
-	if (g_tryPrecacheModels.size() + g_bsp.modelCount + 2 < MAX_PRECACHE) {
+	if (g_tryPrecacheModels.size() + g_bsp.modelCount <= MAX_PRECACHE_MODEL) {
 		if (g_precachedModels.find(path) == g_precachedModels.end())
 			g_precachedModels[path] = path;
 		return g_engfuncs.pfnPrecacheModel(path);
@@ -3086,7 +3086,9 @@ msg_info g_lastMsg;
 char g_msgStrPool[512];
 int g_nextStrOffset = 0;
 std::string g_debugLogName;
+std::string g_errorLogName;
 std::ofstream g_debugFile;
+std::ofstream g_errorFile;
 std::queue<msg_hist_item> g_messageHistory;
 float g_messageHistoryCutoff = 1.0f; // don't keep more than X seconds of history
 
@@ -3147,7 +3149,7 @@ std::string getLogTimeStr() {
 	return buffer;
 }
 
-void writeDebugLog(std::string line) {
+void writeDebugLog(std::ofstream& outFile, std::string lastLogName, std::string prefix, std::string line) {
 	std::string curLogName;
 
 	{
@@ -3159,18 +3161,18 @@ void writeDebugLog(std::string line) {
 		timeinfo = localtime(&rawtime);
 
 		strftime(buffer, sizeof(buffer), "%Y-%m-%d.log", timeinfo);
-		std::string fname = "logs_dbg/" + std::string(buffer);
+		std::string fname = "logs_dbg/" + prefix + "_" + std::string(buffer);
 
 		curLogName = fname;
 	}
 
-	if (curLogName != g_debugLogName) {
-		g_debugLogName = curLogName;
-		g_debugFile.close();
-		g_debugFile.open(g_debugLogName, std::ios_base::app);
+	if (curLogName != lastLogName) {
+		lastLogName = curLogName;
+		outFile.close();
+		outFile.open(lastLogName, std::ios_base::app);
 	}
 
-	g_debugFile << getLogTimeStr() << line << "\n";
+	outFile << getLogTimeStr() << line << "\n";
 }
 
 const char* msgDestStr(int msg_dest) {
@@ -3396,9 +3398,9 @@ void writeNetworkMessageHistory(std::string reason) {
 	while (!g_messageHistory.empty()) {
 		msg_hist_item item = g_messageHistory.front();
 		g_messageHistory.pop();
-		writeDebugLog(item.msg);
+		writeDebugLog(g_debugFile, g_debugLogName, "debug", item.msg);
 	}
-	writeDebugLog(UTIL_VarArgs("T%.2f ", g_engfuncs.pfnTime()) + reason + "\n");
+	writeDebugLog(g_debugFile, g_debugLogName, "debug", UTIL_VarArgs("T%.2f ", g_engfuncs.pfnTime()) + reason + "\n");
 	g_debugFile.flush();
 }
 
@@ -3890,6 +3892,8 @@ cleanup:
 	return info;
 }
 
+std::string lastMapName;
+
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 	static char log_line[4096];
 
@@ -3901,7 +3905,17 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 	OutputDebugString(log_line);
 	g_engfuncs.pfnAlertMessage(target, log_line);
 
-	if (target == at_error && g_developer->value == 0) {
-		g_engfuncs.pfnServerPrint(log_line);
+	if (target == at_error) {
+		if (lastMapName != STRING(gpGlobals->mapname)) {
+			lastMapName = STRING(gpGlobals->mapname);
+			writeDebugLog(g_errorFile, g_errorLogName, "error", "--- Errors for map: " + lastMapName);
+		}
+
+		std::string line = log_line;
+		writeDebugLog(g_errorFile, g_errorLogName, "error", line.substr(0, line.size()-1));
+		g_errorFile.flush();
+
+		if (g_developer->value == 0)
+			g_engfuncs.pfnServerPrint(log_line);
 	}
 }
