@@ -94,12 +94,8 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 #define CVAR_SET_STRING	(*g_engfuncs.pfnCVarSetString)
 #define CVAR_GET_POINTER (*g_engfuncs.pfnCVarGetPointer)
 
-#if defined(WIN32) && (_DEBUG)
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
 #define ALERT		DEBUG_MSG
-#else
-#define ALERT (*g_engfuncs.pfnAlertMessage)
-#endif
 
 #define print(...)	{ALERT(at_console, __VA_ARGS__);}
 #define println(...)	{ALERT(at_console, __VA_ARGS__); ALERT(at_console, "\n");}
