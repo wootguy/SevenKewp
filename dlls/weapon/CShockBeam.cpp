@@ -74,6 +74,8 @@ void CShockBeam::Spawn()
 	CBeam* m_pBeam1 = CBeam::BeamCreate( "sprites/lgtning.spr", 60 );
 	m_hBeam1 = m_pBeam1;
 
+	m_lastPos = pev->origin;
+
 	if( m_pBeam1 )
 	{
 		UTIL_SetOrigin( m_pBeam1->pev, pev->origin );
@@ -128,6 +130,15 @@ void CShockBeam::FlyThink()
 	{
 		SetThink(&CShockBeam::WaterExplodeThink);
 	}
+
+	// SOLID_TRIGGER entities don't touch stationary monsters
+	// so a trace is needed to check for collisions
+	TraceResult tr;
+	TRACE_MONSTER_HULL(edict(), m_lastPos, pev->origin, 0, pev->owner, &tr);
+	if (!FNullEnt(tr.pHit)) {
+		BallTouch(CBaseEntity::Instance(tr.pHit));
+	}
+	m_lastPos = pev->origin;
 
 	pev->nextthink = gpGlobals->time + 0.01;
 }

@@ -90,6 +90,8 @@ void CHornet :: Spawn( void )
 		m_flStopAttack	= gpGlobals->time + 5.0;
 	}
 
+	m_flStartTrack = gpGlobals->time + 0.2f;
+
 	m_flFieldOfView = 0.9; // +- 25 degrees
 
 	if ( RANDOM_LONG ( 1, 5 ) <= 2 )
@@ -106,7 +108,7 @@ void CHornet :: Spawn( void )
 	SET_MODEL(ENT( pev ), GetModel());
 	SetSize(Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );
 
-	SetTouch( &CHornet::DieTouch );
+	SetTouch( &CHornet::TrackTouch);
 	SetThink( &CHornet::StartTrack );
 
 	edict_t *pSoundEnt = pev->owner;
@@ -123,7 +125,9 @@ void CHornet :: Spawn( void )
 		pev->dmg = gSkillData.sk_hornet_dmg;
 	}
 	
-	pev->nextthink = gpGlobals->time + 0.1;
+	m_lastPos = pev->origin;
+
+	pev->nextthink = gpGlobals->time;
 	ResetSequenceInfo( );
 }
 
@@ -198,7 +202,7 @@ void CHornet :: StartTrack ( void )
 	SetTouch( &CHornet::TrackTouch );
 	SetThink( &CHornet::TrackTarget );
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time;
 }
 
 //=========================================================
@@ -210,8 +214,8 @@ void CHornet :: StartDart ( void )
 
 	SetTouch( &CHornet::DartTouch );
 
-	SetThink( &CHornet::SUB_Remove );
-	pev->nextthink = gpGlobals->time + 4;
+	SetThink( &CHornet::DartThink);
+	pev->nextthink = gpGlobals->time;
 }
 
 void CHornet::IgniteTrail( void )
@@ -269,11 +273,40 @@ old colors
 	MESSAGE_END();
 }
 
+bool CHornet::CheckMonsterCollision() {
+	// SOLID_TRIGGER entities don't touch stationary monsters
+	// so a trace is needed to check for collisions
+
+	TraceResult tr;
+	TRACE_MONSTER_HULL(edict(), m_lastPos, pev->origin, 0, pev->owner, &tr);
+
+	if (!FNullEnt(tr.pHit)) {
+		DispatchTouch(edict(), tr.pHit);
+
+		if (!pev->modelindex) {
+			return true; // was killed
+		}
+	}
+
+	m_lastPos = pev->origin;
+	return false;
+}
+
 //=========================================================
 // Hornet is flying, gently tracking target
 //=========================================================
 void CHornet :: TrackTarget ( void )
 {
+	if (CheckMonsterCollision()) {
+		return;
+	}
+
+	pev->nextthink = gpGlobals->time + 0.01f;
+
+	if (gpGlobals->time < m_flNextTrack || gpGlobals->time < m_flStartTrack) {
+		return;
+	}
+
 	Vector	vecFlightDir;
 	Vector	vecDirToEnemy;
 	float	flDelta;
@@ -284,7 +317,6 @@ void CHornet :: TrackTarget ( void )
 	{
 		SetTouch( NULL );
 		SetThink( &CHornet::SUB_Remove );
-		pev->nextthink = gpGlobals->time + 0.1;
 		return;
 	}
 
@@ -339,17 +371,21 @@ void CHornet :: TrackTarget ( void )
 	{
 		case HORNET_TYPE_RED:
 			pev->velocity = pev->velocity * ( m_flFlySpeed * flDelta );// scale the dir by the ( speed * width of turn )
-			pev->nextthink = gpGlobals->time + RANDOM_FLOAT( 0.1, 0.3 );
+			m_flNextTrack = gpGlobals->time + RANDOM_FLOAT(0.1, 0.3);
 			break;
 		case HORNET_TYPE_ORANGE:
 			pev->velocity = pev->velocity * m_flFlySpeed;// do not have to slow down to turn.
-			pev->nextthink = gpGlobals->time + 0.1;// fixed think time
+			m_flNextTrack = gpGlobals->time + 0.1;// fixed think time
 			break;
 	}
 
 	pev->angles = UTIL_VecToAngles (pev->velocity);
 
-	pev->solid = SOLID_TRIGGER;
+	if (pev->solid != SOLID_TRIGGER) {
+		pev->solid = SOLID_TRIGGER;
+		UTIL_SetOrigin(pev, pev->origin);
+	}
+	
 
 	// if hornet is close to the enemy, jet in a straight line for a half second.
 	// (only in the single player game)
@@ -370,11 +406,23 @@ void CHornet :: TrackTarget ( void )
 
 			EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBuzzSounds), HORNET_BUZZ_VOLUME, ATTN_NORM);
 			pev->velocity = pev->velocity * 2;
-			pev->nextthink = gpGlobals->time + 1.0;
+			m_flNextTrack = gpGlobals->time + 1.0;
 			// don't attack again
 			m_flStopAttack = gpGlobals->time;
 		}
 	}
+}
+
+void CHornet::DartThink(void) {
+	if (CheckMonsterCollision()) {
+		return;
+	}
+
+	if (gpGlobals->time > m_flStopAttack) {
+		SetThink(&CHornet::SUB_Remove);
+	}
+
+	pev->nextthink = gpGlobals->time + 0.01f;
 }
 
 //=========================================================

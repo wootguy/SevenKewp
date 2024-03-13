@@ -59,6 +59,7 @@ public:
 	EHANDLE m_hSprite;
 
 	int m_iBeams;
+	Vector m_lastPos;
 };
 
 #endif

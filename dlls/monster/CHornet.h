@@ -46,15 +46,21 @@ public:
 	void EXPORT StartTrack ( void );
 	void EXPORT StartDart ( void );
 	void EXPORT TrackTarget ( void );
+	void EXPORT DartThink( void );
 	void EXPORT TrackTouch ( CBaseEntity *pOther );
 	void EXPORT DartTouch( CBaseEntity *pOther );
 	void EXPORT DieTouch ( CBaseEntity *pOther );
 	
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
+	bool CheckMonsterCollision();
+
 	float			m_flStopAttack;
+	float			m_flStartTrack;
+	float			m_flNextTrack;
 	int				m_iHornetType;
 	float			m_flFlySpeed;
+	Vector			m_lastPos;
 
 private:
 	static const char* pBuzzSounds[];
