@@ -15,6 +15,7 @@ class CFuncTrainControls : public CBaseEntity
 public:
 	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	void Spawn(void);
+	void Precache();
 	void EXPORT Find(void);
 };
 LINK_ENTITY_TO_CLASS(func_traincontrols, CFuncTrainControls);
@@ -52,4 +53,8 @@ void CFuncTrainControls::Spawn(void)
 
 	SetThink(&CFuncTrainControls::Find);
 	pev->nextthink = gpGlobals->time;
+}
+
+void CFuncTrainControls::Precache(void) {
+	PRECACHE_SOUND("plats/train_use1.wav");
 }

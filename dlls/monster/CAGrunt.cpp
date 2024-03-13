@@ -560,6 +560,11 @@ void CAGrunt :: Precache()
 	PRECACHE_SOUND_ARRAY(pAttackSounds);
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
 
+	PRECACHE_SOUND("player/pl_ladder1.wav");
+	PRECACHE_SOUND("player/pl_ladder2.wav");
+	PRECACHE_SOUND("player/pl_ladder3.wav");
+	PRECACHE_SOUND("player/pl_ladder4.wav");
+
 	PRECACHE_SOUND( "hassault/hw_shoot1.wav" );
 
 	iAgruntMuzzleFlash = PRECACHE_MODEL( "sprites/muz4.spr" );

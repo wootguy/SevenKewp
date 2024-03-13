@@ -77,6 +77,7 @@ std::map<std::string, std::string> g_modelReplacementsMap;
 std::map<std::string, std::string> g_modelReplacements;
 
 NerfStats g_nerfStats;
+TextureTypeStats g_textureStats;
 bool g_cfgsExecuted;
 
 void test_command() {

@@ -217,7 +217,6 @@ public:
 	unsigned char* m_lastPas; // only valid during AddToFullPack
 
 	virtual void Spawn( void );
-	void Pain( void );
 
 //	virtual void Think( void );
 	virtual void Jump( void );
