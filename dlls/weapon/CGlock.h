@@ -9,6 +9,7 @@ class CGlock : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
+	void PrecacheEvents();
 	int iItemSlot( void ) { return 2; }
 	int GetItemInfo(ItemInfo *p);
 

@@ -59,21 +59,20 @@ const char* CBaseGruntOp4::pGrenSounds[] =
 
 const char* CBaseGruntOp4::pAlertSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/alert.wav",
 	MOD_SND_FOLDER "fgrunt/down.wav",
-	MOD_SND_FOLDER "fgrunt/bogies.wav",
+	//MOD_SND_FOLDER "fgrunt/bogies.wav",
 	MOD_SND_FOLDER "fgrunt/hostiles.wav",
 };
 
 const char* CBaseGruntOp4::pMonsterSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/hostiles.wav",
+	MOD_SND_FOLDER "fgrunt/alert.wav",
 	MOD_SND_FOLDER "fgrunt/bogies.wav",
 };
 
 const char* CBaseGruntOp4::pCoverSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/clear.wav",
+	//MOD_SND_FOLDER "fgrunt/clear.wav",
 	MOD_SND_FOLDER "fgrunt/cover.wav",
 	MOD_SND_FOLDER "fgrunt/staydown.wav",
 };
@@ -81,7 +80,7 @@ const char* CBaseGruntOp4::pCoverSounds[] =
 const char* CBaseGruntOp4::pThrowSounds[] =
 {
 	MOD_SND_FOLDER "fgrunt/fire.wav",
-	MOD_SND_FOLDER "fgrunt/grenade.wav",
+	//MOD_SND_FOLDER "fgrunt/grenade.wav",
 };
 
 const char* CBaseGruntOp4::pChargeSounds[] =
@@ -94,20 +93,20 @@ const char* CBaseGruntOp4::pChargeSounds[] =
 const char* CBaseGruntOp4::pTauntSounds[] =
 {
 	MOD_SND_FOLDER "fgrunt/nothing.wav",
-	MOD_SND_FOLDER "fgrunt/getsome.wav",
+	//MOD_SND_FOLDER "fgrunt/getsome.wav",
 	MOD_SND_FOLDER "fgrunt/corners.wav",
 	MOD_SND_FOLDER "fgrunt/backup.wav",
-	MOD_SND_FOLDER "fgrunt/oneshot.wav",
-	MOD_SND_FOLDER "fgrunt/mister.wav",
+	//MOD_SND_FOLDER "fgrunt/oneshot.wav",
+	//MOD_SND_FOLDER "fgrunt/mister.wav",
 };
 
 const char* CBaseGruntOp4::pShotSounds[] =
 {
 	MOD_SND_FOLDER "fgrunt/friendly.wav",
 	MOD_SND_FOLDER "fgrunt/watchfire.wav",
-	MOD_SND_FOLDER "fgrunt/zone.wav",
+	//MOD_SND_FOLDER "fgrunt/zone.wav",
 	MOD_SND_FOLDER "fgrunt/watchit.wav",
-	MOD_SND_FOLDER "fgrunt/check.wav",
+	//MOD_SND_FOLDER "fgrunt/check.wav",
 	MOD_SND_FOLDER "fgrunt/wantsome.wav",
 };
 
@@ -124,9 +123,9 @@ const char* CBaseGruntOp4::pKillSounds[] =
 	MOD_SND_FOLDER "fgrunt/corporal.wav",
 	MOD_SND_FOLDER "fgrunt/talking.wav",
 	MOD_SND_FOLDER "fgrunt/take.wav",
-	MOD_SND_FOLDER "fgrunt/area.wav",
-	MOD_SND_FOLDER "fgrunt/check.wav",
-	MOD_SND_FOLDER "fgrunt/wantsome.wav",
+	//MOD_SND_FOLDER "fgrunt/area.wav",
+	//MOD_SND_FOLDER "fgrunt/check.wav",
+	//MOD_SND_FOLDER "fgrunt/wantsome.wav",
 	MOD_SND_FOLDER "fgrunt/oneshot.wav",
 };
 
@@ -152,7 +151,7 @@ const char* CBaseGruntOp4::pIdleSounds[] =
 	MOD_SND_FOLDER "fgrunt/guard.wav",
 	MOD_SND_FOLDER "fgrunt/mission.wav",
 	MOD_SND_FOLDER "fgrunt/babysitting.wav",
-	MOD_SND_FOLDER "fgrunt/coverup.wav",
+	//MOD_SND_FOLDER "fgrunt/coverup.wav",
 	MOD_SND_FOLDER "fgrunt/now.wav",
 	MOD_SND_FOLDER "fgrunt/short.wav",
 	MOD_SND_FOLDER "fgrunt/outof.wav",
@@ -161,7 +160,7 @@ const char* CBaseGruntOp4::pIdleSounds[] =
 	MOD_SND_FOLDER "fgrunt/dogs.wav",
 	MOD_SND_FOLDER "fgrunt/disney.wav",
 	MOD_SND_FOLDER "fgrunt/checkrecon.wav",
-	MOD_SND_FOLDER "fgrunt/seensquad.wav",
+	//MOD_SND_FOLDER "fgrunt/seensquad.wav",
 };
 
 const char* CBaseGruntOp4::pOkSounds[] =
@@ -239,16 +238,16 @@ const char* CBaseGruntOp4::pAttackSounds[] =
 	MOD_SND_FOLDER "fgrunt/rapidfire.wav",
 	MOD_SND_FOLDER "fgrunt/marines.wav",
 	MOD_SND_FOLDER "fgrunt/moveup.wav",
-	MOD_SND_FOLDER "fgrunt/go.wav",
+	//MOD_SND_FOLDER "fgrunt/go.wav",
 	MOD_SND_FOLDER "fgrunt/covering.wav",
-	MOD_SND_FOLDER "fgrunt/ass.wav",
+	//MOD_SND_FOLDER "fgrunt/ass.wav",
 };
 
 const char* CBaseGruntOp4::pPokSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/hell.wav",
-	MOD_SND_FOLDER "fgrunt/sir_01.wav",
-	MOD_SND_FOLDER "fgrunt/hellosir.wav",
+	//MOD_SND_FOLDER "fgrunt/hell.wav",
+	//MOD_SND_FOLDER "fgrunt/sir_01.wav",
+	//MOD_SND_FOLDER "fgrunt/hellosir.wav",
 	MOD_SND_FOLDER "fgrunt/corporal_01.wav",
 };
 
@@ -265,10 +264,14 @@ const char* CBaseGruntOp4::pClearSounds[] =
 };
 
 void CBaseGruntOp4::ShuffleSoundArrays() {
-	if (g_shuffledMonsterSounds.count(STRING(pev->classname))) {
+	// Notes on shuffled arrays:
+	// don't use a classname because child classes will cause more shuffling during map load
+	// don't allow sounds to be shared between shuffled arrays, or else precache count
+	// will flucuate on each map load
+	if (g_shuffledMonsterSounds.count("op4grunt")) {
 		return;
 	}
-	g_shuffledMonsterSounds.insert(STRING(pev->classname));
+	g_shuffledMonsterSounds.insert("op4grunt");
 
 	SHUFFLE_SOUND_ARRAY(pPainSounds);
 	SHUFFLE_SOUND_ARRAY(pDieSounds);

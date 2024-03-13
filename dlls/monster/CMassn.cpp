@@ -75,6 +75,7 @@ public:
 	float m_flStandGroundRange;
 
 	int m_iAssassinHead;
+	int m_weaponModel;
 
 private:
 	static const char* pDieSounds[];
@@ -140,25 +141,32 @@ void CMassn :: Spawn()
 {
 	BaseSpawn();
 
-	if( m_iAssassinHead == MAssassinHead::Random )
+	pev->skin = 0;
+	SetBodygroup(MAssassinBodygroup::Heads, m_iAssassinHead);
+	SetBodygroup(MAssassinBodygroup::Weapons, m_weaponModel);
+}
+
+void CMassn :: Precache()
+{
+	if (m_iAssassinHead == MAssassinHead::Random)
 	{
-		m_iAssassinHead = RANDOM_LONG( MAssassinHead::White, MAssassinHead::ThermalVision );
+		m_iAssassinHead = RANDOM_LONG(MAssassinHead::White, MAssassinHead::ThermalVision);
 	}
 
 	if (pev->weapons == 0) { // default equipment
 		pev->weapons = MAssassinWeaponFlag::MP5 | MAssassinWeaponFlag::HandGrenade;
 	}
 
-	auto weaponModel = MAssassinWeapon::None;
+	m_weaponModel = MAssassinWeapon::None;
 
-	if (FBitSet( pev->weapons, MAssassinWeaponFlag::MP5 ))
+	if (FBitSet(pev->weapons, MAssassinWeaponFlag::MP5))
 	{
-		weaponModel = MAssassinWeapon::MP5;
+		m_weaponModel = MAssassinWeapon::MP5;
 		m_cClipSize = MASSASSIN_MP5_CLIP_SIZE;
 	}
-	else if( FBitSet( pev->weapons, MAssassinWeaponFlag::SniperRifle ) )
+	else if (FBitSet(pev->weapons, MAssassinWeaponFlag::SniperRifle))
 	{
-		weaponModel = MAssassinWeapon::SniperRifle;
+		m_weaponModel = MAssassinWeapon::SniperRifle;
 		m_cClipSize = MASSN_SNIPER_CLIP_SIZE;
 		m_flDistTooFar = 4096.0;
 		m_flDistLook = 4096.0;
@@ -166,19 +174,14 @@ void CMassn :: Spawn()
 	}
 	else
 	{
-		weaponModel = MAssassinWeapon::None;
+		m_weaponModel = MAssassinWeapon::None;
 		m_cClipSize = 0;
 		runFromHeavyDamage = false;
 	}
 
-	SetBodygroup( MAssassinBodygroup::Heads, m_iAssassinHead );
-	SetBodygroup( MAssassinBodygroup::Weapons, weaponModel );
-
-	m_cAmmoLoaded		= m_cClipSize;
+	m_cAmmoLoaded = m_cClipSize;
 
 	m_flLastShot = gpGlobals->time;
-
-	pev->skin = 0;
 
 	// get voice pitch
 	if (RANDOM_LONG(0, 1))
@@ -199,10 +202,7 @@ void CMassn :: Spawn()
 	if (FBitSet(pev->weapons, MAssassinWeaponFlag::GrenadeLauncher)) {
 		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
 	}
-}
 
-void CMassn :: Precache()
-{
 	BasePrecache();
 	m_defaultModel = "models/massn.mdl";
 	PRECACHE_MODEL(GetModel());

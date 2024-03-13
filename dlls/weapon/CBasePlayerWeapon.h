@@ -7,6 +7,7 @@ class CBasePlayerWeapon : public CBasePlayerItem
 public:
 	virtual void KeyValue(KeyValueData* pkvd);
 	void Precache();
+	virtual void PrecacheEvents() {} // server must always call this for weapons which the client loads by default
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	

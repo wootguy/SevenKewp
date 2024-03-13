@@ -81,9 +81,11 @@ std::map<std::string, std::string> g_precachedModels;
 std::set<std::string> g_missingModels;
 std::set<std::string> g_precachedSounds;
 std::set<std::string> g_precachedGeneric;
+std::map<std::string, int> g_precachedEvents;
 std::set<std::string> g_tryPrecacheModels;
 std::set<std::string> g_tryPrecacheSounds;
 std::set<std::string> g_tryPrecacheGeneric;
+std::set<std::string> g_tryPrecacheEvents;
 std::map<std::string, WavInfo> g_wavInfos;
 Bsp g_bsp;
 
@@ -1802,7 +1804,7 @@ void UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::str
 			dat.szClassName = (char*)STRING(pEntity->pev->classname);
 			dat.szKeyName = (char*)item.first.c_str();
 			dat.szValue = (char*)item.second.c_str();
-			pEntity->KeyValue(&dat);
+			DispatchKeyValue(pent, &dat);
 		}
 
 		pEntity->Precache();
@@ -2859,7 +2861,19 @@ void LoadBsp() {
 
 			BSPMIPTEX& tex = *((BSPMIPTEX*)(g_bsp.textures + texOffset));
 
-			switch (PM_FindTextureType(tex.szName)) {
+			char* texName = tex.szName;
+			int slen = strlen(texName);
+
+			if (slen > 1) {
+				if (texName[0] == '{' || texName[0] == '!') {
+					texName = texName + 1;
+				}
+				else if (slen > 2 && (texName[0] == '+' || texName[0] == '-')) {
+					texName = texName + 2;
+				}
+			}
+
+			switch (PM_FindTextureType(texName)) {
 				case CHAR_TEX_CONCRETE: g_textureStats.tex_concrete = true; break;
 				case CHAR_TEX_METAL: g_textureStats.tex_metal = true; break;
 				case CHAR_TEX_DIRT: g_textureStats.tex_dirt = true; break;
@@ -2872,6 +2886,16 @@ void LoadBsp() {
 				case CHAR_TEX_GLASS: g_textureStats.tex_glass = true; break;
 				case CHAR_TEX_FLESH: g_textureStats.tex_flesh = true; break;
 				default: break;
+			}
+		}
+	}
+
+	// check for any leaves that would make swimming sounds if the player entered them
+	if (g_bsp.leaves) {
+		for (int i = 0; i < g_bsp.leafCount; i++) {
+			int contents = g_bsp.leaves[i].nContents;
+			if (contents <= CONTENTS_WATER && contents > CONTENTS_TRANSLUCENT) {
+				g_textureStats.tex_water = true;
 			}
 		}
 	}
@@ -2897,7 +2921,7 @@ int PRECACHE_GENERIC(const char* path) {
 
 	g_tryPrecacheGeneric.insert(path);
 
-	if (g_precachedGeneric.size() < MAX_PRECACHE) {
+	if (g_tryPrecacheGeneric.size() < MAX_PRECACHE) {
 		g_precachedGeneric.insert(path);
 		return g_engfuncs.pfnPrecacheGeneric(path);
 	}
@@ -2990,6 +3014,31 @@ int PRECACHE_MODEL(const char* path) {
 		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
 	}
 	
+}
+
+int PRECACHE_EVENT(int id, const char* path) {
+	std::string lowerPath = toLowerCase(path);
+	path = lowerPath.c_str();
+
+	if (g_serveractive) {
+		if (g_precachedEvents.find(path) != g_precachedEvents.end()) {
+			return g_precachedEvents[path];
+		}
+		else {
+			ALERT(at_error, "PrecacheEvent failed: %s\n", path);
+			return -1;
+		}
+	}
+
+	g_tryPrecacheEvents.insert(path);
+
+	if (g_tryPrecacheEvents.size() < MAX_PRECACHE_EVENT) {
+		g_precachedEvents[path] = g_engfuncs.pfnPrecacheEvent(id, path);
+		return g_precachedEvents[path];
+	}
+	else {
+		return -1;
+	}
 }
 
 void SET_MODEL(edict_t* edict, const char* model) {

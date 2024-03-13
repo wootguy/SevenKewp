@@ -70,7 +70,11 @@ void CCrowbar::Precache( void )
 	PRECACHE_SOUND("weapons/cbar_hitbod3.wav");
 	PRECACHE_SOUND("weapons/cbar_miss1.wav");
 
-	m_usCrowbar = PRECACHE_EVENT ( 1, "events/crowbar.sc" );
+	PrecacheEvents();
+}
+
+void CCrowbar::PrecacheEvents() {
+	m_usCrowbar = PRECACHE_EVENT(1, "events/crowbar.sc");
 }
 
 int CCrowbar::GetItemInfo(ItemInfo *p)

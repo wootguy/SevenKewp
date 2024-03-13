@@ -81,7 +81,7 @@ class CHGruntOp4 : public CBaseGruntOp4
 {
 public:
 	void Spawn( void );
-	void Precache( void );
+	virtual void Precache( void );
 	const char* DisplayName();
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void GibMonster( void );
@@ -189,7 +189,17 @@ void CHGruntOp4 :: Spawn()
 {
 	BaseSpawn();
 
-	m_afCapability		= bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP | bits_CAP_HEAR;
+	CTalkSquadMonster::g_talkWaitTime = 0;
+	SetUse(&CHGruntOp4::FollowerUse);
+
+	SetBodygroup(HGruntAllyBodygroup::Head, m_iGruntHead);
+	SetBodygroup(HGruntAllyBodygroup::Torso, m_iGruntTorso);
+	SetBodygroup(HGruntAllyBodygroup::Weapons, m_iWeaponIdx);
+}
+
+void CHGruntOp4 :: Precache()
+{
+	m_afCapability = bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP | bits_CAP_HEAR;
 
 	//Note: this code has been rewritten to use SetBodygroup since it relies on hardcoded offsets in the original
 	pev->body = 0;
@@ -199,18 +209,18 @@ void CHGruntOp4 :: Spawn()
 		pev->weapons = HGruntAllyWeaponFlag::MP5 | HGruntAllyWeaponFlag::HandGrenade;
 	}
 
-	if( pev->weapons & HGruntAllyWeaponFlag::MP5 )
+	if (pev->weapons & HGruntAllyWeaponFlag::MP5)
 	{
 		m_iWeaponIdx = HGruntAllyWeapon::MP5;
 		m_cClipSize = GRUNT_MP5_CLIP_SIZE;
 	}
-	else if( pev->weapons & HGruntAllyWeaponFlag::Shotgun )
+	else if (pev->weapons & HGruntAllyWeaponFlag::Shotgun)
 	{
 		m_cClipSize = GRUNT_SHOTGUN_CLIP_SIZE;
 		m_iWeaponIdx = HGruntAllyWeapon::Shotgun;
 		m_iGruntTorso = HGruntAllyTorso::Shotgun;
 	}
-	else if( pev->weapons & HGruntAllyWeaponFlag::Saw )
+	else if (pev->weapons & HGruntAllyWeaponFlag::Saw)
 	{
 		m_iWeaponIdx = HGruntAllyWeapon::Saw;
 		m_cClipSize = GRUNT_SAW_CLIP_SIZE;
@@ -224,21 +234,21 @@ void CHGruntOp4 :: Spawn()
 
 	m_cAmmoLoaded = m_cClipSize;
 
-	if( m_iGruntHead == HGruntAllyHead::Default )
+	if (m_iGruntHead == HGruntAllyHead::Default)
 	{
-		if( pev->spawnflags & SF_SQUADMONSTER_LEADER )
+		if (pev->spawnflags & SF_SQUADMONSTER_LEADER)
 		{
 			m_iGruntHead = HGruntAllyHead::BeretWhite;
 		}
-		else if( m_iWeaponIdx == HGruntAllyWeapon::Shotgun )
+		else if (m_iWeaponIdx == HGruntAllyWeapon::Shotgun)
 		{
 			m_iGruntHead = HGruntAllyHead::OpsMask;
 		}
-		else if( m_iWeaponIdx == HGruntAllyWeapon::Saw )
+		else if (m_iWeaponIdx == HGruntAllyWeapon::Saw)
 		{
-			m_iGruntHead = RANDOM_LONG( 0, 1 ) + HGruntAllyHead::BandanaWhite;
+			m_iGruntHead = RANDOM_LONG(0, 1) + HGruntAllyHead::BandanaWhite;
 		}
-		else if( m_iWeaponIdx == HGruntAllyWeapon::MP5 )
+		else if (m_iWeaponIdx == HGruntAllyWeapon::MP5)
 		{
 			m_iGruntHead = HGruntAllyHead::MilitaryPolice;
 		}
@@ -248,28 +258,23 @@ void CHGruntOp4 :: Spawn()
 		}
 	}
 
-	SetBodygroup( HGruntAllyBodygroup::Head, m_iGruntHead );
-	SetBodygroup( HGruntAllyBodygroup::Torso, m_iGruntTorso );
-	SetBodygroup( HGruntAllyBodygroup::Weapons, m_iWeaponIdx );
-
 	//TODO: probably also needs this for head HGruntAllyHead::BeretBlack
-	if( m_iGruntHead == HGruntAllyHead::OpsMask || m_iGruntHead == HGruntAllyHead::BandanaBlack )
+	if (m_iGruntHead == HGruntAllyHead::OpsMask || m_iGruntHead == HGruntAllyHead::BandanaBlack)
 		m_voicePitch = 90;
 
 	pev->skin = 0;
-
-	CTalkSquadMonster::g_talkWaitTime = 0;
 
 	m_flMedicWaitTime = gpGlobals->time;
 
 	// get voice pitch
 	m_voicePitch = 100;
 
-	SetUse( &CHGruntOp4::FollowerUse );
-
 	// set base equipment flags
 	if (FBitSet(pev->weapons, HGruntAllyWeaponFlag::MP5)) {
 		m_iEquipment |= MEQUIP_MP5;
+	}
+	if (FBitSet(pev->weapons, HGruntAllyWeaponFlag::Shotgun)) {
+		m_iEquipment |= MEQUIP_SHOTGUN;
 	}
 	if (FBitSet(pev->weapons, HGruntAllyWeaponFlag::Saw)) {
 		m_iEquipment |= MEQUIP_SAW;
@@ -283,10 +288,7 @@ void CHGruntOp4 :: Spawn()
 	if (m_iGruntHead == HGruntAllyHead::GasMask || m_iGruntHead == HGruntAllyHead::MilitaryPolice) {
 		m_iEquipment |= MEQUIP_HELMET;
 	}
-}
 
-void CHGruntOp4 :: Precache()
-{
 	CBaseGruntOp4::Precache();
 	m_defaultModel = "models/hgrunt_opfor.mdl";
 	PRECACHE_MODEL(GetModel());

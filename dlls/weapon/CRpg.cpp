@@ -393,7 +393,11 @@ void CRpg::Precache( void )
 	PRECACHE_SOUND("weapons/rocketfire1.wav");
 	PRECACHE_SOUND("weapons/glauncher.wav"); // alternative fire sound
 
-	m_usRpg = PRECACHE_EVENT ( 1, "events/rpg.sc" );
+	PrecacheEvents();
+}
+
+void CRpg::PrecacheEvents() {
+	m_usRpg = PRECACHE_EVENT(1, "events/rpg.sc");
 }
 
 

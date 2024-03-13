@@ -141,7 +141,6 @@ inline void *GET_PRIVATE( edict_t *pent )
 #define NUMBER_OF_ENTITIES		(*g_engfuncs.pfnNumberOfEntities)
 #define IS_DEDICATED_SERVER		(*g_engfuncs.pfnIsDedicatedServer)
 
-#define PRECACHE_EVENT			(*g_engfuncs.pfnPrecacheEvent)
 #define PLAYBACK_EVENT_FULL		(*g_engfuncs.pfnPlaybackEvent)
 
 #define ENGINE_SET_PVS			(*g_engfuncs.pfnSetFatPVS)

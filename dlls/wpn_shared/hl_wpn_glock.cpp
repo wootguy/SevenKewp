@@ -68,8 +68,12 @@ void CGlock::Precache( void )
 	PRECACHE_SOUND ("weapons/pl_gun2.wav");//silenced handgun
 	PRECACHE_SOUND ("weapons/pl_gun3.wav");//handgun
 
-	m_usFireGlock1 = PRECACHE_EVENT( 1, "events/glock1.sc" );
-	m_usFireGlock2 = PRECACHE_EVENT( 1, "events/glock2.sc" );
+	PrecacheEvents();
+}
+
+void CGlock::PrecacheEvents() {
+	m_usFireGlock1 = PRECACHE_EVENT(1, "events/glock1.sc");
+	m_usFireGlock2 = PRECACHE_EVENT(1, "events/glock2.sc");
 }
 
 int CGlock::GetItemInfo(ItemInfo *p)

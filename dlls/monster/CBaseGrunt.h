@@ -130,6 +130,7 @@ class CBaseGrunt : public CTalkSquadMonster
 public:
 	void BaseSpawn();
 	void BasePrecache();
+	void PrecacheEquipment(int equipment);
 	void SetYawSpeed(void);
 	int  Classify(void);
 	virtual int ISoundMask(void);

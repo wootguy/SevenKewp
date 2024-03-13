@@ -136,16 +136,27 @@ const char* CHWGrunt::pGruntSentences[] =
 void CHWGrunt::Spawn() {
 	BaseSpawn();
 
-	m_voicePitch = 85 + RANDOM_LONG(0,10);
+	minigunShootSeq = LookupSequence("attack");
+	minigunSpinupSeq = LookupSequence("spinup");
+}
+
+void CHWGrunt::Precache()
+{
+	m_voicePitch = 85 + RANDOM_LONG(0, 10);
 
 	if (pev->weapons == 0 || pev->weapons == RANDOM_PISTOL) {
-		pev->weapons = RANDOM_LONG(1,3);
+		pev->weapons = RANDOM_LONG(1, 3);
+
+		// weapon isn't known until spawn time. For normal monsters this could be skipped
+		// but then the precache list would change every map restart, so keep things simple
+		// and precache everything to be safe on maps that are very close to overflows.
+		//PrecacheEquipment(MEQUIP_GLOCK | MEQUIP_DEAGLE | MEQUIP_357);
 	}
 
 	m_iEquipment = MEQUIP_MINIGUN;
 
 	pev->weapons = 3;
-
+	/*
 	switch(pev->weapons) {
 	default:
 	case 1:
@@ -164,6 +175,7 @@ void CHWGrunt::Spawn() {
 		secondaryBody = GUN_357;
 		break;
 	}
+	*/
 
 	minigunIsSpinning = false;
 	m_cAmmoLoaded = m_cClipSize = INT_MAX;
@@ -172,12 +184,6 @@ void CHWGrunt::Spawn() {
 	shellEjectAttachment = 1;
 	m_flDistTooFar = 1536;
 
-	minigunShootSeq = LookupSequence("attack");
-	minigunSpinupSeq = LookupSequence("spinup");
-}
-
-void CHWGrunt::Precache()
-{
 	BasePrecache();
 
 	m_defaultModel = "models/hwgrunt.mdl";

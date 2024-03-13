@@ -961,37 +961,36 @@ void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void CBaseGrunt::BaseSpawn()
 {
-	Precache( );
-
-	SET_MODEL(ENT(pev), GetModel());
-	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
-
-	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_RED;
-	pev->effects		= 0;
-	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
-	m_MonsterState		= MONSTERSTATE_NONE;
+	pev->solid = SOLID_SLIDEBOX;
+	pev->movetype = MOVETYPE_STEP;
+	m_bloodColor = BLOOD_COLOR_RED;
+	pev->effects = 0;
+	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
+	m_MonsterState = MONSTERSTATE_NONE;
 	m_flNextGrenadeCheck = gpGlobals->time + 1;
-	m_flNextPainTime	= gpGlobals->time;
-	m_iSentence			= HGRUNT_SENT_NONE;
+	m_flNextPainTime = gpGlobals->time;
+	m_iSentence = HGRUNT_SENT_NONE;
 
-	m_afCapability		= bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
+	m_afCapability = bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
 
-	m_fEnemyEluded		= FALSE;
-	m_fFirstEncounter	= TRUE;// this is true when the grunt spawns, because he hasn't encountered an enemy yet.
+	m_fEnemyEluded = FALSE;
+	m_fFirstEncounter = TRUE;// this is true when the grunt spawns, because he hasn't encountered an enemy yet.
 
-	m_HackedGunPos = Vector ( 0, 0, 55 );
+	m_HackedGunPos = Vector(0, 0, 55);
 
 	CTalkSquadMonster::g_talkWaitTime = 0;
 
 	m_voicePitch = 100;
 
-	MonsterInit();
-
 	m_iEquipment = 0;
-
 	shellEjectAttachment = -1;
+
+	Precache();
+
+	SET_MODEL(ENT(pev), GetModel());
+	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+
+	MonsterInit();
 
 	InitAiFlags();
 }
@@ -1015,35 +1014,65 @@ void CBaseGrunt::BasePrecache() {
 	m_iSawShell = PRECACHE_MODEL("models/saw_shell.mdl");
 	m_iSawLink = PRECACHE_MODEL("models/saw_link.mdl");
 
-	// 9mmAR burst fire
-	PRECACHE_SOUND("hgrunt/gr_mgun1.wav");
-	PRECACHE_SOUND("hgrunt/gr_mgun2.wav");
-	PRECACHE_SOUND("weapons/glauncher.wav");
-	PRECACHE_SOUND("weapons/sbarrel1.wav");
 	PRECACHE_SOUND("hgrunt/gr_reload1.wav");
-	
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire1.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire2.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire3.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_reload.wav");
-
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/uzi/fire_both1.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/uzi/fire_both2.wav");
-
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/sniper_fire.wav");
-
-	PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_shoot2.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_shoot3.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_spinup.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_spindown.wav");
-
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/desert_eagle_fire.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/desert_eagle_reload.wav");
-
-	PRECACHE_SOUND("weapons/357_shot1.wav");
-	PRECACHE_SOUND("weapons/357_shot2.wav");
-	
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
+
+	PrecacheEquipment(m_iEquipment);
+}
+
+void CBaseGrunt::PrecacheEquipment(int equipment) {
+	if (equipment & MEQUIP_MP5) {
+		PRECACHE_SOUND("hgrunt/gr_mgun1.wav");
+		PRECACHE_SOUND("hgrunt/gr_mgun2.wav");
+
+		g_mapWeapons.insert("weapon_9mmAR");
+	}
+	if (equipment & MEQUIP_GRENADE_LAUNCHER) {
+		PRECACHE_SOUND("weapons/glauncher.wav");
+		g_mapWeapons.insert("weapon_9mmAR");
+	}
+	if (equipment & MEQUIP_SHOTGUN) {
+		PRECACHE_SOUND("weapons/sbarrel1.wav");
+
+		g_mapWeapons.insert("weapon_shotgun");
+	}
+	if (equipment & MEQUIP_SAW) {
+		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire1.wav");
+		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire2.wav");
+		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire3.wav");
+		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_reload.wav");
+
+		//g_mapWeapons.insert("weapon_9mmAR");
+	}
+	if (equipment & MEQUIP_357) {
+		PRECACHE_SOUND("weapons/357_shot1.wav");
+		PRECACHE_SOUND("weapons/357_shot2.wav");
+		g_mapWeapons.insert("weapon_357");
+	}
+	if (equipment & MEQUIP_DEAGLE) {
+		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/desert_eagle_fire.wav");
+		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/desert_eagle_reload.wav");
+	}
+	if (equipment & MEQUIP_GLOCK) {
+		g_mapWeapons.insert("weapon_9mmhandgun");
+	}
+	if (equipment & MEQUIP_SNIPER) {
+		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/sniper_fire.wav");
+		//g_mapWeapons.insert("weapon_9mmAR");
+	}
+	if (equipment & MEQUIP_MINIGUN) {
+		//g_mapWeapons.insert("weapon_9mmAR");
+		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_shoot2.wav");
+		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_shoot3.wav");
+		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_spinup.wav");
+		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_spindown.wav");
+	}
+	if (equipment & MEQUIP_AKIMBO_UZIS) {
+		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/uzi/fire_both1.wav");
+		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/uzi/fire_both2.wav");
+
+		g_mapWeapons.insert("weapon_9mmAR");
+	}
 }
 
 void CBaseGrunt :: StartTask ( Task_t *pTask )
