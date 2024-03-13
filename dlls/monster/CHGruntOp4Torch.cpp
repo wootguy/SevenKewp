@@ -94,6 +94,8 @@ public:
 	BOOL m_fTorchActive;
 
 	EHANDLE m_hTorchBeam;
+
+	int m_weaponIndex;
 };
 
 class COFTorchAllyRepel : public CBaseRepel
@@ -262,7 +264,21 @@ void COFTorchAlly :: Spawn()
 	BaseSpawn();
 
 	m_afCapability		= bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP | bits_CAP_HEAR;
+	CTalkSquadMonster::g_talkWaitTime = 0;
 
+	m_flMedicWaitTime = gpGlobals->time;
+
+	// get voice pitch
+	m_voicePitch = 95;
+
+	SetUse(&COFTorchAlly::FollowerUse);
+
+	pev->skin = 0;
+	SetBodygroup(TorchAllyBodygroup::Weapons, m_weaponIndex);
+}
+
+void COFTorchAlly :: Precache()
+{
 	//Note: this code has been rewritten to use SetBodygroup since it relies on hardcoded offsets in the original
 	pev->body = 0;
 
@@ -276,47 +292,31 @@ void COFTorchAlly :: Spawn()
 		pev->weapons |= TorchAllyWeaponFlag::DesertEagle;
 	}
 
-	int weaponIndex = TorchAllyWeapon::None;
+	m_weaponIndex = TorchAllyWeapon::None;
 
 	if( pev->weapons & TorchAllyWeaponFlag::DesertEagle )
 	{
-		weaponIndex = TorchAllyWeapon::DesertEagle;
+		m_weaponIndex = TorchAllyWeapon::DesertEagle;
 		m_cClipSize = TORCH_DEAGLE_CLIP_SIZE;
 	}
 	else
 	{
-		weaponIndex = TorchAllyWeapon::Torch;
+		m_weaponIndex = TorchAllyWeapon::Torch;
 		m_cClipSize = TORCH_DEAGLE_CLIP_SIZE;
 		m_fGunHolstered = true;
 		m_fTorchHolstered = false;
 	}
 
-	SetBodygroup( TorchAllyBodygroup::Weapons, weaponIndex );
-
 	m_cAmmoLoaded = m_cClipSize;
 
 	m_flLastShot = gpGlobals->time;
-
-	pev->skin = 0;
-
-	CTalkSquadMonster::g_talkWaitTime = 0;
-
-	m_flMedicWaitTime = gpGlobals->time;
-
-	// get voice pitch
-	m_voicePitch = 95;
-
-	SetUse( &COFTorchAlly::FollowerUse );
 
 	// set base equipment flags
 	if (FBitSet(pev->weapons, TorchAllyWeaponFlag::DesertEagle)) {
 		m_iEquipment |= MEQUIP_DEAGLE;
 	}
 	m_iEquipment |= MEQUIP_HELMET;
-}
 
-void COFTorchAlly :: Precache()
-{
 	CBaseGruntOp4::Precache();
 
 	m_defaultModel = "models/hgrunt_torch.mdl";

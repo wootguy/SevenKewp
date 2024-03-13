@@ -76,6 +76,8 @@ std::map<std::string, std::string> g_modelReplacementsMod;
 std::map<std::string, std::string> g_modelReplacementsMap;
 std::map<std::string, std::string> g_modelReplacements;
 
+std::set<std::string> g_mapWeapons;
+
 NerfStats g_nerfStats;
 TextureTypeStats g_textureStats;
 bool g_cfgsExecuted;

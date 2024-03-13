@@ -156,7 +156,10 @@ void CRoboGrunt::Spawn() {
 		m_voicePitch = 120 + RANDOM_LONG(0, 9);
 	else
 		m_voicePitch = 115;
+}
 
+void CRoboGrunt::Precache()
+{
 	if (pev->weapons == 0)
 	{
 		// initialize to original values
@@ -189,10 +192,7 @@ void CRoboGrunt::Spawn() {
 	if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER)) {
 		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
 	}
-}
 
-void CRoboGrunt::Precache()
-{
 	BasePrecache();
 
 	m_defaultModel = "models/rgrunt.mdl";

@@ -113,6 +113,8 @@ extern std::map<std::string, std::string> g_modelReplacementsMap; // model repla
 extern std::map<std::string, std::string> g_modelReplacementsMod; // model replacements for this mod
 extern std::map<std::string, std::string> g_modelReplacements; // combined model replacements
 
+extern std::set<std::string> g_mapWeapons; // weapons which should be precached (don't use aliases here)
+
 // per-monster sound replacement maps
 // should be a class member, but I'm afraid of the bugs that will come from using non-POD class members
 extern std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;

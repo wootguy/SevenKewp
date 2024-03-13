@@ -50,11 +50,13 @@ extern std::map<std::string, std::string> g_precachedModels; // storing values s
 extern std::set<std::string> g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
 extern std::set<std::string> g_precachedSounds;
 extern std::set<std::string> g_precachedGeneric;
+extern std::map<std::string, int> g_precachedEvents;
 
 // resources that attempted to precache but may have been replaced with a failure model
 extern std::set<std::string> g_tryPrecacheModels;
 extern std::set<std::string> g_tryPrecacheSounds;
 extern std::set<std::string> g_tryPrecacheGeneric;
+extern std::set<std::string> g_tryPrecacheEvents;
 
 extern std::map<std::string, WavInfo> g_wavInfos; // cached wav info, cleared on map change
 
@@ -65,6 +67,7 @@ extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to 
 #define MAX_PRECACHE 512
 #define MAX_PRECACHE_SOUND 511
 #define MAX_PRECACHE_MODEL 510
+#define MAX_PRECACHE_EVENT 256
 
 extern Bsp g_bsp;
 
@@ -692,7 +695,8 @@ float UTIL_WeaponTimeBase( void );
 #ifdef CLIENT_DLL
 #define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
 #define SET_MODEL		(*g_engfuncs.pfnSetModel)
-#define PRECACHE_SOUND		(*g_engfuncs.pfnPrecacheSound)
+#define PRECACHE_SOUND	(*g_engfuncs.pfnPrecacheSound)
+#define PRECACHE_EVENT	(*g_engfuncs.pfnPrecacheEvent)
 #define MODEL_INDEX		(*g_engfuncs.pfnModelIndex)
 #define GET_MODEL(model) model
 inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL) {
@@ -712,6 +716,7 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 int PRECACHE_GENERIC(const char* path);
 int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path);
 int PRECACHE_MODEL(const char* model);
+int PRECACHE_EVENT(int id, const char* path);
 void SET_MODEL(edict_t* edict, const char* model);
 const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
 int MODEL_INDEX(const char* model);

@@ -43,6 +43,7 @@
 #include "CRpg.h"
 #include "CMonsterMaker.h"
 #include "skill.h"
+#include "CGamePlayerEquip.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -361,6 +362,7 @@ void ServerDeactivate( void )
 	g_tryPrecacheGeneric.clear();
 	g_tryPrecacheModels.clear();
 	g_tryPrecacheSounds.clear();
+	g_mapWeapons.clear();
 	g_wavInfos.clear();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";
@@ -376,13 +378,147 @@ void ServerDeactivate( void )
 
 #include "lagcomp.h"
 
+void PrecacheWeapons() {
+	if (g_mapWeapons.find("weapon_shotgun") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_shotgun");
+		UTIL_PrecacheOther("ammo_buckshot");
+	}
+	if (g_mapWeapons.find("weapon_crowbar") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_crowbar");
+	}
+	if (g_mapWeapons.find("weapon_9mmhandgun") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_9mmhandgun");
+		UTIL_PrecacheOther("ammo_9mmclip");
+	}
+	if (g_mapWeapons.find("weapon_9mmAR") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_9mmAR");
+		UTIL_PrecacheOther("ammo_9mmAR");
+		UTIL_PrecacheOther("ammo_ARgrenades");
+	}
+	if (g_mapWeapons.find("weapon_357") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_357");
+		UTIL_PrecacheOther("ammo_357");
+	}
+	if (g_mapWeapons.find("weapon_gauss") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_gauss");
+		UTIL_PrecacheOther("ammo_gaussclip");
+	}
+	if (g_mapWeapons.find("weapon_rpg") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_rpg");
+		UTIL_PrecacheOther("ammo_rpgclip");
+	}
+	if (g_mapWeapons.find("weapon_crossbow") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_crossbow");
+		UTIL_PrecacheOther("ammo_crossbow");
+	}
+	if (g_mapWeapons.find("weapon_egon") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_egon");
+		UTIL_PrecacheOther("ammo_gaussclip");
+	}
+	if (g_mapWeapons.find("weapon_tripmine") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_tripmine");
+	}
+	if (g_mapWeapons.find("weapon_satchel") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_satchel");
+	}
+	if (g_mapWeapons.find("weapon_handgrenade") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_handgrenade");
+	}
+	if (g_mapWeapons.find("weapon_snark") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_snark");
+	}
+	if (g_mapWeapons.find("weapon_hornetgun") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_hornetgun");
+	}
+	if (g_mapWeapons.find("weapon_grapple") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_grapple");
+	}
+}
+
+void PrecacheTextureSounds() {
+	if (g_textureStats.tex_concrete) {
+		PRECACHE_SOUND_ENT(NULL, "player/pl_step1.wav");		// walk on concrete
+		PRECACHE_SOUND_ENT(NULL, "player/pl_step2.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_step3.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_step4.wav");
+	}
+
+	if (g_textureStats.tex_metal) {
+		PRECACHE_SOUND_ENT(NULL, "player/pl_metal1.wav");		// walk on metal
+		PRECACHE_SOUND_ENT(NULL, "player/pl_metal2.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_metal3.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_metal4.wav");
+	}
+
+	if (g_textureStats.tex_dirt) {
+		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt1.wav");		// walk on dirt
+		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt2.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt3.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt4.wav");
+	}
+
+	if (g_textureStats.tex_duct) {
+		PRECACHE_SOUND_ENT(NULL, "player/pl_duct1.wav");		// walk in duct
+		PRECACHE_SOUND_ENT(NULL, "player/pl_duct2.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_duct3.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_duct4.wav");
+	}
+
+	if (g_textureStats.tex_grate) {
+		PRECACHE_SOUND_ENT(NULL, "player/pl_grate1.wav");		// walk on grate
+		PRECACHE_SOUND_ENT(NULL, "player/pl_grate2.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_grate3.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_grate4.wav");
+	}
+
+	if (g_textureStats.tex_tile) {
+		PRECACHE_SOUND_ENT(NULL, "player/pl_tile1.wav");		// walk on tile
+		PRECACHE_SOUND_ENT(NULL, "player/pl_tile2.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_tile3.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_tile4.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_tile5.wav");
+	}
+
+	if (g_textureStats.tex_wood) {
+		PRECACHE_SOUND_ENT(NULL, "debris/wood1.wav");			// hit wood texture
+		PRECACHE_SOUND_ENT(NULL, "debris/wood2.wav");
+		PRECACHE_SOUND_ENT(NULL, "debris/wood3.wav");
+	}
+
+	if (g_textureStats.tex_computer) {
+		PRECACHE_SOUND_ENT(NULL, "buttons/spark5.wav");		// hit computer texture
+		PRECACHE_SOUND_ENT(NULL, "buttons/spark6.wav");
+	}
+
+	if (g_textureStats.tex_computer || g_textureStats.tex_glass) {
+		PRECACHE_SOUND_ENT(NULL, "debris/glass1.wav");
+		PRECACHE_SOUND_ENT(NULL, "debris/glass2.wav");
+		PRECACHE_SOUND_ENT(NULL, "debris/glass3.wav");
+	}
+
+	if (g_textureStats.tex_water) {
+		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh1.wav");		// walk in shallow water
+		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh2.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh3.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh4.wav");
+
+		PRECACHE_SOUND_ENT(NULL, "player/pl_swim1.wav");		// breathe bubbles
+		PRECACHE_SOUND_ENT(NULL, "player/pl_swim2.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_swim3.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_swim4.wav");
+
+		// Note: wade sounds are used by the engine for state transtitions
+		PRECACHE_SOUND_ENT(NULL, "player/pl_wade1.wav");		// wade in water
+		PRECACHE_SOUND_ENT(NULL, "player/pl_wade2.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_wade3.wav");
+		PRECACHE_SOUND_ENT(NULL, "player/pl_wade4.wav");
+	}
+}
+
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
 	int				i;
 	CBaseEntity		*pClass;
-
-	// Every call to ServerActivate should be matched by a call to ServerDeactivate
-	g_serveractive = 1;
 
 	// Clients have not been initialized yet
 	for ( i = 0; i < edictCount; i++ )
@@ -393,6 +529,12 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		// Clients aren't necessarily initialized until ClientPutInServer()
 		if ( i < clientMax || !pEdictList[i].pvPrivateData )
 			continue;
+
+		bool isBspModel = pEdictList[i].v.model && STRING(pEdictList[i].v.model)[0] == '*';
+		bool isSwimmable = pEdictList[i].v.skin <= CONTENTS_WATER && pEdictList[i].v.skin > CONTENTS_TRANSLUCENT;
+		if (isBspModel && isSwimmable) {
+			g_textureStats.tex_water = true;
+		}
 
 		pClass = CBaseEntity::Instance( &pEdictList[i] );
 		// Activate this entity if it's got a class & isn't dormant
@@ -412,6 +554,12 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			pClass->MyMonsterPointer()->Nerf();
 		}
 	}
+
+	PrecacheWeapons();
+	PrecacheTextureSounds();
+
+	// Every call to ServerActivate should be matched by a call to ServerDeactivate
+	g_serveractive = 1;
 
 	// Link user messages here to make sure first client can get them...
 	LinkUserMessages();
@@ -433,9 +581,9 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		}
 	}
 
-	ALERT(at_console, "Precache stats: %d models (%d MDL, %d BSP), %d sounds, %d generic\n",
+	ALERT(at_console, "Precache stats: %d models (%d MDL, %d BSP), %d sounds, %d generic, %d events\n",
 		g_tryPrecacheModels.size() + g_bsp.modelCount, g_tryPrecacheModels.size(), g_bsp.modelCount, 
-		g_tryPrecacheSounds.size(), g_tryPrecacheGeneric.size());
+		g_tryPrecacheSounds.size(), g_tryPrecacheGeneric.size(), g_tryPrecacheEvents.size());
 
 	if (g_tryPrecacheModels.size() > g_precachedModels.size()) {
 		ALERT(at_error, "Model precache overflow (%d / %d). The following models were not precached:\n",
@@ -467,6 +615,21 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			}
 		}
 	}
+	if (g_tryPrecacheEvents.size() > g_precachedEvents.size()) {
+		ALERT(at_error, "Event precache overflow (%d / %d). The following resources were not precached:\n",
+			g_tryPrecacheEvents.size(), MAX_PRECACHE_EVENT);
+
+		for (std::string item : g_tryPrecacheEvents) {
+			if (!g_precachedEvents.count(item)) {
+				ALERT(at_console, "    %s\n", item.c_str());
+			}
+		}
+	}
+	/*
+	for (std::string item : g_tryPrecacheSounds) {
+		ALERT(at_console, "    %s\n", item.c_str());
+	}
+	*/
 }
 
 /*
@@ -603,83 +766,6 @@ void ClientPrecache( void )
 	PRECACHE_SOUND_ENT(NULL, "common/npc_step2.wav");
 	PRECACHE_SOUND_ENT(NULL, "common/npc_step3.wav");
 	PRECACHE_SOUND_ENT(NULL, "common/npc_step4.wav");
-
-	if (g_textureStats.tex_concrete) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_step1.wav");		// walk on concrete
-		PRECACHE_SOUND_ENT(NULL, "player/pl_step2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_step3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_step4.wav");
-	}
-	
-	if (g_textureStats.tex_metal) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_metal1.wav");		// walk on metal
-		PRECACHE_SOUND_ENT(NULL, "player/pl_metal2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_metal3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_metal4.wav");
-	}
-
-	if (g_textureStats.tex_dirt) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt1.wav");		// walk on dirt
-		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt4.wav");
-	}
-
-	if (g_textureStats.tex_duct) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_duct1.wav");		// walk in duct
-		PRECACHE_SOUND_ENT(NULL, "player/pl_duct2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_duct3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_duct4.wav");
-	}
-
-	if (g_textureStats.tex_grate) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_grate1.wav");		// walk on grate
-		PRECACHE_SOUND_ENT(NULL, "player/pl_grate2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_grate3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_grate4.wav");
-	}
-
-	if (g_textureStats.tex_water) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh1.wav");		// walk in shallow water
-		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh4.wav");
-
-		PRECACHE_SOUND_ENT(NULL, "player/pl_swim1.wav");		// breathe bubbles
-		PRECACHE_SOUND_ENT(NULL, "player/pl_swim2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_swim3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_swim4.wav");
-
-		PRECACHE_SOUND_ENT(NULL, "player/pl_wade1.wav");		// wade in water
-		PRECACHE_SOUND_ENT(NULL, "player/pl_wade2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_wade3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_wade4.wav");
-	}
-
-	if (g_textureStats.tex_tile) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_tile1.wav");		// walk on tile
-		PRECACHE_SOUND_ENT(NULL, "player/pl_tile2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_tile3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_tile4.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_tile5.wav");
-	}
-
-	if (g_textureStats.tex_wood) {
-		PRECACHE_SOUND_ENT(NULL, "debris/wood1.wav");			// hit wood texture
-		PRECACHE_SOUND_ENT(NULL, "debris/wood2.wav");
-		PRECACHE_SOUND_ENT(NULL, "debris/wood3.wav");
-	}
-
-	if (g_textureStats.tex_computer) {
-		PRECACHE_SOUND_ENT(NULL, "buttons/spark5.wav");		// hit computer texture
-		PRECACHE_SOUND_ENT(NULL, "buttons/spark6.wav");
-	}
-
-	if (g_textureStats.tex_computer || g_textureStats.tex_glass) {
-		PRECACHE_SOUND_ENT(NULL, "debris/glass1.wav");
-		PRECACHE_SOUND_ENT(NULL, "debris/glass2.wav");
-		PRECACHE_SOUND_ENT(NULL, "debris/glass3.wav");
-	}
 
 	PRECACHE_SOUND_ENT(NULL,  SOUND_FLASHLIGHT_ON );
 	PRECACHE_SOUND_ENT(NULL,  SOUND_FLASHLIGHT_OFF );

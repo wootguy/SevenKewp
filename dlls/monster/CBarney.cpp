@@ -473,6 +473,8 @@ void CBarney :: Precache()
 	// when a level is loaded, nobody will talk (time is reset to 0)
 	TalkInit();
 	CTalkSquadMonster::Precache();
+
+	g_mapWeapons.insert("weapon_9mmhandgun");
 }	
 
 // Init talk data

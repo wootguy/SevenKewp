@@ -255,8 +255,21 @@ void CHGruntOp4Medic :: Spawn()
 	m_fFollowChecked = false;
 	m_fFollowChecking = false;
 
+	CTalkSquadMonster::g_talkWaitTime = 0;
 
-	if( !pev->weapons )
+	SetUse(&CHGruntOp4Medic::HealerUse);
+
+	// get voice pitch
+	m_voicePitch = 105;
+
+	pev->skin = 0;
+	SetBodygroup(MedicAllyBodygroup::Head, m_iBlackOrWhite);
+	SetBodygroup(MedicAllyBodygroup::Weapons, m_iWeaponIdx);
+}
+
+void CHGruntOp4Medic :: Precache()
+{
+	if (!pev->weapons)
 	{
 		pev->weapons |= MedicAllyWeaponFlag::Glock;
 	}
@@ -289,26 +302,14 @@ void CHGruntOp4Medic :: Spawn()
 		m_cClipSize = 0;
 	}
 
-	SetBodygroup( MedicAllyBodygroup::Head, m_iBlackOrWhite );
-	SetBodygroup( MedicAllyBodygroup::Weapons, m_iWeaponIdx );
-
 	m_cAmmoLoaded = m_cClipSize;
 
 	m_flLastShot = gpGlobals->time;
 
-	pev->skin = 0;
-
-	if( m_iBlackOrWhite == MedicAllyHead::Black )
+	if (m_iBlackOrWhite == MedicAllyHead::Black)
 	{
 		m_voicePitch = 95;
 	}
-
-	CTalkSquadMonster::g_talkWaitTime = 0;
-
-	SetUse( &CHGruntOp4Medic::HealerUse );
-
-	// get voice pitch
-	m_voicePitch = 105;
 
 	// set base equipment flags
 	if (FBitSet(pev->weapons, MedicAllyWeaponFlag::Glock)) {
@@ -321,10 +322,7 @@ void CHGruntOp4Medic :: Spawn()
 		m_iEquipment |= MEQUIP_NEEDLE;
 	}
 	m_iEquipment |= MEQUIP_HELMET;
-}
 
-void CHGruntOp4Medic :: Precache()
-{
 	CBaseGruntOp4::Precache();
 
 	m_defaultModel = "models/hgrunt_medic.mdl";

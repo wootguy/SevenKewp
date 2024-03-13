@@ -102,20 +102,6 @@ const char* CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting
 void CHGrunt::Spawn() {
 	BaseSpawn();
 
-	// get voice pitch
-	if (RANDOM_LONG(0, 1))
-		m_voicePitch = 109 + RANDOM_LONG(0, 7);
-	else
-		m_voicePitch = 100;
-
-	if (pev->weapons == 0)
-	{
-		// initialize to original values
-		pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
-		// pev->weapons = HGRUNT_SHOTGUN;
-		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
-	}
-
 	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
 	{
 		SetBodygroup(GUN_GROUP, GUN_SHOTGUN);
@@ -141,6 +127,23 @@ void CHGrunt::Spawn() {
 		SetBodygroup(HEAD_GROUP, HEAD_M203);
 		pev->skin = 1; // alway dark skin
 	}
+}
+
+void CHGrunt::Precache()
+{
+	// get voice pitch
+	if (RANDOM_LONG(0, 1))
+		m_voicePitch = 109 + RANDOM_LONG(0, 7);
+	else
+		m_voicePitch = 100;
+
+	if (pev->weapons == 0)
+	{
+		// initialize to original values
+		pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
+		// pev->weapons = HGRUNT_SHOTGUN;
+		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
+	}
 
 	// set base equipment flags
 	if (FBitSet(pev->weapons, HGRUNT_9MMAR)) {
@@ -158,10 +161,7 @@ void CHGrunt::Spawn() {
 	if (GetBodygroup(HEAD_GROUP) == HEAD_GRUNT) {
 		m_iEquipment |= MEQUIP_HELMET;
 	}
-}
 
-void CHGrunt::Precache()
-{
 	BasePrecache();
 
 	m_defaultModel = "models/hgrunt.mdl";

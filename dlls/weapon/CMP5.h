@@ -11,6 +11,7 @@ class CMP5 : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
+	void PrecacheEvents();
 	int iItemSlot( void ) { return 3; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );

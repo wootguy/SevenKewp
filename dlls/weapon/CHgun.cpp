@@ -71,9 +71,13 @@ void CHgun::Precache( void )
 	m_defaultModelW = "models/w_hgun.mdl";
 	CBasePlayerWeapon::Precache();
 
-	m_usHornetFire = PRECACHE_EVENT ( 1, "events/firehornet.sc" );
+	PrecacheEvents();
 
 	UTIL_PrecacheOther("hornet");
+}
+
+void CHgun::PrecacheEvents() {
+	m_usHornetFire = PRECACHE_EVENT(1, "events/firehornet.sc");
 }
 
 int CHgun::AddToPlayer( CBasePlayer *pPlayer )

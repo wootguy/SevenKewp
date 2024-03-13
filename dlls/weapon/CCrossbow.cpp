@@ -278,10 +278,13 @@ void CCrossbow::Precache( void )
 
 	UTIL_PrecacheOther( "crossbow_bolt" );
 
-	m_usCrossbow = PRECACHE_EVENT( 1, "events/crossbow1.sc" );
-	m_usCrossbow2 = PRECACHE_EVENT( 1, "events/crossbow2.sc" );
+	PrecacheEvents();
 }
 
+void CCrossbow::PrecacheEvents() {
+	m_usCrossbow = PRECACHE_EVENT(1, "events/crossbow1.sc");
+	m_usCrossbow2 = PRECACHE_EVENT(1, "events/crossbow2.sc");
+}
 
 int CCrossbow::GetItemInfo(ItemInfo *p)
 {

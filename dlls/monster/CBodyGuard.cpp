@@ -118,14 +118,14 @@ const char* CBodyGuard::pPainSounds[] =
 	MOD_SND_FOLDER "bodyguard/pain1.wav",
 	MOD_SND_FOLDER "bodyguard/pain2.wav",
 	MOD_SND_FOLDER "bodyguard/pain3.wav",
-	MOD_SND_FOLDER "bodyguard/pain4.wav"
+	MOD_SND_FOLDER "bodyguard/pain4.wav",
 };
 
 const char* CBodyGuard::pDeathSounds[] =
 {
 	MOD_SND_FOLDER "bodyguard/die1.wav",
 	MOD_SND_FOLDER "bodyguard/die2.wav",
-	MOD_SND_FOLDER "bodyguard/die3.wav"
+	MOD_SND_FOLDER "bodyguard/die3.wav",
 };
 
 const char* CBodyGuard::pShotSounds[] =
@@ -144,14 +144,14 @@ const char* CBodyGuard::pMadSounds[] =
 
 const char* CBodyGuard::pKillSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/whathelljoke.wav",
+	//MOD_SND_FOLDER "bodyguard/whathelljoke.wav",
 	MOD_SND_FOLDER "bodyguard/layeggs.wav",
 	MOD_SND_FOLDER "bodyguard/ashestoashes.wav",
 };
 
 const char* CBodyGuard::pIdleSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/pathetic.wav",
+	//MOD_SND_FOLDER "bodyguard/pathetic.wav",
 	MOD_SND_FOLDER "bodyguard/mondays.wav",
 	MOD_SND_FOLDER "bodyguard/shownupdrunk.wav",
 	MOD_SND_FOLDER "bodyguard/shootface.wav",
@@ -176,7 +176,7 @@ const char* CBodyGuard::pStopSounds[] =
 {
 	MOD_SND_FOLDER "bodyguard/stop1.wav",
 	MOD_SND_FOLDER "bodyguard/stop2.wav",
-	MOD_SND_FOLDER "bodyguard/stop3.wav",
+	//MOD_SND_FOLDER "bodyguard/stop3.wav",
 };
 
 const char* CBodyGuard::pScaredSounds[] =
@@ -202,7 +202,7 @@ const char* CBodyGuard::pCureSounds[] =
 
 const char* CBodyGuard::pQuestionSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/babysitter.wav",
+	//MOD_SND_FOLDER "bodyguard/babysitter.wav",
 	MOD_SND_FOLDER "bodyguard/pathetic.wav",
 	MOD_SND_FOLDER "bodyguard/whathelljoke.wav",
 };
@@ -211,7 +211,7 @@ const char* CBodyGuard::pAnswerSounds[] =
 {
 	MOD_SND_FOLDER "bodyguard/imbusy.wav",
 	MOD_SND_FOLDER "bodyguard/palimworking.wav",
-	MOD_SND_FOLDER "bodyguard/yougotit.wav",
+	//MOD_SND_FOLDER "bodyguard/yougotit.wav",
 };
 
 void CBodyGuard::GibMonster(void)
@@ -287,8 +287,50 @@ void CBodyGuard::Spawn()
 
 	m_afCapability = bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP | bits_CAP_HEAR;
 
+	m_cAmmoLoaded = m_cClipSize;
+
+	pev->body = 0;
+	SetBodygroup(2, pev->weapons);
+
+	pev->skin = RANDOM_LONG(0, 1);
+
+	m_flMedicWaitTime = gpGlobals->time;
+
+	// get voice pitch
+	m_voicePitch = pev->skin == 0 ? 100 : 90;
+
+	minigunShootSeq = LookupSequence("shoot_minigun");
+	minigunSpinupSeq = LookupSequence("shoot_minigun_spinup");
+}
+
+void CBodyGuard::ShuffleSoundArrays() {
+	if (g_shuffledMonsterSounds.count("bodyguard")) {
+		return;
+	}
+	g_shuffledMonsterSounds.insert("bodyguard");
+
+	SHUFFLE_SOUND_ARRAY(pShotSounds);
+	SHUFFLE_SOUND_ARRAY(pMadSounds);
+	SHUFFLE_SOUND_ARRAY(pKillSounds);
+	SHUFFLE_SOUND_ARRAY(pIdleSounds);
+	SHUFFLE_SOUND_ARRAY(pStopSounds);
+	SHUFFLE_SOUND_ARRAY(pScaredSounds);
+	SHUFFLE_SOUND_ARRAY(pHelloSounds);
+	SHUFFLE_SOUND_ARRAY(pCureSounds);
+	SHUFFLE_SOUND_ARRAY(pQuestionSounds);
+	SHUFFLE_SOUND_ARRAY(pAnswerSounds);
+}
+
+void CBodyGuard::Precache()
+{
 	if (pev->weapons <= 0 || pev->weapons > 7) {
 		pev->weapons = RANDOM_LONG(1, 7);
+
+		// weapon isn't known until spawn time. For normal monsters this could be skipped
+		// but then the precache list would change every map restart, so keep things simple
+		// and precache everything to be safe on maps that are very close to overflows.
+		PrecacheEquipment(MEQUIP_GLOCK | MEQUIP_DEAGLE | MEQUIP_SHOTGUN | MEQUIP_AKIMBO_UZIS
+			| MEQUIP_MP5 | MEQUIP_SNIPER | MEQUIP_MINIGUN);
 	}
 
 	switch(pev->weapons)
@@ -329,42 +371,6 @@ void CBodyGuard::Spawn()
 		break;
 	}
 
-	m_cAmmoLoaded = m_cClipSize;
-
-	pev->body = 0;
-	SetBodygroup(2, pev->weapons);
-
-	pev->skin = RANDOM_LONG(0, 1);
-
-	m_flMedicWaitTime = gpGlobals->time;
-
-	// get voice pitch
-	m_voicePitch = pev->skin == 0 ? 100 : 90;
-
-	minigunShootSeq = LookupSequence("shoot_minigun");
-	minigunSpinupSeq = LookupSequence("shoot_minigun_spinup");
-}
-
-void CBodyGuard::ShuffleSoundArrays() {
-	if (g_shuffledMonsterSounds.count(STRING(pev->classname))) {
-		return;
-	}
-	g_shuffledMonsterSounds.insert(STRING(pev->classname));
-
-	SHUFFLE_SOUND_ARRAY(pShotSounds);
-	SHUFFLE_SOUND_ARRAY(pMadSounds);
-	SHUFFLE_SOUND_ARRAY(pKillSounds);
-	SHUFFLE_SOUND_ARRAY(pIdleSounds);
-	SHUFFLE_SOUND_ARRAY(pStopSounds);
-	SHUFFLE_SOUND_ARRAY(pScaredSounds);
-	SHUFFLE_SOUND_ARRAY(pHelloSounds);
-	SHUFFLE_SOUND_ARRAY(pCureSounds);
-	SHUFFLE_SOUND_ARRAY(pQuestionSounds);
-	SHUFFLE_SOUND_ARRAY(pAnswerSounds);
-}
-
-void CBodyGuard::Precache()
-{
 	CBaseGrunt::BasePrecache();
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);

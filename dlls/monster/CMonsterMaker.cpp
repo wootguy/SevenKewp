@@ -296,6 +296,8 @@ void CMonsterMaker :: Precache( void )
 		keys["soundlist"] = STRING(m_soundReplacementPath);
 	if (m_IsPlayerAlly)
 		keys["is_player_ally"] = STRING(m_IsPlayerAlly);
+	if (pev->weapons)
+		keys["weapons"] = UTIL_VarArgs("%d", pev->weapons);
 
 	UTIL_PrecacheOther( STRING( m_iszMonsterClassname ), keys );
 

@@ -14,6 +14,7 @@ public:
 
 	void Spawn( void );
 	void Precache( void );
+	void PrecacheEvents();
 	int iItemSlot( void ) { return 4; }
 	int GetItemInfo(ItemInfo *p);
 	int AddToPlayer( CBasePlayer *pPlayer );

@@ -276,7 +276,6 @@ const char* COtis::pShotSounds[] =
 	MOD_SND_FOLDER "otis/damn.wav",
 	MOD_SND_FOLDER "otis/friends.wav",
 	MOD_SND_FOLDER "otis/chump.wav",
-	MOD_SND_FOLDER "otis/watchit.wav",
 	MOD_SND_FOLDER "otis/onry.wav",
 };
 
@@ -739,13 +738,15 @@ void COtis :: TalkInit()
 
 	// get voice for head - just one otis voice for now
 	m_voicePitch = 100;
+
+	g_mapWeapons.insert("weapon_357"); // weapon dropped on death
 }
 
 void COtis::ShuffleSoundArrays() {
-	if (g_shuffledMonsterSounds.count(STRING(pev->classname))) {
+	if (g_shuffledMonsterSounds.count("otis")) {
 		return;
 	}
-	g_shuffledMonsterSounds.insert(STRING(pev->classname));
+	g_shuffledMonsterSounds.insert("otis");
 
 	SHUFFLE_SOUND_ARRAY(pAnswerSounds);
 	SHUFFLE_SOUND_ARRAY(pQuestionSounds);

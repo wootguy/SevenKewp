@@ -41,6 +41,8 @@ void CGamePlayerEquip::KeyValue(KeyValueData* pkvd)
 				m_weaponCount[i] = atoi(pkvd->szValue);
 				m_weaponCount[i] = V_max(1, m_weaponCount[i]);
 				pkvd->fHandled = TRUE;
+
+				UTIL_PrecacheOther(STRING(m_weaponNames[i]));
 				break;
 			}
 		}

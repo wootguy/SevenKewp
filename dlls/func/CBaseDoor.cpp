@@ -220,6 +220,7 @@ void CBaseDoor::Spawn()
 	{// special contents
 		pev->solid = SOLID_NOT;
 		SetBits(pev->spawnflags, SF_DOOR_SILENT);	// water is silent for now
+		g_textureStats.tex_water = true;
 	}
 
 	pev->movetype = MOVETYPE_PUSH;

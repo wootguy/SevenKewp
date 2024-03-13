@@ -253,26 +253,30 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 }
 
 
-// Precaches the weapon and queues the weapon info for sending to clients
-void UTIL_PrecacheOtherWeapon( const char *szClassname )
+// Queues the weapon info for sending to clients
+void UTIL_RegisterWeapon( const char *szClassname )
 {
 	edict_t	*pent;
 
 	pent = CREATE_NAMED_ENTITY( MAKE_STRING( szClassname ) );
 	if ( FNullEnt( pent ) )
 	{
-		ALERT ( at_console, UTIL_VarArgs("NULL Ent '%s' in UTIL_PrecacheOtherWeapon\n", szClassname) );
+		ALERT ( at_console, UTIL_VarArgs("NULL Ent '%s' in UTIL_RegisterWeapon\n", szClassname) );
 		return;
 	}
 	
 	CBaseEntity *pEntity = CBaseEntity::Instance (VARS( pent ));
+	CBasePlayerWeapon* wep = pEntity ? pEntity->GetWeaponPtr() : NULL;
 
-	if (pEntity)
+	if (wep)
 	{
+		// events must always be precached, and in the correct order, or else
+		// vanilla clients will play the wrong weapon events
+		wep->PrecacheEvents();
+
 		ItemInfo II;
-		pEntity->Precache( );
 		memset( &II, 0, sizeof II );
-		if ( ((CBasePlayerItem*)pEntity)->GetItemInfo( &II ) )
+		if ( wep->GetItemInfo( &II ) )
 		{
 			CBasePlayerItem::ItemInfoArray[II.iId] = II;
 
@@ -303,79 +307,29 @@ void W_Precache(void)
 	// custom items...
 
 	// common world objects
+	/*
 	UTIL_PrecacheOther( "item_suit" );
 	UTIL_PrecacheOther( "item_battery" );
 	UTIL_PrecacheOther( "item_antidote" );
 	UTIL_PrecacheOther( "item_security" );
 	UTIL_PrecacheOther( "item_longjump" );
+	*/
 
-	// shotgun
-	UTIL_PrecacheOtherWeapon( "weapon_shotgun" );
-	UTIL_PrecacheOther( "ammo_buckshot" );
-
-	// crowbar
-	UTIL_PrecacheOtherWeapon( "weapon_crowbar" );
-
-	// glock
-	UTIL_PrecacheOtherWeapon( "weapon_9mmhandgun" );
-	UTIL_PrecacheOther( "ammo_9mmclip" );
-
-	// mp5
-	UTIL_PrecacheOtherWeapon( "weapon_9mmAR" );
-	UTIL_PrecacheOther( "ammo_9mmAR" );
-	UTIL_PrecacheOther( "ammo_ARgrenades" );
-
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// python
-	UTIL_PrecacheOtherWeapon( "weapon_357" );
-	UTIL_PrecacheOther( "ammo_357" );
-#endif
-	
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// gauss
-	UTIL_PrecacheOtherWeapon( "weapon_gauss" );
-	UTIL_PrecacheOther( "ammo_gaussclip" );
-#endif
-
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// rpg
-	UTIL_PrecacheOtherWeapon( "weapon_rpg" );
-	UTIL_PrecacheOther( "ammo_rpgclip" );
-#endif
-
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// crossbow
-	UTIL_PrecacheOtherWeapon( "weapon_crossbow" );
-	UTIL_PrecacheOther( "ammo_crossbow" );
-#endif
-
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// egon
-	UTIL_PrecacheOtherWeapon( "weapon_egon" );
-#endif
-
-	// tripmine
-	UTIL_PrecacheOtherWeapon( "weapon_tripmine" );
-
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// satchel charge
-	UTIL_PrecacheOtherWeapon( "weapon_satchel" );
-#endif
-
-	// hand grenade
-	UTIL_PrecacheOtherWeapon("weapon_handgrenade");
-
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// squeak grenade
-	UTIL_PrecacheOtherWeapon( "weapon_snark" );
-#endif
-
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	// hornetgun
-	UTIL_PrecacheOtherWeapon( "weapon_hornetgun" );
-#endif
-
-	UTIL_PrecacheOtherWeapon("weapon_grapple");
+	UTIL_RegisterWeapon("weapon_shotgun");
+	UTIL_RegisterWeapon("weapon_crowbar");
+	UTIL_RegisterWeapon("weapon_9mmhandgun");
+	UTIL_RegisterWeapon("weapon_9mmAR");
+	UTIL_RegisterWeapon("weapon_357");
+	UTIL_RegisterWeapon("weapon_gauss");
+	UTIL_RegisterWeapon("weapon_rpg");
+	UTIL_RegisterWeapon("weapon_crossbow");
+	UTIL_RegisterWeapon("weapon_egon");
+	UTIL_RegisterWeapon("weapon_tripmine");
+	UTIL_RegisterWeapon("weapon_satchel");
+	UTIL_RegisterWeapon("weapon_handgrenade");
+	UTIL_RegisterWeapon("weapon_snark");
+	UTIL_RegisterWeapon("weapon_hornetgun");
+	UTIL_RegisterWeapon("weapon_grapple");
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	if ( g_pGameRules->IsDeathmatch() )
@@ -397,6 +351,7 @@ void W_Precache(void)
 
 	// used by explosions
 	PRECACHE_MODEL ("models/grenade.mdl");
+	PRECACHE_MODEL ("models/w_grenade.mdl");
 	PRECACHE_MODEL ("sprites/explode1.spr");
 
 	PRECACHE_SOUND_ENT(NULL, "weapons/debris1.wav");// explosion aftermaths
