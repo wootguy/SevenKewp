@@ -3984,7 +3984,10 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 	vsnprintf(log_line, 4096, format, vl);
 	va_end(vl);
 
+#if defined(WIN32) && (_DEBUG)
 	OutputDebugString(log_line);
+#endif
+
 	g_engfuncs.pfnAlertMessage(target, log_line);
 
 	if (target == at_error) {
