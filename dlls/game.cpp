@@ -78,6 +78,49 @@ std::map<std::string, std::string> g_modelReplacements;
 
 std::set<std::string> g_mapWeapons;
 
+std::map<std::string, const char*> g_itemNameRemap = {
+	{"weapon_9mmar", "weapon_9mmAR"},
+	{"weapon_mp5", "weapon_9mmAR"},
+	{"weapon_uzi", "weapon_9mmAR"},
+	{"weapon_uziakimbo", "weapon_9mmAR"},
+	{"weapon_m16", "weapon_9mmAR"},
+	{"weapon_m249", "weapon_9mmAR"},
+	{"weapon_saw", "weapon_9mmAR"},
+	{"weapon_minigun", "weapon_9mmAR"},
+	{"weapon_pipewrench", "weapon_crowbar"},
+	{"weapon_eagle", "weapon_357"},
+	{"weapon_python", "weapon_357"},
+	{"weapon_sniperrifle", "weapon_crossbow"},
+	{"weapon_displacer", "weapon_egon"},
+	{"weapon_shockrifle", "weapon_hornetgun"},
+	{"weapon_glock", "weapon_9mmhandgun"},
+
+	{"ammo_9mmar", "ammo_9mmAR"},
+	{"ammo_mp5clip", "ammo_9mmAR"},
+	{"ammo_556clip", "ammo_9mmAR"},
+	{"ammo_uziclip", "ammo_9mmAR"},
+	{"ammo_556", "ammo_9mmbox"},
+	{"ammo_glockclip", "ammo_9mmclip"},
+	{"ammo_9mm", "ammo_9mmclip"},
+	{"ammo_egonclip", "ammo_gaussclip"},
+	{"ammo_mp5grenades", "ammo_ARgrenades"},
+	{"ammo_spore", "ammo_ARgrenades"},
+	{"ammo_argrenades", "ammo_ARgrenades"},
+	{"weapon_sporelauncher", "ammo_ARgrenades"},
+	{"ammo_sporeclip", "ammo_ARgrenades"},
+	{"ammo_spore", "ammo_ARgrenades"},
+	{"ammo_762", "ammo_crossbow"},
+};
+
+void AddPrecacheWeapon(std::string wepName) {
+	if (g_itemNameRemap.find(wepName) != g_itemNameRemap.end()) {
+		g_mapWeapons.insert(g_itemNameRemap[wepName]);
+	}
+	else {
+		g_mapWeapons.insert(wepName);
+	}
+}
+
 NerfStats g_nerfStats;
 TextureTypeStats g_textureStats;
 bool g_cfgsExecuted;

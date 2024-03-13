@@ -92,44 +92,10 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 	// Players getting spawnkilled rapidly in a full server leads to crashes and overflows.
 	// This also reduces noise when spawning.
 
-	static std::map<std::string, const char*> itemNameRemap = {
-		{"weapon_9mmar", "weapon_9mmAR"},
-		{"weapon_mp5", "weapon_9mmAR"},
-		{"weapon_uzi", "weapon_9mmAR"},
-		{"weapon_uziakimbo", "weapon_9mmAR"},
-		{"weapon_m16", "weapon_9mmAR"},
-		{"weapon_m249", "weapon_9mmAR"},
-		{"weapon_saw", "weapon_9mmAR"},
-		{"weapon_minigun", "weapon_9mmAR"},
-		{"weapon_pipewrench", "weapon_crowbar"},
-		{"weapon_eagle", "weapon_357"},
-		{"weapon_python", "weapon_357"},
-		{"weapon_sniperrifle", "weapon_crossbow"},
-		{"weapon_displacer", "weapon_egon"},
-		{"weapon_shockrifle", "weapon_hornetgun"},
-		{"weapon_glock", "weapon_9mmhandgun"},
-
-		{"ammo_9mmar", "ammo_9mmAR"},
-		{"ammo_mp5clip", "ammo_9mmAR"},
-		{"ammo_556clip", "ammo_9mmAR"},
-		{"ammo_uziclip", "ammo_9mmAR"},
-		{"ammo_556", "ammo_9mmbox"},
-		{"ammo_glockclip", "ammo_9mmclip"},
-		{"ammo_9mm", "ammo_9mmclip"},
-		{"ammo_egonclip", "ammo_gaussclip"},
-		{"ammo_mp5grenades", "ammo_ARgrenades"},
-		{"ammo_spore", "ammo_ARgrenades"},
-		{"ammo_argrenades", "ammo_ARgrenades"},
-		{"weapon_sporelauncher", "ammo_ARgrenades"},
-		{"ammo_sporeclip", "ammo_ARgrenades"},
-		{"ammo_spore", "ammo_ARgrenades"},
-		{"ammo_762", "ammo_crossbow"},
-	};
-
 	std::string itemLower = toLowerCase(itemName);
 	
-	if (itemNameRemap.find(itemLower) != itemNameRemap.end()) {
-		itemName = itemNameRemap[itemLower];
+	if (g_itemNameRemap.find(itemLower) != g_itemNameRemap.end()) {
+		itemName = g_itemNameRemap[itemLower];
 	}
 
 	if (!strcmp(itemName, "ammo_357")) {
