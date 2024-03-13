@@ -413,16 +413,18 @@ void DispatchObjectCollsionBox( edict_t *pent )
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE(pent);
 	if (pEntity)
 	{
-		if (pEntity->IsAlive()) {
-			pEntity->SetObjectCollisionBox();
-		}
-		else {
+		if (pEntity->IsMonster() && !pEntity->IsAlive()) {
 			// dead monsters have all have the same giant collision box for hit detections
 			// outside of the normal bbox (monsters sometimes die in positions far away from their origin)
-			pEntity->pev->absmin = pEntity->pev->origin + pEntity->pev->mins;
-			pEntity->pev->absmax = pEntity->pev->origin + pEntity->pev->maxs;
+			Vector deadMins = Vector(-256, -256, 0);
+			Vector deadMaxs = Vector(256, 256, 256);
+
+			pEntity->pev->absmin = pEntity->pev->origin + deadMins;
+			pEntity->pev->absmax = pEntity->pev->origin + deadMaxs;
 		}
-		
+		else {
+			pEntity->SetObjectCollisionBox();
+		}
 	}
 	else
 		SetObjectCollisionBox( &pent->v );

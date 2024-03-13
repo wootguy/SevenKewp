@@ -341,7 +341,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 			ClearMultiDamage();
 			if (pEntity->pev->takedamage)
 			{
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.sk_plr_egon_narrow, vecDir, &tr, DMG_ENERGYBEAM | DMG_BLOOD );
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.sk_plr_egon_narrow, vecDir, &tr, DMG_ENERGYBEAM );
 			}
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 
@@ -378,14 +378,14 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 			ClearMultiDamage();
 			if (pEntity->pev->takedamage)
 			{
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.sk_plr_egon_wide, vecDir, &tr, DMG_ENERGYBEAM | DMG_ALWAYSGIB | DMG_BLOOD);
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.sk_plr_egon_wide, vecDir, &tr, DMG_ENERGYBEAM | DMG_ALWAYSGIB);
 			}
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 
 			if ( g_pGameRules->IsMultiplayer() )
 			{
 				// radius damage a little more potent in multiplayer.
-				::RadiusDamage( tr.vecEndPos, pev, m_pPlayer->pev, gSkillData.sk_plr_egon_wide /4, 128, CLASS_NONE, DMG_ENERGYBEAM | DMG_ALWAYSGIB | DMG_BLOOD);
+				::RadiusDamage( tr.vecEndPos, pev, m_pPlayer->pev, gSkillData.sk_plr_egon_wide /4, 128, CLASS_NONE, DMG_ENERGYBEAM | DMG_ALWAYSGIB);
 			}
 
 			if ( !m_pPlayer->IsAlive() )

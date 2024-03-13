@@ -167,9 +167,8 @@ void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, const char* gibModel
 		if (pevVictim)
 		{
 			// spawn the gib somewhere in the monster's bounding volume
-			pGib->pev->origin.x = pevVictim->absmin.x + pevVictim->size.x * (RANDOM_FLOAT(0, 1));
-			pGib->pev->origin.y = pevVictim->absmin.y + pevVictim->size.y * (RANDOM_FLOAT(0, 1));
-			pGib->pev->origin.z = pevVictim->absmin.z + pevVictim->size.z * (RANDOM_FLOAT(0, 1)) + 1;	// absmin.z is in the floor because the engine subtracts 1 to enlarge the box
+			pGib->pev->origin = (pevVictim->origin - pevVictim->mins) + pevVictim->size * (RANDOM_FLOAT(0, 1));
+			pGib->pev->origin.z += 1; // absmin.z is in the floor because the engine subtracts 1 to enlarge the box
 
 			// make the gib fly away from the attack vector
 			pGib->pev->velocity = g_vecAttackDir * -1;

@@ -637,7 +637,7 @@ public:
 #define DMG_SHOWNHUD		(DMG_POISON | DMG_ACID | DMG_FREEZE | DMG_SLOWFREEZE | DMG_DROWN | DMG_BURN | DMG_SLOWBURN | DMG_NERVEGAS | DMG_RADIATION | DMG_SHOCK)
 
 // damage types that draw blood from the victim
-#define DMG_BLOOD (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB | DMG_ACID | DMG_MORTAR | DMG_SNIPER)
+#define DMG_BLOOD (DMG_BULLET | DMG_SLASH | DMG_BLAST | DMG_CLUB | DMG_ACID | DMG_MORTAR | DMG_SNIPER | DMG_ENERGYBEAM)
 
 // NOTE: tweak these values based on gameplay feedback:
 
