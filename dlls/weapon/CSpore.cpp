@@ -44,8 +44,8 @@ void CSpore::Precache()
 	m_iBlowSmall = PRECACHE_MODEL("sprites/spore_exp_c_01.spr" );
 	m_iSpitSprite = m_iTrail = PRECACHE_MODEL("sprites/tinyspit.spr" );
 
-	PRECACHE_SOUND( "weapons/splauncher_impact.wav" );
-	PRECACHE_SOUND( "weapons/splauncher_bounce.wav" );
+	PRECACHE_SOUND( MOD_SND_FOLDER "weapons/splauncher_impact.wav" );
+	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/splauncher_bounce.wav" );
 }
 
 void CSpore::Spawn()
@@ -133,7 +133,7 @@ void CSpore::IgniteThink()
 		m_hSprite = nullptr;
 	}
 
-	EMIT_SOUND(edict(), CHAN_WEAPON, "weapons/splauncher_impact.wav", VOL_NORM, ATTN_NORM);
+	EMIT_SOUND(edict(), CHAN_WEAPON, MOD_SND_FOLDER "weapons/splauncher_impact.wav", VOL_NORM, ATTN_NORM);
 
 	const auto vecDir = pev->velocity.Normalize();
 
@@ -251,7 +251,7 @@ void CSpore::MyBounceTouch( CBaseEntity* pOther )
 			}
 			else
 			{
-				EMIT_SOUND_DYN( edict(), CHAN_VOICE, "weapons/splauncher_bounce.wav", 0.25, ATTN_NORM, 0, PITCH_NORM );
+				EMIT_SOUND_DYN( edict(), CHAN_VOICE, MOD_SND_FOLDER "weapons/splauncher_bounce.wav", 1.0f, ATTN_NORM, 0, PITCH_NORM );
 			}
 		}
 	}

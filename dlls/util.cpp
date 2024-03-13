@@ -2914,7 +2914,7 @@ int PRECACHE_GENERIC(const char* path) {
 			return g_engfuncs.pfnPrecacheGeneric(path);
 		}
 		else {
-			ALERT(at_error, "PrecacheGeneric failed: %s\n", path);
+			ALERT(at_warning, "PrecacheGeneric failed: %s\n", path);
 			return -1;
 		}
 	}
@@ -2953,7 +2953,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 			return g_engfuncs.pfnPrecacheSound(path);
 		}
 		else {
-			ALERT(at_error, "PrecacheSound failed: %s\n", path);
+			ALERT(at_warning, "PrecacheSound failed: %s\n", path);
 			return -1;
 		}
 	}
@@ -2997,7 +2997,7 @@ int PRECACHE_MODEL(const char* path) {
 			return g_engfuncs.pfnPrecacheModel(path);
 		}
 		else {
-			ALERT(at_error, "PrecacheModel failed: %s\n", path);
+			ALERT(at_warning, "PrecacheModel failed: %s\n", path);
 			return -1;
 		}
 	}
@@ -3025,7 +3025,7 @@ int PRECACHE_EVENT(int id, const char* path) {
 			return g_precachedEvents[path];
 		}
 		else {
-			ALERT(at_error, "PrecacheEvent failed: %s\n", path);
+			ALERT(at_warning, "PrecacheEvent failed: %s\n", path);
 			return -1;
 		}
 	}
