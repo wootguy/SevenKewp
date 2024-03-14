@@ -4050,11 +4050,11 @@ void CBaseMonster::GibMonster(void)
 		gibbed = TRUE;
 	}
 
-	if (!IsPlayer())
+	if (!IsPlayer() && !IsPlayerCorpse())
 	{
 		if (gibbed)
 		{
-			// don't remove players!
+			// don't remove players or player corpses!
 			SetThink(&CBaseMonster::SUB_Remove);
 			pev->nextthink = gpGlobals->time;
 		}
@@ -4299,7 +4299,7 @@ void CBaseMonster::CallGibMonster(void)
 		pev->health = 0;
 	}
 
-	if (ShouldFadeOnDeath() && !fade)
+	if (ShouldFadeOnDeath() && !fade && !IsPlayerCorpse())
 		UTIL_Remove(this);
 }
 

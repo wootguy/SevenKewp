@@ -198,6 +198,7 @@ public:
 	virtual BOOL    IsInWorld( void );
 	virtual	BOOL	IsMonster( void ) { return FALSE; }
 	virtual	BOOL	IsPlayer( void ) { return FALSE; }
+	virtual	BOOL	IsPlayerCorpse( void ) { return FALSE; }
 	virtual BOOL	IsNetClient( void ) { return FALSE; }
 	virtual BOOL	IsBreakable( void ) { return FALSE; }
 	virtual const char *TeamID( void ) { return ""; }
