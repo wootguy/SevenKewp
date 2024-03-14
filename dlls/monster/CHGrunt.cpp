@@ -127,6 +127,9 @@ void CHGrunt::Spawn() {
 		SetBodygroup(HEAD_GROUP, HEAD_M203);
 		pev->skin = 1; // alway dark skin
 	}
+	if (GetBodygroup(HEAD_GROUP) == HEAD_GRUNT) {
+		m_iEquipment |= MEQUIP_HELMET;
+	}
 }
 
 void CHGrunt::Precache()
@@ -157,9 +160,6 @@ void CHGrunt::Precache()
 	}
 	if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER)) {
 		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
-	}
-	if (GetBodygroup(HEAD_GROUP) == HEAD_GRUNT) {
-		m_iEquipment |= MEQUIP_HELMET;
 	}
 
 	BasePrecache();

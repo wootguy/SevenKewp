@@ -413,10 +413,10 @@ void DispatchObjectCollsionBox( edict_t *pent )
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE(pent);
 	if (pEntity)
 	{
-		if (pEntity->IsMonster() && !pEntity->IsAlive()) {
+		if (pEntity->pev->iuser4 == 1337) { // HACK TOWN USA
 			// dead monsters have all have the same giant collision box for hit detections
 			// outside of the normal bbox (monsters sometimes die in positions far away from their origin)
-			Vector deadMins = Vector(-256, -256, 0);
+			Vector deadMins = Vector(-256, -256, -256); // negative z for player corpses or upside-down monsters
 			Vector deadMaxs = Vector(256, 256, 256);
 
 			pEntity->pev->absmin = pEntity->pev->origin + deadMins;

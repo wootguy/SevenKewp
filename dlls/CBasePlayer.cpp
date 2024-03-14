@@ -894,6 +894,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	
 	pev->angles.x = 0;
 	pev->angles.z = 0;
+	pev->solid = SOLID_NOT; // fix laggy movement on corpses
 
 	SetThink(&CBasePlayer::PlayerDeathThink);
 	pev->nextthink = gpGlobals->time + 0.1;
@@ -1308,11 +1309,13 @@ void CBasePlayer::PlayerDeathThink(void)
 // if the player has been dead for one second longer than allowed by forcerespawn, 
 // forcerespawn isn't on. Send the player off to an intermission camera until they 
 // choose to respawn.
+	/*
 	if ( g_pGameRules->IsMultiplayer() && ( gpGlobals->time > (m_fDeadTime + 6) ) && !(m_afPhysicsFlags & PFLAG_OBSERVER) )
 	{
 		// go to dead camera. 
 		StartDeathCam();
 	}
+	*/
 
 	if ( pev->iuser1 )	// player is in spectator mode
 		return;	
