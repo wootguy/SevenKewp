@@ -448,6 +448,10 @@ void CBaseDoor::DoorTouch(CBaseEntity* pOther)
 void CBaseDoor::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
 	m_hActivator = pActivator;
+	if ((pev->spawnflags & SF_DOOR_NOMONSTERS) && pActivator->IsMonster() && !pActivator->IsPlayer()) {
+		return;
+	}
+
 	// if not ready to be used, ignore "use" command.
 	if (m_toggle_state == TS_AT_BOTTOM || FBitSet(pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && m_toggle_state == TS_AT_TOP)
 		DoorActivate();

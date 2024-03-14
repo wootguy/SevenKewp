@@ -153,10 +153,11 @@ int CCrowbar::Swing( int fFirst )
 	static edict_t* nearbyCorpses[256];
 	int numNearbyCorpses = 0;
 	edict_t* ent = NULL;
-	while (!FNullEnt(ent = FIND_ENTITY_IN_SPHERE(ent, vecSrc, 64))) {
+	while (!FNullEnt(ent = FIND_ENTITY_IN_SPHERE(ent, vecSrc, 192))) {
 		if ((ent->v.flags & (FL_MONSTER | FL_CLIENT)) && ent->v.deadflag >= DEAD_DEAD && ent->v.solid == SOLID_NOT) {
 			nearbyCorpses[numNearbyCorpses++] = ent;
 			ent->v.solid = SOLID_BBOX;
+			ent->v.iuser4 = 1337; // HACKAROO: flag meaning "this entity is a gibbable corpse which is about to be attacked so it should have a large bounding box right now, but usually it shouldn't have that"
 			UTIL_SetOrigin(&ent->v, ent->v.origin);
 		}
 	}
@@ -186,7 +187,10 @@ int CCrowbar::Swing( int fFirst )
 	//ALERT(at_console, "solidfied %d nearby corpses\n", numNearbyCorpses);
 	// revert back to nonsolid so that the player doesn't get gibbed by a door or have laggy movement
 	for (int i = 0; i < numNearbyCorpses; i++) {
-		nearbyCorpses[i]->v.solid = SOLID_NOT;
+		ent = nearbyCorpses[i];
+		ent->v.solid = SOLID_NOT;
+		ent->v.iuser4 = 0;
+		UTIL_SetOrigin(&ent->v, ent->v.origin); // reset abs bbox
 	}
 
 	// disabled client prediction to stop doubling sounds/animations

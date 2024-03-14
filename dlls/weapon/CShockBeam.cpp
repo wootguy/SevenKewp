@@ -262,10 +262,9 @@ CShockBeam* CShockBeam::CreateShockBeam( const Vector& vecOrigin, const Vector& 
 {
 	auto pBeam = GetClassPtr<CShockBeam>( nullptr );
 
+	pBeam->pev->origin = vecOrigin;
 	pBeam->pev->angles = vecAngles;
 	pBeam->pev->angles.x = -pBeam->pev->angles.x;
-
-	UTIL_SetOrigin( pBeam->pev, vecOrigin );
 
 	UTIL_MakeVectors( pBeam->pev->angles );
 
