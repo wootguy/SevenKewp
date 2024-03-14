@@ -10,6 +10,7 @@ class CCorpse : public CBaseMonster
 {
 	virtual int ObjectCaps(void) { return FCAP_DONT_SAVE; }
 	int Classify() { return CLASS_PLAYER; }
+	BOOL IsPlayerCorpse(void) { return TRUE; }
 };
 
 LINK_ENTITY_TO_CLASS(bodyque, CCorpse);
