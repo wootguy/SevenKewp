@@ -154,7 +154,7 @@ int CCrowbar::Swing( int fFirst )
 	int numNearbyCorpses = 0;
 	edict_t* ent = NULL;
 	while (!FNullEnt(ent = FIND_ENTITY_IN_SPHERE(ent, vecSrc, 64))) {
-		if ((ent->v.flags & FL_MONSTER) && ent->v.deadflag == DEAD_DEAD && ent->v.solid == SOLID_NOT) {
+		if ((ent->v.flags & (FL_MONSTER | FL_CLIENT)) && ent->v.deadflag >= DEAD_DEAD && ent->v.solid == SOLID_NOT) {
 			nearbyCorpses[numNearbyCorpses++] = ent;
 			ent->v.solid = SOLID_BBOX;
 			UTIL_SetOrigin(&ent->v, ent->v.origin);
