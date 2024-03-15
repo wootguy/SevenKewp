@@ -4739,6 +4739,9 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 			break;
 		}
 
+		if (IsMachine()) {
+			UTIL_Shrapnel(ptr->vecEndPos, ptr->vecPlaneNormal, flDamage, bitsDamageType);
+		}
 		if (bitsDamageType & DMG_BLOOD) {
 			// headshots should always show big blood, no matter how little damage was done.
 			// The idea is that blood size should be used primarly as an indicator that you hit the weak point.
@@ -7239,13 +7242,7 @@ void CBaseMonster::Nerf() {
 	}
 
 	if (IRelationship(CLASS_PLAYER, Classify()) > R_NO || (IsTurret() && !m_IsPlayerAlly)) {
-		float healthStatMult = 1.0f;
-
-		if (strstr(monstertype, "monster_robogrunt") == monstertype) {
-			healthStatMult = 5.0f; // robo grunts effectively have 5x hp due to damage resistance
-		}
-
-		g_nerfStats.totalMonsterHealth += pev->health * healthStatMult;
+		g_nerfStats.totalMonsterHealth += pev->health;
 		g_nerfStats.totalMonsters++;
 	}
 }

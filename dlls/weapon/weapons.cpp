@@ -47,6 +47,8 @@ DLL_GLOBAL	short	g_sModelIndexWExplosion;// holds the index for the underwater e
 DLL_GLOBAL	short	g_sModelIndexBubbles;// holds the index for the bubbles model
 DLL_GLOBAL	short	g_sModelIndexBloodDrop;// holds the sprite index for the initial blood
 DLL_GLOBAL	short	g_sModelIndexBloodSpray;// holds the sprite index for splattered blood
+DLL_GLOBAL	short	g_sModelIndexShrapnelHit;// holds the sprite index for shrapnel impact sprite
+DLL_GLOBAL	short	g_sModelIndexShrapnel;// holds the model index for shrapnel gibs
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
@@ -348,6 +350,9 @@ void W_Precache(void)
 	g_sModelIndexLaser = PRECACHE_MODEL( (char *)g_pModelNameLaser );
 	g_sModelIndexLaserDot = PRECACHE_MODEL("sprites/laserdot.spr");
 
+	// shrapnel effect ("blood" for machines)
+	g_sModelIndexShrapnelHit = PRECACHE_MODEL("sprites/hlcoop/shraphit.spr");
+	g_sModelIndexShrapnel = PRECACHE_MODEL("models/hlcoop/bigshrapnel.mdl");
 
 	// used by explosions
 	PRECACHE_MODEL ("models/grenade.mdl");

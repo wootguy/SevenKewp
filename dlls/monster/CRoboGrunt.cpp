@@ -47,6 +47,7 @@ public:
 	const char* GetDeathNoticeWeapon();
 
 	float m_explodeTime;
+	int m_iHeadshotSpr;
 
 private:
 	static const char* pDeathSounds[];
@@ -64,6 +65,7 @@ private:
 	static const char* pQuestSounds[];
 	static const char* pTauntSounds[];
 	static const char* pThrowSounds[];
+	static const char* pHeadshotSounds[];
 };
 
 class CRoboGruntRepel : public CBaseRepel
@@ -136,6 +138,13 @@ const char* CRoboGrunt::pThrowSounds[] =
 {
 	MOD_SND_FOLDER "rgrunt/rb_throw0.wav",
 };
+const char* CRoboGrunt::pHeadshotSounds[] =
+{
+	"buttons/spark1.wav",
+	"buttons/spark2.wav",
+	"buttons/spark3.wav",
+	"buttons/spark4.wav",
+};
 
 const char* CRoboGrunt::pGruntSentences[] =
 {
@@ -150,6 +159,17 @@ const char* CRoboGrunt::pGruntSentences[] =
 
 void CRoboGrunt::Spawn() {
 	BaseSpawn();
+
+	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
+	{
+		SetBodygroup(GUN_GROUP, GUN_SHOTGUN);
+		m_cClipSize = 8;
+	}
+	else
+	{
+		m_cClipSize = GRUNT_CLIP_SIZE;
+	}
+	m_cAmmoLoaded = m_cClipSize;
 
 	// get voice pitch
 	if (RANDOM_LONG(0, 1))
@@ -167,17 +187,6 @@ void CRoboGrunt::Precache()
 		// pev->weapons = HGRUNT_SHOTGUN;
 		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
 	}
-
-	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
-	{
-		SetBodygroup(GUN_GROUP, GUN_SHOTGUN);
-		m_cClipSize = 8;
-	}
-	else
-	{
-		m_cClipSize = GRUNT_CLIP_SIZE;
-	}
-	m_cAmmoLoaded = m_cClipSize;
 
 	// set base equipment flags
 	if (FBitSet(pev->weapons, HGRUNT_9MMAR)) {
@@ -199,6 +208,8 @@ void CRoboGrunt::Precache()
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL("models/computergibs.mdl");
 
+	m_iHeadshotSpr = PRECACHE_MODEL("sprites/xspark2.spr");
+
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
 
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
@@ -212,6 +223,7 @@ void CRoboGrunt::Precache()
 	PRECACHE_SOUND_ARRAY(pQuestSounds);
 	PRECACHE_SOUND_ARRAY(pTauntSounds);
 	PRECACHE_SOUND_ARRAY(pThrowSounds);
+	PRECACHE_SOUND_ARRAY(pHeadshotSounds);
 }
 
 int	CRoboGrunt::Classify(void)
@@ -313,20 +325,33 @@ void CRoboGrunt::RunTask(Task_t* pTask)
 
 void CRoboGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
 {
-	// reduce bullet damage
 	if (flDamage > 0) {
-		UTIL_Ricochet(ptr->vecEndPos, 1.0);
-
 		if (pev->deadflag != DEAD_DEAD) {
-			if (!(bitsDamageType & DMG_ENERGYBEAM))
-				flDamage *= 0.2; // Note: This magic value is also used in SetHealth for monster stats
+			if ((bitsDamageType & DMG_ENERGYBEAM))
+				flDamage *= 4; // Note: This magic value is also used in SetHealth for monster stats
 		}
 		else if (RANDOM_LONG(0, 4) == 0) { // 25% chance damage triggers explosion on death
 			GibMonster();
 		}
+
+		if (ptr->iHitgroup == HITGROUP_HEAD) {
+			StartSound(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(pHeadshotSounds), 1.0f, ATTN_NORM, 0, RANDOM_LONG(90, 110), pev->origin, 0xffffffff);
+
+			Vector sprPos = ptr->vecEndPos - Vector(0, 0, 10);
+
+			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, ptr->vecEndPos);
+			WRITE_BYTE(TE_EXPLOSION);
+			WRITE_COORD(sprPos.x);
+			WRITE_COORD(sprPos.y);
+			WRITE_COORD(sprPos.z);
+			WRITE_SHORT(m_iHeadshotSpr);
+			WRITE_BYTE(RANDOM_LONG(6, 8));
+			WRITE_BYTE(50); // framerate
+			WRITE_BYTE(2 | 4 | 8);
+			MESSAGE_END();
+		}
 	}
 
-	ptr->iHitgroup = HITGROUP_GENERIC; // no weak points
 	bitsDamageType &= ~DMG_BLOOD; // never bleed
 
 	CBaseGrunt::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
