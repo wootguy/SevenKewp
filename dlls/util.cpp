@@ -1571,6 +1571,49 @@ void UTIL_Ricochet( const Vector &position, float scale )
 	MESSAGE_END();
 }
 
+void UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType) {
+	Vector sprPos = pos - Vector(0, 0, 10);
+	bool isBlast = bitsDamageType & DMG_BLAST;
+	int gibCount = V_min(128, flDamage / 10);
+
+	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+	WRITE_BYTE(TE_EXPLOSION);
+	WRITE_COORD(sprPos.x);
+	WRITE_COORD(sprPos.y);
+	WRITE_COORD(sprPos.z);
+	WRITE_SHORT(g_sModelIndexShrapnelHit);
+	WRITE_BYTE(V_min(8, RANDOM_LONG(3, 4) + (flDamage / 20)));
+	WRITE_BYTE(50); // framerate
+	WRITE_BYTE(2 | 4 | 8);
+	MESSAGE_END();
+
+	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+	WRITE_BYTE(TE_BREAKMODEL);
+	WRITE_COORD(pos.x);
+	WRITE_COORD(pos.y);
+	WRITE_COORD(pos.z);
+	WRITE_COORD(0);
+	WRITE_COORD(0);
+	WRITE_COORD(0);
+	WRITE_COORD(dir.x);
+	WRITE_COORD(dir.y);
+	WRITE_COORD(dir.z);
+	WRITE_BYTE(isBlast ? 30 : 15); // randomization
+	WRITE_SHORT(g_sModelIndexShrapnel); // model id#
+	WRITE_BYTE(gibCount);
+	WRITE_BYTE(1);// duration 0.1 seconds
+	WRITE_BYTE(0); // flags
+	MESSAGE_END();
+
+	// saving this in case it's useful for a similar effect. The sounds make more sense for small gibs
+	// and they have higher gravity and less bounce. Much higher network usage for lots of gibs though.
+	/*
+	for (int i = 0; i < gibCount; i++) {
+		EjectBrass(pos, dir * 200, RANDOM_LONG(0, 1.0f), MODEL_INDEX("models/shrapnel.mdl"), TE_BOUNCE_SHELL);
+	}
+	*/
+}
+
 
 BOOL UTIL_TeamsMatch( const char *pTeamName1, const char *pTeamName2 )
 {

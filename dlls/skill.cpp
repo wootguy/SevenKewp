@@ -317,8 +317,8 @@ void RefreshSkillData() {
 	g_defaultMonsterHealth["monster_otis"] = gSkillData.sk_otis_health;
 	g_defaultMonsterHealth["monster_pitdrone"] = gSkillData.sk_pitdrone_health;
 	g_defaultMonsterHealth["monster_rat"] = 8;
-	g_defaultMonsterHealth["monster_robogrunt"] = gSkillData.sk_hgrunt_health;
-	g_defaultMonsterHealth["monster_robogrunt_repel"] = gSkillData.sk_hgrunt_health;
+	g_defaultMonsterHealth["monster_robogrunt"] = gSkillData.sk_hgrunt_health * 5;
+	g_defaultMonsterHealth["monster_robogrunt_repel"] = gSkillData.sk_hgrunt_health * 5;
 	g_defaultMonsterHealth["monster_scientist"] = gSkillData.sk_scientist_health;
 	g_defaultMonsterHealth["monster_sentry"] = gSkillData.sk_sentry_health;
 	g_defaultMonsterHealth["monster_shockroach"] = gSkillData.sk_shockroach_health;

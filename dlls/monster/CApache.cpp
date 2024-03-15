@@ -84,6 +84,10 @@ class CApache : public CBaseMonster
 	int m_iSpriteTexture;
 	int m_iExplode;
 	int m_iBodyGibs;
+	int m_iGlassHit;
+	int m_iEngineHit;
+	int m_iGlassGibs;
+	int m_iEngineGibs;
 
 	float m_flGoalSpeed;
 
@@ -176,6 +180,11 @@ void CApache::Precache( void )
 
 	m_iExplode	= PRECACHE_MODEL( "sprites/fexplo.spr" );
 	m_iBodyGibs = PRECACHE_MODEL( "models/metalplategibs_green.mdl" );
+
+	m_iGlassHit = PRECACHE_MODEL("sprites/xfire2.spr");
+	m_iEngineHit = PRECACHE_MODEL("sprites/muz1.spr");
+	m_iGlassGibs = PRECACHE_MODEL("models/chromegibs.mdl");
+	m_iEngineGibs = PRECACHE_MODEL("models/mechgibs.mdl");
 
 	UTIL_PrecacheOther( "hvr_rocket" );
 }
@@ -922,6 +931,97 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	// ignore blades
 	if (ptr->iHitgroup == 6 && (bitsDamageType & (DMG_ENERGYBEAM|DMG_BULLET|DMG_CLUB)))
 		return;
+
+	int gibModel = m_iEngineGibs;
+	int gibCount = 0;
+	int gibFlags = BREAK_METAL;
+	bool isBlast = bitsDamageType & DMG_BLAST;
+
+	if (isBlast) {
+		gibModel = m_iBodyGibs;
+
+		if (flDamage > 80) {
+			gibCount = 16;
+		}
+		else if (flDamage > 30) {
+			gibCount = 8;
+		}
+		else {
+			gibCount = 4;
+		}
+	}
+
+	Vector dir = ptr->vecPlaneNormal;
+	Vector pos = ptr->vecEndPos;
+
+	if (!isBlast && (ptr->iHitgroup == 1 || ptr->iHitgroup == 2)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_STREAK_SPLASH);
+		WRITE_COORD(pos.x);
+		WRITE_COORD(pos.y);
+		WRITE_COORD(pos.z);
+		WRITE_COORD(dir.x);
+		WRITE_COORD(dir.y);
+		WRITE_COORD(dir.z);
+		WRITE_BYTE(ptr->iHitgroup == 1 ? 0 : 5);
+		WRITE_SHORT(flDamage >= 40 ? 32 : 16);
+		WRITE_SHORT(768);
+		WRITE_SHORT(256);
+		MESSAGE_END();
+
+		Vector sprPos = pos + dir * 4;
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_EXPLOSION);
+		WRITE_COORD(sprPos.x);
+		WRITE_COORD(sprPos.y);
+		WRITE_COORD(sprPos.z);
+		if (ptr->iHitgroup == 1) {
+			WRITE_SHORT(m_iGlassHit);
+			WRITE_BYTE(24); // scale
+			WRITE_BYTE(80); // framerate
+		}
+		else {
+			WRITE_SHORT(m_iEngineHit);
+			WRITE_BYTE(12); // scale
+			WRITE_BYTE(50); // framerate
+		}
+		WRITE_BYTE(2 | 4 | 8);
+		MESSAGE_END();
+
+		gibCount = 1 + (int)(flDamage / 30.0);
+
+		if (ptr->iHitgroup == 1) {
+			gibModel = m_iGlassGibs;
+			gibFlags = BREAK_GLASS | BREAK_TRANS;
+		}
+	}
+
+	if (gibCount) {
+		if (dir.Length() < 1.0f) {
+			dir = (ptr->vecEndPos - pev->origin).Normalize();
+			dir.z *= 0.2f;
+			dir = dir.Normalize();
+		}
+		dir = dir * (isBlast ? 400 : 200);
+
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_BREAKMODEL);
+		WRITE_COORD(pos.x);
+		WRITE_COORD(pos.y);
+		WRITE_COORD(pos.z);
+		WRITE_COORD(0);
+		WRITE_COORD(0);
+		WRITE_COORD(0);
+		WRITE_COORD(dir.x);
+		WRITE_COORD(dir.y);
+		WRITE_COORD(dir.z);
+		WRITE_BYTE(isBlast ? 30 : 15); // randomization
+		WRITE_SHORT(gibModel); // model id#
+		WRITE_BYTE(gibCount);
+		WRITE_BYTE(1);// duration 0.1 seconds
+		WRITE_BYTE(gibFlags); // flags
+		MESSAGE_END();
+	}
 
 	// hit hard, hits cockpit, hits engines
 	if (flDamage > 50 || ptr->iHitgroup == 1 || ptr->iHitgroup == 2)

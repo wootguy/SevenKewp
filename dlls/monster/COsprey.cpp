@@ -21,6 +21,7 @@
 #include "env/CSoundEnt.h"
 #include "effects.h"
 #include "customentity.h"
+#include "explode.h"
 
 typedef struct 
 {
@@ -102,9 +103,10 @@ public:
 	int	m_iTailGibs;
 	int	m_iBodyGibs;
 	int	m_iEngineGibs;
-
-	int m_iDoLeftSmokePuff;
-	int m_iDoRightSmokePuff;
+	int m_iGlassHit;
+	int m_iEngineHit;
+	int m_iGlassGibs;
+	int m_iMechGibs;
 
 	const char* replenishMonster;
 };
@@ -140,9 +142,6 @@ TYPEDESCRIPTION	COsprey::m_SaveData[] =
 	// DEFINE_FIELD( COsprey, m_iSoundState, FIELD_INTEGER ),
 	// DEFINE_FIELD( COsprey, m_iSpriteTexture, FIELD_INTEGER ),
 	// DEFINE_FIELD( COsprey, m_iPitch, FIELD_INTEGER ),
-
-	DEFINE_FIELD( COsprey, m_iDoLeftSmokePuff, FIELD_INTEGER ),
-	DEFINE_FIELD( COsprey, m_iDoRightSmokePuff, FIELD_INTEGER ),
 };
 IMPLEMENT_SAVERESTORE( COsprey, CBaseMonster );
 
@@ -155,7 +154,7 @@ void COsprey :: Spawn( void )
 	pev->solid = SOLID_BBOX;
 
 	SET_MODEL(ENT(pev), GetModel());
-	SetSize(Vector( -400, -400, -100), Vector(400, 400, 32));
+	SetSize(Vector( -480, -480, -100), Vector(480, 480, 64));
 	UTIL_SetOrigin( pev, pev->origin );
 
 	pev->flags |= FL_MONSTER;
@@ -216,6 +215,11 @@ void COsprey::Precache( void )
 		m_iBodyGibs = PRECACHE_MODEL("models/osprey_bodygibs.mdl");
 		m_iEngineGibs = PRECACHE_MODEL("models/osprey_enginegibs.mdl");
 	}
+
+	m_iGlassHit = PRECACHE_MODEL("sprites/xfire2.spr");
+	m_iEngineHit = PRECACHE_MODEL("sprites/muz1.spr");
+	m_iGlassGibs = PRECACHE_MODEL("models/chromegibs.mdl");
+	m_iMechGibs = PRECACHE_MODEL("models/hlcoop/bigshrapnel.mdl");
 }
 
 void COsprey::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -436,12 +440,15 @@ void COsprey::Flight( )
 	
 	float f = UTIL_SplineFraction( t * scale, 1.0 );
 
-	Vector pos = (m_pos1 + m_vel1 * t) * (1.0 - f) + (m_pos2 - m_vel2 * (m_dTime - t)) * f;
-	Vector ang = (m_ang1) * (1.0 - f) + (m_ang2) * f;
-	m_velocity = m_vel1 * (1.0 - f) + m_vel2 * f;
+	if (f > 0) {
+		Vector pos = (m_pos1 + m_vel1 * t) * (1.0 - f) + (m_pos2 - m_vel2 * (m_dTime - t)) * f;
+		Vector ang = (m_ang1) * (1.0 - f) + (m_ang2)*f;
+		m_velocity = m_vel1 * (1.0 - f) + m_vel2 * f;
+		UTIL_SetOrigin(pev, pos);
+		pev->angles = ang;
+	}
 
-	UTIL_SetOrigin( pev, pos );
-	pev->angles = ang;
+	
 	UTIL_MakeAimVectors( pev->angles );
 	float flSpeed = DotProduct( gpGlobals->v_forward, m_velocity );
 
@@ -753,7 +760,7 @@ void COsprey :: DyingThink( void )
 
 void COsprey :: ShowDamage( void )
 {
-	if (m_iDoLeftSmokePuff > 0 || RANDOM_LONG(0,99) > m_flLeftHealth)
+	if (m_flLeftHealth < 0)
 	{
 		Vector vecSrc = pev->origin + gpGlobals->v_right * -340;
 		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
@@ -765,10 +772,8 @@ void COsprey :: ShowDamage( void )
 			WRITE_BYTE( RANDOM_LONG(0,9) + 20 ); // scale * 10
 			WRITE_BYTE( 12 ); // framerate
 		MESSAGE_END();
-		if (m_iDoLeftSmokePuff > 0)
-			m_iDoLeftSmokePuff--;
 	}
-	if (m_iDoRightSmokePuff > 0 || RANDOM_LONG(0,99) > m_flRightHealth)
+	if (m_flRightHealth < 0)
 	{
 		Vector vecSrc = pev->origin + gpGlobals->v_right * 340;
 		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
@@ -780,8 +785,6 @@ void COsprey :: ShowDamage( void )
 			WRITE_BYTE( RANDOM_LONG(0,9) + 20 ); // scale * 10
 			WRITE_BYTE( 12 ); // framerate
 		MESSAGE_END();
-		if (m_iDoRightSmokePuff > 0)
-			m_iDoRightSmokePuff--;
 	}
 }
 
@@ -789,35 +792,138 @@ void COsprey :: ShowDamage( void )
 void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
 	// ALERT( at_console, "%d %.0f\n", ptr->iHitgroup, flDamage );
+	bool isBlast = bitsDamageType & DMG_BLAST;
+	bool engineExploded = false;
 
 	// only so much per engine
 	if (ptr->iHitgroup == 3)
 	{
-		if (m_flRightHealth < 0)
+		if (m_flRightHealth < 0 && !isBlast) {
+			UTIL_Ricochet(ptr->vecEndPos, 1.0f);
 			return;
-		else
+		}
+		else {
+			if (m_flRightHealth >= 0 && m_flRightHealth - flDamage < 0) {
+				engineExploded = true;
+			}
 			m_flRightHealth -= flDamage;
-		m_iDoLeftSmokePuff = 3 + (flDamage / 5.0);
+		}
 	}
 
 	if (ptr->iHitgroup == 2)
 	{
-		if (m_flLeftHealth < 0)
+		if (m_flLeftHealth < 0 && !isBlast) {
+			UTIL_Ricochet(ptr->vecEndPos, 1.0f);
 			return;
-		else
+		}
+		else {
+			if (m_flLeftHealth >= 0 && m_flLeftHealth - flDamage < 0) {
+				engineExploded = true;
+			}
 			m_flLeftHealth -= flDamage;
-		m_iDoRightSmokePuff = 3 + (flDamage / 5.0);
+		}
 	}
 
 	// hit hard, hits cockpit, hits engines
 	if (flDamage > 50 || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3)
 	{
+		Vector dir = ptr->vecPlaneNormal;
+		Vector pos = ptr->vecEndPos;
+		int gibCount = 1;
+		int gibModel = ptr->iHitgroup == 1 ? m_iGlassGibs : m_iMechGibs;
+
+		if (isBlast) {
+			gibModel = m_iBodyGibs;
+
+			if (flDamage > 80) {
+				gibCount = 8;
+			}
+			else if (flDamage > 30) {
+				gibCount = 4;
+			}
+			else {
+				gibCount = 2;
+			}
+		}
+		else {
+			gibCount = 1 + (int)(flDamage / 30.0);
+		}
+
+		if (engineExploded) {
+			// engine destroyed
+			ExplosionCreate(pos, g_vecZero, NULL, 100, true);
+			gibCount = 16;
+			gibModel = m_iBodyGibs;
+		}
+		else {
+			// cockpit
+			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+			WRITE_BYTE(TE_STREAK_SPLASH);
+			WRITE_COORD(pos.x);
+			WRITE_COORD(pos.y);
+			WRITE_COORD(pos.z);
+			WRITE_COORD(dir.x);
+			WRITE_COORD(dir.y);
+			WRITE_COORD(dir.z);
+			WRITE_BYTE(ptr->iHitgroup == 1 ? 0 : 5);
+			WRITE_SHORT(flDamage >= 40 ? 16 : 8);
+			WRITE_SHORT(768);
+			WRITE_SHORT(256);
+			MESSAGE_END();
+
+			Vector sprPos = pos + dir * 4;
+			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+			WRITE_BYTE(TE_EXPLOSION);
+			WRITE_COORD(sprPos.x);
+			WRITE_COORD(sprPos.y);
+			WRITE_COORD(sprPos.z);
+			if (ptr->iHitgroup == 1) {
+				WRITE_SHORT(m_iGlassHit);
+				WRITE_BYTE(12); // scale
+				WRITE_BYTE(80); // framerate
+			}
+			else {
+				WRITE_SHORT(m_iEngineHit);
+				WRITE_BYTE(6 + (flDamage / 10)); // scale
+				WRITE_BYTE(50); // framerate
+			}
+			WRITE_BYTE(2 | 4 | 8);
+			MESSAGE_END();
+		}
+
+		if (gibCount) {
+			if (dir.Length() < 1.0f) {
+				dir = (ptr->vecEndPos - pev->origin).Normalize();
+				dir.z *= 0.2f;
+				dir = dir.Normalize();
+			}
+			dir = dir * (isBlast ? 400 : 200);
+
+			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+			WRITE_BYTE(TE_BREAKMODEL);
+			WRITE_COORD(pos.x);
+			WRITE_COORD(pos.y);
+			WRITE_COORD(pos.z);
+			WRITE_COORD(0);
+			WRITE_COORD(0);
+			WRITE_COORD(0);
+			WRITE_COORD(dir.x);
+			WRITE_COORD(dir.y);
+			WRITE_COORD(dir.z);
+			WRITE_BYTE(isBlast ? 30 : 15); // randomization
+			WRITE_SHORT(gibModel); // model id#
+			WRITE_BYTE(gibCount);
+			WRITE_BYTE(1);// duration 0.1 seconds
+			WRITE_BYTE(gibModel == m_iBodyGibs ? BREAK_METAL : 0); // flags
+			MESSAGE_END();
+		}
+
 		// ALERT( at_console, "%.0f\n", flDamage );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
 	}
 	else
 	{
-		UTIL_Sparks( ptr->vecEndPos );
+		UTIL_Ricochet(ptr->vecEndPos, 1.0f);
 	}
 }
 

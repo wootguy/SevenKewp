@@ -124,6 +124,8 @@ void CBaseTurret::Precache()
 	PRECACHE_SOUND("turret/tu_spindown.wav");
 	PRECACHE_SOUND("turret/tu_search.wav");
 	PRECACHE_SOUND("turret/tu_alert.wav");
+
+	m_iGibModel = PRECACHE_MODEL("models/mechgibs.mdl");
 }
 
 void CBaseTurret::Initialize(void)
@@ -688,6 +690,36 @@ void CBaseTurret::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vec
 		}
 
 		flDamage = 0.1;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
+	}
+	else if (pev->takedamage && flDamage > 0) {
+		Vector pos = ptr->vecEndPos;
+		Vector dir = ptr->vecPlaneNormal;
+
+		Vector sprPos = pos - Vector(0,0,10);
+		bool isBlast = bitsDamageType & DMG_BLAST;
+
+		UTIL_Shrapnel(pos, dir, flDamage, bitsDamageType);
+
+		if (isBlast && flDamage > pev->health) {
+			// turret was effectively gibbed
+			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+			WRITE_BYTE(TE_BREAKMODEL);
+			WRITE_COORD(pos.x);
+			WRITE_COORD(pos.y);
+			WRITE_COORD(pos.z);
+			WRITE_COORD(0);
+			WRITE_COORD(0);
+			WRITE_COORD(0);
+			WRITE_COORD(dir.x);
+			WRITE_COORD(dir.y);
+			WRITE_COORD(dir.z);
+			WRITE_BYTE(15); // randomization
+			WRITE_SHORT(m_iGibModel); // model id#
+			WRITE_BYTE(16);
+			WRITE_BYTE(1);// duration 0.1 seconds
+			WRITE_BYTE(BREAK_METAL); // flags
+			MESSAGE_END();
+		}
 	}
 
 	if (!pev->takedamage)

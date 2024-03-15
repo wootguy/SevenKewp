@@ -98,9 +98,10 @@ public:
 	Vector	m_vecCurAngles;
 	Vector	m_vecGoalAngles;
 
-
 	float	m_flPingTime;	// Time until the next ping, used when searching
 	float	m_flSpinUpTime;	// Amount of time until the barrel should spin down when searching
+
+	int m_iGibModel;
 
 private:
 	static const char* pDieSounds[];
