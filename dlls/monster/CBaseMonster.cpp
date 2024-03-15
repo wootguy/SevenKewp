@@ -3622,7 +3622,8 @@ void CBaseMonster::MonsterInitDead(void)
 {
 	InitBoneControllers();
 
-	pev->solid = SOLID_BBOX;
+	pev->flags |= FL_MONSTER;
+	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_TOSS;// so he'll fall to ground
 
 	pev->frame = 0;
@@ -7005,7 +7006,7 @@ void CBaseMonster::FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 	if (m_useTime > gpGlobals->time)
 		return;
 
-	if (pCaller != NULL && pCaller->IsPlayer())
+	if (pCaller != NULL && pCaller->IsPlayer() && IRelationship(pCaller) == R_AL)
 	{
 		// Pre-disaster followers can't be used
 		if (pev->spawnflags & SF_MONSTER_PREDISASTER)

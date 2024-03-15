@@ -412,6 +412,7 @@ void CBaseGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector v
 			{
 				UTIL_Ricochet( ptr->vecEndPos, 1.0 );
 				flDamage = 0.01;
+				bitsDamageType &= ~DMG_BLOOD; // don't spawn blood
 			}
 		}
 		// it's head shot anyways

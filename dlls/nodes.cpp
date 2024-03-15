@@ -164,6 +164,10 @@ entvars_t* CGraph :: LinkEntForLink ( CLink *pLink, CNode *pNode )
 		///!!!UNDONE - check for TOGGLE or STAY open doors here. If a door is in the way, and is 
 		// TOGGLE or STAY OPEN, even monsters that can't open doors can go that way.
 
+		if (pevLinkEnt->spawnflags & SF_DOOR_NOMONSTERS) {
+			return NULL;
+		}
+
 		if ( ( pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY ) )
 		{// door is use only, so the door is all the monster has to worry about
 			return pevLinkEnt;
@@ -238,6 +242,9 @@ int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, N
 
 		pDoor = ( CBaseEntity::Instance( pevLinkEnt ) );
 
+		if ((pevLinkEnt->spawnflags & SF_DOOR_NOMONSTERS) && queryType != NODEGRAPH_STATIC)
+			return FALSE;
+
 		if ( ( pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY ) ) 
 		{// door is use only.
 
@@ -266,8 +273,7 @@ int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, N
 			}
 			if  ( ( afCapMask & bits_CAP_OPEN_DOORS ) )
 			{
-				if ( !( pevLinkEnt->spawnflags & SF_DOOR_NOMONSTERS ) || queryType == NODEGRAPH_STATIC )
-					return TRUE;
+				return TRUE;
 			}
 
 			return FALSE;
