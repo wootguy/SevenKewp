@@ -530,6 +530,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 			continue;
 		}
 
+		// TODO: should only consider PAS (can hear reload sounds but only distant gunshots)
 		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, ent);
 		WRITE_BYTES(msgbuffer, msgSz);
 		MESSAGE_END();
@@ -590,7 +591,7 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 	switch (soundType) {
 	case DISTANT_9MM:
 		sample = MOD_SND_FOLDER "weapons/distant/crack_9mm.wav";
-		volume = 0.25f;
+		volume = 0.3f;
 		break;
 	case DISTANT_357:
 		sample = MOD_SND_FOLDER "weapons/distant/crack_357.wav";

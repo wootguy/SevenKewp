@@ -154,7 +154,7 @@ int CCrowbar::Swing( int fFirst )
 	int numNearbyCorpses = 0;
 	edict_t* ent = NULL;
 	while (!FNullEnt(ent = FIND_ENTITY_IN_SPHERE(ent, vecSrc, 192))) {
-		if ((ent->v.flags & (FL_MONSTER | FL_CLIENT)) && ent->v.deadflag >= DEAD_DEAD && ent->v.solid == SOLID_NOT) {
+		if ((ent->v.flags & (FL_MONSTER | FL_CLIENT)) && ent->v.deadflag >= DEAD_DEAD && ent->v.solid == SOLID_NOT && !(ent->v.effects & EF_NODRAW)) {
 			nearbyCorpses[numNearbyCorpses++] = ent;
 			ent->v.solid = SOLID_BBOX;
 			ent->v.iuser4 = 1337; // HACKAROO: flag meaning "this entity is a gibbable corpse which is about to be attacked so it should have a large bounding box right now, but usually it shouldn't have that"
