@@ -278,9 +278,13 @@ bool CHornet::CheckMonsterCollision() {
 	// so a trace is needed to check for collisions
 
 	TraceResult tr;
+	pev->solid = SOLID_BBOX; // needed for collisions with the world
+	UTIL_SetOrigin(pev, pev->origin);
 	TRACE_MONSTER_HULL(edict(), m_lastPos, pev->origin, 0, pev->owner, &tr);
+	pev->solid = SOLID_TRIGGER;
+	UTIL_SetOrigin(pev, pev->origin); // needed to prevent "trigger in clipping list" fatal error
 
-	if (!FNullEnt(tr.pHit)) {
+	if (!tr.fInOpen) {
 		DispatchTouch(edict(), tr.pHit);
 
 		if (!pev->modelindex) {
