@@ -278,9 +278,7 @@ void CFuncTank::ControllerPostFrame(void)
 {
 	CBasePlayer* m_pController = (CBasePlayer*)m_hController.GetEntity();
 
-	ASSERT(m_pController != NULL);
-
-	if (gpGlobals->time < m_flNextAttack)
+	if (!m_pController || gpGlobals->time < m_flNextAttack)
 		return;
 
 	if (m_pController->pev->button & IN_ATTACK)
