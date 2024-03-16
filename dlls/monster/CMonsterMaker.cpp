@@ -612,6 +612,57 @@ void CMonsterMaker :: DeathNotice ( entvars_t *pevChild )
 	}
 }
 
+// return number of triggers that would be removed if all monstermakers were nerfed
+int CountMonsterTriggerNerfs(string_t targetname) {
+	edict_t* edicts = ENT(0);
+	int triggerCount = 0;
+	int nerfCount = 0;
+
+	int maxNerfedSpawnCount = mp_maxmonsterrespawns.value + 1.5f;
+
+	for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++)
+	{
+		edict_t* ent = &edicts[i];
+		if (ent->free)
+			continue;
+
+		const char* cname = STRING(ent->v.classname);
+		CBaseEntity* pent = (CBaseEntity*)GET_PRIVATE(ent);
+		if (!pent)
+			continue;
+
+		CBaseMonster* mon = pent->MyMonsterPointer();
+		if (!mon) {
+			continue;
+		}
+
+		if (!mon->HasTarget(targetname)) {
+			continue;
+		}
+
+		if (!strcmp(cname, "monstermaker")) {
+			CMonsterMaker* maker = (CMonsterMaker*)pent;
+
+			triggerCount += maker->m_cNumMonsters;
+			if (maker->m_cNumMonsters > maxNerfedSpawnCount) {
+				nerfCount += maker->m_cNumMonsters - maxNerfedSpawnCount;
+			}
+			else if (maker->m_cNumMonsters == -1) {
+				return -1;
+			}
+		}
+		else if (strstr(cname, "monster_") == cname) {
+			triggerCount++;
+		}
+		else {
+			ALERT(at_console, "Unknown monster trigger classname: %s\n", STRING(ent->v.classname));
+			return -1;
+		}
+	}
+
+	return nerfCount;
+}
+
 void CMonsterMaker::Nerf() {
 	const char* spawnCname = STRING(m_iszMonsterClassname);
 
@@ -634,42 +685,51 @@ void CMonsterMaker::Nerf() {
 	if (mp_maxmonsterrespawns.value >= 0 && spawnsTooMany) {
 		bool shouldNerf = true;
 		if (m_iszTriggerTarget) {
-			if (m_cNumMonsters > 0) {
-				edict_t* ent = NULL;
-				while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
-					if (strcmp(STRING(ent->v.classname), "game_counter") && strcmp(STRING(ent->v.classname), "trigger_counter")) {
-						ALERT(at_console, "Not nerfing %d count %s maker (triggers '%s')\n",
-							m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget));
-						shouldNerf = false;
-						break;
-					}
-				}
-
-				if (shouldNerf) {
-					ent = NULL;
-					int reducedCount = m_cNumMonsters - maxNerfedSpawnCount;
-					while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
-						if (!strcmp(STRING(ent->v.classname), "game_counter")) {
-							ent->v.health -= reducedCount;
-							ALERT(at_console, "Reduced game_counter %s limit by %d (%d total)\n",
-								STRING(m_iszTriggerTarget), reducedCount, (int)ent->v.health);
-						}
-						else if (strcmp(STRING(ent->v.classname), "trigger_counter")) {
-							CBaseToggle* trig = (CBaseToggle*)GET_PRIVATE(ent);
-							if (trig) {
-								trig->m_cTriggersLeft -= reducedCount;
-								ALERT(at_console, "Reduced trigger_counter %s limit by %d (%d total)\n",
-									STRING(m_iszTriggerTarget), reducedCount, (int)trig->m_cTriggersLeft);
-							}
-						}
-					}
+			edict_t* ent = NULL;
+			while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
+				if (strcmp(STRING(ent->v.classname), "game_counter") && strcmp(STRING(ent->v.classname), "trigger_counter")) {
+					ALERT(at_console, "Not nerfing %d count %s maker (triggers '%s')\n",
+						m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget));
+					shouldNerf = false;
+					break;
 				}
 			}
-			else {
-				ALERT(at_console, "Not nerfing %d count %s maker (infinitely triggers '%s')\n",
-					m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget));
-				shouldNerf = false;
-			}			
+
+			if (shouldNerf) {
+				ent = NULL;
+				int reducedCount = m_cNumMonsters - maxNerfedSpawnCount;
+				while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
+					if (!strcmp(STRING(ent->v.classname), "game_counter")) {
+						int trigCount = CountMonsterTriggerNerfs(m_iszTriggerTarget);
+						if (trigCount == -1 || trigCount >= (int)ent->v.health) {
+							ALERT(at_console, "Not nerfing %d count %s maker because game_counter %s would be nerfed into a negative count (%d > %d)\n",
+								m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget), trigCount, (int)ent->v.health);
+							shouldNerf = false;
+							break;
+						}
+
+						ent->v.health -= reducedCount;
+						ALERT(at_console, "Reduced game_counter %s limit by %d (%d total)\n",
+							STRING(m_iszTriggerTarget), reducedCount, (int)ent->v.health);
+					}
+					else if (strcmp(STRING(ent->v.classname), "trigger_counter")) {
+						CBaseToggle* trig = (CBaseToggle*)GET_PRIVATE(ent);
+						if (trig) {
+							int trigCount = CountMonsterTriggerNerfs(m_iszTriggerTarget);
+							if (trigCount == -1 || trigCount >= trig->m_cTriggersLeft) {
+								ALERT(at_console, "Not nerfing %d count %s maker because trigger_counter %s would be nerfed into a negative count (%d > %d)\n",
+									m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget), trigCount, trig->m_cTriggersLeft);
+								shouldNerf = false;
+								break;
+							}
+
+							trig->m_cTriggersLeft -= reducedCount;
+							ALERT(at_console, "Reduced trigger_counter %s limit by %d (%d total)\n",
+								STRING(m_iszTriggerTarget), reducedCount, (int)trig->m_cTriggersLeft);
+						}
+					}
+				}
+			}		
 		}
 		else if (pev->spawnflags & (SF_MONSTERMAKER_PRISONER | SF_MONSTERMAKER_WAIT_SCRIPT)) {
 			ALERT(at_console, "Not nerfing %d count %s maker (prisoner/scripted)\n",

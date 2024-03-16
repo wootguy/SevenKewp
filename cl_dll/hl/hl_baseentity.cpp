@@ -372,6 +372,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float volume, 
 edict_t* EHANDLE::GetEdict(void) { return 0; }
 CBaseEntity* EHANDLE::GetEntity(void) { return 0; }
 void CBaseMonster::Nerf() {}
+int CBaseMonster::HasTarget(string_t targetname) { return 0; }
 
 void lagcomp_begin(CBasePlayer* plr) {}
 void lagcomp_end() {}

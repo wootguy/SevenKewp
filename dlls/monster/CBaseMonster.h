@@ -134,6 +134,7 @@ public:
 
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
+	virtual BOOL	HasTarget(string_t targetname);
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 

@@ -125,6 +125,10 @@ int CBaseMonster::Restore(CRestore& restore)
 	return status;
 }
 
+int CBaseMonster::HasTarget(string_t targetname) {
+	bool validTriggerCondition = m_iTriggerCondition > AITRIGGER_NONE && m_iTriggerCondition <= AITRIGGER_SEEPLAYER_NOT_IN_COMBAT;
+	return validTriggerCondition && FStrEq(STRING(targetname), STRING(m_iszTriggerTarget)) ? TRUE : FALSE;
+}
 
 //=========================================================
 // Eat - makes a monster full for a little while.
