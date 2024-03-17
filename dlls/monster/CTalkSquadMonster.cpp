@@ -1177,8 +1177,10 @@ int CTalkSquadMonster :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAtta
 
 	if ( IsAlive() )
 	{
+		CBaseEntity* attacker = (CBaseEntity*)GET_PRIVATE(ENT(pevAttacker));
+
 		// if player damaged this entity, have other friends talk about it
-		if (pevAttacker && m_MonsterState != MONSTERSTATE_PRONE && FBitSet(pevAttacker->flags, FL_CLIENT))
+		if (pevAttacker && m_MonsterState != MONSTERSTATE_PRONE && FBitSet(pevAttacker->flags, FL_CLIENT) && attacker && IRelationship(attacker) == R_AL)
 		{
 			CBaseEntity *pFriend = FindNearestFriend(FALSE);
 

@@ -542,7 +542,9 @@ int CBarney :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	if ( !IsAlive() || pev->deadflag == DEAD_DYING )
 		return ret;
 
-	if ( m_MonsterState != MONSTERSTATE_PRONE && (pevAttacker->flags & FL_CLIENT) )
+	CBaseEntity* attacker = (CBaseEntity*)GET_PRIVATE(ENT(pevAttacker));
+
+	if ( m_MonsterState != MONSTERSTATE_PRONE && (pevAttacker->flags & FL_CLIENT) && attacker && IRelationship(attacker) == R_AL )
 	{
 		m_flPlayerDamage += flDamage;
 

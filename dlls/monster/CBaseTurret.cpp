@@ -747,6 +747,7 @@ int CBaseTurret::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 		pev->health = 0;
 		pev->takedamage = DAMAGE_NO;
 		pev->dmgtime = gpGlobals->time;
+		pev->movetype = MOVETYPE_FLY;
 
 		ClearBits(pev->flags, FL_MONSTER); // why are they set in the first place???
 
