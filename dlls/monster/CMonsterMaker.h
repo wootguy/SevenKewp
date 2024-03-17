@@ -31,7 +31,9 @@ public:
 	void MakeMonster(void);
 	void XenmakerEffect();
 	virtual void Nerf(); // reduce monster count if there is no good reason to have multiple spawns
+	bool NerfMonsterCounters(string_t target);
 	int Classify(void);
+	virtual BOOL HasTarget(string_t targetname);
 
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);

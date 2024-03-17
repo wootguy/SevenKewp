@@ -440,7 +440,9 @@ int CBaseGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	if (pev->deadflag != DEAD_NO || !canBeMadAtPlayer)
 		return ret;
 
-	if (m_MonsterState != MONSTERSTATE_PRONE && (pevAttacker->flags & FL_CLIENT))
+	CBaseEntity* attacker = (CBaseEntity*)GET_PRIVATE(ENT(pevAttacker));
+
+	if (m_MonsterState != MONSTERSTATE_PRONE && (pevAttacker->flags & FL_CLIENT) && attacker && IRelationship(attacker) == R_AL)
 	{
 		Forget(bits_MEMORY_INCOVER);
 

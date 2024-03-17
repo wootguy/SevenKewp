@@ -222,6 +222,10 @@ int CMonsterMaker::Classify(void) {
 	return CBaseMonster::Classify(DefaultClassify(STRING(m_iszMonsterClassname)));
 }
 
+BOOL CMonsterMaker::HasTarget(string_t targetname) {
+	return (CBaseMonster::HasTarget(targetname) || CBaseEntity::HasTarget(targetname)) ? TRUE : FALSE;
+}
+
 void CMonsterMaker :: Spawn( )
 {
 	pev->solid = SOLID_NOT;
@@ -663,6 +667,59 @@ int CountMonsterTriggerNerfs(string_t targetname) {
 	return nerfCount;
 }
 
+bool CMonsterMaker::NerfMonsterCounters(string_t target) {
+	bool shouldNerf = true;
+	int maxNerfedSpawnCount = mp_maxmonsterrespawns.value + 1.5f;
+
+	edict_t* ent = NULL;
+	while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(target)))) {
+		if (strcmp(STRING(ent->v.classname), "game_counter") && strcmp(STRING(ent->v.classname), "trigger_counter")) {
+			ALERT(at_console, "Not nerfing %d count %s maker (triggers '%s')\n",
+				m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(target));
+			shouldNerf = false;
+			break;
+		}
+	}
+
+	if (shouldNerf) {
+		ent = NULL;
+		int reducedCount = m_cNumMonsters - maxNerfedSpawnCount;
+		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(target)))) {
+			if (!strcmp(STRING(ent->v.classname), "game_counter")) {
+				int trigCount = CountMonsterTriggerNerfs(target);
+				if (trigCount == -1 || trigCount >= (int)ent->v.health) {
+					ALERT(at_console, "Not nerfing %d count %s maker because game_counter '%s' would be nerfed into a negative count (%d > %d)\n",
+						m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(target), trigCount, (int)ent->v.health);
+					shouldNerf = false;
+					break;
+				}
+
+				ent->v.health -= reducedCount;
+				ALERT(at_console, "Reduced game_counter %s limit by %d (%d total)\n",
+					STRING(target), reducedCount, (int)ent->v.health);
+			}
+			else if (strcmp(STRING(ent->v.classname), "trigger_counter")) {
+				CBaseToggle* trig = (CBaseToggle*)GET_PRIVATE(ent);
+				if (trig) {
+					int trigCount = CountMonsterTriggerNerfs(target);
+					if (trigCount == -1 || trigCount >= trig->m_cTriggersLeft) {
+						ALERT(at_console, "Not nerfing %d count %s maker because trigger_counter '%s' would be nerfed into a negative count (%d > %d)\n",
+							m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget), trigCount, trig->m_cTriggersLeft);
+						shouldNerf = false;
+						break;
+					}
+
+					trig->m_cTriggersLeft -= reducedCount;
+					ALERT(at_console, "Reduced trigger_counter %s limit by %d (%d total)\n",
+						STRING(target), reducedCount, (int)trig->m_cTriggersLeft);
+				}
+			}
+		}
+	}
+
+	return shouldNerf;
+}
+
 void CMonsterMaker::Nerf() {
 	const char* spawnCname = STRING(m_iszMonsterClassname);
 
@@ -684,52 +741,17 @@ void CMonsterMaker::Nerf() {
 
 	if (mp_maxmonsterrespawns.value >= 0 && spawnsTooMany) {
 		bool shouldNerf = true;
-		if (m_iszTriggerTarget) {
-			edict_t* ent = NULL;
-			while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
-				if (strcmp(STRING(ent->v.classname), "game_counter") && strcmp(STRING(ent->v.classname), "trigger_counter")) {
-					ALERT(at_console, "Not nerfing %d count %s maker (triggers '%s')\n",
-						m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget));
-					shouldNerf = false;
-					break;
-				}
-			}
-
-			if (shouldNerf) {
-				ent = NULL;
-				int reducedCount = m_cNumMonsters - maxNerfedSpawnCount;
-				while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
-					if (!strcmp(STRING(ent->v.classname), "game_counter")) {
-						int trigCount = CountMonsterTriggerNerfs(m_iszTriggerTarget);
-						if (trigCount == -1 || trigCount >= (int)ent->v.health) {
-							ALERT(at_console, "Not nerfing %d count %s maker because game_counter %s would be nerfed into a negative count (%d > %d)\n",
-								m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget), trigCount, (int)ent->v.health);
-							shouldNerf = false;
-							break;
-						}
-
-						ent->v.health -= reducedCount;
-						ALERT(at_console, "Reduced game_counter %s limit by %d (%d total)\n",
-							STRING(m_iszTriggerTarget), reducedCount, (int)ent->v.health);
-					}
-					else if (strcmp(STRING(ent->v.classname), "trigger_counter")) {
-						CBaseToggle* trig = (CBaseToggle*)GET_PRIVATE(ent);
-						if (trig) {
-							int trigCount = CountMonsterTriggerNerfs(m_iszTriggerTarget);
-							if (trigCount == -1 || trigCount >= trig->m_cTriggersLeft) {
-								ALERT(at_console, "Not nerfing %d count %s maker because trigger_counter %s would be nerfed into a negative count (%d > %d)\n",
-									m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget), trigCount, trig->m_cTriggersLeft);
-								shouldNerf = false;
-								break;
-							}
-
-							trig->m_cTriggersLeft -= reducedCount;
-							ALERT(at_console, "Reduced trigger_counter %s limit by %d (%d total)\n",
-								STRING(m_iszTriggerTarget), reducedCount, (int)trig->m_cTriggersLeft);
-						}
-					}
-				}
-			}		
+		if (m_iszTriggerTarget && pev->target) {
+			// not actually a problem, just lazy.
+			// Need to be able to undo counter changes if one target fails to update
+			ALERT(at_console, "Not nerfing %d count %s maker (complicated triggers)\n",
+				m_cNumMonsters, STRING(m_iszMonsterClassname));
+		}
+		else if (m_iszTriggerTarget) {
+			shouldNerf = NerfMonsterCounters(m_iszTriggerTarget);
+		}
+		else if (pev->target) {
+			shouldNerf = NerfMonsterCounters(pev->target);
 		}
 		else if (pev->spawnflags & (SF_MONSTERMAKER_PRISONER | SF_MONSTERMAKER_WAIT_SCRIPT)) {
 			ALERT(at_console, "Not nerfing %d count %s maker (prisoner/scripted)\n",
@@ -790,6 +812,7 @@ void CMonsterMaker::Nerf() {
 			}
 		}
 		*/
+
 		if (shouldNerf) {
 			ALERT(at_console, "Nerf %s maker '%s' count: %d -> %d\n", STRING(m_iszMonsterClassname),
 				STRING(pev->targetname), m_cNumMonsters, maxNerfedSpawnCount);
