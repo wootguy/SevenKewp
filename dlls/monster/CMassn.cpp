@@ -141,7 +141,6 @@ void CMassn :: Spawn()
 {
 	BaseSpawn();
 
-	pev->skin = 0;
 	SetBodygroup(MAssassinBodygroup::Heads, m_iAssassinHead);
 	SetBodygroup(MAssassinBodygroup::Weapons, m_weaponModel);
 }
@@ -269,25 +268,21 @@ void CDeadMassn::Spawn(void)
 	{
 	case 0: // Grunt with Gun
 		pev->body = 0;
-		pev->skin = 0;
 		SetBodygroup( MAssassinBodygroup::Heads, MAssassinHead::White );
 		SetBodygroup( MAssassinBodygroup::Weapons, MAssassinWeapon::MP5 );
 		break;
 	case 1: // Commander with Gun
 		pev->body = 0;
-		pev->skin = 0;
 		SetBodygroup( MAssassinBodygroup::Heads, MAssassinHead::Black );
 		SetBodygroup( MAssassinBodygroup::Weapons, MAssassinWeapon::MP5 );
 		break;
 	case 2: // Grunt no Gun
 		pev->body = 0;
-		pev->skin = 0;
 		SetBodygroup( MAssassinBodygroup::Heads, MAssassinHead::White );
 		SetBodygroup( MAssassinBodygroup::Weapons, MAssassinWeapon::SniperRifle );
 		break;
 	case 3: // Commander no Gun
 		pev->body = 0;
-		pev->skin = 0;
 		SetBodygroup( MAssassinBodygroup::Heads, MAssassinHead::White );
 		SetBodygroup( MAssassinBodygroup::Weapons, MAssassinWeapon::None );
 		break;

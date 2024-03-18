@@ -6,6 +6,10 @@
 #include "user_messages.h"
 #include "weapons.h"
 
+// TODO:
+// - blinking
+// - vanilla HL smoke clouds
+
 #define TOXIC_SOUND "ambience/disgusting.wav"
 #define TOXIC_SOUND2 "doors/aliendoor1.wav"
 #define TOXIC_SPRITE "sprites/puff1.spr"
@@ -43,6 +47,7 @@ public:
 	float nextCloudEmit;
 	int smokeColor;
 	bool stopSmoking;
+	int m_iSmokeSpr;
 };
 
 LINK_ENTITY_TO_CLASS(monster_chumtoad, CChumtoad);
@@ -51,7 +56,8 @@ void CChumtoad::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), GetModel());
+	m_skinFrames = 3;
+	InitModel();
 	SetSize(Vector(-16, -16, 0), Vector(16, 12, 36));
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -72,7 +78,7 @@ void CChumtoad::Precache()
 
 	m_defaultModel = "models/chumtoad.mdl";
 	PRECACHE_MODEL(GetModel());
-	PRECACHE_MODEL(TOXIC_SPRITE);
+	m_iSmokeSpr = PRECACHE_MODEL(TOXIC_SPRITE);
 	PRECACHE_SOUND(TOXIC_SOUND);
 	PRECACHE_SOUND(TOXIC_SOUND2);
 }
@@ -162,10 +168,24 @@ void CChumtoad::PrescheduleThink() {
 			// Since the message is so small I don't think it matters. Need to test if this works similarly
 			// when monster is on the border of the PVS. Maybe sven sends these messages globally to prevent
 			// glitches.
+			/*
 			MESSAGE_BEGIN(MSG_PVS, gmsgToxicCloud, pev->origin);
 				WRITE_SHORT(entindex()); // entity to spawn the effect from
 				WRITE_BYTE(RANDOM_LONG(0, 255)); // seed for random velocity calculated on the client
 				WRITE_BYTE(smokeColor); // color brightness
+			MESSAGE_END();
+			*/
+
+			// using vanilla HL effects until this mod is standalone
+			Vector pos = pev->origin + Vector(RANDOM_FLOAT(pev->mins.x, pev->maxs.x)*8, RANDOM_FLOAT(pev->mins.y, pev->maxs.y)*8, 1.0f);
+			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+			WRITE_BYTE(TE_SMOKE);
+			WRITE_COORD(pos.x);
+			WRITE_COORD(pos.y);
+			WRITE_COORD(pos.z);
+			WRITE_SHORT(m_iSmokeSpr);
+			WRITE_BYTE(RANDOM_LONG(80, 120));
+			WRITE_BYTE(RANDOM_LONG(15, 25));
 			MESSAGE_END();
 		}
 	}

@@ -183,7 +183,7 @@ const char *CLeech::pAlertSounds[] =
 void CLeech::Spawn( void )
 {
 	Precache();
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	// Just for fun
 	//	SET_MODEL(ENT(pev), "models/icky.mdl");
 	

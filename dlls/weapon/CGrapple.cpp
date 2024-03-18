@@ -593,7 +593,7 @@ int CGrapple::GetItemInfo(ItemInfo* p)
 {
 	// hack to force client to load HUD config from the hlcoop folder
 	// (changing this folder name requires an update to client commands as well)
-	p->pszName = "hlcoop/weapon_grapple";
+	p->pszName = MOD_SPRITE_FOLDER "weapon_grapple";
 	
 	p->pszAmmo1 = NULL;
 	p->iMaxAmmo1 = -1;

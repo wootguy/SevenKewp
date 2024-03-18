@@ -34,7 +34,5 @@ public:
 
 	const char* GetModel();
 
-	const char* m_defaultModel;
-
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };

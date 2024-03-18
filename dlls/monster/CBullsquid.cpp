@@ -632,7 +632,7 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case BSQUID_AE_BLINK:
 		{
 			// close eye. 
-			pev->skin = 1;
+			pev->skin = m_skinBase + 1;
 		}
 		break;
 
@@ -694,7 +694,8 @@ void CBullsquid :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	m_skinFrames = 2;
+	InitModel();
 	SetSize(Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -764,15 +765,15 @@ void CBullsquid :: RunAI ( void )
 	// first, do base class stuff
 	CBaseMonster :: RunAI();
 
-	if ( pev->skin != 0 )
+	if ( pev->skin != m_skinBase)
 	{
 		// close eye if it was open.
-		pev->skin = 0; 
+		pev->skin = m_skinBase;
 	}
 
 	if ( RANDOM_LONG(0,39) == 0 )
 	{
-		pev->skin = 1;
+		pev->skin = m_skinBase + 1;
 	}
 
 	if ( m_hEnemy != NULL && m_Activity == ACT_RUN )

@@ -262,7 +262,6 @@ void CHGruntOp4Medic :: Spawn()
 	// get voice pitch
 	m_voicePitch = 105;
 
-	pev->skin = 0;
 	SetBodygroup(MedicAllyBodygroup::Head, m_iBlackOrWhite);
 	SetBodygroup(MedicAllyBodygroup::Weapons, m_iWeaponIdx);
 }

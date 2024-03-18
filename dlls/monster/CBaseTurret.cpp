@@ -101,6 +101,12 @@ void CBaseTurret::Spawn()
 		m_iAutoStart = TRUE;
 	}
 
+	// setup friendly skin
+	bool oldOn = m_iOn;
+	m_iOn = true;
+	InitModel();
+	m_iOn = oldOn;
+
 	ResetSequenceInfo();
 	SetBoneController(0, 0);
 	SetBoneController(1, 0);

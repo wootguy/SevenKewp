@@ -990,7 +990,7 @@ void CBaseGrunt::BaseSpawn()
 
 	Precache();
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	MonsterInit();
@@ -2605,6 +2605,18 @@ void CBaseRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	CBaseMonster* pGrunt = pEntity->MyMonsterPointer();
 	CBaseGrunt* baseGrunt = static_cast<CBaseGrunt*>(pEntity->MyTalkSquadMonsterPointer());
 
+	// copy settings from parent
+	pGrunt->pev->rendermode = pev->rendermode;
+	pGrunt->pev->renderamt = pev->renderamt;
+	pGrunt->pev->renderfx = pev->renderfx;
+	pGrunt->pev->rendercolor = pev->rendercolor;
+	pGrunt->m_iszTriggerTarget = m_iszTriggerTarget;
+	pGrunt->m_iTriggerCondition = m_iTriggerCondition;
+	pGrunt->m_displayName = m_displayName;
+	pGrunt->m_Classify = m_Classify;
+	pGrunt->m_IsPlayerAlly = m_IsPlayerAlly;
+	pGrunt->pev->owner = pev->owner; // required for repel grunts spawned by monstermaker
+
 	if (baseGrunt)
 	{
 		baseGrunt->pev->weapons = pev->weapons;
@@ -2633,18 +2645,6 @@ void CBaseRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	// UNDONE: position?
 	pGrunt->m_vecLastPosition = tr.vecEndPos;
 
-	// copy settings from parent
-	pGrunt->pev->rendermode = pev->rendermode;
-	pGrunt->pev->renderamt = pev->renderamt;
-	pGrunt->pev->renderfx = pev->renderfx;
-	pGrunt->pev->rendercolor = pev->rendercolor;
-	pGrunt->m_iszTriggerTarget = m_iszTriggerTarget;
-	pGrunt->m_iTriggerCondition = m_iTriggerCondition;
-	pGrunt->m_displayName = m_displayName;
-	pGrunt->m_Classify = m_Classify;
-	pGrunt->m_IsPlayerAlly = m_IsPlayerAlly;
-	pGrunt->pev->owner = pev->owner; // required for repel grunts spawned by monstermaker
-
 	CBeam* pBeam = CBeam::BeamCreate("sprites/rope.spr", 10);
 	pBeam->PointEntInit(pev->origin + Vector(0, 0, 112), pGrunt->entindex());
 	pBeam->SetFlags(BEAM_FSOLID);
@@ -2659,7 +2659,7 @@ void CBaseDead::BaseSpawn(const char* model)
 {
 	m_defaultModel = model;
 	PRECACHE_MODEL(GetModel());
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;

@@ -245,6 +245,9 @@ old colors
 			break;
 	
 */
+	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
+	CBaseMonster* mon = owner ? owner->MyMonsterPointer() : NULL;
+	bool firedByAllyMonster = mon && !mon->IsPlayer() && mon->IRelationship(mon->Classify(), CLASS_PLAYER) == R_AL;
 
 	// trail
 	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
@@ -253,18 +256,34 @@ old colors
 		WRITE_SHORT( iHornetTrail );	// model
 		WRITE_BYTE( 10 ); // life
 		WRITE_BYTE( 2 );  // width
-		
+
+		// r, g, b
 		switch ( m_iHornetType )
 		{
 		case HORNET_TYPE_RED:
-			WRITE_BYTE( 179 );   // r, g, b
-			WRITE_BYTE( 39 );   // r, g, b
-			WRITE_BYTE( 14 );   // r, g, b
+			if (firedByAllyMonster) {
+				WRITE_BYTE(0);   
+				WRITE_BYTE(128);
+				WRITE_BYTE(255);
+			}
+			else {
+				WRITE_BYTE(179);
+				WRITE_BYTE(39);
+				WRITE_BYTE(14);
+			}
+			
 			break;
 		case HORNET_TYPE_ORANGE:
-			WRITE_BYTE( 255 );   // r, g, b
-			WRITE_BYTE( 128 );   // r, g, b
-			WRITE_BYTE( 0 );   // r, g, b
+			if (firedByAllyMonster) {
+				WRITE_BYTE(0);
+				WRITE_BYTE(255);
+				WRITE_BYTE(200);
+			}
+			else {
+				WRITE_BYTE(255);
+				WRITE_BYTE(128);
+				WRITE_BYTE(0);
+			}
 			break;
 		}
 

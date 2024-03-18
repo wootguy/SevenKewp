@@ -283,6 +283,7 @@ void CBodyGuard::OnTaskComplete(Task_t task) {
 
 void CBodyGuard::Spawn()
 {
+	m_skinFrames = 2;
 	BaseSpawn();
 
 	m_afCapability = bits_CAP_SQUAD | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP | bits_CAP_HEAR;
@@ -292,12 +293,12 @@ void CBodyGuard::Spawn()
 	pev->body = 0;
 	SetBodygroup(2, pev->weapons);
 
-	pev->skin = RANDOM_LONG(0, 1);
+	pev->skin = m_skinBase + RANDOM_LONG(0, 1);
 
 	m_flMedicWaitTime = gpGlobals->time;
 
 	// get voice pitch
-	m_voicePitch = pev->skin == 0 ? 100 : 90;
+	m_voicePitch = pev->skin == m_skinBase ? 100 : 90;
 
 	minigunShootSeq = LookupSequence("shoot_minigun");
 	minigunSpinupSeq = LookupSequence("shoot_minigun_spinup");

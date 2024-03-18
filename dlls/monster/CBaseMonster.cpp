@@ -7141,6 +7141,20 @@ void CBaseMonster::SetHealth() {
 		pev->health = GetDefaultHealth(STRING(pev->classname));
 }
 
+void CBaseMonster::InitModel() {
+	SET_MODEL(edict(), GetModel());
+	bool isAlly = IRelationship(Classify(), CLASS_PLAYER) == R_AL;
+
+	if (isAlly != m_friendlySkinFirst) {
+		// use friendly skin
+		pev->skin += m_skinFrames ? m_skinFrames : 1;
+		m_skinBase = pev->skin;
+	}
+	else {
+		pev->skin = 0;
+	}
+}
+
 void CBaseMonster::Nerf() {
 	const char* monstertype = STRING(pev->classname);
 	string_t monstername = pev->targetname;

@@ -172,7 +172,7 @@ void CBabyVoltigore::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(Vector(-16, -16, 0), Vector(16, 16, 36));
 
 	pev->solid = SOLID_SLIDEBOX;

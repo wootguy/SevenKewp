@@ -351,8 +351,8 @@ void W_Precache(void)
 	g_sModelIndexLaserDot = PRECACHE_MODEL("sprites/laserdot.spr");
 
 	// shrapnel effect ("blood" for machines)
-	g_sModelIndexShrapnelHit = PRECACHE_MODEL("sprites/hlcoop/shraphit.spr");
-	g_sModelIndexShrapnel = PRECACHE_MODEL("models/hlcoop/bigshrapnel.mdl");
+	g_sModelIndexShrapnelHit = PRECACHE_MODEL("sprites/shraphit.spr");
+	g_sModelIndexShrapnel = PRECACHE_MODEL("models/bigshrapnel.mdl");
 
 	// used by explosions
 	PRECACHE_MODEL ("models/grenade.mdl");

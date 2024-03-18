@@ -285,7 +285,7 @@ void CHeadCrab :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(Vector(-12, -12, 0), Vector(12, 12, 24));
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -520,7 +520,7 @@ void CBabyCrab :: Spawn( void )
 
 	MonsterInit();
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	pev->rendermode = kRenderTransTexture;
 	pev->renderamt = 192;
 	SetSize(Vector(-12, -12, 0), Vector(12, 12, 24));

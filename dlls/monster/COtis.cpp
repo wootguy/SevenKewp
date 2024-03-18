@@ -628,7 +628,8 @@ void COtis :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	m_friendlySkinFirst = true;
+	InitModel();
 	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -1147,7 +1148,7 @@ void CDeadOtis:: Spawn( )
 {
 	m_defaultModel = "models/otis.mdl";
 	PRECACHE_MODEL(GetModel());
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 
 	pev->effects		= 0;
 	pev->yaw_speed		= 8;

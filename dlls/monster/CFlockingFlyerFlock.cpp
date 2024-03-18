@@ -338,7 +338,7 @@ void CFlockingFlyer :: SpawnCommonCode( )
 	m_flFieldOfView	= 0.2;
 
 	//SET_MODEL(ENT(pev), "models/aflock.mdl");
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 
 //	UTIL_SetSize(pev, Vector(0,0,0), Vector(0,0,0));
 	SetSize(Vector(-5,-5,0), Vector(5,5,2));

@@ -90,6 +90,7 @@ public:
 	int	m_voicePitch;
 
 	EHANDLE m_hDead;
+	Vector m_beamColor;
 
 	static const char *pAttackHitSounds[];
 	static const char *pAttackMissSounds[];
@@ -397,7 +398,6 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			}
 
 			EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "debris/zap4.wav", 1, ATTN_NORM, 0, 100 + m_iBeams * 10 );
-			pev->skin = m_iBeams / 2;
 		}
 		break;
 
@@ -532,7 +532,7 @@ void CISlave :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -547,6 +547,13 @@ void CISlave :: Spawn()
 	m_voicePitch		= RANDOM_LONG( 85, 110 );
 
 	MonsterInit();
+
+	if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+		m_beamColor = Vector(96, 180, 255);
+	}
+	else {
+		m_beamColor = Vector(180, 255, 96);
+	}
 }
 
 //=========================================================
@@ -759,8 +766,7 @@ void CISlave :: ArmBeam( int side )
 
 	beam->PointEntInit( tr.vecEndPos, entindex( ) );
 	beam->SetEndAttachment( side < 0 ? 2 : 1 );
-	// beam->SetColor( 180, 255, 96 );
-	beam->SetColor( 96, 128, 16 );
+	beam->SetColor(m_beamColor.x, m_beamColor.y, m_beamColor.z);
 	beam->SetBrightness( 64 );
 	beam->SetNoise( 80 );
 	m_hBeam[m_iBeams] = beam;
@@ -810,7 +816,7 @@ void CISlave :: WackBeam( int side, CBaseEntity *pEntity )
 
 	beam->PointEntInit( pEntity->Center(), entindex( ) );
 	beam->SetEndAttachment( side < 0 ? 2 : 1 );
-	beam->SetColor( 180, 255, 96 );
+	beam->SetColor(m_beamColor.x, m_beamColor.y, m_beamColor.z);
 	beam->SetBrightness( 255 );
 	beam->SetNoise( 80 );
 	m_hBeam[m_iBeams] = beam;
@@ -841,7 +847,7 @@ void CISlave :: ZapBeam( int side )
 
 	beam->PointEntInit( tr.vecEndPos, entindex( ) );
 	beam->SetEndAttachment( side < 0 ? 2 : 1 );
-	beam->SetColor( 180, 255, 96 );
+	beam->SetColor(m_beamColor.x, m_beamColor.y, m_beamColor.z);
 	beam->SetBrightness( 255 );
 	beam->SetNoise( 20 );
 	m_hBeam[m_iBeams] = beam;
@@ -870,7 +876,6 @@ void CISlave :: ClearBeams( )
 		}
 	}
 	m_iBeams = 0;
-	pev->skin = 0;
 
 	STOP_SOUND( ENT(pev), CHAN_WEAPON, "debris/zap4.wav" );
 }

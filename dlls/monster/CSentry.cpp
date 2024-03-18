@@ -45,7 +45,7 @@ const char* CSentry::DisplayName() {
 void CSentry::Spawn()
 {
 	Precache();
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	m_HackedGunPos = Vector(0, 0, 48);
 	pev->view_ofs.z = 48;
 	m_flMaxWait = 1E6;

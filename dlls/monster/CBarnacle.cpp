@@ -127,7 +127,7 @@ void CBarnacle :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize( Vector(-16, -16, -32), Vector(16, 16, 0) );
 
 	pev->solid			= SOLID_SLIDEBOX;

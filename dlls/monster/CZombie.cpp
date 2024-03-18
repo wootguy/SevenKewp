@@ -293,7 +293,7 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 void CZombie :: Spawn()
 {
 	Precache( );
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 
 	
 	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );

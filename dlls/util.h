@@ -62,7 +62,7 @@ extern std::map<std::string, WavInfo> g_wavInfos; // cached wav info, cleared on
 
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 
-#define NOT_PRECACHED_MODEL "models/hlcoop/not_precached.mdl"
+#define NOT_PRECACHED_MODEL "models/" MOD_MODEL_FOLDER "not_precached.mdl"
 #define NOT_PRECACHED_SOUND "common/null.wav"
 #define MAX_PRECACHE 512
 #define MAX_PRECACHE_SOUND 511

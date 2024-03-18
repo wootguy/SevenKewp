@@ -35,7 +35,7 @@ extern CGraph WorldGraph;
 #define	HOUNDEYE_MAX_ATTACK_RADIUS		384
 #define	HOUNDEYE_SQUAD_BONUS			(float)1.1
 
-#define HOUNDEYE_EYE_FRAMES 4 // how many different switchable maps for the eye
+#define HOUNDEYE_EYE_FRAMES 3 // how many different switchable maps for the eye
 
 #define HOUNDEYE_SOUND_STARTLE_VOLUME	128 // how loud a sound has to be to badly scare a sleeping houndeye
 
@@ -372,7 +372,7 @@ void CHoundeye :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case HOUND_AE_CLOSE_EYE:
 			if ( !m_fDontBlink )
 			{
-				pev->skin = HOUNDEYE_EYE_FRAMES - 1;
+				pev->skin = m_skinBase + (HOUNDEYE_EYE_FRAMES - 1);
 			}
 			break;
 
@@ -389,7 +389,8 @@ void CHoundeye :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	m_skinFrames = HOUNDEYE_EYE_FRAMES;
+	InitModel();
 	SetSize(Vector ( -16, -16, 0 ), Vector ( 16, 16, 36 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -594,53 +595,54 @@ void CHoundeye :: SonicAttack ( void )
 	// iterate on all entities in the vicinity.
 	while ((pEntity = UTIL_FindEntityInSphere( pEntity, pev->origin, HOUNDEYE_MAX_ATTACK_RADIUS )) != NULL)
 	{
-		if ( pEntity->pev->takedamage != DAMAGE_NO )
+		if (pEntity->pev->takedamage == DAMAGE_NO || pEntity == this) {
+			continue;
+		}
+
+		if (FClassnameIs(pEntity->pev, "monster_houndeye") && IRelationship(pEntity) == R_AL) {
+			continue; // houndeyes don't hurt other houndeyes with their attack, unless they're enemies
+		}
+
+		// houndeyes do FULL damage if the ent in question is visible. Half damage otherwise.
+		// This means that you must get out of the houndeye's attack range entirely to avoid damage.
+		// Calculate full damage first
+
+		if ( SquadCount() > 1 )
 		{
-			if ( !FClassnameIs(pEntity->pev, "monster_houndeye") )
-			{// houndeyes don't hurt other houndeyes with their attack
+			// squad gets attack bonus.
+			flAdjustedDamage = gSkillData.sk_houndeye_dmg_blast + gSkillData.sk_houndeye_dmg_blast * ( HOUNDEYE_SQUAD_BONUS * ( SquadCount() - 1 ) );
+		}
+		else
+		{
+			// solo
+			flAdjustedDamage = gSkillData.sk_houndeye_dmg_blast;
+		}
 
-				// houndeyes do FULL damage if the ent in question is visible. Half damage otherwise.
-				// This means that you must get out of the houndeye's attack range entirely to avoid damage.
-				// Calculate full damage first
+		flDist = (pEntity->Center() - pev->origin).Length();
 
-				if ( SquadCount() > 1 )
-				{
-					// squad gets attack bonus.
-					flAdjustedDamage = gSkillData.sk_houndeye_dmg_blast + gSkillData.sk_houndeye_dmg_blast * ( HOUNDEYE_SQUAD_BONUS * ( SquadCount() - 1 ) );
-				}
-				else
-				{
-					// solo
-					flAdjustedDamage = gSkillData.sk_houndeye_dmg_blast;
-				}
+		flAdjustedDamage -= ( flDist / HOUNDEYE_MAX_ATTACK_RADIUS ) * flAdjustedDamage;
 
-				flDist = (pEntity->Center() - pev->origin).Length();
-
-				flAdjustedDamage -= ( flDist / HOUNDEYE_MAX_ATTACK_RADIUS ) * flAdjustedDamage;
-
-				if ( !FVisible( pEntity ) )
-				{
-					if ( pEntity->IsPlayer() )
-					{
-						// if this entity is a client, and is not in full view, inflict half damage. We do this so that players still 
-						// take the residual damage if they don't totally leave the houndeye's effective radius. We restrict it to clients
-						// so that monsters in other parts of the level don't take the damage and get pissed.
-						flAdjustedDamage *= 0.5;
-					}
-					else if ( !FClassnameIs( pEntity->pev, "func_breakable" ) && !FClassnameIs( pEntity->pev, "func_pushable" ) ) 
-					{
-						// do not hurt nonclients through walls, but allow damage to be done to breakables
-						flAdjustedDamage = 0;
-					}
-				}
-
-				//ALERT ( at_aiconsole, "Damage: %f\n", flAdjustedDamage );
-
-				if (flAdjustedDamage > 0 )
-				{
-					pEntity->TakeDamage ( pev, pev, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB );
-				}
+		if ( !FVisible( pEntity ) )
+		{
+			if ( pEntity->IsPlayer() )
+			{
+				// if this entity is a client, and is not in full view, inflict half damage. We do this so that players still 
+				// take the residual damage if they don't totally leave the houndeye's effective radius. We restrict it to clients
+				// so that monsters in other parts of the level don't take the damage and get pissed.
+				flAdjustedDamage *= 0.5;
 			}
+			else if ( !FClassnameIs( pEntity->pev, "func_breakable" ) && !FClassnameIs( pEntity->pev, "func_pushable" ) ) 
+			{
+				// do not hurt nonclients through walls, but allow damage to be done to breakables
+				flAdjustedDamage = 0;
+			}
+		}
+
+		//ALERT ( at_aiconsole, "Damage: %f\n", flAdjustedDamage );
+
+		if (flAdjustedDamage > 0 )
+		{
+			pEntity->TakeDamage ( pev, pev, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB );
 		}
 	}
 }
@@ -674,7 +676,7 @@ void CHoundeye :: StartTask ( Task_t *pTask )
 		}
 	case TASK_HOUND_CLOSE_EYE:
 		{
-			pev->skin = 0;
+			pev->skin = m_skinBase;
 			m_fDontBlink = TRUE; // tell blink code to leave the eye alone.
 			break;
 		}
@@ -768,7 +770,7 @@ void CHoundeye :: RunTask ( Task_t *pTask )
 		}
 	case TASK_HOUND_CLOSE_EYE:
 		{
-			if ( pev->skin < HOUNDEYE_EYE_FRAMES - 1 )
+			if ( pev->skin < m_skinBase + (HOUNDEYE_EYE_FRAMES - 1) )
 			{
 				pev->skin++;
 			}
@@ -784,7 +786,7 @@ void CHoundeye :: RunTask ( Task_t *pTask )
 		}
 	case TASK_SPECIAL_ATTACK1:
 		{
-			pev->skin = RANDOM_LONG(0, HOUNDEYE_EYE_FRAMES - 1);
+			pev->skin = m_skinBase + RANDOM_LONG(0, HOUNDEYE_EYE_FRAMES - 1);
 
 			MakeIdealYaw ( m_vecEnemyLKP );
 			ChangeYaw ( pev->yaw_speed );
@@ -833,11 +835,11 @@ void CHoundeye::PrescheduleThink ( void )
 	// at random, initiate a blink if not already blinking or sleeping
 	if ( !m_fDontBlink )
 	{
-		if ( ( pev->skin == 0 ) && RANDOM_LONG(0,0x7F) == 0 )
+		if ( ( pev->skin == m_skinBase) && RANDOM_LONG(0,0x7F) == 0 )
 		{// start blinking!
-			pev->skin = HOUNDEYE_EYE_FRAMES - 1;
+			pev->skin = m_skinBase + HOUNDEYE_EYE_FRAMES - 1;
 		}
-		else if ( pev->skin != 0 )
+		else if ( pev->skin != m_skinBase)
 		{// already blinking
 			pev->skin--;
 		}

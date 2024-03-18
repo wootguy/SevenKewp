@@ -100,6 +100,7 @@ const char* CHGrunt::pGruntSentences[] =
 const char* CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
 void CHGrunt::Spawn() {
+	m_skinFrames = 2;
 	BaseSpawn();
 
 	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
@@ -114,9 +115,9 @@ void CHGrunt::Spawn() {
 	m_cAmmoLoaded = m_cClipSize;
 
 	if (RANDOM_LONG(0, 99) < 80)
-		pev->skin = 0;	// light skin
+		pev->skin = m_skinBase;	// light skin
 	else
-		pev->skin = 1;	// dark skin
+		pev->skin = m_skinBase + 1;	// dark skin
 
 	if (FBitSet(pev->weapons, HGRUNT_SHOTGUN))
 	{
@@ -125,7 +126,7 @@ void CHGrunt::Spawn() {
 	else if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER))
 	{
 		SetBodygroup(HEAD_GROUP, HEAD_M203);
-		pev->skin = 1; // alway dark skin
+		pev->skin = m_skinBase + 1; // alway dark skin
 	}
 	if (GetBodygroup(HEAD_GROUP) == HEAD_GRUNT) {
 		m_iEquipment |= MEQUIP_HELMET;
@@ -178,7 +179,7 @@ void CHGrunt::StartMonster(void)
 	if (IsLeader())
 	{
 		SetBodygroup(HEAD_GROUP, HEAD_GRUNT);
-		pev->skin = 0;
+		pev->skin = m_skinBase;
 		m_iEquipment &= ~MEQUIP_HELMET;
 	}
 }
@@ -279,25 +280,21 @@ void CDeadHGrunt::Spawn(void)
 	{
 	case 0: // Grunt with Gun
 		pev->body = 0;
-		pev->skin = 0;
 		SetBodygroup(HEAD_GROUP, HEAD_GRUNT);
 		SetBodygroup(GUN_GROUP, GUN_MP5);
 		break;
 	case 1: // Commander with Gun
 		pev->body = 0;
-		pev->skin = 0;
 		SetBodygroup(HEAD_GROUP, HEAD_COMMANDER);
 		SetBodygroup(GUN_GROUP, GUN_MP5);
 		break;
 	case 2: // Grunt no Gun
 		pev->body = 0;
-		pev->skin = 0;
 		SetBodygroup(HEAD_GROUP, HEAD_GRUNT);
 		SetBodygroup(GUN_GROUP, GUN_NONE);
 		break;
 	case 3: // Commander no Gun
 		pev->body = 0;
-		pev->skin = 0;
 		SetBodygroup(HEAD_GROUP, HEAD_COMMANDER);
 		SetBodygroup(GUN_GROUP, GUN_NONE);
 		break;
