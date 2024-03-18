@@ -132,6 +132,10 @@ public:
 	Vector m_maxHullSize;
 	Vector m_minHullSize;
 
+	int m_skinBase; // skin to use as starting point for skin animations (offset for friendly/enemy skin)
+	int m_skinFrames; // how many "frames" of animation the model has, ignoring ally/enemy skins
+	bool m_friendlySkinFirst; // true if the friendly skin comes before the enemy skin
+
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
 	virtual BOOL	HasTarget(string_t targetname);
@@ -396,6 +400,7 @@ public:
 
 	void SetSize(Vector defaultMins, Vector defaultMaxs);
 	void SetHealth();
+	void InitModel();
 	virtual void Nerf(); // reduces monster health and/or spawn count according to cvars
 };
 

@@ -151,10 +151,10 @@ bool ActivityHasEvent(void* pmodel, int activity, int event) {
 	{
 		if (pseqdesc[i].activity == activity)
 		{
-			mstudioevent_t* pevent = (mstudioevent_t*)((byte*)pstudiohdr + pseqdesc->eventindex);
+			mstudioevent_t* pevent = (mstudioevent_t*)((byte*)pstudiohdr + pseqdesc[i].eventindex);
 
 			for (int k = 0; k < pseqdesc[i].numevents; k++) {
-				if (pevent[k].type == event) {
+				if (pevent[k].event == event) {
 					return true;
 				}
 			}

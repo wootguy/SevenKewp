@@ -153,7 +153,7 @@ void COsprey :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(Vector( -480, -480, -100), Vector(480, 480, 64));
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -219,7 +219,7 @@ void COsprey::Precache( void )
 	m_iGlassHit = PRECACHE_MODEL("sprites/xfire2.spr");
 	m_iEngineHit = PRECACHE_MODEL("sprites/muz1.spr");
 	m_iGlassGibs = PRECACHE_MODEL("models/chromegibs.mdl");
-	m_iMechGibs = PRECACHE_MODEL("models/hlcoop/bigshrapnel.mdl");
+	m_iMechGibs = PRECACHE_MODEL("models/bigshrapnel.mdl");
 }
 
 void COsprey::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )

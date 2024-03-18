@@ -640,7 +640,15 @@ void CBigMomma::GibMonster()
 
 void CBigMomma :: LayHeadcrab( void )
 {
-	CBaseEntity *pChild = CBaseEntity::Create( BIG_CHILDCLASS, pev->origin, pev->angles, edict() );
+	std::map<std::string, std::string> keys;
+	if (m_IsPlayerAlly) {
+		keys["is_player_ally"] = "1";
+	}
+	if (m_Classify) {
+		keys["classify"] = m_Classify;
+	}
+
+	CBaseEntity *pChild = CBaseEntity::Create( BIG_CHILDCLASS, pev->origin, pev->angles, edict(), keys );
 
 	pChild->pev->spawnflags |= SF_MONSTER_FALL_TO_GROUND;
 
@@ -698,7 +706,7 @@ void CBigMomma :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;

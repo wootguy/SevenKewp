@@ -388,11 +388,17 @@ void CShockTrooper::GibMonster()
 		vecGunAngles.x = vecGunAngles.z = 0;
 
 		CBaseEntity* pGun = DropItem("monster_shockroach", vecGunPos + Vector(0, 0, 32), vecGunAngles);
+		CBaseMonster* mon = pGun ? pGun->MyMonsterPointer() : NULL;
 
-		if (pGun)
+		if (mon)
 		{
-			pGun->pev->velocity = Vector(RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(200, 300));
-			pGun->pev->avelocity = Vector(0, RANDOM_FLOAT(200, 400), 0);
+			mon->pev->velocity = Vector(RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(200, 300));
+			mon->pev->avelocity = Vector(0, RANDOM_FLOAT(200, 400), 0);
+
+			if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+				mon->pev->skin = 1;
+				mon->m_IsPlayerAlly = TRUE;
+			}
 		}
 
 		//TODO: change body group
@@ -939,13 +945,18 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 			SetBodygroup(STrooperBodyGroup::Weapons, STrooperWeapon::None);
 
 			// now spawn a gun.
-			auto pRoach = DropItem("monster_shockroach", pev->origin + Vector(0, 0, 48), vecGunAngles);
+			CBaseEntity* pRoach = DropItem("monster_shockroach", pev->origin + Vector(0, 0, 48), vecGunAngles);
+			CBaseMonster* mon = pRoach ? pRoach->MyMonsterPointer() : NULL;
 
-			if (pRoach)
+			if (mon)
 			{
-				pRoach->pev->velocity = Vector(RANDOM_FLOAT(-20, 20), RANDOM_FLOAT(-20, 20), RANDOM_FLOAT(20, 30));
+				mon->pev->velocity = Vector(RANDOM_FLOAT(-20, 20), RANDOM_FLOAT(-20, 20), RANDOM_FLOAT(20, 30));
+				mon->pev->avelocity = Vector(0, RANDOM_FLOAT(20, 40), 0);
 
-				pRoach->pev->avelocity = Vector(0, RANDOM_FLOAT(20, 40), 0);
+				if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+					mon->pev->skin = 1;
+					mon->m_IsPlayerAlly = TRUE;
+				}
 			}
 		}
 	}
@@ -1026,7 +1037,8 @@ void CShockTrooper::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), GetModel());
+	m_skinFrames = 4;
+	InitModel();
 	SetSize(Vector(-24, -24, 0), Vector(24, 24, 72));
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -1058,8 +1070,6 @@ void CShockTrooper::Spawn()
 	CTalkSquadMonster::g_talkWaitTime = 0;
 
 	m_flLastShot = gpGlobals->time;
-
-	pev->skin = 0;
 
 	MonsterInit();
 }
@@ -2316,19 +2326,19 @@ void CShockTrooper::MonsterThink()
 	{
 		if (lastBlink >= RANDOM_FLOAT(3.0, 7.0))
 		{
-			pev->skin = 1;
+			pev->skin = m_skinBase + 1;
 
 			m_flLastBlinkInterval = gpGlobals->time;
 			m_flLastBlinkTime = gpGlobals->time;
 		}
 	}
 
-	if (pev->skin > 0)
+	if (pev->skin > m_skinBase)
 	{
 		if (gpGlobals->time - m_flLastBlinkInterval >= 0.1)
 		{
-			if (pev->skin == 3)
-				pev->skin = 0;
+			if (pev->skin == m_skinBase + 3)
+				pev->skin = m_skinBase;
 			else
 				++pev->skin;
 
@@ -2436,7 +2446,7 @@ void CDeadShockTrooper::Spawn()
 {
 	m_defaultModel = "models/strooper.mdl";
 	PRECACHE_MODEL(GetModel());
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;
@@ -2452,8 +2462,6 @@ void CDeadShockTrooper::Spawn()
 
 	// Corpses have less health
 	pev->health = 8;
-
-	pev->skin = 0;
 
 	MonsterInitDead();
 }

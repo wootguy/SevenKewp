@@ -112,6 +112,7 @@ private:
 	float m_painTime;
 	float m_healTime;
 	float m_fearTime;
+	bool m_isCleansuit;
 
 	static const char* pPainSounds[];
 };
@@ -657,7 +658,8 @@ void CScientist :: Spawn( void )
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	m_friendlySkinFirst = true;
+	InitModel();
 	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -671,17 +673,14 @@ void CScientist :: Spawn( void )
 
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE;
 
-	// White hands
-	pev->skin = 0;
-
 	if ( pev->body == -1 )
 	{// -1 chooses a random head
 		pev->body = RANDOM_LONG(0, NUM_SCIENTIST_HEADS-1);// pick a head, any head
 	}
 
 	// Luther is black, make his hands black
-	if ( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
+	if ( pev->body == HEAD_LUTHER && !m_isCleansuit)
+		pev->skin = m_skinBase + 1;
 	
 	MonsterInit();
 	SetUse( &CScientist::FollowerUse );
@@ -694,7 +693,9 @@ void CScientist :: Precache( void )
 {
 	CTalkSquadMonster::Precache();
 
-	m_defaultModel = FClassnameIs(pev, "monster_scientist") ? "models/scientist.mdl" : "models/cleansuit_scientist.mdl";
+	m_isCleansuit = FClassnameIs(pev, "monster_cleansuit_scientist");
+	m_defaultModel = m_isCleansuit ? "models/cleansuit_scientist.mdl" : "models/scientist.mdl";
+	m_skinFrames = m_isCleansuit ? 1 : 2;
 
 	PRECACHE_MODEL(GetModel());
 
@@ -1135,9 +1136,9 @@ void CDeadScientist :: Spawn( )
 	}
 	// Luther is black, make his hands black
 	if ( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
+		pev->skin = m_skinBase + 1;
 	else
-		pev->skin = 0;
+		pev->skin = m_skinBase;
 
 	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
 	if (pev->sequence == -1)
@@ -1200,10 +1201,12 @@ SITTING_ANIM_sitting3
 // ********** Scientist SPAWN **********
 //
 void CSittingScientist :: Spawn( )
-{
-	PRECACHE_MODEL("models/scientist.mdl");
-	SET_MODEL(ENT(pev), "models/scientist.mdl");
+{	
 	Precache();
+
+	m_friendlySkinFirst = true;
+	m_skinFrames = 2;
+	InitModel();
 	InitBoneControllers();
 
 	UTIL_SetSize(pev, Vector(-14, -14, 0), Vector(14, 14, 36));
@@ -1226,7 +1229,7 @@ void CSittingScientist :: Spawn( )
 	}
 	// Luther is black, make his hands black
 	if ( pev->body == HEAD_LUTHER )
-		pev->skin = 1;
+		pev->skin = m_skinBase + 1;
 	
 	m_baseSequence = LookupSequence( "sitlookleft" );
 	pev->sequence = m_baseSequence + RANDOM_LONG(0,4);
@@ -1240,7 +1243,9 @@ void CSittingScientist :: Spawn( )
 
 void CSittingScientist :: Precache( void )
 {
+	m_defaultModel = "mosnter/scientist.mdl";
 	CBaseMonster::Precache();
+	PRECACHE_MODEL(GetModel());
 	m_baseSequence = LookupSequence( "sitlookleft" );
 	TalkInit();
 }

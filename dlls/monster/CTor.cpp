@@ -130,6 +130,8 @@ private:
 	int numChildren;
 	string_t summon_cname;
 	Vector summonPos;
+	Vector beamColor1;
+	Vector beamColor2;
 
 	static const char* pAttackHitSounds[];
 	static const char* pAttackMissSounds[];
@@ -361,7 +363,7 @@ void CTor::MonsterThink(void) {
 				CBeam* beam = CBeam::BeamCreate(SHOOT_BEAM_SPRITE, 50);
 				beam->PointsInit(vecSrc, tr.vecEndPos);
 				beam->SetFlags(SF_BEAM_TEMPORARY);
-				beam->SetColor(96, 128, 16);
+				beam->SetColor(beamColor1.x, beamColor1.y, beamColor1.z);
 				beam->SetBrightness(150);
 				beam->SetNoise(10);
 				beam->SetScrollRate(150);
@@ -370,7 +372,7 @@ void CTor::MonsterThink(void) {
 				CBeam* beam2 = CBeam::BeamCreate(SHOOT_BEAM_SPRITE, 50);
 				beam2->PointsInit(vecSrc, tr.vecEndPos);
 				beam2->SetFlags(SF_BEAM_TEMPORARY | BEAM_FSINE);
-				beam2->SetColor(96, 255, 16);
+				beam2->SetColor(beamColor2.x, beamColor2.y, beamColor2.z);
 				beam2->SetBrightness(150);
 				beam2->SetNoise(15);
 				beam2->SetScrollRate(150);
@@ -531,7 +533,7 @@ void CTor::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(Vector(-24, -24, 0), Vector(24, 24, 72));
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -546,6 +548,15 @@ void CTor::Spawn()
 	numChildren = 0;
 
 	MonsterInit();
+
+	if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+		beamColor1 = Vector(16, 255, 255);
+		beamColor2 = Vector(128, 255, 255);
+	}
+	else {
+		beamColor1 = Vector(96, 128, 16);
+		beamColor2 = Vector(96, 255, 16);
+	}	
 }
 
 void CTor::Precache()
@@ -739,11 +750,18 @@ void CTor::SpawnGrunt() {
 	pevCreate->origin = summonPos;
 	pevCreate->angles = pev->angles;
 	SetBits(pevCreate->spawnflags, SF_MONSTER_FALL_TO_GROUND);
+	
+	CBaseEntity* ent = CBaseEntity::Instance(pent);
+	CBaseMonster* mon = ent->MyMonsterPointer();
+	if (mon) {
+		mon->m_Classify = m_Classify;
+		mon->m_IsPlayerAlly = m_IsPlayerAlly;
+	}
 
 	DispatchSpawn(ENT(pevCreate));
 	pevCreate->owner = edict();
 
-	CBaseEntity* ent = CBaseEntity::Instance(pent);
+	
 	CAGrunt* agrunt = dynamic_cast<CAGrunt*>(ent);
 	agrunt->playLandAnim = true;
 

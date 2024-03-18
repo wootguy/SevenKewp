@@ -76,7 +76,7 @@ void CRat :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(Vector( 0, 0, 0 ), Vector( 0, 0, 0 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;

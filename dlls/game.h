@@ -24,6 +24,8 @@ extern void GameDLLInit( void );
 
 // subfolders created to separate mod files from vanilla HL files
 #define MOD_SND_FOLDER "hlcoop/"
+#define MOD_MODEL_FOLDER "hlcoop_v2/"
+#define MOD_SPRITE_FOLDER "hlcoop/"
 
 extern cvar_t	displaysoundlist;
 

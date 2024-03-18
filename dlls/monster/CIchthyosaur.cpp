@@ -479,7 +479,8 @@ void CIchthyosaur :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	m_skinFrames = 5;
+	InitModel();
 	SetSize(Vector( -32, -32, -32 ), Vector( 32, 32, 32 ) );
 
 	pev->solid			= SOLID_BBOX;
@@ -623,7 +624,7 @@ void CIchthyosaur::StartTask(Task_t *pTask)
 		break;
 
 	case TASK_ICHTHYOSAUR_FLOAT:
-		pev->skin = EYE_BASE;
+		pev->skin = m_skinBase + EYE_BASE;
 		SetSequenceByName( "bellyup" );
 		break;
 
@@ -864,14 +865,14 @@ void CIchthyosaur::MonsterThink ( void )
 			// blink the eye
 			if (m_flBlink < gpGlobals->time)
 			{
-				pev->skin = EYE_CLOSED;
+				pev->skin = m_skinBase + EYE_CLOSED;
 				if (m_flBlink + 0.2 < gpGlobals->time)
 				{
 					m_flBlink = gpGlobals->time + RANDOM_FLOAT( 3, 4 );
 					if (m_bOnAttack)
-						pev->skin = EYE_MAD;
+						pev->skin = m_skinBase + EYE_MAD;
 					else
-						pev->skin = EYE_BASE;
+						pev->skin = m_skinBase + EYE_BASE;
 				}
 			}
 		}

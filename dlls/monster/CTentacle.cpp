@@ -266,7 +266,7 @@ void CTentacle :: Spawn( )
 
 	m_spawnHealth = pev->health;
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->takedamage		= DAMAGE_AIM;

@@ -42,7 +42,7 @@ LINK_ENTITY_TO_CLASS(monster_turret, CTurret);
 void CTurret::Spawn()
 {
 	Precache();
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	m_HackedGunPos = Vector(0, 0, 12.75);
 	m_flMaxSpin = TURRET_MAXSPIN;
 	pev->view_ofs.z = 12.75;
@@ -58,7 +58,18 @@ void CTurret::Spawn()
 
 	CSprite* eye = CSprite::SpriteCreate(TURRET_GLOW_SPRITE, pev->origin, FALSE);
 	m_hEyeGlow = eye;
-	eye->SetTransparency(kRenderGlow, 255, 0, 0, 0, kRenderFxNoDissipation);
+
+	// setup friendly glow
+	bool oldOn = m_iOn;
+	m_iOn = true;
+	if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+		eye->SetTransparency(kRenderGlow, 0, 255, 0, 0, kRenderFxNoDissipation);
+	}
+	else {
+		eye->SetTransparency(kRenderGlow, 255, 0, 0, 0, kRenderFxNoDissipation);
+	}
+	m_iOn = oldOn;
+	
 	eye->SetAttachment(edict(), 2);
 	m_eyeBrightness = 0;
 

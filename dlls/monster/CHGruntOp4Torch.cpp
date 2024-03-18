@@ -273,7 +273,6 @@ void COFTorchAlly :: Spawn()
 
 	SetUse(&COFTorchAlly::FollowerUse);
 
-	pev->skin = 0;
 	SetBodygroup(TorchAllyBodygroup::Weapons, m_weaponIndex);
 }
 

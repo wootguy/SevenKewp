@@ -187,6 +187,7 @@ void CHGruntOp4 :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void CHGruntOp4 :: Spawn()
 {
+	m_skinFrames = 2;
 	BaseSpawn();
 
 	CTalkSquadMonster::g_talkWaitTime = 0;
@@ -261,8 +262,6 @@ void CHGruntOp4 :: Precache()
 	//TODO: probably also needs this for head HGruntAllyHead::BeretBlack
 	if (m_iGruntHead == HGruntAllyHead::OpsMask || m_iGruntHead == HGruntAllyHead::BandanaBlack)
 		m_voicePitch = 90;
-
-	pev->skin = 0;
 
 	m_flMedicWaitTime = gpGlobals->time;
 
@@ -450,6 +449,4 @@ void CDeadHGruntAlly:: Spawn( void )
 	}
 
 	SetBodygroup( HGruntAllyBodygroup::Head, m_iGruntHead );
-
-	pev->skin = 0;
 }

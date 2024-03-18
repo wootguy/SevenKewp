@@ -332,6 +332,10 @@ void CController :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			pBall->pev->velocity = Vector( 0, 0, 32 );
 			pBall->m_hEnemy = m_hEnemy;
 
+			if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+				pBall->pev->rendercolor = Vector(0, 255, 255);
+			}
+
 			m_iBall[0] = 0;
 			m_iBall[1] = 0;
 		}
@@ -373,7 +377,7 @@ void CController :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(Vector( -32, -32, 0 ), Vector( 32, 32, 64 ));
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -677,6 +681,10 @@ void CController :: RunTask ( Task_t *pTask )
 				vecSrc = vecSrc + vecDir * (gpGlobals->time - m_flShootTime);
 				CBaseMonster *pBall = (CBaseMonster*)Create( "controller_energy_ball", vecSrc, pev->angles, edict() );
 				pBall->pev->velocity = vecDir;
+
+				if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+					pBall->pev->rendercolor = Vector(0, 255, 255);
+				}
 			}
 			m_flShootTime += 0.2;
 		}
@@ -874,6 +882,11 @@ void CController :: RunAI( void )
 			ball->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation );
 			ball->SetAttachment( edict(), (i + 3) );
 			ball->SetScale( 1.0 );
+
+			if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+				ball->SetColor(0, 255, 255);
+			}
+
 			m_hBall[i] = ball;
 		}
 

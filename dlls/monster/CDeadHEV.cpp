@@ -44,7 +44,7 @@ void CDeadHEV::Spawn(void)
 {
 	m_defaultModel = "models/player.mdl";
 	PRECACHE_MODEL(GetModel());
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;

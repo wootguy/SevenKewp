@@ -23,7 +23,7 @@ LINK_ENTITY_TO_CLASS(monster_miniturret, CMiniTurret);
 void CMiniTurret::Spawn()
 {
 	Precache();
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	m_HackedGunPos = Vector(0, 0, 12.75);
 	m_flMaxSpin = 0;
 	pev->view_ofs.z = 12.75;

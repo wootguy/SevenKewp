@@ -246,7 +246,7 @@ void CVoltigore::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), GetModel());
+	InitModel();
 	SetSize(Vector(-32, -32, 0), Vector(32, 32, 64));
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -269,7 +269,12 @@ void CVoltigore::Spawn()
 		beam->EntsInit(entindex(), entindex());
 		beam->SetStartAttachment(i+1); // head, left hand, right hand
 		beam->SetEndAttachment(4);
-		beam->SetColor(255, 16, 128);
+		if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+			beam->SetColor(140, 255, 96);
+		}
+		else {
+			beam->SetColor(255, 16, 128);
+		}
 		beam->SetBrightness(255);
 		beam->SetNoise(80);
 		m_pBeam[i] = beam;
@@ -493,10 +498,21 @@ void CVoltigoreShock::Spawn(void)
 
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));
 
+	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
+	CBaseMonster* mon = owner ? owner->MyMonsterPointer() : NULL;
+	bool isAllyShock = mon && CBaseMonster::IRelationship(mon->Classify(), CLASS_PLAYER) == R_AL;
+
 	for (int i = 0; i < SHOCK_FLY_BEAMS; i++) {
 		CBeam* beam = CBeam::BeamCreate(BEAM_SPRITE, 30);
 		beam->PointEntInit(RandomBeamPoint(pev), entindex());
-		beam->SetColor(255, 16, 128);
+
+		if (isAllyShock) {
+			beam->SetColor(140, 255, 96);
+		}
+		else {
+			beam->SetColor(255, 16, 128);
+		}
+		
 		beam->SetBrightness(255);
 		beam->SetNoise(80);
 
@@ -543,11 +559,12 @@ void CVoltigoreShock::Shock(void)
 void CVoltigoreShock::Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity)
 {
 	CVoltigoreShock* pSpit = GetClassPtr((CVoltigoreShock*)NULL);
+	pSpit->pev->owner = ENT(pevOwner);
+
 	pSpit->Spawn();
 
 	UTIL_SetOrigin(pSpit->pev, vecStart);
 	pSpit->pev->velocity = vecVelocity;
-	pSpit->pev->owner = ENT(pevOwner);
 
 	pSpit->SetThink(&CVoltigoreShock::Fly);
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
