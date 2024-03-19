@@ -625,6 +625,7 @@ void CFuncTrackTrain::Precache(void)
 
 	PRECACHE_SOUND("plats/ttrain_brake1.wav");
 	PRECACHE_SOUND("plats/ttrain_start1.wav");
+	PRECACHE_SOUND("plats/train_use1.wav");
 
 	m_usAdjustPitch = PRECACHE_EVENT(1, "events/train.sc");
 }
