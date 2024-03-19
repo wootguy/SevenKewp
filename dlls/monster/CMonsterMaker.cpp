@@ -733,6 +733,9 @@ void CMonsterMaker::Nerf() {
 		return; // don't care about nerfing friendlies/insects/snarks
 	}
 
+	float defaultHealth = GetDefaultHealth(spawnCname);
+	float preNerfHealth = pev->health ? pev->health : defaultHealth;
+
 	CBaseMonster::Nerf(); // reduce health
 
 	int maxNerfedSpawnCount = mp_maxmonsterrespawns.value + 1.5f;
@@ -835,6 +838,12 @@ void CMonsterMaker::Nerf() {
 	if (m_cNumMonsters > 0) {
 		g_nerfStats.totalMonsters += m_cNumMonsters - 1; // CBaseMonster::Nerf increments this too
 		g_nerfStats.totalMonsterHealth += (m_cNumMonsters - 1) * pev->health;
+
+		if (preNerfHealth > pev->health)
+			g_nerfStats.nerfedMonsterHealth += (m_cNumMonsters - 1) * (preNerfHealth - pev->health);
+
+		if (pev->health > defaultHealth)
+			g_nerfStats.skippedMonsterHealth += (m_cNumMonsters - 1) * (pev->health - defaultHealth);
 	}
 	else {
 		g_nerfStats.skippedMonsterInfiniSpawns++;
