@@ -40,6 +40,7 @@ enum mp5_e
 
 LINK_ENTITY_TO_CLASS( weapon_mp5, CMP5 );
 LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 );
+LINK_ENTITY_TO_CLASS( weapon_9mmar, CMP5 );
 
 // TODO: implement these weapons instead of remapping them
 LINK_ENTITY_TO_CLASS(weapon_uzi, CMP5);
