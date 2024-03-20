@@ -3369,6 +3369,10 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_satchel" );
 		GiveNamedItem( "weapon_snark" );
 		GiveNamedItem( "weapon_hornetgun" );
+		GiveNamedItem( "weapon_grapple" );
+		if (!m_fLongJump) {
+			GiveNamedItem("item_longjump");
+		}
 		gEvilImpulse101 = FALSE;
 		break;
 
