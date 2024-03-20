@@ -116,7 +116,6 @@ inline void *GET_PRIVATE( edict_t *pent )
 #define FIND_ENTITY_IN_SPHERE		(*g_engfuncs.pfnFindEntityInSphere)
 #define FIND_CLIENT_IN_PVS			(*g_engfuncs.pfnFindClientInPVS) // Doesn't work as expected in multiplayer.
 #define EMIT_AMBIENT_SOUND			(*g_engfuncs.pfnEmitAmbientSound)
-#define GET_MODEL_PTR				(*g_engfuncs.pfnGetModelPtr)
 #define REG_USER_MSG				(*g_engfuncs.pfnRegUserMsg)
 #define GET_BONE_POSITION			(*g_engfuncs.pfnGetBonePosition)
 #define FUNCTION_FROM_NAME			(*g_engfuncs.pfnFunctionFromName)

@@ -34,6 +34,7 @@
 #include <fstream>
 #include "user_messages.h"
 #include <queue>
+#include "studio.h"
 
 #include <fstream>
 #include <sys/types.h>
@@ -3142,6 +3143,24 @@ int MODEL_INDEX(const char* model) {
 	std::string lowerPath = toLowerCase(model);
 	model = lowerPath.c_str();
 	return g_engfuncs.pfnModelIndex(model);
+}
+
+void* GET_MODEL_PTR(edict_t* edict) {
+	studiohdr_t* header = (studiohdr_t*)g_engfuncs.pfnGetModelPtr(edict);
+
+	if (!header) {
+		return NULL;
+	}
+
+	// basic corruption detection
+	if (header->id != 1414743113 || header->version != 10) {
+		ALERT(at_error, "Model corruption! Model: %s, idx: %d, ID: %d, Version: %d\n",
+			STRING(edict->v.model), edict->v.modelindex, header->version, header->id);
+		SET_MODEL(edict, NOT_PRECACHED_MODEL); // stop using the broken model and spamming the console
+		return NULL;
+	}
+
+	return header;
 }
 
 const char* getPlayerUniqueId(edict_t* plr) {

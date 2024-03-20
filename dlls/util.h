@@ -712,6 +712,7 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 #define WRITE_COORD		(*g_engfuncs.pfnWriteCoord)
 #define WRITE_STRING	(*g_engfuncs.pfnWriteString)
 #define WRITE_ENTITY	(*g_engfuncs.pfnWriteEntity)
+#define GET_MODEL_PTR	(*g_engfuncs.pfnGetModelPtr)
 #else
 // engine wrappers which handle model/sound replacement logic
 int PRECACHE_GENERIC(const char* path);
@@ -721,6 +722,7 @@ int PRECACHE_EVENT(int id, const char* path);
 void SET_MODEL(edict_t* edict, const char* model);
 const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
 int MODEL_INDEX(const char* model);
+void* GET_MODEL_PTR(edict_t* edict);
 #define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
 
 void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL);
