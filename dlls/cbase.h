@@ -767,4 +767,5 @@ public:
 	const char* getDisplayName() { return "World"; }
 
 	string_t m_globalModelList;
+	string_t m_globalSoundList;
 };

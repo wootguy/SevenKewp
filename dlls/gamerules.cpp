@@ -143,6 +143,8 @@ void execMapCfg() {
 		"mp_npckill",
 		"startarmor",
 		"starthealth",
+		"globalmodellist",
+		"globalsoundlist",
 	};
 
 	static set<string> itemNames = {
@@ -237,6 +239,17 @@ void execMapCfg() {
 					ALERT(at_console, "mp_prefer_server_maxspeed: Ignoring \"sv_maxspeed %d\" set by map cfg.\n", maxspeed);
 					continue;
 				}
+			}
+
+			// model/sound lists must be loaded now or else other entities might precache the wrong files
+			if (name == "globalmodellist" || name == "globalsoundlist") {
+				KeyValueData dat;
+				dat.fHandled = false;
+				dat.szClassName = (char*)"worldspawn";
+				dat.szKeyName = (char*)name.c_str();
+				dat.szValue = (char*)value.c_str();
+				DispatchKeyValue(ENT(0), &dat);
+				continue;
 			}
 
 			SERVER_COMMAND(UTIL_VarArgs("%s %s\n", name.c_str(), value.c_str()));

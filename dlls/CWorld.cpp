@@ -44,21 +44,33 @@ void CWorld::Spawn(void)
 
 void CWorld::loadReplacementFiles() {
 	const char* gmrPath = "hlcoop.gmr";
-	static uint64_t lastEditTime = 0;
+	const char* gsrPath = "hlcoop.gsr";
+	static uint64_t lastEditTimeGmr = 0;
+	static uint64_t lastEditTimeGsr = 0;
 
-	std::string path = getGameFilePath(gmrPath);
+	std::string mpath = getGameFilePath(gmrPath);
+	std::string spath = getGameFilePath(gsrPath);
 
-	if (path.empty()) {
+	if (mpath.empty()) {
 		g_modelReplacementsMod.clear();
 		ALERT(at_warning, "Missing replacement file: %s\n", gmrPath);
-		return;
+	}
+	if (spath.empty()) {
+		g_soundReplacementsMod.clear();
+		ALERT(at_warning, "Missing replacement file: %s\n", gsrPath);
 	}
 
-	uint64_t editTime = getFileModifiedTime(path.c_str());
+	uint64_t editTimeGmr = getFileModifiedTime(mpath.c_str());
+	uint64_t editTimeGsr = getFileModifiedTime(spath.c_str());
 
-	if (lastEditTime != editTime) {
-		lastEditTime = editTime;
+	if (lastEditTimeGmr != editTimeGmr) {
+		lastEditTimeGmr = editTimeGmr;
 		g_modelReplacementsMod = loadReplacementFile(gmrPath);
+	}
+
+	if (lastEditTimeGsr != editTimeGsr) {
+		lastEditTimeGsr = editTimeGsr;
+		g_soundReplacementsMod = loadReplacementFile(gsrPath);
 	}
 
 	g_modelReplacementsMap.clear();
@@ -67,10 +79,20 @@ void CWorld::loadReplacementFiles() {
 		g_modelReplacementsMap = loadReplacementFile(mapGmrPath);
 	}
 
-	// map models have priority over mod models
+	g_soundReplacementsMap.clear();
+	if (m_globalSoundList) {
+		const char* mapGsrPath = UTIL_VarArgs("sound/%s/%s", STRING(gpGlobals->mapname), STRING(m_globalSoundList));
+		g_soundReplacementsMap = loadReplacementFile(mapGsrPath);
+	}
+
+	// map models/sounds have priority over mod models
 	g_modelReplacements.clear();
 	g_modelReplacements.insert(g_modelReplacementsMap.begin(), g_modelReplacementsMap.end());
 	g_modelReplacements.insert(g_modelReplacementsMod.begin(), g_modelReplacementsMod.end());
+
+	g_soundReplacements.clear();
+	g_soundReplacements.insert(g_soundReplacementsMap.begin(), g_soundReplacementsMap.end());
+	g_soundReplacements.insert(g_soundReplacementsMod.begin(), g_soundReplacementsMod.end());
 }
 
 void CWorld::Precache(void)
@@ -344,6 +366,11 @@ void CWorld::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "globalmodellist"))
 	{
 		m_globalModelList = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "globalsoundlist"))
+	{
+		m_globalSoundList = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else

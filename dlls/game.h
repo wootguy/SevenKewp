@@ -115,6 +115,10 @@ extern std::map<std::string, std::string> g_modelReplacementsMap; // model repla
 extern std::map<std::string, std::string> g_modelReplacementsMod; // model replacements for this mod
 extern std::map<std::string, std::string> g_modelReplacements; // combined model replacements
 
+extern std::map<std::string, std::string> g_soundReplacementsMod; // sound replacements for the current map
+extern std::map<std::string, std::string> g_soundReplacementsMap; // sound replacements for this mod
+extern std::map<std::string, std::string> g_soundReplacements; // combined sound replacements
+
 extern std::set<std::string> g_mapWeapons; // weapons which should be precached (don't use aliases here)
 extern std::map<std::string, const char*> g_itemNameRemap;
 
