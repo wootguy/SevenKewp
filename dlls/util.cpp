@@ -763,6 +763,12 @@ void UTIL_EmitAmbientSound( edict_t *entity, const Vector &vecOrigin, const char
 		if (g_monsterSoundReplacements[eidx].find(samp) != g_monsterSoundReplacements[eidx].end()) {
 			samp = g_monsterSoundReplacements[eidx][samp].c_str();
 		}
+		else if (g_soundReplacements.find(samp) != g_soundReplacements.end()) {
+			samp = g_soundReplacements[samp].c_str();
+		}
+	}
+	else if (g_soundReplacements.find(samp) != g_soundReplacements.end()) {
+		samp = g_soundReplacements[samp].c_str();
 	}
 
 	if (samp && *samp == '!')
@@ -2951,6 +2957,9 @@ int PRECACHE_GENERIC(const char* path) {
 	if (g_modelReplacements.find(path) != g_modelReplacements.end()) {
 		path = g_modelReplacements[path].c_str();
 	}
+	if (g_soundReplacements.find(path) != g_soundReplacements.end()) {
+		path = g_soundReplacements[path].c_str();
+	}
 
 	if (g_serveractive) {
 		if (g_precachedGeneric.find(path) != g_precachedGeneric.end()) {
@@ -2977,11 +2986,17 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
 
+	bool hadMonsterSoundReplacement = false;
 	if (ent && ent->IsMonster() && g_monsterSoundReplacements.size() >= ent->entindex()) {
 		std::map<std::string, std::string>& replacementMap = g_monsterSoundReplacements[ent->entindex()];
 		if (replacementMap.find(path) != replacementMap.end()) {
 			path = replacementMap[path].c_str();
+			hadMonsterSoundReplacement = true;
 		}
+	}
+	
+	if (!hadMonsterSoundReplacement && g_soundReplacements.find(path) != g_soundReplacements.end()) {
+		path = g_soundReplacements[path].c_str();
 	}
 
 	if (lowerPath.find(" ") != -1) {

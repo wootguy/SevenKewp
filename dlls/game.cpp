@@ -76,6 +76,10 @@ std::map<std::string, std::string> g_modelReplacementsMod;
 std::map<std::string, std::string> g_modelReplacementsMap;
 std::map<std::string, std::string> g_modelReplacements;
 
+std::map<std::string, std::string> g_soundReplacementsMod;
+std::map<std::string, std::string> g_soundReplacementsMap;
+std::map<std::string, std::string> g_soundReplacements;
+
 std::set<std::string> g_mapWeapons;
 
 std::map<std::string, const char*> g_itemNameRemap = {
