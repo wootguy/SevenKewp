@@ -698,7 +698,7 @@ bool CMonsterMaker::NerfMonsterCounters(string_t target) {
 				ALERT(at_console, "Reduced game_counter %s limit by %d (%d total)\n",
 					STRING(target), reducedCount, (int)ent->v.health);
 			}
-			else if (strcmp(STRING(ent->v.classname), "trigger_counter")) {
+			else if (!strcmp(STRING(ent->v.classname), "trigger_counter")) {
 				CBaseToggle* trig = (CBaseToggle*)GET_PRIVATE(ent);
 				if (trig) {
 					int trigCount = CountMonsterTriggerNerfs(target);
