@@ -203,6 +203,7 @@ set(TRIGGER_SRC
 	triggers/CTargetCDAudio.cpp
 	triggers/CTriggerCDAudio.cpp
 	triggers/CTriggerChangeTarget.cpp
+	triggers/CTriggerChangeValue.cpp
 	triggers/CTriggerCounter.cpp
 	triggers/CTriggerEndSection.cpp
 	triggers/CTriggerGravity.cpp

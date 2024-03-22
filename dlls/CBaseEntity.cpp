@@ -14,6 +14,8 @@
 extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 
+CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName);
+
 // Global Savedata for Delay
 TYPEDESCRIPTION	CBaseEntity::m_SaveData[] =
 {
@@ -110,6 +112,10 @@ CBaseEntity* CBaseEntity::GetNextTarget(void)
 		return NULL;
 
 	return Instance(pTarget);
+}
+
+CKeyValue CBaseEntity::GetKeyValue(const char* keyName) {
+	return GetEntvarsKeyvalue(pev, keyName);
 }
 
 int CBaseEntity::Save(CSave& save)

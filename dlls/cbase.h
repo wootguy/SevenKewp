@@ -130,6 +130,17 @@ public:
 	CBaseEntity * operator ->();
 };
 
+struct CKeyValue {
+	TYPEDESCRIPTION* desc;
+
+	union {
+		int iVal;
+		float fVal;
+		string_t sVal;
+		float* vVal;
+		EHANDLE eVal;
+	};
+};
 
 //
 // Base Entity.  All entity types derive from this
@@ -149,6 +160,7 @@ public:
 	virtual void	Spawn( void ) { return; }
 	virtual void	Precache( void ) { return; }
 	virtual void	KeyValue( KeyValueData* pkvd) { pkvd->fHandled = FALSE; }
+	virtual CKeyValue GetKeyValue(const char* keyName);
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	virtual int		ObjectCaps( void ) { return FCAP_ACROSS_TRANSITION; }
