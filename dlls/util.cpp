@@ -2253,6 +2253,56 @@ void CSave :: WriteFunction( const char *pname, void **data, int count )
 		ALERT( at_error, "Invalid function pointer in entity!" );
 }
 
+CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName) {
+	CKeyValue keyvalue;
+	memset(&keyvalue, 0, sizeof(CKeyValue));
+
+	TYPEDESCRIPTION* pField;
+
+	for (int i = 0; i < ENTVARS_COUNT; i++)
+	{
+		pField = &gEntvarsDescription[i];
+
+		if (!stricmp(pField->fieldName, keyName))
+		{
+			keyvalue.desc = pField;
+
+			switch (pField->fieldType)
+			{
+			case FIELD_MODELNAME:
+			case FIELD_SOUNDNAME:
+			case FIELD_STRING:
+				keyvalue.sVal = (*(int*)((char*)pev + pField->fieldOffset));
+				break;
+
+			case FIELD_TIME:
+			case FIELD_FLOAT:
+				keyvalue.fVal = (*(float*)((char*)pev + pField->fieldOffset));
+				break;
+
+			case FIELD_INTEGER:
+				keyvalue.iVal = (*(int*)((char*)pev + pField->fieldOffset));
+				break;
+
+			case FIELD_POSITION_VECTOR:
+			case FIELD_VECTOR:
+				keyvalue.vVal = (float*)((char*)pev + pField->fieldOffset);
+				break;
+
+			default:
+			case FIELD_EVARS:
+			case FIELD_CLASSPTR:
+			case FIELD_EDICT:
+			case FIELD_ENTITY:
+			case FIELD_POINTER:
+				break;
+			}
+			break;
+		}
+	}
+
+	return keyvalue;
+}
 
 void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
 {
