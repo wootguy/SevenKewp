@@ -648,11 +648,11 @@ int CountMonsterTriggerNerfs(string_t targetname) {
 			CMonsterMaker* maker = (CMonsterMaker*)pent;
 
 			triggerCount += maker->m_cNumMonsters;
-			if (maker->m_cNumMonsters > maxNerfedSpawnCount) {
-				nerfCount += maker->m_cNumMonsters - maxNerfedSpawnCount;
-			}
-			else if (maker->m_cNumMonsters == -1) {
+			if (maker->m_cNumMonsters < 0) {
 				return -1;
+			}
+			else if (maker->m_cNumMonsters > maxNerfedSpawnCount) {
+				nerfCount += maker->m_cNumMonsters - maxNerfedSpawnCount;
 			}
 		}
 		else if (strstr(cname, "monster_") == cname) {
@@ -671,13 +671,16 @@ bool CMonsterMaker::NerfMonsterCounters(string_t target) {
 	bool shouldNerf = true;
 	int maxNerfedSpawnCount = mp_maxmonsterrespawns.value + 1.5f;
 
+	if (m_cNumMonsters <= maxNerfedSpawnCount) {
+		return false;
+	}
+
 	edict_t* ent = NULL;
 	while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(target)))) {
 		if (strcmp(STRING(ent->v.classname), "game_counter") && strcmp(STRING(ent->v.classname), "trigger_counter")) {
 			ALERT(at_console, "Not nerfing %d count %s maker (triggers '%s')\n",
 				m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(target));
-			shouldNerf = false;
-			break;
+			return false;
 		}
 	}
 
@@ -690,8 +693,7 @@ bool CMonsterMaker::NerfMonsterCounters(string_t target) {
 				if (trigCount == -1 || trigCount >= (int)ent->v.health) {
 					ALERT(at_console, "Not nerfing %d count %s maker because game_counter '%s' would be nerfed into a negative count (%d > %d)\n",
 						m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(target), trigCount, (int)ent->v.health);
-					shouldNerf = false;
-					break;
+					return false;
 				}
 
 				ent->v.health -= reducedCount;
@@ -705,19 +707,21 @@ bool CMonsterMaker::NerfMonsterCounters(string_t target) {
 					if (trigCount == -1 || trigCount >= trig->m_cTriggersLeft) {
 						ALERT(at_console, "Not nerfing %d count %s maker because trigger_counter '%s' would be nerfed into a negative count (%d > %d)\n",
 							m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(m_iszTriggerTarget), trigCount, trig->m_cTriggersLeft);
-						shouldNerf = false;
-						break;
+						return false;
 					}
 
 					trig->m_cTriggersLeft -= reducedCount;
 					ALERT(at_console, "Reduced trigger_counter %s limit by %d (%d total)\n",
 						STRING(target), reducedCount, (int)trig->m_cTriggersLeft);
 				}
+				else {
+					return false;
+				}
 			}
 		}
 	}
 
-	return shouldNerf;
+	return true;
 }
 
 void CMonsterMaker::Nerf() {
