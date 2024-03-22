@@ -3732,13 +3732,54 @@ bool fileExists(const char* path) {
 	return false;
 }
 
+std::string normalize_path(std::string s)
+{
+	if (s.size() == 0)
+		return s;
+
+	replace(s.begin(), s.end(), '\\', '/');
+
+	std::vector<std::string> parts = splitString(s, "/");
+	int depth = 0;
+	for (int i = 0; i < parts.size(); i++)
+	{
+		depth++;
+		if (parts[i] == "..")
+		{
+			depth--;
+			if (depth == 0)
+			{
+				// can only .. up to game root folder, and not any further
+				parts.erase(parts.begin() + i);
+				i--;
+			}
+			else if (i > 0)
+			{
+				parts.erase(parts.begin() + i);
+				parts.erase(parts.begin() + (i - 1));
+				i -= 2;
+			}
+		}
+	}
+	s = "";
+	for (int i = 0; i < parts.size(); i++)
+	{
+		if (i > 0) {
+			s += '/';
+		}
+		s += parts[i];
+	}
+
+	return s;
+}
+
 std::string getGameFilePath(const char* path) {
 	static char gameDir[MAX_PATH];
 	GET_GAME_DIR(gameDir);
 
 	std::string searchPaths[2] = {
-		gameDir + std::string("/") + path,
-		gameDir + std::string("_downloads/") + path,
+		normalize_path(gameDir + std::string("/") + path),
+		normalize_path(gameDir + std::string("_downloads/") + path),
 	};
 
 	for (int i = 0; i < 2; i++) {
