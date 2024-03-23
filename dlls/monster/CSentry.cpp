@@ -139,16 +139,7 @@ void CSentry::SentryDeath(void)
 	{
 		pev->deadflag = DEAD_DEAD;
 
-		float flRndSound = RANDOM_FLOAT(0, 1);
-
-		if (flRndSound <= 0.33)
-			EMIT_SOUND(ENT(pev), CHAN_BODY, "turret/tu_die.wav", 1.0, ATTN_NORM);
-		else if (flRndSound <= 0.66)
-			EMIT_SOUND(ENT(pev), CHAN_BODY, "turret/tu_die2.wav", 1.0, ATTN_NORM);
-		else
-			EMIT_SOUND(ENT(pev), CHAN_BODY, "turret/tu_die3.wav", 1.0, ATTN_NORM);
-
-		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "turret/tu_active2.wav", 0, 0, SND_STOP, 100);
+		DeathSound();
 
 		SetBoneController(0, 0);
 		SetBoneController(1, 0);

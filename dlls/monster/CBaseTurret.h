@@ -31,6 +31,7 @@ public:
 	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
 	BOOL IsMachine() { return 1; } // ignore classification overrides
 	BOOL IsTurret() { return 1; }
+	void DeathSound();
 
 	int BloodColor(void) { return DONT_BLEED; }
 	void GibMonster(void) {}	// UNDONE: Throw turret gibs?
@@ -103,6 +104,6 @@ public:
 
 	int m_iGibModel;
 
-private:
+protected:
 	static const char* pDieSounds[];
 };

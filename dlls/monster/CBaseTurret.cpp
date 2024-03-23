@@ -254,6 +254,11 @@ void CBaseTurret::EyeOff()
 	}
 }
 
+void CBaseTurret::DeathSound() {
+	EMIT_SOUND(ENT(pev), CHAN_BODY, RANDOM_SOUND_ARRAY(pDieSounds), 1.0, ATTN_NORM);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "turret/tu_active2.wav", 0, 0, SND_STOP, 100);
+}
+
 void CBaseTurret::ActiveThink(void)
 {
 	int fAttack = 0;
@@ -636,9 +641,7 @@ void CBaseTurret::TurretDeath(void)
 	{
 		pev->deadflag = DEAD_DEAD;
 
-		EMIT_SOUND(ENT(pev), CHAN_BODY, RANDOM_SOUND_ARRAY(pDieSounds), 1.0, ATTN_NORM);
-
-		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "turret/tu_active2.wav", 0, 0, SND_STOP, 100);
+		DeathSound();
 
 		if (m_iOrientation == 0)
 			m_vecGoalAngles.x = -15;
