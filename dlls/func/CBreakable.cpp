@@ -288,6 +288,8 @@ void CBreakable::Precache(void)
 		PRECACHE_SOUND("buttons/spark6.wav");
 		pGibName = "models/computergibs.mdl";
 
+		PRECACHE_SOUND("debris/metal1.wav");
+		PRECACHE_SOUND("debris/metal3.wav");
 		PRECACHE_SOUND("debris/bustmetal1.wav");
 		PRECACHE_SOUND("debris/bustmetal2.wav");
 		break;

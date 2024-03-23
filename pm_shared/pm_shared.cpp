@@ -426,6 +426,10 @@ void PM_PlayStepSound( int step, float fvol )
 		}
 		break;
 	case STEP_LADDER:
+		if (pmove->flags & FL_IMMUNE_LAVA) {
+			// special flag set by the grapple weapon to indicate the player is flying and not on a ladder
+			break;
+		}
 		switch(irand)
 		{
 		// right foot

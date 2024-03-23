@@ -1243,7 +1243,7 @@ void CSittingScientist :: Spawn( )
 
 void CSittingScientist :: Precache( void )
 {
-	m_defaultModel = "mosnter/scientist.mdl";
+	m_defaultModel = "models/scientist.mdl";
 	CBaseMonster::Precache();
 	PRECACHE_MODEL(GetModel());
 	m_baseSequence = LookupSequence( "sitlookleft" );
