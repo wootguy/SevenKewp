@@ -10,7 +10,7 @@
 #define SF_SET_ONCE					4	// Only update the target once then remove the trigger_setorigin.
 
 // Use the vector between the target and the copypointer plus the "Offset"-keyvalue as the offset vector.
-// Also implies copy of X/Y/Z axes. TODO: X/Y/Z angles as well?
+// Also implies copy of X/Y/Z axes, unless one or more of the copy-axis flags are set.
 #define SF_LOCK_OFFSETS				8
 
 #define SF_COPY_X_ANGLE				16
@@ -122,6 +122,12 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 	}
 
 	if (pev->spawnflags & SF_LOCK_OFFSETS) {
+		// TODO: Lock offsets behaves strangely in sven when attached to a rotating entity.
+		// The offset key is not respected and some extra space is added/removed depending
+		// on how rotated the entity was when the trigger_setorigin was activated. This can
+		// be so far off target that the child attaches to the opposite side of the parent.
+		// This doesn't apply when "Skip initial set" is active, which causes the offset key
+		// to be totally ignored, for some reason.
 
 		for (int i = 0; i < m_targetCount; i++) {
 			if (pev->spawnflags & SF_SKIP_INITIAL_SET) {
@@ -133,7 +139,11 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 
 			m_lockOffsetAngles[i] = m_hTargets[i]->pev->angles - m_hCopyEnt->pev->angles;
 		}
-		
+
+		if (!(pev->spawnflags & (SF_COPY_X_AXIS | SF_COPY_Y_AXIS | SF_COPY_Z_AXIS))) {
+			// TODO: wtf? ripent this shit.
+			pev->spawnflags = SF_COPY_X_AXIS | SF_COPY_Y_AXIS | SF_COPY_Z_AXIS;
+		}
 	}
 
 	UpdateEntity();
@@ -173,31 +183,44 @@ void CTriggerSetOrigin::UpdateEntity() {
 		entvars_t* targetPev = m_hTargets[i]->pev;
 		Vector& lockOffset = m_lockOffsets[i];
 		Vector& lockOffsetAngles = m_lockOffsetAngles[i];
+		
+		Vector offset = lockOffset + m_offset;
 
-		if (pev->spawnflags & (SF_COPY_X_AXIS | SF_LOCK_OFFSETS)) {
-			targetPev->origin.x = m_hCopyEnt->pev->origin.x + m_offset.x + lockOffset.x;
-		}
-		if (pev->spawnflags & (SF_COPY_Y_AXIS | SF_LOCK_OFFSETS)) {
-			targetPev->origin.y = m_hCopyEnt->pev->origin.y + m_offset.y + lockOffset.y;
-		}
-		if (pev->spawnflags & (SF_COPY_Z_AXIS | SF_LOCK_OFFSETS)) {
-			targetPev->origin.z = m_hCopyEnt->pev->origin.z + m_offset.z + lockOffset.z;
+		
+		if (pev->spawnflags & SF_SKIP_INITIAL_SET) {
+			// TODO: Figure out if there's a good reason for this, or if it's a bug
+			offset = offset - m_offset;
 		}
 
-		if (pev->spawnflags & (SF_COPY_X_ANGLE | SF_LOCK_OFFSETS)) {
+		if (pev->spawnflags & SF_LOCK_OFFSETS) {
+			// rotate the offset to align with the parent
+			UTIL_MakeVectors(m_hCopyEnt->pev->angles);
+			offset = (gpGlobals->v_forward * offset.x) + (gpGlobals->v_right * offset.y) + (gpGlobals->v_up * offset.z);
+		}
+
+		if (pev->spawnflags & SF_COPY_X_AXIS) {
+			targetPev->origin.x = m_hCopyEnt->pev->origin.x + offset.x;
+		}
+		if (pev->spawnflags & SF_COPY_Y_AXIS) {
+			targetPev->origin.y = m_hCopyEnt->pev->origin.y + offset.y;
+		}
+		if (pev->spawnflags & SF_COPY_Z_AXIS) {
+			targetPev->origin.z = m_hCopyEnt->pev->origin.z + offset.z;
+		}
+
+		if (pev->spawnflags & SF_COPY_X_ANGLE) {
 			float v = m_hCopyEnt->pev->angles.x;
 			targetPev->angles.x = (m_invertAngleX ? -v : v) + m_angleoffset.x + lockOffsetAngles.x;
 		}
-		if (pev->spawnflags & (SF_COPY_Y_ANGLE | SF_LOCK_OFFSETS)) {
+		if (pev->spawnflags & SF_COPY_Y_ANGLE) {
 			float v = m_hCopyEnt->pev->angles.y;
 			targetPev->angles.y = (m_invertAngleY ? -v : v) + m_angleoffset.y + lockOffsetAngles.y;
 		}
-		if (pev->spawnflags & (SF_COPY_Z_ANGLE | SF_LOCK_OFFSETS)) {
+		if (pev->spawnflags & SF_COPY_Z_ANGLE) {
 			float v = m_hCopyEnt->pev->angles.z;
 			targetPev->angles.z = (m_invertAngleZ ? -v : v) + m_angleoffset.z + lockOffsetAngles.z;
 		}
 
-		// TODO: might not be needed but I know this has fixed bugs in the past
 		UTIL_SetOrigin(m_hTargets[i]->pev, m_hTargets[i]->pev->origin);
 	}
 }
