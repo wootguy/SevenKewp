@@ -34,6 +34,8 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS(func_train, CFuncTrain);
+LINK_ENTITY_TO_CLASS(env_spritetrain, CFuncTrain);
+
 TYPEDESCRIPTION	CFuncTrain::m_SaveData[] =
 {
 	DEFINE_FIELD(CFuncTrain, m_sounds, FIELD_INTEGER),
@@ -249,12 +251,26 @@ void CFuncTrain::Spawn(void)
 	if (pev->dmg == 0)
 		pev->dmg = 2;
 
-	pev->movetype = MOVETYPE_PUSH;
+	pev->movetype = MOVETYPE_PUSH; // required for LinearMove (ltime)
 
-	if (FBitSet(pev->spawnflags, SF_TRACKTRAIN_PASSABLE))
+	if (FClassnameIs(pev, "env_spritetrain")) {
 		pev->solid = SOLID_NOT;
-	else
-		pev->solid = SOLID_BSP;
+
+		if (pev->rendermode == 0) {
+			pev->rendermode = kRenderTransAdd;
+		}
+		if (pev->renderamt == 0) {
+			pev->renderamt = 200; // just a guess, should check exact value in sven
+		}
+	}
+	else {
+		if (FBitSet(pev->spawnflags, SF_TRACKTRAIN_PASSABLE))
+			pev->solid = SOLID_NOT;
+		else
+			pev->solid = SOLID_BSP;
+	}
+
+	
 
 	SET_MODEL(ENT(pev), STRING(pev->model));
 	UTIL_SetSize(pev, pev->mins, pev->maxs);
@@ -270,6 +286,10 @@ void CFuncTrain::Spawn(void)
 void CFuncTrain::Precache(void)
 {
 	CBasePlatTrain::Precache();
+
+	if (FClassnameIs(pev, "env_spritetrain")) {
+		PRECACHE_MODEL(STRING(pev->model));
+	}
 
 #if 0  // obsolete
 	// otherwise use preset sound
