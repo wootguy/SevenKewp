@@ -216,6 +216,7 @@ set(TRIGGER_SRC
 	triggers/CTriggerPush.cpp
 	triggers/CTriggerRandom.cpp
 	triggers/CTriggerRelay.cpp
+	triggers/CTriggerRenamePlayer.cpp
 	triggers/CTriggerRespawn.cpp
 	triggers/CTriggerSave.cpp
 	triggers/CTriggerSetOrigin.cpp
