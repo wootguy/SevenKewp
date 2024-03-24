@@ -11,15 +11,17 @@
 #define SF_DONT_USE_X 1
 #define SF_DONT_USE_Y 2
 #define SF_DONT_USE_Z 4
+#define SF_CONSTANT 8
+//#define SF_START_ON 16 // does nothing according to docs
 #define SF_INVERT_TARGET_VALUE 32
 #define SF_INVERT_SOURCE_VALUE 64 // TODO: this is pointless. Ripent this out of every map that uses it.
+#define SF_MULTIPLE_DESTINATIONS 128 // TODO: When you would ever want to target only the first entity found? As a mapper, you have no idea what that will be. It just seems like a bug.
 
 // from rehlds
 #define MAX_KEY_NAME_LEN 256
 #define MAX_KEY_VALUE_LEN 2048
 
 enum changevalue_operations {
-	// these values are weird because svencoop.fgd is weird
 	CVAL_OP_REPLACE = 0,
 	CVAL_OP_ADD = 1,
 	CVAL_OP_MUL = 2,
@@ -29,6 +31,8 @@ enum changevalue_operations {
 	CVAL_OP_OR = 6,
 	CVAL_OP_NAND = 7,
 	CVAL_OP_NOR = 8,
+	CVAL_OP_DIR2ANG = 9,
+	CVAL_OP_ANG2DIR = 10,
 	CVAL_OP_APPEND = 11, 
 	CVAL_OP_MOD = 12,
 	CVAL_OP_XOR = 13,
@@ -49,12 +53,25 @@ enum changevalue_trig_behavior {
 	CVAL_TRIG_RADIANS
 };
 
+enum copyvalue_float_conv {
+	CVAL_STR_6DP = 0, // 6 decimal places when converted to string
+	CVAL_STR_5DP = 1,
+	CVAL_STR_4DP = 4,
+	CVAL_STR_3DP = 7,
+	CVAL_STR_2DP = 10,
+	CVAL_STR_1DP = 13,
+	CVAL_STR_ROUND = 16, // round to nearest whole number when converted to string/int
+	CVAL_STR_CEIL = 17,
+	CVAL_STR_FLOOR = 18,
+};
+
 class CTriggerChangeValue : public CPointEntity
 {
 public:
 	void Spawn(void);
 	void KeyValue(KeyValueData* pkvd);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void EXPORT TimedThink();
 
 	int OperateInteger(int sourceVal, int targetVal);
 	float OperateFloat(float sourceVal, float targetVal);
@@ -62,26 +79,41 @@ public:
 	const char* OperateString(const char* sourceVal, const char* targetVal);
 	const char* Operate(CKeyValue& keyvalue);
 	void HandleTarget(CBaseEntity* ent);
+	void ChangeValues();
+	float VectorToFloat(Vector v);
+	int FloatToInteger(float v);
+	std::string FloatToString(float v);
+	std::string VectorToString(Vector v);
 
 	string_t m_iszKeyName;
 	string_t m_iszNewValue;
 	int m_iAppendSpaces;
 	int m_iOperation;
 
-	// temporaries for math
-	Vector m_vVal;
-	float m_fVal;
-	int m_iVal;
+	string_t m_iszSrcKeyName;
+	int m_iFloatConversion;
+
+	// source values loaded from source entity or static keyvalue
+	Vector m_vSrc;
+	float m_fSrc;
+	int m_iSrc;
+	const char* m_sSrc;
 
 	float m_trigIn; // multiplier for trigonemtric function input values (degrees -> degrees/radians)
 	float m_trigOut; // multiplier for trigonemtric function output values (radians -> degrees/radians)
+
+	bool isCopyValue; // this entitiy is a trigger_copyvalue not a trigger_changevalue
+	bool isActive;
+	EHANDLE h_activator;
+	EHANDLE h_caller;
 };
 
 LINK_ENTITY_TO_CLASS(trigger_changevalue, CTriggerChangeValue);
+LINK_ENTITY_TO_CLASS(trigger_copyvalue, CTriggerChangeValue);
 
 void CTriggerChangeValue::KeyValue(KeyValueData* pkvd)
 {
-	if (FStrEq(pkvd->szKeyName, "m_iszValueName"))
+	if (FStrEq(pkvd->szKeyName, "m_iszValueName") || FStrEq(pkvd->szKeyName, "m_iszDstValueName"))
 	{
 		m_iszKeyName = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
@@ -96,7 +128,7 @@ void CTriggerChangeValue::KeyValue(KeyValueData* pkvd)
 		m_iAppendSpaces = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
-	else if (FStrEq(pkvd->szKeyName, "m_iOperation"))
+	else if (FStrEq(pkvd->szKeyName, "m_iszValueType"))
 	{
 		m_iOperation = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
@@ -120,6 +152,16 @@ void CTriggerChangeValue::KeyValue(KeyValueData* pkvd)
 		
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "m_iszSrcValueName"))
+	{
+		m_iszSrcKeyName = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "m_iFloatConversion"))
+	{
+		m_iFloatConversion = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else {
 		CPointEntity::KeyValue(pkvd);
 	}
@@ -141,6 +183,21 @@ void CTriggerChangeValue::Spawn(void)
 		spacesVal[oldLen + spacesToAppend] = '\0';
 
 		m_iszNewValue = ALLOC_STRING(spacesVal);
+	}
+
+	isCopyValue = !strcmp(STRING(pev->classname), "trigger_copyvalue");
+
+	if (!isCopyValue) {
+		// disable copyvalue-specific settings
+		pev->spawnflags &= ~(SF_CONSTANT | SF_MULTIPLE_DESTINATIONS);
+		pev->netname = 0;
+		pev->dmg = 0;
+		m_iszSrcKeyName = 0;
+		m_iFloatConversion = 0;
+	}
+	else {
+		// disable changevalue-specific settings
+		m_iszNewValue = 0;
 	}
 
 	SetUse(&CTriggerChangeValue::Use);
@@ -176,7 +233,8 @@ int CTriggerChangeValue::OperateInteger(int sourceVal, int targetVal) {
 	case CVAL_OP_ARCTAN: return atanf(sourceVal * m_trigIn) * m_trigOut;
 	case CVAL_OP_ARCCOT: return atanf(1.0f / (sourceVal * m_trigIn)) * m_trigOut;
 	default:
-		ALERT(at_warning, "trigger_changevalue: invalid operation %d on integer value\n", m_iOperation);
+		ALERT(at_warning, "'%s' (%s): invalid operation %d on integer value\n",\
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_iOperation);
 		return targetVal;
 	}
 }
@@ -204,7 +262,8 @@ float CTriggerChangeValue::OperateFloat(float sourceVal, float targetVal) {
 	case CVAL_OP_ARCTAN: return atanf(sourceVal * m_trigIn) * m_trigOut;
 	case CVAL_OP_ARCCOT: return atanf(1.0f / (sourceVal * m_trigIn)) * m_trigOut;
 	default:
-		ALERT(at_warning, "trigger_changevalue: invalid operation %d on float value\n", m_iOperation);
+		ALERT(at_warning, "'%s' (%s): invalid operation %d on float value\n",
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_iOperation);
 		return targetVal;
 	}
 }
@@ -212,26 +271,33 @@ float CTriggerChangeValue::OperateFloat(float sourceVal, float targetVal) {
 Vector CTriggerChangeValue::OperateVector(CKeyValue& keyvalue) {
 	Vector vTemp = keyvalue.vVal;
 
-	if (!(pev->spawnflags & SF_DONT_USE_X)) {
-		vTemp[0] = OperateFloat(m_vVal[0], keyvalue.vVal[0]);
+	switch (m_iOperation) {
+	case CVAL_OP_DIR2ANG:
+		return UTIL_VecToAngles(vTemp.Normalize());
+	case CVAL_OP_ANG2DIR:
+		UTIL_MakeVectors(vTemp);
+		return gpGlobals->v_forward;
+	default:
+		if (!(pev->spawnflags & SF_DONT_USE_X)) {
+			vTemp[0] = OperateFloat(m_vSrc[0], keyvalue.vVal[0]);
+		}
+		if (!(pev->spawnflags & SF_DONT_USE_Y)) {
+			vTemp[1] = OperateFloat(m_vSrc[1], keyvalue.vVal[1]);
+		}
+		if (!(pev->spawnflags & SF_DONT_USE_Z)) {
+			vTemp[2] = OperateFloat(m_vSrc[2], keyvalue.vVal[2]);
+		}
+		return vTemp;
 	}
-	if (!(pev->spawnflags & SF_DONT_USE_Y)) {
-		vTemp[1] = OperateFloat(m_vVal[1], keyvalue.vVal[1]);
-	}
-	if (!(pev->spawnflags & SF_DONT_USE_Z)) {
-		vTemp[2] = OperateFloat(m_vVal[2], keyvalue.vVal[2]);
-	}
-
-	return vTemp;
 }
 
 const char* CTriggerChangeValue::Operate(CKeyValue& keyvalue) {
 	switch (keyvalue.desc->fieldType) {
 	case FIELD_TIME:
 	case FIELD_FLOAT:
-		return UTIL_VarArgs("%f", OperateFloat(m_fVal, keyvalue.fVal));
+		return UTIL_VarArgs("%f", OperateFloat(m_fSrc, keyvalue.fVal));
 	case FIELD_INTEGER:
-		return UTIL_VarArgs("%d", OperateFloat(m_iVal, keyvalue.iVal));
+		return UTIL_VarArgs("%d", OperateInteger(m_iSrc, keyvalue.iVal));
 	case FIELD_POSITION_VECTOR:
 	case FIELD_VECTOR: {
 		Vector vTemp = OperateVector(keyvalue);
@@ -240,9 +306,10 @@ const char* CTriggerChangeValue::Operate(CKeyValue& keyvalue) {
 	case FIELD_MODELNAME:
 	case FIELD_SOUNDNAME:
 	case FIELD_STRING:
-		return OperateString(STRING(m_iszNewValue), keyvalue.sVal ? STRING(keyvalue.sVal) : "");
+		return OperateString(m_sSrc ? m_sSrc : "", keyvalue.sVal ? STRING(keyvalue.sVal) : "");
 	default:
-		ALERT(at_warning, "trigger_changevalue: operation on keyvalue %s not allowed\n", keyvalue.desc->fieldName);
+		ALERT(at_warning, "'%s' (%s): operation on keyvalue %s not allowed\n", 
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), keyvalue.desc->fieldName);
 		return "";
 	}
 }
@@ -252,7 +319,8 @@ const char* CTriggerChangeValue::OperateString(const char* sourceVal, const char
 		return UTIL_VarArgs("%s%s", targetVal, sourceVal);
 	}
 	else {
-		ALERT(at_warning, "trigger_changevalue: invalid operation %d on string value\n", m_iOperation);
+		ALERT(at_warning, "'%s' (%s): invalid operation %d on string value\n",
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_iOperation);
 		return targetVal;
 	}	
 }
@@ -264,61 +332,230 @@ void CTriggerChangeValue::HandleTarget(CBaseEntity* pent) {
 	KeyValueData dat;
 	dat.fHandled = false;
 	dat.szKeyName = (char*)STRING(m_iszKeyName);
-	dat.szValue = (char*)STRING(m_iszNewValue);
+	dat.szValue = (char*)(m_sSrc ? m_sSrc : "");
 	dat.szClassName = (char*)STRING(pent->pev->classname);
 
 	if (m_iOperation != CVAL_OP_REPLACE) {
 		CKeyValue keyvalue = pent->GetKeyValue(dat.szKeyName);
 
 		if (keyvalue.desc) {
-			// TODO: operate on entvars keys directly, don't make a new keyvalue
+			// TODO: operate on entvars data directly, don't make a new keyvalue
 			dat.szValue = Operate(keyvalue);
 		}
 		else {
-			ALERT(at_warning, "trigger_changevalue: keyvalue '%s' in entity '%s' can only be replaced\n",
-				dat.szKeyName, STRING(pent->pev->classname));
+			ALERT(at_warning, "'%s' (%s): keyvalue '%s' in entity '%s' can only be replaced\n",
+				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), dat.szKeyName, STRING(pent->pev->classname));
 		}
 	}
 
-	DispatchKeyValue(pent->edict(), &dat);
+	DispatchKeyValue(pent->edict(), &dat); // using this for private fields
+	UTIL_SetOrigin(pent->pev, pent->pev->origin); // in case any changes to solid/origin were made
 }
 
-void CTriggerChangeValue::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
-{
-	if (!m_iszKeyName) {
-		ALERT(at_warning, "trigger_changevalue: missing key name\n");
-		return;
+float CTriggerChangeValue::VectorToFloat(Vector v) {
+	if (pev->spawnflags & SF_DONT_USE_X) {
+		v.x = 0;
 	}
-	if (!m_iszNewValue) {
-		ALERT(at_warning, "trigger_changevalue: missing source value\n");
-		return;
+	if (pev->spawnflags & SF_DONT_USE_Y) {
+		v.y = 0;
+	}
+	if (pev->spawnflags & SF_DONT_USE_Z) {
+		v.z = 0;
 	}
 
-	// setup temporary vars for math
-	if (m_iOperation != CVAL_OP_REPLACE) {
+	return v.Length();
+}
+
+int CTriggerChangeValue::FloatToInteger(float f) {
+	switch (m_iFloatConversion) {
+	case CVAL_STR_ROUND: return f + 0.5f;
+	case CVAL_STR_CEIL: return ceilf(f);
+	case CVAL_STR_FLOOR: 
+	default:
+		return f;
+	}
+}
+
+std::string CTriggerChangeValue::FloatToString(float f) {
+	switch (m_iFloatConversion) {
+	case CVAL_STR_5DP: return UTIL_VarArgs("%.5f", f);
+	case CVAL_STR_4DP: return UTIL_VarArgs("%.4f", f);
+	case CVAL_STR_3DP: return UTIL_VarArgs("%.3f", f);
+	case CVAL_STR_2DP: return UTIL_VarArgs("%.2f", f);
+	case CVAL_STR_1DP: return UTIL_VarArgs("%.1f", f);
+	case CVAL_STR_ROUND: return UTIL_VarArgs("%d", (int)(f + 0.5f));
+	case CVAL_STR_CEIL: return UTIL_VarArgs("%d", (int)ceilf(f));
+	case CVAL_STR_FLOOR: return UTIL_VarArgs("%d", (int)f);
+	case CVAL_STR_6DP:
+	default:
+		return UTIL_VarArgs("%f", f);
+	}
+}
+
+std::string CTriggerChangeValue::VectorToString(Vector v) {
+	std::string s;
+
+	if (!(pev->spawnflags & SF_DONT_USE_X)) {
+		s += FloatToString(v.x);
+	}
+	if (!(pev->spawnflags & SF_DONT_USE_Y)) {
+		if (s.length()) {
+			s += " ";
+		}
+		s += FloatToString(v.y);
+	}
+	if (!(pev->spawnflags & SF_DONT_USE_Z)) {
+		if (s.length()) {
+			s += " ";
+		}
+		s += FloatToString(v.z);
+	}
+
+	return s;
+}
+
+void CTriggerChangeValue::ChangeValues() {
+	if (isCopyValue) {
+		if (!pev->netname) {
+			ALERT(at_warning, "'%s' (%s): missing source entity\n",
+				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
+			return;
+		}
+		if (!m_iszSrcKeyName) {
+			ALERT(at_warning, "'%s' (%s): missing source key\n",
+				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
+			return;
+		}
+	}
+	else {
+		if (!m_iszKeyName) {
+			ALERT(at_warning, "'%s' (%s): missing key name\n",
+				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
+			return;
+		}
+		if (!m_iszNewValue) {
+			ALERT(at_warning, "'%s' (%s): missing source value\n",
+				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
+			return;
+		}
+	}	
+
+	// defined here to prevent destruction before keyvalues are sent,
+	// and this exists at all because UTIL_VarArgs uses a single static buffer
+	std::string temp;
+
+	// set up source values
+	if (isCopyValue) {
+		edict_t* ent = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->netname));
+		CBaseEntity* pent = CBaseEntity::Instance(ent);
+		if (pent) {
+			CKeyValue srcKey = pent->GetKeyValue(STRING(m_iszSrcKeyName));
+			if (srcKey.desc) {
+				switch (srcKey.desc->fieldType) {
+				case FIELD_TIME:
+				case FIELD_FLOAT:
+					m_iSrc = m_fSrc = srcKey.fVal;
+					m_vSrc = Vector(srcKey.fVal, srcKey.fVal, srcKey.fVal);
+					temp = FloatToString(srcKey.fVal);
+					m_sSrc = temp.c_str();
+					break;
+				case FIELD_INTEGER:
+					m_fSrc = m_iSrc = srcKey.iVal;
+					m_vSrc = Vector(srcKey.iVal, srcKey.iVal, srcKey.iVal);
+					m_sSrc = UTIL_VarArgs("%d", srcKey.iVal);
+					break;
+				case FIELD_POSITION_VECTOR:
+				case FIELD_VECTOR: {
+					m_iSrc = m_fSrc = VectorToFloat(srcKey.vVal);
+					m_vSrc = srcKey.vVal;
+					temp = VectorToString(srcKey.vVal);
+					m_sSrc = temp.c_str();
+					break;
+				}
+				case FIELD_MODELNAME:
+				case FIELD_SOUNDNAME:
+				case FIELD_STRING:
+					m_fSrc = m_iSrc = 0;
+					m_vSrc = g_vecZero;
+					m_sSrc = srcKey.sVal ? STRING(srcKey.sVal) : "";
+					break;
+				default:
+					ALERT(at_warning, "'%s' (%s): operation on keyvalue %s not allowed\n",
+						pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), srcKey.desc->fieldName);
+					return;
+				}
+			}
+		}
+		else {
+			m_iSrc = m_fSrc = 0;
+			m_sSrc = NULL;
+			m_vSrc = g_vecZero;
+		}
+	}
+	else {
+		// trigger_changevalue static value
 		const char* cNewVal = STRING(m_iszNewValue);
-		m_fVal = atof(cNewVal);
-		m_iVal = atoi(cNewVal);
-		UTIL_StringToVector(m_vVal, cNewVal);
+		UTIL_StringToVector(m_vSrc, cNewVal);
+
+		if (m_vSrc.y != 0 || m_vSrc.z != 0) {
+			// length of vector used when assigning a vector to a float/int
+			m_iSrc = m_fSrc = VectorToFloat(m_vSrc);
+		}
+		else {
+			m_fSrc = atof(cNewVal);
+			m_iSrc = atoi(cNewVal);
+		}
+		
+		m_sSrc = STRING(m_iszNewValue);
 	}
 
 	const char* target = STRING(pev->target);
 
 	if (!strcmp(target, "!activator")) {
-		HandleTarget(pActivator);
+		HandleTarget(h_activator);
 	}
 	else if (!strcmp(target, "!caller")) {
-		HandleTarget(pCaller);
+		HandleTarget(h_caller);
 	}
 	else {
 		edict_t* ent = NULL;
 
 		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, target))) {
 			HandleTarget(CBaseEntity::Instance(ent));
+
+			if (isCopyValue && !(pev->spawnflags & SF_MULTIPLE_DESTINATIONS)) {
+				break;
+			}
 		}
 	}
 
 	if (pev->message) {
-		FireTargets(STRING(pev->message), pActivator, this, USE_TOGGLE, 0.0f);
+		FireTargets(STRING(pev->message), h_activator, this, USE_TOGGLE, 0.0f);
 	}
+}
+
+void CTriggerChangeValue::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	h_activator = pActivator;
+	h_caller = pCaller;
+
+	ChangeValues();
+
+	if (pev->spawnflags & SF_CONSTANT) {
+		isActive = useType == USE_TOGGLE ? !isActive : useType;
+
+		if (isActive) {
+			SetThink(&CTriggerChangeValue::TimedThink);
+			pev->nextthink = gpGlobals->time + pev->dmg;
+		}
+		else {
+			SetThink(NULL);
+			pev->nextthink = 0;
+		}
+	}
+}
+
+void CTriggerChangeValue::TimedThink() {
+	ChangeValues();
+	pev->nextthink = gpGlobals->time + pev->dmg;
 }
