@@ -205,6 +205,7 @@ set(TRIGGER_SRC
 	triggers/CTriggerChangeTarget.cpp
 	triggers/CTriggerChangeValue.cpp
 	triggers/CTriggerCounter.cpp
+	triggers/CTriggerCreateEntity.cpp
 	triggers/CTriggerEndSection.cpp
 	triggers/CTriggerGravity.cpp
 	triggers/CTriggerHurt.cpp
