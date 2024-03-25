@@ -35,6 +35,7 @@
 #include "Bsp.h"
 #include "mstream.h"
 #include <float.h>
+#include "mod_api.h"
 
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
@@ -288,7 +289,7 @@ extern void			UTIL_MakeAimVectors		( const Vector &vecAngles ); // like MakeVect
 extern void			UTIL_MakeInvVectors		( const Vector &vec, globalvars_t *pgv );
 
 extern void			UTIL_SetOrigin			( entvars_t* pev, const Vector &vecOrigin ); // Needs to be called any time an entity changes origin, mins, maxs, or solid
-extern void			UTIL_EmitAmbientSound	( edict_t *entity, const Vector &vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest=NULL);
+extern void			UTIL_EmitAmbientSound	( edict_t *entity, const float* vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest=NULL);
 extern void			UTIL_ParticleEffect		( const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount );
 extern void			UTIL_ScreenShake		( const Vector &center, float amplitude, float frequency, float duration, float radius );
 extern void			UTIL_ScreenShakeAll		( const Vector &center, float amplitude, float frequency, float duration );
@@ -629,14 +630,7 @@ inline void STOP_SOUND(edict_t *entity, int channel, const char *sample)
 	EMIT_SOUND_DYN(entity, channel, sample, 0, 0, SND_STOP, PITCH_NORM);
 }
 
-enum distant_sound_types {
-	DISTANT_9MM, // light tapping noise
-	DISTANT_357, // deeper tap
-	DISTANT_556, // deep tap / small explosion
-	DISTANT_BOOM // big explosion
-};
-
-// conditionally plays a special distant sound clip for players for very loud sounds that should be heard everywhere
+// conditionally plays a special distant sound clip for very loud sounds that should be heard everywhere
 void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType);
 
 void EMIT_SOUND_SUIT(edict_t *entity, const char *sample);
@@ -717,6 +711,7 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 // engine wrappers which handle model/sound replacement logic
 int PRECACHE_GENERIC(const char* path);
 int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path);
+int PRECACHE_SOUND_NULLENT(const char* path);
 int PRECACHE_MODEL(const char* model);
 int PRECACHE_EVENT(int id, const char* path);
 void SET_MODEL(edict_t* edict, const char* model);
