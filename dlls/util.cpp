@@ -753,10 +753,10 @@ void WRITE_BYTES(uint8_t* bytes, int count) {
 	}
 }
 
-void UTIL_EmitAmbientSound( edict_t *entity, const Vector &vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest)
+void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest)
 {
 	float rgfl[3];
-	vecOrigin.CopyToArray(rgfl);
+	memcpy(rgfl, vecOrigin, 3 * sizeof(float));
 
 	if (entity->v.flags & FL_MONSTER) {
 		int eidx = ENTINDEX(entity);
@@ -3076,6 +3076,10 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 	else {
 		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
 	}
+}
+
+int PRECACHE_SOUND_NULLENT(const char* path) {
+	return PRECACHE_SOUND_ENT(NULL, path);
 }
 
 int PRECACHE_MODEL(const char* path) {
