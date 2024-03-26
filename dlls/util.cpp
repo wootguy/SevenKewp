@@ -1669,6 +1669,21 @@ void UTIL_StringToVector( float *pVector, const char *pString )
 	}
 }
 
+bool UTIL_StringIsVector(const char* pString) {
+	int j;
+	const char *pstr = pString;
+
+	for (j = 0; j < 3; j++)
+	{
+		while (*pstr && *pstr != ' ')
+			pstr++;
+		if (!*pstr)
+			break;
+		pstr++;
+	}
+
+	return j < 2;
+}
 
 void UTIL_StringToIntArray( int *pVector, int count, const char *pString )
 {
@@ -2273,20 +2288,24 @@ CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName) {
 			case FIELD_SOUNDNAME:
 			case FIELD_STRING:
 				keyvalue.sVal = (*(int*)((char*)pev + pField->fieldOffset));
+				keyvalue.keyType = KEY_TYPE_STRING;
 				break;
 
 			case FIELD_TIME:
 			case FIELD_FLOAT:
 				keyvalue.fVal = (*(float*)((char*)pev + pField->fieldOffset));
+				keyvalue.keyType = KEY_TYPE_FLOAT;
 				break;
 
 			case FIELD_INTEGER:
 				keyvalue.iVal = (*(int*)((char*)pev + pField->fieldOffset));
+				keyvalue.keyType = KEY_TYPE_INT;
 				break;
 
 			case FIELD_POSITION_VECTOR:
 			case FIELD_VECTOR:
-				keyvalue.vVal = (float*)((char*)pev + pField->fieldOffset);
+				memcpy(keyvalue.vVal, (float*)((char*)pev + pField->fieldOffset), 3 * sizeof(float));
+				keyvalue.keyType = KEY_TYPE_VECTOR;
 				break;
 
 			default:
