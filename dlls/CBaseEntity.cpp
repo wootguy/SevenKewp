@@ -14,6 +14,9 @@
 extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 
+std::vector<std::map<std::string, CKeyValue>> g_customKeyValues;
+CKeyValue g_emptyKeyValue;
+
 CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName);
 
 // Global Savedata for Delay
@@ -114,8 +117,78 @@ CBaseEntity* CBaseEntity::GetNextTarget(void)
 	return Instance(pTarget);
 }
 
+void CBaseEntity::KeyValue(KeyValueData* pkvd) {
+	// custom keyvalues (e.g. "$i_energy")
+	if (strlen(pkvd->szKeyName) > 3 && pkvd->szKeyName[0] == '$' && pkvd->szKeyName[2] == '_') {
+		CKeyValue value = g_emptyKeyValue;
+
+		if (pkvd->szKeyName[1] == 'i') {
+			value.keyType = KEY_TYPE_INT;
+			value.iVal = atoi(pkvd->szValue);
+		}
+		else if (pkvd->szKeyName[1] == 'f') {
+			value.keyType = KEY_TYPE_FLOAT;
+			value.fVal = atof(pkvd->szValue);
+		}
+		else if (pkvd->szKeyName[1] == 'v') {
+			value.keyType = KEY_TYPE_VECTOR;
+			UTIL_StringToVector(value.vVal, pkvd->szValue);
+		}
+		else if (pkvd->szKeyName[1] == 's') {
+			value.keyType = KEY_TYPE_STRING;
+			value.sVal = ALLOC_STRING(pkvd->szValue);
+		}
+		else {
+			pkvd->fHandled = FALSE;
+			return;
+		}
+
+		std::map<std::string, CKeyValue>& customKeys = *GetCustomKeyValues();
+		std::map<std::string, CKeyValue>::iterator it = customKeys.find(pkvd->szKeyName);
+
+		if (it != customKeys.end()) {
+			value.keyName = it->second.keyName; // reuse the key name to save string memory
+		}
+		else {
+			value.keyName = STRING(ALLOC_STRING(pkvd->szKeyName));
+		}
+
+		customKeys[pkvd->szKeyName] = value;
+		pkvd->fHandled = TRUE;
+	}
+	else {
+		pkvd->fHandled = FALSE;
+	}
+}
+
+CKeyValue CBaseEntity::GetCustomKeyValue(const char* keyName) {
+	if (strlen(keyName) <3 || keyName[0] != '$' || keyName[2] != '_') { // don't add a space there
+		return g_emptyKeyValue;
+	}
+
+	std::map<std::string, CKeyValue>* customKeys = GetCustomKeyValues();
+
+	std::map<std::string, CKeyValue>::iterator it = customKeys->find(keyName);
+	if (it != customKeys->end()) {
+		return it->second;
+	}
+	
+	return g_emptyKeyValue;
+}
+
 CKeyValue CBaseEntity::GetKeyValue(const char* keyName) {
+	CKeyValue customKey = GetCustomKeyValue(keyName);
+	if (customKey.keyType) {
+		return customKey;
+	}
 	return GetEntvarsKeyvalue(pev, keyName);
+}
+
+std::map<std::string, CKeyValue>* CBaseEntity::GetCustomKeyValues() {
+	if (g_customKeyValues.empty())
+		g_customKeyValues.resize(gpGlobals->maxEntities);
+
+	return &g_customKeyValues[entindex()];
 }
 
 int CBaseEntity::Save(CSave& save)

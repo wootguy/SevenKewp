@@ -282,6 +282,7 @@ set(ENTITY_HDR
 	nodes.h
 	CBasePlayer.h
 	CBaseSpectator.h
+	CKeyValue.h
 	scripted.h
 	scriptevent.h
 	../engine/progs.h

@@ -307,7 +307,7 @@ const char* CTriggerChangeValue::Operate(CKeyValue& keyvalue) {
 		return OperateString(m_sSrc, keyvalue.sVal ? STRING(keyvalue.sVal) : "");
 	default:
 		ALERT(at_warning, "'%s' (%s): operation on keyvalue %s not allowed\n", 
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), keyvalue.desc->fieldName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), keyvalue.keyName);
 		return "";
 	}
 }
@@ -337,7 +337,7 @@ void CTriggerChangeValue::HandleTarget(CBaseEntity* pent) {
 
 	CKeyValue keyvalue = pent->GetKeyValue(dat.szKeyName);
 
-	if (keyvalue.desc) {
+	if (keyvalue.keyType) {
 		// TODO: operate on entvars data directly, don't make a new keyvalue
 		dat.szValue = Operate(keyvalue);
 	}
@@ -443,7 +443,7 @@ void CTriggerChangeValue::ChangeValues() {
 		CBaseEntity* pent = CBaseEntity::Instance(ent);
 		if (pent) {
 			CKeyValue srcKey = pent->GetKeyValue(STRING(m_iszSrcKeyName));
-			if (srcKey.desc) {
+			if (srcKey.keyType) {
 				switch (srcKey.keyType) {
 				case KEY_TYPE_FLOAT:
 					m_iSrc = m_fSrc = srcKey.fVal;
@@ -470,7 +470,7 @@ void CTriggerChangeValue::ChangeValues() {
 					break;
 				default:
 					ALERT(at_warning, "'%s' (%s): operation on keyvalue %s not allowed\n",
-						pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), srcKey.desc->fieldName);
+						pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), srcKey.keyName);
 					return;
 				}
 			}

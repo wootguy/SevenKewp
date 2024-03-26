@@ -16,6 +16,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "CKeyValue.h"
 #include <map>
 #include <string>
 #include <set>
@@ -125,6 +126,13 @@ extern std::map<std::string, const char*> g_itemNameRemap;
 // per-monster sound replacement maps
 // should be a class member, but I'm afraid of the bugs that will come from using non-POD class members
 extern std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
+
+// map for each entity, containing custom keyvalues
+// using a global vector instead of a class member because the map is not POD
+extern std::vector<std::map<std::string, CKeyValue>> g_customKeyValues;
+
+extern CKeyValue g_emptyKeyValue; // a keyvalue initialized with zeroes
+
 extern std::set<std::string> g_shuffledMonsterSounds; // classes that had their sounds shuffled this map
 
 extern bool g_cfgsExecuted; // set to true after server and map cfgs are executed

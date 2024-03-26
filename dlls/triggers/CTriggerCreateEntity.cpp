@@ -140,34 +140,30 @@ void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		}
 
 		CKeyValue srcKey = pent->GetKeyValue(keyName);
-		if (srcKey.desc) {
-			switch (srcKey.desc->fieldType) {
-			case FIELD_TIME:
-			case FIELD_FLOAT:
+		if (srcKey.keyType) {
+			switch (srcKey.keyType) {
+			case KEY_TYPE_FLOAT:
 				keys[keyName] = UTIL_VarArgs("%f", srcKey.fVal);
 				break;
-			case FIELD_INTEGER:
+			case KEY_TYPE_INT:
 				keys[keyName] = UTIL_VarArgs("%d", srcKey.iVal);
 				break;
-			case FIELD_POSITION_VECTOR:
-			case FIELD_VECTOR: {
+			case KEY_TYPE_VECTOR: {
 				keys[keyName] = UTIL_VarArgs("%f %f %f", srcKey.vVal[0], srcKey.vVal[1], srcKey.vVal[2]);
 				break;
 			}
-			case FIELD_MODELNAME:
-			case FIELD_SOUNDNAME:
-			case FIELD_STRING:
+			case KEY_TYPE_STRING:
 				keys[keyName] = STRING(srcKey.sVal);
 				break;
 			default:
 				ALERT(at_console, "'%s' (%s): failed to copy keyvalue '%s' (invalid type)\n",
-					pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), srcKey.desc->fieldName);
+					pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), srcKey.keyName);
 				break;
 			}
 		}
 		else {
 			ALERT(at_console, "'%s' (%s): failed to copy keyvalue '%s' (mistyped or private)\n",
-				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), srcKey.desc->fieldName);
+				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), srcKey.keyName);
 		}
 	}
 
