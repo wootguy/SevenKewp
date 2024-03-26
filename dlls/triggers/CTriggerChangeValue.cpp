@@ -212,6 +212,7 @@ int CTriggerChangeValue::OperateInteger(int sourceVal, int targetVal) {
 	}
 
 	switch (m_iOperation) {
+	case CVAL_OP_REPLACE: return sourceVal;
 	case CVAL_OP_ADD: return targetVal + sourceVal;
 	case CVAL_OP_MUL: return targetVal * sourceVal;
 	case CVAL_OP_SUB: return targetVal - sourceVal;
@@ -248,6 +249,7 @@ float CTriggerChangeValue::OperateFloat(float sourceVal, float targetVal) {
 	}
 
 	switch (m_iOperation) {
+	case CVAL_OP_REPLACE: return sourceVal;
 	case CVAL_OP_ADD: return targetVal + sourceVal;
 	case CVAL_OP_MUL: return targetVal * sourceVal;
 	case CVAL_OP_SUB: return targetVal - sourceVal;
@@ -292,21 +294,17 @@ Vector CTriggerChangeValue::OperateVector(CKeyValue& keyvalue) {
 }
 
 const char* CTriggerChangeValue::Operate(CKeyValue& keyvalue) {
-	switch (keyvalue.desc->fieldType) {
-	case FIELD_TIME:
-	case FIELD_FLOAT:
+	switch (keyvalue.keyType) {
+	case KEY_TYPE_FLOAT:
 		return UTIL_VarArgs("%f", OperateFloat(m_fSrc, keyvalue.fVal));
-	case FIELD_INTEGER:
+	case KEY_TYPE_INT:
 		return UTIL_VarArgs("%d", OperateInteger(m_iSrc, keyvalue.iVal));
-	case FIELD_POSITION_VECTOR:
-	case FIELD_VECTOR: {
+	case KEY_TYPE_VECTOR: {
 		Vector vTemp = OperateVector(keyvalue);
 		return UTIL_VarArgs("%f %f %f", vTemp.x, vTemp.y, vTemp.z);
 	}
-	case FIELD_MODELNAME:
-	case FIELD_SOUNDNAME:
-	case FIELD_STRING:
-		return OperateString(m_sSrc ? m_sSrc : "", keyvalue.sVal ? STRING(keyvalue.sVal) : "");
+	case KEY_TYPE_STRING:
+		return OperateString(m_sSrc, keyvalue.sVal ? STRING(keyvalue.sVal) : "");
 	default:
 		ALERT(at_warning, "'%s' (%s): operation on keyvalue %s not allowed\n", 
 			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), keyvalue.desc->fieldName);
@@ -315,14 +313,16 @@ const char* CTriggerChangeValue::Operate(CKeyValue& keyvalue) {
 }
 
 const char* CTriggerChangeValue::OperateString(const char* sourceVal, const char* targetVal) {
-	if (m_iOperation == CVAL_OP_APPEND) {
+	switch (m_iOperation) {
+	case CVAL_OP_REPLACE:
+		return sourceVal;
+	case CVAL_OP_APPEND:
 		return UTIL_VarArgs("%s%s", targetVal, sourceVal);
-	}
-	else {
+	default:
 		ALERT(at_warning, "'%s' (%s): invalid operation %d on string value\n",
 			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_iOperation);
 		return targetVal;
-	}	
+	}
 }
 
 void CTriggerChangeValue::HandleTarget(CBaseEntity* pent) {
@@ -332,20 +332,18 @@ void CTriggerChangeValue::HandleTarget(CBaseEntity* pent) {
 	KeyValueData dat;
 	dat.fHandled = false;
 	dat.szKeyName = (char*)STRING(m_iszKeyName);
-	dat.szValue = (char*)(m_sSrc ? m_sSrc : "");
+	dat.szValue = (char*)m_sSrc;
 	dat.szClassName = (char*)STRING(pent->pev->classname);
 
-	if (m_iOperation != CVAL_OP_REPLACE) {
-		CKeyValue keyvalue = pent->GetKeyValue(dat.szKeyName);
+	CKeyValue keyvalue = pent->GetKeyValue(dat.szKeyName);
 
-		if (keyvalue.desc) {
-			// TODO: operate on entvars data directly, don't make a new keyvalue
-			dat.szValue = Operate(keyvalue);
-		}
-		else {
-			ALERT(at_warning, "'%s' (%s): keyvalue '%s' in entity '%s' can only be replaced\n",
-				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), dat.szKeyName, STRING(pent->pev->classname));
-		}
+	if (keyvalue.desc) {
+		// TODO: operate on entvars data directly, don't make a new keyvalue
+		dat.szValue = Operate(keyvalue);
+	}
+	else {
+		ALERT(at_warning, "'%s' (%s): keyvalue '%s' in entity '%s' can only be replaced\n",
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), dat.szKeyName, STRING(pent->pev->classname));
 	}
 
 	DispatchKeyValue(pent->edict(), &dat); // using this for private fields
@@ -433,11 +431,6 @@ void CTriggerChangeValue::ChangeValues() {
 				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
 			return;
 		}
-		if (!m_iszNewValue) {
-			ALERT(at_warning, "'%s' (%s): missing source value\n",
-				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
-			return;
-		}
 	}	
 
 	// defined here to prevent destruction before keyvalues are sent,
@@ -451,30 +444,26 @@ void CTriggerChangeValue::ChangeValues() {
 		if (pent) {
 			CKeyValue srcKey = pent->GetKeyValue(STRING(m_iszSrcKeyName));
 			if (srcKey.desc) {
-				switch (srcKey.desc->fieldType) {
-				case FIELD_TIME:
-				case FIELD_FLOAT:
+				switch (srcKey.keyType) {
+				case KEY_TYPE_FLOAT:
 					m_iSrc = m_fSrc = srcKey.fVal;
 					m_vSrc = Vector(srcKey.fVal, srcKey.fVal, srcKey.fVal);
 					temp = FloatToString(srcKey.fVal);
 					m_sSrc = temp.c_str();
 					break;
-				case FIELD_INTEGER:
+				case KEY_TYPE_INT:
 					m_fSrc = m_iSrc = srcKey.iVal;
 					m_vSrc = Vector(srcKey.iVal, srcKey.iVal, srcKey.iVal);
 					m_sSrc = UTIL_VarArgs("%d", srcKey.iVal);
 					break;
-				case FIELD_POSITION_VECTOR:
-				case FIELD_VECTOR: {
+				case KEY_TYPE_VECTOR: {
 					m_iSrc = m_fSrc = VectorToFloat(srcKey.vVal);
 					m_vSrc = srcKey.vVal;
 					temp = VectorToString(srcKey.vVal);
 					m_sSrc = temp.c_str();
 					break;
 				}
-				case FIELD_MODELNAME:
-				case FIELD_SOUNDNAME:
-				case FIELD_STRING:
+				case KEY_TYPE_STRING:
 					m_fSrc = m_iSrc = 0;
 					m_vSrc = g_vecZero;
 					m_sSrc = srcKey.sVal ? STRING(srcKey.sVal) : "";
@@ -488,25 +477,34 @@ void CTriggerChangeValue::ChangeValues() {
 		}
 		else {
 			m_iSrc = m_fSrc = 0;
-			m_sSrc = NULL;
+			m_sSrc = "";
 			m_vSrc = g_vecZero;
 		}
 	}
 	else {
 		// trigger_changevalue static value
-		const char* cNewVal = STRING(m_iszNewValue);
-		UTIL_StringToVector(m_vSrc, cNewVal);
+		if (m_iszNewValue) {
+			const char* cNewVal = STRING(m_iszNewValue);
+			UTIL_StringToVector(m_vSrc, cNewVal);
 
-		if (m_vSrc.y != 0 || m_vSrc.z != 0) {
-			// length of vector used when assigning a vector to a float/int
-			m_iSrc = m_fSrc = VectorToFloat(m_vSrc);
+			if (m_vSrc.y != 0 || m_vSrc.z != 0) {
+				// length of vector used when assigning a vector to a float/int
+				m_iSrc = m_fSrc = VectorToFloat(m_vSrc);
+			}
+			else {
+				// single value used
+				m_fSrc = atof(cNewVal);
+				m_iSrc = atoi(cNewVal);
+				m_vSrc = Vector(m_fSrc, m_fSrc, m_fSrc);
+			}
+
+			m_sSrc = STRING(m_iszNewValue);
 		}
 		else {
-			m_fSrc = atof(cNewVal);
-			m_iSrc = atoi(cNewVal);
+			m_iSrc = m_fSrc = 0;
+			m_sSrc = "";
+			m_vSrc = g_vecZero;
 		}
-		
-		m_sSrc = STRING(m_iszNewValue);
 	}
 
 	const char* target = STRING(pev->target);

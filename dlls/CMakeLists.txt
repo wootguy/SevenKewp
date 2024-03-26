@@ -204,6 +204,7 @@ set(TRIGGER_SRC
 	triggers/CTriggerCDAudio.cpp
 	triggers/CTriggerChangeTarget.cpp
 	triggers/CTriggerChangeValue.cpp
+	triggers/CTriggerCondition.cpp
 	triggers/CTriggerCounter.cpp
 	triggers/CTriggerCreateEntity.cpp
 	triggers/CTriggerEndSection.cpp

@@ -130,14 +130,24 @@ public:
 	CBaseEntity * operator ->();
 };
 
+enum keyvalue_types {
+	KEY_TYPE_NONE, // indicates value failed to load
+	KEY_TYPE_INT,
+	KEY_TYPE_FLOAT,
+	KEY_TYPE_VECTOR,
+	KEY_TYPE_STRING,
+	KEY_TYPE_EHANDLE
+};
+
 struct CKeyValue {
 	TYPEDESCRIPTION* desc;
+	int keyType; // simplified type from keyvalue_types
 
 	union {
 		int iVal;
 		float fVal;
 		string_t sVal;
-		float* vVal;
+		float vVal[3];
 		EHANDLE eVal;
 	};
 };
