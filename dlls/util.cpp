@@ -2280,7 +2280,8 @@ CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName) {
 
 		if (!stricmp(pField->fieldName, keyName))
 		{
-			keyvalue.desc = pField;
+			keyvalue.keyName = pField->fieldName;
+			keyvalue.keyOffset = pField->fieldOffset;
 
 			switch (pField->fieldType)
 			{

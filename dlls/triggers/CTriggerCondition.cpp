@@ -17,13 +17,6 @@
 #define SF_KEEP_ACTIVATOR 64
 #define SF_IGNORE_INITIAL_RESULT 128
 
-TYPEDESCRIPTION g_staticCompareKeyTypeString = {
-	FIELD_STRING, "m_iszCheckValue", -1, 4, 0
-};
-TYPEDESCRIPTION g_staticCompareKeyTypeInt = {
-	FIELD_INTEGER, "m_iszCheckValue", -1, 4, 0
-};
-
 enum compare_types {
 	COMPARE_EQUAL,
 	COMPARE_NEQUAL,
@@ -191,7 +184,7 @@ CKeyValue CTriggerCondition::LoadKey(string_t entName, string_t keyName, const c
 	}
 
 	key = pent->GetKeyValue(STRING(keyName));
-	if (!key.desc) {
+	if (!key.keyType) {
 		ALERT(at_console, "'%s' (trigger_condition): %s ent key %s is invalid\n",
 			pev->targetname ? STRING(pev->targetname) : "", errorDesc, STRING(keyName));
 	}
@@ -217,7 +210,7 @@ void CTriggerCondition::Evaluate() {
 	}
 
 	CKeyValue monitorKey = LoadKey(pev->target, m_monitoredKey, "monitored");
-	if (!monitorKey.desc) {
+	if (!monitorKey.keyType) {
 		return;
 	}
 
@@ -225,19 +218,21 @@ void CTriggerCondition::Evaluate() {
 
 	if (m_compareEntity && m_compareKey) {
 		compareKey = LoadKey(m_compareEntity, m_compareKey, "compare");
-		if (!compareKey.desc) {
+		if (!compareKey.keyType) {
 			return;
 		}
 	}
 	else {
 		// static value
 		if (m_compareValue) {
-			compareKey.desc = &g_staticCompareKeyTypeString;
+			compareKey.keyName = "m_iszCheckValue";
+			compareKey.keyOffset = 0;
 			compareKey.keyType = KEY_TYPE_STRING;
 			compareKey.sVal = m_compareValue;
 		}
 		else {
-			compareKey.desc = &g_staticCompareKeyTypeInt;
+			compareKey.keyName = "m_iszCheckValue";
+			compareKey.keyOffset = 0;
 			compareKey.keyType = KEY_TYPE_INT;
 			compareKey.iVal = 0;
 		}
@@ -299,7 +294,7 @@ bool CTriggerCondition::Compare(const CKeyValue& monitorKey, const CKeyValue& co
 		return CompareStrings(monitorKey, compareKey);
 	default:
 		ALERT(at_console, "'%s' (%s): cannot compare key %s (invalid type)\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.desc->fieldName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.keyName);
 		return false;
 	}
 }
@@ -315,7 +310,7 @@ bool CTriggerCondition::CompareFloats(const CKeyValue& monitorKey, const CKeyVal
 	case COMPARE_BITSET:
 	default:
 		ALERT(at_console, "'%s' (%s): invalid compare type %d used on float key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.desc->fieldName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.keyName);
 		return false;
 	}
 }
@@ -331,7 +326,7 @@ bool CTriggerCondition::CompareInts(const CKeyValue& monitorKey, const CKeyValue
 	case COMPARE_BITSET: return monitorKey.iVal & getValueAsInt(compareKey);
 	default:
 		ALERT(at_console, "'%s' (%s): invalid compare type %d used on int key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.desc->fieldName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.keyName);
 		return false;
 	}
 }
@@ -386,7 +381,7 @@ bool CTriggerCondition::CompareVectors(const CKeyValue& monitorKey, const CKeyVa
 	case COMPARE_BITSET:
 	default:
 		ALERT(at_console, "'%s' (%s): invalid compare type %d used on vector key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.desc->fieldName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.keyName);
 		return false;
 	}
 }
@@ -402,7 +397,7 @@ bool CTriggerCondition::CompareStrings(const CKeyValue& monitorKey, const CKeyVa
 	case COMPARE_BITSET:
 	default:
 		ALERT(at_console, "'%s' (%s): invalid compare type %d used on string key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.desc->fieldName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.keyName);
 		return false;
 	}
 }
@@ -427,7 +422,7 @@ float CTriggerCondition::getValueAsFloat(const CKeyValue& key) {
 	}
 	default:
 		ALERT(at_console, "'%s' (%s): cannot convert key %s to float (invalid type)\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), key.desc->fieldName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), key.keyName);
 		return 0;
 	}
 }
@@ -474,7 +469,7 @@ int CTriggerCondition::getValueAsInt(const CKeyValue& key) {
 	}
 	default:
 		ALERT(at_console, "'%s' (%s): cannot convert key %s to int (invalid type)\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), key.desc->fieldName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), key.keyName);
 		return 0;
 	}
 }
@@ -511,7 +506,7 @@ const char* CTriggerCondition::getValueAsString(const CKeyValue& key) {
 		return STRING(key.sVal);
 	default:
 		ALERT(at_console, "'%s' (%s): cannot convert key %s to string (invalid type)\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), key.desc->fieldName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), key.keyName);
 		return "";
 	}
 }

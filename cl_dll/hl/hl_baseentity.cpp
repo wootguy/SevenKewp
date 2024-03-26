@@ -374,6 +374,7 @@ CBaseEntity* EHANDLE::GetEntity(void) { return 0; }
 void CBaseMonster::Nerf() {}
 int CBaseMonster::HasTarget(string_t targetname) { return 0; }
 CKeyValue CBaseEntity::GetKeyValue(const char* keyName) { return CKeyValue(); }
+void CBaseEntity::KeyValue(KeyValueData* pkvd) {}
 
 void lagcomp_begin(CBasePlayer* plr) {}
 void lagcomp_end() {}

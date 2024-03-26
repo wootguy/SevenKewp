@@ -52,6 +52,7 @@ CBaseEntity
 #endif
 
 #include "Platform.h"
+#include "CKeyValue.h"
 
 // C functions for external declarations that call the appropriate C++ methods
 
@@ -130,28 +131,6 @@ public:
 	CBaseEntity * operator ->();
 };
 
-enum keyvalue_types {
-	KEY_TYPE_NONE, // indicates value failed to load
-	KEY_TYPE_INT,
-	KEY_TYPE_FLOAT,
-	KEY_TYPE_VECTOR,
-	KEY_TYPE_STRING,
-	KEY_TYPE_EHANDLE
-};
-
-struct CKeyValue {
-	TYPEDESCRIPTION* desc;
-	int keyType; // simplified type from keyvalue_types
-
-	union {
-		int iVal;
-		float fVal;
-		string_t sVal;
-		float vVal[3];
-		EHANDLE eVal;
-	};
-};
-
 //
 // Base Entity.  All entity types derive from this
 //
@@ -169,8 +148,10 @@ public:
 	// initialization functions
 	virtual void	Spawn( void ) { return; }
 	virtual void	Precache( void ) { return; }
-	virtual void	KeyValue( KeyValueData* pkvd) { pkvd->fHandled = FALSE; }
+	virtual void	KeyValue(KeyValueData* pkvd);
 	virtual CKeyValue GetKeyValue(const char* keyName);
+	CKeyValue GetCustomKeyValue(const char* keyName);
+	std::map<std::string, CKeyValue>* GetCustomKeyValues();
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	virtual int		ObjectCaps( void ) { return FCAP_ACROSS_TRANSITION; }

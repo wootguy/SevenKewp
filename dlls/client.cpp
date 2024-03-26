@@ -351,6 +351,7 @@ void ServerDeactivate( void )
 
 	g_serveractive = 0;
 
+	g_customKeyValues.clear();
 	g_monsterSoundReplacements.clear();
 	g_shuffledMonsterSounds.clear();
 	g_bsp.delete_lumps();
