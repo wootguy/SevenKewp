@@ -118,12 +118,14 @@ void CBubbling::KeyValue(KeyValueData* pkvd)
 
 void CBubbling::FizzThink(void)
 {
-	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, VecBModelOrigin(pev));
-	WRITE_BYTE(TE_FIZZ);
-	WRITE_SHORT((short)ENTINDEX(edict()));
-	WRITE_SHORT((short)m_bubbleModel);
-	WRITE_BYTE(m_density);
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(ENTINDEX(edict()), "create TE_FIZZ")) {
+		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, VecBModelOrigin(pev));
+		WRITE_BYTE(TE_FIZZ);
+		WRITE_SHORT((short)ENTINDEX(edict()));
+		WRITE_SHORT((short)m_bubbleModel);
+		WRITE_BYTE(m_density);
+		MESSAGE_END();
+	}
 
 	if (m_frequency > 19)
 		pev->nextthink = gpGlobals->time + 0.5;

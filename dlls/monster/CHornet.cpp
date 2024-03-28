@@ -250,19 +250,20 @@ old colors
 	bool firedByAllyMonster = mon && !mon->IsPlayer() && mon->IRelationship(mon->Classify(), CLASS_PLAYER) == R_AL;
 
 	// trail
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE(  TE_BEAMFOLLOW );
-		WRITE_SHORT( entindex() );	// entity
-		WRITE_SHORT( iHornetTrail );	// model
-		WRITE_BYTE( 10 ); // life
-		WRITE_BYTE( 2 );  // width
+	if (UTIL_isSafeEntIndex(entindex(), "create hornet trail")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_BEAMFOLLOW);
+		WRITE_SHORT(entindex());	// entity
+		WRITE_SHORT(iHornetTrail);	// model
+		WRITE_BYTE(10); // life
+		WRITE_BYTE(2);  // width
 
 		// r, g, b
-		switch ( m_iHornetType )
+		switch (m_iHornetType)
 		{
 		case HORNET_TYPE_RED:
 			if (firedByAllyMonster) {
-				WRITE_BYTE(0);   
+				WRITE_BYTE(0);
 				WRITE_BYTE(128);
 				WRITE_BYTE(255);
 			}
@@ -271,7 +272,7 @@ old colors
 				WRITE_BYTE(39);
 				WRITE_BYTE(14);
 			}
-			
+
 			break;
 		case HORNET_TYPE_ORANGE:
 			if (firedByAllyMonster) {
@@ -287,9 +288,10 @@ old colors
 			break;
 		}
 
-		WRITE_BYTE( 128 );	// brightness
+		WRITE_BYTE(128);	// brightness
 
-	MESSAGE_END();
+		MESSAGE_END();
+	}
 }
 
 bool CHornet::CheckMonsterCollision() {

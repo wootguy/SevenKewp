@@ -319,6 +319,13 @@ void CLightning::StrikeThink(void)
 			}
 		}
 
+		if (!UTIL_isSafeEntIndex(pStart->entindex(), "create lightning")) {
+			return;
+		}
+		if (!UTIL_isSafeEntIndex(pEnd->entindex(), "create lightning")) {
+			return;
+		}
+
 		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
 		if (IsPointEntity(pStart) || IsPointEntity(pEnd))
 		{

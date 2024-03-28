@@ -183,17 +183,19 @@ void CPitdroneSpike::SpikeTouch( CBaseEntity *pOther )
 
 void CPitdroneSpike::StartTrail()
 {
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-	WRITE_BYTE( TE_BEAMFOLLOW );
-	WRITE_SHORT( entindex() );
-	WRITE_SHORT( iSpikeTrail );
-	WRITE_BYTE( 2 );
-	WRITE_BYTE( 1 );
-	WRITE_BYTE( 197 );
-	WRITE_BYTE( 194 );
-	WRITE_BYTE( 11 );
-	WRITE_BYTE( 192 );
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(entindex(), "create spike trail")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_BEAMFOLLOW);
+		WRITE_SHORT(entindex());
+		WRITE_SHORT(iSpikeTrail);
+		WRITE_BYTE(2);
+		WRITE_BYTE(1);
+		WRITE_BYTE(197);
+		WRITE_BYTE(194);
+		WRITE_BYTE(11);
+		WRITE_BYTE(192);
+		MESSAGE_END();
+	}
 
 	SetTouch( &CPitdroneSpike::SpikeTouch );
 	SetThink( nullptr );

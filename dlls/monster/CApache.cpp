@@ -1110,20 +1110,22 @@ void CApacheHVR :: IgniteThink( void  )
 	// make rocket sound
 	EMIT_SOUND( ENT(pev), CHAN_VOICE, "weapons/rocket1.wav", 1, 0.5 );
 
-	// rocket trail
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+	if (UTIL_isSafeEntIndex(entindex(), "create HVR rocket trail")) {
+		// rocket trail
+		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 
-		WRITE_BYTE( TE_BEAMFOLLOW );
-		WRITE_SHORT(entindex());	// entity
-		WRITE_SHORT(m_iTrail );	// model
-		WRITE_BYTE( 15 ); // life
-		WRITE_BYTE( 5 );  // width
-		WRITE_BYTE( 224 );   // r, g, b
-		WRITE_BYTE( 224 );   // r, g, b
-		WRITE_BYTE( 255 );   // r, g, b
-		WRITE_BYTE( 255 );	// brightness
+			WRITE_BYTE( TE_BEAMFOLLOW );
+			WRITE_SHORT(entindex());	// entity
+			WRITE_SHORT(m_iTrail );	// model
+			WRITE_BYTE( 15 ); // life
+			WRITE_BYTE( 5 );  // width
+			WRITE_BYTE( 224 );   // r, g, b
+			WRITE_BYTE( 224 );   // r, g, b
+			WRITE_BYTE( 255 );   // r, g, b
+			WRITE_BYTE( 255 );	// brightness
 
-	MESSAGE_END();  // move PHS/PVS data sending into here (SEND_ALL, SEND_PVS, SEND_PHS)
+		MESSAGE_END();  // move PHS/PVS data sending into here (SEND_ALL, SEND_PVS, SEND_PHS)
+	}
 
 	// set to accelerate
 	SetThink( &CApacheHVR::AccelerateThink );
