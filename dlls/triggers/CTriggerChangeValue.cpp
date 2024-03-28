@@ -4,15 +4,18 @@
 #include "gamerules.h"
 #include "cbase.h"
 #include "CRuleEntity.h"
+#include "CBaseLogic.h"
 
 //
 // CTriggerChangeValue / trigger_changevalue -- changes an entity keyvalue
+
+// TODO: key values like MOVETYPE_SOLID and bitwise negation (~) work according to the docs
 
 #define SF_DONT_USE_X 1
 #define SF_DONT_USE_Y 2
 #define SF_DONT_USE_Z 4
 #define SF_CONSTANT 8
-//#define SF_START_ON 16 // does nothing according to docs
+#define SF_START_ON 16
 #define SF_INVERT_TARGET_VALUE 32
 #define SF_INVERT_SOURCE_VALUE 64 // TODO: this is pointless. Ripent this out of every map that uses it.
 #define SF_MULTIPLE_DESTINATIONS 128 // TODO: When you would ever want to target only the first entity found? As a mapper, you have no idea what that will be. It just seems like a bug.
@@ -65,7 +68,7 @@ enum copyvalue_float_conv {
 	CVAL_STR_FLOOR = 18,
 };
 
-class CTriggerChangeValue : public CPointEntity
+class CTriggerChangeValue : public CBaseLogic
 {
 public:
 	void Spawn(void);
@@ -80,16 +83,15 @@ public:
 	const char* Operate(CKeyValue& keyvalue);
 	void HandleTarget(CBaseEntity* ent);
 	void ChangeValues();
-	float VectorToFloat(Vector v);
-	int FloatToInteger(float v);
-	std::string FloatToString(float v);
-	std::string VectorToString(Vector v);
+
+	int GetVectorDontUseFlags() { return pev->spawnflags & (SF_DONT_USE_X | SF_DONT_USE_Y | SF_DONT_USE_Z); }
 
 	string_t m_iszKeyName;
 	string_t m_iszNewValue;
 	int m_iAppendSpaces;
 	int m_iOperation;
 
+	string_t m_iszDstKeyName;
 	string_t m_iszSrcKeyName;
 	int m_iFloatConversion;
 
@@ -104,8 +106,6 @@ public:
 
 	bool isCopyValue; // this entitiy is a trigger_copyvalue not a trigger_changevalue
 	bool isActive;
-	EHANDLE h_activator;
-	EHANDLE h_caller;
 };
 
 LINK_ENTITY_TO_CLASS(trigger_changevalue, CTriggerChangeValue);
@@ -113,9 +113,14 @@ LINK_ENTITY_TO_CLASS(trigger_copyvalue, CTriggerChangeValue);
 
 void CTriggerChangeValue::KeyValue(KeyValueData* pkvd)
 {
-	if (FStrEq(pkvd->szKeyName, "m_iszValueName") || FStrEq(pkvd->szKeyName, "m_iszDstValueName"))
+	if (FStrEq(pkvd->szKeyName, "m_iszValueName"))
 	{
 		m_iszKeyName = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "m_iszDstValueName"))
+	{
+		m_iszDstKeyName = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "m_iszNewValue"))
@@ -171,25 +176,11 @@ void CTriggerChangeValue::Spawn(void)
 {
 	CPointEntity::Spawn();
 
-	if (m_iAppendSpaces > 0 && (m_iOperation == CVAL_OP_APPEND || m_iOperation == CVAL_OP_REPLACE)) {
-		static char spacesVal[MAX_KEY_VALUE_LEN];
-		const int maxStrLen = MAX_KEY_VALUE_LEN - 2; // exludes the null char
-
-		int oldLen = V_min(maxStrLen, strlen(STRING(m_iszNewValue)));
-		int spacesToAppend = V_min(maxStrLen - oldLen, m_iAppendSpaces);
-
-		strncpy(spacesVal, STRING(m_iszNewValue), maxStrLen);
-		memset(spacesVal + oldLen, ' ', spacesToAppend);
-		spacesVal[oldLen + spacesToAppend] = '\0';
-
-		m_iszNewValue = ALLOC_STRING(spacesVal);
-	}
-
 	isCopyValue = !strcmp(STRING(pev->classname), "trigger_copyvalue");
 
 	if (!isCopyValue) {
 		// disable copyvalue-specific settings
-		pev->spawnflags &= ~(SF_CONSTANT | SF_MULTIPLE_DESTINATIONS);
+		pev->spawnflags &= ~(SF_CONSTANT | SF_MULTIPLE_DESTINATIONS | SF_START_ON);
 		pev->netname = 0;
 		pev->dmg = 0;
 		m_iszSrcKeyName = 0;
@@ -197,7 +188,14 @@ void CTriggerChangeValue::Spawn(void)
 	}
 	else {
 		// disable changevalue-specific settings
+		m_iszKeyName = m_iszDstKeyName;
 		m_iszNewValue = 0;
+	}
+
+	if (pev->spawnflags & SF_START_ON) {
+		isActive = true;
+		SetThink(&CTriggerChangeValue::TimedThink);
+		pev->nextthink = gpGlobals->time + pev->dmg;
 	}
 
 	SetUse(&CTriggerChangeValue::Use);
@@ -255,6 +253,13 @@ float CTriggerChangeValue::OperateFloat(float sourceVal, float targetVal) {
 	case CVAL_OP_SUB: return targetVal - sourceVal;
 	case CVAL_OP_DIV: return targetVal / sourceVal;
 	case CVAL_OP_POW: return powf(targetVal, sourceVal);
+	case CVAL_OP_MOD: return (int)targetVal % (int)sourceVal;
+	case CVAL_OP_AND: return (int)targetVal & (int)sourceVal;
+	case CVAL_OP_OR: return (int)targetVal | (int)sourceVal;
+	case CVAL_OP_XOR: return (int)targetVal ^ (int)sourceVal;
+	case CVAL_OP_NAND: return ~((int)targetVal & (int)sourceVal);
+	case CVAL_OP_NOR: return ~((int)targetVal | (int)sourceVal);
+	case CVAL_OP_NXOR: return ~((int)targetVal ^ (int)sourceVal);
 	case CVAL_OP_SIN: return sinf(sourceVal * m_trigIn) * m_trigOut;
 	case CVAL_OP_COS: return cosf(sourceVal * m_trigIn) * m_trigOut;
 	case CVAL_OP_TAN: return tanf(sourceVal * m_trigIn) * m_trigOut;
@@ -313,11 +318,22 @@ const char* CTriggerChangeValue::Operate(CKeyValue& keyvalue) {
 }
 
 const char* CTriggerChangeValue::OperateString(const char* sourceVal, const char* targetVal) {
+	static char spaces[MAX_KEY_VALUE_LEN];
+
+	if (m_iAppendSpaces > 0) {
+		int appendCnt = V_min(MAX_KEY_VALUE_LEN - 1, m_iAppendSpaces);
+		memset(spaces, ' ', appendCnt);
+		spaces[appendCnt] = 0;
+	}
+	else {
+		spaces[0] = 0;
+	}
+
 	switch (m_iOperation) {
 	case CVAL_OP_REPLACE:
-		return sourceVal;
+		return UTIL_VarArgs("%s%s", sourceVal, spaces);
 	case CVAL_OP_APPEND:
-		return UTIL_VarArgs("%s%s", targetVal, sourceVal);
+		return UTIL_VarArgs("%s%s%s", targetVal, sourceVal, spaces);
 	default:
 		ALERT(at_warning, "'%s' (%s): invalid operation %d on string value\n",
 			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_iOperation);
@@ -341,75 +357,19 @@ void CTriggerChangeValue::HandleTarget(CBaseEntity* pent) {
 		// TODO: operate on entvars data directly, don't make a new keyvalue
 		dat.szValue = Operate(keyvalue);
 	}
-	else {
+	else if (m_iOperation != CVAL_OP_REPLACE) {
 		ALERT(at_warning, "'%s' (%s): keyvalue '%s' in entity '%s' can only be replaced\n",
 			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), dat.szKeyName, STRING(pent->pev->classname));
 	}
+	
+	/*
+	ALERT(at_console, "'%s' (%s): send value '%s' to key '%s' in entity '%s'\n",
+		pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname),
+		dat.szValue, dat.szKeyName, STRING(pent->pev->targetname));
+	*/
 
 	DispatchKeyValue(pent->edict(), &dat); // using this for private fields
 	UTIL_SetOrigin(pent->pev, pent->pev->origin); // in case any changes to solid/origin were made
-}
-
-float CTriggerChangeValue::VectorToFloat(Vector v) {
-	if (pev->spawnflags & SF_DONT_USE_X) {
-		v.x = 0;
-	}
-	if (pev->spawnflags & SF_DONT_USE_Y) {
-		v.y = 0;
-	}
-	if (pev->spawnflags & SF_DONT_USE_Z) {
-		v.z = 0;
-	}
-
-	return v.Length();
-}
-
-int CTriggerChangeValue::FloatToInteger(float f) {
-	switch (m_iFloatConversion) {
-	case CVAL_STR_ROUND: return f + 0.5f;
-	case CVAL_STR_CEIL: return ceilf(f);
-	case CVAL_STR_FLOOR: 
-	default:
-		return f;
-	}
-}
-
-std::string CTriggerChangeValue::FloatToString(float f) {
-	switch (m_iFloatConversion) {
-	case CVAL_STR_5DP: return UTIL_VarArgs("%.5f", f);
-	case CVAL_STR_4DP: return UTIL_VarArgs("%.4f", f);
-	case CVAL_STR_3DP: return UTIL_VarArgs("%.3f", f);
-	case CVAL_STR_2DP: return UTIL_VarArgs("%.2f", f);
-	case CVAL_STR_1DP: return UTIL_VarArgs("%.1f", f);
-	case CVAL_STR_ROUND: return UTIL_VarArgs("%d", (int)(f + 0.5f));
-	case CVAL_STR_CEIL: return UTIL_VarArgs("%d", (int)ceilf(f));
-	case CVAL_STR_FLOOR: return UTIL_VarArgs("%d", (int)f);
-	case CVAL_STR_6DP:
-	default:
-		return UTIL_VarArgs("%f", f);
-	}
-}
-
-std::string CTriggerChangeValue::VectorToString(Vector v) {
-	std::string s;
-
-	if (!(pev->spawnflags & SF_DONT_USE_X)) {
-		s += FloatToString(v.x);
-	}
-	if (!(pev->spawnflags & SF_DONT_USE_Y)) {
-		if (s.length()) {
-			s += " ";
-		}
-		s += FloatToString(v.y);
-	}
-	if (!(pev->spawnflags & SF_DONT_USE_Z)) {
-		if (s.length()) {
-			s += " ";
-		}
-		s += FloatToString(v.z);
-	}
-
-	return s;
 }
 
 void CTriggerChangeValue::ChangeValues() {
@@ -439,27 +399,30 @@ void CTriggerChangeValue::ChangeValues() {
 
 	// set up source values
 	if (isCopyValue) {
-		edict_t* ent = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->netname));
-		CBaseEntity* pent = CBaseEntity::Instance(ent);
+		CBaseEntity* pent = FindLogicEntity(pev->netname);
 		if (pent) {
 			CKeyValue srcKey = pent->GetKeyValue(STRING(m_iszSrcKeyName));
 			if (srcKey.keyType) {
 				switch (srcKey.keyType) {
 				case KEY_TYPE_FLOAT:
-					m_iSrc = m_fSrc = srcKey.fVal;
+					m_fSrc = srcKey.fVal;
+					m_iSrc = FloatToInteger(m_fSrc, m_iFloatConversion);
 					m_vSrc = Vector(srcKey.fVal, srcKey.fVal, srcKey.fVal);
-					temp = FloatToString(srcKey.fVal);
+					temp = FloatToString(srcKey.fVal, m_iFloatConversion);
 					m_sSrc = temp.c_str();
 					break;
 				case KEY_TYPE_INT:
-					m_fSrc = m_iSrc = srcKey.iVal;
+					m_fSrc = srcKey.iVal;
+					m_iSrc = FloatToInteger(m_fSrc, m_iFloatConversion);
 					m_vSrc = Vector(srcKey.iVal, srcKey.iVal, srcKey.iVal);
-					m_sSrc = UTIL_VarArgs("%d", srcKey.iVal);
+					temp = UTIL_VarArgs("%d", srcKey.iVal);
+					m_sSrc = temp.c_str();
 					break;
 				case KEY_TYPE_VECTOR: {
-					m_iSrc = m_fSrc = VectorToFloat(srcKey.vVal);
+					m_fSrc = VectorToFloat(srcKey.vVal);
+					m_iSrc = FloatToInteger(m_fSrc, m_iFloatConversion);
 					m_vSrc = srcKey.vVal;
-					temp = VectorToString(srcKey.vVal);
+					temp = VectorToString(srcKey.vVal, m_iFloatConversion);
 					m_sSrc = temp.c_str();
 					break;
 				}
@@ -528,7 +491,7 @@ void CTriggerChangeValue::ChangeValues() {
 	}
 
 	if (pev->message) {
-		FireTargets(STRING(pev->message), h_activator, this, USE_TOGGLE, 0.0f);
+		FireLogicTargets(STRING(pev->message), USE_TOGGLE, 0.0f);
 	}
 }
 
