@@ -922,6 +922,8 @@ void SpectatorThink( edict_t *pEntity )
 // PAS and PVS routines for client messaging
 //
 
+int g_numEdictOverflows[33];
+
 /*
 ================
 SetupVisibility
@@ -971,6 +973,14 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 	}
 
 	g_packClientIdx = ENTINDEX(pClient);
+
+	int pnum = g_packClientIdx - 1;
+	if (g_numEdictOverflows[pnum] > 0) {
+		ALERT(at_console, "Overflowed %d edicts for client %s\n",
+			g_numEdictOverflows[pnum], STRING(pClient->v.netname));
+	}
+
+	g_numEdictOverflows[pnum] = 0;
 }
 
 #include "entity_state.h"
@@ -1183,6 +1193,13 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			state->angles.x = ent->v.v_angle.x;
 		}
 		
+	}
+
+	// prevent disconnects with this error:
+	// Host_Error: CL_EntityNum: 1665 is an invalid number, cl.max_edicts is 1665
+	if (sv_max_client_edicts && e >= (int)sv_max_client_edicts->value) {
+		g_numEdictOverflows[player]++;
+		return 0;
 	}
 
 	return 1;

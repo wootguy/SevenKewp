@@ -796,9 +796,9 @@ void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char 
 	float rgfl[3];
 	memcpy(rgfl, vecOrigin, 3 * sizeof(float));
 
-	if (entity->v.flags & FL_MONSTER) {
-		int eidx = ENTINDEX(entity);
+	int eidx = ENTINDEX(entity);
 
+	if (entity->v.flags & FL_MONSTER) {
 		if (g_monsterSoundReplacements[eidx].find(samp) != g_monsterSoundReplacements[eidx].end()) {
 			samp = g_monsterSoundReplacements[eidx][samp].c_str();
 		}
@@ -808,6 +808,10 @@ void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char 
 	}
 	else if (g_soundReplacements.find(samp) != g_soundReplacements.end()) {
 		samp = g_soundReplacements[samp].c_str();
+	}
+
+	if (!UTIL_isSafeEntIndex(eidx, "emit static sound")) {
+		return;
 	}
 
 	if (samp && *samp == '!')
@@ -1521,15 +1525,17 @@ void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber )
 		}
 	}
 	
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( message );
-		WRITE_COORD( pTrace->vecEndPos.x );
-		WRITE_COORD( pTrace->vecEndPos.y );
-		WRITE_COORD( pTrace->vecEndPos.z );
-		WRITE_BYTE( index );
-		if ( entityIndex )
-			WRITE_SHORT( entityIndex );
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(entityIndex, "apply decal")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(message);
+		WRITE_COORD(pTrace->vecEndPos.x);
+		WRITE_COORD(pTrace->vecEndPos.y);
+		WRITE_COORD(pTrace->vecEndPos.z);
+		WRITE_BYTE(index);
+		if (entityIndex)
+			WRITE_SHORT(entityIndex);
+		MESSAGE_END();
+	}
 }
 
 /*
@@ -1560,15 +1566,17 @@ void UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber,
 	if (pTrace->flFraction == 1.0)
 		return;
 
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_PLAYERDECAL );
-		WRITE_BYTE ( playernum );
-		WRITE_COORD( pTrace->vecEndPos.x );
-		WRITE_COORD( pTrace->vecEndPos.y );
-		WRITE_COORD( pTrace->vecEndPos.z );
-		WRITE_SHORT( (short)ENTINDEX(pTrace->pHit) );
-		WRITE_BYTE( index );
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(ENTINDEX(pTrace->pHit), "apply player decal")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_PLAYERDECAL);
+		WRITE_BYTE(playernum);
+		WRITE_COORD(pTrace->vecEndPos.x);
+		WRITE_COORD(pTrace->vecEndPos.y);
+		WRITE_COORD(pTrace->vecEndPos.z);
+		WRITE_SHORT((short)ENTINDEX(pTrace->pHit));
+		WRITE_BYTE(index);
+		MESSAGE_END();
+	}
 }
 
 void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
@@ -1583,14 +1591,16 @@ void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
 	if (pTrace->flFraction == 1.0)
 		return;
 
-	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pTrace->vecEndPos );
-		WRITE_BYTE( TE_GUNSHOTDECAL );
-		WRITE_COORD( pTrace->vecEndPos.x );
-		WRITE_COORD( pTrace->vecEndPos.y );
-		WRITE_COORD( pTrace->vecEndPos.z );
-		WRITE_SHORT( (short)ENTINDEX(pTrace->pHit) );
-		WRITE_BYTE( index );
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(ENTINDEX(pTrace->pHit), "apply gunshot decal")) {
+		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pTrace->vecEndPos);
+		WRITE_BYTE(TE_GUNSHOTDECAL);
+		WRITE_COORD(pTrace->vecEndPos.x);
+		WRITE_COORD(pTrace->vecEndPos.y);
+		WRITE_COORD(pTrace->vecEndPos.z);
+		WRITE_SHORT((short)ENTINDEX(pTrace->pHit));
+		WRITE_BYTE(index);
+		MESSAGE_END();
+	}
 }
 
 
@@ -3743,6 +3753,16 @@ void WRITE_ENTITY(int iValue) {
 void MESSAGE_END() {
 	log_msg(g_lastMsg);
 	g_engfuncs.pfnMessageEnd();
+}
+
+bool UTIL_isSafeEntIndex(int idx, const char* action) {
+	if (sv_max_client_edicts && idx >= sv_max_client_edicts->value) {
+		ALERT(at_error, "Can't %s for edict %d (sv_max_client_edicts = %d)\n",
+			action, idx, sv_max_client_edicts->value);
+		return false;
+	}
+
+	return true;
 }
 
 std::vector<std::string> splitString(std::string str, const char* delimitters)

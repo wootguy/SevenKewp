@@ -283,19 +283,21 @@ void CController :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			
 			GetAttachment( 0, vecStart, angleGun );
 			
-			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-				WRITE_BYTE( TE_ELIGHT );
-				WRITE_SHORT( entindex( ) + 0x1000 );		// entity, attachment
-				WRITE_COORD( vecStart.x );		// origin
-				WRITE_COORD( vecStart.y );
-				WRITE_COORD( vecStart.z );
-				WRITE_COORD( 1 );	// radius
-				WRITE_BYTE( 255 );	// R
-				WRITE_BYTE( 192 );	// G
-				WRITE_BYTE( 64 );	// B
-				WRITE_BYTE( 20 );	// life * 10
-				WRITE_COORD( -32 ); // decay
-			MESSAGE_END();
+			if (UTIL_isSafeEntIndex(entindex(), "attach controller headball")) {
+				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+				WRITE_BYTE(TE_ELIGHT);
+				WRITE_SHORT(entindex() + 0x1000);		// entity, attachment
+				WRITE_COORD(vecStart.x);		// origin
+				WRITE_COORD(vecStart.y);
+				WRITE_COORD(vecStart.z);
+				WRITE_COORD(1);	// radius
+				WRITE_BYTE(255);	// R
+				WRITE_BYTE(192);	// G
+				WRITE_BYTE(64);	// B
+				WRITE_BYTE(20);	// life * 10
+				WRITE_COORD(-32); // decay
+				MESSAGE_END();
+			}
 
 			m_iBall[0] = 192;
 			m_iBallTime[0] = gpGlobals->time + atoi( pEvent->options ) / 15.0;
@@ -311,19 +313,21 @@ void CController :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			
 			GetAttachment( 0, vecStart, angleGun );
 
-			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-				WRITE_BYTE( TE_ELIGHT );
-				WRITE_SHORT( entindex( ) + 0x1000 );		// entity, attachment
-				WRITE_COORD( 0 );		// origin
-				WRITE_COORD( 0 );
-				WRITE_COORD( 0 );
-				WRITE_COORD( 32 );	// radius
-				WRITE_BYTE( 255 );	// R
-				WRITE_BYTE( 192 );	// G
-				WRITE_BYTE( 64 );	// B
-				WRITE_BYTE( 10 );	// life * 10
-				WRITE_COORD( 32 ); // decay
-			MESSAGE_END();
+			if (UTIL_isSafeEntIndex(entindex(), "attach controller ball")) {
+				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+				WRITE_BYTE(TE_ELIGHT);
+				WRITE_SHORT(entindex() + 0x1000);		// entity, attachment
+				WRITE_COORD(0);		// origin
+				WRITE_COORD(0);
+				WRITE_COORD(0);
+				WRITE_COORD(32);	// radius
+				WRITE_BYTE(255);	// R
+				WRITE_BYTE(192);	// G
+				WRITE_BYTE(64);	// B
+				WRITE_BYTE(10);	// life * 10
+				WRITE_COORD(32); // decay
+				MESSAGE_END();
+			}
 
 			const char* soundlist = m_soundReplacementPath ? STRING(m_soundReplacementPath) : "";
 			std::map<std::string, std::string> keys = { {"soundlist", soundlist} };
@@ -903,19 +907,21 @@ void CController :: RunAI( void )
 		GetAttachment( i + 2, vecStart, angleGun );
 		UTIL_SetOrigin(ball->pev, vecStart );
 		
-		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-			WRITE_BYTE( TE_ELIGHT );
-			WRITE_SHORT( entindex( ) + 0x1000 * (i + 3) );		// entity, attachment
-			WRITE_COORD( vecStart.x );		// origin
-			WRITE_COORD( vecStart.y );
-			WRITE_COORD( vecStart.z );
-			WRITE_COORD( m_iBallCurrent[i] / 8 );	// radius
-			WRITE_BYTE( 255 );	// R
-			WRITE_BYTE( 192 );	// G
-			WRITE_BYTE( 64 );	// B
-			WRITE_BYTE( 5 );	// life * 10
-			WRITE_COORD( 0 ); // decay
-		MESSAGE_END();
+		if (UTIL_isSafeEntIndex(entindex(), "attach controller ball")) {
+			MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+			WRITE_BYTE(TE_ELIGHT);
+			WRITE_SHORT(entindex() + 0x1000 * (i + 3));		// entity, attachment
+			WRITE_COORD(vecStart.x);		// origin
+			WRITE_COORD(vecStart.y);
+			WRITE_COORD(vecStart.z);
+			WRITE_COORD(m_iBallCurrent[i] / 8);	// radius
+			WRITE_BYTE(255);	// R
+			WRITE_BYTE(192);	// G
+			WRITE_BYTE(64);	// B
+			WRITE_BYTE(5);	// life * 10
+			WRITE_COORD(0); // decay
+			MESSAGE_END();
+		}
 	}
 }
 
@@ -1235,19 +1241,21 @@ void CControllerHeadBall :: HuntThink( void  )
 
 	pev->renderamt -= 5;
 
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_ELIGHT );
-		WRITE_SHORT( entindex( ) );		// entity, attachment
-		WRITE_COORD( pev->origin.x );		// origin
-		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z );
-		WRITE_COORD( pev->renderamt / 16 );	// radius
-		WRITE_BYTE( 255 );	// R
-		WRITE_BYTE( 255 );	// G
-		WRITE_BYTE( 255 );	// B
-		WRITE_BYTE( 2 );	// life * 10
-		WRITE_COORD( 0 ); // decay
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(entindex(), "create controller elight")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_ELIGHT);
+		WRITE_SHORT(entindex());		// entity, attachment
+		WRITE_COORD(pev->origin.x);		// origin
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_COORD(pev->renderamt / 16);	// radius
+		WRITE_BYTE(255);	// R
+		WRITE_BYTE(255);	// G
+		WRITE_BYTE(255);	// B
+		WRITE_BYTE(2);	// life * 10
+		WRITE_COORD(0); // decay
+		MESSAGE_END();
+	}
 
 	// check world boundaries
 	if (gpGlobals->time - pev->dmgtime > 5 || pev->renderamt < 64 || m_hEnemy == NULL || m_hOwner == NULL || pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096)
@@ -1339,24 +1347,26 @@ void CControllerHeadBall :: Crawl( void  )
 	Vector vecAim = Vector( RANDOM_FLOAT( -1, 1 ), RANDOM_FLOAT( -1, 1 ), RANDOM_FLOAT( -1, 1 ) ).Normalize( );
 	Vector vecPnt = pev->origin + pev->velocity * 0.3 + vecAim * 64;
 
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_BEAMENTPOINT );
-		WRITE_SHORT( entindex() );
-		WRITE_COORD( vecPnt.x);
-		WRITE_COORD( vecPnt.y);
-		WRITE_COORD( vecPnt.z);
-		WRITE_SHORT( g_sModelIndexLaser );
-		WRITE_BYTE( 0 ); // frame start
-		WRITE_BYTE( 10 ); // framerate
-		WRITE_BYTE( 3 ); // life
-		WRITE_BYTE( 20 );  // width
-		WRITE_BYTE( 0 );   // noise
-		WRITE_BYTE( 255 );   // r, g, b
-		WRITE_BYTE( 255 );   // r, g, b
-		WRITE_BYTE( 255 );   // r, g, b
-		WRITE_BYTE( 255 );	// brightness
-		WRITE_BYTE( 10 );		// speed
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(entindex(), "create headball beam")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_BEAMENTPOINT);
+		WRITE_SHORT(entindex());
+		WRITE_COORD(vecPnt.x);
+		WRITE_COORD(vecPnt.y);
+		WRITE_COORD(vecPnt.z);
+		WRITE_SHORT(g_sModelIndexLaser);
+		WRITE_BYTE(0); // frame start
+		WRITE_BYTE(10); // framerate
+		WRITE_BYTE(3); // life
+		WRITE_BYTE(20);  // width
+		WRITE_BYTE(0);   // noise
+		WRITE_BYTE(255);   // r, g, b
+		WRITE_BYTE(255);   // r, g, b
+		WRITE_BYTE(255);   // r, g, b
+		WRITE_BYTE(255);	// brightness
+		WRITE_BYTE(10);		// speed
+		MESSAGE_END();
+	}
 }
 
 

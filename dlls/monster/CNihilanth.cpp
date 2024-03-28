@@ -516,24 +516,26 @@ void CNihilanth :: DyingThink( void )
 
 	UTIL_TraceLine( vecSrc, vecSrc + vecDir * 4096, ignore_monsters, ENT(pev), &tr );
 	
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_BEAMENTPOINT );
-		WRITE_SHORT( entindex() + 0x1000 * iAttachment );
-		WRITE_COORD( tr.vecEndPos.x);
-		WRITE_COORD( tr.vecEndPos.y);
-		WRITE_COORD( tr.vecEndPos.z);
-		WRITE_SHORT( g_sModelIndexLaser );
-		WRITE_BYTE( 0 ); // frame start
-		WRITE_BYTE( 10 ); // framerate
-		WRITE_BYTE( 5 ); // life
-		WRITE_BYTE( 100 );  // width
-		WRITE_BYTE( 120 );   // noise
-		WRITE_BYTE( 64 );   // r, g, b
-		WRITE_BYTE( 128 );   // r, g, b
-		WRITE_BYTE( 255);   // r, g, b
-		WRITE_BYTE( 255 );	// brightness
-		WRITE_BYTE( 10 );		// speed
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(entindex(), "attach nih beam")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_BEAMENTPOINT);
+		WRITE_SHORT(entindex() + 0x1000 * iAttachment);
+		WRITE_COORD(tr.vecEndPos.x);
+		WRITE_COORD(tr.vecEndPos.y);
+		WRITE_COORD(tr.vecEndPos.z);
+		WRITE_SHORT(g_sModelIndexLaser);
+		WRITE_BYTE(0); // frame start
+		WRITE_BYTE(10); // framerate
+		WRITE_BYTE(5); // life
+		WRITE_BYTE(100);  // width
+		WRITE_BYTE(120);   // noise
+		WRITE_BYTE(64);   // r, g, b
+		WRITE_BYTE(128);   // r, g, b
+		WRITE_BYTE(255);   // r, g, b
+		WRITE_BYTE(255);	// brightness
+		WRITE_BYTE(10);		// speed
+		MESSAGE_END();
+	}
 
 	GetAttachment( 0, vecSrc, vecAngles ); 
 	CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
@@ -702,19 +704,21 @@ void CNihilanth :: NextActivity( )
 
 		if (m_hBall)
 		{
-			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-				WRITE_BYTE( TE_ELIGHT );
-				WRITE_SHORT( entindex( ) + 0x1000 );		// entity, attachment
-				WRITE_COORD( pev->origin.x );		// origin
-				WRITE_COORD( pev->origin.y );
-				WRITE_COORD( pev->origin.z );
-				WRITE_COORD( 256 );	// radius
-				WRITE_BYTE( 255 );	// R
-				WRITE_BYTE( 192 );	// G
-				WRITE_BYTE( 64 );	// B
-				WRITE_BYTE( 200 );	// life * 10
-				WRITE_COORD( 0 ); // decay
-			MESSAGE_END();
+			if (UTIL_isSafeEntIndex(entindex(), "attach nih ball")) {
+				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+				WRITE_BYTE(TE_ELIGHT);
+				WRITE_SHORT(entindex() + 0x1000);		// entity, attachment
+				WRITE_COORD(pev->origin.x);		// origin
+				WRITE_COORD(pev->origin.y);
+				WRITE_COORD(pev->origin.z);
+				WRITE_COORD(256);	// radius
+				WRITE_BYTE(255);	// R
+				WRITE_BYTE(192);	// G
+				WRITE_BYTE(64);	// B
+				WRITE_BYTE(200);	// life * 10
+				WRITE_COORD(0); // decay
+				MESSAGE_END();
+			}
 		}
 	}
 
@@ -1064,33 +1068,35 @@ void CNihilanth :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			EMIT_SOUND( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pBallSounds ), 1.0, 0.2 ); 
 
-			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-				WRITE_BYTE( TE_ELIGHT );
-				WRITE_SHORT( entindex( ) + 0x3000 );		// entity, attachment
-				WRITE_COORD( pev->origin.x );		// origin
-				WRITE_COORD( pev->origin.y );
-				WRITE_COORD( pev->origin.z );
-				WRITE_COORD( 256 );	// radius
-				WRITE_BYTE( 128 );	// R
-				WRITE_BYTE( 128 );	// G
-				WRITE_BYTE( 255 );	// B
-				WRITE_BYTE( 10 );	// life * 10
-				WRITE_COORD( 128 ); // decay
-			MESSAGE_END();
+			if (UTIL_isSafeEntIndex(entindex(), "attach nih elights")) {
+				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+				WRITE_BYTE(TE_ELIGHT);
+				WRITE_SHORT(entindex() + 0x3000);		// entity, attachment
+				WRITE_COORD(pev->origin.x);		// origin
+				WRITE_COORD(pev->origin.y);
+				WRITE_COORD(pev->origin.z);
+				WRITE_COORD(256);	// radius
+				WRITE_BYTE(128);	// R
+				WRITE_BYTE(128);	// G
+				WRITE_BYTE(255);	// B
+				WRITE_BYTE(10);	// life * 10
+				WRITE_COORD(128); // decay
+				MESSAGE_END();
 
-			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-				WRITE_BYTE( TE_ELIGHT );
-				WRITE_SHORT( entindex( ) + 0x4000 );		// entity, attachment
-				WRITE_COORD( pev->origin.x );		// origin
-				WRITE_COORD( pev->origin.y );
-				WRITE_COORD( pev->origin.z );
-				WRITE_COORD( 256 );	// radius
-				WRITE_BYTE( 128 );	// R
-				WRITE_BYTE( 128 );	// G
-				WRITE_BYTE( 255 );	// B
-				WRITE_BYTE( 10 );	// life * 10
-				WRITE_COORD( 128 ); // decay
-			MESSAGE_END();
+				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+				WRITE_BYTE(TE_ELIGHT);
+				WRITE_SHORT(entindex() + 0x4000);		// entity, attachment
+				WRITE_COORD(pev->origin.x);		// origin
+				WRITE_COORD(pev->origin.y);
+				WRITE_COORD(pev->origin.z);
+				WRITE_COORD(256);	// radius
+				WRITE_BYTE(128);	// R
+				WRITE_BYTE(128);	// G
+				WRITE_BYTE(255);	// B
+				WRITE_BYTE(10);	// life * 10
+				WRITE_COORD(128); // decay
+				MESSAGE_END();
+			}
 			
 			m_flShootTime = gpGlobals->time;
 			m_flShootEnd = gpGlobals->time + 1.0;
@@ -1125,33 +1131,35 @@ void CNihilanth :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 				ALERT( at_aiconsole, "nihilanth can't target %s\n", szText );
 
-				MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-					WRITE_BYTE( TE_ELIGHT );
-					WRITE_SHORT( entindex( ) + 0x3000 );		// entity, attachment
-					WRITE_COORD( pev->origin.x );		// origin
-					WRITE_COORD( pev->origin.y );
-					WRITE_COORD( pev->origin.z );
-					WRITE_COORD( 256 );	// radius
-					WRITE_BYTE( 128 );	// R
-					WRITE_BYTE( 128 );	// G
-					WRITE_BYTE( 255 );	// B
-					WRITE_BYTE( 10 );	// life * 10
-					WRITE_COORD( 128 ); // decay
-				MESSAGE_END();
+				if (UTIL_isSafeEntIndex(entindex(), "attach nih elights")) {
+					MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+					WRITE_BYTE(TE_ELIGHT);
+					WRITE_SHORT(entindex() + 0x3000);		// entity, attachment
+					WRITE_COORD(pev->origin.x);		// origin
+					WRITE_COORD(pev->origin.y);
+					WRITE_COORD(pev->origin.z);
+					WRITE_COORD(256);	// radius
+					WRITE_BYTE(128);	// R
+					WRITE_BYTE(128);	// G
+					WRITE_BYTE(255);	// B
+					WRITE_BYTE(10);	// life * 10
+					WRITE_COORD(128); // decay
+					MESSAGE_END();
 
-				MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-					WRITE_BYTE( TE_ELIGHT );
-					WRITE_SHORT( entindex( ) + 0x4000 );		// entity, attachment
-					WRITE_COORD( pev->origin.x );		// origin
-					WRITE_COORD( pev->origin.y );
-					WRITE_COORD( pev->origin.z );
-					WRITE_COORD( 256 );	// radius
-					WRITE_BYTE( 128 );	// R
-					WRITE_BYTE( 128 );	// G
-					WRITE_BYTE( 255 );	// B
-					WRITE_BYTE( 10 );	// life * 10
-					WRITE_COORD( 128 ); // decay
-				MESSAGE_END();
+					MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+					WRITE_BYTE(TE_ELIGHT);
+					WRITE_SHORT(entindex() + 0x4000);		// entity, attachment
+					WRITE_COORD(pev->origin.x);		// origin
+					WRITE_COORD(pev->origin.y);
+					WRITE_COORD(pev->origin.z);
+					WRITE_COORD(256);	// radius
+					WRITE_BYTE(128);	// R
+					WRITE_BYTE(128);	// G
+					WRITE_BYTE(255);	// B
+					WRITE_BYTE(10);	// life * 10
+					WRITE_COORD(128); // decay
+					MESSAGE_END();
+				}
 
 				m_flShootTime = gpGlobals->time;
 				m_flShootEnd = gpGlobals->time + 1.0;
@@ -1500,24 +1508,26 @@ void CNihilanthHVR :: ZapThink( void  )
 			ApplyMultiDamage( pev, pev );
 		}
 
-		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-			WRITE_BYTE( TE_BEAMENTPOINT );
-			WRITE_SHORT( entindex() );
-			WRITE_COORD( tr.vecEndPos.x );
-			WRITE_COORD( tr.vecEndPos.y );
-			WRITE_COORD( tr.vecEndPos.z );
-			WRITE_SHORT( g_sModelIndexLaser );
-			WRITE_BYTE( 0 ); // frame start
-			WRITE_BYTE( 10 ); // framerate
-			WRITE_BYTE( 3 ); // life
-			WRITE_BYTE( 20 );  // width
-			WRITE_BYTE( 20 );   // noise
-			WRITE_BYTE( 64 );   // r, g, b
-			WRITE_BYTE( 196 );   // r, g, b
-			WRITE_BYTE( 255);   // r, g, b
-			WRITE_BYTE( 255 );	// brightness
-			WRITE_BYTE( 10 );		// speed
-		MESSAGE_END();
+		if (UTIL_isSafeEntIndex(entindex(), "create nih beam")) {
+			MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+			WRITE_BYTE(TE_BEAMENTPOINT);
+			WRITE_SHORT(entindex());
+			WRITE_COORD(tr.vecEndPos.x);
+			WRITE_COORD(tr.vecEndPos.y);
+			WRITE_COORD(tr.vecEndPos.z);
+			WRITE_SHORT(g_sModelIndexLaser);
+			WRITE_BYTE(0); // frame start
+			WRITE_BYTE(10); // framerate
+			WRITE_BYTE(3); // life
+			WRITE_BYTE(20);  // width
+			WRITE_BYTE(20);   // noise
+			WRITE_BYTE(64);   // r, g, b
+			WRITE_BYTE(196);   // r, g, b
+			WRITE_BYTE(255);   // r, g, b
+			WRITE_BYTE(255);	// brightness
+			WRITE_BYTE(10);		// speed
+			MESSAGE_END();
+		}
 
 		UTIL_EmitAmbientSound( edict(), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
 
@@ -1529,19 +1539,21 @@ void CNihilanthHVR :: ZapThink( void  )
 
 	pev->frame = (int)(pev->frame + 1) % 11;
 
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_ELIGHT );
-		WRITE_SHORT( entindex( ) );		// entity, attachment
-		WRITE_COORD( pev->origin.x );		// origin
-		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z );
-		WRITE_COORD( 128 );	// radius
-		WRITE_BYTE( 128 );	// R
-		WRITE_BYTE( 128 );	// G
-		WRITE_BYTE( 255 );	// B
-		WRITE_BYTE( 10 );	// life * 10
-		WRITE_COORD( 128 ); // decay
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(entindex(), "attach nih elight")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_ELIGHT);
+		WRITE_SHORT(entindex());		// entity, attachment
+		WRITE_COORD(pev->origin.x);		// origin
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_COORD(128);	// radius
+		WRITE_BYTE(128);	// R
+		WRITE_BYTE(128);	// G
+		WRITE_BYTE(255);	// B
+		WRITE_BYTE(10);	// life * 10
+		WRITE_COORD(128); // decay
+		MESSAGE_END();
+	}
 
 	// Crawl( );
 }
@@ -1637,19 +1649,21 @@ void CNihilanthHVR :: TeleportThink( void  )
 		MovetoTarget( m_hEnemy->Center( ) );
 	}
 
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_ELIGHT );
-		WRITE_SHORT( entindex( ) );		// entity, attachment
-		WRITE_COORD( pev->origin.x );		// origin
-		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z );
-		WRITE_COORD( 256 );	// radius
-		WRITE_BYTE( 0 );	// R
-		WRITE_BYTE( 255 );	// G
-		WRITE_BYTE( 0 );	// B
-		WRITE_BYTE( 10 );	// life * 10
-		WRITE_COORD( 256 ); // decay
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(entindex(), "attach nih elight")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_ELIGHT);
+		WRITE_SHORT(entindex());		// entity, attachment
+		WRITE_COORD(pev->origin.x);		// origin
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_COORD(256);	// radius
+		WRITE_BYTE(0);	// R
+		WRITE_BYTE(255);	// G
+		WRITE_BYTE(0);	// B
+		WRITE_BYTE(10);	// life * 10
+		WRITE_COORD(256); // decay
+		MESSAGE_END();
+	}
 
 	pev->frame = (int)(pev->frame + 1) % 20;
 }
@@ -1720,19 +1734,21 @@ void CNihilanthHVR :: DissipateThink( void  )
 		UTIL_Remove( this );
 	}
 
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_ELIGHT );
-		WRITE_SHORT( entindex( ) );		// entity, attachment
-		WRITE_COORD( pev->origin.x );		// origin
-		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z );
-		WRITE_COORD( pev->renderamt );	// radius
-		WRITE_BYTE( 255 );	// R
-		WRITE_BYTE( 192 );	// G
-		WRITE_BYTE( 64 );	// B
-		WRITE_BYTE( 2 );	// life * 10
-		WRITE_COORD( 0 ); // decay
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(entindex(), "attach nih elight")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_ELIGHT);
+		WRITE_SHORT(entindex());		// entity, attachment
+		WRITE_COORD(pev->origin.x);		// origin
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_COORD(pev->renderamt);	// radius
+		WRITE_BYTE(255);	// R
+		WRITE_BYTE(192);	// G
+		WRITE_BYTE(64);	// B
+		WRITE_BYTE(2);	// life * 10
+		WRITE_COORD(0); // decay
+		MESSAGE_END();
+	}
 }
 
 
@@ -1817,24 +1833,26 @@ void CNihilanthHVR :: Crawl( void  )
 	Vector vecAim = Vector( RANDOM_FLOAT( -1, 1 ), RANDOM_FLOAT( -1, 1 ), RANDOM_FLOAT( -1, 1 ) ).Normalize( );
 	Vector vecPnt = pev->origin + pev->velocity * 0.2 + vecAim * 128;
 
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_BEAMENTPOINT );
-		WRITE_SHORT( entindex() );
-		WRITE_COORD( vecPnt.x);
-		WRITE_COORD( vecPnt.y);
-		WRITE_COORD( vecPnt.z);
-		WRITE_SHORT( g_sModelIndexLaser );
-		WRITE_BYTE( 0 ); // frame start
-		WRITE_BYTE( 10 ); // framerate
-		WRITE_BYTE( 3 ); // life
-		WRITE_BYTE( 20 );  // width
-		WRITE_BYTE( 80 );   // noise
-		WRITE_BYTE( 64 );   // r, g, b
-		WRITE_BYTE( 128 );   // r, g, b
-		WRITE_BYTE( 255);   // r, g, b
-		WRITE_BYTE( 255 );	// brightness
-		WRITE_BYTE( 10 );		// speed
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(entindex(), "attach nih beam")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_BEAMENTPOINT);
+		WRITE_SHORT(entindex());
+		WRITE_COORD(vecPnt.x);
+		WRITE_COORD(vecPnt.y);
+		WRITE_COORD(vecPnt.z);
+		WRITE_SHORT(g_sModelIndexLaser);
+		WRITE_BYTE(0); // frame start
+		WRITE_BYTE(10); // framerate
+		WRITE_BYTE(3); // life
+		WRITE_BYTE(20);  // width
+		WRITE_BYTE(80);   // noise
+		WRITE_BYTE(64);   // r, g, b
+		WRITE_BYTE(128);   // r, g, b
+		WRITE_BYTE(255);   // r, g, b
+		WRITE_BYTE(255);	// brightness
+		WRITE_BYTE(10);		// speed
+		MESSAGE_END();
+	}
 }
 
 

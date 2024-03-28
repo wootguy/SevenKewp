@@ -733,6 +733,9 @@ void WRITE_STRING(const char* sValue);
 void WRITE_ENTITY(int iValue);
 #endif
 
+// returns false if the entity index would overflow the client, and prints an error message in that case
+inline bool UTIL_isSafeEntIndex(int idx, const char* action);
+
 inline void WRITE_COORD_VECTOR(const Vector& vec)
 {
 	WRITE_COORD(vec.x);

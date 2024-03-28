@@ -110,17 +110,19 @@ void CDecal::TriggerDecal(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 
 	UTIL_TraceLine(pev->origin - Vector(5, 5, 5), pev->origin + Vector(5, 5, 5), ignore_monsters, ENT(pev), &trace);
 
-	MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-	WRITE_BYTE(TE_BSPDECAL);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z);
-	WRITE_SHORT((int)pev->skin);
-	entityIndex = (short)ENTINDEX(trace.pHit);
-	WRITE_SHORT(entityIndex);
-	if (entityIndex)
-		WRITE_SHORT((int)VARS(trace.pHit)->modelindex);
-	MESSAGE_END();
+	if (UTIL_isSafeEntIndex(ENTINDEX(edict()), "apply decal")) {
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_BSPDECAL);
+		WRITE_COORD(pev->origin.x);
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_SHORT((int)pev->skin);
+		entityIndex = (short)ENTINDEX(trace.pHit);
+		WRITE_SHORT(entityIndex);
+		if (entityIndex)
+			WRITE_SHORT((int)VARS(trace.pHit)->modelindex);
+		MESSAGE_END();
+	}
 
 	SetThink(&CDecal::SUB_Remove);
 	pev->nextthink = gpGlobals->time + 0.1;
@@ -140,7 +142,11 @@ void CDecal::StaticDecal(void)
 	else
 		modelIndex = 0;
 
-	g_engfuncs.pfnStaticDecal(pev->origin, (int)pev->skin, entityIndex, modelIndex);
+	static int decalCount = 0;
+
+	if (UTIL_isSafeEntIndex(entityIndex, "apply decal")) {
+		g_engfuncs.pfnStaticDecal(pev->origin, (int)pev->skin, entityIndex, modelIndex);
+	}
 
 	SUB_Remove();
 }

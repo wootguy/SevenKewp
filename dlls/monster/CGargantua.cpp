@@ -365,19 +365,21 @@ void CGargantua :: FlameUpdate( void )
 			// RadiusDamage( trace.vecEndPos, pev, pev, gSkillData.gargantuaDmgFire, CLASS_ALIEN_MONSTER, DMG_BURN );
 			FlameDamage( vecStart, trace.vecEndPos, pev, pev, fireDamage, CLASS_ALIEN_MONSTER, DMG_BURN );
 
-			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-				WRITE_BYTE( TE_ELIGHT );
-				WRITE_SHORT( entindex( ) + 0x1000 * (i + 2) );		// entity, attachment
-				WRITE_COORD( vecStart.x );		// origin
-				WRITE_COORD( vecStart.y );
-				WRITE_COORD( vecStart.z );
-				WRITE_COORD( RANDOM_FLOAT( 32, 48 ) );	// radius
-				WRITE_BYTE( 255 );	// R
-				WRITE_BYTE( 255 );	// G
-				WRITE_BYTE( 255 );	// B
-				WRITE_BYTE( 2 );	// life * 10
-				WRITE_COORD( 0 ); // decay
-			MESSAGE_END();
+			if (UTIL_isSafeEntIndex(entindex(), "attach garg elight")) {
+				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+				WRITE_BYTE(TE_ELIGHT);
+				WRITE_SHORT(entindex() + 0x1000 * (i + 2));		// entity, attachment
+				WRITE_COORD(vecStart.x);		// origin
+				WRITE_COORD(vecStart.y);
+				WRITE_COORD(vecStart.z);
+				WRITE_COORD(RANDOM_FLOAT(32, 48));	// radius
+				WRITE_BYTE(255);	// R
+				WRITE_BYTE(255);	// G
+				WRITE_BYTE(255);	// B
+				WRITE_BYTE(2);	// life * 10
+				WRITE_COORD(0); // decay
+				MESSAGE_END();
+			}
 		}
 	}
 	if ( streaks )

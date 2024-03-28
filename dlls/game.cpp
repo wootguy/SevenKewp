@@ -69,6 +69,7 @@ cvar_t 	*g_psv_gravity = NULL;
 cvar_t	*g_psv_aim = NULL;
 cvar_t	*g_footsteps = NULL;
 cvar_t	*g_developer = NULL;
+cvar_t	*sv_max_client_edicts = NULL;
 
 // END Cvars for Skill Level settings
 
@@ -158,6 +159,7 @@ void GameDLLInit( void )
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 	g_developer = CVAR_GET_POINTER( "developer" );
+	sv_max_client_edicts = CVAR_GET_POINTER( "sv_max_client_edicts" );
 
 	CVAR_REGISTER (&displaysoundlist);
 	CVAR_REGISTER( &allow_spectators );
