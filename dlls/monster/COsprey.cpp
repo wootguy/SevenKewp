@@ -366,6 +366,7 @@ void COsprey :: HoverThink( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 	UTIL_MakeAimVectors( pev->angles );
 	ShowDamage( );
+	FCheckAITrigger();
 }
 
 
@@ -408,6 +409,7 @@ void COsprey::UpdateGoal( )
 void COsprey::FlyThink( void )
 {
 	StudioFrameAdvance( );
+	FCheckAITrigger();
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	if (!m_hGoalEnt && !FStringNull(pev->target) )// this monster has a target

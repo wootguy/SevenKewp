@@ -194,6 +194,7 @@ void CApache::Precache( void )
 void CApache::NullThink( void )
 {
 	StudioFrameAdvance( );
+	FCheckAITrigger();
 	pev->nextthink = gpGlobals->time + 0.5;
 }
 
@@ -462,6 +463,7 @@ void CApache :: HuntThink( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	ShowDamage( );
+	FCheckAITrigger();
 
 	if ( !m_hGoalEnt && !FStringNull(pev->target) )// this monster has a target
 	{

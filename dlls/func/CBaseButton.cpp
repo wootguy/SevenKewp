@@ -417,8 +417,14 @@ void CBaseButton::ButtonActivate()
 	m_toggle_state = TS_GOING_UP;
 
 	SetMoveDone(&CBaseButton::TriggerAndWait);
-	if (!m_fRotating)
-		LinearMove(m_vecPosition2, pev->speed);
+	if (!m_fRotating) {
+		if (pev->spawnflags & SF_BUTTON_DONTMOVE) {
+			TriggerAndWait();
+		}
+		else {
+			LinearMove(m_vecPosition2, pev->speed);
+		}
+	}
 	else
 		AngularMove(m_vecAngle2, pev->speed);
 }
@@ -469,8 +475,14 @@ void CBaseButton::ButtonReturn(void)
 	m_toggle_state = TS_GOING_DOWN;
 
 	SetMoveDone(&CBaseButton::ButtonBackHome);
-	if (!m_fRotating)
-		LinearMove(m_vecPosition1, pev->speed);
+	if (!m_fRotating) {
+		if (pev->spawnflags & SF_BUTTON_DONTMOVE) {
+			ButtonBackHome();
+		}
+		else {
+			LinearMove(m_vecPosition1, pev->speed);
+		}
+	}
 	else
 		AngularMove(m_vecAngle1, pev->speed);
 

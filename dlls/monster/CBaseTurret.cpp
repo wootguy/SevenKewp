@@ -266,6 +266,7 @@ void CBaseTurret::ActiveThink(void)
 
 	pev->nextthink = gpGlobals->time + 0.1;
 	StudioFrameAdvance();
+	FCheckAITrigger();
 
 	if ((!m_iOn) || (m_hEnemy == NULL))
 	{
@@ -544,6 +545,7 @@ void CBaseTurret::SearchThink(void)
 	// ensure rethink
 	SetTurretAnim(TURRET_ANIM_SPIN);
 	StudioFrameAdvance();
+	FCheckAITrigger();
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	if (m_flSpinUpTime == 0 && m_flMaxSpin)

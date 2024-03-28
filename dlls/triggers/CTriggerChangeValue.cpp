@@ -437,8 +437,16 @@ void CTriggerChangeValue::LoadSourceValues() {
 			}
 			else {
 				// single value used
-				m_fSrc = atof(cNewVal);
-				m_iSrc = atoi(cNewVal);
+				if (cNewVal[0] == '~') {
+					cNewVal = cNewVal + 1;
+					m_fSrc = ~((int)atof(cNewVal));
+					m_iSrc = ~atoi(cNewVal);
+				}
+				else {
+					m_fSrc = atof(cNewVal);
+					m_iSrc = atoi(cNewVal);
+				}
+				
 				m_vSrc = Vector(m_fSrc, m_fSrc, m_fSrc);
 			}
 
