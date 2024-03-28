@@ -82,6 +82,7 @@ public:
 	const char* OperateString(const char* sourceVal, const char* targetVal);
 	const char* Operate(CKeyValue& keyvalue);
 	void HandleTarget(CBaseEntity* ent);
+	void LoadSourceValues();
 	void ChangeValues();
 
 	int GetVectorDontUseFlags() { return pev->spawnflags & (SF_DONT_USE_X | SF_DONT_USE_Y | SF_DONT_USE_Z); }
@@ -372,30 +373,10 @@ void CTriggerChangeValue::HandleTarget(CBaseEntity* pent) {
 	UTIL_SetOrigin(pent->pev, pent->pev->origin); // in case any changes to solid/origin were made
 }
 
-void CTriggerChangeValue::ChangeValues() {
-	if (isCopyValue) {
-		if (!pev->netname) {
-			ALERT(at_warning, "'%s' (%s): missing source entity\n",
-				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
-			return;
-		}
-		if (!m_iszSrcKeyName) {
-			ALERT(at_warning, "'%s' (%s): missing source key\n",
-				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
-			return;
-		}
-	}
-	else {
-		if (!m_iszKeyName) {
-			ALERT(at_warning, "'%s' (%s): missing key name\n",
-				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
-			return;
-		}
-	}	
-
+void CTriggerChangeValue::LoadSourceValues() {
 	// defined here to prevent destruction before keyvalues are sent,
 	// and this exists at all because UTIL_VarArgs uses a single static buffer
-	std::string temp;
+	static std::string temp;
 
 	// set up source values
 	if (isCopyValue) {
@@ -469,6 +450,30 @@ void CTriggerChangeValue::ChangeValues() {
 			m_vSrc = g_vecZero;
 		}
 	}
+}
+
+void CTriggerChangeValue::ChangeValues() {
+	if (isCopyValue) {
+		if (!pev->netname) {
+			ALERT(at_warning, "'%s' (%s): missing source entity\n",
+				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
+			return;
+		}
+		if (!m_iszSrcKeyName) {
+			ALERT(at_warning, "'%s' (%s): missing source key\n",
+				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
+			return;
+		}
+	}
+	else {
+		if (!m_iszKeyName) {
+			ALERT(at_warning, "'%s' (%s): missing key name\n",
+				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
+			return;
+		}
+	}	
+
+	LoadSourceValues();
 
 	const char* target = STRING(pev->target);
 
