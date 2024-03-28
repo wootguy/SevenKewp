@@ -1767,7 +1767,13 @@ void CBasePlayer::UpdateStatusBar()
 				}
 
 				strcpy(sbuf1, UTIL_VarArgs("1 %s%s", srel, name));
-				strcpy(sbuf0, UTIL_VarArgs("2 Health: %d", hp));
+
+				if ((pEntity->pev->flags & FL_GODMODE) || (pEntity->pev->takedamage == DAMAGE_NO)) {
+					strcpy(sbuf0, UTIL_VarArgs("2 Health: Invincible", hp));
+				}
+				else {
+					strcpy(sbuf0, UTIL_VarArgs("2 Health: %d", hp));
+				}
 
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
 				newSBarState[SBAR_ID_TARGETHEALTH] = hp;

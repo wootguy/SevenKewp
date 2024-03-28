@@ -7105,7 +7105,7 @@ const char* CBaseMonster::DisplayName() {
 }
 
 bool CBaseMonster::IsImmune(entvars_t* attacker) {
-	if (!pev->takedamage) {
+	if (!pev->takedamage || (pev->flags & FL_GODMODE)) {
 		return true;
 	}
 
@@ -7138,7 +7138,7 @@ void CBaseMonster::SetSize(Vector defaultMins, Vector defaultMaxs) {
 
 void CBaseMonster::SetHealth() {
 	if (!pev->health)
-		pev->health = GetDefaultHealth(STRING(pev->classname));
+		pev->health = pev->max_health = GetDefaultHealth(STRING(pev->classname));
 }
 
 void CBaseMonster::InitModel() {
@@ -7190,7 +7190,7 @@ void CBaseMonster::Nerf() {
 	else if (mp_bulletsponges.value == 0) {
 		// extra health is never allowed
 		g_nerfStats.nerfedMonsterHealth += pev->health - defaultHealth;
-		pev->health = defaultHealth;
+		pev->health = pev->max_health = defaultHealth;
 	}
 	else if (mp_bulletsponges.value == 2) {
 		// extra health is allowed if there's a good reason for it (custom appearance, special logic)
@@ -7241,7 +7241,7 @@ void CBaseMonster::Nerf() {
 			// There is likely no good reason for this monster to have extra health
 			ALERT(at_console, "Nerf %s hp: %d -> %d.\n", monstertype, (int)pev->health, (int)defaultHealth);
 			g_nerfStats.nerfedMonsterHealth += pev->health - defaultHealth;
-			pev->health = defaultHealth;
+			pev->health = pev->max_health = defaultHealth;
 		}
 		else {
 			if (shouldPartialNerf && mp_bulletspongemax.value >= 1) {
@@ -7249,7 +7249,7 @@ void CBaseMonster::Nerf() {
 				if (pev->health > maxspongehp) {
 					ALERT(at_console, "Partially nerf %s hp: %d -> %d\n", monstertype, (int)pev->health, (int)maxspongehp);
 					g_nerfStats.nerfedMonsterHealth += pev->health - maxspongehp;
-					pev->health = maxspongehp;
+					pev->health = pev->max_health = maxspongehp;
 				}
 			}
 

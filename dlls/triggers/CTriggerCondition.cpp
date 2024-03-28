@@ -410,7 +410,12 @@ float CTriggerCondition::getValueAsFloat(const CKeyValue& key) {
 			return VectorToFloat(vTemp);
 		}
 		else {
-			return atof(STRING(key.sVal));
+			if (STRING(key.sVal)[0] == '~') {
+				return ~((int)atof(STRING(key.sVal) + 1)); // atoi - the only reason getValueAsInt exists
+			}
+			else {
+				return atof(STRING(key.sVal)); // atoi - the only reason getValueAsInt exists
+			}
 		}
 	}
 	default:
@@ -431,7 +436,12 @@ int CTriggerCondition::getValueAsInt(const CKeyValue& key) {
 			return getValueAsFloat(key);
 		}
 		else {
-			return atoi(STRING(key.sVal)); // atoi - the only reason getValueAsInt exists
+			if (STRING(key.sVal)[0] == '~') {
+				return ~atoi(STRING(key.sVal) + 1);
+			}
+			else {
+				return atoi(STRING(key.sVal)); // atoi - the only reason getValueAsInt exists
+			}
 		}
 	}
 	default:
