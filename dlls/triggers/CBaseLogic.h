@@ -30,6 +30,12 @@ public:
 	// supports !activator and !caller
 	CBaseEntity* FindLogicEntity(string_t targetname);
 
+	// finds all entities with the given targetname, or just the !activator/!caller
+	std::vector<CBaseEntity*> FindLogicEntities(const char* targetName);
+
+	// same as FireTargets but also handles !activator and !caller
+	void FireLogicTargets(const char* targetName, USE_TYPE useType, float value);
+
 	// returns a single coordinate if 2x don't-use flags are set, else the length of the vector
 	float VectorToFloat(Vector v);
 
@@ -38,8 +44,6 @@ public:
 	std::string FloatToString(float f, int flt2str_mode);
 
 	std::string VectorToString(Vector v, int flt2str_mode);
-
-	void FireLogicTargets(const char* targetName, USE_TYPE useType, float value);
 
 	EHANDLE h_activator;
 	EHANDLE h_caller;

@@ -4,6 +4,7 @@
 #include "gamerules.h"
 #include "cbase.h"
 #include "CRuleEntity.h"
+#include "CBaseLogic.h"
 
 //
 // CTriggerEntityIterator / trigger_entity_iterator -- fires targets using iterated entities as the activator
@@ -21,7 +22,7 @@ enum run_modes {
 	RUN_MODE_ONCE_MULTITHREADED_CHILD = 1337, // this entity is the child of a multithreaded iterator, and should die after running
 };
 
-class CTriggerEntityIterator : public CPointEntity
+class CTriggerEntityIterator : public CBaseLogic
 {
 public:
 	void Spawn(void);
@@ -42,7 +43,6 @@ public:
 	int m_nextIdx;
 	int m_runCount;
 	bool m_isRunning;
-	EHANDLE h_activator;
 };
 
 LINK_ENTITY_TO_CLASS(trigger_entity_iterator, CTriggerEntityIterator);
@@ -119,6 +119,15 @@ void CTriggerEntityIterator::Iterate() {
 
 	edict_t* edicts = ENT(0);
 
+	std::vector<CBaseEntity*> targets;
+	if (iterateAll) {
+		// only find targets once since they shouldn't be changing mid-loop (faster).
+		// It IS possible that new entities are created during the loop, but
+		// proper handling for that would mean restarting the scan on every trigger
+		// as well as keeping track of which entities have been iterated.
+		targets = FindLogicEntities(ent_target);
+	}
+
 	int i;
 	for (i = m_nextIdx; i < gpGlobals->maxEntities; i++)
 	{
@@ -141,14 +150,21 @@ void CTriggerEntityIterator::Iterate() {
 			continue;
 		}
 
-		if (!iterateAll && foundAnEnt) {
-			// make sure there is another entity to use next time to prevent an Iterate() call doing nothing
-			m_nextIdx = i;
-			break;
+		if (iterateAll) {
+			for (CBaseEntity* target : targets) {
+				target->Use(ent, this, (USE_TYPE)m_triggerstate, 0.0f);
+			}
 		}
+		else {
+			if (!iterateAll && foundAnEnt) {
+				// make sure there is another entity to use next time to prevent an Iterate() call doing nothing
+				m_nextIdx = i;
+				break;
+			}
 
-		FireTargets(ent_target, ent, this, (USE_TYPE)m_triggerstate, 0.0f);
-		foundAnEnt = true;
+			FireTargets(ent_target, ent, this, (USE_TYPE)m_triggerstate, 0.0f);
+			foundAnEnt = true;
+		}
 	}
 
 	bool finishedRun = i == gpGlobals->maxEntities;
