@@ -18,7 +18,15 @@ class CItemBattery : public CItem
 	}
 	void Precache(void)
 	{
-		m_defaultModel = "models/w_battery.mdl";
+		if (FClassnameIs(pev, "item_armorvest")) {
+			m_defaultModel = "models/barney_helmet.mdl";
+		} else if (FClassnameIs(pev, "item_armorvest")) {
+			m_defaultModel = "models/barney_vest.mdl";
+		}
+		else {
+			m_defaultModel = "models/w_battery.mdl";
+		}
+		
 		PRECACHE_MODEL(GetModel());
 		PRECACHE_SOUND("items/gunpickup2.wav");
 	}
@@ -63,3 +71,5 @@ class CItemBattery : public CItem
 };
 
 LINK_ENTITY_TO_CLASS(item_battery, CItemBattery);
+LINK_ENTITY_TO_CLASS(item_helmet, CItemBattery);
+LINK_ENTITY_TO_CLASS(item_armor_vest, CItemBattery);
