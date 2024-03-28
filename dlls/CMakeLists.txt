@@ -168,6 +168,7 @@ set(ITEM_SRC
 )
 
 set(TRIGGER_HDR
+	triggers/CBaseLogic.h
 	triggers/CBaseTrigger.h
 	triggers/CGamePlayerEquip.h
 	triggers/CFireAndDie.h
@@ -176,6 +177,7 @@ set(TRIGGER_HDR
 )
 set(TRIGGER_SRC
 	triggers/CAutoTrigger.cpp
+	triggers/CBaseLogic.cpp
 	triggers/CBaseTrigger.cpp
 	triggers/CChangeLevel.cpp
 	triggers/CFrictionModifier.cpp

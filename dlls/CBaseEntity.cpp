@@ -167,12 +167,14 @@ CKeyValue CBaseEntity::GetCustomKeyValue(const char* keyName) {
 	}
 
 	std::map<std::string, CKeyValue>* customKeys = GetCustomKeyValues();
-
 	std::map<std::string, CKeyValue>::iterator it = customKeys->find(keyName);
+
 	if (it != customKeys->end()) {
 		return it->second;
 	}
 	
+	ALERT(at_console, "%s (%s) has no custom key named %s\n",
+		STRING(pev->targetname), STRING(pev->classname), keyName);
 	return g_emptyKeyValue;
 }
 

@@ -4,6 +4,7 @@
 #include "gamerules.h"
 #include "cbase.h"
 #include "CRuleEntity.h"
+#include "CBaseLogic.h"
 
 //
 // CTriggerCreateEntity / trigger_createentity -- spawns any entity
@@ -21,7 +22,7 @@ struct create_key_t {
 	int valueType;
 };
 
-class CTriggerCreateEntity : public CPointEntity
+class CTriggerCreateEntity : public CBaseLogic
 {
 public:
 	void Precache(void);
@@ -128,8 +129,7 @@ void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 			continue;
 		}
 
-		edict_t* ent = FIND_ENTITY_BY_TARGETNAME(NULL, keyValue);
-		CBaseEntity* pent = CBaseEntity::Instance(ent);
+		CBaseEntity* pent = FindLogicEntity(MAKE_STRING(keyValue));
 
 		if (!pent) {
 			if (!strcmp(STRING(m_keys[i].key_name), "model")) {
@@ -170,6 +170,6 @@ void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 	CBaseEntity::Create(STRING(m_childClass), pev->origin, pev->angles, NULL, keys);
 
 	if (m_triggerAfterSpawn) {
-		FireTargets(STRING(m_triggerAfterSpawn), pActivator, this, USE_TOGGLE, 0);
+		FireLogicTargets(STRING(m_triggerAfterSpawn), USE_TOGGLE, 0);
 	}
 }

@@ -4,6 +4,7 @@
 #include "gamerules.h"
 #include "cbase.h"
 #include "CRuleEntity.h"
+#include "CBaseLogic.h"
 
 //
 // CTriggerCondition / trigger_condition -- compare entity keyvalues
@@ -16,6 +17,8 @@
 #define SF_CYCLIC 32
 #define SF_KEEP_ACTIVATOR 64
 #define SF_IGNORE_INITIAL_RESULT 128
+
+#define VEC_EQ_EPSILON 0.03125f
 
 enum compare_types {
 	COMPARE_EQUAL,
@@ -38,7 +41,7 @@ enum constant_mode_check_behaviors {
 	CONSTANT_MODES
 };
 
-class CTriggerCondition : public CPointEntity
+class CTriggerCondition : public CBaseLogic
 {
 public:
 	void Spawn(void);
@@ -52,13 +55,17 @@ public:
 
 	int getValueAsInt(const CKeyValue& key);
 	float getValueAsFloat(const CKeyValue& key);
-	float getValueAsFloat(Vector v);
 	const char* getValueAsString(const CKeyValue& key);
 
 	bool CompareFloats(const CKeyValue& monitorKey, const CKeyValue& compareKey);
 	bool CompareInts(const CKeyValue& monitorKey, const CKeyValue& compareKey);
 	bool CompareVectors(const CKeyValue& monitorKey, const CKeyValue& compareKey);
 	bool CompareStrings(const CKeyValue& monitorKey, const CKeyValue& compareKey);
+
+	int GetVectorDontUseFlags() {
+		// "don't use flags" are 1 bit higher than the generic flags
+		return (pev->spawnflags & (SF_DONT_USE_X | SF_DONT_USE_Y | SF_DONT_USE_Z)) >> 1;
+	}
 
 	string_t m_monitoredKey;
 	string_t m_compareEntity;
@@ -71,9 +78,6 @@ public:
 	bool isActive;
 	bool m_checkedFirstResult;
 	int m_lastResult;
-
-	EHANDLE h_activator;
-	EHANDLE h_caller;
 };
 
 LINK_ENTITY_TO_CLASS(trigger_condition, CTriggerCondition);
@@ -112,7 +116,7 @@ void CTriggerCondition::KeyValue(KeyValueData* pkvd)
 	}
 	else if (FStrEq(pkvd->szKeyName, "m_fCheckInterval"))
 	{
-		m_checkInterval = atoi(pkvd->szValue);
+		m_checkInterval = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else {
@@ -133,7 +137,8 @@ void CTriggerCondition::Spawn(void)
 void CTriggerCondition::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
 	isActive = useType == USE_TOGGLE ? !isActive : useType == USE_ON;
-	h_activator = pActivator;
+
+	h_activator = (pev->spawnflags & SF_KEEP_ACTIVATOR) ? pActivator : this;
 	h_caller = pCaller;
 
 	m_checkedFirstResult = false;
@@ -161,21 +166,9 @@ void CTriggerCondition::TimedThink() {
 }
 
 CKeyValue CTriggerCondition::LoadKey(string_t entName, string_t keyName, const char* errorDesc) {
-	CKeyValue key;
-	memset(&key, 0, sizeof(CKeyValue));
+	CKeyValue key = g_emptyKeyValue;
 
-	edict_t* ent = NULL;
-	if (!strcmp(STRING(entName), "!activator")) {
-		ent = h_activator.GetEdict();
-	}
-	else if (!strcmp(STRING(entName), "!caller")) {
-		ent = h_caller.GetEdict();
-	}
-	else {
-		ent = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(entName));
-	}
-
-	CBaseEntity* pent = CBaseEntity::Instance(ent);
+	CBaseEntity* pent = FindLogicEntity(entName);
 
 	if (!pent) {
 		ALERT(at_console, "'%s' (trigger_condition): %s ent %s not found\n",
@@ -261,17 +254,15 @@ void CTriggerCondition::Evaluate() {
 	}
 
 	if (shouldFireResultTarget) {
-		CBaseEntity* activator = (pev->spawnflags & SF_KEEP_ACTIVATOR) ? h_activator.GetEntity() : this;
-
 		if (result && pev->netname) {
-			ALERT(at_console, "'%s' (%s): Firing TRUE target %s\n",
-				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), STRING(pev->netname));
-			FireTargets(STRING(pev->netname), activator, this, USE_TOGGLE, 0.0f);
+			//ALERT(at_console, "'%s' (%s): Firing TRUE target %s\n",
+			//	pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), STRING(pev->netname));
+			FireLogicTargets(STRING(pev->netname), USE_TOGGLE, 0.0f);
 		}
 		else if (!result && pev->message) {
-			ALERT(at_console, "'%s' (%s): Firing FALSE target %s\n",
-				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), STRING(pev->netname));
-			FireTargets(STRING(pev->message), activator, this, USE_TOGGLE, 0.0f);
+			//ALERT(at_console, "'%s' (%s): Firing FALSE target %s\n",
+			//	pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), STRING(pev->netname));
+			FireLogicTargets(STRING(pev->message), USE_TOGGLE, 0.0f);
 		}
 	}
 
@@ -356,20 +347,22 @@ bool CTriggerCondition::CompareVectors(const CKeyValue& monitorKey, const CKeyVa
 
 	// lengths or single components are compared if the compare value is not a vector,
 	// or if check type is anything but ==/!=
-	float monitorFloat = getValueAsFloat(monitorVector);
+	float monitorFloat = VectorToFloat(monitorVector);
 	float compareFloat = getValueAsFloat(compareKey);
 
 	switch (m_checkType) {
 	case COMPARE_EQUAL:
 		if (compareKeyIsVector) {
-			return monitorVector == compareVector;
+			Vector d = monitorVector - compareVector;
+			return fabs(d.x) <= VEC_EQ_EPSILON && fabs(d.y) <= VEC_EQ_EPSILON && fabs(d.z) <= VEC_EQ_EPSILON;
 		}
 		else {
 			return monitorFloat == compareFloat;
 		}
 	case COMPARE_NEQUAL:
 		if (compareKeyIsVector) {
-			return monitorVector != compareVector;
+			Vector d = monitorVector - compareVector;
+			return fabs(d.x) > VEC_EQ_EPSILON || fabs(d.y) > VEC_EQ_EPSILON || fabs(d.z) > VEC_EQ_EPSILON;
 		}
 		else {
 			return monitorFloat != compareFloat;
@@ -409,12 +402,12 @@ float CTriggerCondition::getValueAsFloat(const CKeyValue& key) {
 	case KEY_TYPE_INT:
 		return key.iVal;
 	case KEY_TYPE_VECTOR:
-		return getValueAsFloat(key.vVal);
+		return VectorToFloat(key.vVal);
 	case KEY_TYPE_STRING: {
 		if (UTIL_StringIsVector(STRING(key.sVal))) {
 			Vector vTemp;
 			UTIL_StringToVector(vTemp, STRING(key.sVal));
-			return getValueAsFloat(vTemp);
+			return VectorToFloat(vTemp);
 		}
 		else {
 			return atof(STRING(key.sVal));
@@ -425,32 +418,6 @@ float CTriggerCondition::getValueAsFloat(const CKeyValue& key) {
 			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), key.keyName);
 		return 0;
 	}
-}
-
-float CTriggerCondition::getValueAsFloat(Vector v) {
-	int dont_use_flags = SF_DONT_USE_X | SF_DONT_USE_Y | SF_DONT_USE_Z;
-
-	if ((pev->spawnflags & dont_use_flags) == (SF_DONT_USE_Y | SF_DONT_USE_Z)) {
-		return v.x;
-	}
-	if ((pev->spawnflags & dont_use_flags) == (SF_DONT_USE_X | SF_DONT_USE_Z)) {
-		return v.y;
-	}
-	if ((pev->spawnflags & dont_use_flags) == (SF_DONT_USE_X | SF_DONT_USE_Y)) {
-		return v.z;
-	}
-
-	if (pev->spawnflags & SF_DONT_USE_X) {
-		v.x = 0;
-	}
-	if (pev->spawnflags & SF_DONT_USE_Y) {
-		v.y = 0;
-	}
-	if (pev->spawnflags & SF_DONT_USE_Z) {
-		v.z = 0;
-	}
-
-	return v.Length();
 }
 
 int CTriggerCondition::getValueAsInt(const CKeyValue& key) {
@@ -481,26 +448,8 @@ const char* CTriggerCondition::getValueAsString(const CKeyValue& key) {
 	case KEY_TYPE_INT:
 		return UTIL_VarArgs("%d", key.iVal);
 	case KEY_TYPE_VECTOR: {
-		// TODO: code duplicated in trigger_changevalue
-		std::string s;
-
-		if (!(pev->spawnflags & SF_DONT_USE_X)) {
-			s += UTIL_VarArgs("%f", key.vVal[0]);
-		}
-		if (!(pev->spawnflags & SF_DONT_USE_Y)) {
-			if (s.length()) {
-				s += " ";
-			}
-			s += UTIL_VarArgs("%f", key.vVal[1]);
-		}
-		if (!(pev->spawnflags & SF_DONT_USE_Z)) {
-			if (s.length()) {
-				s += " ";
-			}
-			s += UTIL_VarArgs("%f", key.vVal[2]);
-		}
-
-		return UTIL_VarArgs("%2", s.c_str());
+		std::string temp = VectorToString(key.vVal, FLT2STR_6DP);
+		return UTIL_VarArgs("%s", temp.c_str());
 	}
 	case KEY_TYPE_STRING:
 		return STRING(key.sVal);
