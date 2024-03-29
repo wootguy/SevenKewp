@@ -17,6 +17,7 @@
 class CMultiManager : public CBaseToggle
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void KeyValue(KeyValueData* pkvd);
 	void Spawn(void);
 	void EXPORT ManagerThink(void);

@@ -70,6 +70,7 @@ void init_decals() {
 class CDecal : public CBaseEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void	Spawn(void);
 	void	KeyValue(KeyValueData* pkvd);
 	void	EXPORT StaticDecal(void);

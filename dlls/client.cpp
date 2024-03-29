@@ -338,6 +338,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 }
 
 int g_serveractive = 0;
+int g_edictsinit = 0;
 bool g_monstersNerfed = false;
 
 void ServerDeactivate( void )
@@ -350,6 +351,7 @@ void ServerDeactivate( void )
 	}
 
 	g_serveractive = 0;
+	g_edictsinit = 0;
 
 	g_customKeyValues.clear();
 	g_monsterSoundReplacements.clear();
@@ -581,6 +583,8 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			CVAR_SET_STRING("mp_nextmap", "");
 		}
 	}
+
+	PrintEntindexStats();
 
 	ALERT(at_console, "Precache stats: %d models (%d MDL, %d BSP), %d sounds, %d generic, %d events\n",
 		g_tryPrecacheModels.size() + g_bsp.modelCount, g_tryPrecacheModels.size(), g_bsp.modelCount, 
@@ -1198,6 +1202,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	// prevent disconnects with this error:
 	// Host_Error: CL_EntityNum: 1665 is an invalid number, cl.max_edicts is 1665
 	if (sv_max_client_edicts && e >= (int)sv_max_client_edicts->value) {
+		ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
 		g_numEdictOverflows[player]++;
 		return 0;
 	}

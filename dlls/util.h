@@ -62,6 +62,7 @@ extern std::set<std::string> g_tryPrecacheEvents;
 extern std::map<std::string, WavInfo> g_wavInfos; // cached wav info, cleared on map change
 
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
+extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
 
 #define NOT_PRECACHED_MODEL "models/" MOD_MODEL_FOLDER "not_precached.mdl"
 #define NOT_PRECACHED_SOUND "common/null.wav"
@@ -708,6 +709,7 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 #define WRITE_STRING	(*g_engfuncs.pfnWriteString)
 #define WRITE_ENTITY	(*g_engfuncs.pfnWriteEntity)
 #define GET_MODEL_PTR	(*g_engfuncs.pfnGetModelPtr)
+#define CREATE_NAMED_ENTITY		(*g_engfuncs.pfnCreateNamedEntity)
 #else
 // engine wrappers which handle model/sound replacement logic
 int PRECACHE_GENERIC(const char* path);
@@ -719,6 +721,7 @@ void SET_MODEL(edict_t* edict, const char* model);
 const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
 int MODEL_INDEX(const char* model);
 void* GET_MODEL_PTR(edict_t* edict);
+edict_t* CREATE_NAMED_ENTITY(string_t cname);
 #define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
 
 void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL);
@@ -732,6 +735,10 @@ void WRITE_COORD(float iValue);
 void WRITE_STRING(const char* sValue);
 void WRITE_ENTITY(int iValue);
 #endif
+
+void InitEdictRelocations();
+void PrintEntindexStats();
+CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity);
 
 // returns false if the entity index would overflow the client, and prints an error message in that case
 inline bool UTIL_isSafeEntIndex(int idx, const char* action);

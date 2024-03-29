@@ -571,6 +571,9 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		sample = g_soundReplacements[sample].c_str();
 	}
 	
+	if (!UTIL_isSafeEntIndex(ENTINDEX(entity), "play sound")) {
+		return;
+	}
 	
 	if (sample && *sample == '!')
 	{

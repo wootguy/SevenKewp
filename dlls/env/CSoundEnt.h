@@ -67,7 +67,7 @@ public:
 class CSoundEnt : public CBaseEntity 
 {
 public:
-
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void Precache ( void );
 	void Spawn( void );
 	void Think( void );

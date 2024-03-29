@@ -131,6 +131,19 @@ public:
 	CBaseEntity * operator ->();
 };
 
+enum entindex_priority {
+	// entity should have an index lower than 512 so that sprite attachments work
+	// (skin is sent with 9 bits in delta.lst and this can't be changed for vanilla HL clients)
+	ENTIDX_PRIORITY_HIGH,
+
+	// entity is likely to be sent to clients (monsters, sprites, doors, etc.)
+	ENTIDX_PRIORITY_NORMAL,
+
+	// entity is server-side only and can have an index above the client limit
+	// TODO: make a separate edict list for these, things like logic ents are basically a scripting engine
+	ENTIDX_PRIORITY_LOW,
+};
+
 //
 // Base Entity.  All entity types derive from this
 //
@@ -156,6 +169,7 @@ public:
 	virtual int		Restore( CRestore &restore );
 	virtual int		ObjectCaps( void ) { return FCAP_ACROSS_TRANSITION; }
 	virtual void	Activate( void ) {}
+	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	
 	// Setup the object->object collision box (pev->mins / pev->maxs is the object->world collision box)
 	virtual void	SetObjectCollisionBox( void );
@@ -397,6 +411,7 @@ public:
 class CPointEntity : public CBaseEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void	Spawn( void );
 	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 private:
@@ -459,6 +474,7 @@ public:
 	float		m_flDelay;
 	int			m_iszKillTarget;
 
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	virtual void	KeyValue( KeyValueData* pkvd);
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
@@ -473,6 +489,7 @@ public:
 class CBaseAnimating : public CBaseDelay
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 
@@ -704,7 +721,8 @@ template <class T> T * GetClassPtr( T *a )
 	entvars_t *pev = (entvars_t *)a;
 
 	// allocate entity if necessary
-	if (pev == NULL)
+	bool allocate = pev == NULL;
+	if (allocate)
 		pev = VARS(CREATE_ENTITY());
 
 	// get the private data
@@ -713,10 +731,12 @@ template <class T> T * GetClassPtr( T *a )
 	if (a == NULL) 
 	{
 		// allocate private data 
-		a = new(pev) T;
+		a = new(pev) T; // TODO: shouldn't this use malloc? What does the engine do?
 		a->pev = pev;
 	}
-	return a;
+
+	// only relocate if a new entity was allocated, else EHANDLEs will break
+	return allocate ? (T*)RelocateEntIdx(a) : a;
 }
 
 
@@ -763,6 +783,7 @@ typedef struct _SelAmmo
 class CWorld : public CBaseEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	void Spawn( void );
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );

@@ -13,6 +13,7 @@
 class CFuncTrainControls : public CBaseEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	void Spawn(void);
 	void EXPORT Find(void);

@@ -9,6 +9,7 @@
 class CScriptedSentence : public CBaseToggle
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void Spawn(void);
 	void Precache();
 	void KeyValue(KeyValueData* pkvd);

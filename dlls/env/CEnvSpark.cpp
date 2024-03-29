@@ -7,6 +7,7 @@
 class CEnvSpark : public CBaseEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	void	Spawn(void);
 	void	Precache(void);
 	void	EXPORT SparkThink(void);

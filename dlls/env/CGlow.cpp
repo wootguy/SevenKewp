@@ -10,6 +10,7 @@
 class CGlow : public CPointEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	void Spawn(void);
 	void Think(void);
 	void Animate(float frames);

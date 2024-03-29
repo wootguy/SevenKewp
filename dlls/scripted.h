@@ -46,6 +46,7 @@ enum SS_INTERRUPT
 class CCineMonster : public CBaseMonster
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void Spawn( void );
 	virtual void KeyValue( KeyValueData *pkvd );
 	virtual void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );

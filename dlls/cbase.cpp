@@ -123,54 +123,65 @@ int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion )
 
 }
 
-
 int DispatchSpawn( edict_t *pent )
 {
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE(pent);
 
-	if (pEntity)
+	if (!pEntity)
+		return 0;
+
+	pEntity = RelocateEntIdx(pEntity);
+	pent = pEntity->edict();
+
+	// Initialize these or entities who don't link to the world won't have anything in here
+	pEntity->pev->absmin = pEntity->pev->origin - Vector(1,1,1);
+	pEntity->pev->absmax = pEntity->pev->origin + Vector(1,1,1);
+
+	pEntity->Spawn();
+
+	// Try to get the pointer again, in case the spawn function deleted the entity.
+	// UNDONE: Spawn() should really return a code to ask that the entity be deleted, but
+	// that would touch too much code for me to do that right now.
+	pEntity = (CBaseEntity *)GET_PRIVATE(pent);
+
+	if ( pEntity )
 	{
-		// Initialize these or entities who don't link to the world won't have anything in here
-		pEntity->pev->absmin = pEntity->pev->origin - Vector(1,1,1);
-		pEntity->pev->absmax = pEntity->pev->origin + Vector(1,1,1);
-
-		pEntity->Spawn();
-
-		// Try to get the pointer again, in case the spawn function deleted the entity.
-		// UNDONE: Spawn() should really return a code to ask that the entity be deleted, but
-		// that would touch too much code for me to do that right now.
-		pEntity = (CBaseEntity *)GET_PRIVATE(pent);
-
-		if ( pEntity )
-		{
-			if ( g_pGameRules && !g_pGameRules->IsAllowedToSpawn( pEntity ) )
-				return -1;	// return that this entity should be deleted
-			if ( pEntity->pev->flags & FL_KILLME )
-				return -1;
+		if ((g_pGameRules && !g_pGameRules->IsAllowedToSpawn(pEntity)) || pEntity->pev->flags & FL_KILLME) {
+			//return -1;	// return that this entity should be deleted (old behavior)
+			
+			// don't ask the engine to delete the edict, because relocation will have invalidated
+			// its pointer. Instead, free the edict here. This removal needs to happen now to make room
+			// for the other edicts that are spawning this frame while the level is loading
+			REMOVE_ENTITY(pent);
+			
+			// don't let the engine touch the old pointer. Maybe a new ent used that slot during Spawn()
+			//return -1;
+			return 0;
 		}
+	}
 
-
-		// Handle global stuff here
-		if ( pEntity && pEntity->pev->globalname ) 
+	// Handle global stuff here
+	if ( pEntity && pEntity->pev->globalname ) 
+	{
+		const globalentity_t *pGlobal = gGlobalState.EntityFromTable( pEntity->pev->globalname );
+		if ( pGlobal )
 		{
-			const globalentity_t *pGlobal = gGlobalState.EntityFromTable( pEntity->pev->globalname );
-			if ( pGlobal )
-			{
-				// Already dead? delete
-				if ( pGlobal->state == GLOBAL_DEAD )
-					return -1;
-				else if ( !FStrEq( STRING(gpGlobals->mapname), pGlobal->levelName ) )
-					pEntity->MakeDormant();	// Hasn't been moved to this level yet, wait but stay alive
-				// In this level & not dead, continue on as normal
+			// Already dead? delete
+			if (pGlobal->state == GLOBAL_DEAD) {
+				REMOVE_ENTITY(pent);
+				return 0;
 			}
-			else
-			{
-				// Spawned entities default to 'On'
-				gGlobalState.EntityAdd( pEntity->pev->globalname, gpGlobals->mapname, GLOBAL_ON );
+				
+			else if ( !FStrEq( STRING(gpGlobals->mapname), pGlobal->levelName ) )
+				pEntity->MakeDormant();	// Hasn't been moved to this level yet, wait but stay alive
+			// In this level & not dead, continue on as normal
+		}
+		else
+		{
+			// Spawned entities default to 'On'
+			gGlobalState.EntityAdd( pEntity->pev->globalname, gpGlobals->mapname, GLOBAL_ON );
 //				ALERT( at_console, "Added global entity %s (%s)\n", STRING(pEntity->pev->classname), STRING(pEntity->pev->globalname) );
-			}
 		}
-
 	}
 
 	return 0;

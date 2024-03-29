@@ -7,6 +7,7 @@
 // Spark Shower
 class CShower : public CBaseEntity
 {
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void Spawn(void);
 	void Think(void);
 	void Touch(CBaseEntity* pOther);

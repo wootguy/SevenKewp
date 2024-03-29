@@ -2,6 +2,7 @@
 class CRuleEntity : public CBaseEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void	Spawn(void);
 	void	KeyValue(KeyValueData* pkvd);
 	virtual int		Save(CSave& save);

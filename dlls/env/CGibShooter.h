@@ -4,6 +4,7 @@
 class CGibShooter : public CBaseDelay
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void	Spawn(void);
 	void	Precache(void);
 	void	KeyValue(KeyValueData* pkvd);

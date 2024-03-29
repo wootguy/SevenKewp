@@ -5,6 +5,7 @@
 class CNullEntity : public CBaseEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void Spawn(void);
 };
 
