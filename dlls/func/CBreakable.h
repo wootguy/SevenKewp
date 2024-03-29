@@ -10,6 +10,7 @@ class CBreakable : public CBaseDelay
 {
 public:
 	// basic functions
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	void Spawn(void);
 	void Precache(void);
 	void KeyValue(KeyValueData* pkvd);

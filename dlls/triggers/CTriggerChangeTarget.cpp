@@ -11,6 +11,7 @@
 class CTriggerChangeTarget : public CBaseDelay
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void KeyValue(KeyValueData* pkvd);
 	void Spawn(void);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);

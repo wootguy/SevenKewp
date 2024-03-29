@@ -10,6 +10,7 @@
 class CMessage : public CPointEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	void	Spawn(void);
 	void	Precache(void);
 	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);

@@ -54,6 +54,7 @@ extern cvar_t	mp_startarmor;
 extern cvar_t	mp_bulletsponges; // prevent mappers setting high npc health for no good reason
 extern cvar_t	mp_bulletspongemax; // max health multiplier for any monster
 extern cvar_t	mp_maxmonsterrespawns; // limit monster respawns which affect no entity logic
+extern cvar_t	mp_edictsorting; // sorts edict list by entity index priority
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

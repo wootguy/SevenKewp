@@ -8,6 +8,7 @@
 class CFuncTankControls : public CBaseEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	virtual int	ObjectCaps(void);
 	void Spawn(void);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);

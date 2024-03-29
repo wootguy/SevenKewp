@@ -9,6 +9,7 @@
 class CLadder : public CBaseTrigger
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	void KeyValue(KeyValueData* pkvd);
 	void Spawn(void);
 	void Precache(void);

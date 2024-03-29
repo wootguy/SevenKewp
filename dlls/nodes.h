@@ -261,6 +261,7 @@ public:
 //=========================================================
 class CNodeEnt : public CBaseEntity
 {
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void Spawn( void );
 	void KeyValue( KeyValueData *pkvd );
 	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }

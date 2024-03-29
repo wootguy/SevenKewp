@@ -136,6 +136,7 @@ public:
 	int m_skinFrames; // how many "frames" of animation the model has, ignoring ally/enemy skins
 	bool m_friendlySkinFirst; // true if the friendly skin comes before the enemy skin
 
+	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
 	virtual BOOL	HasTarget(string_t targetname);

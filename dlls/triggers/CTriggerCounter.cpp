@@ -15,6 +15,7 @@ times (default 2), it will fire all of it's targets and remove itself.
 class CTriggerCounter : public CBaseTrigger
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // for ActivateMultiTrigger sound
 	void Spawn(void);
 };
 LINK_ENTITY_TO_CLASS(trigger_counter, CTriggerCounter);

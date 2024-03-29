@@ -8,6 +8,7 @@
 class CBaseTrigger : public CBaseToggle
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void KeyValue(KeyValueData* pkvd);
 	void EXPORT MultiTouch(CBaseEntity* pOther);
 	void EXPORT HurtTouch(CBaseEntity* pOther);

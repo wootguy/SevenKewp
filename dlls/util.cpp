@@ -3284,6 +3284,125 @@ void* GET_MODEL_PTR(edict_t* edict) {
 	return header;
 }
 
+void InitEdictRelocations() {
+	if (!g_edictsinit) {
+		// initialize all edict slots so that ents can be relocated anywhere
+		// (unused slots are not marked 'free' until the total edict count requires a new slot)
+		// this will hurt performance because the max edict count will always be iterated when scanning ents
+
+		edict_t* startEdict = CREATE_ENTITY();
+		int edictsToCreate = (gpGlobals->maxEntities - ENTINDEX(startEdict)) - 1;
+		for (int i = 0; i < edictsToCreate; i++) {
+			CREATE_ENTITY();
+		}
+		for (int i = 0; i <= edictsToCreate; i++) {
+			REMOVE_ENTITY(startEdict + i);
+		}
+
+		g_edictsinit = 1;
+		//ALERT(at_console, "Created %d edicts to prep for relocations\n", edictsToCreate);
+
+		PrintEntindexStats();
+	}
+}
+
+void PrintEntindexStats() {
+	int totalFreeLowPrio = 0;
+	int totalFreeNormalPrio = 0;
+	int totalFreeHighPrio = 0;
+	int lowPrioMin = sv_max_client_edicts->value;
+	int normalPrioMin = 512;
+	int reservedSlots = gpGlobals->maxClients + 1;
+
+	edict_t* edicts = ENT(0);
+	for (int i = reservedSlots; i < normalPrioMin; i++) {
+		totalFreeHighPrio += edicts[i].free;
+	}
+	for (int i = normalPrioMin; i < lowPrioMin; i++) {
+		totalFreeNormalPrio += edicts[i].free;
+	}
+	for (int i = lowPrioMin; i < gpGlobals->maxEntities; i++) {
+		totalFreeLowPrio += edicts[i].free;
+	}
+
+	int totalHighSlots = normalPrioMin;
+	int totalNormalSlots = lowPrioMin - normalPrioMin;
+	int totalLowSlots = gpGlobals->maxEntities - lowPrioMin;
+	int totalFree = totalFreeHighPrio + totalFreeNormalPrio + totalFreeLowPrio;
+
+	ALERT(at_console, "Edict stats: %d/%d TOTAL (%d/%d HIGH, %d/%d NORM, %d/%d LOW)\n",
+		gpGlobals->maxEntities - totalFree, gpGlobals->maxEntities,
+		totalHighSlots - totalFreeHighPrio, totalHighSlots,
+		totalNormalSlots - totalFreeNormalPrio, totalNormalSlots,
+		totalLowSlots - totalFreeLowPrio, totalLowSlots);
+}
+
+// Moves an entity somewhere else in the edict list, based on its priority.
+// Note: This will break EHANDLES, so be certain none of those are created in KeyValue
+// before an entity spawns.
+CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity) {
+	if (!mp_edictsorting.value) {
+		return pEntity;
+	}
+
+	InitEdictRelocations();
+
+	int iprio = pEntity->GetEntindexPriority();
+	int eidx = pEntity->entindex();
+	int bestIdx = eidx;
+	int lowPrioMin = sv_max_client_edicts->value;
+	int normalPrioMin = 512;
+	edict_t* edicts = ENT(0);
+
+	if (iprio == ENTIDX_PRIORITY_LOW && eidx < lowPrioMin) {
+		// try to find a slot in the low priority area, else a normal slot, else whatever it is now
+		for (int i = gpGlobals->maxEntities - 1; i >= normalPrioMin; i--) {
+			if (edicts[i].free) {
+				bestIdx = i;
+				break;
+			}
+		}
+	}
+	else if (iprio == ENTIDX_PRIORITY_NORMAL && eidx < normalPrioMin) {
+		// try to find a slot in the normal priority area, else keep using the high priority slot
+		for (int i = lowPrioMin - 1; i >= normalPrioMin; i--) {
+			if (edicts[i].free) {
+				bestIdx = i;
+				break;
+			}
+		}
+	}
+
+	if (bestIdx != eidx) {
+		memcpy(&edicts[bestIdx], &edicts[eidx], sizeof(edict_t));
+
+		edicts[eidx].pvPrivateData = NULL;
+		REMOVE_ENTITY(&edicts[eidx]);
+
+		if (!g_customKeyValues.empty()) {
+			g_customKeyValues[bestIdx] = g_customKeyValues[eidx];
+			g_customKeyValues[eidx].clear();
+		}
+
+		if (!g_monsterSoundReplacements.empty()) {
+			g_monsterSoundReplacements[bestIdx] = g_monsterSoundReplacements[eidx];
+			g_monsterSoundReplacements[eidx].clear();
+		}
+
+		pEntity->pev = &edicts[bestIdx].v;
+		edicts[bestIdx].v.pContainingEntity = &edicts[bestIdx];
+	}
+
+	return pEntity;
+}
+
+edict_t* CREATE_NAMED_ENTITY(string_t cname) {
+	edict_t* ed = g_engfuncs.pfnCreateNamedEntity(cname);
+	CBaseEntity* pEntity = CBaseEntity::Instance(ed);
+
+	return pEntity ? RelocateEntIdx(pEntity)->edict() : ed;
+}
+
 const char* getPlayerUniqueId(edict_t* plr) {
 	if (plr == NULL) {
 		return "STEAM_ID_NULL";
@@ -3757,8 +3876,8 @@ void MESSAGE_END() {
 
 bool UTIL_isSafeEntIndex(int idx, const char* action) {
 	if (sv_max_client_edicts && idx >= sv_max_client_edicts->value) {
-		ALERT(at_error, "Can't %s for edict %d (sv_max_client_edicts = %d)\n",
-			action, idx, sv_max_client_edicts->value);
+		ALERT(at_error, "Can't %s for edict %d '%s' (sv_max_client_edicts = %d)\n",
+			action, idx, STRING(INDEXENT(idx)->v.classname), sv_max_client_edicts->value);
 		return false;
 	}
 

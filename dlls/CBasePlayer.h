@@ -104,6 +104,7 @@ public:
 	int		m_iObserverLastMode;// last used observer mode
 	int		IsObserver() { return pev->iuser1; };
 	BOOL	IsFirstPerson() { return m_hViewEntity.GetEdict() == edict(); }
+	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 
 	int					random_seed;    // See that is shared between client & server for shared weapons code
 

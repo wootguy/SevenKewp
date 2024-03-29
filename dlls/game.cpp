@@ -54,6 +54,7 @@ cvar_t	mp_startarmor ={"startarmor","0", FCVAR_SERVER };
 cvar_t	mp_bulletsponges ={"mp_bulletsponges","1", FCVAR_SERVER };
 cvar_t	mp_bulletspongemax ={"mp_bulletspongemax","4", FCVAR_SERVER };
 cvar_t	mp_maxmonsterrespawns ={"mp_maxmonsterrespawns","-1", FCVAR_SERVER };
+cvar_t	mp_edictsorting ={"mp_edictsorting","1", FCVAR_SERVER };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER };
 
@@ -153,6 +154,7 @@ void GameDLLInit( void )
 {
 	g_engfuncs.pfnAddServerCommand("test", test_command);
 	g_engfuncs.pfnAddServerCommand("cfg_exec_finished", cfg_exec_finished);
+	g_engfuncs.pfnAddServerCommand("edicts", PrintEntindexStats);
 	// Register cvars here:
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
@@ -198,6 +200,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_bulletsponges);
 	CVAR_REGISTER (&mp_bulletspongemax);
 	CVAR_REGISTER (&mp_maxmonsterrespawns);
+	CVAR_REGISTER (&mp_edictsorting);
 
 	CVAR_REGISTER (&mp_chattime);
 

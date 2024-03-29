@@ -8,6 +8,7 @@
 class CSprite : public CPointEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	void Spawn(void);
 	void Precache(void);
 

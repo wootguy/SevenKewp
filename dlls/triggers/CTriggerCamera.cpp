@@ -19,6 +19,7 @@
 class CTriggerCamera : public CBaseDelay
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	void Spawn(void);
 	void KeyValue(KeyValueData* pkvd);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
