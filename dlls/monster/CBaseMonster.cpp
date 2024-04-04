@@ -7105,6 +7105,10 @@ const char* CBaseMonster::DisplayName() {
 }
 
 bool CBaseMonster::IsImmune(entvars_t* attacker) {
+	if (!IsAlive()) {
+		return false;
+	}
+
 	if (!pev->takedamage || (pev->flags & FL_GODMODE)) {
 		return true;
 	}

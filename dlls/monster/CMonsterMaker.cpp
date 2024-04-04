@@ -753,6 +753,7 @@ void CMonsterMaker::Nerf() {
 			// Need to be able to undo counter changes if one target fails to update
 			ALERT(at_console, "Not nerfing %d count %s maker (complicated triggers)\n",
 				m_cNumMonsters, STRING(m_iszMonsterClassname));
+			shouldNerf = false;
 		}
 		else if (m_iszTriggerTarget) {
 			shouldNerf = NerfMonsterCounters(m_iszTriggerTarget);

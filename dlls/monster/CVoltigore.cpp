@@ -394,7 +394,7 @@ void CVoltigore::ExplodeThink(void) {
 
 		::RadiusDamage(pev->origin, pev, pev, gSkillData.sk_voltigore_dmg_explode, 512, 0, DMG_POISON | DMG_ACID);
 
-		SetThink(&CVoltigoreShock::SUB_Remove);
+		SetThink(&CVoltigore::SUB_Remove);
 		pev->nextthink = gpGlobals->time;
 
 		return;

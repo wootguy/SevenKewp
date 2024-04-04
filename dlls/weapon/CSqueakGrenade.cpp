@@ -55,6 +55,7 @@ class CSqueakGrenade : public CGrenade
 	int  BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
+	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Snark"; }
 
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );

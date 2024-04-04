@@ -170,7 +170,7 @@ string_t CTriggerRandom::SelectRandomTarget() {
 
 void CTriggerRandom::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	isActive = useType == USE_TOGGLE ? !isActive : useType;
+	isActive = !isActive; // yes, useType is ignored
 
 	if (pev->spawnflags & SF_TIMED) {
 		if (isActive) {

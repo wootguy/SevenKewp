@@ -379,6 +379,10 @@ void CTriggerChangeValue::LoadSourceValues() {
 	static std::string temp;
 
 	// set up source values
+	m_iSrc = m_fSrc = 0;
+	m_sSrc = "";
+	m_vSrc = g_vecZero;
+
 	if (isCopyValue) {
 		CBaseEntity* pent = FindLogicEntity(pev->netname);
 		if (pent) {
@@ -419,44 +423,32 @@ void CTriggerChangeValue::LoadSourceValues() {
 				}
 			}
 		}
-		else {
-			m_iSrc = m_fSrc = 0;
-			m_sSrc = "";
-			m_vSrc = g_vecZero;
-		}
 	}
-	else {
-		// trigger_changevalue static value
-		if (m_iszNewValue) {
-			const char* cNewVal = STRING(m_iszNewValue);
-			UTIL_StringToVector(m_vSrc, cNewVal);
+	else if (m_iszNewValue) {
+		// trigger_changevalue static value	
+		const char* cNewVal = STRING(m_iszNewValue);
+		UTIL_StringToVector(m_vSrc, cNewVal);
 
-			if (m_vSrc.y != 0 || m_vSrc.z != 0) {
-				// length of vector used when assigning a vector to a float/int
-				m_iSrc = m_fSrc = VectorToFloat(m_vSrc);
+		if (m_vSrc.y != 0 || m_vSrc.z != 0) {
+			// length of vector used when assigning a vector to a float/int
+			m_iSrc = m_fSrc = VectorToFloat(m_vSrc);
+		}
+		else {
+			// single value used
+			if (cNewVal[0] == '~') {
+				cNewVal = cNewVal + 1;
+				m_fSrc = ~((int)atof(cNewVal));
+				m_iSrc = ~atoi(cNewVal);
 			}
 			else {
-				// single value used
-				if (cNewVal[0] == '~') {
-					cNewVal = cNewVal + 1;
-					m_fSrc = ~((int)atof(cNewVal));
-					m_iSrc = ~atoi(cNewVal);
-				}
-				else {
-					m_fSrc = atof(cNewVal);
-					m_iSrc = atoi(cNewVal);
-				}
-				
-				m_vSrc = Vector(m_fSrc, m_fSrc, m_fSrc);
+				m_fSrc = atof(cNewVal);
+				m_iSrc = atoi(cNewVal);
 			}
+				
+			m_vSrc = Vector(m_fSrc, m_fSrc, m_fSrc);
+		}
 
-			m_sSrc = STRING(m_iszNewValue);
-		}
-		else {
-			m_iSrc = m_fSrc = 0;
-			m_sSrc = "";
-			m_vSrc = g_vecZero;
-		}
+		m_sSrc = STRING(m_iszNewValue);
 	}
 }
 
