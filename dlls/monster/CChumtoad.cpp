@@ -85,7 +85,10 @@ void CChumtoad::Precache()
 
 int	CChumtoad::Classify(void)
 {
-	return CBaseMonster::Classify(CLASS_ALIEN_MONSTER);
+	if (m_IsPlayerAlly)
+		return CLASS_ALIEN_MONSTER;
+	else
+		return CBaseMonster::Classify(CLASS_PLAYER_ALLY);
 }
 
 const char* CChumtoad::DisplayName() {
@@ -162,7 +165,22 @@ void CChumtoad::PrescheduleThink() {
 			nextCloudEmit = gpGlobals->time + 0.1f;
 			pev->nextthink = nextCloudEmit;
 
-			::RadiusDamage(pev->origin, pev, pev, 15.0f, 256, CLASS_ALIEN_MONSTER, DMG_NERVEGAS);
+			CBaseEntity* pEntity = NULL;
+			// iterate on all entities in the vicinity.
+			const int ATTACK_RADIUS = 256;
+			while ((pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, ATTACK_RADIUS)) != NULL)
+			{
+				if (pEntity == this || IRelationship(pEntity) == R_AL) {
+					continue;
+				}
+
+				float flDist = (pEntity->Center() - pev->origin).Length();
+				float flAdjustedDamage = 15 - ((flDist / ATTACK_RADIUS) * 15);
+
+				if (flAdjustedDamage > 0) {
+					pEntity->TakeDamage(pev, pev, flAdjustedDamage, DMG_NERVEGAS | DMG_NEVERGIB);
+				}
+			}
 
 			// in sven, it might be message per X seconds of smoke, rather than one message per particle. 
 			// Since the message is so small I don't think it matters. Need to test if this works similarly

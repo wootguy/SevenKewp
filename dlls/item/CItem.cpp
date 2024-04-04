@@ -48,6 +48,10 @@ void CItem::Spawn(void)
 		}
 	}
 	
+	if (m_sequence_name) {
+		pev->sequence = LookupSequence(STRING(m_sequence_name));
+		ResetSequenceInfo();
+	}
 }
 
 void CItem::KeyValue(KeyValueData* pkvd) {
@@ -59,6 +63,11 @@ void CItem::KeyValue(KeyValueData* pkvd) {
 	else if (FStrEq(pkvd->szKeyName, "maxhullsize"))
 	{
 		UTIL_StringToVector(m_maxHullSize, pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "sequencename"))
+	{
+		m_sequence_name = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else

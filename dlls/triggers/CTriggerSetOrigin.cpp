@@ -142,7 +142,7 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 
 		if (!(pev->spawnflags & (SF_COPY_X_AXIS | SF_COPY_Y_AXIS | SF_COPY_Z_AXIS))) {
 			// TODO: wtf? ripent this shit.
-			pev->spawnflags = SF_COPY_X_AXIS | SF_COPY_Y_AXIS | SF_COPY_Z_AXIS;
+			pev->spawnflags |= SF_COPY_X_AXIS | SF_COPY_Y_AXIS | SF_COPY_Z_AXIS;
 		}
 	}
 

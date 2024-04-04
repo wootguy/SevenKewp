@@ -225,7 +225,10 @@ void CBaseTrigger::HurtTouch(CBaseEntity* pOther)
 
 	if (pOther->IsMonster()) {
 		// monsters only Touch() when moving, so force checks while a monster is here
-		gpGlobals->force_retouch++;
+		// TODO: Don't use this evil variable. It causes other entities like trigger_push
+		// to launch players at lightning speeds, and trigger_hurt will start spamming noises
+		// on weapons and func_breakable.
+		//gpGlobals->force_retouch++;
 	}
 
 	// HACKHACK -- In multiplayer, players touch this based on packet receipt.

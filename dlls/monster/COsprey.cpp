@@ -231,10 +231,13 @@ void COsprey :: FindAllThink( void )
 {
 	CBaseEntity *pEntity = NULL;
 
+	bool isOspreyPlayerAlly = IRelationship(Classify(), CLASS_PLAYER) == R_AL;
+
 	m_iUnits = 0;
 	while (m_iUnits < MAX_CARRY && (pEntity = UTIL_FindEntityByClassname( pEntity, replenishMonster)) != NULL)
 	{
-		if (pEntity->IsAlive())
+		bool isUnitPlayerAlly = IRelationship(pEntity->Classify(), CLASS_PLAYER) == R_AL;
+		if (pEntity->IsAlive() && isUnitPlayerAlly == isOspreyPlayerAlly)
 		{
 			m_hGrunt[m_iUnits]		= pEntity;
 			m_vecOrigin[m_iUnits]	= pEntity->pev->origin;
@@ -322,7 +325,12 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 			{
 				m_hGrunt[i]->SUB_StartFadeOut( );
 			}
-			pEntity = Create(replenishMonster, vecSrc, pev->angles );
+			std::map<std::string, std::string> keys;
+			if (m_IsPlayerAlly) {
+				keys["is_player_ally"] = "1";
+			}
+
+			pEntity = Create(replenishMonster, vecSrc, pev->angles, NULL, keys);
 			pGrunt = pEntity->MyMonsterPointer( );
 			pGrunt->pev->movetype = MOVETYPE_FLY;
 			pGrunt->pev->velocity = Vector( 0, 0, RANDOM_FLOAT( -196, -128 ) );
@@ -797,6 +805,11 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	bool isBlast = bitsDamageType & DMG_BLAST;
 	bool engineExploded = false;
 
+	if (bitsDamageType & DMG_BLAST)
+	{
+		flDamage *= 2;
+	}
+
 	// only so much per engine
 	if (ptr->iHitgroup == 3)
 	{
@@ -827,7 +840,7 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	}
 
 	// hit hard, hits cockpit, hits engines
-	if (flDamage > 50 || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3)
+	if (flDamage > 50 || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3 || isBlast)
 	{
 		Vector dir = ptr->vecPlaneNormal;
 		Vector pos = ptr->vecEndPos;

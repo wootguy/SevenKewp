@@ -25,7 +25,7 @@ extern int gmsgItemPickup;
 
 #define MAX_NORMAL_BATTERY	100
 
-class CItem : public CBaseEntity
+class CItem : public CBaseAnimating
 {
 public:
 	void	Spawn(void);
@@ -40,6 +40,7 @@ public:
 	void SetSize(Vector defaultMins, Vector defaultMaxs);
 
 	const char* m_defaultModel;
+	string_t m_sequence_name;
 
 	Vector m_minHullSize;
 	Vector m_maxHullSize;

@@ -741,7 +741,7 @@ void PrintEntindexStats();
 CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity);
 
 // returns false if the entity index would overflow the client, and prints an error message in that case
-inline bool UTIL_isSafeEntIndex(int idx, const char* action);
+bool UTIL_isSafeEntIndex(int idx, const char* action);
 
 inline void WRITE_COORD_VECTOR(const Vector& vec)
 {

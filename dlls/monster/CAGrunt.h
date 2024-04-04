@@ -55,6 +55,7 @@ public:
 		pev->absmin = pev->origin + Vector(-32, -32, 0);
 		pev->absmax = pev->origin + Vector(32, 32, 85);
 	}
+	const char* GetDeathNoticeWeapon() { return "hornet"; }
 
 	Schedule_t* GetSchedule(void);
 	Schedule_t* GetScheduleOfType(int Type);
