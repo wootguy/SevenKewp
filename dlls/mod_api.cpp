@@ -2,6 +2,8 @@
 #include "mod_api.h"
 #include "util.h"
 
+edict_t* SpawnEdict(edict_t* pent);
+
 static HLCOOP_FUNCTIONS gFunctionTable =
 {
 	PRECACHE_MODEL,
@@ -16,7 +18,8 @@ static HLCOOP_FUNCTIONS gFunctionTable =
 	UTIL_EmitAmbientSound,
 	PLAY_DISTANT_SOUND,
 	UTIL_PlayGlobalMp3,
-	UTIL_StopGlobalMp3
+	UTIL_StopGlobalMp3,
+	SpawnEdict
 };
 
 extern "C" {
