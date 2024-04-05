@@ -5,7 +5,7 @@
 #pragma once
 #include <stdint.h>
 
-#define HLCOOP_API_VERSION 1
+#define HLCOOP_API_VERSION 2
 
 enum distant_sound_types {
 	DISTANT_9MM, // light tapping noise
@@ -60,4 +60,7 @@ struct HLCOOP_FUNCTIONS {
 	// stops MP3 playback for the target, or all players if target is null.
 	// Call this so the mod knows when any global mp3s playing.
 	void (*pfnStopGlobalMp3)(edict_t* target);
+
+	// spawns an entity and returns the relocated edict pointer
+	edict_t* (*pfnSpawnEdict)(edict_t* pent);
 };
