@@ -143,6 +143,13 @@ void CLightning::Spawn(void)
 			pev->nextthink = gpGlobals->time + 1.0;
 		}
 	}
+
+	// beam life is used as (int)(m_life*10) in the network messages, so this must be at least 0.1
+	// or else it becomes 0, meaining infinite life, leading to beam overflows.
+	// 0 is still a valid value though for mappers wanting infinite life.
+	if (m_life > 0 && m_life < 0.1f) {
+		m_life = 0.1f;
+	}
 }
 
 void CLightning::Precache(void)

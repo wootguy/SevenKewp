@@ -3877,7 +3877,7 @@ void MESSAGE_END() {
 bool UTIL_isSafeEntIndex(int idx, const char* action) {
 	if (sv_max_client_edicts && idx >= sv_max_client_edicts->value) {
 		ALERT(at_error, "Can't %s for edict %d '%s' (sv_max_client_edicts = %d)\n",
-			action, idx, STRING(INDEXENT(idx)->v.classname), sv_max_client_edicts->value);
+			action, idx, STRING(INDEXENT(idx)->v.classname), (int)sv_max_client_edicts->value);
 		return false;
 	}
 
