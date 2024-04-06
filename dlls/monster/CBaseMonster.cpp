@@ -1295,7 +1295,9 @@ void CBaseMonster::SetSequenceByName(const char* szSequence)
 // !!!PERFORMANCE - should we try to load balance this?
 // DON"T USE SETORIGIN! 
 //=========================================================
-#define	LOCAL_STEP_SIZE	16
+// 
+// should be able to increase this to 32 at least, but might result in monsters trying and failing to cross gaps
+#define	LOCAL_STEP_SIZE	16 
 int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, CBaseEntity* pTarget, float* pflDist)
 {
 	Vector	vecStartPos;// record monster's position before trying the move
@@ -1312,17 +1314,22 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 		switch (m_localMoveCheckType) {
 		case LOCAL_MOVE_CHECK_ROUTE_SIMPLIFY:
 			te_debug_beam(vecStart, vecEnd, 2, RGBA(0, 64, 0));
+			//ALERT(at_console, "CheckLocalMove: ROUTE_SIMPLIFY\n");
 			break;
 		case LOCAL_MOVE_CHECK_BUILD_ROUTE:
 			te_debug_beam(vecStart, vecEnd, 2, RGBA(0, 64, 0));
+			//ALERT(at_console, "CheckLocalMove: BUILD_ROUTE\n");
 			break;
 		case LOCAL_MOVE_CHECK_TRIANGULATE:
 			te_debug_beam(vecStart, vecEnd, 2, RGBA(0, 0, 64));
+			//ALERT(at_console, "CheckLocalMove: TRIANGULATE\n");
 			break;
 		case LOCAL_MOVE_CHECK_MOVE:
 			te_debug_beam(vecStart, vecEnd, 2, RGBA(64, 0, 0));
+			//ALERT(at_console, "CheckLocalMove: MOVE\n");
 			break;
 		default:
+			//ALERT(at_console, "CheckLocalMove: ???\n");
 			//te_debug_beam(vecStart, vecEnd, 2, RGBA(64, 64, 64));
 			break;
 		}
@@ -1357,15 +1364,25 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 		return FALSE;
 	}
 */
-// this loop takes single steps to the goal.
-	for (flStep = 0; flStep < flDist; flStep += LOCAL_STEP_SIZE)
-	{
-		stepSize = LOCAL_STEP_SIZE;
 
-		if ((flStep + LOCAL_STEP_SIZE) >= (flDist - 1))
+	int lastStepSize = LOCAL_STEP_SIZE;
+	int nextStepSize = LOCAL_STEP_SIZE;
+
+	Vector lastPos = pev->origin;
+	// this loop takes single steps to the goal.
+	for (flStep = 0; flStep < flDist && lastStepSize; flStep += lastStepSize)
+	{
+		stepSize = nextStepSize;
+
+		if ((flStep + stepSize) >= (flDist - 1))
 			stepSize = (flDist - flStep) - 1;
 
-		//		UTIL_ParticleEffect ( pev->origin, g_vecZero, 255, 25 );
+		lastStepSize = stepSize;
+
+		//UTIL_ParticleEffect ( pev->origin, g_vecZero, 255, 25 );
+
+		//te_debug_beam(lastPos, pev->origin, 20, RGBA(64, 64, 0));
+		//lastPos = pev->origin;
 
 		if (!WALK_MOVE(ENT(pev), flYaw, stepSize, WALKMOVE_CHECKONLY))
 		{// can't take the next step, fail!
@@ -1380,6 +1397,15 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 				iReturn = LOCALMOVE_VALID;
 				break;
 			}
+			else if (nextStepSize > 4) {
+				// try taking a smaller step. This helps with stairs at the top of steep slopes.
+				// Crouch over the top edge of a ramp and you can often feel a sudden jump upwards.
+				// That's where monsters have trouble because the combined step size of the slope 
+				// and "stair" are too high unless taking baby steps.
+				nextStepSize /= 2;
+				//ALERT(at_console, "Try a smaller step! %d\n", nextStepSize);
+				continue;
+			}
 			else
 			{
 				// If we're going toward an entity, and we're almost getting there, it's OK.
@@ -1387,35 +1413,55 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 //					fReturn = TRUE;
 //				else
 				iReturn = LOCALMOVE_INVALID;
+
+				/*
+				WALK_MOVE(ENT(pev), flYaw, stepSize, WALKMOVE_CHECKONLY); // again so you can step through the engine code
+
+				// show what the engine traced (from PF_walkmove_I and SV_movestep)
+				Vector start = pev->origin;
+				Vector move;
+				move[0] = cos(flYaw * 2.0 * M_PI / 360.0) * stepSize;
+				move[1] = sin(flYaw * 2.0 * M_PI / 360.0) * stepSize;
+				move[2] = sv_stepsize->value;
+
+				te_debug_beam(start, start + move, 20, RGBA(0, 64, 0));
+				te_debug_beam(start + move, start + move - Vector(0, 0, sv_stepsize->value * 2), 20, RGBA(0, 0, 64));
+				*/
 				//if (!FNullEnt(gpGlobals->trace_ent))
 				//	ALERT(at_aiconsole, "Local move blocked by %s\n", STRING(gpGlobals->trace_ent->v.classname));
 				break;
 			}
 
 		}
+		else if (nextStepSize < LOCAL_STEP_SIZE) {
+			// got past a tricky slope/stair combination or something. Back to big steps.
+			nextStepSize = LOCAL_STEP_SIZE;
+		}
 	}
 
 	if (iReturn == LOCALMOVE_VALID && !(pev->flags & (FL_FLY | FL_SWIM)) && (!pTarget || (pTarget->pev->flags & FL_ONGROUND)))
 	{
+		Vector delta2d = vecEnd - pev->origin;
+		delta2d.z = 0;
+
 		// The monster can move to a spot UNDER the target, but not to it. Don't try to triangulate, go directly to the node graph.
 		// UNDONE: Magic # 64 -- this used to be pev->size.z but that won't work for small creatures like the headcrab
-		if (fabs(vecEnd.z - pev->origin.z) > 64)
+		if (fabs(vecEnd.z - pev->origin.z) > 64 && delta2d.Length() < LOCAL_STEP_SIZE)
 		{
+			/*
+			te_debug_beam(vecEnd - Vector(0, 0, 16), vecEnd + Vector(0,0,16), 40, RGBA(64, 64, 64));
+			te_debug_beam(vecEnd - Vector(0, 16, 0), vecEnd + Vector(0,16,0), 40, RGBA(64, 64, 64));
+			te_debug_beam(vecEnd - Vector(16, 0, 0), vecEnd + Vector(16,0,0), 40, RGBA(64, 64, 64));
+
+			te_debug_beam(vecStartPos - Vector(0, 0, 16), vecStartPos + Vector(0, 0, 16), 40, RGBA(0, 64, 64));
+			te_debug_beam(vecStartPos - Vector(0, 16, 0), vecStartPos + Vector(0, 16, 0), 40, RGBA(0, 64, 64));
+			te_debug_beam(vecStartPos - Vector(16, 0, 0), vecStartPos + Vector(16, 0, 0), 40, RGBA(0, 64, 64));
+			ALERT(at_console, "can move under only %f %f %f\n", vecStart.z, pev->origin.z, vecEnd.z);
+			*/
 			iReturn = LOCALMOVE_INVALID_DONT_TRIANGULATE;
 		}
 	}
-	/*
-	// uncommenting this block will draw a line representing the nearest legal move.
-	WRITE_BYTE(MSG_BROADCAST, SVC_TEMPENTITY);
-	WRITE_BYTE(MSG_BROADCAST, TE_SHOWLINE);
-	WRITE_COORD(MSG_BROADCAST, pev->origin.x);
-	WRITE_COORD(MSG_BROADCAST, pev->origin.y);
-	WRITE_COORD(MSG_BROADCAST, pev->origin.z);
-	WRITE_COORD(MSG_BROADCAST, vecStart.x);
-	WRITE_COORD(MSG_BROADCAST, vecStart.y);
-	WRITE_COORD(MSG_BROADCAST, vecStart.z);
-	*/
-
+	
 	// since we've actually moved the monster during the check, undo the move.
 	UTIL_SetOrigin(pev, vecStartPos);
 
@@ -1576,6 +1622,7 @@ BOOL CBaseMonster::BuildRoute(const Vector& vecGoal, int iMoveFlag, CBaseEntity*
 	if (iLocalMove == LOCALMOVE_VALID)
 	{
 		// monster can walk straight there!
+		//ALERT(at_console, "Walk straight there!\n");
 		return TRUE;
 	}
 	// try to triangulate around any obstacles.
@@ -1599,6 +1646,7 @@ BOOL CBaseMonster::BuildRoute(const Vector& vecGoal, int iMoveFlag, CBaseEntity*
 		WRITE_COORD(MSG_BROADCAST, vecApex.z + 128 );
 		*/
 
+		//ALERT(at_console, "Triangulated there!\n");
 		RouteSimplify(pTarget);
 		return TRUE;
 	}
@@ -1609,8 +1657,11 @@ BOOL CBaseMonster::BuildRoute(const Vector& vecGoal, int iMoveFlag, CBaseEntity*
 		//		ALERT ( at_console, "Can get there on nodes\n" );
 		m_vecMoveGoal = vecGoal;
 		RouteSimplify(pTarget);
+		//ALERT(at_console, "Used nodes!\n");
 		return TRUE;
 	}
+
+	//ALERT(at_console, "oh noez i cant get there!\n");
 
 	// b0rk
 	return FALSE;
@@ -1650,6 +1701,10 @@ void CBaseMonster::InsertWaypoint(Vector vecLocation, int afMoveFlags)
 //=========================================================
 BOOL CBaseMonster::FTriangulate(const Vector& vecStart, const Vector& vecEnd, float flDist, CBaseEntity* pTargetEnt, Vector* pApex)
 {
+	//if (1) {
+	//	return FALSE; // disable triangulations for less clutter when troubleshooting specific paths
+	//}
+
 	Vector		vecDir;
 	Vector		vecForward;
 	Vector		vecLeft;// the spot we'll try to triangulate to on the left
@@ -1900,7 +1955,17 @@ void CBaseMonster::Move(float flInterval)
 	// If this fails, it should be because of some dynamic entity blocking this guy.
 	// We've already checked this path, so we should wait and time out if the entity doesn't move
 	flDist = 0;
-	if (CheckLocalMove(pev->origin, pev->origin + vecDir * flCheckDist, pTargetEnt, &flDist) != LOCALMOVE_VALID)
+
+	// move the target location to the floor for the height check that happens after the move test passes.
+	// The height check aborts the move if the monster would end up under/above the target. On steep slopes,
+	// the "vecDir" might move the target pos too high in the air causing that check to fail erroneously.
+	// TODO: adjusting the target origin to the floor (for players) should also fix this but it doesn't?
+	Vector movePos = pev->origin + vecDir * flCheckDist;
+	TraceResult tr;
+	TRACE_MONSTER_HULL(edict(), movePos, movePos - Vector(0, 0, 4096), ignore_monsters, NULL, &tr);
+	movePos = tr.flFraction < 1.0f ? tr.vecEndPos : movePos;
+
+	if (CheckLocalMove(pev->origin, movePos, pTargetEnt, &flDist) != LOCALMOVE_VALID)
 	{
 		CBaseEntity* pBlocker;
 
