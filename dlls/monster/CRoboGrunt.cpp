@@ -48,6 +48,7 @@ public:
 
 	float m_explodeTime;
 	int m_iHeadshotSpr;
+	bool m_didExplosion;
 
 private:
 	static const char* pDeathSounds[];
@@ -241,9 +242,10 @@ const char* CRoboGrunt::GetDeathNoticeWeapon() {
 
 void CRoboGrunt::GibMonster(void)
 {
-	if (m_explodeTime == 0) {
+	if (m_didExplosion) {
 		return;
 	}
+	m_didExplosion = true;
 	pev->takedamage = DAMAGE_NO; // don't gib again from the explosion damage coming now
 
 	int magnitude = 90;

@@ -262,7 +262,13 @@ void CAmbientGeneric::RampThink(void)
 				pev->nextthink = gpGlobals->time + timeLeft;
 			}
 		}
+
+		// Time() from the previous map carries over to the current map on startup, so this can be negative
+		// if the ambient sound starts on, which would then break sound looping/stopping
+		pev->nextthink = V_max(pev->nextthink, gpGlobals->time);
 	}
+
+	
 
 	if (!m_dpv.spinup && !m_dpv.spindown && !m_dpv.fadein && !m_dpv.fadeout && !m_dpv.lfotype) {
 		return;						// no ramps or lfo, stop thinking
