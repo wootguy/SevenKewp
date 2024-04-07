@@ -897,9 +897,6 @@ BOOL CAGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 //=========================================================
 void CAGrunt :: StartTask ( Task_t *pTask )
 {
-	if (pTask->iTask == TASK_TLK_SPEAK) {
-		ALERT(at_console, "HERE WE GO\n");
-	}
 	switch ( pTask->iTask )
 	{
 	case TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE:
