@@ -175,33 +175,6 @@ public:
 
 	void MonsterThink() override;
 
-#if 0
-	// debugging schedules
-	virtual void ScheduleChange(void) {
-		const char* schedName = m_pSchedule != NULL ? m_pSchedule->pName : "NULL";
-		println("\nSchedule changing from <%s> because:", schedName);
-
-		if (m_MonsterState != m_IdealMonsterState) {
-			println("- monster state changing from %d to %d", m_MonsterState, m_IdealMonsterState);
-		}
-		if (!FScheduleValid()) {
-			if (m_pSchedule == NULL) {
-				println("- Schedule is NULL");
-				return;
-			}
-			if (HasConditions(bits_COND_SCHEDULE_DONE)) {
-				println("- Schedule is finished");
-			}
-			if (HasConditions(bits_COND_TASK_FAILED)) {
-				println("- Task failed");
-			}
-			if (HasConditions(m_pSchedule->iInterruptMask)) {
-				println("- Interrupted by %d", m_pSchedule->iInterruptMask);
-			}
-		}
-	}
-#endif
-
 	CUSTOM_SCHEDULES;
 	static TYPEDESCRIPTION m_SaveData[];
 
