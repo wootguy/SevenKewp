@@ -1104,3 +1104,36 @@ Schedule_t	slMoveAwayFollow[] =
 		"MoveAwayFollow"
 	},
 };
+
+Task_t	tlRoam[] =
+{
+	{ TASK_GET_ROAM_NODE,		(float)0 },
+	{ TASK_WALK_PATH,			(float)0 },
+	//{ TASK_RUN_PATH,			(float)0 }, // for faster troubleshooting
+	{ TASK_WAIT_FOR_MOVEMENT,	(float)0 },
+};
+
+Schedule_t	slRoam[] =
+{
+	{
+		tlRoam,
+		ARRAYSIZE(tlRoam),
+		bits_COND_NEW_ENEMY |
+		bits_COND_SEE_FEAR |
+		bits_COND_LIGHT_DAMAGE |
+		bits_COND_HEAVY_DAMAGE |
+		bits_COND_HEAR_SOUND |
+		bits_COND_SMELL_FOOD |
+		bits_COND_SMELL |
+		bits_COND_PROVOKED,
+
+		bits_SOUND_COMBAT |// sound flags
+		bits_SOUND_WORLD |
+		bits_SOUND_DANGER |
+
+		bits_SOUND_MEAT |// scents
+		bits_SOUND_CARCASS |
+		bits_SOUND_GARBAGE,
+		"Roam"
+	},
+};

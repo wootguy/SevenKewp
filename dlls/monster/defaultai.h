@@ -123,4 +123,7 @@ extern Schedule_t slMoveAway[];
 extern Schedule_t slMoveAwayFollow[];
 extern Schedule_t slMoveAwayFail[];
 
+// roaming
+extern Schedule_t slRoam[];
+
 #endif		// DEFAULTAI_H

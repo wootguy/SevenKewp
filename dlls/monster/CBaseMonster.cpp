@@ -22,6 +22,8 @@
 std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
 std::set<std::string> g_shuffledMonsterSounds;
 
+extern bool g_freeRoam;
+
 enum LOCAL_MOVE_CHECK_TYPES {
 	LOCAL_MOVE_CHECK_ROUTE_SIMPLIFY,
 	LOCAL_MOVE_CHECK_BUILD_ROUTE,
@@ -663,17 +665,17 @@ BOOL CBaseMonster::FRefreshRoute(void)
 	break;
 
 	case MOVEGOAL_ENEMY:
-		returnCode = BuildRoute(m_vecEnemyLKP, bits_MF_TO_ENEMY, m_hEnemy);
+		returnCode = BuildRoute(m_vecEnemyLKP, bits_MF_TO_ENEMY, m_hEnemy, true);
 		break;
 
 	case MOVEGOAL_LOCATION:
-		returnCode = BuildRoute(m_vecMoveGoal, bits_MF_TO_LOCATION, NULL);
+		returnCode = BuildRoute(m_vecMoveGoal, bits_MF_TO_LOCATION, NULL, true);
 		break;
 
 	case MOVEGOAL_TARGETENT:
 		if (m_hTargetEnt != NULL)
 		{
-			returnCode = BuildRoute(m_hTargetEnt->pev->origin, bits_MF_TO_TARGETENT, m_hTargetEnt);
+			returnCode = BuildRoute(m_hTargetEnt->pev->origin, bits_MF_TO_TARGETENT, m_hTargetEnt, true);
 		}
 		break;
 
@@ -1602,7 +1604,7 @@ int CBaseMonster::RouteClassify(int iMoveFlag)
 //=========================================================
 // BuildRoute
 //=========================================================
-BOOL CBaseMonster::BuildRoute(const Vector& vecGoal, int iMoveFlag, CBaseEntity* pTarget)
+BOOL CBaseMonster::BuildRoute(const Vector& vecGoal, int iMoveFlag, CBaseEntity* pTarget, bool useNodes)
 {
 	float	flDist;
 	Vector	vecApex;
@@ -1653,7 +1655,7 @@ BOOL CBaseMonster::BuildRoute(const Vector& vecGoal, int iMoveFlag, CBaseEntity*
 	}
 
 	// last ditch, try nodes
-	if (FGetNodeRoute(vecGoal))
+	if (useNodes && FGetNodeRoute(vecGoal))
 	{
 		//		ALERT ( at_console, "Can get there on nodes\n" );
 		m_vecMoveGoal = vecGoal;
@@ -2677,7 +2679,7 @@ BOOL CBaseMonster::BuildNearestRoute(Vector vecThreat, Vector vecViewOffset, flo
 				if (tr.flFraction == 1.0)
 				{
 					// try to actually get there
-					if (BuildRoute(node.m_vecOrigin, bits_MF_TO_LOCATION, NULL))
+					if (BuildRoute(node.m_vecOrigin, bits_MF_TO_LOCATION, NULL, true))
 					{
 						flMaxDist = flDist;
 						m_vecMoveGoal = node.m_vecOrigin;
@@ -3397,6 +3399,11 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 		UTIL_StringToVector(m_maxHullSize, pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "freeroam"))
+	{
+		m_freeroam = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 	{
 		CBaseToggle::KeyValue(pkvd);
@@ -3869,6 +3876,13 @@ BOOL CBaseMonster::ShouldFadeOnDeath(void)
 	return FALSE;
 }
 
+bool CBaseMonster::ShouldRoam() {
+	if (m_freeroam) {
+		return m_freeroam == ROAM_ALWAYS;
+	}
+
+	return g_freeRoam;
+}
 
 BOOL CBaseMonster::ExitScriptedSequence()
 {
@@ -5142,6 +5156,7 @@ Schedule_t* CBaseMonster::m_scheduleList[] =
 	slMoveAway,
 	slMoveAwayFollow,
 	slMoveAwayFail,
+	slRoam,
 };
 
 //=========================================================
@@ -6119,7 +6134,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	}
 	case TASK_GET_PATH_TO_ENEMY_LKP:
 	{
-		if (BuildRoute(m_vecEnemyLKP, bits_MF_TO_LOCATION, NULL))
+		if (BuildRoute(m_vecEnemyLKP, bits_MF_TO_LOCATION, NULL, true))
 		{
 			TaskComplete();
 		}
@@ -6145,7 +6160,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 			return;
 		}
 
-		if (BuildRoute(pEnemy->pev->origin, bits_MF_TO_ENEMY, pEnemy))
+		if (BuildRoute(pEnemy->pev->origin, bits_MF_TO_ENEMY, pEnemy, true))
 		{
 			TaskComplete();
 		}
@@ -6164,7 +6179,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	case TASK_GET_PATH_TO_ENEMY_CORPSE:
 	{
 		UTIL_MakeVectors(pev->angles);
-		if (BuildRoute(m_vecEnemyLKP - gpGlobals->v_forward * 64, bits_MF_TO_LOCATION, NULL))
+		if (BuildRoute(m_vecEnemyLKP - gpGlobals->v_forward * 64, bits_MF_TO_LOCATION, NULL, true))
 		{
 			TaskComplete();
 		}
@@ -6178,7 +6193,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	case TASK_GET_PATH_TO_SPOT:
 	{
 		CBaseEntity* pPlayer = CBaseEntity::Instance(FIND_ENTITY_BY_CLASSNAME(NULL, "player"));
-		if (BuildRoute(m_vecMoveGoal, bits_MF_TO_LOCATION, pPlayer))
+		if (BuildRoute(m_vecMoveGoal, bits_MF_TO_LOCATION, pPlayer, true))
 		{
 			TaskComplete();
 		}
@@ -6505,7 +6520,86 @@ void CBaseMonster::StartTask(Task_t* pTask)
 		ClearConditions(bits_COND_CLIENT_PUSH);
 		TaskComplete();
 		break;
+	case TASK_GET_ROAM_NODE:
+	{
+		int inode = WorldGraph.FindNearestNode(pev->origin, this);
 
+		if (inode < 0 || inode >= WorldGraph.m_cNodes) {
+			TaskFail();
+			break;
+		}
+
+		CNode& nearestNode = WorldGraph.Node(inode);
+
+		Vector delta = nearestNode.m_vecOrigin - pev->origin;
+		delta.z = 0;
+
+		int highestLink = nearestNode.m_iFirstLink + nearestNode.m_cNumLinks - 1;
+
+		if (nearestNode.m_cNumLinks == 0 || highestLink < 0 || highestLink >= WorldGraph.m_cLinks) {
+			//ALERT(at_console, "Can't roam from node with no links!\n");
+			TaskComplete();
+			break;
+		}
+
+		int bestNode = inode;
+
+		if (delta.Length() > 64) {
+			// get close to the node first
+			m_lastNode = inode;
+			m_targetNode = bestNode;
+
+			CNode& targetNode = WorldGraph.Node(m_targetNode);
+			if (!BuildRoute(targetNode.m_vecOrigin, bits_MF_TO_NODE, NULL, false)) {
+
+				// the path to the nearest node is blocked by something
+				// try routing to a node that the nearest one links to
+				for (int i = 0; i < nearestNode.m_cNumLinks; i++) {
+					CLink& link = WorldGraph.Link(nearestNode.m_iFirstLink + i);
+					CNode& targetNode = WorldGraph.Node(link.m_iDestNode);
+
+					if (BuildRoute(targetNode.m_vecOrigin, bits_MF_TO_NODE, NULL, false)) {
+						m_targetNode = bestNode;
+						//ALERT(at_console, "Nearest node is blocked but can route to one of its links\n");
+						break;
+					}
+				}
+			}
+		} 
+		else {
+			// pick a random route
+			bestNode = m_lastNode;
+			for (int i = 0; i < 8; i++) {
+				int randomLink = nearestNode.m_iFirstLink + RANDOM_LONG(0, nearestNode.m_cNumLinks - 1);
+				CLink& link = WorldGraph.Link(randomLink);
+				if (link.m_iDestNode != m_lastNode) {
+					bestNode = link.m_iDestNode;
+					break;
+				}
+			}
+
+			if (bestNode < 0 || bestNode >= WorldGraph.m_cNodes) {
+				//ALERT(at_console, "Failed to find a random node from %d links\n", nearestNode.m_cNumLinks);
+				TaskFail();
+				break;
+			}
+
+			if (bestNode == m_lastNode) {
+				//ALERT(at_console, "Dead end roam. Heading back to last node\n");
+			}
+
+			//ALERT(at_console, "Roam from node %d -> %d\n", inode, bestNode);
+
+			m_lastNode = inode;
+			m_targetNode = bestNode;
+
+			CNode& targetNode = WorldGraph.Node(m_targetNode);
+			BuildRoute(targetNode.m_vecOrigin, bits_MF_TO_NODE, NULL, true);
+		}
+
+		TaskComplete();
+		break;
+	}
 	default:
 	{
 		ALERT(at_aiconsole, "No StartTask entry for %d\n", (SHARED_TASKS)pTask->iTask);
@@ -6627,6 +6721,7 @@ const char* CBaseMonster::GetTaskName(int taskIdx) {
 	case TASK_MOVE_AWAY_PATH: return "TASK_MOVE_AWAY_PATH";
 	case TASK_WALK_PATH_FOR_UNITS: return "TASK_WALK_PATH_FOR_UNITS";
 	case TASK_FACE_PLAYER: return "TASK_FACE_PLAYER";
+	case TASK_GET_ROAM_NODE: return "TASK_GET_ROAM_NODE";
 	default:
 		return "Unknown";
 	}
@@ -6689,6 +6784,10 @@ Schedule_t* CBaseMonster::GetSchedule(void)
 			// no valid route!
 			if (HasConditions(bits_COND_CLIENT_PUSH)) {
 				return GetScheduleOfType(SCHED_MOVE_AWAY);
+			}
+
+			if (ShouldRoam()) {
+				return GetScheduleOfType(SCHED_ROAM);
 			}
 
 			return GetScheduleOfType(SCHED_IDLE_STAND);
@@ -7056,6 +7155,10 @@ Schedule_t* CBaseMonster::GetScheduleOfType(int Type)
 	case SCHED_MOVE_AWAY_FAIL:
 	{
 		return slMoveAwayFail;
+	}
+	case SCHED_ROAM:
+	{
+		return slRoam;
 	}
 	default:
 	{

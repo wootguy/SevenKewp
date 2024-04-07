@@ -17,6 +17,8 @@ extern CSoundEnt* pSoundEnt;
 DLL_GLOBAL edict_t* g_pBodyQueueHead;
 extern DLL_GLOBAL	int			gDisplayTitle;
 
+bool g_freeRoam;
+
 extern void W_Precache(void);
 
 // moved CWorld class definition to cbase.h
@@ -40,6 +42,8 @@ void CWorld::Spawn(void)
 	g_fGameOver = FALSE;
 	Precache();
 	g_flWeaponCheat = CVAR_GET_FLOAT("sv_cheats");  // Is the impulse 101 command allowed?
+
+	g_freeRoam = m_freeRoam;
 }
 
 void CWorld::loadReplacementFiles() {
@@ -371,6 +375,11 @@ void CWorld::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "globalsoundlist"))
 	{
 		m_globalSoundList = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "freeroam"))
+	{
+		m_freeRoam = atoi(pkvd->szValue) == 1;
 		pkvd->fHandled = TRUE;
 	}
 	else

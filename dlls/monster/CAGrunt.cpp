@@ -902,7 +902,7 @@ void CAGrunt :: StartTask ( Task_t *pTask )
 	case TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE:
 		{
 			UTIL_MakeVectors( pev->angles );
-			if ( BuildRoute ( m_vecEnemyLKP - gpGlobals->v_forward * 50, bits_MF_TO_LOCATION, NULL ) )
+			if ( BuildRoute ( m_vecEnemyLKP - gpGlobals->v_forward * 50, bits_MF_TO_LOCATION, NULL, true ) )
 			{
 				TaskComplete();
 			}

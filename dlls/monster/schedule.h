@@ -77,6 +77,7 @@ typedef enum
 		SCHED_MOVE_AWAY,		// Try to get out of the player's way
 		SCHED_MOVE_AWAY_FOLLOW,	// same, but follow afterward
 		SCHED_MOVE_AWAY_FAIL,	// Turn back toward player
+		SCHED_ROAM,
 
 		LAST_COMMON_SCHEDULE			// Leave this at the bottom
 } SCHEDULE_TYPE;
@@ -180,6 +181,7 @@ typedef enum
 		TASK_MOVE_AWAY_PATH,
 		TASK_WALK_PATH_FOR_UNITS,
 		TASK_FACE_PLAYER,		// Face the player
+		TASK_GET_ROAM_NODE,
 		LAST_COMMON_TASK, // LEAVE THIS AT THE BOTTOM!! (sjb)
 } SHARED_TASKS;
 
