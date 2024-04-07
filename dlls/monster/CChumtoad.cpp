@@ -13,6 +13,8 @@
 #define TOXIC_SOUND "ambience/disgusting.wav"
 #define TOXIC_SOUND2 "doors/aliendoor1.wav"
 #define TOXIC_SPRITE "sprites/puff1.spr"
+#define FOLLOW_SOUND MOD_SND_FOLDER "chumtoad/follow.wav"
+#define UNFOLLOW_SOUND MOD_SND_FOLDER "chumtoad/unfollow.wav"
 
 #define TOXIC_START_DISTANCE 200
 
@@ -41,6 +43,10 @@ public:
 	BOOL CheckRangeAttack1(float flDot, float flDist) { return FALSE; }
 	BOOL CheckRangeAttack2(float flDot, float flDist) { return FALSE; }
 	BOOL CheckMeleeAttack1(float flDot, float flDist);
+
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 
 	CUSTOM_SCHEDULES;
 
@@ -81,6 +87,8 @@ void CChumtoad::Precache()
 	m_iSmokeSpr = PRECACHE_MODEL(TOXIC_SPRITE);
 	PRECACHE_SOUND(TOXIC_SOUND);
 	PRECACHE_SOUND(TOXIC_SOUND2);
+	PRECACHE_SOUND(FOLLOW_SOUND);
+	PRECACHE_SOUND(UNFOLLOW_SOUND);
 }
 
 int	CChumtoad::Classify(void)
@@ -255,4 +263,16 @@ BOOL CChumtoad::CheckMeleeAttack1(float flDot, float flDist) {
 		return TRUE;
 	}
 	return FALSE;
+}
+
+void CChumtoad::StartFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, FOLLOW_SOUND, 1, ATTN_NORM);
+}
+
+void CChumtoad::StopFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, UNFOLLOW_SOUND, 1, ATTN_NORM);
+}
+
+void CChumtoad::CantFollowSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, UNFOLLOW_SOUND, 1, ATTN_NORM);
 }

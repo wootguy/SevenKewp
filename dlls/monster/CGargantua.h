@@ -118,6 +118,9 @@ public:
 	virtual void FootSound();
 	virtual void StompSound();
 	virtual void BreatheSound();
+	virtual void StartFollowingSound();
+	virtual void StopFollowingSound();
+	virtual void CantFollowSound();
 
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 	

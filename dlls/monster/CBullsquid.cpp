@@ -218,6 +218,9 @@ public:
 
 	int	Save( CSave &save ); 
 	int Restore( CRestore &restore );
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 
 	CUSTOM_SCHEDULES;
 	static TYPEDESCRIPTION m_SaveData[];
@@ -755,6 +758,17 @@ void CBullsquid :: AttackSound ( void )
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1, ATTN_NORM);
 }
 
+void CBullsquid::StartFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pGrowlSounds), 1, ATTN_NORM);
+}
+
+void CBullsquid::StopFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
+}
+
+void CBullsquid::CantFollowSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
+}
 
 //========================================================
 // RunAI - overridden for bullsquid because there are things

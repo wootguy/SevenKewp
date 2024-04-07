@@ -63,6 +63,9 @@ public:
 	void PainSound(void);
 	void AlertSound(void);
 	void IdleSound(void);
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 	const char* GetDeathNoticeWeapon() {
 		return IsAlive() ? "weapon_crowbar" : "grenade";
 	}
@@ -476,6 +479,27 @@ void CVoltigore::IdleSound(void)
 
 	// Play a random idle sound
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CVoltigore::StartFollowingSound() {
+	int r = RANDOM_LONG(0, 1);
+
+	switch (r) {
+	case 0:
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, MOD_SND_FOLDER "voltigore/voltigore_attack_melee1.wav", 1, ATTN_NORM);
+		break;
+	case 1:
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, MOD_SND_FOLDER "voltigore/voltigore_attack_melee2.wav", 1, ATTN_NORM);
+		break;
+	}
+}
+
+void CVoltigore::StopFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
+}
+
+void CVoltigore::CantFollowSound() {
+	EMIT_SOUND(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
 }
 
 //

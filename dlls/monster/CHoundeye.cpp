@@ -88,6 +88,9 @@ public:
 	void WarnSound( void );
 	void PainSound( void );
 	void IdleSound( void );
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 	void StartTask( Task_t *pTask );
 	void RunTask ( Task_t *pTask );
 	void SonicAttack( void );
@@ -484,6 +487,18 @@ void CHoundeye :: DeathSound ( void )
 void CHoundeye :: PainSound ( void )
 {
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
+}
+
+void CHoundeye::StartFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
+}
+
+void CHoundeye::StopFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1, ATTN_NORM);
+}
+
+void CHoundeye::CantFollowSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1, ATTN_NORM);
 }
 
 //=========================================================

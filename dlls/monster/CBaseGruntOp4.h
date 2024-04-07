@@ -19,7 +19,6 @@ public:
 	void DeclineFollowing();
 	virtual void Precache();
 	void TalkInit();
-	virtual int ObjectCaps();
 	void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation);
 	void ShuffleSoundArrays();
 

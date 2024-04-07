@@ -15,7 +15,7 @@ public:
 	void Spawn(void);
 	void Die(void);
 	int	 Classify(void);
-	virtual int	ObjectCaps(void) { return (CBaseMonster::ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
+	virtual int	ObjectCaps(void) { return (CBaseMonster::ObjectCaps() & ~(FCAP_IMPULSE_USE | FCAP_ACROSS_TRANSITION)); }
 };
 
 

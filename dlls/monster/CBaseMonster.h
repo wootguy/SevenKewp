@@ -137,6 +137,7 @@ public:
 	bool m_friendlySkinFirst; // true if the friendly skin comes before the enemy skin
 
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
+	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
 	virtual BOOL	HasTarget(string_t targetname);
@@ -380,6 +381,7 @@ public:
 	virtual void	StartFollowing(CBaseEntity* pLeader);
 	virtual void	DeclineFollowing(void) {}
 	void EXPORT		FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void EXPORT		PushTouch(CBaseEntity* pOther);
 
 	virtual void	StartFollowingSound() {}
 	virtual void	StopFollowingSound() {}

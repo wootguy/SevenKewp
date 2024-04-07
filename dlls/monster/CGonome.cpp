@@ -66,6 +66,9 @@ public:
 	void PainSound(void);
 	void AlertSound(void);
 	void IdleSound(void);
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
@@ -404,6 +407,21 @@ void CGonome::IdleSound(void)
 	int pitch = 100 + RANDOM_LONG(-5, 5);
 
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CGonome::StartFollowingSound() {
+	int pitch = 100 + RANDOM_LONG(0, 9);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CGonome::StopFollowingSound() {
+	int pitch = 100 + RANDOM_LONG(0, 9);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CGonome::CantFollowSound() {
+	int pitch = 100 + RANDOM_LONG(0, 9);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1.0, ATTN_NORM, 0, pitch);
 }
 
 //

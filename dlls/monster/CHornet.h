@@ -33,6 +33,7 @@ extern int iHornetPuff;
 class CHornet : public CBaseMonster
 {
 public:
+	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 	void Spawn( void );
 	void Precache( void );
 	int	 Classify ( void );

@@ -34,6 +34,7 @@
 class CBarnacle : public CBaseMonster
 {
 public:
+	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 	void Spawn( void );
 	void Precache( void );
 	CBaseEntity *TongueTouchEnt ( float *pflLength );

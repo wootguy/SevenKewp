@@ -55,7 +55,6 @@ public:
 	
 	void RunTask( Task_t *pTask );
 	void StartTask( Task_t *pTask );
-	virtual int	ObjectCaps( void ) { return CTalkSquadMonster :: ObjectCaps() | FCAP_IMPULSE_USE; }
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	

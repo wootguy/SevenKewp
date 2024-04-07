@@ -60,10 +60,14 @@ public:
 	void PainSound( void );
 	void AlertSound( void );
 	void IdleSound( void );
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 
 	void Killed( entvars_t *pevAttacker, int iGib );
 
     void StartTask ( Task_t *pTask );
+	void RunTask(Task_t* pTask);
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType ( int Type );
 	CUSTOM_SCHEDULES;
@@ -261,6 +265,17 @@ void CISlave :: DeathSound( void )
 	EMIT_SOUND_DYN ( ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pDeathSounds), 1.0, ATTN_NORM, 0, m_voicePitch );
 }
 
+void CISlave::StartFollowingSound() {
+	SENTENCEG_PlayRndSz(ENT(pev), "SLV_ALERT", 0.85, ATTN_NORM, 0, m_voicePitch);
+}
+
+void CISlave::StopFollowingSound() {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM, 0, m_voicePitch);
+}
+
+void CISlave::CantFollowSound() {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM, 0, m_voicePitch);
+}
 
 //=========================================================
 // ISoundMask - returns a bit mask indicating which types
@@ -524,6 +539,24 @@ void CISlave :: StartTask ( Task_t *pTask )
 	CTalkSquadMonster :: StartTask ( pTask );
 }
 
+void CISlave::RunTask(Task_t* pTask)
+{
+	switch (pTask->iTask)
+	{
+	case TASK_MOVE_TO_TARGET_RANGE:
+	{
+		CBaseMonster::RunTask(pTask);
+
+		// always run when following someone because the walk speed is painfully slow
+		m_movementActivity = ACT_RUN;
+		break;
+	}
+	default:
+	{
+		CBaseMonster::RunTask(pTask);
+	}
+	}
+}
 
 //=========================================================
 // Spawn

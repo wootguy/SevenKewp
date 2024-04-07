@@ -37,6 +37,7 @@
 class CRoach : public CBaseMonster
 {
 public:
+	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 	void Spawn( void );
 	void Precache( void );
 	void SetYawSpeed( void );

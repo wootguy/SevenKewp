@@ -64,7 +64,6 @@ public:
 	void DeathSound(void);
 	void DeclineFollowing();
 	void TalkInit();
-	int ObjectCaps();
 	void OnTaskComplete(Task_t task);
 
 	void PrescheduleThink(void);
@@ -663,7 +662,3 @@ void CBodyGuard::TalkInit()
 	m_szGrp[TLK_MORTAL] = NULL;
 }
 
-int CBodyGuard::ObjectCaps()
-{
-	return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
-}

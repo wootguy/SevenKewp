@@ -121,6 +121,9 @@ public:
 	void BiteSound( void );
 	void DeathSound( void );
 	void PainSound( void );
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 };
 
 LINK_ENTITY_TO_CLASS( monster_ichthyosaur, CIchthyosaur );
@@ -212,6 +215,18 @@ void CIchthyosaur :: DeathSound( void )
 void CIchthyosaur :: PainSound( void )	
 { 
 	EMIT_ICKY_SOUND( CHAN_VOICE, pPainSounds ); 
+}
+
+void CIchthyosaur::StartFollowingSound() {
+	EMIT_SOUND_ARRAY_DYN(CHAN_WEAPON, pAttackSounds);
+}
+
+void CIchthyosaur::StopFollowingSound() {
+	EMIT_SOUND_ARRAY_DYN(CHAN_WEAPON, pPainSounds);
+}
+
+void CIchthyosaur::CantFollowSound() {
+	EMIT_SOUND_ARRAY_DYN(CHAN_WEAPON, pPainSounds);
 }
 
 //=========================================================
@@ -357,6 +372,11 @@ void CIchthyosaur::BiteTouch( CBaseEntity *pOther )
 
 void CIchthyosaur::CombatUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
+	if (pActivator && IRelationship(pActivator) == R_AL) {
+		FollowerUse(pActivator, pCaller, useType, value);
+		return;
+	}
+
 	if ( !ShouldToggle( useType, m_bOnAttack ) )
 		return;
 
@@ -539,10 +559,20 @@ Schedule_t* CIchthyosaur::GetSchedule()
 	{
 	case MONSTERSTATE_IDLE:
 		m_flightSpeed = 80;
+
+		if (m_hEnemy == NULL && IsFollowing()) {
+			return GetScheduleOfType(SCHED_TARGET_FACE);
+		}
+
 		return GetScheduleOfType( SCHED_IDLE_WALK );
 
 	case MONSTERSTATE_ALERT:
 		m_flightSpeed = 150;
+
+		if (m_hEnemy == NULL && IsFollowing()) {
+			return GetScheduleOfType(SCHED_TARGET_FACE);
+		}
+
 		return GetScheduleOfType( SCHED_IDLE_WALK );
 
 	case MONSTERSTATE_COMBAT:
@@ -927,6 +957,9 @@ void CIchthyosaur::Swim( )
 		if (m_IdealActivity == ACT_RUN)
 			pev->framerate = m_flightSpeed / 150.0;
 		// ALERT( at_console, "run  %.2f\n", pev->framerate );
+	}
+	if (m_hEnemy == NULL && IsFollowing()) {
+		SetActivity(ACT_WALK);
 	}
 
 /*

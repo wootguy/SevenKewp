@@ -1087,6 +1087,17 @@ void CGargantua::BreatheSound() {
 	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBreatheSounds), 1.0, ATTN_GARG, 0, PITCH_NORM + RANDOM_LONG(-10, 10));
 }
 
+void CGargantua::StartFollowingSound() {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_GARG, 0, PITCH_NORM);
+}
+
+void CGargantua::StopFollowingSound() {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, PITCH_NORM);
+}
+
+void CGargantua::CantFollowSound() {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, PITCH_NORM);
+}
 
 CStomp* CStomp::StompCreate(const Vector& origin, const Vector& end, float speed, float damage)
 {

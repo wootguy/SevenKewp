@@ -298,6 +298,10 @@ public:
 	BOOL CheckMeleeAttack2( float flDot, float flDist );	// Lay a crab
 	BOOL CheckRangeAttack1( float flDot, float flDist );	// Mortar launch
 
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
+
 	virtual int	Save( CSave &save );
 	virtual int	Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -1137,7 +1141,17 @@ void CBigMomma::RunTask( Task_t *pTask )
 	}
 }
 
+void CBigMomma::StartFollowingSound() {
+	EMIT_SOUND_ARRAY_DYN(CHAN_WEAPON, pAlertSounds);
+}
 
+void CBigMomma::StopFollowingSound() {
+	EMIT_SOUND_ARRAY_DYN(CHAN_WEAPON, pPainSounds);
+}
+
+void CBigMomma::CantFollowSound() {
+	EMIT_SOUND_ARRAY_DYN(CHAN_WEAPON, pPainSounds);
+}
 
 Vector VecCheckSplatToss( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float maxHeight )
 {

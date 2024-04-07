@@ -202,68 +202,6 @@ Schedule_t	slIdleStopShooting[] =
 	},
 };
 
-Task_t	tlMoveAway[] =
-{
-	{ TASK_SET_FAIL_SCHEDULE,		(float)SCHED_MOVE_AWAY_FAIL },
-	{ TASK_STORE_LASTPOSITION,		(float)0		},
-	{ TASK_MOVE_AWAY_PATH,			(float)100		},
-	{ TASK_WALK_PATH_FOR_UNITS,		(float)100		},
-	{ TASK_STOP_MOVING,				(float)0		},
-	{ TASK_FACE_PLAYER,				(float)0.5 },
-};
-
-Schedule_t	slMoveAway[] =
-{
-	{
-		tlMoveAway,
-		ARRAYSIZE ( tlMoveAway ),
-		0,
-		0,
-		"MoveAway"
-	},
-};
-
-
-Task_t	tlMoveAwayFail[] =
-{
-	{ TASK_STOP_MOVING,				(float)0		},
-	{ TASK_FACE_PLAYER,				(float)0.5		},
-};
-
-Schedule_t	slMoveAwayFail[] =
-{
-	{
-		tlMoveAwayFail,
-		ARRAYSIZE ( tlMoveAwayFail ),
-		0,
-		0,
-		"MoveAwayFail"
-	},
-};
-
-
-
-Task_t	tlMoveAwayFollow[] =
-{
-	{ TASK_SET_FAIL_SCHEDULE,		(float)SCHED_TARGET_FACE },
-	{ TASK_STORE_LASTPOSITION,		(float)0		},
-	{ TASK_MOVE_AWAY_PATH,			(float)100				},
-	{ TASK_WALK_PATH_FOR_UNITS,		(float)100		},
-	{ TASK_STOP_MOVING,				(float)0		},
-	{ TASK_SET_SCHEDULE,			(float)SCHED_TARGET_FACE },
-};
-
-Schedule_t	slMoveAwayFollow[] =
-{
-	{
-		tlMoveAwayFollow,
-		ARRAYSIZE ( tlMoveAwayFollow ),
-		0,
-		0,
-		"MoveAwayFollow"
-	},
-};
-
 Task_t	tlTlkIdleWatchClient[] =
 {
 	{ TASK_STOP_MOVING,			0				},
@@ -363,9 +301,6 @@ DEFINE_CUSTOM_SCHEDULES( CTalkSquadMonster )
 	slIdleHello,
 	slIdleSpeakWait,
 	slIdleStopShooting,
-	slMoveAway,
-	slMoveAwayFollow,
-	slMoveAwayFail,
 	slTlkIdleWatchClient,
 	&slTlkIdleWatchClient[ 1 ],
 	slTlkIdleEyecontact,
@@ -555,20 +490,6 @@ void CTalkSquadMonster :: RunTask( Task_t *pTask )
 		}
 		break;
 
-	case TASK_WALK_PATH_FOR_UNITS:
-		{
-			float distance;
-
-			distance = (m_vecLastPosition - pev->origin).Length2D();
-
-			// Walk path until far enough away
-			if ( distance > pTask->flData || MovementIsComplete() )
-			{
-				TaskComplete();
-				RouteClear();		// Stop moving
-			}
-		}
-		break;
 	case TASK_WAIT_FOR_MOVEMENT:
 		if (IsTalking() && m_hTalkTarget != NULL)
 		{
@@ -616,7 +537,6 @@ const char* CTalkSquadMonster::GetTaskName(int taskIdx) {
 		case TASK_TLK_CLIENT_STARE: return "TASK_TLK_CLIENT_STARE";
 		case TASK_TLK_EYECONTACT: return "TASK_TLK_EYECONTACT";
 		case TASK_TLK_IDEALYAW: return "TASK_TLK_IDEALYAW";
-		case TASK_FACE_PLAYER: return "TASK_FACE_PLAYER";
 		default:
 			return CBaseMonster::GetTaskName(taskIdx);
 	}
@@ -851,32 +771,6 @@ int CTalkSquadMonster :: GetVoicePitch( void )
 {
 	return m_voicePitch + RANDOM_LONG(0,3);
 }
-
-
-void CTalkSquadMonster :: Touch( CBaseEntity *pOther )
-{
-	// Did the player touch me?
-	if ( pOther->IsPlayer() && IRelationship(pOther) <= R_NO)
-	{
-		// Ignore if pissed at player
-		if ( m_afMemory & bits_MEMORY_PROVOKED )
-			return;
-
-		// Stay put during speech
-		if ( IsTalking() )
-			return;
-
-		// Heuristic for determining if the player is pushing me away
-		float speed = fabs(pOther->pev->velocity.x) + fabs(pOther->pev->velocity.y);
-		if ( speed > 50 )
-		{
-			SetConditions( bits_COND_CLIENT_PUSH );
-			MakeIdealYaw( pOther->pev->origin );
-		}
-	}
-}
-
-
 
 //=========================================================
 // IdleRespond
@@ -1204,22 +1098,13 @@ Schedule_t* CTalkSquadMonster :: GetScheduleOfType ( int Type )
 	{
 		return &slChaseEnemyFailed[0];
 	}
-	case SCHED_MOVE_AWAY:
-		return slMoveAway;
-
-	case SCHED_MOVE_AWAY_FOLLOW:
-		return slMoveAwayFollow;
-
-	case SCHED_MOVE_AWAY_FAIL:
-		return slMoveAwayFail;
-
 	case SCHED_TARGET_FACE:
 		// speak during 'use'
 		if (RANDOM_LONG(0,99) < 2)
 			//ALERT ( at_console, "target chase speak\n" );
 			return slIdleSpeakWait;
 		else
-			return slIdleStand;
+			return slFaceTarget;
 		
 	case SCHED_IDLE_STAND:
 		{	

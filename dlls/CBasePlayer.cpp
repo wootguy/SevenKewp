@@ -1520,6 +1520,7 @@ void CBasePlayer::PlayerUse ( void )
 	CBaseEntity *pObject = NULL;
 	CBaseEntity *pClosest = NULL;
 	Vector		vecLOS;
+	Vector viewPos = pev->origin + pev->view_ofs;
 	float flMaxDot = VIEW_FIELD_NARROW;
 	float flDot;
 
@@ -1533,19 +1534,27 @@ void CBasePlayer::PlayerUse ( void )
 			// !!!PERFORMANCE- should this check be done on a per case basis AFTER we've determined that
 			// this object is actually usable? This dot is being done for every object within PLAYER_SEARCH_RADIUS
 			// when player hits the use key. How many objects can be in that area, anyway? (sjb)
-			vecLOS = (VecBModelOrigin( pObject->pev ) - (pev->origin + pev->view_ofs));
+			vecLOS = (VecBModelOrigin( pObject->pev ) - viewPos);
 			
 			// This essentially moves the origin of the target to the corner nearest the player to test to see 
 			// if it's "hull" is in the view cone
 			vecLOS = UTIL_ClampVectorToBox( vecLOS, pObject->pev->size * 0.5 );
 			
 			flDot = DotProduct (vecLOS , gpGlobals->v_forward);
-			if (flDot > flMaxDot )
+			if (flDot > flMaxDot)
 			{// only if the item is in front of the user
 				pClosest = pObject;
 				flMaxDot = flDot;
 //				ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
 			}
+
+			// player is INSIDE the usable entity. Nothing can be closer than that.
+			// (example: big momma has abs box much larger than its collision box)
+			if (Intersects(pObject)) {
+				pClosest = pObject;
+				break;
+			}
+
 //			ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
 		}
 	}

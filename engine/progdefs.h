@@ -98,7 +98,7 @@ typedef struct entvars_s
 	vec3_t		size;		// maxs - mins
 
 	float		ltime;
-	float		nextthink;
+	float		nextthink; // must be greater than 0 for think functions to be called
 
 	int			movetype;
 	int			solid;

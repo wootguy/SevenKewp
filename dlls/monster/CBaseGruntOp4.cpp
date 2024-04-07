@@ -613,8 +613,3 @@ void CBaseGruntOp4::TalkInit()
 	// get voice for head - just one barney voice for now
 	m_voicePitch = 100;
 }
-
-int CBaseGruntOp4::ObjectCaps()
-{
-	return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
-}

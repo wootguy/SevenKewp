@@ -5,6 +5,8 @@
 class CGrenade : public CBaseMonster
 {
 public:
+	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
+
 	void Spawn( void );
 
 	typedef enum { SATCHEL_DETONATE = 0, SATCHEL_RELEASE } SATCHELCODE;

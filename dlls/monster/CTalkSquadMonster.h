@@ -74,7 +74,6 @@ enum
 	TASK_TLK_CLIENT_STARE,	// same as look at client, but says something if the player stares.
 	TASK_TLK_EYECONTACT,	// maintain eyecontact with person who I'm talking to
 	TASK_TLK_IDEALYAW,		// set ideal yaw to face who I'm talking to
-	TASK_FACE_PLAYER,		// Face the player
 
 	LAST_TALKMONSTER_TASK,			// MUST be last
 };
@@ -124,7 +123,6 @@ public:
 	// Base Monster functions
 	virtual void	Precache( void );
 	int				TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
-	void			Touch(	CBaseEntity *pOther );
 	void			Killed( entvars_t *pevAttacker, int iGib );
 	int				IRelationship ( CBaseEntity *pTarget );
 	virtual int		CanPlaySentence( BOOL fDisregardState );

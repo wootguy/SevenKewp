@@ -32,6 +32,7 @@ public:
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
+	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 	void Spawn( void );
 	void Precache( void );
 	int  Classify( void ) { return CBaseMonster::Classify(CLASS_ALIEN_MILITARY); };

@@ -75,7 +75,6 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	void RunTask( Task_t *pTask );
 	void StartTask( Task_t *pTask );
-	int	ObjectCaps( void ) { return CTalkSquadMonster :: ObjectCaps() | FCAP_IMPULSE_USE; }
 	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	virtual int FriendNumber( int arrayNumber );
 	void SetActivity ( Activity newActivity );
@@ -1094,6 +1093,7 @@ int CScientist::FriendNumber( int arrayNumber )
 class CDeadScientist : public CBaseMonster
 {
 public:
+	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 	void Spawn( void );
 	int	Classify ( void ) { return	CLASS_HUMAN_PASSIVE; }
 
