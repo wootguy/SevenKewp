@@ -586,9 +586,9 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	PrintEntindexStats();
 
-	ALERT(at_console, "Precache stats: %d models (%d MDL, %d BSP), %d sounds, %d generic, %d events\n",
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Precache stats: %d models (%d MDL, %d BSP), %d sounds, %d generic, %d events\n",
 		g_tryPrecacheModels.size() + g_bsp.modelCount, g_tryPrecacheModels.size(), g_bsp.modelCount, 
-		g_tryPrecacheSounds.size(), g_tryPrecacheGeneric.size(), g_tryPrecacheEvents.size());
+		g_tryPrecacheSounds.size(), g_tryPrecacheGeneric.size(), g_tryPrecacheEvents.size()));
 
 	if (g_tryPrecacheModels.size() > g_precachedModels.size()) {
 		ALERT(at_error, "Model precache overflow (%d / %d). The following models were not precached:\n",
@@ -606,7 +606,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 		for (std::string item : g_tryPrecacheSounds) {
 			if (!g_precachedSounds.count(item)) {
-				ALERT(at_console, "    %s\n", item.c_str());
+				g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", item.c_str()));
 			}
 		}
 	}
@@ -616,7 +616,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 		for (std::string item : g_tryPrecacheGeneric) {
 			if (!g_precachedGeneric.count(item)) {
-				ALERT(at_console, "    %s\n", item.c_str());
+				g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", item.c_str()));
 			}
 		}
 	}
@@ -626,7 +626,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 		for (std::string item : g_tryPrecacheEvents) {
 			if (!g_precachedEvents.count(item)) {
-				ALERT(at_console, "    %s\n", item.c_str());
+				g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", item.c_str()));
 			}
 		}
 	}

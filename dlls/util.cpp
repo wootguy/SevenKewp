@@ -3330,11 +3330,11 @@ void PrintEntindexStats() {
 	int totalLowSlots = gpGlobals->maxEntities - lowPrioMin;
 	int totalFree = totalFreeHighPrio + totalFreeNormalPrio + totalFreeLowPrio;
 
-	ALERT(at_console, "Edict stats: %d/%d TOTAL (%d/%d HIGH, %d/%d NORM, %d/%d LOW)\n",
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Edict stats: %d/%d TOTAL (%d/%d HIGH, %d/%d NORM, %d/%d LOW)\n",
 		gpGlobals->maxEntities - totalFree, gpGlobals->maxEntities,
 		totalHighSlots - totalFreeHighPrio, totalHighSlots,
 		totalNormalSlots - totalFreeNormalPrio, totalNormalSlots,
-		totalLowSlots - totalFreeLowPrio, totalLowSlots);
+		totalLowSlots - totalFreeLowPrio, totalLowSlots));
 }
 
 // Moves an entity somewhere else in the edict list, based on its priority.
