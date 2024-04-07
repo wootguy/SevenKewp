@@ -83,33 +83,9 @@ public:
 	void AlertSound(void);
 	void IdleSound(void);
 	void AttackSound(void);
-
-#if 0
-	// debugging schedules
-	virtual void ScheduleChange(void) {
-		const char* schedName = m_pSchedule != NULL ? m_pSchedule->pName : "NULL";
-		println("\nSchedule changing from <%s> because:", schedName);
-
-		if (m_MonsterState != m_IdealMonsterState) {
-			println("- monster state changing from %d to %d", m_MonsterState, m_IdealMonsterState);
-		}
-		if (!FScheduleValid()) {
-			if (m_pSchedule == NULL) {
-				println("- Schedule is NULL");
-				return;
-			}
-			if (HasConditions(bits_COND_SCHEDULE_DONE)) {
-				println("- Schedule is finished");
-			}
-			if (HasConditions(bits_COND_TASK_FAILED)) {
-				println("- Task failed");
-			}
-			if (HasConditions(m_pSchedule->iInterruptMask)) {
-				println("- Interrupted by %d", m_pSchedule->iInterruptMask);
-			}
-		}
-	}
-#endif
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 
 	CUSTOM_SCHEDULES;
 
@@ -614,6 +590,21 @@ void CTor::AttackSound(void) {
 	int pitch = 100 + RANDOM_LONG(-5, 5);
 
 	// Play a random attack sound
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CTor::StartFollowingSound() {
+	int pitch = 100 + RANDOM_LONG(0, 9);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CTor::StopFollowingSound() {
+	int pitch = 100 + RANDOM_LONG(0, 9);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CTor::CantFollowSound() {
+	int pitch = 100 + RANDOM_LONG(0, 9);
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_NORM, 0, pitch);
 }
 

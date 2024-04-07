@@ -144,6 +144,9 @@ public:
 	void RunTask(Task_t* pTask) override;
 	void PainSound() override;
 	void IdleSound() override;
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 	Vector GetGunPosition() override;
 	void Shoot();
 	void PrescheduleThink() override;
@@ -815,6 +818,47 @@ void CShockTrooper::IdleSound()
 		}
 		JustSpoke();
 	}
+}
+
+void CShockTrooper::StartFollowingSound() {
+	int r = RANDOM_LONG(0, 2);
+
+	// complicated/energetic speech
+	switch (r) {
+	case 0:
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_quest0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		break;
+	case 1:
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_cover0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		break;
+	case 2:
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		break;
+	}
+	JustSpoke();
+}
+
+void CShockTrooper::StopFollowingSound() {
+	int r = RANDOM_LONG(0, 2);
+
+	// simple 2 word speech, low energy
+	switch (r) {
+	case 0:
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		break;
+	case 1:
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_check0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		break;
+	case 2:
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_answer0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		break;
+	}
+	JustSpoke();
+}
+
+void CShockTrooper::CantFollowSound() {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+	JustSpoke();
 }
 
 //=========================================================

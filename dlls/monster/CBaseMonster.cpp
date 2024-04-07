@@ -17,7 +17,7 @@
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
-//#define DEBUG_MONSTER "monster_hwgrunt" // uncomment to enable verbose logging
+#define DEBUG_MONSTER "monster_gonome" // uncomment to enable verbose logging
 
 std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
 std::set<std::string> g_shuffledMonsterSounds;
@@ -2172,6 +2172,7 @@ void CBaseMonster::MonsterInit(void)
 	pev->nextthink = gpGlobals->time + 0.1;
 	//SetUse(&CBaseMonster::MonsterUse);
 	SetUse(&CBaseMonster::FollowerUse);
+	SetTouch(&CBaseMonster::PushTouch);
 }
 
 //=========================================================
@@ -5136,7 +5137,10 @@ Schedule_t* CBaseMonster::m_scheduleList[] =
 
 	slFaceTarget,
 	slFollow,
-	slStopFollowing
+	slStopFollowing,
+	slMoveAway,
+	slMoveAwayFollow,
+	slMoveAwayFail,
 };
 
 //=========================================================
@@ -5667,6 +5671,20 @@ void CBaseMonster::RunTask(Task_t* pTask)
 		}
 		break;
 	}
+	case TASK_WALK_PATH_FOR_UNITS:
+	{
+		float distance;
+
+		distance = (m_vecLastPosition - pev->origin).Length2D();
+
+		// Walk path until far enough away
+		if (distance > pTask->flData || MovementIsComplete())
+		{
+			TaskComplete();
+			RouteClear();		// Stop moving
+		}
+	}
+	break;
 	}
 }
 
@@ -6480,6 +6498,12 @@ void CBaseMonster::StartTask(Task_t* pTask)
 		}
 	}
 	break;
+	case TASK_FACE_PLAYER:
+		// track head to the client for a while.
+		m_flWaitFinished = gpGlobals->time + pTask->flData;
+		ClearConditions(bits_COND_CLIENT_PUSH);
+		TaskComplete();
+		break;
 
 	default:
 	{
@@ -6601,6 +6625,7 @@ const char* CBaseMonster::GetTaskName(int taskIdx) {
 	case TASK_CANT_FOLLOW: return "TASK_CANT_FOLLOW";
 	case TASK_MOVE_AWAY_PATH: return "TASK_MOVE_AWAY_PATH";
 	case TASK_WALK_PATH_FOR_UNITS: return "TASK_WALK_PATH_FOR_UNITS";
+	case TASK_FACE_PLAYER: return "TASK_FACE_PLAYER";
 	default:
 		return "Unknown";
 	}
@@ -6616,18 +6641,8 @@ Schedule_t* CBaseMonster::GetSchedule(void)
 {
 	switch (m_MonsterState)
 	{
-	case MONSTERSTATE_PRONE:
-	{
-		return GetScheduleOfType(SCHED_BARNACLE_VICTIM_GRAB);
-		break;
-	}
-	case MONSTERSTATE_NONE:
-	{
-		ALERT(at_aiconsole, "MONSTERSTATE IS NONE!\n");
-		break;
-	}
 	case MONSTERSTATE_IDLE:
-	{
+	case MONSTERSTATE_ALERT:
 		if (m_hEnemy == NULL && IsFollowing())
 		{
 			if (!m_hTargetEnt->IsAlive())
@@ -6640,19 +6655,41 @@ Schedule_t* CBaseMonster::GetSchedule(void)
 			{
 				if (HasConditions(bits_COND_CLIENT_PUSH))
 				{
-					//return GetScheduleOfType(SCHED_MOVE_AWAY_FOLLOW);
+					return GetScheduleOfType(SCHED_MOVE_AWAY_FOLLOW);
 				}
 				return GetScheduleOfType(SCHED_TARGET_FACE);
 			}
 		}
+		break;
+	default:
+		break;
+	}
 
+	switch (m_MonsterState)
+	{
+	case MONSTERSTATE_PRONE:
+	{
+		return GetScheduleOfType(SCHED_BARNACLE_VICTIM_GRAB);
+		break;
+	}
+	case MONSTERSTATE_NONE:
+	{
+		ALERT(at_aiconsole, "MONSTERSTATE IS NONE!\n");
+		break;
+	}
+	case MONSTERSTATE_IDLE:
+	{
 		if (HasConditions(bits_COND_HEAR_SOUND))
 		{
 			return GetScheduleOfType(SCHED_ALERT_FACE);
-		}
+		} 
 		else if (FRouteClear())
 		{
 			// no valid route!
+			if (HasConditions(bits_COND_CLIENT_PUSH)) {
+				return GetScheduleOfType(SCHED_MOVE_AWAY);
+			}
+
 			return GetScheduleOfType(SCHED_IDLE_STAND);
 		}
 		else
@@ -6660,6 +6697,7 @@ Schedule_t* CBaseMonster::GetSchedule(void)
 			// valid route. Get moving
 			return GetScheduleOfType(SCHED_IDLE_WALK);
 		}
+
 		break;
 	}
 	case MONSTERSTATE_ALERT:
@@ -7006,6 +7044,18 @@ Schedule_t* CBaseMonster::GetScheduleOfType(int Type)
 	{
 		return &slStopFollowing[0];
 	}
+	case SCHED_MOVE_AWAY:
+	{
+		return slMoveAway;
+	}
+	case SCHED_MOVE_AWAY_FOLLOW:
+	{
+		return slMoveAwayFollow;
+	}
+	case SCHED_MOVE_AWAY_FAIL:
+	{
+		return slMoveAwayFail;
+	}
 	default:
 	{
 		ALERT(at_console, "GetScheduleOfType()\nNo CASE for Schedule Type %d!\n", Type);
@@ -7095,6 +7145,29 @@ void CBaseMonster::FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		{
 			StopFollowing(TRUE);
 			StopFollowingSound();
+		}
+	}
+}
+
+void CBaseMonster::PushTouch(CBaseEntity* pOther)
+{
+	// Did the player touch me?
+	if (pOther->IsPlayer() && IRelationship(pOther) <= R_NO)
+	{
+		// Ignore if pissed at player
+		if (m_afMemory & bits_MEMORY_PROVOKED)
+			return;
+
+		// Stay put during speech
+		//if (IsTalking())
+		//	return;
+
+		// Heuristic for determining if the player is pushing me away
+		float speed = fabs(pOther->pev->velocity.x) + fabs(pOther->pev->velocity.y);
+		if (speed > 50)
+		{
+			SetConditions(bits_COND_CLIENT_PUSH);
+			MakeIdealYaw(pOther->pev->origin);
 		}
 	}
 }

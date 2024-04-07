@@ -119,5 +119,8 @@ extern Schedule_t slTakeCoverFromEnemy[];
 extern Schedule_t slFollow[];
 extern Schedule_t slFaceTarget[];
 extern Schedule_t slStopFollowing[];
+extern Schedule_t slMoveAway[];
+extern Schedule_t slMoveAwayFollow[];
+extern Schedule_t slMoveAwayFail[];
 
 #endif		// DEFAULTAI_H

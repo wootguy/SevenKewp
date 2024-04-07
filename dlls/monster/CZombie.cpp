@@ -51,6 +51,11 @@ public:
 	void AlertSound( void );
 	void IdleSound( void );
 	void AttackSound( void );
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
+
+	void RunTask(Task_t* pTask);
 
 	static const char *pAttackSounds[];
 	static const char *pIdleSounds[];
@@ -204,6 +209,36 @@ void CZombie :: AttackSound( void )
 	EMIT_SOUND_DYN ( ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_NORM, 0, pitch );
 }
 
+void CZombie::StartFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1, ATTN_NORM);
+}
+
+void CZombie::StopFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), 1, ATTN_NORM);
+}
+
+void CZombie::CantFollowSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), 1, ATTN_NORM);
+}
+
+void CZombie::RunTask(Task_t* pTask)
+{
+	switch (pTask->iTask)
+	{
+	case TASK_MOVE_TO_TARGET_RANGE:
+	{
+		CBaseMonster::RunTask(pTask);
+
+		// zombie has no run animation
+		m_movementActivity = ACT_WALK;
+		break;
+	}
+	default:
+	{
+		CBaseMonster::RunTask(pTask);
+	}
+	}
+}
 
 //=========================================================
 // HandleAnimEvent - catches the monster-specific messages

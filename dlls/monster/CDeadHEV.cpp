@@ -15,6 +15,7 @@ class CDeadHEV : public CBaseMonster
 public:
 	void Spawn(void);
 	int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
+	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 
 	void KeyValue(KeyValueData* pkvd);
 

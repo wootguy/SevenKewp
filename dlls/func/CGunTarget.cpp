@@ -35,7 +35,7 @@ public:
 	void			Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	Vector			BodyTarget(const Vector& posSrc) { return pev->origin; }
 
-	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~(FCAP_IMPULSE_USE | FCAP_ACROSS_TRANSITION); }
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
 

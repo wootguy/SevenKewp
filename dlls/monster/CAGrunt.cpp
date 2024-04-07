@@ -897,6 +897,9 @@ BOOL CAGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 //=========================================================
 void CAGrunt :: StartTask ( Task_t *pTask )
 {
+	if (pTask->iTask == TASK_TLK_SPEAK) {
+		ALERT(at_console, "HERE WE GO\n");
+	}
 	switch ( pTask->iTask )
 	{
 	case TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE:
@@ -1126,3 +1129,17 @@ Schedule_t* CAGrunt :: GetScheduleOfType ( int Type )
 	return CTalkSquadMonster :: GetScheduleOfType( Type );
 }
 
+void CAGrunt::StartFollowingSound() {
+	StopTalking();
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), 1.0, ATTN_NORM);
+}
+
+void CAGrunt::StopFollowingSound() {
+	StopTalking();
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM);
+}
+
+void CAGrunt::CantFollowSound() {
+	StopTalking();
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM);
+}

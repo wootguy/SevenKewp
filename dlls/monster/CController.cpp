@@ -80,6 +80,9 @@ public:
 	void IdleSound( void );
 	void AttackSound( void );
 	void DeathSound( void );
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 
 	static const char *pAttackSounds[];
 	static const char *pIdleSounds[];
@@ -267,6 +270,18 @@ void CController :: AttackSound( void )
 void CController :: DeathSound( void )
 {
 	EMIT_SOUND_ARRAY_DYN( CHAN_VOICE, pDeathSounds ); 
+}
+
+void CController::StartFollowingSound() {
+	EMIT_SOUND_ARRAY_DYN(CHAN_VOICE, pAttackSounds);
+}
+
+void CController::StopFollowingSound() {
+	EMIT_SOUND_ARRAY_DYN(CHAN_VOICE, pPainSounds);
+}
+
+void CController::CantFollowSound() {
+	EMIT_SOUND_ARRAY_DYN(CHAN_VOICE, pPainSounds);
 }
 
 //=========================================================
@@ -708,8 +723,15 @@ void CController :: RunTask ( Task_t *pTask )
 	case TASK_WAIT_FOR_MOVEMENT:
 	case TASK_WAIT:
 	case TASK_WAIT_FACE_ENEMY:
+	case TASK_MOVE_TO_TARGET_RANGE:
 	case TASK_WAIT_PVS:
-		MakeIdealYaw( m_vecEnemyLKP );
+		if (m_hTargetEnt && IsFollowing() && (m_MonsterState == MONSTERSTATE_IDLE || m_MonsterState == MONSTERSTATE_ALERT)) {
+			MakeIdealYaw(m_hTargetEnt->pev->origin);
+		}
+		else if (m_MonsterState != MONSTERSTATE_IDLE) {
+			MakeIdealYaw(m_vecEnemyLKP);
+		}
+		
 		ChangeYaw( pev->yaw_speed );
 
 		if (m_fSequenceFinished)

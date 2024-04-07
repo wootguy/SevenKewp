@@ -66,6 +66,9 @@ public:
 	void InitAiFlags();
 	void PainSound(void);
 	void DeathSound(void);
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 	void PlaySentenceSound(int sentenceType);
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	Schedule_t* GetScheduleOfType(int Type);
@@ -77,6 +80,7 @@ public:
 	int LookupActivity(int activity);
 	Schedule_t* GetMonsterStateSchedule(void);
 	void StartTask(Task_t* pTask);
+	void RunTask(Task_t* pTask);
 	CBaseEntity* PBestMinigun(void);
 	void DropMinigun(Vector vecDir);
 	void PickupMinigun();
@@ -224,6 +228,46 @@ void CHWGrunt::PainSound(void)
 void CHWGrunt::DeathSound(void)
 {
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1, ATTN_NORM);
+}
+
+void CHWGrunt::StartFollowingSound() {
+	int r = RANDOM_LONG(0, 2);
+
+	switch (r) {
+	case 0:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE1", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	case 1:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE2", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	case 2:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE3", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	}
+
+	JustSpoke();
+}
+
+void CHWGrunt::StopFollowingSound() {
+	int r = RANDOM_LONG(0, 2);
+
+	switch (r) {
+	case 0:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_QUEST4", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	case 1:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER0", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	case 2:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER1", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	}
+	JustSpoke();
+}
+
+void CHWGrunt::CantFollowSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER3", SENTENCE_VOLUME, ATTN_NORM);
+	JustSpoke();
 }
 
 void CHWGrunt::PlaySentenceSound(int sentenceType) {
@@ -518,5 +562,24 @@ void CHWGrunt::StartTask(Task_t* pTask) {
 	}
 	default:
 		CBaseGrunt::StartTask(pTask);
+	}
+}
+
+void CHWGrunt::RunTask(Task_t* pTask)
+{
+	switch (pTask->iTask)
+	{
+	case TASK_MOVE_TO_TARGET_RANGE:
+	{
+		CBaseMonster::RunTask(pTask);
+
+		// always run when following someone because the walk speed is painfully slow
+		m_movementActivity = ACT_RUN;
+		break;
+	}
+	default:
+	{
+		CBaseMonster::RunTask(pTask);
+	}
 	}
 }

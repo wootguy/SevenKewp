@@ -1042,3 +1042,65 @@ Schedule_t	slStopFollowing[] =
 		"StopFollowing"
 	},
 };
+
+Task_t	tlMoveAway[] =
+{
+	{ TASK_SET_FAIL_SCHEDULE,		(float)SCHED_MOVE_AWAY_FAIL },
+	{ TASK_STORE_LASTPOSITION,		(float)0		},
+	{ TASK_MOVE_AWAY_PATH,			(float)100		},
+	{ TASK_WALK_PATH_FOR_UNITS,		(float)100		},
+	{ TASK_STOP_MOVING,				(float)0		},
+	{ TASK_FACE_PLAYER,				(float)0.5 },
+};
+
+Schedule_t	slMoveAway[] =
+{
+	{
+		tlMoveAway,
+		ARRAYSIZE(tlMoveAway),
+		0,
+		0,
+		"MoveAway"
+	},
+};
+
+
+Task_t	tlMoveAwayFail[] =
+{
+	{ TASK_STOP_MOVING,				(float)0		},
+	{ TASK_FACE_PLAYER,				(float)0.5		},
+};
+
+Schedule_t	slMoveAwayFail[] =
+{
+	{
+		tlMoveAwayFail,
+		ARRAYSIZE(tlMoveAwayFail),
+		0,
+		0,
+		"MoveAwayFail"
+	},
+};
+
+
+
+Task_t	tlMoveAwayFollow[] =
+{
+	{ TASK_SET_FAIL_SCHEDULE,		(float)SCHED_TARGET_FACE },
+	{ TASK_STORE_LASTPOSITION,		(float)0		},
+	{ TASK_MOVE_AWAY_PATH,			(float)100				},
+	{ TASK_WALK_PATH_FOR_UNITS,		(float)100		},
+	{ TASK_STOP_MOVING,				(float)0		},
+	{ TASK_SET_SCHEDULE,			(float)SCHED_TARGET_FACE },
+};
+
+Schedule_t	slMoveAwayFollow[] =
+{
+	{
+		tlMoveAwayFollow,
+		ARRAYSIZE(tlMoveAwayFollow),
+		0,
+		0,
+		"MoveAwayFollow"
+	},
+};

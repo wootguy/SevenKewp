@@ -14,7 +14,7 @@ enum
 //=========================================================
 enum
 {
-	TASK_AGRUNT_SETUP_HIDE_ATTACK = LAST_COMMON_TASK + 1,
+	TASK_AGRUNT_SETUP_HIDE_ATTACK = LAST_TALKMONSTER_TASK + 1,
 	TASK_AGRUNT_GET_PATH_TO_ENEMY_CORPSE,
 };
 
@@ -72,6 +72,9 @@ public:
 	int IRelationship(CBaseEntity* pTarget);
 	void StopTalking(void);
 	BOOL ShouldSpeak(void);
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 	CUSTOM_SCHEDULES;
 
 	virtual int		Save(CSave& save);

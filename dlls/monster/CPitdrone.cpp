@@ -243,6 +243,9 @@ public:
 	void IdleSound( void );
 	void PainSound( void );
 	void AlertSound ( void );
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 	void StartTask ( Task_t *pTask );
 	void RunTask ( Task_t *pTask );
 	BOOL CheckMeleeAttack1 ( float flDot, float flDist );
@@ -502,6 +505,21 @@ void CPitdrone :: AlertSound ( void )
 	int iPitch = RANDOM_LONG( 140, 160 );
 
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), 1, ATTN_NORM, 0, iPitch);
+}
+
+void CPitdrone::StartFollowingSound() {
+	int iPitch = RANDOM_LONG(85, 120);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM, 0, iPitch);
+}
+
+void CPitdrone::StopFollowingSound() {
+	int iPitch = 100 + RANDOM_LONG(0, 9);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1, ATTN_NORM, 0, iPitch);
+}
+
+void CPitdrone::CantFollowSound() {
+	int iPitch = 100 + RANDOM_LONG(0, 9);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDieSounds), 1, ATTN_NORM, 0, iPitch);
 }
 
 //=========================================================

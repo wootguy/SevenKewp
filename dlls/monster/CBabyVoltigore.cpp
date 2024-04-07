@@ -34,6 +34,9 @@ public:
 	void AlertSound(void);
 	void IdleSound(void);
 	void AttackSound(void);
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 
 private:
 	static const char* pAttackHitSounds[];
@@ -237,4 +240,19 @@ int CBabyVoltigore::IgnoreConditions(void)
 	int iIgnore = CBaseMonster::IgnoreConditions();
 	iIgnore |= (bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE); // no flinching
 	return iIgnore;
+}
+
+void CBabyVoltigore::StartFollowingSound() {
+	int pitch = BASE_SOUND_PITCH + RANDOM_LONG(-5, 5);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CBabyVoltigore::StopFollowingSound() {
+	int pitch = BASE_SOUND_PITCH + RANDOM_LONG(0, 9);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM, 0, pitch);
+}
+
+void CBabyVoltigore::CantFollowSound() {
+	int pitch = BASE_SOUND_PITCH + RANDOM_LONG(0, 9);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_NORM, 0, pitch);
 }

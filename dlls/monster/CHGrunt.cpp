@@ -40,6 +40,9 @@ public:
 	void PainSound(void);
 	void DeathSound(void);
 	void IdleSound(void);
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 	void PlaySentenceSound(int sentenceType);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	void StartMonster(void);
@@ -205,6 +208,46 @@ void CHGrunt::PainSound(void)
 void CHGrunt::DeathSound(void)
 {
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1, ATTN_NORM);
+}
+
+void CHGrunt::StartFollowingSound() {
+	int r = RANDOM_LONG(0, 2);
+
+	switch (r) {
+	case 0:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE1", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	case 1:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE2", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	case 2:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE3", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	}
+	
+	JustSpoke();
+}
+
+void CHGrunt::StopFollowingSound() {
+	int r = RANDOM_LONG(0, 2);
+
+	switch (r) {
+	case 0:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_QUEST4", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	case 1:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER0", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	case 2:
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER1", SENTENCE_VOLUME, ATTN_NORM);
+		break;
+	}
+	JustSpoke();
+}
+
+void CHGrunt::CantFollowSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER3", SENTENCE_VOLUME, ATTN_NORM);
+	JustSpoke();
 }
 
 void CHGrunt::IdleSound(void)

@@ -86,6 +86,9 @@ public:
 	void DeathSound( void );
 	void IdleSound( void );
 	void AlertSound( void );
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 	void PrescheduleThink( void );
 	int  Classify ( void );
 	const char* DisplayName();
@@ -349,6 +352,14 @@ void COFShockRoach :: RunTask ( Task_t *pTask )
 			}
 			break;
 		}
+	case TASK_MOVE_TO_TARGET_RANGE:
+	{
+		CBaseMonster::RunTask(pTask);
+
+		// always run when following someone because the walk speed is painfully slow
+		m_movementActivity = ACT_RUN;
+		break;
+	}
 	default:
 		{
 			CBaseMonster :: RunTask(pTask);
@@ -500,6 +511,18 @@ void COFShockRoach :: PainSound ( void )
 //=========================================================
 void COFShockRoach :: DeathSound ( void )
 {
+}
+
+void COFShockRoach::StartFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), 1, ATTN_NORM);
+}
+
+void COFShockRoach::StopFollowingSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
+}
+
+void COFShockRoach::CantFollowSound() {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
 }
 
 Schedule_t* COFShockRoach :: GetScheduleOfType ( int Type )

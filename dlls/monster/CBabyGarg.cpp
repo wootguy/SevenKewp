@@ -36,6 +36,9 @@ public:
 	void FootSound();
 	void StompSound();
 	void BreatheSound();
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 
 private:
 	static const char* pBeamAttackSounds[];
@@ -227,4 +230,16 @@ void CBabyGarg::StompSound() {
 
 void CBabyGarg::BreatheSound() {
 	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBreatheSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH + RANDOM_LONG(-10, 10));
+}
+
+void CBabyGarg::StartFollowingSound() {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
+}
+
+void CBabyGarg::StopFollowingSound() {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
+}
+
+void CBabyGarg::CantFollowSound() {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
 }

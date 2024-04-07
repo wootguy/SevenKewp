@@ -241,6 +241,7 @@ public:
 	void KeyValue(KeyValueData* pkvd);
 	void EXPORT RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual const char* GetMonsterType() { return "monster_human_grunt"; }
+	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 
 	const char* monsterType;
 	int m_iSpriteTexture;	// Don't save, precache
@@ -253,6 +254,7 @@ class CBaseDead : public CBaseMonster {
 public:
 	void BaseSpawn(const char* model);
 	virtual int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
+	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 	virtual int GetPoseSequence() { return -1; }
 
 	void KeyValue(KeyValueData* pkvd);

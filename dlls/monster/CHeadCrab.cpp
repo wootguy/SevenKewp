@@ -85,6 +85,9 @@ public:
 	void DeathSound( void );
 	void IdleSound( void );
 	void AlertSound( void );
+	void StartFollowingSound();
+	void StopFollowingSound();
+	void CantFollowSound();
 	void PrescheduleThink( void );
 	int  Classify ( void );
 	const char* DisplayName();
@@ -314,6 +317,8 @@ void CHeadCrab :: Precache()
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
 	PRECACHE_SOUND_ARRAY(pBiteSounds);
 
+	PRECACHE_SOUND("headcrab/hc_attack2.wav"); // follow sound
+
 	m_defaultModel = "models/headcrab.mdl";
 	PRECACHE_MODEL(GetModel());
 }	
@@ -337,6 +342,14 @@ void CHeadCrab :: RunTask ( Task_t *pTask )
 			}
 			break;
 		}
+	case TASK_MOVE_TO_TARGET_RANGE:
+	{
+		CBaseMonster::RunTask(pTask);
+
+		// always run when following someone because the walk speed is painfully slow
+		m_movementActivity = ACT_RUN;
+		break;
+	}
 	default:
 		{
 			CBaseMonster :: RunTask(pTask);
@@ -472,6 +485,18 @@ void CHeadCrab :: PainSound ( void )
 void CHeadCrab :: DeathSound ( void )
 {
 	EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
+}
+
+void CHeadCrab::StartFollowingSound() {
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, "headcrab/hc_attack2.wav", GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+}
+
+void CHeadCrab::StopFollowingSound() {
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
+}
+
+void CHeadCrab::CantFollowSound() {
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pPainSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch());
 }
 
 Schedule_t* CHeadCrab :: GetScheduleOfType ( int Type )
