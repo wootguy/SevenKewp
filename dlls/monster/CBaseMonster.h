@@ -136,6 +136,8 @@ public:
 	int m_skinFrames; // how many "frames" of animation the model has, ignoring ally/enemy skins
 	bool m_friendlySkinFirst; // true if the friendly skin comes before the enemy skin
 
+	bool canBeMadAtPlayer; // grunt will retaliate on too much friendly fire
+
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
 	virtual int		Save( CSave &save ); 
@@ -382,6 +384,7 @@ public:
 	virtual void	DeclineFollowing(void) {}
 	void EXPORT		FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void EXPORT		PushTouch(CBaseEntity* pOther);
+	virtual bool	CanBePushed() { return true; }
 
 	virtual void	StartFollowingSound() {}
 	virtual void	StopFollowingSound() {}

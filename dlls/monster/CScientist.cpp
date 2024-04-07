@@ -683,6 +683,7 @@ void CScientist :: Spawn( void )
 	
 	MonsterInit();
 	SetUse( &CScientist::FollowerUse );
+	canBeMadAtPlayer = true;
 }
 
 //=========================================================

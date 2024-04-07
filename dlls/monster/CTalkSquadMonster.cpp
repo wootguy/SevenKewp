@@ -1284,6 +1284,10 @@ void CTalkSquadMonster::StartFollowing(CBaseEntity* pLeader)
 	CBaseMonster::StartFollowing(pLeader);
 }
 
+bool CTalkSquadMonster::CanBePushed()
+{
+	return !IsTalking();
+}
 
 
 
