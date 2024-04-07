@@ -792,4 +792,5 @@ public:
 
 	string_t m_globalModelList;
 	string_t m_globalSoundList;
+	bool m_freeRoam;
 };

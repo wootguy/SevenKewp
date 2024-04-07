@@ -39,8 +39,14 @@ public:
 			SCRIPT_RUN_TO_MARK,
 		} SCRIPTSTATE;
 
+		typedef enum
+		{
+			ROAM_MAP_DEFAULT,
+			ROAM_NEVER,
+			ROAM_ALWAYS
+		}ROAMING_MODES;
 
-	
+
 		// these fields have been added in the process of reworking the state machine. (sjb)
 		int				m_Classify;		// Classify, to let mappers override the default
 		BOOL				m_IsPlayerAlly;		// Toggles player ally status (shortcut to override Classify)
@@ -137,6 +143,9 @@ public:
 	bool m_friendlySkinFirst; // true if the friendly skin comes before the enemy skin
 
 	bool canBeMadAtPlayer; // grunt will retaliate on too much friendly fire
+	int m_freeroam;
+	int m_lastNode;
+	int m_targetNode;
 
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
@@ -164,6 +173,7 @@ public:
 	virtual BOOL	IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual	BOOL	IsMonster(void) { return TRUE; }
 	virtual BOOL	ShouldFadeOnDeath( void );
+	virtual bool	ShouldRoam( void );
 
 // Basic Monster AI functions
 	virtual float ChangeYaw ( int speed );
@@ -269,7 +279,7 @@ public:
 		virtual BOOL FTriangulate ( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex );
 		void MakeIdealYaw( Vector vecTarget );
 		virtual void SetYawSpeed ( void ) { return; };// allows different yaw_speeds for each activity
-		BOOL BuildRoute ( const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget );
+		BOOL BuildRoute ( const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget, bool useNodes );
 		virtual BOOL BuildNearestRoute ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist );
 		int RouteClassify( int iMoveFlag );
 		void InsertWaypoint ( Vector vecLocation, int afMoveFlags );
