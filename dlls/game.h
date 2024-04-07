@@ -82,6 +82,7 @@ extern cvar_t	*g_psv_aim;
 extern cvar_t	*g_footsteps;
 extern cvar_t	*g_developer;
 extern cvar_t	*sv_max_client_edicts;
+extern cvar_t	*sv_stepsize;
 
 struct NerfStats {
 	int nerfedMonsterHealth;
