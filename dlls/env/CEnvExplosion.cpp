@@ -3,16 +3,15 @@
 #include "cbase.h"
 #include "decals.h"
 #include "explode.h"
-#include "monster/CBaseMonster.h"
+#include "weapons.h"
 
-class CEnvExplosion : public CBaseMonster
+class CEnvExplosion : public CPointEntity
 {
 public:
 	void Spawn();
 	void EXPORT Smoke(void);
 	void KeyValue(KeyValueData* pkvd);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
@@ -28,7 +27,7 @@ TYPEDESCRIPTION	CEnvExplosion::m_SaveData[] =
 	DEFINE_FIELD(CEnvExplosion, m_spriteScale, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CEnvExplosion, CBaseMonster);
+IMPLEMENT_SAVERESTORE(CEnvExplosion, CPointEntity);
 LINK_ENTITY_TO_CLASS(env_explosion, CEnvExplosion);
 
 void CEnvExplosion::KeyValue(KeyValueData* pkvd)
@@ -141,7 +140,7 @@ void CEnvExplosion::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 	// do damage
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NODAMAGE))
 	{
-		RadiusDamage(pev, pev, m_iMagnitude, CLASS_NONE, DMG_BLAST);
+		::RadiusDamage(pev->origin, pev, pev, m_iMagnitude, m_iMagnitude * 2.5, CLASS_NONE, DMG_BLAST);
 	}
 
 	SetThink(&CEnvExplosion::Smoke);

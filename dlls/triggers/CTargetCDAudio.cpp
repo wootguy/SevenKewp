@@ -4,7 +4,6 @@
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
-#include "player_util.h"
 
 // This plays a CD track when fired or when the player enters it's radius
 class CTargetCDAudio : public CPointEntity

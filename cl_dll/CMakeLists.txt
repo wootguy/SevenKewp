@@ -15,7 +15,7 @@ set(WEAPON_SRC
 	../dlls/weapon/CRpg.cpp
 	../dlls/weapon/CSatchel.cpp
 	../dlls/weapon/CShotgun.cpp
-	../dlls/weapon/CSqueakGrenade.cpp
+	../dlls/weapon/CSqueak.cpp
 	../dlls/weapon/CTripmine.cpp
 	com_weapons.cpp
 )

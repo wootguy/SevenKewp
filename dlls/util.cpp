@@ -4372,3 +4372,38 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 			g_engfuncs.pfnServerPrint(log_line);
 	}
 }
+
+Vector VecBModelOrigin(entvars_t* pevBModel)
+{
+	return pevBModel->absmin + (pevBModel->size * 0.5);
+}
+
+void PlayCDTrack(int iTrack)
+{
+	edict_t* pClient;
+
+	// manually find the single player. 
+	pClient = g_engfuncs.pfnPEntityOfEntIndex(1);
+
+	// Can't play if the client is not connected!
+	if (!pClient)
+		return;
+
+	if (iTrack < -1 || iTrack > 30)
+	{
+		ALERT(at_console, "TriggerCDAudio - Track %d out of range\n");
+		return;
+	}
+
+	if (iTrack == -1)
+	{
+		CLIENT_COMMAND(pClient, "cd stop\n");
+	}
+	else
+	{
+		char string[64];
+
+		sprintf(string, "cd play %3d\n", iTrack);
+		CLIENT_COMMAND(pClient, string);
+	}
+}

@@ -788,3 +788,10 @@ std::map<std::string, std::string> loadReplacementFile(const char* path);
 void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType=MSG_BROADCAST, edict_t* dest=NULL);
 
 WavInfo getWaveFileInfo(const char* path);
+
+//
+// BModelOrigin - calculates origin of a bmodel from absmin/size because all bmodel origins are 0 0 0
+//
+Vector VecBModelOrigin(entvars_t* pevBModel);
+
+void PlayCDTrack(int iTrack);
