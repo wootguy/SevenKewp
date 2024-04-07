@@ -5,7 +5,6 @@
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
 #include "CBaseTrigger.h"
-#include "player_util.h"
 
 //=====================================
 //

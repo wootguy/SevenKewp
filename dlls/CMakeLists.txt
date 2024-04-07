@@ -27,79 +27,85 @@ set(MONSTER_HDR
 	monster/schedule.h
 )
 set(MONSTER_SRC
-	monster/CActAnimating.cpp
-	monster/CAGrunt.cpp
-	monster/CApache.cpp
-	monster/CBabyGarg.cpp
-	monster/CBabyVoltigore.cpp
-	monster/CBarnacle.cpp
-	monster/CBarney.cpp
-	monster/CBaseAnimating.cpp
-	monster/CBaseGrunt.cpp
-	monster/CBaseGruntOp4.cpp
 	monster/CBaseMonster.cpp
-	monster/CBaseTurret.cpp
-	monster/CBigMomma.cpp
+	monster/CMonsterMaker.cpp
+	monster/CTalkSquadMonster.cpp
+	monster/defaultai.cpp
+	monster/h_ai.cpp
+	monster/CCineAI.cpp
+	monster/CCineMonster.cpp
+	monster/CScriptedSentence.cpp
+	nodes.cpp
+)
+set(MONSTER_MISC_SRC
+	monster/CActAnimating.cpp
 	monster/CBloater.cpp
-	monster/CBodyGuard.cpp
-	monster/CBullsquid.cpp
-	monster/CChumtoad.cpp
+	env/CCorpse.cpp
 	monster/CDeadHEV.cpp
 	monster/CFlockingFlyerFlock.cpp
-	monster/CFlyingMonster.cpp
 	monster/CFurniture.cpp
-	monster/CMiniTurret.cpp
-	monster/CMonsterMaker.cpp
-	monster/CController.cpp
-	monster/CGargantua.cpp
 	monster/CGenericMonster.cpp
 	monster/CGMan.cpp
-	monster/CGonome.cpp
 	monster/CCycler.cpp
-	monster/CHAssassin.cpp
-	monster/CHeadCrab.cpp
-	monster/CHGrunt.cpp
-	monster/CHGruntOp4.cpp
-	monster/CHGruntOp4Medic.cpp
-	monster/CHGruntOp4Torch.cpp
-	monster/CHornet.cpp
-	monster/CHoundeye.cpp
-	monster/CHWGrunt.cpp
-	monster/CIchthyosaur.cpp
-	monster/CISlave.cpp
 	monster/CLeech.cpp
-	monster/CMassn.cpp
-	monster/CNihilanth.cpp
-	monster/COsprey.cpp
-	monster/COtis.cpp
-	monster/CPitdrone.cpp
 	monster/CRat.cpp
 	monster/CRoach.cpp
-	monster/CRoboGrunt.cpp
-	monster/CScientist.cpp
-	monster/CSentry.cpp
-	monster/CShockRoach.cpp
-	monster/CShockTrooper.cpp
-	monster/CTalkSquadMonster.cpp
-	monster/CTentacle.cpp
-	monster/CTor.cpp
-	monster/CTurret.cpp
-	monster/CVoltigore.cpp
 	monster/CXenHair.cpp
 	monster/CXenPLight.cpp
 	monster/CXenSpore.cpp
 	monster/CXenTree.cpp
-	monster/CZombie.cpp
 	monster/tempmonster.cpp
 )
-set(MONSTER_AI_SRC
-	monster/defaultai.cpp
-	monster/h_ai.cpp
+set(MONSTER_MACHINE_SRC
+	monster/CApache.cpp
+	monster/CBaseTurret.cpp
+	monster/CMiniTurret.cpp
+	monster/COsprey.cpp
+	monster/CRoboGrunt.cpp
+	monster/CSentry.cpp
+	monster/CTurret.cpp
 )
-set(MONSTER_SCRIPTED_SRC
-	monster/CCineAI.cpp
-	monster/CCineMonster.cpp
-	monster/CScriptedSentence.cpp
+set(MONSTER_HUMAN_SRC
+	monster/CBarney.cpp
+	monster/CBaseGrunt.cpp
+	monster/CBaseGruntOp4.cpp
+	monster/CBodyGuard.cpp
+	monster/CHAssassin.cpp
+	monster/CHGrunt.cpp
+	monster/CHGruntOp4.cpp
+	monster/CHGruntOp4Medic.cpp
+	monster/CHGruntOp4Torch.cpp
+	monster/CHWGrunt.cpp
+	monster/CMassn.cpp
+	monster/COtis.cpp
+	monster/CScientist.cpp
+)
+set(MONSTER_ALIEN_SRC
+	monster/CAGrunt.cpp
+	monster/CBabyGarg.cpp
+	monster/CBabyVoltigore.cpp
+	monster/CBarnacle.cpp
+	monster/CBigMomma.cpp
+	monster/CBullsquid.cpp
+	monster/CChumtoad.cpp
+	monster/CController.cpp
+	monster/CFlyingMonster.cpp
+	monster/CGargantua.cpp
+	monster/CGonome.cpp
+	monster/CHeadCrab.cpp
+	monster/CHornet.cpp
+	monster/CHoundeye.cpp
+	monster/CIchthyosaur.cpp
+	monster/CISlave.cpp
+	monster/CNihilanth.cpp
+	monster/CPitdrone.cpp
+	monster/CShockRoach.cpp
+	monster/CShockTrooper.cpp
+	monster/CSqueakGrenade.cpp
+	monster/CTentacle.cpp
+	monster/CTor.cpp
+	monster/CVoltigore.cpp
+	monster/CZombie.cpp
 )
 
 set(ENV_HDR
@@ -123,7 +129,6 @@ set(ENV_SRC
 	env/CBlood.cpp
 	env/CBloodSplat.cpp
 	env/CBubbling.cpp
-	env/CCorpse.cpp
 	env/CDecal.cpp
 	env/CEnvBeverage.cpp
 	env/CEnvExplosion.cpp
@@ -176,62 +181,63 @@ set(TRIGGER_HDR
 	triggers/CTriggerMultiple.h
 )
 set(TRIGGER_SRC
-	triggers/CAutoTrigger.cpp
 	triggers/CBaseLogic.cpp
 	triggers/CBaseTrigger.cpp
-	triggers/CChangeLevel.cpp
-	triggers/CFrictionModifier.cpp
 	triggers/CFireAndDie.cpp
+	triggers/CRuleEntity.cpp
+)
+set(TRIGGER_OBSOLETE_SRC
+	triggers/CRevertSaved.cpp
+	triggers/CTriggerEndSection.cpp
+	triggers/CTriggerSave.cpp
+	triggers/CTriggerVolume.cpp
+)
+set(TRIGGER_POINT_SRC
+	triggers/CAutoTrigger.cpp
 	triggers/CGameCounter.cpp
 	triggers/CGameEnd.cpp
 	triggers/CGamePlayerEquip.cpp
 	triggers/CGamePlayerHurt.cpp
-	triggers/CGamePlayerTeam.cpp
-	triggers/CGamePlayerZone.cpp
 	triggers/CGameScore.cpp
-	triggers/CGameTeamMaster.cpp
-	triggers/CGameTeamSet.cpp
 	triggers/CGameText.cpp
-	triggers/CInfoIntermission.cpp
-	triggers/CLadder.cpp
 	triggers/CMultiManager.cpp
 	triggers/CMultiSource.cpp
-	triggers/CPlayerRespawnZone.cpp
 	triggers/CRenderFxManager.cpp
-	triggers/CRevertSaved.cpp
-	triggers/CRuleEntity.cpp
 	triggers/CStripWeapons.cpp
 	triggers/CTriggerCamera.cpp
 	triggers/CTargetCDAudio.cpp
-	triggers/CTriggerCDAudio.cpp
 	triggers/CTriggerChangeTarget.cpp
 	triggers/CTriggerChangeValue.cpp
 	triggers/CTriggerCondition.cpp
-	triggers/CTriggerCounter.cpp
 	triggers/CTriggerCreateEntity.cpp
-	triggers/CTriggerEndSection.cpp
 	triggers/CTriggerEntityIterator.cpp
+	triggers/CTriggerRandom.cpp
+	triggers/CTriggerRelay.cpp
+	triggers/CTriggerRenamePlayer.cpp
+	triggers/CTriggerRespawn.cpp
+	triggers/CTriggerSetOrigin.cpp
+	
+)
+set(TRIGGER_BRUSHED_SRC
+	triggers/CChangeLevel.cpp
+	triggers/CFrictionModifier.cpp
+	triggers/CGamePlayerZone.cpp
+	triggers/CPlayerRespawnZone.cpp
+	triggers/CTriggerCDAudio.cpp
+	triggers/CTriggerCounter.cpp
 	triggers/CTriggerGravity.cpp
 	triggers/CTriggerHurt.cpp
 	triggers/CTriggerMonsterJump.cpp
 	triggers/CTriggerMultiple.cpp
 	triggers/CTriggerOnce.cpp
 	triggers/CTriggerPush.cpp
-	triggers/CTriggerRandom.cpp
-	triggers/CTriggerRelay.cpp
-	triggers/CTriggerRenamePlayer.cpp
-	triggers/CTriggerRespawn.cpp
-	triggers/CTriggerSave.cpp
-	triggers/CTriggerSetOrigin.cpp
 	triggers/CTriggerTeleport.cpp
-	triggers/CTriggerVolume.cpp
 )
 
 set(FUNC_HDR
 	func/CBaseButton.h
 	func/CBasePlatTrain.h
 	func/CBreakable.h
-	func/func_util.h
 	func/CBaseDoor.h
 	func/CFuncPlat.h
 	func/CFuncPlatRot.h
@@ -247,7 +253,6 @@ set(FUNC_SRC
 	func/CBasePlatTrain.cpp
 	func/CBreakable.cpp
 	func/CButtonTarget.cpp
-	func/func_util.cpp
 	func/CFuncConveyor.cpp
 	func/CFuncIllusionary.cpp
 	func/CFuncMonsterClip.cpp
@@ -269,6 +274,7 @@ set(FUNC_SRC
 	func/CFuncWall.cpp
 	func/CFuncWallToggle.cpp
 	func/CGunTarget.cpp
+	func/CLadder.cpp
 	func/CMomentaryDoor.cpp
 	func/CMomentaryRotButton.cpp
 	func/CPlatTrigger.cpp
@@ -287,6 +293,8 @@ set(ENTITY_HDR
 	CKeyValue.h
 	scripted.h
 	scriptevent.h
+	path/CPathCorner.h
+	path/CPathTrack.h
 	../engine/progs.h
 	../engine/progdefs.h
 	../engine/edict.h
@@ -295,6 +303,7 @@ set(ENTITY_HDR
 )
 set(ENTITY_SRC
 	cbase.cpp
+	CBaseAnimating.cpp
 	CBaseEntity.cpp
 	CBaseDelay.cpp
 	CBaseDMStart.cpp
@@ -306,16 +315,8 @@ set(ENTITY_SRC
 	CPointEntity.cpp
 	CWorld.cpp
 	subs.cpp
-)
-
-set(PATH_HDR
-	path/CPathCorner.h
-	path/CPathTrack.h
-)
-set(PATH_SRC
 	path/CPathCorner.cpp
 	path/CPathTrack.cpp
-	nodes.cpp
 )
 
 set(WEAPON_HDR
@@ -362,7 +363,7 @@ set(WEAPON_SRC
 	weapon/CShockBeam.cpp
 	weapon/CShotgun.cpp
 	weapon/CSpore.cpp
-	weapon/CSqueakGrenade.cpp
+	weapon/CSqueak.cpp
 	weapon/CTripmine.cpp
 	weapon/CWeaponBox.cpp
 	weapon/weapons.cpp
@@ -387,21 +388,22 @@ set(AMMO_SRC
 )
 
 set(UTIL_HDR
+	animation.h
 	Bsp.h
 	bsptypes.h
 	bsplimits.h
 	plane.h
-	player_util.h
 	util.h
 	mstream.h
 	lagcomp.h
 	vector.h
 )
 set(UTIL_SRC
+	animation.cpp
 	Bsp.cpp
 	bsptypes.cpp
 	plane.cpp
-	player_util.cpp
+	sound.cpp
 	util.cpp
 	mstream.cpp
 	lagcomp.cpp
@@ -411,7 +413,6 @@ set(UTIL_SRC
 )
 
 set(GAME_HDR
-	animation.h
 	client.h
 	../engine/custom.h
 	../engine/eiface.h
@@ -424,7 +425,6 @@ set(GAME_HDR
 	mod_api.h
 )
 set(GAME_SRC
-	animation.cpp
 	client.cpp
 	client_commands.cpp
 	game.cpp
@@ -434,7 +434,6 @@ set(GAME_SRC
 	multiplay_gamerules.cpp
 	singleplay_gamerules.cpp
 	skill.cpp
-	sound.cpp
 	teamplay_gamerules.cpp
 	user_messages.cpp
 	../game_shared/voice_gamemgr.cpp
@@ -442,13 +441,13 @@ set(GAME_SRC
 )
 
 set(ALL_SRC
-	${MONSTER_SRC} ${MONSTER_AI_SRC} ${MONSTER_SCRIPTED_SRC} ${MONSTER_HDR}
+	${MONSTER_SRC} ${MONSTER_ALIEN_SRC} ${MONSTER_HUMAN_SRC} ${MONSTER_MACHINE_SRC} ${MONSTER_MISC_SRC} ${MONSTER_HDR}
 	${ENTITY_SRC} ${ENTITY_HDR}
 	${ENV_SRC} ${ENV_HDR}
 	${ITEM_SRC} ${ITEM_HDR}
 	${FUNC_HDR} ${FUNC_SRC}
 	${PATH_HDR} ${PATH_SRC}
-	${TRIGGER_HDR} ${TRIGGER_SRC}
+	${TRIGGER_HDR} ${TRIGGER_SRC} ${TRIGGER_POINT_SRC} ${TRIGGER_BRUSHED_SRC} ${TRIGGER_OBSOLETE_SRC}
 	${WEAPON_SRC} ${WEAPON_HDR}
 	${AMMO_SRC} ${AMMO_HDR}
 	${UTIL_SRC} ${UTIL_HDR}
@@ -529,10 +528,15 @@ elseif(MSVC)
 	source_group("Source Files\\Entities\\func" FILES ${FUNC_SRC})
 	source_group("Source Files\\Entities\\item" FILES ${ITEM_SRC})
 	source_group("Source Files\\Entities\\monster" FILES ${MONSTER_SRC})
-	source_group("Source Files\\Entities\\monster\\ai" FILES ${MONSTER_AI_SRC})
-	source_group("Source Files\\Entities\\monster\\scripted" FILES ${MONSTER_SCRIPTED_SRC})
+	source_group("Source Files\\Entities\\monster\\aliens" FILES ${MONSTER_ALIEN_SRC})
+	source_group("Source Files\\Entities\\monster\\humans" FILES ${MONSTER_HUMAN_SRC})
+	source_group("Source Files\\Entities\\monster\\machines" FILES ${MONSTER_MACHINE_SRC})
+	source_group("Source Files\\Entities\\monster\\misc" FILES ${MONSTER_MISC_SRC})
 	source_group("Source Files\\Entities\\path" FILES ${PATH_SRC})
 	source_group("Source Files\\Entities\\trigger" FILES ${TRIGGER_SRC})
+	source_group("Source Files\\Entities\\trigger\\point" FILES ${TRIGGER_POINT_SRC})
+	source_group("Source Files\\Entities\\trigger\\brush" FILES ${TRIGGER_BRUSHED_SRC})
+	source_group("Source Files\\Entities\\trigger\\obsolete" FILES ${TRIGGER_OBSOLETE_SRC})
 	source_group("Source Files\\Entities\\weapon" FILES ${WEAPON_SRC})
 	source_group("Source Files\\Entities\\weapon\\ammo" FILES ${AMMO_SRC})
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})
