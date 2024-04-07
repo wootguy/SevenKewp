@@ -436,6 +436,7 @@ void CBarney :: Spawn()
 	Precache( );
 
 	m_friendlySkinFirst = true;
+	canBeMadAtPlayer = true;
 	InitModel();
 	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 

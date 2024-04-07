@@ -326,13 +326,6 @@ void CLightning::StrikeThink(void)
 			}
 		}
 
-		if (!UTIL_isSafeEntIndex(pStart->entindex(), "create lightning")) {
-			return;
-		}
-		if (!UTIL_isSafeEntIndex(pEnd->entindex(), "create lightning")) {
-			return;
-		}
-
 		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
 		if (IsPointEntity(pStart) || IsPointEntity(pEnd))
 		{
@@ -345,6 +338,9 @@ void CLightning::StrikeThink(void)
 			}
 			if (!IsPointEntity(pStart))	// One sided
 			{
+				if (!UTIL_isSafeEntIndex(pStart->entindex(), "create lightning")) {
+					return;
+				}
 				WRITE_BYTE(TE_BEAMENTPOINT);
 				WRITE_SHORT(pStart->entindex());
 				WRITE_COORD(pEnd->pev->origin.x);
@@ -366,6 +362,13 @@ void CLightning::StrikeThink(void)
 		}
 		else
 		{
+			if (!UTIL_isSafeEntIndex(pStart->entindex(), "create lightning")) {
+				return;
+			}
+			if (!UTIL_isSafeEntIndex(pEnd->entindex(), "create lightning")) {
+				return;
+			}
+
 			if (pev->spawnflags & SF_BEAM_RING)
 				WRITE_BYTE(TE_BEAMRING);
 			else

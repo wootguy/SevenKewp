@@ -1397,11 +1397,12 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 				iReturn = LOCALMOVE_VALID;
 				break;
 			}
-			else if (nextStepSize > 4) {
+			else if (nextStepSize > 8) {
 				// try taking a smaller step. This helps with stairs at the top of steep slopes.
 				// Crouch over the top edge of a ramp and you can often feel a sudden jump upwards.
 				// That's where monsters have trouble because the combined step size of the slope 
 				// and "stair" are too high unless taking baby steps.
+				// TODO: setting below 8 causes grunts to try running inside walls for cover??
 				nextStepSize /= 2;
 				//ALERT(at_console, "Try a smaller step! %d\n", nextStepSize);
 				continue;
@@ -7134,8 +7135,16 @@ void CBaseMonster::FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		}
 		else if (CanFollow())
 		{
-			if (m_afMemory & bits_MEMORY_PROVOKED)
-				ALERT(at_console, "I'm not following you, you evil person!\n");
+			if (canBeMadAtPlayer && (m_afMemory & bits_MEMORY_PROVOKED)) {
+				const char* name = DisplayName();
+				const char* msg = "refuses to follow you.";
+				if (strlen(name) + strlen(msg) > 40) {
+					CLIENT_PRINTF(pCaller->edict(), print_center, UTIL_VarArgs("%s\n%s", name, msg));
+				}
+				else {
+					CLIENT_PRINTF(pCaller->edict(), print_center, UTIL_VarArgs("%s %s", name, msg));
+				}
+			}
 			else
 			{
 				StartFollowing(pCaller);
@@ -7155,12 +7164,12 @@ void CBaseMonster::PushTouch(CBaseEntity* pOther)
 	if (pOther->IsPlayer() && IRelationship(pOther) <= R_NO)
 	{
 		// Ignore if pissed at player
-		if (m_afMemory & bits_MEMORY_PROVOKED)
+		if (canBeMadAtPlayer && (m_afMemory & bits_MEMORY_PROVOKED))
 			return;
 
 		// Stay put during speech
-		//if (IsTalking())
-		//	return;
+		if (!CanBePushed())
+			return;
 
 		// Heuristic for determining if the player is pushing me away
 		float speed = fabs(pOther->pev->velocity.x) + fabs(pOther->pev->velocity.y);

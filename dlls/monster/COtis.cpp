@@ -702,6 +702,7 @@ void COtis :: Precache()
 	// every new otis must call this, otherwise
 	// when a level is loaded, nobody will talk (time is reset to 0)
 	TalkInit();
+	canBeMadAtPlayer = true;
 }	
 
 // Init talk data

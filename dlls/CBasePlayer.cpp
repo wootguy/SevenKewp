@@ -1777,8 +1777,13 @@ void CBasePlayer::UpdateStatusBar()
 
 				strcpy(sbuf1, UTIL_VarArgs("1 %s%s", srel, name));
 
-				if ((pEntity->pev->flags & FL_GODMODE) || (pEntity->pev->takedamage == DAMAGE_NO)) {
-					strcpy(sbuf0, UTIL_VarArgs("2 Health: Invincible", hp));
+				if ((pEntity->pev->flags & FL_GODMODE) || (pEntity->pev->takedamage == DAMAGE_NO) || pEntity->pev->health > 2147483647) {
+					strcpy(sbuf0, "2 Health: Invincible");
+					hp = 1; // client won't show health text if this is an insane value
+				}
+				else if (hp == 0) {
+					strcpy(sbuf0, "2 Health: 0");
+					hp = 1; // client won't show health text if this is 0
 				}
 				else {
 					strcpy(sbuf0, UTIL_VarArgs("2 Health: %d", hp));

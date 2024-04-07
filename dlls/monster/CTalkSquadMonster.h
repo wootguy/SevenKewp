@@ -158,6 +158,7 @@ public:
 	// following
 	virtual void StopFollowing(BOOL clearSchedule);
 	virtual void StartFollowing(CBaseEntity* pLeader);
+	virtual bool CanBePushed();
 	
 	virtual void	SetAnswerQuestion(CTalkSquadMonster* pSpeaker );
 	virtual int		FriendNumber( int arrayNumber )	{ return arrayNumber; }
@@ -251,7 +252,6 @@ public:
 	float m_flLastHitByPlayer;
 	int m_iPlayerHits;
 	float m_flPlayerDamage;
-	bool canBeMadAtPlayer; // grunt will retaliate on too much friendly fire
 
 	CTalkSquadMonster* MySquadMedic();
 
