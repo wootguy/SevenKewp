@@ -6,6 +6,7 @@
 #include "gamerules.h"
 #include "CBaseTrigger.h"
 
+#define SF_RANDOM_DESTINATION 64
 
 class CTriggerTeleport : public CBaseTrigger
 {
@@ -45,7 +46,6 @@ void CTriggerTeleport::KeyValue(KeyValueData* pkvd)
 void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 {
 	entvars_t* pevToucher = pOther->pev;
-	edict_t* pentTarget = NULL;
 
 	// Only teleport monsters or clients
 	if (!FBitSet(pevToucher->flags, FL_CLIENT | FL_MONSTER))
@@ -70,9 +70,21 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 		}
 	}
 
-	pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(pev->target));
-	if (FNullEnt(pentTarget))
+	std::vector<edict_t*> targets;
+	edict_t* ent = NULL;
+	while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(pev->target)))) {
+		if (!strcmp(STRING(ent->v.classname), "info_teleport_destination")) {
+			targets.push_back(ent);
+		}
+	}
+
+	if (targets.empty())
 		return;
+
+	edict_t* pentTarget = targets[0];
+
+	if (pev->spawnflags & SF_RANDOM_DESTINATION)
+		pentTarget = targets[RANDOM_LONG(0, targets.size()-1)];
 
 	Vector tmp = VARS(pentTarget)->origin;
 
