@@ -489,7 +489,7 @@ extern DLL_GLOBAL int			g_Language;
 #define VEC_DUCK_HULL_MAX	Vector( 16,  16,  18)
 #define VEC_DUCK_VIEW		Vector( 0, 0, 12 )
 
-typedef enum svc_commands_e
+enum svc_commands_e
 {
 	SVC_BAD,
 	SVC_NOP,

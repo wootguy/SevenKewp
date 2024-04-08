@@ -580,8 +580,6 @@ void CGargantua :: Precache()
 {
 	CBaseMonster::Precache();
 
-	int i;
-
 	m_defaultModel = "models/garg.mdl";
 	PRECACHE_MODEL(GetModel());
 

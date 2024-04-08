@@ -506,7 +506,7 @@ Schedule_t* CHWGrunt::GetMonsterStateSchedule(void) {
 CBaseEntity* CHWGrunt::PBestMinigun(void)
 {
 	CBaseEntity* bestEnt = NULL;
-	float bestDist = 9e99;
+	float bestDist = FLT_MAX;
 	bool bestIsReachable = false;
 
 	Vector eyePos = EyePosition();

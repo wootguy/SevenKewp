@@ -1764,7 +1764,6 @@ void CBasePlayer::UpdateStatusBar()
 				int hp = roundf(pEntity->pev->health);
 
 				int irel = IRelationship(pEntity);
-				bool isFriendly = irel == R_NO || irel == R_AL;
 
 				const char* srel = "";
 
@@ -2316,13 +2315,13 @@ void CBasePlayer::CheckSuitUpdate()
 	{
 		// play a sentence off of the end of the queue
 		for (i = 0; i < CSUITPLAYLIST; i++)
-			{
-			if (isentence = m_rgSuitPlayList[isearch])
+		{
+			if ((isentence = m_rgSuitPlayList[isearch]) != 0)
 				break;
 			
 			if (++isearch == CSUITPLAYLIST)
 				isearch = 0;
-			}
+		}
 
 		if (isentence)
 		{
@@ -3341,7 +3340,6 @@ void CBasePlayer::ImpulseCommands( )
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
 {
 	CBaseEntity *pEntity;
-	TraceResult tr;
 
 	switch ( iImpulse )
 	{
@@ -3502,16 +3500,20 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		}
 		break;
 	case	202:// Random blood splatter
-		RETURN_IF_CHEATS_DISABLED()
+	{
+		RETURN_IF_CHEATS_DISABLED();
 		UTIL_MakeVectors(pev->v_angle);
-		UTIL_TraceLine ( pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128, ignore_monsters, ENT(pev), & tr);
+	
+		TraceResult tr;
+		UTIL_TraceLine(pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128, ignore_monsters, ENT(pev), &tr);
 
-		if ( tr.flFraction != 1.0 )
+		if (tr.flFraction != 1.0)
 		{// line hit something, so paint a decal
-			CBloodSplat *pBlood = GetClassPtr((CBloodSplat *)NULL);
-			pBlood->Spawn( pev );
+			CBloodSplat* pBlood = GetClassPtr((CBloodSplat*)NULL);
+			pBlood->Spawn(pev);
 		}
 		break;
+	}
 	case	203:// remove creature.
 		RETURN_IF_CHEATS_DISABLED()
 		pEntity = FindEntityForward( this );
@@ -4091,7 +4093,7 @@ Vector CBasePlayer :: GetAutoaimVector( float flDelta )
 
 	// always use non-sticky autoaim
 	// UNDONE: use sever variable to chose!
-	if (1 || g_iSkillLevel == SKILL_MEDIUM)
+	//if (g_iSkillLevel == SKILL_MEDIUM)
 	{
 		m_vecAutoAim = Vector( 0, 0, 0 );
 		// flDelta *= 0.5;

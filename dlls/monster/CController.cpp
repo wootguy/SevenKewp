@@ -1325,7 +1325,7 @@ void CControllerHeadBall :: HuntThink( void  )
 		int oldFlags = pev->flags;
 		pev->flags |= FL_MONSTER; // HACK: consider this entity for sound replacement
 		UTIL_EmitAmbientSound( ENT(pev), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
-		pev->flags = pev->flags;
+		pev->flags = oldFlags;
 
 		m_flNextAttack = gpGlobals->time + 3.0;
 

@@ -1083,7 +1083,7 @@ int CBaseMonster::CheckEnemy(CBaseEntity* pEnemy)
 	{
 		// distance to enemy's feet
 		vecEnemyPos.z -= pEnemy->pev->size.z;
-		float flDistToEnemy2 = (vecEnemyPos - pev->origin).Length();
+		flDistToEnemy2 = (vecEnemyPos - pev->origin).Length();
 		if (flDistToEnemy2 < flDistToEnemy)
 			flDistToEnemy = flDistToEnemy2;
 	}
@@ -4396,9 +4396,6 @@ Killed
 */
 void CBaseMonster::Killed(entvars_t* pevAttacker, int iGib)
 {
-	unsigned int	cCount = 0;
-	BOOL			fDone = FALSE;
-
 	if (HasMemory(bits_MEMORY_KILLED))
 	{
 		if (ShouldGibMonster(iGib))
@@ -6556,9 +6553,9 @@ void CBaseMonster::StartTask(Task_t* pTask)
 				// try routing to a node that the nearest one links to
 				for (int i = 0; i < nearestNode.m_cNumLinks; i++) {
 					CLink& link = WorldGraph.Link(nearestNode.m_iFirstLink + i);
-					CNode& targetNode = WorldGraph.Node(link.m_iDestNode);
+					CNode& altNode = WorldGraph.Node(link.m_iDestNode);
 
-					if (BuildRoute(targetNode.m_vecOrigin, bits_MF_TO_NODE, NULL, false)) {
+					if (BuildRoute(altNode.m_vecOrigin, bits_MF_TO_NODE, NULL, false)) {
 						m_targetNode = bestNode;
 						//ALERT(at_console, "Nearest node is blocked but can route to one of its links\n");
 						break;

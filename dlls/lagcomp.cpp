@@ -118,7 +118,7 @@ void lagcomp_update() {
 	g_historyIdx = (g_historyIdx+1) % MAX_UNLAG_STATES;
 	g_historyWritten = V_min(MAX_UNLAG_STATES, g_historyWritten+1);
 
-	float duration = g_engfuncs.pfnTime() - now;
+	//float duration = g_engfuncs.pfnTime() - now;
 }
 
 void lagcomp_begin(CBasePlayer* plr) {

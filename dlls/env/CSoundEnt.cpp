@@ -272,8 +272,7 @@ void CSoundEnt :: Initialize ( void )
 //=========================================================
 int CSoundEnt :: ISoundsInList ( int iListType )
 {
-	int i;
-	int iThisSound;
+	int iThisSound = SOUNDLIST_EMPTY;
 
 	if ( iListType == SOUNDLISTTYPE_FREE )
 	{
@@ -293,7 +292,7 @@ int CSoundEnt :: ISoundsInList ( int iListType )
 		return 0;
 	}
 
-	i = 0;
+	int i = 0;
 
 	while ( iThisSound != SOUNDLIST_EMPTY )
 	{

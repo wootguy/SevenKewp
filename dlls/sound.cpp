@@ -142,7 +142,7 @@ int USENTENCEG_Pick(int isentenceg, char *szfound, int bufsz)
 	unsigned char i;
 	unsigned char count;
 	char sznum[8];
-	unsigned char ipick;
+	unsigned char ipick = 0;
 	int ffound = FALSE;
 	
 	if (!fSentencesInit)
@@ -485,7 +485,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 		sound_num = PRECACHE_SOUND_ENT(NULL, sample); // TODO: abort if not precached
 	}
 
-	int ent = ENTINDEX(entity);
+	int ient = ENTINDEX(entity);
 	int volume = clampf(fvolume, 0, 1.0f) * 255;
 	
 	if (volume != DEFAULT_SOUND_PACKET_VOLUME)
@@ -509,7 +509,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 	if (field_mask & SND_FL_ATTENUATION)
 		bitbuffer.writeBits((uint32)(attenuation * 64.0f), 8);
 	bitbuffer.writeBits(channel, 3);
-	bitbuffer.writeBits(ent, MAX_EDICT_BITS);
+	bitbuffer.writeBits(ient, MAX_EDICT_BITS);
 	bitbuffer.writeBits(sound_num, (field_mask & SND_FL_LARGE_INDEX) ? 16 : 8);
 	bitbuffer.writeBitVec3Coord(origin);
 	if (field_mask & SND_FL_PITCH)
@@ -523,15 +523,15 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 	bool anyMessagesWritten = false;
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
-		edict_t* ent = INDEXENT(i);
-		uint32_t playerBit = PLRBIT(ent);
+		edict_t* plent = INDEXENT(i);
+		uint32_t playerBit = PLRBIT(plent);
 
-		if (!(messageTargets & playerBit) || !IsValidPlayer(ent)) {
+		if (!(messageTargets & playerBit) || !IsValidPlayer(plent)) {
 			continue;
 		}
 
 		// TODO: should only consider PAS (can hear reload sounds but only distant gunshots)
-		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, ent);
+		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, plent);
 		WRITE_BYTES(msgbuffer, msgSz);
 		MESSAGE_END();
 		anyMessagesWritten = true;

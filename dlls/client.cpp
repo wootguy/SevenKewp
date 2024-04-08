@@ -641,7 +641,6 @@ Called every frame before physics are run
 */
 void PlayerPreThink( edict_t *pEntity )
 {
-	entvars_t *pev = &pEntity->v;
 	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE(pEntity);
 
 	if (pPlayer)
@@ -657,7 +656,6 @@ Called every frame after physics are run
 */
 void PlayerPostThink( edict_t *pEntity )
 {
-	entvars_t *pev = &pEntity->v;
 	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE(pEntity);
 
 	if (pPlayer)
@@ -843,7 +841,6 @@ animation right now.
 */
 void PlayerCustomization( edict_t *pEntity, customization_t *pCust )
 {
-	entvars_t *pev = &pEntity->v;
 	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE(pEntity);
 
 	if (!pPlayer)
@@ -883,7 +880,6 @@ A spectator has joined the game
 */
 void SpectatorConnect( edict_t *pEntity )
 {
-	entvars_t *pev = &pEntity->v;
 	CBaseSpectator *pPlayer = (CBaseSpectator *)GET_PRIVATE(pEntity);
 
 	if (pPlayer)
@@ -899,7 +895,6 @@ A spectator has left the game
 */
 void SpectatorDisconnect( edict_t *pEntity )
 {
-	entvars_t *pev = &pEntity->v;
 	CBaseSpectator *pPlayer = (CBaseSpectator *)GET_PRIVATE(pEntity);
 
 	if (pPlayer)
@@ -915,7 +910,6 @@ A spectator has sent a usercmd
 */
 void SpectatorThink( edict_t *pEntity )
 {
-	entvars_t *pev = &pEntity->v;
 	CBaseSpectator *pPlayer = (CBaseSpectator *)GET_PRIVATE(pEntity);
 
 	if (pPlayer)
@@ -1760,7 +1754,7 @@ ConnectionlessPacket
 int	ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
 {
 	// Parse stuff from args
-	int max_buffer_size = *response_buffer_size;
+	//int max_buffer_size = *response_buffer_size;
 
 	// Zero it out since we aren't going to respond.
 	// If we wanted to response, we'd write data into response_buffer
@@ -1814,13 +1808,12 @@ to be created during play ( e.g., grenades, ammo packs, projectiles, corpses, et
 */
 void CreateInstancedBaselines ( void )
 {
-	int iret = 0;
 	entity_state_t state;
 
 	memset( &state, 0, sizeof( state ) );
 
 	// Create any additional baselines here for things like grendates, etc.
-	// iret = ENGINE_INSTANCE_BASELINE( pc->pev->classname, &state );
+	// int iret = ENGINE_INSTANCE_BASELINE( pc->pev->classname, &state );
 
 	// Destroy objects.
 	//UTIL_Remove( pc );

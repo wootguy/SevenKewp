@@ -314,7 +314,7 @@ Schedule_t* CTor::GetMonsterStateSchedule(void) {
 		return CBaseMonster::GetSchedule();
 	}
 
-	CBaseMonster::GetSchedule();
+	return CBaseMonster::GetSchedule();
 }
 
 void CTor::MonsterThink(void) {

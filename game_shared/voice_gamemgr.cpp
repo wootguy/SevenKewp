@@ -43,6 +43,7 @@ cvar_t sv_alltalk = {"sv_alltalk", "0", FCVAR_SERVER};
 // ------------------------------------------------------------------------ //
 
 // Find a player with a case-insensitive name search.
+/*
 static CBasePlayer* FindPlayerByName(const char *pTestName)
 {
 	for(int i=1; i <= gpGlobals->maxClients; i++)
@@ -64,6 +65,7 @@ static CBasePlayer* FindPlayerByName(const char *pTestName)
 
 	return NULL;
 }
+*/
 
 static void VoiceServerDebug( char const *pFmt, ... )
 {
@@ -239,7 +241,7 @@ void CVoiceGameMgr::UpdateMasks()
 			// Build a mask of who they can hear based on the game rules.
 			for(int iOtherClient=0; iOtherClient < m_nMaxPlayers; iOtherClient++)
 			{
-				CBaseEntity *pEnt = UTIL_PlayerByIndex(iOtherClient+1);
+				pEnt = UTIL_PlayerByIndex(iOtherClient+1);
 				if(pEnt && (bAllTalk || m_pHelper->CanPlayerHearPlayer(pPlayer, (CBasePlayer*)pEnt)) )
 				{
 					gameRulesMask[iOtherClient] = true;

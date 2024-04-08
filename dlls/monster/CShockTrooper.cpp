@@ -492,16 +492,11 @@ BOOL CShockTrooper::FCanCheckAttacks()
 //=========================================================
 BOOL CShockTrooper::CheckMeleeAttack1(float flDot, float flDist)
 {
-	CBaseMonster* pEnemy;
+	CBaseMonster* pEnemy = m_hEnemy != NULL ? m_hEnemy->MyMonsterPointer() : NULL;
 
-	if (m_hEnemy != NULL)
+	if (!pEnemy)
 	{
-		pEnemy = m_hEnemy->MyMonsterPointer();
-
-		if (!pEnemy)
-		{
-			return false;
-		}
+		return false;
 	}
 
 	if (flDist <= 64 && flDot >= 0.7 &&
@@ -1846,7 +1841,6 @@ IMPLEMENT_CUSTOM_SCHEDULES(CShockTrooper, CTalkSquadMonster);
 void CShockTrooper::SetActivity(Activity NewActivity)
 {
 	int iSequence = ACTIVITY_NOT_AVAILABLE;
-	void* pmodel = GET_MODEL_PTR(ENT(pev));
 
 	switch (NewActivity)
 	{

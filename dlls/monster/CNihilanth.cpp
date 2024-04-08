@@ -953,8 +953,6 @@ void CNihilanth :: Flight( void )
 	if (flDir < 0)
 		flSpeed = -flSpeed;
 
-	float flDist = DotProduct( m_posDesired - vecEst, gpGlobals->v_forward );
-
 	// sideways drag
 	m_velocity.x = m_velocity.x * (1.0 - fabs( gpGlobals->v_right.x ) * 0.05);
 	m_velocity.y = m_velocity.y * (1.0 - fabs( gpGlobals->v_right.y ) * 0.05);
@@ -1030,9 +1028,8 @@ BOOL CNihilanth :: EmitSphere( void )
 
 void CNihilanth :: 	TargetSphere( USE_TYPE useType, float value )
 {
-	CBaseMonster *pSphere;
-	int i;
-	for (i = 0; i < N_SPHERES; i++)
+	CBaseMonster *pSphere = NULL;
+	for (int i = 0; i < N_SPHERES; i++)
 	{
 		if (m_hSphere[i] != NULL)
 		{
@@ -1041,7 +1038,7 @@ void CNihilanth :: 	TargetSphere( USE_TYPE useType, float value )
 				break;
 		}
 	}
-	if (i == N_SPHERES)
+	if (!pSphere)
 	{
 		return;
 	}

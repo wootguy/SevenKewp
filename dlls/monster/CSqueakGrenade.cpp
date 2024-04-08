@@ -222,7 +222,7 @@ void CSqueakGrenade::HuntThink( void )
 		pev->velocity = pev->velocity * 0.9;
 		pev->velocity.z += 8.0;
 	}
-	else if (pev->movetype = MOVETYPE_FLY)
+	else if (pev->movetype == MOVETYPE_FLY)
 	{
 		pev->movetype = MOVETYPE_BOUNCE;
 	}
@@ -233,7 +233,6 @@ void CSqueakGrenade::HuntThink( void )
 
 	m_flNextHunt = gpGlobals->time + 2.0;
 	
-	CBaseEntity *pOther = NULL;
 	Vector vecDir;
 	TraceResult tr;
 

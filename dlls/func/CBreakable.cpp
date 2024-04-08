@@ -271,6 +271,7 @@ void CBreakable::Precache(void)
 
 	switch (m_Material)
 	{
+	default:
 	case matWood:
 		pGibName = "models/woodgibs.mdl";
 
@@ -404,6 +405,7 @@ void CBreakable::DamageSound(void)
 		i = 3;
 		break;
 
+	default:
 	case matCeilingTile:
 		// UNDONE: no ceiling tile shard sound yet
 		i = 0;
@@ -576,7 +578,6 @@ void CBreakable::Die()
 {
 	Vector vecSpot;// shard origin
 	Vector vecVelocity;// shard velocity
-	CBaseEntity* pEntity = NULL;
 	char cFlag = 0;
 	int pitch;
 	float fvol;

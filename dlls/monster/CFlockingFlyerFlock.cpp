@@ -568,7 +568,6 @@ void CFlockingFlyer :: FlockLeaderThink( void )
 	TraceResult		tr;
 	Vector			vecDist;// used for general measurements
 	Vector			vecDir;// used for general measurements
-	int				cProcessed = 0;// keep track of how many other boids we've processed 
 	float			flLeftSide;
 	float			flRightSide;
 	

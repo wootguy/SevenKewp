@@ -410,20 +410,20 @@ void CTalkSquadMonster :: RunTask( Task_t *pTask )
 	{
 	case TASK_TLK_CLIENT_STARE:
 	case TASK_TLK_LOOK_AT_CLIENT:
-
-		edict_t *pPlayer;
+	{
+		edict_t* pPlayer = NULL;
 
 		// track head to the client for a while.
-		if ( m_MonsterState == MONSTERSTATE_IDLE		&& 
-			 !IsMoving()								&&
-			 !IsTalking()								)
+		if (m_MonsterState == MONSTERSTATE_IDLE &&
+			!IsMoving() &&
+			!IsTalking())
 		{
 			// Get edict for one player
-			pPlayer = g_engfuncs.pfnPEntityOfEntIndex( 1 );
+			pPlayer = g_engfuncs.pfnPEntityOfEntIndex(1);
 
-			if ( pPlayer )
+			if (pPlayer)
 			{
-				IdleHeadTurn( pPlayer->v.origin );
+				IdleHeadTurn(pPlayer->v.origin);
 			}
 		}
 		else
@@ -433,29 +433,29 @@ void CTalkSquadMonster :: RunTask( Task_t *pTask )
 			return;
 		}
 
-		if ( pTask->iTask == TASK_TLK_CLIENT_STARE )
+		if (pTask->iTask == TASK_TLK_CLIENT_STARE)
 		{
 			// fail out if the player looks away or moves away.
-			if ( ( pPlayer->v.origin - pev->origin ).Length2D() > TLK_STARE_DIST )
+			if ((pPlayer->v.origin - pev->origin).Length2D() > TLK_STARE_DIST)
 			{
 				// player moved away.
 				TaskFail();
 			}
 
-			UTIL_MakeVectors( pPlayer->v.angles );
-			if ( UTIL_DotPoints( pPlayer->v.origin, pev->origin, gpGlobals->v_forward ) < m_flFieldOfView )
+			UTIL_MakeVectors(pPlayer->v.angles);
+			if (UTIL_DotPoints(pPlayer->v.origin, pev->origin, gpGlobals->v_forward) < m_flFieldOfView)
 			{
 				// player looked away
 				TaskFail();
 			}
 		}
 
-		if ( gpGlobals->time > m_flWaitFinished )
+		if (gpGlobals->time > m_flWaitFinished)
 		{
 			TaskComplete();
 		}
 		break;
-
+	}
 	case TASK_FACE_PLAYER:
 		{
 			// Get edict for one player
@@ -575,7 +575,7 @@ CBaseEntity	*CTalkSquadMonster::EnumFriends( CBaseEntity *pPrevious, int listNum
 	Vector vecCheck;
 
 	pszFriend = m_szFriends[ FriendNumber(listNumber) ];
-	while (pFriend = UTIL_FindEntityByClassname( pFriend, pszFriend ))
+	while ((pFriend = UTIL_FindEntityByClassname( pFriend, pszFriend )) != 0)
 	{
 		if (pFriend == this || !pFriend->IsAlive())
 			// don't talk to self or dead people
@@ -613,7 +613,7 @@ void CTalkSquadMonster::AlertFriends( void )
 	// for each friend in this bsp...
 	for ( i = 0; i < TLK_CFRIENDS; i++ )
 	{
-		while (pFriend = EnumFriends( pFriend, i, TRUE ))
+		while ((pFriend = EnumFriends( pFriend, i, TRUE )) != 0)
 		{
 			CTalkSquadMonster* pMonster = pFriend->MyTalkSquadMonsterPointer();
 			if (pMonster && pMonster->IsAlive() && pMonster->canBeMadAtPlayer) {
@@ -634,7 +634,7 @@ void CTalkSquadMonster::ShutUpFriends( void )
 	// for each friend in this bsp...
 	for ( i = 0; i < TLK_CFRIENDS; i++ )
 	{
-		while (pFriend = EnumFriends( pFriend, i, TRUE ))
+		while ((pFriend = EnumFriends( pFriend, i, TRUE )) != 0)
 		{
 			CBaseMonster *pMonster = pFriend->MyMonsterPointer();
 			if ( pMonster )
@@ -728,7 +728,7 @@ CBaseEntity *CTalkSquadMonster :: FindNearestFriend(BOOL fPlayer)
 			continue;
 
 		// for each friend in this bsp...
-		while (pFriend = UTIL_FindEntityByClassname( pFriend, pszFriend ))
+		while ((pFriend = UTIL_FindEntityByClassname( pFriend, pszFriend )) != 0)
 		{
 			if (pFriend == this || !pFriend->IsAlive())
 				// don't talk to self or dead people
@@ -777,9 +777,7 @@ int CTalkSquadMonster :: GetVoicePitch( void )
 // Respond to a previous question
 //=========================================================
 void CTalkSquadMonster :: IdleRespond( void )
-{
-	int pitch = GetVoicePitch();
-	
+{	
 	// play response
 	PlaySentence( m_szGrp[TLK_ANSWER], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
 }
@@ -993,7 +991,7 @@ int CTalkSquadMonster :: FIdleSpeak ( void )
 	if ( RANDOM_LONG(0,1) )
 	{
 		//SENTENCEG_PlayRndSz( ENT(pev), szIdleGroup, 1.0, ATTN_IDLE, 0, pitch );
-		CBaseEntity *pFriend = FindNearestFriend(TRUE);
+		pFriend = FindNearestFriend(TRUE);
 
 		if ( pFriend )
 		{
@@ -1853,7 +1851,7 @@ CTalkSquadMonster* CTalkSquadMonster::MySquadMedic()
 
 CTalkSquadMonster* CTalkSquadMonster::FindSquadMedic(int searchRadius)
 {
-	for (CBaseEntity* pEntity = nullptr; (pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, searchRadius)); )
+	for (CBaseEntity* pEntity = nullptr; (pEntity = UTIL_FindEntityInSphere(pEntity, pev->origin, searchRadius)) != 0; )
 	{
 		CTalkSquadMonster* pMonster = pEntity->MyTalkSquadMonsterPointer();
 

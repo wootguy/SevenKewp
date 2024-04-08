@@ -1186,7 +1186,6 @@ Vector VecCheckSplatToss( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot
 	float time = speed / flGravity;
 	vecGrenadeVel = (vecSpot2 - vecSpot1);
 	vecGrenadeVel.z = 0;
-	float distance = vecGrenadeVel.Length();
 	
 	// Travel half the distance to the target in that time (apex is at the midpoint)
 	vecGrenadeVel = vecGrenadeVel * ( 0.5 / time );

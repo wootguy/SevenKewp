@@ -283,8 +283,6 @@ void execServerCfg() {
 	std::stringstream data_stream(cfgFile);
 	string line;
 
-	int equipIdx = 0;
-
 	// not just doing "exec server.cfg" so that commands remain in order after parsing other CFGs.
 	while (std::getline(data_stream, line)) {
 		line = trimSpaces(line);

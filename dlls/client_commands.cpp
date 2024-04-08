@@ -301,7 +301,6 @@ if (CVAR_GET_FLOAT("sv_cheats") == 0) {\
 
 bool CheatCommand(edict_t* pEntity) {
 	const char* pcmd = CMD_ARGV(0);
-	const char* pstr;
 
 	entvars_t* pev = &pEntity->v;
 

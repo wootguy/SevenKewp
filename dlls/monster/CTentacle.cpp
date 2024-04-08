@@ -627,6 +627,7 @@ void CTentacle :: Cycle( void )
 
 					switch( RANDOM_LONG(0,1) )
 					{
+					default:
 					case 0: sound = "tentacle/te_sing1.wav"; break;
 					case 1: sound = "tentacle/te_sing2.wav"; break;
 					}
@@ -899,6 +900,7 @@ void CTentacle :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	case 7: // roar
 		switch( RANDOM_LONG(0,1) )
 		{
+		default:
 		case 0: sound = "tentacle/te_roar1.wav"; break;
 		case 1: sound = "tentacle/te_roar2.wav"; break;
 		}
@@ -909,6 +911,7 @@ void CTentacle :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	case 8: // search
 		switch( RANDOM_LONG(0,1) )
 		{
+		default:
 		case 0: sound = "tentacle/te_search1.wav"; break;
 		case 1: sound = "tentacle/te_search2.wav"; break;
 		}
@@ -919,6 +922,7 @@ void CTentacle :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	case 9: // swing
 		switch( RANDOM_LONG(0,1) )
 		{
+		default:
 		case 0: sound = "tentacle/te_move1.wav"; break;
 		case 1: sound = "tentacle/te_move2.wav"; break;
 		}

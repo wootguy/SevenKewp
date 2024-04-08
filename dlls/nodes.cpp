@@ -284,12 +284,8 @@ int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, N
 	{
 		return TRUE;
 	}
-	else
-	{
-		ALERT ( at_aiconsole, "Unhandled Ent in Path %s\n", STRING( pevLinkEnt->classname ) );
-		return FALSE;
-	}
 
+	ALERT ( at_aiconsole, "Unhandled Ent in Path %s\n", STRING( pevLinkEnt->classname ) );
 	return FALSE;
 }
 
@@ -668,6 +664,9 @@ int CGraph :: FindShortestPath ( int *piPath, int iStart, int iDest, int iHull, 
 		case NODE_FLY_HULL:
 			iHullMask = bits_LINK_FLY_HULL;
 			break;
+		default:
+			iHullMask = bits_LINK_HUMAN_HULL;
+			break;
 		}
 
 		// Mark all the nodes as unvisited.
@@ -878,7 +877,6 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  CBaseEntity *pEntity )
 
 int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
 {
-	int	i;
 	TraceResult tr;
 
 	if ( !m_fGraphPresent || !m_fGraphPointersSet )
@@ -889,7 +887,7 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
 
 	// Check with the cache
 	//
-	ULONG iHash = (CACHE_SIZE-1) & Hash((void *)(const float *)vecOrigin, sizeof(vecOrigin));
+	ULONG iHash = (NODE_CACHE_SIZE-1) & Hash((void *)(const float *)vecOrigin, sizeof(vecOrigin));
 	if (m_Cache[iHash].v == vecOrigin)
 	{
 		//ALERT(at_aiconsole, "Cache Hit.\n");
@@ -941,11 +939,9 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
     int halfY = (m_minY+m_maxY)/2;
     int halfZ = (m_minZ+m_maxZ)/2;
 
-    int j;
-
-    for (i = halfX; i >= m_minX; i--)
+    for (int i = halfX; i >= m_minX; i--)
     {
-        for (j = m_RangeStart[0][i]; j <= m_RangeEnd[0][i]; j++)
+        for (int j = m_RangeStart[0][i]; j <= m_RangeEnd[0][i]; j++)
         {
 			if (!(m_pNodes[m_di[j].m_SortedBy[0]].m_afNodeInfo & afNodeTypes)) continue;
 
@@ -960,9 +956,9 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
         }
     }
 
-    for (i = V_max(m_minY,halfY+1); i <= m_maxY; i++)
+    for (int i = V_max(m_minY,halfY+1); i <= m_maxY; i++)
     {
-        for (j = m_RangeStart[1][i]; j <= m_RangeEnd[1][i]; j++)
+        for (int j = m_RangeStart[1][i]; j <= m_RangeEnd[1][i]; j++)
         {
 			if (!(m_pNodes[m_di[j].m_SortedBy[1]].m_afNodeInfo & afNodeTypes)) continue;
 
@@ -976,9 +972,9 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
         }
     }
 
-    for (i = V_min(m_maxZ,halfZ); i >= m_minZ; i--)
+    for (int i = V_min(m_maxZ,halfZ); i >= m_minZ; i--)
     {
-        for (j = m_RangeStart[2][i]; j <= m_RangeEnd[2][i]; j++)
+        for (int j = m_RangeStart[2][i]; j <= m_RangeEnd[2][i]; j++)
         {
 			if (!(m_pNodes[m_di[j].m_SortedBy[2]].m_afNodeInfo & afNodeTypes)) continue;
 
@@ -992,9 +988,9 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
         }
     }
 
-    for (i = V_max(m_minX,halfX+1); i <= m_maxX; i++)
+    for (int i = V_max(m_minX,halfX+1); i <= m_maxX; i++)
     {
-        for (j = m_RangeStart[0][i]; j <= m_RangeEnd[0][i]; j++)
+        for (int j = m_RangeStart[0][i]; j <= m_RangeEnd[0][i]; j++)
         {
 			if (!(m_pNodes[m_di[j].m_SortedBy[0]].m_afNodeInfo & afNodeTypes)) continue;
 
@@ -1009,9 +1005,9 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
         }
     }
 
-    for (i = V_min(m_maxY,halfY); i >= m_minY; i--)
+    for (int i = V_min(m_maxY,halfY); i >= m_minY; i--)
     {
-        for (j = m_RangeStart[1][i]; j <= m_RangeEnd[1][i]; j++)
+        for (int j = m_RangeStart[1][i]; j <= m_RangeEnd[1][i]; j++)
         {
 			if (!(m_pNodes[m_di[j].m_SortedBy[1]].m_afNodeInfo & afNodeTypes)) continue;
 
@@ -1025,9 +1021,9 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
         }
     }
 
-    for (i = V_max(m_minZ,halfZ+1); i <= m_maxZ; i++)
+    for (int i = V_max(m_minZ,halfZ+1); i <= m_maxZ; i++)
     {
-        for (j = m_RangeStart[2][i]; j <= m_RangeEnd[2][i]; j++)
+        for (int j = m_RangeStart[2][i]; j <= m_RangeEnd[2][i]; j++)
         {
 			if (!(m_pNodes[m_di[j].m_SortedBy[2]].m_afNodeInfo & afNodeTypes)) continue;
 
@@ -1611,7 +1607,6 @@ void CTestHull::CallBuildNodeGraph( void )
 //=========================================================
 void CTestHull :: BuildNodeGraph( void )
 {
-	TraceResult	tr;
 	FILE	*file;
 
 	char	szNrpFilename [MAX_PATH];// text node report filename
@@ -1628,10 +1623,6 @@ void CTestHull :: BuildNodeGraph( void )
 
 	int		iBadNode;// this is the node that caused graph generation to fail
 
-	int		cMaxInitialLinks = 0;
-	int		cMaxValidLinks	= 0;
-
-	int		iPoolIndex = 0;
 	int		cPoolLinks;// number of links in the pool.
 
 	Vector	vecDirToCheckNode;
@@ -2966,7 +2957,7 @@ void CGraph::BuildRegionTables(void)
 			int jCodeX = m_pNodes[jNode].m_Region[0];
 			int jCodeY = m_pNodes[jNode].m_Region[1];
 			int jCodeZ = m_pNodes[jNode].m_Region[2];
-			int jCode;
+			int jCode = 0;
 			switch (i)
 			{
 			case 0:
@@ -2986,7 +2977,7 @@ void CGraph::BuildRegionTables(void)
 				int kCodeX = m_pNodes[kNode].m_Region[0];
 				int kCodeY = m_pNodes[kNode].m_Region[1];
 				int kCodeZ = m_pNodes[kNode].m_Region[2];
-				int kCode;
+				int kCode = 0;
 				switch (i)
 				{
 				case 0:
@@ -3072,6 +3063,7 @@ void CGraph :: ComputeStaticRoutingTables( void )
 				int iCapMask;
 				switch (iCap)
 				{
+				default:
 				case 0:
 					iCapMask = 0;
 					break;
@@ -3338,10 +3330,10 @@ void CGraph :: ComputeStaticRoutingTables( void )
 		}		
 		ALERT( at_aiconsole, "Size of Routes = %d\n", nTotalCompressedSize);
 	}
-	if (Routes) delete Routes;
-	if (BestNextNodes) delete BestNextNodes;
-	if (pRoute) delete pRoute;
-	if (pMyPath) delete pMyPath;
+	if (Routes) delete[] Routes;
+	if (BestNextNodes) delete[] BestNextNodes;
+	if (pRoute) delete[] pRoute;
+	if (pMyPath) delete[] pMyPath;
 	Routes = 0;
 	BestNextNodes = 0;
 	pRoute = 0;
@@ -3368,6 +3360,7 @@ void CGraph :: TestRoutingTables( void )
 				int iCapMask;
 				switch (iCap)
 				{
+				default:
 				case 0:
 					iCapMask = 0;
 					break;
@@ -3473,8 +3466,8 @@ void CGraph :: TestRoutingTables( void )
 
 EnoughSaid:
 
-	if (pMyPath) delete pMyPath;
-	if (pMyPath2) delete pMyPath2;
+	if (pMyPath) delete[] pMyPath;
+	if (pMyPath2) delete[] pMyPath2;
 	pMyPath = 0;
 	pMyPath2 = 0;
 }
