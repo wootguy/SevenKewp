@@ -60,7 +60,7 @@ void CChangeLevel::KeyValue(KeyValueData* pkvd)
 	{
 		if (strlen(pkvd->szValue) >= cchMapNameMost)
 			ALERT(at_error, "Map name '%s' too long (32 chars)\n", pkvd->szValue);
-		strcpy(m_szMapName, pkvd->szValue);
+		strcpy_safe(m_szMapName, pkvd->szValue, 32);
 
 		// lower case map names for linux servers (prevents fastdl/plugin problems)
 		for (char* p = m_szMapName; *p; ++p) *p = tolower(*p);
@@ -71,7 +71,7 @@ void CChangeLevel::KeyValue(KeyValueData* pkvd)
 	{
 		if (strlen(pkvd->szValue) >= cchMapNameMost)
 			ALERT(at_error, "Landmark name '%s' too long (32 chars)\n", pkvd->szValue);
-		strcpy(m_szLandmarkName, pkvd->szValue);
+		strcpy_safe(m_szLandmarkName, pkvd->szValue, 32);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "changetarget"))
@@ -200,7 +200,7 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 		}
 	}
 	// This object will get removed in the call to CHANGE_LEVEL, copy the params into "safe" memory
-	strcpy(st_szNextMap, m_szMapName);
+	strcpy_safe(st_szNextMap, m_szMapName, 32);
 
 	m_hActivator = pActivator;
 	SUB_UseTargets(pActivator, USE_TOGGLE, 0);
@@ -211,7 +211,7 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 	pentLandmark = FindLandmark(m_szLandmarkName);
 	if (!FNullEnt(pentLandmark))
 	{
-		strcpy(st_szNextSpot, m_szLandmarkName);
+		strcpy_safe(st_szNextSpot, m_szLandmarkName, 32);
 		gpGlobals->vecLandmarkOffset = VARS(pentLandmark)->origin;
 	}
 	//	ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
@@ -249,8 +249,8 @@ int CChangeLevel::AddTransitionToList(LEVELLIST* pLevelList, int listCount, cons
 		if (pLevelList[i].pentLandmark == pentLandmark && strcmp(pLevelList[i].mapName, pMapName) == 0)
 			return 0;
 	}
-	strcpy(pLevelList[listCount].mapName, pMapName);
-	strcpy(pLevelList[listCount].landmarkName, pLandmarkName);
+	strcpy_safe(pLevelList[listCount].mapName, pMapName, 32);
+	strcpy_safe(pLevelList[listCount].landmarkName, pLandmarkName, 32);
 	pLevelList[listCount].pentLandmark = pentLandmark;
 	pLevelList[listCount].vecLandmarkOrigin = VARS(pentLandmark)->origin;
 
@@ -424,12 +424,12 @@ void NextLevel(void)
 	{
 		gpGlobals->mapname = ALLOC_STRING("start");
 		pChange = GetClassPtr((CChangeLevel*)NULL);
-		strcpy(pChange->m_szMapName, "start");
+		strcpy_safe(pChange->m_szMapName, "start", 32);
 	}
 	else
 		pChange = GetClassPtr((CChangeLevel*)VARS(pent));
 
-	strcpy(st_szNextMap, pChange->m_szMapName);
+	strcpy_safe(st_szNextMap, pChange->m_szMapName, 32);
 	g_fGameOver = TRUE;
 
 	if (pChange->pev->nextthink < gpGlobals->time)

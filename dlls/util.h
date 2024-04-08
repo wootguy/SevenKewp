@@ -36,6 +36,7 @@
 #include "mstream.h"
 #include <float.h>
 #include "mod_api.h"
+#include "shared_util.h"
 
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
@@ -602,7 +603,7 @@ int SENTENCEG_PlayRndI(edict_t *entity, int isentenceg, float volume, float atte
 int SENTENCEG_PlayRndSz(edict_t *entity, const char *szrootname, float volume, float attenuation, int flags, int pitch);
 int SENTENCEG_PlaySequentialSz(edict_t *entity, const char *szrootname, float volume, float attenuation, int flags, int pitch, int ipick, int freset);
 int SENTENCEG_GetIndex(const char *szrootname);
-int SENTENCEG_Lookup(const char *sample, char *sentencenum);
+int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz);
 
 void TEXTURETYPE_Init();
 char TEXTURETYPE_Find(char *name);

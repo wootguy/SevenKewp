@@ -107,7 +107,7 @@ CHalfLifeMultiplay :: CHalfLifeMultiplay()
 			char szCommand[256];
 			
 			ALERT( at_console, "Executing listen server config file\n" );
-			sprintf( szCommand, "exec %s\n", lservercfgfile );
+			snprintf( szCommand, 256, "exec %s\n", lservercfgfile );
 			SERVER_COMMAND( szCommand );
 		}
 	}
@@ -1257,7 +1257,7 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 
 			// Create entry
 			item = new mapcycle_item_t;
-			strcpy(item->mapname, szMap);
+			strcpy_safe(item->mapname, szMap, 32);
 			item->mapname[31] = 0;
 			item->seriesIdx = seriesIdx++;
 			item->next = cycle->items;
@@ -1423,7 +1423,7 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 
 	// Has the map cycle filename changed?
 	if (stricmp(mapcfile, szPreviousMapCycleFile)) {
-		strcpy( szPreviousMapCycleFile, mapcfile );
+		strcpy_safe( szPreviousMapCycleFile, mapcfile, 256 );
 		shouldReloadMapCycle = true;
 	}
 
@@ -1509,11 +1509,11 @@ void CHalfLifeMultiplay :: SendMOTDToClient( edict_t *client )
 		
 		if ( strlen( pFileList ) < MAX_MOTD_CHUNK )
 		{
-			strcpy( chunk, pFileList );
+			strcpy_safe( chunk, pFileList, MAX_MOTD_CHUNK);
 		}
 		else
 		{
-			strncpy( chunk, pFileList, MAX_MOTD_CHUNK );
+			strcpy_safe( chunk, pFileList, MAX_MOTD_CHUNK );
 			chunk[MAX_MOTD_CHUNK] = 0;		// strncpy doesn't always append the null terminator
 		}
 

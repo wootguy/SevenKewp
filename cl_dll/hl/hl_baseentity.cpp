@@ -158,7 +158,7 @@ int CBaseMonster :: CheckLocalMove ( const Vector &vecStart, const Vector &vecEn
 float CBaseMonster :: OpenDoorAndWait( entvars_t *pevDoor ) { return 0.0; }
 void CBaseMonster :: AdvanceRoute ( float distance ) { }
 int CBaseMonster :: RouteClassify( int iMoveFlag ) { return 0; }
-BOOL CBaseMonster :: BuildRoute ( const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget ) { return FALSE; }
+BOOL CBaseMonster :: BuildRoute ( const Vector &vecGoal, int iMoveFlag, CBaseEntity *pTarget, bool useNodes ) { return FALSE; }
 void CBaseMonster :: InsertWaypoint ( Vector vecLocation, int afMoveFlags ) { }
 BOOL CBaseMonster :: FTriangulate ( const Vector &vecStart , const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex ) { return FALSE; }
 void CBaseMonster :: Move ( float flInterval ) { }
@@ -375,6 +375,7 @@ void CBaseMonster::Nerf() {}
 int CBaseMonster::HasTarget(string_t targetname) { return 0; }
 CKeyValue CBaseEntity::GetKeyValue(const char* keyName) { return CKeyValue(); }
 void CBaseEntity::KeyValue(KeyValueData* pkvd) {}
+bool CBaseMonster::ShouldRoam() { return false; }
 
 void lagcomp_begin(CBasePlayer* plr) {}
 void lagcomp_end() {}

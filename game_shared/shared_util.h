@@ -117,4 +117,8 @@ wchar_t * SharedWVarArgs(wchar_t *format, ...);
 wchar_t* SharedFindString( char *asciiIdentifier );
 #endif
 
+char* strcpy_safe(char* dest, const char* src, size_t size);
+
+char* strcat_safe(char* dest, const char* src, size_t size);
+
 #endif // SHARED_UTIL_H

@@ -230,11 +230,11 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 	char text[1024];
 	if ( !strcmp( mdls, pPlayer->m_szTeamName ) )
 	{
-		sprintf( text, "* you are on team \'%s\'\n", pPlayer->m_szTeamName );
+		snprintf( text, 1024, "* you are on team \'%s\'\n", pPlayer->m_szTeamName );
 	}
 	else
 	{
-		sprintf( text, "* assigned to team %s\n", pPlayer->m_szTeamName );
+		snprintf( text, 1024, "* assigned to team %s\n", pPlayer->m_szTeamName );
 	}
 
 	ChangePlayerTeam( pPlayer, pPlayer->m_szTeamName, FALSE, FALSE );
@@ -325,7 +325,7 @@ void CHalfLifeTeamplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infob
 
 		g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", pPlayer->m_szTeamName );
 		g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "team", pPlayer->m_szTeamName );
-		sprintf( text, "* Not allowed to change teams in this game!\n" );
+		snprintf( text, 1024, "* Not allowed to change teams in this game!\n" );
 		UTIL_SayText( text, pPlayer );
 		return;
 	}
@@ -335,14 +335,14 @@ void CHalfLifeTeamplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infob
 		int clientIndex = pPlayer->entindex();
 
 		g_engfuncs.pfnSetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", pPlayer->m_szTeamName );
-		sprintf( text, "* Can't change team to \'%s\'\n", mdls );
+		snprintf( text, 1024, "* Can't change team to \'%s\'\n", mdls );
 		UTIL_SayText( text, pPlayer );
-		sprintf( text, "* Server limits teams to \'%s\'\n", m_szTeamList );
+		snprintf( text, 1024, "* Server limits teams to \'%s\'\n", m_szTeamList );
 		UTIL_SayText( text, pPlayer );
 		return;
 	}
 	// notify everyone of the team change
-	sprintf( text, "* %s has changed to team \'%s\'\n", STRING(pPlayer->pev->netname), mdls );
+	snprintf( text, 1024, "* %s has changed to team \'%s\'\n", STRING(pPlayer->pev->netname), mdls );
 	UTIL_SayTextAll( text, pPlayer );
 
 	UTIL_LogPrintf( "\"%s<%i><%s><%s>\" joined team \"%s\"\n", 
@@ -564,14 +564,14 @@ void CHalfLifeTeamplay::RecountTeams( bool bResendInfo )
 
 	// Copy all of the teams from the teamlist
 	// make a copy because strtok is destructive
-	strcpy( teamlist, m_szTeamList );
+	strcpy_safe( teamlist, m_szTeamList, TEAMPLAY_TEAMLISTLENGTH);
 	pName = teamlist;
 	pName = strtok( pName, ";" );
 	while ( pName != NULL && *pName )
 	{
 		if ( GetTeamIndex( pName ) < 0 )
 		{
-			strcpy( team_names[num_teams], pName );
+			strcpy_safe( team_names[num_teams], pName, 16 );
 			num_teams++;
 		}
 		pName = strtok( NULL, ";" );

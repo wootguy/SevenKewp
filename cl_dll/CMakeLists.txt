@@ -125,6 +125,7 @@ set(UTIL_SRC
 	../pm_shared/pm_math.cpp
 	../pm_shared/pm_shared.cpp
 	../public/interface.cpp
+	../game_shared/shared_util.cpp
 )
 
 set(GAME_HDR

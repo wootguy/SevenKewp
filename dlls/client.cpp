@@ -306,7 +306,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		if (gpGlobals->maxClients > 1)
 		{
 			char text[256];
-			sprintf( text, "* %s changed name to %s\n", STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+			snprintf( text, 256, "* %s changed name to %s\n", STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
 			MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 				WRITE_BYTE( ENTINDEX(pEntity) );
 				WRITE_STRING( text );
@@ -1635,7 +1635,7 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 	cd->flSwimTime		= pev->flSwimTime;
 	cd->waterjumptime	= pev->teleport_time;
 
-	strcpy( cd->physinfo, ENGINE_GETPHYSINFO( ent ) );
+	strcpy_safe( cd->physinfo, ENGINE_GETPHYSINFO( ent ), 256 );
 
 	cd->maxspeed		= pev->maxspeed;
 	cd->fov				= pev->fov;
@@ -1841,7 +1841,7 @@ int	InconsistentFile( const edict_t *player, const char *filename, char *disconn
 		return 0;
 
 	// Default behavior is to kick the player
-	sprintf( disconnect_message, "Server is enforcing file consistency for %s\n", filename );
+	snprintf( disconnect_message, 256, "Server is enforcing file consistency for %s\n", filename );
 
 	// Kick now with specified disconnect message.
 	return 1;

@@ -1664,14 +1664,14 @@ void CTestHull :: BuildNodeGraph( void )
 
 	// make sure directories have been made
 	GET_GAME_DIR( szNrpFilename );
-	strcat( szNrpFilename, "/maps" );
+	strcat_safe( szNrpFilename, "/maps", MAX_PATH);
 	CreateDirectory( szNrpFilename, NULL );
-	strcat( szNrpFilename, "/graphs" );
+	strcat_safe( szNrpFilename, "/graphs", MAX_PATH );
 	CreateDirectory( szNrpFilename, NULL );
 
-	strcat( szNrpFilename, "/" );
-	strcat( szNrpFilename, STRING( gpGlobals->mapname ) );
-	strcat( szNrpFilename, ".nrp" );
+	strcat_safe( szNrpFilename, "/", MAX_PATH);
+	strcat_safe( szNrpFilename, STRING( gpGlobals->mapname ), MAX_PATH);
+	strcat_safe( szNrpFilename, ".nrp", MAX_PATH);
 
 	file = fopen ( szNrpFilename, "w+" );
 
@@ -2336,14 +2336,14 @@ int CGraph :: FLoadGraph ( char *szMapName )
 	// make sure the directories have been made
 	char	szDirName[MAX_PATH];
 	GET_GAME_DIR( szDirName );
-	strcat( szDirName, "/maps" );
+	strcat_safe( szDirName, "/maps", MAX_PATH);
 	CreateDirectory( szDirName, NULL );
-	strcat( szDirName, "/graphs" );
+	strcat_safe( szDirName, "/graphs", MAX_PATH);
 	CreateDirectory( szDirName, NULL );
 
-	strcpy ( szFilename, "maps/graphs/" );
-	strcat ( szFilename, szMapName );
-	strcat( szFilename, ".nod" );
+	strcat_safe( szFilename, "maps/graphs/", MAX_PATH);
+	strcat_safe( szFilename, szMapName, MAX_PATH);
+	strcat_safe( szFilename, ".nod", MAX_PATH);
 
 	pMemFile = aMemFile = LOAD_FILE_FOR_ME(szFilename, &length);
 
@@ -2514,14 +2514,14 @@ int CGraph :: FSaveGraph ( char *szMapName )
 
 	// make sure directories have been made
 	GET_GAME_DIR( szFilename );
-	strcat( szFilename, "/maps" );
+	strcat_safe( szFilename, "/maps", MAX_PATH);
 	CreateDirectory( szFilename, NULL );
-	strcat( szFilename, "/graphs" );
+	strcat_safe( szFilename, "/graphs", MAX_PATH);
 	CreateDirectory( szFilename, NULL );
 
-	strcat( szFilename, "/" );
-	strcat( szFilename, szMapName );
-	strcat( szFilename, ".nod" );
+	strcat_safe( szFilename, "/", MAX_PATH);
+	strcat_safe( szFilename, szMapName, MAX_PATH);
+	strcat_safe( szFilename, ".nod", MAX_PATH);
 
 	file = fopen ( szFilename, "wb" );
 

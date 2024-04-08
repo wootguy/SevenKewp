@@ -437,6 +437,7 @@ set(GAME_SRC
 	teamplay_gamerules.cpp
 	user_messages.cpp
 	../game_shared/voice_gamemgr.cpp
+	../game_shared/shared_util.cpp
 	mod_api.cpp
 )
 

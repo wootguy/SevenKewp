@@ -28,6 +28,7 @@
 #include <string.h> // strcpy
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
+#include "shared_util.h"
 
 #ifdef CLIENT_DLL
 	// Spectator Mode
@@ -159,13 +160,13 @@ void PM_SwapTextures( int i, int j )
 	char chTemp;
 	char szTemp[ CBTEXTURENAMEMAX ];
 
-	strcpy( szTemp, grgszTextureName[ i ] );
+	strncpy( szTemp, grgszTextureName[ i ], CBTEXTURENAMEMAX);
 	chTemp = grgchTextureType[ i ];
 	
-	strcpy( grgszTextureName[ i ], grgszTextureName[ j ] );
+	strncpy( grgszTextureName[ i ], grgszTextureName[ j ], CBTEXTURENAMEMAX);
 	grgchTextureType[ i ] = grgchTextureType[ j ];
 
-	strcpy( grgszTextureName[ j ], szTemp );
+	strncpy( grgszTextureName[ j ], szTemp, CBTEXTURENAMEMAX);
 	grgchTextureType[ j ] = chTemp;
 }
 
@@ -248,7 +249,7 @@ void PM_InitTextureTypes()
 		// null-terminate name and save in sentences array
 		j = V_min (j, CBTEXTURENAMEMAX-1+i);
 		buffer[j] = 0;
-		strcpy(&(grgszTextureName[gcTextures++][0]), &(buffer[i]));
+		strcpy_safe(&(grgszTextureName[gcTextures++][0]), &(buffer[i]), CBTEXTURENAMEMAX);
 	}
 
 	// Must use engine to free since we are in a .dll
@@ -492,7 +493,7 @@ void PM_CatagorizeTextureType( void )
 		pTextureName++;
 	// '}}'
 	
-	strcpy( pmove->sztexturename, pTextureName);
+	strcpy_safe( pmove->sztexturename, pTextureName, 256);
 	pmove->sztexturename[ CBTEXTURENAMEMAX - 1 ] = 0;
 		
 	// get texture type
