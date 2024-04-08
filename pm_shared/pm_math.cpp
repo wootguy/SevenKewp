@@ -25,7 +25,9 @@
 // fall over
 #define	ROLL	2 
 
+#ifdef _WIN32
 #pragma warning(disable : 4244)
+#endif
 
 int nanmask = 255<<23;
 

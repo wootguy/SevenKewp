@@ -30,7 +30,7 @@ public:
 	int			EntityIndex( EOFFSET eoLookup );
 	int			EntityIndex( CBaseEntity *pEntity );
 
-	int			EntityFlags( int entityIndex, int flags ) { return EntityFlagsSet( entityIndex, 0 ); }
+	int			EntityFlags( int entityIndex ) { return EntityFlagsSet( entityIndex, 0 ); }
 	int			EntityFlagsSet( int entityIndex, int flags );
 
 	edict_t		*EntityFromIndex( int entityIndex );

@@ -119,10 +119,10 @@ public:
 	int	Classify(void) { return	CBaseMonster::Classify(CLASS_PLAYER_ALLY); }
 	int GetPoseSequence() { return LookupSequence(m_szPoses[m_iPose]); }
 
-	static char* m_szPoses[7];
+	static const char* m_szPoses[7];
 };
 
-char* CDeadHGruntAlly::m_szPoses[] = { "deadstomach", "deadside", "deadsitting", "dead_on_back", "hgrunt_dead_stomach", "dead_headcrabed", "dead_canyon" };
+const char* CDeadHGruntAlly::m_szPoses[] = { "deadstomach", "deadside", "deadsitting", "dead_on_back", "hgrunt_dead_stomach", "dead_headcrabed", "dead_canyon" };
 
 LINK_ENTITY_TO_CLASS(monster_human_grunt_ally, CHGruntOp4);
 LINK_ENTITY_TO_CLASS(monster_grunt_ally_repel, CHGruntOp4Repel);

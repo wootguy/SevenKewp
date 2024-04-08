@@ -330,7 +330,6 @@ void CGargantua :: FlameControls( float angleX, float angleY )
 void CGargantua :: FlameUpdate( void )
 {
 	int				i;
-	static float	offset[2] = { 60, -60 };
 	TraceResult		trace;
 	Vector			vecStart, angleGun;
 	BOOL			streaks = FALSE;
@@ -600,8 +599,6 @@ void CGargantua :: Precache()
 }	
 
 void CGargantua::PrecacheCommon(void) {
-	int i;
-
 	PRECACHE_MODEL(GARG_EYE_SPRITE_NAME);
 	PRECACHE_MODEL(GARG_BEAM_SPRITE_NAME);
 	PRECACHE_MODEL(GARG_BEAM_SPRITE2);
@@ -609,13 +606,13 @@ void CGargantua::PrecacheCommon(void) {
 	gStompSprite = PRECACHE_MODEL(GARG_STOMP_SPRITE_NAME);
 	PRECACHE_SOUND(GARG_STOMP_BUZZ_SOUND);
 
-	for (i = 0; i < ARRAYSIZE(pAttackHitSounds); i++)
+	for (int i = 0; i < (int)ARRAYSIZE(pAttackHitSounds); i++)
 		PRECACHE_SOUND((char*)pAttackHitSounds[i]);
 
-	for (i = 0; i < ARRAYSIZE(pAttackMissSounds); i++)
+	for (int i = 0; i < (int)ARRAYSIZE(pAttackMissSounds); i++)
 		PRECACHE_SOUND((char*)pAttackMissSounds[i]);
 
-	for (i = 0; i < ARRAYSIZE(pRicSounds); i++)
+	for (int i = 0; i < (int)ARRAYSIZE(pRicSounds); i++)
 		PRECACHE_SOUND((char*)pRicSounds[i]);
 }
 

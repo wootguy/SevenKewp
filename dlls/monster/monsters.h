@@ -169,7 +169,7 @@ public:
 
 #define CUSTOM_SCHEDULES\
 		virtual Schedule_t *ScheduleFromName( const char *pName );\
-		static Schedule_t *m_scheduleList[];
+		static Schedule_t *m_scheduleList[]
 
 #define DEFINE_CUSTOM_SCHEDULES(derivedClass)\
 	Schedule_t *derivedClass::m_scheduleList[] =

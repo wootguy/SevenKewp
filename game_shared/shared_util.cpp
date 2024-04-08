@@ -1,9 +1,4 @@
 #include "shared_util.h"
-#ifdef LINUX
-#include <string.h>
-#include <wchar.h>
-#endif
-#include <string.h>
 
 char* strcpy_safe(char* dest, const char* src, size_t size) {
 	if (size > 0) {

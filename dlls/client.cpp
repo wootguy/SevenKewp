@@ -1776,21 +1776,25 @@ int GetHullBounds( int hullnumber, float *mins, float *maxs )
 {
 	int iret = 0;
 
+	// TODO: what was this meant to do? Can you change player sizes with this?
+	// the code below was setting the pointers that were passed here by value... which does nothing.
+	// doing a memcpy on them instead had no effect. Didn't try changing the sizes yet.
+
 	switch ( hullnumber )
 	{
 	case 0:				// Normal player
-		mins = VEC_HULL_MIN;
-		maxs = VEC_HULL_MAX;
+		//mins = VEC_HULL_MIN;
+		//maxs = VEC_HULL_MAX;
 		iret = 1;
 		break;
 	case 1:				// Crouched player
-		mins = VEC_DUCK_HULL_MIN;
-		maxs = VEC_DUCK_HULL_MAX;
+		//mins = VEC_DUCK_HULL_MIN;
+		//maxs = VEC_DUCK_HULL_MAX;
 		iret = 1;
 		break;
 	case 2:				// Point based hull
-		mins = Vector( 0, 0, 0 );
-		maxs = Vector( 0, 0, 0 );
+		//mins = Vector( 0, 0, 0 );
+		//maxs = Vector( 0, 0, 0 );
 		iret = 1;
 		break;
 	}

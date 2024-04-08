@@ -61,7 +61,7 @@ DLL_DECALLIST gDecals[] = {
 };
 
 void init_decals() {
-	for (int i = 0; i < ARRAYSIZE(gDecals); i++)
+	for (int i = 0; i < (int)ARRAYSIZE(gDecals); i++)
 		gDecals[i].index = DECAL_INDEX(gDecals[i].name);
 }
 
@@ -142,8 +142,6 @@ void CDecal::StaticDecal(void)
 		modelIndex = (int)VARS(trace.pHit)->modelindex;
 	else
 		modelIndex = 0;
-
-	static int decalCount = 0;
 
 	if (UTIL_isSafeEntIndex(entityIndex, "apply decal")) {
 		g_engfuncs.pfnStaticDecal(pev->origin, (int)pev->skin, entityIndex, modelIndex);

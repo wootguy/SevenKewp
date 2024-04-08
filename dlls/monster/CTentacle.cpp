@@ -524,9 +524,11 @@ void CTentacle :: Cycle( void )
 			m_flSoundYaw -= 360;
 
 		// ALERT( at_console, "sound %d %.0f\n", m_iSoundLevel, m_flSoundYaw );
+		/*
 		if (m_flSoundTime < gpGlobals->time)
 		{
 			// play "I hear new something" sound
+			
 			const char *sound;	
 
 			switch( RANDOM_LONG(0,1) )
@@ -535,8 +537,9 @@ void CTentacle :: Cycle( void )
 			case 1: sound = "tentacle/te_alert2.wav"; break;
 			}
 
-			// UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector( 0, 0, MyHeight()), sound, 1.0, ATTN_NORM, 0, 100);
+			UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector( 0, 0, MyHeight()), sound, 1.0, ATTN_NORM, 0, 100);
 		}
+		*/
 		m_flSoundTime = gpGlobals->time + RANDOM_FLOAT( 5.0, 10.0 );
 	}
 

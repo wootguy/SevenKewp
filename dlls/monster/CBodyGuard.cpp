@@ -500,7 +500,7 @@ int CBodyGuard::GetActivitySequence(Activity NewActivity) {
 			case 2: iSequence = LookupSequence("reload_pistol"); break;
 			case 3: iSequence = LookupSequence("reload_shotgun"); break;
 			case 4: iSequence = LookupSequence("reload_uzis"); break;
-			case 5: iSequence = LookupSequence("reload_mp5");
+			case 5: iSequence = LookupSequence("reload_mp5"); break;
 			case 6: iSequence = LookupSequence("reload_sniper"); break;
 			case 7: iSequence = LookupSequence("shoot_minigun"); break;
 			default: break;
@@ -515,7 +515,7 @@ int CBodyGuard::GetActivitySequence(Activity NewActivity) {
 }
 
 void CBodyGuard::PlaySentenceSound(int sentenceType) {
-	if (sentenceType >= ARRAYSIZE(pGruntSentences)) {
+	if (sentenceType >= (int)ARRAYSIZE(pGruntSentences)) {
 		return;
 	}
 	PlaySentence(pGruntSentences[sentenceType], 3.0f, SENTENCE_VOLUME, GRUNT_ATTN);

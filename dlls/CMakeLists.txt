@@ -486,7 +486,8 @@ if(UNIX)
 
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32 -g -Wall -O2" LINK_FLAGS "-m32 -g"
+		COMPILE_FLAGS "-m32 -g -O2 -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter"
+		LINK_FLAGS "-m32 -g"
 	)
 
 elseif(MSVC)

@@ -70,7 +70,7 @@ void CFuncTank::Spawn(void)
 
 	if (m_fireRate <= 0)
 		m_fireRate = 1;
-	if (m_spread > MAX_FIRING_SPREADS)
+	if (m_spread > (int)MAX_FIRING_SPREADS)
 		m_spread = 0;
 
 	pev->oldorigin = pev->origin;
@@ -208,8 +208,6 @@ BOOL CFuncTank::OnControls(entvars_t* pevTest)
 {
 	if (!(pev->spawnflags & SF_TANK_CANCONTROL))
 		return FALSE;
-
-	Vector offset = pevTest->origin - pev->origin;
 
 	if ((m_vecControllerUsePos - pevTest->origin).Length() < 30)
 		return TRUE;
@@ -369,7 +367,7 @@ void CFuncTank::Think(void)
 void CFuncTank::TrackTarget(void)
 {
 	TraceResult tr;
-	BOOL updateTime = FALSE, lineOfSight;
+	BOOL updateTime = FALSE;
 	Vector angles, direction, targetPosition;
 	edict_t* pTarget = NULL;
 	Vector barrelEnd = BarrelPosition();
@@ -441,12 +439,9 @@ void CFuncTank::TrackTarget(void)
 
 		UTIL_TraceLine(barrelEnd, targetPosition, dont_ignore_monsters, edict(), &tr);
 
-		lineOfSight = FALSE;
 		// No line of sight, don't track
 		if (tr.flFraction == 1.0 || tr.pHit == pTarget)
 		{
-			lineOfSight = TRUE;
-
 			CBaseEntity* pInstance = CBaseEntity::Instance(pTarget);
 			if (InRange(range) && pInstance && pInstance->IsAlive())
 			{

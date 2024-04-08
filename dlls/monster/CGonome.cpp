@@ -305,7 +305,7 @@ void CGonome::Precache()
 	PRECACHE_SOUND_ARRAY(pDieSounds);
 
 	// not affected by mp_soundvariety (but should be)
-	for (int i = 0; i < ARRAYSIZE(pEventSounds); i++) \
+	for (int i = 0; i < (int)ARRAYSIZE(pEventSounds); i++) \
 		PRECACHE_SOUND((char*)pEventSounds[i]);
 
 	PRECACHE_SOUND(GRAB_BLOOD_SOUND);

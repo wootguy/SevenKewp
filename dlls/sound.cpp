@@ -91,7 +91,7 @@ int USENTENCEG_PickSequential(int isentenceg, char *szfound, int ipick, int fres
 {
 	char *szgroupname;
 	unsigned char count;
-	char sznum[8];
+	char sznum[16];
 	
 	if (!fSentencesInit)
 		return -1;
@@ -110,7 +110,7 @@ int USENTENCEG_PickSequential(int isentenceg, char *szfound, int ipick, int fres
 
 	strcpy_safe(szfound, "!", bufsz);
 	strcat_safe(szfound, szgroupname, bufsz);
-	snprintf(sznum, 8, "%d", ipick);
+	snprintf(sznum, 16, "%d", ipick);
 	strcat_safe(szfound, sznum, bufsz);
 	
 	if (ipick >= count)
@@ -222,7 +222,7 @@ int SENTENCEG_PlayRndI(edict_t *entity, int isentenceg,
 	name[0] = 0;
 
 	ipick = USENTENCEG_Pick(isentenceg, name, 64);
-	if (ipick > 0 && name)
+	if (ipick > 0 && name[0])
 		EMIT_SOUND_DYN(entity, CHAN_VOICE, name, volume, attenuation, flags, pitch);
 	return ipick;
 }
@@ -520,7 +520,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 	}
 
 	int msgSz = bitbuffer.tell() + 1;
-	bool anyMessagesWritten = false;
+	//bool anyMessagesWritten = false;
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		edict_t* plent = INDEXENT(i);
@@ -534,14 +534,16 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, plent);
 		WRITE_BYTES(msgbuffer, msgSz);
 		MESSAGE_END();
-		anyMessagesWritten = true;
+		//anyMessagesWritten = true;
 	}
 
+	/*
 	if (anyMessagesWritten && mp_debugmsg.value > 1) {
 		ALERT(at_logged, "[DEBUG] StartSound(%d, %d, \"%s\", 0x%X, 0x%X, 0x%X, %d, (0x%X 0x%X 0x%X), 0x%X)\n",
 			(int)(entity ? ENTINDEX(entity) : 0), channel, sample, *(int*)&fvolume, *(int*)&attenuation, fFlags, pitch,
 			*(int*)&origin[0], *(int*)&origin[1], *(int*)&origin[2], messageTargets);
 	}
+	*/
 }
 
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,

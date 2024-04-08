@@ -26,7 +26,7 @@ typedef wchar_t	uchar16;
 typedef unsigned int uchar32;
 #else
 typedef unsigned short uchar16;
-typedef wchar_t uchar32;
+typedef unsigned int uchar32;
 #endif
 
 //-----------------------------------------------------------------------------

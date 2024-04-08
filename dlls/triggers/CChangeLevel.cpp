@@ -125,7 +125,7 @@ void CChangeLevel::ExecuteChangeLevel(void)
 
 
 FILE_GLOBAL char st_szNextMap[cchMapNameMost];
-FILE_GLOBAL char st_szNextSpot[cchMapNameMost];
+//FILE_GLOBAL char st_szNextSpot[cchMapNameMost];
 
 edict_t* CChangeLevel::FindLandmark(const char* pLandmarkName)
 {
@@ -157,7 +157,7 @@ void CChangeLevel::UseChangeLevel(CBaseEntity* pActivator, CBaseEntity* pCaller,
 
 void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 {
-	LEVELLIST	levels[16];
+	//LEVELLIST	levels[16];
 
 	ASSERT(!FStrEq(m_szMapName, ""));
 

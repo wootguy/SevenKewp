@@ -23,7 +23,7 @@
 skilldata_t	gSkillData;
 std::map<std::string, float> g_defaultMonsterHealth;
 
-#define DECL_SKILL_CVAR(name) {{#name, "0"}, offsetof(skilldata_t, name)}
+#define DECL_SKILL_CVAR(name) {{#name, "0", 0, 0, 0}, offsetof(skilldata_t, name)}
 
 struct skill_cvar_t {
 	cvar_t cvar;
@@ -235,7 +235,7 @@ skill_cvar_t skill_cvars[] = {
 };
 
 void RegisterSkillCvars() {
-	for (int i = 0; i < sizeof(skill_cvars) / sizeof(skill_cvar_t); i++) {
+	for (int i = 0; i < (int)(sizeof(skill_cvars) / sizeof(skill_cvar_t)); i++) {
 		CVAR_REGISTER(&skill_cvars[i].cvar);
 	}
 }
@@ -259,7 +259,7 @@ void RefreshSkillData() {
 
 	ALERT(at_console, "\nGAME SKILL LEVEL:%d\n", iSkill);
 
-	for (int i = 0; i < sizeof(skill_cvars) / sizeof(skill_cvar_t); i++) {
+	for (int i = 0; i < (int)(sizeof(skill_cvars) / sizeof(skill_cvar_t)); i++) {
 		float* structMember = (float*)((byte*)&gSkillData.firstMember + skill_cvars[i].structMemberOffset);
 		*structMember = skill_cvars[i].cvar.value;
 	}

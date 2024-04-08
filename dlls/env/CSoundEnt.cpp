@@ -229,7 +229,6 @@ void CSoundEnt :: Initialize ( void )
   	int i;
 	int iSound;
 
-	m_cLastActiveSounds;
 	m_iFreeSound = 0;
 	m_iActiveSound = SOUNDLIST_EMPTY;
 

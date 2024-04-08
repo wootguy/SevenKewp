@@ -159,8 +159,6 @@ void CPitdroneSpike::SpikeTouch( CBaseEntity *pOther )
 
 		UTIL_SetOrigin( pev, vecOrigin );
 
-		auto v41 = UTIL_VecToAngles( vecDir );
-
 		pev->angles = UTIL_VecToAngles( vecDir );
 		pev->solid = SOLID_NOT;
 		pev->movetype = MOVETYPE_FLY;
@@ -432,14 +430,12 @@ BOOL CPitdrone :: CheckMeleeAttack2 ( float flDot, float flDist )
 //=========================================================
 BOOL CPitdrone :: FValidateHintType ( short sHint )
 {
-	int i;
-
 	static short sSquidHints[] =
 	{
 		HINT_WORLD_HUMAN_BLOOD,
 	};
 
-	for ( i = 0 ; i < ARRAYSIZE ( sSquidHints ) ; i++ )
+	for ( int i = 0 ; i < (int)ARRAYSIZE ( sSquidHints ) ; i++ )
 	{
 		if ( sSquidHints[ i ] == sHint )
 		{
@@ -1141,6 +1137,8 @@ Schedule_t *CPitdrone :: GetSchedule( void )
 
 			break;
 		}
+	default:
+		break;
 	}
 
 	return CBaseMonster :: GetSchedule();

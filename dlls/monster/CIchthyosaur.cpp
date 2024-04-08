@@ -597,6 +597,9 @@ Schedule_t* CIchthyosaur::GetSchedule()
 		}
 
 		return GetScheduleOfType( SCHED_STANDOFF );
+		
+	default:
+		break;
 	}
 
 	return CFlyingMonster :: GetSchedule();

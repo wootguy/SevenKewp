@@ -451,14 +451,12 @@ BOOL CBullsquid :: CheckMeleeAttack2 ( float flDot, float flDist )
 //=========================================================
 BOOL CBullsquid :: FValidateHintType ( short sHint )
 {
-	int i;
-
 	static short sSquidHints[] =
 	{
 		HINT_WORLD_HUMAN_BLOOD,
 	};
 
-	for ( i = 0 ; i < ARRAYSIZE ( sSquidHints ) ; i++ )
+	for ( int i = 0 ; i < (int)ARRAYSIZE ( sSquidHints ) ; i++ )
 	{
 		if ( sSquidHints[ i ] == sHint )
 		{
@@ -1118,6 +1116,8 @@ Schedule_t *CBullsquid :: GetSchedule( void )
 
 			break;
 		}
+	default:
+		break;
 	}
 
 	return CBaseMonster :: GetSchedule();
@@ -1132,28 +1132,21 @@ Schedule_t* CBullsquid :: GetScheduleOfType ( int Type )
 	{
 	case SCHED_RANGE_ATTACK1:
 		return &slSquidRangeAttack1[ 0 ];
-		break;
 	case SCHED_SQUID_HURTHOP:
 		return &slSquidHurtHop[ 0 ];
-		break;
 	case SCHED_SQUID_SEECRAB:
 		return &slSquidSeeCrab[ 0 ];
-		break;
 	case SCHED_SQUID_EAT:
 		return &slSquidEat[ 0 ];
-		break;
 	case SCHED_SQUID_SNIFF_AND_EAT:
 		return &slSquidSniffAndEat[ 0 ];
-		break;
 	case SCHED_SQUID_WALLOW:
 		return &slSquidWallow[ 0 ];
-		break;
 	case SCHED_CHASE_ENEMY:
 		return &slSquidChaseEnemy[ 0 ];
-		break;
+	default:
+		return CBaseMonster::GetScheduleOfType(Type);
 	}
-
-	return CBaseMonster :: GetScheduleOfType ( Type );
 }
 
 //=========================================================
@@ -1257,9 +1250,10 @@ MONSTERSTATE CBullsquid :: GetIdealState ( void )
 			}
 			break;
 		}
+		default:
+			m_IdealMonsterState = CBaseMonster::GetIdealState();
+			break;
 	}
-
-	m_IdealMonsterState = CBaseMonster :: GetIdealState();
 
 	return m_IdealMonsterState;
 }

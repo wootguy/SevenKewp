@@ -426,7 +426,7 @@ void CRoboGrunt::CantFollowSound() {
 }
 
 void CRoboGrunt::PlaySentenceSound(int sentenceType) {
-	if (sentenceType >= ARRAYSIZE(pGruntSentences)) {
+	if (sentenceType >= (int)ARRAYSIZE(pGruntSentences)) {
 		return;
 	}
 

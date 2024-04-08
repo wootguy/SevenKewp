@@ -49,8 +49,9 @@ typedef unsigned char byte;
 
 extern globalvars_t				*gpGlobals;
 
+#ifdef _WIN32
 #pragma warning( disable : 4244 )
-
+#endif
 
 
 int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
