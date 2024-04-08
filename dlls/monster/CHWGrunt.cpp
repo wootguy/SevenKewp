@@ -22,26 +22,24 @@
 // - minigun looks broken while being picked up
 // - reloads minigun if secondary empty
 
-#define GUN_GROUP					1
+#define HWGRUNT_GUN_GROUP					1
 
-#define GUN_MINIGUN					0
-#define GUN_GLOCK					1
-#define GUN_DEAGLE					2
-#define GUN_357						3
-#define GUN_NONE					4
+#define HWGRUNT_GUN_MINIGUN					0
+#define HWGRUNT_GUN_GLOCK					1
+#define HWGRUNT_GUN_DEAGLE					2
+#define HWGRUNT_GUN_357						3
+#define HWGRUNT_GUN_NONE					4
 
-#define GLOCK_CLIP_SIZE				9
-#define DEAGLE_CLIP_SIZE			7
-#define PYTHON_CLIP_SIZE			6
+#define HWGRUNT_GLOCK_CLIP_SIZE				9
+#define HWGRUNT_DEAGLE_CLIP_SIZE			7
+#define HWGRUNT_PYTHON_CLIP_SIZE			6
 
-#define EVENT_SHOOT_PISTOL 1
-#define EVENT_PICKUP_MINIGUN 12
+#define HWGRUNT_EVENT_SHOOT_PISTOL 1
+#define HWGRUNT_EVENT_PICKUP_MINIGUN 12
 
-#define MINIGUN_FIND_DISTANCE 1024
+#define HWGRUNT_MINIGUN_FIND_DISTANCE 1024
 
-#define RANDOM_PISTOL 7
-
-#define	SENTENCE_VOLUME (float)0.35 // volume of grunt sentences
+#define HWGRUNT_RANDOM_PISTOL 7
 
 enum
 {
@@ -148,7 +146,7 @@ void CHWGrunt::Precache()
 {
 	m_voicePitch = 85 + RANDOM_LONG(0, 10);
 
-	if (pev->weapons == 0 || pev->weapons == RANDOM_PISTOL) {
+	if (pev->weapons == 0 || pev->weapons == HWGRUNT_RANDOM_PISTOL) {
 		pev->weapons = RANDOM_LONG(1, 3);
 
 		// weapon isn't known until spawn time. For normal monsters this could be skipped
@@ -165,18 +163,18 @@ void CHWGrunt::Precache()
 	default:
 	case 1:
 		m_iEquipment |= MEQUIP_GLOCK;
-		secondaryClipSize = GLOCK_CLIP_SIZE;
-		secondaryBody = GUN_GLOCK;
+		secondaryClipSize = HWGRUNT_GLOCK_CLIP_SIZE;
+		secondaryBody = HWGRUNT_GUN_GLOCK;
 		break;
 	case 2:
 		m_iEquipment |= MEQUIP_DEAGLE;
-		secondaryClipSize = DEAGLE_CLIP_SIZE;
-		secondaryBody = GUN_DEAGLE;
+		secondaryClipSize = HWGRUNT_DEAGLE_CLIP_SIZE;
+		secondaryBody = HWGRUNT_GUN_DEAGLE;
 		break;
 	case 3:
 		m_iEquipment |= MEQUIP_357;
-		secondaryClipSize = PYTHON_CLIP_SIZE;
-		secondaryBody = GUN_357;
+		secondaryClipSize = HWGRUNT_PYTHON_CLIP_SIZE;
+		secondaryBody = HWGRUNT_GUN_357;
 		break;
 	}
 	*/
@@ -235,13 +233,13 @@ void CHWGrunt::StartFollowingSound() {
 
 	switch (r) {
 	case 0:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE1", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE1", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	case 1:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE2", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE2", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	case 2:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE3", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE3", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	}
 
@@ -253,20 +251,20 @@ void CHWGrunt::StopFollowingSound() {
 
 	switch (r) {
 	case 0:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_QUEST4", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_QUEST4", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	case 1:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER0", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER0", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	case 2:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER1", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER1", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	}
 	JustSpoke();
 }
 
 void CHWGrunt::CantFollowSound() {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER3", SENTENCE_VOLUME, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER3", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 	JustSpoke();
 }
 
@@ -274,7 +272,7 @@ void CHWGrunt::PlaySentenceSound(int sentenceType) {
 	if (sentenceType >= (int)ARRAYSIZE(pGruntSentences)) {
 		return;
 	}
-	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[sentenceType], SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[sentenceType], GRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 }
 
 void CHWGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) {
@@ -292,7 +290,7 @@ void CHWGrunt::DropMinigun(Vector vecDir) {
 	//DropEquipment(2, MEQUIP_MINIGUN, launchDir, Vector(0, RANDOM_FLOAT(200, 400), 0));
 	m_cClipSize = m_cAmmoLoaded = secondaryClipSize;
 	m_IdealActivity = ACT_SMALL_FLINCH;
-	SetBodygroup(GUN_GROUP, secondaryBody);
+	SetBodygroup(HWGRUNT_GUN_GROUP, secondaryBody);
 }
 
 void CHWGrunt::PickupMinigun() {
@@ -314,7 +312,7 @@ void CHWGrunt::PickupMinigun() {
 	UTIL_Remove(minigun);
 
 	m_cClipSize = m_cAmmoLoaded = INT_MAX;
-	SetBodygroup(GUN_GROUP, GUN_MINIGUN);
+	SetBodygroup(HWGRUNT_GUN_GROUP, HWGRUNT_GUN_MINIGUN);
 	m_iEquipment |= MEQUIP_MINIGUN;
 }
 
@@ -447,15 +445,15 @@ void CHWGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 	switch (pEvent->event)
 	{
-	case EVENT_SHOOT_PISTOL:
+	case HWGRUNT_EVENT_SHOOT_PISTOL:
 		Shoot(false);
 		break;
-	case EVENT_PICKUP_MINIGUN:
+	case HWGRUNT_EVENT_PICKUP_MINIGUN:
 		PickupMinigun();
 		break;
 	case HGRUNT_AE_DROP_GUN:
 		if (DropEquipment(0, false))
-			SetBodygroup(GUN_GROUP, GUN_NONE);
+			SetBodygroup(HWGRUNT_GUN_GROUP, GUN_NONE);
 		break;
 	default:
 		CBaseGrunt::HandleAnimEvent(pEvent);
@@ -512,7 +510,7 @@ CBaseEntity* CHWGrunt::PBestMinigun(void)
 	Vector eyePos = EyePosition();
 
 	CBaseEntity* ent = NULL;
-	while ((ent = UTIL_FindEntityInSphere(ent, eyePos, MINIGUN_FIND_DISTANCE)) != NULL)
+	while ((ent = UTIL_FindEntityInSphere(ent, eyePos, HWGRUNT_MINIGUN_FIND_DISTANCE)) != NULL)
 	{
 		if (ent->pev->effects != EF_NODRAW && FClassnameIs(ent->pev, "weapon_9mmAR")) { // TODO: Minigun
 			TraceResult tr;

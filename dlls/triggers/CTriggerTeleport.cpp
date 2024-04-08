@@ -6,7 +6,7 @@
 #include "gamerules.h"
 #include "CBaseTrigger.h"
 
-#define SF_RANDOM_DESTINATION 64
+#define SF_TELE_RANDOM_DESTINATION 64
 
 class CTriggerTeleport : public CBaseTrigger
 {
@@ -83,7 +83,7 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 
 	edict_t* pentTarget = targets[0];
 
-	if (pev->spawnflags & SF_RANDOM_DESTINATION)
+	if (pev->spawnflags & SF_TELE_RANDOM_DESTINATION)
 		pentTarget = targets[RANDOM_LONG(0, targets.size()-1)];
 
 	Vector tmp = VARS(pentTarget)->origin;

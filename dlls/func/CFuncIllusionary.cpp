@@ -3,8 +3,6 @@
 #include "cbase.h"
 #include "doors.h"
 
-#define SF_USE_ANGLES 2
-
 /*QUAKED func_illusionary (0 .5 .8) ?
 A simple entity that looks solid but lets you walk through it.
 */
@@ -32,7 +30,7 @@ void CFuncIllusionary::KeyValue(KeyValueData* pkvd)
 
 void CFuncIllusionary::Spawn(void)
 {
-	pev->angles = (pev->spawnflags & SF_USE_ANGLES) ? pev->angles : g_vecZero;
+	pev->angles = (pev->spawnflags & SF_WALL_USE_ANGLES) ? pev->angles : g_vecZero;
 	pev->movetype = MOVETYPE_NONE;
 	pev->solid = SOLID_NOT;// always solid_not 
 	SET_MODEL(ENT(pev), STRING(pev->model));

@@ -1,3 +1,4 @@
+#pragma once
 //#include "const.h"
 
 #define SF_BUTTON_DONTMOVE		1

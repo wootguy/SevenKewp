@@ -8,11 +8,11 @@
 //
 // CTriggerRandom / trigger_random -- fires a random target
 
-#define SF_START_ON				1
-#define SF_TRIGGER_ONCE			2
-#define SF_REUSABLE				4
-#define SF_TIMED				8
-#define SF_UNIQUE				16
+#define SF_TRAND_START_ON				1
+#define SF_TRAND_TRIGGER_ONCE			2
+#define SF_TRAND_REUSABLE				4
+#define SF_TRAND_TIMED				8
+#define SF_TRAND_UNIQUE				16
 
 #define MAX_RANDOM_TARGETS 16
 
@@ -85,16 +85,16 @@ void CTriggerRandom::Spawn(void)
 		if (pev->spawnflags & 1) {
 			// re-usable. Convert to trigger_random's reusable flag
 			pev->spawnflags &= ~1;
-			pev->spawnflags |= SF_REUSABLE;
+			pev->spawnflags |= SF_TRAND_REUSABLE;
 		}
-		pev->spawnflags |= SF_UNIQUE;
+		pev->spawnflags |= SF_TRAND_UNIQUE;
 	}
 
 	if (!strcmp(STRING(pev->classname), "trigger_random_time")) {
-		pev->spawnflags |= SF_TIMED;
+		pev->spawnflags |= SF_TRAND_TIMED;
 	}
 	
-	if ((pev->spawnflags & SF_TIMED) && (pev->spawnflags & SF_START_ON)) {
+	if ((pev->spawnflags & SF_TRAND_TIMED) && (pev->spawnflags & SF_TRAND_START_ON)) {
 		SetThink(&CTriggerRandom::TimedThink);
 		pev->nextthink = gpGlobals->time + RANDOM_FLOAT(min_delay, max_delay);
 	}
@@ -123,7 +123,7 @@ void CTriggerRandom::TimedThink() {
 		FireTargets(STRING(target), this, this, USE_TOGGLE, 0);
 	}
 
-	if (pev->spawnflags & SF_TRIGGER_ONCE) {
+	if (pev->spawnflags & SF_TRAND_TRIGGER_ONCE) {
 		SetThink(NULL);
 		pev->nextthink = 0;
 		isActive = false;
@@ -136,7 +136,7 @@ void CTriggerRandom::TimedThink() {
 string_t CTriggerRandom::SelectRandomTarget() {
 	int randomIdx;
 
-	if (pev->spawnflags & SF_UNIQUE) {
+	if (pev->spawnflags & SF_TRAND_UNIQUE) {
 		int remainingTargetCount = 0;
 		int remainingTargets[16];
 		for (int i = 0; i < target_count; i++) {
@@ -146,7 +146,7 @@ string_t CTriggerRandom::SelectRandomTarget() {
 		}
 
 		if (remainingTargetCount == 0) {
-			if (pev->spawnflags & SF_REUSABLE) {
+			if (pev->spawnflags & SF_TRAND_REUSABLE) {
 				memset(firedTargets, 0, sizeof(bool) * MAX_RANDOM_TARGETS);
 				randomIdx = RANDOM_LONG(0, target_count - 1);
 			}
@@ -172,7 +172,7 @@ void CTriggerRandom::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 {
 	isActive = !isActive; // yes, useType is ignored
 
-	if (pev->spawnflags & SF_TIMED) {
+	if (pev->spawnflags & SF_TRAND_TIMED) {
 		if (isActive) {
 			SetThink(&CTriggerRandom::TimedThink);
 			pev->nextthink = gpGlobals->time + RANDOM_FLOAT(min_delay, max_delay);

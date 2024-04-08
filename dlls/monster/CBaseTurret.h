@@ -1,3 +1,4 @@
+#pragma once
 
 #define TURRET_SHOTS	2
 #define TURRET_RANGE	(100 * 12)

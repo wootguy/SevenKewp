@@ -42,6 +42,7 @@
 #include "CSoundEnt.h"
 #include "CSpore.h"
 #include "CShockBeam.h"
+#include "CBaseGrunt.h"
 
 int g_fShockTrooperQuestion; // true if an idle grunt asked a question. Cleared when someone answers.
 static int iShockTrooperMuzzleFlash;
@@ -51,18 +52,7 @@ extern DLL_GLOBAL int g_iSkillLevel;
 //=========================================================
 // monster-specific DEFINE's
 //=========================================================
-#define GRUNT_CLIP_SIZE 36	 // how many bullets in a clip? - NOTE: 3 round burst sound, so keep as 3 * x!
-#define GRUNT_VOL 0.35		 // volume of grunt sounds
-#define GRUNT_ATTN ATTN_NORM // attenutation of grunt sentences
-#define HGRUNT_LIMP_HEALTH 20
-#define HGRUNT_DMG_HEADSHOT (DMG_BULLET | DMG_CLUB) // damage types that can kill a grunt with a single headshot.
-#define HGRUNT_NUM_HEADS 2							// how many grunt heads are there?
-#define HGRUNT_MINIMUM_HEADSHOT_DAMAGE 15			// must do at least this much damage in one shot to head to score a headshot kill
 #define ShockTrooper_SENTENCE_VOLUME (float)0.5	// volume of grunt sentences
-
-#define HGRUNT_9MMAR (1 << 0)
-#define HGRUNT_HANDGRENADE (1 << 1)
-#define HGRUNT_SHOTGUN (1 << 3)
 
 namespace STrooperBodyGroup
 {
@@ -90,39 +80,6 @@ namespace STrooperWeapon
 #define STROOPER_AE_GREN_TOSS (7)
 #define STROOPER_AE_CAUGHT_ENEMY (10) // grunt established sight with an enemy (player only) that had previously eluded the squad.
 #define STROOPER_AE_DROP_GUN (11)	  // grunt (probably dead) is dropping his mp5.
-
-//=========================================================
-// monster-specific schedule types
-//=========================================================
-enum
-{
-	SCHED_GRUNT_SUPPRESS = LAST_COMMON_SCHEDULE + 1,
-	SCHED_GRUNT_ESTABLISH_LINE_OF_FIRE, // move to a location to set up an attack against the enemy. (usually when a friendly is in the way).
-	SCHED_GRUNT_COVER_AND_RELOAD,
-	SCHED_GRUNT_SWEEP,
-	SCHED_GRUNT_FOUND_ENEMY,
-	SCHED_GRUNT_REPEL,
-	SCHED_GRUNT_REPEL_ATTACK,
-	SCHED_GRUNT_REPEL_LAND,
-	SCHED_GRUNT_WAIT_FACE_ENEMY,
-	SCHED_GRUNT_TAKECOVER_FAILED, // special schedule type that forces analysis of conditions and picks the best possible schedule to recover from this type of failure.
-	SCHED_GRUNT_ELOF_FAIL,
-};
-
-//=========================================================
-// monster-specific tasks
-//=========================================================
-enum
-{
-	TASK_GRUNT_FACE_TOSS_DIR = LAST_COMMON_TASK + 1,
-	TASK_GRUNT_SPEAK_SENTENCE,
-	TASK_GRUNT_CHECK_FIRE,
-};
-
-//=========================================================
-// monster-specific conditions
-//=========================================================
-#define bits_COND_GRUNT_NOFIRE (bits_COND_SPECIAL1)
 
 class CShockTrooper : public CTalkSquadMonster
 {

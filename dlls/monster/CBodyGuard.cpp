@@ -27,7 +27,7 @@
 #define BG_SHOOT_UZIS_EVENT3 6
 #define BG_SHOOT_UZIS_EVENT4 8
 
-#define SENTENCE_VOLUME 1.0f
+#define BODYGUARD_SENTENCE_VOLUME 1.0f
 
 // TODO:
 // - add reload events to model so the sounds play at the right time
@@ -518,7 +518,7 @@ void CBodyGuard::PlaySentenceSound(int sentenceType) {
 	if (sentenceType >= (int)ARRAYSIZE(pGruntSentences)) {
 		return;
 	}
-	PlaySentence(pGruntSentences[sentenceType], 3.0f, SENTENCE_VOLUME, GRUNT_ATTN);
+	PlaySentence(pGruntSentences[sentenceType], 3.0f, BODYGUARD_SENTENCE_VOLUME, GRUNT_ATTN);
 }
 
 void CBodyGuard::PlaySentence(const char* pszSentence, float duration, float volume, float attenuation)

@@ -26,8 +26,8 @@
 
 #define	SENTENCE_VOLUME (float)0.35 // volume of grunt sentences
 
-#define FOLLOW_SOUND "buttons/button3.wav"
-#define UNFOLLOW_SOUND "buttons/button2.wav"
+#define RGRUNT_FOLLOW_SOUND "buttons/button3.wav"
+#define RGRUNT_UNFOLLOW_SOUND "buttons/button2.wav"
 
 class CRoboGrunt : public CBaseGrunt
 {
@@ -232,8 +232,8 @@ void CRoboGrunt::Precache()
 	PRECACHE_SOUND_ARRAY(pThrowSounds);
 	PRECACHE_SOUND_ARRAY(pHeadshotSounds);
 
-	PRECACHE_SOUND(FOLLOW_SOUND);
-	PRECACHE_SOUND(UNFOLLOW_SOUND);
+	PRECACHE_SOUND(RGRUNT_FOLLOW_SOUND);
+	PRECACHE_SOUND(RGRUNT_UNFOLLOW_SOUND);
 }
 
 int	CRoboGrunt::Classify(void)
@@ -414,15 +414,15 @@ void CRoboGrunt::IdleSound(void)
 }
 
 void CRoboGrunt::StartFollowingSound() {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, FOLLOW_SOUND, 1.0f, GRUNT_ATTN);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RGRUNT_FOLLOW_SOUND, 1.0f, GRUNT_ATTN);
 }
 
 void CRoboGrunt::StopFollowingSound() {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, UNFOLLOW_SOUND, 1.0f, GRUNT_ATTN);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RGRUNT_UNFOLLOW_SOUND, 1.0f, GRUNT_ATTN);
 }
 
 void CRoboGrunt::CantFollowSound() {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, UNFOLLOW_SOUND, 1.0f, GRUNT_ATTN);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RGRUNT_UNFOLLOW_SOUND, 1.0f, GRUNT_ATTN);
 }
 
 void CRoboGrunt::PlaySentenceSound(int sentenceType) {

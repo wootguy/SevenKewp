@@ -62,8 +62,8 @@ enum
 
 #define bits_MEMORY_BADJUMP		(bits_MEMORY_CUSTOM1)
 
-#define FOLLOW_SOUND "buttons/blip2.wav"
-#define UNFOLLOW_SOUND "buttons/blip1.wav"
+#define HASS_FOLLOW_SOUND "buttons/blip2.wav"
+#define HASS_UNFOLLOW_SOUND "buttons/blip1.wav"
 
 class CHAssassin : public CBaseMonster
 {
@@ -150,15 +150,15 @@ void CHAssassin :: IdleSound ( void )
 }
 
 void CHAssassin::StartFollowingSound() {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, FOLLOW_SOUND, 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, HASS_FOLLOW_SOUND, 1, ATTN_NORM);
 }
 
 void CHAssassin::StopFollowingSound() {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, UNFOLLOW_SOUND, 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, HASS_UNFOLLOW_SOUND, 1, ATTN_NORM);
 }
 
 void CHAssassin::CantFollowSound() {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, UNFOLLOW_SOUND, 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, HASS_UNFOLLOW_SOUND, 1, ATTN_NORM);
 }
 
 //=========================================================
@@ -342,8 +342,8 @@ void CHAssassin :: Precache()
 
 	PRECACHE_SOUND("debris/beamstart1.wav");
 
-	PRECACHE_SOUND(FOLLOW_SOUND);
-	PRECACHE_SOUND(UNFOLLOW_SOUND);
+	PRECACHE_SOUND(HASS_FOLLOW_SOUND);
+	PRECACHE_SOUND(HASS_UNFOLLOW_SOUND);
 
 	m_iShell = PRECACHE_MODEL ("models/shell.mdl");// brass shell
 }	

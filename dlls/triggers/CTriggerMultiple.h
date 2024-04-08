@@ -1,3 +1,4 @@
+#pragma once
 #include "CBaseTrigger.h"
 
 /*QUAKED trigger_multiple (.5 .5 .5) ? notouch

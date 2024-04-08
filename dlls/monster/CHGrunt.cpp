@@ -23,13 +23,6 @@
 #define GUN_SHOTGUN					1
 #define GUN_NONE					2
 
-#define HGRUNT_9MMAR				( 1 << 0)
-#define HGRUNT_HANDGRENADE			( 1 << 1)
-#define HGRUNT_GRENADELAUNCHER		( 1 << 2)
-#define HGRUNT_SHOTGUN				( 1 << 3)
-
-#define	SENTENCE_VOLUME (float)0.35 // volume of grunt sentences
-
 class CHGrunt : public CBaseGrunt
 {
 public:
@@ -215,13 +208,13 @@ void CHGrunt::StartFollowingSound() {
 
 	switch (r) {
 	case 0:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE1", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE1", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	case 1:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE2", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE2", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	case 2:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE3", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_CHARGE3", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	}
 	
@@ -233,20 +226,20 @@ void CHGrunt::StopFollowingSound() {
 
 	switch (r) {
 	case 0:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_QUEST4", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_QUEST4", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	case 1:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER0", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER0", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	case 2:
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER1", SENTENCE_VOLUME, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER1", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 		break;
 	}
 	JustSpoke();
 }
 
 void CHGrunt::CantFollowSound() {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER3", SENTENCE_VOLUME, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, "!HG_ANSWER3", GRUNT_SENTENCE_VOLUME, ATTN_NORM);
 	JustSpoke();
 }
 
@@ -260,15 +253,15 @@ void CHGrunt::IdleSound(void)
 			switch (RANDOM_LONG(0, 2))
 			{
 			case 0: // check in
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_CHECK", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), "HG_CHECK", GRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fGruntQuestion = 1;
 				break;
 			case 1: // question
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_QUEST", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), "HG_QUEST", GRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fGruntQuestion = 2;
 				break;
 			case 2: // statement
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_IDLE", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), "HG_IDLE", GRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 		}
@@ -277,10 +270,10 @@ void CHGrunt::IdleSound(void)
 			switch (g_fGruntQuestion)
 			{
 			case 1: // check in
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_CLEAR", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), "HG_CLEAR", GRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			case 2: // question 
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_ANSWER", SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), "HG_ANSWER", GRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 			g_fGruntQuestion = 0;
@@ -293,7 +286,7 @@ void CHGrunt::PlaySentenceSound(int sentenceType) {
 	if (sentenceType >= (int)ARRAYSIZE(pGruntSentences)) {
 		return;
 	}
-	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[sentenceType], SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[sentenceType], GRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 }
 
 void CHGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)

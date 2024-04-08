@@ -1,3 +1,5 @@
+#pragma once
+
 // UNDONE: Need to save this!!! It needs class & linkage
 class CPlatTrigger : public CBaseEntity
 {

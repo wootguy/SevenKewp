@@ -1,3 +1,4 @@
+#pragma once
 
 #define SF_PLAT_TOGGLE		0x0001
 

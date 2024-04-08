@@ -1,3 +1,4 @@
+#pragma once
 
 // doors
 #define SF_DOOR_ROTATE_Y			0
@@ -12,8 +13,8 @@
 #define SF_DOOR_NOMONSTERS			512	// Monster can't open
 #define SF_DOOR_SILENT				0x80000000
 
-#define noiseMoving noise1
-#define noiseArrived noise2
+#define door_noiseMoving noise1
+#define door_noiseArrived noise2
 
 class CBaseDoor : public CBaseToggle
 {

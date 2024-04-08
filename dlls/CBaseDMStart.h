@@ -1,3 +1,5 @@
+#pragma once
+
 edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer);
 
 BOOL IsSpawnPointClear(CBaseEntity* pPlayer, CBaseEntity* pSpot);

@@ -1,3 +1,4 @@
+#pragma once
 #include "CRuleEntity.h"
 
 //

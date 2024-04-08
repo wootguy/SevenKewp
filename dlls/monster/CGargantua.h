@@ -1,4 +1,4 @@
-
+#pragma once
 
 const float GARG_ATTACKDIST = 80.0;
 

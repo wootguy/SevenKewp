@@ -9,9 +9,9 @@
 
 // CTriggerRespawn / trigger_respawn -- Respawns dead players and relocates living ones
 
-#define SF_RESPAWN_TARGET 1
-#define SF_RESPAWN_DEAD_PLAYERS 2
-#define SF_DONT_MOVE_LIVING 4
+#define SF_TRESPAWN_TARGET 1
+#define SF_TRESPAWN_DEAD_PLAYERS 2
+#define SF_TRESPAWN_DONT_MOVE_LIVING 4
 
 class CTriggerRespawn : public CRulePointEntity
 {
@@ -28,7 +28,7 @@ void CTriggerRespawn::RespawnTarget(CBaseEntity* target) {
 		return;
 	}
 
-	if (target->IsAlive() && (pev->spawnflags & SF_DONT_MOVE_LIVING)) {
+	if (target->IsAlive() && (pev->spawnflags & SF_TRESPAWN_DONT_MOVE_LIVING)) {
 		return;
 	}
 
@@ -43,14 +43,14 @@ void CTriggerRespawn::RespawnTarget(CBaseEntity* target) {
 	if (target->IsAlive()) {
 		target->pev->health = target->pev->max_health;
 	}
-	else if (pev->spawnflags & SF_RESPAWN_DEAD_PLAYERS) {
+	else if (pev->spawnflags & SF_TRESPAWN_DEAD_PLAYERS) {
 		target->Spawn();
 	}
 }
 
 void CTriggerRespawn::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	if (pev->spawnflags & SF_RESPAWN_TARGET) {
+	if (pev->spawnflags & SF_TRESPAWN_TARGET) {
 		edict_t* ent = NULL;
 		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(pev->target)))) {
 			RespawnTarget(CBaseEntity::Instance(ent));

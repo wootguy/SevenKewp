@@ -30,7 +30,7 @@ LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar );
 LINK_ENTITY_TO_CLASS(weapon_pipewrench, CCrowbar); // TODO: implement wrench
 
 
-enum gauss_e {
+enum crowbar_e {
 	CROWBAR_IDLE = 0,
 	CROWBAR_DRAW,
 	CROWBAR_HOLSTER,

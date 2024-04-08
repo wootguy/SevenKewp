@@ -27,8 +27,8 @@ LINK_ENTITY_TO_CLASS(func_plat, CFuncPlat);
 
 void CFuncPlat::Setup(void)
 {
-	//pev->noiseMovement = MAKE_STRING("plats/platmove1.wav");
-	//pev->noiseStopMoving = MAKE_STRING("plats/platstop1.wav");
+	//pev->plat_noiseMoving = MAKE_STRING("plats/platmove1.wav");
+	//pev->plat_noiseArrived = MAKE_STRING("plats/platstop1.wav");
 
 	if (m_flTLength == 0)
 		m_flTLength = 80;
@@ -125,8 +125,8 @@ void CFuncPlat::PlatUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 //
 void CFuncPlat::GoDown(void)
 {
-	if (pev->noiseMovement)
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement), m_volume, ATTN_NORM);
+	if (pev->plat_noiseMoving)
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->plat_noiseMoving), m_volume, ATTN_NORM);
 
 	ASSERT(m_toggle_state == TS_AT_TOP || m_toggle_state == TS_GOING_UP);
 	m_toggle_state = TS_GOING_DOWN;
@@ -140,11 +140,11 @@ void CFuncPlat::GoDown(void)
 //
 void CFuncPlat::HitBottom(void)
 {
-	if (pev->noiseMovement)
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+	if (pev->plat_noiseMoving)
+		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->plat_noiseMoving));
 
-	if (pev->noiseStopMoving)
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+	if (pev->plat_noiseArrived)
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, (char*)STRING(pev->plat_noiseArrived), m_volume, ATTN_NORM);
 
 	ASSERT(m_toggle_state == TS_GOING_DOWN);
 	m_toggle_state = TS_AT_BOTTOM;
@@ -156,8 +156,8 @@ void CFuncPlat::HitBottom(void)
 //
 void CFuncPlat::GoUp(void)
 {
-	if (pev->noiseMovement)
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement), m_volume, ATTN_NORM);
+	if (pev->plat_noiseMoving)
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->plat_noiseMoving), m_volume, ATTN_NORM);
 
 	ASSERT(m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
 	m_toggle_state = TS_GOING_UP;
@@ -171,11 +171,11 @@ void CFuncPlat::GoUp(void)
 //
 void CFuncPlat::HitTop(void)
 {
-	if (pev->noiseMovement)
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+	if (pev->plat_noiseMoving)
+		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->plat_noiseMoving));
 
-	if (pev->noiseStopMoving)
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+	if (pev->plat_noiseArrived)
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, (char*)STRING(pev->plat_noiseArrived), m_volume, ATTN_NORM);
 
 	ASSERT(m_toggle_state == TS_GOING_UP);
 	m_toggle_state = TS_AT_TOP;
@@ -200,8 +200,8 @@ void CFuncPlat::Blocked(CBaseEntity* pOther)
 		pOther->Killed(pev, GIB_ALWAYS);
 	}
 
-	if (pev->noiseMovement)
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+	if (pev->plat_noiseMoving)
+		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->plat_noiseMoving));
 
 	// Send the platform back where it came from
 	ASSERT(m_toggle_state == TS_GOING_UP || m_toggle_state == TS_GOING_DOWN);

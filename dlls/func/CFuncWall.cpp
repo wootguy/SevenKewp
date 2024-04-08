@@ -3,13 +3,11 @@
 #include "cbase.h"
 #include "CFuncWall.h"
 
-#define SF_USE_ANGLES 2
-
 LINK_ENTITY_TO_CLASS(func_wall, CFuncWall);
 
 void CFuncWall::Spawn(void)
 {
-	pev->angles = (pev->spawnflags & SF_USE_ANGLES) ? pev->angles : g_vecZero;
+	pev->angles = (pev->spawnflags & SF_WALL_USE_ANGLES) ? pev->angles : g_vecZero;
 	pev->movetype = MOVETYPE_PUSH;  // so it doesn't get pushed by anything
 	pev->solid = SOLID_BSP;
 	SET_MODEL(ENT(pev), STRING(pev->model));

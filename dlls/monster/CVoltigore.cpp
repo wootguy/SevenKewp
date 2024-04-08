@@ -13,27 +13,27 @@
 // new classification for racex
 // accurate beam color/width and sprite size
 
-#define EVENT_SHOOT_ORB 1
-#define EVENT_SLASH_BOTH 12
-#define EVENT_SLASH_RIGHT 13
+#define VOLTI_EVENT_SHOOT_ORB 1
+#define VOLTI_EVENT_SLASH_BOTH 12
+#define VOLTI_EVENT_SLASH_RIGHT 13
 
-#define MELEE_ATTACK1_DISTANCE 128
-#define SHOCK_CHARGE_BEAMS 3
-#define SHOCK_FLY_BEAMS 7
-#define SHOCK_DEATH_BEAMS 12
+#define VOLTI_MELEE_ATTACK1_DISTANCE 128
+#define VOLTI_SHOCK_CHARGE_BEAMS 3
+#define VOLTI_SHOCK_FLY_BEAMS 7
+#define VOLTI_SHOCK_DEATH_BEAMS 12
 
-#define SHOCK_SPRITE "sprites/blueflare2.spr"
-#define BEAM_SPRITE "sprites/lgtning.spr"
-#define GIB_MODEL "models/vgibs.mdl"
-#define SPORE_EXPLODE_SPRITE "sprites/spore_exp_01.spr"
-#define SPORE_EXPLODE_SPRITE2 "sprites/tinyspit.spr"
-#define SPORE_EXPLODE_SOUND MOD_SND_FOLDER "weapons/splauncher_impact.wav"
-#define SHOCK_SOUND "debris/beamstart1.wav"
+#define VOLTI_SHOCK_SPRITE "sprites/blueflare2.spr"
+#define VOLTI_BEAM_SPRITE "sprites/lgtning.spr"
+#define VOLTI_GIB_MODEL "models/vgibs.mdl"
+#define VOLTI_SPORE_EXPLODE_SPRITE "sprites/spore_exp_01.spr"
+#define VOLTI_SPORE_EXPLODE_SPRITE2 "sprites/tinyspit.spr"
+#define VOLTI_SPORE_EXPLODE_SOUND MOD_SND_FOLDER "weapons/splauncher_impact.wav"
+#define VOLTI_SHOCK_SOUND "debris/beamstart1.wav"
 
-#define HEAD_ATTACHEMENT 1
-#define ARM_LEFT_ATTACHEMENT 2
-#define ARM_RIGHT_ATTACHEMENT 3
-#define SHOCK_ATTACHMENT 4
+#define VOLTI_HEAD_ATTACHEMENT 1
+#define VOLTI_ARM_LEFT_ATTACHEMENT 2
+#define VOLTI_ARM_RIGHT_ATTACHEMENT 3
+#define VOLTI_SHOCK_ATTACHMENT 4
 
 int sporeExplodeSprIdx = 0;
 
@@ -73,8 +73,8 @@ public:
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
 	EHANDLE m_handShock;
-	EHANDLE m_pBeam[SHOCK_CHARGE_BEAMS];
-	EHANDLE m_pDeathBeam[SHOCK_DEATH_BEAMS];
+	EHANDLE m_pBeam[VOLTI_SHOCK_CHARGE_BEAMS];
+	EHANDLE m_pDeathBeam[VOLTI_SHOCK_DEATH_BEAMS];
 	float explodeTime;
 
 	static const char* pAttackHitSounds[];
@@ -98,7 +98,7 @@ public:
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 private:
-	EHANDLE m_pBeam[SHOCK_FLY_BEAMS];
+	EHANDLE m_pBeam[VOLTI_SHOCK_FLY_BEAMS];
 	int beamUpdateIdx;
 	int shocksLeft;
 };
@@ -194,8 +194,8 @@ void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
 {
 	switch (pEvent->event)
 	{
-	case EVENT_SLASH_BOTH:
-	case EVENT_SLASH_RIGHT:
+	case VOLTI_EVENT_SLASH_BOTH:
+	case VOLTI_EVENT_SLASH_RIGHT:
 	{
 		bool isRightSwing = pEvent->event == EVENT_SLASH_RIGHT;
 		float damage = gSkillData.sk_voltigore_dmg_punch;
@@ -221,12 +221,12 @@ void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackMissSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
 		break;
 	}
-	case EVENT_SHOOT_ORB:
+	case VOLTI_EVENT_SHOOT_ORB:
 	{
 		HideChargeBeam();
 
 		Vector handOrigin, handAngles;
-		GetAttachment(SHOCK_ATTACHMENT-1, handOrigin, handAngles);
+		GetAttachment(VOLTI_SHOCK_ATTACHMENT-1, handOrigin, handAngles);
 
 		UTIL_MakeVectors(pev->angles);
 		Vector vecThrowDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - handOrigin).Normalize();
@@ -261,14 +261,14 @@ void CVoltigore::Spawn()
 
 	MonsterInit();
 
-	CSprite* sprite = CSprite::SpriteCreate(SHOCK_SPRITE, pev->origin, FALSE);
+	CSprite* sprite = CSprite::SpriteCreate(VOLTI_SHOCK_SPRITE, pev->origin, FALSE);
 	sprite->SetScale(0.3f);
 	sprite->SetTransparency(kRenderTransAdd, 255, 255, 255, 255, 0);
-	sprite->SetAttachment(edict(), SHOCK_ATTACHMENT);
+	sprite->SetAttachment(edict(), VOLTI_SHOCK_ATTACHMENT);
 	m_handShock = sprite;
 
-	for (int i = 0; i < SHOCK_CHARGE_BEAMS; i++ ) {
-		CBeam* beam = CBeam::BeamCreate(BEAM_SPRITE, 30);
+	for (int i = 0; i < VOLTI_SHOCK_CHARGE_BEAMS; i++ ) {
+		CBeam* beam = CBeam::BeamCreate(VOLTI_BEAM_SPRITE, 30);
 		beam->EntsInit(entindex(), entindex());
 		beam->SetStartAttachment(i+1); // head, left hand, right hand
 		beam->SetEndAttachment(4);
@@ -287,7 +287,7 @@ void CVoltigore::Spawn()
 }
 
 void CVoltigore::ShowChargeBeam() {
-	for (int i = 0; i < SHOCK_CHARGE_BEAMS; i++) {
+	for (int i = 0; i < VOLTI_SHOCK_CHARGE_BEAMS; i++) {
 		if (m_pBeam[i])
 			m_pBeam[i]->pev->effects &= ~EF_NODRAW;
 	}
@@ -298,7 +298,7 @@ void CVoltigore::ShowChargeBeam() {
 }
 
 void CVoltigore::HideChargeBeam() {
-	for (int i = 0; i < SHOCK_CHARGE_BEAMS; i++) {
+	for (int i = 0; i < VOLTI_SHOCK_CHARGE_BEAMS; i++) {
 		if (m_pBeam[i])
 			m_pBeam[i]->pev->effects |= EF_NODRAW;
 	}
@@ -314,11 +314,11 @@ void CVoltigore::Precache()
 
 	m_defaultModel = "models/voltigore.mdl";
 	PRECACHE_MODEL(GetModel());
-	PRECACHE_MODEL(GIB_MODEL);
-	PRECACHE_MODEL(BEAM_SPRITE);
-	PRECACHE_MODEL(SHOCK_SPRITE);
-	PRECACHE_MODEL(SPORE_EXPLODE_SPRITE);
-	sporeExplodeSprIdx = PRECACHE_MODEL(SPORE_EXPLODE_SPRITE2);
+	PRECACHE_MODEL(VOLTI_GIB_MODEL);
+	PRECACHE_MODEL(VOLTI_BEAM_SPRITE);
+	PRECACHE_MODEL(VOLTI_SHOCK_SPRITE);
+	PRECACHE_MODEL(VOLTI_SPORE_EXPLODE_SPRITE);
+	sporeExplodeSprIdx = PRECACHE_MODEL(VOLTI_SPORE_EXPLODE_SPRITE2);
 
 	PRECACHE_SOUND_ARRAY(pAttackHitSounds);
 	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
@@ -331,8 +331,8 @@ void CVoltigore::Precache()
 	for (int i = 0; i < (int)ARRAYSIZE(pEventSounds); i++) \
 		PRECACHE_SOUND((char*)pEventSounds[i]);
 	
-	PRECACHE_SOUND(SPORE_EXPLODE_SOUND);
-	PRECACHE_SOUND(SHOCK_SOUND);
+	PRECACHE_SOUND(VOLTI_SPORE_EXPLODE_SOUND);
+	PRECACHE_SOUND(VOLTI_SHOCK_SOUND);
 }
 
 BOOL CVoltigore::CheckMeleeAttack1(float flDot, float flDist)
@@ -357,20 +357,20 @@ void CVoltigore::ExplodeThink(void) {
 	CBaseMonster::MonsterThink();
 
 	if (explodeTime < gpGlobals->time) {
-		for (int i = 0; i < SHOCK_DEATH_BEAMS; i++) {
+		for (int i = 0; i < VOLTI_SHOCK_DEATH_BEAMS; i++) {
 			UTIL_Remove(m_pDeathBeam[i]);
 			m_pDeathBeam[i] = NULL;
 		}
 
-		EMIT_SOUND(ENT(pev), CHAN_BODY, SPORE_EXPLODE_SOUND, 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_BODY, VOLTI_SPORE_EXPLODE_SOUND, 1, ATTN_NORM);
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 0.5, ATTN_NORM);
 
 		pev->health = -100; // speeds up the gibs
 		g_vecAttackDir = Vector(0,0,-1);
 		pev->absmin.z += 16; // prevent gibs from spawning inside the floor
-		CGib::SpawnRandomGibs(pev, 10, GIB_MODEL, 9, 0);
+		CGib::SpawnRandomGibs(pev, 10, VOLTI_GIB_MODEL, 9, 0);
 
-		CSprite* expSprite = CSprite::SpriteCreate(SPORE_EXPLODE_SPRITE, pev->origin + Vector(0,0,64), TRUE);
+		CSprite* expSprite = CSprite::SpriteCreate(VOLTI_SPORE_EXPLODE_SPRITE, pev->origin + Vector(0,0,64), TRUE);
 		expSprite->SetScale(4.0f);
 		expSprite->SetTransparency(kRenderTransAdd, 255, 255, 255, 128, 0);
 		expSprite->AnimateAndDie(17);
@@ -414,13 +414,13 @@ void CVoltigore::Killed(entvars_t* pevAttacker, int iGib)
 
 	UTIL_Remove(m_handShock);
 	m_handShock = NULL;
-	for (int i = 0; i < SHOCK_CHARGE_BEAMS; i++) {
+	for (int i = 0; i < VOLTI_SHOCK_CHARGE_BEAMS; i++) {
 		UTIL_Remove(m_pBeam[i]);
 		m_pBeam[i] = NULL;
 	}
 
-	for (int i = 0; i < SHOCK_DEATH_BEAMS; i++) {
-		CBeam* beam = CBeam::BeamCreate(BEAM_SPRITE, 30);
+	for (int i = 0; i < VOLTI_SHOCK_DEATH_BEAMS; i++) {
+		CBeam* beam = CBeam::BeamCreate(VOLTI_BEAM_SPRITE, 30);
 		beam->PointsInit(RandomBeamPoint(pev), pev->origin + Vector(0,0,32));
 		beam->SetColor(255, 16, 128);
 		beam->SetBrightness(128);
@@ -515,7 +515,7 @@ void CVoltigoreShock::Spawn(void)
 	pev->rendermode = kRenderTransAdd;
 	pev->renderamt = 255;
 
-	SET_MODEL(ENT(pev), SHOCK_SPRITE);
+	SET_MODEL(ENT(pev), VOLTI_SHOCK_SPRITE);
 	pev->frame = 0;
 	pev->scale = 0.3f;
 	beamUpdateIdx = 0;
@@ -526,8 +526,8 @@ void CVoltigoreShock::Spawn(void)
 	CBaseMonster* mon = owner ? owner->MyMonsterPointer() : NULL;
 	bool isAllyShock = mon && CBaseMonster::IRelationship(mon->Classify(), CLASS_PLAYER) == R_AL;
 
-	for (int i = 0; i < SHOCK_FLY_BEAMS; i++) {
-		CBeam* beam = CBeam::BeamCreate(BEAM_SPRITE, 30);
+	for (int i = 0; i < VOLTI_SHOCK_FLY_BEAMS; i++) {
+		CBeam* beam = CBeam::BeamCreate(VOLTI_BEAM_SPRITE, 30);
 		beam->PointEntInit(RandomBeamPoint(pev), entindex());
 
 		if (isAllyShock) {
@@ -543,7 +543,7 @@ void CVoltigoreShock::Spawn(void)
 		m_pBeam[i] = beam;
 	}
 
-	EMIT_SOUND(ENT(pev), CHAN_BODY, SHOCK_SOUND, 1, 0.6f);
+	EMIT_SOUND(ENT(pev), CHAN_BODY, VOLTI_SHOCK_SOUND, 1, 0.6f);
 }
 
 void CVoltigoreShock::Fly(void)
@@ -554,14 +554,14 @@ void CVoltigoreShock::Fly(void)
 		CBeam* beam = (CBeam*)m_pBeam[beamUpdateIdx].GetEntity();
 		if (beam)
 			beam->PointEntInit(RandomBeamPoint(pev), entindex());
-		beamUpdateIdx = (beamUpdateIdx + 1) % SHOCK_FLY_BEAMS;
+		beamUpdateIdx = (beamUpdateIdx + 1) % VOLTI_SHOCK_FLY_BEAMS;
 	}
 }
 
 void CVoltigoreShock::Shock(void)
 {
 	if (shocksLeft == 0) {
-		for (int i = 0; i < SHOCK_FLY_BEAMS; i++) {
+		for (int i = 0; i < VOLTI_SHOCK_FLY_BEAMS; i++) {
 			UTIL_Remove(m_pBeam[i]);
 		}
 

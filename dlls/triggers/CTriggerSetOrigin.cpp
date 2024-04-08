@@ -6,27 +6,27 @@
 //
 // CTriggerSetOrigin / trigger_setorigin -- copies position and orientation of one entity to another
 
-#define SF_CONSTANT					1	// Always update the target's position and orientation.
-#define SF_SET_ONCE					4	// Only update the target once then remove the trigger_setorigin.
+#define SF_TSORI_CONSTANT					1	// Always update the target's position and orientation.
+#define SF_TSORI_SET_ONCE					4	// Only update the target once then remove the trigger_setorigin.
 
 // Use the vector between the target and the copypointer plus the "Offset"-keyvalue as the offset vector.
 // Also implies copy of X/Y/Z axes, unless one or more of the copy-axis flags are set.
-#define SF_LOCK_OFFSETS				8
+#define SF_TSORI_LOCK_OFFSETS				8
 
-#define SF_COPY_X_ANGLE				16
-#define SF_COPY_Y_ANGLE				32
-#define SF_COPY_Z_ANGLE				64
-#define SF_COPY_X_AXIS				128
-#define SF_COPY_Y_AXIS				256
-#define SF_COPY_Z_AXIS				512
+#define SF_TSORI_COPY_X_ANGLE				16
+#define SF_TSORI_COPY_Y_ANGLE				32
+#define SF_TSORI_COPY_Z_ANGLE				64
+#define SF_TSORI_COPY_X_AXIS				128
+#define SF_TSORI_COPY_Y_AXIS				256
+#define SF_TSORI_COPY_Z_AXIS				512
 
 // If set, the target entity will not be moved to the copypointer's origin before doing
 // the offset difference calculation (set this unless you want the target entity stuck
 // to the center of the copypointer).
-#define SF_SKIP_INITIAL_SET			1024
+#define SF_TSORI_SKIP_INITIAL_SET			1024
 
 // TODO: test if sven entity scans for ents every frame or if it caches them
-#define MAX_TARGETS 512 // 512 = max visible ents for an area. Doubtful a mapper would go beyond that.
+#define TSORI_MAX_TARGETS 512 // 512 = max visible ents for an area. Doubtful a mapper would go beyond that.
 
 class CTriggerSetOrigin : public CPointEntity
 {
@@ -46,9 +46,9 @@ public:
 	bool m_invertAngleZ;
 
 	EHANDLE m_hCopyEnt;
-	EHANDLE m_hTargets[MAX_TARGETS];
-	Vector m_lockOffsets[MAX_TARGETS];
-	Vector m_lockOffsetAngles[MAX_TARGETS];
+	EHANDLE m_hTargets[TSORI_MAX_TARGETS];
+	Vector m_lockOffsets[TSORI_MAX_TARGETS];
+	Vector m_lockOffsetAngles[TSORI_MAX_TARGETS];
 	int m_targetCount;
 	bool m_isActive;
 	
@@ -107,7 +107,7 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 	m_targetCount = 0;
 	edict_t* ent = NULL;
 	while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(pev->target)))) {
-		if (m_targetCount >= MAX_TARGETS) {
+		if (m_targetCount >= TSORI_MAX_TARGETS) {
 			ALERT(at_console, "trigger_setorigin (%s): Max target count exceeded!", STRING(pev->targetname));
 			break;
 		}
@@ -115,13 +115,13 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 	}
 	
 	if (FNullEnt(m_hCopyEnt.GetEdict()) || m_targetCount == 0) {
-		if (pev->spawnflags & SF_SET_ONCE) {
+		if (pev->spawnflags & SF_TSORI_SET_ONCE) {
 			UTIL_Remove(this);
 		}
 		return;
 	}
 
-	if (pev->spawnflags & SF_LOCK_OFFSETS) {
+	if (pev->spawnflags & SF_TSORI_LOCK_OFFSETS) {
 		// TODO: Lock offsets behaves strangely in sven when attached to a rotating entity.
 		// The offset key is not respected and some extra space is added/removed depending
 		// on how rotated the entity was when the trigger_setorigin was activated. This can
@@ -130,7 +130,7 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 		// to be totally ignored, for some reason.
 
 		for (int i = 0; i < m_targetCount; i++) {
-			if (pev->spawnflags & SF_SKIP_INITIAL_SET) {
+			if (pev->spawnflags & SF_TSORI_SKIP_INITIAL_SET) {
 				m_lockOffsets[i] = m_hTargets[i]->pev->origin - m_hCopyEnt->pev->origin;
 			}
 			else {
@@ -140,20 +140,20 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 			m_lockOffsetAngles[i] = m_hTargets[i]->pev->angles - m_hCopyEnt->pev->angles;
 		}
 
-		if (!(pev->spawnflags & (SF_COPY_X_AXIS | SF_COPY_Y_AXIS | SF_COPY_Z_AXIS))) {
+		if (!(pev->spawnflags & (SF_TSORI_COPY_X_AXIS | SF_TSORI_COPY_Y_AXIS | SF_TSORI_COPY_Z_AXIS))) {
 			// TODO: wtf? ripent this shit.
-			pev->spawnflags |= SF_COPY_X_AXIS | SF_COPY_Y_AXIS | SF_COPY_Z_AXIS;
+			pev->spawnflags |= SF_TSORI_COPY_X_AXIS | SF_TSORI_COPY_Y_AXIS | SF_TSORI_COPY_Z_AXIS;
 		}
 	}
 
 	UpdateEntity();
 
-	if (pev->spawnflags & SF_SET_ONCE) {
+	if (pev->spawnflags & SF_TSORI_SET_ONCE) {
 		UTIL_Remove(this);
 		return;
 	}
 
-	if (pev->spawnflags & SF_CONSTANT) {
+	if (pev->spawnflags & SF_TSORI_CONSTANT) {
 		if (m_isActive) {
 			SetThink(&CTriggerSetOrigin::ConstantModeThink);
 			pev->nextthink = gpGlobals->time;
@@ -187,36 +187,36 @@ void CTriggerSetOrigin::UpdateEntity() {
 		Vector offset = lockOffset + m_offset;
 
 		
-		if (pev->spawnflags & SF_SKIP_INITIAL_SET) {
+		if (pev->spawnflags & SF_TSORI_SKIP_INITIAL_SET) {
 			// TODO: Figure out if there's a good reason for this, or if it's a bug
 			offset = offset - m_offset;
 		}
 
-		if (pev->spawnflags & SF_LOCK_OFFSETS) {
+		if (pev->spawnflags & SF_TSORI_LOCK_OFFSETS) {
 			// rotate the offset to align with the parent
 			UTIL_MakeVectors(m_hCopyEnt->pev->angles);
 			offset = (gpGlobals->v_forward * offset.x) + (gpGlobals->v_right * offset.y) + (gpGlobals->v_up * offset.z);
 		}
 
-		if (pev->spawnflags & SF_COPY_X_AXIS) {
+		if (pev->spawnflags & SF_TSORI_COPY_X_AXIS) {
 			targetPev->origin.x = m_hCopyEnt->pev->origin.x + offset.x;
 		}
-		if (pev->spawnflags & SF_COPY_Y_AXIS) {
+		if (pev->spawnflags & SF_TSORI_COPY_Y_AXIS) {
 			targetPev->origin.y = m_hCopyEnt->pev->origin.y + offset.y;
 		}
-		if (pev->spawnflags & SF_COPY_Z_AXIS) {
+		if (pev->spawnflags & SF_TSORI_COPY_Z_AXIS) {
 			targetPev->origin.z = m_hCopyEnt->pev->origin.z + offset.z;
 		}
 
-		if (pev->spawnflags & SF_COPY_X_ANGLE) {
+		if (pev->spawnflags & SF_TSORI_COPY_X_ANGLE) {
 			float v = m_hCopyEnt->pev->angles.x;
 			targetPev->angles.x = (m_invertAngleX ? -v : v) + m_angleoffset.x + lockOffsetAngles.x;
 		}
-		if (pev->spawnflags & SF_COPY_Y_ANGLE) {
+		if (pev->spawnflags & SF_TSORI_COPY_Y_ANGLE) {
 			float v = m_hCopyEnt->pev->angles.y;
 			targetPev->angles.y = (m_invertAngleY ? -v : v) + m_angleoffset.y + lockOffsetAngles.y;
 		}
-		if (pev->spawnflags & SF_COPY_Z_ANGLE) {
+		if (pev->spawnflags & SF_TSORI_COPY_Z_ANGLE) {
 			float v = m_hCopyEnt->pev->angles.z;
 			targetPev->angles.z = (m_invertAngleZ ? -v : v) + m_angleoffset.z + lockOffsetAngles.z;
 		}

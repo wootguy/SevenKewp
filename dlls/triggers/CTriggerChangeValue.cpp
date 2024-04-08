@@ -11,14 +11,14 @@
 
 // TODO: key values like MOVETYPE_SOLID and bitwise negation (~) work according to the docs
 
-#define SF_DONT_USE_X 1
-#define SF_DONT_USE_Y 2
-#define SF_DONT_USE_Z 4
-#define SF_CONSTANT 8
-#define SF_START_ON 16
-#define SF_INVERT_TARGET_VALUE 32
-#define SF_INVERT_SOURCE_VALUE 64 // TODO: this is pointless. Ripent this out of every map that uses it.
-#define SF_MULTIPLE_DESTINATIONS 128 // TODO: When you would ever want to target only the first entity found? As a mapper, you have no idea what that will be. It just seems like a bug.
+#define SF_TCVAL_DONT_USE_X 1
+#define SF_TCVAL_DONT_USE_Y 2
+#define SF_TCVAL_DONT_USE_Z 4
+#define SF_TCVAL_CONSTANT 8
+#define SF_TCVAL_START_ON 16
+#define SF_TCVAL_INVERT_TARGET_VALUE 32
+#define SF_TCVAL_INVERT_SOURCE_VALUE 64 // TODO: this is pointless. Ripent this out of every map that uses it.
+#define SF_TCVAL_MULTIPLE_DESTINATIONS 128 // TODO: When you would ever want to target only the first entity found? As a mapper, you have no idea what that will be. It just seems like a bug.
 
 // from rehlds
 #define MAX_KEY_NAME_LEN 256
@@ -85,7 +85,7 @@ public:
 	void LoadSourceValues();
 	void ChangeValues();
 
-	int GetVectorDontUseFlags() { return pev->spawnflags & (SF_DONT_USE_X | SF_DONT_USE_Y | SF_DONT_USE_Z); }
+	int GetVectorDontUseFlags() { return pev->spawnflags & (SF_TCVAL_DONT_USE_X | SF_TCVAL_DONT_USE_Y | SF_TCVAL_DONT_USE_Z); }
 
 	string_t m_iszKeyName;
 	string_t m_iszNewValue;
@@ -181,7 +181,7 @@ void CTriggerChangeValue::Spawn(void)
 
 	if (!isCopyValue) {
 		// disable copyvalue-specific settings
-		pev->spawnflags &= ~(SF_CONSTANT | SF_MULTIPLE_DESTINATIONS | SF_START_ON);
+		pev->spawnflags &= ~(SF_TCVAL_CONSTANT | SF_TCVAL_MULTIPLE_DESTINATIONS | SF_TCVAL_START_ON);
 		pev->netname = 0;
 		pev->dmg = 0;
 		m_iszSrcKeyName = 0;
@@ -193,7 +193,7 @@ void CTriggerChangeValue::Spawn(void)
 		m_iszNewValue = 0;
 	}
 
-	if (pev->spawnflags & SF_START_ON) {
+	if (pev->spawnflags & SF_TCVAL_START_ON) {
 		isActive = true;
 		SetThink(&CTriggerChangeValue::TimedThink);
 		pev->nextthink = gpGlobals->time + pev->dmg;
@@ -203,10 +203,10 @@ void CTriggerChangeValue::Spawn(void)
 }
 
 int CTriggerChangeValue::OperateInteger(int sourceVal, int targetVal) {
-	if (pev->spawnflags & SF_INVERT_TARGET_VALUE) {
+	if (pev->spawnflags & SF_TCVAL_INVERT_TARGET_VALUE) {
 		targetVal = -targetVal;
 	}
-	if (pev->spawnflags & SF_INVERT_SOURCE_VALUE) {
+	if (pev->spawnflags & SF_TCVAL_INVERT_SOURCE_VALUE) {
 		sourceVal = -sourceVal;
 	}
 
@@ -240,10 +240,10 @@ int CTriggerChangeValue::OperateInteger(int sourceVal, int targetVal) {
 }
 
 float CTriggerChangeValue::OperateFloat(float sourceVal, float targetVal) {
-	if (pev->spawnflags & SF_INVERT_TARGET_VALUE) {
+	if (pev->spawnflags & SF_TCVAL_INVERT_TARGET_VALUE) {
 		targetVal = -targetVal;
 	}
-	if (pev->spawnflags & SF_INVERT_SOURCE_VALUE) {
+	if (pev->spawnflags & SF_TCVAL_INVERT_SOURCE_VALUE) {
 		sourceVal = -sourceVal;
 	}
 
@@ -286,13 +286,13 @@ Vector CTriggerChangeValue::OperateVector(CKeyValue& keyvalue) {
 		UTIL_MakeVectors(vTemp);
 		return gpGlobals->v_forward;
 	default:
-		if (!(pev->spawnflags & SF_DONT_USE_X)) {
+		if (!(pev->spawnflags & SF_TCVAL_DONT_USE_X)) {
 			vTemp[0] = OperateFloat(m_vSrc[0], keyvalue.vVal[0]);
 		}
-		if (!(pev->spawnflags & SF_DONT_USE_Y)) {
+		if (!(pev->spawnflags & SF_TCVAL_DONT_USE_Y)) {
 			vTemp[1] = OperateFloat(m_vSrc[1], keyvalue.vVal[1]);
 		}
-		if (!(pev->spawnflags & SF_DONT_USE_Z)) {
+		if (!(pev->spawnflags & SF_TCVAL_DONT_USE_Z)) {
 			vTemp[2] = OperateFloat(m_vSrc[2], keyvalue.vVal[2]);
 		}
 		return vTemp;
@@ -489,7 +489,7 @@ void CTriggerChangeValue::ChangeValues() {
 		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, target))) {
 			HandleTarget(CBaseEntity::Instance(ent));
 
-			if (isCopyValue && !(pev->spawnflags & SF_MULTIPLE_DESTINATIONS)) {
+			if (isCopyValue && !(pev->spawnflags & SF_TCVAL_MULTIPLE_DESTINATIONS)) {
 				break;
 			}
 		}
@@ -507,7 +507,7 @@ void CTriggerChangeValue::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE
 
 	ChangeValues();
 
-	if (pev->spawnflags & SF_CONSTANT) {
+	if (pev->spawnflags & SF_TCVAL_CONSTANT) {
 		isActive = useType == USE_TOGGLE ? !isActive : (bool)useType;
 
 		if (isActive) {

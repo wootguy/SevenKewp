@@ -1,3 +1,6 @@
+#pragma once
+
+#define SF_WALL_USE_ANGLES 2
 
 /*QUAKED func_wall (0 .5 .8) ?
 This is just a solid wall if not inhibited

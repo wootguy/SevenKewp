@@ -1,3 +1,5 @@
+#pragma once
+
 //=========================================================
 // CWeaponBox - a single entity that can store weapons
 // and ammo. 

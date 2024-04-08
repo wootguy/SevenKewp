@@ -1,3 +1,5 @@
+#pragma once
+
 // Fires a target after level transition and then dies
 class CFireAndDie : public CBaseDelay
 {

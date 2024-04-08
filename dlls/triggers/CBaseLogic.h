@@ -1,3 +1,5 @@
+#pragma once
+
 // shared functions used by logic entities such as trigger_changevalue and trigger_condition
 #include "cbase.h"
 

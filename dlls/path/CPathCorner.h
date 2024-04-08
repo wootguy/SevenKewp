@@ -1,3 +1,5 @@
+#pragma once
+
 // Spawnflags of CPathCorner
 #define SF_CORNER_WAITFORTRIG	0x001
 #define SF_CORNER_TELEPORT		0x002
