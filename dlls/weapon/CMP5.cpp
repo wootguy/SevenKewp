@@ -86,7 +86,7 @@ void CMP5::Precache( void )
 
 	PRECACHE_SOUND("items/clipinsert1.wav");
 	PRECACHE_SOUND("items/cliprelease1.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/9mmar_reload.wav"); // combined reload sound for less network usage and code
+	PRECACHE_SOUND("weapons/9mmar_reload.wav"); // combined reload sound for less network usage and code
 
 	PRECACHE_SOUND ("weapons/hks1.wav");// H to the K
 	PRECACHE_SOUND ("weapons/hks2.wav");// H to the K
@@ -292,7 +292,7 @@ void CMP5::Reload( void )
 		if (m_pPlayer->IsFirstPerson()) {
 			messageTargets &= ~PLRBIT(m_pPlayer->edict());
 		}
-		StartSound(m_pPlayer->edict(), CHAN_ITEM, MOD_SND_FOLDER "weapons/9mmar_reload.wav", 0.8f,
+		StartSound(m_pPlayer->edict(), CHAN_ITEM, "weapons/9mmar_reload.wav", 0.8f,
 			ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
 	}
 }

@@ -114,103 +114,103 @@ const char* CBodyGuard::pGruntSentences[] =
 
 const char* CBodyGuard::pPainSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/pain1.wav",
-	MOD_SND_FOLDER "bodyguard/pain2.wav",
-	MOD_SND_FOLDER "bodyguard/pain3.wav",
-	MOD_SND_FOLDER "bodyguard/pain4.wav",
+	"bodyguard/pain1.wav",
+	"bodyguard/pain2.wav",
+	"bodyguard/pain3.wav",
+	"bodyguard/pain4.wav",
 };
 
 const char* CBodyGuard::pDeathSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/die1.wav",
-	MOD_SND_FOLDER "bodyguard/die2.wav",
-	MOD_SND_FOLDER "bodyguard/die3.wav",
+	"bodyguard/die1.wav",
+	"bodyguard/die2.wav",
+	"bodyguard/die3.wav",
 };
 
 const char* CBodyGuard::pShotSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/hellaimingat.wav",
-	MOD_SND_FOLDER "bodyguard/watchyourfire.wav",
-	MOD_SND_FOLDER "bodyguard/wounded1.wav",
+	"bodyguard/hellaimingat.wav",
+	"bodyguard/watchyourfire.wav",
+	"bodyguard/wounded1.wav",
 };
 
 const char* CBodyGuard::pMadSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/bringiton.wav",
-	MOD_SND_FOLDER "bodyguard/heyoverhere.wav",
-	MOD_SND_FOLDER "bodyguard/primalroar.wav",
+	"bodyguard/bringiton.wav",
+	"bodyguard/heyoverhere.wav",
+	"bodyguard/primalroar.wav",
 };
 
 const char* CBodyGuard::pKillSounds[] =
 {
-	//MOD_SND_FOLDER "bodyguard/whathelljoke.wav",
-	MOD_SND_FOLDER "bodyguard/layeggs.wav",
-	MOD_SND_FOLDER "bodyguard/ashestoashes.wav",
+	//"bodyguard/whathelljoke.wav",
+	"bodyguard/layeggs.wav",
+	"bodyguard/ashestoashes.wav",
 };
 
 const char* CBodyGuard::pIdleSounds[] =
 {
-	//MOD_SND_FOLDER "bodyguard/pathetic.wav",
-	MOD_SND_FOLDER "bodyguard/mondays.wav",
-	MOD_SND_FOLDER "bodyguard/shownupdrunk.wav",
-	MOD_SND_FOLDER "bodyguard/shootface.wav",
-	MOD_SND_FOLDER "bodyguard/nicesuit.wav",
+	//"bodyguard/pathetic.wav",
+	"bodyguard/mondays.wav",
+	"bodyguard/shownupdrunk.wav",
+	"bodyguard/shootface.wav",
+	"bodyguard/nicesuit.wav",
 };
 
 const char* CBodyGuard::pOkSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/letsmove.wav",
-	MOD_SND_FOLDER "bodyguard/babysitter.wav",
-	MOD_SND_FOLDER "bodyguard/yougotit.wav",
+	"bodyguard/letsmove.wav",
+	"bodyguard/babysitter.wav",
+	"bodyguard/yougotit.wav",
 };
 
 const char* CBodyGuard::pWaitSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/stop3.wav",
-	MOD_SND_FOLDER "bodyguard/laterfellas.wav",
-	MOD_SND_FOLDER "bodyguard/waitinrighthere.wav",
+	"bodyguard/stop3.wav",
+	"bodyguard/laterfellas.wav",
+	"bodyguard/waitinrighthere.wav",
 };
 
 const char* CBodyGuard::pStopSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/stop1.wav",
-	MOD_SND_FOLDER "bodyguard/stop2.wav",
-	//MOD_SND_FOLDER "bodyguard/stop3.wav",
+	"bodyguard/stop1.wav",
+	"bodyguard/stop2.wav",
+	//"bodyguard/stop3.wav",
 };
 
 const char* CBodyGuard::pScaredSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/hellareyoudoing.wav",
-	MOD_SND_FOLDER "bodyguard/knockitoff.wav",
-	MOD_SND_FOLDER "bodyguard/backoff.wav",
+	"bodyguard/hellareyoudoing.wav",
+	"bodyguard/knockitoff.wav",
+	"bodyguard/backoff.wav",
 };
 
 const char* CBodyGuard::pHelloSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/hello.wav",
-	MOD_SND_FOLDER "bodyguard/whatsgoinon.wav",
-	MOD_SND_FOLDER "bodyguard/someonescoming.wav",
+	"bodyguard/hello.wav",
+	"bodyguard/whatsgoinon.wav",
+	"bodyguard/someonescoming.wav",
 };
 
 const char* CBodyGuard::pCureSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/looklikeshit.wav",
-	MOD_SND_FOLDER "bodyguard/hellhappenedyou.wav",
-	MOD_SND_FOLDER "bodyguard/notaninjury.wav",
+	"bodyguard/looklikeshit.wav",
+	"bodyguard/hellhappenedyou.wav",
+	"bodyguard/notaninjury.wav",
 };
 
 const char* CBodyGuard::pQuestionSounds[] =
 {
-	//MOD_SND_FOLDER "bodyguard/babysitter.wav",
-	MOD_SND_FOLDER "bodyguard/pathetic.wav",
-	MOD_SND_FOLDER "bodyguard/whathelljoke.wav",
+	//"bodyguard/babysitter.wav",
+	"bodyguard/pathetic.wav",
+	"bodyguard/whathelljoke.wav",
 };
 
 const char* CBodyGuard::pAnswerSounds[] =
 {
-	MOD_SND_FOLDER "bodyguard/imbusy.wav",
-	MOD_SND_FOLDER "bodyguard/palimworking.wav",
-	//MOD_SND_FOLDER "bodyguard/yougotit.wav",
+	"bodyguard/imbusy.wav",
+	"bodyguard/palimworking.wav",
+	//"bodyguard/yougotit.wav",
 };
 
 void CBodyGuard::GibMonster(void)
@@ -438,7 +438,7 @@ Schedule_t* CBodyGuard::GetScheduleOfType(int Type)
 	default:
 		if (minigunIsSpinning) {
 			minigunIsSpinning = false;
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 			return &slMinigunSpindown[0];
 		}
 		return CBaseGrunt::GetScheduleOfType(Type);
@@ -449,7 +449,7 @@ void CBodyGuard::SetActivity(Activity NewActivity) {
 	CBaseGrunt::SetActivity(NewActivity);
 
 	if (NewActivity == ACT_THREAT_DISPLAY) {
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "hassault/hw_spinup.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spinup.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 		PointAtEnemy();
 	}
 }

@@ -16,8 +16,8 @@
 
 #define	MASSASSIN_MP5_CLIP_SIZE			36 // how many bullets in a clip? - NOTE: 3 round burst sound, so keep as 3 * x!
 #define MASSN_SNIPER_CLIP_SIZE			1
-#define MASSN_FOLLOW_SOUND MOD_SND_FOLDER "massn/yeah.wav"
-#define MASSN_UNFOLLOW_SOUND MOD_SND_FOLDER "massn/covered.wav"
+#define MASSN_FOLLOW_SOUND "massn/yeah.wav"
+#define MASSN_UNFOLLOW_SOUND "massn/covered.wav"
 
 namespace MAssassinBodygroup
 {

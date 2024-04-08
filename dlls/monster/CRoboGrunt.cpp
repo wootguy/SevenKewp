@@ -93,13 +93,13 @@ const char* CRoboGrunt::pDeathSounds[] =
 
 const char* CRoboGrunt::pAlertSounds[] =
 {
-	MOD_SND_FOLDER "rgrunt/rb_alert0.wav",
-	MOD_SND_FOLDER "rgrunt/rb_alert1.wav",
+	"rgrunt/rb_alert0.wav",
+	"rgrunt/rb_alert1.wav",
 };
 const char* CRoboGrunt::pAnswerSounds[] =
 {
 	"vox/green.wav",
-	MOD_SND_FOLDER "rgrunt/rb_answer1.wav",
+	"rgrunt/rb_answer1.wav",
 };
 const char* CRoboGrunt::pChargeSounds[] =
 {
@@ -108,13 +108,13 @@ const char* CRoboGrunt::pChargeSounds[] =
 };
 const char* CRoboGrunt::pCheckSounds[] =
 {
-	MOD_SND_FOLDER "rgrunt/rb_check0.wav",
-	MOD_SND_FOLDER "rgrunt/rb_check1.wav",
+	"rgrunt/rb_check0.wav",
+	"rgrunt/rb_check1.wav",
 };
 const char* CRoboGrunt::pClearSounds[] =
 {
-	MOD_SND_FOLDER "rgrunt/rb_clear0.wav",
-	MOD_SND_FOLDER "rgrunt/rb_clear1.wav",
+	"rgrunt/rb_clear0.wav",
+	"rgrunt/rb_clear1.wav",
 };
 const char* CRoboGrunt::pCoverSounds[] =
 {
@@ -123,27 +123,27 @@ const char* CRoboGrunt::pCoverSounds[] =
 };
 const char* CRoboGrunt::pGrenSounds[] =
 {
-	MOD_SND_FOLDER "rgrunt/rb_gren0.wav",
-	MOD_SND_FOLDER "rgrunt/rb_gren1.wav",
+	"rgrunt/rb_gren0.wav",
+	"rgrunt/rb_gren1.wav",
 };
 const char* CRoboGrunt::pMonstSounds[] =
 {
 	"vox/alert.wav",
-	MOD_SND_FOLDER "rgrunt/rb_monst1.wav",
+	"rgrunt/rb_monst1.wav",
 };
 const char* CRoboGrunt::pQuestSounds[] =
 {
 	"vox/status.wav",
-	MOD_SND_FOLDER "rgrunt/rb_quest1.wav",
+	"rgrunt/rb_quest1.wav",
 };
 const char* CRoboGrunt::pTauntSounds[] =
 {
-	MOD_SND_FOLDER "rgrunt/rb_taunt0.wav",
-	MOD_SND_FOLDER "rgrunt/rb_taunt1.wav",
+	"rgrunt/rb_taunt0.wav",
+	"rgrunt/rb_taunt1.wav",
 };
 const char* CRoboGrunt::pThrowSounds[] =
 {
-	MOD_SND_FOLDER "rgrunt/rb_throw0.wav",
+	"rgrunt/rb_throw0.wav",
 };
 const char* CRoboGrunt::pHeadshotSounds[] =
 {

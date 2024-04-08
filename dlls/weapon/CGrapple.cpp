@@ -51,13 +51,13 @@ void CGrapple::Precache()
 	m_defaultModelW = "models/w_bgrap.mdl";
 	CBasePlayerWeapon::Precache();
 
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/bgrapple_release.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/bgrapple_impact.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/bgrapple_fire.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/bgrapple_cough.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/bgrapple_pull.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/bgrapple_wait.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/alienweap_draw.wav");
+	PRECACHE_SOUND("weapons/bgrapple_release.wav");
+	PRECACHE_SOUND("weapons/bgrapple_impact.wav");
+	PRECACHE_SOUND("weapons/bgrapple_fire.wav");
+	PRECACHE_SOUND("weapons/bgrapple_cough.wav");
+	PRECACHE_SOUND("weapons/bgrapple_pull.wav");
+	PRECACHE_SOUND("weapons/bgrapple_wait.wav");
+	PRECACHE_SOUND("weapons/alienweap_draw.wav");
 	PRECACHE_SOUND("barnacle/bcl_chew1.wav");
 	PRECACHE_SOUND("barnacle/bcl_chew2.wav");
 	PRECACHE_SOUND("barnacle/bcl_chew3.wav");
@@ -127,7 +127,7 @@ void CGrapple::WeaponIdle()
 		}
 		else if (flNextIdle > 0.95)
 		{
-			EMIT_SOUND(m_pPlayer->edict(), CHAN_STATIC, MOD_SND_FOLDER "weapons/bgrapple_cough.wav", VOL_NORM, ATTN_NORM);
+			EMIT_SOUND(m_pPlayer->edict(), CHAN_STATIC, "weapons/bgrapple_cough.wav", VOL_NORM, ATTN_NORM);
 
 			iAnim = BGRAPPLE_COUGH;
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 4.6;
@@ -182,11 +182,11 @@ void CGrapple::PrimaryAttack()
 			{
 				SendWeaponAnim(BGRAPPLE_FIRETRAVEL);
 
-				EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, MOD_SND_FOLDER "weapons/bgrapple_impact.wav", 0.98, ATTN_NORM, 0, 125);
+				EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, "weapons/bgrapple_impact.wav", 0.98, ATTN_NORM, 0, 125);
 
 				if (pTarget->IsPlayer())
 				{
-					EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, MOD_SND_FOLDER "weapons/bgrapple_impact.wav", 0.98, ATTN_NORM, 0, 125);
+					EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, "weapons/bgrapple_impact.wav", 0.98, ATTN_NORM, 0, 125);
 				}
 
 				m_bMomentaryStuck = false;
@@ -249,7 +249,7 @@ void CGrapple::PrimaryAttack()
 
 		if (m_pTip->HasMissed())
 		{
-			EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, MOD_SND_FOLDER "weapons/bgrapple_release.wav", 0.98, ATTN_NORM, 0, 125);
+			EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, "weapons/bgrapple_release.wav", 0.98, ATTN_NORM, 0, 125);
 
 			EndAttack();
 			return;
@@ -269,7 +269,7 @@ void CGrapple::PrimaryAttack()
 
 			Fire(m_pPlayer->GetGunPosition(), gpGlobals->v_forward);
 
-			EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, MOD_SND_FOLDER "weapons/bgrapple_pull.wav", 0.98, ATTN_NORM, 0, 125);
+			EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, "weapons/bgrapple_pull.wav", 0.98, ATTN_NORM, 0, 125);
 
 			m_flShootTime = 0;
 		}
@@ -293,7 +293,7 @@ void CGrapple::PrimaryAttack()
 			m_flShootTime = gpGlobals->time + 0.35;
 		}
 
-		EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_WEAPON, MOD_SND_FOLDER "weapons/bgrapple_fire.wav", 0.98, ATTN_NORM, 0, 125);
+		EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_WEAPON, "weapons/bgrapple_fire.wav", 0.98, ATTN_NORM, 0, 125);
 
 		m_FireState = FireState::CHARGE;
 	}
@@ -489,9 +489,9 @@ void CGrapple::EndAttack()
 
 	SendWeaponAnim(BGRAPPLE_FIREREACHED);
 
-	EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, MOD_SND_FOLDER "weapons/bgrapple_release.wav", 0.98, ATTN_NORM, 0, 125);
+	EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, "weapons/bgrapple_release.wav", 0.98, ATTN_NORM, 0, 125);
 
-	EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, MOD_SND_FOLDER "weapons/bgrapple_pull.wav", 0.0, ATTN_NONE, SND_STOP, 100);
+	EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_STATIC, "weapons/bgrapple_pull.wav", 0.0, ATTN_NONE, SND_STOP, 100);
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase();
 

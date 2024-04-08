@@ -162,131 +162,131 @@ const char* COtis::pDieSounds[] =
 };
 const char* COtis::pAnswerSounds[] =
 {
-	MOD_SND_FOLDER "otis/yes.wav",
-	MOD_SND_FOLDER "otis/no.wav",
-	MOD_SND_FOLDER "otis/dontask.wav",
-	MOD_SND_FOLDER "otis/yessir.wav",
-	MOD_SND_FOLDER "otis/youbet.wav",
-	MOD_SND_FOLDER "otis/alright.wav",
-	MOD_SND_FOLDER "otis/yup.wav",
-	MOD_SND_FOLDER "otis/yeah.wav",
-	MOD_SND_FOLDER "otis/noway.wav",
-	MOD_SND_FOLDER "otis/doubt.wav",
-	MOD_SND_FOLDER "otis/breath.wav",
-	MOD_SND_FOLDER "otis/dontguess.wav",
-	MOD_SND_FOLDER "otis/nope.wav",
-	MOD_SND_FOLDER "otis/nosir.wav",
-	MOD_SND_FOLDER "otis/suppose.wav",
-	MOD_SND_FOLDER "otis/hell.wav",
-	MOD_SND_FOLDER "otis/cantfigure.wav",
-	MOD_SND_FOLDER "otis/maybe.wav",
-	MOD_SND_FOLDER "otis/talkmuch.wav",
-	MOD_SND_FOLDER "otis/dejavu.wav",
+	"otis/yes.wav",
+	"otis/no.wav",
+	"otis/dontask.wav",
+	"otis/yessir.wav",
+	"otis/youbet.wav",
+	"otis/alright.wav",
+	"otis/yup.wav",
+	"otis/yeah.wav",
+	"otis/noway.wav",
+	"otis/doubt.wav",
+	"otis/breath.wav",
+	"otis/dontguess.wav",
+	"otis/nope.wav",
+	"otis/nosir.wav",
+	"otis/suppose.wav",
+	"otis/hell.wav",
+	"otis/cantfigure.wav",
+	"otis/maybe.wav",
+	"otis/talkmuch.wav",
+	"otis/dejavu.wav",
 };
 
 const char* COtis::pQuestionSounds[] =
 {
-	MOD_SND_FOLDER "otis/beer.wav",
-	MOD_SND_FOLDER "otis/rightdirection.wav",
-	MOD_SND_FOLDER "otis/getanyworse.wav",
-	MOD_SND_FOLDER "otis/gladof.wav",
-	MOD_SND_FOLDER "otis/aliencombat.wav",
-	MOD_SND_FOLDER "otis/somethingmoves.wav",
-	MOD_SND_FOLDER "otis/noise.wav",
+	"otis/beer.wav",
+	"otis/rightdirection.wav",
+	"otis/getanyworse.wav",
+	"otis/gladof.wav",
+	"otis/aliencombat.wav",
+	"otis/somethingmoves.wav",
+	"otis/noise.wav",
 };
 
 const char* COtis::pIdleSounds[] =
 {
-	MOD_SND_FOLDER "otis/mom.wav",
-	MOD_SND_FOLDER "otis/aliens.wav",
-	MOD_SND_FOLDER "otis/wuss.wav",
-	MOD_SND_FOLDER "otis/bridge.wav",
-	MOD_SND_FOLDER "otis/closet.wav",
-	MOD_SND_FOLDER "otis/cousin.wav",
-	MOD_SND_FOLDER "otis/mall.wav",
+	"otis/mom.wav",
+	"otis/aliens.wav",
+	"otis/wuss.wav",
+	"otis/bridge.wav",
+	"otis/closet.wav",
+	"otis/cousin.wav",
+	"otis/mall.wav",
 };
 
 const char* COtis::pOkSounds[] =
 {
-	MOD_SND_FOLDER "otis/reputation.wav",
-	MOD_SND_FOLDER "otis/live.wav",
-	MOD_SND_FOLDER "otis/together.wav",
-	MOD_SND_FOLDER "otis/letsgo.wav",
-	MOD_SND_FOLDER "otis/diealone.wav",
-	MOD_SND_FOLDER "otis/joinyou.wav",
-	MOD_SND_FOLDER "otis/teamup.wav",
+	"otis/reputation.wav",
+	"otis/live.wav",
+	"otis/together.wav",
+	"otis/letsgo.wav",
+	"otis/diealone.wav",
+	"otis/joinyou.wav",
+	"otis/teamup.wav",
 };
 
 const char* COtis::pWaitSounds[] =
 {
-	MOD_SND_FOLDER "otis/help.wav",
-	MOD_SND_FOLDER "otis/go_on.wav",
-	MOD_SND_FOLDER "otis/slowingyoudown.wav",
-	MOD_SND_FOLDER "otis/illwait.wav",
-	MOD_SND_FOLDER "otis/seeya.wav",
-	MOD_SND_FOLDER "otis/standguard.wav",
-	MOD_SND_FOLDER "otis/notalone.wav",
+	"otis/help.wav",
+	"otis/go_on.wav",
+	"otis/slowingyoudown.wav",
+	"otis/illwait.wav",
+	"otis/seeya.wav",
+	"otis/standguard.wav",
+	"otis/notalone.wav",
 };
 
 const char* COtis::pScaredSounds[] =
 {
-	MOD_SND_FOLDER "otis/donthurtem.wav",
-	MOD_SND_FOLDER "otis/leavealone.wav",
+	"otis/donthurtem.wav",
+	"otis/leavealone.wav",
 };
 
 const char* COtis::pHelloSounds[] =
 {
-	MOD_SND_FOLDER "otis/hello.wav",
-	MOD_SND_FOLDER "otis/hiya.wav",
-	MOD_SND_FOLDER "otis/hey.wav",
-	MOD_SND_FOLDER "otis/soldier.wav",
+	"otis/hello.wav",
+	"otis/hiya.wav",
+	"otis/hey.wav",
+	"otis/soldier.wav",
 };
 
 const char* COtis::pSmellSounds[] =
 {
-	MOD_SND_FOLDER "otis/ass.wav",
-	MOD_SND_FOLDER "otis/chili.wav",
-	MOD_SND_FOLDER "otis/janitor.wav",
+	"otis/ass.wav",
+	"otis/chili.wav",
+	"otis/janitor.wav",
 };
 
 const char* COtis::pWoundSounds[] =
 {
-	MOD_SND_FOLDER "otis/imhit.wav",
-	MOD_SND_FOLDER "otis/virgin.wav",
+	"otis/imhit.wav",
+	"otis/virgin.wav",
 };
 
 const char* COtis::pMortalSounds[] =
 {
-	MOD_SND_FOLDER "otis/imdead.wav",
-	MOD_SND_FOLDER "otis/hitbad.wav",
+	"otis/imdead.wav",
+	"otis/hitbad.wav",
 };
 
 const char* COtis::pMadSounds[] =
 {
-	MOD_SND_FOLDER "otis/bully.wav",
-	MOD_SND_FOLDER "otis/somuch.wav",
-	MOD_SND_FOLDER "otis/dontmake.wav",
-	MOD_SND_FOLDER "otis/tomb.wav",
+	"otis/bully.wav",
+	"otis/somuch.wav",
+	"otis/dontmake.wav",
+	"otis/tomb.wav",
 };
 
 const char* COtis::pShotSounds[] =
 {
-	MOD_SND_FOLDER "otis/watchit.wav",
-	MOD_SND_FOLDER "otis/damn.wav",
-	MOD_SND_FOLDER "otis/friends.wav",
-	MOD_SND_FOLDER "otis/chump.wav",
-	MOD_SND_FOLDER "otis/onry.wav",
+	"otis/watchit.wav",
+	"otis/damn.wav",
+	"otis/friends.wav",
+	"otis/chump.wav",
+	"otis/onry.wav",
 };
 
 const char* COtis::pKillSounds[] =
 {
-	MOD_SND_FOLDER "otis/gotone.wav",
-	MOD_SND_FOLDER "otis/another.wav",
-	MOD_SND_FOLDER "otis/buttugly.wav",
-	MOD_SND_FOLDER "otis/seethat.wav",
-	MOD_SND_FOLDER "otis/close.wav",
-	MOD_SND_FOLDER "otis/firepl.wav",
-	MOD_SND_FOLDER "otis/bring.wav",
+	"otis/gotone.wav",
+	"otis/another.wav",
+	"otis/buttugly.wav",
+	"otis/seethat.wav",
+	"otis/close.wav",
+	"otis/firepl.wav",
+	"otis/bring.wav",
 };
 
 LINK_ENTITY_TO_CLASS( monster_otis, COtis );
@@ -572,7 +572,7 @@ void COtis :: OtisFirePistol ( void )
 		pitchShift = 0;
 	else
 		pitchShift -= 5;
-	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "weapons/de_shot1.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
+	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "weapons/de_shot1.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
 
 	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
 
@@ -672,7 +672,7 @@ void COtis :: Precache()
 
 	ShuffleSoundArrays();
 
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/de_shot1.wav" );
+	PRECACHE_SOUND("weapons/de_shot1.wav" );
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDieSounds);

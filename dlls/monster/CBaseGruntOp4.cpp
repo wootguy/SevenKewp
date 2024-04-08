@@ -33,234 +33,234 @@ const char* CBaseGruntOp4::pGruntSentences[] =
 
 const char* CBaseGruntOp4::pPainSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/pain1.wav",
-	MOD_SND_FOLDER "fgrunt/pain2.wav",
-	MOD_SND_FOLDER "fgrunt/pain3.wav",
-	MOD_SND_FOLDER "fgrunt/pain4.wav",
-	MOD_SND_FOLDER "fgrunt/pain5.wav",
-	MOD_SND_FOLDER "fgrunt/pain6.wav",
+	"fgrunt/pain1.wav",
+	"fgrunt/pain2.wav",
+	"fgrunt/pain3.wav",
+	"fgrunt/pain4.wav",
+	"fgrunt/pain5.wav",
+	"fgrunt/pain6.wav",
 };
 
 const char* CBaseGruntOp4::pDieSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/death1.wav",
-	MOD_SND_FOLDER "fgrunt/death2.wav",
-	MOD_SND_FOLDER "fgrunt/death3.wav",
-	MOD_SND_FOLDER "fgrunt/death4.wav",
-	MOD_SND_FOLDER "fgrunt/death5.wav",
-	MOD_SND_FOLDER "fgrunt/death6.wav",
+	"fgrunt/death1.wav",
+	"fgrunt/death2.wav",
+	"fgrunt/death3.wav",
+	"fgrunt/death4.wav",
+	"fgrunt/death5.wav",
+	"fgrunt/death6.wav",
 };
 
 const char* CBaseGruntOp4::pGrenSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/incoming.wav",
-	MOD_SND_FOLDER "fgrunt/grenade.wav",
+	"fgrunt/incoming.wav",
+	"fgrunt/grenade.wav",
 };
 
 const char* CBaseGruntOp4::pAlertSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/down.wav",
-	//MOD_SND_FOLDER "fgrunt/bogies.wav",
-	MOD_SND_FOLDER "fgrunt/hostiles.wav",
+	"fgrunt/down.wav",
+	//"fgrunt/bogies.wav",
+	"fgrunt/hostiles.wav",
 };
 
 const char* CBaseGruntOp4::pMonsterSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/alert.wav",
-	MOD_SND_FOLDER "fgrunt/bogies.wav",
+	"fgrunt/alert.wav",
+	"fgrunt/bogies.wav",
 };
 
 const char* CBaseGruntOp4::pCoverSounds[] =
 {
-	//MOD_SND_FOLDER "fgrunt/clear.wav",
-	MOD_SND_FOLDER "fgrunt/cover.wav",
-	MOD_SND_FOLDER "fgrunt/staydown.wav",
+	//"fgrunt/clear.wav",
+	"fgrunt/cover.wav",
+	"fgrunt/staydown.wav",
 };
 
 const char* CBaseGruntOp4::pThrowSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/fire.wav",
-	//MOD_SND_FOLDER "fgrunt/grenade.wav",
+	"fgrunt/fire.wav",
+	//"fgrunt/grenade.wav",
 };
 
 const char* CBaseGruntOp4::pChargeSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/go.wav",
-	MOD_SND_FOLDER "fgrunt/move.wav",
-	MOD_SND_FOLDER "fgrunt/getsome.wav",
+	"fgrunt/go.wav",
+	"fgrunt/move.wav",
+	"fgrunt/getsome.wav",
 };
 
 const char* CBaseGruntOp4::pTauntSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/nothing.wav",
-	//MOD_SND_FOLDER "fgrunt/getsome.wav",
-	MOD_SND_FOLDER "fgrunt/corners.wav",
-	MOD_SND_FOLDER "fgrunt/backup.wav",
-	//MOD_SND_FOLDER "fgrunt/oneshot.wav",
-	//MOD_SND_FOLDER "fgrunt/mister.wav",
+	"fgrunt/nothing.wav",
+	//"fgrunt/getsome.wav",
+	"fgrunt/corners.wav",
+	"fgrunt/backup.wav",
+	//"fgrunt/oneshot.wav",
+	//"fgrunt/mister.wav",
 };
 
 const char* CBaseGruntOp4::pShotSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/friendly.wav",
-	MOD_SND_FOLDER "fgrunt/watchfire.wav",
-	//MOD_SND_FOLDER "fgrunt/zone.wav",
-	MOD_SND_FOLDER "fgrunt/watchit.wav",
-	//MOD_SND_FOLDER "fgrunt/check.wav",
-	MOD_SND_FOLDER "fgrunt/wantsome.wav",
+	"fgrunt/friendly.wav",
+	"fgrunt/watchfire.wav",
+	//"fgrunt/zone.wav",
+	"fgrunt/watchit.wav",
+	//"fgrunt/check.wav",
+	"fgrunt/wantsome.wav",
 };
 
 const char* CBaseGruntOp4::pMadSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/ass.wav",
-	MOD_SND_FOLDER "fgrunt/mister.wav",
+	"fgrunt/ass.wav",
+	"fgrunt/mister.wav",
 };
 
 const char* CBaseGruntOp4::pKillSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/sniper.wav",
-	MOD_SND_FOLDER "fgrunt/tag.wav",
-	MOD_SND_FOLDER "fgrunt/corporal.wav",
-	MOD_SND_FOLDER "fgrunt/talking.wav",
-	MOD_SND_FOLDER "fgrunt/take.wav",
-	//MOD_SND_FOLDER "fgrunt/area.wav",
-	//MOD_SND_FOLDER "fgrunt/check.wav",
-	//MOD_SND_FOLDER "fgrunt/wantsome.wav",
-	MOD_SND_FOLDER "fgrunt/oneshot.wav",
+	"fgrunt/sniper.wav",
+	"fgrunt/tag.wav",
+	"fgrunt/corporal.wav",
+	"fgrunt/talking.wav",
+	"fgrunt/take.wav",
+	//"fgrunt/area.wav",
+	//"fgrunt/check.wav",
+	//"fgrunt/wantsome.wav",
+	"fgrunt/oneshot.wav",
 };
 
 const char* CBaseGruntOp4::pAnswerSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/roger.wav",
-	MOD_SND_FOLDER "fgrunt/quiet.wav",
-	MOD_SND_FOLDER "fgrunt/no.wav",
+	"fgrunt/roger.wav",
+	"fgrunt/quiet.wav",
+	"fgrunt/no.wav",
 };
 
 const char* CBaseGruntOp4::pQuestionSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/seensquad.wav",
-	MOD_SND_FOLDER "fgrunt/current.wav",
-	MOD_SND_FOLDER "fgrunt/coverup.wav",
-	MOD_SND_FOLDER "fgrunt/chicken.wav",
-	MOD_SND_FOLDER "fgrunt/charge.wav",
-	MOD_SND_FOLDER "fgrunt/bfeeling.wav",
+	"fgrunt/seensquad.wav",
+	"fgrunt/current.wav",
+	"fgrunt/coverup.wav",
+	"fgrunt/chicken.wav",
+	"fgrunt/charge.wav",
+	"fgrunt/bfeeling.wav",
 };
 
 const char* CBaseGruntOp4::pIdleSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/guard.wav",
-	MOD_SND_FOLDER "fgrunt/mission.wav",
-	MOD_SND_FOLDER "fgrunt/babysitting.wav",
-	//MOD_SND_FOLDER "fgrunt/coverup.wav",
-	MOD_SND_FOLDER "fgrunt/now.wav",
-	MOD_SND_FOLDER "fgrunt/short.wav",
-	MOD_SND_FOLDER "fgrunt/outof.wav",
-	MOD_SND_FOLDER "fgrunt/lost.wav",
-	MOD_SND_FOLDER "fgrunt/fubar.wav",
-	MOD_SND_FOLDER "fgrunt/dogs.wav",
-	MOD_SND_FOLDER "fgrunt/disney.wav",
-	MOD_SND_FOLDER "fgrunt/checkrecon.wav",
-	//MOD_SND_FOLDER "fgrunt/seensquad.wav",
+	"fgrunt/guard.wav",
+	"fgrunt/mission.wav",
+	"fgrunt/babysitting.wav",
+	//"fgrunt/coverup.wav",
+	"fgrunt/now.wav",
+	"fgrunt/short.wav",
+	"fgrunt/outof.wav",
+	"fgrunt/lost.wav",
+	"fgrunt/fubar.wav",
+	"fgrunt/dogs.wav",
+	"fgrunt/disney.wav",
+	"fgrunt/checkrecon.wav",
+	//"fgrunt/seensquad.wav",
 };
 
 const char* CBaseGruntOp4::pOkSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/damage.wav",
-	MOD_SND_FOLDER "fgrunt/six.wav",
-	MOD_SND_FOLDER "fgrunt/moving.wav",
-	MOD_SND_FOLDER "fgrunt/gotit.wav",
-	MOD_SND_FOLDER "fgrunt/hellout.wav",
-	MOD_SND_FOLDER "fgrunt/sir.wav",
-	MOD_SND_FOLDER "fgrunt/right.wav",
-	MOD_SND_FOLDER "fgrunt/command.wav",
-	MOD_SND_FOLDER "fgrunt/notfail.wav",
-	MOD_SND_FOLDER "fgrunt/yes.wav",
+	"fgrunt/damage.wav",
+	"fgrunt/six.wav",
+	"fgrunt/moving.wav",
+	"fgrunt/gotit.wav",
+	"fgrunt/hellout.wav",
+	"fgrunt/sir.wav",
+	"fgrunt/right.wav",
+	"fgrunt/command.wav",
+	"fgrunt/notfail.wav",
+	"fgrunt/yes.wav",
 };
 
 const char* CBaseGruntOp4::pWaitSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/secure.wav",
-	MOD_SND_FOLDER "fgrunt/orders.wav",
-	MOD_SND_FOLDER "fgrunt/scout.wav",
-	MOD_SND_FOLDER "fgrunt/guardduty.wav",
+	"fgrunt/secure.wav",
+	"fgrunt/orders.wav",
+	"fgrunt/scout.wav",
+	"fgrunt/guardduty.wav",
 };
 
 const char* CBaseGruntOp4::pStopSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/post.wav",
-	MOD_SND_FOLDER "fgrunt/stay.wav",
-	MOD_SND_FOLDER "fgrunt/leave.wav",
+	"fgrunt/post.wav",
+	"fgrunt/stay.wav",
+	"fgrunt/leave.wav",
 };
 
 const char* CBaseGruntOp4::pScaredSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/hearsome.wav",
-	MOD_SND_FOLDER "fgrunt/hear.wav",
+	"fgrunt/hearsome.wav",
+	"fgrunt/hear.wav",
 };
 
 const char* CBaseGruntOp4::pHelloSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/sir_01.wav",
-	MOD_SND_FOLDER "fgrunt/tosee.wav",
-	MOD_SND_FOLDER "fgrunt/hellosir.wav",
+	"fgrunt/sir_01.wav",
+	"fgrunt/tosee.wav",
+	"fgrunt/hellosir.wav",
 };
 
 const char* CBaseGruntOp4::pCureSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/needmedic.wav",
-	MOD_SND_FOLDER "fgrunt/hurt.wav",
-	MOD_SND_FOLDER "fgrunt/hell.wav",
-	MOD_SND_FOLDER "fgrunt/feel.wav",
+	"fgrunt/needmedic.wav",
+	"fgrunt/hurt.wav",
+	"fgrunt/hell.wav",
+	"fgrunt/feel.wav",
 };
 
 const char* CBaseGruntOp4::pWoundSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/imhit.wav",
-	MOD_SND_FOLDER "fgrunt/fwound.wav",
-	MOD_SND_FOLDER "fgrunt/makeit.wav",
+	"fgrunt/imhit.wav",
+	"fgrunt/fwound.wav",
+	"fgrunt/makeit.wav",
 };
 
 const char* CBaseGruntOp4::pMortalSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/hitbad.wav",
-	MOD_SND_FOLDER "fgrunt/critical.wav",
-	MOD_SND_FOLDER "fgrunt/sdamage.wav",
+	"fgrunt/hitbad.wav",
+	"fgrunt/critical.wav",
+	"fgrunt/sdamage.wav",
 };
 
 const char* CBaseGruntOp4::pAttackSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/flank.wav",
-	MOD_SND_FOLDER "fgrunt/suppressing.wav",
-	MOD_SND_FOLDER "fgrunt/sweep.wav",
-	MOD_SND_FOLDER "fgrunt/wantsome.wav",
-	MOD_SND_FOLDER "fgrunt/freaks.wav",
-	MOD_SND_FOLDER "fgrunt/recon.wav",
-	MOD_SND_FOLDER "fgrunt/rapidfire.wav",
-	MOD_SND_FOLDER "fgrunt/marines.wav",
-	MOD_SND_FOLDER "fgrunt/moveup.wav",
-	//MOD_SND_FOLDER "fgrunt/go.wav",
-	MOD_SND_FOLDER "fgrunt/covering.wav",
-	//MOD_SND_FOLDER "fgrunt/ass.wav",
+	"fgrunt/flank.wav",
+	"fgrunt/suppressing.wav",
+	"fgrunt/sweep.wav",
+	//"fgrunt/wantsome.wav",
+	"fgrunt/freaks.wav",
+	"fgrunt/recon.wav",
+	"fgrunt/rapidfire.wav",
+	"fgrunt/marines.wav",
+	"fgrunt/moveup.wav",
+	//"fgrunt/go.wav",
+	"fgrunt/covering.wav",
+	//"fgrunt/ass.wav",
 };
 
 const char* CBaseGruntOp4::pPokSounds[] =
 {
-	//MOD_SND_FOLDER "fgrunt/hell.wav",
-	//MOD_SND_FOLDER "fgrunt/sir_01.wav",
-	//MOD_SND_FOLDER "fgrunt/hellosir.wav",
-	MOD_SND_FOLDER "fgrunt/corporal_01.wav",
+	//"fgrunt/hell.wav",
+	//"fgrunt/sir_01.wav",
+	//"fgrunt/hellosir.wav",
+	"fgrunt/corporal_01.wav",
 };
 
 const char* CBaseGruntOp4::pCheckSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/check.wav",
-	MOD_SND_FOLDER "fgrunt/zone.wav",
+	"fgrunt/check.wav",
+	"fgrunt/zone.wav",
 };
 
 const char* CBaseGruntOp4::pClearSounds[] =
 {
-	MOD_SND_FOLDER "fgrunt/clear.wav",
-	MOD_SND_FOLDER "fgrunt/area.wav",
+	"fgrunt/clear.wav",
+	"fgrunt/area.wav",
 };
 
 void CBaseGruntOp4::ShuffleSoundArrays() {
@@ -473,7 +473,7 @@ void CBaseGruntOp4::Precache()
 
 	soundvariety.value = oldSoundVariety;
 
-	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/medic.wav");
+	PRECACHE_SOUND("fgrunt/medic.wav");
 
 	TalkInit();
 }
