@@ -45,12 +45,12 @@ uint64_t mstream::read( void * dest, uint64_t bytes )
 uint32_t mstream::readBit()
 {
 	if (eomFlag)
-		return -1;
+		return UINT32_MAX;
 
 	if (currentBit >= 8) {
 		if (pos + 1 >= end) {
 			eomFlag = true;
-			return -1;
+			return UINT32_MAX;
 		}
 
 		pos++;

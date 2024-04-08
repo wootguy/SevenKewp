@@ -429,7 +429,6 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				if ( !trace.fStartSolid )
 				{
 					CBaseEntity *pNew = Create( "monster_alien_slave", m_hDead->pev->origin, m_hDead->pev->angles );
-					CBaseMonster *pNewMonster = pNew->MyMonsterPointer( );
 					pNew->pev->spawnflags |= 1;
 					WackBeam( -1, pNew );
 					WackBeam( 1, pNew );
@@ -488,8 +487,9 @@ BOOL CISlave :: CheckRangeAttack1 ( float flDot, float flDist )
 //=========================================================
 BOOL CISlave :: CheckRangeAttack2 ( float flDot, float flDist )
 {
+	// TODO: skill cvar to enable reviving allies
 	return FALSE;
-
+	/*
 	if (m_flNextAttack > gpGlobals->time)
 	{
 		return FALSE;
@@ -526,6 +526,7 @@ BOOL CISlave :: CheckRangeAttack2 ( float flDot, float flDist )
 		return TRUE;
 	else
 		return FALSE;
+		*/
 }
 
 
@@ -595,8 +596,6 @@ void CISlave :: Spawn()
 void CISlave :: Precache()
 {
 	CBaseMonster::Precache();
-
-	int i;
 
 	m_defaultModel = "models/islave.mdl";
 	PRECACHE_MODEL(GetModel());
@@ -835,7 +834,6 @@ void CISlave :: BeamGlow( )
 void CISlave :: WackBeam( int side, CBaseEntity *pEntity )
 {
 	Vector vecDest;
-	float flDist = 1.0;
 	
 	if (m_iBeams >= ISLAVE_MAX_BEAMS)
 		return;

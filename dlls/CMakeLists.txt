@@ -397,6 +397,7 @@ set(UTIL_HDR
 	mstream.h
 	lagcomp.h
 	vector.h
+	../game_shared/shared_util.h
 )
 set(UTIL_SRC
 	animation.cpp
@@ -410,6 +411,7 @@ set(UTIL_SRC
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
 	../pm_shared/pm_shared.cpp
+	../game_shared/shared_util.cpp
 )
 
 set(GAME_HDR
@@ -437,7 +439,6 @@ set(GAME_SRC
 	teamplay_gamerules.cpp
 	user_messages.cpp
 	../game_shared/voice_gamemgr.cpp
-	../game_shared/shared_util.cpp
 	mod_api.cpp
 )
 
@@ -474,7 +475,7 @@ add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
 target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
 
-target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS)
+target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS -D_CRT_SECURE_NO_DEPRECATE)
 
 if(UNIX)
 
@@ -485,7 +486,7 @@ if(UNIX)
 
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32 -g -w -O2" LINK_FLAGS "-m32 -g"
+		COMPILE_FLAGS "-m32 -g -Wall -O2" LINK_FLAGS "-m32 -g"
 	)
 
 elseif(MSVC)
@@ -502,7 +503,7 @@ elseif(MSVC)
 		)
 	endif()
 
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W0") 
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4") 
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${CMAKE_CURRENT_SOURCE_DIR}/hl.def") 
 	
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES

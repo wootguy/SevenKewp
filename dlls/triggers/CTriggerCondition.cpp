@@ -239,13 +239,13 @@ void CTriggerCondition::Evaluate() {
 	if (!isCyclic && shouldFireResultTarget) {
 		switch (m_iCheckBehavior) {
 		case MODE_WAIT_BOTH:
-			shouldFireResultTarget = m_lastResult != result;
+			shouldFireResultTarget = (bool)m_lastResult != result;
 			break;
 		case MODE_WAIT_AFTER_FALSE:
-			shouldFireResultTarget = m_lastResult != result || result == true;
+			shouldFireResultTarget = (bool)m_lastResult != result || result == true;
 			break;
 		case MODE_WAIT_AFTER_TRUE:
-			shouldFireResultTarget = m_lastResult != result || result == false;
+			shouldFireResultTarget = (bool)m_lastResult != result || result == false;
 			break;
 		case MODE_WAIT_NEVER:
 		default:

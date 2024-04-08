@@ -88,6 +88,7 @@ void CSpeaker::SpeakerThink(void)
 		// go lookup preset text, assign szSoundFile
 		switch (m_preset)
 		{
+		default:
 		case 1: szSoundFile = "C1A0_"; break;
 		case 2: szSoundFile = "C1A1_"; break;
 		case 3: szSoundFile = "C1A2_"; break;

@@ -515,7 +515,7 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 		equipPlayerWithItem(pPlayer, STRING(g_mapEquipment[i].itemName), g_mapEquipment[i].count);
 	}
 
-	while ( pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" ))
+	while ( (pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" )) != 0)
 	{
 		pWeaponEntity->Touch( pPlayer );
 		addDefault = FALSE;
@@ -1227,7 +1227,6 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 	int length;
 	char *pFileList;
 	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( filename, &length );
-	int hasbuffer;
 	mapcycle_item_t *item, *newlist = NULL, *next;
 
 	if ( pFileList && length )
@@ -1466,7 +1465,6 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 
 	if ( do_cycle && mapcycle.items && !nextMapCvarSet )
 	{
-		bool found = false;
 		mapcycle_item_t* item = GetMapCyleMap(current_map);
 
 		if (item) {

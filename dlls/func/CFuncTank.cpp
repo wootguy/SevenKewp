@@ -369,10 +369,9 @@ void CFuncTank::Think(void)
 void CFuncTank::TrackTarget(void)
 {
 	TraceResult tr;
-	int numPvsClients;
 	BOOL updateTime = FALSE, lineOfSight;
 	Vector angles, direction, targetPosition;
-	edict_t* pTarget;
+	edict_t* pTarget = NULL;
 	Vector barrelEnd = BarrelPosition();
 	CBasePlayer* m_pController = (CBasePlayer*)m_hController.GetEntity();
 
@@ -517,7 +516,6 @@ void CFuncTank::TrackTarget(void)
 	if (CanFire() && ((fabs(distX) < m_pitchTolerance && fabs(distY) < m_yawTolerance) || (pev->spawnflags & SF_TANK_LINEOFSIGHT)))
 	{
 		BOOL fire = FALSE;
-		Vector forward;
 		UTIL_MakeVectorsPrivate(pev->angles, forward, NULL, NULL);
 
 		if (pev->spawnflags & SF_TANK_LINEOFSIGHT)

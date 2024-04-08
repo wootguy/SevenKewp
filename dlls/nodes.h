@@ -131,7 +131,7 @@ public:
 	// search each range. After the search is exhausted, we know we have the closest
 	// node.
 	//
-#define CACHE_SIZE 128
+#define NODE_CACHE_SIZE 128
 #define NUM_RANGES 256
 	DIST_INFO *m_di;	// This is m_cNodes long, but the entries don't correspond to CNode entries.
 	int m_RangeStart[3][NUM_RANGES];
@@ -142,7 +142,7 @@ public:
 	int m_minBoxX, m_minBoxY, m_minBoxZ, m_maxBoxX, m_maxBoxY, m_maxBoxZ;
 	int m_CheckedCounter;
 	float m_RegionMin[3], m_RegionMax[3]; // The range of nodes.
-	CACHE_ENTRY m_Cache[CACHE_SIZE];
+	CACHE_ENTRY m_Cache[NODE_CACHE_SIZE];
 
 
 	int m_HashPrimes[16];

@@ -742,7 +742,6 @@ void UTIL_MakeInvVectors( const Vector &vec, globalvars_t *pgv )
 void ambientsound_msg(edict_t* entity, float* pos, const char* samp, float vol, float attenuation, 
 	int fFlags, int pitch, int msgDst, edict_t* dest)
 {
-	int i;
 	int soundnum;
 
 	if (samp[0] == '!')
@@ -2201,11 +2200,8 @@ void CSave :: WriteFloat( const char *pname, const float *data, int count )
 
 void CSave :: WriteTime( const char *pname, const float *data, int count )
 {
-	int i;
-	Vector tmp, input;
-
 	BufferHeader( pname, sizeof(float) * count );
-	for ( i = 0; i < count; i++ )
+	for ( int i = 0; i < count; i++ )
 	{
 		float tmp = data[0];
 
@@ -2288,11 +2284,8 @@ void CSave :: WritePositionVector( const char *pname, const Vector &value )
 
 void CSave :: WritePositionVector( const char *pname, const float *value, int count )
 {
-	int i;
-	Vector tmp, input;
-
 	BufferHeader( pname, sizeof(float) * 3 * count );
-	for ( i = 0; i < count; i++ )
+	for ( int i = 0; i < count; i++ )
 	{
 		Vector tmp( value[0], value[1], value[2] );
 
@@ -2986,7 +2979,7 @@ std::map<std::string, std::string> loadReplacementFile(const char* path) {
 			
 			std::vector<std::string> parts = splitString(line, " \t");
 			std::vector<std::string> nonemptyParts;
-			for (int i = 0; i < parts.size(); i++) {
+			for (int i = 0; i < (int)parts.size(); i++) {
 				if (parts[i].size()) {
 					nonemptyParts.push_back(parts[i]);
 				}
@@ -3105,7 +3098,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 	path = lowerPath.c_str();
 
 	bool hadMonsterSoundReplacement = false;
-	if (ent && ent->IsMonster() && g_monsterSoundReplacements.size() >= ent->entindex()) {
+	if (ent && ent->IsMonster() && (int)g_monsterSoundReplacements.size() >= ent->entindex()) {
 		std::map<std::string, std::string>& replacementMap = g_monsterSoundReplacements[ent->entindex()];
 		if (replacementMap.find(path) != replacementMap.end()) {
 			path = replacementMap[path].c_str();
@@ -3410,7 +3403,7 @@ const char* getPlayerUniqueId(edict_t* plr) {
 
 	const char* steamId = (*g_engfuncs.pfnGetPlayerAuthId)(plr);
 
-	if (steamId == "STEAM_ID_LAN" || steamId == "BOT") {
+	if (!strcmp(steamId, "STEAM_ID_LAN") || !strcmp(steamId, "BOT")) {
 		steamId = STRING(plr->v.netname);
 	}
 
@@ -3991,7 +3984,7 @@ std::string normalize_path(std::string s)
 
 	std::vector<std::string> parts = splitString(s, "/");
 	int depth = 0;
-	for (int i = 0; i < parts.size(); i++)
+	for (int i = 0; i < (int)parts.size(); i++)
 	{
 		depth++;
 		if (parts[i] == "..")
@@ -4012,7 +4005,7 @@ std::string normalize_path(std::string s)
 		}
 	}
 	s = "";
-	for (int i = 0; i < parts.size(); i++)
+	for (int i = 0; i < (int)parts.size(); i++)
 	{
 		if (i > 0) {
 			s += '/';

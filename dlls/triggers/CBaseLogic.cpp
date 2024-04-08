@@ -58,7 +58,6 @@ std::vector<CBaseEntity*> CBaseLogic::FindLogicEntities(const char* targetName) 
 
 void CBaseLogic::FireLogicTargets(const char* targetName, USE_TYPE useType, float value)
 {
-	edict_t* pentTarget = NULL;
 	if (!targetName)
 		return;
 

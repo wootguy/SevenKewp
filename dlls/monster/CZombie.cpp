@@ -351,8 +351,6 @@ void CZombie :: Precache()
 {
 	CBaseMonster::Precache();
 
-	int i;
-
 	if (!strcmp(STRING(pev->classname), "monster_zombie_barney")) {
 		m_defaultModel = "models/zombie_barney.mdl";
 	}

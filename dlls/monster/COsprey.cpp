@@ -83,7 +83,6 @@ public:
 
 	Vector m_velocity;
 
-	float m_flIdealtilt;
 	float m_flRotortilt;
 
 	float m_flRightHealth;
@@ -128,7 +127,6 @@ TYPEDESCRIPTION	COsprey::m_SaveData[] =
 	DEFINE_FIELD( COsprey, m_dTime, FIELD_FLOAT ),
 	DEFINE_FIELD( COsprey, m_velocity, FIELD_VECTOR ),
 
-	DEFINE_FIELD( COsprey, m_flIdealtilt, FIELD_FLOAT ),
 	DEFINE_FIELD( COsprey, m_flRotortilt, FIELD_FLOAT ),
 
 	DEFINE_FIELD( COsprey, m_flRightHealth, FIELD_FLOAT ),
@@ -401,11 +399,6 @@ void COsprey::UpdateGoal( )
 		{
 			m_ang1.y -= 360;
 		}
-
-		if (m_hGoalEnt->pev->speed < 400)
-			m_flIdealtilt = 0;
-		else
-			m_flIdealtilt = -90;
 	}
 	else
 	{

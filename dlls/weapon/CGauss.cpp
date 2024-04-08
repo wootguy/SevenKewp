@@ -475,11 +475,9 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 
 		if ( pEntity->ReflectGauss() )
 		{
-			float n;
-
 			pentIgnore = NULL;
 
-			n = -DotProduct(tr.vecPlaneNormal, vecDir);
+			float n = -DotProduct(tr.vecPlaneNormal, vecDir);
 
 			if (n < 0.5) // 60 degrees
 			{
@@ -520,7 +518,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 						// trace backwards to find exit point
 						UTIL_TraceLine( beam_tr.vecEndPos, tr.vecEndPos, dont_ignore_monsters, pentIgnore, &beam_tr);
 
-						float n = (beam_tr.vecEndPos - tr.vecEndPos).Length( );
+						n = (beam_tr.vecEndPos - tr.vecEndPos).Length( );
 
 						if (n < flDamage)
 						{
@@ -632,9 +630,7 @@ void CGauss::WeaponIdle( void )
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3;
 		}
 
-		return;
 		SendWeaponAnim( iAnim );
-		
 	}
 }
 

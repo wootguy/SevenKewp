@@ -117,7 +117,6 @@ int LookupActivityWithOffset(void* pmodel, entvars_t* pev, int activity, int off
 
 	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
 
-	int weighttotal = 0;
 	int seq = ACTIVITY_NOT_AVAILABLE;
 	int currentOffset = 0;
 	for (int i = 0; i < pstudiohdr->numseq; i++)
@@ -146,7 +145,6 @@ bool ActivityHasEvent(void* pmodel, int activity, int event) {
 
 	pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex);
 
-	int weighttotal = 0;
 	for (int i = 0; i < pstudiohdr->numseq; i++)
 	{
 		if (pseqdesc[i].activity == activity)
@@ -333,8 +331,6 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 	pstudiohdr = (studiohdr_t *)pmodel;
 	if ( !pstudiohdr || pev->sequence >= pstudiohdr->numseq || !pMonsterEvent )
 		return 0;
-
-	int events = 0;
 
 	mstudioseqdesc_t	*pseqdesc;
 	mstudioevent_t		*pevent;

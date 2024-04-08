@@ -931,7 +931,7 @@ void COtis::Killed( entvars_t *pevAttacker, int iGib )
 
 		GetAttachment( 0, vecGunPos, vecGunAngles );
 		
-		CBaseEntity *pGun = DropItem( "weapon_eagle", vecGunPos, vecGunAngles );
+		DropItem( "weapon_eagle", vecGunPos, vecGunAngles );
 	}
 
 	SetUse( NULL );	

@@ -89,8 +89,6 @@ void CSatchelCharge :: Spawn( void )
 
 void CSatchelCharge::SatchelSlide( CBaseEntity *pOther )
 {
-	entvars_t	*pevOther = pOther->pev;
-
 	// don't hit the guy that launched this grenade
 	if ( pOther->edict() == pev->owner )
 		return;
@@ -304,11 +302,8 @@ BOOL CSatchel::Deploy( )
 
 	if ( m_chargeReady )
 		return DefaultDeploy(GET_MODEL("models/v_satchel_radio.mdl"), GET_MODEL("models/p_satchel_radio.mdl"), SATCHEL_RADIO_DRAW, "hive" );
-	else
-		return DefaultDeploy(GetModelV(), GetModelP(), SATCHEL_DRAW, "trip" );
 
-	
-	return TRUE;
+	return DefaultDeploy(GetModelV(), GetModelP(), SATCHEL_DRAW, "trip" );
 }
 
 

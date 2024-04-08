@@ -202,16 +202,11 @@ BOOL CBaseGrunt :: FCanCheckAttacks ( void )
 
 BOOL CBaseGrunt :: CheckMeleeAttack1 ( float flDot, float flDist )
 {
-	CBaseMonster *pEnemy;
+	CBaseMonster *pEnemy = m_hEnemy != NULL ? m_hEnemy->MyMonsterPointer() : NULL;
 
-	if ( m_hEnemy != NULL )
+	if ( !pEnemy )
 	{
-		pEnemy = m_hEnemy->MyMonsterPointer();
-
-		if ( !pEnemy )
-		{
-			return FALSE;
-		}
+		return FALSE;
 	}
 
 	if ( flDist <= 64 && flDot >= 0.7	&& 
@@ -1881,7 +1876,6 @@ IMPLEMENT_CUSTOM_SCHEDULES( CBaseGrunt, CTalkSquadMonster );
 void CBaseGrunt :: SetActivity ( Activity NewActivity )
 {
 	int	iSequence = ACTIVITY_NOT_AVAILABLE;
-	void *pmodel = GET_MODEL_PTR( ENT(pev) );
 
 	iSequence = GetActivitySequence(NewActivity);
 	

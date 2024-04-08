@@ -71,6 +71,8 @@ struct mapcycle_t
 class CGameRules
 {
 public:
+	virtual ~CGameRules() = default;
+
 	mapcycle_t mapcycle;
 
 	virtual void Think( void ) = 0;// GR_Think - runs every server frame, should handle any timer tasks, periodic events, etc.

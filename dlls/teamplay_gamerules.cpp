@@ -152,7 +152,7 @@ BOOL CHalfLifeTeamplay :: ClientCommand( CBasePlayer *pPlayer, const char *pcmd 
 		if ( CMD_ARGC() < 2 )
 			return TRUE;
 
-		int slot = atoi( CMD_ARGV(1) );
+		//int slot = atoi( CMD_ARGV(1) );
 
 		// select the item from the current menu
 
@@ -239,7 +239,6 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 
 	ChangePlayerTeam( pPlayer, pPlayer->m_szTeamName, FALSE, FALSE );
 	UTIL_SayText( text, pPlayer );
-	int clientIndex = pPlayer->entindex();
 	RecountTeams();
 	// update this player with all the other players team info
 	// loop through all active players and send their team info to the new client
@@ -557,15 +556,15 @@ const char *CHalfLifeTeamplay::TeamWithFewestPlayers( void )
 void CHalfLifeTeamplay::RecountTeams( bool bResendInfo )
 {
 	char	*pName;
-	char	teamlist[TEAMPLAY_TEAMLISTLENGTH];
+	char	strteamlist[TEAMPLAY_TEAMLISTLENGTH];
 
 	// loop through all teams, recounting everything
 	num_teams = 0;
 
 	// Copy all of the teams from the teamlist
 	// make a copy because strtok is destructive
-	strcpy_safe( teamlist, m_szTeamList, TEAMPLAY_TEAMLISTLENGTH);
-	pName = teamlist;
+	strcpy_safe(strteamlist, m_szTeamList, TEAMPLAY_TEAMLISTLENGTH);
+	pName = strteamlist;
 	pName = strtok( pName, ";" );
 	while ( pName != NULL && *pName )
 	{

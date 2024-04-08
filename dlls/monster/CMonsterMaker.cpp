@@ -743,7 +743,6 @@ void CMonsterMaker::Nerf() {
 	CBaseMonster::Nerf(); // reduce health
 
 	int maxNerfedSpawnCount = mp_maxmonsterrespawns.value + 1.5f;
-	bool isCyclic = pev->targetname && (pev->spawnflags & SF_MONSTERMAKER_CYCLIC);
 	bool spawnsTooMany = (m_cNumMonsters < 0 || m_cNumMonsters > maxNerfedSpawnCount);
 
 	if (mp_maxmonsterrespawns.value >= 0 && spawnsTooMany) {

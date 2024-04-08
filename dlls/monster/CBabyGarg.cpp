@@ -160,8 +160,6 @@ void CBabyGarg::Precache()
 {
 	CBaseMonster::Precache();
 
-	int i;
-
 	m_defaultModel = "models/babygarg.mdl";
 	PRECACHE_MODEL(GetModel());
 	

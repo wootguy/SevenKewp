@@ -302,7 +302,7 @@ void CRpg::Reload( void )
 	if (!m_pPlayer)
 		return;
 
-	int iResult;
+	int iResult = 0;
 
 	if ( m_iClip == 1 )
 	{
