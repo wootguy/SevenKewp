@@ -66,8 +66,8 @@ void CGlobalState::EntityAdd(string_t globalname, string_t mapName, GLOBALESTATE
 	ASSERT(pNewEntity != NULL);
 	pNewEntity->pNext = m_pList;
 	m_pList = pNewEntity;
-	strcpy(pNewEntity->name, STRING(globalname));
-	strcpy(pNewEntity->levelName, STRING(mapName));
+	strcpy_safe(pNewEntity->name, STRING(globalname), 64);
+	strcpy_safe(pNewEntity->levelName, STRING(mapName), 32);
 	pNewEntity->state = state;
 	m_listCount++;
 }
@@ -162,7 +162,7 @@ void CGlobalState::EntityUpdate(string_t globalname, string_t mapname)
 	globalentity_t* pEnt = Find(globalname);
 
 	if (pEnt)
-		strcpy(pEnt->levelName, STRING(mapname));
+		strcpy_safe(pEnt->levelName, STRING(mapname), 32);
 }
 
 

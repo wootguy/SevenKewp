@@ -990,10 +990,10 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 
 	case ACT_RANGE_ATTACK1:
 		if ( FBitSet( pev->flags, FL_DUCKING ) )	// crouching
-			strcpy( szAnim, "crouch_shoot_" );
+			strcpy_safe( szAnim, "crouch_shoot_", 64 );
 		else
-			strcpy( szAnim, "ref_shoot_" );
-		strcat( szAnim, m_szAnimExtention );
+			strcpy_safe( szAnim, "ref_shoot_", 64 );
+		strcat_safe( szAnim, m_szAnimExtention, 64 );
 		animDesired = LookupSequence( szAnim );
 		if (animDesired == -1)
 			animDesired = 0;
@@ -1018,10 +1018,10 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		if (m_Activity != ACT_RANGE_ATTACK1 || m_fSequenceFinished)
 		{
 			if ( FBitSet( pev->flags, FL_DUCKING ) )	// crouching
-				strcpy( szAnim, "crouch_aim_" );
+				strcpy_safe( szAnim, "crouch_aim_", 64 );
 			else
-				strcpy( szAnim, "ref_aim_" );
-			strcat( szAnim, m_szAnimExtention );
+				strcpy_safe( szAnim, "ref_aim_", 64 );
+			strcat_safe( szAnim, m_szAnimExtention, 64 );
 			animDesired = LookupSequence( szAnim );
 			if (animDesired == -1)
 				animDesired = 0;
@@ -1731,8 +1731,8 @@ void CBasePlayer::UpdateStatusBar()
 	char sbuf1[ SBAR_STRING_SIZE ];
 
 	memset( newSBarState, 0, sizeof(newSBarState) );
-	strcpy( sbuf0, m_SbarString0 );
-	strcpy( sbuf1, m_SbarString1 );
+	strcpy_safe( sbuf0, m_SbarString0, SBAR_STRING_SIZE);
+	strcpy_safe( sbuf1, m_SbarString1, SBAR_STRING_SIZE);
 
 	// Find an ID Target
 	TraceResult tr;
@@ -1750,8 +1750,8 @@ void CBasePlayer::UpdateStatusBar()
 			if (pEntity->Classify() == CLASS_PLAYER )
 			{
 				newSBarState[ SBAR_ID_TARGETNAME ] = ENTINDEX( pEntity->edict() );
-				strcpy( sbuf1, "1 Player: %p1" );
-				strcpy( sbuf0, "2 Health: %i2%%\n3 Armor: %i3%%" );
+				strcpy_safe( sbuf1, "1 Player: %p1", SBAR_STRING_SIZE );
+				strcpy_safe( sbuf0, "2 Health: %i2%%\n3 Armor: %i3%%", SBAR_STRING_SIZE);
 
 				newSBarState[ SBAR_ID_TARGETHEALTH ] = 100 * (pEntity->pev->health / pEntity->pev->max_health);
 				newSBarState[ SBAR_ID_TARGETARMOR ] = pEntity->pev->armorvalue; //No need to get it % based since 100 it's the max.
@@ -1775,18 +1775,18 @@ void CBasePlayer::UpdateStatusBar()
 					srel = "Enemy: ";
 				}
 
-				strcpy(sbuf1, UTIL_VarArgs("1 %s%s", srel, name));
+				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", srel, name), SBAR_STRING_SIZE);
 
 				if ((pEntity->pev->flags & FL_GODMODE) || (pEntity->pev->takedamage == DAMAGE_NO) || pEntity->pev->health > 2147483647) {
-					strcpy(sbuf0, "2 Health: Invincible");
+					strcpy_safe(sbuf0, "2 Health: Invincible", SBAR_STRING_SIZE);
 					hp = 1; // client won't show health text if this is an insane value
 				}
 				else if (hp == 0) {
-					strcpy(sbuf0, "2 Health: 0");
+					strcpy_safe(sbuf0, "2 Health: 0", SBAR_STRING_SIZE);
 					hp = 1; // client won't show health text if this is 0
 				}
 				else {
-					strcpy(sbuf0, UTIL_VarArgs("2 Health: %d", hp));
+					strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
 				}
 
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
@@ -1807,8 +1807,8 @@ void CBasePlayer::UpdateStatusBar()
 					hint = " (use crowbar)";
 				}
 
-				strcpy(sbuf1, UTIL_VarArgs("1 %s%s", name, hint));
-				strcpy(sbuf0, UTIL_VarArgs("2 Health: %d", hp));
+				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name, hint), SBAR_STRING_SIZE);
+				strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
 
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
 				newSBarState[SBAR_ID_TARGETHEALTH] = hp;
@@ -1827,27 +1827,27 @@ void CBasePlayer::UpdateStatusBar()
 
 	BOOL bForceResend = FALSE;
 
-	if ( strcmp( sbuf0, m_SbarString0 ) )
+	if ( strncmp( sbuf0, m_SbarString0, SBAR_STRING_SIZE) )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgStatusText, NULL, pev );
 			WRITE_BYTE( 0 );
 			WRITE_STRING( sbuf0 );
 		MESSAGE_END();
 
-		strcpy( m_SbarString0, sbuf0 );
+		strcpy_safe( m_SbarString0, sbuf0, SBAR_STRING_SIZE);
 
 		// make sure everything's resent
 		bForceResend = TRUE;
 	}
 
-	if ( strcmp( sbuf1, m_SbarString1 ) )
+	if ( strncmp( sbuf1, m_SbarString1, SBAR_STRING_SIZE) )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgStatusText, NULL, pev );
 			WRITE_BYTE( 1 );
 			WRITE_STRING( sbuf1 );
 		MESSAGE_END();
 
-		strcpy( m_SbarString1, sbuf1 );
+		strcpy_safe( m_SbarString1, sbuf1, SBAR_STRING_SIZE);
 
 		// make sure everything's resent
 		bForceResend = TRUE;
@@ -2332,8 +2332,8 @@ void CBasePlayer::CheckSuitUpdate()
 				// play sentence number
 
 				char sentence[CBSENTENCENAME_MAX+1];
-				strcpy(sentence, "!");
-				strcat(sentence, gszallsentencenames[isentence]);
+				strcpy_safe(sentence, "!", CBSENTENCENAME_MAX + 1);
+				strcat_safe(sentence, gszallsentencenames[isentence], CBSENTENCENAME_MAX + 1);
 				EMIT_SOUND_SUIT(ENT(pev), sentence);
 			}
 			else
@@ -2382,7 +2382,7 @@ void CBasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeatTime)
 	// get sentence or group number
 	if (!fgroup)
 	{
-		isentence = SENTENCEG_Lookup(name, NULL);
+		isentence = SENTENCEG_Lookup(name, NULL, 0);
 		if (isentence < 0)
 			return;
 	}
@@ -4790,7 +4790,7 @@ void CBasePlayer::Observer_SetMode(int iMode)
 	// print spepctaor mode on client screen
 
 	char modemsg[16];
-	sprintf(modemsg, "#Spec_Mode%i", pev->iuser1);
+	snprintf(modemsg, 16, "#Spec_Mode%i", pev->iuser1);
 	UTIL_ClientPrint(edict(), print_center, modemsg);
 
 	m_iObserverLastMode = iMode;

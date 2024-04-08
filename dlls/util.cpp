@@ -407,9 +407,9 @@ DBG_AssertFunction(
 		return;
 	char szOut[512];
 	if (szMessage != NULL)
-		sprintf(szOut, "ASSERT FAILED:\n %s \n(%s@%d)\n%s", szExpr, szFile, szLine, szMessage);
+		snprintf(szOut, 512, "ASSERT FAILED:\n %s \n(%s@%d)\n%s", szExpr, szFile, szLine, szMessage);
 	else
-		sprintf(szOut, "ASSERT FAILED:\n %s \n(%s@%d)", szExpr, szFile, szLine);
+		snprintf(szOut, 512, "ASSERT FAILED:\n %s \n(%s@%d)", szExpr, szFile, szLine);
 	ALERT(at_console, szOut);
 	}
 #endif	// DEBUG
@@ -817,7 +817,7 @@ void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char 
 	if (samp && *samp == '!')
 	{
 		char name[32];
-		if (SENTENCEG_Lookup(samp, name) >= 0) {
+		if (SENTENCEG_Lookup(samp, name, 32) >= 0) {
 			if (dest) {
 				ambientsound_msg(entity, rgfl, name, vol, attenuation, fFlags, pitch, MSG_ONE, dest);
 			}
@@ -1156,28 +1156,28 @@ void UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity )
 char *UTIL_dtos1( int d )
 {
 	static char buf[8];
-	sprintf( buf, "%d", d );
+	snprintf( buf, 8, "%d", d );
 	return buf;
 }
 
 char *UTIL_dtos2( int d )
 {
 	static char buf[8];
-	sprintf( buf, "%d", d );
+	snprintf( buf, 8, "%d", d );
 	return buf;
 }
 
 char *UTIL_dtos3( int d )
 {
 	static char buf[8];
-	sprintf( buf, "%d", d );
+	snprintf( buf, 8, "%d", d );
 	return buf;
 }
 
 char *UTIL_dtos4( int d )
 {
 	static char buf[8];
-	sprintf( buf, "%d", d );
+	snprintf( buf, 8, "%d", d );
 	return buf;
 }
 
@@ -1692,7 +1692,7 @@ void UTIL_StringToVector( float *pVector, const char *pString )
 	char *pstr, *pfront, tempString[128];
 	int	j;
 
-	strcpy( tempString, pString );
+	strcpy_safe( tempString, pString, 128 );
 	pstr = pfront = tempString;
 
 	for ( j = 0; j < 3; j++ )			// lifted from pr_edict.c
@@ -1738,7 +1738,7 @@ void UTIL_StringToIntArray( int *pVector, int count, const char *pString )
 	char *pstr, *pfront, tempString[128];
 	int	j;
 
-	strcpy( tempString, pString );
+	strcpy_safe( tempString, pString, 128 );
 	pstr = pfront = tempString;
 
 	for ( j = 0; j < count; j++ )			// lifted from pr_edict.c
@@ -4403,7 +4403,7 @@ void PlayCDTrack(int iTrack)
 	{
 		char string[64];
 
-		sprintf(string, "cd play %3d\n", iTrack);
+		snprintf(string, 64, "cd play %3d\n", iTrack);
 		CLIENT_COMMAND(pClient, string);
 	}
 }

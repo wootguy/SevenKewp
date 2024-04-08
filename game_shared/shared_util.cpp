@@ -22,6 +22,7 @@ static char s_shared_quote = '\"';
 /**
  *  Wrapper for vgui::localize()->Find() that doesn't return NULL
  */
+/*
 #ifdef CLIENT_DLL
 #include <vgui/IVGui.h>
 #include <vgui_controls/Controls.h>	// for localize()
@@ -45,6 +46,7 @@ wchar_t* SharedFindString( char *asciiIdentifier )
 	return identifier;
 }
 #endif
+*/
 
 //--------------------------------------------------------------------------------------------------------------
 wchar_t * SharedWVarArgs(wchar_t *format, ...)
@@ -258,4 +260,34 @@ bool SharedTokenWaiting( const char *buffer )
 	}
 
 	return false;
+}
+
+char* strcpy_safe(char* dest, const char* src, size_t size) {
+	if (size > 0) {
+		size_t i;
+		for (i = 0; i < size - 1 && src[i]; i++) {
+			dest[i] = src[i];
+		}
+		dest[i] = '\0';
+	}
+	return dest;
+}
+
+char* strcat_safe(char* dest, const char* src, size_t size) {
+	int dstLen = strlen(dest);
+	char* writeDst = dest + dstLen;
+	
+	if (dstLen > size) {
+		return dest;
+	}
+	size -= dstLen;
+
+	if (size > 0) {
+		size_t i;
+		for (i = 0; i < size - 1 && src[i]; i++) {
+			writeDst[i] = src[i];
+		}
+		writeDst[i] = '\0';
+	}
+	return dest;
 }
