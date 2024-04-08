@@ -1,8 +1,7 @@
 set(WEAPON_HDR
 	com_weapons.h
 )
-set(WEAPON_SRC
-	hl/hl_weapons.cpp
+set(SHARED_WEAPON_SRC
 	../dlls/weapon/CGlock.cpp
 	../dlls/weapon/CCrossbow.cpp
 	../dlls/weapon/CCrowbar.cpp
@@ -17,6 +16,9 @@ set(WEAPON_SRC
 	../dlls/weapon/CShotgun.cpp
 	../dlls/weapon/CSqueak.cpp
 	../dlls/weapon/CTripmine.cpp
+)
+set(CLIENT_WEAPON_SRC
+	hl/hl_weapons.cpp
 	com_weapons.cpp
 )
 
@@ -167,9 +169,29 @@ set(ENTITY_SRC
 	hl/hl_objects.cpp
 )
 
+function(write_wep_source_file)	
+	set(ENT_SRCS_EXT ${SHARED_WEAPON_SRC})
+	list(LENGTH ENT_SRCS_EXT list_count)
+	math(EXPR list_max_index ${list_count}-1)
+	foreach(i RANGE ${list_max_index})
+		list(GET ENT_SRCS_EXT ${i} x)
+		
+		set(WEP_INCLUDES "${WEP_INCLUDES} #include \"${x}\"\n")
+	endforeach(i)
+	
+	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp
+		${WEP_INCLUDES}
+	)
+endfunction()
+
+write_wep_source_file()
+
+# don't compile individual entity files
+set_source_files_properties(${SHARED_WEAPON_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
+
 set(ALL_SRC	
 	${MISC_HDR}
-	${WEAPON_SRC} ${WEAPON_HDR}
+	${SHARED_WEAPON_SRC} ${CLIENT_WEAPON_SRC} ${WEAPON_HDR}
 	${HUD_SRC} ${HUD_HDR}
 	${VGUI_SRC} ${VGUI_HDR}
 	${INPUT_SRC} ${INPUT_HDR}
@@ -177,7 +199,7 @@ set(ALL_SRC
 	${GAME_SRC} ${GAME_HDR}
 	${RENDER_SRC} ${RENDER_HDR}
 	${ENTITY_SRC} ${ENTITY_HDR}
-	
+	${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp
 )
 
 include_directories(../dlls)
@@ -255,7 +277,8 @@ elseif(MSVC)
 	source_group("Header Files\\Render" FILES ${RENDER_HDR})	
 	
 	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})	
-	source_group("Source Files\\Weapons" FILES ${WEAPON_SRC})	
+	source_group("Source Files\\Weapons\\Shared" FILES ${SHARED_WEAPON_SRC} ${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp)	
+	source_group("Source Files\\Weapons" FILES ${CLIENT_WEAPON_SRC})	
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})	
 	source_group("Source Files\\Game" FILES ${GAME_SRC})	
 	source_group("Source Files\\HUD" FILES ${HUD_SRC})	

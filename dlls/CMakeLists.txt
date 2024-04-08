@@ -490,6 +490,7 @@ set(ALL_SRC
 	${CMAKE_CURRENT_BINARY_DIR}/entities.cpp
 )
 
+# don't compile individual entity files
 set_source_files_properties(${ENT_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 include_directories(../common)
@@ -561,7 +562,7 @@ elseif(MSVC)
 	source_group("Header Files\\Game" FILES ${GAME_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})
 	
-	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})
+	source_group("Source Files\\Entities" FILES ${ENTITY_SRC} ${CMAKE_CURRENT_BINARY_DIR}/entities.cpp)
 	source_group("Source Files\\Entities\\env" FILES ${ENV_SRC})
 	source_group("Source Files\\Entities\\func" FILES ${FUNC_SRC})
 	source_group("Source Files\\Entities\\item" FILES ${ITEM_SRC})
