@@ -367,7 +367,7 @@ set(WEAPON_SRC
 	weapon/CTripmine.cpp
 	weapon/CWeaponBox.cpp
 	weapon/weapons.cpp
-	wpn_shared/hl_wpn_glock.cpp
+	weapon/CGlock.cpp
 	weapon/combat.cpp
 )
 set(AMMO_HDR

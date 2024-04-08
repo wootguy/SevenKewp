@@ -140,14 +140,14 @@ public:
 	int m_iWeaponIdx;
 };
 
-class CHGruntOp4Repel : public CBaseRepel
+class CHGruntOp4MedicRepel : public CBaseRepel
 {
 public:
 	const char* GetMonsterType() { return "monster_human_medic_ally"; };
 };
 
 LINK_ENTITY_TO_CLASS(monster_human_medic_ally, CHGruntOp4Medic);
-LINK_ENTITY_TO_CLASS(monster_medic_ally_repel, CHGruntOp4Repel);
+LINK_ENTITY_TO_CLASS(monster_medic_ally_repel, CHGruntOp4MedicRepel);
 
 TYPEDESCRIPTION	CHGruntOp4Medic::m_SaveData[] = 
 {
