@@ -47,6 +47,7 @@ class CXenSporeLarge : public CXenSpore
 class CXenHull : public CPointEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	static CXenHull* CreateHull(CBaseEntity* source, const Vector& mins, const Vector& maxs, const Vector& offset);
 	int			Classify(void) { return CLASS_BARNACLE; }
 };
