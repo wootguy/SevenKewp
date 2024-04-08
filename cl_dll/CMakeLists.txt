@@ -3,7 +3,7 @@ set(WEAPON_HDR
 )
 set(WEAPON_SRC
 	hl/hl_weapons.cpp
-	../dlls/wpn_shared/hl_wpn_glock.cpp
+	../dlls/weapon/CGlock.cpp
 	../dlls/weapon/CCrossbow.cpp
 	../dlls/weapon/CCrowbar.cpp
 	../dlls/weapon/CEgon.cpp
