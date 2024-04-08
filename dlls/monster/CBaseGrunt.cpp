@@ -661,7 +661,7 @@ void CBaseGrunt::ShootUzis(Vector& vecShootOrigin, Vector& vecShootDir) {
 	EjectBrass(vecShootOrigin - vecShootDir * 24, rightShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL);
 	FireBullets(2, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5); // shoot +-5 degrees;
 	
-	const char* sound = RANDOM_LONG(0, 1) ? MOD_SND_FOLDER "weapons/uzi/fire_both1.wav" : MOD_SND_FOLDER "weapons/uzi/fire_both2.wav";
+	const char* sound = RANDOM_LONG(0, 1) ? "weapons/uzi/fire_both1.wav" : "weapons/uzi/fire_both2.wav";
 	EMIT_SOUND(ENT(pev), CHAN_STATIC, sound, 1, ATTN_NORM);
 	PLAY_DISTANT_SOUND(edict(), DISTANT_9MM);
 }
@@ -682,7 +682,7 @@ void CBaseGrunt::ShootMinigun(Vector& vecShootOrigin, Vector& vecShootDir) {
 		break;
 	}
 
-	const char* sound = RANDOM_LONG(0,1) == 0 ? MOD_SND_FOLDER "hassault/hw_shoot2.wav" : MOD_SND_FOLDER "hassault/hw_shoot3.wav";
+	const char* sound = RANDOM_LONG(0,1) == 0 ? "hassault/hw_shoot2.wav" : "hassault/hw_shoot3.wav";
 
 	Vector	vecShellVelocity = gpGlobals->v_right * RANDOM_FLOAT(40, 90) + gpGlobals->v_up * RANDOM_FLOAT(75, 200) + gpGlobals->v_forward * RANDOM_FLOAT(-40, 40);
 	EjectBrass(vecShootOrigin - vecShootDir * 24, vecShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL);
@@ -694,7 +694,7 @@ void CBaseGrunt::ShootMinigun(Vector& vecShootOrigin, Vector& vecShootDir) {
 void CBaseGrunt::ShootSniper(Vector& vecShootOrigin, Vector& vecShootDir) {
 	//TODO: why is this 556? is 762 too damaging?
 	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 8192, BULLET_MONSTER_762);
-	EMIT_SOUND(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "weapons/sniper_fire.wav", 1, 0.3);
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sniper_fire.wav", 1, 0.3);
 }
 
 void CBaseGrunt ::ShootShotgun(Vector& vecShootOrigin, Vector& vecShootDir)
@@ -732,7 +732,7 @@ void CBaseGrunt::ShootSaw(Vector& vecShootOrigin, Vector& vecShootDir)
 
 	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 8192, BULLET_PLAYER_556, 2); // shoot +-5 degrees
 
-	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, MOD_SND_FOLDER "weapons/saw_fire1.wav", VOL_NORM, ATTN_NORM, 0, RANDOM_LONG(0, 15) + 94);
+	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, "weapons/saw_fire1.wav", VOL_NORM, ATTN_NORM, 0, RANDOM_LONG(0, 15) + 94);
 	PLAY_DISTANT_SOUND(edict(), DISTANT_556);
 }
 
@@ -750,7 +750,7 @@ void CBaseGrunt::ShootDeagle(Vector& vecShootOrigin, Vector& vecShootDir) {
 	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_2DEGREES, 1024, BULLET_PLAYER_357); // shoot +-5 degrees
 
 	const auto random = RANDOM_LONG(0, 20);
-	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, MOD_SND_FOLDER "weapons/desert_eagle_fire.wav", VOL_NORM, ATTN_NORM, 0, (random <= 10 ? random - 5 : 0) + 100);
+	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, "weapons/desert_eagle_fire.wav", VOL_NORM, ATTN_NORM, 0, (random <= 10 ? random - 5 : 0) + 100);
 	PLAY_DISTANT_SOUND(edict(), DISTANT_357);
 }
 
@@ -853,10 +853,10 @@ const char* CBaseGrunt::GetDeathNoticeWeapon() {
 
 void CBaseGrunt::Reload() {
 	if (HasEquipment(MEQUIP_SAW)) {
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "weapons/saw_reload.wav", 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/saw_reload.wav", 1, ATTN_NORM);
 	}
 	else if (HasEquipment(MEQUIP_DEAGLE)) {
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "weapons/desert_eagle_reload.wav", 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/desert_eagle_reload.wav", 1, ATTN_NORM);
 	}
 	else {
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "hgrunt/gr_reload1.wav", 1, ATTN_NORM);
@@ -1035,10 +1035,10 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 		AddPrecacheWeapon("weapon_shotgun");
 	}
 	if (equipment & MEQUIP_SAW) {
-		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire1.wav");
-		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire2.wav");
-		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_fire3.wav");
-		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/saw_reload.wav");
+		PRECACHE_SOUND("weapons/saw_fire1.wav");
+		PRECACHE_SOUND("weapons/saw_fire2.wav");
+		PRECACHE_SOUND("weapons/saw_fire3.wav");
+		PRECACHE_SOUND("weapons/saw_reload.wav");
 
 		//AddPrecacheWeapon("weapon_9mmAR");
 	}
@@ -1048,26 +1048,26 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 		AddPrecacheWeapon("weapon_357");
 	}
 	if (equipment & MEQUIP_DEAGLE) {
-		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/desert_eagle_fire.wav");
-		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/desert_eagle_reload.wav");
+		PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
+		PRECACHE_SOUND("weapons/desert_eagle_reload.wav");
 	}
 	if (equipment & MEQUIP_GLOCK) {
 		AddPrecacheWeapon("weapon_9mmhandgun");
 	}
 	if (equipment & MEQUIP_SNIPER) {
-		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/sniper_fire.wav");
+		PRECACHE_SOUND("weapons/sniper_fire.wav");
 		//AddPrecacheWeapon("weapon_9mmAR");
 	}
 	if (equipment & MEQUIP_MINIGUN) {
 		//AddPrecacheWeapon("weapon_9mmAR");
-		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_shoot2.wav");
-		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_shoot3.wav");
-		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_spinup.wav");
-		PRECACHE_SOUND(MOD_SND_FOLDER "hassault/hw_spindown.wav");
+		PRECACHE_SOUND("hassault/hw_shoot2.wav");
+		PRECACHE_SOUND("hassault/hw_shoot3.wav");
+		PRECACHE_SOUND("hassault/hw_spinup.wav");
+		PRECACHE_SOUND("hassault/hw_spindown.wav");
 	}
 	if (equipment & MEQUIP_AKIMBO_UZIS) {
-		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/uzi/fire_both1.wav");
-		PRECACHE_SOUND(MOD_SND_FOLDER "weapons/uzi/fire_both2.wav");
+		PRECACHE_SOUND("weapons/uzi/fire_both1.wav");
+		PRECACHE_SOUND("weapons/uzi/fire_both2.wav");
 
 		AddPrecacheWeapon("weapon_9mmAR");
 	}
@@ -2279,7 +2279,7 @@ Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 					{
 						ALERT(at_aiconsole, "Injured Grunt called for Medic\n");
 
-						EMIT_SOUND_DYN(edict(), CHAN_VOICE, MOD_SND_FOLDER "fgrunt/medic.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+						EMIT_SOUND_DYN(edict(), CHAN_VOICE, "fgrunt/medic.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
 						JustSpoke();
 						m_flMedicWaitTime = gpGlobals->time + 5.0;

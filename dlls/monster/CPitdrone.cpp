@@ -286,43 +286,43 @@ LINK_ENTITY_TO_CLASS( monster_pitdrone, CPitdrone );
 
 const char* CPitdrone::pAlertSounds[] =
 {
-	MOD_SND_FOLDER "pitdrone/pit_drone_alert1.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_alert2.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_alert3.wav",
+	"pitdrone/pit_drone_alert1.wav",
+	"pitdrone/pit_drone_alert2.wav",
+	"pitdrone/pit_drone_alert3.wav",
 };
 /*
 const char* CPitdrone::pTalkSounds[] =
 {
-	MOD_SND_FOLDER "pitdrone/pit_drone_communicate1.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_communicate2.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_communicate3.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_communicate4.wav",
+	"pitdrone/pit_drone_communicate1.wav",
+	"pitdrone/pit_drone_communicate2.wav",
+	"pitdrone/pit_drone_communicate3.wav",
+	"pitdrone/pit_drone_communicate4.wav",
 };
 const char* CPitdrone::pHuntSounds[] =
 {
-	MOD_SND_FOLDER "pitdrone/pit_drone_hunt1.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_hunt2.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_hunt3.wav",
+	"pitdrone/pit_drone_hunt1.wav",
+	"pitdrone/pit_drone_hunt2.wav",
+	"pitdrone/pit_drone_hunt3.wav",
 };
 */
 const char* CPitdrone::pDieSounds[] =
 {
-	MOD_SND_FOLDER "pitdrone/pit_drone_die1.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_die2.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_die3.wav",
+	"pitdrone/pit_drone_die1.wav",
+	"pitdrone/pit_drone_die2.wav",
+	"pitdrone/pit_drone_die3.wav",
 };
 const char* CPitdrone::pIdleSounds[] =
 {
-	MOD_SND_FOLDER "pitdrone/pit_drone_idle1.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_idle2.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_idle3.wav",
+	"pitdrone/pit_drone_idle1.wav",
+	"pitdrone/pit_drone_idle2.wav",
+	"pitdrone/pit_drone_idle3.wav",
 };
 const char* CPitdrone::pPainSounds[] =
 {
-	MOD_SND_FOLDER "pitdrone/pit_drone_pain1.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_pain2.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_pain3.wav",
-	MOD_SND_FOLDER "pitdrone/pit_drone_pain4.wav",
+	"pitdrone/pit_drone_pain1.wav",
+	"pitdrone/pit_drone_pain2.wav",
+	"pitdrone/pit_drone_pain3.wav",
+	"pitdrone/pit_drone_pain4.wav",
 };
 const char* CPitdrone::pBiteSounds[] =
 {
@@ -772,10 +772,10 @@ void CPitdrone :: Precache()
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pBiteSounds);
 
-	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_melee_attack1.wav" );
-	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_melee_attack2.wav" );
-	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_attack_spike1.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "pitdrone/pit_drone_eat.wav" );
+	PRECACHE_SOUND("pitdrone/pit_drone_melee_attack1.wav" );
+	PRECACHE_SOUND("pitdrone/pit_drone_melee_attack2.wav" );
+	PRECACHE_SOUND("pitdrone/pit_drone_attack_spike1.wav");
+	PRECACHE_SOUND("pitdrone/pit_drone_eat.wav" );
 }
 
 //========================================================

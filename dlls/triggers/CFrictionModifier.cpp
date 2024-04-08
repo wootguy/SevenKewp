@@ -8,7 +8,8 @@
 class CFrictionModifier : public CBaseEntity
 {
 public:
-	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
+
+	virtual int	GetEntindexPriority() override { return ENTIDX_PRIORITY_NORMAL; }
 	void		Spawn(void);
 	void		KeyValue(KeyValueData* pkvd);
 	void EXPORT	ChangeFriction(CBaseEntity* pOther);

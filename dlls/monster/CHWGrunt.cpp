@@ -379,7 +379,7 @@ Schedule_t* CHWGrunt::GetScheduleOfType(int Type)
 	default:
 		if (minigunIsSpinning) {
 			minigunIsSpinning = false;
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 			return &slMinigunSpindown[0];
 		}
 
@@ -391,7 +391,7 @@ void CHWGrunt::SetActivity(Activity NewActivity) {
 	CBaseGrunt::SetActivity(NewActivity);
 
 	if (NewActivity == ACT_THREAT_DISPLAY) {
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "hassault/hw_spinup.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spinup.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 		PointAtEnemy(); // otherwise he looks at the ground when starting the animation
 	}
 }

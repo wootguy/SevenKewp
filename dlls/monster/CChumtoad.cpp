@@ -13,8 +13,8 @@
 #define TOXIC_SOUND "ambience/disgusting.wav"
 #define TOXIC_SOUND2 "doors/aliendoor1.wav"
 #define TOXIC_SPRITE "sprites/puff1.spr"
-#define FOLLOW_SOUND MOD_SND_FOLDER "chumtoad/follow.wav"
-#define UNFOLLOW_SOUND MOD_SND_FOLDER "chumtoad/unfollow.wav"
+#define FOLLOW_SOUND "chumtoad/follow.wav"
+#define UNFOLLOW_SOUND "chumtoad/unfollow.wav"
 
 #define TOXIC_START_DISTANCE 200
 

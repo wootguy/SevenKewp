@@ -322,8 +322,8 @@ void COFTorchAlly :: Precache()
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL( TORCH_BEAM_SPRITE );
 
-	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/torch_light.wav" );
-	PRECACHE_SOUND(MOD_SND_FOLDER "fgrunt/torch_cut_loop.wav" );
+	PRECACHE_SOUND("fgrunt/torch_light.wav" );
+	PRECACHE_SOUND("fgrunt/torch_cut_loop.wav" );
 }
 
 const char* COFTorchAlly::DisplayName() {

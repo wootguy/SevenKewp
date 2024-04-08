@@ -43,7 +43,7 @@ void CShockBeam::Precache()
 	PRECACHE_MODEL( "sprites/lgtning.spr" );
 	PRECACHE_MODEL( "sprites/glow01.spr" );
 	PRECACHE_MODEL("models/shock_effect.mdl" );
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/shock_impact.wav" );
+	PRECACHE_SOUND("weapons/shock_impact.wav" );
 }
 
 void CShockBeam::Spawn()
@@ -255,7 +255,7 @@ void CShockBeam::Explode()
 
 	pev->owner = nullptr;
 
-	EMIT_SOUND( edict(), CHAN_WEAPON, MOD_SND_FOLDER "weapons/shock_impact.wav", RANDOM_FLOAT( 0.8, 0.9 ), ATTN_NORM );
+	EMIT_SOUND( edict(), CHAN_WEAPON, "weapons/shock_impact.wav", RANDOM_FLOAT( 0.8, 0.9 ), ATTN_NORM );
 }
 
 CShockBeam* CShockBeam::CreateShockBeam( const Vector& vecOrigin, const Vector& vecAngles, CBaseEntity* pOwner )

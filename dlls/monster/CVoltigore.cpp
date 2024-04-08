@@ -27,7 +27,7 @@
 #define VOLTI_GIB_MODEL "models/vgibs.mdl"
 #define VOLTI_SPORE_EXPLODE_SPRITE "sprites/spore_exp_01.spr"
 #define VOLTI_SPORE_EXPLODE_SPRITE2 "sprites/tinyspit.spr"
-#define VOLTI_SPORE_EXPLODE_SOUND MOD_SND_FOLDER "weapons/splauncher_impact.wav"
+#define VOLTI_SPORE_EXPLODE_SOUND "weapons/splauncher_impact.wav"
 #define VOLTI_SHOCK_SOUND "debris/beamstart1.wav"
 
 #define VOLTI_HEAD_ATTACHEMENT 1
@@ -123,47 +123,47 @@ const char* CVoltigore::pAttackMissSounds[] =
 
 const char* CVoltigore::pIdleSounds[] =
 {
-	MOD_SND_FOLDER "voltigore/voltigore_idle1.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_idle2.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_idle3.wav"
+	"voltigore/voltigore_idle1.wav",
+	"voltigore/voltigore_idle2.wav",
+	"voltigore/voltigore_idle3.wav"
 };
 
 const char* CVoltigore::pAlertSounds[] =
 {
-	MOD_SND_FOLDER "voltigore/voltigore_alert1.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_alert2.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_alert3.wav"
+	"voltigore/voltigore_alert1.wav",
+	"voltigore/voltigore_alert2.wav",
+	"voltigore/voltigore_alert3.wav"
 };
 
 const char* CVoltigore::pPainSounds[] =
 {
-	MOD_SND_FOLDER "voltigore/voltigore_pain1.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_pain2.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_pain3.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_pain4.wav",
+	"voltigore/voltigore_pain1.wav",
+	"voltigore/voltigore_pain2.wav",
+	"voltigore/voltigore_pain3.wav",
+	"voltigore/voltigore_pain4.wav",
 };
 
 const char* CVoltigore::pDieSounds[] =
 {
-	MOD_SND_FOLDER "voltigore/voltigore_die1.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_die2.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_die3.wav",
+	"voltigore/voltigore_die1.wav",
+	"voltigore/voltigore_die2.wav",
+	"voltigore/voltigore_die3.wav",
 };
 
 const char* CVoltigore::pEventSounds[] =
 {
 	// TODO: combine movement sounds?
-	MOD_SND_FOLDER "voltigore/voltigore_attack_melee1.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_attack_melee2.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_attack_shock.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_run_grunt1.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_run_grunt2.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_footstep1.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_footstep2.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_footstep3.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_eat.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_communicate3.wav",
-	MOD_SND_FOLDER "voltigore/voltigore_attack_shock.wav",
+	"voltigore/voltigore_attack_melee1.wav",
+	"voltigore/voltigore_attack_melee2.wav",
+	"voltigore/voltigore_attack_shock.wav",
+	"voltigore/voltigore_run_grunt1.wav",
+	"voltigore/voltigore_run_grunt2.wav",
+	"voltigore/voltigore_footstep1.wav",
+	"voltigore/voltigore_footstep2.wav",
+	"voltigore/voltigore_footstep3.wav",
+	"voltigore/voltigore_eat.wav",
+	"voltigore/voltigore_communicate3.wav",
+	"voltigore/voltigore_attack_shock.wav",
 };
 
 
@@ -486,10 +486,10 @@ void CVoltigore::StartFollowingSound() {
 
 	switch (r) {
 	case 0:
-		EMIT_SOUND(ENT(pev), CHAN_ITEM, MOD_SND_FOLDER "voltigore/voltigore_attack_melee1.wav", 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, "voltigore/voltigore_attack_melee1.wav", 1, ATTN_NORM);
 		break;
 	case 1:
-		EMIT_SOUND(ENT(pev), CHAN_ITEM, MOD_SND_FOLDER "voltigore/voltigore_attack_melee2.wav", 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, "voltigore/voltigore_attack_melee2.wav", 1, ATTN_NORM);
 		break;
 	}
 }

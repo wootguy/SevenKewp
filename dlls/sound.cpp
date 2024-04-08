@@ -601,14 +601,14 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 
 	switch (soundType) {
 	case DISTANT_9MM:
-		sample = MOD_SND_FOLDER "weapons/distant/crack_9mm.wav";
+		sample = "weapons/distant/crack_9mm.wav";
 		volume = 0.3f;
 		break;
 	case DISTANT_357:
-		sample = MOD_SND_FOLDER "weapons/distant/crack_357.wav";
+		sample = "weapons/distant/crack_357.wav";
 		break;
 	case DISTANT_556:
-		sample = MOD_SND_FOLDER "weapons/distant/crack_556.wav";
+		sample = "weapons/distant/crack_556.wav";
 		break;
 	case DISTANT_BOOM: {
 		minRange = 2048.0f;
@@ -616,13 +616,13 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 		switch (RANDOM_LONG(0, 1))
 		{
 		case 0:
-			sample = MOD_SND_FOLDER "weapons/distant/explode3.wav";
+			sample = "weapons/distant/explode3.wav";
 			break;
 		case 1:
-			sample = MOD_SND_FOLDER "weapons/distant/explode5.wav";
+			sample = "weapons/distant/explode5.wav";
 			break;
 		//case 2:
-		//	sample = MOD_SND_FOLDER "weapons/distant/explode4.wav";
+		//	sample = "weapons/distant/explode4.wav";
 		//	break;
 		}
 		break;

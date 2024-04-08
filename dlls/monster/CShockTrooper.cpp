@@ -171,26 +171,26 @@ LINK_ENTITY_TO_CLASS(monster_shocktrooper, CShockTrooper);
 
 const char* CShockTrooper::pPainSounds[] =
 {
-	MOD_SND_FOLDER "shocktrooper/shock_trooper_pain1.wav",
-	MOD_SND_FOLDER "shocktrooper/shock_trooper_pain2.wav",
-	MOD_SND_FOLDER "shocktrooper/shock_trooper_pain3.wav",
-	MOD_SND_FOLDER "shocktrooper/shock_trooper_pain4.wav",
-	MOD_SND_FOLDER "shocktrooper/shock_trooper_pain5.wav",
+	"shocktrooper/shock_trooper_pain1.wav",
+	"shocktrooper/shock_trooper_pain2.wav",
+	"shocktrooper/shock_trooper_pain3.wav",
+	"shocktrooper/shock_trooper_pain4.wav",
+	"shocktrooper/shock_trooper_pain5.wav",
 };
 
 const char* CShockTrooper::pDieSounds[] =
 {
-	MOD_SND_FOLDER "shocktrooper/shock_trooper_die1.wav",
-	MOD_SND_FOLDER "shocktrooper/shock_trooper_die2.wav",
-	MOD_SND_FOLDER "shocktrooper/shock_trooper_die3.wav",
-	MOD_SND_FOLDER "shocktrooper/shock_trooper_die4.wav",
+	"shocktrooper/shock_trooper_die1.wav",
+	"shocktrooper/shock_trooper_die2.wav",
+	"shocktrooper/shock_trooper_die3.wav",
+	"shocktrooper/shock_trooper_die4.wav",
 };
 
 const char* CShockTrooper::pAlertSounds[] =
 {
-	MOD_SND_FOLDER "shocktrooper/st_alert0.wav",
-	MOD_SND_FOLDER "shocktrooper/st_alert1.wav",
-	MOD_SND_FOLDER "shocktrooper/st_alert2.wav",
+	"shocktrooper/st_alert0.wav",
+	"shocktrooper/st_alert1.wav",
+	"shocktrooper/st_alert2.wav",
 };
 
 
@@ -265,25 +265,25 @@ void CShockTrooper::SpeakSentence()
 		// into wav files and played normally
 		switch (m_iSentence) {
 		case 0:
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_gren0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_gren0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 			break;
 		case 1:
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_alert0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_alert0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 			break;
 		case 2:
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_monster0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_monster0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 			break;
 		case 3:
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_cover0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_cover0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 			break;
 		case 4:
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 			break;
 		case 5:
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_charge0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_charge0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 			break;
 		case 6:
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 			break;
 		}
 
@@ -712,17 +712,17 @@ void CShockTrooper::IdleSound()
 			{
 			case 0: // check in
 				//SENTENCEG_PlayRndSz(ENT(pev), "ST_CHECK", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_check0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_check0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fShockTrooperQuestion = 1;
 				break;
 			case 1: // question
 				//SENTENCEG_PlayRndSz(ENT(pev), "ST_QUEST", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_quest0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_quest0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fShockTrooperQuestion = 2;
 				break;
 			case 2: // statement
 				//SENTENCEG_PlayRndSz(ENT(pev), "ST_IDLE", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_idle0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_idle0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 		}
@@ -732,11 +732,11 @@ void CShockTrooper::IdleSound()
 			{
 			case 1: // check in
 				//SENTENCEG_PlayRndSz(ENT(pev), "ST_CLEAR", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_clear0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_clear0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			case 2: // question
 				//SENTENCEG_PlayRndSz(ENT(pev), "ST_ANSWER", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_answer0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_answer0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 			g_fShockTrooperQuestion = 0;
@@ -751,13 +751,13 @@ void CShockTrooper::StartFollowingSound() {
 	// complicated/energetic speech
 	switch (r) {
 	case 0:
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_quest0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_quest0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 		break;
 	case 1:
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_cover0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_cover0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 		break;
 	case 2:
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 		break;
 	}
 	JustSpoke();
@@ -769,20 +769,20 @@ void CShockTrooper::StopFollowingSound() {
 	// simple 2 word speech, low energy
 	switch (r) {
 	case 0:
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 		break;
 	case 1:
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_check0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_check0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 		break;
 	case 2:
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_answer0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_answer0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 		break;
 	}
 	JustSpoke();
 }
 
 void CShockTrooper::CantFollowSound() {
-	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 	JustSpoke();
 }
 
@@ -962,7 +962,7 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 		Shoot();
 
-		EMIT_SOUND(ENT(pev), CHAN_WEAPON, MOD_SND_FOLDER "weapons/shock_fire.wav", 1, ATTN_NORM);
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_fire.wav", 1, ATTN_NORM);
 
 		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
 	}
@@ -1054,27 +1054,27 @@ void CShockTrooper::Precache()
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL("models/strooper_gibs.mdl");
 
-	PRECACHE_SOUND(MOD_SND_FOLDER "weapons/shock_fire.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/shock_trooper_attack.wav");
+	PRECACHE_SOUND("weapons/shock_fire.wav");
+	PRECACHE_SOUND("shocktrooper/shock_trooper_attack.wav");
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDieSounds);
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
 
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_check0.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_quest0.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_idle0.wav");
+	PRECACHE_SOUND("shocktrooper/st_check0.wav");
+	PRECACHE_SOUND("shocktrooper/st_quest0.wav");
+	PRECACHE_SOUND("shocktrooper/st_idle0.wav");
 
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_clear0.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_answer0.wav");
+	PRECACHE_SOUND("shocktrooper/st_clear0.wav");
+	PRECACHE_SOUND("shocktrooper/st_answer0.wav");
 
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_charge0.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_gren0.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_alert0.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_monst0.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_throw0.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_taunt0.wav");
-	PRECACHE_SOUND(MOD_SND_FOLDER "shocktrooper/st_cover0.wav");
+	PRECACHE_SOUND("shocktrooper/st_charge0.wav");
+	PRECACHE_SOUND("shocktrooper/st_gren0.wav");
+	PRECACHE_SOUND("shocktrooper/st_alert0.wav");
+	PRECACHE_SOUND("shocktrooper/st_monst0.wav");
+	PRECACHE_SOUND("shocktrooper/st_throw0.wav");
+	PRECACHE_SOUND("shocktrooper/st_taunt0.wav");
+	PRECACHE_SOUND("shocktrooper/st_cover0.wav");
 
 	// get voice pitch
 	if (RANDOM_LONG(0, 1))
@@ -1926,7 +1926,7 @@ Schedule_t* CShockTrooper::GetSchedule()
 				if (FOkToSpeak())
 				{
 					//SENTENCEG_PlayRndSz(ENT(pev), "ST_GREN", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_gren0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_gren0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 					JustSpoke();
 				}
 				return GetScheduleOfType(SCHED_TAKE_COVER_FROM_BEST_SOUND);
@@ -1983,7 +1983,7 @@ Schedule_t* CShockTrooper::GetSchedule()
 							(m_hEnemy->Classify() != CLASS_MACHINE))
 							// monster
 							//SENTENCEG_PlayRndSz(ENT(pev), "ST_MONST", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-							EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_monst0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+							EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_monst0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 						JustSpoke();
 					}
 
@@ -2078,7 +2078,7 @@ Schedule_t* CShockTrooper::GetSchedule()
 				if (FOkToSpeak())
 				{
 					//SENTENCEG_PlayRndSz(ENT(pev), "ST_THROW", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 					JustSpoke();
 				}
 				return GetScheduleOfType(SCHED_RANGE_ATTACK2);
@@ -2104,7 +2104,7 @@ Schedule_t* CShockTrooper::GetSchedule()
 				if (FOkToSpeak() && RANDOM_LONG(0, 1))
 				{
 					//SENTENCEG_PlayRndSz(ENT(pev), "ST_TAUNT", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_taunt0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 					JustSpoke();
 				}
 				return GetScheduleOfType(SCHED_STANDOFF);
@@ -2139,7 +2139,7 @@ Schedule_t* CShockTrooper::GetScheduleOfType(int Type)
 				if (FOkToSpeak())
 				{
 					//SENTENCEG_PlayRndSz(ENT(pev), "ST_THROW", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, MOD_SND_FOLDER "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "shocktrooper/st_throw0.wav", ShockTrooper_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 					JustSpoke();
 				}
 				return slShockTrooperTossGrenadeCover;

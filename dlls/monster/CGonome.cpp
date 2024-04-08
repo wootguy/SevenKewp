@@ -114,31 +114,31 @@ const char* CGonome::pAttackMissSounds[] =
 
 const char* CGonome::pIdleSounds[] =
 {
-	MOD_SND_FOLDER "gonome/gonome_idle1.wav",
-	MOD_SND_FOLDER "gonome/gonome_idle2.wav",
-	MOD_SND_FOLDER "gonome/gonome_idle3.wav"
+	"gonome/gonome_idle1.wav",
+	"gonome/gonome_idle2.wav",
+	"gonome/gonome_idle3.wav"
 };
 
 const char* CGonome::pPainSounds[] =
 {
-	MOD_SND_FOLDER "gonome/gonome_pain1.wav",
-	MOD_SND_FOLDER "gonome/gonome_pain2.wav",
-	MOD_SND_FOLDER "gonome/gonome_pain3.wav",
-	MOD_SND_FOLDER "gonome/gonome_pain4.wav"
+	"gonome/gonome_pain1.wav",
+	"gonome/gonome_pain2.wav",
+	"gonome/gonome_pain3.wav",
+	"gonome/gonome_pain4.wav"
 };
 
 const char* CGonome::pDieSounds[] =
 {
-	MOD_SND_FOLDER "gonome/gonome_death2.wav",
-	MOD_SND_FOLDER "gonome/gonome_death3.wav",
-	MOD_SND_FOLDER "gonome/gonome_death4.wav",
+	"gonome/gonome_death2.wav",
+	"gonome/gonome_death3.wav",
+	"gonome/gonome_death4.wav",
 };
 
 const char* CGonome::pEventSounds[] =
 {
-	MOD_SND_FOLDER "gonome/gonome_melee1.wav",
-	MOD_SND_FOLDER "gonome/gonome_melee2.wav",
-	MOD_SND_FOLDER "gonome/gonome_eat.wav",
+	"gonome/gonome_melee1.wav",
+	"gonome/gonome_melee2.wav",
+	"gonome/gonome_eat.wav",
 
 	// not actually event sounds but wtv
 	"bullchicken/bc_acid1.wav",
