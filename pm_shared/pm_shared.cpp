@@ -45,7 +45,9 @@ static int pm_shared_initialized = 0;
 //TODO: fix
 vec3_t shared_vec3_origin = {0,0,0};
 
+#ifdef _WIN32
 #pragma warning( disable : 4305 )
+#endif
 
 typedef enum {mod_brush, mod_sprite, mod_alias, mod_studio} modtype_t;
 
@@ -126,7 +128,10 @@ typedef struct hull_s
 #define PLAYER_DUCKING_MULTIPLIER 0.333
 
 // double to float warning
+#ifdef _WIN32
 #pragma warning(disable : 4244)
+#endif
+
 // up / down
 #define	PITCH	0
 // left / right
@@ -160,13 +165,13 @@ void PM_SwapTextures( int i, int j )
 	char chTemp;
 	char szTemp[ CBTEXTURENAMEMAX ];
 
-	strncpy( szTemp, grgszTextureName[ i ], CBTEXTURENAMEMAX);
+	strcpy_safe( szTemp, grgszTextureName[ i ], CBTEXTURENAMEMAX);
 	chTemp = grgchTextureType[ i ];
 	
-	strncpy( grgszTextureName[ i ], grgszTextureName[ j ], CBTEXTURENAMEMAX);
+	strcpy_safe( grgszTextureName[ i ], grgszTextureName[ j ], CBTEXTURENAMEMAX);
 	grgchTextureType[ i ] = grgchTextureType[ j ];
 
-	strncpy( grgszTextureName[ j ], szTemp, CBTEXTURENAMEMAX);
+	strcpy_safe( grgszTextureName[ j ], szTemp, CBTEXTURENAMEMAX);
 	grgchTextureType[ j ] = chTemp;
 }
 
@@ -506,7 +511,7 @@ void PM_UpdateStepSound( void )
 	float fvol;
 	vec3_t knee;
 	vec3_t feet;
-	vec3_t center;
+	//vec3_t center;
 	float height;
 	float speed;
 	float velrun;
@@ -551,7 +556,7 @@ void PM_UpdateStepSound( void )
 	{
 		fWalking = speed < velrun;		
 
-		VectorCopy( pmove->origin, center );
+		//VectorCopy( pmove->origin, center );
 		VectorCopy( pmove->origin, knee );
 		VectorCopy( pmove->origin, feet );
 
@@ -1035,7 +1040,6 @@ Only used by players.  Moves along the ground when player is a MOVETYPE_WALK.
 */
 void PM_WalkMove ()
 {
-	int			clip;
 	int			oldonground;
 	int i;
 
@@ -1045,7 +1049,7 @@ void PM_WalkMove ()
 	vec3_t		wishdir;
 	float		wishspeed;
 
-	vec3_t dest, start;
+	vec3_t dest;
 	vec3_t original, originalvel;
 	vec3_t down, downvel;
 	float downdist, updist;
@@ -1108,7 +1112,7 @@ void PM_WalkMove ()
 	dest[2] = pmove->origin[2];
 
 	// first try moving directly to the next spot
-	VectorCopy (dest, start);
+	//VectorCopy (dest, start);
 	trace = pmove->PM_PlayerTrace (pmove->origin, dest, PM_NORMAL, -1 );
 	// If we made it all the way, then copy trace end
 	//  as new player position.
@@ -1131,7 +1135,7 @@ void PM_WalkMove ()
 	VectorCopy (pmove->velocity, originalvel);  //  velocity.
 
 	// Slide move
-	clip = PM_FlyMove ();
+	PM_FlyMove ();
 
 	// Copy the results out
 	VectorCopy (pmove->origin  , down);
@@ -1156,7 +1160,7 @@ void PM_WalkMove ()
 	}
 
 // slide move the rest of the way.
-	clip = PM_FlyMove ();
+	PM_FlyMove ();
 
 // Now try going back down from the end point
 //  press down the stepheight

@@ -46,7 +46,7 @@ bool Bsp::load_lumps(string fpath)
 	int size = fin.tellg();
 	fin.seekg(0, fin.beg);
 
-	if (size < sizeof(BSPHEADER) + sizeof(BSPLUMP) * HEADER_LUMPS) {
+	if (size < (int)(sizeof(BSPHEADER) + sizeof(BSPLUMP) * HEADER_LUMPS)) {
 		update_lump_pointers();
 		valid = false;
 		return false;

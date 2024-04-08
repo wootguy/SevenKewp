@@ -60,7 +60,7 @@ class Vector						// same data-layout as engine's vec3_t,
 {								//		which is a vec_t[3]
 public:
 	// Construction/destruction
-	inline Vector(void)								{ }
+	inline Vector(void) { x = 0; y = 0; z = 0; }
 	inline Vector(float X, float Y, float Z)		{ x = X; y = Y; z = Z;						}
 	//inline Vector(double X, double Y, double Z)		{ x = (float)X; y = (float)Y; z = (float)Z;	}
 	//inline Vector(int X, int Y, int Z)				{ x = (float)X; y = (float)Y; z = (float)Z;	}
@@ -69,6 +69,7 @@ public:
 
 	// Operators
 	inline Vector operator-(void) const				{ return Vector(-x,-y,-z);				}
+	inline Vector& operator=(const Vector&) = default;
 	inline int operator==(const Vector& v) const	{ return x==v.x && y==v.y && z==v.z;	}
 	inline int operator!=(const Vector& v) const	{ return !(*this==v);					}
 	inline Vector operator+(const Vector& v) const	{ return Vector(x+v.x, y+v.y, z+v.z);	}
@@ -106,7 +107,6 @@ public:
 inline Vector operator*(float fl, const Vector& v)	{ return v * fl; }
 inline float DotProduct(const Vector& a, const Vector& b) { return(a.x*b.x+a.y*b.y+a.z*b.z); }
 inline Vector CrossProduct(const Vector& a, const Vector& b) { return Vector( a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x ); }
-
 
 
 #endif

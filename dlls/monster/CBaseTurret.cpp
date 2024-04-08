@@ -530,6 +530,8 @@ void CBaseTurret::SetTurretAnim(TURRET_ANIM anim)
 		case TURRET_ANIM_DIE:
 			pev->framerate = 1.0;
 			break;
+		default:
+			break;
 		}
 		//ALERT(at_console, "Turret anim #%d\n", anim);
 	}
@@ -703,8 +705,6 @@ void CBaseTurret::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vec
 	else if (pev->takedamage && flDamage > 0) {
 		Vector pos = ptr->vecEndPos;
 		Vector dir = ptr->vecPlaneNormal;
-
-		Vector sprPos = pos - Vector(0,0,10);
 		bool isBlast = bitsDamageType & DMG_BLAST;
 
 		UTIL_Shrapnel(pos, dir, flDamage, bitsDamageType);

@@ -355,7 +355,7 @@ extern void			UTIL_PrecacheOther( const char *szClassname, std::map<std::string,
 
 // prints a message to each client
 extern void			UTIL_ClientPrintAll( int msg_dest, const char *msg);
-inline void			UTIL_CenterPrintAll( const char *msg_name, const char *param1 = NULL, const char *param2 = NULL, const char *param3 = NULL, const char *param4 = NULL ) 
+inline void			UTIL_CenterPrintAll( const char *msg_name ) 
 {
 	UTIL_ClientPrintAll( print_center, msg_name );
 }

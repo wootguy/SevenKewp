@@ -51,9 +51,6 @@ Returns the entity to spawn at
 edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
 {
 	CBaseEntity* pSpot;
-	edict_t* player;
-
-	player = pPlayer->edict();
 
 	std::vector<CBaseEntity*> enabledSpawns;
 	std::vector<CBaseEntity*> clearSpawns;

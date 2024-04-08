@@ -2107,8 +2107,8 @@ void CSaveRestoreBuffer :: BufferRewind( int size )
 extern "C" {
 unsigned _rotr ( unsigned val, int shift)
 {
-        register unsigned lobit;        /* non-zero means lo bit set */
-        register unsigned num = val;    /* number to rotate */
+        unsigned lobit;        /* non-zero means lo bit set */
+        unsigned num = val;    /* number to rotate */
 
         shift &= 0x1f;                  /* modulo 32 -- this will also make
                                            negative shifts work */
@@ -2314,7 +2314,7 @@ CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName) {
 
 	TYPEDESCRIPTION* pField;
 
-	for (int i = 0; i < ENTVARS_COUNT; i++)
+	for (int i = 0; i < (int)ENTVARS_COUNT; i++)
 	{
 		pField = &gEntvarsDescription[i];
 
@@ -2369,7 +2369,7 @@ void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
 	int i;
 	TYPEDESCRIPTION		*pField;
 
-	for ( i = 0; i < ENTVARS_COUNT; i++ )
+	for ( i = 0; i < (int)ENTVARS_COUNT; i++ )
 	{
 		pField = &gEntvarsDescription[i];
 
@@ -2490,6 +2490,8 @@ int CSave :: WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *p
 					case FIELD_EHANDLE:
 						entityArray[j] = EntityIndex( (CBaseEntity *)(((EHANDLE *)pOutputData)[j]) );
 					break;
+					default:
+						break;
 				}
 			}
 			WriteInt( pTest->fieldName, entityArray, pTest->fieldSize );
@@ -3110,7 +3112,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 		path = g_soundReplacements[path].c_str();
 	}
 
-	if (lowerPath.find(" ") != -1) {
+	if (lowerPath.find(" ") != std::string::npos) {
 		// files with spaces causes clients to hang at "Verifying resources"
 		// and the file doesn't download
 		ALERT(at_error, "Precached file with spaces: '%s'\n", path);
@@ -3814,7 +3816,7 @@ void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed
 		g_lastMsg.numMsgParts = 0;
 		g_nextStrOffset = 0;
 		if (ed)
-			strncpy(g_lastMsg.name, STRING(ed->v.netname), 32);
+			strcpy_safe(g_lastMsg.name, STRING(ed->v.netname), 32);
 		else
 			g_lastMsg.name[0] = 0;
 	}
@@ -3916,8 +3918,8 @@ std::string toUpperCase(std::string str) {
 }
 
 std::string trimSpaces(std::string s) {
-	int start = s.find_first_not_of(" \t\n\r");
-	int end = s.find_last_not_of(" \t\n\r");
+	size_t start = s.find_first_not_of(" \t\n\r");
+	size_t end = s.find_last_not_of(" \t\n\r");
 	return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
 }
 
@@ -4187,7 +4189,7 @@ WavInfo getWaveFileInfo(const char* path) {
 
 	//ALERT(at_console, "%s\n", path);
 
-	static char infoText[512];
+	//static char infoText[512];
 
 	while (1) {
 		if (ftell(file) + 8 >= fsize) {

@@ -1370,7 +1370,7 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 	int lastStepSize = LOCAL_STEP_SIZE;
 	int nextStepSize = LOCAL_STEP_SIZE;
 
-	Vector lastPos = pev->origin;
+	//Vector lastPos = pev->origin;
 	// this loop takes single steps to the goal.
 	for (flStep = 0; flStep < flDist && lastStepSize; flStep += lastStepSize)
 	{
@@ -2774,7 +2774,7 @@ CBaseEntity* CBaseMonster::BestVisibleEnemy(void)
 //=========================================================
 void CBaseMonster::MakeIdealYaw(Vector vecTarget)
 {
-	Vector	vecProjection;
+	Vector vecProjection;
 
 	// strafing monster needs to face 90 degrees away from its goal
 	if (m_movementActivity == ACT_STRAFE_LEFT)
@@ -4279,12 +4279,8 @@ Activity CBaseMonster::GetDeathActivity(void)
 Activity CBaseMonster::GetSmallFlinchActivity(void)
 {
 	Activity	flinchActivity;
-	BOOL		fTriedDirection;
-	float		flDot;
 
-	fTriedDirection = FALSE;
 	UTIL_MakeVectors(pev->angles);
-	flDot = DotProduct(gpGlobals->v_forward, g_vecAttackDir * -1);
 
 	switch (m_LastHitGroup)
 	{
@@ -4909,8 +4905,7 @@ void CBaseMonster::SetState(MONSTERSTATE State)
 
 	switch (State)
 	{
-
-		// Drop enemy pointers when going to idle
+	// Drop enemy pointers when going to idle
 	case MONSTERSTATE_IDLE:
 
 		if (m_hEnemy != NULL)
@@ -4918,6 +4913,8 @@ void CBaseMonster::SetState(MONSTERSTATE State)
 			m_hEnemy = NULL;// not allowed to have an enemy anymore.
 			ALERT(at_aiconsole, "Stripped\n");
 		}
+		break;
+	default:
 		break;
 	}
 
@@ -5095,6 +5092,8 @@ MONSTERSTATE CBaseMonster::GetIdealState(void)
 
 	case MONSTERSTATE_DEAD:
 		m_IdealMonsterState = MONSTERSTATE_DEAD;
+		break;
+	default:
 		break;
 	}
 

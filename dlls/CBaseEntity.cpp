@@ -641,11 +641,10 @@ EHANDLE g_debugCycler;
 
 Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t* pevAttacker, int shared_rand)
 {
-	static int tracerCount;
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
 	Vector vecUp = gpGlobals->v_up;
-	float x = 0, y = 0, z = 0;
+	float x = 0, y = 0;
 
 	if (pevAttacker == NULL)
 		pevAttacker = pev;  // the default attacker is ourselves
@@ -659,7 +658,6 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		// get circular gaussian spread
 		x = UTIL_SharedRandomFloat(shared_rand + iShot, -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (1 + iShot), -0.5, 0.5);
 		y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5, 0.5);
-		z = x * x + y * y;
 
 		Vector vecDir = vecDirShooting +
 			x * vecSpread.x * vecRight +

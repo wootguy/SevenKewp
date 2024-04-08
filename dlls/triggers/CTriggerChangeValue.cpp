@@ -508,7 +508,7 @@ void CTriggerChangeValue::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE
 	ChangeValues();
 
 	if (pev->spawnflags & SF_CONSTANT) {
-		isActive = useType == USE_TOGGLE ? !isActive : useType;
+		isActive = useType == USE_TOGGLE ? !isActive : (bool)useType;
 
 		if (isActive) {
 			SetThink(&CTriggerChangeValue::TimedThink);

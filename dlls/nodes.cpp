@@ -219,7 +219,6 @@ entvars_t* CGraph :: LinkEntForLink ( CLink *pLink, CNode *pNode )
 //=========================================================
 int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType )
 {
-	edict_t  *pentWorld;
 	CBaseEntity	*pDoor;
 	TraceResult	tr;
 
@@ -234,7 +233,6 @@ int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, N
 		ALERT ( at_aiconsole, "dead path ent!\n" );
 		return TRUE;
 	}
-	pentWorld = NULL;
 
 // func_door
 	if ( FClassnameIs( pevLinkEnt, "func_door" ) || FClassnameIs( pevLinkEnt, "func_door_rotating" ) )

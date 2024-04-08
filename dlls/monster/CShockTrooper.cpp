@@ -268,7 +268,7 @@ const char* CShockTrooper::pGruntSentences[] =
 	"ST_TAUNT",	  // say rude things
 };
 
-enum
+enum ShockTrooper_SENTENCE_TYPES
 {
 	ShockTrooper_SENT_NONE = -1,
 	ShockTrooper_SENT_GREN = 0,
@@ -278,7 +278,7 @@ enum
 	ShockTrooper_SENT_THROW,
 	ShockTrooper_SENT_CHARGE,
 	ShockTrooper_SENT_TAUNT,
-} ShockTrooper_SENTENCE_TYPES;
+};
 
 //=========================================================
 // Speak Sentence - say your cued up sentence.
@@ -2159,6 +2159,8 @@ Schedule_t* CShockTrooper::GetSchedule()
 			return GetScheduleOfType(SCHED_GRUNT_ESTABLISH_LINE_OF_FIRE);
 		}
 	}
+	default:
+		break;
 	}
 
 	// no special cases here, call the base class
@@ -2432,10 +2434,10 @@ public:
 	void KeyValue(KeyValueData* pkvd) override;
 
 	int m_iPose; // which sequence to display	-- temporary, don't need to save
-	static char* m_szPoses[3];
+	static const char* m_szPoses[3];
 };
 
-char* CDeadShockTrooper::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
+const char* CDeadShockTrooper::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
 void CDeadShockTrooper::KeyValue(KeyValueData* pkvd)
 {

@@ -765,7 +765,6 @@ void CApache :: Flight( void )
 void CApache :: FireRocket( void )
 {
 	static float side = 1.0;
-	static int count;
 
 	if (m_iRockets <= 0)
 		return;

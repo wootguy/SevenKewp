@@ -271,7 +271,7 @@ void CHWGrunt::CantFollowSound() {
 }
 
 void CHWGrunt::PlaySentenceSound(int sentenceType) {
-	if (sentenceType >= ARRAYSIZE(pGruntSentences)) {
+	if (sentenceType >= (int)ARRAYSIZE(pGruntSentences)) {
 		return;
 	}
 	SENTENCEG_PlayRndSz(ENT(pev), pGruntSentences[sentenceType], SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
@@ -288,7 +288,7 @@ void CHWGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir
 }
 
 void CHWGrunt::DropMinigun(Vector vecDir) {
-	Vector launchDir = Vector(vecDir.x * 200, vecDir.y * 200, 400);
+	//Vector launchDir = Vector(vecDir.x * 200, vecDir.y * 200, 400);
 	//DropEquipment(2, MEQUIP_MINIGUN, launchDir, Vector(0, RANDOM_FLOAT(200, 400), 0));
 	m_cClipSize = m_cAmmoLoaded = secondaryClipSize;
 	m_IdealActivity = ACT_SMALL_FLINCH;

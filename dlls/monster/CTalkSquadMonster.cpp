@@ -898,7 +898,6 @@ void CTalkSquadMonster :: IdleHeadTurn( Vector &vecFriend )
 int CTalkSquadMonster :: FIdleSpeak ( void )
 { 
 	// try to start a conversation, or make statement
-	int pitch;
 	const char *szIdleGroup;
 	const char *szQuestionGroup;
 	float duration;
@@ -922,8 +921,6 @@ int CTalkSquadMonster :: FIdleSpeak ( void )
 		duration = RANDOM_FLOAT(2.8, 3.2);
 
 	}
-
-	pitch = GetVoicePitch();
 		
 	// player using this entity is alive and wounded?
 	CBaseEntity *pTarget = m_hTargetEnt;
@@ -1744,10 +1741,6 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 //=========================================================
 MONSTERSTATE CTalkSquadMonster::GetIdealState(void)
 {
-	int	iConditions;
-
-	iConditions = IScheduleFlags();
-
 	// If no schedule conditions, the new ideal state is probably the reason we're in here.
 	switch (m_MonsterState)
 	{
@@ -1757,6 +1750,8 @@ MONSTERSTATE CTalkSquadMonster::GetIdealState(void)
 		{
 			SquadMakeEnemy(m_hEnemy);
 		}
+		break;
+	default:
 		break;
 	}
 

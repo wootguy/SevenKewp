@@ -948,7 +948,7 @@ void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				PlaySentenceSound(HGRUNT_SENT_ALERT);
 				JustSpoke();
 			}
-
+			break;
 		}
 
 		default:
@@ -2245,6 +2245,7 @@ Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 				return GetScheduleOfType(SCHED_GRUNT_ESTABLISH_LINE_OF_FIRE);
 			}
 		}
+		break;
 	}
 
 	case MONSTERSTATE_ALERT:
@@ -2314,6 +2315,8 @@ Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 		TrySmellTalk();
 		break;
 	}
+	default:
+		break;
 	}
 
 	return CTalkSquadMonster::GetSchedule();

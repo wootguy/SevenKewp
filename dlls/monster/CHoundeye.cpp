@@ -208,7 +208,7 @@ BOOL CHoundeye :: FValidateHintType ( short sHint )
 		HINT_WORLD_ALIEN_BLOOD,
 	};
 
-	for ( i = 0 ; i < ARRAYSIZE ( sHoundHints ) ; i++ )
+	for ( i = 0 ; i < (int)ARRAYSIZE ( sHoundHints ) ; i++ )
 	{
 		if ( sHoundHints[ i ] == sHint )
 		{
@@ -289,6 +289,8 @@ void CHoundeye :: SetYawSpeed ( void )
 	case ACT_TURN_LEFT:
 	case ACT_TURN_RIGHT:
 		ys = 90;
+		break;
+	default:
 		break;
 	}
 
@@ -1293,6 +1295,8 @@ Schedule_t *CHoundeye :: GetSchedule( void )
 			}
 			break;
 		}
+	default:
+		break;
 	}
 
 	return CTalkSquadMonster :: GetSchedule();

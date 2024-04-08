@@ -83,7 +83,7 @@ void CBreakable::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "spawnobject"))
 	{
 		int object = atoi(pkvd->szValue);
-		if (object > 0 && object < ARRAYSIZE(pSpawnObjects))
+		if (object > 0 && object < (int)ARRAYSIZE(pSpawnObjects))
 			m_iszSpawnObject = MAKE_STRING(pSpawnObjects[object]);
 		pkvd->fHandled = TRUE;
 	}
@@ -505,6 +505,8 @@ void CBreakable::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 		case matUnbreakableGlass:
 			UTIL_Ricochet(ptr->vecEndPos, RANDOM_FLOAT(0.5, 1.5));
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -657,6 +659,10 @@ void CBreakable::Die()
 
 	case matCeilingTile:
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustceiling.wav", fvol, ATTN_NORM, 0, pitch);
+		break;
+
+	case matNone:
+	default:
 		break;
 	}
 

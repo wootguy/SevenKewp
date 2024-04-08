@@ -2096,8 +2096,6 @@ void CBasePlayer::CheckTimeBasedDamage()
 	int i;
 	BYTE bDuration = 0;
 
-	static float gtbdPrev = 0.0;
-
 	if (!(m_bitsDamageType & DMG_TIMEBASED))
 		return;
 
@@ -3056,7 +3054,7 @@ void CBasePlayer::SelectItem(const char *pstr)
 	{
 		if (m_rgpPlayerItems[i])
 		{
-			pItem = pItem = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
+			pItem = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
 	
 			while (pItem)
 			{
@@ -3702,8 +3700,6 @@ Called every frame by the player PostThink
 */
 void CBasePlayer::ItemPostFrame()
 {
-	static int fInSelect = FALSE;
-
 	// check if the player is using a tank
 	if ( m_pTank != NULL )
 		return;

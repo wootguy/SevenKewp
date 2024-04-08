@@ -20,50 +20,50 @@
 #include "CBaseMonster.h"
 #include "skill.h"
 
-cvar_t	displaysoundlist = {"displaysoundlist","0"};
+cvar_t	displaysoundlist = {"displaysoundlist","0", 0, 0, 0};
 
 // multiplayer server rules
-cvar_t	fragsleft	= {"mp_fragsleft","0", FCVAR_SERVER | FCVAR_UNLOGGED };	  // Don't spam console/log files/users with this changing
-cvar_t	timeleft	= {"mp_timeleft","0" , FCVAR_SERVER | FCVAR_UNLOGGED };	  // "      "
+cvar_t	fragsleft = { "mp_fragsleft","0", FCVAR_SERVER | FCVAR_UNLOGGED, 0, 0 }; // Don't spam console/log files/users with this changing
+cvar_t	timeleft = { "mp_timeleft","0" , FCVAR_SERVER | FCVAR_UNLOGGED, 0, 0 }; // "      "
 
 // multiplayer server rules
-cvar_t	teamplay	= {"mp_teamplay","0", FCVAR_SERVER };
-cvar_t	fraglimit	= {"mp_fraglimit","0", FCVAR_SERVER };
-cvar_t	timelimit	= {"mp_timelimit","0", FCVAR_SERVER };
-cvar_t	friendlyfire= {"mp_friendlyfire","0", FCVAR_SERVER };
-cvar_t	falldamage	= {"mp_falldamage","1", FCVAR_SERVER };
-cvar_t	weaponstay	= {"mp_weaponstay","0", FCVAR_SERVER };
-cvar_t	item_despawn_time = {"mp_itemdespawntime","120", FCVAR_SERVER };
-cvar_t	item_repick_time = {"mp_itemrepicktime","10", FCVAR_SERVER };
-cvar_t	max_item_drops = {"mp_maxitemdrops","16", FCVAR_SERVER };
-cvar_t	forcerespawn= {"mp_forcerespawn","1", FCVAR_SERVER };
-cvar_t	flashlight	= {"mp_flashlight","1", FCVAR_SERVER };
-cvar_t	aimcrosshair= {"mp_autocrosshair","1", FCVAR_SERVER };
-cvar_t	decalfrequency = {"decalfrequency","30", FCVAR_SERVER };
-cvar_t	teamlist = {"mp_teamlist","hgrunt;scientist", FCVAR_SERVER };
-cvar_t	teamoverride = {"mp_teamoverride","1" };
-cvar_t	defaultteam = {"mp_defaultteam","0" };
-cvar_t	allowmonsters={"mp_allowmonsters","1", FCVAR_SERVER };
-cvar_t	mp_nextmap={"mp_nextmap","", FCVAR_SERVER };
-cvar_t	mp_prefer_server_maxspeed={"mp_prefer_server_maxspeed","1", FCVAR_SERVER };
-cvar_t	mp_objectboost ={"mp_objectboost","0", FCVAR_SERVER };
-cvar_t	mp_respawndelay ={"mp_respawndelay","3", FCVAR_SERVER };
-cvar_t	mp_debugmsg ={"mp_debugmsg","0", FCVAR_SERVER };
-cvar_t	mp_starthealth ={"starthealth","0", FCVAR_SERVER };
-cvar_t	mp_startarmor ={"startarmor","0", FCVAR_SERVER };
-cvar_t	mp_bulletsponges ={"mp_bulletsponges","1", FCVAR_SERVER };
-cvar_t	mp_bulletspongemax ={"mp_bulletspongemax","4", FCVAR_SERVER };
-cvar_t	mp_maxmonsterrespawns ={"mp_maxmonsterrespawns","-1", FCVAR_SERVER };
-cvar_t	mp_edictsorting ={"mp_edictsorting","1", FCVAR_SERVER };
+cvar_t	teamplay	= {"mp_teamplay","0", FCVAR_SERVER, 0, 0 };
+cvar_t	fraglimit	= {"mp_fraglimit","0", FCVAR_SERVER, 0, 0 };
+cvar_t	timelimit	= {"mp_timelimit","0", FCVAR_SERVER, 0, 0 };
+cvar_t	friendlyfire= {"mp_friendlyfire","0", FCVAR_SERVER, 0, 0 };
+cvar_t	falldamage	= {"mp_falldamage","1", FCVAR_SERVER, 0, 0 };
+cvar_t	weaponstay	= {"mp_weaponstay","0", FCVAR_SERVER, 0, 0 };
+cvar_t	item_despawn_time = {"mp_itemdespawntime","120", FCVAR_SERVER, 0, 0 };
+cvar_t	item_repick_time = {"mp_itemrepicktime","10", FCVAR_SERVER, 0, 0 };
+cvar_t	max_item_drops = {"mp_maxitemdrops","16", FCVAR_SERVER, 0, 0 };
+cvar_t	forcerespawn= {"mp_forcerespawn","1", FCVAR_SERVER, 0, 0 };
+cvar_t	flashlight	= {"mp_flashlight","1", FCVAR_SERVER, 0, 0 };
+cvar_t	aimcrosshair= {"mp_autocrosshair","1", FCVAR_SERVER, 0, 0 };
+cvar_t	decalfrequency = {"decalfrequency","30", FCVAR_SERVER, 0, 0 };
+cvar_t	teamlist = {"mp_teamlist","hgrunt;scientist", FCVAR_SERVER, 0, 0 };
+cvar_t	teamoverride = {"mp_teamoverride","1", 0, 0, 0 };
+cvar_t	defaultteam = {"mp_defaultteam","0", 0, 0, 0 };
+cvar_t	allowmonsters={"mp_allowmonsters","1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_nextmap={"mp_nextmap","", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_prefer_server_maxspeed={"mp_prefer_server_maxspeed","1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_objectboost ={"mp_objectboost","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_respawndelay ={"mp_respawndelay","3", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_debugmsg ={"mp_debugmsg","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_starthealth ={"starthealth","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_startarmor ={"startarmor","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_bulletsponges ={"mp_bulletsponges","1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_bulletspongemax ={"mp_bulletspongemax","4", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_maxmonsterrespawns ={"mp_maxmonsterrespawns","-1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_edictsorting ={"mp_edictsorting","1", FCVAR_SERVER, 0, 0 };
 
-cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER };
+cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 
-cvar_t	mp_npckill = { "mp_npckill", "1", FCVAR_SERVER };
-cvar_t	killnpc = { "killnpc", "1", FCVAR_SERVER };
+cvar_t	mp_npckill = { "mp_npckill", "1", FCVAR_SERVER, 0, 0 };
+cvar_t	killnpc = { "killnpc", "1", FCVAR_SERVER, 0, 0 };
 
-cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER };		// 0 prevents players from being spectators
+cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER, 0, 0 }; // 0 prevents players from being spectators
 
-cvar_t  mp_chattime = {"mp_chattime","10", FCVAR_SERVER };
+cvar_t  mp_chattime = {"mp_chattime","10", FCVAR_SERVER, 0, 0 };
 
 // Engine Cvars
 cvar_t 	*g_psv_gravity = NULL;
@@ -133,16 +133,6 @@ TextureTypeStats g_textureStats;
 bool g_cfgsExecuted;
 
 void test_command() {
-	int entIdx = 1;
-	int channel = 3;
-	const char* sample = "hlcoop/weapons/glock_reload.wav";
-	uint32_t vol = 0x3F4CCCCD;
-	uint32_t attn = 0x3F4CCCCD;
-	int flags = 0;
-	int pitch = 103;
-	uint32_t origin[3] = { 0x448A6000, 0xC5442000, 0xC45D3470 };
-	Vector ori = Vector(*(float*)&origin[0], *(float*)&origin[1], *(float*)&origin[2]);
-	StartSound(INDEXENT(entIdx), channel, sample, *(float*)&vol, *(float*)&attn, flags, pitch, ori, 0xFFFFFFFF);
 }
 
 void cfg_exec_finished() {
