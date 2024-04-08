@@ -29,6 +29,7 @@ public:
 		pev->absmax = pev->origin + Vector(32, 32, 96);
 	}
 	void Killed(entvars_t* pevAttacker, int iGib);
+	void HandleAnimEvent(MonsterEvent_t* pEvent);
 
 	void PainSound();
 	void AttackSound();
@@ -240,4 +241,17 @@ void CBabyGarg::StopFollowingSound() {
 
 void CBabyGarg::CantFollowSound() {
 	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
+}
+
+void CBabyGarg::HandleAnimEvent(MonsterEvent_t* pEvent)
+{
+	switch (pEvent->event)
+	{
+	case SCRIPT_EVENT_SOUND_VOICE:
+		EMIT_SOUND_DYN(edict(), CHAN_VOICE, pEvent->options, 1.0, ATTN_IDLE, 0, BABYGARG_PITCH);
+		break;
+	default:
+		CGargantua::HandleAnimEvent(pEvent);
+		break;
+	}
 }
