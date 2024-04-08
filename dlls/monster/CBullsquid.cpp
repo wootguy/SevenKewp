@@ -1177,7 +1177,7 @@ void CBullsquid :: StartTask ( Task_t *pTask )
 		}
 	case TASK_GET_PATH_TO_ENEMY:
 		{
-			if ( BuildRoute ( m_hEnemy->pev->origin, bits_MF_TO_ENEMY, m_hEnemy, true) )
+			if (m_hEnemy && BuildRoute ( m_hEnemy->pev->origin, bits_MF_TO_ENEMY, m_hEnemy, true) )
 			{
 				m_iTaskStatus = TASKSTATUS_COMPLETE;
 			}
