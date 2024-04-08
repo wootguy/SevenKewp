@@ -17,22 +17,22 @@
 // fade out corpse
 // check fov
 
-#define EVENT_ATTACK1_LEFT 1
-#define EVENT_ATTACK1_RIGHT 2
-#define EVENT_GRAB_BLOOD 3
-#define EVENT_THROW_BLOOD 4
-#define EVENT_ATTACK2_SWING0 19
-#define EVENT_ATTACK2_SWING1 20
-#define EVENT_ATTACK2_SWING2 21
-#define EVENT_ATTACK2_SWING3 22
-#define EVENT_PLAY_SOUND 1011
+#define GONOME_EVENT_ATTACK1_LEFT 1
+#define GONOME_EVENT_ATTACK1_RIGHT 2
+#define GONOME_EVENT_GRAB_BLOOD 3
+#define GONOME_EVENT_THROW_BLOOD 4
+#define GONOME_EVENT_ATTACK2_SWING0 19
+#define GONOME_EVENT_ATTACK2_SWING1 20
+#define GONOME_EVENT_ATTACK2_SWING2 21
+#define GONOME_EVENT_ATTACK2_SWING3 22
+#define GONOME_EVENT_PLAY_SOUND 1011
 
-#define MELEE_ATTACK1_DISTANCE 80 
-#define MELEE_ATTACK2_DISTANCE 56 // the one where it tries to eat you
-#define MELEE_CHASE_DISTANCE 600 // don't waste time with ranged attack within this distance
+#define GONOME_MELEE_ATTACK1_DISTANCE 80 
+#define GONOME_MELEE_ATTACK2_DISTANCE 56 // the one where it tries to eat you
+#define GONOME_MELEE_CHASE_DISTANCE 600 // don't waste time with ranged attack within this distance
 
-#define MELEE_ATTACK1_SEQUENCE_OFFSET 0
-#define MELEE_ATTACK2_SEQUENCE_OFFSET 1 // second ATTACK1 sequence in the model should be gonna-eat-you one
+#define GONOME_MELEE_ATTACK1_SEQUENCE_OFFSET 0
+#define GONOME_MELEE_ATTACK2_SEQUENCE_OFFSET 1 // second ATTACK1 sequence in the model should be gonna-eat-you one
 
 #define GONOME_SPIT_SPRITE "sprites/blood_chnk.spr" 
 
@@ -174,19 +174,19 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 {
 	switch( pEvent->event )
 	{
-	case EVENT_PLAY_SOUND:
+	case GONOME_EVENT_PLAY_SOUND:
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pEvent->options, 1.0, ATTN_NORM, 0, 100);
 		break;
-	case EVENT_ATTACK1_LEFT:
-	case EVENT_ATTACK1_RIGHT:
-	case EVENT_ATTACK2_SWING0:
-	case EVENT_ATTACK2_SWING1:
-	case EVENT_ATTACK2_SWING2:
-	case EVENT_ATTACK2_SWING3:
+	case GONOME_EVENT_ATTACK1_LEFT:
+	case GONOME_EVENT_ATTACK1_RIGHT:
+	case GONOME_EVENT_ATTACK2_SWING0:
+	case GONOME_EVENT_ATTACK2_SWING1:
+	case GONOME_EVENT_ATTACK2_SWING2:
+	case GONOME_EVENT_ATTACK2_SWING3:
 	{
-		bool isAttack2 = pEvent->event >= EVENT_ATTACK2_SWING0;
-		bool isLeftSwing = pEvent->event == EVENT_ATTACK1_LEFT;
-		float attackDistance = isAttack2 ? MELEE_ATTACK2_DISTANCE : MELEE_ATTACK1_DISTANCE;
+		bool isAttack2 = pEvent->event >= GONOME_EVENT_ATTACK2_SWING0;
+		bool isLeftSwing = pEvent->event == GONOME_EVENT_ATTACK1_LEFT;
+		float attackDistance = isAttack2 ? GONOME_MELEE_ATTACK2_DISTANCE : MELEE_ATTACK1_DISTANCE;
 		float damage = isAttack2 ? gSkillData.sk_gonome_dmg_one_bite : gSkillData.sk_gonome_dmg_one_slash;
 		CBaseEntity* pHurt = CheckTraceHullAttack(attackDistance, damage, DMG_SLASH);
 
@@ -209,7 +209,7 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackMissSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
 		break;
 	}
-	case EVENT_GRAB_BLOOD:
+	case GONOME_EVENT_GRAB_BLOOD:
 	{
 		CSprite* handBlood = (CSprite*)m_hHandBlood.GetEntity();
 		if (handBlood)
@@ -231,7 +231,7 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 		break;
 	}
-	case EVENT_THROW_BLOOD:
+	case GONOME_EVENT_THROW_BLOOD:
 	{
 		CSprite* handBlood = (CSprite*)m_hHandBlood.GetEntity();
 		if (handBlood)
@@ -314,7 +314,7 @@ void CGonome::Precache()
 BOOL CGonome::CheckMeleeAttack1(float flDot, float flDist)
 {
 	if (flDist <= MELEE_ATTACK1_DISTANCE) {
-		if (flDist <= MELEE_ATTACK2_DISTANCE) {
+		if (flDist <= GONOME_MELEE_ATTACK2_DISTANCE) {
 			SetConditions(bits_COND_CAN_MELEE_ATTACK2);
 		}
 
@@ -326,7 +326,7 @@ BOOL CGonome::CheckMeleeAttack1(float flDot, float flDist)
 
 BOOL CGonome::CheckRangeAttack1(float flDot, float flDist)
 {
-	if (flDist > MELEE_CHASE_DISTANCE && m_rangeAttackCooldown < gpGlobals->time)
+	if (flDist > GONOME_MELEE_CHASE_DISTANCE && m_rangeAttackCooldown < gpGlobals->time)
 	{
 		return TRUE;
 	}
@@ -380,7 +380,7 @@ int CGonome::LookupActivity(int activity)
 
 	switch(activity) {
 	case ACT_MELEE_ATTACK1:
-		offset = HasConditions(bits_COND_CAN_MELEE_ATTACK2) ? MELEE_ATTACK2_SEQUENCE_OFFSET : MELEE_ATTACK1_SEQUENCE_OFFSET;
+		offset = HasConditions(bits_COND_CAN_MELEE_ATTACK2) ? GONOME_MELEE_ATTACK2_SEQUENCE_OFFSET : GONOME_MELEE_ATTACK1_SEQUENCE_OFFSET;
 		return ::LookupActivityWithOffset(pmodel, pev, activity, offset);
 	default:
 		return ::LookupActivity(pmodel, pev, activity);

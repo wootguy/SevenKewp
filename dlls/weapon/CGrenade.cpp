@@ -34,7 +34,7 @@
 LINK_ENTITY_TO_CLASS( grenade, CGrenade );
 
 // Grenades flagged with this will be triggered when the owner calls detonateSatchelCharges
-#define SF_DETONATE		0x0001
+#define SF_GRENADE_DETONATE		0x0001
 
 //
 // Grenade Explode
@@ -451,7 +451,7 @@ CGrenade * CGrenade :: ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart,
 	pGrenade->SetThink( &CGrenade::SUB_DoNothing );
 	pGrenade->SetUse( &CGrenade::DetonateUse );
 	pGrenade->SetTouch( &CGrenade::SlideTouch );
-	pGrenade->pev->spawnflags = SF_DETONATE;
+	pGrenade->pev->spawnflags = SF_GRENADE_DETONATE;
 
 	pGrenade->pev->friction = 0.9;
 
@@ -478,7 +478,7 @@ void CGrenade :: UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code )
 		CBaseEntity *pEnt = Instance( pentFind );
 		if ( pEnt )
 		{
-			if ( FBitSet( pEnt->pev->spawnflags, SF_DETONATE ) && pEnt->pev->owner == pentOwner )
+			if ( FBitSet( pEnt->pev->spawnflags, SF_GRENADE_DETONATE ) && pEnt->pev->owner == pentOwner )
 			{
 				if ( code == SATCHEL_DETONATE )
 					pEnt->Use( pOwner, pOwner, USE_ON, 0 );

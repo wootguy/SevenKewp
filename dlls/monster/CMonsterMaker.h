@@ -1,3 +1,4 @@
+#pragma once
 // Monstermaker spawnflags
 #define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )
 #define	SF_MONSTERMAKER_CYCLIC		4 // drop one monster every time fired.

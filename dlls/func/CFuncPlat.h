@@ -1,5 +1,7 @@
-#define noiseMovement noise
-#define noiseStopMoving noise1
+#pragma once
+
+#define plat_noiseMoving noise
+#define plat_noiseArrived noise1
 
 class CFuncPlat : public CBasePlatTrain
 {

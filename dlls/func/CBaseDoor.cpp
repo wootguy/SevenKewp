@@ -270,50 +270,50 @@ void CBaseDoor::Precache(void)
 	switch (m_bMoveSnd)
 	{
 	case	0:
-		pev->noiseMoving = ALLOC_STRING("common/null.wav");
+		pev->door_noiseMoving = ALLOC_STRING("common/null.wav");
 		break;
 	case	1:
 		PRECACHE_SOUND("doors/doormove1.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove1.wav");
+		pev->door_noiseMoving = ALLOC_STRING("doors/doormove1.wav");
 		break;
 	case	2:
 		PRECACHE_SOUND("doors/doormove2.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove2.wav");
+		pev->door_noiseMoving = ALLOC_STRING("doors/doormove2.wav");
 		break;
 	case	3:
 		PRECACHE_SOUND("doors/doormove3.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove3.wav");
+		pev->door_noiseMoving = ALLOC_STRING("doors/doormove3.wav");
 		break;
 	case	4:
 		PRECACHE_SOUND("doors/doormove4.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove4.wav");
+		pev->door_noiseMoving = ALLOC_STRING("doors/doormove4.wav");
 		break;
 	case	5:
 		PRECACHE_SOUND("doors/doormove5.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove5.wav");
+		pev->door_noiseMoving = ALLOC_STRING("doors/doormove5.wav");
 		break;
 	case	6:
 		PRECACHE_SOUND("doors/doormove6.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove6.wav");
+		pev->door_noiseMoving = ALLOC_STRING("doors/doormove6.wav");
 		break;
 	case	7:
 		PRECACHE_SOUND("doors/doormove7.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove7.wav");
+		pev->door_noiseMoving = ALLOC_STRING("doors/doormove7.wav");
 		break;
 	case	8:
 		PRECACHE_SOUND("doors/doormove8.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove8.wav");
+		pev->door_noiseMoving = ALLOC_STRING("doors/doormove8.wav");
 		break;
 	case	9:
 		PRECACHE_SOUND("doors/doormove9.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove9.wav");
+		pev->door_noiseMoving = ALLOC_STRING("doors/doormove9.wav");
 		break;
 	case	10:
 		PRECACHE_SOUND("doors/doormove10.wav");
-		pev->noiseMoving = ALLOC_STRING("doors/doormove10.wav");
+		pev->door_noiseMoving = ALLOC_STRING("doors/doormove10.wav");
 		break;
 	default:
-		pev->noiseMoving = ALLOC_STRING("common/null.wav");
+		pev->door_noiseMoving = ALLOC_STRING("common/null.wav");
 		break;
 	}
 
@@ -321,42 +321,42 @@ void CBaseDoor::Precache(void)
 	switch (m_bStopSnd)
 	{
 	case	0:
-		pev->noiseArrived = ALLOC_STRING("common/null.wav");
+		pev->door_noiseArrived = ALLOC_STRING("common/null.wav");
 		break;
 	case	1:
 		PRECACHE_SOUND("doors/doorstop1.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop1.wav");
+		pev->door_noiseArrived = ALLOC_STRING("doors/doorstop1.wav");
 		break;
 	case	2:
 		PRECACHE_SOUND("doors/doorstop2.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop2.wav");
+		pev->door_noiseArrived = ALLOC_STRING("doors/doorstop2.wav");
 		break;
 	case	3:
 		PRECACHE_SOUND("doors/doorstop3.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop3.wav");
+		pev->door_noiseArrived = ALLOC_STRING("doors/doorstop3.wav");
 		break;
 	case	4:
 		PRECACHE_SOUND("doors/doorstop4.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop4.wav");
+		pev->door_noiseArrived = ALLOC_STRING("doors/doorstop4.wav");
 		break;
 	case	5:
 		PRECACHE_SOUND("doors/doorstop5.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop5.wav");
+		pev->door_noiseArrived = ALLOC_STRING("doors/doorstop5.wav");
 		break;
 	case	6:
 		PRECACHE_SOUND("doors/doorstop6.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop6.wav");
+		pev->door_noiseArrived = ALLOC_STRING("doors/doorstop6.wav");
 		break;
 	case	7:
 		PRECACHE_SOUND("doors/doorstop7.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop7.wav");
+		pev->door_noiseArrived = ALLOC_STRING("doors/doorstop7.wav");
 		break;
 	case	8:
 		PRECACHE_SOUND("doors/doorstop8.wav");
-		pev->noiseArrived = ALLOC_STRING("doors/doorstop8.wav");
+		pev->door_noiseArrived = ALLOC_STRING("doors/doorstop8.wav");
 		break;
 	default:
-		pev->noiseArrived = ALLOC_STRING("common/null.wav");
+		pev->door_noiseArrived = ALLOC_STRING("common/null.wav");
 		break;
 	}
 
@@ -503,7 +503,7 @@ void CBaseDoor::DoorGoUp(void)
 	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
 	{
 		if (m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN)
-			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->door_noiseMoving), 1, ATTN_NORM);
 	}
 
 	m_toggle_state = TS_GOING_UP;
@@ -545,8 +545,8 @@ void CBaseDoor::DoorHitTop(void)
 {
 	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
 	{
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving));
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseArrived), 1, ATTN_NORM);
+		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->door_noiseMoving));
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->door_noiseArrived), 1, ATTN_NORM);
 	}
 
 	ASSERT(m_toggle_state == TS_GOING_UP);
@@ -587,7 +587,7 @@ void CBaseDoor::DoorGoDown(void)
 	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
 	{
 		if (m_toggle_state != TS_GOING_UP && m_toggle_state != TS_GOING_DOWN)
-			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving), 1, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->door_noiseMoving), 1, ATTN_NORM);
 	}
 
 #ifdef DOOR_ASSERT
@@ -609,8 +609,8 @@ void CBaseDoor::DoorHitBottom(void)
 {
 	if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
 	{
-		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving));
-		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseArrived), 1, ATTN_NORM);
+		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->door_noiseMoving));
+		EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->door_noiseArrived), 1, ATTN_NORM);
 	}
 
 	ASSERT(m_toggle_state == TS_GOING_DOWN);
@@ -694,7 +694,7 @@ void CBaseDoor::Blocked(CBaseEntity* pOther)
 						}
 
 						if (!FBitSet(pev->spawnflags, SF_DOOR_SILENT))
-							STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMoving));
+							STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->door_noiseMoving));
 
 						if (pDoor->m_toggle_state == TS_GOING_DOWN)
 							pDoor->DoorGoUp();

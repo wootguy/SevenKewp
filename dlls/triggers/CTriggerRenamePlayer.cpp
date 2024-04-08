@@ -8,7 +8,7 @@
 //
 // CTriggerRenamePlayer / trigger_renameplayer -- sets a targetname on the triggering player
 
-#define SF_REUSABLE 1
+#define SF_RPLR_REUSABLE 1
 
 class CTriggerRenamePlayer : public CPointEntity
 {
@@ -23,7 +23,7 @@ void CTriggerRenamePlayer::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 	if (pActivator && pActivator->IsPlayer()) {
 		pActivator->pev->targetname = pev->netname;
 
-		if (!(pev->spawnflags & SF_REUSABLE)) {
+		if (!(pev->spawnflags & SF_RPLR_REUSABLE)) {
 			REMOVE_ENTITY(edict());
 		}
 	}

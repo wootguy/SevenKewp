@@ -1,3 +1,4 @@
+#pragma once
 #include "CBaseGrunt.h"
 
 #define HAS_SHOTGUN_FLAG 8

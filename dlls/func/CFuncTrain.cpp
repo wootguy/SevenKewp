@@ -92,8 +92,8 @@ void CFuncTrain::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 			pev->target = pev->enemy->v.targetname;
 		pev->nextthink = 0;
 		pev->velocity = g_vecZero;
-		if (pev->noiseStopMoving)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+		if (pev->plat_noiseArrived)
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->plat_noiseArrived), m_volume, ATTN_NORM);
 		m_activated = 2;
 	}
 }
@@ -114,10 +114,10 @@ void CFuncTrain::Wait(void)
 	{
 		pev->spawnflags |= SF_TRAIN_WAIT_RETRIGGER;
 		// clear the sound channel.
-		if (pev->noiseMovement)
-			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
-		if (pev->noiseStopMoving)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+		if (pev->plat_noiseMoving)
+			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->plat_noiseMoving));
+		if (pev->plat_noiseArrived)
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->plat_noiseArrived), m_volume, ATTN_NORM);
 		pev->nextthink = 0;
 		return;
 	}
@@ -127,10 +127,10 @@ void CFuncTrain::Wait(void)
 	if (m_flWait != 0)
 	{// -1 wait will wait forever!		
 		pev->nextthink = pev->ltime + m_flWait;
-		if (pev->noiseMovement)
-			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
-		if (pev->noiseStopMoving)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+		if (pev->plat_noiseMoving)
+			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->plat_noiseMoving));
+		if (pev->plat_noiseArrived)
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->plat_noiseArrived), m_volume, ATTN_NORM);
 		SetThink(&CFuncTrain::Next);
 	}
 	else
@@ -153,11 +153,11 @@ void CFuncTrain::Next(void)
 
 	if (!pTarg)
 	{
-		if (pev->noiseMovement)
-			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
+		if (pev->plat_noiseMoving)
+			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->plat_noiseMoving));
 		// Play stop sound
-		if (pev->noiseStopMoving)
-			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noiseStopMoving), m_volume, ATTN_NORM);
+		if (pev->plat_noiseArrived)
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->plat_noiseArrived), m_volume, ATTN_NORM);
 		return;
 	}
 
@@ -194,10 +194,10 @@ void CFuncTrain::Next(void)
 		// CHANGED this from CHAN_VOICE to CHAN_STATIC around OEM beta time because trains should
 		// use CHAN_STATIC for their movement sounds to prevent sound field problems.
 		// this is not a hack or temporary fix, this is how things should be. (sjb).
-		if (pev->noiseMovement)
-			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->noiseMovement));
-		if (pev->noiseMovement)
-			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noiseMovement), m_volume, ATTN_NORM);
+		if (pev->plat_noiseMoving)
+			STOP_SOUND(edict(), CHAN_STATIC, (char*)STRING(pev->plat_noiseMoving));
+		if (pev->plat_noiseMoving)
+			EMIT_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->plat_noiseMoving), m_volume, ATTN_NORM);
 		ClearBits(pev->effects, EF_NOINTERP);
 		SetMoveDone(&CFuncTrain::Wait);
 		LinearMove(pTarg->pev->origin - (pev->mins + pev->maxs) * 0.5, pev->speed);

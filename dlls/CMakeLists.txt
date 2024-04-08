@@ -442,20 +442,55 @@ set(GAME_SRC
 	mod_api.cpp
 )
 
-set(ALL_SRC
-	${MONSTER_SRC} ${MONSTER_ALIEN_SRC} ${MONSTER_HUMAN_SRC} ${MONSTER_MACHINE_SRC} ${MONSTER_MISC_SRC} ${MONSTER_HDR}
-	${ENTITY_SRC} ${ENTITY_HDR}
-	${ENV_SRC} ${ENV_HDR}
-	${ITEM_SRC} ${ITEM_HDR}
-	${FUNC_HDR} ${FUNC_SRC}
-	${PATH_HDR} ${PATH_SRC}
+set(ENT_SRC
+	${MONSTER_SRC} ${MONSTER_ALIEN_SRC} ${MONSTER_HUMAN_SRC} ${MONSTER_MACHINE_SRC} ${MONSTER_MISC_SRC}
+	${ENTITY_SRC}
+	${ENV_SRC}
+	${ITEM_SRC}
+	${FUNC_SRC}
+	${PATH_SRC}
 	${TRIGGER_HDR} ${TRIGGER_SRC} ${TRIGGER_POINT_SRC} ${TRIGGER_BRUSHED_SRC} ${TRIGGER_OBSOLETE_SRC}
-	${WEAPON_SRC} ${WEAPON_HDR}
-	${AMMO_SRC} ${AMMO_HDR}
+	${WEAPON_SRC}
+	${AMMO_SRC}
+)
+
+set(ENT_HDR
+	${MONSTER_HDR}
+	${ENTITY_HDR}
+	${ENV_HDR}
+	${ITEM_HDR}
+	${PATH_HDR}
+	${WEAPON_HDR}
+	${AMMO_HDR}
+)
+
+# combine all entity source files into one monolothic file for a huge compile time speedup
+function(write_ent_source_file)	
+	set(ENT_SRCS_EXT ${ENT_SRC})
+	list(LENGTH ENT_SRCS_EXT list_count)
+	math(EXPR list_max_index ${list_count}-1)
+	foreach(i RANGE ${list_max_index})
+		list(GET ENT_SRCS_EXT ${i} x)
+		
+		set(ENT_INCLUDES "${ENT_INCLUDES} #include \"${x}\"\n")
+	endforeach(i)
+	
+	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/entities.cpp
+		${ENT_INCLUDES}
+	)
+endfunction()
+
+write_ent_source_file()
+
+set(ALL_SRC
+	${ENT_SRC} ${ENT_HDR}
 	${UTIL_SRC} ${UTIL_HDR}
 	${GAME_SRC} ${GAME_HDR}
 	${MISC_HDR}
+	${CMAKE_CURRENT_BINARY_DIR}/entities.cpp
 )
+
+set_source_files_properties(${ENT_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 include_directories(../common)
 include_directories(../engine)

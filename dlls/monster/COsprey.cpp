@@ -33,10 +33,10 @@ typedef struct
 
 
 
-#define SF_WAITFORTRIGGER	0x40
+#define SF_OSPREY_WAITFORTRIGGER	0x40
 
 
-#define MAX_CARRY	24
+#define OSPREY_MAX_CARRY	24
 
 class COsprey : public CBaseMonster
 {
@@ -89,8 +89,8 @@ public:
 	float m_flLeftHealth;
 
 	int	m_iUnits;
-	EHANDLE m_hGrunt[MAX_CARRY];
-	Vector m_vecOrigin[MAX_CARRY];
+	EHANDLE m_hGrunt[OSPREY_MAX_CARRY];
+	Vector m_vecOrigin[OSPREY_MAX_CARRY];
 	EHANDLE m_hRepel[4];
 
 	int m_iSoundState;
@@ -133,8 +133,8 @@ TYPEDESCRIPTION	COsprey::m_SaveData[] =
 	DEFINE_FIELD( COsprey, m_flLeftHealth, FIELD_FLOAT ),
 
 	DEFINE_FIELD( COsprey, m_iUnits, FIELD_INTEGER ),
-	DEFINE_ARRAY( COsprey, m_hGrunt, FIELD_EHANDLE, MAX_CARRY ),
-	DEFINE_ARRAY( COsprey, m_vecOrigin, FIELD_POSITION_VECTOR, MAX_CARRY ),
+	DEFINE_ARRAY( COsprey, m_hGrunt, FIELD_EHANDLE, OSPREY_MAX_CARRY),
+	DEFINE_ARRAY( COsprey, m_vecOrigin, FIELD_POSITION_VECTOR, OSPREY_MAX_CARRY),
 	DEFINE_ARRAY( COsprey, m_hRepel, FIELD_EHANDLE, 4 ),
 
 	// DEFINE_FIELD( COsprey, m_iSoundState, FIELD_INTEGER ),
@@ -173,7 +173,7 @@ void COsprey :: Spawn( void )
 	SetThink( &COsprey::FindAllThink );
 	SetUse( &COsprey::CommandUse );
 
-	if (!(pev->spawnflags & SF_WAITFORTRIGGER))
+	if (!(pev->spawnflags & SF_OSPREY_WAITFORTRIGGER))
 	{
 		pev->nextthink = gpGlobals->time + 1.0;
 	}
@@ -232,7 +232,7 @@ void COsprey :: FindAllThink( void )
 	bool isOspreyPlayerAlly = IRelationship(Classify(), CLASS_PLAYER) == R_AL;
 
 	m_iUnits = 0;
-	while (m_iUnits < MAX_CARRY && (pEntity = UTIL_FindEntityByClassname( pEntity, replenishMonster)) != NULL)
+	while (m_iUnits < OSPREY_MAX_CARRY && (pEntity = UTIL_FindEntityByClassname( pEntity, replenishMonster)) != NULL)
 	{
 		bool isUnitPlayerAlly = IRelationship(pEntity->Classify(), CLASS_PLAYER) == R_AL;
 		if (pEntity->IsAlive() && isUnitPlayerAlly == isOspreyPlayerAlly)

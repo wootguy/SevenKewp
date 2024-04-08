@@ -9,14 +9,14 @@
 //
 // CTriggerCondition / trigger_condition -- compare entity keyvalues
 
-#define SF_START_OFF 1
-#define SF_DONT_USE_X 2
-#define SF_DONT_USE_Y 4
-#define SF_DONT_USE_Z 8
-#define SF_DONT_USE_W 16 // TODO: which keys have a W/A value?
-#define SF_CYCLIC 32
-#define SF_KEEP_ACTIVATOR 64
-#define SF_IGNORE_INITIAL_RESULT 128
+#define SF_TCOND_START_OFF 1
+#define SF_TCOND_DONT_USE_X 2
+#define SF_TCOND_DONT_USE_Y 4
+#define SF_TCOND_DONT_USE_Z 8
+#define SF_TCOND_DONT_USE_W 16 // TODO: which keys have a W/A value?
+#define SF_TCOND_CYCLIC 32
+#define SF_TCOND_KEEP_ACTIVATOR 64
+#define SF_TCOND_IGNORE_INITIAL_RESULT 128
 
 #define VEC_EQ_EPSILON 0.03125f
 
@@ -64,7 +64,7 @@ public:
 
 	int GetVectorDontUseFlags() {
 		// "don't use flags" are 1 bit higher than the generic flags
-		return (pev->spawnflags & (SF_DONT_USE_X | SF_DONT_USE_Y | SF_DONT_USE_Z)) >> 1;
+		return (pev->spawnflags & (SF_TCOND_DONT_USE_X | SF_TCOND_DONT_USE_Y | SF_TCOND_DONT_USE_Z)) >> 1;
 	}
 
 	string_t m_monitoredKey;
@@ -128,7 +128,7 @@ void CTriggerCondition::Spawn(void)
 {
 	CPointEntity::Spawn();
 
-	if (!(pev->spawnflags & (SF_START_OFF | SF_CYCLIC))) {
+	if (!(pev->spawnflags & (SF_TCOND_START_OFF | SF_TCOND_CYCLIC))) {
 		SetThink(&CTriggerCondition::TimedThink);
 		pev->nextthink = gpGlobals->time;
 	}
@@ -138,13 +138,13 @@ void CTriggerCondition::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 {
 	isActive = useType == USE_TOGGLE ? !isActive : useType == USE_ON;
 
-	h_activator = (pev->spawnflags & SF_KEEP_ACTIVATOR) ? pActivator : this;
+	h_activator = (pev->spawnflags & SF_TCOND_KEEP_ACTIVATOR) ? pActivator : this;
 	h_caller = pCaller;
 
 	m_checkedFirstResult = false;
 	m_lastResult = -1;
 
-	if (pev->spawnflags & SF_CYCLIC) {
+	if (pev->spawnflags & SF_TCOND_CYCLIC) {
 		Evaluate();
 	}
 	else {
@@ -232,8 +232,8 @@ void CTriggerCondition::Evaluate() {
 	}
 
 	bool result = Compare(monitorKey, compareKey);
-	bool isCyclic = pev->spawnflags & SF_CYCLIC;
-	bool ignoreFirstResult = pev->spawnflags & SF_IGNORE_INITIAL_RESULT;
+	bool isCyclic = pev->spawnflags & SF_TCOND_CYCLIC;
+	bool ignoreFirstResult = pev->spawnflags & SF_TCOND_IGNORE_INITIAL_RESULT;
 	bool shouldFireResultTarget = !ignoreFirstResult || m_checkedFirstResult || isCyclic;
 
 	if (!isCyclic && shouldFireResultTarget) {
@@ -332,15 +332,15 @@ bool CTriggerCondition::CompareVectors(const CKeyValue& monitorKey, const CKeyVa
 		UTIL_StringToVector(compareVector, STRING(compareKey.sVal));
 	}
 
-	if (pev->spawnflags & SF_DONT_USE_X) {
+	if (pev->spawnflags & SF_TCOND_DONT_USE_X) {
 		monitorVector.x = 0;
 		compareVector.x = 0;
 	}
-	if (pev->spawnflags & SF_DONT_USE_Y) {
+	if (pev->spawnflags & SF_TCOND_DONT_USE_Y) {
 		monitorVector.y = 0;
 		compareVector.y = 0;
 	}
-	if (pev->spawnflags & SF_DONT_USE_Z) {
+	if (pev->spawnflags & SF_TCOND_DONT_USE_Z) {
 		monitorVector.z = 0;
 		compareVector.z = 0;
 	}

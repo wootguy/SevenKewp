@@ -1,3 +1,4 @@
+#pragma once
 
 //==============================================
 // !!!UNDONE:ultra temporary SprayCan entity to apply

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "CFuncTrackTrain.h"
 
 #define SF_TRACK_ACTIVATETRAIN		0x00000001

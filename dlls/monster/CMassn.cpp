@@ -16,8 +16,8 @@
 
 #define	MASSASSIN_MP5_CLIP_SIZE			36 // how many bullets in a clip? - NOTE: 3 round burst sound, so keep as 3 * x!
 #define MASSN_SNIPER_CLIP_SIZE			1
-#define FOLLOW_SOUND MOD_SND_FOLDER "massn/yeah.wav"
-#define UNFOLLOW_SOUND MOD_SND_FOLDER "massn/covered.wav"
+#define MASSN_FOLLOW_SOUND MOD_SND_FOLDER "massn/yeah.wav"
+#define MASSN_UNFOLLOW_SOUND MOD_SND_FOLDER "massn/covered.wav"
 
 namespace MAssassinBodygroup
 {
@@ -212,8 +212,8 @@ void CMassn :: Precache()
 	PRECACHE_MODEL(GetModel());
 	
 	PRECACHE_SOUND_ARRAY(pDieSounds);
-	PRECACHE_SOUND(FOLLOW_SOUND);
-	PRECACHE_SOUND(UNFOLLOW_SOUND);
+	PRECACHE_SOUND(MASSN_FOLLOW_SOUND);
+	PRECACHE_SOUND(MASSN_UNFOLLOW_SOUND);
 }	
 
 void CMassn :: DeathSound ( void )
@@ -222,11 +222,11 @@ void CMassn :: DeathSound ( void )
 }
 
 void CMassn::StartFollowingSound() {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, FOLLOW_SOUND, 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, MASSN_FOLLOW_SOUND, 1, ATTN_NORM);
 }
 
 void CMassn::StopFollowingSound() {
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, UNFOLLOW_SOUND, 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, MASSN_UNFOLLOW_SOUND, 1, ATTN_NORM);
 }
 
 void CMassn::CantFollowSound() {

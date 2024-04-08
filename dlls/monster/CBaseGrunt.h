@@ -1,3 +1,4 @@
+#pragma once
 //=========================================================
 // monster-specific DEFINE's
 //=========================================================
@@ -22,6 +23,13 @@
 #define		HGRUNT_AE_GREN_DROP		( 9 )
 #define		HGRUNT_AE_CAUGHT_ENEMY	( 10) // grunt established sight with an enemy (player only) that had previously eluded the squad.
 #define		HGRUNT_AE_DROP_GUN		( 11) // grunt (probably dead) is dropping his mp5.
+
+#define HGRUNT_9MMAR				( 1 << 0)
+#define HGRUNT_HANDGRENADE			( 1 << 1)
+#define HGRUNT_GRENADELAUNCHER		( 1 << 2)
+#define HGRUNT_SHOTGUN				( 1 << 3)
+
+#define	GRUNT_SENTENCE_VOLUME (float)0.35 // volume of grunt sentences
 
 //=========================================================
 // monster-specific schedule types
