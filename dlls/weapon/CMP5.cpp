@@ -286,6 +286,7 @@ void CMP5::Reload( void )
 		return;
 
 	if (DefaultReload(MP5_MAX_CLIP, MP5_RELOAD, 1.5)) {
+#ifndef CLIENT_DLL
 		// send reload sound to everyone except the reloader if they're in first-person mode,
 		// because the reloading client will play sounds via model events
 		uint32_t messageTargets = 0xffffffff;
@@ -294,6 +295,7 @@ void CMP5::Reload( void )
 		}
 		StartSound(m_pPlayer->edict(), CHAN_ITEM, "weapons/9mmar_reload.wav", 0.8f,
 			ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
+#endif
 	}
 }
 

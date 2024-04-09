@@ -146,6 +146,7 @@ int CCrowbar::Swing( int fFirst )
 	Vector vecSrc	= m_pPlayer->GetGunPosition( );
 	Vector vecEnd	= vecSrc + gpGlobals->v_forward * 32;
 
+#ifndef CLIENT_DLL
 	// solidfy nearby corpses so they can be gibbed
 	// TODO: This is expensive. Try to fix the bug where players have laggy movement on corpses instead.
 	// For some reason the shocktrooper on auspices has no laggy movement when player walks on it,
@@ -166,7 +167,6 @@ int CCrowbar::Swing( int fFirst )
 
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
 
-#ifndef CLIENT_DLL
 	if ( tr.flFraction >= 1.0 )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
@@ -180,7 +180,6 @@ int CCrowbar::Swing( int fFirst )
 			vecEnd = tr.vecEndPos;	// This is the point on the actual surface (the hull could have hit space)
 		}
 	}
-#endif
 
 	lagcomp_end();
 
@@ -192,6 +191,7 @@ int CCrowbar::Swing( int fFirst )
 		ent->v.iuser4 = 0;
 		UTIL_SetOrigin(&ent->v, ent->v.origin); // reset abs bbox
 	}
+#endif
 
 	// disabled client prediction to stop doubling sounds/animations
 	if (fFirst) {
