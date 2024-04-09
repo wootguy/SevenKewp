@@ -259,6 +259,7 @@ void CPython::Reload( void )
 #endif
 
 	if (DefaultReload(6, PYTHON_RELOAD, 2.0, bUseScope)) {
+#ifndef CLIENT_DLL
 		// send reload sound to everyone except the reloader if they're in first-person mode,
 		// because the reloading client will play sounds via model events
 		uint32_t messageTargets = 0xffffffff;
@@ -267,6 +268,7 @@ void CPython::Reload( void )
 		}
 		StartSound(m_pPlayer->edict(), CHAN_ITEM, "weapons/357_reload1.wav", 0.8f,
 			ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
+#endif
 	}
 }
 
