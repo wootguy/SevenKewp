@@ -70,21 +70,27 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 		}
 	}
 
+	edict_t* pentTarget = NULL;
 	std::vector<edict_t*> targets;
 	edict_t* ent = NULL;
 	while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(pev->target)))) {
 		if (!strcmp(STRING(ent->v.classname), "info_teleport_destination")) {
 			targets.push_back(ent);
 		}
+		else if (!pentTarget) {
+			pentTarget = ent;
+		}
 	}
 
-	if (targets.empty())
+	if (!targets.empty()) {
+		pentTarget = targets[0]; // prefer tp destination entities
+		
+		if (pev->spawnflags & SF_TELE_RANDOM_DESTINATION)
+			pentTarget = targets[RANDOM_LONG(0, targets.size() - 1)];
+	}
+
+	if (!pentTarget)
 		return;
-
-	edict_t* pentTarget = targets[0];
-
-	if (pev->spawnflags & SF_TELE_RANDOM_DESTINATION)
-		pentTarget = targets[RANDOM_LONG(0, targets.size()-1)];
 
 	Vector tmp = VARS(pentTarget)->origin;
 
