@@ -4190,6 +4190,8 @@ WavInfo getWaveFileInfo(const char* path) {
 	//ALERT(at_console, "%s\n", path);
 
 	//static char infoText[512];
+	float cues[2];
+	int numCues = 0;
 
 	while (1) {
 		if (ftell(file) + 8 >= fsize) {
@@ -4252,9 +4254,9 @@ WavInfo getWaveFileInfo(const char* path) {
 			// All fields besides "sampleStart" are ignored
 			// inverted cue points will crash the client
 			// (possible with 1 cue point if placed after the middle of the file)
-			/*
-			std::string cueString = "        cue points: ";
-			for (int i = 0; i < cdata.numCuePoints; i++) {
+			
+			//std::string cueString = "        cue points: ";
+			for (int i = 0; i < cdata.numCuePoints && i < 2; i++) {
 				WAVE_CUE cue;
 				read = fread(&cue, sizeof(WAVE_CUE), 1, file);
 
@@ -4265,12 +4267,14 @@ WavInfo getWaveFileInfo(const char* path) {
 				}
 
 				float sampTime = sampleRate ? cue.sampleStart / (float)sampleRate : 0;
-				cueString += UTIL_VarArgs("%.2f  ", sampTime);
+				cues[i] = sampTime;
+				//cueString += UTIL_VarArgs("%.2f  ", sampTime);
 			}
-			cueString += "\n";
-			ALERT(at_console, cueString.c_str());
-			*/
+			//cueString += "\n";
+			//ALERT(at_console, cueString.c_str());
+			
 			info.isLooped = cdata.numCuePoints > 0;
+			numCues = cdata.numCuePoints;
 		}
 		/*
 		else if (chunkName == "LIST") {
@@ -4327,6 +4331,29 @@ WavInfo getWaveFileInfo(const char* path) {
 		else {
 			fseek(file, seekSize, SEEK_CUR);
 		}
+	}
+
+	float durationSeconds = info.durationMillis / 1000.0f;
+
+	bool fatalWave = false;
+
+	if (numCues == 1 && cues[0] > durationSeconds * 0.495f) { // better safe than sorry here - don't use 0.5 exactly
+		ALERT(at_error, "'%s' has 1 cue point and it was placed after the mid point! This file will crash clients.\n", path);
+		fatalWave = true;
+	}
+	else if (numCues >= 2 && cues[0] > cues[1]) {
+		ALERT(at_error, "'%s' start/end cue points are inverted! This file will crash clients.\n", path);
+		fatalWave = true;
+	}
+
+	if (fatalWave) {
+		// don't allow anyone to download this file! Not all server ops know that you need to rename
+		// a file after updating it. Then if some people got the old file, they will crash and others
+		// will be like "idk works for me" and people will have to delete their hl folder to fix this.
+		// Or worse, they'll just live with it for years because it's just a few maps they crash on.
+		ALERT(at_error, "Server shutting down to prevent distribution of the broken file.\n", path);
+		g_engfuncs.pfnServerCommand("quit\n");
+		g_engfuncs.pfnServerExecute();
 	}
 
 cleanup:
