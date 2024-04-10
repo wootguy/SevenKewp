@@ -1360,9 +1360,9 @@ int UTIL_IsMasterTriggered(string_t sMaster, CBaseEntity *pActivator)
 {
 	if (sMaster)
 	{
-		edict_t *pentTarget = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(sMaster));
+		edict_t *pentTarget = NULL;
 	
-		if ( !FNullEnt(pentTarget) )
+		while (!FNullEnt(pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(sMaster))))
 		{
 			CBaseEntity *pMaster = CBaseEntity::Instance(pentTarget);
 			if ( pMaster && (pMaster->ObjectCaps() & FCAP_MASTER) )
@@ -4160,6 +4160,11 @@ WavInfo getWaveFileInfo(const char* path) {
 	int fsize = 0;
 	FILE* file = NULL;
 
+	float durationSeconds = 0;
+	bool fatalWave = false;
+	float cues[2];
+	int numCues = 0;
+
 	if (!fpath.size()) {
 		ALERT(at_error, "Missing WAVE file: %s\n", path);
 		goto cleanup;
@@ -4190,8 +4195,6 @@ WavInfo getWaveFileInfo(const char* path) {
 	//ALERT(at_console, "%s\n", path);
 
 	//static char infoText[512];
-	float cues[2];
-	int numCues = 0;
 
 	while (1) {
 		if (ftell(file) + 8 >= fsize) {
@@ -4256,7 +4259,7 @@ WavInfo getWaveFileInfo(const char* path) {
 			// (possible with 1 cue point if placed after the middle of the file)
 			
 			//std::string cueString = "        cue points: ";
-			for (int i = 0; i < cdata.numCuePoints && i < 2; i++) {
+			for (int i = 0; i < (int)cdata.numCuePoints && i < 2; i++) {
 				WAVE_CUE cue;
 				read = fread(&cue, sizeof(WAVE_CUE), 1, file);
 
@@ -4333,9 +4336,8 @@ WavInfo getWaveFileInfo(const char* path) {
 		}
 	}
 
-	float durationSeconds = info.durationMillis / 1000.0f;
-
-	bool fatalWave = false;
+	durationSeconds = info.durationMillis / 1000.0f;
+	fatalWave = false;
 
 	if (numCues == 1 && cues[0] > durationSeconds * 0.495f) { // better safe than sorry here - don't use 0.5 exactly
 		ALERT(at_error, "'%s' has 1 cue point and it was placed after the mid point! This file will crash clients.\n", path);

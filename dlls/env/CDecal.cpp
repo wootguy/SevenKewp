@@ -111,7 +111,7 @@ void CDecal::TriggerDecal(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 
 	UTIL_TraceLine(pev->origin - Vector(5, 5, 5), pev->origin + Vector(5, 5, 5), ignore_monsters, ENT(pev), &trace);
 
-	if (UTIL_isSafeEntIndex(ENTINDEX(edict()), "apply decal")) {
+	if (UTIL_isSafeEntIndex(ENTINDEX(trace.pHit), "apply decal")) {
 		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
 		WRITE_BYTE(TE_BSPDECAL);
 		WRITE_COORD(pev->origin.x);
