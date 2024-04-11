@@ -396,13 +396,13 @@ void CPushable::StopLift() {
 		plr->m_pPushable = NULL;
 	}
 	m_hLifter = NULL;
-	pev->movetype = MOVETYPE_PUSHSTEP;
+	pev->gravity = 1.0f;
 }
 
 void CPushable::StartLift(CBasePlayer* lifter) {
 	lifter->m_pPushable = this;
 	m_hLifter = lifter;
-	pev->movetype = MOVETYPE_FLY;
+	pev->gravity = 0.0001f;
 }
 
 #if 0

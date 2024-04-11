@@ -462,6 +462,8 @@ Vector UTIL_VecToAngles( const Vector &vec )
 //	float UTIL_MoveToOrigin( edict_t *pent, const Vector vecGoal, float flDist, int iMoveType )
 void UTIL_MoveToOrigin( edict_t *pent, const Vector &vecGoal, float flDist, int iMoveType )
 {
+	pent->v.oldorigin = pent->v.origin; // for func_clip
+
 	float rgfl[3];
 	vecGoal.CopyToArray(rgfl);
 //		return MOVE_TO_ORIGIN ( pent, rgfl, flDist, iMoveType ); 

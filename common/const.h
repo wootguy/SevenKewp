@@ -54,6 +54,13 @@
 #define FL_KILLME				(1<<30)	// This entity is marked for death -- This allows the engine to kill ents at the appropriate time
 #define FL_DORMANT				(1<<31)	// Entity is dormant, no updates to client
 
+// flags used in the edited rehlds engine to indicate what an entity shouldn't collide with
+// These apply to any non-player entity
+#define FL_NOCLIP_PLAYERS		FL_IMMUNE_WATER
+#define FL_NOCLIP_MONSTERS		FL_IMMUNE_SLIME
+#define FL_NOCLIP_PUSHABLES		FL_IMMUNE_LAVA
+#define FL_NOCLIP_EVERYTHING_ELSE FL_ONTRAIN
+#define FL_NOCLIP_TRACES		FL_WATERJUMP // traces = crowbar swings/bullets/vision checks/etc.
 
 // Goes into globalvars_t.trace_flags
 #define FTRACE_SIMPLEBOX		(1<<0)	// Traceline with a simple box
