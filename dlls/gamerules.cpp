@@ -145,6 +145,7 @@ void execMapCfg() {
 		"starthealth",
 		"globalmodellist",
 		"globalsoundlist",
+		"mp_shitcode",
 	};
 
 	static set<string> itemNames = {
