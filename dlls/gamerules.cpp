@@ -230,6 +230,9 @@ void execMapCfg() {
 		string name = trimSpaces(toLowerCase(parts[0]));
 		string value = parts.size() > 1 ? trimSpaces(parts[1]) : "";
 
+		// prevent sneaky stuff like "sv_gravity 800;rcon_password lololol"
+		value = replaceString(value, ";", "");
+
 		// strip quotes from value
 		value.erase(std::remove(value.begin(), value.end(), '"'), value.end());
 
