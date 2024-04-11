@@ -55,6 +55,7 @@ cvar_t	mp_bulletsponges ={"mp_bulletsponges","1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_bulletspongemax ={"mp_bulletspongemax","4", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_maxmonsterrespawns ={"mp_maxmonsterrespawns","-1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_edictsorting ={"mp_edictsorting","1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_shitcode ={"mp_shitcode","0", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 
@@ -193,6 +194,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_bulletspongemax);
 	CVAR_REGISTER (&mp_maxmonsterrespawns);
 	CVAR_REGISTER (&mp_edictsorting);
+	CVAR_REGISTER (&mp_shitcode);
 
 	CVAR_REGISTER (&mp_chattime);
 
