@@ -73,6 +73,7 @@ cvar_t	*g_footsteps = NULL;
 cvar_t	*g_developer = NULL;
 cvar_t	*sv_max_client_edicts = NULL;
 cvar_t	*sv_stepsize = NULL;
+cvar_t	*sv_lowercase = NULL;
 
 // END Cvars for Skill Level settings
 
@@ -155,6 +156,7 @@ void GameDLLInit( void )
 	g_developer = CVAR_GET_POINTER( "developer" );
 	sv_max_client_edicts = CVAR_GET_POINTER( "sv_max_client_edicts" );
 	sv_stepsize = CVAR_GET_POINTER( "sv_stepsize" );
+	sv_lowercase = CVAR_GET_POINTER( "sv_lowercase" );
 
 	CVAR_REGISTER (&displaysoundlist);
 	CVAR_REGISTER( &allow_spectators );

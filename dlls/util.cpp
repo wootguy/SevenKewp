@@ -3297,7 +3297,7 @@ void InitEdictRelocations() {
 		g_edictsinit = 1;
 		//ALERT(at_console, "Created %d edicts to prep for relocations\n", edictsToCreate);
 
-		PrintEntindexStats();
+		//PrintEntindexStats();
 	}
 }
 
@@ -4022,12 +4022,16 @@ std::string getGameFilePath(const char* path) {
 	static char gameDir[MAX_PATH];
 	GET_GAME_DIR(gameDir);
 
-	std::string searchPaths[2] = {
+	std::string lowerPath = toLowerCase(path);
+
+	std::string searchPaths[4] = {
 		normalize_path(gameDir + std::string("/") + path),
+		normalize_path(gameDir + std::string("/") + lowerPath),
 		normalize_path(gameDir + std::string("_downloads/") + path),
+		normalize_path(gameDir + std::string("_downloads/") + lowerPath),
 	};
 
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < 4; i++) {
 		if (fileExists(searchPaths[i].c_str())) {
 			return searchPaths[i];
 		}
