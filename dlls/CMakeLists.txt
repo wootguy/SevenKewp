@@ -253,6 +253,7 @@ set(FUNC_SRC
 	func/CBasePlatTrain.cpp
 	func/CBreakable.cpp
 	func/CButtonTarget.cpp
+	func/CFuncClip.cpp
 	func/CFuncConveyor.cpp
 	func/CFuncIllusionary.cpp
 	func/CFuncMonsterClip.cpp

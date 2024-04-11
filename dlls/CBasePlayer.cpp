@@ -2744,6 +2744,7 @@ pt_end:
 
 	// Track button info so we can detect 'pressed' and 'released' buttons next frame
 	m_afButtonLast = pev->button;
+	pev->oldorigin = pev->origin; // for func_clip
 }
 
 void CBasePlayer::Spawn( void )
