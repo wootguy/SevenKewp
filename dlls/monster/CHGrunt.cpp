@@ -158,6 +158,11 @@ void CHGrunt::Precache()
 	if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER)) {
 		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
 	}
+	if (FBitSet(pev->weapons, HGRUNT_ROCKETLAUNCHER)) {
+		ALERT(at_console, "RPG grunt replaced with AR grenade grunt");
+		m_iEquipment |= MEQUIP_MP5;
+		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
+	}
 
 	BasePrecache();
 
