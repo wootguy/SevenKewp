@@ -1399,15 +1399,13 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 				iReturn = LOCALMOVE_VALID;
 				break;
 			}
-			else if (nextStepSize > 8 && mp_shitcode.value != 0) {
+			else if (nextStepSize > 4) {
 				// try taking a smaller step. This helps with stairs at the top of steep slopes.
 				// Crouch over the top edge of a ramp and you can often feel a sudden jump upwards.
 				// That's where monsters have trouble because the combined step size of the slope 
 				// and "stair" are too high unless taking baby steps.
-				// SHITCODE TODO: This is causing grunts to try taking cover inside walls.
-				// seems like they don't account for their collision box when actually executing the move.
-				// Yet it's the same function called here...?
 				nextStepSize /= 2;
+				flStep -= lastStepSize;
 				//ALERT(at_console, "Try a smaller step! %d\n", nextStepSize);
 				continue;
 			}
