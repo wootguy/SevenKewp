@@ -1399,11 +1399,12 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 				iReturn = LOCALMOVE_VALID;
 				break;
 			}
-			else if (nextStepSize > 4) {
+			else if (nextStepSize > 8) {
 				// try taking a smaller step. This helps with stairs at the top of steep slopes.
 				// Crouch over the top edge of a ramp and you can often feel a sudden jump upwards.
 				// That's where monsters have trouble because the combined step size of the slope 
 				// and "stair" are too high unless taking baby steps.
+				// TODO: this is letting monsters climb near-vertical slopes
 				nextStepSize /= 2;
 				flStep -= lastStepSize;
 				//ALERT(at_console, "Try a smaller step! %d\n", nextStepSize);
