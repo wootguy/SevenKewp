@@ -2622,6 +2622,7 @@ void CBaseRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	pGrunt->m_Classify = m_Classify;
 	pGrunt->m_IsPlayerAlly = m_IsPlayerAlly;
 	pGrunt->pev->owner = pev->owner; // required for repel grunts spawned by monstermaker
+	pGrunt->pev->model = pev->model;
 
 	if (baseGrunt)
 	{
