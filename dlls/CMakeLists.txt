@@ -196,6 +196,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CAutoTrigger.cpp
 	triggers/CGameCounter.cpp
 	triggers/CGameEnd.cpp
+	triggers/CGamePlayerCounter.cpp
 	triggers/CGamePlayerEquip.cpp
 	triggers/CGamePlayerHurt.cpp
 	triggers/CGameScore.cpp
