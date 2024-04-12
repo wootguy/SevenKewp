@@ -1814,6 +1814,25 @@ void CBasePlayer::UpdateStatusBar()
 
 				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			}
+			else if (FClassnameIs(pEntity->pev, "func_pushable")) {
+
+				const char* name = pEntity->DisplayName();
+
+				const char* hint = "";
+				if (pEntity->pev->spawnflags & SF_PUSH_LIFTABLE) {
+					strcpy_safe(sbuf0, "2 Press USE key to lift", SBAR_STRING_SIZE);
+				}
+				else {
+					strcpy_safe(sbuf0, "2 Cannot lift", SBAR_STRING_SIZE);
+				}
+
+				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name, hint), SBAR_STRING_SIZE);
+
+				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
+				newSBarState[SBAR_ID_TARGETHEALTH] = 1;
+
+				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+			}
 		}
 		else if ( m_flStatusBarDisappearDelay > gpGlobals->time )
 		{
