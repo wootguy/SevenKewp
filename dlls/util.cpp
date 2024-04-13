@@ -3362,7 +3362,7 @@ CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity) {
 	}
 	else if (iprio == ENTIDX_PRIORITY_NORMAL && eidx < normalPrioMin) {
 		// try to find a slot in the normal priority area, else keep using the high priority slot
-		for (int i = lowPrioMin - 1; i >= normalPrioMin; i--) {
+		for (int i = normalPrioMin; i < lowPrioMin; i++) {
 			if (edicts[i].free) {
 				bestIdx = i;
 				break;
