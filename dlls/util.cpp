@@ -35,6 +35,7 @@
 #include "user_messages.h"
 #include <queue>
 #include "studio.h"
+#include "PluginManager.h"
 
 #include <fstream>
 #include <sys/types.h>
@@ -3395,6 +3396,20 @@ CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity) {
 
 edict_t* CREATE_NAMED_ENTITY(string_t cname) {
 	edict_t* ed = g_engfuncs.pfnCreateNamedEntity(cname);
+
+	if (!ed) {
+		ENTITYINIT initFunc = g_pluginManager.GetCustomEntityInitFunc(STRING(cname));
+
+		if (initFunc) {
+			ed = CREATE_ENTITY();
+			ed->v.classname = cname;
+			initFunc(&ed->v);
+		}
+		else {
+			ALERT(at_console, "Invalid entity class '%s'\n", STRING(cname));
+		}
+	}
+
 	CBaseEntity* pEntity = CBaseEntity::Instance(ed);
 
 	return pEntity ? RelocateEntIdx(pEntity)->edict() : ed;

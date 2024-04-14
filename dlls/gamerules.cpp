@@ -26,6 +26,7 @@
 #include	"game.h"
 #include "CGamePlayerEquip.h"
 #include "CBasePlayerItem.h"
+#include "PluginManager.h"
 
 #include <sstream>
 #include <string>
@@ -146,6 +147,7 @@ void execMapCfg() {
 		"globalmodellist",
 		"globalsoundlist",
 		"mp_shitcode",
+		"map_plugin",
 	};
 
 	static set<string> itemNames = {
@@ -253,6 +255,12 @@ void execMapCfg() {
 				dat.szKeyName = (char*)name.c_str();
 				dat.szValue = (char*)value.c_str();
 				DispatchKeyValue(ENT(0), &dat);
+				continue;
+			}
+
+			// map plugins need to be loaded now in case they define custom entities used in the bsp data
+			if (name == "map_plugin") {
+				g_pluginManager.AddPlugin(value.c_str(), true);
 				continue;
 			}
 

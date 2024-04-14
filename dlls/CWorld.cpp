@@ -11,6 +11,7 @@
 #include "gamerules.h"
 #include "teamplay_gamerules.h"
 #include "bodyque.h"
+#include "PluginManager.h"
 
 extern CGraph WorldGraph;
 extern CSoundEnt* pSoundEnt;
@@ -295,6 +296,8 @@ void CWorld::Precache(void)
 	{
 		CVAR_SET_FLOAT("mp_defaultteam", 0);
 	}
+
+	g_pluginManager.CallHooks(&HLCOOP_PLUGIN_HOOKS::pfnMapInit);
 }
 
 

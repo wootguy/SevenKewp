@@ -62,6 +62,8 @@ extern std::set<std::string> g_tryPrecacheEvents;
 
 extern std::map<std::string, WavInfo> g_wavInfos; // cached wav info, cleared on map change
 
+extern std::set<std::string> g_weaponClassnames;
+
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
 
