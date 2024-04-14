@@ -3,7 +3,6 @@
 #include "cbase.h"
 #include "lagcomp.h"
 #include <queue>
-#include "basemonster.h"
 #include "CBasePlayer.h"
 
 #define MAX_UNLAG_STATES 50

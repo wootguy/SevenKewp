@@ -1,4 +1,6 @@
 #pragma once
+#include "cbase.h"
+#include "CBasePlayer.h"
 
 typedef struct
 {
@@ -22,7 +24,7 @@ typedef struct
 } ItemInfo;
 
 // Items that the player has in their inventory that they can use
-class CBasePlayerItem : public CBaseAnimating
+class EXPORT CBasePlayerItem : public CBaseAnimating
 {
 public:
 	virtual void SetObjectCollisionBox( void );
@@ -34,11 +36,11 @@ public:
 
 	virtual int AddToPlayer( CBasePlayer *pPlayer );	// return TRUE if the item you want the item added to the player inventory
 	virtual int AddDuplicate( CBasePlayerItem *pItem ) { return FALSE; }	// return TRUE if you want your duplicate removed from world
-	void EXPORT DestroyItem( void );
-	void EXPORT DefaultTouch( CBaseEntity *pOther );	// default weapon touch
-	void EXPORT FallThink ( void );// when an item is first spawned, this think is run to determine when the object has hit the ground.
-	void EXPORT Materialize( void );// make a weapon visible and tangible
-	void EXPORT AttemptToMaterialize( void );  // the weapon desires to become visible and tangible, if the game rules allow for it
+	void DestroyItem( void );
+	void DefaultTouch( CBaseEntity *pOther );	// default weapon touch
+	void FallThink ( void );// when an item is first spawned, this think is run to determine when the object has hit the ground.
+	void Materialize( void );// make a weapon visible and tangible
+	void AttemptToMaterialize( void );  // the weapon desires to become visible and tangible, if the game rules allow for it
 	virtual CBaseEntity* Respawn ( void );// copy a weapon
 	void FallInit( void );
 	void CheckRespawn( void );

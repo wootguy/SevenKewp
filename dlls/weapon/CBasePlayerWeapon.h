@@ -2,7 +2,7 @@
 #include "CBasePlayerItem.h"
 #include "lagcomp.h"
 
-class CBasePlayerWeapon : public CBasePlayerItem
+class EXPORT CBasePlayerWeapon : public CBasePlayerItem
 {
 public:
 	virtual void KeyValue(KeyValueData* pkvd);

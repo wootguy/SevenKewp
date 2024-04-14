@@ -15,11 +15,13 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include "Platform.h"
+
 //=========================================================
 // 2DVector - used for many pathfinding and many other 
 // operations that are treated as planar rather than 3d.
 //=========================================================
-class Vector2D
+class EXPORT Vector2D
 {
 public:
 	inline Vector2D(void)									{ }
@@ -56,14 +58,12 @@ inline Vector2D operator*(float fl, const Vector2D& v)	{ return v * fl; }
 //=========================================================
 // 3D Vector
 //=========================================================
-class Vector						// same data-layout as engine's vec3_t,
+class EXPORT Vector						// same data-layout as engine's vec3_t,
 {								//		which is a vec_t[3]
 public:
 	// Construction/destruction
 	inline Vector(void) { x = 0; y = 0; z = 0; }
 	inline Vector(float X, float Y, float Z)		{ x = X; y = Y; z = Z;						}
-	//inline Vector(double X, double Y, double Z)		{ x = (float)X; y = (float)Y; z = (float)Z;	}
-	//inline Vector(int X, int Y, int Z)				{ x = (float)X; y = (float)Y; z = (float)Z;	}
 	inline Vector(const Vector& v)					{ x = v.x; y = v.y; z = v.z;				} 
 	inline Vector(const float rgfl[3])					{ x = rgfl[0]; y = rgfl[1]; z = rgfl[2];	}
 

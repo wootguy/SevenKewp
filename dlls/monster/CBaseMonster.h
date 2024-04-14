@@ -24,7 +24,7 @@ extern entvars_t* g_pevLastInflictor;
 //
 // generic Monster
 //
-class CBaseMonster : public CBaseToggle
+class EXPORT CBaseMonster : public CBaseToggle
 {
 private:
 		int					m_afConditions;
@@ -158,8 +158,8 @@ public:
 	virtual void KeyValue( KeyValueData *pkvd );
 
 // monster use function
-	void EXPORT			MonsterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void EXPORT			CorpseUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void MonsterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void CorpseUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
 // overrideable Monster member functions
 	
@@ -184,7 +184,7 @@ public:
 
 // stuff written for new state machine
 		virtual void MonsterThink( void );
-		void EXPORT	CallMonsterThink( void ) { this->MonsterThink(); }
+		void CallMonsterThink( void ) { this->MonsterThink(); }
 		virtual int Classify ( void );
 		// returns classification accounting for override keys
 		int Classify ( int defaultClassify );
@@ -196,9 +196,9 @@ public:
 		virtual void MonsterInit ( void );
 		virtual void MonsterInitDead( void );	// Call after animation/pose is set up
 		virtual void BecomeDead( void );
-		void EXPORT CorpseFallThink( void );
+		void CorpseFallThink( void );
 
-		void EXPORT MonsterInitThink ( void );
+		void MonsterInitThink ( void );
 		virtual void StartMonster ( void );
 		virtual CBaseEntity* BestVisibleEnemy ( void );// finds best visible enemy for attack
 		virtual BOOL FInViewCone ( CBaseEntity *pEntity );// see if pEntity is in monster's view cone
@@ -392,8 +392,8 @@ public:
 	virtual void	StopFollowing(BOOL clearSchedule);
 	virtual void	StartFollowing(CBaseEntity* pLeader);
 	virtual void	DeclineFollowing(void) {}
-	void EXPORT		FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	void EXPORT		PushTouch(CBaseEntity* pOther);
+	void FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void PushTouch(CBaseEntity* pOther);
 	virtual bool	CanBePushed() { return true; }
 
 	virtual void	StartFollowingSound() {}

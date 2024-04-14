@@ -18,14 +18,14 @@ typedef enum
 	TURRET_ANIM_DIE,
 } TURRET_ANIM;
 
-class CBaseTurret : public CBaseMonster
+class EXPORT CBaseTurret : public CBaseMonster
 {
 public:
 	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 	void Spawn(void);
 	virtual void Precache(void);
 	void KeyValue(KeyValueData* pkvd);
-	void EXPORT TurretUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void TurretUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 
 	virtual void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	virtual int	 TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
@@ -40,13 +40,13 @@ public:
 
 	// Think functions
 
-	void EXPORT ActiveThink(void);
-	void EXPORT SearchThink(void);
-	void EXPORT AutoSearchThink(void);
-	void EXPORT TurretDeath(void);
+	void ActiveThink(void);
+	void SearchThink(void);
+	void AutoSearchThink(void);
+	void TurretDeath(void);
 
-	virtual void EXPORT SpinDownCall(void) { m_iSpin = 0; }
-	virtual void EXPORT SpinUpCall(void) { m_iSpin = 1; }
+	virtual void SpinDownCall(void) { m_iSpin = 0; }
+	virtual void SpinUpCall(void) { m_iSpin = 1; }
 
 	// void SpinDown(void);
 	// float EXPORT SpinDownCall( void ) { return SpinDown(); }
@@ -54,10 +54,10 @@ public:
 	// virtual float SpinDown(void) { return 0;}
 	// virtual float Retire(void) { return 0;}
 
-	virtual void EXPORT Deploy(void);
-	void EXPORT Retire(void);
+	virtual void Deploy(void);
+	void Retire(void);
 
-	void EXPORT Initialize(void);
+	void Initialize(void);
 
 	virtual void Ping(void);
 	virtual void EyeOn(void);

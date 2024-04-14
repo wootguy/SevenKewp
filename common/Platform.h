@@ -61,7 +61,8 @@
 #define itoa _itoa
 #define strupr _strupr
 
-#define DLLEXPORT __declspec( dllexport )
+#define DLLEXPORT __declspec(dllexport)
+#define DLLIMPORT __declspec(dllimport)
 #else // _WIN32
 #define FALSE 0
 #define TRUE (!FALSE)
@@ -80,9 +81,16 @@ typedef int BOOL;
 #define _alloca alloca
 
 #define DLLEXPORT __attribute__ ( ( visibility( "default" ) ) )
+#define DLLIMPORT
 #endif //_WIN32
 
 #define V_min(a,b)  (((a) < (b)) ? (a) : (b))
 #define V_max(a,b)  (((a) > (b)) ? (a) : (b))
+
+#ifdef PLUGIN_BUILD
+#define EXPORT DLLIMPORT
+#else
+#define EXPORT DLLEXPORT
+#endif
 
 #endif //PLATFORM_H

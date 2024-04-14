@@ -21,7 +21,7 @@ enum float_to_str_conv {
 	FLT2STR_FLOOR = 18,
 };
 
-class CBaseLogic : public CPointEntity
+class EXPORT CBaseLogic : public CPointEntity
 {
 public:
 

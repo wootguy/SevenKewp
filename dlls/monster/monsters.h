@@ -72,21 +72,24 @@
 #define		MOVE_STRAFE				1// moves in direction specified, no matter which way monster is facing
 
 // spawn flags 256 and above are already taken by the engine
-extern void UTIL_MoveToOrigin( edict_t* pent, const Vector &vecGoal, float flDist, int iMoveType ); 
+EXPORT void UTIL_MoveToOrigin( edict_t* pent, const Vector &vecGoal, float flDist, int iMoveType );
 
-Vector VecCheckToss ( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float flGravityAdj = 1.0 );
-Vector VecCheckThrow ( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float flSpeed, float flGravityAdj = 1.0 );
-extern DLL_GLOBAL Vector		g_vecAttackDir;
-extern DLL_GLOBAL CONSTANT float g_flMeleeRange;
-extern DLL_GLOBAL CONSTANT float g_flMediumRange;
-extern DLL_GLOBAL CONSTANT float g_flLongRange;
-extern void EjectBrass (const Vector &vecOrigin, const Vector &vecVelocity, float rotation, int model, int soundtype );
-extern void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count );
+EXPORT Vector VecCheckToss ( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float flGravityAdj = 1.0 );
+EXPORT Vector VecCheckThrow ( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float flSpeed, float flGravityAdj = 1.0 );
+EXPORT extern DLL_GLOBAL Vector		g_vecAttackDir;
+EXPORT extern DLL_GLOBAL CONSTANT float g_flMeleeRange;
+EXPORT extern DLL_GLOBAL CONSTANT float g_flMediumRange;
+EXPORT extern DLL_GLOBAL CONSTANT float g_flLongRange;
+EXPORT void EjectBrass (const Vector &vecOrigin, const Vector &vecVelocity, float rotation, int model, int soundtype );
+EXPORT void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count );
 
-BOOL FBoxVisible ( entvars_t *pevLooker, entvars_t *pevTarget );
-BOOL FBoxVisible ( entvars_t *pevLooker, entvars_t *pevTarget, Vector &vecTargetOrigin, float flSize = 0.0 );
+EXPORT BOOL FBoxVisible ( entvars_t *pevLooker, entvars_t *pevTarget );
+EXPORT BOOL FBoxVisible ( entvars_t *pevLooker, entvars_t *pevTarget, Vector &vecTargetOrigin, float flSize = 0.0 );
 
-BOOL IsFacing(entvars_t* pevTest, const Vector& reference);
+EXPORT BOOL IsFacing(entvars_t* pevTest, const Vector& reference);
+
+EXPORT void AddAmmoNameToAmmoRegistry(const char* szAmmoname);
+EXPORT void UTIL_RegisterWeapon(const char* szClassname);
 
 // monster to monster relationship types
 #define R_AL	-2 // (ALLY) pals. Good alternative to R_NO when applicable.
@@ -145,14 +148,14 @@ enum
 //
 // A gib is a chunk of a body, or a piece of wood/metal/rocks/etc.
 //
-class CGib : public CBaseEntity
+class EXPORT CGib : public CBaseEntity
 {
 public:
 	void Spawn( const char *szGibModel );
-	void EXPORT BounceGibTouch ( CBaseEntity *pOther );
-	void EXPORT StickyGibTouch ( CBaseEntity *pOther );
-	void EXPORT WaitTillLand( void );
-	void		LimitVelocity( void );
+	void BounceGibTouch ( CBaseEntity *pOther );
+	void StickyGibTouch ( CBaseEntity *pOther );
+	void WaitTillLand( void );
+	void LimitVelocity( void );
 
 	virtual int	ObjectCaps( void ) { return (CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE; }
 	static	void SpawnHeadGib( entvars_t *pevVictim );

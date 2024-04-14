@@ -45,7 +45,7 @@ struct WavInfo {
 	bool isLooped; // sound is looped with cue points
 };
 
-extern globalvars_t				*gpGlobals;
+extern EXPORT globalvars_t				*gpGlobals;
 
 // resources that were successfully precached
 extern std::map<std::string, std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
@@ -151,7 +151,7 @@ typedef int BOOL;
 // Conversion among the three types of "entity", including identity-conversions.
 //
 #ifdef DEBUG
-	extern edict_t *DBG_EntOfVars(const entvars_t *pev);
+	EXPORT edict_t *DBG_EntOfVars(const entvars_t *pev);
 	inline edict_t *ENT(const entvars_t *pev)	{ return DBG_EntOfVars(pev); }
 #else
 	inline edict_t *ENT(const entvars_t *pev)	{ return pev->pContainingEntity; }
@@ -255,17 +255,17 @@ inline BOOL FClassnameIs(entvars_t* pev, const char* szClassname)
 class CBaseEntity;
 
 // Misc. Prototypes
-extern void			UTIL_SetSize			(entvars_t* pev, const Vector &vecMin, const Vector &vecMax);
-extern float		UTIL_VecToYaw			(const Vector &vec);
-extern Vector		UTIL_VecToAngles		(const Vector &vec);
-extern float		UTIL_AngleMod			(float a);
-extern float		UTIL_AngleDiff			( float destAngle, float srcAngle );
+EXPORT void			UTIL_SetSize			(entvars_t* pev, const Vector &vecMin, const Vector &vecMax);
+EXPORT float		UTIL_VecToYaw			(const Vector &vec);
+EXPORT Vector		UTIL_VecToAngles		(const Vector &vec);
+EXPORT float		UTIL_AngleMod			(float a);
+EXPORT float		UTIL_AngleDiff			( float destAngle, float srcAngle );
 
-extern CBaseEntity	*UTIL_FindEntityInSphere(CBaseEntity *pStartEntity, const Vector &vecCenter, float flRadius);
-extern CBaseEntity	*UTIL_FindEntityByString(CBaseEntity *pStartEntity, const char *szKeyword, const char *szValue );
-extern CBaseEntity	*UTIL_FindEntityByClassname(CBaseEntity *pStartEntity, const char *szName );
-extern CBaseEntity	*UTIL_FindEntityByTargetname(CBaseEntity *pStartEntity, const char *szName );
-extern CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, float flRadius );
+EXPORT CBaseEntity	*UTIL_FindEntityInSphere(CBaseEntity *pStartEntity, const Vector &vecCenter, float flRadius);
+EXPORT CBaseEntity	*UTIL_FindEntityByString(CBaseEntity *pStartEntity, const char *szKeyword, const char *szValue );
+EXPORT CBaseEntity	*UTIL_FindEntityByClassname(CBaseEntity *pStartEntity, const char *szName );
+EXPORT CBaseEntity	*UTIL_FindEntityByTargetname(CBaseEntity *pStartEntity, const char *szName );
+EXPORT CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, float flRadius );
 
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns NULL
@@ -273,88 +273,88 @@ extern CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, f
 extern CBaseEntity	*UTIL_PlayerByIndex( int playerIndex );
 
 #define UTIL_EntitiesInPVS(pent)			(*g_engfuncs.pfnEntitiesInPVS)(pent)
-extern edict_t*		UTIL_ClientsInPVS(edict_t* edict, int& playerCount);
-extern bool			UTIL_IsClientInPVS(edict_t* edict); // faster than UTIL_ClientsInPVS
-extern void			UTIL_MakeVectors(const Vector& vecAngles);
-extern bool			IsValidPlayer(edict_t* edict); // true if edict is a connected player
+EXPORT edict_t*		UTIL_ClientsInPVS(edict_t* edict, int& playerCount);
+EXPORT bool			UTIL_IsClientInPVS(edict_t* edict); // faster than UTIL_ClientsInPVS
+EXPORT void			UTIL_MakeVectors(const Vector& vecAngles);
+EXPORT bool			IsValidPlayer(edict_t* edict); // true if edict is a connected player
 
 // Pass in an array of pointers and an array size, it fills the array and returns the number inserted
-extern int			UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &center, float radius );
-extern int			UTIL_EntitiesInBox( CBaseEntity **pList, int listMax, const Vector &mins, const Vector &maxs, int flagMask, bool ignoreDead);
+EXPORT int			UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &center, float radius );
+EXPORT int			UTIL_EntitiesInBox( CBaseEntity **pList, int listMax, const Vector &mins, const Vector &maxs, int flagMask, bool ignoreDead);
 
 inline void UTIL_MakeVectorsPrivate( const Vector &vecAngles, float *p_vForward, float *p_vRight, float *p_vUp )
 {
 	g_engfuncs.pfnAngleVectors( vecAngles, p_vForward, p_vRight, p_vUp );
 }
 
-extern void			UTIL_MakeAimVectors		( const Vector &vecAngles ); // like MakeVectors, but assumes pitch isn't inverted
-extern void			UTIL_MakeInvVectors		( const Vector &vec, globalvars_t *pgv );
+EXPORT void			UTIL_MakeAimVectors		( const Vector &vecAngles ); // like MakeVectors, but assumes pitch isn't inverted
+EXPORT void			UTIL_MakeInvVectors		( const Vector &vec, globalvars_t *pgv );
 
-extern void			UTIL_SetOrigin			( entvars_t* pev, const Vector &vecOrigin ); // Needs to be called any time an entity changes origin, mins, maxs, or solid
-extern void			UTIL_EmitAmbientSound	( edict_t *entity, const float* vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest=NULL);
-extern void			UTIL_ParticleEffect		( const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount );
-extern void			UTIL_ScreenShake		( const Vector &center, float amplitude, float frequency, float duration, float radius );
-extern void			UTIL_ScreenShakeAll		( const Vector &center, float amplitude, float frequency, float duration );
-extern void			UTIL_ShowMessage		( const char *pString, CBaseEntity *pPlayer );
-extern void			UTIL_ShowMessageAll		( const char *pString );
-extern void			UTIL_ScreenFadeAll		( const Vector &color, float fadeTime, float holdTime, int alpha, int flags );
-extern void			UTIL_ScreenFade			( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags );
+EXPORT void			UTIL_SetOrigin			( entvars_t* pev, const Vector &vecOrigin ); // Needs to be called any time an entity changes origin, mins, maxs, or solid
+EXPORT void			UTIL_EmitAmbientSound	( edict_t *entity, const float* vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest=NULL);
+EXPORT void			UTIL_ParticleEffect		( const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount );
+EXPORT void			UTIL_ScreenShake		( const Vector &center, float amplitude, float frequency, float duration, float radius );
+EXPORT void			UTIL_ScreenShakeAll		( const Vector &center, float amplitude, float frequency, float duration );
+EXPORT void			UTIL_ShowMessage		( const char *pString, CBaseEntity *pPlayer );
+EXPORT void			UTIL_ShowMessageAll		( const char *pString );
+EXPORT void			UTIL_ScreenFadeAll		( const Vector &color, float fadeTime, float holdTime, int alpha, int flags );
+EXPORT void			UTIL_ScreenFade			( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags );
 
 // leave target NULL to play music for all players
-extern void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target=NULL);
+EXPORT void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target=NULL);
 
 // leave target NULL to stop music for all players
-extern void UTIL_StopGlobalMp3(edict_t* target=NULL);
+EXPORT void UTIL_StopGlobalMp3(edict_t* target=NULL);
 
 typedef enum { ignore_monsters=1, dont_ignore_monsters=0, missile=2 } IGNORE_MONSTERS;
 typedef enum { ignore_glass=1, dont_ignore_glass=0 } IGNORE_GLASS;
-extern void			UTIL_TraceLine			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr);
-extern void			UTIL_TraceLine			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t *pentIgnore, TraceResult *ptr);
+EXPORT void			UTIL_TraceLine			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr);
+EXPORT void			UTIL_TraceLine			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t *pentIgnore, TraceResult *ptr);
 enum { point_hull=0, human_hull=1, large_hull=2, head_hull=3 };
-extern void			UTIL_TraceHull			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, int hullNumber, edict_t *pentIgnore, TraceResult *ptr);
-extern TraceResult	UTIL_GetGlobalTrace		(void);
-extern void			UTIL_TraceModel			(const Vector &vecStart, const Vector &vecEnd, int hullNumber, edict_t *pentModel, TraceResult *ptr);
-extern Vector		UTIL_GetAimVector		(edict_t* pent, float flSpeed);
-extern int			UTIL_PointContents		(const Vector &vec);
+EXPORT void			UTIL_TraceHull			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, int hullNumber, edict_t *pentIgnore, TraceResult *ptr);
+EXPORT TraceResult	UTIL_GetGlobalTrace		(void);
+EXPORT void			UTIL_TraceModel			(const Vector &vecStart, const Vector &vecEnd, int hullNumber, edict_t *pentModel, TraceResult *ptr);
+EXPORT Vector		UTIL_GetAimVector		(edict_t* pent, float flSpeed);
+EXPORT int			UTIL_PointContents		(const Vector &vec);
 
-extern int			UTIL_IsMasterTriggered	(string_t sMaster, CBaseEntity *pActivator);
-extern void			UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount );
-extern void			UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, int amount );
-extern Vector		UTIL_RandomBloodVector( void );
-extern BOOL			UTIL_ShouldShowBlood( int bloodColor );
-extern void			UTIL_BloodDecalTrace( TraceResult *pTrace, int bloodColor );
-extern void			UTIL_DecalTrace( TraceResult *pTrace, int decalNumber );
-extern void			UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber, BOOL bIsCustom );
-extern void			UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber );
-extern void			UTIL_Sparks( const Vector &position );
-extern void			UTIL_Ricochet( const Vector &position, float scale );
-extern void			UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType);
-extern void			UTIL_StringToVector( float *pVector, const char *pString );
-extern bool			UTIL_StringIsVector( const char *pString );
-extern void			UTIL_StringToIntArray( int *pVector, int count, const char *pString );
-extern Vector		UTIL_ClampVectorToBox( const Vector &input, const Vector &clampSize );
-extern float		UTIL_Approach( float target, float value, float speed );
-extern float		UTIL_ApproachAngle( float target, float value, float speed );
-extern float		UTIL_AngleDistance( float next, float cur );
+EXPORT int			UTIL_IsMasterTriggered	(string_t sMaster, CBaseEntity *pActivator);
+EXPORT void			UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount );
+EXPORT void			UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, int amount );
+EXPORT Vector		UTIL_RandomBloodVector( void );
+EXPORT BOOL			UTIL_ShouldShowBlood( int bloodColor );
+EXPORT void			UTIL_BloodDecalTrace( TraceResult *pTrace, int bloodColor );
+EXPORT void			UTIL_DecalTrace( TraceResult *pTrace, int decalNumber );
+EXPORT void			UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber, BOOL bIsCustom );
+EXPORT void			UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber );
+EXPORT void			UTIL_Sparks( const Vector &position );
+EXPORT void			UTIL_Ricochet( const Vector &position, float scale );
+EXPORT void			UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType);
+EXPORT void			UTIL_StringToVector( float *pVector, const char *pString );
+EXPORT bool			UTIL_StringIsVector( const char *pString );
+EXPORT void			UTIL_StringToIntArray( int *pVector, int count, const char *pString );
+EXPORT Vector		UTIL_ClampVectorToBox( const Vector &input, const Vector &clampSize );
+EXPORT float		UTIL_Approach( float target, float value, float speed );
+EXPORT float		UTIL_ApproachAngle( float target, float value, float speed );
+EXPORT float		UTIL_AngleDistance( float next, float cur );
 
-extern char			*UTIL_VarArgs( const char *format, ... );
-extern void			UTIL_Remove( CBaseEntity *pEntity );
-extern BOOL			UTIL_IsValidEntity( edict_t *pent );
-extern BOOL			UTIL_TeamsMatch( const char *pTeamName1, const char *pTeamName2 );
+EXPORT char			*UTIL_VarArgs( const char *format, ... );
+EXPORT void			UTIL_Remove( CBaseEntity *pEntity );
+EXPORT BOOL			UTIL_IsValidEntity( edict_t *pent );
+EXPORT BOOL			UTIL_TeamsMatch( const char *pTeamName1, const char *pTeamName2 );
 
 // Use for ease-in, ease-out style interpolation (accel/decel)
-extern float		UTIL_SplineFraction( float value, float scale );
+EXPORT float		UTIL_SplineFraction( float value, float scale );
 
 // Search for water transition along a vertical line
-extern float		UTIL_WaterLevel( const Vector &position, float minz, float maxz );
-extern void			UTIL_Bubbles( Vector mins, Vector maxs, int count );
-extern void			UTIL_BubbleTrail( Vector from, Vector to, int count );
+EXPORT float		UTIL_WaterLevel( const Vector &position, float minz, float maxz );
+EXPORT void			UTIL_Bubbles( Vector mins, Vector maxs, int count );
+EXPORT void			UTIL_BubbleTrail( Vector from, Vector to, int count );
 
 // allows precacheing of other entities
-extern void			UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::string> keys=std::map<std::string, std::string>() );
+EXPORT void			UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::string> keys=std::map<std::string, std::string>() );
 
 // prints a message to each client
-extern void			UTIL_ClientPrintAll( int msg_dest, const char *msg);
+EXPORT void			UTIL_ClientPrintAll( int msg_dest, const char *msg);
 inline void			UTIL_CenterPrintAll( const char *msg_name ) 
 {
 	UTIL_ClientPrintAll( print_center, msg_name );
@@ -362,14 +362,14 @@ inline void			UTIL_CenterPrintAll( const char *msg_name )
 
 class CBasePlayerItem;
 class CBasePlayer;
-extern BOOL UTIL_GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
+EXPORT BOOL UTIL_GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
 
 // prints messages through the HUD
-extern void UTIL_ClientPrint(edict_t* client, int msg_dest, const char *msg );
+EXPORT void UTIL_ClientPrint(edict_t* client, int msg_dest, const char *msg );
 
 // prints a message to the HUD say (chat)
-extern void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
-extern void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity );
+EXPORT void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
+EXPORT void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity );
 
 
 typedef struct hudtextparms_s
@@ -387,27 +387,27 @@ typedef struct hudtextparms_s
 } hudtextparms_t;
 
 // prints as transparent 'title' to the HUD
-extern void			UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage );
-extern void			UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage );
+EXPORT void			UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage );
+EXPORT void			UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage );
 
 // for handy use with ClientPrint params
-extern char *UTIL_dtos1( int d );
-extern char *UTIL_dtos2( int d );
-extern char *UTIL_dtos3( int d );
-extern char *UTIL_dtos4( int d );
+EXPORT char *UTIL_dtos1( int d );
+EXPORT char *UTIL_dtos2( int d );
+EXPORT char *UTIL_dtos3( int d );
+EXPORT char *UTIL_dtos4( int d );
 
 // Writes message to console with timestamp and FragLog header.
-extern void			UTIL_LogPrintf( const char *fmt, ... );
+EXPORT void			UTIL_LogPrintf( const char *fmt, ... );
 
 // Sorta like FInViewCone, but for nonmonsters. 
-extern float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir );
+EXPORT float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir );
 
-extern void UTIL_StripToken( const char *pKey, char *pDest );// for redundant keynames
+EXPORT void UTIL_StripToken( const char *pKey, char *pDest );// for redundant keynames
 
 // Misc functions
-extern void SetMovedir(entvars_t* pev);
-extern Vector VecBModelOrigin( entvars_t* pevBModel );
-extern int BuildChangeList( LEVELLIST *pLevelList, int maxList );
+EXPORT void SetMovedir(entvars_t* pev);
+EXPORT Vector VecBModelOrigin( entvars_t* pevBModel );
+EXPORT int BuildChangeList( LEVELLIST *pLevelList, int maxList );
 
 //
 // How did I ever live without ASSERT?
@@ -593,21 +593,21 @@ enum svc_commands_e
 extern char gszallsentencenames[CVOXFILESENTENCEMAX][CBSENTENCENAME_MAX];
 extern int gcallsentences;
 
-int USENTENCEG_Pick(int isentenceg, char *szfound);
-int USENTENCEG_PickSequential(int isentenceg, char *szfound, int ipick, int freset);
-void USENTENCEG_InitLRU(unsigned char *plru, int count);
+EXPORT int USENTENCEG_Pick(int isentenceg, char *szfound);
+EXPORT int USENTENCEG_PickSequential(int isentenceg, char *szfound, int ipick, int freset);
+EXPORT void USENTENCEG_InitLRU(unsigned char *plru, int count);
 
-void SENTENCEG_Init();
-void SENTENCEG_Stop(edict_t *entity, int isentenceg, int ipick);
-int SENTENCEG_PlayRndI(edict_t *entity, int isentenceg, float volume, float attenuation, int flags, int pitch);
-int SENTENCEG_PlayRndSz(edict_t *entity, const char *szrootname, float volume, float attenuation, int flags, int pitch);
-int SENTENCEG_PlaySequentialSz(edict_t *entity, const char *szrootname, float volume, float attenuation, int flags, int pitch, int ipick, int freset);
-int SENTENCEG_GetIndex(const char *szrootname);
-int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz);
+EXPORT void SENTENCEG_Init();
+EXPORT void SENTENCEG_Stop(edict_t *entity, int isentenceg, int ipick);
+EXPORT int SENTENCEG_PlayRndI(edict_t *entity, int isentenceg, float volume, float attenuation, int flags, int pitch);
+EXPORT int SENTENCEG_PlayRndSz(edict_t *entity, const char *szrootname, float volume, float attenuation, int flags, int pitch);
+EXPORT int SENTENCEG_PlaySequentialSz(edict_t *entity, const char *szrootname, float volume, float attenuation, int flags, int pitch, int ipick, int freset);
+EXPORT int SENTENCEG_GetIndex(const char *szrootname);
+EXPORT int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz);
 
-void TEXTURETYPE_Init();
-char TEXTURETYPE_Find(char *name);
-float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType);
+EXPORT void TEXTURETYPE_Init();
+EXPORT char TEXTURETYPE_Find(char *name);
+EXPORT float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType);
 
 // NOTE: use EMIT_SOUND_DYN to set the pitch of a sound. Pitch of 100
 // is no pitch shift.  Pitch > 100 up to 255 is a higher pitch, pitch < 100
@@ -615,12 +615,12 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 // EMIT_SOUND_DYN with pitch != 100 should be used sparingly, as it's not quite as
 // fast as EMIT_SOUND (the pitchshift mixer is not native coded).
 
-void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
+EXPORT void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
 						   int flags, int pitch);
 
 // play the sound for players with bits contained in messageTargets
 // a player bit = 1 << (ENTINDEX(player_edict) % 31)
-void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
+EXPORT void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
 	int fFlags, int pitch, const float* origin, uint32_t messageTargets);
 
 inline void EMIT_SOUND(edict_t *entity, int channel, const char *sample, float volume, float attenuation)
@@ -634,11 +634,11 @@ inline void STOP_SOUND(edict_t *entity, int channel, const char *sample)
 }
 
 // conditionally plays a special distant sound clip for very loud sounds that should be heard everywhere
-void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType);
+EXPORT void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType);
 
-void EMIT_SOUND_SUIT(edict_t *entity, const char *sample);
-void EMIT_GROUPID_SUIT(edict_t *entity, int isentenceg);
-void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
+EXPORT void EMIT_SOUND_SUIT(edict_t *entity, const char *sample);
+EXPORT void EMIT_GROUPID_SUIT(edict_t *entity, int isentenceg);
+EXPORT void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 
 // macros for precaching sound arrays and selecting random sounds which are affected my mp_soundvariety
 #define RANDOM_SOUND_ARRAY_IDX( array ) RANDOM_LONG(0,(soundvariety.value > 0 ? V_min(ARRAYSIZE( (array) ), soundvariety.value) : ARRAYSIZE( (array) ))-1)
@@ -661,7 +661,7 @@ void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 // randomize sounds in array, so that the same sounds aren't played on every map when mp_soundvariety is low
 #define SOUND_ARRAY_SZ(array) (sizeof(array) / sizeof(const char*))
 #define SHUFFLE_SOUND_ARRAY(array) UTIL_ShuffleSoundArray(array, SOUND_ARRAY_SZ(array));
-void UTIL_ShuffleSoundArray(const char** arr, size_t n);
+EXPORT void UTIL_ShuffleSoundArray(const char** arr, size_t n);
 
 #define PLAYBACK_EVENT( flags, who, index ) PLAYBACK_EVENT_FULL( flags, who, index, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
 #define PLAYBACK_EVENT_DELAY( flags, who, index, delay ) PLAYBACK_EVENT_FULL( flags, who, index, delay, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
@@ -682,13 +682,13 @@ private:
 	int m_oldgroupmask, m_oldgroupop;
 };
 
-void UTIL_SetGroupTrace( int groupmask, int op );
-void UTIL_UnsetGroupTrace( void );
+EXPORT void UTIL_SetGroupTrace( int groupmask, int op );
+EXPORT void UTIL_UnsetGroupTrace( void );
 
-int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
-float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
+EXPORT int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
+EXPORT float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
-float UTIL_WeaponTimeBase( void );
+EXPORT float UTIL_WeaponTimeBase( void );
 
 #ifdef CLIENT_DLL
 #define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
@@ -713,36 +713,36 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 #define CREATE_NAMED_ENTITY		(*g_engfuncs.pfnCreateNamedEntity)
 #else
 // engine wrappers which handle model/sound replacement logic
-int PRECACHE_GENERIC(const char* path);
-int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path);
-int PRECACHE_SOUND_NULLENT(const char* path);
-int PRECACHE_MODEL(const char* model);
-int PRECACHE_EVENT(int id, const char* path);
-void SET_MODEL(edict_t* edict, const char* model);
-const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
-int MODEL_INDEX(const char* model);
-void* GET_MODEL_PTR(edict_t* edict);
-edict_t* CREATE_NAMED_ENTITY(string_t cname);
+EXPORT int PRECACHE_GENERIC(const char* path);
+EXPORT int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path);
+EXPORT int PRECACHE_SOUND_NULLENT(const char* path);
+EXPORT int PRECACHE_MODEL(const char* model);
+EXPORT int PRECACHE_EVENT(int id, const char* path);
+EXPORT void SET_MODEL(edict_t* edict, const char* model);
+EXPORT const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
+EXPORT int MODEL_INDEX(const char* model);
+EXPORT void* GET_MODEL_PTR(edict_t* edict);
+EXPORT edict_t* CREATE_NAMED_ENTITY(string_t cname);
 #define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
 
-void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL);
-void MESSAGE_END();
-void WRITE_BYTE(int iValue);
-void WRITE_CHAR(int iValue);
-void WRITE_SHORT(int iValue);
-void WRITE_LONG(int iValue);
-void WRITE_ANGLE(float fValue);
-void WRITE_COORD(float iValue);
-void WRITE_STRING(const char* sValue);
-void WRITE_ENTITY(int iValue);
+EXPORT void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL);
+EXPORT void MESSAGE_END();
+EXPORT void WRITE_BYTE(int iValue);
+EXPORT void WRITE_CHAR(int iValue);
+EXPORT void WRITE_SHORT(int iValue);
+EXPORT void WRITE_LONG(int iValue);
+EXPORT void WRITE_ANGLE(float fValue);
+EXPORT void WRITE_COORD(float iValue);
+EXPORT void WRITE_STRING(const char* sValue);
+EXPORT void WRITE_ENTITY(int iValue);
 #endif
 
-void InitEdictRelocations();
-void PrintEntindexStats();
-CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity);
+EXPORT void InitEdictRelocations();
+EXPORT void PrintEntindexStats();
+EXPORT CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity);
 
 // returns false if the entity index would overflow the client, and prints an error message in that case
-bool UTIL_isSafeEntIndex(int idx, const char* action);
+EXPORT bool UTIL_isSafeEntIndex(int idx, const char* action);
 
 inline void WRITE_COORD_VECTOR(const Vector& vec)
 {
@@ -754,45 +754,45 @@ inline void WRITE_COORD_VECTOR(const Vector& vec)
 // write the most recent X seconds of message history for debugging client disconnects 
 // due to malformed network messages.
 // reason = reason for writing the message history
-void writeNetworkMessageHistory(std::string reason);
-void clearNetworkMessageHistory();
+EXPORT void writeNetworkMessageHistory(std::string reason);
+EXPORT void clearNetworkMessageHistory();
 
-std::vector<std::string> splitString(std::string str, const char* delimitters);
+EXPORT std::vector<std::string> splitString(std::string str, const char* delimitters);
 
-std::string toLowerCase(std::string str);
+EXPORT std::string toLowerCase(std::string str);
 
-std::string toUpperCase(std::string str);
+EXPORT std::string toUpperCase(std::string str);
 
-std::string trimSpaces(std::string s);
+EXPORT std::string trimSpaces(std::string s);
 
-std::string replaceString(std::string subject, std::string search, std::string replace);
+EXPORT std::string replaceString(std::string subject, std::string search, std::string replace);
 
-bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins2, const Vector& maxs2);
+EXPORT bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins2, const Vector& maxs2);
 
-float clampf(float val, float min, float max);
+EXPORT float clampf(float val, float min, float max);
 
-int clampi(int val, int min, int max);
+EXPORT int clampi(int val, int min, int max);
 
 // returns 0 if the file doesn't exist
-uint64_t getFileModifiedTime(const char* path);
+EXPORT uint64_t getFileModifiedTime(const char* path);
 
-bool fileExists(const char* path);
+EXPORT bool fileExists(const char* path);
 
 // searches game directories in order (e.g. valve/path, valve_downloads/path)
 // returns an empty string if the file can't be found
-std::string getGameFilePath(const char* path);
+EXPORT std::string getGameFilePath(const char* path);
 
 // loads a global model/sound replacement file
 // format: "file_path" "replacement_file_path"
-std::map<std::string, std::string> loadReplacementFile(const char* path);
+EXPORT std::map<std::string, std::string> loadReplacementFile(const char* path);
 
-void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType=MSG_BROADCAST, edict_t* dest=NULL);
+EXPORT void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType=MSG_BROADCAST, edict_t* dest=NULL);
 
-WavInfo getWaveFileInfo(const char* path);
+EXPORT WavInfo getWaveFileInfo(const char* path);
 
 //
 // BModelOrigin - calculates origin of a bmodel from absmin/size because all bmodel origins are 0 0 0
 //
-Vector VecBModelOrigin(entvars_t* pevBModel);
+EXPORT Vector VecBModelOrigin(entvars_t* pevBModel);
 
-void PlayCDTrack(int iTrack);
+EXPORT void PlayCDTrack(int iTrack);
