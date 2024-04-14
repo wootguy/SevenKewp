@@ -18,10 +18,10 @@
 #include "ammo.h"
 
 class CBasePlayer;
-extern int gmsgWeapPickup;
+EXPORT extern int gmsgWeapPickup;
 
-int MaxAmmoCarry(int iszName);
-void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* mins, float* maxs, edict_t* pEntity);
+EXPORT int MaxAmmoCarry(int iszName);
+EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* mins, float* maxs, edict_t* pEntity);
 
 #define WEAPON_NONE				0
 #define WEAPON_CROWBAR			1
@@ -90,27 +90,27 @@ typedef	enum
 
 #define WEAPON_IS_ONTARGET 0x40
 
-extern DLL_GLOBAL	short	g_sModelIndexLaser;// holds the index for the laser beam
-extern DLL_GLOBAL	const char *g_pModelNameLaser;
+EXPORT extern DLL_GLOBAL	short	g_sModelIndexLaser;// holds the index for the laser beam
+EXPORT extern DLL_GLOBAL	const char *g_pModelNameLaser;
 
-extern DLL_GLOBAL	short	g_sModelIndexLaserDot;// holds the index for the laser beam dot
-extern DLL_GLOBAL	short	g_sModelIndexFireball;// holds the index for the fireball
-extern DLL_GLOBAL	short	g_sModelIndexSmoke;// holds the index for the smoke cloud
-extern DLL_GLOBAL	short	g_sModelIndexWExplosion;// holds the index for the underwater explosion
-extern DLL_GLOBAL	short	g_sModelIndexBubbles;// holds the index for the bubbles model
-extern DLL_GLOBAL	short	g_sModelIndexBloodDrop;// holds the sprite index for blood drops
-extern DLL_GLOBAL	short	g_sModelIndexBloodSpray;// holds the sprite index for blood spray (bigger)
-extern DLL_GLOBAL	short	g_sModelIndexShrapnelHit;// holds the sprite index for shrapnel impact sprite
-extern DLL_GLOBAL	short	g_sModelIndexShrapnel;// holds the model index for shrapnel gibs
+EXPORT extern DLL_GLOBAL	short	g_sModelIndexLaserDot;// holds the index for the laser beam dot
+EXPORT extern DLL_GLOBAL	short	g_sModelIndexFireball;// holds the index for the fireball
+EXPORT extern DLL_GLOBAL	short	g_sModelIndexSmoke;// holds the index for the smoke cloud
+EXPORT extern DLL_GLOBAL	short	g_sModelIndexWExplosion;// holds the index for the underwater explosion
+EXPORT extern DLL_GLOBAL	short	g_sModelIndexBubbles;// holds the index for the bubbles model
+EXPORT extern DLL_GLOBAL	short	g_sModelIndexBloodDrop;// holds the sprite index for blood drops
+EXPORT extern DLL_GLOBAL	short	g_sModelIndexBloodSpray;// holds the sprite index for blood spray (bigger)
+EXPORT extern DLL_GLOBAL	short	g_sModelIndexShrapnelHit;// holds the sprite index for shrapnel impact sprite
+EXPORT extern DLL_GLOBAL	short	g_sModelIndexShrapnel;// holds the model index for shrapnel gibs
 
-extern void ClearMultiDamage(void);
-extern void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker );
-extern void AddMultiDamage( entvars_t *pevInflictor, CBaseEntity *pEntity, float flDamage, int bitsDamageType);
+EXPORT void ClearMultiDamage(void);
+EXPORT void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker );
+EXPORT void AddMultiDamage( entvars_t *pevInflictor, CBaseEntity *pEntity, float flDamage, int bitsDamageType);
 
-extern void DecalGunshot( TraceResult *pTrace, int iBulletType );
-extern void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage);
-extern int DamageDecal( CBaseEntity *pEntity, int bitsDamageType );
-extern void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType );
+EXPORT void DecalGunshot( TraceResult *pTrace, int iBulletType );
+EXPORT void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage);
+EXPORT int DamageDecal( CBaseEntity *pEntity, int bitsDamageType );
+EXPORT void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType );
 
 typedef struct 
 {
@@ -119,7 +119,7 @@ typedef struct
 	int				type;
 } MULTIDAMAGE;
 
-extern MULTIDAMAGE gMultiDamage;
+EXPORT extern MULTIDAMAGE gMultiDamage;
 
 #define LOUD_GUN_VOLUME			1000
 #define NORMAL_GUN_VOLUME		600

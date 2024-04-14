@@ -56,8 +56,6 @@ CBaseEntity
 
 // C functions for external declarations that call the appropriate C++ methods
 
-#define EXPORT DLLEXPORT
-
 extern "C" DLLEXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
 extern "C" DLLEXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
 
@@ -115,7 +113,7 @@ class CTalkSquadMonster;
 //
 // EHANDLE. Safe way to point to CBaseEntities who may die between frames
 //
-class EHANDLE
+class EXPORT EHANDLE
 {
 private:
 	edict_t *m_pent;
@@ -147,7 +145,7 @@ enum entindex_priority {
 //
 // Base Entity.  All entity types derive from this
 //
-class CBaseEntity 
+class EXPORT CBaseEntity
 {
 public:
 	// Constructor.  Set engine to use C/C++ callback functions
@@ -258,11 +256,11 @@ public:
 	void UpdateOnRemove( void );
 
 	// common member functions
-	void EXPORT SUB_Remove( void );
-	void EXPORT SUB_DoNothing( void );
-	void EXPORT SUB_StartFadeOut ( void );
-	void EXPORT SUB_FadeOut ( void );
-	void EXPORT SUB_CallUseToggle( void ) { this->Use( this, this, USE_TOGGLE, 0 ); }
+	void SUB_Remove( void );
+	void SUB_DoNothing( void );
+	void SUB_StartFadeOut ( void );
+	void SUB_FadeOut ( void );
+	void SUB_CallUseToggle( void ) { this->Use( this, this, USE_TOGGLE, 0 ); }
 	int			ShouldToggle( USE_TYPE useType, BOOL currentState );
 	void		FireBullets( ULONG	cShots, Vector  vecSrc, Vector	vecDirShooting,	Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t *pevAttacker = NULL  );
 	Vector		FireBulletsPlayer( ULONG	cShots, Vector  vecSrc, Vector	vecDirShooting,	Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t *pevAttacker = NULL, int shared_rand = 0 );
@@ -408,7 +406,7 @@ public:
 #endif
 
 
-class CPointEntity : public CBaseEntity
+class EXPORT CPointEntity : public CBaseEntity
 {
 public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
@@ -443,7 +441,7 @@ void PlayLockSounds(entvars_t *pev, locksound_t *pls, int flocked, int fbutton);
 #define MAX_MULTI_TARGETS	64 // maximum number of targets a single multi_manager entity may be assigned.
 #define MS_MAX_TARGETS 32
 
-class CMultiSource : public CPointEntity
+class EXPORT CMultiSource : public CPointEntity
 {
 public:
 	void Spawn( );
@@ -451,7 +449,7 @@ public:
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	int	ObjectCaps( void ) { return (CPointEntity::ObjectCaps() | FCAP_MASTER); }
 	BOOL IsTriggered( CBaseEntity *pActivator );
-	void EXPORT Register( void );
+	void Register( void );
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 
@@ -468,7 +466,7 @@ public:
 //
 // generic Delay entity.
 //
-class CBaseDelay : public CBaseEntity
+class EXPORT CBaseDelay : public CBaseEntity
 {
 public:
 	float		m_flDelay;
@@ -482,11 +480,11 @@ public:
 	static	TYPEDESCRIPTION m_SaveData[];
 	// common member functions
 	void SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, float value );
-	void EXPORT DelayThink( void );
+	void DelayThink( void );
 };
 
 
-class CBaseAnimating : public CBaseDelay
+class EXPORT CBaseAnimating : public CBaseDelay
 {
 public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
@@ -531,7 +529,7 @@ public:
 //
 #define	SF_ITEM_USE_ONLY	256 //  ITEM_USE_ONLY = BUTTON_USE_ONLY = DOOR_USE_ONLY!!! 
 
-class CBaseToggle : public CBaseAnimating
+class EXPORT CBaseToggle : public CBaseAnimating
 {
 public:
 	void				KeyValue( KeyValueData *pkvd );
@@ -568,9 +566,9 @@ public:
 
 	// common member functions
 	void LinearMove( Vector	vecDest, float flSpeed );
-	void EXPORT LinearMoveDone( void );
+	void LinearMoveDone( void );
 	void AngularMove( Vector vecDestAngle, float flSpeed );
-	void EXPORT AngularMoveDone( void );
+	void AngularMoveDone( void );
 	BOOL IsLockedByMaster( void );
 
 	static float		AxisValue( int flags, const Vector &angles );
@@ -700,6 +698,11 @@ public:
 #define GIB_NEVER			1// never gib, no matter how much death damage is done ( freezing, etc )
 #define GIB_ALWAYS			2// always gib ( Houndeye Shock, Barnacle Bite )
 
+#define WATERLEVEL_DRY 0
+#define WATERLEVEL_FEET 1
+#define WATERLEVEL_WAIST 2
+#define WATERLEVEL_HEAD 3
+
 class CBaseMonster;
 class CCineMonster;
 class CSound;
@@ -780,7 +783,7 @@ typedef struct _SelAmmo
 //
 // This spawns first when each level begins.
 //=======================
-class CWorld : public CBaseEntity
+class EXPORT CWorld : public CBaseEntity
 {
 public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }

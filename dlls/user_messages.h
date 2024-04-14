@@ -1,45 +1,46 @@
+#pragma once
 
-extern int giPrecacheGrunt;
-extern int gmsgShake;
-extern int gmsgFade;
-extern int gmsgSelAmmo;
-extern int gmsgFlashlight;
-extern int gmsgFlashBattery;
-extern int gmsgResetHUD;
-extern int gmsgInitHUD;
-extern int gmsgShowGameTitle;
-extern int gmsgCurWeapon;
-extern int gmsgHealth;
-extern int gmsgDamage;
-extern int gmsgBattery;
-extern int gmsgTrain;
-extern int gmsgLogo;
-extern int gmsgWeaponList;
-extern int gmsgAmmoX;
-extern int gmsgHudText;
-extern int gmsgDeathMsg;
-extern int gmsgScoreInfo;
-extern int gmsgTeamInfo;
-extern int gmsgTeamScore;
-extern int gmsgGameMode;
-extern int gmsgMOTD;
-extern int gmsgServerName;
-extern int gmsgAmmoPickup;
-extern int gmsgWeapPickup;
-extern int gmsgItemPickup;
-extern int gmsgHideWeapon;
-extern int gmsgSetCurWeap;
-extern int gmsgSayText;
-extern int gmsgTextMsg;
-extern int gmsgSetFOV;
-extern int gmsgShowMenu;
-extern int gmsgGeigerRange;
-extern int gmsgTeamNames;
+EXPORT extern int giPrecacheGrunt;
+EXPORT extern int gmsgShake;
+EXPORT extern int gmsgFade;
+EXPORT extern int gmsgSelAmmo;
+EXPORT extern int gmsgFlashlight;
+EXPORT extern int gmsgFlashBattery;
+EXPORT extern int gmsgResetHUD;
+EXPORT extern int gmsgInitHUD;
+EXPORT extern int gmsgShowGameTitle;
+EXPORT extern int gmsgCurWeapon;
+EXPORT extern int gmsgHealth;
+EXPORT extern int gmsgDamage;
+EXPORT extern int gmsgBattery;
+EXPORT extern int gmsgTrain;
+EXPORT extern int gmsgLogo;
+EXPORT extern int gmsgWeaponList;
+EXPORT extern int gmsgAmmoX;
+EXPORT extern int gmsgHudText;
+EXPORT extern int gmsgDeathMsg;
+EXPORT extern int gmsgScoreInfo;
+EXPORT extern int gmsgTeamInfo;
+EXPORT extern int gmsgTeamScore;
+EXPORT extern int gmsgGameMode;
+EXPORT extern int gmsgMOTD;
+EXPORT extern int gmsgServerName;
+EXPORT extern int gmsgAmmoPickup;
+EXPORT extern int gmsgWeapPickup;
+EXPORT extern int gmsgItemPickup;
+EXPORT extern int gmsgHideWeapon;
+EXPORT extern int gmsgSetCurWeap;
+EXPORT extern int gmsgSayText;
+EXPORT extern int gmsgTextMsg;
+EXPORT extern int gmsgSetFOV;
+EXPORT extern int gmsgShowMenu;
+EXPORT extern int gmsgGeigerRange;
+EXPORT extern int gmsgTeamNames;
 
-extern int gmsgStatusText;
-extern int gmsgStatusValue;
+EXPORT extern int gmsgStatusText;
+EXPORT extern int gmsgStatusValue;
 
-extern int gmsgToxicCloud;
+EXPORT extern int gmsgToxicCloud;
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 

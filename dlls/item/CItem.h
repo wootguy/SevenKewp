@@ -25,15 +25,15 @@ extern int gmsgItemPickup;
 
 #define MAX_NORMAL_BATTERY	100
 
-class CItem : public CBaseAnimating
+class EXPORT CItem : public CBaseAnimating
 {
 public:
 	void	Spawn(void);
 	void	KeyValue(KeyValueData* pkvd);
 	CBaseEntity* Respawn(void);
-	void	EXPORT ItemTouch(CBaseEntity* pOther);
-	void	EXPORT Materialize(void);
-	void	EXPORT ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void ItemTouch(CBaseEntity* pOther);
+	void Materialize(void);
+	void ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual BOOL MyTouch(CBasePlayer* pPlayer) { return FALSE; };
 	virtual BOOL ShouldRespawn();
 	const char* GetModel();

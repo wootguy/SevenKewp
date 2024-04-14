@@ -86,7 +86,7 @@ enum sbar_data
 
 #define CHAT_INTERVAL 1.0f
 
-class CBasePlayer : public CBaseMonster
+class EXPORT CBasePlayer : public CBaseMonster
 {
 public:
 	
@@ -297,7 +297,7 @@ public:
 	void SendAmmoUpdate(void);
 
 	void WaterMove( void );
-	void EXPORT PlayerDeathThink( void );
+	void PlayerDeathThink( void );
 	void PlayerUse( void );
 
 	void CheckSuitUpdate();
@@ -368,7 +368,7 @@ public:
 #define AUTOAIM_10DEGREES 0.1736481776669
 
 
-extern int	gmsgHudText;
-extern BOOL gInitHUD;
+EXPORT extern int	gmsgHudText;
+EXPORT extern BOOL gInitHUD;
 
 #endif // PLAYER_H

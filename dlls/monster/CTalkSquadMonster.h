@@ -112,7 +112,7 @@ enum
 #define	MAX_SQUAD_MEMBERS	5
 
 
-class CTalkSquadMonster : public CBaseMonster
+class EXPORT CTalkSquadMonster : public CBaseMonster
 {
 public:
 	void			TalkInit( void );				

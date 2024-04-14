@@ -226,10 +226,10 @@ struct skilldata_t
 	float sk_yawspeed_mult;
 };
 
-extern	DLL_GLOBAL	skilldata_t	gSkillData;
+EXPORT extern DLL_GLOBAL skilldata_t gSkillData;
 
-extern DLL_GLOBAL int		g_iSkillLevel;
-extern std::map<std::string, float> g_defaultMonsterHealth;
+EXPORT extern DLL_GLOBAL int g_iSkillLevel;
+EXPORT extern std::map<std::string, float> g_defaultMonsterHealth;
 
 void RefreshSkillData();
 

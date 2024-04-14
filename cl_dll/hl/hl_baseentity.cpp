@@ -376,6 +376,21 @@ int CBaseMonster::HasTarget(string_t targetname) { return 0; }
 CKeyValue CBaseEntity::GetKeyValue(const char* keyName) { return CKeyValue(); }
 void CBaseEntity::KeyValue(KeyValueData* pkvd) {}
 bool CBaseMonster::ShouldRoam() { return false; }
+void CPointEntity::Spawn(void) {}
+void CMultiSource::Spawn(void) {}
+void CMultiSource::KeyValue(KeyValueData* pkvd) {}
+void CMultiSource::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {}
+BOOL CMultiSource::IsTriggered(CBaseEntity* pActivator) { return 0; }
+void CMultiSource::Register(void) {}
+int	CMultiSource::Save(CSave& save) { return 0; }
+int	CMultiSource::Restore(CRestore& restore) { return 0; }
+void CWorld::Spawn(void) {}
+void CWorld::Precache(void) {}
+void CWorld::KeyValue(KeyValueData* pkvd) {}
+void CWorld::loadReplacementFiles() {}
+CBaseEntity* EHANDLE :: operator = (CBaseEntity* pEntity) { return 0; }
+CBaseEntity* EHANDLE :: operator -> () { return 0; }
+EHANDLE :: operator CBaseEntity* () { return 0; };
 
 void lagcomp_begin(CBasePlayer* plr) {}
 void lagcomp_end() {}

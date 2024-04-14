@@ -19,7 +19,7 @@
 #include "event_flags.h"
 
 // Must be provided by user of this code
-extern enginefuncs_t g_engfuncs;
+extern EXPORT enginefuncs_t g_engfuncs;
 
 // The actual engine callbacks
 #define GETPLAYERUSERID (*g_engfuncs.pfnGetPlayerUserId)
@@ -93,8 +93,15 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 #define CVAR_SET_STRING	(*g_engfuncs.pfnCVarSetString)
 #define CVAR_GET_POINTER (*g_engfuncs.pfnCVarGetPointer)
 
-void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
-#define ALERT		DEBUG_MSG
+EXPORT void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
+
+#ifdef PLUGIN_BUILD
+#define ALERT(target, fmt, ...) { \
+	DEBUG_MSG(target, "[" PLUGIN_NAME "] " fmt, ##__VA_ARGS__ ); \
+}
+#else
+#define ALERT DEBUG_MSG
+#endif
 
 #define print(...)	{ALERT(at_console, __VA_ARGS__);}
 #define println(...)	{ALERT(at_console, __VA_ARGS__); ALERT(at_console, "\n");}
