@@ -756,6 +756,11 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 {
+	if (!g_serveractive) {
+		// game will crash if removing custom weapons defined in plugins that were unloaded during level change
+		return;
+	}
+
 	if (m_pActiveItem)
 	{
 		CBasePlayerItem* item = (CBasePlayerItem*)m_pActiveItem.GetEntity();
@@ -3865,8 +3870,7 @@ void CBasePlayer :: UpdateClientData( void )
 
 	if (pev->health != m_iClientHealth)
 	{
-#define clamp( val, min, max ) ( ((val) > (max)) ? (max) : ( ((val) < (min)) ? (min) : (val) ) )
-		int iHealth = clamp( pev->health, 0, 255 );  // make sure that no negative health values are sent
+		int iHealth = clampf( pev->health, 0, 255 );  // make sure that no negative health values are sent
 		if ( pev->health > 0.0f && pev->health <= 1.0f )
 			iHealth = 1;
 

@@ -255,6 +255,9 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 }
 
 
+bool g_logRegisterCalls = false;
+std::set<std::string> g_weaponClassnames;
+
 // Queues the weapon info for sending to clients
 void UTIL_RegisterWeapon( const char *szClassname )
 {
@@ -292,6 +295,10 @@ void UTIL_RegisterWeapon( const char *szClassname )
 				AddAmmoNameToAmmoRegistry( II.pszAmmo2 );
 			}
 
+			g_weaponClassnames.insert(II.pszName);
+			if (g_logRegisterCalls)
+				ALERT(at_console, "Registered custom weapon '%s'\n", szClassname);
+
 			memset( &II, 0, sizeof II );
 		}
 	}
@@ -317,6 +324,7 @@ void W_Precache(void)
 	UTIL_PrecacheOther( "item_longjump" );
 	*/
 
+	g_logRegisterCalls = false;
 	UTIL_RegisterWeapon("weapon_shotgun");
 	UTIL_RegisterWeapon("weapon_crowbar");
 	UTIL_RegisterWeapon("weapon_9mmhandgun");
@@ -332,6 +340,7 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_snark");
 	UTIL_RegisterWeapon("weapon_hornetgun");
 	UTIL_RegisterWeapon("weapon_grapple");
+	g_logRegisterCalls = true; // log for custom weapons in plugins
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	if ( g_pGameRules->IsDeathmatch() )

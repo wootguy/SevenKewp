@@ -44,6 +44,7 @@
 #include "CMonsterMaker.h"
 #include "skill.h"
 #include "CGamePlayerEquip.h"
+#include "PluginManager.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -353,6 +354,8 @@ void ServerDeactivate( void )
 	g_serveractive = 0;
 	g_edictsinit = 0;
 
+	g_pluginManager.RemovePlugins(true);
+
 	g_customKeyValues.clear();
 	g_monsterSoundReplacements.clear();
 	g_shuffledMonsterSounds.clear();
@@ -367,6 +370,7 @@ void ServerDeactivate( void )
 	g_tryPrecacheSounds.clear();
 	g_mapWeapons.clear();
 	g_wavInfos.clear();
+	g_weaponClassnames.clear();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";
 	g_monstersNerfed = false;
@@ -630,6 +634,8 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			}
 		}
 	}
+
+	g_pluginManager.CallHooks(&HLCOOP_PLUGIN_HOOKS::pfnMapActivate);
 }
 
 /*

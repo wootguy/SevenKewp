@@ -118,7 +118,7 @@ void CAmbientGeneric::Spawn(void)
 
 	if (FStringNull(pev->message) || strlen(szSoundFile) < 1)
 	{
-		ALERT(at_error, "EMPTY AMBIENT AT: %f, %f, %f\n", pev->origin.x, pev->origin.y, pev->origin.z);
+		ALERT(at_console, "EMPTY AMBIENT AT: %f, %f, %f\n", pev->origin.x, pev->origin.y, pev->origin.z);
 		pev->nextthink = gpGlobals->time + 0.1;
 		SetThink(&CAmbientGeneric::SUB_Remove);
 		return;
