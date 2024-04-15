@@ -14,6 +14,7 @@
 #include "netadr.h"
 #include "pm_shared.h"
 #include "voice_gamemgr.h"
+#include "TextMenu.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
 extern int gmsgSayText;
@@ -379,6 +380,8 @@ bool CheatCommand(edict_t* pEntity) {
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
 void ClientCommand(edict_t* pEntity)
 {
+	TextMenuClientCommandHook(pEntity);
+
 	const char* pcmd = CMD_ARGV(0);
 	const char* pstr;
 

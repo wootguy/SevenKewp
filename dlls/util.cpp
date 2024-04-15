@@ -36,6 +36,7 @@
 #include <queue>
 #include "studio.h"
 #include "PluginManager.h"
+#include "TextMenu.h"
 
 #include <fstream>
 #include <sys/types.h>
@@ -1123,16 +1124,32 @@ void UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage )
 extern int gmsgTextMsg, gmsgSayText;
 void UTIL_ClientPrintAll( int msg_dest, const char *msg )
 {
-	for (int i = 1; i <= gpGlobals->maxClients; i++) {
-		edict_t* ent = INDEXENT(i);
-		if (IsValidPlayer(ent))
-			CLIENT_PRINTF(ent, (PRINT_TYPE)msg_dest, msg);
+	if (msg_dest == print_chat) {
+		MESSAGE_BEGIN(MSG_ALL, gmsgSayText, NULL);
+		WRITE_BYTE(0);
+		WRITE_STRING(msg);
+		MESSAGE_END();
+	}
+	else {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
+			edict_t* ent = INDEXENT(i);
+			if (IsValidPlayer(ent))
+				CLIENT_PRINTF(ent, (PRINT_TYPE)msg_dest, msg);
+		}
 	}
 }
 
 void UTIL_ClientPrint( edict_t* client, int msg_dest, const char * msg)
 {
-	CLIENT_PRINTF(client, (PRINT_TYPE)msg_dest, msg);
+	if (msg_dest == print_chat) {
+		MESSAGE_BEGIN(MSG_ALL, gmsgSayText, NULL);
+		WRITE_BYTE(0);
+		WRITE_STRING(msg);
+		MESSAGE_END();
+	}
+	else {
+		CLIENT_PRINTF(client, (PRINT_TYPE)msg_dest, msg);
+	}
 }
 
 void UTIL_SayText( const char *pText, CBaseEntity *pEntity )
@@ -3822,6 +3839,8 @@ void clearNetworkMessageHistory() {
 }
 
 void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed) {
+	TextMenuMessageBeginHook(msg_dest, msg_type, pOrigin, ed);
+
 	if (mp_debugmsg.value) {
 		g_lastMsg.msg_dest = msg_dest;
 		g_lastMsg.msg_type = msg_type;

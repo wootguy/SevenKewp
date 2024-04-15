@@ -179,6 +179,7 @@ set(TRIGGER_HDR
 	triggers/CFireAndDie.h
 	triggers/CRuleEntity.h
 	triggers/CTriggerMultiple.h
+	triggers/CTriggerVote.h
 )
 set(TRIGGER_SRC
 	triggers/CBaseLogic.cpp
@@ -217,7 +218,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CTriggerRenamePlayer.cpp
 	triggers/CTriggerRespawn.cpp
 	triggers/CTriggerSetOrigin.cpp
-	
+	triggers/CTriggerVote.cpp
 )
 set(TRIGGER_BRUSHED_SRC
 	triggers/CChangeLevel.cpp
@@ -399,6 +400,7 @@ set(UTIL_HDR
 	mstream.h
 	lagcomp.h
 	vector.h
+	TextMenu.h
 	../game_shared/shared_util.h
 )
 set(UTIL_SRC
@@ -410,6 +412,7 @@ set(UTIL_SRC
 	util.cpp
 	mstream.cpp
 	lagcomp.cpp
+	TextMenu.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
 	../pm_shared/pm_shared.cpp
