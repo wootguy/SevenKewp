@@ -1,27 +1,7 @@
 #pragma once
 #include "cbase.h"
 #include "CBasePlayer.h"
-
-typedef struct
-{
-	const char* pszName;
-	int iId;
-} AmmoInfo;
-
-typedef struct
-{
-	int		iSlot;
-	int		iPosition;
-	const char* pszAmmo1;	// ammo 1 type
-	int		iMaxAmmo1;		// max ammo 1
-	const char* pszAmmo2;	// ammo 2 type
-	int		iMaxAmmo2;		// max ammo 2
-	const char* pszName;
-	int		iMaxClip;
-	int		iId;
-	int		iFlags;
-	int		iWeight;// this value used to determine this weapon's importance in autoselection.
-} ItemInfo;
+#include "weapons.h"
 
 // Items that the player has in their inventory that they can use
 class EXPORT CBasePlayerItem : public CBaseAnimating

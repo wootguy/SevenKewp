@@ -499,12 +499,8 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)
 	{
 		// get circular gaussian spread
-		float x, y, z;
-		do {
-			x = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
-			y = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
-			z = x * x + y * y;
-		} while (z > 1);
+		float x, y;
+		GetCircularGaussianSpread(x, y);
 
 		Vector vecDir = vecDirShooting +
 			x * vecSpread.x * vecRight +

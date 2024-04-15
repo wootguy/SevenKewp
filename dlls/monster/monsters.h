@@ -80,16 +80,11 @@ EXPORT extern DLL_GLOBAL Vector		g_vecAttackDir;
 EXPORT extern DLL_GLOBAL CONSTANT float g_flMeleeRange;
 EXPORT extern DLL_GLOBAL CONSTANT float g_flMediumRange;
 EXPORT extern DLL_GLOBAL CONSTANT float g_flLongRange;
-EXPORT void EjectBrass (const Vector &vecOrigin, const Vector &vecVelocity, float rotation, int model, int soundtype );
-EXPORT void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count );
 
 EXPORT BOOL FBoxVisible ( entvars_t *pevLooker, entvars_t *pevTarget );
 EXPORT BOOL FBoxVisible ( entvars_t *pevLooker, entvars_t *pevTarget, Vector &vecTargetOrigin, float flSize = 0.0 );
 
 EXPORT BOOL IsFacing(entvars_t* pevTest, const Vector& reference);
-
-EXPORT void AddAmmoNameToAmmoRegistry(const char* szAmmoname);
-EXPORT void UTIL_RegisterWeapon(const char* szClassname);
 
 // monster to monster relationship types
 #define R_AL	-2 // (ALLY) pals. Good alternative to R_NO when applicable.

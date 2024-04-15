@@ -20,6 +20,27 @@
 class CBasePlayer;
 EXPORT extern int gmsgWeapPickup;
 
+typedef struct
+{
+	int		iSlot;
+	int		iPosition;
+	const char* pszAmmo1;	// ammo 1 type
+	int		iMaxAmmo1;		// max ammo 1
+	const char* pszAmmo2;	// ammo 2 type
+	int		iMaxAmmo2;		// max ammo 2
+	const char* pszName;
+	int		iMaxClip;
+	int		iId;
+	int		iFlags;
+	int		iWeight;// this value used to determine this weapon's importance in autoselection.
+} ItemInfo;
+
+typedef struct
+{
+	const char* pszName;
+	int iId;
+} AmmoInfo;
+
 EXPORT int MaxAmmoCarry(int iszName);
 EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* mins, float* maxs, edict_t* pEntity);
 
@@ -28,7 +49,7 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define	WEAPON_GLOCK			2
 #define WEAPON_PYTHON			3
 #define WEAPON_MP5				4
-#define WEAPON_CHAINGUN			5
+#define WEAPON_GRAPPLE			5
 #define WEAPON_CROSSBOW			6
 #define WEAPON_SHOTGUN			7
 #define WEAPON_RPG				8
@@ -39,13 +60,14 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define WEAPON_TRIPMINE			13
 #define	WEAPON_SATCHEL			14
 #define	WEAPON_SNARK			15
-#define	WEAPON_GRAPPLE			16
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
 #define WEAPON_SUIT				31	// ?????
 
 #define MAX_WEAPONS			32
+#define MAX_WEAPON_SLOTS	5
+#define MAX_WEAPON_POSITIONS 5
 
 
 // weapon weight factors (for auto-switching)   (-1 = noswitch)
@@ -111,6 +133,19 @@ EXPORT void DecalGunshot( TraceResult *pTrace, int iBulletType );
 EXPORT void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage);
 EXPORT int DamageDecal( CBaseEntity *pEntity, int bitsDamageType );
 EXPORT void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType );
+
+EXPORT void EjectBrass(const Vector& vecOrigin, const Vector& vecVelocity, float rotation, int model, int soundtype);
+EXPORT void ExplodeModel(const Vector& vecOrigin, float speed, int model, int count);
+EXPORT CBaseEntity* ShootMortar(edict_t* pentOwner, Vector vecStart, Vector vecVelocity);
+EXPORT void GetCircularGaussianSpread(float& x, float& y);
+
+// uses GetItemInfo to extract registration info.
+// Set iId and iPosition to -1 to have them be automatically assigned.
+// That should be done to prevent conflicts between the game and unrelated plugins.
+// Returns an ItemInfo with reassigned id and position.
+EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname);
+
+EXPORT void AddAmmoNameToAmmoRegistry(const char* szAmmoname);
 
 typedef struct 
 {

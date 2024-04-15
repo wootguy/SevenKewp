@@ -1095,6 +1095,24 @@ void CBasePlayer::TabulateAmmo()
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
 }
 
+int CBasePlayer::rgAmmo(int ammoIdx) {
+	if (ammoIdx < 0 || ammoIdx >= MAX_AMMO_TYPES) {
+		ALERT(at_console, "Invalid ammo index %d\n", ammoIdx);
+		return -1;
+	}
+
+	return m_rgAmmo[ammoIdx];
+}
+
+void CBasePlayer::rgAmmo(int ammoIdx, int newCount) {
+	if (ammoIdx < 0 || ammoIdx >= MAX_AMMO_TYPES) {
+		ALERT(at_console, "Invalid ammo index %d\n", ammoIdx);
+		return;
+	}
+
+	m_rgAmmo[ammoIdx] = newCount;
+}
+
 void CBasePlayer::ReleaseControlledObjects() {
 	if (m_pTank)
 	{
