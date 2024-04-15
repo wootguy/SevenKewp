@@ -38,8 +38,12 @@
 #define HUD_PRINTCONSOLE	0
 #define HUD_PRINTCENTER		1
 #define HUD_PRINTTALK		2
-#define HUD_PRINTNOTIFY		2
 
+#ifdef CLIENT_DLL
+#define HUD_PRINTNOTIFY		3
+#else
+#define HUD_PRINTNOTIFY		2
+#endif
 
 #define WEAPON_SUIT			31
 

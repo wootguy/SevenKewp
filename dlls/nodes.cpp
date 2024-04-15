@@ -1571,6 +1571,7 @@ void CNodeEnt :: Spawn( void )
 //=========================================================
 void CTestHull :: ShowBadNode( void )
 {
+#ifdef _DEBUG
 	pev->movetype = MOVETYPE_FLY;
 	pev->angles.y = pev->angles.y + 4;
 
@@ -1583,6 +1584,7 @@ void CTestHull :: ShowBadNode( void )
 	UTIL_ParticleEffect ( pev->origin - gpGlobals->v_right * 64, g_vecZero, 255, 25 );
 
 	pev->nextthink = gpGlobals->time + 0.1;
+#endif
 }
 
 extern BOOL gTouchDisabled;

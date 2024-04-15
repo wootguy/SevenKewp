@@ -596,6 +596,10 @@ void CVoltigoreShock::Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelo
 
 void CVoltigoreShock::Touch(CBaseEntity* pOther)
 {
+	if (pev->velocity == g_vecZero) {
+		return;
+	}
+
 	shocksLeft = 5;
 	SetThink(&CVoltigoreShock::Shock);
 	pev->velocity = g_vecZero;

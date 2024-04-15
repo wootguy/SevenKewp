@@ -212,12 +212,35 @@ void CGrapple::PrimaryAttack()
 			case CGrappleTip::TargetClass::MEDIUM:
 			case CGrappleTip::TargetClass::LARGE:
 			case CGrappleTip::TargetClass::FIXED:
-				// pTarget->BarnacleVictimGrabbed( this );
-
+			{
 				if (m_pTip->GetGrappleType() != CGrappleTip::TargetClass::FIXED)
 					SET_ORIGIN(m_pTip->edict(), pTarget->Center());
 
-				m_pPlayer->pev->velocity = m_pPlayer->pev->velocity + (m_pTip->pev->origin - m_pPlayer->pev->origin);
+				bool secondaryMode = m_pPlayer->pev->button & IN_ATTACK2;
+				// pTarget->BarnacleVictimGrabbed( this );
+
+				if (secondaryMode) {
+					m_pPlayer->pev->movetype = MOVETYPE_TOSS;
+					ClearBits(m_pPlayer->pev->flags, FL_IMMUNE_LAVA);
+
+					if (!(m_pPlayer->pev->flags & (FL_PARTIALGROUND | FL_ONGROUND))) {
+						Vector delta = (m_pTip->pev->origin - m_pPlayer->pev->origin);
+						delta.z = 0;
+						if (delta.Length() > 450) {
+							delta = delta.Normalize() * 450;
+						}
+
+						m_pPlayer->pev->velocity.x = delta.x;
+						m_pPlayer->pev->velocity.y = delta.y;
+					}
+
+					if (m_pPlayer->pev->velocity.z < -350) {
+						m_pPlayer->pev->velocity.z = -350;
+					}
+				}
+				else {
+					m_pPlayer->pev->velocity = m_pPlayer->pev->velocity + (m_pTip->pev->origin - m_pPlayer->pev->origin);
+				}
 
 				if (m_pPlayer->pev->velocity.Length() > 450.0)
 				{
@@ -243,7 +266,10 @@ void CGrapple::PrimaryAttack()
 					m_pPlayer->SetAnimation(PLAYER_IDLE);
 				}
 
+				
+
 				break;
+			}
 			}
 		}
 
@@ -408,46 +434,7 @@ void CGrapple::PrimaryAttack()
 
 void CGrapple::SecondaryAttack()
 {
-#ifndef CLIENT_DLL
-	CBasePlayer* m_pPlayer = GetPlayer();
-	if (!m_pPlayer)
-		return;
-
-	CGrappleTip* m_pTip = (CGrappleTip*)m_hTip.GetEntity();
-	if (m_pTip && m_pTip->IsStuck() &&
-		(!m_pTip->GetGrappleTarget() || m_pTip->GetGrappleTarget()->IsPlayer()))
-	{
-		EndAttack();
-	}
-	else
-#endif
-	{
-		UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
-
-		if (m_pTip) {
-			m_pPlayer->pev->movetype = MOVETYPE_TOSS;
-			ClearBits(m_pPlayer->pev->flags, FL_IMMUNE_LAVA);
-
-			if (!(m_pPlayer->pev->flags & (FL_PARTIALGROUND | FL_ONGROUND))) {
-				Vector delta = (m_pTip->pev->origin - m_pPlayer->pev->origin);
-				delta.z = 0;
-				if (delta.Length() > 450) {
-					delta = delta.Normalize() * 450;
-				}
-
-				m_pPlayer->pev->velocity.x = delta.x;
-				m_pPlayer->pev->velocity.y = delta.y;
-			}
-
-			if (m_pPlayer->pev->velocity.z < -350) {
-				m_pPlayer->pev->velocity.z = -350;
-			}
-		}
-		else {
-			m_pPlayer->pev->movetype = MOVETYPE_WALK;
-			ClearBits(m_pPlayer->pev->flags, FL_IMMUNE_LAVA);
-		}
-	}
+	PrimaryAttack();	
 }
 
 void CGrapple::Fire(const Vector& vecOrigin, const Vector& vecDir)

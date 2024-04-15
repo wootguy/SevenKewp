@@ -3188,7 +3188,7 @@ int PRECACHE_MODEL(const char* path) {
 	}
 
 	if (g_serveractive) {
-		if (g_tryPrecacheModels.find(path) != g_tryPrecacheModels.end()) {
+		if (g_precachedModels.find(path) != g_precachedModels.end()) {
 			return g_engfuncs.pfnPrecacheModel(path);
 		}
 		else {
@@ -3199,8 +3199,8 @@ int PRECACHE_MODEL(const char* path) {
 
 	g_tryPrecacheModels.insert(path);
 
-	// not sure what the +2 is for. Tested with sc_darknebula.
-	if (g_tryPrecacheModels.size() + g_bsp.modelCount <= MAX_PRECACHE_MODEL) {
+	// Tested with sc_darknebula.
+	if (g_tryPrecacheModels.size() + g_bsp.entityBspModelCount + 1 <= MAX_PRECACHE_MODEL) {
 		if (g_precachedModels.find(path) == g_precachedModels.end())
 			g_precachedModels[path] = path;
 		return g_engfuncs.pfnPrecacheModel(path);
