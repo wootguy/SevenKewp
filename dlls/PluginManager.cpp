@@ -61,10 +61,12 @@ void PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
 			ALERT(at_console, "Loaded plugin '%s'\n", plugin.fpath);
 		} else {
 			ALERT(at_error, "PluginInit call failed in plugin '%s'.\n", plugin.fpath);
+			return;
 		}
 	}
 	else {
 		ALERT(at_error, "PluginInit not found in plugin '%s'\n", plugin.fpath);
+		return;
 	}
 
 	plugins.push_back(plugin);
