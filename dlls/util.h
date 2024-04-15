@@ -152,7 +152,7 @@ typedef int BOOL;
 //
 // Conversion among the three types of "entity", including identity-conversions.
 //
-#ifdef DEBUG
+#if defined(DEBUG) && !defined(PLUGIN_BUILD)
 	EXPORT edict_t *DBG_EntOfVars(const entvars_t *pev);
 	inline edict_t *ENT(const entvars_t *pev)	{ return DBG_EntOfVars(pev); }
 #else

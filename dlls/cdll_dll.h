@@ -35,10 +35,10 @@
 #define	MAX_AMMO_TYPES	32		// ???
 #define MAX_AMMO_SLOTS  32		// not really slots
 
-#define HUD_PRINTNOTIFY		1
-#define HUD_PRINTCONSOLE	2
-#define HUD_PRINTTALK		3
-#define HUD_PRINTCENTER		4
+#define HUD_PRINTCONSOLE	0
+#define HUD_PRINTCENTER		1
+#define HUD_PRINTTALK		2
+#define HUD_PRINTNOTIFY		2
 
 
 #define WEAPON_SUIT			31

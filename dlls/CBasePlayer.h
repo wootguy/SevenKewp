@@ -326,6 +326,8 @@ public:
 	void CleanupWeaponboxes(void);
 
 	void TabulateAmmo( void );
+	int rgAmmo(int ammoIdx);
+	void rgAmmo(int ammoIdx, int newCount);
 
 	// stop control over tanks and pushables
 	void ReleaseControlledObjects();

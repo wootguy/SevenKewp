@@ -150,17 +150,15 @@ void CFuncMortarField::FieldUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 		vecSpot.x += RANDOM_FLOAT(-m_flSpread, m_flSpread);
 		vecSpot.y += RANDOM_FLOAT(-m_flSpread, m_flSpread);
 
-		TraceResult tr;
-		UTIL_TraceLine(vecSpot, vecSpot + Vector(0, 0, -1) * 4096, ignore_monsters, ENT(pev), &tr);
-
 		edict_t* pentOwner = NULL;
 		if (pActivator)	pentOwner = pActivator->edict();
 
-		CBaseEntity* pMortar = Create("monster_mortar", tr.vecEndPos, Vector(0, 0, 0), pentOwner);
+		CBaseEntity* pMortar = ShootMortar(pentOwner, vecSpot, Vector(0, 0, 0));
+		
 		pMortar->pev->nextthink = gpGlobals->time + t;
 		t += RANDOM_FLOAT(0.2, 0.5);
 
 		if (i == 0)
-			CSoundEnt::InsertSound(bits_SOUND_DANGER, tr.vecEndPos, 400, 0.3);
+			CSoundEnt::InsertSound(bits_SOUND_DANGER, pMortar->pev->origin, 400, 0.3);
 	}
 }

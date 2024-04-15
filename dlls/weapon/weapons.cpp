@@ -228,6 +228,25 @@ void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count )
 }
 #endif
 
+CBaseEntity* ShootMortar(edict_t* pentOwner, Vector vecStart, Vector vecVelocity) {
+	TraceResult tr;
+	UTIL_TraceLine(vecStart, vecStart + Vector(0, 0, -4096), ignore_monsters, pentOwner, &tr);
+
+	CBaseEntity* pMortar = CBaseEntity::Create("monster_mortar", tr.vecEndPos, Vector(0, 0, 0), pentOwner);
+
+	pMortar->pev->nextthink = gpGlobals->time;
+
+	return pMortar;
+}
+
+void GetCircularGaussianSpread(float& x, float& y) {
+	float z;
+	do {
+		x = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
+		y = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
+		z = x * x + y * y;
+	} while (z > 1);
+}
 
 int giAmmoIndex = 0;
 
@@ -258,52 +277,110 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 bool g_logRegisterCalls = false;
 std::set<std::string> g_weaponClassnames;
 
+const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
+
 // Queues the weapon info for sending to clients
-void UTIL_RegisterWeapon( const char *szClassname )
+ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 {
 	edict_t	*pent;
+	ItemInfo info;
+	memset(&info, 0, sizeof(ItemInfo));
+	info.iId = -1;
+
+	if (g_weaponClassnames.size() >= MAX_WEAPONS) {
+		ALERT(at_error, "Failed to register weapon %s. Too many weapons! (%d)\n",
+			szClassname, MAX_WEAPONS);
+		return info;
+	}
 
 	pent = CREATE_NAMED_ENTITY( MAKE_STRING( szClassname ) );
 	if ( FNullEnt( pent ) )
 	{
-		ALERT ( at_console, UTIL_VarArgs("NULL Ent '%s' in UTIL_RegisterWeapon\n", szClassname) );
-		return;
+		ALERT ( at_error, UTIL_VarArgs("Failed to register weapon '%s' (entity does not exist)\n", szClassname) );
+		return info;
 	}
-	
+
 	CBaseEntity *pEntity = CBaseEntity::Instance (VARS( pent ));
 	CBasePlayerWeapon* wep = pEntity ? pEntity->GetWeaponPtr() : NULL;
+	ItemInfo II;
+	memset(&II, 0, sizeof II);
 
-	if (wep)
-	{
-		// events must always be precached, and in the correct order, or else
-		// vanilla clients will play the wrong weapon events
-		wep->PrecacheEvents();
-
-		ItemInfo II;
-		memset( &II, 0, sizeof II );
-		if ( wep->GetItemInfo( &II ) )
-		{
-			CBasePlayerItem::ItemInfoArray[II.iId] = II;
-
-			if ( II.pszAmmo1 && *II.pszAmmo1 )
-			{
-				AddAmmoNameToAmmoRegistry( II.pszAmmo1 );
-			}
-
-			if ( II.pszAmmo2 && *II.pszAmmo2 )
-			{
-				AddAmmoNameToAmmoRegistry( II.pszAmmo2 );
-			}
-
-			g_weaponClassnames.insert(II.pszName);
-			if (g_logRegisterCalls)
-				ALERT(at_console, "Registered custom weapon '%s'\n", szClassname);
-
-			memset( &II, 0, sizeof II );
-		}
+	if (!wep) {
+		ALERT(at_error, "Failed to register weapon '%s' (entity is not a weapon)\n", szClassname);
+		goto cleanup;
 	}
 
+	if (!wep->GetItemInfo(&II)) {
+		ALERT(at_error, "Failed to register weapon '%s' (GetItemInfo() returned FALSE)\n", szClassname);
+		goto cleanup;
+	}
+
+	memcpy(&info, &II, sizeof(ItemInfo));
+
+	if (!info.pszName) {
+		ALERT(at_error, "Failed to register weapon '%s' (pszName not set)\n", szClassname);
+		goto cleanup;
+	}
+
+	if (info.iId < 0 || info.iId >= MAX_WEAPONS) {
+		info.iId = g_weaponClassnames.size() + 1;
+	}
+
+	if (info.iSlot < 0 || info.iSlot >= MAX_WEAPON_SLOTS) {
+		ALERT(at_error, "Failed to register weapon '%s' (invalid slot %d. Max is %d)\n",
+			szClassname, info.iSlot, MAX_WEAPON_SLOTS - 1);
+		goto cleanup;
+	}
+
+	if (info.iPosition < 0) {
+		for (int i = 0; i < MAX_WEAPON_POSITIONS; i++) {
+			if (!g_filledWeaponSlots[info.iSlot][i]) {
+				info.iPosition = i;
+				break;
+			}
+		}
+
+		if (info.iPosition < 0) {
+			ALERT(at_error, "Failed to register weapon '%s' (slot %d has too many weapons)\n",
+				szClassname, info.iSlot);
+			goto cleanup;
+		}
+	} else if (info.iPosition < 0 || info.iPosition >= MAX_WEAPON_POSITIONS) {
+		ALERT(at_error, "Failed to register weapon '%s' (invalid position %d. Max is %d)\n",
+			szClassname, info.iPosition, MAX_WEAPON_POSITIONS - 1);
+		goto cleanup;
+	}
+
+	if (g_filledWeaponSlots[info.iSlot][info.iPosition]) {
+		ALERT(at_error, "Failed to register weapon '%s' (slot %d position %d is filled by '%s')\n",
+			szClassname, info.iSlot, info.iPosition, g_filledWeaponSlots[info.iSlot][info.iPosition]);
+		goto cleanup;
+	}
+
+	// events must always be precached, and in the correct order, or else
+	// vanilla clients will play the wrong weapon events
+	wep->PrecacheEvents();
+
+	g_filledWeaponSlots[info.iSlot][info.iPosition] = szClassname;
+
+	CBasePlayerItem::ItemInfoArray[info.iId] = info;
+
+	if (info.pszAmmo1 && *info.pszAmmo1) {
+		AddAmmoNameToAmmoRegistry(info.pszAmmo1);
+	}
+
+	if (info.pszAmmo2 && *info.pszAmmo2) {
+		AddAmmoNameToAmmoRegistry(info.pszAmmo2);
+	}
+
+	g_weaponClassnames.insert(info.pszName);
+	if (g_logRegisterCalls)
+		ALERT(at_console, "Registered custom weapon '%s' (ID %d) to slot %d position %d\n",
+			szClassname, info.iId, info.iSlot, info.iPosition);
+
+cleanup:
 	REMOVE_ENTITY(pent);
+	return info;
 }
 
 // called by worldspawn
@@ -323,6 +400,10 @@ void W_Precache(void)
 	UTIL_PrecacheOther( "item_security" );
 	UTIL_PrecacheOther( "item_longjump" );
 	*/
+
+	for (int i = 0; i < MAX_WEAPON_SLOTS; i++) {
+		memset(g_filledWeaponSlots[i], 0, MAX_WEAPON_POSITIONS * sizeof(const char*));
+	}
 
 	g_logRegisterCalls = false;
 	UTIL_RegisterWeapon("weapon_shotgun");

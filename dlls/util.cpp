@@ -380,8 +380,8 @@ TYPEDESCRIPTION	gEntvarsDescription[] =
 #define ENTVARS_COUNT		(sizeof(gEntvarsDescription)/sizeof(gEntvarsDescription[0]))
 
 
-#ifdef	DEBUG
-edict_t *DBG_EntOfVars( const entvars_t *pev )
+#ifdef DEBUG
+EXPORT edict_t *DBG_EntOfVars( const entvars_t *pev )
 {
 	if (pev->pContainingEntity != NULL)
 		return pev->pContainingEntity;
