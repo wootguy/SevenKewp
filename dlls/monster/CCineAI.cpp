@@ -38,7 +38,7 @@ void CCineAI::PossessEntity(void)
 		}
 
 		pTarget->m_hGoalEnt = this;
-		pTarget->m_pCine = this;
+		pTarget->m_hCine = this;
 		pTarget->m_hTargetEnt = this;
 
 		m_saved_movetype = pTarget->pev->movetype;

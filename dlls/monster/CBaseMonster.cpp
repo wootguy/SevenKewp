@@ -93,7 +93,7 @@ TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 	DEFINE_FIELD(CBaseMonster, m_HackedGunPos, FIELD_VECTOR),
 
 	DEFINE_FIELD(CBaseMonster, m_scriptState, FIELD_INTEGER),
-	DEFINE_FIELD(CBaseMonster, m_pCine, FIELD_CLASSPTR),
+	DEFINE_FIELD(CBaseMonster, m_hCine, FIELD_EHANDLE),
 };
 
 //IMPLEMENT_SAVERESTORE( CBaseMonster, CBaseToggle );
@@ -585,8 +585,8 @@ int CBaseMonster::IgnoreConditions(void)
 		iIgnoreConditions |= bits_COND_SMELL_FOOD;
 	}
 
-	if (m_MonsterState == MONSTERSTATE_SCRIPT && m_pCine)
-		iIgnoreConditions |= m_pCine->IgnoreConditions();
+	if (m_MonsterState == MONSTERSTATE_SCRIPT && m_hCine)
+		iIgnoreConditions |= ((CCineMonster*)m_hCine.GetEntity())->IgnoreConditions();
 
 	return iIgnoreConditions;
 }
@@ -2958,13 +2958,13 @@ void CBaseMonster::HandleAnimEvent(MonsterEvent_t* pEvent)
 		break;
 
 	case SCRIPT_EVENT_NOINTERRUPT:		// Can't be interrupted from now on
-		if (m_pCine)
-			m_pCine->AllowInterrupt(FALSE);
+		if (m_hCine)
+			((CCineMonster*)m_hCine.GetEntity())->AllowInterrupt(FALSE);
 		break;
 
 	case SCRIPT_EVENT_CANINTERRUPT:		// OK to interrupt now
-		if (m_pCine)
-			m_pCine->AllowInterrupt(TRUE);
+		if (m_hCine)
+			((CCineMonster*)m_hCine.GetEntity())->AllowInterrupt(TRUE);
 		break;
 
 #if 0
@@ -3521,7 +3521,7 @@ BOOL CBaseMonster::FCheckAITrigger(void)
 //=========================================================	
 int CBaseMonster::CanPlaySequence(BOOL fDisregardMonsterState, int interruptLevel)
 {
-	if (m_pCine || !IsAlive() || m_MonsterState == MONSTERSTATE_PRONE)
+	if (m_hCine || !IsAlive() || m_MonsterState == MONSTERSTATE_PRONE)
 	{
 		// monster is already running a scripted sequence or dead!
 		return FALSE;
@@ -3895,9 +3895,9 @@ BOOL CBaseMonster::ExitScriptedSequence()
 		return FALSE;
 	}
 
-	if (m_pCine)
+	if (m_hCine)
 	{
-		m_pCine->CancelScript();
+		((CCineMonster*)m_hCine.GetEntity())->CancelScript();
 	}
 
 	return TRUE;
@@ -3905,11 +3905,12 @@ BOOL CBaseMonster::ExitScriptedSequence()
 
 BOOL CBaseMonster::CineCleanup()
 {
-	CCineMonster* pOldCine = m_pCine;
+	CCineMonster* pOldCine = (CCineMonster*)m_hCine.GetEntity();
 
 	// am I linked to a cinematic?
-	if (m_pCine)
+	if (m_hCine)
 	{
+		CCineMonster* m_pCine = (CCineMonster*)m_hCine.GetEntity();
 		// okay, reset me to what it thought I was before
 		m_pCine->m_hTargetEnt = NULL;
 		pev->movetype = m_pCine->m_saved_movetype;
@@ -3922,7 +3923,7 @@ BOOL CBaseMonster::CineCleanup()
 		pev->movetype = MOVETYPE_STEP;// this is evil
 		pev->solid = SOLID_SLIDEBOX;
 	}
-	m_pCine = NULL;
+	m_hCine = NULL;
 	m_hTargetEnt = NULL;
 	m_hGoalEnt = NULL;
 	if (pev->deadflag == DEAD_DYING)
@@ -5665,7 +5666,9 @@ void CBaseMonster::RunTask(Task_t* pTask)
 	break;
 	case TASK_WAIT_FOR_SCRIPT:
 	{
-		if (m_pCine->m_iDelay <= 0 && gpGlobals->time >= m_pCine->m_startTime)
+		CCineMonster* m_pCine = (CCineMonster*)m_hCine.GetEntity();
+
+		if (m_pCine && m_pCine->m_iDelay <= 0 && gpGlobals->time >= m_pCine->m_startTime)
 		{
 			TaskComplete();
 			m_pCine->StartSequence((CBaseMonster*)this, m_pCine->m_iszPlay, TRUE);
@@ -5678,9 +5681,9 @@ void CBaseMonster::RunTask(Task_t* pTask)
 	}
 	case TASK_PLAY_SCRIPT:
 	{
-		if (m_fSequenceFinished)
+		if (m_fSequenceFinished && m_hCine)
 		{
-			m_pCine->SequenceDone(this);
+			((CCineMonster*)m_hCine.GetEntity())->SequenceDone(this);
 		}
 		break;
 	}
@@ -6410,7 +6413,9 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	}
 	case TASK_WAIT_FOR_SCRIPT:
 	{
-		if (m_pCine->m_iszIdle)
+		CCineMonster* m_pCine = (CCineMonster*)m_hCine.GetEntity();
+
+		if (m_pCine && m_pCine->m_iszIdle)
 		{
 			m_pCine->StartSequence((CBaseMonster*)this, m_pCine->m_iszIdle, FALSE);
 			if (FStrEq(STRING(m_pCine->m_iszIdle), STRING(m_pCine->m_iszPlay)))
@@ -6432,7 +6437,8 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	}
 	case TASK_ENABLE_SCRIPT:
 	{
-		m_pCine->DelayStart(0);
+		if (m_hCine)
+			((CCineMonster*)m_hCine.GetEntity())->DelayStart(0);
 		TaskComplete();
 		break;
 	}
@@ -6911,8 +6917,8 @@ Schedule_t* CBaseMonster::GetSchedule(void)
 	}
 	case MONSTERSTATE_SCRIPT:
 	{
-		ASSERT(m_pCine != NULL);
-		if (!m_pCine)
+		ASSERT(m_hCine != NULL);
+		if (!m_hCine)
 		{
 			ALERT(at_aiconsole, "Script failed for %s\n", STRING(pev->classname));
 			CineCleanup();
@@ -6972,8 +6978,8 @@ Schedule_t* CBaseMonster::GetScheduleOfType(int Type)
 		// This is the schedule for scripted sequences AND scripted AI
 	case SCHED_AISCRIPT:
 	{
-		ASSERT(m_pCine != NULL);
-		if (!m_pCine)
+		ASSERT(m_hCine != NULL);
+		if (!m_hCine)
 		{
 			ALERT(at_aiconsole, "Script failed for %s\n", STRING(pev->classname));
 			CineCleanup();
@@ -6982,7 +6988,7 @@ Schedule_t* CBaseMonster::GetScheduleOfType(int Type)
 		//			else
 		//				ALERT( at_aiconsole, "Starting script %s for %s\n", STRING( m_pCine->m_iszPlay ), STRING(pev->classname) );
 
-		switch (m_pCine->m_fMoveTo)
+		switch (((CCineMonster*)m_hCine.GetEntity())->m_fMoveTo)
 		{
 		case 0:
 		case 4:
@@ -7191,8 +7197,8 @@ void CBaseMonster::StopFollowing(BOOL clearSchedule)
 
 void CBaseMonster::StartFollowing(CBaseEntity* pLeader)
 {
-	if (m_pCine)
-		m_pCine->CancelScript();
+	if (m_hCine)
+		((CCineMonster*)m_hCine.GetEntity())->CancelScript();
 
 	if (m_hEnemy != NULL)
 		m_IdealMonsterState = MONSTERSTATE_ALERT;
@@ -7209,7 +7215,7 @@ BOOL CBaseMonster::CanFollow(void)
 {
 	if (m_MonsterState == MONSTERSTATE_SCRIPT)
 	{
-		if (m_pCine && !m_pCine->CanInterrupt())
+		if (m_hCine && !((CCineMonster*)m_hCine.GetEntity())->CanInterrupt())
 			return FALSE;
 	}
 

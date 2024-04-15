@@ -54,10 +54,16 @@ public:
 	int lightDataLength;
 	int visDataLength;
 
+	int entityBspModelCount;
+
 	Bsp();
 
 	bool load_lumps(std::string fname);
 	void delete_lumps();
+
+	void count_entity_bsp_models();
+
+	void parse_keyvalue(const std::string& line, std::string& key, std::string& value);
 
 private:
 	void update_lump_pointers();

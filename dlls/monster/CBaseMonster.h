@@ -130,7 +130,7 @@ public:
 
 // Scripted sequence Info
 	SCRIPTSTATE			m_scriptState;		// internal cinematic state
-	CCineMonster		*m_pCine;
+	EHANDLE m_hCine;
 
 	const char* m_defaultModel;
 	string_t m_displayName;

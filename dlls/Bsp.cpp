@@ -85,6 +85,8 @@ bool Bsp::load_lumps(string fpath)
 
 	update_lump_pointers();
 
+	count_entity_bsp_models();
+
 	return valid;
 }
 
@@ -134,4 +136,97 @@ void Bsp::update_lump_pointers() {
 	if (textureCount > MAX_MAP_TEXTURES) ALERT(at_console, "Overflowed textures !!!\n");
 	if (lightDataLength > MAX_MAP_LIGHTDATA) ALERT(at_console, "Overflowed lightdata !!!\n");
 	if (visDataLength > MAX_MAP_VISDATA) ALERT(at_console, "Overflowed visdata !!!\n");
+}
+
+void Bsp::count_entity_bsp_models()
+{
+	membuf sbuf((char*)lumps[LUMP_ENTITIES], header.lump[LUMP_ENTITIES].nLength);
+	istream in(&sbuf);
+
+	int lineNum = 0;
+	int lastBracket = -1;
+
+	set<string> unique_bsp_models;
+
+	string line = "";
+	while (getline(in, line))
+	{
+		lineNum++;
+		if (line.length() < 1 || line[0] == '\n')
+			continue;
+
+		if (line[0] == '{')
+		{
+			if (lastBracket == 0)
+			{
+				ALERT(at_console, "%s.bsp ent data (line %d): Unexpected '{'\n", path.c_str(), lineNum);
+				continue;
+			}
+			lastBracket = 0;
+		}
+		else if (line[0] == '}')
+		{
+			if (lastBracket == 1)
+				ALERT(at_console, "%s.bsp ent data (line %d): Unexpected '}'\n", path.c_str(), lineNum);
+			lastBracket = 1;
+
+			// you can end/start an ent on the same line, you know
+			if (line.find("{") != string::npos)
+			{
+				lastBracket = 0;
+			}
+		}
+		else if (lastBracket == 0) // currently defining an entity
+		{
+			string key, value;
+			parse_keyvalue(line, key, value);
+			if (key == "model" && value[0] == '*') {
+				unique_bsp_models.insert(value);
+			}
+		}
+	}
+
+	entityBspModelCount = unique_bsp_models.size();
+}
+
+void Bsp::parse_keyvalue(const std::string& line, std::string& key, std::string& value) {
+	int begin = -1;
+	int end = -1;
+
+	key = "";
+	value = "";
+	int comment = 0;
+
+	for (uint32_t i = 0; i < line.length(); i++)
+	{
+		if (line[i] == '/')
+		{
+			if (++comment >= 2)
+			{
+				key = value = "";
+				break;
+			}
+		}
+		else
+			comment = 0;
+		if (line[i] == '"')
+		{
+			if (begin == -1)
+				begin = i + 1;
+			else
+			{
+				end = i;
+				if (key.length() == 0)
+				{
+					key = line.substr(begin, end - begin);
+					begin = end = -1;
+				}
+				else
+				{
+					value = line.substr(begin, end - begin);
+					break;
+				}
+			}
+		}
+	}
 }

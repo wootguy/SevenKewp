@@ -1054,7 +1054,7 @@ void CTalkSquadMonster :: Talk( float flDuration )
 // Prepare this talking monster to answer question
 void CTalkSquadMonster :: SetAnswerQuestion( CTalkSquadMonster *pSpeaker )
 {
-	if ( !m_pCine )
+	if ( !m_hCine )
 		ChangeSchedule( slIdleResponse );
 	m_hTalkTarget = (CBaseMonster *)pSpeaker;
 }
@@ -1581,7 +1581,7 @@ int CTalkSquadMonster::SquadRecruit(int searchRadius, int maxMembers)
 			//	println("Potential squad member!");
 			//}
 
-			if (pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_pCine)
+			if (pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_hCine)
 			{
 				// Can we recruit this guy?
 				if (!pRecruit->InSquad() && pRecruit->Classify() == iMyClass &&
@@ -1853,7 +1853,7 @@ CTalkSquadMonster* CTalkSquadMonster::FindSquadMedic(int searchRadius)
 		if (pMonster
 			&& pMonster != this
 			&& pMonster->IsAlive()
-			&& !pMonster->m_pCine
+			&& !pMonster->m_hCine
 			&& FClassnameIs(pMonster->pev, "monster_human_medic_ally"))
 		{
 			return pMonster;

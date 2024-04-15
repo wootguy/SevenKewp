@@ -213,6 +213,11 @@ void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 	{
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "new_body"))
+	{
+		pev->body = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 
 	else
 		CBaseMonster::KeyValue( pkvd );
@@ -401,6 +406,8 @@ void CMonsterMaker::MakeMonster( void )
 		mon->m_Classify = m_Classify;
 		mon->m_IsPlayerAlly = m_IsPlayerAlly;
 		mon->m_soundReplacementPath = m_soundReplacementPath;
+		mon->m_minHullSize = m_minHullSize;
+		mon->m_maxHullSize = m_maxHullSize;
 		g_monsterSoundReplacements[mon->entindex()] = g_monsterSoundReplacements[entindex()];
 	}
 
@@ -425,6 +432,10 @@ void CMonsterMaker::MakeMonster( void )
 
 	DispatchSpawn( ENT( pevCreate ) );
 	pevCreate->owner = edict();
+
+	if (pev->body > 0) {
+		pent->v.body = pev->body;
+	}
 
 	if ( !FStringNull( pev->netname ) )
 	{

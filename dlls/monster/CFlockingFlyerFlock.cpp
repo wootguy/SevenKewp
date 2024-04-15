@@ -436,7 +436,7 @@ void CFlockingFlyer :: FormFlock( void )
 		{
 			CBaseMonster *pRecruit = pEntity->MyMonsterPointer( );
 
-			if ( pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_pCine )
+			if ( pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_hCine )
 			{
 				// Can we recruit this guy?
 				if ( FClassnameIs ( pRecruit->pev, "monster_flyer" ) )

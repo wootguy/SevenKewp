@@ -65,7 +65,7 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 		if (pev->spawnflags & SF_TRIGGER_NOCLIENTS)
 			return;
 	}
-	if (pOther->IsMonster()) {
+	else if (pOther->IsMonster()) {
 		if (!(pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS))
 			return;
 	}
