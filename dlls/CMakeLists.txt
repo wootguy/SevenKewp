@@ -213,6 +213,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CTriggerCondition.cpp
 	triggers/CTriggerCreateEntity.cpp
 	triggers/CTriggerEntityIterator.cpp
+	triggers/CTriggerHurtRemote.cpp
 	triggers/CTriggerRandom.cpp
 	triggers/CTriggerRelay.cpp
 	triggers/CTriggerRenamePlayer.cpp
