@@ -2957,7 +2957,7 @@ std::map<std::string, std::string> loadReplacementFile(const char* path) {
 	std::ifstream infile(fpath);
 
 	if (fpath.empty() || !infile.is_open()) {
-		ALERT(at_console, "Failed to load replacement file: %s\n", path);
+		ALERT(at_error, "Failed to load replacement file: %s\n", path);
 		return replacements;
 	}
 
@@ -3080,6 +3080,45 @@ void LoadBsp() {
 				g_textureStats.tex_water = true;
 			}
 		}
+	}
+}
+
+void PRECACHE_HUD_FILES(const char* hudConfigPath) {
+	std::string lowerPath = toLowerCase(hudConfigPath);
+	hudConfigPath = lowerPath.c_str();
+
+	if (g_modelReplacements.find(hudConfigPath) != g_modelReplacements.end()) {
+		hudConfigPath = g_modelReplacements[hudConfigPath].c_str();
+	}
+
+	std::string fpath = getGameFilePath(hudConfigPath);
+	std::ifstream infile(fpath);
+
+	if (fpath.empty() || !infile.is_open()) {
+		ALERT(at_error, "Failed to load HUD config: %s\n", hudConfigPath);
+		return;
+	}
+
+	PRECACHE_GENERIC(hudConfigPath);
+
+	int lineNum = 0;
+	std::string line;
+	while (std::getline(infile, line))
+	{
+		lineNum++;
+		std::string paths[2];
+
+		line = trimSpaces(line);
+		if (line.empty()) {
+			continue;
+		}
+
+		std::vector<std::string> parts = splitString(line, " \t");
+
+		if (parts.size() < 7)
+			continue;
+
+		PRECACHE_GENERIC((parts[2] + ".spr").c_str());
 	}
 }
 
@@ -3915,20 +3954,21 @@ bool UTIL_isSafeEntIndex(int idx, const char* action) {
 	return true;
 }
 
-std::vector<std::string> splitString(std::string str, const char* delimitters)
+std::vector<std::string> splitString(std::string str, const char* delimiters)
 {
 	std::vector<std::string> split;
-	size_t start = 0;
-	size_t end = str.find_first_of(delimitters);
 
-	while (end != std::string::npos)
+	const char* c_str = str.c_str();
+	size_t str_len = str.length();
+
+	size_t start = strspn(c_str, delimiters);
+
+	while (start < str_len)
 	{
-		split.push_back(str.substr(start, end - start));
-		start = end + 1;
-		end = str.find_first_of(delimitters, start);
+		size_t end = strcspn(c_str + start, delimiters);
+		split.push_back(str.substr(start, end));
+		start += end + strspn(c_str + start + end, delimiters);
 	}
-
-	split.push_back(str.substr(start));
 
 	return split;
 }

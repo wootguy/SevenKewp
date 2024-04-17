@@ -727,6 +727,9 @@ EXPORT void* GET_MODEL_PTR(edict_t* edict);
 EXPORT edict_t* CREATE_NAMED_ENTITY(string_t cname);
 #define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
 
+// called automatically for custom weapons during registration
+EXPORT void PRECACHE_HUD_FILES(const char* path);
+
 EXPORT void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL);
 EXPORT void MESSAGE_END();
 EXPORT void WRITE_BYTE(int iValue);
