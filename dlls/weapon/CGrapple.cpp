@@ -65,17 +65,7 @@ void CGrapple::Precache()
 	PRECACHE_MODEL("sprites/tongue.spr");
 
 	// client-side HUD sprites and config
-	PRECACHE_GENERIC("sprites/320hudof01.spr");
-	PRECACHE_GENERIC("sprites/640hudof01.spr");
-	PRECACHE_GENERIC("sprites/640hudof02.spr");
-	PRECACHE_GENERIC("sprites/ofch1.spr");
-	PRECACHE_GENERIC("sprites/1280ofch1.spr");
-	PRECACHE_GENERIC("sprites/1280/weapon_grapple_weapon.spr");
-	PRECACHE_GENERIC("sprites/1280/weapon_grapple_weapon_s.spr");
-	PRECACHE_GENERIC("sprites/2560ofch1.spr");
-	PRECACHE_GENERIC("sprites/2560/weapon_grapple_weapon.spr");
-	PRECACHE_GENERIC("sprites/2560/weapon_grapple_weapon_s.spr");
-	PRECACHE_GENERIC("sprites/weapon_grapple.txt");
+	PRECACHE_HUD_FILES("sprites/weapon_grapple.txt");
 
 	UTIL_PrecacheOther("grapple_tip");
 }

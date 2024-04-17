@@ -274,7 +274,7 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 }
 
 
-bool g_logRegisterCalls = false;
+bool g_registeringCustomWeps = false;
 std::set<std::string> g_weaponClassnames;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
@@ -357,10 +357,6 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 		goto cleanup;
 	}
 
-	// events must always be precached, and in the correct order, or else
-	// vanilla clients will play the wrong weapon events
-	wep->PrecacheEvents();
-
 	g_filledWeaponSlots[info.iSlot][info.iPosition] = szClassname;
 
 	CBasePlayerItem::ItemInfoArray[info.iId] = info;
@@ -374,9 +370,17 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 	}
 
 	g_weaponClassnames.insert(info.pszName);
-	if (g_logRegisterCalls)
+
+	// events must always be precached, and in the correct order, or else
+	// vanilla clients will play the wrong weapon events
+	wep->PrecacheEvents();
+
+	if (g_registeringCustomWeps) {
+		PRECACHE_HUD_FILES(("sprites/" + std::string(info.pszName) + ".txt").c_str());
+
 		ALERT(at_console, "Registered custom weapon '%s' (ID %d) to slot %d position %d\n",
 			szClassname, info.iId, info.iSlot, info.iPosition);
+	}
 
 cleanup:
 	REMOVE_ENTITY(pent);
@@ -405,7 +409,7 @@ void W_Precache(void)
 		memset(g_filledWeaponSlots[i], 0, MAX_WEAPON_POSITIONS * sizeof(const char*));
 	}
 
-	g_logRegisterCalls = false;
+	g_registeringCustomWeps = false;
 	UTIL_RegisterWeapon("weapon_shotgun");
 	UTIL_RegisterWeapon("weapon_crowbar");
 	UTIL_RegisterWeapon("weapon_9mmhandgun");
@@ -421,7 +425,7 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_snark");
 	UTIL_RegisterWeapon("weapon_hornetgun");
 	UTIL_RegisterWeapon("weapon_grapple");
-	g_logRegisterCalls = true; // log for custom weapons in plugins
+	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 	if ( g_pGameRules->IsDeathmatch() )
