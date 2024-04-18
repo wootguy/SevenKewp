@@ -229,6 +229,11 @@ void execMapCfg() {
 	while (std::getline(data_stream, line))
 	{
 		vector<string> parts = splitString(line, " \t");
+
+		if (parts.empty()) {
+			continue;
+		}
+
 		string name = trimSpaces(toLowerCase(parts[0]));
 		string value = parts.size() > 1 ? trimSpaces(parts[1]) : "";
 
