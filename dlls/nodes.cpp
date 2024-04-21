@@ -2332,7 +2332,7 @@ int CGraph :: FLoadGraph ( char *szMapName )
 	strcat_safe( szDirName, "/graphs", MAX_PATH);
 	CreateDirectory( szDirName, NULL );
 
-	strcat_safe( szFilename, "maps/graphs/", MAX_PATH);
+	strcpy_safe( szFilename, "maps/graphs/", MAX_PATH);
 	strcat_safe( szFilename, szMapName, MAX_PATH);
 	strcat_safe( szFilename, ".nod", MAX_PATH);
 

@@ -2099,7 +2099,7 @@ void CBaseMonster::Precache(void) {
 		g_monsterSoundReplacements.resize(gpGlobals->maxEntities);
 
 	int eidx = entindex();
-	if (m_soundReplacementPath) {
+	if (m_soundReplacementPath && strlen(STRING(m_soundReplacementPath))) {
 		const char* filePath = UTIL_VarArgs("sound/%s/%s",
 			STRING(gpGlobals->mapname), STRING(m_soundReplacementPath));
 

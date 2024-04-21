@@ -52,6 +52,12 @@ void CMultiSource::Spawn()
 
 void CMultiSource::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	if (!m_registered) {
+		// if a trigger_auto targets a multisource with 0 delay, then the multisource may not have
+		// registered its callers yet, depending on entity initialization order
+		Register();
+	}
+
 	int i = 0;
 
 	// Find the entity in our list
@@ -140,4 +146,6 @@ void CMultiSource::Register(void)
 	}
 
 	pev->spawnflags &= ~SF_MULTI_INIT;
+	
+	m_registered = true;
 }
