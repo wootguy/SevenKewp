@@ -801,3 +801,6 @@ EXPORT WavInfo getWaveFileInfo(const char* path);
 EXPORT Vector VecBModelOrigin(entvars_t* pevBModel);
 
 EXPORT void PlayCDTrack(int iTrack);
+
+// same as the STRING macro but defined as a function for easy calling in the debugger
+const char* cstr(string_t s);

@@ -4511,3 +4511,7 @@ void PlayCDTrack(int iTrack)
 		CLIENT_COMMAND(pClient, string);
 	}
 }
+
+const char* cstr(string_t s) {
+	return STRING(s);
+}

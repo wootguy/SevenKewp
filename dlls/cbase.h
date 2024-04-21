@@ -460,6 +460,7 @@ public:
 
 	int			m_iTotal;
 	string_t	m_globalstate;
+	bool m_registered;
 };
 
 
