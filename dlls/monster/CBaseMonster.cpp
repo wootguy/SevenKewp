@@ -5605,7 +5605,7 @@ void CBaseMonster::RunTask(Task_t* pTask)
 				UTIL_SetSize(pev, Vector(-4, -4, 0), Vector(4, 4, 1));
 			}
 			else // !!!HACKHACK - put monster in a thin, wide bounding box until we fix the solid type/bounding volume problem
-				UTIL_SetSize(pev, pev->mins, Vector(pev->maxs.x, pev->maxs.y, 2)); // >1 unit to prevent collision issues
+				UTIL_SetSize(pev, pev->mins, Vector(pev->maxs.x, pev->maxs.y, pev->mins.z+2)); // >1 unit to prevent collision issues
 
 			// corpses cause laggy movement when walking over them, so make them nonsolid
 			// gibbing with crowbar is handled in the weapon code
