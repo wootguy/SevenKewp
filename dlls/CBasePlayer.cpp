@@ -1542,10 +1542,12 @@ void CBasePlayer::PlayerUse ( void )
 
 	CBaseEntity *pObject = NULL;
 	CBaseEntity *pClosest = NULL;
+	CBaseEntity *pInside = NULL;
 	Vector		vecLOS;
 	Vector viewPos = pev->origin + pev->view_ofs;
 	float flMaxDot = VIEW_FIELD_NARROW;
 	float flDot;
+	float bestDist = FLT_MAX;
 
 	UTIL_MakeVectors ( pev->v_angle );// so we know which way we are facing
 	
@@ -1571,17 +1573,18 @@ void CBasePlayer::PlayerUse ( void )
 //				ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
 			}
 
-			// player is INSIDE the usable entity. Nothing can be closer than that.
+			// player is INSIDE the usable entity. View direction may the opposite of expected
 			// (example: big momma has abs box much larger than its collision box)
-			if (Intersects(pObject)) {
-				pClosest = pObject;
-				break;
+			float dist = (vecLOS - pObject->Center()).Length();
+			if (dist < bestDist && Intersects(pObject)) {
+				pInside = pObject;
+				bestDist = dist;
 			}
 
 //			ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
 		}
 	}
-	pObject = pClosest;
+	pObject = pClosest ? pClosest : pInside;
 
 	// Found an object
 	if (pObject )

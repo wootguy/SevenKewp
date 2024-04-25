@@ -7,7 +7,8 @@
 #include "CBaseTrigger.h"
 
 #define	SF_TRIGGER_PUSH_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
-#define SF_TRIGGER_PUSH_EVERYTHING_ELSE 8
+#define SF_TRIGGER_PUSH_NO_CLIENTS 8
+#define SF_TRIGGER_PUSH_NO_MONSTERS 16
 
 class CTriggerPush : public CBaseTrigger
 {
@@ -62,19 +63,15 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 	}
 
 	if (pOther->IsPlayer()) {
-		if (pev->spawnflags & SF_TRIGGER_NOCLIENTS)
+		if (pev->spawnflags & SF_TRIGGER_PUSH_NO_CLIENTS)
 			return;
 	}
 	else if (pOther->IsMonster()) {
-		if (!(pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS))
+		if (pev->spawnflags & SF_TRIGGER_PUSH_NO_MONSTERS)
 			return;
 	}
 	else if (FClassnameIs(pOther->pev, "func_pushable")) {
 		if (!(pev->spawnflags & SF_TRIGGER_PUSHABLES))
-			return;
-	}
-	else {
-		if (!(pev->spawnflags & SF_TRIGGER_PUSH_EVERYTHING_ELSE))
 			return;
 	}
 
