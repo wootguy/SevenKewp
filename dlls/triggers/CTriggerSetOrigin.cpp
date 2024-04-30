@@ -139,11 +139,12 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 
 			m_lockOffsetAngles[i] = m_hTargets[i]->pev->angles - m_hCopyEnt->pev->angles;
 		}
+	}
 
-		if (!(pev->spawnflags & (SF_TSORI_COPY_X_AXIS | SF_TSORI_COPY_Y_AXIS | SF_TSORI_COPY_Z_AXIS))) {
-			// TODO: wtf? ripent this shit.
-			pev->spawnflags |= SF_TSORI_COPY_X_AXIS | SF_TSORI_COPY_Y_AXIS | SF_TSORI_COPY_Z_AXIS;
-		}
+	if (!(pev->spawnflags & (SF_TSORI_COPY_X_AXIS | SF_TSORI_COPY_Y_AXIS | SF_TSORI_COPY_Z_AXIS 
+		| SF_TSORI_COPY_X_ANGLE | SF_TSORI_COPY_Y_ANGLE | SF_TSORI_COPY_Z_ANGLE))) {
+		// TODO: wtf? ripent this shit.
+		pev->spawnflags |= SF_TSORI_COPY_X_AXIS | SF_TSORI_COPY_Y_AXIS | SF_TSORI_COPY_Z_AXIS;
 	}
 
 	UpdateEntity();

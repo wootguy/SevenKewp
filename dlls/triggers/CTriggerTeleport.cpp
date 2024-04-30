@@ -7,6 +7,16 @@
 #include "CBaseTrigger.h"
 
 #define SF_TELE_RANDOM_DESTINATION 64
+#define SF_TELE_RELATIVE 128
+#define SF_TELE_KEEP_ANGLES 256
+#define SF_TELE_KEEP_VELOCITY 512
+#define SF_TELE_ROTATE_ANGLES 1024
+
+// rotate angles, velocity, and position offset for rotated seamless transitions using relative teleports.
+// For example, areas where hallway is shared, but the hallway is rotated 90 degrees so the player would
+// run into or get stuck inside a wall if keeping unrotated velocity and position offset.
+// This also implies and replaces the following flags: Relative, keep angles, keep velocity
+#define SF_TELE_SEAMLESS_TRANSITION 4096
 
 class CTriggerTeleport : public CBaseTrigger
 {
@@ -94,26 +104,64 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 
 	Vector tmp = VARS(pentTarget)->origin;
 
-	if (pOther->IsPlayer())
+	if (pOther->IsPlayer() && !(pev->spawnflags & (SF_TELE_RELATIVE | SF_TELE_SEAMLESS_TRANSITION)))
 	{
-		tmp.z -= pOther->pev->mins.z;// make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
+		// make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
+		// relative/seamless modes already account for this origin difference
+		tmp.z -= pOther->pev->mins.z;
 	}
 
 	tmp.z++;
 
-	pevToucher->flags &= ~FL_ONGROUND;
+	Vector offset = pevToucher->origin - pev->origin;
 
-	UTIL_SetOrigin(pevToucher, tmp);
-
-	pevToucher->angles = pentTarget->v.angles;
-
-	if (pOther->IsPlayer())
-	{
-		pevToucher->v_angle = pentTarget->v.angles;
+	if (pev->spawnflags & SF_TELE_SEAMLESS_TRANSITION) {
+		// rotate relative offset
+		float len = offset.Length();
+		Vector vecAngles = UTIL_VecToAngles(offset.Normalize());
+		vecAngles.x *= -1;
+		UTIL_MakeVectors(vecAngles + pentTarget->v.angles);
+		offset = gpGlobals->v_forward * len;
+		tmp = tmp + offset;
+	}
+	else if (pev->spawnflags & SF_TELE_RELATIVE) {
+		tmp = tmp + offset;
 	}
 
-	pevToucher->fixangle = TRUE;
-	pevToucher->velocity = pevToucher->basevelocity = g_vecZero;
+	UTIL_SetOrigin(pevToucher, tmp);
+	pevToucher->flags &= ~FL_ONGROUND;
+
+	if (pev->spawnflags & SF_TELE_SEAMLESS_TRANSITION) {
+		// rotate velocity
+		float speed = pevToucher->velocity.Length();
+		Vector vecAngles = UTIL_VecToAngles(pevToucher->velocity);
+		vecAngles.x *= -1;
+		UTIL_MakeVectors(vecAngles + pentTarget->v.angles);
+		pevToucher->velocity = gpGlobals->v_forward * speed;
+
+		// TODO: players will continue to send movement commands using their old angles which
+		// will add some unwanted side velocity. Rotate those commands for some amount of time?
+	}
+	else if (!(pev->spawnflags & SF_TELE_KEEP_VELOCITY)) {
+		pevToucher->velocity = pevToucher->basevelocity = g_vecZero;
+	}
+
+	if (pev->spawnflags & (SF_TELE_ROTATE_ANGLES | SF_TELE_SEAMLESS_TRANSITION)) {
+		// rotate angles
+		pevToucher->angles = pevToucher->v_angle + pentTarget->v.angles;
+
+		if (pOther->IsPlayer()) {
+			pevToucher->fixangle = TRUE;
+		}
+	}
+	else if (!(pev->spawnflags & SF_TELE_KEEP_ANGLES)) {
+		// copy angles
+		pevToucher->angles = pentTarget->v.angles;
+
+		if (pOther->IsPlayer()) {
+			pevToucher->fixangle = TRUE;
+		}
+	}
 }
 
 LINK_ENTITY_TO_CLASS(info_teleport_destination, CPointEntity);
