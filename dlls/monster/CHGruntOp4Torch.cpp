@@ -22,8 +22,7 @@ namespace TorchAllyBodygroup
 {
 enum TorchAllyBodygroup
 {
-	Head = 1,
-	Weapons = 2
+	Weapons = 1
 };
 }
 
