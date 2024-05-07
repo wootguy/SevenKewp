@@ -114,7 +114,7 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 		m_hTargets[m_targetCount++] = CBaseEntity::Instance(ent);
 	}
 	
-	if (FNullEnt(m_hCopyEnt.GetEdict()) || m_targetCount == 0) {
+	if (FNullEnt(m_hCopyEnt.GetEntity()) || m_targetCount == 0) {
 		if (pev->spawnflags & SF_TSORI_SET_ONCE) {
 			UTIL_Remove(this);
 		}
@@ -172,12 +172,12 @@ void CTriggerSetOrigin::ConstantModeThink() {
 }
 
 void CTriggerSetOrigin::UpdateEntity() {
-	if (FNullEnt(m_hCopyEnt.GetEdict())) {
+	if (FNullEnt(m_hCopyEnt.GetEntity())) {
 		return;
 	}
 
 	for (int i = 0; i < m_targetCount; i++) {
-		if (FNullEnt(m_hTargets[i].GetEdict())) {
+		if (FNullEnt(m_hTargets[i].GetEntity())) {
 			continue;
 		}
 

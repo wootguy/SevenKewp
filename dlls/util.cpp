@@ -710,7 +710,7 @@ bool UTIL_IsClientInPVS(edict_t* edict) {
 }
 
 bool IsValidPlayer(edict_t* edict) {
-	return edict && (edict->v.flags & FL_CLIENT) && STRING(edict->v.netname)[0] != '\0';
+	return edict && !edict->free && (edict->v.flags & FL_CLIENT) && STRING(edict->v.netname)[0] != '\0';
 }
 
 void UTIL_MakeVectors( const Vector &vecAngles )
