@@ -545,7 +545,7 @@ void SetBodygroup( void *pmodel, entvars_t *pev, int iGroup, int iValue )
 		return;
 
 	if (iGroup >= pstudiohdr->numbodyparts) {
-		ALERT(at_error, "invalid bodygroup %d set by %s for %s\n",
+		ALERT(at_console, "invalid bodygroup %d set by %s for %s\n",
 			iGroup, STRING(pev->classname), STRING(pev->model));
 		return;
 	}
