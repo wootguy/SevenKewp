@@ -127,8 +127,10 @@ int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion )
 edict_t* SpawnEdict(edict_t* pent) {
 	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pent);
 
-	if (!pEntity)
+	if (!pEntity) {
+		REMOVE_ENTITY(pent);
 		return NULL;
+	}
 
 	pEntity = RelocateEntIdx(pEntity);
 	pent = pEntity->edict();

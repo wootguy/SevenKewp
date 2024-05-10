@@ -3463,6 +3463,7 @@ edict_t* CREATE_NAMED_ENTITY(string_t cname) {
 		}
 		else {
 			ALERT(at_console, "Invalid entity class '%s'\n", STRING(cname));
+			return NULL;
 		}
 	}
 
