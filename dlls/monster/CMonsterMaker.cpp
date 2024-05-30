@@ -369,6 +369,11 @@ void CMonsterMaker::MakeMonster( void )
 			// don't build a stack of monsters!
 			if (m_blockedSpawnMode == SPAWN_BLOCK_WAIT) {
 				pev->nextthink = gpGlobals->time + 0.05f; // recheck quickly
+
+				if (pev->spawnflags & SF_MONSTERMAKER_CYCLIC) {
+					// this entity doesn't normally think in cyclic mode
+					SetThink(&CMonsterMaker::BlockedCyclicThink);
+				}
 			}
 
 			return;
@@ -612,6 +617,11 @@ void CMonsterMaker :: MakerThink ( void )
 	else if (!m_nextXenSound) {
 		SetThink(NULL);
 	}
+}
+
+void CMonsterMaker::BlockedCyclicThink() {
+	SetThink(NULL); // cyclic makers shouldn't think unless MakeMonster is blocked
+	MakeMonster();
 }
 
 //=========================================================

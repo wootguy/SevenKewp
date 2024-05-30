@@ -30,6 +30,7 @@ public:
 	void ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void CyclicUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void MakerThink(void);
+	void BlockedCyclicThink();
 	void DeathNotice(entvars_t* pevChild);// monster maker children use this to tell the monster maker that they have died.
 	void MakeMonster(void);
 	void XenmakerEffect();
