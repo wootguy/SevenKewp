@@ -135,4 +135,6 @@ void CGameText::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 			}
 		}
 	}
+
+	SUB_UseTargets(pActivator, USE_TOGGLE, 0.0f);
 }

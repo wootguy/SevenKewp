@@ -1015,18 +1015,16 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	baseent->m_visiblePlayers &= ~plrbit;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
-	if ( ( ent->v.effects & EF_NODRAW ) &&
-		 ( ent != host ) )
-		return 0;
-
 	// Ignore ents without valid / visible models
-	if ( !ent->v.modelindex || !STRING( ent->v.model ) )
-		return 0;
-
 	// Don't send spectators to other players
-	if ( ( ent->v.flags & FL_SPECTATOR ) && ( ent != host ) )
-	{
-		return 0;
+	bool invisible = (ent->v.effects & EF_NODRAW) && (ent != host) ||
+					 (!ent->v.modelindex || !STRING(ent->v.model)) ||
+					 ((ent->v.flags & FL_SPECTATOR) && (ent != host));
+
+	bool forceVisChecks = baseent->ForceVisChecks();
+
+	if (invisible && !forceVisChecks) {
+		return 0; // exit now unless a vis check was requested for this ent
 	}
 
 	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(host);
@@ -1043,6 +1041,10 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	else if(ent != host) {
 		// Ignore if not the host and not touching a PVS leaf
 		// If pSet is NULL, then the test will always succeed and the entity will be added to the update
+		return 0;
+	}
+
+	if (invisible || forceVisChecks) {
 		return 0;
 	}
 

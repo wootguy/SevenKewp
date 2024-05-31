@@ -122,7 +122,7 @@ public:
 	int					m_afButtonPressed;
 	int					m_afButtonReleased;
 	
-	edict_t			   *m_pentSndLast;			// last sound entity to modify player room type
+	EHANDLE				m_pentSndLast;			// last sound entity to modify player room type
 	float				m_flSndRoomtype;		// last roomtype set by sound entity
 	float				m_flLastSetRoomtype;		// last roomtype set by sound entity
 	float				m_flSndRange;			// dist from player to sound entity

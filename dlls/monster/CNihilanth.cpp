@@ -131,6 +131,8 @@ public:
 	float m_flShootEnd;
 	float m_flShootTime;
 
+	float m_irritationTime; // for automatically starting combat even if not triggered
+
 	EHANDLE m_hFriend[3];
 };
 
@@ -311,6 +313,7 @@ void CNihilanth :: Spawn( void )
 
 	m_iLevel = 1; 
 	m_iTeleport = 1;
+	m_irritationTime = gpGlobals->time + 10;
 
 	if (m_szRechargerTarget[0] == '\0')	strcpy_safe( m_szRechargerTarget, "n_recharger", 64 );
 	if (m_szDrawUse[0] == '\0')			strcpy_safe( m_szDrawUse, "n_draw", 64);
@@ -359,7 +362,7 @@ void CNihilanth :: PainSound( void )
 	
 	m_flNextPainSound = gpGlobals->time + RANDOM_FLOAT( 2, 5 );
 
-	if (pev->health > gSkillData.sk_nihilanth_health / 2)
+	if (pev->health > pev->max_health / 2)
 	{
 		EMIT_SOUND( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY( pLaughSounds ), 1.0, 0.2 ); 
 	}
@@ -451,6 +454,8 @@ void CNihilanth :: DyingThink( void )
 			FireTargets( m_szDeadUse, this, this, USE_ON, 1.0 );
 			pev->deadflag = DEAD_DEAD;
 		}
+
+		FCheckAITrigger();
 	}
 
 	if (m_fSequenceFinished)
@@ -723,7 +728,7 @@ void CNihilanth :: NextActivity( )
 		}
 	}
 
-	if ((pev->health < gSkillData.sk_nihilanth_health / 2 || m_iActiveSpheres < N_SPHERES / 2) && m_hRecharger == NULL && m_iLevel <= 9)
+	if ((pev->health < pev->max_health / 2 || m_iActiveSpheres < N_SPHERES / 2) && m_hRecharger == NULL && m_iLevel <= 9)
 	{
 		char szName[128];
 
@@ -809,7 +814,7 @@ void CNihilanth :: NextActivity( )
 	{
 		if (m_flLastSeen + 5 > gpGlobals->time && flDist < 256 && flDot > 0)
 		{
-			if (m_irritation >= 2 && pev->health < gSkillData.sk_nihilanth_health / 2.0)
+			if (m_irritation >= 2 && pev->health < pev->max_health / 2.0)
 			{
 				pev->sequence = LookupSequence( "attack1_open" );
 			}
@@ -866,9 +871,9 @@ void CNihilanth :: HuntThink( void )
 	// ALERT( at_console, "health %.0f\n", pev->health );
 
 	// if damaged, try to abosorb some spheres
-	if (pev->health < gSkillData.sk_nihilanth_health && AbsorbSphere( ))
+	if (pev->health < pev->max_health && AbsorbSphere( ))
 	{
-		pev->health += gSkillData.sk_nihilanth_health / N_SPHERES;
+		pev->health += pev->max_health / N_SPHERES;
 	}
 
 	// get new sequence
@@ -878,7 +883,7 @@ void CNihilanth :: HuntThink( void )
 		pev->frame = 0;
 		NextActivity( );
 		ResetSequenceInfo( );
-		pev->framerate = 2.0 - 1.0 * (pev->health / gSkillData.sk_nihilanth_health);
+		pev->framerate = 2.0 - 1.0 * (pev->health / pev->max_health);
 	}
 
 	// look for current enemy	
@@ -1275,11 +1280,14 @@ void CNihilanth::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 	if (m_irritation == 2 && ptr->iHitgroup == 2 && flDamage > 2)
 		m_irritation = 3;
 
+	if (m_irritation == 0 && gpGlobals->time > m_irritationTime)
+		m_irritation = 1;
+
 	if (m_irritation != 3)
 	{
 		Vector vecBlood = (ptr->vecEndPos - pev->origin).Normalize( );
 
-		UTIL_BloodStream( ptr->vecEndPos, vecBlood, BloodColor(), flDamage + (100 - 100 * (pev->health / gSkillData.sk_nihilanth_health)));
+		UTIL_BloodStream( ptr->vecEndPos, vecBlood, BloodColor(), flDamage + (100 - 100 * (pev->health / pev->max_health)));
 	}
 
 	// SpawnBlood(ptr->vecEndPos, BloodColor(), flDamage * 5.0);// a little surface blood.

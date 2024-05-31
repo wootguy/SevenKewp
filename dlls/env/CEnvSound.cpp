@@ -8,6 +8,8 @@
 class CEnvSound : public CPointEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // TODO: needed for VIS checks but it shouldn't be
+	virtual bool ForceVisChecks() { return true; }
 	void KeyValue(KeyValueData* pkvd);
 	void Spawn(void);
 
@@ -100,7 +102,7 @@ void CEnvSound::Think(void)
 	if (!UTIL_IsClientInPVS(edict()))
 		goto env_sound_Think_slow; // no player in pvs of sound entity, slow it down
 
-	// cycle through players on each think (0.64s update delay per player, for 32 players)
+	// cycle through players on each think (0.32s update delay per player, for 32 players)
 	
 	for (int i = 0; i < 32; i++) {
 		clientIdx = (clientIdx + 1) % gpGlobals->maxClients;
@@ -121,7 +123,7 @@ void CEnvSound::Think(void)
 	// check to see if this is the sound entity that is 
 	// currently affecting this player
 
-	if (!FNullEnt(pPlayer->m_pentSndLast) && (pPlayer->m_pentSndLast == ENT(pev))) {
+	if (!FNullEnt(pPlayer->m_pentSndLast) && (pPlayer->m_pentSndLast.GetEntity() == this)) {
 
 		// this is the entity currently affecting player, check
 		// for validity
@@ -162,7 +164,7 @@ void CEnvSound::Think(void)
 		if (flRange < pPlayer->m_flSndRange || pPlayer->m_flSndRange == 0)
 		{
 			// new entity is closer to player, so it wins.
-			pPlayer->m_pentSndLast = ENT(pev);
+			pPlayer->m_pentSndLast = this;
 			pPlayer->m_flSndRoomtype = m_flRoomtype;
 			pPlayer->m_flSndRange = flRange;
 
@@ -190,11 +192,11 @@ void CEnvSound::Think(void)
 	// not in range. do nothing, fall through to think_fast...
 
 env_sound_Think_fast:
-	pev->nextthink = gpGlobals->time + 0.02;
+	pev->nextthink = gpGlobals->time + 0.01;
 	return;
 
 env_sound_Think_slow:
-	pev->nextthink = gpGlobals->time + 0.75;
+	pev->nextthink = gpGlobals->time + 0.2;
 	return;
 }
 
@@ -207,4 +209,9 @@ void CEnvSound::Spawn()
 {
 	// spread think times
 	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.0, 0.5);
+
+	// must set a model for rehlds to call AddFullToPack
+	SET_MODEL(edict(), "models/player.mdl");
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
 }

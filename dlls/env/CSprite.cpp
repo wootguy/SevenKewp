@@ -34,7 +34,7 @@ void CSprite::Spawn(void)
 		TurnOn();
 
 	// Worldcraft only sets y rotation, copy to Z
-	if (pev->angles.y != 0 && pev->angles.z == 0)
+	if (vp_type == 0 && pev->angles.y != 0 && pev->angles.z == 0)
 	{
 		pev->angles.z = pev->angles.y;
 		pev->angles.y = 0;
@@ -57,6 +57,16 @@ void CSprite::Precache(void)
 	}
 }
 
+void CSprite::KeyValue(KeyValueData* pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "vp_type"))
+	{
+		vp_type = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CPointEntity::KeyValue(pkvd);
+}
 
 void CSprite::SpriteInit(const char* pSpriteName, const Vector& origin)
 {
