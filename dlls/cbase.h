@@ -168,6 +168,7 @@ public:
 	virtual int		ObjectCaps( void ) { return FCAP_ACROSS_TRANSITION; }
 	virtual void	Activate( void ) {}
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
+	virtual bool	ForceVisChecks() { return false; } // return true for invisible ents that normally skip VIS checks in AddToFullPack
 	
 	// Setup the object->object collision box (pev->mins / pev->maxs is the object->world collision box)
 	virtual void	SetObjectCollisionBox( void );

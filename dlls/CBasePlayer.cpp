@@ -2903,6 +2903,7 @@ void CBasePlayer::Spawn( void )
 
 	// reset sound environment to default
 	if (m_flLastSetRoomtype) {
+		m_pentSndLast = NULL;
 		m_flLastSetRoomtype = 0;
 		MESSAGE_BEGIN(MSG_ONE, SVC_ROOMTYPE, NULL, edict());
 		WRITE_SHORT(0);

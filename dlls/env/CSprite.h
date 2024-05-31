@@ -11,6 +11,7 @@ public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	void Spawn(void);
 	void Precache(void);
+	void KeyValue(KeyValueData* pkvd);
 
 	int		ObjectCaps(void)
 	{
@@ -72,6 +73,7 @@ private:
 
 	float		m_lastTime;
 	float		m_maxFrame;
+	int vp_type;
 };
 
 #endif

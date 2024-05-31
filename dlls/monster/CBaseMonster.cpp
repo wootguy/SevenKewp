@@ -7395,7 +7395,9 @@ void CBaseMonster::SetSize(Vector defaultMins, Vector defaultMaxs) {
 
 void CBaseMonster::SetHealth() {
 	if (!pev->health)
-		pev->health = pev->max_health = GetDefaultHealth(STRING(pev->classname));
+		pev->health = GetDefaultHealth(STRING(pev->classname));
+
+	pev->max_health = pev->health;
 }
 
 void CBaseMonster::InitModel() {
