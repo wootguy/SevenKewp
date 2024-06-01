@@ -73,7 +73,9 @@ BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 		return FALSE;
 	}
 
-	if ( pPlayer->TakeHealth( gSkillData.sk_healthkit, DMG_GENERIC ) )
+	float giveHealth = pev->health ? pev->health : gSkillData.sk_healthkit;
+
+	if ( pPlayer->TakeHealth(giveHealth, DMG_GENERIC ) )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
 			WRITE_STRING( STRING(pev->classname) );
