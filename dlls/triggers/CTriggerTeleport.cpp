@@ -12,6 +12,8 @@
 #define SF_TELE_KEEP_VELOCITY 512
 #define SF_TELE_ROTATE_ANGLES 1024
 
+#define SF_TELE_DEST_TRIGGER_ON_ARRIVAL 32
+
 // rotate angles, velocity, and position offset for rotated seamless transitions using relative teleports.
 // For example, areas where hallway is shared, but the hallway is rotated 90 degrees so the player would
 // run into or get stuck inside a wall if keeping unrotated velocity and position offset.
@@ -161,6 +163,11 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 		if (pOther->IsPlayer()) {
 			pevToucher->fixangle = TRUE;
 		}
+	}
+
+	if (FClassnameIs(pentTarget, "info_teleport_destination") 
+		&& (pentTarget->v.spawnflags & SF_TELE_DEST_TRIGGER_ON_ARRIVAL) && pentTarget->v.target) {
+		FireTargets(STRING(pentTarget->v.target), pOther, CBaseEntity::Instance(pentTarget), USE_TOGGLE, 0.0f);
 	}
 }
 
