@@ -193,12 +193,6 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 		m_hTarget = GetNextTarget();
 	}
 
-	// Nothing to look at!
-	if (m_hTarget == NULL)
-	{
-		return;
-	}
-
 	if (m_sPath)
 	{
 		m_pentPath = Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_sPath)));
@@ -244,7 +238,7 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 
 void CTriggerCamera::FollowTarget()
 {
-	if (m_hTarget == NULL || m_flReturnTime < gpGlobals->time)
+	if (m_flReturnTime < gpGlobals->time)
 	{
 		TogglePlayerViews(false);
 
@@ -253,6 +247,11 @@ void CTriggerCamera::FollowTarget()
 		
 		pev->avelocity = Vector(0, 0, 0);
 		m_state = 0;
+		return;
+	}
+
+	if (m_hTarget == NULL) {
+		pev->nextthink = gpGlobals->time;
 		return;
 	}
 
