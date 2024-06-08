@@ -3118,7 +3118,7 @@ void PRECACHE_HUD_FILES(const char* hudConfigPath) {
 		if (parts.size() < 7)
 			continue;
 
-		PRECACHE_GENERIC((parts[2] + ".spr").c_str());
+		PRECACHE_GENERIC(("sprites/" + parts[2] + ".spr").c_str());
 	}
 }
 
