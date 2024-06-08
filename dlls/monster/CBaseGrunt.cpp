@@ -799,6 +799,7 @@ bool CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity
 	}
 	if (equipmentToDrop & MEQUIP_DEAGLE) {
 		//DropEquipmentToss("weapon_eagle", vecGunPos, vecGunAngles, velocity, aVelocity);
+		DropEquipmentToss("weapon_357", vecGunPos, vecGunAngles, velocity, aVelocity);
 	}
 	if (equipmentToDrop & MEQUIP_GLOCK) {
 		DropEquipmentToss("weapon_9mmhandgun", vecGunPos, vecGunAngles, velocity, aVelocity);

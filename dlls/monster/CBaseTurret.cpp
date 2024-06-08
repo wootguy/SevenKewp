@@ -101,6 +101,10 @@ void CBaseTurret::Spawn()
 		m_iAutoStart = TRUE;
 	}
 
+	if (!pev->targetname) {
+		m_iAutoStart = TRUE;
+	}
+
 	// setup friendly skin
 	bool oldOn = m_iOn;
 	m_iOn = true;

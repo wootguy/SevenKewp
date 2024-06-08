@@ -26,6 +26,7 @@
 #define BG_SHOOT_UZIS_EVENT2 5
 #define BG_SHOOT_UZIS_EVENT3 6
 #define BG_SHOOT_UZIS_EVENT4 8
+#define BG_DROP_WEAPON 2001
 
 #define BODYGUARD_SENTENCE_VOLUME 1.0f
 
@@ -234,7 +235,7 @@ void CBodyGuard::HandleAnimEvent(MonsterEvent_t* pEvent)
 {
 	switch (pEvent->event)
 	{
-	case HGRUNT_AE_DROP_GUN:
+	case BG_DROP_WEAPON:
 		if (DropEquipment(0, false))
 			SetBodygroup(2, 0);
 		break;
