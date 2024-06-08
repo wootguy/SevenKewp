@@ -10,12 +10,15 @@
 
 class CItemBattery : public CItem
 {
+	float m_healthcap;
+
 	void Spawn(void)
 	{
 		Precache();
 		SET_MODEL(ENT(pev), GetModel());
 		CItem::Spawn();
 	}
+
 	void Precache(void)
 	{
 		if (FClassnameIs(pev, "item_armorvest")) {
@@ -30,6 +33,18 @@ class CItemBattery : public CItem
 		PRECACHE_MODEL(GetModel());
 		PRECACHE_SOUND("items/gunpickup2.wav");
 	}
+
+	void KeyValue(KeyValueData* pkvd)
+	{
+		if (FStrEq(pkvd->szKeyName, "healthcap"))
+		{
+			m_healthcap = atof(pkvd->szValue);
+			pkvd->fHandled = TRUE;
+		}
+		else
+			CItem::KeyValue(pkvd);
+	}
+
 	BOOL MyTouch(CBasePlayer* pPlayer)
 	{
 		if (pPlayer->pev->deadflag != DEAD_NO)
@@ -43,8 +58,10 @@ class CItemBattery : public CItem
 			int pct;
 			char szcharge[64];
 
+			float healthcap = m_healthcap > 0 ? m_healthcap : MAX_NORMAL_BATTERY;
+
 			pPlayer->pev->armorvalue += pev->health ? pev->health : gSkillData.sk_battery;
-			pPlayer->pev->armorvalue = V_min(pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY);
+			pPlayer->pev->armorvalue = V_min(pPlayer->pev->armorvalue, healthcap);
 
 			EMIT_SOUND(pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
 

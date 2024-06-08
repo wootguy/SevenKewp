@@ -27,7 +27,11 @@ class CHealthKit : public CItem
 {
 	void Spawn( void );
 	void Precache( void );
+	void KeyValue(KeyValueData* pkvd);
+
 	BOOL MyTouch( CBasePlayer *pPlayer );
+
+	float m_healthcap;
 
 /*
 	virtual int		Save( CSave &save ); 
@@ -66,6 +70,17 @@ void CHealthKit::Precache( void )
 	PRECACHE_SOUND("items/smallmedkit1.wav");
 }
 
+void CHealthKit::KeyValue(KeyValueData* pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "healthcap"))
+	{
+		m_healthcap = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CItem::KeyValue(pkvd);
+}
+
 BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 {
 	if ( pPlayer->pev->deadflag != DEAD_NO )
@@ -75,7 +90,7 @@ BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 
 	float giveHealth = pev->health ? pev->health : gSkillData.sk_healthkit;
 
-	if ( pPlayer->TakeHealth(giveHealth, DMG_GENERIC ) )
+	if ( pPlayer->TakeHealth(giveHealth, DMG_GENERIC, m_healthcap ) )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
 			WRITE_STRING( STRING(pev->classname) );

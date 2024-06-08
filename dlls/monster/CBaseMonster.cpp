@@ -4447,7 +4447,7 @@ void CBaseMonster::Killed(entvars_t* pevAttacker, int iGib)
 }
 
 // take health
-int CBaseMonster::TakeHealth(float flHealth, int bitsDamageType)
+int CBaseMonster::TakeHealth(float flHealth, int bitsDamageType, float healthcap)
 {
 	if (!pev->takedamage)
 		return 0;
@@ -4458,7 +4458,7 @@ int CBaseMonster::TakeHealth(float flHealth, int bitsDamageType)
 
 	m_bitsDamageType &= ~(bitsDamageType & ~DMG_TIMEBASED);
 
-	return CBaseEntity::TakeHealth(flHealth, bitsDamageType);
+	return CBaseEntity::TakeHealth(flHealth, bitsDamageType, healthcap);
 }
 
 /*

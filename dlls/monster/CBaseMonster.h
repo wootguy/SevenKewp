@@ -359,7 +359,7 @@ public:
 
 	virtual	Vector  GetGunPosition( void );
 
-	virtual int TakeHealth( float flHealth, int bitsDamageType );
+	virtual int TakeHealth( float flHealth, int bitsDamageType, float healthcap=0);
 	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	int			DeadTakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	void GiveScorePoints(entvars_t* pevAttacker, float flDamage); // award attackers with points for damage dealt. Call this before updating monster health.
