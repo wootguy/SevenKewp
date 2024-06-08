@@ -19,6 +19,17 @@ void CBasePlayerAmmo::Spawn(void)
 	SetTouch(&CBasePlayerAmmo::DefaultTouch);
 }
 
+void CBasePlayerAmmo::KeyValue(KeyValueData* pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "m_flCustomRespawnTime"))
+	{
+		m_flCustomRespawnTime = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseEntity::KeyValue(pkvd);
+}
+
 CBaseEntity* CBasePlayerAmmo::Respawn(void)
 {
 	pev->effects |= EF_NODRAW;
