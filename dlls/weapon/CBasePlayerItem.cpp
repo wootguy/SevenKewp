@@ -22,6 +22,16 @@ TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
 };
 IMPLEMENT_SAVERESTORE(CBasePlayerItem, CBaseAnimating);
 
+void CBasePlayerItem::KeyValue(KeyValueData* pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "m_flCustomRespawnTime"))
+	{
+		m_flCustomRespawnTime = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBaseEntity::KeyValue(pkvd);
+}
 
 void CBasePlayerItem::SetObjectCollisionBox(void)
 {

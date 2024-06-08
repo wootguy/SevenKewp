@@ -29,7 +29,7 @@ class EXPORT CItem : public CBaseAnimating
 {
 public:
 	void	Spawn(void);
-	void	KeyValue(KeyValueData* pkvd);
+	void KeyValue(KeyValueData* pkvd);
 	CBaseEntity* Respawn(void);
 	void ItemTouch(CBaseEntity* pOther);
 	void Materialize(void);
@@ -44,6 +44,8 @@ public:
 
 	Vector m_minHullSize;
 	Vector m_maxHullSize;
+
+	float m_flCustomRespawnTime;
 };
 
 #endif // ITEMS_H
