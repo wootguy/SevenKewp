@@ -31,19 +31,23 @@ TYPEDESCRIPTION	CBaseEntity::m_SaveData[] =
 };
 
 // give health
-int CBaseEntity::TakeHealth(float flHealth, int bitsDamageType)
+int CBaseEntity::TakeHealth(float flHealth, int bitsDamageType, float healthcap)
 {
 	if (!pev->takedamage)
 		return 0;
 
+	if (healthcap <= 0) {
+		healthcap = pev->max_health;
+	}
+
 	// heal
-	if (pev->health >= pev->max_health)
+	if (pev->health >= healthcap)
 		return 0;
 
 	pev->health += flHealth;
 
-	if (pev->health > pev->max_health)
-		pev->health = pev->max_health;
+	if (pev->health > healthcap)
+		pev->health = healthcap;
 
 	return 1;
 }

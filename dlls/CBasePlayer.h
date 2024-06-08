@@ -225,7 +225,7 @@ public:
 	virtual void PreThink( void );
 	virtual void PostThink( void );
 	virtual Vector GetGunPosition( void );
-	virtual int TakeHealth( float flHealth, int bitsDamageType );
+	virtual int TakeHealth( float flHealth, int bitsDamageType, float healthcap=0);
 	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	virtual void	Killed( entvars_t *pevAttacker, int iGib );

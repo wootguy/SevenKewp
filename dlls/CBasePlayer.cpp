@@ -311,9 +311,9 @@ void CBasePlayer :: DeathSound( void )
 // override takehealth
 // bitsDamageType indicates type of damage healed. 
 
-int CBasePlayer :: TakeHealth( float flHealth, int bitsDamageType )
+int CBasePlayer :: TakeHealth( float flHealth, int bitsDamageType, float healthcap)
 {
-	return CBaseMonster :: TakeHealth (flHealth, bitsDamageType);
+	return CBaseMonster :: TakeHealth (flHealth, bitsDamageType, healthcap);
 
 }
 
@@ -2800,6 +2800,8 @@ void CBasePlayer::Spawn( void )
 	pev->takedamage		= DAMAGE_AIM;
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_WALK;
+	pev->health			= mp_starthealth.value;
+	pev->armorvalue		= mp_startarmor.value;
 	pev->max_health		= pev->health;
 	pev->flags		   &= FL_PROXY;	// keep proxy flag sey by engine
 	pev->flags		   |= FL_CLIENT;
