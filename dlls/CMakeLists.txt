@@ -219,6 +219,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CTriggerRelay.cpp
 	triggers/CTriggerRenamePlayer.cpp
 	triggers/CTriggerRespawn.cpp
+	triggers/CTriggerSetCvar.cpp
 	triggers/CTriggerSetOrigin.cpp
 	triggers/CTriggerVote.cpp
 )
