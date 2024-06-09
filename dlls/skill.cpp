@@ -240,6 +240,16 @@ void RegisterSkillCvars() {
 	}
 }
 
+cvar_t* GetSkillCvar(const char* cvar) {
+	for (int i = 0; i < (int)(sizeof(skill_cvars) / sizeof(skill_cvar_t)); i++) {
+		if (FStrEq(cvar, skill_cvars[i].cvar.name)) {
+			return &skill_cvars[i].cvar;
+		}
+	}
+
+	return NULL;
+}
+
 void RefreshSkillData() {
 	int	iSkill;
 
