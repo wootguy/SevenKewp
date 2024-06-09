@@ -804,3 +804,6 @@ EXPORT void PlayCDTrack(int iTrack);
 
 // same as the STRING macro but defined as a function for easy calling in the debugger
 const char* cstr(string_t s);
+
+// strips unsafe chars from value to prevent sneaky stuff like "sv_gravity 800;rcon_password lololol"
+std::string sanitize_cvar_value(std::string val);

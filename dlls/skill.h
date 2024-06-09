@@ -237,6 +237,9 @@ void RegisterSkillCvars();
 
 float GetDefaultHealth(const char* monstertype);
 
+cvar_t* GetSkillCvar(const char* cvar);
+
+
 #define SKILL_EASY		1
 #define SKILL_MEDIUM	2
 #define SKILL_HARD		3

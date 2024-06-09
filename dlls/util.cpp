@@ -4516,3 +4516,9 @@ void PlayCDTrack(int iTrack)
 const char* cstr(string_t s) {
 	return STRING(s);
 }
+
+std::string sanitize_cvar_value(std::string val) {
+	val = replaceString(val, ";", "");
+	val.erase(std::remove(val.begin(), val.end(), '"'), val.end());
+	return val;
+}
