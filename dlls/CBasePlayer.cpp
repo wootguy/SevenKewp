@@ -1786,7 +1786,7 @@ void CBasePlayer::UpdateStatusBar()
 			}
 			else if (pEntity->IsMonster() && pEntity->IsAlive()) {
 				
-				const char* name = pEntity->DisplayName();
+				std::string name = replaceString(pEntity->DisplayName(), "\n", " ");
 				int hp = roundf(pEntity->pev->health);
 
 				int irel = IRelationship(pEntity);
@@ -1800,7 +1800,7 @@ void CBasePlayer::UpdateStatusBar()
 					srel = "Enemy: ";
 				}
 
-				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", srel, name), SBAR_STRING_SIZE);
+				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", srel, name.c_str()), SBAR_STRING_SIZE);
 
 				if ((pEntity->pev->flags & FL_GODMODE) || (pEntity->pev->takedamage == DAMAGE_NO) || pEntity->pev->health > 2147483647) {
 					strcpy_safe(sbuf0, "2 Health: Invincible", SBAR_STRING_SIZE);
@@ -1821,7 +1821,7 @@ void CBasePlayer::UpdateStatusBar()
 			}
 			else if (pEntity->IsBreakable() && !(pEntity->pev->spawnflags & SF_BREAK_TRIGGER_ONLY)) {
 
-				const char* name = pEntity->DisplayName();
+				std::string name = replaceString(pEntity->DisplayName(), "\n", " ");
 				int hp = roundf(pEntity->pev->health);
 
 				const char* hint = "";
@@ -1832,7 +1832,7 @@ void CBasePlayer::UpdateStatusBar()
 					hint = " (use crowbar)";
 				}
 
-				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name, hint), SBAR_STRING_SIZE);
+				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name.c_str(), hint), SBAR_STRING_SIZE);
 				strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
 
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
@@ -1842,7 +1842,7 @@ void CBasePlayer::UpdateStatusBar()
 			}
 			else if (FClassnameIs(pEntity->pev, "func_pushable")) {
 
-				const char* name = pEntity->DisplayName();
+				std::string name = replaceString(pEntity->DisplayName(), "\n", " ");
 
 				const char* hint = "";
 				if (pEntity->pev->spawnflags & SF_PUSH_LIFTABLE) {
@@ -1852,7 +1852,7 @@ void CBasePlayer::UpdateStatusBar()
 					strcpy_safe(sbuf0, "2 Cannot lift", SBAR_STRING_SIZE);
 				}
 
-				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name, hint), SBAR_STRING_SIZE);
+				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name.c_str(), hint), SBAR_STRING_SIZE);
 
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
 				newSBarState[SBAR_ID_TARGETHEALTH] = 1;

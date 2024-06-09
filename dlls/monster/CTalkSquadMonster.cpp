@@ -1025,10 +1025,8 @@ void CTalkSquadMonster::PlaySentence( const char *pszSentence, float duration, f
 	Talk ( duration );
 
 	CTalkSquadMonster::g_talkWaitTime = gpGlobals->time + duration + 2.0;
-	if ( pszSentence[0] == '!' )
-		EMIT_SOUND_DYN( edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, GetVoicePitch());
-	else
-		SENTENCEG_PlayRndSz( edict(), pszSentence, volume, attenuation, 0, GetVoicePitch() );
+	
+	CBaseMonster::PlaySentence(pszSentence, duration, volume, attenuation);
 
 	// If you say anything, don't greet the player - you may have already spoken to them
 	SetBits(m_bitsSaid, bit_saidHelloPlayer);
