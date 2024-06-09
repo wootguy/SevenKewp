@@ -8,6 +8,7 @@ class EXPORT CBasePlayerItem : public CBaseAnimating
 {
 public:
 	virtual void SetObjectCollisionBox( void );
+	void KeyValue(KeyValueData* pkvd);
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
@@ -66,6 +67,7 @@ public:
 
 	EHANDLE m_pNext;
 	int		m_iId;												// WEAPON_???
+	float m_flCustomRespawnTime;
 
 	virtual int iItemSlot( void ) { return 0; }			// return 0 to MAX_ITEMS_SLOTS, used in hud
 

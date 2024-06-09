@@ -809,6 +809,10 @@ void CHalfLifeMultiplay :: PlayerGotWeapon( CBasePlayer *pPlayer, CBasePlayerIte
 //=========================================================
 float CHalfLifeMultiplay :: FlWeaponRespawnTime( CBasePlayerItem *pWeapon )
 {
+	if (pWeapon->m_flCustomRespawnTime) {
+		return gpGlobals->time + pWeapon->m_flCustomRespawnTime;
+	}
+
 	if ( weaponstay.value > 0 )
 	{
 		// make sure it's only certain weapons
@@ -929,7 +933,8 @@ int CHalfLifeMultiplay::ItemShouldRespawn( CItem *pItem )
 //=========================================================
 float CHalfLifeMultiplay::FlItemRespawnTime( CItem *pItem )
 {
-	return gpGlobals->time + ITEM_RESPAWN_TIME;
+	float respawnTime = pItem->m_flCustomRespawnTime ? pItem->m_flCustomRespawnTime : ITEM_RESPAWN_TIME;
+	return gpGlobals->time + respawnTime;
 }
 
 //=========================================================
@@ -973,7 +978,8 @@ int CHalfLifeMultiplay::AmmoShouldRespawn( CBasePlayerAmmo *pAmmo )
 //=========================================================
 float CHalfLifeMultiplay::FlAmmoRespawnTime( CBasePlayerAmmo *pAmmo )
 {
-	return gpGlobals->time + AMMO_RESPAWN_TIME;
+	float respawnTime = pAmmo->m_flCustomRespawnTime ? pAmmo->m_flCustomRespawnTime : AMMO_RESPAWN_TIME;
+	return gpGlobals->time + respawnTime;
 }
 
 //=========================================================

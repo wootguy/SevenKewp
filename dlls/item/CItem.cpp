@@ -70,6 +70,11 @@ void CItem::KeyValue(KeyValueData* pkvd) {
 		m_sequence_name = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "m_flCustomRespawnTime"))
+	{
+		m_flCustomRespawnTime = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 	{
 		CBaseEntity::KeyValue(pkvd);
