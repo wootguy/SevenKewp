@@ -1357,7 +1357,7 @@ BOOL CHalfLifeMultiplay::SurvivalModeCanSpawn( CBasePlayer* pPlayer )
 //=========================================================
 void CHalfLifeMultiplay::SurvivalModeThink()
 {
-	if( (int)CVAR_GET_FLOAT( "mp_survival_supported" ) != 1 || CountPlayers() == 0 )
+	if( (int)mp_survival_supported.value != 1 || CountPlayers() == 0 )
 		return;
 
 	int iAlivePlayers = 0;
@@ -1383,7 +1383,7 @@ void CHalfLifeMultiplay::SurvivalModeThink()
 	{
 		SurvivalPlayerData.clear();
 
-		if( (int)CVAR_GET_FLOAT( "mp_survival_restart" ) == 1 )
+		if( (int)mp_survival_restart.value == 1 )
 		{
 			SERVER_COMMAND( "restart\n" );
 		}
