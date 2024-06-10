@@ -69,31 +69,35 @@ void CTriggerSetCVar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 		"sv_ai_enemy_detection_mode",
 	};
 
+	if (pev->netname) {
+		FireTargets(STRING(pev->netname), pActivator, this, USE_TOGGLE, 0.0f);
+	}
+
 	if (!m_iszCVarToChange) {
 		ALERT(at_console, "%s (trigger_setcvar): no cvar selected\n", STRING(pev->targetname));
 		return;
 	}
 
-	const char* cvar = STRING(m_iszCVarToChange);
-	cvar_t* skillCvar = GetSkillCvar(cvar);
+	const char* cvarname = STRING(m_iszCVarToChange);
+	cvar_t* skillCvar = GetSkillCvar(cvarname);
 
 	if (!skillCvar) {
-		if (unimpl_cvars.count(cvar)) {
-			ALERT(at_console, "%s (trigger_setcvar): unimplemented cvar '%s'\n",
-				STRING(pev->targetname), STRING(m_iszCVarToChange));
+		if (unimpl_cvars.count(cvarname)) {
+			ALERT(at_error, "%s (trigger_setcvar): unimplemented cvar '%s'\n",
+				STRING(pev->targetname), cvarname);
 			return;
 		}
 
-		if (!valid_cvars.count(cvar)) {
-			ALERT(at_console, "%s (trigger_setcvar): invalid cvar '%s'\n",
-				STRING(pev->targetname), STRING(m_iszCVarToChange));
+		if (!valid_cvars.count(cvarname)) {
+			ALERT(at_error, "%s (trigger_setcvar): invalid cvar '%s'\n",
+				STRING(pev->targetname), cvarname);
 			return;
 		}
 	}
-	
+
 	std::string cvarvalue = sanitize_cvar_value(pev->message ? STRING(pev->message) : "");
 
-	ALERT(at_logged, "trigger_setcvar: '%s' set to '%s'\n", cvar, cvarvalue.c_str());
+	ALERT(at_logged, "trigger_setcvar: '%s' set to '%s'\n", cvarname, cvarvalue.c_str());
 
 	if (skillCvar) {
 		// cvar must be set now so that skill data can be refreshed this same frame
@@ -102,9 +106,6 @@ void CTriggerSetCVar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 		RefreshSkillData();
 	}
 	else {
-		SERVER_COMMAND(UTIL_VarArgs("%s %s\n", cvar, cvarvalue.c_str()));
+		SERVER_COMMAND(UTIL_VarArgs("%s %s\n", cvarname, cvarvalue.c_str()));
 	}
-
-	if (pev->netname)
-		FireTargets(STRING(pev->netname), pActivator, this, USE_TOGGLE, 0.0f);
 }
