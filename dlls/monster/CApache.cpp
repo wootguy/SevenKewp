@@ -956,7 +956,9 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	Vector dir = ptr->vecPlaneNormal;
 	Vector pos = ptr->vecEndPos;
 
-	if (!isBlast && (ptr->iHitgroup == 1 || ptr->iHitgroup == 2)) {
+	bool hitHard = flDamage > 50;
+
+	if (!isBlast && (ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || hitHard)) {
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 		WRITE_BYTE(TE_STREAK_SPLASH);
 		WRITE_COORD(pos.x);
@@ -972,23 +974,25 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		MESSAGE_END();
 
 		Vector sprPos = pos + dir * 4;
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
-		WRITE_BYTE(TE_EXPLOSION);
-		WRITE_COORD(sprPos.x);
-		WRITE_COORD(sprPos.y);
-		WRITE_COORD(sprPos.z);
-		if (ptr->iHitgroup == 1) {
-			WRITE_SHORT(m_iGlassHit);
-			WRITE_BYTE(24); // scale
-			WRITE_BYTE(80); // framerate
+		if (ptr->iHitgroup == 2 || ptr->iHitgroup == 1) {
+			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+			WRITE_BYTE(TE_EXPLOSION);
+			WRITE_COORD(sprPos.x);
+			WRITE_COORD(sprPos.y);
+			WRITE_COORD(sprPos.z);
+			if (ptr->iHitgroup == 1) {
+				WRITE_SHORT(m_iGlassHit);
+				WRITE_BYTE(24); // scale
+				WRITE_BYTE(80); // framerate
+			}
+			else {
+				WRITE_SHORT(m_iEngineHit);
+				WRITE_BYTE(12); // scale
+				WRITE_BYTE(50); // framerate
+			}
+			WRITE_BYTE(2 | 4 | 8);
+			MESSAGE_END();
 		}
-		else {
-			WRITE_SHORT(m_iEngineHit);
-			WRITE_BYTE(12); // scale
-			WRITE_BYTE(50); // framerate
-		}
-		WRITE_BYTE(2 | 4 | 8);
-		MESSAGE_END();
 
 		gibCount = 1 + (int)(flDamage / 30.0);
 
@@ -1026,7 +1030,7 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	}
 
 	// hit hard, hits cockpit, hits engines
-	if (flDamage > 50 || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || isBlast)
+	if (hitHard || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || isBlast)
 	{
 		// ALERT( at_console, "%.0f\n", flDamage );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );

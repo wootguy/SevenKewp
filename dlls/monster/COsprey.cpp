@@ -832,8 +832,10 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		}
 	}
 
+	bool hitHard = flDamage > 50;
+
 	// hit hard, hits cockpit, hits engines
-	if (flDamage > 50 || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3 || isBlast)
+	if (hitHard || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3 || isBlast)
 	{
 		Vector dir = ptr->vecPlaneNormal;
 		Vector pos = ptr->vecEndPos;
@@ -878,25 +880,27 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 			WRITE_SHORT(768);
 			WRITE_SHORT(256);
 			MESSAGE_END();
-
-			Vector sprPos = pos + dir * 4;
-			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
-			WRITE_BYTE(TE_EXPLOSION);
-			WRITE_COORD(sprPos.x);
-			WRITE_COORD(sprPos.y);
-			WRITE_COORD(sprPos.z);
-			if (ptr->iHitgroup == 1) {
-				WRITE_SHORT(m_iGlassHit);
-				WRITE_BYTE(12); // scale
-				WRITE_BYTE(80); // framerate
+			
+			if (ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3) {
+				Vector sprPos = pos + dir * 4;
+				MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+				WRITE_BYTE(TE_EXPLOSION);
+				WRITE_COORD(sprPos.x);
+				WRITE_COORD(sprPos.y);
+				WRITE_COORD(sprPos.z);
+				if (ptr->iHitgroup == 1) {
+					WRITE_SHORT(m_iGlassHit);
+					WRITE_BYTE(12); // scale
+					WRITE_BYTE(80); // framerate
+				}
+				else {
+					WRITE_SHORT(m_iEngineHit);
+					WRITE_BYTE(6 + (flDamage / 10)); // scale
+					WRITE_BYTE(50); // framerate
+				}
+				WRITE_BYTE(2 | 4 | 8);
+				MESSAGE_END();
 			}
-			else {
-				WRITE_SHORT(m_iEngineHit);
-				WRITE_BYTE(6 + (flDamage / 10)); // scale
-				WRITE_BYTE(50); // framerate
-			}
-			WRITE_BYTE(2 | 4 | 8);
-			MESSAGE_END();
 		}
 
 		if (gibCount) {
