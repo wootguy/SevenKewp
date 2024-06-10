@@ -215,6 +215,8 @@ void CHalfLifeMultiplay :: Think ( void )
 
 	last_frags = frags_remaining;
 	last_time  = time_remaining;
+
+	SurvivalModeThink();
 }
 
 
@@ -1320,6 +1322,72 @@ int CountPlayers( void )
 	}
 
 	return num;
+}
+
+//=========================================================
+// Returns whatever survival mode is enabled
+//=========================================================
+BOOL CHalfLifeMultiplay::SurvivalModeEnabled( void )
+{
+	return (int)( mp_survival_supported.value + mp_survival_starton.value ) == 2;
+}
+
+//=========================================================
+// Returns whatever a player can respawn if survival mode is enabled
+//=========================================================
+BOOL CHalfLifeMultiplay::SurvivalModeCanSpawn( CBasePlayer* pPlayer )
+{
+	if( !SurvivalModeEnabled() )
+		return TRUE;
+
+	std::string szID = std::string( GETPLAYERAUTHID( pPlayer->edict() ) );
+
+	if( SurvivalPlayerData[ szID ] )
+		return FALSE;
+
+	CLIENT_PRINTF( pPlayer->edict(), print_chat, "Survival Mode is enabled, no more respawning allowed." );
+
+	SurvivalPlayerData[ szID ] = true;
+
+	return TRUE;
+}
+
+//=========================================================
+// Reload the server if mp_survival_restart == 1, else just re-spawn all players
+//=========================================================
+void CHalfLifeMultiplay::SurvivalModeThink()
+{
+	if( (int)CVAR_GET_FLOAT( "mp_survival_supported" ) != 1 || CountPlayers() == 0 )
+		return;
+
+	int iAlivePlayers = 0;
+
+	for( int i = 1; i <= gpGlobals->maxClients; i++ )
+	{
+		CBaseEntity* pPlayer = UTIL_PlayerByIndex( i );
+
+		if( !pPlayer || pPlayer == nullptr )
+			continue;
+
+		if( !SurvivalModeEnabled() )
+		{
+			SurvivalPlayerData[ std::string( GETPLAYERAUTHID( pPlayer->edict() ) ) ] = false;
+		}
+		else
+		{
+			iAlivePlayers++;
+		}
+	}
+
+	if( SurvivalModeEnabled() && iAlivePlayers == 0 )
+	{
+		SurvivalPlayerData.clear();
+
+		if( (int)CVAR_GET_FLOAT( "mp_survival_restart" ) == 1 )
+		{
+			SERVER_COMMAND( "restart\n" );
+		}
+	}
 }
 
 /*

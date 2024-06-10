@@ -66,6 +66,10 @@ cvar_t  allow_spectators = { "allow_spectators", "0.0", FCVAR_SERVER, 0, 0 }; //
 
 cvar_t  mp_chattime = {"mp_chattime","10", FCVAR_SERVER, 0, 0 };
 
+cvar_t  mp_survival_supported = { "mp_survival_supported", "0", FCVAR_SERVER, 0, 0 };
+cvar_t  mp_survival_starton = { "mp_survival_starton", "0", FCVAR_SERVER, 0, 0 };
+cvar_t  mp_survival_restart = { "mp_survival_restart", "0", FCVAR_SERVER, 0, 0 };
+
 // Engine Cvars
 cvar_t 	*g_psv_gravity = NULL;
 cvar_t	*g_psv_aim = NULL;
@@ -199,6 +203,10 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_shitcode);
 
 	CVAR_REGISTER (&mp_chattime);
+
+	CVAR_REGISTER (&mp_survival_supported);
+	CVAR_REGISTER (&mp_survival_starton);
+	CVAR_REGISTER (&mp_survival_restart);
 
 	RegisterSkillCvars();
 
