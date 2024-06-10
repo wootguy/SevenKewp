@@ -461,7 +461,7 @@ void ClientCommand(edict_t* pEntity)
 		{
 			CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
 
-			if( pev->iuser1 != OBS_NONE )
+			if( pev->iuser1 == OBS_NONE )
 			{
 				edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot(pPlayer);
 				pPlayer->StartObserver(pev->origin, VARS(pentSpawnSpot)->angles);
