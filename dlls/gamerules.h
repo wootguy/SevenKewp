@@ -1,3 +1,7 @@
+#include <iostream>
+#include <map>
+#include <string>
+
 #pragma once
 /***
 *
@@ -89,7 +93,12 @@ public:
 	virtual BOOL IsTeamplay( void ) { return FALSE; };// is this deathmatch game being played with team rules?
 	virtual BOOL IsCoOp( void ) = 0;// is this a coop game?
 	virtual const char *GetGameDescription( void ) { return "Half-Life Co-op"; }  // this is the game name that gets seen in the server browser
-	
+
+// Survival Mode
+	virtual BOOL SurvivalModeEnabled( void ) { return FALSE; };
+	virtual BOOL SurvivalModeCanSpawn( CBasePlayer *pPlayer ) { return FALSE; };
+	virtual void SurvivalModeThink() {};
+
 // Client connection/disconnection
 	virtual BOOL ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] ) = 0;// a client just connected to the server (player hasn't spawned yet)
 	virtual void InitHUD( CBasePlayer *pl ) = 0;		// the client dll is ready for updating
@@ -287,6 +296,13 @@ public:
 	virtual BOOL IsMultiplayer( void );
 	virtual BOOL IsDeathmatch( void );
 	virtual BOOL IsCoOp( void );
+
+protected:
+    std::map<std::string, bool> SurvivalPlayerData;
+public:
+	virtual BOOL SurvivalModeEnabled( void );
+	virtual BOOL SurvivalModeCanSpawn( CBasePlayer *pPlayer );
+	virtual void SurvivalModeThink();
 
 // Client connection/disconnection
 	// If ClientConnected returns FALSE, the connection is rejected and the user is provided the reason specified in

@@ -171,6 +171,12 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(ENT(pev));
 	edict_t* spawnSpot = g_pGameRules->GetPlayerSpawnSpot(plr);
 
+	if( !g_pGameRules->SurvivalModeCanSpawn(plr) )
+	{
+		plr->StartObserver( plr->pev->origin, plr->pev->angles );
+		return;
+	}
+
 	if (FNullEnt(spawnSpot)) {
 		if (gpGlobals->time - plr->m_lastSpawnMessage > 0.5f) {
 			CLIENT_PRINTF(plr->edict(), print_center, "No spawn points available");

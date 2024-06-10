@@ -1484,6 +1484,12 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	Observer_SetMode( m_iObserverLastMode );
 }
 
+void CBasePlayer::LeaveObserver()
+{
+	ClearBits( m_afPhysicsFlags, PFLAG_OBSERVER );
+	pev->iuser1 = OBS_NONE;
+}
+
 // 
 // PlayerUse - handles USE keypress
 //
@@ -2819,6 +2825,9 @@ void CBasePlayer::Spawn( void )
 	pev->rendercolor = Vector(0,0,0);
 	m_lastDropTime = 0;
 	memset(m_nextItemPickups, 0, sizeof(float) * MAX_WEAPONS);
+
+	if( pev->iuser1 != OBS_NONE )
+		LeaveObserver();
 
 	m_bitsHUDDamage		= -1;
 	m_bitsDamageType	= 0;
