@@ -192,6 +192,10 @@ struct skilldata_t
 	float sk_plr_spore;
 	float sk_plr_shockrifle;
 	float sk_plr_hornet;
+	float sk_plr_pipewrench;
+	float sk_plr_pipewrench_full_damage;
+	float sk_plr_displacer_other;
+	float sk_plr_displacer_radius;
 
 	// World weapons
 	float sk_12mm_bullet;

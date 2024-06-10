@@ -227,10 +227,10 @@ if(UNIX)
 
 	add_definitions(-DLINUX)
 
-	add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
-	    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls
-	    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
-	)
+	#add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
+	#    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls
+	#    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
+	#)
 
 	target_link_libraries(${CLIENT_DLL_NAME} 
 		dl
@@ -247,11 +247,11 @@ if(UNIX)
 
 elseif(MSVC)
 	
-	add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
-	    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/cl_dlls/
-	    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls
-	    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
-	)
+	#add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
+	#    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/cl_dlls/
+	#    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls
+	#    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
+	#)
 
 	target_link_libraries(${CLIENT_DLL_NAME} 
 		${CMAKE_CURRENT_SOURCE_DIR}/../utils/vgui/lib/win32_vc6/vgui.lib

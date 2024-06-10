@@ -200,6 +200,10 @@ skill_cvar_t skill_cvars[] = {
 	DECL_SKILL_CVAR(sk_plr_spore),
 	DECL_SKILL_CVAR(sk_plr_shockrifle),
 	DECL_SKILL_CVAR(sk_plr_hornet),
+	DECL_SKILL_CVAR(sk_plr_pipewrench),
+	DECL_SKILL_CVAR(sk_plr_pipewrench_full_damage),
+	DECL_SKILL_CVAR(sk_plr_displacer_other),
+	DECL_SKILL_CVAR(sk_plr_displacer_radius),
 
 	// World weapons
 	DECL_SKILL_CVAR(sk_12mm_bullet),

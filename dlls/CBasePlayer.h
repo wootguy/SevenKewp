@@ -126,6 +126,8 @@ public:
 	float				m_flSndRoomtype;		// last roomtype set by sound entity
 	float				m_flLastSetRoomtype;		// last roomtype set by sound entity
 	float				m_flSndRange;			// dist from player to sound entity
+	float				m_DisplacerSndRoomtype;
+	Vector				m_DisplacerReturn;
 
 	float				m_flFallVelocity;
 	

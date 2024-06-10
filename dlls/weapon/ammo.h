@@ -13,6 +13,7 @@
 #define SNARK_MAX_CARRY			15
 #define HORNET_MAX_CARRY		8
 #define M203_GRENADE_MAX_CARRY	10
+#define SPORE_MAX_CARRY			20
 
 // the maximum amount of ammo each weapon's clip can hold
 #define WEAPON_NOCLIP			-1
@@ -28,3 +29,4 @@
 #define AMMO_RPGCLIP_GIVE		2
 #define AMMO_URANIUMBOX_GIVE	20
 #define AMMO_SNARKBOX_GIVE		5
+#define AMMO_SPORE_GIVE			1

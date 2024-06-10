@@ -24,24 +24,21 @@ enum ShockRifleAnim
 	SHOCKRIFLE_IDLE3
 };
 
+#define SHOCKRIFLE_DEFAULT_GIVE 10
+
 class CShockRifle : public CBasePlayerWeapon
 {
-	DECLARE_CLASS(CShockRifle, CBasePlayerWeapon);
-	DECLARE_DATAMAP();
-
 public:
-	void OnCreate() override;
+	void Spawn() override;
 	void Precache() override;
 
-	void Spawn() override;
+	//void AttachToPlayer(CBasePlayer* pPlayer) override;
 
-	void AttachToPlayer(CBasePlayer* pPlayer) override;
+	//bool CanDeploy() override;
 
-	bool CanDeploy() override;
+	BOOL Deploy() override;
 
-	bool Deploy() override;
-
-	void Holster() override;
+	void Holster(int skiplocal = 0) override;
 
 	void WeaponIdle() override;
 
@@ -53,9 +50,9 @@ public:
 
 	void ItemPostFrame() override;
 
-	bool GetWeaponInfo(WeaponInfo& info) override;
+	int GetItemInfo(ItemInfo* p) override;
 
-	bool UseDecrement() override
+	BOOL UseDecrement() override
 	{
 #if defined(CLIENT_WEAPONS)
 		return true;

@@ -217,6 +217,7 @@ public:
 	virtual	BOOL	IsPlayerCorpse( void ) { return FALSE; }
 	virtual BOOL	IsNetClient( void ) { return FALSE; }
 	virtual BOOL	IsBreakable( void ) { return FALSE; }
+	virtual BOOL	IsMachine(void) { return FALSE; };
 	virtual const char *TeamID( void ) { return ""; }
 	virtual const char* DisplayName() { return STRING(pev->classname); }
 	virtual const char* GetDeathNoticeWeapon() { return STRING(pev->classname); };

@@ -28,11 +28,11 @@ enum SporeLauncherAnim
 	SPLAUNCHER_IDLE2
 };
 
+#define SPORELAUNCHER_DEFAULT_GIVE 5
+#define SPORELAUNCHER_MAX_CLIP 5
+
 class CSporeLauncher : public CBasePlayerWeapon
 {
-	DECLARE_CLASS(CSporeLauncher, CBasePlayerWeapon);
-	DECLARE_DATAMAP();
-
 private:
 	enum class ReloadState
 	{
@@ -42,17 +42,13 @@ private:
 	};
 
 public:
-	void OnCreate() override;
-
 	void Precache() override;
 
 	void Spawn() override;
 
-	bool Deploy() override;
+	BOOL Deploy() override;
 
-	void Holster() override;
-
-	bool ShouldWeaponIdle() override;
+	void Holster(int skiplocal = 0) override;
 
 	void WeaponIdle() override;
 
@@ -62,11 +58,9 @@ public:
 
 	void Reload() override;
 
-	bool GetWeaponInfo(WeaponInfo& info) override;
+	int GetItemInfo(ItemInfo* p) override;
 
-	void IncrementAmmo(CBasePlayer* pPlayer) override;
-
-	bool UseDecrement() override
+	BOOL UseDecrement() override
 	{
 #if defined(CLIENT_WEAPONS)
 		return true;
@@ -75,9 +69,9 @@ public:
 #endif
 	}
 
-	void GetWeaponData(weapon_data_t& data) override;
+	//void GetWeaponData(weapon_data_t& data) override;
 
-	void SetWeaponData(const weapon_data_t& data) override;
+	//void SetWeaponData(const weapon_data_t& data) override;
 
 private:
 	unsigned short m_usFireSpore;

@@ -15,6 +15,8 @@
 
 #pragma once
 
+#define DISPLACER_DEFAULT_GIVE 40
+
 enum DisplacerAnim
 {
 	DISPLACER_IDLE1 = 0,
@@ -38,17 +40,14 @@ static const size_t DISPLACER_NUM_BEAMS = 4;
 
 class CDisplacer : public CBasePlayerWeapon
 {
-	DECLARE_CLASS(CDisplacer, CBasePlayerWeapon);
-	DECLARE_DATAMAP();
-
 public:
-	void OnCreate() override;
+	void Spawn() override;
 
 	void Precache() override;
 
-	bool Deploy() override;
+	BOOL Deploy(void) override;
 
-	void Holster() override;
+	void Holster(int skiplocal = 0) override;
 
 	void WeaponIdle() override;
 
@@ -66,11 +65,9 @@ public:
 
 	void AltFireThink();
 
-	bool GetWeaponInfo(WeaponInfo& info) override;
+	int GetItemInfo(ItemInfo* p) override;
 
-	void IncrementAmmo(CBasePlayer* pPlayer) override;
-
-	bool UseDecrement() override
+	BOOL UseDecrement() override
 	{
 #if defined(CLIENT_WEAPONS)
 		return true;

@@ -42,7 +42,6 @@ enum firemode_e
 
 
 LINK_ENTITY_TO_CLASS( weapon_hornetgun, CHgun );
-LINK_ENTITY_TO_CLASS(weapon_shockrifle, CHgun); // TODO: implement
 
 BOOL CHgun::IsUseable( void )
 {

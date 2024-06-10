@@ -348,6 +348,7 @@ set(WEAPON_HDR
 	weapon/CTripmine.h
 	weapon/CSqueak.h
 	weapon/CDisplacer.h
+	weapon/CDisplacerBall.h
 	weapon/CPipewrench.h
 	weapon/CShockRifle.h
 	weapon/CSporeLauncher.h
@@ -377,6 +378,7 @@ set(WEAPON_SRC
 	weapon/CTripmine.cpp
 	weapon/CWeaponBox.cpp
 	weapon/CDisplacer.cpp
+	weapon/CDisplacerBall.cpp
 	weapon/CPipewrench.cpp
 	weapon/CShockRifle.cpp
 	weapon/CSporeLauncher.cpp
@@ -399,6 +401,7 @@ set(AMMO_SRC
 	weapon/CPythonAmmo.cpp
 	weapon/CRpgAmmo.cpp
 	weapon/CShotgunAmmo.cpp
+	weapon/CSporeAmmo.cpp
 )
 
 set(UTIL_HDR

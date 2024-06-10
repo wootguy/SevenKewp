@@ -13,67 +13,73 @@
  *
  ****/
 #include "cbase.h"
-#include "UserMessages.h"
+#include "user_messages.h"
 
 #ifndef CLIENT_DLL
-#include "spawnpoints.h"
-#include "rope/CRope.h"
-
-#include "weapons/CDisplacerBall.h"
-
-#include "ctf/ctf_goals.h"
+#include "CDisplacerBall.h"
 #endif
 
 #include "CDisplacer.h"
 
+/*
 BEGIN_DATAMAP(CDisplacer)
 DEFINE_FUNCTION(SpinupThink),
-	DEFINE_FUNCTION(AltSpinupThink),
-	DEFINE_FUNCTION(FireThink),
-	DEFINE_FUNCTION(AltFireThink),
-	END_DATAMAP();
+DEFINE_FUNCTION(AltSpinupThink),
+DEFINE_FUNCTION(FireThink),
+DEFINE_FUNCTION(AltFireThink),
+END_DATAMAP();
+*/
 
 LINK_ENTITY_TO_CLASS(weapon_displacer, CDisplacer);
 
-void CDisplacer::OnCreate()
+void CDisplacer::Spawn()
 {
-	BaseClass::OnCreate();
+	Precache();
 	m_iId = WEAPON_DISPLACER;
+	SET_MODEL(ENT(pev), GetModelW());
+	m_iClip = -1;
 	m_iDefaultAmmo = DISPLACER_DEFAULT_GIVE;
-	m_WorldModel = pev->model = MAKE_STRING("models/w_displacer.mdl");
+
+	FallInit();// get ready to fall down.
 }
 
 void CDisplacer::Precache()
 {
+	m_defaultModelV = "models/v_displacer.mdl";
+	m_defaultModelP = "models/p_displacer.mdl";
+	m_defaultModelW = "models/w_displacer.mdl";
 	CBasePlayerWeapon::Precache();
-	PrecacheModel("models/v_displacer.mdl");
-	PrecacheModel(STRING(m_WorldModel));
-	PrecacheModel("models/p_displacer.mdl");
 
-	PrecacheSound("weapons/displacer_fire.wav");
-	PrecacheSound("weapons/displacer_self.wav");
-	PrecacheSound("weapons/displacer_spin.wav");
-	PrecacheSound("weapons/displacer_spin2.wav");
+	PRECACHE_SOUND("weapons/displacer_fire.wav");
+	PRECACHE_SOUND("weapons/displacer_self.wav");
+	PRECACHE_SOUND("weapons/displacer_spin.wav");
+	PRECACHE_SOUND("weapons/displacer_spin2.wav");
+	PRECACHE_SOUND("buttons/button11.wav");
 
-	PrecacheSound("buttons/button11.wav");
-
-	m_iSpriteTexture = PrecacheModel("sprites/shockwave.spr");
+	m_iSpriteTexture = PRECACHE_MODEL("sprites/shockwave.spr");
 
 	UTIL_PrecacheOther("displacer_ball");
 
 	m_usFireDisplacer = PRECACHE_EVENT(1, "events/displacer.sc");
+
+	// client-side HUD sprites and config
+	PRECACHE_HUD_FILES("sprites/weapon_displacer.txt");
 }
 
-bool CDisplacer::Deploy()
+BOOL CDisplacer::Deploy()
 {
 	return DefaultDeploy("models/v_displacer.mdl", "models/p_displacer.mdl", DISPLACER_DRAW, "egon");
 }
 
-void CDisplacer::Holster()
+void CDisplacer::Holster(int skiplocal)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	m_fInReload = false;
 
-	m_pPlayer->StopSound(CHAN_WEAPON, "weapons/displacer_spin.wav");
+	STOP_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_spin.wav");
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
 
@@ -83,18 +89,22 @@ void CDisplacer::Holster()
 
 	if (m_pfnThink == &CDisplacer::SpinupThink)
 	{
-		m_pPlayer->AdjustAmmoByIndex(m_iPrimaryAmmoType, -20);
+		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 20;
 		SetThink(nullptr);
 	}
 	else if (m_pfnThink == &CDisplacer::AltSpinupThink)
 	{
-		m_pPlayer->AdjustAmmoByIndex(m_iPrimaryAmmoType, -60);
+		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 60;
 		SetThink(nullptr);
 	}
 }
 
 void CDisplacer::WeaponIdle()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	ResetEmptySound();
 
 	m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
@@ -125,7 +135,11 @@ void CDisplacer::WeaponIdle()
 
 void CDisplacer::PrimaryAttack()
 {
-	if (m_pPlayer->GetAmmoCountByIndex(m_iPrimaryAmmoType) >= 20)
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= 20)
 	{
 		SetThink(&CDisplacer::SpinupThink);
 
@@ -133,13 +147,13 @@ void CDisplacer::PrimaryAttack()
 
 		m_Mode = DisplacerMode::STARTED;
 
-		m_pPlayer->EmitSound(CHAN_WEAPON, "weapons/displacer_spin.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
+		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_spin.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 
 		m_flTimeWeaponIdle = m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.5;
 	}
 	else
 	{
-		m_pPlayer->EmitSound(CHAN_WEAPON, "buttons/button11.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
+		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "buttons/button11.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 
 		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 	}
@@ -147,7 +161,11 @@ void CDisplacer::PrimaryAttack()
 
 void CDisplacer::SecondaryAttack()
 {
-	if (m_pPlayer->GetAmmoCountByIndex(m_iPrimaryAmmoType) >= 60)
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= 60)
 	{
 		SetThink(&CDisplacer::AltSpinupThink);
 
@@ -155,13 +173,13 @@ void CDisplacer::SecondaryAttack()
 
 		m_Mode = DisplacerMode::STARTED;
 
-		m_pPlayer->EmitSound(CHAN_WEAPON, "weapons/displacer_spin2.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
+		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_spin2.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 
 		m_flTimeWeaponIdle = m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
 	}
 	else
 	{
-		m_pPlayer->EmitSound(CHAN_WEAPON, "buttons/button11.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
+		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "buttons/button11.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 
 		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 	}
@@ -174,6 +192,10 @@ void CDisplacer::Reload()
 
 void CDisplacer::SpinupThink()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if (m_Mode == DisplacerMode::STARTED)
 	{
 		SendWeaponAnim(DISPLACER_SPINUP);
@@ -188,8 +210,8 @@ void CDisplacer::SpinupThink()
 		flags = 0;
 		// #endif
 
-		PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireDisplacer, 0, g_vecZero, g_vecZero,
-			0, 0, static_cast<int>(m_Mode), 0, 0, 0);
+		//PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireDisplacer, 0, g_vecZero, g_vecZero,
+		//	0, 0, static_cast<int>(m_Mode), 0, 0, 0);
 
 		m_flStartTime = gpGlobals->time;
 		m_iSoundState = 0;
@@ -219,6 +241,10 @@ void CDisplacer::SpinupThink()
 
 void CDisplacer::AltSpinupThink()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if (m_Mode == DisplacerMode::STARTED)
 	{
 		SendWeaponAnim(DISPLACER_SPINUP);
@@ -233,8 +259,8 @@ void CDisplacer::AltSpinupThink()
 		flags = 0;
 		// #endif
 
-		PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireDisplacer, 0, g_vecZero, g_vecZero,
-			0, 0, static_cast<int>(m_Mode), 0, 0, 0);
+		//PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireDisplacer, 0, g_vecZero, g_vecZero,
+		//	0, 0, static_cast<int>(m_Mode), 0, 0, 0);
 
 		m_flStartTime = gpGlobals->time;
 		m_iSoundState = 0;
@@ -264,7 +290,11 @@ void CDisplacer::AltSpinupThink()
 
 void CDisplacer::FireThink()
 {
-	m_pPlayer->AdjustAmmoByIndex(m_iPrimaryAmmoType, -20);
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 20;
 
 	m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
 	m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
@@ -275,7 +305,7 @@ void CDisplacer::FireThink()
 
 	m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
 
-	EmitSound(CHAN_WEAPON, "weapons/displacer_fire.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
+	EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_fire.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 
 	int flags;
 
@@ -298,13 +328,14 @@ void CDisplacer::FireThink()
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 
 	// Update auto-aim
-	m_pPlayer->GetAutoaimVectorFromPoint(vecSrc, AUTOAIM_10DEGREES);
+	//m_pPlayer->GetAutoaimVectorFromPoint(vecSrc, AUTOAIM_10DEGREES);
+	m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 
 	CDisplacerBall::CreateDisplacerBall(vecSrc, vecAnglesAim, m_pPlayer);
 
-	if (m_pPlayer->GetAmmoCountByIndex(m_iPrimaryAmmoType) == 0)
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0)
 	{
-		m_pPlayer->SetSuitUpdate("!HEV_AMO0", SUIT_REPEAT_OK);
+		m_pPlayer->SetSuitUpdate("!HEV_AMO0", TRUE, SUIT_REPEAT_OK);
 	}
 #endif
 
@@ -313,6 +344,11 @@ void CDisplacer::FireThink()
 
 void CDisplacer::AltFireThink()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	/*
 #ifndef CLIENT_DLL
 	if (m_pPlayer->IsOnRope())
 	{
@@ -323,13 +359,14 @@ void CDisplacer::AltFireThink()
 		m_pPlayer->SetRope(nullptr);
 	}
 #endif
+*/
 
-	m_pPlayer->StopSound(CHAN_WEAPON, "weapons/displacer_spin.wav");
+	STOP_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_spin.wav");
 
 	m_pPlayer->m_DisplacerReturn = m_pPlayer->pev->origin;
+	m_pPlayer->m_DisplacerSndRoomtype = m_pPlayer->m_flSndRoomtype;
 
-	m_pPlayer->m_DisplacerSndRoomtype = m_pPlayer->m_SndRoomtype;
-
+/*
 #ifndef CLIENT_DLL
 	if (g_pGameRules->IsCTF() && m_pPlayer->m_pFlag)
 	{
@@ -338,9 +375,10 @@ void CDisplacer::AltFireThink()
 		pFlag->DropFlag(m_pPlayer);
 	}
 #endif
+*/
 
 #ifndef CLIENT_DLL
-	CBaseEntity* pDestination;
+	CBaseEntity* pDestination = NULL;
 
 	if (!g_pGameRules->IsMultiplayer() || g_pGameRules->IsCoOp())
 	{
@@ -348,20 +386,19 @@ void CDisplacer::AltFireThink()
 	}
 	else
 	{
-		pDestination = EntSelectSpawnPoint(m_pPlayer);
+		pDestination = CBaseEntity::Instance(EntSelectSpawnPoint(m_pPlayer));
 
-		if (!pDestination)
-			pDestination = g_pLastSpawn;
+		//if (!pDestination)
+		//	pDestination = g_pLastSpawn;
 
-		Vector vecEnd = pDestination->pev->origin;
+		if (pDestination) {
+			Vector vecEnd = pDestination->pev->origin;
+			vecEnd.z -= 100;
 
-		vecEnd.z -= 100;
-
-		TraceResult tr;
-
-		UTIL_TraceLine(pDestination->pev->origin, vecEnd, ignore_monsters, edict(), &tr);
-
-		m_pPlayer->SetOrigin(tr.vecEndPos + Vector(0, 0, 37));
+			TraceResult tr;
+			UTIL_TraceLine(pDestination->pev->origin, vecEnd, ignore_monsters, edict(), &tr);
+			UTIL_SetOrigin(m_pPlayer->pev, tr.vecEndPos + Vector(0, 0, 37));
+		}
 	}
 
 	if (!FNullEnt(pDestination))
@@ -375,13 +412,11 @@ void CDisplacer::AltFireThink()
 			vecNewOrigin.z += 37;
 		}
 
-		m_pPlayer->SetOrigin(vecNewOrigin);
+		UTIL_SetOrigin(m_pPlayer->pev, vecNewOrigin);
 
 		m_pPlayer->pev->angles = pDestination->pev->angles;
-
 		m_pPlayer->pev->v_angle = pDestination->pev->angles;
-
-		m_pPlayer->pev->fixangle = FIXANGLE_ABSOLUTE;
+		m_pPlayer->pev->fixangle = TRUE;
 
 		m_pPlayer->pev->basevelocity = g_vecZero;
 		m_pPlayer->pev->velocity = g_vecZero;
@@ -396,19 +431,19 @@ void CDisplacer::AltFireThink()
 
 #ifndef CLIENT_DLL
 		// Must always be handled on the server side in order to play the right sounds and effects.
-		int flags = 0;
+		//int flags = 0;
 
-		PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireDisplacer, 0, g_vecZero, g_vecZero,
-			0, 0, static_cast<int>(DisplacerMode::FIRED), 0, 1, 0);
+		//PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireDisplacer, 0, g_vecZero, g_vecZero,
+		//	0, 0, static_cast<int>(DisplacerMode::FIRED), 0, 1, 0);
 
-		m_pPlayer->AdjustAmmoByIndex(m_iPrimaryAmmoType, -60);
+		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 60;
 
 		CDisplacerBall::CreateDisplacerBall(m_pPlayer->m_DisplacerReturn, Vector(90, 0, 0), m_pPlayer);
 
-		if (0 == GetMagazine1())
+		//if (0 == GetMagazine1())
 		{
-			if (m_pPlayer->GetAmmoCountByIndex(m_iPrimaryAmmoType) <= 0)
-				m_pPlayer->SetSuitUpdate("!HEV_AMO0", SUIT_REPEAT_OK);
+			if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
+				m_pPlayer->SetSuitUpdate("!HEV_AMO0", TRUE, SUIT_REPEAT_OK);
 		}
 
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase();
@@ -418,27 +453,22 @@ void CDisplacer::AltFireThink()
 	}
 	else
 	{
-		m_pPlayer->EmitSound(CHAN_WEAPON, "buttons/button11.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
+		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "buttons/button11.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 	}
 #endif
 }
 
-bool CDisplacer::GetWeaponInfo(WeaponInfo& info)
+int CDisplacer::GetItemInfo(ItemInfo* p)
 {
-	info.AttackModeInfo[0].AmmoType = "uranium";
-	info.Name = STRING(pev->classname);
-	info.AttackModeInfo[0].MagazineSize = WEAPON_NOCLIP;
-	info.Slot = 5;
-	info.Position = 1;
-	info.Id = WEAPON_DISPLACER;
-	info.Weight = DISPLACER_WEIGHT;
-	return true;
-}
+	p->pszName = STRING(pev->classname);
+	p->pszAmmo1 = "uranium";
+	p->iMaxAmmo1 = URANIUM_MAX_CARRY;
+	p->iMaxClip = WEAPON_NOCLIP;
+	p->iSlot = 5;
+	p->iPosition = 1;
+	p->iFlags = 0;
+	p->iId = m_iId = WEAPON_DISPLACER;
+	p->iWeight = DISPLACER_WEIGHT;
 
-void CDisplacer::IncrementAmmo(CBasePlayer* pPlayer)
-{
-	if (pPlayer->GiveAmmo(1, "uranium") >= 0)
-	{
-		pPlayer->EmitSound(CHAN_STATIC, "ctf/pow_backpack.wav", 0.5, ATTN_NORM);
-	}
+	return 1;
 }

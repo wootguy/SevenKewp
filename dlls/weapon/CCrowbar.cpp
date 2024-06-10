@@ -27,7 +27,6 @@
 #define	CROWBAR_WALLHIT_VOLUME 512
 
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar );
-LINK_ENTITY_TO_CLASS(weapon_pipewrench, CCrowbar); // TODO: implement wrench
 
 
 enum crowbar_e {
