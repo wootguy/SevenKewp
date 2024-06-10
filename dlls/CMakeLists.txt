@@ -347,6 +347,10 @@ set(WEAPON_HDR
 	weapon/CSatchel.h
 	weapon/CTripmine.h
 	weapon/CSqueak.h
+	weapon/CDisplacer.h
+	weapon/CPipewrench.h
+	weapon/CShockRifle.h
+	weapon/CSporeLauncher.h
 	weapon/weapons.h
 )
 set(WEAPON_SRC
@@ -372,6 +376,10 @@ set(WEAPON_SRC
 	weapon/CSqueak.cpp
 	weapon/CTripmine.cpp
 	weapon/CWeaponBox.cpp
+	weapon/CDisplacer.cpp
+	weapon/CPipewrench.cpp
+	weapon/CShockRifle.cpp
+	weapon/CSporeLauncher.cpp
 	weapon/weapons.cpp
 	weapon/CGlock.cpp
 	weapon/combat.cpp
