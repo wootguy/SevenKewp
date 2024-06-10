@@ -14,10 +14,7 @@
  ****/
 #include "cbase.h"
 
-#include "ctf/CTFDefs.h"
-#include "ctf/ctf_goals.h"
-
-#include "UserMessages.h"
+#include "user_messages.h"
 
 #include "CDisplacerBall.h"
 
@@ -64,6 +61,7 @@ const char* const displace[] =
 		"monster_shocktrooper"};
 }
 
+/*
 BEGIN_DATAMAP(CDisplacerBall)
 DEFINE_FUNCTION(BallTouch),
 	DEFINE_FUNCTION(FlyThink),
@@ -72,17 +70,18 @@ DEFINE_FUNCTION(BallTouch),
 	DEFINE_FUNCTION(ExplodeThink),
 	DEFINE_FUNCTION(KillThink),
 	END_DATAMAP();
+*/
 
 LINK_ENTITY_TO_CLASS(displacer_ball, CDisplacerBall);
 
 void CDisplacerBall::Precache()
 {
-	PrecacheModel("sprites/exit1.spr");
-	PrecacheModel("sprites/lgtning.spr");
-	m_iTrail = PrecacheModel("sprites/disp_ring.spr");
+	PRECACHE_MODEL("sprites/exit1.spr");
+	PRECACHE_MODEL("sprites/lgtning.spr");
+	m_iTrail = PRECACHE_MODEL("sprites/disp_ring.spr");
 
-	PrecacheSound("weapons/displacer_impact.wav");
-	PrecacheSound("weapons/displacer_teleport.wav");
+	PRECACHE_SOUND("weapons/displacer_impact.wav");
+	PRECACHE_SOUND("weapons/displacer_teleport.wav");
 }
 
 void CDisplacerBall::Spawn()
@@ -92,11 +91,11 @@ void CDisplacerBall::Spawn()
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SetModel("sprites/exit1.spr");
+	SET_MODEL(edict(), "sprites/exit1.spr");
 
-	SetOrigin(pev->origin);
+	UTIL_SetOrigin(pev, pev->origin);
 
-	SetSize(g_vecZero, g_vecZero);
+	UTIL_SetSize(pev, g_vecZero, g_vecZero);
 
 	pev->rendermode = kRenderTransAdd;
 
@@ -156,7 +155,7 @@ void CDisplacerBall::BallTouch(CBaseEntity* pOther)
 	UTIL_TraceLine(pev->origin, pev->origin + pev->velocity * 10, dont_ignore_monsters, edict(), &tr);
 
 	UTIL_DecalTrace(&tr, DECAL_SCORCH1 + RANDOM_LONG(0, 1));
-
+	/*
 	if (auto pPlayer = ToBasePlayer(pOther); pPlayer)
 	{
 		// Clear any flags set on player (onground, using grapple, etc).
@@ -211,6 +210,7 @@ void CDisplacerBall::BallTouch(CBaseEntity* pOther)
 
 		pPlayer->m_fNoPlayerSound = false;
 	}
+	*/
 
 	if (ClassifyTarget(pOther))
 	{
@@ -220,7 +220,7 @@ void CDisplacerBall::BallTouch(CBaseEntity* pOther)
 
 		m_hDisplacedTarget = pOther;
 
-		pOther->Killed(this, GIB_NEVER);
+		pOther->Killed(pev, GIB_NEVER);
 	}
 
 	pev->basevelocity = g_vecZero;
@@ -229,7 +229,7 @@ void CDisplacerBall::BallTouch(CBaseEntity* pOther)
 
 	pev->solid = SOLID_NOT;
 
-	SetOrigin(pev->origin);
+	UTIL_SetOrigin(pev, pev->origin);
 
 	SetThink(&CDisplacerBall::KillThink);
 
@@ -245,7 +245,7 @@ void CDisplacerBall::FlyThink()
 
 void CDisplacerBall::FlyThink2()
 {
-	SetSize(Vector(-8, -8, -8), Vector(8, 8, 8));
+	UTIL_SetSize(pev, Vector(-8, -8, -8), Vector(8, 8, 8));
 
 	ArmBeam(-1);
 	ArmBeam(1);
@@ -257,7 +257,7 @@ void CDisplacerBall::FizzleThink()
 {
 	ClearBeams();
 
-	pev->dmg = GetSkillFloat("plr_displacer_other"sv);
+	pev->dmg = gSkillData.sk_plr_displacer_other;
 
 	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
 	WRITE_BYTE(TE_DLIGHT);
@@ -270,13 +270,12 @@ void CDisplacerBall::FizzleThink()
 	WRITE_BYTE(10);
 	MESSAGE_END();
 
-	auto pOwner = GetOwner();
-
+	edict_t* pOwner = pev->owner;
 	pev->owner = nullptr;
 
-	RadiusDamage(pev->origin, this, pOwner, pev->dmg, 128.0, DMG_ALWAYSGIB | DMG_BLAST);
+	RadiusDamage(pev->origin, pev, &pOwner->v, pev->dmg, 128.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST);
 
-	EmitSound(CHAN_WEAPON, "weapons/displacer_impact.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
+	EMIT_SOUND(edict(), CHAN_WEAPON, "weapons/displacer_impact.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 
 	UTIL_Remove(this);
 }
@@ -285,15 +284,14 @@ void CDisplacerBall::ExplodeThink()
 {
 	ClearBeams();
 
-	pev->dmg = GetSkillFloat("plr_displacer_other"sv);
+	pev->dmg = gSkillData.sk_plr_displacer_other;
 
-	auto pOwner = GetOwner();
-
+	edict_t* pOwner = pev->owner;
 	pev->owner = nullptr;
 
-	RadiusDamage(pev->origin, this, pOwner, pev->dmg, GetSkillFloat("plr_displacer_radius"sv), DMG_ALWAYSGIB | DMG_BLAST);
+	RadiusDamage(pev->origin, pev, &pOwner->v, pev->dmg, gSkillData.sk_plr_displacer_radius, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST);
 
-	EmitSound(CHAN_WEAPON, "weapons/displacer_teleport.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
+	EMIT_SOUND(edict(), CHAN_WEAPON, "weapons/displacer_teleport.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 
 	UTIL_Remove(this);
 }
@@ -382,7 +380,7 @@ void CDisplacerBall::ArmBeam(int iSide)
 
 		m_pBeam[m_uiBeams]->SetBrightness(255);
 
-		RadiusDamage(tr.vecEndPos, this, GetOwner(), 25, 15, DMG_ENERGYBEAM);
+		RadiusDamage(tr.vecEndPos, pev, &pev->owner->v, 25, 15, CLASS_NONE, DMG_ENERGYBEAM);
 	}
 	else
 	{
@@ -402,10 +400,12 @@ bool CDisplacerBall::ClassifyTarget(CBaseEntity* pTarget)
 	if (!pTarget || pTarget->IsPlayer())
 		return false;
 
+	/*
 	if (pTarget->IsUnkillable())
 	{
 		return false;
 	}
+	*/
 
 	for (size_t uiIndex = 0; uiIndex < std::size(displace); ++uiIndex)
 	{
@@ -418,9 +418,9 @@ bool CDisplacerBall::ClassifyTarget(CBaseEntity* pTarget)
 
 CDisplacerBall* CDisplacerBall::CreateDisplacerBall(const Vector& vecOrigin, const Vector& vecAngles, CBaseEntity* pOwner)
 {
-	auto pBall = g_EntityDictionary->Create<CDisplacerBall>("displacer_ball");
+	CDisplacerBall* pBall = GetClassPtr((CDisplacerBall*)NULL);
 
-	pBall->SetOrigin(vecOrigin);
+	UTIL_SetOrigin(pBall->pev, vecOrigin);
 
 	Vector vecNewAngles = vecAngles;
 

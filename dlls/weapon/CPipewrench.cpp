@@ -19,6 +19,7 @@
 #define PIPEWRENCH_BODYHIT_VOLUME 128
 #define PIPEWRENCH_WALLHIT_VOLUME 512
 
+/*
 BEGIN_DATAMAP(CPipewrench)
 DEFINE_FIELD(m_flBigSwingStart, FIELD_TIME),
 	DEFINE_FIELD(m_iSwing, FIELD_INTEGER),
@@ -27,49 +28,61 @@ DEFINE_FIELD(m_flBigSwingStart, FIELD_TIME),
 	DEFINE_FUNCTION(Smack),
 	DEFINE_FUNCTION(BigSwing),
 	END_DATAMAP();
+*/
 
 LINK_ENTITY_TO_CLASS(weapon_pipewrench, CPipewrench);
 
-void CPipewrench::OnCreate()
+void CPipewrench::Spawn()
 {
-	BaseClass::OnCreate();
+	Precache();
 	m_iId = WEAPON_PIPEWRENCH;
-	SetMagazine1(WEAPON_NOCLIP);
-	m_WorldModel = pev->model = MAKE_STRING("models/w_pipe_wrench.mdl");
+	SET_MODEL(ENT(pev), GetModelW());
+	m_iClip = WEAPON_NOCLIP;
+	m_iDefaultAmmo = DISPLACER_DEFAULT_GIVE;
+
+	FallInit();// get ready to fall down.
 }
 
 void CPipewrench::Precache()
 {
+	m_defaultModelV = "models/v_pipe_wrench.mdl";
+	m_defaultModelP = "models/p_pipe_wrench.mdl";
+	m_defaultModelW = "models/w_pipe_wrench.mdl";
 	CBasePlayerWeapon::Precache();
-	PrecacheModel("models/v_pipe_wrench.mdl");
-	PrecacheModel(STRING(m_WorldModel));
-	PrecacheModel("models/p_pipe_wrench.mdl");
+
 	// Shepard - The commented sounds below are unused
 	// in Opposing Force, if you wish to use them,
 	// uncomment all the appropriate lines.
-	/*PrecacheSound("weapons/pwrench_big_hit1.wav");
-	PrecacheSound("weapons/pwrench_big_hit2.wav");*/
-	PrecacheSound("weapons/pwrench_big_hitbod1.wav");
-	PrecacheSound("weapons/pwrench_big_hitbod2.wav");
-	PrecacheSound("weapons/pwrench_big_miss.wav");
-	PrecacheSound("weapons/pwrench_hit1.wav");
-	PrecacheSound("weapons/pwrench_hit2.wav");
-	PrecacheSound("weapons/pwrench_hitbod1.wav");
-	PrecacheSound("weapons/pwrench_hitbod2.wav");
-	PrecacheSound("weapons/pwrench_hitbod3.wav");
-	PrecacheSound("weapons/pwrench_miss1.wav");
-	PrecacheSound("weapons/pwrench_miss2.wav");
+	/*PRECACHE_SOUND("weapons/pwrench_big_hit1.wav");
+	PRECACHE_SOUND("weapons/pwrench_big_hit2.wav");*/
+	PRECACHE_SOUND("weapons/pwrench_big_hitbod1.wav");
+	PRECACHE_SOUND("weapons/pwrench_big_hitbod2.wav");
+	PRECACHE_SOUND("weapons/pwrench_big_miss.wav");
+	PRECACHE_SOUND("weapons/pwrench_hit1.wav");
+	PRECACHE_SOUND("weapons/pwrench_hit2.wav");
+	PRECACHE_SOUND("weapons/pwrench_hitbod1.wav");
+	PRECACHE_SOUND("weapons/pwrench_hitbod2.wav");
+	PRECACHE_SOUND("weapons/pwrench_hitbod3.wav");
+	PRECACHE_SOUND("weapons/pwrench_miss1.wav");
+	PRECACHE_SOUND("weapons/pwrench_miss2.wav");
 
-	m_usPipewrench = PRECACHE_EVENT(1, "events/pipewrench.sc");
+	//m_usPipewrench = PRECACHE_EVENT(1, "events/pipewrench.sc");
+
+	// client-side HUD sprites and config
+	PRECACHE_HUD_FILES("sprites/weapon_pipewrench.txt");
 }
 
-bool CPipewrench::Deploy()
+BOOL CPipewrench::Deploy()
 {
 	return DefaultDeploy("models/v_pipe_wrench.mdl", "models/p_pipe_wrench.mdl", PIPEWRENCH_DRAW, "crowbar");
 }
 
-void CPipewrench::Holster()
+void CPipewrench::Holster(int skiplocal)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	// Cancel any swing in progress.
 	m_iSwingMode = SWING_NONE;
 	SetThink(nullptr);
@@ -115,6 +128,10 @@ void CPipewrench::SwingAgain()
 
 bool CPipewrench::Swing(const bool bFirst)
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return false;
+
 	bool bDidHit = false;
 
 	TraceResult tr;
@@ -135,7 +152,7 @@ bool CPipewrench::Swing(const bool bFirst)
 			// This is and approximation of the "best" intersection
 			CBaseEntity* pHit = CBaseEntity::Instance(tr.pHit);
 			if (!pHit || pHit->IsBSPModel())
-				FindHullIntersection(vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer);
+				FindHullIntersection(vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict());
 			vecEnd = tr.vecEndPos; // This is the point on the actual surface (the hull could have hit space)
 		}
 	}
@@ -143,9 +160,11 @@ bool CPipewrench::Swing(const bool bFirst)
 
 	if (bFirst)
 	{
+		/*
 		PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usPipewrench,
 			0.0, g_vecZero, g_vecZero, 0, 0, 0,
 			0.0, 0, static_cast<int>(tr.flFraction < 1));
+			*/
 	}
 
 
@@ -203,23 +222,23 @@ bool CPipewrench::Swing(const bool bFirst)
 		{
 			ClearMultiDamage();
 
-			if ((m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase()) || g_Skill.GetValue("pipewrench_full_damage") != 0)
+			if ((m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase()) || gSkillData.sk_plr_pipewrench_full_damage != 0)
 			{
 				// first swing does full damage
-				pEntity->TraceAttack(m_pPlayer, GetSkillFloat("plr_pipewrench"sv), gpGlobals->v_forward, &tr, DMG_CLUB);
+				pEntity->TraceAttack(m_pPlayer->pev, gSkillData.sk_plr_pipewrench, gpGlobals->v_forward, &tr, DMG_CLUB);
 			}
 			else
 			{
 				// subsequent swings do half
-				pEntity->TraceAttack(m_pPlayer, GetSkillFloat("plr_pipewrench"sv) / 2, gpGlobals->v_forward, &tr, DMG_CLUB);
+				pEntity->TraceAttack(m_pPlayer->pev, gSkillData.sk_plr_pipewrench / 2, gpGlobals->v_forward, &tr, DMG_CLUB);
 			}
 
-			ApplyMultiDamage(m_pPlayer, m_pPlayer);
+			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}
 
 #endif
 
-		if (GetSkillFloat("chainsaw_melee") == 0)
+		//if (GetSkillFloat("chainsaw_melee") == 0)
 		{
 			m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
 			m_flNextSecondaryAttack = GetNextAttackDelay(0.5);
@@ -235,19 +254,19 @@ bool CPipewrench::Swing(const bool bFirst)
 
 		if (pEntity)
 		{
-			if (pEntity->Classify() != ENTCLASS_NONE && !pEntity->IsMachine())
+			if (pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine())
 			{
 				// play thwack or smack sound
 				switch (RANDOM_LONG(0, 2))
 				{
 				case 0:
-					m_pPlayer->EmitSound(CHAN_ITEM, "weapons/pwrench_hitbod1.wav", 1, ATTN_NORM);
+					EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hitbod1.wav", 1, ATTN_NORM);
 					break;
 				case 1:
-					m_pPlayer->EmitSound(CHAN_ITEM, "weapons/pwrench_hitbod2.wav", 1, ATTN_NORM);
+					EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hitbod2.wav", 1, ATTN_NORM);
 					break;
 				case 2:
-					m_pPlayer->EmitSound(CHAN_ITEM, "weapons/pwrench_hitbod3.wav", 1, ATTN_NORM);
+					EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hitbod3.wav", 1, ATTN_NORM);
 					break;
 				}
 				m_pPlayer->m_iWeaponVolume = PIPEWRENCH_BODYHIT_VOLUME;
@@ -279,10 +298,10 @@ bool CPipewrench::Swing(const bool bFirst)
 			switch (RANDOM_LONG(0, 1))
 			{
 			case 0:
-				m_pPlayer->EmitSoundDyn(CHAN_ITEM, "weapons/pwrench_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+				EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
 				break;
 			case 1:
-				m_pPlayer->EmitSoundDyn(CHAN_ITEM, "weapons/pwrench_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+				EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
 				break;
 			}
 
@@ -296,7 +315,7 @@ bool CPipewrench::Swing(const bool bFirst)
 		pev->nextthink = gpGlobals->time + 0.2;
 #endif
 
-		if (GetSkillFloat("chainsaw_melee") != 0)
+		//if (GetSkillFloat("chainsaw_melee") != 0)
 		{
 			m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
 			m_flNextSecondaryAttack = GetNextAttackDelay(0.5);
@@ -307,6 +326,10 @@ bool CPipewrench::Swing(const bool bFirst)
 
 void CPipewrench::BigSwing()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	TraceResult tr;
 
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle);
@@ -325,17 +348,17 @@ void CPipewrench::BigSwing()
 			// This is and approximation of the "best" intersection
 			CBaseEntity* pHit = CBaseEntity::Instance(tr.pHit);
 			if (!pHit || pHit->IsBSPModel())
-				FindHullIntersection(vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer);
+				FindHullIntersection(vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict());
 			vecEnd = tr.vecEndPos; // This is the point on the actual surface (the hull could have hit space)
 		}
 	}
 #endif
 
-	PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usPipewrench,
-		0.0, g_vecZero, g_vecZero, 0, 0, 0,
-		0.0, 1, static_cast<int>(tr.flFraction < 1));
+	//PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usPipewrench,
+	//	0.0, g_vecZero, g_vecZero, 0, 0, 0,
+	//	0.0, 1, static_cast<int>(tr.flFraction < 1));
 
-	EmitSoundDyn(CHAN_WEAPON, "weapons/pwrench_big_miss.wav", VOL_NORM, ATTN_NORM, 0, 94 + RANDOM_LONG(0, 15));
+	EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_WEAPON, "weapons/pwrench_big_miss.wav", VOL_NORM, ATTN_NORM, 0, 94 + RANDOM_LONG(0, 15));
 
 	if (tr.flFraction >= 1.0)
 	{
@@ -365,18 +388,18 @@ void CPipewrench::BigSwing()
 		{
 			ClearMultiDamage();
 
-			float flDamage = (gpGlobals->time - m_flBigSwingStart) * GetSkillFloat("plr_pipewrench"sv) + 25.0f;
-			if ((m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase()) || g_Skill.GetValue("pipewrench_full_damage") != 0)
+			float flDamage = (gpGlobals->time - m_flBigSwingStart) * gSkillData.sk_plr_pipewrench + 25.0f;
+			if ((m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase()) || gSkillData.sk_plr_pipewrench_full_damage != 0)
 			{
 				// first swing does full damage
-				pEntity->TraceAttack(m_pPlayer, flDamage, gpGlobals->v_forward, &tr, DMG_CLUB);
+				pEntity->TraceAttack(m_pPlayer->pev, flDamage, gpGlobals->v_forward, &tr, DMG_CLUB);
 			}
 			else
 			{
 				// subsequent swings do half
-				pEntity->TraceAttack(m_pPlayer, flDamage / 2, gpGlobals->v_forward, &tr, DMG_CLUB);
+				pEntity->TraceAttack(m_pPlayer->pev, flDamage / 2, gpGlobals->v_forward, &tr, DMG_CLUB);
 			}
-			ApplyMultiDamage(m_pPlayer, m_pPlayer);
+			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}
 
 		// play thwack, smack, or dong sound
@@ -385,16 +408,16 @@ void CPipewrench::BigSwing()
 
 		if (pEntity)
 		{
-			if (pEntity->Classify() != ENTCLASS_NONE && !pEntity->IsMachine())
+			if (pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine())
 			{
 				// play thwack or smack sound
 				switch (RANDOM_LONG(0, 1))
 				{
 				case 0:
-					m_pPlayer->EmitSound(CHAN_ITEM, "weapons/pwrench_big_hitbod1.wav", 1, ATTN_NORM);
+					EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_big_hitbod1.wav", 1, ATTN_NORM);
 					break;
 				case 1:
-					m_pPlayer->EmitSound(CHAN_ITEM, "weapons/pwrench_big_hitbod2.wav", 1, ATTN_NORM);
+					EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_big_hitbod2.wav", 1, ATTN_NORM);
 					break;
 				}
 				m_pPlayer->m_iWeaponVolume = PIPEWRENCH_BODYHIT_VOLUME;
@@ -429,11 +452,11 @@ void CPipewrench::BigSwing()
 			switch (RANDOM_LONG(0, 1))
 			{
 			case 0:
-				m_pPlayer->EmitSoundDyn(CHAN_ITEM, "weapons/pwrench_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+				EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
 				// m_pPlayer->EmitSoundDyn(CHAN_ITEM, "weapons/pwrench_big_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0,3));
 				break;
 			case 1:
-				m_pPlayer->EmitSoundDyn(CHAN_ITEM, "weapons/pwrench_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+				EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
 				// m_pPlayer->EmitSoundDyn(CHAN_ITEM, "weapons/pwrench_big_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0,3));
 				break;
 			}
@@ -459,6 +482,10 @@ void CPipewrench::BigSwing()
 
 void CPipewrench::WeaponIdle()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
@@ -499,28 +526,17 @@ void CPipewrench::WeaponIdle()
 	}
 }
 
-void CPipewrench::GetWeaponData(weapon_data_t& data)
+int CPipewrench::GetItemInfo(ItemInfo* p)
 {
-	BaseClass::GetWeaponData(data);
-
-	data.m_fInSpecialReload = static_cast<int>(m_iSwingMode);
-}
-
-void CPipewrench::SetWeaponData(const weapon_data_t& data)
-{
-	BaseClass::SetWeaponData(data);
-
-	m_iSwingMode = data.m_fInSpecialReload;
-}
-
-bool CPipewrench::GetWeaponInfo(WeaponInfo& info)
-{
-	info.Name = STRING(pev->classname);
-	info.AttackModeInfo[0].MagazineSize = WEAPON_NOCLIP;
-	info.Slot = 0;
-	info.Position = 1;
-	info.Id = WEAPON_PIPEWRENCH;
-	info.Weight = PIPEWRENCH_WEIGHT;
-
-	return true;
+	p->pszName = STRING(pev->classname);
+	p->pszAmmo1 = NULL;
+	p->iMaxAmmo1 = -1;
+	p->pszAmmo2 = NULL;
+	p->iMaxAmmo2 = -1;
+	p->iMaxClip = WEAPON_NOCLIP;
+	p->iSlot = 0;
+	p->iPosition = 0;
+	p->iId = WEAPON_PIPEWRENCH;
+	p->iWeight = PIPEWRENCH_WEIGHT;
+	return 1;
 }

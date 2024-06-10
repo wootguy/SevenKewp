@@ -17,9 +17,6 @@
 
 class CDisplacerBall : public CBaseEntity
 {
-	DECLARE_CLASS(CDisplacerBall, CBaseEntity);
-	DECLARE_DATAMAP();
-
 private:
 	static const size_t NUM_BEAMS = 8;
 

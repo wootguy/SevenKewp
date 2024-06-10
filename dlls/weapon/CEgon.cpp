@@ -66,7 +66,6 @@ IMPLEMENT_SAVERESTORE(CEgon, CBasePlayerWeapon);
 #endif
 
 LINK_ENTITY_TO_CLASS( weapon_egon, CEgon );
-LINK_ENTITY_TO_CLASS(weapon_displacer, CEgon); // TODO: implement
 
 void CEgon::Spawn( )
 {

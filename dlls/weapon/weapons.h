@@ -60,6 +60,10 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define WEAPON_TRIPMINE			13
 #define	WEAPON_SATCHEL			14
 #define	WEAPON_SNARK			15
+#define	WEAPON_DISPLACER		16
+#define	WEAPON_PIPEWRENCH		17
+#define	WEAPON_SHOCKRIFLE		18
+#define	WEAPON_SPORELAUNCHER	19
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -71,21 +75,25 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 
 
 // weapon weight factors (for auto-switching)   (-1 = noswitch)
-#define CROWBAR_WEIGHT		0
-#define GRAPPLE_WEIGHT		0
-#define GLOCK_WEIGHT		10
-#define PYTHON_WEIGHT		15
-#define MP5_WEIGHT			15
-#define SHOTGUN_WEIGHT		15
-#define CROSSBOW_WEIGHT		10
-#define RPG_WEIGHT			20
-#define GAUSS_WEIGHT		20
-#define EGON_WEIGHT			20
-#define HORNETGUN_WEIGHT	10
-#define HANDGRENADE_WEIGHT	5
-#define SNARK_WEIGHT		5
-#define SATCHEL_WEIGHT		-10
-#define TRIPMINE_WEIGHT		-10
+#define CROWBAR_WEIGHT			0
+#define PIPEWRENCH_WEIGHT		0
+#define GRAPPLE_WEIGHT			0
+#define GLOCK_WEIGHT			10
+#define PYTHON_WEIGHT			15
+#define MP5_WEIGHT				15
+#define SHOTGUN_WEIGHT			15
+#define SHOCKRIFLE_WEIGHT		15
+#define CROSSBOW_WEIGHT			10
+#define RPG_WEIGHT				20
+#define GAUSS_WEIGHT			20
+#define EGON_WEIGHT				20
+#define SPORELAUNCHER_WEIGHT	20
+#define HORNETGUN_WEIGHT		10
+#define DISPLACER_WEIGHT		10
+#define HANDGRENADE_WEIGHT		5
+#define SNARK_WEIGHT			5
+#define SATCHEL_WEIGHT			-10
+#define TRIPMINE_WEIGHT			-10
 
 // bullet types
 typedef	enum
