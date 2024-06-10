@@ -1329,7 +1329,7 @@ int CountPlayers( void )
 //=========================================================
 BOOL CHalfLifeMultiplay::SurvivalModeEnabled( void )
 {
-	return ( (int)CVAR_GET_FLOAT( "mp_survival_supported" ) == 1 && (int)CVAR_GET_FLOAT( "mp_survival_starton" ) == 1 );
+	return (int)( mp_survival_supported.value + mp_survival_starton.value ) == 2;
 }
 
 //=========================================================
