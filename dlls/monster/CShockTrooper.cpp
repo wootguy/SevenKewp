@@ -490,7 +490,7 @@ BOOL CShockTrooper::CheckRangeAttack1(float flDot, float flDist)
 		// verify that a bullet fired from the gun will hit the enemy before the world.
 		UTIL_TraceLine(vecSrc, m_hEnemy->BodyTarget(vecSrc), ignore_monsters, ignore_glass, ENT(pev), &tr);
 
-		if (tr.flFraction == 1.0)
+		if (tr.flFraction == 1.0 || tr.pHit == m_hEnemy->edict())
 		{
 			return true;
 		}
@@ -540,7 +540,13 @@ BOOL CShockTrooper::CheckRangeAttack2(float flDot, float flDist)
 		if (RANDOM_LONG(0, 1))
 		{
 			// magically know where they are
-			vecTarget = Vector(m_hEnemy->pev->origin.x, m_hEnemy->pev->origin.y, m_hEnemy->pev->absmin.z);
+			if (m_hEnemy->IsBSPModel()) {
+				vecTarget = m_hEnemy->GetTargetOrigin();
+			}
+			else {
+				vecTarget = Vector(m_hEnemy->pev->origin.x, m_hEnemy->pev->origin.y, m_hEnemy->pev->absmin.z);
+			}
+			
 		}
 		else
 		{
@@ -555,7 +561,13 @@ BOOL CShockTrooper::CheckRangeAttack2(float flDot, float flDist)
 	{
 		// find target
 		// vecTarget = m_hEnemy->BodyTarget( pev->origin );
-		vecTarget = m_vecEnemyLKP + (m_hEnemy->BodyTarget(pev->origin) - m_hEnemy->pev->origin);
+		if (m_hEnemy->IsBSPModel()) {
+			vecTarget = m_hEnemy->GetTargetOrigin();
+		}
+		else {
+			vecTarget = m_vecEnemyLKP + (m_hEnemy->BodyTarget(pev->origin) - m_hEnemy->pev->origin);
+		}
+
 		// estimate position
 		if (HasConditions(bits_COND_SEE_ENEMY))
 			vecTarget = vecTarget + ((vecTarget - pev->origin).Length() / gSkillData.sk_shocktrooper_grenadespeed) * m_hEnemy->pev->velocity;

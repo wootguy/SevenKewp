@@ -569,7 +569,8 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			vecSpitOffset = ( gpGlobals->v_right * 8 + gpGlobals->v_forward * 37 + gpGlobals->v_up * 23 );		
 			vecSpitOffset = ( pev->origin + vecSpitOffset );
 			if (m_hEnemy) {
-				vecSpitDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - vecSpitOffset).Normalize();
+				Vector targetOri = m_hEnemy->GetTargetOrigin();
+				vecSpitDir = ((targetOri + m_hEnemy->pev->view_ofs) - vecSpitOffset).Normalize();
 			}
 			else {
 				vecSpitDir = gpGlobals->v_forward;

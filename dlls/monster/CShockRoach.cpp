@@ -245,16 +245,18 @@ void COFShockRoach :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				if (gravity <= 1)
 					gravity = 1;
 
+				Vector targetOri = m_hEnemy->GetTargetOrigin();
+
 				// How fast does the headcrab need to travel to reach that height given gravity?
-				float height = (m_hEnemy->pev->origin.z + m_hEnemy->pev->view_ofs.z - pev->origin.z);
+				float height = (targetOri.z + m_hEnemy->pev->view_ofs.z - pev->origin.z);
 				if (height < 16)
 					height = 16;
-				float speed = sqrt( 2 * gravity * height );
+				float speed = sqrt(2 * gravity * height);
 				float time = speed / gravity;
 
 				// Scale the sideways velocity to get there at the right time
-				vecJumpDir = (m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs - pev->origin);
-				vecJumpDir = vecJumpDir * ( 1.0 / time );
+				vecJumpDir = (targetOri + m_hEnemy->pev->view_ofs - pev->origin);
+				vecJumpDir = vecJumpDir * (1.0 / time);
 
 				// Speed to offset gravity at the desired height
 				vecJumpDir.z = speed;

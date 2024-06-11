@@ -244,7 +244,7 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 		Vector vecThrowDir;
 
 		if (m_hEnemy) {
-			vecThrowDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - handOrigin).Normalize();
+			vecThrowDir = ((m_hEnemy->GetTargetOrigin() + m_hEnemy->pev->view_ofs) - handOrigin).Normalize();
 		}
 		else {
 			vecThrowDir = gpGlobals->v_forward;

@@ -532,7 +532,11 @@ BOOL COtis :: CheckRangeAttack1 ( float flDot, float flDist )
 			
 			Vector shootOrigin = pev->origin + Vector( 0, 0, 55 );
 			CBaseEntity *pEnemy = m_hEnemy;
-			Vector shootTarget = ( (pEnemy->BodyTarget( shootOrigin ) - pEnemy->pev->origin) + m_vecEnemyLKP );
+			Vector shootTarget = ((pEnemy->BodyTarget(shootOrigin) - pEnemy->pev->origin) + m_vecEnemyLKP);
+			if (pEnemy->IsBSPModel()) {
+				shootTarget = pEnemy->Center();
+			}
+
 			UTIL_TraceLine( shootOrigin, shootTarget, dont_ignore_monsters, ENT(pev), &tr );
 			m_checkAttackTime = gpGlobals->time + 1;
 			if ( tr.flFraction == 1.0 || (tr.pHit != NULL && CBaseEntity::Instance(tr.pHit) == pEnemy) )

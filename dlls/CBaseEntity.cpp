@@ -397,11 +397,11 @@ BOOL CBaseEntity::FVisible(CBaseEntity* pEntity)
 		return FALSE;
 
 	vecLookerOrigin = pev->origin + pev->view_ofs;//look through the caller's 'eyes'
-	vecTargetOrigin = pEntity->EyePosition();
+	vecTargetOrigin = pEntity->IsBSPModel() ? pEntity->Center() : pEntity->EyePosition();
 
 	UTIL_TraceLine(vecLookerOrigin, vecTargetOrigin, ignore_monsters, ignore_glass, ENT(pev)/*pentIgnore*/, &tr);
 
-	if (tr.flFraction != 1.0)
+	if (tr.flFraction != 1.0 && tr.pHit != pEntity->edict())
 	{
 		return FALSE;// Line of sight is not established
 	}

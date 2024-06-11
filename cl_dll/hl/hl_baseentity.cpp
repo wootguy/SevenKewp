@@ -60,6 +60,8 @@ int CBaseEntity::ShouldToggle( USE_TYPE useType, BOOL currentState ) { return 0;
 int	CBaseEntity :: DamageDecal( int bitsDamageType ) { return -1; }
 CBaseEntity * CBaseEntity::Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner, std::map<std::string, std::string> keys) { return NULL; }
 void CBaseEntity::SUB_Remove( void ) { }
+void CBaseEntity::UpdateOnRemove( void ) { }
+void CBaseEntity::SetClassify( int ) { }
 
 // CBaseDelay Stubs
 void CBaseDelay :: KeyValue( struct KeyValueData_s * ) { }
@@ -126,6 +128,7 @@ float CBaseMonster :: FLSoundVolume ( CSound *pSound ) { return 0.0; }
 BOOL CBaseMonster :: FValidateHintType ( short sHint ) { return FALSE; }
 void CBaseMonster :: Look ( int iDistance ) { }
 int CBaseMonster :: ISoundMask ( void ) { return 0; }
+int CBaseMonster :: Classify ( void ) { return 0; }
 CSound* CBaseMonster :: PBestSound ( void ) { return NULL; }
 CSound* CBaseMonster :: PBestScent ( void ) { return NULL; } 
 float CBaseAnimating :: StudioFrameAdvance ( float flInterval ) { return 0.0; }
@@ -169,9 +172,8 @@ void CBaseMonster :: MonsterInitThink ( void ) { }
 void CBaseMonster :: StartMonster ( void ) { }
 void CBaseMonster :: MovementComplete( void ) { }
 int CBaseMonster::TaskIsRunning( void ) { return 0; }
-int CBaseMonster::Classify( void ) { return 0; }
 void CBaseMonster::SetClassify( int ) { }
-int CBaseMonster::IRelationship ( CBaseEntity *pTarget ) { return 0; }
+int CBaseEntity::IRelationship ( CBaseEntity *pTarget ) { return 0; }
 BOOL CBaseMonster :: FindCover ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist ) { return FALSE; }
 BOOL CBaseMonster :: BuildNearestRoute ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist ) { return FALSE; }
 CBaseEntity *CBaseMonster :: BestVisibleEnemy ( void ) { return NULL; }

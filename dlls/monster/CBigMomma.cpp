@@ -470,7 +470,7 @@ void CBigMomma :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			Vector maxs = center + Vector( 64, 64, 64 );
 
 			CBaseEntity *pList[8];
-			int count = UTIL_EntitiesInBox( pList, 8, mins, maxs, FL_MONSTER|FL_CLIENT, false);
+			int count = UTIL_EntitiesInBox( pList, 8, mins, maxs, FL_MONSTER|FL_CLIENT|FL_POSSIBLE_TARGET, false);
 			CBaseEntity *pHurt = NULL;
 
 			for ( int i = 0; i < count && !pHurt; i++ )

@@ -229,7 +229,14 @@ void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
 		GetAttachment(VOLTI_SHOCK_ATTACHMENT-1, handOrigin, handAngles);
 
 		UTIL_MakeVectors(pev->angles);
-		Vector vecThrowDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - handOrigin).Normalize();
+
+		UTIL_MakeVectors(pev->angles);
+		Vector vecThrowDir = gpGlobals->v_forward;
+
+		if (m_hEnemy) {
+			vecThrowDir = ((m_hEnemy->GetTargetOrigin() + m_hEnemy->pev->view_ofs) - handOrigin).Normalize();
+		}
+
 		vecThrowDir.x += RANDOM_FLOAT(-0.01, 0.01);
 		vecThrowDir.y += RANDOM_FLOAT(-0.01, 0.01);
 		vecThrowDir.z += RANDOM_FLOAT(-0.01, 0.01);

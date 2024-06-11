@@ -16,7 +16,7 @@
 #define FOLLOW_SOUND "chumtoad/follow.wav"
 #define UNFOLLOW_SOUND "chumtoad/unfollow.wav"
 
-#define TOXIC_START_DISTANCE 200
+#define TOXIC_START_DISTANCE 128
 
 #define SMOKE_TIME 3.0f
 

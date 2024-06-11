@@ -311,7 +311,7 @@ void CBaseMonster::Look(int iDistance)
 		Vector delta = Vector(iDistance, iDistance, iDistance);
 
 		// Find only monsters/clients in box, NOT limited to PVS
-		int count = UTIL_EntitiesInBox(pList, 100, pev->origin - delta, pev->origin + delta, FL_CLIENT | FL_MONSTER, false);
+		int count = UTIL_EntitiesInBox(pList, 100, pev->origin - delta, pev->origin + delta, FL_CLIENT | FL_MONSTER | FL_POSSIBLE_TARGET, false);
 		for (int i = 0; i < count; i++)
 		{
 			pSightEnt = pList[i];
@@ -965,7 +965,8 @@ BOOL CBaseMonster::CheckRangeAttack2(float flDot, float flDist)
 BOOL CBaseMonster::CheckMeleeAttack1(float flDot, float flDist)
 {
 	// Decent fix to keep folks from kicking/punching hornets and snarks is to check the onground flag(sjb)
-	if (flDist <= 64 && flDot >= 0.7 && m_hEnemy != NULL && FBitSet(m_hEnemy->pev->flags, FL_ONGROUND))
+	if (flDist <= 64 && flDot >= 0.7 && m_hEnemy != NULL 
+		&& (m_hEnemy->IsBSPModel() || FBitSet(m_hEnemy->pev->flags, FL_ONGROUND)))
 	{
 		return TRUE;
 	}
@@ -995,7 +996,7 @@ void CBaseMonster::CheckAttacks(CBaseEntity* pTarget, float flDist)
 
 	UTIL_MakeVectors(pev->angles);
 
-	vec2LOS = (pTarget->pev->origin - pev->origin).Make2D();
+	vec2LOS = (pTarget->GetTargetOrigin() - pev->origin).Make2D();
 	vec2LOS = vec2LOS.Normalize();
 
 	flDot = DotProduct(vec2LOS, gpGlobals->v_forward.Make2D());
@@ -1071,21 +1072,62 @@ int CBaseMonster::CheckEnemy(CBaseEntity* pEnemy)
 		return FALSE;
 	}
 
-	Vector vecEnemyPos = pEnemy->pev->origin;
+	Vector vecEnemyPos = pEnemy->GetTargetOrigin();
+
 	// distance to enemy's origin
 	flDistToEnemy = (vecEnemyPos - pev->origin).Length();
-	vecEnemyPos.z += pEnemy->pev->size.z * 0.5;
-	// distance to enemy's head
-	float flDistToEnemy2 = (vecEnemyPos - pev->origin).Length();
-	if (flDistToEnemy2 < flDistToEnemy)
-		flDistToEnemy = flDistToEnemy2;
-	else
-	{
-		// distance to enemy's feet
-		vecEnemyPos.z -= pEnemy->pev->size.z;
-		flDistToEnemy2 = (vecEnemyPos - pev->origin).Length();
+
+	if (pEnemy->IsBSPModel()) {
+		// brush may be too thick to attack the center, so try aiming somewhere on the outside
+		Vector vecAttackOrigin = pev->origin;//look through the caller's 'eyes'
+		vecAttackOrigin.z += pev->size.z * 0.5;
+
+		Vector vecHead = pEnemy->Center();
+		Vector vecFoot = pEnemy->Center();
+		vecHead.z += pEnemy->pev->size.z * 0.45;
+		vecFoot.z -= pEnemy->pev->size.z * 0.45;
+
+		//Vector vecDir2D = vecTarget - vecLookerOrigin;
+		//vecDir2D.z = 0;
+
+		TraceResult trHead;
+		TraceResult trFoot;
+		UTIL_TraceLine(vecAttackOrigin, vecHead, ignore_monsters, ignore_glass, ENT(pev), &trHead);
+		UTIL_TraceLine(vecAttackOrigin, vecFoot, ignore_monsters, ignore_glass, ENT(pev), &trFoot);
+		
+		float distHead = (trHead.vecEndPos - vecAttackOrigin).Length();
+		float distFoot = (trFoot.vecEndPos - vecAttackOrigin).Length();
+
+		if (trHead.pHit == pEnemy->edict() && trFoot.pHit == pEnemy->edict()) {
+			vecEnemyPos = distHead < distFoot ? trHead.vecEndPos : trFoot.vecEndPos;
+			flDistToEnemy = V_min(distHead, distFoot);
+		}
+		else if (trHead.pHit == pEnemy->edict()) {
+			vecEnemyPos = trHead.vecEndPos;
+			flDistToEnemy = distHead;
+		}
+		else {
+			vecEnemyPos = trFoot.vecEndPos;
+			flDistToEnemy = distFoot;
+		}
+
+		//te_debug_beam(vecAttackOrigin, vecEnemyPos, 10, RGBA(0, 255, 0));
+	}
+	else {
+		
+		vecEnemyPos.z += pEnemy->pev->size.z * 0.5;
+		// distance to enemy's head
+		float flDistToEnemy2 = (vecEnemyPos - pev->origin).Length();
 		if (flDistToEnemy2 < flDistToEnemy)
 			flDistToEnemy = flDistToEnemy2;
+		else
+		{
+			// distance to enemy's feet
+			vecEnemyPos.z -= pEnemy->pev->size.z;
+			flDistToEnemy2 = (vecEnemyPos - pev->origin).Length();
+			if (flDistToEnemy2 < flDistToEnemy)
+				flDistToEnemy = flDistToEnemy2;
+		}
 	}
 
 	if (HasConditions(bits_COND_SEE_ENEMY))
@@ -1093,7 +1135,7 @@ int CBaseMonster::CheckEnemy(CBaseEntity* pEnemy)
 		CBaseMonster* pEnemyMonster;
 
 		iUpdatedLKP = TRUE;
-		m_vecEnemyLKP = pEnemy->pev->origin;
+		m_vecEnemyLKP = pEnemy->GetTargetOrigin();
 
 		pEnemyMonster = pEnemy->MyMonsterPointer();
 
@@ -1123,7 +1165,7 @@ int CBaseMonster::CheckEnemy(CBaseEntity* pEnemy)
 		// if the enemy is near enough the monster, we go ahead and let the monster know where the
 		// enemy is. 
 		iUpdatedLKP = TRUE;
-		m_vecEnemyLKP = pEnemy->pev->origin;
+		m_vecEnemyLKP = pEnemy->GetTargetOrigin();
 	}
 
 	if (flDistToEnemy >= m_flDistTooFar)
@@ -2241,7 +2283,7 @@ void CBaseMonster::StartMonster(void)
 		else
 		{
 			// Monster will start turning towards his destination
-			MakeIdealYaw(m_hGoalEnt->pev->origin);
+			MakeIdealYaw(m_hGoalEnt->GetTargetOrigin());
 
 			// JAY: How important is this error message?  Big Momma doesn't obey this rule, so I took it out.
 #if 0
@@ -3578,7 +3620,13 @@ Vector CBaseMonster::ShootAtEnemy(const Vector& shootOrigin)
 
 	if (pEnemy)
 	{
-		return ((pEnemy->BodyTarget(shootOrigin) - pEnemy->pev->origin) + m_vecEnemyLKP - shootOrigin).Normalize();
+		if (pEnemy->IsBSPModel()) {
+			return (pEnemy->Center() - shootOrigin).Normalize();
+		}
+		else {
+			return ((pEnemy->BodyTarget(shootOrigin) - pEnemy->pev->origin) + m_vecEnemyLKP - shootOrigin).Normalize();
+		}
+		
 	}
 	else
 		return gpGlobals->v_forward;
@@ -3764,7 +3812,7 @@ BOOL CBaseMonster::GetEnemy(void)
 					PushEnemy(m_hEnemy, m_vecEnemyLKP);
 					SetConditions(bits_COND_NEW_ENEMY);
 					m_hEnemy = pNewEnemy;
-					m_vecEnemyLKP = m_hEnemy->pev->origin;
+					m_vecEnemyLKP = m_hEnemy->GetTargetOrigin();
 				}
 				// if the new enemy has an owner, take that one as well
 				if (pNewEnemy->pev->owner != NULL)
@@ -4705,7 +4753,7 @@ BOOL CBaseMonster::FInViewCone(CBaseEntity* pEntity)
 
 	UTIL_MakeVectors(pev->angles);
 
-	vec2LOS = (pEntity->pev->origin - pev->origin).Make2D();
+	vec2LOS = (pEntity->Center() - pev->origin).Make2D();
 	vec2LOS = vec2LOS.Normalize();
 
 	flDot = DotProduct(vec2LOS, gpGlobals->v_forward.Make2D());
@@ -5950,7 +5998,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	case TASK_FACE_TARGET:
 		if (m_hTargetEnt != NULL)
 		{
-			MakeIdealYaw(m_hTargetEnt->pev->origin);
+			MakeIdealYaw(m_hTargetEnt->GetTargetOrigin());
 			SetTurnActivity();
 		}
 		else

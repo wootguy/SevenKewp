@@ -169,7 +169,8 @@ public:
 	virtual void	Activate( void ) {}
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	virtual bool	ForceVisChecks() { return false; } // return true for invisible ents that normally skip VIS checks in AddToFullPack
-	
+	virtual Vector	GetTargetOrigin() { return pev->origin; } // origin used for monster pathing and targetting
+
 	// Setup the object->object collision box (pev->mins / pev->maxs is the object->world collision box)
 	virtual void	SetObjectCollisionBox( void );
 
