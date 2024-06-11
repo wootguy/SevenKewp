@@ -1062,7 +1062,7 @@ int CTalkSquadMonster :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAtta
 	if (IsImmune(pevAttacker))
 		return 0;
 
-	if ( IsAlive() )
+	if ( IsAlive() && flDamage > 0 )
 	{
 		CBaseEntity* attacker = (CBaseEntity*)GET_PRIVATE(ENT(pevAttacker));
 

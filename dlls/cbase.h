@@ -175,7 +175,7 @@ public:
 
 // Classify - returns the type of group (i.e, "houndeye", or "human military" so that monsters with different classnames
 // still realize that they are teammates. (overridden for monsters that form groups)
-	virtual int Classify ( void ) { return CLASS_NONE; };
+	virtual int Classify ( void ) { return m_Classify; };
 	virtual void DeathNotice ( entvars_t* pevChild) {}// monster maker children use this to tell the monster maker that they have died.
 
 
@@ -363,6 +363,10 @@ public:
 	virtual	BOOL FVisible ( CBaseEntity *pEntity );
 	virtual	BOOL FVisible ( const Vector &vecOrigin );
 
+	virtual void SetClassify(int iNewClassify);
+	virtual int IRelationship(CBaseEntity* pTarget);
+	static int IRelationship(int attackerClass, int victimClass);
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;
@@ -380,6 +384,7 @@ public:
 
 	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
 	int m_fireState;
+	int	m_Classify;		// Classify, to let mappers override the default
 
 	uint32_t m_audiblePlayers; // players in the audible set of this entity (invalid for invisible ents)
 	uint32_t m_visiblePlayers; // players in the visible set of this entity (invalid for invisible ents)

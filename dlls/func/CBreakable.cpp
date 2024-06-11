@@ -144,6 +144,7 @@ void CBreakable::Spawn(void)
 	pev->movetype = MOVETYPE_PUSH;
 	m_angle = pev->angles.y;
 	pev->angles.y = 0;
+	pev->max_health = pev->health;
 
 	// HACK:  matGlass can receive decals, we need the client to know about this
 	//  so use class to store the material flag
@@ -538,11 +539,12 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	{
 		vecTemp = pevInflictor->origin - (pev->absmin + (pev->size * 0.5));
 
-		// if a client hit the breakable with a crowbar, and breakable is crowbar-sensitive, break it now.
-		if (FBitSet(pevAttacker->flags, FL_CLIENT) &&
+		if (flDamage > 0 &&
+			FBitSet(pevAttacker->flags, FL_CLIENT) &&
 			FBitSet(pev->spawnflags, SF_BREAK_INSTANT) && (bitsDamageType & DMG_CLUB)) {
-			CBasePlayer* plr = (CBasePlayer*)CBaseEntity::Instance(pevAttacker);
-			bool isWrench = plr && plr->m_pActiveItem && FClassnameIs(plr->m_pActiveItem->pev, "weapon_pipewrench");
+			// if a client hit the breakable with a crowbar, and breakable is crowbar-sensitive, break it now.
+
+			bool isWrench = FStrEq(getActiveWeapon(pevAttacker), "weapon_pipewrench");
 			bool requiresWrench = m_instantBreakWeapon == BREAK_INSTANT_WRENCH;
 
 			if (requiresWrench == isWrench) {
@@ -571,7 +573,8 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	g_vecAttackDir = vecTemp.Normalize();
 
 	// do the damage
-	pev->health -= flDamage;
+	pev->health = V_min(pev->max_health, pev->health - flDamage);
+
 	if (pev->health <= 0)
 	{
 		Killed(pevAttacker, GIB_NORMAL);
@@ -583,7 +586,8 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	// Make a shard noise each time func breakable is hit.
 	// Don't play shard noise if cbreakable actually died.
 
-	DamageSound();
+	if (flDamage > 0)
+		DamageSound();
 
 	return 1;
 }

@@ -2466,40 +2466,6 @@ void CBaseMonster::SetClassify ( int iNewClassify )
 }
 
 //=========================================================
-// IRelationship - returns an integer that describes the 
-// relationship between two types of monster.
-//=========================================================
-int CBaseMonster::IRelationship(CBaseEntity* pTarget)
-{
-	return IRelationship(Classify(), pTarget->Classify());
-}
-
-int CBaseMonster::IRelationship(int attackerClass, int victimClass) {
-	//TODO: need to update the entries for military ally & race x
-	static int iEnemy[16][16] =
-	{				//   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN	RACEX	RACEXP
-		/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
-		/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL,	R_DL,	R_DL	},
-		/*PLAYER*/		{ R_NO	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_AL,	R_DL,	R_DL,	R_DL,	R_DL	},
-		/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_NO	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO,	R_FR,	R_FR	},
-		/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO,	R_HT,	R_HT	},
-		/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_HT,	R_HT	},
-		/*ALIENPASSIVE*/{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
-		/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_NO,	R_NO	},
-		/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO,	R_NO,	R_NO	},
-		/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_DL	},
-		/*INSECT*/		{ R_FR	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO,	R_NO,	R_NO	},
-		/*PLAYERALLY*/	{ R_NO	,R_DL	,R_AL	,R_AL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_NO,	R_DL,	R_DL	},
-		/*PBIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_DL,	R_DL,	R_DL	},
-		/*ABIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_NO	,R_NO	,R_DL,	R_DL,	R_NO,	R_DL,	R_DL	},
-		/*RACEX*/		{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_HT	,R_DL	,R_NO	,R_NO	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_AL,	R_AL	},
-		/*RACEX (pit)*/	{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_HT	,R_DL	,R_NO	,R_NO	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_AL,	R_AL	}
-	};
-
-	return iEnemy[attackerClass][victimClass];
-}
-
-//=========================================================
 // FindCover - tries to find a nearby node that will hide
 // the caller from its enemy. 
 //
@@ -3360,12 +3326,7 @@ void CBaseMonster::ReportAIState(void)
 //=========================================================
 void CBaseMonster::KeyValue(KeyValueData* pkvd)
 {
-	if (FStrEq(pkvd->szKeyName, "classify"))
-	{
-		SetClassify(atoi(pkvd->szValue));
-		pkvd->fHandled = TRUE;
-	}
-	else if (FStrEq(pkvd->szKeyName, "is_player_ally"))
+	if (FStrEq(pkvd->szKeyName, "is_player_ally"))
 	{
 		m_IsPlayerAlly = atoi(pkvd->szValue) != 0;
 		pkvd->fHandled = TRUE;
@@ -4540,7 +4501,7 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	GiveScorePoints(pevAttacker, flTake);
 
 	// do the damage
-	pev->health -= flTake;
+	pev->health = V_min(pev->max_health, pev->health - flTake);
 
 	// HACKHACK Don't kill monsters in a script.  Let them break their scripts first
 	if (m_MonsterState == MONSTERSTATE_SCRIPT)
@@ -4666,7 +4627,7 @@ void CBaseMonster::GiveScorePoints(entvars_t* pevAttacker, float damageDealt) {
 	// give points proportional to how much damage will be dealt, ignoring overkill damage
 	if (attackMon && (pevAttacker->flags & FL_CLIENT) && pev->health > 0) {
 		const float MONSTER_POINTS_PER_HP = 0.01f; // how many points to give per hitpoint of damage dealt
-		float damageAmt = V_min(damageDealt, pev->health);
+		float damageAmt = damageDealt > 0 ? V_min(damageDealt, pev->health) : V_min(damageDealt, pev->max_health - pev->health);
 		bool isFriendly = attackMon->IRelationship(this) == R_AL;
 		pevAttacker->frags += damageAmt * (isFriendly ? -1 : 1) * MONSTER_POINTS_PER_HP;
 	}
@@ -4820,7 +4781,7 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 			break;
 		}
 
-		if (IsMachine()) {
+		if (IsMachine() && flDamage > 0) {
 			UTIL_Shrapnel(ptr->vecEndPos, ptr->vecPlaneNormal, flDamage, bitsDamageType);
 		}
 		if (bitsDamageType & DMG_BLOOD) {
