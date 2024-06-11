@@ -97,8 +97,14 @@ void CBreakable::KeyValue(KeyValueData* pkvd)
 		m_displayName = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
-	else if (FStrEq(pkvd->szKeyName, "lip"))
+	else if (FStrEq(pkvd->szKeyName, "lip")) {
 		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "weapon"))
+	{
+		m_instantBreakWeapon = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseDelay::KeyValue(pkvd);
 }
@@ -534,8 +540,15 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 
 		// if a client hit the breakable with a crowbar, and breakable is crowbar-sensitive, break it now.
 		if (FBitSet(pevAttacker->flags, FL_CLIENT) &&
-			FBitSet(pev->spawnflags, SF_BREAK_CROWBAR) && (bitsDamageType & DMG_CLUB))
-			flDamage = pev->health;
+			FBitSet(pev->spawnflags, SF_BREAK_INSTANT) && (bitsDamageType & DMG_CLUB)) {
+			CBasePlayer* plr = (CBasePlayer*)CBaseEntity::Instance(pevAttacker);
+			bool isWrench = plr && plr->m_pActiveItem && FClassnameIs(plr->m_pActiveItem->pev, "weapon_pipewrench");
+			bool requiresWrench = m_instantBreakWeapon == BREAK_INSTANT_WRENCH;
+
+			if (requiresWrench == isWrench) {
+				flDamage = pev->health;
+			}
+		}
 	}
 	else
 		// an actual missile was involved.
