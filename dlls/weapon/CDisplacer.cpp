@@ -85,7 +85,7 @@ BOOL CDisplacer::Deploy()
 		h_beams[i] = beam;
 	}
 
-	return DefaultDeploy("models/v_displacer.mdl", "models/p_displacer.mdl", DISPLACER_DRAW, "egon");
+	return DefaultDeploy(GetModelV(), GetModelP(), DISPLACER_DRAW, "egon");
 }
 
 void CDisplacer::Holster(int skiplocal)

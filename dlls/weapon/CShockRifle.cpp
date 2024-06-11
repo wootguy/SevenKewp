@@ -99,7 +99,7 @@ BOOL CShockRifle::Deploy()
 		h_beams[i] = beam;
 	}
 
-	return DefaultDeploy("models/v_shock.mdl", "models/p_shock.mdl", SHOCKRIFLE_DRAW, "bow");
+	return DefaultDeploy(GetModelV(), GetModelP(), SHOCKRIFLE_DRAW, "bow");
 }
 
 void CShockRifle::Holster(int skiplocal)
