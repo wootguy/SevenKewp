@@ -87,7 +87,7 @@ void CSpore::Spawn()
 	{
 		if( m_SporeType != SporeType::GRENADE )
 		{
-			pev->velocity = gpGlobals->v_forward * 1200;
+			pev->velocity = gpGlobals->v_forward * 800;
 		}
 
 		pev->gravity = 1;

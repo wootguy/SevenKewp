@@ -96,6 +96,7 @@ public:
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	BOOL CheckRangeAttack2 ( float flDot, float flDist );
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void RifleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 
 	virtual float GetDamageAmount( void ) { return gSkillData.sk_shockroach_dmg_bite; }
 	virtual int GetVoicePitch( void ) { return 100; }
@@ -311,6 +312,8 @@ void COFShockRoach :: Spawn()
 	m_flBirthTime = gpGlobals->time;
 
 	MonsterInit();
+
+	SetUse(&COFShockRoach::RifleUse);
 }
 
 //=========================================================
@@ -330,6 +333,7 @@ void COFShockRoach :: Precache()
 	PRECACHE_SOUND("shockroach/shock_walk.wav" );
 
 	m_defaultModel = "models/w_shock_rifle.mdl";
+	UTIL_PrecacheOther("weapon_shockrifle");
 	PRECACHE_MODEL(GetModel());
 }	
 
@@ -384,7 +388,6 @@ void COFShockRoach :: LeapTouch ( CBaseEntity *pOther )
 	}
 
 	//Give the player a shock rifle if they don't have one
-	/*
 	if( pOther->IsPlayer() )
 	{
 		auto pPlayer = static_cast<CBasePlayer*>( pOther );
@@ -397,7 +400,6 @@ void COFShockRoach :: LeapTouch ( CBaseEntity *pOther )
 			return;
 		}
 	}
-	*/
 
 	// Don't hit if back on ground
 	if ( !FBitSet( pev->flags, FL_ONGROUND ) )
@@ -483,6 +485,23 @@ int COFShockRoach :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker
 
 	//Never gib the roach
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, ( bitsDamageType & ~DMG_ALWAYSGIB ) | DMG_NEVERGIB );
+}
+
+void COFShockRoach::RifleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {
+	if (pActivator->IsPlayer())
+	{
+		auto pPlayer = static_cast<CBasePlayer*>(pActivator);
+
+		if (!pPlayer->HasNamedPlayerItem("weapon_shockrifle"))
+		{
+			pPlayer->GiveNamedItem("weapon_shockrifle");
+			SetTouch(NULL);
+			UTIL_Remove(this);
+			return;
+		}
+	}
+
+	FollowerUse(pActivator, pCaller, useType, value);
 }
 
 //=========================================================

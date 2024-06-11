@@ -19,6 +19,25 @@
 #define PIPEWRENCH_BODYHIT_VOLUME 128
 #define PIPEWRENCH_WALLHIT_VOLUME 512
 
+enum PipewrenchAnim
+{
+	PWRENCH_IDLE1 = 0,
+	PWRENCH_IDLE2,
+	PWRENCH_IDLE3,
+	PWRENCH_DRAW,
+	PWRENCH_HOLSTER,
+	PWRENCH_HIT1,
+	PWRENCH_MISS1,
+	PWRENCH_HIT2,
+	PWRENCH_MISS2,
+	PWRENCH_HIT3,
+	PWRENCH_MISS3,
+	PWRENCH_BIGWIND,
+	PWRENCH_BIGHIT,
+	PWRENCH_BIGMISS,
+	PWRENCH_BIGLOOP,
+};
+
 /*
 BEGIN_DATAMAP(CPipewrench)
 DEFINE_FIELD(m_flBigSwingStart, FIELD_TIME),
@@ -192,6 +211,29 @@ bool CPipewrench::Swing(const bool bFirst)
 
 			// player "shoot" animation
 			m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+
+			switch (((m_iSwing++) % 2) + 1)
+			{
+			case 0:
+				SendWeaponAnim(PWRENCH_MISS1);
+				break;
+			case 1:
+				SendWeaponAnim(PWRENCH_MISS2);
+				break;
+			case 2:
+				SendWeaponAnim(PWRENCH_MISS3);
+				break;
+			}
+
+			switch (RANDOM_LONG(0, 1))
+			{
+			case 0:
+				EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/pwrench_miss1.wav", 1, ATTN_NORM);
+				break;
+			case 1:
+				EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/pwrench_miss2.wav", 1, ATTN_NORM);
+				break;
+			}
 		}
 	}
 	else
@@ -304,6 +346,7 @@ bool CPipewrench::Swing(const bool bFirst)
 				EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
 				break;
 			}
+			
 
 			// delay the decal a bit
 			m_trHit = tr;
@@ -411,6 +454,8 @@ void CPipewrench::BigSwing()
 			if (pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine())
 			{
 				// play thwack or smack sound
+				// (not using the big hit sound because it lags behind the impact effect)
+				/*
 				switch (RANDOM_LONG(0, 1))
 				{
 				case 0:
@@ -420,6 +465,20 @@ void CPipewrench::BigSwing()
 					EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_big_hitbod2.wav", 1, ATTN_NORM);
 					break;
 				}
+				*/
+				switch (RANDOM_LONG(0, 2))
+				{
+				case 0:
+					EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hitbod1.wav", 1, ATTN_NORM);
+					break;
+				case 1:
+					EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hitbod2.wav", 1, ATTN_NORM);
+					break;
+				case 2:
+					EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hitbod3.wav", 1, ATTN_NORM);
+					break;
+				}
+
 				m_pPlayer->m_iWeaponVolume = PIPEWRENCH_BODYHIT_VOLUME;
 				if (!pEntity->IsAlive())
 					return;
@@ -453,11 +512,9 @@ void CPipewrench::BigSwing()
 			{
 			case 0:
 				EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
-				// m_pPlayer->EmitSoundDyn(CHAN_ITEM, "weapons/pwrench_big_hit1.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0,3));
 				break;
 			case 1:
 				EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
-				// m_pPlayer->EmitSoundDyn(CHAN_ITEM, "weapons/pwrench_big_hit2.wav", fvolbar, ATTN_NORM, 0, 98 + RANDOM_LONG(0,3));
 				break;
 			}
 
@@ -528,14 +585,16 @@ void CPipewrench::WeaponIdle()
 
 int CPipewrench::GetItemInfo(ItemInfo* p)
 {
-	p->pszName = STRING(pev->classname);
+	// hack to force client to load HUD config from the hlcoop folder
+	p->pszName = MOD_SPRITE_FOLDER "weapon_pipewrench";
+
 	p->pszAmmo1 = NULL;
 	p->iMaxAmmo1 = -1;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 0;
+	p->iPosition = 2;
 	p->iId = WEAPON_PIPEWRENCH;
 	p->iWeight = PIPEWRENCH_WEIGHT;
 	return 1;

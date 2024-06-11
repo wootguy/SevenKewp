@@ -35,7 +35,6 @@ void CShockRifle::Spawn()
 	Precache();
 	m_iId = WEAPON_SHOCKRIFLE;
 	SET_MODEL(ENT(pev), GetModelW());
-	m_iClip = WEAPON_NOCLIP;
 	m_iDefaultAmmo = SHOCKRIFLE_DEFAULT_GIVE;
 
 	FallInit();// get ready to fall down.
@@ -65,24 +64,8 @@ void CShockRifle::Precache()
 	UTIL_PrecacheOther("shock_beam");
 
 	// client-side HUD sprites and config
-	PRECACHE_HUD_FILES("sprites/weapon_pipewrench.txt");
+	PRECACHE_HUD_FILES("sprites/weapon_shockrifle.txt");
 }
-
-/*
-void CShockRifle::AttachToPlayer(CBasePlayer* pPlayer)
-{
-	if (0 == m_iDefaultAmmo)
-		m_iDefaultAmmo = 1;
-
-	BaseClass::AttachToPlayer(pPlayer);
-}
-
-bool CShockRifle::CanDeploy()
-{
-	return true;
-}
-
-*/
 
 BOOL CShockRifle::Deploy()
 {
@@ -97,7 +80,24 @@ BOOL CShockRifle::Deploy()
 	}
 	*/
 
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return FALSE;
+
 	m_flRechargeTime = gpGlobals->time + 0.5;
+
+	for (int i = 0; i < 3; i++) {
+		UTIL_Remove(h_beams[i]);
+
+		CBeam* beam = CBeam::BeamCreate("sprites/lgtning.spr", 8);
+		beam->EntsInit(m_pPlayer->entindex(), m_pPlayer->entindex());
+		beam->SetStartAttachment(1);
+		beam->SetEndAttachment(2 + i);
+		beam->SetColor(0, 253, 253);
+		beam->SetNoise(64);
+		beam->SetBrightness(0);
+		h_beams[i] = beam;
+	}
 
 	return DefaultDeploy("models/v_shock.mdl", "models/p_shock.mdl", SHOCKRIFLE_DRAW, "bow");
 }
@@ -115,6 +115,10 @@ void CShockRifle::Holster(int skiplocal)
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 1.0;
 
 	SendWeaponAnim(SHOCKRIFLE_HOLSTER);
+	
+	for (int i = 0; i < 3; i++) {
+		UTIL_Remove(h_beams[i]);
+	}
 
 	if (0 == m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType])
 	{
@@ -199,6 +203,7 @@ void CShockRifle::PrimaryAttack()
 
 	m_flRechargeTime = gpGlobals->time + 1.0;
 
+	/*
 	int flags;
 
 #if defined(CLIENT_WEAPONS)
@@ -208,6 +213,13 @@ void CShockRifle::PrimaryAttack()
 #endif
 
 	PLAYBACK_EVENT(flags, m_pPlayer->edict(), m_usShockRifle);
+	*/
+
+	SendWeaponAnim(SHOCKRIFLE_FIRE);
+	EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/shock_fire.wav", 1, ATTN_NORM);
+
+	ToggleChargeBeams(true);
+	m_lastAttack = gpGlobals->time;
 
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
@@ -228,7 +240,7 @@ void CShockRifle::PrimaryAttack()
 	//m_pPlayer->GetAutoaimVectorFromPoint(vecSrc, AUTOAIM_10DEGREES);
 	m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 
-	auto pBeam = CShockBeam::CreateShockBeam(vecSrc, vecAnglesAim, m_pPlayer);
+	CShockBeam* pBeam = CShockBeam::CreateShockBeam(vecSrc, vecAnglesAim, m_pPlayer);
 
 	UTIL_SetOrigin(pBeam->m_hBeam1->pev, pBeam->pev->origin);
 
@@ -269,6 +281,19 @@ void CShockRifle::ItemPostFrame()
 	CBasePlayerWeapon::ItemPostFrame();
 
 	Reload();
+
+	if (gpGlobals->time - m_lastAttack > 0.1f) {
+		ToggleChargeBeams(false);
+	}
+}
+
+void CShockRifle::ToggleChargeBeams(bool enabled) {
+	for (int i = 0; i < 3; i++) {
+		CBeam* beam = (CBeam*)h_beams[i].GetEntity();
+		if (beam) {
+			beam->SetBrightness(enabled ? 255 : 0);
+		}
+	}
 }
 
 void CShockRifle::RechargeAmmo(bool bLoud)
@@ -305,16 +330,40 @@ void CShockRifle::RechargeAmmo(bool bLoud)
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = ammoCount;
 }
 
+int CShockRifle::AddToPlayer(CBasePlayer* pPlayer)
+{
+	if (CBasePlayerWeapon::AddToPlayer(pPlayer))
+	{
+#ifndef CLIENT_DLL
+		if (g_pGameRules->IsMultiplayer())
+		{
+			// in multiplayer, all hivehands come full. 
+			pPlayer->m_rgAmmo[PrimaryAmmoIndex()] = SHOCKRIFLE_DEFAULT_GIVE;
+		}
+#endif
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void CShockRifle::UpdateOnRemove(void) {
+	for (int i = 0; i < 3; i++) {
+		UTIL_Remove(h_beams[i]);
+	}
+}
+
 int CShockRifle::GetItemInfo(ItemInfo* p)
 {
-	p->pszName = STRING(pev->classname);
+	// hack to force client to load HUD config from the hlcoop folder
+	p->pszName = MOD_SPRITE_FOLDER "weapon_shockrifle";
+
 	p->pszAmmo1 = "shock";
 	p->iMaxAmmo1 = -1;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
-	p->iSlot = 5; // should be 6 but that slot isn't bound by default in vanilla HL
-	p->iPosition = 1;
+	p->iSlot = 2; // should be 6 but that slot doesn't exist in vanilla HL
+	p->iPosition = 3;
 	p->iId = WEAPON_SHOCKRIFLE;
 	p->iWeight = SHOCKRIFLE_WEIGHT;
 	p->iFlags = ITEM_FLAG_NOAUTORELOAD | ITEM_FLAG_NOAUTOSWITCHEMPTY | ITEM_FLAG_SELECTONEMPTY;

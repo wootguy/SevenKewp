@@ -50,6 +50,10 @@ public:
 
 	void ItemPostFrame() override;
 
+	void ToggleChargeBeams(bool enabled);
+
+	int AddToPlayer(CBasePlayer* pPlayer);
+
 	int GetItemInfo(ItemInfo* p) override;
 
 	BOOL UseDecrement() override
@@ -61,6 +65,10 @@ public:
 #endif
 	}
 
+	BOOL IsClientWeapon() { return FALSE; }
+
+	void UpdateOnRemove(void) override;
+
 private:
 	void RechargeAmmo(bool bLoud);
 
@@ -71,4 +79,7 @@ private:
 
 	float m_flRechargeTime;
 	float m_flSoundDelay;
+	float m_lastAttack;
+
+	EHANDLE h_beams[3];
 };

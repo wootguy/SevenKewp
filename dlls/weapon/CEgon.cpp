@@ -108,27 +108,12 @@ void CEgon::PrecacheEvents() {
 	m_usEgonStop = PRECACHE_EVENT(1, "events/egon_stop.sc");
 }
 
-
 BOOL CEgon::Deploy( void )
 {
 	m_deployed = FALSE;
 	m_fireState = FIRE_OFF;
 	return DefaultDeploy(GetModelV(), GetModelP(), EGON_DRAW, "egon");
 }
-
-int CEgon::AddToPlayer( CBasePlayer *pPlayer )
-{
-	if ( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
-	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
-			WRITE_BYTE( m_iId );
-		MESSAGE_END();
-		return TRUE;
-	}
-	return FALSE;
-}
-
-
 
 void CEgon::Holster( int skiplocal /* = 0 */ )
 {

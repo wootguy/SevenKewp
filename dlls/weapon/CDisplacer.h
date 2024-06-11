@@ -65,6 +65,10 @@ public:
 
 	void AltFireThink();
 
+	void ToggleChargeBeams(bool enabled);
+
+	void ItemPostFrame() override;
+
 	int GetItemInfo(ItemInfo* p) override;
 
 	BOOL UseDecrement() override
@@ -75,6 +79,10 @@ public:
 		return false;
 #endif
 	}
+
+	BOOL IsClientWeapon() { return FALSE; }
+
+	void UpdateOnRemove(void) override;
 
 private:
 	int m_iSpriteTexture;
@@ -88,4 +96,7 @@ private:
 	int m_iSoundState;
 
 	unsigned short m_usFireDisplacer;
+
+	float m_lastAttack;
+	EHANDLE h_beams[2];
 };

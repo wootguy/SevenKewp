@@ -61,7 +61,7 @@ void CSporeLauncher::Precache()
 	//m_usFireSpore = PRECACHE_EVENT(1, "events/spore.sc");
 
 	// client-side HUD sprites and config
-	PRECACHE_HUD_FILES("sprites/weapon_pipewrench.txt");
+	PRECACHE_HUD_FILES("sprites/weapon_sporelauncher.txt");
 }
 
 BOOL CSporeLauncher::Deploy()
@@ -164,6 +164,8 @@ void CSporeLauncher::PrimaryAttack()
 
 #ifndef CLIENT_DLL
 		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+		SendWeaponAnim(SPLAUNCHER_FIRE);
+		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/splauncher_fire.wav", VOL_NORM, ATTN_NORM);
 
 		Vector vecAngles = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
 
@@ -219,6 +221,8 @@ void CSporeLauncher::SecondaryAttack()
 
 #ifndef CLIENT_DLL
 		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+		SendWeaponAnim(SPLAUNCHER_FIRE);
+		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/splauncher_fire.wav", VOL_NORM, ATTN_NORM);
 
 		Vector vecAngles = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
 
@@ -319,40 +323,17 @@ void CSporeLauncher::Reload()
 
 int CSporeLauncher::GetItemInfo(ItemInfo* p)
 {
-	p->pszName = STRING(pev->classname);
+	// hack to force client to load HUD config from the hlcoop folder
+	p->pszName = MOD_SPRITE_FOLDER "weapon_sporelauncher";
+
 	p->pszAmmo1 = "spores";
 	p->iMaxAmmo1 = SPORE_MAX_CARRY;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = SPORELAUNCHER_MAX_CLIP;
-	p->iSlot = 5; // should be 6 but that slot isn't bound by default in vanilla HL
-	p->iPosition = 0;
+	p->iSlot = 4; // should be 6 but that slot  doesn't exist in vanilla HL
+	p->iPosition = 4;
 	p->iId = WEAPON_SPORELAUNCHER;
 	p->iWeight = SHOCKRIFLE_WEIGHT;
 	return 1;
 }
-
-/*
-void CSporeLauncher::IncrementAmmo(CBasePlayer* pPlayer)
-{
-	if (pPlayer->GiveAmmo(1, "spores") >= 0)
-	{
-		pPlayer->EmitSound(CHAN_STATIC, "ctf/pow_backpack.wav", 0.5, ATTN_NORM);
-	}
-}
-
-void CSporeLauncher::GetWeaponData(weapon_data_t& data)
-{
-	BaseClass::GetWeaponData(data);
-
-	// m_ReloadState is called m_fInSpecialReload in Op4.
-	data.m_fInSpecialReload = static_cast<int>(m_ReloadState);
-}
-
-void CSporeLauncher::SetWeaponData(const weapon_data_t& data)
-{
-	BaseClass::SetWeaponData(data);
-
-	m_ReloadState = static_cast<ReloadState>(data.m_fInSpecialReload);
-}
-*/

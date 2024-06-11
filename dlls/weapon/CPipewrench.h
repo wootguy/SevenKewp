@@ -69,6 +69,8 @@ public:
 #endif
 	}
 
+	BOOL IsClientWeapon() { return FALSE; }
+
 	float m_flBigSwingStart;
 	int m_iSwingMode = SWING_NONE;
 	int m_iSwing;
