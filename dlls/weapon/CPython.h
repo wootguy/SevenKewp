@@ -12,7 +12,6 @@ public:
 	void PrecacheEvents();
 	int iItemSlot( void ) { return 2; }
 	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
 	void PrimaryAttack( void );
 	void SecondaryAttack( void );
 	BOOL Deploy( void );

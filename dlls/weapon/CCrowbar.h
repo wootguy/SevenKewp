@@ -14,7 +14,6 @@ public:
 
 	void PrimaryAttack( void );
 	int Swing( int fFirst );
-	int AddToPlayer(CBasePlayer* pPlayer);
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
 	int m_iSwing;

@@ -135,7 +135,7 @@ void CShockBeam::FlyThink()
 	// so a trace is needed to check for collisions
 	TraceResult tr;
 	TRACE_MONSTER_HULL(edict(), m_lastPos, pev->origin, 0, pev->owner, &tr);
-	if (!FNullEnt(tr.pHit)) {
+	if (!FNullEnt(tr.pHit) && tr.pHit != pev->owner) {
 		BallTouch(CBaseEntity::Instance(tr.pHit));
 	}
 	m_lastPos = pev->origin;
@@ -162,6 +162,10 @@ void CShockBeam::WaterExplodeThink()
 
 void CShockBeam::BallTouch( CBaseEntity* pOther )
 {
+	if (pOther->edict() == pev->owner) {
+		return;
+	}
+
 	SetTouch( nullptr );
 	SetThink( nullptr );
 

@@ -60,7 +60,7 @@ void CDisplacer::Precache()
 
 	UTIL_PrecacheOther("displacer_ball");
 
-	m_usFireDisplacer = PRECACHE_EVENT(1, "events/displacer.sc");
+	//m_usFireDisplacer = PRECACHE_EVENT(1, "events/displacer.sc");
 
 	// client-side HUD sprites and config
 	PRECACHE_HUD_FILES("sprites/weapon_displacer.txt");
@@ -68,6 +68,23 @@ void CDisplacer::Precache()
 
 BOOL CDisplacer::Deploy()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return FALSE;
+
+	for (int i = 0; i < 2; i++) {
+		UTIL_Remove(h_beams[i]);
+
+		CBeam* beam = CBeam::BeamCreate("sprites/lgtning.spr", 8);
+		beam->EntsInit(m_pPlayer->entindex(), m_pPlayer->entindex());
+		beam->SetStartAttachment(2);
+		beam->SetEndAttachment(3 + i);
+		beam->SetColor(96, 128, 16);
+		beam->SetNoise(64);
+		beam->SetBrightness(0);
+		h_beams[i] = beam;
+	}
+
 	return DefaultDeploy("models/v_displacer.mdl", "models/p_displacer.mdl", DISPLACER_DRAW, "egon");
 }
 
@@ -86,6 +103,10 @@ void CDisplacer::Holster(int skiplocal)
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0.0, 5.0);
 
 	SendWeaponAnim(DISPLACER_HOLSTER1);
+
+	for (int i = 0; i < 2; i++) {
+		UTIL_Remove(h_beams[i]);
+	}
 
 	if (m_pfnThink == &CDisplacer::SpinupThink)
 	{
@@ -150,6 +171,9 @@ void CDisplacer::PrimaryAttack()
 		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_spin.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 
 		m_flTimeWeaponIdle = m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.5;
+	
+		ToggleChargeBeams(true);
+		m_lastAttack = gpGlobals->time;
 	}
 	else
 	{
@@ -176,6 +200,9 @@ void CDisplacer::SecondaryAttack()
 		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_spin2.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 
 		m_flTimeWeaponIdle = m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
+	
+		ToggleChargeBeams(true);
+		m_lastAttack = gpGlobals->time;
 	}
 	else
 	{
@@ -202,16 +229,18 @@ void CDisplacer::SpinupThink()
 
 		m_Mode = DisplacerMode::SPINNING_UP;
 
+		/*
 		int flags;
 
-		// #if defined( CLIENT_WEAPONS )
-		//		flags = FEV_NOTHOST;
-		// #else
-		flags = 0;
-		// #endif
+		#if defined( CLIENT_WEAPONS )
+			flags = FEV_NOTHOST;
+		#else
+			flags = 0;
+		#endif
 
-		//PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireDisplacer, 0, g_vecZero, g_vecZero,
-		//	0, 0, static_cast<int>(m_Mode), 0, 0, 0);
+		PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireDisplacer, 0, g_vecZero, g_vecZero,
+			0, 0, static_cast<int>(m_Mode), 0, 0, 0);
+		*/
 
 		m_flStartTime = gpGlobals->time;
 		m_iSoundState = 0;
@@ -251,16 +280,18 @@ void CDisplacer::AltSpinupThink()
 
 		m_Mode = DisplacerMode::SPINNING_UP;
 
+		/*
 		int flags;
 
-		// #if defined( CLIENT_WEAPONS )
-		//		flags = FEV_NOTHOST;
-		// #else
-		flags = 0;
-		// #endif
+		#if defined( CLIENT_WEAPONS )
+			flags = FEV_NOTHOST;
+		#else
+			flags = 0;
+		#endif
 
-		//PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireDisplacer, 0, g_vecZero, g_vecZero,
-		//	0, 0, static_cast<int>(m_Mode), 0, 0, 0);
+		PLAYBACK_EVENT_FULL(flags, m_pPlayer->edict(), m_usFireDisplacer, 0, g_vecZero, g_vecZero,
+			0, 0, static_cast<int>(m_Mode), 0, 0, 0);
+		*/
 
 		m_flStartTime = gpGlobals->time;
 		m_iSoundState = 0;
@@ -307,6 +338,7 @@ void CDisplacer::FireThink()
 
 	EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/displacer_fire.wav", RANDOM_FLOAT(0.8, 0.9), ATTN_NORM);
 
+	/*
 	int flags;
 
 #if defined(CLIENT_WEAPONS)
@@ -314,8 +346,7 @@ void CDisplacer::FireThink()
 #else
 	flags = 0;
 #endif
-
-	/*
+	
 	PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usFireDisplacer, 0,
 		g_vecZero, g_vecZero, 0, 0, static_cast<int>( DisplacerMode::FIRED ), 0, 0, 0 );
 		*/
@@ -380,7 +411,8 @@ void CDisplacer::AltFireThink()
 #ifndef CLIENT_DLL
 	CBaseEntity* pDestination = NULL;
 
-	if (!g_pGameRules->IsMultiplayer() || g_pGameRules->IsCoOp())
+	//if (!g_pGameRules->IsMultiplayer() || g_pGameRules->IsCoOp())
+	if (true)
 	{
 		pDestination = UTIL_FindEntityByClassname(nullptr, "info_displacer_xen_target");
 	}
@@ -458,14 +490,40 @@ void CDisplacer::AltFireThink()
 #endif
 }
 
+void CDisplacer::ToggleChargeBeams(bool enabled) {
+	for (int i = 0; i < 2; i++) {
+		CBeam* beam = (CBeam*)h_beams[i].GetEntity();
+		if (beam) {
+			beam->SetBrightness(enabled ? 255 : 0);
+		}
+	}
+}
+
+void CDisplacer::ItemPostFrame()
+{
+	CBasePlayerWeapon::ItemPostFrame();
+
+	if (gpGlobals->time - m_lastAttack > 1.0f) {
+		ToggleChargeBeams(false);
+	}
+}
+
+void CDisplacer::UpdateOnRemove(void) {
+	for (int i = 0; i < 2; i++) {
+		UTIL_Remove(h_beams[i]);
+	}
+}
+
 int CDisplacer::GetItemInfo(ItemInfo* p)
 {
-	p->pszName = STRING(pev->classname);
+	// hack to force client to load HUD config from the hlcoop folder
+	p->pszName = MOD_SPRITE_FOLDER "weapon_displacer";
+
 	p->pszAmmo1 = "uranium";
 	p->iMaxAmmo1 = URANIUM_MAX_CARRY;
 	p->iMaxClip = WEAPON_NOCLIP;
-	p->iSlot = 5;
-	p->iPosition = 1;
+	p->iSlot = 3;
+	p->iPosition = 4;
 	p->iFlags = 0;
 	p->iId = m_iId = WEAPON_DISPLACER;
 	p->iWeight = DISPLACER_WEIGHT;

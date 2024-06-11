@@ -53,7 +53,6 @@ public:
 	void PrimaryAttack();
 	void SecondaryAttack();
 	int GetItemInfo(ItemInfo* p);
-	int AddToPlayer(CBasePlayer* pPlayer);
 	BOOL IsClientWeapon() { return FALSE; }
 
 	BOOL UseDecrement(void)

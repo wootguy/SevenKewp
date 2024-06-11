@@ -122,18 +122,6 @@ int CMP5::GetItemInfo(ItemInfo *p)
 	return 1;
 }
 
-int CMP5::AddToPlayer( CBasePlayer *pPlayer )
-{
-	if ( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
-	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
-			WRITE_BYTE( m_iId );
-		MESSAGE_END();
-		return TRUE;
-	}
-	return FALSE;
-}
-
 BOOL CMP5::Deploy( )
 {
 	return DefaultDeploy(GetModelV(), GetModelP(), MP5_DEPLOY, "mp5" );

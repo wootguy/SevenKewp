@@ -96,19 +96,6 @@ void CShotgun::PrecacheEvents() {
 	m_usDoubleFire = PRECACHE_EVENT(1, "events/shotgun2.sc");
 }
 
-int CShotgun::AddToPlayer( CBasePlayer *pPlayer )
-{
-	if ( CBasePlayerWeapon::AddToPlayer( pPlayer ) )
-	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev );
-			WRITE_BYTE( m_iId );
-		MESSAGE_END();
-		return TRUE;
-	}
-	return FALSE;
-}
-
-
 int CShotgun::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);

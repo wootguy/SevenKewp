@@ -18,7 +18,6 @@ public:
 	void PrecacheEvents();
 	int iItemSlot( void ) { return 4; }
 	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
 
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0  );

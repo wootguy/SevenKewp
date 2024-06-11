@@ -425,6 +425,10 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_snark");
 	UTIL_RegisterWeapon("weapon_hornetgun");
 	UTIL_RegisterWeapon("weapon_grapple");
+	UTIL_RegisterWeapon("weapon_displacer");
+	UTIL_RegisterWeapon("weapon_pipewrench");
+	UTIL_RegisterWeapon("weapon_shockrifle");
+	UTIL_RegisterWeapon("weapon_sporelauncher");
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )

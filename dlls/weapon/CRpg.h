@@ -35,7 +35,6 @@ public:
 	void Reload( void );
 	int iItemSlot( void ) { return 4; }
 	int GetItemInfo(ItemInfo *p);
-	int AddToPlayer( CBasePlayer *pPlayer );
 
 	BOOL Deploy( void );
 	BOOL CanHolster( void );
