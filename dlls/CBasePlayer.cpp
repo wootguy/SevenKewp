@@ -1834,8 +1834,15 @@ void CBasePlayer::UpdateStatusBar()
 				if (pEntity->pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) {
 					hint = " (explosives only)";
 				}
-				else if (pEntity->pev->spawnflags & SF_BREAK_CROWBAR) {
-					hint = " (use crowbar)";
+				else if (pEntity->pev->spawnflags & SF_BREAK_INSTANT) {
+					CBreakable* breakable = (CBreakable*)pEntity;
+
+					if (breakable->m_instantBreakWeapon == BREAK_INSTANT_WRENCH) {
+						hint = " (use wrench)";
+					}
+					else {
+						hint = " (use crowbar)";
+					}
 				}
 
 				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name.c_str(), hint), SBAR_STRING_SIZE);

@@ -564,7 +564,7 @@ enum svc_commands_e
 #define SF_BREAK_TRIGGER_ONLY	1// may only be broken by trigger
 #define	SF_BREAK_TOUCH			2// can be 'crashed through' by running player (plate glass)
 #define SF_BREAK_PRESSURE		4// can be broken by a player standing on it
-#define SF_BREAK_CROWBAR		256// instant break if hit with crowbar
+#define SF_BREAK_INSTANT		256// instant break if hit with crowbar or wrench
 #define SF_BREAK_EXPLOSIVES_ONLY	512 // only damaged by DMG_BLAST
 
 // func_pushable (it's also func_breakable, so don't collide with those flags)

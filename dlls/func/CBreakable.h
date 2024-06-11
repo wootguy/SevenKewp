@@ -5,6 +5,7 @@ typedef enum { expRandom, expDirected } Explosions;
 typedef enum { matGlass = 0, matWood, matMetal, matFlesh, matCinderBlock, matCeilingTile, matComputer, matUnbreakableGlass, matRocks, matNone, matLastMaterial } Materials;
 
 #define	NUM_SHARDS 6 // this many shards spawned when breakable objects break;
+#define BREAK_INSTANT_WRENCH 20
 
 class CBreakable : public CBaseDelay
 {
@@ -59,6 +60,7 @@ public:
 	int			m_iszSpawnObject;
 	string_t	m_displayName;
 	EHANDLE		m_hActivator;
+	int			m_instantBreakWeapon;
 };
 
 #endif	// FUNC_BREAK_H
