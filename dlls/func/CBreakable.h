@@ -19,6 +19,7 @@ public:
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void DamageSound(void);
 	const char* DisplayName() { return m_displayName ? STRING(m_displayName) : "Breakable"; }
+	virtual Vector GetTargetOrigin() { return Center(); }
 
 	// breakables use an overridden takedamage
 	virtual int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);

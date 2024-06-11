@@ -158,6 +158,9 @@ void CBreakable::Spawn(void)
 	SetTouch(&CBreakable::BreakTouch);
 	if (FBitSet(pev->spawnflags, SF_BREAK_TRIGGER_ONLY))		// Only break on trigger
 		SetTouch(NULL);
+	else {
+		pev->flags |= FL_POSSIBLE_TARGET;
+	}
 
 	// Flag unbreakable glass as "worldbrush" so it will block ALL tracelines
 	if (!IsBreakable() && pev->rendermode != kRenderNormal)

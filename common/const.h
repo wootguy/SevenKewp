@@ -62,6 +62,9 @@
 #define FL_NOCLIP_EVERYTHING_ELSE FL_ONTRAIN
 #define FL_NOCLIP_TRACES		FL_WATERJUMP // traces = crowbar swings/bullets/vision checks/etc.
 
+// more repurposed flags which depend on context
+#define FL_POSSIBLE_TARGET		FL_FROZEN	// entity is not a player/monster but should still be targetted in monster AI
+
 // Goes into globalvars_t.trace_flags
 #define FTRACE_SIMPLEBOX		(1<<0)	// Traceline with a simple box
 

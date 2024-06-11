@@ -565,7 +565,7 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				vecSpitOffset = ( pev->origin + vecSpitOffset );
 
 				if (m_hEnemy)
-					vecSpitDir = ((m_hEnemy->pev->origin + m_hEnemy->pev->view_ofs) - vecSpitOffset).Normalize();
+					vecSpitDir = ((m_hEnemy->GetTargetOrigin() + m_hEnemy->pev->view_ofs) - vecSpitOffset).Normalize();
 				else
 					vecSpitDir = gpGlobals->v_forward;
 
