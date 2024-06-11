@@ -90,7 +90,7 @@ void CPipewrench::Precache()
 
 BOOL CPipewrench::Deploy()
 {
-	return DefaultDeploy("models/v_pipe_wrench.mdl", "models/p_pipe_wrench.mdl", PIPEWRENCH_DRAW, "crowbar");
+	return DefaultDeploy(GetModelV(), GetModelP(), PIPEWRENCH_DRAW, "crowbar");
 }
 
 void CPipewrench::Holster(int skiplocal)
