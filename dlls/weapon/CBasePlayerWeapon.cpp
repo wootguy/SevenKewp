@@ -643,3 +643,41 @@ void CBasePlayerWeapon::PrintState(void)
 
 	ALERT(at_console, "m_iclip:  %i\n", m_iClip);
 }
+
+edict_t* nearbyCorpses[256];
+int numNearbyCorpses = 0;
+
+void CBasePlayerWeapon::SolidifyNearbyCorpses(bool solidState) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	Vector vecSrc = m_pPlayer->GetGunPosition();
+
+	if (!solidState) {
+		// solidfy nearby corpses so they can be gibbed
+		// TODO: This is expensive. Try to fix the bug where players have laggy movement on corpses instead.
+		// For some reason the shocktrooper on auspices has no laggy movement when player walks on it,
+		// though it seems like the bbox is set incorrectly (much higher than 2 units).
+		
+		edict_t* ent = NULL;
+		while (!FNullEnt(ent = FIND_ENTITY_IN_SPHERE(ent, vecSrc, 192))) {
+			if ((ent->v.flags & (FL_MONSTER | FL_CLIENT)) && ent->v.deadflag >= DEAD_DEAD && ent->v.solid == SOLID_NOT && !(ent->v.effects & EF_NODRAW)) {
+				nearbyCorpses[numNearbyCorpses++] = ent;
+				ent->v.solid = SOLID_BBOX;
+				ent->v.iuser4 = 1337; // HACKAROO: flag meaning "this entity is a gibbable corpse which is about to be attacked so it should have a large bounding box right now, but usually it shouldn't have that"
+				UTIL_SetOrigin(&ent->v, ent->v.origin);
+			}
+		}
+	}
+	else {
+		//ALERT(at_console, "solidfied %d nearby corpses\n", numNearbyCorpses);
+		// revert back to nonsolid so that the player doesn't get gibbed by a door or have laggy movement
+		for (int i = 0; i < numNearbyCorpses; i++) {
+			edict_t* ent = nearbyCorpses[i];
+			ent->v.solid = SOLID_NOT;
+			ent->v.iuser4 = 0;
+			UTIL_SetOrigin(&ent->v, ent->v.origin); // reset abs bbox
+		}
+	}
+}

@@ -446,6 +446,18 @@ void PrecacheWeapons() {
 	if (g_mapWeapons.find("weapon_grapple") != g_mapWeapons.end()) {
 		UTIL_PrecacheOther("weapon_grapple");
 	}
+	if (g_mapWeapons.find("weapon_pipewrench") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_pipewrench");
+	}
+	if (g_mapWeapons.find("weapon_displacer") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_displacer");
+	}
+	if (g_mapWeapons.find("weapon_shockrifle") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_shockrifle");
+	}
+	if (g_mapWeapons.find("weapon_sporelauncher") != g_mapWeapons.end()) {
+		UTIL_PrecacheOther("weapon_sporelauncher");
+	}
 }
 
 void PrecacheTextureSounds() {

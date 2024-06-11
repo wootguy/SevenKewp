@@ -156,9 +156,11 @@ bool CPipewrench::Swing(const bool bFirst)
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecEnd = vecSrc + gpGlobals->v_forward * 32;
 
+#ifndef CLIENT_DLL
+	SolidifyNearbyCorpses(false);
+
 	UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr);
 
-#ifndef CLIENT_DLL
 	if (tr.flFraction >= 1.0)
 	{
 		UTIL_TraceHull(vecSrc, vecEnd, dont_ignore_monsters, head_hull, m_pPlayer->edict(), &tr);
@@ -172,6 +174,8 @@ bool CPipewrench::Swing(const bool bFirst)
 			vecEnd = tr.vecEndPos; // This is the point on the actual surface (the hull could have hit space)
 		}
 	}
+
+	SolidifyNearbyCorpses(true);
 #endif
 
 	if (bFirst)
@@ -390,9 +394,11 @@ void CPipewrench::BigSwing()
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecEnd = vecSrc + gpGlobals->v_forward * 32;
 
+#ifndef CLIENT_DLL
+	SolidifyNearbyCorpses(false);
+
 	UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr);
 
-#ifndef CLIENT_DLL
 	if (tr.flFraction >= 1.0)
 	{
 		UTIL_TraceHull(vecSrc, vecEnd, dont_ignore_monsters, head_hull, m_pPlayer->edict(), &tr);
@@ -406,6 +412,8 @@ void CPipewrench::BigSwing()
 			vecEnd = tr.vecEndPos; // This is the point on the actual surface (the hull could have hit space)
 		}
 	}
+
+	SolidifyNearbyCorpses(true);
 #endif
 
 	//PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usPipewrench,
