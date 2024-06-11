@@ -69,11 +69,8 @@ void CPipewrench::Precache()
 	m_defaultModelW = "models/w_pipe_wrench.mdl";
 	CBasePlayerWeapon::Precache();
 
-	// Shepard - The commented sounds below are unused
-	// in Opposing Force, if you wish to use them,
-	// uncomment all the appropriate lines.
-	/*PRECACHE_SOUND("weapons/pwrench_big_hit1.wav");
-	PRECACHE_SOUND("weapons/pwrench_big_hit2.wav");*/
+	PRECACHE_SOUND("weapons/pwrench_big_hit1.wav");
+	PRECACHE_SOUND("weapons/pwrench_big_hit2.wav");
 	PRECACHE_SOUND("weapons/pwrench_big_hitbod1.wav");
 	PRECACHE_SOUND("weapons/pwrench_big_hitbod2.wav");
 	PRECACHE_SOUND("weapons/pwrench_big_miss.wav");
@@ -260,20 +257,38 @@ bool CPipewrench::Swing(const bool bFirst)
 		bDidHit = true;
 		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
 
+		// play thwack, smack, or dong sound
+		float flVol = 1.0;
+		bool bHitWorld = true;
+
 		if (pEntity)
 		{
 			ClearMultiDamage();
 
+			float flDamage = gSkillData.sk_plr_pipewrench / 2;
+
 			if ((m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase()) || gSkillData.sk_plr_pipewrench_full_damage != 0)
 			{
-				// first swing does full damage
-				pEntity->TraceAttack(m_pPlayer->pev, gSkillData.sk_plr_pipewrench, gpGlobals->v_forward, &tr, DMG_CLUB);
+				// only first swing does full damage
+				flDamage = gSkillData.sk_plr_pipewrench;
 			}
-			else
-			{
-				// subsequent swings do half
-				pEntity->TraceAttack(m_pPlayer->pev, gSkillData.sk_plr_pipewrench / 2, gpGlobals->v_forward, &tr, DMG_CLUB);
+
+			if (m_pPlayer->IRelationship(pEntity) == R_AL && (pEntity->IsMachine() || pEntity->IsBSPModel())) {
+				flDamage *= -1;
+				bHitWorld = false;
+
+				switch (RANDOM_LONG(0, 1))
+				{
+				case 0:
+					EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_big_hit1.wav", VOL_NORM, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+					break;
+				case 1:
+					EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_big_hit2.wav", VOL_NORM, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+					break;
+				}
 			}
+
+			pEntity->TraceAttack(m_pPlayer->pev, flDamage, gpGlobals->v_forward, &tr, DMG_CLUB);
 
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}
@@ -290,13 +305,9 @@ bool CPipewrench::Swing(const bool bFirst)
 
 #ifndef CLIENT_DLL
 
-		// play thwack, smack, or dong sound
-		float flVol = 1.0;
-		bool bHitWorld = true;
-
 		if (pEntity)
 		{
-			if (pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine())
+			if (pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine() && !pEntity->IsBSPModel())
 			{
 				// play thwack or smack sound
 				switch (RANDOM_LONG(0, 2))
@@ -427,11 +438,31 @@ void CPipewrench::BigSwing()
 		// hit
 		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
 
+		// play thwack, smack, or dong sound
+		float flVol = 1.0;
+		bool bHitWorld = true;
+
 		if (pEntity)
 		{
 			ClearMultiDamage();
 
 			float flDamage = (gpGlobals->time - m_flBigSwingStart) * gSkillData.sk_plr_pipewrench + 25.0f;
+			
+			if (m_pPlayer->IRelationship(pEntity) == R_AL && (pEntity->IsMachine() || pEntity->IsBSPModel())) {
+				flDamage *= -1;
+				bHitWorld = false;
+
+				switch (RANDOM_LONG(0, 1))
+				{
+				case 0:
+					EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_big_hit1.wav", VOL_NORM, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+					break;
+				case 1:
+					EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_ITEM, "weapons/pwrench_big_hit2.wav", VOL_NORM, ATTN_NORM, 0, 98 + RANDOM_LONG(0, 3));
+					break;
+				}
+			}
+
 			if ((m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase()) || gSkillData.sk_plr_pipewrench_full_damage != 0)
 			{
 				// first swing does full damage
@@ -445,13 +476,9 @@ void CPipewrench::BigSwing()
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}
 
-		// play thwack, smack, or dong sound
-		float flVol = 1.0;
-		bool bHitWorld = true;
-
 		if (pEntity)
 		{
-			if (pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine())
+			if (pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine() && !pEntity->IsBSPModel())
 			{
 				// play thwack or smack sound
 				// (not using the big hit sound because it lags behind the impact effect)

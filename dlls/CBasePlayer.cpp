@@ -1831,7 +1831,10 @@ void CBasePlayer::UpdateStatusBar()
 				int hp = roundf(pEntity->pev->health);
 
 				const char* hint = "";
-				if (pEntity->pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) {
+				if (IRelationship(pEntity) == R_AL) {
+					hint = " (wrench repairs)";
+				}
+				else if (pEntity->pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) {
 					hint = " (explosives only)";
 				}
 				else if (pEntity->pev->spawnflags & SF_BREAK_INSTANT) {

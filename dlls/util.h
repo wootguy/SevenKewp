@@ -807,3 +807,5 @@ const char* cstr(string_t s);
 
 // strips unsafe chars from value to prevent sneaky stuff like "sv_gravity 800;rcon_password lololol"
 std::string sanitize_cvar_value(std::string val);
+
+const char* getActiveWeapon(entvars_t* pev);

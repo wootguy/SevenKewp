@@ -4522,3 +4522,15 @@ std::string sanitize_cvar_value(std::string val) {
 	val.erase(std::remove(val.begin(), val.end(), '"'), val.end());
 	return val;
 }
+
+const char* getActiveWeapon(entvars_t* pev) {
+	CBaseEntity* ent = CBaseEntity::Instance(pev);
+
+	if (!ent || !ent->IsPlayer()) {
+		return "";
+	}
+
+	CBasePlayer* plr = (CBasePlayer*)ent;
+	
+	return  plr->m_pActiveItem ? STRING(plr->m_pActiveItem->pev->classname) : "";
+}
