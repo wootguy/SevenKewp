@@ -46,14 +46,17 @@ void CShockRifle::Spawn()
 
 void CShockRifle::Precache()
 {
+	// NOTE: these precaches are duplicated in monster_shockroach to prevent a precache loop
+	// keep both classes in sync!
+
 	m_defaultModelV = "models/v_shock.mdl";
 	m_defaultModelP = "models/p_shock.mdl";
 	m_defaultModelW = "models/w_shock.mdl";
 	CBasePlayerWeapon::Precache();
 
 	m_iSpriteTexture = PRECACHE_MODEL("sprites/shockwave.spr");
+	
 	PRECACHE_MODEL("sprites/lgtning.spr");
-
 	PRECACHE_SOUND("weapons/shock_fire.wav");
 	PRECACHE_SOUND("weapons/shock_draw.wav");
 	PRECACHE_SOUND("weapons/shock_recharge.wav");
@@ -62,6 +65,7 @@ void CShockRifle::Precache()
 	//m_usShockRifle = PRECACHE_EVENT(1, "events/shock.sc");
 
 	UTIL_PrecacheOther("shock_beam");
+	UTIL_PrecacheOther("monster_shockroach");
 
 	// client-side HUD sprites and config
 	PRECACHE_HUD_FILES("sprites/weapon_shockrifle.txt");
@@ -84,7 +88,7 @@ BOOL CShockRifle::Deploy()
 	if (!m_pPlayer)
 		return FALSE;
 
-	m_flRechargeTime = gpGlobals->time + 0.5;
+	m_flRechargeTime = gpGlobals->time + 0.25;
 
 	for (int i = 0; i < 3; i++) {
 		UTIL_Remove(h_beams[i]);
@@ -167,8 +171,7 @@ void CShockRifle::WeaponIdle()
 	SendWeaponAnim(iAnim);
 }
 
-void CShockRifle::PrimaryAttack()
-{
+void CShockRifle::BeamAttack(bool isSecondary) {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
@@ -226,7 +229,15 @@ void CShockRifle::PrimaryAttack()
 	m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
 
 #ifndef CLIENT_DLL
-	const Vector vecAnglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
+	Vector vecAnglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
+	
+	if (isSecondary) {
+		float x, y;
+		GetCircularGaussianSpread(x, y);
+		vecAnglesAim.x += x * 3;
+		vecAnglesAim.y += y * 3;
+		m_pPlayer->pev->punchangle.x += 1;
+	}
 
 	UTIL_MakeVectors(vecAnglesAim);
 
@@ -261,14 +272,20 @@ void CShockRifle::PrimaryAttack()
 	}
 	*/
 
-	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2;
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.2f;
+	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.1f;
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.33;
 }
 
+void CShockRifle::PrimaryAttack()
+{
+	BeamAttack(false);
+}
+
 void CShockRifle::SecondaryAttack()
 {
-	// Nothing
+	BeamAttack(true);
 }
 
 void CShockRifle::Reload()
@@ -324,7 +341,7 @@ void CShockRifle::RechargeAmmo(bool bLoud)
 		}
 		*/
 
-		m_flRechargeTime += 0.5;
+		m_flRechargeTime += 0.25;
 	}
 
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = ammoCount;

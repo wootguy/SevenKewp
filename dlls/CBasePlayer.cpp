@@ -1771,7 +1771,11 @@ void CBasePlayer::UpdateStatusBar()
 	UTIL_MakeVectors( pev->v_angle + pev->punchangle );
 	Vector vecSrc = EyePosition();
 	Vector vecEnd = vecSrc + (gpGlobals->v_forward * MAX_ID_RANGE);
-	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, edict(), &tr);
+
+	int oldSolid = pev->solid; // not just passing edict() to trace so we can see owned items (e.g. dropped shockroach)
+	pev->solid = SOLID_NOT;
+	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, NULL, &tr);
+	pev->solid = oldSolid;
 
 	if (tr.flFraction != 1.0)
 	{
@@ -4481,6 +4485,17 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 			UTIL_MakeVectors ( pev->v_angle ); 
 
 			pev->weapons &= ~(1<<pWeapon->m_iId);// take item off hud
+
+			if (!strcmp(STRING(pWeapon->pev->classname), "weapon_shockrifle")) {
+				if (RemovePlayerItem(pWeapon)) {
+					static std::map<std::string, std::string> keys = { {"is_player_ally", "1"} };
+					Vector angles(0, pev->angles.y, 0);
+					COFShockRoach* pRoach = (COFShockRoach*)CBaseEntity::Create("monster_shockroach",
+						pev->origin + gpGlobals->v_forward * 10, angles, edict(), keys);
+					pRoach->pev->velocity = gpGlobals->v_forward * 400;
+				}
+				return;
+			}
 
 			CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, edict() );
 			pWeaponBox->pev->angles.x = 0;
