@@ -8,8 +8,7 @@
 #include "decals.h"
 #include "gamerules.h"
 #include "CBasePlayerWeapon.h"
-
-extern int gmsgCurWeapon;
+#include "user_messages.h"
 
 TYPEDESCRIPTION	CBasePlayerWeapon::m_SaveData[] =
 {

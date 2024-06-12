@@ -43,11 +43,10 @@
 #include "CSpore.h"
 #include "CShockBeam.h"
 #include "CBaseGrunt.h"
+#include "skill.h"
 
 int g_fShockTrooperQuestion; // true if an idle grunt asked a question. Cleared when someone answers.
 static int iShockTrooperMuzzleFlash;
-
-extern DLL_GLOBAL int g_iSkillLevel;
 
 //=========================================================
 // monster-specific DEFINE's
