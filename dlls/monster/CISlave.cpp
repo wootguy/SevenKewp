@@ -25,8 +25,7 @@
 #include	"effects.h"
 #include	"weapons.h"
 #include	"env/CSoundEnt.h"
-
-extern DLL_GLOBAL int		g_iSkillLevel;
+#include "skill.h"
 
 //=========================================================
 // Monster's Anim Events Go Here

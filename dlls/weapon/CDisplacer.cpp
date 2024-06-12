@@ -20,6 +20,7 @@
 #endif
 
 #include "CDisplacer.h"
+#include "CBaseDMStart.h"
 
 /*
 BEGIN_DATAMAP(CDisplacer)

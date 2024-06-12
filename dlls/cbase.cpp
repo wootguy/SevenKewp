@@ -20,6 +20,7 @@
 #include	"decals.h"
 #include	"gamerules.h"
 #include	"game.h"
+#include	"skill.h"
 
 void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd );
 
@@ -28,8 +29,6 @@ void PM_Init ( struct playermove_s *ppmove  );
 char PM_FindTextureType( char *name );
 
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
-extern DLL_GLOBAL Vector		g_vecAttackDir;
-extern DLL_GLOBAL int			g_iSkillLevel;
 
 static DLL_FUNCTIONS gFunctionTable = 
 {

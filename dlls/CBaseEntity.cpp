@@ -10,6 +10,7 @@
 #include	"skill.h"
 #include	"nodes.h"
 #include "lagcomp.h"
+#include "monsters.h"
 
 extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;

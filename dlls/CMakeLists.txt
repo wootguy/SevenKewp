@@ -465,16 +465,16 @@ set(GAME_SRC
 	PluginManager.cpp
 )
 
+set(ALL_MONSTER_SRC ${MONSTER_SRC} ${MONSTER_ALIEN_SRC} ${MONSTER_HUMAN_SRC} ${MONSTER_MACHINE_SRC} ${MONSTER_MISC_SRC})
+set(ALL_WEAPON_SRC ${WEAPON_SRC} ${AMMO_SRC})
+set(ALL_TRIGGER_SRC ${TRIGGER_SRC} ${TRIGGER_POINT_SRC} ${TRIGGER_BRUSHED_SRC} ${TRIGGER_OBSOLETE_SRC})
+set(ALL_ENT_MISC_SRC ${ENTITY_SRC} ${ENV_SRC} ${ITEM_SRC} ${FUNC_SRC} ${PATH_SRC})
+
 set(ENT_SRC
-	${MONSTER_SRC} ${MONSTER_ALIEN_SRC} ${MONSTER_HUMAN_SRC} ${MONSTER_MACHINE_SRC} ${MONSTER_MISC_SRC}
-	${ENTITY_SRC}
-	${ENV_SRC}
-	${ITEM_SRC}
-	${FUNC_SRC}
-	${PATH_SRC}
-	${TRIGGER_HDR} ${TRIGGER_SRC} ${TRIGGER_POINT_SRC} ${TRIGGER_BRUSHED_SRC} ${TRIGGER_OBSOLETE_SRC}
-	${WEAPON_SRC}
-	${AMMO_SRC}
+	${ALL_MONSTER_SRC}
+	${ALL_ENT_MISC_SRC}
+	${ALL_TRIGGER_SRC}
+	${ALL_WEAPON_SRC}
 )
 
 set(ENT_HDR
@@ -483,34 +483,47 @@ set(ENT_HDR
 	${ENV_HDR}
 	${ITEM_HDR}
 	${PATH_HDR}
+	${TRIGGER_HDR}
 	${WEAPON_HDR}
 	${AMMO_HDR}
 )
 
 # combine all entity source files into one monolothic file for a huge compile time speedup
-function(write_ent_source_file)	
-	set(ENT_SRCS_EXT ${ENT_SRC})
-	list(LENGTH ENT_SRCS_EXT list_count)
-	math(EXPR list_max_index ${list_count}-1)
-	foreach(i RANGE ${list_max_index})
-		list(GET ENT_SRCS_EXT ${i} x)
-		
-		set(ENT_INCLUDES "${ENT_INCLUDES} #include \"${x}\"\n")
-	endforeach(i)
-	
-	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/entities.cpp
-		${ENT_INCLUDES}
-	)
+function(write_ent_source_file IN_FILES_STRING OUT_NAME)
+    # Split the input string into a list
+    string(REPLACE ";" ";" IN_FILES_STRING "${IN_FILES_STRING}")
+    string(REGEX REPLACE ";" ";" IN_SRCS_EXT "${IN_FILES_STRING}")
+    list(LENGTH IN_SRCS_EXT list_count)
+    math(EXPR list_max_index ${list_count}-1)
+    foreach(i RANGE ${list_max_index})
+        list(GET IN_SRCS_EXT ${i} x)
+        
+        set(OUT_FILE_INCLUDES "${OUT_FILE_INCLUDES} #include \"${x}\"\n")
+    endforeach(i)
+    
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${OUT_NAME}
+        ${OUT_FILE_INCLUDES}
+    )
 endfunction()
 
-write_ent_source_file()
+write_ent_source_file("${ALL_MONSTER_SRC}" all_monsters.cpp)
+write_ent_source_file("${ALL_WEAPON_SRC}" all_weapons.cpp)
+write_ent_source_file("${ALL_TRIGGER_SRC}" all_triggers.cpp)
+write_ent_source_file("${ALL_ENT_MISC_SRC}" all_other_ents.cpp)
+
+set(GENERATED_SRCS 
+	${CMAKE_CURRENT_BINARY_DIR}/all_monsters.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/all_weapons.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/all_triggers.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/all_other_ents.cpp
+)
 
 set(ALL_SRC
 	${ENT_SRC} ${ENT_HDR}
 	${UTIL_SRC} ${UTIL_HDR}
 	${GAME_SRC} ${GAME_HDR}
 	${MISC_HDR}
-	${CMAKE_CURRENT_BINARY_DIR}/entities.cpp
+	${GENERATED_SRCS}
 )
 
 # don't compile individual entity files
@@ -591,7 +604,8 @@ elseif(MSVC)
 	source_group("Header Files\\Game" FILES ${GAME_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})
 	
-	source_group("Source Files\\Entities" FILES ${ENTITY_SRC} ${CMAKE_CURRENT_BINARY_DIR}/entities.cpp)
+	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})
+	source_group("Source Files\\Generated" FILES  ${GENERATED_SRCS})
 	source_group("Source Files\\Entities\\env" FILES ${ENV_SRC})
 	source_group("Source Files\\Entities\\func" FILES ${FUNC_SRC})
 	source_group("Source Files\\Entities\\item" FILES ${ITEM_SRC})

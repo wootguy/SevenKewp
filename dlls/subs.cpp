@@ -26,10 +26,9 @@
 #include "saverestore.h"
 #include "nodes.h"
 #include "CBaseDoor.h"
+#include "skill.h"
 
 extern BOOL FEntIsVisible(entvars_t* pev, entvars_t* pevTarget);
-
-extern DLL_GLOBAL int g_iSkillLevel;
 
 void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {

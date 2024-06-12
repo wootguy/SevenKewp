@@ -14,10 +14,9 @@
 #include	"CBaseGrunt.h"
 #include	"defaultai.h"
 #include	"weapon/CGrenade.h"
+#include	"skill.h"
 
 int g_fGruntQuestion;
-
-extern DLL_GLOBAL int		g_iSkillLevel;
 
 TYPEDESCRIPTION	CBaseGrunt::m_SaveData[] = 
 {

@@ -47,6 +47,8 @@
 #include "CBasePlayerWeapon.h"
 #include "CItem.h"
 #include "CTripmine.h"
+#include "skill.h"
+#include "CBreakable.h"
 
 // #define DUCKFIX
 
@@ -54,7 +56,7 @@ extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL	BOOL	g_fDrawLines;
 int gEvilImpulse101;
-extern DLL_GLOBAL int		g_iSkillLevel, gDisplayTitle;
+extern DLL_GLOBAL int gDisplayTitle;
 extern float g_flWeaponCheat;
 
 BOOL gInitHUD = TRUE;
@@ -4490,7 +4492,7 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 				if (RemovePlayerItem(pWeapon)) {
 					static std::map<std::string, std::string> keys = { {"is_player_ally", "1"} };
 					Vector angles(0, pev->angles.y, 0);
-					COFShockRoach* pRoach = (COFShockRoach*)CBaseEntity::Create("monster_shockroach",
+					CBaseEntity* pRoach = CBaseEntity::Create("monster_shockroach",
 						pev->origin + gpGlobals->v_forward * 10, angles, edict(), keys);
 					pRoach->pev->velocity = gpGlobals->v_forward * 400;
 				}
