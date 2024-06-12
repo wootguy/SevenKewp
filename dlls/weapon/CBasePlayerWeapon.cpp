@@ -659,9 +659,10 @@ void CBasePlayerWeapon::SolidifyNearbyCorpses(bool solidState) {
 		// TODO: This is expensive. Try to fix the bug where players have laggy movement on corpses instead.
 		// For some reason the shocktrooper on auspices has no laggy movement when player walks on it,
 		// though it seems like the bbox is set incorrectly (much higher than 2 units).
-		
+		numNearbyCorpses = 0;
+
 		edict_t* ent = NULL;
-		while (!FNullEnt(ent = FIND_ENTITY_IN_SPHERE(ent, vecSrc, 192))) {
+		while (!FNullEnt(ent = FIND_ENTITY_IN_SPHERE(ent, vecSrc, 192)) && numNearbyCorpses < 256) {
 			if ((ent->v.flags & (FL_MONSTER | FL_CLIENT)) && ent->v.deadflag >= DEAD_DEAD && ent->v.solid == SOLID_NOT && !(ent->v.effects & EF_NODRAW)) {
 				nearbyCorpses[numNearbyCorpses++] = ent;
 				ent->v.solid = SOLID_BBOX;
