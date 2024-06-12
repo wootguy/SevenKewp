@@ -1,3 +1,4 @@
+option(ASAN "Build with AddressSanitizer Enabled" OFF)
 
 set(MISC_HDR
 	../engine/studio.h
@@ -542,10 +543,16 @@ if(UNIX)
 		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls/
 	)
 
+	set(ASAN_OPTS "")
+	if (ASAN)
+		set(ASAN_CFLAGS "-fsanitize=address -fno-omit-frame-pointer")
+		set(ASAN_LFLAGS "-fsanitize=address")
+	endif()
+
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32 -g -O2 -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter"
-		LINK_FLAGS "-m32 -g"
+		COMPILE_FLAGS "-m32 -g -O2 -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter ${ASAN_CFLAGS}"
+		LINK_FLAGS "-m32 -g  ${ASAN_LFLAGS}"
 	)
 
 elseif(MSVC)
