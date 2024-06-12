@@ -7302,7 +7302,8 @@ void CBaseMonster::AddShockEffect(float r, float g, float b, float size, float f
 	{
 		if (m_fShockEffect)
 		{
-			m_flShockDuration += flShockDuration;
+			//m_flShockDuration += flShockDuration; // don't stack shock durations
+			m_flShockTime = gpGlobals->time;
 		}
 		else
 		{

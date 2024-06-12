@@ -373,6 +373,7 @@ void COsprey :: HoverThink( void )
 	UTIL_MakeAimVectors( pev->angles );
 	ShowDamage( );
 	FCheckAITrigger();
+	UpdateShockEffect();
 }
 
 
@@ -411,6 +412,7 @@ void COsprey::FlyThink( void )
 {
 	StudioFrameAdvance( );
 	FCheckAITrigger();
+	UpdateShockEffect();
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	if (!m_hGoalEnt && !FStringNull(pev->target) )// this monster has a target
@@ -574,6 +576,7 @@ void COsprey::CrashTouch( CBaseEntity *pOther )
 
 void COsprey :: DyingThink( void )
 {
+	UpdateShockEffect();
 	StudioFrameAdvance( );
 	pev->nextthink = gpGlobals->time + 0.1;
 
@@ -833,6 +836,7 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	}
 
 	bool hitHard = flDamage > 50;
+	bool isShock = bitsDamageType & DMG_SHOCK;
 
 	// hit hard, hits cockpit, hits engines
 	if (hitHard || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3 || isBlast)
@@ -865,7 +869,7 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 			gibCount = 16;
 			gibModel = m_iBodyGibs;
 		}
-		else {
+		else if (!isShock) {
 			// cockpit
 			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 			WRITE_BYTE(TE_STREAK_SPLASH);
@@ -901,6 +905,10 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 				WRITE_BYTE(2 | 4 | 8);
 				MESSAGE_END();
 			}
+		}
+
+		if (isShock) {
+			gibCount = 0;
 		}
 
 		if (gibCount) {

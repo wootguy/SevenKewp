@@ -177,17 +177,17 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 
 		const auto damage = gSkillData.sk_plr_shockrifle;
 
-		auto bitsDamageTypes = DMG_ALWAYSGIB | DMG_SHOCK;
+		auto bitsDamageTypes = DMG_SHOCK;
 
 		auto pMonster = pOther->MyMonsterPointer();
 
 		if( pMonster )
 		{
-			bitsDamageTypes = DMG_BLAST;
+			bitsDamageTypes |= DMG_BLAST;
 
-			if( pMonster->m_flShockDuration > 1 )
+			if( pMonster->m_flShockDuration > 0 )
 			{
-				bitsDamageTypes = DMG_ALWAYSGIB;
+				bitsDamageTypes |= DMG_ALWAYSGIB;
 			}
 		}
 
@@ -256,6 +256,17 @@ void CShockBeam::Explode()
 	WRITE_BYTE( 5 );
 	WRITE_BYTE( 10 );
 	MESSAGE_END();
+
+	// gib corpses
+	edict_t* ent = NULL;
+	while (!FNullEnt(ent = FIND_ENTITY_IN_SPHERE(ent, pev->origin, 16))) {
+		if ((ent->v.flags & (FL_MONSTER | FL_CLIENT)) && ent->v.deadflag >= DEAD_DEAD && ent->v.solid == SOLID_NOT && !(ent->v.effects & EF_NODRAW)) {
+			CBaseEntity* baseent = CBaseEntity::Instance(ent);
+			if (baseent && pev->owner) {
+				baseent->Killed(&pev->owner->v, GIB_ALWAYS);
+			}
+		}
+	}
 
 	pev->owner = nullptr;
 

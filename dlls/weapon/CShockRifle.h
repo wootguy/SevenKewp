@@ -46,6 +46,8 @@ public:
 
 	void SecondaryAttack() override;
 
+	void BeamAttack(bool isSecondary);
+
 	void Reload() override;
 
 	void ItemPostFrame() override;

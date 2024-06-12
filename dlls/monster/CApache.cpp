@@ -196,6 +196,7 @@ void CApache::NullThink( void )
 {
 	StudioFrameAdvance( );
 	FCheckAITrigger();
+	UpdateShockEffect();
 	pev->nextthink = gpGlobals->time + 0.5;
 }
 
@@ -236,6 +237,7 @@ void CApache :: Killed( entvars_t *pevAttacker, int iGib )
 
 void CApache :: DyingThink( void )
 {
+	UpdateShockEffect();
 	StudioFrameAdvance( );
 	pev->nextthink = gpGlobals->time + 0.1;
 
@@ -465,6 +467,7 @@ void CApache :: HuntThink( void )
 
 	ShowDamage( );
 	FCheckAITrigger();
+	UpdateShockEffect();
 
 	if ( !m_hGoalEnt && !FStringNull(pev->target) )// this monster has a target
 	{
@@ -957,8 +960,12 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	Vector pos = ptr->vecEndPos;
 
 	bool hitHard = flDamage > 50;
+	bool isShock = bitsDamageType & DMG_SHOCK;
 
-	if (!isBlast && (ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || hitHard)) {
+	if (isShock) {
+		gibCount = 0;
+	}
+	else if (!isBlast && (ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || hitHard)) {
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 		WRITE_BYTE(TE_STREAK_SPLASH);
 		WRITE_COORD(pos.x);

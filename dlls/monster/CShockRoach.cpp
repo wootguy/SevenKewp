@@ -335,7 +335,19 @@ void COFShockRoach :: Precache()
 	PRECACHE_SOUND("shockroach/shock_walk.wav" );
 
 	m_defaultModel = "models/w_shock_rifle.mdl";
-	UTIL_PrecacheOther("weapon_shockrifle");
+	
+	// weapon precaches copied here to prevent a precache loop
+	//UTIL_PrecacheOther("weapon_shockrifle");
+	PRECACHE_MODEL("models/v_shock.mdl");
+	PRECACHE_MODEL("models/p_shock.mdl");
+	PRECACHE_MODEL("models/w_shock.mdl");
+	PRECACHE_MODEL("sprites/shockwave.spr");
+	PRECACHE_MODEL("sprites/lgtning.spr");
+	PRECACHE_SOUND("weapons/shock_fire.wav");
+	PRECACHE_SOUND("weapons/shock_draw.wav");
+	PRECACHE_SOUND("weapons/shock_recharge.wav");
+	PRECACHE_SOUND("weapons/shock_discharge.wav");
+
 	PRECACHE_MODEL(GetModel());
 }	
 

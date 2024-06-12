@@ -271,6 +271,7 @@ void CBaseTurret::ActiveThink(void)
 	pev->nextthink = gpGlobals->time + 0.1;
 	StudioFrameAdvance();
 	FCheckAITrigger();
+	UpdateShockEffect();
 
 	if ((!m_iOn) || (m_hEnemy == NULL))
 	{
@@ -552,6 +553,7 @@ void CBaseTurret::SearchThink(void)
 	SetTurretAnim(TURRET_ANIM_SPIN);
 	StudioFrameAdvance();
 	FCheckAITrigger();
+	UpdateShockEffect();
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	if (m_flSpinUpTime == 0 && m_flMaxSpin)
@@ -611,6 +613,8 @@ void CBaseTurret::SearchThink(void)
 //
 void CBaseTurret::AutoSearchThink(void)
 {
+	UpdateShockEffect();
+
 	// ensure rethink
 	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.3;
@@ -690,7 +694,11 @@ void CBaseTurret::TurretDeath(void)
 	{
 		pev->framerate = 0;
 		SetThink(NULL);
+
+		m_flShockDuration = 0;
 	}
+
+	UpdateShockEffect();
 }
 
 void CBaseTurret::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
