@@ -43,7 +43,7 @@ void PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
 #ifdef _WIN32
 	plugin.h_module = LoadLibraryA(plugin.fpath);
 #else
-	plugin.h_module = dlopen(plugin.fpath, RTLD_NOW | RTLD_DEEPBIND | RTLD_LOCAL);
+	plugin.h_module = dlopen(plugin.fpath, RTLD_NOW | RTLD_LOCAL);
 #endif
 
 	if (!plugin.h_module) {
