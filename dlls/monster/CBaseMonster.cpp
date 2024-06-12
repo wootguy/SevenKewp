@@ -216,8 +216,11 @@ void CBaseMonster::Listen(void)
 	{
 		pCurrentSound = CSoundEnt::SoundPointerForIndex(iSound);
 
-		if (pCurrentSound &&
-			(pCurrentSound->m_iType & iMySounds) &&
+		if (!pCurrentSound) {
+			break;
+		}
+
+		if ((pCurrentSound->m_iType & iMySounds) &&
 			(pCurrentSound->m_vecOrigin - EarPosition()).Length() <= pCurrentSound->m_iVolume * hearingSensitivity)
 
 			//if ( ( g_pSoundEnt->m_SoundPool[ iSound ].m_iType & iMySounds ) && ( g_pSoundEnt->m_SoundPool[ iSound ].m_vecOrigin - EarPosition()).Length () <= g_pSoundEnt->m_SoundPool[ iSound ].m_iVolume * hearingSensitivity ) 
