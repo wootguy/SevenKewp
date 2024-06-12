@@ -304,7 +304,7 @@ void CMonsterMaker :: Precache( void )
 	if (m_soundReplacementPath)
 		keys["soundlist"] = STRING(m_soundReplacementPath);
 	if (m_IsPlayerAlly)
-		keys["is_player_ally"] = STRING(m_IsPlayerAlly);
+		keys["is_player_ally"] = "1";
 	if (pev->weapons)
 		keys["weapons"] = UTIL_VarArgs("%d", pev->weapons);
 
