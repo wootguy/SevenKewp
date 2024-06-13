@@ -465,16 +465,26 @@ set(GAME_SRC
 	PluginManager.cpp
 )
 
-set(ALL_MONSTER_SRC ${MONSTER_SRC} ${MONSTER_ALIEN_SRC} ${MONSTER_HUMAN_SRC} ${MONSTER_MACHINE_SRC} ${MONSTER_MISC_SRC})
-set(ALL_WEAPON_SRC ${WEAPON_SRC} ${AMMO_SRC})
-set(ALL_TRIGGER_SRC ${TRIGGER_SRC} ${TRIGGER_POINT_SRC} ${TRIGGER_BRUSHED_SRC} ${TRIGGER_OBSOLETE_SRC})
-set(ALL_ENT_MISC_SRC ${ENTITY_SRC} ${ENV_SRC} ${ITEM_SRC} ${FUNC_SRC} ${PATH_SRC})
+set(ALL_TRIGGER_MISC_SRC ${TRIGGER_SRC} ${TRIGGER_OBSOLETE_SRC})
+set(ALL_TRIGGER_POINT_SRC ${TRIGGER_POINT_SRC})
+set(ALL_TRIGGER_BRUSH_SRC ${TRIGGER_BRUSHED_SRC})
+set(ALL_ENT_MISC_SRC ${ENTITY_SRC} ${PATH_SRC})
 
 set(ENT_SRC
-	${ALL_MONSTER_SRC}
+	${MONSTER_SRC}
+	${MONSTER_ALIEN_SRC}
+	${MONSTER_HUMAN_SRC}
+	${MONSTER_MACHINE_SRC}
+	${MONSTER_MISC_SRC}
+	${ALL_TRIGGER_POINT_SRC}
+	${ALL_TRIGGER_BRUSH_SRC}
+	${ALL_TRIGGER_MISC_SRC}
+	${WEAPON_SRC}
+	${AMMO_SRC}
+	${ENV_SRC}
+	${ITEM_SRC}
+	${FUNC_SRC}
 	${ALL_ENT_MISC_SRC}
-	${ALL_TRIGGER_SRC}
-	${ALL_WEAPON_SRC}
 )
 
 set(ENT_HDR
@@ -506,16 +516,36 @@ function(write_ent_source_file IN_FILES_STRING OUT_NAME)
     )
 endfunction()
 
-write_ent_source_file("${ALL_MONSTER_SRC}" all_monsters.cpp)
-write_ent_source_file("${ALL_WEAPON_SRC}" all_weapons.cpp)
-write_ent_source_file("${ALL_TRIGGER_SRC}" all_triggers.cpp)
-write_ent_source_file("${ALL_ENT_MISC_SRC}" all_other_ents.cpp)
+write_ent_source_file("${MONSTER_SRC}" monsters_base.cpp)
+write_ent_source_file("${MONSTER_ALIEN_SRC}" monsters_aliens.cpp)
+write_ent_source_file("${MONSTER_HUMAN_SRC}" monsters_humans.cpp)
+write_ent_source_file("${MONSTER_MACHINE_SRC}" monsters_machines.cpp)
+write_ent_source_file("${MONSTER_MISC_SRC}" monsters_misc.cpp)
+write_ent_source_file("${WEAPON_SRC}" all_weapons.cpp)
+write_ent_source_file("${AMMO_SRC}" all_ammo.cpp)
+write_ent_source_file("${ALL_TRIGGER_POINT_SRC}" triggers_point.cpp)
+write_ent_source_file("${ALL_TRIGGER_BRUSH_SRC}" triggers_brush.cpp)
+write_ent_source_file("${ALL_TRIGGER_MISC_SRC}" triggers_misc.cpp)
+write_ent_source_file("${ALL_ENT_MISC_SRC}" all_ents_misc.cpp)
+write_ent_source_file("${ENV_SRC}" all_ents_env.cpp)
+write_ent_source_file("${ITEM_SRC}" all_ents_item.cpp)
+write_ent_source_file("${FUNC_SRC}" all_ents_func.cpp)
 
 set(GENERATED_SRCS 
-	${CMAKE_CURRENT_BINARY_DIR}/all_monsters.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/monsters_base.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/monsters_aliens.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/monsters_humans.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/monsters_machines.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/monsters_misc.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/all_weapons.cpp
-	${CMAKE_CURRENT_BINARY_DIR}/all_triggers.cpp
-	${CMAKE_CURRENT_BINARY_DIR}/all_other_ents.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/all_ammo.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/triggers_point.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/triggers_brush.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/triggers_misc.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/all_ents_misc.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/all_ents_env.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/all_ents_item.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/all_ents_func.cpp
 )
 
 set(ALL_SRC

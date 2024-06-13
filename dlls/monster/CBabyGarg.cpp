@@ -8,6 +8,7 @@
 #include "weapons.h"
 #include "CGargantua.h"
 #include "effects.h"
+#include "scriptevent.h"
 
 #define BABYGARG_FLAME_LENGTH 130
 #define BABYGARG_FLAME_WIDTH 120

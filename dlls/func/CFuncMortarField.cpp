@@ -4,6 +4,7 @@
 #include "saverestore.h"
 #include "decals.h"
 #include "env/CSoundEnt.h"
+#include "weapons.h"
 
 class CFuncMortarField : public CBaseToggle
 {
