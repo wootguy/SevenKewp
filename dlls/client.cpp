@@ -822,6 +822,8 @@ void ClientPrecache( void )
 	PRECACHE_SOUND_ENT(NULL, "common/wpn_select.wav");
 	PRECACHE_SOUND_ENT(NULL, "common/wpn_denyselect.wav");
 
+	PRECACHE_SOUND_ENT(NULL, "player/bhit_helmet-1.wav");
+
 	if (giPrecacheGrunt)
 		UTIL_PrecacheOther("monster_human_grunt");
 }
