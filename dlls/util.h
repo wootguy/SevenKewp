@@ -37,6 +37,7 @@
 #include <float.h>
 #include "mod_api.h"
 #include "shared_util.h"
+#include "studio.h"
 
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
@@ -809,3 +810,6 @@ const char* cstr(string_t s);
 std::string sanitize_cvar_value(std::string val);
 
 const char* getActiveWeapon(entvars_t* pev);
+
+// for debugging
+bool ModelIsValid(entvars_t* edict, studiohdr_t* header);

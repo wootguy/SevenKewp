@@ -333,6 +333,11 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 	if ( !pstudiohdr || pev->sequence < 0 || pev->sequence >= pstudiohdr->numseq || !pMonsterEvent )
 		return 0;
 
+	if (!ModelIsValid(pev, pstudiohdr)) {
+		ALERT(at_error, "model corruption in GetAnimationEvent!\n");
+		return 0;
+	}
+
 	mstudioseqdesc_t	*pseqdesc;
 	mstudioevent_t		*pevent;
 

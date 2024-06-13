@@ -3327,15 +3327,18 @@ void* GET_MODEL_PTR(edict_t* edict) {
 		return NULL;
 	}
 
+	return header;
+}
+
+bool ModelIsValid(entvars_t* edict, studiohdr_t* header) {
 	// basic corruption detection
 	if (header->id != 1414743113 || header->version != 10) {
-		ALERT(at_error, "Model corruption! Model: %s, idx: %d, ID: %d, Version: %d\n",
-			STRING(edict->v.model), edict->v.modelindex, header->version, header->id);
-		SET_MODEL(edict, NOT_PRECACHED_MODEL); // stop using the broken model and spamming the console
-		return NULL;
+		ALERT(at_error, "Model corruption! Model: %s, ID: %d, Version: %d\n",
+			STRING(edict->model),  header->version, header->id);
+		return false;
 	}
 
-	return header;
+	return true;
 }
 
 void InitEdictRelocations() {

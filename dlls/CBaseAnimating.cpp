@@ -26,6 +26,7 @@
 #include "animation.h"
 #include "saverestore.h"
 #include "monster/CBaseMonster.h"
+#include "studio.h"
 
 TYPEDESCRIPTION	CBaseAnimating::m_SaveData[] = 
 {
@@ -162,7 +163,17 @@ void CBaseAnimating :: DispatchAnimEvents ( float flInterval )
 
 	while ( (index = GetAnimationEvent( pmodel, pev, &event, flStart, flEnd, index ) ) != 0 )
 	{
+		if (!ModelIsValid(pev, (studiohdr_t*)pmodel)) {
+			ALERT(at_error, "model corruption after GetAnimationEvent!\n");
+			break;
+		}
+
 		HandleAnimEvent( &event );
+
+		if (!ModelIsValid(pev, (studiohdr_t*)pmodel)) {
+			ALERT(at_error, "model corruption after HandleAnimEvent!\n");
+			break;
+		}
 	}
 }
 
