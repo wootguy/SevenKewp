@@ -572,7 +572,12 @@ int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 		}
 	}
 
-	pev->punchangle.x = m_headshot ? -10 : -2;
+	if (m_headshot) {
+		pev->punchangle.x = -10;
+	}
+	else if (fabs(pev->punchangle.x) < 2) {
+		pev->punchangle.x = -2;
+	}
 	m_headshot = false;
 
 	if (fTookDamage && !ftrivial && fmajor && flHealthPrev >= 75) 
