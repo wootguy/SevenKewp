@@ -347,6 +347,7 @@ void COFShockRoach :: Precache()
 	PRECACHE_SOUND("weapons/shock_draw.wav");
 	PRECACHE_SOUND("weapons/shock_recharge.wav");
 	PRECACHE_SOUND("weapons/shock_discharge.wav");
+	PRECACHE_HUD_FILES("sprites/weapon_shockrifle.txt");
 
 	PRECACHE_MODEL(GetModel());
 }	
