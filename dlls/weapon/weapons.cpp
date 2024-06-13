@@ -31,6 +31,7 @@
 #include "decals.h"
 #include "gamerules.h"
 #include "CBasePlayerWeapon.h"
+#include "explode.h"
 
 extern CGraph	WorldGraph;
 extern int gEvilImpulse101;

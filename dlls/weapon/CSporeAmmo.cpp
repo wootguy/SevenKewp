@@ -1,4 +1,5 @@
 #include "CBasePlayerAmmo.h"
+#include "CSpore.h"
 
 enum SporeAmmoAnim
 {

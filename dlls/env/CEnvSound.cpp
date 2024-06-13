@@ -123,7 +123,7 @@ void CEnvSound::Think(void)
 	// check to see if this is the sound entity that is 
 	// currently affecting this player
 
-	if (!FNullEnt(pPlayer->m_pentSndLast) && (pPlayer->m_pentSndLast.GetEntity() == this)) {
+	if (!FNullEnt(pPlayer->m_pentSndLast.GetEdict()) && (pPlayer->m_pentSndLast.GetEntity() == this)) {
 
 		// this is the entity currently affecting player, check
 		// for validity
