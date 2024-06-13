@@ -345,6 +345,8 @@ void CBasePlayer :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector 
 			break;
 		case HITGROUP_HEAD:
 			flDamage *= gSkillData.sk_player_head;
+			EMIT_SOUND_DYN(edict(), CHAN_BODY, "player/bhit_helmet-1.wav", 1.0f, ATTN_STATIC, 0, RANDOM_LONG(90, 110));
+			m_headshot = true;
 			break;
 		case HITGROUP_CHEST:
 			flDamage *= gSkillData.sk_player_chest;
@@ -570,7 +572,8 @@ int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 		}
 	}
 
-	pev->punchangle.x = -2;
+	pev->punchangle.x = m_headshot ? -10 : -2;
+	m_headshot = false;
 
 	if (fTookDamage && !ftrivial && fmajor && flHealthPrev >= 75) 
 	{

@@ -236,7 +236,7 @@ void CShockRifle::BeamAttack(bool isSecondary) {
 		GetCircularGaussianSpread(x, y);
 		vecAnglesAim.x += x * 3;
 		vecAnglesAim.y += y * 3;
-		m_pPlayer->pev->punchangle.x += 1;
+		m_pPlayer->pev->punchangle.x = -2;
 	}
 
 	UTIL_MakeVectors(vecAnglesAim);

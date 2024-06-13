@@ -219,6 +219,8 @@ public:
 	unsigned char* m_lastPvs; // only valid during AddToFullPack
 	unsigned char* m_lastPas; // only valid during AddToFullPack
 
+	bool m_headshot; // last TakeDamage was a headshot
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );

@@ -2957,7 +2957,7 @@ std::map<std::string, std::string> loadReplacementFile(const char* path) {
 	std::ifstream infile(fpath);
 
 	if (fpath.empty() || !infile.is_open()) {
-		ALERT(at_error, "Failed to load replacement file: %s\n", path);
+		ALERT(at_console, "Failed to load replacement file: %s\n", path);
 		return replacements;
 	}
 
