@@ -953,5 +953,5 @@ int CBaseEntity::IRelationship(int attackerClass, int victimClass) {
 		/*RACEX (pit)*/	{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_HT	,R_DL	,R_NO	,R_NO	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_AL,	R_AL	}
 	};
 
-	return iEnemy[attackerClass][victimClass];
+	return iEnemy[clampi(attackerClass, 0, 15)][clampi(victimClass, 0, 15)];
 }
