@@ -60,6 +60,7 @@ public:
 
 	int m_iBeams;
 	Vector m_lastPos;
+	int m_waterExplodeSpr;
 };
 
 #endif

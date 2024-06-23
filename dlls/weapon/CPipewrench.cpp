@@ -454,8 +454,12 @@ void CPipewrench::BigSwing()
 		{
 			ClearMultiDamage();
 
-			float flDamage = (gpGlobals->time - m_flBigSwingStart) * gSkillData.sk_plr_pipewrench + 25.0f;
-			
+			// Charge wrench for 2.5s for full damage. Does 50% damage with no charge.
+			const float minAttackTime = 1.1f;
+			float chargeTime = (gpGlobals->time - m_flBigSwingStart) - minAttackTime;
+			float multiplier = V_min(chargeTime*0.2f + 0.5f, 1.0f);
+			float flDamage = multiplier * gSkillData.sk_plr_pipewrench_full_damage;
+
 			if (m_pPlayer->IRelationship(pEntity) == R_AL && (pEntity->IsMachine() || pEntity->IsBSPModel())) {
 				flDamage *= -1;
 				bHitWorld = false;
@@ -471,16 +475,8 @@ void CPipewrench::BigSwing()
 				}
 			}
 
-			if ((m_flNextPrimaryAttack + 1 < UTIL_WeaponTimeBase()) || gSkillData.sk_plr_pipewrench_full_damage != 0)
-			{
-				// first swing does full damage
-				pEntity->TraceAttack(m_pPlayer->pev, flDamage, gpGlobals->v_forward, &tr, DMG_CLUB);
-			}
-			else
-			{
-				// subsequent swings do half
-				pEntity->TraceAttack(m_pPlayer->pev, flDamage / 2, gpGlobals->v_forward, &tr, DMG_CLUB);
-			}
+			pEntity->TraceAttack(m_pPlayer->pev, flDamage, gpGlobals->v_forward, &tr, DMG_CLUB);
+
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}
 

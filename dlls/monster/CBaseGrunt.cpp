@@ -1061,6 +1061,7 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 	if (equipment & MEQUIP_DEAGLE) {
 		PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
 		PRECACHE_SOUND("weapons/desert_eagle_reload.wav");
+		AddPrecacheWeapon("weapon_357");
 	}
 	if (equipment & MEQUIP_GLOCK) {
 		AddPrecacheWeapon("weapon_9mmhandgun");

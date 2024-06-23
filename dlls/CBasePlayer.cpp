@@ -727,6 +727,23 @@ void CBasePlayer::PackDeadPlayerItems( void )
 		}
 	}
 
+	CBasePlayerWeapon* firstWep = rgpPackWeapons[0];
+	if (iWeaponRules == GR_PLR_DROP_GUN_ACTIVE && firstWep && !strcmp(STRING(firstWep->pev->classname), "weapon_shockrifle")) {
+		if (RemovePlayerItem(firstWep)) {
+			// fixme: logic duplicated in weapon drop code
+			static std::map<std::string, std::string> keys = { {"is_player_ally", "1"} };
+			Vector angles(0, pev->angles.y, 0);
+			CBaseEntity* pRoach = CBaseEntity::Create("monster_shockroach",
+				pev->origin + gpGlobals->v_forward * 10, angles, edict(), keys);
+			pRoach->pev->velocity = pev->velocity * 1.2;
+		
+		}
+
+		RemoveAllItems(TRUE);// now strip off everything that wasn't handled by the code above.
+
+		return;
+	}
+
 // create a box to pack the stuff into.
 	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin, pev->angles, edict() );
 
@@ -3460,6 +3477,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 
 
 	case 101:
+		// impulse 101 cheat
 		RETURN_IF_CHEATS_DISABLED()
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
@@ -4516,6 +4534,7 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 			pev->weapons &= ~(1<<pWeapon->m_iId);// take item off hud
 
 			if (!strcmp(STRING(pWeapon->pev->classname), "weapon_shockrifle")) {
+				// fixme: logic duplicated in kill code
 				if (RemovePlayerItem(pWeapon)) {
 					static std::map<std::string, std::string> keys = { {"is_player_ally", "1"} };
 					Vector angles(0, pev->angles.y, 0);

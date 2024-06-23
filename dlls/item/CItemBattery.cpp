@@ -52,13 +52,13 @@ class CItemBattery : public CItem
 			return FALSE;
 		}
 
-		if ((pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY) &&
+		float healthcap = m_healthcap > 0 ? m_healthcap : MAX_NORMAL_BATTERY;
+
+		if ((pPlayer->pev->armorvalue < healthcap) &&
 			(pPlayer->pev->weapons & (1 << WEAPON_SUIT)))
 		{
 			int pct;
 			char szcharge[64];
-
-			float healthcap = m_healthcap > 0 ? m_healthcap : MAX_NORMAL_BATTERY;
 
 			pPlayer->pev->armorvalue += pev->health ? pev->health : gSkillData.sk_battery;
 			pPlayer->pev->armorvalue = V_min(pPlayer->pev->armorvalue, healthcap);

@@ -117,6 +117,8 @@ int CHgun::GetItemInfo(ItemInfo *p)
 
 BOOL CHgun::Deploy( )
 {
+	Reload();
+
 	return DefaultDeploy(GetModelV(), GetModelP(), HGUN_UP, "hive" );
 }
 
