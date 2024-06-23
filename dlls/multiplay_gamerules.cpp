@@ -471,6 +471,8 @@ float CHalfLifeMultiplay :: FlPlayerFallDamage( CBasePlayer *pPlayer )
 	case 0:// fixed
 		return 10;
 		break;
+	case -1:
+		return 0; // fall damage disabled
 	}
 } 
 
