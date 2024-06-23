@@ -344,9 +344,16 @@ void CBasePlayer :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector 
 		case HITGROUP_GENERIC:
 			break;
 		case HITGROUP_HEAD:
-			flDamage *= gSkillData.sk_player_head;
-			EMIT_SOUND_DYN(edict(), CHAN_BODY, "player/bhit_helmet-1.wav", 1.0f, ATTN_STATIC, 0, RANDOM_LONG(90, 110));
-			m_headshot = true;
+			if (bitsDamageType & (DMG_BULLET | DMG_CLUB)) {
+				flDamage *= gSkillData.sk_player_head;
+				EMIT_SOUND_DYN(edict(), CHAN_BODY, "player/bhit_helmet-1.wav", 1.0f, ATTN_STATIC, 0, RANDOM_LONG(90, 110));
+				m_headshot = IsAlive(); // don't play effect while dying
+				m_headshotDir = Vector(vecDir.x, vecDir.y, 0).Normalize();
+			}
+			else {
+				// don't take headshot damage for things other than bullets and some melee attacks
+				flDamage *= gSkillData.sk_player_chest;
+			}
 			break;
 		case HITGROUP_CHEST:
 			flDamage *= gSkillData.sk_player_chest;
@@ -573,7 +580,9 @@ int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 	}
 
 	if (m_headshot) {
-		pev->punchangle.x = -10;
+		MAKE_VECTORS(Vector(0, pev->angles.y, 0));
+		pev->punchangle.x = DotProduct(m_headshotDir, gpGlobals->v_forward) * 10;
+		pev->punchangle.z = DotProduct(m_headshotDir, gpGlobals->v_right) * 10;
 	}
 	else if (fabs(pev->punchangle.x) < 2) {
 		pev->punchangle.x = -2;
@@ -913,6 +922,16 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	SetThink(&CBasePlayer::PlayerDeathThink);
 	pev->nextthink = gpGlobals->time + 0.1;
+}
+
+Vector CBasePlayer::BodyTarget(const Vector& posSrc) {
+	// have enemies sometimes aim for the head, but mostly not (bias towards lower values)
+	float bias = RANDOM_FLOAT(0, 1.0f);
+	bias = bias * bias * bias;
+
+	Vector headHeight = (pev->flags & FL_DUCKING) ? pev->view_ofs*2.0f : pev->view_ofs;
+
+	return Center() + headHeight * (bias*0.5f + 0.5f);
 }
 
 // Set the activity based on an event or current state

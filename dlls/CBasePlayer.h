@@ -220,6 +220,7 @@ public:
 	unsigned char* m_lastPas; // only valid during AddToFullPack
 
 	bool m_headshot; // last TakeDamage was a headshot
+	Vector m_headshotDir; // direction of headshot
 
 	virtual void Spawn( void );
 
@@ -233,7 +234,7 @@ public:
 	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	virtual void	Killed( entvars_t *pevAttacker, int iGib );
-	virtual Vector BodyTarget( const Vector &posSrc ) { return Center( ) + pev->view_ofs * RANDOM_FLOAT( 0.5, 1.1 ); };		// position to shoot at
+	virtual Vector BodyTarget(const Vector& posSrc);
 	virtual void StartSneaking( void ) { m_tSneaking = gpGlobals->time - 1; }
 	virtual void StopSneaking( void ) { m_tSneaking = gpGlobals->time + 30; }
 	virtual BOOL IsSneaking( void ) { return m_tSneaking <= gpGlobals->time; }
