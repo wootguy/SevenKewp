@@ -44,6 +44,7 @@ public:
 	void SearchThink(void);
 	void AutoSearchThink(void);
 	void TurretDeath(void);
+	void RetireThink(void);
 
 	virtual void SpinDownCall(void) { m_iSpin = 0; }
 	virtual void SpinUpCall(void) { m_iSpin = 1; }

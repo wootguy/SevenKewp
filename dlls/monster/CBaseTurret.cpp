@@ -367,13 +367,19 @@ void CBaseTurret::ActiveThink(void)
 	//move the gun
 	if (m_fBeserk)
 	{
-		if (RANDOM_LONG(0, 9) == 0)
+		if (RANDOM_LONG(0, 3) == 0)
 		{
 			m_vecGoalAngles.y = RANDOM_FLOAT(0, 360);
 			m_vecGoalAngles.x = RANDOM_FLOAT(0, 90) - 90 * m_iOrientation;
 			TakeDamage(pev, pev, 1, DMG_GENERIC); // don't beserk forever
+			m_fBeserk -= 1;
+
 			return;
 		}
+
+		UTIL_Sparks(pev->origin + Vector(RANDOM_FLOAT(pev->mins.x, pev->maxs.x),
+			RANDOM_FLOAT(pev->mins.y, pev->maxs.y),
+			RANDOM_FLOAT(pev->mins.z, pev->maxs.z)));
 	}
 	else if (fEnemyVisible)
 	{
@@ -424,6 +430,8 @@ void CBaseTurret::Deploy(void)
 {
 	pev->nextthink = gpGlobals->time + 0.1;
 	StudioFrameAdvance();
+	FCheckAITrigger();
+	UpdateShockEffect();
 
 	if (pev->sequence != TURRET_ANIM_DEPLOY)
 	{
@@ -467,6 +475,8 @@ void CBaseTurret::Retire(void)
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	StudioFrameAdvance();
+	FCheckAITrigger();
+	UpdateShockEffect();
 
 	EyeOff();
 
@@ -496,13 +506,20 @@ void CBaseTurret::Retire(void)
 				pev->nextthink = gpGlobals->time + .1;
 			}
 			else
-				SetThink(&CBaseTurret::SUB_DoNothing);
+				SetThink(&CBaseTurret::RetireThink);
 		}
 	}
 	else
 	{
 		SetTurretAnim(TURRET_ANIM_SPIN);
 	}
+}
+
+void CBaseTurret::RetireThink(void)
+{
+	FCheckAITrigger();
+	UpdateShockEffect();
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void CBaseTurret::SetTurretAnim(TURRET_ANIM anim)
@@ -703,7 +720,15 @@ void CBaseTurret::TurretDeath(void)
 
 void CBaseTurret::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
 {
-	if (ptr->iHitgroup == 10)
+	if (bitsDamageType & DMG_SHOCK) {
+		flDamage *= 2;
+
+		// mini beserk
+		m_vecGoalAngles.y = RANDOM_FLOAT(0, 360);
+		m_vecGoalAngles.x = RANDOM_FLOAT(0, 90) - 90 * m_iOrientation;
+		m_fBeserk = 2;
+	}
+	else if (ptr->iHitgroup == 10)
 	{
 		// hit armor
 		if (pev->dmgtime != gpGlobals->time || (RANDOM_LONG(0, 10) < 1))
@@ -786,7 +811,7 @@ int CBaseTurret::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	{
 		if (m_iOn && (1 || RANDOM_LONG(0, 0x7FFF) > 800))
 		{
-			m_fBeserk = 1;
+			m_fBeserk = 10;
 			SetThink(&CBaseTurret::SearchThink);
 		}
 	}

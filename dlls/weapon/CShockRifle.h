@@ -76,6 +76,7 @@ private:
 
 private:
 	int m_iSpriteTexture;
+	int m_waterExplodeSpr;
 
 	unsigned short m_usShockRifle;
 

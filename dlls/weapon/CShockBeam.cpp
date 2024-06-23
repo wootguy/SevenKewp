@@ -44,6 +44,9 @@ void CShockBeam::Precache()
 	PRECACHE_MODEL( "sprites/glow01.spr" );
 	PRECACHE_MODEL("models/shock_effect.mdl" );
 	PRECACHE_SOUND("weapons/shock_impact.wav" );
+
+	m_waterExplodeSpr = PRECACHE_MODEL("sprites/xspark2.spr");
+
 }
 
 void CShockBeam::Spawn()
@@ -131,6 +134,7 @@ void CShockBeam::FlyThink()
 		SetThink(&CShockBeam::WaterExplodeThink);
 	}
 
+	/*
 	// SOLID_TRIGGER entities don't touch stationary monsters
 	// so a trace is needed to check for collisions
 	TraceResult tr;
@@ -141,6 +145,10 @@ void CShockBeam::FlyThink()
 	m_lastPos = pev->origin;
 
 	pev->nextthink = gpGlobals->time + 0.01;
+	*/
+	// removed in favor of sv_retouch in rehlds. This wasn't working with gargs.
+
+	pev->nextthink = gpGlobals->time + 0.05;
 }
 
 void CShockBeam::ExplodeThink()
@@ -152,6 +160,17 @@ void CShockBeam::ExplodeThink()
 void CShockBeam::WaterExplodeThink()
 {
 	auto pOwner = VARS( pev->owner );
+
+	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+	WRITE_BYTE(TE_EXPLOSION);
+	WRITE_COORD(pev->origin.x);
+	WRITE_COORD(pev->origin.y);
+	WRITE_COORD(pev->origin.z);
+	WRITE_SHORT(m_waterExplodeSpr);
+	WRITE_BYTE(30); // scale * 10
+	WRITE_BYTE(50); // framerate
+	WRITE_BYTE(2 | 4 | 8); // no light, sound, nor particles
+	MESSAGE_END();
 
 	Explode();
 
@@ -172,6 +191,7 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 	if( pOther->pev->takedamage != DAMAGE_NO )
 	{
 		TraceResult tr = UTIL_GetGlobalTrace();
+		tr.vecEndPos = pev->origin;
 
 		ClearMultiDamage();
 

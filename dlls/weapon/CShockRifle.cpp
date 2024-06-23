@@ -61,6 +61,7 @@ void CShockRifle::Precache()
 	PRECACHE_SOUND("weapons/shock_draw.wav");
 	PRECACHE_SOUND("weapons/shock_recharge.wav");
 	PRECACHE_SOUND("weapons/shock_discharge.wav");
+	m_waterExplodeSpr = PRECACHE_MODEL("sprites/xspark2.spr");
 
 	//m_usShockRifle = PRECACHE_EVENT(1, "events/shock.sc");
 
@@ -88,7 +89,10 @@ BOOL CShockRifle::Deploy()
 	if (!m_pPlayer)
 		return FALSE;
 
-	m_flRechargeTime = gpGlobals->time + 0.25;
+	// don't reset recharge time to allow recharge when not held
+	//m_flRechargeTime = gpGlobals->time + 0.25;
+
+	RechargeAmmo(true);
 
 	for (int i = 0; i < 3; i++) {
 		UTIL_Remove(h_beams[i]);
@@ -184,6 +188,17 @@ void CShockRifle::BeamAttack(bool isSecondary) {
 		EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "weapons/shock_discharge.wav", flVolume, ATTN_NONE);
 
 		const int ammoCount = m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
+
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
+		WRITE_BYTE(TE_EXPLOSION);
+		WRITE_COORD(pev->origin.x);
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_SHORT(m_waterExplodeSpr);
+		WRITE_BYTE(30); // scale * 10
+		WRITE_BYTE(50); // framerate
+		WRITE_BYTE(2 | 4 | 8); // no light, sound, nor particles
+		MESSAGE_END();
 
 		RadiusDamage(pev->origin, m_pPlayer->pev, m_pPlayer->pev, ammoCount * 100, ammoCount * 150, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST);
 
@@ -320,15 +335,11 @@ void CShockRifle::RechargeAmmo(bool bLoud)
 		return;
 
 	int ammoCount = m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
+	bool didRecharge = false;
 
-	while (ammoCount < SHOCKRIFLE_DEFAULT_GIVE && m_flRechargeTime < gpGlobals->time)
-	{
+	while (ammoCount < SHOCKRIFLE_DEFAULT_GIVE && m_flRechargeTime < gpGlobals->time) {
 		++ammoCount;
-
-		if (bLoud)
-		{
-			EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/shock_recharge.wav", VOL_NORM, ATTN_NORM);
-		}
+		didRecharge = true;
 
 		/*
 		if (g_Skill.GetValue("shockrifle_fast") != 0)
@@ -342,6 +353,10 @@ void CShockRifle::RechargeAmmo(bool bLoud)
 		*/
 
 		m_flRechargeTime += 0.25;
+	}
+
+	if (didRecharge) {
+		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/shock_recharge.wav", VOL_NORM, ATTN_NORM);
 	}
 
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = ammoCount;

@@ -331,7 +331,7 @@ void CTor::MonsterThink(void) {
 			CBaseEntity* target = m_hEnemy;
 			
 			if (target) {
-				Vector vecDir1 = (target->pev->origin - vecSrc).Normalize();
+				Vector vecDir1 = (target->BodyTarget(pev->origin) - vecSrc).Normalize();
 
 				TraceResult	tr;
 				UTIL_TraceLine(vecSrc, vecSrc + vecDir1 * SHOOT_RANGE, dont_ignore_monsters, edict(), &tr);
@@ -358,7 +358,7 @@ void CTor::MonsterThink(void) {
 				if (phit) {
 					phit->TakeDamage(pev, pev, gSkillData.sk_tor_energybeam, DMG_ENERGYBEAM);
 
-					if (phit->IsMonster()) {
+					if (phit->IsMonster() && (phit->pev->movetype == MOVETYPE_STEP || phit->IsPlayer())) {
 						phit->pev->velocity.z += (phit->pev->flags & FL_ONGROUND) ? 200 : 200;
 					}
 				}

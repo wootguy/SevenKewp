@@ -87,8 +87,10 @@ void CMessage::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useTy
 {
 	CBaseEntity* pPlayer = NULL;
 
-	if (pev->spawnflags & SF_MESSAGE_ALL)
+	if (pev->spawnflags & SF_MESSAGE_ALL) {
 		UTIL_ShowMessageAll(STRING(pev->message));
+		UTIL_ClientPrintAll(print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", STRING(pev->message)));
+	}
 	else
 	{
 		if (pActivator && pActivator->IsPlayer())
@@ -97,8 +99,10 @@ void CMessage::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useTy
 		{
 			pPlayer = CBaseEntity::Instance(g_engfuncs.pfnPEntityOfEntIndex(1));
 		}
-		if (pPlayer)
+		if (pPlayer) {
 			UTIL_ShowMessage(STRING(pev->message), pPlayer);
+			UTIL_ClientPrint(pPlayer->edict(), print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", STRING(pev->message)));
+		}
 	}
 	if (pev->noise)
 	{
