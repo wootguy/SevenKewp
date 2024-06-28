@@ -399,8 +399,8 @@ EXPORT char *UTIL_dtos2( int d );
 EXPORT char *UTIL_dtos3( int d );
 EXPORT char *UTIL_dtos4( int d );
 
-// Writes message to console with timestamp and FragLog header.
-EXPORT void			UTIL_LogPrintf( const char *fmt, ... );
+// Writes message to console with player info as a prefix
+EXPORT void	UTIL_LogPlayerEvent( edict_t* plr, const char *fmt, ... );
 
 // Sorta like FInViewCone, but for nonmonsters. 
 EXPORT float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir );

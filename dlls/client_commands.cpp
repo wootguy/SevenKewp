@@ -272,26 +272,7 @@ void Host_Say(edict_t* pEntity, int teamonly)
 		temp = "say";
 
 	// team match?
-	if (g_teamplay)
-	{
-		UTIL_LogPrintf("\"%s<%i><%s><%s>\" %s \"%s\"\n",
-			STRING(pEntity->v.netname),
-			GETPLAYERUSERID(pEntity),
-			GETPLAYERAUTHID(pEntity),
-			g_engfuncs.pfnInfoKeyValue(g_engfuncs.pfnGetInfoKeyBuffer(pEntity), "model"),
-			temp,
-			p);
-	}
-	else
-	{
-		UTIL_LogPrintf("\"%s<%i><%s><%i>\" %s \"%s\"\n",
-			STRING(pEntity->v.netname),
-			GETPLAYERUSERID(pEntity),
-			GETPLAYERAUTHID(pEntity),
-			GETPLAYERUSERID(pEntity),
-			temp,
-			p);
-	}
+	UTIL_LogPlayerEvent(pEntity, "%s \"%s\"\n", temp, p);
 }
 
 #define ABORT_IF_CHEATS_DISABLED(cheatName) \
