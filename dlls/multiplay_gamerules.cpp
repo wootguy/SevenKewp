@@ -343,6 +343,9 @@ BOOL CHalfLifeMultiplay :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerI
 //=========================================================
 BOOL CHalfLifeMultiplay :: ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] )
 {
+	pEntity->v.netname = MAKE_STRING(pszName);
+	UTIL_LogPlayerEvent(pEntity, "connected from address %s\n",	pszAddress);
+
 	g_VoiceGameMgr.ClientConnected(pEntity);
 	return TRUE;
 }
@@ -363,23 +366,13 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 	//UTIL_ClientPrintAll(print_chat, UTIL_VarArgs( "%s has joined the game\n",
 	//	( pl->pev->netname && STRING(pl->pev->netname)[0] != 0 ) ? STRING(pl->pev->netname) : "unconnected" ) );
 
-	// team match?
-	if ( g_teamplay )
-	{
-		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" entered the game\n",  
-			STRING( pl->pev->netname ), 
-			GETPLAYERUSERID( pl->edict() ),
-			GETPLAYERAUTHID( pl->edict() ),
-			g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pl->edict() ), "model" ) );
-	}
-	else
-	{
-		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" entered the game\n",  
-			STRING( pl->pev->netname ), 
-			GETPLAYERUSERID( pl->edict() ),
-			GETPLAYERAUTHID( pl->edict() ),
-			GETPLAYERUSERID( pl->edict() ) );
-	}
+	char* keybuffer = g_engfuncs.pfnGetInfoKeyBuffer(pl->edict());
+
+	UTIL_LogPlayerEvent(pl->edict(), "entered the game as %s(%d,%d)\n",
+		g_engfuncs.pfnInfoKeyValue(keybuffer, "model"),
+		atoi(g_engfuncs.pfnInfoKeyValue(keybuffer, "topcolor")),
+		atoi(g_engfuncs.pfnInfoKeyValue(keybuffer, "bottomcolor"))
+	);
 
 	UpdateGameMode( pl );
 
@@ -432,23 +425,9 @@ void CHalfLifeMultiplay :: ClientDisconnected( edict_t *pClient )
 		{
 			FireTargets( "game_playerleave", pPlayer, pPlayer, USE_TOGGLE, 0 );
 
-			// team match?
-			if ( g_teamplay )
-			{
-				UTIL_LogPrintf( "\"%s<%i><%s><%s>\" disconnected\n",  
-					STRING( pPlayer->pev->netname ), 
-					GETPLAYERUSERID( pPlayer->edict() ),
-					GETPLAYERAUTHID( pPlayer->edict() ),
-					g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model" ) );
-			}
-			else
-			{
-				UTIL_LogPrintf( "\"%s<%i><%s><%i>\" disconnected\n",  
-					STRING( pPlayer->pev->netname ), 
-					GETPLAYERUSERID( pPlayer->edict() ),
-					GETPLAYERAUTHID( pPlayer->edict() ),
-					GETPLAYERUSERID( pPlayer->edict() ) );
-			}
+			UTIL_LogPlayerEvent(pClient, "disconnected\n");
+
+			pPlayer->pev->frags = 0;
 
 			pPlayer->RemoveAllItems( TRUE );// destroy all of the players weapons and items
 		}
@@ -704,35 +683,20 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	if ( pVictim->pev == pKiller )  
 	{
 		// killed self
-		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" committed suicide with \"%s\"\n",  
-			STRING( pVictim->pev->netname ), 
-			GETPLAYERUSERID( pVictim->edict() ),
-			GETPLAYERAUTHID( pVictim->edict() ),
-			GETPLAYERUSERID( pVictim->edict() ),
-			killer_weapon_name );		
+		UTIL_LogPlayerEvent(pVictim->edict(), "committed suicide with \"%s\"\n", killer_weapon_name );		
 	}
 	else if ( pKiller->flags & FL_CLIENT )
 	{
 		// killed by other player
-		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" killed \"%s<%i><%s><%i>\" with \"%s\"\n",  
+		UTIL_LogPlayerEvent(pVictim->edict(), "killed by \\%s\\ with \"%s\"\n",
 			STRING( pKiller->netname ),
-			GETPLAYERUSERID( ENT(pKiller) ),
 			GETPLAYERAUTHID( ENT(pKiller) ),
-			GETPLAYERUSERID( ENT(pKiller) ),
-			STRING( pVictim->pev->netname ),
-			GETPLAYERUSERID( pVictim->edict() ),
-			GETPLAYERAUTHID( pVictim->edict() ),
-			GETPLAYERUSERID( pVictim->edict() ),
 			killer_weapon_name );
 	}
 	else
 	{ 
 		// killed by a monster or world
-		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" killed by \"%s\"\n",
-			STRING( pVictim->pev->netname ), 
-			GETPLAYERUSERID( pVictim->edict() ), 
-			GETPLAYERAUTHID( pVictim->edict() ),
-			GETPLAYERUSERID( pVictim->edict() ),
+		UTIL_LogPlayerEvent(pVictim->edict(), "killed by \"%s\"\n",
 			Killer ? Killer->DisplayName() : STRING(pKiller->classname));
 	}
 

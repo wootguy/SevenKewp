@@ -1948,7 +1948,7 @@ void UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::str
 // UTIL_LogPrintf - Prints a logged message to console.
 // Preceded by LOG: ( timestamp ) < message >
 //=========================================================
-void UTIL_LogPrintf( const char *fmt, ... )
+void UTIL_LogPlayerEvent(edict_t* plr, const char* fmt, ...)
 {
 	va_list			argptr;
 	static char		string[1024];
@@ -1958,7 +1958,11 @@ void UTIL_LogPrintf( const char *fmt, ... )
 	va_end   ( argptr );
 
 	// Print to server console
-	ALERT( at_logged, "%s", string );
+	ALERT( at_logged, "\\%s\\%s\\%d\\ %s",
+		STRING(plr->v.netname),
+		GETPLAYERAUTHID(plr),
+		(int)plr->v.frags,
+		string );
 }
 
 //=========================================================
