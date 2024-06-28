@@ -207,6 +207,7 @@ void CZombie :: AttackSound( void )
 
 	// Play a random attack sound
 	EMIT_SOUND_DYN ( ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_NORM, 0, pitch );
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 }
 
 void CZombie::StartFollowingSound() {

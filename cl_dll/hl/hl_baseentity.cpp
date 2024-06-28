@@ -172,6 +172,7 @@ void CBaseMonster :: MonsterInitThink ( void ) { }
 void CBaseMonster :: StartMonster ( void ) { }
 void CBaseMonster :: MovementComplete( void ) { }
 int CBaseMonster::TaskIsRunning( void ) { return 0; }
+void CBaseMonster::ScheduleChange( void ) { }
 void CBaseMonster::SetClassify( int ) { }
 int CBaseEntity::IRelationship ( CBaseEntity *pTarget ) { return 0; }
 BOOL CBaseMonster :: FindCover ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist ) { return FALSE; }

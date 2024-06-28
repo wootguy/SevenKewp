@@ -282,6 +282,8 @@ void COFShockRoach :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			pev->velocity = vecJumpDir;
 			m_flNextAttack = gpGlobals->time + 2;
+
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, QUIET_GUN_VOLUME, 0.3);
 		}
 		break;
 

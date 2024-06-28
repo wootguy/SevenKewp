@@ -133,6 +133,7 @@ void CSpore::IgniteThink()
 		m_hSprite = nullptr;
 	}
 
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 	EMIT_SOUND(edict(), CHAN_WEAPON, "weapons/splauncher_impact.wav", VOL_NORM, ATTN_NORM);
 
 	const auto vecDir = pev->velocity.Normalize();

@@ -224,6 +224,7 @@ void CChumtoad::StartTask(Task_t* pTask)
 	switch (pTask->iTask)
 	{
 	case TASK_START_CLOUD:
+		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, TOXIC_SOUND, 1.0, ATTN_NORM, 0, 100);
 		EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, TOXIC_SOUND2, 1.0, ATTN_NORM, 0, 100);
 		smokeColor = RANDOM_LONG(60, 100);

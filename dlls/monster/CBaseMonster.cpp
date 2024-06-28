@@ -17,7 +17,7 @@
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
-//#define DEBUG_MONSTER "monster_gonome" // uncomment to enable verbose logging
+//#define DEBUG_MONSTER "monster_male_assassin" // uncomment to enable verbose logging
 
 std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
 std::set<std::string> g_shuffledMonsterSounds;
@@ -4718,13 +4718,23 @@ CBaseEntity* CBaseMonster::CheckTraceHullAttack(float flDist, int iDamage, int i
 {
 	TraceResult tr;
 
-	if (IsPlayer())
-		UTIL_MakeVectors(pev->angles);
-	else
-		UTIL_MakeAimVectors(pev->angles);
-
 	Vector vecStart = pev->origin;
 	vecStart.z += pev->size.z * 0.5;
+
+	if (IsPlayer())
+		UTIL_MakeVectors(pev->angles);
+	else {
+		Vector aimAngles = pev->angles;
+
+		if (m_hEnemy) {
+			Vector targetOri = m_hEnemy->BodyTarget(pev->origin);
+			Vector aimDir = targetOri - vecStart;
+			aimAngles.x = UTIL_VecToAngles(aimDir).x;
+		}
+
+		UTIL_MakeAimVectors(aimAngles);
+	}
+
 	Vector vecEnd = vecStart + (gpGlobals->v_forward * flDist);
 
 	UTIL_TraceHull(vecStart, vecEnd, dont_ignore_monsters, head_hull, ENT(pev), &tr);
@@ -5024,12 +5034,12 @@ MONSTERSTATE CBaseMonster::GetIdealState(void)
 		else if (iConditions & bits_COND_LIGHT_DAMAGE)
 		{
 			MakeIdealYaw(m_vecEnemyLKP);
-			m_IdealMonsterState = MONSTERSTATE_ALERT;
+			m_IdealMonsterState = MONSTERSTATE_COMBAT;
 		}
 		else if (iConditions & bits_COND_HEAVY_DAMAGE)
 		{
 			MakeIdealYaw(m_vecEnemyLKP);
-			m_IdealMonsterState = MONSTERSTATE_ALERT;
+			m_IdealMonsterState = MONSTERSTATE_COMBAT;
 		}
 		else if (iConditions & bits_COND_HEAR_SOUND)
 		{
@@ -5061,6 +5071,16 @@ MONSTERSTATE CBaseMonster::GetIdealState(void)
 		if (iConditions & (bits_COND_NEW_ENEMY | bits_COND_SEE_ENEMY))
 		{
 			// see an enemy we MUST attack
+			m_IdealMonsterState = MONSTERSTATE_COMBAT;
+		}
+		else if (iConditions & bits_COND_LIGHT_DAMAGE)
+		{
+			MakeIdealYaw(m_vecEnemyLKP);
+			m_IdealMonsterState = MONSTERSTATE_COMBAT;
+		}
+		else if (iConditions & bits_COND_HEAVY_DAMAGE)
+		{
+			MakeIdealYaw(m_vecEnemyLKP);
 			m_IdealMonsterState = MONSTERSTATE_COMBAT;
 		}
 		else if (iConditions & bits_COND_HEAR_SOUND)
@@ -5370,6 +5390,7 @@ void CBaseMonster::MaintainSchedule(void)
 
 			// Call GetIdealState if we're not dead and one or more of the following...
 			// - in COMBAT state with no enemy (it died?)
+			// - not in COMBAT state and taking damage
 			// - conditions bits (excluding SCHEDULE_DONE) indicate interruption,
 			// - schedule is done but schedule indicates it wants GetIdealState called
 			//   after successful completion (by setting bits_COND_SCHEDULE_DONE in iInterruptMask)
@@ -5379,7 +5400,8 @@ void CBaseMonster::MaintainSchedule(void)
 			{
 				if ((m_afConditions && !HasConditions(bits_COND_SCHEDULE_DONE)) ||
 					(m_pSchedule && (m_pSchedule->iInterruptMask & bits_COND_SCHEDULE_DONE)) ||
-					((m_MonsterState == MONSTERSTATE_COMBAT) && (m_hEnemy == NULL)))
+					((m_MonsterState == MONSTERSTATE_COMBAT) && (m_hEnemy == NULL)) ||
+					((m_MonsterState != MONSTERSTATE_COMBAT) && HasConditions(bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE)))
 				{
 					GetIdealState();
 				}
@@ -6947,6 +6969,36 @@ Schedule_t* CBaseMonster::GetSchedule(void)
 	}
 
 	return &slError[0];
+}
+
+void CBaseMonster::ScheduleChange(void)
+{
+#ifdef DEBUG_MONSTER
+	// debugging schedules
+	if (FClassnameIs(pev, DEBUG_MONSTER)) {
+		const char* schedName = m_pSchedule != NULL ? m_pSchedule->pName : "NULL";
+		println("\nSchedule changing from <%s> because:", schedName);
+
+		if (m_MonsterState != m_IdealMonsterState) {
+			println("- monster state changing from %d to %d", m_MonsterState, m_IdealMonsterState);
+		}
+		if (!FScheduleValid()) {
+			if (m_pSchedule == NULL) {
+				println("- Schedule is NULL");
+				return;
+			}
+			if (HasConditions(bits_COND_SCHEDULE_DONE)) {
+				println("- Schedule is finished");
+			}
+			if (HasConditions(bits_COND_TASK_FAILED)) {
+				println("- Task failed");
+			}
+			if (HasConditions(m_pSchedule->iInterruptMask)) {
+				println("- Interrupted by %d", m_pSchedule->iInterruptMask);
+			}
+		}
+	}
+#endif
 }
 
 Schedule_t* CBaseMonster::ScheduleFromName(const char* pName)

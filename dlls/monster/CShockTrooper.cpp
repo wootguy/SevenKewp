@@ -886,6 +886,7 @@ void CShockTrooper::Shoot()
 	shootAngles.x = -shootAngles.x;
 
 	auto pBeam = CShockBeam::CreateShockBeam(vecShootOrigin, shootAngles, this);
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 
 	pBeam->pev->velocity = vecShootDir * 2000;
 	pBeam->pev->speed = 2000;

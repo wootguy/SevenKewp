@@ -41,8 +41,20 @@ Schedule_t	slFail[] =
 	{
 		tlFail,
 		ARRAYSIZE ( tlFail ),
-		bits_COND_CAN_ATTACK,
-		0,
+		bits_COND_CAN_ATTACK |
+
+		bits_COND_NEW_ENEMY |
+		bits_COND_SEE_ENEMY |
+		bits_COND_SEE_FEAR |
+		bits_COND_LIGHT_DAMAGE |
+		bits_COND_HEAVY_DAMAGE |
+		bits_COND_PROVOKED |
+		bits_COND_HEAR_SOUND,
+
+		bits_SOUND_COMBAT |// sound flags
+		bits_SOUND_WORLD |
+		bits_SOUND_PLAYER |
+		bits_SOUND_DANGER,
 		"Fail"
 	},
 };

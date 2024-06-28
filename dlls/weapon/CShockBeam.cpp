@@ -175,6 +175,7 @@ void CShockBeam::WaterExplodeThink()
 	Explode();
 
 	::RadiusDamage( pev->origin, pev, pOwner, 100.0, 150.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, QUIET_GUN_VOLUME, 0.1);
 
 	UTIL_Remove( this );
 }
@@ -291,6 +292,7 @@ void CShockBeam::Explode()
 	pev->owner = nullptr;
 
 	EMIT_SOUND( edict(), CHAN_WEAPON, "weapons/shock_impact.wav", RANDOM_FLOAT( 0.8, 0.9 ), ATTN_NORM );
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, QUIET_GUN_VOLUME, 0.1);
 }
 
 CShockBeam* CShockBeam::CreateShockBeam( const Vector& vecOrigin, const Vector& vecAngles, CBaseEntity* pOwner )

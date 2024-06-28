@@ -461,6 +461,8 @@ void CBigMomma :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case BIG_AE_MELEE_ATTACKBL:
 		case BIG_AE_MELEE_ATTACK1:
 		{
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+
 			Vector forward, right;
 
 			UTIL_MakeVectorsPrivate( pev->angles, forward, right, NULL );

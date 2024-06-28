@@ -451,6 +451,7 @@ void CHoundeye :: IdleSound ( void )
 void CHoundeye :: WarmUpSound ( void )
 {
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1, ATTN_NORM);
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 }
 
 //=========================================================

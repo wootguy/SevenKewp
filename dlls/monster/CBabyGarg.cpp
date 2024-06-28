@@ -208,6 +208,7 @@ void CBabyGarg::PainSound() {
 }
 
 void CBabyGarg::AttackSound() {
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), 1.0, ATTN_GARG, 0, BABYGARG_PITCH);
 }
 

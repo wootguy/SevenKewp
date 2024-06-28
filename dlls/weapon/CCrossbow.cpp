@@ -218,6 +218,7 @@ void CCrossbowBolt::ExplodeThink( void )
 	pev->owner = NULL; // can't traceline attack owner if this is set
 
 	::RadiusDamage( pev->origin, pev, pevOwner, pev->dmg, 128, CLASS_NONE, DMG_BLAST | DMG_ALWAYSGIB );
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, SMALL_EXPLOSION_VOLUME, 0.3);
 
 	UTIL_Remove(this);
 }

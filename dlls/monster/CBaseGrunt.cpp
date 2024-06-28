@@ -596,12 +596,13 @@ void CBaseGrunt::Shoot(bool firstRound)
 	}	
 
 	Vector vecShootOrigin = GetGunPosition();
-	Vector vecShootDir = ShootAtEnemy(vecShootOrigin);
 
 	if (shellEjectAttachment >= 0) {
 		Vector vecAngles;
 		GetAttachment(shellEjectAttachment, vecShootOrigin, vecAngles);
 	}
+
+	Vector vecShootDir = ShootAtEnemy(vecShootOrigin);
 
 	if (HasEquipment(MEQUIP_MP5)) {
 		ShootMp5(vecShootOrigin, vecShootDir);
@@ -1203,7 +1204,7 @@ Task_t	tlGruntCombatFail[] =
 {
 	{ TASK_STOP_MOVING,			0				},
 	{ TASK_SET_ACTIVITY,		(float)ACT_IDLE },
-	{ TASK_WAIT_FACE_ENEMY,		(float)2		},
+	{ TASK_WAIT_FACE_ENEMY,		(float)2.0f		},
 	{ TASK_WAIT_PVS,			(float)0		},
 };
 
@@ -1213,8 +1214,18 @@ Schedule_t	slGruntCombatFail[] =
 		tlGruntCombatFail,
 		ARRAYSIZE ( tlGruntCombatFail ),
 		bits_COND_CAN_RANGE_ATTACK1	|
-		bits_COND_CAN_RANGE_ATTACK2,
-		0,
+		bits_COND_CAN_RANGE_ATTACK2 |
+		bits_COND_NEW_ENEMY |
+		bits_COND_SEE_ENEMY |
+		bits_COND_SEE_FEAR |
+		bits_COND_LIGHT_DAMAGE |
+		bits_COND_HEAVY_DAMAGE |
+		bits_COND_PROVOKED |
+		bits_COND_HEAR_SOUND,
+
+		bits_SOUND_COMBAT |// sound flags
+		bits_SOUND_PLAYER |
+		bits_SOUND_DANGER,
 		"Grunt Combat Fail"
 	},
 };
@@ -1417,7 +1428,7 @@ Task_t	tlGruntWaitInCover[] =
 {
 	{ TASK_STOP_MOVING,				(float)0					},
 	{ TASK_SET_ACTIVITY,			(float)ACT_IDLE				},
-	{ TASK_WAIT_FACE_ENEMY,			(float)1					},
+	{ TASK_WAIT_FACE_ENEMY,			(float)0.2f					},
 };
 
 Schedule_t	slGruntWaitInCover[] =
@@ -2078,18 +2089,23 @@ Schedule_t* CBaseGrunt::GetLightDamageSchedule(void) {
 	// 10% chance of flinch.
 	int iPercent = RANDOM_LONG(0, 99);
 
-	if (iPercent <= 90 && m_hEnemy != NULL)
+	if (iPercent <= 90)
 	{
-		// only try to take cover if we actually have an enemy!
+		if (m_hEnemy != NULL) {
+			// only try to take cover if we actually have an enemy!
 
-		//!!!KELLY - this grunt was hit and is going to run to cover.
-		if (FOkToSpeak()) // && RANDOM_LONG(0,1))
-		{
-			//SENTENCEG_PlayRndSz( ENT(pev), "HG_COVER", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-			m_iSentence = HGRUNT_SENT_COVER;
-			//JustSpoke();
+			//!!!KELLY - this grunt was hit and is going to run to cover.
+			if (FOkToSpeak()) // && RANDOM_LONG(0,1))
+			{
+				//SENTENCEG_PlayRndSz( ENT(pev), "HG_COVER", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+				m_iSentence = HGRUNT_SENT_COVER;
+				//JustSpoke();
+			}
+			return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
 		}
-		return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
+		else {
+			return GetScheduleOfType(SCHED_COMBAT_FACE);
+		}
 	}
 	else
 	{
@@ -2222,7 +2238,7 @@ Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 		}
 
 		// damaged just a little (melee grunts don't care)
-		else if (HasConditions(bits_COND_LIGHT_DAMAGE) && HasEquipment(ANY_RANGED_WEAPON))
+		else if (HasConditions(bits_COND_LIGHT_DAMAGE) && (HasEquipment(ANY_RANGED_WEAPON) || !m_hEnemy))
 		{
 			return GetLightDamageSchedule();
 		}

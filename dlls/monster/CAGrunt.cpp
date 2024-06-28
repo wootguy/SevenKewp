@@ -395,6 +395,8 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			UTIL_MakeVectors ( pHornet->pev->angles );
 			pHornet->pev->velocity = gpGlobals->v_forward * 300;
 			
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+
 			if (gSkillData.sk_agrunt_hornet_mode == 1 && HasConditions(bits_COND_SEE_ENEMY) && m_hEnemy) {
 				// shoot fast hornets in a straight line instead of slowly tracking targets
 				Vector predictedTargetOri = m_hEnemy->Center();
@@ -408,6 +410,15 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				}
 
 				Vector direction = (predictedTargetOri - pHornet->pev->origin).Normalize();
+				
+				UTIL_MakeVectors(pev->angles);
+
+				Vector vecSpread = VECTOR_CONE_4DEGREES;
+				float x, y;
+				GetCircularGaussianSpread(x, y);
+				direction = direction + x * vecSpread.x * gpGlobals->v_right +
+							 y * vecSpread.y * gpGlobals->v_up;
+
 				pHornet->pev->angles = UTIL_VecToAngles(direction);
 				pHornet->pev->velocity = direction * hornetSpeed;
 				pHornet->SetThink(&CHornet::StartDart);
@@ -452,6 +463,8 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			CBaseEntity *pHurt = CheckTraceHullAttack( AGRUNT_MELEE_DIST, gSkillData.sk_agrunt_dmg_punch, DMG_CLUB );
 			
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+
 			if ( pHurt )
 			{
 				pHurt->pev->punchangle.y = -25;
@@ -481,6 +494,8 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	case AGRUNT_AE_RIGHT_PUNCH:
 		{
 			CBaseEntity *pHurt = CheckTraceHullAttack( AGRUNT_MELEE_DIST, gSkillData.sk_agrunt_dmg_punch, DMG_CLUB );
+
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 
 			if ( pHurt )
 			{
