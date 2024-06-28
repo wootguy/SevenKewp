@@ -294,38 +294,11 @@ old colors
 	}
 }
 
-bool CHornet::CheckMonsterCollision() {
-	// SOLID_TRIGGER entities don't touch stationary monsters
-	// so a trace is needed to check for collisions
-
-	TraceResult tr;
-	pev->solid = SOLID_BBOX; // needed for collisions with the world
-	UTIL_SetOrigin(pev, pev->origin);
-	TRACE_MONSTER_HULL(edict(), m_lastPos, pev->origin, 0, pev->owner, &tr);
-	pev->solid = SOLID_TRIGGER;
-	UTIL_SetOrigin(pev, pev->origin); // needed to prevent "trigger in clipping list" fatal error
-
-	if (!tr.fInOpen) {
-		DispatchTouch(edict(), tr.pHit);
-
-		if (!pev->modelindex) {
-			return true; // was killed
-		}
-	}
-
-	m_lastPos = pev->origin;
-	return false;
-}
-
 //=========================================================
 // Hornet is flying, gently tracking target
 //=========================================================
 void CHornet :: TrackTarget ( void )
 {
-	if (CheckMonsterCollision()) {
-		return;
-	}
-
 	pev->nextthink = gpGlobals->time + 0.01f;
 
 	if (gpGlobals->time < m_flNextTrack || gpGlobals->time < m_flStartTrack) {
@@ -439,10 +412,6 @@ void CHornet :: TrackTarget ( void )
 }
 
 void CHornet::DartThink(void) {
-	if (CheckMonsterCollision()) {
-		return;
-	}
-
 	if (gpGlobals->time > m_flStopAttack) {
 		SetThink(&CHornet::SUB_Remove);
 	}
@@ -455,13 +424,12 @@ void CHornet::DartThink(void) {
 //=========================================================
 void CHornet :: TrackTouch ( CBaseEntity *pOther )
 {
-	if ( pOther->edict() == pev->owner || pOther->pev->modelindex == pev->modelindex )
+	if ( pOther->edict() == pev->owner || pOther->pev->solid == SOLID_TRIGGER)
 	{// bumped into the guy that shot it.
-		pev->solid = SOLID_NOT;
 		return;
 	}
 
-	if ( IRelationship( pOther ) <= R_NO )
+	if ( IRelationship( pOther ) <= R_NO)
 	{
 		// hit something we don't want to hurt, so turn around.
 
@@ -481,6 +449,11 @@ void CHornet :: TrackTouch ( CBaseEntity *pOther )
 
 void CHornet::DartTouch( CBaseEntity *pOther )
 {
+	if (pOther->edict() == pev->owner || pOther->pev->solid == SOLID_TRIGGER)
+	{// bumped into the guy that shot it.
+		return;
+	}
+
 	DieTouch( pOther );
 }
 

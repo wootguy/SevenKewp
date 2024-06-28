@@ -637,11 +637,14 @@ void CBaseDoor::Blocked(CBaseEntity* pOther)
 	CBaseDoor* pDoor = NULL;
 
 	// Hurt the blocker a little.
-	if (pev->dmg)
+	if (pev->dmg) {
 		pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
+	}
+
 	if (pOther->IsMonster() && !pOther->IsAlive()) {
 		// don't let corpses block doors
 		pOther->Killed(pev, GIB_ALWAYS);
+		return; // don't bounce back because the path is clear now
 	}
 
 	// if a door has a negative wait, it would never come back if blocked,
