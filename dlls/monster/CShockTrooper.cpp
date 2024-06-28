@@ -296,12 +296,14 @@ void CShockTrooper::SpeakSentence()
 //=========================================================
 int CShockTrooper::IRelationship(CBaseEntity* pTarget)
 {
-	if (FClassnameIs(pTarget->pev, "monster_alien_grunt") || (FClassnameIs(pTarget->pev, "monster_gargantua")))
+	int r = CTalkSquadMonster::IRelationship(pTarget);
+
+	if ((r >= R_DL) && (FClassnameIs(pTarget->pev, "monster_alien_grunt") || (FClassnameIs(pTarget->pev, "monster_gargantua"))))
 	{
 		return R_NM;
 	}
-
-	return CTalkSquadMonster::IRelationship(pTarget);
+	else
+		return r;
 }
 
 //=========================================================

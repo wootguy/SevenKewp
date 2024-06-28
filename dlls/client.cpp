@@ -368,6 +368,12 @@ void ServerDeactivate( void )
 	memset(&g_nerfStats, 0, sizeof(NerfStats));
 	memset(&g_textureStats, 0, sizeof(TextureTypeStats));
 
+	// in case the next map doesn't configure a sky or light_environment
+	CVAR_SET_STRING("sv_skyname", "");
+	CVAR_SET_STRING("sv_skycolor_r", "0");
+	CVAR_SET_STRING("sv_skycolor_g", "0");
+	CVAR_SET_STRING("sv_skycolor_b", "0");
+
 	// Peform any shutdown operations here...
 	//
 }

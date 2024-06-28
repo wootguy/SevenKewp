@@ -6206,6 +6206,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 		{
 			// no way to get there =(
 			ALERT(at_aiconsole, "GetPathToEnemy failed!!\n");
+			Remember(bits_MEMORY_MOVE_FAILED);
 			TaskFail();
 		}
 		break;

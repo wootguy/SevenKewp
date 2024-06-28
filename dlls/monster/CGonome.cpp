@@ -70,6 +70,8 @@ public:
 	void StopFollowingSound();
 	void CantFollowSound();
 
+	CUSTOM_SCHEDULES;
+
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
 	float m_nextBloodSound; // next time the grabbing blood sound should be played (should really be an animation event)
@@ -146,6 +148,39 @@ const char* CGonome::pEventSounds[] =
 	"bullchicken/bc_spithit2.wav",
 };
 
+// Chase enemy schedule
+Task_t tlGonomeChaseEnemy1[] =
+{
+	{ TASK_SET_FAIL_SCHEDULE,	(float)SCHED_RANGE_ATTACK1	},
+	{ TASK_GET_PATH_TO_ENEMY,	(float)0					},
+	{ TASK_RUN_PATH,			(float)0					},
+	{ TASK_WAIT_FOR_MOVEMENT,	(float)0					},
+};
+
+Schedule_t slGonomeChaseEnemy[] =
+{
+	{
+		tlGonomeChaseEnemy1,
+		ARRAYSIZE(tlGonomeChaseEnemy1),
+		bits_COND_NEW_ENEMY |
+		bits_COND_ENEMY_DEAD |
+		bits_COND_CAN_MELEE_ATTACK1 |
+		bits_COND_CAN_MELEE_ATTACK2 |
+		bits_COND_TASK_FAILED |
+		bits_COND_HEAR_SOUND,
+
+		bits_SOUND_DANGER |
+		bits_SOUND_MEAT,
+		"Gonome Chase Enemy"
+	},
+};
+
+DEFINE_CUSTOM_SCHEDULES(CGonome)
+{
+	slGonomeChaseEnemy
+};
+
+IMPLEMENT_CUSTOM_SCHEDULES(CGonome, CBaseMonster);
 
 int	CGonome:: Classify ( void )
 {
@@ -326,7 +361,7 @@ BOOL CGonome::CheckMeleeAttack1(float flDot, float flDist)
 
 BOOL CGonome::CheckRangeAttack1(float flDot, float flDist)
 {
-	if (flDist > GONOME_MELEE_CHASE_DISTANCE && m_rangeAttackCooldown < gpGlobals->time)
+	if ((flDist > GONOME_MELEE_CHASE_DISTANCE || HasMemory(bits_MEMORY_MOVE_FAILED)) && m_rangeAttackCooldown < gpGlobals->time)
 	{
 		return TRUE;
 	}
@@ -346,6 +381,10 @@ void CGonome::Killed(entvars_t* pevAttacker, int iGib)
 
 Schedule_t* CGonome::GetScheduleOfType(int Type) {
 	m_nextBloodSound = 0;
+
+	if (Type == SCHED_CHASE_ENEMY) {
+		return &slGonomeChaseEnemy[0];
+	}
 
 	CSprite* handBlood = (CSprite*)m_hHandBlood.GetEntity();
 	if (handBlood)
