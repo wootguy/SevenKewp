@@ -826,7 +826,7 @@ Schedule_t	slPitdroneRangeAttack1[] =
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_NO_AMMO_LOADED,
 		0,
-		"Squid Range Attack1"
+		"Pitdrone Range Attack1"
 	},
 };
 
@@ -855,7 +855,7 @@ Schedule_t slPitdroneChaseEnemy[] =
 		
 		bits_SOUND_DANGER			|
 		bits_SOUND_MEAT,
-		"Squid Chase Enemy"
+		"Pitdrone Chase Enemy"
 	},
 };
 
@@ -874,7 +874,7 @@ Schedule_t slPitdroneHurtHop[] =
 		ARRAYSIZE ( tlPitdroneHurtHop ),
 		0,
 		0,
-		"SquidHurtHop"
+		"PitdroneHurtHop"
 	}
 };
 
@@ -910,7 +910,7 @@ Schedule_t slPitdroneEat[] =
 		// here or the monster won't detect these sounds at ALL while running this schedule.
 		bits_SOUND_MEAT			|
 		bits_SOUND_CARCASS,
-		"SquidEat"
+		"PitdroneEat"
 	}
 };
 
@@ -948,7 +948,7 @@ Schedule_t slPitdroneSniffAndEat[] =
 		// here or the monster won't detect these sounds at ALL while running this schedule.
 		bits_SOUND_MEAT			|
 		bits_SOUND_CARCASS,
-		"SquidSniffAndEat"
+		"PitdroneSniffAndEat"
 	}
 };
 
@@ -982,7 +982,7 @@ Schedule_t slPitdroneWallow[] =
 		// here or the monster won't detect these sounds at ALL while running this schedule.
 		bits_SOUND_GARBAGE,
 
-		"SquidWallow"
+		"PitdroneWallow"
 	}
 };
 
@@ -1122,9 +1122,9 @@ Schedule_t *CPitdrone :: GetSchedule( void )
 					return GetScheduleOfType( SCHED_PITDRONE_COVER_AND_RELOAD );
 			}
 
-			if ( HasConditions( bits_COND_CAN_RANGE_ATTACK1 ) )
+			if ( HasConditions( bits_COND_CAN_RANGE_ATTACK1 ) && !HasConditions(bits_COND_NO_AMMO_LOADED))
 			{
-				return GetScheduleOfType ( SCHED_RANGE_ATTACK1 );
+				return GetScheduleOfType(SCHED_RANGE_ATTACK1);
 			}
 
 			if ( HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )
@@ -1156,7 +1156,12 @@ Schedule_t* CPitdrone :: GetScheduleOfType ( int Type )
 	switch	( Type )
 	{
 	case SCHED_RANGE_ATTACK1:
-		return &slPitdroneRangeAttack1[ 0 ];
+		if (!HasConditions(bits_COND_NO_AMMO_LOADED)) {
+			return &slPitdroneRangeAttack1[0];
+		}
+		else {
+			return &slPitdroneHideReload[0];
+		}
 		break;
 	case SCHED_PITDRONE_HURTHOP:
 		return &slPitdroneHurtHop[ 0 ];
@@ -1205,7 +1210,7 @@ void CPitdrone :: StartTask ( Task_t *pTask )
 		}
 	case TASK_GET_PATH_TO_ENEMY:
 		{
-			if ( BuildRoute ( m_hEnemy->pev->origin, bits_MF_TO_ENEMY, m_hEnemy, true) )
+			if (m_hEnemy && BuildRoute ( m_hEnemy->pev->origin, bits_MF_TO_ENEMY, m_hEnemy, true) )
 			{
 				m_iTaskStatus = TASKSTATUS_COMPLETE;
 			}

@@ -127,6 +127,7 @@ void execMapCfg() {
 		"sv_wateraccelerate",
 		"sv_wateramp",
 		"sv_waterfriction",
+		"sv_ledgesize",
 		"mp_decals",
 		"mp_falldamage",
 		"mp_flashlight",

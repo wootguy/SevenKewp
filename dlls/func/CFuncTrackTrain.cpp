@@ -187,7 +187,7 @@ void CFuncTrackTrain::StopSound(void)
 		/*
 		STOP_SOUND(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noise));
 		*/
-		EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "plats/ttrain_brake1.wav", m_flVolume, ATTN_NORM, 0, 100);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "plats/ttrain_brake1.wav", m_flVolume, ATTN_NORM, 0, 100);
 	}
 
 	m_soundPlaying = 0;
@@ -210,7 +210,7 @@ void CFuncTrackTrain::UpdateSound(void)
 	{
 		// play startup sound for train
 		EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "plats/ttrain_start1.wav", m_flVolume, ATTN_NORM, 0, 100);
-		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, (char*)STRING(pev->noise), m_flVolume, ATTN_NORM, 0, (int)flpitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noise), m_flVolume, ATTN_NORM, 0, (int)flpitch);
 		m_soundPlaying = 1;
 	}
 	else

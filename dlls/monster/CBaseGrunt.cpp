@@ -188,14 +188,8 @@ void CBaseGrunt :: PrescheduleThink ( void )
 //=========================================================
 BOOL CBaseGrunt :: FCanCheckAttacks ( void )
 {
-	if ( !HasConditions( bits_COND_ENEMY_TOOFAR ) )
-	{
-		return TRUE;
-	}
-	else
-	{
-		return FALSE;
-	}
+	// if you can see the enemy but can't move into optimal range, try attacking it anyway	
+	return !HasConditions(bits_COND_ENEMY_TOOFAR) || HasMemory(bits_MEMORY_MOVE_FAILED);
 }
 
 
@@ -1204,6 +1198,7 @@ Task_t	tlGruntCombatFail[] =
 {
 	{ TASK_STOP_MOVING,			0				},
 	{ TASK_SET_ACTIVITY,		(float)ACT_IDLE },
+	{ TASK_REMEMBER,			(float)bits_MEMORY_MOVE_FAILED},
 	{ TASK_WAIT_FACE_ENEMY,		(float)2.0f		},
 	{ TASK_WAIT_PVS,			(float)0		},
 };
@@ -2078,8 +2073,16 @@ Schedule_t* CBaseGrunt::GetShootSchedule(void) {
 	}
 	else
 	{
-		// hide!
-		return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
+		
+		if (HasMemory(bits_MEMORY_MOVE_FAILED)) {
+			// tried and failed to take cover, just shoot
+			return GetScheduleOfType(SCHED_RANGE_ATTACK1);
+		}
+		else {
+			// hide!
+			return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
+		}
+		
 	}
 }
 

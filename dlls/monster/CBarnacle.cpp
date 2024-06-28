@@ -297,8 +297,14 @@ void CBarnacle :: BarnacleThink ( void )
 				pTouchEnt->pev->movetype = MOVETYPE_FLY;
 				pTouchEnt->pev->velocity = g_vecZero;
 				pTouchEnt->pev->basevelocity = g_vecZero;
-				pTouchEnt->pev->origin.x = pev->origin.x;
-				pTouchEnt->pev->origin.y = pev->origin.y;
+
+				TraceResult tr;
+				Vector vecStart = pev->origin + Vector(0, 0, 32); // start from a bit higher in case of slope
+				Vector vecEnd(pev->origin.x, pev->origin.y, pTouchEnt->pev->origin.z);
+				TRACE_MONSTER_HULL(pTouchEnt->edict(), vecStart, vecEnd, ignore_monsters, pTouchEnt->edict(), &tr);
+
+				pTouchEnt->pev->origin.x = tr.vecEndPos.x;
+				pTouchEnt->pev->origin.x = tr.vecEndPos.y;
 
 				m_fLiftingPrey = TRUE;// indicate that we should be lifting prey.
 				m_flKillVictimTime = -1;// set this to a bogus time while the victim is lifted.
