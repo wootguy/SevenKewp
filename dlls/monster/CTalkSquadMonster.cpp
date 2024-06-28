@@ -1314,6 +1314,9 @@ BOOL CTalkSquadMonster::OccupySlot(int iDesiredSlots)
 
 	if (!(iDesiredSlots ^ pSquadLeader->m_afSquadSlots))
 	{
+		if (iDesiredSlots == bits_SLOTS_HGRUNT_ENGAGE) {
+			ALERT(at_aiconsole, "Too many other grunts are engaged! I will do something else... %d\n", entindex());
+		}
 		// none of the desired slots are available. 
 		return FALSE;
 	}
@@ -1336,6 +1339,9 @@ BOOL CTalkSquadMonster::OccupySlot(int iDesiredSlots)
 		}
 	}
 
+	if (iDesiredSlots == bits_SLOTS_HGRUNT_ENGAGE) {
+		ALERT(at_aiconsole, "Too many other grunts are engaged! I will do something else... %d\n", entindex());
+	}
 	return FALSE;
 }
 
@@ -1358,6 +1364,7 @@ void CTalkSquadMonster::VacateSlot()
 void CTalkSquadMonster::ScheduleChange(void)
 {
 	VacateSlot();
+	CBaseMonster::ScheduleChange();
 }
 
 // These functions are still awaiting conversion to CTalkSquadMonster 

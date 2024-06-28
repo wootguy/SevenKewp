@@ -272,6 +272,8 @@ void CHeadCrab :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			if ( iSound != 0 )
 				EMIT_SOUND_DYN( edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, QUIET_GUN_VOLUME, 0.3);
+
 			pev->velocity = vecJumpDir;
 			m_flNextAttack = gpGlobals->time + 2;
 		}

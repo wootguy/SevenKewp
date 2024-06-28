@@ -200,6 +200,7 @@ void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
 		bool isRightSwing = pEvent->event == EVENT_SLASH_RIGHT;
 		float damage = gSkillData.sk_voltigore_dmg_punch;
 		CBaseEntity* pHurt = CheckTraceHullAttack(MELEE_ATTACK1_DISTANCE, damage, DMG_SLASH);
+		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 
 		if (pHurt)
 		{
@@ -242,6 +243,7 @@ void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
 		vecThrowDir.z += RANDOM_FLOAT(-0.01, 0.01);
 
 		CVoltigoreShock::Shoot(pev, handOrigin, vecThrowDir * 1000);
+		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 
 		m_rangeAttackCooldown = gpGlobals->time + RANDOM_FLOAT(4, 6);
 		break;

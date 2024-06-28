@@ -227,6 +227,7 @@ void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 	case EVENT_SLAM:
 		SlamAttack();
+		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 		break;
 	case EVENT_SHOOT:
 		nextBeam = nextBeamBurst = gpGlobals->time;
@@ -249,6 +250,7 @@ void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 		bool isRightSwing = pEvent->event == EVENT_STAFF_SWING;
 		CBaseEntity* pHurt = CheckTraceHullAttack(MELEE_ATTACK_DISTANCE, gSkillData.sk_tor_punch, DMG_SLASH);
+		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 
 		if (pHurt)
 		{
@@ -325,6 +327,7 @@ void CTor::MonsterThink(void) {
 			nextBeam = gpGlobals->time + 0.05;
 			burstShotsFired++;
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, SHOOT_SOUND, 1.0, ATTN_NORM, 0, 100);
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 
 			Vector vecSrc, angles;
 			GetAttachment(0, vecSrc, angles);
