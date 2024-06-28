@@ -55,8 +55,6 @@ public:
 	
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
-	bool CheckMonsterCollision();
-
 	float			m_flStopAttack;
 	float			m_flStartTrack;
 	float			m_flNextTrack;
