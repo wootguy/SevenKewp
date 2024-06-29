@@ -343,8 +343,10 @@ BOOL CHalfLifeMultiplay :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerI
 //=========================================================
 BOOL CHalfLifeMultiplay :: ClientConnected( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] )
 {
+	string_t oldnetname = pEntity->v.netname;
 	pEntity->v.netname = MAKE_STRING(pszName);
 	UTIL_LogPlayerEvent(pEntity, "connected from address %s\n",	pszAddress);
+	pEntity->v.netname = oldnetname;
 
 	g_VoiceGameMgr.ClientConnected(pEntity);
 	return TRUE;
@@ -425,7 +427,10 @@ void CHalfLifeMultiplay :: ClientDisconnected( edict_t *pClient )
 		{
 			FireTargets( "game_playerleave", pPlayer, pPlayer, USE_TOGGLE, 0 );
 
-			UTIL_LogPlayerEvent(pClient, "disconnected\n");
+			if ((int)pClient->v.frags > 0)
+				UTIL_LogPlayerEvent(pClient, "disconnected with %d points\n", (int)pClient->v.frags);
+			else
+				UTIL_LogPlayerEvent(pClient, "disconnected\n");
 
 			pPlayer->pev->frags = 0;
 

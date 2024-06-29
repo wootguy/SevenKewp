@@ -340,6 +340,17 @@ void ServerDeactivate( void )
 		return;
 	}
 
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = (CBasePlayer*)UTIL_PlayerByIndex(i);
+		if (!plr) {
+			continue;
+		}
+
+		UTIL_LogPlayerEvent(plr->edict(), "%d points, %d deaths\n", 
+			(int)plr->pev->frags, plr->m_iDeaths);
+	}
+
+
 	g_serveractive = 0;
 	g_edictsinit = 0;
 
