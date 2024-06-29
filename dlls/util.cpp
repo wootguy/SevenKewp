@@ -1958,10 +1958,9 @@ void UTIL_LogPlayerEvent(edict_t* plr, const char* fmt, ...)
 	va_end   ( argptr );
 
 	// Print to server console
-	ALERT( at_logged, "\\%s\\%s\\%d\\ %s",
-		STRING(plr->v.netname),
+	ALERT( at_logged, "\\%s\\%s\\ %s",
+		plr->v.netname ? STRING(plr->v.netname) : "",
 		GETPLAYERAUTHID(plr),
-		(int)plr->v.frags,
 		string );
 }
 
