@@ -275,6 +275,8 @@ void CMP5::Reload( void )
 
 	if (DefaultReload(MP5_MAX_CLIP, MP5_RELOAD, 1.5)) {
 #ifndef CLIENT_DLL
+		m_pPlayer->SetAnimation(PLAYER_RELOAD, 1.5f);
+			
 		// send reload sound to everyone except the reloader if they're in first-person mode,
 		// because the reloading client will play sounds via model events
 		uint32_t messageTargets = 0xffffffff;

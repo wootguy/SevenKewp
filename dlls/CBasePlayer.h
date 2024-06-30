@@ -71,6 +71,7 @@ typedef enum
 	PLAYER_SUPERJUMP,
 	PLAYER_DIE,
 	PLAYER_ATTACK1,
+	PLAYER_RELOAD,
 } PLAYER_ANIM;
 
 #define MAX_ID_RANGE 4096
@@ -270,7 +271,7 @@ public:
 	void DeathSound ( void );
 
 	int Classify ( void );
-	void SetAnimation( PLAYER_ANIM playerAnim );
+	void SetAnimation( PLAYER_ANIM playerAnim, float duration=0 );
 	void SetWeaponAnimType( const char *szExtention );
 	char m_szAnimExtention[32];
 

@@ -291,6 +291,8 @@ void CSporeLauncher::Reload()
 	if (m_ReloadState == ReloadState::NOT_RELOADING)
 	{
 		SendWeaponAnim(SPLAUNCHER_RELOAD_REACH);
+		m_pPlayer->SetAnimation(PLAYER_RELOAD, 2.0f);
+
 		m_ReloadState = ReloadState::DO_RELOAD_EFFECTS;
 		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.66;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.66;
@@ -305,6 +307,7 @@ void CSporeLauncher::Reload()
 		// was waiting for gun to move to side
 		m_ReloadState = ReloadState::RELOAD_ONE;
 
+		m_pPlayer->SetAnimation(PLAYER_RELOAD, 0.8f);
 		EMIT_SOUND(m_pPlayer->edict(),CHAN_ITEM, "weapons/splauncher_reload.wav", 0.7, ATTN_NORM);
 
 		SendWeaponAnim(SPLAUNCHER_RELOAD);

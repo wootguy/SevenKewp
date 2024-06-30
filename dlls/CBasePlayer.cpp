@@ -952,7 +952,7 @@ Vector CBasePlayer::BodyTarget(const Vector& posSrc) {
 }
 
 // Set the activity based on an event or current state
-void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
+void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 {
 	int animDesired;
 	float speed;
@@ -981,39 +981,38 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		m_IdealActivity = GetDeathActivity( );
 		break;
 
-	case PLAYER_ATTACK1:	
+	case PLAYER_RELOAD:
+	case PLAYER_ATTACK1:
 		switch( m_Activity )
 		{
-		case ACT_HOVER:
-		case ACT_SWIM:
-		case ACT_HOP:
-		case ACT_LEAP:
 		case ACT_DIESIMPLE:
 			m_IdealActivity = m_Activity;
 			break;
 		default:
-			m_IdealActivity = ACT_RANGE_ATTACK1;
+			m_IdealActivity = playerAnim == PLAYER_ATTACK1 ? ACT_RANGE_ATTACK1 : ACT_RELOAD;
 			break;
 		}
 		break;
 	case PLAYER_IDLE:
 	case PLAYER_WALK:
-		if ( !FBitSet( pev->flags, FL_ONGROUND ) && (m_Activity == ACT_HOP || m_Activity == ACT_LEAP) )	// Still jumping
+	{
+		if (pev->waterlevel > 1)
 		{
-			m_IdealActivity = m_Activity;
-		}
-		else if ( pev->waterlevel > 1 )
-		{
-			if ( speed == 0 )
+			if (speed == 0)
 				m_IdealActivity = ACT_HOVER;
 			else
 				m_IdealActivity = ACT_SWIM;
+		}
+		else if (!FBitSet(pev->flags, FL_ONGROUND) && (m_Activity == ACT_HOP || m_Activity == ACT_LEAP))	// Still jumping
+		{
+			m_IdealActivity = m_Activity;
 		}
 		else
 		{
 			m_IdealActivity = ACT_WALK;
 		}
 		break;
+	}
 	}
 
 	switch (m_IdealActivity)
@@ -1024,32 +1023,53 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 	case ACT_HOP:
 	case ACT_DIESIMPLE:
 	default:
-		if ( m_Activity == m_IdealActivity)
+	{
+		if (m_Activity == m_IdealActivity)
 			return;
+
+		bool isFloating = m_IdealActivity == ACT_SWIM || m_IdealActivity == ACT_HOVER;
+		if (isFloating && m_Activity == ACT_RANGE_ATTACK1 && !m_fSequenceFinished) {
+			pev->gaitsequence = LookupActivity(ACT_HOVER);
+			return;
+		}
+
 		m_Activity = m_IdealActivity;
 
-		animDesired = LookupActivity( m_Activity );
+		animDesired = LookupActivity(m_Activity);
 		// Already using the desired animation?
 		if (pev->sequence == animDesired)
 			return;
 
 		pev->gaitsequence = 0;
-		pev->sequence		= animDesired;
-		pev->frame			= 0;
-		ResetSequenceInfo( );
+		pev->sequence = animDesired;
+		pev->frame = 0;
+		ResetSequenceInfo();
 		return;
-
+	}
 	case ACT_RANGE_ATTACK1:
-		if ( FBitSet( pev->flags, FL_DUCKING ) )	// crouching
-			strcpy_safe( szAnim, "crouch_shoot_", 64 );
+	{
+		if ((m_Activity == ACT_HOP || m_Activity == ACT_LEAP) && pev->frame < 220) {
+			// jump animation has priority
+			return;
+		}
+
+		if (FBitSet(pev->flags, FL_DUCKING))	// crouching
+			strcpy_safe(szAnim, "crouch_shoot_", 64);
 		else
-			strcpy_safe( szAnim, "ref_shoot_", 64 );
-		strcat_safe( szAnim, m_szAnimExtention, 64 );
-		animDesired = LookupSequence( szAnim );
+			strcpy_safe(szAnim, "ref_shoot_", 64);
+
+		if (!strcmp(m_szAnimExtention, "bow")) {
+			strcat_safe(szAnim, "shotgun", 64); // hl bow shoot anim is the same as aiming
+		}
+		else {
+			strcat_safe(szAnim, m_szAnimExtention, 64);
+		}
+
+		animDesired = LookupSequence(szAnim);
 		if (animDesired == -1)
 			animDesired = 0;
 
-		if ( pev->sequence != animDesired || !m_fSequenceLoops )
+		if (pev->sequence != animDesired || !m_fSequenceLoops)
 		{
 			pev->frame = 0;
 		}
@@ -1058,22 +1078,50 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		{
 			pev->effects |= EF_NOINTERP;
 		}
+		
+		m_Activity = m_IdealActivity;
+
+		pev->sequence = animDesired;
+		ResetSequenceInfo();
+		break;
+	}
+
+	case ACT_RELOAD:
+		if ((m_Activity == ACT_HOP || m_Activity == ACT_LEAP) && pev->frame < 200) {
+			// jump animation has priority
+			return;
+		}
+
+		animDesired = LookupSequence("ref_aim_squeak");
+		if (animDesired == -1)
+			animDesired = 0;
+
+		if (pev->sequence != animDesired || !m_fSequenceLoops)
+		{
+			pev->frame = 0;
+		}
+
+		//if (!m_fSequenceLoops)
+		{
+			pev->effects |= EF_NOINTERP;
+		}
 
 		m_Activity = m_IdealActivity;
 
-		pev->sequence		= animDesired;
-		ResetSequenceInfo( );
+		pev->sequence = animDesired;
+		ResetSequenceInfo();
 		break;
 
 	case ACT_WALK:
-		if (m_Activity != ACT_RANGE_ATTACK1 || m_fSequenceFinished)
+	{
+		if ((m_Activity != ACT_RANGE_ATTACK1 && m_Activity != ACT_RELOAD) || m_fSequenceFinished)
 		{
-			if ( FBitSet( pev->flags, FL_DUCKING ) )	// crouching
-				strcpy_safe( szAnim, "crouch_aim_", 64 );
+			if (FBitSet(pev->flags, FL_DUCKING))	// crouching
+				strcpy_safe(szAnim, "crouch_aim_", 64);
 			else
-				strcpy_safe( szAnim, "ref_aim_", 64 );
-			strcat_safe( szAnim, m_szAnimExtention, 64 );
-			animDesired = LookupSequence( szAnim );
+				strcpy_safe(szAnim, "ref_aim_", 64);
+			strcat_safe(szAnim, m_szAnimExtention, 64);
+			animDesired = LookupSequence(szAnim);
 			if (animDesired == -1)
 				animDesired = 0;
 			m_Activity = ACT_WALK;
@@ -1082,6 +1130,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		{
 			animDesired = pev->sequence;
 		}
+	}
 	}
 
 	if ( FBitSet( pev->flags, FL_DUCKING ) )
@@ -1110,6 +1159,18 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		pev->gaitsequence	= LookupSequence( "deep_idle" );
 	}
 
+	if (duration) {
+		studiohdr_t* pstudiohdr = (studiohdr_t*)GET_MODEL_PTR(edict());
+		mstudioseqdesc_t* pseqdesc;
+
+		if (pstudiohdr && pev->sequence >= 0 && pev->sequence < pstudiohdr->numseq)
+		{
+			pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + (int)pev->sequence;
+			float animDuration = (pseqdesc->numframes - 1) / pseqdesc->fps;
+			pev->framerate = animDuration / duration;
+			return;
+		}
+	}
 
 	// Already using the desired animation?
 	if (pev->sequence == animDesired)

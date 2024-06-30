@@ -248,6 +248,8 @@ void CPython::Reload( void )
 
 	if (DefaultReload(6, PYTHON_RELOAD, 2.0, bUseScope)) {
 #ifndef CLIENT_DLL
+		m_pPlayer->SetAnimation(PLAYER_RELOAD, 2.0f);
+
 		// send reload sound to everyone except the reloader if they're in first-person mode,
 		// because the reloading client will play sounds via model events
 		uint32_t messageTargets = 0xffffffff;

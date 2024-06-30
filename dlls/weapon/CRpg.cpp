@@ -341,8 +341,10 @@ void CRpg::Reload( void )
 	}
 #endif
 
-	if ( m_iClip == 0 )
-		iResult = DefaultReload( RPG_MAX_CLIP, RPG_RELOAD, 2 );
+	if (m_iClip == 0) {
+		iResult = DefaultReload(RPG_MAX_CLIP, RPG_RELOAD, 2);
+		m_pPlayer->SetAnimation(PLAYER_RELOAD, 2.0f);
+	}
 	
 	if ( iResult )
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
