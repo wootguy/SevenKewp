@@ -191,6 +191,9 @@ void CShotgun::PrimaryAttack()
 	if (m_iClip != 0)
 		m_flPumpTime = gpGlobals->time + 0.5;
 
+	// player "shoot" animation
+	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+
 	m_flNextPrimaryAttack = GetNextAttackDelay(0.75);
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.75;
 	if (m_iClip != 0)
@@ -304,6 +307,8 @@ void CShotgun::Reload( void )
 	if (m_fInSpecialReload == 0)
 	{
 		SendWeaponAnim( SHOTGUN_START_RELOAD );
+		m_pPlayer->SetAnimation(PLAYER_RELOAD, 1.0f);
+
 		m_fInSpecialReload = 1;
 		m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.6;
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.6;
@@ -317,6 +322,8 @@ void CShotgun::Reload( void )
 			return;
 		// was waiting for gun to move to side
 		m_fInSpecialReload = 2;
+
+		m_pPlayer->SetAnimation(PLAYER_RELOAD, 0.4f);
 
 		if (RANDOM_LONG(0,1))
 			EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/reload1.wav", 1, ATTN_NORM, 0, 85 + RANDOM_LONG(0,0x1f));

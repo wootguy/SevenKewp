@@ -262,7 +262,7 @@ void CBasePlayer :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector 
 int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) { return 0; }
 void CBasePlayer::PackDeadPlayerItems( void ) { }
 void CBasePlayer::RemoveAllItems( BOOL removeSuit ) { }
-void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim ) { }
+void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration ) { }
 void CBasePlayer::WaterMove() { }
 BOOL CBasePlayer::IsOnLadder( void ) { return FALSE; }
 void CBasePlayer::PlayerDeathThink(void) { }

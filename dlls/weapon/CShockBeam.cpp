@@ -182,7 +182,7 @@ void CShockBeam::WaterExplodeThink()
 
 void CShockBeam::BallTouch( CBaseEntity* pOther )
 {
-	if (pOther->edict() == pev->owner) {
+	if (pOther->edict() == pev->owner || pOther->pev->solid == SOLID_TRIGGER) {
 		return;
 	}
 

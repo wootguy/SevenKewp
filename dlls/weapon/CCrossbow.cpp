@@ -496,6 +496,7 @@ void CCrossbow::Reload( void )
 	if ( DefaultReload( 5, CROSSBOW_RELOAD, 4.5 ) )
 	{
 		EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/xbow_reload1.wav", RANDOM_FLOAT(0.95, 1.0), ATTN_NORM, 0, 93 + RANDOM_LONG(0,0xF));
+		m_pPlayer->SetAnimation(PLAYER_RELOAD, 4.5f);
 	}
 }
 
