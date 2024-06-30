@@ -7436,20 +7436,7 @@ bool CBaseMonster::IsImmune(entvars_t* attacker) {
 		return false;
 	}
 
-	// mp_npckill has priority over killnpc if not set to the default value
-	int npcKillValue = (int)mp_npckill.value != 1 ? (int)mp_npckill.value : killnpc.value;
-
-	if (!npcKillValue) {
-		// disallow ally NPCs to be damaged by anything
-		return IRelationship(Classify(), CLASS_PLAYER) == R_AL;
-	}
-	else if (npcKillValue == 2 && !FNullEnt(attacker)) {
-		// disallow ally NPCs to be damaged by ally classes
-		CBaseEntity* ent = CBaseEntity::Instance(attacker);
-		return ent && IRelationship(Classify(), CLASS_PLAYER) == R_AL && IRelationship(ent) == R_AL;
-	}
-
-	return false;
+	return ShouldBlockFriendlyFire(attacker);
 }
 
 void CBaseMonster::SetSize(Vector defaultMins, Vector defaultMaxs) {

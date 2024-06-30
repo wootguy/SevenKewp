@@ -367,6 +367,7 @@ public:
 	virtual void SetClassify(int iNewClassify);
 	virtual int IRelationship(CBaseEntity* pTarget);
 	static int IRelationship(int attackerClass, int victimClass);
+	bool ShouldBlockFriendlyFire(entvars_t* attacker);
 
 	//We use this variables to store each ammo count.
 	int ammo_9mm;

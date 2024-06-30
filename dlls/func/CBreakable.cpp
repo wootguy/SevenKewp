@@ -494,6 +494,10 @@ void CBreakable::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 
 void CBreakable::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
 {
+	if (ShouldBlockFriendlyFire(pevAttacker)) {
+		return;
+	}
+
 	// random spark if this is a 'computer' object
 	if (RANDOM_LONG(0, 1))
 	{
@@ -530,6 +534,10 @@ void CBreakable::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 //=========================================================
 int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
+	if (ShouldBlockFriendlyFire(pevAttacker)) {
+		return 0;
+	}
+
 	Vector	vecTemp;
 
 	if ((pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) && !(bitsDamageType & (DMG_BLAST | DMG_MORTAR))) {
