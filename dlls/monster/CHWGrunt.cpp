@@ -67,6 +67,7 @@ public:
 	void StartFollowingSound();
 	void StopFollowingSound();
 	void CantFollowSound();
+	void Killed(entvars_t* pevAttacker, int iGib);
 	void PlaySentenceSound(int sentenceType);
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	Schedule_t* GetScheduleOfType(int Type);
@@ -91,6 +92,7 @@ private:
 	static const char* pGruntSentences[];
 
 	bool minigunIsSpinning;
+	float minigunSpinupTime;
 	int minigunSpinupSeq;
 	int minigunShootSeq;
 	float nextMinigunShoot;
@@ -293,6 +295,14 @@ void CHWGrunt::DropMinigun(Vector vecDir) {
 	SetBodygroup(HWGRUNT_GUN_GROUP, secondaryBody);
 }
 
+void CHWGrunt::Killed(entvars_t* pevAttacker, int iGib)
+{
+	// stop minigun spin sound
+	minigunIsSpinning = false;
+	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+	CBaseGrunt::Killed(pevAttacker, iGib);
+}
+
 void CHWGrunt::PickupMinigun() {
 
 	CBaseEntity* minigun = NULL;
@@ -354,6 +364,7 @@ Schedule_t* CHWGrunt::GetScheduleOfType(int Type)
 		if (HasEquipment(MEQUIP_MINIGUN) && !minigunIsSpinning) {
 			if (!minigunIsSpinning) {
 				minigunIsSpinning = true;
+				minigunSpinupTime = gpGlobals->time;
 				return &slMinigunSpinup[0];
 			}
 			return &slGruntRangeAttack1C[0]; // prevent crouching or angry idle animations
@@ -379,6 +390,9 @@ Schedule_t* CHWGrunt::GetScheduleOfType(int Type)
 	default:
 		if (minigunIsSpinning) {
 			minigunIsSpinning = false;
+			minigunSpinupTime = 0;
+			//STOP_SOUND(edict(), CHAN_ITEM, "hassault/hw_spin.wav");
+			EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 			return &slMinigunSpindown[0];
 		}
@@ -468,6 +482,10 @@ void CHWGrunt::PrescheduleThink(void) {
 		if (pev->sequence == minigunShootSeq && gpGlobals->time >= nextMinigunShoot) {
 			pev->nextthink = nextMinigunShoot = gpGlobals->time + 0.07f;
 			Shoot(false);
+		}
+		if (minigunIsSpinning && minigunSpinupTime && gpGlobals->time - minigunSpinupTime > 1.0f) {
+			EMIT_SOUND_DYN(edict(), CHAN_ITEM, "hassault/hw_spin.wav", 0.7f, ATTN_STATIC, 0, 100);
+			minigunSpinupTime = 0; // sound loops automatically, don't need to keep playing
 		}
 		if (pev->sequence == minigunSpinupSeq) {
 			PointAtEnemy();
