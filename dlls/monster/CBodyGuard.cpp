@@ -46,6 +46,7 @@ public:
 	void InitAiFlags();
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	void GibMonster(void);
+	void Killed(entvars_t* pevAttacker, int iGib);
 	void ShuffleSoundArrays();
 
 	void SetActivity(Activity NewActivity);
@@ -78,6 +79,7 @@ public:
 	int minigunSpinupSeq;
 	float nextMinigunShoot;
 	bool minigunIsSpinning;
+	float minigunSpinupTime;
 
 private:
 	static const char* pGruntSentences[];
@@ -231,6 +233,14 @@ void CBodyGuard::GibMonster(void)
 	CBaseMonster::GibMonster();
 }
 
+void CBodyGuard::Killed(entvars_t* pevAttacker, int iGib)
+{
+	// stop minigun spin sound
+	minigunIsSpinning = false;
+	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+	CBaseGrunt::Killed(pevAttacker, iGib);
+}
+
 void CBodyGuard::HandleAnimEvent(MonsterEvent_t* pEvent)
 {
 	switch (pEvent->event)
@@ -260,6 +270,10 @@ void CBodyGuard::PrescheduleThink(void) {
 	if (pev->sequence == minigunShootSeq && gpGlobals->time >= nextMinigunShoot) {
 		pev->nextthink = nextMinigunShoot = gpGlobals->time + 0.07f;
 		Shoot(false);
+	}
+	if (minigunIsSpinning && minigunSpinupTime && gpGlobals->time - minigunSpinupTime > 1.0f) {
+		EMIT_SOUND_DYN(edict(), CHAN_ITEM, "hassault/hw_spin.wav", 0.7f, ATTN_STATIC, 0, 100);
+		minigunSpinupTime = 0; // sound loops automatically, don't need to keep playing
 	}
 	if (pev->sequence == minigunSpinupSeq) {
 		PointAtEnemy();
@@ -433,12 +447,15 @@ Schedule_t* CBodyGuard::GetScheduleOfType(int Type)
 	case SCHED_RANGE_ATTACK1:
 		if (HasEquipment(MEQUIP_MINIGUN) && !minigunIsSpinning) {
 			minigunIsSpinning = true;
+			minigunSpinupTime = gpGlobals->time;
 			return &slMinigunSpinup[0];
 		}
 		return &slGruntRangeAttack1C[0]; // prevent crouching or angry idle animations
 	default:
 		if (minigunIsSpinning) {
 			minigunIsSpinning = false;
+			minigunSpinupTime = 0;
+			EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 			return &slMinigunSpindown[0];
 		}

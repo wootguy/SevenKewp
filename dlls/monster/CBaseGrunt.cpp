@@ -675,14 +675,11 @@ void CBaseGrunt::ShootMinigun(Vector& vecShootOrigin, Vector& vecShootDir) {
 	UTIL_MakeVectors(pev->angles);
 
 	int channel = CHAN_WEAPON;
-	switch(RANDOM_LONG(0, 3)) {
+	switch(RANDOM_LONG(0, 1)) {
 	case 0:
 		channel = CHAN_WEAPON;
 		break;
 	case 1:
-		channel = CHAN_ITEM;
-		break;
-	case 2:
 		channel = CHAN_BODY;
 		break;
 	}
@@ -1070,6 +1067,7 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 		PRECACHE_SOUND("hassault/hw_shoot2.wav");
 		PRECACHE_SOUND("hassault/hw_shoot3.wav");
 		PRECACHE_SOUND("hassault/hw_spinup.wav");
+		PRECACHE_SOUND("hassault/hw_spin.wav");
 		PRECACHE_SOUND("hassault/hw_spindown.wav");
 	}
 	if (equipment & MEQUIP_AKIMBO_UZIS) {
