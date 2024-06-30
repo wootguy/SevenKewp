@@ -184,6 +184,7 @@ void CTriggerEntityIterator::Iterate() {
 		if (m_run_mode == RUN_MODE_TOGGLE && (!m_maximum_runs || ++m_runCount < m_maximum_runs)) {
 			m_nextIdx = 1;
 			pev->nextthink = gpGlobals->time + m_delay_between_runs;
+			SetThink(&CTriggerEntityIterator::Iterate);
 		}
 		else {
 			m_isRunning = false;

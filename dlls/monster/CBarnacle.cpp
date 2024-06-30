@@ -172,6 +172,8 @@ void CBarnacle :: BarnacleThink ( void )
 	CBaseMonster *pVictim;
 	float flLength;
 
+	UpdateShockEffect();
+
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	if ( m_hEnemy != NULL )
@@ -304,7 +306,7 @@ void CBarnacle :: BarnacleThink ( void )
 				TRACE_MONSTER_HULL(pTouchEnt->edict(), vecStart, vecEnd, ignore_monsters, pTouchEnt->edict(), &tr);
 
 				pTouchEnt->pev->origin.x = tr.vecEndPos.x;
-				pTouchEnt->pev->origin.x = tr.vecEndPos.y;
+				pTouchEnt->pev->origin.y = tr.vecEndPos.y;
 
 				m_fLiftingPrey = TRUE;// indicate that we should be lifting prey.
 				m_flKillVictimTime = -1;// set this to a bogus time while the victim is lifted.

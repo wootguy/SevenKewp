@@ -63,7 +63,8 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 	}
 
 	if (pOther->IsPlayer()) {
-		if (pev->spawnflags & SF_TRIGGER_PUSH_NO_CLIENTS)
+		CBasePlayer* plr = (CBasePlayer*)pOther;
+		if ((pev->spawnflags & SF_TRIGGER_PUSH_NO_CLIENTS) || plr->IsOnLadder())
 			return;
 	}
 	else if (pOther->IsMonster()) {
