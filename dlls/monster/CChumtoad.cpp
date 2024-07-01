@@ -93,7 +93,7 @@ void CChumtoad::Precache()
 
 int	CChumtoad::Classify(void)
 {
-	if (m_IsPlayerAlly)
+	if (!m_Classify && m_IsPlayerAlly)
 		return CLASS_ALIEN_MONSTER;
 	else
 		return CBaseMonster::Classify(CLASS_PLAYER_ALLY);
