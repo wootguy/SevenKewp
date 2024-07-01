@@ -465,7 +465,7 @@ int COtis :: ISoundMask ( void)
 int	COtis :: Classify ( void )
 {
 	// Is Player Ally? works inverted for friendly monsters
-	if (m_IsPlayerAlly)
+	if (!m_Classify && m_IsPlayerAlly)
 		return CLASS_HUMAN_MILITARY;
 	else
 		return CBaseMonster::Classify(CLASS_PLAYER_ALLY);

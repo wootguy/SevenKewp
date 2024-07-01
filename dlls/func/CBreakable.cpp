@@ -494,7 +494,7 @@ void CBreakable::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 
 void CBreakable::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
 {
-	if (ShouldBlockFriendlyFire(pevAttacker)) {
+	if (flDamage > 0 && ShouldBlockFriendlyFire(pevAttacker)) {
 		return;
 	}
 
@@ -534,7 +534,7 @@ void CBreakable::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 //=========================================================
 int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
-	if (ShouldBlockFriendlyFire(pevAttacker)) {
+	if (flDamage > 0 && ShouldBlockFriendlyFire(pevAttacker)) {
 		return 0;
 	}
 
