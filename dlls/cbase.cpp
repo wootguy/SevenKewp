@@ -458,21 +458,22 @@ void SaveReadFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseD
 
 
 edict_t * EHANDLE::GetEdict( void ) 
-{ 
-	if (m_pent && !m_pent->free && m_pent->serialnumber == m_serialnumber)
-	{
-		/*
+{
+	if (m_pent) {
 		byte* edicts = (byte*)ENT(0);
-		byte* endEdicts = edicts + sizeof(edict_t)*gpGlobals->maxEntities;
+		byte* endEdicts = edicts + sizeof(edict_t) * gpGlobals->maxEntities;
 		bool inRange = (byte*)m_pent >= edicts && (byte*)m_pent < endEdicts;
 		bool aligned = (((byte*)m_pent - edicts) % sizeof(edict_t)) == 0;
 
-		if (inRange && aligned)
+		if (!inRange || !aligned) {
+			ALERT(at_error, "An EHANDLE was corrupted! Nulled to avoid crash.\n");
+			m_pent = NULL;
+			return NULL;
+		}
+
+		if (!m_pent->free && m_pent->serialnumber == m_serialnumber) {
 			return m_pent;
-		else
-			ALERT(at_console, "EHANDLE corruption! m_pent points to 0x%08X\n", (uint32_t)m_pent);
-		*/
-		return m_pent;
+		}
 	}
 
 	return NULL; 

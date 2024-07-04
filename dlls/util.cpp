@@ -3146,6 +3146,13 @@ int PRECACHE_GENERIC(const char* path) {
 		}
 	}
 
+	if (lowerPath.find(" ") != std::string::npos) {
+		// files with spaces causes clients to hang at "Verifying resources"
+		// and the file doesn't download
+		ALERT(at_error, "Precached file with spaces: '%s'\n", path);
+		return -1;
+	}
+
 	g_tryPrecacheGeneric.insert(path);
 
 	if (g_tryPrecacheGeneric.size() < MAX_PRECACHE) {
@@ -3177,7 +3184,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 	if (lowerPath.find(" ") != std::string::npos) {
 		// files with spaces causes clients to hang at "Verifying resources"
 		// and the file doesn't download
-		ALERT(at_error, "Precached file with spaces: '%s'\n", path);
+		ALERT(at_error, "Precached sound with spaces: '%s'\n", path);
 		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
 	}
 
@@ -3217,6 +3224,13 @@ int PRECACHE_MODEL(const char* path) {
 	// loading BSP here because ServerActivate is not soon enough and GameDLLInit is only called once
 	if (!g_bsp.loaded) {
 		LoadBsp();
+	}
+
+	if (lowerPath.find(" ") != std::string::npos) {
+		// files with spaces causes clients to hang at "Verifying resources"
+		// and the file doesn't download
+		ALERT(at_error, "Precached model with spaces: '%s'\n", path);
+		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
 	}
 
 	bool alreadyPrecached = g_precachedModels.find(path) != g_precachedModels.end();
@@ -4253,7 +4267,7 @@ WavInfo getWaveFileInfo(const char* path) {
 	int numCues = 0;
 
 	if (!fpath.size()) {
-		ALERT(at_error, "Missing WAVE file: %s\n", path);
+		ALERT(at_console, "Missing WAVE file: %s\n", path);
 		goto cleanup;
 	}
 
