@@ -549,11 +549,11 @@ set(GENERATED_SRCS
 )
 
 set(ALL_SRC
+	${GENERATED_SRCS}
 	${ENT_SRC} ${ENT_HDR}
 	${UTIL_SRC} ${UTIL_HDR}
 	${GAME_SRC} ${GAME_HDR}
 	${MISC_HDR}
-	${GENERATED_SRCS}
 )
 
 # don't compile individual entity files
