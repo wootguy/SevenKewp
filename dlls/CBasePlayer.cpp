@@ -2861,9 +2861,7 @@ pt_end:
 
 			while ( pPlayerItem )
 			{
-				CBasePlayerWeapon *gun;
-
-				gun = (CBasePlayerWeapon *)pPlayerItem->GetWeaponPtr();
+				CBasePlayerWeapon *gun = (CBasePlayerWeapon *)pPlayerItem->GetWeaponPtr();
 				
 				if ( gun && gun->UseDecrement() )
 				{
