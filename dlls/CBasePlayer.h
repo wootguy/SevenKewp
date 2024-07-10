@@ -103,7 +103,9 @@ public:
 	float	m_flNextObserverInput;
 	int		m_iObserverWeapon;	// weapon of current tracked target
 	int		m_iObserverLastMode;// last used observer mode
-	int		IsObserver() { return pev->iuser1; };
+	bool	m_isObserver;
+	float	m_lastObserverSwitch;
+	int		IsObserver() { return m_isObserver; };
 	BOOL	IsFirstPerson() { return m_hViewEntity.GetEdict() == edict(); }
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 
@@ -363,6 +365,8 @@ public:
 	bool m_deathMessageSent;
 
 	float m_initSoundTime;
+
+	int GetNameColor();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

@@ -27,6 +27,10 @@ extern void GameDLLInit( void );
 #define MOD_MODEL_FOLDER "hlcoop_v2/"
 #define MOD_SPRITE_FOLDER "hlcoop/"
 
+#define DEFAULT_TEAM_NAME "Team" // name seen in the scoreboard
+#define DEFAULT_TEAM_COLOR 1
+#define OBSERVER_TEAM_COLOR 6 // spectator color (white on windows, still blue on linux?)
+
 extern cvar_t	displaysoundlist;
 
 // multiplayer server rules
