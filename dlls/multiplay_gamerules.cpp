@@ -44,6 +44,8 @@ extern int gmsgMOTD;
 extern int gmsgServerName;
 
 extern int g_teamplay;
+extern int gmsgTeamNames;
+extern int gmsgTeamInfo;
 
 #define ITEM_RESPAWN_TIME	30
 #define WEAPON_RESPAWN_TIME	20
@@ -358,7 +360,8 @@ extern int gmsgGameMode;
 void CHalfLifeMultiplay :: UpdateGameMode( CBasePlayer *pPlayer )
 {
 	MESSAGE_BEGIN( MSG_ONE, gmsgGameMode, NULL, pPlayer->edict() );
-		WRITE_BYTE( 0 );  // game mode none
+		//WRITE_BYTE( 0 );  // game mode none
+		WRITE_BYTE( 1 );  // team game
 	MESSAGE_END();
 }
 
@@ -376,16 +379,30 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 		atoi(g_engfuncs.pfnInfoKeyValue(keybuffer, "bottomcolor"))
 	);
 
+	// Send down the team names
+	MESSAGE_BEGIN(MSG_ONE, gmsgTeamNames, NULL, pl->edict());
+	WRITE_BYTE(4);
+	WRITE_STRING(DEFAULT_TEAM_NAME);
+	WRITE_STRING(DEFAULT_TEAM_NAME);
+	WRITE_STRING(DEFAULT_TEAM_NAME);
+	WRITE_STRING(DEFAULT_TEAM_NAME);
+	MESSAGE_END();
+
+	MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
+	WRITE_BYTE(pl->entindex());
+	WRITE_STRING(DEFAULT_TEAM_NAME);
+	MESSAGE_END();
+
 	UpdateGameMode( pl );
 
 	// sending just one score makes the hud scoreboard active;  otherwise
 	// it is just disabled for single play
-	MESSAGE_BEGIN( MSG_ONE, gmsgScoreInfo, NULL, pl->edict() );
-		WRITE_BYTE( ENTINDEX(pl->edict()) );
-		WRITE_SHORT( 0 );
-		WRITE_SHORT( 0 );
-		WRITE_SHORT( 0 );
-		WRITE_SHORT( 0 );
+	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+	WRITE_BYTE(pl->entindex());	// client number
+	WRITE_SHORT(pl->pev->frags);
+	WRITE_SHORT(pl->m_iDeaths);
+	WRITE_SHORT(0);
+	WRITE_SHORT(DEFAULT_TEAM_COLOR);
 	MESSAGE_END();
 
 	SendMOTDToClient( pl->edict() );
@@ -396,14 +413,21 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 		// FIXME:  Probably don't need to cast this just to read m_iDeaths
 		CBasePlayer *plr = (CBasePlayer *)UTIL_PlayerByIndex( i );
 
-		if ( plr )
+		if ( plr && plr != pl )
 		{
 			MESSAGE_BEGIN( MSG_ONE, gmsgScoreInfo, NULL, pl->edict() );
 				WRITE_BYTE( i );	// client number
 				WRITE_SHORT( plr->pev->frags );
 				WRITE_SHORT( plr->m_iDeaths );
 				WRITE_SHORT( 0 );
-				WRITE_SHORT( GetTeamIndex( plr->m_szTeamName ) + 1 );
+				WRITE_SHORT(plr->GetNameColor());
+				//WRITE_SHORT(DEFAULT_TEAM_COLOR);
+			MESSAGE_END();
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgTeamInfo, NULL, pl->edict());
+			WRITE_BYTE(i);
+			WRITE_STRING(plr->IsObserver() ? "" : DEFAULT_TEAM_NAME);
+			//WRITE_STRING(DEFAULT_TEAM_NAME);
 			MESSAGE_END();
 		}
 	}
@@ -1573,3 +1597,7 @@ void CHalfLifeMultiplay :: SendMOTDToClient( edict_t *client )
 }
 	
 
+int CHalfLifeMultiplay::GetTeamIndex(const char* pTeamName)
+{
+	return DEFAULT_TEAM_COLOR;
+}

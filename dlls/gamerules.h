@@ -385,6 +385,8 @@ public:
 	// finds the map cycle item for the given map name
 	virtual mapcycle_item_t* GetMapCyleMap(const char* map);
 
+	virtual int GetTeamIndex(const char* pTeamName);
+
 protected:
 	virtual void ChangeLevel( void );
 	virtual void GoToIntermission( void );

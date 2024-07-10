@@ -442,15 +442,16 @@ void ClientCommand(edict_t* pEntity)
 		{
 			CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
 
-			if( pev->iuser1 == OBS_NONE )
+			if (gpGlobals->time - pPlayer->m_lastObserverSwitch < 3.0f) {
+				float timeleft = 3.0f - (gpGlobals->time - pPlayer->m_lastObserverSwitch);
+				CLIENT_PRINTF(pPlayer->edict(), print_center, UTIL_VarArgs("Wait %.1f seconds", timeleft));
+			}
+			else if( pev->iuser1 == OBS_NONE )
 			{
-				edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot(pPlayer);
-				pPlayer->StartObserver(pev->origin, VARS(pentSpawnSpot)->angles);
+				pPlayer->StartObserver(pev->origin, pev->angles);
 
-				pPlayer->pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
 				pPlayer->pev->v_angle = g_vecZero;
 				pPlayer->pev->velocity = g_vecZero;
-				pPlayer->pev->angles = VARS(pentSpawnSpot)->angles;
 				pPlayer->pev->punchangle = g_vecZero;
 				pPlayer->pev->fixangle = TRUE;
 
@@ -460,6 +461,8 @@ void ClientCommand(edict_t* pEntity)
 			}
 			else
 			{
+				UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s stopped spectating\n",
+					(pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "unconnected"));
 				pPlayer->LeaveObserver();
 			}
 		}

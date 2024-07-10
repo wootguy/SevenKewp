@@ -915,6 +915,20 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 		WRITE_BYTE(0);
 	MESSAGE_END();
 
+	// resend hud color
+	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+	WRITE_BYTE(entindex());	// client number
+	WRITE_SHORT(pev->frags);
+	WRITE_SHORT(m_iDeaths);
+	WRITE_SHORT(0);
+	WRITE_SHORT(DEFAULT_TEAM_COLOR);
+	MESSAGE_END();
+
+	MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
+	WRITE_BYTE(entindex());
+	WRITE_STRING(DEFAULT_TEAM_NAME);
+	MESSAGE_END();
+
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
 	// UTIL_ScreenFade( edict(), Vector(128,0,0), 6, 15, 255, FFADE_OUT | FFADE_MODULATE );
@@ -1570,6 +1584,8 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	ClearBits( pev->flags, FL_DUCKING );
 	pev->deadflag = DEAD_RESPAWNABLE;
 	pev->health = 1;
+	m_isObserver = true;
+	m_lastObserverSwitch = gpGlobals->time;
 
 	// Clear out the status bar
 	m_fInitHUD = TRUE;
@@ -1578,6 +1594,14 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo );
 		WRITE_BYTE( ENTINDEX(edict()) );
 		WRITE_STRING( "" );
+	MESSAGE_END();
+
+	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+	WRITE_BYTE(entindex());	// client number
+	WRITE_SHORT(pev->frags);
+	WRITE_SHORT(m_iDeaths);
+	WRITE_SHORT(0);
+	WRITE_SHORT(OBSERVER_TEAM_COLOR);
 	MESSAGE_END();
 
 	// Remove all the player's stuff
@@ -1593,8 +1617,23 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 
 void CBasePlayer::LeaveObserver()
 {
+	MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
+	WRITE_BYTE(ENTINDEX(edict()));
+	WRITE_STRING(DEFAULT_TEAM_NAME);
+	MESSAGE_END();
+
+	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+	WRITE_BYTE(entindex());	// client number
+	WRITE_SHORT(pev->frags);
+	WRITE_SHORT(m_iDeaths);
+	WRITE_SHORT(0);
+	WRITE_SHORT(g_pGameRules->GetTeamIndex(m_szTeamName) + 1);
+	MESSAGE_END();
+
 	ClearBits( m_afPhysicsFlags, PFLAG_OBSERVER );
 	pev->iuser1 = OBS_NONE;
+	m_isObserver = false;
+	m_lastObserverSwitch = gpGlobals->time;
 }
 
 // 
@@ -1893,11 +1932,11 @@ void CBasePlayer::UpdateStatusBar()
 			if (pEntity->Classify() == CLASS_PLAYER )
 			{
 				newSBarState[ SBAR_ID_TARGETNAME ] = ENTINDEX( pEntity->edict() );
-				strcpy_safe( sbuf1, "1 Player: %p1", SBAR_STRING_SIZE );
-				strcpy_safe( sbuf0, "2 Health: %i2%%\n3 Armor: %i3%%", SBAR_STRING_SIZE);
+				strcpy_safe( sbuf1, "1 %p1", SBAR_STRING_SIZE );
+				strcpy_safe( sbuf0, "2 Health: %i2\n3 Armor: %i3", SBAR_STRING_SIZE);
 
-				newSBarState[ SBAR_ID_TARGETHEALTH ] = 100 * (pEntity->pev->health / pEntity->pev->max_health);
-				newSBarState[ SBAR_ID_TARGETARMOR ] = pEntity->pev->armorvalue; //No need to get it % based since 100 it's the max.
+				newSBarState[ SBAR_ID_TARGETHEALTH ] = pEntity->pev->health;
+				newSBarState[ SBAR_ID_TARGETARMOR ] = pEntity->pev->armorvalue;
 
 				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			}
@@ -3040,6 +3079,15 @@ void CBasePlayer::Spawn( void )
 		MESSAGE_END();
 	}
 
+	// change hud color
+	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+	WRITE_BYTE(entindex());	// client number
+	WRITE_SHORT(pev->frags);
+	WRITE_SHORT(m_iDeaths);
+	WRITE_SHORT(0);
+	WRITE_SHORT(DEFAULT_TEAM_COLOR);
+	MESSAGE_END();
+
 	// view can be set to null(?) if the level changes while a camera is active
 	// which means you won't see any entities in the next level
 	if (!m_hActiveCamera) {
@@ -3976,6 +4024,23 @@ void CBasePlayer :: UpdateClientData( void )
 		MESSAGE_BEGIN( MSG_ONE, gmsgResetHUD, NULL, pev );
 			WRITE_BYTE( 0 );
 		MESSAGE_END();
+
+		// resend team info
+		// TODO: the scoreboard team will flicker for a moment on respawn
+		{
+			MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
+			WRITE_BYTE(entindex());
+			WRITE_STRING(IsObserver() ? "" : DEFAULT_TEAM_NAME);
+			MESSAGE_END();
+
+			MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+			WRITE_BYTE(entindex());	// client number
+			WRITE_SHORT(pev->frags);
+			WRITE_SHORT(m_iDeaths);
+			WRITE_SHORT(0);
+			WRITE_SHORT(GetNameColor());
+			MESSAGE_END();
+		}
 
 		if ( !m_fGameHUDInitialized )
 		{
@@ -5068,6 +5133,14 @@ void CBasePlayer::UpdateScore() {
 	WRITE_SHORT(m_lastScore);
 	WRITE_SHORT(m_iDeaths);
 	WRITE_SHORT(0);
-	WRITE_SHORT(-1);
+	WRITE_SHORT(g_pGameRules->GetTeamIndex(m_szTeamName));
 	MESSAGE_END();
+}
+
+int CBasePlayer::GetNameColor() {
+	if (IsObserver()) {
+		return OBSERVER_TEAM_COLOR;
+	}
+
+	return DEFAULT_TEAM_COLOR;
 }
