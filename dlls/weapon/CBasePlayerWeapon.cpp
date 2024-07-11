@@ -9,6 +9,7 @@
 #include "gamerules.h"
 #include "CBasePlayerWeapon.h"
 #include "user_messages.h"
+#include "pm_shared.h"
 
 TYPEDESCRIPTION	CBasePlayerWeapon::m_SaveData[] =
 {
@@ -281,6 +282,18 @@ void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 	WRITE_BYTE(iAnim);						// sequence number
 	WRITE_BYTE(pev->body);					// weaponmodel bodygroup.
 	MESSAGE_END();
+
+	// play animation for spectators
+	for (int i = 1; i < gpGlobals->maxClients; i++) {
+		CBasePlayer* spec = (CBasePlayer*)UTIL_PlayerByIndex(i);
+
+		if (spec && spec->pev->iuser1 == OBS_IN_EYE && spec->m_hObserverTarget.GetEntity() == m_pPlayer) {
+			MESSAGE_BEGIN(MSG_ONE, SVC_WEAPONANIM, NULL, spec->pev);
+			WRITE_BYTE(iAnim);						// sequence number
+			WRITE_BYTE(pev->body);					// weaponmodel bodygroup.
+			MESSAGE_END();
+		}
+	}
 }
 
 BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, char* szName, int iMaxClip, int iMaxCarry)

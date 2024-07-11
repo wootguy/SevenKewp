@@ -1617,6 +1617,12 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 
 void CBasePlayer::LeaveObserver()
 {
+	ClearBits( m_afPhysicsFlags, PFLAG_OBSERVER );
+	pev->iuser1 = OBS_NONE;
+	m_isObserver = false;
+	m_lastObserverSwitch = gpGlobals->time;
+	m_iHideHUD = 0;
+
 	MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
 	WRITE_BYTE(ENTINDEX(edict()));
 	WRITE_STRING(DEFAULT_TEAM_NAME);
@@ -1627,13 +1633,8 @@ void CBasePlayer::LeaveObserver()
 	WRITE_SHORT(pev->frags);
 	WRITE_SHORT(m_iDeaths);
 	WRITE_SHORT(0);
-	WRITE_SHORT(g_pGameRules->GetTeamIndex(m_szTeamName) + 1);
+	WRITE_SHORT(GetNameColor());
 	MESSAGE_END();
-
-	ClearBits( m_afPhysicsFlags, PFLAG_OBSERVER );
-	pev->iuser1 = OBS_NONE;
-	m_isObserver = false;
-	m_lastObserverSwitch = gpGlobals->time;
 }
 
 // 
@@ -4881,9 +4882,9 @@ void CBasePlayer::Observer_HandleButtons()
 			Observer_SetMode(OBS_MAP_CHASE);
 
 		else
-			Observer_SetMode(OBS_CHASE_FREE);	// don't use OBS_CHASE_LOCKED anymore
+			Observer_SetMode(OBS_CHASE_LOCKED);	// don't use OBS_CHASE_LOCKED anymore
 
-		m_flNextObserverInput = gpGlobals->time + 0.2;
+		m_flNextObserverInput = gpGlobals->time + 0.05;
 	}
 
 	// Attack moves to the next player
@@ -4891,7 +4892,7 @@ void CBasePlayer::Observer_HandleButtons()
 	{
 		Observer_FindNextPlayer(false);
 
-		m_flNextObserverInput = gpGlobals->time + 0.2;
+		m_flNextObserverInput = gpGlobals->time + 0.05;
 	}
 
 	// Attack2 moves to the prev player
@@ -4899,7 +4900,7 @@ void CBasePlayer::Observer_HandleButtons()
 	{
 		Observer_FindNextPlayer(true);
 
-		m_flNextObserverInput = gpGlobals->time + 0.2;
+		m_flNextObserverInput = gpGlobals->time + 0.05;
 	}
 }
 
@@ -5045,9 +5046,26 @@ void CBasePlayer::Observer_SetMode(int iMode)
 
 	// print spepctaor mode on client screen
 
-	char modemsg[16];
-	snprintf(modemsg, 16, "#Spec_Mode%i", pev->iuser1);
-	UTIL_ClientPrint(edict(), print_center, modemsg);
+	switch (pev->iuser1) {
+	case OBS_CHASE_LOCKED:
+		UTIL_ClientPrint(edict(), print_center, "Locked Chase Cam\n[1/6]");
+		break;
+	case OBS_CHASE_FREE:
+		UTIL_ClientPrint(edict(), print_center, "Free Chase Cam\n[2/6]");
+		break;
+	case OBS_IN_EYE:
+		UTIL_ClientPrint(edict(), print_center, "First-Person Cam\n[3/6]");
+		break;
+	case OBS_ROAMING:
+		UTIL_ClientPrint(edict(), print_center, "Free-Look\n[4/6]");
+		break;
+	case OBS_MAP_FREE:
+		UTIL_ClientPrint(edict(), print_center, "Free Map Overview\n[5/6]");
+		break;
+	case OBS_MAP_CHASE:
+		UTIL_ClientPrint(edict(), print_center, "Chase Map Overview\n[6/6]");
+		break;
+	}
 
 	m_iObserverLastMode = iMode;
 }

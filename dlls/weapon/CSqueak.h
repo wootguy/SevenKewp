@@ -8,6 +8,7 @@ class CSqueak : public CBasePlayerWeapon
 public:
 	void Spawn( void );
 	void Precache( void );
+	void PrecacheEvents();
 	int iItemSlot( void ) { return 5; }
 	int GetItemInfo(ItemInfo *p);
 
@@ -16,6 +17,7 @@ public:
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );
+	BOOL IsClientWeapon() { return FALSE; }
 	int m_fJustThrown;
 
 	virtual BOOL UseDecrement( void )
