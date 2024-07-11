@@ -2,10 +2,10 @@
 
 // weapon clip/carry ammo capacities
 #define URANIUM_MAX_CARRY		100
-#define	_9MM_MAX_CARRY			250
-#define _357_MAX_CARRY			36
-#define BUCKSHOT_MAX_CARRY		125
-#define BOLT_MAX_CARRY			50
+#define	_9MM_MAX_CARRY			200 // vanilla = 250
+#define _357_MAX_CARRY			24 // vanilla = 36
+#define BUCKSHOT_MAX_CARRY		30 // vanilla = 125
+#define BOLT_MAX_CARRY			10 // vanilla = 50
 #define ROCKET_MAX_CARRY		5
 #define HANDGRENADE_MAX_CARRY	10
 #define SATCHEL_MAX_CARRY		5
