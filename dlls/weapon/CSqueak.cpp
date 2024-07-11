@@ -65,7 +65,11 @@ void CSqueak::Precache( void )
 	PRECACHE_SOUND("squeek/sqk_hunt3.wav");
 	UTIL_PrecacheOther("monster_snark");
 
-	m_usSnarkFire = PRECACHE_EVENT ( 1, "events/snarkfire.sc" );
+	PrecacheEvents();
+}
+
+void CSqueak::PrecacheEvents() {
+	m_usSnarkFire = PRECACHE_EVENT(1, "events/snarkfire.sc");
 }
 
 
@@ -160,6 +164,8 @@ void CSqueak::PrimaryAttack()
 #endif
 
 	    PLAYBACK_EVENT_FULL( flags, m_pPlayer->edict(), m_usSnarkFire, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
+
+		SendWeaponAnim(SQUEAK_THROW, 0, 0);
 
 		if ( tr.fAllSolid == 0 && tr.fStartSolid == 0 && tr.flFraction > 0.25 )
 		{
