@@ -391,6 +391,7 @@ void CRpg::Precache( void )
 
 	UTIL_PrecacheOther( "laser_spot" );
 	UTIL_PrecacheOther( "rpg_rocket" );
+	UTIL_PrecacheOther("ammo_rpgclip");
 
 	PRECACHE_SOUND("weapons/rocketfire1.wav");
 	PRECACHE_SOUND("weapons/glauncher.wav"); // alternative fire sound

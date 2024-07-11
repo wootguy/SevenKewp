@@ -60,6 +60,7 @@ void CDisplacer::Precache()
 	m_iSpriteTexture = PRECACHE_MODEL("sprites/shockwave.spr");
 
 	UTIL_PrecacheOther("displacer_ball");
+	UTIL_PrecacheOther("ammo_gaussclip");
 
 	//m_usFireDisplacer = PRECACHE_EVENT(1, "events/displacer.sc");
 

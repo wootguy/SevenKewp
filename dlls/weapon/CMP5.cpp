@@ -97,6 +97,9 @@ void CMP5::Precache( void )
 
 	PRECACHE_SOUND ("weapons/357_cock1.wav");
 
+	UTIL_PrecacheOther("ammo_9mmAR");
+	UTIL_PrecacheOther("ammo_ARgrenades");
+
 	PrecacheEvents();
 }
 

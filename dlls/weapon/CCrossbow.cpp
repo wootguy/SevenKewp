@@ -266,6 +266,7 @@ void CCrossbow::Precache( void )
 	PRECACHE_SOUND("weapons/xbow_reload1.wav");
 
 	UTIL_PrecacheOther( "crossbow_bolt" );
+	UTIL_PrecacheOther( "ammo_crossbow" );
 
 	PrecacheEvents();
 }

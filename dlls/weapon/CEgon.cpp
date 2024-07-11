@@ -100,6 +100,8 @@ void CEgon::Precache( void )
 
 	PRECACHE_SOUND ("weapons/357_cock1.wav");
 
+	UTIL_PrecacheOther("ammo_gaussclip");
+
 	PrecacheEvents();
 }
 

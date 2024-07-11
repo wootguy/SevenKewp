@@ -68,6 +68,8 @@ void CGlock::Precache( void )
 	PRECACHE_SOUND ("weapons/pl_gun2.wav");//silenced handgun
 	PRECACHE_SOUND ("weapons/pl_gun3.wav");//handgun
 
+	UTIL_PrecacheOther("ammo_9mm");
+
 	PrecacheEvents();
 }
 
@@ -251,4 +253,9 @@ void CGlock::WeaponIdle( void )
 		}
 		SendWeaponAnim( iAnim, 1 );
 	}
+}
+
+void CGlock::GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount) {
+	ammoEntName = "ammo_9mm";
+	dropAmount = 17;
 }

@@ -78,6 +78,86 @@ void CBasePlayerWeapon::Precache() {
 		PRECACHE_MODEL(GetModelP());
 }
 
+void CBasePlayerWeapon::GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount) {
+	ammoEntName = NULL;
+	dropAmount = 0;
+
+	if (isSecondary) {
+		const char* ammoName2 = pszAmmo2();
+
+		if (!ammoName2) {
+			return;
+		}
+
+		if (!strcmp(ammoName2, "ARgrenades")) {
+			ammoEntName = "ammo_ARgrenades";
+			dropAmount = 2;
+		}
+		else {
+			ALERT(at_console, "Weapon %s should implement GetAmmoDropInfo\n", STRING(pev->classname));
+		}
+
+		return;
+	}
+
+	const char* ammoName = pszAmmo1();
+
+	if (!ammoName) {
+		return;
+	}
+
+	if (!strcmp(ammoName, "9mm")) {
+		ammoEntName = "ammo_9mmAR";
+		dropAmount = 50;
+	}
+	else if (!strcmp(ammoName, "357")) {
+		ammoEntName = "ammo_357";
+		dropAmount = 6;
+	}
+	else if (!strcmp(ammoName, "buckshot")) {
+		ammoEntName = "ammo_buckshot";
+		dropAmount = 12;
+	}
+	else if (!strcmp(ammoName, "bolts")) {
+		ammoEntName = "ammo_crossbow";
+		dropAmount = 5;
+	}
+	else if (!strcmp(ammoName, "rockets")) {
+		ammoEntName = "ammo_rpgclip";
+		dropAmount = 1;
+	}
+	else if (!strcmp(ammoName, "uranium")) {
+		ammoEntName = "ammo_gaussclip";
+		dropAmount = 20;
+	}
+	else if (!strcmp(ammoName, "Hand Grenade")) {
+		ammoEntName = "weapon_handgrenade";
+		dropAmount = 5;
+	}
+	else if (!strcmp(ammoName, "Satchel Charge")) {
+		ammoEntName = "weapon_satchel";
+		dropAmount = 1;
+	}
+	else if (!strcmp(ammoName, "Trip Mine")) {
+		ammoEntName = "weapon_tripmine";
+		dropAmount = 1;
+	}
+	else if (!strcmp(ammoName, "Snarks")) {
+		ammoEntName = "weapon_snark";
+		dropAmount = 5;
+	}
+	else if (!strcmp(ammoName, "spores")) {
+		ammoEntName = "ammo_sporeclip";
+		dropAmount = 1;
+	}
+	else if (!strcmp(ammoName, "Hornets") || !strcmp(ammoName, "shock")) {
+		// can't drop ammo for these weapons
+	}
+	else {
+		ALERT(at_console, "Weapon %s should implement GetAmmoDropInfo\n", STRING(pev->classname));
+	}
+}
+
 void CBasePlayerWeapon::ItemPostFrame(void)
 {
 	CBasePlayer* m_pPlayer = GetPlayer();

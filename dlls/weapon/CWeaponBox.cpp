@@ -154,6 +154,8 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 		}
 	}
 
+	bool hadWeapon = false;
+
 	// go through my weapons and try to give the usable ones to the player. 
 	// it's important the the player be given ammo first, so the weapons code doesn't refuse 
 	// to deploy a better weapon that the player may pick up because he has no ammo for it.
@@ -170,6 +172,7 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 
 				pItem = (CBasePlayerItem*)m_rghPlayerItems[i].GetEntity();
 				m_rghPlayerItems[i] = pItem->m_pNext.GetEntity();// unlink this weapon from the box
+				hadWeapon = true;
 
 				if (pPlayer->AddPlayerItem(pItem))
 				{
@@ -179,7 +182,7 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 		}
 	}
 
-	EMIT_SOUND(pOther->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+	EMIT_SOUND(pOther->edict(), CHAN_ITEM, hadWeapon ? "items/gunpickup2.wav" : "items/9mmclip1.wav", 1, ATTN_NORM);
 	SetTouch(NULL);
 	UTIL_Remove(this);
 }
@@ -190,7 +193,6 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 BOOL CWeaponBox::PackWeapon(CBasePlayerItem* pWeapon)
 {
 	CBasePlayer* plr = (CBasePlayer*)pWeapon->m_hPlayer.GetEntity();
-	if (!plr) return 0;
 
 	// is one of these weapons already packed in this box?
 	if (HasWeapon(pWeapon))
