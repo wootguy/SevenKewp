@@ -88,6 +88,8 @@ void CShotgun::Precache( void )
 	PRECACHE_SOUND ("weapons/357_cock1.wav"); // gun empty sound
 	PRECACHE_SOUND ("weapons/scock1.wav");	// cock gun
 
+	UTIL_PrecacheOther("ammo_buckshot");
+
 	PrecacheEvents();
 }
 

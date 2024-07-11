@@ -104,6 +104,8 @@ void CGauss::Precache( void )
 	m_iBalls = PRECACHE_MODEL( "sprites/hotglow.spr" );
 	m_iBeam = PRECACHE_MODEL( "sprites/smoke.spr" );
 
+	UTIL_PrecacheOther("ammo_gaussclip");
+
 	PrecacheEvents();
 }
 

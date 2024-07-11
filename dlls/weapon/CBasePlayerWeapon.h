@@ -40,7 +40,8 @@ public:
 	virtual BOOL IsUseable( void );
 	BOOL DefaultDeploy(const char *szViewModel, const char *szWeaponModel, int iAnim, const char *szAnimExt, int skiplocal = 0, int body = 0 );
 	int DefaultReload( int iClipSize, int iAnim, float fDelay, int body = 0 );
-
+	
+	virtual void GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount);
 	virtual void ItemPostFrame( void );	// called each frame by the player PostThink
 	// called by CBasePlayerWeapons ItemPostFrame()
 	virtual void PrimaryAttack( void ) { return; }				// do "+ATTACK"
@@ -94,4 +95,7 @@ public:
 	string_t m_customModelV;
 	string_t m_customModelP;
 	string_t m_customModelW;
+
+	const char* m_ammoModel;
+	const char* m_ammoModel2;
 };

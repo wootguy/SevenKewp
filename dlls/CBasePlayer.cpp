@@ -997,13 +997,26 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 
 	case PLAYER_RELOAD:
 	case PLAYER_ATTACK1:
+	case PLAYER_USE:
+	case PLAYER_DROP_ITEM:
 		switch( m_Activity )
 		{
 		case ACT_DIESIMPLE:
 			m_IdealActivity = m_Activity;
 			break;
 		default:
-			m_IdealActivity = playerAnim == PLAYER_ATTACK1 ? ACT_RANGE_ATTACK1 : ACT_RELOAD;
+			if (playerAnim == PLAYER_RELOAD) {
+				m_IdealActivity = ACT_RELOAD;
+			}
+			else if (playerAnim == PLAYER_ATTACK1) {
+				m_IdealActivity = ACT_RANGE_ATTACK1;
+			}
+			else if (playerAnim == PLAYER_DROP_ITEM) {
+				m_IdealActivity = ACT_ARM;
+			}
+			else {
+				m_IdealActivity = ACT_USE;
+			}
 			break;
 		}
 		break;
@@ -1100,13 +1113,30 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 		break;
 	}
 
+	case ACT_USE:
+	case ACT_ARM:
 	case ACT_RELOAD:
+	{
 		if ((m_Activity == ACT_HOP || m_Activity == ACT_LEAP) && pev->frame < 200) {
 			// jump animation has priority
 			return;
 		}
 
-		animDesired = LookupSequence("ref_aim_squeak");
+		bool ducking = FBitSet(pev->flags, FL_DUCKING);
+		const char* seqName = "";
+
+		if (m_IdealActivity == ACT_ARM) {
+			seqName = ducking ? "crouch_shoot_squeak" : "ref_shoot_squeak";
+		}
+		else if (m_IdealActivity == ACT_USE) {
+			seqName = ducking ? "crouch_shoot_trip" : "ref_shoot_trip";
+		}
+		else {
+			seqName = ducking ? "crouch_aim_squeak" : "ref_aim_squeak";
+		}
+
+		animDesired = LookupSequence(seqName);
+
 		if (animDesired == -1)
 			animDesired = 0;
 
@@ -1125,10 +1155,12 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 		pev->sequence = animDesired;
 		ResetSequenceInfo();
 		break;
-
+	}
 	case ACT_WALK:
 	{
-		if ((m_Activity != ACT_RANGE_ATTACK1 && m_Activity != ACT_RELOAD) || m_fSequenceFinished)
+		bool upperBodyActing = (m_Activity == ACT_RANGE_ATTACK1 || m_Activity == ACT_RELOAD 
+			|| m_Activity == ACT_USE || m_Activity == ACT_ARM);
+		if (!upperBodyActing || m_fSequenceFinished)
 		{
 			if (FBitSet(pev->flags, FL_DUCKING))	// crouching
 				strcpy_safe(szAnim, "crouch_aim_", 64);
@@ -1652,6 +1684,8 @@ void CBasePlayer::PlayerUse ( void )
 	// Hit Use on a train?
 	if ( m_afButtonPressed & IN_USE )
 	{
+		SetAnimation(PLAYER_USE);
+
 		if ( m_pTank != NULL )
 		{
 			// Stop controlling the tank
@@ -4726,9 +4760,97 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 
 			CleanupWeaponboxes();
 
+			SetAnimation(PLAYER_DROP_ITEM);
+
 			return;// we're done, so stop searching with the FOR loop.
 		}
 	}
+}
+
+void CBasePlayer::DropAmmo(bool secondary) {
+	if (!m_pActiveItem) {
+		return;
+	}
+
+	CBasePlayerWeapon* wep = m_pActiveItem.GetEntity()->GetWeaponPtr();
+
+	if (!wep) {
+		return;
+	}
+
+	int ammoIdx = secondary ? wep->SecondaryAmmoIndex() : wep->PrimaryAmmoIndex();
+
+	if (ammoIdx < 0 || ammoIdx > MAX_AMMO_TYPES) {
+		return;
+	}
+
+	int ammoLeft = m_rgAmmo[ammoIdx];
+	int ammoTake = 0;
+	const char* ammoEntName = NULL;
+	
+	wep->GetAmmoDropInfo(secondary, ammoEntName, ammoTake);
+
+	ItemInfo info;
+	wep->GetItemInfo(&info);
+	bool isLastAmmo = ammoTake >= ammoLeft && info.iMaxClip < 0;
+
+	if (!ammoEntName || ammoTake > ammoLeft || isLastAmmo) {
+		return;
+	}
+
+	m_rgAmmo[ammoIdx] = ammoLeft - ammoTake;
+
+	UTIL_MakeVectors(pev->v_angle);
+	
+	// get ammo entity model
+	string_t model = 0;
+	CBaseEntity* ammoEnt = (CBaseEntity*)CBaseEntity::Create(ammoEntName, pev->origin, pev->angles, edict());
+	if (!ammoEnt) {
+		ALERT(at_console, "Invalid ent in DropAmmo: %s\n", ammoEntName);
+		return;
+	}
+
+	model = ammoEnt->pev->model;
+
+	CWeaponBox* pWeaponBox = (CWeaponBox*)CBaseEntity::Create("weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, edict());
+	pWeaponBox->pev->angles.x = 0;
+	pWeaponBox->pev->angles.z = 0;
+	pWeaponBox->pev->avelocity = Vector(0, 256, 256);
+	pWeaponBox->pev->velocity = pev->velocity + gpGlobals->v_forward * 400;
+
+	if (wep->iFlags() & ITEM_FLAG_EXHAUSTIBLE) {
+		CBasePlayerWeapon* ammoWep = ammoEnt->GetWeaponPtr();
+		if (ammoWep) {
+			ammoWep->pev->solid = SOLID_NOT;
+			pWeaponBox->PackWeapon(ammoWep);
+		}
+		else {
+			REMOVE_ENTITY(ammoEnt->edict());
+			ALERT(at_console, "Failed to drop ammo for exhaustible weapon %s\n", STRING(ammoEntName));
+		}
+		
+	}
+	else {
+		REMOVE_ENTITY(ammoEnt->edict());
+		const char* ammoName = secondary ? wep->pszAmmo2() : wep->pszAmmo1();
+		pWeaponBox->PackAmmo(MAKE_STRING(ammoName), ammoTake);
+	}
+	
+
+	if (model) {
+		SET_MODEL(pWeaponBox->edict(), STRING(model));
+		if (!strcmp(ammoEntName, "weapon_tripmine")) {
+			pWeaponBox->pev->body = 3;
+			pWeaponBox->pev->sequence = TRIPMINE_GROUND;
+		}
+	}
+
+	pWeaponBox->SetThink(&CWeaponBox::Kill);
+	pWeaponBox->pev->nextthink = gpGlobals->time + item_despawn_time.value;
+
+	CleanupWeaponboxes();
+
+	SetAnimation(PLAYER_DROP_ITEM);
 }
 
 //=========================================================

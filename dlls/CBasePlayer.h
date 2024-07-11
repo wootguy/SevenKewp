@@ -72,6 +72,8 @@ typedef enum
 	PLAYER_DIE,
 	PLAYER_ATTACK1,
 	PLAYER_RELOAD,
+	PLAYER_DROP_ITEM,
+	PLAYER_USE,
 } PLAYER_ANIM;
 
 #define MAX_ID_RANGE 4096
@@ -290,6 +292,7 @@ public:
 	BOOL AddPlayerItem( CBasePlayerItem *pItem );
 	BOOL RemovePlayerItem( CBasePlayerItem *pItem );
 	void DropPlayerItem ( char *pszItemName );
+	void DropAmmo(bool secondary);
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
 	BOOL HasNamedPlayerItem( const char *pszItemName );
 	BOOL HasWeapons( void );// do I have ANY weapons?

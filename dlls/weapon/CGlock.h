@@ -19,6 +19,7 @@ public:
 	BOOL Deploy( void );
 	void Reload( void );
 	void WeaponIdle( void );
+	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount) override;
 
 	virtual BOOL UseDecrement( void )
 	{ 
