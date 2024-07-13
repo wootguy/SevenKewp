@@ -4,6 +4,7 @@
 #include "animation.h"
 #include "effects.h"
 #include "CActAnimating.h"
+#include "CBasePlayer.h"
 
 #define TREE_AE_ATTACK		1
 
@@ -148,15 +149,16 @@ void CXenTree::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 		for (int i = 0; i < count; i++)
 		{
-			if (pList[i] != this)
+			if( pList[i] == this ||
+				pList[i]->IsPlayer() && ((CBasePlayer*)pList[i])->IsObserver() ) // Don't hit observers
+				continue;
+
+			if (pList[i]->pev->owner != edict())
 			{
-				if (pList[i]->pev->owner != edict())
-				{
-					sound = TRUE;
-					pList[i]->TakeDamage(pev, pev, 25, DMG_CRUSH | DMG_SLASH);
-					pList[i]->pev->punchangle.x = 15;
-					pList[i]->pev->velocity = pList[i]->pev->velocity + forward * 100;
-				}
+				sound = TRUE;
+				pList[i]->TakeDamage(pev, pev, 25, DMG_CRUSH | DMG_SLASH);
+				pList[i]->pev->punchangle.x = 15;
+				pList[i]->pev->velocity = pList[i]->pev->velocity + forward * 100;
 			}
 		}
 
