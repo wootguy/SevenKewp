@@ -26,6 +26,7 @@
 #include	"weapons.h"
 #include	"game.h"
 #include "animation.h"
+#include "CBasePlayer.h"
 
 #define SF_INFOBM_RUN		0x0001
 #define SF_INFOBM_WAIT		0x0002
@@ -477,11 +478,12 @@ void CBigMomma :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			for ( int i = 0; i < count && !pHurt; i++ )
 			{
-				if ( pList[i] != this )
-				{
-					if ( pList[i]->pev->owner != edict() )
-						pHurt = pList[i];
-				}
+				if( pList[i] == this ||
+					pList[i]->IsPlayer() && ((CBasePlayer*)pList[i])->IsObserver() ) // Don't hit observers
+					continue;
+
+				if ( pList[i]->pev->owner != edict() )
+					pHurt = pList[i];
 			}
 					
 			if ( pHurt )
