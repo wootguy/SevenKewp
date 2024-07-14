@@ -393,10 +393,10 @@ void ServerDeactivate( void )
 	// Sometimes, instead of crashing, collision will be broken and no one can move because a model
 	// set insane boundaries on an cycler_sprite or something. 
 
-	g_engfuncs.pfnServerCommand("sv_cheats 1; flush; sv_cheats 0;\n");
+	g_engfuncs.pfnServerCommand("flush_mcache\n");
 	g_engfuncs.pfnServerExecute();
 
-	// To reproduce the problem and properly fix this, see this "fix" for a related problem.
+	// TODO: To reproduce the problem and properly fix this, see this "fix" for a related problem.
 	// The bug appears after loading every map in that list and switching to fy_vertstadt.
 	// The key is probably filling up the "mod_known" array in the engine. If the bug doesn't
 	// come up, make sure cycler_sprite never calls SetSize, or undo the fix in the commit
