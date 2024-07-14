@@ -53,6 +53,7 @@ public:
 	BOOL CheckRangeAttack1(float flDot, float flDist);
 	int LookupActivity(int activity);
 	void Killed(entvars_t* pevAttacker, int iGib);
+	Schedule_t* GetSchedule(void);
 	Schedule_t* GetScheduleOfType(int Type);
 	void MonsterThink(void);
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
@@ -148,6 +149,51 @@ const char* CGonome::pEventSounds[] =
 	"bullchicken/bc_spithit2.wav",
 };
 
+// Melee attack schedule
+Task_t tlGonomeMeleeAttack1[] =
+{
+	{ TASK_STOP_MOVING,			(float)0	},
+	{ TASK_FACE_ENEMY,			(float)0	},
+	{ TASK_MELEE_ATTACK1,		(float)0	},
+};
+
+Schedule_t slGonomeMeleeAttack1[] =
+{
+	{
+		tlGonomeMeleeAttack1,
+		ARRAYSIZE(tlGonomeMeleeAttack1),
+		bits_COND_NEW_ENEMY			|
+		bits_COND_ENEMY_DEAD		|
+		bits_COND_LIGHT_DAMAGE		|
+		bits_COND_HEAVY_DAMAGE		|
+		bits_COND_ENEMY_OCCLUDED,
+		0,
+		"Gonome Melee Attack1"
+	},
+};
+
+Task_t tlGonomeMeleeAttack2[] =
+{
+	{ TASK_STOP_MOVING,			(float)0	},
+	{ TASK_FACE_ENEMY,			(float)0	},
+	{ TASK_MELEE_ATTACK2,		(float)0	},
+};
+
+Schedule_t slGonomeMeleeAttack2[] =
+{
+	{
+		tlGonomeMeleeAttack2,
+		ARRAYSIZE(tlGonomeMeleeAttack2),
+		bits_COND_NEW_ENEMY			|
+		bits_COND_ENEMY_DEAD		|
+		bits_COND_LIGHT_DAMAGE		|
+		bits_COND_HEAVY_DAMAGE		|
+		bits_COND_ENEMY_OCCLUDED,
+		0,
+		"Gonome Melee Attack2"
+	},
+};
+
 // Chase enemy schedule
 Task_t tlGonomeChaseEnemy1[] =
 {
@@ -177,6 +223,8 @@ Schedule_t slGonomeChaseEnemy[] =
 
 DEFINE_CUSTOM_SCHEDULES(CGonome)
 {
+	slGonomeMeleeAttack1,
+	slGonomeMeleeAttack2,
 	slGonomeChaseEnemy
 };
 
@@ -242,6 +290,9 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 		}
 		else // Play a random attack miss sound
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackMissSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+
+		m_flNextAttack = gpGlobals->time + 0.2;
+
 		break;
 	}
 	case GONOME_EVENT_GRAB_BLOOD:
@@ -348,7 +399,7 @@ void CGonome::Precache()
 
 BOOL CGonome::CheckMeleeAttack1(float flDot, float flDist)
 {
-	if (flDist <= MELEE_ATTACK1_DISTANCE) {
+	if (flDist <= MELEE_ATTACK1_DISTANCE && m_flNextAttack < gpGlobals->time) {
 		if (flDist <= GONOME_MELEE_ATTACK2_DISTANCE) {
 			SetConditions(bits_COND_CAN_MELEE_ATTACK2);
 		}
@@ -379,9 +430,57 @@ void CGonome::Killed(entvars_t* pevAttacker, int iGib)
 	CBaseMonster::Killed(pevAttacker, iGib);
 }
 
+Schedule_t *CGonome::GetSchedule( void )
+{
+	switch( m_MonsterState )
+	{
+		case MONSTERSTATE_COMBAT:
+		{
+			if( HasConditions( bits_COND_ENEMY_DEAD ) )
+			{
+				// call base class, all code to handle dead enemies is centralized there.
+				return CBaseMonster::GetSchedule();
+			}
+
+			if( HasConditions( bits_COND_HEAVY_DAMAGE ) )
+				return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
+
+			pev->movetype = MOVETYPE_STEP;
+
+			if( m_hEnemy && m_hEnemy->pev->velocity == g_vecZero )
+			{
+				float flDistToEnemy = (pev->origin - m_hEnemy->pev->origin).Length();
+
+				if( flDistToEnemy < 64 )
+				{
+					if( HasConditions( bits_COND_CAN_MELEE_ATTACK2 ) )
+						return GetScheduleOfType( SCHED_MELEE_ATTACK2 );
+					else if( HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )
+						return GetScheduleOfType( SCHED_MELEE_ATTACK1 );
+				}
+			}
+
+			if( !HasConditions( bits_COND_CAN_RANGE_ATTACK1 ) )
+				return GetScheduleOfType( SCHED_CHASE_ENEMY );
+			else
+				return CBaseMonster::GetSchedule();
+
+			break;
+		}
+	}
+
+	return CBaseMonster::GetSchedule();
+}
+
 Schedule_t* CGonome::GetScheduleOfType(int Type) {
 	m_nextBloodSound = 0;
 
+	if (Type == SCHED_MELEE_ATTACK1 ) {
+		return &slGonomeMeleeAttack1[0];
+	}
+	if (Type == SCHED_MELEE_ATTACK2 ) {
+		return &slGonomeMeleeAttack2[0];
+	}
 	if (Type == SCHED_CHASE_ENEMY) {
 		return &slGonomeChaseEnemy[0];
 	}
@@ -405,6 +504,38 @@ void CGonome::MonsterThink(void) {
 	}
 
 	CBaseMonster::MonsterThink();
+
+	//This if block handles the attack whilst moving functionality by forcing gaitsequences
+	if( m_pSchedule == GetScheduleOfType( SCHED_CHASE_ENEMY ) )
+	{
+		if( m_hEnemy )
+		{
+			float flDistToEnemy = (pev->origin - m_hEnemy->pev->origin).Length();
+
+			if( pev->gaitsequence != 1 )
+				pev->gaitsequence = 1;
+
+			if( flDistToEnemy <= MELEE_ATTACK1_DISTANCE && FInViewCone(m_hEnemy) && m_flNextAttack < gpGlobals->time )
+			{
+				if( HasConditions( bits_COND_CAN_MELEE_ATTACK2 ) )
+				{
+					if( pev->sequence != LookupSequence("attack2") )
+					{
+						pev->sequence = LookupSequence("attack2");
+						pev->gaitsequence = 1;
+					}
+				}
+				else if( HasConditions( bits_COND_CAN_MELEE_ATTACK1 ) )
+				{
+					if( pev->sequence != LookupSequence("attack1") )
+					{
+						pev->sequence = LookupSequence("attack1");
+						pev->gaitsequence = 1;
+					}
+				}
+			}
+		}
+	}
 }
 
 // HACK
