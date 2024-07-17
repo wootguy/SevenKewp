@@ -114,13 +114,13 @@ private:
 #define IMPLEMENT_SAVERESTORE(derivedClass,baseClass) \
 	int derivedClass::Save( CSave &save )\
 	{\
-		if ( !baseClass::Save(save) )\
+		if ( gpGlobals->maxClients > 1 || !baseClass::Save(save) )\
 			return 0;\
 		return save.WriteFields( #derivedClass, this, m_SaveData, ARRAYSIZE(m_SaveData) );\
 	}\
 	int derivedClass::Restore( CRestore &restore )\
 	{\
-		if ( !baseClass::Restore(restore) )\
+		if ( gpGlobals->maxClients > 1 || !baseClass::Restore(restore) )\
 			return 0;\
 		return restore.ReadFields( #derivedClass, this, m_SaveData, ARRAYSIZE(m_SaveData) );\
 	}
