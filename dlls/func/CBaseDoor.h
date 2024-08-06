@@ -47,7 +47,7 @@ public:
 	int DoorActivate();
 	void EXPORT DoorGoUp(void);
 	void EXPORT DoorGoDown(void);
-	void EXPORT DoorHitTop(void);
+	virtual void EXPORT DoorHitTop(void);
 	void EXPORT DoorHitBottom(void);
 
 	BYTE	m_bHealthValue;// some doors are medi-kit doors, they give players health
