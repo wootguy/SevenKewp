@@ -2875,6 +2875,28 @@ void CBasePlayer::PostThink()
 			
 			float flFallDamage = g_pGameRules->FlPlayerFallDamage( this );
 
+			TraceResult tr;
+			int hullType = (pev->flags & FL_DUCKING) ? head_hull : human_hull;
+			TRACE_HULL(pev->origin, pev->origin + Vector(0,0,-1), dont_ignore_monsters, hullType, edict(), &tr);
+
+			// split fall damage with self and whatever ent was landed on
+			CBaseEntity* ent = CBaseEntity::Instance(tr.pHit);
+			if (ent->IsMonster()) {
+				flFallDamage *= 0.5f;
+
+				if (ent->IsPlayer()) {
+					ent->pev->punchangle.x += 4 + 12 * (V_min(100, flFallDamage) / 100.0f);
+					UTIL_ScreenShake(ent->pev->origin, 255.0f, 255.0f, 0.5f, 1.0f);
+				}
+				
+				// bypass friendly fire checks in case target is blocking
+				// (e.g. player sitting at the bottom of a deep tunnel with no way to avoid them)
+				ent->pev->health -= flFallDamage;
+				if (ent->pev->health <= 0) {
+					ent->Killed(pev, GIB_NORMAL);
+				}
+			}
+
 			if ( flFallDamage > pev->health )
 			{//splat
 				// note: play on item channel because we play footstep landing on body channel
