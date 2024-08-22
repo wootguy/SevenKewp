@@ -1601,3 +1601,9 @@ int CHalfLifeMultiplay::GetTeamIndex(const char* pTeamName)
 {
 	return DEFAULT_TEAM_COLOR;
 }
+
+void CHalfLifeMultiplay::ClientUserInfoChanged(CBasePlayer* pPlayer, char* infobuffer)
+{
+	// Set preferences
+	pPlayer->SetPrefsFromUserinfo(infobuffer);
+}

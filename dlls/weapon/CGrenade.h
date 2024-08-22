@@ -17,7 +17,7 @@ public:
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
 	void Explode( Vector vecSrc, Vector vecAim );
-	void Explode( TraceResult *pTrace, int bitsDamageType );
+	virtual void Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
 
 	void EXPORT BounceTouch( CBaseEntity *pOther );

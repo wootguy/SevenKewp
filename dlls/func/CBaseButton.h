@@ -35,6 +35,7 @@ public:
 	virtual int		TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
+	virtual BOOL IsAllowedToSpeak() { return TRUE; }
 
 	enum BUTTON_CODE { BUTTON_NOTHING, BUTTON_ACTIVATE, BUTTON_RETURN };
 	BUTTON_CODE	ButtonResponseToTouch(void);

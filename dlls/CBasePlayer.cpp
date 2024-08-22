@@ -674,8 +674,20 @@ void CBasePlayer::PackDeadPlayerItems( void )
 				case GR_PLR_DROP_GUN_ACTIVE:
 					if ( m_pActiveItem && pPlayerItem == m_pActiveItem.GetEntity() )
 					{
+						CBasePlayerWeapon* pWeapon = (CBasePlayerWeapon*)pPlayerItem;
+						int nIndex = iPW++;
+
 						// this is the active item. Pack it.
-						rgpPackWeapons[ iPW++ ] = (CBasePlayerWeapon *)pPlayerItem;
+						rgpPackWeapons[nIndex] = pWeapon;
+
+						//Reload the weapon before dropping it if we have ammo
+						int j = V_min( pWeapon->iMaxClip() - pWeapon->m_iClip, m_rgAmmo[pWeapon->m_iPrimaryAmmoType] );
+
+						// Add them to the clip
+						pWeapon->m_iClip += j;
+						m_rgAmmo[pWeapon->m_iPrimaryAmmoType] -= j;
+
+						TabulateAmmo();
 					}
 					break;
 
@@ -757,29 +769,41 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	iPA = 0;
 	iPW = 0;
 
-// pack the ammo
-	while ( iPackAmmo[ iPA ] != -1 )
+	bool bPackItems = TRUE;
+
+	if (iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE && iWeaponRules == GR_PLR_DROP_GUN_ACTIVE)
 	{
-		pWeaponBox->PackAmmo( MAKE_STRING( CBasePlayerItem::AmmoInfoArray[ iPackAmmo[ iPA ] ].pszName ), m_rgAmmo[ iPackAmmo[ iPA ] ] );
-		iPA++;
+		if (firstWep && FClassnameIs(firstWep->pev, "weapon_satchel") && (iPackAmmo[0] == -1 || (m_rgAmmo[iPackAmmo[0]] == 0)))
+		{
+			bPackItems = FALSE;
+		}
 	}
 
-// now pack all of the items in the lists
-	while ( rgpPackWeapons[ iPW ] )
-	{
-		// weapon unhooked from the player. Pack it into der box.
-		pWeaponBox->PackWeapon( rgpPackWeapons[ iPW ] );
-
-		if (iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE) {
-			SET_MODEL(pWeaponBox->edict(), rgpPackWeapons[iPW]->GetModelW());
-
-			if (!strcmp(STRING(rgpPackWeapons[iPW]->pev->classname), "weapon_tripmine")) {
-				pWeaponBox->pev->body = 3;
-				pWeaponBox->pev->sequence = TRIPMINE_GROUND;
-			}
+	if (bPackItems) {
+		// pack the ammo
+		while (iPackAmmo[iPA] != -1)
+		{
+			pWeaponBox->PackAmmo(MAKE_STRING(CBasePlayerItem::AmmoInfoArray[iPackAmmo[iPA]].pszName), m_rgAmmo[iPackAmmo[iPA]]);
+			iPA++;
 		}
 
-		iPW++;
+		// now pack all of the items in the lists
+		while (rgpPackWeapons[iPW])
+		{
+			// weapon unhooked from the player. Pack it into der box.
+			pWeaponBox->PackWeapon(rgpPackWeapons[iPW]);
+
+			if (iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE) {
+				SET_MODEL(pWeaponBox->edict(), rgpPackWeapons[iPW]->GetModelW());
+
+				if (!strcmp(STRING(rgpPackWeapons[iPW]->pev->classname), "weapon_tripmine")) {
+					pWeaponBox->pev->body = 3;
+					pWeaponBox->pev->sequence = TRIPMINE_GROUND;
+				}
+			}
+
+			iPW++;
+		}
 	}
 
 	pWeaponBox->pev->velocity = pev->velocity * 1.2;// weaponbox has player's velocity, then some.
@@ -882,7 +906,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	SetAnimation( PLAYER_DIE );
 	
-	m_iRespawnFrames = 0;
+	m_flRespawnTimer = 0;
 
 	pev->modelindex = g_ulModelIndexPlayer;    // don't use eyes
 
@@ -1447,18 +1471,27 @@ void CBasePlayer::PlayerDeathThink(void)
 	{
 		StudioFrameAdvance( );
 
-		m_iRespawnFrames++;				// Note, these aren't necessarily real "frames", so behavior is dependent on # of client movement commands
-		if ( m_iRespawnFrames < 120 )   // Animations should be no longer than this
+		m_flRespawnTimer += gpGlobals->frametime;
+		if (m_flRespawnTimer < 4.0f)   // 120 frames at 30fps -- animations should be no longer than this
 			return;
+	}
+
+	if (pev->deadflag == DEAD_DYING)
+	{
+		//Once we finish animating, if we're in multiplayer just make a copy of our body right away.
+		if (m_fSequenceFinished && g_pGameRules->IsMultiplayer() && pev->movetype == MOVETYPE_NONE)
+		{
+			CopyToBodyQue(pev);
+			pev->modelindex = 0;
+		}
+
+		pev->deadflag = DEAD_DEAD;
 	}
 
 	// once we're done animating our death and we're on the ground, we want to set movetype to None so our dead body won't do collisions and stuff anymore
 	// this prevents a bug where the dead body would go to a player's head if he walked over it while the dead player was clicking their button to respawn
 	if ( pev->movetype != MOVETYPE_NONE && FBitSet(pev->flags, FL_ONGROUND) )
 		pev->movetype = MOVETYPE_NONE;
-
-	if (pev->deadflag == DEAD_DYING)
-		pev->deadflag = DEAD_DEAD;
 	
 	StopAnimation();
 
@@ -1502,7 +1535,7 @@ void CBasePlayer::PlayerDeathThink(void)
 		return;
 
 	pev->button = 0;
-	m_iRespawnFrames = 0;
+	m_flRespawnTimer = 0.0f;
 
 	//ALERT(at_console, "Respawn\n");
 
@@ -2961,23 +2994,23 @@ pt_end:
 				
 				if ( gun && gun->UseDecrement() )
 				{
-					gun->m_flNextPrimaryAttack		= V_max( gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0 );
-					gun->m_flNextSecondaryAttack	= V_max( gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001 );
+					gun->m_flNextPrimaryAttack		= V_max( gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0f );
+					gun->m_flNextSecondaryAttack	= V_max( gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001f );
 
 					if ( gun->m_flTimeWeaponIdle != 1000 )
 					{
-						gun->m_flTimeWeaponIdle		= V_max( gun->m_flTimeWeaponIdle - gpGlobals->frametime, -0.001 );
+						gun->m_flTimeWeaponIdle		= V_max( gun->m_flTimeWeaponIdle - gpGlobals->frametime, -0.001f );
 					}
 
 					if ( gun->pev->fuser1 != 1000 )
 					{
-						gun->pev->fuser1	= V_max( gun->pev->fuser1 - gpGlobals->frametime, -0.001 );
+						gun->pev->fuser1	= V_max( gun->pev->fuser1 - gpGlobals->frametime, -0.001f );
 					}
 
 					// Only decrement if not flagged as NO_DECREMENT
 //					if ( gun->m_flPumpTime != 1000 )
 				//	{
-				//		gun->m_flPumpTime	= V_max( gun->m_flPumpTime - gpGlobals->frametime, -0.001 );
+				//		gun->m_flPumpTime	= V_max( gun->m_flPumpTime - gpGlobals->frametime, -0.001f );
 				//	}
 					
 				}
@@ -3015,6 +3048,8 @@ pt_end:
 
 void CBasePlayer::Spawn( void )
 {
+	m_flStartCharge = gpGlobals->time;
+
 	pev->classname		= MAKE_STRING("player");
 	pev->health			= 100;
 	pev->armorvalue		= 0;
@@ -3267,12 +3302,21 @@ int CBasePlayer::Restore( CRestore &restore )
 
 	RenewItems();
 
+	//Resync ammo data so you can reload - Solokiller
+	TabulateAmmo();
+
 #if defined( CLIENT_WEAPONS )
 	// HACK:	This variable is saved/restored in CBaseMonster as a time variable, but we're using it
 	//			as just a counter.  Ideally, this needs its own variable that's saved as a plain float.
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
 	m_flNextAttack = UTIL_WeaponTimeBase();
 #endif
+
+	// Force a flashlight update for the HUD
+	if (m_flFlashLightTime == 0)
+	{
+		m_flFlashLightTime = 1;
+	}
 
 	return status;
 }
@@ -4323,6 +4367,22 @@ void CBasePlayer :: UpdateClientData( void )
 	}
 }
 
+void CBasePlayer::SetPrefsFromUserinfo(char* infobuffer)
+{
+	const char* pszKeyVal;
+
+	// Set autoswitch preference
+	pszKeyVal = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autowepswitch");
+	if (FStrEq(pszKeyVal, ""))
+	{
+		m_iAutoWepSwitch = 1;
+	}
+	else
+	{
+		m_iAutoWepSwitch = atoi(pszKeyVal);
+	}
+}
+
 //=========================================================
 // FBecomeProne - Overridden for the player to set the proper
 // physics flags when a barnacle grabs player.
@@ -4442,7 +4502,7 @@ Vector CBasePlayer :: GetAutoaimVector( float flDelta )
 	// m_vecAutoAim = m_vecAutoAim * 0.99;
 
 	// Don't send across network if sv_aim is 0
-	if ( g_psv_aim->value != 0 )
+	if ( g_psv_aim->value != 0 && g_psv_allow_autoaim->value != 0)
 	{
 		if ( m_vecAutoAim.x != m_lastx ||
 			 m_vecAutoAim.y != m_lasty )
@@ -4469,7 +4529,7 @@ Vector CBasePlayer :: AutoaimDeflection( Vector &vecSrc, float flDist, float flD
 	edict_t		*bestent;
 	TraceResult tr;
 
-	if ( g_psv_aim->value == 0 )
+	if ( g_psv_aim->value == 0 || g_psv_allow_autoaim->value == 0)
 	{
 		m_fOnTarget = FALSE;
 		return g_vecZero;

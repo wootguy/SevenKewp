@@ -30,6 +30,8 @@ public:
 	float m_flNextReload;
 	int m_iShell;
 
+	void ItemPostFrame(void) override;
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )

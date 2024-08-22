@@ -93,7 +93,7 @@ void CMultiManager::KeyValue(KeyValueData* pkvd)
 				triggerMode = atoi(triggerTypeSep + 1);
 			}
 
-			UTIL_StripToken(pkvd->szKeyName, tmp);
+			UTIL_StripToken(pkvd->szKeyName, tmp, sizeof(tmp));
 			m_iTargetName[m_cTargets] = ALLOC_STRING(tmp);
 			m_flTargetDelay[m_cTargets] = atof(pkvd->szValue);
 			m_triggerMode[m_cTargets] = triggerMode;

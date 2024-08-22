@@ -83,6 +83,10 @@ void CBasePlayerItem::FallThink(void)
 
 		Materialize();
 	}
+	else if (!m_hPlayer)
+	{
+		SetThink(NULL);
+	}
 }
 
 //=========================================================

@@ -73,6 +73,7 @@ cvar_t  mp_survival_restart = { "mp_survival_restart", "0", FCVAR_SERVER, 0, 0 }
 // Engine Cvars
 cvar_t 	*g_psv_gravity = NULL;
 cvar_t	*g_psv_aim = NULL;
+cvar_t* g_psv_allow_autoaim = NULL;
 cvar_t	*g_footsteps = NULL;
 cvar_t	*g_developer = NULL;
 cvar_t	*sv_max_client_edicts = NULL;
@@ -149,6 +150,7 @@ void GameDLLInit( void )
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
+	g_psv_allow_autoaim = CVAR_GET_POINTER("sv_allow_autoaim");
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 	g_developer = CVAR_GET_POINTER( "developer" );
 	sv_max_client_edicts = CVAR_GET_POINTER( "sv_max_client_edicts" );

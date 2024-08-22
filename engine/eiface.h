@@ -1432,6 +1432,9 @@ typedef struct enginefuncs_s
 	*	@return Key index in the command line buffer, or 0 if it wasn't found.
 	*/
 	int (*pfnCheckParm)(const char* pszCmdLineToken, char** ppNext);
+
+	// new mystery function from hl 25th sdk update
+	edict_t* (*pfnPEntityOfEntIndexAllEntities) (int iEntIndex);
 } enginefuncs_t;
 
 

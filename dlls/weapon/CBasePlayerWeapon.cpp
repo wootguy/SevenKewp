@@ -455,7 +455,7 @@ BOOL CBasePlayerWeapon::IsUseable(void)
 		if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] <= 0 && iMaxAmmo1() != -1)
 		{
 			// clip is empty (or nonexistant) and the player has no more ammo of this type. 
-			return FALSE;
+			return CanDeploy();
 		}
 	}
 

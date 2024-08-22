@@ -170,13 +170,16 @@ void CMP5::PrimaryAttack()
 	lagcomp_begin(m_pPlayer);
 
 #ifdef CLIENT_DLL
-	if ( !bIsMultiplayer() )
+	if ( bIsMultiplayer() )
 #else
-	if ( !g_pGameRules->IsMultiplayer() )
+	if ( g_pGameRules->IsMultiplayer() )
 #endif
 	{
 		// optimized multiplayer. Widened to make it easier to hit a moving player
-		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_6DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		//vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_6DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+	
+		// using wider sp spread to make it harder for single players to rush through maps
+		vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, VECTOR_CONE_6DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
 	}
 	else
 	{

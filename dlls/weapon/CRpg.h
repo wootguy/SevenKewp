@@ -76,6 +76,9 @@ public:
 	void EXPORT FollowThink( void );
 	void EXPORT IgniteThink( void );
 	void EXPORT RocketTouch( CBaseEntity *pOther );
+
+	virtual void Explode(TraceResult* pTrace, int bitsDamageType);
+
 	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher );
 
 	int m_iTrail;

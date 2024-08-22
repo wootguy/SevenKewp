@@ -512,6 +512,14 @@ void ClientCommand(edict_t* pEntity)
 		strncpy(command, pcmd, 127);
 		command[127] = '\0';
 
+		// First parse the name and remove any %'s
+		for (char* pApersand = command; pApersand != NULL && *pApersand != 0; pApersand++)
+		{
+			// Replace it with a space
+			if (*pApersand == '%')
+				*pApersand = ' ';
+		}
+
 		// tell the user they entered an unknown command
 		UTIL_ClientPrint(pEntity, print_console, UTIL_VarArgs("Unknown command: %s\n", command));
 	}
