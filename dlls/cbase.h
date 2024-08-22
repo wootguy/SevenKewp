@@ -106,6 +106,7 @@ class CBaseEntity;
 class CBaseMonster;
 class CBasePlayerWeapon;
 class CTalkSquadMonster;
+class CBaseToggle;
 
 
 #define	SF_NORESPAWN	( 1 << 10 )// !!!set this bit on guns and stuff that should never respawn.
@@ -192,6 +193,7 @@ public:
 	virtual CBaseMonster *MyMonsterPointer( void ) { return NULL;}
 	virtual CBasePlayerWeapon* GetWeaponPtr(void) { return NULL; };
 	virtual CTalkSquadMonster * MyTalkSquadMonsterPointer( void ) { return NULL;}
+	virtual CBaseToggle* MyTogglePointer(void) { return NULL; }
 	virtual	int		GetToggleState( void ) { return TS_AT_TOP; }
 	virtual void	AddPoints( int score, BOOL bAllowNegativeScore ) {}
 	virtual void	AddPointsToTeam( int score, BOOL bAllowNegativeScore ) {}
@@ -580,6 +582,14 @@ public:
 	void AngularMove( Vector vecDestAngle, float flSpeed );
 	void AngularMoveDone( void );
 	BOOL IsLockedByMaster( void );
+
+	virtual CBaseToggle* MyTogglePointer(void) { return this; }
+
+	// monsters use this, but so could buttons for instance
+	virtual void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation);
+	virtual void PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity* pListener);
+	virtual void SentenceStop(void);
+	virtual BOOL IsAllowedToSpeak() { return FALSE; }
 
 	static float		AxisValue( int flags, const Vector &angles );
 	static void			AxisDir( entvars_t *pev );

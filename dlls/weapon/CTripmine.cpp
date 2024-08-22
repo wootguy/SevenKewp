@@ -405,7 +405,7 @@ int CTripmine::GetItemInfo(ItemInfo *p)
 
 BOOL CTripmine::Deploy( )
 {
-	//pev->body = 0;
+	pev->body = 0;
 	return DefaultDeploy(GetModelV(), GetModelP(), TRIPMINE_DRAW, "trip" );
 }
 

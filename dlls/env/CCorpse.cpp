@@ -23,7 +23,7 @@ LINK_ENTITY_TO_CLASS(bodyque, CCorpse);
 //
 void CopyToBodyQue(entvars_t* pev)
 {
-	if (pev->effects & EF_NODRAW)
+	if ((pev->effects & EF_NODRAW) || pev->modelindex == 0)
 		return;
 
 	entvars_t* pevHead = VARS(g_pBodyQueueHead);

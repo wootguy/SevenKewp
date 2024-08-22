@@ -405,7 +405,7 @@ EXPORT void	UTIL_LogPlayerEvent( edict_t* plr, const char *fmt, ... );
 // Sorta like FInViewCone, but for nonmonsters. 
 EXPORT float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir );
 
-EXPORT void UTIL_StripToken( const char *pKey, char *pDest );// for redundant keynames
+EXPORT void UTIL_StripToken( const char *pKey, char *pDest, int nLen);// for redundant keynames
 
 // Misc functions
 EXPORT void SetMovedir(entvars_t* pev);
@@ -590,7 +590,7 @@ enum svc_commands_e
 
 // sentence groups
 #define CBSENTENCENAME_MAX 16
-#define CVOXFILESENTENCEMAX		1536		// max number of sentences in game. NOTE: this must match
+#define CVOXFILESENTENCEMAX		2048		// max number of sentences in game. NOTE: this must match
 											// CVOXFILESENTENCEMAX in engine\sound.h!!!
 
 extern char gszallsentencenames[CVOXFILESENTENCEMAX][CBSENTENCENAME_MAX];
