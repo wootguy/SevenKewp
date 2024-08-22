@@ -598,9 +598,9 @@ void CGauss::WeaponIdle( void )
 	{
 		switch (RANDOM_LONG(0,3))
 		{
-		case 0:	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/electro4.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM); break;
-		case 1:	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/electro5.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM); break;
-		case 2:	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/electro6.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM); break;
+		case 0:	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/electro4.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM); break;
+		case 1:	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/electro5.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM); break;
+		case 2:	EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/electro6.wav", RANDOM_FLOAT(0.7, 0.8), ATTN_NORM); break;
 		case 3:	break; // no sound
 		}
 		m_pPlayer->m_flPlayAftershock = 0.0;
