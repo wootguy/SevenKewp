@@ -330,7 +330,7 @@ int CSporeLauncher::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_sporelauncher";
 
 	p->pszAmmo1 = "spores";
-	p->iMaxAmmo1 = SPORE_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_spores;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = SPORELAUNCHER_MAX_CLIP;

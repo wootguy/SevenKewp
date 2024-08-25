@@ -20,6 +20,7 @@
 #include "nodes.h"
 #include "CBasePlayer.h"
 #include "weapon/CGlock.h"
+#include "skill.h"
 
 enum glock_e {
 	GLOCK_IDLE1 = 0,
@@ -82,7 +83,7 @@ int CGlock::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "9mm";
-	p->iMaxAmmo1 = _9MM_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_9mm;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = GLOCK_MAX_CLIP;

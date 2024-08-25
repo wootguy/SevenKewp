@@ -17,6 +17,7 @@
 #include "CSatchel.h"
 #include "CHandGrenade.h"
 #include "CSqueak.h"
+#include "skill.h"
 
 LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip);
 
@@ -99,31 +100,31 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 	}
 
 	if (!strcmp(itemName, "ammo_357")) {
-		pPlayer->GiveAmmo(AMMO_357BOX_GIVE * count, "357", _357_MAX_CARRY);
+		pPlayer->GiveAmmo(AMMO_357BOX_GIVE * count, "357", gSkillData.sk_ammo_max_357);
 	}
 	else if (!strcmp(itemName, "ammo_crossbow")) {
-		pPlayer->GiveAmmo(AMMO_CROSSBOWCLIP_GIVE * count, "bolts", BOLT_MAX_CARRY);
+		pPlayer->GiveAmmo(AMMO_CROSSBOWCLIP_GIVE * count, "bolts", gSkillData.sk_ammo_max_bolts);
 	}
 	else if (!strcmp(itemName, "ammo_gaussclip")) {
-		pPlayer->GiveAmmo(AMMO_URANIUMBOX_GIVE * count, "uranium", URANIUM_MAX_CARRY);
+		pPlayer->GiveAmmo(AMMO_URANIUMBOX_GIVE * count, "uranium", gSkillData.sk_ammo_max_uranium);
 	}
 	else if (!strcmp(itemName, "ammo_9mmclip")) {
-		pPlayer->GiveAmmo(AMMO_GLOCKCLIP_GIVE * count, "9mm", _9MM_MAX_CARRY);
+		pPlayer->GiveAmmo(AMMO_GLOCKCLIP_GIVE * count, "9mm", gSkillData.sk_ammo_max_9mm);
 	}
 	else if (!strcmp(itemName, "ammo_9mmAR")) {
-		pPlayer->GiveAmmo(AMMO_MP5CLIP_GIVE * count, "9mm", _9MM_MAX_CARRY);
+		pPlayer->GiveAmmo(AMMO_MP5CLIP_GIVE * count, "9mm", gSkillData.sk_ammo_max_9mm);
 	}
 	else if (!strcmp(itemName, "ammo_9mmbox")) {
-		pPlayer->GiveAmmo(AMMO_CHAINBOX_GIVE * count, "9mm", _9MM_MAX_CARRY);
+		pPlayer->GiveAmmo(AMMO_CHAINBOX_GIVE * count, "9mm", gSkillData.sk_ammo_max_9mm);
 	}
 	else if (!strcmp(itemName, "ammo_ARgrenades")) {
-		pPlayer->GiveAmmo(AMMO_M203BOX_GIVE * count, "ARgrenades", M203_GRENADE_MAX_CARRY);
+		pPlayer->GiveAmmo(AMMO_M203BOX_GIVE * count, "ARgrenades", gSkillData.sk_ammo_max_argrenades);
 	}
 	else if (!strcmp(itemName, "ammo_rpgclip")) {
-		pPlayer->GiveAmmo(AMMO_RPGCLIP_GIVE * count, "rockets", ROCKET_MAX_CARRY);
+		pPlayer->GiveAmmo(AMMO_RPGCLIP_GIVE * count, "rockets", gSkillData.sk_ammo_max_rockets);
 	}
 	else if (!strcmp(itemName, "ammo_buckshot")) {
-		pPlayer->GiveAmmo(AMMO_BUCKSHOTBOX_GIVE * count, "buckshot", BUCKSHOT_MAX_CARRY);
+		pPlayer->GiveAmmo(AMMO_BUCKSHOTBOX_GIVE * count, "buckshot", gSkillData.sk_ammo_max_buckshot);
 	}
 	else if (!strcmp(itemName, "weapon_tripmine")) {
 		int giveAmount = count;
@@ -132,7 +133,7 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 			giveAmount -= 1;
 		}
 		if (giveAmount > 0)
-			pPlayer->GiveAmmo(TRIPMINE_DEFAULT_GIVE * giveAmount, "Trip Mine", TRIPMINE_MAX_CARRY);
+			pPlayer->GiveAmmo(TRIPMINE_DEFAULT_GIVE * giveAmount, "Trip Mine", gSkillData.sk_ammo_max_tripmines);
 	}
 	else if (!strcmp(itemName, "weapon_snark")) {
 		int giveAmount = count;
@@ -141,7 +142,7 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 			giveAmount -= 1;
 		}
 		if (giveAmount > 0)
-			pPlayer->GiveAmmo(SNARK_DEFAULT_GIVE * giveAmount, "Snarks", SNARK_MAX_CARRY);
+			pPlayer->GiveAmmo(SNARK_DEFAULT_GIVE * giveAmount, "Snarks", gSkillData.sk_ammo_max_snarks);
 	}
 	else if (!strcmp(itemName, "weapon_satchel")) {
 		int giveAmount = count;
@@ -150,7 +151,7 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 			giveAmount -= 1;
 		}
 		if (giveAmount > 0)
-			pPlayer->GiveAmmo(SATCHEL_DEFAULT_GIVE * giveAmount, "Satchel Charge", SATCHEL_MAX_CARRY);
+			pPlayer->GiveAmmo(SATCHEL_DEFAULT_GIVE * giveAmount, "Satchel Charge", gSkillData.sk_ammo_max_satchels);
 	}
 	else if (!strcmp(itemName, "weapon_handgrenade")) {
 		int giveAmount = count;
@@ -159,7 +160,7 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 			giveAmount -= 1;
 		}
 		if (giveAmount > 0)
-			pPlayer->GiveAmmo(HANDGRENADE_DEFAULT_GIVE * giveAmount, "Hand Grenade", HANDGRENADE_MAX_CARRY);
+			pPlayer->GiveAmmo(HANDGRENADE_DEFAULT_GIVE * giveAmount, "Hand Grenade", gSkillData.sk_ammo_max_grenades);
 	}
 	else {
 		for (int j = 0; j < count; j++) {

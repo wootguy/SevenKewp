@@ -21,7 +21,7 @@ class CMP5AmmoGrenade : public CBasePlayerAmmo
 			giveAmount = 1;
 		}
 
-		int bResult = (pOther->GiveAmmo(giveAmount, "ARgrenades", M203_GRENADE_MAX_CARRY) != -1);
+		int bResult = (pOther->GiveAmmo(giveAmount, "ARgrenades", gSkillData.sk_ammo_max_argrenades) != -1);
 
 		if (bResult)
 		{

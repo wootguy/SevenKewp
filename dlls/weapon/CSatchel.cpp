@@ -197,7 +197,7 @@ int CSatchel::AddDuplicate( CBasePlayerItem *pOriginal )
 			}
 		}
 
-		if (pSatchel->m_chargeReady != 0 && (nSatchelsInPocket + nNumSatchels) >= SATCHEL_MAX_CARRY)
+		if (pSatchel->m_chargeReady != 0 && (nSatchelsInPocket + nNumSatchels) >= gSkillData.sk_ammo_max_satchels)
 		{
 			// player has some satchels deployed. Refuse to add more.
 			return FALSE;
@@ -253,7 +253,7 @@ int CSatchel::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "Satchel Charge";
-	p->iMaxAmmo1 = SATCHEL_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_satchels;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
