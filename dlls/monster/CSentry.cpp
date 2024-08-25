@@ -179,6 +179,8 @@ void CSentry::SentryDeath(void)
 		pev->framerate = 0;
 		SetThink(NULL);
 	}
+
+	UpdateShockEffect();
 }
 
 void CSentry::Deploy(void)

@@ -1678,6 +1678,30 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 		return TRUE;
 	}
 
+	{
+		// this works better than the 2D plane checks (sc_tropical1_final snipers)
+		Vector gunPos = GetGunPosition();
+		Vector targetPos = m_hEnemy->Center();
+		TraceResult tr, tr2;
+		TRACE_HULL(gunPos, targetPos, dont_ignore_monsters, head_hull, edict(), &tr);
+		
+		// do a line check too in case head hull hit a wall or something
+		TRACE_LINE(gunPos, targetPos, dont_ignore_monsters, edict(), &tr2);
+
+		CBaseEntity* phit = CBaseEntity::Instance(tr.pHit);
+		CBaseEntity* phit2 = CBaseEntity::Instance(tr2.pHit);
+
+		if (phit && IRelationship(phit) == R_AL) {
+			return FALSE;
+		}
+		if (phit2 && IRelationship(phit2) == R_AL) {
+			return FALSE;
+		}
+
+		return TRUE;
+	}
+	
+
 	CPlane	backPlane;
 	CPlane  leftPlane;
 	CPlane	rightPlane;

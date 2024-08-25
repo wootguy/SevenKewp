@@ -93,6 +93,7 @@ public:
 	static void Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity);
 	void Touch(CBaseEntity* pOther);
 	void EXPORT Animate(void);
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	int  m_maxFrame;
 };

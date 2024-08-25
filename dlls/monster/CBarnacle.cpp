@@ -379,6 +379,7 @@ void CBarnacle :: WaitTillDead ( void )
 
 	float flInterval = StudioFrameAdvance( 0.1 );
 	DispatchAnimEvents ( flInterval );
+	UpdateShockEffect();
 
 	if ( m_fSequenceFinished )
 	{
