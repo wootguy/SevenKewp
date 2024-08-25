@@ -1678,6 +1678,11 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 		return TRUE;
 	}
 
+	if (!m_hEnemy) {
+		// if there's no enemy, pretend there's a friendly in the way, so the grunt won't shoot.
+		return FALSE;
+	}
+
 	{
 		// this works better than the 2D plane checks (sc_tropical1_final snipers)
 		Vector gunPos = GetGunPosition();
@@ -1711,16 +1716,7 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 	Vector	v_left;
 
 	//!!!BUGBUG - to fix this, the planes must be aligned to where the monster will be firing its gun, not the direction it is facing!!!
-
-	if (m_hEnemy != NULL)
-	{
-		UTIL_MakeVectors(UTIL_VecToAngles(m_hEnemy->Center() - pev->origin));
-	}
-	else
-	{
-		// if there's no enemy, pretend there's a friendly in the way, so the grunt won't shoot.
-		return FALSE;
-	}
+	UTIL_MakeVectors(UTIL_VecToAngles(m_hEnemy->Center() - pev->origin));
 
 	//UTIL_MakeVectors ( pev->angles );
 
