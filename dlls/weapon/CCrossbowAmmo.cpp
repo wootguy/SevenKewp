@@ -1,5 +1,6 @@
 #include "CBasePlayerAmmo.h"
 #include "CCrossbow.h"
+#include "skill.h"
 
 class CCrossbowAmmo : public CBasePlayerAmmo
 {
@@ -16,7 +17,7 @@ class CCrossbowAmmo : public CBasePlayerAmmo
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
-		if (pOther->GiveAmmo( AMMO_CROSSBOWCLIP_GIVE, "bolts", BOLT_MAX_CARRY ) != -1)
+		if (pOther->GiveAmmo( AMMO_CROSSBOWCLIP_GIVE, "bolts", gSkillData.sk_ammo_max_bolts ) != -1)
 		{
 			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
 			return TRUE;
