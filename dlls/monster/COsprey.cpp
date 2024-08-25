@@ -835,11 +835,13 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		}
 	}
 
-	bool hitHard = flDamage > 50;
+	bool hitHard = flDamage >= 50;
 	bool isShock = bitsDamageType & DMG_SHOCK;
+	bool isEgon = bitsDamageType & DMG_ENERGYBEAM;
+	bool hitWeakpoint = ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3;
 
 	// hit hard, hits cockpit, hits engines
-	if (hitHard || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3 || isBlast)
+	if (hitHard || hitWeakpoint || isBlast || isEgon)
 	{
 		Vector dir = ptr->vecPlaneNormal;
 		Vector pos = ptr->vecEndPos;
@@ -869,7 +871,7 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 			gibCount = 16;
 			gibModel = m_iBodyGibs;
 		}
-		else if (!isShock) {
+		else if (!isShock && !isEgon) {
 			// cockpit
 			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 			WRITE_BYTE(TE_STREAK_SPLASH);
@@ -907,7 +909,7 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 			}
 		}
 
-		if (isShock) {
+		if (isShock || isEgon) {
 			gibCount = 0;
 		}
 

@@ -48,6 +48,7 @@ public:
 	BOOL ShouldWeaponIdle( void ) { return TRUE; };
 
 	EHANDLE m_hSpot;
+	EHANDLE m_hBeam;
 	int m_fSpotActive;
 	int m_cActiveRockets;// how many missiles in flight from this launcher right now?
 

@@ -958,13 +958,15 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	Vector dir = ptr->vecPlaneNormal;
 	Vector pos = ptr->vecEndPos;
 
-	bool hitHard = flDamage > 50;
+	bool hitHard = flDamage >= 50;
 	bool isShock = bitsDamageType & DMG_SHOCK;
+	bool isEgon = bitsDamageType & DMG_ENERGYBEAM;
+	bool hitWeakpoint = ptr->iHitgroup == 1 || ptr->iHitgroup == 2;
 
 	if (isShock) {
 		gibCount = 0;
 	}
-	else if (!isBlast && (ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || hitHard)) {
+	else if (!isBlast && (hitWeakpoint || hitHard)) {
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 		WRITE_BYTE(TE_STREAK_SPLASH);
 		WRITE_COORD(pos.x);
@@ -980,7 +982,7 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		MESSAGE_END();
 
 		Vector sprPos = pos + dir * 4;
-		if (ptr->iHitgroup == 2 || ptr->iHitgroup == 1) {
+		if (hitWeakpoint) {
 			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 			WRITE_BYTE(TE_EXPLOSION);
 			WRITE_COORD(sprPos.x);
@@ -1036,7 +1038,7 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	}
 
 	// hit hard, hits cockpit, hits engines
-	if (hitHard || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || isBlast)
+	if (hitHard || hitWeakpoint || isBlast || isEgon)
 	{
 		// ALERT( at_console, "%.0f\n", flDamage );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );

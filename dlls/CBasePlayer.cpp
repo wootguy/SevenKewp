@@ -2885,6 +2885,8 @@ void CBasePlayer::PostThink()
 // do weapon stuff
 	ItemPostFrame( );
 
+	ImpulseCommands();
+
 // check to see if player landed hard enough to make a sound
 // falling farther than half of the maximum safe distance, but not as far a max safe distance will
 // play a bootscrape sound, and no damage will be inflicted. Fallling a distance shorter than half
@@ -4043,8 +4045,6 @@ void CBasePlayer::ItemPostFrame()
 	{
 		return;
 	}
-
-	ImpulseCommands();
 
 	if (!m_pActiveItem)
 		return;
