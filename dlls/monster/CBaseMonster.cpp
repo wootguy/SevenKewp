@@ -2842,6 +2842,7 @@ float CBaseMonster::ChangeYaw(int yawSpeed)
 	ideal = pev->ideal_yaw;
 	if (current != ideal)
 	{
+		/*
 		if (m_flLastYawTime == 0.f)
 		{
 			m_flLastYawTime = gpGlobals->time - gpGlobals->frametime;
@@ -2855,6 +2856,10 @@ float CBaseMonster::ChangeYaw(int yawSpeed)
 			delta = 0.25f;
 
 		speed = (float)yawSpeed * delta * 2;
+		*/
+		// undid HL25 change. It's causing jerky movement.
+		speed = (float)yawSpeed * gpGlobals->frametime * 10;
+
 		move = ideal - current;
 
 		if (ideal > current)

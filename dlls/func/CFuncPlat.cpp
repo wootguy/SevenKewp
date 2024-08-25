@@ -191,13 +191,15 @@ void CFuncPlat::HitTop(void)
 
 void CFuncPlat::Blocked(CBaseEntity* pOther)
 {
-	ALERT(at_aiconsole, "%s Blocked by %s\n", STRING(pev->classname), STRING(pOther->pev->classname));
 	// Hurt the blocker a little
-	pOther->TakeDamage(pev, pev, 1, DMG_CRUSH);
+	if (pev->dmg || FClassnameIs(pOther->pev, "monster_tripmine")) {
+		pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
+	}
 
 	if (pOther->IsMonster() && !pOther->IsAlive()) {
 		// don't let corpses block anything
 		pOther->Killed(pev, GIB_ALWAYS);
+		return; // don't bounce back because the path is clear now
 	}
 
 	if (pev->plat_noiseMoving)

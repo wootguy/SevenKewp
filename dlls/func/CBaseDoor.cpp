@@ -637,7 +637,7 @@ void CBaseDoor::Blocked(CBaseEntity* pOther)
 	CBaseDoor* pDoor = NULL;
 
 	// Hurt the blocker a little.
-	if (pev->dmg) {
+	if (pev->dmg || FClassnameIs(pOther->pev, "monster_tripmine")) {
 		pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
 	}
 
