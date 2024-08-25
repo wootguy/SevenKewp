@@ -385,6 +385,8 @@ void CRpg::Reload( void )
 		CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 		m_pSpot->Suspend( 2.1 );
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.1;
+
+		m_hBeam->pev->effects |= EF_NODRAW;
 	}
 #endif
 
@@ -509,6 +511,9 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 		m_pSpot->Killed( NULL, GIB_NEVER );
 		m_hSpot = NULL;
 	}
+	if (m_hBeam) {
+		UTIL_Remove(m_hBeam);
+	}
 #endif
 
 }
@@ -576,6 +581,8 @@ void CRpg::SecondaryAttack()
 	{
 		m_pSpot->Killed( NULL, GIB_NORMAL );
 		m_hSpot = NULL;
+
+		UTIL_Remove(m_hBeam);
 	}
 #endif
 
@@ -644,6 +651,17 @@ void CRpg::UpdateSpot( void )
 		}
 		CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 
+		if (!m_hBeam) {
+			CBeam* beam = CBeam::BeamCreate("sprites/laserbeam.spr", 8);
+			beam->EntsInit(m_pPlayer->entindex(), m_pSpot->entindex());
+			beam->SetStartAttachment(1);
+			beam->SetColor(255, 32, 32);
+			beam->SetNoise(0);
+			beam->SetBrightness(16);
+			beam->SetScrollRate(64);
+			m_hBeam = beam;
+		}
+
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 		Vector vecSrc = m_pPlayer->GetGunPosition( );;
 		Vector vecAiming = gpGlobals->v_forward;
@@ -652,6 +670,20 @@ void CRpg::UpdateSpot( void )
 		UTIL_TraceLine ( vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr );
 		
 		UTIL_SetOrigin( m_pSpot->pev, tr.vecEndPos );
+
+		CBeam* beam = (CBeam*)m_hBeam.GetEntity();
+		if (beam) {
+			beam->pev->effects = m_pSpot->pev->effects;
+			if (UTIL_PointContents(tr.vecEndPos) == CONTENTS_SKY) {
+				// dot exits the PVS in this case
+				beam->PointEntInit(tr.vecEndPos, m_pPlayer->entindex());
+				beam->SetEndAttachment(1);
+			}
+			else {
+				beam->EntsInit(m_pPlayer->entindex(), m_pSpot->entindex());
+				beam->SetStartAttachment(1);
+			}
+		}
 	}
 #endif
 

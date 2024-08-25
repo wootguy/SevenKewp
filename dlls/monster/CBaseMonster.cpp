@@ -4807,29 +4807,35 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 	{
 		m_LastHitGroup = ptr->iHitgroup;
 
-		switch (ptr->iHitgroup)
-		{
-		case HITGROUP_GENERIC:
-			break;
-		case HITGROUP_HEAD:
-			flDamage *= gSkillData.sk_monster_head;
-			break;
-		case HITGROUP_CHEST:
-			flDamage *= gSkillData.sk_monster_chest;
-			break;
-		case HITGROUP_STOMACH:
-			flDamage *= gSkillData.sk_monster_stomach;
-			break;
-		case HITGROUP_LEFTARM:
-		case HITGROUP_RIGHTARM:
-			flDamage *= gSkillData.sk_monster_arm;
-			break;
-		case HITGROUP_LEFTLEG:
-		case HITGROUP_RIGHTLEG:
-			flDamage *= gSkillData.sk_monster_leg;
-			break;
-		default:
-			break;
+		if (!(bitsDamageType & DMG_BLAST)) {
+			switch (ptr->iHitgroup)
+			{
+			case HITGROUP_GENERIC:
+				break;
+			case HITGROUP_HEAD:
+				flDamage *= gSkillData.sk_monster_head;
+				break;
+			case HITGROUP_CHEST:
+				flDamage *= gSkillData.sk_monster_chest;
+				break;
+			case HITGROUP_STOMACH:
+				flDamage *= gSkillData.sk_monster_stomach;
+				break;
+			case HITGROUP_LEFTARM:
+			case HITGROUP_RIGHTARM:
+				flDamage *= gSkillData.sk_monster_arm;
+				break;
+			case HITGROUP_LEFTLEG:
+			case HITGROUP_RIGHTLEG:
+				flDamage *= gSkillData.sk_monster_leg;
+				break;
+			default:
+				break;
+			}
+		}
+		else {
+			// blast damage shouldn't hit a single point like bullets.
+			// consider it to always be a body/generic shot
 		}
 
 		if (IsMachine() && flDamage > 0) {
