@@ -232,7 +232,7 @@ CGrappleTip::TargetClass CGrappleTip::ClassifyTarget(CBaseEntity* pTarget)
 	}
 	else
 	{
-		for (size_t uiIndex = 0; uiIndex < std::size(grapple_small); ++uiIndex)
+		for (size_t uiIndex = 0; uiIndex < ARRAY_SZ(grapple_small); ++uiIndex)
 		{
 			if (!strcmp(STRING(pTarget->pev->classname), grapple_small[uiIndex]))
 			{
@@ -243,7 +243,7 @@ CGrappleTip::TargetClass CGrappleTip::ClassifyTarget(CBaseEntity* pTarget)
 			}
 		}
 
-		for (size_t uiIndex = 0; uiIndex < std::size(grapple_medium); ++uiIndex)
+		for (size_t uiIndex = 0; uiIndex < ARRAY_SZ(grapple_medium); ++uiIndex)
 		{
 			if (!strcmp(STRING(pTarget->pev->classname), grapple_medium[uiIndex]))
 			{
@@ -254,7 +254,7 @@ CGrappleTip::TargetClass CGrappleTip::ClassifyTarget(CBaseEntity* pTarget)
 			}
 		}
 
-		for (size_t uiIndex = 0; uiIndex < std::size(grapple_large); ++uiIndex)
+		for (size_t uiIndex = 0; uiIndex < ARRAY_SZ(grapple_large); ++uiIndex)
 		{
 			if (!strcmp(STRING(pTarget->pev->classname), grapple_large[uiIndex]))
 			{
@@ -265,7 +265,7 @@ CGrappleTip::TargetClass CGrappleTip::ClassifyTarget(CBaseEntity* pTarget)
 			}
 		}
 
-		for (size_t uiIndex = 0; uiIndex < std::size(grapple_fixed); ++uiIndex)
+		for (size_t uiIndex = 0; uiIndex < ARRAY_SZ(grapple_fixed); ++uiIndex)
 		{
 			if (!strcmp(STRING(pTarget->pev->classname), grapple_fixed[uiIndex]))
 			{

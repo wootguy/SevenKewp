@@ -407,7 +407,7 @@ bool CDisplacerBall::ClassifyTarget(CBaseEntity* pTarget)
 	}
 	*/
 
-	for (size_t uiIndex = 0; uiIndex < std::size(displace); ++uiIndex)
+	for (size_t uiIndex = 0; uiIndex < ARRAY_SZ(displace); ++uiIndex)
 	{
 		if (strcmp(STRING(pTarget->pev->classname), displace[uiIndex]) == 0)
 			return true;
