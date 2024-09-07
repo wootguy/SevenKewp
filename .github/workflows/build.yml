@@ -1,0 +1,50 @@
+name: C/C++ CI
+
+on: [push, pull_request]
+
+jobs:
+  build-windows:
+    runs-on: windows-2019
+  
+    steps: 
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: 'false'
+
+    - name: Build release 
+      run: |
+        mkdir build && cd build
+        cmake .. -DBUILD_SERVER_ONLY=ON
+        cmake --build . --config Release
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: sevenkewp-windows
+        path: build/dlls/Release
+
+  build-linux:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: 'false'
+    
+    - name: Download and install dependencies
+      run: |
+        sudo apt install gcc-multilib g++-multilib libc6-dev-i386
+
+    - name: Build release
+      run: |
+        mkdir build; cd build
+        cmake .. -DBUILD_SERVER_ONLY=ON -DCMAKE_BUILD_TYPE=RELEASE
+        make
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: sevenkewp-linux
+        path: build/dlls
