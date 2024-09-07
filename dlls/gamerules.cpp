@@ -336,13 +336,12 @@ CGameRules *InstallGameRules( void )
 {
 	execCfgs();
 
-	if (1 == 1) {
-		g_teamplay = 0;
-		return new CHalfLifeMultiplay;
-	}
+	g_teamplay = 0;
+	return new CHalfLifeMultiplay;
 	
 	// keeping other rules for reference only
 
+	/*
 	if ( !gpGlobals->deathmatch )
 	{
 		// generic half-life
@@ -371,5 +370,6 @@ CGameRules *InstallGameRules( void )
 			return new CHalfLifeMultiplay;
 		}
 	}
+	*/
 }
 

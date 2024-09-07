@@ -1706,7 +1706,8 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 		return TRUE;
 	}
 	
-
+	// legacy logic
+	/*
 	CPlane	backPlane;
 	CPlane  leftPlane;
 	CPlane	rightPlane;
@@ -1727,12 +1728,15 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 	leftPlane.InitializePlane(gpGlobals->v_right, vecLeftSide);
 	rightPlane.InitializePlane(v_left, vecRightSide);
 	backPlane.InitializePlane(gpGlobals->v_forward, pev->origin);
+	*/
 
 	/*
 		ALERT ( at_console, "LeftPlane: %f %f %f : %f\n", leftPlane.m_vecNormal.x, leftPlane.m_vecNormal.y, leftPlane.m_vecNormal.z, leftPlane.m_flDist );
 		ALERT ( at_console, "RightPlane: %f %f %f : %f\n", rightPlane.m_vecNormal.x, rightPlane.m_vecNormal.y, rightPlane.m_vecNormal.z, rightPlane.m_flDist );
 		ALERT ( at_console, "BackPlane: %f %f %f : %f\n", backPlane.m_vecNormal.x, backPlane.m_vecNormal.y, backPlane.m_vecNormal.z, backPlane.m_flDist );
 	*/
+
+	/*
 
 	CTalkSquadMonster* pSquadLeader = MySquadLeader();
 	for (int i = 0; i < MAX_SQUAD_MEMBERS; i++)
@@ -1752,6 +1756,7 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 	}
 
 	return TRUE;
+	*/
 }
 
 //=========================================================
