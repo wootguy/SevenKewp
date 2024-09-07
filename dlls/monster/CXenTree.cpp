@@ -150,7 +150,7 @@ void CXenTree::HandleAnimEvent(MonsterEvent_t* pEvent)
 		for (int i = 0; i < count; i++)
 		{
 			if( pList[i] == this ||
-				pList[i]->IsPlayer() && ((CBasePlayer*)pList[i])->IsObserver() ) // Don't hit observers
+				(pList[i]->IsPlayer() && ((CBasePlayer*)pList[i])->IsObserver()) ) // Don't hit observers
 				continue;
 
 			if (pList[i]->pev->owner != edict())
