@@ -81,7 +81,13 @@ void CTriggerHurtRemote::HurtTarget(CBaseEntity* loser) {
 			loser->pev->armorvalue = V_max(loser->pev->armorvalue - m_armorDmg, 0);
 		}
 
-		loser->TakeDamage(pev, pev, pev->dmg, m_damageType);
+		if (pev->dmg > 0) {
+			loser->TakeDamage(pev, pev, pev->dmg, m_damageType);
+		}
+		else {
+			loser->TakeHealth(-pev->dmg, m_damageType);
+		}
+		
 	}
 }
 
