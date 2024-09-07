@@ -27,8 +27,8 @@ TYPEDESCRIPTION	CEnvExplosion::m_SaveData[] =
 	DEFINE_FIELD(CEnvExplosion, m_spriteScale, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CEnvExplosion, CPointEntity);
-LINK_ENTITY_TO_CLASS(env_explosion, CEnvExplosion);
+IMPLEMENT_SAVERESTORE(CEnvExplosion, CPointEntity)
+LINK_ENTITY_TO_CLASS(env_explosion, CEnvExplosion)
 
 void CEnvExplosion::KeyValue(KeyValueData* pkvd)
 {

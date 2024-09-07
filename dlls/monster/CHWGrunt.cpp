@@ -107,8 +107,8 @@ public:
 	const char* GetMonsterType() { return "monster_hwgrunt"; };
 };
 
-LINK_ENTITY_TO_CLASS(monster_hwgrunt, CHWGrunt);
-LINK_ENTITY_TO_CLASS(monster_hwgrunt_repel, CHWGruntRepel);
+LINK_ENTITY_TO_CLASS(monster_hwgrunt, CHWGrunt)
+LINK_ENTITY_TO_CLASS(monster_hwgrunt_repel, CHWGruntRepel)
 
 const char* CHWGrunt::pPainSounds[] =
 {
@@ -354,7 +354,7 @@ DEFINE_CUSTOM_SCHEDULES(CHWGrunt)
 	slFindMinigun
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES(CHWGrunt, CBaseGrunt);
+IMPLEMENT_CUSTOM_SCHEDULES(CHWGrunt, CBaseGrunt)
 
 Schedule_t* CHWGrunt::GetScheduleOfType(int Type)
 {

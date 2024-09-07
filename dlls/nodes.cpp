@@ -45,8 +45,8 @@ Vector VecBModelOrigin( entvars_t* pevBModel );
 
 CGraph	WorldGraph;
 
-LINK_ENTITY_TO_CLASS( info_node, CNodeEnt );
-LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt );
+LINK_ENTITY_TO_CLASS( info_node, CNodeEnt )
+LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt )
 #ifdef __linux__
 #include <unistd.h>
 #define CreateDirectory(p, n) mkdir(p, 0777)
@@ -1453,7 +1453,7 @@ public:
 	Vector	vecBadNodeOrigin;
 };
 
-LINK_ENTITY_TO_CLASS( testhull, CTestHull );
+LINK_ENTITY_TO_CLASS( testhull, CTestHull )
 
 //=========================================================
 // CTestHull::Spawn
@@ -3505,10 +3505,10 @@ public:
 	void EXPORT DrawThink( void );
 
 };
-LINK_ENTITY_TO_CLASS( node_viewer, CNodeViewer );
-LINK_ENTITY_TO_CLASS( node_viewer_human, CNodeViewer );
-LINK_ENTITY_TO_CLASS( node_viewer_fly, CNodeViewer );
-LINK_ENTITY_TO_CLASS( node_viewer_large, CNodeViewer );
+LINK_ENTITY_TO_CLASS( node_viewer, CNodeViewer )
+LINK_ENTITY_TO_CLASS( node_viewer_human, CNodeViewer )
+LINK_ENTITY_TO_CLASS( node_viewer_fly, CNodeViewer )
+LINK_ENTITY_TO_CLASS( node_viewer_large, CNodeViewer )
 
 void CNodeViewer::Spawn( )
 {

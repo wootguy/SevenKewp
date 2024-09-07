@@ -25,8 +25,8 @@ class CMP5AmmoClip : public CBasePlayerAmmo
 	}
 };
 
-LINK_ENTITY_TO_CLASS( ammo_mp5clip, CMP5AmmoClip );
-LINK_ENTITY_TO_CLASS( ammo_9mmAR, CMP5AmmoClip );
-LINK_ENTITY_TO_CLASS( ammo_9mmar, CMP5AmmoClip );
-LINK_ENTITY_TO_CLASS(ammo_556clip, CMP5AmmoClip);
-LINK_ENTITY_TO_CLASS(ammo_uziclip, CMP5AmmoClip);
+LINK_ENTITY_TO_CLASS( ammo_mp5clip, CMP5AmmoClip )
+LINK_ENTITY_TO_CLASS( ammo_9mmAR, CMP5AmmoClip )
+LINK_ENTITY_TO_CLASS( ammo_9mmar, CMP5AmmoClip )
+LINK_ENTITY_TO_CLASS(ammo_556clip, CMP5AmmoClip)
+LINK_ENTITY_TO_CLASS(ammo_uziclip, CMP5AmmoClip)

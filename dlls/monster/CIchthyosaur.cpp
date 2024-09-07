@@ -129,7 +129,7 @@ public:
 	void CantFollowSound();
 };
 
-LINK_ENTITY_TO_CLASS( monster_ichthyosaur, CIchthyosaur );
+LINK_ENTITY_TO_CLASS( monster_ichthyosaur, CIchthyosaur )
 
 TYPEDESCRIPTION	CIchthyosaur::m_SaveData[] = 
 {
@@ -144,7 +144,7 @@ TYPEDESCRIPTION	CIchthyosaur::m_SaveData[] =
 	DEFINE_FIELD( CIchthyosaur, m_flNextAlert, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CIchthyosaur, CFlyingMonster );
+IMPLEMENT_SAVERESTORE( CIchthyosaur, CFlyingMonster )
 
 
 const char *CIchthyosaur::pIdleSounds[] = 
@@ -336,7 +336,7 @@ DEFINE_CUSTOM_SCHEDULES(CIchthyosaur)
 	slCircleEnemy,
 	slTwitchDie,
 };
-IMPLEMENT_CUSTOM_SCHEDULES(CIchthyosaur, CFlyingMonster);
+IMPLEMENT_CUSTOM_SCHEDULES(CIchthyosaur, CFlyingMonster)
 
 //=========================================================
 // Classify - indicates this monster's place in the 

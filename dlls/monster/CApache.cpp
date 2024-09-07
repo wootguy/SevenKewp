@@ -94,8 +94,8 @@ class CApache : public CBaseMonster
 	int m_iDoSmokePuff;
 };
 
-LINK_ENTITY_TO_CLASS( monster_apache, CApache );
-LINK_ENTITY_TO_CLASS( monster_blkop_apache, CApache );
+LINK_ENTITY_TO_CLASS( monster_apache, CApache )
+LINK_ENTITY_TO_CLASS( monster_blkop_apache, CApache )
 
 TYPEDESCRIPTION	CApache::m_SaveData[] = 
 {
@@ -117,7 +117,7 @@ TYPEDESCRIPTION	CApache::m_SaveData[] =
 	DEFINE_FIELD( CApache, m_flGoalSpeed, FIELD_FLOAT ),
 	DEFINE_FIELD( CApache, m_iDoSmokePuff, FIELD_INTEGER ),
 };
-IMPLEMENT_SAVERESTORE( CApache, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CApache, CBaseMonster )
 
 
 void CApache :: Spawn( void )
@@ -1070,7 +1070,7 @@ class CApacheHVR : public CGrenade
 	int m_iTrail;
 	Vector m_vecForward;
 };
-LINK_ENTITY_TO_CLASS( hvr_rocket, CApacheHVR );
+LINK_ENTITY_TO_CLASS( hvr_rocket, CApacheHVR )
 
 TYPEDESCRIPTION	CApacheHVR::m_SaveData[] = 
 {
@@ -1078,7 +1078,7 @@ TYPEDESCRIPTION	CApacheHVR::m_SaveData[] =
 	DEFINE_FIELD( CApacheHVR, m_vecForward, FIELD_VECTOR ),
 };
 
-IMPLEMENT_SAVERESTORE( CApacheHVR, CGrenade );
+IMPLEMENT_SAVERESTORE( CApacheHVR, CGrenade )
 
 void CApacheHVR :: Spawn( void )
 {

@@ -27,7 +27,7 @@ public:
 private:
 };
 
-LINK_ENTITY_TO_CLASS(env_blood, CBlood);
+LINK_ENTITY_TO_CLASS(env_blood, CBlood)
 
 
 

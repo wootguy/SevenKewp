@@ -59,9 +59,9 @@ TYPEDESCRIPTION	CScriptedSentence::m_SaveData[] =
 };
 
 
-IMPLEMENT_SAVERESTORE(CScriptedSentence, CBaseToggle);
+IMPLEMENT_SAVERESTORE(CScriptedSentence, CBaseToggle)
 
-LINK_ENTITY_TO_CLASS(scripted_sentence, CScriptedSentence);
+LINK_ENTITY_TO_CLASS(scripted_sentence, CScriptedSentence)
 
 void CScriptedSentence::KeyValue(KeyValueData* pkvd)
 {

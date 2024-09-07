@@ -15,7 +15,7 @@ public:
 	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 };
 
-LINK_ENTITY_TO_CLASS(func_illusionary, CFuncIllusionary);
+LINK_ENTITY_TO_CLASS(func_illusionary, CFuncIllusionary)
 
 void CFuncIllusionary::KeyValue(KeyValueData* pkvd)
 {

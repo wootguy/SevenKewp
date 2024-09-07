@@ -25,4 +25,4 @@ class CPythonAmmo : public CBasePlayerAmmo
 	}
 };
 
-LINK_ENTITY_TO_CLASS( ammo_357, CPythonAmmo );
+LINK_ENTITY_TO_CLASS( ammo_357, CPythonAmmo )

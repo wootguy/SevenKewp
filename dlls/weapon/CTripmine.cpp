@@ -63,7 +63,7 @@ class CTripmineGrenade : public CGrenade
 	edict_t		*m_pRealOwner;// tracelines don't hit PEV->OWNER, which means a player couldn't detonate his own trip mine, so we store the owner here.
 };
 
-LINK_ENTITY_TO_CLASS( monster_tripmine, CTripmineGrenade );
+LINK_ENTITY_TO_CLASS( monster_tripmine, CTripmineGrenade )
 
 TYPEDESCRIPTION	CTripmineGrenade::m_SaveData[] = 
 {
@@ -78,7 +78,7 @@ TYPEDESCRIPTION	CTripmineGrenade::m_SaveData[] =
 	DEFINE_FIELD( CTripmineGrenade, m_pRealOwner, FIELD_EDICT ),
 };
 
-IMPLEMENT_SAVERESTORE(CTripmineGrenade,CGrenade);
+IMPLEMENT_SAVERESTORE(CTripmineGrenade,CGrenade)
 
 
 void CTripmineGrenade :: Spawn( void )
@@ -347,7 +347,7 @@ void CTripmineGrenade::DelayDeathThink( void )
 }
 #endif
 
-LINK_ENTITY_TO_CLASS( weapon_tripmine, CTripmine );
+LINK_ENTITY_TO_CLASS( weapon_tripmine, CTripmine )
 
 void CTripmine::Spawn( )
 {

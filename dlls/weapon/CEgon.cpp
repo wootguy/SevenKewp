@@ -62,10 +62,10 @@ TYPEDESCRIPTION	CEgon::m_SaveData[] =
 		DEFINE_FIELD(CEgon, m_shakeTime, FIELD_TIME),
 		DEFINE_FIELD(CEgon, m_flAmmoUseTime, FIELD_TIME),
 };
-IMPLEMENT_SAVERESTORE(CEgon, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE(CEgon, CBasePlayerWeapon)
 #endif
 
-LINK_ENTITY_TO_CLASS( weapon_egon, CEgon );
+LINK_ENTITY_TO_CLASS( weapon_egon, CEgon )
 
 void CEgon::Spawn( )
 {

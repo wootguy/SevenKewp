@@ -49,7 +49,7 @@ public:
 	int	  m_state;
 
 };
-LINK_ENTITY_TO_CLASS(trigger_camera, CTriggerCamera);
+LINK_ENTITY_TO_CLASS(trigger_camera, CTriggerCamera)
 
 // Global Savedata for changelevel friction modifier
 TYPEDESCRIPTION	CTriggerCamera::m_SaveData[] =
@@ -69,7 +69,7 @@ TYPEDESCRIPTION	CTriggerCamera::m_SaveData[] =
 	DEFINE_FIELD(CTriggerCamera, m_state, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CTriggerCamera, CBaseDelay);
+IMPLEMENT_SAVERESTORE(CTriggerCamera, CBaseDelay)
 
 void CTriggerCamera::Spawn(void)
 {

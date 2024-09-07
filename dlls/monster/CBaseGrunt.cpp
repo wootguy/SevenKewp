@@ -34,7 +34,7 @@ TYPEDESCRIPTION	CBaseGrunt::m_SaveData[] =
 	DEFINE_FIELD( CBaseGrunt, m_iSentence, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CBaseGrunt, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CBaseGrunt, CTalkSquadMonster )
 
 //=========================================================
 // Speak Sentence - say your cued up sentence.
@@ -1887,7 +1887,7 @@ DEFINE_CUSTOM_SCHEDULES( CBaseGrunt )
 	slMinigunSpindown
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CBaseGrunt, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CBaseGrunt, CTalkSquadMonster )
 
 void CBaseGrunt :: SetActivity ( Activity NewActivity )
 {

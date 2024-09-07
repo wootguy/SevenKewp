@@ -32,10 +32,10 @@ TYPEDESCRIPTION CShockBeam::m_SaveData[] =
 	DEFINE_FIELD(CShockBeam, m_hSprite, FIELD_EHANDLE),
 };
 
-IMPLEMENT_SAVERESTORE(CShockBeam, CShockBeam::BaseClass);
+IMPLEMENT_SAVERESTORE(CShockBeam, CShockBeam::BaseClass)
 #endif
 
-LINK_ENTITY_TO_CLASS(shock_beam, CShockBeam);
+LINK_ENTITY_TO_CLASS(shock_beam, CShockBeam)
 
 void CShockBeam::Precache()
 {

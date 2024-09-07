@@ -19,7 +19,7 @@ public:
 private:
 };
 
-LINK_ENTITY_TO_CLASS(game_player_hurt, CGamePlayerHurt);
+LINK_ENTITY_TO_CLASS(game_player_hurt, CGamePlayerHurt)
 
 
 void CGamePlayerHurt::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)

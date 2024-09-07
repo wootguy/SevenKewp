@@ -30,7 +30,7 @@ public:
 
 	bool m_startInactive;
 };
-LINK_ENTITY_TO_CLASS(trigger_teleport, CTriggerTeleport);
+LINK_ENTITY_TO_CLASS(trigger_teleport, CTriggerTeleport)
 
 void CTriggerTeleport::Spawn(void)
 {
@@ -171,4 +171,4 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 	}
 }
 
-LINK_ENTITY_TO_CLASS(info_teleport_destination, CPointEntity);
+LINK_ENTITY_TO_CLASS(info_teleport_destination, CPointEntity)

@@ -166,7 +166,7 @@ public:
 	static const char* pAlertSounds[];
 };
 
-LINK_ENTITY_TO_CLASS(monster_shocktrooper, CShockTrooper);
+LINK_ENTITY_TO_CLASS(monster_shocktrooper, CShockTrooper)
 
 const char* CShockTrooper::pPainSounds[] =
 {
@@ -211,7 +211,7 @@ TYPEDESCRIPTION CShockTrooper::m_SaveData[] =
 	DEFINE_FIELD(CShockTrooper, m_flLastShot, FIELD_TIME),
 };
 
-IMPLEMENT_SAVERESTORE(CShockTrooper, CTalkSquadMonster);
+IMPLEMENT_SAVERESTORE(CShockTrooper, CTalkSquadMonster)
 
 const char* CShockTrooper::pGruntSentences[] =
 {
@@ -1804,7 +1804,7 @@ DEFINE_CUSTOM_SCHEDULES(CShockTrooper) {
 		slShockTrooperRepelLand,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES(CShockTrooper, CTalkSquadMonster);
+IMPLEMENT_CUSTOM_SCHEDULES(CShockTrooper, CTalkSquadMonster)
 
 //=========================================================
 // SetActivity
@@ -2347,7 +2347,7 @@ public:
 	int m_iSpriteTexture; // Don't save, precache
 };
 
-LINK_ENTITY_TO_CLASS(monster_shocktrooper_repel, CShockTrooperRepel);
+LINK_ENTITY_TO_CLASS(monster_shocktrooper_repel, CShockTrooperRepel)
 
 void CShockTrooperRepel::Spawn()
 {
@@ -2421,7 +2421,7 @@ void CDeadShockTrooper::KeyValue(KeyValueData* pkvd)
 		CBaseMonster::KeyValue(pkvd);
 }
 
-LINK_ENTITY_TO_CLASS(monster_ShockTrooper_dead, CDeadShockTrooper);
+LINK_ENTITY_TO_CLASS(monster_ShockTrooper_dead, CDeadShockTrooper)
 
 //=========================================================
 // ********** DeadHGrunt SPAWN **********

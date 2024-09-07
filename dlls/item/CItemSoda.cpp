@@ -23,7 +23,7 @@ void CItemSoda::Precache(void)
 {
 }
 
-LINK_ENTITY_TO_CLASS(item_sodacan, CItemSoda);
+LINK_ENTITY_TO_CLASS(item_sodacan, CItemSoda)
 
 void CItemSoda::Spawn(void)
 {

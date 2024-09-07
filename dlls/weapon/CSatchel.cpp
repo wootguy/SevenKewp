@@ -44,11 +44,11 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 {
 	DEFINE_FIELD(CSatchel, m_chargeReady, FIELD_INTEGER),
 };
-IMPLEMENT_SAVERESTORE(CSatchel, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE(CSatchel, CBasePlayerWeapon)
 #endif
 
-LINK_ENTITY_TO_CLASS(weapon_satchel, CSatchel);
-LINK_ENTITY_TO_CLASS(monster_satchel, CSatchelCharge);
+LINK_ENTITY_TO_CLASS(weapon_satchel, CSatchel)
+LINK_ENTITY_TO_CLASS(monster_satchel, CSatchelCharge)
 
 //=========================================================
 // Deactivate - do whatever it is we do to an orphaned 

@@ -36,8 +36,8 @@ TYPEDESCRIPTION	CTurret::m_SaveData[] =
 	DEFINE_FIELD(CTurret, m_iStartSpin, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CTurret, CBaseTurret);
-LINK_ENTITY_TO_CLASS(monster_turret, CTurret);
+IMPLEMENT_SAVERESTORE(CTurret, CBaseTurret)
+LINK_ENTITY_TO_CLASS(monster_turret, CTurret)
 
 void CTurret::Spawn()
 {

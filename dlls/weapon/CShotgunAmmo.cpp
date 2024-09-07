@@ -24,4 +24,4 @@ class CShotgunAmmo : public CBasePlayerAmmo
 	}
 };
 
-LINK_ENTITY_TO_CLASS( ammo_buckshot, CShotgunAmmo );
+LINK_ENTITY_TO_CLASS( ammo_buckshot, CShotgunAmmo )

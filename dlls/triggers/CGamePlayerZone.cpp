@@ -26,7 +26,7 @@ private:
 	string_t	m_iszOutCount;
 };
 
-LINK_ENTITY_TO_CLASS(game_zone_player, CGamePlayerZone);
+LINK_ENTITY_TO_CLASS(game_zone_player, CGamePlayerZone)
 TYPEDESCRIPTION	CGamePlayerZone::m_SaveData[] =
 {
 	DEFINE_FIELD(CGamePlayerZone, m_iszInTarget, FIELD_STRING),
@@ -35,7 +35,7 @@ TYPEDESCRIPTION	CGamePlayerZone::m_SaveData[] =
 	DEFINE_FIELD(CGamePlayerZone, m_iszOutCount, FIELD_STRING),
 };
 
-IMPLEMENT_SAVERESTORE(CGamePlayerZone, CRuleBrushEntity);
+IMPLEMENT_SAVERESTORE(CGamePlayerZone, CRuleBrushEntity)
 
 void CGamePlayerZone::KeyValue(KeyValueData* pkvd)
 {

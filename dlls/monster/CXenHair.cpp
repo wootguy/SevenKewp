@@ -13,7 +13,7 @@ public:
 	void		Think(void);
 };
 
-LINK_ENTITY_TO_CLASS(xen_hair, CXenHair);
+LINK_ENTITY_TO_CLASS(xen_hair, CXenHair)
 
 #define SF_HAIR_SYNC		0x0001
 

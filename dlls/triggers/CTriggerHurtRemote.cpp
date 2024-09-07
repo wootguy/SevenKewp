@@ -29,7 +29,7 @@ public:
 	bool m_isActive;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_hurt_remote, CTriggerHurtRemote);
+LINK_ENTITY_TO_CLASS(trigger_hurt_remote, CTriggerHurtRemote)
 
 void CTriggerHurtRemote::KeyValue(KeyValueData* pkvd)
 {

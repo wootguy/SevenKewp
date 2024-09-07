@@ -54,8 +54,8 @@ public:
 	float	m_radius;
 };
 
-LINK_ENTITY_TO_CLASS(env_lightning, CLightning);
-LINK_ENTITY_TO_CLASS(env_beam, CLightning);
+LINK_ENTITY_TO_CLASS(env_lightning, CLightning)
+LINK_ENTITY_TO_CLASS(env_beam, CLightning)
 
 // UNDONE: Jay -- This is only a test
 #if _DEBUG
@@ -63,7 +63,7 @@ class CTripBeam : public CLightning
 {
 	void Spawn(void);
 };
-LINK_ENTITY_TO_CLASS(trip_beam, CTripBeam);
+LINK_ENTITY_TO_CLASS(trip_beam, CTripBeam)
 
 void CTripBeam::Spawn(void)
 {
@@ -93,7 +93,7 @@ TYPEDESCRIPTION	CLightning::m_SaveData[] =
 	DEFINE_FIELD(CLightning, m_radius, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CLightning, CBeam);
+IMPLEMENT_SAVERESTORE(CLightning, CBeam)
 
 
 void CLightning::Spawn(void)

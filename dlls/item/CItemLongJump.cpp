@@ -43,4 +43,4 @@ class CItemLongJump : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_longjump, CItemLongJump);
+LINK_ENTITY_TO_CLASS(item_longjump, CItemLongJump)

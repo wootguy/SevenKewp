@@ -124,9 +124,9 @@ public:
 
 const char* CDeadHGruntAlly::m_szPoses[] = { "deadstomach", "deadside", "deadsitting", "dead_on_back", "hgrunt_dead_stomach", "dead_headcrabed", "dead_canyon" };
 
-LINK_ENTITY_TO_CLASS(monster_human_grunt_ally, CHGruntOp4);
-LINK_ENTITY_TO_CLASS(monster_grunt_ally_repel, CHGruntOp4Repel);
-LINK_ENTITY_TO_CLASS(monster_human_grunt_ally_dead, CDeadHGruntAlly);
+LINK_ENTITY_TO_CLASS(monster_human_grunt_ally, CHGruntOp4)
+LINK_ENTITY_TO_CLASS(monster_grunt_ally_repel, CHGruntOp4Repel)
+LINK_ENTITY_TO_CLASS(monster_human_grunt_ally_dead, CDeadHGruntAlly)
 
 TYPEDESCRIPTION	CHGruntOp4::m_SaveData[] = 
 {
@@ -148,7 +148,7 @@ TYPEDESCRIPTION	CHGruntOp4::m_SaveData[] =
 	DEFINE_FIELD( CHGruntOp4, m_iGruntTorso, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CHGruntOp4, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CHGruntOp4, CTalkSquadMonster )
 
 void CHGruntOp4 :: GibMonster ( void )
 {

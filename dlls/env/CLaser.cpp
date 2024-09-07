@@ -7,7 +7,7 @@
 #include "CBreakable.h"
 #include "shake.h"
 
-LINK_ENTITY_TO_CLASS(env_laser, CLaser);
+LINK_ENTITY_TO_CLASS(env_laser, CLaser)
 
 TYPEDESCRIPTION	CLaser::m_SaveData[] =
 {
@@ -16,7 +16,7 @@ TYPEDESCRIPTION	CLaser::m_SaveData[] =
 	DEFINE_FIELD(CLaser, m_firePosition, FIELD_POSITION_VECTOR),
 };
 
-IMPLEMENT_SAVERESTORE(CLaser, CBeam);
+IMPLEMENT_SAVERESTORE(CLaser, CBeam)
 
 void CLaser::Spawn(void)
 {

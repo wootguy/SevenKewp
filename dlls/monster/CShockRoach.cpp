@@ -122,14 +122,14 @@ public:
 	static const char *pDeathSounds[];
 	static const char *pBiteSounds[];
 };
-LINK_ENTITY_TO_CLASS( monster_shockroach, COFShockRoach );
+LINK_ENTITY_TO_CLASS( monster_shockroach, COFShockRoach )
 
 TYPEDESCRIPTION	COFShockRoach::m_SaveData[] =
 {
 	DEFINE_FIELD( COFShockRoach, m_flBirthTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( COFShockRoach, CBaseMonster );
+IMPLEMENT_SAVERESTORE( COFShockRoach, CBaseMonster )
 
 DEFINE_CUSTOM_SCHEDULES( COFShockRoach )
 {
@@ -137,7 +137,7 @@ DEFINE_CUSTOM_SCHEDULES( COFShockRoach )
 	slRCRangeAttack1Fast,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( COFShockRoach, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( COFShockRoach, CBaseMonster )
 
 const char *COFShockRoach::pIdleSounds[] = 
 {

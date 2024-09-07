@@ -37,7 +37,7 @@ public:
 	BOOL CheckMeleeAttack1(float flDot, float flDist);
 };
 
-LINK_ENTITY_TO_CLASS( my_monster, CMyMonster );
+LINK_ENTITY_TO_CLASS( my_monster, CMyMonster )
 
 void CMyMonster :: Spawn()
 {

@@ -7,7 +7,7 @@
 #include "CBreakable.h"
 #include "shake.h"
 
-LINK_ENTITY_TO_CLASS(env_sprite, CSprite);
+LINK_ENTITY_TO_CLASS(env_sprite, CSprite)
 
 TYPEDESCRIPTION	CSprite::m_SaveData[] =
 {
@@ -15,7 +15,7 @@ TYPEDESCRIPTION	CSprite::m_SaveData[] =
 	DEFINE_FIELD(CSprite, m_maxFrame, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CSprite, CPointEntity);
+IMPLEMENT_SAVERESTORE(CSprite, CPointEntity)
 
 void CSprite::Spawn(void)
 {

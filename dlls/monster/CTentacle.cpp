@@ -116,7 +116,7 @@ public:
 int CTentacle :: g_fFlySound;
 int CTentacle :: g_fSquirmSound;
 
-LINK_ENTITY_TO_CLASS( monster_tentacle, CTentacle );
+LINK_ENTITY_TO_CLASS( monster_tentacle, CTentacle )
 
 // stike sounds
 #define TE_NONE -1
@@ -167,7 +167,7 @@ TYPEDESCRIPTION	CTentacle::m_SaveData[] =
 	DEFINE_FIELD( CTentacle, m_vecPrevSound, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CTentacle, m_flPrevSoundTime, FIELD_TIME ),
 };
-IMPLEMENT_SAVERESTORE( CTentacle, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CTentacle, CBaseMonster )
 
 
 // animation sequence aliases 
@@ -1038,7 +1038,7 @@ public:
 	void Precache( );
 };
 
-LINK_ENTITY_TO_CLASS( monster_tentaclemaw, CTentacleMaw );
+LINK_ENTITY_TO_CLASS( monster_tentaclemaw, CTentacleMaw )
 
 //
 // Tentacle Spawn

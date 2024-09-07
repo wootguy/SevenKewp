@@ -37,13 +37,13 @@ class CAirtank : public CGrenade
 };
 
 
-LINK_ENTITY_TO_CLASS( item_airtank, CAirtank );
+LINK_ENTITY_TO_CLASS( item_airtank, CAirtank )
 TYPEDESCRIPTION	CAirtank::m_SaveData[] = 
 {
 	DEFINE_FIELD( CAirtank, m_state, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CAirtank, CGrenade );
+IMPLEMENT_SAVERESTORE( CAirtank, CGrenade )
 
 
 void CAirtank :: Spawn( void )

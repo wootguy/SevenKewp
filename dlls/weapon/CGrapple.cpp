@@ -32,7 +32,7 @@
 
 #include "CGrapple.h"
 
-LINK_ENTITY_TO_CLASS(weapon_grapple, CGrapple);
+LINK_ENTITY_TO_CLASS(weapon_grapple, CGrapple)
 
 void CGrapple::Spawn()
 {

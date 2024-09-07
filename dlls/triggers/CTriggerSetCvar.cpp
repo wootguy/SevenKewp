@@ -14,7 +14,7 @@ public:
 	string_t m_iszCVarToChange;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_setcvar, CTriggerSetCVar);
+LINK_ENTITY_TO_CLASS(trigger_setcvar, CTriggerSetCVar)
 
 void CTriggerSetCVar::KeyValue(KeyValueData* pkvd)
 {

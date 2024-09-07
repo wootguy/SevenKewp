@@ -25,7 +25,7 @@
 
 #include "CGrappleTip.h"
 
-LINK_ENTITY_TO_CLASS(grapple_tip, CGrappleTip);
+LINK_ENTITY_TO_CLASS(grapple_tip, CGrappleTip)
 
 namespace
 {

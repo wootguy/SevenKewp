@@ -99,7 +99,7 @@ private:
 	static const char* pAnswerSounds[];
 };
 
-LINK_ENTITY_TO_CLASS(monster_bodyguard, CBodyGuard);
+LINK_ENTITY_TO_CLASS(monster_bodyguard, CBodyGuard)
 
 const char* CBodyGuard::pGruntSentences[] =
 {
@@ -437,7 +437,7 @@ DEFINE_CUSTOM_SCHEDULES(CBodyGuard)
 	slGruntRangeAttack1B
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES(CBodyGuard, CBaseGrunt);
+IMPLEMENT_CUSTOM_SCHEDULES(CBodyGuard, CBaseGrunt)
 
 
 Schedule_t* CBodyGuard::GetScheduleOfType(int Type)

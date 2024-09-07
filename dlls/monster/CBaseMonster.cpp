@@ -96,7 +96,7 @@ TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 	DEFINE_FIELD(CBaseMonster, m_hCine, FIELD_EHANDLE),
 };
 
-//IMPLEMENT_SAVERESTORE( CBaseMonster, CBaseToggle );
+//IMPLEMENT_SAVERESTORE( CBaseMonster, CBaseToggle )
 int CBaseMonster::Save(CSave& save)
 {
 	if (!CBaseToggle::Save(save))

@@ -28,7 +28,7 @@ TYPEDESCRIPTION	CBaseToggle::m_SaveData[] =
 	DEFINE_FIELD(CBaseToggle, m_sMaster, FIELD_STRING),
 	DEFINE_FIELD(CBaseToggle, m_bitsDamageInflict, FIELD_INTEGER),	// damage type inflicted
 };
-IMPLEMENT_SAVERESTORE(CBaseToggle, CBaseAnimating);
+IMPLEMENT_SAVERESTORE(CBaseToggle, CBaseAnimating)
 
 
 void CBaseToggle::KeyValue(KeyValueData* pkvd)

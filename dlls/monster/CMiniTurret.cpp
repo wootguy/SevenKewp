@@ -17,7 +17,7 @@ public:
 };
 
 
-LINK_ENTITY_TO_CLASS(monster_miniturret, CMiniTurret);
+LINK_ENTITY_TO_CLASS(monster_miniturret, CMiniTurret)
 
 
 void CMiniTurret::Spawn()

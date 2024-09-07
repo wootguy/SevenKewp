@@ -24,7 +24,7 @@ public:
 	void Spawn(void);
 };
 
-LINK_ENTITY_TO_CLASS(trigger_once, CTriggerOnce);
+LINK_ENTITY_TO_CLASS(trigger_once, CTriggerOnce)
 void CTriggerOnce::Spawn(void)
 {
 	m_flWait = -1;

@@ -10,4 +10,4 @@ void CPointEntity::Spawn(void)
 }
 
 // Lightning target, just alias landmark
-LINK_ENTITY_TO_CLASS(info_target, CPointEntity);
+LINK_ENTITY_TO_CLASS(info_target, CPointEntity)

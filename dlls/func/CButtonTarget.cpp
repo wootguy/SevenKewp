@@ -17,7 +17,7 @@ public:
 
 };
 
-LINK_ENTITY_TO_CLASS(button_target, CButtonTarget);
+LINK_ENTITY_TO_CLASS(button_target, CButtonTarget)
 
 void CButtonTarget::Spawn(void)
 {

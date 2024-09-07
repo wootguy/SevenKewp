@@ -14,7 +14,7 @@ public:
 	void Spawn(void);
 };
 
-LINK_ENTITY_TO_CLASS(func_rot_button, CRotButton);
+LINK_ENTITY_TO_CLASS(func_rot_button, CRotButton)
 
 void CRotButton::Spawn(void)
 {

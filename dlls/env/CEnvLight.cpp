@@ -10,7 +10,7 @@ public:
 	void	Spawn(void);
 };
 
-LINK_ENTITY_TO_CLASS(light_environment, CEnvLight);
+LINK_ENTITY_TO_CLASS(light_environment, CEnvLight)
 
 void CEnvLight::KeyValue(KeyValueData* pkvd)
 {

@@ -14,7 +14,7 @@ public:
 	void EXPORT RadiationThink(void);
 };
 
-LINK_ENTITY_TO_CLASS(trigger_hurt, CTriggerHurt);
+LINK_ENTITY_TO_CLASS(trigger_hurt, CTriggerHurt)
 
 
 //

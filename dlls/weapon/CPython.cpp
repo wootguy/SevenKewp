@@ -33,9 +33,9 @@ enum python_e {
 	PYTHON_IDLE3
 };
 
-LINK_ENTITY_TO_CLASS( weapon_python, CPython );
-LINK_ENTITY_TO_CLASS( weapon_357, CPython );
-LINK_ENTITY_TO_CLASS(weapon_eagle, CPython); // TODO: implement
+LINK_ENTITY_TO_CLASS( weapon_python, CPython )
+LINK_ENTITY_TO_CLASS( weapon_357, CPython )
+LINK_ENTITY_TO_CLASS(weapon_eagle, CPython) // TODO: implement
 
 int CPython::GetItemInfo(ItemInfo *p)
 {

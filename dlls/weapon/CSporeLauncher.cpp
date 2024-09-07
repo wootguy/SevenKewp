@@ -27,7 +27,7 @@ DEFINE_FIELD(m_ReloadState, FIELD_INTEGER),
 	END_DATAMAP();
 */
 
-LINK_ENTITY_TO_CLASS(weapon_sporelauncher, CSporeLauncher);
+LINK_ENTITY_TO_CLASS(weapon_sporelauncher, CSporeLauncher)
 
 void CSporeLauncher::Spawn()
 {

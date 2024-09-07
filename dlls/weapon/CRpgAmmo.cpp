@@ -24,4 +24,4 @@ class CRpgAmmo : public CBasePlayerAmmo
 	}
 };
 
-LINK_ENTITY_TO_CLASS( ammo_rpgclip, CRpgAmmo );
+LINK_ENTITY_TO_CLASS( ammo_rpgclip, CRpgAmmo )

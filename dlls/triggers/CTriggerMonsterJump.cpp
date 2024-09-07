@@ -17,7 +17,7 @@ public:
 	void Think(void);
 };
 
-LINK_ENTITY_TO_CLASS(trigger_monsterjump, CTriggerMonsterJump);
+LINK_ENTITY_TO_CLASS(trigger_monsterjump, CTriggerMonsterJump)
 
 
 void CTriggerMonsterJump::Spawn(void)

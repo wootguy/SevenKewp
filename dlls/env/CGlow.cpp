@@ -22,7 +22,7 @@ public:
 	float		m_maxFrame;
 };
 
-LINK_ENTITY_TO_CLASS(env_glow, CGlow);
+LINK_ENTITY_TO_CLASS(env_glow, CGlow)
 
 TYPEDESCRIPTION	CGlow::m_SaveData[] =
 {
@@ -30,7 +30,7 @@ TYPEDESCRIPTION	CGlow::m_SaveData[] =
 	DEFINE_FIELD(CGlow, m_maxFrame, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CGlow, CPointEntity);
+IMPLEMENT_SAVERESTORE(CGlow, CPointEntity)
 
 void CGlow::Spawn(void)
 {

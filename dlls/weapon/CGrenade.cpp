@@ -31,7 +31,7 @@
 //===================grenade
 
 
-LINK_ENTITY_TO_CLASS( grenade, CGrenade );
+LINK_ENTITY_TO_CLASS( grenade, CGrenade )
 
 // Grenades flagged with this will be triggered when the owner calls detonateSatchelCharges
 #define SF_GRENADE_DETONATE		0x0001

@@ -289,7 +289,7 @@ const char* COtis::pKillSounds[] =
 	"otis/bring.wav",
 };
 
-LINK_ENTITY_TO_CLASS( monster_otis, COtis );
+LINK_ENTITY_TO_CLASS( monster_otis, COtis )
 
 TYPEDESCRIPTION	COtis::m_SaveData[] = 
 {
@@ -302,7 +302,7 @@ TYPEDESCRIPTION	COtis::m_SaveData[] =
 	DEFINE_FIELD( COtis, m_iOtisHead, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( COtis, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( COtis, CTalkSquadMonster )
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -416,7 +416,7 @@ DEFINE_CUSTOM_SCHEDULES( COtis )
 };
 
 
-IMPLEMENT_CUSTOM_SCHEDULES( COtis, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( COtis, CTalkSquadMonster )
 
 void COtis :: StartTask( Task_t *pTask )
 {
@@ -1145,7 +1145,7 @@ void CDeadOtis::KeyValue( KeyValueData *pkvd )
 		CBaseMonster::KeyValue( pkvd );
 }
 
-LINK_ENTITY_TO_CLASS( monster_otis_dead, CDeadOtis );
+LINK_ENTITY_TO_CLASS( monster_otis_dead, CDeadOtis )
 
 //=========================================================
 // ********** DeadOtis SPAWN **********

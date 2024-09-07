@@ -50,10 +50,10 @@ TYPEDESCRIPTION	CGauss::m_SaveData[] =
 	//	DEFINE_FIELD( CGauss, m_flNextAmmoBurn, FIELD_TIME ),
 		DEFINE_FIELD(CGauss, m_fPrimaryFire, FIELD_BOOLEAN),
 };
-IMPLEMENT_SAVERESTORE(CGauss, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE(CGauss, CBasePlayerWeapon)
 #endif
 
-LINK_ENTITY_TO_CLASS( weapon_gauss, CGauss );
+LINK_ENTITY_TO_CLASS( weapon_gauss, CGauss )
 
 float CGauss::GetFullChargeTime( void )
 {

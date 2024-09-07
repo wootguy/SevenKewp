@@ -43,7 +43,7 @@ class CHealthKit : public CItem
 };
 
 
-LINK_ENTITY_TO_CLASS( item_healthkit, CHealthKit );
+LINK_ENTITY_TO_CLASS( item_healthkit, CHealthKit )
 
 /*
 TYPEDESCRIPTION	CHealthKit::m_SaveData[] = 
@@ -52,7 +52,7 @@ TYPEDESCRIPTION	CHealthKit::m_SaveData[] =
 };
 
 
-IMPLEMENT_SAVERESTORE( CHealthKit, CItem);
+IMPLEMENT_SAVERESTORE( CHealthKit, CItem)
 */
 
 void CHealthKit :: Spawn( void )
@@ -149,9 +149,9 @@ TYPEDESCRIPTION CWallHealth::m_SaveData[] =
 	DEFINE_FIELD( CWallHealth, m_flSoundTime, FIELD_TIME),
 };
 
-IMPLEMENT_SAVERESTORE( CWallHealth, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CWallHealth, CBaseEntity )
 
-LINK_ENTITY_TO_CLASS(func_healthcharger, CWallHealth);
+LINK_ENTITY_TO_CLASS(func_healthcharger, CWallHealth)
 
 
 void CWallHealth::KeyValue( KeyValueData *pkvd )

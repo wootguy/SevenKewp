@@ -10,7 +10,7 @@ TYPEDESCRIPTION	CActAnimating::m_SaveData[] =
 	DEFINE_FIELD(CActAnimating, m_Activity, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CActAnimating, CBaseAnimating);
+IMPLEMENT_SAVERESTORE(CActAnimating, CBaseAnimating)
 
 void CActAnimating::SetActivity(Activity act)
 {

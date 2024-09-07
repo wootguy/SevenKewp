@@ -12,9 +12,9 @@ TYPEDESCRIPTION CMultiSource::m_SaveData[] =
 	DEFINE_FIELD(CMultiSource, m_globalstate, FIELD_STRING),
 };
 
-IMPLEMENT_SAVERESTORE(CMultiSource, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CMultiSource, CBaseEntity)
 
-LINK_ENTITY_TO_CLASS(multisource, CMultiSource);
+LINK_ENTITY_TO_CLASS(multisource, CMultiSource)
 //
 // Cache user-entity-field values until spawn is called.
 //

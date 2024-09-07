@@ -72,7 +72,7 @@ DEFINE_FUNCTION(BallTouch),
 	END_DATAMAP();
 */
 
-LINK_ENTITY_TO_CLASS(displacer_ball, CDisplacerBall);
+LINK_ENTITY_TO_CLASS(displacer_ball, CDisplacerBall)
 
 void CDisplacerBall::Precache()
 {

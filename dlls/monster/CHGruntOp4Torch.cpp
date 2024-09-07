@@ -103,8 +103,8 @@ public:
 	const char* GetMonsterType() { return "monster_human_torch_ally"; };
 };
 
-LINK_ENTITY_TO_CLASS(monster_human_torch_ally, COFTorchAlly );
-LINK_ENTITY_TO_CLASS(monster_torch_ally_repel, COFTorchAllyRepel);
+LINK_ENTITY_TO_CLASS(monster_human_torch_ally, COFTorchAlly )
+LINK_ENTITY_TO_CLASS(monster_torch_ally_repel, COFTorchAllyRepel)
 
 TYPEDESCRIPTION	COFTorchAlly::m_SaveData[] = 
 {
@@ -131,7 +131,7 @@ TYPEDESCRIPTION	COFTorchAlly::m_SaveData[] =
 	DEFINE_FIELD( COFTorchAlly, m_flLastShot, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( COFTorchAlly, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( COFTorchAlly, CTalkSquadMonster )
 
 void COFTorchAlly :: GibMonster ( void )
 {

@@ -5,7 +5,7 @@
 #include "saverestore.h"
 #include "CPathCorner.h"
 
-LINK_ENTITY_TO_CLASS(path_corner, CPathCorner);
+LINK_ENTITY_TO_CLASS(path_corner, CPathCorner)
 
 // Global Savedata for Delay
 TYPEDESCRIPTION	CPathCorner::m_SaveData[] =
@@ -13,7 +13,7 @@ TYPEDESCRIPTION	CPathCorner::m_SaveData[] =
 	DEFINE_FIELD(CPathCorner, m_flWait, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CPathCorner, CPointEntity);
+IMPLEMENT_SAVERESTORE(CPathCorner, CPointEntity)
 
 //
 // Cache user-entity-field values until spawn is called.

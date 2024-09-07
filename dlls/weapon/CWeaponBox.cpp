@@ -10,7 +10,7 @@
 #include "CWeaponBox.h"
 #include "CBasePlayerItem.h"
 
-LINK_ENTITY_TO_CLASS(weaponbox, CWeaponBox);
+LINK_ENTITY_TO_CLASS(weaponbox, CWeaponBox)
 
 TYPEDESCRIPTION	CWeaponBox::m_SaveData[] =
 {
@@ -19,8 +19,7 @@ TYPEDESCRIPTION	CWeaponBox::m_SaveData[] =
 	DEFINE_ARRAY(CWeaponBox, m_rghPlayerItems, FIELD_EHANDLE, MAX_ITEM_TYPES),
 	DEFINE_FIELD(CWeaponBox, m_cAmmoTypes, FIELD_INTEGER),
 };
-
-IMPLEMENT_SAVERESTORE(CWeaponBox, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CWeaponBox, CBaseEntity)
 
 //=========================================================
 //

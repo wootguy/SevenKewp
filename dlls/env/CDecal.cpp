@@ -77,7 +77,7 @@ public:
 	void	EXPORT TriggerDecal(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 };
 
-LINK_ENTITY_TO_CLASS(infodecal, CDecal);
+LINK_ENTITY_TO_CLASS(infodecal, CDecal)
 
 // UNDONE:  These won't get sent to joining players in multi-player
 void CDecal::Spawn(void)

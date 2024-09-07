@@ -35,9 +35,9 @@ public:
 	bool isActive;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_random, CTriggerRandom);
-LINK_ENTITY_TO_CLASS(trigger_random_unique, CTriggerRandom);
-LINK_ENTITY_TO_CLASS(trigger_random_time, CTriggerRandom);
+LINK_ENTITY_TO_CLASS(trigger_random, CTriggerRandom)
+LINK_ENTITY_TO_CLASS(trigger_random_unique, CTriggerRandom)
+LINK_ENTITY_TO_CLASS(trigger_random_time, CTriggerRandom)
 
 void CTriggerRandom::KeyValue(KeyValueData* pkvd)
 {

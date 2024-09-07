@@ -62,9 +62,9 @@ public:
 	static const char* m_szPoses[3];
 };
 
-LINK_ENTITY_TO_CLASS(monster_human_grunt, CHGrunt);
-LINK_ENTITY_TO_CLASS(monster_grunt_repel, CHGruntRepel);
-LINK_ENTITY_TO_CLASS(monster_hgrunt_dead, CDeadHGrunt);
+LINK_ENTITY_TO_CLASS(monster_human_grunt, CHGrunt)
+LINK_ENTITY_TO_CLASS(monster_grunt_repel, CHGruntRepel)
+LINK_ENTITY_TO_CLASS(monster_hgrunt_dead, CDeadHGrunt)
 
 const char* CHGrunt::pPainSounds[] =
 {

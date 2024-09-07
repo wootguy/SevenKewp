@@ -6,7 +6,7 @@
 #include "gamerules.h"
 #include "CBaseTrigger.h"
 
-LINK_ENTITY_TO_CLASS(trigger, CBaseTrigger);
+LINK_ENTITY_TO_CLASS(trigger, CBaseTrigger)
 
 /*
 ================

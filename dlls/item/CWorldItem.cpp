@@ -13,7 +13,7 @@ public:
 	int		m_iType;
 };
 
-LINK_ENTITY_TO_CLASS(world_items, CWorldItem);
+LINK_ENTITY_TO_CLASS(world_items, CWorldItem)
 
 void CWorldItem::KeyValue(KeyValueData* pkvd)
 {

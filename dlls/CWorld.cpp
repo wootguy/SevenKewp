@@ -29,7 +29,7 @@ extern void W_Precache(void);
 // This spawns first when each level begins.
 //=======================
 
-LINK_ENTITY_TO_CLASS(worldspawn, CWorld);
+LINK_ENTITY_TO_CLASS(worldspawn, CWorld)
 
 #define SF_WORLD_DARK		0x0001		// Fade from black at startup
 #define SF_WORLD_TITLE		0x0002		// Display game title at startup

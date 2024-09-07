@@ -13,7 +13,7 @@ class CCorpse : public CBaseMonster
 	BOOL IsPlayerCorpse(void) { return TRUE; }
 };
 
-LINK_ENTITY_TO_CLASS(bodyque, CCorpse);
+LINK_ENTITY_TO_CLASS(bodyque, CCorpse)
 
 
 //

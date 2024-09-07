@@ -79,14 +79,14 @@ public:
 	int  m_maxFrame;
 };
 
-LINK_ENTITY_TO_CLASS( pitdronespike, CPitdroneSpike );
+LINK_ENTITY_TO_CLASS( pitdronespike, CPitdroneSpike )
 
 TYPEDESCRIPTION	CPitdroneSpike::m_SaveData[] =
 {
 	DEFINE_FIELD( CPitdroneSpike, m_maxFrame, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CPitdroneSpike, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CPitdroneSpike, CBaseEntity )
 
 void CPitdroneSpike::Precache()
 {
@@ -282,7 +282,7 @@ private:
 	static const char* pPainSounds[];
 	static const char* pBiteSounds[];
 };
-LINK_ENTITY_TO_CLASS( monster_pitdrone, CPitdrone );
+LINK_ENTITY_TO_CLASS( monster_pitdrone, CPitdrone )
 
 const char* CPitdrone::pAlertSounds[] =
 {
@@ -337,7 +337,7 @@ TYPEDESCRIPTION	CPitdrone::m_SaveData[] =
 	DEFINE_FIELD( CPitdrone, m_flNextEatTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CPitdrone, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CPitdrone, CBaseMonster )
 
 //=========================================================
 // IgnoreConditions 
@@ -1047,7 +1047,7 @@ DEFINE_CUSTOM_SCHEDULES( CPitdrone )
 	slPitdroneWaitInCover
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CPitdrone, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CPitdrone, CBaseMonster )
 
 //=========================================================
 // GetSchedule 

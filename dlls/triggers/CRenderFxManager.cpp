@@ -27,7 +27,7 @@ public:
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 };
 
-LINK_ENTITY_TO_CLASS(env_render, CRenderFxManager);
+LINK_ENTITY_TO_CLASS(env_render, CRenderFxManager)
 
 
 void CRenderFxManager::Spawn(void)

@@ -24,14 +24,14 @@ public:
 	BYTE	m_bMoveSnd;			// sound a door makes while moving	
 };
 
-LINK_ENTITY_TO_CLASS(momentary_door, CMomentaryDoor);
+LINK_ENTITY_TO_CLASS(momentary_door, CMomentaryDoor)
 
 TYPEDESCRIPTION	CMomentaryDoor::m_SaveData[] =
 {
 	DEFINE_FIELD(CMomentaryDoor, m_bMoveSnd, FIELD_CHARACTER),
 };
 
-IMPLEMENT_SAVERESTORE(CMomentaryDoor, CBaseToggle);
+IMPLEMENT_SAVERESTORE(CMomentaryDoor, CBaseToggle)
 
 void CMomentaryDoor::Spawn(void)
 {

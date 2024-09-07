@@ -50,7 +50,7 @@ public:
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 };
 
-LINK_ENTITY_TO_CLASS( monster_bloater, CBloater );
+LINK_ENTITY_TO_CLASS( monster_bloater, CBloater )
 
 //=========================================================
 // Classify - indicates this monster's place in the 

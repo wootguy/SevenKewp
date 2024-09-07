@@ -26,7 +26,7 @@ void CEnvBeverage::Precache(void)
 	PRECACHE_SOUND("weapons/g_bounce3.wav");
 }
 
-LINK_ENTITY_TO_CLASS(env_beverage, CEnvBeverage);
+LINK_ENTITY_TO_CLASS(env_beverage, CEnvBeverage)
 
 void CEnvBeverage::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {

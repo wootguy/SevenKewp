@@ -10,7 +10,7 @@ TYPEDESCRIPTION	CRuleEntity::m_SaveData[] =
 	DEFINE_FIELD(CRuleEntity, m_iszMaster, FIELD_STRING),
 };
 
-IMPLEMENT_SAVERESTORE(CRuleEntity, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CRuleEntity, CBaseEntity)
 
 
 void CRuleEntity::Spawn(void)

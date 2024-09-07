@@ -146,8 +146,8 @@ public:
 	const char* GetMonsterType() { return "monster_human_medic_ally"; };
 };
 
-LINK_ENTITY_TO_CLASS(monster_human_medic_ally, CHGruntOp4Medic);
-LINK_ENTITY_TO_CLASS(monster_medic_ally_repel, CHGruntOp4MedicRepel);
+LINK_ENTITY_TO_CLASS(monster_human_medic_ally, CHGruntOp4Medic)
+LINK_ENTITY_TO_CLASS(monster_medic_ally_repel, CHGruntOp4MedicRepel)
 
 TYPEDESCRIPTION	CHGruntOp4Medic::m_SaveData[] = 
 {
@@ -181,7 +181,7 @@ TYPEDESCRIPTION	CHGruntOp4Medic::m_SaveData[] =
 	DEFINE_FIELD( CHGruntOp4Medic, m_flLastShot, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CHGruntOp4Medic, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CHGruntOp4Medic, CTalkSquadMonster )
 
 void CHGruntOp4Medic :: GibMonster ( void )
 {
@@ -543,7 +543,7 @@ DEFINE_CUSTOM_SCHEDULES( CHGruntOp4Medic )
 	slMedicAllyHealTarget,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CHGruntOp4Medic, CBaseGrunt );
+IMPLEMENT_CUSTOM_SCHEDULES( CHGruntOp4Medic, CBaseGrunt )
 
 int CHGruntOp4Medic::GetActivitySequence(Activity NewActivity)
 {

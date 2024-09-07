@@ -28,7 +28,7 @@ DEFINE_FIELD(m_flRechargeTime, FIELD_TIME),
 	END_DATAMAP();
 */
 
-LINK_ENTITY_TO_CLASS(weapon_shockrifle, CShockRifle);
+LINK_ENTITY_TO_CLASS(weapon_shockrifle, CShockRifle)
 
 void CShockRifle::Spawn()
 {

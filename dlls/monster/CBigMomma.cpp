@@ -53,14 +53,14 @@ public:
 	int		m_preSequence;
 };
 
-LINK_ENTITY_TO_CLASS( info_bigmomma, CInfoBM );
+LINK_ENTITY_TO_CLASS( info_bigmomma, CInfoBM )
 
 TYPEDESCRIPTION	CInfoBM::m_SaveData[] = 
 {
 	DEFINE_FIELD( CInfoBM, m_preSequence, FIELD_STRING ),
 };
 
-IMPLEMENT_SAVERESTORE( CInfoBM, CPointEntity );
+IMPLEMENT_SAVERESTORE( CInfoBM, CPointEntity )
 
 void CInfoBM::Spawn( void )
 {
@@ -118,14 +118,14 @@ public:
 	int  m_maxFrame;
 };
 
-LINK_ENTITY_TO_CLASS( bmortar, CBMortar );
+LINK_ENTITY_TO_CLASS( bmortar, CBMortar )
 
 TYPEDESCRIPTION	CBMortar::m_SaveData[] = 
 {
 	DEFINE_FIELD( CBMortar, m_maxFrame, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CBMortar, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CBMortar, CBaseEntity )
 
 
 //=========================================================
@@ -328,7 +328,7 @@ private:
 	float	m_painSoundTime;
 	int		m_crabCount;
 };
-LINK_ENTITY_TO_CLASS( monster_bigmomma, CBigMomma );
+LINK_ENTITY_TO_CLASS( monster_bigmomma, CBigMomma )
 
 TYPEDESCRIPTION	CBigMomma::m_SaveData[] = 
 {
@@ -339,7 +339,7 @@ TYPEDESCRIPTION	CBigMomma::m_SaveData[] =
 	DEFINE_FIELD( CBigMomma, m_crabCount, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CBigMomma, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CBigMomma, CBaseMonster )
 
 const char *CBigMomma::pChildDieSounds[] = 
 {
@@ -938,7 +938,7 @@ DEFINE_CUSTOM_SCHEDULES( CBigMomma )
 	slNodeFail,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CBigMomma, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CBigMomma, CBaseMonster )
 
 
 

@@ -116,8 +116,8 @@ private:
 	static const char* pPainSounds[];
 };
 
-LINK_ENTITY_TO_CLASS( monster_scientist, CScientist );
-LINK_ENTITY_TO_CLASS( monster_cleansuit_scientist, CScientist );
+LINK_ENTITY_TO_CLASS( monster_scientist, CScientist )
+LINK_ENTITY_TO_CLASS( monster_cleansuit_scientist, CScientist )
 
 const char* CScientist::pPainSounds[] =
 {
@@ -135,7 +135,7 @@ TYPEDESCRIPTION	CScientist::m_SaveData[] =
 	DEFINE_FIELD( CScientist, m_fearTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CScientist, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CScientist, CTalkSquadMonster )
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -417,7 +417,7 @@ DEFINE_CUSTOM_SCHEDULES( CScientist )
 };
 
 
-IMPLEMENT_CUSTOM_SCHEDULES( CScientist, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CScientist, CTalkSquadMonster )
 
 
 void CScientist::DeclineFollowing( void )
@@ -1120,7 +1120,7 @@ void CDeadScientist::KeyValue( KeyValueData *pkvd )
 	else
 		CBaseMonster::KeyValue( pkvd );
 }
-LINK_ENTITY_TO_CLASS( monster_scientist_dead, CDeadScientist );
+LINK_ENTITY_TO_CLASS( monster_scientist_dead, CDeadScientist )
 
 //
 // ********** DeadScientist SPAWN **********
@@ -1183,7 +1183,7 @@ public:
 	float	m_flResponseDelay;
 };
 
-LINK_ENTITY_TO_CLASS( monster_sitting_scientist, CSittingScientist );
+LINK_ENTITY_TO_CLASS( monster_sitting_scientist, CSittingScientist )
 TYPEDESCRIPTION	CSittingScientist::m_SaveData[] = 
 {
 	// Don't need to save/restore m_baseSequence (recalced)
@@ -1191,7 +1191,7 @@ TYPEDESCRIPTION	CSittingScientist::m_SaveData[] =
 	DEFINE_FIELD( CSittingScientist, m_flResponseDelay, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CSittingScientist, CScientist );
+IMPLEMENT_SAVERESTORE( CSittingScientist, CScientist )
 
 // animation sequence aliases 
 typedef enum
