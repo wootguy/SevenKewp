@@ -784,6 +784,8 @@ EXPORT uint64_t getFileModifiedTime(const char* path);
 
 EXPORT bool fileExists(const char* path);
 
+EXPORT std::string normalize_path(std::string s);
+
 // searches game directories in order (e.g. valve/path, valve_downloads/path)
 // returns an empty string if the file can't be found
 EXPORT std::string getGameFilePath(const char* path);
