@@ -250,6 +250,7 @@ set(FUNC_HDR
 	func/CFuncTank.h
 	func/CFuncTrackChange.h
 	func/CFuncTrackTrain.h
+	func/CFuncVehicle.h
 	func/CFuncWall.h
 	func/CPlatTrigger.h
 )
@@ -278,6 +279,7 @@ set(FUNC_SRC
 	func/CFuncTrackTrain.cpp
 	func/CFuncTrain.cpp
 	func/CFuncTrainControls.cpp
+	func/CFuncVehicle.cpp
 	func/CFuncWall.cpp
 	func/CFuncWallToggle.cpp
 	func/CGunTarget.cpp
