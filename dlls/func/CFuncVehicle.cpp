@@ -304,6 +304,7 @@ void CFuncVehicle :: StopSound( void )
 	// if sound playing, stop it
 	if (m_soundPlaying && pev->noise)
 	{
+		/*
 		unsigned short us_encode;
 		unsigned short us_sound  = ( ( unsigned short )( m_sounds ) & 0x0007 ) << 12;
 
@@ -311,6 +312,9 @@ void CFuncVehicle :: StopSound( void )
 
 		PLAYBACK_EVENT_FULL( FEV_RELIABLE | FEV_UPDATE, edict(), m_usAdjustPitch, 0.0, 
 			(float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, us_encode, 0, 1, 0 );
+		*/
+
+		STOP_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noise));
 	}
 
 	m_soundPlaying = 0;
@@ -1048,7 +1052,7 @@ void CFuncVehicle :: Precache( void )
 	PRECACHE_SOUND("plats/vehicle_start1.wav");
 	PRECACHE_SOUND("plats/vehicle_ignition.wav");
 
-	m_usAdjustPitch = PRECACHE_EVENT( 1, "events/vehicle.sc" );
+	//m_usAdjustPitch = PRECACHE_EVENT( 1, "events/vehicle.sc" );
 }
 
 
