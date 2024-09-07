@@ -843,8 +843,9 @@ void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char 
 void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target) {
 	// surround with ; to prevent multiple commands being joined when sent in the same frame(?)
 	// this fixes music sometimes not loading/starting/stopping
-	std::string mp3Command = UTIL_VarArgs(";mp3 %s sound/%s;", (loop ? "loop" : "play"), path);
-	
+	std::string mp3Path = normalize_path(UTIL_VarArgs("sound/%s", path));
+	std::string mp3Command = UTIL_VarArgs(";mp3 %s %s;", (loop ? "loop" : "play"), mp3Path.c_str());
+
 	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
 	WRITE_STRING(mp3Command.c_str());
 	MESSAGE_END();
