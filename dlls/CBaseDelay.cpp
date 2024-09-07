@@ -5,7 +5,7 @@
 #include "nodes.h"
 #include "CBaseDoor.h"
 
-LINK_ENTITY_TO_CLASS(DelayedUse, CBaseDelay);
+LINK_ENTITY_TO_CLASS(DelayedUse, CBaseDelay)
 
 // Global Savedata for Delay
 TYPEDESCRIPTION	CBaseDelay::m_SaveData[] =
@@ -14,7 +14,7 @@ TYPEDESCRIPTION	CBaseDelay::m_SaveData[] =
 	DEFINE_FIELD(CBaseDelay, m_iszKillTarget, FIELD_STRING),
 };
 
-IMPLEMENT_SAVERESTORE(CBaseDelay, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CBaseDelay, CBaseEntity)
 
 void CBaseDelay::KeyValue(KeyValueData* pkvd)
 {

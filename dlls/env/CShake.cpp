@@ -27,7 +27,7 @@ public:
 private:
 };
 
-LINK_ENTITY_TO_CLASS(env_shake, CShake);
+LINK_ENTITY_TO_CLASS(env_shake, CShake)
 
 // pev->scale is amplitude
 // pev->dmg_save is frequency

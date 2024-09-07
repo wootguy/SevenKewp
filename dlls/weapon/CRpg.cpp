@@ -37,25 +37,25 @@ enum rpg_e {
 	RPG_FIDGET_UL,	// unloaded fidget
 };
 
-LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg );
+LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg )
 
 #ifndef CLIENT_DLL
 
-LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot );
+LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot )
 
 TYPEDESCRIPTION	CRpg::m_SaveData[] =
 {
 	DEFINE_FIELD(CRpg, m_fSpotActive, FIELD_INTEGER),
 	DEFINE_FIELD(CRpg, m_cActiveRockets, FIELD_INTEGER),
 };
-IMPLEMENT_SAVERESTORE(CRpg, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE(CRpg, CBasePlayerWeapon)
 
 TYPEDESCRIPTION	CRpgRocket::m_SaveData[] =
 {
 	DEFINE_FIELD(CRpgRocket, m_flIgniteTime, FIELD_TIME),
 	DEFINE_FIELD(CRpgRocket, m_hLauncher, FIELD_EHANDLE),
 };
-IMPLEMENT_SAVERESTORE(CRpgRocket, CGrenade);
+IMPLEMENT_SAVERESTORE(CRpgRocket, CGrenade)
 
 //=========================================================
 //=========================================================
@@ -83,7 +83,7 @@ void CLaserSpot::Spawn( void )
 
 	SET_MODEL(ENT(pev), "sprites/laserdot.spr");
 	UTIL_SetOrigin( pev, pev->origin );
-};
+}
 
 //=========================================================
 // Suspend- make the laser sight invisible. 
@@ -109,9 +109,9 @@ void CLaserSpot::Revive( void )
 void CLaserSpot::Precache( void )
 {
 	PRECACHE_MODEL("sprites/laserdot.spr");
-};
+}
 
-LINK_ENTITY_TO_CLASS( rpg_rocket, CRpgRocket );
+LINK_ENTITY_TO_CLASS( rpg_rocket, CRpgRocket )
 
 //=========================================================
 //=========================================================

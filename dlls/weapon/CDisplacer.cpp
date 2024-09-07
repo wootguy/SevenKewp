@@ -31,7 +31,7 @@ DEFINE_FUNCTION(AltFireThink),
 END_DATAMAP();
 */
 
-LINK_ENTITY_TO_CLASS(weapon_displacer, CDisplacer);
+LINK_ENTITY_TO_CLASS(weapon_displacer, CDisplacer)
 
 void CDisplacer::Spawn()
 {

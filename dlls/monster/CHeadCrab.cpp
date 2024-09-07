@@ -111,7 +111,7 @@ public:
 	static const char *pDeathSounds[];
 	static const char *pBiteSounds[];
 };
-LINK_ENTITY_TO_CLASS( monster_headcrab, CHeadCrab );
+LINK_ENTITY_TO_CLASS( monster_headcrab, CHeadCrab )
 
 DEFINE_CUSTOM_SCHEDULES( CHeadCrab )
 {
@@ -119,7 +119,7 @@ DEFINE_CUSTOM_SCHEDULES( CHeadCrab )
 	slHCRangeAttack1Fast,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CHeadCrab, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CHeadCrab, CBaseMonster )
 
 const char *CHeadCrab::pIdleSounds[] = 
 {
@@ -532,7 +532,7 @@ public:
 	virtual int GetVoicePitch( void ) { return PITCH_NORM + RANDOM_LONG(40,50); }
 	virtual float GetSoundVolue( void ) { return 0.8; }
 };
-LINK_ENTITY_TO_CLASS( monster_babycrab, CBabyCrab );
+LINK_ENTITY_TO_CLASS( monster_babycrab, CBabyCrab )
 
 void CBabyCrab :: Spawn( void )
 {

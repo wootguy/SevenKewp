@@ -54,7 +54,7 @@ private:
 	static const char* pDeathSounds[];
 };
 
-LINK_ENTITY_TO_CLASS(monster_babygarg, CBabyGarg);
+LINK_ENTITY_TO_CLASS(monster_babygarg, CBabyGarg)
 
 const char* CBabyGarg::pBeamAttackSounds[] =
 {

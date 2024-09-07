@@ -13,7 +13,7 @@ public:
 	void CountThink();
 };
 
-LINK_ENTITY_TO_CLASS(game_player_counter, CGamePlayerCounter);
+LINK_ENTITY_TO_CLASS(game_player_counter, CGamePlayerCounter)
 
 void CGamePlayerCounter::Spawn(void)
 {

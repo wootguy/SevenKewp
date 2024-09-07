@@ -27,14 +27,14 @@ private:
 	CSprite* m_pGlow;
 };
 
-LINK_ENTITY_TO_CLASS(xen_plantlight, CXenPLight);
+LINK_ENTITY_TO_CLASS(xen_plantlight, CXenPLight)
 
 TYPEDESCRIPTION	CXenPLight::m_SaveData[] =
 {
 	DEFINE_FIELD(CXenPLight, m_pGlow, FIELD_CLASSPTR),
 };
 
-IMPLEMENT_SAVERESTORE(CXenPLight, CActAnimating);
+IMPLEMENT_SAVERESTORE(CXenPLight, CActAnimating)
 
 void CXenPLight::Spawn(void)
 {

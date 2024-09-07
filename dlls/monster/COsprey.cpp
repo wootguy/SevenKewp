@@ -110,8 +110,8 @@ public:
 	const char* replenishMonster;
 };
 
-LINK_ENTITY_TO_CLASS( monster_osprey, COsprey );
-LINK_ENTITY_TO_CLASS( monster_blkop_osprey, COsprey );
+LINK_ENTITY_TO_CLASS( monster_osprey, COsprey )
+LINK_ENTITY_TO_CLASS( monster_blkop_osprey, COsprey )
 
 TYPEDESCRIPTION	COsprey::m_SaveData[] = 
 {
@@ -141,7 +141,7 @@ TYPEDESCRIPTION	COsprey::m_SaveData[] =
 	// DEFINE_FIELD( COsprey, m_iSpriteTexture, FIELD_INTEGER ),
 	// DEFINE_FIELD( COsprey, m_iPitch, FIELD_INTEGER ),
 };
-IMPLEMENT_SAVERESTORE( COsprey, CBaseMonster );
+IMPLEMENT_SAVERESTORE( COsprey, CBaseMonster )
 
 
 void COsprey :: Spawn( void )

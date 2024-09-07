@@ -8,7 +8,7 @@
 #include "CFuncPlatRot.h"
 #include "CFuncTrackChange.h"
 
-LINK_ENTITY_TO_CLASS(func_trackchange, CFuncTrackChange);
+LINK_ENTITY_TO_CLASS(func_trackchange, CFuncTrackChange)
 
 TYPEDESCRIPTION	CFuncTrackChange::m_SaveData[] =
 {
@@ -23,7 +23,7 @@ TYPEDESCRIPTION	CFuncTrackChange::m_SaveData[] =
 	DEFINE_FIELD(CFuncTrackChange, m_use, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CFuncTrackChange, CFuncPlatRot);
+IMPLEMENT_SAVERESTORE(CFuncTrackChange, CFuncPlatRot)
 
 void CFuncTrackChange::Spawn(void)
 {

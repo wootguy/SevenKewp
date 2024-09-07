@@ -17,7 +17,7 @@ public:
 	void KeyValue(KeyValueData* pkvd);
 	void Touch(CBaseEntity* pOther);
 };
-LINK_ENTITY_TO_CLASS(trigger_push, CTriggerPush);
+LINK_ENTITY_TO_CLASS(trigger_push, CTriggerPush)
 
 
 void CTriggerPush::KeyValue(KeyValueData* pkvd)

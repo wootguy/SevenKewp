@@ -72,9 +72,9 @@ public:
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 };
 
-LINK_ENTITY_TO_CLASS( monster_zombie, CZombie );
-LINK_ENTITY_TO_CLASS( monster_zombie_barney, CZombie );
-LINK_ENTITY_TO_CLASS( monster_zombie_soldier, CZombie );
+LINK_ENTITY_TO_CLASS( monster_zombie, CZombie )
+LINK_ENTITY_TO_CLASS( monster_zombie_barney, CZombie )
+LINK_ENTITY_TO_CLASS( monster_zombie_soldier, CZombie )
 
 const char *CZombie::pAttackHitSounds[] = 
 {

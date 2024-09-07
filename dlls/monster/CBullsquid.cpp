@@ -75,7 +75,7 @@ public:
 	static const char* pSpitHitSounds[];
 };
 
-LINK_ENTITY_TO_CLASS( squidspit, CSquidSpit );
+LINK_ENTITY_TO_CLASS( squidspit, CSquidSpit )
 
 const char* CSquidSpit::pSpitHitSounds[] =
 {
@@ -88,7 +88,7 @@ TYPEDESCRIPTION	CSquidSpit::m_SaveData[] =
 	DEFINE_FIELD( CSquidSpit, m_maxFrame, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CSquidSpit, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CSquidSpit, CBaseEntity )
 
 void CSquidSpit:: Spawn( void )
 {
@@ -239,7 +239,7 @@ private:
 	static const char* pGrowlSounds[];
 	static const char* pBiteSounds[];
 };
-LINK_ENTITY_TO_CLASS( monster_bullchicken, CBullsquid );
+LINK_ENTITY_TO_CLASS( monster_bullchicken, CBullsquid )
 
 const char* CBullsquid::pAttackSounds[] =
 {
@@ -297,7 +297,7 @@ TYPEDESCRIPTION	CBullsquid::m_SaveData[] =
 	DEFINE_FIELD( CBullsquid, m_flNextSpitTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CBullsquid, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CBullsquid, CBaseMonster )
 
 //=========================================================
 // IgnoreConditions 
@@ -1016,7 +1016,7 @@ DEFINE_CUSTOM_SCHEDULES( CBullsquid )
 	slSquidWallow
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CBullsquid, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CBullsquid, CBaseMonster )
 
 //=========================================================
 // GetSchedule 

@@ -109,8 +109,8 @@ public:
 	bool isActive;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_changevalue, CTriggerChangeValue);
-LINK_ENTITY_TO_CLASS(trigger_copyvalue, CTriggerChangeValue);
+LINK_ENTITY_TO_CLASS(trigger_changevalue, CTriggerChangeValue)
+LINK_ENTITY_TO_CLASS(trigger_copyvalue, CTriggerChangeValue)
 
 void CTriggerChangeValue::KeyValue(KeyValueData* pkvd)
 {

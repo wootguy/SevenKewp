@@ -38,7 +38,7 @@ TYPEDESCRIPTION	CBaseTurret::m_SaveData[] =
 	DEFINE_FIELD(CBaseTurret, m_flSpinUpTime, FIELD_TIME),
 };
 
-IMPLEMENT_SAVERESTORE(CBaseTurret, CBaseMonster);
+IMPLEMENT_SAVERESTORE(CBaseTurret, CBaseMonster)
 
 const char* CBaseTurret::pDieSounds[] =
 {

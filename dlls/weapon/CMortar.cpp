@@ -40,7 +40,7 @@ public:
 	int m_spriteTexture;
 };
 
-LINK_ENTITY_TO_CLASS( monster_mortar, CMortar );
+LINK_ENTITY_TO_CLASS( monster_mortar, CMortar )
 
 void CMortar::Spawn( )
 {

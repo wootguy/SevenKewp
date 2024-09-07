@@ -20,7 +20,7 @@ public:
 	void Touch(CBaseEntity* pOther);
 };
 
-LINK_ENTITY_TO_CLASS(trigger_cdaudio, CTriggerCDAudio);
+LINK_ENTITY_TO_CLASS(trigger_cdaudio, CTriggerCDAudio)
 
 //
 // Changes tracks or stops CD when player touches

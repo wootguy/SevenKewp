@@ -49,7 +49,7 @@ class CSqueakGrenade : public CGrenade
 
 float CSqueakGrenade::m_flNextBounceSoundTime = 0;
 
-LINK_ENTITY_TO_CLASS( monster_snark, CSqueakGrenade );
+LINK_ENTITY_TO_CLASS( monster_snark, CSqueakGrenade )
 TYPEDESCRIPTION	CSqueakGrenade::m_SaveData[] = 
 {
 	DEFINE_FIELD( CSqueakGrenade, m_flDie, FIELD_TIME ),
@@ -60,7 +60,7 @@ TYPEDESCRIPTION	CSqueakGrenade::m_SaveData[] =
 	DEFINE_FIELD( CSqueakGrenade, m_hOwner, FIELD_EHANDLE ),
 };
 
-IMPLEMENT_SAVERESTORE( CSqueakGrenade, CGrenade );
+IMPLEMENT_SAVERESTORE( CSqueakGrenade, CGrenade )
 
 #define SQUEEK_DETONATE_DELAY	15.0
 

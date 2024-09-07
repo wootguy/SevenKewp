@@ -28,7 +28,7 @@
 
 int iAgruntMuzzleFlash;
 
-LINK_ENTITY_TO_CLASS( monster_alien_grunt, CAGrunt );
+LINK_ENTITY_TO_CLASS( monster_alien_grunt, CAGrunt )
 
 TYPEDESCRIPTION	CAGrunt::m_SaveData[] = 
 {
@@ -40,7 +40,7 @@ TYPEDESCRIPTION	CAGrunt::m_SaveData[] =
 	DEFINE_FIELD( CAGrunt, m_iLastWord, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CAGrunt, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CAGrunt, CTalkSquadMonster )
 
 const char *CAGrunt::pAttackHitSounds[] = 
 {
@@ -835,7 +835,7 @@ DEFINE_CUSTOM_SCHEDULES( CAGrunt )
 	slAGruntThreatDisplay,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CAGrunt, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CAGrunt, CTalkSquadMonster )
 
 //=========================================================
 // FCanCheckAttacks - this is overridden for alien grunts

@@ -11,7 +11,7 @@ public:
 	void KeyValue(KeyValueData* pkvd);
 	void Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker);
 };
-LINK_ENTITY_TO_CLASS(func_tankmortar, CFuncTankMortar);
+LINK_ENTITY_TO_CLASS(func_tankmortar, CFuncTankMortar)
 
 
 void CFuncTankMortar::KeyValue(KeyValueData* pkvd)

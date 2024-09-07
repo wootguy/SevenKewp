@@ -28,7 +28,7 @@ public:
 	int		m_state;
 };
 
-LINK_ENTITY_TO_CLASS(env_bubbles, CBubbling);
+LINK_ENTITY_TO_CLASS(env_bubbles, CBubbling)
 
 TYPEDESCRIPTION	CBubbling::m_SaveData[] =
 {
@@ -39,7 +39,7 @@ TYPEDESCRIPTION	CBubbling::m_SaveData[] =
 	//	DEFINE_FIELD( CBubbling, m_bubbleModel, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE(CBubbling, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CBubbling, CBaseEntity)
 
 
 #define SF_BUBBLES_STARTOFF		0x0001

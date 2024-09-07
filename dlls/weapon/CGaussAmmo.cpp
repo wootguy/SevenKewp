@@ -24,5 +24,5 @@ class CGaussAmmo : public CBasePlayerAmmo
 	}
 };
 
-LINK_ENTITY_TO_CLASS( ammo_gaussclip, CGaussAmmo);
-LINK_ENTITY_TO_CLASS( ammo_egonclip, CGaussAmmo);
+LINK_ENTITY_TO_CLASS( ammo_gaussclip, CGaussAmmo)
+LINK_ENTITY_TO_CLASS( ammo_egonclip, CGaussAmmo)

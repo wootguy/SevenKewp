@@ -112,7 +112,7 @@ public:
 
 	int		m_iShell;
 };
-LINK_ENTITY_TO_CLASS( monster_human_assassin, CHAssassin );
+LINK_ENTITY_TO_CLASS( monster_human_assassin, CHAssassin )
 
 
 TYPEDESCRIPTION	CHAssassin::m_SaveData[] = 
@@ -131,7 +131,7 @@ TYPEDESCRIPTION	CHAssassin::m_SaveData[] =
 	DEFINE_FIELD( CHAssassin, m_iFrustration, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CHAssassin, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CHAssassin, CBaseMonster )
 
 
 //=========================================================
@@ -646,7 +646,7 @@ DEFINE_CUSTOM_SCHEDULES( CHAssassin )
 	slAssassinJumpLand,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CHAssassin, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CHAssassin, CBaseMonster )
 
 
 //=========================================================

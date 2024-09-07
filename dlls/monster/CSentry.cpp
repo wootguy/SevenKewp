@@ -25,7 +25,7 @@ public:
 
 };
 
-LINK_ENTITY_TO_CLASS(monster_sentry, CSentry);
+LINK_ENTITY_TO_CLASS(monster_sentry, CSentry)
 
 void CSentry::Precache()
 {

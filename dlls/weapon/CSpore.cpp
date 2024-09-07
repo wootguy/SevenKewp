@@ -30,10 +30,10 @@ TYPEDESCRIPTION CSpore::m_SaveData[] =
 	DEFINE_FIELD(CSpore, m_bIsAI, FIELD_BOOLEAN),
 	DEFINE_FIELD(CSpore, m_hSprite, FIELD_EHANDLE) };
 
-IMPLEMENT_SAVERESTORE(CSpore, CSpore::BaseClass);
+IMPLEMENT_SAVERESTORE(CSpore, CSpore::BaseClass)
 #endif
 
-LINK_ENTITY_TO_CLASS(spore, CSpore);
+LINK_ENTITY_TO_CLASS(spore, CSpore)
 
 void CSpore::Precache()
 {

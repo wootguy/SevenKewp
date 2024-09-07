@@ -105,8 +105,8 @@ private:
 
 Vector RandomBeamPoint(entvars_t* owner);
 
-LINK_ENTITY_TO_CLASS(monster_alien_voltigore, CVoltigore);
-LINK_ENTITY_TO_CLASS(voltigoreshock, CVoltigoreShock);
+LINK_ENTITY_TO_CLASS(monster_alien_voltigore, CVoltigore)
+LINK_ENTITY_TO_CLASS(voltigoreshock, CVoltigoreShock)
 
 const char* CVoltigore::pAttackHitSounds[] =
 {

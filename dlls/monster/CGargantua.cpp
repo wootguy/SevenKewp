@@ -41,10 +41,10 @@
 int gStompSprite = 0;
 int gGargGibModel = 0;
 
-LINK_ENTITY_TO_CLASS(streak_spiral, CSpiral);
-LINK_ENTITY_TO_CLASS(garg_stomp, CStomp );
-LINK_ENTITY_TO_CLASS(env_smoker, CSmoker);
-LINK_ENTITY_TO_CLASS(monster_gargantua, CGargantua);
+LINK_ENTITY_TO_CLASS(streak_spiral, CSpiral)
+LINK_ENTITY_TO_CLASS(garg_stomp, CStomp )
+LINK_ENTITY_TO_CLASS(env_smoker, CSmoker)
+LINK_ENTITY_TO_CLASS(monster_gargantua, CGargantua)
 
 TYPEDESCRIPTION	CGargantua::m_SaveData[] = 
 {
@@ -59,7 +59,7 @@ TYPEDESCRIPTION	CGargantua::m_SaveData[] =
 	DEFINE_FIELD( CGargantua, m_flameY, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CGargantua, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CGargantua, CBaseMonster )
 
 const char *CGargantua::pAttackHitSounds[] = 
 {
@@ -212,7 +212,7 @@ DEFINE_CUSTOM_SCHEDULES( CGargantua )
 	slGargSwipe,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CGargantua, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CGargantua, CBaseMonster )
 
 
 void CGargantua::EyeOn( int level )

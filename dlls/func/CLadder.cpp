@@ -17,7 +17,7 @@ public:
 	void Precache(void);
 	void Toggle(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 };
-LINK_ENTITY_TO_CLASS(func_ladder, CLadder);
+LINK_ENTITY_TO_CLASS(func_ladder, CLadder)
 
 
 void CLadder::KeyValue(KeyValueData* pkvd)

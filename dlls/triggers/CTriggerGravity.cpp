@@ -12,7 +12,7 @@ public:
 	void Spawn(void);
 	void EXPORT GravityTouch(CBaseEntity* pOther);
 };
-LINK_ENTITY_TO_CLASS(trigger_gravity, CTriggerGravity);
+LINK_ENTITY_TO_CLASS(trigger_gravity, CTriggerGravity)
 
 void CTriggerGravity::Spawn(void)
 {

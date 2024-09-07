@@ -23,8 +23,8 @@ TYPEDESCRIPTION	CFuncTrackTrain::m_SaveData[] =
 	DEFINE_FIELD(CFuncTrackTrain, m_oldSpeed, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CFuncTrackTrain, CBaseEntity);
-LINK_ENTITY_TO_CLASS(func_tracktrain, CFuncTrackTrain);
+IMPLEMENT_SAVERESTORE(CFuncTrackTrain, CBaseEntity)
+LINK_ENTITY_TO_CLASS(func_tracktrain, CFuncTrackTrain)
 
 void CFuncTrackTrain::KeyValue(KeyValueData* pkvd)
 {

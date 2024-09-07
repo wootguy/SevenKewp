@@ -99,8 +99,8 @@ public:
 };
 
 
-LINK_ENTITY_TO_CLASS(monster_gonome, CGonome);
-LINK_ENTITY_TO_CLASS(gonomespit, CGonomeSpit);
+LINK_ENTITY_TO_CLASS(monster_gonome, CGonome)
+LINK_ENTITY_TO_CLASS(gonomespit, CGonomeSpit)
 
 const char* CGonome::pAttackHitSounds[] =
 {
@@ -181,7 +181,7 @@ DEFINE_CUSTOM_SCHEDULES(CGonome)
 	slGonomeChaseEnemy
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES(CGonome, CBaseMonster);
+IMPLEMENT_CUSTOM_SCHEDULES(CGonome, CBaseMonster)
 
 int	CGonome:: Classify ( void )
 {

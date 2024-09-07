@@ -16,7 +16,7 @@ public:
 	BOOL	IsOn(void);
 };
 
-LINK_ENTITY_TO_CLASS(func_wall_toggle, CFuncWallToggle);
+LINK_ENTITY_TO_CLASS(func_wall_toggle, CFuncWallToggle)
 
 void CFuncWallToggle::Spawn(void)
 {

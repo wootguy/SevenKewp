@@ -22,7 +22,7 @@ public:
 	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {}		// Clear out func_wall's use function
 };
 
-LINK_ENTITY_TO_CLASS(func_monsterclip, CFuncMonsterClip);
+LINK_ENTITY_TO_CLASS(func_monsterclip, CFuncMonsterClip)
 
 void CFuncMonsterClip::Spawn(void)
 {

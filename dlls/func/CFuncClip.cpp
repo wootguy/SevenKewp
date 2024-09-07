@@ -21,7 +21,7 @@ public:
 	Vector m_clipDirection;
 };
 
-LINK_ENTITY_TO_CLASS(func_clip, CFuncClip);
+LINK_ENTITY_TO_CLASS(func_clip, CFuncClip)
 
 void CFuncClip::Spawn()
 {

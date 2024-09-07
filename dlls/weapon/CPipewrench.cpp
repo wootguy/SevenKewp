@@ -49,7 +49,7 @@ DEFINE_FIELD(m_flBigSwingStart, FIELD_TIME),
 	END_DATAMAP();
 */
 
-LINK_ENTITY_TO_CLASS(weapon_pipewrench, CPipewrench);
+LINK_ENTITY_TO_CLASS(weapon_pipewrench, CPipewrench)
 
 void CPipewrench::Spawn()
 {

@@ -87,6 +87,6 @@ class CItemBattery : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_battery, CItemBattery);
-LINK_ENTITY_TO_CLASS(item_helmet, CItemBattery);
-LINK_ENTITY_TO_CLASS(item_armorvest, CItemBattery);
+LINK_ENTITY_TO_CLASS(item_battery, CItemBattery)
+LINK_ENTITY_TO_CLASS(item_helmet, CItemBattery)
+LINK_ENTITY_TO_CLASS(item_armorvest, CItemBattery)

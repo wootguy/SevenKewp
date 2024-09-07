@@ -48,10 +48,10 @@ TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 	// DEFINE_FIELD( CShotgun, m_iShell, FIELD_INTEGER ),
 	DEFINE_FIELD(CShotgun, m_flPumpTime, FIELD_TIME),
 };
-IMPLEMENT_SAVERESTORE(CShotgun, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE(CShotgun, CBasePlayerWeapon)
 #endif
 
-LINK_ENTITY_TO_CLASS( weapon_shotgun, CShotgun );
+LINK_ENTITY_TO_CLASS( weapon_shotgun, CShotgun )
 
 void CShotgun::Spawn( )
 {

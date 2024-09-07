@@ -17,7 +17,7 @@ public:
 	void			Play(void);
 };
 
-LINK_ENTITY_TO_CLASS(target_cdaudio, CTargetCDAudio);
+LINK_ENTITY_TO_CLASS(target_cdaudio, CTargetCDAudio)
 
 void CTargetCDAudio::KeyValue(KeyValueData* pkvd)
 {

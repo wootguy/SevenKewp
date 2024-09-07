@@ -11,7 +11,7 @@ public:
 	void Precache(void);
 	void Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker);
 };
-LINK_ENTITY_TO_CLASS(func_tankrocket, CFuncTankRocket);
+LINK_ENTITY_TO_CLASS(func_tankrocket, CFuncTankRocket)
 
 void CFuncTankRocket::Precache(void)
 {

@@ -16,7 +16,7 @@ public:
 	void KeyValue(KeyValueData* pkvd);
 	void EXPORT EndSectionUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 };
-LINK_ENTITY_TO_CLASS(trigger_endsection, CTriggerEndSection);
+LINK_ENTITY_TO_CLASS(trigger_endsection, CTriggerEndSection)
 
 
 void CTriggerEndSection::EndSectionUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)

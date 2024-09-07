@@ -113,7 +113,7 @@ void CBreakable::KeyValue(KeyValueData* pkvd)
 //
 // func_breakable - bmodel that breaks into pieces after taking damage
 //
-LINK_ENTITY_TO_CLASS(func_breakable, CBreakable);
+LINK_ENTITY_TO_CLASS(func_breakable, CBreakable)
 TYPEDESCRIPTION CBreakable::m_SaveData[] =
 {
 	DEFINE_FIELD(CBreakable, m_Material, FIELD_INTEGER),
@@ -129,7 +129,7 @@ TYPEDESCRIPTION CBreakable::m_SaveData[] =
 		// Explosion magnitude is stored in pev->impulse
 };
 
-IMPLEMENT_SAVERESTORE(CBreakable, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CBreakable, CBaseEntity)
 
 void CBreakable::Spawn(void)
 {

@@ -54,7 +54,7 @@ public:
 	
 };
 
-LINK_ENTITY_TO_CLASS(trigger_setorigin, CTriggerSetOrigin);
+LINK_ENTITY_TO_CLASS(trigger_setorigin, CTriggerSetOrigin)
 
 void CTriggerSetOrigin::KeyValue(KeyValueData* pkvd)
 {

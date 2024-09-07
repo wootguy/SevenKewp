@@ -119,8 +119,8 @@ private:
 	static const char* pSlamSounds[];
 };
 
-LINK_ENTITY_TO_CLASS(monster_alien_tor, CTor);
-LINK_ENTITY_TO_CLASS(monster_kingpin, CTor);
+LINK_ENTITY_TO_CLASS(monster_alien_tor, CTor)
+LINK_ENTITY_TO_CLASS(monster_kingpin, CTor)
 
 const char* CTor::pAttackHitSounds[] =
 {
@@ -196,7 +196,7 @@ DEFINE_CUSTOM_SCHEDULES(CTor)
 	slSummonAttack
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES(CTor, CBaseMonster);
+IMPLEMENT_CUSTOM_SCHEDULES(CTor, CBaseMonster)
 
 int	CTor::Classify(void)
 {

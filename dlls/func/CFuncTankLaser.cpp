@@ -22,7 +22,7 @@ private:
 	EHANDLE m_hLaser;
 	float	m_laserTime;
 };
-LINK_ENTITY_TO_CLASS(func_tanklaser, CFuncTankLaser);
+LINK_ENTITY_TO_CLASS(func_tanklaser, CFuncTankLaser)
 
 TYPEDESCRIPTION	CFuncTankLaser::m_SaveData[] =
 {
@@ -30,7 +30,7 @@ TYPEDESCRIPTION	CFuncTankLaser::m_SaveData[] =
 	DEFINE_FIELD(CFuncTankLaser, m_laserTime, FIELD_TIME),
 };
 
-IMPLEMENT_SAVERESTORE(CFuncTankLaser, CFuncTank);
+IMPLEMENT_SAVERESTORE(CFuncTankLaser, CFuncTank)
 
 void CFuncTankLaser::Activate(void)
 {

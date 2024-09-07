@@ -36,7 +36,7 @@ public:
 	int m_iKeys;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_createentity, CTriggerCreateEntity);
+LINK_ENTITY_TO_CLASS(trigger_createentity, CTriggerCreateEntity)
 
 void CTriggerCreateEntity::KeyValue(KeyValueData* pkvd)
 {

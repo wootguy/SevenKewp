@@ -34,7 +34,7 @@ private:
 	float	m_loadTime;
 };
 
-LINK_ENTITY_TO_CLASS(player_loadsaved, CRevertSaved);
+LINK_ENTITY_TO_CLASS(player_loadsaved, CRevertSaved)
 
 TYPEDESCRIPTION	CRevertSaved::m_SaveData[] =
 {
@@ -42,7 +42,7 @@ TYPEDESCRIPTION	CRevertSaved::m_SaveData[] =
 	DEFINE_FIELD(CRevertSaved, m_loadTime, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CRevertSaved, CPointEntity);
+IMPLEMENT_SAVERESTORE(CRevertSaved, CPointEntity)
 
 void CRevertSaved::KeyValue(KeyValueData* pkvd)
 {

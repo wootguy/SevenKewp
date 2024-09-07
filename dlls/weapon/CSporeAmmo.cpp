@@ -189,5 +189,5 @@ class CSporeClip : public CBasePlayerAmmo
 	}
 };
 
-LINK_ENTITY_TO_CLASS(ammo_spore, CSporeAmmo);
-LINK_ENTITY_TO_CLASS(ammo_sporeclip, CSporeClip);
+LINK_ENTITY_TO_CLASS(ammo_spore, CSporeAmmo)
+LINK_ENTITY_TO_CLASS(ammo_sporeclip, CSporeClip)

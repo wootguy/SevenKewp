@@ -33,11 +33,11 @@ TYPEDESCRIPTION	CCineMonster::m_SaveData[] =
 };
 
 
-IMPLEMENT_SAVERESTORE(CCineMonster, CBaseMonster);
+IMPLEMENT_SAVERESTORE(CCineMonster, CBaseMonster)
 
-LINK_ENTITY_TO_CLASS(scripted_sequence, CCineMonster);
+LINK_ENTITY_TO_CLASS(scripted_sequence, CCineMonster)
 
-LINK_ENTITY_TO_CLASS(aiscripted_sequence, CCineAI);
+LINK_ENTITY_TO_CLASS(aiscripted_sequence, CCineAI)
 
 void ScriptEntityCancel(edict_t* pentCine)
 {

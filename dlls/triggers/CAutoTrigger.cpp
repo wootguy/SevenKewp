@@ -28,7 +28,7 @@ private:
 	int			m_globalstate;
 	USE_TYPE	triggerType;
 };
-LINK_ENTITY_TO_CLASS(trigger_auto, CAutoTrigger);
+LINK_ENTITY_TO_CLASS(trigger_auto, CAutoTrigger)
 
 TYPEDESCRIPTION	CAutoTrigger::m_SaveData[] =
 {
@@ -36,7 +36,7 @@ TYPEDESCRIPTION	CAutoTrigger::m_SaveData[] =
 	DEFINE_FIELD(CAutoTrigger, triggerType, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CAutoTrigger, CBaseDelay);
+IMPLEMENT_SAVERESTORE(CAutoTrigger, CBaseDelay)
 
 void CAutoTrigger::KeyValue(KeyValueData* pkvd)
 {

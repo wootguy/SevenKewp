@@ -27,4 +27,4 @@ class CItemSecurity : public CItem
 	BOOL ShouldRespawn() { return FALSE; }
 };
 
-LINK_ENTITY_TO_CLASS(item_security, CItemSecurity);
+LINK_ENTITY_TO_CLASS(item_security, CItemSecurity)

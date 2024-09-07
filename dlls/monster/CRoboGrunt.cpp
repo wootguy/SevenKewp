@@ -81,8 +81,8 @@ public:
 	const char* GetMonsterType() { return "monster_robogrunt"; };
 };
 
-LINK_ENTITY_TO_CLASS(monster_robogrunt, CRoboGrunt);
-LINK_ENTITY_TO_CLASS(monster_robogrunt_repel, CRoboGruntRepel);
+LINK_ENTITY_TO_CLASS(monster_robogrunt, CRoboGrunt)
+LINK_ENTITY_TO_CLASS(monster_robogrunt_repel, CRoboGruntRepel)
 
 const char* CRoboGrunt::pDeathSounds[] =
 {

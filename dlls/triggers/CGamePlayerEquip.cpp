@@ -19,7 +19,7 @@
 #include "CSqueak.h"
 #include "skill.h"
 
-LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip);
+LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip)
 
 bool g_mapCfgExists;
 EquipItem g_mapEquipment[MAX_EQUIP];

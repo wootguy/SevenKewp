@@ -125,7 +125,7 @@ private:
 	static const char* pBlastSounds[];
 
 };
-LINK_ENTITY_TO_CLASS( monster_houndeye, CHoundeye );
+LINK_ENTITY_TO_CLASS( monster_houndeye, CHoundeye )
 
 const char* CHoundeye::pAlertSounds[] =
 {
@@ -178,7 +178,7 @@ TYPEDESCRIPTION	CHoundeye::m_SaveData[] =
 	DEFINE_FIELD( CHoundeye, m_vecPackCenter, FIELD_POSITION_VECTOR ),
 };
 
-IMPLEMENT_SAVERESTORE( CHoundeye, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CHoundeye, CTalkSquadMonster )
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -1141,7 +1141,7 @@ DEFINE_CUSTOM_SCHEDULES( CHoundeye )
 	slHoundCombatFailNoPVS,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CHoundeye, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CHoundeye, CTalkSquadMonster )
 
 //=========================================================
 // GetScheduleOfType 

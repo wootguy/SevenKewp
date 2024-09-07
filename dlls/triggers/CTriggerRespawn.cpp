@@ -21,7 +21,7 @@ public:
 private:
 };
 
-LINK_ENTITY_TO_CLASS(trigger_respawn, CTriggerRespawn);
+LINK_ENTITY_TO_CLASS(trigger_respawn, CTriggerRespawn)
 
 void CTriggerRespawn::RespawnTarget(CBaseEntity* target) {
 	if (!target) {

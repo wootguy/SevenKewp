@@ -39,7 +39,7 @@ TYPEDESCRIPTION	CFuncTank::m_SaveData[] =
 	DEFINE_FIELD(CFuncTank, m_iszMaster, FIELD_STRING),
 };
 
-IMPLEMENT_SAVERESTORE(CFuncTank, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CFuncTank, CBaseEntity)
 
 Vector gTankSpread[] =
 {

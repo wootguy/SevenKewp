@@ -23,7 +23,7 @@ Set "sounds" to one of the following:
 2) chain slow
 */
 
-LINK_ENTITY_TO_CLASS(func_plat, CFuncPlat);
+LINK_ENTITY_TO_CLASS(func_plat, CFuncPlat)
 
 void CFuncPlat::Setup(void)
 {

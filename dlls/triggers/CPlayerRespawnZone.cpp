@@ -29,14 +29,14 @@ private:
 	int zoneType;
 };
 
-LINK_ENTITY_TO_CLASS(player_respawn_zone, CPlayerRespawnZone);
+LINK_ENTITY_TO_CLASS(player_respawn_zone, CPlayerRespawnZone)
 
 TYPEDESCRIPTION	CPlayerRespawnZone::m_SaveData[] =
 {
 	DEFINE_FIELD(CPlayerRespawnZone, zoneType, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CPlayerRespawnZone, CRuleBrushEntity);
+IMPLEMENT_SAVERESTORE(CPlayerRespawnZone, CRuleBrushEntity)
 
 void CPlayerRespawnZone::KeyValue(KeyValueData* pkvd)
 {

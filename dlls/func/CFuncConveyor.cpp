@@ -15,7 +15,7 @@ public:
 	void	UpdateSpeed(float speed);
 };
 
-LINK_ENTITY_TO_CLASS(func_conveyor, CFuncConveyor);
+LINK_ENTITY_TO_CLASS(func_conveyor, CFuncConveyor)
 void CFuncConveyor::Spawn(void)
 {
 	SetMovedir(pev);

@@ -45,7 +45,7 @@ public:
 	bool m_isRunning;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_entity_iterator, CTriggerEntityIterator);
+LINK_ENTITY_TO_CLASS(trigger_entity_iterator, CTriggerEntityIterator)
 
 void CTriggerEntityIterator::KeyValue(KeyValueData* pkvd)
 {

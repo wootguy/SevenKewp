@@ -190,7 +190,7 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 };
 
 
-LINK_ENTITY_TO_CLASS( player, CBasePlayer );
+LINK_ENTITY_TO_CLASS( player, CBasePlayer )
 
 /* 
  *

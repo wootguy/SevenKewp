@@ -25,7 +25,7 @@ public:
 };
 
 
-LINK_ENTITY_TO_CLASS(test_effect, CTestEffect);
+LINK_ENTITY_TO_CLASS(test_effect, CTestEffect)
 
 void CTestEffect::Spawn(void)
 {

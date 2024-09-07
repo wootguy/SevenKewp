@@ -14,7 +14,7 @@ public:
 private:
 };
 
-LINK_ENTITY_TO_CLASS(game_end, CGameEnd);
+LINK_ENTITY_TO_CLASS(game_end, CGameEnd)
 
 
 void CGameEnd::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)

@@ -21,14 +21,14 @@ private:
 	USE_TYPE	triggerType;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_relay, CTriggerRelay);
+LINK_ENTITY_TO_CLASS(trigger_relay, CTriggerRelay)
 
 TYPEDESCRIPTION	CTriggerRelay::m_SaveData[] =
 {
 	DEFINE_FIELD(CTriggerRelay, triggerType, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CTriggerRelay, CBaseDelay);
+IMPLEMENT_SAVERESTORE(CTriggerRelay, CBaseDelay)
 
 void CTriggerRelay::KeyValue(KeyValueData* pkvd)
 {

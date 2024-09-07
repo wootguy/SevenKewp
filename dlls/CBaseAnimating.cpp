@@ -37,7 +37,7 @@ TYPEDESCRIPTION	CBaseAnimating::m_SaveData[] =
 	DEFINE_FIELD( CBaseMonster, m_fSequenceLoops, FIELD_BOOLEAN ),
 };
 
-IMPLEMENT_SAVERESTORE( CBaseAnimating, CBaseDelay );
+IMPLEMENT_SAVERESTORE( CBaseAnimating, CBaseDelay )
 
 
 //=========================================================

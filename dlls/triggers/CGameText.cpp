@@ -32,7 +32,7 @@ private:
 	hudtextparms_t	m_textParms;
 };
 
-LINK_ENTITY_TO_CLASS(game_text, CGameText);
+LINK_ENTITY_TO_CLASS(game_text, CGameText)
 
 // Save parms as a block.  Will break save/restore if the structure changes, but this entity didn't ship with Half-Life, so
 // it can't impact saved Half-Life games.
@@ -41,7 +41,7 @@ TYPEDESCRIPTION	CGameText::m_SaveData[] =
 	DEFINE_ARRAY(CGameText, m_textParms, FIELD_CHARACTER, sizeof(hudtextparms_t)),
 };
 
-IMPLEMENT_SAVERESTORE(CGameText, CRulePointEntity);
+IMPLEMENT_SAVERESTORE(CGameText, CRulePointEntity)
 
 
 void CGameText::KeyValue(KeyValueData* pkvd)

@@ -23,7 +23,7 @@ public:
 	float		m_frictionFraction;		// Sorry, couldn't resist this name :)
 };
 
-LINK_ENTITY_TO_CLASS(func_friction, CFrictionModifier);
+LINK_ENTITY_TO_CLASS(func_friction, CFrictionModifier)
 
 // Global Savedata for changelevel friction modifier
 TYPEDESCRIPTION	CFrictionModifier::m_SaveData[] =
@@ -31,7 +31,7 @@ TYPEDESCRIPTION	CFrictionModifier::m_SaveData[] =
 	DEFINE_FIELD(CFrictionModifier, m_frictionFraction, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CFrictionModifier, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CFrictionModifier, CBaseEntity)
 
 
 // Modify an entity's friction

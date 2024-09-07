@@ -52,11 +52,11 @@ TYPEDESCRIPTION	CFuncRotating::m_SaveData[] =
 	DEFINE_FIELD(CFuncRotating, m_sounds, FIELD_INTEGER)
 };
 
-IMPLEMENT_SAVERESTORE(CFuncRotating, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CFuncRotating, CBaseEntity)
 
 
 
-LINK_ENTITY_TO_CLASS(func_rotating, CFuncRotating);
+LINK_ENTITY_TO_CLASS(func_rotating, CFuncRotating)
 
 void CFuncRotating::KeyValue(KeyValueData* pkvd)
 {

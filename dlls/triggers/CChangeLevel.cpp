@@ -37,7 +37,7 @@ public:
 	int		m_changeTarget;
 	float	m_changeTargetDelay;
 };
-LINK_ENTITY_TO_CLASS(trigger_changelevel, CChangeLevel);
+LINK_ENTITY_TO_CLASS(trigger_changelevel, CChangeLevel)
 
 // Global Savedata for changelevel trigger
 TYPEDESCRIPTION	CChangeLevel::m_SaveData[] =
@@ -48,7 +48,7 @@ TYPEDESCRIPTION	CChangeLevel::m_SaveData[] =
 	DEFINE_FIELD(CChangeLevel, m_changeTargetDelay, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CChangeLevel, CBaseTrigger);
+IMPLEMENT_SAVERESTORE(CChangeLevel, CBaseTrigger)
 
 //
 // Cache user-entity-field values until spawn is called.

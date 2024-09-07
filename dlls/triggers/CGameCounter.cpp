@@ -35,7 +35,7 @@ private:
 	inline void SetInitialValue(int value) { pev->dmg = value; }
 };
 
-LINK_ENTITY_TO_CLASS(game_counter, CGameCounter);
+LINK_ENTITY_TO_CLASS(game_counter, CGameCounter)
 
 void CGameCounter::Spawn(void)
 {
@@ -98,7 +98,7 @@ public:
 private:
 };
 
-LINK_ENTITY_TO_CLASS(game_counter_set, CGameCounterSet);
+LINK_ENTITY_TO_CLASS(game_counter_set, CGameCounterSet)
 
 
 void CGameCounterSet::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)

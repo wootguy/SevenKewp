@@ -55,7 +55,7 @@ TYPEDESCRIPTION	CTalkSquadMonster::m_SaveData[] =
 	DEFINE_FIELD(CTalkSquadMonster, m_iMySlot, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE( CTalkSquadMonster, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CTalkSquadMonster, CBaseMonster )
 
 // array of friend names
 const char *CTalkSquadMonster::m_szFriends[TLK_CFRIENDS] = 
@@ -306,7 +306,7 @@ DEFINE_CUSTOM_SCHEDULES( CTalkSquadMonster )
 	slTlkIdleEyecontact,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CTalkSquadMonster, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CTalkSquadMonster, CBaseMonster )
 
 
 void CTalkSquadMonster :: SetActivity ( Activity newActivity )

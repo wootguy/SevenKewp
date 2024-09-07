@@ -26,9 +26,9 @@
 #include "CBasePlayerWeapon.h"
 #include "CMonsterMaker.h"
 
-LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker );
-LINK_ENTITY_TO_CLASS( squadmaker, CMonsterMaker );
-LINK_ENTITY_TO_CLASS( env_xenmaker, CMonsterMaker );
+LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker )
+LINK_ENTITY_TO_CLASS( squadmaker, CMonsterMaker )
+LINK_ENTITY_TO_CLASS( env_xenmaker, CMonsterMaker )
 
 TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] = 
 {
@@ -44,7 +44,7 @@ TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 };
 
 
-IMPLEMENT_SAVERESTORE( CMonsterMaker, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CMonsterMaker, CBaseMonster )
 
 void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 {

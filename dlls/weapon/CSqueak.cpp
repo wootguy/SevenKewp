@@ -35,7 +35,7 @@ enum squeak_e {
 	SQUEAK_THROW
 };
 
-LINK_ENTITY_TO_CLASS( weapon_snark, CSqueak );
+LINK_ENTITY_TO_CLASS( weapon_snark, CSqueak )
 
 
 void CSqueak::Spawn( )

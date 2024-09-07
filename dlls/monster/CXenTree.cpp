@@ -14,7 +14,7 @@ public:
 	void		Touch(CBaseEntity* pOther);
 	static CXenTreeTrigger* TriggerCreate(edict_t* pOwner, const Vector& position);
 };
-LINK_ENTITY_TO_CLASS(xen_ttrigger, CXenTreeTrigger);
+LINK_ENTITY_TO_CLASS(xen_ttrigger, CXenTreeTrigger)
 
 CXenTreeTrigger* CXenTreeTrigger::TriggerCreate(edict_t* pOwner, const Vector& position)
 {
@@ -60,14 +60,14 @@ private:
 	CXenTreeTrigger* m_pTrigger;
 };
 
-LINK_ENTITY_TO_CLASS(xen_tree, CXenTree);
+LINK_ENTITY_TO_CLASS(xen_tree, CXenTree)
 
 TYPEDESCRIPTION	CXenTree::m_SaveData[] =
 {
 	DEFINE_FIELD(CXenTree, m_pTrigger, FIELD_CLASSPTR),
 };
 
-IMPLEMENT_SAVERESTORE(CXenTree, CActAnimating);
+IMPLEMENT_SAVERESTORE(CXenTree, CActAnimating)
 
 void CXenTree::Spawn(void)
 {

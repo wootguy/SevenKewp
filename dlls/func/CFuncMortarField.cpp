@@ -31,7 +31,7 @@ public:
 	int m_fControl;
 };
 
-LINK_ENTITY_TO_CLASS(func_mortar_field, CFuncMortarField);
+LINK_ENTITY_TO_CLASS(func_mortar_field, CFuncMortarField)
 
 TYPEDESCRIPTION	CFuncMortarField::m_SaveData[] =
 {
@@ -43,7 +43,7 @@ TYPEDESCRIPTION	CFuncMortarField::m_SaveData[] =
 	DEFINE_FIELD(CFuncMortarField, m_fControl, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CFuncMortarField, CBaseToggle);
+IMPLEMENT_SAVERESTORE(CFuncMortarField, CBaseToggle)
 
 
 void CFuncMortarField::KeyValue(KeyValueData* pkvd)

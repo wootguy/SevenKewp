@@ -22,7 +22,7 @@ public:
 private:
 };
 
-LINK_ENTITY_TO_CLASS(env_fade, CFade);
+LINK_ENTITY_TO_CLASS(env_fade, CFade)
 
 // pev->dmg_take is duration
 // pev->dmg_save is hold duration

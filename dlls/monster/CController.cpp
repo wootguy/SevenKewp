@@ -106,8 +106,8 @@ public:
 	int m_fInCombat;
 };
 
-LINK_ENTITY_TO_CLASS( monster_alien_controller, CController );
-LINK_ENTITY_TO_CLASS( monster_stukabat, CController );
+LINK_ENTITY_TO_CLASS( monster_alien_controller, CController )
+LINK_ENTITY_TO_CLASS( monster_stukabat, CController )
 
 TYPEDESCRIPTION	CController::m_SaveData[] = 
 {
@@ -117,7 +117,7 @@ TYPEDESCRIPTION	CController::m_SaveData[] =
 	DEFINE_ARRAY( CController, m_iBallCurrent, FIELD_INTEGER, 2 ),
 	DEFINE_FIELD( CController, m_vecEstVelocity, FIELD_VECTOR ),
 };
-IMPLEMENT_SAVERESTORE( CController, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CController, CTalkSquadMonster )
 
 
 const char *CController::pAttackSounds[] = 
@@ -536,7 +536,7 @@ DEFINE_CUSTOM_SCHEDULES( CController )
 	slControllerFail,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CController, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CController, CTalkSquadMonster )
 
 
 
@@ -1214,7 +1214,7 @@ class CControllerHeadBall : public CBaseMonster
 	Vector m_vecIdeal;
 	EHANDLE m_hOwner;
 };
-LINK_ENTITY_TO_CLASS( controller_head_ball, CControllerHeadBall );
+LINK_ENTITY_TO_CLASS( controller_head_ball, CControllerHeadBall )
 
 
 
@@ -1418,7 +1418,7 @@ class CControllerZapBall : public CBaseMonster
 
 	EHANDLE m_hOwner;
 };
-LINK_ENTITY_TO_CLASS( controller_energy_ball, CControllerZapBall );
+LINK_ENTITY_TO_CLASS( controller_energy_ball, CControllerZapBall )
 
 
 void CControllerZapBall :: Spawn( void )

@@ -56,7 +56,7 @@ public:
 	int m_iSmokeSpr;
 };
 
-LINK_ENTITY_TO_CLASS(monster_chumtoad, CChumtoad);
+LINK_ENTITY_TO_CLASS(monster_chumtoad, CChumtoad)
 
 void CChumtoad::Spawn()
 {
@@ -163,7 +163,7 @@ DEFINE_CUSTOM_SCHEDULES(CChumtoad)
 	slToxicCloud
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES(CChumtoad, CBaseMonster);
+IMPLEMENT_CUSTOM_SCHEDULES(CChumtoad, CBaseMonster)
 
 void CChumtoad::PrescheduleThink() {
 	if (m_Activity == ACT_TWITCH && !stopSmoking) {

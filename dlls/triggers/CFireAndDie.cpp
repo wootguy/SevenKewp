@@ -3,7 +3,7 @@
 #include "cbase.h"
 #include "CFireAndDie.h"
 
-LINK_ENTITY_TO_CLASS(fireanddie, CFireAndDie);
+LINK_ENTITY_TO_CLASS(fireanddie, CFireAndDie)
 
 void CFireAndDie::Spawn(void)
 {

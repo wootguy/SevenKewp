@@ -48,8 +48,8 @@ dynpitchvol_t rgdpvpreset[CDPVPRESETMAX] =
 // can only play one track at a time (no more overlapping music :>)
 EHANDLE g_lastMp3PlayerEnt;
 
-LINK_ENTITY_TO_CLASS(ambient_generic, CAmbientGeneric);
-LINK_ENTITY_TO_CLASS(ambient_music, CAmbientGeneric);
+LINK_ENTITY_TO_CLASS(ambient_generic, CAmbientGeneric)
+LINK_ENTITY_TO_CLASS(ambient_music, CAmbientGeneric)
 
 TYPEDESCRIPTION	CAmbientGeneric::m_SaveData[] =
 {
@@ -65,7 +65,7 @@ TYPEDESCRIPTION	CAmbientGeneric::m_SaveData[] =
 	DEFINE_ARRAY(CAmbientGeneric, m_dpv, FIELD_CHARACTER, sizeof(dynpitchvol_t)),
 };
 
-IMPLEMENT_SAVERESTORE(CAmbientGeneric, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CAmbientGeneric, CBaseEntity)
 
 //
 // ambient_generic - general-purpose user-defined static sound

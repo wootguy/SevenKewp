@@ -20,7 +20,7 @@ TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
 	// DEFINE_FIELD( CBasePlayerItem, m_iIdPrimary, FIELD_INTEGER ),
 	// DEFINE_FIELD( CBasePlayerItem, m_iIdSecondary, FIELD_INTEGER ),
 };
-IMPLEMENT_SAVERESTORE(CBasePlayerItem, CBaseAnimating);
+IMPLEMENT_SAVERESTORE(CBasePlayerItem, CBaseAnimating)
 
 void CBasePlayerItem::KeyValue(KeyValueData* pkvd)
 {

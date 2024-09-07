@@ -20,8 +20,8 @@ TYPEDESCRIPTION CGibShooter::m_SaveData[] =
 	DEFINE_FIELD(CGibShooter, m_flGibLife, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CGibShooter, CBaseDelay);
-LINK_ENTITY_TO_CLASS(gibshooter, CGibShooter);
+IMPLEMENT_SAVERESTORE(CGibShooter, CBaseDelay)
+LINK_ENTITY_TO_CLASS(gibshooter, CGibShooter)
 
 
 void CGibShooter::Precache(void)

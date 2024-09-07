@@ -12,7 +12,7 @@ public:
 	void		Spawn(void);
 };
 
-LINK_ENTITY_TO_CLASS(trigger_transition, CTriggerVolume);
+LINK_ENTITY_TO_CLASS(trigger_transition, CTriggerVolume)
 
 // Define space that travels across a level transition
 void CTriggerVolume::Spawn(void)
