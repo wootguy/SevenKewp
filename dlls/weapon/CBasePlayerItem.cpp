@@ -44,7 +44,8 @@ void CBasePlayerItem::SetObjectCollisionBox(void)
 //=========================================================
 void CBasePlayerItem::FallInit(void)
 {
-	pev->movetype = MOVETYPE_TOSS;
+	if (pev->movetype == 0)
+		pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetOrigin(pev, pev->origin);

@@ -27,6 +27,7 @@
 #include "CGamePlayerEquip.h"
 #include "CBasePlayerItem.h"
 #include "PluginManager.h"
+#include "game.h"
 
 #include <sstream>
 #include <string>
@@ -141,6 +142,7 @@ void execMapCfg() {
 		"mp_bulletsponges",
 		"mp_bulletspongemax",
 		"mp_maxmonsterrespawns",
+		"mp_mergemodels",
 		"killnpc",
 		"mp_npckill",
 		"startarmor",
@@ -258,6 +260,12 @@ void execMapCfg() {
 				continue;
 			}
 
+			// must know this value now to know what to precache during this frame
+			if (name == "mp_mergemodels") {
+				mp_mergemodels.value = atoi(value.c_str()) != 0;
+				continue;
+			}
+
 			// map plugins need to be loaded now in case they define custom entities used in the bsp data
 			if (name == "map_plugin") {
 				g_pluginManager.AddPlugin(value.c_str(), true);
@@ -299,6 +307,21 @@ void execServerCfg() {
 	while (std::getline(data_stream, line)) {
 		line = trimSpaces(line);
 		if (line.empty() || line[0] == '/') {
+			continue;
+		}
+
+		vector<string> parts = splitString(line, " \t");
+
+		if (parts.empty()) {
+			continue;
+		}
+
+		string name = trimSpaces(toLowerCase(parts[0]));
+		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
+
+		// must know this value now to know what to precache during this frame (todo: duplicated in map cfg logic)
+		if (name == "mp_mergemodels") {
+			mp_mergemodels.value = atoi(value.c_str()) != 0;
 			continue;
 		}
 
