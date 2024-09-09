@@ -1,5 +1,7 @@
-import struct, os, subprocess, wave, time, sys, copy, codecs
+import struct, os, subprocess, wave, time, sys, copy, codecs, json
 from collections import OrderedDict
+
+nonstandard_audio_formats = ["aiff", "asf", "asx", "au", "dls", "flac", "fsb", "it", "m3u", "mid", "midi", "mod", "mp2", "ogg", "pls", "s3m", "vag", "wax", "wma", "xm", "xma"]
 
 def parse_keyvalue(line):
 	if line.find("//") != -1:
@@ -86,6 +88,15 @@ def get_all_maps(maps_dir):
 		all_maps.append(file)
 		
 	return sorted(all_maps, key=lambda v: v.upper())
+
+def get_all_models(models_dir):
+	mdl_files = []
+	for root, dirs, files in os.walk(models_dir):
+		for file in files:
+			if file.endswith('.mdl'):
+				mdl_files.append(os.path.join(root, file))
+	
+	return mdl_files
 
 def convert_audio(file, out_format, samp_rate):
 	global converted_files
@@ -266,6 +277,7 @@ def check_map_problems(all_ents, fix_problems):
 	global default_files
 	global converted_files
 	global modelguy_path
+	global nonstandard_audio_formats
 	
 	any_problems = False
 	
@@ -303,7 +315,6 @@ def check_map_problems(all_ents, fix_problems):
 			
 			soundPath = os.path.join(maps_dir, '..', 'sound/' + soundFile)
 			ext = os.path.splitext(soundFile)[1][1:]
-			nonstandard_formats = ["aiff", "asf", "asx", "au", "dls", "flac", "fsb", "it", "m3u", "mid", "midi", "mod", "mp2", "ogg", "pls", "s3m", "vag", "wax", "wma", "xm", "xma"]
 			global_str = 'GLOBAL' if is_global else 'LOCAL'
 			
 			
@@ -396,7 +407,7 @@ def check_map_problems(all_ents, fix_problems):
 				else:
 					ent['message'] = prefix + convert_audio(soundFile, 'wav', 22050)
 				any_problems = True
-			elif ext in nonstandard_formats:
+			elif ext in nonstandard_audio_formats:
 				if not fix_problems:
 					err("Nonstandard format: %s (%s)" % (soundFile, global_str))
 				else:
@@ -520,8 +531,10 @@ modelguy_path = os.path.join(cur_dir, 'modelguy')
 #os.chdir('../compatible_maps')
 
 maps_dir = "maps"
+models_dir = "models"
 
 all_maps = get_all_maps(maps_dir)
+all_models = get_all_models(models_dir)
 
 fix_problems = True
 
@@ -529,6 +542,53 @@ if fix_problems:
 	print("Lowercasing files...", end='')
 	lowercase_rename('.')
 	print("DONE")
+
+if fix_problems:
+	print("Merging external models")
+	for mdl in all_models:
+		if os.path.exists(mdl.lower().replace(".mdl", "01.mdl")) or os.path.exists(mdl.lower().replace(".mdl", "t.mdl")):
+			mdlguy_command = [modelguy_path, 'merge', mdl]
+			print(' '.join(mdlguy_command))
+			subprocess.run(mdlguy_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+	print("Converting model event sounds")
+	for mdl in all_models:
+		json_path = 'temp.json'
+		
+		mdlguy_command = [modelguy_path, 'info', mdl, json_path]
+		#print(' '.join(mdlguy_command))
+		subprocess.run(mdlguy_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		
+		if not os.path.exists(json_path):
+			print("Zomg failed to info model %s" % mdl)
+			sys.exit()
+		
+		had_nonstandard_audio = False
+		
+		with open(json_path, 'r') as file:
+			data = json.load(file)
+			
+			for evt in data["events"]:
+				for fmt in nonstandard_audio_formats:
+					if ('.%s' % fmt) in evt['options']:
+						path = 'sound/%s' % evt["options"]
+						had_nonstandard_audio = True
+						
+						if os.path.exists(path):
+							convert_audio(evt["options"], 'wav', 22050)
+						elif not os.path.exists(os.path.splitext(path)[0] + ".wav"):
+							print("Missing model audio: %s" % path)
+						break
+						
+			if had_nonstandard_audio:
+				mdlguy_command = [modelguy_path, 'wavify', mdl]
+				print(' '.join(mdlguy_command))
+				subprocess.run(mdlguy_command)
+		os.remove(json_path)
+	
+	
+
+sys.exit()
 
 print("\nSearching for incompatible entity settings...")
 
