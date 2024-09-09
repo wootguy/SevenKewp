@@ -69,11 +69,51 @@ extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to 
 extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
 
 #define NOT_PRECACHED_MODEL "models/" MOD_MODEL_FOLDER "not_precached.mdl"
+#define MERGED_ITEMS_MODEL "models/" MOD_MODEL_FOLDER "w_items.mdl"
 #define NOT_PRECACHED_SOUND "common/null.wav"
 #define MAX_PRECACHE 512
 #define MAX_PRECACHE_SOUND 511
 #define MAX_PRECACHE_MODEL 510
 #define MAX_PRECACHE_EVENT 256
+
+enum merged_item_bodies {
+	MERGE_MDL_W_9MMAR,
+	MERGE_MDL_W_9MMARCLIP,
+	MERGE_MDL_W_9MMCLIP,
+	MERGE_MDL_W_9MMHANDGUN,
+	MERGE_MDL_W_357,
+	MERGE_MDL_W_357AMMOBOX,
+	MERGE_MDL_W_ARGRENADE,
+	MERGE_MDL_W_BATTERY,
+	MERGE_MDL_W_BGRAP,
+	MERGE_MDL_W_CHAINAMMO,
+	MERGE_MDL_W_CROSSBOW,
+	MERGE_MDL_W_CROSSBOW_CLIP,
+	MERGE_MDL_W_CROWBAR,
+	MERGE_MDL_W_DISPLACER,
+	MERGE_MDL_W_EGON,
+	MERGE_MDL_W_GAUSS,
+	MERGE_MDL_W_GAUSSAMMO,
+	MERGE_MDL_W_GRENADE,
+	MERGE_MDL_W_HGUN,
+	MERGE_MDL_W_LONGJUMP,
+	MERGE_MDL_W_MEDKIT,
+	MERGE_MDL_W_PIPE_WRENCH,
+	MERGE_MDL_W_RPG,
+	MERGE_MDL_W_RPGAMMO,
+	MERGE_MDL_W_SATCHEL,
+	MERGE_MDL_W_SECURITY,
+	MERGE_MDL_W_SHOTBOX,
+	MERGE_MDL_W_SHOTGUN,
+	MERGE_MDL_W_SHOTSHELL,
+	MERGE_MDL_W_SUIT,
+	MERGE_MDL_W_WEAPONBOX,
+	MERGE_MDL_GRENADE,
+	MERGE_MDL_HVR,
+	MERGE_MDL_RPGROCKET,
+	MERGE_MDL_SPORE,
+	MERGE_MDL_SHOCK_EFFECT,
+};
 
 extern Bsp g_bsp;
 
@@ -720,8 +760,10 @@ EXPORT int PRECACHE_GENERIC(const char* path);
 EXPORT int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path);
 EXPORT int PRECACHE_SOUND_NULLENT(const char* path);
 EXPORT int PRECACHE_MODEL(const char* model);
+EXPORT int PRECACHE_REPLACEMENT_MODEL(const char* model); // only precache the model if it will be replaced
 EXPORT int PRECACHE_EVENT(int id, const char* path);
-EXPORT void SET_MODEL(edict_t* edict, const char* model);
+EXPORT bool SET_MODEL(edict_t* edict, const char* model); // returns true if the given model was swapped with something else
+EXPORT bool SET_MODEL_MERGED(edict_t* edict, const char* model, int mergeId); // will set the merged model and body if the given model was not replaced
 EXPORT const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
 EXPORT int MODEL_INDEX(const char* model);
 EXPORT void* GET_MODEL_PTR(edict_t* edict);

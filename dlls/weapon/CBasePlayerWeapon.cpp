@@ -718,7 +718,20 @@ const char* CBasePlayerWeapon::GetModelP() {
 }
 
 const char* CBasePlayerWeapon::GetModelW() {
-	return m_customModelW ? STRING(m_customModelW) : m_defaultModelW;
+	if (m_customModelW) {
+		return STRING(m_customModelW);
+	}
+
+	return mp_mergemodels.value && MergedModelBody() != -1 ? MERGED_ITEMS_MODEL : m_defaultModelW;
+}
+
+void CBasePlayerWeapon::SetWeaponModelW() {
+	if (m_customModelW || MergedModelBody() == -1) {
+		SET_MODEL(ENT(pev), GetModelW());
+	}
+	else {
+		SET_MODEL_MERGED(ENT(pev), GetModelW(), MergedModelBody());
+	}
 }
 
 void CBasePlayerWeapon::PrintState(void)

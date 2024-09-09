@@ -12,10 +12,12 @@ class CItemBattery : public CItem
 {
 	float m_healthcap;
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_BATTERY; }
+
 	void Spawn(void)
 	{
 		Precache();
-		SET_MODEL(ENT(pev), GetModel());
+		SetItemModel();
 		CItem::Spawn();
 	}
 
@@ -52,7 +54,9 @@ class CItemBattery : public CItem
 			return FALSE;
 		}
 
-		float healthcap = m_healthcap > 0 ? m_healthcap : mp_startarmor.value;
+		float maxArmor = mp_startarmor.value > 100 ? mp_startarmor.value : 100;
+
+		float healthcap = m_healthcap > 0 ? m_healthcap : maxArmor;
 
 		if ((pPlayer->pev->armorvalue < healthcap) &&
 			(pPlayer->pev->weapons & (1 << WEAPON_SUIT)))
@@ -72,7 +76,7 @@ class CItemBattery : public CItem
 
 			// Suit reports new power level
 			// For some reason this wasn't working in release build -- round it.
-			pct = (int)((float)(pPlayer->pev->armorvalue * 100.0) * (1.0 / mp_startarmor.value) + 0.5);
+			pct = (int)((float)(pPlayer->pev->armorvalue * 100.0) * (1.0 / maxArmor) + 0.5);
 			pct = (pct / 5);
 			if (pct > 0)
 				pct--;

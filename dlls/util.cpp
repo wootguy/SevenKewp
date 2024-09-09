@@ -3270,6 +3270,17 @@ int PRECACHE_MODEL(const char* path) {
 	
 }
 
+int PRECACHE_REPLACEMENT_MODEL(const char* path) {
+	std::string lowerPath = toLowerCase(path);
+	path = lowerPath.c_str();
+
+	if (!mp_mergemodels.value || g_modelReplacements.find(path) != g_modelReplacements.end()) {
+		return PRECACHE_MODEL(path);
+	}
+
+	return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
+}
+
 int PRECACHE_EVENT(int id, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
@@ -3295,18 +3306,20 @@ int PRECACHE_EVENT(int id, const char* path) {
 	}
 }
 
-void SET_MODEL(edict_t* edict, const char* model) {
+bool SET_MODEL(edict_t* edict, const char* model) {
 	if (model && model[0] == '*') {
 		// BSP model. No special handling.
 		g_engfuncs.pfnSetModel(edict, model);
-		return;
+		return false;
 	}
 
 	std::string lowerPath = toLowerCase(model);
 	model = lowerPath.c_str();
+	bool replaced = false;
 
 	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
 		model = g_modelReplacements[model].c_str();
+		replaced = true;
 	}
 	
 	if (g_precachedModels.find(model) == g_precachedModels.end()) {
@@ -3314,6 +3327,19 @@ void SET_MODEL(edict_t* edict, const char* model) {
 	}
 
 	g_engfuncs.pfnSetModel(edict, model);
+
+	return replaced;
+}
+
+bool SET_MODEL_MERGED(edict_t* edict, const char* model, int mergeId) {
+	if (!SET_MODEL(edict, model) && mp_mergemodels.value) {
+		// save on model slots by using the merged model that contains many different submodels
+		SET_MODEL(edict, MERGED_ITEMS_MODEL);
+		edict->v.body = mergeId;
+		return false;
+	}
+
+	return true;
 }
 
 const char* GET_MODEL(const char* model) {

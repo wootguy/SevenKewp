@@ -796,6 +796,8 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 			if (iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE) {
 				SET_MODEL(pWeaponBox->edict(), rgpPackWeapons[iPW]->GetModelW());
+				pWeaponBox->pev->body = rgpPackWeapons[iPW]->MergedModelBody() != -1 ? rgpPackWeapons[iPW]->MergedModelBody() : 0;
+				pWeaponBox->pev->sequence = rgpPackWeapons[iPW]->pev->sequence;
 
 				if (!strcmp(STRING(rgpPackWeapons[iPW]->pev->classname), "weapon_tripmine")) {
 					pWeaponBox->pev->body = 3;
@@ -4855,6 +4857,9 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 			CBasePlayerWeapon* wep = pWeapon->GetWeaponPtr();
 			if (wep) {
 				SET_MODEL(pWeaponBox->edict(), wep->GetModelW());
+				pWeaponBox->pev->body = wep->MergedModelBody() != -1 ? wep->MergedModelBody() : 0;
+				pWeaponBox->pev->sequence = wep->pev->sequence;
+
 				if (!strcmp(STRING(pWeapon->pev->classname), "weapon_tripmine")) {
 					pWeaponBox->pev->body = 3;
 					pWeaponBox->pev->sequence = TRIPMINE_GROUND;
@@ -4939,6 +4944,8 @@ void CBasePlayer::DropAmmo(bool secondary) {
 	
 	// get ammo entity model
 	string_t model = 0;
+	int body = 0;
+	int sequence = 0;
 	CBaseEntity* ammoEnt = (CBaseEntity*)CBaseEntity::Create(ammoEntName, pev->origin, pev->angles, edict());
 	if (!ammoEnt) {
 		ALERT(at_console, "Invalid ent in DropAmmo: %s\n", ammoEntName);
@@ -4946,6 +4953,8 @@ void CBasePlayer::DropAmmo(bool secondary) {
 	}
 
 	model = ammoEnt->pev->model;
+	body = ammoEnt->pev->body;
+	sequence = ammoEnt->pev->sequence;
 
 	CWeaponBox* pWeaponBox = (CWeaponBox*)CBaseEntity::Create("weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, edict());
 	pWeaponBox->pev->angles.x = 0;
@@ -4974,6 +4983,9 @@ void CBasePlayer::DropAmmo(bool secondary) {
 
 	if (model) {
 		SET_MODEL(pWeaponBox->edict(), STRING(model));
+		pWeaponBox->pev->body = body;
+		pWeaponBox->pev->sequence = sequence;
+
 		if (!strcmp(ammoEntName, "weapon_tripmine")) {
 			pWeaponBox->pev->body = 3;
 			pWeaponBox->pev->sequence = TRIPMINE_GROUND;

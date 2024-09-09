@@ -26,7 +26,7 @@ IMPLEMENT_SAVERESTORE(CWeaponBox, CBaseEntity)
 //=========================================================
 void CWeaponBox::Precache(void)
 {
-	PRECACHE_MODEL("models/w_weaponbox.mdl");
+	PRECACHE_REPLACEMENT_MODEL("models/w_weaponbox.mdl");
 }
 
 //=========================================================
@@ -60,7 +60,7 @@ void CWeaponBox::Spawn(void)
 
 	UTIL_SetSize(pev, g_vecZero, g_vecZero);
 
-	SET_MODEL(ENT(pev), "models/w_weaponbox.mdl");
+	SET_MODEL_MERGED(ENT(pev), "models/w_weaponbox.mdl", MERGE_MDL_W_WEAPONBOX);
 }
 
 //=========================================================

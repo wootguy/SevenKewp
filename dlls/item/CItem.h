@@ -38,6 +38,8 @@ public:
 	virtual BOOL ShouldRespawn();
 	const char* GetModel();
 	void SetSize(Vector defaultMins, Vector defaultMaxs);
+	void SetItemModel();
+	virtual int MergedModelBody() { return -1; }
 
 	const char* m_defaultModel;
 	string_t m_sequence_name;

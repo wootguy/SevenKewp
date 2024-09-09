@@ -29,7 +29,9 @@ public:
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );
 	void Throw( void );
-	
+
+	virtual int MergedModelBody() { return MERGE_MDL_W_SATCHEL; }
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )
@@ -48,6 +50,8 @@ class CSatchelCharge : public CGrenade
 
 	void EXPORT SatchelSlide(CBaseEntity* pOther);
 	void EXPORT SatchelThink(void);
+
+	virtual int MergedModelBody() { return MERGE_MDL_W_SATCHEL; }
 
 public:
 	void Deactivate(void);

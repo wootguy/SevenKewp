@@ -42,7 +42,9 @@ void CShockBeam::Precache()
 	PRECACHE_MODEL( "sprites/flare3.spr" );
 	PRECACHE_MODEL( "sprites/lgtning.spr" );
 	PRECACHE_MODEL( "sprites/glow01.spr" );
-	PRECACHE_MODEL("models/shock_effect.mdl" );
+
+	m_defaultModel = "models/shock_effect.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_SOUND("weapons/shock_impact.wav" );
 
 	m_waterExplodeSpr = PRECACHE_MODEL("sprites/xspark2.spr");
@@ -56,7 +58,13 @@ void CShockBeam::Spawn()
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_TRIGGER;
 
-	SET_MODEL( edict(), "models/shock_effect.mdl" );
+	SetGrenadeModel();
+
+	if (mp_mergemodels.value) {
+		int mergedIdle = LookupSequence("shock_idle");
+		if (mergedIdle != -1)
+			pev->sequence = mergedIdle;
+	}
 
 	UTIL_SetOrigin( pev, pev->origin );
 

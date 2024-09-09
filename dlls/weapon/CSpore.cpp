@@ -37,7 +37,8 @@ LINK_ENTITY_TO_CLASS(spore, CSpore)
 
 void CSpore::Precache()
 {
-	PRECACHE_MODEL( "models/spore.mdl" );
+	m_defaultModel = "models/spore.mdl";
+	PRECACHE_MODEL( GetModel() );
 	PRECACHE_MODEL( "sprites/glow01.spr" );
 
 	m_iBlow = PRECACHE_MODEL("sprites/spore_exp_01.spr" );
@@ -59,7 +60,7 @@ void CSpore::Spawn()
 
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL( edict(), "models/spore.mdl" );
+	SetGrenadeModel();
 
 	UTIL_SetSize( pev, g_vecZero, g_vecZero );
 

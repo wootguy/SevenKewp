@@ -6,7 +6,7 @@ class EXPORT CBasePlayerWeapon : public CBasePlayerItem
 {
 public:
 	virtual void KeyValue(KeyValueData* pkvd);
-	void Precache();
+	void Precache(); // custom weapons call this
 	virtual void PrecacheEvents() {} // server must always call this for weapons which the client loads by default
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
@@ -67,6 +67,8 @@ public:
 	const char* GetModelV();
 	const char* GetModelP();
 	const char* GetModelW();
+	virtual int MergedModelBody() { return -1; } // body index to use in the merged items model (-1 = don't use merged model)
+	void SetWeaponModelW(); // accounts for merged models
 
 	// hack to allow corpse gibbing of non-solid corpses
 	void SolidifyNearbyCorpses(bool solidState);

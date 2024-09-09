@@ -42,7 +42,7 @@ class CCrossbowBolt : public CBaseEntity
 	void EXPORT BoltTouch( CBaseEntity *pOther );
 	void EXPORT ExplodeThink( void );
 
-	int m_iTrail;
+	//int m_iTrail;
 
 public:
 	static CCrossbowBolt *BoltCreate( void );
@@ -80,13 +80,13 @@ void CCrossbowBolt::Spawn( )
 
 void CCrossbowBolt::Precache( )
 {
-	PRECACHE_MODEL ("models/crossbow_bolt.mdl");
+	PRECACHE_MODEL ("models/crossbow_bolt.mdl"); // used client side so can't be replaced without removing event
 	PRECACHE_SOUND("weapons/xbow_hitbod1.wav");
 	PRECACHE_SOUND("weapons/xbow_hitbod2.wav");
 	PRECACHE_SOUND("weapons/xbow_fly1.wav");
 	PRECACHE_SOUND("weapons/xbow_hit1.wav");
 	PRECACHE_SOUND("fvox/beep.wav");
-	m_iTrail = PRECACHE_MODEL("sprites/streak.spr");
+	//m_iTrail = PRECACHE_MODEL("sprites/streak.spr");
 }
 
 
@@ -248,7 +248,7 @@ void CCrossbow::Spawn( )
 
 	Precache( );
 	m_iId = WEAPON_CROSSBOW;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 
 	m_iDefaultAmmo = CROSSBOW_DEFAULT_GIVE;
 

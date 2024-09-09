@@ -6,12 +6,12 @@ class CGlockAmmo : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache( );
-		SET_MODEL(ENT(pev), "models/w_9mmclip.mdl");
+		SET_MODEL_MERGED(ENT(pev), "models/w_9mmclip.mdl", MERGE_MDL_W_9MMCLIP);
 		CBasePlayerAmmo::Spawn( );
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_9mmclip.mdl");
+		PRECACHE_REPLACEMENT_MODEL ("models/w_9mmclip.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 

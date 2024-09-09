@@ -19,6 +19,8 @@ public:
 	int m_iSwing;
 	TraceResult m_trHit;
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_CROWBAR; }
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )

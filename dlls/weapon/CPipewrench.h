@@ -60,6 +60,8 @@ public:
 
 	int GetItemInfo(ItemInfo* p) override;
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_PIPE_WRENCH; }
+
 	BOOL UseDecrement() override
 	{
 #if defined(CLIENT_WEAPONS)

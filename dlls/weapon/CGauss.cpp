@@ -77,7 +77,7 @@ void CGauss::Spawn( )
 {
 	Precache( );
 	m_iId = WEAPON_GAUSS;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 
 	m_iDefaultAmmo = GAUSS_DEFAULT_GIVE;
 

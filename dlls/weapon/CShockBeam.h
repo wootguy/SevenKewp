@@ -42,6 +42,8 @@ public:
 
 	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
 
+	virtual int MergedModelBody() { return MERGE_MDL_SHOCK_EFFECT; }
+
 #ifndef CLIENT_DLL
 	int Save(CSave& save) override;
 	int Restore(CRestore& restore) override;

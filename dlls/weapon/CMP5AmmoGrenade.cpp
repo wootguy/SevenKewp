@@ -5,12 +5,12 @@ class CMP5AmmoGrenade : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache( );
-		SET_MODEL(ENT(pev), "models/w_ARgrenade.mdl");
+		SET_MODEL_MERGED(ENT(pev), "models/w_ARgrenade.mdl", MERGE_MDL_W_ARGRENADE);
 		CBasePlayerAmmo::Spawn( );
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_ARgrenade.mdl");
+		PRECACHE_REPLACEMENT_MODEL ("models/w_ARgrenade.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 

@@ -25,6 +25,8 @@ extern int gmsgItemPickup;
 
 class CHealthKit : public CItem
 {
+	virtual int MergedModelBody() { return MERGE_MDL_W_MEDKIT; }
+
 	void Spawn( void );
 	void Precache( void );
 	void KeyValue(KeyValueData* pkvd);
@@ -58,7 +60,7 @@ IMPLEMENT_SAVERESTORE( CHealthKit, CItem)
 void CHealthKit :: Spawn( void )
 {
 	Precache( );
-	SET_MODEL(ENT(pev), GetModel());
+	SetItemModel();
 
 	CItem::Spawn();
 }

@@ -32,6 +32,8 @@ public:
 
 	void ItemPostFrame(void) override;
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_SHOTGUN; }
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )

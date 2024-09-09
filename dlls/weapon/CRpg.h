@@ -52,6 +52,8 @@ public:
 	int m_fSpotActive;
 	int m_cActiveRockets;// how many missiles in flight from this launcher right now?
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_RPG; }
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )
@@ -81,6 +83,8 @@ public:
 	virtual void Explode(TraceResult* pTrace, int bitsDamageType);
 
 	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher );
+
+	virtual int MergedModelBody() { return MERGE_MDL_RPGROCKET; }
 
 	int m_iTrail;
 	float m_flIgniteTime;

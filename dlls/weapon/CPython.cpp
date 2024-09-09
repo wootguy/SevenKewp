@@ -59,7 +59,7 @@ void CPython::Spawn( )
 	pev->classname = MAKE_STRING("weapon_357"); // hack to allow for old names
 	Precache( );
 	m_iId = WEAPON_PYTHON;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 
 	m_iDefaultAmmo = PYTHON_DEFAULT_GIVE;
 
@@ -74,7 +74,6 @@ void CPython::Precache( void )
 	m_defaultModelW = "models/w_357.mdl";
 	CBasePlayerWeapon::Precache();
 
-	PRECACHE_MODEL("models/w_357ammobox.mdl");
 	PRECACHE_SOUND("items/9mmclip1.wav");              
 
 	PRECACHE_SOUND ("weapons/357_reload1.wav");

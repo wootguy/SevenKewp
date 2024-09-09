@@ -88,6 +88,15 @@ void CItem::SetSize(Vector defaultMins, Vector defaultMaxs) {
 	UTIL_SetSize(pev, min, max);
 }
 
+void CItem::SetItemModel() {
+	if (pev->model || MergedModelBody() == -1) {
+		SET_MODEL(ENT(pev), GetModel());
+	}
+	else {
+		SET_MODEL_MERGED(ENT(pev), GetModel(), MergedModelBody());
+	}
+}
+
 
 extern int gEvilImpulse101;
 
@@ -180,5 +189,9 @@ void CItem::Materialize(void)
 }
 
 const char* CItem::GetModel() {
-	return pev->model ? STRING(pev->model) : m_defaultModel;
+	if (pev->model) {
+		return STRING(pev->model);
+	}
+
+	return mp_mergemodels.value && MergedModelBody() != -1 ? MERGED_ITEMS_MODEL : m_defaultModel;
 }

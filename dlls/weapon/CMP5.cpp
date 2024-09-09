@@ -61,7 +61,7 @@ void CMP5::Spawn( )
 {
 	pev->classname = MAKE_STRING("weapon_9mmAR"); // hack to allow for old names
 	Precache( );
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 	m_iId = WEAPON_MP5;
 
 	m_iDefaultAmmo = MP5_DEFAULT_GIVE;
@@ -80,8 +80,6 @@ void CMP5::Precache( void )
 	m_iShell = PRECACHE_MODEL ("models/shell.mdl");// brass shellTE_MODEL
 
 	PRECACHE_MODEL("models/grenade.mdl");	// grenade
-
-	PRECACHE_MODEL("models/w_9mmARclip.mdl");
 	PRECACHE_SOUND("items/9mmclip1.wav");              
 
 	PRECACHE_SOUND("items/clipinsert1.wav");

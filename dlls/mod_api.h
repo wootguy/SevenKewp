@@ -30,8 +30,8 @@ struct HLCOOP_FUNCTIONS {
 	// return replacement model if one exists, otherwise the given model
 	const char* (*pfnGetModel)(const char* model);
 
-	// same as the engine function, but handles model replacements
-	void (*pfnSetModel)(edict_t* edict, const char* model);
+	// same as the engine function, but handles model replacements, returns true if the model was replaced
+	bool (*pfnSetModel)(edict_t* edict, const char* model);
 	
 	// same as the engine function, but handles model replacements
 	int (*pfnModelIndex)(const char* model);
