@@ -672,6 +672,7 @@ CBaseEntity* CBasePlayerWeapon::Respawn(void)
 		wep->m_customModelV = m_customModelV;
 		wep->m_customModelP = m_customModelP;
 		wep->m_customModelW = m_customModelW;
+		wep->pev->movetype = pev->movetype;
 		SET_MODEL(wep->edict(), GetModelW());
 	}
 
