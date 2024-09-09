@@ -1067,6 +1067,8 @@ class CApacheHVR : public CGrenade
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
+	virtual int MergedModelBody() { return MERGE_MDL_HVR; }
+
 	int m_iTrail;
 	Vector m_vecForward;
 };
@@ -1087,7 +1089,7 @@ void CApacheHVR :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), "models/HVR.mdl");
+	SetGrenadeModel();
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -1106,7 +1108,8 @@ void CApacheHVR :: Spawn( void )
 
 void CApacheHVR :: Precache( void )
 {
-	PRECACHE_MODEL("models/HVR.mdl");
+	m_defaultModel = "models/HVR.mdl";
+	PRECACHE_MODEL(GetModel());
 	m_iTrail = PRECACHE_MODEL("sprites/smoke.spr");
 	PRECACHE_SOUND ("weapons/rocket1.wav");
 }

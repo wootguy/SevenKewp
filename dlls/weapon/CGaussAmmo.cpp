@@ -5,12 +5,12 @@ class CGaussAmmo : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache( );
-		SET_MODEL(ENT(pev), "models/w_gaussammo.mdl");
+		SET_MODEL_MERGED(ENT(pev), "models/w_gaussammo.mdl", MERGE_MDL_W_GAUSSAMMO);
 		CBasePlayerAmmo::Spawn( );
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_gaussammo.mdl");
+		PRECACHE_REPLACEMENT_MODEL ("models/w_gaussammo.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 

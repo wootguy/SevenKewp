@@ -38,7 +38,7 @@ void CGrapple::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_GRAPPLE;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 	m_iClip = -1;
 
 	FallInit();// get ready to fall down.

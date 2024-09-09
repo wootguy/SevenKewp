@@ -139,7 +139,7 @@ void CRpgRocket :: Spawn( void )
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), GetModel());
+	SetGrenadeModel();
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -405,7 +405,7 @@ void CRpg::Spawn( )
 	Precache( );
 	m_iId = WEAPON_RPG;
 
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 	m_fSpotActive = 0;
 
 #ifdef CLIENT_DLL

@@ -37,7 +37,7 @@ void CDisplacer::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_DISPLACER;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 	m_iClip = -1;
 	m_iDefaultAmmo = DISPLACER_DEFAULT_GIVE;
 

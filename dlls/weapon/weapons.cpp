@@ -432,13 +432,6 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_sporelauncher");
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	if ( g_pGameRules->IsDeathmatch() )
-	{
-		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
-	}
-#endif
-
 	g_sModelIndexFireball = PRECACHE_MODEL ("sprites/zerogxplode.spr");// fireball
 	g_sModelIndexWExplosion = PRECACHE_MODEL ("sprites/WXplo1.spr");// underwater fireball
 	g_sModelIndexSmoke = PRECACHE_MODEL ("sprites/steam1.spr");// smoke

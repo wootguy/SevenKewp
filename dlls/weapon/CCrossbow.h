@@ -21,6 +21,7 @@ public:
 	void Holster( int skiplocal = 0 );
 	void Reload( void );
 	void WeaponIdle( void );
+	virtual int MergedModelBody() { return MERGE_MDL_W_CROSSBOW; }
 
 	int m_fInZoom; // don't save this
 

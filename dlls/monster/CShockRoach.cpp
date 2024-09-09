@@ -342,7 +342,7 @@ void COFShockRoach :: Precache()
 	//UTIL_PrecacheOther("weapon_shockrifle");
 	PRECACHE_MODEL("models/v_shock.mdl");
 	PRECACHE_MODEL("models/p_shock.mdl");
-	PRECACHE_MODEL("models/w_shock.mdl");
+	PRECACHE_MODEL("models/w_shock_rifle.mdl");
 	PRECACHE_MODEL("sprites/shockwave.spr");
 	PRECACHE_MODEL("sprites/lgtning.spr");
 	PRECACHE_SOUND("weapons/shock_fire.wav");

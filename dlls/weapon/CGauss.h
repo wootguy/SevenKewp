@@ -38,6 +38,8 @@ public:
 	// we need to know so we can pick the right set of effects. 
 	BOOL m_fPrimaryFire;
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_GAUSS; }
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )

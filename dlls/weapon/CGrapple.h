@@ -55,6 +55,8 @@ public:
 	int GetItemInfo(ItemInfo* p);
 	BOOL IsClientWeapon() { return FALSE; }
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_BGRAP; }
+
 	BOOL UseDecrement(void)
 	{
 #if defined( CLIENT_WEAPONS )

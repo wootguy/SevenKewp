@@ -21,6 +21,8 @@ public:
 	void WeaponIdle( void );
 	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount) override;
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_9MMHANDGUN; }
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )

@@ -35,6 +35,8 @@ public:
 	const char* GetDeathNoticeWeapon() { return "monster_grenade"; }
 
 	const char* GetModel();
+	void SetGrenadeModel();
+	virtual int MergedModelBody() { return -1; }
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };

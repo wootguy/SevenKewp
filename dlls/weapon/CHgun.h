@@ -26,6 +26,8 @@ public:
 	
 	int m_iFirePhase;// don't save me.
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_HGUN; }
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )

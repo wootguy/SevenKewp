@@ -48,6 +48,8 @@ public:
 	EHANDLE m_hNoise;
 	EHANDLE m_hSprite;
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_EGON; }
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )

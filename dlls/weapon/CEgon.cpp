@@ -73,7 +73,7 @@ void CEgon::Spawn( )
 
 	Precache( );
 	m_iId = WEAPON_EGON;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 
 	m_iDefaultAmmo = EGON_DEFAULT_GIVE;
 

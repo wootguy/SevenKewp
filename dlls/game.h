@@ -62,6 +62,7 @@ extern cvar_t	mp_shitcode; // conditionally enables shitty code that fixes criti
 extern cvar_t	mp_survival_supported;
 extern cvar_t	mp_survival_starton;
 extern cvar_t	mp_survival_restart;
+extern cvar_t	mp_mergemodels; // used merged models to save on model slots
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
