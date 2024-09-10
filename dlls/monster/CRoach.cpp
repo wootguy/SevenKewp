@@ -453,7 +453,7 @@ void CRoach :: Look ( int iDistance )
 				case	R_NO:
 					break;
 				default:
-					ALERT ( at_console, "%s can't asses %s\n", STRING(pev->classname), STRING(pSightEnt->pev->classname ) );
+					ALERT ( at_aiconsole, "%s can't asses %s\n", STRING(pev->classname), STRING(pSightEnt->pev->classname ) );
 					break;
 				}
 			}

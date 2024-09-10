@@ -166,8 +166,8 @@ void CBaseAnimating :: DispatchAnimEvents ( float flInterval )
 		HandleAnimEvent( &event );
 
 		if (!ModelIsValid(pev, (studiohdr_t*)pmodel)) {
-			ALERT(at_error, "model corruption after HandleAnimEvent! %s was sent event %d '%s'\n",
-				STRING(pev->classname), event.event, event.options);
+			ALERT(at_error, "model corruption after HandleAnimEvent! %s was sent event %d\n",
+				STRING(pev->classname), event.event);
 			break;
 		}
 	}
