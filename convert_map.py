@@ -180,7 +180,8 @@ def convert_audio(file, out_format, samp_rate):
 	
 	while True:
 		try:
-			os.remove('sound/' + file)
+			if os.path.exists('sound/' + file):
+				os.remove('sound/' + file)
 			break
 		except Exception as e:
 			print(e)
@@ -573,7 +574,7 @@ if fix_problems:
 		
 		if not os.path.exists(json_path):
 			print("Zomg failed to info model %s" % mdl)
-			sys.exit()
+			continue
 		
 		had_nonstandard_audio = False
 		
@@ -623,7 +624,10 @@ for idx, map_name in enumerate(all_maps):
 			# keep classname last
 			path = os.path.normpath("sound/%s/%s" % (map_name.replace(".bsp", ""), ent['globalsoundlist']))
 			gsr_files.append(path)
-			break
+		if ent.get('soundlist', ''):
+			# keep classname last
+			path = os.path.normpath("sound/%s/%s" % (map_name.replace(".bsp", ""), ent['soundlist']))
+			gsr_files.append(path)
 	
 	if check_map_problems(all_ents, False) or special_map_logic:
 		print()
@@ -694,6 +698,7 @@ for gsr in gsr_files:
 		continue
 	
 	new_lines = []
+	any_replaced = False
 	with open(gsr, 'r') as file:
 		for line in file:
 			line = line.strip()
@@ -716,10 +721,12 @@ for gsr in gsr_files:
 				
 				line = '%s %s' % (parts[0], newpath)
 				new_lines.append(line)
+				any_replaced = True
 	
-	with open(gsr, 'w') as file:
-		for line in new_lines:
-			file.write(line + "\n")
+	if any_replaced:
+		with open(gsr, 'w') as file:
+			for line in new_lines:
+				file.write(line + "\n")
 	
 
 
