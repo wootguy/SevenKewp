@@ -97,6 +97,17 @@ def get_all_models(models_dir):
 				mdl_files.append(os.path.join(root, file))
 	
 	return mdl_files
+	
+def get_all_cfgs(maps_dir):
+	all_cfgs = []
+	
+	for file in os.listdir(maps_dir):
+		if not file.lower().endswith('.cfg'):
+			continue
+			
+		all_cfgs.append(file)
+		
+	return sorted(all_cfgs, key=lambda v: v.upper())
 
 def convert_audio(file, out_format, samp_rate):
 	global converted_files
@@ -534,6 +545,7 @@ maps_dir = "maps"
 models_dir = "models"
 
 all_maps = get_all_maps(maps_dir)
+all_cfgs = get_all_cfgs(maps_dir)
 all_models = get_all_models(models_dir)
 
 fix_problems = True
@@ -585,12 +597,10 @@ if fix_problems:
 				print(' '.join(mdlguy_command))
 				subprocess.run(mdlguy_command)
 		os.remove(json_path)
-	
-	
-
-sys.exit()
 
 print("\nSearching for incompatible entity settings...")
+
+gsr_files = []
 
 last_progress_str = ''
 for idx, map_name in enumerate(all_maps):
@@ -607,6 +617,13 @@ for idx, map_name in enumerate(all_maps):
 	old_ents = copy.deepcopy(all_ents)
 	
 	special_map_logic = False
+	
+	for ent in all_ents:
+		if ent.get('classname', '') == 'worldspawn' and ent.get('globalsoundlist', ''):
+			# keep classname last
+			path = os.path.normpath("sound/%s/%s" % (map_name.replace(".bsp", ""), ent['globalsoundlist']))
+			gsr_files.append(path)
+			break
 	
 	if check_map_problems(all_ents, False) or special_map_logic:
 		print()
@@ -656,6 +673,55 @@ for idx, map_name in enumerate(all_maps):
 			os.remove(old_ent_file)
 		
 		print()
+
+print("Converting GSR audio")
+for cfg in all_cfgs:
+	with open("maps/%s" % cfg, 'r') as file:
+		for line in file:
+			line = line.strip().lower()
+			parts = line.split()
+			if len(parts) < 2:
+				continue
+			
+			if parts[0] == 'globalsoundlist':
+				mapname = os.path.splitext(cfg)[0]
+				path = os.path.normpath("sound/%s/%s" % (mapname, parts[1]))
+				gsr_files.append(path)
+				
+for gsr in gsr_files:
+	if not os.path.exists(gsr):
+		print("Missing GSR: %s" % gsr)
+		continue
+	
+	new_lines = []
+	with open(gsr, 'r') as file:
+		for line in file:
+			line = line.strip()
+			parts = line.split()
+			
+			if len(parts) < 2:
+				new_lines.append(line)
+				continue
+			
+			needsReplace = False
+			for fmt in nonstandard_audio_formats:
+				if (".%s" % fmt) in parts[1]:
+					needsReplace = True
+			
+			if needsReplace:
+				oldpath = parts[1].replace('"', '')
+				newpath = '"' + os.path.splitext(parts[1])[0].replace('"', '') + '.wav"'
+				
+				convert_audio(oldpath, 'wav', 22050)
+				
+				line = '%s %s' % (parts[0], newpath)
+				new_lines.append(line)
+	
+	with open(gsr, 'w') as file:
+		for line in new_lines:
+			file.write(line + "\n")
+	
+
 
 print()
 os.system('pause')
