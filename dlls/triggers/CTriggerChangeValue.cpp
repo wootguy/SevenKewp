@@ -83,6 +83,7 @@ public:
 	const char* Operate(CKeyValue& keyvalue);
 	void HandleTarget(CBaseEntity* ent);
 	void LoadSourceValues();
+	bool LoadSpecialStaticValue(const char* val, int& specialVal);
 	void ChangeValues();
 
 	int GetVectorDontUseFlags() { return pev->spawnflags & (SF_TCVAL_DONT_USE_X | SF_TCVAL_DONT_USE_Y | SF_TCVAL_DONT_USE_Z); }
@@ -437,12 +438,27 @@ void CTriggerChangeValue::LoadSourceValues() {
 			// single value used
 			if (cNewVal[0] == '~') {
 				cNewVal = cNewVal + 1;
-				m_fSrc = ~((int)atof(cNewVal));
-				m_iSrc = ~atoi(cNewVal);
+				
+				int specialVal = 0;
+				if (LoadSpecialStaticValue(cNewVal, specialVal)) {
+					m_fSrc = ~specialVal;
+					m_iSrc = ~specialVal;
+				}
+				else {
+					m_fSrc = ~((int)atof(cNewVal));
+					m_iSrc = ~atoi(cNewVal);
+				}
 			}
 			else {
-				m_fSrc = atof(cNewVal);
-				m_iSrc = atoi(cNewVal);
+				int specialVal = 0;
+				if (LoadSpecialStaticValue(cNewVal, specialVal)) {
+					m_fSrc = specialVal;
+					m_iSrc = specialVal;
+				}
+				else {
+					m_fSrc = atof(cNewVal);
+					m_iSrc = atoi(cNewVal);
+				}
 			}
 				
 			m_vSrc = Vector(m_fSrc, m_fSrc, m_fSrc);
@@ -450,6 +466,153 @@ void CTriggerChangeValue::LoadSourceValues() {
 
 		m_sSrc = STRING(m_iszNewValue);
 	}
+}
+
+bool CTriggerChangeValue::LoadSpecialStaticValue(const char* val, int& specialVal) {
+	static std::unordered_map<std::string, int> special_vals = {
+		{"FL_FLY", FL_FLY},
+		{"FL_SWIM", FL_SWIM},
+		{"FL_CONVEYOR", FL_CONVEYOR},
+		{"FL_CLIENT", FL_CLIENT},
+		{"FL_INWATER", FL_INWATER},
+		{"FL_MONSTER", FL_MONSTER},
+		{"FL_GODMODE", FL_GODMODE},
+		{"FL_NOTARGET", FL_NOTARGET},
+		{"FL_SKIPLOCALHOST", FL_SKIPLOCALHOST},
+		{"FL_ONGROUND", FL_ONGROUND},
+		{"FL_PARTIALGROUND", FL_PARTIALGROUND},
+		{"FL_WATERJUMP", FL_WATERJUMP},
+		{"FL_FROZEN", FL_FROZEN},
+		{"FL_FAKECLIENT", FL_FAKECLIENT},
+		{"FL_DUCKING", FL_DUCKING},
+		{"FL_FLOAT", FL_FLOAT},
+
+		{"IN_ATTACK", IN_ATTACK},
+		{"IN_JUMP", IN_JUMP},
+		{"IN_DUCK", IN_DUCK},
+		{"IN_FORWARD", IN_FORWARD},
+		{"IN_BACK", IN_BACK},
+		{"IN_USE", IN_USE},
+		{"IN_CANCEL", IN_CANCEL},
+		{"IN_LEFT", IN_LEFT},
+		{"IN_RIGHT", IN_RIGHT},
+		{"IN_MOVELEFT", IN_MOVELEFT},
+		{"IN_MOVERIGHT", IN_MOVERIGHT},
+		{"IN_ATTACK2", IN_ATTACK2},
+		{"IN_RUN", IN_RUN},
+		{"IN_RELOAD", IN_RELOAD},
+		{"IN_ALT1", IN_ALT1},
+		{"IN_SCORE", IN_SCORE},
+
+		{"DEAD_NO", DEAD_NO},
+		{"DEAD_DYING", DEAD_DYING},
+		{"DEAD_DEAD", DEAD_DEAD},
+		{"DEAD_RESPAWNABLE", DEAD_RESPAWNABLE},
+		{"DEAD_DISCARDBODY", DEAD_DISCARDBODY},
+
+		{"DAMAGE_NO", DAMAGE_NO},
+		{"DAMAGE_YES", DAMAGE_YES},
+		{"DAMAGE_AIM", DAMAGE_AIM},
+
+		{"SOLID_NOT", SOLID_NOT},
+		{"SOLID_TRIGGER", SOLID_TRIGGER},
+		{"SOLID_BBOX", SOLID_BBOX},
+		{"SOLID_SLIDEBOX", SOLID_SLIDEBOX},
+		{"SOLID_BSP", SOLID_BSP},
+
+		{"WATERLEVEL_DRY", WATERLEVEL_DRY},
+		{"WATERLEVEL_FEET", WATERLEVEL_FEET},
+		{"WATERLEVEL_WAIST", WATERLEVEL_WAIST},
+		{"WATERLEVEL_HEAD", WATERLEVEL_HEAD},
+
+		{"MOVETYPE_NONE", MOVETYPE_NONE},
+		{"MOVETYPE_WALK", MOVETYPE_WALK},
+		{"MOVETYPE_STEP", MOVETYPE_STEP},
+		{"MOVETYPE_FLY", MOVETYPE_FLY},
+		{"MOVETYPE_TOSS", MOVETYPE_TOSS},
+		{"MOVETYPE_PUSH", MOVETYPE_PUSH},
+		{"MOVETYPE_NOCLIP", MOVETYPE_NOCLIP},
+		{"MOVETYPE_FLYMISSILE", MOVETYPE_FLYMISSILE},
+		{"MOVETYPE_BOUNCE", MOVETYPE_BOUNCE},
+		{"MOVETYPE_BOUNCEMISSILE", MOVETYPE_BOUNCEMISSILE},
+		{"MOVETYPE_FOLLOW", MOVETYPE_FOLLOW},
+		{"MOVETYPE_PUSHSTEP", MOVETYPE_PUSHSTEP},
+
+		{"EF_BRIGHTFIELD", EF_BRIGHTFIELD},
+		{"EF_MUZZLEFLASH", EF_MUZZLEFLASH},
+		{"EF_BRIGHTLIGHT", EF_BRIGHTLIGHT},
+		{"EF_DIMLIGHT", EF_DIMLIGHT},
+		{"EF_INVLIGHT", EF_INVLIGHT},
+		{"EF_NOINTERP", EF_NOINTERP},
+		{"EF_LIGHT", EF_LIGHT},
+		{"EF_NODRAW", EF_NODRAW},
+		//{"EF_NOANIMTEXTURES", EF_NOANIMTEXTURES},
+		//{"EF_FRAMEANIMTEXTURES", EF_FRAMEANIMTEXTURES},
+		//{"EF_SPRITE_CUSTOM_VP", EF_SPRITE_CUSTOM_VP},
+		//{"EF_NODECALS", EF_NODECALS},
+		
+		{"KRENDERFXNONE", kRenderFxNone},
+		{"KRENDERFXPULSESLOW", kRenderFxPulseSlow},
+		{"KRENDERFXPULSEFAST", kRenderFxPulseFast},
+		{"KRENDERFXPULSESLOWWIDE", kRenderFxPulseSlowWide},
+		{"KRENDERFXPULSEFASTWIDE", kRenderFxPulseFastWide},
+		{"KRENDERFXFADESLOW", kRenderFxFadeSlow},
+		{"KRENDERFXFADEFAST", kRenderFxFadeFast},
+		{"KRENDERFXSOLIDSLOW", kRenderFxSolidSlow},
+		{"KRENDERFXSOLIDFAST", kRenderFxSolidFast},
+		{"KRENDERFXSTROBESLOW", kRenderFxStrobeSlow},
+		{"KRENDERFXSTROBEFAST", kRenderFxStrobeFast},
+		{"KRENDERFXSTROBEFASTER", kRenderFxStrobeFaster},
+		{"KRENDERFXFLICKERFAST", kRenderFxFlickerFast},
+		{"KRENDERFXNODISSIPATION", kRenderFxNoDissipation},
+		{"KRENDERFXDISTORT", kRenderFxDistort},
+		{"KRENDERFXHOLOGRAM", kRenderFxHologram},
+		{"KRENDERFXDEADPLAYER", kRenderFxDeadPlayer},
+		{"KRENDERFXEXPLODE", kRenderFxExplode},
+		{"KRENDERFXGLOWSHELL", kRenderFxGlowShell},
+		{"KRENDERFXCLAMPMINSCALE", kRenderFxClampMinScale },
+
+		{"KRENDERNORMAL", kRenderNormal },
+		{"KRENDERTRANSCOLOR", kRenderTransColor },
+		{"KRENDERTRANSTEXTURE", kRenderTransTexture },
+		{"KRENDERGLOW", kRenderGlow },
+		{"KRENDERTRANSALPHA", kRenderTransAlpha },
+		{"KRENDERTRANSADD", kRenderTransAdd },
+
+		//{"CLASS_FORCE_NONE", CLASS_FORCE_NONE },
+		{"CLASS_NONE", CLASS_NONE },
+		{"CLASS_MACHINE", CLASS_MACHINE },
+		{"CLASS_PLAYER", CLASS_PLAYER },
+		{"CLASS_HUMAN_PASSIVE", CLASS_HUMAN_PASSIVE },
+		{"CLASS_HUMAN_MILITARY", CLASS_HUMAN_MILITARY },
+		{"CLASS_ALIEN_MILITARY", CLASS_ALIEN_MILITARY },
+		{"CLASS_ALIEN_PASSIVE", CLASS_ALIEN_PASSIVE },
+		{"CLASS_ALIEN_MONSTER", CLASS_ALIEN_MONSTER },
+		{"CLASS_ALIEN_PREY", CLASS_ALIEN_PREY },
+		{"CLASS_ALIEN_PREDATOR", CLASS_ALIEN_PREDATOR },
+		{"CLASS_INSECT", CLASS_INSECT },
+		{"CLASS_PLAYER_ALLY", CLASS_PLAYER_ALLY },
+		{"CLASS_PLAYER_BIOWEAPON", CLASS_PLAYER_BIOWEAPON },
+		{"CLASS_ALIEN_BIOWEAPON", CLASS_ALIEN_BIOWEAPON },
+		{"CLASS_XRACE_PITDRONE", CLASS_ALIEN_RACE_X_PITDRONE },
+		{"CLASS_ALIEN_RACE_X_PITDRONE", CLASS_ALIEN_RACE_X_PITDRONE },
+		{"CLASS_XRACE_SHOCK", CLASS_ALIEN_RACE_X },
+		{"CLASS_ALIEN_RACE_X", CLASS_ALIEN_RACE_X },
+		//{"CLASS_TEAM1", CLASS_TEAM1 },
+		//{"CLASS_TEAM2", CLASS_TEAM2 },
+		//{"CLASS_TEAM3", CLASS_TEAM3 },
+		//{"CLASS_TEAM4", CLASS_TEAM4 },
+		{"CLASS_BARNACLE", CLASS_BARNACLE },
+	};
+
+	std::string upperVal = toUpperCase(val);
+
+	if (special_vals.find(upperVal) != special_vals.end()) {
+		specialVal = special_vals[upperVal];
+		return true;
+	}
+
+	return false;
 }
 
 void CTriggerChangeValue::ChangeValues() {

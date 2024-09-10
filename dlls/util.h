@@ -30,6 +30,7 @@
 #include <string>
 #include "game.h"
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <string>
 #include "Bsp.h"
