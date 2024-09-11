@@ -370,7 +370,7 @@ void CFuncVehicle :: UpdateSound( void )
 
 void CFuncVehicle :: CheckTurning (void)
 {
-	float maxspeed;
+	float maxspeed = m_speed;
 	TraceResult tr;
 
 	//bool bTurnIntoWall = false;
@@ -850,7 +850,7 @@ void CFuncVehicle :: Find( void )
 	entvars_t *pevTarget = m_ppath->pev;
 	if ( !FClassnameIs( pevTarget, "path_track" ) )
 	{
-		ALERT( at_console, "func_track_train must be on a path of path_track\n" );
+		ALERT( at_console, "func_vehicle must be on a path of path_track\n" );
 		m_ppath = NULL;
 		return;
 	}

@@ -262,7 +262,7 @@ void execMapCfg() {
 
 			// must know this value now to know what to precache during this frame
 			if (name == "mp_mergemodels") {
-				mp_mergemodels.value = atoi(value.c_str()) != 0;
+				CVAR_SET_FLOAT("mp_mergemodels", atoi(value.c_str()) != 0);
 				continue;
 			}
 
@@ -321,7 +321,7 @@ void execServerCfg() {
 
 		// must know this value now to know what to precache during this frame (todo: duplicated in map cfg logic)
 		if (name == "mp_mergemodels") {
-			mp_mergemodels.value = atoi(value.c_str()) != 0;
+			CVAR_SET_FLOAT("mp_mergemodels", atoi(value.c_str()) != 0);
 			continue;
 		}
 
