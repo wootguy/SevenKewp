@@ -48,7 +48,7 @@ EntSelectSpawnPoint
 Returns the entity to spawn at
 ============
 */
-edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
+edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer, bool includeDisabledSpawns)
 {
 	CBaseEntity* pSpot;
 
@@ -69,7 +69,7 @@ edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
 	for (int i = 0; i < SPAWN_ENT_TYPES; i++) {
 		pSpot = NULL;
 		while (!FNullEnt(pSpot = UTIL_FindEntityByClassname(pSpot, spawn_ent_names[i]))) {
-			if (pSpot->IsTriggered(pPlayer)) {
+			if (pSpot->IsTriggered(pPlayer) || includeDisabledSpawns) {
 				if (i == 0) {
 					legacySpawns.push_back(pSpot);
 					continue;

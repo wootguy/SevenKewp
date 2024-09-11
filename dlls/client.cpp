@@ -177,6 +177,9 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 	}
 
 	if (FNullEnt(spawnSpot)) {
+		plr->StartObserver(plr->pev->origin, plr->pev->angles);
+		plr->m_wantToExitObserver = true;
+
 		if (gpGlobals->time - plr->m_lastSpawnMessage > 0.5f) {
 			CLIENT_PRINTF(plr->edict(), print_center, "No spawn points available");
 			plr->m_lastSpawnMessage = gpGlobals->time;
@@ -272,7 +275,12 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->pev->effects |= EF_NOINTERP;
 
 	pPlayer->pev->iuser1 = 0;	// disable any spec modes
-	pPlayer->pev->iuser2 = 0; 
+	pPlayer->pev->iuser2 = 0;
+
+	if (g_pGameRules->IsMultiplayer())
+	{
+		FireTargets("game_playerjoin", pPlayer, pPlayer, USE_TOGGLE, 0);
+	}
 }
 
 /*

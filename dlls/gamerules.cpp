@@ -28,6 +28,7 @@
 #include "CBasePlayerItem.h"
 #include "PluginManager.h"
 #include "game.h"
+#include "CBaseDMStart.h"
 
 #include <sstream>
 #include <string>
@@ -36,8 +37,6 @@
 #include <algorithm>
 
 using namespace std;
-
-extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
 DLL_GLOBAL CGameRules*	g_pGameRules = NULL;
 extern DLL_GLOBAL BOOL	g_fGameOver;
