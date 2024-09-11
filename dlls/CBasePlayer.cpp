@@ -1703,6 +1703,12 @@ void CBasePlayer::LeaveObserver()
 	WRITE_SHORT(0);
 	WRITE_SHORT(GetNameColor());
 	MESSAGE_END();
+
+	// fixes scoreboard
+	m_fInitHUD = true;
+	m_fGameHUDInitialized = false;
+
+	Spawn();
 }
 
 // 
@@ -2238,6 +2244,22 @@ void CBasePlayer::PreThink(void)
 		Observer_CheckTarget();
 		Observer_CheckProperties();
 		pev->impulse = 0;
+
+		static float lastCheck = 0;
+
+		if (m_wantToExitObserver && (lastCheck > gpGlobals->time || gpGlobals->time - lastCheck > 1.0f)) {
+			lastCheck = gpGlobals->time;
+			edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot(this);
+
+			if (!FNullEnt(pentSpawnSpot)) {
+				LeaveObserver();
+				m_wantToExitObserver = false;
+			}
+			else {
+				UTIL_ClientPrint(edict(), print_center, "Waiting to spawn...\n");
+			}
+		}
+
 		return;
 	}
 
@@ -3243,8 +3265,13 @@ void CBasePlayer::Spawn( void )
 		SET_VIEW(edict(), edict());
 	}
 	
+	g_pGameRules->PlayerSpawn(this);
 
-	g_pGameRules->PlayerSpawn( this );
+	if (FNullEnt(pentSpawnSpot)) {
+		edict_t* anySpawnPoint = EntSelectSpawnPoint(this, true);
+		StartObserver(anySpawnPoint->v.origin, anySpawnPoint->v.angles);
+		m_wantToExitObserver = true;
+	}
 }
 
 void CBasePlayer :: Precache( void )
@@ -4207,11 +4234,6 @@ void CBasePlayer :: UpdateClientData( void )
 			m_fGameHUDInitialized = TRUE;
 			
 			m_iObserverLastMode = OBS_ROAMING;
-			
-			if ( g_pGameRules->IsMultiplayer() )
-			{
-				FireTargets( "game_playerjoin", this, this, USE_TOGGLE, 0 );
-			}
 		}
 
 		FireTargets( "game_playerspawn", this, this, USE_TOGGLE, 0 );

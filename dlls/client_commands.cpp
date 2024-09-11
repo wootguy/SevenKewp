@@ -467,13 +467,21 @@ void ClientCommand(edict_t* pEntity)
 
 				// notify other clients of player switching to spectator mode
 				UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s switched to spectator mode\n",
-					(pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "unconnected"));
+					(pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "\\disconnected\\"));
 			}
 			else
 			{
-				UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s stopped spectating\n",
-					(pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "unconnected"));
-				pPlayer->LeaveObserver();
+				edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot(pPlayer);
+
+				if (FNullEnt(pentSpawnSpot)) {
+					pPlayer->m_wantToExitObserver = true;
+					UTIL_ClientPrint(pPlayer->edict(), print_chat, "Can't stop spectating. No spawn points are available.\n");
+				}
+				else {
+					pPlayer->LeaveObserver();
+					UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s stopped spectating\n",
+						(pev->netname&& STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "\\disconnected\\"));
+				}
 			}
 		}
 		else

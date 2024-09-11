@@ -32,6 +32,11 @@ void CTriggerRespawn::RespawnTarget(CBaseEntity* target) {
 		return;
 	}
 
+	CBasePlayer* plr = (CBasePlayer*)target;
+	if (target->IsPlayer() && plr->IsObserver()) {
+		return;
+	}
+
 	// always move player entity, dead or alive
 	edict_t* spawnPoint = EntSelectSpawnPoint(target);
 	if (!FNullEnt(spawnPoint)) {

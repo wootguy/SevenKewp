@@ -107,6 +107,7 @@ public:
 	int		m_iObserverLastMode;// last used observer mode
 	bool	m_isObserver;
 	float	m_lastObserverSwitch;
+	bool m_wantToExitObserver; // set to true if the player should spawn as soon as a spawn point is available
 	int		IsObserver() { return m_isObserver; };
 	BOOL	IsFirstPerson() { return m_hViewEntity.GetEdict() == edict(); }
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }

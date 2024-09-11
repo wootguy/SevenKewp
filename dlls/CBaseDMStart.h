@@ -1,6 +1,6 @@
 #pragma once
 
-edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer);
+edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer, bool includeDisabledSpawns=false);
 
 BOOL IsSpawnPointClear(CBaseEntity* pPlayer, CBaseEntity* pSpot);
 
