@@ -70,7 +70,7 @@ extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to 
 extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
 
 #define NOT_PRECACHED_MODEL "models/" MOD_MODEL_FOLDER "not_precached.mdl"
-#define MERGED_ITEMS_MODEL "models/" MOD_MODEL_FOLDER "w_items.mdl"
+#define MERGED_ITEMS_MODEL "models/" MOD_MODEL_FOLDER "w_items_v2.mdl"
 #define NOT_PRECACHED_SOUND "common/null.wav"
 #define MAX_PRECACHE 512
 #define MAX_PRECACHE_SOUND 511
