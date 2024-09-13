@@ -169,7 +169,7 @@ void CPitdroneSpike::SpikeTouch( CBaseEntity *pOther )
 		pev->avelocity = g_vecZero;
 
 		SetThink( &CBaseEntity::SUB_FadeOut );
-		pev->nextthink = gpGlobals->time + 90.0;
+		pev->nextthink = gpGlobals->time + 10.0;
 	}
 	else
 	{
