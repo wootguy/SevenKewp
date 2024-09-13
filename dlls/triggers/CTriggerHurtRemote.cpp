@@ -78,8 +78,9 @@ void CTriggerHurtRemote::HurtTarget(CBaseEntity* loser) {
 	}
 	else {
 		if (pev->spawnflags & SF_RHURT_DO_ARMOR) {
+			float maxArmor = mp_startarmor.value > 100 ? mp_startarmor.value : 100;
 			loser->pev->armorvalue = V_max(loser->pev->armorvalue - m_armorDmg, 0);
-			loser->pev->armorvalue = V_min(mp_startarmor.value, loser->pev->armorvalue);
+			loser->pev->armorvalue = V_min(maxArmor, loser->pev->armorvalue);
 		}
 
 		if (pev->dmg > 0) {
