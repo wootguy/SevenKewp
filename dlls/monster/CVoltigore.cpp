@@ -226,8 +226,10 @@ void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 		HideChargeBeam();
 
+		int attachIdx = V_min(GetAttachmentCount(), VOLTI_SHOCK_ATTACHMENT) - 1;
+
 		Vector handOrigin, handAngles;
-		GetAttachment(VOLTI_SHOCK_ATTACHMENT-1, handOrigin, handAngles);
+		GetAttachment(attachIdx, handOrigin, handAngles);
 
 		UTIL_MakeVectors(pev->angles);
 

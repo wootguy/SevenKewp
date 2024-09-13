@@ -218,6 +218,12 @@ void CBaseAnimating :: GetAttachment ( int iAttachment, Vector &origin, Vector &
 	GET_ATTACHMENT( ENT(pev), iAttachment, origin, angles );
 }
 
+int CBaseAnimating::GetAttachmentCount()
+{
+	studiohdr_t* pstudiohdr = (studiohdr_t*)GET_MODEL_PTR(ENT(pev));
+	return pstudiohdr ? pstudiohdr->numattachments : 0;
+}
+
 //=========================================================
 //=========================================================
 int CBaseAnimating :: FindTransition( int iEndingSequence, int iGoalSequence, int *piDir )
