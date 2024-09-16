@@ -3192,12 +3192,18 @@ void CBasePlayer::Spawn( void )
 	g_pGameRules->SetDefaultPlayerTeam( this );
 	edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( this );
 
-	pev->origin = VARS(pentSpawnSpot)->origin + Vector(0, 0, 1);
-	pev->v_angle = g_vecZero;
-	pev->velocity = g_vecZero;
-	pev->angles = VARS(pentSpawnSpot)->angles;
-	pev->punchangle = g_vecZero;
-	pev->fixangle = TRUE;
+	if (!FNullEnt(pentSpawnSpot)) {
+		CBaseDMStart* spawn = (CBaseDMStart*)CBaseEntity::Instance(pentSpawnSpot);
+		spawn->SpawnPlayer(this);
+	}
+	else {
+		pev->origin = Vector(0, 0, 1);
+		pev->v_angle = g_vecZero;
+		pev->velocity = g_vecZero;
+		pev->angles = g_vecZero;
+		pev->punchangle = g_vecZero;
+		pev->fixangle = TRUE;
+	}
 
     SET_MODEL(ENT(pev), "models/player.mdl");
     g_ulModelIndexPlayer = pev->modelindex;
