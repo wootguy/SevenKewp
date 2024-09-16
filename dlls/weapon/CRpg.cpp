@@ -657,7 +657,7 @@ void CRpg::UpdateSpot( void )
 			beam->SetStartAttachment(1);
 			beam->SetColor(255, 32, 32);
 			beam->SetNoise(0);
-			beam->SetBrightness(16);
+			beam->SetBrightness(48);
 			beam->SetScrollRate(64);
 			m_hBeam = beam;
 		}

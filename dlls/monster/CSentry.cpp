@@ -71,7 +71,8 @@ void CSentry::DropInit() {
 
 void CSentry::Shoot(Vector& vecSrc, Vector& vecDirToEnemy)
 {
-	FireBullets(1, vecSrc, vecDirToEnemy, TURRET_SPREAD, TURRET_RANGE, BULLET_MONSTER_MP5, 1);
+	float bulletRange = V_max(m_flSightRange, TURRET_RANGE);
+	FireBullets(1, vecSrc, vecDirToEnemy, TURRET_SPREAD, bulletRange, BULLET_MONSTER_MP5, 1);
 
 	switch (RANDOM_LONG(0, 2))
 	{
