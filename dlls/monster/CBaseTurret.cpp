@@ -71,6 +71,11 @@ void CBaseTurret::KeyValue(KeyValueData* pkvd)
 		m_iBaseTurnRate = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "attackrange"))
+	{
+		m_flSightRange = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else if (FStrEq(pkvd->szKeyName, "style") ||
 		FStrEq(pkvd->szKeyName, "height") ||
 		FStrEq(pkvd->szKeyName, "value1") ||
@@ -115,7 +120,7 @@ void CBaseTurret::Spawn()
 	SetBoneController(0, 0);
 	SetBoneController(1, 0);
 	m_flFieldOfView = VIEW_FIELD_FULL;
-	// m_flSightRange = TURRET_RANGE;
+	m_flSightRange = m_flSightRange ? m_flSightRange : TURRET_RANGE;
 }
 
 void CBaseTurret::Precache()
@@ -312,7 +317,7 @@ void CBaseTurret::ActiveThink(void)
 	Vector vec = UTIL_VecToAngles(vecMidEnemy - vecMid);
 
 	// Current enmey is not visible.
-	if (!fEnemyVisible || (flDistToEnemy > TURRET_RANGE))
+	if (!fEnemyVisible || (flDistToEnemy > m_flSightRange))
 	{
 		if (!m_flLastSight)
 			m_flLastSight = gpGlobals->time + 0.5;
@@ -589,7 +594,7 @@ void CBaseTurret::SearchThink(void)
 	// Acquire Target
 	if (m_hEnemy == NULL)
 	{
-		Look(TURRET_RANGE);
+		Look(m_flSightRange);
 		m_hEnemy = BestVisibleEnemy();
 	}
 
@@ -648,7 +653,7 @@ void CBaseTurret::AutoSearchThink(void)
 
 	if (m_hEnemy == NULL)
 	{
-		Look(TURRET_RANGE);
+		Look(m_flSightRange);
 		m_hEnemy = BestVisibleEnemy();
 	}
 
