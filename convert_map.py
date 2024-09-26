@@ -1,7 +1,9 @@
-import struct, os, subprocess, wave, time, sys, copy, codecs, json
+import struct, os, subprocess, wave, time, sys, copy, codecs, json, shutil
 from collections import OrderedDict
 
 nonstandard_audio_formats = ["aiff", "asf", "asx", "au", "dls", "flac", "fsb", "it", "m3u", "mid", "midi", "mod", "mp2", "ogg", "pls", "s3m", "vag", "wax", "wma", "xm", "xma"]
+
+valve_path = 'C:/Games/Steam/steamapps/common/Half-Life/valve'
 
 def parse_keyvalue(line):
 	if line.find("//") != -1:
@@ -289,6 +291,9 @@ def check_map_problems(all_ents, fix_problems):
 	global default_files
 	global converted_files
 	global modelguy_path
+	global wadmaker_path
+	global magick_path
+	global bspguy_path
 	global nonstandard_audio_formats
 	
 	any_problems = False
@@ -301,6 +306,25 @@ def check_map_problems(all_ents, fix_problems):
 			scversion = int(ent.get("scversion2", ent.get("scversion", "200")))
 			if scversion == 4:
 				scversion = 400
+			
+			for key in ent.keys():
+				if key.lower() == 'maxrange' and key != 'MaxRange':
+					print("MaxRange worldspawn key with bad casing: %s" % key)
+					if fix_problems:
+						ent["MaxRange"] = ent[key]
+						del ent[key]
+					else:
+						any_problems = True
+					break
+			for key in ent.keys():
+				if key.lower() == 'waveheight' and key != 'WaveHeight':
+					print("WaveHeight worldspawn key with bad casing: %s" % key)
+					if fix_problems:
+						ent["WaveHeight"] = ent[key]
+						del ent[key]
+					else:
+						any_problems = True
+					break
 			break
 	
 	unique_errors = set()
@@ -467,6 +491,53 @@ def check_map_problems(all_ents, fix_problems):
 					ent['spawnflags'] = "%d" % (spawnflags | 896)
 				any_problems = True
 		
+		if cname == "trigger_changesky":
+			skyname = ent.get('skyname', "")
+			if not fix_problems:
+				err("trigger_changesky requires sky to bsp conversion")
+				any_problems = True
+			else:
+				can_convert = True
+				skybox_image_tmp_path = "_skybox/images"
+				shutil.rmtree(skybox_image_tmp_path)
+				os.makedirs(skybox_image_tmp_path, exist_ok=True)
+				sky_suffixes = ["ft", "bk", "lf", "rt", "up", "dn"]
+				
+				for suffix in sky_suffixes:
+					fpath = "gfx/env/%s%s.tga" % (skyname, suffix)
+					if not os.path.exists(fpath):
+						fpath = os.path.join(valve_path, fpath)
+						if not os.path.exists(fpath):
+							print("ERROR: Failed to find file for trigger_changesky model: %s" % fpath)
+							can_convert = False
+							break
+					
+					cmd = [magick_path, 'convert', '-auto-orient', '-depth', '8', '-type', 'palette', '+dither', fpath, "%s/box_%s.bmp" % (skybox_image_tmp_path, suffix)]
+					print(' '.join(cmd))
+					subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+						
+				if can_convert:
+					cmd = [wadmaker_path, '-nologfile', '-full', '_skybox/images', 'skybox.wad']
+					print(' '.join(cmd))
+					subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+					
+					cmd = [ripent_path, '-textureimport', '_skybox/skybox']
+					print(' '.join(cmd))
+					subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+					
+					os.makedirs('models/skybox', exist_ok=True)
+					bsppath = 'models/skybox/%s.bsp' % skyname
+					shutil.copyfile('_skybox/skybox.bsp', bsppath)
+					
+					# rename textures because each texture loaded by the client must have a unique name
+					# without this you can't use 3+ skies or change levels to another map with trigger_changesky
+					shortskyname = skyname[:13] # leave room for 2 char suffix and the null char
+					for suffix in sky_suffixes:
+						newname = suffix + shortskyname # suffix comes first in case the sky name starts with "sky", which is invisible to the client
+						cmd = [bspguy_path, 'renametex', bsppath, '-old', 'box_%s' % suffix, '-new', newname]
+						print(' '.join(cmd))
+						subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		
 		# custom models with external sequences cause crashes if the "vanilla" model they're referencing
 		# does not exist (e.g. "models/shocktrooper01.mdl" for a custom shocktrooper model)
 		for key, value in ent.items():
@@ -539,6 +610,9 @@ for line in open('resguy_default_content.txt', 'r').readlines():
 cur_dir = os.getcwd()
 ripent_path = os.path.join(cur_dir, 'ripent')
 modelguy_path = os.path.join(cur_dir, 'modelguy')
+wadmaker_path = os.path.join(cur_dir, '_skybox', 'wadmaker')
+bspguy_path = os.path.join(cur_dir, 'bspguy')
+magick_path = 'magick'
 
 #os.chdir('../compatible_maps')
 
@@ -580,6 +654,10 @@ if fix_problems:
 		
 		with open(json_path, 'r') as file:
 			data = json.load(file)
+			
+			for tex in  data["textures"]:
+				if tex["width"] > 512 or tex["height"] > 512:
+					print("ERROR: Model %s has invalid texture (%s %dx%d)" % (mdl, tex["name"], tex["width"], tex["height"]))
 			
 			for evt in data["events"]:
 				for fmt in nonstandard_audio_formats:
@@ -678,7 +756,6 @@ for idx, map_name in enumerate(all_maps):
 		
 		print()
 
-print("Converting GSR audio")
 for cfg in all_cfgs:
 	with open("maps/%s" % cfg, 'r') as file:
 		for line in file:
@@ -691,7 +768,10 @@ for cfg in all_cfgs:
 				mapname = os.path.splitext(cfg)[0]
 				path = os.path.normpath("sound/%s/%s" % (mapname, parts[1]))
 				gsr_files.append(path)
-				
+
+if len(gsr_files):
+	print("Converting GSR audio")
+
 for gsr in gsr_files:
 	if not os.path.exists(gsr):
 		print("Missing GSR: %s" % gsr)

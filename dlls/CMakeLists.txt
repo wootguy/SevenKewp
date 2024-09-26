@@ -210,6 +210,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CTriggerCamera.cpp
 	triggers/CTargetCDAudio.cpp
 	triggers/CTriggerChangeModel.cpp
+	triggers/CTriggerChangeSky.cpp
 	triggers/CTriggerChangeTarget.cpp
 	triggers/CTriggerChangeValue.cpp
 	triggers/CTriggerCondition.cpp
