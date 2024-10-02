@@ -19,6 +19,7 @@ public:
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
 	void	Blocked(CBaseEntity* pOther);
+	virtual const char* DisplayName() { return "Pendulum"; }
 
 	static	TYPEDESCRIPTION m_SaveData[];
 

@@ -24,6 +24,7 @@ public:
 	virtual void KeyValue(KeyValueData* pkvd);
 	virtual void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual void Blocked(CBaseEntity* pOther);
+	virtual const char* DisplayName() { return "Door"; }
 
 
 	virtual int	ObjectCaps(void)

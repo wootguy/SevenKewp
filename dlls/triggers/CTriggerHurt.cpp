@@ -12,6 +12,7 @@ class CTriggerHurt : public CBaseTrigger
 public:
 	void Spawn(void);
 	void EXPORT RadiationThink(void);
+	virtual const char* DisplayName() { return "Pain"; }
 };
 
 LINK_ENTITY_TO_CLASS(trigger_hurt, CTriggerHurt)

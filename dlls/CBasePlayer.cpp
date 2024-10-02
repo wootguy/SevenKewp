@@ -451,6 +451,9 @@ int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 		flDamage = flNew;
 	}
 
+	m_lastDamageType = bitsDamageType;
+	m_lastDamageEnt = pAttacker;
+
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
 	fTookDamage = CBaseMonster::TakeDamage(pevInflictor, pevAttacker, (int)flDamage, bitsDamageType);
@@ -2460,6 +2463,11 @@ void CBasePlayer::CheckTimeBasedDamage()
 		return;
 	
 	m_tbdPrev = gpGlobals->time;
+	entvars_t* attackerPev = pev;
+
+	if (m_lastDamageEnt) {
+		attackerPev = &m_lastDamageEnt.GetEdict()->v;
+	}
 
 	for (i = 0; i < CDMG_TIMEBASED; i++)
 	{
@@ -2473,13 +2481,17 @@ void CBasePlayer::CheckTimeBasedDamage()
 				bDuration = PARALYZE_DURATION;
 				break;
 			case itbd_NerveGas:
-//				TakeDamage(pev, pev, NERVEGAS_DAMAGE, DMG_GENERIC);	
+				//				TakeDamage(pev, pev, NERVEGAS_DAMAGE, DMG_GENERIC);	
 				bDuration = NERVEGAS_DURATION;
 				break;
 			case itbd_Poison:
-				TakeDamage(pev, pev, POISON_DAMAGE, DMG_GENERIC);
+			{
+				int oldTime = m_rgbTimeBasedDamage[i];
+				TakeDamage(attackerPev, attackerPev, POISON_DAMAGE, DMG_POISON);
+				m_rgbTimeBasedDamage[i] = oldTime; // don't reset damage timer
 				bDuration = POISON_DURATION;
 				break;
+			}
 			case itbd_Radiation:
 //				TakeDamage(pev, pev, RADIATION_DAMAGE, DMG_GENERIC);
 				bDuration = RADIATION_DURATION;
@@ -3153,6 +3165,8 @@ void CBasePlayer::Spawn( void )
 	pev->renderfx = 0;
 	pev->rendercolor = Vector(0,0,0);
 	m_lastDropTime = 0;
+	m_lastDamageEnt = NULL;
+	m_lastDamageType = 0;
 	memset(m_nextItemPickups, 0, sizeof(float) * MAX_WEAPONS);
 
 	if( pev->iuser1 != OBS_NONE )
@@ -4448,6 +4462,41 @@ void CBasePlayer :: UpdateClientData( void )
 		lagcomp_end();
 		m_flNextSBarUpdateTime = gpGlobals->time + 0.2;
 	}
+}
+
+void CBasePlayer::Rename(const char* newName) {
+	char* info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
+
+	// not doing this because it triggers the "changed name" chat message
+	//g_engfuncs.pfnSetClientKeyValue(entindex(), info, "name", (char*)newName);
+	//info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
+
+	static char userinfo[512];
+
+	char* nameStart = strstr(info, "\\name\\") + 6;
+	char* nameEnd = strstr(nameStart, "\\");
+
+	if (strlen(info) + strlen(newName) > 512 && nameStart) {
+		return;
+	}
+
+	strncpy(userinfo, info, nameStart - info);
+	int offset = nameStart - info;
+
+	strcpy(userinfo + offset, newName);
+	offset += strlen(newName);
+
+	if (nameEnd)
+		strcpy(userinfo + offset, nameEnd);
+
+	MESSAGE_BEGIN(MSG_ALL, SVC_UPDATEUSERINFO);
+	WRITE_BYTE(entindex() - 1);
+	WRITE_LONG(0); // client user id (???)
+	WRITE_STRING(userinfo);
+	for (int i = 0; i < 16; i++) {
+		WRITE_BYTE(0x00); // CD Key hash (???)
+	}
+	MESSAGE_END();
 }
 
 void CBasePlayer::SetPrefsFromUserinfo(char* infobuffer)

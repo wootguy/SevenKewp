@@ -10,6 +10,7 @@ class CFuncTankRocket : public CFuncTank
 public:
 	void Precache(void);
 	void Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker);
+	virtual const char* DisplayName() { return "Rocket"; }
 };
 LINK_ENTITY_TO_CLASS(func_tankrocket, CFuncTankRocket)
 
