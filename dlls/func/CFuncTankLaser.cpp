@@ -13,6 +13,7 @@ public:
 	void	Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker);
 	void	Think(void);
 	CLaser* GetLaser(void);
+	virtual const char* DisplayName() { return "Laser"; }
 
 	virtual int	Save(CSave& save);
 	virtual int	Restore(CRestore& restore);

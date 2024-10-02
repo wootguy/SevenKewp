@@ -697,11 +697,124 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	else if ( strncmp( killer_weapon_name, "func_", 5 ) == 0 )
 		killer_weapon_name += 5;
 
+	// HACK: quickly replace another player's name to the monster/damage that killed the player
+	// so that the kill feed can show a killer name
+	CBasePlayer* hackedKillerPlayer = NULL;
+	const char* hackedKillerOriginalName = "";
+	{
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			CBasePlayer* pPlayer = (CBasePlayer*)UTIL_PlayerByIndex(i);
+
+			if (pPlayer && pPlayer != pVictim)
+			{
+				hackedKillerPlayer = pPlayer;
+				break;
+			}
+		}
+	}
+
+	if (hackedKillerPlayer) {
+		hackedKillerOriginalName = STRING(hackedKillerPlayer->pev->netname);
+		killer_index = hackedKillerPlayer->entindex();
+
+		if (Killer->IsMonster()) {
+			hackedKillerPlayer->Rename(Killer->DisplayName());
+		}
+		else {
+			const char* killerName = Killer->DisplayName();
+
+			if (pVictim->m_lastDamageType & DMG_FALL) {
+				killerName = "Gravity";
+			}
+			else if (pVictim->m_lastDamageType & DMG_CRUSH) {
+				//killerName = "Crushing force";
+				// entity name will be a better description (door, elevator, etc.)
+			}
+			else if (pVictim->m_lastDamageType & DMG_SHOCK) {
+				killerName = "Electricity";
+			}
+			else if (pVictim->m_lastDamageType & DMG_ENERGYBEAM) {
+				killerName = "Laser";
+			}
+			else if (pVictim->m_lastDamageType & DMG_DROWN) {
+				killerName = "Suffocation";
+			}
+			else if (pVictim->m_lastDamageType & (DMG_POISON | DMG_NERVEGAS)) {
+				killerName = "Poison";
+			}
+			else if (pVictim->m_lastDamageType & DMG_RADIATION) {
+				killerName = "Radiation";
+			}
+			else if (pVictim->m_lastDamageType & DMG_ACID) {
+				killerName = "Acid";
+			}
+			else if (pVictim->m_lastDamageType & DMG_SLOWBURN) {
+				killerName = "Hyperthermia";
+			}
+			else if (pVictim->m_lastDamageType & (DMG_FREEZE | DMG_SLOWFREEZE)) {
+				killerName = "Hypothermia";
+			}
+			else if (pVictim->m_lastDamageType & (DMG_MORTAR | DMG_BLAST)) {
+				killerName = "Explosion";
+			}
+			else if (pVictim->m_lastDamageType & (DMG_PARALYZE)) {
+				//killerName = "Nerve damage";
+				// entity name should be better ("pain" for trigger_hurt)
+			}
+			else if (pVictim->m_lastDamageType & (DMG_SONIC)) {
+				killerName = "Sound";
+			}
+			else if (pVictim->m_lastDamageType & (DMG_CLUB)) {
+				killerName = "Clubbing";
+			}
+
+			hackedKillerPlayer->Rename(killerName);
+		}
+
+		// change name color to match the type entity type
+		if (!Killer->IsPlayer()) {
+			MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+			WRITE_BYTE(hackedKillerPlayer->entindex());	// client number
+			WRITE_SHORT(hackedKillerPlayer->pev->frags);
+			WRITE_SHORT(hackedKillerPlayer->m_iDeaths);
+			WRITE_SHORT(0);
+			WRITE_SHORT(Killer->IsMonster() ? ENEMY_TEAM_COLOR : WORLD_TEAM_COLOR);
+			MESSAGE_END();
+
+			MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
+			WRITE_BYTE(hackedKillerPlayer->entindex());
+			WRITE_STRING(DEFAULT_TEAM_NAME);
+			MESSAGE_END();
+		}
+	}
+
 	MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
 		WRITE_BYTE( killer_index );						// the killer
 		WRITE_BYTE( ENTINDEX(pVictim->edict()) );		// the victim
 		WRITE_STRING( killer_weapon_name );		// what they were killed by (should this be a string?)
 	MESSAGE_END();
+
+	if (hackedKillerPlayer) {
+		// restore player name and team info
+		hackedKillerPlayer->Rename(hackedKillerOriginalName);
+
+		if (!Killer->IsPlayer()) {
+			// reset team color
+			MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+			WRITE_BYTE(hackedKillerPlayer->entindex());	// client number
+			WRITE_SHORT(hackedKillerPlayer->pev->frags);
+			WRITE_SHORT(hackedKillerPlayer->m_iDeaths);
+			WRITE_SHORT(0);
+			WRITE_SHORT(hackedKillerPlayer->GetNameColor());
+			MESSAGE_END();
+
+			MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
+			WRITE_BYTE(hackedKillerPlayer->entindex());
+			WRITE_STRING(hackedKillerPlayer->IsObserver() ? "" : DEFAULT_TEAM_NAME);
+			MESSAGE_END();
+		}
+	}
 
 	// replace the code names with the 'real' names
 	if ( !strcmp( killer_weapon_name, "egon" ) )

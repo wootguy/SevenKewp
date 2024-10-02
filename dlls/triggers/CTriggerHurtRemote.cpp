@@ -21,6 +21,7 @@ public:
 	void ConstantThink();
 	void HurtAllTargets();
 	void HurtTarget(CBaseEntity* target);
+	virtual const char* DisplayName() { return "Pain"; }
 
 	string_t m_targetClass;
 	float m_armorDmg;

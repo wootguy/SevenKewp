@@ -32,6 +32,7 @@ public:
 	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void	Think(void);
 	void	TrackTarget(void);
+	virtual const char* DisplayName() { return "Mounted Gun"; }
 
 	virtual void Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker);
 	virtual Vector UpdateTargetPosition(CBaseEntity* pTarget)

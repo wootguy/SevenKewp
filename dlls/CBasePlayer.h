@@ -251,7 +251,7 @@ public:
 	virtual BOOL IsNetClient( void ) { return TRUE; }		// Bots should return FALSE for this, they can't receive NET messages
 															// Spectators should return TRUE for this
 	virtual const char *TeamID( void );
-
+	virtual const char* DisplayName() { return STRING(pev->netname); }
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	void RenewItems(void);
@@ -261,6 +261,8 @@ public:
 
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
 	virtual void UpdateClientData( void );
+
+	void Rename(const char* newName);
 
 	void SetPrefsFromUserinfo(char* infobuffer);
 	
@@ -374,6 +376,9 @@ public:
 	bool m_deathMessageSent;
 
 	float m_initSoundTime;
+
+	int m_lastDamageType;
+	EHANDLE m_lastDamageEnt;
 
 	int GetNameColor();
 	

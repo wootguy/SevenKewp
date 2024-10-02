@@ -29,6 +29,8 @@ extern void GameDLLInit( void );
 
 #define DEFAULT_TEAM_NAME "Team" // name seen in the scoreboard
 #define DEFAULT_TEAM_COLOR 1
+#define ENEMY_TEAM_COLOR 2
+#define WORLD_TEAM_COLOR 3
 #define OBSERVER_TEAM_COLOR 6 // spectator color (white on windows, still blue on linux?)
 
 extern cvar_t	displaysoundlist;
