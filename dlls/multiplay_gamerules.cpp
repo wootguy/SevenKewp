@@ -631,12 +631,17 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	if (!strcmp(STRING(pVictim->pev->classname), "hornet") 
 		|| !strcmp(STRING(pVictim->pev->classname), "monster_cockroach")
 		|| !strcmp(STRING(pVictim->pev->classname), "monster_leech")
-		|| !strcmp(STRING(pVictim->pev->classname), "monster_snark")) {
+		|| !strcmp(STRING(pVictim->pev->classname), "monster_snark")
+		|| !strcmp(STRING(pVictim->pev->classname), "monster_tripmine")) {
 		return; // not worth a kill message
 	}
 
 	// Work out what killed the player, and send a message to all clients about it
 	CBaseEntity *Killer = CBaseEntity::Instance( pKiller );
+
+	if (!Killer || !pVictim) {
+		return;
+	}
 
 	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
 	int killer_index = 0;
@@ -817,7 +822,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 						if (info.userid && info.userid != attackerId) {
 							attackerCount++;
 							if (!otherAttacker) {
-								CBasePlayer* plr = UTIL_PlayerByIndex(info.userid);
+								CBasePlayer* plr = UTIL_PlayerByUserId(info.userid);
 								if (plr)
 									otherAttacker = plr->DisplayName();
 							}
@@ -903,7 +908,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	}
 	if (Killer->IsPlayer()) {
 		CBasePlayer* plr = (CBasePlayer*)Killer;
-		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
+		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2 && !originalKillerName) {
 			plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
 			plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
 		}
@@ -915,18 +920,16 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		WRITE_STRING( killer_weapon_name );		// what they were killed by (should this be a string?)
 	MESSAGE_END();
 
+	// restore player name and team info
 	if (hackedPlayer1) {
-		// restore player name and team info
 		hackedPlayer1->Rename(hackedKillerOriginalName, false);
 		hackedPlayer1->UpdateTeamInfo();
-
-		if (originalKillerName) {
-			CBasePlayer* plr = (CBasePlayer*)Killer;
-			plr->Rename(originalKillerName, false);
-		}
+	}
+	if (originalKillerName) {
+		CBasePlayer* plr = (CBasePlayer*)Killer;
+		plr->Rename(originalKillerName, false);
 	}
 	if (hackedPlayer2) {
-		// restore player name and team info
 		hackedPlayer2->Rename(hackedVictimOriginalName, false);
 		hackedPlayer2->UpdateTeamInfo();
 

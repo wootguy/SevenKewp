@@ -40,7 +40,6 @@ void CTriggerChangeSky::Spawn(void)
 	// using a bsp because it isn't affected by world lighting and renders everywhere
 	SET_MODEL(ENT(pev), UTIL_VarArgs(SKYBOX_MODEL_PATH "/%s.bsp", STRING(m_skyname)));
 
-	edict_t* world = ENT(0);
 	if (CVAR_GET_FLOAT("sv_zmax") < SKYBOX_MIN_ZMAX) {
 		ALERT(at_console, "trigger_changesky: increased sv_zmax to %d for skybox rendering\n", SKYBOX_MIN_ZMAX);
 		CVAR_SET_FLOAT("sv_zmax", SKYBOX_MIN_ZMAX);

@@ -1385,7 +1385,7 @@ void CBasePlayer::WaterMove()
 	// make bubbles
 
 	air = (int)(pev->air_finished - gpGlobals->time);
-	if (!RANDOM_LONG(0,0x1f) && RANDOM_LONG(0,AIRTIME-1) >= air)
+	if (!RANDOM_LONG(0,0x1f) && RANDOM_LONG(0,AIRTIME-1) >= air && IsAlive())
 	{
 		switch (RANDOM_LONG(0,3))
 			{
@@ -1990,7 +1990,8 @@ void CBasePlayer::UpdateStatusBar()
 
 	FakePlayerInfo fakePlayerInfo;
 	fakePlayerInfo.enabled = false;
-	static char fakeNameBuffer[128];
+	fakePlayerInfo.color = DEFAULT_TEAM_COLOR;
+	fakePlayerInfo.name = "\\no name\\";
 
 	std::string name;
 
@@ -2179,6 +2180,7 @@ void CBasePlayer::UpdateStatusBar()
 			MESSAGE_END();
 
 			tempNameActive = 1;
+			memset(m_tempName, 0, SBAR_STRING_SIZE);
 			strncpy(m_tempName, fakePlayerInfo.name, SBAR_STRING_SIZE);
 			m_tempName[SBAR_STRING_SIZE - 1] = 0;
 			m_tempTeam = fakePlayerInfo.color;
@@ -4495,6 +4497,9 @@ void CBasePlayer::Rename(const char* newName, bool fast, int msg_mode, edict_t* 
 	// not doing this because it triggers the "changed name" chat message
 	//g_engfuncs.pfnSetClientKeyValue(entindex(), info, "name", (char*)newName);
 
+
+	static char userinfo[512];
+
 	if (fast) {
 		// only send the essential values for rendering
 		// TODO: are the other values even used by the client? or only the server?
@@ -4502,11 +4507,25 @@ void CBasePlayer::Rename(const char* newName, bool fast, int msg_mode, edict_t* 
 		char* topcolor = g_engfuncs.pfnInfoKeyValue(info, "topcolor");
 		char* botcolor = g_engfuncs.pfnInfoKeyValue(info, "bottomcolor");
 
+		if (strlen(model) + strlen(topcolor) + strlen(botcolor) + strlen(newName) + 40 >= 512) {
+			ALERT(at_error, "Can't rename player. Userinfo too long\n"); // shouldn't ever happen
+			return;
+		}
+
+		memset(userinfo, 0, 512);
+		strcat(userinfo, "\\name\\");
+		strcat(userinfo, newName);
+		strcat(userinfo, "\\model\\");
+		strcat(userinfo, model);
+		strcat(userinfo, "\\topcolor\\");
+		strcat(userinfo, topcolor);
+		strcat(userinfo, "\\bottomcolor\\");
+		strcat(userinfo, botcolor);
+
 		MESSAGE_BEGIN(msg_mode, SVC_UPDATEUSERINFO, 0, dst);
 		WRITE_BYTE(entindex() - 1);
 		WRITE_LONG(0); // client user id (???)
-		WRITE_STRING(UTIL_VarArgs("\\name\\%s\\model\\%s\\topcolor\\%s\\bottomcolor\\%s", 
-			newName, model, topcolor, botcolor));
+		WRITE_STRING(userinfo);
 		for (int i = 0; i < 16; i++) {
 			WRITE_BYTE(0x00); // CD Key hash (???)
 		}
@@ -4515,7 +4534,7 @@ void CBasePlayer::Rename(const char* newName, bool fast, int msg_mode, edict_t* 
 		return;
 	}
 
-	static char userinfo[512];
+	
 
 	char* nameStart = strstr(info, "\\name\\") + 6;
 	char* nameEnd = strstr(nameStart, "\\");

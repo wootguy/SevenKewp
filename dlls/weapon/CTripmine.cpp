@@ -41,6 +41,7 @@ class CTripmineGrenade : public CGrenade
 
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Tripmine"; }
+	virtual const char* GetDeathNoticeWeapon() { return "tripmine"; };
 
 	void EXPORT WarningThink( void );
 	void EXPORT PowerupThink( void );

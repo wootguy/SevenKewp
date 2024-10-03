@@ -5,10 +5,6 @@
 #include "CItem.h"
 #include "gamerules.h"
 
-#define SF_ITEM_TOUCH_ONLY 128 // Pick this item up only by touching it.
-#define SF_ITEM_USE_ONLY 256 // Pick this item up only by using it ('USE' key).
-#define SF_ITEM_USE_WITHOUT_LOS 512 // Player can pick up this item even when it's not within his line of sight.
-
 void CItem::Spawn(void)
 {
 	UTIL_SetOrigin(pev, pev->origin);

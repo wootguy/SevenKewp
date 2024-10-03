@@ -11,6 +11,7 @@ public:
 	void KeyValue(KeyValueData* pkvd);
 	void Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker);
 	virtual const char* DisplayName() { return "Mortar"; }
+	virtual const char* GetDeathNoticeWeapon() { return "grenade"; };
 };
 LINK_ENTITY_TO_CLASS(func_tankmortar, CFuncTankMortar)
 
