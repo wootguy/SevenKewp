@@ -3,7 +3,7 @@
 #include "TextMenu.h"
 #include "user_messages.h"
 #include "CTriggerVote.h"
-
+#include <cstdint>
 class CTriggerVote;
 
 TextMenu g_textMenus[MAX_PLAYERS];

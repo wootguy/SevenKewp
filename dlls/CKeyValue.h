@@ -1,6 +1,6 @@
 #pragma once
 #include "extdll.h"
-
+#include <cstdint>
 enum keyvalue_types {
 	KEY_TYPE_NONE, // indicates value failed to load
 	KEY_TYPE_INT,
