@@ -24,7 +24,7 @@
  *  
  *  This is a general header that includes C language support.
  */
-
+#include <cstdint>
 #ifndef _SDL_stdinc_h
 #define _SDL_stdinc_h
 
