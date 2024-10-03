@@ -33,6 +33,7 @@ public:
 	void	Think(void);
 	void	TrackTarget(void);
 	virtual const char* DisplayName() { return "Mounted Gun"; }
+	virtual const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; };
 
 	virtual void Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker);
 	virtual Vector UpdateTargetPosition(CBaseEntity* pTarget)

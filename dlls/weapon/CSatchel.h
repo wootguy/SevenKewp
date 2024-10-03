@@ -52,6 +52,7 @@ class CSatchelCharge : public CGrenade
 	void EXPORT SatchelThink(void);
 
 	virtual int MergedModelBody() { return MERGE_MDL_W_SATCHEL; }
+	virtual const char* GetDeathNoticeWeapon() { return "satchel"; };
 
 public:
 	void Deactivate(void);

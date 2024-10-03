@@ -16,7 +16,7 @@ public:
 	void Precache(void);
 	void Activate(void);
 	void OverrideReset(void);
-	virtual const char* DisplayName() { return "Train"; }
+	virtual const char* DisplayName() { return "Compression"; } // hack for the kill feed
 
 	void Blocked(CBaseEntity* pOther);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
