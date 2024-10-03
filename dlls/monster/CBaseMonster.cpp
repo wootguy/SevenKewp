@@ -4492,6 +4492,9 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		return DeadTakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 	}
 
+	m_lastDamageType = bitsDamageType;
+	m_lastDamageEnt = CBaseEntity::Instance(ENT(pevAttacker));
+
 	if (pev->deadflag == DEAD_NO)
 	{
 		// no pain sound during death animation.
@@ -4567,6 +4570,8 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		{
 			Killed(pevAttacker, GIB_NORMAL);
 		}
+
+		g_pGameRules->DeathNotice(this, pevAttacker, pevInflictor);
 
 		g_pevLastInflictor = NULL;
 

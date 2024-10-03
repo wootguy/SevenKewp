@@ -57,6 +57,7 @@ cvar_t	mp_maxmonsterrespawns ={"mp_maxmonsterrespawns","-1", FCVAR_SERVER, 0, 0 
 cvar_t	mp_edictsorting ={"mp_edictsorting","1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_shitcode ={"mp_shitcode","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_mergemodels ={"mp_mergemodels","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_killfeed ={"mp_killfeed","1", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 
@@ -198,6 +199,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_edictsorting);
 	CVAR_REGISTER (&mp_shitcode);
 	CVAR_REGISTER (&mp_mergemodels);
+	CVAR_REGISTER (&mp_killfeed);
 
 	CVAR_REGISTER (&mp_chattime);
 

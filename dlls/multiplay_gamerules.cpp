@@ -388,22 +388,11 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 	WRITE_STRING(DEFAULT_TEAM_NAME);
 	MESSAGE_END();
 
-	MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
-	WRITE_BYTE(pl->entindex());
-	WRITE_STRING(DEFAULT_TEAM_NAME);
-	MESSAGE_END();
-
 	UpdateGameMode( pl );
 
 	// sending just one score makes the hud scoreboard active;  otherwise
 	// it is just disabled for single play
-	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-	WRITE_BYTE(pl->entindex());	// client number
-	WRITE_SHORT(pl->pev->frags);
-	WRITE_SHORT(pl->m_iDeaths);
-	WRITE_SHORT(0);
-	WRITE_SHORT(DEFAULT_TEAM_COLOR);
-	MESSAGE_END();
+	pl->UpdateTeamInfo();
 
 	SendMOTDToClient( pl->edict() );
 
@@ -577,8 +566,6 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 {
 	pVictim->m_deathMessageSent = true;
 
-	DeathNotice( pVictim, pKiller, pInflictor );
-
 	pVictim->m_iDeaths += 1;
 
 
@@ -606,13 +593,7 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 
 	// update the scores
 	// killed scores
-	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
-		WRITE_BYTE( ENTINDEX(pVictim->edict()) );
-		WRITE_SHORT( pVictim->pev->frags );
-		WRITE_SHORT( pVictim->m_iDeaths );
-		WRITE_SHORT( 0 );
-		WRITE_SHORT( GetTeamIndex( pVictim->m_szTeamName ) + 1 );
-	MESSAGE_END();
+	pVictim->UpdateTeamInfo();
 
 	// killers score, if it's a player
 	CBaseEntity *ep = CBaseEntity::Instance( pKiller );
@@ -620,13 +601,7 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 	{
 		CBasePlayer *PK = (CBasePlayer*)ep;
 
-		MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
-			WRITE_BYTE( ENTINDEX(PK->edict()) );
-			WRITE_SHORT( PK->pev->frags );
-			WRITE_SHORT( PK->m_iDeaths );
-			WRITE_SHORT( 0 );
-			WRITE_SHORT( GetTeamIndex( PK->m_szTeamName) + 1 );
-		MESSAGE_END();
+		PK->UpdateTeamInfo();
 
 		// let the killer paint another decal as soon as he'd like.
 		PK->m_flNextDecalTime = gpGlobals->time;
@@ -642,51 +617,45 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 //=========================================================
 // Deathnotice. 
 //=========================================================
-void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
+void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
 {
+	if (!pVictim->IsPlayer() && !(pKiller->flags & FL_CLIENT)) {
+		return; // don't care about monsters killing other monsters
+	}
+
+	if (!mp_killfeed.value || (mp_killfeed.value < 2 && !pVictim->IsPlayer())) {
+		return;
+	}
+
 	// Work out what killed the player, and send a message to all clients about it
 	CBaseEntity *Killer = CBaseEntity::Instance( pKiller );
 
 	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
 	int killer_index = 0;
+	int victim_index = pVictim->entindex();
 	
 	// Hack to fix name change
 	const char *tau = "tau_cannon";
 	const char *gluon = "gluon gun";
 
+	CBaseEntity* Inflictor = CBaseEntity::Instance(pevInflictor);
+	if (Inflictor)
+		killer_weapon_name = Inflictor->GetDeathNoticeWeapon();
+
 	if ( pKiller->flags & FL_CLIENT )
 	{
 		killer_index = ENTINDEX(ENT(pKiller));
 		
-		if ( pevInflictor )
+		if ( pevInflictor && pevInflictor == pKiller)
 		{
-			if ( pevInflictor == pKiller )
-			{
-				// If the inflictor is the killer,  then it must be their current weapon doing the damage
-				CBasePlayer *pPlayer = (CBasePlayer*)CBaseEntity::Instance( pKiller );
+			// If the inflictor is the killer,  then it must be their current weapon doing the damage
+			CBasePlayer *pPlayer = (CBasePlayer*)Killer;
 				
-				if ( pPlayer->m_pActiveItem )
-				{
-					killer_weapon_name = ((CBasePlayerItem*)pPlayer->m_pActiveItem.GetEntity())->pszName();
-				}
-			}
-			else
+			if ( pPlayer->m_pActiveItem )
 			{
-				killer_weapon_name = STRING( pevInflictor->classname );  // it's just that easy
+				killer_weapon_name = ((CBasePlayerItem*)pPlayer->m_pActiveItem.GetEntity())->GetDeathNoticeWeapon();
 			}
 		}
-	}
-	else
-	{
-		if (pevInflictor) {
-			CBaseEntity* Inflictor = CBaseEntity::Instance(pevInflictor);
-			if (Inflictor)
-				killer_weapon_name = Inflictor->GetDeathNoticeWeapon();
-		}
-
-		// max_players is 64 on the client, but >32 slots are unused(?) so this should be empty
-		// changes "committed suicide with X" client message to "killed with X"
-		killer_index = 60;
 	}
 
 	// strip the monster_* or weapon_* from the inflictor's classname
@@ -701,12 +670,13 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 	// so that the kill feed can show a killer name
 	CBasePlayer* hackedKillerPlayer = NULL;
 	const char* hackedKillerOriginalName = "";
-	{
+	bool monsterKill = !Killer->IsPlayer() || !pVictim->IsPlayer();
+	if (monsterKill) {
 		for (int i = 1; i <= gpGlobals->maxClients; i++)
 		{
 			CBasePlayer* pPlayer = (CBasePlayer*)UTIL_PlayerByIndex(i);
 
-			if (pPlayer && pPlayer != pVictim)
+			if (pPlayer && pPlayer != pVictim && pPlayer != Killer)
 			{
 				hackedKillerPlayer = pPlayer;
 				break;
@@ -716,12 +686,18 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 
 	if (hackedKillerPlayer) {
 		hackedKillerOriginalName = STRING(hackedKillerPlayer->pev->netname);
-		killer_index = hackedKillerPlayer->entindex();
+		bool monsterKillingPlayer = !Killer->IsPlayer() && pVictim->IsPlayer();
+		bool playerKillingMonster = Killer->IsPlayer() && !pVictim->IsPlayer();
+		bool worldKillingPlayer = !Killer->IsMonster() && pVictim->IsPlayer();
 
-		if (Killer->IsMonster()) {
-			hackedKillerPlayer->Rename(Killer->DisplayName());
+		if (Killer->IsPlayer()) {
+			victim_index = hackedKillerPlayer->entindex();
 		}
 		else {
+			killer_index = hackedKillerPlayer->entindex();
+		}
+		
+		if (worldKillingPlayer) {
 			const char* killerName = Killer->DisplayName();
 
 			if (pVictim->m_lastDamageType & DMG_FALL) {
@@ -771,49 +747,40 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 
 			hackedKillerPlayer->Rename(killerName);
 		}
-
-		// change name color to match the type entity type
-		if (!Killer->IsPlayer()) {
-			MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-			WRITE_BYTE(hackedKillerPlayer->entindex());	// client number
-			WRITE_SHORT(hackedKillerPlayer->pev->frags);
-			WRITE_SHORT(hackedKillerPlayer->m_iDeaths);
-			WRITE_SHORT(0);
-			WRITE_SHORT(Killer->IsMonster() ? ENEMY_TEAM_COLOR : WORLD_TEAM_COLOR);
-			MESSAGE_END();
-
-			MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
-			WRITE_BYTE(hackedKillerPlayer->entindex());
-			WRITE_STRING(DEFAULT_TEAM_NAME);
-			MESSAGE_END();
+		else {
+			if (monsterKillingPlayer) {
+				hackedKillerPlayer->Rename(Killer->DisplayName());
+			}
+			else if (playerKillingMonster) {
+				hackedKillerPlayer->Rename(pVictim->DisplayName());
+			}
 		}
+
+		// change killer name color to match the type entity type
+		MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+		WRITE_BYTE(hackedKillerPlayer->entindex());	// client number
+		WRITE_SHORT(hackedKillerPlayer->pev->frags);
+		WRITE_SHORT(hackedKillerPlayer->m_iDeaths);
+		WRITE_SHORT(0);
+		WRITE_SHORT(worldKillingPlayer ? WORLD_TEAM_COLOR : ENEMY_TEAM_COLOR);
+		MESSAGE_END();
+
+		MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
+		WRITE_BYTE(hackedKillerPlayer->entindex());
+		WRITE_STRING(DEFAULT_TEAM_NAME);
+		MESSAGE_END();
 	}
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
 		WRITE_BYTE( killer_index );						// the killer
-		WRITE_BYTE( ENTINDEX(pVictim->edict()) );		// the victim
+		WRITE_BYTE(victim_index);		// the victim
 		WRITE_STRING( killer_weapon_name );		// what they were killed by (should this be a string?)
 	MESSAGE_END();
 
 	if (hackedKillerPlayer) {
 		// restore player name and team info
 		hackedKillerPlayer->Rename(hackedKillerOriginalName);
-
-		if (!Killer->IsPlayer()) {
-			// reset team color
-			MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-			WRITE_BYTE(hackedKillerPlayer->entindex());	// client number
-			WRITE_SHORT(hackedKillerPlayer->pev->frags);
-			WRITE_SHORT(hackedKillerPlayer->m_iDeaths);
-			WRITE_SHORT(0);
-			WRITE_SHORT(hackedKillerPlayer->GetNameColor());
-			MESSAGE_END();
-
-			MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
-			WRITE_BYTE(hackedKillerPlayer->entindex());
-			WRITE_STRING(hackedKillerPlayer->IsObserver() ? "" : DEFAULT_TEAM_NAME);
-			MESSAGE_END();
-		}
+		hackedKillerPlayer->UpdateTeamInfo();
 	}
 
 	// replace the code names with the 'real' names
@@ -827,13 +794,20 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 		// killed self
 		UTIL_LogPlayerEvent(pVictim->edict(), "committed suicide with \"%s\"\n", killer_weapon_name );		
 	}
-	else if ( pKiller->flags & FL_CLIENT )
+	else if (pKiller->flags & FL_CLIENT)
 	{
 		// killed by other player
-		UTIL_LogPlayerEvent(pVictim->edict(), "killed by \\%s\\ with \"%s\"\n",
-			STRING( pKiller->netname ),
-			GETPLAYERAUTHID( ENT(pKiller) ),
-			killer_weapon_name );
+		if (pVictim->IsPlayer()) {
+			UTIL_LogPlayerEvent(pVictim->edict(), "killed by \\%s\\ with \"%s\"\n",
+				STRING(pKiller->netname),
+				GETPLAYERAUTHID(ENT(pKiller)),
+				killer_weapon_name);
+		}
+		else {
+			UTIL_LogPlayerEvent(Killer->edict(), "killed \"%s\" with \"%s\"\n",
+				pVictim->DisplayName(),
+				killer_weapon_name);
+		}
 	}
 	else
 	{ 
@@ -856,51 +830,6 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 //  Print a standard message
 	// TODO: make this go direct to console
 	return; // just remove for now
-/*
-	char	szText[ 128 ];
-
-	if ( pKiller->flags & FL_MONSTER )
-	{
-		// killed by a monster
-		strcpy ( szText, STRING( pVictim->pev->netname ) );
-		strcat ( szText, " was killed by a monster.\n" );
-		return;
-	}
-
-	if ( pKiller == pVictim->pev )
-	{
-		strcpy ( szText, STRING( pVictim->pev->netname ) );
-		strcat ( szText, " commited suicide.\n" );
-	}
-	else if ( pKiller->flags & FL_CLIENT )
-	{
-		strcpy ( szText, STRING( pKiller->netname ) );
-
-		strcat( szText, " : " );
-		strcat( szText, killer_weapon_name );
-		strcat( szText, " : " );
-
-		strcat ( szText, STRING( pVictim->pev->netname ) );
-		strcat ( szText, "\n" );
-	}
-	else if ( FClassnameIs ( pKiller, "worldspawn" ) )
-	{
-		strcpy ( szText, STRING( pVictim->pev->netname ) );
-		strcat ( szText, " fell or drowned or something.\n" );
-	}
-	else if ( pKiller->solid == SOLID_BSP )
-	{
-		strcpy ( szText, STRING( pVictim->pev->netname ) );
-		strcat ( szText, " was mooshed.\n" );
-	}
-	else
-	{
-		strcpy ( szText, STRING( pVictim->pev->netname ) );
-		strcat ( szText, " died mysteriously.\n" );
-	}
-
-	UTIL_ClientPrintAll( szText );
-*/
 }
 
 //=========================================================

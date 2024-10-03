@@ -451,9 +451,6 @@ int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 		flDamage = flNew;
 	}
 
-	m_lastDamageType = bitsDamageType;
-	m_lastDamageEnt = pAttacker;
-
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
 	fTookDamage = CBaseMonster::TakeDamage(pevInflictor, pevAttacker, (int)flDamage, bitsDamageType);
@@ -946,18 +943,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	MESSAGE_END();
 
 	// resend hud color
-	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-	WRITE_BYTE(entindex());	// client number
-	WRITE_SHORT(pev->frags);
-	WRITE_SHORT(m_iDeaths);
-	WRITE_SHORT(0);
-	WRITE_SHORT(DEFAULT_TEAM_COLOR);
-	MESSAGE_END();
-
-	MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
-	WRITE_BYTE(entindex());
-	WRITE_STRING(DEFAULT_TEAM_NAME);
-	MESSAGE_END();
+	UpdateTeamInfo();
 
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
@@ -1662,18 +1648,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	m_fInitHUD = TRUE;
 
 	pev->team =  0;
-	MESSAGE_BEGIN( MSG_ALL, gmsgTeamInfo );
-		WRITE_BYTE( ENTINDEX(edict()) );
-		WRITE_STRING( "" );
-	MESSAGE_END();
-
-	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-	WRITE_BYTE(entindex());	// client number
-	WRITE_SHORT(pev->frags);
-	WRITE_SHORT(m_iDeaths);
-	WRITE_SHORT(0);
-	WRITE_SHORT(OBSERVER_TEAM_COLOR);
-	MESSAGE_END();
+	UpdateTeamInfo();
 
 	// Remove all the player's stuff
 	RemoveAllItems( FALSE );
@@ -1694,18 +1669,7 @@ void CBasePlayer::LeaveObserver()
 	m_lastObserverSwitch = gpGlobals->time;
 	m_iHideHUD = 0;
 
-	MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
-	WRITE_BYTE(ENTINDEX(edict()));
-	WRITE_STRING(DEFAULT_TEAM_NAME);
-	MESSAGE_END();
-
-	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-	WRITE_BYTE(entindex());	// client number
-	WRITE_SHORT(pev->frags);
-	WRITE_SHORT(m_iDeaths);
-	WRITE_SHORT(0);
-	WRITE_SHORT(GetNameColor());
-	MESSAGE_END();
+	UpdateTeamInfo();
 
 	// fixes scoreboard
 	m_fInitHUD = true;
@@ -1974,13 +1938,7 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore )
 
 	pev->frags += score;
 
-	MESSAGE_BEGIN( MSG_ALL, gmsgScoreInfo );
-		WRITE_BYTE( ENTINDEX(edict()) );
-		WRITE_SHORT( pev->frags );
-		WRITE_SHORT( m_iDeaths );
-		WRITE_SHORT( 0 );
-		WRITE_SHORT( g_pGameRules->GetTeamIndex( m_szTeamName ) + 1 );
-	MESSAGE_END();
+	UpdateTeamInfo();
 }
 
 void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore )
@@ -3271,13 +3229,7 @@ void CBasePlayer::Spawn( void )
 	}
 
 	// change hud color
-	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-	WRITE_BYTE(entindex());	// client number
-	WRITE_SHORT(pev->frags);
-	WRITE_SHORT(m_iDeaths);
-	WRITE_SHORT(0);
-	WRITE_SHORT(DEFAULT_TEAM_COLOR);
-	MESSAGE_END();
+	UpdateTeamInfo();
 
 	// view can be set to null(?) if the level changes while a camera is active
 	// which means you won't see any entities in the next level
@@ -4231,18 +4183,7 @@ void CBasePlayer :: UpdateClientData( void )
 		// resend team info
 		// TODO: the scoreboard team will flicker for a moment on respawn
 		{
-			MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
-			WRITE_BYTE(entindex());
-			WRITE_STRING(IsObserver() ? "" : DEFAULT_TEAM_NAME);
-			MESSAGE_END();
-
-			MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-			WRITE_BYTE(entindex());	// client number
-			WRITE_SHORT(pev->frags);
-			WRITE_SHORT(m_iDeaths);
-			WRITE_SHORT(0);
-			WRITE_SHORT(GetNameColor());
-			MESSAGE_END();
+			UpdateTeamInfo();
 		}
 
 		if ( !m_fGameHUDInitialized )
@@ -5492,12 +5433,21 @@ void CBasePlayer::UpdateScore() {
 	m_lastScoreUpdate = g_engfuncs.pfnTime();
 	m_lastScore = pev->frags;
 
+	UpdateTeamInfo();
+}
+
+void CBasePlayer::UpdateTeamInfo() {
 	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-	WRITE_BYTE(ENTINDEX(edict()));
-	WRITE_SHORT(m_lastScore);
+	WRITE_BYTE(entindex());	// client number
+	WRITE_SHORT(pev->frags);
 	WRITE_SHORT(m_iDeaths);
 	WRITE_SHORT(0);
-	WRITE_SHORT(g_pGameRules->GetTeamIndex(m_szTeamName));
+	WRITE_SHORT(GetNameColor());
+	MESSAGE_END();
+
+	MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
+	WRITE_BYTE(entindex());
+	WRITE_STRING(IsObserver() ? "" : DEFAULT_TEAM_NAME);
 	MESSAGE_END();
 }
 
