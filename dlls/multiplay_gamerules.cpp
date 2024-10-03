@@ -822,7 +822,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 						if (info.userid && info.userid != attackerId) {
 							attackerCount++;
 							if (!otherAttacker) {
-								CBasePlayer* plr = UTIL_PlayerByIndex(info.userid);
+								CBasePlayer* plr = UTIL_PlayerByUserId(info.userid);
 								if (plr)
 									otherAttacker = plr->DisplayName();
 							}

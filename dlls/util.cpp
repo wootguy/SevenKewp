@@ -669,8 +669,6 @@ CBasePlayer* UTIL_PlayerByIndex( int playerIndex )
 
 CBasePlayer* UTIL_PlayerByUserId(int userid)
 {
-	CBasePlayer* pPlayer = NULL;
-
 	if (userid > 0)
 	{
 		for (int i = 1; i <= gpGlobals->maxClients; i++)

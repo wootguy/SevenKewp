@@ -51,8 +51,11 @@ void CBasePlayerItem::FallInit(void)
 	UTIL_SetOrigin(pev, pev->origin);
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));//pointsize until it lands on the ground.
 
-	SetTouch(&CBasePlayerItem::DefaultTouch);
-	SetThink(&CBasePlayerItem::FallThink);
+	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
+		SetTouch(&CBasePlayerItem::DefaultTouch);
+
+	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
+		SetUse(&CBasePlayerItem::DefaultUse);
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }
@@ -87,6 +90,7 @@ void CBasePlayerItem::FallThink(void)
 	else if (!m_hPlayer)
 	{
 		SetThink(NULL);
+		SetUse(NULL);
 	}
 }
 
@@ -106,8 +110,12 @@ void CBasePlayerItem::Materialize(void)
 	pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetOrigin(pev, pev->origin);// link into world.
-	SetTouch(&CBasePlayerItem::DefaultTouch);
-	SetThink(NULL);
+
+	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
+		SetTouch(&CBasePlayerItem::DefaultTouch);
+
+	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
+		SetUse(&CBasePlayerItem::DefaultUse);
 
 }
 
@@ -238,6 +246,7 @@ int CBasePlayerItem::AddToPlayer(CBasePlayer* pPlayer)
 void CBasePlayerItem::Drop(void)
 {
 	SetTouch(NULL);
+	SetUse(NULL);
 	SetThink(&CBasePlayerItem::SUB_Remove);
 	pev->nextthink = gpGlobals->time + .1;
 }
@@ -245,6 +254,7 @@ void CBasePlayerItem::Drop(void)
 void CBasePlayerItem::Kill(void)
 {
 	SetTouch(NULL);
+	SetUse(NULL);
 	SetThink(&CBasePlayerItem::SUB_Remove);
 	pev->nextthink = gpGlobals->time + .1;
 }
@@ -270,4 +280,25 @@ void CBasePlayerItem::AttachToPlayer(CBasePlayer* pPlayer)
 	pev->owner = pPlayer->edict();
 	pev->nextthink = gpGlobals->time + .1;
 	SetTouch(NULL);
+	SetUse(NULL);
+}
+
+void CBasePlayerItem::DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	if (pCaller && pCaller->IsPlayer()) {
+
+		if (!(pev->spawnflags & SF_ITEM_USE_WITHOUT_LOS)) {
+			TraceResult tr;
+			TRACE_LINE(pCaller->pev->origin + pCaller->pev->view_ofs, pev->origin, dont_ignore_monsters, pCaller->edict(), &tr);
+
+			bool hitItemSurface = tr.pHit && tr.pHit != edict();
+			bool enteredItemBox = boxesIntersect(pev->absmin, pev->absmax, tr.vecEndPos, tr.vecEndPos);
+			if (!hitItemSurface && !enteredItemBox) {
+				ALERT(at_console, "Can't use item not in LOS\n");
+				return;
+			}
+		}
+
+		DefaultTouch(pCaller);
+	}
 }

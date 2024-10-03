@@ -1385,7 +1385,7 @@ void CBasePlayer::WaterMove()
 	// make bubbles
 
 	air = (int)(pev->air_finished - gpGlobals->time);
-	if (!RANDOM_LONG(0,0x1f) && RANDOM_LONG(0,AIRTIME-1) >= air)
+	if (!RANDOM_LONG(0,0x1f) && RANDOM_LONG(0,AIRTIME-1) >= air && IsAlive())
 	{
 		switch (RANDOM_LONG(0,3))
 			{
@@ -1990,7 +1990,8 @@ void CBasePlayer::UpdateStatusBar()
 
 	FakePlayerInfo fakePlayerInfo;
 	fakePlayerInfo.enabled = false;
-	static char fakeNameBuffer[128];
+	fakePlayerInfo.color = DEFAULT_TEAM_COLOR;
+	fakePlayerInfo.name = "\\no name\\";
 
 	std::string name;
 
@@ -2179,6 +2180,7 @@ void CBasePlayer::UpdateStatusBar()
 			MESSAGE_END();
 
 			tempNameActive = 1;
+			memset(m_tempName, 0, SBAR_STRING_SIZE);
 			strncpy(m_tempName, fakePlayerInfo.name, SBAR_STRING_SIZE);
 			m_tempName[SBAR_STRING_SIZE - 1] = 0;
 			m_tempTeam = fakePlayerInfo.color;
