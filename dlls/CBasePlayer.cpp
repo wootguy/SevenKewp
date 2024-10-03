@@ -1982,6 +1982,18 @@ void CBasePlayer::UpdateStatusBar()
 	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, NULL, &tr);
 	pev->solid = oldSolid;
 
+	struct FakePlayerInfo {
+		bool enabled;
+		int color;
+		const char* name;
+	};
+
+	FakePlayerInfo fakePlayerInfo;
+	fakePlayerInfo.enabled = false;
+	static char fakeNameBuffer[128];
+
+	std::string name;
+
 	if (tr.flFraction != 1.0)
 	{
 		if ( !FNullEnt( tr.pHit ) )
@@ -2001,21 +2013,29 @@ void CBasePlayer::UpdateStatusBar()
 			}
 			else if (pEntity->IsMonster() && pEntity->IsAlive()) {
 				
-				std::string name = replaceString(pEntity->DisplayName(), "\n", " ");
+				name = replaceString(pEntity->DisplayName(), "\n", " ");
 				int hp = roundf(pEntity->pev->health);
 
 				int irel = IRelationship(pEntity);
 
-				const char* srel = "";
-
+				fakePlayerInfo.enabled = true;
+				fakePlayerInfo.color = NEUTRAL_TEAM_COLOR;
+				fakePlayerInfo.name = name.c_str();
+				
 				if (irel == R_AL) {
-					srel = "Friend: ";
+					fakePlayerInfo.color = FRIEND_TEAM_COLOR;
 				}
 				else if (irel == R_DL || irel == R_HT || irel == R_NM) {
-					srel = "Enemy: ";
+					fakePlayerInfo.color = ENEMY_TEAM_COLOR;
 				}
 
-				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", srel, name.c_str()), SBAR_STRING_SIZE);
+				std::string desc = "";
+				if (name.size() > 32) {
+					// player names can only be 32 chars long
+					desc = name.substr(31).c_str();
+				}
+
+				strcpy_safe(sbuf1, UTIL_VarArgs("1 %%p1%s", desc.c_str()), SBAR_STRING_SIZE);
 
 				if ((pEntity->pev->flags & FL_GODMODE) || (pEntity->pev->takedamage == DAMAGE_NO) || pEntity->pev->health > 2147483647) {
 					strcpy_safe(sbuf0, "2 Health: Invincible", SBAR_STRING_SIZE);
@@ -2029,18 +2049,19 @@ void CBasePlayer::UpdateStatusBar()
 					strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
 				}
 
-				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
+				newSBarState[SBAR_ID_TARGETNAME] = entindex();
 				newSBarState[SBAR_ID_TARGETHEALTH] = hp;
 
 				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			}
 			else if (pEntity->IsBreakable() && !(pEntity->pev->spawnflags & SF_BREAK_TRIGGER_ONLY)) {
 
-				std::string name = replaceString(pEntity->DisplayName(), "\n", " ");
+				name = replaceString(pEntity->DisplayName(), "\n", " ");
 				int hp = roundf(pEntity->pev->health);
+				int irel = IRelationship(pEntity);
 
 				const char* hint = "";
-				if (IRelationship(pEntity) == R_AL) {
+				if (irel == R_AL) {
 					hint = " (wrench repairs)";
 				}
 				else if (pEntity->pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) {
@@ -2057,17 +2078,34 @@ void CBasePlayer::UpdateStatusBar()
 					}
 				}
 
-				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name.c_str(), hint), SBAR_STRING_SIZE);
-				strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
+				if (irel == R_AL) {
+					// use fake player info
+					fakePlayerInfo.enabled = true;
+					fakePlayerInfo.color = FRIEND_TEAM_COLOR;
+					fakePlayerInfo.name = name.c_str();
 
-				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
+					std::string desc = "";
+					if (name.size() > 32) {
+						// player names can only be 32 chars long
+						desc = name.substr(31).c_str();
+					}
+
+					newSBarState[SBAR_ID_TARGETNAME] = entindex();
+					strcpy_safe(sbuf1, UTIL_VarArgs("1 %%p1%s", desc.c_str()), SBAR_STRING_SIZE);
+				}
+				else {
+					strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name.c_str(), hint), SBAR_STRING_SIZE);
+					newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
+				}
+				
+				strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
 				newSBarState[SBAR_ID_TARGETHEALTH] = hp;
 
 				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			}
 			else if (FClassnameIs(pEntity->pev, "func_pushable")) {
 
-				std::string name = replaceString(pEntity->DisplayName(), "\n", " ");
+				name = replaceString(pEntity->DisplayName(), "\n", " ");
 
 				const char* hint = "";
 				if (pEntity->pev->spawnflags & SF_PUSH_LIFTABLE) {
@@ -2098,25 +2136,60 @@ void CBasePlayer::UpdateStatusBar()
 
 	if ( strncmp( sbuf0, m_SbarString0, SBAR_STRING_SIZE) )
 	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgStatusText, NULL, pev );
-			WRITE_BYTE( 0 );
-			WRITE_STRING( sbuf0 );
+		MESSAGE_BEGIN(MSG_ONE, gmsgStatusText, NULL, pev);
+		WRITE_BYTE(0);
+		WRITE_STRING(sbuf0);
 		MESSAGE_END();
 
-		strcpy_safe( m_SbarString0, sbuf0, SBAR_STRING_SIZE);
+		strcpy_safe(m_SbarString0, sbuf0, SBAR_STRING_SIZE);
 
 		// make sure everything's resent
 		bForceResend = TRUE;
 	}
 
-	if ( strncmp( sbuf1, m_SbarString1, SBAR_STRING_SIZE) )
+	//if (fakePlayerInfo.enabled && (pev->button & IN_SCORE) || tempNameActive > 1) {
+	if (tempNameActive) {
+		tempNameActive++;
+	}
+
+	bool statusChanged = false;
+	for (int i = 1; i < SBAR_END; i++) {
+		if (newSBarState[i] != m_izSBarState[i]) {
+			statusChanged = true;
+			break;
+		}
+	}
+
+	if ( strncmp( sbuf1, m_SbarString1, SBAR_STRING_SIZE) || (fakePlayerInfo.enabled && statusChanged))
 	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgStatusText, NULL, pev );
-			WRITE_BYTE( 1 );
-			WRITE_STRING( sbuf1 );
+		if (fakePlayerInfo.enabled) {
+			Rename(fakePlayerInfo.name, true, MSG_ONE, edict());
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgScoreInfo, 0, edict());
+			WRITE_BYTE(entindex());	// client number
+			WRITE_SHORT(pev->frags);
+			WRITE_SHORT(m_iDeaths);
+			WRITE_SHORT(0);
+			WRITE_SHORT(fakePlayerInfo.color);
+			MESSAGE_END();
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgTeamInfo, 0, edict());
+			WRITE_BYTE(entindex());
+			WRITE_STRING(DEFAULT_TEAM_NAME);
+			MESSAGE_END();
+
+			tempNameActive = 1;
+			strncpy(m_tempName, fakePlayerInfo.name, SBAR_STRING_SIZE);
+			m_tempName[SBAR_STRING_SIZE - 1] = 0;
+			m_tempTeam = fakePlayerInfo.color;
+		}
+		
+		MESSAGE_BEGIN(MSG_ONE, gmsgStatusText, NULL, pev);
+		WRITE_BYTE(1);
+		WRITE_STRING(sbuf1);
 		MESSAGE_END();
 
-		strcpy_safe( m_SbarString1, sbuf1, SBAR_STRING_SIZE);
+		strcpy_safe(m_SbarString1, sbuf1, SBAR_STRING_SIZE);
 
 		// make sure everything's resent
 		bForceResend = TRUE;
@@ -2134,6 +2207,15 @@ void CBasePlayer::UpdateStatusBar()
 
 			m_izSBarState[i] = newSBarState[i];
 		}
+	}
+
+	if ((!fakePlayerInfo.enabled && tempNameActive) || tempNameActive >= 2) {
+		// have a to wait a bit before resetting the player name and color because
+		// the client doesn't parse the new status bar text until its next rendering frame.
+		// This can fail if the client fps is less than 10 (or whatever speed this func is called).
+		tempNameActive = 0;
+		Rename(STRING(pev->netname), false, MSG_ONE, edict());
+		UpdateTeamInfo(-1, MSG_ONE, edict());
 	}
 }
 
@@ -2962,8 +3044,8 @@ void CBasePlayer::PostThink()
 			TRACE_HULL(pev->origin, pev->origin + Vector(0,0,-1), dont_ignore_monsters, hullType, edict(), &tr);
 
 			// split fall damage with self and whatever ent was landed on
-			CBaseEntity* ent = CBaseEntity::Instance(tr.pHit);
-			if (ent->IsMonster()) {
+			CBaseMonster* ent = CBaseEntity::Instance(tr.pHit)->MyMonsterPointer();
+			if (ent) {
 				flFallDamage *= 0.5f;
 
 				if (ent->IsPlayer()) {
@@ -2976,6 +3058,8 @@ void CBasePlayer::PostThink()
 				ent->pev->health -= flFallDamage;
 				if (ent->pev->health <= 0) {
 					ent->Killed(pev, GIB_NORMAL);
+					ent->m_lastDamageType = DMG_FALL;
+					g_pGameRules->DeathNotice(ent, pev, pev);
 				}
 			}
 
@@ -4401,16 +4485,35 @@ void CBasePlayer :: UpdateClientData( void )
 		lagcomp_begin(this);
 		UpdateStatusBar();
 		lagcomp_end();
-		m_flNextSBarUpdateTime = gpGlobals->time + 0.2;
+		m_flNextSBarUpdateTime = gpGlobals->time + 0.1f;
 	}
 }
 
-void CBasePlayer::Rename(const char* newName) {
+void CBasePlayer::Rename(const char* newName, bool fast, int msg_mode, edict_t* dst) {
 	char* info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
 
 	// not doing this because it triggers the "changed name" chat message
 	//g_engfuncs.pfnSetClientKeyValue(entindex(), info, "name", (char*)newName);
-	//info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
+
+	if (fast) {
+		// only send the essential values for rendering
+		// TODO: are the other values even used by the client? or only the server?
+		char* model = g_engfuncs.pfnInfoKeyValue(info, "model");
+		char* topcolor = g_engfuncs.pfnInfoKeyValue(info, "topcolor");
+		char* botcolor = g_engfuncs.pfnInfoKeyValue(info, "bottomcolor");
+
+		MESSAGE_BEGIN(msg_mode, SVC_UPDATEUSERINFO, 0, dst);
+		WRITE_BYTE(entindex() - 1);
+		WRITE_LONG(0); // client user id (???)
+		WRITE_STRING(UTIL_VarArgs("\\name\\%s\\model\\%s\\topcolor\\%s\\bottomcolor\\%s", 
+			newName, model, topcolor, botcolor));
+		for (int i = 0; i < 16; i++) {
+			WRITE_BYTE(0x00); // CD Key hash (???)
+		}
+		MESSAGE_END();
+
+		return;
+	}
 
 	static char userinfo[512];
 
@@ -4430,7 +4533,7 @@ void CBasePlayer::Rename(const char* newName) {
 	if (nameEnd)
 		strcpy(userinfo + offset, nameEnd);
 
-	MESSAGE_BEGIN(MSG_ALL, SVC_UPDATEUSERINFO);
+	MESSAGE_BEGIN(msg_mode, SVC_UPDATEUSERINFO, 0, dst);
 	WRITE_BYTE(entindex() - 1);
 	WRITE_LONG(0); // client user id (???)
 	WRITE_STRING(userinfo);
@@ -5436,18 +5539,18 @@ void CBasePlayer::UpdateScore() {
 	UpdateTeamInfo();
 }
 
-void CBasePlayer::UpdateTeamInfo() {
-	MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
+void CBasePlayer::UpdateTeamInfo(int color, int msg_mode, edict_t* dst) {
+	MESSAGE_BEGIN(msg_mode, gmsgScoreInfo, 0, dst);
 	WRITE_BYTE(entindex());	// client number
 	WRITE_SHORT(pev->frags);
 	WRITE_SHORT(m_iDeaths);
 	WRITE_SHORT(0);
-	WRITE_SHORT(GetNameColor());
+	WRITE_SHORT(color == -1 ? GetNameColor() : color);
 	MESSAGE_END();
 
-	MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
+	MESSAGE_BEGIN(msg_mode, gmsgTeamInfo, 0, dst);
 	WRITE_BYTE(entindex());
-	WRITE_STRING(IsObserver() ? "" : DEFAULT_TEAM_NAME);
+	WRITE_STRING((IsObserver() && color == -1) ? "" : DEFAULT_TEAM_NAME);
 	MESSAGE_END();
 }
 

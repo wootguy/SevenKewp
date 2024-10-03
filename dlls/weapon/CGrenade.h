@@ -32,7 +32,7 @@ public:
 	virtual void BounceSound( void );
 	virtual int	BloodColor( void ) { return DONT_BLEED; }
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
-	const char* GetDeathNoticeWeapon() { return "monster_grenade"; }
+	virtual const char* GetDeathNoticeWeapon() { return "monster_grenade"; }
 
 	const char* GetModel();
 	void SetGrenadeModel();

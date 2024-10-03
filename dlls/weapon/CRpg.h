@@ -79,6 +79,7 @@ public:
 	void EXPORT FollowThink( void );
 	void EXPORT IgniteThink( void );
 	void EXPORT RocketTouch( CBaseEntity *pOther );
+	virtual const char* GetDeathNoticeWeapon() { return "rpg_rocket"; };
 
 	virtual void Explode(TraceResult* pTrace, int bitsDamageType);
 

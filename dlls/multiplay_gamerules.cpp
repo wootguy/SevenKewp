@@ -620,12 +620,19 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 //=========================================================
 void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
 {
-	if (!pVictim->IsPlayer() && !(pKiller->flags & FL_CLIENT)) {
-		return; // don't care about monsters killing other monsters
+	if (!pVictim->IsPlayer() && !(pKiller->flags & FL_CLIENT) && mp_killfeed.value < 3) {
+		return; // monsters killing other monsters
 	}
 
 	if (!mp_killfeed.value || (mp_killfeed.value < 2 && !pVictim->IsPlayer())) {
-		return;
+		return; // players killing monsters
+	}
+
+	if (!strcmp(STRING(pVictim->pev->classname), "hornet") 
+		|| !strcmp(STRING(pVictim->pev->classname), "monster_cockroach")
+		|| !strcmp(STRING(pVictim->pev->classname), "monster_leech")
+		|| !strcmp(STRING(pVictim->pev->classname), "monster_snark")) {
+		return; // not worth a kill message
 	}
 
 	// Work out what killed the player, and send a message to all clients about it
@@ -657,6 +664,10 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				killer_weapon_name = ((CBasePlayerItem*)pPlayer->m_pActiveItem.GetEntity())->GetDeathNoticeWeapon();
 			}
 		}
+
+		if (pVictim->m_lastDamageType == DMG_FALL) {
+			killer_weapon_name = "skull";
+		}
 	}
 
 	// strip the monster_* or weapon_* from the inflictor's classname
@@ -669,34 +680,65 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 
 	// HACK: quickly replace another player's name to the monster/damage that killed the player
 	// so that the kill feed can show a killer name
-	CBasePlayer* hackedKillerPlayer = NULL;
+	CBasePlayer* hackedPlayer1 = NULL;
+	CBasePlayer* hackedPlayer2 = NULL;
 	const char* hackedKillerOriginalName = NULL;
+	const char* hackedVictimOriginalName = NULL;
 	const char* originalKillerName = NULL;
+	const char* originalVictimName = NULL;
 	bool monsterKill = !Killer->IsPlayer() || !pVictim->IsPlayer();
+	bool monsterKillingPlayer = !Killer->IsPlayer() && pVictim->IsPlayer();
+	bool playerKillingMonster = Killer->IsPlayer() && !pVictim->IsPlayer();
+	bool worldKillingPlayer = !Killer->IsMonster() && pVictim->IsPlayer();
+	bool worldKillingMonster = !Killer->IsMonster() && !pVictim->IsPlayer();
+	bool monsterKillingMonster = !Killer->IsPlayer() && !pVictim->IsPlayer();
+
 	if (monsterKill) {
-		for (int i = 1; i <= gpGlobals->maxClients; i++)
-		{
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* pPlayer = (CBasePlayer*)UTIL_PlayerByIndex(i);
 
 			if (pPlayer && pPlayer != pVictim && pPlayer != Killer)
 			{
-				hackedKillerPlayer = pPlayer;
+				hackedPlayer1 = pPlayer;
 				break;
+			}
+		}
+
+		if (monsterKillingMonster) {
+			for (int i = 1; i <= gpGlobals->maxClients; i++) {
+				CBasePlayer* pPlayer = (CBasePlayer*)UTIL_PlayerByIndex(i);
+
+				if (pPlayer && pPlayer != hackedPlayer1)
+				{
+					hackedPlayer2 = pPlayer;
+					break;
+				}
 			}
 		}
 	}
 
-	if (hackedKillerPlayer) {
-		hackedKillerOriginalName = STRING(hackedKillerPlayer->pev->netname);
-		bool monsterKillingPlayer = !Killer->IsPlayer() && pVictim->IsPlayer();
-		bool playerKillingMonster = Killer->IsPlayer() && !pVictim->IsPlayer();
-		bool worldKillingPlayer = !Killer->IsMonster() && pVictim->IsPlayer();
+	if (hackedPlayer1) {
+		hackedKillerOriginalName = STRING(hackedPlayer1->pev->netname);
+
+		if (hackedPlayer2)
+			hackedVictimOriginalName = STRING(hackedPlayer2->pev->netname);
 
 		if (Killer->IsPlayer()) {
-			victim_index = hackedKillerPlayer->entindex();
+			victim_index = hackedPlayer1->entindex();
 		}
 		else {
-			killer_index = hackedKillerPlayer->entindex();
+			killer_index = hackedPlayer1->entindex();
+		}
+
+		if (monsterKillingMonster) {
+			victim_index = hackedPlayer1->entindex();
+			killer_index = hackedPlayer2 ? hackedPlayer2->entindex() : 60;
+			if (pVictim->entindex() == Killer->entindex()) {
+				killer_index = 60; // only show one name for suicide
+				if (!strcmp(STRING(pVictim->pev->classname), "monster_shockroach")) {
+					killer_weapon_name = "skull"; // roach dying of natural causes
+				}
+			}
 		}
 		
 		if (worldKillingPlayer) {
@@ -747,17 +789,26 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				killerName = "Clubbing";
 			}
 
-			hackedKillerPlayer->Rename(killerName);
+			hackedPlayer1->Rename(killerName, true);
 		}
 		else {
 			if (monsterKillingPlayer) {
-				hackedKillerPlayer->Rename(Killer->DisplayName());
+				hackedPlayer1->Rename(Killer->DisplayName(), true);
+			}
+			else if (monsterKillingMonster) {
+				if (hackedPlayer2) {
+					hackedPlayer1->Rename(pVictim->DisplayName(), true);
+					hackedPlayer2->Rename(Killer->DisplayName(), true);
+				}
+				else {
+					hackedPlayer1->Rename(pVictim->DisplayName(), true);
+				}
 			}
 			else if (playerKillingMonster) {
 				const char* otherAttacker = NULL;
 				int attackerCount = 1;
 
-				if (mp_killfeed.value >= 3) {
+				if (mp_killfeed.value >= 2) {
 					int attackerId = g_engfuncs.pfnGetPlayerUserId(Killer->edict());
 
 					for (int i = 0; i < 32; i++) {
@@ -779,14 +830,14 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 					originalKillerName = plr->DisplayName();
 					
 					if (attackerCount == 2) {
-						plr->Rename(UTIL_VarArgs("%s + %s", Killer->DisplayName(), otherAttacker));
+						plr->Rename(UTIL_VarArgs("%s + %s", Killer->DisplayName(), otherAttacker), true);
 					}
 					else {
-						plr->Rename(UTIL_VarArgs("%s + %d players", Killer->DisplayName(), attackerCount));
+						plr->Rename(UTIL_VarArgs("%s + %d players", Killer->DisplayName(), attackerCount), true);
 					}
 				}
 
-				hackedKillerPlayer->Rename(pVictim->DisplayName());
+				hackedPlayer1->Rename(pVictim->DisplayName(), true);
 			}
 		}
 
@@ -805,18 +856,57 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		}
 
 		// change killer name color to match the type entity type
-		MESSAGE_BEGIN(MSG_ALL, gmsgScoreInfo);
-		WRITE_BYTE(hackedKillerPlayer->entindex());	// client number
-		WRITE_SHORT(hackedKillerPlayer->pev->frags);
-		WRITE_SHORT(hackedKillerPlayer->m_iDeaths);
-		WRITE_SHORT(0);
-		WRITE_SHORT(worldKillingPlayer ? NEUTRAL_TEAM_COLOR : monsterTeamColor);
-		MESSAGE_END();
+		if (monsterKillingMonster || worldKillingMonster) {
+			int victimColor = ENEMY_TEAM_COLOR;
+			int killerColor = ENEMY_TEAM_COLOR;
 
-		MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
-		WRITE_BYTE(hackedKillerPlayer->entindex());
-		WRITE_STRING(DEFAULT_TEAM_NAME);
-		MESSAGE_END();
+			switch (Killer->IRelationship(Killer->Classify(), CLASS_PLAYER)) {
+			case R_AL:
+				killerColor = FRIEND_TEAM_COLOR;
+				break;
+			case R_FR:
+			case R_NO:
+				killerColor = NEUTRAL_TEAM_COLOR;
+				break;
+			default:
+				break;
+			}
+
+			switch (pVictim->IRelationship(pVictim->Classify(), CLASS_PLAYER)) {
+			case R_AL:
+				victimColor = FRIEND_TEAM_COLOR;
+				break;
+			case R_FR:
+			case R_NO:
+				victimColor = NEUTRAL_TEAM_COLOR;
+				break;
+			default:
+				break;
+			}
+
+			hackedPlayer1->UpdateTeamInfo(victimColor);
+			if (hackedPlayer2)
+				hackedPlayer2->UpdateTeamInfo(worldKillingMonster ? NEUTRAL_TEAM_COLOR : killerColor);
+		}
+		else {
+			hackedPlayer1->UpdateTeamInfo(worldKillingPlayer ? NEUTRAL_TEAM_COLOR : monsterTeamColor);
+		}
+	}
+
+	// restore player names if temporarily changed for the status bar, unless renamed just now
+	if (pVictim->IsPlayer()) {
+		CBasePlayer* plr = (CBasePlayer*)pVictim;
+		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
+			plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
+			plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
+		}
+	}
+	if (Killer->IsPlayer()) {
+		CBasePlayer* plr = (CBasePlayer*)Killer;
+		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
+			plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
+			plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
+		}
 	}
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
@@ -825,14 +915,40 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		WRITE_STRING( killer_weapon_name );		// what they were killed by (should this be a string?)
 	MESSAGE_END();
 
-	if (hackedKillerPlayer) {
+	if (hackedPlayer1) {
 		// restore player name and team info
-		hackedKillerPlayer->Rename(hackedKillerOriginalName);
-		hackedKillerPlayer->UpdateTeamInfo();
+		hackedPlayer1->Rename(hackedKillerOriginalName, false);
+		hackedPlayer1->UpdateTeamInfo();
 
 		if (originalKillerName) {
 			CBasePlayer* plr = (CBasePlayer*)Killer;
-			plr->Rename(originalKillerName);
+			plr->Rename(originalKillerName, false);
+		}
+	}
+	if (hackedPlayer2) {
+		// restore player name and team info
+		hackedPlayer2->Rename(hackedVictimOriginalName, false);
+		hackedPlayer2->UpdateTeamInfo();
+
+		if (originalVictimName) {
+			CBasePlayer* plr = (CBasePlayer*)Killer;
+			plr->Rename(originalVictimName, false);
+		}
+	}
+
+	// back to the temp name, if one exists, so that the status bar renders correctly after a kill
+	if (pVictim->IsPlayer()) {
+		CBasePlayer* plr = (CBasePlayer*)pVictim;
+		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
+			plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
+			plr->UpdateTeamInfo(plr->m_tempTeam, MSG_ONE, plr->edict());
+		}
+	}
+	if (Killer->IsPlayer()) {
+		CBasePlayer* plr = (CBasePlayer*)Killer;
+		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
+			plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
+			plr->UpdateTeamInfo(plr->m_tempTeam, MSG_ONE, plr->edict());
 		}
 	}
 
@@ -862,7 +978,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				killer_weapon_name);
 		}
 	}
-	else
+	else if (!monsterKillingMonster)
 	{ 
 		// killed by a monster or world
 		UTIL_LogPlayerEvent(pVictim->edict(), "killed by \"%s\"\n",

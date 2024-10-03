@@ -5,6 +5,7 @@
 #include "weapons.h"
 #include "effects.h"
 #include "CBaseTurret.h"
+#include "gamerules.h"
 
 TYPEDESCRIPTION	CBaseTurret::m_SaveData[] =
 {
@@ -796,6 +797,7 @@ int CBaseTurret::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	if (pev->health <= 0)
 	{
 		CBaseMonster::Killed(pev, GIB_NEVER); // for monstermaker death notice + death trigger
+		g_pGameRules->DeathNotice(this, pevAttacker, pevInflictor);
 
 		pev->health = 0;
 		pev->takedamage = DAMAGE_NO;

@@ -166,10 +166,14 @@ void COFTorchAlly :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector
 		//Make sure it kills this grunt
 		bitsDamageType = DMG_ALWAYSGIB | DMG_BLAST;
 		flDamage = pev->health;
+
+		int oldTake = pev->takedamage;
+		pev->takedamage = DAMAGE_NO; // die by the bullet, not the explosion (prevents double kill message)
 		ExplosionCreate( ptr->vecEndPos, pev->angles, edict(), 100, true );
+		pev->takedamage = oldTake;
 	}
 
-	CBaseGruntOp4::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+	CBaseGruntOp4::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 }
 
 void COFTorchAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )

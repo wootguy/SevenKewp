@@ -262,7 +262,8 @@ public:
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
 	virtual void UpdateClientData( void );
 
-	void Rename(const char* newName);
+	// if fast, then only send essential user info because it will be reset shortly
+	void Rename(const char* newName, bool fast, int msg_mode = MSG_ALL, edict_t* dst = NULL);
 
 	void SetPrefsFromUserinfo(char* infobuffer);
 	
@@ -362,7 +363,10 @@ public:
 	float m_flStatusBarDisappearDelay;
 	char m_SbarString0[ SBAR_STRING_SIZE ];
 	char m_SbarString1[ SBAR_STRING_SIZE ];
-	
+	int tempNameActive; // +1 for each status bar update while the player's name/team is currently swapped for status bar coloring
+	char m_tempName[SBAR_STRING_SIZE];
+	int m_tempTeam;
+
 	float m_flNextChatTime;
 	
 	int m_iAutoWepSwitch;
@@ -370,7 +374,8 @@ public:
 	float m_lastScoreUpdate;
 	int m_lastScore;
 	void UpdateScore();
-	void UpdateTeamInfo();
+
+	void UpdateTeamInfo(int color=-1, int msg_mode=MSG_ALL, edict_t* dst=NULL);
 
 	float m_lastSpawnMessage;
 	float m_lastKillTime;
