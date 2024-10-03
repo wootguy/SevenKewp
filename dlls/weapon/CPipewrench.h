@@ -73,6 +73,8 @@ public:
 
 	BOOL IsClientWeapon() { return FALSE; }
 
+	virtual const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+
 	float m_flBigSwingStart;
 	int m_iSwingMode = SWING_NONE;
 	int m_iSwing;

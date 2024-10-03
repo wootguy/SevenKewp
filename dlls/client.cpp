@@ -234,6 +234,11 @@ void ClientKill( edict_t *pEntity )
 	pev->health = 0;
 	pl->Killed( pev, GIB_NEVER );
 
+	EHANDLE oldWeapon = pl->m_pActiveItem;
+	pl->m_pActiveItem = NULL; // don't show a weapon icon in the kill feed
+	g_pGameRules->DeathNotice(pl, pev, pev);
+	pl->m_pActiveItem = oldWeapon;
+
 //	pev->modelindex = g_ulModelIndexPlayer;
 //	pev->frags -= 2;		// extra penalty
 //	respawn( pev );

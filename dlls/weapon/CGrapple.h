@@ -74,6 +74,8 @@ private:
 	void UpdateEffect();
 	void DestroyEffect();
 
+	virtual const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+
 private:
 	EHANDLE m_hTip;
 	EHANDLE m_hBeam;

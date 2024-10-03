@@ -148,6 +148,9 @@ public:
 	int m_lastNode;
 	int m_targetNode;
 
+	int m_lastDamageType;
+	EHANDLE m_lastDamageEnt;
+
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
 	virtual int		Save( CSave &save ); 

@@ -370,15 +370,13 @@ public:
 	float m_lastScoreUpdate;
 	int m_lastScore;
 	void UpdateScore();
+	void UpdateTeamInfo();
 
 	float m_lastSpawnMessage;
 	float m_lastKillTime;
 	bool m_deathMessageSent;
 
 	float m_initSoundTime;
-
-	int m_lastDamageType;
-	EHANDLE m_lastDamageEnt;
 
 	int GetNameColor();
 	
