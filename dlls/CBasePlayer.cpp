@@ -4495,6 +4495,9 @@ void CBasePlayer::Rename(const char* newName, bool fast, int msg_mode, edict_t* 
 	// not doing this because it triggers the "changed name" chat message
 	//g_engfuncs.pfnSetClientKeyValue(entindex(), info, "name", (char*)newName);
 
+
+	static char userinfo[512];
+
 	if (fast) {
 		// only send the essential values for rendering
 		// TODO: are the other values even used by the client? or only the server?
@@ -4502,11 +4505,25 @@ void CBasePlayer::Rename(const char* newName, bool fast, int msg_mode, edict_t* 
 		char* topcolor = g_engfuncs.pfnInfoKeyValue(info, "topcolor");
 		char* botcolor = g_engfuncs.pfnInfoKeyValue(info, "bottomcolor");
 
+		if (strlen(model) + strlen(topcolor) + strlen(botcolor) + strlen(newName) + 40 >= 512) {
+			ALERT(at_error, "Can't rename player. Userinfo too long\n"); // shouldn't ever happen
+			return;
+		}
+
+		memset(userinfo, 0, 512);
+		strcat(userinfo, "\\name\\");
+		strcat(userinfo, newName);
+		strcat(userinfo, "\\model\\");
+		strcat(userinfo, model);
+		strcat(userinfo, "\\topcolor\\");
+		strcat(userinfo, topcolor);
+		strcat(userinfo, "\\bottomcolor\\");
+		strcat(userinfo, botcolor);
+
 		MESSAGE_BEGIN(msg_mode, SVC_UPDATEUSERINFO, 0, dst);
 		WRITE_BYTE(entindex() - 1);
 		WRITE_LONG(0); // client user id (???)
-		WRITE_STRING(UTIL_VarArgs("\\name\\%s\\model\\%s\\topcolor\\%s\\bottomcolor\\%s", 
-			newName, model, topcolor, botcolor));
+		WRITE_STRING(userinfo);
 		for (int i = 0; i < 16; i++) {
 			WRITE_BYTE(0x00); // CD Key hash (???)
 		}
@@ -4515,7 +4532,7 @@ void CBasePlayer::Rename(const char* newName, bool fast, int msg_mode, edict_t* 
 		return;
 	}
 
-	static char userinfo[512];
+	
 
 	char* nameStart = strstr(info, "\\name\\") + 6;
 	char* nameEnd = strstr(nameStart, "\\");

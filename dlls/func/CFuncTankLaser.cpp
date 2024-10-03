@@ -14,6 +14,7 @@ public:
 	void	Think(void);
 	CLaser* GetLaser(void);
 	virtual const char* DisplayName() { return "Laser"; }
+	virtual const char* GetDeathNoticeWeapon() { return "weapon_gauss"; };
 
 	virtual int	Save(CSave& save);
 	virtual int	Restore(CRestore& restore);
