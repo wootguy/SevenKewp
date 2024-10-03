@@ -5,6 +5,7 @@
 #include <map>
 #include <fstream>
 #include <algorithm>
+#include <cstdint>
 
 using namespace std;
 
