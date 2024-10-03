@@ -3044,8 +3044,8 @@ void CBasePlayer::PostThink()
 			TRACE_HULL(pev->origin, pev->origin + Vector(0,0,-1), dont_ignore_monsters, hullType, edict(), &tr);
 
 			// split fall damage with self and whatever ent was landed on
-			CBaseEntity* ent = CBaseEntity::Instance(tr.pHit);
-			if (ent->IsMonster()) {
+			CBaseMonster* ent = CBaseEntity::Instance(tr.pHit)->MyMonsterPointer();
+			if (ent) {
 				flFallDamage *= 0.5f;
 
 				if (ent->IsPlayer()) {
@@ -3058,6 +3058,8 @@ void CBasePlayer::PostThink()
 				ent->pev->health -= flFallDamage;
 				if (ent->pev->health <= 0) {
 					ent->Killed(pev, GIB_NORMAL);
+					ent->m_lastDamageType = DMG_FALL;
+					g_pGameRules->DeathNotice(ent, pev, pev);
 				}
 			}
 

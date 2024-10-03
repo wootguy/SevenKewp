@@ -102,6 +102,9 @@ int CSentry::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float f
 	pev->health -= flDamage;
 	if (pev->health <= 0)
 	{
+		CBaseMonster::Killed(pev, GIB_NEVER); // for monstermaker death notice + death trigger
+		g_pGameRules->DeathNotice(this, pevAttacker, pevInflictor);
+
 		pev->health = 0;
 		pev->takedamage = DAMAGE_NO;
 		pev->dmgtime = gpGlobals->time;

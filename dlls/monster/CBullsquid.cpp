@@ -170,7 +170,7 @@ void CSquidSpit :: Touch ( CBaseEntity *pOther )
 	}
 	else
 	{
-		pOther->TakeDamage ( pev, pev, gSkillData.sk_bullsquid_dmg_spit, DMG_GENERIC );
+		pOther->TakeDamage ( pev, &pev->owner->v, gSkillData.sk_bullsquid_dmg_spit, DMG_GENERIC );
 	}
 
 	SetThink ( &CSquidSpit::SUB_Remove );

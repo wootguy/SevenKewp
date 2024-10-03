@@ -253,7 +253,7 @@ void CGargantua::StompAttack( void )
 	Vector vecEnd = (vecAim * 1024) + vecStart;
 
 	UTIL_TraceLine( vecStart, vecEnd, ignore_monsters, edict(), &trace );
-	CStomp::StompCreate( vecStart, trace.vecEndPos, 500, stompDamage );
+	CStomp::StompCreate( vecStart, trace.vecEndPos, edict(), 500, stompDamage );
 	UTIL_ScreenShake( pev->origin, 12.0, 100.0, 2.0, 1000 );
 	StompSound();
 
@@ -1094,7 +1094,7 @@ void CGargantua::CantFollowSound() {
 	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, PITCH_NORM);
 }
 
-CStomp* CStomp::StompCreate(const Vector& origin, const Vector& end, float speed, float damage)
+CStomp* CStomp::StompCreate(const Vector& origin, const Vector& end, edict_t* owner, float speed, float damage)
 {
 	CStomp* pStomp = GetClassPtr((CStomp*)NULL);
 
@@ -1104,6 +1104,7 @@ CStomp* CStomp::StompCreate(const Vector& origin, const Vector& end, float speed
 	pStomp->pev->movedir = dir.Normalize();
 	pStomp->pev->speed = speed;
 	pStomp->pev->dmg = damage;
+	pStomp->pev->owner = owner;
 	pStomp->Spawn();
 
 	return pStomp;
