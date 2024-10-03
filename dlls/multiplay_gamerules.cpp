@@ -747,11 +747,11 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				killerName = "Clubbing";
 			}
 
-			hackedKillerPlayer->Rename(killerName);
+			hackedKillerPlayer->Rename(killerName, true);
 		}
 		else {
 			if (monsterKillingPlayer) {
-				hackedKillerPlayer->Rename(Killer->DisplayName());
+				hackedKillerPlayer->Rename(Killer->DisplayName(), true);
 			}
 			else if (playerKillingMonster) {
 				const char* otherAttacker = NULL;
@@ -779,14 +779,14 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 					originalKillerName = plr->DisplayName();
 					
 					if (attackerCount == 2) {
-						plr->Rename(UTIL_VarArgs("%s + %s", Killer->DisplayName(), otherAttacker));
+						plr->Rename(UTIL_VarArgs("%s + %s", Killer->DisplayName(), otherAttacker), true);
 					}
 					else {
-						plr->Rename(UTIL_VarArgs("%s + %d players", Killer->DisplayName(), attackerCount));
+						plr->Rename(UTIL_VarArgs("%s + %d players", Killer->DisplayName(), attackerCount), true);
 					}
 				}
 
-				hackedKillerPlayer->Rename(pVictim->DisplayName());
+				hackedKillerPlayer->Rename(pVictim->DisplayName(), true);
 			}
 		}
 
@@ -819,6 +819,22 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		MESSAGE_END();
 	}
 
+	// restore player names if temporarily changed for the status bar, unless renamed just now
+	if (pVictim->IsPlayer()) {
+		CBasePlayer* plr = (CBasePlayer*)pVictim;
+		if (plr->tempNameActive && plr != hackedKillerPlayer) {
+			plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
+			plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
+		}
+	}
+	if (Killer->IsPlayer()) {
+		CBasePlayer* plr = (CBasePlayer*)Killer;
+		if (plr->tempNameActive && plr != hackedKillerPlayer) {
+			plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
+			plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
+		}
+	}
+
 	MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
 		WRITE_BYTE( killer_index );						// the killer
 		WRITE_BYTE(victim_index);		// the victim
@@ -827,12 +843,28 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 
 	if (hackedKillerPlayer) {
 		// restore player name and team info
-		hackedKillerPlayer->Rename(hackedKillerOriginalName);
+		hackedKillerPlayer->Rename(hackedKillerOriginalName, false);
 		hackedKillerPlayer->UpdateTeamInfo();
 
 		if (originalKillerName) {
 			CBasePlayer* plr = (CBasePlayer*)Killer;
-			plr->Rename(originalKillerName);
+			plr->Rename(originalKillerName, false);
+		}
+	}
+
+	// back to the temp name, if one exists, so that the status bar renders correctly after a kill
+	if (pVictim->IsPlayer()) {
+		CBasePlayer* plr = (CBasePlayer*)pVictim;
+		if (plr->tempNameActive && plr != hackedKillerPlayer) {
+			plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
+			plr->UpdateTeamInfo(plr->m_tempTeam, MSG_ONE, plr->edict());
+		}
+	}
+	if (Killer->IsPlayer()) {
+		CBasePlayer* plr = (CBasePlayer*)Killer;
+		if (plr->tempNameActive && plr != hackedKillerPlayer) {
+			plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
+			plr->UpdateTeamInfo(plr->m_tempTeam, MSG_ONE, plr->edict());
 		}
 	}
 
