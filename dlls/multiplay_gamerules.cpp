@@ -31,6 +31,7 @@
 #include "CBasePlayerAmmo.h"
 #include "CBasePlayerItem.h"
 #include "CSatchel.h"
+#include "monsters.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -669,7 +670,8 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	// HACK: quickly replace another player's name to the monster/damage that killed the player
 	// so that the kill feed can show a killer name
 	CBasePlayer* hackedKillerPlayer = NULL;
-	const char* hackedKillerOriginalName = "";
+	const char* hackedKillerOriginalName = NULL;
+	const char* originalKillerName = NULL;
 	bool monsterKill = !Killer->IsPlayer() || !pVictim->IsPlayer();
 	if (monsterKill) {
 		for (int i = 1; i <= gpGlobals->maxClients; i++)
@@ -752,8 +754,54 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				hackedKillerPlayer->Rename(Killer->DisplayName());
 			}
 			else if (playerKillingMonster) {
+				const char* otherAttacker = NULL;
+				int attackerCount = 1;
+
+				if (mp_killfeed.value >= 3) {
+					int attackerId = g_engfuncs.pfnGetPlayerUserId(Killer->edict());
+
+					for (int i = 0; i < 32; i++) {
+						PlayerAttackInfo& info = pVictim->m_attackers[i];
+
+						if (info.userid && info.userid != attackerId) {
+							attackerCount++;
+							if (!otherAttacker) {
+								CBasePlayer* plr = UTIL_PlayerByIndex(info.userid);
+								if (plr)
+									otherAttacker = plr->DisplayName();
+							}
+						}
+					}
+				}
+
+				if (attackerCount > 1 && Killer->IsPlayer() && otherAttacker) {
+					CBasePlayer* plr = (CBasePlayer*)Killer;
+					originalKillerName = plr->DisplayName();
+					
+					if (attackerCount == 2) {
+						plr->Rename(UTIL_VarArgs("%s + %s", Killer->DisplayName(), otherAttacker));
+					}
+					else {
+						plr->Rename(UTIL_VarArgs("%s + %d players", Killer->DisplayName(), attackerCount));
+					}
+				}
+
 				hackedKillerPlayer->Rename(pVictim->DisplayName());
 			}
+		}
+
+		int monsterTeamColor = ENEMY_TEAM_COLOR;
+
+		switch (Killer->IRelationship(pVictim->Classify(), Killer->Classify())) {
+		case R_AL:
+			monsterTeamColor = FRIEND_TEAM_COLOR;
+			break;
+		case R_FR:
+		case R_NO:
+			monsterTeamColor = NEUTRAL_TEAM_COLOR;
+			break;
+		default:
+			break;
 		}
 
 		// change killer name color to match the type entity type
@@ -762,7 +810,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		WRITE_SHORT(hackedKillerPlayer->pev->frags);
 		WRITE_SHORT(hackedKillerPlayer->m_iDeaths);
 		WRITE_SHORT(0);
-		WRITE_SHORT(worldKillingPlayer ? WORLD_TEAM_COLOR : ENEMY_TEAM_COLOR);
+		WRITE_SHORT(worldKillingPlayer ? NEUTRAL_TEAM_COLOR : monsterTeamColor);
 		MESSAGE_END();
 
 		MESSAGE_BEGIN(MSG_ALL, gmsgTeamInfo);
@@ -781,6 +829,11 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		// restore player name and team info
 		hackedKillerPlayer->Rename(hackedKillerOriginalName);
 		hackedKillerPlayer->UpdateTeamInfo();
+
+		if (originalKillerName) {
+			CBasePlayer* plr = (CBasePlayer*)Killer;
+			plr->Rename(originalKillerName);
+		}
 	}
 
 	// replace the code names with the 'real' names

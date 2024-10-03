@@ -98,6 +98,11 @@ int CBaseEntity::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	if (pev->health <= 0)
 	{
 		Killed(pevAttacker, GIB_NORMAL);
+
+		if (IsMonster()) {
+			g_pGameRules->DeathNotice((CBaseMonster*)this, pevAttacker, pevInflictor);
+		}
+
 		return 0;
 	}
 

@@ -651,20 +651,38 @@ CBaseEntity *UTIL_FindEntityGeneric( const char *szWhatever, Vector &vecSrc, flo
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns NULL
 // Index is 1 based
-CBaseEntity	*UTIL_PlayerByIndex( int playerIndex )
+CBasePlayer* UTIL_PlayerByIndex( int playerIndex )
 {
-	CBaseEntity *pPlayer = NULL;
+	CBasePlayer* pPlayer = NULL;
 
 	if ( playerIndex > 0 && playerIndex <= gpGlobals->maxClients )
 	{
 		edict_t *pPlayerEdict = INDEXENT( playerIndex );
 		if ( IsValidPlayer(pPlayerEdict) && !pPlayerEdict->free )
 		{
-			pPlayer = CBaseEntity::Instance( pPlayerEdict );
+			pPlayer = (CBasePlayer*)CBaseEntity::Instance( pPlayerEdict );
 		}
 	}
 	
 	return pPlayer;
+}
+
+CBasePlayer* UTIL_PlayerByUserId(int userid)
+{
+	CBasePlayer* pPlayer = NULL;
+
+	if (userid > 0)
+	{
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+
+			if (pPlayer && g_engfuncs.pfnGetPlayerUserId(pPlayer->edict()) == userid)
+				return pPlayer;
+		}
+	}
+
+	return NULL;
 }
 
 edict_t* UTIL_ClientsInPVS(edict_t* edict, int& playerCount) {

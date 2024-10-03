@@ -40,6 +40,8 @@
 #include "shared_util.h"
 #include "studio.h"
 
+class CBasePlayer;
+
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
 
 struct WavInfo {
@@ -314,7 +316,8 @@ EXPORT CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, f
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns NULL
 // Index is 1 based
-extern CBaseEntity	*UTIL_PlayerByIndex( int playerIndex );
+extern CBasePlayer	*UTIL_PlayerByIndex( int playerIndex );
+extern CBasePlayer	*UTIL_PlayerByUserId( int userid );
 
 #define UTIL_EntitiesInPVS(pent)			(*g_engfuncs.pfnEntitiesInPVS)(pent)
 EXPORT edict_t*		UTIL_ClientsInPVS(edict_t* edict, int& playerCount);

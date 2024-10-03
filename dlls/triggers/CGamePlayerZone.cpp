@@ -4,6 +4,7 @@
 #include "gamerules.h"
 #include "cbase.h"
 #include "CRuleEntity.h"
+#include "CBasePlayer.h"
 
 //
 // CGamePlayerZone / game_player_zone -- players in the zone fire my target when I'm fired
@@ -71,7 +72,7 @@ void CGamePlayerZone::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	if (!CanFireForActivator(pActivator))
 		return;
 
-	CBaseEntity* pPlayer = NULL;
+	CBasePlayer* pPlayer = NULL;
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
