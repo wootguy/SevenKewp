@@ -421,6 +421,36 @@ void ServerDeactivate( void )
 #include "lagcomp.h"
 
 void PrecacheWeapons() {
+	UTIL_PrecacheOther("item_suit");
+	UTIL_PrecacheOther("item_battery");
+	UTIL_PrecacheOther("weapon_crowbar");
+	UTIL_PrecacheOther("weapon_9mmhandgun");
+	UTIL_PrecacheOther("ammo_9mmclip");
+	UTIL_PrecacheOther("weapon_shotgun");
+	UTIL_PrecacheOther("ammo_buckshot");
+	UTIL_PrecacheOther("weapon_9mmAR");
+	UTIL_PrecacheOther("ammo_9mmAR");
+	UTIL_PrecacheOther("ammo_ARgrenades");
+	UTIL_PrecacheOther("weapon_handgrenade");
+	UTIL_PrecacheOther("weapon_tripmine");
+	UTIL_PrecacheOther("weapon_357");
+	UTIL_PrecacheOther("ammo_357");
+	UTIL_PrecacheOther("weapon_crossbow");
+	UTIL_PrecacheOther("ammo_crossbow");
+	UTIL_PrecacheOther("weapon_egon");
+	UTIL_PrecacheOther("weapon_gauss");
+	UTIL_PrecacheOther("ammo_gaussclip");
+	UTIL_PrecacheOther("weapon_rpg");
+	UTIL_PrecacheOther("ammo_rpgclip");
+	UTIL_PrecacheOther("weapon_satchel");
+	UTIL_PrecacheOther("weapon_snark");
+	UTIL_PrecacheOther("weapon_hornetgun");
+	UTIL_PrecacheOther("weapon_grapple");
+	UTIL_PrecacheOther("weapon_pipewrench");
+	UTIL_PrecacheOther("weapon_displacer");
+	UTIL_PrecacheOther("weapon_shockrifle");
+	UTIL_PrecacheOther("weapon_sporelauncher");
+	UTIL_PrecacheOther("item_longjump");
 	if (g_mapWeapons.find("weapon_shotgun") != g_mapWeapons.end()) {
 		UTIL_PrecacheOther("weapon_shotgun");
 		UTIL_PrecacheOther("ammo_buckshot");
