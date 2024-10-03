@@ -638,6 +638,10 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	// Work out what killed the player, and send a message to all clients about it
 	CBaseEntity *Killer = CBaseEntity::Instance( pKiller );
 
+	if (!Killer || !pVictim) {
+		return;
+	}
+
 	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
 	int killer_index = 0;
 	int victim_index = pVictim->entindex();
