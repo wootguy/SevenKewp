@@ -21,6 +21,11 @@ extern entvars_t* g_pevLastInflictor;
 // Clients can push talkmonsters out of their way
 #define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
 
+struct PlayerAttackInfo {
+	int userid; // 0 = free slot
+	float damageDealt;
+};
+
 //
 // generic Monster
 //
@@ -150,6 +155,8 @@ public:
 
 	int m_lastDamageType;
 	EHANDLE m_lastDamageEnt;
+
+	PlayerAttackInfo m_attackers[32]; // players that attacked this entity
 
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
@@ -417,6 +424,7 @@ public:
 	void SetHealth();
 	void InitModel();
 	virtual void Nerf(); // reduces monster health and/or spawn count according to cvars
+	void LogPlayerDamage(entvars_t* attacker, float damage);
 };
 
 
