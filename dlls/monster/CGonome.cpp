@@ -550,7 +550,7 @@ void CGonomeSpit::Touch(CBaseEntity* pOther)
 		WRITE_BYTE(10);	// size
 	MESSAGE_END();
 
-	pOther->TakeDamage(pev, pev, gSkillData.sk_gonome_dmg_guts, DMG_GENERIC);
+	pOther->TakeDamage(pev, &pev->owner->v, gSkillData.sk_gonome_dmg_guts, DMG_GENERIC);
 
 	SetThink(&CGonomeSpit::SUB_Remove);
 	pev->nextthink = gpGlobals->time;

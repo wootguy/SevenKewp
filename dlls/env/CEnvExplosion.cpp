@@ -12,6 +12,7 @@ public:
 	void EXPORT Smoke(void);
 	void KeyValue(KeyValueData* pkvd);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	const char* DisplayName() { return "Explosion"; }
 
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);

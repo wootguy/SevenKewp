@@ -1062,6 +1062,7 @@ class CApacheHVR : public CGrenade
 	void Precache( void );
 	void EXPORT IgniteThink( void );
 	void EXPORT AccelerateThink( void );
+	virtual const char* GetDeathNoticeWeapon() { return "rpg_rocket"; };
 
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
