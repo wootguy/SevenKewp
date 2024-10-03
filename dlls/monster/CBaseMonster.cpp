@@ -4676,6 +4676,8 @@ void CBaseMonster::GiveScorePoints(entvars_t* pevAttacker, float damageDealt) {
 		float damageAmt = damageDealt > 0 ? V_min(damageDealt, pev->health) : V_min(damageDealt, pev->max_health - pev->health);
 		bool isFriendly = attackMon->IRelationship(this) == R_AL;
 		pevAttacker->frags += damageAmt * (isFriendly ? -1 : 1) * MONSTER_POINTS_PER_HP;
+
+		LogPlayerDamage(pevAttacker, damageAmt);
 	}
 }
 
@@ -7576,5 +7578,25 @@ void CBaseMonster::Nerf() {
 	if (IRelationship(CLASS_PLAYER, Classify()) > R_NO || (IsTurret() && !m_IsPlayerAlly)) {
 		g_nerfStats.totalMonsterHealth += pev->health;
 		g_nerfStats.totalMonsters++;
+	}
+}
+
+void CBaseMonster::LogPlayerDamage(entvars_t* attacker, float damage) {
+	if (!(attacker->flags & FL_CLIENT)) {
+		return;
+	}
+
+	int userid = g_engfuncs.pfnGetPlayerUserId(ENT(attacker));
+
+	for (int i = 0; i < 32; i++) {
+		if (userid == m_attackers[i].userid) {
+			m_attackers[i].damageDealt += damage;
+			break;
+		}
+		if (m_attackers[i].userid == 0) {
+			m_attackers[i].userid = userid;
+			m_attackers[i].damageDealt = damage;
+			break;
+		}
 	}
 }

@@ -30,7 +30,8 @@ extern void GameDLLInit( void );
 #define DEFAULT_TEAM_NAME "Team" // name seen in the scoreboard
 #define DEFAULT_TEAM_COLOR 1
 #define ENEMY_TEAM_COLOR 2
-#define WORLD_TEAM_COLOR 3
+#define NEUTRAL_TEAM_COLOR 3
+#define FRIEND_TEAM_COLOR 4
 #define OBSERVER_TEAM_COLOR 6 // spectator color (white on windows, still blue on linux?)
 
 extern cvar_t	displaysoundlist;
@@ -65,7 +66,7 @@ extern cvar_t	mp_survival_supported;
 extern cvar_t	mp_survival_starton;
 extern cvar_t	mp_survival_restart;
 extern cvar_t	mp_mergemodels; // used merged models to save on model slots
-extern cvar_t	mp_killfeed; // 0 = off, 1 = player deaths, 2 = show monster deaths
+extern cvar_t	mp_killfeed; // 0 = off, 1 = player deaths, 2 = show monster deaths, 3 = show assists
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
