@@ -16,7 +16,11 @@ void CBasePlayerAmmo::Spawn(void)
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	UTIL_SetOrigin(pev, pev->origin);
 
-	SetTouch(&CBasePlayerAmmo::DefaultTouch);
+	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
+		SetTouch(&CBasePlayerAmmo::DefaultTouch);
+
+	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
+		SetUse(&CBasePlayerAmmo::DefaultUse);	
 }
 
 void CBasePlayerAmmo::KeyValue(KeyValueData* pkvd)
@@ -53,7 +57,11 @@ void CBasePlayerAmmo::Materialize(void)
 		pev->effects |= EF_MUZZLEFLASH;
 	}
 
-	SetTouch(&CBasePlayerAmmo::DefaultTouch);
+	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
+		SetTouch(&CBasePlayerAmmo::DefaultTouch);
+
+	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
+		SetUse(&CBasePlayerAmmo::DefaultUse);
 }
 
 void CBasePlayerAmmo::DefaultTouch(CBaseEntity* pOther)
@@ -82,5 +90,25 @@ void CBasePlayerAmmo::DefaultTouch(CBaseEntity* pOther)
 		SetTouch(NULL);
 		SetThink(&CBasePlayerAmmo::SUB_Remove);
 		pev->nextthink = gpGlobals->time + .1;
+	}
+}
+
+void CBasePlayerAmmo::DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	if (pCaller && pCaller->IsPlayer()) {
+
+		if (!(pev->spawnflags & SF_ITEM_USE_WITHOUT_LOS)) {
+			TraceResult tr;
+			TRACE_LINE(pCaller->pev->origin + pCaller->pev->view_ofs, pev->origin, dont_ignore_monsters, pCaller->edict(), &tr);
+
+			bool hitItemSurface = tr.pHit && tr.pHit != edict();
+			bool enteredItemBox = boxesIntersect(pev->absmin, pev->absmax, tr.vecEndPos, tr.vecEndPos);
+			if (!hitItemSurface && !enteredItemBox) {
+				ALERT(at_console, "Can't use item not in LOS\n");
+				return;
+			}
+		}
+
+		DefaultTouch(pCaller);
 	}
 }

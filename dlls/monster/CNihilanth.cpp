@@ -435,6 +435,7 @@ void CNihilanth :: DyingThink( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 	DispatchAnimEvents( );
 	StudioFrameAdvance( );
+	UpdateShockEffect();
 
 	if (pev->deadflag == DEAD_NO)
 	{
@@ -857,6 +858,7 @@ void CNihilanth :: HuntThink( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 	DispatchAnimEvents( );
 	StudioFrameAdvance( );
+	UpdateShockEffect();
 
 	ShootBalls( );
 
