@@ -189,6 +189,10 @@ void CBasePlayerItem::DefaultTouch(CBaseEntity* pOther)
 	if (!pOther->IsPlayer())
 		return;
 
+	if (pev->movetype == MOVETYPE_FOLLOW || m_hPlayer) {
+		return; // attached to a player
+	}
+
 	CBasePlayer* pPlayer = (CBasePlayer*)pOther;
 
 	// can I have this?
@@ -300,5 +304,14 @@ void CBasePlayerItem::DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, 
 		}
 
 		DefaultTouch(pCaller);
+	}
+}
+
+int CBasePlayerItem::ObjectCaps() {
+	if (pev->movetype == MOVETYPE_FOLLOW) {
+		return CBaseEntity::ObjectCaps();
+	}
+	else {
+		return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
 	}
 }

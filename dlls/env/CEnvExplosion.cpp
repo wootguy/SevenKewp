@@ -141,7 +141,8 @@ void CEnvExplosion::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 	// do damage
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NODAMAGE))
 	{
-		::RadiusDamage(pev->origin, pev, pev, m_iMagnitude, m_iMagnitude * 2.5, CLASS_NONE, DMG_BLAST);
+		entvars_t* ownerpev = pev->owner ? &pev->owner->v : pev;
+		::RadiusDamage(pev->origin, pev, ownerpev, m_iMagnitude, m_iMagnitude * 2.5, CLASS_NONE, DMG_BLAST);
 	}
 
 	SetThink(&CEnvExplosion::Smoke);
