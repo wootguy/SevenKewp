@@ -13,7 +13,7 @@ public:
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 
-	virtual int	ObjectCaps(void) { return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE; }
+	virtual int	ObjectCaps(void);
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 
