@@ -912,8 +912,9 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	}
 	if (Killer->IsPlayer()) {
 		CBasePlayer* plr = (CBasePlayer*)Killer;
-		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2 && !originalKillerName) {
-			plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
+		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
+			if (!originalKillerName)
+				plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
 			plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
 		}
 	}
