@@ -34,6 +34,7 @@ class CMortar : public CGrenade
 public:
 	void Spawn( void );
 	void Precache( void );
+	virtual const char* DisplayName() { return "Mortar"; }
 
 	void EXPORT MortarExplode( void );
 
