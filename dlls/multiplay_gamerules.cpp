@@ -690,7 +690,6 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	const char* hackedKillerOriginalName = NULL;
 	const char* hackedVictimOriginalName = NULL;
 	const char* originalKillerName = NULL;
-	const char* originalVictimName = NULL;
 	bool monsterKill = !Killer->IsPlayer() || !pVictim->IsPlayer();
 	bool monsterKillingPlayer = !Killer->IsPlayer() && pVictim->IsPlayer();
 	bool playerKillingMonster = Killer->IsPlayer() && !pVictim->IsPlayer();
@@ -763,7 +762,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				killerName = "Laser";
 			}
 			else if (pVictim->m_lastDamageType & DMG_DROWN) {
-				killerName = "Suffocation";
+				killerName = "Hypoxia";
 			}
 			else if (pVictim->m_lastDamageType & (DMG_POISON | DMG_NERVEGAS)) {
 				killerName = "Poison";
@@ -774,18 +773,22 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 			else if (pVictim->m_lastDamageType & DMG_ACID) {
 				killerName = "Acid";
 			}
-			else if (pVictim->m_lastDamageType & DMG_SLOWBURN) {
+			else if (pVictim->m_lastDamageType & (DMG_BURN | DMG_SLOWBURN)) {
 				killerName = "Hyperthermia";
 			}
 			else if (pVictim->m_lastDamageType & (DMG_FREEZE | DMG_SLOWFREEZE)) {
 				killerName = "Hypothermia";
 			}
-			else if (pVictim->m_lastDamageType & (DMG_MORTAR | DMG_BLAST)) {
-				killerName = "Explosion";
+			else if (pVictim->m_lastDamageType & DMG_MORTAR) {
+				killerName = "Mortar";
+			}
+			else if (pVictim->m_lastDamageType & DMG_BLAST) {
+				//killerName = "Explosion";
+				// entity name should be better
 			}
 			else if (pVictim->m_lastDamageType & (DMG_PARALYZE)) {
 				//killerName = "Nerve damage";
-				// entity name should be better ("pain" for trigger_hurt)
+				// entity name should be better
 			}
 			else if (pVictim->m_lastDamageType & (DMG_SONIC)) {
 				killerName = "Sound";
@@ -899,6 +902,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	}
 
 	// restore player names if temporarily changed for the status bar, unless renamed just now
+	// or else the wrong name shows in the kill feed
 	if (pVictim->IsPlayer()) {
 		CBasePlayer* plr = (CBasePlayer*)pVictim;
 		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
@@ -908,8 +912,9 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	}
 	if (Killer->IsPlayer()) {
 		CBasePlayer* plr = (CBasePlayer*)Killer;
-		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2 && !originalKillerName) {
-			plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
+		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
+			if (!originalKillerName)
+				plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
 			plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
 		}
 	}
@@ -924,6 +929,12 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	if (hackedPlayer1) {
 		hackedPlayer1->Rename(hackedKillerOriginalName, false);
 		hackedPlayer1->UpdateTeamInfo();
+		
+		// TODO: this is sending the hacked player double the network packets, and these are already heavy
+		if (hackedPlayer1->tempNameActive) {
+			hackedPlayer1->Rename(hackedPlayer1->m_tempName, false, MSG_ONE, hackedPlayer1->edict());
+			hackedPlayer1->UpdateTeamInfo(hackedPlayer1->m_tempTeam, MSG_ONE, hackedPlayer1->edict());
+		}
 	}
 	if (originalKillerName) {
 		CBasePlayer* plr = (CBasePlayer*)Killer;
@@ -933,9 +944,9 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		hackedPlayer2->Rename(hackedVictimOriginalName, false);
 		hackedPlayer2->UpdateTeamInfo();
 
-		if (originalVictimName) {
-			CBasePlayer* plr = (CBasePlayer*)Killer;
-			plr->Rename(originalVictimName, false);
+		if (hackedPlayer2->tempNameActive) {
+			hackedPlayer2->Rename(hackedPlayer2->m_tempName, false, MSG_ONE, hackedPlayer2->edict());
+			hackedPlayer2->UpdateTeamInfo(hackedPlayer2->m_tempTeam, MSG_ONE, hackedPlayer2->edict());
 		}
 	}
 
@@ -950,7 +961,8 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	if (Killer->IsPlayer()) {
 		CBasePlayer* plr = (CBasePlayer*)Killer;
 		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
-			plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
+			if (!originalKillerName)
+				plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
 			plr->UpdateTeamInfo(plr->m_tempTeam, MSG_ONE, plr->edict());
 		}
 	}

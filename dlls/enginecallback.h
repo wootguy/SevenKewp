@@ -95,7 +95,7 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 
 EXPORT void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
 
-#ifdef PLUGIN_BUILD
+#if defined(PLUGIN_BUILD) && defined(PLUGIN_NAME)
 #define ALERT(target, fmt, ...) { \
 	DEBUG_MSG(target, "[" PLUGIN_NAME "] " fmt, ##__VA_ARGS__ ); \
 }
