@@ -807,10 +807,13 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 			iPW++;
 		}
-	}
 
-	pWeaponBox->pev->velocity = pev->velocity * 1.2;// weaponbox has player's velocity, then some.
-	pWeaponBox->pev->avelocity = Vector(0, 256, 256);
+		pWeaponBox->pev->velocity = pev->velocity * 1.2;// weaponbox has player's velocity, then some.
+		pWeaponBox->pev->avelocity = Vector(0, 256, 256);
+	}
+	else {
+		REMOVE_ENTITY(pWeaponBox->edict());
+	}
 
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
 
@@ -2135,6 +2138,7 @@ void CBasePlayer::UpdateStatusBar()
 
 	BOOL bForceResend = FALSE;
 
+	// second line of status bar, despite "0"
 	if ( strncmp( sbuf0, m_SbarString0, SBAR_STRING_SIZE) )
 	{
 		MESSAGE_BEGIN(MSG_ONE, gmsgStatusText, NULL, pev);
@@ -2165,19 +2169,7 @@ void CBasePlayer::UpdateStatusBar()
 	{
 		if (fakePlayerInfo.enabled) {
 			Rename(fakePlayerInfo.name, true, MSG_ONE, edict());
-
-			MESSAGE_BEGIN(MSG_ONE, gmsgScoreInfo, 0, edict());
-			WRITE_BYTE(entindex());	// client number
-			WRITE_SHORT(pev->frags);
-			WRITE_SHORT(m_iDeaths);
-			WRITE_SHORT(0);
-			WRITE_SHORT(fakePlayerInfo.color);
-			MESSAGE_END();
-
-			MESSAGE_BEGIN(MSG_ONE, gmsgTeamInfo, 0, edict());
-			WRITE_BYTE(entindex());
-			WRITE_STRING(DEFAULT_TEAM_NAME);
-			MESSAGE_END();
+			UpdateTeamInfo(fakePlayerInfo.color, MSG_ONE, edict());
 
 			tempNameActive = 1;
 			memset(m_tempName, 0, SBAR_STRING_SIZE);
