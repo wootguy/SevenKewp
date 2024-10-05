@@ -762,7 +762,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				killerName = "Laser";
 			}
 			else if (pVictim->m_lastDamageType & DMG_DROWN) {
-				killerName = "Hypoxia";
+				killerName = "Fluid";
 			}
 			else if (pVictim->m_lastDamageType & (DMG_POISON | DMG_NERVEGAS)) {
 				killerName = "Poison";
@@ -774,15 +774,18 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				killerName = "Acid";
 			}
 			else if (pVictim->m_lastDamageType & (DMG_BURN | DMG_SLOWBURN)) {
-				killerName = "Hyperthermia";
+				killerName = "Heat";
 			}
 			else if (pVictim->m_lastDamageType & (DMG_FREEZE | DMG_SLOWFREEZE)) {
-				killerName = "Hypothermia";
+				killerName = "Cold";
 			}
 			else if (pVictim->m_lastDamageType & DMG_MORTAR) {
 				killerName = "Mortar";
 			}
 			else if (pVictim->m_lastDamageType & DMG_BLAST) {
+				if (pVictim->IsBreakable()) {
+					killerName = "Explosion";
+				}
 				//killerName = "Explosion";
 				// entity name should be better
 			}
@@ -794,7 +797,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				killerName = "Sound";
 			}
 			else if (pVictim->m_lastDamageType & (DMG_CLUB)) {
-				killerName = "Clubbing";
+				killerName = "Club";
 			}
 
 			hackedPlayer1->Rename(killerName, true);
@@ -841,7 +844,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 						plr->Rename(UTIL_VarArgs("%s + %s", Killer->DisplayName(), otherAttacker), true);
 					}
 					else {
-						plr->Rename(UTIL_VarArgs("%s + %d players", Killer->DisplayName(), attackerCount), true);
+						plr->Rename(UTIL_VarArgs("%s + %d players", Killer->DisplayName(), attackerCount-1), true);
 					}
 				}
 
@@ -939,6 +942,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	if (originalKillerName) {
 		CBasePlayer* plr = (CBasePlayer*)Killer;
 		plr->Rename(originalKillerName, false);
+		plr->UpdateTeamInfo(); // forces name on client to update NOW
 	}
 	if (hackedPlayer2) {
 		hackedPlayer2->Rename(hackedVictimOriginalName, false);

@@ -255,11 +255,21 @@ void Host_Say(edict_t* pEntity, int teamonly)
 
 	}
 
+	if (player->tempNameActive) {
+		player->Rename(player->DisplayName(), true, MSG_ONE, player->edict());
+		player->UpdateTeamInfo(-1, MSG_ONE, player->edict());
+	}
+
 	// print to the sending client
 	MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, &pEntity->v);
 	WRITE_BYTE(ENTINDEX(pEntity));
 	WRITE_STRING(text);
 	MESSAGE_END();
+
+	if (player->tempNameActive) {
+		player->Rename(player->m_tempName, false, MSG_ONE, player->edict());
+		player->UpdateTeamInfo(player->m_tempTeam, MSG_ONE, player->edict());
+	}
 
 	// echo to server console for listen servers, dedicated servers should have logs enabled
 	if (!IS_DEDICATED_SERVER())
