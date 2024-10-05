@@ -4677,7 +4677,7 @@ void CBaseMonster::GiveScorePoints(entvars_t* pevAttacker, float damageDealt) {
 		bool isFriendly = attackMon->IRelationship(this) == R_AL;
 		pevAttacker->frags += damageDealt * 1 * MONSTER_POINTS_PER_HP;
 
-		LogPlayerDamage(pevAttacker, damageAmt);
+		LogPlayerDamage(pevAttacker, damageDealt);
 	}
 }
 
