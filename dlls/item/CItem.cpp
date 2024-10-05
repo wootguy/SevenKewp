@@ -108,6 +108,10 @@ void CItem::ItemTouch(CBaseEntity* pOther)
 		return;
 	}
 
+	if (pev->effects & EF_NODRAW) {
+		return; // waiting to respawn
+	}
+
 	CBasePlayer* pPlayer = (CBasePlayer*)pOther;
 
 	// ok, a player is touching this item, but can he have it?

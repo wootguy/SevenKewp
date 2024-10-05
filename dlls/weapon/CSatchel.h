@@ -47,6 +47,7 @@ class CSatchelCharge : public CGrenade
 	void Spawn(void);
 	void Precache(void);
 	void BounceSound(void);
+	const char* DisplayName() { return "Satchel"; }
 
 	void EXPORT SatchelSlide(CBaseEntity* pOther);
 	void EXPORT SatchelThink(void);

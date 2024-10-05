@@ -71,6 +71,10 @@ void CBasePlayerAmmo::DefaultTouch(CBaseEntity* pOther)
 		return;
 	}
 
+	if (pev->effects & EF_NODRAW) {
+		return; // waiting to respawn
+	}
+
 	if (AddAmmo(pOther))
 	{
 		if (g_pGameRules->AmmoShouldRespawn(this) == GR_AMMO_RESPAWN_YES)
