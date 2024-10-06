@@ -3322,10 +3322,6 @@ void CBasePlayer::Spawn( void )
 		StartObserver(anySpawnPoint->v.origin, anySpawnPoint->v.angles);
 		m_wantToExitObserver = true;
 	}
-		GiveNamedItem( "item_suit" );
-		GiveNamedItem( "item_battery" );
-		GiveNamedItem( "weapon_crowbar" );
-		GiveNamedItem( "weapon_9mmhandgun" );
 		GiveNamedItem( "ammo_9mmclip" );
 		GiveNamedItem( "weapon_shotgun" );
 		GiveNamedItem( "ammo_buckshot" );
@@ -3351,9 +3347,7 @@ void CBasePlayer::Spawn( void )
 		GiveNamedItem( "weapon_displacer" );
 		GiveNamedItem( "weapon_shockrifle" );
 		GiveNamedItem( "weapon_sporelauncher" );
-		if (!m_fLongJump) {
-			GiveNamedItem("item_longjump");
-		}
+		GiveNamedItem("item_longjump");
 }
 
 void CBasePlayer :: Precache( void )
