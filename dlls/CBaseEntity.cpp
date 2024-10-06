@@ -977,3 +977,13 @@ bool CBaseEntity::ShouldBlockFriendlyFire(entvars_t* attacker) {
 
 	return false;
 }
+
+bool CBaseEntity::CanReach(CBaseEntity* toucher) {
+	TraceResult tr;
+	TRACE_LINE(toucher->pev->origin + toucher->pev->view_ofs, pev->origin, dont_ignore_monsters, toucher->edict(), &tr);
+
+	bool hitItemSurface = tr.pHit && tr.pHit == edict();
+	bool enteredItemBox = boxesIntersect(pev->absmin, pev->absmax, tr.vecEndPos, tr.vecEndPos);
+	
+	return hitItemSurface || enteredItemBox;
+}

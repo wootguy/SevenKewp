@@ -147,16 +147,8 @@ void CItem::ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 {
 	if (pCaller && pCaller->IsPlayer()) {
 
-		if (!(pev->spawnflags & SF_ITEM_USE_WITHOUT_LOS)) {
-			TraceResult tr;
-			TRACE_LINE(pCaller->pev->origin + pCaller->pev->view_ofs, pev->origin, dont_ignore_monsters, pCaller->edict(), &tr);
-			
-			bool hitItemSurface = tr.pHit && tr.pHit != edict();
-			bool enteredItemBox = boxesIntersect(pev->absmin, pev->absmax, tr.vecEndPos, tr.vecEndPos);
-			if (!hitItemSurface && !enteredItemBox) {
-				ALERT(at_console, "Can't use item not in LOS\n");
-				return;
-			}
+		if (!(pev->spawnflags & SF_ITEM_USE_WITHOUT_LOS) && !CanReach(pCaller)) {
+			return;
 		}
 
 		ItemTouch(pCaller);
@@ -194,4 +186,13 @@ const char* CItem::GetModel() {
 	}
 
 	return mp_mergemodels.value && MergedModelBody() != -1 ? MERGED_ITEMS_MODEL : m_defaultModel;
+}
+
+int	CItem::ObjectCaps(void) {
+	if (pev->effects & EF_NODRAW) {
+		return CBaseEntity::ObjectCaps();
+	}
+	else {
+		return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
+	}
 }

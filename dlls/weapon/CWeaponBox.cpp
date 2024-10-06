@@ -189,7 +189,7 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 
 void CWeaponBox::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	if (pCaller && pCaller->IsPlayer()) {
+	if (pCaller && pCaller->IsPlayer() && CanReach(pCaller)) {
 		Touch(pCaller);
 	}
 }
