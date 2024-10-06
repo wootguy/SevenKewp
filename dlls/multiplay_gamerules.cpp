@@ -783,8 +783,8 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				killerName = "Mortar";
 			}
 			else if (pVictim->m_lastDamageType & DMG_BLAST) {
-				if (pVictim->IsBreakable()) {
-					killerName = "Explosion";
+				if (Killer->IsBreakable()) {
+					killerName = "Explosives";
 				}
 				//killerName = "Explosion";
 				// entity name should be better

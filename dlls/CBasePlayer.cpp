@@ -2004,6 +2004,8 @@ void CBasePlayer::UpdateStatusBar()
 		{
 			CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
+			bool ignoreMonster = FClassnameIs(pEntity->pev, "monster_furniture");
+
 			if (pEntity->Classify() == CLASS_PLAYER )
 			{
 				newSBarState[ SBAR_ID_TARGETNAME ] = ENTINDEX( pEntity->edict() );
@@ -2015,8 +2017,7 @@ void CBasePlayer::UpdateStatusBar()
 
 				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			}
-			else if (pEntity->IsMonster() && pEntity->IsAlive()) {
-				
+			else if (pEntity->IsMonster() && pEntity->IsAlive() && !ignoreMonster) {
 				name = replaceString(pEntity->DisplayName(), "\n", " ");
 				int hp = roundf(pEntity->pev->health);
 

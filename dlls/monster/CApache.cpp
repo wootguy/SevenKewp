@@ -40,7 +40,9 @@ class CApache : public CBaseMonster
 	int  BloodColor( void ) { return DONT_BLEED; }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
-	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
+
+	// when crashing, show an explosion kill icon
+	const char* GetDeathNoticeWeapon() { return IsAlive() ? "weapon_9mmAR" : "grenade"; }
 
 	void SetObjectCollisionBox( void )
 	{
