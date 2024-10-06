@@ -24,6 +24,7 @@ public:
 			flags = FCAP_DONT_SAVE;
 		return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | flags;
 	}
+	virtual const char* DisplayName() { return "Laser"; }
 
 	void EXPORT TriggerTouch(CBaseEntity* pOther);
 

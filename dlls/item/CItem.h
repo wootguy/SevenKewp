@@ -40,7 +40,7 @@ public:
 	void SetSize(Vector defaultMins, Vector defaultMaxs);
 	void SetItemModel();
 	virtual int MergedModelBody() { return -1; }
-	virtual int	ObjectCaps(void) { return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE; }
+	virtual int	ObjectCaps(void);
 
 	const char* m_defaultModel;
 	string_t m_sequence_name;

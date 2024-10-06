@@ -346,6 +346,8 @@ void CBasePlayerItem::Kill( void ) { }
 void CBasePlayerItem::Holster( int skiplocal ) { }
 void CBasePlayerItem::AttachToPlayer ( CBasePlayer *pPlayer ) { }
 void CBasePlayerItem::KeyValue(KeyValueData* pkvd) {}
+int CBasePlayerItem::ObjectCaps(void) { return 0; }
+int CBasePlayerAmmo::ObjectCaps(void) { return 0; }
 int CBasePlayerWeapon::AddDuplicate( CBasePlayerItem *pOriginal ) { return 0; }
 int CBasePlayerWeapon::AddToPlayer( CBasePlayer *pPlayer ) { return FALSE; }
 int CBasePlayerWeapon::UpdateClientData( CBasePlayer *pPlayer ) { return 0; }
@@ -368,6 +370,8 @@ CBaseEntity* CBasePlayerWeapon::Respawn() { return NULL;  }
 const char* CBasePlayerWeapon::GetModelV() { return 0; }
 const char* CBasePlayerWeapon::GetModelP() { return 0; }
 const char* CBasePlayerWeapon::GetModelW() { return 0; }
+void CBasePlayerWeapon::SetWeaponModelW() { }
+void CGrenade::SetGrenadeModel() { }
 void CSoundEnt::InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration ) {}
 void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType ){}
 void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,

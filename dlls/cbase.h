@@ -372,6 +372,10 @@ public:
 	static int IRelationship(int attackerClass, int victimClass);
 	bool ShouldBlockFriendlyFire(entvars_t* attacker);
 
+	// can the player using this entity physically touch the ent with their hand?
+	// or is there something in the way? (player use code assumes arms have noclip)
+	bool CanReach(CBaseEntity* toucher);
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;
