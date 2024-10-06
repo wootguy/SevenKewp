@@ -910,7 +910,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 		}
 	}
 
-	SetAnimation( PLAYER_DIE );
+	SetAnimation( 18 );
 	
 	m_flRespawnTimer = 0;
 
