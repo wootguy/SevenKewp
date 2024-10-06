@@ -4546,6 +4546,8 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		GiveScorePoints(pevAttacker, flTake);
 	}
 
+	pev->frags -= flTake/100
+
 	// do the damage
 	pev->health = V_min(pev->max_health, pev->health - flTake);
 

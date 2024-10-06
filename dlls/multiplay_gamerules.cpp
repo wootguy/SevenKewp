@@ -556,7 +556,7 @@ BOOL CHalfLifeMultiplay :: AllowAutoTargetCrosshair( void )
 //=========================================================
 int CHalfLifeMultiplay :: IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled )
 {
-	return 1;
+	return 0;
 }
 
 
@@ -578,18 +578,18 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 
 	if ( pVictim->pev == pKiller )  
 	{  // killed self
-		pKiller->frags -= 1;
+		// pKiller->frags -= 1;
 	}
 	else if ( ktmp && ktmp->IsPlayer() )
 	{
 		// if a player dies in a deathmatch game and the killer is a client, award the killer some points
-		pKiller->frags += IPointsForKill( peKiller, pVictim );
+		// pKiller->frags += IPointsForKill( peKiller, pVictim );
 		
 		FireTargets( "game_playerkill", ktmp, ktmp, USE_TOGGLE, 0 );
 	}
 	else
 	{  // killed by the world
-		pKiller->frags -= 1;
+		// pKiller->frags -= 1;
 	}
 
 	// update the scores
