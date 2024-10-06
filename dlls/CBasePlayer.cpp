@@ -910,7 +910,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 		}
 	}
 
-	SetAnimation( 18 );
+	SetAnimation( PLAYER_DIE );
 	
 	m_flRespawnTimer = 0;
 
@@ -1473,6 +1473,7 @@ void CBasePlayer::PlayerDeathThink(void)
 
 	if (pev->deadflag == DEAD_DYING)
 	{
+		pev->sequence = 18;
 		//Once we finish animating, if we're in multiplayer just make a copy of our body right away.
 		if (m_fSequenceFinished && g_pGameRules->IsMultiplayer() && pev->movetype == MOVETYPE_NONE)
 		{
