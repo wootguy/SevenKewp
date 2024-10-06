@@ -910,7 +910,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		CBasePlayer* plr = (CBasePlayer*)pVictim;
 		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
 			plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
-			plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
+			plr->UpdateTeamInfo(plr->GetNameColor(), MSG_ONE, plr->edict());
 		}
 	}
 	if (Killer->IsPlayer()) {
@@ -918,7 +918,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
 			if (!originalKillerName)
 				plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
-			plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
+			plr->UpdateTeamInfo(plr->GetNameColor(), MSG_ONE, plr->edict());
 		}
 	}
 
@@ -931,7 +931,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	// restore player name and team info
 	if (hackedPlayer1) {
 		hackedPlayer1->Rename(hackedKillerOriginalName, false);
-		hackedPlayer1->UpdateTeamInfo();
+		hackedPlayer1->UpdateTeamInfo(hackedPlayer1->GetNameColor());
 		
 		// TODO: this is sending the hacked player double the network packets, and these are already heavy
 		if (hackedPlayer1->tempNameActive) {
@@ -942,11 +942,11 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	if (originalKillerName) {
 		CBasePlayer* plr = (CBasePlayer*)Killer;
 		plr->Rename(originalKillerName, false);
-		plr->UpdateTeamInfo(); // forces name on client to update NOW
+		plr->UpdateTeamInfo(plr->GetNameColor()); // forces name on client to update NOW
 	}
 	if (hackedPlayer2) {
 		hackedPlayer2->Rename(hackedVictimOriginalName, false);
-		hackedPlayer2->UpdateTeamInfo();
+		hackedPlayer2->UpdateTeamInfo(hackedPlayer2->GetNameColor());
 
 		if (hackedPlayer2->tempNameActive) {
 			hackedPlayer2->Rename(hackedPlayer2->m_tempName, false, MSG_ONE, hackedPlayer2->edict());

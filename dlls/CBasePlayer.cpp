@@ -2204,10 +2204,11 @@ void CBasePlayer::UpdateStatusBar()
 		}
 	}
 
-	if ((!fakePlayerInfo.enabled && tempNameActive) || tempNameActive >= 2) {
+	if (tempNameActive >= 10) {
 		// have a to wait a bit before resetting the player name and color because
 		// the client doesn't parse the new status bar text until its next rendering frame.
-		// This can fail if the client fps is less than 10 (or whatever speed this func is called).
+		// With packet loss and lag, this message can arrive at the same time the status bar
+		// was last updated, causing the player name to show instead of the npc name.
 		tempNameActive = 0;
 		Rename(STRING(pev->netname), false, MSG_ONE, edict());
 		UpdateTeamInfo(-1, MSG_ONE, edict());
@@ -5548,7 +5549,23 @@ void CBasePlayer::UpdateScore() {
 	m_lastScoreUpdate = g_engfuncs.pfnTime();
 	m_lastScore = pev->frags;
 
-	UpdateTeamInfo();
+	if (tempNameActive) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			CBaseEntity* pPlayer = UTIL_PlayerByIndex(i);
+
+			if (!pPlayer) {
+				continue;
+			}
+
+			// prevent flashing NPC names while gaining score shooting them
+			UpdateTeamInfo(i == entindex() ? m_tempTeam : -1, MSG_ONE, edict());
+		}
+	}
+	else {
+		UpdateTeamInfo();
+	}
+	
 }
 
 void CBasePlayer::UpdateTeamInfo(int color, int msg_mode, edict_t* dst) {
