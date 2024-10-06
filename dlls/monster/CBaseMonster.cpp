@@ -4542,7 +4542,9 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		pev->velocity = pev->velocity + vecDir * -DamageForce(flDamage);
 	}
 
-	GiveScorePoints(pevAttacker, flTake);
+	if (pevAttacker != pev) {
+		GiveScorePoints(pevAttacker, flTake);
+	}
 
 	// do the damage
 	pev->health = V_min(pev->max_health, pev->health - flTake);
@@ -4671,7 +4673,7 @@ void CBaseMonster::GiveScorePoints(entvars_t* pevAttacker, float damageDealt) {
 	CBaseMonster* attackMon = baseEnt ? baseEnt->MyMonsterPointer() : NULL;
 	
 	// give points proportional to how much damage will be dealt, ignoring overkill damage
-	if (attackMon && (pevAttacker->flags & FL_CLIENT) && pev->health > 0 && (attackMon != baseEnt)) {
+	if (attackMon && (pevAttacker->flags & FL_CLIENT) && pev->health > 0) {
 		const float MONSTER_POINTS_PER_HP = 0.01f; // how many points to give per hitpoint of damage dealt
 		// float damageAmt = damageDealt > 0 ? V_min(damageDealt, pev->health) : V_min(damageDealt, pev->max_health - pev->health);
 		// bool isFriendly = attackMon->IRelationship(this) == R_AL;
