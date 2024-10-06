@@ -3347,7 +3347,7 @@ void CBasePlayer::Spawn( void )
 		GiveNamedItem( "weapon_displacer" );
 		GiveNamedItem( "weapon_shockrifle" );
 		GiveNamedItem( "weapon_sporelauncher" );
-		GiveNamedItem("item_longjump");
+
 }
 
 void CBasePlayer :: Precache( void )
