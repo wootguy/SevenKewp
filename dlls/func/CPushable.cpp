@@ -38,7 +38,7 @@ public:
 	//	virtual void	SetActivator( CBaseEntity *pActivator ) { m_pPusher = pActivator; }
 	BOOL	IsBreakable() { return pev->spawnflags & SF_PUSH_BREAKABLE; }
 
-	const char* DisplayName() { return m_displayName ? STRING(m_displayName) : "Pushable"; }
+	const char* DisplayName();
 
 	virtual int	ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE; }
 	virtual int		Save(CSave& save);
@@ -359,6 +359,13 @@ void CPushable::PostMove(bool clampSpeed) {
 		else
 			STOP_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound]);
 	}
+}
+
+const char* CPushable::DisplayName() {
+	if (m_displayName) {
+		return STRING(m_displayName);
+	}
+	return Explodable() ? "Pushable Explosives" : "Pushable";
 }
 
 void CPushable::Lift() {

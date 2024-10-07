@@ -1997,42 +1997,98 @@ void CBasePlayer::UpdateStatusBar()
 	fakePlayerInfo.name = "\\no name\\";
 
 	std::string name;
+	bool lookingAtStatusEnt = false;
 
-	if (tr.flFraction != 1.0)
+	if (tr.flFraction != 1.0 && !FNullEnt( tr.pHit ) )
 	{
-		if ( !FNullEnt( tr.pHit ) )
+		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
+
+		bool ignoreMonster = FClassnameIs(pEntity->pev, "monster_furniture");
+
+		if (pEntity->Classify() == CLASS_PLAYER )
 		{
-			CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
+			newSBarState[ SBAR_ID_TARGETNAME ] = ENTINDEX( pEntity->edict() );
+			strcpy_safe( sbuf1, "1 %p1", SBAR_STRING_SIZE );
+			strcpy_safe( sbuf0, "2 Health: %i2\n3 Armor: %i3", SBAR_STRING_SIZE);
 
-			bool ignoreMonster = FClassnameIs(pEntity->pev, "monster_furniture");
+			newSBarState[ SBAR_ID_TARGETHEALTH ] = pEntity->pev->health;
+			newSBarState[ SBAR_ID_TARGETARMOR ] = pEntity->pev->armorvalue;
 
-			if (pEntity->Classify() == CLASS_PLAYER )
-			{
-				newSBarState[ SBAR_ID_TARGETNAME ] = ENTINDEX( pEntity->edict() );
-				strcpy_safe( sbuf1, "1 %p1", SBAR_STRING_SIZE );
-				strcpy_safe( sbuf0, "2 Health: %i2\n3 Armor: %i3", SBAR_STRING_SIZE);
+			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+			lookingAtStatusEnt = true;
+		}
+		else if (pEntity->IsMonster() && pEntity->IsAlive() && !ignoreMonster) {
+			name = replaceString(pEntity->DisplayName(), "\n", " ");
+			int hp = roundf(pEntity->pev->health);
 
-				newSBarState[ SBAR_ID_TARGETHEALTH ] = pEntity->pev->health;
-				newSBarState[ SBAR_ID_TARGETARMOR ] = pEntity->pev->armorvalue;
+			int irel = IRelationship(pEntity);
 
-				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
-			}
-			else if (pEntity->IsMonster() && pEntity->IsAlive() && !ignoreMonster) {
-				name = replaceString(pEntity->DisplayName(), "\n", " ");
-				int hp = roundf(pEntity->pev->health);
-
-				int irel = IRelationship(pEntity);
-
-				fakePlayerInfo.enabled = true;
-				fakePlayerInfo.color = NEUTRAL_TEAM_COLOR;
-				fakePlayerInfo.name = name.c_str();
+			fakePlayerInfo.enabled = true;
+			fakePlayerInfo.color = NEUTRAL_TEAM_COLOR;
+			fakePlayerInfo.name = name.c_str();
 				
-				if (irel == R_AL) {
-					fakePlayerInfo.color = FRIEND_TEAM_COLOR;
+			if (irel == R_AL) {
+				fakePlayerInfo.color = FRIEND_TEAM_COLOR;
+			}
+			else if (irel == R_DL || irel == R_HT || irel == R_NM) {
+				fakePlayerInfo.color = ENEMY_TEAM_COLOR;
+			}
+
+			std::string desc = "";
+			if (name.size() > 32) {
+				// player names can only be 32 chars long
+				desc = name.substr(31).c_str();
+			}
+
+			strcpy_safe(sbuf1, UTIL_VarArgs("1 %%p1%s", desc.c_str()), SBAR_STRING_SIZE);
+
+			if ((pEntity->pev->flags & FL_GODMODE) || (pEntity->pev->takedamage == DAMAGE_NO) || pEntity->pev->health > 2147483647) {
+				strcpy_safe(sbuf0, "2 Health: Invincible", SBAR_STRING_SIZE);
+				hp = 1; // client won't show health text if this is an insane value
+			}
+			else if (hp == 0) {
+				strcpy_safe(sbuf0, "2 Health: 0", SBAR_STRING_SIZE);
+				hp = 1; // client won't show health text if this is 0
+			}
+			else {
+				strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
+			}
+
+			newSBarState[SBAR_ID_TARGETNAME] = entindex();
+			newSBarState[SBAR_ID_TARGETHEALTH] = hp;
+
+			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+			lookingAtStatusEnt = true;
+		}
+		else if (pEntity->IsBreakable() && !(pEntity->pev->spawnflags & SF_BREAK_TRIGGER_ONLY)) {
+
+			name = replaceString(pEntity->DisplayName(), "\n", " ");
+			int hp = roundf(pEntity->pev->health);
+			int irel = IRelationship(pEntity);
+
+			const char* hint = "";
+			if (irel == R_AL) {
+				hint = " (wrench repairs)";
+			}
+			else if (pEntity->pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) {
+				hint = " (explosives only)";
+			}
+			else if (pEntity->pev->spawnflags & SF_BREAK_INSTANT) {
+				CBreakable* breakable = (CBreakable*)pEntity;
+
+				if (breakable->m_instantBreakWeapon == BREAK_INSTANT_WRENCH) {
+					hint = " (use wrench)";
 				}
-				else if (irel == R_DL || irel == R_HT || irel == R_NM) {
-					fakePlayerInfo.color = ENEMY_TEAM_COLOR;
+				else {
+					hint = " (use crowbar)";
 				}
+			}
+
+			if (irel == R_AL) {
+				// use fake player info
+				fakePlayerInfo.enabled = true;
+				fakePlayerInfo.color = FRIEND_TEAM_COLOR;
+				fakePlayerInfo.name = name.c_str();
 
 				std::string desc = "";
 				if (name.size() > 32) {
@@ -2040,101 +2096,49 @@ void CBasePlayer::UpdateStatusBar()
 					desc = name.substr(31).c_str();
 				}
 
-				strcpy_safe(sbuf1, UTIL_VarArgs("1 %%p1%s", desc.c_str()), SBAR_STRING_SIZE);
-
-				if ((pEntity->pev->flags & FL_GODMODE) || (pEntity->pev->takedamage == DAMAGE_NO) || pEntity->pev->health > 2147483647) {
-					strcpy_safe(sbuf0, "2 Health: Invincible", SBAR_STRING_SIZE);
-					hp = 1; // client won't show health text if this is an insane value
-				}
-				else if (hp == 0) {
-					strcpy_safe(sbuf0, "2 Health: 0", SBAR_STRING_SIZE);
-					hp = 1; // client won't show health text if this is 0
-				}
-				else {
-					strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
-				}
-
 				newSBarState[SBAR_ID_TARGETNAME] = entindex();
-				newSBarState[SBAR_ID_TARGETHEALTH] = hp;
-
-				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+				strcpy_safe(sbuf1, UTIL_VarArgs("1 %%p1%s", desc.c_str()), SBAR_STRING_SIZE);
 			}
-			else if (pEntity->IsBreakable() && !(pEntity->pev->spawnflags & SF_BREAK_TRIGGER_ONLY)) {
-
-				name = replaceString(pEntity->DisplayName(), "\n", " ");
-				int hp = roundf(pEntity->pev->health);
-				int irel = IRelationship(pEntity);
-
-				const char* hint = "";
-				if (irel == R_AL) {
-					hint = " (wrench repairs)";
-				}
-				else if (pEntity->pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) {
-					hint = " (explosives only)";
-				}
-				else if (pEntity->pev->spawnflags & SF_BREAK_INSTANT) {
-					CBreakable* breakable = (CBreakable*)pEntity;
-
-					if (breakable->m_instantBreakWeapon == BREAK_INSTANT_WRENCH) {
-						hint = " (use wrench)";
-					}
-					else {
-						hint = " (use crowbar)";
-					}
-				}
-
-				if (irel == R_AL) {
-					// use fake player info
-					fakePlayerInfo.enabled = true;
-					fakePlayerInfo.color = FRIEND_TEAM_COLOR;
-					fakePlayerInfo.name = name.c_str();
-
-					std::string desc = "";
-					if (name.size() > 32) {
-						// player names can only be 32 chars long
-						desc = name.substr(31).c_str();
-					}
-
-					newSBarState[SBAR_ID_TARGETNAME] = entindex();
-					strcpy_safe(sbuf1, UTIL_VarArgs("1 %%p1%s", desc.c_str()), SBAR_STRING_SIZE);
-				}
-				else {
-					strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name.c_str(), hint), SBAR_STRING_SIZE);
-					newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
-				}
-				
-				strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
-				newSBarState[SBAR_ID_TARGETHEALTH] = hp;
-
-				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
-			}
-			else if (FClassnameIs(pEntity->pev, "func_pushable")) {
-
-				name = replaceString(pEntity->DisplayName(), "\n", " ");
-
-				const char* hint = "";
-				if (pEntity->pev->spawnflags & SF_PUSH_LIFTABLE) {
-					strcpy_safe(sbuf0, "2 Press USE key to lift", SBAR_STRING_SIZE);
-				}
-				else {
-					strcpy_safe(sbuf0, "2 Cannot lift", SBAR_STRING_SIZE);
-				}
-
+			else {
 				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name.c_str(), hint), SBAR_STRING_SIZE);
-
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
-				newSBarState[SBAR_ID_TARGETHEALTH] = 1;
-
-				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			}
+				
+			strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
+			newSBarState[SBAR_ID_TARGETHEALTH] = hp;
+
+			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+			lookingAtStatusEnt = true;
 		}
-		else if ( m_flStatusBarDisappearDelay > gpGlobals->time )
-		{
-			// hold the values for a short amount of time after viewing the object
-			newSBarState[ SBAR_ID_TARGETNAME ] = m_izSBarState[ SBAR_ID_TARGETNAME ];
-			newSBarState[ SBAR_ID_TARGETHEALTH ] = m_izSBarState[ SBAR_ID_TARGETHEALTH ];
-			newSBarState[ SBAR_ID_TARGETARMOR ] = m_izSBarState[ SBAR_ID_TARGETARMOR ];
+		else if (FClassnameIs(pEntity->pev, "func_pushable")) {
+
+			name = replaceString(pEntity->DisplayName(), "\n", " ");
+
+			const char* hint = "";
+			if (pEntity->pev->spawnflags & SF_PUSH_LIFTABLE) {
+				strcpy_safe(sbuf0, "2 Press USE key to lift", SBAR_STRING_SIZE);
+			}
+			else {
+				strcpy_safe(sbuf0, "2 Cannot lift", SBAR_STRING_SIZE);
+			}
+
+			strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name.c_str(), hint), SBAR_STRING_SIZE);
+
+			newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
+			newSBarState[SBAR_ID_TARGETHEALTH] = 1;
+
+			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+			lookingAtStatusEnt = true;
 		}
+		
+	}
+	
+	if ( !lookingAtStatusEnt && m_flStatusBarDisappearDelay > gpGlobals->time )
+	{
+		// hold the values for a short amount of time after viewing the object
+		newSBarState[ SBAR_ID_TARGETNAME ] = m_izSBarState[ SBAR_ID_TARGETNAME ];
+		newSBarState[ SBAR_ID_TARGETHEALTH ] = m_izSBarState[ SBAR_ID_TARGETHEALTH ];
+		newSBarState[ SBAR_ID_TARGETARMOR ] = m_izSBarState[ SBAR_ID_TARGETARMOR ];
 	}
 
 	BOOL bForceResend = FALSE;
@@ -2158,7 +2162,7 @@ void CBasePlayer::UpdateStatusBar()
 		tempNameActive++;
 	}
 
-	bool statusChanged = false;
+	bool statusChanged = bForceResend;
 	for (int i = 1; i < SBAR_END; i++) {
 		if (newSBarState[i] != m_izSBarState[i]) {
 			statusChanged = true;
