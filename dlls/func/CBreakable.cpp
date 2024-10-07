@@ -426,6 +426,13 @@ void CBreakable::DamageSound(void)
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, rgpsz[RANDOM_LONG(0, i - 1)], fvol, ATTN_NORM, 0, pitch);
 }
 
+const char* CBreakable::DisplayName() {
+	if (m_displayName) {
+		return STRING(m_displayName);
+	}
+	return Explodable() ? "Explosives" : "Breakable";
+}
+
 void CBreakable::BreakTouch(CBaseEntity* pOther)
 {
 	float flDamage;
