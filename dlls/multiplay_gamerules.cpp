@@ -932,10 +932,14 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		}
 	}
 
+	// client crash if the killer name is too long
+	static char shortened_killer_name[30]; // client only has 32 char buffer which prepends "d_"
+	strcpy_safe(shortened_killer_name, killer_weapon_name, 30);
+
 	MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
-		WRITE_BYTE( killer_index );						// the killer
-		WRITE_BYTE(victim_index);		// the victim
-		WRITE_STRING( killer_weapon_name );		// what they were killed by (should this be a string?)
+		WRITE_BYTE( killer_index );				// the killer
+		WRITE_BYTE(victim_index);				// the victim
+		WRITE_STRING(shortened_killer_name);	// what they were killed by (should this be a string?)
 	MESSAGE_END();
 
 	// restore player name and team info
