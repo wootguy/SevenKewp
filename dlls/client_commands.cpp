@@ -476,7 +476,7 @@ void ClientCommand(edict_t* pEntity)
 				pPlayer->pev->fixangle = TRUE;
 
 				// notify other clients of player switching to spectator mode
-				UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s switched to spectator mode\n",
+				UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s is now spectating\n",
 					(pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "\\disconnected\\"));
 			}
 			else
