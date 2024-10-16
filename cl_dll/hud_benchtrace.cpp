@@ -37,7 +37,7 @@ struct trace_options_s
 	unsigned char a[7];
 };
 
-struct TraceReturn
+struct
 {
 	DWORD			dwAddress;
 	unsigned long	ulStatus, ulRoundTripTime;

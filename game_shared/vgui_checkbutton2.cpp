@@ -7,7 +7,6 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include "Platform.h"
 #include "vgui_checkbutton2.h"
 #include "vgui_loadtga.h"
 

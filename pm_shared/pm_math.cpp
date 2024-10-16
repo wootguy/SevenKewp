@@ -29,6 +29,9 @@
 #pragma warning(disable : 4244)
 #endif
 
+#ifndef DISABLE_VEC_ORIGIN
+vec3_t vec3_origin = {0,0,0};
+#endif
 int nanmask = 255<<23;
 
 float	anglemod(float a)
@@ -108,7 +111,7 @@ void AngleVectorsTranspose (const vec3_t angles, vec3_t forward, vec3_t right, v
 }
 
 #ifndef DISABLE_VEC_FUNCS
-void AngleMatrix (const float* angles, float (*matrix)[4] )
+void AngleMatrix (const vec3_t angles, float (*matrix)[4] )
 {
 	float		angle;
 	float		sr, sp, sy, cr, cp, cy;
@@ -169,7 +172,7 @@ void AngleIMatrix (const vec3_t angles, float matrix[3][4] )
 }
 #endif
 
-void NormalizeAngles( float* angles )
+void NormalizeAngles( float *angles )
 {
 	int i;
 	// Normalize angles
@@ -248,14 +251,14 @@ float AngleBetweenVectors( const vec3_t v1, const vec3_t v2 )
 }
 
 #ifndef DISABLE_VEC_FUNCS
-void VectorTransform (const float* in1, float in2[3][4], float* out)
+void VectorTransform (const vec3_t in1, float in2[3][4], vec3_t out)
 {
 	out[0] = DotProduct(in1, in2[0]) + in2[0][3];
 	out[1] = DotProduct(in1, in2[1]) + in2[1][3];
 	out[2] = DotProduct(in1, in2[2]) + in2[2][3];
 }
 
-int VectorCompare (const float* v1, const float* v2)
+int VectorCompare (const vec3_t v1, const vec3_t v2)
 {
 	int		i;
 	
@@ -266,7 +269,7 @@ int VectorCompare (const float* v1, const float* v2)
 	return 1;
 }
 
-void VectorMA (const float* veca, float scale, const float* vecb, float* vecc)
+void VectorMA (const vec3_t veca, float scale, const vec3_t vecb, vec3_t vecc)
 {
 	vecc[0] = veca[0] + scale*vecb[0];
 	vecc[1] = veca[1] + scale*vecb[1];
@@ -302,7 +305,7 @@ void _VectorCopy (vec3_t in, vec3_t out)
 }
 
 #ifndef DISABLE_VEC_FUNCS
-void CrossProduct (const float* v1, const float* v2, float* cross)
+void CrossProduct (const vec3_t v1, const vec3_t v2, vec3_t cross)
 {
 	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
 	cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
@@ -310,8 +313,10 @@ void CrossProduct (const float* v1, const float* v2, float* cross)
 }
 #endif
 
+double sqrt(double x);
+
 #ifndef DISABLE_VEC_FUNCS
-float Length(const float* v)
+float Length(const vec3_t v)
 {
 	int		i;
 	float	length = 0.0f;
@@ -332,7 +337,7 @@ float Distance(const float* v1, const float* v2)
 }
 
 #ifndef DISABLE_VEC_FUNCS
-float VectorNormalize (float* v)
+float VectorNormalize (vec3_t v)
 {
 	float	length, ilength;
 
@@ -351,14 +356,14 @@ float VectorNormalize (float* v)
 
 }
 
-void VectorInverse (float* v)
+void VectorInverse (vec3_t v)
 {
 	v[0] = -v[0];
 	v[1] = -v[1];
 	v[2] = -v[2];
 }
 
-void VectorScale (const float* in, float scale, float* out)
+void VectorScale (const vec3_t in, vec_t scale, vec3_t out)
 {
 	out[0] = in[0]*scale;
 	out[1] = in[1]*scale;
@@ -399,9 +404,9 @@ void VectorMatrix( vec3_t forward, vec3_t right, vec3_t up)
 
 
 #ifndef DISABLE_VEC_FUNCS
-void VectorAngles( const float* forward, float* angles )
+void VectorAngles( const vec3_t forward, vec3_t angles )
 {
-	double	tmp, yaw, pitch;
+	float	tmp, yaw, pitch;
 	
 	if (forward[1] == 0 && forward[0] == 0)
 	{

@@ -18,6 +18,7 @@
 #include <assert.h>
 #include "mathlib.h"
 #include "const.h"
+#include "minmax.h"
 #include "usercmd.h"
 #include "pm_defs.h"
 #include "pm_shared.h"
@@ -128,10 +129,7 @@ typedef struct hull_s
 #define PLAYER_DUCKING_MULTIPLIER 0.333
 
 // double to float warning
-#ifdef _WIN32
 #pragma warning(disable : 4244)
-#endif
-
 // up / down
 #define	PITCH	0
 // left / right
@@ -511,7 +509,7 @@ void PM_UpdateStepSound( void )
 	float fvol;
 	vec3_t knee;
 	vec3_t feet;
-	//vec3_t center;
+	vec3_t center;
 	float height;
 	float speed;
 	float velrun;
@@ -531,7 +529,8 @@ void PM_UpdateStepSound( void )
 	speed = Length( pmove->velocity );
 
 	// determine if we are on a ladder
-	fLadder = ( pmove->movetype == MOVETYPE_FLY );// IsOnLadder();
+	//The Barnacle Grapple sets the FL_IMMUNE_LAVA flag to indicate that the player is not on a ladder - Solokiller
+	fLadder = ( pmove->movetype == MOVETYPE_FLY ) && !( pmove->flags & FL_IMMUNE_LAVA );// IsOnLadder();
 
 	// UNDONE: need defined numbers for run, walk, crouch, crouch run velocities!!!!	
 	if ( ( pmove->flags & FL_DUCKING) || fLadder )
@@ -556,7 +555,7 @@ void PM_UpdateStepSound( void )
 	{
 		fWalking = speed < velrun;		
 
-		//VectorCopy( pmove->origin, center );
+		VectorCopy( pmove->origin, center );
 		VectorCopy( pmove->origin, knee );
 		VectorCopy( pmove->origin, feet );
 
@@ -846,7 +845,7 @@ int PM_FlyMove (void)
 		//  are blocked by floor and wall.
 		if (trace.allsolid)
 		{	// entity is trapped in another solid
-			VectorCopy (shared_vec3_origin, pmove->velocity);
+			VectorCopy (vec3_origin, pmove->velocity);
 			//Con_DPrintf("Trapped 4\n");
 			return 4;
 		}
@@ -896,7 +895,7 @@ int PM_FlyMove (void)
 		if (numplanes >= MAX_CLIP_PLANES)
 		{	// this shouldn't really happen
 			//  Stop our movement if so.
-			VectorCopy (shared_vec3_origin, pmove->velocity);
+			VectorCopy (vec3_origin, pmove->velocity);
 			//Con_DPrintf("Too many planes 4\n");
 
 			break;
@@ -912,9 +911,9 @@ int PM_FlyMove (void)
 		// relfect player velocity 
 		// Only give this a try for first impact plane because you can get yourself stuck in an acute corner by jumping in place
 		//  and pressing forward and nobody was really using this bounce/reflection feature anyway...
-		if (numplanes == 1 &&
-			pmove->movetype == MOVETYPE_WALK &&
-			((pmove->onground == -1) || (pmove->friction != 1)))
+		if (	numplanes == 1 &&
+				pmove->movetype == MOVETYPE_WALK &&
+				((pmove->onground == -1) || (pmove->friction != 1)) )
 		{
 			for ( i = 0; i < numplanes; i++ )
 			{
@@ -961,7 +960,7 @@ int PM_FlyMove (void)
 				if (numplanes != 2)
 				{
 					//Con_Printf ("clip velocity, numplanes == %i\n",numplanes);
-					VectorCopy (shared_vec3_origin, pmove->velocity);
+					VectorCopy (vec3_origin, pmove->velocity);
 					//Con_DPrintf("Trapped 4\n");
 
 					break;
@@ -978,7 +977,7 @@ int PM_FlyMove (void)
 			if (DotProduct (pmove->velocity, primal_velocity) <= 0)
 			{
 				//Con_DPrintf("Back\n");
-				VectorCopy (shared_vec3_origin, pmove->velocity);
+				VectorCopy (vec3_origin, pmove->velocity);
 				break;
 			}
 		}
@@ -986,7 +985,7 @@ int PM_FlyMove (void)
 
 	if ( allFraction == 0 )
 	{
-		VectorCopy (shared_vec3_origin, pmove->velocity);
+		VectorCopy (vec3_origin, pmove->velocity);
 		//Con_DPrintf( "Don't stick\n" );
 	}
 
@@ -1044,6 +1043,7 @@ Only used by players.  Moves along the ground when player is a MOVETYPE_WALK.
 */
 void PM_WalkMove ()
 {
+	int			clip;
 	int			oldonground;
 	int i;
 
@@ -1053,7 +1053,7 @@ void PM_WalkMove ()
 	vec3_t		wishdir;
 	float		wishspeed;
 
-	vec3_t dest;
+	vec3_t dest, start;
 	vec3_t original, originalvel;
 	vec3_t down, downvel;
 	float downdist, updist;
@@ -1116,7 +1116,7 @@ void PM_WalkMove ()
 	dest[2] = pmove->origin[2];
 
 	// first try moving directly to the next spot
-	//VectorCopy (dest, start);
+	VectorCopy (dest, start);
 	trace = pmove->PM_PlayerTrace (pmove->origin, dest, PM_NORMAL, -1 );
 	// If we made it all the way, then copy trace end
 	//  as new player position.
@@ -1139,7 +1139,7 @@ void PM_WalkMove ()
 	VectorCopy (pmove->velocity, originalvel);  //  velocity.
 
 	// Slide move
-	PM_FlyMove ();
+	clip = PM_FlyMove ();
 
 	// Copy the results out
 	VectorCopy (pmove->origin  , down);
@@ -1164,7 +1164,7 @@ void PM_WalkMove ()
 	}
 
 // slide move the rest of the way.
-	PM_FlyMove ();
+	clip = PM_FlyMove ();
 
 // Now try going back down from the end point
 //  press down the stepheight
@@ -1788,7 +1788,7 @@ void PM_SpectatorMove (void)
 		{
 			VectorCopy( vJumpOrigin, pmove->origin );
 			VectorCopy( vJumpAngles, pmove->angles );
-			VectorCopy(shared_vec3_origin, pmove->velocity );
+			VectorCopy( vec3_origin, pmove->velocity );
 			iJumpSpectator	= 0;
 			return;
 		}
@@ -1798,7 +1798,7 @@ void PM_SpectatorMove (void)
 		speed = Length (pmove->velocity);
 		if (speed < 1)
 		{
-			VectorCopy (shared_vec3_origin, pmove->velocity)
+			VectorCopy (vec3_origin, pmove->velocity)
 		}
 		else
 		{
@@ -1882,7 +1882,7 @@ void PM_SpectatorMove (void)
 		VectorCopy( pmove->physents[target].origin, pmove->origin );
 
 		// no velocity
-		VectorCopy(shared_vec3_origin, pmove->velocity );
+		VectorCopy( vec3_origin, pmove->velocity );
 	}
 }
 
@@ -1979,6 +1979,9 @@ void PM_Duck( void )
 
 	int buttonsChanged	= ( pmove->oldbuttons ^ pmove->cmd.buttons );	// These buttons have changed this frame
 	int nButtonPressed	=  buttonsChanged & pmove->cmd.buttons;		// The changed ones still down are "pressed"
+
+	int duckchange		= buttonsChanged & IN_DUCK ? 1 : 0;
+	int duckpressed		= nButtonPressed & IN_DUCK ? 1 : 0;
 
 	if ( pmove->cmd.buttons & IN_DUCK )
 	{
@@ -2320,8 +2323,8 @@ void PM_Physics_Toss()
 	// If on ground and not moving, return.
 	if ( pmove->onground != -1 )
 	{
-		if (VectorCompare(pmove->basevelocity, shared_vec3_origin) &&
-		    VectorCompare(pmove->velocity, shared_vec3_origin))
+		if (VectorCompare(pmove->basevelocity, vec3_origin) &&
+		    VectorCompare(pmove->velocity, vec3_origin))
 			return;
 	}
 
@@ -2350,7 +2353,7 @@ void PM_Physics_Toss()
 	{	
 		// entity is trapped in another solid
 		pmove->onground = trace.ent;
-		VectorCopy (shared_vec3_origin, pmove->velocity);
+		VectorCopy (vec3_origin, pmove->velocity);
 		return;
 	}
 	
@@ -2391,7 +2394,7 @@ void PM_Physics_Toss()
 		if (vel < (30 * 30) || (pmove->movetype != MOVETYPE_BOUNCE && pmove->movetype != MOVETYPE_BOUNCEMISSILE))
 		{
 			pmove->onground = trace.ent;
-			VectorCopy (shared_vec3_origin, pmove->velocity);
+			VectorCopy (vec3_origin, pmove->velocity);
 		}
 		else
 		{
@@ -2431,17 +2434,46 @@ void PM_NoClip()
 	}
 	wishvel[2] += pmove->cmd.upmove;
 
-	// prevent sticking to the ground when noclip is enabled while on the ground
-	if (pmove->onground != -1 && fabs(wishvel[2]) > 10) {
-		pmove->origin[2] += wishvel[2] > 0 ? 2.0f : -2.0f;
-	}
-
 	VectorMA (pmove->origin, pmove->frametime, wishvel, pmove->origin);
-
+	
 	// Zero out the velocity so that we don't accumulate a huge downward velocity from
 	//  gravity, etc.
 	VectorClear( pmove->velocity );
 
+}
+
+// Only allow bunny jumping up to 1.7x server / player maxspeed setting
+#define BUNNYJUMP_MAX_SPEED_FACTOR 1.7f
+
+//-----------------------------------------------------------------------------
+// Purpose: Corrects bunny jumping ( where player initiates a bunny jump before other
+//  movement logic runs, thus making onground == -1 thus making PM_Friction get skipped and
+//  running PM_AirMove, which doesn't crop velocity to maxspeed like the ground / other
+//  movement logic does.
+//-----------------------------------------------------------------------------
+void PM_PreventMegaBunnyJumping( void )
+{
+	// Current player speed
+	float spd;
+	// If we have to crop, apply this cropping fraction to velocity
+	float fraction;
+	// Speed at which bunny jumping is limited
+	float maxscaledspeed;
+
+	maxscaledspeed = BUNNYJUMP_MAX_SPEED_FACTOR * pmove->maxspeed;
+
+	// Don't divide by zero
+	if ( maxscaledspeed <= 0.0f )
+		return;
+
+	spd = Length( pmove->velocity );
+
+	if ( spd <= maxscaledspeed )
+		return;
+
+	fraction = ( maxscaledspeed / spd ) * 0.65; //Returns the modifier for the velocity
+	
+	VectorScale( pmove->velocity, fraction, pmove->velocity ); //Crop it down!.
 }
 
 /*
@@ -2534,6 +2566,8 @@ void PM_Jump (void)
 
 	// In the air now.
     pmove->onground = -1;
+
+	//PM_PreventMegaBunnyJumping();
 
 	if ( tfc )
 	{
@@ -2638,7 +2672,7 @@ void PM_CheckWaterJump (void)
 	{
 		vecStart[2] += pmove->player_maxs[ savehull ][2] - WJ_HEIGHT;
 		VectorMA( vecStart, 24, flatforward, vecEnd );
-		VectorMA(shared_vec3_origin, -50, tr.plane.normal, pmove->movedir );
+		VectorMA( vec3_origin, -50, tr.plane.normal, pmove->movedir );
 
 		tr = pmove->PM_PlayerTrace( vecStart, vecEnd, PM_NORMAL, -1 );
 		if ( tr.fraction == 1.0 )
@@ -2827,14 +2861,16 @@ void PM_CheckParamters( void )
 		pmove->maxspeed = V_min( maxspeed, pmove->maxspeed );
 	}
 
+#if !defined( _TFC )
 	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
 	//
 	// JoshA: Moved this to CheckParamters rather than working on the velocity,
 	// as otherwise it affects every integration step incorrectly.
-	if ((pmove->onground != -1) && (pmove->cmd.buttons & IN_USE))
+	if ( ( pmove->onground != -1 ) && ( pmove->cmd.buttons & IN_USE) )
 	{
 		pmove->maxspeed *= 1.0f / 3.0f;
 	}
+#endif
 
 	if ( ( spd != 0.0 ) &&
 		 ( spd > pmove->maxspeed ) )
@@ -2957,19 +2993,19 @@ void PM_PlayerMove ( qboolean server )
 	}
 
 	// Always try and unstick us unless we are in NOCLIP mode
-	if ( pmove->movetype != MOVETYPE_NOCLIP && pmove->movetype != MOVETYPE_NONE )
-	{
-		if ( PM_CheckStuck() )
-		{
+    if ( pmove->movetype != MOVETYPE_NOCLIP && pmove->movetype != MOVETYPE_NONE )
+    {
+        if ( PM_CheckStuck() )
+        {
 			//Let the user try to duck to get unstuck
-			PM_Duck();
+            PM_Duck();
 
-			if (PM_CheckStuck())
-			{
-				return;  // Can't move, we're stuck
-			}
-		}
-	}
+            if ( PM_CheckStuck() )
+            {
+                return;  // Can't move, we're stuck
+            }
+        }
+    }
 
 	// Now that we are "unstuck", see where we are ( waterlevel and type, pmove->onground ).
 	PM_CatagorizePosition();
@@ -3314,8 +3350,8 @@ void PM_Move ( struct playermove_s *ppmove, int server )
 		pmove->flags &= ~FL_ONGROUND;
 	}
 
-	// reset friction after each movement. FrictionModifier Triggers work still.
-	if ( pmove->movetype == MOVETYPE_WALK  )
+	// In single player, reset friction after each movement to FrictionModifier Triggers work still.
+	if ( !pmove->multiplayer && ( pmove->movetype == MOVETYPE_WALK  ) )
 	{
 		pmove->friction = 1.0f;
 	}
