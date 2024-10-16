@@ -949,7 +949,7 @@ int CBaseEntity::IRelationship(int attackerClass, int victimClass) {
 		/*ALIENPASSIVE*/{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO,	R_NO,	R_NO	},
-		/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_DL	},
+		/*ALIENPREDATO*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO,	R_DL,	R_DL	},
 		/*INSECT*/		{ R_FR	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*PLAYERALLY*/	{ R_NO	,R_DL	,R_AL	,R_AL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_NO,	R_DL,	R_DL	},
 		/*PBIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_DL,	R_DL,	R_DL	},
@@ -986,4 +986,8 @@ bool CBaseEntity::CanReach(CBaseEntity* toucher) {
 	bool enteredItemBox = boxesIntersect(pev->absmin, pev->absmax, tr.vecEndPos, tr.vecEndPos);
 	
 	return hitItemSurface || enteredItemBox;
+}
+
+bool CBaseEntity::IsVisibleTo(edict_t* player) {
+	return m_visiblePlayers & PLRBIT(player);
 }

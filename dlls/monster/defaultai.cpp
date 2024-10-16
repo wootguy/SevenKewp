@@ -485,7 +485,7 @@ Schedule_t	slRangeAttack1[] =
 		ARRAYSIZE ( tlRangeAttack1 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
-		bits_COND_LIGHT_DAMAGE		|
+		//bits_COND_LIGHT_DAMAGE		|	// TODO: may want to selectively disable this per monster
 		bits_COND_HEAVY_DAMAGE		|
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_NO_AMMO_LOADED	|
@@ -511,7 +511,7 @@ Schedule_t	slRangeAttack2[] =
 		ARRAYSIZE ( tlRangeAttack2 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
-		bits_COND_LIGHT_DAMAGE		|
+		//bits_COND_LIGHT_DAMAGE		|	// TODO: may want to selectively disable this per monster
 		bits_COND_HEAVY_DAMAGE		|
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_HEAR_SOUND,

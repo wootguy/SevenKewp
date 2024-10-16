@@ -37,11 +37,18 @@ public:
 
 		UTIL_SetSize(pev, Vector(-16, -16, -16), Vector(16, 16, 16));
 
-		pev->origin.z += 16;
+		pev->angles.x -= 90;
+
+		// align to the floor/ceiling (TODO: this is stupid, ripent the maps)
+		MAKE_VECTORS(pev->angles);
+		if (gpGlobals->v_up.z > 0.9f) {
+			pev->origin.z -= 16;
+		}
+		else if (gpGlobals->v_up.z < -0.9f) {
+			pev->origin.z += 16;
+		}
 
 		UTIL_SetOrigin(pev, pev->origin);
-
-		pev->angles.x -= 90;
 
 		pev->sequence = SPOREAMMO_SPAWNDN;
 

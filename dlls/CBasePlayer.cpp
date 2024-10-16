@@ -2019,7 +2019,7 @@ void CBasePlayer::UpdateStatusBar()
 		}
 		else if (pEntity->IsMonster() && pEntity->IsAlive() && !ignoreMonster) {
 			name = replaceString(pEntity->DisplayName(), "\n", " ");
-			int hp = roundf(pEntity->pev->health);
+			long long hp = roundf(pEntity->pev->health);
 
 			int irel = IRelationship(pEntity);
 
@@ -2051,7 +2051,8 @@ void CBasePlayer::UpdateStatusBar()
 				hp = 1; // client won't show health text if this is 0
 			}
 			else {
-				strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
+				strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %lld", hp), SBAR_STRING_SIZE);
+				hp = 1;
 			}
 
 			newSBarState[SBAR_ID_TARGETNAME] = entindex();

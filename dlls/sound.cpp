@@ -458,7 +458,7 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz)
 #define MAX_EDICT_BITS 11
 
 void StartSound(edict_t* entity, int channel, const char* sample, float fvolume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets)
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, bool reliable)
 {
 	int sound_num;
 	int field_mask;
@@ -531,7 +531,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 		}
 
 		// TODO: should only consider PAS (can hear reload sounds but only distant gunshots)
-		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, plent);
+		MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, plent);
 		WRITE_BYTES(msgbuffer, msgSz);
 		MESSAGE_END();
 		//anyMessagesWritten = true;
@@ -585,8 +585,30 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		else
 			ALERT( at_aiconsole, "Unable to find %s in sentences.txt\n", sample );
 	}
-	else
-		EMIT_SOUND_DYN2(entity, channel, sample, volume, attenuation, flags, pitch);
+	else {
+		CBaseEntity* bent = CBaseEntity::Instance(entity);
+		if (bent && channel == CHAN_STATIC) {
+			// the static channel is special because it ignores the PAS. However, clients won't hear
+			// the sound if they can't see the entity, even if it's nearby. This block will emit
+			// positional sounds for those cases. This has the drawback of sound not following the
+			// entity, but is better than hearing nothing at all.
+			Vector ori = entity->v.origin + (entity->v.maxs + entity->v.mins) * 0.5f;
+
+			for (int i = 1; i <= gpGlobals->maxClients; i++) {
+				edict_t* plr = INDEXENT(i);
+
+				if (IsValidPlayer(plr) && !bent->IsVisibleTo(plr)) {
+					ambientsound_msg(entity, ori, sample, volume, attenuation, flags, pitch, MSG_ONE, plr);
+				}
+			}
+
+			// play the sound normally for players that can see the ent
+			StartSound(entity, channel, sample, volume, attenuation, flags, pitch, ori, bent->m_visiblePlayers, true);
+		}
+		else {
+			EMIT_SOUND_DYN2(entity, channel, sample, volume, attenuation, flags, pitch);
+		}
+	}
 }
 
 void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
@@ -658,7 +680,7 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 		// randomize pitch per entity, so you get a better idea of how many players/npcs are shooting
 		int pitch = 95 + ((ENTINDEX(emitter) * 7) % 11);
 
-		StartSound(NULL, CHAN_STATIC, sample, volume, attn, 0, pitch, emitter->v.origin, pbits);
+		StartSound(NULL, CHAN_STATIC, sample, volume, attn, 0, pitch, emitter->v.origin, pbits, false);
 	}
 }
 

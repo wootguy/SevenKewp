@@ -430,7 +430,7 @@ const char* CBreakable::DisplayName() {
 	if (m_displayName) {
 		return STRING(m_displayName);
 	}
-	return Explodable() ? "Explosives" : "Breakable";
+	return Explodable() && !(pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) ? "Explosives" : "Breakable";
 }
 
 void CBreakable::BreakTouch(CBaseEntity* pOther)

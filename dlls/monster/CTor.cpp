@@ -60,8 +60,8 @@ public:
 	int Classify(void);
 	const char* DisplayName();
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
+	Schedule_t* GetSchedule(void);
 	Schedule_t* GetScheduleOfType(int Type);
-	Schedule_t* GetMonsterStateSchedule(void);
 
 	void MonsterThink(void);
 	BOOL CheckRangeAttack1(float flDot, float flDist);
@@ -286,30 +286,15 @@ void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
 	}
 }
 
-Schedule_t* CTor::GetScheduleOfType(int Type) {
-	if (Type == SCHED_RANGE_ATTACK2) {
-		return slSummonAttack;
-	}
-	if (Type == SCHED_MELEE_ATTACK2) {
-		AttackSound();
-	}
-
-	return CBaseMonster::GetScheduleOfType(Type);
-}
-
-Schedule_t* CTor::GetMonsterStateSchedule(void) {
+Schedule_t* CTor::GetSchedule(void)
+{
 	if (HasConditions(bits_COND_HEAVY_DAMAGE))
 	{
-		// flinch for heavy damage but not too often
-		if (RANDOM_LONG(0, 2) == 0) {
-			return GetScheduleOfType(SCHED_SMALL_FLINCH);
-		}
-		else {
-			ClearConditions(bits_COND_HEAVY_DAMAGE);
-			return CBaseMonster::GetSchedule();
-		}
+		ClearConditions(bits_COND_HEAVY_DAMAGE);
+		return GetScheduleOfType(SCHED_SMALL_FLINCH);
 	}
-	else if (HasConditions(bits_COND_LIGHT_DAMAGE))
+
+	if (HasConditions(bits_COND_LIGHT_DAMAGE))
 	{
 		ClearConditions(bits_COND_LIGHT_DAMAGE);
 		// never flinch or retreat from light damage
@@ -317,6 +302,14 @@ Schedule_t* CTor::GetMonsterStateSchedule(void) {
 	}
 
 	return CBaseMonster::GetSchedule();
+}
+
+Schedule_t* CTor::GetScheduleOfType(int Type) {
+	if (Type == SCHED_MELEE_ATTACK2) {
+		AttackSound();
+	}
+
+	return CBaseMonster::GetScheduleOfType(Type);
 }
 
 void CTor::MonsterThink(void) {
@@ -474,7 +467,7 @@ void CTor::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, Tr
 			pev->dmgtime = gpGlobals->time;
 		}
 
-		if (RANDOM_LONG(0, 1) == 0)
+		if ((bitsDamageType & DMG_BULLET) && RANDOM_LONG(0, 1) == 0)
 		{
 			Vector vecTracerDir = vecDir;
 

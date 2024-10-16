@@ -910,7 +910,7 @@ void COtis::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, 
 	{
 	case HITGROUP_CHEST:
 	case HITGROUP_STOMACH:
-		if (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST))
+		if (bitsDamageType & (DMG_BULLET | DMG_SLASH))
 		{
 			flDamage = flDamage / 2;
 		}
