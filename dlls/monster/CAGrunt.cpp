@@ -138,7 +138,7 @@ void CAGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecD
 			pev->dmgtime = gpGlobals->time;
 		}
 
-		if ( RANDOM_LONG( 0, 1 ) == 0 )
+		if ( (bitsDamageType & DMG_BULLET) && RANDOM_LONG( 0, 1 ) == 0 )
 		{
 			Vector vecTracerDir = vecDir;
 

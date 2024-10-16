@@ -347,6 +347,10 @@ EXPORT void			UTIL_ShowMessageAll		( const char *pString );
 EXPORT void			UTIL_ScreenFadeAll		( const Vector &color, float fadeTime, float holdTime, int alpha, int flags );
 EXPORT void			UTIL_ScreenFade			( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags );
 
+// duplicate of the engine function with the ability to change the message mode and target entity
+EXPORT void ambientsound_msg(edict_t* entity, float* pos, const char* samp, float vol, float attenuation,
+	int fFlags, int pitch, int msgDst, edict_t* dest);
+
 // leave target NULL to play music for all players
 EXPORT void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target=NULL);
 
@@ -668,7 +672,7 @@ EXPORT void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, flo
 // play the sound for players with bits contained in messageTargets
 // a player bit = 1 << (ENTINDEX(player_edict) % 31)
 EXPORT void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets);
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, bool reliable);
 
 inline void EMIT_SOUND(edict_t *entity, int channel, const char *sample, float volume, float attenuation)
 {

@@ -376,6 +376,9 @@ public:
 	// or is there something in the way? (player use code assumes arms have noclip)
 	bool CanReach(CBaseEntity* toucher);
 
+	// true if the player can potentially see this entity
+	bool IsVisibleTo(edict_t* player);
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;

@@ -661,6 +661,10 @@ int CGargantua::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	if (IsImmune(pevAttacker))
 		return 0;
 
+	if (!(bitsDamageType & GARG_DAMAGE)) {
+		flDamage = 0;
+	}
+
 	if ( IsAlive() )
 	{
 		if ( !(bitsDamageType & GARG_DAMAGE) )

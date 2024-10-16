@@ -4607,7 +4607,10 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 				SetConditions(bits_COND_LIGHT_DAMAGE);
 			}
 
-			if (flDamage >= 20)
+			// HL sets this to 20, but monsters are getting stunlocked often in co-op
+			int flinchAmount = (m_IdealMonsterState == MONSTERSTATE_COMBAT) ? 50 : 20;
+
+			if (flDamage >= flinchAmount)
 			{
 				SetConditions(bits_COND_HEAVY_DAMAGE);
 			}
@@ -6484,7 +6487,11 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	{
 		if (m_hTargetEnt != NULL)
 		{
-			pev->origin = m_hTargetEnt->pev->origin;	// Plant on target
+			Vector scriptOri = m_hTargetEnt->pev->origin;
+			TraceResult tr;
+			TRACE_MONSTER_HULL(edict(), scriptOri, scriptOri - Vector(0, 0, 512), ignore_monsters, edict(), &tr);
+			
+			pev->origin = tr.vecEndPos;	// Plant on floor under script
 		}
 
 		TaskComplete();
@@ -7427,12 +7434,12 @@ const char* CBaseMonster::DisplayName() {
 }
 
 bool CBaseMonster::IsImmune(entvars_t* attacker) {
-	if (!IsAlive()) {
-		return false;
-	}
-
 	if (!pev->takedamage || (pev->flags & FL_GODMODE)) {
 		return true;
+	}
+
+	if (!IsAlive()) {
+		return false;
 	}
 
 	if (pev->flags & FL_CLIENT) {

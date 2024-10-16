@@ -617,7 +617,7 @@ void CHoundeye :: SonicAttack ( void )
 			continue;
 		}
 
-		if (FClassnameIs(pEntity->pev, "monster_houndeye") && IRelationship(pEntity) == R_AL) {
+		if (FClassnameIs(pEntity->pev, "monster_houndeye") && IRelationship(pEntity) <= R_NO) {
 			continue; // houndeyes don't hurt other houndeyes with their attack, unless they're enemies
 		}
 

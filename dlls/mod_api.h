@@ -44,7 +44,7 @@ struct HLCOOP_FUNCTIONS {
 	// plays the sound for players with bits contained in messageTargets
 	// a player bit = 1 << (ENTINDEX(player_edict) % 31)
 	void (*pfnStartSound)(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
-		int fFlags, int pitch, const float* origin, uint32_t messageTargets);
+		int fFlags, int pitch, const float* origin, uint32_t messageTargets, bool reliable);
 
 	// same as the engine function but accounts for sound replacement
 	void (*pfnEmitAmbientSound)(edict_t* entity, const float* vecOrigin, const char* samp, float vol,
