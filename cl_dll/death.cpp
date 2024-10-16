@@ -73,7 +73,7 @@ int CHudDeathNotice :: Init( void )
 
 	HOOK_MESSAGE( DeathMsg );
 
-	CVAR_CREATE( "hud_deathnotice_time", "6", 0 );
+	CVAR_CREATE( "hud_deathnotice_time", "6", FCVAR_ARCHIVE );
 
 	return 1;
 }
@@ -94,7 +94,17 @@ int CHudDeathNotice :: VidInit( void )
 
 int CHudDeathNotice :: Draw( float flTime )
 {
-	int x, y, r, g, b;
+	int x, y, r, g, b, texty;
+
+	int gap = 20;
+
+	wrect_t& sprite = gHUD.GetSpriteRect(m_HUD_d_skull);
+	gap = sprite.bottom - sprite.top;
+
+	SCREENINFO screenInfo;
+	screenInfo.iSize = sizeof(SCREENINFO);
+	gEngfuncs.pfnGetScreenInfo(&screenInfo);
+	gap = max( gap, screenInfo.iCharHeight );
 
 	for ( int i = 0; i < MAX_DEATHNOTICES; i++ )
 	{
@@ -109,16 +119,18 @@ int CHudDeathNotice :: Draw( float flTime )
 			continue;
 		}
 
-		rgDeathNoticeList[i].flDisplayTime = V_min( rgDeathNoticeList[i].flDisplayTime, gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME );
+		rgDeathNoticeList[i].flDisplayTime = min( rgDeathNoticeList[i].flDisplayTime, gHUD.m_flTime + DEATHNOTICE_DISPLAY_TIME );
 
 		// Only draw if the viewport will let me
 		if ( gViewPort && gViewPort->AllowedToPrintText() )
 		{
 			// Draw the death notice
-			y = DEATHNOTICE_TOP + 2 + (20 * i);  //!!!
+			y = DEATHNOTICE_TOP + 2 + (gap * i);
+
+			texty = y + 4;
 
 			int id = (rgDeathNoticeList[i].iId == -1) ? m_HUD_d_skull : rgDeathNoticeList[i].iId;
-			x = ScreenWidth - ConsoleStringLen(rgDeathNoticeList[i].szVictim) - (gHUD.GetSpriteRect(id).right - gHUD.GetSpriteRect(id).left);
+			x = ScreenWidth - ConsoleStringLen(rgDeathNoticeList[i].szVictim) - (gHUD.GetSpriteRect(id).right - gHUD.GetSpriteRect(id).left) - 4;
 
 			if ( !rgDeathNoticeList[i].iSuicide )
 			{
@@ -127,7 +139,7 @@ int CHudDeathNotice :: Draw( float flTime )
 				// Draw killers name
 				if ( rgDeathNoticeList[i].KillerColor )
 					gEngfuncs.pfnDrawSetTextColor( rgDeathNoticeList[i].KillerColor[0], rgDeathNoticeList[i].KillerColor[1], rgDeathNoticeList[i].KillerColor[2] );
-				x = 5 + DrawConsoleString( x, y, rgDeathNoticeList[i].szKiller );
+				x = 5 + DrawConsoleString( x, texty, rgDeathNoticeList[i].szKiller );
 			}
 
 			r = 255;  g = 80;	b = 0;
@@ -147,7 +159,7 @@ int CHudDeathNotice :: Draw( float flTime )
 			{
 				if ( rgDeathNoticeList[i].VictimColor )
 					gEngfuncs.pfnDrawSetTextColor( rgDeathNoticeList[i].VictimColor[0], rgDeathNoticeList[i].VictimColor[1], rgDeathNoticeList[i].VictimColor[2] );
-				x = DrawConsoleString( x, y, rgDeathNoticeList[i].szVictim );
+				x = DrawConsoleString( x, texty, rgDeathNoticeList[i].szVictim );
 			}
 		}
 	}
@@ -189,7 +201,7 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 		gViewPort->GetAllPlayersInfo();
 
 	// Get the Killer's name
-	const char *killer_name = g_PlayerInfoList[ killer ].name;
+	char *killer_name = g_PlayerInfoList[ killer ].name;
 	if ( !killer_name )
 	{
 		killer_name = "";
@@ -203,7 +215,7 @@ int CHudDeathNotice :: MsgFunc_DeathMsg( const char *pszName, int iSize, void *p
 	}
 
 	// Get the Victim's name
-	const char *victim_name = NULL;
+	char *victim_name = NULL;
 	// If victim is -1, the killer killed a specific, non-player object (like a sentrygun)
 	if ( ((char)victim) != -1 )
 		victim_name = g_PlayerInfoList[ victim ].name;

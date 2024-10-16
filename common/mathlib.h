@@ -48,7 +48,7 @@ extern	int nanmask;
 #define VectorSubtract(a,b,c) {(c)[0]=(a)[0]-(b)[0];(c)[1]=(a)[1]-(b)[1];(c)[2]=(a)[2]-(b)[2];}
 #define VectorAdd(a,b,c) {(c)[0]=(a)[0]+(b)[0];(c)[1]=(a)[1]+(b)[1];(c)[2]=(a)[2]+(b)[2];}
 #define VectorCopy(a,b) {(b)[0]=(a)[0];(b)[1]=(a)[1];(b)[2]=(a)[2];}
-inline void VectorClear( float *a ) { a[ 0 ] = 0.0; a[ 1 ] = 0.0; a[ 2 ] = 0.0; }
+#define VectorClear(a) {(a)[0]=0.0;(a)[1]=0.0;(a)[2]=0.0;}
 
 void VectorMA (const float* veca, float scale, const float* vecb, float* vecc);
 
@@ -108,8 +108,8 @@ void __inline restore_fpu_cw(void)
 	_asm	fldcw	old_cw
 }
 #else
+#define quick_ftol(f) ((int)(f))
 #define set_fpu_cw() /* */
-#define quick_ftol(f) ftol(f)
 #define restore_fpu_cw() /* */
 #endif
 

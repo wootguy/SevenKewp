@@ -54,7 +54,7 @@ Demo_ReadBuffer
 Engine wants us to parse some data from the demo stream
 =====================
 */
-void DLLEXPORT Demo_ReadBuffer( int size, unsigned char *buffer )
+void CL_DLLEXPORT Demo_ReadBuffer( int size, unsigned char *buffer )
 {
 //	RecClReadDemoBuffer(size, buffer);
 

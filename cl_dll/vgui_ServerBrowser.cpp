@@ -88,7 +88,7 @@ public:
 		m_nMouseOverRow	= row;
 	}
 
-	void DoSort( const char *sortkey )
+	void DoSort( char *sortkey )
 	{
 		// Request server list and refresh servers...
 		SortServers( sortkey );
@@ -154,7 +154,7 @@ public:
 
 		// Space for buttons
 		height -= YRES(20);
-		height = V_max( 0, height );
+		height = max( 0, height );
 
 		rowcount = height / CELL_HEIGHT;
 
@@ -439,7 +439,7 @@ private:
 	ServerBrowserTablePanel *m_pBrowser;
 
 public:
-	CSBLabel( const char *name, const char *sortkey ) : Label( name )
+	CSBLabel( char *name, char *sortkey ) : Label( name )
 	{
 		m_pBrowser = NULL;
 

@@ -146,8 +146,8 @@ int CHudBenchmark::MsgFunc_Bench(const char *pszName, int iSize, void *pbuf)
 	m_fReceiveTime = gHUD.m_flTime;
 	m_StoredLatency = ( m_fReceiveTime - m_fSendTime );
 
-	m_StoredLatency = V_min( 1.0, m_StoredLatency );
-	m_StoredLatency = V_max( 0.0, m_StoredLatency );
+	m_StoredLatency = V_min( 1.0f, m_StoredLatency );
+	m_StoredLatency = V_max( 0.0f, m_StoredLatency );
 
 	m_StoredPacketLoss = 0.0;
 
@@ -286,8 +286,8 @@ void CHudBenchmark::Think( void )
 			float switch_time;
 			float total_time;
 			
-			latency = V_max( 0.0, latency );
-			latency = V_min( 1.0, latency );
+			latency = V_max( 0.0f, latency );
+			latency = V_min( 1.0f, latency );
 
 			total_time = Bench_GetSwitchTime();
 			total_time -= 2.0;
@@ -341,8 +341,8 @@ void CHudBenchmark::Think( void )
 
 			// Only takes 1/2 time to get up to maximum speed
 			frac *= 2.0;
-			frac = V_max( 0.0, frac );
-			frac = V_min( 1.0, frac );
+			frac = V_max( 0.0f, frac );
+			frac = V_min( 1.0f, frac );
 
 			m_nObjects = (int)(NUM_BENCH_OBJ * frac);
 		}
@@ -506,7 +506,7 @@ int CHudBenchmark::Draw( float flTime )
 		}
 		else
 		{
-			sprintf( sz, "%s", g_stage1[0] );
+			sprintf( sz, g_stage1[0] );
 		}
 		gHUD.DrawHudString( x, y, 320, sz, 255, 255, 255 );
 
@@ -531,7 +531,7 @@ int CHudBenchmark::Draw( float flTime )
 		}
 		else
 		{
-			sprintf( sz, "%s", g_stage2[0] );
+			sprintf( sz, g_stage2[0] );
 		}
 		gHUD.DrawHudString( x, y, 320, sz, 255, 255, 255 );
 		y += 20;
@@ -546,7 +546,7 @@ int CHudBenchmark::Draw( float flTime )
 		}
 		else
 		{
-			sprintf( sz, "%s", g_stage3[0] );
+			sprintf( sz, g_stage3[0] );
 		}
 
 		gHUD.DrawHudString( x, y, 320, sz, 255, 255, 255 );
