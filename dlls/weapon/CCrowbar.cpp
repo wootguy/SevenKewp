@@ -149,9 +149,11 @@ int CCrowbar::Swing( int fFirst )
 	SolidifyNearbyCorpses(false);
 
 	lagcomp_begin(m_pPlayer);
+#endif
 
-	UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( m_pPlayer->pev ), &tr );
+	UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr);
 
+#ifndef CLIENT_DLL
 	if ( tr.flFraction >= 1.0 )
 	{
 		UTIL_TraceHull( vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT( m_pPlayer->pev ), &tr );
