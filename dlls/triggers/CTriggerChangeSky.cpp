@@ -38,7 +38,9 @@ void CTriggerChangeSky::Spawn(void)
 	pev->effects |= EF_NODRAW;
 
 	// using a bsp because it isn't affected by world lighting and renders everywhere
-	SET_MODEL(ENT(pev), UTIL_VarArgs(SKYBOX_MODEL_PATH "/%s.bsp", STRING(m_skyname)));
+	if (m_skyname) {
+		SET_MODEL(ENT(pev), UTIL_VarArgs(SKYBOX_MODEL_PATH "/%s.bsp", STRING(m_skyname)));
+	}
 
 	if (CVAR_GET_FLOAT("sv_zmax") < SKYBOX_MIN_ZMAX) {
 		ALERT(at_console, "trigger_changesky: increased sv_zmax to %d for skybox rendering\n", SKYBOX_MIN_ZMAX);
@@ -48,13 +50,16 @@ void CTriggerChangeSky::Spawn(void)
 
 void CTriggerChangeSky::Precache()
 {
-	PRECACHE_MODEL(UTIL_VarArgs(SKYBOX_MODEL_PATH "/%s.bsp", STRING(m_skyname)));
+	if (m_skyname) {
+		PRECACHE_MODEL(UTIL_VarArgs(SKYBOX_MODEL_PATH "/%s.bsp", STRING(m_skyname)));
+	}
 }
 
 void CTriggerChangeSky::KeyValue(KeyValueData* pkvd) {
 	if (FStrEq(pkvd->szKeyName, "skyname"))
 	{
-		m_skyname = ALLOC_STRING(pkvd->szValue);
+		if (strlen(pkvd->szValue))
+			m_skyname = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "color"))
@@ -74,6 +79,11 @@ void CTriggerChangeSky::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 	CVAR_SET_FLOAT("sv_skycolor_r", m_color.x);
 	CVAR_SET_FLOAT("sv_skycolor_g", m_color.y);
 	CVAR_SET_FLOAT("sv_skycolor_b", m_color.z);
+
+	if (!m_skyname) {
+		// no sky name set, just update light colors
+		return;
+	}
 
 	// sv_skyname is also synced but clients currently in the server have to rejoin to see it.
 	// So, a giant model will be drawn in front of the sky instead.

@@ -150,6 +150,7 @@ void execMapCfg() {
 		"globalsoundlist",
 		"mp_shitcode",
 		"map_plugin",
+		"nosuit",
 	};
 
 	static set<string> itemNames = {
@@ -215,6 +216,7 @@ void execMapCfg() {
 	char* cfgFile = (char*)LOAD_FILE_FOR_ME(cfgPath.c_str(), &length);
 	
 	g_mapCfgExists = cfgFile;
+	g_noSuit = false;
 
 	if (!cfgFile) {
 		// precache default equipment
@@ -238,6 +240,11 @@ void execMapCfg() {
 
 		string name = trimSpaces(toLowerCase(parts[0]));
 		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
+
+		if (name == "nosuit") {
+			g_noSuit = true;
+			continue;
+		}
 
 		if (parts.size() > 1 && whitelistCommands.find(name) != whitelistCommands.end()) {
 			if (mp_prefer_server_maxspeed.value == 1 && name == "sv_maxspeed") {
