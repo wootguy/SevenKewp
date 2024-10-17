@@ -134,6 +134,60 @@ NerfStats g_nerfStats;
 TextureTypeStats g_textureStats;
 bool g_cfgsExecuted;
 
+#include <algorithm>
+#include <fstream>
+
+void dump_missing_files() {
+	std::vector<std::string> missingList;
+
+	std::set<std::string> allPrecacheFiles;
+	allPrecacheFiles.insert(g_tryPrecacheModels.begin(), g_tryPrecacheModels.end());
+	allPrecacheFiles.insert(g_missingModels.begin(), g_missingModels.end());
+	allPrecacheFiles.insert(g_tryPrecacheGeneric.begin(), g_tryPrecacheGeneric.end());
+	allPrecacheFiles.insert(g_tryPrecacheEvents.begin(), g_tryPrecacheEvents.end());
+
+	for (std::string item : g_tryPrecacheSounds) {
+		if (item.size() > 1) {
+			if (item[0] == '*' || item[0] == '!') {
+				item = item.substr(1); // client will ignore this character and load the path after this
+			}
+		}
+
+		allPrecacheFiles.insert("sound/" + item);
+	}
+
+	for (std::string item : allPrecacheFiles) {
+		std::string lowerItem = normalize_path(toLowerCase(item));
+
+		if (getGameFilePath(lowerItem.c_str()).empty()) {
+			missingList.push_back(lowerItem);
+		}
+	}
+
+	if (missingList.empty()) {
+		g_engfuncs.pfnServerPrint("No missing files\n");
+		return;
+	}
+
+	sort(missingList.begin(), missingList.end());
+
+	std::ofstream missingfile;
+	missingfile.open(std::string("res/") + STRING(gpGlobals->mapname) + ".res", std::ios_base::app);
+
+	if (!missingfile.is_open()) {
+		g_engfuncs.pfnServerPrint("Failed to open file in res/ folder (does it exist?)\n");
+		return;
+	}
+
+	for (std::string item : missingList) {
+		missingfile << item + "\n";
+	}
+
+	missingfile.close();
+
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Wrote %d missing files\n", (int)missingList.size()));
+}
+
 void test_command() {
 }
 
@@ -146,6 +200,7 @@ void cfg_exec_finished() {
 void GameDLLInit( void )
 {
 	g_engfuncs.pfnAddServerCommand("test", test_command);
+	g_engfuncs.pfnAddServerCommand("dmiss", dump_missing_files);
 	g_engfuncs.pfnAddServerCommand("cfg_exec_finished", cfg_exec_finished);
 	g_engfuncs.pfnAddServerCommand("edicts", PrintEntindexStats);
 	// Register cvars here:
