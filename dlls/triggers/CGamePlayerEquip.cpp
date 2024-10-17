@@ -22,6 +22,7 @@
 LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip)
 
 bool g_mapCfgExists;
+bool g_noSuit;
 EquipItem g_mapEquipment[MAX_EQUIP];
 
 void CGamePlayerEquip::KeyValue(KeyValueData* pkvd)

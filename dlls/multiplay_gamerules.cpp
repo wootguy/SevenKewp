@@ -506,7 +506,8 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 	BOOL		addDefault;
 	CBaseEntity	*pWeaponEntity = NULL;
 
-	pPlayer->pev->weapons |= (1<<WEAPON_SUIT);
+	if (!g_noSuit)
+		pPlayer->pev->weapons |= (1<<WEAPON_SUIT);
 
 	addDefault = !g_mapCfgExists;
 

@@ -30,7 +30,7 @@ void CBasePlayerItem::KeyValue(KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 	}
 	else
-		CBaseEntity::KeyValue(pkvd);
+		CBaseDelay::KeyValue(pkvd);
 }
 
 void CBasePlayerItem::SetObjectCollisionBox(void)

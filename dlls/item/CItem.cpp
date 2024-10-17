@@ -73,7 +73,7 @@ void CItem::KeyValue(KeyValueData* pkvd) {
 	}
 	else
 	{
-		CBaseEntity::KeyValue(pkvd);
+		CBaseAnimating::KeyValue(pkvd);
 	}
 }
 
