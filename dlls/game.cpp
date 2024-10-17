@@ -138,7 +138,9 @@ bool g_cfgsExecuted;
 #include <fstream>
 
 void dump_missing_files() {
-	std::vector<std::string> missingList;
+	bool dumpMissing = !strcmp(CMD_ARGV(0), "dmiss");
+
+	std::vector<std::string> resList;
 
 	std::set<std::string> allPrecacheFiles;
 	allPrecacheFiles.insert(g_tryPrecacheModels.begin(), g_tryPrecacheModels.end());
@@ -159,33 +161,36 @@ void dump_missing_files() {
 	for (std::string item : allPrecacheFiles) {
 		std::string lowerItem = normalize_path(toLowerCase(item));
 
-		if (getGameFilePath(lowerItem.c_str()).empty()) {
-			missingList.push_back(lowerItem);
+		if (getGameFilePath(lowerItem.c_str()).empty() == dumpMissing) {
+			resList.push_back(lowerItem);
 		}
 	}
 
-	if (missingList.empty()) {
-		g_engfuncs.pfnServerPrint("No missing files\n");
+	if (resList.empty()) {
+		g_engfuncs.pfnServerPrint(dumpMissing ? "No missing files\n" : "No precached files\n");
 		return;
 	}
 
-	sort(missingList.begin(), missingList.end());
+	sort(resList.begin(), resList.end());
 
-	std::ofstream missingfile;
-	missingfile.open(std::string("res/") + STRING(gpGlobals->mapname) + ".res", std::ios_base::app);
+	std::ofstream resfile;
+	const char* suffix = dumpMissing ? ".miss" : ".res";
+	std::string fname = std::string("res/") + STRING(gpGlobals->mapname) + suffix;
+	resfile.open(fname, std::ios_base::app);
 
-	if (!missingfile.is_open()) {
+	if (!resfile.is_open()) {
 		g_engfuncs.pfnServerPrint("Failed to open file in res/ folder (does it exist?)\n");
 		return;
 	}
 
-	for (std::string item : missingList) {
-		missingfile << item + "\n";
+	for (std::string item : resList) {
+		resfile << item + "\n";
 	}
 
-	missingfile.close();
+	resfile.close();
 
-	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Wrote %d missing files\n", (int)missingList.size()));
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Wrote %d %s files to %s\n",
+		(int)resList.size(), dumpMissing ? "missing" : "precached", fname.c_str()));
 }
 
 void test_command() {
@@ -200,6 +205,7 @@ void cfg_exec_finished() {
 void GameDLLInit( void )
 {
 	g_engfuncs.pfnAddServerCommand("test", test_command);
+	g_engfuncs.pfnAddServerCommand("dcache", dump_missing_files);
 	g_engfuncs.pfnAddServerCommand("dmiss", dump_missing_files);
 	g_engfuncs.pfnAddServerCommand("cfg_exec_finished", cfg_exec_finished);
 	g_engfuncs.pfnAddServerCommand("edicts", PrintEntindexStats);
