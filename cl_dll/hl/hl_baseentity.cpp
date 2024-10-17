@@ -43,6 +43,8 @@ globalvars_t  *gpGlobals;
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 
+std::map<std::string, std::string> g_soundReplacements;
+
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch) { }
 
 // CBaseEntity Stubs
