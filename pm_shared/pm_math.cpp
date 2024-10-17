@@ -27,11 +27,10 @@
 
 #ifdef _WIN32
 #pragma warning(disable : 4244)
+#endif
 
 #ifndef DISABLE_VEC_ORIGIN
 vec3_t vec3_origin = { 0,0,0 };
-#endif
-
 #endif
 
 int nanmask = 255<<23;
