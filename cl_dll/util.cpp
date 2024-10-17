@@ -30,7 +30,9 @@
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
-vec3_t vec3_origin( 0, 0, 0 );
+#ifdef _WIN32
+vec3_t vec3_origin( 0, 0, 0 ); // linux complains this is doubly defined, yet windows requires it
+#endif
 
 HSPRITE LoadSprite(const char *pszName)
 {
