@@ -152,6 +152,46 @@ void CWorld::Precache(void)
 
 	ClientPrecache();
 
+	const char* skyname = CVAR_GET_STRING("sv_skyname");
+
+	if (strlen(skyname)) {
+		// the engine precaches these automatically, this is here for tracking missing files
+		PRECACHE_GENERIC(UTIL_VarArgs("gfx/env/%sft.tga", skyname));
+		PRECACHE_GENERIC(UTIL_VarArgs("gfx/env/%sbk.tga", skyname));
+		PRECACHE_GENERIC(UTIL_VarArgs("gfx/env/%slf.tga", skyname));
+		PRECACHE_GENERIC(UTIL_VarArgs("gfx/env/%srt.tga", skyname));
+		PRECACHE_GENERIC(UTIL_VarArgs("gfx/env/%sup.tga", skyname));
+		PRECACHE_GENERIC(UTIL_VarArgs("gfx/env/%sdn.tga", skyname));
+
+		// bmp files are also precached by the engine, but they're useless?
+		// I was once told software mode uses them, but the HL25 client is happy with tga.
+	}
+
+	PRECACHE_DETAIL_TEXTURES();
+
+	// wads are precached automatically by the engine but this is needed for tracking missing files
+	if (m_wadlist) {
+		std::vector<std::string> wads = splitString(STRING(m_wadlist), ";");
+
+		for (std::string wad : wads) {
+			int lastSlash = wad.find_last_of("\\/");
+			if (lastSlash != -1) {
+				wad = wad.substr(lastSlash + 1);
+			}
+
+			wad = toLowerCase(wad);
+
+			if (wad.find("xeno.wad") != -1 || wad.find("halflife.wad") != -1) {
+				// bad logic copied from the engine. This explains why "nwxeno.wad" fails to transfer
+				bool unexpected = wad != "xeno.wad" && wad != "halflife.wad";
+				ALERT(unexpected ? at_error : at_console, "Engine blacklisted WAD: %s\n", wad.c_str());
+				continue;
+			}
+
+			PRECACHE_GENERIC(wad.c_str());
+		}
+	}
+
 	// sounds used from C physics code
 	PRECACHE_SOUND("common/null.wav");				// clears sound channels
 
@@ -313,6 +353,11 @@ void CWorld::KeyValue(KeyValueData* pkvd)
 	{
 		// Sent over net now.
 		CVAR_SET_STRING("sv_skyname", pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "wad"))
+	{
+		m_wadlist = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "sounds"))

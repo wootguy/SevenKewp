@@ -3105,6 +3105,45 @@ void LoadBsp() {
 	}
 }
 
+void PRECACHE_DETAIL_TEXTURES() {
+	// the engine does this too, but doing it here lets the mod track missing files and overflows
+	std::string detail = UTIL_VarArgs("maps/%s_detail.txt", STRING(gpGlobals->mapname));
+
+	std::string detail_path = getGameFilePath(detail.c_str());
+	if (detail_path.empty()) {
+		return;
+	}
+
+	PRECACHE_GENERIC(detail.c_str());
+
+	std::ifstream file(detail_path);
+	if (!file.is_open()) {
+		return;
+	}
+
+	int line_num = 0;
+	std::string line;
+	while (getline(file, line))
+	{
+		line_num++;
+
+		line = trimSpaces(line);
+		if (line.find("//") == 0 || line.length() == 0)
+			continue;
+
+		std::vector<std::string> parts = splitString(line, "\t ");
+
+		if (parts.size() != 4) {
+			ALERT(at_warning, "Invalid line in detail file (%d):\n", line_num, detail.c_str());
+			continue;
+		}
+
+		PRECACHE_GENERIC(("gfx/" + parts[1] + ".tga").c_str());
+	}
+
+	file.close();
+}
+
 void PRECACHE_HUD_FILES(const char* hudConfigPath) {
 	std::string lowerPath = toLowerCase(hudConfigPath);
 	hudConfigPath = lowerPath.c_str();
@@ -3232,6 +3271,136 @@ int PRECACHE_SOUND_NULLENT(const char* path) {
 	return PRECACHE_SOUND_ENT(NULL, path);
 }
 
+void PRECACHE_MODEL_EXTRAS(const char* path, studiohdr_t* mdl) {
+	if (!mdl || !path) {
+		return;
+	}
+
+	// Verify the model is valid
+	if (strlen(mdl->name) <= 0) {
+		// Ignore T Models being used directly. Maybe it was in a custom_precache entity or something.
+		return;
+	}
+	if (mdl->id != 1414743113) {
+		ALERT(at_error, "Invalid ID in model header: %s\n", path);
+		return;
+	}
+	if (mdl->version != 10) {
+		ALERT(at_error, "Invalid version in model header: %s\n", path);
+		return;
+	}
+	if (mdl->numseqgroups >= 10000)
+	{
+		ALERT(at_error, "Too many seqgroups (%d) for model: %s\n", mdl->numseqgroups, path);
+		return;
+	}
+	// TODO: might want to get the file size from disk to prevent reading invalid memory
+	
+	std::string normalizedPath = normalize_path(path);
+	std::string pathWithoutExt = normalizedPath;
+
+	int lastDot = pathWithoutExt.find_last_of(".");
+	if (lastDot != -1) {
+		pathWithoutExt = pathWithoutExt.substr(0, lastDot);
+	}
+
+	bool isPlayerModel = normalizedPath.find("models/player/") != -1;
+
+	// player model preview image
+	if (isPlayerModel) {
+		PRECACHE_GENERIC(UTIL_VarArgs("%s.bmp", pathWithoutExt.c_str()));
+	}
+
+	// external sequence models (01/02/03.mdl)
+	if (mdl->numseqgroups > 1) {
+		for (int m = 1; m < mdl->numseqgroups; m++) {
+			PRECACHE_GENERIC(UTIL_VarArgs("%s%02d.mdl", pathWithoutExt.c_str(), m));
+		}
+	}
+
+	// T model
+	if (mdl->numtextures == 0) {
+		// Textures aren't used if the model has no triangles
+		bool isEmptyModel = true;
+		int iGroup = 0;
+		mstudiobodyparts_t* bod = (mstudiobodyparts_t*)((byte*)mdl + mdl->bodypartindex) + iGroup;
+		
+		for (int i = 0; i < bod->nummodels; i++) {
+			mstudiomodel_t* mod = (mstudiomodel_t*)((byte*)mdl + bod->modelindex) + i;
+
+			if (mod->nummesh != 0) {
+				isEmptyModel = false;
+				break;
+			}
+		}
+
+		if (!isEmptyModel) {
+			PRECACHE_GENERIC(UTIL_VarArgs("%st.mdl", pathWithoutExt.c_str()));
+		}
+	}
+
+	// sounds and sprites attached to events
+	for (int i = 0; i < mdl->numseq; i++) {
+		mstudioseqdesc_t* seq = (mstudioseqdesc_t*)((byte*)mdl + mdl->seqindex) + i;
+
+		for (int k = 0; k < seq->numevents; k++) {
+			mstudioevent_t* evt = (mstudioevent_t*)((byte*)mdl + seq->eventindex) + k;
+
+			std::string opt(evt->options, 64);
+			int lastDot = opt.find(".");
+			
+			if (lastDot == -1 || lastDot == opt.size()-1)
+				continue; // no file extension
+
+			if (evt->event == 1004 || evt->event == 1008 || evt->event == 5004) { // play sound
+				if (opt[0] == '*')
+					opt = opt.substr(1); // not sure why some models do this, it looks pointless.
+
+				// model sounds are loaded on demand, not precached
+				PRECACHE_GENERIC(normalize_path("sound/" + opt).c_str());
+			}
+			if (evt->event == 5001 || evt->event == 5011 || evt->event == 5021 || evt->event == 5031) { // muzzleflash sprite
+				PRECACHE_GENERIC(normalize_path(opt).c_str());
+			}
+			if (evt->event == 5005) { // custom muzzleflash (sven co-op only, likely requires custom client)
+				std::string muzzle_txt = normalize_path("events/" + opt);
+				ALERT(at_console, "unimplemented custom muzzle flash '%s' on model: %s\n",
+					muzzle_txt.c_str(), path);
+				/*
+				PRECACHE_GENERIC(muzzle_txt.c_str());
+
+				std::string muzzle_txt_path = getGameFilePath(muzzle_txt.c_str());
+				if (muzzle_txt_path.empty())
+					continue;
+
+				// parse muzzleflash config for sprite name
+				std::ifstream file(muzzle_txt_path);
+				if (file.is_open()) {
+					int line_num = 0;
+					std::string line;
+					while (getline(file, line)) {
+						line_num++;
+
+						line = trimSpaces(line);
+						if (line.find("//") == 0 || line.length() == 0)
+							continue;
+
+						line = replaceString(line, "\t", " ");
+
+						if (line.find("spritename") == 0) {
+							std::string val = trimSpaces(line.substr(line.find("spritename") + strlen("spritename")));
+							val.erase(std::remove(val.begin(), val.end(), '\"'), val.end());
+							PRECACHE_GENERIC(val);
+						}
+					}
+				}
+				file.close();
+				*/
+			}
+		}
+	}
+}
+
 int PRECACHE_MODEL(const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
@@ -3278,12 +3447,23 @@ int PRECACHE_MODEL(const char* path) {
 	if (g_tryPrecacheModels.size() + g_bsp.entityBspModelCount + 1 <= MAX_PRECACHE_MODEL) {
 		if (g_precachedModels.find(path) == g_precachedModels.end())
 			g_precachedModels[path] = path;
-		return g_engfuncs.pfnPrecacheModel(path);
+		int modelIdx = g_engfuncs.pfnPrecacheModel(path);
+		
+		std::string pathstr = std::string(path);
+		if (pathstr.find(".mdl") == pathstr.size() - 4) {
+			// temporarily attach the model to an entity to avoid loading the model from disk again
+			edict_t* world = ENT(0);
+			int oldModelIdx = world->v.modelindex;
+			world->v.modelindex = modelIdx;
+			PRECACHE_MODEL_EXTRAS(path, (studiohdr_t*)GET_MODEL_PTR(world));
+			world->v.modelindex = oldModelIdx;
+		}
+
+		return modelIdx;
 	}
 	else {
 		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
 	}
-	
 }
 
 int PRECACHE_REPLACEMENT_MODEL(const char* path) {
@@ -4025,7 +4205,7 @@ std::vector<std::string> splitString(std::string str, const char* delimiters)
 	std::vector<std::string> split;
 
 	const char* c_str = str.c_str();
-	size_t str_len = str.length();
+	size_t str_len = strlen(c_str);
 
 	size_t start = strspn(c_str, delimiters);
 

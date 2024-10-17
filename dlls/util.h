@@ -778,6 +778,8 @@ EXPORT void* GET_MODEL_PTR(edict_t* edict);
 EXPORT edict_t* CREATE_NAMED_ENTITY(string_t cname);
 #define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
 
+EXPORT void PRECACHE_DETAIL_TEXTURES();
+
 // called automatically for custom weapons during registration
 EXPORT void PRECACHE_HUD_FILES(const char* path);
 
