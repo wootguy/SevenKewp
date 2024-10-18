@@ -174,12 +174,16 @@ void CWorld::Precache(void)
 		std::vector<std::string> wads = splitString(STRING(m_wadlist), ";");
 
 		for (std::string wad : wads) {
-			int lastSlash = wad.find_last_of("\\/");
+			int lastSlash = wad.find_last_of("\\/\n");
 			if (lastSlash != -1) {
 				wad = wad.substr(lastSlash + 1);
 			}
 
 			wad = toLowerCase(wad);
+
+			if (wad.find(".wad") != wad.size() - 4) {
+				continue;
+			}
 
 			if (wad.find("xeno.wad") != -1 || wad.find("halflife.wad") != -1) {
 				// bad logic copied from the engine. This explains why "nwxeno.wad" fails to transfer

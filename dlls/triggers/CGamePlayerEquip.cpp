@@ -72,7 +72,7 @@ void CGamePlayerEquip::EquipPlayer(CBaseEntity* pEntity)
 		pPlayer = (CBasePlayer*)pEntity;
 	}
 
-	if (!pPlayer)
+	if (!pPlayer || !pPlayer->IsAlive())
 		return;
 
 	for (int i = 0; i < MAX_EQUIP; i++)
@@ -98,6 +98,10 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 	
 	if (g_itemNameRemap.find(itemLower) != g_itemNameRemap.end()) {
 		itemName = g_itemNameRemap[itemLower];
+	}
+
+	if (!strcmp(itemName, "<keyvalue>")) {
+		return;
 	}
 
 	if (!strcmp(itemName, "ammo_357")) {
