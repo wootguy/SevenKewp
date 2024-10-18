@@ -119,6 +119,14 @@ std::map<std::string, const char*> g_itemNameRemap = {
 	{"ammo_mp5grenades", "ammo_ARgrenades"},
 	{"ammo_argrenades", "ammo_ARgrenades"},
 	{"ammo_762", "ammo_crossbow"},
+
+	// keyvalues that should be ignored
+	{"equipmode", "<keyvalue>"},
+	{"delay", "<keyvalue>"},
+	{"inventorymode", "<keyvalue>"},
+	{"master", "<keyvalue>"},
+	{"killtarget", "<keyvalue>"},
+	{"ondestroyfn", "<keyvalue>"},
 };
 
 void AddPrecacheWeapon(std::string wepName) {
