@@ -1,5 +1,7 @@
 option(ASAN "Build with AddressSanitizer Enabled" OFF)
 
+project(${SERVER_DLL_NAME})
+
 set(MISC_HDR
 	../engine/studio.h
 	../common/Platform.h
@@ -562,20 +564,6 @@ set(ALL_SRC
 # don't compile individual entity files
 set_source_files_properties(${ENT_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
 
-include_directories(../common)
-include_directories(../engine)
-include_directories(../game_shared)
-include_directories(../pm_shared)
-include_directories(../public)
-include_directories(env)
-include_directories(func)
-include_directories(triggers)
-include_directories(monster)
-include_directories(item)
-include_directories(path)
-include_directories(weapon)
-include_directories(.)
-
 add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
 target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
@@ -661,7 +649,7 @@ else()
 	message(FATAL_ERROR "TODO: Mac support")
 endif()
 
-set(MOD_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/output/dlls")
+set(MOD_OUTPUT_PATH "${CMAKE_BINARY_DIR}/output/dlls")
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY ${MOD_OUTPUT_PATH}
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${MOD_OUTPUT_PATH}
