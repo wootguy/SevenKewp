@@ -50,6 +50,7 @@
 #include "skill.h"
 #include "CBreakable.h"
 #include "CFuncVehicle.h"
+#include "PluginManager.h"
 
 // #define DUCKFIX
 
@@ -1686,6 +1687,8 @@ void CBasePlayer::LeaveObserver()
 //
 void CBasePlayer::PlayerUse ( void )
 {
+	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnPlayerUse, this);
+
 	if ( IsObserver() )
 		return;
 
@@ -2222,6 +2225,8 @@ void CBasePlayer::UpdateStatusBar()
 
 void CBasePlayer::PreThink(void)
 {
+	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnPlayerPreThink, this);
+
 	int buttonsChanged = (m_afButtonLast ^ pev->button);	// These buttons have changed this frame
 	
 	// Debounced button codes for pressed/released
@@ -2992,6 +2997,8 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 
 void CBasePlayer::PostThink()
 {
+	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnPlayerPostThink, this);
+
 	if ( g_fGameOver )
 		goto pt_end;         // intermission or finale
 

@@ -1,16 +1,33 @@
 #include "mod_api.h"
 
-enum HOOK_RETURN_CODE {
-	HOOK_CONTINUE,
-	HOOK_HANDLED
+struct HOOK_RETURN_DATA {
+	uint32_t code; // what to do after processing this hook
+	void* data; // overridden return value for the mod
 };
+
+#define HOOKBIT_HANDLED		1 // If set, forbid later plugins from processing the hook
+#define HOOKBIT_OVERRIDE	2 // If set, do not call the game function and return the given value
+
+#define HOOK_CONTINUE					{0, 0}
+#define HOOK_CONTINUE_OVERRIDE(data)	{HOOKBIT_OVERRIDE, (void*)data}
+#define HOOK_HANDLED					{HOOKBIT_HANDLED, 0}
+#define HOOK_HANDLED_OVERRIDE(data)		{(HOOKBIT_HANDLED | HOOKBIT_OVERRIDE), (void*)data}
 
 struct HLCOOP_PLUGIN_HOOKS {
 	// called when the server starts, before any entities are spawns
-	HOOK_RETURN_CODE (*pfnMapInit)();
+	HOOK_RETURN_DATA (*pfnMapInit)();
 
 	// called after map entities are spawned
-	HOOK_RETURN_CODE (*pfnMapActivate)();
+	HOOK_RETURN_DATA (*pfnMapActivate)();
+
+	// called before the player PreThink function
+	HOOK_RETURN_DATA (*pfnPlayerPreThink)(CBasePlayer*);
+
+	// called before the player PostThink function
+	HOOK_RETURN_DATA (*pfnPlayerPostThink)(CBasePlayer*);
+
+	// called before the player Use function is called
+	HOOK_RETURN_DATA (*pfnPlayerUse)(CBasePlayer*);
 };
 
 // boilerplate for PluginInit functions

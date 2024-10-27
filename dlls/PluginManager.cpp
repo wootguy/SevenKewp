@@ -88,7 +88,7 @@ void PluginManager::UnloadPlugin(const Plugin& plugin) {
 		apiFunc();
 	}
 	else {
-		ALERT(at_console, "PluginExit not found in plugin '%s'\n", plugin.fpath);
+		ALERT(at_console, "PluginExit not found in plugin '%s'\n", plugin.fpath.c_str());
 	}
 
 	FreeLibrary((HMODULE)plugin.h_module);
@@ -98,9 +98,8 @@ void PluginManager::UnloadPlugin(const Plugin& plugin) {
 void PluginManager::RemovePlugin(const Plugin& plugin) {
 	UnloadPlugin(plugin);
 
-	for (int i = 0; i < plugins.size(); i++) {
-		const Plugin& plugin = plugins[i];
-		if (&plugin == &plugin) {
+	for (int i = 0; i < (int)plugins.size(); i++) {
+		if (&plugins[i] == &plugin) {
 			plugins.erase(plugins.begin() + i);
 			return;
 		}
@@ -183,8 +182,8 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 		}
 
 		bool found = false;
-		for (std::string& path : pluginPaths) {
-			if (std::string(plugin.fpath) == path) {
+		for (std::string& p : pluginPaths) {
+			if (std::string(plugin.fpath) == p) {
 				found = true;
 				break;
 			}
@@ -203,16 +202,16 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 	int numFailed = 0;
 
 	// add new plugins
-	for (std::string& path : pluginPaths) {
+	for (std::string& p : pluginPaths) {
 		bool found = false;
 		for (const Plugin& plugin : plugins) {
-			if (std::string(plugin.fpath) == path) {
+			if (std::string(plugin.fpath) == p) {
 				continue;
 			}
 		}
 
 		if (!found) {
-			if (AddPlugin(path.c_str(), false)) {
+			if (AddPlugin(p.c_str(), false)) {
 				numLoaded++;
 			}
 			else {
@@ -222,11 +221,11 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 	}
 
 	// assign ids and sort
-	for (int i = 0; i < pluginPaths.size(); i++) {
-		std::string& path = pluginPaths[i];
+	for (int i = 0; i < (int)pluginPaths.size(); i++) {
+		std::string& p = pluginPaths[i];
 
 		for (Plugin& plugin : plugins) {
-			if (std::string(plugin.fpath) == path) {
+			if (std::string(plugin.fpath) == p) {
 				plugin.sortId = i+1;
 			}
 		}
@@ -268,7 +267,7 @@ void PluginManager::ListPlugins(edict_t* plr) {
 	lines.push_back(UTIL_VarArgs("\n    %-20s %-8s %-44s\n", "Name", "Type", isAdmin ? "File path" : ""));
 	lines.push_back("--------------------------------------------------------------------------------\n");
 
-	for (int i = 0; i < plugins.size(); i++) {
+	for (int i = 0; i < (int)plugins.size(); i++) {
 		const Plugin& plugin = plugins[i];
 
 		std::string name = plugin.fpath;
