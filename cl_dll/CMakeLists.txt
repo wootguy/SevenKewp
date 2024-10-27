@@ -242,7 +242,7 @@ if(UNIX)
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32" LINK_FLAGS "-m32 -L ../../linux/release -L ../../linux"
+		COMPILE_FLAGS "-m32 -Wno-format-truncation -Wno-unused-result" LINK_FLAGS "-m32 -L ../../linux/release -L ../../linux"
 	)
 
 elseif(MSVC)

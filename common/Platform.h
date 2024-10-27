@@ -80,7 +80,7 @@ typedef int BOOL;
 #define _snprintf snprintf
 #define _alloca alloca
 
-#define DLLEXPORT __attribute__ ( ( visibility( "default" ) ) )
+#define DLLEXPORT __attribute__ ((visibility("default")))
 #define DLLIMPORT
 #endif //_WIN32
 

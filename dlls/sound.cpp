@@ -286,7 +286,7 @@ int SENTENCEG_PlaySequentialSz(edict_t *entity, const char *szgroupname,
 void SENTENCEG_Stop(edict_t *entity, int isentenceg, int ipick)
 {
 	char buffer[64];
-	char sznum[8];
+	char sznum[12];
 	
 	if (!fSentencesInit)
 		return;
@@ -296,7 +296,7 @@ void SENTENCEG_Stop(edict_t *entity, int isentenceg, int ipick)
 	
 	strcpy_safe(buffer, "!", 64);
 	strcat_safe(buffer, rgsentenceg[isentenceg].szgroupname, 64);
-	snprintf(sznum, 8, "%d", ipick);
+	snprintf(sznum, 12, "%d", ipick);
 	strcat_safe(buffer, sznum, 64);
 
 	STOP_SOUND(entity, CHAN_VOICE, buffer);

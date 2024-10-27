@@ -463,8 +463,8 @@ public:
 	
 	//had to make these public so CHud could access them (to enable concussion icon)
 	//could use a friend declaration instead...
-	void EnableIcon( char *pszIconName, unsigned char red, unsigned char green, unsigned char blue );
-	void DisableIcon( char *pszIconName );
+	void EnableIcon( const char *pszIconName, unsigned char red, unsigned char green, unsigned char blue );
+	void DisableIcon( const char *pszIconName );
 
 private:
 
