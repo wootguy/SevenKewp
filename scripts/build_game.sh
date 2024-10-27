@@ -8,5 +8,5 @@ cd ..
 rm -rf build
 mkdir build
 cd build
-cmake -DBUILD_SERVER_ONLY=ON ..
+cmake -DBUILD_SERVER=ON ..
 cmake --build . --config Release

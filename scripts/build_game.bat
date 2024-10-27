@@ -7,7 +7,7 @@ cd ..
 
 mkdir build
 cd build
-cmake -A Win32 -DBUILD_SERVER_ONLY=ON ..
+cmake -A Win32 -DBUILD_SERVER=ON ..
 cmake --build . --config Release
 
 echo.

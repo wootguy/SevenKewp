@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.6)
 
 set(ENGINE_DIR "D:/Steam/steamapps/common/Half-Life" CACHE STRING "Path to your half-life-compatible engine folder")
 set(ENGINE_EXE "hl.exe" CACHE STRING "Name of the executable that starts the half-life engine")
-option(USE_AUTOHOTKEY_SCRIPT "Disable this if you don't have AutoHotkey installed" )
-option(BUILD_SERVER_ONLY "Disable this if you don't want to build the client library" )
+option(BUILD_SERVER "Disable this if you don't want to build the server library" ON)
+option(BUILD_CLIENT "Enable this if you want to build the client library" OFF)
 option(BUILD_PLUGINS "Build everything in the plugins/ folder" )
 
 set(SERVER_DLL_NAME "sevenkewp")
@@ -21,9 +21,11 @@ endif()
 
 project(sevenkewp)
 
-add_subdirectory(dlls) # server project
+if (BUILD_SERVER)
+	add_subdirectory(dlls) # server project
+endif()
 
-if (NOT ${BUILD_SERVER_ONLY})
+if (BUILD_CLIENT)
 	add_subdirectory(cl_dll) # client project
 endif()
 
