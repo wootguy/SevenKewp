@@ -16,7 +16,6 @@ set(CLIENT_EXE "hl.exe" CACHE STRING "Name of the executable that starts the cli
 
 set(SERVER_DLL_NAME "server")
 set(CLIENT_DLL_NAME "client")
-set(GAMEDIR_NAME "sevenkewp")
 
 include_directories(${CMAKE_SOURCE_DIR}/common)
 include_directories(${CMAKE_SOURCE_DIR}/engine)

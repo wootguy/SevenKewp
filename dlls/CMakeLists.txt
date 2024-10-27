@@ -584,12 +584,6 @@ if(UNIX)
 	)
 
 elseif(MSVC)
-	if (USE_AUTOHOTKEY_SCRIPT)
-		add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
-			COMMAND start ${CMAKE_CURRENT_SOURCE_DIR}/../resize_console.ahk
-		)
-	endif()
-
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4") 
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${CMAKE_CURRENT_SOURCE_DIR}/hl.def") 
 	

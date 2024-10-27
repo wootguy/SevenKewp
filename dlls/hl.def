@@ -1,4 +1,4 @@
-LIBRARY sevenkewp
+LIBRARY server
 EXPORTS
 	GiveFnptrsToDll			@1
 SECTIONS
