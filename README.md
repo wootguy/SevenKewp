@@ -30,3 +30,17 @@ This mod has its own plugin system, similar to metamod. Here's how you build tho
 6. Repeat steps 4 and 5 whenever the mod updates.
 
 Mod plugins are tightly coupled to the mod code and have full access to its classes and utilities. This makes plugins powerful but easily broken by mod updates.
+
+# Installing Sven Co-op maps
+Sven Co-op maps often need converting before they can be used in Half-Life. Not doing this will result in crashes. This section is here mostly as a warning not to install maps directly. Good luck actually following this. I plan to publish all my ports and ripents later so that this isn't needed.
+
+1. Create a folder and copy `scripts/convert_map.py` to the new folder.
+2. Add modelguy, ripent, bspguy, and wadmaker to the same folder. modelguy and bspguy need to be built from source because the latest releases are missing features.
+3. Update `valve_path` in the script to point to your `Half-Life/valve` folder.
+4. Install imagemagick and ffmpeg. Make sure `magick` and `ffmpeg` are usable from the command-line.
+1. Extract a map package to the folder (`maps/` should end up next to the script)
+2. Run the script
+
+The script will fail on certain things like models with invalid textures. Those models need manual edits. Maps made for Sven Co-op 5.x sometimes need special attention (map moving/splitting to fit in the +/-4096 grid, texture resizing, etc.). The master branch of [bspguy](https://github.com/wootguy/bspguy) has porting tools to help with this.
+
+So far, I've had the only server hosting sven maps so I don't bother renaming files that the script modifies. That's a horrible practice and will cause crashes once other server ops start hosting without reading this section.
