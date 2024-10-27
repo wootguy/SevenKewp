@@ -1,150 +1,148 @@
-cmake_minimum_required(VERSION 3.2)
-
-set(ROOT_FOLDER ${CMAKE_SOURCE_DIR}/SevenKewp)
+cmake_minimum_required(VERSION 3.6)
 
 set(MISC_HDR
-	${ROOT_FOLDER}/engine/studio.h
-	${ROOT_FOLDER}/common/Platform.h
-	${ROOT_FOLDER}/dlls/cdll_dll.h
-	${ROOT_FOLDER}/dlls/enginecallback.h
-	${ROOT_FOLDER}/dlls/extdll.h
+	${MOD_DIR}/engine/studio.h
+	${MOD_DIR}/common/Platform.h
+	${MOD_DIR}/dlls/cdll_dll.h
+	${MOD_DIR}/dlls/enginecallback.h
+	${MOD_DIR}/dlls/extdll.h
 )
 
 set(MONSTER_HDR
-	${ROOT_FOLDER}/dlls/monster/activity.h
-	${ROOT_FOLDER}/dlls/monster/activitymap.h
-	${ROOT_FOLDER}/dlls/monster/bodyque.h
-	${ROOT_FOLDER}/dlls/monster/CAGrunt.h
-	${ROOT_FOLDER}/dlls/monster/CBaseGrunt.h
-	${ROOT_FOLDER}/dlls/monster/CBaseGruntOp4.h
-	${ROOT_FOLDER}/dlls/monster/CBaseMonster.h
-	${ROOT_FOLDER}/dlls/monster/CBaseTurret.h
-	${ROOT_FOLDER}/dlls/monster/CFlyingMonster.h
-	${ROOT_FOLDER}/dlls/monster/CGargantua.h
-	${ROOT_FOLDER}/dlls/monster/CHornet.h
-	${ROOT_FOLDER}/dlls/monster/CMonsterMaker.h
-	${ROOT_FOLDER}/dlls/monster/CTalkSquadMonster.h
-	${ROOT_FOLDER}/dlls/monster/defaultai.h
-	${ROOT_FOLDER}/dlls/monster/monsterevent.h
-	${ROOT_FOLDER}/dlls/monster/monsters.h
-	${ROOT_FOLDER}/dlls/monster/schedule.h
+	${MOD_DIR}/dlls/monster/activity.h
+	${MOD_DIR}/dlls/monster/activitymap.h
+	${MOD_DIR}/dlls/monster/bodyque.h
+	${MOD_DIR}/dlls/monster/CAGrunt.h
+	${MOD_DIR}/dlls/monster/CBaseGrunt.h
+	${MOD_DIR}/dlls/monster/CBaseGruntOp4.h
+	${MOD_DIR}/dlls/monster/CBaseMonster.h
+	${MOD_DIR}/dlls/monster/CBaseTurret.h
+	${MOD_DIR}/dlls/monster/CFlyingMonster.h
+	${MOD_DIR}/dlls/monster/CGargantua.h
+	${MOD_DIR}/dlls/monster/CHornet.h
+	${MOD_DIR}/dlls/monster/CMonsterMaker.h
+	${MOD_DIR}/dlls/monster/CTalkSquadMonster.h
+	${MOD_DIR}/dlls/monster/defaultai.h
+	${MOD_DIR}/dlls/monster/monsterevent.h
+	${MOD_DIR}/dlls/monster/monsters.h
+	${MOD_DIR}/dlls/monster/schedule.h
 )
 
 set(ENV_HDR
-	${ROOT_FOLDER}/dlls/env/CAmbientGeneric.h
-	${ROOT_FOLDER}/dlls/env/CBeam.h
-	${ROOT_FOLDER}/dlls/env/CBloodSplat.h
-	${ROOT_FOLDER}/dlls/env/CGibShooter.h
-	${ROOT_FOLDER}/dlls/env/CLaser.h
-	${ROOT_FOLDER}/dlls/env/CLight.h
-	${ROOT_FOLDER}/dlls/env/CSoundEnt.h
-	${ROOT_FOLDER}/dlls/env/CSprayCan.h
-	${ROOT_FOLDER}/dlls/env/CSprite.h
-	${ROOT_FOLDER}/dlls/env/decals.h
-	${ROOT_FOLDER}/dlls/env/effects.h
-	${ROOT_FOLDER}/dlls/env/explode.h
-	${ROOT_FOLDER}/engine/shake.h
+	${MOD_DIR}/dlls/env/CAmbientGeneric.h
+	${MOD_DIR}/dlls/env/CBeam.h
+	${MOD_DIR}/dlls/env/CBloodSplat.h
+	${MOD_DIR}/dlls/env/CGibShooter.h
+	${MOD_DIR}/dlls/env/CLaser.h
+	${MOD_DIR}/dlls/env/CLight.h
+	${MOD_DIR}/dlls/env/CSoundEnt.h
+	${MOD_DIR}/dlls/env/CSprayCan.h
+	${MOD_DIR}/dlls/env/CSprite.h
+	${MOD_DIR}/dlls/env/decals.h
+	${MOD_DIR}/dlls/env/effects.h
+	${MOD_DIR}/dlls/env/explode.h
+	${MOD_DIR}/engine/shake.h
 )
 
 set(ITEM_HDR
-	${ROOT_FOLDER}/dlls/item/CItem.h
+	${MOD_DIR}/dlls/item/CItem.h
 )
 
 set(TRIGGER_HDR
-	${ROOT_FOLDER}/dlls/triggers/CBaseLogic.h
-	${ROOT_FOLDER}/dlls/triggers/CBaseTrigger.h
-	${ROOT_FOLDER}/dlls/triggers/CGamePlayerEquip.h
-	${ROOT_FOLDER}/dlls/triggers/CFireAndDie.h
-	${ROOT_FOLDER}/dlls/triggers/CRuleEntity.h
-	${ROOT_FOLDER}/dlls/triggers/CTriggerMultiple.h
+	${MOD_DIR}/dlls/triggers/CBaseLogic.h
+	${MOD_DIR}/dlls/triggers/CBaseTrigger.h
+	${MOD_DIR}/dlls/triggers/CGamePlayerEquip.h
+	${MOD_DIR}/dlls/triggers/CFireAndDie.h
+	${MOD_DIR}/dlls/triggers/CRuleEntity.h
+	${MOD_DIR}/dlls/triggers/CTriggerMultiple.h
 )
 
 set(FUNC_HDR
-	${ROOT_FOLDER}/dlls/func/CBaseButton.h
-	${ROOT_FOLDER}/dlls/func/CBasePlatTrain.h
-	${ROOT_FOLDER}/dlls/func/CBreakable.h
-	${ROOT_FOLDER}/dlls/func/CBaseDoor.h
-	${ROOT_FOLDER}/dlls/func/CFuncPlat.h
-	${ROOT_FOLDER}/dlls/func/CFuncPlatRot.h
-	${ROOT_FOLDER}/dlls/func/CFuncTank.h
-	${ROOT_FOLDER}/dlls/func/CFuncTrackChange.h
-	${ROOT_FOLDER}/dlls/func/CFuncTrackTrain.h
-	${ROOT_FOLDER}/dlls/func/CFuncWall.h
-	${ROOT_FOLDER}/dlls/func/CPlatTrigger.h
+	${MOD_DIR}/dlls/func/CBaseButton.h
+	${MOD_DIR}/dlls/func/CBasePlatTrain.h
+	${MOD_DIR}/dlls/func/CBreakable.h
+	${MOD_DIR}/dlls/func/CBaseDoor.h
+	${MOD_DIR}/dlls/func/CFuncPlat.h
+	${MOD_DIR}/dlls/func/CFuncPlatRot.h
+	${MOD_DIR}/dlls/func/CFuncTank.h
+	${MOD_DIR}/dlls/func/CFuncTrackChange.h
+	${MOD_DIR}/dlls/func/CFuncTrackTrain.h
+	${MOD_DIR}/dlls/func/CFuncWall.h
+	${MOD_DIR}/dlls/func/CPlatTrigger.h
 )
 
 set(ENTITY_HDR
-	${ROOT_FOLDER}/dlls/cbase.h
-	${ROOT_FOLDER}/dlls/ent_globals.h
-	${ROOT_FOLDER}/dlls/nodes.h
-	${ROOT_FOLDER}/dlls/CBasePlayer.h
-	${ROOT_FOLDER}/dlls/CBaseSpectator.h
-	${ROOT_FOLDER}/dlls/CKeyValue.h
-	${ROOT_FOLDER}/dlls/scripted.h
-	${ROOT_FOLDER}/dlls/scriptevent.h
-	${ROOT_FOLDER}/dlls/path/CPathCorner.h
-	${ROOT_FOLDER}/dlls/path/CPathTrack.h
-	${ROOT_FOLDER}/engine/progs.h
-	${ROOT_FOLDER}/engine/progdefs.h
-	${ROOT_FOLDER}/engine/edict.h
-	${ROOT_FOLDER}/engine/customentity.h
-	${ROOT_FOLDER}/common/const.h
+	${MOD_DIR}/dlls/cbase.h
+	${MOD_DIR}/dlls/ent_globals.h
+	${MOD_DIR}/dlls/nodes.h
+	${MOD_DIR}/dlls/CBasePlayer.h
+	${MOD_DIR}/dlls/CBaseSpectator.h
+	${MOD_DIR}/dlls/CKeyValue.h
+	${MOD_DIR}/dlls/scripted.h
+	${MOD_DIR}/dlls/scriptevent.h
+	${MOD_DIR}/dlls/path/CPathCorner.h
+	${MOD_DIR}/dlls/path/CPathTrack.h
+	${MOD_DIR}/engine/progs.h
+	${MOD_DIR}/engine/progdefs.h
+	${MOD_DIR}/engine/edict.h
+	${MOD_DIR}/engine/customentity.h
+	${MOD_DIR}/common/const.h
 )
 
 set(WEAPON_HDR
-	${ROOT_FOLDER}/dlls/weapon/CShockBeam.h
-	${ROOT_FOLDER}/dlls/weapon/CGrapple.h
-	${ROOT_FOLDER}/dlls/weapon/CGrappleTip.h
-	${ROOT_FOLDER}/dlls/weapon/CSpore.h
-	${ROOT_FOLDER}/dlls/weapon/CBasePlayerItem.h
-	${ROOT_FOLDER}/dlls/weapon/CBasePlayerWeapon.h
-	${ROOT_FOLDER}/dlls/weapon/CWeaponBox.h
-	${ROOT_FOLDER}/dlls/weapon/CGlock.h
-	${ROOT_FOLDER}/dlls/weapon/CCrowbar.h
-	${ROOT_FOLDER}/dlls/weapon/CPython.h
-	${ROOT_FOLDER}/dlls/weapon/CMP5.h
-	${ROOT_FOLDER}/dlls/weapon/CCrossbow.h
-	${ROOT_FOLDER}/dlls/weapon/CShotgun.h
-	${ROOT_FOLDER}/dlls/weapon/CRpg.h
-	${ROOT_FOLDER}/dlls/weapon/CGauss.h
-	${ROOT_FOLDER}/dlls/weapon/CEgon.h
-	${ROOT_FOLDER}/dlls/weapon/CHgun.h
-	${ROOT_FOLDER}/dlls/weapon/CHandGrenade.h
-	${ROOT_FOLDER}/dlls/weapon/CSatchel.h
-	${ROOT_FOLDER}/dlls/weapon/CTripmine.h
-	${ROOT_FOLDER}/dlls/weapon/CSqueak.h
-	${ROOT_FOLDER}/dlls/weapon/weapons.h
+	${MOD_DIR}/dlls/weapon/CShockBeam.h
+	${MOD_DIR}/dlls/weapon/CGrapple.h
+	${MOD_DIR}/dlls/weapon/CGrappleTip.h
+	${MOD_DIR}/dlls/weapon/CSpore.h
+	${MOD_DIR}/dlls/weapon/CBasePlayerItem.h
+	${MOD_DIR}/dlls/weapon/CBasePlayerWeapon.h
+	${MOD_DIR}/dlls/weapon/CWeaponBox.h
+	${MOD_DIR}/dlls/weapon/CGlock.h
+	${MOD_DIR}/dlls/weapon/CCrowbar.h
+	${MOD_DIR}/dlls/weapon/CPython.h
+	${MOD_DIR}/dlls/weapon/CMP5.h
+	${MOD_DIR}/dlls/weapon/CCrossbow.h
+	${MOD_DIR}/dlls/weapon/CShotgun.h
+	${MOD_DIR}/dlls/weapon/CRpg.h
+	${MOD_DIR}/dlls/weapon/CGauss.h
+	${MOD_DIR}/dlls/weapon/CEgon.h
+	${MOD_DIR}/dlls/weapon/CHgun.h
+	${MOD_DIR}/dlls/weapon/CHandGrenade.h
+	${MOD_DIR}/dlls/weapon/CSatchel.h
+	${MOD_DIR}/dlls/weapon/CTripmine.h
+	${MOD_DIR}/dlls/weapon/CSqueak.h
+	${MOD_DIR}/dlls/weapon/weapons.h
 )
 
 set(AMMO_HDR
-	${ROOT_FOLDER}/dlls/weapon/CBasePlayerAmmo.h
-	${ROOT_FOLDER}/dlls/weapon/ammo.h
+	${MOD_DIR}/dlls/weapon/CBasePlayerAmmo.h
+	${MOD_DIR}/dlls/weapon/ammo.h
 )
 
 set(UTIL_HDR
-	${ROOT_FOLDER}/dlls/animation.h
-	${ROOT_FOLDER}/dlls/Bsp.h
-	${ROOT_FOLDER}/dlls/bsptypes.h
-	${ROOT_FOLDER}/dlls/bsplimits.h
-	${ROOT_FOLDER}/dlls/plane.h
-	${ROOT_FOLDER}/dlls/util.h
-	${ROOT_FOLDER}/dlls/mstream.h
-	${ROOT_FOLDER}/dlls/lagcomp.h
-	${ROOT_FOLDER}/dlls/vector.h
-	${ROOT_FOLDER}/game_shared/shared_util.h
+	${MOD_DIR}/dlls/animation.h
+	${MOD_DIR}/dlls/Bsp.h
+	${MOD_DIR}/dlls/bsptypes.h
+	${MOD_DIR}/dlls/bsplimits.h
+	${MOD_DIR}/dlls/plane.h
+	${MOD_DIR}/dlls/util.h
+	${MOD_DIR}/dlls/mstream.h
+	${MOD_DIR}/dlls/lagcomp.h
+	${MOD_DIR}/dlls/vector.h
+	${MOD_DIR}/game_shared/shared_util.h
 )
 
 set(GAME_HDR
-	${ROOT_FOLDER}/dlls/client.h
-	${ROOT_FOLDER}/engine/custom.h
-	${ROOT_FOLDER}/engine/eiface.h
-	${ROOT_FOLDER}/dlls/game.h
-	${ROOT_FOLDER}/dlls/gamerules.h
-	${ROOT_FOLDER}/dlls/saverestore.h
-	${ROOT_FOLDER}/dlls/skill.h
-	${ROOT_FOLDER}/dlls/teamplay_gamerules.h
-	${ROOT_FOLDER}/dlls/user_messages.h
-	${ROOT_FOLDER}/dlls/mod_api.h
+	${MOD_DIR}/dlls/client.h
+	${MOD_DIR}/engine/custom.h
+	${MOD_DIR}/engine/eiface.h
+	${MOD_DIR}/dlls/game.h
+	${MOD_DIR}/dlls/gamerules.h
+	${MOD_DIR}/dlls/saverestore.h
+	${MOD_DIR}/dlls/skill.h
+	${MOD_DIR}/dlls/teamplay_gamerules.h
+	${MOD_DIR}/dlls/user_messages.h
+	${MOD_DIR}/dlls/mod_api.h
 )
 
 set(HLCOOP_HEADERS
@@ -161,20 +159,20 @@ set(HLCOOP_HEADERS
 )
 
 # setup standard include directories and compile settings
-function(hlcoop_sdk_init)	
-	include_directories(${ROOT_FOLDER}/common)
-	include_directories(${ROOT_FOLDER}/engine)
-	include_directories(${ROOT_FOLDER}/game_shared)
-	include_directories(${ROOT_FOLDER}/pm_shared)
-	include_directories(${ROOT_FOLDER}/public)
-	include_directories(${ROOT_FOLDER}/dlls/env)
-	include_directories(${ROOT_FOLDER}/dlls/func)
-	include_directories(${ROOT_FOLDER}/dlls/triggers)
-	include_directories(${ROOT_FOLDER}/dlls/monster)
-	include_directories(${ROOT_FOLDER}/dlls/item)
-	include_directories(${ROOT_FOLDER}/dlls/path)
-	include_directories(${ROOT_FOLDER}/dlls/weapon)
-	include_directories(${ROOT_FOLDER}/dlls/)
+function(hlcoop_setup_plugin OUTPUT_PATH)	
+	include_directories(${MOD_DIR}/common)
+	include_directories(${MOD_DIR}/engine)
+	include_directories(${MOD_DIR}/game_shared)
+	include_directories(${MOD_DIR}/pm_shared)
+	include_directories(${MOD_DIR}/public)
+	include_directories(${MOD_DIR}/dlls/env)
+	include_directories(${MOD_DIR}/dlls/func)
+	include_directories(${MOD_DIR}/dlls/triggers)
+	include_directories(${MOD_DIR}/dlls/monster)
+	include_directories(${MOD_DIR}/dlls/item)
+	include_directories(${MOD_DIR}/dlls/path)
+	include_directories(${MOD_DIR}/dlls/weapon)
+	include_directories(${MOD_DIR}/dlls/)
 	
 	if(UNIX)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -g -O2 -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter") 
@@ -193,7 +191,7 @@ function(hlcoop_sdk_init)
 		
 		set(CMAKE_SHARED_LIBRARY_PREFIX "" PARENT_SCOPE)
 		
-		target_link_libraries(${PROJECT_NAME} PRIVATE ${ROOT_FOLDER}/build/dlls/sevenkewp.so)
+		set(CMAKE_SHARED_LIBRARY_PREFIX "" PARENT_SCOPE)
 		
 	elseif(MSVC)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4") 
@@ -215,13 +213,29 @@ function(hlcoop_sdk_init)
 		source_group("Header Files\\hlcoop\\Game" FILES ${GAME_HDR})
 		source_group("Header Files\\hlcoop\\Util" FILES ${UTIL_HDR})
 		source_group("Header Files\\hlcoop" FILES ${MISC_HDR})
-
-		target_link_libraries(${PROJECT_NAME} PRIVATE ${ROOT_FOLDER}/build/dlls/Release/sevenkewp.lib)
 	else()
 		message(FATAL_ERROR "TODO: Mac support")
 	endif()
 
+	target_link_libraries(${PROJECT_NAME} PRIVATE sevenkewp)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS -D_CRT_SECURE_NO_DEPRECATE)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE -DPLUGIN_BUILD PLUGIN_NAME="${PROJECT_NAME}")
+	
+	if (BUILD_PLUGINS)
+		set(PLUGIN_OUT_PATH "${CMAKE_SOURCE_DIR}/build/output/${OUTPUT_PATH}")
+		set_target_properties(${PROJECT_NAME} PROPERTIES
+			RUNTIME_OUTPUT_DIRECTORY ${PLUGIN_OUT_PATH}
+			RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PLUGIN_OUT_PATH}
+			RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PLUGIN_OUT_PATH}
+		)
+		
+		if(UNIX)
+			set_target_properties(${PROJECT_NAME} PROPERTIES
+				LIBRARY_OUTPUT_DIRECTORY ${PLUGIN_OUT_PATH}
+				LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PLUGIN_OUT_PATH}
+				LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PLUGIN_OUT_PATH}
+			)
+		endif()
+	endif()
 	
 endfunction()

@@ -1,0 +1,8 @@
+Any folders here are compiled as part of build_game_and_plugins.bat
+which is faster than compiling plugins individually from their separate repos.
+Plugin libs are output to "SevenKewp/build/output/" alongside the game lib.
+
+Open a shell in this folder and clone plugin repos to add them to the build. Example:
+git clone https://github.com/wootguy/SevenKewp_plugins
+
+Plugins often need to be rebuilt whenever the mod is updated.
