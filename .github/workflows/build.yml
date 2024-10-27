@@ -15,7 +15,7 @@ jobs:
     - name: Build release 
       run: |
         mkdir build && cd build
-        cmake ..  -A win32
+        cmake ..  -A win32 -DBUILD_CLIENT=ON
         cmake --build . --config Release
 
     - name: Upload artifact
@@ -40,7 +40,7 @@ jobs:
     - name: Build release
       run: |
         mkdir build; cd build
-        cmake .. -DCMAKE_BUILD_TYPE=RELEASE
+        cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_CLIENT=ON
         make
 
     - name: Upload artifact
