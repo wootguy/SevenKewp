@@ -32,17 +32,18 @@ CPlayerBitVec	g_SentGameRulesMasks[VOICE_MAX_PLAYERS];	// These store the masks 
 CPlayerBitVec	g_SentBanMasks[VOICE_MAX_PLAYERS];			// we need to resend them.
 CPlayerBitVec	g_bWantModEnable;
 
-cvar_t voice_serverdebug = {"voice_serverdebug", "0"};
+cvar_t voice_serverdebug = {"voice_serverdebug", "0", FCVAR_SERVER, 0, 0 };
 
 // Set game rules to allow all clients to talk to each other.
 // Muted players still can't talk to each other.
-cvar_t sv_alltalk = {"sv_alltalk", "0", FCVAR_SERVER};
+cvar_t sv_alltalk = {"sv_alltalk", "0", FCVAR_SERVER, 0, 0 };
 
 // ------------------------------------------------------------------------ //
 // Static helpers.
 // ------------------------------------------------------------------------ //
 
 // Find a player with a case-insensitive name search.
+/*
 static CBasePlayer* FindPlayerByName(const char *pTestName)
 {
 	for(int i=1; i <= gpGlobals->maxClients; i++)
@@ -64,6 +65,7 @@ static CBasePlayer* FindPlayerByName(const char *pTestName)
 
 	return NULL;
 }
+*/
 
 static void VoiceServerDebug( char const *pFmt, ... )
 {

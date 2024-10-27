@@ -48,7 +48,7 @@ int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 );
 class SBColumnInfo
 {
 public:
-	char				*m_pTitle;		// If null, ignore, if starts with #, it's localized, otherwise use the string directly.
+	const char			*m_pTitle;		// If null, ignore, if starts with #, it's localized, otherwise use the string directly.
 	int					m_Width;		// Based on 640 width. Scaled to fit other resolutions.
 	Label::Alignment	m_Alignment;	
 };
@@ -702,11 +702,19 @@ void ScorePanel::FillGrid()
 				case COLUMN_NAME:
 					if ( m_iIsATeam[row] == TEAM_SPECTATORS )
 					{
-						sprintf( sz2, CHudTextMessage::BufferedLocaliseTextString( "#Spectators" ) );
+#ifdef VANILLA_HL
+						sprintf(sz2, CHudTextMessage::BufferedLocaliseTextString("#Spectators"));
+#else
+						sprintf(sz2, "%s", CHudTextMessage::BufferedLocaliseTextString("#Spectators"));
+#endif
 					}
 					else
 					{
-						sprintf( sz2, gViewPort->GetTeamName(team_info->teamnumber) );
+#ifdef VANILLA_HL
+						sprintf(sz2, gViewPort->GetTeamName(team_info->teamnumber));
+#else
+						sprintf(sz2, "%s", gViewPort->GetTeamName(team_info->teamnumber));
+#endif	
 					}
 
 					strcpy(sz, sz2);
@@ -797,7 +805,7 @@ void ScorePanel::FillGrid()
 						}
 
 						if (bNoClass)
-							sprintf(sz, "");
+							sz[0] = 0;
 						else
 							sprintf( sz, "%s", CHudTextMessage::BufferedLocaliseTextString( sLocalisedClasses[ g_PlayerExtraInfo[ m_iSortedRows[row] ].playerclass ] ) );
 					}
@@ -918,7 +926,12 @@ void ScorePanel::mousePressed(MouseCode code, Panel* panel)
 
 			if (pl_info && pl_info->name && pl_info->name[0])
 			{
+#ifdef VANILLA_HL
 				char string[256];
+#else
+				char string[2100];
+#endif
+				
 				if (GetClientVoiceMgr()->IsPlayerBlocked(iPlayer))
 				{
 					char string1[1024];
@@ -940,7 +953,11 @@ void ScorePanel::mousePressed(MouseCode code, Panel* panel)
 					GetClientVoiceMgr()->SetPlayerBlockedState(iPlayer, true);
 
 					sprintf( string1, CHudTextMessage::BufferedLocaliseTextString( "#Muted" ), pl_info->name );
-					sprintf( string2, CHudTextMessage::BufferedLocaliseTextString( "#No_longer_hear_that_player" ) );
+#ifdef VANILLA_HL
+					sprintf(string2, CHudTextMessage::BufferedLocaliseTextString("#No_longer_hear_that_player"));
+#else
+					sprintf(string2, "%s", CHudTextMessage::BufferedLocaliseTextString("#No_longer_hear_that_player"));
+#endif
 					sprintf( string, "%c** %s %s\n", HUD_PRINTTALK, string1, string2 );
 
 					gHUD.m_TextMessage.MsgFunc_TextMsg(NULL, strlen(string)+1, string );

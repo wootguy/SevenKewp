@@ -17,6 +17,7 @@
 #include "../game_shared/vgui_listbox.h"
 
 #include <ctype.h>
+#include <stdint.h>
 
 #define MAX_SCORES					10
 #define MAX_SCOREBOARD_TEAMS		5
@@ -154,7 +155,7 @@ public:
 		strcpy(buf, text);
 
 		int len = strlen(buf);
-		while (len && isspace(buf[--len]))
+		while (len && !isspace((uint8_t)buf[--len]))
 		{
 			buf[len] = 0;
 		}

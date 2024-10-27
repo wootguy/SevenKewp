@@ -97,7 +97,7 @@ int iTeamColors[5][3] =
 
 
 // Used for Class specific buttons
-char *sTFClasses[] =
+const char *sTFClasses[] =
 {
 	"",
 	"SCOUT",
@@ -112,7 +112,7 @@ char *sTFClasses[] =
 	"CIVILIAN",
 };
 
-char *sLocalisedClasses[] = 
+const char *sLocalisedClasses[] =
 {
 	"#Civilian",
 	"#Scout",
@@ -128,7 +128,7 @@ char *sLocalisedClasses[] =
 	"#Civilian",
 };
 
-char *sTFClassSelection[] = 
+const char *sTFClassSelection[] =
 {
 	"civilian",
 	"scout",
@@ -176,7 +176,11 @@ char* GetVGUITGAName(const char *pszName)
 {
 	int i;
 	char sz[256]; 
-	static char gd[256]; 
+#ifdef VANILLA_HL
+	static char gd[256];
+#else
+	static char gd[280];
+#endif
 	const char *gamedir;
 
 	if (ScreenWidth < 640)
@@ -689,7 +693,7 @@ class CException;
 // Purpose: Read the Command Menu structure from the txt file and create the menu.
 //			Returns Index of menu in m_pCommandMenus
 //-----------------------------------------------------------------------------
-int TeamFortressViewport::CreateCommandMenu( char * menuFile, int direction, int yOffset, bool flatDesign, float flButtonSizeX, float flButtonSizeY, int xOffset )
+int TeamFortressViewport::CreateCommandMenu(const char * menuFile, int direction, int yOffset, bool flatDesign, float flButtonSizeX, float flButtonSizeY, int xOffset )
 {
 	// COMMAND MENU
 	// Create the root of this new Command Menu
@@ -1616,7 +1620,12 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		// add sting auto if we are in auto directed mode
 		if ( gHUD.m_Spectator.m_autoDirector->value )
 		{
+#ifdef VANILLA_HL
 			char tempString[128];
+#else
+			char tempString[160];
+#endif
+			
 			sprintf(tempString, "#Spec_Auto %s", helpString2);
 			strcpy( helpString2, tempString );
 		}
@@ -1626,7 +1635,11 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 
 		
 		// update extra info field
+#ifdef VANILLA_HL
 		char szText[64];
+#else
+		char szText[80];
+#endif
 
 		if ( gEngfuncs.IsSpectateOnly() )
 		{

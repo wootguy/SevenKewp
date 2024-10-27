@@ -164,6 +164,7 @@ CSysModule	*Sys_LoadModule( const char *pModuleName )
 			szCwd[ strlen( szCwd ) - 1 ] = 0;
 
 		snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", szCwd, pModuleName );
+		szAbsoluteModuleName[1023] = 0;
 
 		hDLL = dlopen( szAbsoluteModuleName, RTLD_NOW );
 	}
@@ -187,6 +188,7 @@ CSysModule	*Sys_LoadModule( const char *pModuleName )
 #else
 		printf("Error:%s\n",dlerror());
 		snprintf( str, sizeof(str), "%s.so", szAbsoluteModuleName );
+		str[511] = 0;
 		hDLL = dlopen(str, RTLD_NOW);
 #endif
 	}

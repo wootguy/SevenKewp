@@ -185,7 +185,7 @@ void CWorld::Precache(void)
 				continue;
 			}
 
-			if (wad.find("xeno.wad") != -1 || wad.find("halflife.wad") != -1) {
+			if (wad.find("xeno.wad") != std::string::npos || wad.find("halflife.wad") != std::string::npos) {
 				// bad logic copied from the engine. This explains why "nwxeno.wad" fails to transfer
 				bool unexpected = wad != "xeno.wad" && wad != "halflife.wad";
 				ALERT(unexpected ? at_error : at_console, "Engine blacklisted WAD: %s\n", wad.c_str());

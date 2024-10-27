@@ -3304,7 +3304,7 @@ void PRECACHE_MODEL_EXTRAS(const char* path, studiohdr_t* mdl) {
 		pathWithoutExt = pathWithoutExt.substr(0, lastDot);
 	}
 
-	bool isPlayerModel = normalizedPath.find("models/player/") != -1;
+	bool isPlayerModel = normalizedPath.find("models/player/") != std::string::npos;
 
 	// player model preview image
 	if (isPlayerModel) {
@@ -3349,7 +3349,7 @@ void PRECACHE_MODEL_EXTRAS(const char* path, studiohdr_t* mdl) {
 			std::string opt(evt->options, 64);
 			int lastDot = opt.find(".");
 			
-			if (lastDot == -1 || lastDot == opt.size()-1)
+			if (lastDot == -1 || lastDot == (int)opt.size()-1)
 				continue; // no file extension
 
 			if (evt->event == 1004 || evt->event == 1008 || evt->event == 5004) { // play sound
