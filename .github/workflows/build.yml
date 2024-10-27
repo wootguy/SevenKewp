@@ -22,7 +22,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: sevenkewp-windows
-        path: build/dlls/Release/sevenkewp.dll
+        path: build/output/dlls/sevenkewp.dll
 
   build-linux:
     runs-on: ubuntu-20.04
@@ -47,4 +47,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: sevenkewp-linux
-        path: build/dlls/sevenkewp.so
+        path: build/output/dlls/sevenkewp.so
