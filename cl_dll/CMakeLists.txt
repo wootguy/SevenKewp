@@ -1,3 +1,5 @@
+project(${CLIENT_DLL_NAME})
+
 set(WEAPON_HDR
 	com_weapons.h
 )
@@ -202,16 +204,8 @@ set(ALL_SRC
 	${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp
 )
 
-include_directories(../dlls)
-include_directories(../dlls/env)
-include_directories(.)
-include_directories(../public)
-include_directories(../common)
-include_directories(../pm_shared)
-include_directories(../engine)
-include_directories(../utils/vgui/include)
-include_directories(../game_shared)
-include_directories(../external)
+include_directories(${CMAKE_SOURCE_DIR}/utils/vgui/include)
+include_directories(${CMAKE_SOURCE_DIR}/external)
 
 add_library(${CLIENT_DLL_NAME} SHARED ${ALL_SRC})
 
@@ -288,4 +282,18 @@ elseif(MSVC)
 
 else()
 	message(FATAL_ERROR "TODO: Mac support")
+endif()
+
+set(MOD_OUTPUT_PATH "${CMAKE_BINARY_DIR}/output/cl_dll")
+set_target_properties(${PROJECT_NAME} PROPERTIES
+	RUNTIME_OUTPUT_DIRECTORY ${MOD_OUTPUT_PATH}
+	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${MOD_OUTPUT_PATH}
+	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${MOD_OUTPUT_PATH}
+)
+if(UNIX)
+	set_target_properties(${PROJECT_NAME} PROPERTIES
+		LIBRARY_OUTPUT_DIRECTORY ${MOD_OUTPUT_PATH}
+		LIBRARY_OUTPUT_DIRECTORY_DEBUG ${MOD_OUTPUT_PATH}
+		LIBRARY_OUTPUT_DIRECTORY_RELEASE ${MOD_OUTPUT_PATH}
+	)
 endif()
