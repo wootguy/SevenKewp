@@ -682,7 +682,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		}
 	}
 
-	g_pluginManager.CallHooks(&HLCOOP_PLUGIN_HOOKS::pfnMapActivate);
+	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnMapActivate);
 }
 
 /*

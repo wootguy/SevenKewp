@@ -3347,7 +3347,7 @@ void PRECACHE_MODEL_EXTRAS(const char* path, studiohdr_t* mdl) {
 			mstudioevent_t* evt = (mstudioevent_t*)((byte*)mdl + seq->eventindex) + k;
 
 			std::string opt(evt->options, 64);
-			int lastDot = opt.find(".");
+			lastDot = opt.find(".");
 			
 			if (lastDot == -1 || lastDot == (int)opt.size()-1)
 				continue; // no file extension
