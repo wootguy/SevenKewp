@@ -15,6 +15,7 @@
 #include "pm_shared.h"
 #include "voice_gamemgr.h"
 #include "TextMenu.h"
+#include "PluginManager.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
 extern int gmsgSayText;
@@ -515,6 +516,10 @@ void ClientCommand(edict_t* pEntity)
 
 		if (pPlayer->IsObserver())
 			pPlayer->Observer_FindNextPlayer(atoi(CMD_ARGV(1)) ? true : false);
+	}
+	else if (FStrEq(pcmd, "listplugins"))
+	{
+		g_pluginManager.ListPlugins(pEntity);
 	}
 	else if (g_pGameRules->ClientCommand(GetClassPtr((CBasePlayer*)pev), pcmd))
 	{
