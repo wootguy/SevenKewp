@@ -211,20 +211,8 @@ add_library(${CLIENT_DLL_NAME} SHARED ${ALL_SRC})
 
 target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DCLIENT_DLL -DCLIENT_WEAPONS -DHL_DLL)
 
-if (USE_AUTOHOTKEY_SCRIPT)
-	add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
-		COMMAND start ${CMAKE_CURRENT_SOURCE_DIR}/../resize_console.ahk
-	)
-endif()
-
 if(UNIX)
-
 	add_definitions(-DLINUX)
-
-	#add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
-	#    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls
-	#    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
-	#)
 
 	target_link_libraries(${CLIENT_DLL_NAME} 
 		dl
@@ -240,13 +228,6 @@ if(UNIX)
 	)
 
 elseif(MSVC)
-	
-	#add_custom_command(TARGET ${CLIENT_DLL_NAME} POST_BUILD
-	#    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/cl_dlls/
-	#    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls
-	#    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${CLIENT_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/cl_dlls/
-	#)
-
 	target_link_libraries(${CLIENT_DLL_NAME} 
 		${CMAKE_CURRENT_SOURCE_DIR}/../utils/vgui/lib/win32_vc6/vgui.lib
 		wsock32
@@ -254,9 +235,9 @@ elseif(MSVC)
 	)
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
-		VS_DEBUGGER_COMMAND "${ENGINE_DIR}/${ENGINE_EXE}"
-		VS_DEBUGGER_WORKING_DIRECTORY "${ENGINE_DIR}"
-		VS_DEBUGGER_COMMAND_ARGUMENTS "${GAME_ARGS}"
+		VS_DEBUGGER_COMMAND "${CLIENT_WORK_DIR}/${CLIENT_EXE}"
+		VS_DEBUGGER_WORKING_DIRECTORY "${CLIENT_WORK_DIR}"
+		VS_DEBUGGER_COMMAND_ARGUMENTS "${CLIENT_ARGS}"
 	)
 	
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W0") 
@@ -284,7 +265,12 @@ else()
 	message(FATAL_ERROR "TODO: Mac support")
 endif()
 
-set(MOD_OUTPUT_PATH "${CMAKE_BINARY_DIR}/output/cl_dll")
+if (SETUP_IDE)
+	set(MOD_OUTPUT_PATH "${CLIENT_WORK_DIR}/valve_addon/cl_dlls")
+else()
+	set(MOD_OUTPUT_PATH "${CMAKE_BINARY_DIR}/output/cl_dlls")
+endif()
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY ${MOD_OUTPUT_PATH}
 	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${MOD_OUTPUT_PATH}

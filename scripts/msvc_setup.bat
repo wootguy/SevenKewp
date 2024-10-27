@@ -7,9 +7,7 @@ cd ..
 
 mkdir msvc
 cd msvc
-
-mkdir server
-cd server
-cmake -A Win32 -DBUILD_CLIENT=ON -DBUILD_SERVER=ON -DBUILD_PLUGINS=ON ..
+cmake -A Win32 -DBUILD_CLIENT=ON -DBUILD_SERVER=ON -DBUILD_PLUGINS=ON -DSETUP_IDE=ON ..
+cmake-gui
 
 echo.
