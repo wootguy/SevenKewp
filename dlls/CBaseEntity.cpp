@@ -15,7 +15,7 @@
 extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 
-std::vector<std::map<std::string, CKeyValue>> g_customKeyValues;
+std::vector<std::unordered_map<std::string, CKeyValue>> g_customKeyValues;
 CKeyValue g_emptyKeyValue;
 
 CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName);
@@ -153,8 +153,8 @@ void CBaseEntity::KeyValue(KeyValueData* pkvd) {
 			return;
 		}
 
-		std::map<std::string, CKeyValue>& customKeys = *GetCustomKeyValues();
-		std::map<std::string, CKeyValue>::iterator it = customKeys.find(pkvd->szKeyName);
+		std::unordered_map<std::string, CKeyValue>& customKeys = *GetCustomKeyValues();
+		std::unordered_map<std::string, CKeyValue>::iterator it = customKeys.find(pkvd->szKeyName);
 
 		if (it != customKeys.end()) {
 			value.keyName = it->second.keyName; // reuse the key name to save string memory
@@ -181,8 +181,8 @@ CKeyValue CBaseEntity::GetCustomKeyValue(const char* keyName) {
 		return g_emptyKeyValue;
 	}
 
-	std::map<std::string, CKeyValue>* customKeys = GetCustomKeyValues();
-	std::map<std::string, CKeyValue>::iterator it = customKeys->find(keyName);
+	std::unordered_map<std::string, CKeyValue>* customKeys = GetCustomKeyValues();
+	std::unordered_map<std::string, CKeyValue>::iterator it = customKeys->find(keyName);
 
 	if (it != customKeys->end()) {
 		return it->second;
@@ -201,7 +201,7 @@ CKeyValue CBaseEntity::GetKeyValue(const char* keyName) {
 	return GetEntvarsKeyvalue(pev, keyName);
 }
 
-std::map<std::string, CKeyValue>* CBaseEntity::GetCustomKeyValues() {
+std::unordered_map<std::string, CKeyValue>* CBaseEntity::GetCustomKeyValues() {
 	if (g_customKeyValues.empty())
 		g_customKeyValues.resize(gpGlobals->maxEntities);
 
@@ -320,7 +320,7 @@ int	CBaseEntity::DamageDecal(int bitsDamageType)
 
 // NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity
 // will keep a pointer to it after this call.
-CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner, std::map<std::string, std::string> keys)
+CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner, std::unordered_map<std::string, std::string> keys)
 {
 	edict_t* pent;
 	CBaseEntity* pEntity;
@@ -719,7 +719,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 				if (g_debugMonster) {
 					UTIL_Remove(g_debugCycler);
 					CBaseEntity* debugMon = g_debugMonster;
-					std::map<std::string, std::string> keys;
+					std::unordered_map<std::string, std::string> keys;
 					keys["model"] = STRING(debugMon->pev->model);
 					CBaseMonster* cycler = (CBaseMonster*)Create("cycler", debugMon->pev->origin, debugMon->pev->angles, 0, keys);
 					cycler->pev->solid = SOLID_NOT;

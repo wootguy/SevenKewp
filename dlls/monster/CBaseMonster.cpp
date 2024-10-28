@@ -19,8 +19,8 @@
 
 //#define DEBUG_MONSTER "monster_male_assassin" // uncomment to enable verbose logging
 
-std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
-std::set<std::string> g_shuffledMonsterSounds;
+std::vector<std::unordered_map<std::string, std::string>> g_monsterSoundReplacements;
+std::unordered_set<std::string> g_shuffledMonsterSounds;
 
 extern bool g_freeRoam;
 
@@ -2423,7 +2423,7 @@ int CBaseMonster::Classify(int defaultClassify) {
 
 int CBaseMonster::DefaultClassify(const char* monstertype) {
 	// Keep this map in sync with each monster's Classify method
-	static std::map<std::string, int> classMap = {
+	static std::unordered_map<std::string, int> classMap = {
 		{"hornet", CLASS_ALIEN_BIOWEAPON},
 		{"monster_alien_babyvoltigore", CLASS_ALIEN_MONSTER},
 		{"monster_alien_controller", CLASS_ALIEN_MILITARY},

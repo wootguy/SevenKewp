@@ -648,7 +648,7 @@ void CBigMomma::GibMonster()
 
 void CBigMomma :: LayHeadcrab( void )
 {
-	std::map<std::string, std::string> keys;
+	std::unordered_map<std::string, std::string> keys;
 	if (m_IsPlayerAlly) {
 		keys["is_player_ally"] = "1";
 	}

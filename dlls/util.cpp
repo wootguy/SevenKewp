@@ -88,7 +88,7 @@ unsigned int seed_table[ 256 ] =
 
 std::string g_mp3Command;
 
-std::map<std::string, int> g_admins;
+std::unordered_map<std::string, int> g_admins;
 
 TYPEDESCRIPTION	gEntvarsDescription[] =
 {
@@ -1909,7 +1909,7 @@ BOOL UTIL_IsValidEntity( edict_t *pent )
 }
 
 
-void UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::string> keys)
+void UTIL_PrecacheOther( const char *szClassname, std::unordered_map<std::string, std::string> keys)
 {
 	edict_t	*pent;
 
@@ -2090,8 +2090,8 @@ void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
 	}
 }
 
-std::map<std::string, std::string> loadReplacementFile(const char* path) {
-	std::map<std::string, std::string> replacements;
+std::unordered_map<std::string, std::string> loadReplacementFile(const char* path) {
+	std::unordered_map<std::string, std::string> replacements;
 
 	std::string fpath = getGameFilePath(path);
 	std::ifstream infile(fpath);

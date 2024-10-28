@@ -88,6 +88,6 @@ struct WavInfo {
 	bool isLooped; // sound is looped with cue points
 };
 
-extern std::map<std::string, WavInfo> g_wavInfos; // cached wav info, cleared on map change
+extern std::unordered_map<std::string, WavInfo> g_wavInfos; // cached wav info, cleared on map change
 
 EXPORT WavInfo getWaveFileInfo(const char* path);

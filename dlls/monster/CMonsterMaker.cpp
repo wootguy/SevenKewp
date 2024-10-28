@@ -300,7 +300,7 @@ void CMonsterMaker :: Precache( void )
 {
 	CBaseMonster::Precache();
 
-	std::map<std::string, std::string> keys;
+	std::unordered_map<std::string, std::string> keys;
 	if (m_soundReplacementPath)
 		keys["soundlist"] = STRING(m_soundReplacementPath);
 	if (m_IsPlayerAlly)

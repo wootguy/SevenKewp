@@ -8,17 +8,17 @@ class CBaseEntity;
 extern Bsp g_bsp;
 
 // resources that were successfully precached
-extern std::map<std::string, std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
-extern std::set<std::string> g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
-extern std::set<std::string> g_precachedSounds;
-extern std::set<std::string> g_precachedGeneric;
-extern std::map<std::string, int> g_precachedEvents;
+extern std::unordered_map<std::string, std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
+extern std::unordered_set<std::string> g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
+extern std::unordered_set<std::string> g_precachedSounds;
+extern std::unordered_set<std::string> g_precachedGeneric;
+extern std::unordered_map<std::string, int> g_precachedEvents;
 
 // resources that attempted to precache but may have been replaced with a failure model
-extern std::set<std::string> g_tryPrecacheModels;
-extern std::set<std::string> g_tryPrecacheSounds;
-extern std::set<std::string> g_tryPrecacheGeneric;
-extern std::set<std::string> g_tryPrecacheEvents;
+extern std::unordered_set<std::string> g_tryPrecacheModels;
+extern std::unordered_set<std::string> g_tryPrecacheSounds;
+extern std::unordered_set<std::string> g_tryPrecacheGeneric;
+extern std::unordered_set<std::string> g_tryPrecacheEvents;
 
 #ifdef CLIENT_DLL
 #define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)

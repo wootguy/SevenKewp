@@ -30,7 +30,7 @@
 #include <string>
 #include "game.h"
 #include <unordered_map>
-#include <set>
+#include <unordered_set>
 #include <string>
 #include "mstream.h"
 #include <float.h>
@@ -45,12 +45,12 @@ class CBasePlayer;
 
 extern EXPORT globalvars_t				*gpGlobals;
 
-extern std::set<std::string> g_weaponClassnames;
+extern std::unordered_set<std::string> g_weaponClassnames;
 
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
 
-extern std::map<std::string, int> g_admins;
+extern std::unordered_map<std::string, int> g_admins;
 
 extern std::string g_mp3Command; // current global mp3 command
 
@@ -391,7 +391,7 @@ EXPORT void			UTIL_Bubbles( Vector mins, Vector maxs, int count );
 EXPORT void			UTIL_BubbleTrail( Vector from, Vector to, int count );
 
 // allows precacheing of other entities
-EXPORT void			UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::string> keys=std::map<std::string, std::string>() );
+EXPORT void			UTIL_PrecacheOther( const char *szClassname, std::unordered_map<std::string, std::string> keys=std::unordered_map<std::string, std::string>() );
 
 // prints a message to each client
 EXPORT void			UTIL_ClientPrintAll( int msg_dest, const char *msg);
@@ -760,7 +760,7 @@ EXPORT std::string getGameFilePath(const char* path);
 
 // loads a global model/sound replacement file
 // format: "file_path" "replacement_file_path"
-EXPORT std::map<std::string, std::string> loadReplacementFile(const char* path);
+EXPORT std::unordered_map<std::string, std::string> loadReplacementFile(const char* path);
 
 EXPORT void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType=MSG_BROADCAST, edict_t* dest=NULL);
 

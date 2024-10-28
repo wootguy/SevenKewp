@@ -166,7 +166,7 @@ public:
 	virtual void	KeyValue(KeyValueData* pkvd);
 	virtual CKeyValue GetKeyValue(const char* keyName);
 	CKeyValue GetCustomKeyValue(const char* keyName);
-	std::map<std::string, CKeyValue>* GetCustomKeyValues();
+	std::unordered_map<std::string, CKeyValue>* GetCustomKeyValues();
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	virtual int		ObjectCaps( void ) { return FCAP_ACROSS_TRANSITION; }
@@ -352,7 +352,7 @@ public:
 
 
 	//
-	static CBaseEntity *Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner = NULL, std::map<std::string, std::string> keys= std::map<std::string, std::string>());
+	static CBaseEntity *Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner = NULL, std::unordered_map<std::string, std::string> keys= std::unordered_map<std::string, std::string>());
 
 	virtual BOOL FBecomeProne( void ) {return FALSE;};
 	edict_t *edict() { return ENT( pev ); };

@@ -87,17 +87,17 @@ cvar_t	*sv_lowercase = NULL;
 
 // END Cvars for Skill Level settings
 
-std::map<std::string, std::string> g_modelReplacementsMod;
-std::map<std::string, std::string> g_modelReplacementsMap;
-std::map<std::string, std::string> g_modelReplacements;
+std::unordered_map<std::string, std::string> g_modelReplacementsMod;
+std::unordered_map<std::string, std::string> g_modelReplacementsMap;
+std::unordered_map<std::string, std::string> g_modelReplacements;
 
-std::map<std::string, std::string> g_soundReplacementsMod;
-std::map<std::string, std::string> g_soundReplacementsMap;
-std::map<std::string, std::string> g_soundReplacements;
+std::unordered_map<std::string, std::string> g_soundReplacementsMod;
+std::unordered_map<std::string, std::string> g_soundReplacementsMap;
+std::unordered_map<std::string, std::string> g_soundReplacements;
 
-std::set<std::string> g_mapWeapons;
+std::unordered_set<std::string> g_mapWeapons;
 
-std::map<std::string, const char*> g_itemNameRemap = {
+std::unordered_map<std::string, const char*> g_itemNameRemap = {
 	{"weapon_9mmar", "weapon_9mmAR"},
 	{"weapon_mp5", "weapon_9mmAR"},
 	{"weapon_uzi", "weapon_9mmAR"},
@@ -153,7 +153,7 @@ void dump_missing_files() {
 
 	std::vector<std::string> resList;
 
-	std::set<std::string> allPrecacheFiles;
+	std::unordered_set<std::string> allPrecacheFiles;
 	allPrecacheFiles.insert(g_tryPrecacheModels.begin(), g_tryPrecacheModels.end());
 	allPrecacheFiles.insert(g_missingModels.begin(), g_missingModels.end());
 	allPrecacheFiles.insert(g_tryPrecacheGeneric.begin(), g_tryPrecacheGeneric.end());

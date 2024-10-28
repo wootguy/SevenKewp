@@ -17,9 +17,9 @@
 #define GAME_H
 
 #include "CKeyValue.h"
-#include <map>
+#include <unordered_map>
 #include <string>
-#include <set>
+#include <unordered_set>
 
 extern void GameDLLInit( void );
 
@@ -131,28 +131,28 @@ struct TextureTypeStats {
 
 extern TextureTypeStats g_textureStats;
 
-extern std::map<std::string, std::string> g_modelReplacementsMap; // model replacements for the current map
-extern std::map<std::string, std::string> g_modelReplacementsMod; // model replacements for this mod
-extern std::map<std::string, std::string> g_modelReplacements; // combined model replacements
+extern std::unordered_map<std::string, std::string> g_modelReplacementsMap; // model replacements for the current map
+extern std::unordered_map<std::string, std::string> g_modelReplacementsMod; // model replacements for this mod
+extern std::unordered_map<std::string, std::string> g_modelReplacements; // combined model replacements
 
-extern std::map<std::string, std::string> g_soundReplacementsMod; // sound replacements for the current map
-extern std::map<std::string, std::string> g_soundReplacementsMap; // sound replacements for this mod
-extern std::map<std::string, std::string> g_soundReplacements; // combined sound replacements
+extern std::unordered_map<std::string, std::string> g_soundReplacementsMod; // sound replacements for the current map
+extern std::unordered_map<std::string, std::string> g_soundReplacementsMap; // sound replacements for this mod
+extern std::unordered_map<std::string, std::string> g_soundReplacements; // combined sound replacements
 
-extern std::set<std::string> g_mapWeapons; // weapons which should be precached (don't use aliases here)
-extern std::map<std::string, const char*> g_itemNameRemap;
+extern std::unordered_set<std::string> g_mapWeapons; // weapons which should be precached (don't use aliases here)
+extern std::unordered_map<std::string, const char*> g_itemNameRemap;
 
 // per-monster sound replacement maps
 // should be a class member, but I'm afraid of the bugs that will come from using non-POD class members
-extern std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
+extern std::vector<std::unordered_map<std::string, std::string>> g_monsterSoundReplacements;
 
 // map for each entity, containing custom keyvalues
 // using a global vector instead of a class member because the map is not POD
-extern std::vector<std::map<std::string, CKeyValue>> g_customKeyValues;
+extern std::vector<std::unordered_map<std::string, CKeyValue>> g_customKeyValues;
 
 extern CKeyValue g_emptyKeyValue; // a keyvalue initialized with zeroes
 
-extern std::set<std::string> g_shuffledMonsterSounds; // classes that had their sounds shuffled this map
+extern std::unordered_set<std::string> g_shuffledMonsterSounds; // classes that had their sounds shuffled this map
 
 extern bool g_cfgsExecuted; // set to true after server and map cfgs are executed
 

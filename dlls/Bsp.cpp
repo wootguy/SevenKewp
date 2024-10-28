@@ -1,8 +1,8 @@
 #include "Bsp.h"
 #include "util.h"
 #include <sstream>
-#include <set>
-#include <map>
+#include <unordered_set>
+#include <unordered_map>
 #include <fstream>
 #include <algorithm>
 #include <cstdint>
@@ -147,7 +147,7 @@ void Bsp::count_entity_bsp_models()
 	int lineNum = 0;
 	int lastBracket = -1;
 
-	set<string> unique_bsp_models;
+	unordered_set<string> unique_bsp_models;
 
 	string line = "";
 	while (getline(in, line))
