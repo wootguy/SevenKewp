@@ -3,8 +3,21 @@
 #include "PluginManager.h"
 #include "cbase.h"
 #include <fstream>
+#include "Scheduler.h"
 
 PluginManager g_pluginManager;
+
+#define MAX_PLUGIN_CVARS 256
+
+struct ExternalCvar {
+	int pluginId;
+	cvar_t cvar;
+};
+
+ExternalCvar g_plugin_cvars[MAX_PLUGIN_CVARS];
+int g_plugin_cvar_count = 0;
+
+int g_plugin_id = 0;
 
 #ifdef _WIN32
 #include "windows.h"
@@ -20,11 +33,10 @@ PluginManager g_pluginManager;
 #define HMODULE void*
 #endif
 
-typedef int(*PLUGIN_INIT_FUNCTION)(HLCOOP_PLUGIN_HOOKS* pFunctionTable, int interfaceVersion);
+typedef int(*PLUGIN_INIT_FUNCTION)(void* plugin, int interfaceVersion);
 typedef void(*PLUGIN_EXIT_FUNCTION)(void);
 
 bool PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
-
 	std::string gamePath = fpath;
 
 	if (isMapPlugin) {
@@ -44,6 +56,7 @@ bool PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
 	plugin.isMapPlugin = isMapPlugin;
 
 	plugin.fpath = fpath;
+	plugin.id = g_plugin_id++;
 
 #ifdef _WIN32
 	plugin.h_module = LoadLibraryA(plugin.fpath.c_str());
@@ -62,7 +75,7 @@ bool PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
 
 	if (apiFunc) {
 		int apiVersion = HLCOOP_API_VERSION;
-		if (apiFunc(&plugin.hooks, apiVersion)) {
+		if (apiFunc(&plugin, apiVersion)) {
 			ALERT(at_console, "Loaded plugin '%s'\n", plugin.fpath.c_str());
 		} else {
 			ALERT(at_error, "PluginInit call failed in plugin '%s'.\n", plugin.fpath.c_str());
@@ -91,6 +104,8 @@ void PluginManager::UnloadPlugin(const Plugin& plugin) {
 		ALERT(at_console, "PluginExit not found in plugin '%s'\n", plugin.fpath.c_str());
 	}
 
+	g_Scheduler.RemoveTimers(plugin.name);
+
 	FreeLibrary((HMODULE)plugin.h_module);
 	ALERT(at_console, "Removed plugin: '%s'\n", plugin.fpath.c_str());
 }
@@ -103,6 +118,30 @@ void PluginManager::RemovePlugin(const Plugin& plugin) {
 			plugins.erase(plugins.begin() + i);
 			return;
 		}
+	}
+}
+
+void PluginManager::RemovePlugin(const char* name) {
+	int bestIdx = -1;
+	int numFound = 0;
+
+	std::string lowerName = toLowerCase(name);
+
+	for (int i = 0; i < (int)plugins.size(); i++) {
+		if (toLowerCase(plugins[i].fpath).find(lowerName) != std::string::npos) {
+			bestIdx = i;
+			numFound++;
+		}
+	}
+
+	if (numFound == 1) {
+		RemovePlugin(plugins[bestIdx]);
+	}
+	else if (numFound > 1) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Multiple plugins contain '%s'. Be more specific.\n", name));
+	}
+	else {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("No plugin found by name '%s'\n", name));
 	}
 }
 
@@ -123,12 +162,12 @@ void PluginManager::RemovePlugins(bool mapPluginsOnly) {
 
 void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 	static uint64_t lastEditTime = 0;
-	const char* configPath = CVAR_GET_STRING("pluginlist");
+	const char* configPath = CVAR_GET_STRING("pluginlistfile");
 
 	std::string path = getGameFilePath(configPath);
 
 	if (path.empty()) {
-		ALERT(at_warning, "Missing plugin config: '%s'\n", configPath);
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Missing plugin config: '%s'\n", configPath));
 	}
 
 	uint64_t editTime = getFileModifiedTime(path.c_str());
@@ -137,14 +176,14 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 		return; // no changes made
 	}
 
-	lastEditTime = editTime;
-
 	std::ifstream infile(path);
 
 	if (!infile.is_open()) {
-		ALERT(at_console, "Failed to open plugin config: '%s'\n", path.c_str());
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Failed to open plugin config: '%s'\n", path.c_str()));
 		return;
 	}
+
+	lastEditTime = editTime;
 
 	std::vector<std::string> pluginPaths;
 
@@ -163,8 +202,8 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 		std::string gamePath = getGameFilePath(pluginPath.c_str());
 
 		if (gamePath.empty()) {
-			ALERT(at_console, "Error on line %d of '%s'. Plugin not found: '%s'\n",
-				lineNum, path.c_str(), pluginPath.c_str());
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("Error on line %d of '%s'. Plugin not found: '%s'\n",
+				lineNum, path.c_str(), pluginPath.c_str()));
 			continue;
 		}
 
@@ -236,10 +275,11 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 	});
 
 	if (numFailed) {
-		ALERT(at_error, "Loaded %d plugins. %d plugins failed to load.\n", numLoaded, numFailed);
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded %d plugins. %d plugins failed to load.\n",
+			numLoaded, numFailed));
 	}
 	else {
-		ALERT(at_console, "Loaded %d plugins\n", numLoaded);
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded %d plugins\n", numLoaded));
 	}
 }
 
@@ -270,24 +310,14 @@ void PluginManager::ListPlugins(edict_t* plr) {
 	for (int i = 0; i < (int)plugins.size(); i++) {
 		const Plugin& plugin = plugins[i];
 
-		std::string name = plugin.fpath;
-		int lastSlash = name.find_last_of("/");
-		if (lastSlash != -1) {
-			name = name.substr(lastSlash + 1);
-		}
-		int lastDot = name.find_last_of(".");
-		if (lastDot != -1) {
-			name = name.substr(0, lastDot);
-		}
-
 		const char* type = plugin.isMapPlugin ? "MAP" : "SERVER";
 
 		if (isAdmin) {
-			lines.push_back(UTIL_VarArgs("%2d) %-20s %-8s %-44s\n", i + 1, name.c_str(), type, plugin.fpath.c_str()));
+			lines.push_back(UTIL_VarArgs("%2d) %-20s %-8s %-44s\n", i + 1, plugin.name, type, plugin.fpath.c_str()));
 		}
 		else {
 			// player shouldn't know how the server files are laid out
-			lines.push_back(UTIL_VarArgs("%2d) %-20s %-8s\n", i + 1, name.c_str(), type));
+			lines.push_back(UTIL_VarArgs("%2d) %-20s %-8s\n", i + 1, plugin.name, type));
 		}
 	}
 	lines.push_back("--------------------------------------------------------------------------------\n");
@@ -312,6 +342,59 @@ ENTITYINIT PluginManager::GetCustomEntityInitFunc(const char* pname) {
 	}
 
 	return NULL;
+}
+
+cvar_t* RegisterPluginCVar(void* pluginptr, char* name, char* strDefaultValue, int intDefaultValue, int flags) {
+	if (!pluginptr) {
+		return NULL;
+	}
+
+	Plugin* plugin = (Plugin*)pluginptr;
+
+	if (g_plugin_cvar_count >= MAX_PLUGIN_CVARS) {
+		ALERT(at_error, "Plugin cvar limit exceeded! Failed to register: %s\n", name);
+		return NULL;
+	}
+
+	cvar_t* existing = CVAR_GET_POINTER(name);
+	if (existing) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Plugin cvar already registered: %s\n", name));
+
+		// update the owner of the cvar
+		for (int i = 0; i < MAX_PLUGIN_CVARS; i++) {
+			if (existing == &g_plugin_cvars[i].cvar) {
+				g_plugin_cvars[i].pluginId = plugin->id;
+			}
+		}
+
+		return existing;
+	}
+
+	ExternalCvar& extvar = g_plugin_cvars[g_plugin_cvar_count];
+
+	extvar.cvar.name = STRING(ALLOC_STRING(name));
+	extvar.cvar.string = STRING(ALLOC_STRING(strDefaultValue));
+	extvar.cvar.flags = flags | FCVAR_EXTDLL;
+	extvar.cvar.value = intDefaultValue;
+	extvar.cvar.next = NULL;
+	extvar.pluginId = plugin->id;
+
+	g_plugin_cvar_count++;
+
+	CVAR_REGISTER(&extvar.cvar);
+
+	return CVAR_GET_POINTER(name);
+}
+
+void RegisterPlugin(void* pluginptr, HLCOOP_PLUGIN_HOOKS* hooks, const char* name) {
+	if (!pluginptr) {
+		return;
+	}
+
+	Plugin* plugin = (Plugin*)pluginptr;
+
+	plugin->name = name;
+	memcpy(&plugin->hooks, hooks, sizeof(HLCOOP_PLUGIN_HOOKS));
 }
 
 // custom entity loader called by the engine during map load

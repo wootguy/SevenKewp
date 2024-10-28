@@ -41,6 +41,10 @@
 #include <fstream>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <chrono>
+
+using namespace std::chrono;
+
 #ifndef WIN32
 #include <unistd.h>
 #endif
@@ -93,6 +97,8 @@ std::map<std::string, WavInfo> g_wavInfos;
 Bsp g_bsp;
 
 std::string g_mp3Command;
+
+std::map<std::string, int> g_admins;
 
 unsigned int U_Random( void ) 
 { 
@@ -4778,4 +4784,89 @@ const char* getActiveWeapon(entvars_t* pev) {
 	CBasePlayer* plr = (CBasePlayer*)ent;
 	
 	return  plr->m_pActiveItem ? STRING(plr->m_pActiveItem->pev->classname) : "";
+}
+
+uint64_t getEpochMillis() {
+	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
+double TimeDifference(uint64_t start, uint64_t end) {
+	if (end > start) {
+		return (end - start) / 1000.0;
+	}
+	else {
+		return -((start - end) / 1000.0);
+	}
+}
+
+void LoadAdminList(bool forceUpdate) {
+	const char* ADMIN_LIST_FILE = CVAR_GET_STRING("adminlistfile");
+
+	g_admins.clear();
+
+	static uint64_t lastEditTime = 0;
+
+	std::string fpath = getGameFilePath(ADMIN_LIST_FILE);
+
+	if (fpath.empty()) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Missing admin list: '%s'\n", ADMIN_LIST_FILE));
+		return;
+	}
+
+	uint64_t editTime = getFileModifiedTime(fpath.c_str());
+
+	if (!forceUpdate && lastEditTime == editTime) {
+		return; // no changes made
+	}
+	
+	std::ifstream infile(fpath);
+
+	if (!infile.is_open()) {
+		ALERT(at_console, "Failed to open admins file: %s\n", ADMIN_LIST_FILE);
+		return;
+	}
+
+	lastEditTime = editTime;
+
+	std::string line;
+	while (std::getline(infile, line)) {
+		if (line.empty()) {
+			continue;
+		}
+
+		// strip comments
+		int endPos = line.find_first_of(" \t#/\n");
+		std::string steamId = trimSpaces(line.substr(0, endPos));
+
+		if (steamId.length() < 1) {
+			continue;
+		}
+
+		int adminLevel = ADMIN_YES;
+
+		if (steamId[0] == '*') {
+			adminLevel = ADMIN_OWNER;
+			steamId = steamId.substr(1);
+		}
+
+		g_admins[steamId] = adminLevel;
+	}
+
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded %d admin(s) from file", g_admins.size()));
+}
+
+int AdminLevel(edict_t* plr) {
+	std::string steamId = (*g_engfuncs.pfnGetPlayerAuthId)(plr);
+
+	if (!IS_DEDICATED_SERVER()) {
+		if (ENTINDEX(plr) == 1) {
+			return ADMIN_OWNER; // listen server owner is always the first player to join (I hope)
+		}
+	}
+
+	if (g_admins.find(steamId) != g_admins.end()) {
+		return g_admins[steamId];
+	}
+
+	return ADMIN_NO;
 }

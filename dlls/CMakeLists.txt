@@ -415,11 +415,13 @@ set(UTIL_HDR
 	Bsp.h
 	bsptypes.h
 	bsplimits.h
+	CommandArgs.h
 	plane.h
 	util.h
 	mstream.h
 	lagcomp.h
 	vector.h
+	Scheduler.h
 	TextMenu.h
 	../game_shared/shared_util.h
 )
@@ -427,11 +429,13 @@ set(UTIL_SRC
 	animation.cpp
 	Bsp.cpp
 	bsptypes.cpp
+	CommandArgs.cpp
 	plane.cpp
 	sound.cpp
 	util.cpp
 	mstream.cpp
 	lagcomp.cpp
+	Scheduler.cpp
 	TextMenu.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp

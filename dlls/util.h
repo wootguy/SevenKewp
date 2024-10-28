@@ -29,7 +29,6 @@
 #include <vector>
 #include <string>
 #include "game.h"
-#include <map>
 #include <unordered_map>
 #include <set>
 #include <string>
@@ -78,6 +77,14 @@ extern int g_edictsinit; // 1 if all edicts were allocated so that relocations c
 #define MAX_PRECACHE_SOUND 511
 #define MAX_PRECACHE_MODEL 510
 #define MAX_PRECACHE_EVENT 256
+
+enum AdminLevel {
+	ADMIN_NO,
+	ADMIN_YES,
+	ADMIN_OWNER
+};
+
+extern std::map<std::string, int> g_admins;
 
 enum merged_item_bodies {
 	MERGE_MDL_W_9MMAR,
@@ -861,9 +868,23 @@ EXPORT void PlayCDTrack(int iTrack);
 const char* cstr(string_t s);
 
 // strips unsafe chars from value to prevent sneaky stuff like "sv_gravity 800;rcon_password lololol"
-std::string sanitize_cvar_value(std::string val);
+EXPORT std::string sanitize_cvar_value(std::string val);
 
-const char* getActiveWeapon(entvars_t* pev);
+EXPORT const char* getActiveWeapon(entvars_t* pev);
 
 // for debugging
 bool ModelIsValid(entvars_t* edict, studiohdr_t* header);
+
+EXPORT const char* getPlayerUniqueId(edict_t* plr);
+
+EXPORT uint64_t steamid_to_steamid64(const char* steamid);
+
+EXPORT uint64_t getPlayerCommunityId(edict_t* plr);
+
+EXPORT void LoadAdminList(bool forceUpdate=false); // call on each map change, so AdminLevel can work
+
+EXPORT int AdminLevel(edict_t* player);
+
+EXPORT uint64_t getEpochMillis();
+
+EXPORT double TimeDifference(uint64_t start, uint64_t end);

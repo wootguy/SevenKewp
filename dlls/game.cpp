@@ -59,7 +59,8 @@ cvar_t	mp_edictsorting ={"mp_edictsorting","1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_shitcode ={"mp_shitcode","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_mergemodels ={"mp_mergemodels","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_killfeed ={"mp_killfeed","1", FCVAR_SERVER, 0, 0 };
-cvar_t	pluginlist ={"pluginlist","plugins.txt", FCVAR_SERVER, 0, 0 };
+cvar_t	pluginlistfile ={"pluginlistfile","plugins.txt", FCVAR_SERVER, 0, 0 };
+cvar_t	adminlistfile ={"adminlistfile","admins.txt", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 
@@ -211,6 +212,14 @@ void list_plugins() {
 	g_pluginManager.ListPlugins(NULL);
 }
 
+void remove_plugin() {
+	if (CMD_ARGC() < 2) {
+		return;
+	}
+
+	g_pluginManager.RemovePlugin(CMD_ARGV(1));
+}
+
 void test_command() {
 }
 
@@ -229,6 +238,7 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("edicts", PrintEntindexStats);
 	g_engfuncs.pfnAddServerCommand("reloadplugins", reload_plugins);
 	g_engfuncs.pfnAddServerCommand("listplugins", list_plugins);
+	g_engfuncs.pfnAddServerCommand("removeplugin", remove_plugin);
 	// Register cvars here:
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
@@ -281,7 +291,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_shitcode);
 	CVAR_REGISTER (&mp_mergemodels);
 	CVAR_REGISTER (&mp_killfeed);
-	CVAR_REGISTER (&pluginlist);
+	CVAR_REGISTER (&pluginlistfile);
+	CVAR_REGISTER (&adminlistfile);
 
 	CVAR_REGISTER (&mp_chattime);
 

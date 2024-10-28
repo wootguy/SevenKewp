@@ -5,11 +5,13 @@
 #include "const.h"
 
 struct Plugin {
-	std::string fpath;
-	void* h_module; // handle to the library
 	HLCOOP_PLUGIN_HOOKS hooks;
+	const char* name; // must be unique. Each plugin defines this
+	void* h_module; // handle to the library
 	bool isMapPlugin;
+	int id; // unique per server instance
 	int sortId; // not unique
+	std::string fpath;
 };
 
 typedef void(*ENTITYINIT)(struct entvars_s*);
@@ -35,6 +37,8 @@ public:
 	void UnloadPlugin(const Plugin& plugin);
 
 	void RemovePlugin(const Plugin& plugin);
+
+	void RemovePlugin(const char* name);
 
 	void RemovePlugins(bool mapPluginsOnly);
 
