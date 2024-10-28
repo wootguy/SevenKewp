@@ -416,13 +416,17 @@ set(UTIL_HDR
 	bsptypes.h
 	bsplimits.h
 	CommandArgs.h
+	debug.h
+	eng_wrappers.h
 	plane.h
+	saverestore.h
 	util.h
 	mstream.h
 	lagcomp.h
 	vector.h
 	Scheduler.h
 	TextMenu.h
+	wav.h
 	../game_shared/shared_util.h
 )
 set(UTIL_SRC
@@ -430,13 +434,17 @@ set(UTIL_SRC
 	Bsp.cpp
 	bsptypes.cpp
 	CommandArgs.cpp
+	debug.cpp
+	eng_wrappers.cpp
 	plane.cpp
 	sound.cpp
 	util.cpp
 	mstream.cpp
 	lagcomp.cpp
+	saverestore.cpp
 	Scheduler.cpp
 	TextMenu.cpp
+	wav.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
 	../pm_shared/pm_shared.cpp
@@ -449,7 +457,6 @@ set(GAME_HDR
 	../engine/eiface.h
 	game.h
 	gamerules.h
-	saverestore.h
 	skill.h
 	teamplay_gamerules.h
 	user_messages.h
