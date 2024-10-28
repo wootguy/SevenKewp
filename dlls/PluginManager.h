@@ -66,7 +66,7 @@ public:
 			
 			if (ret.code & HOOKBIT_OVERRIDE) {
 				if (totalRet.code & HOOKBIT_OVERRIDE) {
-					ALERT(at_console, "Multiple plugins want to override a function return value\n");
+					ALERT(at_console, "%s", "Multiple plugins want to override a function return value\n");
 				}
 				totalRet.code |= HOOKBIT_OVERRIDE;
 				totalRet.data = ret.data;

@@ -125,13 +125,14 @@ void CFuncVehicle :: Blocked( CBaseEntity *pOther )
 	{
 		pevOther->velocity = pev->velocity;
 		return;
-
+		/*
 		float deltaSpeed = fabs(pev->speed);
 		if ( deltaSpeed > 50 )
 			deltaSpeed = 50;
 		if ( !pevOther->velocity.z )
 			pevOther->velocity.z += deltaSpeed;
 		return;
+		*/
 	}
 	else
 	{
