@@ -248,7 +248,7 @@ struct skilldata_t
 EXPORT extern DLL_GLOBAL skilldata_t gSkillData;
 
 EXPORT extern DLL_GLOBAL int g_iSkillLevel;
-EXPORT extern std::map<std::string, float> g_defaultMonsterHealth;
+EXPORT extern std::unordered_map<std::string, float> g_defaultMonsterHealth;
 
 void RefreshSkillData();
 

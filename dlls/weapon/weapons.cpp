@@ -276,7 +276,7 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 
 
 bool g_registeringCustomWeps = false;
-std::set<std::string> g_weaponClassnames;
+std::unordered_set<std::string> g_weaponClassnames;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 

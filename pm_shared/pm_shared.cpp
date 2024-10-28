@@ -31,10 +31,10 @@
 #include <ctype.h>  // isspace
 #include "shared_util.h"
 
-#include <map>
+#include <unordered_map>
 #include <string>
 
-extern std::map<std::string, std::string> g_soundReplacements;
+extern std::unordered_map<std::string, std::string> g_soundReplacements;
 
 #ifdef CLIENT_DLL
 	// Spectator Mode

@@ -323,7 +323,7 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 			{
 				m_hGrunt[i]->SUB_StartFadeOut( );
 			}
-			std::map<std::string, std::string> keys;
+			std::unordered_map<std::string, std::string> keys;
 			if (m_IsPlayerAlly) {
 				keys["is_player_ally"] = "1";
 			}

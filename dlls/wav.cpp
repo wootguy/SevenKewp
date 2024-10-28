@@ -2,7 +2,7 @@
 #include "util.h"
 #include "wav.h"
 
-std::map<std::string, WavInfo> g_wavInfos;
+std::unordered_map<std::string, WavInfo> g_wavInfos;
 
 WavInfo getWaveFileInfo(const char* path) {
 	if (g_wavInfos.find(path) != g_wavInfos.end()) {

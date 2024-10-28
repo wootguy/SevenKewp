@@ -33,7 +33,7 @@
 #include <sstream>
 #include <string>
 #include <fstream>
-#include <set>
+#include <unordered_set>
 #include <algorithm>
 
 using namespace std;
@@ -112,7 +112,7 @@ void execMapCfg() {
 	// Map CFGs are low trust so only whitelisted commands are allowed.
 	// Server owners shouldn't have to check each map for things like "rcon_password HAHA_GOT_YOU"
 
-	static set<string> whitelistCommands = {
+	static unordered_set<string> whitelistCommands = {
 		"sv_gravity",
 		"sv_friction",
 		"sv_accelerate",
@@ -153,7 +153,7 @@ void execMapCfg() {
 		"nosuit",
 	};
 
-	static set<string> itemNames = {
+	static unordered_set<string> itemNames = {
 		"weapon_crossbow",
 		"weapon_crowbar",
 		"weapon_egon",

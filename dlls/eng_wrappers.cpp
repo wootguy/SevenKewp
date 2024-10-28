@@ -7,15 +7,15 @@
 #include "TextMenu.h"
 #include <fstream>
 
-std::map<std::string, std::string> g_precachedModels;
-std::set<std::string> g_missingModels;
-std::set<std::string> g_precachedSounds;
-std::set<std::string> g_precachedGeneric;
-std::map<std::string, int> g_precachedEvents;
-std::set<std::string> g_tryPrecacheModels;
-std::set<std::string> g_tryPrecacheSounds;
-std::set<std::string> g_tryPrecacheGeneric;
-std::set<std::string> g_tryPrecacheEvents;
+std::unordered_map<std::string, std::string> g_precachedModels;
+std::unordered_set<std::string> g_missingModels;
+std::unordered_set<std::string> g_precachedSounds;
+std::unordered_set<std::string> g_precachedGeneric;
+std::unordered_map<std::string, int> g_precachedEvents;
+std::unordered_set<std::string> g_tryPrecacheModels;
+std::unordered_set<std::string> g_tryPrecacheSounds;
+std::unordered_set<std::string> g_tryPrecacheGeneric;
+std::unordered_set<std::string> g_tryPrecacheEvents;
 
 Bsp g_bsp;
 
@@ -196,7 +196,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 
 	bool hadMonsterSoundReplacement = false;
 	if (ent && ent->IsMonster() && (int)g_monsterSoundReplacements.size() >= ent->entindex()) {
-		std::map<std::string, std::string>& replacementMap = g_monsterSoundReplacements[ent->entindex()];
+		std::unordered_map<std::string, std::string>& replacementMap = g_monsterSoundReplacements[ent->entindex()];
 		if (replacementMap.find(path) != replacementMap.end()) {
 			path = replacementMap[path].c_str();
 			hadMonsterSoundReplacement = true;

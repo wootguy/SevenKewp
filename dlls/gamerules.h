@@ -1,5 +1,5 @@
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #pragma once
@@ -298,7 +298,7 @@ public:
 	virtual BOOL IsCoOp( void );
 
 protected:
-    std::map<std::string, bool> SurvivalPlayerData;
+    std::unordered_map<std::string, bool> SurvivalPlayerData;
 public:
 	virtual BOOL SurvivalModeEnabled( void );
 	virtual BOOL SurvivalModeCanSpawn( CBasePlayer *pPlayer );
