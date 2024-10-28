@@ -1021,7 +1021,7 @@ typedef struct enginefuncs_s
 	*	@param pszKey Key whose value to set.
 	*	@param pszValue Value to set.
 	*/
-	void		(*pfnSetKeyValue)			(char* pszInfoBuffer, const char* pszKey, char* pszValue);
+	void		(*pfnSetKeyValue)			(char* pszInfoBuffer, const char* pszKey, const char* pszValue);
 
 	/**
 	*	Sets the value of the given key in the given buffer.
@@ -1031,7 +1031,7 @@ typedef struct enginefuncs_s
 	*	@param pszKey Key whose value to set.
 	*	@param pszValue Value to set.
 	*/
-	void		(*pfnSetClientKeyValue)		(int clientIndex, char* pszInfoBuffer, const char* pszKey, char* pszValue);
+	void		(*pfnSetClientKeyValue)		(int clientIndex, char* pszInfoBuffer, const char* pszKey, const char* pszValue);
 
 	/**
 	*	Checks if the given filename is a valid map.

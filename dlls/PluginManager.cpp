@@ -373,7 +373,7 @@ ENTITYINIT PluginManager::GetCustomEntityInitFunc(const char* pname) {
 	return NULL;
 }
 
-cvar_t* RegisterPluginCVar(void* pluginptr, char* name, char* strDefaultValue, int intDefaultValue, int flags) {
+cvar_t* RegisterPluginCVar(void* pluginptr, const char* name, const char* strDefaultValue, int intDefaultValue, int flags) {
 	if (!pluginptr) {
 		return NULL;
 	}
@@ -443,7 +443,7 @@ void ExternalPluginCommand() {
 	ecmd->function();
 }
 
-void RegisterPluginCommand(void* pluginptr, char* cmd, void (*function)(void)) {
+void RegisterPluginCommand(void* pluginptr, const char* cmd, void (*function)(void)) {
 	if (!pluginptr) {
 		return;
 	}

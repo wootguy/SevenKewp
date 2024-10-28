@@ -53,11 +53,11 @@ EXPORT void RegisterPlugin(void* plugin, HLCOOP_PLUGIN_HOOKS* hooks, const char*
 
 // must call this instead of registering cvars directly or else the game crashes when the plugin unloads
 // and any cvar is used
-EXPORT cvar_t* RegisterPluginCVar(void* plugin, char* name, char* strDefaultValue, int intDefaultValue, int flags);
+EXPORT cvar_t* RegisterPluginCVar(void* plugin, const char* name, const char* strDefaultValue, int intDefaultValue, int flags);
 
 // must call this instead of registering commands directly or else the game crashes when the plugin unloads
 // and the registered command is used
-EXPORT void RegisterPluginCommand(void* plugin, char* cmd, void (*function)(void));
+EXPORT void RegisterPluginCommand(void* plugin, const char* cmd, void (*function)(void));
 
 // boilerplate for PluginInit functions
 // must be inline so that plugins don't reference the game definition of HLCOOP_API_VERSION
