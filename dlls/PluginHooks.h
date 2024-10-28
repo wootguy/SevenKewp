@@ -21,6 +21,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// called after map entities are spawned
 	HOOK_RETURN_DATA (*pfnMapActivate)();
 
+	// called when the server is about to load a new map
+	HOOK_RETURN_DATA (*pfnMapChange)();
+
 	// called before the player PreThink function
 	HOOK_RETURN_DATA (*pfnPlayerPreThink)(CBasePlayer* pPlayer);
 
@@ -36,13 +39,25 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// called when a client connects to the server. Return 0 to reject the connection with the given reason.
 	HOOK_RETURN_DATA (*pfnClientConnect)(edict_t* pEntity, const char* pszName, const char* pszAddress, char szRejectReason[128]);
 	
+	// called when a client disconnects from the server.
+	HOOK_RETURN_DATA(*pfnClientDisconnect)(edict_t* pEntity);
+
 	// called when a player is fully connected to the server and is about to spawn
 	HOOK_RETURN_DATA (*pfnClientPutInServer)(CBasePlayer* pPlayer);
+
+	// called when a player changes model, name, colors, etc.
+	HOOK_RETURN_DATA (*pfnClientUserInfoChanged)(edict_t* pPlayer, char* infobuffer);
 };
 
+EXPORT void RegisterPlugin(void* plugin, HLCOOP_PLUGIN_HOOKS* hooks, const char* name);
+
+// must call this instead of registering cvars directly or else the game crashes when the plugin unloads
+// and any cvar is used
 EXPORT cvar_t* RegisterPluginCVar(void* plugin, char* name, char* strDefaultValue, int intDefaultValue, int flags);
 
-EXPORT void RegisterPlugin(void* plugin, HLCOOP_PLUGIN_HOOKS* hooks, const char* name);
+// must call this instead of registering commands directly or else the game crashes when the plugin unloads
+// and the registered command is used
+EXPORT void RegisterPluginCommand(void* plugin, char* cmd, void (*function)(void));
 
 // boilerplate for PluginInit functions
 // must be inline so that plugins don't reference the game definition of HLCOOP_API_VERSION

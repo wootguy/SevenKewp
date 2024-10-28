@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-class mstream
+class EXPORT mstream
 {
 public:	
 

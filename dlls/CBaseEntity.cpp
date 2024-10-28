@@ -325,7 +325,7 @@ CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, co
 	edict_t* pent;
 	CBaseEntity* pEntity;
 
-	pent = CREATE_NAMED_ENTITY(MAKE_STRING(szName));
+	pent = CREATE_NAMED_ENTITY(ALLOC_STRING(szName)); // not using MAKE_STRING in case an unloaded plugin called this func
 	if (FNullEnt(pent))
 	{
 		ALERT(at_console, UTIL_VarArgs("NULL Ent '%s' in Create!\n", szName));

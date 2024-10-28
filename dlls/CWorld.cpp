@@ -345,7 +345,7 @@ void CWorld::Precache(void)
 		CVAR_SET_FLOAT("mp_defaultteam", 0);
 	}
 
-	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnMapInit);
+	CALL_HOOKS_VOID(pfnMapInit);
 }
 
 

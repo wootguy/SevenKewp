@@ -384,7 +384,7 @@ void ClientCommand(edict_t* pEntity)
 		return;
 	}
 
-	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnClientCommand, pPlayer);
+	CALL_HOOKS_VOID(pfnClientCommand, pPlayer);
 
 	TextMenuClientCommandHook(pEntity);
 
