@@ -372,16 +372,24 @@ bool CheatCommand(edict_t* pEntity) {
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
 void ClientCommand(edict_t* pEntity)
 {
-	TextMenuClientCommandHook(pEntity);
-
-	const char* pcmd = CMD_ARGV(0);
-	const char* pstr;
-
 	// Is the client spawned yet?
 	if (!pEntity->pvPrivateData)
 		return;
 
 	entvars_t* pev = &pEntity->v;
+
+	CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
+
+	if (!pPlayer) {
+		return;
+	}
+
+	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnClientCommand, pPlayer);
+
+	TextMenuClientCommandHook(pEntity);
+
+	const char* pcmd = CMD_ARGV(0);
+	const char* pstr;
 
 	if (CheatCommand(pEntity)) {
 		return;
@@ -396,37 +404,36 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "fullupdate"))
 	{
-		GetClassPtr((CBasePlayer*)pev)->ForceClientDllUpdate();
+		pPlayer->ForceClientDllUpdate();
 	}
 	else if (FStrEq(pcmd, "give"))
 	{
 		if (g_flWeaponCheat != 0.0)
 		{
 			int iszItem = ALLOC_STRING(CMD_ARGV(1));	// Make a copy of the classname
-			GetClassPtr((CBasePlayer*)pev)->GiveNamedItem(STRING(iszItem));
+			pPlayer->GiveNamedItem(STRING(iszItem));
 		}
 	}
-
 	else if (FStrEq(pcmd, "drop"))
 	{
 		// player is dropping an item. 
-		GetClassPtr((CBasePlayer*)pev)->DropPlayerItem((char*)CMD_ARGV(1));
+		pPlayer->DropPlayerItem((char*)CMD_ARGV(1));
 	}
 	else if (FStrEq(pcmd, "dropammo"))
 	{
 		// player is dropping an item. 
-		GetClassPtr((CBasePlayer*)pev)->DropAmmo(false);
+		pPlayer->DropAmmo(false);
 	}
 	else if (FStrEq(pcmd, "dropammo2"))
 	{
 		// player is dropping an item. 
-		GetClassPtr((CBasePlayer*)pev)->DropAmmo(true);
+		pPlayer->DropAmmo(true);
 	}
 	else if (FStrEq(pcmd, "fov"))
 	{
 		if (g_flWeaponCheat && CMD_ARGC() > 1)
 		{
-			GetClassPtr((CBasePlayer*)pev)->m_iFOV = atoi(CMD_ARGV(1));
+			pPlayer->m_iFOV = atoi(CMD_ARGV(1));
 		}
 		else
 		{
@@ -435,7 +442,7 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "use"))
 	{
-		GetClassPtr((CBasePlayer*)pev)->SelectItem((char*)CMD_ARGV(1));
+		pPlayer->SelectItem((char*)CMD_ARGV(1));
 	}
 	else if (g_weaponClassnames.count(pcmd))
 	{
@@ -446,23 +453,21 @@ void ClientCommand(edict_t* pEntity)
 			wepCname = pcmd + dirEnd + 1;
 		}
 
-		GetClassPtr((CBasePlayer*)pev)->SelectItem(wepCname);
+		pPlayer->SelectItem(wepCname);
 	}
 	else if (((pstr = strstr(pcmd, "weapon_")) != NULL) && (pstr == pcmd))
 	{
-		GetClassPtr((CBasePlayer*)pev)->SelectItem(pcmd);
+		pPlayer->SelectItem(pcmd);
 	}
 	else if (FStrEq(pcmd, "lastinv"))
 	{
-		GetClassPtr((CBasePlayer*)pev)->SelectLastItem();
+		pPlayer->SelectLastItem();
 	}
 	else if (FStrEq(pcmd, "spectate"))	// clients wants to become a spectator
 	{
 		// always allow proxies to become a spectator
 		if ((pev->flags & FL_PROXY) || allow_spectators.value)
 		{
-			CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
-
 			if (gpGlobals->time - pPlayer->m_lastObserverSwitch < 3.0f) {
 				float timeleft = 3.0f - (gpGlobals->time - pPlayer->m_lastObserverSwitch);
 				CLIENT_PRINTF(pPlayer->edict(), print_center, UTIL_VarArgs("Wait %.1f seconds", timeleft));
@@ -501,8 +506,6 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "specmode"))	// new spectator mode
 	{
-		CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
-
 		if (pPlayer->IsObserver())
 			pPlayer->Observer_SetMode(atoi(CMD_ARGV(1)));
 	}
@@ -512,8 +515,6 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "follownext"))	// follow next player
 	{
-		CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
-
 		if (pPlayer->IsObserver())
 			pPlayer->Observer_FindNextPlayer(atoi(CMD_ARGV(1)) ? true : false);
 	}
@@ -521,7 +522,7 @@ void ClientCommand(edict_t* pEntity)
 	{
 		g_pluginManager.ListPlugins(pEntity);
 	}
-	else if (g_pGameRules->ClientCommand(GetClassPtr((CBasePlayer*)pev), pcmd))
+	else if (g_pGameRules->ClientCommand(pPlayer, pcmd))
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
 	}

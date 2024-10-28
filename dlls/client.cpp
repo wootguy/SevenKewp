@@ -45,6 +45,7 @@
 #include "skill.h"
 #include "CGamePlayerEquip.h"
 #include "PluginManager.h"
+#include "Scheduler.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -89,7 +90,9 @@ called when a player connects to a server
 ============
 */
 BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ]  )
-{	
+{
+	CALL_HOOKS(BOOL, &HLCOOP_PLUGIN_HOOKS::pfnClientConnect, pEntity, pszName, pszAddress, szRejectReason);
+
 	return g_pGameRules->ClientConnected( pEntity, pszName, pszAddress, szRejectReason );
 
 // a client connecting during an intermission can cause problems
@@ -272,18 +275,20 @@ void ClientPutInServer( edict_t *pEntity )
 		UTIL_StopGlobalMp3(pEntity);
 	}
 
-	// Allocate a CBasePlayer for pev, and call spawn
-	pPlayer->Spawn();
 	pPlayer->m_initSoundTime = gpGlobals->time + 1.0f;
-
-	// Reset interpolation during first frame
-	pPlayer->pev->effects |= EF_NOINTERP;
 
 	pPlayer->pev->iuser1 = 0;	// disable any spec modes
 	pPlayer->pev->iuser2 = 0;
 
-	if (g_pGameRules->IsMultiplayer())
-	{
+	// Reset interpolation during first frame
+	pPlayer->pev->effects |= EF_NOINTERP;
+
+	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnClientPutInServer, pPlayer);
+
+	// Allocate a CBasePlayer for pev, and call spawn
+	pPlayer->Spawn();
+
+	if (g_pGameRules->IsMultiplayer()) {
 		FireTargets("game_playerjoin", pPlayer, pPlayer, USE_TOGGLE, 0);
 	}
 }
@@ -682,6 +687,8 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		}
 	}
 
+	LoadAdminList();
+
 	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnMapActivate);
 }
 
@@ -800,6 +807,8 @@ void StartFrame( void )
 	}
 
 	lagcomp_update();
+
+	g_Scheduler.Think();
 }
 
 

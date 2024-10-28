@@ -67,7 +67,8 @@ extern cvar_t	mp_survival_starton;
 extern cvar_t	mp_survival_restart;
 extern cvar_t	mp_mergemodels; // used merged models to save on model slots
 extern cvar_t	mp_killfeed; // 0 = off, 1 = player deaths, 2 = player kills/deaths, 3 = player + monster kills/deaths
-extern cvar_t	pluginlist; // name of the plugin list file
+extern cvar_t	pluginlistfile; // name of the plugin list file
+extern cvar_t	adminlistfile; // name of the admin list file
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
