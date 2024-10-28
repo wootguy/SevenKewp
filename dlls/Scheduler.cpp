@@ -51,7 +51,6 @@ void Scheduler::RemoveTimers(const char* owner) {
     for (int i = 0; i < (int)functions.size(); i++) {
         if (strcmp(functions[i].owner, owner)) {
             newFuncs.push_back(functions[i]);
-            return;
         }
     }
 

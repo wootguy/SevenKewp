@@ -47,9 +47,10 @@ using namespace std::chrono;
 
 #ifndef WIN32
 #include <unistd.h>
-#endif
-
-#ifdef WIN32
+#include <time.h>
+#include <unistd.h>
+#include <dirent.h>
+#else
 #define stat _stat
 #endif
 
@@ -689,6 +690,18 @@ CBasePlayer* UTIL_PlayerByUserId(int userid)
 	return NULL;
 }
 
+CBasePlayer* UTIL_PlayerByUniqueId(const char* id) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+
+		if (!strcmp(id, getPlayerUniqueId(pPlayer->edict()))) {
+			return pPlayer;
+		}
+	}
+
+	return NULL;
+}
+
 edict_t* UTIL_ClientsInPVS(edict_t* edict, int& playerCount) {
 	// TODO: reimplement engine func so that it only iterates 32 edicts
 	edict_t* pvsents = UTIL_EntitiesInPVS(edict);
@@ -1177,7 +1190,7 @@ void UTIL_ClientPrint( edict_t* client, int msg_dest, const char * msg)
 
 void UTIL_SayText( const char *pText, CBaseEntity *pEntity )
 {
-	if ( !pEntity->IsNetClient() )
+	if ( !pEntity || !pEntity->IsNetClient() )
 		return;
 
 	MESSAGE_BEGIN( MSG_ONE, gmsgSayText, NULL, pEntity->edict() );
@@ -1188,8 +1201,10 @@ void UTIL_SayText( const char *pText, CBaseEntity *pEntity )
 
 void UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity )
 {
+	int idx = pEntity ? pEntity->entindex() : 0;
+
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
-		WRITE_BYTE( pEntity->entindex() );
+		WRITE_BYTE(idx);
 		WRITE_STRING( pText );
 	MESSAGE_END();
 }
@@ -3753,6 +3768,16 @@ uint64_t steamid_to_steamid64(const char* steamid) {
 	return steam64id;
 }
 
+std::string steamid64_to_steamid(uint64_t steam64) {
+	steam64 -= 76561197960265728;
+
+	if (steam64 & 1) {
+		return "STEAM_0:1:" + std::to_string((steam64 - 1) / 2);
+	}
+
+	return "STEAM_0:0:" + std::to_string(steam64 / 2);
+}
+
 uint64_t getPlayerCommunityId(edict_t* plr) {
 	const char* id = getPlayerUniqueId(plr);
 
@@ -4835,24 +4860,25 @@ void LoadAdminList(bool forceUpdate) {
 		}
 
 		// strip comments
-		int endPos = line.find_first_of(" \t#/\n");
-		std::string steamId = trimSpaces(line.substr(0, endPos));
+		int endPos = line.find_first_of("#/");
+		if (endPos != -1)
+			line = trimSpaces(line.substr(0, endPos));
 
-		if (steamId.length() < 1) {
+		if (line.length() < 1) {
 			continue;
 		}
 
 		int adminLevel = ADMIN_YES;
 
-		if (steamId[0] == '*') {
+		if (line[0] == '*') {
 			adminLevel = ADMIN_OWNER;
-			steamId = steamId.substr(1);
+			line = line.substr(1);
 		}
 
-		g_admins[steamId] = adminLevel;
+		g_admins[line] = adminLevel;
 	}
 
-	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded %d admin(s) from file", g_admins.size()));
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded %d admin(s) from file\n", g_admins.size()));
 }
 
 int AdminLevel(edict_t* plr) {
@@ -4869,4 +4895,83 @@ int AdminLevel(edict_t* plr) {
 	}
 
 	return ADMIN_NO;
+}
+
+void winPath(std::string& path) {
+	for (int i = 0, size = path.size(); i < size; i++) {
+		if (path[i] == '/')
+			path[i] = '\\';
+	}
+}
+
+std::vector<std::string> getDirFiles(std::string path, std::string extension, std::string startswith, bool onlyOne)
+{
+	std::vector<std::string> results;
+
+#if defined(WIN32) || defined(_WIN32)
+	path = path + startswith + "*." + extension;
+	winPath(path);
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+
+	//println("Target file is " + path);
+	hFind = FindFirstFile(path.c_str(), &FindFileData);
+	if (hFind == INVALID_HANDLE_VALUE)
+	{
+		//println("FindFirstFile failed " + str((int)GetLastError()) + " " + path);
+		return results;
+	}
+	else
+	{
+		results.push_back(FindFileData.cFileName);
+
+		while (FindNextFile(hFind, &FindFileData) != 0)
+		{
+			results.push_back(FindFileData.cFileName);
+			if (onlyOne)
+				break;
+		}
+
+		FindClose(hFind);
+	}
+#else
+	extension = toLowerCase(extension);
+	startswith = toLowerCase(startswith);
+	startswith.erase(std::remove(startswith.begin(), startswith.end(), '*'), startswith.end());
+	DIR* dir = opendir(path.c_str());
+
+	if (!dir)
+		return results;
+
+	while (true)
+	{
+		dirent* entry = readdir(dir);
+
+		if (!entry)
+			break;
+
+		if (entry->d_type == DT_DIR)
+			continue;
+
+		std::string name = std::string(entry->d_name);
+		std::string lowerName = toLowerCase(name);
+
+		if (extension.size() > name.size() || startswith.size() > name.size())
+			continue;
+
+		if (extension == "*" || std::equal(extension.rbegin(), extension.rend(), lowerName.rbegin()))
+		{
+			if (startswith.size() == 0 || std::equal(startswith.begin(), startswith.end(), lowerName.begin()))
+			{
+				results.push_back(name);
+				if (onlyOne)
+					break;
+			}
+		}
+	}
+
+	closedir(dir);
+#endif
+
+	return results;
 }

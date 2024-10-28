@@ -8,14 +8,24 @@
 PluginManager g_pluginManager;
 
 #define MAX_PLUGIN_CVARS 256
+#define MAX_PLUGIN_COMMANDS 256
 
 struct ExternalCvar {
 	int pluginId;
 	cvar_t cvar;
 };
 
+struct ExternalCommand {
+	int pluginId;
+	char name[64];
+	void (*function)(void);
+};
+
 ExternalCvar g_plugin_cvars[MAX_PLUGIN_CVARS];
 int g_plugin_cvar_count = 0;
+
+ExternalCommand g_plugin_commands[MAX_PLUGIN_COMMANDS];
+int g_plugin_command_count = 0;
 
 int g_plugin_id = 0;
 
@@ -193,8 +203,11 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 	{
 		lineNum++;
 
-		line = trimSpaces(line);
-		if (line.empty() || line[0] == '/' || line[0] == '#') {
+		int endPos = line.find_first_of("#/");
+		if (endPos != -1)
+			line = trimSpaces(line.substr(0, endPos));
+
+		if (line.empty()) {
 			continue;
 		}
 
@@ -302,7 +315,7 @@ void PluginManager::ReloadPlugins() {
 void PluginManager::ListPlugins(edict_t* plr) {
 	std::vector<std::string> lines;
 
-	bool isAdmin = !plr;
+	bool isAdmin = !plr || AdminLevel(plr) > ADMIN_NO;
 
 	lines.push_back(UTIL_VarArgs("\n    %-20s %-8s %-44s\n", "Name", "Type", isAdmin ? "File path" : ""));
 	lines.push_back("--------------------------------------------------------------------------------\n");
@@ -311,7 +324,7 @@ void PluginManager::ListPlugins(edict_t* plr) {
 		const Plugin& plugin = plugins[i];
 
 		const char* type = plugin.isMapPlugin ? "MAP" : "SERVER";
-
+		
 		if (isAdmin) {
 			lines.push_back(UTIL_VarArgs("%2d) %-20s %-8s %-44s\n", i + 1, plugin.name, type, plugin.fpath.c_str()));
 		}
@@ -320,6 +333,12 @@ void PluginManager::ListPlugins(edict_t* plr) {
 			lines.push_back(UTIL_VarArgs("%2d) %-20s %-8s\n", i + 1, plugin.name, type));
 		}
 	}
+
+	if (isAdmin) {
+		lines.push_back(UTIL_VarArgs("\n Registered %d cvars, %d commands\n", 
+			g_plugin_cvar_count, g_plugin_command_count));
+	}
+
 	lines.push_back("--------------------------------------------------------------------------------\n");
 
 	for (std::string& line : lines) {
@@ -330,6 +349,16 @@ void PluginManager::ListPlugins(edict_t* plr) {
 			g_engfuncs.pfnServerPrint(line.c_str());
 		}
 	}
+}
+
+Plugin* PluginManager::FindPlugin(int id) {
+	for (Plugin& plugin : plugins) {
+		if (plugin.id == id) {
+			return &plugin;
+		}
+	}
+
+	return NULL;
 }
 
 ENTITYINIT PluginManager::GetCustomEntityInitFunc(const char* pname) {
@@ -358,7 +387,7 @@ cvar_t* RegisterPluginCVar(void* pluginptr, char* name, char* strDefaultValue, i
 
 	cvar_t* existing = CVAR_GET_POINTER(name);
 	if (existing) {
-		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Plugin cvar already registered: %s\n", name));
+		//g_engfuncs.pfnServerPrint(UTIL_VarArgs("Plugin cvar already registered: %s\n", name));
 
 		// update the owner of the cvar
 		for (int i = 0; i < MAX_PLUGIN_CVARS; i++) {
@@ -384,6 +413,64 @@ cvar_t* RegisterPluginCVar(void* pluginptr, char* name, char* strDefaultValue, i
 	CVAR_REGISTER(&extvar.cvar);
 
 	return CVAR_GET_POINTER(name);
+}
+
+void ExternalPluginCommand() {
+	const char* cmd = CMD_ARGV(0);
+
+	ExternalCommand* ecmd = NULL;
+
+	for (int i = 0; i < g_plugin_command_count; i++) {
+		if (!strcmp(g_plugin_commands[i].name, cmd)) {
+			ecmd = &g_plugin_commands[i];
+			break;
+		}
+	}
+
+	if (!ecmd) {
+		// should never happen
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Unrecognized external plugin command: %s\n", cmd));
+		return;
+	}
+	
+	Plugin* plugin = g_pluginManager.FindPlugin(ecmd->pluginId);
+
+	if (!plugin) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Command from unloaded plugin can't be called: %s\n", cmd));
+		return;
+	}
+
+	ecmd->function();
+}
+
+void RegisterPluginCommand(void* pluginptr, char* cmd, void (*function)(void)) {
+	if (!pluginptr) {
+		return;
+	}
+
+	Plugin* plugin = (Plugin*)pluginptr;
+
+	if (g_plugin_command_count >= MAX_PLUGIN_COMMANDS) {
+		ALERT(at_error, "Plugin command limit exceeded! Failed to register: %s\n", cmd);
+		return;
+	}
+
+	for (int i = 0; i < g_plugin_command_count; i++) {
+		if (!strcmp(g_plugin_commands[i].name, cmd)) {
+			//g_engfuncs.pfnServerPrint(UTIL_VarArgs("Plugin command already registered: %s\n", cmd));
+			g_plugin_commands[i].pluginId = plugin->id;
+			g_plugin_commands[i].function = function;
+			return;
+		}
+	}
+
+	ExternalCommand& ecmd = g_plugin_commands[g_plugin_command_count];
+	ecmd.pluginId = plugin->id;
+	ecmd.function = function;
+	strcpy_safe(ecmd.name, cmd, sizeof(ecmd.name));
+	g_plugin_command_count++;
+
+	g_engfuncs.pfnAddServerCommand(ecmd.name, ExternalPluginCommand);
 }
 
 void RegisterPlugin(void* pluginptr, HLCOOP_PLUGIN_HOOKS* hooks, const char* name) {

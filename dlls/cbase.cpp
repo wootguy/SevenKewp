@@ -456,6 +456,9 @@ void SaveReadFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseD
 	restoreHelper.ReadFields( pname, pBaseData, pFields, fieldCount );
 }
 
+EHANDLE::EHANDLE(edict_t* pent) {
+	Set(pent);
+}
 
 edict_t * EHANDLE::GetEdict( void ) 
 {

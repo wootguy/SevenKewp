@@ -323,8 +323,9 @@ EXPORT CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, f
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns NULL
 // Index is 1 based
-extern CBasePlayer	*UTIL_PlayerByIndex( int playerIndex );
-extern CBasePlayer	*UTIL_PlayerByUserId( int userid );
+EXPORT extern CBasePlayer	*UTIL_PlayerByIndex( int playerIndex );
+EXPORT extern CBasePlayer	*UTIL_PlayerByUserId( int userid );
+EXPORT extern CBasePlayer	*UTIL_PlayerByUniqueId(const char* id);
 
 #define UTIL_EntitiesInPVS(pent)			(*g_engfuncs.pfnEntitiesInPVS)(pent)
 EXPORT edict_t*		UTIL_ClientsInPVS(edict_t* edict, int& playerCount);
@@ -427,7 +428,7 @@ EXPORT void UTIL_ClientPrint(edict_t* client, int msg_dest, const char *msg );
 
 // prints a message to the HUD say (chat)
 EXPORT void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
-EXPORT void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity );
+EXPORT void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity=NULL );
 
 
 typedef struct hudtextparms_s
@@ -480,7 +481,7 @@ void DBG_AssertFunction(BOOL fExpr, const char* szExpr, const char* szFile, int 
 #endif	// !DEBUG
 
 
-extern DLL_GLOBAL const Vector g_vecZero;
+EXPORT extern const Vector g_vecZero;
 
 //
 // Constants that were used only by QC (maybe not used at all now)
@@ -879,6 +880,8 @@ EXPORT const char* getPlayerUniqueId(edict_t* plr);
 
 EXPORT uint64_t steamid_to_steamid64(const char* steamid);
 
+EXPORT std::string steamid64_to_steamid(uint64_t steam64);
+
 EXPORT uint64_t getPlayerCommunityId(edict_t* plr);
 
 EXPORT void LoadAdminList(bool forceUpdate=false); // call on each map change, so AdminLevel can work
@@ -888,3 +891,5 @@ EXPORT int AdminLevel(edict_t* player);
 EXPORT uint64_t getEpochMillis();
 
 EXPORT double TimeDifference(uint64_t start, uint64_t end);
+
+EXPORT std::vector<std::string> getDirFiles(std::string path, std::string extension, std::string startswith, bool onlyOne);

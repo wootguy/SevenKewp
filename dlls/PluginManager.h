@@ -17,10 +17,10 @@ struct Plugin {
 typedef void(*ENTITYINIT)(struct entvars_s*);
 
 #define CALL_HOOKS_VOID(...) \
-	if (g_pluginManager.CallHooks(__VA_ARGS__).code & HOOKBIT_OVERRIDE) { return; }
+	if (g_pluginManager.CallHooks(&HLCOOP_PLUGIN_HOOKS::__VA_ARGS__).code & HOOKBIT_OVERRIDE) { return; }
 
 #define CALL_HOOKS(type, ...) { \
-	HOOK_RETURN_DATA ret = g_pluginManager.CallHooks(__VA_ARGS__); \
+	HOOK_RETURN_DATA ret = g_pluginManager.CallHooks(&HLCOOP_PLUGIN_HOOKS::__VA_ARGS__); \
 	if (ret.code & HOOKBIT_OVERRIDE) { \
 		return (type)ret.data; \
 	} \
@@ -50,6 +50,8 @@ public:
 
 	// print loaded server and map plugins to console or client
 	void ListPlugins(edict_t* plr);
+
+	Plugin* FindPlugin(int id);
 
 	template<typename Func, typename... Args>
 	HOOK_RETURN_DATA CallHooks(Func hookFunction, Args&&... args) {

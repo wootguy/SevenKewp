@@ -29,24 +29,24 @@ public:
 
 	// use this to create menus for each player.
 	// When creating a menu for all players, pass NULL for player.
-	static TextMenu* init(edict_t* player, TextMenuCallback callback);
+	EXPORT static TextMenu* init(edict_t* player, TextMenuCallback callback);
 
-	static TextMenu* init(edict_t* player, EntityTextMenuCallback callback, CBaseEntity* ent);
+	EXPORT static TextMenu* init(edict_t* player, EntityTextMenuCallback callback, CBaseEntity* ent);
 
-	void SetTitle(std::string title);
+	EXPORT void SetTitle(std::string title);
 
-	void AddItem(std::string displayText, std::string optionData);
+	EXPORT void AddItem(std::string displayText, std::string optionData);
 
 	// set player to NULL to send to all players.
 	// This should be the same target as was used with initMenuForPlayer
 	// paging not supported yet
-	void Open(uint8_t duration, uint8_t page, edict_t* player);
+	EXPORT void Open(uint8_t duration, uint8_t page, edict_t* player);
 
 	// don't call directly. This is triggered by global hook functions
-	void handleMenuMessage(int msg_dest, edict_t* ed);
+	EXPORT void handleMenuMessage(int msg_dest, edict_t* ed);
 
 	// don't call directly. This is triggered by global hook functions
-	void handleMenuselectCmd(edict_t* pEntity, int selection);
+	EXPORT void handleMenuselectCmd(edict_t* pEntity, int selection);
 
 private:
 	void initAnon(TextMenuCallback callback);

@@ -1687,7 +1687,7 @@ void CBasePlayer::LeaveObserver()
 //
 void CBasePlayer::PlayerUse ( void )
 {
-	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnPlayerUse, this);
+	CALL_HOOKS_VOID(pfnPlayerUse, this);
 
 	if ( IsObserver() )
 		return;
@@ -2225,7 +2225,7 @@ void CBasePlayer::UpdateStatusBar()
 
 void CBasePlayer::PreThink(void)
 {
-	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnPlayerPreThink, this);
+	CALL_HOOKS_VOID(pfnPlayerPreThink, this);
 
 	int buttonsChanged = (m_afButtonLast ^ pev->button);	// These buttons have changed this frame
 	
@@ -2997,7 +2997,7 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 
 void CBasePlayer::PostThink()
 {
-	CALL_HOOKS_VOID(&HLCOOP_PLUGIN_HOOKS::pfnPlayerPostThink, this);
+	CALL_HOOKS_VOID(pfnPlayerPostThink, this);
 
 	if ( g_fGameOver )
 		goto pt_end;         // intermission or finale
