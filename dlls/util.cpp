@@ -648,7 +648,7 @@ CBasePlayer* UTIL_PlayerByUniqueId(const char* id) {
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
 
-		if (!strcmp(id, getPlayerUniqueId(pPlayer->edict()))) {
+		if (pPlayer && !strcmp(id, getPlayerUniqueId(pPlayer->edict()))) {
 			return pPlayer;
 		}
 	}
