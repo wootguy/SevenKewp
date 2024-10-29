@@ -54,30 +54,37 @@ CBaseEntity
 #include "Platform.h"
 #include "CKeyValue.h"
 
+typedef struct {
+	DLL_FUNCTIONS* dllapi_table;
+	NEW_DLL_FUNCTIONS* newapi_table;
+} gamedll_funcs_t;
+
+EXPORT extern gamedll_funcs_t* gpGamedllFuncs; // for ease of porting to/from metamod
+
 // C functions for external declarations that call the appropriate C++ methods
 
 extern "C" DLLEXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
 extern "C" DLLEXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
 
-extern int DispatchSpawn( edict_t *pent );
-extern void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd );
-extern void DispatchTouch( edict_t *pentTouched, edict_t *pentOther );
-extern void DispatchUse( edict_t *pentUsed, edict_t *pentOther );
-extern void DispatchThink( edict_t *pent );
-extern void DispatchBlocked( edict_t *pentBlocked, edict_t *pentOther );
-extern void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData );
-extern int  DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity );
-extern void	DispatchObjectCollsionBox( edict_t *pent );
-extern void SaveWriteFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount );
-extern void SaveReadFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount );
-extern void SaveGlobalState( SAVERESTOREDATA *pSaveData );
-extern void RestoreGlobalState( SAVERESTOREDATA *pSaveData );
-extern void ResetGlobalState( void );
-extern void SetObjectCollisionBox(entvars_t* pev);
+EXPORT extern int DispatchSpawn( edict_t *pent );
+EXPORT extern void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd );
+EXPORT extern void DispatchTouch( edict_t *pentTouched, edict_t *pentOther );
+EXPORT extern void DispatchUse( edict_t *pentUsed, edict_t *pentOther );
+EXPORT extern void DispatchThink( edict_t *pent );
+EXPORT extern void DispatchBlocked( edict_t *pentBlocked, edict_t *pentOther );
+EXPORT extern void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData );
+EXPORT extern int  DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity );
+EXPORT extern void	DispatchObjectCollsionBox( edict_t *pent );
+EXPORT extern void SaveWriteFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount );
+EXPORT extern void SaveReadFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount );
+EXPORT extern void SaveGlobalState( SAVERESTOREDATA *pSaveData );
+EXPORT extern void RestoreGlobalState( SAVERESTOREDATA *pSaveData );
+EXPORT extern void ResetGlobalState( void );
+EXPORT extern void SetObjectCollisionBox(entvars_t* pev);
 
 typedef enum { USE_OFF = 0, USE_ON = 1, USE_SET = 2, USE_TOGGLE = 3 } USE_TYPE;
 
-extern void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+EXPORT extern void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
 typedef void (CBaseEntity::*BASEPTR)(void);
 typedef void (CBaseEntity::*ENTITYFUNCPTR)(CBaseEntity *pOther );

@@ -13,6 +13,7 @@
 #include "util.h"
 #include "cbase.h"
 #include "CBasePlayer.h"
+#include "user_messages.h"
 
 
 

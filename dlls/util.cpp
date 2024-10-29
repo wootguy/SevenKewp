@@ -43,6 +43,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <chrono>
+#include <mutex>
 
 using namespace std::chrono;
 
@@ -858,7 +859,7 @@ void UTIL_StopGlobalMp3(edict_t* target) {
 	}
 }
 
-static unsigned short FixedUnsigned16( float value, float scale )
+unsigned short FixedUnsigned16( float value, float scale )
 {
 	int output;
 
@@ -871,7 +872,7 @@ static unsigned short FixedUnsigned16( float value, float scale )
 	return (unsigned short)output;
 }
 
-static short FixedSigned16( float value, float scale )
+short FixedSigned16( float value, float scale )
 {
 	int output;
 
@@ -1350,6 +1351,9 @@ float UTIL_SplineFraction( float value, float scale )
 
 char* UTIL_VarArgs( const char *format, ... )
 {
+	static std::mutex m; // only allow one thread at a time to access static buffers
+	std::lock_guard<std::mutex> lock(m);
+
 	va_list		argptr;
 	static char		string[1024];
 	
@@ -2550,6 +2554,9 @@ void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, 
 std::string lastMapName;
 
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
+	static std::mutex m; // only allow one thread at a time to access static buffers
+	std::lock_guard<std::mutex> lock(m);
+
 	static char log_line[4096];
 
 	va_list vl;

@@ -41,6 +41,11 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 #define WRITE_ENTITY	(*g_engfuncs.pfnWriteEntity)
 #define GET_MODEL_PTR	(*g_engfuncs.pfnGetModelPtr)
 #define CREATE_NAMED_ENTITY		(*g_engfuncs.pfnCreateNamedEntity)
+#define EMIT_SOUND_DYN2 (*g_engfuncs.pfnEmitSound)
+#define CMD_ARGS					(*g_engfuncs.pfnCmd_Args)
+#define CMD_ARGC					(*g_engfuncs.pfnCmd_Argc)
+#define CMD_ARGV					(*g_engfuncs.pfnCmd_Argv)
+#define CHANGE_LEVEL	(*g_engfuncs.pfnChangeLevel)
 #else
 // engine wrappers which handle model/sound replacement logic
 EXPORT int PRECACHE_GENERIC(const char* path);
@@ -72,4 +77,13 @@ EXPORT void WRITE_ANGLE(float fValue);
 EXPORT void WRITE_COORD(float iValue);
 EXPORT void WRITE_STRING(const char* sValue);
 EXPORT void WRITE_ENTITY(int iValue);
+
+EXPORT void EMIT_SOUND_DYN2(edict_t* pEntity, int channel, const char* pszSample, float volume, float attenuation, int fFlags, int pitch);
+EXPORT void SetClientMaxspeed(const edict_t* pEntity, float maxspeed);
+EXPORT void SetClientKeyValue(int clientIndex, char* pszInfoBuffer, const char* pszKey, const char* pszValue);
+
+EXPORT const char* CMD_ARGV(int argc);
+EXPORT int CMD_ARGC();
+EXPORT const char* CMD_ARGS();
+EXPORT void CHANGE_LEVEL(const char* pszLevelName, const char* pszLandmarkName);
 #endif
