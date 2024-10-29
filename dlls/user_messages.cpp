@@ -3,6 +3,7 @@
 #include "cbase.h"
 #include "shake.h"
 #include "user_messages.h"
+#include "PluginManager.h"
 
 int giPrecacheGrunt = 0;
 int gmsgShake = 0;
@@ -46,7 +47,35 @@ int gmsgStatusValue = 0;
 
 int gmsgToxicCloud = 0;
 
+std::vector<UserMessage> g_userMessages;
 
+int REG_USER_MSG(const char* name, int size) {
+	CALL_HOOKS(int, pfnRegUserMsg, name, size);
+
+	UserMessage msg;
+	msg.name = name;
+	msg.size = size;
+
+	msg.id = g_engfuncs.pfnRegUserMsg(name, size);
+
+	g_userMessages.push_back(msg);
+
+	return msg.id;
+}
+
+int GetUserMsgInfo(const char* msgname, int* size) {
+	for (int i = 0; i < (int)g_userMessages.size(); i++) {
+		UserMessage& msg = g_userMessages[i];
+
+		if (!strcmp(msg.name, msgname)) {
+			if (size)
+				*size = msg.size;
+			return msg.id;
+		}
+	}
+
+	return 0;
+}
 
 void LinkUserMessages(void)
 {

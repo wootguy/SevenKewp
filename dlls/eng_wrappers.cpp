@@ -5,6 +5,7 @@
 #include "pm_shared.h"
 #include "eng_wrappers.h"
 #include "TextMenu.h"
+#include "PluginManager.h"
 #include <fstream>
 
 std::unordered_map<std::string, std::string> g_precachedModels;
@@ -541,6 +542,8 @@ void* GET_MODEL_PTR(edict_t* edict) {
 }
 
 void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed) {
+	CALL_HOOKS_VOID(pfnMessageBegin, msg_dest, msg_type, pOrigin, ed);
+
 	TextMenuMessageBeginHook(msg_dest, msg_type, pOrigin, ed);
 
 	if (mp_debugmsg.value) {
@@ -563,46 +566,90 @@ void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed
 }
 
 void WRITE_BYTE(int iValue) {
+	CALL_HOOKS_VOID(pfnWriteByte, iValue);
 	add_msg_part(MFUNC_BYTE, iValue);
 	g_engfuncs.pfnWriteByte(iValue);
 }
 
 void WRITE_CHAR(int iValue) {
+	CALL_HOOKS_VOID(pfnWriteChar, iValue);
 	add_msg_part(MFUNC_CHAR, iValue);
 	g_engfuncs.pfnWriteChar(iValue);
 }
 
 void WRITE_SHORT(int iValue) {
+	CALL_HOOKS_VOID(pfnWriteShort, iValue);
 	add_msg_part(MFUNC_SHORT, iValue);
 	g_engfuncs.pfnWriteShort(iValue);
 }
 
 void WRITE_LONG(int iValue) {
+	CALL_HOOKS_VOID(pfnWriteLong, iValue);
 	add_msg_part(MFUNC_LONG, iValue);
 	g_engfuncs.pfnWriteLong(iValue);
 }
 
 void WRITE_ANGLE(float fValue) {
+	CALL_HOOKS_VOID(pfnWriteAngle, fValue);
 	add_msg_part(MFUNC_ANGLE, fValue);
 	g_engfuncs.pfnWriteAngle(fValue);
 }
 
 void WRITE_COORD(float fValue) {
+	CALL_HOOKS_VOID(pfnWriteCoord, fValue);
 	add_msg_part(MFUNC_COORD, fValue);
 	g_engfuncs.pfnWriteCoord(fValue);
 }
 
 void WRITE_STRING(const char* sValue) {
+	CALL_HOOKS_VOID(pfnWriteString, sValue);
 	add_msg_part(sValue);
 	g_engfuncs.pfnWriteString(sValue);
 }
 
 void WRITE_ENTITY(int iValue) {
+	CALL_HOOKS_VOID(pfnWriteEntity, iValue);
 	add_msg_part(MFUNC_ENTITY, iValue);
 	g_engfuncs.pfnWriteEntity(iValue);
 }
 
 void MESSAGE_END() {
+	CALL_HOOKS_VOID(pfnMessageEnd);
 	log_msg(g_lastMsg);
 	g_engfuncs.pfnMessageEnd();
+}
+
+void EMIT_SOUND_DYN2(edict_t* pEntity, int channel, const char* pszSample, float volume, float attenuation, int fFlags, int pitch) {
+	CALL_HOOKS_VOID(pfnEmitSound, pEntity, channel, pszSample, volume, attenuation, fFlags, pitch);
+	g_engfuncs.pfnEmitSound(pEntity, channel, pszSample, volume, attenuation, fFlags, pitch);
+}
+
+void SetClientMaxspeed(const edict_t* pEntity, float maxspeed) {
+	CALL_HOOKS_VOID(pfnSetClientMaxspeed, pEntity, maxspeed);
+	g_engfuncs.pfnSetClientMaxspeed(pEntity, maxspeed);
+}
+
+void SetClientKeyValue(int clientIndex, char* pszInfoBuffer, const char* pszKey, const char* pszValue) {
+	CALL_HOOKS_VOID(pfnSetClientKeyValue, clientIndex, pszInfoBuffer, pszKey, pszValue);
+	g_engfuncs.pfnSetClientKeyValue(clientIndex, pszInfoBuffer, pszKey, pszValue);
+}
+
+const char* CMD_ARGV(int argc) {
+	CALL_HOOKS(const char*, pfnCmd_Argv, argc);
+	return g_engfuncs.pfnCmd_Argv(argc);
+}
+
+int CMD_ARGC() {
+	CALL_HOOKS(int, pfnCmd_Argc);
+	return g_engfuncs.pfnCmd_Argc();
+}
+
+const char* CMD_ARGS() {
+	CALL_HOOKS(const char*, pfnCmd_Args);
+	return g_engfuncs.pfnCmd_Args();
+}
+
+void CHANGE_LEVEL(const char* pszLevelName, const char* pszLandmarkName) {
+	CALL_HOOKS_VOID(pfnChangeLevel, pszLevelName, pszLandmarkName);
+	g_engfuncs.pfnChangeLevel(pszLevelName, pszLandmarkName);
 }

@@ -426,7 +426,7 @@ void ServerDeactivate( void )
 	//    SHA-1: 0c95b51652eda12e0b268631d1421634614c661f
 	//    fix physics breaking after long uptime
 
-	CALL_HOOKS_VOID(pfnMapChange);
+	CALL_HOOKS_VOID(pfnServerDeactivate);
 }
 
 #include "lagcomp.h"
@@ -695,7 +695,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	LoadAdminList();
 
-	CALL_HOOKS_VOID(pfnMapActivate);
+	CALL_HOOKS_VOID(pfnServerActivate);
 }
 
 /*
@@ -798,6 +798,8 @@ void NerfMonsters() {
 //
 void StartFrame( void )
 {
+	CALL_HOOKS_VOID(pfnStartFrame);
+
 	if ( g_pGameRules )
 		g_pGameRules->Think();
 
@@ -1937,3 +1939,15 @@ int AllowLagCompensation( void )
 {
 	return 1;
 }
+
+void OnFreeEntPrivateData(edict_t* pEnt) {}
+
+void GameShutdown(void) {}
+
+int	ShouldCollide(edict_t* pentTouched, edict_t* pentOther) {
+	return 1;
+}
+
+void CvarValue(const edict_t* pEnt, const char* pszValue) {}
+
+void CvarValue2(const edict_t* pEnt, int requestID, const char* pszCvarName, const char* pszValue) {}

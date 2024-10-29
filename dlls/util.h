@@ -793,3 +793,7 @@ EXPORT uint64_t getEpochMillis();
 EXPORT double TimeDifference(uint64_t start, uint64_t end);
 
 EXPORT std::vector<std::string> getDirFiles(std::string path, std::string extension, std::string startswith, bool onlyOne);
+
+EXPORT short FixedSigned16(float value, float scale);
+
+EXPORT unsigned short FixedUnsigned16(float value, float scale);

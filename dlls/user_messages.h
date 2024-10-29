@@ -44,4 +44,22 @@ EXPORT extern int gmsgToxicCloud;
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 
+struct UserMessage {
+	const char* name;
+	int id;
+	int size;
+};
+
+extern std::vector<UserMessage> g_userMessages;
+
+#ifdef CLIENT_DLL
+#define REG_USER_MSG				(*g_engfuncs.pfnRegUserMsg)
+#else
+EXPORT int REG_USER_MSG(const char* name, int size);
+#endif
+
+// Find a usermsg, registered by the gamedll, with the corresponding
+// msgname, and return remaining info about it (msgid, size). -metamod
+EXPORT int GetUserMsgInfo(const char* msgname, int* size);
+
 void LinkUserMessages(void);

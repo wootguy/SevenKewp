@@ -62,4 +62,11 @@ extern int	InconsistentFile( const edict_t *player, const char *filename, char *
 
 extern int AllowLagCompensation( void );
 
+// new dll funcs
+void OnFreeEntPrivateData(edict_t* pEnt);
+void GameShutdown(void);
+int	ShouldCollide(edict_t* pentTouched, edict_t* pentOther);
+void CvarValue(const edict_t* pEnt, const char* pszValue);
+void CvarValue2(const edict_t* pEnt, int requestID, const char* pszCvarName, const char* pszValue);
+
 #endif		// CLIENT_H

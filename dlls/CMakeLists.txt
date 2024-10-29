@@ -426,6 +426,8 @@ set(UTIL_HDR
 	vector.h
 	Scheduler.h
 	TextMenu.h
+	ThreadSafeInt.h
+	ThreadSafeQueue.h
 	wav.h
 	../game_shared/shared_util.h
 )
@@ -444,6 +446,8 @@ set(UTIL_SRC
 	saverestore.cpp
 	Scheduler.cpp
 	TextMenu.cpp
+	ThreadSafeInt.cpp
+	ThreadSafeQueue.cpp
 	wav.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
