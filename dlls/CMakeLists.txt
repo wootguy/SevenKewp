@@ -464,7 +464,6 @@ set(GAME_HDR
 	skill.h
 	teamplay_gamerules.h
 	user_messages.h
-	mod_api.h
 	PluginHooks.h
 	PluginManager.h
 )
@@ -481,7 +480,6 @@ set(GAME_SRC
 	teamplay_gamerules.cpp
 	user_messages.cpp
 	../game_shared/voice_gamemgr.cpp
-	mod_api.cpp
 	PluginManager.cpp
 )
 

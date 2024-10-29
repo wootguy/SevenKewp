@@ -1,5 +1,8 @@
 #pragma once
-#include "mod_api.h"
+
+#define HLCOOP_API_VERSION 2
+
+class CBasePlayer;
 
 struct HOOK_RETURN_DATA {
 	uint32_t code; // what to do after processing this hook
