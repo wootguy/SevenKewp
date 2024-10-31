@@ -40,6 +40,8 @@
 #include "debug.h"
 #include "eng_wrappers.h"
 #include "wav.h"
+#include "ThreadSafeQueue.h"
+#include <thread>
 
 class CBasePlayer;
 
@@ -56,6 +58,14 @@ extern std::string g_mp3Command; // current global mp3 command
 
 extern TYPEDESCRIPTION	gEntvarsDescription[];
 extern const int ENTVARS_COUNT;
+
+struct AlertMsgCall {
+	ALERT_TYPE atype;
+	std::string msg;
+};
+
+extern std::thread::id g_main_thread_id;
+extern ThreadSafeQueue<AlertMsgCall> g_thread_prints;
 
 #define NOT_PRECACHED_MODEL "models/" MOD_MODEL_FOLDER "not_precached.mdl"
 #define MERGED_ITEMS_MODEL "models/" MOD_MODEL_FOLDER "w_items_v2.mdl"
@@ -227,11 +237,11 @@ inline entvars_t *VARS(edict_t *pent)
 }
 
 inline entvars_t* VARS(EOFFSET eoffset)			{ return VARS(ENT(eoffset)); }
-inline int	  ENTINDEX(edict_t *pEdict)			{ return (*g_engfuncs.pfnIndexOfEdict)(pEdict); }
+inline int	  ENTINDEX(const edict_t *pEdict)			{ return (*g_engfuncs.pfnIndexOfEdict)(pEdict); }
 inline edict_t* INDEXENT( int iEdictNum )		{ return (*g_engfuncs.pfnPEntityOfEntIndex)(iEdictNum); }
-inline uint32_t PLRBIT(edict_t* pEdict)			{ return 1 << (ENTINDEX(pEdict) & 31); }
+inline uint32_t PLRBIT(const edict_t* pEdict)			{ return 1 << (ENTINDEX(pEdict) & 31); }
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent ) {
-	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ENT(ent));
+	MESSAGE_BEGIN(msg_dest, msg_type, pOrigin, ENT(ent));
 }
 void WRITE_BYTES(uint8_t* bytes, int count);
 
@@ -435,7 +445,7 @@ typedef struct hudtextparms_s
 
 // prints as transparent 'title' to the HUD
 EXPORT void			UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage );
-EXPORT void			UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage );
+EXPORT void			UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage, int msgMode = MSG_ONE);
 
 // for handy use with ClientPrint params
 EXPORT char *UTIL_dtos1( int d );
@@ -804,3 +814,11 @@ EXPORT std::vector<std::string> getDirFiles(std::string path, std::string extens
 EXPORT short FixedSigned16(float value, float scale);
 
 EXPORT unsigned short FixedUnsigned16(float value, float scale);
+
+EXPORT void KickPlayer(edict_t* ent, const char* reason="");
+
+// Normalizes any number to an arbitrary range 
+// by assuming the range wraps around when going below min or above max
+EXPORT float normalizeRangef(const float value, const float start, const float end);
+
+EXPORT void handleThreadPrints();

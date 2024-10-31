@@ -1,4 +1,6 @@
 #pragma once
+#include "Platform.h"
+#include "vector.h"
 #include <stdint.h>
 
 class EXPORT mstream

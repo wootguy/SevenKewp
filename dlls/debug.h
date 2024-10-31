@@ -66,9 +66,9 @@ std::string getLogTimeStr();
 
 void writeDebugLog(std::ofstream& outFile, std::string lastLogName, std::string prefix, std::string line);
 
-const char* msgDestStr(int msg_dest);
+EXPORT const char* msgDestStr(int msg_dest);
 
-const char* msgTypeStr(int msg_type);
+EXPORT const char* msgTypeStr(int msg_type);
 
 void log_msg(msg_info& msg);
 

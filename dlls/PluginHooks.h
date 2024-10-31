@@ -107,6 +107,18 @@ struct HLCOOP_PLUGIN_HOOKS {
 	HOOK_RETURN_DATA (*pfnWriteString)(const char* value);
 	HOOK_RETURN_DATA (*pfnWriteEntity)(int value);
 	HOOK_RETURN_DATA (*pfnMessageEnd)();
+
+	// called before the engine sets the model, after model replacement in the mod
+	HOOK_RETURN_DATA (*pfnSetModel)(edict_t* edict, const char* model);
+
+	// called immediately after the engine sets a model
+	HOOK_RETURN_DATA (*pfnSetModelPost)(edict_t* edict, const char* model);
+
+	// called after the engine precaches the given model
+	HOOK_RETURN_DATA (*pfnPrecacheModelPost)(const char* model);
+
+	// called before an event is played
+	HOOK_RETURN_DATA(*pfnPlaybackEvent)(int flags, const edict_t* pInvoker, unsigned short eventindex, float delay, float* origin, float* angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2);
 };
 
 EXPORT void RegisterPlugin(void* plugin, HLCOOP_PLUGIN_HOOKS* hooks, const char* name);

@@ -455,6 +455,22 @@ set(UTIL_SRC
 	../game_shared/shared_util.cpp
 )
 
+set(NET_HDR
+	net/Socket.h
+	net/IPV4.h
+	net/Packet.h
+)
+set(NET_SRC
+	net/IPV4.cpp
+	net/Packet.cpp
+)
+
+if (UNIX)
+	set(NET_SRC ${NET_SRC} net/network_unix.cpp net/Socket_unix.cpp)
+else()
+	set(NET_SRC ${NET_SRC} net/network_win.cpp net/Socket_win.cpp)
+endif()
+
 set(GAME_HDR
 	client.h
 	../engine/custom.h
@@ -570,6 +586,7 @@ set(ALL_SRC
 	${GENERATED_SRCS}
 	${ENT_SRC} ${ENT_HDR}
 	${UTIL_SRC} ${UTIL_HDR}
+	${NET_SRC} ${NET_HDR}
 	${GAME_SRC} ${GAME_HDR}
 	${MISC_HDR}
 )
@@ -596,6 +613,8 @@ if(UNIX)
 		LINK_FLAGS "-m32 -g  ${ASAN_LFLAGS}"
 	)
 
+	target_link_libraries(${PROJECT_NAME} PRIVATE WS2_32 IPHLPAPI)
+	
 elseif(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4") 
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${CMAKE_CURRENT_SOURCE_DIR}/hl.def") 
@@ -617,6 +636,7 @@ elseif(MSVC)
 	source_group("Header Files\\Entities\\weapon\\ammo" FILES ${AMMO_HDR})
 	source_group("Header Files\\Game" FILES ${GAME_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})
+	source_group("Header Files\\Network" FILES ${NET_HDR})
 	
 	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})
 	source_group("Source Files\\Generated" FILES  ${GENERATED_SRCS})
@@ -636,7 +656,11 @@ elseif(MSVC)
 	source_group("Source Files\\Entities\\weapon" FILES ${WEAPON_SRC})
 	source_group("Source Files\\Entities\\weapon\\ammo" FILES ${AMMO_SRC})
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})
+	source_group("Source Files\\Network" FILES ${NET_SRC})
 	source_group("Source Files\\Game" FILES ${GAME_SRC})
+	
+	# WinSock libraries for network utils
+	target_link_libraries(${PROJECT_NAME} PRIVATE WS2_32 IPHLPAPI)
 
 else()
 	message(FATAL_ERROR "TODO: Mac support")

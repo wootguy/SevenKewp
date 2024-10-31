@@ -46,6 +46,7 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 #define CMD_ARGC					(*g_engfuncs.pfnCmd_Argc)
 #define CMD_ARGV					(*g_engfuncs.pfnCmd_Argv)
 #define CHANGE_LEVEL	(*g_engfuncs.pfnChangeLevel)
+#define PLAYBACK_EVENT_FULL		(*g_engfuncs.pfnPlaybackEvent)
 #else
 // engine wrappers which handle model/sound replacement logic
 EXPORT int PRECACHE_GENERIC(const char* path);
@@ -86,4 +87,5 @@ EXPORT const char* CMD_ARGV(int argc);
 EXPORT int CMD_ARGC();
 EXPORT const char* CMD_ARGS();
 EXPORT void CHANGE_LEVEL(const char* pszLevelName, const char* pszLandmarkName);
+EXPORT void PLAYBACK_EVENT_FULL(int flags, const edict_t* pInvoker, unsigned short eventindex, float delay, float* origin, float* angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2);
 #endif
