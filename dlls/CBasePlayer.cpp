@@ -4500,9 +4500,12 @@ void CBasePlayer :: UpdateClientData( void )
 void CBasePlayer::Rename(const char* newName, bool fast, int msg_mode, edict_t* dst) {
 	char* info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
 
+	if (!info || info[0] == '\0') {
+		return;
+	}
+
 	// not doing this because it triggers the "changed name" chat message
 	//g_engfuncs.pfnSetClientKeyValue(entindex(), info, "name", (char*)newName);
-
 
 	static char userinfo[512];
 
@@ -4540,9 +4543,11 @@ void CBasePlayer::Rename(const char* newName, bool fast, int msg_mode, edict_t* 
 		return;
 	}
 
-	
-
 	char* nameStart = strstr(info, "\\name\\") + 6;
+	if (!nameStart) {
+		return;
+	}
+
 	char* nameEnd = strstr(nameStart, "\\");
 
 	if (strlen(info) + strlen(newName) > 512 && nameStart) {
