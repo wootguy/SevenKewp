@@ -612,8 +612,6 @@ if(UNIX)
 		COMPILE_FLAGS "-m32 -g -O2 -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter ${ASAN_CFLAGS}"
 		LINK_FLAGS "-m32 -g  ${ASAN_LFLAGS}"
 	)
-
-	target_link_libraries(${PROJECT_NAME} PRIVATE WS2_32 IPHLPAPI)
 	
 elseif(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4") 
