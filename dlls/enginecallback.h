@@ -95,17 +95,18 @@ EXPORT void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
 
 #if defined(PLUGIN_BUILD) && defined(PLUGIN_NAME)
 #define ALERT(target, fmt, ...) { \
-	DEBUG_MSG(target, "[" PLUGIN_NAME "] " fmt, ##__VA_ARGS__ ); \
+	DEBUG_MSG(target, "[" PLUGIN_NAME "] "); \
+	DEBUG_MSG(target, fmt, ##__VA_ARGS__ ); \
 }
 #else
 #define ALERT DEBUG_MSG
 #endif
 
 #define print(...)	{ALERT(at_console, __VA_ARGS__);}
-#define println(...)	{ALERT(at_console, __VA_ARGS__); ALERT(at_console, "\n");}
+#define println(...)	{ALERT(at_console, __VA_ARGS__); DEBUG_MSG(at_console, "\n");}
 #define ENGINE_FPRINTF	(*g_engfuncs.pfnEngineFprintf)
 #define ALLOC_PRIVATE	(*g_engfuncs.pfnPvAllocEntPrivateData)
-inline void *GET_PRIVATE( edict_t *pent )
+inline void *GET_PRIVATE( const edict_t *pent )
 {
 	if ( pent )
 		return pent->pvPrivateData;
@@ -135,8 +136,6 @@ inline void *GET_PRIVATE( edict_t *pent )
 #define IS_MAP_VALID			(*g_engfuncs.pfnIsMapValid)
 #define NUMBER_OF_ENTITIES		(*g_engfuncs.pfnNumberOfEntities)
 #define IS_DEDICATED_SERVER		(*g_engfuncs.pfnIsDedicatedServer)
-
-#define PLAYBACK_EVENT_FULL		(*g_engfuncs.pfnPlaybackEvent)
 
 #define ENGINE_SET_PVS			(*g_engfuncs.pfnSetFatPVS)
 #define ENGINE_SET_PAS			(*g_engfuncs.pfnSetFatPAS)

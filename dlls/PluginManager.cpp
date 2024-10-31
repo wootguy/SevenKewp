@@ -203,7 +203,7 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 	{
 		lineNum++;
 
-		int endPos = line.find_first_of("#/");
+		int endPos = line.find("//");
 		if (endPos != -1)
 			line = trimSpaces(line.substr(0, endPos));
 

@@ -428,6 +428,8 @@ int PRECACHE_MODEL(const char* path) {
 			world->v.modelindex = oldModelIdx;
 		}
 
+		CALL_HOOKS(int, pfnPrecacheModelPost, path);
+
 		return modelIdx;
 	}
 	else {
@@ -491,7 +493,11 @@ bool SET_MODEL(edict_t* edict, const char* model) {
 		model = NOT_PRECACHED_MODEL;
 	}
 
+	CALL_HOOKS(bool, pfnSetModel, edict, model);
+
 	g_engfuncs.pfnSetModel(edict, model);
+
+	CALL_HOOKS(bool, pfnSetModelPost, edict, model);
 
 	return replaced;
 }
@@ -652,4 +658,14 @@ const char* CMD_ARGS() {
 void CHANGE_LEVEL(const char* pszLevelName, const char* pszLandmarkName) {
 	CALL_HOOKS_VOID(pfnChangeLevel, pszLevelName, pszLandmarkName);
 	g_engfuncs.pfnChangeLevel(pszLevelName, pszLandmarkName);
+}
+
+void PLAYBACK_EVENT_FULL(int flags, const edict_t* pInvoker, unsigned short eventindex, float delay, 
+	float* origin, float* angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, 
+	int bparam2)
+{
+	CALL_HOOKS_VOID(pfnPlaybackEvent, flags, pInvoker, eventindex, delay, origin, angles, fparam1, fparam2,
+		iparam1, iparam2, bparam1, bparam2);
+	g_engfuncs.pfnPlaybackEvent(flags, pInvoker, eventindex, delay, origin, angles, fparam1, fparam2,
+		iparam1, iparam2, bparam1, bparam2);
 }

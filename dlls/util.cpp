@@ -91,6 +91,9 @@ std::string g_mp3Command;
 
 std::unordered_map<std::string, int> g_admins;
 
+std::thread::id g_main_thread_id = std::this_thread::get_id();
+ThreadSafeQueue<AlertMsgCall> g_thread_prints;
+
 TYPEDESCRIPTION	gEntvarsDescription[] =
 {
 	DEFINE_ENTITY_FIELD(classname, FIELD_STRING),
@@ -1062,14 +1065,14 @@ const char* BreakupLongLines(const char* pMessage) {
 	return pMessage;
 }
 
-void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage )
+void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage, int msgMode)
 {
 	if ( !pEntity || !pEntity->IsNetClient() )
 		return;
 
 	pMessage = BreakupLongLines(pMessage);
 
-	MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, NULL, pEntity->edict() );
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, NULL, pEntity->edict() );
 		WRITE_BYTE( TE_TEXTMESSAGE );
 		WRITE_BYTE( textparms.channel & 0xFF );
 
@@ -2564,6 +2567,11 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 	vsnprintf(log_line, 4096, format, vl);
 	va_end(vl);
 
+	if (std::this_thread::get_id() != g_main_thread_id) {
+		g_thread_prints.enqueue({target, log_line}); // only the main thread can call engine functions
+		return;
+	}
+
 #if defined(WIN32) && (_DEBUG)
 	OutputDebugString(log_line);
 #endif
@@ -2582,6 +2590,19 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 
 		if (g_developer->value == 0)
 			g_engfuncs.pfnServerPrint(log_line);
+	}
+}
+
+void handleThreadPrints() {
+	AlertMsgCall msg;
+
+	for (int failsafe = 0; failsafe < 128; failsafe++) {
+		if (g_thread_prints.dequeue(msg)) {
+			ALERT(msg.atype, msg.msg.c_str());
+		}
+		else {
+			break;
+		}
 	}
 }
 
@@ -2654,8 +2675,6 @@ double TimeDifference(uint64_t start, uint64_t end) {
 void LoadAdminList(bool forceUpdate) {
 	const char* ADMIN_LIST_FILE = CVAR_GET_STRING("adminlistfile");
 
-	g_admins.clear();
-
 	static uint64_t lastEditTime = 0;
 
 	std::string fpath = getGameFilePath(ADMIN_LIST_FILE);
@@ -2680,6 +2699,8 @@ void LoadAdminList(bool forceUpdate) {
 
 	lastEditTime = editTime;
 
+	g_admins.clear();
+
 	std::string line;
 	while (std::getline(infile, line)) {
 		if (line.empty()) {
@@ -2687,7 +2708,7 @@ void LoadAdminList(bool forceUpdate) {
 		}
 
 		// strip comments
-		int endPos = line.find_first_of("#/");
+		int endPos = line.find("//");
 		if (endPos != -1)
 			line = trimSpaces(line.substr(0, endPos));
 
@@ -2801,4 +2822,23 @@ std::vector<std::string> getDirFiles(std::string path, std::string extension, st
 #endif
 
 	return results;
+}
+
+void KickPlayer(edict_t* ent, const char* reason) {
+	if (!ent || (ent->v.flags & FL_CLIENT) == 0) {
+		return;
+	}
+	int userid = g_engfuncs.pfnGetPlayerUserId(ent);
+	g_engfuncs.pfnServerCommand(UTIL_VarArgs("kick #%d %s\n", userid, reason));
+	g_engfuncs.pfnServerExecute();
+}
+
+// https://stackoverflow.com/questions/1628386/normalise-orientation-between-0-and-360
+float normalizeRangef(const float value, const float start, const float end)
+{
+	const float width = end - start;
+	const float offsetValue = value - start;   // value relative to 0
+
+	return (offsetValue - (floor(offsetValue / width) * width)) + start;
+	// + start to reset back to start of original range
 }

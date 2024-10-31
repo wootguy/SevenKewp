@@ -265,7 +265,9 @@ bool mstream::eom()
 
 void mstream::freeBuf()
 {
-	delete [] (char*)start;
+	if (start)
+		delete [] (char*)start;
+	start = 0;
 }
 
 mstream::~mstream( void )

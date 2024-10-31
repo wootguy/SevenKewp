@@ -115,6 +115,7 @@ class CBaseMonster;
 class CBasePlayerWeapon;
 class CTalkSquadMonster;
 class CBaseToggle;
+class CBaseAnimating;
 
 
 #define	SF_NORESPAWN	( 1 << 10 )// !!!set this bit on guns and stuff that should never respawn.
@@ -204,6 +205,7 @@ public:
 	virtual CBasePlayerWeapon* GetWeaponPtr(void) { return NULL; };
 	virtual CTalkSquadMonster * MyTalkSquadMonsterPointer( void ) { return NULL;}
 	virtual CBaseToggle* MyTogglePointer(void) { return NULL; }
+	virtual CBaseAnimating* MyAnimatingPointer(void) { return NULL; }
 	virtual	int		GetToggleState( void ) { return TS_AT_TOP; }
 	virtual void	AddPoints( int score, BOOL bAllowNegativeScore ) {}
 	virtual void	AddPointsToTeam( int score, BOOL bAllowNegativeScore ) {}
@@ -289,7 +291,7 @@ public:
 	int		IsDormant( void );
 	BOOL    IsLockedByMaster( void ) { return FALSE; }
 
-	static CBaseEntity *Instance( edict_t *pent )
+	static CBaseEntity *Instance( const edict_t *pent )
 	{ 
 		if ( !pent )
 			pent = ENT(0);
@@ -519,6 +521,7 @@ public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
+	virtual CBaseAnimating* MyAnimatingPointer(void) { return this; }
 
 	static	TYPEDESCRIPTION m_SaveData[];
 

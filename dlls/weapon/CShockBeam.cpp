@@ -243,10 +243,10 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 		UTIL_DecalTrace( &tr, DECAL_OFSCORCH1 + RANDOM_LONG( 0, 2 ) );
 
 		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-		g_engfuncs.pfnWriteByte( TE_SPARKS );
-		g_engfuncs.pfnWriteCoord( pev->origin.x );
-		g_engfuncs.pfnWriteCoord( pev->origin.y );
-		g_engfuncs.pfnWriteCoord( pev->origin.z );
+		WRITE_BYTE( TE_SPARKS );
+		WRITE_COORD( pev->origin.x );
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z );
 		MESSAGE_END();
 	}
 }
