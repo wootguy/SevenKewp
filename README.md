@@ -19,8 +19,8 @@ Note: If you're a player, you don't need to install anything or build this mod. 
 
 Currently, the mod is designed to run as a replacement server library for Half-Life, rather than a new mod with its own server list and client. The mod doesn't work with Sven Co-op clients yet.
 
-# Building plugins
-This mod has its own plugin system, similar to metamod. Here's how you build those plugins.
+# Building native plugins
+Native plugins are tightly integrated with the mod code and have full access to its classes and utilities. This makes native plugins powerful but easily broken by mod updates. Here's how to build them.
 
 1. Set up the mod project as described in the previous section
 2. Open a shell in `SevenKewp/plugins/`
@@ -29,7 +29,22 @@ This mod has its own plugin system, similar to metamod. Here's how you build tho
 5. Copy the contents of `SevenKewp/build/output/` to `valve/` on your dedicated server.
 6. Repeat steps 4 and 5 whenever the mod updates.
 
-Mod plugins are tightly coupled to the mod code and have full access to its classes and utilities. This makes plugins powerful but easily broken by mod updates.
+# Installing native plugins
+Once you have built or downloaded a native plugin, you need to copy it to the right place and update the relevant config file. `valve` and `valve_downloads` are interchangeable. The plugin loader will search both paths.
+
+## Server plugins
+1. Copy the dll to the server plugins folder (Example: `valve/plugins/server/AntiBlock.dll`)
+2. Add the plugin file path to `valve/plugins.txt` without the file extension (Example: write `Antiblock` to load the path in step 1)
+
+Plugin paths in `plugins.txt` start in `valve/plugins/server/`. That's why you only need to write `AntiBlock` instead of `valve/plugins/server/AntiBlock` in the above example.
+
+## Map plugins
+These steps only apply to unreleased maps/ports. Ideally the map package will set this up for you so that you only need to extract the files.
+
+1. Copy the dll to the map plugins folder (Example: `valve/plugins/maps/pizza_ya_san.dll`)
+2. Add the plugin file path to the map cfg file(s) the plugin was made for (Example: add `map_plugin pizza_ya_san` to `valve/maps/pizza_ya_san1.cfg` and `valve/maps/pizza_ya_san2.cfg`).
+
+Plugin paths in map cfg files start in `valve/plugins/maps/`.
 
 # Installing Sven Co-op maps
 Sven Co-op maps often need converting before they can be used in Half-Life. Not doing this will result in crashes. This section is here mostly as a warning not to install maps directly. Good luck actually following this. I plan to publish all my ports and ripents later so that this isn't needed.
