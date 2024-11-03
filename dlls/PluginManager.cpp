@@ -12,6 +12,7 @@ PluginManager g_pluginManager;
 
 struct ExternalCvar {
 	int pluginId;
+	std::string name;
 	cvar_t cvar;
 };
 
@@ -434,9 +435,10 @@ cvar_t* RegisterPluginCVar(void* pluginptr, const char* name, const char* strDef
 	}
 
 	ExternalCvar& extvar = g_plugin_cvars[g_plugin_cvar_count];
-
-	extvar.cvar.name = STRING(ALLOC_STRING(name));
-	extvar.cvar.string = STRING(ALLOC_STRING(strDefaultValue));
+	
+	extvar.name = name;
+	extvar.cvar.name = extvar.name.c_str();
+	extvar.cvar.string = STRING(MAKE_STRING(strDefaultValue));
 	extvar.cvar.flags = flags | FCVAR_EXTDLL;
 	extvar.cvar.value = intDefaultValue;
 	extvar.cvar.next = NULL;
