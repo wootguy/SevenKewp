@@ -964,8 +964,7 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 		GetAttachment(0, vecArmPos, vecArmAngles);
 
-		//MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, vecArmPos);
-		MESSAGE_BEGIN(MSG_ALL, SVC_TEMPENTITY, vecArmPos);
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, vecArmPos);
 		WRITE_BYTE(TE_SPRITE);
 		WRITE_COORD(vecArmPos.x);
 		WRITE_COORD(vecArmPos.y);

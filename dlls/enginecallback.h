@@ -95,15 +95,15 @@ EXPORT void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
 
 #if defined(PLUGIN_BUILD) && defined(PLUGIN_NAME)
 #define ALERT(target, fmt, ...) { \
-	DEBUG_MSG(target, "[" PLUGIN_NAME "] "); \
-	DEBUG_MSG(target, fmt, ##__VA_ARGS__ ); \
+	DEBUG_MSG(target, "[" PLUGIN_NAME "] ", NULL); \
+	DEBUG_MSG(target, fmt, ##__VA_ARGS__, NULL); \
 }
 #else
 #define ALERT DEBUG_MSG
 #endif
 
-#define print(...)	{ALERT(at_console, __VA_ARGS__);}
-#define println(...)	{ALERT(at_console, __VA_ARGS__); DEBUG_MSG(at_console, "\n");}
+#define print(...)	{ALERT(at_console, __VA_ARGS__, NULL);}
+#define println(...)	{ALERT(at_console, __VA_ARGS__, NULL); DEBUG_MSG(at_console, "\n", NULL);}
 #define ENGINE_FPRINTF	(*g_engfuncs.pfnEngineFprintf)
 #define ALLOC_PRIVATE	(*g_engfuncs.pfnPvAllocEntPrivateData)
 inline void *GET_PRIVATE( const edict_t *pent )
