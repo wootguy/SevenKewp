@@ -4321,7 +4321,7 @@ void CBasePlayer :: UpdateClientData( void )
 		gDisplayTitle = 0;
 	}
 
-	if (pev->health != m_iClientHealth)
+	if ((int)pev->health != m_iClientHealth)
 	{
 		int iHealth = clampf( pev->health, 0, 255 );  // make sure that no negative health values are sent
 		if ( pev->health > 0.0f && pev->health <= 1.0f )
@@ -4336,7 +4336,7 @@ void CBasePlayer :: UpdateClientData( void )
 	}
 
 
-	if (pev->armorvalue != m_iClientBattery)
+	if ((int)pev->armorvalue != m_iClientBattery)
 	{
 		m_iClientBattery = pev->armorvalue;
 

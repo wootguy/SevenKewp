@@ -135,7 +135,12 @@ bool mstream::writeBit(bool value) {
 		currentBit = 0;
 	}
 
-	*((uint8_t*)pos) |= (value ? 1 : 0) << currentBit;
+	if (value) {
+		*((uint8_t*)pos) |= 1 << currentBit;
+	}
+	else {
+		*((uint8_t*)pos) &= ~(1 << currentBit);
+	}
 
 	currentBit++;
 	return 1;
