@@ -73,7 +73,7 @@ public:
 
     void Think();
 
-    void RemoveTimer(ScheduledFunction schedule);
+    EXPORT void RemoveTimer(ScheduledFunction schedule);
 
     void RemoveTimers(const char* owner);
 };

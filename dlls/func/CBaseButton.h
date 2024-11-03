@@ -14,7 +14,7 @@ void DoSpark(entvars_t* pev, const Vector& location);
 //
 // Generic Button
 //
-class CBaseButton : public CBaseToggle
+class EXPORT CBaseButton : public CBaseToggle
 {
 public:
 	void Spawn(void);
@@ -25,13 +25,13 @@ public:
 	void ButtonActivate();
 	void SparkSoundCache(void);
 
-	void EXPORT ButtonShot(void);
-	void EXPORT ButtonTouch(CBaseEntity* pOther);
-	void EXPORT ButtonSpark(void);
-	void EXPORT TriggerAndWait(void);
-	void EXPORT ButtonReturn(void);
-	void EXPORT ButtonBackHome(void);
-	void EXPORT ButtonUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void ButtonShot(void);
+	void ButtonTouch(CBaseEntity* pOther);
+	void ButtonSpark(void);
+	void TriggerAndWait(void);
+	void ButtonReturn(void);
+	void ButtonBackHome(void);
+	void ButtonUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual int		TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);

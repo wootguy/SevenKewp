@@ -63,15 +63,15 @@ typedef struct dynpitchvol
 
 // presets for runtime pitch and vol modulation of ambient sounds
 
-class CAmbientGeneric : public CBaseEntity
+class EXPORT CAmbientGeneric : public CBaseEntity
 {
 public:
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	void KeyValue(KeyValueData* pkvd);
 	void Spawn(void);
 	void Precache(void);
-	void EXPORT ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	void EXPORT RampThink(void);
+	void ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void RampThink(void);
 	void InitModulationParms(void);
 	void InitSoundForNewJoiner(edict_t* target);
 

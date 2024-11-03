@@ -54,7 +54,7 @@ extern int g_edictsinit; // 1 if all edicts were allocated so that relocations c
 
 extern std::unordered_map<std::string, int> g_admins;
 
-extern std::string g_mp3Command; // current global mp3 command
+EXPORT extern std::string g_mp3Command; // current global mp3 command
 
 extern TYPEDESCRIPTION	gEntvarsDescription[];
 extern const int ENTVARS_COUNT;
@@ -243,7 +243,7 @@ inline uint32_t PLRBIT(const edict_t* pEdict)			{ return 1 << (ENTINDEX(pEdict) 
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent ) {
 	MESSAGE_BEGIN(msg_dest, msg_type, pOrigin, ENT(ent));
 }
-void WRITE_BYTES(uint8_t* bytes, int count);
+EXPORT void WRITE_BYTES(uint8_t* bytes, int count);
 
 // Testing the three types of "entity" for nullity
 #define eoNullEntity 0
@@ -661,6 +661,16 @@ EXPORT float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecE
 
 EXPORT void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
 						   int flags, int pitch);
+
+// rehlds
+#define DEFAULT_SOUND_PACKET_VOLUME 255
+#define DEFAULT_SOUND_PACKET_ATTENUATION 1.0f
+#define DEFAULT_SOUND_PACKET_PITCH 100
+#define MAX_EDICT_BITS 11
+
+// uses a static buffer, returns NULL on failure
+EXPORT mstream* BuildStartSoundMessage(edict_t* entity, int channel, const char* sample, float fvolume,
+	float attenuation, int fFlags, int pitch, const float* origin);
 
 // play the sound for players with bits contained in messageTargets
 // a player bit = 1 << (ENTINDEX(player_edict) % 31)
