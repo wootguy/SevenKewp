@@ -477,41 +477,46 @@ void COsprey::Flight( )
 	SetBoneController( 0, m_flRotortilt );
 
 
+	static int lastPitch[33];
+
+	// make rotor, engine sounds
 	if (m_iSoundState == 0)
 	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor4.wav", 1.0, 0.15, 0, 110 );
-		// EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_whine1.wav", 0.5, 0.2, 0, 110 );
-
+		StartSound(edict(), CHAN_ITEM, "apache/ap_rotor4.wav", 1.0f, 0.3f, 0, 110, g_vecZero, 0xffffffff, false);
+		memset(lastPitch, 0, sizeof(int) * 33);
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 	}
 	else
 	{
-		CBaseEntity *pPlayer = NULL;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBaseEntity* pPlayer = (CBaseEntity*)UTIL_PlayerByIndex(i);
 
-		pPlayer = UTIL_FindEntityByClassname( NULL, "player" );
-		// UNDONE: this needs to send different sounds to every player for multiplayer.	
-		if (pPlayer)
-		{
-			float pitch = DotProduct( m_velocity - pPlayer->pev->velocity, (pPlayer->pev->origin - pev->origin).Normalize() );
+			if (!pPlayer) {
+				continue;
+			}
 
-			pitch = (int)(100 + pitch / 75.0);
+			float dot = DotProduct(pev->velocity - pPlayer->pev->velocity, (pPlayer->pev->origin - pev->origin).Normalize());
 
-			if (pitch > 250) 
+			int pitch = (int)(100 + dot / 75.0);
+
+			if (pitch > 250)
 				pitch = 250;
 			if (pitch < 50)
 				pitch = 50;
 
-			if (pitch == 100)
-				pitch = 101;
+			pitch = (pitch / 2) * 2; // reduce the amount of network messages
 
-			if (pitch != m_iPitch)
-			{
-				m_iPitch = pitch;
-				EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor4.wav", 1.0, 0.15, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);
-				// ALERT( at_console, "%.0f\n", pitch );
+			if (pitch == 100)
+				pitch = 101; // SND_CHANGE_PITCH will not work for 100 pitch (random sounds will play)
+
+			if (pitch == lastPitch[pPlayer->entindex()]) {
+				continue;
 			}
+
+			StartSound(edict(), CHAN_ITEM, "apache/ap_rotor4.wav", 1.0f, 0.3f, SND_CHANGE_PITCH,
+				pitch, g_vecZero, PLRBIT(pPlayer->edict()), false);
+			lastPitch[pPlayer->entindex()] = pitch;
 		}
-		// EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_whine1.wav", flVol, 0.2, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);
 	}
 
 }
@@ -549,7 +554,7 @@ void COsprey :: Killed( entvars_t *pevAttacker, int iGib )
 	pev->gravity = 0.3;
 	pev->velocity = m_velocity;
 	pev->avelocity = Vector( RANDOM_FLOAT( -20, 20 ), 0, RANDOM_FLOAT( -50, 50 ) );
-	STOP_SOUND( ENT(pev), CHAN_STATIC, "apache/ap_rotor4.wav" );
+	STOP_SOUND(ENT(pev), CHAN_ITEM, "apache/ap_rotor4.wav");
 
 	UTIL_SetSize( pev, Vector( -32, -32, -64), Vector( 32, 32, 0) );
 	SetThink( &COsprey::DyingThink );
