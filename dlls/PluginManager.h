@@ -34,11 +34,15 @@ public:
 	// set isMapPlugin to true if the plugin should only run on the current map
 	bool AddPlugin(const char* fpath, bool isMapPlugin);
 
+	bool LoadPlugin(Plugin& plugin);
+
 	void UnloadPlugin(const Plugin& plugin);
 
 	void RemovePlugin(const Plugin& plugin);
 
 	void RemovePlugin(const char* name);
+
+	void ReloadPlugin(const char* name);
 
 	void RemovePlugins(bool mapPluginsOnly);
 

@@ -476,7 +476,11 @@ int PRECACHE_EVENT(int id, const char* path) {
 bool SET_MODEL(edict_t* edict, const char* model) {
 	if (model && model[0] == '*') {
 		// BSP model. No special handling.
+		CALL_HOOKS(bool, pfnSetModel, edict, model);
 		g_engfuncs.pfnSetModel(edict, model);
+		if (!g_serveractive)
+			g_precachedModels[model] = model; // engine precaches entity BSP models automatically
+		CALL_HOOKS(bool, pfnSetModelPost, edict, model);
 		return false;
 	}
 
@@ -536,6 +540,13 @@ int MODEL_INDEX(const char* model) {
 	model = lowerPath.c_str();
 	return g_engfuncs.pfnModelIndex(model);
 }
+
+int SOUND_INDEX(const char* sound) {
+	std::string lowerPath = toLowerCase(sound);
+	sound = lowerPath.c_str();
+	return g_engfuncs.pfnPrecacheSound(sound);
+}
+
 
 void* GET_MODEL_PTR(edict_t* edict) {
 	studiohdr_t* header = (studiohdr_t*)g_engfuncs.pfnGetModelPtr(edict);
@@ -628,6 +639,11 @@ void MESSAGE_END() {
 void EMIT_SOUND_DYN2(edict_t* pEntity, int channel, const char* pszSample, float volume, float attenuation, int fFlags, int pitch) {
 	CALL_HOOKS_VOID(pfnEmitSound, pEntity, channel, pszSample, volume, attenuation, fFlags, pitch);
 	g_engfuncs.pfnEmitSound(pEntity, channel, pszSample, volume, attenuation, fFlags, pitch);
+}
+
+void EMIT_AMBIENT_SOUND(edict_t* pEntity, const float* vecPos, const char* pszSample, float vol, float attenuation, int fFlags, int pitch) {
+	CALL_HOOKS_VOID(pfnEmitAmbientSound, pEntity, vecPos, pszSample, vol, attenuation, fFlags, pitch);
+	g_engfuncs.pfnEmitAmbientSound(pEntity, vecPos, pszSample, vol, attenuation, fFlags, pitch);
 }
 
 void SetClientMaxspeed(const edict_t* pEntity, float maxspeed) {

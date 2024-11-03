@@ -451,15 +451,8 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz)
 	return -1;
 }
 
-// rehlds
-#define DEFAULT_SOUND_PACKET_VOLUME 255
-#define DEFAULT_SOUND_PACKET_ATTENUATION 1.0f
-#define DEFAULT_SOUND_PACKET_PITCH 100
-#define MAX_EDICT_BITS 11
-
-void StartSound(edict_t* entity, int channel, const char* sample, float fvolume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets, bool reliable)
-{
+mstream* BuildStartSoundMessage(edict_t* entity, int channel, const char* sample, float fvolume, float attenuation,
+	int fFlags, int pitch, const float* origin) {
 	int sound_num;
 	int field_mask;
 
@@ -472,7 +465,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 		if (sound_num >= CVOXFILESENTENCEMAX)
 		{
 			ALERT(at_console, "%s: invalid sentence number: %s\n", __func__, sample + 1);
-			return;
+			return NULL;
 		}
 	}
 	else if (*sample == '#')
@@ -487,7 +480,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 
 	int ient = ENTINDEX(entity);
 	int volume = clampf(fvolume, 0, 1.0f) * 255;
-	
+
 	if (volume != DEFAULT_SOUND_PACKET_VOLUME)
 		field_mask |= SND_FL_VOLUME;
 	if (attenuation != DEFAULT_SOUND_PACKET_ATTENUATION)
@@ -499,9 +492,10 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 
 	const int maxStartSoundMessageSz = 16;
 	static uint8_t msgbuffer[maxStartSoundMessageSz];
+	static mstream bitbuffer((char*)msgbuffer, 16);
 
 	memset(msgbuffer, 0, maxStartSoundMessageSz);
-	mstream bitbuffer((char*)msgbuffer, 16);
+	bitbuffer.seek(0);
 
 	bitbuffer.writeBits(field_mask, 9);
 	if (field_mask & SND_FL_VOLUME)
@@ -517,9 +511,22 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 
 	if (bitbuffer.eom()) {
 		ALERT(at_error, "StartSound bit buffer overflow\n");
+		return NULL;
 	}
 
-	int msgSz = bitbuffer.tell() + 1;
+	return &bitbuffer;
+}
+
+void StartSound(edict_t* entity, int channel, const char* sample, float fvolume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, bool reliable)
+{
+	mstream* bitbuffer = BuildStartSoundMessage(entity, channel, sample, fvolume, attenuation, fFlags, pitch, origin);
+	
+	if (!bitbuffer) {
+		return;
+	}
+
+	int msgSz = bitbuffer->tell() + 1;
 	//bool anyMessagesWritten = false;
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
@@ -532,7 +539,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 
 		// TODO: should only consider PAS (can hear reload sounds but only distant gunshots)
 		MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, plent);
-		WRITE_BYTES(msgbuffer, msgSz);
+		WRITE_BYTES((uint8_t*)bitbuffer->getBuffer(), msgSz);
 		MESSAGE_END();
 		//anyMessagesWritten = true;
 	}

@@ -220,6 +220,14 @@ void remove_plugin() {
 	g_pluginManager.RemovePlugin(CMD_ARGV(1));
 }
 
+void reload_plugin() {
+	if (CMD_ARGC() < 2) {
+		return;
+	}
+
+	g_pluginManager.ReloadPlugin(CMD_ARGV(1));
+}
+
 void test_command() {
 }
 
@@ -239,6 +247,7 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("reloadplugins", reload_plugins);
 	g_engfuncs.pfnAddServerCommand("listplugins", list_plugins);
 	g_engfuncs.pfnAddServerCommand("removeplugin", remove_plugin);
+	g_engfuncs.pfnAddServerCommand("reloadplugin", reload_plugin);
 	// Register cvars here:
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );

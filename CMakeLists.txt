@@ -29,6 +29,7 @@ include_directories(${CMAKE_SOURCE_DIR}/dlls/monster)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/item)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/path)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/weapon)
+include_directories(${CMAKE_SOURCE_DIR}/dlls/net)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/)
 
 project(sevenkewp)
@@ -45,8 +46,11 @@ if (BUILD_PLUGINS)
 	include(${CMAKE_SOURCE_DIR}/scripts/hlcoop_plugin.cmake)
 	set(PLUGIN_DIR "${CMAKE_CURRENT_LIST_DIR}/plugins")
 	file(GLOB ALL_ITEMS "${PLUGIN_DIR}/*")
-	message(STATUS "Note: Local plugin changes are discarded when built in BUILD_PLUGINS mode")
-
+	
+	if (UPDATE_PLUGINS)
+		message(STATUS "Note: Local plugin changes are discarded when built in UPDATE_PLUGINS mode")
+	endif()
+	
 	foreach(ITEM ${ALL_ITEMS})
 		if(IS_DIRECTORY ${ITEM})
 			get_filename_component(REPO_NAME ${ITEM} NAME)

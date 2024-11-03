@@ -1,4 +1,6 @@
 #pragma once
+#include "weaponinfo.h"
+#include "entity_state.h"
 
 #define HLCOOP_API_VERSION 2
 
@@ -77,6 +79,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// called when a sound is about to be played, after the mod has handled sound replacement
 	HOOK_RETURN_DATA (*pfnEmitSound)(edict_t* pEntity, int channel, const char* pszSample, float volume, float attenuation, int fFlags, int pitch);
+	
+	// called when an ambient sound is about to be played, after the mod has handled sound replacement
+	HOOK_RETURN_DATA (*pfnEmitAmbientSound)(edict_t* pEntity, const float* vecPos, const char* pszSample, float vol, float attenuation, int fFlags, int pitch);
 
 	// called when the mod registers a custom user message
 	HOOK_RETURN_DATA (*pfnRegUserMsg)(const char* name, int size);
@@ -118,7 +123,13 @@ struct HLCOOP_PLUGIN_HOOKS {
 	HOOK_RETURN_DATA (*pfnPrecacheModelPost)(const char* model);
 
 	// called before an event is played
-	HOOK_RETURN_DATA(*pfnPlaybackEvent)(int flags, const edict_t* pInvoker, unsigned short eventindex, float delay, float* origin, float* angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2);
+	HOOK_RETURN_DATA (*pfnPlaybackEvent)(int flags, const edict_t* pInvoker, unsigned short eventindex, float delay, float* origin, float* angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2);
+
+	// called before weapon data is updated
+	HOOK_RETURN_DATA (*pfnGetWeaponData)(edict_t* player, weapon_data_t* info);
+
+	// called after client data is updated by the mod and before it is returned to the engine
+	HOOK_RETURN_DATA (*pfnUpdateClientDataPost)(const edict_t* ent, int sendweapons, clientdata_t* cd);
 };
 
 EXPORT void RegisterPlugin(void* plugin, HLCOOP_PLUGIN_HOOKS* hooks, const char* name);

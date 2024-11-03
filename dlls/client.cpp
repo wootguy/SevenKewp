@@ -1599,6 +1599,8 @@ void RegisterEncoders( void )
 
 int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 {
+	CALL_HOOKS(int, pfnGetWeaponData, player, info);
+
 #if defined( CLIENT_WEAPONS )
 	int i;
 	weapon_data_t *item;
@@ -1779,6 +1781,8 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 		}
 	} 
 #endif
+
+	CALL_HOOKS_VOID(pfnUpdateClientDataPost, ent, sendweapons, cd);
 }
 
 /*

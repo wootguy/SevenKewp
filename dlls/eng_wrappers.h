@@ -5,20 +5,20 @@
 
 class CBaseEntity;
 
-extern Bsp g_bsp;
+EXPORT extern Bsp g_bsp;
 
 // resources that were successfully precached
-extern std::unordered_map<std::string, std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
-extern std::unordered_set<std::string> g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
-extern std::unordered_set<std::string> g_precachedSounds;
-extern std::unordered_set<std::string> g_precachedGeneric;
-extern std::unordered_map<std::string, int> g_precachedEvents;
+EXPORT extern std::unordered_map<std::string, std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
+EXPORT extern std::unordered_set<std::string> g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
+EXPORT extern std::unordered_set<std::string> g_precachedSounds;
+EXPORT extern std::unordered_set<std::string> g_precachedGeneric;
+EXPORT extern std::unordered_map<std::string, int> g_precachedEvents;
 
 // resources that attempted to precache but may have been replaced with a failure model
-extern std::unordered_set<std::string> g_tryPrecacheModels;
-extern std::unordered_set<std::string> g_tryPrecacheSounds;
-extern std::unordered_set<std::string> g_tryPrecacheGeneric;
-extern std::unordered_set<std::string> g_tryPrecacheEvents;
+EXPORT extern std::unordered_set<std::string> g_tryPrecacheModels;
+EXPORT extern std::unordered_set<std::string> g_tryPrecacheSounds;
+EXPORT extern std::unordered_set<std::string> g_tryPrecacheGeneric;
+EXPORT extern std::unordered_set<std::string> g_tryPrecacheEvents;
 
 #ifdef CLIENT_DLL
 #define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
@@ -42,6 +42,7 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 #define GET_MODEL_PTR	(*g_engfuncs.pfnGetModelPtr)
 #define CREATE_NAMED_ENTITY		(*g_engfuncs.pfnCreateNamedEntity)
 #define EMIT_SOUND_DYN2 (*g_engfuncs.pfnEmitSound)
+#define EMIT_AMBIENT_SOUND			(*g_engfuncs.pfnEmitAmbientSound)
 #define CMD_ARGS					(*g_engfuncs.pfnCmd_Args)
 #define CMD_ARGC					(*g_engfuncs.pfnCmd_Argc)
 #define CMD_ARGV					(*g_engfuncs.pfnCmd_Argv)
@@ -59,6 +60,7 @@ EXPORT bool SET_MODEL(edict_t* edict, const char* model); // returns true if the
 EXPORT bool SET_MODEL_MERGED(edict_t* edict, const char* model, int mergeId); // will set the merged model and body if the given model was not replaced
 EXPORT const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
 EXPORT int MODEL_INDEX(const char* model);
+EXPORT int SOUND_INDEX(const char* model);
 EXPORT void* GET_MODEL_PTR(edict_t* edict);
 EXPORT edict_t* CREATE_NAMED_ENTITY(string_t cname);
 #define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
@@ -80,6 +82,7 @@ EXPORT void WRITE_STRING(const char* sValue);
 EXPORT void WRITE_ENTITY(int iValue);
 
 EXPORT void EMIT_SOUND_DYN2(edict_t* pEntity, int channel, const char* pszSample, float volume, float attenuation, int fFlags, int pitch);
+EXPORT void EMIT_AMBIENT_SOUND(edict_t* pEntity, const float* vecPos, const char* pszSample, float vol, float attenuation, int fFlags, int pitch);
 EXPORT void SetClientMaxspeed(const edict_t* pEntity, float maxspeed);
 EXPORT void SetClientKeyValue(int clientIndex, char* pszInfoBuffer, const char* pszKey, const char* pszValue);
 
