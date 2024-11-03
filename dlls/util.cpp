@@ -47,13 +47,17 @@
 
 using namespace std::chrono;
 
-#ifndef WIN32
+#ifdef WIN32
+#include <windows.h>
+#include <direct.h>
+#define mkdir(path, perms) _mkdir(path)
+#define stat _stat
+#else
 #include <unistd.h>
 #include <time.h>
 #include <unistd.h>
 #include <dirent.h>
-#else
-#define stat _stat
+#include <sys/statvfs.h>
 #endif
 
 float UTIL_WeaponTimeBase( void )
@@ -2841,4 +2845,43 @@ float normalizeRangef(const float value, const float start, const float end)
 
 	return (offsetValue - (floor(offsetValue / width) * width)) + start;
 	// + start to reset back to start of original range
+}
+
+bool createFolder(const std::string& path) {
+	if (mkdir(path.c_str(), 0777) == 0) {
+		return true;
+	}
+
+	return false;
+}
+
+bool folderExists(const std::string& path) {
+	struct stat info;
+
+	if (stat(path.c_str(), &info) != 0) {
+		return false;
+	}
+
+	return (info.st_mode & S_IFDIR) != 0;
+}
+
+
+uint64_t getFreeSpace(const std::string& path) {
+#if defined(_WIN32)
+	ULARGE_INTEGER freeBytesAvailable;
+	if (GetDiskFreeSpaceEx(path.c_str(), &freeBytesAvailable, NULL, NULL)) {
+		return freeBytesAvailable.QuadPart;
+	}
+	else {
+		ALERT(at_console, "Error getting free space.\n");
+		return 0;
+	}
+#else
+	struct statvfs stat;
+	if (statvfs(path.c_str(), &stat) != 0) {
+		ALERT(at_console, "Error getting free space.\n");
+		return 0;
+	}
+	return stat.f_bavail * stat.f_frsize;
+#endif
 }
