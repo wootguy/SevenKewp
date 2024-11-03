@@ -32,10 +32,10 @@ struct SocketData
 
 SocketData * Socket::createSocket(const char * addr, const char * port)
 {
-	SocketData * skt = new SocketData;
+	SocketData * sdat = new SocketData;
 	// Resolve the local address and port to be used by the server
 	addrinfo * hints = (socketType & SOCKET_TCP) ? &tcphints : &udphints;
-	int ret = getaddrinfo(addr, port, hints, &skt->addr);
+	int ret = getaddrinfo(addr, port, hints, &sdat->addr);
 
 	if (ret != 0)
 	{
@@ -45,12 +45,12 @@ SocketData * Socket::createSocket(const char * addr, const char * port)
 	}
 
 	// create the socket
-	skt->sock = socket(skt->addr->ai_family, skt->addr->ai_socktype, skt->addr->ai_protocol);
+	sdat->sock = socket(sdat->addr->ai_family, sdat->addr->ai_socktype, sdat->addr->ai_protocol);
 
-	if (skt->sock == INVALID_SOCKET)
+	if (sdat->sock == INVALID_SOCKET)
 	{
 		ALERT(at_console, "Socket creation failed at socket(): %d\n", WSAGetLastError());
-		freeaddrinfo(skt->addr);
+		freeaddrinfo(sdat->addr);
 		delete skt;
 		return NULL;
 	}
@@ -59,11 +59,11 @@ SocketData * Socket::createSocket(const char * addr, const char * port)
 	if (!(socketType & SOCKET_BLOCKING))
 	{
 		u_long iMode = 1;
-		ret = ioctlsocket(skt->sock, FIONBIO, &iMode);
+		ret = ioctlsocket(sdat->sock, FIONBIO, &iMode);
 		if (ret == SOCKET_ERROR)
 		{
 			ALERT(at_console, "Failed to set socket to non-blocking: %d\n", WSAGetLastError());
-			freeaddrinfo(skt->addr);
+			freeaddrinfo(sdat->addr);
 			delete skt;
 			return NULL;
 		}
@@ -72,10 +72,10 @@ SocketData * Socket::createSocket(const char * addr, const char * port)
 	if (socketType & SOCKET_UDP) {
 		BOOL bNewBehavior = FALSE;
 		DWORD dwBytesReturned = 0;
-		WSAIoctl(skt->sock, WSAECONNRESET, &bNewBehavior, sizeof bNewBehavior, NULL, 0, &dwBytesReturned, NULL, NULL);
+		WSAIoctl(sdat->sock, WSAECONNRESET, &bNewBehavior, sizeof bNewBehavior, NULL, 0, &dwBytesReturned, NULL, NULL);
 	}
 
-	return skt;
+	return sdat;
 }
 
 Socket::Socket()

@@ -39,7 +39,7 @@ SocketData * Socket::createSocket(const char * addr, const char * port)
 	if (sock->sock == -1)
 	{
 		ALERT(at_console, "Socket creation failed\n");
-		delete sock;
+		delete (SocketData*)sock;
 		return NULL;
 	}
 
@@ -101,7 +101,7 @@ Socket::Socket(int socketType, IPV4 addr)
 		if (ret == 0)
 		{
 			ALERT(at_console, "inet_aton() failed\n");
-			delete sock;
+			delete (SocketData*)sock;
 			return;
 		}
 		ALERT(at_console, "Created client socket on %s\n", addr.getString().c_str());
@@ -114,7 +114,7 @@ Socket::~Socket(void)
 	if (sock != NULL)
 	{
 		close(sock->sock);
-		delete sock;
+		delete (SocketData*)sock;
 	}
 }
 
@@ -224,7 +224,7 @@ bool Socket::bind()
 		{
 			ALERT(at_console, "Socket listen failed with error: %s\n", strerror_r( err, buff, 256 ));
 			close(sock->sock);
-			delete skt;
+			delete (SocketData*)skt;
 			skt = NULL;
 			return false;
 		}
