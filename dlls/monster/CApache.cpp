@@ -167,10 +167,10 @@ void CApache::Precache( void )
 
 	PRECACHE_MODEL(GetModel());
 
-	PRECACHE_SOUND("apache/ap_rotor1.wav");
+	//PRECACHE_SOUND("apache/ap_rotor1.wav");
 	PRECACHE_SOUND("apache/ap_rotor2.wav");
-	PRECACHE_SOUND("apache/ap_rotor3.wav");
-	PRECACHE_SOUND("apache/ap_whine1.wav");
+	//PRECACHE_SOUND("apache/ap_rotor3.wav");
+	//PRECACHE_SOUND("apache/ap_whine1.wav");
 
 	PRECACHE_SOUND("weapons/mortarhit.wav");
 
@@ -725,39 +725,54 @@ void CApache :: Flight( void )
 	// ALERT( at_console, "%.0f %.0f : %.0f %.0f : %.0f %.0f : %.0f\n", pev->origin.x, pev->velocity.x, flDist, flSpeed, pev->angles.x, pev->avelocity.x, m_flForce ); 
 	// ALERT( at_console, "%.0f %.0f : %.0f %0.f : %.0f\n", pev->origin.z, pev->velocity.z, vecEst.z, m_posDesired.z, m_flForce ); 
 
+	static int lastPitch[33];
+
 	// make rotor, engine sounds
 	if (m_iSoundState == 0)
 	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0, 0.3, 0, 110 );
+		StartSound(edict(), CHAN_ITEM, "apache/ap_rotor2.wav", 1.0f, 0.3f, 0, 110, g_vecZero, 0xffffffff, false);
+		//EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0, 0.3, 0, 110 );
 		// EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_whine1.wav", 0.5, 0.2, 0, 110 );
 
+		memset(lastPitch, 0, sizeof(int) * 33);
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 	}
 	else
 	{
-		CBaseEntity *pPlayer = NULL;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBaseEntity* pPlayer = (CBaseEntity*)UTIL_PlayerByIndex(i);
 
-		pPlayer = UTIL_FindEntityByClassname( NULL, "player" );
-		// UNDONE: this needs to send different sounds to every player for multiplayer.	
-		if (pPlayer)
-		{
+			if (!pPlayer) {
+				continue;
+			}
 
-			float pitch = DotProduct( pev->velocity - pPlayer->pev->velocity, (pPlayer->pev->origin - pev->origin).Normalize() );
+			float dot = DotProduct(pev->velocity - pPlayer->pev->velocity, (pPlayer->pev->origin - pev->origin).Normalize());
 
-			pitch = (int)(100 + pitch / 50.0);
+			int pitch = (int)(100 + dot / 50.0);
 
-			if (pitch > 250) 
+			if (pitch > 250)
 				pitch = 250;
 			if (pitch < 50)
 				pitch = 50;
+
+			pitch = (pitch / 2) * 2; // reduce the amount of network messages
+
 			if (pitch == 100)
-				pitch = 101;
+				pitch = 101; // SND_CHANGE_PITCH will not work for 100 pitch (random sounds will play)
 
+			/*
 			float flVol = (m_flForce / 100.0) + .1;
-			if (flVol > 1.0) 
+			if (flVol > 1.0)
 				flVol = 1.0;
+				*/
 
-			EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0, 0.3, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);
+			if (pitch == lastPitch[pPlayer->entindex()]) {
+				continue;
+			}
+
+			StartSound(edict(), CHAN_ITEM, "apache/ap_rotor2.wav", 1.0f, 0.3f, SND_CHANGE_PITCH,
+				pitch, g_vecZero, PLRBIT(pPlayer->edict()), false);
+			lastPitch[pPlayer->entindex()] = pitch;
 		}
 		// EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_whine1.wav", flVol, 0.2, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);
 	
