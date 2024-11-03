@@ -95,8 +95,8 @@ EXPORT void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
 
 #if defined(PLUGIN_BUILD) && defined(PLUGIN_NAME)
 #define ALERT(target, fmt, ...) { \
-	DEBUG_MSG(target, "[" PLUGIN_NAME "] ", NULL); \
-	DEBUG_MSG(target, fmt, ##__VA_ARGS__, NULL); \
+	DEBUG_MSG(target, "[" PLUGIN_NAME "] "); \
+	DEBUG_MSG(target, fmt, ##__VA_ARGS__); \
 }
 #else
 #define ALERT DEBUG_MSG

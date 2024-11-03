@@ -832,3 +832,9 @@ EXPORT void KickPlayer(edict_t* ent, const char* reason="");
 EXPORT float normalizeRangef(const float value, const float start, const float end);
 
 EXPORT void handleThreadPrints();
+
+EXPORT bool createFolder(const std::string& path);
+
+EXPORT bool folderExists(const std::string& path);
+
+EXPORT uint64_t getFreeSpace(const std::string& path);
