@@ -95,15 +95,15 @@ void TextMenu::handleMenuMessage(int msg_dest, edict_t* ed) {
 	}
 
 	if ((msg_dest == MSG_ONE || msg_dest == MSG_ONE_UNRELIABLE) && ed) {
-		//println("New menu opened for %s", STRING(ed->v.netname));
+		//ALERT(at_console, "New menu opened for %s", STRING(ed->v.netname));
 		viewers &= ~(PLRBIT(ed));
 	}
 	else if (msg_dest == MSG_ALL || msg_dest == MSG_ALL) {
-		//println("New menu opened for all players");
+		//ALERT(at_console, "New menu opened for all players");
 		viewers = 0;
 	}
 	else {
-		//println("Unhandled text menu message dest: %d", msg_dest);
+		//ALERT(at_console, "Unhandled text menu message dest: %d", msg_dest);
 	}
 }
 
@@ -137,7 +137,7 @@ void TextMenu::handleMenuselectCmd(edict_t* pEntity, int selection) {
 		}
 	}
 	else {
-		//println("%s is not viewing the '%s' menu", STRING(pEntity->v.netname), title.c_str());
+		//ALERT(at_console, "%s is not viewing the '%s' menu", STRING(pEntity->v.netname), title.c_str());
 	}
 }
 
@@ -151,7 +151,7 @@ void TextMenu::SetTitle(std::string newTitle) {
 
 void TextMenu::AddItem(std::string displayText, std::string optionData) {
 	if (numOptions >= MAX_MENU_OPTIONS) {
-		println("Maximum menu options reached! Failed to add: %s", optionData.c_str());
+		ALERT(at_console, "Maximum menu options reached! Failed to add: %s\n", optionData.c_str());
 		return;
 	}
 
@@ -217,7 +217,7 @@ void TextMenu::Open(uint8_t duration, uint8_t page, edict_t* player) {
 		viewers |= PLRBIT(player);
 	}
 	else {
-		println("WARNING: pagination is broken for menus that don't have a destination player");
+		ALERT(at_console, "WARNING: pagination is broken for menus that don't have a destination player\n");
 		MESSAGE_BEGIN(MSG_ALL, gmsgShowMenu);
 		WRITE_SHORT(validSlots);
 		WRITE_CHAR(duration);

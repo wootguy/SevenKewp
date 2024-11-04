@@ -2766,11 +2766,11 @@ std::vector<std::string> getDirFiles(std::string path, std::string extension, st
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFind;
 
-	//println("Target file is " + path);
+	//ALERT(at_console, "Target file is " + path);
 	hFind = FindFirstFile(path.c_str(), &FindFileData);
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
-		//println("FindFirstFile failed " + str((int)GetLastError()) + " " + path);
+		//ALERT(at_console, "FindFirstFile failed " + str((int)GetLastError()) + " " + path);
 		return results;
 	}
 	else

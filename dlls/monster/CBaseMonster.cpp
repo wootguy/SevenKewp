@@ -1266,7 +1266,7 @@ void CBaseMonster::SetActivity(Activity NewActivity)
 
 	#ifdef DEBUG_MONSTER
 	if (FClassnameIs(pev, DEBUG_MONSTER)) {
-		println("        SetActivity %s", activity_map[NewActivity].name);
+		ALERT(at_console, "        SetActivity %s\n", activity_map[NewActivity].name);
 	}
 	#endif
 
@@ -5447,7 +5447,7 @@ void CBaseMonster::MaintainSchedule(void)
 			TaskBegin();
 			#ifdef DEBUG_MONSTER
 			if (FClassnameIs(pev, DEBUG_MONSTER)) {
-				println("    Start Task %s with data %f", GetTaskName(pTask->iTask), pTask->flData);
+				ALERT(at_console, "    Start Task %s with data %f\n", GetTaskName(pTask->iTask), pTask->flData);
 			}
 			#endif
 			StartTask(pTask);
@@ -6988,24 +6988,24 @@ void CBaseMonster::ScheduleChange(void)
 	// debugging schedules
 	if (FClassnameIs(pev, DEBUG_MONSTER)) {
 		const char* schedName = m_pSchedule != NULL ? m_pSchedule->pName : "NULL";
-		println("\nSchedule changing from <%s> because:", schedName);
+		ALERT(at_console, "\nSchedule changing from <%s> because:\n", schedName);
 
 		if (m_MonsterState != m_IdealMonsterState) {
-			println("- monster state changing from %d to %d", m_MonsterState, m_IdealMonsterState);
+			ALERT(at_console, "- monster state changing from %d to %d\n", m_MonsterState, m_IdealMonsterState);
 		}
 		if (!FScheduleValid()) {
 			if (m_pSchedule == NULL) {
-				println("- Schedule is NULL");
+				ALERT(at_console, "- Schedule is NULL\n");
 				return;
 			}
 			if (HasConditions(bits_COND_SCHEDULE_DONE)) {
-				println("- Schedule is finished");
+				ALERT(at_console, "- Schedule is finished\n");
 			}
 			if (HasConditions(bits_COND_TASK_FAILED)) {
-				println("- Task failed");
+				ALERT(at_console, "- Task failed\n");
 			}
 			if (HasConditions(m_pSchedule->iInterruptMask)) {
-				println("- Interrupted by %d", m_pSchedule->iInterruptMask);
+				ALERT(at_console, "- Interrupted by %d\n", m_pSchedule->iInterruptMask);
 			}
 		}
 	}

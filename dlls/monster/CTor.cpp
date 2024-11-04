@@ -243,7 +243,7 @@ void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
 		}
 		break;
 	case EVENT_SUMMON_GRUNT:
-		//println("SUMMON EVENT");
+		//ALERT(at_console, "SUMMON EVENT\n");
 		break;
 	case EVENT_STAFF_SWING:
 	case EVENT_STAFF_STAB:
@@ -693,7 +693,7 @@ bool CTor::GetSummonPos(Vector& pos) {
 
 void CTor::StartSummon() {
 	if (!GetSummonPos(summonPos)) {
-		println("Failed to summon");
+		ALERT(at_console, "Failed to summon\n");
 		return;
 	}
 

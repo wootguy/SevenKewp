@@ -565,7 +565,7 @@ void CHWGrunt::StartTask(Task_t* pTask) {
 		if (pGun && MoveToLocation(m_movementActivity, 2, pGun->pev->origin))
 		{
 			TaskComplete();
-			println("MOVE COMPLETE!");
+			ALERT(at_console, "MOVE COMPLETE!\n");
 		}
 		else
 		{

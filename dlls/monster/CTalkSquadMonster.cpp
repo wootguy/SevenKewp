@@ -1577,7 +1577,7 @@ int CTalkSquadMonster::SquadRecruit(int searchRadius, int maxMembers)
 		{
 			CTalkSquadMonster* pRecruit = pEntity->MyTalkSquadMonsterPointer();
 			//if (pRecruit) {
-			//	println("Potential squad member!");
+			//	ALERT(at_console, "Potential squad member!\n");
 			//}
 
 			if (pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_hCine)
