@@ -96,7 +96,7 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 	if (apiFunc) {
 		int apiVersion = HLCOOP_API_VERSION;
 		if (apiFunc(&plugin, apiVersion)) {
-			ALERT(at_console, "Loaded plugin '%s'\n", plugin.fpath.c_str());
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded plugin '%s'\n", plugin.fpath.c_str()));
 		}
 		else {
 			ALERT(at_error, "PluginInit call failed in plugin '%s'.\n", plugin.fpath.c_str());
@@ -127,7 +127,7 @@ void PluginManager::UnloadPlugin(const Plugin& plugin) {
 	g_Scheduler.RemoveTimers(plugin.name);
 
 	FreeLibrary((HMODULE)plugin.h_module);
-	ALERT(at_console, "Removed plugin: '%s'\n", plugin.fpath.c_str());
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Removed plugin: '%s'\n", plugin.fpath.c_str()));
 }
 
 void PluginManager::RemovePlugin(const Plugin& plugin) {

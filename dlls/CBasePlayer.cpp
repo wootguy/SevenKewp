@@ -2001,8 +2001,9 @@ void CBasePlayer::UpdateStatusBar()
 
 	std::string name;
 	bool lookingAtStatusEnt = false;
+	bool shouldShowHud = !IsObserver() || pev->iuser1 == OBS_MAP_FREE || pev->iuser1 == OBS_ROAMING;
 
-	if (tr.flFraction != 1.0 && !FNullEnt( tr.pHit ) )
+	if (shouldShowHud && tr.flFraction != 1.0 && !FNullEnt( tr.pHit ) )
 	{
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
@@ -4488,7 +4489,7 @@ void CBasePlayer :: UpdateClientData( void )
 	m_iClientFOV = m_iFOV;
 
 	// Update Status Bar
-	if ( m_flNextSBarUpdateTime < gpGlobals->time )
+	if ( m_flNextSBarUpdateTime < gpGlobals->time && !IsBot() )
 	{
 		lagcomp_begin(this);
 		UpdateStatusBar();

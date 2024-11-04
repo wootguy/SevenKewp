@@ -490,16 +490,6 @@ extern DLL_GLOBAL int			g_Language;
 
 #define SPEAKER_START_SILENT			1	// wait for trigger 'on' to start announcements
 
-#define SND_FL_VOLUME		(1<<0)		// send volume (set automatically)
-#define SND_FL_ATTENUATION	(1<<1)		// send attenuation (set automatically)
-#define SND_FL_LARGE_INDEX	(1<<2)		// send large entity index (set automatically)
-#define SND_FL_PITCH		(1<<3)		// send pitch (set automatically)
-#define SND_SPAWNING		(1<<8)		// duplicated in protocol.h we're spawing, used in some cases for ambients 
-#define SND_SENTENCE		(1<<4)
-#define SND_STOP			(1<<5)		// duplicated in protocol.h stop sound
-#define SND_CHANGE_VOL		(1<<6)		// duplicated in protocol.h change sound vol
-#define SND_CHANGE_PITCH	(1<<7)		// duplicated in protocol.h change sound pitch
-
 #define	LFO_SQUARE			1
 #define LFO_TRIANGLE		2
 #define LFO_RANDOM			3
@@ -675,7 +665,10 @@ EXPORT mstream* BuildStartSoundMessage(edict_t* entity, int channel, const char*
 // play the sound for players with bits contained in messageTargets
 // a player bit = 1 << (ENTINDEX(player_edict) % 31)
 EXPORT void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets, bool reliable);
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable);
+
+EXPORT void StartSound(int eidx, int channel, const char* sample, float volume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable);
 
 inline void EMIT_SOUND(edict_t *entity, int channel, const char *sample, float volume, float attenuation)
 {

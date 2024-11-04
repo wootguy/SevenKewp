@@ -84,6 +84,22 @@ typedef struct hull_s
 	vec3_t		clip_maxs;
 } hull_t;
 
+void StartSound(int eidx, int channel, const char* sample, float volume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable);
+
+inline uint32_t PLRBIT(int eidx) { return 1 << (eidx & 31); }
+
+#ifdef CLIENT_DLL
+#define PLAY_MOVEMENT_SOUND(channel, sample, volume, attenuation, fFlags, pitch) \
+	pmove->PM_PlaySound(channel, sample, volume, attenuation, fFlags, pitch);
+#else
+#define PLAY_MOVEMENT_SOUND(channel, sample, volume, attenuation, fFlags, pitch) \
+	StartSound(pmove->player_index+1, channel, sample, volume, attenuation, fFlags | SND_FL_PREDICTED, \
+		pitch, shared_vec3_origin, 0xffffffff & ~PLRBIT(pmove->player_index+1), false);
+#endif
+
+
+
 // Ducking time
 #define TIME_TO_DUCK		0.4
 #define VEC_DUCK_HULL_MIN	-18
@@ -420,7 +436,7 @@ void PM_PlayStepSound( int step, float fvol )
 		if ( iSkipStep == 0 )
 		{
 			iSkipStep++;
-			break;
+			return;
 		}
 
 		if ( iSkipStep++ == 3 )
@@ -459,7 +475,7 @@ void PM_PlayStepSound( int step, float fvol )
 		stepSound = g_soundReplacements[stepSound].c_str();
 	}
 
-	pmove->PM_PlaySound(CHAN_BODY, stepSound, fvol, ATTN_NORM, 0, PITCH_NORM);
+	PLAY_MOVEMENT_SOUND(CHAN_BODY, stepSound, fvol, ATTN_NORM, 0, PITCH_NORM);
 }	
 
 int PM_MapTextureTypeStepType(char chTextureType)
@@ -2570,7 +2586,7 @@ void PM_Jump (void)
 				wadeSound = g_soundReplacements[wadeSound].c_str();
 			}
 
-			pmove->PM_PlaySound(CHAN_BODY, wadeSound, 1, ATTN_NORM, 0, PITCH_NORM);
+			PLAY_MOVEMENT_SOUND(CHAN_BODY, wadeSound, 1, ATTN_NORM, 0, PITCH_NORM);
 		}
 
 		return;
@@ -2596,7 +2612,7 @@ void PM_Jump (void)
 
 	if ( tfc )
 	{
-		pmove->PM_PlaySound( CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
+		PLAY_MOVEMENT_SOUND( CHAN_BODY, "player/plyrjmp8.wav", 0.5, ATTN_NORM, 0, PITCH_NORM );
 	}
 	else
 	{
@@ -2741,7 +2757,7 @@ void PM_CheckFalling( void )
 				fallSound = g_soundReplacements[fallSound].c_str();
 			}
 				
-			pmove->PM_PlaySound( CHAN_VOICE, fallSound, 1, ATTN_NORM, 0, PITCH_NORM );
+			PLAY_MOVEMENT_SOUND( CHAN_VOICE, fallSound, 1, ATTN_NORM, 0, PITCH_NORM );
 			//	break;
 			//}
 			fvol = 1.0;
@@ -2753,7 +2769,7 @@ void PM_CheckFalling( void )
 
 			if ( tfc )
 			{
-				pmove->PM_PlaySound( CHAN_VOICE, "player/pl_fallpain3.wav", 1, ATTN_NORM, 0, PITCH_NORM );
+				PLAY_MOVEMENT_SOUND( CHAN_VOICE, "player/pl_fallpain3.wav", 1, ATTN_NORM, 0, PITCH_NORM );
 			}
 
 			fvol = 0.85;
@@ -2824,7 +2840,7 @@ void PM_PlayWaterSounds( void )
 			wadeSound = g_soundReplacements[wadeSound].c_str();
 		}
 
-		pmove->PM_PlaySound(CHAN_BODY, wadeSound, 1, ATTN_NORM, 0, PITCH_NORM);
+		PLAY_MOVEMENT_SOUND(CHAN_BODY, wadeSound, 1, ATTN_NORM, 0, PITCH_NORM);
 	}
 }
 
