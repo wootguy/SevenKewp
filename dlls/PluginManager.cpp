@@ -293,6 +293,7 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 		bool found = false;
 		for (const Plugin& plugin : plugins) {
 			if (std::string(plugin.fpath) == p) {
+				found = true;
 				continue;
 			}
 		}
