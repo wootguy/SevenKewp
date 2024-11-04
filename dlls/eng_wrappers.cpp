@@ -8,7 +8,7 @@
 #include "PluginManager.h"
 #include <fstream>
 
-std::unordered_map<std::string, std::string> g_precachedModels;
+std::unordered_set<std::string> g_precachedModels;
 std::unordered_set<std::string> g_missingModels;
 std::unordered_set<std::string> g_precachedSounds;
 std::unordered_set<std::string> g_precachedGeneric;
@@ -415,7 +415,7 @@ int PRECACHE_MODEL(const char* path) {
 	// Tested with sc_darknebula.
 	if (g_tryPrecacheModels.size() + g_bsp.entityBspModelCount + 1 <= MAX_PRECACHE_MODEL) {
 		if (g_precachedModels.find(path) == g_precachedModels.end())
-			g_precachedModels[path] = path;
+			g_precachedModels.insert(path);
 		int modelIdx = g_engfuncs.pfnPrecacheModel(path);
 
 		std::string pathstr = std::string(path);
@@ -479,7 +479,7 @@ bool SET_MODEL(edict_t* edict, const char* model) {
 		CALL_HOOKS(bool, pfnSetModel, edict, model);
 		g_engfuncs.pfnSetModel(edict, model);
 		if (!g_serveractive)
-			g_precachedModels[model] = model; // engine precaches entity BSP models automatically
+			g_precachedModels.insert(model); // engine precaches entity BSP models automatically
 		CALL_HOOKS(bool, pfnSetModelPost, edict, model);
 		return false;
 	}
@@ -519,17 +519,13 @@ bool SET_MODEL_MERGED(edict_t* edict, const char* model, int mergeId) {
 
 const char* GET_MODEL(const char* model) {
 	std::string lowerPath = toLowerCase(model);
-	model = lowerPath.c_str();
 
-	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
-		model = g_modelReplacements[model].c_str();
+	if (g_modelReplacements.find(lowerPath) != g_modelReplacements.end()) {
+		model = g_modelReplacements[lowerPath].c_str();
 	}
 
 	if (g_precachedModels.find(model) == g_precachedModels.end()) {
 		model = NOT_PRECACHED_MODEL;
-	}
-	else {
-		model = g_precachedModels[model].c_str();
 	}
 
 	return model;
@@ -538,6 +534,16 @@ const char* GET_MODEL(const char* model) {
 int MODEL_INDEX(const char* model) {
 	std::string lowerPath = toLowerCase(model);
 	model = lowerPath.c_str();
+
+	if (!model || model[0] == '\0') {
+		return 0;
+	}
+
+	if (!g_precachedModels.count(lowerPath)) {
+		ALERT(at_error, "MODEL_INDEX not precached: %s\n", model);
+		return g_engfuncs.pfnModelIndex(NOT_PRECACHED_MODEL);
+	}
+
 	return g_engfuncs.pfnModelIndex(model);
 }
 

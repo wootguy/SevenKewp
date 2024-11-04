@@ -5291,19 +5291,19 @@ void CBasePlayer::Observer_HandleButtons()
 			Observer_SetMode(OBS_CHASE_FREE);
 
 		else if (pev->iuser1 == OBS_CHASE_FREE)
-			Observer_SetMode(OBS_IN_EYE);
-
-		else if (pev->iuser1 == OBS_IN_EYE)
 			Observer_SetMode(OBS_ROAMING);
 
+		else if (pev->iuser1 == OBS_IN_EYE)
+			Observer_SetMode(OBS_CHASE_LOCKED);
+
 		else if (pev->iuser1 == OBS_ROAMING)
-			Observer_SetMode(OBS_MAP_FREE);
+			Observer_SetMode(OBS_IN_EYE);
 
 		else if (pev->iuser1 == OBS_MAP_FREE)
-			Observer_SetMode(OBS_MAP_CHASE);
+			Observer_SetMode(OBS_CHASE_LOCKED);
 
 		else
-			Observer_SetMode(OBS_CHASE_LOCKED);	// don't use OBS_CHASE_LOCKED anymore
+			Observer_SetMode(OBS_CHASE_LOCKED);
 
 		m_flNextObserverInput = gpGlobals->time + 0.05;
 	}
@@ -5356,6 +5356,9 @@ void CBasePlayer::Observer_CheckTarget()
 		Observer_FindNextPlayer(false);
 		return;
 	}
+
+	// keep copying origin so that the view doesn't break after teleporting large distances
+	UTIL_SetOrigin(pev, target->pev->origin);
 
 	// check taget
 	if (target->pev->deadflag == DEAD_DEAD)
@@ -5468,23 +5471,23 @@ void CBasePlayer::Observer_SetMode(int iMode)
 	// print spepctaor mode on client screen
 
 	switch (pev->iuser1) {
+	case OBS_IN_EYE:
+		UTIL_ClientPrint(edict(), print_center, "First-Person Cam\n[1/4]");
+		break;
 	case OBS_CHASE_LOCKED:
-		UTIL_ClientPrint(edict(), print_center, "Locked Chase Cam\n[1/6]");
+		UTIL_ClientPrint(edict(), print_center, "Locked Chase Cam\n[2/4]");
 		break;
 	case OBS_CHASE_FREE:
-		UTIL_ClientPrint(edict(), print_center, "Free Chase Cam\n[2/6]");
-		break;
-	case OBS_IN_EYE:
-		UTIL_ClientPrint(edict(), print_center, "First-Person Cam\n[3/6]");
+		UTIL_ClientPrint(edict(), print_center, "Free Chase Cam\n[3/4]");
 		break;
 	case OBS_ROAMING:
-		UTIL_ClientPrint(edict(), print_center, "Free-Look\n[4/6]");
+		UTIL_ClientPrint(edict(), print_center, "Free-Look\n[4/4]");
 		break;
 	case OBS_MAP_FREE:
-		UTIL_ClientPrint(edict(), print_center, "Free Map Overview\n[5/6]");
+		UTIL_ClientPrint(edict(), print_center, "Free Map Overview\n");
 		break;
 	case OBS_MAP_CHASE:
-		UTIL_ClientPrint(edict(), print_center, "Chase Map Overview\n[6/6]");
+		UTIL_ClientPrint(edict(), print_center, "Chase Map Overview\n");
 		break;
 	}
 
