@@ -8,7 +8,7 @@ class CBaseEntity;
 EXPORT extern Bsp g_bsp;
 
 // resources that were successfully precached
-EXPORT extern std::unordered_map<std::string, std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
+EXPORT extern std::unordered_set<std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
 EXPORT extern std::unordered_set<std::string> g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
 EXPORT extern std::unordered_set<std::string> g_precachedSounds;
 EXPORT extern std::unordered_set<std::string> g_precachedGeneric;
