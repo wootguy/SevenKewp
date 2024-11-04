@@ -23,6 +23,7 @@
 #include "CBasePlayer.h"
 #include "CTalkSquadMonster.h"
 #include "gamerules.h"
+#include "PluginManager.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -451,7 +452,7 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz)
 	return -1;
 }
 
-mstream* BuildStartSoundMessage(edict_t* entity, int channel, const char* sample, float fvolume, float attenuation,
+mstream* BuildStartSoundMessage(edict_t* ent, int channel, const char* sample, float fvolume, float attenuation,
 	int fFlags, int pitch, const float* origin) {
 	int sound_num;
 	int field_mask;
@@ -478,7 +479,7 @@ mstream* BuildStartSoundMessage(edict_t* entity, int channel, const char* sample
 		sound_num = PRECACHE_SOUND_ENT(NULL, sample); // TODO: abort if not precached
 	}
 
-	int ient = ENTINDEX(entity);
+	int ient = ENTINDEX(ent);
 	int volume = clampf(fvolume, 0, 1.0f) * 255;
 
 	if (volume != DEFAULT_SOUND_PACKET_VOLUME)
@@ -517,11 +518,14 @@ mstream* BuildStartSoundMessage(edict_t* entity, int channel, const char* sample
 	return &bitbuffer;
 }
 
-void StartSound(edict_t* entity, int channel, const char* sample, float fvolume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets, bool reliable)
+
+void StartSound(edict_t* entidx, int channel, const char* sample, float fvolume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable)
 {
-	mstream* bitbuffer = BuildStartSoundMessage(entity, channel, sample, fvolume, attenuation, fFlags, pitch, origin);
-	
+	CALL_HOOKS_VOID(pfnEmitSound, entidx, channel, sample, fvolume, attenuation, fFlags | SND_FL_MOD, pitch, origin, messageTargets, reliable);
+
+	mstream* bitbuffer = BuildStartSoundMessage(entidx, channel, sample, fvolume, attenuation, fFlags, pitch, origin);
+
 	if (!bitbuffer) {
 		return;
 	}
@@ -551,6 +555,12 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 			*(int*)&origin[0], *(int*)&origin[1], *(int*)&origin[2], messageTargets);
 	}
 	*/
+}
+
+void StartSound(int eidx, int channel, const char* sample, float volume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable) {
+	StartSound(INDEXENT(eidx), channel, sample, volume, attenuation, fFlags, pitch, origin,
+		messageTargets, reliable);
 }
 
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,

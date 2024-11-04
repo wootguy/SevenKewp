@@ -930,7 +930,7 @@ void CController :: RunAI( void )
 		GetAttachment( i + 2, vecStart, angleGun );
 		UTIL_SetOrigin(ball->pev, vecStart );
 		
-		if (UTIL_isSafeEntIndex(entindex(), "attach controller ball")) {
+		if (UTIL_isSafeEntIndex(entindex(), "attach controller ball") && m_iBallCurrent[i] > 64) {
 			MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
 			WRITE_BYTE(TE_ELIGHT);
 			WRITE_SHORT(entindex() + 0x1000 * (i + 3));		// entity, attachment
