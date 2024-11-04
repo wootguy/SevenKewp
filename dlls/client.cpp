@@ -902,6 +902,7 @@ Engine is going to shut down, allows setting a breakpoint in game .dll to catch 
 void Sys_Error( const char *error_string )
 {
 	// Default case, do nothing.  MOD AUTHORS:  Add code ( e.g., _asm { int 3 }; here to cause a breakpoint for debugging your game .dlls
+	ALERT(at_error, "Sys_Error: %s\n", error_string);
 }
 
 /*
