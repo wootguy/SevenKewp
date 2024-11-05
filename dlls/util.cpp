@@ -3135,6 +3135,6 @@ uint64_t getFreeSpace(const std::string& path) {
 		ALERT(at_console, "Error getting free space.\n");
 		return 0;
 	}
-	return stat.f_bavail * stat.f_frsize;
+	return stat.f_bavail * stat.f_bsize;
 #endif
 }
