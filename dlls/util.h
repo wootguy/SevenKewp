@@ -132,6 +132,8 @@ struct RGBA {
 
 	RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r(r), g(g), b(b), a(a) {}
 	RGBA(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b), a(255) {}
+	RGBA(Vector v) : r(v.x), g(v.y), b(v.z), a(255) {}
+	RGBA(Vector v, uint8_t a) : r(v.x), g(v.y), b(v.z), a(a) {}
 };
 
 // Use this instead of ALLOC_STRING on constant strings
@@ -454,7 +456,7 @@ EXPORT char *UTIL_dtos3( int d );
 EXPORT char *UTIL_dtos4( int d );
 
 // Writes message to console with player info as a prefix
-EXPORT void	UTIL_LogPlayerEvent( edict_t* plr, const char *fmt, ... );
+EXPORT void	UTIL_LogPlayerEvent( const edict_t* plr, const char *fmt, ... );
 
 // Sorta like FInViewCone, but for nonmonsters. 
 EXPORT float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir );
@@ -742,7 +744,7 @@ EXPORT void PrintEntindexStats();
 EXPORT CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity);
 
 // returns false if the entity index would overflow the client, and prints an error message in that case
-EXPORT bool UTIL_isSafeEntIndex(int idx, const char* action);
+EXPORT bool UTIL_isSafeEntIndex(edict_t* plr, int idx, const char* action);
 
 inline void WRITE_COORD_VECTOR(const Vector& vec)
 {
@@ -831,3 +833,14 @@ EXPORT bool createFolder(const std::string& path);
 EXPORT bool folderExists(const std::string& path);
 
 EXPORT uint64_t getFreeSpace(const std::string& path);
+
+EXPORT void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_Fizz(int eidx, int modelIdx, uint8_t density, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_ELight(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_BeamPoints(Vector start, Vector end, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_BeamEnts(int startEnt, int startAttachment, int endEnt, int endAttachment, bool ringMode, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
+EXPORT void UTIL_BSPDecal(int entindex, Vector origin, int decalIdx, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_PlayerDecal(int entindex, int playernum, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
+EXPORT void UTIL_GunshotDecal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
+EXPORT void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);

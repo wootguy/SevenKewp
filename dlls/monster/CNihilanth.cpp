@@ -523,26 +523,8 @@ void CNihilanth :: DyingThink( void )
 
 	UTIL_TraceLine( vecSrc, vecSrc + vecDir * 4096, ignore_monsters, ENT(pev), &tr );
 	
-	if (UTIL_isSafeEntIndex(entindex(), "attach nih beam")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_BEAMENTPOINT);
-		WRITE_SHORT(entindex() + 0x1000 * iAttachment);
-		WRITE_COORD(tr.vecEndPos.x);
-		WRITE_COORD(tr.vecEndPos.y);
-		WRITE_COORD(tr.vecEndPos.z);
-		WRITE_SHORT(g_sModelIndexLaser);
-		WRITE_BYTE(0); // frame start
-		WRITE_BYTE(10); // framerate
-		WRITE_BYTE(5); // life
-		WRITE_BYTE(100);  // width
-		WRITE_BYTE(120);   // noise
-		WRITE_BYTE(64);   // r, g, b
-		WRITE_BYTE(128);   // r, g, b
-		WRITE_BYTE(255);   // r, g, b
-		WRITE_BYTE(255);	// brightness
-		WRITE_BYTE(10);		// speed
-		MESSAGE_END();
-	}
+	UTIL_BeamEntPoint(entindex(), iAttachment, tr.vecEndPos, g_sModelIndexLaser, 0, 10, 5, 100, 120,
+		RGBA(64, 128, 255, 255), 10);
 
 	GetAttachment( 0, vecSrc, vecAngles ); 
 	CNihilanthHVR *pEntity = (CNihilanthHVR *)Create( "nihilanth_energy_ball", vecSrc, pev->angles, edict() );
@@ -711,21 +693,7 @@ void CNihilanth :: NextActivity( )
 
 		if (m_hBall)
 		{
-			if (UTIL_isSafeEntIndex(entindex(), "attach nih ball")) {
-				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-				WRITE_BYTE(TE_ELIGHT);
-				WRITE_SHORT(entindex() + 0x1000);		// entity, attachment
-				WRITE_COORD(pev->origin.x);		// origin
-				WRITE_COORD(pev->origin.y);
-				WRITE_COORD(pev->origin.z);
-				WRITE_COORD(256);	// radius
-				WRITE_BYTE(255);	// R
-				WRITE_BYTE(192);	// G
-				WRITE_BYTE(64);	// B
-				WRITE_BYTE(200);	// life * 10
-				WRITE_COORD(0); // decay
-				MESSAGE_END();
-			}
+			UTIL_ELight(entindex(), 1, pev->origin, 256, RGBA(255, 192, 64), 200, 0);
 		}
 	}
 
@@ -1073,35 +1041,8 @@ void CNihilanth :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			EMIT_SOUND( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY( pBallSounds ), 1.0, 0.2 ); 
 
-			if (UTIL_isSafeEntIndex(entindex(), "attach nih elights")) {
-				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-				WRITE_BYTE(TE_ELIGHT);
-				WRITE_SHORT(entindex() + 0x3000);		// entity, attachment
-				WRITE_COORD(pev->origin.x);		// origin
-				WRITE_COORD(pev->origin.y);
-				WRITE_COORD(pev->origin.z);
-				WRITE_COORD(256);	// radius
-				WRITE_BYTE(128);	// R
-				WRITE_BYTE(128);	// G
-				WRITE_BYTE(255);	// B
-				WRITE_BYTE(10);	// life * 10
-				WRITE_COORD(128); // decay
-				MESSAGE_END();
-
-				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-				WRITE_BYTE(TE_ELIGHT);
-				WRITE_SHORT(entindex() + 0x4000);		// entity, attachment
-				WRITE_COORD(pev->origin.x);		// origin
-				WRITE_COORD(pev->origin.y);
-				WRITE_COORD(pev->origin.z);
-				WRITE_COORD(256);	// radius
-				WRITE_BYTE(128);	// R
-				WRITE_BYTE(128);	// G
-				WRITE_BYTE(255);	// B
-				WRITE_BYTE(10);	// life * 10
-				WRITE_COORD(128); // decay
-				MESSAGE_END();
-			}
+			UTIL_ELight(entindex(), 3, pev->origin, 256, RGBA(128, 128, 255), 10, 128);
+			UTIL_ELight(entindex(), 4, pev->origin, 256, RGBA(128, 128, 255), 10, 128);
 			
 			m_flShootTime = gpGlobals->time;
 			m_flShootEnd = gpGlobals->time + 1.0;
@@ -1136,35 +1077,8 @@ void CNihilanth :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 				ALERT( at_aiconsole, "nihilanth can't target %s\n", szText );
 
-				if (UTIL_isSafeEntIndex(entindex(), "attach nih elights")) {
-					MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-					WRITE_BYTE(TE_ELIGHT);
-					WRITE_SHORT(entindex() + 0x3000);		// entity, attachment
-					WRITE_COORD(pev->origin.x);		// origin
-					WRITE_COORD(pev->origin.y);
-					WRITE_COORD(pev->origin.z);
-					WRITE_COORD(256);	// radius
-					WRITE_BYTE(128);	// R
-					WRITE_BYTE(128);	// G
-					WRITE_BYTE(255);	// B
-					WRITE_BYTE(10);	// life * 10
-					WRITE_COORD(128); // decay
-					MESSAGE_END();
-
-					MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-					WRITE_BYTE(TE_ELIGHT);
-					WRITE_SHORT(entindex() + 0x4000);		// entity, attachment
-					WRITE_COORD(pev->origin.x);		// origin
-					WRITE_COORD(pev->origin.y);
-					WRITE_COORD(pev->origin.z);
-					WRITE_COORD(256);	// radius
-					WRITE_BYTE(128);	// R
-					WRITE_BYTE(128);	// G
-					WRITE_BYTE(255);	// B
-					WRITE_BYTE(10);	// life * 10
-					WRITE_COORD(128); // decay
-					MESSAGE_END();
-				}
+				UTIL_ELight(entindex(), 3, pev->origin, 256, RGBA(128, 128, 255), 10, 128);
+				UTIL_ELight(entindex(), 4, pev->origin, 256, RGBA(128, 128, 255), 10, 128);
 
 				m_flShootTime = gpGlobals->time;
 				m_flShootEnd = gpGlobals->time + 1.0;
@@ -1516,26 +1430,8 @@ void CNihilanthHVR :: ZapThink( void  )
 			ApplyMultiDamage( pev, pev );
 		}
 
-		if (UTIL_isSafeEntIndex(entindex(), "create nih beam")) {
-			MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-			WRITE_BYTE(TE_BEAMENTPOINT);
-			WRITE_SHORT(entindex());
-			WRITE_COORD(tr.vecEndPos.x);
-			WRITE_COORD(tr.vecEndPos.y);
-			WRITE_COORD(tr.vecEndPos.z);
-			WRITE_SHORT(g_sModelIndexLaser);
-			WRITE_BYTE(0); // frame start
-			WRITE_BYTE(10); // framerate
-			WRITE_BYTE(3); // life
-			WRITE_BYTE(20);  // width
-			WRITE_BYTE(20);   // noise
-			WRITE_BYTE(64);   // r, g, b
-			WRITE_BYTE(196);   // r, g, b
-			WRITE_BYTE(255);   // r, g, b
-			WRITE_BYTE(255);	// brightness
-			WRITE_BYTE(10);		// speed
-			MESSAGE_END();
-		}
+		UTIL_BeamEntPoint(entindex(), 0, tr.vecEndPos, g_sModelIndexLaser, 0, 10, 3, 20, 20,
+			RGBA(64, 196, 255, 255), 10);
 
 		UTIL_EmitAmbientSound( edict(), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );
 
@@ -1547,21 +1443,7 @@ void CNihilanthHVR :: ZapThink( void  )
 
 	pev->frame = (int)(pev->frame + 1) % 11;
 
-	if (UTIL_isSafeEntIndex(entindex(), "attach nih elight")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_ELIGHT);
-		WRITE_SHORT(entindex());		// entity, attachment
-		WRITE_COORD(pev->origin.x);		// origin
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z);
-		WRITE_COORD(128);	// radius
-		WRITE_BYTE(128);	// R
-		WRITE_BYTE(128);	// G
-		WRITE_BYTE(255);	// B
-		WRITE_BYTE(10);	// life * 10
-		WRITE_COORD(128); // decay
-		MESSAGE_END();
-	}
+	UTIL_ELight(entindex(), 0, pev->origin, 128, RGBA(128, 128, 255), 10, 128);
 
 	// Crawl( );
 }
@@ -1657,21 +1539,7 @@ void CNihilanthHVR :: TeleportThink( void  )
 		MovetoTarget( m_hEnemy->Center( ) );
 	}
 
-	if (UTIL_isSafeEntIndex(entindex(), "attach nih elight")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_ELIGHT);
-		WRITE_SHORT(entindex());		// entity, attachment
-		WRITE_COORD(pev->origin.x);		// origin
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z);
-		WRITE_COORD(256);	// radius
-		WRITE_BYTE(0);	// R
-		WRITE_BYTE(255);	// G
-		WRITE_BYTE(0);	// B
-		WRITE_BYTE(10);	// life * 10
-		WRITE_COORD(256); // decay
-		MESSAGE_END();
-	}
+	UTIL_ELight(entindex(), 0, pev->origin, 256, RGBA(0, 255, 0), 10, 256);
 
 	pev->frame = (int)(pev->frame + 1) % 20;
 }
@@ -1682,22 +1550,8 @@ void CNihilanthHVR :: AbsorbInit( void  )
 	SetThink( &CNihilanthHVR::DissipateThink );
 	pev->renderamt = 255;
 
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_BEAMENTS );
-		WRITE_SHORT( this->entindex() );
-		WRITE_SHORT( m_hTargetEnt->entindex() + 0x1000 );
-		WRITE_SHORT( g_sModelIndexLaser );
-		WRITE_BYTE( 0 ); // framestart
-		WRITE_BYTE( 0 ); // framerate
-		WRITE_BYTE( 50 ); // life
-		WRITE_BYTE( 80 );  // width
-		WRITE_BYTE( 80 );   // noise
-		WRITE_BYTE( 255 );   // r, g, b
-		WRITE_BYTE( 128 );   // r, g, b
-		WRITE_BYTE( 64 );   // r, g, b
-		WRITE_BYTE( 255 );	// brightness
-		WRITE_BYTE( 30 );		// speed
-	MESSAGE_END();
+	UTIL_BeamEnts(entindex(), 0, m_hTargetEnt->entindex(), 1, false, g_sModelIndexLaser, 0, 0, 50, 80, 80,
+		RGBA(255, 128, 64, 255), 30);
 }
 
 void CNihilanthHVR::TeleportTouch( CBaseEntity *pOther )
@@ -1742,21 +1596,7 @@ void CNihilanthHVR :: DissipateThink( void  )
 		UTIL_Remove( this );
 	}
 
-	if (UTIL_isSafeEntIndex(entindex(), "attach nih elight")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_ELIGHT);
-		WRITE_SHORT(entindex());		// entity, attachment
-		WRITE_COORD(pev->origin.x);		// origin
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z);
-		WRITE_COORD(pev->renderamt);	// radius
-		WRITE_BYTE(255);	// R
-		WRITE_BYTE(192);	// G
-		WRITE_BYTE(64);	// B
-		WRITE_BYTE(2);	// life * 10
-		WRITE_COORD(0); // decay
-		MESSAGE_END();
-	}
+	UTIL_ELight(entindex(), 0, pev->origin, pev->renderamt, RGBA(255, 192, 64), 2, 0);
 }
 
 
@@ -1841,26 +1681,8 @@ void CNihilanthHVR :: Crawl( void  )
 	Vector vecAim = Vector( RANDOM_FLOAT( -1, 1 ), RANDOM_FLOAT( -1, 1 ), RANDOM_FLOAT( -1, 1 ) ).Normalize( );
 	Vector vecPnt = pev->origin + pev->velocity * 0.2 + vecAim * 128;
 
-	if (UTIL_isSafeEntIndex(entindex(), "attach nih beam")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_BEAMENTPOINT);
-		WRITE_SHORT(entindex());
-		WRITE_COORD(vecPnt.x);
-		WRITE_COORD(vecPnt.y);
-		WRITE_COORD(vecPnt.z);
-		WRITE_SHORT(g_sModelIndexLaser);
-		WRITE_BYTE(0); // frame start
-		WRITE_BYTE(10); // framerate
-		WRITE_BYTE(3); // life
-		WRITE_BYTE(20);  // width
-		WRITE_BYTE(80);   // noise
-		WRITE_BYTE(64);   // r, g, b
-		WRITE_BYTE(128);   // r, g, b
-		WRITE_BYTE(255);   // r, g, b
-		WRITE_BYTE(255);	// brightness
-		WRITE_BYTE(10);		// speed
-		MESSAGE_END();
-	}
+	UTIL_BeamEntPoint(entindex(), 0, vecPnt, g_sModelIndexLaser, 0, 10, 3, 20, 80,
+		RGBA(64, 128, 255, 255), 10);
 }
 
 

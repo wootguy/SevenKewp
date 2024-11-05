@@ -65,6 +65,7 @@ EXPORT extern gamedll_funcs_t* gpGamedllFuncs; // for ease of porting to/from me
 
 extern "C" DLLEXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
 extern "C" DLLEXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
+extern "C" DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS * pNewFunctionTable, int* interfaceVersion);
 
 EXPORT extern int DispatchSpawn( edict_t *pent );
 EXPORT extern void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd );
@@ -389,6 +390,9 @@ public:
 
 	// true if the player can potentially see this entity
 	bool IsVisibleTo(edict_t* player);
+
+	// true if the player can potentially hear this entity
+	bool IsAudibleTo(edict_t* player);
 
 	//We use this variables to store each ammo count.
 	int ammo_9mm;

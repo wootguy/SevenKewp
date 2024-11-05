@@ -590,10 +590,6 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		sample = g_soundReplacements[sample].c_str();
 	}
 	
-	if (!UTIL_isSafeEntIndex(ENTINDEX(entity), "play sound")) {
-		return;
-	}
-	
 	if (sample && *sample == '!')
 	{
 		char name[32];
@@ -604,25 +600,44 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 	}
 	else {
 		CBaseEntity* bent = CBaseEntity::Instance(entity);
-		if (bent && channel == CHAN_STATIC) {
-			// the static channel is special because it ignores the PAS. However, clients won't hear
-			// the sound if they can't see the entity, even if it's nearby. This block will emit
-			// positional sounds for those cases. This has the drawback of sound not following the
-			// entity, but is better than hearing nothing at all.
+		if (!bent) {
+			return;
+		}
+
+		// the static channel is special because it ignores the PAS. However, clients won't hear
+		// the sound if they can't see the entity, even if it's nearby. This block will emit
+		// positional sounds for those cases. This has the drawback of sound not following the
+		// entity, but is better than hearing nothing at all.
+		bool isStatic = channel == CHAN_STATIC;
+
+		// this sound will crash clients if sent through the normal engine function.
+		bool isUnsafeIdx = ENTINDEX(entity) >= MAX_LEGACY_CLIENT_ENTS;
+
+		if (isStatic || isUnsafeIdx) {
 			Vector ori = entity->v.origin + (entity->v.maxs + entity->v.mins) * 0.5f;
 
 			for (int i = 1; i <= gpGlobals->maxClients; i++) {
 				edict_t* plr = INDEXENT(i);
 
-				if (IsValidPlayer(plr) && !bent->IsVisibleTo(plr)) {
+				if (!IsValidPlayer(plr)) {
+					continue;
+				}
+
+				if (isUnsafeIdx && !UTIL_isSafeEntIndex(plr, ENTINDEX(entity), "play sound")) {
+					continue;
+				}
+
+				if (isStatic && !bent->IsVisibleTo(plr)) {
 					ambientsound_msg(entity, ori, sample, volume, attenuation, flags, pitch, MSG_ONE, plr);
 				}
+				else {
+					// play the sound normally for players that can see the ent
+					StartSound(entity, channel, sample, volume, attenuation, flags, pitch, ori, PLRBIT(plr), true);
+				}
 			}
-
-			// play the sound normally for players that can see the ent
-			StartSound(entity, channel, sample, volume, attenuation, flags, pitch, ori, bent->m_visiblePlayers, true);
 		}
 		else {
+			// the engine function is preferred because it uses the PAS
 			EMIT_SOUND_DYN2(entity, channel, sample, volume, attenuation, flags, pitch);
 		}
 	}

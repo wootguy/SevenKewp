@@ -991,3 +991,7 @@ bool CBaseEntity::CanReach(CBaseEntity* toucher) {
 bool CBaseEntity::IsVisibleTo(edict_t* player) {
 	return m_visiblePlayers & PLRBIT(player);
 }
+
+bool CBaseEntity::IsAudibleTo(edict_t* player) {
+	return m_audiblePlayers & PLRBIT(player);
+}
