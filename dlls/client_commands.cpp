@@ -236,8 +236,10 @@ void Host_Say(edict_t* pEntity, int teamonly)
 			continue;
 
 		// can the receiver hear the sender? or has he muted him?
-		if (g_VoiceGameMgr.PlayerHasBlockedPlayer(client, player))
-			continue;
+		// TODO: voice muting has a buggy implementation that causes random ppl to get muted
+		// when you change servers. Create a new system.
+		//if (g_VoiceGameMgr.PlayerHasBlockedPlayer(client, player))
+		//	continue;
 
 		/*
 		if (!player->IsObserver() && teamonly && g_pGameRules->PlayerRelationship(client, CBaseEntity::Instance(pEntity)) != GR_TEAMMATE)

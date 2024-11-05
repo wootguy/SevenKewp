@@ -790,6 +790,10 @@ void WRITE_BYTES(uint8_t* bytes, int count) {
 	}
 }
 
+void WRITE_FLOAT(float f) {
+	WRITE_LONG(*(uint32_t*)&f);
+}
+
 void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest)
 {
 	float rgfl[3];
@@ -1071,50 +1075,65 @@ const char* BreakupLongLines(const char* pMessage) {
 
 void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage, int msgMode)
 {
-	if ( !pEntity || !pEntity->IsNetClient() )
+	bool isIndividual = msgMode == MSG_ONE || msgMode == MSG_ONE_UNRELIABLE;
+
+	if (isIndividual && (!pEntity || !pEntity->IsNetClient()))
 		return;
 
 	pMessage = BreakupLongLines(pMessage);
 
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, NULL, pEntity->edict() );
-		WRITE_BYTE( TE_TEXTMESSAGE );
-		WRITE_BYTE( textparms.channel & 0xFF );
+	if (textparms.channel == -1) {
+		int sz = 7 * sizeof(long) + 3 + strlen(pMessage);
+		uint32_t color = (textparms.r1 << 16) | (textparms.g1 << 8) | textparms.b1;
 
-		WRITE_SHORT( FixedSigned16( textparms.x, 1<<13 ) );
-		WRITE_SHORT( FixedSigned16( textparms.y, 1<<13 ) );
-		WRITE_BYTE( textparms.effect );
+		MESSAGE_BEGIN(msgMode, SVC_DIRECTOR, NULL, pEntity ? pEntity->edict() : NULL);
+		WRITE_BYTE(sz); // message size
+		WRITE_BYTE(6); // director message
+		WRITE_BYTE(textparms.effect); // effect
+		WRITE_LONG(color); // color
+		WRITE_FLOAT(textparms.x); // x
+		WRITE_FLOAT(textparms.y); // y
+		WRITE_FLOAT(textparms.fadeinTime); // fade in
+		WRITE_FLOAT(textparms.fadeoutTime); // fade out
+		WRITE_FLOAT(textparms.holdTime); // hold time
+		WRITE_FLOAT(textparms.fxTime); // fx time
+		WRITE_STRING(pMessage); // fx time
+		MESSAGE_END();
+	}
+	else {
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, NULL, pEntity ? pEntity->edict() : NULL);
+		WRITE_BYTE(TE_TEXTMESSAGE);
+		WRITE_BYTE(textparms.channel & 0xFF);
 
-		WRITE_BYTE( textparms.r1 );
-		WRITE_BYTE( textparms.g1 );
-		WRITE_BYTE( textparms.b1 );
-		WRITE_BYTE( textparms.a1 );
+		WRITE_SHORT(FixedSigned16(textparms.x, 1 << 13));
+		WRITE_SHORT(FixedSigned16(textparms.y, 1 << 13));
+		WRITE_BYTE(textparms.effect);
 
-		WRITE_BYTE( textparms.r2 );
-		WRITE_BYTE( textparms.g2 );
-		WRITE_BYTE( textparms.b2 );
-		WRITE_BYTE( textparms.a2 );
+		WRITE_BYTE(textparms.r1);
+		WRITE_BYTE(textparms.g1);
+		WRITE_BYTE(textparms.b1);
+		WRITE_BYTE(textparms.a1);
 
-		WRITE_SHORT( FixedUnsigned16( textparms.fadeinTime, 1<<8 ) );
-		WRITE_SHORT( FixedUnsigned16( textparms.fadeoutTime, 1<<8 ) );
-		WRITE_SHORT( FixedUnsigned16( textparms.holdTime, 1<<8 ) );
+		WRITE_BYTE(textparms.r2);
+		WRITE_BYTE(textparms.g2);
+		WRITE_BYTE(textparms.b2);
+		WRITE_BYTE(textparms.a2);
 
-		if ( textparms.effect == 2 )
-			WRITE_SHORT( FixedUnsigned16( textparms.fxTime, 1<<8 ) );
+		WRITE_SHORT(FixedUnsigned16(textparms.fadeinTime, 1 << 8));
+		WRITE_SHORT(FixedUnsigned16(textparms.fadeoutTime, 1 << 8));
+		WRITE_SHORT(FixedUnsigned16(textparms.holdTime, 1 << 8));
 
-		WRITE_STRING( pMessage );
-	MESSAGE_END();
+		if (textparms.effect == 2)
+			WRITE_SHORT(FixedUnsigned16(textparms.fxTime, 1 << 8));
+
+		WRITE_STRING(pMessage);
+		MESSAGE_END();
+	}	
 }
 
-void UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage )
+void UTIL_HudMessageAll(const hudtextparms_t& textparms, const char* pMessage, int msgMode)
 {
-	int			i;
-
-	for ( i = 1; i <= gpGlobals->maxClients; i++ )
-	{
-		CBaseEntity *pPlayer = UTIL_PlayerByIndex( i );
-		if ( pPlayer )
-			UTIL_HudMessage( pPlayer, textparms, pMessage );
-	}
+	UTIL_HudMessage(NULL, textparms, pMessage, MSG_ALL);
 }
 
 					 
