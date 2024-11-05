@@ -244,6 +244,7 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, ent
 	MESSAGE_BEGIN(msg_dest, msg_type, pOrigin, ENT(ent));
 }
 EXPORT void WRITE_BYTES(uint8_t* bytes, int count);
+EXPORT void WRITE_FLOAT(float val);
 
 // Testing the three types of "entity" for nullity
 #define eoNullEntity 0
@@ -428,7 +429,6 @@ EXPORT void UTIL_ClientPrint(edict_t* client, int msg_dest, const char *msg );
 EXPORT void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
 EXPORT void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity=NULL );
 
-
 typedef struct hudtextparms_s
 {
 	float		x;
@@ -440,11 +440,11 @@ typedef struct hudtextparms_s
 	float		fadeoutTime;
 	float		holdTime;
 	float		fxTime;
-	int			channel;
+	int			channel; // -1 = automatic (director message mode)
 } hudtextparms_t;
 
 // prints as transparent 'title' to the HUD
-EXPORT void			UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage );
+EXPORT void			UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage, int msgMode = MSG_ALL );
 EXPORT void			UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage, int msgMode = MSG_ONE);
 
 // for handy use with ClientPrint params
