@@ -790,6 +790,292 @@ void WRITE_BYTES(uint8_t* bytes, int count) {
 	}
 }
 
+// This logic makes sure that a network message does not get sent to
+// a client that can't handle a high entity index, if one is given.
+// entindex is assumed to be the entity used for PVS/PAS tests, if using that message mode.
+// Required variadic args:
+//    int msgMode = the network message mode
+//    const float* msgOrigin = origin used by the engine for some message send modes (PVS/PAS)
+//    edict_t* targetEnt = the target entity of the network message (NULL for broadcasts)
+// NOTE: This code is mostly duplicated in UTIL_BeamEnts, which checks multiple indexes
+#define SAFE_MESSAGE_ENT_LOGIC(msg_func, entindex, ...) \
+	if (entindex < MAX_LEGACY_CLIENT_ENTS) { \
+		msg_func(entindex, __VA_ARGS__); \
+		return; \
+	} \
+	\
+	if (msgMode == MSG_ONE || msgMode == MSG_ONE_UNRELIABLE) { \
+		if (UTIL_isSafeEntIndex(targetEnt, entindex, __FUNCTION__)) { \
+			msg_func(entindex, __VA_ARGS__); \
+		} \
+		return; \
+	} \
+	\
+	int originalMsgMode = msgMode; /* saved in case PVS/PAS was passed, for testing later */ \
+	msgMode = GetIndividualNetMessageMode(msgMode); /* sending individual messages instead of a broadcast */\
+	msgOrigin = NULL; /* don't send this to the engine because PVS/PAS testing will be done here */ \
+	for (int i = 1; i <= gpGlobals->maxClients; i++) { \
+		targetEnt = INDEXENT(i); \
+	\
+		if (TestMsgVis(targetEnt, entindex, originalMsgMode) && UTIL_isSafeEntIndex(targetEnt, entindex, __FUNCTION__)) { \
+			msg_func(entindex, __VA_ARGS__); \
+		} \
+	}
+
+// tests if a player would receive a message given a send mode
+// and the entity which is emitting the message
+bool TestMsgVis(edict_t* plr, int testEntIdx, int netMsgMode) {
+	CBaseEntity* ent = CBaseEntity::Instance(ENT(testEntIdx));
+
+	if (!ent) {
+		return false;
+	}
+
+	switch (netMsgMode) {
+	case MSG_PVS:
+	case MSG_PVS_R:
+		return ent->IsVisibleTo(plr);
+	case MSG_PAS:
+	case MSG_PAS_R:
+		return ent->IsAudibleTo(plr);
+	default:
+		return true;
+	}
+}
+
+// converts a broadcast message mode to an individual mode
+// while preserving the reliable/unreliable channel selection
+int GetIndividualNetMessageMode(int msgMode) {
+	switch (msgMode) {
+	case MSG_ALL:
+	case MSG_PVS_R:
+	case MSG_PAS_R:
+	case MSG_ONE:
+		return MSG_ONE;
+	default:
+		return MSG_ONE_UNRELIABLE;
+	}
+}
+
+void UTIL_BeamFollow_msg(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_BEAMFOLLOW);
+	WRITE_SHORT(entindex);
+	WRITE_SHORT(modelIdx);
+	WRITE_BYTE(life);
+	WRITE_BYTE(width);
+	WRITE_BYTE(color.r);
+	WRITE_BYTE(color.g);
+	WRITE_BYTE(color.b);
+	WRITE_BYTE(color.a);
+	MESSAGE_END();
+}
+void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_BeamFollow_msg, entindex, modelIdx, life, width, color, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_Fizz_msg(int entindex, int modelIdx, uint8_t density, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_FIZZ);
+	WRITE_SHORT(entindex);
+	WRITE_SHORT(modelIdx);
+	WRITE_BYTE(density);
+	MESSAGE_END();
+}
+void UTIL_Fizz(int entindex, int modelIdx, uint8_t density, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_Fizz_msg, entindex, modelIdx, density, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_ELight_msg(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_ELIGHT);
+	WRITE_SHORT(entindex + (attachment << 12));
+	WRITE_COORD(origin.x);
+	WRITE_COORD(origin.y);
+	WRITE_COORD(origin.z);
+	WRITE_COORD(radius);
+	WRITE_BYTE(color.r);
+	WRITE_BYTE(color.g);
+	WRITE_BYTE(color.b);
+	WRITE_BYTE(life);
+	WRITE_COORD(decay);
+	MESSAGE_END();
+}
+void UTIL_ELight(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_ELight_msg, entindex, attachment, origin, radius, color, life, decay, msgMode, origin, targetEnt);
+}
+
+void UTIL_BeamEntPoint_msg(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart,
+	uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, 
+	int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_BEAMENTPOINT);
+	WRITE_SHORT(entindex + (attachment << 12));
+	WRITE_COORD(point.x);
+	WRITE_COORD(point.y);
+	WRITE_COORD(point.z);
+	WRITE_SHORT(modelIdx);
+	WRITE_BYTE(frameStart);
+	WRITE_BYTE(framerate);
+	WRITE_BYTE(life);
+	WRITE_BYTE(width);
+	WRITE_BYTE(noise);
+	WRITE_BYTE(color.r);
+	WRITE_BYTE(color.g);
+	WRITE_BYTE(color.b);
+	WRITE_BYTE(color.a);
+	WRITE_BYTE(speed);
+	MESSAGE_END();
+}
+void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_BeamEntPoint_msg, entindex, attachment, point, modelIdx, frameStart, framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_BeamEnts_msg(int entindex, int attachment, int entindex2, int attachment2, bool ringMode, int modelIdx, uint8_t frameStart,
+	uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed,
+	int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(ringMode ? TE_BEAMRING : TE_BEAMENTS);
+	WRITE_SHORT(entindex + (attachment << 12));
+	WRITE_SHORT(entindex2 + (attachment2 << 12));
+	WRITE_SHORT(g_sModelIndexLaser);
+	WRITE_BYTE(frameStart);
+	WRITE_BYTE(framerate);
+	WRITE_BYTE(life);
+	WRITE_BYTE(width);
+	WRITE_BYTE(noise);
+	WRITE_BYTE(color.r);
+	WRITE_BYTE(color.g);
+	WRITE_BYTE(color.b);
+	WRITE_BYTE(color.a);
+	WRITE_BYTE(speed);
+	MESSAGE_END();
+}
+void UTIL_BeamEnts(int startEnt, int startAttachment, int endEnt, int endAttachment, bool ringMode, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	// NOTE: This code is mostly duplicated in the SAFE_MESSAGE_ENT_LOGIC macro
+	if (startEnt < MAX_LEGACY_CLIENT_ENTS && endEnt < MAX_LEGACY_CLIENT_ENTS) {
+		UTIL_BeamEnts_msg(startEnt, startAttachment, endEnt, endAttachment, ringMode, modelIdx, frameStart,
+			framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
+		return;
+	}
+
+	if (msgMode == MSG_ONE || msgMode == MSG_ONE_UNRELIABLE) {
+		if (UTIL_isSafeEntIndex(targetEnt, startEnt, __FUNCTION__) && UTIL_isSafeEntIndex(targetEnt, endEnt, __FUNCTION__)) {
+			UTIL_BeamEnts_msg(startEnt, startAttachment, endEnt, endAttachment, ringMode, modelIdx, frameStart,
+				framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
+		}
+		return;
+	}
+
+	int originalMsgMode = msgMode; /* saved in case PVS/PAS was passed, for testing later */
+	msgMode = GetIndividualNetMessageMode(msgMode); /* sending individual messages instead of a broadcast */
+	msgOrigin = NULL; /* don't send this to the engine because PVS/PAS testing will be done here */
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		targetEnt = INDEXENT(i);
+
+		bool isVisible = TestMsgVis(targetEnt, startEnt, originalMsgMode) || TestMsgVis(targetEnt, endEnt, originalMsgMode);
+		bool isSafeIndex = UTIL_isSafeEntIndex(targetEnt, startEnt, __FUNCTION__) && UTIL_isSafeEntIndex(targetEnt, endEnt, __FUNCTION__);
+
+		if (isVisible && isSafeIndex) {
+			UTIL_BeamEnts_msg(startEnt, startAttachment, endEnt, endAttachment, ringMode, modelIdx, frameStart,
+				framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
+		}
+	}
+}
+
+void UTIL_BeamPoints(Vector start, Vector end, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_BEAMPOINTS);
+	WRITE_COORD(start.x);
+	WRITE_COORD(start.y);
+	WRITE_COORD(start.z);
+	WRITE_COORD(end.x);
+	WRITE_COORD(end.y);
+	WRITE_COORD(end.z);
+	WRITE_SHORT(modelIdx);
+	WRITE_BYTE(frameStart);
+	WRITE_BYTE(framerate);
+	WRITE_BYTE(life);
+	WRITE_BYTE(width);
+	WRITE_BYTE(noise);
+	WRITE_BYTE(color.r);
+	WRITE_BYTE(color.g);
+	WRITE_BYTE(color.b);
+	WRITE_BYTE(color.a);
+	WRITE_BYTE(speed);
+	MESSAGE_END();
+}
+
+void UTIL_BSPDecal_msg(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_BSPDECAL);
+	WRITE_COORD(origin.x);
+	WRITE_COORD(origin.y);
+	WRITE_COORD(origin.z);
+	WRITE_SHORT(decalIdx);
+	WRITE_SHORT(entindex);
+	if (entindex)
+		WRITE_SHORT(ENT(entindex)->v.modelindex);
+	MESSAGE_END();
+}
+void UTIL_BSPDecal(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_BSPDecal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_PlayerDecal_msg(int entindex, int playernum, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_PLAYERDECAL);
+	WRITE_BYTE(playernum);
+	WRITE_COORD(origin.x);
+	WRITE_COORD(origin.y);
+	WRITE_COORD(origin.z);
+	WRITE_SHORT(entindex);
+	WRITE_BYTE(decalIdx);
+	MESSAGE_END();
+}
+void UTIL_PlayerDecal(int entindex, int playernum, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_PlayerDecal_msg, entindex, playernum, origin, decalIdx, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_GunshotDecal_msg(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_GUNSHOTDECAL);
+	WRITE_COORD(origin.x);
+	WRITE_COORD(origin.y);
+	WRITE_COORD(origin.z);
+	WRITE_SHORT(entindex);
+	WRITE_BYTE(decalIdx);
+	MESSAGE_END();
+}
+void UTIL_GunshotDecal(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_GunshotDecal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_Decal_msg(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	int mode = TE_DECAL;
+
+	if (entindex) {
+		mode = decalIdx > 255 ? TE_DECALHIGH : TE_DECAL;
+	}
+	else {
+		mode = decalIdx > 255 ? TE_WORLDDECALHIGH : TE_WORLDDECAL;
+	}
+	
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(mode);
+	WRITE_COORD(origin.x);
+	WRITE_COORD(origin.y);
+	WRITE_COORD(origin.z);
+	WRITE_BYTE(decalIdx);
+	if (entindex)
+		WRITE_SHORT(entindex);
+	MESSAGE_END();
+}
+void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_Decal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
+}
+
+
 void WRITE_FLOAT(float f) {
 	WRITE_LONG(*(uint32_t*)&f);
 }
@@ -813,30 +1099,33 @@ void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char 
 		samp = g_soundReplacements[samp].c_str();
 	}
 
-	if (!UTIL_isSafeEntIndex(eidx, "emit static sound")) {
-		return;
+	char name[32];
+	if (samp && *samp == '!') {
+		if (SENTENCEG_Lookup(samp, name, 32) >= 0) {
+			samp = name;
+		}
+		else {
+			ALERT(at_error, "Bad sentence: %s\n", samp);
+			return;
+		}
 	}
 
-	if (samp && *samp == '!')
-	{
-		char name[32];
-		if (SENTENCEG_Lookup(samp, name, 32) >= 0) {
-			if (dest) {
-				ambientsound_msg(entity, rgfl, name, vol, attenuation, fFlags, pitch, MSG_ONE, dest);
+	if (dest) {
+		if (UTIL_isSafeEntIndex(dest, ENTINDEX(entity), "play ambient sound")) {
+			ambientsound_msg(entity, rgfl, samp, vol, attenuation, fFlags, pitch, MSG_ONE, dest);
+		}
+	}
+	else if (ENTINDEX(entity) >= MAX_LEGACY_CLIENT_ENTS) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
+			edict_t* plr = INDEXENT(i);
+
+			if (IsValidPlayer(plr) && UTIL_isSafeEntIndex(plr, ENTINDEX(entity), "play ambient sound")) {
+				ambientsound_msg(entity, rgfl, samp, vol, attenuation, fFlags, pitch, MSG_ONE, plr);
 			}
-			else {
-				EMIT_AMBIENT_SOUND(entity, rgfl, name, vol, attenuation, fFlags, pitch);
-			}
-			
 		}
 	}
 	else {
-		if (dest) {
-			ambientsound_msg(entity, rgfl, samp, vol, attenuation, fFlags, pitch, MSG_ONE, dest);
-		}
-		else {
-			EMIT_AMBIENT_SOUND(entity, rgfl, samp, vol, attenuation, fFlags, pitch);
-		}
+		EMIT_AMBIENT_SOUND(entity, rgfl, samp, vol, attenuation, fFlags, pitch);
 	}
 }
 
@@ -1158,7 +1447,7 @@ void UTIL_ClientPrintAll( int msg_dest, const char *msg )
 void UTIL_ClientPrint( edict_t* client, int msg_dest, const char * msg)
 {
 	if (msg_dest == print_chat) {
-		MESSAGE_BEGIN(MSG_ALL, gmsgSayText, NULL);
+		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, client);
 		WRITE_BYTE(0);
 		WRITE_STRING(msg);
 		MESSAGE_END();
@@ -1522,7 +1811,6 @@ void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber )
 {
 	short entityIndex;
 	int index;
-	int message;
 
 	if ( decalNumber < 0 )
 		return;
@@ -1545,37 +1833,8 @@ void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber )
 	}
 	else 
 		entityIndex = 0;
-
-	message = TE_DECAL;
-	if ( entityIndex != 0 )
-	{
-		if ( index > 255 )
-		{
-			message = TE_DECALHIGH;
-			index -= 256;
-		}
-	}
-	else
-	{
-		message = TE_WORLDDECAL;
-		if ( index > 255 )
-		{
-			message = TE_WORLDDECALHIGH;
-			index -= 256;
-		}
-	}
 	
-	if (UTIL_isSafeEntIndex(entityIndex, "apply decal")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(message);
-		WRITE_COORD(pTrace->vecEndPos.x);
-		WRITE_COORD(pTrace->vecEndPos.y);
-		WRITE_COORD(pTrace->vecEndPos.z);
-		WRITE_BYTE(index);
-		if (entityIndex)
-			WRITE_SHORT(entityIndex);
-		MESSAGE_END();
-	}
+	UTIL_Decal(entityIndex, pTrace->vecEndPos, index);
 }
 
 /*
@@ -1606,17 +1865,7 @@ void UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber,
 	if (pTrace->flFraction == 1.0)
 		return;
 
-	if (UTIL_isSafeEntIndex(ENTINDEX(pTrace->pHit), "apply player decal")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_PLAYERDECAL);
-		WRITE_BYTE(playernum);
-		WRITE_COORD(pTrace->vecEndPos.x);
-		WRITE_COORD(pTrace->vecEndPos.y);
-		WRITE_COORD(pTrace->vecEndPos.z);
-		WRITE_SHORT((short)ENTINDEX(pTrace->pHit));
-		WRITE_BYTE(index);
-		MESSAGE_END();
-	}
+	UTIL_PlayerDecal(ENTINDEX(pTrace->pHit), playernum, pTrace->vecEndPos, index);
 }
 
 void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
@@ -1631,16 +1880,7 @@ void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
 	if (pTrace->flFraction == 1.0)
 		return;
 
-	if (UTIL_isSafeEntIndex(ENTINDEX(pTrace->pHit), "apply gunshot decal")) {
-		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pTrace->vecEndPos);
-		WRITE_BYTE(TE_GUNSHOTDECAL);
-		WRITE_COORD(pTrace->vecEndPos.x);
-		WRITE_COORD(pTrace->vecEndPos.y);
-		WRITE_COORD(pTrace->vecEndPos.z);
-		WRITE_SHORT((short)ENTINDEX(pTrace->pHit));
-		WRITE_BYTE(index);
-		MESSAGE_END();
-	}
+	UTIL_GunshotDecal(ENTINDEX(pTrace->pHit), pTrace->vecEndPos, index, MSG_PAS, pTrace->vecEndPos);
 }
 
 
@@ -1971,7 +2211,7 @@ void UTIL_PrecacheOther( const char *szClassname, std::unordered_map<std::string
 // UTIL_LogPrintf - Prints a logged message to console.
 // Preceded by LOG: ( timestamp ) < message >
 //=========================================================
-void UTIL_LogPlayerEvent(edict_t* plr, const char* fmt, ...)
+void UTIL_LogPlayerEvent(const edict_t* plr, const char* fmt, ...)
 {
 	va_list			argptr;
 	static char		string[1024];
@@ -2381,10 +2621,18 @@ uint64_t getPlayerCommunityId(edict_t* plr) {
 	return steamid_to_steamid64(id);
 }
 
-bool UTIL_isSafeEntIndex(int idx, const char* action) {
-	if (sv_max_client_edicts && idx >= sv_max_client_edicts->value) {
-		ALERT(at_error, "Can't %s for edict %d '%s' (sv_max_client_edicts = %d)\n",
-			action, idx, STRING(INDEXENT(idx)->v.classname), (int)sv_max_client_edicts->value);
+bool UTIL_isSafeEntIndex(edict_t* ent, int idx, const char* action) {
+	CBasePlayer* plr = UTIL_PlayerByIndex(ENTINDEX(ent));
+	if (!plr) {
+		return false;
+	}
+
+	int maxEdicts = plr->GetMaxClientEdicts();
+
+	if (idx >= maxEdicts) {
+		ALERT(at_error, "Can't %s for edict %d '%s' (max edicts for \"%s\" is %d)\n",
+			action, idx, STRING(INDEXENT(idx)->v.classname), plr->DisplayName(), maxEdicts);
+		plr->SendLegacyClientWarning();
 		return false;
 	}
 
@@ -2555,31 +2803,17 @@ std::string getGameFilePath(const char* path) {
 
 void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, edict_t* dest)
 {
-	MESSAGE_BEGIN(msgType, SVC_TEMPENTITY, NULL, dest);
-	WRITE_BYTE(TE_BEAMPOINTS);
-	WRITE_COORD(start.x);
-	WRITE_COORD(start.y);
-	WRITE_COORD(start.z);
-	WRITE_COORD(end.x);
-	WRITE_COORD(end.y);
-	WRITE_COORD(end.z);
-	WRITE_SHORT(g_engfuncs.pfnModelIndex("sprites/laserbeam.spr"));
-	WRITE_BYTE(0);
-	WRITE_BYTE(0);
-	WRITE_BYTE(life);
-	WRITE_BYTE(16);
-	WRITE_BYTE(0);
-	WRITE_BYTE(c.r);
-	WRITE_BYTE(c.g);
-	WRITE_BYTE(c.b);
-	WRITE_BYTE(c.a); // actually brightness
-	WRITE_BYTE(0);
-	MESSAGE_END();
+	UTIL_BeamPoints(start, end, MODEL_INDEX("sprites/laserbeam.spr"), 0, 0, life, 16, 0,
+		c, 0, msgType, NULL, dest);
 }
 
 std::string lastMapName;
 
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
+	if (target < at_warning && g_developer->value == 0) {
+		return;
+	}
+
 	static std::mutex m; // only allow one thread at a time to access static buffers
 	std::lock_guard<std::mutex> lock(m);
 

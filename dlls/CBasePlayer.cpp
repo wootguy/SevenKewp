@@ -5611,3 +5611,81 @@ int CBasePlayer::GetNameColor() {
 
 	return DEFAULT_TEAM_COLOR;
 }
+
+void CBasePlayer::QueryClientType() {
+	if (IsBot()) {
+		m_clientEngineVersion = CLIENT_ENGINE_BOT;
+		m_clientModVersion = CLIENT_MOD_BOT;
+		return;
+	}
+
+	// first check for custom clients, next step depends on the output of this
+	g_engfuncs.pfnQueryClientCvarValue2(edict(), "aghl_version", 0); // BugfixedHL cvar
+}
+
+void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarName, const char* pszValue) {
+	if (requestID == 0) {
+		bool hasCvar = strstr(pszValue, "Bad CVAR request") == 0;
+		if (hasCvar) {
+			m_clientModVersion = CLIENT_MOD_HLBUGFIXED;
+			m_clientModVersionString = ALLOC_STRING((std::string("HLBugFixed ") + pszValue).c_str());
+		}
+		else {
+			// could also be using an unknown custom client, no way to know...
+			m_clientModVersion = CLIENT_MOD_HL;
+			m_clientModVersionString = MAKE_STRING("Half-Life");
+		}
+
+		// sv_allow_shaders was added to HL 25, so if it's missing, then it must be the legacy client
+		g_engfuncs.pfnQueryClientCvarValue2(edict(), "sv_allow_shaders", 1);
+	}
+	else if (requestID == 1) {
+		bool hasCvar = strstr(pszValue, "Bad CVAR request") == 0;
+		m_clientEngineVersion = hasCvar ? CLIENT_ENGINE_HL_LATEST : CLIENT_ENGINE_HL_LEGACY;
+
+		UTIL_LogPlayerEvent(edict(), "Client version: %s\n", GetClientVersionString());
+	}
+}
+
+int CBasePlayer::GetMaxClientEdicts() {
+	// return the default from steam
+	// this value can be overridden in liblist.gam but there's no way to know if the client did that
+	// and they will get kicked if this value is overestimated
+	
+	switch (m_clientEngineVersion) {
+	case CLIENT_ENGINE_HL_LATEST:
+		return MAX_CLIENT_ENTS;
+	case CLIENT_ENGINE_HL_LEGACY:
+	default: // better safe than sorry
+		return MAX_LEGACY_CLIENT_ENTS;
+	}
+}
+
+void CBasePlayer::SendLegacyClientWarning() {
+	if (m_sentClientWarning || m_clientEngineVersion != CLIENT_ENGINE_HL_LEGACY) {
+		return;
+	}
+
+	edict_t* e = edict();
+	m_sentClientWarning = true;
+	UTIL_ClientPrint(e, print_chat, "[info] This map does not function properly with steam_legacy clients. Check your console for more information.\n");
+		
+	UTIL_ClientPrint(e, print_console, "\n-------------------------------------------------------------------------\n");
+	UTIL_ClientPrint(e, print_console, "This mod is not 100% compatible with the \"Pre-25th Anniversary Build\" of Half-Life.\n");
+	UTIL_ClientPrint(e, print_console, "Some objects and effects have been made invisible to you so that you aren't kicked.\n");
+	UTIL_ClientPrint(e, print_console, "To fix this, either set \"Beta Participation\" to \"None\" in Steam, or add \"edicts 2048\"\n");
+	UTIL_ClientPrint(e, print_console, "to your liblist.gam file. Editing liblist.gam should fix the problem, but won't remove\n");
+	UTIL_ClientPrint(e, print_console, "this message (the server can't know if you've made that edit or not).\n");
+	UTIL_ClientPrint(e, print_console, "-------------------------------------------------------------------------\n\n");
+
+	UTIL_LogPlayerEvent(e, "was sent the steam_legacy client warning\n");
+}
+
+const char* CBasePlayer::GetClientVersionString() {
+	const char* engineVersion = "";
+
+	if (m_clientEngineVersion == CLIENT_ENGINE_HL_LEGACY)
+		engineVersion = " (steam_legacy)";
+
+	return UTIL_VarArgs("%s%s", STRING(m_clientModVersionString), engineVersion);
+}

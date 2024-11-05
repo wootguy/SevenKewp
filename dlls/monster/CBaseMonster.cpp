@@ -748,54 +748,16 @@ void DrawRoute(entvars_t* pev, WayPoint_t* m_Route, int m_iRouteIndex, int r, in
 
 	//	UTIL_ParticleEffect ( m_Route[ m_iRouteIndex ].vecLocation, g_vecZero, 255, 25 );
 
-	MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-	WRITE_BYTE(TE_BEAMPOINTS);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z);
-	WRITE_COORD(m_Route[m_iRouteIndex].vecLocation.x);
-	WRITE_COORD(m_Route[m_iRouteIndex].vecLocation.y);
-	WRITE_COORD(m_Route[m_iRouteIndex].vecLocation.z);
-
-	WRITE_SHORT(g_sModelIndexLaser);
-	WRITE_BYTE(0); // frame start
-	WRITE_BYTE(10); // framerate
-	WRITE_BYTE(1); // life
-	WRITE_BYTE(16);  // width
-	WRITE_BYTE(0);   // noise
-	WRITE_BYTE(r);   // r, g, b
-	WRITE_BYTE(g);   // r, g, b
-	WRITE_BYTE(b);   // r, g, b
-	WRITE_BYTE(255);	// brightness
-	WRITE_BYTE(10);		// speed
-	MESSAGE_END();
+	UTIL_BeamPoints(pev->origin, m_Route[m_iRouteIndex].vecLocation, g_sModelIndexLaser, 0, 10, 1, 16, 0,
+		RGBA(r, g, b, 255), 10);
 
 	for (i = m_iRouteIndex; i < ROUTE_SIZE - 1; i++)
 	{
 		if ((m_Route[i].iType & bits_MF_IS_GOAL) || (m_Route[i + 1].iType == 0))
 			break;
 
-
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_BEAMPOINTS);
-		WRITE_COORD(m_Route[i].vecLocation.x);
-		WRITE_COORD(m_Route[i].vecLocation.y);
-		WRITE_COORD(m_Route[i].vecLocation.z);
-		WRITE_COORD(m_Route[i + 1].vecLocation.x);
-		WRITE_COORD(m_Route[i + 1].vecLocation.y);
-		WRITE_COORD(m_Route[i + 1].vecLocation.z);
-		WRITE_SHORT(g_sModelIndexLaser);
-		WRITE_BYTE(0); // frame start
-		WRITE_BYTE(10); // framerate
-		WRITE_BYTE(1); // life
-		WRITE_BYTE(8);  // width
-		WRITE_BYTE(0);   // noise
-		WRITE_BYTE(r);   // r, g, b
-		WRITE_BYTE(g);   // r, g, b
-		WRITE_BYTE(b);   // r, g, b
-		WRITE_BYTE(255);	// brightness
-		WRITE_BYTE(10);		// speed
-		MESSAGE_END();
+		UTIL_BeamPoints(pev->origin, m_Route[i + 1].vecLocation, g_sModelIndexLaser, 0, 10, 1, 8, 0,
+			RGBA(r, g, b, 255), 10);
 
 		//		UTIL_ParticleEffect ( m_Route[ i ].vecLocation, g_vecZero, 255, 25 );
 	}

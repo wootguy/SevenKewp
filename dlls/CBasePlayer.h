@@ -87,6 +87,23 @@ enum sbar_data
 	SBAR_END,
 };
 
+#define MAX_CLIENT_ENTS 1665 // default for the latest HL client from steam
+#define MAX_LEGACY_CLIENT_ENTS 1365 // default when using the steam_legacy beta
+
+enum HL_CLIENT_ENGINE_VERSION {
+	CLIENT_ENGINE_NOT_CHECKED,	// player hasn't responded to cvar queries yet
+	CLIENT_ENGINE_HL_LATEST,	// the latest version of the steam HL client from steam
+	CLIENT_ENGINE_HL_LEGACY,	// the legacy version of HL from steam
+	CLIENT_ENGINE_BOT,			// bot's don't use a client
+};
+
+enum HL_CLIENT_MOD_VERSION {
+	CLIENT_MOD_NOT_CHECKED,	// player hasn't responded to cvar queries yet
+	CLIENT_MOD_HL,			// the vanilla half-life mod from steam (or an undetected custom client)
+	CLIENT_MOD_HLBUGFIXED,	// a popular custom client (for cheating!!! but also cool stuff...)
+	CLIENT_MOD_BOT,			// bot's don't use mods
+};
+
 #define CHAT_INTERVAL 1.0f
 
 class EXPORT CBasePlayer : public CBaseMonster
@@ -384,7 +401,24 @@ public:
 
 	float m_initSoundTime;
 
+	HL_CLIENT_ENGINE_VERSION m_clientEngineVersion; // which game engine is the is this player using?
+	HL_CLIENT_MOD_VERSION m_clientModVersion; // which mod is this player using?
+	string_t m_clientModVersionString; // version string for the client mod
+	bool m_sentClientWarning; // has this client been warned about their client incompatability?
+
 	int GetNameColor();
+
+	// checks client cvars to determine which engine and mod is being used. Called when the player first enters the server.
+	void QueryClientType();
+
+	void HandleClientCvarResponse(int requestID, const char* pszCvarName, const char* pszValue);
+
+	// get the default edict count for the player's client, to avoid sending invalid indexes
+	int GetMaxClientEdicts();
+
+	void SendLegacyClientWarning();
+
+	const char* GetClientVersionString();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

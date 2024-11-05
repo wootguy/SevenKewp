@@ -108,7 +108,7 @@ gamedll_funcs_t* gpGamedllFuncs = &GameDllFuncs;
 
 extern "C" {
 
-	int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion )
+int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion )
 {
 	if ( !pFunctionTable || interfaceVersion != INTERFACE_VERSION )
 	{

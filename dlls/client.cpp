@@ -249,6 +249,17 @@ void ClientKill( edict_t *pEntity )
 //	respawn( pev );
 }
 
+
+void CvarValue2(const edict_t* pEnt, int requestID, const char* pszCvarName, const char* pszValue) {
+	CBasePlayer* plr = UTIL_PlayerByIndex(ENTINDEX(pEnt));
+
+	if (!plr || strstr(pszValue, "Bad Player")) {
+		return;
+	}
+
+	plr->HandleClientCvarResponse(requestID, pszCvarName, pszValue);
+}
+
 /*
 ===========
 ClientPutInServer
@@ -284,6 +295,8 @@ void ClientPutInServer( edict_t *pEntity )
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;
+
+	pPlayer->QueryClientType();
 
 	CALL_HOOKS_VOID(pfnClientPutInServer, pPlayer);
 
@@ -1049,8 +1062,8 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 
 	int pnum = g_packClientIdx - 1;
 	if (g_numEdictOverflows[pnum] > 0) {
-		ALERT(at_console, "Overflowed %d edicts for client %s\n",
-			g_numEdictOverflows[pnum], STRING(pClient->v.netname));
+		ALERT(at_console, "Overflowed %d edicts for \"%s\", Client: %s\n",
+			g_numEdictOverflows[pnum], STRING(pClient->v.netname), plr->GetClientVersionString());
 	}
 
 	g_numEdictOverflows[pnum] = 0;
@@ -1270,11 +1283,10 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		
 	}
 
-	// prevent disconnects with this error:
-	// Host_Error: CL_EntityNum: 1665 is an invalid number, cl.max_edicts is 1665
-	if (sv_max_client_edicts && e >= (int)sv_max_client_edicts->value) {
-		ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
+	if (e >= plr->GetMaxClientEdicts()) {
+		//ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
 		g_numEdictOverflows[player]++;
+		plr->SendLegacyClientWarning();
 		return 0;
 	}
 
@@ -1957,4 +1969,3 @@ int	ShouldCollide(edict_t* pentTouched, edict_t* pentOther) {
 
 void CvarValue(const edict_t* pEnt, const char* pszValue) {}
 
-void CvarValue2(const edict_t* pEnt, int requestID, const char* pszCvarName, const char* pszValue) {}
