@@ -1447,12 +1447,14 @@ void CBasePlayer::PlayerDeathThink(void)
 	}
 
 	float deadTime = gpGlobals->time - m_lastKillTime;
-	if (deadTime < mp_respawndelay.value + 1.0f) {
+	float respawnDelay = mp_respawndelay.value + m_extraRespawnDelay;
+
+	if (deadTime < respawnDelay + 1.0f) {
 		if (gpGlobals->time - m_lastSpawnMessage > 0.2f) {
-			int timeLeft = (int)ceilf(mp_respawndelay.value - deadTime);
+			int timeLeft = (int)ceilf(respawnDelay - deadTime);
 			const char* msg = UTIL_VarArgs("Respawn allowed in %d seconds", timeLeft);
 
-			if (deadTime >= mp_respawndelay.value) {
+			if (deadTime >= respawnDelay) {
 				msg = "You can respawn now!";
 			} else if (timeLeft == 1) {
 				msg = "Respawn allowed in 1 second";
@@ -5600,7 +5602,7 @@ void CBasePlayer::UpdateTeamInfo(int color, int msg_mode, edict_t* dst) {
 
 	MESSAGE_BEGIN(msg_mode, gmsgTeamInfo, 0, dst);
 	WRITE_BYTE(entindex());
-	WRITE_STRING((IsObserver() && color == -1) ? "" : DEFAULT_TEAM_NAME);
+	WRITE_STRING((IsObserver() && color == -1) ? "" : GetTeamName());
 	MESSAGE_END();
 }
 
@@ -5609,7 +5611,23 @@ int CBasePlayer::GetNameColor() {
 		return OBSERVER_TEAM_COLOR;
 	}
 
+	if (m_allowFriendlyFire) {
+		return ENEMY_TEAM_COLOR;
+	}
+
 	return DEFAULT_TEAM_COLOR;
+}
+
+const char* CBasePlayer::GetTeamName() {
+	if (IsObserver()) {
+		return "";
+	}
+	
+	if (m_allowFriendlyFire) {
+		return ENEMY_TEAM_NAME;
+	}
+
+	return DEFAULT_TEAM_NAME;
 }
 
 void CBasePlayer::QueryClientType() {

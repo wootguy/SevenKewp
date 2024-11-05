@@ -28,6 +28,7 @@ extern void GameDLLInit( void );
 #define MOD_SPRITE_FOLDER "hlcoop/"
 
 #define DEFAULT_TEAM_NAME "Team" // name seen in the scoreboard
+#define ENEMY_TEAM_NAME "Bad Guys" // name seen in the scoreboard
 #define DEFAULT_TEAM_COLOR 1
 #define ENEMY_TEAM_COLOR 2
 #define NEUTRAL_TEAM_COLOR 3

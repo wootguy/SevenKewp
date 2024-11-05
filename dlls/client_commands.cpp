@@ -470,8 +470,9 @@ void ClientCommand(edict_t* pEntity)
 		// always allow proxies to become a spectator
 		if ((pev->flags & FL_PROXY) || allow_spectators.value)
 		{
-			if (gpGlobals->time - pPlayer->m_lastObserverSwitch < 3.0f) {
-				float timeleft = 3.0f - (gpGlobals->time - pPlayer->m_lastObserverSwitch);
+			float cooldown = mp_respawndelay.value + pPlayer->m_extraRespawnDelay;
+			if (gpGlobals->time - pPlayer->m_lastObserverSwitch < cooldown) {
+				float timeleft = cooldown - (gpGlobals->time - pPlayer->m_lastObserverSwitch);
 				CLIENT_PRINTF(pPlayer->edict(), print_center, UTIL_VarArgs("Wait %.1f seconds", timeleft));
 			}
 			else if( pev->iuser1 == OBS_NONE )

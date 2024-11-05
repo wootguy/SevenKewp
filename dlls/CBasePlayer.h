@@ -398,6 +398,9 @@ public:
 	float m_lastSpawnMessage;
 	float m_lastKillTime;
 	bool m_deathMessageSent;
+	bool m_allowFriendlyFire; // true if this player allows incoming friendly fire
+
+	float m_extraRespawnDelay; // set to non-zero to increase respawn delay (sums with map default)
 
 	float m_initSoundTime;
 
@@ -407,6 +410,8 @@ public:
 	bool m_sentClientWarning; // has this client been warned about their client incompatability?
 
 	int GetNameColor();
+
+	const char* GetTeamName();
 
 	// checks client cvars to determine which engine and mod is being used. Called when the player first enters the server.
 	void QueryClientType();
