@@ -524,8 +524,8 @@ const char* GET_MODEL(const char* model) {
 		model = g_modelReplacements[lowerPath].c_str();
 	}
 
-	if (g_precachedModels.find(model) == g_precachedModels.end()) {
-		model = NOT_PRECACHED_MODEL;
+	if (g_precachedModels.find(lowerPath) == g_precachedModels.end()) {
+		return NOT_PRECACHED_MODEL;
 	}
 
 	return model;
