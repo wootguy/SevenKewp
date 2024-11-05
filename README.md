@@ -10,12 +10,13 @@ Note: If you're a player, you don't need to install anything or build this mod. 
 
 1. Install dependendies.  
    Windows: Install Git, CMake, and Visual Studio  
-   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386`  
+   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386`
+1. Open a shell somewhere and clone the repo: `git clone --recurse-submodules https://github.com/wootguy/SevenKewp`
 1. Run `scripts/build_game_and_plugins.bat` (Windows) or `scripts/build_game_and_plugins.sh` (Linux).
 2. Copy the contents of `build/output/` to `valve/` on your Half-Life dedicated server.
 3. Build and install [my fork of ReHLDS](https://github.com/wootguy/rehlds). This is required for some maps.
-1. Copy the contents `sevenkewp` to `valve_downloads/` on your dedicated server. You may want/need the `.cfg` files in `valve/` instead.
-1. Add `-dll dlls/server.dll` (Windows) or `-dll dlls/server.so` (Linux) to the launch options of your dedicated server. If you want metamod, then add that path to metamod's `config.ini` instead.
+1. Copy the contents of `sevenkewp/` to `valve/` on your dedicated server. The `.cfg` files must be in `valve/`, but you can copy everything else to `valve_downloads/` if you want.
+1. Add `-dll dlls/server.dll` (Windows) or `-dll dlls/server.so` (Linux) to the launch options of your dedicated server. If you use metamod, then add `gamedll dlls/server.dll` (or `.so`) to metamod's `config.ini` instead.
 
 Currently, the mod is designed to run as a replacement server library for Half-Life, rather than a new mod with its own server list and client. The mod doesn't work with Sven Co-op clients yet.
 
