@@ -384,7 +384,7 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 	MESSAGE_BEGIN(MSG_ONE, gmsgTeamNames, NULL, pl->edict());
 	WRITE_BYTE(4);
 	WRITE_STRING(DEFAULT_TEAM_NAME);
-	WRITE_STRING(DEFAULT_TEAM_NAME);
+	WRITE_STRING(ENEMY_TEAM_NAME);
 	WRITE_STRING(DEFAULT_TEAM_NAME);
 	WRITE_STRING(DEFAULT_TEAM_NAME);
 	MESSAGE_END();
@@ -483,7 +483,7 @@ BOOL CHalfLifeMultiplay::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity
 	}
 
 	bool isOtherPlayer = pAttacker->IsPlayer() && pAttacker->entindex() != pPlayer->entindex();
-	return !isOtherPlayer || friendlyfire.value != 0;
+	return !isOtherPlayer || friendlyfire.value != 0 || pPlayer->m_allowFriendlyFire;
 }
 
 //=========================================================
