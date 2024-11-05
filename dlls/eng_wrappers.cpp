@@ -522,6 +522,7 @@ const char* GET_MODEL(const char* model) {
 
 	if (g_modelReplacements.find(lowerPath) != g_modelReplacements.end()) {
 		model = g_modelReplacements[lowerPath].c_str();
+		lowerPath = toLowerCase(model);
 	}
 
 	if (g_precachedModels.find(lowerPath) == g_precachedModels.end()) {
