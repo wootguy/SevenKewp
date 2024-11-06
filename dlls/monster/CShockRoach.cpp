@@ -47,7 +47,7 @@ Schedule_t	slRCRangeAttack1[] =
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_NO_AMMO_LOADED,
 		0,
-		"HCRangeAttack1"
+		"SROACH_RANGE_ATTACK1"
 	},
 };
 
@@ -67,7 +67,7 @@ Schedule_t	slRCRangeAttack1Fast[] =
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_NO_AMMO_LOADED,
 		0,
-		"HCRAFast"
+		"SROACH_ATTACK1_FAST"
 	},
 };
 

@@ -71,6 +71,7 @@ public:
 	void PlaySentenceSound(int sentenceType);
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	Schedule_t* GetScheduleOfType(int Type);
+	const char* GetTaskName(int taskIdx);
 	void SetActivity(Activity NewActivity);
 	int GetActivitySequence(Activity NewActivity);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
@@ -345,7 +346,7 @@ Schedule_t	slFindMinigun[] =
 		bits_COND_HEAVY_DAMAGE,
 
 		0,
-		"Find minigun"
+		"HWGRUNT_FIND_MINIGUN"
 	},
 };
 
@@ -398,6 +399,14 @@ Schedule_t* CHWGrunt::GetScheduleOfType(int Type)
 		}
 
 		return CBaseGrunt::GetScheduleOfType(Type);
+	}
+}
+
+const char* CHWGrunt::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_GET_PATH_TO_BEST_MINIGUN: return "TASK_GET_PATH_TO_BEST_MINIGUN";
+	default:
+		return CBaseGrunt::GetTaskName(taskIdx);
 	}
 }
 

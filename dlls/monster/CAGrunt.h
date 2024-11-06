@@ -60,6 +60,7 @@ public:
 
 	Schedule_t* GetSchedule(void);
 	Schedule_t* GetScheduleOfType(int Type);
+	const char* GetTaskName(int taskIdx);
 	BOOL FCanCheckAttacks(void);
 	BOOL CheckMeleeAttack1(float flDot, float flDist);
 	BOOL CheckRangeAttack1(float flDot, float flDist);

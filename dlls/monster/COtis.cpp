@@ -324,7 +324,7 @@ Schedule_t	slOtFollow[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_PROVOKED,
 		bits_SOUND_DANGER,
-		"Follow"
+		"OTIS_FOLLOW"
 	},
 };
 
@@ -346,7 +346,7 @@ Schedule_t slOtisEnemyDraw[] =
 		ARRAYSIZE ( tlOtisEnemyDraw ),
 		0,
 		0,
-		"Otis Enemy Draw"
+		"OTIS_ENEMY_DRAW"
 	}
 };
 
@@ -370,7 +370,7 @@ Schedule_t	slOtFaceTarget[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_PROVOKED,
 		bits_SOUND_DANGER,
-		"FaceTarget"
+		"OTIS_FACE_TARGET"
 	},
 };
 
@@ -403,7 +403,7 @@ Schedule_t	slIdleOtStand[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"IdleStand"
+		"OTIS_IDLE_STAND"
 	},
 };
 

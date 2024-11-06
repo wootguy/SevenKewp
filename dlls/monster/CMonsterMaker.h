@@ -24,6 +24,7 @@ class EXPORT CMonsterMaker : public CBaseMonster
 public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
+	virtual	BOOL IsNormalMonster(void) { return FALSE; }
 	void Spawn(void);
 	void Precache(void);
 	void KeyValue(KeyValueData* pkvd);

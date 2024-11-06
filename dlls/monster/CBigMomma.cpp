@@ -190,6 +190,7 @@ public:
 	Schedule_t	*GetSchedule( void );
 	Schedule_t	*GetScheduleOfType( int Type );
 	void		TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	virtual const char* GetTaskName(int taskIdx);
 
 	void NodeStart( int iszNextNode );
 	void NodeReach( void );
@@ -910,7 +911,7 @@ Schedule_t	slBigNode[] =
 		ARRAYSIZE ( tlBigNode ), 
 		0,
 		0,
-		"Big Node"
+		"MOM_BIG_NODE"
 	},
 };
 
@@ -928,7 +929,7 @@ Schedule_t	slNodeFail[] =
 		ARRAYSIZE ( tlNodeFail ), 
 		0,
 		0,
-		"NodeFail"
+		"MOM_NODE_FAIL"
 	},
 };
 
@@ -959,6 +960,19 @@ Schedule_t *CBigMomma::GetScheduleOfType( int Type )
 	return CBaseMonster::GetScheduleOfType( Type );
 }
 
+const char* CBigMomma::GetTaskName(int taskIdx) {	
+	switch (taskIdx) {
+	case TASK_MOVE_TO_NODE_RANGE: return "TASK_MOVE_TO_NODE_RANGE";
+	case TASK_FIND_NODE: return "TASK_FIND_NODE";
+	case TASK_PLAY_NODE_PRESEQUENCE: return "TASK_PLAY_NODE_PRESEQUENCE";
+	case TASK_PLAY_NODE_SEQUENCE: return "TASK_PLAY_NODE_SEQUENCE";
+	case TASK_PROCESS_NODE: return "TASK_PROCESS_NODE";
+	case TASK_NODE_DELAY: return "TASK_NODE_DELAY";
+	case TASK_NODE_YAW: return "TASK_NODE_YAW";
+	default:
+		return CBaseMonster::GetTaskName(taskIdx);
+	}
+}
 
 BOOL CBigMomma::ShouldGoToNode( void )
 {

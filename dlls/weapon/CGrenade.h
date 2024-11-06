@@ -37,6 +37,7 @@ public:
 	const char* GetModel();
 	void SetGrenadeModel();
 	virtual int MergedModelBody() { return -1; }
+	virtual	BOOL IsNormalMonster(void) { return FALSE; }
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };

@@ -183,6 +183,7 @@ public:
 
 	virtual BOOL	IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual	BOOL	IsMonster(void) { return TRUE; }
+	virtual	BOOL	IsNormalMonster(void) { return TRUE; }
 	virtual BOOL	ShouldFadeOnDeath( void );
 	virtual bool	ShouldRoam( void );
 
@@ -239,6 +240,7 @@ public:
 		void NextScheduledTask ( void );
 		Schedule_t *ScheduleInList( const char *pName, Schedule_t **pList, int listCount );
 
+		virtual void GetAllSchedules(std::unordered_set<Schedule_t*>& schedulesOut);
 		virtual Schedule_t *ScheduleFromName( const char *pName );
 		static Schedule_t *m_scheduleList[];
 		

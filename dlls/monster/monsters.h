@@ -167,6 +167,7 @@ public:
 
 #define CUSTOM_SCHEDULES\
 		virtual Schedule_t *ScheduleFromName( const char *pName );\
+		virtual void GetAllSchedules( std::unordered_set<Schedule_t*>& schedulesOut );\
 		static Schedule_t *m_scheduleList[]
 
 #define DEFINE_CUSTOM_SCHEDULES(derivedClass)\
@@ -179,6 +180,12 @@ public:
 			if ( !pSchedule )\
 				return baseClass::ScheduleFromName(pName);\
 			return pSchedule;\
+		} \
+		void derivedClass::GetAllSchedules(std::unordered_set<Schedule_t*>& schedulesOut) { \
+			baseClass::GetAllSchedules(schedulesOut); \
+			for (int i = 0; i < (int)ARRAYSIZE(m_scheduleList); i++) { \
+				schedulesOut.insert(m_scheduleList[i]); \
+			} \
 		}
 
 

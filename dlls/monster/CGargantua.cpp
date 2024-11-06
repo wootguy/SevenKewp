@@ -181,7 +181,7 @@ Schedule_t	slGargFlame[] =
 		ARRAYSIZE ( tlGargFlame ), 
 		0,
 		0,
-		"GargFlame"
+		"GARG_FLAME"
 	},
 };
 
@@ -201,7 +201,7 @@ Schedule_t	slGargSwipe[] =
 		ARRAYSIZE ( tlGargSwipe ), 
 		bits_COND_CAN_MELEE_ATTACK2,
 		0,
-		"GargSwipe"
+		"GARG_SWIPE"
 	},
 };
 
@@ -874,6 +874,15 @@ Schedule_t *CGargantua::GetScheduleOfType( int Type )
 	}
 
 	return CBaseMonster::GetScheduleOfType( Type );
+}
+
+const char* CGargantua::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_SOUND_ATTACK: return "TASK_SOUND_ATTACK";
+	case TASK_FLAME_SWEEP: return "TASK_FLAME_SWEEP";
+	default:
+		return CBaseMonster::GetTaskName(taskIdx);
+	}
 }
 
 

@@ -96,7 +96,7 @@ Schedule_t	slIdleResponse[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"Idle Response"
+		"TALK_IDLE_RESPONSE"
 
 	},
 };
@@ -121,7 +121,7 @@ Schedule_t	slIdleSpeak[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"Idle Speak"
+		"TALK_IDLE_SPEAK"
 	},
 };
 
@@ -143,7 +143,7 @@ Schedule_t	slIdleSpeakWait[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"Idle Speak Wait"
+		"TALK_IDLE_SPEAK_WAIT"
 	},
 };
 
@@ -178,7 +178,7 @@ Schedule_t	slIdleHello[] =
 		bits_COND_PROVOKED,
 
 		bits_SOUND_COMBAT,
-		"Idle Hello"
+		"TALK_IDLE_HELLO"
 	},
 };
 
@@ -198,7 +198,7 @@ Schedule_t	slIdleStopShooting[] =
 		bits_COND_HEAVY_DAMAGE	|
 		bits_COND_HEAR_SOUND,
 		0,
-		"Idle Stop Shooting"
+		"TALK_IDLE_STOP_SHOOTING"
 	},
 };
 
@@ -243,7 +243,7 @@ Schedule_t	slTlkIdleWatchClient[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"TlkIdleWatchClient"
+		"TALK_IDLE_WATCH_CLIENT1"
 	},
 
 	{ 
@@ -266,7 +266,7 @@ Schedule_t	slTlkIdleWatchClient[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"TlkIdleWatchClientStare"
+		"TALK_IDLE_WATCH_CLIENT2"
 	},
 };
 
@@ -289,7 +289,7 @@ Schedule_t	slTlkIdleEyecontact[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"TlkIdleEyecontact"
+		"TALK_EYE_CONTACT"
 	},
 };
 
