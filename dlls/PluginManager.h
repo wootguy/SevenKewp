@@ -44,10 +44,18 @@ public:
 
 	void ReloadPlugin(const char* name);
 
+	std::string GetUpdatedPluginPath(Plugin& plugin);
+
+	bool UpdatePlugin(const char* name);
+
+	bool UpdatePlugin(Plugin& plugin);
+
+	bool UpdatePlugins();
+
 	void RemovePlugins(bool mapPluginsOnly);
 
 	// will conditionally load/unload plugins if the config has been updated since the last call, unless forceUpdate=true
-	void UpdateServerPlugins(bool forceUpdate=false);
+	void UpdatePluginsFromList(bool forceUpdate=false);
 
 	// reloads server plugins (not map plugins)
 	void ReloadPlugins();
@@ -56,6 +64,8 @@ public:
 	void ListPlugins(edict_t* plr);
 
 	Plugin* FindPlugin(int id);
+
+	Plugin* FindPlugin(const char* name);
 
 	template<typename Func, typename... Args>
 	HOOK_RETURN_DATA CallHooks(Func hookFunction, Args&&... args) {

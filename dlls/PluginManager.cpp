@@ -78,6 +78,8 @@ bool PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
 }
 
 bool PluginManager::LoadPlugin(Plugin& plugin) {
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loading plugin '%s'\n", plugin.fpath.c_str()));
+
 #ifdef _WIN32
 	plugin.h_module = LoadLibraryA(plugin.fpath.c_str());
 #else
@@ -96,7 +98,7 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 	if (apiFunc) {
 		int apiVersion = HLCOOP_API_VERSION;
 		if (apiFunc(&plugin, apiVersion)) {
-			g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded plugin '%s'\n", plugin.fpath.c_str()));
+			// success
 		}
 		else {
 			ALERT(at_error, "PluginInit call failed in plugin '%s'.\n", plugin.fpath.c_str());
@@ -114,6 +116,8 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 }
 
 void PluginManager::UnloadPlugin(const Plugin& plugin) {
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Removing plugin: '%s'\n", plugin.fpath.c_str()));
+
 	PLUGIN_EXIT_FUNCTION apiFunc =
 		(PLUGIN_EXIT_FUNCTION)GetProcAddress((HMODULE)plugin.h_module, "PluginExit");
 
@@ -127,7 +131,6 @@ void PluginManager::UnloadPlugin(const Plugin& plugin) {
 	g_Scheduler.RemoveTimers(plugin.name);
 
 	FreeLibrary((HMODULE)plugin.h_module);
-	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Removed plugin: '%s'\n", plugin.fpath.c_str()));
 }
 
 void PluginManager::RemovePlugin(const Plugin& plugin) {
@@ -142,51 +145,127 @@ void PluginManager::RemovePlugin(const Plugin& plugin) {
 }
 
 void PluginManager::RemovePlugin(const char* name) {
-	int bestIdx = -1;
-	int numFound = 0;
+	Plugin* plug = FindPlugin(name);
 
-	std::string lowerName = toLowerCase(name);
-
-	for (int i = 0; i < (int)plugins.size(); i++) {
-		if (toLowerCase(plugins[i].fpath).find(lowerName) != std::string::npos) {
-			bestIdx = i;
-			numFound++;
-		}
-	}
-
-	if (numFound == 1) {
-		RemovePlugin(plugins[bestIdx]);
-	}
-	else if (numFound > 1) {
-		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Multiple plugins contain '%s'. Be more specific.\n", name));
-	}
-	else {
-		g_engfuncs.pfnServerPrint(UTIL_VarArgs("No plugin found by name '%s'\n", name));
+	if (plug) {
+		RemovePlugin(*plug);
 	}
 }
 
 void PluginManager::ReloadPlugin(const char* name) {
-	int bestIdx = -1;
-	int numFound = 0;
+	Plugin* plug = FindPlugin(name);
 
-	std::string lowerName = toLowerCase(name);
+	if (plug) {
+		UnloadPlugin(*plug);
+		LoadPlugin(*plug);
+	}
+}
 
-	for (int i = 0; i < (int)plugins.size(); i++) {
-		if (toLowerCase(plugins[i].fpath).find(lowerName) != std::string::npos) {
-			bestIdx = i;
-			numFound++;
+std::string PluginManager::GetUpdatedPluginPath(Plugin& plugin) {
+	std::string updatePath = plugin.fpath;
+	updatePath = updatePath.substr(updatePath.find("/") + 1); // strip content folder
+	return std::string(pluginupdatepath.string) + updatePath;
+}
+
+bool PluginManager::UpdatePlugin(const char* name) {
+	Plugin* plug = FindPlugin(name);
+
+	if (plug)
+		return UpdatePlugin(*plug);
+
+	return false;
+}
+
+bool PluginManager::UpdatePlugin(Plugin& plugin) {
+	std::string updatePath = GetUpdatedPluginPath(plugin);
+	std::string currentPath = plugin.fpath;
+
+	if (!fileExists(updatePath.c_str())) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Update aborted. Updated plugin file not found \"%s\"\n", updatePath.c_str()));
+		return false;
+	}
+	if (!fileExists(currentPath.c_str())) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Update aborted. Current plugin file not found \"%s\"\n", currentPath.c_str()));
+		return false;
+	}
+
+	std::string backupPath = currentPath + ".backup";
+
+	errno = 0;
+	if (fileExists(backupPath.c_str()) && remove(backupPath.c_str())) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Update aborted. Failed to delete backup plugin file \"%s\" (error %d)\n", backupPath.c_str(), errno));
+		return false;
+	}
+	if (rename(currentPath.c_str(), backupPath.c_str()) == -1) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Update aborted. Failed to create backup plugin file \"%s\" (error %d)\n", backupPath.c_str(), errno));
+		return false;
+	}
+
+	UnloadPlugin(plugin);
+
+	if (rename(updatePath.c_str(), currentPath.c_str()) == -1) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Update failed. File move from \"%s\" -> \"%s\" failed (error %d)\n",
+			updatePath.c_str(), currentPath.c_str(), errno));
+
+		if (rename(backupPath.c_str(), currentPath.c_str()) == -1) {
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("Failed to restore backup plugin file \"%s\" (error %d)\n", backupPath.c_str(), errno));
+		}
+		else if (!LoadPlugin(plugin)) {
+			g_engfuncs.pfnServerPrint("Failed to reload the plugin\n");
+		}
+
+		return false;
+	}
+
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Moved \"%s\" -> \"%s\" \n",
+		updatePath.c_str(), currentPath.c_str(), errno));
+
+	if (!LoadPlugin(plugin)) {
+		g_engfuncs.pfnServerPrint("Update failed. Restoring from backup...\n");
+
+		if (rename(currentPath.c_str(), updatePath.c_str()) == -1) {
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("Failed to move the plugin back to the update path \"%s\" (error %d)\n", updatePath.c_str(), errno));
+			if (remove(currentPath.c_str())) {
+				g_engfuncs.pfnServerPrint(UTIL_VarArgs("Failed to delete the updated plugin \"%s\" (error %d)\n", currentPath.c_str(), errno));
+			}
+		}
+
+		if (rename(backupPath.c_str(), currentPath.c_str()) == -1) {
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("Failed to restore backup plugin file \"%s\" (error %d)\n", backupPath.c_str(), errno));
+		}
+		else {
+			if (!LoadPlugin(plugin)) {
+				g_engfuncs.pfnServerPrint("Failed to load the backup plugin\n");
+			}
+		}
+
+		return false;
+	}
+	
+	return true;
+}
+
+bool PluginManager::UpdatePlugins() {
+	int updatecount = 0;
+
+	for (Plugin& plugin : plugins) {
+		std::string updatePath = GetUpdatedPluginPath(plugin);
+
+		if (!fileExists(updatePath.c_str())) {
+			continue;
+		}
+
+		if (UpdatePlugin(plugin)) {
+			updatecount++;
 		}
 	}
 
-	if (numFound == 1) {
-		UnloadPlugin(plugins[bestIdx]);
-		LoadPlugin(plugins[bestIdx]);
-	}
-	else if (numFound > 1) {
-		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Multiple plugins contain '%s'. Be more specific.\n", name));
+	if (updatecount) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Updated %d plugins\n", updatecount));
+		return true;
 	}
 	else {
-		g_engfuncs.pfnServerPrint(UTIL_VarArgs("No plugin found by name '%s'\n", name));
+		return false;
 	}
 }
 
@@ -205,7 +284,7 @@ void PluginManager::RemovePlugins(bool mapPluginsOnly) {
 	plugins = newPluginList;
 }
 
-void PluginManager::UpdateServerPlugins(bool forceUpdate) {
+void PluginManager::UpdatePluginsFromList(bool forceUpdate) {
 	static uint64_t lastEditTime = 0;
 	const char* configPath = CVAR_GET_STRING("pluginlistfile");
 
@@ -230,6 +309,7 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 
 	lastEditTime = editTime;
 
+	std::vector<std::string> relativePluginPaths;
 	std::vector<std::string> pluginPaths;
 
 	int lineNum = 0;
@@ -255,6 +335,7 @@ void PluginManager::UpdateServerPlugins(bool forceUpdate) {
 			continue;
 		}
 
+		relativePluginPaths.push_back(pluginPath);
 		pluginPaths.push_back(gamePath);
 	}
 
@@ -345,7 +426,7 @@ void PluginManager::ReloadPlugins() {
 	}
 	plugins = loadedMapPlugins;
 
-	UpdateServerPlugins(true);
+	UpdatePluginsFromList(true);
 }
 
 void PluginManager::ListPlugins(edict_t* plr) {
@@ -392,6 +473,32 @@ Plugin* PluginManager::FindPlugin(int id) {
 		if (plugin.id == id) {
 			return &plugin;
 		}
+	}
+
+	return NULL;
+}
+
+Plugin* PluginManager::FindPlugin(const char* name) {
+	int bestIdx = -1;
+	int numFound = 0;
+
+	std::string lowerName = toLowerCase(name);
+
+	for (int i = 0; i < (int)plugins.size(); i++) {
+		if (toLowerCase(plugins[i].fpath).find(lowerName) != std::string::npos) {
+			bestIdx = i;
+			numFound++;
+		}
+	}
+
+	if (numFound == 1) {
+		return &plugins[bestIdx];
+	}
+	else if (numFound > 1) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Multiple plugins contain '%s'. Be more specific.\n", name));
+	}
+	else {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("No plugin found by name '%s'\n", name));
 	}
 
 	return NULL;
