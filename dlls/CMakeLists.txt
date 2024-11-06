@@ -545,9 +545,19 @@ function(write_ent_source_file IN_FILES_STRING OUT_NAME)
         set(OUT_FILE_INCLUDES "${OUT_FILE_INCLUDES} #include \"${x}\"\n")
     endforeach(i)
     
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${OUT_NAME}
-        ${OUT_FILE_INCLUDES}
-    )
+	set(OUT_FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/${OUT_NAME}")
+	
+	# Read the existing contents of the file if it exists
+    if(EXISTS ${OUT_FILE_PATH})
+        file(READ ${OUT_FILE_PATH} CURRENT_CONTENT)
+    else()
+        set(CURRENT_CONTENT "")
+    endif()
+	
+    # Only write if the new content is different
+    if(NOT "${CURRENT_CONTENT}" STREQUAL "${OUT_FILE_INCLUDES}")
+        file(WRITE ${OUT_FILE_PATH} ${OUT_FILE_INCLUDES})
+    endif()
 endfunction()
 
 write_ent_source_file("${MONSTER_SRC}" monsters_base.cpp)

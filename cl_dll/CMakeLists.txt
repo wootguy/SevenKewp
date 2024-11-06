@@ -181,9 +181,19 @@ function(write_wep_source_file)
 		set(WEP_INCLUDES "${WEP_INCLUDES} #include \"${x}\"\n")
 	endforeach(i)
 	
-	file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp
-		${WEP_INCLUDES}
-	)
+	set(OUT_FILE_PATH ${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp)
+	
+	# Read the existing contents of the file if it exists
+    if(EXISTS ${OUT_FILE_PATH})
+        file(READ ${OUT_FILE_PATH} CURRENT_CONTENT)
+    else()
+        set(CURRENT_CONTENT "")
+    endif()
+	
+    # Only write if the new content is different
+    if(NOT "${CURRENT_CONTENT}" STREQUAL "${WEP_INCLUDES}")
+        file(WRITE ${OUT_FILE_PATH} ${WEP_INCLUDES})
+    endif()
 endfunction()
 
 write_wep_source_file()
