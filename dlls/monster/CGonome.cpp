@@ -172,7 +172,7 @@ Schedule_t slGonomeChaseEnemy[] =
 
 		bits_SOUND_DANGER |
 		bits_SOUND_MEAT,
-		"Gonome Chase Enemy"
+		"GONOME_CHASE_ENEMY"
 	},
 };
 

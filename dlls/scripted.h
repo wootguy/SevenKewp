@@ -72,6 +72,7 @@ public:
 	void CancelScript( void );
 	virtual BOOL StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
 	virtual BOOL FCanOverrideState ( void );
+	virtual	BOOL IsNormalMonster(void) { return FALSE; }
 	void SequenceDone ( CBaseMonster *pMonster );
 	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
 	BOOL	CanInterrupt( void );

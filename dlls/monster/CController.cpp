@@ -433,7 +433,7 @@ Schedule_t slControllerChaseEnemy[] =
 		bits_COND_NEW_ENEMY			|
 		bits_COND_TASK_FAILED,
 		0,
-		"ControllerChaseEnemy"
+		"CONTROLLER_CHASE_ENEMY"
 	},
 };
 
@@ -454,7 +454,7 @@ Schedule_t	slControllerStrafe[] =
 		ARRAYSIZE ( tlControllerStrafe ), 
 		bits_COND_NEW_ENEMY,
 		0,
-		"ControllerStrafe"
+		"CONTROLLER_STRAFE"
 	},
 };
 
@@ -474,7 +474,7 @@ Schedule_t	slControllerTakeCover[] =
 		ARRAYSIZE ( tlControllerTakeCover ), 
 		bits_COND_NEW_ENEMY,
 		0,
-		"ControllerTakeCover"
+		"CONTROLLER_TAKE_COVER"
 	},
 };
 
@@ -494,7 +494,7 @@ Schedule_t	slControllerFail[] =
 		ARRAYSIZE ( tlControllerFail ),
 		0,
 		0,
-		"ControllerFail"
+		"CONTROLLER_FAIL"
 	},
 };
 

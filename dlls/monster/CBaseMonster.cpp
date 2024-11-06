@@ -6974,6 +6974,12 @@ void CBaseMonster::ScheduleChange(void)
 #endif
 }
 
+void CBaseMonster::GetAllSchedules(std::unordered_set<Schedule_t*>& schedulesOut) {
+	for (int i = 0; i < (int)ARRAYSIZE(m_scheduleList); i++) {
+		schedulesOut.insert(m_scheduleList[i]);
+	}
+}
+
 Schedule_t* CBaseMonster::ScheduleFromName(const char* pName)
 {
 	return ScheduleInList(pName, m_scheduleList, ARRAYSIZE(m_scheduleList));

@@ -187,7 +187,7 @@ Schedule_t	slSummonAttack[] =
 		0, 
 
 		0,
-		"Summon Attack"
+		"TOR_SUMMON_ATTACK"
 	},
 };
 

@@ -102,6 +102,7 @@ public:
 	BOOL FCanActiveIdle ( void );
 	Schedule_t *GetScheduleOfType ( int Type );
 	Schedule_t *GetSchedule( void );
+	const char* GetTaskName(int taskIdx);
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	int	Save( CSave &save ); 
@@ -908,7 +909,7 @@ Schedule_t	slHoundGuardPack[] =
 		bits_SOUND_WORLD		|
 		bits_SOUND_MEAT			|
 		bits_SOUND_PLAYER,
-		"GuardPack"
+		"HOUND_GUARD_PACK"
 	},
 };
 
@@ -936,7 +937,7 @@ Schedule_t	slHoundRangeAttack[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"HoundRangeAttack1"
+		"HOUND_RANGE_ATTACK1"
 	},
 	{ 
 		tlHoundYell2,
@@ -944,7 +945,7 @@ Schedule_t	slHoundRangeAttack[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"HoundRangeAttack2"
+		"HOUND_RANGE_ATTACK2"
 	},
 };
 
@@ -976,7 +977,7 @@ Schedule_t	slHoundSleep[] =
 		bits_SOUND_COMBAT		|
 		bits_SOUND_PLAYER		|
 		bits_SOUND_WORLD,
-		"Hound Sleep"
+		"HOUND_SLEEP"
 	},
 };
 
@@ -997,7 +998,7 @@ Schedule_t	slHoundWakeLazy[] =
 		ARRAYSIZE ( tlHoundWakeLazy ),
 		0,
 		0,
-		"WakeLazy"
+		"HOUND_WAKE_LAZY"
 	},
 };
 
@@ -1017,7 +1018,7 @@ Schedule_t	slHoundWakeUrgent[] =
 		ARRAYSIZE ( tlHoundWakeUrgent ),
 		0,
 		0,
-		"WakeUrgent"
+		"HOUND_WAKE_URGENT"
 	},
 };
 
@@ -1041,7 +1042,7 @@ Schedule_t	slHoundSpecialAttack1[] =
 		bits_COND_ENEMY_OCCLUDED,
 		
 		0,
-		"Hound Special Attack1"
+		"HOUND_SPECIAL_ATTACK1"
 	},
 };
 
@@ -1060,7 +1061,7 @@ Schedule_t	slHoundAgitated[] =
 		bits_COND_LIGHT_DAMAGE		|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"Hound Agitated"
+		"HOUND_AGITATED"
 	},
 };
 
@@ -1078,7 +1079,7 @@ Schedule_t	slHoundHopRetreat[] =
 		ARRAYSIZE ( tlHoundHopRetreat ), 
 		0,
 		0,
-		"Hound Hop Retreat"
+		"HOUND_HOP_RETREAT"
 	},
 };
 
@@ -1099,7 +1100,7 @@ Schedule_t	slHoundCombatFailPVS[] =
 		bits_COND_LIGHT_DAMAGE		|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"HoundCombatFailPVS"
+		"HOUND_COMBAT_FAIL_PVS"
 	},
 };
 
@@ -1122,7 +1123,7 @@ Schedule_t	slHoundCombatFailNoPVS[] =
 		bits_COND_LIGHT_DAMAGE		|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"HoundCombatFailNoPVS"
+		"HOUND_COMBAT_FAIL_NO_PVS"
 	},
 };
 
@@ -1301,4 +1302,17 @@ Schedule_t *CHoundeye :: GetSchedule( void )
 	}
 
 	return CTalkSquadMonster :: GetSchedule();
+}
+
+const char* CHoundeye::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_HOUND_CLOSE_EYE: return "TASK_HOUND_CLOSE_EYE";
+	case TASK_HOUND_OPEN_EYE: return "TASK_HOUND_OPEN_EYE";
+	case TASK_HOUND_THREAT_DISPLAY: return "TASK_HOUND_THREAT_DISPLAY";
+	case TASK_HOUND_FALL_ASLEEP: return "TASK_HOUND_FALL_ASLEEP";
+	case TASK_HOUND_WAKE_UP: return "TASK_HOUND_WAKE_UP";
+	case TASK_HOUND_HOP_BACK: return "TASK_HOUND_HOP_BACK";
+	default:
+		return CBaseMonster::GetTaskName(taskIdx);
+	}
 }

@@ -1185,7 +1185,7 @@ Schedule_t	slGruntFail[] =
 		bits_COND_CAN_MELEE_ATTACK1 |
 		bits_COND_CAN_MELEE_ATTACK2,
 		0,
-		"Grunt Fail"
+		"GRUNT_FAIL"
 	},
 };
 
@@ -1219,7 +1219,7 @@ Schedule_t	slGruntCombatFail[] =
 		bits_SOUND_COMBAT |// sound flags
 		bits_SOUND_PLAYER |
 		bits_SOUND_DANGER,
-		"Grunt Combat Fail"
+		"GRUNT_COMBAT_FAIL"
 	},
 };
 
@@ -1247,7 +1247,7 @@ Schedule_t	slGruntVictoryDance[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"GruntVictoryDance"
+		"GRUNT_VICTORY_DANCE"
 	},
 };
 
@@ -1278,7 +1278,7 @@ Schedule_t slGruntEstablishLineOfFire[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"GruntEstablishLineOfFire"
+		"GRUNT_ESTABLISH_LINE_OF_FIRE"
 	},
 };
 
@@ -1301,7 +1301,7 @@ Schedule_t	slGruntFoundEnemy[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"GruntFoundEnemy"
+		"GRUNT_FOUND_ENEMY"
 	},
 };
 
@@ -1327,7 +1327,7 @@ Schedule_t	slGruntCombatFace[] =
 		bits_COND_CAN_RANGE_ATTACK1		|
 		bits_COND_CAN_RANGE_ATTACK2,
 		0,
-		"Combat Face"
+		"GRUNT_COMBAT_FACE"
 	},
 };
 
@@ -1370,7 +1370,7 @@ Schedule_t	slGruntSignalSuppress[] =
 		bits_COND_NO_AMMO_LOADED,
 
 		bits_SOUND_DANGER,
-		"SignalSuppress"
+		"GRUNT_SIGNAL_SUPPRESS"
 	},
 };
 
@@ -1407,7 +1407,7 @@ Schedule_t	slGruntSuppress[] =
 		bits_COND_NO_AMMO_LOADED,
 
 		bits_SOUND_DANGER,
-		"Suppress"
+		"GRUNT_SUPPRESS"
 	},
 };
 
@@ -1437,7 +1437,7 @@ Schedule_t	slGruntWaitInCover[] =
 		bits_COND_CAN_MELEE_ATTACK2,
 
 		bits_SOUND_DANGER,
-		"GruntWaitInCover"
+		"GRUNT_WAIT_IN_COVER"
 	},
 };
 
@@ -1465,7 +1465,7 @@ Schedule_t	slGruntTakeCover[] =
 		ARRAYSIZE ( tlGruntTakeCover1 ), 
 		0,
 		0,
-		"TakeCover"
+		"GRUNT_TAKE_COVER"
 	},
 };
 
@@ -1491,7 +1491,7 @@ Schedule_t	slGruntGrenadeCover[] =
 		ARRAYSIZE ( tlGruntGrenadeCover1 ), 
 		0,
 		0,
-		"GrenadeCover"
+		"GRUNT_GRENADE_COVER"
 	},
 };
 
@@ -1513,7 +1513,7 @@ Schedule_t	slGruntTossGrenadeCover[] =
 		ARRAYSIZE ( tlGruntTossGrenadeCover1 ), 
 		0,
 		0,
-		"TossGrenadeCover"
+		"GRUNT_TOSS_GRENADE_COVER"
 	},
 };
 
@@ -1538,7 +1538,7 @@ Schedule_t	slGruntTakeCoverFromBestSound[] =
 		ARRAYSIZE ( tlGruntTakeCoverFromBestSound ), 
 		0,
 		0,
-		"GruntTakeCoverFromBestSound"
+		"GRUNT_TAKE_COVER_FROM_BEST_SOUND"
 	},
 };
 
@@ -1566,7 +1566,7 @@ Schedule_t slGruntHideReload[] =
 		bits_COND_HEAR_SOUND,
 
 		bits_SOUND_DANGER,
-		"GruntHideReload"
+		"GRUNT_HIDE_RELOAD"
 	}
 };
 
@@ -1598,7 +1598,7 @@ Schedule_t	slGruntSweep[] =
 		bits_SOUND_DANGER		|
 		bits_SOUND_PLAYER,
 
-		"Grunt Sweep"
+		"GRUNT_SWEEP"
 	},
 };
 
@@ -1637,7 +1637,7 @@ Schedule_t	slGruntRangeAttack1A[] =
 		bits_COND_NO_AMMO_LOADED,
 		
 		bits_SOUND_DANGER,
-		"Range Attack1A"
+		"GRUNT_RANGE_ATTACK_1A"
 	},
 };
 
@@ -1674,7 +1674,7 @@ Schedule_t	slGruntRangeAttack1B[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"Range Attack1B"
+		"GRUNT_RANGE_ATTACK_1B"
 	},
 };
 
@@ -1710,7 +1710,7 @@ Schedule_t	slGruntRangeAttack1C[] =
 		bits_COND_NO_AMMO_LOADED,
 
 		bits_SOUND_DANGER,
-		"Range Attack"
+		"GRUNT_RANGE_ATTACK_1C"
 	},
 };
 
@@ -1733,7 +1733,7 @@ Schedule_t	slGruntRangeAttack2[] =
 		ARRAYSIZE ( tlGruntRangeAttack2 ), 
 		0,
 		0,
-		"RangeAttack2"
+		"GRUNT_RANGE_ATTACK2"
 	},
 };
 
@@ -1762,7 +1762,7 @@ Schedule_t	slGruntRepel[] =
 		bits_SOUND_DANGER			|
 		bits_SOUND_COMBAT			|
 		bits_SOUND_PLAYER, 
-		"Repel"
+		"GRUNT_REPEL"
 	},
 };
 
@@ -1784,7 +1784,7 @@ Schedule_t	slGruntRepelAttack[] =
 		ARRAYSIZE ( tlGruntRepelAttack ), 
 		bits_COND_ENEMY_OCCLUDED,
 		0,
-		"Repel Attack"
+		"GRUNT_REPEL_ATTACK"
 	},
 };
 
@@ -1815,7 +1815,7 @@ Schedule_t	slGruntRepelLand[] =
 		bits_SOUND_DANGER			|
 		bits_SOUND_COMBAT			|
 		bits_SOUND_PLAYER, 
-		"Repel Land"
+		"GRUNT_REPEL_LAND"
 	},
 };
 
@@ -1838,7 +1838,7 @@ Schedule_t	slMinigunSpinup[] =
 		bits_COND_GRUNT_NOFIRE,
 
 		0,
-		"Minigun spinup"
+		"GRUNT_MINIGUN_SPINUP"
 	},
 };
 
@@ -1855,7 +1855,7 @@ Schedule_t	slMinigunSpindown[] =
 		0,
 
 		0,
-		"Minigun spindown"
+		"GRUNT_MINIGUN_SPINDOWN"
 	},
 };
 

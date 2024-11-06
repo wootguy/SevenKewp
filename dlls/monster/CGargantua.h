@@ -89,6 +89,7 @@ public:
 	}
 
 	Schedule_t* GetScheduleOfType(int Type);
+	const char* GetTaskName(int taskIdx);
 	void StartTask(Task_t* pTask);
 	void RunTask(Task_t* pTask);
 

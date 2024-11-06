@@ -46,7 +46,7 @@ Schedule_t	slHCRangeAttack1[] =
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_NO_AMMO_LOADED,
 		0,
-		"HCRangeAttack1"
+		"CRAB_RANGE_ATTACK"
 	},
 };
 
@@ -66,7 +66,7 @@ Schedule_t	slHCRangeAttack1Fast[] =
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_NO_AMMO_LOADED,
 		0,
-		"HCRAFast"
+		"CRAB_FAST"
 	},
 };
 

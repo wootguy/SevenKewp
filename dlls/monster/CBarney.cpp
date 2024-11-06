@@ -140,7 +140,7 @@ Schedule_t	slBaFollow[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_PROVOKED,
 		bits_SOUND_DANGER,
-		"Follow"
+		"BARNEY_FOLLOW"
 	},
 };
 
@@ -162,7 +162,7 @@ Schedule_t slBarneyEnemyDraw[] =
 		ARRAYSIZE ( tlBarneyEnemyDraw ),
 		0,
 		0,
-		"Barney Enemy Draw"
+		"BARNEY_ENEMY_DRAW"
 	}
 };
 
@@ -186,7 +186,7 @@ Schedule_t	slBaFaceTarget[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_PROVOKED,
 		bits_SOUND_DANGER,
-		"FaceTarget"
+		"BARNEY_FACE_TARGET"
 	},
 };
 
@@ -219,7 +219,7 @@ Schedule_t	slIdleBaStand[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"IdleStand"
+		"BARNEY_IDLE_STAND"
 	},
 };
 

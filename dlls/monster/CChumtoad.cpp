@@ -38,6 +38,7 @@ public:
 	void PrescheduleThink();
 	void StartTask(Task_t* pTask);
 	Schedule_t* GetScheduleOfType(int Type);
+	const char* GetTaskName(int taskIdx);
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	BOOL CheckRangeAttack1(float flDot, float flDist) { return FALSE; }
@@ -154,7 +155,7 @@ Schedule_t	slToxicCloud[] =
 		0,
 
 		0,
-		"Toxic cloud"
+		"CHUM_TOXIC_CLOUD"
 	},
 };
 
@@ -256,6 +257,15 @@ Schedule_t* CChumtoad::GetScheduleOfType(int Type) {
 		
 	default:
 		return CBaseMonster::GetScheduleOfType(Type);
+	}
+}
+
+const char* CChumtoad::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_START_CLOUD: return "TASK_START_CLOUD";
+	case TASK_STOP_CLOUD: return "TASK_STOP_CLOUD";
+	default:
+		return CBaseMonster::GetTaskName(taskIdx);
 	}
 }
 

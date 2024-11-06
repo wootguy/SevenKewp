@@ -475,7 +475,7 @@ Schedule_t	slMedicAllyNewHealTarget[] =
 		ARRAYSIZE( tlMedicAllyNewHealTarget ),
 		0,
 		0,
-		"Draw Needle"
+		"MEDIC_NEW_HEAL_TARGET"
 	},
 };
 
@@ -496,7 +496,7 @@ Schedule_t	slMedicAllyDrawNeedle[] =
 		ARRAYSIZE( tlMedicAllyDrawNeedle ),
 		0,
 		0,
-		"Draw Needle"
+		"MEDIC_DRAW_NEEDLE"
 	},
 };
 
@@ -513,7 +513,7 @@ Schedule_t	slMedicAllyDrawGun[] =
 		ARRAYSIZE( tlMedicAllyDrawGun ),
 		0,
 		0,
-		"Draw Gun"
+		"MEDIC_DRAW_GUN"
 	},
 };
 
@@ -531,7 +531,7 @@ Schedule_t	slMedicAllyHealTarget[] =
 		ARRAYSIZE( tlMedicAllyHealTarget ),
 		0,
 		0,
-		"Medic Ally Heal Target"
+		"MEDIC_HEAL_TARGET"
 	},
 };
 

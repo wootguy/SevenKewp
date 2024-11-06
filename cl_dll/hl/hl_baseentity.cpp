@@ -253,6 +253,7 @@ const char* CBaseMonster::GetTaskName(int taskIdx) {return "";}
 const char* CBaseMonster::DisplayName() {return "";}
 BOOL CBaseMonster::IsMachine() {return 0;}
 void CBaseMonster::Precache() {}
+void CBaseMonster::GetAllSchedules(std::unordered_set<Schedule_t*>& schedulesOut) {}
 
 int TrainSpeed(int iSpeed, int iMax) { 	return 0; }
 void CBasePlayer :: DeathSound( void ) { }

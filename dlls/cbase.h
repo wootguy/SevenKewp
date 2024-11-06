@@ -229,6 +229,7 @@ public:
 	virtual BOOL	HasTarget( string_t targetname ) { return FStrEq(STRING(targetname), STRING(pev->target) ); }
 	virtual BOOL    IsInWorld( void );
 	virtual	BOOL	IsMonster( void ) { return FALSE; }
+	virtual	BOOL	IsNormalMonster(void) { return FALSE; } // is this what you'd expect to be a monster? (not a monstermaker/grenade/etc.)
 	virtual	BOOL	IsPlayer( void ) { return FALSE; }
 	virtual	BOOL	IsPlayerCorpse( void ) { return FALSE; }
 	virtual BOOL	IsNetClient( void ) { return FALSE; }

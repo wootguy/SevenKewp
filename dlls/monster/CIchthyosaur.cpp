@@ -66,6 +66,7 @@ public:
 
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType ( int Type );
+	const char* GetTaskName(int taskIdx);
 
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void BecomeDead( void );
@@ -264,7 +265,7 @@ static Schedule_t	slSwimAround[] =
 		bits_COND_HEAR_SOUND,
 		bits_SOUND_PLAYER |
 		bits_SOUND_COMBAT,
-		"SwimAround"
+		"ICKY_SWIM_AROUND"
 	},
 };
 
@@ -282,7 +283,7 @@ static Schedule_t	slSwimAgitated[] =
 		ARRAYSIZE(tlSwimAgitated), 
 		0, 
 		0, 
-		"SwimAgitated"
+		"ICKY_SWIM_AGITATED"
 	},
 };
 
@@ -304,7 +305,7 @@ static Schedule_t	slCircleEnemy[] =
 		bits_COND_CAN_MELEE_ATTACK1 |
 		bits_COND_CAN_RANGE_ATTACK1,
 		0,
-		"CircleEnemy"
+		"ICKY_CIRCLE_ENEMY"
 	},
 };
 
@@ -324,7 +325,7 @@ Schedule_t slTwitchDie[] =
 		ARRAYSIZE( tlTwitchDie ),
 		0,
 		0,
-		"Die"
+		"ICKY_TWITCH_DIE"
 	},
 };
 
@@ -631,6 +632,16 @@ Schedule_t* CIchthyosaur :: GetScheduleOfType ( int Type )
 	return CBaseMonster :: GetScheduleOfType( Type );
 }
 
+
+const char* CIchthyosaur::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_ICHTHYOSAUR_CIRCLE_ENEMY: return "TASK_ICHTHYOSAUR_CIRCLE_ENEMY";
+	case TASK_ICHTHYOSAUR_SWIM: return "TASK_ICHTHYOSAUR_SWIM";
+	case TASK_ICHTHYOSAUR_FLOAT: return "TASK_ICHTHYOSAUR_FLOAT";
+	default:
+		return CBaseMonster::GetTaskName(taskIdx);
+	}
+}
 
 
 //=========================================================
