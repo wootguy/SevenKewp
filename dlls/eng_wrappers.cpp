@@ -551,6 +551,12 @@ int MODEL_INDEX(const char* model) {
 int SOUND_INDEX(const char* sound) {
 	std::string lowerPath = toLowerCase(sound);
 	sound = lowerPath.c_str();
+
+	if (!g_precachedSounds.count(lowerPath)) {
+		ALERT(at_error, "SOUND_INDEX not precached: %s\n", sound);
+		return g_engfuncs.pfnModelIndex(NOT_PRECACHED_SOUND);
+	}
+
 	return g_engfuncs.pfnPrecacheSound(sound);
 }
 
