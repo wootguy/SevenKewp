@@ -61,6 +61,8 @@ cvar_t	mp_mergemodels ={"mp_mergemodels","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_killfeed ={"mp_killfeed","1", FCVAR_SERVER, 0, 0 };
 cvar_t	pluginlistfile ={"pluginlistfile","plugins.txt", FCVAR_SERVER, 0, 0 };
 cvar_t	adminlistfile ={"adminlistfile","admins.txt", FCVAR_SERVER, 0, 0 };
+cvar_t	pluginupdatepath ={"plugin_update_path","valve_pending/", FCVAR_SERVER, 0, 0 };
+cvar_t	pluginautoupdate ={"plugin_auto_update", "0", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 
@@ -228,6 +230,25 @@ void reload_plugin() {
 	g_pluginManager.ReloadPlugin(CMD_ARGV(1));
 }
 
+void update_plugin() {
+	if (CMD_ARGC() < 2) {
+		return;
+	}
+
+	if (g_pluginManager.UpdatePlugin(CMD_ARGV(1))) {
+		g_engfuncs.pfnServerPrint("Plugin updated\n");
+	}
+}
+
+void update_plugins() {
+	g_pluginManager.UpdatePluginsFromList();
+
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Searching update path \"%s\"\n", pluginupdatepath.string));
+	if (!g_pluginManager.UpdatePlugins()) {
+		g_engfuncs.pfnServerPrint("Plugins are up-to-date\n");
+	}
+}
+
 void test_command() {
 }
 
@@ -248,6 +269,8 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("listplugins", list_plugins);
 	g_engfuncs.pfnAddServerCommand("removeplugin", remove_plugin);
 	g_engfuncs.pfnAddServerCommand("reloadplugin", reload_plugin);
+	g_engfuncs.pfnAddServerCommand("updateplugin", update_plugin);
+	g_engfuncs.pfnAddServerCommand("updateplugins", update_plugins);
 	// Register cvars here:
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
@@ -302,6 +325,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_killfeed);
 	CVAR_REGISTER (&pluginlistfile);
 	CVAR_REGISTER (&adminlistfile);
+	CVAR_REGISTER (&pluginupdatepath);
+	CVAR_REGISTER (&pluginautoupdate);
 
 	CVAR_REGISTER (&mp_chattime);
 

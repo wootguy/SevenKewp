@@ -119,7 +119,10 @@ void CWorld::Precache(void)
 	}
 
 	g_pGameRules = InstallGameRules();
-	g_pluginManager.UpdateServerPlugins();
+	g_pluginManager.UpdatePluginsFromList();
+	if (pluginautoupdate.value) {
+		g_pluginManager.UpdatePlugins();
+	}
 	loadReplacementFiles();
 
 	//!!!UNDONE why is there so much Spawn code in the Precache function? I'll just keep it here 
