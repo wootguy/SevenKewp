@@ -639,17 +639,6 @@ void CRpg::UpdateSpot( void )
 		}
 		CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 
-		if (!m_hBeam) {
-			CBeam* beam = CBeam::BeamCreate("sprites/laserbeam.spr", 8);
-			beam->EntsInit(m_pPlayer->entindex(), m_pSpot->entindex());
-			beam->SetStartAttachment(1);
-			beam->SetColor(255, 32, 32);
-			beam->SetNoise(0);
-			beam->SetBrightness(48);
-			beam->SetScrollRate(64);
-			m_hBeam = beam;
-		}
-
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 		Vector vecSrc = m_pPlayer->GetGunPosition( );;
 		Vector vecAiming = gpGlobals->v_forward;
@@ -659,15 +648,37 @@ void CRpg::UpdateSpot( void )
 		
 		UTIL_SetOrigin( m_pSpot->pev, tr.vecEndPos );
 
+		if (!m_hBeam) {
+			CBeam* beam = CBeam::BeamCreate("sprites/laserbeam.spr", 8);
+			beam->PointEntInit(tr.vecEndPos, m_pPlayer->entindex());
+			beam->SetEndAttachment(1);
+			beam->SetColor(255, 32, 32);
+			beam->SetNoise(0);
+			beam->SetBrightness(48);
+			beam->SetScrollRate(64);
+			m_hBeam = beam;
+		}
+
 		CBeam* beam = (CBeam*)m_hBeam.GetEntity();
 		if (beam) {
 			beam->pev->effects = m_pSpot->pev->effects;
-			if (UTIL_PointContents(tr.vecEndPos) == CONTENTS_SKY) {
+
+			const bool fix_crash = true;
+
+			if (fix_crash || UTIL_PointContents(tr.vecEndPos) == CONTENTS_SKY) {
 				// dot exits the PVS in this case
 				beam->PointEntInit(tr.vecEndPos, m_pPlayer->entindex());
 				beam->SetEndAttachment(1);
 			}
 			else {
+				// DON'T DO THIS. Somehow, it is causing client crashes.
+				// In a replay, I see a laser spot switches from index 922 to 934
+				// and then every client loses connection at the same time.
+				// Can't reproduce and I've only seen it happen twice in months.
+				// The player index never changes so that should be safe.
+				// Removing the dot randomly doesn't crash. Messing with attachments
+				// here doesn't crash. idk what happened.
+
 				beam->EntsInit(m_pPlayer->entindex(), m_pSpot->entindex());
 				beam->SetStartAttachment(1);
 			}

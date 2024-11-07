@@ -80,6 +80,3 @@ EXPORT void clearNetworkMessageHistory();
 
 // for debugging
 bool ModelIsValid(entvars_t* edict, studiohdr_t* header);
-
-// same as the STRING macro but defined as a function for easy calling in the debugger
-const char* cstr(string_t s);

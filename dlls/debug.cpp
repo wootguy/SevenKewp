@@ -375,7 +375,3 @@ bool ModelIsValid(entvars_t* edict, studiohdr_t* header) {
 
 	return true;
 }
-
-const char* cstr(string_t s) {
-	return STRING(s);
-}
