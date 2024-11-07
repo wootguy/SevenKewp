@@ -1283,15 +1283,21 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		
 	}
 
-	if (e >= plr->GetMaxClientEdicts()) {
+	int maxClientEdicts = plr->GetMaxClientEdicts();
+	if (e >= maxClientEdicts) {
 		//ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
 		g_numEdictOverflows[player]++;
 		plr->SendLegacyClientWarning();
 		return 0;
 	}
+	if (ENTINDEX(ent->v.aiment) >= maxClientEdicts) {
+		//ALERT(at_console, "Can't send attachment %d '%s' (index too high)\n", ENTINDEX(ent->v.aiment), STRING(ent->v.aiment->v.classname));
+		g_numEdictOverflows[player]++;
+		plr->SendLegacyClientWarning();
+		return 0;
+	}
 
-	CBaseEntity* pEntity = static_cast<CBaseEntity*>(GET_PRIVATE(ent));
-	if (pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE)
+	if (baseent->Classify() != CLASS_NONE && baseent->Classify() != CLASS_MACHINE)
 		state->eflags |= EFLAG_FLESH_SOUND;
 	else
 		state->eflags &= ~EFLAG_FLESH_SOUND;

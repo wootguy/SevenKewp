@@ -140,6 +140,9 @@ struct RGBA {
 #define STRING(offset)		((const char *)(gpGlobals->pStringBase + (unsigned int)(offset)))
 #define MAKE_STRING(str)	((uint64)(str) - (uint64)(STRING(0)))
 
+// same as the STRING macro but defined as a function for easy calling in the debugger
+inline const char* cstr(string_t s) { return STRING(s); }
+
 inline edict_t *FIND_ENTITY_BY_CLASSNAME(edict_t *entStart, const char *pszName) 
 {
 	return FIND_ENTITY_BY_STRING(entStart, "classname", pszName);
