@@ -105,10 +105,10 @@ EXPORT BOOL IsFacing(entvars_t* pevTest, const Vector& reference);
 #define bits_MEMORY_MOVE_FAILED			( 1 << 5 )// Movement has already failed
 #define bits_MEMORY_FLINCHED			( 1 << 6 )// Has already flinched
 #define bits_MEMORY_KILLED				( 1 << 7 )// HACKHACK -- remember that I've already called my Killed()
-#define bits_MEMORY_CUSTOM4				( 1 << 12 )	// Monster-specific memory
-#define bits_MEMORY_CUSTOM3				( 1 << 13 )	// Monster-specific memory
-#define bits_MEMORY_CUSTOM2				( 1 << 14 )	// Monster-specific memory
-#define bits_MEMORY_CUSTOM1				( 1 << 15 )	// Monster-specific memory
+#define bits_MEMORY_CUSTOM4				( 1 << 8 )	// Monster-specific memory
+#define bits_MEMORY_CUSTOM3				( 1 << 9 )	// Monster-specific memory
+#define bits_MEMORY_CUSTOM2				( 1 << 10 )	// Monster-specific memory
+#define bits_MEMORY_CUSTOM1				( 1 << 11 )	// Monster-specific memory
 
 // trigger conditions for scripted AI
 // these MUST match the CHOICES interface in halflife.fgd for the base monster
@@ -197,7 +197,7 @@ public:
 			if (baseIdx != -1) { \
 				return baseIdx; \
 			} \
-			for (int i = 0; i < ARRAYSIZE(m_scheduleList); i++) { \
+			for (int i = 0; i < (int)ARRAYSIZE(m_scheduleList); i++) { \
 				if (m_scheduleList[i] == m_pSchedule) { \
 					return baseClass::GetScheduleTableSize() + i; \
 				} \
