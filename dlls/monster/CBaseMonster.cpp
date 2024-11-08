@@ -7009,6 +7009,22 @@ Schedule_t* CBaseMonster::ScheduleInList(const char* pName, Schedule_t** pList, 
 	return NULL;
 }
 
+Schedule_t* CBaseMonster::ScheduleFromTableIdx(uint32_t idx) {
+	return idx < ARRAYSIZE(m_scheduleList) ? m_scheduleList[idx] : NULL;
+}
+
+int CBaseMonster::GetScheduleTableSize() {
+	return ARRAYSIZE(m_scheduleList);
+}
+
+int CBaseMonster::GetScheduleTableIdx() {
+	for (int i = 0; i < ARRAYSIZE(m_scheduleList); i++) {
+		if (m_scheduleList[i] == m_pSchedule) {
+			return i;
+		}
+	}
+}
+
 //=========================================================
 // GetScheduleOfType - returns a pointer to one of the 
 // monster's available schedules of the indicated type.

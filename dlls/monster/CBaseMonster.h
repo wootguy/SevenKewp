@@ -31,10 +31,7 @@ struct PlayerAttackInfo {
 //
 class EXPORT CBaseMonster : public CBaseToggle
 {
-private:
-		int					m_afConditions;
-
-public:
+public:	
 		typedef enum
 		{
 			SCRIPT_PLAYING = 0,		// Playing the sequence
@@ -90,7 +87,8 @@ public:
 
 		int					m_iHintNode; // this is the hint node that the monster is moving towards or performing active idle on.
 
-		int					m_afMemory;
+		int					m_afConditions; // don't touch. Use the accessor methods
+		int					m_afMemory; // don't touch. Use the accessor methods
 
 		int					m_iMaxHealth;// keeps track of monster's maximum health value (for re-healing, etc)
 
@@ -241,7 +239,10 @@ public:
 		Schedule_t *ScheduleInList( const char *pName, Schedule_t **pList, int listCount );
 
 		virtual void GetAllSchedules(std::unordered_set<Schedule_t*>& schedulesOut);
+		virtual int GetScheduleTableSize();
+		virtual int GetScheduleTableIdx(); // index of current schedule in this monster's schedule table (-1 = not found)
 		virtual Schedule_t *ScheduleFromName( const char *pName );
+		virtual Schedule_t *ScheduleFromTableIdx( uint32_t idx);
 		static Schedule_t *m_scheduleList[];
 		
 		void MaintainSchedule ( void );

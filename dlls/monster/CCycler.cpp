@@ -47,6 +47,7 @@ public:
 	// Don't treat as a live target
 	virtual BOOL IsAlive( void ) { return FALSE; }
 	virtual BOOL IsAllowedToSpeak() { return TRUE; }
+	virtual BOOL IsNormalMonster() { return FALSE; }
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );

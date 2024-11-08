@@ -42,6 +42,7 @@ public:
 	int  IRelationship ( CBaseEntity *pTarget );
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
+	virtual BOOL IsNormalMonster() { return FALSE; }
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	void IgniteTrail( void );

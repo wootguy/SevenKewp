@@ -22,7 +22,7 @@ public:
     ScheduledFunction() {}
     ScheduledFunction(int scheduleId) : scheduleId(scheduleId) {}
 
-    bool HasBeenRemoved();
+    EXPORT bool HasBeenRemoved();
 };
 
 EXPORT extern unsigned int g_schedule_id; // don't touch this
