@@ -1128,7 +1128,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		return 0;
 	}
 
-	if (invisible || forceVisChecks) {
+	if (invisible || forceVisChecks || (baseent->m_hidePlayers & plrbit)) {
 		return 0;
 	}
 
