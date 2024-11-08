@@ -32,6 +32,10 @@ public:
 	
 	float readBitCoord();
 
+	// increment to the next byte if current bit is not 0
+	// true if position was incremented
+	bool endBitReading();
+
 	// returns number of bytes that could be written into the buffer
 	uint64_t write(void * src, uint64_t bytes);
 
@@ -41,6 +45,10 @@ public:
 	// write bitCount bits from value. Returns bits written
 	uint8_t writeBits(uint32_t value, uint8_t bitCount);
 
+	// write zeroes into the remaining bits at the current byte, then increment the position to the next byte
+	// true if position was incremented
+	bool endBitWriting();
+
 	// write Half-Life vector as bits (used in sound message)
 	bool writeBitVec3Coord(const float* fa);
 
@@ -49,6 +57,9 @@ public:
 
 	// returns the offset in the buffer
 	uint64_t tell();
+
+	// returns the offset in the buffer, accurate to the bit
+	uint64_t tellBits();
 
 	// returns the size of the buffer
 	uint64_t size();
@@ -62,6 +73,9 @@ public:
 	// changes the read position in the buffer
 	// resets eom flag if set to a valid position
 	void seek(uint64_t to);
+
+	// position is given in bits
+	void seekBits(uint64_t to);
 
 	// like seek but implements SEEK_CUR/SET/END functionality
 	void seek(uint64_t to, int whence);
