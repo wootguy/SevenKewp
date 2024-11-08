@@ -54,30 +54,38 @@ CBaseEntity
 #include "Platform.h"
 #include "CKeyValue.h"
 
+typedef struct {
+	DLL_FUNCTIONS* dllapi_table;
+	NEW_DLL_FUNCTIONS* newapi_table;
+} gamedll_funcs_t;
+
+EXPORT extern gamedll_funcs_t* gpGamedllFuncs; // for ease of porting to/from metamod
+
 // C functions for external declarations that call the appropriate C++ methods
 
 extern "C" DLLEXPORT int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion );
 extern "C" DLLEXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion );
+extern "C" DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS * pNewFunctionTable, int* interfaceVersion);
 
-extern int DispatchSpawn( edict_t *pent );
-extern void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd );
-extern void DispatchTouch( edict_t *pentTouched, edict_t *pentOther );
-extern void DispatchUse( edict_t *pentUsed, edict_t *pentOther );
-extern void DispatchThink( edict_t *pent );
-extern void DispatchBlocked( edict_t *pentBlocked, edict_t *pentOther );
-extern void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData );
-extern int  DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity );
-extern void	DispatchObjectCollsionBox( edict_t *pent );
-extern void SaveWriteFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount );
-extern void SaveReadFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount );
-extern void SaveGlobalState( SAVERESTOREDATA *pSaveData );
-extern void RestoreGlobalState( SAVERESTOREDATA *pSaveData );
-extern void ResetGlobalState( void );
-extern void SetObjectCollisionBox(entvars_t* pev);
+EXPORT extern int DispatchSpawn( edict_t *pent );
+EXPORT extern void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd );
+EXPORT extern void DispatchTouch( edict_t *pentTouched, edict_t *pentOther );
+EXPORT extern void DispatchUse( edict_t *pentUsed, edict_t *pentOther );
+EXPORT extern void DispatchThink( edict_t *pent );
+EXPORT extern void DispatchBlocked( edict_t *pentBlocked, edict_t *pentOther );
+EXPORT extern void DispatchSave( edict_t *pent, SAVERESTOREDATA *pSaveData );
+EXPORT extern int  DispatchRestore( edict_t *pent, SAVERESTOREDATA *pSaveData, int globalEntity );
+EXPORT extern void	DispatchObjectCollsionBox( edict_t *pent );
+EXPORT extern void SaveWriteFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount );
+EXPORT extern void SaveReadFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount );
+EXPORT extern void SaveGlobalState( SAVERESTOREDATA *pSaveData );
+EXPORT extern void RestoreGlobalState( SAVERESTOREDATA *pSaveData );
+EXPORT extern void ResetGlobalState( void );
+EXPORT extern void SetObjectCollisionBox(entvars_t* pev);
 
 typedef enum { USE_OFF = 0, USE_ON = 1, USE_SET = 2, USE_TOGGLE = 3 } USE_TYPE;
 
-extern void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+EXPORT extern void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
 typedef void (CBaseEntity::*BASEPTR)(void);
 typedef void (CBaseEntity::*ENTITYFUNCPTR)(CBaseEntity *pOther );
@@ -100,12 +108,15 @@ typedef void (CBaseEntity::*USEPTR)( CBaseEntity *pActivator, CBaseEntity *pCall
 #define CLASS_ALIEN_BIOWEAPON	13 // hornets and snarks.launched by the alien menace
 #define CLASS_ALIEN_RACE_X		14
 #define CLASS_ALIEN_RACE_X_PITDRONE		15 // TODO: use this
+#define CLASS_VEHICLE			16
 #define	CLASS_BARNACLE			99 // special because no one pays attention to it, and it eats a wide cross-section of creatures.
 
 class CBaseEntity;
 class CBaseMonster;
 class CBasePlayerWeapon;
 class CTalkSquadMonster;
+class CBaseToggle;
+class CBaseAnimating;
 
 
 #define	SF_NORESPAWN	( 1 << 10 )// !!!set this bit on guns and stuff that should never respawn.
@@ -119,6 +130,8 @@ private:
 	edict_t *m_pent;
 	int		m_serialnumber;
 public:
+	EHANDLE() : m_pent(0), m_serialnumber(0) {}
+	EHANDLE(edict_t* pent);
 	edict_t *GetEdict( void );
 	CBaseEntity *GetEntity( void );
 	edict_t *Set( edict_t *pent );
@@ -162,7 +175,7 @@ public:
 	virtual void	KeyValue(KeyValueData* pkvd);
 	virtual CKeyValue GetKeyValue(const char* keyName);
 	CKeyValue GetCustomKeyValue(const char* keyName);
-	std::map<std::string, CKeyValue>* GetCustomKeyValues();
+	std::unordered_map<std::string, CKeyValue>* GetCustomKeyValues();
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	virtual int		ObjectCaps( void ) { return FCAP_ACROSS_TRANSITION; }
@@ -192,6 +205,8 @@ public:
 	virtual CBaseMonster *MyMonsterPointer( void ) { return NULL;}
 	virtual CBasePlayerWeapon* GetWeaponPtr(void) { return NULL; };
 	virtual CTalkSquadMonster * MyTalkSquadMonsterPointer( void ) { return NULL;}
+	virtual CBaseToggle* MyTogglePointer(void) { return NULL; }
+	virtual CBaseAnimating* MyAnimatingPointer(void) { return NULL; }
 	virtual	int		GetToggleState( void ) { return TS_AT_TOP; }
 	virtual void	AddPoints( int score, BOOL bAllowNegativeScore ) {}
 	virtual void	AddPointsToTeam( int score, BOOL bAllowNegativeScore ) {}
@@ -214,6 +229,7 @@ public:
 	virtual BOOL	HasTarget( string_t targetname ) { return FStrEq(STRING(targetname), STRING(pev->target) ); }
 	virtual BOOL    IsInWorld( void );
 	virtual	BOOL	IsMonster( void ) { return FALSE; }
+	virtual	BOOL	IsNormalMonster(void) { return FALSE; } // is this what you'd expect to be a monster? (not a monstermaker/grenade/etc.)
 	virtual	BOOL	IsPlayer( void ) { return FALSE; }
 	virtual	BOOL	IsPlayerCorpse( void ) { return FALSE; }
 	virtual BOOL	IsNetClient( void ) { return FALSE; }
@@ -277,7 +293,7 @@ public:
 	int		IsDormant( void );
 	BOOL    IsLockedByMaster( void ) { return FALSE; }
 
-	static CBaseEntity *Instance( edict_t *pent )
+	static CBaseEntity *Instance( const edict_t *pent )
 	{ 
 		if ( !pent )
 			pent = ENT(0);
@@ -347,7 +363,7 @@ public:
 
 
 	//
-	static CBaseEntity *Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner = NULL, std::map<std::string, std::string> keys= std::map<std::string, std::string>());
+	static CBaseEntity *Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner = NULL, std::unordered_map<std::string, std::string> keys= std::unordered_map<std::string, std::string>());
 
 	virtual BOOL FBecomeProne( void ) {return FALSE;};
 	edict_t *edict() { return ENT( pev ); };
@@ -369,6 +385,28 @@ public:
 	static int IRelationship(int attackerClass, int victimClass);
 	bool ShouldBlockFriendlyFire(entvars_t* attacker);
 
+	// can the player using this entity physically touch the ent with their hand?
+	// or is there something in the way? (player use code assumes arms have noclip)
+	bool CanReach(CBaseEntity* toucher);
+
+	// true if this entity is in the PVS of the given player
+	inline bool InPVS(edict_t* player) { return m_pvsPlayers & PLRBIT(player); }
+
+	// true if the entity is in the PAS of the given player
+	inline bool InPAS(edict_t* player) { return m_pasPlayers & PLRBIT(player); }
+
+	// true if the entity is networked to the given player
+	inline bool isVisibleTo(edict_t* player) { return m_netPlayers & PLRBIT(player); }
+
+	// true if the entity was flagged to be hidden from the given player
+	inline bool isHiddenFrom(edict_t* player) { return m_hidePlayers & PLRBIT(player); }
+
+	// flag this entity to be visible/invisible to the given player
+	inline void SetVisible(edict_t* player, bool visible) {
+		if (visible) m_hidePlayers &= ~PLRBIT(player);
+		else m_hidePlayers |= PLRBIT(player);
+	}
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;
@@ -388,8 +426,10 @@ public:
 	int m_fireState;
 	int	m_Classify;		// Classify, to let mappers override the default
 
-	uint32_t m_audiblePlayers; // players in the audible set of this entity (invalid for invisible ents)
-	uint32_t m_visiblePlayers; // players in the visible set of this entity (invalid for invisible ents)
+	uint32_t m_pasPlayers; // players in the audible set of this entity (invalid for invisible ents)
+	uint32_t m_pvsPlayers; // players in the visible set of this entity (invalid for invisible ents)
+	uint32_t m_netPlayers; // players this entity has been networked to (AddToFullPack returned 1)
+	uint32_t m_hidePlayers; // players this entity will be hidden from (AddToFullPack)
 };
 
 
@@ -500,6 +540,7 @@ public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
+	virtual CBaseAnimating* MyAnimatingPointer(void) { return this; }
 
 	static	TYPEDESCRIPTION m_SaveData[];
 
@@ -519,6 +560,7 @@ public:
 	void GetAutomovement( Vector &origin, Vector &angles, float flInterval = 0.1 );
 	int  FindTransition( int iEndingSequence, int iGoalSequence, int *piDir );
 	void GetAttachment ( int iAttachment, Vector &origin, Vector &angles );
+	int GetAttachmentCount();
 	void SetBodygroup( int iGroup, int iValue );
 	int GetBodygroup( int iGroup );
 	int ExtractBbox( int sequence, float *mins, float *maxs );
@@ -580,6 +622,14 @@ public:
 	void AngularMove( Vector vecDestAngle, float flSpeed );
 	void AngularMoveDone( void );
 	BOOL IsLockedByMaster( void );
+
+	virtual CBaseToggle* MyTogglePointer(void) { return this; }
+
+	// monsters use this, but so could buttons for instance
+	virtual void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation);
+	virtual void PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity* pListener);
+	virtual void SentenceStop(void);
+	virtual BOOL IsAllowedToSpeak() { return FALSE; }
 
 	static float		AxisValue( int flags, const Vector &angles );
 	static void			AxisDir( entvars_t *pev );
@@ -713,6 +763,10 @@ public:
 #define WATERLEVEL_WAIST 2
 #define WATERLEVEL_HEAD 3
 
+#define SF_ITEM_TOUCH_ONLY 128 // Pick this item up only by touching it.
+#define SF_ITEM_USE_ONLY 256 // Pick this item up only by using it ('USE' key).
+#define SF_ITEM_USE_WITHOUT_LOS 512 // Player can pick up this item even when it's not within his line of sight.
+
 class CBaseMonster;
 class CCineMonster;
 class CSound;
@@ -805,5 +859,6 @@ public:
 
 	string_t m_globalModelList;
 	string_t m_globalSoundList;
+	string_t m_wadlist;
 	bool m_freeRoam;
 };

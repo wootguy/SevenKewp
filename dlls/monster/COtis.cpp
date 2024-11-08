@@ -289,7 +289,7 @@ const char* COtis::pKillSounds[] =
 	"otis/bring.wav",
 };
 
-LINK_ENTITY_TO_CLASS( monster_otis, COtis );
+LINK_ENTITY_TO_CLASS( monster_otis, COtis )
 
 TYPEDESCRIPTION	COtis::m_SaveData[] = 
 {
@@ -302,7 +302,7 @@ TYPEDESCRIPTION	COtis::m_SaveData[] =
 	DEFINE_FIELD( COtis, m_iOtisHead, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( COtis, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( COtis, CTalkSquadMonster )
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -324,7 +324,7 @@ Schedule_t	slOtFollow[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_PROVOKED,
 		bits_SOUND_DANGER,
-		"Follow"
+		"OTIS_FOLLOW"
 	},
 };
 
@@ -346,7 +346,7 @@ Schedule_t slOtisEnemyDraw[] =
 		ARRAYSIZE ( tlOtisEnemyDraw ),
 		0,
 		0,
-		"Otis Enemy Draw"
+		"OTIS_ENEMY_DRAW"
 	}
 };
 
@@ -370,7 +370,7 @@ Schedule_t	slOtFaceTarget[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_PROVOKED,
 		bits_SOUND_DANGER,
-		"FaceTarget"
+		"OTIS_FACE_TARGET"
 	},
 };
 
@@ -403,7 +403,7 @@ Schedule_t	slIdleOtStand[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"IdleStand"
+		"OTIS_IDLE_STAND"
 	},
 };
 
@@ -416,7 +416,7 @@ DEFINE_CUSTOM_SCHEDULES( COtis )
 };
 
 
-IMPLEMENT_CUSTOM_SCHEDULES( COtis, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( COtis, CTalkSquadMonster )
 
 void COtis :: StartTask( Task_t *pTask )
 {
@@ -910,7 +910,7 @@ void COtis::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, 
 	{
 	case HITGROUP_CHEST:
 	case HITGROUP_STOMACH:
-		if (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST))
+		if (bitsDamageType & (DMG_BULLET | DMG_SLASH))
 		{
 			flDamage = flDamage / 2;
 		}
@@ -1145,7 +1145,7 @@ void CDeadOtis::KeyValue( KeyValueData *pkvd )
 		CBaseMonster::KeyValue( pkvd );
 }
 
-LINK_ENTITY_TO_CLASS( monster_otis_dead, CDeadOtis );
+LINK_ENTITY_TO_CLASS( monster_otis_dead, CDeadOtis )
 
 //=========================================================
 // ********** DeadOtis SPAWN **********

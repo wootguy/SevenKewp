@@ -41,6 +41,7 @@ class CTripmineGrenade : public CGrenade
 
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Tripmine"; }
+	virtual const char* GetDeathNoticeWeapon() { return "tripmine"; };
 
 	void EXPORT WarningThink( void );
 	void EXPORT PowerupThink( void );
@@ -63,7 +64,7 @@ class CTripmineGrenade : public CGrenade
 	edict_t		*m_pRealOwner;// tracelines don't hit PEV->OWNER, which means a player couldn't detonate his own trip mine, so we store the owner here.
 };
 
-LINK_ENTITY_TO_CLASS( monster_tripmine, CTripmineGrenade );
+LINK_ENTITY_TO_CLASS( monster_tripmine, CTripmineGrenade )
 
 TYPEDESCRIPTION	CTripmineGrenade::m_SaveData[] = 
 {
@@ -78,7 +79,7 @@ TYPEDESCRIPTION	CTripmineGrenade::m_SaveData[] =
 	DEFINE_FIELD( CTripmineGrenade, m_pRealOwner, FIELD_EDICT ),
 };
 
-IMPLEMENT_SAVERESTORE(CTripmineGrenade,CGrenade);
+IMPLEMENT_SAVERESTORE(CTripmineGrenade,CGrenade)
 
 
 void CTripmineGrenade :: Spawn( void )
@@ -347,7 +348,7 @@ void CTripmineGrenade::DelayDeathThink( void )
 }
 #endif
 
-LINK_ENTITY_TO_CLASS( weapon_tripmine, CTripmine );
+LINK_ENTITY_TO_CLASS( weapon_tripmine, CTripmine )
 
 void CTripmine::Spawn( )
 {
@@ -390,7 +391,7 @@ int CTripmine::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "Trip Mine";
-	p->iMaxAmmo1 = TRIPMINE_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_tripmines;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
@@ -405,7 +406,7 @@ int CTripmine::GetItemInfo(ItemInfo *p)
 
 BOOL CTripmine::Deploy( )
 {
-	//pev->body = 0;
+	pev->body = 0;
 	return DefaultDeploy(GetModelV(), GetModelP(), TRIPMINE_DRAW, "trip" );
 }
 

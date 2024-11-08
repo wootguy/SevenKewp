@@ -69,6 +69,7 @@ public:
 	const char* GetDeathNoticeWeapon() {
 		return IsAlive() ? "weapon_crowbar" : "grenade";
 	}
+	void UpdateOnRemove(void);
 
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
@@ -105,8 +106,8 @@ private:
 
 Vector RandomBeamPoint(entvars_t* owner);
 
-LINK_ENTITY_TO_CLASS(monster_alien_voltigore, CVoltigore);
-LINK_ENTITY_TO_CLASS(voltigoreshock, CVoltigoreShock);
+LINK_ENTITY_TO_CLASS(monster_alien_voltigore, CVoltigore)
+LINK_ENTITY_TO_CLASS(voltigoreshock, CVoltigoreShock)
 
 const char* CVoltigore::pAttackHitSounds[] =
 {
@@ -226,8 +227,10 @@ void CVoltigore::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 		HideChargeBeam();
 
+		int attachIdx = V_min(GetAttachmentCount(), VOLTI_SHOCK_ATTACHMENT) - 1;
+
 		Vector handOrigin, handAngles;
-		GetAttachment(VOLTI_SHOCK_ATTACHMENT-1, handOrigin, handAngles);
+		GetAttachment(attachIdx, handOrigin, handAngles);
 
 		UTIL_MakeVectors(pev->angles);
 
@@ -366,11 +369,6 @@ void CVoltigore::ExplodeThink(void) {
 	CBaseMonster::MonsterThink();
 
 	if (explodeTime < gpGlobals->time) {
-		for (int i = 0; i < VOLTI_SHOCK_DEATH_BEAMS; i++) {
-			UTIL_Remove(m_pDeathBeam[i]);
-			m_pDeathBeam[i] = NULL;
-		}
-
 		EMIT_SOUND(ENT(pev), CHAN_BODY, VOLTI_SPORE_EXPLODE_SOUND, 1, ATTN_NORM);
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 0.5, ATTN_NORM);
 
@@ -428,15 +426,18 @@ void CVoltigore::Killed(entvars_t* pevAttacker, int iGib)
 		m_pBeam[i] = NULL;
 	}
 
-	for (int i = 0; i < VOLTI_SHOCK_DEATH_BEAMS; i++) {
-		CBeam* beam = CBeam::BeamCreate(VOLTI_BEAM_SPRITE, 30);
-		beam->PointsInit(RandomBeamPoint(pev), pev->origin + Vector(0,0,32));
-		beam->SetColor(255, 16, 128);
-		beam->SetBrightness(128);
-		beam->SetNoise(80);
-		m_pDeathBeam[i] = beam;
-	}
+	if (!m_pDeathBeam[0]) {
+		for (int i = 0; i < VOLTI_SHOCK_DEATH_BEAMS; i++) {
 
+			CBeam* beam = CBeam::BeamCreate(VOLTI_BEAM_SPRITE, 30);
+			beam->PointsInit(RandomBeamPoint(pev), pev->origin + Vector(0, 0, 32));
+			beam->SetColor(255, 16, 128);
+			beam->SetBrightness(128);
+			beam->SetNoise(80);
+			m_pDeathBeam[i] = beam;
+		}
+	}
+	
 	CBaseMonster::Killed(pevAttacker, GIB_NEVER);
 
 	if (ShouldGibMonster(iGib)) {
@@ -509,6 +510,20 @@ void CVoltigore::StopFollowingSound() {
 
 void CVoltigore::CantFollowSound() {
 	EMIT_SOUND(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
+}
+
+void CVoltigore::UpdateOnRemove(void) {
+	UTIL_Remove(m_handShock);
+	for (int i = 0; i < VOLTI_SHOCK_CHARGE_BEAMS; i++) {
+		UTIL_Remove(m_pBeam[i]);
+		m_pBeam[i] = NULL;
+	}
+	for (int i = 0; i < VOLTI_SHOCK_DEATH_BEAMS; i++) {
+		UTIL_Remove(m_pDeathBeam[i]);
+		m_pDeathBeam[i] = NULL;
+	}
+
+	CBaseEntity::UpdateOnRemove();
 }
 
 //

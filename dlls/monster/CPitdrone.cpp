@@ -79,14 +79,14 @@ public:
 	int  m_maxFrame;
 };
 
-LINK_ENTITY_TO_CLASS( pitdronespike, CPitdroneSpike );
+LINK_ENTITY_TO_CLASS( pitdronespike, CPitdroneSpike )
 
 TYPEDESCRIPTION	CPitdroneSpike::m_SaveData[] =
 {
 	DEFINE_FIELD( CPitdroneSpike, m_maxFrame, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CPitdroneSpike, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CPitdroneSpike, CBaseEntity )
 
 void CPitdroneSpike::Precache()
 {
@@ -143,7 +143,7 @@ void CPitdroneSpike::SpikeTouch( CBaseEntity *pOther )
 	}
 	else
 	{
-		pOther->TakeDamage( pev, pev, gSkillData.sk_pitdrone_dmg_spit, DMG_GENERIC );
+		pOther->TakeDamage( pev, &pev->owner->v, gSkillData.sk_pitdrone_dmg_spit, DMG_GENERIC );
 		EMIT_SOUND_DYN( edict(), CHAN_VOICE, "weapons/xbow_hitbod1.wav", VOL_NORM, ATTN_NORM, 0, iPitch );
 	}
 
@@ -169,7 +169,7 @@ void CPitdroneSpike::SpikeTouch( CBaseEntity *pOther )
 		pev->avelocity = g_vecZero;
 
 		SetThink( &CBaseEntity::SUB_FadeOut );
-		pev->nextthink = gpGlobals->time + 90.0;
+		pev->nextthink = gpGlobals->time + 10.0;
 	}
 	else
 	{
@@ -181,19 +181,7 @@ void CPitdroneSpike::SpikeTouch( CBaseEntity *pOther )
 
 void CPitdroneSpike::StartTrail()
 {
-	if (UTIL_isSafeEntIndex(entindex(), "create spike trail")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_BEAMFOLLOW);
-		WRITE_SHORT(entindex());
-		WRITE_SHORT(iSpikeTrail);
-		WRITE_BYTE(2);
-		WRITE_BYTE(1);
-		WRITE_BYTE(197);
-		WRITE_BYTE(194);
-		WRITE_BYTE(11);
-		WRITE_BYTE(192);
-		MESSAGE_END();
-	}
+	UTIL_BeamFollow(entindex(), iSpikeTrail, 2, 1, RGBA(197, 194, 11, 192));
 
 	SetTouch( &CPitdroneSpike::SpikeTouch );
 	SetThink( nullptr );
@@ -253,6 +241,7 @@ public:
 	BOOL FValidateHintType ( short sHint );
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType ( int Type );
+	const char* GetTaskName(int taskIdx);
 	int IRelationship ( CBaseEntity *pTarget );
 	int IgnoreConditions ( void );
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
@@ -282,7 +271,7 @@ private:
 	static const char* pPainSounds[];
 	static const char* pBiteSounds[];
 };
-LINK_ENTITY_TO_CLASS( monster_pitdrone, CPitdrone );
+LINK_ENTITY_TO_CLASS( monster_pitdrone, CPitdrone )
 
 const char* CPitdrone::pAlertSounds[] =
 {
@@ -337,7 +326,7 @@ TYPEDESCRIPTION	CPitdrone::m_SaveData[] =
 	DEFINE_FIELD( CPitdrone, m_flNextEatTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CPitdrone, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CPitdrone, CBaseMonster )
 
 //=========================================================
 // IgnoreConditions 
@@ -826,7 +815,7 @@ Schedule_t	slPitdroneRangeAttack1[] =
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_NO_AMMO_LOADED,
 		0,
-		"Pitdrone Range Attack1"
+		"PIT_RANGE_ATTACK"
 	},
 };
 
@@ -855,7 +844,7 @@ Schedule_t slPitdroneChaseEnemy[] =
 		
 		bits_SOUND_DANGER			|
 		bits_SOUND_MEAT,
-		"Pitdrone Chase Enemy"
+		"PIT_CHASE_ENEMY"
 	},
 };
 
@@ -874,7 +863,7 @@ Schedule_t slPitdroneHurtHop[] =
 		ARRAYSIZE ( tlPitdroneHurtHop ),
 		0,
 		0,
-		"PitdroneHurtHop"
+		"PIT_HURT_HOP"
 	}
 };
 
@@ -910,7 +899,7 @@ Schedule_t slPitdroneEat[] =
 		// here or the monster won't detect these sounds at ALL while running this schedule.
 		bits_SOUND_MEAT			|
 		bits_SOUND_CARCASS,
-		"PitdroneEat"
+		"PIT_EAT"
 	}
 };
 
@@ -948,7 +937,7 @@ Schedule_t slPitdroneSniffAndEat[] =
 		// here or the monster won't detect these sounds at ALL while running this schedule.
 		bits_SOUND_MEAT			|
 		bits_SOUND_CARCASS,
-		"PitdroneSniffAndEat"
+		"PIT_SNIFF_AND_EAT"
 	}
 };
 
@@ -982,7 +971,7 @@ Schedule_t slPitdroneWallow[] =
 		// here or the monster won't detect these sounds at ALL while running this schedule.
 		bits_SOUND_GARBAGE,
 
-		"PitdroneWallow"
+		"PIT_WALLOW"
 	}
 };
 
@@ -1007,7 +996,7 @@ Schedule_t slPitdroneHideReload[] =
 		bits_COND_HEAR_SOUND,
 		bits_SOUND_DANGER,
 
-		"PitdroneHideReload"
+		"PIT_HIDE_RELOAD"
 	}
 };
 
@@ -1031,7 +1020,7 @@ Schedule_t slPitdroneWaitInCover[] =
 		bits_COND_HEAR_SOUND,
 		bits_SOUND_DANGER,
 
-		"PitdroneWaitInCover"
+		"PIT_WAIT_IN_COVER"
 	}
 };
 
@@ -1047,7 +1036,7 @@ DEFINE_CUSTOM_SCHEDULES( CPitdrone )
 	slPitdroneWaitInCover
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CPitdrone, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CPitdrone, CBaseMonster )
 
 //=========================================================
 // GetSchedule 
@@ -1189,6 +1178,14 @@ Schedule_t* CPitdrone :: GetScheduleOfType ( int Type )
 	}
 
 	return CBaseMonster :: GetScheduleOfType ( Type );
+}
+
+const char* CPitdrone::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_PITDRONE_HOPTURN: return "TASK_PITDRONE_HOPTURN";
+	default:
+		return CBaseMonster::GetTaskName(taskIdx);
+	}
 }
 
 //=========================================================

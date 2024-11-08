@@ -49,13 +49,13 @@ DEFINE_FIELD(m_flBigSwingStart, FIELD_TIME),
 	END_DATAMAP();
 */
 
-LINK_ENTITY_TO_CLASS(weapon_pipewrench, CPipewrench);
+LINK_ENTITY_TO_CLASS(weapon_pipewrench, CPipewrench)
 
 void CPipewrench::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_PIPEWRENCH;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 	m_iClip = WEAPON_NOCLIP;
 	m_iDefaultAmmo = DISPLACER_DEFAULT_GIVE;
 

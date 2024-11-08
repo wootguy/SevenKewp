@@ -12,7 +12,7 @@ public:
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 };
 
-LINK_ENTITY_TO_CLASS(trigger_changemodel, CTriggerChangeModel);
+LINK_ENTITY_TO_CLASS(trigger_changemodel, CTriggerChangeModel)
 
 void CTriggerChangeModel::Spawn(void) {
 	CPointEntity::Spawn();

@@ -45,8 +45,8 @@ Vector VecBModelOrigin( entvars_t* pevBModel );
 
 CGraph	WorldGraph;
 
-LINK_ENTITY_TO_CLASS( info_node, CNodeEnt );
-LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt );
+LINK_ENTITY_TO_CLASS( info_node, CNodeEnt )
+LINK_ENTITY_TO_CLASS( info_node_air, CNodeEnt )
 #ifdef __linux__
 #include <unistd.h>
 #define CreateDirectory(p, n) mkdir(p, 0777)
@@ -1453,7 +1453,7 @@ public:
 	Vector	vecBadNodeOrigin;
 };
 
-LINK_ENTITY_TO_CLASS( testhull, CTestHull );
+LINK_ENTITY_TO_CLASS( testhull, CTestHull )
 
 //=========================================================
 // CTestHull::Spawn
@@ -3505,10 +3505,10 @@ public:
 	void EXPORT DrawThink( void );
 
 };
-LINK_ENTITY_TO_CLASS( node_viewer, CNodeViewer );
-LINK_ENTITY_TO_CLASS( node_viewer_human, CNodeViewer );
-LINK_ENTITY_TO_CLASS( node_viewer_fly, CNodeViewer );
-LINK_ENTITY_TO_CLASS( node_viewer_large, CNodeViewer );
+LINK_ENTITY_TO_CLASS( node_viewer, CNodeViewer )
+LINK_ENTITY_TO_CLASS( node_viewer_human, CNodeViewer )
+LINK_ENTITY_TO_CLASS( node_viewer_fly, CNodeViewer )
+LINK_ENTITY_TO_CLASS( node_viewer_large, CNodeViewer )
 
 void CNodeViewer::Spawn( )
 {
@@ -3633,27 +3633,11 @@ void CNodeViewer :: DrawThink( void )
 		}
 
 		extern short g_sModelIndexLaser;
-		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-			WRITE_BYTE( TE_BEAMPOINTS );
-			WRITE_COORD( WorldGraph.m_pNodes[ m_aFrom[m_iDraw] ].m_vecOrigin.x );
-			WRITE_COORD( WorldGraph.m_pNodes[ m_aFrom[m_iDraw] ].m_vecOrigin.y );
-			WRITE_COORD( WorldGraph.m_pNodes[ m_aFrom[m_iDraw] ].m_vecOrigin.z + NODE_HEIGHT );
 
-			WRITE_COORD( WorldGraph.m_pNodes[ m_aTo[m_iDraw] ].m_vecOrigin.x );
-			WRITE_COORD( WorldGraph.m_pNodes[ m_aTo[m_iDraw] ].m_vecOrigin.y );
-			WRITE_COORD( WorldGraph.m_pNodes[ m_aTo[m_iDraw] ].m_vecOrigin.z + NODE_HEIGHT );
-			WRITE_SHORT( g_sModelIndexLaser );
-			WRITE_BYTE( 0 ); // framerate
-			WRITE_BYTE( 0 ); // framerate
-			WRITE_BYTE( 250 ); // life
-			WRITE_BYTE( 40 );  // width
-			WRITE_BYTE( 0 );   // noise
-			WRITE_BYTE( m_vecColor.x );   // r, g, b
-			WRITE_BYTE( m_vecColor.y );   // r, g, b
-			WRITE_BYTE( m_vecColor.z );   // r, g, b
-			WRITE_BYTE( 128 );	// brightness
-			WRITE_BYTE( 0 );		// speed
-		MESSAGE_END();
+		Vector offset = Vector(0, 0, NODE_HEIGHT);
+		UTIL_BeamPoints(WorldGraph.m_pNodes[m_aFrom[m_iDraw]].m_vecOrigin + offset,
+			WorldGraph.m_pNodes[m_aTo[m_iDraw]].m_vecOrigin + offset,
+			g_sModelIndexLaser, 0, 0, 250, 40, 0, m_vecColor, 128);
 
 		m_iDraw++;
 	}

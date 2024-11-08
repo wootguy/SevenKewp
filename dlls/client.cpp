@@ -45,6 +45,7 @@
 #include "skill.h"
 #include "CGamePlayerEquip.h"
 #include "PluginManager.h"
+#include "Scheduler.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -89,7 +90,9 @@ called when a player connects to a server
 ============
 */
 BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ]  )
-{	
+{
+	CALL_HOOKS(BOOL, pfnClientConnect, pEntity, pszName, pszAddress, szRejectReason);
+
 	return g_pGameRules->ClientConnected( pEntity, pszName, pszAddress, szRejectReason );
 
 // a client connecting during an intermission can cause problems
@@ -110,6 +113,8 @@ GLOBALS ASSUMED SET:  g_fGameOver
 */
 void ClientDisconnect( edict_t *pEntity )
 {
+	CALL_HOOKS_VOID(pfnClientDisconnect, pEntity);
+
 	if (mp_debugmsg.value) {
 		writeNetworkMessageHistory(std::string(STRING(pEntity->v.netname)) 
 			+ " dropped on map " + STRING(gpGlobals->mapname));
@@ -150,8 +155,9 @@ void ClientDisconnect( edict_t *pEntity )
 
 		CBaseEntity* ent = (CBaseEntity*)GET_PRIVATE(&edicts[i]);
 		if (ent) {
-			ent->m_visiblePlayers &= ~plrbit;
-			ent->m_audiblePlayers &= ~plrbit;
+			ent->m_pvsPlayers &= ~plrbit;
+			ent->m_pasPlayers &= ~plrbit;
+			ent->m_netPlayers &= ~plrbit;
 		}
 	}
 
@@ -177,6 +183,9 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 	}
 
 	if (FNullEnt(spawnSpot)) {
+		plr->StartObserver(plr->pev->origin, plr->pev->angles);
+		plr->m_wantToExitObserver = true;
+
 		if (gpGlobals->time - plr->m_lastSpawnMessage > 0.5f) {
 			CLIENT_PRINTF(plr->edict(), print_center, "No spawn points available");
 			plr->m_lastSpawnMessage = gpGlobals->time;
@@ -185,7 +194,7 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 	}
 
 	float deadTime = gpGlobals->time - plr->m_lastKillTime;
-	if (deadTime < mp_respawndelay.value) {
+	if (deadTime < mp_respawndelay.value + plr->m_extraRespawnDelay) {
 		return;
 	}
 
@@ -231,9 +240,25 @@ void ClientKill( edict_t *pEntity )
 	pev->health = 0;
 	pl->Killed( pev, GIB_NEVER );
 
+	EHANDLE oldWeapon = pl->m_pActiveItem;
+	pl->m_pActiveItem = NULL; // don't show a weapon icon in the kill feed
+	g_pGameRules->DeathNotice(pl, pev, pev);
+	pl->m_pActiveItem = oldWeapon;
+
 //	pev->modelindex = g_ulModelIndexPlayer;
 //	pev->frags -= 2;		// extra penalty
 //	respawn( pev );
+}
+
+
+void CvarValue2(const edict_t* pEnt, int requestID, const char* pszCvarName, const char* pszValue) {
+	CBasePlayer* plr = UTIL_PlayerByIndex(ENTINDEX(pEnt));
+
+	if (!plr || strstr(pszValue, "Bad Player")) {
+		return;
+	}
+
+	plr->HandleClientCvarResponse(requestID, pszCvarName, pszValue);
 }
 
 /*
@@ -264,15 +289,24 @@ void ClientPutInServer( edict_t *pEntity )
 		UTIL_StopGlobalMp3(pEntity);
 	}
 
-	// Allocate a CBasePlayer for pev, and call spawn
-	pPlayer->Spawn();
 	pPlayer->m_initSoundTime = gpGlobals->time + 1.0f;
+
+	pPlayer->pev->iuser1 = 0;	// disable any spec modes
+	pPlayer->pev->iuser2 = 0;
 
 	// Reset interpolation during first frame
 	pPlayer->pev->effects |= EF_NOINTERP;
 
-	pPlayer->pev->iuser1 = 0;	// disable any spec modes
-	pPlayer->pev->iuser2 = 0; 
+	pPlayer->QueryClientType();
+
+	CALL_HOOKS_VOID(pfnClientPutInServer, pPlayer);
+
+	// Allocate a CBasePlayer for pev, and call spawn
+	pPlayer->Spawn();
+
+	if (g_pGameRules->IsMultiplayer()) {
+		FireTargets("game_playerjoin", pPlayer, pPlayer, USE_TOGGLE, 0);
+	}
 }
 
 /*
@@ -289,6 +323,8 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	// Is the client spawned yet?
 	if ( !pEntity->pvPrivateData )
 		return;
+
+	CALL_HOOKS_VOID(pfnClientUserInfoChanged, pEntity, infobuffer);
 
 	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
 	if ( pEntity->v.netname && STRING(pEntity->v.netname)[0] != 0 && !FStrEq( STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" )) )
@@ -403,6 +439,8 @@ void ServerDeactivate( void )
 	// below and try keenrace instead.
 	//    SHA-1: 0c95b51652eda12e0b268631d1421634614c661f
 	//    fix physics breaking after long uptime
+
+	CALL_HOOKS_VOID(pfnServerDeactivate);
 }
 
 #include "lagcomp.h"
@@ -669,7 +707,9 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		}
 	}
 
-	g_pluginManager.CallHooks(&HLCOOP_PLUGIN_HOOKS::pfnMapActivate);
+	LoadAdminList();
+
+	CALL_HOOKS_VOID(pfnServerActivate);
 }
 
 /*
@@ -772,6 +812,8 @@ void NerfMonsters() {
 //
 void StartFrame( void )
 {
+	CALL_HOOKS_VOID(pfnStartFrame);
+
 	if ( g_pGameRules )
 		g_pGameRules->Think();
 
@@ -787,6 +829,10 @@ void StartFrame( void )
 	}
 
 	lagcomp_update();
+
+	g_Scheduler.Think();
+
+	handleThreadPrints();
 }
 
 
@@ -870,6 +916,7 @@ Engine is going to shut down, allows setting a breakpoint in game .dll to catch 
 void Sys_Error( const char *error_string )
 {
 	// Default case, do nothing.  MOD AUTHORS:  Add code ( e.g., _asm { int 3 }; here to cause a breakpoint for debugging your game .dlls
+	ALERT(at_error, "Sys_Error: %s\n", error_string);
 }
 
 /*
@@ -1016,8 +1063,8 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 
 	int pnum = g_packClientIdx - 1;
 	if (g_numEdictOverflows[pnum] > 0) {
-		ALERT(at_console, "Overflowed %d edicts for client %s\n",
-			g_numEdictOverflows[pnum], STRING(pClient->v.netname));
+		ALERT(at_console, "Overflowed %d edicts for \"%s\", Client: %s\n",
+			g_numEdictOverflows[pnum], STRING(pClient->v.netname), plr->GetClientVersionString());
 	}
 
 	g_numEdictOverflows[pnum] = 0;
@@ -1047,8 +1094,9 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		return 0; // should never happen?
 
 	uint32_t plrbit = PLRBIT(host);
-	baseent->m_audiblePlayers &= ~plrbit;
-	baseent->m_visiblePlayers &= ~plrbit;
+	baseent->m_pvsPlayers &= ~plrbit;
+	baseent->m_pasPlayers &= ~plrbit;
+	baseent->m_netPlayers &= ~plrbit;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
 	// Ignore ents without valid / visible models
@@ -1068,11 +1116,11 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		return 0; // should never happen?
 
 	if (ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPas)) {
-		baseent->m_audiblePlayers |= plrbit;
+		baseent->m_pasPlayers |= plrbit;
 	}
 
 	if (ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPvs)) {
-		baseent->m_visiblePlayers |= plrbit;
+		baseent->m_pvsPlayers |= plrbit;
 	}
 	else if(ent != host) {
 		// Ignore if not the host and not touching a PVS leaf
@@ -1080,7 +1128,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		return 0;
 	}
 
-	if (invisible || forceVisChecks) {
+	if (invisible || forceVisChecks || (baseent->m_hidePlayers & plrbit)) {
 		return 0;
 	}
 
@@ -1237,13 +1285,26 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		
 	}
 
-	// prevent disconnects with this error:
-	// Host_Error: CL_EntityNum: 1665 is an invalid number, cl.max_edicts is 1665
-	if (sv_max_client_edicts && e >= (int)sv_max_client_edicts->value) {
-		ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
+	int maxClientEdicts = plr->GetMaxClientEdicts();
+	if (e >= maxClientEdicts) {
+		//ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
 		g_numEdictOverflows[player]++;
+		plr->SendLegacyClientWarning();
 		return 0;
 	}
+	if (ENTINDEX(ent->v.aiment) >= maxClientEdicts) {
+		//ALERT(at_console, "Can't send attachment %d '%s' (index too high)\n", ENTINDEX(ent->v.aiment), STRING(ent->v.aiment->v.classname));
+		g_numEdictOverflows[player]++;
+		plr->SendLegacyClientWarning();
+		return 0;
+	}
+
+	if (baseent->Classify() != CLASS_NONE && baseent->Classify() != CLASS_MACHINE)
+		state->eflags |= EFLAG_FLESH_SOUND;
+	else
+		state->eflags &= ~EFLAG_FLESH_SOUND;
+
+	baseent->m_netPlayers |= plrbit;
 
 	return 1;
 }
@@ -1561,6 +1622,8 @@ void RegisterEncoders( void )
 
 int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 {
+	CALL_HOOKS(int, pfnGetWeaponData, player, info);
+
 #if defined( CLIENT_WEAPONS )
 	int i;
 	weapon_data_t *item;
@@ -1599,12 +1662,12 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 						item->m_iId						= II.iId;
 						item->m_iClip					= gun->m_iClip;
 
-						item->m_flTimeWeaponIdle		= V_max( gun->m_flTimeWeaponIdle, -0.001 );
-						item->m_flNextPrimaryAttack		= V_max( gun->m_flNextPrimaryAttack, -0.001 );
-						item->m_flNextSecondaryAttack	= V_max( gun->m_flNextSecondaryAttack, -0.001 );
+						item->m_flTimeWeaponIdle		= V_max( gun->m_flTimeWeaponIdle, -0.001f );
+						item->m_flNextPrimaryAttack		= V_max( gun->m_flNextPrimaryAttack, -0.001f );
+						item->m_flNextSecondaryAttack	= V_max( gun->m_flNextSecondaryAttack, -0.001f );
 						item->m_fInReload				= gun->m_fInReload;
 						item->m_fInSpecialReload		= gun->m_fInSpecialReload;
-						item->fuser1					= V_max( gun->pev->fuser1, -0.001 );
+						item->fuser1					= V_max( gun->pev->fuser1, -0.001f );
 						item->fuser2					= gun->m_flStartThrow;
 						item->fuser3					= gun->m_flReleaseThrow;
 						item->iuser1					= gun->m_chargeReady;
@@ -1612,7 +1675,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 						item->iuser3					= gun->m_fireState;
 						
 											
-//						item->m_flPumpTime				= V_max( gun->m_flPumpTime, -0.001 );
+//						item->m_flPumpTime				= V_max( gun->m_flPumpTime, -0.001f );
 					}
 				}
 				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
@@ -1741,6 +1804,8 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 		}
 	} 
 #endif
+
+	CALL_HOOKS_VOID(pfnUpdateClientDataPost, ent, sendweapons, cd);
 }
 
 /*
@@ -1903,3 +1968,14 @@ int AllowLagCompensation( void )
 {
 	return 1;
 }
+
+void OnFreeEntPrivateData(edict_t* pEnt) {}
+
+void GameShutdown(void) {}
+
+int	ShouldCollide(edict_t* pentTouched, edict_t* pentOther) {
+	return 1;
+}
+
+void CvarValue(const edict_t* pEnt, const char* pszValue) {}
+

@@ -32,17 +32,19 @@ TYPEDESCRIPTION CShockBeam::m_SaveData[] =
 	DEFINE_FIELD(CShockBeam, m_hSprite, FIELD_EHANDLE),
 };
 
-IMPLEMENT_SAVERESTORE(CShockBeam, CShockBeam::BaseClass);
+IMPLEMENT_SAVERESTORE(CShockBeam, CShockBeam::BaseClass)
 #endif
 
-LINK_ENTITY_TO_CLASS(shock_beam, CShockBeam);
+LINK_ENTITY_TO_CLASS(shock_beam, CShockBeam)
 
 void CShockBeam::Precache()
 {
 	PRECACHE_MODEL( "sprites/flare3.spr" );
 	PRECACHE_MODEL( "sprites/lgtning.spr" );
 	PRECACHE_MODEL( "sprites/glow01.spr" );
-	PRECACHE_MODEL("models/shock_effect.mdl" );
+
+	m_defaultModel = "models/shock_effect.mdl";
+	PRECACHE_MODEL(GetModel());
 	PRECACHE_SOUND("weapons/shock_impact.wav" );
 
 	m_waterExplodeSpr = PRECACHE_MODEL("sprites/xspark2.spr");
@@ -56,7 +58,13 @@ void CShockBeam::Spawn()
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_TRIGGER;
 
-	SET_MODEL( edict(), "models/shock_effect.mdl" );
+	SetGrenadeModel();
+
+	if (mp_mergemodels.value) {
+		int mergedIdle = LookupSequence("shock_idle");
+		if (mergedIdle != -1)
+			pev->sequence = mergedIdle;
+	}
 
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -235,10 +243,10 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 		UTIL_DecalTrace( &tr, DECAL_OFSCORCH1 + RANDOM_LONG( 0, 2 ) );
 
 		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-		g_engfuncs.pfnWriteByte( TE_SPARKS );
-		g_engfuncs.pfnWriteCoord( pev->origin.x );
-		g_engfuncs.pfnWriteCoord( pev->origin.y );
-		g_engfuncs.pfnWriteCoord( pev->origin.z );
+		WRITE_BYTE( TE_SPARKS );
+		WRITE_COORD( pev->origin.x );
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z );
 		MESSAGE_END();
 	}
 }

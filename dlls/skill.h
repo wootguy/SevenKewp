@@ -197,6 +197,21 @@ struct skilldata_t
 	float sk_plr_displacer_other;
 	float sk_plr_displacer_radius;
 
+	// Player max ammo
+	float sk_ammo_max_uranium;
+	float sk_ammo_max_9mm;
+	float sk_ammo_max_357;
+	float sk_ammo_max_buckshot;
+	float sk_ammo_max_bolts;
+	float sk_ammo_max_rockets;
+	float sk_ammo_max_grenades;
+	float sk_ammo_max_satchels;
+	float sk_ammo_max_tripmines;
+	float sk_ammo_max_snarks;
+	float sk_ammo_max_hornets;
+	float sk_ammo_max_argrenades;
+	float sk_ammo_max_spores;
+
 	// World weapons
 	float sk_12mm_bullet;
 	float sk_9mmAR_bullet;
@@ -233,7 +248,7 @@ struct skilldata_t
 EXPORT extern DLL_GLOBAL skilldata_t gSkillData;
 
 EXPORT extern DLL_GLOBAL int g_iSkillLevel;
-EXPORT extern std::map<std::string, float> g_defaultMonsterHealth;
+EXPORT extern std::unordered_map<std::string, float> g_defaultMonsterHealth;
 
 void RefreshSkillData();
 

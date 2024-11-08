@@ -4,6 +4,7 @@
 #include "gamerules.h"
 #include "cbase.h"
 #include "CRuleEntity.h"
+#include "CBasePlayer.h"
 
 //
 // CGamePlayerZone / game_player_zone -- players in the zone fire my target when I'm fired
@@ -26,7 +27,7 @@ private:
 	string_t	m_iszOutCount;
 };
 
-LINK_ENTITY_TO_CLASS(game_zone_player, CGamePlayerZone);
+LINK_ENTITY_TO_CLASS(game_zone_player, CGamePlayerZone)
 TYPEDESCRIPTION	CGamePlayerZone::m_SaveData[] =
 {
 	DEFINE_FIELD(CGamePlayerZone, m_iszInTarget, FIELD_STRING),
@@ -35,7 +36,7 @@ TYPEDESCRIPTION	CGamePlayerZone::m_SaveData[] =
 	DEFINE_FIELD(CGamePlayerZone, m_iszOutCount, FIELD_STRING),
 };
 
-IMPLEMENT_SAVERESTORE(CGamePlayerZone, CRuleBrushEntity);
+IMPLEMENT_SAVERESTORE(CGamePlayerZone, CRuleBrushEntity)
 
 void CGamePlayerZone::KeyValue(KeyValueData* pkvd)
 {
@@ -71,7 +72,7 @@ void CGamePlayerZone::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	if (!CanFireForActivator(pActivator))
 		return;
 
-	CBaseEntity* pPlayer = NULL;
+	CBasePlayer* pPlayer = NULL;
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{

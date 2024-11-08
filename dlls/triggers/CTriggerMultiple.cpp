@@ -7,7 +7,7 @@
 #include "CTriggerMultiple.h"
 
 
-LINK_ENTITY_TO_CLASS(trigger_multiple, CTriggerMultiple);
+LINK_ENTITY_TO_CLASS(trigger_multiple, CTriggerMultiple)
 
 
 void CTriggerMultiple::Spawn(void)

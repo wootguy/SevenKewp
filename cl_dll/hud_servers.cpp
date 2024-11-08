@@ -758,7 +758,12 @@ int CHudServers::LoadMasterAddresses( int maxservers, int *count, netadr_t *padr
 	char		*pbuffer = NULL;
 	char		*pstart = NULL ;
 	netadr_t	adr;
+#ifdef VANILLA_HL
 	char		szAdr[64];
+#else
+	char		szAdr[1056];
+#endif
+	
 	int			nPort;
 	int			nCount = 0;
 	bool		bIgnore;
@@ -810,7 +815,11 @@ int CHudServers::LoadMasterAddresses( int maxservers, int *count, netadr_t *padr
 		// Parse addresses until we get to "}"
 		while ( nCount < maxservers )
 		{
+#ifdef VANILLA_HL
+			char base[256];
+#else
 			char base[1024];
+#endif
 
 			// Now parse all addresses between { }
 			pstart = gEngfuncs.COM_ParseFile( pstart, m_szToken );

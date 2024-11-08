@@ -43,6 +43,8 @@ globalvars_t  *gpGlobals;
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 
+std::unordered_map<std::string, std::string> g_soundReplacements;
+
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch) { }
 
 // CBaseEntity Stubs
@@ -58,7 +60,7 @@ int CBaseEntity :: IsDormant( void ) { return 0; }
 BOOL CBaseEntity :: IsInWorld( void ) { return TRUE; }
 int CBaseEntity::ShouldToggle( USE_TYPE useType, BOOL currentState ) { return 0; }
 int	CBaseEntity :: DamageDecal( int bitsDamageType ) { return -1; }
-CBaseEntity * CBaseEntity::Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner, std::map<std::string, std::string> keys) { return NULL; }
+CBaseEntity * CBaseEntity::Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, edict_t *pentOwner, std::unordered_map<std::string, std::string> keys) { return NULL; }
 void CBaseEntity::SUB_Remove( void ) { }
 void CBaseEntity::UpdateOnRemove( void ) { }
 void CBaseEntity::SetClassify( int ) { }
@@ -78,7 +80,7 @@ void DBG_AssertFunction(BOOL fExpr,	const char*	szExpr,	const char*	szFile,	int 
 
 // UTIL_* Stubs
 void UTIL_PrecacheOther( const char *szClassname ) { }
-void UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::string> keys ) { }
+void UTIL_PrecacheOther( const char *szClassname, std::unordered_map<std::string, std::string> keys ) { }
 void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, int amount ) { }
 void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber ) { }
 void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber ) { }
@@ -218,9 +220,6 @@ BOOL CBaseMonster :: FindLateralCover ( const Vector &vecThreat, const Vector &v
 Vector CBaseMonster :: ShootAtEnemy( const Vector &shootOrigin ) { return g_vecZero; }
 BOOL CBaseMonster :: FacingIdeal( void ) { return FALSE; }
 BOOL CBaseMonster :: FCanActiveIdle ( void ) { return FALSE; }
-void CBaseMonster::PlaySentence( const char *pszSentence, float duration, float volume, float attenuation ) { }
-void CBaseMonster::PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener ) { }
-void CBaseMonster::SentenceStop( void ) { }
 void CBaseMonster::CorpseFallThink( void ) { }
 void CBaseMonster :: MonsterInitDead( void ) { }
 BOOL CBaseMonster :: BBoxFlat ( void ) { return TRUE; }
@@ -254,6 +253,10 @@ const char* CBaseMonster::GetTaskName(int taskIdx) {return "";}
 const char* CBaseMonster::DisplayName() {return "";}
 BOOL CBaseMonster::IsMachine() {return 0;}
 void CBaseMonster::Precache() {}
+void CBaseMonster::GetAllSchedules(std::unordered_set<Schedule_t*>& schedulesOut) {}
+Schedule_t* CBaseMonster::ScheduleFromTableIdx(uint32_t idx) { return NULL; }
+int CBaseMonster::GetScheduleTableSize() { return 0; }
+int CBaseMonster::GetScheduleTableIdx() { return 0; }
 
 int TrainSpeed(int iSpeed, int iMax) { 	return 0; }
 void CBasePlayer :: DeathSound( void ) { }
@@ -349,6 +352,8 @@ void CBasePlayerItem::Kill( void ) { }
 void CBasePlayerItem::Holster( int skiplocal ) { }
 void CBasePlayerItem::AttachToPlayer ( CBasePlayer *pPlayer ) { }
 void CBasePlayerItem::KeyValue(KeyValueData* pkvd) {}
+int CBasePlayerItem::ObjectCaps(void) { return 0; }
+int CBasePlayerAmmo::ObjectCaps(void) { return 0; }
 int CBasePlayerWeapon::AddDuplicate( CBasePlayerItem *pOriginal ) { return 0; }
 int CBasePlayerWeapon::AddToPlayer( CBasePlayer *pPlayer ) { return FALSE; }
 int CBasePlayerWeapon::UpdateClientData( CBasePlayer *pPlayer ) { return 0; }
@@ -371,6 +376,8 @@ CBaseEntity* CBasePlayerWeapon::Respawn() { return NULL;  }
 const char* CBasePlayerWeapon::GetModelV() { return 0; }
 const char* CBasePlayerWeapon::GetModelP() { return 0; }
 const char* CBasePlayerWeapon::GetModelW() { return 0; }
+void CBasePlayerWeapon::SetWeaponModelW() { }
+void CGrenade::SetGrenadeModel() { }
 void CSoundEnt::InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration ) {}
 void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType ){}
 void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
@@ -397,6 +404,11 @@ void CWorld::loadReplacementFiles() {}
 CBaseEntity* EHANDLE :: operator = (CBaseEntity* pEntity) { return 0; }
 CBaseEntity* EHANDLE :: operator -> () { return 0; }
 EHANDLE :: operator CBaseEntity* () { return 0; };
+
+void CBaseToggle::PlaySentence(const char* pszSentence, float duration, float volume, float attenuation) {}
+void CBaseToggle::PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity* pListener) {}
+void CBaseToggle::SentenceStop(void) {}
+void CBasePlayerWeapon::GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount) {}
 
 void lagcomp_begin(CBasePlayer* plr) {}
 void lagcomp_end() {}

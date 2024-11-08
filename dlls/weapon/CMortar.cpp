@@ -34,13 +34,14 @@ class CMortar : public CGrenade
 public:
 	void Spawn( void );
 	void Precache( void );
+	virtual const char* DisplayName() { return "Mortar"; }
 
 	void EXPORT MortarExplode( void );
 
 	int m_spriteTexture;
 };
 
-LINK_ENTITY_TO_CLASS( monster_mortar, CMortar );
+LINK_ENTITY_TO_CLASS( monster_mortar, CMortar )
 
 void CMortar::Spawn( )
 {
@@ -67,26 +68,8 @@ void CMortar::MortarExplode( void )
 {
 #if 1
 	// mortar beam
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_BEAMPOINTS );
-		WRITE_COORD(pev->origin.x);
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z);
-		WRITE_COORD(pev->origin.x);
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z + 1024);
-		WRITE_SHORT(m_spriteTexture );
-		WRITE_BYTE( 0 ); // framerate
-		WRITE_BYTE( 0 ); // framerate
-		WRITE_BYTE( 1 ); // life
-		WRITE_BYTE( 40 );  // width
-		WRITE_BYTE( 0 );   // noise
-		WRITE_BYTE( 255 );   // r, g, b
-		WRITE_BYTE( 160 );   // r, g, b
-		WRITE_BYTE( 100 );   // r, g, b
-		WRITE_BYTE( 128 );	// brightness
-		WRITE_BYTE( 0 );		// speed
-	MESSAGE_END();
+	UTIL_BeamPoints(pev->origin, pev->origin + Vector(0,0,1024), m_spriteTexture, 0, 0, 1, 40, 0,
+		RGBA(255, 160, 100, 128), 0);
 #endif
 
 #if 0

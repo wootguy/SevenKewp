@@ -19,6 +19,7 @@ public:
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
 	void	Blocked(CBaseEntity* pOther);
+	virtual const char* DisplayName() { return "Pendulum"; }
 
 	static	TYPEDESCRIPTION m_SaveData[];
 
@@ -32,7 +33,7 @@ public:
 	vec3_t	m_start;
 };
 
-LINK_ENTITY_TO_CLASS(func_pendulum, CPendulum);
+LINK_ENTITY_TO_CLASS(func_pendulum, CPendulum)
 
 TYPEDESCRIPTION	CPendulum::m_SaveData[] =
 {
@@ -46,7 +47,7 @@ TYPEDESCRIPTION	CPendulum::m_SaveData[] =
 	DEFINE_FIELD(CPendulum, m_start, FIELD_VECTOR),
 };
 
-IMPLEMENT_SAVERESTORE(CPendulum, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CPendulum, CBaseEntity)
 
 
 

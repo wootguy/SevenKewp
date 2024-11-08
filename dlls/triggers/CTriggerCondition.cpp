@@ -80,7 +80,7 @@ public:
 	int m_lastResult;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_condition, CTriggerCondition);
+LINK_ENTITY_TO_CLASS(trigger_condition, CTriggerCondition)
 
 void CTriggerCondition::KeyValue(KeyValueData* pkvd)
 {

@@ -31,7 +31,7 @@
 //===================grenade
 
 
-LINK_ENTITY_TO_CLASS( grenade, CGrenade );
+LINK_ENTITY_TO_CLASS( grenade, CGrenade )
 
 // Grenades flagged with this will be triggered when the owner calls detonateSatchelCharges
 #define SF_GRENADE_DETONATE		0x0001
@@ -151,7 +151,21 @@ void CGrenade::Killed( entvars_t *pevAttacker, int iGib )
 }
 
 const char* CGrenade::GetModel() {
-	return pev->model ? STRING(pev->model) : m_defaultModel;
+
+	if (pev->model) {
+		return STRING(pev->model);
+	}
+
+	return mp_mergemodels.value && MergedModelBody() != -1 ? MERGED_ITEMS_MODEL : m_defaultModel;
+}
+
+void CGrenade::SetGrenadeModel() {
+	if (pev->model || MergedModelBody() == -1) {
+		SET_MODEL(ENT(pev), GetModel());
+	}
+	else {
+		SET_MODEL_MERGED(ENT(pev), GetModel(), MergedModelBody());
+	}
 }
 
 // Timed grenade, this think is called when time runs out.

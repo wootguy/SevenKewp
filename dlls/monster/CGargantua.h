@@ -50,7 +50,7 @@ class CStomp : public CBaseEntity
 public:
 	void Spawn(void);
 	void Think(void);
-	static CStomp* StompCreate(const Vector& origin, const Vector& end, float speed, float damage);
+	static CStomp* StompCreate(const Vector& origin, const Vector& end, edict_t* owner, float speed, float damage);
 
 private:
 	// UNDONE: re-use this sprite list instead of creating new ones all the time
@@ -89,6 +89,7 @@ public:
 	}
 
 	Schedule_t* GetScheduleOfType(int Type);
+	const char* GetTaskName(int taskIdx);
 	void StartTask(Task_t* pTask);
 	void RunTask(Task_t* pTask);
 

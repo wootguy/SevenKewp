@@ -8,7 +8,7 @@
 #include "shake.h"
 #include "CBeam.h"
 
-LINK_ENTITY_TO_CLASS(beam, CBeam);
+LINK_ENTITY_TO_CLASS(beam, CBeam)
 
 void CBeam::Spawn(void)
 {

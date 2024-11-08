@@ -6,17 +6,17 @@ class CPythonAmmo : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache( );
-		SET_MODEL(ENT(pev), "models/w_357ammobox.mdl");
+		SET_MODEL_MERGED(ENT(pev), "models/w_357ammobox.mdl", MERGE_MDL_W_357AMMOBOX);
 		CBasePlayerAmmo::Spawn( );
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_357ammobox.mdl");
+		PRECACHE_REPLACEMENT_MODEL("models/w_357ammobox.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
-		if (pOther->GiveAmmo( AMMO_357BOX_GIVE, "357", _357_MAX_CARRY ) != -1)
+		if (pOther->GiveAmmo( AMMO_357BOX_GIVE, "357", gSkillData.sk_ammo_max_357 ) != -1)
 		{
 			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
 			return TRUE;
@@ -25,4 +25,4 @@ class CPythonAmmo : public CBasePlayerAmmo
 	}
 };
 
-LINK_ENTITY_TO_CLASS( ammo_357, CPythonAmmo );
+LINK_ENTITY_TO_CLASS( ammo_357, CPythonAmmo )

@@ -26,9 +26,9 @@
 #include "CBasePlayerWeapon.h"
 #include "CMonsterMaker.h"
 
-LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker );
-LINK_ENTITY_TO_CLASS( squadmaker, CMonsterMaker );
-LINK_ENTITY_TO_CLASS( env_xenmaker, CMonsterMaker );
+LINK_ENTITY_TO_CLASS( monstermaker, CMonsterMaker )
+LINK_ENTITY_TO_CLASS( squadmaker, CMonsterMaker )
+LINK_ENTITY_TO_CLASS( env_xenmaker, CMonsterMaker )
 
 TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] = 
 {
@@ -44,7 +44,7 @@ TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 };
 
 
-IMPLEMENT_SAVERESTORE( CMonsterMaker, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CMonsterMaker, CBaseMonster )
 
 void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 {
@@ -300,7 +300,7 @@ void CMonsterMaker :: Precache( void )
 {
 	CBaseMonster::Precache();
 
-	std::map<std::string, std::string> keys;
+	std::unordered_map<std::string, std::string> keys;
 	if (m_soundReplacementPath)
 		keys["soundlist"] = STRING(m_soundReplacementPath);
 	if (m_IsPlayerAlly)
@@ -562,26 +562,8 @@ void CMonsterMaker :: XenmakerEffect() {
 
 		TRACE_LINE(position, randomPos, ignore_monsters, NULL, &tr);
 		if (tr.flFraction < 1.0f) {
-			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, position);
-			WRITE_BYTE(TE_BEAMPOINTS);
-			WRITE_COORD(position.x);
-			WRITE_COORD(position.y);
-			WRITE_COORD(position.z);
-			WRITE_COORD(tr.vecEndPos.x);
-			WRITE_COORD(tr.vecEndPos.y);
-			WRITE_COORD(tr.vecEndPos.z);
-			WRITE_SHORT(xen->m_xenBeamSpriteIdx);
-			WRITE_BYTE(0); // frame start
-			WRITE_BYTE(0); // frame rate
-			WRITE_BYTE(effectDuration); // life
-			WRITE_BYTE(10); // width
-			WRITE_BYTE(50); // noise
-			WRITE_BYTE(xen->m_vBeamColor.x);
-			WRITE_BYTE(xen->m_vBeamColor.y);
-			WRITE_BYTE(xen->m_vBeamColor.z);
-			WRITE_BYTE(xen->m_iBeamAlpha);
-			WRITE_BYTE(0); // scroll
-			MESSAGE_END();
+			UTIL_BeamPoints(position, tr.vecEndPos, xen->m_xenBeamSpriteIdx, 0, 0, effectDuration, 10, 50,
+				RGBA(xen->m_vBeamColor, xen->m_iBeamAlpha), 0, MSG_PVS, position);
 
 			if (++createdBeams >= MAX_XENMAKER_BEAMS) {
 				break;

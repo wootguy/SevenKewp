@@ -71,10 +71,10 @@ CXenHull* CXenHull::CreateHull(CBaseEntity* source, const Vector& mins, const Ve
 }
 
 
-LINK_ENTITY_TO_CLASS(xen_spore_small, CXenSporeSmall);
-LINK_ENTITY_TO_CLASS(xen_spore_medium, CXenSporeMed);
-LINK_ENTITY_TO_CLASS(xen_spore_large, CXenSporeLarge);
-LINK_ENTITY_TO_CLASS(xen_hull, CXenHull);
+LINK_ENTITY_TO_CLASS(xen_spore_small, CXenSporeSmall)
+LINK_ENTITY_TO_CLASS(xen_spore_medium, CXenSporeMed)
+LINK_ENTITY_TO_CLASS(xen_spore_large, CXenSporeLarge)
+LINK_ENTITY_TO_CLASS(xen_hull, CXenHull)
 
 void CXenSporeSmall::Spawn(void)
 {

@@ -24,6 +24,7 @@ public:
 	virtual void KeyValue(KeyValueData* pkvd);
 	virtual void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual void Blocked(CBaseEntity* pOther);
+	virtual const char* DisplayName() { return "Door"; }
 
 
 	virtual int	ObjectCaps(void)
@@ -47,7 +48,7 @@ public:
 	int DoorActivate();
 	void EXPORT DoorGoUp(void);
 	void EXPORT DoorGoDown(void);
-	void EXPORT DoorHitTop(void);
+	virtual void EXPORT DoorHitTop(void);
 	void EXPORT DoorHitBottom(void);
 
 	BYTE	m_bHealthValue;// some doors are medi-kit doors, they give players health

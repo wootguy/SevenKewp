@@ -105,10 +105,10 @@ EXPORT BOOL IsFacing(entvars_t* pevTest, const Vector& reference);
 #define bits_MEMORY_MOVE_FAILED			( 1 << 5 )// Movement has already failed
 #define bits_MEMORY_FLINCHED			( 1 << 6 )// Has already flinched
 #define bits_MEMORY_KILLED				( 1 << 7 )// HACKHACK -- remember that I've already called my Killed()
-#define bits_MEMORY_CUSTOM4				( 1 << 28 )	// Monster-specific memory
-#define bits_MEMORY_CUSTOM3				( 1 << 29 )	// Monster-specific memory
-#define bits_MEMORY_CUSTOM2				( 1 << 30 )	// Monster-specific memory
-#define bits_MEMORY_CUSTOM1				( 1 << 31 )	// Monster-specific memory
+#define bits_MEMORY_CUSTOM4				( 1 << 8 )	// Monster-specific memory
+#define bits_MEMORY_CUSTOM3				( 1 << 9 )	// Monster-specific memory
+#define bits_MEMORY_CUSTOM2				( 1 << 10 )	// Monster-specific memory
+#define bits_MEMORY_CUSTOM1				( 1 << 11 )	// Monster-specific memory
 
 // trigger conditions for scripted AI
 // these MUST match the CHOICES interface in halflife.fgd for the base monster
@@ -167,6 +167,10 @@ public:
 
 #define CUSTOM_SCHEDULES\
 		virtual Schedule_t *ScheduleFromName( const char *pName );\
+		virtual Schedule_t* ScheduleFromTableIdx(uint32_t idx); \
+		virtual int GetScheduleTableSize(); \
+		virtual int GetScheduleTableIdx(); \
+		virtual void GetAllSchedules( std::unordered_set<Schedule_t*>& schedulesOut ); \
 		static Schedule_t *m_scheduleList[]
 
 #define DEFINE_CUSTOM_SCHEDULES(derivedClass)\
@@ -179,7 +183,33 @@ public:
 			if ( !pSchedule )\
 				return baseClass::ScheduleFromName(pName);\
 			return pSchedule;\
-		}
+		} \
+		Schedule_t* derivedClass::ScheduleFromTableIdx(uint32_t idx) { \
+			Schedule_t* baseSched = baseClass::ScheduleFromTableIdx(idx); \
+			idx -= baseClass::GetScheduleTableSize(); \
+			return (!baseSched && idx < ARRAYSIZE(m_scheduleList)) ? m_scheduleList[idx] : baseSched; \
+		} \
+		int derivedClass::GetScheduleTableSize() { \
+			return baseClass::GetScheduleTableSize() + ARRAYSIZE(m_scheduleList); \
+		} \
+		int derivedClass::GetScheduleTableIdx() { \
+			int baseIdx = baseClass::GetScheduleTableIdx(); \
+			if (baseIdx != -1) { \
+				return baseIdx; \
+			} \
+			for (int i = 0; i < (int)ARRAYSIZE(m_scheduleList); i++) { \
+				if (m_scheduleList[i] == m_pSchedule) { \
+					return baseClass::GetScheduleTableSize() + i; \
+				} \
+			} \
+			return -1; \
+		} \
+		void derivedClass::GetAllSchedules(std::unordered_set<Schedule_t*>& schedulesOut) { \
+			baseClass::GetAllSchedules(schedulesOut); \
+			for (int i = 0; i < (int)ARRAYSIZE(m_scheduleList); i++) { \
+				schedulesOut.insert(m_scheduleList[i]); \
+			} \
+		} \
 
 
 

@@ -87,6 +87,23 @@ enum sbar_data
 	SBAR_END,
 };
 
+#define MAX_CLIENT_ENTS 1665 // default for the latest HL client from steam
+#define MAX_LEGACY_CLIENT_ENTS 1365 // default when using the steam_legacy beta
+
+enum HL_CLIENT_ENGINE_VERSION {
+	CLIENT_ENGINE_NOT_CHECKED,	// player hasn't responded to cvar queries yet
+	CLIENT_ENGINE_HL_LATEST,	// the latest version of the steam HL client from steam
+	CLIENT_ENGINE_HL_LEGACY,	// the legacy version of HL from steam
+	CLIENT_ENGINE_BOT,			// bot's don't use a client
+};
+
+enum HL_CLIENT_MOD_VERSION {
+	CLIENT_MOD_NOT_CHECKED,	// player hasn't responded to cvar queries yet
+	CLIENT_MOD_HL,			// the vanilla half-life mod from steam (or an undetected custom client)
+	CLIENT_MOD_HLBUGFIXED,	// a popular custom client (for cheating!!! but also cool stuff...)
+	CLIENT_MOD_BOT,			// bot's don't use mods
+};
+
 #define CHAT_INTERVAL 1.0f
 
 class EXPORT CBasePlayer : public CBaseMonster
@@ -107,8 +124,11 @@ public:
 	int		m_iObserverLastMode;// last used observer mode
 	bool	m_isObserver;
 	float	m_lastObserverSwitch;
+	bool m_wantToExitObserver; // set to true if the player should spawn as soon as a spawn point is available
 	int		IsObserver() { return m_isObserver; };
 	BOOL	IsFirstPerson() { return m_hViewEntity.GetEdict() == edict(); }
+	BOOL	IsBot() { return pev->flags & FL_FAKECLIENT; }
+	virtual	BOOL IsNormalMonster(void) { return FALSE; }
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 
 	int					random_seed;    // See that is shared between client & server for shared weapons code
@@ -210,7 +230,7 @@ public:
 	Vector				m_vecAutoAim;
 	BOOL				m_fOnTarget;
 	int					m_iDeaths;
-	float				m_iRespawnFrames;	// used in PlayerDeathThink() to make sure players can always respawn
+	float				m_flRespawnTimer; // used in PlayerDeathThink() to make sure players can always respawn;
 
 	int m_lastx, m_lasty;  // These are the previous update's crosshair angles, DON"T SAVE/RESTORE
 
@@ -250,7 +270,7 @@ public:
 	virtual BOOL IsNetClient( void ) { return TRUE; }		// Bots should return FALSE for this, they can't receive NET messages
 															// Spectators should return TRUE for this
 	virtual const char *TeamID( void );
-
+	virtual const char* DisplayName() { return STRING(pev->netname); }
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	void RenewItems(void);
@@ -260,6 +280,11 @@ public:
 
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
 	virtual void UpdateClientData( void );
+
+	// if fast, then only send essential user info because it will be reset shortly
+	void Rename(const char* newName, bool fast, int msg_mode = MSG_ALL, edict_t* dst = NULL);
+
+	void SetPrefsFromUserinfo(char* infobuffer);
 	
 	static	TYPEDESCRIPTION m_playerSaveData[];
 
@@ -357,19 +382,49 @@ public:
 	float m_flStatusBarDisappearDelay;
 	char m_SbarString0[ SBAR_STRING_SIZE ];
 	char m_SbarString1[ SBAR_STRING_SIZE ];
-	
+	int tempNameActive; // +1 for each status bar update while the player's name/team is currently swapped for status bar coloring
+	char m_tempName[SBAR_STRING_SIZE];
+	int m_tempTeam;
+
 	float m_flNextChatTime;
+	
+	int m_iAutoWepSwitch;
+
 	float m_lastScoreUpdate;
 	int m_lastScore;
 	void UpdateScore();
 
+	void UpdateTeamInfo(int color=-1, int msg_mode=MSG_ALL, edict_t* dst=NULL);
+
 	float m_lastSpawnMessage;
 	float m_lastKillTime;
 	bool m_deathMessageSent;
+	bool m_allowFriendlyFire; // true if this player allows incoming friendly fire
+
+	float m_extraRespawnDelay; // set to non-zero to increase respawn delay (sums with map default)
 
 	float m_initSoundTime;
 
+	HL_CLIENT_ENGINE_VERSION m_clientEngineVersion; // which game engine is the is this player using?
+	HL_CLIENT_MOD_VERSION m_clientModVersion; // which mod is this player using?
+	string_t m_clientModVersionString; // version string for the client mod
+	bool m_sentClientWarning; // has this client been warned about their client incompatability?
+
 	int GetNameColor();
+
+	const char* GetTeamName();
+
+	// checks client cvars to determine which engine and mod is being used. Called when the player first enters the server.
+	void QueryClientType();
+
+	void HandleClientCvarResponse(int requestID, const char* pszCvarName, const char* pszValue);
+
+	// get the default edict count for the player's client, to avoid sending invalid indexes
+	int GetMaxClientEdicts();
+
+	void SendLegacyClientWarning();
+
+	const char* GetClientVersionString();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

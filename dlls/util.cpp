@@ -19,7 +19,7 @@
   Utility code.  Really not optional after all.
 
 */
-
+#include <cstdint>
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
@@ -37,16 +37,27 @@
 #include "studio.h"
 #include "PluginManager.h"
 #include "TextMenu.h"
+#include "debug.h"
 
 #include <fstream>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef WIN32
-#include <unistd.h>
-#endif
+#include <chrono>
+#include <mutex>
+
+using namespace std::chrono;
 
 #ifdef WIN32
+#include <windows.h>
+#include <direct.h>
+#define mkdir(path, perms) _mkdir(path)
 #define stat _stat
+#else
+#include <unistd.h>
+#include <time.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/statvfs.h>
 #endif
 
 float UTIL_WeaponTimeBase( void )
@@ -80,19 +91,166 @@ unsigned int seed_table[ 256 ] =
 	25678, 18555, 13256, 23316, 22407, 16727, 991, 9236, 5373, 29402, 6117, 15241, 27715, 19291, 19888, 19847
 };
 
-std::map<std::string, std::string> g_precachedModels;
-std::set<std::string> g_missingModels;
-std::set<std::string> g_precachedSounds;
-std::set<std::string> g_precachedGeneric;
-std::map<std::string, int> g_precachedEvents;
-std::set<std::string> g_tryPrecacheModels;
-std::set<std::string> g_tryPrecacheSounds;
-std::set<std::string> g_tryPrecacheGeneric;
-std::set<std::string> g_tryPrecacheEvents;
-std::map<std::string, WavInfo> g_wavInfos;
-Bsp g_bsp;
-
 std::string g_mp3Command;
+
+std::unordered_map<std::string, int> g_admins;
+
+std::thread::id g_main_thread_id = std::this_thread::get_id();
+ThreadSafeQueue<AlertMsgCall> g_thread_prints;
+
+TYPEDESCRIPTION	gEntvarsDescription[] =
+{
+	DEFINE_ENTITY_FIELD(classname, FIELD_STRING),
+	DEFINE_ENTITY_GLOBAL_FIELD(globalname, FIELD_STRING),
+
+	DEFINE_ENTITY_FIELD(origin, FIELD_POSITION_VECTOR),
+	DEFINE_ENTITY_FIELD(oldorigin, FIELD_POSITION_VECTOR),
+	DEFINE_ENTITY_FIELD(velocity, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(basevelocity, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(clbasevelocity, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(movedir, FIELD_VECTOR),
+
+	DEFINE_ENTITY_FIELD(angles, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(avelocity, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(punchangle, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(v_angle, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(endpos, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(startpos, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(impacttime, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(starttime, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(fixangle, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(idealpitch, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(pitch_speed, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(ideal_yaw, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(yaw_speed, FIELD_FLOAT),
+
+	DEFINE_ENTITY_FIELD(modelindex, FIELD_INTEGER),
+	DEFINE_ENTITY_GLOBAL_FIELD(model, FIELD_MODELNAME),
+
+	DEFINE_ENTITY_FIELD(viewmodel, FIELD_MODELNAME),
+	DEFINE_ENTITY_FIELD(weaponmodel, FIELD_MODELNAME),
+
+	DEFINE_ENTITY_FIELD(absmin, FIELD_POSITION_VECTOR),
+	DEFINE_ENTITY_FIELD(absmax, FIELD_POSITION_VECTOR),
+	DEFINE_ENTITY_GLOBAL_FIELD(mins, FIELD_VECTOR),
+	DEFINE_ENTITY_GLOBAL_FIELD(maxs, FIELD_VECTOR),
+	DEFINE_ENTITY_GLOBAL_FIELD(size, FIELD_VECTOR),
+
+	DEFINE_ENTITY_FIELD(ltime, FIELD_TIME),
+	DEFINE_ENTITY_FIELD(nextthink, FIELD_TIME),
+
+	DEFINE_ENTITY_FIELD(solid, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(movetype, FIELD_INTEGER),
+
+	DEFINE_ENTITY_FIELD(skin, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(body, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(effects, FIELD_INTEGER),
+
+	DEFINE_ENTITY_FIELD(gravity, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(friction, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(light_level, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(gaitsequence, FIELD_INTEGER),
+
+	DEFINE_ENTITY_FIELD(frame, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(scale, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(sequence, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(animtime, FIELD_TIME),
+	DEFINE_ENTITY_FIELD(framerate, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(controller, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(blending, FIELD_INTEGER),
+
+	DEFINE_ENTITY_FIELD(rendermode, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(renderamt, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(rendercolor, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(renderfx, FIELD_INTEGER),
+
+	DEFINE_ENTITY_FIELD(health, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(frags, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(weapons, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(takedamage, FIELD_FLOAT),
+
+	DEFINE_ENTITY_FIELD(deadflag, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(view_ofs, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(button, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(impulse, FIELD_INTEGER),
+
+	DEFINE_ENTITY_FIELD(chain, FIELD_EDICT),
+	DEFINE_ENTITY_FIELD(dmg_inflictor, FIELD_EDICT),
+	DEFINE_ENTITY_FIELD(enemy, FIELD_EDICT),
+	DEFINE_ENTITY_FIELD(aiment, FIELD_EDICT),
+	DEFINE_ENTITY_FIELD(owner, FIELD_EDICT),
+	DEFINE_ENTITY_FIELD(groundentity, FIELD_EDICT),
+
+	DEFINE_ENTITY_FIELD(spawnflags, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(flags, FIELD_INTEGER),
+
+	DEFINE_ENTITY_FIELD(colormap, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(team, FIELD_INTEGER),
+
+	DEFINE_ENTITY_FIELD(max_health, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(teleport_time, FIELD_TIME),
+	DEFINE_ENTITY_FIELD(armortype, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(armorvalue, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(waterlevel, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(watertype, FIELD_INTEGER),
+
+	// Having these fields be local to the individual levels makes it easier to test those levels individually.
+	DEFINE_ENTITY_GLOBAL_FIELD(target, FIELD_STRING),
+	DEFINE_ENTITY_GLOBAL_FIELD(targetname, FIELD_STRING),
+	DEFINE_ENTITY_FIELD(netname, FIELD_STRING),
+	DEFINE_ENTITY_FIELD(message, FIELD_STRING),
+
+	DEFINE_ENTITY_FIELD(dmg_take, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(dmg_save, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(dmg, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(dmgtime, FIELD_TIME),
+
+	DEFINE_ENTITY_FIELD(noise, FIELD_SOUNDNAME),
+	DEFINE_ENTITY_FIELD(noise1, FIELD_SOUNDNAME),
+	DEFINE_ENTITY_FIELD(noise2, FIELD_SOUNDNAME),
+	DEFINE_ENTITY_FIELD(noise3, FIELD_SOUNDNAME),
+	DEFINE_ENTITY_FIELD(speed, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(air_finished, FIELD_TIME),
+	DEFINE_ENTITY_FIELD(pain_finished, FIELD_TIME),
+	DEFINE_ENTITY_FIELD(radsuit_finished, FIELD_TIME),
+
+	DEFINE_ENTITY_FIELD(pContainingEntity, FIELD_EDICT),
+	DEFINE_ENTITY_FIELD(playerclass, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(maxspeed, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(fov, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(weaponanim, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(pushmsec, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(bInDuck, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(flTimeStepSound, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(flSwimTime, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(flDuckTime, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(iStepLeft, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(flFallVelocity, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(gamestate, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(oldbuttons, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(groupinfo, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(iuser1, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(iuser2, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(iuser3, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(iuser4, FIELD_INTEGER),
+	DEFINE_ENTITY_FIELD(fuser1, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(fuser2, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(fuser3, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(fuser4, FIELD_FLOAT),
+	DEFINE_ENTITY_FIELD(vuser1, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(vuser2, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(vuser3, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(vuser4, FIELD_VECTOR),
+	DEFINE_ENTITY_FIELD(euser1, FIELD_EDICT),
+	DEFINE_ENTITY_FIELD(euser2, FIELD_EDICT),
+	DEFINE_ENTITY_FIELD(euser3, FIELD_EDICT),
+	DEFINE_ENTITY_FIELD(euser4, FIELD_EDICT),
+};
+
+const int ENTVARS_COUNT = (sizeof(gEntvarsDescription) / sizeof(gEntvarsDescription[0]));
+
+int g_groupmask = 0;
+int g_groupop = 0;
 
 unsigned int U_Random( void ) 
 { 
@@ -189,9 +347,6 @@ void UTIL_ParametricRocket( entvars_t *pev, Vector vecOrigin, Vector vecAngles, 
 	pev->impacttime = gpGlobals->time + travelTime;
 }
 
-int g_groupmask = 0;
-int g_groupop = 0;
-
 // Normal overrides
 void UTIL_SetGroupTrace( int groupmask, int op )
 {
@@ -228,193 +383,6 @@ UTIL_GroupTrace::~UTIL_GroupTrace( void )
 
 	ENGINE_SETGROUPMASK( g_groupmask, g_groupop );
 }
-
-TYPEDESCRIPTION	gEntvarsDescription[] = 
-{
-	DEFINE_ENTITY_FIELD( classname, FIELD_STRING ),
-	DEFINE_ENTITY_GLOBAL_FIELD( globalname, FIELD_STRING ),
-	
-	DEFINE_ENTITY_FIELD( origin, FIELD_POSITION_VECTOR ),
-	DEFINE_ENTITY_FIELD( oldorigin, FIELD_POSITION_VECTOR ),
-	DEFINE_ENTITY_FIELD( velocity, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( basevelocity, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( clbasevelocity, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( movedir, FIELD_VECTOR ),
-
-	DEFINE_ENTITY_FIELD( angles, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( avelocity, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( punchangle, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( v_angle, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( endpos, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( startpos, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( impacttime, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( starttime, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( fixangle, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( idealpitch, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( pitch_speed, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( ideal_yaw, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( yaw_speed, FIELD_FLOAT ),
-
-	DEFINE_ENTITY_FIELD( modelindex, FIELD_INTEGER ),
-	DEFINE_ENTITY_GLOBAL_FIELD( model, FIELD_MODELNAME ),
-
-	DEFINE_ENTITY_FIELD( viewmodel, FIELD_MODELNAME ),
-	DEFINE_ENTITY_FIELD( weaponmodel, FIELD_MODELNAME ),
-
-	DEFINE_ENTITY_FIELD( absmin, FIELD_POSITION_VECTOR ),
-	DEFINE_ENTITY_FIELD( absmax, FIELD_POSITION_VECTOR ),
-	DEFINE_ENTITY_GLOBAL_FIELD( mins, FIELD_VECTOR ),
-	DEFINE_ENTITY_GLOBAL_FIELD( maxs, FIELD_VECTOR ),
-	DEFINE_ENTITY_GLOBAL_FIELD( size, FIELD_VECTOR ),
-
-	DEFINE_ENTITY_FIELD( ltime, FIELD_TIME ),
-	DEFINE_ENTITY_FIELD( nextthink, FIELD_TIME ),
-
-	DEFINE_ENTITY_FIELD( solid, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( movetype, FIELD_INTEGER ),
-
-	DEFINE_ENTITY_FIELD( skin, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( body, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( effects, FIELD_INTEGER ),
-
-	DEFINE_ENTITY_FIELD( gravity, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( friction, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( light_level, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( gaitsequence, FIELD_INTEGER),
-
-	DEFINE_ENTITY_FIELD( frame, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( scale, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( sequence, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( animtime, FIELD_TIME ),
-	DEFINE_ENTITY_FIELD( framerate, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( controller, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( blending, FIELD_INTEGER ),
-
-	DEFINE_ENTITY_FIELD( rendermode, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( renderamt, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( rendercolor, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( renderfx, FIELD_INTEGER ),
-
-	DEFINE_ENTITY_FIELD( health, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( frags, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( weapons, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( takedamage, FIELD_FLOAT ),
-
-	DEFINE_ENTITY_FIELD( deadflag, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( view_ofs, FIELD_VECTOR ),
-	DEFINE_ENTITY_FIELD( button, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( impulse, FIELD_INTEGER ),
-
-	DEFINE_ENTITY_FIELD( chain, FIELD_EDICT ),
-	DEFINE_ENTITY_FIELD( dmg_inflictor, FIELD_EDICT ),
-	DEFINE_ENTITY_FIELD( enemy, FIELD_EDICT ),
-	DEFINE_ENTITY_FIELD( aiment, FIELD_EDICT ),
-	DEFINE_ENTITY_FIELD( owner, FIELD_EDICT ),
-	DEFINE_ENTITY_FIELD( groundentity, FIELD_EDICT ),
-
-	DEFINE_ENTITY_FIELD( spawnflags, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( flags, FIELD_INTEGER),
-
-	DEFINE_ENTITY_FIELD( colormap, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( team, FIELD_INTEGER ),
-
-	DEFINE_ENTITY_FIELD( max_health, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( teleport_time, FIELD_TIME ),
-	DEFINE_ENTITY_FIELD( armortype, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( armorvalue, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( waterlevel, FIELD_INTEGER ),
-	DEFINE_ENTITY_FIELD( watertype, FIELD_INTEGER ),
-
-	// Having these fields be local to the individual levels makes it easier to test those levels individually.
-	DEFINE_ENTITY_GLOBAL_FIELD( target, FIELD_STRING ),
-	DEFINE_ENTITY_GLOBAL_FIELD( targetname, FIELD_STRING ),
-	DEFINE_ENTITY_FIELD( netname, FIELD_STRING ),
-	DEFINE_ENTITY_FIELD( message, FIELD_STRING ),
-
-	DEFINE_ENTITY_FIELD( dmg_take, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( dmg_save, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( dmg, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( dmgtime, FIELD_TIME ),
-
-	DEFINE_ENTITY_FIELD( noise, FIELD_SOUNDNAME ),
-	DEFINE_ENTITY_FIELD( noise1, FIELD_SOUNDNAME ),
-	DEFINE_ENTITY_FIELD( noise2, FIELD_SOUNDNAME ),
-	DEFINE_ENTITY_FIELD( noise3, FIELD_SOUNDNAME ),
-	DEFINE_ENTITY_FIELD( speed, FIELD_FLOAT ),
-	DEFINE_ENTITY_FIELD( air_finished, FIELD_TIME ),
-	DEFINE_ENTITY_FIELD( pain_finished, FIELD_TIME ),
-	DEFINE_ENTITY_FIELD( radsuit_finished, FIELD_TIME ),
-
-	DEFINE_ENTITY_FIELD( pContainingEntity, FIELD_EDICT),
-	DEFINE_ENTITY_FIELD( playerclass, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( maxspeed, FIELD_FLOAT),
-	DEFINE_ENTITY_FIELD( fov, FIELD_FLOAT),
-	DEFINE_ENTITY_FIELD( weaponanim, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( pushmsec, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( bInDuck, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( flTimeStepSound, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( flSwimTime, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( flDuckTime, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( iStepLeft, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( flFallVelocity, FIELD_FLOAT),
-	DEFINE_ENTITY_FIELD( gamestate, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( oldbuttons, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( groupinfo, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( iuser1, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( iuser2, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( iuser3, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( iuser4, FIELD_INTEGER),
-	DEFINE_ENTITY_FIELD( fuser1, FIELD_FLOAT),
-	DEFINE_ENTITY_FIELD( fuser2, FIELD_FLOAT),
-	DEFINE_ENTITY_FIELD( fuser3, FIELD_FLOAT),
-	DEFINE_ENTITY_FIELD( fuser4, FIELD_FLOAT),
-	DEFINE_ENTITY_FIELD( vuser1, FIELD_VECTOR),
-	DEFINE_ENTITY_FIELD( vuser2, FIELD_VECTOR),
-	DEFINE_ENTITY_FIELD( vuser3, FIELD_VECTOR),
-	DEFINE_ENTITY_FIELD( vuser4, FIELD_VECTOR),
-	DEFINE_ENTITY_FIELD( euser1, FIELD_EDICT),
-	DEFINE_ENTITY_FIELD( euser2, FIELD_EDICT),
-	DEFINE_ENTITY_FIELD( euser3, FIELD_EDICT),
-	DEFINE_ENTITY_FIELD( euser4, FIELD_EDICT),
-};
-
-#define ENTVARS_COUNT		(sizeof(gEntvarsDescription)/sizeof(gEntvarsDescription[0]))
-
-
-#ifdef DEBUG
-EXPORT edict_t *DBG_EntOfVars( const entvars_t *pev )
-{
-	if (pev->pContainingEntity != NULL)
-		return pev->pContainingEntity;
-	ALERT(at_console, "entvars_t pContainingEntity is NULL, calling into engine");
-	edict_t* pent = (*g_engfuncs.pfnFindEntityByVars)((entvars_t*)pev);
-	if (pent == NULL)
-		ALERT(at_console, "DAMN!  Even the engine couldn't FindEntityByVars!");
-	((entvars_t *)pev)->pContainingEntity = pent;
-	return pent;
-}
-#endif //DEBUG
-
-
-#ifdef	DEBUG
-	void
-DBG_AssertFunction(
-	BOOL		fExpr,
-	const char*	szExpr,
-	const char*	szFile,
-	int			szLine,
-	const char*	szMessage)
-	{
-	if (fExpr)
-		return;
-	char szOut[512];
-	if (szMessage != NULL)
-		snprintf(szOut, 512, "ASSERT FAILED:\n %s \n(%s@%d)\n%s", szExpr, szFile, szLine, szMessage);
-	else
-		snprintf(szOut, 512, "ASSERT FAILED:\n %s \n(%s@%d)", szExpr, szFile, szLine);
-	ALERT(at_console, szOut);
-	}
-#endif	// DEBUG
 
 BOOL UTIL_GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon )
 {
@@ -651,20 +619,48 @@ CBaseEntity *UTIL_FindEntityGeneric( const char *szWhatever, Vector &vecSrc, flo
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns NULL
 // Index is 1 based
-CBaseEntity	*UTIL_PlayerByIndex( int playerIndex )
+CBasePlayer* UTIL_PlayerByIndex( int playerIndex )
 {
-	CBaseEntity *pPlayer = NULL;
+	CBasePlayer* pPlayer = NULL;
 
 	if ( playerIndex > 0 && playerIndex <= gpGlobals->maxClients )
 	{
 		edict_t *pPlayerEdict = INDEXENT( playerIndex );
 		if ( IsValidPlayer(pPlayerEdict) && !pPlayerEdict->free )
 		{
-			pPlayer = CBaseEntity::Instance( pPlayerEdict );
+			pPlayer = (CBasePlayer*)CBaseEntity::Instance( pPlayerEdict );
 		}
 	}
 	
 	return pPlayer;
+}
+
+CBasePlayer* UTIL_PlayerByUserId(int userid)
+{
+	if (userid > 0)
+	{
+		for (int i = 1; i <= gpGlobals->maxClients; i++)
+		{
+			CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+
+			if (pPlayer && g_engfuncs.pfnGetPlayerUserId(pPlayer->edict()) == userid)
+				return pPlayer;
+		}
+	}
+
+	return NULL;
+}
+
+CBasePlayer* UTIL_PlayerByUniqueId(const char* id) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+
+		if (pPlayer && !strcmp(id, getPlayerUniqueId(pPlayer->edict()))) {
+			return pPlayer;
+		}
+	}
+
+	return NULL;
 }
 
 edict_t* UTIL_ClientsInPVS(edict_t* edict, int& playerCount) {
@@ -706,7 +702,7 @@ edict_t* UTIL_ClientsInPVS(edict_t* edict, int& playerCount) {
 
 bool UTIL_IsClientInPVS(edict_t* edict) {
 	CBaseEntity* ent = (CBaseEntity*)GET_PRIVATE(edict);
-	return ent && ent->m_visiblePlayers;
+	return ent && ent->m_pvsPlayers;
 }
 
 bool IsValidPlayer(edict_t* edict) {
@@ -794,6 +790,296 @@ void WRITE_BYTES(uint8_t* bytes, int count) {
 	}
 }
 
+// This logic makes sure that a network message does not get sent to
+// a client that can't handle a high entity index, if one is given.
+// entindex is assumed to be the entity used for PVS/PAS tests, if using that message mode.
+// Required variadic args:
+//    int msgMode = the network message mode
+//    const float* msgOrigin = origin used by the engine for some message send modes (PVS/PAS)
+//    edict_t* targetEnt = the target entity of the network message (NULL for broadcasts)
+// NOTE: This code is mostly duplicated in UTIL_BeamEnts, which checks multiple indexes
+#define SAFE_MESSAGE_ENT_LOGIC(msg_func, entindex, ...) \
+	if (entindex < MAX_LEGACY_CLIENT_ENTS) { \
+		msg_func(entindex, __VA_ARGS__); \
+		return; \
+	} \
+	\
+	if (msgMode == MSG_ONE || msgMode == MSG_ONE_UNRELIABLE) { \
+		if (UTIL_isSafeEntIndex(targetEnt, entindex, __FUNCTION__)) { \
+			msg_func(entindex, __VA_ARGS__); \
+		} \
+		return; \
+	} \
+	\
+	int originalMsgMode = msgMode; /* saved in case PVS/PAS was passed, for testing later */ \
+	msgMode = GetIndividualNetMessageMode(msgMode); /* sending individual messages instead of a broadcast */\
+	msgOrigin = NULL; /* don't send this to the engine because PVS/PAS testing will be done here */ \
+	for (int i = 1; i <= gpGlobals->maxClients; i++) { \
+		targetEnt = INDEXENT(i); \
+	\
+		if (TestMsgVis(targetEnt, entindex, originalMsgMode) && UTIL_isSafeEntIndex(targetEnt, entindex, __FUNCTION__)) { \
+			msg_func(entindex, __VA_ARGS__); \
+		} \
+	}
+
+// tests if a player would receive a message given a send mode
+// and the entity which is emitting the message
+bool TestMsgVis(edict_t* plr, int testEntIdx, int netMsgMode) {
+	CBaseEntity* ent = CBaseEntity::Instance(ENT(testEntIdx));
+
+	if (!ent) {
+		return false;
+	}
+
+	switch (netMsgMode) {
+	case MSG_PVS:
+	case MSG_PVS_R:
+		return ent->InPVS(plr);
+	case MSG_PAS:
+	case MSG_PAS_R:
+		return ent->InPAS(plr);
+	default:
+		return true;
+	}
+}
+
+// converts a broadcast message mode to an individual mode
+// while preserving the reliable/unreliable channel selection
+int GetIndividualNetMessageMode(int msgMode) {
+	switch (msgMode) {
+	case MSG_ALL:
+	case MSG_PVS_R:
+	case MSG_PAS_R:
+	case MSG_ONE:
+		return MSG_ONE;
+	default:
+		return MSG_ONE_UNRELIABLE;
+	}
+}
+
+void UTIL_BeamFollow_msg(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_BEAMFOLLOW);
+	WRITE_SHORT(entindex);
+	WRITE_SHORT(modelIdx);
+	WRITE_BYTE(life);
+	WRITE_BYTE(width);
+	WRITE_BYTE(color.r);
+	WRITE_BYTE(color.g);
+	WRITE_BYTE(color.b);
+	WRITE_BYTE(color.a);
+	MESSAGE_END();
+}
+void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_BeamFollow_msg, entindex, modelIdx, life, width, color, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_Fizz_msg(int entindex, int modelIdx, uint8_t density, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_FIZZ);
+	WRITE_SHORT(entindex);
+	WRITE_SHORT(modelIdx);
+	WRITE_BYTE(density);
+	MESSAGE_END();
+}
+void UTIL_Fizz(int entindex, int modelIdx, uint8_t density, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_Fizz_msg, entindex, modelIdx, density, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_ELight_msg(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_ELIGHT);
+	WRITE_SHORT(entindex + (attachment << 12));
+	WRITE_COORD(origin.x);
+	WRITE_COORD(origin.y);
+	WRITE_COORD(origin.z);
+	WRITE_COORD(radius);
+	WRITE_BYTE(color.r);
+	WRITE_BYTE(color.g);
+	WRITE_BYTE(color.b);
+	WRITE_BYTE(life);
+	WRITE_COORD(decay);
+	MESSAGE_END();
+}
+void UTIL_ELight(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_ELight_msg, entindex, attachment, origin, radius, color, life, decay, msgMode, origin, targetEnt);
+}
+
+void UTIL_BeamEntPoint_msg(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart,
+	uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, 
+	int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_BEAMENTPOINT);
+	WRITE_SHORT(entindex + (attachment << 12));
+	WRITE_COORD(point.x);
+	WRITE_COORD(point.y);
+	WRITE_COORD(point.z);
+	WRITE_SHORT(modelIdx);
+	WRITE_BYTE(frameStart);
+	WRITE_BYTE(framerate);
+	WRITE_BYTE(life);
+	WRITE_BYTE(width);
+	WRITE_BYTE(noise);
+	WRITE_BYTE(color.r);
+	WRITE_BYTE(color.g);
+	WRITE_BYTE(color.b);
+	WRITE_BYTE(color.a);
+	WRITE_BYTE(speed);
+	MESSAGE_END();
+}
+void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_BeamEntPoint_msg, entindex, attachment, point, modelIdx, frameStart, framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_BeamEnts_msg(int entindex, int attachment, int entindex2, int attachment2, bool ringMode, int modelIdx, uint8_t frameStart,
+	uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed,
+	int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(ringMode ? TE_BEAMRING : TE_BEAMENTS);
+	WRITE_SHORT(entindex + (attachment << 12));
+	WRITE_SHORT(entindex2 + (attachment2 << 12));
+	WRITE_SHORT(g_sModelIndexLaser);
+	WRITE_BYTE(frameStart);
+	WRITE_BYTE(framerate);
+	WRITE_BYTE(life);
+	WRITE_BYTE(width);
+	WRITE_BYTE(noise);
+	WRITE_BYTE(color.r);
+	WRITE_BYTE(color.g);
+	WRITE_BYTE(color.b);
+	WRITE_BYTE(color.a);
+	WRITE_BYTE(speed);
+	MESSAGE_END();
+}
+void UTIL_BeamEnts(int startEnt, int startAttachment, int endEnt, int endAttachment, bool ringMode, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	// NOTE: This code is mostly duplicated in the SAFE_MESSAGE_ENT_LOGIC macro
+	if (startEnt < MAX_LEGACY_CLIENT_ENTS && endEnt < MAX_LEGACY_CLIENT_ENTS) {
+		UTIL_BeamEnts_msg(startEnt, startAttachment, endEnt, endAttachment, ringMode, modelIdx, frameStart,
+			framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
+		return;
+	}
+
+	if (msgMode == MSG_ONE || msgMode == MSG_ONE_UNRELIABLE) {
+		if (UTIL_isSafeEntIndex(targetEnt, startEnt, __FUNCTION__) && UTIL_isSafeEntIndex(targetEnt, endEnt, __FUNCTION__)) {
+			UTIL_BeamEnts_msg(startEnt, startAttachment, endEnt, endAttachment, ringMode, modelIdx, frameStart,
+				framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
+		}
+		return;
+	}
+
+	int originalMsgMode = msgMode; /* saved in case PVS/PAS was passed, for testing later */
+	msgMode = GetIndividualNetMessageMode(msgMode); /* sending individual messages instead of a broadcast */
+	msgOrigin = NULL; /* don't send this to the engine because PVS/PAS testing will be done here */
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		targetEnt = INDEXENT(i);
+
+		bool isVisible = TestMsgVis(targetEnt, startEnt, originalMsgMode) || TestMsgVis(targetEnt, endEnt, originalMsgMode);
+		bool isSafeIndex = UTIL_isSafeEntIndex(targetEnt, startEnt, __FUNCTION__) && UTIL_isSafeEntIndex(targetEnt, endEnt, __FUNCTION__);
+
+		if (isVisible && isSafeIndex) {
+			UTIL_BeamEnts_msg(startEnt, startAttachment, endEnt, endAttachment, ringMode, modelIdx, frameStart,
+				framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
+		}
+	}
+}
+
+void UTIL_BeamPoints(Vector start, Vector end, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_BEAMPOINTS);
+	WRITE_COORD(start.x);
+	WRITE_COORD(start.y);
+	WRITE_COORD(start.z);
+	WRITE_COORD(end.x);
+	WRITE_COORD(end.y);
+	WRITE_COORD(end.z);
+	WRITE_SHORT(modelIdx);
+	WRITE_BYTE(frameStart);
+	WRITE_BYTE(framerate);
+	WRITE_BYTE(life);
+	WRITE_BYTE(width);
+	WRITE_BYTE(noise);
+	WRITE_BYTE(color.r);
+	WRITE_BYTE(color.g);
+	WRITE_BYTE(color.b);
+	WRITE_BYTE(color.a);
+	WRITE_BYTE(speed);
+	MESSAGE_END();
+}
+
+void UTIL_BSPDecal_msg(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_BSPDECAL);
+	WRITE_COORD(origin.x);
+	WRITE_COORD(origin.y);
+	WRITE_COORD(origin.z);
+	WRITE_SHORT(decalIdx);
+	WRITE_SHORT(entindex);
+	if (entindex)
+		WRITE_SHORT(ENT(entindex)->v.modelindex);
+	MESSAGE_END();
+}
+void UTIL_BSPDecal(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_BSPDecal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_PlayerDecal_msg(int entindex, int playernum, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_PLAYERDECAL);
+	WRITE_BYTE(playernum);
+	WRITE_COORD(origin.x);
+	WRITE_COORD(origin.y);
+	WRITE_COORD(origin.z);
+	WRITE_SHORT(entindex);
+	WRITE_BYTE(decalIdx);
+	MESSAGE_END();
+}
+void UTIL_PlayerDecal(int entindex, int playernum, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_PlayerDecal_msg, entindex, playernum, origin, decalIdx, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_GunshotDecal_msg(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_GUNSHOTDECAL);
+	WRITE_COORD(origin.x);
+	WRITE_COORD(origin.y);
+	WRITE_COORD(origin.z);
+	WRITE_SHORT(entindex);
+	WRITE_BYTE(decalIdx);
+	MESSAGE_END();
+}
+void UTIL_GunshotDecal(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_GunshotDecal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
+}
+
+void UTIL_Decal_msg(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	int mode = TE_DECAL;
+
+	if (entindex) {
+		mode = decalIdx > 255 ? TE_DECALHIGH : TE_DECAL;
+	}
+	else {
+		mode = decalIdx > 255 ? TE_WORLDDECALHIGH : TE_WORLDDECAL;
+	}
+	
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(mode);
+	WRITE_COORD(origin.x);
+	WRITE_COORD(origin.y);
+	WRITE_COORD(origin.z);
+	WRITE_BYTE(decalIdx);
+	if (entindex)
+		WRITE_SHORT(entindex);
+	MESSAGE_END();
+}
+void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_Decal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
+}
+
+
+void WRITE_FLOAT(float f) {
+	WRITE_LONG(*(uint32_t*)&f);
+}
+
 void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest)
 {
 	float rgfl[3];
@@ -813,38 +1099,42 @@ void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char 
 		samp = g_soundReplacements[samp].c_str();
 	}
 
-	if (!UTIL_isSafeEntIndex(eidx, "emit static sound")) {
-		return;
+	char name[32];
+	if (samp && *samp == '!') {
+		if (SENTENCEG_Lookup(samp, name, 32) >= 0) {
+			samp = name;
+		}
+		else {
+			ALERT(at_error, "Bad sentence: %s\n", samp);
+			return;
+		}
 	}
 
-	if (samp && *samp == '!')
-	{
-		char name[32];
-		if (SENTENCEG_Lookup(samp, name, 32) >= 0) {
-			if (dest) {
-				ambientsound_msg(entity, rgfl, name, vol, attenuation, fFlags, pitch, MSG_ONE, dest);
+	if (dest) {
+		if (UTIL_isSafeEntIndex(dest, ENTINDEX(entity), "play ambient sound")) {
+			ambientsound_msg(entity, rgfl, samp, vol, attenuation, fFlags, pitch, MSG_ONE, dest);
+		}
+	}
+	else if (ENTINDEX(entity) >= MAX_LEGACY_CLIENT_ENTS) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
+			edict_t* plr = INDEXENT(i);
+
+			if (IsValidPlayer(plr) && UTIL_isSafeEntIndex(plr, ENTINDEX(entity), "play ambient sound")) {
+				ambientsound_msg(entity, rgfl, samp, vol, attenuation, fFlags, pitch, MSG_ONE, plr);
 			}
-			else {
-				EMIT_AMBIENT_SOUND(entity, rgfl, name, vol, attenuation, fFlags, pitch);
-			}
-			
 		}
 	}
 	else {
-		if (dest) {
-			ambientsound_msg(entity, rgfl, samp, vol, attenuation, fFlags, pitch, MSG_ONE, dest);
-		}
-		else {
-			EMIT_AMBIENT_SOUND(entity, rgfl, samp, vol, attenuation, fFlags, pitch);
-		}
+		EMIT_AMBIENT_SOUND(entity, rgfl, samp, vol, attenuation, fFlags, pitch);
 	}
 }
 
 void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target) {
 	// surround with ; to prevent multiple commands being joined when sent in the same frame(?)
 	// this fixes music sometimes not loading/starting/stopping
-	std::string mp3Command = UTIL_VarArgs(";mp3 %s sound/%s;", (loop ? "loop" : "play"), path);
-	
+	std::string mp3Path = normalize_path(UTIL_VarArgs("sound/%s", path));
+	std::string mp3Command = UTIL_VarArgs(";mp3 %s %s;", (loop ? "loop" : "play"), mp3Path.c_str());
+
 	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
 	WRITE_STRING(mp3Command.c_str());
 	MESSAGE_END();
@@ -869,7 +1159,7 @@ void UTIL_StopGlobalMp3(edict_t* target) {
 	}
 }
 
-static unsigned short FixedUnsigned16( float value, float scale )
+unsigned short FixedUnsigned16( float value, float scale )
 {
 	int output;
 
@@ -882,7 +1172,7 @@ static unsigned short FixedUnsigned16( float value, float scale )
 	return (unsigned short)output;
 }
 
-static short FixedSigned16( float value, float scale )
+short FixedSigned16( float value, float scale )
 {
 	int output;
 
@@ -1072,52 +1362,67 @@ const char* BreakupLongLines(const char* pMessage) {
 	return pMessage;
 }
 
-void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage )
+void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage, int msgMode)
 {
-	if ( !pEntity || !pEntity->IsNetClient() )
+	bool isIndividual = msgMode == MSG_ONE || msgMode == MSG_ONE_UNRELIABLE;
+
+	if (isIndividual && (!pEntity || !pEntity->IsNetClient()))
 		return;
 
 	pMessage = BreakupLongLines(pMessage);
 
-	MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, NULL, pEntity->edict() );
-		WRITE_BYTE( TE_TEXTMESSAGE );
-		WRITE_BYTE( textparms.channel & 0xFF );
+	if (textparms.channel == -1) {
+		int sz = 7 * sizeof(long) + 3 + strlen(pMessage);
+		uint32_t color = (textparms.r1 << 16) | (textparms.g1 << 8) | textparms.b1;
 
-		WRITE_SHORT( FixedSigned16( textparms.x, 1<<13 ) );
-		WRITE_SHORT( FixedSigned16( textparms.y, 1<<13 ) );
-		WRITE_BYTE( textparms.effect );
+		MESSAGE_BEGIN(msgMode, SVC_DIRECTOR, NULL, pEntity ? pEntity->edict() : NULL);
+		WRITE_BYTE(sz); // message size
+		WRITE_BYTE(6); // director message
+		WRITE_BYTE(textparms.effect); // effect
+		WRITE_LONG(color); // color
+		WRITE_FLOAT(textparms.x); // x
+		WRITE_FLOAT(textparms.y); // y
+		WRITE_FLOAT(textparms.fadeinTime); // fade in
+		WRITE_FLOAT(textparms.fadeoutTime); // fade out
+		WRITE_FLOAT(textparms.holdTime); // hold time
+		WRITE_FLOAT(textparms.fxTime); // fx time
+		WRITE_STRING(pMessage); // fx time
+		MESSAGE_END();
+	}
+	else {
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, NULL, pEntity ? pEntity->edict() : NULL);
+		WRITE_BYTE(TE_TEXTMESSAGE);
+		WRITE_BYTE(textparms.channel & 0xFF);
 
-		WRITE_BYTE( textparms.r1 );
-		WRITE_BYTE( textparms.g1 );
-		WRITE_BYTE( textparms.b1 );
-		WRITE_BYTE( textparms.a1 );
+		WRITE_SHORT(FixedSigned16(textparms.x, 1 << 13));
+		WRITE_SHORT(FixedSigned16(textparms.y, 1 << 13));
+		WRITE_BYTE(textparms.effect);
 
-		WRITE_BYTE( textparms.r2 );
-		WRITE_BYTE( textparms.g2 );
-		WRITE_BYTE( textparms.b2 );
-		WRITE_BYTE( textparms.a2 );
+		WRITE_BYTE(textparms.r1);
+		WRITE_BYTE(textparms.g1);
+		WRITE_BYTE(textparms.b1);
+		WRITE_BYTE(textparms.a1);
 
-		WRITE_SHORT( FixedUnsigned16( textparms.fadeinTime, 1<<8 ) );
-		WRITE_SHORT( FixedUnsigned16( textparms.fadeoutTime, 1<<8 ) );
-		WRITE_SHORT( FixedUnsigned16( textparms.holdTime, 1<<8 ) );
+		WRITE_BYTE(textparms.r2);
+		WRITE_BYTE(textparms.g2);
+		WRITE_BYTE(textparms.b2);
+		WRITE_BYTE(textparms.a2);
 
-		if ( textparms.effect == 2 )
-			WRITE_SHORT( FixedUnsigned16( textparms.fxTime, 1<<8 ) );
+		WRITE_SHORT(FixedUnsigned16(textparms.fadeinTime, 1 << 8));
+		WRITE_SHORT(FixedUnsigned16(textparms.fadeoutTime, 1 << 8));
+		WRITE_SHORT(FixedUnsigned16(textparms.holdTime, 1 << 8));
 
-		WRITE_STRING( pMessage );
-	MESSAGE_END();
+		if (textparms.effect == 2)
+			WRITE_SHORT(FixedUnsigned16(textparms.fxTime, 1 << 8));
+
+		WRITE_STRING(pMessage);
+		MESSAGE_END();
+	}	
 }
 
-void UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage )
+void UTIL_HudMessageAll(const hudtextparms_t& textparms, const char* pMessage, int msgMode)
 {
-	int			i;
-
-	for ( i = 1; i <= gpGlobals->maxClients; i++ )
-	{
-		CBaseEntity *pPlayer = UTIL_PlayerByIndex( i );
-		if ( pPlayer )
-			UTIL_HudMessage( pPlayer, textparms, pMessage );
-	}
+	UTIL_HudMessage(NULL, textparms, pMessage, MSG_ALL);
 }
 
 					 
@@ -1142,7 +1447,7 @@ void UTIL_ClientPrintAll( int msg_dest, const char *msg )
 void UTIL_ClientPrint( edict_t* client, int msg_dest, const char * msg)
 {
 	if (msg_dest == print_chat) {
-		MESSAGE_BEGIN(MSG_ALL, gmsgSayText, NULL);
+		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, client);
 		WRITE_BYTE(0);
 		WRITE_STRING(msg);
 		MESSAGE_END();
@@ -1154,7 +1459,7 @@ void UTIL_ClientPrint( edict_t* client, int msg_dest, const char * msg)
 
 void UTIL_SayText( const char *pText, CBaseEntity *pEntity )
 {
-	if ( !pEntity->IsNetClient() )
+	if ( !pEntity || !pEntity->IsNetClient() )
 		return;
 
 	MESSAGE_BEGIN( MSG_ONE, gmsgSayText, NULL, pEntity->edict() );
@@ -1165,8 +1470,10 @@ void UTIL_SayText( const char *pText, CBaseEntity *pEntity )
 
 void UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity )
 {
+	int idx = pEntity ? pEntity->entindex() : 0;
+
 	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
-		WRITE_BYTE( pEntity->entindex() );
+		WRITE_BYTE(idx);
 		WRITE_STRING( pText );
 	MESSAGE_END();
 }
@@ -1359,6 +1666,9 @@ float UTIL_SplineFraction( float value, float scale )
 
 char* UTIL_VarArgs( const char *format, ... )
 {
+	static std::mutex m; // only allow one thread at a time to access static buffers
+	std::lock_guard<std::mutex> lock(m);
+
 	va_list		argptr;
 	static char		string[1024];
 	
@@ -1501,7 +1811,6 @@ void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber )
 {
 	short entityIndex;
 	int index;
-	int message;
 
 	if ( decalNumber < 0 )
 		return;
@@ -1524,37 +1833,8 @@ void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber )
 	}
 	else 
 		entityIndex = 0;
-
-	message = TE_DECAL;
-	if ( entityIndex != 0 )
-	{
-		if ( index > 255 )
-		{
-			message = TE_DECALHIGH;
-			index -= 256;
-		}
-	}
-	else
-	{
-		message = TE_WORLDDECAL;
-		if ( index > 255 )
-		{
-			message = TE_WORLDDECALHIGH;
-			index -= 256;
-		}
-	}
 	
-	if (UTIL_isSafeEntIndex(entityIndex, "apply decal")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(message);
-		WRITE_COORD(pTrace->vecEndPos.x);
-		WRITE_COORD(pTrace->vecEndPos.y);
-		WRITE_COORD(pTrace->vecEndPos.z);
-		WRITE_BYTE(index);
-		if (entityIndex)
-			WRITE_SHORT(entityIndex);
-		MESSAGE_END();
-	}
+	UTIL_Decal(entityIndex, pTrace->vecEndPos, index);
 }
 
 /*
@@ -1585,17 +1865,7 @@ void UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber,
 	if (pTrace->flFraction == 1.0)
 		return;
 
-	if (UTIL_isSafeEntIndex(ENTINDEX(pTrace->pHit), "apply player decal")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_PLAYERDECAL);
-		WRITE_BYTE(playernum);
-		WRITE_COORD(pTrace->vecEndPos.x);
-		WRITE_COORD(pTrace->vecEndPos.y);
-		WRITE_COORD(pTrace->vecEndPos.z);
-		WRITE_SHORT((short)ENTINDEX(pTrace->pHit));
-		WRITE_BYTE(index);
-		MESSAGE_END();
-	}
+	UTIL_PlayerDecal(ENTINDEX(pTrace->pHit), playernum, pTrace->vecEndPos, index);
 }
 
 void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
@@ -1610,16 +1880,7 @@ void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
 	if (pTrace->flFraction == 1.0)
 		return;
 
-	if (UTIL_isSafeEntIndex(ENTINDEX(pTrace->pHit), "apply gunshot decal")) {
-		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pTrace->vecEndPos);
-		WRITE_BYTE(TE_GUNSHOTDECAL);
-		WRITE_COORD(pTrace->vecEndPos.x);
-		WRITE_COORD(pTrace->vecEndPos.y);
-		WRITE_COORD(pTrace->vecEndPos.z);
-		WRITE_SHORT((short)ENTINDEX(pTrace->pHit));
-		WRITE_BYTE(index);
-		MESSAGE_END();
-	}
+	UTIL_GunshotDecal(ENTINDEX(pTrace->pHit), pTrace->vecEndPos, index, MSG_PAS, pTrace->vecEndPos);
 }
 
 
@@ -1712,6 +1973,7 @@ void UTIL_StringToVector( float *pVector, const char *pString )
 	int	j;
 
 	strcpy_safe( tempString, pString, 128 );
+	tempString[sizeof(tempString) - 1] = '\0';
 	pstr = pfront = tempString;
 
 	for ( j = 0; j < 3; j++ )			// lifted from pr_edict.c
@@ -1758,6 +2020,7 @@ void UTIL_StringToIntArray( int *pVector, int count, const char *pString )
 	int	j;
 
 	strcpy_safe( tempString, pString, 128 );
+	tempString[sizeof(tempString) - 1] = '\0';
 	pstr = pfront = tempString;
 
 	for ( j = 0; j < count; j++ )			// lifted from pr_edict.c
@@ -1916,7 +2179,7 @@ BOOL UTIL_IsValidEntity( edict_t *pent )
 }
 
 
-void UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::string> keys)
+void UTIL_PrecacheOther( const char *szClassname, std::unordered_map<std::string, std::string> keys)
 {
 	edict_t	*pent;
 
@@ -1948,7 +2211,7 @@ void UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::str
 // UTIL_LogPrintf - Prints a logged message to console.
 // Preceded by LOG: ( timestamp ) < message >
 //=========================================================
-void UTIL_LogPlayerEvent(edict_t* plr, const char* fmt, ...)
+void UTIL_LogPlayerEvent(const edict_t* plr, const char* fmt, ...)
 {
 	va_list			argptr;
 	static char		string[1024];
@@ -1982,354 +2245,16 @@ float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vecto
 //=========================================================
 // UTIL_StripToken - for redundant keynames
 //=========================================================
-void UTIL_StripToken( const char *pKey, char *pDest )
+void UTIL_StripToken( const char *pKey, char *pDest, int nLen)
 {
 	int i = 0;
 
-	while ( pKey[i] && pKey[i] != '#' )
+	while (i < nLen - 1 && pKey[i] && pKey[i] != '#')
 	{
 		pDest[i] = pKey[i];
 		i++;
 	}
 	pDest[i] = 0;
-}
-
-
-// --------------------------------------------------------------
-//
-// CSave
-//
-// --------------------------------------------------------------
-static int gSizes[FIELD_TYPECOUNT] = 
-{
-	sizeof(float),		// FIELD_FLOAT
-	sizeof(int),		// FIELD_STRING
-	sizeof(int),		// FIELD_ENTITY
-	sizeof(int),		// FIELD_CLASSPTR
-	sizeof(int),		// FIELD_EHANDLE
-	sizeof(int),		// FIELD_entvars_t
-	sizeof(int),		// FIELD_EDICT
-	sizeof(float)*3,	// FIELD_VECTOR
-	sizeof(float)*3,	// FIELD_POSITION_VECTOR
-	sizeof(int *),		// FIELD_POINTER
-	sizeof(int),		// FIELD_INTEGER
-#ifdef GNUC
-	sizeof(int *)*2,		// FIELD_FUNCTION
-#else
-	sizeof(int *),		// FIELD_FUNCTION	
-#endif
-	sizeof(int),		// FIELD_BOOLEAN
-	sizeof(short),		// FIELD_SHORT
-	sizeof(char),		// FIELD_CHARACTER
-	sizeof(float),		// FIELD_TIME
-	sizeof(int),		// FIELD_MODELNAME
-	sizeof(int),		// FIELD_SOUNDNAME
-};
-
-
-// Base class includes common SAVERESTOREDATA pointer, and manages the entity table
-CSaveRestoreBuffer :: CSaveRestoreBuffer( void )
-{
-	m_pdata = NULL;
-}
-
-
-CSaveRestoreBuffer :: CSaveRestoreBuffer( SAVERESTOREDATA *pdata )
-{
-	m_pdata = pdata;
-}
-
-
-CSaveRestoreBuffer :: ~CSaveRestoreBuffer( void )
-{
-}
-
-int	CSaveRestoreBuffer :: EntityIndex( CBaseEntity *pEntity )
-{
-	if ( pEntity == NULL )
-		return -1;
-	return EntityIndex( pEntity->pev );
-}
-
-
-int	CSaveRestoreBuffer :: EntityIndex( entvars_t *pevLookup )
-{
-	if ( pevLookup == NULL )
-		return -1;
-	return EntityIndex( ENT( pevLookup ) );
-}
-
-int	CSaveRestoreBuffer :: EntityIndex( EOFFSET eoLookup )
-{
-	return EntityIndex( ENT( eoLookup ) );
-}
-
-
-int	CSaveRestoreBuffer :: EntityIndex( edict_t *pentLookup )
-{
-	if ( !m_pdata || pentLookup == NULL )
-		return -1;
-
-	int i;
-	ENTITYTABLE *pTable;
-
-	for ( i = 0; i < m_pdata->tableCount; i++ )
-	{
-		pTable = m_pdata->pTable + i;
-		if ( pTable->pent == pentLookup )
-			return i;
-	}
-	return -1;
-}
-
-
-edict_t *CSaveRestoreBuffer :: EntityFromIndex( int entityIndex )
-{
-	if ( !m_pdata || entityIndex < 0 )
-		return NULL;
-
-	int i;
-	ENTITYTABLE *pTable;
-
-	for ( i = 0; i < m_pdata->tableCount; i++ )
-	{
-		pTable = m_pdata->pTable + i;
-		if ( pTable->id == entityIndex )
-			return pTable->pent;
-	}
-	return NULL;
-}
-
-
-int	CSaveRestoreBuffer :: EntityFlagsSet( int entityIndex, int flags )
-{
-	if ( !m_pdata || entityIndex < 0 )
-		return 0;
-	if ( entityIndex > m_pdata->tableCount )
-		return 0;
-
-	m_pdata->pTable[ entityIndex ].flags |= flags;
-
-	return m_pdata->pTable[ entityIndex ].flags;
-}
-
-
-void CSaveRestoreBuffer :: BufferRewind( int size )
-{
-	if ( !m_pdata )
-		return;
-
-	if ( m_pdata->size < size )
-		size = m_pdata->size;
-
-	m_pdata->pCurrentData -= size;
-	m_pdata->size -= size;
-}
-
-#ifndef _WIN32
-extern "C" {
-unsigned _rotr ( unsigned val, int shift)
-{
-        unsigned lobit;        /* non-zero means lo bit set */
-        unsigned num = val;    /* number to rotate */
-
-        shift &= 0x1f;                  /* modulo 32 -- this will also make
-                                           negative shifts work */
-
-        while (shift--) {
-                lobit = num & 1;        /* get high bit */
-                num >>= 1;              /* shift right one bit */
-                if (lobit)
-                        num |= 0x80000000;  /* set hi bit if lo bit was set */
-        }
-
-        return num;
-}
-}
-#endif
-
-unsigned int CSaveRestoreBuffer :: HashString( const char *pszToken )
-{
-	unsigned int	hash = 0;
-
-	while ( *pszToken )
-		hash = _rotr( hash, 4 ) ^ *pszToken++;
-
-	return hash;
-}
-
-unsigned short CSaveRestoreBuffer :: TokenHash( const char *pszToken )
-{
-	unsigned short	hash = (unsigned short)(HashString( pszToken ) % (unsigned)m_pdata->tokenCount );
-	
-#if _DEBUG
-	static int tokensparsed = 0;
-	tokensparsed++;
-	if ( !m_pdata->tokenCount || !m_pdata->pTokens )
-		ALERT( at_error, "No token table array in TokenHash()!" );
-#endif
-
-	for ( int i=0; i<m_pdata->tokenCount; i++ )
-	{
-#if _DEBUG
-		static qboolean beentheredonethat = FALSE;
-		if ( i > 50 && !beentheredonethat )
-		{
-			beentheredonethat = TRUE;
-			ALERT( at_error, "CSaveRestoreBuffer :: TokenHash() is getting too full!" );
-		}
-#endif
-
-		int	index = hash + i;
-		if ( index >= m_pdata->tokenCount )
-			index -= m_pdata->tokenCount;
-
-		if ( !m_pdata->pTokens[index] || strcmp( pszToken, m_pdata->pTokens[index] ) == 0 )
-		{
-			m_pdata->pTokens[index] = (char *)pszToken;
-			return index;
-		}
-	}
-		
-	// Token hash table full!!! 
-	// [Consider doing overflow table(s) after the main table & limiting linear hash table search]
-	ALERT( at_error, "CSaveRestoreBuffer :: TokenHash() is COMPLETELY FULL!" );
-	return 0;
-}
-
-void CSave :: WriteData( const char *pname, int size, const char *pdata )
-{
-	BufferField( pname, size, pdata );
-}
-
-
-void CSave :: WriteShort( const char *pname, const short *data, int count )
-{
-	BufferField( pname, sizeof(short) * count, (const char *)data );
-}
-
-
-void CSave :: WriteInt( const char *pname, const int *data, int count )
-{
-	BufferField( pname, sizeof(int) * count, (const char *)data );
-}
-
-
-void CSave :: WriteFloat( const char *pname, const float *data, int count )
-{
-	BufferField( pname, sizeof(float) * count, (const char *)data );
-}
-
-
-void CSave :: WriteTime( const char *pname, const float *data, int count )
-{
-	BufferHeader( pname, sizeof(float) * count );
-	for ( int i = 0; i < count; i++ )
-	{
-		float tmp = data[0];
-
-		// Always encode time as a delta from the current time so it can be re-based if loaded in a new level
-		// Times of 0 are never written to the file, so they will be restored as 0, not a relative time
-		if ( m_pdata )
-			tmp -= m_pdata->time;
-
-		BufferData( (const char *)&tmp, sizeof(float) );
-		data ++;
-	}
-}
-
-
-void CSave :: WriteString( const char *pname, const char *pdata )
-{
-#ifdef TOKENIZE
-	short	token = (short)TokenHash( pdata );
-	WriteShort( pname, &token, 1 );
-#else
-	BufferField( pname, strlen(pdata) + 1, pdata );
-#endif
-}
-
-
-void CSave :: WriteString( const char *pname, const int *stringId, int count )
-{
-	int i, size;
-
-#ifdef TOKENIZE
-	short	token = (short)TokenHash( STRING( *stringId ) );
-	WriteShort( pname, &token, 1 );
-#else
-#if 0
-	if ( count != 1 )
-		ALERT( at_error, "No string arrays!\n" );
-	WriteString( pname, (char *)STRING(*stringId) );
-#endif
-
-	size = 0;
-	for ( i = 0; i < count; i++ )
-		size += strlen( STRING( stringId[i] ) ) + 1;
-
-	BufferHeader( pname, size );
-	for ( i = 0; i < count; i++ )
-	{
-		const char *pString = STRING(stringId[i]);
-		BufferData( pString, strlen(pString)+1 );
-	}
-#endif
-}
-
-
-void CSave :: WriteVector( const char *pname, const Vector &value )
-{
-	WriteVector( pname, &value.x, 1 );
-}
-
-
-void CSave :: WriteVector( const char *pname, const float *value, int count )
-{
-	BufferHeader( pname, sizeof(float) * 3 * count );
-	BufferData( (const char *)value, sizeof(float) * 3 * count );
-}
-
-
-
-void CSave :: WritePositionVector( const char *pname, const Vector &value )
-{
-
-	if ( m_pdata && m_pdata->fUseLandmark )
-	{
-		Vector tmp = value - m_pdata->vecLandmarkOffset;
-		WriteVector( pname, tmp );
-	}
-
-	WriteVector( pname, value );
-}
-
-
-void CSave :: WritePositionVector( const char *pname, const float *value, int count )
-{
-	BufferHeader( pname, sizeof(float) * 3 * count );
-	for ( int i = 0; i < count; i++ )
-	{
-		Vector tmp( value[0], value[1], value[2] );
-
-		if ( m_pdata && m_pdata->fUseLandmark )
-			tmp = tmp - m_pdata->vecLandmarkOffset;
-
-		BufferData( (const char *)&tmp.x, sizeof(float) * 3 );
-		value += 3;
-	}
-}
-
-
-void CSave :: WriteFunction( const char *pname, void **data, int count )
-{
-	const char *functionName;
-
-	functionName = NAME_FOR_FUNCTION( (uint32)*data );
-	if ( functionName )
-		BufferField( pname, strlen(functionName) + 1, functionName );
-	else
-		ALERT( at_error, "Invalid function pointer in entity!" );
 }
 
 CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName) {
@@ -2435,526 +2360,8 @@ void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
 	}
 }
 
-
-
-int CSave :: WriteEntVars( const char *pname, entvars_t *pev )
-{
-	return WriteFields( pname, pev, gEntvarsDescription, ENTVARS_COUNT );
-}
-
-
-
-int CSave :: WriteFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount )
-{
-	int				i, j, actualCount, emptyCount;
-	TYPEDESCRIPTION	*pTest;
-	int				entityArray[MAX_ENTITYARRAY];
-
-	// Precalculate the number of empty fields
-	emptyCount = 0;
-	for ( i = 0; i < fieldCount; i++ )
-	{
-		void *pOutputData;
-		pOutputData = ((char *)pBaseData + pFields[i].fieldOffset );
-		if ( DataEmpty( (const char *)pOutputData, pFields[i].fieldSize * gSizes[pFields[i].fieldType] ) )
-			emptyCount++;
-	}
-
-	// Empty fields will not be written, write out the actual number of fields to be written
-	actualCount = fieldCount - emptyCount;
-	WriteInt( pname, &actualCount, 1 );
-
-	for ( i = 0; i < fieldCount; i++ )
-	{
-		void *pOutputData;
-		pTest = &pFields[ i ];
-		pOutputData = ((char *)pBaseData + pTest->fieldOffset );
-
-		// UNDONE: Must we do this twice?
-		if ( DataEmpty( (const char *)pOutputData, pTest->fieldSize * gSizes[pTest->fieldType] ) )
-			continue;
-
-		switch( pTest->fieldType )
-		{
-		case FIELD_FLOAT:
-			WriteFloat( pTest->fieldName, (float *)pOutputData, pTest->fieldSize );
-		break;
-		case FIELD_TIME:
-			WriteTime( pTest->fieldName, (float *)pOutputData, pTest->fieldSize );
-		break;
-		case FIELD_MODELNAME:
-		case FIELD_SOUNDNAME:
-		case FIELD_STRING:
-			WriteString( pTest->fieldName, (int *)pOutputData, pTest->fieldSize );
-		break;
-		case FIELD_CLASSPTR:
-		case FIELD_EVARS:
-		case FIELD_EDICT:
-		case FIELD_ENTITY:
-		case FIELD_EHANDLE:
-			if ( pTest->fieldSize > MAX_ENTITYARRAY )
-				ALERT( at_error, "Can't save more than %d entities in an array!!!\n", MAX_ENTITYARRAY );
-			for ( j = 0; j < pTest->fieldSize; j++ )
-			{
-				switch( pTest->fieldType )
-				{
-					case FIELD_EVARS:
-						entityArray[j] = EntityIndex( ((entvars_t **)pOutputData)[j] );
-					break;
-					case FIELD_CLASSPTR:
-						entityArray[j] = EntityIndex( ((CBaseEntity **)pOutputData)[j] );
-					break;
-					case FIELD_EDICT:
-						entityArray[j] = EntityIndex( ((edict_t **)pOutputData)[j] );
-					break;
-					case FIELD_ENTITY:
-						entityArray[j] = EntityIndex( ((EOFFSET *)pOutputData)[j] );
-					break;
-					case FIELD_EHANDLE:
-						entityArray[j] = EntityIndex( (CBaseEntity *)(((EHANDLE *)pOutputData)[j]) );
-					break;
-					default:
-						break;
-				}
-			}
-			WriteInt( pTest->fieldName, entityArray, pTest->fieldSize );
-		break;
-		case FIELD_POSITION_VECTOR:
-			WritePositionVector( pTest->fieldName, (float *)pOutputData, pTest->fieldSize );
-		break;
-		case FIELD_VECTOR:
-			WriteVector( pTest->fieldName, (float *)pOutputData, pTest->fieldSize );
-		break;
-
-		case FIELD_BOOLEAN:
-		case FIELD_INTEGER:
-			WriteInt( pTest->fieldName, (int *)pOutputData, pTest->fieldSize );
-		break;
-
-		case FIELD_SHORT:
-			WriteData( pTest->fieldName, 2 * pTest->fieldSize, ((char *)pOutputData) );
-		break;
-
-		case FIELD_CHARACTER:
-			WriteData( pTest->fieldName, pTest->fieldSize, ((char *)pOutputData) );
-		break;
-
-		// For now, just write the address out, we're not going to change memory while doing this yet!
-		case FIELD_POINTER:
-			WriteInt( pTest->fieldName, (int *)(char *)pOutputData, pTest->fieldSize );
-		break;
-
-		case FIELD_FUNCTION:
-			WriteFunction( pTest->fieldName, (void **)pOutputData, pTest->fieldSize );
-		break;
-		default:
-			ALERT( at_error, "Bad field type\n" );
-		}
-	}
-
-	return 1;
-}
-
-
-void CSave :: BufferString( char *pdata, int len )
-{
-	char c = 0;
-
-	BufferData( pdata, len );		// Write the string
-	BufferData( &c, 1 );			// Write a null terminator
-}
-
-
-int CSave :: DataEmpty( const char *pdata, int size )
-{
-	for ( int i = 0; i < size; i++ )
-	{
-		if ( pdata[i] )
-			return 0;
-	}
-	return 1;
-}
-
-
-void CSave :: BufferField( const char *pname, int size, const char *pdata )
-{
-	BufferHeader( pname, size );
-	BufferData( pdata, size );
-}
-
-
-void CSave :: BufferHeader( const char *pname, int size )
-{
-	short	hashvalue = TokenHash( pname );
-	if ( size > 1<<(sizeof(short)*8) )
-		ALERT( at_error, "CSave :: BufferHeader() size parameter exceeds 'short'!" );
-	BufferData( (const char *)&size, sizeof(short) );
-	BufferData( (const char *)&hashvalue, sizeof(short) );
-}
-
-
-void CSave :: BufferData( const char *pdata, int size )
-{
-	if ( !m_pdata )
-		return;
-
-	if ( m_pdata->size + size > m_pdata->bufferSize )
-	{
-		ALERT( at_error, "Save/Restore overflow!" );
-		m_pdata->size = m_pdata->bufferSize;
-		return;
-	}
-
-	memcpy( m_pdata->pCurrentData, pdata, size );
-	m_pdata->pCurrentData += size;
-	m_pdata->size += size;
-}
-
-
-
-// --------------------------------------------------------------
-//
-// CRestore
-//
-// --------------------------------------------------------------
-
-int CRestore::ReadField( void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount, int startField, int size, char *pName, void *pData )
-{
-	int i, j, stringCount, fieldNumber, entityIndex;
-	TYPEDESCRIPTION *pTest;
-	float	time, timeData;
-	Vector	position;
-	edict_t	*pent;
-	char	*pString;
-
-	time = 0;
-	position = Vector(0,0,0);
-
-	if ( m_pdata )
-	{
-		time = m_pdata->time;
-		if ( m_pdata->fUseLandmark )
-			position = m_pdata->vecLandmarkOffset;
-	}
-
-	for ( i = 0; i < fieldCount; i++ )
-	{
-		fieldNumber = (i+startField)%fieldCount;
-		pTest = &pFields[ fieldNumber ];
-		if ( !stricmp( pTest->fieldName, pName ) )
-		{
-			if ( !m_global || !(pTest->flags & FTYPEDESC_GLOBAL) )
-			{
-				for ( j = 0; j < pTest->fieldSize; j++ )
-				{
-					void *pOutputData = ((char *)pBaseData + pTest->fieldOffset + (j*gSizes[pTest->fieldType]) );
-					void *pInputData = (char *)pData + j * gSizes[pTest->fieldType];
-
-					switch( pTest->fieldType )
-					{
-					case FIELD_TIME:
-						timeData = *(float *)pInputData;
-						// Re-base time variables
-						timeData += time;
-						*((float *)pOutputData) = timeData;
-					break;
-					case FIELD_FLOAT:
-						*((float *)pOutputData) = *(float *)pInputData;
-					break;
-					case FIELD_MODELNAME:
-					case FIELD_SOUNDNAME:
-					case FIELD_STRING:
-						// Skip over j strings
-						pString = (char *)pData;
-						for ( stringCount = 0; stringCount < j; stringCount++ )
-						{
-							while (*pString)
-								pString++;
-							pString++;
-						}
-						pInputData = pString;
-						if ( strlen( (char *)pInputData ) == 0 )
-							*((int *)pOutputData) = 0;
-						else
-						{
-							int string;
-
-							string = ALLOC_STRING( (char *)pInputData );
-							
-							*((int *)pOutputData) = string;
-
-							if ( !FStringNull( string ) && m_precache )
-							{
-								if ( pTest->fieldType == FIELD_MODELNAME )
-									PRECACHE_MODEL( (char *)STRING( string ) );
-								else if ( pTest->fieldType == FIELD_SOUNDNAME )
-									PRECACHE_SOUND_ENT(NULL, (char *)STRING( string ) );
-							}
-						}
-					break;
-					case FIELD_EVARS:
-						entityIndex = *( int *)pInputData;
-						pent = EntityFromIndex( entityIndex );
-						if ( pent )
-							*((entvars_t **)pOutputData) = VARS(pent);
-						else
-							*((entvars_t **)pOutputData) = NULL;
-					break;
-					case FIELD_CLASSPTR:
-						entityIndex = *( int *)pInputData;
-						pent = EntityFromIndex( entityIndex );
-						if ( pent )
-							*((CBaseEntity **)pOutputData) = CBaseEntity::Instance(pent);
-						else
-							*((CBaseEntity **)pOutputData) = NULL;
-					break;
-					case FIELD_EDICT:
-						entityIndex = *( int *)pInputData;
-						pent = EntityFromIndex( entityIndex );
-						*((edict_t **)pOutputData) = pent;
-					break;
-					case FIELD_EHANDLE:
-						// Input and Output sizes are different!
-						pOutputData = (char *)pOutputData + j*(sizeof(EHANDLE) - gSizes[pTest->fieldType]);
-						entityIndex = *( int *)pInputData;
-						pent = EntityFromIndex( entityIndex );
-						if ( pent )
-							*((EHANDLE *)pOutputData) = CBaseEntity::Instance(pent);
-						else
-							*((EHANDLE *)pOutputData) = NULL;
-					break;
-					case FIELD_ENTITY:
-						entityIndex = *( int *)pInputData;
-						pent = EntityFromIndex( entityIndex );
-						if ( pent )
-							*((EOFFSET *)pOutputData) = OFFSET(pent);
-						else
-							*((EOFFSET *)pOutputData) = 0;
-					break;
-					case FIELD_VECTOR:
-						((float *)pOutputData)[0] = ((float *)pInputData)[0];
-						((float *)pOutputData)[1] = ((float *)pInputData)[1];
-						((float *)pOutputData)[2] = ((float *)pInputData)[2];
-					break;
-					case FIELD_POSITION_VECTOR:
-						((float *)pOutputData)[0] = ((float *)pInputData)[0] + position.x;
-						((float *)pOutputData)[1] = ((float *)pInputData)[1] + position.y;
-						((float *)pOutputData)[2] = ((float *)pInputData)[2] + position.z;
-					break;
-
-					case FIELD_BOOLEAN:
-					case FIELD_INTEGER:
-						*((int *)pOutputData) = *( int *)pInputData;
-					break;
-
-					case FIELD_SHORT:
-						*((short *)pOutputData) = *( short *)pInputData;
-					break;
-
-					case FIELD_CHARACTER:
-						*((char *)pOutputData) = *( char *)pInputData;
-					break;
-
-					case FIELD_POINTER:
-						*((int *)pOutputData) = *( int *)pInputData;
-					break;
-					case FIELD_FUNCTION:
-						if ( strlen( (char *)pInputData ) == 0 )
-							*((int *)pOutputData) = 0;
-						else
-							*((int *)pOutputData) = FUNCTION_FROM_NAME( (char *)pInputData );
-					break;
-
-					default:
-						ALERT( at_error, "Bad field type\n" );
-					}
-				}
-			}
-#if 0
-			else
-			{
-				ALERT( at_console, "Skipping global field %s\n", pName );
-			}
-#endif
-			return fieldNumber;
-		}
-	}
-
-	return -1;
-}
-
-
-int CRestore::ReadEntVars( const char *pname, entvars_t *pev )
-{
-	return ReadFields( pname, pev, gEntvarsDescription, ENTVARS_COUNT );
-}
-
-
-int CRestore::ReadFields( const char *pname, void *pBaseData, TYPEDESCRIPTION *pFields, int fieldCount )
-{
-	unsigned short	i, token;
-	int		lastField, fileCount;
-	HEADER	header;
-
-	i = ReadShort();
-	ASSERT( i == sizeof(int) );			// First entry should be an int
-
-	token = ReadShort();
-
-	// Check the struct name
-	if ( token != TokenHash(pname) )			// Field Set marker
-	{
-//		ALERT( at_error, "Expected %s found %s!\n", pname, BufferPointer() );
-		BufferRewind( 2*sizeof(short) );
-		return 0;
-	}
-
-	// Skip over the struct name
-	fileCount = ReadInt();						// Read field count
-
-	lastField = 0;								// Make searches faster, most data is read/written in the same order
-
-	// Clear out base data
-	for ( i = 0; i < fieldCount; i++ )
-	{
-		// Don't clear global fields
-		if ( !m_global || !(pFields[i].flags & FTYPEDESC_GLOBAL) )
-			memset( ((char *)pBaseData + pFields[i].fieldOffset), 0, pFields[i].fieldSize * gSizes[pFields[i].fieldType] );
-	}
-
-	for ( i = 0; i < fileCount; i++ )
-	{
-		BufferReadHeader( &header );
-		lastField = ReadField( pBaseData, pFields, fieldCount, lastField, header.size, m_pdata->pTokens[header.token], header.pData );
-		lastField++;
-	}
-	
-	return 1;
-}
-
-
-void CRestore::BufferReadHeader( HEADER *pheader )
-{
-	ASSERT( pheader!=NULL );
-	pheader->size = ReadShort();				// Read field size
-	pheader->token = ReadShort();				// Read field name token
-	pheader->pData = BufferPointer();			// Field Data is next
-	BufferSkipBytes( pheader->size );			// Advance to next field
-}
-
-
-short	CRestore::ReadShort( void )
-{
-	short tmp = 0;
-
-	BufferReadBytes( (char *)&tmp, sizeof(short) );
-
-	return tmp;
-}
-
-int	CRestore::ReadInt( void )
-{
-	int tmp = 0;
-
-	BufferReadBytes( (char *)&tmp, sizeof(int) );
-
-	return tmp;
-}
-
-int CRestore::ReadNamedInt( const char *pName )
-{
-	HEADER header;
-
-	BufferReadHeader( &header );
-	return ((int *)header.pData)[0];
-}
-
-char *CRestore::ReadNamedString( const char *pName )
-{
-	HEADER header;
-
-	BufferReadHeader( &header );
-#ifdef TOKENIZE
-	return (char *)(m_pdata->pTokens[*(short *)header.pData]);
-#else
-	return (char *)header.pData;
-#endif
-}
-
-
-char *CRestore::BufferPointer( void )
-{
-	if ( !m_pdata )
-		return NULL;
-
-	return m_pdata->pCurrentData;
-}
-
-void CRestore::BufferReadBytes( char *pOutput, int size )
-{
-	ASSERT( m_pdata !=NULL );
-
-	if ( !m_pdata || Empty() )
-		return;
-
-	if ( (m_pdata->size + size) > m_pdata->bufferSize )
-	{
-		ALERT( at_error, "Restore overflow!" );
-		m_pdata->size = m_pdata->bufferSize;
-		return;
-	}
-
-	if ( pOutput )
-		memcpy( pOutput, m_pdata->pCurrentData, size );
-	m_pdata->pCurrentData += size;
-	m_pdata->size += size;
-}
-
-
-void CRestore::BufferSkipBytes( int bytes )
-{
-	BufferReadBytes( NULL, bytes );
-}
-
-int CRestore::BufferSkipZString( void )
-{
-	char *pszSearch;
-	int	 len;
-
-	if ( !m_pdata )
-		return 0;
-
-	int maxLen = m_pdata->bufferSize - m_pdata->size;
-
-	len = 0;
-	pszSearch = m_pdata->pCurrentData;
-	while ( *pszSearch++ && len < maxLen )
-		len++;
-
-	len++;
-
-	BufferSkipBytes( len );
-
-	return len;
-}
-
-int	CRestore::BufferCheckZString( const char *string )
-{
-	if ( !m_pdata )
-		return 0;
-
-	int maxLen = m_pdata->bufferSize - m_pdata->size;
-	int len = strlen( string );
-	if ( len <= maxLen )
-	{
-		if ( !strncmp( string, m_pdata->pCurrentData, len ) )
-			return 1;
-	}
-	return 0;
-}
-
-std::map<std::string, std::string> loadReplacementFile(const char* path) {
-	std::map<std::string, std::string> replacements;
+std::unordered_map<std::string, std::string> loadReplacementFile(const char* path) {
+	std::unordered_map<std::string, std::string> replacements;
 
 	std::string fpath = getGameFilePath(path);
 	std::ifstream infile(fpath);
@@ -3028,334 +2435,6 @@ std::map<std::string, std::string> loadReplacementFile(const char* path) {
 	}
 
 	return replacements;
-}
-
-char PM_FindTextureType(char* name);
-
-void LoadBsp() {
-	std::string mapPath = getGameFilePath((std::string("maps/") + STRING(gpGlobals->mapname) + ".bsp").c_str());
-	g_bsp.load_lumps(mapPath);
-
-	if (g_bsp.textures) {
-		for (int i = 0; i < g_bsp.textureCount; i++) {
-			int32_t texOffset = ((int32_t*)g_bsp.textures)[i + 1];
-
-			if (texOffset == -1) {
-				continue;
-			}
-
-			BSPMIPTEX& tex = *((BSPMIPTEX*)(g_bsp.textures + texOffset));
-
-			char* texName = tex.szName;
-			int slen = strlen(texName);
-
-			if (slen > 1) {
-				if (texName[0] == '{' || texName[0] == '!') {
-					texName = texName + 1;
-				}
-				else if (slen > 2 && (texName[0] == '+' || texName[0] == '-')) {
-					texName = texName + 2;
-				}
-			}
-
-			switch (PM_FindTextureType(texName)) {
-				case CHAR_TEX_CONCRETE: g_textureStats.tex_concrete = true; break;
-				case CHAR_TEX_METAL: g_textureStats.tex_metal = true; break;
-				case CHAR_TEX_DIRT: g_textureStats.tex_dirt = true; break;
-				case CHAR_TEX_VENT: g_textureStats.tex_duct = true; break;
-				case CHAR_TEX_GRATE: g_textureStats.tex_grate = true; break;
-				case CHAR_TEX_TILE: g_textureStats.tex_tile = true; break;
-				case CHAR_TEX_SLOSH: g_textureStats.tex_water = true; break;
-				case CHAR_TEX_WOOD: g_textureStats.tex_wood = true; break;
-				case CHAR_TEX_COMPUTER: g_textureStats.tex_computer = true; break;
-				case CHAR_TEX_GLASS: g_textureStats.tex_glass = true; break;
-				case CHAR_TEX_FLESH: g_textureStats.tex_flesh = true; break;
-				default: break;
-			}
-		}
-	}
-
-	// check for any leaves that would make swimming sounds if the player entered them
-	if (g_bsp.leaves) {
-		for (int i = 0; i < g_bsp.leafCount; i++) {
-			int contents = g_bsp.leaves[i].nContents;
-			if (contents <= CONTENTS_WATER && contents > CONTENTS_TRANSLUCENT) {
-				g_textureStats.tex_water = true;
-			}
-		}
-	}
-}
-
-void PRECACHE_HUD_FILES(const char* hudConfigPath) {
-	std::string lowerPath = toLowerCase(hudConfigPath);
-	hudConfigPath = lowerPath.c_str();
-
-	if (g_modelReplacements.find(hudConfigPath) != g_modelReplacements.end()) {
-		hudConfigPath = g_modelReplacements[hudConfigPath].c_str();
-	}
-
-	std::string fpath = getGameFilePath(hudConfigPath);
-	std::ifstream infile(fpath);
-
-	if (fpath.empty() || !infile.is_open()) {
-		ALERT(at_error, "Failed to load HUD config: %s\n", hudConfigPath);
-		return;
-	}
-
-	PRECACHE_GENERIC(hudConfigPath);
-
-	int lineNum = 0;
-	std::string line;
-	while (std::getline(infile, line))
-	{
-		lineNum++;
-		std::string paths[2];
-
-		line = trimSpaces(line);
-		if (line.empty()) {
-			continue;
-		}
-
-		std::vector<std::string> parts = splitString(line, " \t");
-
-		if (parts.size() < 7)
-			continue;
-
-		PRECACHE_GENERIC(("sprites/" + parts[2] + ".spr").c_str());
-	}
-}
-
-int PRECACHE_GENERIC(const char* path) {
-	std::string lowerPath = toLowerCase(path);
-	path = lowerPath.c_str();
-
-	if (g_modelReplacements.find(path) != g_modelReplacements.end()) {
-		path = g_modelReplacements[path].c_str();
-	}
-	if (g_soundReplacements.find(path) != g_soundReplacements.end()) {
-		path = g_soundReplacements[path].c_str();
-	}
-
-	if (g_serveractive) {
-		if (g_precachedGeneric.find(path) != g_precachedGeneric.end()) {
-			return g_engfuncs.pfnPrecacheGeneric(path);
-		}
-		else {
-			ALERT(at_warning, "PrecacheGeneric failed: %s\n", path);
-			return -1;
-		}
-	}
-
-	if (lowerPath.find(" ") != std::string::npos) {
-		// files with spaces causes clients to hang at "Verifying resources"
-		// and the file doesn't download
-		ALERT(at_error, "Precached file with spaces: '%s'\n", path);
-		return -1;
-	}
-
-	g_tryPrecacheGeneric.insert(path);
-
-	if (g_tryPrecacheGeneric.size() < MAX_PRECACHE) {
-		g_precachedGeneric.insert(path);
-		return g_engfuncs.pfnPrecacheGeneric(path);
-	}
-	else {
-		return -1;
-	}
-}
-
-int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
-	std::string lowerPath = toLowerCase(path);
-	path = lowerPath.c_str();
-
-	bool hadMonsterSoundReplacement = false;
-	if (ent && ent->IsMonster() && (int)g_monsterSoundReplacements.size() >= ent->entindex()) {
-		std::map<std::string, std::string>& replacementMap = g_monsterSoundReplacements[ent->entindex()];
-		if (replacementMap.find(path) != replacementMap.end()) {
-			path = replacementMap[path].c_str();
-			hadMonsterSoundReplacement = true;
-		}
-	}
-	
-	if (!hadMonsterSoundReplacement && g_soundReplacements.find(path) != g_soundReplacements.end()) {
-		path = g_soundReplacements[path].c_str();
-	}
-
-	if (lowerPath.find(" ") != std::string::npos) {
-		// files with spaces causes clients to hang at "Verifying resources"
-		// and the file doesn't download
-		ALERT(at_error, "Precached sound with spaces: '%s'\n", path);
-		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
-	}
-
-	if (g_serveractive) {
-		if (g_precachedSounds.find(path) != g_precachedSounds.end()) {
-			return g_engfuncs.pfnPrecacheSound(path);
-		}
-		else {
-			ALERT(at_warning, "PrecacheSound failed: %s\n", path);
-			return -1;
-		}
-	}
-
-	g_tryPrecacheSounds.insert(path);
-
-	if (g_tryPrecacheSounds.size() <= MAX_PRECACHE_SOUND) {
-		g_precachedSounds.insert(path);
-		return g_engfuncs.pfnPrecacheSound(path);
-	}
-	else {
-		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
-	}
-}
-
-int PRECACHE_SOUND_NULLENT(const char* path) {
-	return PRECACHE_SOUND_ENT(NULL, path);
-}
-
-int PRECACHE_MODEL(const char* path) {
-	std::string lowerPath = toLowerCase(path);
-	path = lowerPath.c_str();
-
-	if (g_modelReplacements.find(path) != g_modelReplacements.end()) {
-		path = g_modelReplacements[path].c_str();
-	}
-
-	// loading BSP here because ServerActivate is not soon enough and GameDLLInit is only called once
-	if (!g_bsp.loaded) {
-		LoadBsp();
-	}
-
-	if (lowerPath.find(" ") != std::string::npos) {
-		// files with spaces causes clients to hang at "Verifying resources"
-		// and the file doesn't download
-		ALERT(at_error, "Precached model with spaces: '%s'\n", path);
-		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
-	}
-
-	bool alreadyPrecached = g_precachedModels.find(path) != g_precachedModels.end();
-	if (!alreadyPrecached && getGameFilePath(path).empty()) {
-		if (!g_missingModels.count(path)) {
-			ALERT(at_error, "Model precache failed. File not found: %s\n", path);
-			g_missingModels.insert(path);
-		}
-		
-		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
-	}
-
-	if (g_serveractive) {
-		if (g_precachedModels.find(path) != g_precachedModels.end()) {
-			return g_engfuncs.pfnPrecacheModel(path);
-		}
-		else {
-			ALERT(at_warning, "PrecacheModel failed: %s\n", path);
-			return -1;
-		}
-	}
-
-	g_tryPrecacheModels.insert(path);
-
-	// Tested with sc_darknebula.
-	if (g_tryPrecacheModels.size() + g_bsp.entityBspModelCount + 1 <= MAX_PRECACHE_MODEL) {
-		if (g_precachedModels.find(path) == g_precachedModels.end())
-			g_precachedModels[path] = path;
-		return g_engfuncs.pfnPrecacheModel(path);
-	}
-	else {
-		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
-	}
-	
-}
-
-int PRECACHE_EVENT(int id, const char* path) {
-	std::string lowerPath = toLowerCase(path);
-	path = lowerPath.c_str();
-
-	if (g_serveractive) {
-		if (g_precachedEvents.find(path) != g_precachedEvents.end()) {
-			return g_precachedEvents[path];
-		}
-		else {
-			ALERT(at_warning, "PrecacheEvent failed: %s\n", path);
-			return -1;
-		}
-	}
-
-	g_tryPrecacheEvents.insert(path);
-
-	if (g_tryPrecacheEvents.size() < MAX_PRECACHE_EVENT) {
-		g_precachedEvents[path] = g_engfuncs.pfnPrecacheEvent(id, path);
-		return g_precachedEvents[path];
-	}
-	else {
-		return -1;
-	}
-}
-
-void SET_MODEL(edict_t* edict, const char* model) {
-	if (model && model[0] == '*') {
-		// BSP model. No special handling.
-		g_engfuncs.pfnSetModel(edict, model);
-		return;
-	}
-
-	std::string lowerPath = toLowerCase(model);
-	model = lowerPath.c_str();
-
-	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
-		model = g_modelReplacements[model].c_str();
-	}
-	
-	if (g_precachedModels.find(model) == g_precachedModels.end()) {
-		model = NOT_PRECACHED_MODEL;
-	}
-
-	g_engfuncs.pfnSetModel(edict, model);
-}
-
-const char* GET_MODEL(const char* model) {
-	std::string lowerPath = toLowerCase(model);
-	model = lowerPath.c_str();
-
-	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
-		model = g_modelReplacements[model].c_str();
-	}
-
-	if (g_precachedModels.find(model) == g_precachedModels.end()) {
-		model = NOT_PRECACHED_MODEL;
-	}
-	else {
-		model = g_precachedModels[model].c_str();
-	}
-
-	return model;
-}
-
-int MODEL_INDEX(const char* model) {
-	std::string lowerPath = toLowerCase(model);
-	model = lowerPath.c_str();
-	return g_engfuncs.pfnModelIndex(model);
-}
-
-void* GET_MODEL_PTR(edict_t* edict) {
-	studiohdr_t* header = (studiohdr_t*)g_engfuncs.pfnGetModelPtr(edict);
-
-	if (!header) {
-		return NULL;
-	}
-
-	return header;
-}
-
-bool ModelIsValid(entvars_t* edict, studiohdr_t* header) {
-	// basic corruption detection
-	if (header->id != 1414743113 || header->version != 10) {
-		ALERT(at_error, "Model corruption! Model: %s, ID: %d, Version: %d\n",
-			STRING(edict->model),  header->version, header->id);
-		return false;
-	}
-
-	return true;
 }
 
 void InitEdictRelocations() {
@@ -3522,6 +2601,16 @@ uint64_t steamid_to_steamid64(const char* steamid) {
 	return steam64id;
 }
 
+std::string steamid64_to_steamid(uint64_t steam64) {
+	steam64 -= 76561197960265728;
+
+	if (steam64 & 1) {
+		return "STEAM_0:1:" + std::to_string((steam64 - 1) / 2);
+	}
+
+	return "STEAM_0:0:" + std::to_string(steam64 / 2);
+}
+
 uint64_t getPlayerCommunityId(edict_t* plr) {
 	const char* id = getPlayerUniqueId(plr);
 
@@ -3532,443 +2621,18 @@ uint64_t getPlayerCommunityId(edict_t* plr) {
 	return steamid_to_steamid64(id);
 }
 
-enum msg_func_types {
-	MFUNC_BYTE,
-	MFUNC_CHAR,
-	MFUNC_SHORT,
-	MFUNC_LONG,
-	MFUNC_ANGLE,
-	MFUNC_COORD,
-	MFUNC_STRING,
-	MFUNC_ENTITY,
-};
-
-struct msg_part {
-	uint16_t type;
-	
-	union {
-		int iValue;
-		float fValue;
-	};
-	const char* sValue;
-};
-
-struct msg_info {
-	int msg_dest;
-	int msg_type;
-	bool hasOrigin;
-	float pOrigin[3];
-	int entIdx;
-	char name[32];
-
-	int numMsgParts;
-	msg_part parts[512];
-};
-
-struct msg_hist_item {
-	float time;
-	std::string msg;
-};
-
-msg_info g_lastMsg;
-char g_msgStrPool[512];
-int g_nextStrOffset = 0;
-std::string g_debugLogName;
-std::string g_errorLogName;
-std::ofstream g_debugFile;
-std::ofstream g_errorFile;
-std::queue<msg_hist_item> g_messageHistory;
-float g_messageHistoryCutoff = 1.0f; // don't keep more than X seconds of history
-
-void add_msg_part(int mtype, int iValue) {
-	if (!mp_debugmsg.value) {
-		return;
-	}
-	int idx = g_lastMsg.numMsgParts++ % 512;
-	msg_part& part = g_lastMsg.parts[idx];
-	part.type = mtype;
-	part.iValue = iValue;
-}
-void add_msg_part(int mtype, float fValue) {
-	if (!mp_debugmsg.value) {
-		return;
-	}
-	int idx = g_lastMsg.numMsgParts++ % 512;
-	msg_part& part = g_lastMsg.parts[idx];
-	part.type = mtype;
-	part.iValue = fValue;
-}
-void add_msg_part(const char* sValue) {
-	if (!mp_debugmsg.value) {
-		return;
-	}
-	int idx = g_lastMsg.numMsgParts++ % 512;
-	msg_part& part = g_lastMsg.parts[idx];
-	part.type = MFUNC_STRING;
-	
-	int strLen = sValue ? strlen(sValue) + 1 : 1;
-	if (g_nextStrOffset + strLen < 512) {
-		if (sValue) {
-			memcpy(g_msgStrPool + g_nextStrOffset, sValue, strLen);
-			part.sValue = g_msgStrPool + g_nextStrOffset;
-			g_nextStrOffset += strLen;
-		}
-		else {
-			part.sValue = g_msgStrPool + g_nextStrOffset;
-			g_msgStrPool[g_nextStrOffset++] = 0;
-		}
-	}
-	else {
-		ALERT(at_logged, "ERROR: WRITE_STRING exceeded 512 bytes of message\n");
-		part.sValue = 0;
-	}
-}
-
-std::string getLogTimeStr() {
-	time_t rawtime;
-	struct tm* timeinfo;
-	static char buffer[256];
-
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-
-	strftime(buffer, sizeof(buffer), "L %d/%m/%Y - %H:%M:%S: ", timeinfo);
-
-	return buffer;
-}
-
-void writeDebugLog(std::ofstream& outFile, std::string lastLogName, std::string prefix, std::string line) {
-	std::string curLogName;
-
-	{
-		time_t rawtime;
-		struct tm* timeinfo;
-		static char buffer[256];
-
-		time(&rawtime);
-		timeinfo = localtime(&rawtime);
-
-		strftime(buffer, sizeof(buffer), "%Y-%m-%d.log", timeinfo);
-		std::string fname = "logs_dbg/" + prefix + "_" + std::string(buffer);
-
-		curLogName = fname;
+bool UTIL_isSafeEntIndex(edict_t* ent, int idx, const char* action) {
+	CBasePlayer* plr = UTIL_PlayerByIndex(ENTINDEX(ent));
+	if (!plr) {
+		return false;
 	}
 
-	if (curLogName != lastLogName) {
-		lastLogName = curLogName;
-		outFile.close();
-		outFile.open(lastLogName, std::ios_base::app);
-	}
+	int maxEdicts = plr->GetMaxClientEdicts();
 
-	outFile << getLogTimeStr() << line << "\n";
-}
-
-const char* msgDestStr(int msg_dest) {
-	const char* sdst = "";
-	switch (msg_dest) {
-	case MSG_BROADCAST:
-		sdst = "MSG_BROADCAST";
-		break;
-	case MSG_ONE:
-		sdst = "MSG_ONE";
-		break;
-	case MSG_ALL:
-		sdst = "MSG_ALL";
-		break;
-	case MSG_INIT:
-		sdst = "MSG_INIT";
-		break;
-	case MSG_PVS:
-		sdst = "MSG_PVS";
-		break;
-	case MSG_PAS:
-		sdst = "MSG_PAS";
-		break;
-	case MSG_PVS_R:
-		sdst = "MSG_PVS_R";
-		break;
-	case MSG_PAS_R:
-		sdst = "MSG_PAS_R";
-		break;
-	case MSG_ONE_UNRELIABLE:
-		sdst = "MSG_ONE_UNRELIABLE";
-		break;
-	case MSG_SPEC:
-		sdst = "MSG_SPEC";
-		break;
-	default:
-		sdst = UTIL_VarArgs("%d (unkown)", msg_dest);
-		break;
-	}
-
-	return sdst;
-}
-
-const char* msgTypeStr(int msg_type) {
-	const char* sdst = "";
-
-	switch (msg_type) {
-	case SVC_BAD: sdst = "SVC_BAD"; break;
-	case SVC_NOP: sdst = "SVC_NOP"; break;
-	case SVC_DISCONNECT: sdst = "SVC_DISCONNECT"; break;
-	case SVC_EVENT: sdst = "SVC_EVENT"; break;
-	case SVC_VERSION: sdst = "SVC_VERSION"; break;
-	case SVC_SETVIEW: sdst = "SVC_SETVIEW"; break;
-	case SVC_SOUND: sdst = "SVC_SOUND"; break;
-	case SVC_TIME: sdst = "SVC_TIME"; break;
-	case SVC_PRINT: sdst = "SVC_PRINT"; break;
-	case SVC_STUFFTEXT: sdst = "SVC_STUFFTEXT"; break;
-	case SVC_SETANGLE: sdst = "SVC_SETANGLE"; break;
-	case SVC_SERVERINFO: sdst = "SVC_SERVERINFO"; break;
-	case SVC_LIGHTSTYLE: sdst = "SVC_LIGHTSTYLE"; break;
-	case SVC_UPDATEUSERINFO: sdst = "SVC_UPDATEUSERINFO"; break;
-	case SVC_DELTADESCRIPTION: sdst = "SVC_DELTADESCRIPTION"; break;
-	case SVC_CLIENTDATA: sdst = "SVC_CLIENTDATA"; break;
-	case SVC_STOPSOUND: sdst = "SVC_STOPSOUND"; break;
-	case SVC_PINGS: sdst = "SVC_PINGS"; break;
-	case SVC_PARTICLE: sdst = "SVC_PARTICLE"; break;
-	case SVC_DAMAGE: sdst = "SVC_DAMAGE"; break;
-	case SVC_SPAWNSTATIC: sdst = "SVC_SPAWNSTATIC"; break;
-	case SVC_EVENT_RELIABLE: sdst = "SVC_EVENT_RELIABLE"; break;
-	case SVC_SPAWNBASELINE: sdst = "SVC_SPAWNBASELINE"; break;
-	case SVC_TEMPENTITY: sdst = "SVC_TEMPENTITY"; break;
-	case SVC_SETPAUSE: sdst = "SVC_SETPAUSE"; break;
-	case SVC_SIGNONNUM: sdst = "SVC_SIGNONNUM"; break;
-	case SVC_CENTERPRINT: sdst = "SVC_CENTERPRINT"; break;
-	case SVC_KILLEDMONSTER: sdst = "SVC_KILLEDMONSTER"; break;
-	case SVC_FOUNDSECRET: sdst = "SVC_FOUNDSECRET"; break;
-	case SVC_SPAWNSTATICSOUND: sdst = "SVC_SPAWNSTATICSOUND"; break;
-	case SVC_INTERMISSION: sdst = "SVC_INTERMISSION"; break;
-	case SVC_FINALE: sdst = "SVC_FINALE"; break;
-	case SVC_CDTRACK: sdst = "SVC_CDTRACK"; break;
-	case SVC_RESTORE: sdst = "SVC_RESTORE"; break;
-	case SVC_CUTSCENE: sdst = "SVC_CUTSCENE"; break;
-	case SVC_WEAPONANIM: sdst = "SVC_WEAPONANIM"; break;
-	case SVC_DECALNAME: sdst = "SVC_DECALNAME"; break;
-	case SVC_ROOMTYPE: sdst = "SVC_ROOMTYPE"; break;
-	case SVC_ADDANGLE: sdst = "SVC_ADDANGLE"; break;
-	case SVC_NEWUSERMSG: sdst = "SVC_NEWUSERMSG"; break;
-	case SVC_PACKETENTITIES: sdst = "SVC_PACKETENTITIES"; break;
-	case SVC_DELTAPACKETENTITIES: sdst = "SVC_DELTAPACKETENTITIES"; break;
-	case SVC_CHOKE: sdst = "SVC_CHOKE"; break;
-	case SVC_RESOURCELIST: sdst = "SVC_RESOURCELIST"; break;
-	case SVC_NEWMOVEVARS: sdst = "SVC_NEWMOVEVARS"; break;
-	case SVC_RESOURCEREQUEST: sdst = "SVC_RESOURCEREQUEST"; break;
-	case SVC_CUSTOMIZATION: sdst = "SVC_CUSTOMIZATION"; break;
-	case SVC_CROSSHAIRANGLE: sdst = "SVC_CROSSHAIRANGLE"; break;
-	case SVC_SOUNDFADE: sdst = "SVC_SOUNDFADE"; break;
-	case SVC_FILETXFERFAILED: sdst = "SVC_FILETXFERFAILED"; break;
-	case SVC_HLTV: sdst = "SVC_HLTV"; break;
-	case SVC_DIRECTOR: sdst = "SVC_DIRECTOR"; break;
-	case SVC_VOICEINIT: sdst = "SVC_VOICEINIT"; break;
-	case SVC_VOICEDATA: sdst = "SVC_VOICEDATA"; break;
-	case SVC_SENDEXTRAINFO: sdst = "SVC_SENDEXTRAINFO"; break;
-	case SVC_TIMESCALE: sdst = "SVC_TIMESCALE"; break;
-	case SVC_RESOURCELOCATION: sdst = "SVC_RESOURCELOCATION"; break;
-	case SVC_SENDCVARVALUE: sdst = "SVC_SENDCVARVALUE"; break;
-	case SVC_SENDCVARVALUE2: sdst = "SVC_SENDCVARVALUE2"; break;
-	default:
-		if (msg_type == giPrecacheGrunt) sdst = "giPrecacheGrunt";
-		else if (msg_type == giPrecacheGrunt) sdst = "giPrecacheGrunt";
-		else if (msg_type == gmsgShake) sdst = "gmsgShake";
-		else if (msg_type == gmsgFade) sdst = "gmsgFade";
-		else if (msg_type == gmsgSelAmmo) sdst = "gmsgSelAmmo";
-		else if (msg_type == gmsgFlashlight) sdst = "gmsgFlashlight";
-		else if (msg_type == gmsgFlashBattery) sdst = "gmsgFlashBattery";
-		else if (msg_type == gmsgResetHUD) sdst = "gmsgResetHUD";
-		else if (msg_type == gmsgInitHUD) sdst = "gmsgInitHUD";
-		else if (msg_type == gmsgShowGameTitle) sdst = "gmsgShowGameTitle";
-		else if (msg_type == gmsgCurWeapon) sdst = "gmsgCurWeapon";
-		else if (msg_type == gmsgHealth) sdst = "gmsgHealth";
-		else if (msg_type == gmsgDamage) sdst = "gmsgDamage";
-		else if (msg_type == gmsgBattery) sdst = "gmsgBattery";
-		else if (msg_type == gmsgTrain) sdst = "gmsgTrain";
-		else if (msg_type == gmsgLogo) sdst = "gmsgLogo";
-		else if (msg_type == gmsgWeaponList) sdst = "gmsgWeaponList";
-		else if (msg_type == gmsgAmmoX) sdst = "gmsgAmmoX";
-		else if (msg_type == gmsgHudText) sdst = "gmsgHudText";
-		else if (msg_type == gmsgDeathMsg) sdst = "gmsgDeathMsg";
-		else if (msg_type == gmsgScoreInfo) sdst = "gmsgScoreInfo";
-		else if (msg_type == gmsgTeamInfo) sdst = "gmsgTeamInfo";
-		else if (msg_type == gmsgTeamScore) sdst = "gmsgTeamScore";
-		else if (msg_type == gmsgGameMode) sdst = "gmsgGameMode";
-		else if (msg_type == gmsgMOTD) sdst = "gmsgMOTD";
-		else if (msg_type == gmsgServerName) sdst = "gmsgServerName";
-		else if (msg_type == gmsgAmmoPickup) sdst = "gmsgAmmoPickup";
-		else if (msg_type == gmsgWeapPickup) sdst = "gmsgWeapPickup";
-		else if (msg_type == gmsgItemPickup) sdst = "gmsgItemPickup";
-		else if (msg_type == gmsgHideWeapon) sdst = "gmsgHideWeapon";
-		else if (msg_type == gmsgSetCurWeap) sdst = "gmsgSetCurWeap";
-		else if (msg_type == gmsgSayText) sdst = "gmsgSayText";
-		else if (msg_type == gmsgTextMsg) sdst = "gmsgTextMsg";
-		else if (msg_type == gmsgSetFOV) sdst = "gmsgSetFOV";
-		else if (msg_type == gmsgShowMenu) sdst = "gmsgShowMenu";
-		else if (msg_type == gmsgGeigerRange) sdst = "gmsgGeigerRange";
-		else if (msg_type == gmsgTeamNames) sdst = "gmsgTeamNames";
-		else if (msg_type == gmsgStatusText) sdst = "gmsgStatusText";
-		else if (msg_type == gmsgStatusValue) sdst = "gmsgStatusValue";
-		else if (msg_type == gmsgToxicCloud) sdst = "gmsgToxicCloud";
-		else sdst = UTIL_VarArgs("%d", msg_type);
-		break;
-	}
-
-	return sdst;
-}
-
-void log_msg(msg_info& msg) {
-	if (!mp_debugmsg.value) {
-		return;
-	}
-
-	std::string originStr = msg.hasOrigin ? UTIL_VarArgs("(%X %X %X)",
-		*(int*)&msg.pOrigin[0], *(int*)&msg.pOrigin[1], *(int*)&msg.pOrigin[2]) : "NULL";
-	std::string entStr = msg.name[0] != 0 ? std::string(msg.name) : "NULL";
-	std::string argStr = "";
-	for (int i = 0; i < msg.numMsgParts; i++) {
-		switch (msg.parts[i].type) {
-		case MFUNC_BYTE:
-			argStr += UTIL_VarArgs(" B-%X", msg.parts[i].iValue);
-			break;
-		case MFUNC_CHAR:
-			argStr += UTIL_VarArgs(" C-%X", msg.parts[i].iValue);
-			break;
-		case MFUNC_SHORT:
-			argStr += UTIL_VarArgs(" S-%X", msg.parts[i].iValue);
-			break;
-		case MFUNC_LONG:
-			argStr += UTIL_VarArgs(" L-%X", msg.parts[i].iValue);
-			break;
-		case MFUNC_ANGLE:
-			argStr += UTIL_VarArgs(" A-%X", *(int*)&msg.parts[i].fValue);
-			break;
-		case MFUNC_COORD:
-			argStr += UTIL_VarArgs(" F-%X", *(int*)&msg.parts[i].fValue);
-			break;
-		case MFUNC_STRING:
-			if (msg.parts[i].sValue >= g_msgStrPool && msg.parts[i].sValue < g_msgStrPool + 512) {
-				argStr += UTIL_VarArgs(" \"%s\"", msg.parts[i].sValue);
-			}
-			else {
-				argStr += UTIL_VarArgs(" \"\"");
-			}
-			break;
-		case MFUNC_ENTITY:
-			argStr += UTIL_VarArgs(" E-%X", msg.parts[i].iValue);
-			break;
-		default:
-			break;
-		}
-	}
-
-	float now = g_engfuncs.pfnTime();
-
-	std::string log = UTIL_VarArgs("T%.2f MSG(%s, %s, %s, %s)%s",
-		now, msgDestStr(msg.msg_dest), msgTypeStr(msg.msg_type),
-		originStr.c_str(), entStr.c_str(), argStr.c_str());
-
-	// forget old messages
-	while (!g_messageHistory.empty() && now - g_messageHistory.front().time > g_messageHistoryCutoff) {
-		g_messageHistory.pop();
-	}
-	
-	msg_hist_item item;
-	item.time = now;
-	item.msg = log;
-	g_messageHistory.push(item);
-}
-
-void writeNetworkMessageHistory(std::string reason) {
-	float now = g_engfuncs.pfnTime();
-	while (!g_messageHistory.empty() && now - g_messageHistory.front().time > g_messageHistoryCutoff) {
-		g_messageHistory.pop();
-	}
-
-	while (!g_messageHistory.empty()) {
-		msg_hist_item item = g_messageHistory.front();
-		g_messageHistory.pop();
-		writeDebugLog(g_debugFile, g_debugLogName, "debug", item.msg);
-	}
-	writeDebugLog(g_debugFile, g_debugLogName, "debug", UTIL_VarArgs("T%.2f ", g_engfuncs.pfnTime()) + reason + "\n");
-	g_debugFile.flush();
-}
-
-void clearNetworkMessageHistory() {
-	while (!g_messageHistory.empty()) {
-		g_messageHistory.pop();
-	}
-}
-
-void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed) {
-	TextMenuMessageBeginHook(msg_dest, msg_type, pOrigin, ed);
-
-	if (mp_debugmsg.value) {
-		g_lastMsg.msg_dest = msg_dest;
-		g_lastMsg.msg_type = msg_type;
-		g_lastMsg.hasOrigin = pOrigin != NULL;
-		if (pOrigin) {
-			memcpy(g_lastMsg.pOrigin, pOrigin, sizeof(float) * 3);
-		}
-		g_lastMsg.entIdx = ed ? ENTINDEX(ed) : 0;
-		g_lastMsg.numMsgParts = 0;
-		g_nextStrOffset = 0;
-		if (ed)
-			strcpy_safe(g_lastMsg.name, STRING(ed->v.netname), 32);
-		else
-			g_lastMsg.name[0] = 0;
-	}
-
-	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ed);
-}
-
-void WRITE_BYTE(int iValue) {
-	add_msg_part(MFUNC_BYTE, iValue);
-	g_engfuncs.pfnWriteByte(iValue);
-}
-
-void WRITE_CHAR(int iValue) {
-	add_msg_part(MFUNC_CHAR, iValue);
-	g_engfuncs.pfnWriteChar(iValue);
-}
-
-void WRITE_SHORT(int iValue) {
-	add_msg_part(MFUNC_SHORT, iValue);
-	g_engfuncs.pfnWriteShort(iValue);
-}
-
-void WRITE_LONG(int iValue) {
-	add_msg_part(MFUNC_LONG, iValue);
-	g_engfuncs.pfnWriteLong(iValue);
-}
-
-void WRITE_ANGLE(float fValue) {
-	add_msg_part(MFUNC_ANGLE, fValue);
-	g_engfuncs.pfnWriteAngle(fValue);
-}
-
-void WRITE_COORD(float fValue) {
-	add_msg_part(MFUNC_COORD, fValue);
-	g_engfuncs.pfnWriteCoord(fValue);
-}
-
-void WRITE_STRING(const char* sValue) {
-	add_msg_part(sValue);
-	g_engfuncs.pfnWriteString(sValue);
-}
-
-void WRITE_ENTITY(int iValue) {
-	add_msg_part(MFUNC_ENTITY, iValue);
-	g_engfuncs.pfnWriteEntity(iValue);
-}
-
-void MESSAGE_END() {
-	log_msg(g_lastMsg);
-	g_engfuncs.pfnMessageEnd();
-}
-
-bool UTIL_isSafeEntIndex(int idx, const char* action) {
-	if (sv_max_client_edicts && idx >= sv_max_client_edicts->value) {
-		ALERT(at_error, "Can't %s for edict %d '%s' (sv_max_client_edicts = %d)\n",
-			action, idx, STRING(INDEXENT(idx)->v.classname), (int)sv_max_client_edicts->value);
+	if (idx >= maxEdicts) {
+		ALERT(at_error, "Can't %s for edict %d '%s' (max edicts for \"%s\" is %d)\n",
+			action, idx, STRING(INDEXENT(idx)->v.classname), plr->DisplayName(), maxEdicts);
+		plr->SendLegacyClientWarning();
 		return false;
 	}
 
@@ -3980,7 +2644,7 @@ std::vector<std::string> splitString(std::string str, const char* delimiters)
 	std::vector<std::string> split;
 
 	const char* c_str = str.c_str();
-	size_t str_len = str.length();
+	size_t str_len = strlen(c_str);
 
 	size_t start = strspn(c_str, delimiters);
 
@@ -4139,343 +2803,31 @@ std::string getGameFilePath(const char* path) {
 
 void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, edict_t* dest)
 {
-	MESSAGE_BEGIN(msgType, SVC_TEMPENTITY, NULL, dest);
-	WRITE_BYTE(TE_BEAMPOINTS);
-	WRITE_COORD(start.x);
-	WRITE_COORD(start.y);
-	WRITE_COORD(start.z);
-	WRITE_COORD(end.x);
-	WRITE_COORD(end.y);
-	WRITE_COORD(end.z);
-	WRITE_SHORT(g_engfuncs.pfnModelIndex("sprites/laserbeam.spr"));
-	WRITE_BYTE(0);
-	WRITE_BYTE(0);
-	WRITE_BYTE(life);
-	WRITE_BYTE(16);
-	WRITE_BYTE(0);
-	WRITE_BYTE(c.r);
-	WRITE_BYTE(c.g);
-	WRITE_BYTE(c.b);
-	WRITE_BYTE(c.a); // actually brightness
-	WRITE_BYTE(0);
-	MESSAGE_END();
-}
-
-// WAVE file header format
-#pragma pack(push, 1)
-struct RIFF_HEADER {
-	char riff[4];		// RIFF string
-	uint32_t overall_size;	// overall size of file in bytes
-	char wave[4];		// WAVE string
-};
-
-struct RIFF_FMT_PCM {
-	uint16_t format_type;		// format type. 1-PCM, 3- IEEE float, 6 - 8bit A law, 7 - 8bit mu law
-	uint16_t channels;			// no.of channels
-	uint32_t sample_rate;		// sampling rate (blocks per second)
-	uint32_t byterate;			// SampleRate * NumChannels * BitsPerSample/8
-	uint16_t block_align;		// NumChannels * BitsPerSample/8
-	uint16_t bits_per_sample;	// bits per sample, 8- 8bits, 16- 16 bits etc
-};
-
-struct WAVE_CHUNK_FMT {
-	// common format fields
-	uint16_t format_type;		// format type. 1-PCM, 3- IEEE float, 6 - 8bit A law, 7 - 8bit mu law
-	uint16_t channels;			// no.of channels
-	uint32_t sample_rate;		// sampling rate (blocks per second)
-	uint32_t byterate;			// SampleRate * NumChannels * BitsPerSample/8
-	uint16_t block_align;		// NumChannels * BitsPerSample/8
-	uint16_t bits_per_sample;	// bits per sample, 8- 8bits, 16- 16 bits etc
-
-	// non-pcm format field
-	uint16_t cbSize;			// size of the extension
-
-	// extensible format fields
-	uint16_t validBitsPerSample;
-	uint32_t dwChannelMask;
-	uint8_t subFormat[16];
-};
-
-struct WAVE_CUE_HEADER {
-	uint32_t numCuePoints;
-	// WAVE_CUE structs follow
-};
-
-struct WAVE_CUE {
-	uint32_t id; // A unique number for the point used by other chunks to identify the cue point. For example, a playlist chunk creates a playlist by referring to cue points, which themselves define points somewhere in the file
-	uint32_t position; // If there is no playlist chunk, this value is zero. If there is a playlist chunk, this value is the sample at which the cue point should occur
-	char dataChunkId[4]; // Either "data" or "slnt" depending on whether the cue occurs in a data chunk or in a silent chunk
-	uint32_t chunkStart; // The position of the start of the data chunk that contains the cue point. If there is a wave list chunk, this value is the byte position of the chunk that contains the cue. If there is no wave list chunk, there is only one data chunk in the file and this value is zero
-	uint32_t blockStart; // The byte position of the cue in the "data" or "slnt" chunk. If this is an uncompressed PCM file, this is counted from the beginning of the chunk's data. If this is a compressed file, the byte position can be counted from the last byte from which one can start decompressing to find the cue
-	uint32_t sampleStart; // The position of the cue in number of bytes from the start of the block
-};
-
-struct WAVE_LIST_HEADER {
-	char listType[4];
-};
-
-struct WAVE_LIST_INFO_HEADER {
-	char infoType[4];
-	uint32_t textSize;
-};
-
-struct WAVE_ADTL_HEADER {
-	char adtlType[4];
-	uint32_t subSize;
-	uint32_t cueId;
-	// ascii text follows, if "labl" or "note" chunk
-};
-
-// for "ltxt" adtl chunks
-struct WAVE_CUE_LABEL {
-	uint32_t sampleLength;
-	uint32_t purposeId;
-	uint16_t country;
-	uint16_t lang;
-	uint16_t dialect;
-	uint16_t codePage;
-	// ascii text follows
-};
-
-struct WAVE_CHUNK_HEADER {
-	uint8_t name[4];
-	uint32_t size;
-};
-#pragma pack(pop)
-
-WavInfo getWaveFileInfo(const char* path) {
-	if (g_wavInfos.find(path) != g_wavInfos.end()) {
-		return g_wavInfos[path];
-	}
-
-	std::string fpath = getGameFilePath(UTIL_VarArgs("sound/%s", path));
-
-	WavInfo info;
-	info.durationMillis = 0;
-	info.isLooped = false;
-
-	int sampleRate = 0;
-	int bytesPerSample = 0;
-	int numSamples = 0;
-	int read = 0;
-	int fsize = 0;
-	FILE* file = NULL;
-
-	float durationSeconds = 0;
-	bool fatalWave = false;
-	float cues[2];
-	int numCues = 0;
-
-	if (!fpath.size()) {
-		ALERT(at_console, "Missing WAVE file: %s\n", path);
-		goto cleanup;
-	}
-
-	// open file
-	file = fopen(fpath.c_str(), "rb");
-	if (file == NULL) {
-		ALERT(at_error, "Failed to open WAVE file: %s\n", fpath.c_str());
-		goto cleanup;
-	}
-
-	fseek(file, 0, SEEK_END);
-	fsize = ftell(file);
-	fseek(file, 0, SEEK_SET);
-
-	{
-		RIFF_HEADER header;
-		read = fread(&header, sizeof(RIFF_HEADER), 1, file);
-
-		if (!read || strncmp((const char*)header.riff, "RIFF", 4)
-			|| strncmp((const char*)header.wave, "WAVE", 4)) {
-			ALERT(at_error, "Invalid WAVE header: %s\n", fpath.c_str());
-			goto cleanup;
-		}
-	}
-
-	//ALERT(at_console, "%s\n", path);
-
-	//static char infoText[512];
-
-	while (1) {
-		if (ftell(file) + 8 >= fsize) {
-			break;
-		}
-
-		WAVE_CHUNK_HEADER chunk;
-		read = fread(&chunk, sizeof(WAVE_CHUNK_HEADER), 1, file);
-		
-		if (!read) {
-			break; // end of file
-		}
-
-		std::string chunkName = std::string((const char*)chunk.name, 4);
-		//ALERT(at_console, "    Read chunk %s (%d)\n", chunkName.c_str(), chunk.size);
-
-		int seekSize = ((chunk.size + 1) / 2) * 2; // round up to nearest word size
-
-		if (chunkName == "fmt ") {
-
-			if (chunk.size == 16 || chunk.size == 18 || chunk.size == 40) {
-				WAVE_CHUNK_FMT cdata;
-				read = fread(&cdata, chunk.size, 1, file);
-
-				bytesPerSample = cdata.channels * (cdata.bits_per_sample / 8);
-				sampleRate = cdata.sample_rate;
-
-				if (!read || !bytesPerSample || !sampleRate) {
-					ALERT(at_error, "Invalid WAVE fmt chunk: %s\n", fpath.c_str());
-					goto cleanup;
-				}
-			}
-			else {
-				ALERT(at_error, "Invalid WAVE fmt chunk: %s\n", fpath.c_str());
-				goto cleanup;
-			}
-		}
-		else if (chunkName == "data") {
-			if (bytesPerSample && sampleRate && chunk.size) {
-				numSamples = chunk.size / bytesPerSample;
-				info.durationMillis = ((float)numSamples / sampleRate) * 1000.0f;
-			}
-
-			fseek(file, seekSize, SEEK_CUR);
-		}
-		else if (chunkName == "cue ") {
-			WAVE_CUE_HEADER cdata;
-			read = fread(&cdata, sizeof(WAVE_CUE_HEADER), 1, file);
-
-			if (!read) {
-				ALERT(at_error, "Invalid WAVE cue chunk: %s\n", fpath.c_str());
-				goto cleanup;
-			}
-
-			// How cue points work:
-			// 1  cue point  = loop starts at the cue point and ends at an equal distance from the end
-			// 2  cue points = loop starts at the 1st cue and ends at the 2nd cue
-			// 3+ cue points = same as 2 and the extras are ignored
-			//
-			// All fields besides "sampleStart" are ignored
-			// inverted cue points will crash the client
-			// (possible with 1 cue point if placed after the middle of the file)
-			
-			//std::string cueString = "        cue points: ";
-			for (int i = 0; i < (int)cdata.numCuePoints && i < 2; i++) {
-				WAVE_CUE cue;
-				read = fread(&cue, sizeof(WAVE_CUE), 1, file);
-
-				std::string dataChunkId = std::string(cue.dataChunkId, 4);
-				if (!read || (dataChunkId != "data" && dataChunkId != "slnt")) {
-					ALERT(at_error, "Invalid WAVE cue chunk: %s\n", fpath.c_str());
-					goto cleanup;
-				}
-
-				float sampTime = sampleRate ? cue.sampleStart / (float)sampleRate : 0;
-				cues[i] = sampTime;
-				//cueString += UTIL_VarArgs("%.2f  ", sampTime);
-			}
-			//cueString += "\n";
-			//ALERT(at_console, cueString.c_str());
-			
-			info.isLooped = cdata.numCuePoints > 0;
-			numCues = cdata.numCuePoints;
-		}
-		/*
-		else if (chunkName == "LIST") {
-			WAVE_LIST_HEADER cdata;
-			read = fread(&cdata, sizeof(WAVE_LIST_HEADER), 1, file);
-
-			if (!read) {
-				ALERT(at_error, "Invalid WAVE list chunk: %s\n", fpath.c_str());
-				goto cleanup;
-			}
-
-			std::string listType = std::string(cdata.listType, 4);
-
-			ALERT(at_console, "        type: %s\n", listType.c_str());
-			if (!strncmp(cdata.listType, "INFO", 4)) {
-				WAVE_LIST_INFO_HEADER iheader;
-				read = fread(&iheader, sizeof(WAVE_LIST_INFO_HEADER), 1, file);
-
-				if (!read) {
-					ALERT(at_error, "Invalid WAVE list chunk: %s\n", fpath.c_str());
-					goto cleanup;
-				}
-
-				std::string infoType = std::string(iheader.infoType, 4);
-
-				int readSize = V_min(511, iheader.textSize);
-				read = fread(infoText, readSize, 1, file);
-				infoText[readSize] = '\0';
-
-				ALERT(at_console, "        %s (%d): %s\n", infoType.c_str(), iheader.textSize, infoText);
-			}
-			else if (!strncmp(cdata.listType, "adtl", 4)) {
-				WAVE_ADTL_HEADER aheader;
-				read = fread(&aheader, sizeof(WAVE_ADTL_HEADER), 1, file);
-
-				std::string adtlType = std::string(aheader.adtlType, 4);
-
-				if (!strncmp(aheader.adtlType, "labl", 4) || !strncmp(aheader.adtlType, "note", 4)) {
-					int headerSize = sizeof(WAVE_ADTL_HEADER) + sizeof(WAVE_LIST_INFO_HEADER) + sizeof(WAVE_LIST_HEADER) + 4;
-					int readSize = V_min(511, chunk.size - headerSize);
-					read = fread(infoText, readSize, 1, file);
-					infoText[readSize] = '\0';
-					ALERT(at_console, "        %s for %d (%d): %s\n", adtlType.c_str(), aheader.cueId, readSize, infoText);
-				}
-				else if (!strncmp(aheader.adtlType, "ltxt", 4)) {
-					WAVE_CUE_LABEL lheader;
-					read = fread(&aheader, sizeof(WAVE_CUE_LABEL), 1, file);
-				}
-			}
-
-			fseek(file, chunk.size - sizeof(WAVE_LIST_HEADER), SEEK_CUR);
-		}
-		*/
-		else {
-			fseek(file, seekSize, SEEK_CUR);
-		}
-	}
-
-	durationSeconds = info.durationMillis / 1000.0f;
-	fatalWave = false;
-
-	if (numCues == 1 && cues[0] > durationSeconds * 0.495f) { // better safe than sorry here - don't use 0.5 exactly
-		ALERT(at_error, "'%s' has 1 cue point and it was placed after the mid point! This file will crash clients.\n", path);
-		fatalWave = true;
-	}
-	else if (numCues >= 2 && cues[0] > cues[1]) {
-		ALERT(at_error, "'%s' start/end cue points are inverted! This file will crash clients.\n", path);
-		fatalWave = true;
-	}
-
-	if (fatalWave) {
-		// don't allow anyone to download this file! Not all server ops know that you need to rename
-		// a file after updating it. Then if some people got the old file, they will crash and others
-		// will be like "idk works for me" and people will have to delete their hl folder to fix this.
-		// Or worse, they'll just live with it for years because it's just a few maps they crash on.
-		ALERT(at_error, "Server shutting down to prevent distribution of the broken file.\n", path);
-		g_engfuncs.pfnServerCommand("quit\n");
-		g_engfuncs.pfnServerExecute();
-	}
-
-cleanup:
-	g_wavInfos[path] = info;
-	if (file) {
-		fclose(file);
-	}
-	return info;
+	UTIL_BeamPoints(start, end, MODEL_INDEX("sprites/laserbeam.spr"), 0, 0, life, 16, 0,
+		c, 0, msgType, NULL, dest);
 }
 
 std::string lastMapName;
 
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
+	if (target < at_warning && g_developer->value == 0) {
+		return;
+	}
+
+	static std::mutex m; // only allow one thread at a time to access static buffers
+	std::lock_guard<std::mutex> lock(m);
+
 	static char log_line[4096];
 
 	va_list vl;
 	va_start(vl, format);
 	vsnprintf(log_line, 4096, format, vl);
 	va_end(vl);
+
+	if (std::this_thread::get_id() != g_main_thread_id) {
+		g_thread_prints.enqueue({target, log_line}); // only the main thread can call engine functions
+		return;
+	}
 
 #if defined(WIN32) && (_DEBUG)
 	OutputDebugString(log_line);
@@ -4495,6 +2847,19 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 
 		if (g_developer->value == 0)
 			g_engfuncs.pfnServerPrint(log_line);
+	}
+}
+
+void handleThreadPrints() {
+	AlertMsgCall msg;
+
+	for (int failsafe = 0; failsafe < 128; failsafe++) {
+		if (g_thread_prints.dequeue(msg)) {
+			ALERT(msg.atype, msg.msg.c_str());
+		}
+		else {
+			break;
+		}
 	}
 }
 
@@ -4533,10 +2898,6 @@ void PlayCDTrack(int iTrack)
 	}
 }
 
-const char* cstr(string_t s) {
-	return STRING(s);
-}
-
 std::string sanitize_cvar_value(std::string val) {
 	val = replaceString(val, ";", "");
 	val.erase(std::remove(val.begin(), val.end(), '"'), val.end());
@@ -4553,4 +2914,227 @@ const char* getActiveWeapon(entvars_t* pev) {
 	CBasePlayer* plr = (CBasePlayer*)ent;
 	
 	return  plr->m_pActiveItem ? STRING(plr->m_pActiveItem->pev->classname) : "";
+}
+
+uint64_t getEpochMillis() {
+	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
+double TimeDifference(uint64_t start, uint64_t end) {
+	if (end > start) {
+		return (end - start) / 1000.0;
+	}
+	else {
+		return -((start - end) / 1000.0);
+	}
+}
+
+void LoadAdminList(bool forceUpdate) {
+	const char* ADMIN_LIST_FILE = CVAR_GET_STRING("adminlistfile");
+
+	static uint64_t lastEditTime = 0;
+
+	std::string fpath = getGameFilePath(ADMIN_LIST_FILE);
+
+	if (fpath.empty()) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Missing admin list: '%s'\n", ADMIN_LIST_FILE));
+		return;
+	}
+
+	uint64_t editTime = getFileModifiedTime(fpath.c_str());
+
+	if (!forceUpdate && lastEditTime == editTime) {
+		return; // no changes made
+	}
+	
+	std::ifstream infile(fpath);
+
+	if (!infile.is_open()) {
+		ALERT(at_console, "Failed to open admins file: %s\n", ADMIN_LIST_FILE);
+		return;
+	}
+
+	lastEditTime = editTime;
+
+	g_admins.clear();
+
+	std::string line;
+	while (std::getline(infile, line)) {
+		if (line.empty()) {
+			continue;
+		}
+
+		// strip comments
+		int endPos = line.find("//");
+		if (endPos != -1)
+			line = trimSpaces(line.substr(0, endPos));
+
+		if (line.length() < 1) {
+			continue;
+		}
+
+		int adminLevel = ADMIN_YES;
+
+		if (line[0] == '*') {
+			adminLevel = ADMIN_OWNER;
+			line = line.substr(1);
+		}
+
+		g_admins[line] = adminLevel;
+	}
+
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded %d admin(s) from file\n", g_admins.size()));
+}
+
+int AdminLevel(edict_t* plr) {
+	std::string steamId = (*g_engfuncs.pfnGetPlayerAuthId)(plr);
+
+	if (!IS_DEDICATED_SERVER()) {
+		if (ENTINDEX(plr) == 1) {
+			return ADMIN_OWNER; // listen server owner is always the first player to join (I hope)
+		}
+	}
+
+	if (g_admins.find(steamId) != g_admins.end()) {
+		return g_admins[steamId];
+	}
+
+	return ADMIN_NO;
+}
+
+void winPath(std::string& path) {
+	for (int i = 0, size = path.size(); i < size; i++) {
+		if (path[i] == '/')
+			path[i] = '\\';
+	}
+}
+
+std::vector<std::string> getDirFiles(std::string path, std::string extension, std::string startswith, bool onlyOne)
+{
+	std::vector<std::string> results;
+
+#if defined(WIN32) || defined(_WIN32)
+	path = path + startswith + "*." + extension;
+	winPath(path);
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+
+	//ALERT(at_console, "Target file is " + path);
+	hFind = FindFirstFile(path.c_str(), &FindFileData);
+	if (hFind == INVALID_HANDLE_VALUE)
+	{
+		//ALERT(at_console, "FindFirstFile failed " + str((int)GetLastError()) + " " + path);
+		return results;
+	}
+	else
+	{
+		results.push_back(FindFileData.cFileName);
+
+		while (FindNextFile(hFind, &FindFileData) != 0)
+		{
+			results.push_back(FindFileData.cFileName);
+			if (onlyOne)
+				break;
+		}
+
+		FindClose(hFind);
+	}
+#else
+	extension = toLowerCase(extension);
+	startswith = toLowerCase(startswith);
+	startswith.erase(std::remove(startswith.begin(), startswith.end(), '*'), startswith.end());
+	DIR* dir = opendir(path.c_str());
+
+	if (!dir)
+		return results;
+
+	while (true)
+	{
+		dirent* entry = readdir(dir);
+
+		if (!entry)
+			break;
+
+		if (entry->d_type == DT_DIR)
+			continue;
+
+		std::string name = std::string(entry->d_name);
+		std::string lowerName = toLowerCase(name);
+
+		if (extension.size() > name.size() || startswith.size() > name.size())
+			continue;
+
+		if (extension == "*" || std::equal(extension.rbegin(), extension.rend(), lowerName.rbegin()))
+		{
+			if (startswith.size() == 0 || std::equal(startswith.begin(), startswith.end(), lowerName.begin()))
+			{
+				results.push_back(name);
+				if (onlyOne)
+					break;
+			}
+		}
+	}
+
+	closedir(dir);
+#endif
+
+	return results;
+}
+
+void KickPlayer(edict_t* ent, const char* reason) {
+	if (!ent || (ent->v.flags & FL_CLIENT) == 0) {
+		return;
+	}
+	int userid = g_engfuncs.pfnGetPlayerUserId(ent);
+	g_engfuncs.pfnServerCommand(UTIL_VarArgs("kick #%d %s\n", userid, reason));
+	g_engfuncs.pfnServerExecute();
+}
+
+// https://stackoverflow.com/questions/1628386/normalise-orientation-between-0-and-360
+float normalizeRangef(const float value, const float start, const float end)
+{
+	const float width = end - start;
+	const float offsetValue = value - start;   // value relative to 0
+
+	return (offsetValue - (floor(offsetValue / width) * width)) + start;
+	// + start to reset back to start of original range
+}
+
+bool createFolder(const std::string& path) {
+	if (mkdir(path.c_str(), 0777) == 0) {
+		return true;
+	}
+
+	return false;
+}
+
+bool folderExists(const std::string& path) {
+	struct stat info;
+
+	if (stat(path.c_str(), &info) != 0) {
+		return false;
+	}
+
+	return (info.st_mode & S_IFDIR) != 0;
+}
+
+
+uint64_t getFreeSpace(const std::string& path) {
+#if defined(_WIN32)
+	ULARGE_INTEGER freeBytesAvailable;
+	if (GetDiskFreeSpaceEx(path.c_str(), &freeBytesAvailable, NULL, NULL)) {
+		return freeBytesAvailable.QuadPart;
+	}
+	else {
+		ALERT(at_console, "Error getting free space.\n");
+		return 0;
+	}
+#else
+	struct statvfs stat;
+	if (statvfs(path.c_str(), &stat) != 0) {
+		ALERT(at_console, "Error getting free space.\n");
+		return 0;
+	}
+	return stat.f_bavail * stat.f_bsize;
+#endif
 }

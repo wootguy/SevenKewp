@@ -15,7 +15,7 @@
 extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 
-std::vector<std::map<std::string, CKeyValue>> g_customKeyValues;
+std::vector<std::unordered_map<std::string, CKeyValue>> g_customKeyValues;
 CKeyValue g_emptyKeyValue;
 
 CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName);
@@ -98,6 +98,11 @@ int CBaseEntity::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	if (pev->health <= 0)
 	{
 		Killed(pevAttacker, GIB_NORMAL);
+
+		if (IsMonster()) {
+			g_pGameRules->DeathNotice((CBaseMonster*)this, pevAttacker, pevInflictor);
+		}
+
 		return 0;
 	}
 
@@ -148,8 +153,8 @@ void CBaseEntity::KeyValue(KeyValueData* pkvd) {
 			return;
 		}
 
-		std::map<std::string, CKeyValue>& customKeys = *GetCustomKeyValues();
-		std::map<std::string, CKeyValue>::iterator it = customKeys.find(pkvd->szKeyName);
+		std::unordered_map<std::string, CKeyValue>& customKeys = *GetCustomKeyValues();
+		std::unordered_map<std::string, CKeyValue>::iterator it = customKeys.find(pkvd->szKeyName);
 
 		if (it != customKeys.end()) {
 			value.keyName = it->second.keyName; // reuse the key name to save string memory
@@ -176,8 +181,8 @@ CKeyValue CBaseEntity::GetCustomKeyValue(const char* keyName) {
 		return g_emptyKeyValue;
 	}
 
-	std::map<std::string, CKeyValue>* customKeys = GetCustomKeyValues();
-	std::map<std::string, CKeyValue>::iterator it = customKeys->find(keyName);
+	std::unordered_map<std::string, CKeyValue>* customKeys = GetCustomKeyValues();
+	std::unordered_map<std::string, CKeyValue>::iterator it = customKeys->find(keyName);
 
 	if (it != customKeys->end()) {
 		return it->second;
@@ -196,7 +201,7 @@ CKeyValue CBaseEntity::GetKeyValue(const char* keyName) {
 	return GetEntvarsKeyvalue(pev, keyName);
 }
 
-std::map<std::string, CKeyValue>* CBaseEntity::GetCustomKeyValues() {
+std::unordered_map<std::string, CKeyValue>* CBaseEntity::GetCustomKeyValues() {
 	if (g_customKeyValues.empty())
 		g_customKeyValues.resize(gpGlobals->maxEntities);
 
@@ -315,12 +320,12 @@ int	CBaseEntity::DamageDecal(int bitsDamageType)
 
 // NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity
 // will keep a pointer to it after this call.
-CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner, std::map<std::string, std::string> keys)
+CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner, std::unordered_map<std::string, std::string> keys)
 {
 	edict_t* pent;
 	CBaseEntity* pEntity;
 
-	pent = CREATE_NAMED_ENTITY(MAKE_STRING(szName));
+	pent = CREATE_NAMED_ENTITY(ALLOC_STRING(szName)); // not using MAKE_STRING in case an unloaded plugin called this func
 	if (FNullEnt(pent))
 	{
 		ALERT(at_console, UTIL_VarArgs("NULL Ent '%s' in Create!\n", szName));
@@ -714,7 +719,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 				if (g_debugMonster) {
 					UTIL_Remove(g_debugCycler);
 					CBaseEntity* debugMon = g_debugMonster;
-					std::map<std::string, std::string> keys;
+					std::unordered_map<std::string, std::string> keys;
 					keys["model"] = STRING(debugMon->pev->model);
 					CBaseMonster* cycler = (CBaseMonster*)Create("cycler", debugMon->pev->origin, debugMon->pev->angles, 0, keys);
 					cycler->pev->solid = SOLID_NOT;
@@ -939,12 +944,12 @@ int CBaseEntity::IRelationship(int attackerClass, int victimClass) {
 		/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL,	R_DL,	R_DL	},
 		/*PLAYER*/		{ R_NO	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_AL,	R_DL,	R_DL,	R_DL,	R_DL	},
 		/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_NO	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO,	R_FR,	R_FR	},
-		/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO,	R_HT,	R_HT	},
-		/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_HT,	R_HT	},
+		/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_AL	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO,	R_HT,	R_HT	},
+		/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_AL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_HT,	R_HT	},
 		/*ALIENPASSIVE*/{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO,	R_NO,	R_NO	},
-		/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_DL	},
+		/*ALIENPREDATO*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO,	R_DL,	R_DL	},
 		/*INSECT*/		{ R_FR	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*PLAYERALLY*/	{ R_NO	,R_DL	,R_AL	,R_AL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_NO,	R_DL,	R_DL	},
 		/*PBIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_DL,	R_DL,	R_DL	},
@@ -971,4 +976,14 @@ bool CBaseEntity::ShouldBlockFriendlyFire(entvars_t* attacker) {
 	}
 
 	return false;
+}
+
+bool CBaseEntity::CanReach(CBaseEntity* toucher) {
+	TraceResult tr;
+	TRACE_LINE(toucher->pev->origin + toucher->pev->view_ofs, pev->origin, dont_ignore_monsters, toucher->edict(), &tr);
+
+	bool hitItemSurface = tr.pHit && tr.pHit == edict();
+	bool enteredItemBox = boxesIntersect(pev->absmin, pev->absmax, tr.vecEndPos, tr.vecEndPos);
+	
+	return hitItemSurface || enteredItemBox;
 }

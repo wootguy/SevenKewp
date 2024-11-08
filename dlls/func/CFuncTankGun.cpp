@@ -11,7 +11,7 @@ class CFuncTankGun : public CFuncTank
 public:
 	void Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker);
 };
-LINK_ENTITY_TO_CLASS(func_tank, CFuncTankGun);
+LINK_ENTITY_TO_CLASS(func_tank, CFuncTankGun)
 
 void CFuncTankGun::Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker)
 {

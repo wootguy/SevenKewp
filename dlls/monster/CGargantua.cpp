@@ -41,10 +41,10 @@
 int gStompSprite = 0;
 int gGargGibModel = 0;
 
-LINK_ENTITY_TO_CLASS(streak_spiral, CSpiral);
-LINK_ENTITY_TO_CLASS(garg_stomp, CStomp );
-LINK_ENTITY_TO_CLASS(env_smoker, CSmoker);
-LINK_ENTITY_TO_CLASS(monster_gargantua, CGargantua);
+LINK_ENTITY_TO_CLASS(streak_spiral, CSpiral)
+LINK_ENTITY_TO_CLASS(garg_stomp, CStomp )
+LINK_ENTITY_TO_CLASS(env_smoker, CSmoker)
+LINK_ENTITY_TO_CLASS(monster_gargantua, CGargantua)
 
 TYPEDESCRIPTION	CGargantua::m_SaveData[] = 
 {
@@ -59,7 +59,7 @@ TYPEDESCRIPTION	CGargantua::m_SaveData[] =
 	DEFINE_FIELD( CGargantua, m_flameY, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CGargantua, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CGargantua, CBaseMonster )
 
 const char *CGargantua::pAttackHitSounds[] = 
 {
@@ -181,7 +181,7 @@ Schedule_t	slGargFlame[] =
 		ARRAYSIZE ( tlGargFlame ), 
 		0,
 		0,
-		"GargFlame"
+		"GARG_FLAME"
 	},
 };
 
@@ -201,7 +201,7 @@ Schedule_t	slGargSwipe[] =
 		ARRAYSIZE ( tlGargSwipe ), 
 		bits_COND_CAN_MELEE_ATTACK2,
 		0,
-		"GargSwipe"
+		"GARG_SWIPE"
 	},
 };
 
@@ -212,7 +212,7 @@ DEFINE_CUSTOM_SCHEDULES( CGargantua )
 	slGargSwipe,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CGargantua, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CGargantua, CBaseMonster )
 
 
 void CGargantua::EyeOn( int level )
@@ -253,7 +253,7 @@ void CGargantua::StompAttack( void )
 	Vector vecEnd = (vecAim * 1024) + vecStart;
 
 	UTIL_TraceLine( vecStart, vecEnd, ignore_monsters, edict(), &trace );
-	CStomp::StompCreate( vecStart, trace.vecEndPos, 500, stompDamage );
+	CStomp::StompCreate( vecStart, trace.vecEndPos, edict(), 500, stompDamage );
 	UTIL_ScreenShake( pev->origin, 12.0, 100.0, 2.0, 1000 );
 	StompSound();
 
@@ -364,21 +364,7 @@ void CGargantua :: FlameUpdate( void )
 			// RadiusDamage( trace.vecEndPos, pev, pev, gSkillData.gargantuaDmgFire, CLASS_ALIEN_MONSTER, DMG_BURN );
 			FlameDamage( vecStart, trace.vecEndPos, pev, pev, fireDamage, CLASS_ALIEN_MONSTER, DMG_BURN );
 
-			if (UTIL_isSafeEntIndex(entindex(), "attach garg elight")) {
-				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-				WRITE_BYTE(TE_ELIGHT);
-				WRITE_SHORT(entindex() + 0x1000 * (i + 2));		// entity, attachment
-				WRITE_COORD(vecStart.x);		// origin
-				WRITE_COORD(vecStart.y);
-				WRITE_COORD(vecStart.z);
-				WRITE_COORD(RANDOM_FLOAT(32, 48));	// radius
-				WRITE_BYTE(255);	// R
-				WRITE_BYTE(255);	// G
-				WRITE_BYTE(255);	// B
-				WRITE_BYTE(2);	// life * 10
-				WRITE_COORD(0); // decay
-				MESSAGE_END();
-			}
+			UTIL_ELight(entindex(), i+2, vecStart, RANDOM_FLOAT(32, 48), RGBA(255, 255, 255), 2, 0);
 		}
 	}
 	if ( streaks )
@@ -661,6 +647,10 @@ int CGargantua::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 	if (IsImmune(pevAttacker))
 		return 0;
 
+	if (!(bitsDamageType & GARG_DAMAGE)) {
+		flDamage = 0;
+	}
+
 	if ( IsAlive() )
 	{
 		if ( !(bitsDamageType & GARG_DAMAGE) )
@@ -886,6 +876,15 @@ Schedule_t *CGargantua::GetScheduleOfType( int Type )
 	return CBaseMonster::GetScheduleOfType( Type );
 }
 
+const char* CGargantua::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_SOUND_ATTACK: return "TASK_SOUND_ATTACK";
+	case TASK_FLAME_SWEEP: return "TASK_FLAME_SWEEP";
+	default:
+		return CBaseMonster::GetTaskName(taskIdx);
+	}
+}
+
 
 void CGargantua::StartTask( Task_t *pTask )
 {
@@ -1094,7 +1093,7 @@ void CGargantua::CantFollowSound() {
 	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1.0, ATTN_GARG, 0, PITCH_NORM);
 }
 
-CStomp* CStomp::StompCreate(const Vector& origin, const Vector& end, float speed, float damage)
+CStomp* CStomp::StompCreate(const Vector& origin, const Vector& end, edict_t* owner, float speed, float damage)
 {
 	CStomp* pStomp = GetClassPtr((CStomp*)NULL);
 
@@ -1104,6 +1103,7 @@ CStomp* CStomp::StompCreate(const Vector& origin, const Vector& end, float speed
 	pStomp->pev->movedir = dir.Normalize();
 	pStomp->pev->speed = speed;
 	pStomp->pev->dmg = damage;
+	pStomp->pev->owner = owner;
 	pStomp->Spawn();
 
 	return pStomp;

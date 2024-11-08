@@ -40,7 +40,9 @@ class CApache : public CBaseMonster
 	int  BloodColor( void ) { return DONT_BLEED; }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
-	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
+
+	// when crashing, show an explosion kill icon
+	const char* GetDeathNoticeWeapon() { return IsAlive() ? "weapon_9mmAR" : "grenade"; }
 
 	void SetObjectCollisionBox( void )
 	{
@@ -94,8 +96,8 @@ class CApache : public CBaseMonster
 	int m_iDoSmokePuff;
 };
 
-LINK_ENTITY_TO_CLASS( monster_apache, CApache );
-LINK_ENTITY_TO_CLASS( monster_blkop_apache, CApache );
+LINK_ENTITY_TO_CLASS( monster_apache, CApache )
+LINK_ENTITY_TO_CLASS( monster_blkop_apache, CApache )
 
 TYPEDESCRIPTION	CApache::m_SaveData[] = 
 {
@@ -117,7 +119,7 @@ TYPEDESCRIPTION	CApache::m_SaveData[] =
 	DEFINE_FIELD( CApache, m_flGoalSpeed, FIELD_FLOAT ),
 	DEFINE_FIELD( CApache, m_iDoSmokePuff, FIELD_INTEGER ),
 };
-IMPLEMENT_SAVERESTORE( CApache, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CApache, CBaseMonster )
 
 
 void CApache :: Spawn( void )
@@ -165,10 +167,10 @@ void CApache::Precache( void )
 
 	PRECACHE_MODEL(GetModel());
 
-	PRECACHE_SOUND("apache/ap_rotor1.wav");
+	//PRECACHE_SOUND("apache/ap_rotor1.wav");
 	PRECACHE_SOUND("apache/ap_rotor2.wav");
-	PRECACHE_SOUND("apache/ap_rotor3.wav");
-	PRECACHE_SOUND("apache/ap_whine1.wav");
+	//PRECACHE_SOUND("apache/ap_rotor3.wav");
+	//PRECACHE_SOUND("apache/ap_whine1.wav");
 
 	PRECACHE_SOUND("weapons/mortarhit.wav");
 
@@ -215,7 +217,7 @@ void CApache :: Killed( entvars_t *pevAttacker, int iGib )
 	pev->movetype = MOVETYPE_TOSS;
 	pev->gravity = 0.3;
 
-	STOP_SOUND( ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav" );
+	STOP_SOUND(ENT(pev), CHAN_ITEM, "apache/ap_rotor2.wav");
 
 	UTIL_SetSize( pev, Vector( -32, -32, -64), Vector( 32, 32, 0) );
 	SetThink( &CApache::DyingThink );
@@ -723,39 +725,54 @@ void CApache :: Flight( void )
 	// ALERT( at_console, "%.0f %.0f : %.0f %.0f : %.0f %.0f : %.0f\n", pev->origin.x, pev->velocity.x, flDist, flSpeed, pev->angles.x, pev->avelocity.x, m_flForce ); 
 	// ALERT( at_console, "%.0f %.0f : %.0f %0.f : %.0f\n", pev->origin.z, pev->velocity.z, vecEst.z, m_posDesired.z, m_flForce ); 
 
+	static int lastPitch[33];
+
 	// make rotor, engine sounds
 	if (m_iSoundState == 0)
 	{
-		EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0, 0.3, 0, 110 );
+		StartSound(edict(), CHAN_ITEM, "apache/ap_rotor2.wav", 1.0f, 0.3f, 0, 110, g_vecZero, 0xffffffff, false);
+		//EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0, 0.3, 0, 110 );
 		// EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_whine1.wav", 0.5, 0.2, 0, 110 );
 
+		memset(lastPitch, 0, sizeof(int) * 33);
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 	}
 	else
 	{
-		CBaseEntity *pPlayer = NULL;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBaseEntity* pPlayer = (CBaseEntity*)UTIL_PlayerByIndex(i);
 
-		pPlayer = UTIL_FindEntityByClassname( NULL, "player" );
-		// UNDONE: this needs to send different sounds to every player for multiplayer.	
-		if (pPlayer)
-		{
+			if (!pPlayer) {
+				continue;
+			}
 
-			float pitch = DotProduct( pev->velocity - pPlayer->pev->velocity, (pPlayer->pev->origin - pev->origin).Normalize() );
+			float dot = DotProduct(pev->velocity - pPlayer->pev->velocity, (pPlayer->pev->origin - pev->origin).Normalize());
 
-			pitch = (int)(100 + pitch / 50.0);
+			int pitch = (int)(100 + dot / 50.0);
 
-			if (pitch > 250) 
+			if (pitch > 250)
 				pitch = 250;
 			if (pitch < 50)
 				pitch = 50;
+
+			pitch = (pitch / 2) * 2; // reduce the amount of network messages
+
 			if (pitch == 100)
-				pitch = 101;
+				pitch = 101; // SND_CHANGE_PITCH will not work for 100 pitch (random sounds will play)
 
+			/*
 			float flVol = (m_flForce / 100.0) + .1;
-			if (flVol > 1.0) 
+			if (flVol > 1.0)
 				flVol = 1.0;
+				*/
 
-			EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0, 0.3, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);
+			if (pitch == lastPitch[pPlayer->entindex()]) {
+				continue;
+			}
+
+			StartSound(edict(), CHAN_ITEM, "apache/ap_rotor2.wav", 1.0f, 0.3f, SND_CHANGE_PITCH,
+				pitch, g_vecZero, PLRBIT(pPlayer->edict()), false);
+			lastPitch[pPlayer->entindex()] = pitch;
 		}
 		// EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_whine1.wav", flVol, 0.2, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);
 	
@@ -958,13 +975,15 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	Vector dir = ptr->vecPlaneNormal;
 	Vector pos = ptr->vecEndPos;
 
-	bool hitHard = flDamage > 50;
+	bool hitHard = flDamage >= 50;
 	bool isShock = bitsDamageType & DMG_SHOCK;
+	bool isEgon = bitsDamageType & DMG_ENERGYBEAM;
+	bool hitWeakpoint = ptr->iHitgroup == 1 || ptr->iHitgroup == 2;
 
 	if (isShock) {
 		gibCount = 0;
 	}
-	else if (!isBlast && (ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || hitHard)) {
+	else if (!isBlast && (hitWeakpoint || hitHard)) {
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 		WRITE_BYTE(TE_STREAK_SPLASH);
 		WRITE_COORD(pos.x);
@@ -980,7 +999,7 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		MESSAGE_END();
 
 		Vector sprPos = pos + dir * 4;
-		if (ptr->iHitgroup == 2 || ptr->iHitgroup == 1) {
+		if (hitWeakpoint) {
 			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 			WRITE_BYTE(TE_EXPLOSION);
 			WRITE_COORD(sprPos.x);
@@ -1036,7 +1055,7 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	}
 
 	// hit hard, hits cockpit, hits engines
-	if (hitHard || ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || isBlast)
+	if (hitHard || hitWeakpoint || isBlast || isEgon)
 	{
 		// ALERT( at_console, "%.0f\n", flDamage );
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
@@ -1060,15 +1079,18 @@ class CApacheHVR : public CGrenade
 	void Precache( void );
 	void EXPORT IgniteThink( void );
 	void EXPORT AccelerateThink( void );
+	virtual const char* GetDeathNoticeWeapon() { return "rpg_rocket"; };
 
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
+	virtual int MergedModelBody() { return MERGE_MDL_HVR; }
+
 	int m_iTrail;
 	Vector m_vecForward;
 };
-LINK_ENTITY_TO_CLASS( hvr_rocket, CApacheHVR );
+LINK_ENTITY_TO_CLASS( hvr_rocket, CApacheHVR )
 
 TYPEDESCRIPTION	CApacheHVR::m_SaveData[] = 
 {
@@ -1076,7 +1098,7 @@ TYPEDESCRIPTION	CApacheHVR::m_SaveData[] =
 	DEFINE_FIELD( CApacheHVR, m_vecForward, FIELD_VECTOR ),
 };
 
-IMPLEMENT_SAVERESTORE( CApacheHVR, CGrenade );
+IMPLEMENT_SAVERESTORE( CApacheHVR, CGrenade )
 
 void CApacheHVR :: Spawn( void )
 {
@@ -1085,7 +1107,7 @@ void CApacheHVR :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), "models/HVR.mdl");
+	SetGrenadeModel();
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -1104,7 +1126,8 @@ void CApacheHVR :: Spawn( void )
 
 void CApacheHVR :: Precache( void )
 {
-	PRECACHE_MODEL("models/HVR.mdl");
+	m_defaultModel = "models/HVR.mdl";
+	PRECACHE_MODEL(GetModel());
 	m_iTrail = PRECACHE_MODEL("sprites/smoke.spr");
 	PRECACHE_SOUND ("weapons/rocket1.wav");
 }
@@ -1120,22 +1143,7 @@ void CApacheHVR :: IgniteThink( void  )
 	// make rocket sound
 	EMIT_SOUND( ENT(pev), CHAN_VOICE, "weapons/rocket1.wav", 1, 0.5 );
 
-	if (UTIL_isSafeEntIndex(entindex(), "create HVR rocket trail")) {
-		// rocket trail
-		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-
-			WRITE_BYTE( TE_BEAMFOLLOW );
-			WRITE_SHORT(entindex());	// entity
-			WRITE_SHORT(m_iTrail );	// model
-			WRITE_BYTE( 15 ); // life
-			WRITE_BYTE( 5 );  // width
-			WRITE_BYTE( 224 );   // r, g, b
-			WRITE_BYTE( 224 );   // r, g, b
-			WRITE_BYTE( 255 );   // r, g, b
-			WRITE_BYTE( 255 );	// brightness
-
-		MESSAGE_END();  // move PHS/PVS data sending into here (SEND_ALL, SEND_PVS, SEND_PHS)
-	}
+	UTIL_BeamFollow(entindex(), m_iTrail, 15, 5, RGBA(224, 224, 255, 255), MSG_BROADCAST, NULL);
 
 	// set to accelerate
 	SetThink( &CApacheHVR::AccelerateThink );

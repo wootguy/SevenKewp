@@ -5,8 +5,12 @@
 #include "game.h"
 #include "CBaseDMStart.h"
 #include <vector>
+#include "CBasePlayer.h"
 
 #define FL_START_OFF 2
+#define FL_SPAWN_FILTER_TNAME 8
+#define FL_SPAWN_FILTER_INVERT 16
+#define FL_SPAWN_TRIGGER 32
 
 class CBaseDMStart : public CPointEntity
 {
@@ -14,17 +18,21 @@ public:
 	void		Spawn(void);
 	void		Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	BOOL		IsTriggered(CBaseEntity* pEntity);
+	void		KeyValue(KeyValueData* pkvd);
+
+	void		SpawnPlayer(CBasePlayer* plr);
 
 private:
 	bool isActive;
+	int triggerState;
 };
 
 // These are the new entry points to entities. 
-LINK_ENTITY_TO_CLASS(info_player_deathmatch, CBaseDMStart);
-LINK_ENTITY_TO_CLASS(info_player_start, CBaseDMStart);
-LINK_ENTITY_TO_CLASS(info_player_coop, CBaseDMStart);
-LINK_ENTITY_TO_CLASS(info_player_dm2, CBaseDMStart);
-LINK_ENTITY_TO_CLASS(info_landmark, CPointEntity);
+LINK_ENTITY_TO_CLASS(info_player_deathmatch, CBaseDMStart)
+LINK_ENTITY_TO_CLASS(info_player_start, CBaseDMStart)
+LINK_ENTITY_TO_CLASS(info_player_coop, CBaseDMStart)
+LINK_ENTITY_TO_CLASS(info_player_dm2, CBaseDMStart)
+LINK_ENTITY_TO_CLASS(info_landmark, CPointEntity)
 
 void CBaseDMStart::Spawn()
 {
@@ -38,7 +46,47 @@ void CBaseDMStart::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE u
 
 BOOL CBaseDMStart::IsTriggered(CBaseEntity* pEntity)
 {
+	if (pev->spawnflags & FL_SPAWN_FILTER_TNAME) {
+		bool namesShouldMatch = !(pev->spawnflags & FL_SPAWN_FILTER_INVERT);
+		bool namesMatch = (!pev->message && !pEntity->pev->targetname)
+				|| (pev->message && pEntity->pev->targetname && !strcmp(STRING(pev->message), STRING(pEntity->pev->targetname)));
+
+		if (namesMatch != namesShouldMatch) {
+			return false;
+		}
+	}
+
 	return isActive;
+}
+
+void CBaseDMStart::SpawnPlayer(CBasePlayer* plr) {
+	plr->pev->origin = pev->origin + Vector(0, 0, 1);
+	plr->pev->v_angle = g_vecZero;
+	plr->pev->velocity = g_vecZero;
+	plr->pev->angles = pev->angles;
+	plr->pev->punchangle = g_vecZero;
+	plr->pev->fixangle = TRUE;
+	
+	if (pev->netname) {
+		// new player targetname
+		plr->pev->targetname = pev->netname;
+	}
+
+	if (pev->spawnflags & FL_SPAWN_TRIGGER) {
+		FireTargets(STRING(pev->target), plr, this, (USE_TYPE)triggerState, 0.0f);
+	}
+}
+
+void CBaseDMStart::KeyValue(KeyValueData* pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "triggerstate"))
+	{
+		triggerState = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else {
+		CPointEntity::KeyValue(pkvd);
+	}
 }
 
 /*
@@ -48,7 +96,7 @@ EntSelectSpawnPoint
 Returns the entity to spawn at
 ============
 */
-edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
+edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer, bool includeDisabledSpawns)
 {
 	CBaseEntity* pSpot;
 
@@ -69,7 +117,7 @@ edict_t* EntSelectSpawnPoint(CBaseEntity* pPlayer)
 	for (int i = 0; i < SPAWN_ENT_TYPES; i++) {
 		pSpot = NULL;
 		while (!FNullEnt(pSpot = UTIL_FindEntityByClassname(pSpot, spawn_ent_names[i]))) {
-			if (pSpot->IsTriggered(pPlayer)) {
+			if (pSpot->IsTriggered(pPlayer) || includeDisabledSpawns) {
 				if (i == 0) {
 					legacySpawns.push_back(pSpot);
 					continue;

@@ -54,7 +54,7 @@ private:
 
 	CMultiManager* Clone(void);
 };
-LINK_ENTITY_TO_CLASS(multi_manager, CMultiManager);
+LINK_ENTITY_TO_CLASS(multi_manager, CMultiManager)
 
 // Global Savedata for multi_manager
 TYPEDESCRIPTION	CMultiManager::m_SaveData[] =
@@ -66,7 +66,7 @@ TYPEDESCRIPTION	CMultiManager::m_SaveData[] =
 	DEFINE_ARRAY(CMultiManager, m_flTargetDelay, FIELD_FLOAT, MAX_MULTI_TARGETS),
 };
 
-IMPLEMENT_SAVERESTORE(CMultiManager, CBaseToggle);
+IMPLEMENT_SAVERESTORE(CMultiManager, CBaseToggle)
 
 void CMultiManager::KeyValue(KeyValueData* pkvd)
 {
@@ -93,7 +93,7 @@ void CMultiManager::KeyValue(KeyValueData* pkvd)
 				triggerMode = atoi(triggerTypeSep + 1);
 			}
 
-			UTIL_StripToken(pkvd->szKeyName, tmp);
+			UTIL_StripToken(pkvd->szKeyName, tmp, sizeof(tmp));
 			m_iTargetName[m_cTargets] = ALLOC_STRING(tmp);
 			m_flTargetDelay[m_cTargets] = atof(pkvd->szValue);
 			m_triggerMode[m_cTargets] = triggerMode;

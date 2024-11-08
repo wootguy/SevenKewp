@@ -48,8 +48,11 @@ public:
 	BOOL ShouldWeaponIdle( void ) { return TRUE; };
 
 	EHANDLE m_hSpot;
+	EHANDLE m_hBeam;
 	int m_fSpotActive;
 	int m_cActiveRockets;// how many missiles in flight from this launcher right now?
+
+	virtual int MergedModelBody() { return MERGE_MDL_W_RPG; }
 
 	virtual BOOL UseDecrement( void )
 	{ 
@@ -76,7 +79,13 @@ public:
 	void EXPORT FollowThink( void );
 	void EXPORT IgniteThink( void );
 	void EXPORT RocketTouch( CBaseEntity *pOther );
+	virtual const char* GetDeathNoticeWeapon() { return "rpg_rocket"; };
+
+	virtual void Explode(TraceResult* pTrace, int bitsDamageType);
+
 	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher );
+
+	virtual int MergedModelBody() { return MERGE_MDL_RPGROCKET; }
 
 	int m_iTrail;
 	float m_flIgniteTime;

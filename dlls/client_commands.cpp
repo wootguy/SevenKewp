@@ -15,6 +15,7 @@
 #include "pm_shared.h"
 #include "voice_gamemgr.h"
 #include "TextMenu.h"
+#include "PluginManager.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
 extern int gmsgSayText;
@@ -235,8 +236,10 @@ void Host_Say(edict_t* pEntity, int teamonly)
 			continue;
 
 		// can the receiver hear the sender? or has he muted him?
-		if (g_VoiceGameMgr.PlayerHasBlockedPlayer(client, player))
-			continue;
+		// TODO: voice muting has a buggy implementation that causes random ppl to get muted
+		// when you change servers. Create a new system.
+		//if (g_VoiceGameMgr.PlayerHasBlockedPlayer(client, player))
+		//	continue;
 
 		/*
 		if (!player->IsObserver() && teamonly && g_pGameRules->PlayerRelationship(client, CBaseEntity::Instance(pEntity)) != GR_TEAMMATE)
@@ -255,11 +258,21 @@ void Host_Say(edict_t* pEntity, int teamonly)
 
 	}
 
+	if (player->tempNameActive) {
+		player->Rename(player->DisplayName(), true, MSG_ONE, player->edict());
+		player->UpdateTeamInfo(-1, MSG_ONE, player->edict());
+	}
+
 	// print to the sending client
 	MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, &pEntity->v);
 	WRITE_BYTE(ENTINDEX(pEntity));
 	WRITE_STRING(text);
 	MESSAGE_END();
+
+	if (player->tempNameActive) {
+		player->Rename(player->m_tempName, false, MSG_ONE, player->edict());
+		player->UpdateTeamInfo(player->m_tempTeam, MSG_ONE, player->edict());
+	}
 
 	// echo to server console for listen servers, dedicated servers should have logs enabled
 	if (!IS_DEDICATED_SERVER())
@@ -361,16 +374,24 @@ bool CheatCommand(edict_t* pEntity) {
 // Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
 void ClientCommand(edict_t* pEntity)
 {
-	TextMenuClientCommandHook(pEntity);
-
-	const char* pcmd = CMD_ARGV(0);
-	const char* pstr;
-
 	// Is the client spawned yet?
 	if (!pEntity->pvPrivateData)
 		return;
 
 	entvars_t* pev = &pEntity->v;
+
+	CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
+
+	if (!pPlayer) {
+		return;
+	}
+
+	CALL_HOOKS_VOID(pfnClientCommand, pPlayer);
+
+	TextMenuClientCommandHook(pEntity);
+
+	const char* pcmd = CMD_ARGV(0);
+	const char* pstr;
 
 	if (CheatCommand(pEntity)) {
 		return;
@@ -385,37 +406,36 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "fullupdate"))
 	{
-		GetClassPtr((CBasePlayer*)pev)->ForceClientDllUpdate();
+		pPlayer->ForceClientDllUpdate();
 	}
 	else if (FStrEq(pcmd, "give"))
 	{
 		if (g_flWeaponCheat != 0.0)
 		{
 			int iszItem = ALLOC_STRING(CMD_ARGV(1));	// Make a copy of the classname
-			GetClassPtr((CBasePlayer*)pev)->GiveNamedItem(STRING(iszItem));
+			pPlayer->GiveNamedItem(STRING(iszItem));
 		}
 	}
-
 	else if (FStrEq(pcmd, "drop"))
 	{
 		// player is dropping an item. 
-		GetClassPtr((CBasePlayer*)pev)->DropPlayerItem((char*)CMD_ARGV(1));
+		pPlayer->DropPlayerItem((char*)CMD_ARGV(1));
 	}
 	else if (FStrEq(pcmd, "dropammo"))
 	{
 		// player is dropping an item. 
-		GetClassPtr((CBasePlayer*)pev)->DropAmmo(false);
+		pPlayer->DropAmmo(false);
 	}
 	else if (FStrEq(pcmd, "dropammo2"))
 	{
 		// player is dropping an item. 
-		GetClassPtr((CBasePlayer*)pev)->DropAmmo(true);
+		pPlayer->DropAmmo(true);
 	}
 	else if (FStrEq(pcmd, "fov"))
 	{
 		if (g_flWeaponCheat && CMD_ARGC() > 1)
 		{
-			GetClassPtr((CBasePlayer*)pev)->m_iFOV = atoi(CMD_ARGV(1));
+			pPlayer->m_iFOV = atoi(CMD_ARGV(1));
 		}
 		else
 		{
@@ -424,7 +444,7 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "use"))
 	{
-		GetClassPtr((CBasePlayer*)pev)->SelectItem((char*)CMD_ARGV(1));
+		pPlayer->SelectItem((char*)CMD_ARGV(1));
 	}
 	else if (g_weaponClassnames.count(pcmd))
 	{
@@ -435,25 +455,24 @@ void ClientCommand(edict_t* pEntity)
 			wepCname = pcmd + dirEnd + 1;
 		}
 
-		GetClassPtr((CBasePlayer*)pev)->SelectItem(wepCname);
+		pPlayer->SelectItem(wepCname);
 	}
 	else if (((pstr = strstr(pcmd, "weapon_")) != NULL) && (pstr == pcmd))
 	{
-		GetClassPtr((CBasePlayer*)pev)->SelectItem(pcmd);
+		pPlayer->SelectItem(pcmd);
 	}
 	else if (FStrEq(pcmd, "lastinv"))
 	{
-		GetClassPtr((CBasePlayer*)pev)->SelectLastItem();
+		pPlayer->SelectLastItem();
 	}
 	else if (FStrEq(pcmd, "spectate"))	// clients wants to become a spectator
 	{
 		// always allow proxies to become a spectator
 		if ((pev->flags & FL_PROXY) || allow_spectators.value)
 		{
-			CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
-
-			if (gpGlobals->time - pPlayer->m_lastObserverSwitch < 3.0f) {
-				float timeleft = 3.0f - (gpGlobals->time - pPlayer->m_lastObserverSwitch);
+			float cooldown = mp_respawndelay.value + pPlayer->m_extraRespawnDelay;
+			if (gpGlobals->time - pPlayer->m_lastObserverSwitch < cooldown) {
+				float timeleft = cooldown - (gpGlobals->time - pPlayer->m_lastObserverSwitch);
 				CLIENT_PRINTF(pPlayer->edict(), print_center, UTIL_VarArgs("Wait %.1f seconds", timeleft));
 			}
 			else if( pev->iuser1 == OBS_NONE )
@@ -466,14 +485,22 @@ void ClientCommand(edict_t* pEntity)
 				pPlayer->pev->fixangle = TRUE;
 
 				// notify other clients of player switching to spectator mode
-				UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s switched to spectator mode\n",
-					(pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "unconnected"));
+				UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s is now spectating\n",
+					(pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "\\disconnected\\"));
 			}
 			else
 			{
-				UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s stopped spectating\n",
-					(pev->netname && STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "unconnected"));
-				pPlayer->LeaveObserver();
+				edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot(pPlayer);
+
+				if (FNullEnt(pentSpawnSpot)) {
+					pPlayer->m_wantToExitObserver = true;
+					UTIL_ClientPrint(pPlayer->edict(), print_chat, "Can't stop spectating. No spawn points are available.\n");
+				}
+				else {
+					pPlayer->LeaveObserver();
+					UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("%s stopped spectating\n",
+						(pev->netname&& STRING(pev->netname)[0] != 0) ? STRING(pev->netname) : "\\disconnected\\"));
+				}
 			}
 		}
 		else
@@ -482,8 +509,6 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "specmode"))	// new spectator mode
 	{
-		CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
-
 		if (pPlayer->IsObserver())
 			pPlayer->Observer_SetMode(atoi(CMD_ARGV(1)));
 	}
@@ -493,12 +518,14 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "follownext"))	// follow next player
 	{
-		CBasePlayer* pPlayer = GetClassPtr((CBasePlayer*)pev);
-
 		if (pPlayer->IsObserver())
 			pPlayer->Observer_FindNextPlayer(atoi(CMD_ARGV(1)) ? true : false);
 	}
-	else if (g_pGameRules->ClientCommand(GetClassPtr((CBasePlayer*)pev), pcmd))
+	else if (FStrEq(pcmd, "listplugins"))
+	{
+		g_pluginManager.ListPlugins(pEntity);
+	}
+	else if (g_pGameRules->ClientCommand(pPlayer, pcmd))
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
 	}
@@ -511,6 +538,14 @@ void ClientCommand(edict_t* pEntity)
 		// max total length is 192 ...and we're adding a string below ("Unknown command: %s\n")
 		strncpy(command, pcmd, 127);
 		command[127] = '\0';
+
+		// First parse the name and remove any %'s
+		for (char* pApersand = command; pApersand != NULL && *pApersand != 0; pApersand++)
+		{
+			// Replace it with a space
+			if (*pApersand == '%')
+				*pApersand = ' ';
+		}
 
 		// tell the user they entered an unknown command
 		UTIL_ClientPrint(pEntity, print_console, UTIL_VarArgs("Unknown command: %s\n", command));

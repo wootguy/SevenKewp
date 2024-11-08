@@ -33,7 +33,6 @@ extern EXPORT enginefuncs_t g_engfuncs;
 
 #define MODEL_FRAMES	(*g_engfuncs.pfnModelFrames)
 #define SET_SIZE		(*g_engfuncs.pfnSetSize)
-#define CHANGE_LEVEL	(*g_engfuncs.pfnChangeLevel)
 #define GET_SPAWN_PARMS	(*g_engfuncs.pfnGetSpawnParms)
 #define SAVE_SPAWN_PARMS (*g_engfuncs.pfnSaveSpawnParms)
 #define VEC_TO_YAW		(*g_engfuncs.pfnVecToYaw)
@@ -49,7 +48,6 @@ extern EXPORT enginefuncs_t g_engfuncs;
 #define DROP_TO_FLOOR	(*g_engfuncs.pfnDropToFloor)
 #define WALK_MOVE		(*g_engfuncs.pfnWalkMove)
 #define SET_ORIGIN		(*g_engfuncs.pfnSetOrigin)
-#define EMIT_SOUND_DYN2 (*g_engfuncs.pfnEmitSound)
 #define BUILD_SOUND_MSG (*g_engfuncs.pfnBuildSoundMsg)
 #define TRACE_LINE		(*g_engfuncs.pfnTraceLine)
 #define TRACE_TOSS		(*g_engfuncs.pfnTraceToss)
@@ -95,19 +93,17 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 
 EXPORT void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
 
-#ifdef PLUGIN_BUILD
+#if defined(PLUGIN_BUILD) && defined(PLUGIN_NAME)
 #define ALERT(target, fmt, ...) { \
-	DEBUG_MSG(target, "[" PLUGIN_NAME "] " fmt, ##__VA_ARGS__ ); \
+	DEBUG_MSG(target, (std::string("[" PLUGIN_NAME "] ") + fmt).c_str(), ##__VA_ARGS__); \
 }
 #else
 #define ALERT DEBUG_MSG
 #endif
 
-#define print(...)	{ALERT(at_console, __VA_ARGS__);}
-#define println(...)	{ALERT(at_console, __VA_ARGS__); ALERT(at_console, "\n");}
 #define ENGINE_FPRINTF	(*g_engfuncs.pfnEngineFprintf)
 #define ALLOC_PRIVATE	(*g_engfuncs.pfnPvAllocEntPrivateData)
-inline void *GET_PRIVATE( edict_t *pent )
+inline void *GET_PRIVATE( const edict_t *pent )
 {
 	if ( pent )
 		return pent->pvPrivateData;
@@ -116,21 +112,15 @@ inline void *GET_PRIVATE( edict_t *pent )
 
 #define FREE_PRIVATE	(*g_engfuncs.pfnFreeEntPrivateData)
 //#define STRING			(*g_engfuncs.pfnSzFromIndex)
-#define ALLOC_STRING	(*g_engfuncs.pfnAllocString)
 #define FIND_ENTITY_BY_STRING	(*g_engfuncs.pfnFindEntityByString)
 #define GETENTITYILLUM	(*g_engfuncs.pfnGetEntityIllum)
 #define FIND_ENTITY_IN_SPHERE		(*g_engfuncs.pfnFindEntityInSphere)
 #define FIND_CLIENT_IN_PVS			(*g_engfuncs.pfnFindClientInPVS) // Doesn't work as expected in multiplayer.
-#define EMIT_AMBIENT_SOUND			(*g_engfuncs.pfnEmitAmbientSound)
-#define REG_USER_MSG				(*g_engfuncs.pfnRegUserMsg)
 #define GET_BONE_POSITION			(*g_engfuncs.pfnGetBonePosition)
 #define FUNCTION_FROM_NAME			(*g_engfuncs.pfnFunctionFromName)
 #define NAME_FOR_FUNCTION			(*g_engfuncs.pfnNameForFunction)
 #define TRACE_TEXTURE				(*g_engfuncs.pfnTraceTexture)
 #define CLIENT_PRINTF				(*g_engfuncs.pfnClientPrintf)
-#define CMD_ARGS					(*g_engfuncs.pfnCmd_Args)
-#define CMD_ARGC					(*g_engfuncs.pfnCmd_Argc)
-#define CMD_ARGV					(*g_engfuncs.pfnCmd_Argv)
 #define GET_ATTACHMENT			(*g_engfuncs.pfnGetAttachment)
 #define SET_VIEW				(*g_engfuncs.pfnSetView)
 #define SET_CROSSHAIRANGLE		(*g_engfuncs.pfnCrosshairAngle)
@@ -141,8 +131,6 @@ inline void *GET_PRIVATE( edict_t *pent )
 #define IS_MAP_VALID			(*g_engfuncs.pfnIsMapValid)
 #define NUMBER_OF_ENTITIES		(*g_engfuncs.pfnNumberOfEntities)
 #define IS_DEDICATED_SERVER		(*g_engfuncs.pfnIsDedicatedServer)
-
-#define PLAYBACK_EVENT_FULL		(*g_engfuncs.pfnPlaybackEvent)
 
 #define ENGINE_SET_PVS			(*g_engfuncs.pfnSetFatPVS)
 #define ENGINE_SET_PAS			(*g_engfuncs.pfnSetFatPAS)

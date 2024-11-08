@@ -36,7 +36,7 @@ enum handgrenade_e {
 };
 
 
-LINK_ENTITY_TO_CLASS( weapon_handgrenade, CHandGrenade );
+LINK_ENTITY_TO_CLASS( weapon_handgrenade, CHandGrenade )
 
 
 void CHandGrenade::Spawn( )
@@ -67,7 +67,7 @@ int CHandGrenade::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "Hand Grenade";
-	p->iMaxAmmo1 = HANDGRENADE_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_grenades;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
@@ -154,9 +154,10 @@ void CHandGrenade::WeaponIdle( void )
 		else
 			angThrow.x = -10 + angThrow.x * ( ( 90 + 10 ) / 90.0 );
 
-		float flVel = ( 90 - angThrow.x ) * 4;
-		if ( flVel > 500 )
-			flVel = 500;
+		static float flMultiplier = 6.5f;
+		float flVel = (90 - angThrow.x) * flMultiplier;
+		if (flVel > 1000)
+			flVel = 1000;
 
 		UTIL_MakeVectors( angThrow );
 

@@ -30,14 +30,15 @@ TYPEDESCRIPTION CSpore::m_SaveData[] =
 	DEFINE_FIELD(CSpore, m_bIsAI, FIELD_BOOLEAN),
 	DEFINE_FIELD(CSpore, m_hSprite, FIELD_EHANDLE) };
 
-IMPLEMENT_SAVERESTORE(CSpore, CSpore::BaseClass);
+IMPLEMENT_SAVERESTORE(CSpore, CSpore::BaseClass)
 #endif
 
-LINK_ENTITY_TO_CLASS(spore, CSpore);
+LINK_ENTITY_TO_CLASS(spore, CSpore)
 
 void CSpore::Precache()
 {
-	PRECACHE_MODEL( "models/spore.mdl" );
+	m_defaultModel = "models/spore.mdl";
+	PRECACHE_MODEL( GetModel() );
 	PRECACHE_MODEL( "sprites/glow01.spr" );
 
 	m_iBlow = PRECACHE_MODEL("sprites/spore_exp_01.spr" );
@@ -59,7 +60,7 @@ void CSpore::Spawn()
 
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL( edict(), "models/spore.mdl" );
+	SetGrenadeModel();
 
 	UTIL_SetSize( pev, g_vecZero, g_vecZero );
 
@@ -187,7 +188,7 @@ void CSpore::IgniteThink()
 		WRITE_BYTE( 80 );
 	MESSAGE_END();
 
-	::RadiusDamage( pev->origin, pev, VARS( pev->owner ), pev->dmg, 200, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
+	::RadiusDamage( pev->origin, pev, VARS( pev->owner ), pev->dmg, 200, CLASS_NONE, DMG_ALWAYSGIB | DMG_POISON);
 
 	SetThink( &CSpore::SUB_Remove );
 
@@ -227,7 +228,7 @@ void CSpore::RocketTouch( CBaseEntity* pOther )
 {
 	if( pOther->pev->takedamage != DAMAGE_NO )
 	{
-		pOther->TakeDamage( pev, VARS( pev->owner ), gSkillData.sk_plr_spore, DMG_GENERIC );
+		pOther->TakeDamage( pev, VARS( pev->owner ), gSkillData.sk_plr_spore, DMG_POISON);
 	}
 
 	IgniteThink();
@@ -258,7 +259,7 @@ void CSpore::MyBounceTouch( CBaseEntity* pOther )
 	}
 	else
 	{
-		pOther->TakeDamage( pev, VARS( pev->owner ), gSkillData.sk_plr_spore, DMG_GENERIC );
+		pOther->TakeDamage( pev, VARS( pev->owner ), gSkillData.sk_plr_spore, DMG_POISON);
 
 		IgniteThink();
 	}

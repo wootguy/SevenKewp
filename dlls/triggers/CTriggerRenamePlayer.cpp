@@ -16,7 +16,7 @@ public:
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 };
 
-LINK_ENTITY_TO_CLASS(trigger_renameplayer, CTriggerRenamePlayer);
+LINK_ENTITY_TO_CLASS(trigger_renameplayer, CTriggerRenamePlayer)
 
 void CTriggerRenamePlayer::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {

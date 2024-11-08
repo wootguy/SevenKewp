@@ -18,7 +18,7 @@ public:
 	void EXPORT BreakTouch(CBaseEntity* pOther);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void DamageSound(void);
-	const char* DisplayName() { return m_displayName ? STRING(m_displayName) : "Breakable"; }
+	const char* DisplayName();
 	virtual Vector GetTargetOrigin() { return Center(); }
 
 	// breakables use an overridden takedamage

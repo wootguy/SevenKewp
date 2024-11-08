@@ -21,6 +21,7 @@
 #include	"gamerules.h"
 #include	"game.h"
 #include	"skill.h"
+#include	"PluginManager.h"
 
 void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd );
 
@@ -30,7 +31,7 @@ char PM_FindTextureType( char *name );
 
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
 
-static DLL_FUNCTIONS gFunctionTable = 
+DLL_FUNCTIONS dllFuncs =
 {
 	GameDLLInit,				//pfnGameInit
 	DispatchSpawn,				//pfnSpawn
@@ -94,16 +95,27 @@ static DLL_FUNCTIONS gFunctionTable =
 	AllowLagCompensation,		//pfnAllowLagCompensation
 };
 
+NEW_DLL_FUNCTIONS newDllFuncs = {
+	OnFreeEntPrivateData,
+	GameShutdown,
+	ShouldCollide,
+	CvarValue,
+	CvarValue2
+};
+
+gamedll_funcs_t GameDllFuncs = { &dllFuncs, &newDllFuncs };
+gamedll_funcs_t* gpGamedllFuncs = &GameDllFuncs;
+
 extern "C" {
 
-	int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion )
+int GetEntityAPI( DLL_FUNCTIONS *pFunctionTable, int interfaceVersion )
 {
 	if ( !pFunctionTable || interfaceVersion != INTERFACE_VERSION )
 	{
 		return FALSE;
 	}
 	
-	memcpy( pFunctionTable, &gFunctionTable, sizeof( DLL_FUNCTIONS ) );
+	memcpy( pFunctionTable, &dllFuncs, sizeof( DLL_FUNCTIONS ) );
 	return TRUE;
 }
 
@@ -116,8 +128,23 @@ int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVersion )
 		return FALSE;
 	}
 	
-	memcpy( pFunctionTable, &gFunctionTable, sizeof( DLL_FUNCTIONS ) );
+	memcpy( pFunctionTable, &dllFuncs, sizeof( DLL_FUNCTIONS ) );
 	return TRUE;
+}
+
+int GetNewDLLFunctions(NEW_DLL_FUNCTIONS* pNewFunctionTable, int* interfaceVersion) {
+	if (!pNewFunctionTable) {
+		ALERT(at_error, "GetNewDLLFunctions called with null pNewFunctionTable");
+		return(FALSE);
+	}
+	else if (*interfaceVersion != 1) {
+		ALERT(at_error, "GetNewDLLFunctions version mismatch; requested=%d ours=%d", *interfaceVersion, INTERFACE_VERSION);
+		*interfaceVersion = 1;
+		return(FALSE);
+	}
+
+	memcpy(pNewFunctionTable, &newDllFuncs, sizeof(NEW_DLL_FUNCTIONS));
+	return(TRUE);
 }
 
 }
@@ -182,6 +209,8 @@ edict_t* SpawnEdict(edict_t* pent) {
 
 int DispatchSpawn( edict_t *pent )
 {
+	CALL_HOOKS(int, pfnDispatchSpawn, pent);
+
 	SpawnEdict(pent);
 
 	// never ask the engine to delete the edict, because relocation will have invalidated its pointer.
@@ -190,6 +219,8 @@ int DispatchSpawn( edict_t *pent )
 
 void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd )
 {
+	CALL_HOOKS_VOID(pfnDispatchKeyValue, pentKeyvalue, pkvd);
+
 	if ( !pkvd || !pentKeyvalue )
 		return;
 
@@ -215,6 +246,8 @@ void DispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd )
 BOOL gTouchDisabled = FALSE;
 void DispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 {
+	CALL_HOOKS_VOID(pfnDispatchTouch, pentTouched, pentOther);
+
 	if ( gTouchDisabled )
 		return;
 
@@ -228,6 +261,8 @@ void DispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 
 void DispatchUse( edict_t *pentUsed, edict_t *pentOther )
 {
+	CALL_HOOKS_VOID(pfnDispatchUse, pentUsed, pentOther);
+
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE(pentUsed);
 	CBaseEntity *pOther = (CBaseEntity *)GET_PRIVATE(pentOther);
 
@@ -237,6 +272,8 @@ void DispatchUse( edict_t *pentUsed, edict_t *pentOther )
 
 void DispatchThink( edict_t *pent )
 {
+	CALL_HOOKS_VOID(pfnDispatchThink, pent);
+
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE(pent);
 	if (pEntity)
 	{
@@ -249,6 +286,8 @@ void DispatchThink( edict_t *pent )
 
 void DispatchBlocked( edict_t *pentBlocked, edict_t *pentOther )
 {
+	CALL_HOOKS_VOID(pfnDispatchBlocked, pentBlocked, pentOther);
+
 	CBaseEntity *pEntity = (CBaseEntity *)GET_PRIVATE( pentBlocked );
 	CBaseEntity *pOther = (CBaseEntity *)GET_PRIVATE( pentOther );
 
@@ -456,6 +495,9 @@ void SaveReadFields( SAVERESTOREDATA *pSaveData, const char *pname, void *pBaseD
 	restoreHelper.ReadFields( pname, pBaseData, pFields, fieldCount );
 }
 
+EHANDLE::EHANDLE(edict_t* pent) {
+	Set(pent);
+}
 
 edict_t * EHANDLE::GetEdict( void ) 
 {
@@ -477,12 +519,12 @@ edict_t * EHANDLE::GetEdict( void )
 	}
 
 	return NULL; 
-};
+}
 
 CBaseEntity* EHANDLE::GetEntity(void)
 {
 	return (CBaseEntity*)GET_PRIVATE(GetEdict());
-};
+}
 
 edict_t * EHANDLE::Set( edict_t *pent ) 
 { 
@@ -490,13 +532,13 @@ edict_t * EHANDLE::Set( edict_t *pent )
 	if (pent) 
 		m_serialnumber = m_pent->serialnumber; 
 	return pent; 
-};
+}
 
 
 EHANDLE :: operator CBaseEntity *() 
 { 
 	return (CBaseEntity *)GET_PRIVATE( GetEdict() );
-};
+}
 
 CBaseEntity * EHANDLE :: operator = (CBaseEntity *pEntity)
 {

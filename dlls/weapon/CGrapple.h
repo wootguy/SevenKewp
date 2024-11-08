@@ -55,6 +55,8 @@ public:
 	int GetItemInfo(ItemInfo* p);
 	BOOL IsClientWeapon() { return FALSE; }
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_BGRAP; }
+
 	BOOL UseDecrement(void)
 	{
 #if defined( CLIENT_WEAPONS )
@@ -71,6 +73,8 @@ private:
 	void CreateEffect();
 	void UpdateEffect();
 	void DestroyEffect();
+
+	virtual const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 private:
 	EHANDLE m_hTip;

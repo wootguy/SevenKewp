@@ -21,15 +21,17 @@ extern entvars_t* g_pevLastInflictor;
 // Clients can push talkmonsters out of their way
 #define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
 
+struct PlayerAttackInfo {
+	int userid; // 0 = free slot
+	float damageDealt;
+};
+
 //
 // generic Monster
 //
 class EXPORT CBaseMonster : public CBaseToggle
 {
-private:
-		int					m_afConditions;
-
-public:
+public:	
 		typedef enum
 		{
 			SCRIPT_PLAYING = 0,		// Playing the sequence
@@ -85,7 +87,8 @@ public:
 
 		int					m_iHintNode; // this is the hint node that the monster is moving towards or performing active idle on.
 
-		int					m_afMemory;
+		int					m_afConditions; // don't touch. Use the accessor methods
+		int					m_afMemory; // don't touch. Use the accessor methods
 
 		int					m_iMaxHealth;// keeps track of monster's maximum health value (for re-healing, etc)
 
@@ -131,6 +134,8 @@ public:
 	SCRIPTSTATE			m_scriptState;		// internal cinematic state
 	EHANDLE m_hCine;
 
+	float m_flLastYawTime; // Last time yaw change was computed
+
 	const char* m_defaultModel;
 	string_t m_displayName;
 	string_t m_soundReplacementPath;
@@ -145,6 +150,11 @@ public:
 	int m_freeroam;
 	int m_lastNode;
 	int m_targetNode;
+
+	int m_lastDamageType;
+	EHANDLE m_lastDamageEnt;
+
+	PlayerAttackInfo m_attackers[32]; // players that attacked this entity
 
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
@@ -171,6 +181,7 @@ public:
 
 	virtual BOOL	IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual	BOOL	IsMonster(void) { return TRUE; }
+	virtual	BOOL	IsNormalMonster(void) { return TRUE; }
 	virtual BOOL	ShouldFadeOnDeath( void );
 	virtual bool	ShouldRoam( void );
 
@@ -227,7 +238,11 @@ public:
 		void NextScheduledTask ( void );
 		Schedule_t *ScheduleInList( const char *pName, Schedule_t **pList, int listCount );
 
+		virtual void GetAllSchedules(std::unordered_set<Schedule_t*>& schedulesOut);
+		virtual int GetScheduleTableSize();
+		virtual int GetScheduleTableIdx(); // index of current schedule in this monster's schedule table (-1 = not found)
 		virtual Schedule_t *ScheduleFromName( const char *pName );
+		virtual Schedule_t *ScheduleFromTableIdx( uint32_t idx);
 		static Schedule_t *m_scheduleList[];
 		
 		void MaintainSchedule ( void );
@@ -239,11 +254,8 @@ public:
 		virtual void ScheduleChange(void);
 		// virtual int CanPlaySequence( void ) { return ((m_pCine == NULL) && (m_MonsterState == MONSTERSTATE_NONE || m_MonsterState == MONSTERSTATE_IDLE || m_IdealMonsterState == MONSTERSTATE_IDLE)); }
 		virtual int CanPlaySequence( BOOL fDisregardState, int interruptLevel );
-		virtual int CanPlaySentence( BOOL fDisregardState ) { return IsAlive(); }
-		virtual void PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
-		virtual void PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
-
-		virtual void SentenceStop( void );
+		virtual int CanPlaySentence( BOOL fDisregardState ) { return IsAllowedToSpeak(); }
+		virtual BOOL IsAllowedToSpeak() { return IsAlive(); }
 
 		Task_t *GetTask ( void );
 		virtual MONSTERSTATE GetIdealState ( void );
@@ -415,6 +427,7 @@ public:
 	void SetHealth();
 	void InitModel();
 	virtual void Nerf(); // reduces monster health and/or spawn count according to cvars
+	void LogPlayerDamage(entvars_t* attacker, float damage);
 };
 
 

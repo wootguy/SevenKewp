@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
+#include <cstdint>
 #ifndef _SDL_config_nintendods_h
 #define _SDL_config_nintendods_h
 

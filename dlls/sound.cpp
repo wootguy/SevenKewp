@@ -23,6 +23,7 @@
 #include "CBasePlayer.h"
 #include "CTalkSquadMonster.h"
 #include "gamerules.h"
+#include "PluginManager.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -286,7 +287,7 @@ int SENTENCEG_PlaySequentialSz(edict_t *entity, const char *szgroupname,
 void SENTENCEG_Stop(edict_t *entity, int isentenceg, int ipick)
 {
 	char buffer[64];
-	char sznum[8];
+	char sznum[12];
 	
 	if (!fSentencesInit)
 		return;
@@ -296,7 +297,7 @@ void SENTENCEG_Stop(edict_t *entity, int isentenceg, int ipick)
 	
 	strcpy_safe(buffer, "!", 64);
 	strcat_safe(buffer, rgsentenceg[isentenceg].szgroupname, 64);
-	snprintf(sznum, 8, "%d", ipick);
+	snprintf(sznum, 12, "%d", ipick);
 	strcat_safe(buffer, sznum, 64);
 
 	STOP_SOUND(entity, CHAN_VOICE, buffer);
@@ -451,15 +452,8 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz)
 	return -1;
 }
 
-// rehlds
-#define DEFAULT_SOUND_PACKET_VOLUME 255
-#define DEFAULT_SOUND_PACKET_ATTENUATION 1.0f
-#define DEFAULT_SOUND_PACKET_PITCH 100
-#define MAX_EDICT_BITS 11
-
-void StartSound(edict_t* entity, int channel, const char* sample, float fvolume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets)
-{
+mstream* BuildStartSoundMessage(edict_t* ent, int channel, const char* sample, float fvolume, float attenuation,
+	int fFlags, int pitch, const float* origin) {
 	int sound_num;
 	int field_mask;
 
@@ -472,7 +466,7 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 		if (sound_num >= CVOXFILESENTENCEMAX)
 		{
 			ALERT(at_console, "%s: invalid sentence number: %s\n", __func__, sample + 1);
-			return;
+			return NULL;
 		}
 	}
 	else if (*sample == '#')
@@ -485,9 +479,9 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 		sound_num = PRECACHE_SOUND_ENT(NULL, sample); // TODO: abort if not precached
 	}
 
-	int ient = ENTINDEX(entity);
+	int ient = ENTINDEX(ent);
 	int volume = clampf(fvolume, 0, 1.0f) * 255;
-	
+
 	if (volume != DEFAULT_SOUND_PACKET_VOLUME)
 		field_mask |= SND_FL_VOLUME;
 	if (attenuation != DEFAULT_SOUND_PACKET_ATTENUATION)
@@ -499,9 +493,10 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 
 	const int maxStartSoundMessageSz = 16;
 	static uint8_t msgbuffer[maxStartSoundMessageSz];
+	static mstream bitbuffer((char*)msgbuffer, 16);
 
 	memset(msgbuffer, 0, maxStartSoundMessageSz);
-	mstream bitbuffer((char*)msgbuffer, 16);
+	bitbuffer.seek(0);
 
 	bitbuffer.writeBits(field_mask, 9);
 	if (field_mask & SND_FL_VOLUME)
@@ -517,9 +512,25 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 
 	if (bitbuffer.eom()) {
 		ALERT(at_error, "StartSound bit buffer overflow\n");
+		return NULL;
 	}
 
-	int msgSz = bitbuffer.tell() + 1;
+	return &bitbuffer;
+}
+
+
+void StartSound(edict_t* entidx, int channel, const char* sample, float fvolume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable)
+{
+	CALL_HOOKS_VOID(pfnEmitSound, entidx, channel, sample, fvolume, attenuation, fFlags | SND_FL_MOD, pitch, origin, messageTargets, reliable);
+
+	mstream* bitbuffer = BuildStartSoundMessage(entidx, channel, sample, fvolume, attenuation, fFlags, pitch, origin);
+
+	if (!bitbuffer) {
+		return;
+	}
+
+	int msgSz = bitbuffer->tell() + 1;
 	//bool anyMessagesWritten = false;
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
@@ -531,8 +542,8 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 		}
 
 		// TODO: should only consider PAS (can hear reload sounds but only distant gunshots)
-		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, plent);
-		WRITE_BYTES(msgbuffer, msgSz);
+		MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, plent);
+		WRITE_BYTES((uint8_t*)bitbuffer->getBuffer(), msgSz);
 		MESSAGE_END();
 		//anyMessagesWritten = true;
 	}
@@ -544,6 +555,12 @@ void StartSound(edict_t* entity, int channel, const char* sample, float fvolume,
 			*(int*)&origin[0], *(int*)&origin[1], *(int*)&origin[2], messageTargets);
 	}
 	*/
+}
+
+void StartSound(int eidx, int channel, const char* sample, float volume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable) {
+	StartSound(INDEXENT(eidx), channel, sample, volume, attenuation, fFlags, pitch, origin,
+		messageTargets, reliable);
 }
 
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
@@ -573,10 +590,6 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		sample = g_soundReplacements[sample].c_str();
 	}
 	
-	if (!UTIL_isSafeEntIndex(ENTINDEX(entity), "play sound")) {
-		return;
-	}
-	
 	if (sample && *sample == '!')
 	{
 		char name[32];
@@ -585,8 +598,49 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		else
 			ALERT( at_aiconsole, "Unable to find %s in sentences.txt\n", sample );
 	}
-	else
-		EMIT_SOUND_DYN2(entity, channel, sample, volume, attenuation, flags, pitch);
+	else {
+		CBaseEntity* bent = CBaseEntity::Instance(entity);
+		if (!bent) {
+			return;
+		}
+
+		// the static channel is special because it ignores the PAS. However, clients won't hear
+		// the sound if they can't see the entity, even if it's nearby. This block will emit
+		// positional sounds for those cases. This has the drawback of sound not following the
+		// entity, but is better than hearing nothing at all.
+		bool isStatic = channel == CHAN_STATIC;
+
+		// this sound will crash clients if sent through the normal engine function.
+		bool isUnsafeIdx = ENTINDEX(entity) >= MAX_LEGACY_CLIENT_ENTS;
+
+		if (isStatic || isUnsafeIdx) {
+			Vector ori = entity->v.origin + (entity->v.maxs + entity->v.mins) * 0.5f;
+
+			for (int i = 1; i <= gpGlobals->maxClients; i++) {
+				edict_t* plr = INDEXENT(i);
+
+				if (!IsValidPlayer(plr)) {
+					continue;
+				}
+
+				if (isUnsafeIdx && !UTIL_isSafeEntIndex(plr, ENTINDEX(entity), "play sound")) {
+					continue;
+				}
+
+				if (isStatic && !bent->InPAS(plr)) {
+					ambientsound_msg(entity, ori, sample, volume, attenuation, flags, pitch, MSG_ONE, plr);
+				}
+				else {
+					// play the sound normally for players that can see the ent
+					StartSound(entity, channel, sample, volume, attenuation, flags, pitch, ori, PLRBIT(plr), true);
+				}
+			}
+		}
+		else {
+			// the engine function is preferred because it uses the PAS
+			EMIT_SOUND_DYN2(entity, channel, sample, volume, attenuation, flags, pitch);
+		}
+	}
 }
 
 void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
@@ -644,7 +698,7 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 
 		// if listener is in the audible set and too close, don't play the sound.
 		// otherwise, the player may be close, but on the other side of a wall, so they should hear the sound
-		if ((baseEmitter->m_audiblePlayers & pbit) && (ent->v.origin - emitter->v.origin).Length() < minRange) {
+		if (baseEmitter->InPAS(ent) && (ent->v.origin - emitter->v.origin).Length() < minRange) {
 			continue;
 		}
 
@@ -658,7 +712,7 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 		// randomize pitch per entity, so you get a better idea of how many players/npcs are shooting
 		int pitch = 95 + ((ENTINDEX(emitter) * 7) % 11);
 
-		StartSound(NULL, CHAN_STATIC, sample, volume, attn, 0, pitch, emitter->v.origin, pbits);
+		StartSound(NULL, CHAN_STATIC, sample, volume, attn, 0, pitch, emitter->v.origin, pbits, false);
 	}
 }
 

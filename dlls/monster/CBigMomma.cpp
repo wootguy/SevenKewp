@@ -53,14 +53,14 @@ public:
 	int		m_preSequence;
 };
 
-LINK_ENTITY_TO_CLASS( info_bigmomma, CInfoBM );
+LINK_ENTITY_TO_CLASS( info_bigmomma, CInfoBM )
 
 TYPEDESCRIPTION	CInfoBM::m_SaveData[] = 
 {
 	DEFINE_FIELD( CInfoBM, m_preSequence, FIELD_STRING ),
 };
 
-IMPLEMENT_SAVERESTORE( CInfoBM, CPointEntity );
+IMPLEMENT_SAVERESTORE( CInfoBM, CPointEntity )
 
 void CInfoBM::Spawn( void )
 {
@@ -118,14 +118,14 @@ public:
 	int  m_maxFrame;
 };
 
-LINK_ENTITY_TO_CLASS( bmortar, CBMortar );
+LINK_ENTITY_TO_CLASS( bmortar, CBMortar )
 
 TYPEDESCRIPTION	CBMortar::m_SaveData[] = 
 {
 	DEFINE_FIELD( CBMortar, m_maxFrame, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CBMortar, CBaseEntity );
+IMPLEMENT_SAVERESTORE( CBMortar, CBaseEntity )
 
 
 //=========================================================
@@ -190,6 +190,7 @@ public:
 	Schedule_t	*GetSchedule( void );
 	Schedule_t	*GetScheduleOfType( int Type );
 	void		TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	virtual const char* GetTaskName(int taskIdx);
 
 	void NodeStart( int iszNextNode );
 	void NodeReach( void );
@@ -328,7 +329,7 @@ private:
 	float	m_painSoundTime;
 	int		m_crabCount;
 };
-LINK_ENTITY_TO_CLASS( monster_bigmomma, CBigMomma );
+LINK_ENTITY_TO_CLASS( monster_bigmomma, CBigMomma )
 
 TYPEDESCRIPTION	CBigMomma::m_SaveData[] = 
 {
@@ -339,7 +340,7 @@ TYPEDESCRIPTION	CBigMomma::m_SaveData[] =
 	DEFINE_FIELD( CBigMomma, m_crabCount, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CBigMomma, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CBigMomma, CBaseMonster )
 
 const char *CBigMomma::pChildDieSounds[] = 
 {
@@ -479,7 +480,7 @@ void CBigMomma :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			for ( int i = 0; i < count && !pHurt; i++ )
 			{
 				if( pList[i] == this ||
-					pList[i]->IsPlayer() && ((CBasePlayer*)pList[i])->IsObserver() ) // Don't hit observers
+					(pList[i]->IsPlayer() && ((CBasePlayer*)pList[i])->IsObserver()) ) // Don't hit observers
 					continue;
 
 				if ( pList[i]->pev->owner != edict() )
@@ -648,7 +649,7 @@ void CBigMomma::GibMonster()
 
 void CBigMomma :: LayHeadcrab( void )
 {
-	std::map<std::string, std::string> keys;
+	std::unordered_map<std::string, std::string> keys;
 	if (m_IsPlayerAlly) {
 		keys["is_player_ally"] = "1";
 	}
@@ -910,7 +911,7 @@ Schedule_t	slBigNode[] =
 		ARRAYSIZE ( tlBigNode ), 
 		0,
 		0,
-		"Big Node"
+		"MOM_BIG_NODE"
 	},
 };
 
@@ -928,7 +929,7 @@ Schedule_t	slNodeFail[] =
 		ARRAYSIZE ( tlNodeFail ), 
 		0,
 		0,
-		"NodeFail"
+		"MOM_NODE_FAIL"
 	},
 };
 
@@ -938,7 +939,7 @@ DEFINE_CUSTOM_SCHEDULES( CBigMomma )
 	slNodeFail,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CBigMomma, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CBigMomma, CBaseMonster )
 
 
 
@@ -959,6 +960,19 @@ Schedule_t *CBigMomma::GetScheduleOfType( int Type )
 	return CBaseMonster::GetScheduleOfType( Type );
 }
 
+const char* CBigMomma::GetTaskName(int taskIdx) {	
+	switch (taskIdx) {
+	case TASK_MOVE_TO_NODE_RANGE: return "TASK_MOVE_TO_NODE_RANGE";
+	case TASK_FIND_NODE: return "TASK_FIND_NODE";
+	case TASK_PLAY_NODE_PRESEQUENCE: return "TASK_PLAY_NODE_PRESEQUENCE";
+	case TASK_PLAY_NODE_SEQUENCE: return "TASK_PLAY_NODE_SEQUENCE";
+	case TASK_PROCESS_NODE: return "TASK_PROCESS_NODE";
+	case TASK_NODE_DELAY: return "TASK_NODE_DELAY";
+	case TASK_NODE_YAW: return "TASK_NODE_YAW";
+	default:
+		return CBaseMonster::GetTaskName(taskIdx);
+	}
+}
 
 BOOL CBigMomma::ShouldGoToNode( void )
 {

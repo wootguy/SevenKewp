@@ -48,9 +48,14 @@ class CRotDoor : public CBaseDoor
 public:
 	void Spawn(void);
 	virtual void SetToggleState(int state);
+	void Blocked(CBaseEntity* pOther) override;
+	void DoorHitTop(void) override;
+
+	int blockedCounter;
+	float initialDamage;
 };
 
-LINK_ENTITY_TO_CLASS(func_door_rotating, CRotDoor);
+LINK_ENTITY_TO_CLASS(func_door_rotating, CRotDoor)
 
 
 void CRotDoor::Spawn(void)
@@ -100,6 +105,8 @@ void CRotDoor::Spawn(void)
 	}
 	else // touchable button
 		SetTouch(&CRotDoor::DoorTouch);
+
+	initialDamage = pev->dmg;
 }
 
 
@@ -111,4 +118,22 @@ void CRotDoor::SetToggleState(int state)
 		pev->angles = m_vecAngle1;
 
 	UTIL_SetOrigin(pev, pev->origin);
+}
+
+void CRotDoor::DoorHitTop(void) {
+	blockedCounter = 0;
+	CBaseDoor::DoorHitTop();
+}
+
+void CRotDoor::Blocked(CBaseEntity* pOther)
+{
+	pev->dmg = initialDamage;
+
+	// increase damage exponentially as time goes on to account for monsters with insane health values
+	// and only hurt the entity preventing the door from opening
+	if (++blockedCounter > 8 && m_toggle_state == TS_GOING_UP) {
+		pev->dmg += V_min(1000, powf(10, (blockedCounter / 8)));
+	}
+
+	CBaseDoor::Blocked(pOther);
 }

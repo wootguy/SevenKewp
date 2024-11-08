@@ -126,6 +126,7 @@
 
 // entity flags
 #define EFLAG_SLERP				1	// do studio interpolation of this entity
+#define EFLAG_FLESH_SOUND		2	// JoshA: Whether this entity should sound like flesh. (ie. pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE)
 		
 //
 // temp entity events
@@ -645,6 +646,19 @@
 
 // volume values
 #define VOL_NORM		1.0
+
+#define SND_FL_VOLUME		(1<<0)		// send volume (set automatically)
+#define SND_FL_ATTENUATION	(1<<1)		// send attenuation (set automatically)
+#define SND_FL_LARGE_INDEX	(1<<2)		// send large entity index (set automatically)
+#define SND_FL_PITCH		(1<<3)		// send pitch (set automatically)
+#define SND_SPAWNING		(1<<8)		// duplicated in protocol.h we're spawing, used in some cases for ambients 
+#define SND_SENTENCE		(1<<4)
+#define SND_STOP			(1<<5)		// duplicated in protocol.h stop sound
+#define SND_CHANGE_VOL		(1<<6)		// duplicated in protocol.h change sound vol
+#define SND_CHANGE_PITCH	(1<<7)		// duplicated in protocol.h change sound pitch
+#define SND_FL_SPAWNING		(1<<8)		// we're spawning, used in some cases for ambients (not sent across network)
+#define SND_FL_PREDICTED	(1<<9)		// sound is predicted by the client that emitted it (not sent across network)
+#define SND_FL_MOD			(1<<10)		// sound message is being sent by the mod, not the engine (not sent across network) (for plugins)
 
 // plats
 #define	PLAT_LOW_TRIGGER	1

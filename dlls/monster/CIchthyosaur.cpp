@@ -66,6 +66,7 @@ public:
 
 	Schedule_t *GetSchedule( void );
 	Schedule_t *GetScheduleOfType ( int Type );
+	const char* GetTaskName(int taskIdx);
 
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void BecomeDead( void );
@@ -79,7 +80,7 @@ public:
 	BOOL  CheckMeleeAttack1 ( float flDot, float flDist );
 	BOOL  CheckRangeAttack1 ( float flDot, float flDist );
 
-	float ChangeYaw( int speed );
+	float ChangeYaw( int yawSpeed);
 	Activity GetStoppedActivity( void );
 
 	void  Move( float flInterval );
@@ -91,7 +92,7 @@ public:
 
 	float VectorToPitch( const Vector &vec);
 	float FlPitchDiff( void );
-	float ChangePitch( int speed );
+	float ChangePitch( int yawSpeed);
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	Vector m_SaveVelocity;
@@ -107,6 +108,9 @@ public:
 	float m_flMaxDist;
 
 	float m_flNextAlert;
+
+	float m_flLastPitchTime;	// Last frame time pitch was changed
+	float m_flLastZYawTime;		// Last frame time Z was changed when yaw was changed
 
 	static const char *pIdleSounds[];
 	static const char *pAlertSounds[];
@@ -126,7 +130,7 @@ public:
 	void CantFollowSound();
 };
 
-LINK_ENTITY_TO_CLASS( monster_ichthyosaur, CIchthyosaur );
+LINK_ENTITY_TO_CLASS( monster_ichthyosaur, CIchthyosaur )
 
 TYPEDESCRIPTION	CIchthyosaur::m_SaveData[] = 
 {
@@ -141,7 +145,7 @@ TYPEDESCRIPTION	CIchthyosaur::m_SaveData[] =
 	DEFINE_FIELD( CIchthyosaur, m_flNextAlert, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CIchthyosaur, CFlyingMonster );
+IMPLEMENT_SAVERESTORE( CIchthyosaur, CFlyingMonster )
 
 
 const char *CIchthyosaur::pIdleSounds[] = 
@@ -261,7 +265,7 @@ static Schedule_t	slSwimAround[] =
 		bits_COND_HEAR_SOUND,
 		bits_SOUND_PLAYER |
 		bits_SOUND_COMBAT,
-		"SwimAround"
+		"ICKY_SWIM_AROUND"
 	},
 };
 
@@ -279,7 +283,7 @@ static Schedule_t	slSwimAgitated[] =
 		ARRAYSIZE(tlSwimAgitated), 
 		0, 
 		0, 
-		"SwimAgitated"
+		"ICKY_SWIM_AGITATED"
 	},
 };
 
@@ -301,7 +305,7 @@ static Schedule_t	slCircleEnemy[] =
 		bits_COND_CAN_MELEE_ATTACK1 |
 		bits_COND_CAN_RANGE_ATTACK1,
 		0,
-		"CircleEnemy"
+		"ICKY_CIRCLE_ENEMY"
 	},
 };
 
@@ -321,7 +325,7 @@ Schedule_t slTwitchDie[] =
 		ARRAYSIZE( tlTwitchDie ),
 		0,
 		0,
-		"Die"
+		"ICKY_TWITCH_DIE"
 	},
 };
 
@@ -333,7 +337,7 @@ DEFINE_CUSTOM_SCHEDULES(CIchthyosaur)
 	slCircleEnemy,
 	slTwitchDie,
 };
-IMPLEMENT_CUSTOM_SCHEDULES(CIchthyosaur, CFlyingMonster);
+IMPLEMENT_CUSTOM_SCHEDULES(CIchthyosaur, CFlyingMonster)
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -629,6 +633,16 @@ Schedule_t* CIchthyosaur :: GetScheduleOfType ( int Type )
 }
 
 
+const char* CIchthyosaur::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_ICHTHYOSAUR_CIRCLE_ENEMY: return "TASK_ICHTHYOSAUR_CIRCLE_ENEMY";
+	case TASK_ICHTHYOSAUR_SWIM: return "TASK_ICHTHYOSAUR_SWIM";
+	case TASK_ICHTHYOSAUR_FLOAT: return "TASK_ICHTHYOSAUR_FLOAT";
+	default:
+		return CBaseMonster::GetTaskName(taskIdx);
+	}
+}
+
 
 //=========================================================
 // Start task - selects the correct activity and performs
@@ -834,12 +848,18 @@ float CIchthyosaur::FlPitchDiff( void )
 	return flPitchDiff;
 }
 
-float CIchthyosaur :: ChangePitch( int speed )
+float CIchthyosaur :: ChangePitch( int pitchSpeed)
 {
 	if ( pev->movetype == MOVETYPE_FLY )
 	{
 		float diff = FlPitchDiff();
 		float target = 0;
+
+		if (m_flLastPitchTime == 0.f)
+		{
+			m_flLastPitchTime = gpGlobals->time - gpGlobals->frametime;
+		}
+
 		if ( m_IdealActivity != GetStoppedActivity() )
 		{
 			if (diff < -20)
@@ -847,17 +867,31 @@ float CIchthyosaur :: ChangePitch( int speed )
 			else if (diff > 20)
 				target = -45;
 		}
-		pev->angles.x = UTIL_Approach(target, pev->angles.x, 220.0 * 0.1 );
+
+		float delta = gpGlobals->time - m_flLastPitchTime;
+		m_flLastPitchTime = gpGlobals->time;
+
+		// Clamp delta like the engine does with frametime
+		if (delta > 0.25f)
+			delta = 0.25f;
+
+		float speed = 220.f * delta;
+		pev->angles.x = UTIL_Approach(target, pev->angles.x, speed);
 	}
 	return 0;
 }
 
-float CIchthyosaur::ChangeYaw( int speed )
+float CIchthyosaur::ChangeYaw( int yawSpeed)
 {
 	if ( pev->movetype == MOVETYPE_FLY )
 	{
 		float diff = FlYawDiff();
 		float target = 0;
+
+		if (m_flLastZYawTime == 0.f)
+		{
+			m_flLastZYawTime = gpGlobals->time - gpGlobals->frametime;
+		}
 
 		if ( m_IdealActivity != GetStoppedActivity() )
 		{
@@ -866,9 +900,18 @@ float CIchthyosaur::ChangeYaw( int speed )
 			else if ( diff > 20 )
 				target = -20;
 		}
-		pev->angles.z = UTIL_Approach( target, pev->angles.z, 220.0 * 0.1 );
+
+		float delta = gpGlobals->time - m_flLastZYawTime;
+		m_flLastZYawTime = gpGlobals->time;
+
+		// Clamp delta like the engine does with frametime
+		if (delta > 0.25f)
+			delta = 0.25f;
+
+		float speed = 220.f * delta;
+		pev->angles.z = UTIL_Approach(target, pev->angles.z, speed);
 	}
-	return CFlyingMonster::ChangeYaw( speed );
+	return CFlyingMonster::ChangeYaw(yawSpeed);
 }
 
 

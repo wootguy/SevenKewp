@@ -22,13 +22,13 @@ public:
 	int	m_preset;			// preset number
 };
 
-LINK_ENTITY_TO_CLASS(speaker, CSpeaker);
+LINK_ENTITY_TO_CLASS(speaker, CSpeaker)
 TYPEDESCRIPTION	CSpeaker::m_SaveData[] =
 {
 	DEFINE_FIELD(CSpeaker, m_preset, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CSpeaker, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CSpeaker, CBaseEntity)
 
 //
 // ambient_generic - general-purpose user-defined static sound

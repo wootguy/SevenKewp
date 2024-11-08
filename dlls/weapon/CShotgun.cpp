@@ -48,16 +48,16 @@ TYPEDESCRIPTION	CShotgun::m_SaveData[] =
 	// DEFINE_FIELD( CShotgun, m_iShell, FIELD_INTEGER ),
 	DEFINE_FIELD(CShotgun, m_flPumpTime, FIELD_TIME),
 };
-IMPLEMENT_SAVERESTORE(CShotgun, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE(CShotgun, CBasePlayerWeapon)
 #endif
 
-LINK_ENTITY_TO_CLASS( weapon_shotgun, CShotgun );
+LINK_ENTITY_TO_CLASS( weapon_shotgun, CShotgun )
 
 void CShotgun::Spawn( )
 {
 	Precache( );
 	m_iId = WEAPON_SHOTGUN;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 
 	m_iDefaultAmmo = SHOTGUN_DEFAULT_GIVE;
 
@@ -102,7 +102,7 @@ int CShotgun::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "buckshot";
-	p->iMaxAmmo1 = BUCKSHOT_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_buckshot;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = SHOTGUN_MAX_CLIP;
@@ -190,8 +190,7 @@ void CShotgun::PrimaryAttack()
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	if (m_iClip != 0)
-		m_flPumpTime = gpGlobals->time + 0.5;
+	m_flPumpTime = gpGlobals->time + 0.5;
 
 	// player "shoot" animation
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
@@ -277,8 +276,7 @@ void CShotgun::SecondaryAttack( void )
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);
 
-	if (m_iClip != 0)
-		m_flPumpTime = gpGlobals->time + 0.95;
+	m_flPumpTime = gpGlobals->time + 0.95;
 
 	m_flNextPrimaryAttack = GetNextAttackDelay(1.5);
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.5;
@@ -357,13 +355,6 @@ void CShotgun::WeaponIdle( void )
 
 	m_pPlayer->GetAutoaimVector( AUTOAIM_5DEGREES );
 
-	if ( m_flPumpTime && m_flPumpTime < gpGlobals->time )
-	{
-		// play pumping sound
-		EMIT_SOUND_DYN(ENT(m_pPlayer->pev), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_NORM, 0, 95 + RANDOM_LONG(0,0x1f));
-		m_flPumpTime = 0;
-	}
-
 	if (m_flTimeWeaponIdle <  UTIL_WeaponTimeBase() )
 	{
 		if (m_iClip == 0 && m_fInSpecialReload == 0 && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType])
@@ -409,4 +400,16 @@ void CShotgun::WeaponIdle( void )
 			SendWeaponAnim( iAnim );
 		}
 	}
+}
+
+void CShotgun::ItemPostFrame(void)
+{
+	if (m_hPlayer && m_flPumpTime && m_flPumpTime < gpGlobals->time)
+	{
+		// play pumping sound
+		EMIT_SOUND_DYN(ENT(m_hPlayer->pev), CHAN_ITEM, "weapons/scock1.wav", 1, ATTN_NORM, 0, 95 + RANDOM_LONG(0, 0x1f));
+		m_flPumpTime = 0;
+	}
+
+	CBasePlayerWeapon::ItemPostFrame();
 }

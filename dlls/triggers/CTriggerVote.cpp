@@ -9,7 +9,7 @@
 
 // CTriggerVote / trigger_vote -- trigger something based on player votes
 
-LINK_ENTITY_TO_CLASS(trigger_vote, CTriggerVote);
+LINK_ENTITY_TO_CLASS(trigger_vote, CTriggerVote)
 
 void CTriggerVote::KeyValue(KeyValueData* pkvd)
 {

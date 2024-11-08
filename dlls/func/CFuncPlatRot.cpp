@@ -7,7 +7,7 @@
 #include "CFuncPlat.h"
 #include "CFuncPlatRot.h"
 
-LINK_ENTITY_TO_CLASS(func_platrot, CFuncPlatRot);
+LINK_ENTITY_TO_CLASS(func_platrot, CFuncPlatRot)
 
 TYPEDESCRIPTION	CFuncPlatRot::m_SaveData[] =
 {
@@ -15,7 +15,7 @@ TYPEDESCRIPTION	CFuncPlatRot::m_SaveData[] =
 	DEFINE_FIELD(CFuncPlatRot, m_start, FIELD_VECTOR),
 };
 
-IMPLEMENT_SAVERESTORE(CFuncPlatRot, CFuncPlat);
+IMPLEMENT_SAVERESTORE(CFuncPlatRot, CFuncPlat)
 
 
 void CFuncPlatRot::SetupRotation(void)

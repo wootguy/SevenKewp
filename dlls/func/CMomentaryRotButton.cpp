@@ -60,9 +60,9 @@ TYPEDESCRIPTION CMomentaryRotButton::m_SaveData[] =
 	DEFINE_FIELD(CMomentaryRotButton, m_sounds, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CMomentaryRotButton, CBaseToggle);
+IMPLEMENT_SAVERESTORE(CMomentaryRotButton, CBaseToggle)
 
-LINK_ENTITY_TO_CLASS(momentary_rot_button, CMomentaryRotButton);
+LINK_ENTITY_TO_CLASS(momentary_rot_button, CMomentaryRotButton)
 
 void CMomentaryRotButton::Spawn(void)
 {

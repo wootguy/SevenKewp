@@ -33,15 +33,15 @@ enum python_e {
 	PYTHON_IDLE3
 };
 
-LINK_ENTITY_TO_CLASS( weapon_python, CPython );
-LINK_ENTITY_TO_CLASS( weapon_357, CPython );
-LINK_ENTITY_TO_CLASS(weapon_eagle, CPython); // TODO: implement
+LINK_ENTITY_TO_CLASS( weapon_python, CPython )
+LINK_ENTITY_TO_CLASS( weapon_357, CPython )
+LINK_ENTITY_TO_CLASS(weapon_eagle, CPython) // TODO: implement
 
 int CPython::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "357";
-	p->iMaxAmmo1 = _357_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_357;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = PYTHON_MAX_CLIP;
@@ -59,7 +59,7 @@ void CPython::Spawn( )
 	pev->classname = MAKE_STRING("weapon_357"); // hack to allow for old names
 	Precache( );
 	m_iId = WEAPON_PYTHON;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 
 	m_iDefaultAmmo = PYTHON_DEFAULT_GIVE;
 
@@ -74,7 +74,6 @@ void CPython::Precache( void )
 	m_defaultModelW = "models/w_357.mdl";
 	CBasePlayerWeapon::Precache();
 
-	PRECACHE_MODEL("models/w_357ammobox.mdl");
 	PRECACHE_SOUND("items/9mmclip1.wav");              
 
 	PRECACHE_SOUND ("weapons/357_reload1.wav");
@@ -178,7 +177,7 @@ void CPython::PrimaryAttack()
 			Reload( );
 		else
 		{
-			EMIT_SOUND(ENT(m_pPlayer->pev), CHAN_WEAPON, "weapons/357_cock1.wav", 0.8, ATTN_NORM);
+			PlayEmptySound();
 			m_flNextPrimaryAttack = 0.15;
 		}
 
@@ -259,7 +258,7 @@ void CPython::Reload( void )
 			messageTargets &= ~PLRBIT(m_pPlayer->edict());
 		}
 		StartSound(m_pPlayer->edict(), CHAN_ITEM, "weapons/357_reload1.wav", 0.8f,
-			ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
+			ATTN_NORM, SND_FL_PREDICTED, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets, false);
 #endif
 	}
 }

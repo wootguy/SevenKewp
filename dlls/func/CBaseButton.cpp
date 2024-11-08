@@ -20,7 +20,7 @@ TYPEDESCRIPTION CBaseButton::m_SaveData[] =
 	//	DEFINE_FIELD( CBaseButton, m_ls, FIELD_??? ),   // This is restored in Precache()
 };
 
-IMPLEMENT_SAVERESTORE(CBaseButton, CBaseToggle);
+IMPLEMENT_SAVERESTORE(CBaseButton, CBaseToggle)
 
 void CBaseButton::Precache(void)
 {
@@ -172,7 +172,7 @@ where it can be triggered again.
 2) metallic click
 3) in-out
 */
-LINK_ENTITY_TO_CLASS(func_button, CBaseButton);
+LINK_ENTITY_TO_CLASS(func_button, CBaseButton)
 
 
 void CBaseButton::Spawn()

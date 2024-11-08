@@ -29,7 +29,7 @@
 int iHornetTrail;
 int iHornetPuff;
 
-LINK_ENTITY_TO_CLASS( hornet, CHornet );
+LINK_ENTITY_TO_CLASS( hornet, CHornet )
 
 const char* CHornet::pBuzzSounds[] =
 {
@@ -54,7 +54,7 @@ TYPEDESCRIPTION	CHornet::m_SaveData[] =
 	DEFINE_FIELD( CHornet, m_flFlySpeed, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CHornet, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CHornet, CBaseMonster )
 
 //=========================================================
 // don't let hornets gib, ever.
@@ -250,48 +250,30 @@ old colors
 	bool firedByAllyMonster = mon && !mon->IsPlayer() && mon->IRelationship(mon->Classify(), CLASS_PLAYER) == R_AL;
 
 	// trail
-	if (UTIL_isSafeEntIndex(entindex(), "create hornet trail")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_BEAMFOLLOW);
-		WRITE_SHORT(entindex());	// entity
-		WRITE_SHORT(iHornetTrail);	// model
-		WRITE_BYTE(10); // life
-		WRITE_BYTE(2);  // width
+	RGBA color = RGBA(255,255,255);
 
-		// r, g, b
-		switch (m_iHornetType)
-		{
-		case HORNET_TYPE_RED:
-			if (firedByAllyMonster) {
-				WRITE_BYTE(0);
-				WRITE_BYTE(128);
-				WRITE_BYTE(255);
-			}
-			else {
-				WRITE_BYTE(179);
-				WRITE_BYTE(39);
-				WRITE_BYTE(14);
-			}
-
-			break;
-		case HORNET_TYPE_ORANGE:
-			if (firedByAllyMonster) {
-				WRITE_BYTE(0);
-				WRITE_BYTE(255);
-				WRITE_BYTE(200);
-			}
-			else {
-				WRITE_BYTE(255);
-				WRITE_BYTE(128);
-				WRITE_BYTE(0);
-			}
-			break;
+	switch (m_iHornetType)
+	{
+	case HORNET_TYPE_RED:
+		if (firedByAllyMonster) {
+			color = RGBA(0, 128, 255);
+		}
+		else {
+			color = RGBA(179, 39, 14);
 		}
 
-		WRITE_BYTE(128);	// brightness
-
-		MESSAGE_END();
+		break;
+	case HORNET_TYPE_ORANGE:
+		if (firedByAllyMonster) {
+			color = RGBA(0, 255, 200);
+		}
+		else {
+			color = RGBA(255, 128, 0);
+		}
+		break;
 	}
+
+	UTIL_BeamFollow(entindex(), iHornetTrail, 10, 2, color);
 }
 
 //=========================================================

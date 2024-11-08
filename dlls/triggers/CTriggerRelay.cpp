@@ -3,6 +3,7 @@
 #include "cbase.h"
 
 #define SF_RELAY_FIREONCE		0x0001
+#define SF_RELAY_KEEP_ACTIVATOR		64
 
 class CTriggerRelay : public CBaseDelay
 {
@@ -21,14 +22,14 @@ private:
 	USE_TYPE	triggerType;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_relay, CTriggerRelay);
+LINK_ENTITY_TO_CLASS(trigger_relay, CTriggerRelay)
 
 TYPEDESCRIPTION	CTriggerRelay::m_SaveData[] =
 {
 	DEFINE_FIELD(CTriggerRelay, triggerType, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CTriggerRelay, CBaseDelay);
+IMPLEMENT_SAVERESTORE(CTriggerRelay, CBaseDelay)
 
 void CTriggerRelay::KeyValue(KeyValueData* pkvd)
 {
@@ -60,7 +61,9 @@ void CTriggerRelay::Spawn(void)
 
 void CTriggerRelay::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	SUB_UseTargets(this, triggerType, 0);
+	CBaseEntity* activator = (pev->spawnflags & SF_RELAY_KEEP_ACTIVATOR) ? pActivator : this;
+
+	SUB_UseTargets(activator, triggerType, 0);
 	if (pev->spawnflags & SF_RELAY_FIREONCE)
 		UTIL_Remove(this);
 }

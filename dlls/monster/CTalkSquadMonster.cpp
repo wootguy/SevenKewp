@@ -55,7 +55,7 @@ TYPEDESCRIPTION	CTalkSquadMonster::m_SaveData[] =
 	DEFINE_FIELD(CTalkSquadMonster, m_iMySlot, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE( CTalkSquadMonster, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CTalkSquadMonster, CBaseMonster )
 
 // array of friend names
 const char *CTalkSquadMonster::m_szFriends[TLK_CFRIENDS] = 
@@ -96,7 +96,7 @@ Schedule_t	slIdleResponse[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"Idle Response"
+		"TALK_IDLE_RESPONSE"
 
 	},
 };
@@ -121,7 +121,7 @@ Schedule_t	slIdleSpeak[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"Idle Speak"
+		"TALK_IDLE_SPEAK"
 	},
 };
 
@@ -143,7 +143,7 @@ Schedule_t	slIdleSpeakWait[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"Idle Speak Wait"
+		"TALK_IDLE_SPEAK_WAIT"
 	},
 };
 
@@ -178,7 +178,7 @@ Schedule_t	slIdleHello[] =
 		bits_COND_PROVOKED,
 
 		bits_SOUND_COMBAT,
-		"Idle Hello"
+		"TALK_IDLE_HELLO"
 	},
 };
 
@@ -198,7 +198,7 @@ Schedule_t	slIdleStopShooting[] =
 		bits_COND_HEAVY_DAMAGE	|
 		bits_COND_HEAR_SOUND,
 		0,
-		"Idle Stop Shooting"
+		"TALK_IDLE_STOP_SHOOTING"
 	},
 };
 
@@ -243,7 +243,7 @@ Schedule_t	slTlkIdleWatchClient[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"TlkIdleWatchClient"
+		"TALK_IDLE_WATCH_CLIENT1"
 	},
 
 	{ 
@@ -266,7 +266,7 @@ Schedule_t	slTlkIdleWatchClient[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"TlkIdleWatchClientStare"
+		"TALK_IDLE_WATCH_CLIENT2"
 	},
 };
 
@@ -289,7 +289,7 @@ Schedule_t	slTlkIdleEyecontact[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"TlkIdleEyecontact"
+		"TALK_EYE_CONTACT"
 	},
 };
 
@@ -306,7 +306,7 @@ DEFINE_CUSTOM_SCHEDULES( CTalkSquadMonster )
 	slTlkIdleEyecontact,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CTalkSquadMonster, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CTalkSquadMonster, CBaseMonster )
 
 
 void CTalkSquadMonster :: SetActivity ( Activity newActivity )
@@ -1577,7 +1577,7 @@ int CTalkSquadMonster::SquadRecruit(int searchRadius, int maxMembers)
 		{
 			CTalkSquadMonster* pRecruit = pEntity->MyTalkSquadMonsterPointer();
 			//if (pRecruit) {
-			//	println("Potential squad member!");
+			//	ALERT(at_console, "Potential squad member!\n");
 			//}
 
 			if (pRecruit && pRecruit != this && pRecruit->IsAlive() && !pRecruit->m_hCine)
@@ -1678,6 +1678,36 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 		return TRUE;
 	}
 
+	if (!m_hEnemy) {
+		// if there's no enemy, pretend there's a friendly in the way, so the grunt won't shoot.
+		return FALSE;
+	}
+
+	{
+		// this works better than the 2D plane checks (sc_tropical1_final snipers)
+		Vector gunPos = GetGunPosition();
+		Vector targetPos = m_hEnemy->Center();
+		TraceResult tr, tr2;
+		TRACE_HULL(gunPos, targetPos, dont_ignore_monsters, head_hull, edict(), &tr);
+		
+		// do a line check too in case head hull hit a wall or something
+		TRACE_LINE(gunPos, targetPos, dont_ignore_monsters, edict(), &tr2);
+
+		CBaseEntity* phit = CBaseEntity::Instance(tr.pHit);
+		CBaseEntity* phit2 = CBaseEntity::Instance(tr2.pHit);
+
+		if (phit && IRelationship(phit) == R_AL) {
+			return FALSE;
+		}
+		if (phit2 && IRelationship(phit2) == R_AL) {
+			return FALSE;
+		}
+
+		return TRUE;
+	}
+	
+	// legacy logic
+	/*
 	CPlane	backPlane;
 	CPlane  leftPlane;
 	CPlane	rightPlane;
@@ -1687,16 +1717,7 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 	Vector	v_left;
 
 	//!!!BUGBUG - to fix this, the planes must be aligned to where the monster will be firing its gun, not the direction it is facing!!!
-
-	if (m_hEnemy != NULL)
-	{
-		UTIL_MakeVectors(UTIL_VecToAngles(m_hEnemy->Center() - pev->origin));
-	}
-	else
-	{
-		// if there's no enemy, pretend there's a friendly in the way, so the grunt won't shoot.
-		return FALSE;
-	}
+	UTIL_MakeVectors(UTIL_VecToAngles(m_hEnemy->Center() - pev->origin));
 
 	//UTIL_MakeVectors ( pev->angles );
 
@@ -1707,12 +1728,15 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 	leftPlane.InitializePlane(gpGlobals->v_right, vecLeftSide);
 	rightPlane.InitializePlane(v_left, vecRightSide);
 	backPlane.InitializePlane(gpGlobals->v_forward, pev->origin);
+	*/
 
 	/*
 		ALERT ( at_console, "LeftPlane: %f %f %f : %f\n", leftPlane.m_vecNormal.x, leftPlane.m_vecNormal.y, leftPlane.m_vecNormal.z, leftPlane.m_flDist );
 		ALERT ( at_console, "RightPlane: %f %f %f : %f\n", rightPlane.m_vecNormal.x, rightPlane.m_vecNormal.y, rightPlane.m_vecNormal.z, rightPlane.m_flDist );
 		ALERT ( at_console, "BackPlane: %f %f %f : %f\n", backPlane.m_vecNormal.x, backPlane.m_vecNormal.y, backPlane.m_vecNormal.z, backPlane.m_flDist );
 	*/
+
+	/*
 
 	CTalkSquadMonster* pSquadLeader = MySquadLeader();
 	for (int i = 0; i < MAX_SQUAD_MEMBERS; i++)
@@ -1732,6 +1756,7 @@ BOOL CTalkSquadMonster::NoFriendlyFire(void)
 	}
 
 	return TRUE;
+	*/
 }
 
 //=========================================================

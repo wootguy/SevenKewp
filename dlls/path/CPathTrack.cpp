@@ -14,8 +14,8 @@ TYPEDESCRIPTION	CPathTrack::m_SaveData[] =
 	DEFINE_FIELD(CPathTrack, m_altName, FIELD_STRING),
 };
 
-IMPLEMENT_SAVERESTORE(CPathTrack, CBaseEntity);
-LINK_ENTITY_TO_CLASS(path_track, CPathTrack);
+IMPLEMENT_SAVERESTORE(CPathTrack, CBaseEntity)
+LINK_ENTITY_TO_CLASS(path_track, CPathTrack)
 
 //
 // Cache user-entity-field values until spawn is called.

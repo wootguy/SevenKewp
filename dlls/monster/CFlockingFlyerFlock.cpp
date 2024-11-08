@@ -57,7 +57,7 @@ TYPEDESCRIPTION	CFlockingFlyerFlock::m_SaveData[] =
 	DEFINE_FIELD( CFlockingFlyerFlock, m_flFlockRadius, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CFlockingFlyerFlock, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CFlockingFlyerFlock, CBaseMonster )
 
 //=========================================================
 //=========================================================
@@ -111,8 +111,8 @@ public:
 	float	m_flAlertTime;
 	float	m_flFlockNextSoundTime;
 };
-LINK_ENTITY_TO_CLASS( monster_flyer, CFlockingFlyer );
-LINK_ENTITY_TO_CLASS( monster_flyer_flock, CFlockingFlyerFlock );
+LINK_ENTITY_TO_CLASS( monster_flyer, CFlockingFlyer )
+LINK_ENTITY_TO_CLASS( monster_flyer_flock, CFlockingFlyerFlock )
 
 TYPEDESCRIPTION	CFlockingFlyer::m_SaveData[] = 
 {
@@ -130,7 +130,7 @@ TYPEDESCRIPTION	CFlockingFlyer::m_SaveData[] =
 //	DEFINE_FIELD( CFlockingFlyer, m_flFlockNextSoundTime, FIELD_TIME ),	// don't need to save
 };
 
-IMPLEMENT_SAVERESTORE( CFlockingFlyer, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CFlockingFlyer, CBaseMonster )
 
 //=========================================================
 //=========================================================

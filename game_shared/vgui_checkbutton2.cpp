@@ -7,7 +7,6 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include "Platform.h"
 #include "vgui_checkbutton2.h"
 #include "vgui_loadtga.h"
 
@@ -108,7 +107,7 @@ void CCheckButton2::SetText(char const *pText, ...)
 	
 	va_list marker;
 	va_start(marker, pText);
-	_vsnprintf(str, sizeof(str), pText, marker);
+	vsnprintf(str, sizeof(str), pText, marker);
 	va_end(marker);
 
 	m_Label.setText(str);

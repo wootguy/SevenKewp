@@ -12,7 +12,7 @@ public:
 	void Spawn(void);
 	void EXPORT SaveTouch(CBaseEntity* pOther);
 };
-LINK_ENTITY_TO_CLASS(trigger_autosave, CTriggerSave);
+LINK_ENTITY_TO_CLASS(trigger_autosave, CTriggerSave)
 
 void CTriggerSave::Spawn(void)
 {

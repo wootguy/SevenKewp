@@ -78,6 +78,7 @@ int g_iUser3 = 0;
 #define SBOARD_INDENT_Y_400		20
 
 void IN_ResetMouse( void );
+void IN_ResetRelativeMouseState( void );
 extern CMenuPanel *CMessageWindowPanel_Create( const char *szMOTD, const char *szTitle, int iShadeFullscreen, int iRemoveMe, int x, int y, int wide, int tall );
 extern float * GetClientColor( int clientIndex );
 
@@ -111,7 +112,7 @@ const char *sTFClasses[] =
 	"CIVILIAN",
 };
 
-const char *sLocalisedClasses[] = 
+const char *sLocalisedClasses[] =
 {
 	"#Civilian",
 	"#Scout",
@@ -127,7 +128,7 @@ const char *sLocalisedClasses[] =
 	"#Civilian",
 };
 
-const char *sTFClassSelection[] = 
+const char *sTFClassSelection[] =
 {
 	"civilian",
 	"scout",
@@ -175,7 +176,11 @@ char* GetVGUITGAName(const char *pszName)
 {
 	int i;
 	char sz[256]; 
-	static char gd[256]; 
+#ifdef VANILLA_HL
+	static char gd[256];
+#else
+	static char gd[280];
+#endif
 	const char *gamedir;
 
 	if (ScreenWidth < 640)
@@ -688,7 +693,7 @@ class CException;
 // Purpose: Read the Command Menu structure from the txt file and create the menu.
 //			Returns Index of menu in m_pCommandMenus
 //-----------------------------------------------------------------------------
-int TeamFortressViewport::CreateCommandMenu( const char * menuFile, int direction, int yOffset, bool flatDesign, float flButtonSizeX, float flButtonSizeY, int xOffset )
+int TeamFortressViewport::CreateCommandMenu(const char * menuFile, int direction, int yOffset, bool flatDesign, float flButtonSizeX, float flButtonSizeY, int xOffset )
 {
 	// COMMAND MENU
 	// Create the root of this new Command Menu
@@ -817,8 +822,7 @@ try
 
 			// Get the button text
 			pfile = gEngfuncs.COM_ParseFile(pfile, token);
-			strncpy( cText, token, 32 );
-			cText[31] = '\0';
+			CHudTextMessage::LocaliseTextString( token, cText, sizeof( cText ) );
 
 			// save off the last button text we've come across (for error reporting)
 			strcpy( szLastButtonText, cText );
@@ -1616,7 +1620,12 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 		// add sting auto if we are in auto directed mode
 		if ( gHUD.m_Spectator.m_autoDirector->value )
 		{
+#ifdef VANILLA_HL
 			char tempString[128];
+#else
+			char tempString[160];
+#endif
+			
 			sprintf(tempString, "#Spec_Auto %s", helpString2);
 			strcpy( helpString2, tempString );
 		}
@@ -1626,7 +1635,11 @@ void TeamFortressViewport::UpdateSpectatorPanel()
 
 		
 		// update extra info field
+#ifdef VANILLA_HL
 		char szText[64];
+#else
+		char szText[80];
+#endif
 
 		if ( gEngfuncs.IsSpectateOnly() )
 		{
@@ -2079,6 +2092,12 @@ void TeamFortressViewport::UpdateCursorState()
 	if ( !gEngfuncs.pDemoAPI->IsPlayingback() )
 	{
 		IN_ResetMouse();
+	}
+
+	if ( g_iVisibleMouse )
+	{
+		//Clear any residual input so our camera doesn't jerk when dismissing the UI
+		IN_ResetRelativeMouseState();
 	}
 
 	g_iVisibleMouse = false;

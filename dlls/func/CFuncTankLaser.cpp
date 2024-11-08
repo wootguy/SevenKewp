@@ -13,6 +13,8 @@ public:
 	void	Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker);
 	void	Think(void);
 	CLaser* GetLaser(void);
+	virtual const char* DisplayName() { return "Laser"; }
+	virtual const char* GetDeathNoticeWeapon() { return "weapon_gauss"; };
 
 	virtual int	Save(CSave& save);
 	virtual int	Restore(CRestore& restore);
@@ -22,7 +24,7 @@ private:
 	EHANDLE m_hLaser;
 	float	m_laserTime;
 };
-LINK_ENTITY_TO_CLASS(func_tanklaser, CFuncTankLaser);
+LINK_ENTITY_TO_CLASS(func_tanklaser, CFuncTankLaser)
 
 TYPEDESCRIPTION	CFuncTankLaser::m_SaveData[] =
 {
@@ -30,7 +32,7 @@ TYPEDESCRIPTION	CFuncTankLaser::m_SaveData[] =
 	DEFINE_FIELD(CFuncTankLaser, m_laserTime, FIELD_TIME),
 };
 
-IMPLEMENT_SAVERESTORE(CFuncTankLaser, CFuncTank);
+IMPLEMENT_SAVERESTORE(CFuncTankLaser, CFuncTank)
 
 void CFuncTankLaser::Activate(void)
 {

@@ -29,7 +29,7 @@ public:
 private:
 };
 
-LINK_ENTITY_TO_CLASS(game_score, CGameScore);
+LINK_ENTITY_TO_CLASS(game_score, CGameScore)
 
 
 void CGameScore::Spawn(void)

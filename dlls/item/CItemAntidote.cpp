@@ -28,4 +28,4 @@ class CItemAntidote : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_antidote, CItemAntidote);
+LINK_ENTITY_TO_CLASS(item_antidote, CItemAntidote)

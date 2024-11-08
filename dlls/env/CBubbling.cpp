@@ -28,7 +28,7 @@ public:
 	int		m_state;
 };
 
-LINK_ENTITY_TO_CLASS(env_bubbles, CBubbling);
+LINK_ENTITY_TO_CLASS(env_bubbles, CBubbling)
 
 TYPEDESCRIPTION	CBubbling::m_SaveData[] =
 {
@@ -39,7 +39,7 @@ TYPEDESCRIPTION	CBubbling::m_SaveData[] =
 	//	DEFINE_FIELD( CBubbling, m_bubbleModel, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE(CBubbling, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CBubbling, CBaseEntity)
 
 
 #define SF_BUBBLES_STARTOFF		0x0001
@@ -118,14 +118,7 @@ void CBubbling::KeyValue(KeyValueData* pkvd)
 
 void CBubbling::FizzThink(void)
 {
-	if (UTIL_isSafeEntIndex(ENTINDEX(edict()), "create TE_FIZZ")) {
-		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, VecBModelOrigin(pev));
-		WRITE_BYTE(TE_FIZZ);
-		WRITE_SHORT((short)ENTINDEX(edict()));
-		WRITE_SHORT((short)m_bubbleModel);
-		WRITE_BYTE(m_density);
-		MESSAGE_END();
-	}
+	UTIL_Fizz(entindex(), m_bubbleModel, m_density, MSG_PAS, VecBModelOrigin(pev));
 
 	if (m_frequency > 19)
 		pev->nextthink = gpGlobals->time + 0.5;

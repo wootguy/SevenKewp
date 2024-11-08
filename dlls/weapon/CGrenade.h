@@ -17,7 +17,7 @@ public:
 	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
 	void Explode( Vector vecSrc, Vector vecAim );
-	void Explode( TraceResult *pTrace, int bitsDamageType );
+	virtual void Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
 
 	void EXPORT BounceTouch( CBaseEntity *pOther );
@@ -32,9 +32,12 @@ public:
 	virtual void BounceSound( void );
 	virtual int	BloodColor( void ) { return DONT_BLEED; }
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
-	const char* GetDeathNoticeWeapon() { return "monster_grenade"; }
+	virtual const char* GetDeathNoticeWeapon() { return "monster_grenade"; }
 
 	const char* GetModel();
+	void SetGrenadeModel();
+	virtual int MergedModelBody() { return -1; }
+	virtual	BOOL IsNormalMonster(void) { return FALSE; }
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };

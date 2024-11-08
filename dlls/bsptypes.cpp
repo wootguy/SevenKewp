@@ -1,7 +1,7 @@
 #include "bsptypes.h"
 #include <math.h>
 #include <string.h>
-
+#include <cstdint>
 BSPEDGE::BSPEDGE() {}
 
 BSPEDGE::BSPEDGE(uint16_t v1, uint16_t v2) { 

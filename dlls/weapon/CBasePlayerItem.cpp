@@ -20,7 +20,7 @@ TYPEDESCRIPTION	CBasePlayerItem::m_SaveData[] =
 	// DEFINE_FIELD( CBasePlayerItem, m_iIdPrimary, FIELD_INTEGER ),
 	// DEFINE_FIELD( CBasePlayerItem, m_iIdSecondary, FIELD_INTEGER ),
 };
-IMPLEMENT_SAVERESTORE(CBasePlayerItem, CBaseAnimating);
+IMPLEMENT_SAVERESTORE(CBasePlayerItem, CBaseAnimating)
 
 void CBasePlayerItem::KeyValue(KeyValueData* pkvd)
 {
@@ -30,7 +30,7 @@ void CBasePlayerItem::KeyValue(KeyValueData* pkvd)
 		pkvd->fHandled = TRUE;
 	}
 	else
-		CBaseEntity::KeyValue(pkvd);
+		CBaseDelay::KeyValue(pkvd);
 }
 
 void CBasePlayerItem::SetObjectCollisionBox(void)
@@ -44,14 +44,18 @@ void CBasePlayerItem::SetObjectCollisionBox(void)
 //=========================================================
 void CBasePlayerItem::FallInit(void)
 {
-	pev->movetype = MOVETYPE_TOSS;
+	if (pev->movetype == 0)
+		pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetOrigin(pev, pev->origin);
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));//pointsize until it lands on the ground.
 
-	SetTouch(&CBasePlayerItem::DefaultTouch);
-	SetThink(&CBasePlayerItem::FallThink);
+	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
+		SetTouch(&CBasePlayerItem::DefaultTouch);
+
+	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
+		SetUse(&CBasePlayerItem::DefaultUse);
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }
@@ -83,6 +87,11 @@ void CBasePlayerItem::FallThink(void)
 
 		Materialize();
 	}
+	else if (!m_hPlayer)
+	{
+		SetThink(NULL);
+		SetUse(NULL);
+	}
 }
 
 //=========================================================
@@ -101,8 +110,12 @@ void CBasePlayerItem::Materialize(void)
 	pev->solid = SOLID_TRIGGER;
 
 	UTIL_SetOrigin(pev, pev->origin);// link into world.
-	SetTouch(&CBasePlayerItem::DefaultTouch);
-	SetThink(NULL);
+
+	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
+		SetTouch(&CBasePlayerItem::DefaultTouch);
+
+	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
+		SetUse(&CBasePlayerItem::DefaultUse);
 
 }
 
@@ -176,6 +189,10 @@ void CBasePlayerItem::DefaultTouch(CBaseEntity* pOther)
 	if (!pOther->IsPlayer())
 		return;
 
+	if (pev->movetype == MOVETYPE_FOLLOW || m_hPlayer || (pev->effects & EF_NODRAW)) {
+		return; // attached to a player
+	}
+
 	CBasePlayer* pPlayer = (CBasePlayer*)pOther;
 
 	// can I have this?
@@ -233,6 +250,7 @@ int CBasePlayerItem::AddToPlayer(CBasePlayer* pPlayer)
 void CBasePlayerItem::Drop(void)
 {
 	SetTouch(NULL);
+	SetUse(NULL);
 	SetThink(&CBasePlayerItem::SUB_Remove);
 	pev->nextthink = gpGlobals->time + .1;
 }
@@ -240,6 +258,7 @@ void CBasePlayerItem::Drop(void)
 void CBasePlayerItem::Kill(void)
 {
 	SetTouch(NULL);
+	SetUse(NULL);
 	SetThink(&CBasePlayerItem::SUB_Remove);
 	pev->nextthink = gpGlobals->time + .1;
 }
@@ -265,4 +284,26 @@ void CBasePlayerItem::AttachToPlayer(CBasePlayer* pPlayer)
 	pev->owner = pPlayer->edict();
 	pev->nextthink = gpGlobals->time + .1;
 	SetTouch(NULL);
+	SetUse(NULL);
+}
+
+void CBasePlayerItem::DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	if (pCaller && pCaller->IsPlayer()) {
+
+		if (!(pev->spawnflags & SF_ITEM_USE_WITHOUT_LOS) && !CanReach(pCaller)) {
+			return;
+		}
+
+		DefaultTouch(pCaller);
+	}
+}
+
+int CBasePlayerItem::ObjectCaps() {
+	if (pev->effects == MOVETYPE_FOLLOW || (pev->effects & EF_NODRAW)) {
+		return CBaseEntity::ObjectCaps();
+	}
+	else {
+		return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
+	}
 }

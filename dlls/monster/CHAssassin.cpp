@@ -77,6 +77,7 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	Schedule_t* GetSchedule ( void );
 	Schedule_t* GetScheduleOfType ( int Type );
+	const char* GetTaskName(int taskIdx);
 	BOOL CheckMeleeAttack1 ( float flDot, float flDist );	// jump
 	// BOOL CheckMeleeAttack2 ( float flDot, float flDist );
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );	// shoot
@@ -112,7 +113,7 @@ public:
 
 	int		m_iShell;
 };
-LINK_ENTITY_TO_CLASS( monster_human_assassin, CHAssassin );
+LINK_ENTITY_TO_CLASS( monster_human_assassin, CHAssassin )
 
 
 TYPEDESCRIPTION	CHAssassin::m_SaveData[] = 
@@ -131,7 +132,7 @@ TYPEDESCRIPTION	CHAssassin::m_SaveData[] =
 	DEFINE_FIELD( CHAssassin, m_iFrustration, FIELD_INTEGER ),
 };
 
-IMPLEMENT_SAVERESTORE( CHAssassin, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CHAssassin, CBaseMonster )
 
 
 //=========================================================
@@ -380,7 +381,7 @@ Schedule_t	slAssassinFail[] =
 	
 		bits_SOUND_DANGER |
 		bits_SOUND_PLAYER,
-		"AssassinFail"
+		"FASSN_FAIL"
 	},
 };
 
@@ -403,7 +404,7 @@ Schedule_t slAssassinExposed[] =
 		ARRAYSIZE ( tlAssassinExposed ),
 		bits_COND_CAN_MELEE_ATTACK1,
 		0,
-		"AssassinExposed",
+		"FASSN_EXPOSED",
 	},
 };
 
@@ -434,7 +435,7 @@ Schedule_t	slAssassinTakeCoverFromEnemy[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"AssassinTakeCoverFromEnemy"
+		"FASSN_TAKE_COVER_FROM_ENEMY"
 	},
 };
 
@@ -467,7 +468,7 @@ Schedule_t	slAssassinTakeCoverFromEnemy2[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"AssassinTakeCoverFromEnemy2"
+		"FASSN_TAKE_COVER_FROM_ENEMY2"
 	},
 };
 
@@ -493,7 +494,7 @@ Schedule_t	slAssassinTakeCoverFromBestSound[] =
 		ARRAYSIZE ( tlAssassinTakeCoverFromBestSound ), 
 		bits_COND_NEW_ENEMY,
 		0,
-		"AssassinTakeCoverFromBestSound"
+		"FASSN_TAKE_COVER_FROM_BEST_SOUND"
 	},
 };
 
@@ -526,7 +527,7 @@ Schedule_t	slAssassinHide[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"AssassinHide"
+		"FASSN_HIDE"
 	},
 };
 
@@ -553,7 +554,7 @@ Schedule_t slAssassinHunt[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"AssassinHunt"
+		"FASSN_HUNT"
 	},
 };
 
@@ -575,7 +576,7 @@ Schedule_t	slAssassinJump[] =
 		ARRAYSIZE ( tlAssassinJump ), 
 		0, 
 		0, 
-		"AssassinJump"
+		"FASSN_JUMP"
 	},
 };
 
@@ -598,7 +599,7 @@ Schedule_t	slAssassinJumpAttack[] =
 		ARRAYSIZE ( tlAssassinJumpAttack ), 
 		0, 
 		0,
-		"AssassinJumpAttack"
+		"FASSN_JUMP_ATTACK"
 	},
 };
 
@@ -628,7 +629,7 @@ Schedule_t	slAssassinJumpLand[] =
 		ARRAYSIZE ( tlAssassinJumpLand ), 
 		0, 
 		0,
-		"AssassinJumpLand"
+		"FASSN_JUMP_LAND"
 	},
 };
 
@@ -646,7 +647,7 @@ DEFINE_CUSTOM_SCHEDULES( CHAssassin )
 	slAssassinJumpLand,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CHAssassin, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CHAssassin, CBaseMonster )
 
 
 //=========================================================
@@ -1041,6 +1042,14 @@ Schedule_t* CHAssassin :: GetScheduleOfType ( int Type )
 	}
 
 	return CBaseMonster :: GetScheduleOfType( Type );
+}
+
+const char* CHAssassin::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_ASSASSIN_FALL_TO_GROUND: return "TASK_ASSASSIN_FALL_TO_GROUND";
+	default:
+		return CBaseMonster::GetTaskName(taskIdx);
+	}
 }
 
 #endif

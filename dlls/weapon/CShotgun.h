@@ -30,6 +30,10 @@ public:
 	float m_flNextReload;
 	int m_iShell;
 
+	void ItemPostFrame(void) override;
+
+	virtual int MergedModelBody() { return MERGE_MDL_W_SHOTGUN; }
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )

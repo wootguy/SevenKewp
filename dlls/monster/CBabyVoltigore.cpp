@@ -48,7 +48,7 @@ private:
 	static const char* pRunSounds[];
 };
 
-LINK_ENTITY_TO_CLASS(monster_alien_babyvoltigore, CBabyVoltigore);
+LINK_ENTITY_TO_CLASS(monster_alien_babyvoltigore, CBabyVoltigore)
 
 const char* CBabyVoltigore::pAttackHitSounds[] =
 {

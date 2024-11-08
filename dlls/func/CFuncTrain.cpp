@@ -16,6 +16,7 @@ public:
 	void Precache(void);
 	void Activate(void);
 	void OverrideReset(void);
+	virtual const char* DisplayName() { return "Compression"; } // hack for the kill feed
 
 	void Blocked(CBaseEntity* pOther);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
@@ -33,8 +34,8 @@ public:
 	int		m_activated; // 0 = never activated, 1 = activated, 2 = toggled off after activate
 };
 
-LINK_ENTITY_TO_CLASS(func_train, CFuncTrain);
-LINK_ENTITY_TO_CLASS(env_spritetrain, CFuncTrain);
+LINK_ENTITY_TO_CLASS(func_train, CFuncTrain)
+LINK_ENTITY_TO_CLASS(env_spritetrain, CFuncTrain)
 
 TYPEDESCRIPTION	CFuncTrain::m_SaveData[] =
 {
@@ -43,7 +44,7 @@ TYPEDESCRIPTION	CFuncTrain::m_SaveData[] =
 	DEFINE_FIELD(CFuncTrain, m_activated, FIELD_BOOLEAN),
 };
 
-IMPLEMENT_SAVERESTORE(CFuncTrain, CBasePlatTrain);
+IMPLEMENT_SAVERESTORE(CFuncTrain, CBasePlatTrain)
 
 
 void CFuncTrain::KeyValue(KeyValueData* pkvd)

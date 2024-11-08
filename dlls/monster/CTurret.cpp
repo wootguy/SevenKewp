@@ -36,8 +36,8 @@ TYPEDESCRIPTION	CTurret::m_SaveData[] =
 	DEFINE_FIELD(CTurret, m_iStartSpin, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CTurret, CBaseTurret);
-LINK_ENTITY_TO_CLASS(monster_turret, CTurret);
+IMPLEMENT_SAVERESTORE(CTurret, CBaseTurret)
+LINK_ENTITY_TO_CLASS(monster_turret, CTurret)
 
 void CTurret::Spawn()
 {
@@ -90,7 +90,8 @@ const char* CTurret::DisplayName() {
 
 void CTurret::Shoot(Vector& vecSrc, Vector& vecDirToEnemy)
 {
-	FireBullets(1, vecSrc, vecDirToEnemy, TURRET_SPREAD, TURRET_RANGE, BULLET_MONSTER_12MM, 1);
+	float bulletRange = V_max(m_flSightRange, TURRET_RANGE);
+	FireBullets(1, vecSrc, vecDirToEnemy, TURRET_SPREAD, bulletRange, BULLET_MONSTER_12MM, 1);
 	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "turret/tu_fire1.wav", 1, 0.6);
 	PLAY_DISTANT_SOUND(edict(), DISTANT_357);
 	pev->effects = pev->effects | EF_MUZZLEFLASH;

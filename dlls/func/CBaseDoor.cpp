@@ -18,7 +18,7 @@ TYPEDESCRIPTION	CBaseDoor::m_SaveData[] =
 
 };
 
-IMPLEMENT_SAVERESTORE(CBaseDoor, CBaseToggle);
+IMPLEMENT_SAVERESTORE(CBaseDoor, CBaseToggle)
 
 
 #define DOOR_SENTENCEWAIT	6
@@ -197,11 +197,11 @@ touch or takedamage doors).
 4)      screechy metal
 */
 
-LINK_ENTITY_TO_CLASS(func_door, CBaseDoor);
+LINK_ENTITY_TO_CLASS(func_door, CBaseDoor)
 //
 // func_water - same as a door. 
 //
-LINK_ENTITY_TO_CLASS(func_water, CBaseDoor);
+LINK_ENTITY_TO_CLASS(func_water, CBaseDoor)
 
 
 void CBaseDoor::Spawn()
@@ -637,7 +637,7 @@ void CBaseDoor::Blocked(CBaseEntity* pOther)
 	CBaseDoor* pDoor = NULL;
 
 	// Hurt the blocker a little.
-	if (pev->dmg) {
+	if (pev->dmg || FClassnameIs(pOther->pev, "monster_tripmine")) {
 		pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
 	}
 

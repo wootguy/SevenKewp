@@ -5,6 +5,7 @@
 #include "weapons.h"
 #include "effects.h"
 #include "CBaseTurret.h"
+#include "gamerules.h"
 
 TYPEDESCRIPTION	CBaseTurret::m_SaveData[] =
 {
@@ -38,7 +39,7 @@ TYPEDESCRIPTION	CBaseTurret::m_SaveData[] =
 	DEFINE_FIELD(CBaseTurret, m_flSpinUpTime, FIELD_TIME),
 };
 
-IMPLEMENT_SAVERESTORE(CBaseTurret, CBaseMonster);
+IMPLEMENT_SAVERESTORE(CBaseTurret, CBaseMonster)
 
 const char* CBaseTurret::pDieSounds[] =
 {
@@ -69,6 +70,11 @@ void CBaseTurret::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "turnrate"))
 	{
 		m_iBaseTurnRate = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "attackrange"))
+	{
+		m_flSightRange = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "style") ||
@@ -115,7 +121,7 @@ void CBaseTurret::Spawn()
 	SetBoneController(0, 0);
 	SetBoneController(1, 0);
 	m_flFieldOfView = VIEW_FIELD_FULL;
-	// m_flSightRange = TURRET_RANGE;
+	m_flSightRange = m_flSightRange ? m_flSightRange : TURRET_RANGE;
 }
 
 void CBaseTurret::Precache()
@@ -312,7 +318,7 @@ void CBaseTurret::ActiveThink(void)
 	Vector vec = UTIL_VecToAngles(vecMidEnemy - vecMid);
 
 	// Current enmey is not visible.
-	if (!fEnemyVisible || (flDistToEnemy > TURRET_RANGE))
+	if (!fEnemyVisible || (flDistToEnemy > m_flSightRange))
 	{
 		if (!m_flLastSight)
 			m_flLastSight = gpGlobals->time + 0.5;
@@ -589,7 +595,7 @@ void CBaseTurret::SearchThink(void)
 	// Acquire Target
 	if (m_hEnemy == NULL)
 	{
-		Look(TURRET_RANGE);
+		Look(m_flSightRange);
 		m_hEnemy = BestVisibleEnemy();
 	}
 
@@ -648,7 +654,7 @@ void CBaseTurret::AutoSearchThink(void)
 
 	if (m_hEnemy == NULL)
 	{
-		Look(TURRET_RANGE);
+		Look(m_flSightRange);
 		m_hEnemy = BestVisibleEnemy();
 	}
 
@@ -791,6 +797,7 @@ int CBaseTurret::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 	if (pev->health <= 0)
 	{
 		CBaseMonster::Killed(pev, GIB_NEVER); // for monstermaker death notice + death trigger
+		g_pGameRules->DeathNotice(this, pevAttacker, pevInflictor);
 
 		pev->health = 0;
 		pev->takedamage = DAMAGE_NO;

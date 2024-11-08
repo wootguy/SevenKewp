@@ -60,6 +60,8 @@ public:
 
 	int GetItemInfo(ItemInfo* p) override;
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_PIPE_WRENCH; }
+
 	BOOL UseDecrement() override
 	{
 #if defined(CLIENT_WEAPONS)
@@ -70,6 +72,8 @@ public:
 	}
 
 	BOOL IsClientWeapon() { return FALSE; }
+
+	virtual const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	float m_flBigSwingStart;
 	int m_iSwingMode = SWING_NONE;

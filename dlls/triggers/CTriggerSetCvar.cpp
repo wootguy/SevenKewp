@@ -14,7 +14,7 @@ public:
 	string_t m_iszCVarToChange;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_setcvar, CTriggerSetCVar);
+LINK_ENTITY_TO_CLASS(trigger_setcvar, CTriggerSetCVar)
 
 void CTriggerSetCVar::KeyValue(KeyValueData* pkvd)
 {
@@ -29,7 +29,7 @@ void CTriggerSetCVar::KeyValue(KeyValueData* pkvd)
 
 void CTriggerSetCVar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	static std::set<std::string> valid_cvars = {
+	static std::unordered_set<std::string> valid_cvars = {
 		"mp_falldamage",
 		"mp_flashlight",
 		"mp_forcerespawn",
@@ -47,7 +47,7 @@ void CTriggerSetCVar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 		"sv_waterfriction",
 	};
 
-	static std::set<std::string> unimpl_cvars = {
+	static std::unordered_set<std::string> unimpl_cvars = {
 		"mp_allowmonsterinfo",
 		"mp_banana",
 		"mp_barnacle_paralyze",

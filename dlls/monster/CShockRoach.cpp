@@ -47,7 +47,7 @@ Schedule_t	slRCRangeAttack1[] =
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_NO_AMMO_LOADED,
 		0,
-		"HCRangeAttack1"
+		"SROACH_RANGE_ATTACK1"
 	},
 };
 
@@ -67,7 +67,7 @@ Schedule_t	slRCRangeAttack1Fast[] =
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_NO_AMMO_LOADED,
 		0,
-		"HCRAFast"
+		"SROACH_ATTACK1_FAST"
 	},
 };
 
@@ -122,14 +122,14 @@ public:
 	static const char *pDeathSounds[];
 	static const char *pBiteSounds[];
 };
-LINK_ENTITY_TO_CLASS( monster_shockroach, COFShockRoach );
+LINK_ENTITY_TO_CLASS( monster_shockroach, COFShockRoach )
 
 TYPEDESCRIPTION	COFShockRoach::m_SaveData[] =
 {
 	DEFINE_FIELD( COFShockRoach, m_flBirthTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( COFShockRoach, CBaseMonster );
+IMPLEMENT_SAVERESTORE( COFShockRoach, CBaseMonster )
 
 DEFINE_CUSTOM_SCHEDULES( COFShockRoach )
 {
@@ -137,7 +137,7 @@ DEFINE_CUSTOM_SCHEDULES( COFShockRoach )
 	slRCRangeAttack1Fast,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( COFShockRoach, CBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( COFShockRoach, CBaseMonster )
 
 const char *COFShockRoach::pIdleSounds[] = 
 {
@@ -342,7 +342,7 @@ void COFShockRoach :: Precache()
 	//UTIL_PrecacheOther("weapon_shockrifle");
 	PRECACHE_MODEL("models/v_shock.mdl");
 	PRECACHE_MODEL("models/p_shock.mdl");
-	PRECACHE_MODEL("models/w_shock.mdl");
+	PRECACHE_MODEL("models/w_shock_rifle.mdl");
 	PRECACHE_MODEL("sprites/shockwave.spr");
 	PRECACHE_MODEL("sprites/lgtning.spr");
 	PRECACHE_SOUND("weapons/shock_fire.wav");

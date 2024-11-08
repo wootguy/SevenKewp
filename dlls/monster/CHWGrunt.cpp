@@ -71,6 +71,7 @@ public:
 	void PlaySentenceSound(int sentenceType);
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	Schedule_t* GetScheduleOfType(int Type);
+	const char* GetTaskName(int taskIdx);
 	void SetActivity(Activity NewActivity);
 	int GetActivitySequence(Activity NewActivity);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
@@ -107,8 +108,8 @@ public:
 	const char* GetMonsterType() { return "monster_hwgrunt"; };
 };
 
-LINK_ENTITY_TO_CLASS(monster_hwgrunt, CHWGrunt);
-LINK_ENTITY_TO_CLASS(monster_hwgrunt_repel, CHWGruntRepel);
+LINK_ENTITY_TO_CLASS(monster_hwgrunt, CHWGrunt)
+LINK_ENTITY_TO_CLASS(monster_hwgrunt_repel, CHWGruntRepel)
 
 const char* CHWGrunt::pPainSounds[] =
 {
@@ -345,7 +346,7 @@ Schedule_t	slFindMinigun[] =
 		bits_COND_HEAVY_DAMAGE,
 
 		0,
-		"Find minigun"
+		"HWGRUNT_FIND_MINIGUN"
 	},
 };
 
@@ -354,7 +355,7 @@ DEFINE_CUSTOM_SCHEDULES(CHWGrunt)
 	slFindMinigun
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES(CHWGrunt, CBaseGrunt);
+IMPLEMENT_CUSTOM_SCHEDULES(CHWGrunt, CBaseGrunt)
 
 Schedule_t* CHWGrunt::GetScheduleOfType(int Type)
 {
@@ -398,6 +399,14 @@ Schedule_t* CHWGrunt::GetScheduleOfType(int Type)
 		}
 
 		return CBaseGrunt::GetScheduleOfType(Type);
+	}
+}
+
+const char* CHWGrunt::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_GET_PATH_TO_BEST_MINIGUN: return "TASK_GET_PATH_TO_BEST_MINIGUN";
+	default:
+		return CBaseGrunt::GetTaskName(taskIdx);
 	}
 }
 
@@ -565,7 +574,7 @@ void CHWGrunt::StartTask(Task_t* pTask) {
 		if (pGun && MoveToLocation(m_movementActivity, 2, pGun->pev->origin))
 		{
 			TaskComplete();
-			println("MOVE COMPLETE!");
+			ALERT(at_console, "MOVE COMPLETE!\n");
 		}
 		else
 		{

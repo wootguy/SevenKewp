@@ -1,4 +1,4 @@
-/***
+/*** 
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
 *	
@@ -836,6 +836,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	player.m_afButtonPressed =  buttonsChanged & cmd->buttons;	
 	// The ones not down are "released"
 	player.m_afButtonReleased = buttonsChanged & (~cmd->buttons);
+	player.pev->v_angle = cmd->viewangles;
+	player.pev->origin = from->client.origin;
 
 	// Set player variables that weapons code might check/alter
 	player.pev->button = cmd->buttons;
@@ -1076,7 +1078,7 @@ runfuncs is 1 if this is the first time we've predicted this command.  If so, so
 be ignored
 =====================
 */
-void DLLEXPORT HUD_PostRunCmd( struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed )
+void CL_DLLEXPORT HUD_PostRunCmd( struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed )
 {
 //	RecClPostRunCmd(from, to, cmd, runfuncs, time, random_seed);
 

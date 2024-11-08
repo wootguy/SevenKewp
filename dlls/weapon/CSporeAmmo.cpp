@@ -37,11 +37,18 @@ public:
 
 		UTIL_SetSize(pev, Vector(-16, -16, -16), Vector(16, 16, 16));
 
-		pev->origin.z += 16;
+		pev->angles.x -= 90;
+
+		// align to the floor/ceiling (TODO: this is stupid, ripent the maps)
+		MAKE_VECTORS(pev->angles);
+		if (gpGlobals->v_up.z > 0.9f) {
+			pev->origin.z -= 16;
+		}
+		else if (gpGlobals->v_up.z < -0.9f) {
+			pev->origin.z += 16;
+		}
 
 		UTIL_SetOrigin(pev, pev->origin);
-
-		pev->angles.x -= 90;
 
 		pev->sequence = SPOREAMMO_SPAWNDN;
 
@@ -100,8 +107,8 @@ public:
 
 	BOOL AddAmmo(CBaseEntity* pOther)  override
 	{
-		//return pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores", SPORE_MAX_CARRY, "weapons/spore_ammo.wav");
-		return pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores", SPORE_MAX_CARRY);
+		//return pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores", gSkillData.sk_ammo_max_spores, "weapons/spore_ammo.wav");
+		return pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores", gSkillData.sk_ammo_max_spores);
 	}
 
 	void Idling()
@@ -180,7 +187,7 @@ class CSporeClip : public CBasePlayerAmmo
 
 	BOOL AddAmmo(CBaseEntity* pOther)
 	{
-		if (pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores", SPORE_MAX_CARRY) != -1)
+		if (pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores", gSkillData.sk_ammo_max_spores) != -1)
 		{
 			EMIT_SOUND(edict(), CHAN_ITEM, "weapons/spore_ammo.wav", VOL_NORM, ATTN_NORM);
 			return TRUE;
@@ -189,5 +196,5 @@ class CSporeClip : public CBasePlayerAmmo
 	}
 };
 
-LINK_ENTITY_TO_CLASS(ammo_spore, CSporeAmmo);
-LINK_ENTITY_TO_CLASS(ammo_sporeclip, CSporeClip);
+LINK_ENTITY_TO_CLASS(ammo_spore, CSporeAmmo)
+LINK_ENTITY_TO_CLASS(ammo_sporeclip, CSporeClip)

@@ -16,7 +16,7 @@ public:
 private:
 };
 
-LINK_ENTITY_TO_CLASS(player_weaponstrip, CStripWeapons);
+LINK_ENTITY_TO_CLASS(player_weaponstrip, CStripWeapons)
 
 void CStripWeapons::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {

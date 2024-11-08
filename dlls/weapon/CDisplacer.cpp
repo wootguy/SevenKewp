@@ -31,13 +31,13 @@ DEFINE_FUNCTION(AltFireThink),
 END_DATAMAP();
 */
 
-LINK_ENTITY_TO_CLASS(weapon_displacer, CDisplacer);
+LINK_ENTITY_TO_CLASS(weapon_displacer, CDisplacer)
 
 void CDisplacer::Spawn()
 {
 	Precache();
 	m_iId = WEAPON_DISPLACER;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 	m_iClip = -1;
 	m_iDefaultAmmo = DISPLACER_DEFAULT_GIVE;
 
@@ -522,7 +522,7 @@ int CDisplacer::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_displacer";
 
 	p->pszAmmo1 = "uranium";
-	p->iMaxAmmo1 = URANIUM_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_uranium;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 3;
 	p->iPosition = 4;

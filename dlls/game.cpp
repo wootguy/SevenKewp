@@ -19,6 +19,7 @@
 #include "cbase.h"
 #include "CBaseMonster.h"
 #include "skill.h"
+#include "PluginManager.h"
 
 cvar_t	displaysoundlist = {"displaysoundlist","0", 0, 0, 0};
 
@@ -56,6 +57,12 @@ cvar_t	mp_bulletspongemax ={"mp_bulletspongemax","4", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_maxmonsterrespawns ={"mp_maxmonsterrespawns","-1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_edictsorting ={"mp_edictsorting","1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_shitcode ={"mp_shitcode","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_mergemodels ={"mp_mergemodels","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_killfeed ={"mp_killfeed","1", FCVAR_SERVER, 0, 0 };
+cvar_t	pluginlistfile ={"pluginlistfile","plugins.txt", FCVAR_SERVER, 0, 0 };
+cvar_t	adminlistfile ={"adminlistfile","admins.txt", FCVAR_SERVER, 0, 0 };
+cvar_t	pluginupdatepath ={"plugin_update_path","valve_pending/", FCVAR_SERVER, 0, 0 };
+cvar_t	pluginautoupdate ={"plugin_auto_update", "0", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 
@@ -73,6 +80,7 @@ cvar_t  mp_survival_restart = { "mp_survival_restart", "0", FCVAR_SERVER, 0, 0 }
 // Engine Cvars
 cvar_t 	*g_psv_gravity = NULL;
 cvar_t	*g_psv_aim = NULL;
+cvar_t* g_psv_allow_autoaim = NULL;
 cvar_t	*g_footsteps = NULL;
 cvar_t	*g_developer = NULL;
 cvar_t	*sv_max_client_edicts = NULL;
@@ -81,17 +89,17 @@ cvar_t	*sv_lowercase = NULL;
 
 // END Cvars for Skill Level settings
 
-std::map<std::string, std::string> g_modelReplacementsMod;
-std::map<std::string, std::string> g_modelReplacementsMap;
-std::map<std::string, std::string> g_modelReplacements;
+std::unordered_map<std::string, std::string> g_modelReplacementsMod;
+std::unordered_map<std::string, std::string> g_modelReplacementsMap;
+std::unordered_map<std::string, std::string> g_modelReplacements;
 
-std::map<std::string, std::string> g_soundReplacementsMod;
-std::map<std::string, std::string> g_soundReplacementsMap;
-std::map<std::string, std::string> g_soundReplacements;
+std::unordered_map<std::string, std::string> g_soundReplacementsMod;
+std::unordered_map<std::string, std::string> g_soundReplacementsMap;
+std::unordered_map<std::string, std::string> g_soundReplacements;
 
-std::set<std::string> g_mapWeapons;
+std::unordered_set<std::string> g_mapWeapons;
 
-std::map<std::string, const char*> g_itemNameRemap = {
+std::unordered_map<std::string, const char*> g_itemNameRemap = {
 	{"weapon_9mmar", "weapon_9mmAR"},
 	{"weapon_mp5", "weapon_9mmAR"},
 	{"weapon_uzi", "weapon_9mmAR"},
@@ -116,6 +124,14 @@ std::map<std::string, const char*> g_itemNameRemap = {
 	{"ammo_mp5grenades", "ammo_ARgrenades"},
 	{"ammo_argrenades", "ammo_ARgrenades"},
 	{"ammo_762", "ammo_crossbow"},
+
+	// keyvalues that should be ignored
+	{"equipmode", "<keyvalue>"},
+	{"delay", "<keyvalue>"},
+	{"inventorymode", "<keyvalue>"},
+	{"master", "<keyvalue>"},
+	{"killtarget", "<keyvalue>"},
+	{"ondestroyfn", "<keyvalue>"},
 };
 
 void AddPrecacheWeapon(std::string wepName) {
@@ -131,6 +147,108 @@ NerfStats g_nerfStats;
 TextureTypeStats g_textureStats;
 bool g_cfgsExecuted;
 
+#include <algorithm>
+#include <fstream>
+
+void dump_missing_files() {
+	bool dumpMissing = !strcmp(CMD_ARGV(0), "dmiss");
+
+	std::vector<std::string> resList;
+
+	std::unordered_set<std::string> allPrecacheFiles;
+	allPrecacheFiles.insert(g_tryPrecacheModels.begin(), g_tryPrecacheModels.end());
+	allPrecacheFiles.insert(g_missingModels.begin(), g_missingModels.end());
+	allPrecacheFiles.insert(g_tryPrecacheGeneric.begin(), g_tryPrecacheGeneric.end());
+	allPrecacheFiles.insert(g_tryPrecacheEvents.begin(), g_tryPrecacheEvents.end());
+
+	for (std::string item : g_tryPrecacheSounds) {
+		if (item.size() > 1) {
+			if (item[0] == '*' || item[0] == '!') {
+				item = item.substr(1); // client will ignore this character and load the path after this
+			}
+		}
+
+		allPrecacheFiles.insert("sound/" + item);
+	}
+
+	for (std::string item : allPrecacheFiles) {
+		std::string lowerItem = normalize_path(toLowerCase(item));
+
+		if (getGameFilePath(lowerItem.c_str()).empty() == dumpMissing) {
+			resList.push_back(lowerItem);
+		}
+	}
+
+	if (resList.empty()) {
+		g_engfuncs.pfnServerPrint(dumpMissing ? "No missing files\n" : "No precached files\n");
+		return;
+	}
+
+	sort(resList.begin(), resList.end());
+
+	std::ofstream resfile;
+	const char* suffix = dumpMissing ? ".miss" : ".res";
+	std::string fname = std::string("res/") + STRING(gpGlobals->mapname) + suffix;
+	resfile.open(fname, std::ios_base::app);
+
+	if (!resfile.is_open()) {
+		g_engfuncs.pfnServerPrint("Failed to open file in res/ folder (does it exist?)\n");
+		return;
+	}
+
+	for (std::string item : resList) {
+		resfile << item + "\n";
+	}
+
+	resfile.close();
+
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Wrote %d %s files to %s\n",
+		(int)resList.size(), dumpMissing ? "missing" : "precached", fname.c_str()));
+}
+
+void reload_plugins() {
+	g_pluginManager.ReloadPlugins();
+}
+
+void list_plugins() {
+	g_pluginManager.ListPlugins(NULL);
+}
+
+void remove_plugin() {
+	if (CMD_ARGC() < 2) {
+		return;
+	}
+
+	g_pluginManager.RemovePlugin(CMD_ARGV(1));
+}
+
+void reload_plugin() {
+	if (CMD_ARGC() < 2) {
+		return;
+	}
+
+	g_pluginManager.ReloadPlugin(CMD_ARGV(1));
+}
+
+void update_plugin() {
+	if (CMD_ARGC() < 2) {
+		return;
+	}
+
+	if (g_pluginManager.UpdatePlugin(CMD_ARGV(1))) {
+		g_engfuncs.pfnServerPrint("Plugin updated\n");
+	}
+}
+
+void update_plugins() {
+	g_pluginManager.UpdatePluginsFromList();
+
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Searching update path \"%s\"\n", pluginupdatepath.string));
+	if (!g_pluginManager.UpdatePlugins()) {
+		g_engfuncs.pfnServerPrint("Plugins are up-to-date\n");
+	}
+}
+
 void test_command() {
 }
 
@@ -143,12 +261,21 @@ void cfg_exec_finished() {
 void GameDLLInit( void )
 {
 	g_engfuncs.pfnAddServerCommand("test", test_command);
+	g_engfuncs.pfnAddServerCommand("dcache", dump_missing_files);
+	g_engfuncs.pfnAddServerCommand("dmiss", dump_missing_files);
 	g_engfuncs.pfnAddServerCommand("cfg_exec_finished", cfg_exec_finished);
 	g_engfuncs.pfnAddServerCommand("edicts", PrintEntindexStats);
+	g_engfuncs.pfnAddServerCommand("reloadplugins", reload_plugins);
+	g_engfuncs.pfnAddServerCommand("listplugins", list_plugins);
+	g_engfuncs.pfnAddServerCommand("removeplugin", remove_plugin);
+	g_engfuncs.pfnAddServerCommand("reloadplugin", reload_plugin);
+	g_engfuncs.pfnAddServerCommand("updateplugin", update_plugin);
+	g_engfuncs.pfnAddServerCommand("updateplugins", update_plugins);
 	// Register cvars here:
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
+	g_psv_allow_autoaim = CVAR_GET_POINTER("sv_allow_autoaim");
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 	g_developer = CVAR_GET_POINTER( "developer" );
 	sv_max_client_edicts = CVAR_GET_POINTER( "sv_max_client_edicts" );
@@ -194,6 +321,12 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_maxmonsterrespawns);
 	CVAR_REGISTER (&mp_edictsorting);
 	CVAR_REGISTER (&mp_shitcode);
+	CVAR_REGISTER (&mp_mergemodels);
+	CVAR_REGISTER (&mp_killfeed);
+	CVAR_REGISTER (&pluginlistfile);
+	CVAR_REGISTER (&adminlistfile);
+	CVAR_REGISTER (&pluginupdatepath);
+	CVAR_REGISTER (&pluginautoupdate);
 
 	CVAR_REGISTER (&mp_chattime);
 

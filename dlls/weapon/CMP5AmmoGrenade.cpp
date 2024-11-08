@@ -5,12 +5,12 @@ class CMP5AmmoGrenade : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache( );
-		SET_MODEL(ENT(pev), "models/w_ARgrenade.mdl");
+		SET_MODEL_MERGED(ENT(pev), "models/w_ARgrenade.mdl", MERGE_MDL_W_ARGRENADE);
 		CBasePlayerAmmo::Spawn( );
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_ARgrenade.mdl");
+		PRECACHE_REPLACEMENT_MODEL ("models/w_ARgrenade.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 
@@ -21,7 +21,7 @@ class CMP5AmmoGrenade : public CBasePlayerAmmo
 			giveAmount = 1;
 		}
 
-		int bResult = (pOther->GiveAmmo(giveAmount, "ARgrenades", M203_GRENADE_MAX_CARRY) != -1);
+		int bResult = (pOther->GiveAmmo(giveAmount, "ARgrenades", gSkillData.sk_ammo_max_argrenades) != -1);
 
 		if (bResult)
 		{
@@ -30,5 +30,5 @@ class CMP5AmmoGrenade : public CBasePlayerAmmo
 		return bResult;
 	}
 };
-LINK_ENTITY_TO_CLASS( ammo_mp5grenades, CMP5AmmoGrenade );
-LINK_ENTITY_TO_CLASS( ammo_ARgrenades, CMP5AmmoGrenade );
+LINK_ENTITY_TO_CLASS( ammo_mp5grenades, CMP5AmmoGrenade )
+LINK_ENTITY_TO_CLASS( ammo_ARgrenades, CMP5AmmoGrenade )

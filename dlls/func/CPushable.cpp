@@ -38,7 +38,7 @@ public:
 	//	virtual void	SetActivator( CBaseEntity *pActivator ) { m_pPusher = pActivator; }
 	BOOL	IsBreakable() { return pev->spawnflags & SF_PUSH_BREAKABLE; }
 
-	const char* DisplayName() { return m_displayName ? STRING(m_displayName) : "Pushable"; }
+	const char* DisplayName();
 
 	virtual int	ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE; }
 	virtual int		Save(CSave& save);
@@ -71,9 +71,9 @@ TYPEDESCRIPTION	CPushable::m_SaveData[] =
 	DEFINE_FIELD(CPushable, m_soundTime, FIELD_TIME),
 };
 
-IMPLEMENT_SAVERESTORE(CPushable, CBreakable);
+IMPLEMENT_SAVERESTORE(CPushable, CBreakable)
 
-LINK_ENTITY_TO_CLASS(func_pushable, CPushable);
+LINK_ENTITY_TO_CLASS(func_pushable, CPushable)
 
 const char* CPushable::m_soundNames[3] = { "debris/pushbox1.wav", "debris/pushbox2.wav", "debris/pushbox3.wav" };
 
@@ -359,6 +359,13 @@ void CPushable::PostMove(bool clampSpeed) {
 		else
 			STOP_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound]);
 	}
+}
+
+const char* CPushable::DisplayName() {
+	if (m_displayName) {
+		return STRING(m_displayName);
+	}
+	return Explodable() ? "Pushable Explosives" : "Pushable";
 }
 
 void CPushable::Lift() {

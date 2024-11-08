@@ -10,7 +10,7 @@
 #include "CWeaponBox.h"
 #include "CBasePlayerItem.h"
 
-LINK_ENTITY_TO_CLASS(weaponbox, CWeaponBox);
+LINK_ENTITY_TO_CLASS(weaponbox, CWeaponBox)
 
 TYPEDESCRIPTION	CWeaponBox::m_SaveData[] =
 {
@@ -19,15 +19,14 @@ TYPEDESCRIPTION	CWeaponBox::m_SaveData[] =
 	DEFINE_ARRAY(CWeaponBox, m_rghPlayerItems, FIELD_EHANDLE, MAX_ITEM_TYPES),
 	DEFINE_FIELD(CWeaponBox, m_cAmmoTypes, FIELD_INTEGER),
 };
-
-IMPLEMENT_SAVERESTORE(CWeaponBox, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CWeaponBox, CBaseEntity)
 
 //=========================================================
 //
 //=========================================================
 void CWeaponBox::Precache(void)
 {
-	PRECACHE_MODEL("models/w_weaponbox.mdl");
+	PRECACHE_REPLACEMENT_MODEL("models/w_weaponbox.mdl");
 }
 
 //=========================================================
@@ -61,7 +60,7 @@ void CWeaponBox::Spawn(void)
 
 	UTIL_SetSize(pev, g_vecZero, g_vecZero);
 
-	SET_MODEL(ENT(pev), "models/w_weaponbox.mdl");
+	SET_MODEL_MERGED(ENT(pev), "models/w_weaponbox.mdl", MERGE_MDL_W_WEAPONBOX);
 }
 
 //=========================================================
@@ -184,7 +183,15 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 
 	EMIT_SOUND(pOther->edict(), CHAN_ITEM, hadWeapon ? "items/gunpickup2.wav" : "items/9mmclip1.wav", 1, ATTN_NORM);
 	SetTouch(NULL);
+	SetUse(NULL);
 	UTIL_Remove(this);
+}
+
+void CWeaponBox::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+{
+	if (pCaller && pCaller->IsPlayer() && CanReach(pCaller)) {
+		Touch(pCaller);
+	}
 }
 
 //=========================================================

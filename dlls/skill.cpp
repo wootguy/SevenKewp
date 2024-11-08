@@ -21,7 +21,7 @@
 
 
 skilldata_t	gSkillData;
-std::map<std::string, float> g_defaultMonsterHealth;
+std::unordered_map<std::string, float> g_defaultMonsterHealth;
 
 #define DECL_SKILL_CVAR(name) {{#name, "0", 0, 0, 0}, offsetof(skilldata_t, name)}
 
@@ -204,6 +204,21 @@ skill_cvar_t skill_cvars[] = {
 	DECL_SKILL_CVAR(sk_plr_pipewrench_full_damage),
 	DECL_SKILL_CVAR(sk_plr_displacer_other),
 	DECL_SKILL_CVAR(sk_plr_displacer_radius),
+
+	// Player max ammo
+	DECL_SKILL_CVAR(sk_ammo_max_uranium),
+	DECL_SKILL_CVAR(sk_ammo_max_9mm),
+	DECL_SKILL_CVAR(sk_ammo_max_357),
+	DECL_SKILL_CVAR(sk_ammo_max_buckshot),
+	DECL_SKILL_CVAR(sk_ammo_max_bolts),
+	DECL_SKILL_CVAR(sk_ammo_max_rockets),
+	DECL_SKILL_CVAR(sk_ammo_max_grenades),
+	DECL_SKILL_CVAR(sk_ammo_max_satchels),
+	DECL_SKILL_CVAR(sk_ammo_max_tripmines),
+	DECL_SKILL_CVAR(sk_ammo_max_snarks),
+	DECL_SKILL_CVAR(sk_ammo_max_hornets),
+	DECL_SKILL_CVAR(sk_ammo_max_argrenades),
+	DECL_SKILL_CVAR(sk_ammo_max_spores),
 
 	// World weapons
 	DECL_SKILL_CVAR(sk_12mm_bullet),

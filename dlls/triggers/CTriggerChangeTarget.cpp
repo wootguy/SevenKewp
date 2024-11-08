@@ -25,14 +25,14 @@ public:
 private:
 	int		m_iszNewTarget;
 };
-LINK_ENTITY_TO_CLASS(trigger_changetarget, CTriggerChangeTarget);
+LINK_ENTITY_TO_CLASS(trigger_changetarget, CTriggerChangeTarget)
 
 TYPEDESCRIPTION	CTriggerChangeTarget::m_SaveData[] =
 {
 	DEFINE_FIELD(CTriggerChangeTarget, m_iszNewTarget, FIELD_STRING),
 };
 
-IMPLEMENT_SAVERESTORE(CTriggerChangeTarget, CBaseDelay);
+IMPLEMENT_SAVERESTORE(CTriggerChangeTarget, CBaseDelay)
 
 void CTriggerChangeTarget::KeyValue(KeyValueData* pkvd)
 {

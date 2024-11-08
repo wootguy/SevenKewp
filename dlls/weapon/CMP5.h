@@ -24,6 +24,8 @@ public:
 	float m_flNextAnimTime;
 	int m_iShell;
 
+	virtual int MergedModelBody() { return MERGE_MDL_W_9MMAR; }
+
 	virtual BOOL UseDecrement( void )
 	{ 
 #if defined( CLIENT_WEAPONS )

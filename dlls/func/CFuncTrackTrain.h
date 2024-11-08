@@ -17,6 +17,7 @@ public:
 	void Blocked(CBaseEntity* pOther);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void KeyValue(KeyValueData* pkvd);
+	virtual const char* DisplayName() { return "Vehicle"; }
 
 	void EXPORT Next(void);
 	void EXPORT Find(void);

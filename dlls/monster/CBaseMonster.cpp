@@ -19,8 +19,8 @@
 
 //#define DEBUG_MONSTER "monster_male_assassin" // uncomment to enable verbose logging
 
-std::vector<std::map<std::string, std::string>> g_monsterSoundReplacements;
-std::set<std::string> g_shuffledMonsterSounds;
+std::vector<std::unordered_map<std::string, std::string>> g_monsterSoundReplacements;
+std::unordered_set<std::string> g_shuffledMonsterSounds;
 
 extern bool g_freeRoam;
 
@@ -96,7 +96,7 @@ TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 	DEFINE_FIELD(CBaseMonster, m_hCine, FIELD_EHANDLE),
 };
 
-//IMPLEMENT_SAVERESTORE( CBaseMonster, CBaseToggle );
+//IMPLEMENT_SAVERESTORE( CBaseMonster, CBaseToggle )
 int CBaseMonster::Save(CSave& save)
 {
 	if (!CBaseToggle::Save(save))
@@ -748,54 +748,16 @@ void DrawRoute(entvars_t* pev, WayPoint_t* m_Route, int m_iRouteIndex, int r, in
 
 	//	UTIL_ParticleEffect ( m_Route[ m_iRouteIndex ].vecLocation, g_vecZero, 255, 25 );
 
-	MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-	WRITE_BYTE(TE_BEAMPOINTS);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z);
-	WRITE_COORD(m_Route[m_iRouteIndex].vecLocation.x);
-	WRITE_COORD(m_Route[m_iRouteIndex].vecLocation.y);
-	WRITE_COORD(m_Route[m_iRouteIndex].vecLocation.z);
-
-	WRITE_SHORT(g_sModelIndexLaser);
-	WRITE_BYTE(0); // frame start
-	WRITE_BYTE(10); // framerate
-	WRITE_BYTE(1); // life
-	WRITE_BYTE(16);  // width
-	WRITE_BYTE(0);   // noise
-	WRITE_BYTE(r);   // r, g, b
-	WRITE_BYTE(g);   // r, g, b
-	WRITE_BYTE(b);   // r, g, b
-	WRITE_BYTE(255);	// brightness
-	WRITE_BYTE(10);		// speed
-	MESSAGE_END();
+	UTIL_BeamPoints(pev->origin, m_Route[m_iRouteIndex].vecLocation, g_sModelIndexLaser, 0, 10, 1, 16, 0,
+		RGBA(r, g, b, 255), 10);
 
 	for (i = m_iRouteIndex; i < ROUTE_SIZE - 1; i++)
 	{
 		if ((m_Route[i].iType & bits_MF_IS_GOAL) || (m_Route[i + 1].iType == 0))
 			break;
 
-
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_BEAMPOINTS);
-		WRITE_COORD(m_Route[i].vecLocation.x);
-		WRITE_COORD(m_Route[i].vecLocation.y);
-		WRITE_COORD(m_Route[i].vecLocation.z);
-		WRITE_COORD(m_Route[i + 1].vecLocation.x);
-		WRITE_COORD(m_Route[i + 1].vecLocation.y);
-		WRITE_COORD(m_Route[i + 1].vecLocation.z);
-		WRITE_SHORT(g_sModelIndexLaser);
-		WRITE_BYTE(0); // frame start
-		WRITE_BYTE(10); // framerate
-		WRITE_BYTE(1); // life
-		WRITE_BYTE(8);  // width
-		WRITE_BYTE(0);   // noise
-		WRITE_BYTE(r);   // r, g, b
-		WRITE_BYTE(g);   // r, g, b
-		WRITE_BYTE(b);   // r, g, b
-		WRITE_BYTE(255);	// brightness
-		WRITE_BYTE(10);		// speed
-		MESSAGE_END();
+		UTIL_BeamPoints(pev->origin, m_Route[i + 1].vecLocation, g_sModelIndexLaser, 0, 10, 1, 8, 0,
+			RGBA(r, g, b, 255), 10);
 
 		//		UTIL_ParticleEffect ( m_Route[ i ].vecLocation, g_vecZero, 255, 25 );
 	}
@@ -1266,7 +1228,7 @@ void CBaseMonster::SetActivity(Activity NewActivity)
 
 	#ifdef DEBUG_MONSTER
 	if (FClassnameIs(pev, DEBUG_MONSTER)) {
-		println("        SetActivity %s", activity_map[NewActivity].name);
+		ALERT(at_console, "        SetActivity %s\n", activity_map[NewActivity].name);
 	}
 	#endif
 
@@ -2132,7 +2094,7 @@ void CBaseMonster::MoveExecute(CBaseEntity* pTargetEnt, const Vector& vecDir, fl
 	while (flTotal > 0.001)
 	{
 		// don't walk more than 16 units or stairs stop working
-		flStep = V_min(16.0, flTotal);
+		flStep = V_min(16.0f, flTotal);
 		UTIL_MoveToOrigin(ENT(pev), m_Route[m_iRouteIndex].vecLocation, flStep, MOVE_NORMAL);
 		flTotal -= flStep;
 	}
@@ -2423,7 +2385,7 @@ int CBaseMonster::Classify(int defaultClassify) {
 
 int CBaseMonster::DefaultClassify(const char* monstertype) {
 	// Keep this map in sync with each monster's Classify method
-	static std::map<std::string, int> classMap = {
+	static std::unordered_map<std::string, int> classMap = {
 		{"hornet", CLASS_ALIEN_BIOWEAPON},
 		{"monster_alien_babyvoltigore", CLASS_ALIEN_MONSTER},
 		{"monster_alien_controller", CLASS_ALIEN_MILITARY},
@@ -2842,7 +2804,24 @@ float CBaseMonster::ChangeYaw(int yawSpeed)
 	ideal = pev->ideal_yaw;
 	if (current != ideal)
 	{
+		/*
+		if (m_flLastYawTime == 0.f)
+		{
+			m_flLastYawTime = gpGlobals->time - gpGlobals->frametime;
+		}
+
+		float delta = gpGlobals->time - m_flLastYawTime;
+		m_flLastYawTime = gpGlobals->time;
+
+		// Clamp delta like the engine does with frametime
+		if (delta > 0.25f)
+			delta = 0.25f;
+
+		speed = (float)yawSpeed * delta * 2;
+		*/
+		// undid HL25 change. It's causing jerky movement.
 		speed = (float)yawSpeed * gpGlobals->frametime * 10;
+
 		move = ideal - current;
 
 		if (ideal > current)
@@ -3668,33 +3647,6 @@ BOOL CBaseMonster::FCanActiveIdle(void)
 	return FALSE;
 }
 
-
-void CBaseMonster::PlaySentence(const char* pszSentence, float duration, float volume, float attenuation)
-{
-	if (pszSentence && IsAlive())
-	{
-		if (pszSentence[0] == '!')
-			EMIT_SOUND_DYN(edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, PITCH_NORM);
-		else if (pszSentence[0] == '+')
-			EMIT_SOUND_DYN(edict(), CHAN_VOICE, pszSentence+1, volume, attenuation, 0, PITCH_NORM);
-		else
-			SENTENCEG_PlayRndSz(edict(), pszSentence, volume, attenuation, 0, PITCH_NORM);
-	}
-}
-
-
-void CBaseMonster::PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity* pListener)
-{
-	PlaySentence(pszSentence, duration, volume, attenuation);
-}
-
-
-void CBaseMonster::SentenceStop(void)
-{
-	EMIT_SOUND(edict(), CHAN_VOICE, "common/null.wav", 1.0, ATTN_IDLE);
-}
-
-
 void CBaseMonster::CorpseFallThink(void)
 {
 	if (pev->flags & FL_ONGROUND)
@@ -4502,6 +4454,9 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 		return DeadTakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 	}
 
+	m_lastDamageType = bitsDamageType;
+	m_lastDamageEnt = CBaseEntity::Instance(ENT(pevAttacker));
+
 	if (pev->deadflag == DEAD_NO)
 	{
 		// no pain sound during death animation.
@@ -4578,6 +4533,8 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 			Killed(pevAttacker, GIB_NORMAL);
 		}
 
+		g_pGameRules->DeathNotice(this, pevAttacker, pevInflictor);
+
 		g_pevLastInflictor = NULL;
 
 		return 0;
@@ -4612,7 +4569,10 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 				SetConditions(bits_COND_LIGHT_DAMAGE);
 			}
 
-			if (flDamage >= 20)
+			// HL sets this to 20, but monsters are getting stunlocked often in co-op
+			int flinchAmount = (m_IdealMonsterState == MONSTERSTATE_COMBAT) ? 50 : 20;
+
+			if (flDamage >= flinchAmount)
 			{
 				SetConditions(bits_COND_HEAVY_DAMAGE);
 			}
@@ -4681,6 +4641,8 @@ void CBaseMonster::GiveScorePoints(entvars_t* pevAttacker, float damageDealt) {
 		float damageAmt = damageDealt > 0 ? V_min(damageDealt, pev->health) : V_min(damageDealt, pev->max_health - pev->health);
 		bool isFriendly = attackMon->IRelationship(this) == R_AL;
 		pevAttacker->frags += damageAmt * (isFriendly ? -1 : 1) * MONSTER_POINTS_PER_HP;
+
+		LogPlayerDamage(pevAttacker, damageAmt);
 	}
 }
 
@@ -4817,29 +4779,35 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 	{
 		m_LastHitGroup = ptr->iHitgroup;
 
-		switch (ptr->iHitgroup)
-		{
-		case HITGROUP_GENERIC:
-			break;
-		case HITGROUP_HEAD:
-			flDamage *= gSkillData.sk_monster_head;
-			break;
-		case HITGROUP_CHEST:
-			flDamage *= gSkillData.sk_monster_chest;
-			break;
-		case HITGROUP_STOMACH:
-			flDamage *= gSkillData.sk_monster_stomach;
-			break;
-		case HITGROUP_LEFTARM:
-		case HITGROUP_RIGHTARM:
-			flDamage *= gSkillData.sk_monster_arm;
-			break;
-		case HITGROUP_LEFTLEG:
-		case HITGROUP_RIGHTLEG:
-			flDamage *= gSkillData.sk_monster_leg;
-			break;
-		default:
-			break;
+		if (!(bitsDamageType & DMG_BLAST)) {
+			switch (ptr->iHitgroup)
+			{
+			case HITGROUP_GENERIC:
+				break;
+			case HITGROUP_HEAD:
+				flDamage *= gSkillData.sk_monster_head;
+				break;
+			case HITGROUP_CHEST:
+				flDamage *= gSkillData.sk_monster_chest;
+				break;
+			case HITGROUP_STOMACH:
+				flDamage *= gSkillData.sk_monster_stomach;
+				break;
+			case HITGROUP_LEFTARM:
+			case HITGROUP_RIGHTARM:
+				flDamage *= gSkillData.sk_monster_arm;
+				break;
+			case HITGROUP_LEFTLEG:
+			case HITGROUP_RIGHTLEG:
+				flDamage *= gSkillData.sk_monster_leg;
+				break;
+			default:
+				break;
+			}
+		}
+		else {
+			// blast damage shouldn't hit a single point like bullets.
+			// consider it to always be a body/generic shot
 		}
 
 		if (IsMachine() && flDamage > 0) {
@@ -5441,7 +5409,7 @@ void CBaseMonster::MaintainSchedule(void)
 			TaskBegin();
 			#ifdef DEBUG_MONSTER
 			if (FClassnameIs(pev, DEBUG_MONSTER)) {
-				println("    Start Task %s with data %f", GetTaskName(pTask->iTask), pTask->flData);
+				ALERT(at_console, "    Start Task %s with data %f\n", GetTaskName(pTask->iTask), pTask->flData);
 			}
 			#endif
 			StartTask(pTask);
@@ -6481,7 +6449,11 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	{
 		if (m_hTargetEnt != NULL)
 		{
-			pev->origin = m_hTargetEnt->pev->origin;	// Plant on target
+			Vector scriptOri = m_hTargetEnt->pev->origin;
+			TraceResult tr;
+			TRACE_MONSTER_HULL(edict(), scriptOri, scriptOri - Vector(0, 0, 512), ignore_monsters, edict(), &tr);
+			
+			pev->origin = tr.vecEndPos;	// Plant on floor under script
 		}
 
 		TaskComplete();
@@ -6978,28 +6950,34 @@ void CBaseMonster::ScheduleChange(void)
 	// debugging schedules
 	if (FClassnameIs(pev, DEBUG_MONSTER)) {
 		const char* schedName = m_pSchedule != NULL ? m_pSchedule->pName : "NULL";
-		println("\nSchedule changing from <%s> because:", schedName);
+		ALERT(at_console, "\nSchedule changing from <%s> because:\n", schedName);
 
 		if (m_MonsterState != m_IdealMonsterState) {
-			println("- monster state changing from %d to %d", m_MonsterState, m_IdealMonsterState);
+			ALERT(at_console, "- monster state changing from %d to %d\n", m_MonsterState, m_IdealMonsterState);
 		}
 		if (!FScheduleValid()) {
 			if (m_pSchedule == NULL) {
-				println("- Schedule is NULL");
+				ALERT(at_console, "- Schedule is NULL\n");
 				return;
 			}
 			if (HasConditions(bits_COND_SCHEDULE_DONE)) {
-				println("- Schedule is finished");
+				ALERT(at_console, "- Schedule is finished\n");
 			}
 			if (HasConditions(bits_COND_TASK_FAILED)) {
-				println("- Task failed");
+				ALERT(at_console, "- Task failed\n");
 			}
 			if (HasConditions(m_pSchedule->iInterruptMask)) {
-				println("- Interrupted by %d", m_pSchedule->iInterruptMask);
+				ALERT(at_console, "- Interrupted by %d\n", m_pSchedule->iInterruptMask);
 			}
 		}
 	}
 #endif
+}
+
+void CBaseMonster::GetAllSchedules(std::unordered_set<Schedule_t*>& schedulesOut) {
+	for (int i = 0; i < (int)ARRAYSIZE(m_scheduleList); i++) {
+		schedulesOut.insert(m_scheduleList[i]);
+	}
 }
 
 Schedule_t* CBaseMonster::ScheduleFromName(const char* pName)
@@ -7029,6 +7007,24 @@ Schedule_t* CBaseMonster::ScheduleInList(const char* pName, Schedule_t** pList, 
 			return pList[i];
 	}
 	return NULL;
+}
+
+Schedule_t* CBaseMonster::ScheduleFromTableIdx(uint32_t idx) {
+	return idx < ARRAYSIZE(m_scheduleList) ? m_scheduleList[idx] : NULL;
+}
+
+int CBaseMonster::GetScheduleTableSize() {
+	return ARRAYSIZE(m_scheduleList);
+}
+
+int CBaseMonster::GetScheduleTableIdx() {
+	for (int i = 0; i < ARRAYSIZE(m_scheduleList); i++) {
+		if (m_scheduleList[i] == m_pSchedule) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 //=========================================================
@@ -7424,12 +7420,12 @@ const char* CBaseMonster::DisplayName() {
 }
 
 bool CBaseMonster::IsImmune(entvars_t* attacker) {
-	if (!IsAlive()) {
-		return false;
-	}
-
 	if (!pev->takedamage || (pev->flags & FL_GODMODE)) {
 		return true;
+	}
+
+	if (!IsAlive()) {
+		return false;
 	}
 
 	if (pev->flags & FL_CLIENT) {
@@ -7575,5 +7571,25 @@ void CBaseMonster::Nerf() {
 	if (IRelationship(CLASS_PLAYER, Classify()) > R_NO || (IsTurret() && !m_IsPlayerAlly)) {
 		g_nerfStats.totalMonsterHealth += pev->health;
 		g_nerfStats.totalMonsters++;
+	}
+}
+
+void CBaseMonster::LogPlayerDamage(entvars_t* attacker, float damage) {
+	if (!(attacker->flags & FL_CLIENT)) {
+		return;
+	}
+
+	int userid = g_engfuncs.pfnGetPlayerUserId(ENT(attacker));
+
+	for (int i = 0; i < 32; i++) {
+		if (userid == m_attackers[i].userid) {
+			m_attackers[i].damageDealt += damage;
+			break;
+		}
+		if (m_attackers[i].userid == 0) {
+			m_attackers[i].userid = userid;
+			m_attackers[i].damageDealt = damage;
+			break;
+		}
 	}
 }

@@ -3,7 +3,7 @@
 #include "cbase.h"
 #include "CFuncWall.h"
 
-LINK_ENTITY_TO_CLASS(func_wall, CFuncWall);
+LINK_ENTITY_TO_CLASS(func_wall, CFuncWall)
 
 void CFuncWall::Spawn(void)
 {

@@ -11,10 +11,12 @@
 
 class CItemSuit : public CItem
 {
+	virtual int MergedModelBody() { return MERGE_MDL_W_SUIT; }
+
 	void Spawn(void)
 	{
 		Precache();
-		SET_MODEL(ENT(pev), GetModel());
+		SetItemModel();
 		CItem::Spawn();
 	}
 	void Precache(void)
@@ -37,4 +39,4 @@ class CItemSuit : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_suit, CItemSuit);
+LINK_ENTITY_TO_CLASS(item_suit, CItemSuit)

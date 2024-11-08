@@ -18,7 +18,7 @@ public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // for ActivateMultiTrigger sound
 	void Spawn(void);
 };
-LINK_ENTITY_TO_CLASS(trigger_counter, CTriggerCounter);
+LINK_ENTITY_TO_CLASS(trigger_counter, CTriggerCounter)
 
 void CTriggerCounter::Spawn(void)
 {

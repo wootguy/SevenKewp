@@ -12,6 +12,8 @@ public:
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
+
+	virtual int	ObjectCaps(void);
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 
@@ -19,6 +21,7 @@ public:
 	virtual int AddDuplicate( CBasePlayerItem *pItem ) { return FALSE; }	// return TRUE if you want your duplicate removed from world
 	void DestroyItem( void );
 	void DefaultTouch( CBaseEntity *pOther );	// default weapon touch
+	void DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void FallThink ( void );// when an item is first spawned, this think is run to determine when the object has hit the ground.
 	void Materialize( void );// make a weapon visible and tangible
 	void AttemptToMaterialize( void );  // the weapon desires to become visible and tangible, if the game rules allow for it
@@ -45,6 +48,8 @@ public:
 	virtual int SecondaryAmmoIndex() { return -1; };
 
 	virtual int UpdateClientData( CBasePlayer *pPlayer ) { return 0; }
+
+	virtual const char* GetDeathNoticeWeapon() { return pszName(); }
 
 	static ItemInfo ItemInfoArray[ MAX_WEAPONS ];
 	static AmmoInfo AmmoInfoArray[ MAX_AMMO_SLOTS ];

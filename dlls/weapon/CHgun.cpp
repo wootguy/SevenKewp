@@ -25,6 +25,15 @@
 #include "gamerules.h"
 #include "weapon/CHgun.h"
 
+static float GetRechargeTime()
+{
+	if (gpGlobals->maxClients > 1)
+	{
+		return 0.3f;
+	}
+	return 0.5f;
+}
+
 enum hgun_e {
 	HGUN_IDLE1 = 0,
 	HGUN_FIDGETSWAY,
@@ -41,7 +50,7 @@ enum firemode_e
 };
 
 
-LINK_ENTITY_TO_CLASS( weapon_hornetgun, CHgun );
+LINK_ENTITY_TO_CLASS( weapon_hornetgun, CHgun )
 
 BOOL CHgun::IsUseable( void )
 {
@@ -54,7 +63,7 @@ void CHgun::Spawn( )
 	
 	Precache( );
 	m_iId = WEAPON_HORNETGUN;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 
 	m_iDefaultAmmo = HIVEHAND_DEFAULT_GIVE;
 	m_iFirePhase = 0;
@@ -88,7 +97,7 @@ int CHgun::AddToPlayer( CBasePlayer *pPlayer )
 		if ( g_pGameRules->IsMultiplayer() )
 		{
 			// in multiplayer, all hivehands come full. 
-			pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] = HORNET_MAX_CARRY;
+			pPlayer->m_rgAmmo[ PrimaryAmmoIndex() ] = gSkillData.sk_ammo_max_hornets;
 		}
 #endif
 
@@ -101,7 +110,7 @@ int CHgun::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "Hornets";
-	p->iMaxAmmo1 = HORNET_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_hornets;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
@@ -158,7 +167,7 @@ void CHgun::PrimaryAttack()
 	CBaseEntity *pHornet = CBaseEntity::Create( "hornet", m_pPlayer->GetGunPosition( ) + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -12, m_pPlayer->pev->v_angle, m_pPlayer->edict() );
 	pHornet->pev->velocity = gpGlobals->v_forward * 300;
 
-	m_flRechargeTime = gpGlobals->time + 0.5;
+	m_flRechargeTime = gpGlobals->time + GetRechargeTime();
 #endif
 	
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
@@ -186,6 +195,10 @@ void CHgun::PrimaryAttack()
 	if (m_flNextPrimaryAttack < UTIL_WeaponTimeBase() )
 	{
 		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.25;
+	}
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0)
+	{
+		m_flNextPrimaryAttack += GetRechargeTime();
 	}
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
@@ -255,7 +268,7 @@ void CHgun::SecondaryAttack( void )
 
 	pHornet->SetThink( &CHornet::StartDart );
 
-	m_flRechargeTime = gpGlobals->time + 0.5;
+	m_flRechargeTime = gpGlobals->time + GetRechargeTime();
 #endif
 
 	int flags;
@@ -276,6 +289,12 @@ void CHgun::SecondaryAttack( void )
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.1;
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0)
+	{
+		m_flRechargeTime = gpGlobals->time + 0.5;
+		m_flNextSecondaryAttack += 0.5;
+		m_flNextPrimaryAttack += 0.5;
+	}
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 }
 
@@ -286,13 +305,13 @@ void CHgun::Reload( void )
 	if (!m_pPlayer)
 		return;
 
-	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= HORNET_MAX_CARRY)
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= gSkillData.sk_ammo_max_hornets)
 		return;
 
-	while (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < HORNET_MAX_CARRY && m_flRechargeTime < gpGlobals->time)
+	while (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < gSkillData.sk_ammo_max_hornets && m_flRechargeTime < gpGlobals->time)
 	{
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]++;
-		m_flRechargeTime += 0.5;
+		m_flRechargeTime += GetRechargeTime();
 	}
 }
 

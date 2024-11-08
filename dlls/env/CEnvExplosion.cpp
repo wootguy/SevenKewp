@@ -12,6 +12,7 @@ public:
 	void EXPORT Smoke(void);
 	void KeyValue(KeyValueData* pkvd);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	const char* DisplayName() { return "Explosion"; }
 
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
@@ -27,8 +28,8 @@ TYPEDESCRIPTION	CEnvExplosion::m_SaveData[] =
 	DEFINE_FIELD(CEnvExplosion, m_spriteScale, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(CEnvExplosion, CPointEntity);
-LINK_ENTITY_TO_CLASS(env_explosion, CEnvExplosion);
+IMPLEMENT_SAVERESTORE(CEnvExplosion, CPointEntity)
+LINK_ENTITY_TO_CLASS(env_explosion, CEnvExplosion)
 
 void CEnvExplosion::KeyValue(KeyValueData* pkvd)
 {
@@ -140,7 +141,8 @@ void CEnvExplosion::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 	// do damage
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NODAMAGE))
 	{
-		::RadiusDamage(pev->origin, pev, pev, m_iMagnitude, m_iMagnitude * 2.5, CLASS_NONE, DMG_BLAST);
+		entvars_t* ownerpev = pev->owner ? &pev->owner->v : pev;
+		::RadiusDamage(pev->origin, pev, ownerpev, m_iMagnitude, m_iMagnitude * 2.5, CLASS_NONE, DMG_BLAST);
 	}
 
 	SetThink(&CEnvExplosion::Smoke);

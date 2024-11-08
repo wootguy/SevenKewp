@@ -55,7 +55,7 @@ Schedule_t	slFail[] =
 		bits_SOUND_WORLD |
 		bits_SOUND_PLAYER |
 		bits_SOUND_DANGER,
-		"Fail"
+		"FAIL"
 	},
 };
 
@@ -91,7 +91,7 @@ Schedule_t	slIdleStand[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"IdleStand"
+		"IDLE_STAND"
 	},
 };
 
@@ -104,7 +104,7 @@ Schedule_t	slIdleTrigger[] =
 		bits_COND_LIGHT_DAMAGE	|
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"Idle Trigger"
+		"IDLE_TRIGGER"
 	},
 };
 
@@ -133,7 +133,7 @@ Schedule_t	slIdleWalk[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"Idle Walk"
+		"IDLE_WALK"
 	},
 };
 
@@ -159,7 +159,7 @@ Schedule_t	slAmbush[] =
 		bits_COND_PROVOKED,
 
 		0,
-		"Ambush"
+		"AMBUSH"
 	},
 };
 
@@ -202,7 +202,7 @@ Schedule_t slActiveIdle[] =
 		bits_SOUND_WORLD		|
 		bits_SOUND_PLAYER		|
 		bits_SOUND_DANGER,
-		"Active Idle"
+		"ACTIVE_IDLE"
 	}
 };
 
@@ -224,7 +224,7 @@ Schedule_t slWakeAngry[] =
 		ARRAYSIZE ( tlWakeAngry1 ),
 		bits_COND_NEW_ENEMY,
 		0,
-		"Wake Angry"
+		"WAKE_ANGRY"
 	}
 };
 
@@ -249,7 +249,7 @@ Schedule_t	slAlertFace[] =
 		bits_COND_HEAVY_DAMAGE	|
 		bits_COND_PROVOKED,
 		0,
-		"Alert Face"
+		"ALERT_FACE"
 	},
 };
 
@@ -272,7 +272,7 @@ Schedule_t	slAlertSmallFlinch[] =
 		ARRAYSIZE ( tlAlertSmallFlinch ),
 		0,
 		0,
-		"Alert Small Flinch"
+		"ALERT_SMALL_FLINCH"
 	},
 };
 
@@ -310,7 +310,7 @@ Schedule_t	slAlertStand[] =
 		bits_SOUND_MEAT			|// scent flags
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"Alert Stand"
+		"ALERT_SOUND"
 	},
 };
 
@@ -346,7 +346,7 @@ Schedule_t	slInvestigateSound[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"InvestigateSound"
+		"INVESTIGATE_SOUND"
 	},
 };
 
@@ -371,7 +371,7 @@ Schedule_t	slCombatStand[] =
 		bits_COND_HEAVY_DAMAGE		|
 		bits_COND_CAN_ATTACK, 
 		0,
-		"Combat Stand"
+		"COMBAT_STAND"
 	},
 };
 
@@ -394,7 +394,7 @@ Schedule_t	slCombatFace[] =
 		bits_COND_NEW_ENEMY				|
 		bits_COND_ENEMY_DEAD,
 		0,
-		"Combat Face"
+		"COMBAT_FACE"
 	},
 };
 
@@ -422,7 +422,7 @@ Schedule_t slStandoff[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"Standoff"
+		"STANDOFF"
 	}
 };
 
@@ -442,7 +442,7 @@ Schedule_t slArmWeapon[] =
 		ARRAYSIZE ( tlArmWeapon ),
 		0,
 		0,
-		"Arm Weapon"
+		"ARM_WEAPON"
 	}
 };
 
@@ -462,7 +462,7 @@ Schedule_t slReload[] =
 		ARRAYSIZE ( tlReload ),
 		bits_COND_HEAVY_DAMAGE,
 		0,
-		"Reload"
+		"RELOAD"
 	}
 };
 
@@ -485,14 +485,14 @@ Schedule_t	slRangeAttack1[] =
 		ARRAYSIZE ( tlRangeAttack1 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
-		bits_COND_LIGHT_DAMAGE		|
+		//bits_COND_LIGHT_DAMAGE		|	// TODO: may want to selectively disable this per monster
 		bits_COND_HEAVY_DAMAGE		|
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_NO_AMMO_LOADED	|
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"Range Attack1"
+		"RANGE_ATTACK1"
 	},
 };
 
@@ -511,13 +511,13 @@ Schedule_t	slRangeAttack2[] =
 		ARRAYSIZE ( tlRangeAttack2 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
-		bits_COND_LIGHT_DAMAGE		|
+		//bits_COND_LIGHT_DAMAGE		|	// TODO: may want to selectively disable this per monster
 		bits_COND_HEAVY_DAMAGE		|
 		bits_COND_ENEMY_OCCLUDED	|
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"Range Attack2"
+		"RANGE_ATTACK2"
 	},
 };
 
@@ -540,7 +540,7 @@ Schedule_t	slPrimaryMeleeAttack[] =
 		bits_COND_HEAVY_DAMAGE		|
 		bits_COND_ENEMY_OCCLUDED,
 		0,
-		"Primary Melee Attack"
+		"MELEE_ATTACK1"
 	},
 };
 
@@ -559,11 +559,11 @@ Schedule_t	slSecondaryMeleeAttack[] =
 		ARRAYSIZE ( tlSecondaryMeleeAttack1 ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
-		bits_COND_LIGHT_DAMAGE		|
+		//bits_COND_LIGHT_DAMAGE		| // TODO: may want to selectively disable this per monster
 		bits_COND_HEAVY_DAMAGE		|
 		bits_COND_ENEMY_OCCLUDED,
 		0,
-		"Secondary Melee Attack"
+		"MELEE_ATTACK2"
 	},
 };
 
@@ -589,7 +589,7 @@ Schedule_t	slSpecialAttack1[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"Special Attack1"
+		"SPECIAL_ATTACK1"
 	},
 };
 
@@ -615,7 +615,7 @@ Schedule_t	slSpecialAttack2[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"Special Attack2"
+		"SPECIAL_ATTACK2"
 	},
 };
 
@@ -642,7 +642,7 @@ Schedule_t slChaseEnemy[] =
 		bits_COND_HEAR_SOUND,
 		
 		bits_SOUND_DANGER,
-		"Chase Enemy"
+		"CHASE_ENEMY"
 	},
 };
 
@@ -674,7 +674,7 @@ Schedule_t	slChaseEnemyFailed[] =
 		bits_COND_HEAR_SOUND,
 
 		bits_SOUND_DANGER,
-		"tlChaseEnemyFailed"
+		"CHASE_ENEMY_FAILED"
 	},
 };
 
@@ -696,7 +696,7 @@ Schedule_t slSmallFlinch[] =
 		ARRAYSIZE ( tlSmallFlinch ),
 		0,
 		0,
-		"Small Flinch"
+		"SMALL_FLINCH"
 	},
 };
 
@@ -717,7 +717,7 @@ Schedule_t slDie[] =
 		ARRAYSIZE( tlDie1 ),
 		0,
 		0,
-		"Die"
+		"DIE"
 	},
 };
 
@@ -738,7 +738,7 @@ Schedule_t slVictoryDance[] =
 		ARRAYSIZE( tlVictoryDance ),
 		0,
 		0,
-		"Victory Dance"
+		"VICTORY_DANCE"
 	},
 };
 
@@ -762,7 +762,7 @@ Schedule_t slBarnacleVictimGrab[] =
 		ARRAYSIZE ( tlBarnacleVictimGrab ),
 		0,
 		0,
-		"Barnacle Victim"
+		"BARNACLE_VICTIM"
 	}
 };
 
@@ -786,7 +786,7 @@ Schedule_t slBarnacleVictimChomp[] =
 		ARRAYSIZE ( tlBarnacleVictimChomp ),
 		0,
 		0,
-		"Barnacle Chomp"
+		"BARNACLE_CHOMP"
 	}
 };
 
@@ -805,7 +805,7 @@ Schedule_t	slError[] =
 		ARRAYSIZE ( tlError ), 
 		0,
 		0,
-		"Error"
+		"ERROR"
 	},
 };
 
@@ -828,7 +828,7 @@ Schedule_t slWalkToScript[] =
 		ARRAYSIZE ( tlScriptedWalk ),
 		SCRIPT_BREAK_CONDITIONS,
 		0,
-		"WalkToScript"
+		"WALK_TO_SCRIPT"
 	},
 };
 
@@ -852,7 +852,7 @@ Schedule_t slRunToScript[] =
 		ARRAYSIZE ( tlScriptedRun ),
 		SCRIPT_BREAK_CONDITIONS,
 		0,
-		"RunToScript"
+		"RUN_TO_SCRIPT"
 	},
 };
 
@@ -870,7 +870,7 @@ Schedule_t slWaitScript[] =
 		ARRAYSIZE ( tlScriptedWait ),
 		SCRIPT_BREAK_CONDITIONS,
 		0,
-		"WaitForScript"
+		"WAIT_FOR_SCRIPT"
 	},
 };
 
@@ -890,7 +890,7 @@ Schedule_t slFaceScript[] =
 		ARRAYSIZE ( tlScriptedFace ),
 		SCRIPT_BREAK_CONDITIONS,
 		0,
-		"FaceScript"
+		"FACE_SCRIPT"
 	},
 };
 
@@ -911,7 +911,7 @@ Schedule_t	slCower[] =
 		ARRAYSIZE ( tlCower ),
 		0,
 		0,
-		"Cower"
+		"COWER"
 	},
 };
 
@@ -935,7 +935,7 @@ Schedule_t	slTakeCoverFromOrigin[] =
 		ARRAYSIZE ( tlTakeCoverFromOrigin ), 
 		bits_COND_NEW_ENEMY,
 		0,
-		"TakeCoverFromOrigin"
+		"TAKE_COVER_FROM_ORIGIN"
 	},
 };
 
@@ -959,7 +959,7 @@ Schedule_t	slTakeCoverFromBestSound[] =
 		ARRAYSIZE ( tlTakeCoverFromBestSound ), 
 		bits_COND_NEW_ENEMY,
 		0,
-		"TakeCoverFromBestSound"
+		"TAKE_COVER_FROM_BEST_SOUND"
 	},
 };
 
@@ -987,7 +987,7 @@ Schedule_t	slTakeCoverFromEnemy[] =
 		ARRAYSIZE ( tlTakeCoverFromEnemy ), 
 		bits_COND_NEW_ENEMY,
 		0,
-		"tlTakeCoverFromEnemy"
+		"TAKE_COVER_FROM_ENEMY"
 	},
 };
 
@@ -1010,7 +1010,7 @@ Schedule_t	slFollow[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_PROVOKED,
 		bits_SOUND_DANGER,
-		"Follow"
+		"FOLLOW"
 	},
 };
 
@@ -1035,7 +1035,7 @@ Schedule_t	slFaceTarget[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_PROVOKED,
 		bits_SOUND_DANGER,
-		"FaceTarget"
+		"FACE_TARGET"
 	},
 };
 
@@ -1051,7 +1051,7 @@ Schedule_t	slStopFollowing[] =
 		ARRAYSIZE(tlStopFollowing),
 		0,
 		0,
-		"StopFollowing"
+		"STOP_FOLLOWING"
 	},
 };
 
@@ -1072,7 +1072,7 @@ Schedule_t	slMoveAway[] =
 		ARRAYSIZE(tlMoveAway),
 		0,
 		0,
-		"MoveAway"
+		"MOVE_AWAY"
 	},
 };
 
@@ -1090,7 +1090,7 @@ Schedule_t	slMoveAwayFail[] =
 		ARRAYSIZE(tlMoveAwayFail),
 		0,
 		0,
-		"MoveAwayFail"
+		"MOVE_AWAY_FAIL"
 	},
 };
 
@@ -1113,7 +1113,7 @@ Schedule_t	slMoveAwayFollow[] =
 		ARRAYSIZE(tlMoveAwayFollow),
 		0,
 		0,
-		"MoveAwayFollow"
+		"MOVE_AWAY_FOLLOW"
 	},
 };
 
@@ -1146,6 +1146,6 @@ Schedule_t	slRoam[] =
 		bits_SOUND_MEAT |// scents
 		bits_SOUND_CARCASS |
 		bits_SOUND_GARBAGE,
-		"Roam"
+		"ROAM"
 	},
 };

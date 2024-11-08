@@ -30,7 +30,7 @@ TYPEDESCRIPTION	CBasePlayerWeapon::m_SaveData[] =
 	//  DEFINE_FIELD( CBasePlayerWeapon, m_iClientWeaponState, FIELD_INTEGER ), reset to zero on load so hud gets updated correctly
 };
 
-IMPLEMENT_SAVERESTORE(CBasePlayerWeapon, CBasePlayerItem);
+IMPLEMENT_SAVERESTORE(CBasePlayerWeapon, CBasePlayerItem)
 
 BOOL CanAttack(float attack_time, float curtime, BOOL isPredicted)
 {
@@ -455,7 +455,7 @@ BOOL CBasePlayerWeapon::IsUseable(void)
 		if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] <= 0 && iMaxAmmo1() != -1)
 		{
 			// clip is empty (or nonexistant) and the player has no more ammo of this type. 
-			return FALSE;
+			return CanDeploy();
 		}
 	}
 
@@ -557,7 +557,7 @@ BOOL CBasePlayerWeapon::PlayEmptySound(void)
 		edict_t* plr = m_pPlayer->edict();
 		uint32_t messageTargets = 0xffffffff & ~PLRBIT(plr);
 		StartSound(plr, CHAN_WEAPON, "weapons/357_cock1.wav", 0.8f,
-			ATTN_NORM, 0, 100, m_pPlayer->pev->origin, messageTargets);
+			ATTN_NORM, SND_FL_PREDICTED, 100, m_pPlayer->pev->origin, messageTargets, false);
 #endif
 		m_iPlayEmptySound = 0;
 		return 0;
@@ -672,6 +672,7 @@ CBaseEntity* CBasePlayerWeapon::Respawn(void)
 		wep->m_customModelV = m_customModelV;
 		wep->m_customModelP = m_customModelP;
 		wep->m_customModelW = m_customModelW;
+		wep->pev->movetype = pev->movetype;
 		SET_MODEL(wep->edict(), GetModelW());
 	}
 
@@ -718,7 +719,20 @@ const char* CBasePlayerWeapon::GetModelP() {
 }
 
 const char* CBasePlayerWeapon::GetModelW() {
-	return m_customModelW ? STRING(m_customModelW) : m_defaultModelW;
+	if (m_customModelW) {
+		return STRING(m_customModelW);
+	}
+
+	return mp_mergemodels.value && MergedModelBody() != -1 ? MERGED_ITEMS_MODEL : m_defaultModelW;
+}
+
+void CBasePlayerWeapon::SetWeaponModelW() {
+	if (m_customModelW || MergedModelBody() == -1) {
+		SET_MODEL(ENT(pev), GetModelW());
+	}
+	else {
+		SET_MODEL_MERGED(ENT(pev), GetModelW(), MergedModelBody());
+	}
 }
 
 void CBasePlayerWeapon::PrintState(void)

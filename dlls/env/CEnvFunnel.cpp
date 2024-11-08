@@ -28,7 +28,7 @@ void CEnvFunnel::Precache(void)
 	m_iSprite = PRECACHE_MODEL("sprites/flare6.spr");
 }
 
-LINK_ENTITY_TO_CLASS(env_funnel, CEnvFunnel);
+LINK_ENTITY_TO_CLASS(env_funnel, CEnvFunnel)
 
 void CEnvFunnel::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {

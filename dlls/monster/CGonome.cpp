@@ -94,13 +94,14 @@ public:
 	static void Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity);
 	void Touch(CBaseEntity* pOther);
 	void EXPORT Animate(void);
+	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	int  m_maxFrame;
 };
 
 
-LINK_ENTITY_TO_CLASS(monster_gonome, CGonome);
-LINK_ENTITY_TO_CLASS(gonomespit, CGonomeSpit);
+LINK_ENTITY_TO_CLASS(monster_gonome, CGonome)
+LINK_ENTITY_TO_CLASS(gonomespit, CGonomeSpit)
 
 const char* CGonome::pAttackHitSounds[] =
 {
@@ -217,7 +218,7 @@ Schedule_t slGonomeChaseEnemy[] =
 
 		bits_SOUND_DANGER |
 		bits_SOUND_MEAT,
-		"Gonome Chase Enemy"
+		"GONOME_CHASE_ENEMY"
 	},
 };
 
@@ -228,7 +229,7 @@ DEFINE_CUSTOM_SCHEDULES(CGonome)
 	slGonomeChaseEnemy
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES(CGonome, CBaseMonster);
+IMPLEMENT_CUSTOM_SCHEDULES(CGonome, CBaseMonster)
 
 int	CGonome:: Classify ( void )
 {
@@ -680,7 +681,7 @@ void CGonomeSpit::Touch(CBaseEntity* pOther)
 		WRITE_BYTE(10);	// size
 	MESSAGE_END();
 
-	pOther->TakeDamage(pev, pev, gSkillData.sk_gonome_dmg_guts, DMG_GENERIC);
+	pOther->TakeDamage(pev, &pev->owner->v, gSkillData.sk_gonome_dmg_guts, DMG_GENERIC);
 
 	SetThink(&CGonomeSpit::SUB_Remove);
 	pev->nextthink = gpGlobals->time;

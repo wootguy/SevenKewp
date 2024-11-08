@@ -21,7 +21,7 @@ public:
 private:
 };
 
-LINK_ENTITY_TO_CLASS(trigger_respawn, CTriggerRespawn);
+LINK_ENTITY_TO_CLASS(trigger_respawn, CTriggerRespawn)
 
 void CTriggerRespawn::RespawnTarget(CBaseEntity* target) {
 	if (!target) {
@@ -29,6 +29,11 @@ void CTriggerRespawn::RespawnTarget(CBaseEntity* target) {
 	}
 
 	if (target->IsAlive() && (pev->spawnflags & SF_TRESPAWN_DONT_MOVE_LIVING)) {
+		return;
+	}
+
+	CBasePlayer* plr = (CBasePlayer*)target;
+	if (target->IsPlayer() && plr->IsObserver()) {
 		return;
 	}
 

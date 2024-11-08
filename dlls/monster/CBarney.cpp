@@ -93,7 +93,7 @@ private:
 	static const char* pDieSounds[];
 };
 
-LINK_ENTITY_TO_CLASS( monster_barney, CBarney );
+LINK_ENTITY_TO_CLASS( monster_barney, CBarney )
 
 const char* CBarney::pPainSounds[] =
 {
@@ -118,7 +118,7 @@ TYPEDESCRIPTION	CBarney::m_SaveData[] =
 	DEFINE_FIELD( CBarney, m_flPlayerDamage, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CBarney, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CBarney, CTalkSquadMonster )
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -140,7 +140,7 @@ Schedule_t	slBaFollow[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_PROVOKED,
 		bits_SOUND_DANGER,
-		"Follow"
+		"BARNEY_FOLLOW"
 	},
 };
 
@@ -162,7 +162,7 @@ Schedule_t slBarneyEnemyDraw[] =
 		ARRAYSIZE ( tlBarneyEnemyDraw ),
 		0,
 		0,
-		"Barney Enemy Draw"
+		"BARNEY_ENEMY_DRAW"
 	}
 };
 
@@ -186,7 +186,7 @@ Schedule_t	slBaFaceTarget[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_PROVOKED,
 		bits_SOUND_DANGER,
-		"FaceTarget"
+		"BARNEY_FACE_TARGET"
 	},
 };
 
@@ -219,7 +219,7 @@ Schedule_t	slIdleBaStand[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"IdleStand"
+		"BARNEY_IDLE_STAND"
 	},
 };
 
@@ -232,7 +232,7 @@ DEFINE_CUSTOM_SCHEDULES( CBarney )
 };
 
 
-IMPLEMENT_CUSTOM_SCHEDULES( CBarney, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CBarney, CTalkSquadMonster )
 
 void CBarney :: StartTask( Task_t *pTask )
 {
@@ -611,7 +611,7 @@ void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 	{
 	case HITGROUP_CHEST:
 	case HITGROUP_STOMACH:
-		if (bitsDamageType & (DMG_BULLET | DMG_SLASH | DMG_BLAST))
+		if (bitsDamageType & (DMG_BULLET | DMG_SLASH))
 		{
 			flDamage = flDamage / 2;
 		}
@@ -840,7 +840,7 @@ void CDeadBarney::KeyValue( KeyValueData *pkvd )
 		CBaseMonster::KeyValue( pkvd );
 }
 
-LINK_ENTITY_TO_CLASS( monster_barney_dead, CDeadBarney );
+LINK_ENTITY_TO_CLASS( monster_barney_dead, CDeadBarney )
 
 //=========================================================
 // ********** DeadBarney SPAWN **********

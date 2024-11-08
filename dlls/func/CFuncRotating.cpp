@@ -30,6 +30,7 @@ public:
 	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
+	virtual const char* DisplayName() { return "Rotary"; }
 
 	static	TYPEDESCRIPTION m_SaveData[];
 
@@ -52,11 +53,11 @@ TYPEDESCRIPTION	CFuncRotating::m_SaveData[] =
 	DEFINE_FIELD(CFuncRotating, m_sounds, FIELD_INTEGER)
 };
 
-IMPLEMENT_SAVERESTORE(CFuncRotating, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CFuncRotating, CBaseEntity)
 
 
 
-LINK_ENTITY_TO_CLASS(func_rotating, CFuncRotating);
+LINK_ENTITY_TO_CLASS(func_rotating, CFuncRotating)
 
 void CFuncRotating::KeyValue(KeyValueData* pkvd)
 {

@@ -28,7 +28,7 @@ DEFINE_FIELD(m_flRechargeTime, FIELD_TIME),
 	END_DATAMAP();
 */
 
-LINK_ENTITY_TO_CLASS(weapon_shockrifle, CShockRifle);
+LINK_ENTITY_TO_CLASS(weapon_shockrifle, CShockRifle)
 
 void CShockRifle::Spawn()
 {
@@ -51,7 +51,7 @@ void CShockRifle::Precache()
 
 	m_defaultModelV = "models/v_shock.mdl";
 	m_defaultModelP = "models/p_shock.mdl";
-	m_defaultModelW = "models/w_shock.mdl";
+	m_defaultModelW = "models/w_shock_rifle.mdl";
 	CBasePlayerWeapon::Precache();
 
 	m_iSpriteTexture = PRECACHE_MODEL("sprites/shockwave.spr");

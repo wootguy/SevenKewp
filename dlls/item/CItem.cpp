@@ -5,10 +5,6 @@
 #include "CItem.h"
 #include "gamerules.h"
 
-#define SF_ITEM_TOUCH_ONLY 128 // Pick this item up only by touching it.
-#define SF_ITEM_USE_ONLY 256 // Pick this item up only by using it ('USE' key).
-#define SF_ITEM_USE_WITHOUT_LOS 512 // Player can pick up this item even when it's not within his line of sight.
-
 void CItem::Spawn(void)
 {
 	UTIL_SetOrigin(pev, pev->origin);
@@ -77,7 +73,7 @@ void CItem::KeyValue(KeyValueData* pkvd) {
 	}
 	else
 	{
-		CBaseEntity::KeyValue(pkvd);
+		CBaseAnimating::KeyValue(pkvd);
 	}
 }
 
@@ -86,6 +82,15 @@ void CItem::SetSize(Vector defaultMins, Vector defaultMaxs) {
 	Vector max = m_maxHullSize != g_vecZero ? m_maxHullSize : defaultMaxs;
 
 	UTIL_SetSize(pev, min, max);
+}
+
+void CItem::SetItemModel() {
+	if (pev->model || MergedModelBody() == -1) {
+		SET_MODEL(ENT(pev), GetModel());
+	}
+	else {
+		SET_MODEL_MERGED(ENT(pev), GetModel(), MergedModelBody());
+	}
 }
 
 
@@ -101,6 +106,10 @@ void CItem::ItemTouch(CBaseEntity* pOther)
 	if (!pOther->IsPlayer())
 	{
 		return;
+	}
+
+	if (pev->effects & EF_NODRAW) {
+		return; // waiting to respawn
 	}
 
 	CBasePlayer* pPlayer = (CBasePlayer*)pOther;
@@ -138,16 +147,8 @@ void CItem::ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 {
 	if (pCaller && pCaller->IsPlayer()) {
 
-		if (!(pev->spawnflags & SF_ITEM_USE_WITHOUT_LOS)) {
-			TraceResult tr;
-			TRACE_LINE(pCaller->pev->origin + pCaller->pev->view_ofs, pev->origin, dont_ignore_monsters, pCaller->edict(), &tr);
-			
-			bool hitItemSurface = tr.pHit && tr.pHit != edict();
-			bool enteredItemBox = boxesIntersect(pev->absmin, pev->absmax, tr.vecEndPos, tr.vecEndPos);
-			if (!hitItemSurface && !enteredItemBox) {
-				ALERT(at_console, "Can't use item not in LOS\n");
-				return;
-			}
+		if (!(pev->spawnflags & SF_ITEM_USE_WITHOUT_LOS) && !CanReach(pCaller)) {
+			return;
 		}
 
 		ItemTouch(pCaller);
@@ -180,5 +181,18 @@ void CItem::Materialize(void)
 }
 
 const char* CItem::GetModel() {
-	return pev->model ? STRING(pev->model) : m_defaultModel;
+	if (pev->model) {
+		return STRING(pev->model);
+	}
+
+	return mp_mergemodels.value && MergedModelBody() != -1 ? MERGED_ITEMS_MODEL : m_defaultModel;
+}
+
+int	CItem::ObjectCaps(void) {
+	if (pev->effects & EF_NODRAW) {
+		return CBaseEntity::ObjectCaps();
+	}
+	else {
+		return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
+	}
 }

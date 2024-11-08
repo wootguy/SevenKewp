@@ -8,10 +8,12 @@
 
 class CItemLongJump : public CItem
 {
+	virtual int MergedModelBody() { return MERGE_MDL_W_LONGJUMP; }
+
 	void Spawn(void)
 	{
 		Precache();
-		SET_MODEL(ENT(pev), GetModel());
+		SetItemModel();
 		CItem::Spawn();
 	}
 	void Precache(void)
@@ -43,4 +45,4 @@ class CItemLongJump : public CItem
 	}
 };
 
-LINK_ENTITY_TO_CLASS(item_longjump, CItemLongJump);
+LINK_ENTITY_TO_CLASS(item_longjump, CItemLongJump)

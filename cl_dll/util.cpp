@@ -30,19 +30,28 @@
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
-vec3_t vec3_origin( 0, 0, 0 );
+#ifdef _WIN32
+vec3_t vec3_origin( 0, 0, 0 ); // linux complains this is doubly defined, yet windows requires it
+#endif
 
 HSPRITE LoadSprite(const char *pszName)
 {
-	int i;
+	int iRes;
 	char sz[256]; 
 
-	if (ScreenWidth < 640)
-		i = 320;
+#if !defined( _TFC )
+	if (ScreenWidth > 2560 && ScreenHeight > 1600)
+		iRes = 2560;
+	else if (ScreenWidth >= 1280 && ScreenHeight > 720)
+		iRes = 1280;
+	else 
+#endif
+	if (ScreenWidth >= 640)
+		iRes = 640;
 	else
-		i = 640;
+		iRes = 320;
 
-	sprintf(sz, pszName, i);
+	sprintf(sz, pszName, iRes);
 
 	return SPR_Load(sz);
 }

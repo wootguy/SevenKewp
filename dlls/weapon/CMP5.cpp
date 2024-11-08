@@ -38,17 +38,17 @@ enum mp5_e
 };
 
 
-LINK_ENTITY_TO_CLASS( weapon_mp5, CMP5 );
-LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 );
-LINK_ENTITY_TO_CLASS( weapon_9mmar, CMP5 );
+LINK_ENTITY_TO_CLASS( weapon_mp5, CMP5 )
+LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 )
+LINK_ENTITY_TO_CLASS( weapon_9mmar, CMP5 )
 
 // TODO: implement these weapons instead of remapping them
-LINK_ENTITY_TO_CLASS(weapon_uzi, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_uziakimbo, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_m16, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_m249, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_saw, CMP5);
-LINK_ENTITY_TO_CLASS(weapon_minigun, CMP5);
+LINK_ENTITY_TO_CLASS(weapon_uzi, CMP5)
+LINK_ENTITY_TO_CLASS(weapon_uziakimbo, CMP5)
+LINK_ENTITY_TO_CLASS(weapon_m16, CMP5)
+LINK_ENTITY_TO_CLASS(weapon_m249, CMP5)
+LINK_ENTITY_TO_CLASS(weapon_saw, CMP5)
+LINK_ENTITY_TO_CLASS(weapon_minigun, CMP5)
 
 //=========================================================
 //=========================================================
@@ -61,7 +61,7 @@ void CMP5::Spawn( )
 {
 	pev->classname = MAKE_STRING("weapon_9mmAR"); // hack to allow for old names
 	Precache( );
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 	m_iId = WEAPON_MP5;
 
 	m_iDefaultAmmo = MP5_DEFAULT_GIVE;
@@ -80,8 +80,6 @@ void CMP5::Precache( void )
 	m_iShell = PRECACHE_MODEL ("models/shell.mdl");// brass shellTE_MODEL
 
 	PRECACHE_MODEL("models/grenade.mdl");	// grenade
-
-	PRECACHE_MODEL("models/w_9mmARclip.mdl");
 	PRECACHE_SOUND("items/9mmclip1.wav");              
 
 	PRECACHE_SOUND("items/clipinsert1.wav");
@@ -112,9 +110,9 @@ int CMP5::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "9mm";
-	p->iMaxAmmo1 = _9MM_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_9mm;
 	p->pszAmmo2 = "ARgrenades";
-	p->iMaxAmmo2 = M203_GRENADE_MAX_CARRY;
+	p->iMaxAmmo2 = gSkillData.sk_ammo_max_argrenades;
 	p->iMaxClip = MP5_MAX_CLIP;
 	p->iSlot = 2;
 	p->iPosition = 0;
@@ -170,9 +168,9 @@ void CMP5::PrimaryAttack()
 	lagcomp_begin(m_pPlayer);
 
 #ifdef CLIENT_DLL
-	if ( !bIsMultiplayer() )
+	if ( bIsMultiplayer() )
 #else
-	if ( !g_pGameRules->IsMultiplayer() )
+	if ( g_pGameRules->IsMultiplayer() )
 #endif
 	{
 		// optimized multiplayer. Widened to make it easier to hit a moving player
@@ -287,7 +285,7 @@ void CMP5::Reload( void )
 			messageTargets &= ~PLRBIT(m_pPlayer->edict());
 		}
 		StartSound(m_pPlayer->edict(), CHAN_ITEM, "weapons/9mmar_reload.wav", 0.8f,
-			ATTN_NORM, 0, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
+			ATTN_NORM, SND_FL_PREDICTED, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets, false);
 #endif
 	}
 }

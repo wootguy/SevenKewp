@@ -17,7 +17,7 @@ class CEnvShooter : public CGibShooter
 	CGib* CreateGib(void);
 };
 
-LINK_ENTITY_TO_CLASS(env_shooter, CEnvShooter);
+LINK_ENTITY_TO_CLASS(env_shooter, CEnvShooter)
 
 void CEnvShooter::KeyValue(KeyValueData* pkvd)
 {

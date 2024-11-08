@@ -81,8 +81,8 @@ public:
 	const char* GetMonsterType() { return "monster_robogrunt"; };
 };
 
-LINK_ENTITY_TO_CLASS(monster_robogrunt, CRoboGrunt);
-LINK_ENTITY_TO_CLASS(monster_robogrunt_repel, CRoboGruntRepel);
+LINK_ENTITY_TO_CLASS(monster_robogrunt, CRoboGrunt)
+LINK_ENTITY_TO_CLASS(monster_robogrunt_repel, CRoboGruntRepel)
 
 const char* CRoboGrunt::pDeathSounds[] =
 {
@@ -348,7 +348,7 @@ void CRoboGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 		}
 
 		if (ptr->iHitgroup == HITGROUP_HEAD) {
-			StartSound(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(pHeadshotSounds), 1.0f, ATTN_NORM, 0, RANDOM_LONG(90, 110), pev->origin, 0xffffffff);
+			StartSound(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(pHeadshotSounds), 1.0f, ATTN_NORM, 0, RANDOM_LONG(90, 110), pev->origin, 0xffffffff, false);
 
 			Vector sprPos = ptr->vecEndPos - Vector(0, 0, 10);
 

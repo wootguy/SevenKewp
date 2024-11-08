@@ -20,14 +20,14 @@ public:
 
 	EHANDLE m_hTank;
 };
-LINK_ENTITY_TO_CLASS(func_tankcontrols, CFuncTankControls);
+LINK_ENTITY_TO_CLASS(func_tankcontrols, CFuncTankControls)
 
 TYPEDESCRIPTION	CFuncTankControls::m_SaveData[] =
 {
 	DEFINE_FIELD(CFuncTankControls, m_hTank, FIELD_EHANDLE),
 };
 
-IMPLEMENT_SAVERESTORE(CFuncTankControls, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CFuncTankControls, CBaseEntity)
 
 int	CFuncTankControls::ObjectCaps(void)
 {

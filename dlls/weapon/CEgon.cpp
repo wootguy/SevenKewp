@@ -62,10 +62,10 @@ TYPEDESCRIPTION	CEgon::m_SaveData[] =
 		DEFINE_FIELD(CEgon, m_shakeTime, FIELD_TIME),
 		DEFINE_FIELD(CEgon, m_flAmmoUseTime, FIELD_TIME),
 };
-IMPLEMENT_SAVERESTORE(CEgon, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE(CEgon, CBasePlayerWeapon)
 #endif
 
-LINK_ENTITY_TO_CLASS( weapon_egon, CEgon );
+LINK_ENTITY_TO_CLASS( weapon_egon, CEgon )
 
 void CEgon::Spawn( )
 {
@@ -73,7 +73,7 @@ void CEgon::Spawn( )
 
 	Precache( );
 	m_iId = WEAPON_EGON;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 
 	m_iDefaultAmmo = EGON_DEFAULT_GIVE;
 
@@ -133,7 +133,7 @@ int CEgon::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "uranium";
-	p->iMaxAmmo1 = URANIUM_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_uranium;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
@@ -481,7 +481,9 @@ void CEgon::CreateEffect( void )
 	m_pSprite->pev->scale = 1.0;
 	m_pSprite->SetTransparency( kRenderGlow, 255, 255, 255, 255, kRenderFxNoDissipation );
 	m_pSprite->pev->spawnflags |= SF_SPRITE_TEMPORARY;
-	m_pSprite->pev->flags |= FL_SKIPLOCALHOST;
+	// Josh: This sprite is not predicted o the client, so was missing
+	// for many years after it got broken in an update.
+	//m_pSprite->pev->flags |= FL_SKIPLOCALHOST;
 	m_pSprite->pev->owner = m_pPlayer->edict();
 
 	if ( m_fireMode == FIRE_WIDE )

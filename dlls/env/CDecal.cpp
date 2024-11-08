@@ -2,6 +2,7 @@
 #include "util.h"
 #include "cbase.h"
 #include "decals.h"
+#include "CBasePlayer.h"
 
 //
 // This must match the list in util.h
@@ -77,7 +78,7 @@ public:
 	void	EXPORT TriggerDecal(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 };
 
-LINK_ENTITY_TO_CLASS(infodecal, CDecal);
+LINK_ENTITY_TO_CLASS(infodecal, CDecal)
 
 // UNDONE:  These won't get sent to joining players in multi-player
 void CDecal::Spawn(void)
@@ -107,23 +108,10 @@ void CDecal::TriggerDecal(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	// this is set up as a USE function for infodecals that have targetnames, so that the
 	// decal doesn't get applied until it is fired. (usually by a scripted sequence)
 	TraceResult trace;
-	int			entityIndex;
 
 	UTIL_TraceLine(pev->origin - Vector(5, 5, 5), pev->origin + Vector(5, 5, 5), ignore_monsters, ENT(pev), &trace);
 
-	if (UTIL_isSafeEntIndex(ENTINDEX(trace.pHit), "apply decal")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_BSPDECAL);
-		WRITE_COORD(pev->origin.x);
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z);
-		WRITE_SHORT((int)pev->skin);
-		entityIndex = (short)ENTINDEX(trace.pHit);
-		WRITE_SHORT(entityIndex);
-		if (entityIndex)
-			WRITE_SHORT((int)VARS(trace.pHit)->modelindex);
-		MESSAGE_END();
-	}
+	UTIL_BSPDecal(ENTINDEX(trace.pHit), pev->origin, pev->skin);
 
 	SetThink(&CDecal::SUB_Remove);
 	pev->nextthink = gpGlobals->time + 0.1;
@@ -143,8 +131,13 @@ void CDecal::StaticDecal(void)
 	else
 		modelIndex = 0;
 
-	if (UTIL_isSafeEntIndex(entityIndex, "apply decal")) {
+	// TODO: selectively send decal messages when clients join instead
+	// of calling the engine function which does that automatically
+	if (entityIndex < MAX_LEGACY_CLIENT_ENTS) {
 		g_engfuncs.pfnStaticDecal(pev->origin, (int)pev->skin, entityIndex, modelIndex);
+	}
+	else {
+		ALERT(at_error, "Failed to apply static decal. Entity index too high.");
 	}
 
 	SUB_Remove();

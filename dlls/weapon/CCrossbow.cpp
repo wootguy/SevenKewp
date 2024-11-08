@@ -42,12 +42,12 @@ class CCrossbowBolt : public CBaseEntity
 	void EXPORT BoltTouch( CBaseEntity *pOther );
 	void EXPORT ExplodeThink( void );
 
-	int m_iTrail;
+	//int m_iTrail;
 
 public:
 	static CCrossbowBolt *BoltCreate( void );
 };
-LINK_ENTITY_TO_CLASS( crossbow_bolt, CCrossbowBolt );
+LINK_ENTITY_TO_CLASS( crossbow_bolt, CCrossbowBolt )
 
 CCrossbowBolt *CCrossbowBolt::BoltCreate( void )
 {
@@ -80,13 +80,13 @@ void CCrossbowBolt::Spawn( )
 
 void CCrossbowBolt::Precache( )
 {
-	PRECACHE_MODEL ("models/crossbow_bolt.mdl");
+	PRECACHE_MODEL ("models/crossbow_bolt.mdl"); // used client side so can't be replaced without removing event
 	PRECACHE_SOUND("weapons/xbow_hitbod1.wav");
 	PRECACHE_SOUND("weapons/xbow_hitbod2.wav");
 	PRECACHE_SOUND("weapons/xbow_fly1.wav");
 	PRECACHE_SOUND("weapons/xbow_hit1.wav");
 	PRECACHE_SOUND("fvox/beep.wav");
-	m_iTrail = PRECACHE_MODEL("sprites/streak.spr");
+	//m_iTrail = PRECACHE_MODEL("sprites/streak.spr");
 }
 
 
@@ -239,8 +239,8 @@ enum crossbow_e {
 	CROSSBOW_HOLSTER2,	// empty
 };
 
-LINK_ENTITY_TO_CLASS( weapon_crossbow, CCrossbow );
-LINK_ENTITY_TO_CLASS(weapon_sniperrifle, CCrossbow); // TODO: implement
+LINK_ENTITY_TO_CLASS( weapon_crossbow, CCrossbow )
+LINK_ENTITY_TO_CLASS(weapon_sniperrifle, CCrossbow) // TODO: implement
 
 void CCrossbow::Spawn( )
 {
@@ -248,7 +248,7 @@ void CCrossbow::Spawn( )
 
 	Precache( );
 	m_iId = WEAPON_CROSSBOW;
-	SET_MODEL(ENT(pev), GetModelW());
+	SetWeaponModelW();
 
 	m_iDefaultAmmo = CROSSBOW_DEFAULT_GIVE;
 
@@ -280,7 +280,7 @@ int CCrossbow::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "bolts";
-	p->iMaxAmmo1 = BOLT_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_bolts;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = CROSSBOW_MAX_CLIP;

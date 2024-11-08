@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2001, Valve LLC, All rights reserved. ============
+//========= Copyright ï¿½ 1996-2001, Valve LLC, All rights reserved. ============
 //
 // Purpose: 
 //
@@ -210,7 +210,8 @@ void UTIL_StringToVector( float * pVector, const char *pString )
 	char *pstr, *pfront, tempString[128];
 	int	j;
 
-	strcpy( tempString, pString );
+	strncpy( tempString, pString, sizeof( tempString ) );
+	tempString[ sizeof( tempString ) - 1 ] = '\0';
 	pstr = pfront = tempString;
 	
 	for ( j = 0; j < 3; j++ )		
@@ -655,10 +656,10 @@ int CHudSpectator::Draw(float flTime)
 		// check if name would be in inset window
 		if ( m_pip->value != INSET_OFF )
 		{
-			if (	m_vPlayerPos[i][0] > XRES( m_OverviewData.insetWindowX ) &&
-					m_vPlayerPos[i][1] > YRES( m_OverviewData.insetWindowY ) &&
-					m_vPlayerPos[i][0] < XRES( m_OverviewData.insetWindowX + m_OverviewData.insetWindowWidth ) &&
-					m_vPlayerPos[i][1] < YRES( m_OverviewData.insetWindowY + m_OverviewData.insetWindowHeight) 
+			if (	m_vPlayerPos[i][0] > XRES_HD( m_OverviewData.insetWindowX ) &&
+					m_vPlayerPos[i][1] > YRES_HD( m_OverviewData.insetWindowY ) &&
+					m_vPlayerPos[i][0] < XRES_HD( m_OverviewData.insetWindowX + m_OverviewData.insetWindowWidth ) &&
+					m_vPlayerPos[i][1] < YRES_HD( m_OverviewData.insetWindowY + m_OverviewData.insetWindowHeight) 
 				) continue;
 		}
 
@@ -812,7 +813,7 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 							break;
 
 		case DRC_CMD_STUFFTEXT:
-							EngineClientCmd( READ_STRING() );
+							EngineFilteredClientCmd( READ_STRING() );
 							break;
 
 		case DRC_CMD_CAMPATH:
@@ -1246,7 +1247,12 @@ bool CHudSpectator::IsActivePlayer(cl_entity_t * ent)
 
 bool CHudSpectator::ParseOverviewFile( )
 {
+#ifdef VANILLA_HL
 	char filename[255];
+#else
+	char filename[280];
+#endif
+	
 	char levelname[255];
 	char token[1024];
 	float height;
@@ -1892,7 +1898,7 @@ void CHudSpectator::CheckSettings()
 
 	// if we are a real player on server don't allow inset window
 	// in First Person mode since this is our resticted forcecamera mode 2
-	// team number 3 = SPECTATOR see CBasePlayer.h
+	// team number 3 = SPECTATOR see player.h
 
 	if ( ( (g_iTeamNumber == 1) || (g_iTeamNumber == 2)) && (g_iUser1 == OBS_IN_EYE) )
 		m_pip->value = INSET_OFF;

@@ -13,7 +13,7 @@ TYPEDESCRIPTION	CBasePlatTrain::m_SaveData[] =
 	DEFINE_FIELD(CBasePlatTrain, m_volume, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CBasePlatTrain, CBaseToggle);
+IMPLEMENT_SAVERESTORE(CBasePlatTrain, CBaseToggle)
 
 void CBasePlatTrain::KeyValue(KeyValueData* pkvd)
 {

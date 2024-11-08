@@ -21,6 +21,7 @@ public:
 	void ConstantThink();
 	void HurtAllTargets();
 	void HurtTarget(CBaseEntity* target);
+	virtual const char* DisplayName() { return "Injury"; }
 
 	string_t m_targetClass;
 	float m_armorDmg;
@@ -29,7 +30,7 @@ public:
 	bool m_isActive;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_hurt_remote, CTriggerHurtRemote);
+LINK_ENTITY_TO_CLASS(trigger_hurt_remote, CTriggerHurtRemote)
 
 void CTriggerHurtRemote::KeyValue(KeyValueData* pkvd)
 {
@@ -78,10 +79,18 @@ void CTriggerHurtRemote::HurtTarget(CBaseEntity* loser) {
 	}
 	else {
 		if (pev->spawnflags & SF_RHURT_DO_ARMOR) {
+			float maxArmor = mp_startarmor.value > 100 ? mp_startarmor.value : 100;
 			loser->pev->armorvalue = V_max(loser->pev->armorvalue - m_armorDmg, 0);
+			loser->pev->armorvalue = V_min(maxArmor, loser->pev->armorvalue);
 		}
 
-		loser->TakeDamage(pev, pev, pev->dmg, m_damageType);
+		if (pev->dmg > 0) {
+			loser->TakeDamage(pev, pev, pev->dmg, m_damageType);
+		}
+		else {
+			loser->TakeHealth(-pev->dmg, m_damageType);
+		}
+		
 	}
 }
 

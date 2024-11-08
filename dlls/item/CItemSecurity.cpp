@@ -8,10 +8,12 @@
 
 class CItemSecurity : public CItem
 {
+	virtual int MergedModelBody() { return MERGE_MDL_W_SECURITY; }
+
 	void Spawn(void)
 	{
 		Precache();
-		SET_MODEL(ENT(pev), GetModel());
+		SetItemModel();
 		CItem::Spawn();
 	}
 	void Precache(void)
@@ -27,4 +29,4 @@ class CItemSecurity : public CItem
 	BOOL ShouldRespawn() { return FALSE; }
 };
 
-LINK_ENTITY_TO_CLASS(item_security, CItemSecurity);
+LINK_ENTITY_TO_CLASS(item_security, CItemSecurity)

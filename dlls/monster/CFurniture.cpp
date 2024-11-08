@@ -19,7 +19,7 @@ public:
 };
 
 
-LINK_ENTITY_TO_CLASS(monster_furniture, CFurniture);
+LINK_ENTITY_TO_CLASS(monster_furniture, CFurniture)
 
 
 //=========================================================

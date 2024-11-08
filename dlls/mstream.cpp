@@ -105,6 +105,22 @@ float mstream::readBitCoord() {
 	return 0;
 }
 
+bool mstream::endBitReading() {
+	if (currentBit) {
+		pos++;
+		currentBit = 0;
+
+		if (pos >= end) {
+			eomFlag = true;
+			pos = end;
+		}
+		
+		return true;
+	}
+
+	return false;
+}
+
 uint64_t mstream::write( void * src, uint64_t bytes )
 {
 	if (eomFlag)
@@ -135,7 +151,12 @@ bool mstream::writeBit(bool value) {
 		currentBit = 0;
 	}
 
-	*((uint8_t*)pos) |= (value ? 1 : 0) << currentBit;
+	if (value) {
+		*((uint8_t*)pos) |= 1 << currentBit;
+	}
+	else {
+		*((uint8_t*)pos) &= ~(1 << currentBit);
+	}
 
 	currentBit++;
 	return 1;
@@ -153,6 +174,22 @@ uint8_t mstream::writeBits(uint32_t value, uint8_t bitCount) {
 	}
 
 	return bitCount;
+}
+
+bool mstream::endBitWriting() {
+	if (currentBit == 0 || currentBit == 8) {
+		return false;
+	}
+
+	while (currentBit != 8 && writeBit(0));
+
+	currentBit = 0;
+	pos++;
+
+	if (pos + 1 >= end) {
+		eomFlag = true;
+		return true;
+	}
 }
 
 bool mstream::writeBitCoord(const float f) {
@@ -209,6 +246,20 @@ void mstream::seek( uint64_t to )
 	}
 }
 
+void mstream::seekBits(uint64_t to) {
+	pos = start + (to >> 3);
+	currentBit = to & 0x7;
+	eomFlag = false;
+	if (pos < start) {
+		pos = start;
+		eomFlag = true;
+	}
+	if (pos >= end) {
+		pos = end;
+		eomFlag = true;
+	}
+}
+
 void mstream::seek( uint64_t to, int whence )
 {
 	switch(whence)
@@ -249,6 +300,10 @@ uint64_t mstream::tell()
 	return pos - start;
 }
 
+uint64_t mstream::tellBits() {
+	return (pos - start) * 8 + currentBit;
+}
+
 char * mstream::getBuffer()
 {
 	return (char*)start;
@@ -265,7 +320,9 @@ bool mstream::eom()
 
 void mstream::freeBuf()
 {
-	delete [] (char*)start;
+	if (start)
+		delete [] (char*)start;
+	start = 0;
 }
 
 mstream::~mstream( void )

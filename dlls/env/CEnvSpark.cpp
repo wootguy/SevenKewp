@@ -29,10 +29,10 @@ TYPEDESCRIPTION CEnvSpark::m_SaveData[] =
 	DEFINE_FIELD(CEnvSpark, m_flDelay, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CEnvSpark, CBaseEntity);
+IMPLEMENT_SAVERESTORE(CEnvSpark, CBaseEntity)
 
-LINK_ENTITY_TO_CLASS(env_spark, CEnvSpark);
-LINK_ENTITY_TO_CLASS(env_debris, CEnvSpark);
+LINK_ENTITY_TO_CLASS(env_spark, CEnvSpark)
+LINK_ENTITY_TO_CLASS(env_debris, CEnvSpark)
 
 void CEnvSpark::Spawn(void)
 {

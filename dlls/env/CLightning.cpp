@@ -54,8 +54,8 @@ public:
 	float	m_radius;
 };
 
-LINK_ENTITY_TO_CLASS(env_lightning, CLightning);
-LINK_ENTITY_TO_CLASS(env_beam, CLightning);
+LINK_ENTITY_TO_CLASS(env_lightning, CLightning)
+LINK_ENTITY_TO_CLASS(env_beam, CLightning)
 
 // UNDONE: Jay -- This is only a test
 #if _DEBUG
@@ -63,7 +63,7 @@ class CTripBeam : public CLightning
 {
 	void Spawn(void);
 };
-LINK_ENTITY_TO_CLASS(trip_beam, CTripBeam);
+LINK_ENTITY_TO_CLASS(trip_beam, CTripBeam)
 
 void CTripBeam::Spawn(void)
 {
@@ -93,7 +93,7 @@ TYPEDESCRIPTION	CLightning::m_SaveData[] =
 	DEFINE_FIELD(CLightning, m_radius, FIELD_FLOAT),
 };
 
-IMPLEMENT_SAVERESTORE(CLightning, CBeam);
+IMPLEMENT_SAVERESTORE(CLightning, CBeam)
 
 
 void CLightning::Spawn(void)
@@ -326,7 +326,8 @@ void CLightning::StrikeThink(void)
 			}
 		}
 
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		float life = m_life * 10.0f;
+
 		if (IsPointEntity(pStart) || IsPointEntity(pEnd))
 		{
 			if (!IsPointEntity(pEnd))	// One point entity must be in pEnd
@@ -338,57 +339,26 @@ void CLightning::StrikeThink(void)
 			}
 			if (!IsPointEntity(pStart))	// One sided
 			{
-				if (!UTIL_isSafeEntIndex(pStart->entindex(), "create lightning")) {
-					return;
-				}
-				WRITE_BYTE(TE_BEAMENTPOINT);
-				WRITE_SHORT(pStart->entindex());
-				WRITE_COORD(pEnd->pev->origin.x);
-				WRITE_COORD(pEnd->pev->origin.y);
-				WRITE_COORD(pEnd->pev->origin.z);
+				UTIL_BeamEntPoint(pStart->entindex(), 0, pEnd->pev->origin, m_spriteTexture,
+					m_frameStart, pev->framerate, life, m_boltWidth, m_noiseAmplitude,
+					RGBA(pev->rendercolor, pev->renderamt), m_speed);
 			}
 			else
 			{
-				WRITE_BYTE(TE_BEAMPOINTS);
-				WRITE_COORD(pStart->pev->origin.x);
-				WRITE_COORD(pStart->pev->origin.y);
-				WRITE_COORD(pStart->pev->origin.z);
-				WRITE_COORD(pEnd->pev->origin.x);
-				WRITE_COORD(pEnd->pev->origin.y);
-				WRITE_COORD(pEnd->pev->origin.z);
+				UTIL_BeamPoints(pStart->pev->origin, pEnd->pev->origin, m_spriteTexture,
+					m_frameStart, pev->framerate, life, m_boltWidth, m_noiseAmplitude,
+					RGBA(pev->rendercolor, pev->renderamt), m_speed);
 			}
-
-
 		}
 		else
 		{
-			if (!UTIL_isSafeEntIndex(pStart->entindex(), "create lightning")) {
-				return;
-			}
-			if (!UTIL_isSafeEntIndex(pEnd->entindex(), "create lightning")) {
-				return;
-			}
+			bool ringMode = pev->spawnflags & SF_BEAM_RING;
 
-			if (pev->spawnflags & SF_BEAM_RING)
-				WRITE_BYTE(TE_BEAMRING);
-			else
-				WRITE_BYTE(TE_BEAMENTS);
-			WRITE_SHORT(pStart->entindex());
-			WRITE_SHORT(pEnd->entindex());
+			UTIL_BeamEnts(pStart->entindex(), 0, pEnd->entindex(), 0, ringMode, m_spriteTexture,
+				m_frameStart, pev->framerate, life, m_boltWidth, m_noiseAmplitude,
+				RGBA(pev->rendercolor, pev->renderamt), m_speed);
 		}
 
-		WRITE_SHORT(m_spriteTexture);
-		WRITE_BYTE(m_frameStart); // framestart
-		WRITE_BYTE((int)pev->framerate); // framerate
-		WRITE_BYTE((int)(m_life * 10.0)); // life
-		WRITE_BYTE(m_boltWidth);  // width
-		WRITE_BYTE(m_noiseAmplitude);   // noise
-		WRITE_BYTE((int)pev->rendercolor.x);   // r, g, b
-		WRITE_BYTE((int)pev->rendercolor.y);   // r, g, b
-		WRITE_BYTE((int)pev->rendercolor.z);   // r, g, b
-		WRITE_BYTE(pev->renderamt);	// brightness
-		WRITE_BYTE(m_speed);		// speed
-		MESSAGE_END();
 		DoSparks(pStart->pev->origin, pEnd->pev->origin);
 		if (pev->dmg > 0)
 		{

@@ -5,17 +5,17 @@ class CGaussAmmo : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache( );
-		SET_MODEL(ENT(pev), "models/w_gaussammo.mdl");
+		SET_MODEL_MERGED(ENT(pev), "models/w_gaussammo.mdl", MERGE_MDL_W_GAUSSAMMO);
 		CBasePlayerAmmo::Spawn( );
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL ("models/w_gaussammo.mdl");
+		PRECACHE_REPLACEMENT_MODEL ("models/w_gaussammo.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
-		if (pOther->GiveAmmo( AMMO_URANIUMBOX_GIVE, "uranium", URANIUM_MAX_CARRY ) != -1)
+		if (pOther->GiveAmmo( AMMO_URANIUMBOX_GIVE, "uranium", gSkillData.sk_ammo_max_uranium ) != -1)
 		{
 			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
 			return TRUE;
@@ -24,5 +24,5 @@ class CGaussAmmo : public CBasePlayerAmmo
 	}
 };
 
-LINK_ENTITY_TO_CLASS( ammo_gaussclip, CGaussAmmo);
-LINK_ENTITY_TO_CLASS( ammo_egonclip, CGaussAmmo);
+LINK_ENTITY_TO_CLASS( ammo_gaussclip, CGaussAmmo)
+LINK_ENTITY_TO_CLASS( ammo_egonclip, CGaussAmmo)

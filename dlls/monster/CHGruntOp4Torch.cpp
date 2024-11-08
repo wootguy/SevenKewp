@@ -103,8 +103,8 @@ public:
 	const char* GetMonsterType() { return "monster_human_torch_ally"; };
 };
 
-LINK_ENTITY_TO_CLASS(monster_human_torch_ally, COFTorchAlly );
-LINK_ENTITY_TO_CLASS(monster_torch_ally_repel, COFTorchAllyRepel);
+LINK_ENTITY_TO_CLASS(monster_human_torch_ally, COFTorchAlly )
+LINK_ENTITY_TO_CLASS(monster_torch_ally_repel, COFTorchAllyRepel)
 
 TYPEDESCRIPTION	COFTorchAlly::m_SaveData[] = 
 {
@@ -131,7 +131,7 @@ TYPEDESCRIPTION	COFTorchAlly::m_SaveData[] =
 	DEFINE_FIELD( COFTorchAlly, m_flLastShot, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( COFTorchAlly, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( COFTorchAlly, CTalkSquadMonster )
 
 void COFTorchAlly :: GibMonster ( void )
 {
@@ -166,10 +166,14 @@ void COFTorchAlly :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector
 		//Make sure it kills this grunt
 		bitsDamageType = DMG_ALWAYSGIB | DMG_BLAST;
 		flDamage = pev->health;
+
+		int oldTake = pev->takedamage;
+		pev->takedamage = DAMAGE_NO; // die by the bullet, not the explosion (prevents double kill message)
 		ExplosionCreate( ptr->vecEndPos, pev->angles, edict(), 100, true );
+		pev->takedamage = oldTake;
 	}
 
-	CBaseGruntOp4::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+	CBaseGruntOp4::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 }
 
 void COFTorchAlly :: HandleAnimEvent( MonsterEvent_t *pEvent )

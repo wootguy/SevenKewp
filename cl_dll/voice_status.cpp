@@ -202,7 +202,7 @@ int CVoiceStatus::Init(
 	g_pInternalVoiceStatus = this;
 
 	m_BlinkTimer = 0;
-	m_VoiceHeadModel = 0;
+	m_VoiceHeadModel = (int)NULL;
 	memset(m_Labels, 0, sizeof(m_Labels));
 	
 	for(int i=0; i < MAX_VOICE_SPEAKERS; i++)
@@ -522,7 +522,12 @@ void CVoiceStatus::UpdateServerState(bool bForce)
 
 		if(gEngfuncs.pfnGetCvarFloat("voice_clientdebug"))
 		{
+#ifdef VANILLA_HL
 			char msg[256];
+#else
+			char msg[300];
+#endif
+			
 			sprintf(msg, "CVoiceStatus::UpdateServerState: Sending '%s'\n", str);
 			gEngfuncs.pfnConsolePrint(msg);
 		}
@@ -554,7 +559,7 @@ void CVoiceStatus::UpdateServerState(bool bForce)
 
 		// Ok, the server needs to be updated.
 		char numStr[512];
-		sprintf(numStr, " %lx", banMask);
+		sprintf(numStr, " %x", (unsigned int)banMask);
 		strcat(str, numStr);
 	}
 
@@ -562,7 +567,11 @@ void CVoiceStatus::UpdateServerState(bool bForce)
 	{
 		if(gEngfuncs.pfnGetCvarFloat("voice_clientdebug"))
 		{
+#ifdef VANILLA_HL
 			char msg[256];
+#else
+			char msg[2100];
+#endif
 			sprintf(msg, "CVoiceStatus::UpdateServerState: Sending '%s'\n", str);
 			gEngfuncs.pfnConsolePrint(msg);
 		}
@@ -648,10 +657,10 @@ void CVoiceStatus::HandleVoiceMaskMsg(int iSize, void *pbuf)
 			char str[256];
 			gEngfuncs.pfnConsolePrint("CVoiceStatus::HandleVoiceMaskMsg\n");
 			
-			sprintf(str, "    - m_AudiblePlayers[%lu] = %u\n", dw, m_AudiblePlayers.GetDWord(dw));
+			sprintf(str, "    - m_AudiblePlayers[%d] = %lu\n", (int)dw, (long unsigned int)m_AudiblePlayers.GetDWord(dw));
 			gEngfuncs.pfnConsolePrint(str);
 			
-			sprintf(str, "    - m_ServerBannedPlayers[%lu] = %u\n", dw, m_ServerBannedPlayers.GetDWord(dw));
+			sprintf(str, "    - m_ServerBannedPlayers[%d] = %lu\n", (int)dw, (long unsigned int)m_ServerBannedPlayers.GetDWord(dw));
 			gEngfuncs.pfnConsolePrint(str);
 		}
 	}

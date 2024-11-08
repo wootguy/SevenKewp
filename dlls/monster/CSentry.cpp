@@ -25,7 +25,7 @@ public:
 
 };
 
-LINK_ENTITY_TO_CLASS(monster_sentry, CSentry);
+LINK_ENTITY_TO_CLASS(monster_sentry, CSentry)
 
 void CSentry::Precache()
 {
@@ -71,7 +71,8 @@ void CSentry::DropInit() {
 
 void CSentry::Shoot(Vector& vecSrc, Vector& vecDirToEnemy)
 {
-	FireBullets(1, vecSrc, vecDirToEnemy, TURRET_SPREAD, TURRET_RANGE, BULLET_MONSTER_MP5, 1);
+	float bulletRange = V_max(m_flSightRange, TURRET_RANGE);
+	FireBullets(1, vecSrc, vecDirToEnemy, TURRET_SPREAD, bulletRange, BULLET_MONSTER_MP5, 1);
 
 	switch (RANDOM_LONG(0, 2))
 	{
@@ -101,6 +102,9 @@ int CSentry::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float f
 	pev->health -= flDamage;
 	if (pev->health <= 0)
 	{
+		CBaseMonster::Killed(pev, GIB_NEVER); // for monstermaker death notice + death trigger
+		g_pGameRules->DeathNotice(this, pevAttacker, pevInflictor);
+
 		pev->health = 0;
 		pev->takedamage = DAMAGE_NO;
 		pev->dmgtime = gpGlobals->time;
@@ -179,6 +183,8 @@ void CSentry::SentryDeath(void)
 		pev->framerate = 0;
 		SetThink(NULL);
 	}
+
+	UpdateShockEffect();
 }
 
 void CSentry::Deploy(void)

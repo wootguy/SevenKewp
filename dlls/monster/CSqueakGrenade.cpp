@@ -29,6 +29,7 @@ class CSqueakGrenade : public CGrenade
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
 	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Snark"; }
+	virtual const char* GetDeathNoticeWeapon() { return "snark"; };
 
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
@@ -49,7 +50,7 @@ class CSqueakGrenade : public CGrenade
 
 float CSqueakGrenade::m_flNextBounceSoundTime = 0;
 
-LINK_ENTITY_TO_CLASS( monster_snark, CSqueakGrenade );
+LINK_ENTITY_TO_CLASS( monster_snark, CSqueakGrenade )
 TYPEDESCRIPTION	CSqueakGrenade::m_SaveData[] = 
 {
 	DEFINE_FIELD( CSqueakGrenade, m_flDie, FIELD_TIME ),
@@ -60,7 +61,7 @@ TYPEDESCRIPTION	CSqueakGrenade::m_SaveData[] =
 	DEFINE_FIELD( CSqueakGrenade, m_hOwner, FIELD_EHANDLE ),
 };
 
-IMPLEMENT_SAVERESTORE( CSqueakGrenade, CGrenade );
+IMPLEMENT_SAVERESTORE( CSqueakGrenade, CGrenade )
 
 #define SQUEEK_DETONATE_DELAY	15.0
 
@@ -331,7 +332,7 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 	// higher pitch as squeeker gets closer to detonation time
 	flpitch = 155.0 - 60.0 * ((m_flDie - gpGlobals->time) / SQUEEK_DETONATE_DELAY);
 
-	if ( pOther->pev->takedamage && m_flNextAttack < gpGlobals->time )
+	if (pOther->pev->takedamage && m_flNextAttack < gpGlobals->time && (pOther->pev->flags & FL_WORLDBRUSH) == 0)
 	{
 		// attack!
 

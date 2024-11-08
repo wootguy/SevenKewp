@@ -29,66 +29,119 @@
 #include <vector>
 #include <string>
 #include "game.h"
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <string>
-#include "Bsp.h"
 #include "mstream.h"
 #include <float.h>
-#include "mod_api.h"
+#include "PluginHooks.h"
 #include "shared_util.h"
 #include "studio.h"
+#include "debug.h"
+#include "eng_wrappers.h"
+#include "wav.h"
+#include "ThreadSafeQueue.h"
+#include <thread>
 
-inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent );  // implementation later in this file
-
-struct WavInfo {
-	int durationMillis;
-	bool isLooped; // sound is looped with cue points
-};
+class CBasePlayer;
 
 extern EXPORT globalvars_t				*gpGlobals;
 
-// resources that were successfully precached
-extern std::map<std::string, std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
-extern std::set<std::string> g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
-extern std::set<std::string> g_precachedSounds;
-extern std::set<std::string> g_precachedGeneric;
-extern std::map<std::string, int> g_precachedEvents;
-
-// resources that attempted to precache but may have been replaced with a failure model
-extern std::set<std::string> g_tryPrecacheModels;
-extern std::set<std::string> g_tryPrecacheSounds;
-extern std::set<std::string> g_tryPrecacheGeneric;
-extern std::set<std::string> g_tryPrecacheEvents;
-
-extern std::map<std::string, WavInfo> g_wavInfos; // cached wav info, cleared on map change
-
-extern std::set<std::string> g_weaponClassnames;
+extern std::unordered_set<std::string> g_weaponClassnames;
 
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
 
+extern std::unordered_map<std::string, int> g_admins;
+
+EXPORT extern std::string g_mp3Command; // current global mp3 command
+
+extern TYPEDESCRIPTION	gEntvarsDescription[];
+extern const int ENTVARS_COUNT;
+
+struct AlertMsgCall {
+	ALERT_TYPE atype;
+	std::string msg;
+};
+
+extern std::thread::id g_main_thread_id;
+extern ThreadSafeQueue<AlertMsgCall> g_thread_prints;
+
 #define NOT_PRECACHED_MODEL "models/" MOD_MODEL_FOLDER "not_precached.mdl"
+#define MERGED_ITEMS_MODEL "models/" MOD_MODEL_FOLDER "w_items_v2.mdl"
 #define NOT_PRECACHED_SOUND "common/null.wav"
 #define MAX_PRECACHE 512
 #define MAX_PRECACHE_SOUND 511
 #define MAX_PRECACHE_MODEL 510
 #define MAX_PRECACHE_EVENT 256
 
-extern Bsp g_bsp;
+enum AdminLevel {
+	ADMIN_NO,
+	ADMIN_YES,
+	ADMIN_OWNER
+};
 
-extern std::string g_mp3Command; // current global mp3 command
+enum distant_sound_types {
+	DISTANT_9MM, // light tapping noise
+	DISTANT_357, // deeper tap
+	DISTANT_556, // deep tap / small explosion
+	DISTANT_BOOM // big explosion
+};
+
+enum merged_item_bodies {
+	MERGE_MDL_W_9MMAR,
+	MERGE_MDL_W_9MMARCLIP,
+	MERGE_MDL_W_9MMCLIP,
+	MERGE_MDL_W_9MMHANDGUN,
+	MERGE_MDL_W_357,
+	MERGE_MDL_W_357AMMOBOX,
+	MERGE_MDL_W_ARGRENADE,
+	MERGE_MDL_W_BATTERY,
+	MERGE_MDL_W_BGRAP,
+	MERGE_MDL_W_CHAINAMMO,
+	MERGE_MDL_W_CROSSBOW,
+	MERGE_MDL_W_CROSSBOW_CLIP,
+	MERGE_MDL_W_CROWBAR,
+	MERGE_MDL_W_DISPLACER,
+	MERGE_MDL_W_EGON,
+	MERGE_MDL_W_GAUSS,
+	MERGE_MDL_W_GAUSSAMMO,
+	MERGE_MDL_W_GRENADE,
+	MERGE_MDL_W_HGUN,
+	MERGE_MDL_W_LONGJUMP,
+	MERGE_MDL_W_MEDKIT,
+	MERGE_MDL_W_PIPE_WRENCH,
+	MERGE_MDL_W_RPG,
+	MERGE_MDL_W_RPGAMMO,
+	MERGE_MDL_W_SATCHEL,
+	MERGE_MDL_W_SECURITY,
+	MERGE_MDL_W_SHOTBOX,
+	MERGE_MDL_W_SHOTGUN,
+	MERGE_MDL_W_SHOTSHELL,
+	MERGE_MDL_W_SUIT,
+	MERGE_MDL_W_WEAPONBOX,
+	MERGE_MDL_GRENADE,
+	MERGE_MDL_HVR,
+	MERGE_MDL_RPGROCKET,
+	MERGE_MDL_SPORE,
+	MERGE_MDL_SHOCK_EFFECT,
+};
 
 struct RGBA {
 	uint8_t r, g, b, a;
 
 	RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r(r), g(g), b(b), a(a) {}
 	RGBA(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b), a(255) {}
+	RGBA(Vector v) : r(v.x), g(v.y), b(v.z), a(255) {}
+	RGBA(Vector v, uint8_t a) : r(v.x), g(v.y), b(v.z), a(a) {}
 };
 
 // Use this instead of ALLOC_STRING on constant strings
 #define STRING(offset)		((const char *)(gpGlobals->pStringBase + (unsigned int)(offset)))
 #define MAKE_STRING(str)	((uint64)(str) - (uint64)(STRING(0)))
+
+// same as the STRING macro but defined as a function for easy calling in the debugger
+inline const char* cstr(string_t s) { return STRING(s); }
 
 inline edict_t *FIND_ENTITY_BY_CLASSNAME(edict_t *entStart, const char *pszName) 
 {
@@ -189,13 +242,14 @@ inline entvars_t *VARS(edict_t *pent)
 }
 
 inline entvars_t* VARS(EOFFSET eoffset)			{ return VARS(ENT(eoffset)); }
-inline int	  ENTINDEX(edict_t *pEdict)			{ return (*g_engfuncs.pfnIndexOfEdict)(pEdict); }
+inline int	  ENTINDEX(const edict_t *pEdict)			{ return (*g_engfuncs.pfnIndexOfEdict)(pEdict); }
 inline edict_t* INDEXENT( int iEdictNum )		{ return (*g_engfuncs.pfnPEntityOfEntIndex)(iEdictNum); }
-inline uint32_t PLRBIT(edict_t* pEdict)			{ return 1 << (ENTINDEX(pEdict) & 31); }
+inline uint32_t PLRBIT(const edict_t* pEdict)			{ return 1 << (ENTINDEX(pEdict) & 31); }
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent ) {
-	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ENT(ent));
+	MESSAGE_BEGIN(msg_dest, msg_type, pOrigin, ENT(ent));
 }
-void WRITE_BYTES(uint8_t* bytes, int count);
+EXPORT void WRITE_BYTES(uint8_t* bytes, int count);
+EXPORT void WRITE_FLOAT(float val);
 
 // Testing the three types of "entity" for nullity
 #define eoNullEntity 0
@@ -273,7 +327,9 @@ EXPORT CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, f
 // returns a CBaseEntity pointer to a player by index.  Only returns if the player is spawned and connected
 // otherwise returns NULL
 // Index is 1 based
-extern CBaseEntity	*UTIL_PlayerByIndex( int playerIndex );
+EXPORT extern CBasePlayer	*UTIL_PlayerByIndex( int playerIndex );
+EXPORT extern CBasePlayer	*UTIL_PlayerByUserId( int userid );
+EXPORT extern CBasePlayer	*UTIL_PlayerByUniqueId(const char* id);
 
 #define UTIL_EntitiesInPVS(pent)			(*g_engfuncs.pfnEntitiesInPVS)(pent)
 EXPORT edict_t*		UTIL_ClientsInPVS(edict_t* edict, int& playerCount);
@@ -302,6 +358,10 @@ EXPORT void			UTIL_ShowMessage		( const char *pString, CBaseEntity *pPlayer );
 EXPORT void			UTIL_ShowMessageAll		( const char *pString );
 EXPORT void			UTIL_ScreenFadeAll		( const Vector &color, float fadeTime, float holdTime, int alpha, int flags );
 EXPORT void			UTIL_ScreenFade			( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags );
+
+// duplicate of the engine function with the ability to change the message mode and target entity
+EXPORT void ambientsound_msg(edict_t* entity, float* pos, const char* samp, float vol, float attenuation,
+	int fFlags, int pitch, int msgDst, edict_t* dest);
 
 // leave target NULL to play music for all players
 EXPORT void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target=NULL);
@@ -354,7 +414,7 @@ EXPORT void			UTIL_Bubbles( Vector mins, Vector maxs, int count );
 EXPORT void			UTIL_BubbleTrail( Vector from, Vector to, int count );
 
 // allows precacheing of other entities
-EXPORT void			UTIL_PrecacheOther( const char *szClassname, std::map<std::string, std::string> keys=std::map<std::string, std::string>() );
+EXPORT void			UTIL_PrecacheOther( const char *szClassname, std::unordered_map<std::string, std::string> keys=std::unordered_map<std::string, std::string>() );
 
 // prints a message to each client
 EXPORT void			UTIL_ClientPrintAll( int msg_dest, const char *msg);
@@ -372,8 +432,7 @@ EXPORT void UTIL_ClientPrint(edict_t* client, int msg_dest, const char *msg );
 
 // prints a message to the HUD say (chat)
 EXPORT void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
-EXPORT void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity );
-
+EXPORT void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity=NULL );
 
 typedef struct hudtextparms_s
 {
@@ -386,12 +445,12 @@ typedef struct hudtextparms_s
 	float		fadeoutTime;
 	float		holdTime;
 	float		fxTime;
-	int			channel;
+	int			channel; // -1 = automatic (director message mode)
 } hudtextparms_t;
 
 // prints as transparent 'title' to the HUD
-EXPORT void			UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage );
-EXPORT void			UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage );
+EXPORT void			UTIL_HudMessageAll( const hudtextparms_t &textparms, const char *pMessage, int msgMode = MSG_ALL );
+EXPORT void			UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, const char *pMessage, int msgMode = MSG_ONE);
 
 // for handy use with ClientPrint params
 EXPORT char *UTIL_dtos1( int d );
@@ -400,32 +459,19 @@ EXPORT char *UTIL_dtos3( int d );
 EXPORT char *UTIL_dtos4( int d );
 
 // Writes message to console with player info as a prefix
-EXPORT void	UTIL_LogPlayerEvent( edict_t* plr, const char *fmt, ... );
+EXPORT void	UTIL_LogPlayerEvent( const edict_t* plr, const char *fmt, ... );
 
 // Sorta like FInViewCone, but for nonmonsters. 
 EXPORT float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, const Vector &vecDir );
 
-EXPORT void UTIL_StripToken( const char *pKey, char *pDest );// for redundant keynames
+EXPORT void UTIL_StripToken( const char *pKey, char *pDest, int nLen);// for redundant keynames
 
 // Misc functions
 EXPORT void SetMovedir(entvars_t* pev);
 EXPORT Vector VecBModelOrigin( entvars_t* pevBModel );
 EXPORT int BuildChangeList( LEVELLIST *pLevelList, int maxList );
 
-//
-// How did I ever live without ASSERT?
-//
-#ifdef	DEBUG
-void DBG_AssertFunction(BOOL fExpr, const char* szExpr, const char* szFile, int szLine, const char* szMessage);
-#define ASSERT(f)		DBG_AssertFunction(f, #f, __FILE__, __LINE__, NULL)
-#define ASSERTSZ(f, sz)	DBG_AssertFunction(f, #f, __FILE__, __LINE__, sz)
-#else	// !DEBUG
-#define ASSERT(f)
-#define ASSERTSZ(f, sz)
-#endif	// !DEBUG
-
-
-extern DLL_GLOBAL const Vector g_vecZero;
+EXPORT extern const Vector g_vecZero;
 
 //
 // Constants that were used only by QC (maybe not used at all now)
@@ -448,16 +494,6 @@ extern DLL_GLOBAL int			g_Language;
 #define AMBIENT_SOUND_NOT_LOOPING		32
 
 #define SPEAKER_START_SILENT			1	// wait for trigger 'on' to start announcements
-
-#define SND_FL_VOLUME		(1<<0)		// send volume (set automatically)
-#define SND_FL_ATTENUATION	(1<<1)		// send attenuation (set automatically)
-#define SND_FL_LARGE_INDEX	(1<<2)		// send large entity index (set automatically)
-#define SND_FL_PITCH		(1<<3)		// send pitch (set automatically)
-#define SND_SPAWNING		(1<<8)		// duplicated in protocol.h we're spawing, used in some cases for ambients 
-#define SND_SENTENCE		(1<<4)
-#define SND_STOP			(1<<5)		// duplicated in protocol.h stop sound
-#define SND_CHANGE_VOL		(1<<6)		// duplicated in protocol.h change sound vol
-#define SND_CHANGE_PITCH	(1<<7)		// duplicated in protocol.h change sound pitch
 
 #define	LFO_SQUARE			1
 #define LFO_TRIANGLE		2
@@ -590,7 +626,7 @@ enum svc_commands_e
 
 // sentence groups
 #define CBSENTENCENAME_MAX 16
-#define CVOXFILESENTENCEMAX		1536		// max number of sentences in game. NOTE: this must match
+#define CVOXFILESENTENCEMAX		2048		// max number of sentences in game. NOTE: this must match
 											// CVOXFILESENTENCEMAX in engine\sound.h!!!
 
 extern char gszallsentencenames[CVOXFILESENTENCEMAX][CBSENTENCENAME_MAX];
@@ -621,10 +657,23 @@ EXPORT float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecE
 EXPORT void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
 						   int flags, int pitch);
 
+// rehlds
+#define DEFAULT_SOUND_PACKET_VOLUME 255
+#define DEFAULT_SOUND_PACKET_ATTENUATION 1.0f
+#define DEFAULT_SOUND_PACKET_PITCH 100
+#define MAX_EDICT_BITS 11
+
+// uses a static buffer, returns NULL on failure
+EXPORT mstream* BuildStartSoundMessage(edict_t* entity, int channel, const char* sample, float fvolume,
+	float attenuation, int fFlags, int pitch, const float* origin);
+
 // play the sound for players with bits contained in messageTargets
 // a player bit = 1 << (ENTINDEX(player_edict) % 31)
 EXPORT void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets);
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable);
+
+EXPORT void StartSound(int eidx, int channel, const char* sample, float volume, float attenuation,
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable);
 
 inline void EMIT_SOUND(edict_t *entity, int channel, const char *sample, float volume, float attenuation)
 {
@@ -662,8 +711,8 @@ EXPORT void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 #define RANDOM_SOUND_ARRAY( array ) (array) [ RANDOM_SOUND_ARRAY_IDX(array) ]
 
 // randomize sounds in array, so that the same sounds aren't played on every map when mp_soundvariety is low
-#define SOUND_ARRAY_SZ(array) (sizeof(array) / sizeof(const char*))
-#define SHUFFLE_SOUND_ARRAY(array) UTIL_ShuffleSoundArray(array, SOUND_ARRAY_SZ(array));
+#define ARRAY_SZ(array) (sizeof(array) / sizeof(array[0]))
+#define SHUFFLE_SOUND_ARRAY(array) UTIL_ShuffleSoundArray(array, ARRAY_SZ(array));
 EXPORT void UTIL_ShuffleSoundArray(const char** arr, size_t n);
 
 #define PLAYBACK_EVENT( flags, who, index ) PLAYBACK_EVENT_FULL( flags, who, index, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
@@ -693,62 +742,12 @@ EXPORT float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 
 EXPORT float UTIL_WeaponTimeBase( void );
 
-#ifdef CLIENT_DLL
-#define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
-#define SET_MODEL		(*g_engfuncs.pfnSetModel)
-#define PRECACHE_SOUND	(*g_engfuncs.pfnPrecacheSound)
-#define PRECACHE_EVENT	(*g_engfuncs.pfnPrecacheEvent)
-#define MODEL_INDEX		(*g_engfuncs.pfnModelIndex)
-#define GET_MODEL(model) model
-inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL) {
-	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ed);
-}
-#define MESSAGE_END		(*g_engfuncs.pfnMessageEnd)
-#define WRITE_BYTE		(*g_engfuncs.pfnWriteByte)
-#define WRITE_CHAR		(*g_engfuncs.pfnWriteChar)
-#define WRITE_SHORT		(*g_engfuncs.pfnWriteShort)
-#define WRITE_LONG		(*g_engfuncs.pfnWriteLong)
-#define WRITE_ANGLE		(*g_engfuncs.pfnWriteAngle)
-#define WRITE_COORD		(*g_engfuncs.pfnWriteCoord)
-#define WRITE_STRING	(*g_engfuncs.pfnWriteString)
-#define WRITE_ENTITY	(*g_engfuncs.pfnWriteEntity)
-#define GET_MODEL_PTR	(*g_engfuncs.pfnGetModelPtr)
-#define CREATE_NAMED_ENTITY		(*g_engfuncs.pfnCreateNamedEntity)
-#else
-// engine wrappers which handle model/sound replacement logic
-EXPORT int PRECACHE_GENERIC(const char* path);
-EXPORT int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path);
-EXPORT int PRECACHE_SOUND_NULLENT(const char* path);
-EXPORT int PRECACHE_MODEL(const char* model);
-EXPORT int PRECACHE_EVENT(int id, const char* path);
-EXPORT void SET_MODEL(edict_t* edict, const char* model);
-EXPORT const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
-EXPORT int MODEL_INDEX(const char* model);
-EXPORT void* GET_MODEL_PTR(edict_t* edict);
-EXPORT edict_t* CREATE_NAMED_ENTITY(string_t cname);
-#define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
-
-// called automatically for custom weapons during registration
-EXPORT void PRECACHE_HUD_FILES(const char* path);
-
-EXPORT void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL);
-EXPORT void MESSAGE_END();
-EXPORT void WRITE_BYTE(int iValue);
-EXPORT void WRITE_CHAR(int iValue);
-EXPORT void WRITE_SHORT(int iValue);
-EXPORT void WRITE_LONG(int iValue);
-EXPORT void WRITE_ANGLE(float fValue);
-EXPORT void WRITE_COORD(float iValue);
-EXPORT void WRITE_STRING(const char* sValue);
-EXPORT void WRITE_ENTITY(int iValue);
-#endif
-
 EXPORT void InitEdictRelocations();
 EXPORT void PrintEntindexStats();
 EXPORT CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity);
 
 // returns false if the entity index would overflow the client, and prints an error message in that case
-EXPORT bool UTIL_isSafeEntIndex(int idx, const char* action);
+EXPORT bool UTIL_isSafeEntIndex(edict_t* plr, int idx, const char* action);
 
 inline void WRITE_COORD_VECTOR(const Vector& vec)
 {
@@ -756,12 +755,6 @@ inline void WRITE_COORD_VECTOR(const Vector& vec)
 	WRITE_COORD(vec.y);
 	WRITE_COORD(vec.z);
 }
-
-// write the most recent X seconds of message history for debugging client disconnects 
-// due to malformed network messages.
-// reason = reason for writing the message history
-EXPORT void writeNetworkMessageHistory(std::string reason);
-EXPORT void clearNetworkMessageHistory();
 
 EXPORT std::vector<std::string> splitString(std::string str, const char* delimitters);
 
@@ -784,17 +777,17 @@ EXPORT uint64_t getFileModifiedTime(const char* path);
 
 EXPORT bool fileExists(const char* path);
 
+EXPORT std::string normalize_path(std::string s);
+
 // searches game directories in order (e.g. valve/path, valve_downloads/path)
 // returns an empty string if the file can't be found
 EXPORT std::string getGameFilePath(const char* path);
 
 // loads a global model/sound replacement file
 // format: "file_path" "replacement_file_path"
-EXPORT std::map<std::string, std::string> loadReplacementFile(const char* path);
+EXPORT std::unordered_map<std::string, std::string> loadReplacementFile(const char* path);
 
 EXPORT void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType=MSG_BROADCAST, edict_t* dest=NULL);
-
-EXPORT WavInfo getWaveFileInfo(const char* path);
 
 //
 // BModelOrigin - calculates origin of a bmodel from absmin/size because all bmodel origins are 0 0 0
@@ -803,13 +796,54 @@ EXPORT Vector VecBModelOrigin(entvars_t* pevBModel);
 
 EXPORT void PlayCDTrack(int iTrack);
 
-// same as the STRING macro but defined as a function for easy calling in the debugger
-const char* cstr(string_t s);
-
 // strips unsafe chars from value to prevent sneaky stuff like "sv_gravity 800;rcon_password lololol"
-std::string sanitize_cvar_value(std::string val);
+EXPORT std::string sanitize_cvar_value(std::string val);
 
-const char* getActiveWeapon(entvars_t* pev);
+EXPORT const char* getActiveWeapon(entvars_t* pev);
 
-// for debugging
-bool ModelIsValid(entvars_t* edict, studiohdr_t* header);
+EXPORT const char* getPlayerUniqueId(edict_t* plr);
+
+EXPORT uint64_t steamid_to_steamid64(const char* steamid);
+
+EXPORT std::string steamid64_to_steamid(uint64_t steam64);
+
+EXPORT uint64_t getPlayerCommunityId(edict_t* plr);
+
+EXPORT void LoadAdminList(bool forceUpdate=false); // call on each map change, so AdminLevel can work
+
+EXPORT int AdminLevel(edict_t* player);
+
+EXPORT uint64_t getEpochMillis();
+
+EXPORT double TimeDifference(uint64_t start, uint64_t end);
+
+EXPORT std::vector<std::string> getDirFiles(std::string path, std::string extension, std::string startswith, bool onlyOne);
+
+EXPORT short FixedSigned16(float value, float scale);
+
+EXPORT unsigned short FixedUnsigned16(float value, float scale);
+
+EXPORT void KickPlayer(edict_t* ent, const char* reason="");
+
+// Normalizes any number to an arbitrary range 
+// by assuming the range wraps around when going below min or above max
+EXPORT float normalizeRangef(const float value, const float start, const float end);
+
+EXPORT void handleThreadPrints();
+
+EXPORT bool createFolder(const std::string& path);
+
+EXPORT bool folderExists(const std::string& path);
+
+EXPORT uint64_t getFreeSpace(const std::string& path);
+
+EXPORT void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_Fizz(int eidx, int modelIdx, uint8_t density, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_ELight(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_BeamPoints(Vector start, Vector end, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_BeamEnts(int startEnt, int startAttachment, int endEnt, int endAttachment, bool ringMode, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
+EXPORT void UTIL_BSPDecal(int entindex, Vector origin, int decalIdx, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
+EXPORT void UTIL_PlayerDecal(int entindex, int playernum, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
+EXPORT void UTIL_GunshotDecal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
+EXPORT void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);

@@ -14,7 +14,7 @@ class CShower : public CBaseEntity
 	int ObjectCaps(void) { return FCAP_DONT_SAVE; }
 };
 
-LINK_ENTITY_TO_CLASS(spark_shower, CShower);
+LINK_ENTITY_TO_CLASS(spark_shower, CShower)
 
 void CShower::Spawn(void)
 {

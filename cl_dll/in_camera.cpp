@@ -99,7 +99,7 @@ float MoveToward( float cur, float goal, float maxspeed )
 {
 	if( cur != goal )
 	{
-		if( fabs( cur - goal ) > 180.0 )
+		if( abs( cur - goal ) > 180.0 )
 		{
 			if( cur < goal )
 				cur += 360.0;
@@ -150,7 +150,7 @@ typedef struct
 
 extern trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end);
 
-void DLLEXPORT CAM_Think( void )
+void CL_DLLEXPORT CAM_Think( void )
 {
 //	RecClCamThink();
 
@@ -383,7 +383,7 @@ void DLLEXPORT CAM_Think( void )
 		if( camAngles[ PITCH ] - viewangles[ PITCH ] != cam_idealpitch->value )
 			camAngles[ PITCH ] = MoveToward( camAngles[ PITCH ], cam_idealpitch->value + viewangles[ PITCH ], CAM_ANGLE_SPEED );
 
-		if( fabs( camAngles[ 2 ] - cam_idealdist->value ) < 2.0 )
+		if( abs( camAngles[ 2 ] - cam_idealdist->value ) < 2.0 )
 			camAngles[ 2 ] = cam_idealdist->value;
 		else
 			camAngles[ 2 ] += ( cam_idealdist->value - camAngles[ 2 ] ) / 4.0;
@@ -616,14 +616,14 @@ void CAM_EndDistance(void)
    iMouseInUse=0;
 }
 
-int DLLEXPORT CL_IsThirdPerson( void )
+int CL_DLLEXPORT CL_IsThirdPerson( void )
 {
 //	RecClCL_IsThirdPerson();
 
 	return (cam_thirdperson ? 1 : 0) || (g_iUser1 && (g_iUser2 == gEngfuncs.GetLocalPlayer()->index) );
 }
 
-void DLLEXPORT CL_CameraOffset( float *ofs )
+void CL_DLLEXPORT CL_CameraOffset( float *ofs )
 {
 //	RecClCL_GetCameraOffsets(ofs);
 

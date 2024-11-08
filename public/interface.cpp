@@ -4,6 +4,9 @@
 #include "interface.h"
 
 #if !defined ( _WIN32 )
+#include <dlfcn.h>
+#include <unistd.h>
+
 // Linux doesn't have this function so this emulates its functionality
 //
 //
@@ -32,6 +35,9 @@ void *GetModuleHandle(const char *name)
         dlclose(handle);
        return handle;
 }
+
+#define GetProcAddress dlsym
+#define HMODULE void*
 #endif
 
 // ------------------------------------------------------------------------------------ //
@@ -53,7 +59,7 @@ InterfaceReg::InterfaceReg( InstantiateInterfaceFn fn, const char *pName ) :
 // ------------------------------------------------------------------------------------ //
 // CreateInterface.
 // ------------------------------------------------------------------------------------ //
-EXPORT_FUNCTION IBaseInterface *CreateInterface( const char *pName, int *pReturnCode )
+EXPORT_FUNCTION void *CreateInterface( const char *pName, int *pReturnCode )
 {
 	InterfaceReg *pCur;
 	
@@ -76,6 +82,8 @@ EXPORT_FUNCTION IBaseInterface *CreateInterface( const char *pName, int *pReturn
 	return NULL;	
 }
 
+// BEN-NOTE: unifying this on all platforms
+#if 0
 #ifdef LINUX
 static IBaseInterface *CreateInterfaceLocal( const char *pName, int *pReturnCode )
 {
@@ -99,7 +107,8 @@ static IBaseInterface *CreateInterfaceLocal( const char *pName, int *pReturnCode
 	}
 	return NULL;	
 }
-#endif
+#endif // LINUX
+#endif // 0
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -150,22 +159,18 @@ CSysModule	*Sys_LoadModule( const char *pModuleName )
 		char szCwd[1024];
 		char szAbsoluteModuleName[1024];
 
-		//Prevent loading from garbage paths if the path is too large for the buffer
-		if (!getcwd(szCwd, sizeof(szCwd)))
-		{
-			exit(-1);
-		}
-
+		getcwd( szCwd, sizeof( szCwd ) );
 		if ( szCwd[ strlen( szCwd ) - 1 ] == '/' )
 			szCwd[ strlen( szCwd ) - 1 ] = 0;
 
-		_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", szCwd, pModuleName );
+		snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", szCwd, pModuleName );
+		szAbsoluteModuleName[1023] = 0;
 
 		hDLL = dlopen( szAbsoluteModuleName, RTLD_NOW );
 	}
 	else
 	{
-		_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s", pModuleName );
+		snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s", pModuleName );
 		 hDLL = dlopen( pModuleName, RTLD_NOW );
 	}
 #endif
@@ -174,15 +179,16 @@ CSysModule	*Sys_LoadModule( const char *pModuleName )
 	{
 		char str[512];
 #if defined ( _WIN32 )
-		_snprintf( str, sizeof(str), "%s.dll", pModuleName );
+		snprintf( str, sizeof(str), "%s.dll", pModuleName );
 		hDLL = LoadLibrary( str );
 #elif defined(OSX)
 		printf("Error:%s\n",dlerror());
-		_snprintf( str, sizeof(str), "%s.dylib", szAbsoluteModuleName );
+		snprintf( str, sizeof(str), "%s.dylib", szAbsoluteModuleName );
 		hDLL = dlopen(str, RTLD_NOW);		
 #else
 		printf("Error:%s\n",dlerror());
-		_snprintf( str, sizeof(str), "%s.so", szAbsoluteModuleName );
+		snprintf( str, sizeof(str), "%s.so", szAbsoluteModuleName );
+		str[511] = 0;
 		hDLL = dlopen(str, RTLD_NOW);
 #endif
 	}
@@ -243,11 +249,14 @@ CreateInterfaceFn Sys_GetFactory( CSysModule *pModule )
 //-----------------------------------------------------------------------------
 CreateInterfaceFn Sys_GetFactoryThis( void )
 {
-#ifdef LINUX
+	// BEN-NOTE: unifying this on all platforms
+//#ifdef LINUX
+#if 0
 	return CreateInterfaceLocal;
 #else
 	return CreateInterface;
-#endif
+#endif // LINUX
+
 }
 
 //-----------------------------------------------------------------------------

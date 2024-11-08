@@ -96,6 +96,7 @@ public:
 	float m_flLastSight;	// Last time we saw a target
 	float m_flMaxWait;		// Max time to seach w/o a target
 	int m_iSearchSpeed;		// Not Used!
+	float m_flSightRange;
 
 	// movement
 	float	m_flStartYaw;

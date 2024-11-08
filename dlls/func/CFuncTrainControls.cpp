@@ -18,7 +18,7 @@ public:
 	void Spawn(void);
 	void EXPORT Find(void);
 };
-LINK_ENTITY_TO_CLASS(func_traincontrols, CFuncTrainControls);
+LINK_ENTITY_TO_CLASS(func_traincontrols, CFuncTrainControls)
 
 
 void CFuncTrainControls::Find(void)

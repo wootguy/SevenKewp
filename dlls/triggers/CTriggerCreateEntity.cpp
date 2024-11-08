@@ -36,7 +36,7 @@ public:
 	int m_iKeys;
 };
 
-LINK_ENTITY_TO_CLASS(trigger_createentity, CTriggerCreateEntity);
+LINK_ENTITY_TO_CLASS(trigger_createentity, CTriggerCreateEntity)
 
 void CTriggerCreateEntity::KeyValue(KeyValueData* pkvd)
 {
@@ -90,7 +90,7 @@ void CTriggerCreateEntity::KeyValue(KeyValueData* pkvd)
 }
 
 void CTriggerCreateEntity::Precache() {
-	std::map<std::string, std::string> keys;
+	std::unordered_map<std::string, std::string> keys;
 	
 	for (int i = 0; i < m_iKeys; i++) {
 		if (m_keys[i].valueType == CREATE_KEY_COPY) {
@@ -118,7 +118,7 @@ void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		return;
 	}
 
-	std::map<std::string, std::string> keys;
+	std::unordered_map<std::string, std::string> keys;
 
 	for (int i = 0; i < m_iKeys; i++) {
 		const char* keyName = STRING(m_keys[i].key_name);

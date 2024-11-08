@@ -92,6 +92,7 @@ public:
 	// Override these to set behavior
 	Schedule_t *GetScheduleOfType ( int Type );
 	Schedule_t *GetSchedule ( void );
+	const char* GetTaskName(int taskIdx);
 	MONSTERSTATE GetIdealState ( void );
 
 	void DeathSound( void );
@@ -116,8 +117,8 @@ private:
 	static const char* pPainSounds[];
 };
 
-LINK_ENTITY_TO_CLASS( monster_scientist, CScientist );
-LINK_ENTITY_TO_CLASS( monster_cleansuit_scientist, CScientist );
+LINK_ENTITY_TO_CLASS( monster_scientist, CScientist )
+LINK_ENTITY_TO_CLASS( monster_cleansuit_scientist, CScientist )
 
 const char* CScientist::pPainSounds[] =
 {
@@ -135,7 +136,7 @@ TYPEDESCRIPTION	CScientist::m_SaveData[] =
 	DEFINE_FIELD( CScientist, m_fearTime, FIELD_TIME ),
 };
 
-IMPLEMENT_SAVERESTORE( CScientist, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CScientist, CTalkSquadMonster )
 
 //=========================================================
 // AI Schedules Specific to this monster
@@ -158,7 +159,7 @@ Schedule_t	slSciFollow[] =
 		bits_COND_HEAR_SOUND,
 		bits_SOUND_COMBAT |
 		bits_SOUND_DANGER,
-		"Follow"
+		"SCI_FOLLOW"
 	},
 };
 
@@ -179,7 +180,7 @@ Schedule_t	slFollowScared[] =
 		bits_COND_LIGHT_DAMAGE |
 		bits_COND_HEAVY_DAMAGE,
 		bits_SOUND_DANGER,
-		"FollowScared"
+		"SCI_FOLLOW_SCARED"
 	},
 };
 
@@ -198,7 +199,7 @@ Schedule_t	slFaceTargetScared[] =
 		bits_COND_HEAR_SOUND |
 		bits_COND_NEW_ENEMY,
 		bits_SOUND_DANGER,
-		"FaceTargetScared"
+		"SCI_FACE_TARGET_SCARED"
 	},
 };
 
@@ -220,7 +221,7 @@ Schedule_t	slHeal[] =
 		ARRAYSIZE ( tlHeal ),
 		0,	// Don't interrupt or he'll end up running around with a needle all the time
 		0,
-		"Heal"
+		"SCI_HEAL"
 	},
 };
 
@@ -243,7 +244,7 @@ Schedule_t	slSciFaceTarget[] =
 		bits_COND_HEAR_SOUND,
 		bits_SOUND_COMBAT |
 		bits_SOUND_DANGER,
-		"FaceTarget"
+		"SCI_FACE_TARGET"
 	},
 };
 
@@ -264,7 +265,7 @@ Schedule_t	slSciPanic[] =
 		ARRAYSIZE ( tlSciPanic ),
 		0,
 		0,
-		"SciPanic"
+		"SCI_PANIC"
 	},
 };
 
@@ -297,7 +298,7 @@ Schedule_t	slIdleSciStand[] =
 		bits_SOUND_MEAT			|// scents
 		bits_SOUND_CARCASS		|
 		bits_SOUND_GARBAGE,
-		"IdleSciStand"
+		"SCI_IDLE_STAND"
 
 	},
 };
@@ -320,7 +321,7 @@ Schedule_t	slScientistCover[] =
 		ARRAYSIZE ( tlScientistCover ), 
 		bits_COND_NEW_ENEMY,
 		0,
-		"ScientistCover"
+		"SCI_COVER"
 	},
 };
 
@@ -347,7 +348,7 @@ Schedule_t	slScientistHide[] =
 		bits_COND_SEE_FEAR |
 		bits_COND_SEE_DISLIKE,
 		bits_SOUND_DANGER,
-		"ScientistHide"
+		"SCI_HIDE"
 	},
 };
 
@@ -374,7 +375,7 @@ Schedule_t	slScientistStartle[] =
 		bits_COND_SEE_FEAR |
 		bits_COND_SEE_DISLIKE,
 		0,
-		"ScientistStartle"
+		"SCI_STARTLE"
 	},
 };
 
@@ -395,7 +396,7 @@ Schedule_t	slFear[] =
 		ARRAYSIZE ( tlFear ), 
 		bits_COND_NEW_ENEMY,
 		0,
-		"Fear"
+		"SCI_FEAR"
 	},
 };
 
@@ -417,7 +418,7 @@ DEFINE_CUSTOM_SCHEDULES( CScientist )
 };
 
 
-IMPLEMENT_CUSTOM_SCHEDULES( CScientist, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CScientist, CTalkSquadMonster )
 
 
 void CScientist::DeclineFollowing( void )
@@ -998,6 +999,20 @@ Schedule_t *CScientist :: GetSchedule ( void )
 	return CTalkSquadMonster::GetSchedule();
 }
 
+const char* CScientist::GetTaskName(int taskIdx) {
+	switch (taskIdx) {
+	case TASK_SAY_HEAL: return "TASK_SAY_HEAL";
+	case TASK_HEAL: return "TASK_HEAL";
+	case TASK_SAY_FEAR: return "TASK_SAY_FEAR";
+	case TASK_RUN_PATH_SCARED: return "TASK_RUN_PATH_SCARED";
+	case TASK_SCREAM: return "TASK_SCREAM";
+	case TASK_RANDOM_SCREAM: return "TASK_RANDOM_SCREAM";
+	case TASK_MOVE_TO_TARGET_RANGE_SCARED: return "TASK_MOVE_TO_TARGET_RANGE_SCARED";
+	default:
+		return CTalkSquadMonster::GetTaskName(taskIdx);
+	}
+}
+
 MONSTERSTATE CScientist :: GetIdealState ( void )
 {
 	switch ( m_MonsterState )
@@ -1120,7 +1135,7 @@ void CDeadScientist::KeyValue( KeyValueData *pkvd )
 	else
 		CBaseMonster::KeyValue( pkvd );
 }
-LINK_ENTITY_TO_CLASS( monster_scientist_dead, CDeadScientist );
+LINK_ENTITY_TO_CLASS( monster_scientist_dead, CDeadScientist )
 
 //
 // ********** DeadScientist SPAWN **********
@@ -1183,7 +1198,7 @@ public:
 	float	m_flResponseDelay;
 };
 
-LINK_ENTITY_TO_CLASS( monster_sitting_scientist, CSittingScientist );
+LINK_ENTITY_TO_CLASS( monster_sitting_scientist, CSittingScientist )
 TYPEDESCRIPTION	CSittingScientist::m_SaveData[] = 
 {
 	// Don't need to save/restore m_baseSequence (recalced)
@@ -1191,7 +1206,7 @@ TYPEDESCRIPTION	CSittingScientist::m_SaveData[] =
 	DEFINE_FIELD( CSittingScientist, m_flResponseDelay, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CSittingScientist, CScientist );
+IMPLEMENT_SAVERESTORE( CSittingScientist, CScientist )
 
 // animation sequence aliases 
 typedef enum

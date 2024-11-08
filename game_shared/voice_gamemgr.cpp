@@ -13,6 +13,7 @@
 #include "util.h"
 #include "cbase.h"
 #include "CBasePlayer.h"
+#include "user_messages.h"
 
 
 
@@ -32,7 +33,7 @@ CPlayerBitVec	g_SentGameRulesMasks[VOICE_MAX_PLAYERS];	// These store the masks 
 CPlayerBitVec	g_SentBanMasks[VOICE_MAX_PLAYERS];			// we need to resend them.
 CPlayerBitVec	g_bWantModEnable;
 
-cvar_t voice_serverdebug = {"voice_serverdebug", "0", 0, 0, 0};
+cvar_t voice_serverdebug = {"voice_serverdebug", "0", FCVAR_SERVER, 0, 0 };
 
 // Set game rules to allow all clients to talk to each other.
 // Muted players still can't talk to each other.
@@ -241,8 +242,8 @@ void CVoiceGameMgr::UpdateMasks()
 			// Build a mask of who they can hear based on the game rules.
 			for(int iOtherClient=0; iOtherClient < m_nMaxPlayers; iOtherClient++)
 			{
-				pEnt = UTIL_PlayerByIndex(iOtherClient+1);
-				if(pEnt && (bAllTalk || m_pHelper->CanPlayerHearPlayer(pPlayer, (CBasePlayer*)pEnt)) )
+				CBaseEntity *pEnt2 = UTIL_PlayerByIndex(iOtherClient+1);
+				if(pEnt2 && (bAllTalk || m_pHelper->CanPlayerHearPlayer(pPlayer, (CBasePlayer*)pEnt2)) )
 				{
 					gameRulesMask[iOtherClient] = true;
 				}

@@ -276,7 +276,7 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 
 
 bool g_registeringCustomWeps = false;
-std::set<std::string> g_weaponClassnames;
+std::unordered_set<std::string> g_weaponClassnames;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 
@@ -431,13 +431,6 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_shockrifle");
 	UTIL_RegisterWeapon("weapon_sporelauncher");
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
-
-#if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
-	if ( g_pGameRules->IsDeathmatch() )
-	{
-		UTIL_PrecacheOther( "weaponbox" );// container for dropped deathmatch weapons
-	}
-#endif
 
 	g_sModelIndexFireball = PRECACHE_MODEL ("sprites/zerogxplode.spr");// fireball
 	g_sModelIndexWExplosion = PRECACHE_MODEL ("sprites/WXplo1.spr");// underwater fireball

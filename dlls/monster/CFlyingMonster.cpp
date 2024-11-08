@@ -87,7 +87,7 @@ void CFlyingMonster :: Stop( void )
 }
 
 
-float CFlyingMonster :: ChangeYaw( int speed )
+float CFlyingMonster :: ChangeYaw( int yawSpeed )
 {
 	if ( pev->movetype == MOVETYPE_FLY )
 	{
@@ -101,9 +101,10 @@ float CFlyingMonster :: ChangeYaw( int speed )
 			else if ( diff > 20 )
 				target = -90;
 		}
-		pev->angles.z = UTIL_Approach( target, pev->angles.z, 220.0 * gpGlobals->frametime );
+
+		pev->angles.z = UTIL_Approach(target, pev->angles.z, 220.0 * gpGlobals->frametime);
 	}
-	return CBaseMonster::ChangeYaw( speed );
+	return CBaseMonster::ChangeYaw(yawSpeed);
 }
 
 

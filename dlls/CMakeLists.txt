@@ -1,5 +1,7 @@
 option(ASAN "Build with AddressSanitizer Enabled" OFF)
 
+project(${SERVER_DLL_NAME})
+
 set(MISC_HDR
 	../engine/studio.h
 	../common/Platform.h
@@ -210,6 +212,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CTriggerCamera.cpp
 	triggers/CTargetCDAudio.cpp
 	triggers/CTriggerChangeModel.cpp
+	triggers/CTriggerChangeSky.cpp
 	triggers/CTriggerChangeTarget.cpp
 	triggers/CTriggerChangeValue.cpp
 	triggers/CTriggerCondition.cpp
@@ -250,6 +253,7 @@ set(FUNC_HDR
 	func/CFuncTank.h
 	func/CFuncTrackChange.h
 	func/CFuncTrackTrain.h
+	func/CFuncVehicle.h
 	func/CFuncWall.h
 	func/CPlatTrigger.h
 )
@@ -278,6 +282,7 @@ set(FUNC_SRC
 	func/CFuncTrackTrain.cpp
 	func/CFuncTrain.cpp
 	func/CFuncTrainControls.cpp
+	func/CFuncVehicle.cpp
 	func/CFuncWall.cpp
 	func/CFuncWallToggle.cpp
 	func/CGunTarget.cpp
@@ -410,29 +415,61 @@ set(UTIL_HDR
 	Bsp.h
 	bsptypes.h
 	bsplimits.h
+	CommandArgs.h
+	debug.h
+	eng_wrappers.h
 	plane.h
+	saverestore.h
 	util.h
 	mstream.h
 	lagcomp.h
 	vector.h
+	Scheduler.h
 	TextMenu.h
+	ThreadSafeInt.h
+	ThreadSafeQueue.h
+	wav.h
 	../game_shared/shared_util.h
 )
 set(UTIL_SRC
 	animation.cpp
 	Bsp.cpp
 	bsptypes.cpp
+	CommandArgs.cpp
+	debug.cpp
+	eng_wrappers.cpp
 	plane.cpp
 	sound.cpp
 	util.cpp
 	mstream.cpp
 	lagcomp.cpp
+	saverestore.cpp
+	Scheduler.cpp
 	TextMenu.cpp
+	ThreadSafeInt.cpp
+	ThreadSafeQueue.cpp
+	wav.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
 	../pm_shared/pm_shared.cpp
 	../game_shared/shared_util.cpp
 )
+
+set(NET_HDR
+	net/Socket.h
+	net/IPV4.h
+	net/Packet.h
+)
+set(NET_SRC
+	net/IPV4.cpp
+	net/Packet.cpp
+)
+
+if (UNIX)
+	set(NET_SRC ${NET_SRC} net/network_unix.cpp net/Socket_unix.cpp)
+else()
+	set(NET_SRC ${NET_SRC} net/network_win.cpp net/Socket_win.cpp)
+endif()
 
 set(GAME_HDR
 	client.h
@@ -440,11 +477,9 @@ set(GAME_HDR
 	../engine/eiface.h
 	game.h
 	gamerules.h
-	saverestore.h
 	skill.h
 	teamplay_gamerules.h
 	user_messages.h
-	mod_api.h
 	PluginHooks.h
 	PluginManager.h
 )
@@ -461,7 +496,6 @@ set(GAME_SRC
 	teamplay_gamerules.cpp
 	user_messages.cpp
 	../game_shared/voice_gamemgr.cpp
-	mod_api.cpp
 	PluginManager.cpp
 )
 
@@ -511,9 +545,19 @@ function(write_ent_source_file IN_FILES_STRING OUT_NAME)
         set(OUT_FILE_INCLUDES "${OUT_FILE_INCLUDES} #include \"${x}\"\n")
     endforeach(i)
     
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${OUT_NAME}
-        ${OUT_FILE_INCLUDES}
-    )
+	set(OUT_FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/${OUT_NAME}")
+	
+	# Read the existing contents of the file if it exists
+    if(EXISTS ${OUT_FILE_PATH})
+        file(READ ${OUT_FILE_PATH} CURRENT_CONTENT)
+    else()
+        set(CURRENT_CONTENT "")
+    endif()
+	
+    # Only write if the new content is different
+    if(NOT "${CURRENT_CONTENT}" STREQUAL "${OUT_FILE_INCLUDES}")
+        file(WRITE ${OUT_FILE_PATH} ${OUT_FILE_INCLUDES})
+    endif()
 endfunction()
 
 write_ent_source_file("${MONSTER_SRC}" monsters_base.cpp)
@@ -552,26 +596,13 @@ set(ALL_SRC
 	${GENERATED_SRCS}
 	${ENT_SRC} ${ENT_HDR}
 	${UTIL_SRC} ${UTIL_HDR}
+	${NET_SRC} ${NET_HDR}
 	${GAME_SRC} ${GAME_HDR}
 	${MISC_HDR}
 )
 
 # don't compile individual entity files
 set_source_files_properties(${ENT_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
-
-include_directories(../common)
-include_directories(../engine)
-include_directories(../game_shared)
-include_directories(../pm_shared)
-include_directories(../public)
-include_directories(env)
-include_directories(func)
-include_directories(triggers)
-include_directories(monster)
-include_directories(item)
-include_directories(path)
-include_directories(weapon)
-include_directories(.)
 
 add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
@@ -580,12 +611,6 @@ target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
 target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS -D_CRT_SECURE_NO_DEPRECATE)
 
 if(UNIX)
-
-	add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls
-		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls/
-	)
-
 	set(ASAN_OPTS "")
 	if (ASAN)
 		set(ASAN_CFLAGS "-fsanitize=address -fno-omit-frame-pointer")
@@ -597,30 +622,16 @@ if(UNIX)
 		COMPILE_FLAGS "-m32 -g -O2 -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter ${ASAN_CFLAGS}"
 		LINK_FLAGS "-m32 -g  ${ASAN_LFLAGS}"
 	)
-
+	
 elseif(MSVC)
-
-	#add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
-		#COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${ENGINE_DIR}/${GAMEDIR_NAME}/dlls/
-	#	COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls
-	#	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${SERVER_DLL_NAME}> ${PROJECT_SOURCE_DIR}/${GAMEDIR_NAME}/dlls/
-	#)
-
-	if (USE_AUTOHOTKEY_SCRIPT)
-		add_custom_command(TARGET ${SERVER_DLL_NAME} POST_BUILD
-			COMMAND start ${CMAKE_CURRENT_SOURCE_DIR}/../resize_console.ahk
-		)
-	endif()
-
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4") 
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:${CMAKE_CURRENT_SOURCE_DIR}/hl.def") 
 	
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
-		VS_DEBUGGER_COMMAND "${ENGINE_DIR}/${ENGINE_EXE}"
-		VS_DEBUGGER_WORKING_DIRECTORY "${ENGINE_DIR}"
-		VS_DEBUGGER_COMMAND_ARGUMENTS "${GAME_ARGS}"
+		VS_DEBUGGER_COMMAND "${SERVER_WORK_DIR}/${SERVER_EXE}"
+		VS_DEBUGGER_WORKING_DIRECTORY "${SERVER_WORK_DIR}"
+		VS_DEBUGGER_COMMAND_ARGUMENTS "${SERVER_ARGS}"
 	)
-	
 	
 	source_group("Header Files\\Entities" FILES ${ENTITY_HDR})
 	source_group("Header Files\\Entities\\env" FILES ${ENV_HDR})
@@ -633,6 +644,7 @@ elseif(MSVC)
 	source_group("Header Files\\Entities\\weapon\\ammo" FILES ${AMMO_HDR})
 	source_group("Header Files\\Game" FILES ${GAME_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})
+	source_group("Header Files\\Network" FILES ${NET_HDR})
 	
 	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})
 	source_group("Source Files\\Generated" FILES  ${GENERATED_SRCS})
@@ -652,8 +664,31 @@ elseif(MSVC)
 	source_group("Source Files\\Entities\\weapon" FILES ${WEAPON_SRC})
 	source_group("Source Files\\Entities\\weapon\\ammo" FILES ${AMMO_SRC})
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})
+	source_group("Source Files\\Network" FILES ${NET_SRC})
 	source_group("Source Files\\Game" FILES ${GAME_SRC})
+	
+	# WinSock libraries for network utils
+	target_link_libraries(${PROJECT_NAME} PRIVATE WS2_32 IPHLPAPI)
 
 else()
 	message(FATAL_ERROR "TODO: Mac support")
+endif()
+
+if (SETUP_IDE)
+	set(MOD_OUTPUT_PATH "${SERVER_WORK_DIR}/valve/dlls")
+else()
+	set(MOD_OUTPUT_PATH "${CMAKE_BINARY_DIR}/output/dlls")
+endif()
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+	RUNTIME_OUTPUT_DIRECTORY ${MOD_OUTPUT_PATH}
+	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${MOD_OUTPUT_PATH}
+	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${MOD_OUTPUT_PATH}
+)
+if(UNIX)
+	set_target_properties(${PROJECT_NAME} PROPERTIES
+		LIBRARY_OUTPUT_DIRECTORY ${MOD_OUTPUT_PATH}
+		LIBRARY_OUTPUT_DIRECTORY_DEBUG ${MOD_OUTPUT_PATH}
+		LIBRARY_OUTPUT_DIRECTORY_RELEASE ${MOD_OUTPUT_PATH}
+	)
 endif()

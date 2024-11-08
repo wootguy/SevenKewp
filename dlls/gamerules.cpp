@@ -27,16 +27,16 @@
 #include "CGamePlayerEquip.h"
 #include "CBasePlayerItem.h"
 #include "PluginManager.h"
+#include "game.h"
+#include "CBaseDMStart.h"
 
 #include <sstream>
 #include <string>
 #include <fstream>
-#include <set>
+#include <unordered_set>
 #include <algorithm>
 
 using namespace std;
-
-extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
 
 DLL_GLOBAL CGameRules*	g_pGameRules = NULL;
 extern DLL_GLOBAL BOOL	g_fGameOver;
@@ -112,7 +112,7 @@ void execMapCfg() {
 	// Map CFGs are low trust so only whitelisted commands are allowed.
 	// Server owners shouldn't have to check each map for things like "rcon_password HAHA_GOT_YOU"
 
-	static set<string> whitelistCommands = {
+	static unordered_set<string> whitelistCommands = {
 		"sv_gravity",
 		"sv_friction",
 		"sv_accelerate",
@@ -141,6 +141,7 @@ void execMapCfg() {
 		"mp_bulletsponges",
 		"mp_bulletspongemax",
 		"mp_maxmonsterrespawns",
+		"mp_mergemodels",
 		"killnpc",
 		"mp_npckill",
 		"startarmor",
@@ -149,9 +150,10 @@ void execMapCfg() {
 		"globalsoundlist",
 		"mp_shitcode",
 		"map_plugin",
+		"nosuit",
 	};
 
-	static set<string> itemNames = {
+	static unordered_set<string> itemNames = {
 		"weapon_crossbow",
 		"weapon_crowbar",
 		"weapon_egon",
@@ -214,6 +216,7 @@ void execMapCfg() {
 	char* cfgFile = (char*)LOAD_FILE_FOR_ME(cfgPath.c_str(), &length);
 	
 	g_mapCfgExists = cfgFile;
+	g_noSuit = false;
 
 	if (!cfgFile) {
 		// precache default equipment
@@ -238,6 +241,11 @@ void execMapCfg() {
 		string name = trimSpaces(toLowerCase(parts[0]));
 		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
 
+		if (name == "nosuit") {
+			g_noSuit = true;
+			continue;
+		}
+
 		if (parts.size() > 1 && whitelistCommands.find(name) != whitelistCommands.end()) {
 			if (mp_prefer_server_maxspeed.value == 1 && name == "sv_maxspeed") {
 				int maxspeed = atoi(value.c_str());
@@ -255,6 +263,12 @@ void execMapCfg() {
 				dat.szKeyName = (char*)name.c_str();
 				dat.szValue = (char*)value.c_str();
 				DispatchKeyValue(ENT(0), &dat);
+				continue;
+			}
+
+			// must know this value now to know what to precache during this frame
+			if (name == "mp_mergemodels") {
+				CVAR_SET_FLOAT("mp_mergemodels", atoi(value.c_str()) != 0);
 				continue;
 			}
 
@@ -302,6 +316,21 @@ void execServerCfg() {
 			continue;
 		}
 
+		vector<string> parts = splitString(line, " \t");
+
+		if (parts.empty()) {
+			continue;
+		}
+
+		string name = trimSpaces(toLowerCase(parts[0]));
+		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
+
+		// must know this value now to know what to precache during this frame (todo: duplicated in map cfg logic)
+		if (name == "mp_mergemodels") {
+			CVAR_SET_FLOAT("mp_mergemodels", atoi(value.c_str()) != 0);
+			continue;
+		}
+
 		SERVER_COMMAND(UTIL_VarArgs("%s\n", line.c_str()));
 	}
 
@@ -336,6 +365,12 @@ CGameRules *InstallGameRules( void )
 {
 	execCfgs();
 
+	g_teamplay = 0;
+	return new CHalfLifeMultiplay;
+	
+	// keeping other rules for reference only
+
+	/*
 	if ( !gpGlobals->deathmatch )
 	{
 		// generic half-life
@@ -364,5 +399,6 @@ CGameRules *InstallGameRules( void )
 			return new CHalfLifeMultiplay;
 		}
 	}
+	*/
 }
 

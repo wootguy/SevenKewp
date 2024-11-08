@@ -37,25 +37,25 @@ enum rpg_e {
 	RPG_FIDGET_UL,	// unloaded fidget
 };
 
-LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg );
+LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg )
 
 #ifndef CLIENT_DLL
 
-LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot );
+LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot )
 
 TYPEDESCRIPTION	CRpg::m_SaveData[] =
 {
 	DEFINE_FIELD(CRpg, m_fSpotActive, FIELD_INTEGER),
 	DEFINE_FIELD(CRpg, m_cActiveRockets, FIELD_INTEGER),
 };
-IMPLEMENT_SAVERESTORE(CRpg, CBasePlayerWeapon);
+IMPLEMENT_SAVERESTORE(CRpg, CBasePlayerWeapon)
 
 TYPEDESCRIPTION	CRpgRocket::m_SaveData[] =
 {
 	DEFINE_FIELD(CRpgRocket, m_flIgniteTime, FIELD_TIME),
 	DEFINE_FIELD(CRpgRocket, m_hLauncher, FIELD_EHANDLE),
 };
-IMPLEMENT_SAVERESTORE(CRpgRocket, CGrenade);
+IMPLEMENT_SAVERESTORE(CRpgRocket, CGrenade)
 
 //=========================================================
 //=========================================================
@@ -83,7 +83,7 @@ void CLaserSpot::Spawn( void )
 
 	SET_MODEL(ENT(pev), "sprites/laserdot.spr");
 	UTIL_SetOrigin( pev, pev->origin );
-};
+}
 
 //=========================================================
 // Suspend- make the laser sight invisible. 
@@ -109,9 +109,9 @@ void CLaserSpot::Revive( void )
 void CLaserSpot::Precache( void )
 {
 	PRECACHE_MODEL("sprites/laserdot.spr");
-};
+}
 
-LINK_ENTITY_TO_CLASS( rpg_rocket, CRpgRocket );
+LINK_ENTITY_TO_CLASS( rpg_rocket, CRpgRocket )
 
 //=========================================================
 //=========================================================
@@ -139,7 +139,7 @@ void CRpgRocket :: Spawn( void )
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), GetModel());
+	SetGrenadeModel();
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
@@ -169,10 +169,29 @@ void CRpgRocket :: RocketTouch ( CBaseEntity *pOther )
 	{
 		// my launcher is still around, tell it I'm dead.
 		m_pLauncher->m_cActiveRockets--;
+		m_hLauncher = NULL;
 	}
 
 	STOP_SOUND( edict(), CHAN_VOICE, "weapons/rocket1.wav" );
 	ExplodeTouch( pOther );
+}
+
+//=========================================================
+void CRpgRocket::Explode(TraceResult* pTrace, int bitsDamageType)
+{
+	//ALERT( at_console, "RpgRocket Explode, m_pLauncher: %u\n", GetLauncher() );
+	STOP_SOUND(edict(), CHAN_VOICE, "weapons/rocket1.wav");
+
+	CRpg* m_pLauncher = (CRpg*)m_hLauncher.GetEntity();
+
+	if (m_pLauncher)
+	{
+		// my launcher is still around, tell it I'm dead.
+		m_pLauncher->m_cActiveRockets--;
+		m_hLauncher = NULL;
+	}
+
+	CGrenade::Explode(pTrace, bitsDamageType);
 }
 
 //=========================================================
@@ -197,19 +216,7 @@ void CRpgRocket :: IgniteThink( void  )
 	EMIT_SOUND( ENT(pev), CHAN_VOICE, "weapons/rocket1.wav", 1, 0.5 );
 
 	// rocket trail
-	if (UTIL_isSafeEntIndex(entindex(), "create rocket trail")) {
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_BEAMFOLLOW);
-		WRITE_SHORT(entindex());	// entity
-		WRITE_SHORT(m_iTrail);	// model
-		WRITE_BYTE(40); // life
-		WRITE_BYTE(5);  // width
-		WRITE_BYTE(224);   // r, g, b
-		WRITE_BYTE(224);   // r, g, b
-		WRITE_BYTE(255);   // r, g, b
-		WRITE_BYTE(255);	// brightness
-		MESSAGE_END();  // move PHS/PVS data sending into here (SEND_ALL, SEND_PVS, SEND_PHS)
-	}
+	UTIL_BeamFollow(entindex(), m_iTrail, 40, 5, RGBA(224, 224, 255, 255), MSG_BROADCAST, NULL);	
 
 	m_flIgniteTime = gpGlobals->time;
 
@@ -235,7 +242,14 @@ void CRpgRocket :: FollowThink( void  )
 	// Examine all entities within a reasonable radius
 	while ((pOther = UTIL_FindEntityByClassname( pOther, "laser_spot" )) != NULL)
 	{
-		UTIL_TraceLine ( pev->origin, pOther->pev->origin, dont_ignore_monsters, ENT(pev), &tr );
+		Vector vSpotLocation = pOther->pev->origin;
+
+		if (UTIL_PointContents(vSpotLocation) == CONTENTS_SKY)
+		{
+			//ALERT( at_console, "laser spot is in the sky...\n");
+		}
+
+		UTIL_TraceLine(pev->origin, vSpotLocation, dont_ignore_monsters, ENT(pev), &tr);
 		// ALERT( at_console, "%f\n", tr.flFraction );
 		if (tr.flFraction >= 0.90)
 		{
@@ -288,7 +302,28 @@ void CRpgRocket :: FollowThink( void  )
 			Detonate( );
 		}
 	}
-	// ALERT( at_console, "%.0f\n", flSpeed );
+	
+	CRpg* m_pLauncher = (CRpg*)m_hLauncher.GetEntity();
+	if (m_pLauncher)
+	{
+		float flDistance = (pev->origin - m_pLauncher->pev->origin).Length();
+
+		// if we've travelled more than max distance the player can send a spot, stop tracking the original launcher (allow it to reload)		
+		if (flDistance > 8192.0f || gpGlobals->time - m_flIgniteTime > 6.0f)
+		{
+			//ALERT( at_console, "RPG too far (%f)!\n", flDistance );
+			m_pLauncher->m_cActiveRockets--;
+			m_hLauncher = NULL;
+		}
+
+		//ALERT( at_console, "%.0f, m_pLauncher: %u, flDistance: %f\n", flSpeed, GetLauncher(), flDistance );
+	}
+
+	if ((UTIL_PointContents(pev->origin) == CONTENTS_SKY))
+	{
+		//ALERT( at_console, "Rocket is in the sky, detonating...\n");
+		Detonate();
+	}
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }
@@ -338,6 +373,8 @@ void CRpg::Reload( void )
 		CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 		m_pSpot->Suspend( 2.1 );
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.1;
+
+		m_hBeam->pev->effects |= EF_NODRAW;
 	}
 #endif
 
@@ -356,8 +393,8 @@ void CRpg::Spawn( )
 	Precache( );
 	m_iId = WEAPON_RPG;
 
-	SET_MODEL(ENT(pev), GetModelW());
-	m_fSpotActive = 1;
+	SetWeaponModelW();
+	m_fSpotActive = 0;
 
 #ifdef CLIENT_DLL
 	if ( bIsMultiplayer() )
@@ -408,14 +445,14 @@ int CRpg::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = STRING(pev->classname);
 	p->pszAmmo1 = "rockets";
-	p->iMaxAmmo1 = ROCKET_MAX_CARRY;
+	p->iMaxAmmo1 = gSkillData.sk_ammo_max_rockets;
 	p->pszAmmo2 = NULL;
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = RPG_MAX_CLIP;
 	p->iSlot = 3;
 	p->iPosition = 0;
 	p->iId = m_iId = WEAPON_RPG;
-	p->iFlags = 0;
+	p->iFlags = ITEM_FLAG_NOAUTOSWITCHTO;
 	p->iWeight = RPG_WEIGHT;
 
 	return 1;
@@ -461,6 +498,9 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 	{
 		m_pSpot->Killed( NULL, GIB_NEVER );
 		m_hSpot = NULL;
+	}
+	if (m_hBeam) {
+		UTIL_Remove(m_hBeam);
 	}
 #endif
 
@@ -508,6 +548,8 @@ void CRpg::PrimaryAttack()
 				
 		m_flNextPrimaryAttack = GetNextAttackDelay(1.5);
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.5;
+		
+		ResetEmptySound();
 	}
 	else
 	{
@@ -527,6 +569,8 @@ void CRpg::SecondaryAttack()
 	{
 		m_pSpot->Killed( NULL, GIB_NORMAL );
 		m_hSpot = NULL;
+
+		UTIL_Remove(m_hBeam);
 	}
 #endif
 
@@ -541,8 +585,6 @@ void CRpg::WeaponIdle( void )
 		return;
 
 	UpdateSpot( );
-
-	ResetEmptySound( );
 
 	if ( m_flTimeWeaponIdle > UTIL_WeaponTimeBase() )
 		return;
@@ -570,6 +612,7 @@ void CRpg::WeaponIdle( void )
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 3.0;
 		}
 
+		ResetEmptySound();
 		SendWeaponAnim( iAnim );
 	}
 	else
@@ -604,6 +647,42 @@ void CRpg::UpdateSpot( void )
 		UTIL_TraceLine ( vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr );
 		
 		UTIL_SetOrigin( m_pSpot->pev, tr.vecEndPos );
+
+		if (!m_hBeam) {
+			CBeam* beam = CBeam::BeamCreate("sprites/laserbeam.spr", 8);
+			beam->PointEntInit(tr.vecEndPos, m_pPlayer->entindex());
+			beam->SetEndAttachment(1);
+			beam->SetColor(255, 32, 32);
+			beam->SetNoise(0);
+			beam->SetBrightness(48);
+			beam->SetScrollRate(64);
+			m_hBeam = beam;
+		}
+
+		CBeam* beam = (CBeam*)m_hBeam.GetEntity();
+		if (beam) {
+			beam->pev->effects = m_pSpot->pev->effects;
+
+			const bool fix_crash = true;
+
+			if (fix_crash || UTIL_PointContents(tr.vecEndPos) == CONTENTS_SKY) {
+				// dot exits the PVS in this case
+				beam->PointEntInit(tr.vecEndPos, m_pPlayer->entindex());
+				beam->SetEndAttachment(1);
+			}
+			else {
+				// DON'T DO THIS. Somehow, it is causing client crashes.
+				// In a replay, I see a laser spot switches from index 922 to 934
+				// and then every client loses connection at the same time.
+				// Can't reproduce and I've only seen it happen twice in months.
+				// The player index never changes so that should be safe.
+				// Removing the dot randomly doesn't crash. Messing with attachments
+				// here doesn't crash. idk what happened.
+
+				beam->EntsInit(m_pPlayer->entindex(), m_pSpot->entindex());
+				beam->SetStartAttachment(1);
+			}
+		}
 	}
 #endif
 

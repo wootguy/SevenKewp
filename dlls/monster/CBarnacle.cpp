@@ -61,7 +61,7 @@ private:
 	static const char* pChewSounds[];
 	static const char* pDieSounds[];
 };
-LINK_ENTITY_TO_CLASS( monster_barnacle, CBarnacle );
+LINK_ENTITY_TO_CLASS( monster_barnacle, CBarnacle )
 
 const char* CBarnacle::pChewSounds[] =
 {
@@ -86,7 +86,7 @@ TYPEDESCRIPTION	CBarnacle::m_SaveData[] =
 	DEFINE_FIELD( CBarnacle, m_flTongueAdj, FIELD_FLOAT ),
 };
 
-IMPLEMENT_SAVERESTORE( CBarnacle, CBaseMonster );
+IMPLEMENT_SAVERESTORE( CBarnacle, CBaseMonster )
 
 
 //=========================================================
@@ -379,6 +379,7 @@ void CBarnacle :: WaitTillDead ( void )
 
 	float flInterval = StudioFrameAdvance( 0.1 );
 	DispatchAnimEvents ( flInterval );
+	UpdateShockEffect();
 
 	if ( m_fSequenceFinished )
 	{

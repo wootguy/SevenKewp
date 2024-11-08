@@ -37,7 +37,7 @@ TYPEDESCRIPTION	CBaseAnimating::m_SaveData[] =
 	DEFINE_FIELD( CBaseMonster, m_fSequenceLoops, FIELD_BOOLEAN ),
 };
 
-IMPLEMENT_SAVERESTORE( CBaseAnimating, CBaseDelay );
+IMPLEMENT_SAVERESTORE( CBaseAnimating, CBaseDelay )
 
 
 //=========================================================
@@ -166,8 +166,8 @@ void CBaseAnimating :: DispatchAnimEvents ( float flInterval )
 		HandleAnimEvent( &event );
 
 		if (!ModelIsValid(pev, (studiohdr_t*)pmodel)) {
-			ALERT(at_error, "model corruption after HandleAnimEvent! %s was sent event %d '%s'\n",
-				STRING(pev->classname), event.event, event.options);
+			ALERT(at_error, "model corruption after HandleAnimEvent! %s was sent event %d\n",
+				STRING(pev->classname), event.event);
 			break;
 		}
 	}
@@ -216,6 +216,12 @@ void CBaseAnimating :: GetBonePosition ( int iBone, Vector &origin, Vector &angl
 void CBaseAnimating :: GetAttachment ( int iAttachment, Vector &origin, Vector &angles )
 {
 	GET_ATTACHMENT( ENT(pev), iAttachment, origin, angles );
+}
+
+int CBaseAnimating::GetAttachmentCount()
+{
+	studiohdr_t* pstudiohdr = (studiohdr_t*)GET_MODEL_PTR(ENT(pev));
+	return pstudiohdr ? pstudiohdr->numattachments : 0;
 }
 
 //=========================================================

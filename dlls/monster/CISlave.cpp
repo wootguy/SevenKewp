@@ -100,8 +100,8 @@ public:
 	static const char *pPainSounds[];
 	static const char *pDeathSounds[];
 };
-LINK_ENTITY_TO_CLASS( monster_alien_slave, CISlave );
-LINK_ENTITY_TO_CLASS( monster_vortigaunt, CISlave );
+LINK_ENTITY_TO_CLASS( monster_alien_slave, CISlave )
+LINK_ENTITY_TO_CLASS( monster_vortigaunt, CISlave )
 
 
 TYPEDESCRIPTION	CISlave::m_SaveData[] = 
@@ -118,7 +118,7 @@ TYPEDESCRIPTION	CISlave::m_SaveData[] =
 
 };
 
-IMPLEMENT_SAVERESTORE( CISlave, CTalkSquadMonster );
+IMPLEMENT_SAVERESTORE( CISlave, CTalkSquadMonster )
 
 
 
@@ -669,7 +669,7 @@ Schedule_t	slSlaveAttack1[] =
 		bits_COND_HEAVY_DAMAGE, 
 
 		bits_SOUND_DANGER,
-		"Slave Range Attack1"
+		"SLAVE_RANGE_ATTACK1"
 	},
 };
 
@@ -679,7 +679,7 @@ DEFINE_CUSTOM_SCHEDULES( CISlave )
 	slSlaveAttack1,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CISlave, CTalkSquadMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CISlave, CTalkSquadMonster )
 
 
 //=========================================================
