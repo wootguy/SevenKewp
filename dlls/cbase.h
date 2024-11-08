@@ -398,6 +398,15 @@ public:
 	// true if the entity is networked to the given player
 	inline bool isVisibleTo(edict_t* player) { return m_netPlayers & PLRBIT(player); }
 
+	// true if the entity was flagged to be hidden from the given player
+	inline bool isHiddenFrom(edict_t* player) { return m_hidePlayers & PLRBIT(player); }
+
+	// flag this entity to be visible/invisible to the given player
+	inline void SetVisible(edict_t* player, bool visible) {
+		if (visible) m_hidePlayers &= ~PLRBIT(player);
+		else m_hidePlayers |= PLRBIT(player);
+	}
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;
@@ -420,6 +429,7 @@ public:
 	uint32_t m_pasPlayers; // players in the audible set of this entity (invalid for invisible ents)
 	uint32_t m_pvsPlayers; // players in the visible set of this entity (invalid for invisible ents)
 	uint32_t m_netPlayers; // players this entity has been networked to (AddToFullPack returned 1)
+	uint32_t m_hidePlayers; // players this entity will be hidden from (AddToFullPack)
 };
 
 
