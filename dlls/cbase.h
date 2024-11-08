@@ -389,11 +389,14 @@ public:
 	// or is there something in the way? (player use code assumes arms have noclip)
 	bool CanReach(CBaseEntity* toucher);
 
-	// true if the player can potentially see this entity
-	bool IsVisibleTo(edict_t* player);
+	// true if this entity is in the PVS of the given player
+	inline bool InPVS(edict_t* player) { return m_pvsPlayers & PLRBIT(player); }
 
-	// true if the player can potentially hear this entity
-	bool IsAudibleTo(edict_t* player);
+	// true if the entity is in the PAS of the given player
+	inline bool InPAS(edict_t* player) { return m_pasPlayers & PLRBIT(player); }
+
+	// true if the entity is networked to the given player
+	inline bool isVisibleTo(edict_t* player) { return m_netPlayers & PLRBIT(player); }
 
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
@@ -414,8 +417,9 @@ public:
 	int m_fireState;
 	int	m_Classify;		// Classify, to let mappers override the default
 
-	uint32_t m_audiblePlayers; // players in the audible set of this entity (invalid for invisible ents)
-	uint32_t m_visiblePlayers; // players in the visible set of this entity (invalid for invisible ents)
+	uint32_t m_pasPlayers; // players in the audible set of this entity (invalid for invisible ents)
+	uint32_t m_pvsPlayers; // players in the visible set of this entity (invalid for invisible ents)
+	uint32_t m_netPlayers; // players this entity has been networked to (AddToFullPack returned 1)
 };
 
 

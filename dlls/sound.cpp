@@ -627,7 +627,7 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 					continue;
 				}
 
-				if (isStatic && !bent->IsVisibleTo(plr)) {
+				if (isStatic && !bent->InPAS(plr)) {
 					ambientsound_msg(entity, ori, sample, volume, attenuation, flags, pitch, MSG_ONE, plr);
 				}
 				else {
@@ -698,7 +698,7 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 
 		// if listener is in the audible set and too close, don't play the sound.
 		// otherwise, the player may be close, but on the other side of a wall, so they should hear the sound
-		if ((baseEmitter->m_audiblePlayers & pbit) && (ent->v.origin - emitter->v.origin).Length() < minRange) {
+		if (baseEmitter->InPAS(ent) && (ent->v.origin - emitter->v.origin).Length() < minRange) {
 			continue;
 		}
 

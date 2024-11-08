@@ -702,7 +702,7 @@ edict_t* UTIL_ClientsInPVS(edict_t* edict, int& playerCount) {
 
 bool UTIL_IsClientInPVS(edict_t* edict) {
 	CBaseEntity* ent = (CBaseEntity*)GET_PRIVATE(edict);
-	return ent && ent->m_visiblePlayers;
+	return ent && ent->m_pvsPlayers;
 }
 
 bool IsValidPlayer(edict_t* edict) {
@@ -834,10 +834,10 @@ bool TestMsgVis(edict_t* plr, int testEntIdx, int netMsgMode) {
 	switch (netMsgMode) {
 	case MSG_PVS:
 	case MSG_PVS_R:
-		return ent->IsVisibleTo(plr);
+		return ent->InPVS(plr);
 	case MSG_PAS:
 	case MSG_PAS_R:
-		return ent->IsAudibleTo(plr);
+		return ent->InPAS(plr);
 	default:
 		return true;
 	}
