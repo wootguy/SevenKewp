@@ -1167,6 +1167,7 @@ class CControllerHeadBall : public CBaseMonster
 	void MovetoTarget( Vector vecTarget );
 	void Crawl( void );
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsNormalMonster() { return FALSE; }
 	int m_iTrail;
 	int m_flNextAttack;
 	Vector m_vecIdeal;
@@ -1323,6 +1324,7 @@ class CControllerZapBall : public CBaseMonster
 	void Precache( void );
 	void EXPORT AnimateThink( void );
 	void EXPORT ExplodeTouch( CBaseEntity *pOther );
+	virtual BOOL IsNormalMonster() { return FALSE; }
 
 	EHANDLE m_hOwner;
 };

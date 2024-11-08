@@ -198,6 +198,7 @@ enum
 // The goal index should indicate which schedule (ordinally) the monster is running.  
 // That way, when tasks fail, the AI can make decisions based on the context of the 
 // current goal and sequence rather than just the current schedule.
+/*
 enum
 {
 	GOAL_ATTACK_ENEMY,
@@ -206,6 +207,7 @@ enum
 	GOAL_MOVE_TARGET,
 	GOAL_EAT,
 };
+*/
 
 // an array of tasks is a task list
 // an array of schedules is a schedule list
@@ -260,38 +262,35 @@ struct WayPoint_t
 #define MOVEGOAL_LOCATION			(bits_MF_TO_LOCATION)
 #define MOVEGOAL_NODE				(bits_MF_TO_NODE)
 
-// these bits represent conditions that may befall the monster, of which some are allowed 
-// to interrupt certain schedules. 
-#define bits_COND_NO_AMMO_LOADED		( 1 << 0 ) // weapon needs to be reloaded!
-#define	bits_COND_SEE_HATE				( 1 << 1 ) // see something that you hate
-#define bits_COND_SEE_FEAR				( 1 << 2 ) // see something that you are afraid of
-#define bits_COND_SEE_DISLIKE			( 1 << 3 ) // see something that you dislike
+#define bits_COND_TASK_FAILED			( 1 << 0 )
+#define bits_COND_LIGHT_DAMAGE			( 1 << 1 ) // hurt a little
+#define bits_COND_ENEMY_FACING_ME		( 1 << 2 ) // enemy is facing me
+#define bits_COND_ENEMY_OCCLUDED		( 1 << 3 ) // target entity occluded by the world
 #define bits_COND_SEE_ENEMY				( 1 << 4 ) // target entity is in full view.
-#define bits_COND_ENEMY_OCCLUDED		( 1 << 5 ) // target entity occluded by the world
-#define bits_COND_SMELL_FOOD			( 1 << 6 )
-#define bits_COND_ENEMY_TOOFAR			( 1 << 7 )
-#define bits_COND_LIGHT_DAMAGE			( 1 << 8 ) // hurt a little 
-#define bits_COND_HEAVY_DAMAGE			( 1 << 9 ) // hurt a lot
-#define bits_COND_CAN_RANGE_ATTACK1		( 1 << 10)
-#define bits_COND_CAN_MELEE_ATTACK1		( 1 << 11)
-#define bits_COND_CAN_RANGE_ATTACK2		( 1 << 12)
-#define bits_COND_CAN_MELEE_ATTACK2		( 1 << 13)
+#define bits_COND_SEE_DISLIKE			( 1 << 5 ) // see something that you dislike
+#define	bits_COND_SEE_HATE				( 1 << 6 ) // see something that you hate
+#define bits_COND_SEE_CLIENT			( 1 << 7 ) // see a client
+#define bits_COND_SEE_FEAR				( 1 << 8 ) // see something that you are afraid of
+#define bits_COND_SEE_NEMESIS			( 1 << 9 ) // see my nemesis
+#define bits_COND_ENEMY_TOOFAR			( 1 << 10 )
+#define bits_COND_NO_AMMO_LOADED		( 1 << 11 ) // weapon needs to be reloaded!
+#define bits_COND_CAN_RANGE_ATTACK1		( 1 << 12 )
+#define bits_COND_CAN_RANGE_ATTACK2		( 1 << 13 )
+#define bits_COND_CAN_MELEE_ATTACK1		( 1 << 14 )
+#define bits_COND_CAN_MELEE_ATTACK2		( 1 << 15 )
+
+#define bits_COND_SCHEDULE_DONE			( 1 << 16 )
+#define bits_COND_SMELL_FOOD			( 1 << 17 )
+#define bits_COND_HEAVY_DAMAGE			( 1 << 18 ) // hurt a lot
+#define bits_COND_PROVOKED				( 1 << 19 )
+#define bits_COND_NEW_ENEMY				( 1 << 20 )
+#define bits_COND_HEAR_SOUND			( 1 << 21 ) // there is an interesting sound
+#define bits_COND_SMELL					( 1 << 22 ) // there is an interesting scent
+#define bits_COND_SPECIAL1				( 1 << 23 ) // Defined by individual monster
+#define bits_COND_SPECIAL2				( 1 << 24 ) // Defined by individual monster
+#define bits_COND_ENEMY_DEAD			( 1 << 25 ) // enemy was killed. If you get this in combat, try to find another enemy. If you get it in alert, victory dance.
+
 // #define bits_COND_CAN_RANGE_ATTACK3		( 1 << 14)
-#define bits_COND_PROVOKED				( 1 << 15)
-#define bits_COND_NEW_ENEMY				( 1 << 16)
-#define bits_COND_HEAR_SOUND			( 1 << 17) // there is an interesting sound
-#define bits_COND_SMELL					( 1 << 18) // there is an interesting scent
-#define bits_COND_ENEMY_FACING_ME		( 1 << 19) // enemy is facing me
-#define bits_COND_ENEMY_DEAD			( 1 << 20) // enemy was killed. If you get this in combat, try to find another enemy. If you get it in alert, victory dance.
-#define bits_COND_SEE_CLIENT			( 1 << 21) // see a client
-#define bits_COND_SEE_NEMESIS			( 1 << 22) // see my nemesis
-
-#define bits_COND_SPECIAL1				( 1 << 28) // Defined by individual monster
-#define bits_COND_SPECIAL2				( 1 << 29) // Defined by individual monster
-
-#define bits_COND_TASK_FAILED			( 1 << 30)
-#define bits_COND_SCHEDULE_DONE			( 1 << 31)
-
 
 #define bits_COND_ALL_SPECIAL			(bits_COND_SPECIAL1 | bits_COND_SPECIAL2)
 

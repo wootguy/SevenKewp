@@ -702,3 +702,7 @@ void PLAYBACK_EVENT_FULL(int flags, const edict_t* pInvoker, unsigned short even
 	g_engfuncs.pfnPlaybackEvent(flags, pInvoker, eventindex, delay, origin, angles, fparam1, fparam2,
 		iparam1, iparam2, bparam1, bparam2);
 }
+
+EXPORT string_t ALLOC_STRING(const char* str) {
+	return g_engfuncs.pfnAllocString(str);
+}
