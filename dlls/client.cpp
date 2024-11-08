@@ -155,8 +155,9 @@ void ClientDisconnect( edict_t *pEntity )
 
 		CBaseEntity* ent = (CBaseEntity*)GET_PRIVATE(&edicts[i]);
 		if (ent) {
-			ent->m_visiblePlayers &= ~plrbit;
-			ent->m_audiblePlayers &= ~plrbit;
+			ent->m_pvsPlayers &= ~plrbit;
+			ent->m_pasPlayers &= ~plrbit;
+			ent->m_netPlayers &= ~plrbit;
 		}
 	}
 
@@ -1093,8 +1094,9 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		return 0; // should never happen?
 
 	uint32_t plrbit = PLRBIT(host);
-	baseent->m_audiblePlayers &= ~plrbit;
-	baseent->m_visiblePlayers &= ~plrbit;
+	baseent->m_pvsPlayers &= ~plrbit;
+	baseent->m_pasPlayers &= ~plrbit;
+	baseent->m_netPlayers &= ~plrbit;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
 	// Ignore ents without valid / visible models
@@ -1114,11 +1116,11 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		return 0; // should never happen?
 
 	if (ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPas)) {
-		baseent->m_audiblePlayers |= plrbit;
+		baseent->m_pasPlayers |= plrbit;
 	}
 
 	if (ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPvs)) {
-		baseent->m_visiblePlayers |= plrbit;
+		baseent->m_pvsPlayers |= plrbit;
 	}
 	else if(ent != host) {
 		// Ignore if not the host and not touching a PVS leaf
@@ -1301,6 +1303,8 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		state->eflags |= EFLAG_FLESH_SOUND;
 	else
 		state->eflags &= ~EFLAG_FLESH_SOUND;
+
+	baseent->m_netPlayers |= plrbit;
 
 	return 1;
 }
