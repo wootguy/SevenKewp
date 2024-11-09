@@ -3,7 +3,7 @@
 #include "cbase.h"
 #include "nodes.h"
 #include "env/CSoundEnt.h"
-#include "client.h"
+#include "hlds_hooks.h"
 #include "decals.h"
 #include "skill.h"
 #include "effects.h"

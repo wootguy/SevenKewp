@@ -2,7 +2,7 @@
 #include	"util.h"
 #include	"cbase.h"
 #include	"saverestore.h"
-#include	"client.h"
+#include	"hlds_hooks.h"
 #include	"decals.h"
 #include	"gamerules.h"
 #include	"game.h"
