@@ -20,6 +20,7 @@
 #include "CBaseMonster.h"
 #include "skill.h"
 #include "PluginManager.h"
+#include "rehlds.h"
 
 cvar_t	displaysoundlist = {"displaysoundlist","0", 0, 0, 0};
 
@@ -339,5 +340,7 @@ void GameDLLInit( void )
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
+
+	RehldsApi_Init();
 }
 

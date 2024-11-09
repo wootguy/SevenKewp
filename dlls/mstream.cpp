@@ -186,10 +186,13 @@ bool mstream::endBitWriting() {
 	currentBit = 0;
 	pos++;
 
-	if (pos + 1 >= end) {
+	if (pos >= end) {
 		eomFlag = true;
-		return true;
+		pos = end;
+		return false;
 	}
+
+	return true;
 }
 
 bool mstream::writeBitCoord(const float f) {

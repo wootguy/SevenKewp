@@ -22,7 +22,7 @@
 #include "cl_util.h"
 #include "netadr.h"
 #undef INTERFACE_H
-#include "../public/interface.h"
+#include "../public/interface_hlsdk.h"
 //#include "vgui_schememanager.h"
 
 #include "pm_shared.h"
@@ -30,7 +30,7 @@
 #include <string.h>
 #include "hud_servers.h"
 #include "vgui_int.h"
-#include "interface.h"
+#include "interface_hlsdk.h"
 
 #ifdef _WIN32
 #include "winsani_in.h"
@@ -41,7 +41,7 @@
 #
 #include "tri.h"
 #include "vgui_TeamFortressViewport.h"
-#include "../public/interface.h"
+#include "../public/interface_hlsdk.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;

@@ -1020,7 +1020,7 @@ void ShutdownInput (void)
 	KB_Shutdown();
 }
 
-#include "interface.h"
+#include "../common/interface_hlsdk.h"
 void CL_UnloadParticleMan( void );
 
 #if defined( _TFC )
