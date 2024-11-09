@@ -607,10 +607,6 @@ set(ALL_SRC
 # don't compile individual entity files
 set_source_files_properties(${ENT_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
 
-include_directories(${CMAKE_SOURCE_DIR}/rehlds)
-include_directories(${CMAKE_SOURCE_DIR}/rehlds/rehlds/public)
-include_directories(${CMAKE_SOURCE_DIR}/rehlds/rehlds/common)
-
 add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
 target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
