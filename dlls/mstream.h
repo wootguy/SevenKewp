@@ -26,7 +26,7 @@ public:
 	// returns 0-1 for bit that was read, or -1 for EOM 
 	uint32_t readBit();
 
-	uint32_t readBits(uint8_t bitCount);
+	uint64_t readBits(uint8_t bitCount);
 
 	Vector readBitVec3Coord();
 	
@@ -43,7 +43,7 @@ public:
 	bool writeBit(bool value);
 
 	// write bitCount bits from value. Returns bits written
-	uint8_t writeBits(uint32_t value, uint8_t bitCount);
+	uint8_t writeBits(uint64_t value, uint8_t bitCount);
 
 	// write zeroes into the remaining bits at the current byte, then increment the position to the next byte
 	// true if position was incremented
