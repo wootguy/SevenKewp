@@ -85,6 +85,7 @@ cvar_t* g_psv_allow_autoaim = NULL;
 cvar_t	*g_footsteps = NULL;
 cvar_t	*g_developer = NULL;
 cvar_t	*sv_max_client_edicts = NULL;
+cvar_t	*sv_voiceenable = NULL;
 cvar_t	*sv_stepsize = NULL;
 cvar_t	*sv_lowercase = NULL;
 
@@ -280,6 +281,7 @@ void GameDLLInit( void )
 	g_footsteps = CVAR_GET_POINTER( "mp_footsteps" );
 	g_developer = CVAR_GET_POINTER( "developer" );
 	sv_max_client_edicts = CVAR_GET_POINTER( "sv_max_client_edicts" );
+	sv_voiceenable = CVAR_GET_POINTER( "sv_voiceenable" );
 	sv_stepsize = CVAR_GET_POINTER( "sv_stepsize" );
 	sv_lowercase = CVAR_GET_POINTER( "sv_lowercase" );
 
@@ -342,5 +344,6 @@ void GameDLLInit( void )
 	SERVER_COMMAND( "exec skill.cfg\n" );
 
 	RehldsApi_Init();
+	RegisterRehldsHooks();
 }
 
