@@ -2576,13 +2576,7 @@ const char* getPlayerUniqueId(edict_t* plr) {
 		return "STEAM_ID_NULL";
 	}
 
-	const char* steamId = (*g_engfuncs.pfnGetPlayerAuthId)(plr);
-
-	if (!strcmp(steamId, "STEAM_ID_LAN") || !strcmp(steamId, "BOT")) {
-		steamId = STRING(plr->v.netname);
-	}
-
-	return steamId;
+	return g_engfuncs.pfnGetPlayerAuthId(plr);
 }
 
 uint64_t steamid_to_steamid64(const char* steamid) {

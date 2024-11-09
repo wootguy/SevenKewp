@@ -60,13 +60,13 @@ uint32_t mstream::readBit()
 	return (*((uint8_t*)pos) & (1 << currentBit++)) != 0;
 }
 
-uint32_t mstream::readBits(uint8_t bitCount)
+uint64_t mstream::readBits(uint8_t bitCount)
 {
-	uint32_t val = 0;
+	uint64_t val = 0;
 
 	for (int i = 0; i < bitCount; i++) {
 		// TODO: read a byte if position and bitcount allow
-		val |= readBit() << i;
+		val |= (uint64_t)readBit() << i;
 	}
 
 	return val;
@@ -162,7 +162,7 @@ bool mstream::writeBit(bool value) {
 	return 1;
 }
 
-uint8_t mstream::writeBits(uint32_t value, uint8_t bitCount) {
+uint8_t mstream::writeBits(uint64_t value, uint8_t bitCount) {
 	for (int i = 0; i < bitCount; i++) {
 		// TODO: write a byte if position and bitcount allow
 
