@@ -12,6 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
+#include "rehlds.h"
 #include "extdll.h"
 #include "eiface.h"
 #include "util.h"
@@ -20,7 +21,6 @@
 #include "CBaseMonster.h"
 #include "skill.h"
 #include "PluginManager.h"
-#include "rehlds.h"
 
 cvar_t	displaysoundlist = {"displaysoundlist","0", 0, 0, 0};
 

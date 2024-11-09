@@ -1,41 +1,11 @@
-typedef enum server_state_e
-{
-	ss_dead = 0,
-	ss_loading = 1,
-	ss_active = 2,
-} server_state_t;
-
-typedef float vec_t;
-typedef vec_t vec3_t[3];
-
-typedef struct cache_user_s
-{
-	void* data;
-} cache_user_t;
-
-using cvar_callback_t = void (*)(const char* pszNewValue);
-
-#define EXT_FUNC
-#define SYNCTYPE_T
-
-#include "rehlds/public/interface.h"
-#include "rehlds/public/rehlds/custom.h"
-#include "rehlds/public/FileSystem.h"
-#include "rehlds/public/rehlds/rehlds_api.h"
+#include "rehlds.h"
+#include "util.h"
 
 IRehldsApi* g_RehldsApi;
 const RehldsFuncs_t* g_RehldsFuncs;
 IRehldsServerData* g_RehldsData;
 IRehldsHookchains* g_RehldsHookchains;
 IRehldsServerStatic* g_RehldsSvs;
-
-#include "rehlds.h"
-
-extern void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
-#define ALERT(...) DEBUG_MSG(__VA_ARGS__)
-extern char* UTIL_VarArgs(const char* format, ...);
-
-extern enginefuncs_t g_engfuncs;
 
 bool RehldsApi_Init()
 {
