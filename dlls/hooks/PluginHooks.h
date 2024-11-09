@@ -130,6 +130,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// called after client data is updated by the mod and before it is returned to the engine
 	HOOK_RETURN_DATA (*pfnUpdateClientDataPost)(const edict_t* ent, int sendweapons, clientdata_t* cd);
+
+	// called before voice data is sent to a player. Set mute to true to block the message to the receiver
+	HOOK_RETURN_DATA (*pfnSendVoiceData)(int senderidx, int receiveridx, uint8_t* data, int sz, bool& mute);
 };
 
 EXPORT void RegisterPlugin(void* plugin, HLCOOP_PLUGIN_HOOKS* hooks, const char* name);

@@ -100,6 +100,7 @@ EXPORT extern cvar_t	*g_psv_allow_autoaim;
 EXPORT extern cvar_t	*g_footsteps;
 EXPORT extern cvar_t	*g_developer;
 EXPORT extern cvar_t	*sv_max_client_edicts;
+EXPORT extern cvar_t	*sv_voiceenable;
 EXPORT extern cvar_t	*sv_stepsize;
 EXPORT extern cvar_t	*sv_lowercase;
 

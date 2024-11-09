@@ -478,6 +478,7 @@ set(HOOKS_SRC
 	hooks/hlds_hooks.cpp
 	hooks/PluginManager.cpp
 	hooks/rehlds.cpp
+	hooks/rehlds_hooks.cpp
 	../common/rehlds_interface.cpp
 )
 
