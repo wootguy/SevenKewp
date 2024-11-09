@@ -1,3 +1,6 @@
 [submodule "sevenkewp"]
 	path = sevenkewp
 	url = https://github.com/wootguy/SevenKewp_data.git
+[submodule "rehlds"]
+	path = rehlds
+	url = https://github.com/wootguy/rehlds

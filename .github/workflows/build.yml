@@ -12,6 +12,12 @@ jobs:
       with:
         submodules: 'false'
 
+    - name: Checkout rehlds
+      uses: actions/checkout@v4
+      with:
+        repository: wootguy/rehlds
+        path: ./rehlds
+
     - name: Checkout plugins
       uses: actions/checkout@v4
       with:
@@ -44,6 +50,12 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: 'false'
+
+    - name: Checkout rehlds
+      uses: actions/checkout@v4
+      with:
+        repository: wootguy/rehlds
+        path: ./rehlds
 
     - name: Checkout plugins
       uses: actions/checkout@v4

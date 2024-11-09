@@ -40,6 +40,10 @@
 
 #define CACHE_SIZE	32		// used to align key data structures
 
+// must match definition in modelgen.h
+#ifndef SYNCTYPE_T
+#define SYNCTYPE_T
+
 typedef enum
 {
 	mod_brush, 
@@ -48,17 +52,11 @@ typedef enum
 	mod_studio
 } modtype_t;
 
-// must match definition in modelgen.h
-#ifndef SYNCTYPE_T
-#define SYNCTYPE_T
-
 typedef enum
 {
 	ST_SYNC=0,
 	ST_RAND
 } synctype_t;
-
-#endif
 
 typedef struct
 {
@@ -347,5 +345,7 @@ typedef struct player_info_s
 
 	customization_t customdata;
 } player_info_t;
+
+#endif
 
 #endif // #define COM_MODEL_H

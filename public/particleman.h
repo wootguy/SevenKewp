@@ -1,7 +1,7 @@
 #ifndef PARTICLEMAN_H
 #define PARTICLEMAN_H
 
-#include "interface.h"
+#include "interface_hlsdk.h"
 #include "pman_triangleffect.h"
 
 #define PARTICLEMAN_INTERFACE "create_particleman"

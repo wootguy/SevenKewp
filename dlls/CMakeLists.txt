@@ -429,6 +429,7 @@ set(UTIL_HDR
 	ThreadSafeInt.h
 	ThreadSafeQueue.h
 	wav.h
+	rehlds.h
 	../game_shared/shared_util.h
 )
 set(UTIL_SRC
@@ -449,6 +450,8 @@ set(UTIL_SRC
 	ThreadSafeInt.cpp
 	ThreadSafeQueue.cpp
 	wav.cpp
+	rehlds.cpp
+	../common/rehlds_interface.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
 	../pm_shared/pm_shared.cpp
@@ -603,6 +606,10 @@ set(ALL_SRC
 
 # don't compile individual entity files
 set_source_files_properties(${ENT_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
+
+include_directories(${CMAKE_SOURCE_DIR}/rehlds)
+include_directories(${CMAKE_SOURCE_DIR}/rehlds/rehlds/public)
+include_directories(${CMAKE_SOURCE_DIR}/rehlds/rehlds/common)
 
 add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
