@@ -4,7 +4,7 @@
 #include "saverestore.h"
 #include "CBasePlayer.h"
 #include "CBaseSpectator.h"
-#include "client.h"
+#include "hlds_hooks.h"
 #include "env/CSoundEnt.h"
 #include "gamerules.h"
 #include "game.h"

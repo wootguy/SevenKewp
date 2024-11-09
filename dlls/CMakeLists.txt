@@ -300,8 +300,6 @@ set(ENTITY_HDR
 	cbase.h
 	ent_globals.h
 	nodes.h
-	CBasePlayer.h
-	CBaseSpectator.h
 	CKeyValue.h
 	scripted.h
 	scriptevent.h
@@ -318,15 +316,11 @@ set(ENTITY_SRC
 	CBaseAnimating.cpp
 	CBaseEntity.cpp
 	CBaseDelay.cpp
-	CBaseDMStart.cpp
-	CBasePlayer.cpp
-	CBaseSpectator.cpp
 	CBaseToggle.cpp
 	CGlobalState.cpp
 	CNullEntity.cpp
 	CPointEntity.cpp
 	CWorld.cpp
-	subs.cpp
 	path/CPathCorner.cpp
 	path/CPathTrack.cpp
 )
@@ -429,7 +423,6 @@ set(UTIL_HDR
 	ThreadSafeInt.h
 	ThreadSafeQueue.h
 	wav.h
-	rehlds.h
 	../game_shared/shared_util.h
 )
 set(UTIL_SRC
@@ -446,16 +439,46 @@ set(UTIL_SRC
 	lagcomp.cpp
 	saverestore.cpp
 	Scheduler.cpp
+	subs.cpp
 	TextMenu.cpp
 	ThreadSafeInt.cpp
 	ThreadSafeQueue.cpp
 	wav.cpp
-	rehlds.cpp
-	../common/rehlds_interface.cpp
+	../game_shared/shared_util.cpp
+)
+set(PLAYER_HDR
+	../pm_shared/pm_debug.h
+	../pm_shared/pm_defs.h
+	../pm_shared/pm_info.h
+	../pm_shared/pm_materials.h
+	../pm_shared/pm_movevars.h
+	../pm_shared/pm_shared.h
+	CBasePlayer.h
+	CBaseSpectator.h
+)
+set(PLAYER_SRC
+	../pm_shared/pm_shared.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
-	../pm_shared/pm_shared.cpp
-	../game_shared/shared_util.cpp
+	CBaseDMStart.cpp
+	CBasePlayer.cpp
+	CBaseSpectator.cpp
+)
+set(HOOKS_HDR
+	../engine/custom.h
+	../engine/eiface.h
+	hooks/hlds_hooks.h
+	hooks/PluginHooks.h
+	hooks/PluginManager.h
+	hooks/rehlds.h
+)
+set(HOOKS_SRC
+	hooks/client_commands.cpp
+	hooks/h_export.cpp
+	hooks/hlds_hooks.cpp
+	hooks/PluginManager.cpp
+	hooks/rehlds.cpp
+	../common/rehlds_interface.cpp
 )
 
 set(NET_HDR
@@ -475,31 +498,22 @@ else()
 endif()
 
 set(GAME_HDR
-	client.h
-	../engine/custom.h
-	../engine/eiface.h
 	game.h
 	gamerules.h
 	skill.h
 	teamplay_gamerules.h
 	user_messages.h
-	PluginHooks.h
-	PluginManager.h
 )
 set(GAME_SRC
-	client.cpp
-	client_commands.cpp
 	game.cpp
 	gamerules.cpp
 	globals.cpp
-	h_export.cpp
 	multiplay_gamerules.cpp
 	singleplay_gamerules.cpp
 	skill.cpp
 	teamplay_gamerules.cpp
-	user_messages.cpp
 	../game_shared/voice_gamemgr.cpp
-	PluginManager.cpp
+	user_messages.cpp
 )
 
 set(ALL_TRIGGER_MISC_SRC ${TRIGGER_SRC} ${TRIGGER_OBSOLETE_SRC})
@@ -601,6 +615,8 @@ set(ALL_SRC
 	${UTIL_SRC} ${UTIL_HDR}
 	${NET_SRC} ${NET_HDR}
 	${GAME_SRC} ${GAME_HDR}
+	${PLAYER_SRC} ${PLAYER_HDR}
+	${HOOKS_SRC} ${HOOKS_HDR}
 	${MISC_HDR}
 )
 
@@ -642,12 +658,14 @@ elseif(MSVC)
 	source_group("Header Files\\Entities\\item" FILES ${ITEM_HDR})
 	source_group("Header Files\\Entities\\monster" FILES ${MONSTER_HDR})
 	source_group("Header Files\\Entities\\path" FILES ${PATH_HDR})
+	source_group("Header Files\\Entities\\player" FILES ${PLAYER_HDR})
 	source_group("Header Files\\Entities\\trigger" FILES ${TRIGGER_HDR})
 	source_group("Header Files\\Entities\\weapon" FILES ${WEAPON_HDR})
 	source_group("Header Files\\Entities\\weapon\\ammo" FILES ${AMMO_HDR})
 	source_group("Header Files\\Game" FILES ${GAME_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})
 	source_group("Header Files\\Network" FILES ${NET_HDR})
+	source_group("Header Files\\Hooks" FILES ${HOOKS_HDR})
 	
 	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})
 	source_group("Source Files\\Generated" FILES  ${GENERATED_SRCS})
@@ -660,6 +678,7 @@ elseif(MSVC)
 	source_group("Source Files\\Entities\\monster\\machines" FILES ${MONSTER_MACHINE_SRC})
 	source_group("Source Files\\Entities\\monster\\misc" FILES ${MONSTER_MISC_SRC})
 	source_group("Source Files\\Entities\\path" FILES ${PATH_SRC})
+	source_group("Source Files\\Entities\\player" FILES ${PLAYER_SRC})
 	source_group("Source Files\\Entities\\trigger" FILES ${TRIGGER_SRC})
 	source_group("Source Files\\Entities\\trigger\\point" FILES ${TRIGGER_POINT_SRC})
 	source_group("Source Files\\Entities\\trigger\\brush" FILES ${TRIGGER_BRUSHED_SRC})
@@ -669,6 +688,7 @@ elseif(MSVC)
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})
 	source_group("Source Files\\Network" FILES ${NET_SRC})
 	source_group("Source Files\\Game" FILES ${GAME_SRC})
+	source_group("Source Files\\Hooks" FILES ${HOOKS_SRC})
 	
 	# WinSock libraries for network utils
 	target_link_libraries(${PROJECT_NAME} PRIVATE WS2_32 IPHLPAPI)

@@ -12,21 +12,6 @@
 #define FL_SPAWN_FILTER_INVERT 16
 #define FL_SPAWN_TRIGGER 32
 
-class CBaseDMStart : public CPointEntity
-{
-public:
-	void		Spawn(void);
-	void		Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	BOOL		IsTriggered(CBaseEntity* pEntity);
-	void		KeyValue(KeyValueData* pkvd);
-
-	void		SpawnPlayer(CBasePlayer* plr);
-
-private:
-	bool isActive;
-	int triggerState;
-};
-
 // These are the new entry points to entities. 
 LINK_ENTITY_TO_CLASS(info_player_deathmatch, CBaseDMStart)
 LINK_ENTITY_TO_CLASS(info_player_start, CBaseDMStart)
