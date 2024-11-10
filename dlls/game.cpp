@@ -251,7 +251,24 @@ void update_plugins() {
 	}
 }
 
+void freespace_command() {
+	std::string path = CMD_ARGC() > 1 ? CMD_ARGS() : "";
+
+	if (path.empty()) {
+		static char gameDir[MAX_PATH];
+		GET_GAME_DIR(gameDir);
+
+		path = gameDir;
+	}
+
+	uint64_t bytes = getFreeSpace(path);
+	uint32_t gb = bytes / (1024ULL * 1024ULL * 1024ULL);
+
+	ALERT(at_console, "Free space at %s is %.2f GB\n", path.c_str(), (float)gb);
+}
+
 void test_command() {
+	
 }
 
 void cfg_exec_finished() {
@@ -273,8 +290,9 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("reloadplugin", reload_plugin);
 	g_engfuncs.pfnAddServerCommand("updateplugin", update_plugin);
 	g_engfuncs.pfnAddServerCommand("updateplugins", update_plugins);
+	g_engfuncs.pfnAddServerCommand("freespace", freespace_command);
+	
 	// Register cvars here:
-
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 	g_psv_aim = CVAR_GET_POINTER( "sv_aim" );
 	g_psv_allow_autoaim = CVAR_GET_POINTER("sv_allow_autoaim");
