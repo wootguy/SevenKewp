@@ -101,6 +101,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// called when the mod fetches the full text for a client or server command
 	HOOK_RETURN_DATA (*pfnCmd_Args)();
 
+	// called when a client user command is received (movement, buttons, etc.)
+	HOOK_RETURN_DATA(*pfnCmdStart)(const edict_t* player, const struct usercmd_s* cmd, unsigned int random_seed);
+
 	// called when constructing a network message
 	HOOK_RETURN_DATA (*pfnMessageBegin)(int iMsgType, int iMsgID, const float* pOrigin, edict_t* pEdict);
 	HOOK_RETURN_DATA (*pfnWriteByte)(int value);
