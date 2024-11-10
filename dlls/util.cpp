@@ -3090,7 +3090,7 @@ float normalizeRangef(const float value, const float start, const float end)
 	const float width = end - start;
 	const float offsetValue = value - start;   // value relative to 0
 
-	return (offsetValue - (floor(offsetValue / width) * width)) + start;
+	return (offsetValue - (floorf(offsetValue / width) * width)) + start;
 	// + start to reset back to start of original range
 }
 

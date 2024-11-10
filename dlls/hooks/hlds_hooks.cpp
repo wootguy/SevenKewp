@@ -1818,6 +1818,8 @@ This is the time to examine the usercmd for anything extra.  This call happens e
 */
 void CmdStart( const edict_t *player, const struct usercmd_s *cmd, unsigned int random_seed )
 {
+	CALL_HOOKS_VOID(pfnCmdStart, player, cmd, random_seed);
+
 	entvars_t *pev = (entvars_t *)&player->v;
 	CBasePlayer *pl = dynamic_cast< CBasePlayer *>( CBasePlayer::Instance( pev ) );
 
