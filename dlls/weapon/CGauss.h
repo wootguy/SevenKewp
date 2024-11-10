@@ -33,6 +33,7 @@ public:
 	int m_iGlow;
 	int m_iBeam;
 	int m_iSoundState; // don't save this
+	int m_lastPitch;
 
 	// was this weapon just fired primary or secondary?
 	// we need to know so we can pick the right set of effects. 
