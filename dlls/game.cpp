@@ -361,7 +361,9 @@ void GameDLLInit( void )
 
 	SERVER_COMMAND( "exec skill.cfg\n" );
 
-	RehldsApi_Init();
-	RegisterRehldsHooks();
+	if (IS_DEDICATED_SERVER()) {
+		RehldsApi_Init();
+		RegisterRehldsHooks();
+	}
 }
 
