@@ -3203,7 +3203,7 @@ void CBasePlayer::Spawn( void )
 	pev->health			= mp_starthealth.value;
 	pev->armorvalue		= mp_startarmor.value;
 	pev->max_health		= pev->health;
-	pev->flags		   &= FL_PROXY;	// keep proxy flag sey by engine
+	pev->flags		   &= (FL_PROXY | FL_FAKECLIENT);	// keep proxy flag sey by engine
 	pev->flags		   |= FL_CLIENT;
 	pev->air_finished	= gpGlobals->time + 12;
 	pev->dmg			= 2;				// initial water damage
