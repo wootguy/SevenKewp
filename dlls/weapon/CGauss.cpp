@@ -297,7 +297,16 @@ void CGauss::SecondaryAttack()
 		if ( m_iSoundState == 0 )
 			ALERT( at_console, "sound state %d\n", m_iSoundState );
 
-		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, pitch, 0, ( m_iSoundState == SND_CHANGE_PITCH ) ? 1 : 0, 0 );
+#ifdef CLIENT_DLL
+		m_lastPitch = 0; // always playback the current pitch
+#endif
+
+		if (pitch != m_lastPitch && (m_lastPitch % 4 == 0 || pitch == 250) || m_iSoundState != SND_CHANGE_PITCH) {
+			PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0, (float*)&g_vecZero, (float*)&g_vecZero, 0.0, 0.0, pitch, 0, (m_iSoundState == SND_CHANGE_PITCH) ? 1 : 0, 0);
+			ALERT(at_console, "SEND EVENT: %d\n", pitch);
+		}
+
+		m_lastPitch = pitch;
 
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 
