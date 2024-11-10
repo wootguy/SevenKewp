@@ -401,9 +401,12 @@ void ServerDeactivate( void )
 	g_precachedModels.clear();
 	g_missingModels.clear();
 	g_precachedSounds.clear();
+	g_precachedEvents.clear();
 	g_tryPrecacheGeneric.clear();
 	g_tryPrecacheModels.clear();
 	g_tryPrecacheSounds.clear();
+	g_tryPrecacheEvents.clear();
+	g_allocedStrings.clear();
 	g_mapWeapons.clear();
 	g_wavInfos.clear();
 	g_weaponClassnames.clear();

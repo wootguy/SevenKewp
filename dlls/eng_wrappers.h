@@ -20,6 +20,9 @@ EXPORT extern std::unordered_set<std::string> g_tryPrecacheSounds;
 EXPORT extern std::unordered_set<std::string> g_tryPrecacheGeneric;
 EXPORT extern std::unordered_set<std::string> g_tryPrecacheEvents;
 
+// find an already alloc'd string by its contents (used by ALLOC_STRING)
+extern std::unordered_map<std::string, string_t> g_allocedStrings;
+
 #ifdef CLIENT_DLL
 #define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)
 #define SET_MODEL		(*g_engfuncs.pfnSetModel)

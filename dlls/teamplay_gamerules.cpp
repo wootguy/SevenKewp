@@ -33,6 +33,7 @@ CHalfLifeTeamplay :: CHalfLifeTeamplay()
 {
 	m_DisableDeathMessages = FALSE;
 	m_DisableDeathPenalty = FALSE;
+	mapcycle.items = NULL;
 
 	memset( team_names, 0, sizeof(team_names) );
 	memset( team_scores, 0, sizeof(team_scores) );

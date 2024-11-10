@@ -18,6 +18,8 @@ std::unordered_set<std::string> g_tryPrecacheSounds;
 std::unordered_set<std::string> g_tryPrecacheGeneric;
 std::unordered_set<std::string> g_tryPrecacheEvents;
 
+std::unordered_map<std::string, string_t> g_allocedStrings;
+
 Bsp g_bsp;
 
 void LoadBsp() {
@@ -165,7 +167,7 @@ int PRECACHE_GENERIC(const char* path) {
 
 	if (g_serveractive) {
 		if (g_precachedGeneric.find(path) != g_precachedGeneric.end()) {
-			return g_engfuncs.pfnPrecacheGeneric(path);
+			return g_engfuncs.pfnPrecacheGeneric(STRING(ALLOC_STRING(path)));
 		}
 		else {
 			ALERT(at_warning, "PrecacheGeneric failed: %s\n", path);
@@ -184,7 +186,7 @@ int PRECACHE_GENERIC(const char* path) {
 
 	if (g_tryPrecacheGeneric.size() < MAX_PRECACHE) {
 		g_precachedGeneric.insert(path);
-		return g_engfuncs.pfnPrecacheGeneric(path);
+		return g_engfuncs.pfnPrecacheGeneric(STRING(ALLOC_STRING(path)));
 	}
 	else {
 		return -1;
@@ -217,7 +219,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 
 	if (g_serveractive) {
 		if (g_precachedSounds.find(path) != g_precachedSounds.end()) {
-			return g_engfuncs.pfnPrecacheSound(path);
+			return g_engfuncs.pfnPrecacheSound(STRING(ALLOC_STRING(path)));
 		}
 		else {
 			ALERT(at_warning, "PrecacheSound failed: %s\n", path);
@@ -229,7 +231,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 
 	if (g_tryPrecacheSounds.size() <= MAX_PRECACHE_SOUND) {
 		g_precachedSounds.insert(path);
-		return g_engfuncs.pfnPrecacheSound(path);
+		return g_engfuncs.pfnPrecacheSound(STRING(ALLOC_STRING(path)));
 	}
 	else {
 		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
@@ -277,13 +279,15 @@ void PRECACHE_MODEL_EXTRAS(const char* path, studiohdr_t* mdl) {
 
 	// player model preview image
 	if (isPlayerModel) {
-		PRECACHE_GENERIC(UTIL_VarArgs("%s.bmp", pathWithoutExt.c_str()));
+		const char* bmp = UTIL_VarArgs("%s.bmp", pathWithoutExt.c_str());
+		PRECACHE_GENERIC(STRING(ALLOC_STRING(bmp)));
 	}
 
 	// external sequence models (01/02/03.mdl)
 	if (mdl->numseqgroups > 1) {
 		for (int m = 1; m < mdl->numseqgroups; m++) {
-			PRECACHE_GENERIC(UTIL_VarArgs("%s%02d.mdl", pathWithoutExt.c_str(), m));
+			const char* seqmdl = UTIL_VarArgs("%s%02d.mdl", pathWithoutExt.c_str(), m);
+			PRECACHE_GENERIC(STRING(ALLOC_STRING(seqmdl)));
 		}
 	}
 
@@ -304,7 +308,8 @@ void PRECACHE_MODEL_EXTRAS(const char* path, studiohdr_t* mdl) {
 		}
 
 		if (!isEmptyModel) {
-			PRECACHE_GENERIC(UTIL_VarArgs("%st.mdl", pathWithoutExt.c_str()));
+			const char* tmdl = UTIL_VarArgs("%st.mdl", pathWithoutExt.c_str());
+			PRECACHE_GENERIC(STRING(ALLOC_STRING(tmdl)));
 		}
 	}
 
@@ -326,10 +331,10 @@ void PRECACHE_MODEL_EXTRAS(const char* path, studiohdr_t* mdl) {
 					opt = opt.substr(1); // not sure why some models do this, it looks pointless.
 
 				// model sounds are loaded on demand, not precached
-				PRECACHE_GENERIC(normalize_path("sound/" + opt).c_str());
+				PRECACHE_GENERIC(STRING(ALLOC_STRING(normalize_path("sound/" + opt).c_str())));
 			}
 			if (evt->event == 5001 || evt->event == 5011 || evt->event == 5021 || evt->event == 5031) { // muzzleflash sprite
-				PRECACHE_GENERIC(normalize_path(opt).c_str());
+				PRECACHE_GENERIC(STRING(ALLOC_STRING(normalize_path(opt).c_str())));
 			}
 			if (evt->event == 5005) { // custom muzzleflash (sven co-op only, likely requires custom client)
 				std::string muzzle_txt = normalize_path("events/" + opt);
@@ -402,7 +407,7 @@ int PRECACHE_MODEL(const char* path) {
 
 	if (g_serveractive) {
 		if (g_precachedModels.find(path) != g_precachedModels.end()) {
-			return g_engfuncs.pfnPrecacheModel(path);
+			return g_engfuncs.pfnPrecacheModel(STRING(ALLOC_STRING(path)));
 		}
 		else {
 			ALERT(at_warning, "PrecacheModel failed: %s\n", path);
@@ -416,7 +421,7 @@ int PRECACHE_MODEL(const char* path) {
 	if (g_tryPrecacheModels.size() + g_bsp.entityBspModelCount + 1 <= MAX_PRECACHE_MODEL) {
 		if (g_precachedModels.find(path) == g_precachedModels.end())
 			g_precachedModels.insert(path);
-		int modelIdx = g_engfuncs.pfnPrecacheModel(path);
+		int modelIdx = g_engfuncs.pfnPrecacheModel(STRING(ALLOC_STRING(path)));
 
 		std::string pathstr = std::string(path);
 		if (pathstr.find(".mdl") == pathstr.size() - 4) {
@@ -465,7 +470,7 @@ int PRECACHE_EVENT(int id, const char* path) {
 	g_tryPrecacheEvents.insert(path);
 
 	if (g_tryPrecacheEvents.size() < MAX_PRECACHE_EVENT) {
-		g_precachedEvents[path] = g_engfuncs.pfnPrecacheEvent(id, path);
+		g_precachedEvents[path] = g_engfuncs.pfnPrecacheEvent(id, STRING(ALLOC_STRING(path)));
 		return g_precachedEvents[path];
 	}
 	else {
@@ -704,5 +709,14 @@ void PLAYBACK_EVENT_FULL(int flags, const edict_t* pInvoker, unsigned short even
 }
 
 EXPORT string_t ALLOC_STRING(const char* str) {
-	return g_engfuncs.pfnAllocString(str);
+	auto existing = g_allocedStrings.find(str);
+
+	if (existing != g_allocedStrings.end()) {
+		return existing->second;
+	}
+
+	string_t newStr = g_engfuncs.pfnAllocString(str);
+	g_allocedStrings[str] = newStr;
+
+	return newStr;
 }

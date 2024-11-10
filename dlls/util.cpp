@@ -2463,7 +2463,7 @@ void PrintEntindexStats() {
 	int totalFreeLowPrio = 0;
 	int totalFreeNormalPrio = 0;
 	int totalFreeHighPrio = 0;
-	int lowPrioMin = sv_max_client_edicts->value;
+	int lowPrioMin = sv_max_client_edicts ? sv_max_client_edicts->value : MAX_LEGACY_CLIENT_ENTS;
 	int normalPrioMin = 512;
 	int reservedSlots = gpGlobals->maxClients + 1;
 
@@ -2503,7 +2503,7 @@ CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity) {
 	int iprio = pEntity->GetEntindexPriority();
 	int eidx = pEntity->entindex();
 	int bestIdx = eidx;
-	int lowPrioMin = sv_max_client_edicts->value;
+	int lowPrioMin = sv_max_client_edicts ? sv_max_client_edicts->value : MAX_LEGACY_CLIENT_ENTS;
 	int normalPrioMin = 512;
 	edict_t* edicts = ENT(0);
 
