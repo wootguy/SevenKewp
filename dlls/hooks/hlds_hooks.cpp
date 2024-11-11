@@ -933,6 +933,8 @@ animation right now.
 */
 void PlayerCustomization( edict_t *pEntity, customization_t *pCust )
 {
+	CALL_HOOKS_VOID(pfnPlayerCustomization, pEntity, pCust);
+
 	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE(pEntity);
 
 	if (!pPlayer)
