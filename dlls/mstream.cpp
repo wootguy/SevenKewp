@@ -176,8 +176,8 @@ uint8_t mstream::writeBits(uint64_t value, uint8_t bitCount) {
 	return bitCount;
 }
 
-bool mstream::endBitWriting() {
-	if (currentBit == 0 || currentBit == 8) {
+bool mstream::endBitWriting() {	
+	if (currentBit == 0 || eomFlag) {
 		return false;
 	}
 
