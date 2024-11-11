@@ -136,6 +136,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// called before voice data is sent to a player. Set mute to true to block the message to the receiver
 	HOOK_RETURN_DATA (*pfnSendVoiceData)(int senderidx, int receiveridx, uint8_t* data, int sz, bool& mute);
+
+	// called before the mod processes a newly uploaded customization (tempdecal.wad spray)
+	HOOK_RETURN_DATA (*pfnPlayerCustomization)(edict_t* pEntity, customization_t* pCust);
 };
 
 EXPORT void RegisterPlugin(void* plugin, HLCOOP_PLUGIN_HOOKS* hooks, const char* name);
