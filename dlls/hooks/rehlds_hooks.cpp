@@ -1,6 +1,8 @@
 #include "rehlds.h"
 #include "util.h"
 #include "PluginManager.h"
+#include "cbase.h"
+#include "CBasePlayer.h"
 
 void rehlds_SendBigMessage_internal(int msgType, void* data, int sz, int playerindex) {
 	IGameClient* dstClient = g_RehldsSvs->GetClient(playerindex - 1);
@@ -48,12 +50,14 @@ void SV_ParseVoiceData_hlcoop(IGameClient* cl) {
 	if (sv_voiceenable->value == 0.0f)
 		return;
 
+	static float lastIconTime[33];
+
 	int sender = cl->GetId();
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
-		if (!plr || !g_engfuncs.pfnVoice_GetClientListening(i, sender+1)) {
+		if (!plr) {
 			continue;
 		}
 		
@@ -61,7 +65,21 @@ void SV_ParseVoiceData_hlcoop(IGameClient* cl) {
 
 		CALL_HOOKS_VOID(pfnSendVoiceData, sender + 1, i, chReceived, nDataLength, pluginWantsMute);
 
-		if (pluginWantsMute) {
+		if (!g_engfuncs.pfnVoice_GetClientListening(i, sender+1) || pluginWantsMute) {
+
+			// indicate that the player is muted
+			if (gpGlobals->time - lastIconTime[i] > 0.15f || lastIconTime[i] > gpGlobals->time) {
+				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, plr->edict());
+				WRITE_BYTE(TE_PLAYERATTACHMENT);
+				WRITE_BYTE(sender + 1);
+				WRITE_COORD(45);
+				WRITE_SHORT(MODEL_INDEX(GET_MODEL("sprites/voiceicon_m.spr")));
+				WRITE_SHORT(2);
+				MESSAGE_END();
+
+				lastIconTime[i] = gpGlobals->time;
+			}
+			
 			continue;
 		}
 
