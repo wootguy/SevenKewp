@@ -2779,14 +2779,16 @@ std::string getGameFilePath(const char* path) {
 
 	std::string lowerPath = toLowerCase(path);
 
-	std::string searchPaths[4] = {
+	std::string searchPaths[] = {
+		normalize_path(gameDir + std::string("_addon/") + path),
+		normalize_path(gameDir + std::string("_addon/") + lowerPath),
 		normalize_path(gameDir + std::string("/") + path),
 		normalize_path(gameDir + std::string("/") + lowerPath),
 		normalize_path(gameDir + std::string("_downloads/") + path),
 		normalize_path(gameDir + std::string("_downloads/") + lowerPath),
 	};
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < ARRAY_SZ(searchPaths); i++) {
 		if (fileExists(searchPaths[i].c_str())) {
 			return searchPaths[i];
 		}

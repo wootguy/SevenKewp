@@ -23,7 +23,8 @@ std::unordered_map<std::string, string_t> g_allocedStrings;
 Bsp g_bsp;
 
 void LoadBsp() {
-	std::string mapPath = getGameFilePath((std::string("maps/") + STRING(gpGlobals->mapname) + ".bsp").c_str());
+	std::string relPath = std::string("maps/") + STRING(gpGlobals->mapname) + ".bsp";
+	std::string mapPath = getGameFilePath(relPath.c_str());
 	g_bsp.load_lumps(mapPath);
 
 	if (g_bsp.textures) {
