@@ -245,6 +245,7 @@ inline entvars_t* VARS(EOFFSET eoffset)			{ return VARS(ENT(eoffset)); }
 inline int	  ENTINDEX(const edict_t *pEdict)			{ return (*g_engfuncs.pfnIndexOfEdict)(pEdict); }
 inline edict_t* INDEXENT( int iEdictNum )		{ return (*g_engfuncs.pfnPEntityOfEntIndex)(iEdictNum); }
 inline uint32_t PLRBIT(const edict_t* pEdict)			{ return 1 << (ENTINDEX(pEdict) & 31); }
+inline uint32_t PLRBIT(uint32_t idx)			{ return 1 << (idx & 31); }
 inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin, entvars_t *ent ) {
 	MESSAGE_BEGIN(msg_dest, msg_type, pOrigin, ENT(ent));
 }
