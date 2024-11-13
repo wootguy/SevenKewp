@@ -77,6 +77,20 @@ int GetUserMsgInfo(const char* msgname, int* size) {
 	return 0;
 }
 
+int GetUserMsgInfo(int id, int* size) {
+	for (int i = 0; i < (int)g_userMessages.size(); i++) {
+		UserMessage& msg = g_userMessages[i];
+
+		if (msg.id == id) {
+			if (size)
+				*size = msg.size;
+			return msg.id;
+		}
+	}
+
+	return 0;
+}
+
 void LinkUserMessages(void)
 {
 	// Already taken care of?
