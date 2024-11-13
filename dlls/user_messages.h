@@ -61,5 +61,6 @@ EXPORT int REG_USER_MSG(const char* name, int size);
 // Find a usermsg, registered by the gamedll, with the corresponding
 // msgname, and return remaining info about it (msgid, size). -metamod
 EXPORT int GetUserMsgInfo(const char* msgname, int* size);
+EXPORT int GetUserMsgInfo(int id, int* size);
 
 void LinkUserMessages(void);
