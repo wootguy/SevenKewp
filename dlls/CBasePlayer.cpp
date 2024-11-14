@@ -2308,7 +2308,7 @@ void CBasePlayer::PreThink(void)
 				m_wantToExitObserver = false;
 			}
 			else {
-				UTIL_ClientPrint(edict(), print_center, "Waiting to spawn...\n");
+				UTIL_ClientPrint(this, print_center, "Waiting to spawn...\n");
 			}
 		}
 
@@ -5455,7 +5455,7 @@ void CBasePlayer::Observer_SetMode(int iMode)
 		// if we didn't find a valid target switch to roaming
 		if (m_hObserverTarget == NULL)
 		{
-			UTIL_ClientPrint(edict(), print_center, "#Spec_NoTarget");
+			UTIL_ClientPrint(this, print_center, "#Spec_NoTarget");
 			pev->iuser1 = OBS_ROAMING;
 		}
 	}
@@ -5474,22 +5474,22 @@ void CBasePlayer::Observer_SetMode(int iMode)
 
 	switch (pev->iuser1) {
 	case OBS_IN_EYE:
-		UTIL_ClientPrint(edict(), print_center, "First-Person Cam\n[1/4]");
+		UTIL_ClientPrint(this, print_center, "First-Person Cam\n[1/4]");
 		break;
 	case OBS_CHASE_LOCKED:
-		UTIL_ClientPrint(edict(), print_center, "Locked Chase Cam\n[2/4]");
+		UTIL_ClientPrint(this, print_center, "Locked Chase Cam\n[2/4]");
 		break;
 	case OBS_CHASE_FREE:
-		UTIL_ClientPrint(edict(), print_center, "Free Chase Cam\n[3/4]");
+		UTIL_ClientPrint(this, print_center, "Free Chase Cam\n[3/4]");
 		break;
 	case OBS_ROAMING:
-		UTIL_ClientPrint(edict(), print_center, "Free-Look\n[4/4]");
+		UTIL_ClientPrint(this, print_center, "Free-Look\n[4/4]");
 		break;
 	case OBS_MAP_FREE:
-		UTIL_ClientPrint(edict(), print_center, "Free Map Overview\n");
+		UTIL_ClientPrint(this, print_center, "Free Map Overview\n");
 		break;
 	case OBS_MAP_CHASE:
-		UTIL_ClientPrint(edict(), print_center, "Chase Map Overview\n");
+		UTIL_ClientPrint(this, print_center, "Chase Map Overview\n");
 		break;
 	}
 
@@ -5684,19 +5684,18 @@ void CBasePlayer::SendLegacyClientWarning() {
 		return;
 	}
 
-	edict_t* e = edict();
 	m_sentClientWarning = true;
-	UTIL_ClientPrint(e, print_chat, "[info] This map does not function properly with steam_legacy clients. Check your console for more information.\n");
+	UTIL_ClientPrint(this, print_chat, "[info] This map does not function properly with steam_legacy clients. Check your console for more information.\n");
 		
-	UTIL_ClientPrint(e, print_console, "\n-------------------------------------------------------------------------\n");
-	UTIL_ClientPrint(e, print_console, "This mod is not 100% compatible with the \"Pre-25th Anniversary Build\" of Half-Life.\n");
-	UTIL_ClientPrint(e, print_console, "Some objects and effects have been made invisible to you so that you aren't kicked.\n");
-	UTIL_ClientPrint(e, print_console, "To fix this, either set \"Beta Participation\" to \"None\" in Steam, or add \"edicts 2048\"\n");
-	UTIL_ClientPrint(e, print_console, "to your liblist.gam file. Editing liblist.gam should fix the problem, but won't remove\n");
-	UTIL_ClientPrint(e, print_console, "this message (the server can't know if you've made that edit or not).\n");
-	UTIL_ClientPrint(e, print_console, "-------------------------------------------------------------------------\n\n");
+	UTIL_ClientPrint(this, print_console, "\n-------------------------------------------------------------------------\n");
+	UTIL_ClientPrint(this, print_console, "This mod is not 100% compatible with the \"Pre-25th Anniversary Build\" of Half-Life.\n");
+	UTIL_ClientPrint(this, print_console, "Some objects and effects have been made invisible to you so that you aren't kicked.\n");
+	UTIL_ClientPrint(this, print_console, "To fix this, either set \"Beta Participation\" to \"None\" in Steam, or add \"edicts 2048\"\n");
+	UTIL_ClientPrint(this, print_console, "to your liblist.gam file. Editing liblist.gam should fix the problem, but won't remove\n");
+	UTIL_ClientPrint(this, print_console, "this message (the server can't know if you've made that edit or not).\n");
+	UTIL_ClientPrint(this, print_console, "-------------------------------------------------------------------------\n\n");
 
-	UTIL_LogPlayerEvent(e, "was sent the steam_legacy client warning\n");
+	UTIL_LogPlayerEvent(edict(), "was sent the steam_legacy client warning\n");
 }
 
 const char* CBasePlayer::GetClientVersionString() {
@@ -5706,4 +5705,22 @@ const char* CBasePlayer::GetClientVersionString() {
 		engineVersion = " (steam_legacy)";
 
 	return UTIL_VarArgs("%s%s", STRING(m_clientModVersionString), engineVersion);
+}
+
+const char* CBasePlayer::GetSteamID() {
+	return g_engfuncs.pfnGetPlayerAuthId(edict());
+}
+
+uint64_t CBasePlayer::GetSteamID64() {
+	const char* id = GetSteamID();
+
+	if (!strcmp(id, "STEAM_ID_NULL") || !strcmp(id, "STEAM_ID_LAN") || !strcmp(id, "BOT")) {
+		return 0;
+	}
+
+	return steamid_to_steamid64(id);
+}
+
+int CBasePlayer::GetUserID() {
+	return  g_engfuncs.pfnGetPlayerUserId(edict());
 }

@@ -7,7 +7,7 @@ public:
 	void KeyValue(KeyValueData* pkvd);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void VoteThink();
-	void MenuCallback(TextMenu* menu, edict_t* player, int itemNumber, TextMenuItem& item);
+	void MenuCallback(TextMenu* menu, CBasePlayer* player, int itemNumber, TextMenuItem& item);
 
 	string_t m_iszYesString;
 	string_t m_iszNoString;

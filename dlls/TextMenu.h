@@ -6,21 +6,22 @@
 #define ITEMS_PER_PAGE 7
 #define MAX_PLAYERS 32
 
+class CTriggerVote;
+class CBasePlayer;
+
 // this must be called as part of a MessageBegin hook for text menus to know when they are active
 void TextMenuMessageBeginHook(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed);
 
 // this must be called as part of a DLL ClientCommand hook for option selections to work
-bool TextMenuClientCommandHook(edict_t* pEntity);
+bool TextMenuClientCommandHook(CBasePlayer* pEntity);
 
 struct TextMenuItem {
 	std::string displayText;
 	std::string data;
 };
 
-class CTriggerVote;
-
-typedef void (CTriggerVote::*EntityTextMenuCallback)(class TextMenu* menu, edict_t* player, int itemNumber, TextMenuItem& item);
-typedef void (*TextMenuCallback)(class TextMenu* menu, edict_t* player, int itemNumber, TextMenuItem& item);
+typedef void (CTriggerVote::*EntityTextMenuCallback)(class TextMenu* menu, CBasePlayer* player, int itemNumber, TextMenuItem& item);
+typedef void (*TextMenuCallback)(class TextMenu* menu, CBasePlayer* player, int itemNumber, TextMenuItem& item);
 
 // Do not create new TextMenus. Only use initMenuForPlayer
 class TextMenu {
@@ -29,9 +30,9 @@ public:
 
 	// use this to create menus for each player.
 	// When creating a menu for all players, pass NULL for player.
-	EXPORT static TextMenu* init(edict_t* player, TextMenuCallback callback);
+	EXPORT static TextMenu* init(CBasePlayer* player, TextMenuCallback callback);
 
-	EXPORT static TextMenu* init(edict_t* player, EntityTextMenuCallback callback, CBaseEntity* ent);
+	EXPORT static TextMenu* init(CBasePlayer* player, EntityTextMenuCallback callback, CBaseEntity* ent);
 
 	EXPORT void SetTitle(std::string title);
 
@@ -40,13 +41,13 @@ public:
 	// set player to NULL to send to all players.
 	// This should be the same target as was used with initMenuForPlayer
 	// paging not supported yet
-	EXPORT void Open(uint8_t duration, uint8_t page, edict_t* player);
+	EXPORT void Open(uint8_t duration, uint8_t page, CBasePlayer* player);
 
 	// don't call directly. This is triggered by global hook functions
 	EXPORT void handleMenuMessage(int msg_dest, edict_t* ed);
 
 	// don't call directly. This is triggered by global hook functions
-	EXPORT void handleMenuselectCmd(edict_t* pEntity, int selection);
+	EXPORT void handleMenuselectCmd(CBasePlayer* pEntity, int selection);
 
 private:
 	void initAnon(TextMenuCallback callback);

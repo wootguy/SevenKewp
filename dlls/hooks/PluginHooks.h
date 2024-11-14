@@ -67,7 +67,7 @@ struct HLCOOP_PLUGIN_HOOKS {
 	HOOK_RETURN_DATA (*pfnClientConnect)(edict_t* pEntity, const char* pszName, const char* pszAddress, char szRejectReason[128]);
 	
 	// called when a client disconnects from the server.
-	HOOK_RETURN_DATA (*pfnClientDisconnect)(edict_t* pEntity);
+	HOOK_RETURN_DATA (*pfnClientDisconnect)(CBasePlayer* pEntity);
 
 	// called when a player is fully connected to the server and is about to spawn
 	HOOK_RETURN_DATA (*pfnClientPutInServer)(CBasePlayer* pPlayer);
@@ -160,11 +160,12 @@ struct HLCOOP_PLUGIN_HOOKS {
 	HOOK_RETURN_DATA (*pfnPlayerCustomization)(edict_t* pEntity, customization_t* pCust);
 };
 
-EXPORT void RegisterPlugin(void* plugin, HLCOOP_PLUGIN_HOOKS* hooks, const char* name);
+// do not call directly, use RegisterPlugin instead
+EXPORT int RegisterPlugin_internal( HLCOOP_PLUGIN_HOOKS* hooks, int hookTableSz, const char* name, int ifaceVersion);
 
 // must call this instead of registering cvars directly or else the game crashes when the plugin unloads
 // and any cvar is used
-EXPORT cvar_t* RegisterPluginCVar(void* plugin, const char* name, const char* strDefaultValue, int intDefaultValue, int flags);
+EXPORT cvar_t* RegisterPluginCVar(const char* name, const char* strDefaultValue, int intDefaultValue, int flags);
 
 // must call this instead of registering commands directly or else the game crashes when the plugin unloads
 // and the registered command is used.
@@ -174,21 +175,17 @@ EXPORT cvar_t* RegisterPluginCVar(void* plugin, const char* name, const char* st
 // cooldown = limits the speed a command can be triggered by players who are not an admins.
 //            A non-zero cooldown is recommended so that bad actors can't send hundreds of commands
 //            simultaneously in an attempt to cause lag or crashes.
-EXPORT void RegisterPluginCommand(void* plugin, const char* cmd, plugin_cmd_callback callback,
+EXPORT void RegisterPluginCommand(const char* cmd, plugin_cmd_callback callback,
 	int flags=FL_CMD_SERVER, float cooldown=0.1f);
 
 // boilerplate for PluginInit functions
-// must be inline so that plugins don't reference the game definition of HLCOOP_API_VERSION
-inline int InitPluginApi(void* plugin, HLCOOP_PLUGIN_HOOKS* srcApi, int interfaceVersion) {
-	if (interfaceVersion != HLCOOP_API_VERSION) {
-		ALERT(at_error, "Plugin API version mismatch. Game wanted: %d, Plugin has: %d\n", interfaceVersion, HLCOOP_API_VERSION);
-		return 0;
-	}
-
+// must be inline so that plugins don't reference the mod definitions of HLCOOP_API_VERSION, PLUGIN_NAME,
+// and the hook table size
+inline int RegisterPlugin(HLCOOP_PLUGIN_HOOKS* srcApi) {
 #ifdef PLUGIN_NAME
-	RegisterPlugin(plugin, srcApi, PLUGIN_NAME);
+	return RegisterPlugin_internal(srcApi, sizeof(HLCOOP_PLUGIN_HOOKS), PLUGIN_NAME, HLCOOP_API_VERSION);
 #else
 	ALERT(at_error, "Plugin was not compiled correctly. PLUGIN_NAME is undefined.\n");
+	return 0;
 #endif
-	return 1;
 }

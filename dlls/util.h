@@ -330,7 +330,7 @@ EXPORT CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, f
 // Index is 1 based
 EXPORT extern CBasePlayer	*UTIL_PlayerByIndex( int playerIndex );
 EXPORT extern CBasePlayer	*UTIL_PlayerByUserId( int userid );
-EXPORT extern CBasePlayer	*UTIL_PlayerByUniqueId(const char* id);
+EXPORT extern CBasePlayer	*UTIL_PlayerBySteamId(const char* id);
 
 #define UTIL_EntitiesInPVS(pent)			(*g_engfuncs.pfnEntitiesInPVS)(pent)
 EXPORT edict_t*		UTIL_ClientsInPVS(edict_t* edict, int& playerCount);
@@ -417,24 +417,13 @@ EXPORT void			UTIL_BubbleTrail( Vector from, Vector to, int count );
 // allows precacheing of other entities
 EXPORT void			UTIL_PrecacheOther( const char *szClassname, std::unordered_map<std::string, std::string> keys=std::unordered_map<std::string, std::string>() );
 
-// prints a message to each client
-EXPORT void			UTIL_ClientPrintAll( int msg_dest, const char *msg);
-inline void			UTIL_CenterPrintAll( const char *msg_name ) 
-{
-	UTIL_ClientPrintAll( print_center, msg_name );
-}
+// prints a message to the client.
+EXPORT void			UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char* msg);
+EXPORT void			UTIL_ClientPrintAll(PRINT_TYPE print_type, const char *msg);
 
 class CBasePlayerItem;
 class CBasePlayer;
 EXPORT BOOL UTIL_GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
-
-// prints messages through the HUD
-EXPORT void UTIL_ClientPrint(edict_t* client, int msg_dest, const char *msg ); // TODO: remove this
-EXPORT void UTIL_ClientPrint(CBasePlayer* client, int msg_dest, const char *msg );
-
-// prints a message to the HUD say (chat)
-EXPORT void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
-EXPORT void			UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity=NULL );
 
 typedef struct hudtextparms_s
 {
@@ -803,13 +792,9 @@ EXPORT std::string sanitize_cvar_value(std::string val);
 
 EXPORT const char* getActiveWeapon(entvars_t* pev);
 
-EXPORT const char* getPlayerUniqueId(edict_t* plr);
-
 EXPORT uint64_t steamid_to_steamid64(const char* steamid);
 
 EXPORT std::string steamid64_to_steamid(uint64_t steam64);
-
-EXPORT uint64_t getPlayerCommunityId(edict_t* plr);
 
 EXPORT void LoadAdminList(bool forceUpdate=false); // call on each map change, so AdminLevel can work
 
