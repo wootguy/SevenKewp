@@ -7018,7 +7018,7 @@ int CBaseMonster::GetScheduleTableSize() {
 }
 
 int CBaseMonster::GetScheduleTableIdx() {
-	for (int i = 0; i < ARRAYSIZE(m_scheduleList); i++) {
+	for (int i = 0; i < (int)ARRAYSIZE(m_scheduleList); i++) {
 		if (m_scheduleList[i] == m_pSchedule) {
 			return i;
 		}

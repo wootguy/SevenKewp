@@ -21,7 +21,8 @@ bool RehldsApi_Init()
 	CSysModule* engineModule = NULL; // The module handle of the selected DLL
 	for (const char* dllName : dllNames)
 	{
-		if (engineModule = Sys_LoadModule(dllName))
+		engineModule = Sys_LoadModule(dllName);
+		if (engineModule)
 			break; // gotcha
 	}
 

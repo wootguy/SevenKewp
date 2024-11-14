@@ -662,7 +662,7 @@ bool PluginManager::ClientCommand(CBasePlayer* pPlayer) {
 	Plugin* plugin = g_pluginManager.FindPlugin(ecmd->pluginId);
 
 	if (!plugin) {
-		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Command from unloaded plugin can't be called: %s\n", cmd));
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Command from unloaded plugin can't be called: %s\n", cmd.c_str()));
 		return false;
 	}
 

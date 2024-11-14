@@ -897,7 +897,7 @@ void UTIL_ELight_msg(int entindex, int attachment, Vector origin, float radius, 
 	MESSAGE_END();
 }
 void UTIL_ELight(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	SAFE_MESSAGE_ENT_LOGIC(UTIL_ELight_msg, entindex, attachment, origin, radius, color, life, decay, msgMode, origin, targetEnt);
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_ELight_msg, entindex, attachment, origin, radius, color, life, decay, msgMode, msgOrigin, targetEnt);
 }
 
 void UTIL_BeamEntPoint_msg(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart,
@@ -2751,7 +2751,7 @@ std::string getGameFilePath(const char* path) {
 		normalize_path(gameDir + std::string("_downloads/") + lowerPath),
 	};
 
-	for (int i = 0; i < ARRAY_SZ(searchPaths); i++) {
+	for (int i = 0; i < (int)ARRAY_SZ(searchPaths); i++) {
 		if (fileExists(searchPaths[i].c_str())) {
 			return searchPaths[i];
 		}

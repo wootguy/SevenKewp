@@ -16,11 +16,13 @@ typedef struct cache_user_s
 	void* data;
 } cache_user_t;
 
+#include "rehlds/public/rehlds/osconfig.h"
+
 #define CACHE_USER
 #define SYNCTYPE_T
 #define DID_VEC3_T_DEFINE
-#define EXT_FUNC
 #define EIFACE_H
+#define REHLDS_INCLUDE
 #endif
 
 #include "extdll.h"
