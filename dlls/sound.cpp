@@ -712,7 +712,7 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 		// randomize pitch per entity, so you get a better idea of how many players/npcs are shooting
 		int pitch = 95 + ((ENTINDEX(emitter) * 7) % 11);
 
-		StartSound(NULL, CHAN_STATIC, sample, volume, attn, 0, pitch, emitter->v.origin, pbits, false);
+		StartSound((edict_t*)NULL, CHAN_STATIC, sample, volume, attn, 0, pitch, emitter->v.origin, pbits, false);
 	}
 }
 
