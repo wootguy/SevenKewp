@@ -388,7 +388,7 @@ void ClientCommand(edict_t* pEntity)
 
 	CALL_HOOKS_VOID(pfnClientCommand, pPlayer);
 
-	TextMenuClientCommandHook(pEntity);
+	TextMenuClientCommandHook(pPlayer);
 
 	const char* pcmd = CMD_ARGV(0);
 	const char* pstr;
@@ -486,7 +486,7 @@ void ClientCommand(edict_t* pEntity)
 
 				if (FNullEnt(pentSpawnSpot)) {
 					pPlayer->m_wantToExitObserver = true;
-					UTIL_ClientPrint(pPlayer->edict(), print_chat, "Can't stop spectating. No spawn points are available.\n");
+					UTIL_ClientPrint(pPlayer, print_chat, "Can't stop spectating. No spawn points are available.\n");
 				}
 				else {
 					pPlayer->LeaveObserver();
@@ -496,7 +496,7 @@ void ClientCommand(edict_t* pEntity)
 			}
 		}
 		else
-			UTIL_ClientPrint(pEntity, print_console, "Spectator mode is disabled.\n");
+			UTIL_ClientPrint(pPlayer, print_console, "Spectator mode is disabled.\n");
 
 	}
 	else if (FStrEq(pcmd, "specmode"))	// new spectator mode
@@ -551,6 +551,6 @@ void ClientCommand(edict_t* pEntity)
 		}
 
 		// tell the user they entered an unknown command
-		UTIL_ClientPrint(pEntity, print_console, UTIL_VarArgs("Unknown command: %s\n", command));
+		UTIL_ClientPrint(pPlayer, print_console, UTIL_VarArgs("Unknown command: %s\n", command));
 	}
 }

@@ -66,17 +66,21 @@ void CTriggerVote::VoteThink() {
 	pev->nextthink = 0;
 }
 
-void CTriggerVote::MenuCallback(TextMenu* menu, edict_t* player, int itemNumber, TextMenuItem& item) {
+void CTriggerVote::MenuCallback(TextMenu* menu, CBasePlayer* player, int itemNumber, TextMenuItem& item) {
 	if (item.data[0] == 'y') {
 		m_yesVotes++;
 	}
 	if (item.data[0] == 'n') {
 		m_noVotes++;
 	}
+	
+	if (!player) {
+		return;
+	}
 
-	UTIL_ClientPrintAll(print_console, UTIL_VarArgs("'%s' voted '%s'\n", STRING(player->v.netname), item.displayText.c_str()));
+	UTIL_ClientPrintAll(print_console, UTIL_VarArgs("'%s' voted '%s'\n", player->DisplayName(), item.displayText.c_str()));
 	UTIL_ClientPrint(player, print_center, UTIL_VarArgs("You voted '%s'\n", item.displayText.c_str()));
-	ALERT(at_logged, "trigger_vote: '%s' voted '%s'\n", STRING(player->v.netname), item.displayText.c_str());
+	ALERT(at_logged, "trigger_vote: '%s' voted '%s'\n", player->DisplayName(), item.displayText.c_str());
 }
 
 void CTriggerVote::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {
@@ -89,7 +93,7 @@ void CTriggerVote::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE u
 	UTIL_ClientPrintAll(print_console, UTIL_VarArgs("Started vote '%s'\n", voteMessage));
 	ALERT(at_logged, "trigger_vote: Started vote '%s'\n", voteMessage);
 
-	m_textMenu = TextMenu::init((edict_t*)NULL, &CTriggerVote::MenuCallback, this);
+	m_textMenu = TextMenu::init((CBasePlayer*)NULL, &CTriggerVote::MenuCallback, this);
 	m_textMenu->SetTitle(voteMessage);
 	m_textMenu->AddItem(yesString, "y");
 	m_textMenu->AddItem(noString, "n");

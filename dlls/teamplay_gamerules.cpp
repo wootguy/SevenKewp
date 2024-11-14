@@ -239,7 +239,7 @@ void CHalfLifeTeamplay::InitHUD( CBasePlayer *pPlayer )
 	}
 
 	ChangePlayerTeam( pPlayer, pPlayer->m_szTeamName, FALSE, FALSE );
-	UTIL_SayText( text, pPlayer );
+	UTIL_ClientPrint(pPlayer, print_chat, text );
 	RecountTeams();
 	// update this player with all the other players team info
 	// loop through all active players and send their team info to the new client
@@ -326,7 +326,7 @@ void CHalfLifeTeamplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infob
 		SetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", pPlayer->m_szTeamName );
 		SetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "team", pPlayer->m_szTeamName );
 		snprintf( text, 1024, "* Not allowed to change teams in this game!\n" );
-		UTIL_SayText( text, pPlayer );
+		UTIL_ClientPrint(pPlayer, print_chat, text );
 		return;
 	}
 
@@ -336,14 +336,14 @@ void CHalfLifeTeamplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infob
 
 		SetClientKeyValue( clientIndex, g_engfuncs.pfnGetInfoKeyBuffer( pPlayer->edict() ), "model", pPlayer->m_szTeamName );
 		snprintf( text, 1024, "* Can't change team to \'%s\'\n", mdls );
-		UTIL_SayText( text, pPlayer );
+		UTIL_ClientPrint(pPlayer, print_chat, text );
 		snprintf( text, 1024, "* Server limits teams to \'%s\'\n", m_szTeamList );
-		UTIL_SayText( text, pPlayer );
+		UTIL_ClientPrint(pPlayer, print_chat, text );
 		return;
 	}
 	// notify everyone of the team change
 	snprintf( text, 1024, "* %s has changed to team \'%s\'\n", STRING(pPlayer->pev->netname), mdls );
-	UTIL_SayTextAll( text, pPlayer );
+	UTIL_ClientPrintAll(print_chat, text);
 
 	UTIL_LogPlayerEvent(pPlayer->edict(), "joined team \"%s\"\n", pPlayer->m_szTeamName, mdls );
 

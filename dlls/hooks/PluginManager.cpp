@@ -8,6 +8,8 @@
 
 PluginManager g_pluginManager;
 
+Plugin* g_initPlugin; // the plugin currently being initialized
+
 #define MAX_PLUGIN_CVARS 256
 #define MAX_PLUGIN_COMMANDS 256
 
@@ -48,7 +50,7 @@ int g_plugin_id = 0;
 #define HMODULE void*
 #endif
 
-typedef int(*PLUGIN_INIT_FUNCTION)(void* plugin, int interfaceVersion);
+typedef int(*PLUGIN_INIT_FUNCTION)(void);
 typedef void(*PLUGIN_EXIT_FUNCTION)(void);
 
 bool PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
@@ -100,13 +102,16 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 		(PLUGIN_INIT_FUNCTION)GetProcAddress((HMODULE)plugin.h_module, "PluginInit");
 
 	if (apiFunc) {
-		int apiVersion = HLCOOP_API_VERSION;
-		if (apiFunc(&plugin, apiVersion)) {
+		g_initPlugin = &plugin;
+
+		if (apiFunc()) {
 			// success
+			g_initPlugin = NULL;
 		}
 		else {
 			ALERT(at_error, "PluginInit call failed in plugin '%s'.\n", plugin.fpath.c_str());
 			FreeLibrary((HMODULE)plugin.h_module);
+			g_initPlugin = NULL;
 			return false;
 		}
 	}
@@ -520,12 +525,11 @@ ENTITYINIT PluginManager::GetCustomEntityInitFunc(const char* pname) {
 	return NULL;
 }
 
-cvar_t* RegisterPluginCVar(void* pluginptr, const char* name, const char* strDefaultValue, int intDefaultValue, int flags) {
-	if (!pluginptr) {
+cvar_t* RegisterPluginCVar(const char* name, const char* strDefaultValue, int intDefaultValue, int flags) {
+	if (!g_initPlugin) {
+		ALERT(at_error, "Plugin cvars can only be registered during initialization. Failed to register: %s\n", name);
 		return NULL;
 	}
-
-	Plugin* plugin = (Plugin*)pluginptr;
 
 	if (g_plugin_cvar_count >= MAX_PLUGIN_CVARS) {
 		ALERT(at_error, "Plugin cvar limit exceeded! Failed to register: %s\n", name);
@@ -539,7 +543,7 @@ cvar_t* RegisterPluginCVar(void* pluginptr, const char* name, const char* strDef
 		// update the owner of the cvar
 		for (int i = 0; i < MAX_PLUGIN_CVARS; i++) {
 			if (existing == &g_plugin_cvars[i].cvar) {
-				g_plugin_cvars[i].pluginId = plugin->id;
+				g_plugin_cvars[i].pluginId = g_initPlugin->id;
 			}
 		}
 
@@ -554,7 +558,7 @@ cvar_t* RegisterPluginCVar(void* pluginptr, const char* name, const char* strDef
 	extvar.cvar.flags = flags | FCVAR_EXTDLL;
 	extvar.cvar.value = intDefaultValue;
 	extvar.cvar.next = NULL;
-	extvar.pluginId = plugin->id;
+	extvar.pluginId = g_initPlugin->id;
 
 	g_plugin_cvar_count++;
 
@@ -647,8 +651,8 @@ bool PluginManager::ClientCommand(CBasePlayer* pPlayer) {
 			float timeLeft = ecmd->cooldown - timeSinceCall;
 			if (ecmd->cooldown > 1.0f) {
 				// let the player know how much time they need to wait if the cooldown is long
-				UTIL_ClientPrint(pPlayer->edict(), print_center, UTIL_VarArgs("Wait %.1fs", timeLeft));
-				UTIL_ClientPrint(pPlayer->edict(), print_console, UTIL_VarArgs("Wait %.1fs before using that command again.\n", timeLeft));
+				UTIL_ClientPrint(pPlayer, print_center, UTIL_VarArgs("Wait %.1fs", timeLeft));
+				UTIL_ClientPrint(pPlayer, print_console, UTIL_VarArgs("Wait %.1fs before using that command again.\n", timeLeft));
 			}
 			return true;
 		}
@@ -665,8 +669,9 @@ bool PluginManager::ClientCommand(CBasePlayer* pPlayer) {
 	return ecmd->callback(pPlayer, args);
 }
 
-void RegisterPluginCommand(void* pluginptr, const char* cmd, plugin_cmd_callback callback, int flags, float cooldown) {
-	if (!pluginptr) {
+void RegisterPluginCommand(const char* cmd, plugin_cmd_callback callback, int flags, float cooldown) {
+	if (!g_initPlugin) {
+		ALERT(at_error, "Plugin commands can only be registered during initialization. Failed to register: %s\n", cmd);
 		return;
 	}
 
@@ -674,8 +679,6 @@ void RegisterPluginCommand(void* pluginptr, const char* cmd, plugin_cmd_callback
 		ALERT(at_error, "Plugin command flags can't be 0: %s\n", cmd);
 		return;
 	}
-
-	Plugin* plugin = (Plugin*)pluginptr;
 
 	if (g_plugin_command_count >= MAX_PLUGIN_COMMANDS) {
 		ALERT(at_error, "Plugin command limit exceeded! Failed to register: %s\n", cmd);
@@ -687,7 +690,7 @@ void RegisterPluginCommand(void* pluginptr, const char* cmd, plugin_cmd_callback
 	for (int i = 0; i < g_plugin_command_count; i++) {
 		if (!strcmp(g_plugin_commands[i].name, cmdLower.c_str())) {
 			//g_engfuncs.pfnServerPrint(UTIL_VarArgs("Plugin command already registered: %s\n", cmd));
-			g_plugin_commands[i].pluginId = plugin->id;
+			g_plugin_commands[i].pluginId = g_initPlugin->id;
 			g_plugin_commands[i].callback = callback;
 			g_plugin_commands[i].flags = flags;
 			g_plugin_commands[i].cooldown = cooldown;
@@ -696,7 +699,7 @@ void RegisterPluginCommand(void* pluginptr, const char* cmd, plugin_cmd_callback
 	}
 
 	ExternalCommand& ecmd = g_plugin_commands[g_plugin_command_count];
-	ecmd.pluginId = plugin->id;
+	ecmd.pluginId = g_initPlugin->id;
 	ecmd.callback = callback;
 	ecmd.flags = flags;
 	ecmd.cooldown = cooldown;
@@ -706,19 +709,30 @@ void RegisterPluginCommand(void* pluginptr, const char* cmd, plugin_cmd_callback
 	g_engfuncs.pfnAddServerCommand(ecmd.name, ExternalPluginCommand);
 }
 
-void RegisterPlugin(void* pluginptr, HLCOOP_PLUGIN_HOOKS* hooks, const char* name) {
-	if (!pluginptr) {
-		return;
+int RegisterPlugin_internal(HLCOOP_PLUGIN_HOOKS* hooks, int hooksSz, const char* name, int ifaceVersion) {
+	if (ifaceVersion != HLCOOP_API_VERSION) {
+		ALERT(at_error, "Plugin API version mismatch. Game wanted: %d, Plugin has: %d\n", ifaceVersion, HLCOOP_API_VERSION);
+		return 0;
+	}
+	
+	if (!g_initPlugin) {
+		ALERT(at_error, "Plugins can only be registered during initialization. Failed to register: %s\n", name);
+		return 0;
 	}
 
-	Plugin* plugin = (Plugin*)pluginptr;
+	if (sizeof(HLCOOP_PLUGIN_HOOKS) != hooksSz) {
+		ALERT(at_error, "Plugin hook table size mismatch. Recompile the plugin with your version of the mod.\n");
+		return 0;
+	}
 
-	plugin->name = name;
+	g_initPlugin->name = name;
 
 	if (hooks)
-		memcpy(&plugin->hooks, hooks, sizeof(HLCOOP_PLUGIN_HOOKS));
+		memcpy(&g_initPlugin->hooks, hooks, sizeof(HLCOOP_PLUGIN_HOOKS));
 	else
-		memset(&plugin->hooks, 0, sizeof(HLCOOP_PLUGIN_HOOKS));
+		memset(&g_initPlugin->hooks, 0, sizeof(HLCOOP_PLUGIN_HOOKS));
+
+	return 1;
 }
 
 // custom entity loader called by the engine during map load

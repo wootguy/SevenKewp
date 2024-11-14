@@ -4,6 +4,8 @@
 #include "user_messages.h"
 #include "CTriggerVote.h"
 #include <cstdint>
+#include "CBasePlayer.h"
+
 class CTriggerVote;
 
 TextMenu g_textMenus[MAX_PLAYERS];
@@ -21,7 +23,7 @@ void TextMenuMessageBeginHook(int msg_dest, int msg_type, const float* pOrigin, 
 }
 
 // handle player selections
-bool TextMenuClientCommandHook(edict_t* pEntity) {
+bool TextMenuClientCommandHook(CBasePlayer* pPlayer) {
 	if (toLowerCase(CMD_ARGV(0)) == "menuselect") {
 		int selection = atoi(CMD_ARGV(1)) - 1;
 		if (selection < 0 || selection >= MAX_MENU_OPTIONS) {
@@ -29,7 +31,7 @@ bool TextMenuClientCommandHook(edict_t* pEntity) {
 		}
 
 		for (int i = 0; i < MAX_PLAYERS; i++) {
-			g_textMenus[i].handleMenuselectCmd(pEntity, selection);
+			g_textMenus[i].handleMenuselectCmd(pPlayer, selection);
 		}
 
 		return true;
@@ -38,15 +40,15 @@ bool TextMenuClientCommandHook(edict_t* pEntity) {
 	return false;
 }
 
-TextMenu* TextMenu::init(edict_t* player, TextMenuCallback callback) {
-	int idx = player ? ENTINDEX(player) % MAX_PLAYERS : 0;
+TextMenu* TextMenu::init(CBasePlayer* player, TextMenuCallback callback) {
+	int idx = player ? player->entindex() % MAX_PLAYERS : 0;
 	TextMenu* menu = &g_textMenus[idx];
 	menu->initAnon(callback);
 	return menu;
 }
 
-TextMenu* TextMenu::init(edict_t* player, EntityTextMenuCallback callback, CBaseEntity* ent) {
-	int idx = player ? ENTINDEX(player) % MAX_PLAYERS : 0;
+TextMenu* TextMenu::init(CBasePlayer* player, EntityTextMenuCallback callback, CBaseEntity* ent) {
+	int idx = player ? player->entindex() % MAX_PLAYERS : 0;
 	TextMenu* menu = &g_textMenus[idx];
 	menu->initEnt(callback, ent);
 	return menu;
@@ -107,12 +109,12 @@ void TextMenu::handleMenuMessage(int msg_dest, edict_t* ed) {
 	}
 }
 
-void TextMenu::handleMenuselectCmd(edict_t* pEntity, int selection) {
+void TextMenu::handleMenuselectCmd(CBasePlayer* pPlayer, int selection) {
 	if (!viewers) {
 		return;
 	}
 
-	int playerbit = PLRBIT(pEntity);
+	int playerbit = PLRBIT(pPlayer->edict());
 
 	if (viewers & playerbit) {
 		if (selection == g_exitOptionNum-1) {
@@ -120,17 +122,17 @@ void TextMenu::handleMenuselectCmd(edict_t* pEntity, int selection) {
 			viewers &= ~playerbit;
 		}
 		else if (isPaginated() && selection == 7) {
-			Open(lastDuration, lastPage - 1, pEntity);
+			Open(lastDuration, lastPage - 1, pPlayer);
 		}
 		else if (isPaginated() && selection == 8) {
-			Open(lastDuration, lastPage + 1, pEntity);
+			Open(lastDuration, lastPage + 1, pPlayer);
 		}
-		else if (selection < numOptions && IsValidPlayer(pEntity)) {
+		else if (selection < numOptions && IsValidPlayer(pPlayer->edict())) {
 			if (anonCallback)
-				anonCallback(this, pEntity, selection, options[lastPage*ITEMS_PER_PAGE + selection]);
+				anonCallback(this, pPlayer, selection, options[lastPage*ITEMS_PER_PAGE + selection]);
 			if (entCallback) {
 				if (h_ent)
-					(((CTriggerVote*)h_ent.GetEntity())->*entCallback)(this, pEntity, selection, options[lastPage * ITEMS_PER_PAGE + selection]);
+					(((CTriggerVote*)h_ent.GetEntity())->*entCallback)(this, pPlayer, selection, options[lastPage * ITEMS_PER_PAGE + selection]);
 			}
 
 			viewers &= ~playerbit;
@@ -161,7 +163,7 @@ void TextMenu::AddItem(std::string displayText, std::string optionData) {
 	numOptions++;
 }
 
-void TextMenu::Open(uint8_t duration, uint8_t page, edict_t* player) {
+void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 	std::string menuText = title + "\n\n";
 
 	uint16_t validSlots = (1 << (g_exitOptionNum-1)); // exit option always valid
@@ -206,15 +208,15 @@ void TextMenu::Open(uint8_t duration, uint8_t page, edict_t* player) {
 
 	menuText += std::to_string(g_exitOptionNum % 10) + ": Exit";
 
-	if (IsValidPlayer(player)) {
-		MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, player);
+	if (IsValidPlayer(player->edict())) {
+		MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, player->edict());
 		WRITE_SHORT(validSlots);
 		WRITE_CHAR(duration);
 		WRITE_BYTE(FALSE); // "need more" (?)
 		WRITE_STRING(menuText.c_str());
 		MESSAGE_END();
 
-		viewers |= PLRBIT(player);
+		viewers |= PLRBIT(player->edict());
 	}
 	else {
 		ALERT(at_console, "WARNING: pagination is broken for menus that don't have a destination player\n");

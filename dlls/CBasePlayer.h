@@ -425,6 +425,15 @@ public:
 	void SendLegacyClientWarning();
 
 	const char* GetClientVersionString();
+
+	// gets legacy steam id (e.g. STEAM_0:0:12345679)
+	const char* GetSteamID();
+
+	// gets steam community id (e.g. 123456789901234523)
+	uint64_t GetSteamID64();
+
+	// get ID assigned by the server (starts at 1, and every new player increments this by 1)
+	int GetUserID();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

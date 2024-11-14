@@ -113,7 +113,8 @@ GLOBALS ASSUMED SET:  g_fGameOver
 */
 void ClientDisconnect( edict_t *pEntity )
 {
-	CALL_HOOKS_VOID(pfnClientDisconnect, pEntity);
+	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(pEntity);
+	CALL_HOOKS_VOID(pfnClientDisconnect, plr);
 
 	if (mp_debugmsg.value) {
 		writeNetworkMessageHistory(std::string(STRING(pEntity->v.netname)) 

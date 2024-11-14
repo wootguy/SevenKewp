@@ -621,18 +621,13 @@ CBaseEntity *UTIL_FindEntityGeneric( const char *szWhatever, Vector &vecSrc, flo
 // Index is 1 based
 CBasePlayer* UTIL_PlayerByIndex( int playerIndex )
 {
-	CBasePlayer* pPlayer = NULL;
-
-	if ( playerIndex > 0 && playerIndex <= gpGlobals->maxClients )
-	{
-		edict_t *pPlayerEdict = INDEXENT( playerIndex );
-		if ( IsValidPlayer(pPlayerEdict) && !pPlayerEdict->free )
-		{
-			pPlayer = (CBasePlayer*)CBaseEntity::Instance( pPlayerEdict );
-		}
+	if (playerIndex < 0 && playerIndex > gpGlobals->maxClients) {
+		return NULL;
 	}
-	
-	return pPlayer;
+
+	edict_t* pPlayerEdict = INDEXENT( playerIndex );
+
+	return IsValidPlayer(pPlayerEdict) ? (CBasePlayer*)CBaseEntity::Instance( pPlayerEdict ) : NULL;
 }
 
 CBasePlayer* UTIL_PlayerByUserId(int userid)
@@ -651,11 +646,11 @@ CBasePlayer* UTIL_PlayerByUserId(int userid)
 	return NULL;
 }
 
-CBasePlayer* UTIL_PlayerByUniqueId(const char* id) {
+CBasePlayer* UTIL_PlayerBySteamId(const char* id) {
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
 
-		if (pPlayer && !strcmp(id, getPlayerUniqueId(pPlayer->edict()))) {
+		if (pPlayer && !strcmp(id, pPlayer->GetSteamID())) {
 			return pPlayer;
 		}
 	}
@@ -1427,9 +1422,9 @@ void UTIL_HudMessageAll(const hudtextparms_t& textparms, const char* pMessage, i
 
 					 
 extern int gmsgTextMsg, gmsgSayText;
-void UTIL_ClientPrintAll( int msg_dest, const char *msg )
+void UTIL_ClientPrintAll(PRINT_TYPE print_type, const char *msg )
 {
-	if (msg_dest == print_chat) {
+	if (print_type == print_chat) {
 		MESSAGE_BEGIN(MSG_ALL, gmsgSayText, NULL);
 		WRITE_BYTE(0);
 		WRITE_STRING(msg);
@@ -1439,58 +1434,31 @@ void UTIL_ClientPrintAll( int msg_dest, const char *msg )
 		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			edict_t* ent = INDEXENT(i);
 			if (IsValidPlayer(ent))
-				CLIENT_PRINTF(ent, (PRINT_TYPE)msg_dest, msg);
+				CLIENT_PRINTF(ent, print_type, msg);
 		}
 	}
 }
 
-void UTIL_ClientPrint(edict_t* client, int msg_dest, const char * msg)
+void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char * msg)
 {
 	if (!client) {
 		g_engfuncs.pfnServerPrint(msg);
 		return;
 	}
+	if (!client->IsPlayer()) {
+		return;
+	}
 
-	if (msg_dest == print_chat) {
-		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, client);
+	if (print_type == print_chat) {
+		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, client->edict());
 		WRITE_BYTE(0);
 		WRITE_STRING(msg);
 		MESSAGE_END();
 	}
 	else {
-		CLIENT_PRINTF(client, (PRINT_TYPE)msg_dest, msg);
+		CLIENT_PRINTF(client->edict(), print_type, msg);
 	}
 }
-
-void UTIL_ClientPrint(CBasePlayer* client, int msg_dest, const char* msg) {
-	UTIL_ClientPrint(client ? client->edict() : NULL, msg_dest, msg);
-}
-
-void UTIL_SayText( const char *pText, CBaseEntity *pEntity )
-{
-	if (!pEntity) {
-		g_engfuncs.pfnServerPrint(pText);
-		return;
-	}
-	if ( !pEntity->IsNetClient() )
-		return;
-
-	MESSAGE_BEGIN( MSG_ONE, gmsgSayText, NULL, pEntity->edict() );
-		WRITE_BYTE( pEntity->entindex() );
-		WRITE_STRING( pText );
-	MESSAGE_END();
-}
-
-void UTIL_SayTextAll( const char *pText, CBaseEntity *pEntity )
-{
-	int idx = pEntity ? pEntity->entindex() : 0;
-
-	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
-		WRITE_BYTE(idx);
-		WRITE_STRING( pText );
-	MESSAGE_END();
-}
-
 
 char *UTIL_dtos1( int d )
 {
@@ -2584,14 +2552,6 @@ edict_t* CREATE_NAMED_ENTITY(string_t cname) {
 	return pEntity ? RelocateEntIdx(pEntity)->edict() : ed;
 }
 
-const char* getPlayerUniqueId(edict_t* plr) {
-	if (plr == NULL) {
-		return "STEAM_ID_NULL";
-	}
-
-	return g_engfuncs.pfnGetPlayerAuthId(plr);
-}
-
 uint64_t steamid_to_steamid64(const char* steamid) {
 	if (strlen(steamid) < 10) {
 		return 0;
@@ -2616,16 +2576,6 @@ std::string steamid64_to_steamid(uint64_t steam64) {
 	}
 
 	return "STEAM_0:0:" + std::to_string(steam64 / 2);
-}
-
-uint64_t getPlayerCommunityId(edict_t* plr) {
-	const char* id = getPlayerUniqueId(plr);
-
-	if (!strcmp(id, "STEAM_ID_NULL") || !strcmp(id, "STEAM_ID_LAN") || !strcmp(id, "BOT")) {
-		return 0;
-	}
-
-	return steamid_to_steamid64(id);
 }
 
 bool UTIL_isSafeEntIndex(edict_t* ent, int idx, const char* action) {
