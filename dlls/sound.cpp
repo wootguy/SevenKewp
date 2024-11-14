@@ -519,14 +519,16 @@ mstream* BuildStartSoundMessage(edict_t* ent, int channel, const char* sample, f
 }
 
 
-void StartSound(edict_t* entidx, int channel, const char* sample, float fvolume, float attenuation,
+void StartSound(edict_t* ent, int channel, const char* sample, float fvolume, float attenuation,
 	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable)
 {
-	CALL_HOOKS_VOID(pfnEmitSound, entidx, channel, sample, fvolume, attenuation, fFlags | SND_FL_MOD, pitch, origin, messageTargets, reliable);
+	CALL_HOOKS_VOID(pfnEmitSound, ent, channel, sample, fvolume, attenuation, fFlags | SND_FL_MOD, pitch, origin, messageTargets, reliable);
 
-	mstream* bitbuffer = BuildStartSoundMessage(entidx, channel, sample, fvolume, attenuation, fFlags, pitch, origin);
+	mstream* bitbuffer = BuildStartSoundMessage(ent, channel, sample, fvolume, attenuation, fFlags, pitch, origin);
 
-	if (!bitbuffer) {
+	CBaseEntity* bent = CBaseEntity::Instance(ent);
+
+	if (!bitbuffer || !bent) {
 		return;
 	}
 
@@ -541,10 +543,11 @@ void StartSound(edict_t* entidx, int channel, const char* sample, float fvolume,
 			continue;
 		}
 
-		// TODO: should only consider PAS (can hear reload sounds but only distant gunshots)
-		MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, plent);
-		WRITE_BYTES((uint8_t*)bitbuffer->getBuffer(), msgSz);
-		MESSAGE_END();
+		if (bent->InPAS(plent)) {
+			MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, plent);
+			WRITE_BYTES((uint8_t*)bitbuffer->getBuffer(), msgSz);
+			MESSAGE_END();
+		}
 		//anyMessagesWritten = true;
 	}
 
