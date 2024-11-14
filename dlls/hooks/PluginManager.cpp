@@ -4,6 +4,7 @@
 #include "cbase.h"
 #include <fstream>
 #include "Scheduler.h"
+#include "CBasePlayer.h"
 
 PluginManager g_pluginManager;
 
@@ -18,8 +19,11 @@ struct ExternalCvar {
 
 struct ExternalCommand {
 	int pluginId;
+	int flags;
+	float cooldown;
+	uint64_t lastCall[32]; // last time a player called this command
 	char name[64];
-	void (*function)(void);
+	plugin_cmd_callback callback;
 };
 
 ExternalCvar g_plugin_cvars[MAX_PLUGIN_CVARS];
@@ -429,7 +433,7 @@ void PluginManager::ReloadPlugins() {
 	UpdatePluginsFromList(true);
 }
 
-void PluginManager::ListPlugins(edict_t* plr) {
+void PluginManager::ListPlugins(CBasePlayer* plr) {
 	std::vector<std::string> lines;
 
 	bool isAdmin = !plr || AdminLevel(plr) > ADMIN_NO;
@@ -572,8 +576,13 @@ void ExternalPluginCommand() {
 	}
 
 	if (!ecmd) {
-		// should never happen
-		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Unrecognized external plugin command: %s\n", cmd));
+		// can happen if command flags change after reloading a plugin
+		ALERT(at_console, "Unrecognized external plugin command: %s\n", cmd);
+		return;
+	}
+
+	if (!(ecmd->flags & FL_CMD_SERVER)) {
+		ALERT(at_console, "Plugin command '%s' can only be executed by clients.\n", cmd);
 		return;
 	}
 	
@@ -584,11 +593,85 @@ void ExternalPluginCommand() {
 		return;
 	}
 
-	ecmd->function();
+	CommandArgs args = CommandArgs();
+	args.loadArgs();
+
+	ecmd->callback(NULL, args);
 }
 
-void RegisterPluginCommand(void* pluginptr, const char* cmd, void (*function)(void)) {
+bool PluginManager::ClientCommand(CBasePlayer* pPlayer) {
+	CommandArgs args = CommandArgs();
+	args.loadArgs();
+
+	ExternalCommand* ecmd = NULL;
+
+	std::string cmd = args.ArgV(0);
+	std::string cmdLower = toLowerCase(cmd);
+
+	for (int i = 0; i < g_plugin_command_count; i++) {
+		ExternalCommand& pcmd = g_plugin_commands[i];
+
+		if (!(g_plugin_commands[i].flags & FL_CMD_CLIENT)) {
+			continue;
+		}
+
+		if ((pcmd.flags & FL_CMD_CASE) ? !strcmp(pcmd.name, cmd.c_str()) : toLowerCase(pcmd.name) == cmdLower) {
+			ecmd = &g_plugin_commands[i];
+			break;
+		}
+	}
+
+	if (!ecmd) {
+		return false;
+	}
+
+	if (args.isConsoleCmd && !(ecmd->flags & FL_CMD_CLIENT_CONSOLE)) {
+		return false;
+	}
+
+	if (!args.isConsoleCmd && !(ecmd->flags & FL_CMD_CLIENT_CHAT)) {
+		return false;
+	}
+
+	bool isAdmin = AdminLevel(pPlayer) != ADMIN_NO;
+	
+	if ((ecmd->flags & FL_CMD_ADMIN) && !isAdmin) {
+		return false;
+	}
+
+	if (ecmd->cooldown) {
+		uint64_t now = getEpochMillis();
+		int pidx = pPlayer->entindex() - 1;
+		float timeSinceCall = TimeDifference(ecmd->lastCall[pidx], now);
+		if (timeSinceCall < ecmd->cooldown) {
+			float timeLeft = ecmd->cooldown - timeSinceCall;
+			if (ecmd->cooldown > 1.0f) {
+				// let the player know how much time they need to wait if the cooldown is long
+				UTIL_ClientPrint(pPlayer->edict(), print_center, UTIL_VarArgs("Wait %.1fs", timeLeft));
+				UTIL_ClientPrint(pPlayer->edict(), print_console, UTIL_VarArgs("Wait %.1fs before using that command again.\n", timeLeft));
+			}
+			return true;
+		}
+		ecmd->lastCall[pidx] = now;
+	}
+
+	Plugin* plugin = g_pluginManager.FindPlugin(ecmd->pluginId);
+
+	if (!plugin) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Command from unloaded plugin can't be called: %s\n", cmd));
+		return false;
+	}
+
+	return ecmd->callback(pPlayer, args);
+}
+
+void RegisterPluginCommand(void* pluginptr, const char* cmd, plugin_cmd_callback callback, int flags, float cooldown) {
 	if (!pluginptr) {
+		return;
+	}
+
+	if (!flags) {
+		ALERT(at_error, "Plugin command flags can't be 0: %s\n", cmd);
 		return;
 	}
 
@@ -599,19 +682,25 @@ void RegisterPluginCommand(void* pluginptr, const char* cmd, void (*function)(vo
 		return;
 	}
 
+	std::string cmdLower = (flags & FL_CMD_CASE) ? cmd : toLowerCase(cmd);
+
 	for (int i = 0; i < g_plugin_command_count; i++) {
-		if (!strcmp(g_plugin_commands[i].name, cmd)) {
+		if (!strcmp(g_plugin_commands[i].name, cmdLower.c_str())) {
 			//g_engfuncs.pfnServerPrint(UTIL_VarArgs("Plugin command already registered: %s\n", cmd));
 			g_plugin_commands[i].pluginId = plugin->id;
-			g_plugin_commands[i].function = function;
+			g_plugin_commands[i].callback = callback;
+			g_plugin_commands[i].flags = flags;
+			g_plugin_commands[i].cooldown = cooldown;
 			return;
 		}
 	}
 
 	ExternalCommand& ecmd = g_plugin_commands[g_plugin_command_count];
 	ecmd.pluginId = plugin->id;
-	ecmd.function = function;
-	strcpy_safe(ecmd.name, cmd, sizeof(ecmd.name));
+	ecmd.callback = callback;
+	ecmd.flags = flags;
+	ecmd.cooldown = cooldown;
+	strcpy_safe(ecmd.name, cmdLower.c_str(), sizeof(ecmd.name));
 	g_plugin_command_count++;
 
 	g_engfuncs.pfnAddServerCommand(ecmd.name, ExternalPluginCommand);

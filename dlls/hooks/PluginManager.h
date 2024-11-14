@@ -61,11 +61,15 @@ public:
 	void ReloadPlugins();
 
 	// print loaded server and map plugins to console or client
-	void ListPlugins(edict_t* plr);
+	void ListPlugins(CBasePlayer* plr);
 
 	Plugin* FindPlugin(int id);
 
 	Plugin* FindPlugin(const char* name);
+
+	// run a client command registered by a plugin
+	// returns true if command should be hidden from chat
+	bool ClientCommand(CBasePlayer* pPlayer);
 
 	template<typename Func, typename... Args>
 	HOOK_RETURN_DATA CallHooks(Func hookFunction, Args&&... args) {

@@ -1444,8 +1444,13 @@ void UTIL_ClientPrintAll( int msg_dest, const char *msg )
 	}
 }
 
-void UTIL_ClientPrint( edict_t* client, int msg_dest, const char * msg)
+void UTIL_ClientPrint(edict_t* client, int msg_dest, const char * msg)
 {
+	if (!client) {
+		g_engfuncs.pfnServerPrint(msg);
+		return;
+	}
+
 	if (msg_dest == print_chat) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, client);
 		WRITE_BYTE(0);
@@ -1457,9 +1462,17 @@ void UTIL_ClientPrint( edict_t* client, int msg_dest, const char * msg)
 	}
 }
 
+void UTIL_ClientPrint(CBasePlayer* client, int msg_dest, const char* msg) {
+	UTIL_ClientPrint(client ? client->edict() : NULL, msg_dest, msg);
+}
+
 void UTIL_SayText( const char *pText, CBaseEntity *pEntity )
 {
-	if ( !pEntity || !pEntity->IsNetClient() )
+	if (!pEntity) {
+		g_engfuncs.pfnServerPrint(pText);
+		return;
+	}
+	if ( !pEntity->IsNetClient() )
 		return;
 
 	MESSAGE_BEGIN( MSG_ONE, gmsgSayText, NULL, pEntity->edict() );
@@ -2982,17 +2995,22 @@ void LoadAdminList(bool forceUpdate) {
 	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded %d admin(s) from file\n", g_admins.size()));
 }
 
-int AdminLevel(edict_t* plr) {
-	std::string steamId = (*g_engfuncs.pfnGetPlayerAuthId)(plr);
+int AdminLevel(CBasePlayer* plr) {
+	if (!plr) {
+		return ADMIN_OWNER; // probably the server console (called by command callback)
+	}
+
+	std::string steamId = (*g_engfuncs.pfnGetPlayerAuthId)(plr->edict());
 
 	if (!IS_DEDICATED_SERVER()) {
-		if (ENTINDEX(plr) == 1) {
+		if (plr->entindex() == 1) {
 			return ADMIN_OWNER; // listen server owner is always the first player to join (I hope)
 		}
 	}
 
-	if (g_admins.find(steamId) != g_admins.end()) {
-		return g_admins[steamId];
+	auto adminStatus = g_admins.find(steamId);
+	if (adminStatus != g_admins.end()) {
+		return adminStatus->second;
 	}
 
 	return ADMIN_NO;

@@ -51,7 +51,7 @@ void CommandArgs::loadArgs() {
 	}
 }
 
-std::string CommandArgs::ArgV(int idx) {
+std::string CommandArgs::ArgV(int idx) const {
 	if (idx >= 0 && idx < (int)args.size()) {
 		return args[idx];
 	}
@@ -59,11 +59,11 @@ std::string CommandArgs::ArgV(int idx) {
 	return "";
 }
 
-int CommandArgs::ArgC() {
+int CommandArgs::ArgC() const {
 	return args.size();
 }
 
-std::string CommandArgs::getFullCommand() {
+std::string CommandArgs::getFullCommand() const {
 	std::string str = ArgV(0);
 
 	for (int i = 1; i < (int)args.size(); i++) {

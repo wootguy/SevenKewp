@@ -396,14 +396,6 @@ void ClientCommand(edict_t* pEntity)
 	if (CheatCommand(pEntity)) {
 		return;
 	}
-	else if (FStrEq(pcmd, "say"))
-	{
-		Host_Say(pEntity, 0);
-	}
-	else if (FStrEq(pcmd, "say_team"))
-	{
-		Host_Say(pEntity, 1);
-	}
 	else if (FStrEq(pcmd, "fullupdate"))
 	{
 		pPlayer->ForceClientDllUpdate();
@@ -523,11 +515,22 @@ void ClientCommand(edict_t* pEntity)
 	}
 	else if (FStrEq(pcmd, "listplugins"))
 	{
-		g_pluginManager.ListPlugins(pEntity);
+		g_pluginManager.ListPlugins(pPlayer);
 	}
 	else if (g_pGameRules->ClientCommand(pPlayer, pcmd))
 	{
 		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
+	}
+	else if (g_pluginManager.ClientCommand(pPlayer)) {
+		// plugin handled the command
+	}
+	else if (FStrEq(pcmd, "say"))
+	{
+		Host_Say(pEntity, 0);
+	}
+	else if (FStrEq(pcmd, "say_team"))
+	{
+		Host_Say(pEntity, 1);
 	}
 	else
 	{
