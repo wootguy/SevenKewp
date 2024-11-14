@@ -1,6 +1,7 @@
 #pragma once
 #include "weaponinfo.h"
 #include "entity_state.h"
+#include "CommandArgs.h"
 
 #define HLCOOP_API_VERSION 2
 
@@ -18,6 +19,24 @@ struct HOOK_RETURN_DATA {
 #define HOOK_CONTINUE_OVERRIDE(data)	{HOOKBIT_OVERRIDE, (void*)(data)}
 #define HOOK_HANDLED					{HOOKBIT_HANDLED, 0}
 #define HOOK_HANDLED_OVERRIDE(data)		{(HOOKBIT_HANDLED | HOOKBIT_OVERRIDE), (void*)(data)}
+
+#define FL_CMD_SERVER			1	// command can be sent from server console
+#define FL_CMD_CLIENT_CONSOLE	2	// command can be sent from client console
+#define FL_CMD_CLIENT_CHAT		4	// command can be sent from client chat
+#define FL_CMD_ADMIN			8	// command can only be sent by admins
+#define FL_CMD_CASE				16	// command is case sensitive
+
+// client command that can be run from chat or console
+#define FL_CMD_CLIENT (FL_CMD_CLIENT_CONSOLE | FL_CMD_CLIENT_CHAT)
+
+// command that can be run from anywhere (chat, client console, server console)
+#define FL_CMD_ANY (FL_CMD_CLIENT_CONSOLE | FL_CMD_CLIENT_CHAT | FL_CMD_SERVER)
+
+// Plugin command callback. Handles commands from the server console, client console, and chat.
+// pPlayer = player who executed the command, or NULL for the server console
+// args = parsed command and arguments with a flag to indicate if the command was sent from chat or console
+// return true if the player's chat should be hidden (if the command was sent from chat)
+typedef bool (*plugin_cmd_callback)(CBasePlayer* pPlayer, const CommandArgs& args);
 
 struct HLCOOP_PLUGIN_HOOKS {
 	// called when the server starts, after worldspawn is precached and before any entities spawn
@@ -148,8 +167,15 @@ EXPORT void RegisterPlugin(void* plugin, HLCOOP_PLUGIN_HOOKS* hooks, const char*
 EXPORT cvar_t* RegisterPluginCVar(void* plugin, const char* name, const char* strDefaultValue, int intDefaultValue, int flags);
 
 // must call this instead of registering commands directly or else the game crashes when the plugin unloads
-// and the registered command is used
-EXPORT void RegisterPluginCommand(void* plugin, const char* cmd, void (*function)(void));
+// and the registered command is used.
+// cmd = text which triggers the command
+// callback = function to call when the text is matched
+// flags = combination of FL_CMD_*
+// cooldown = limits the speed a command can be triggered by players who are not an admins.
+//            A non-zero cooldown is recommended so that bad actors can't send hundreds of commands
+//            simultaneously in an attempt to cause lag or crashes.
+EXPORT void RegisterPluginCommand(void* plugin, const char* cmd, plugin_cmd_callback callback,
+	int flags=FL_CMD_SERVER, float cooldown=0.1f);
 
 // boilerplate for PluginInit functions
 // must be inline so that plugins don't reference the game definition of HLCOOP_API_VERSION

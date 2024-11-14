@@ -429,7 +429,8 @@ class CBasePlayer;
 EXPORT BOOL UTIL_GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
 
 // prints messages through the HUD
-EXPORT void UTIL_ClientPrint(edict_t* client, int msg_dest, const char *msg );
+EXPORT void UTIL_ClientPrint(edict_t* client, int msg_dest, const char *msg ); // TODO: remove this
+EXPORT void UTIL_ClientPrint(CBasePlayer* client, int msg_dest, const char *msg );
 
 // prints a message to the HUD say (chat)
 EXPORT void			UTIL_SayText( const char *pText, CBaseEntity *pEntity );
@@ -812,7 +813,8 @@ EXPORT uint64_t getPlayerCommunityId(edict_t* plr);
 
 EXPORT void LoadAdminList(bool forceUpdate=false); // call on each map change, so AdminLevel can work
 
-EXPORT int AdminLevel(edict_t* player);
+// returns ADMIN_YES for admins, ADMIN_NO for normal players, ADMIN_OWNER for NULL or listen server host
+EXPORT int AdminLevel(CBasePlayer* player);
 
 EXPORT uint64_t getEpochMillis();
 
