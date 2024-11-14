@@ -991,31 +991,30 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	else if ( !strcmp( killer_weapon_name, "gauss" ) )
 		killer_weapon_name = tau;
 
-	if ( pVictim->pev == pKiller )  
-	{
-		// killed self
-		UTIL_LogPlayerEvent(pVictim->edict(), "committed suicide with \"%s\"\n", killer_weapon_name );		
-	}
-	else if (pKiller->flags & FL_CLIENT)
-	{
-		// killed by other player
-		if (pVictim->IsPlayer()) {
-			UTIL_LogPlayerEvent(pVictim->edict(), "killed by \\%s\\ with \"%s\"\n",
-				STRING(pKiller->netname),
-				GETPLAYERAUTHID(ENT(pKiller)),
-				killer_weapon_name);
+	if (!monsterKillingMonster) {
+		if (pVictim->pev == pKiller) {
+			// killed self
+			UTIL_LogPlayerEvent(pVictim->edict(), "committed suicide with \"%s\"\n", killer_weapon_name);
+		}
+		else if (pKiller->flags & FL_CLIENT) {
+			// killed by other player
+			if (pVictim->IsPlayer()) {
+				UTIL_LogPlayerEvent(pVictim->edict(), "killed by \\%s\\%s\\ with \"%s\"\n",
+					STRING(pKiller->netname),
+					GETPLAYERAUTHID(ENT(pKiller)),
+					killer_weapon_name);
+			}
+			else {
+				UTIL_LogPlayerEvent(Killer->edict(), "killed \"%s\" with \"%s\"\n",
+					pVictim->DisplayName(),
+					killer_weapon_name);
+			}
 		}
 		else {
-			UTIL_LogPlayerEvent(Killer->edict(), "killed \"%s\" with \"%s\"\n",
-				pVictim->DisplayName(),
-				killer_weapon_name);
+			// killed by a monster or world
+			UTIL_LogPlayerEvent(pVictim->edict(), "killed by \"%s\"\n",
+				Killer ? Killer->DisplayName() : STRING(pKiller->classname));
 		}
-	}
-	else if (!monsterKillingMonster)
-	{ 
-		// killed by a monster or world
-		UTIL_LogPlayerEvent(pVictim->edict(), "killed by \"%s\"\n",
-			Killer ? Killer->DisplayName() : STRING(pKiller->classname));
 	}
 
 	MESSAGE_BEGIN( MSG_SPEC, SVC_DIRECTOR );

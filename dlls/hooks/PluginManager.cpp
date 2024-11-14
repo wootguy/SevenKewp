@@ -711,7 +711,7 @@ void RegisterPluginCommand(const char* cmd, plugin_cmd_callback callback, int fl
 
 int RegisterPlugin_internal(HLCOOP_PLUGIN_HOOKS* hooks, int hooksSz, const char* name, int ifaceVersion) {
 	if (ifaceVersion != HLCOOP_API_VERSION) {
-		ALERT(at_error, "Plugin API version mismatch. Game wanted: %d, Plugin has: %d\n", ifaceVersion, HLCOOP_API_VERSION);
+		ALERT(at_error, "Plugin API version mismatch. Game wanted: %d, Plugin has: %d\n", HLCOOP_API_VERSION, ifaceVersion);
 		return 0;
 	}
 	

@@ -424,6 +424,8 @@ void CRpg::Precache( void )
 	m_defaultModelW = "models/w_rpg.mdl";
 	CBasePlayerWeapon::Precache();
 
+	PRECACHE_MODEL("sprites/laserbeam.spr");
+
 	PRECACHE_SOUND("items/9mmclip1.wav");
 
 	UTIL_PrecacheOther( "laser_spot" );

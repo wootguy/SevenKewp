@@ -15,6 +15,7 @@ class CGamePlayerHurt : public CRulePointEntity
 public:
 	void		Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	inline BOOL RemoveOnFire(void) { return (pev->spawnflags & SF_PKILL_FIREONCE) ? TRUE : FALSE; }
+	virtual const char* DisplayName() { return "Injury"; }
 
 private:
 };
