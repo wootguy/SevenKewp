@@ -78,5 +78,10 @@ private:
 	double				m_UpdateInterval;						// How long since the last update.
 };
 
+class CMultiplayGameMgrHelper : public IVoiceGameMgrHelper
+{
+public:
+	virtual bool		CanPlayerHearPlayer(CBasePlayer* pListener, CBasePlayer* pTalker);
+};
 
 #endif // VOICE_GAMEMGR_H
