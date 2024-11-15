@@ -56,23 +56,20 @@ float g_flIntermissionStartTime = 0;
 
 CVoiceGameMgr	g_VoiceGameMgr;
 
-class CMultiplayGameMgrHelper : public IVoiceGameMgrHelper
-{
-public:
-	virtual bool		CanPlayerHearPlayer(CBasePlayer *pListener, CBasePlayer *pTalker)
-	{
-		if ( g_teamplay )
-		{
-			if ( g_pGameRules->PlayerRelationship( pListener, pTalker ) != GR_TEAMMATE )
-			{
-				return false;
-			}
-		}
+CMultiplayGameMgrHelper g_GameMgrHelper;
 
-		return true;
+bool CMultiplayGameMgrHelper::CanPlayerHearPlayer(CBasePlayer* pListener, CBasePlayer* pTalker)
+{
+	if (g_teamplay)
+	{
+		if (g_pGameRules->PlayerRelationship(pListener, pTalker) != GR_TEAMMATE)
+		{
+			return false;
+		}
 	}
-};
-static CMultiplayGameMgrHelper g_GameMgrHelper;
+
+	return true;
+}
 
 //*********************************************************
 // Rules for the half-life multiplayer game.
@@ -80,8 +77,6 @@ static CMultiplayGameMgrHelper g_GameMgrHelper;
 
 CHalfLifeMultiplay :: CHalfLifeMultiplay()
 {
-	g_VoiceGameMgr.Init(&g_GameMgrHelper, gpGlobals->maxClients);
-
 	RefreshSkillData();
 	m_flIntermissionEndTime = 0;
 	g_flIntermissionStartTime = 0;

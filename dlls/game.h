@@ -17,6 +17,7 @@
 #define GAME_H
 
 #include "CKeyValue.h"
+#include "voice_gamemgr.h"
 #include <unordered_map>
 #include <string>
 #include <unordered_set>
@@ -162,5 +163,8 @@ EXPORT extern bool g_cfgsExecuted; // set to true after server and map cfgs are 
 
 // mark a palyer weapon for precaching (alias names are ok)
 EXPORT void AddPrecacheWeapon(std::string wepName);
+
+EXPORT extern CVoiceGameMgr g_VoiceGameMgr;
+EXPORT extern CMultiplayGameMgrHelper g_GameMgrHelper;
 
 #endif		// GAME_H
