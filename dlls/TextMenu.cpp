@@ -110,7 +110,7 @@ void TextMenu::handleMenuMessage(int msg_dest, edict_t* ed) {
 }
 
 void TextMenu::handleMenuselectCmd(CBasePlayer* pPlayer, int selection) {
-	if (!viewers) {
+	if (!viewers || !pPlayer) {
 		return;
 	}
 
@@ -208,7 +208,7 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 
 	menuText += std::to_string(g_exitOptionNum % 10) + ": Exit";
 
-	if (IsValidPlayer(player->edict())) {
+	if (player && IsValidPlayer(player->edict())) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, player->edict());
 		WRITE_SHORT(validSlots);
 		WRITE_CHAR(duration);
