@@ -87,6 +87,8 @@ typedef enum { USE_OFF = 0, USE_ON = 1, USE_SET = 2, USE_TOGGLE = 3 } USE_TYPE;
 
 EXPORT extern void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
+void* GET_PRIVATE(const edict_t* pent);
+
 typedef void (CBaseEntity::*BASEPTR)(void);
 typedef void (CBaseEntity::*ENTITYFUNCPTR)(CBaseEntity *pOther );
 typedef void (CBaseEntity::*USEPTR)( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
@@ -806,6 +808,23 @@ template <class T> T * GetClassPtr( T *a )
 	return allocate ? (T*)RelocateEntIdx(a) : a;
 }
 
+inline void* GET_PRIVATE(const edict_t* pent)
+{
+	if (pent) {
+		CBaseEntity* bent = (CBaseEntity*)pent->pvPrivateData;
+
+		if (bent && bent->pev != &pent->v) {
+			// TODO: pev was linked wrong somehow. mem corruption?
+			ALERT(at_error, "Entity pev not linked to edict %d pev (%s)\n", 
+				ENTINDEX(pent), STRING(pent->v.classname));
+			bent->pev = (entvars_t*)&pent->v;
+			return NULL;
+		}
+
+		return bent;
+	}
+	return NULL;
+}
 
 /*
 bit_PUSHBRUSH_DATA | bit_TOGGLE_DATA
