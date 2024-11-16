@@ -820,7 +820,7 @@ void WRITE_BYTES(uint8_t* bytes, int count) {
 // tests if a player would receive a message given a send mode
 // and the entity which is emitting the message
 bool TestMsgVis(edict_t* plr, int testEntIdx, int netMsgMode) {
-	CBaseEntity* ent = CBaseEntity::Instance(ENT(testEntIdx));
+	CBaseEntity* ent = CBaseEntity::Instance(INDEXENT(testEntIdx));
 
 	if (!ent) {
 		return false;
