@@ -730,7 +730,7 @@ void CApache :: Flight( void )
 	// make rotor, engine sounds
 	if (m_iSoundState == 0)
 	{
-		StartSound(edict(), CHAN_ITEM, "apache/ap_rotor2.wav", 1.0f, 0.3f, 0, 110, g_vecZero, 0xffffffff, false);
+		StartSound(edict(), CHAN_ITEM, "apache/ap_rotor2.wav", 1.0f, 0.3f, 0, 110, g_vecZero, 0xffffffff);
 		//EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav", 1.0, 0.3, 0, 110 );
 		// EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_whine1.wav", 0.5, 0.2, 0, 110 );
 
@@ -771,7 +771,7 @@ void CApache :: Flight( void )
 			}
 
 			StartSound(edict(), CHAN_ITEM, "apache/ap_rotor2.wav", 1.0f, 0.3f, SND_CHANGE_PITCH,
-				pitch, g_vecZero, PLRBIT(pPlayer->edict()), false);
+				pitch, g_vecZero, PLRBIT(pPlayer->edict()));
 			lastPitch[pPlayer->entindex()] = pitch;
 		}
 		// EMIT_SOUND_DYN(ENT(pev), CHAN_STATIC, "apache/ap_whine1.wav", flVol, 0.2, SND_CHANGE_PITCH | SND_CHANGE_VOL, pitch);

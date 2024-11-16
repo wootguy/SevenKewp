@@ -520,9 +520,9 @@ mstream* BuildStartSoundMessage(edict_t* ent, int channel, const char* sample, f
 
 
 void StartSound(edict_t* ent, int channel, const char* sample, float fvolume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable)
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets)
 {
-	CALL_HOOKS_VOID(pfnEmitSound, ent, channel, sample, fvolume, attenuation, fFlags | SND_FL_MOD, pitch, origin, messageTargets, reliable);
+	CALL_HOOKS_VOID(pfnEmitSound, ent, channel, sample, fvolume, attenuation, fFlags | SND_FL_MOD, pitch, origin, messageTargets);
 
 	mstream* bitbuffer = BuildStartSoundMessage(ent, channel, sample, fvolume, attenuation, fFlags, pitch, origin);
 
@@ -535,6 +535,8 @@ void StartSound(edict_t* ent, int channel, const char* sample, float fvolume, fl
 	int msgSz = bitbuffer->tell() + 1;
 	//bool anyMessagesWritten = false;
 
+	int sendMode = (fFlags & SND_FL_RELIABLE) ? MSG_ONE : MSG_ONE_UNRELIABLE;
+
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		edict_t* plent = INDEXENT(i);
 		uint32_t playerBit = PLRBIT(plent);
@@ -543,8 +545,8 @@ void StartSound(edict_t* ent, int channel, const char* sample, float fvolume, fl
 			continue;
 		}
 
-		if (bent->InPAS(plent)) {
-			MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, SVC_SOUND, NULL, plent);
+		if ((fFlags & SND_FL_GLOBAL) || bent->InPAS(plent)) {
+			MESSAGE_BEGIN(sendMode, SVC_SOUND, NULL, plent);
 			WRITE_BYTES((uint8_t*)bitbuffer->getBuffer(), msgSz);
 			MESSAGE_END();
 		}
@@ -561,9 +563,9 @@ void StartSound(edict_t* ent, int channel, const char* sample, float fvolume, fl
 }
 
 void StartSound(int eidx, int channel, const char* sample, float volume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable) {
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets) {
 	StartSound(INDEXENT(eidx), channel, sample, volume, attenuation, fFlags, pitch, origin,
-		messageTargets, reliable);
+		messageTargets);
 }
 
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
@@ -635,7 +637,7 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 				}
 				else {
 					// play the sound normally for players that can see the ent
-					StartSound(entity, channel, sample, volume, attenuation, flags, pitch, ori, PLRBIT(plr), true);
+					StartSound(entity, channel, sample, volume, attenuation, flags | SND_FL_RELIABLE, pitch, ori, PLRBIT(plr));
 				}
 			}
 		}
@@ -715,7 +717,7 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 		// randomize pitch per entity, so you get a better idea of how many players/npcs are shooting
 		int pitch = 95 + ((ENTINDEX(emitter) * 7) % 11);
 
-		StartSound((edict_t*)NULL, CHAN_STATIC, sample, volume, attn, 0, pitch, emitter->v.origin, pbits, false);
+		StartSound((edict_t*)NULL, CHAN_STATIC, sample, volume, attn, SND_FL_GLOBAL, pitch, emitter->v.origin, pbits);
 	}
 }
 

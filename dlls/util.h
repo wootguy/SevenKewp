@@ -661,10 +661,10 @@ EXPORT mstream* BuildStartSoundMessage(edict_t* entity, int channel, const char*
 // play the sound for players with bits contained in messageTargets
 // a player bit = 1 << (ENTINDEX(player_edict) % 31)
 EXPORT void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable);
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets);
 
 EXPORT void StartSound(int eidx, int channel, const char* sample, float volume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable);
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets);
 
 inline void EMIT_SOUND(edict_t *entity, int channel, const char *sample, float volume, float attenuation)
 {

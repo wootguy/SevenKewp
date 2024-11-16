@@ -97,7 +97,7 @@ struct HLCOOP_PLUGIN_HOOKS {
 	HOOK_RETURN_DATA (*pfnStartFrame)();
 
 	// called when a sound is about to be played, after the mod has handled sound replacement
-	HOOK_RETURN_DATA (*pfnEmitSound)(edict_t* pEntity, int channel, const char* pszSample, float volume, float attenuation, int fFlags, int pitch, const float* origin, uint32_t recipients, bool reliable);
+	HOOK_RETURN_DATA (*pfnEmitSound)(edict_t* pEntity, int channel, const char* pszSample, float volume, float attenuation, int fFlags, int pitch, const float* origin, uint32_t recipients);
 	
 	// called when an ambient sound is about to be played, after the mod has handled sound replacement
 	HOOK_RETURN_DATA (*pfnEmitAmbientSound)(edict_t* pEntity, const float* vecPos, const char* pszSample, float vol, float attenuation, int fFlags, int pitch);
