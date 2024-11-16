@@ -657,10 +657,13 @@ void MESSAGE_END() {
 
 void EMIT_SOUND_DYN2(edict_t* pEntity, int channel, const char* pszSample, float volume, float attenuation, int fFlags, int pitch) {
 	bool sendPAS = channel != CHAN_STATIC && !(fFlags & SND_STOP);
-	bool reliable = !sendPAS;
+	int hookFlags = fFlags;
+	if (!sendPAS) {
+		fFlags |= SND_FL_RELIABLE | SND_FL_GLOBAL;
+	}
 	Vector origin = (pEntity->v.maxs + pEntity->v.mins) * 0.5f + pEntity->v.origin;
 
-	CALL_HOOKS_VOID(pfnEmitSound, pEntity, channel, pszSample, volume, attenuation, fFlags, pitch, origin, 0, reliable);
+	CALL_HOOKS_VOID(pfnEmitSound, pEntity, channel, pszSample, volume, attenuation, hookFlags, pitch, origin, 0);
 	g_engfuncs.pfnEmitSound(pEntity, channel, pszSample, volume, attenuation, fFlags, pitch);
 }
 

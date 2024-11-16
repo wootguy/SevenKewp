@@ -659,6 +659,8 @@
 #define SND_FL_SPAWNING		(1<<8)		// we're spawning, used in some cases for ambients (not sent across network)
 #define SND_FL_PREDICTED	(1<<9)		// sound is predicted by the client that emitted it (not sent across network)
 #define SND_FL_MOD			(1<<10)		// sound message is being sent by the mod, not the engine (not sent across network) (for plugins)
+#define SND_FL_GLOBAL		(1<<11)		// sound message skips the PAS check (not sent across network)
+#define SND_FL_RELIABLE		(1<<12)		// sound uses the reliable channel (not sent across network)
 
 // plats
 #define	PLAT_LOW_TRIGGER	1
