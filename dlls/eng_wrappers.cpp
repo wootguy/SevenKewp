@@ -664,6 +664,11 @@ void EMIT_SOUND_DYN2(edict_t* pEntity, int channel, const char* pszSample, float
 	Vector origin = (pEntity->v.maxs + pEntity->v.mins) * 0.5f + pEntity->v.origin;
 
 	CALL_HOOKS_VOID(pfnEmitSound, pEntity, channel, pszSample, volume, attenuation, hookFlags, pitch, origin, 0);
+	
+	// TODO: the engine doesn't use these flag bits at all, and yet everyone gets kicked with svc_bad
+	// if you pass them to the engine. Destroy an apache to reproduce.
+	fFlags &= ~(SND_FL_RELIABLE | SND_FL_GLOBAL);
+
 	g_engfuncs.pfnEmitSound(pEntity, channel, pszSample, volume, attenuation, fFlags, pitch);
 }
 
