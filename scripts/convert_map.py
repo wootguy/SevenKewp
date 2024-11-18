@@ -491,12 +491,14 @@ def check_map_problems(all_ents, fix_problems):
 					ent['spawnflags'] = "%d" % (spawnflags | 896)
 				any_problems = True
 		
-		if cname == "trigger_changesky":
+		if cname == "trigger_changesky" and ent.get('skyname', ""):
 			skyname = ent.get('skyname', "")
-			if not fix_problems:
+			bsppath = 'models/skybox/%s.bsp' % skyname
+			
+			if not os.path.exists(bsppath) and not fix_problems:
 				err("trigger_changesky requires sky to bsp conversion")
 				any_problems = True
-			else:
+			elif not os.path.exists(bsppath):
 				can_convert = True
 				skybox_image_tmp_path = "_skybox/images"
 				shutil.rmtree(skybox_image_tmp_path)
@@ -526,7 +528,7 @@ def check_map_problems(all_ents, fix_problems):
 					subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 					
 					os.makedirs('models/skybox', exist_ok=True)
-					bsppath = 'models/skybox/%s.bsp' % skyname
+					
 					shutil.copyfile('_skybox/skybox.bsp', bsppath)
 					
 					# rename textures because each texture loaded by the client must have a unique name
@@ -575,10 +577,72 @@ def convert_ents(all_ents):
 				ent[key] = 'models/faraon/hgrunt_desert.mdl'
 			if model == 'models/sandstone/rpggruntf.mdl':
 				ent[key] = 'models/faraon/hgrunt_desert.mdl'
+
+def get_all_skill_cvar_names(skill_path):	
+	all_names = set()
+
+	with open(skill_path, 'r') as file:
+		for line in file:
+			line = line.strip().lower()
 			
-		
+			parts = line.split()
+			if len(parts) < 2:
+				continue
+				
+			if parts[0].startswith("sk_"):
+				all_names.add(parts[0].lower())
+				
+	return all_names
 
+def convert_skill_cfg(skill_path):
+	global all_skill_cvar_names
+	new_cvar_lines_idx = {} # maps a cvar line to an index in new_skill_lines
+	best_cvar_levels = {}
+	new_skill_lines = []
+	change_count = 0
+	
+	with open(skill_path, 'r') as file:
+		for line in file:
+			line = line.strip().lower()
+			
+			parts = line.split()
+			if len(parts) < 2:
+				new_skill_lines.append(line)
+				continue
+				
+			skill_name = parts[0].lower()
+			
+			suffix = skill_name[-1]
+			new_skill_name = skill_name[:-1]
+			
+			if suffix in ["1", "2", "3"] and new_skill_name in all_skill_cvar_names:
+				if new_skill_name in best_cvar_levels:
+					# prefer highest skill level setting
+					old_best = int(best_cvar_levels[new_skill_name])
+					new_best = int(suffix)
+					if new_best <= old_best:
+						continue
+				
+				best_cvar_levels[new_skill_name] = suffix
+				
+				if new_skill_name in new_cvar_lines_idx:
+					del new_skill_lines[new_cvar_lines_idx[new_skill_name]]
+				
+				new_skill_lines.append("%s %s" % (new_skill_name, " ".join(parts[1:])))
+				new_cvar_lines_idx[new_skill_name] = len(new_skill_lines)-1
+				change_count += 1
+				
+				continue
+			
+			new_skill_lines.append(line)
 
+	if change_count > 0:
+		with open(skill_path, 'w') as file:
+			for line in new_skill_lines:
+				file.write(line + "\n")
+				
+		print("Rewrote/removed %d skill file lines" % change_count)
+			
 def ents_match(d1, d2, path=""):
 	if len(d1) != len(d2):
 		return False
@@ -613,6 +677,7 @@ modelguy_path = os.path.join(cur_dir, 'modelguy')
 wadmaker_path = os.path.join(cur_dir, '_skybox', 'wadmaker')
 bspguy_path = os.path.join(cur_dir, 'bspguy')
 magick_path = 'magick'
+skill_path = os.path.join(cur_dir, "skill.cfg")
 
 #os.chdir('../compatible_maps')
 
@@ -622,6 +687,7 @@ models_dir = "models"
 all_maps = get_all_maps(maps_dir)
 all_cfgs = get_all_cfgs(maps_dir)
 all_models = get_all_models(models_dir)
+all_skill_cvar_names = get_all_skill_cvar_names(skill_path)
 
 fix_problems = True
 
@@ -757,6 +823,9 @@ for idx, map_name in enumerate(all_maps):
 		print()
 
 for cfg in all_cfgs:
+	if cfg.endswith("_skl.cfg"):
+		convert_skill_cfg("maps/%s" % cfg)
+		continue
 	with open("maps/%s" % cfg, 'r') as file:
 		for line in file:
 			line = line.strip().lower()

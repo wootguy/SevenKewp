@@ -116,7 +116,6 @@ std::unordered_set<std::string> timeCriticalCvars = {
 	"mp_skill_allow",
 
 	// for determining what to block when map skill is parsed
-	"mp_skill_min_boost",
 	"mp_bulletsponges",
 	"mp_bulletspongemax",
 };
