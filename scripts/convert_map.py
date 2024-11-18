@@ -1,4 +1,4 @@
-import struct, os, subprocess, wave, time, sys, copy, codecs, json, shutil
+import struct, os, subprocess, wave, time, sys, copy, codecs, json, shutil, copy
 from collections import OrderedDict
 
 nonstandard_audio_formats = ["aiff", "asf", "asx", "au", "dls", "flac", "fsb", "it", "m3u", "mid", "midi", "mod", "mp2", "ogg", "pls", "s3m", "vag", "wax", "wma", "xm", "xma"]
@@ -295,6 +295,7 @@ def check_map_problems(all_ents, fix_problems):
 	global magick_path
 	global bspguy_path
 	global nonstandard_audio_formats
+	global all_titles
 	
 	any_problems = False
 	
@@ -540,6 +541,67 @@ def check_map_problems(all_ents, fix_problems):
 						print(' '.join(cmd))
 						subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		
+		if cname == 'env_message':
+			title_name = ent.get("message", "").lower()
+		
+			if title_name in all_titles:
+				if not fix_problems:
+					err("env_message using title from titles.txt: %s" % title_name)
+					any_problems = True
+				else:
+					spawnflags = int(ent.get('spawnflags', 0))
+					
+					title = all_titles[title_name]
+					ent['message'] = title["text"].replace('"', "''")
+					ent['x'] = title["x"]
+					ent['y'] = title["y"]
+					ent['fadein'] = title["fadein"]
+					ent['fadeout'] = title["fadeout"]
+					ent['effect'] = title["effect"]
+					ent['color'] = title["color"]
+					ent['color2'] = title["color2"]
+					ent['holdtime'] = title["holdtime"]
+					ent['fxtime'] = title["fxtime"]
+					ent['classname'] = 'game_text'
+					ent["spawnflags"] = "1" if (spawnflags & 2) else 0
+					
+					if (spawnflags & 1):
+						# kill the text after it plays
+						ent["killtarget"] = ent["targetname"]
+					
+					sound = ent.get("messagesound", "")
+					if sound:
+						attn = int(ent.get("messageattenuation", "0"))
+						ori = ent.get("origin", "")
+						ori_parts = ori.split()
+						if (len(ori_parts) > 2):
+							ori_parts[2] = "%d" % (int(ori_parts[2]) + 24)
+							ori = " ".join(ori_parts)
+						
+						newent = {}
+						newent["classname"] = "ambient_generic"
+						newent["targetname"] = ent["targetname"]
+						newent["origin"] = ori
+						newent["message"] = sound
+						newent["health"] = ent.get("messagevolume", "0")
+						newent["pitch"] = "100"
+						
+						spawnflags = 16 | 32
+						
+						if attn == 0:
+							spawnflags |= 2
+						elif attn == 1:
+							spawnflags |= 4
+						elif attn == 2:
+							spawnflags |= 8
+						elif attn == 3:
+							spawnflags |= 1
+							
+						newent["spawnflags"] = "%d" % spawnflags
+						
+						all_ents.append(newent)
+						
+		
 		# custom models with external sequences cause crashes if the "vanilla" model they're referencing
 		# does not exist (e.g. "models/shocktrooper01.mdl" for a custom shocktrooper model)
 		for key, value in ent.items():
@@ -642,7 +704,63 @@ def convert_skill_cfg(skill_path):
 				file.write(line + "\n")
 				
 		print("Rewrote/removed %d skill file lines" % change_count)
+
+def parse_titles(titles_path):
+	titles = {}
+	
+	# defaults copied from the client code
+	current_hud_params = {
+		'color': '100 100 100',
+		'color2': '240 110 0',
+		'x': '-1',
+		'y': '0.7',
+		'fadein': '0.01',
+		'fadeout': '1.5',
+		'fxtime': '0.25',
+		'holdtime': '5'
+	}
+	
+	current_hud_text = ''
+	title_name = ''
+	parsing_hud_text = False
+
+	with open(titles_path, 'r') as file:
+		for line in file:
+			line = line.strip()
 			
+			if not line or line.startswith("//"):
+				continue
+				
+			if not parsing_hud_text and line.startswith("$"):
+				parts = line.split()
+				param_name = parts[0][1:].lower()
+				
+				if param_name == 'position':
+					current_hud_params['x'] = parts[1]
+					current_hud_params['y'] = parts[2]
+				else:
+					param_value = " ".join(parts[1:])
+					current_hud_params[param_name] = param_value
+			elif line.startswith("{"):
+				parsing_hud_text = True
+			elif line.startswith("}"):
+				parsing_hud_text = False
+				current_hud_params['text'] = current_hud_text
+				titles[title_name] = copy.deepcopy(current_hud_params)
+				current_hud_text = current_hud_params['text'] = ''
+			else:
+				if parsing_hud_text:
+					if current_hud_text:
+						current_hud_text += '\n'
+					current_hud_text += line
+				else:
+					title_name = line.lower()
+	
+	#for key, val in titles.items():
+	#	print("%s = %s" % (key, val))
+	
+	return titles
+
 def ents_match(d1, d2, path=""):
 	if len(d1) != len(d2):
 		return False
@@ -678,6 +796,7 @@ wadmaker_path = os.path.join(cur_dir, '_skybox', 'wadmaker')
 bspguy_path = os.path.join(cur_dir, 'bspguy')
 magick_path = 'magick'
 skill_path = os.path.join(cur_dir, "skill.cfg")
+titles_path = os.path.join(cur_dir, "titles.txt")
 
 #os.chdir('../compatible_maps')
 
@@ -688,6 +807,7 @@ all_maps = get_all_maps(maps_dir)
 all_cfgs = get_all_cfgs(maps_dir)
 all_models = get_all_models(models_dir)
 all_skill_cvar_names = get_all_skill_cvar_names(skill_path)
+all_titles = parse_titles(titles_path)
 
 fix_problems = True
 
