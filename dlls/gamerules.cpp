@@ -108,6 +108,19 @@ BOOL CGameRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeap
 	return TRUE;
 }
 
+std::unordered_set<std::string> timeCriticalCvars = {
+	// to know what to precache during this frame
+	"mp_mergemodels",
+
+	// to decide if the map skill file should be skipped
+	"mp_skill_allow",
+
+	// for determining what to block when map skill is parsed
+	"mp_skill_min_boost",
+	"mp_bulletsponges",
+	"mp_bulletspongemax",
+};
+
 void execMapCfg() {
 	// Map CFGs are low trust so only whitelisted commands are allowed.
 	// Server owners shouldn't have to check each map for things like "rcon_password HAHA_GOT_YOU"
@@ -142,6 +155,7 @@ void execMapCfg() {
 		"mp_bulletspongemax",
 		"mp_maxmonsterrespawns",
 		"mp_mergemodels",
+		"mp_skill_allow",
 		"killnpc",
 		"mp_npckill",
 		"startarmor",
@@ -267,8 +281,8 @@ void execMapCfg() {
 			}
 
 			// must know this value now to know what to precache during this frame
-			if (name == "mp_mergemodels") {
-				CVAR_SET_FLOAT("mp_mergemodels", atoi(value.c_str()) != 0);
+			if (timeCriticalCvars.count(name)) {
+				CVAR_SET_FLOAT(name.c_str(), atoi(value.c_str()));
 				continue;
 			}
 
@@ -324,10 +338,10 @@ void execServerCfg() {
 
 		string name = trimSpaces(toLowerCase(parts[0]));
 		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
-
-		// must know this value now to know what to precache during this frame (todo: duplicated in map cfg logic)
-		if (name == "mp_mergemodels") {
-			CVAR_SET_FLOAT("mp_mergemodels", atoi(value.c_str()) != 0);
+		
+		// TODO: duplicated in map cfg exec
+		if (timeCriticalCvars.count(name)) {
+			CVAR_SET_FLOAT(name.c_str(), atoi(value.c_str()));
 			continue;
 		}
 
@@ -335,6 +349,60 @@ void execServerCfg() {
 	}
 
 	FREE_FILE(cfgFile);
+}
+
+void execSkillCfg(const char* fname, bool isMapSkill) {
+	int length;
+	char* cfgFile = (char*)LOAD_FILE_FOR_ME(fname, &length);
+
+	if (!cfgFile) {
+		return;
+	}
+
+	g_mapCfgExists = cfgFile;
+	g_noSuit = false;
+
+	std::stringstream data_stream(cfgFile);
+	string line;
+
+	int numChanges = 0;
+	int numBlocked = 0;
+
+	std::unordered_set<std::string> cfgChanges;
+
+	while (std::getline(data_stream, line))
+	{
+		vector<string> parts = splitString(line, " \t");
+
+		if (parts.size() < 2) {
+			continue;
+		}
+
+		string name = trimSpaces(toLowerCase(parts[0]));
+		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
+		auto cvar = g_skillCvars.find(name);
+
+		if (cvar != g_skillCvars.end()) {
+			float oldVal = cvar->second->cvar.value;
+			float newVal = atof(value.c_str());
+
+			if (oldVal == newVal) {
+				continue;
+			}
+			
+			// set value now so that calculations can be done in future skill cfgs
+			CVAR_SET_FLOAT(name.c_str(), newVal);
+			numChanges++;
+		}
+	}
+
+	FREE_FILE(cfgFile);
+
+	if (isMapSkill && mp_skill_allow.value >= 1) {
+		ALERT(at_console, "Map skill cvars changed: %d\n", numChanges);
+	}
+
+	RefreshSkillData(isMapSkill);
 }
 
 void execCfgs() {
@@ -348,10 +416,20 @@ void execCfgs() {
 	// How do commands run out of order?
 	// Whenever "exec file.cfg" is called, it's command are moved to the back of the command list,
 	// meaning the order you call SERVER_COMMAND doesn't match the actual execution order. Commands
-	// are run one per frame, so you can't hackfix this by adding a delay to an important CFG either.
+	// are run one per frame, so you can't hackfix this by adding a delay to an important CFG either.	
 
 	execServerCfg();
+	execSkillCfg("skill.cfg", false);
 	execMapCfg();
+
+	if (mp_skill_allow.value != 0) {
+		execSkillCfg(UTIL_VarArgs("maps/%s_skl.cfg", STRING(gpGlobals->mapname)), true);
+	}
+	else {
+		// sync map health values to server values
+		RefreshSkillData(true);
+	}
+
 	SERVER_COMMAND("cfg_exec_finished\n");
 
 	SERVER_EXECUTE();

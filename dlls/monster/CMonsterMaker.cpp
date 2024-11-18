@@ -740,7 +740,7 @@ void CMonsterMaker::Nerf() {
 		return; // don't care about nerfing friendlies/insects/snarks
 	}
 
-	float defaultHealth = GetDefaultHealth(spawnCname);
+	float defaultHealth = GetDefaultHealth(spawnCname, false);
 	float preNerfHealth = pev->health ? pev->health : defaultHealth;
 
 	CBaseMonster::Nerf(); // reduce health
@@ -824,7 +824,7 @@ void CMonsterMaker::Nerf() {
 		*/
 
 		if (shouldNerf) {
-			ALERT(at_console, "Nerf %s maker '%s' count: %d -> %d\n", STRING(m_iszMonsterClassname),
+			ALERT(at_aiconsole, "Nerf %s maker '%s' count: %d -> %d\n", STRING(m_iszMonsterClassname),
 				STRING(pev->targetname), m_cNumMonsters, maxNerfedSpawnCount);
 			if (m_cNumMonsters < 0) {
 				g_nerfStats.nerfedMonsterInfiniSpawns++;

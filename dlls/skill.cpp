@@ -21,241 +21,239 @@
 
 
 skilldata_t	gSkillData;
-std::unordered_map<std::string, float> g_defaultMonsterHealth;
+std::unordered_map<std::string, float> g_defaultMonsterHealthMap; // default hp for the map
+std::unordered_map<std::string, float> g_defaultMonsterHealthServer; // default hp for the server
+std::unordered_map<std::string, skill_cvar_t*> g_skillCvars;
 
-#define DECL_SKILL_CVAR(name) {{#name, "0", 0, 0, 0}, offsetof(skilldata_t, name)}
-
-struct skill_cvar_t {
-	cvar_t cvar;
-	int structMemberOffset; // member offset into skill data struct
-};
+#define DECL_SKILL_CVAR(name, type) {{#name, "0", 0, 0, 0}, offsetof(skilldata_t, name), type}
 
 skill_cvar_t skill_cvars[] = {
 	// Agrunt
-	DECL_SKILL_CVAR(sk_agrunt_health),
-	DECL_SKILL_CVAR(sk_agrunt_dmg_punch),
-	DECL_SKILL_CVAR(sk_agrunt_hornet_mode),
+	DECL_SKILL_CVAR(sk_agrunt_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_agrunt_dmg_punch, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_agrunt_hornet_mode, CVAR_TYPE_AI),
 
 	// Apache
-	DECL_SKILL_CVAR(sk_apache_health),
+	DECL_SKILL_CVAR(sk_apache_health, CVAR_TYPE_HEALTH),
 
 	// Osprey
-	DECL_SKILL_CVAR(sk_osprey_health),
+	DECL_SKILL_CVAR(sk_osprey_health, CVAR_TYPE_HEALTH),
 
 	// Barney
-	DECL_SKILL_CVAR(sk_barney_health),
+	DECL_SKILL_CVAR(sk_barney_health, CVAR_TYPE_HEALTH),
 
 	// Barnacle
-	DECL_SKILL_CVAR(sk_barnacle_health),
-	DECL_SKILL_CVAR(sk_barnacle_pullspeed),
+	DECL_SKILL_CVAR(sk_barnacle_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_barnacle_pullspeed, CVAR_TYPE_AI),
 
 	// Bullsquid
-	DECL_SKILL_CVAR(sk_bullsquid_health),
-	DECL_SKILL_CVAR(sk_bullsquid_dmg_bite),
-	DECL_SKILL_CVAR(sk_bullsquid_dmg_whip),
-	DECL_SKILL_CVAR(sk_bullsquid_dmg_spit),
+	DECL_SKILL_CVAR(sk_bullsquid_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_bullsquid_dmg_bite, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_bullsquid_dmg_whip, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_bullsquid_dmg_spit, CVAR_TYPE_DAMAGE),
 
 	// Big Momma
-	DECL_SKILL_CVAR(sk_bigmomma_health),
-	DECL_SKILL_CVAR(sk_bigmomma_dmg_slash),
-	DECL_SKILL_CVAR(sk_bigmomma_dmg_blast),
-	DECL_SKILL_CVAR(sk_bigmomma_radius_blast),
+	DECL_SKILL_CVAR(sk_bigmomma_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_bigmomma_dmg_slash, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_bigmomma_dmg_blast, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_bigmomma_radius_blast, CVAR_TYPE_DAMAGE),
 
 	// Gargantua
-	DECL_SKILL_CVAR(sk_gargantua_health),
-	DECL_SKILL_CVAR(sk_gargantua_dmg_slash),
-	DECL_SKILL_CVAR(sk_gargantua_dmg_fire),
-	DECL_SKILL_CVAR(sk_gargantua_dmg_stomp),
+	DECL_SKILL_CVAR(sk_gargantua_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_gargantua_dmg_slash, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_gargantua_dmg_fire, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_gargantua_dmg_stomp, CVAR_TYPE_DAMAGE),
 
 	// Hassassin
-	DECL_SKILL_CVAR(sk_hassassin_health),
+	DECL_SKILL_CVAR(sk_hassassin_health, CVAR_TYPE_HEALTH),
 
 	// Headcrab
-	DECL_SKILL_CVAR(sk_headcrab_health),
-	DECL_SKILL_CVAR(sk_headcrab_dmg_bite),
+	DECL_SKILL_CVAR(sk_headcrab_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_headcrab_dmg_bite, CVAR_TYPE_DAMAGE),
 
 	// Hgrunt
-	DECL_SKILL_CVAR(sk_hgrunt_health),
-	DECL_SKILL_CVAR(sk_hgrunt_kick),
-	DECL_SKILL_CVAR(sk_hgrunt_pellets),
-	DECL_SKILL_CVAR(sk_hgrunt_gspeed),
+	DECL_SKILL_CVAR(sk_hgrunt_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_hgrunt_kick, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_hgrunt_pellets, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_hgrunt_gspeed, CVAR_TYPE_AI),
 
 	// HWGrunt
-	DECL_SKILL_CVAR(sk_hwgrunt_health),
+	DECL_SKILL_CVAR(sk_hwgrunt_health, CVAR_TYPE_HEALTH),
 
 	// Houndeye
-	DECL_SKILL_CVAR(sk_houndeye_health),
-	DECL_SKILL_CVAR(sk_houndeye_dmg_blast),
+	DECL_SKILL_CVAR(sk_houndeye_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_houndeye_dmg_blast, CVAR_TYPE_DAMAGE),
 
 	// ISlave
-	DECL_SKILL_CVAR(sk_islave_health),
-	DECL_SKILL_CVAR(sk_islave_dmg_claw),
-	DECL_SKILL_CVAR(sk_islave_dmg_clawrake),
-	DECL_SKILL_CVAR(sk_islave_dmg_zap),
+	DECL_SKILL_CVAR(sk_islave_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_islave_dmg_claw, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_islave_dmg_clawrake, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_islave_dmg_zap, CVAR_TYPE_DAMAGE),
 
 	// Icthyosaur
-	DECL_SKILL_CVAR(sk_ichthyosaur_health),
-	DECL_SKILL_CVAR(sk_ichthyosaur_shake),
+	DECL_SKILL_CVAR(sk_ichthyosaur_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_ichthyosaur_shake, CVAR_TYPE_DAMAGE),
 
 	// Leech
-	DECL_SKILL_CVAR(sk_leech_health),
-	DECL_SKILL_CVAR(sk_leech_dmg_bite),
+	DECL_SKILL_CVAR(sk_leech_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_leech_dmg_bite, CVAR_TYPE_DAMAGE),
 
 	// Controller
-	DECL_SKILL_CVAR(sk_controller_health),
-	DECL_SKILL_CVAR(sk_controller_dmgzap),
-	DECL_SKILL_CVAR(sk_controller_speedball),
-	DECL_SKILL_CVAR(sk_controller_dmgball),
+	DECL_SKILL_CVAR(sk_controller_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_controller_dmgzap, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_controller_speedball, CVAR_TYPE_AI),
+	DECL_SKILL_CVAR(sk_controller_dmgball, CVAR_TYPE_DAMAGE),
 
 	// Nihilanth
-	DECL_SKILL_CVAR(sk_nihilanth_health),
-	DECL_SKILL_CVAR(sk_nihilanth_zap),
+	DECL_SKILL_CVAR(sk_nihilanth_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_nihilanth_zap, CVAR_TYPE_DAMAGE),
 
 	// Scientist
-	DECL_SKILL_CVAR(sk_scientist_health),
+	DECL_SKILL_CVAR(sk_scientist_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_scientist_heal, CVAR_TYPE_DAMAGE),
 
 	// Snark
-	DECL_SKILL_CVAR(sk_snark_health),
-	DECL_SKILL_CVAR(sk_snark_dmg_bite),
-	DECL_SKILL_CVAR(sk_snark_dmg_pop),
+	DECL_SKILL_CVAR(sk_snark_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_snark_dmg_bite, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_snark_dmg_pop, CVAR_TYPE_DAMAGE),
 
 	// Zombie
-	DECL_SKILL_CVAR(sk_zombie_health),
-	DECL_SKILL_CVAR(sk_zombie_dmg_one_slash),
-	DECL_SKILL_CVAR(sk_zombie_dmg_both_slash),
+	DECL_SKILL_CVAR(sk_zombie_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_zombie_dmg_one_slash, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_zombie_dmg_both_slash, CVAR_TYPE_DAMAGE),
 
 	// Turrets
-	DECL_SKILL_CVAR(sk_turret_health),
-	DECL_SKILL_CVAR(sk_miniturret_health),
-	DECL_SKILL_CVAR(sk_sentry_health),
+	DECL_SKILL_CVAR(sk_turret_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_miniturret_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_sentry_health, CVAR_TYPE_HEALTH),
 
 	// Gonome
-	DECL_SKILL_CVAR(sk_gonome_health),
-	DECL_SKILL_CVAR(sk_gonome_dmg_one_slash),
-	DECL_SKILL_CVAR(sk_gonome_dmg_one_bite),
-	DECL_SKILL_CVAR(sk_gonome_dmg_guts),
+	DECL_SKILL_CVAR(sk_gonome_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_gonome_dmg_one_slash, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_gonome_dmg_one_bite, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_gonome_dmg_guts, CVAR_TYPE_DAMAGE),
 
 	// Voltigore
-	DECL_SKILL_CVAR(sk_voltigore_health),
-	DECL_SKILL_CVAR(sk_voltigore_dmg_punch),
-	DECL_SKILL_CVAR(sk_voltigore_dmg_beam),
-	DECL_SKILL_CVAR(sk_voltigore_dmg_explode),
+	DECL_SKILL_CVAR(sk_voltigore_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_voltigore_dmg_punch, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_voltigore_dmg_beam, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_voltigore_dmg_explode, CVAR_TYPE_DAMAGE),
 
 	// Tor
-	DECL_SKILL_CVAR(sk_tor_health),
-	DECL_SKILL_CVAR(sk_tor_punch),
-	DECL_SKILL_CVAR(sk_tor_energybeam),
-	DECL_SKILL_CVAR(sk_tor_sonicblast),
+	DECL_SKILL_CVAR(sk_tor_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_tor_punch, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_tor_energybeam, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_tor_sonicblast, CVAR_TYPE_DAMAGE),
 
 	// Baby garg
-	DECL_SKILL_CVAR(sk_babygargantua_health),
-	DECL_SKILL_CVAR(sk_babygargantua_dmg_slash),
-	DECL_SKILL_CVAR(sk_babygargantua_dmg_fire),
-	DECL_SKILL_CVAR(sk_babygargantua_dmg_stomp),
+	DECL_SKILL_CVAR(sk_babygargantua_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_babygargantua_dmg_slash, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_babygargantua_dmg_fire, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_babygargantua_dmg_stomp, CVAR_TYPE_DAMAGE),
 
 	// Pit drone
-	DECL_SKILL_CVAR(sk_pitdrone_health),
-	DECL_SKILL_CVAR(sk_pitdrone_dmg_bite),
-	DECL_SKILL_CVAR(sk_pitdrone_dmg_whip),
-	DECL_SKILL_CVAR(sk_pitdrone_dmg_spit),
+	DECL_SKILL_CVAR(sk_pitdrone_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_pitdrone_dmg_bite, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_pitdrone_dmg_whip, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_pitdrone_dmg_spit, CVAR_TYPE_DAMAGE),
 
 	// Shock trooper
-	DECL_SKILL_CVAR(sk_shocktrooper_health),
-	DECL_SKILL_CVAR(sk_shocktrooper_kick),
-	DECL_SKILL_CVAR(sk_shocktrooper_maxcharge),
-	DECL_SKILL_CVAR(sk_shocktrooper_rechargespeed),
-	DECL_SKILL_CVAR(sk_shocktrooper_grenadespeed),
+	DECL_SKILL_CVAR(sk_shocktrooper_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_shocktrooper_kick, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_shocktrooper_maxcharge, CVAR_TYPE_AI),
+	DECL_SKILL_CVAR(sk_shocktrooper_rechargespeed, CVAR_TYPE_AI),
+	DECL_SKILL_CVAR(sk_shocktrooper_grenadespeed, CVAR_TYPE_AI),
 
 	// Shock roach
-	DECL_SKILL_CVAR(sk_shockroach_health),
-	DECL_SKILL_CVAR(sk_shockroach_dmg_bite),
-	DECL_SKILL_CVAR(sk_shockroach_lifespan),
+	DECL_SKILL_CVAR(sk_shockroach_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_shockroach_dmg_bite, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_shockroach_lifespan, CVAR_TYPE_AI),
 
 	// Otis
-	DECL_SKILL_CVAR(sk_otis_health),
-	DECL_SKILL_CVAR(sk_otis_bullet),
+	DECL_SKILL_CVAR(sk_otis_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_otis_bullet, CVAR_TYPE_DAMAGE),
 
 	// Male assassin
-	DECL_SKILL_CVAR(sk_massassin_health),
-	DECL_SKILL_CVAR(sk_massassin_grenadespeed),
-	DECL_SKILL_CVAR(sk_massassin_kick),
+	DECL_SKILL_CVAR(sk_massassin_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_massassin_grenadespeed, CVAR_TYPE_AI),
+	DECL_SKILL_CVAR(sk_massassin_kick, CVAR_TYPE_DAMAGE),
 
 	// Player weapons
-	DECL_SKILL_CVAR(sk_plr_crowbar),
-	DECL_SKILL_CVAR(sk_plr_9mm_bullet),
-	DECL_SKILL_CVAR(sk_plr_357_bullet),
-	DECL_SKILL_CVAR(sk_plr_9mmAR_bullet),
-	DECL_SKILL_CVAR(sk_plr_9mmAR_grenade),
-	DECL_SKILL_CVAR(sk_plr_buckshot),
-	DECL_SKILL_CVAR(sk_plr_xbow_bolt_client),
-	DECL_SKILL_CVAR(sk_plr_xbow_bolt_monster),
-	DECL_SKILL_CVAR(sk_plr_xbow_sniper_bullet),
-	DECL_SKILL_CVAR(sk_plr_rpg),
-	DECL_SKILL_CVAR(sk_plr_gauss),
-	DECL_SKILL_CVAR(sk_plr_egon_narrow),
-	DECL_SKILL_CVAR(sk_plr_egon_wide),
-	DECL_SKILL_CVAR(sk_plr_hand_grenade),
-	DECL_SKILL_CVAR(sk_plr_satchel),
-	DECL_SKILL_CVAR(sk_plr_tripmine),
-	DECL_SKILL_CVAR(sk_plr_spore),
-	DECL_SKILL_CVAR(sk_plr_shockrifle),
-	DECL_SKILL_CVAR(sk_plr_hornet),
-	DECL_SKILL_CVAR(sk_plr_pipewrench),
-	DECL_SKILL_CVAR(sk_plr_pipewrench_full_damage),
-	DECL_SKILL_CVAR(sk_plr_displacer_other),
-	DECL_SKILL_CVAR(sk_plr_displacer_radius),
+	DECL_SKILL_CVAR(sk_plr_crowbar, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_9mm_bullet, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_357_bullet, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_9mmAR_bullet, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_9mmAR_grenade, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_buckshot, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_xbow_bolt_client, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_xbow_bolt_monster, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_xbow_sniper_bullet, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_rpg, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_gauss, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_egon_narrow, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_egon_wide, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_hand_grenade, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_satchel, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_tripmine, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_spore, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_shockrifle, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_hornet, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_pipewrench, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_pipewrench_full_damage, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_displacer_other, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_displacer_radius, CVAR_TYPE_DAMAGE),
 
 	// Player max ammo
-	DECL_SKILL_CVAR(sk_ammo_max_uranium),
-	DECL_SKILL_CVAR(sk_ammo_max_9mm),
-	DECL_SKILL_CVAR(sk_ammo_max_357),
-	DECL_SKILL_CVAR(sk_ammo_max_buckshot),
-	DECL_SKILL_CVAR(sk_ammo_max_bolts),
-	DECL_SKILL_CVAR(sk_ammo_max_rockets),
-	DECL_SKILL_CVAR(sk_ammo_max_grenades),
-	DECL_SKILL_CVAR(sk_ammo_max_satchels),
-	DECL_SKILL_CVAR(sk_ammo_max_tripmines),
-	DECL_SKILL_CVAR(sk_ammo_max_snarks),
-	DECL_SKILL_CVAR(sk_ammo_max_hornets),
-	DECL_SKILL_CVAR(sk_ammo_max_argrenades),
-	DECL_SKILL_CVAR(sk_ammo_max_spores),
+	DECL_SKILL_CVAR(sk_ammo_max_uranium, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_9mm, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_357, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_buckshot, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_bolts, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_rockets, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_grenades, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_satchels, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_tripmines, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_snarks, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_hornets, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_argrenades, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_spores, CVAR_TYPE_ITEM),
 
 	// World weapons
-	DECL_SKILL_CVAR(sk_12mm_bullet),
-	DECL_SKILL_CVAR(sk_9mmAR_bullet),
-	DECL_SKILL_CVAR(sk_9mm_bullet),
-	DECL_SKILL_CVAR(sk_762_bullet),
-	DECL_SKILL_CVAR(sk_hornet_dmg),
-	DECL_SKILL_CVAR(sk_556_bullet),
+	DECL_SKILL_CVAR(sk_12mm_bullet, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_9mmAR_bullet, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_9mm_bullet, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_762_bullet, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_hornet_dmg, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_556_bullet, CVAR_TYPE_DAMAGE),
 
 	// Health/Charge
-	DECL_SKILL_CVAR(sk_suitcharger),
-	DECL_SKILL_CVAR(sk_battery),
-	DECL_SKILL_CVAR(sk_healthcharger),
-	DECL_SKILL_CVAR(sk_healthkit),
-	DECL_SKILL_CVAR(sk_scientist_heal),
+	DECL_SKILL_CVAR(sk_suitcharger, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_battery, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_healthcharger, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_healthkit, CVAR_TYPE_ITEM),
 
 	// Monster damage adjusters
-	DECL_SKILL_CVAR(sk_monster_head),
-	DECL_SKILL_CVAR(sk_monster_chest),
-	DECL_SKILL_CVAR(sk_monster_stomach),
-	DECL_SKILL_CVAR(sk_monster_arm),
-	DECL_SKILL_CVAR(sk_monster_leg),
+	DECL_SKILL_CVAR(sk_monster_head, CVAR_TYPE_HITGROUP),
+	DECL_SKILL_CVAR(sk_monster_chest, CVAR_TYPE_HITGROUP),
+	DECL_SKILL_CVAR(sk_monster_stomach, CVAR_TYPE_HITGROUP),
+	DECL_SKILL_CVAR(sk_monster_arm, CVAR_TYPE_HITGROUP),
+	DECL_SKILL_CVAR(sk_monster_leg, CVAR_TYPE_HITGROUP),
 
 	// Player damage adjusters
-	DECL_SKILL_CVAR(sk_player_head),
-	DECL_SKILL_CVAR(sk_player_chest),
-	DECL_SKILL_CVAR(sk_player_stomach),
-	DECL_SKILL_CVAR(sk_player_arm),
-	DECL_SKILL_CVAR(sk_player_leg),
+	DECL_SKILL_CVAR(sk_player_head, CVAR_TYPE_HITGROUP),
+	DECL_SKILL_CVAR(sk_player_chest, CVAR_TYPE_HITGROUP),
+	DECL_SKILL_CVAR(sk_player_stomach, CVAR_TYPE_HITGROUP),
+	DECL_SKILL_CVAR(sk_player_arm, CVAR_TYPE_HITGROUP),
+	DECL_SKILL_CVAR(sk_player_leg, CVAR_TYPE_HITGROUP),
 
 	// Mosnter turn speed multiplier
-	DECL_SKILL_CVAR(sk_yawspeed_mult),
+	DECL_SKILL_CVAR(sk_yawspeed_mult, CVAR_TYPE_AI),
 };
 
 void RegisterSkillCvars() {
 	for (int i = 0; i < (int)(sizeof(skill_cvars) / sizeof(skill_cvar_t)); i++) {
 		CVAR_REGISTER(&skill_cvars[i].cvar);
+		g_skillCvars[skill_cvars[i].cvar.name] = &skill_cvars[i];
 	}
 }
 
@@ -269,104 +267,94 @@ cvar_t* GetSkillCvar(const char* cvar) {
 	return NULL;
 }
 
-void RefreshSkillData() {
-	int	iSkill;
-
-	iSkill = (int)CVAR_GET_FLOAT("skill");
-	g_iSkillLevel = iSkill;
-
-	if (iSkill < 1)
-	{
-		iSkill = 1;
-	}
-	else if (iSkill > 3)
-	{
-		iSkill = 3;
-	}
-
-	gSkillData.iSkillLevel = iSkill;
-
-	ALERT(at_console, "\nGAME SKILL LEVEL:%d\n", iSkill);
-
+void RefreshSkillData(bool mapSkills) {
 	for (int i = 0; i < (int)(sizeof(skill_cvars) / sizeof(skill_cvar_t)); i++) {
 		float* structMember = (float*)((byte*)&gSkillData.firstMember + skill_cvars[i].structMemberOffset);
 		*structMember = skill_cvars[i].cvar.value;
 	}
 
-	g_defaultMonsterHealth.clear();
+	std::unordered_map<std::string, float>& hpDict = mapSkills ?
+		g_defaultMonsterHealthMap : g_defaultMonsterHealthServer;
 
-	g_defaultMonsterHealth["cycler"] = 80000;
-	g_defaultMonsterHealth["hornet"] = 1;
-	g_defaultMonsterHealth["monster_alien_babyvoltigore"] = 80;
-	g_defaultMonsterHealth["monster_alien_controller"] = gSkillData.sk_controller_health;
-	g_defaultMonsterHealth["monster_alien_grunt"] = gSkillData.sk_agrunt_health;
-	g_defaultMonsterHealth["monster_alien_slave"] = gSkillData.sk_islave_health;
-	g_defaultMonsterHealth["monster_alien_tor"] = gSkillData.sk_tor_health;
-	g_defaultMonsterHealth["monster_alien_voltigore"] = gSkillData.sk_voltigore_health;
-	g_defaultMonsterHealth["monster_apache"] = gSkillData.sk_apache_health;
-	g_defaultMonsterHealth["monster_assassin_repel"] = gSkillData.sk_massassin_health;
-	g_defaultMonsterHealth["monster_babycrab"] = gSkillData.sk_headcrab_health * 0.25;
-	g_defaultMonsterHealth["monster_babygarg"] = gSkillData.sk_babygargantua_health;
-	g_defaultMonsterHealth["monster_barnacle"] = gSkillData.sk_barnacle_health;
-	g_defaultMonsterHealth["monster_barney"] = gSkillData.sk_barney_health;
-	g_defaultMonsterHealth["monster_bigmomma"] = gSkillData.sk_bigmomma_health;
-	g_defaultMonsterHealth["monster_blkop_osprey"] = gSkillData.sk_osprey_health;
-	g_defaultMonsterHealth["monster_blkop_apache"] = gSkillData.sk_apache_health;
-	g_defaultMonsterHealth["monster_bloater"] = 40;
-	g_defaultMonsterHealth["monster_bodyguard"] = gSkillData.sk_hgrunt_health;
-	g_defaultMonsterHealth["monster_bullchicken"] = gSkillData.sk_bullsquid_health;
-	g_defaultMonsterHealth["monster_chumtoad"] = 100;
-	g_defaultMonsterHealth["monster_cleansuit_scientist"] = gSkillData.sk_scientist_health;
-	g_defaultMonsterHealth["monster_cockroach"] = 1;
-	g_defaultMonsterHealth["monster_flyer_flock"] = 100;
-	g_defaultMonsterHealth["monster_furniture"] = 80000;
-	g_defaultMonsterHealth["monster_gargantua"] = gSkillData.sk_gargantua_health;
-	g_defaultMonsterHealth["monster_generic"] = 8;
-	g_defaultMonsterHealth["monster_gman"] = 100;
-	g_defaultMonsterHealth["monster_gonome"] = gSkillData.sk_gonome_health;
-	g_defaultMonsterHealth["monster_grunt_ally_repel"] = gSkillData.sk_hgrunt_health;
-	g_defaultMonsterHealth["monster_grunt_repel"] = gSkillData.sk_hgrunt_health;
-	g_defaultMonsterHealth["monster_headcrab"] = gSkillData.sk_headcrab_health;
-	g_defaultMonsterHealth["monster_houndeye"] = gSkillData.sk_houndeye_health;
-	g_defaultMonsterHealth["monster_human_assassin"] = gSkillData.sk_hassassin_health;
-	g_defaultMonsterHealth["monster_human_grunt"] = gSkillData.sk_hgrunt_health;
-	g_defaultMonsterHealth["monster_human_grunt_ally"] = gSkillData.sk_hgrunt_health;
-	g_defaultMonsterHealth["monster_human_medic_ally"] = gSkillData.sk_hgrunt_health;
-	g_defaultMonsterHealth["monster_human_torch_ally"] = gSkillData.sk_hgrunt_health;
-	g_defaultMonsterHealth["monster_hwgrunt"] = gSkillData.sk_hwgrunt_health;
-	g_defaultMonsterHealth["monster_hwgrunt_repel"] = gSkillData.sk_hwgrunt_health;
-	g_defaultMonsterHealth["monster_ichthyosaur"] = gSkillData.sk_ichthyosaur_health;
-	g_defaultMonsterHealth["monster_kingpin"] = gSkillData.sk_tor_health;
-	g_defaultMonsterHealth["monster_leech"] = gSkillData.sk_leech_health;
-	g_defaultMonsterHealth["monster_male_assassin"] = gSkillData.sk_massassin_health;
-	g_defaultMonsterHealth["monster_medic_ally_repel"] = gSkillData.sk_hgrunt_health;
-	g_defaultMonsterHealth["monster_miniturret"] = gSkillData.sk_miniturret_health;
-	g_defaultMonsterHealth["monster_nihilanth"] = gSkillData.sk_nihilanth_health;
-	g_defaultMonsterHealth["monster_osprey"] = gSkillData.sk_osprey_health;
-	g_defaultMonsterHealth["monster_otis"] = gSkillData.sk_otis_health;
-	g_defaultMonsterHealth["monster_pitdrone"] = gSkillData.sk_pitdrone_health;
-	g_defaultMonsterHealth["monster_rat"] = 8;
-	g_defaultMonsterHealth["monster_robogrunt"] = gSkillData.sk_hgrunt_health * 5;
-	g_defaultMonsterHealth["monster_robogrunt_repel"] = gSkillData.sk_hgrunt_health * 5;
-	g_defaultMonsterHealth["monster_scientist"] = gSkillData.sk_scientist_health;
-	g_defaultMonsterHealth["monster_sentry"] = gSkillData.sk_sentry_health;
-	g_defaultMonsterHealth["monster_shockroach"] = gSkillData.sk_shockroach_health;
-	g_defaultMonsterHealth["monster_shocktrooper"] = gSkillData.sk_shocktrooper_health;
-	g_defaultMonsterHealth["monster_sitting_scientist"] = gSkillData.sk_scientist_health;
-	g_defaultMonsterHealth["monster_snark"] = gSkillData.sk_snark_health;
-	g_defaultMonsterHealth["monster_sqknest"] = 100;
-	g_defaultMonsterHealth["monster_stukabat"] = gSkillData.sk_controller_health;
-	g_defaultMonsterHealth["monster_tentacle"] = 4000;
-	g_defaultMonsterHealth["monster_torch_ally_repel"] = gSkillData.sk_hgrunt_health;
-	g_defaultMonsterHealth["monster_turret"] = gSkillData.sk_turret_health;
-	g_defaultMonsterHealth["monster_zombie"] = gSkillData.sk_zombie_health;
-	g_defaultMonsterHealth["monster_zombie_barney"] = gSkillData.sk_zombie_health;
-	g_defaultMonsterHealth["monster_zombie_soldier"] = gSkillData.sk_zombie_health;
+	hpDict.clear();
+
+	hpDict["cycler"] = 80000;
+	hpDict["hornet"] = 1;
+	hpDict["monster_alien_babyvoltigore"] = 80;
+	hpDict["monster_alien_controller"] = gSkillData.sk_controller_health;
+	hpDict["monster_alien_grunt"] = gSkillData.sk_agrunt_health;
+	hpDict["monster_alien_slave"] = gSkillData.sk_islave_health;
+	hpDict["monster_alien_tor"] = gSkillData.sk_tor_health;
+	hpDict["monster_alien_voltigore"] = gSkillData.sk_voltigore_health;
+	hpDict["monster_apache"] = gSkillData.sk_apache_health;
+	hpDict["monster_assassin_repel"] = gSkillData.sk_massassin_health;
+	hpDict["monster_babycrab"] = gSkillData.sk_headcrab_health * 0.25;
+	hpDict["monster_babygarg"] = gSkillData.sk_babygargantua_health;
+	hpDict["monster_barnacle"] = gSkillData.sk_barnacle_health;
+	hpDict["monster_barney"] = gSkillData.sk_barney_health;
+	hpDict["monster_bigmomma"] = gSkillData.sk_bigmomma_health;
+	hpDict["monster_blkop_osprey"] = gSkillData.sk_osprey_health;
+	hpDict["monster_blkop_apache"] = gSkillData.sk_apache_health;
+	hpDict["monster_bloater"] = 40;
+	hpDict["monster_bodyguard"] = gSkillData.sk_hgrunt_health;
+	hpDict["monster_bullchicken"] = gSkillData.sk_bullsquid_health;
+	hpDict["monster_chumtoad"] = 100;
+	hpDict["monster_cleansuit_scientist"] = gSkillData.sk_scientist_health;
+	hpDict["monster_cockroach"] = 1;
+	hpDict["monster_flyer_flock"] = 100;
+	hpDict["monster_furniture"] = 80000;
+	hpDict["monster_gargantua"] = gSkillData.sk_gargantua_health;
+	hpDict["monster_generic"] = 8;
+	hpDict["monster_gman"] = 100;
+	hpDict["monster_gonome"] = gSkillData.sk_gonome_health;
+	hpDict["monster_grunt_ally_repel"] = gSkillData.sk_hgrunt_health;
+	hpDict["monster_grunt_repel"] = gSkillData.sk_hgrunt_health;
+	hpDict["monster_headcrab"] = gSkillData.sk_headcrab_health;
+	hpDict["monster_houndeye"] = gSkillData.sk_houndeye_health;
+	hpDict["monster_human_assassin"] = gSkillData.sk_hassassin_health;
+	hpDict["monster_human_grunt"] = gSkillData.sk_hgrunt_health;
+	hpDict["monster_human_grunt_ally"] = gSkillData.sk_hgrunt_health;
+	hpDict["monster_human_medic_ally"] = gSkillData.sk_hgrunt_health;
+	hpDict["monster_human_torch_ally"] = gSkillData.sk_hgrunt_health;
+	hpDict["monster_hwgrunt"] = gSkillData.sk_hwgrunt_health;
+	hpDict["monster_hwgrunt_repel"] = gSkillData.sk_hwgrunt_health;
+	hpDict["monster_ichthyosaur"] = gSkillData.sk_ichthyosaur_health;
+	hpDict["monster_kingpin"] = gSkillData.sk_tor_health;
+	hpDict["monster_leech"] = gSkillData.sk_leech_health;
+	hpDict["monster_male_assassin"] = gSkillData.sk_massassin_health;
+	hpDict["monster_medic_ally_repel"] = gSkillData.sk_hgrunt_health;
+	hpDict["monster_miniturret"] = gSkillData.sk_miniturret_health;
+	hpDict["monster_nihilanth"] = gSkillData.sk_nihilanth_health;
+	hpDict["monster_osprey"] = gSkillData.sk_osprey_health;
+	hpDict["monster_otis"] = gSkillData.sk_otis_health;
+	hpDict["monster_pitdrone"] = gSkillData.sk_pitdrone_health;
+	hpDict["monster_rat"] = 8;
+	hpDict["monster_robogrunt"] = gSkillData.sk_hgrunt_health * 5;
+	hpDict["monster_robogrunt_repel"] = gSkillData.sk_hgrunt_health * 5;
+	hpDict["monster_scientist"] = gSkillData.sk_scientist_health;
+	hpDict["monster_sentry"] = gSkillData.sk_sentry_health;
+	hpDict["monster_shockroach"] = gSkillData.sk_shockroach_health;
+	hpDict["monster_shocktrooper"] = gSkillData.sk_shocktrooper_health;
+	hpDict["monster_sitting_scientist"] = gSkillData.sk_scientist_health;
+	hpDict["monster_snark"] = gSkillData.sk_snark_health;
+	hpDict["monster_sqknest"] = 100;
+	hpDict["monster_stukabat"] = gSkillData.sk_controller_health;
+	hpDict["monster_tentacle"] = 4000;
+	hpDict["monster_torch_ally_repel"] = gSkillData.sk_hgrunt_health;
+	hpDict["monster_turret"] = gSkillData.sk_turret_health;
+	hpDict["monster_zombie"] = gSkillData.sk_zombie_health;
+	hpDict["monster_zombie_barney"] = gSkillData.sk_zombie_health;
+	hpDict["monster_zombie_soldier"] = gSkillData.sk_zombie_health;
 }
 
-float GetDefaultHealth(const char* monstertype) {
-	if (g_defaultMonsterHealth.find(monstertype) != g_defaultMonsterHealth.end()) {
-		return g_defaultMonsterHealth[monstertype];
+float GetDefaultHealth(const char* monstertype, bool mapSkills) {
+	std::unordered_map<std::string, float>& hpDict = mapSkills ?
+		g_defaultMonsterHealthMap : g_defaultMonsterHealthServer;
+
+	auto defaultHp = hpDict.find(monstertype);
+
+	if (defaultHp != hpDict.end()) {
+		return defaultHp->second;
 	}
 	else {
 		ALERT(at_console, "Monster type %s has no default health\n", monstertype);

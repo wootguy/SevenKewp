@@ -7444,7 +7444,7 @@ void CBaseMonster::SetSize(Vector defaultMins, Vector defaultMaxs) {
 
 void CBaseMonster::SetHealth() {
 	if (!pev->health)
-		pev->health = GetDefaultHealth(STRING(pev->classname));
+		pev->health = GetDefaultHealth(STRING(pev->classname), true);
 
 	pev->max_health = pev->health;
 }
@@ -7486,7 +7486,7 @@ void CBaseMonster::Nerf() {
 		return;
 	}
 
-	float defaultHealth = GetDefaultHealth(monstertype);
+	float defaultHealth = GetDefaultHealth(monstertype, false);
 
 	if (defaultHealth <= 0) {
 		return; // no default health defined for this entity
@@ -7520,7 +7520,7 @@ void CBaseMonster::Nerf() {
 			while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
 				const char* cname = STRING(ent->v.classname);
 				if (strcmp(cname, "game_counter") && strcmp(cname, "trigger_counter")) {
-					ALERT(at_console, "Not nerfing %d hp %s (triggers '%s' %s)\n", (int)pev->health, monstertype, STRING(m_iszTriggerTarget), cname);
+					ALERT(at_aiconsole, "Not nerfing %d hp %s (triggers '%s' %s)\n", (int)pev->health, monstertype, STRING(m_iszTriggerTarget), cname);
 					shouldNerf = false;
 					break;
 				}
@@ -7529,25 +7529,25 @@ void CBaseMonster::Nerf() {
 		if (monstername && !IsTurret() && strstr(monstertype, "_osprey") == NULL && strstr(monstertype, "_apache") == NULL && !FNullEnt(FIND_ENTITY_BY_TARGET(NULL, STRING(monstername)))) {
 			// sc_tetris has a boss that connects alien controllers with beams
 			// turrets/ospreys/apaches can be toggled on/off and often have a name
-			ALERT(at_console, "Not nerfing %d hp %s (has name '%s')\n", (int)pev->health, monstertype, STRING(monstername));
+			ALERT(at_aiconsole, "Not nerfing %d hp %s (has name '%s')\n", (int)pev->health, monstertype, STRING(monstername));
 			shouldNerf = false;
 		}
 		else if (hasCustomModel || isGlowing) {
 			// this monster looks special for some reason, makes sense for hp to be different
-			ALERT(at_console, "Not nerfing %d hp %s (custom appearance)\n", (int)pev->health, monstertype);
+			ALERT(at_aiconsole, "Not nerfing %d hp %s (custom appearance)\n", (int)pev->health, monstertype);
 			shouldNerf = false;
 		}
 		
 		if (pev->health >= 90000) {
 			// monster is meant to be invincible
-			ALERT(at_console, "Not nerfing %d hp %s (probably meant to be invincible)\n", (int)pev->health, monstertype);
+			ALERT(at_aiconsole, "Not nerfing %d hp %s (probably meant to be invincible)\n", (int)pev->health, monstertype);
 			shouldNerf = false;
 			shouldPartialNerf = false;
 		}
 
 		if (shouldNerf) {
 			// There is likely no good reason for this monster to have extra health
-			ALERT(at_console, "Nerf %s hp: %d -> %d.\n", monstertype, (int)pev->health, (int)defaultHealth);
+			ALERT(at_aiconsole, "Nerf %s hp: %d -> %d.\n", monstertype, (int)pev->health, (int)defaultHealth);
 			g_nerfStats.nerfedMonsterHealth += pev->health - defaultHealth;
 			pev->health = pev->max_health = defaultHealth;
 		}
@@ -7555,7 +7555,7 @@ void CBaseMonster::Nerf() {
 			if (shouldPartialNerf && mp_bulletspongemax.value >= 1) {
 				float maxspongehp = defaultHealth * mp_bulletspongemax.value;
 				if (pev->health > maxspongehp) {
-					ALERT(at_console, "Partially nerf %s hp: %d -> %d\n", monstertype, (int)pev->health, (int)maxspongehp);
+					ALERT(at_aiconsole, "Partially nerf %s hp: %d -> %d\n", monstertype, (int)pev->health, (int)maxspongehp);
 					g_nerfStats.nerfedMonsterHealth += pev->health - maxspongehp;
 					pev->health = pev->max_health = maxspongehp;
 				}

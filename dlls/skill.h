@@ -21,7 +21,6 @@
 struct skilldata_t
 {
 	int firstMember; // dummy var used for addressing other members
-	int iSkillLevel; // game skill level
 
 	// Agrunt
 	float sk_agrunt_health;
@@ -105,6 +104,7 @@ struct skilldata_t
 
 	// Scientist
 	float sk_scientist_health;
+	float sk_scientist_heal;
 
 	// Snark
 	float sk_snark_health;
@@ -225,7 +225,6 @@ struct skilldata_t
 	float sk_battery;
 	float sk_healthcharger;
 	float sk_healthkit;
-	float sk_scientist_heal;
 
 	// Monster damage adjusters
 	float sk_monster_head;
@@ -245,16 +244,33 @@ struct skilldata_t
 	float sk_yawspeed_mult;
 };
 
+enum SKILL_CVAR_TYPE {
+	CVAR_TYPE_HEALTH,	// cvar changes npc health
+	CVAR_TYPE_DAMAGE,	// cvar changes damage of player weapons or npc attacks
+	CVAR_TYPE_HITGROUP,	// cvar changes hitgroup multipliers for players/npcs
+	CVAR_TYPE_ITEM,		// cvar changes weapon/item capacity or give amounts
+	CVAR_TYPE_AI,		// cvar affects npc behavior
+};
+
+struct skill_cvar_t {
+	cvar_t cvar;
+	int structMemberOffset; // member offset into skill data struct
+	SKILL_CVAR_TYPE type;
+};
+
 EXPORT extern DLL_GLOBAL skilldata_t gSkillData;
 
-EXPORT extern DLL_GLOBAL int g_iSkillLevel;
-EXPORT extern std::unordered_map<std::string, float> g_defaultMonsterHealth;
+EXPORT extern std::unordered_map<std::string, float> g_defaultMonsterHealthMap;
+EXPORT extern std::unordered_map<std::string, float> g_defaultMonsterHealthServer;
+EXPORT extern std::unordered_map<std::string, skill_cvar_t*> g_skillCvars;
 
-void RefreshSkillData();
+// mapSkills = true if updating skill settings for a specific map
+void RefreshSkillData(bool mapSkills);
 
 void RegisterSkillCvars();
 
-float GetDefaultHealth(const char* monstertype);
+// set mapSkills to true for default health according to the map skill file, otherwise use the server default
+float GetDefaultHealth(const char* monstertype, bool mapSkills);
 
 cvar_t* GetSkillCvar(const char* cvar);
 
