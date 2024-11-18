@@ -379,7 +379,7 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 3.0);
 
 			// speed up attack when on hard
-			if (g_iSkillLevel == SKILL_HARD)
+			//if (g_iSkillLevel == SKILL_HARD)
 				pev->framerate = 1.5;
 
 			UTIL_MakeAimVectors( pev->angles );

@@ -4650,11 +4650,12 @@ void CBasePlayer :: EnableControl(BOOL fControl)
 //=========================================================
 Vector CBasePlayer :: GetAutoaimVector( float flDelta )
 {
-	if (g_iSkillLevel == SKILL_HARD)
+	//if (g_iSkillLevel == SKILL_HARD)
 	{
 		UTIL_MakeVectors( pev->v_angle + pev->punchangle );
 		return gpGlobals->v_forward;
 	}
+	/*
 
 	Vector vecSrc = GetGunPosition( );
 	float flDist = 8192;
@@ -4727,6 +4728,7 @@ Vector CBasePlayer :: GetAutoaimVector( float flDelta )
 
 	UTIL_MakeVectors( pev->v_angle + pev->punchangle + m_vecAutoAim );
 	return gpGlobals->v_forward;
+	*/
 }
 
 Vector CBasePlayer :: AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  )
