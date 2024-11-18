@@ -2150,7 +2150,8 @@ Schedule_t* CShockTrooper::GetScheduleOfType(int Type)
 	{
 		if (InSquad())
 		{
-			if (g_iSkillLevel == SKILL_HARD && HasConditions(bits_COND_CAN_RANGE_ATTACK2) && OccupySlot(bits_SLOTS_HGRUNT_GRENADE))
+			// g_iSkillLevel == SKILL_HARD && 
+			if (HasConditions(bits_COND_CAN_RANGE_ATTACK2) && OccupySlot(bits_SLOTS_HGRUNT_GRENADE))
 			{
 				if (FOkToSpeak())
 				{
