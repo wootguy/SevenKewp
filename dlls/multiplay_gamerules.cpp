@@ -77,7 +77,6 @@ bool CMultiplayGameMgrHelper::CanPlayerHearPlayer(CBasePlayer* pListener, CBaseP
 
 CHalfLifeMultiplay :: CHalfLifeMultiplay()
 {
-	RefreshSkillData();
 	m_flIntermissionEndTime = 0;
 	g_flIntermissionStartTime = 0;
 	mapcycle.items = NULL;

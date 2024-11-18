@@ -64,6 +64,7 @@ cvar_t	pluginlistfile ={"pluginlistfile","plugins.txt", FCVAR_SERVER, 0, 0 };
 cvar_t	adminlistfile ={"adminlistfile","admins.txt", FCVAR_SERVER, 0, 0 };
 cvar_t	pluginupdatepath ={"plugin_update_path","valve_pending/", FCVAR_SERVER, 0, 0 };
 cvar_t	pluginautoupdate ={"plugin_auto_update", "0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_skill_allow ={"mp_skill_allow", "1", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 
@@ -348,6 +349,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&adminlistfile);
 	CVAR_REGISTER (&pluginupdatepath);
 	CVAR_REGISTER (&pluginautoupdate);
+	CVAR_REGISTER (&mp_skill_allow);
 
 	CVAR_REGISTER (&mp_chattime);
 

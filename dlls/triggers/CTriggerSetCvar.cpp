@@ -103,7 +103,7 @@ void CTriggerSetCVar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 		// cvar must be set now so that skill data can be refreshed this same frame
 		// SERVER_COMMAND takes at least a frame to complete
 		skillCvar->value = atof(cvarvalue.c_str());
-		RefreshSkillData();
+		RefreshSkillData(true);
 	}
 	else {
 		SERVER_COMMAND(UTIL_VarArgs("%s %s\n", cvarname, cvarvalue.c_str()));

@@ -36,7 +36,7 @@ extern int gmsgMOTD;
 CHalfLifeRules::CHalfLifeRules( void )
 {
 	mapcycle.items = NULL;
-	RefreshSkillData();
+	RefreshSkillData(false);
 }
 
 //=========================================================

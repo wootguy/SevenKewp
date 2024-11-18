@@ -72,7 +72,8 @@ EXPORT extern cvar_t	mp_killfeed; // 0 = off, 1 = player deaths, 2 = player kill
 EXPORT extern cvar_t	pluginlistfile; // name of the plugin list file
 EXPORT extern cvar_t	adminlistfile; // name of the admin list file
 EXPORT extern cvar_t	pluginupdatepath; // root path for plugin file updates to be searched
-EXPORT extern cvar_t	pluginautoupdate; // root path for plugin file updates to be searched
+EXPORT extern cvar_t	pluginautoupdate; // attempt to update plugins after every map change
+EXPORT extern cvar_t	mp_skill_allow; // 0 = no, 1 = yes
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
