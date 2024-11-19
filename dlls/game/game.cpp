@@ -21,6 +21,7 @@
 #include "CBaseMonster.h"
 #include "skill.h"
 #include "PluginManager.h"
+#include "user_messages.h"
 
 cvar_t	displaysoundlist = {"displaysoundlist","0", 0, 0, 0};
 
@@ -269,7 +270,16 @@ void freespace_command() {
 }
 
 void test_command() {
-	
+	int id = GetUserMsgInfo("VoiceMask", NULL);
+
+	MESSAGE_BEGIN(MSG_ALL, id);
+	int dw;
+	for (dw = 0; dw < VOICE_MAX_PLAYERS_DW; dw++)
+	{
+		WRITE_LONG(0);
+		WRITE_LONG(0);
+	}
+	MESSAGE_END();
 }
 
 void cfg_exec_finished() {

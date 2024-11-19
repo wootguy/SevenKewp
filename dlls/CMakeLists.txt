@@ -406,45 +406,45 @@ set(AMMO_SRC
 )
 
 set(UTIL_HDR
-	animation.h
-	Bsp.h
-	bsptypes.h
-	bsplimits.h
-	CommandArgs.h
-	debug.h
-	eng_wrappers.h
-	plane.h
-	saverestore.h
-	util.h
-	mstream.h
-	lagcomp.h
-	vector.h
-	Scheduler.h
-	TextMenu.h
-	ThreadSafeInt.h
-	ThreadSafeQueue.h
-	wav.h
+	util/animation.h
+	util/Bsp.h
+	util/bsptypes.h
+	util/bsplimits.h
+	util/CommandArgs.h
+	util/debug.h
+	util/eng_wrappers.h
+	util/plane.h
+	util/saverestore.h
+	util/util.h
+	util/mstream.h
+	util/lagcomp.h
+	util/vector.h
+	util/Scheduler.h
+	util/TextMenu.h
+	util/ThreadSafeInt.h
+	util/ThreadSafeQueue.h
+	util/wav.h
 	../game_shared/shared_util.h
 )
 set(UTIL_SRC
-	animation.cpp
-	Bsp.cpp
-	bsptypes.cpp
-	CommandArgs.cpp
-	debug.cpp
-	eng_wrappers.cpp
-	plane.cpp
-	sound.cpp
-	util.cpp
-	mstream.cpp
-	lagcomp.cpp
-	saverestore.cpp
-	Scheduler.cpp
-	subs.cpp
-	TextMenu.cpp
-	ThreadSafeInt.cpp
-	ThreadSafeQueue.cpp
-	wav.cpp
+	util/animation.cpp
+	util/Bsp.cpp
+	util/bsptypes.cpp
+	util/CommandArgs.cpp
+	util/debug.cpp
+	util/eng_wrappers.cpp
+	util/plane.cpp
+	util/sound.cpp
+	util/util.cpp
+	util/mstream.cpp
+	util/lagcomp.cpp
+	util/saverestore.cpp
+	util/Scheduler.cpp
+	util/subs.cpp
+	util/TextMenu.cpp
+	util/ThreadSafeInt.cpp
+	util/ThreadSafeQueue.cpp
+	util/wav.cpp
 	../game_shared/shared_util.cpp
 )
 set(PLAYER_HDR
@@ -500,22 +500,22 @@ else()
 endif()
 
 set(GAME_HDR
-	game.h
-	gamerules.h
-	skill.h
-	teamplay_gamerules.h
-	user_messages.h
+	game/game.h
+	game/gamerules.h
+	game/skill.h
+	game/teamplay_gamerules.h
+	game/user_messages.h
 )
 set(GAME_SRC
-	game.cpp
-	gamerules.cpp
-	globals.cpp
-	multiplay_gamerules.cpp
-	singleplay_gamerules.cpp
-	skill.cpp
-	teamplay_gamerules.cpp
+	game/game.cpp
+	game/gamerules.cpp
+	game/globals.cpp
+	game/multiplay_gamerules.cpp
+	game/singleplay_gamerules.cpp
+	game/skill.cpp
+	game/teamplay_gamerules.cpp
 	../game_shared/voice_gamemgr.cpp
-	user_messages.cpp
+	game/user_messages.cpp
 )
 
 set(ALL_TRIGGER_MISC_SRC ${TRIGGER_SRC} ${TRIGGER_OBSOLETE_SRC})
