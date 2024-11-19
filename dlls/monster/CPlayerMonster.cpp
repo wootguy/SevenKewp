@@ -30,7 +30,7 @@ public:
 	void HandleAnimEvent( MonsterEvent_t *pEvent );
 	int ISoundMask ( void );
 };
-LINK_ENTITY_TO_CLASS( monster_player, CPlayerMonster );
+LINK_ENTITY_TO_CLASS( monster_player, CPlayerMonster )
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -79,7 +79,7 @@ void CPlayerMonster :: HandleAnimEvent( MonsterEvent_t *pEvent )
 //=========================================================
 int CPlayerMonster :: ISoundMask ( void )
 {
-	return	NULL;
+	return 0;
 }
 
 //=========================================================

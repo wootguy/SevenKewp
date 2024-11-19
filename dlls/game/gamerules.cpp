@@ -365,7 +365,6 @@ void execSkillCfg(const char* fname, bool isMapSkill) {
 	string line;
 
 	int numChanges = 0;
-	int numBlocked = 0;
 
 	std::unordered_set<std::string> cfgChanges;
 
