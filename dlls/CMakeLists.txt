@@ -5,7 +5,7 @@ project(${SERVER_DLL_NAME})
 set(MISC_HDR
 	../engine/studio.h
 	../common/Platform.h
-	cdll_dll.h
+	../game_shared/cdll_dll.h
 	enginecallback.h
 	extdll.h
 )
@@ -652,8 +652,7 @@ if(UNIX)
 	)
 	
 elseif(MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4") 
-	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/hl.def\"") 
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4")
 	
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		VS_DEBUGGER_COMMAND "${SERVER_WORK_DIR}/${SERVER_EXE}"
