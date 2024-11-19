@@ -3,7 +3,11 @@
 #include <string>
 
 #define MAX_MENU_OPTIONS 128
-#define ITEMS_PER_PAGE 7
+#define MAX_PAGE_OPTIONS 5
+#define ITEMS_PER_PAGE (MAX_PAGE_OPTIONS-3) // leave room for next, more, and exit options
+#define BACK_OPTION_IDX (ITEMS_PER_PAGE)
+#define MORE_OPTION_IDX (ITEMS_PER_PAGE+1)
+#define MAX_ITEMS_NO_PAGES (ITEMS_PER_PAGE+2)
 #define MAX_PLAYERS 32
 
 class CTriggerVote;
