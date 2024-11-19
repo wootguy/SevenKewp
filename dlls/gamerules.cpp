@@ -400,8 +400,6 @@ void execSkillCfg(const char* fname, bool isMapSkill) {
 	if (isMapSkill && mp_skill_allow.value >= 1) {
 		ALERT(at_console, "Map skill cvars changed: %d\n", numChanges);
 	}
-
-	RefreshSkillData(isMapSkill);
 }
 
 void execCfgs() {
@@ -419,15 +417,13 @@ void execCfgs() {
 
 	execServerCfg();
 	execSkillCfg("skill.cfg", false);
+	RefreshSkillData(false);
 	execMapCfg();
 
 	if (mp_skill_allow.value != 0) {
 		execSkillCfg(UTIL_VarArgs("maps/%s_skl.cfg", STRING(gpGlobals->mapname)), true);
 	}
-	else {
-		// sync map health values to server values
-		RefreshSkillData(true);
-	}
+	RefreshSkillData(true);
 
 	SERVER_COMMAND("cfg_exec_finished\n");
 

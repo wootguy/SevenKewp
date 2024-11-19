@@ -121,10 +121,10 @@ void TextMenu::handleMenuselectCmd(CBasePlayer* pPlayer, int selection) {
 			// exit menu
 			viewers &= ~playerbit;
 		}
-		else if (isPaginated() && selection == 7) {
+		else if (isPaginated() && selection == BACK_OPTION_IDX) {
 			Open(lastDuration, lastPage - 1, pPlayer);
 		}
-		else if (isPaginated() && selection == 8) {
+		else if (isPaginated() && selection == MORE_OPTION_IDX) {
 			Open(lastDuration, lastPage + 1, pPlayer);
 		}
 		else if (selection < numOptions && IsValidPlayer(pPlayer->edict())) {
@@ -144,7 +144,7 @@ void TextMenu::handleMenuselectCmd(CBasePlayer* pPlayer, int selection) {
 }
 
 bool TextMenu::isPaginated() {
-	return numOptions > 9;
+	return numOptions > MAX_ITEMS_NO_PAGES;
 }
 
 void TextMenu::SetTitle(std::string newTitle) {
@@ -171,9 +171,9 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 	lastPage = page;
 	lastDuration = duration;
 	
-	int limitPerPage = isPaginated() ? ITEMS_PER_PAGE : 9;
+	int limitPerPage = isPaginated() ? ITEMS_PER_PAGE : MAX_ITEMS_NO_PAGES;
 	int itemOffset = page * ITEMS_PER_PAGE;
-	int totalPages = (numOptions+6) / ITEMS_PER_PAGE;
+	int totalPages = (numOptions+(ITEMS_PER_PAGE-1)) / ITEMS_PER_PAGE;
 
 	int addedOptions = 0;
 	for (int i = itemOffset, k = 0; i < itemOffset+limitPerPage && i < numOptions; i++, k++) {
@@ -191,15 +191,15 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 
 	if (isPaginated()) {
 		if (page > 0) {
-			menuText += "8: Back\n";
-			validSlots |= (1 << 7);
+			menuText += std::to_string(BACK_OPTION_IDX+1) + ": Back\n";
+			validSlots |= (1 << (ITEMS_PER_PAGE));
 		}
 		else {
 			menuText += "\n";
 		}
 		if (page < totalPages - 1) {
-			menuText += "9: More\n";
-			validSlots |= (1 << 8);
+			menuText += std::to_string(MORE_OPTION_IDX+1) + ": More\n";
+			validSlots |= (1 << (ITEMS_PER_PAGE + 1));
 		}
 		else {
 			menuText += "\n";
