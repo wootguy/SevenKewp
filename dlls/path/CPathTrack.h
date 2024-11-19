@@ -1,5 +1,6 @@
 #ifndef CPATHTRACK_H
 #define CPATHTRACK_H
+#include "CPointEntity.h"
 
 // Spawnflag for CPathTrack
 #define SF_PATH_DISABLED		0x00000001

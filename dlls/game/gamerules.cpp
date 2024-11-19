@@ -18,7 +18,6 @@
 
 #include	"extdll.h"
 #include	"util.h"
-#include	"cbase.h"
 #include	"CBasePlayer.h"
 #include	"gamerules.h"
 #include	"teamplay_gamerules.h"
@@ -29,6 +28,7 @@
 #include "PluginManager.h"
 #include "game.h"
 #include "CBaseDMStart.h"
+#include "hlds_hooks.h"
 
 #include <sstream>
 #include <string>

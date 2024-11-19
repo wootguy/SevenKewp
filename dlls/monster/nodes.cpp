@@ -18,7 +18,6 @@
 
 #include	"extdll.h"
 #include	"util.h"
-#include	"cbase.h"
 #include	"nodes.h"
 #include	"animation.h"
 #include	"CBaseDoor.h"

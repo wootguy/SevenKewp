@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "shake.h"
 #include "user_messages.h"
 #include "PluginManager.h"

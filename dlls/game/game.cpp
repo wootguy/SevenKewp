@@ -17,7 +17,6 @@
 #include "eiface.h"
 #include "util.h"
 #include "game.h"
-#include "cbase.h"
 #include "CBaseMonster.h"
 #include "skill.h"
 #include "PluginManager.h"

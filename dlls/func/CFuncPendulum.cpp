@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "CBaseDoor.h"
 
 #define		SF_PENDULUM_SWING		2	// spawnflag that makes a pendulum a rope swing.

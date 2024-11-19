@@ -1,5 +1,6 @@
 #pragma once
 #include "TextMenu.h"
+#include "CPointEntity.h"
 
 class CTriggerVote : public CPointEntity
 {

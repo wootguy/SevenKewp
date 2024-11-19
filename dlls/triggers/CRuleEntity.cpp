@@ -2,7 +2,6 @@
 #include "eiface.h"
 #include "util.h"
 #include "gamerules.h"
-#include "cbase.h"
 #include "CRuleEntity.h"
 
 TYPEDESCRIPTION	CRuleEntity::m_SaveData[] =

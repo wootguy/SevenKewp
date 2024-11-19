@@ -1,6 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
+#include "CMultiSource.h"
 #include "saverestore.h"
 
 TYPEDESCRIPTION CMultiSource::m_SaveData[] =

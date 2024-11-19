@@ -1,11 +1,11 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
 #include "CBaseTrigger.h"
 #include "CFireAndDie.h"
+#include "hlds_hooks.h"
 
 #define SF_CHANGELEVEL_USEONLY		0x0002
 

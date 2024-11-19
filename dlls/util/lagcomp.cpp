@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "lagcomp.h"
 #include <queue>
 #include "CBasePlayer.h"

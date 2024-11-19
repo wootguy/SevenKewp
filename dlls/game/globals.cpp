@@ -25,7 +25,6 @@
 
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "env/CSoundEnt.h"
 
 DLL_GLOBAL ULONG		g_ulFrameCount;

@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "eiface.h"
 #include "util.h"
-#include "cbase.h"
 
 //
 // CTriggerSetOrigin / trigger_setorigin -- copies position and orientation of one entity to another

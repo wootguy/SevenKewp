@@ -44,6 +44,14 @@ EXPORT extern int gmsgToxicCloud;
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 
+typedef struct _SelAmmo
+{
+	BYTE	Ammo1Type;
+	BYTE	Ammo1;
+	BYTE	Ammo2Type;
+	BYTE	Ammo2;
+} SelAmmo;
+
 struct UserMessage {
 	const char* name;
 	int id;

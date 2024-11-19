@@ -1,4 +1,5 @@
 #pragma once
+#include "CPointEntity.h"
 
 class CBaseDMStart : public CPointEntity
 {

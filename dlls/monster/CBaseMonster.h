@@ -16,6 +16,11 @@
 #ifndef BASEMONSTER_H
 #define BASEMONSTER_H
 
+#include "CBaseToggle.h"
+#include "monster/schedule.h"
+
+class CSound;
+
 extern entvars_t* g_pevLastInflictor;
 
 // Clients can push talkmonsters out of their way

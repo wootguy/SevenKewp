@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "util.h"
 #include "PluginManager.h"
-#include "cbase.h"
 #include <fstream>
 #include "Scheduler.h"
 #include "CBasePlayer.h"

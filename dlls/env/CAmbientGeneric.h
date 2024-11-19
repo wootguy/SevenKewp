@@ -1,4 +1,5 @@
 #pragma once
+#include "CBaseEntity.h"
 
 enum playmodes {
 	PLAYMODE_DEFAULT,
