@@ -8,7 +8,7 @@
 #endif
 
 #include "schedule.h"
-#include "scripted.h"
+#include "CCineMonster.h"
 #include "defaultai.h"
 
 #define CLASSNAME "scripted_sequence"

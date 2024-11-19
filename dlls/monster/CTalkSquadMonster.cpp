@@ -19,7 +19,7 @@
 #include "schedule.h"
 #include "CTalkSquadMonster.h"
 #include "defaultai.h"
-#include "scripted.h"
+#include "CCineMonster.h"
 #include "env/CSoundEnt.h"
 #include "animation.h"
 #include "plane.h"

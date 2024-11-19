@@ -23,7 +23,7 @@
 #include	"CTalkSquadMonster.h"
 #include	"schedule.h"
 #include	"defaultai.h"
-#include	"scripted.h"
+#include	"CCineMonster.h"
 #include	"animation.h"
 #include	"env/CSoundEnt.h"
 

@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
-#include "doors.h"
 
 #define		SF_BRUSH_ACCDCC	16// brush should accelerate and decelerate when toggled
 #define		SF_BRUSH_HURT		32// rotating brush that inflicts pain based on rotation speed
