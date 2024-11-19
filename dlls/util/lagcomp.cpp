@@ -21,7 +21,6 @@ struct WorldState {
 };
 
 struct RewindInfo {
-	bool wasRewound;
 	bool isCompensated;
 	EntState restoreState;
 };
@@ -39,6 +38,18 @@ cvar_t* sv_unlag = NULL;
 
 int g_pingHistoryIdx = 0;
 float g_pingHistory[PING_SMOOTHING_COUNT][32];
+
+int g_currentRewindIdx = 0;
+
+Vector get_lagcomp_offset(int entindex) {
+	RewindInfo& info = g_rewinds[entindex];
+
+	if (g_didRewind && info.isCompensated) {
+		return info.restoreState.origin - g_worldHistory[g_currentRewindIdx].ents[entindex].origin;
+	}
+
+	return g_vecZero;
+}
 
 void update_player_pings() {
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
@@ -137,17 +148,21 @@ void lagcomp_begin(CBasePlayer* plr) {
 	bool foundState = false;
 	float now = g_engfuncs.pfnTime();
 	float targetTime = now - ping;
+	float bestDelta = FLT_MAX;
 
 	for (int i = 0; i < g_historyWritten; i++) {
+		float delta = fabs(g_worldHistory[i].time - targetTime);
 
-		if (g_worldHistory[idx].time <= targetTime) {
+		if (delta < bestDelta) {
+			bestDelta = delta;
 			foundState = true;
-			break;
-		}
-		else if (--idx < 0) {
-			idx = MAX_UNLAG_STATES - 1;
+			idx = i;
 		}
 	}
+
+	g_currentRewindIdx = idx;
+
+	//ALERT(at_console, "best delta %.3f, comp %.2f ago\n", bestDelta, now - targetTime);
 
 	if (!foundState) {
 		ALERT(at_console, "Can't rewind for %.2fs ping.\n", ping);
@@ -177,11 +192,11 @@ void lagcomp_begin(CBasePlayer* plr) {
 		restoreState.sequence = vars.sequence;
 		restoreState.frame = vars.frame;
 
-		EntState& entState = worldState.ents[i];
-		vars.sequence = entState.sequence;
-		vars.frame = entState.frame;
-		vars.angles = entState.angles;
-		UTIL_SetOrigin(&vars, entState.origin);
+		EntState& rewindState = worldState.ents[i];
+		vars.sequence = rewindState.sequence;
+		vars.frame = rewindState.frame;
+		vars.angles = rewindState.angles;
+		UTIL_SetOrigin(&vars, rewindState.origin);
 	}
 
 	g_didRewind = true;
@@ -207,4 +222,6 @@ void lagcomp_end() {
 		vars.angles = restoreState.angles;
 		UTIL_SetOrigin(&vars, restoreState.origin);
 	}
+
+	g_didRewind = false;
 }

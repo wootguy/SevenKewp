@@ -14,6 +14,7 @@
 #include "defaultai.h"
 #include "CMonsterMaker.h"
 #include "hlds_hooks.h"
+#include "lagcomp.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -4814,10 +4815,12 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 			UTIL_Shrapnel(ptr->vecEndPos, ptr->vecPlaneNormal, flDamage, bitsDamageType);
 		}
 		if (bitsDamageType & DMG_BLOOD) {
+			Vector bloodPos = ptr->vecEndPos + get_lagcomp_offset(entindex());
+
 			// headshots should always show big blood, no matter how little damage was done.
 			// The idea is that blood size should be used primarly as an indicator that you hit the weak point.
 			float bloodSize = ptr->iHitgroup == HITGROUP_HEAD ? V_max(flDamage, 30) : flDamage;
-			SpawnBlood(ptr->vecEndPos, BloodColor(), bloodSize);
+			SpawnBlood(bloodPos, BloodColor(), bloodSize);
 			TraceBleed(bloodSize, vecDir, ptr, bitsDamageType);
 		}
 
