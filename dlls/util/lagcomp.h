@@ -10,3 +10,6 @@ void lagcomp_begin(CBasePlayer* plr);
 
 // must be called after lagcomp_begin to restore the current world state after a rewind
 void lagcomp_end();
+
+// returns difference between lag compensated position and server's position
+Vector get_lagcomp_offset(int entindex);
