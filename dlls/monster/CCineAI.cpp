@@ -3,7 +3,7 @@
 #include "cbase.h"
 #include "monsters.h"
 #include "schedule.h"
-#include "scripted.h"
+#include "CCineMonster.h"
 #include "defaultai.h"
 
 

@@ -24,7 +24,7 @@
 #include	"CTalkSquadMonster.h"
 #include	"schedule.h"
 #include	"defaultai.h"
-#include	"scripted.h"
+#include	"CCineMonster.h"
 #include	"weapons.h"
 #include	"CSoundEnt.h"
 

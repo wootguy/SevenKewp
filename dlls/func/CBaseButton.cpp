@@ -2,7 +2,6 @@
 #include "util.h"
 #include "cbase.h"
 #include "saverestore.h"
-#include "doors.h"
 #include "CBaseButton.h"
 
 // CBaseButton

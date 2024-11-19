@@ -19,6 +19,7 @@ set(MONSTER_HDR
 	monster/CBaseGruntOp4.h
 	monster/CBaseMonster.h
 	monster/CBaseTurret.h
+	monster/CCineMonster.h
 	monster/CFlyingMonster.h
 	monster/CGargantua.h
 	monster/CHornet.h
@@ -28,6 +29,7 @@ set(MONSTER_HDR
 	monster/monsterevent.h
 	monster/monsters.h
 	monster/schedule.h
+	monster/nodes.h
 )
 set(MONSTER_SRC
 	monster/CBaseMonster.cpp
@@ -38,7 +40,7 @@ set(MONSTER_SRC
 	monster/CCineAI.cpp
 	monster/CCineMonster.cpp
 	monster/CScriptedSentence.cpp
-	nodes.cpp
+	monster/nodes.cpp
 )
 set(MONSTER_MISC_SRC
 	monster/CActAnimating.cpp
@@ -81,6 +83,7 @@ set(MONSTER_HUMAN_SRC
 	monster/CHWGrunt.cpp
 	monster/CMassn.cpp
 	monster/COtis.cpp
+	monster/CPlayerMonster.cpp
 	monster/CScientist.cpp
 )
 set(MONSTER_ALIEN_SRC
@@ -299,11 +302,7 @@ set(FUNC_SRC
 
 set(ENTITY_HDR
 	cbase.h
-	ent_globals.h
-	nodes.h
-	CKeyValue.h
-	scripted.h
-	scriptevent.h
+	monster/scriptevent.h
 	path/CPathCorner.h
 	path/CPathTrack.h
 	../engine/progs.h
@@ -410,6 +409,7 @@ set(UTIL_HDR
 	util/Bsp.h
 	util/bsptypes.h
 	util/bsplimits.h
+	util/CKeyValue.h
 	util/CommandArgs.h
 	util/debug.h
 	util/eng_wrappers.h
@@ -454,16 +454,16 @@ set(PLAYER_HDR
 	../pm_shared/pm_materials.h
 	../pm_shared/pm_movevars.h
 	../pm_shared/pm_shared.h
-	CBasePlayer.h
-	CBaseSpectator.h
+	player/CBasePlayer.h
+	player/CBaseSpectator.h
 )
 set(PLAYER_SRC
 	../pm_shared/pm_shared.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp
-	CBaseDMStart.cpp
-	CBasePlayer.cpp
-	CBaseSpectator.cpp
+	player/CBaseDMStart.cpp
+	player/CBasePlayer.cpp
+	player/CBaseSpectator.cpp
 )
 set(HOOKS_HDR
 	../engine/custom.h

@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
-#include "ent_globals.h"
 #include "bodyque.h"
 #include "CBaseMonster.h"
 

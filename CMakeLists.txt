@@ -33,6 +33,7 @@ include_directories(${CMAKE_SOURCE_DIR}/dlls/net)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/hooks)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/util)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/game)
+include_directories(${CMAKE_SOURCE_DIR}/dlls/player)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/)
 
 include_directories(${CMAKE_SOURCE_DIR}/rehlds)

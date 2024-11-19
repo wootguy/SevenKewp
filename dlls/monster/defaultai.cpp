@@ -23,7 +23,7 @@
 #include	"defaultai.h"
 #include	"env/CSoundEnt.h"
 #include	"nodes.h"
-#include	"scripted.h"
+#include	"CCineMonster.h"
 
 //=========================================================
 // Fail

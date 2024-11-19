@@ -9,7 +9,7 @@
 #include "CBreakable.h"
 #include "nodes.h"
 #include "saverestore.h"
-#include "scripted.h"
+#include "CCineMonster.h"
 #include "CTalkSquadMonster.h"
 #include "gamerules.h"
 #include "defaultai.h"
