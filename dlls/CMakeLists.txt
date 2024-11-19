@@ -138,6 +138,7 @@ set(ENV_SRC
 	env/CEnvFunnel.cpp
 	env/CEnvGlobal.cpp
 	env/CEnvLight.cpp
+	env/CEnvSentence.cpp
 	env/CEnvShooter.cpp
 	env/CEnvSound.cpp
 	env/CEnvSpark.cpp
