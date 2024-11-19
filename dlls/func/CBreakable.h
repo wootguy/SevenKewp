@@ -1,5 +1,6 @@
 #ifndef FUNC_BREAK_H
 #define FUNC_BREAK_H
+#include "CBaseDelay.h"
 
 typedef enum { expRandom, expDirected } Explosions;
 typedef enum { matGlass = 0, matWood, matMetal, matFlesh, matCinderBlock, matCeilingTile, matComputer, matUnbreakableGlass, matRocks, matNone, matLastMaterial } Materials;

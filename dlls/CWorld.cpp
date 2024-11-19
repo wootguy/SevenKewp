@@ -1,6 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
+#include "CWorld.h"
 #include "nodes.h"
 #include "env/CSoundEnt.h"
 #include "hlds_hooks.h"

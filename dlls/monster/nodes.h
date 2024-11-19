@@ -29,6 +29,8 @@
 #define bits_NODE_WATER     ( 1 << 2 )  // Water node, don't nudge.
 #define bits_NODE_GROUP_REALM (bits_NODE_LAND | bits_NODE_AIR | bits_NODE_WATER)
 
+#include "CBaseEntity.h"
+
 //=========================================================
 // Instance of a node.
 //=========================================================

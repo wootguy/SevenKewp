@@ -13,7 +13,6 @@
  *
  ****/
 
-#include "cbase.h"
 #include "CPipewrench.h"
 
 #define PIPEWRENCH_BODYHIT_VOLUME 128

@@ -27,6 +27,7 @@ class CBasePlayerItem;
 class CBasePlayer;
 class CItem;
 class CBasePlayerAmmo;
+class CBaseMonster;
 
 // weapon respawning return codes
 enum

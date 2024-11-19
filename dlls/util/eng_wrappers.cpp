@@ -1,6 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
+#include "CBaseEntity.h"
 #include "pm_materials.h"
 #include "pm_shared.h"
 #include "eng_wrappers.h"

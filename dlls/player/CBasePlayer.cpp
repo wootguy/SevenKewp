@@ -23,7 +23,6 @@
 #include "extdll.h"
 #include "util.h"
 
-#include "cbase.h"
 #include "CBasePlayer.h"
 #include "trains.h"
 #include "nodes.h"
@@ -51,6 +50,7 @@
 #include "CBreakable.h"
 #include "CFuncVehicle.h"
 #include "PluginManager.h"
+#include "hlds_hooks.h"
 
 // #define DUCKFIX
 

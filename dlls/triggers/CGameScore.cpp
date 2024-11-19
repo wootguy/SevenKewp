@@ -2,7 +2,6 @@
 #include "eiface.h"
 #include "util.h"
 #include "gamerules.h"
-#include "cbase.h"
 #include "CRuleEntity.h"
 
 // CGameScore / game_score	-- award points to player / team 

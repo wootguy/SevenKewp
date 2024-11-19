@@ -22,7 +22,6 @@
 
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "saverestore.h"
 #include "weapons.h"
 #include "decals.h"

@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 
 #define SF_RELAY_FIREONCE		0x0001
 #define SF_RELAY_KEEP_ACTIVATOR		64

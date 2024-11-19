@@ -1,4 +1,5 @@
 #pragma once
+#include "CBaseAnimating.h"
 
 class CActAnimating : public CBaseAnimating
 {

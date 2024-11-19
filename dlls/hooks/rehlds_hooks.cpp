@@ -1,7 +1,6 @@
 #include "rehlds.h"
 #include "util.h"
 #include "PluginManager.h"
-#include "cbase.h"
 #include "CBasePlayer.h"
 
 void rehlds_SendBigMessage_internal(int msgType, void* data, int sz, int playerindex) {

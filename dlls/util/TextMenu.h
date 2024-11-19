@@ -1,5 +1,5 @@
 #pragma once
-#include "cbase.h"
+#include "CBaseEntity.h"
 #include <string>
 
 #define MAX_MENU_OPTIONS 128

@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "monsters.h"
 
 #ifndef ANIMATION_H

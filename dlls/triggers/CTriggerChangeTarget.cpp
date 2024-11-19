@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "CBaseMonster.h"
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality

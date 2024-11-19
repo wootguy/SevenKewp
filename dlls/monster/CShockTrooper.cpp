@@ -31,7 +31,6 @@
 #include "extdll.h"
 #include "plane.h"
 #include "util.h"
-#include "cbase.h"
 #include "monsters.h"
 #include "schedule.h"
 #include "animation.h"

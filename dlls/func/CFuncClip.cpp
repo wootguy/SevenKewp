@@ -1,6 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
+#include "CBaseEntity.h"
 
 #define	SF_FCLIP_START_OFF 1
 #define	SF_FCLIP_DIRECTIONAL 2

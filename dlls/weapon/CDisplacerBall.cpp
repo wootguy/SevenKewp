@@ -12,8 +12,6 @@
  *   without written permission from Valve LLC.
  *
  ****/
-#include "cbase.h"
-
 #include "user_messages.h"
 
 #include "CDisplacerBall.h"

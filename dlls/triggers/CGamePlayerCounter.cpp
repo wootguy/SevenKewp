@@ -1,7 +1,7 @@
 #include "extdll.h"
 #include "eiface.h"
 #include "util.h"
-#include "cbase.h"
+#include "CPointEntity.h"
 
 //
 // CGamePlayerCounter / game_player_counter	-- Fires targets depending on player count

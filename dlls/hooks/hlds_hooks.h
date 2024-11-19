@@ -69,4 +69,33 @@ int	ShouldCollide(edict_t* pentTouched, edict_t* pentOther);
 void CvarValue(const edict_t* pEnt, const char* pszValue);
 void CvarValue2(const edict_t* pEnt, int requestID, const char* pszCvarName, const char* pszValue);
 
+typedef struct {
+	DLL_FUNCTIONS* dllapi_table;
+	NEW_DLL_FUNCTIONS* newapi_table;
+} gamedll_funcs_t;
+
+EXPORT extern gamedll_funcs_t* gpGamedllFuncs; // for ease of porting to/from metamod
+
+// C functions for external declarations that call the appropriate C++ methods
+
+extern "C" DLLEXPORT int GetEntityAPI(DLL_FUNCTIONS * pFunctionTable, int interfaceVersion);
+extern "C" DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS * pFunctionTable, int* interfaceVersion);
+extern "C" DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS * pNewFunctionTable, int* interfaceVersion);
+
+EXPORT extern int DispatchSpawn(edict_t* pent);
+EXPORT extern void DispatchKeyValue(edict_t* pentKeyvalue, KeyValueData* pkvd);
+EXPORT extern void DispatchTouch(edict_t* pentTouched, edict_t* pentOther);
+EXPORT extern void DispatchUse(edict_t* pentUsed, edict_t* pentOther);
+EXPORT extern void DispatchThink(edict_t* pent);
+EXPORT extern void DispatchBlocked(edict_t* pentBlocked, edict_t* pentOther);
+EXPORT extern void DispatchSave(edict_t* pent, SAVERESTOREDATA* pSaveData);
+EXPORT extern int DispatchRestore(edict_t* pent, SAVERESTOREDATA* pSaveData, int globalEntity);
+EXPORT extern void DispatchObjectCollsionBox(edict_t* pent);
+EXPORT extern void SaveWriteFields(SAVERESTOREDATA* pSaveData, const char* pname, void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCount);
+EXPORT extern void SaveReadFields(SAVERESTOREDATA* pSaveData, const char* pname, void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCount);
+EXPORT extern void SaveGlobalState(SAVERESTOREDATA* pSaveData);
+EXPORT extern void RestoreGlobalState(SAVERESTOREDATA* pSaveData);
+EXPORT extern void ResetGlobalState(void);
+EXPORT extern void SetObjectCollisionBox(entvars_t* pev);
+
 #endif		// CLIENT_H

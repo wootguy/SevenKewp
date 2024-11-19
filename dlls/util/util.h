@@ -291,17 +291,6 @@ typedef enum
 
 } MONSTERSTATE;
 
-
-
-// Things that toggle (buttons/triggers/doors) need this
-typedef enum
-	{
-	TS_AT_TOP,
-	TS_AT_BOTTOM,
-	TS_GOING_UP,
-	TS_GOING_DOWN
-	} TOGGLE_STATE;
-
 // Misc useful
 inline BOOL FStrEq(const char*sz1, const char*sz2)
 	{ return (strcmp(sz1, sz2) == 0); }
@@ -458,6 +447,7 @@ EXPORT float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, cons
 EXPORT void UTIL_StripToken( const char *pKey, char *pDest, int nLen);// for redundant keynames
 
 // Misc functions
+EXPORT extern void FireTargets(const char* targetName, CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 EXPORT void SetMovedir(entvars_t* pev);
 EXPORT Vector VecBModelOrigin( entvars_t* pevBModel );
 EXPORT int BuildChangeList( LEVELLIST *pLevelList, int maxList );

@@ -2,7 +2,6 @@
 #include "eiface.h"
 #include "util.h"
 #include "gamerules.h"
-#include "cbase.h"
 #include "CBasePlayer.h"
 #include "weapons.h"
 #include "CGamePlayerEquip.h"

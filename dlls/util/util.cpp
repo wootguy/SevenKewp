@@ -22,7 +22,6 @@
 #include <cstdint>
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "saverestore.h"
 #include <time.h>
 #include "shake.h"
@@ -38,6 +37,7 @@
 #include "PluginManager.h"
 #include "TextMenu.h"
 #include "debug.h"
+#include "hlds_hooks.h"
 
 #include <fstream>
 #include <sys/types.h>

@@ -184,6 +184,7 @@ set(TRIGGER_HDR
 	triggers/CBaseTrigger.h
 	triggers/CGamePlayerEquip.h
 	triggers/CFireAndDie.h
+	triggers/CMultiSource.h
 	triggers/CRuleEntity.h
 	triggers/CTriggerMultiple.h
 	triggers/CTriggerVote.h
@@ -301,7 +302,13 @@ set(FUNC_SRC
 )
 
 set(ENTITY_HDR
-	cbase.h
+	CBaseAnimating.h
+	CBaseDelay.h
+	CBaseEntity.h
+	CPointEntity.h
+	CBaseToggle.h
+	CWorld.h
+	EHandle.h
 	monster/scriptevent.h
 	path/CPathCorner.h
 	path/CPathTrack.h
@@ -312,7 +319,6 @@ set(ENTITY_HDR
 	../common/const.h
 )
 set(ENTITY_SRC
-	cbase.cpp
 	CBaseAnimating.cpp
 	CBaseEntity.cpp
 	CBaseDelay.cpp
@@ -321,6 +327,7 @@ set(ENTITY_SRC
 	CNullEntity.cpp
 	CPointEntity.cpp
 	CWorld.cpp
+	EHandle.cpp
 	path/CPathCorner.cpp
 	path/CPathTrack.cpp
 )

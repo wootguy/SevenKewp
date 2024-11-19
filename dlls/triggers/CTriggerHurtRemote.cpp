@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "eiface.h"
 #include "util.h"
-#include "cbase.h"
 #include "CBaseLogic.h"
 
 //

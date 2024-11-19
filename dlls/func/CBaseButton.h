@@ -1,5 +1,5 @@
 #pragma once
-//#include "const.h"
+#include "CBaseDoor.h"
 
 #define SF_BUTTON_DONTMOVE		1
 #define SF_ROTBUTTON_NOTSOLID	1

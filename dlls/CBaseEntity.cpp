@@ -1,6 +1,5 @@
 #include	"extdll.h"
 #include	"util.h"
-#include	"cbase.h"
 #include	"saverestore.h"
 #include	"hlds_hooks.h"
 #include	"decals.h"
