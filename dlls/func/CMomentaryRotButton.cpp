@@ -173,7 +173,7 @@ void CMomentaryRotButton::UpdateAllButtons(float value, int start)
 	}
 	m_lastProgress = value;
 
-	//ALERT(at_console, "ROT: %f %d %f\n", pev->angles.z, m_overflows, value);
+	//ALERT(at_console, "ROT: %f %d %d %f\n", pev->angles.z, m_direction, m_overflows, value);
 }
 
 void CMomentaryRotButton::UpdateSelf(float value)
@@ -267,6 +267,7 @@ void CMomentaryRotButton::Off(void)
 
 void CMomentaryRotButton::Return(void)
 {
+	m_direction = -1;
 	float value = GetRotProgress(pev->angles);
 
 	UpdateAllButtons(value, 0);	// This will end up calling UpdateSelfReturn() n times, but it still works right
