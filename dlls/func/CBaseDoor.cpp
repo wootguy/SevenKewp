@@ -166,6 +166,79 @@ void CBaseDoor::KeyValue(KeyValueData* pkvd)
 		pev->scale = atof(pkvd->szValue) * (1.0 / 8.0);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "fireonstart"))
+	{
+		m_fireOnStart = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonstart_triggerstate"))
+	{
+		m_fireOnStartMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonstop"))
+	{
+		m_fireOnStop = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonstop_triggerstate"))
+	{
+		m_fireOnStopMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonopening"))
+	{
+		m_fireOnOpenStart = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonopening_triggerstate"))
+	{
+		m_fireOnOpenStartMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonclosing"))
+	{
+		m_fireOnCloseStart = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonclosing_triggerstate"))
+	{
+		m_fireOnCloseStartMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	
+	else if (FStrEq(pkvd->szKeyName, "fireonopened"))
+	{
+		m_fireOnOpenEnd = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonopen"))
+	{
+		// TODO: ripent. This is a legacy key
+		m_fireOnOpenEnd = ALLOC_STRING(pkvd->szValue);
+		m_fireOnOpenEndMode = USE_TOGGLE;
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonopened_triggerstate"))
+	{
+		m_fireOnOpenEndMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonclosed"))
+	{
+		m_fireOnCloseEnd = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonclosed_triggerstate"))
+	{
+		m_fireOnCloseEndMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "m_iObeyTriggerMode"))
+	{
+		m_iObeyTriggerMode = (ObeyTriggerMode)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseToggle::KeyValue(pkvd);
 }
@@ -232,11 +305,31 @@ void CBaseDoor::Spawn()
 	// Subtract 2 from size because the engine expands bboxes by 1 in all directions making the size too big
 	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs(pev->movedir.x * (pev->size.x - 2)) + fabs(pev->movedir.y * (pev->size.y - 2)) + fabs(pev->movedir.z * (pev->size.z - 2)) - m_flLip));
 	ASSERTSZ(m_vecPosition1 != m_vecPosition2, "door start/end positions are equal\n");
+
+	// TODO: ripent this stuff
+	if (pev->netname && !m_fireOnCloseEnd) {
+		// legacy fire on opened/closed keys
+		m_fireOnCloseEnd = pev->netname;
+		m_fireOnCloseEndMode = USE_TOGGLE;
+		pev->netname = 0;
+	}
+	if (m_fireOnOpenStartMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+	if (m_fireOnOpenEndMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+	if (m_fireOnCloseStartMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+	if (m_fireOnCloseEndMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+	if (m_fireOnStartMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+	if (m_fireOnStopMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+
 	if (FBitSet(pev->spawnflags, SF_DOOR_START_OPEN))
 	{	// swap pos1 and pos2, put door at pos2
 		UTIL_SetOrigin(pev, m_vecPosition2);
 		m_vecPosition2 = m_vecPosition1;
 		m_vecPosition1 = pev->origin;
+
+		SWAP(m_fireOnCloseStart, m_fireOnOpenStart, string_t);
+		SWAP(m_fireOnCloseEnd, m_fireOnOpenEnd, string_t);
+		SWAP(m_fireOnCloseStartMode, m_fireOnOpenStartMode, USE_TYPE);
+		SWAP(m_fireOnCloseEndMode, m_fireOnOpenEndMode, USE_TYPE);
 	}
 
 	m_toggle_state = TS_AT_BOTTOM;
@@ -435,7 +528,7 @@ void CBaseDoor::DoorTouch(CBaseEntity* pOther)
 
 	m_hActivator = pOther;// remember who activated the door
 
-	if (DoorActivate())
+	if (DoorActivate(USE_TOGGLE))
 		SetTouch(NULL); // Temporarily disable the touch function, until movement is finished.
 }
 
@@ -447,20 +540,47 @@ void CBaseDoor::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 {
 	m_hActivator = pActivator;
 
-	// if not ready to be used, ignore "use" command.
-	if (m_toggle_state == TS_AT_BOTTOM || (FBitSet(pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && m_toggle_state == TS_AT_TOP))
-		DoorActivate();
+	bool isStopped = m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_AT_TOP;
+	bool doorOpening = m_toggle_state == TS_GOING_UP || m_toggle_state == TS_AT_TOP;
+	bool doorClosing = m_toggle_state == TS_GOING_DOWN || m_toggle_state == TS_AT_BOTTOM;
+
+	if (m_iObeyTriggerMode == DOOR_OBEY_NO) {
+		// if not ready to be used, ignore "use" command.
+		if (m_toggle_state == TS_AT_BOTTOM || (FBitSet(pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && m_toggle_state == TS_AT_TOP))
+			DoorActivate(USE_TOGGLE);
+	}
+	else if (m_iObeyTriggerMode == DOOR_OBEY_YES || m_iObeyTriggerMode == DOOR_OBEY_YES_MOVING) {
+		if (doorClosing && useType == USE_OFF) {
+			return;
+		}
+		if (doorOpening && useType == USE_ON) {
+			return;
+		}
+
+		if (isStopped || m_iObeyTriggerMode == DOOR_OBEY_YES_MOVING)
+			DoorActivate(useType);
+	}
 }
 
 //
 // Causes the door to "do its thing", i.e. start moving, and cascade activation.
 //
-int CBaseDoor::DoorActivate()
+int CBaseDoor::DoorActivate(USE_TYPE useType)
 {
 	if (!UTIL_IsMasterTriggered(m_sMaster, m_hActivator))
 		return 0;
 
-	if (FBitSet(pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && m_toggle_state == TS_AT_TOP)
+	bool doorOpening = m_toggle_state == TS_GOING_UP || m_toggle_state == TS_AT_TOP;
+	bool shouldClose = (doorOpening && useType == USE_TOGGLE) || useType == USE_OFF;
+
+	// TODO: this makes sense to do, logically, but sven doesn't do this
+	/*
+	if (FBitSet(pev->spawnflags, SF_DOOR_START_OPEN) && useType != USE_TOGGLE) {
+		shouldClose = !shouldClose;
+	}
+	*/
+
+	if (FBitSet(pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && shouldClose)
 	{// door should close
 		DoorGoDown();
 	}
@@ -492,9 +612,6 @@ extern Vector VecBModelOrigin(entvars_t* pevBModel);
 void CBaseDoor::DoorGoUp(void)
 {
 	entvars_t* pevActivator;
-
-	// It could be going-down, if blocked.
-	ASSERT(m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_GOING_DOWN);
 
 	// emit door moving and stop sounds on CHAN_STATIC so that the multicast doesn't
 	// filter them out and leave a client stuck with looping door sounds!
@@ -533,6 +650,11 @@ void CBaseDoor::DoorGoUp(void)
 	}
 	else
 		LinearMove(m_vecPosition2, pev->speed);
+
+	if (m_fireOnOpenStart)
+		FireTargets(STRING(m_fireOnOpenStart), m_hActivator, this, m_fireOnOpenStartMode, 0);
+	if (m_fireOnStart)
+		FireTargets(STRING(m_fireOnStart), m_hActivator, this, m_fireOnStartMode, 0);
 }
 
 
@@ -569,9 +691,10 @@ void CBaseDoor::DoorHitTop(void)
 		}
 	}
 
-	// Fire the close target (if startopen is set, then "top" is closed) - netname is the close target
-	if (pev->netname && (pev->spawnflags & SF_DOOR_START_OPEN))
-		FireTargets(STRING(pev->netname), m_hActivator, this, USE_TOGGLE, 0);
+	if (m_fireOnOpenEnd)
+		FireTargets(STRING(m_fireOnOpenEnd), m_hActivator, this, m_fireOnOpenEndMode, 0);
+	if (m_fireOnStop)
+		FireTargets(STRING(m_fireOnStop), m_hActivator, this, m_fireOnStopMode, 0);
 
 	SUB_UseTargets(m_hActivator, USE_TOGGLE, 0); // this isn't finished
 }
@@ -598,6 +721,11 @@ void CBaseDoor::DoorGoDown(void)
 		AngularMove(m_vecAngle1, pev->speed);
 	else
 		LinearMove(m_vecPosition1, pev->speed);
+
+	if (m_fireOnCloseStart)
+		FireTargets(STRING(m_fireOnCloseStart), m_hActivator, this, m_fireOnCloseStartMode, 0);
+	if (m_fireOnStart)
+		FireTargets(STRING(m_fireOnStart), m_hActivator, this, m_fireOnStartMode, 0);
 }
 
 //
@@ -624,9 +752,10 @@ void CBaseDoor::DoorHitBottom(void)
 
 	SUB_UseTargets(m_hActivator, USE_TOGGLE, 0); // this isn't finished
 
-	// Fire the close target (if startopen is set, then "top" is closed) - netname is the close target
-	if (pev->netname && !(pev->spawnflags & SF_DOOR_START_OPEN))
-		FireTargets(STRING(pev->netname), m_hActivator, this, USE_TOGGLE, 0);
+	if (m_fireOnCloseEnd)
+		FireTargets(STRING(m_fireOnCloseEnd), m_hActivator, this, m_fireOnCloseEndMode, 0);
+	if (m_fireOnStop)
+		FireTargets(STRING(m_fireOnStop), m_hActivator, this, m_fireOnStopMode, 0);
 }
 
 void CBaseDoor::Blocked(CBaseEntity* pOther)

@@ -140,6 +140,13 @@ struct RGBA {
 #define STRING(offset)		((const char *)(gpGlobals->pStringBase + (unsigned int)(offset)))
 #define MAKE_STRING(str)	((uint64)(str) - (uint64)(STRING(0)))
 
+// swap 2 values
+#define SWAP(a, b, T) { \
+	T _temp = (a); \
+	(a) = (b); \
+	(b) = _temp; \
+}
+
 // same as the STRING macro but defined as a function for easy calling in the debugger
 inline const char* cstr(string_t s) { return STRING(s); }
 
