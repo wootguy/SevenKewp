@@ -14,17 +14,18 @@
 ****/
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
+#include "CGrenade.h"
 #include "monsters.h"
 #include "weapons.h"
-#include "soundent.h"
 #include "decals.h"
+#include "CSoundEnt.h"
+#include "CBasePlayer.h"
 
 class CMortarShell : public CGrenade
 {
 public:
-	bool Save(CSave& save) override;
-	bool Restore(CRestore& restore) override;
+	int Save(CSave& save) override;
+	int Restore(CRestore& restore) override;
 	static TYPEDESCRIPTION m_SaveData[];
 
 	void Precache() override;
@@ -85,7 +86,7 @@ void CMortarShell::Spawn()
 	pev->gravity = 1;
 
 	//Deal twice the damage that the RPG does
-	pev->dmg = 2 * gSkillData.plrDmgRPG;
+	pev->dmg = 2 * gSkillData.sk_plr_rpg;
 
 	pev->nextthink = gpGlobals->time + 0.01;
 	m_flIgniteTime = gpGlobals->time;
@@ -243,11 +244,11 @@ const auto SF_MORTAR_CONTROLLABLE = 1 << 5;
 class COp4Mortar : public CBaseMonster
 {
 public:
-	bool Save(CSave& save) override;
-	bool Restore(CRestore& restore) override;
+	int Save(CSave& save) override;
+	int Restore(CRestore& restore) override;
 	static TYPEDESCRIPTION m_SaveData[];
 
-	bool KeyValue(KeyValueData* pkvd) override;
+	void KeyValue(KeyValueData* pkvd) override;
 
 	void Precache() override;
 
@@ -255,9 +256,12 @@ public:
 
 	int ObjectCaps() override { return 0; }
 
-	void EXPORT MortarThink();
+	int	Classify(void);
 
-	bool TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
+	void EXPORT MortarThink();
+	void EXPORT DropInit();
+
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
 
 	void PlaySound();
 
@@ -325,45 +329,46 @@ IMPLEMENT_SAVERESTORE(COp4Mortar, CBaseMonster);
 
 LINK_ENTITY_TO_CLASS(op4mortar, COp4Mortar);
 
-bool COp4Mortar::KeyValue(KeyValueData* pkvd)
+void COp4Mortar::KeyValue(KeyValueData* pkvd)
 {
 	if (FStrEq("h_max", pkvd->szKeyName))
 	{
 		m_hmax = atoi(pkvd->szValue);
-		return true;
+		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq("h_min", pkvd->szKeyName))
 	{
 		m_hmin = atoi(pkvd->szValue);
-		return true;
+		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq("mortar_velocity", pkvd->szKeyName))
 	{
 		m_velocity = atoi(pkvd->szValue);
-		return true;
+		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq("mindist", pkvd->szKeyName))
 	{
 		m_minRange = atof(pkvd->szValue);
-		return true;
+		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq("maxdist", pkvd->szKeyName))
 	{
 		m_maxRange = atof(pkvd->szValue);
-		return true;
+		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq("enemytype", pkvd->szKeyName))
 	{
 		m_iEnemyType = atoi(pkvd->szValue);
-		return true;
+		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq("firedelay", pkvd->szKeyName))
 	{
 		m_fireDelay = atoi(pkvd->szValue);
-		return true;
+		pkvd->fHandled = TRUE;
 	}
-
-	return CBaseToggle::KeyValue(pkvd);
+	else {
+		CBaseToggle::KeyValue(pkvd);
+	}
 }
 
 void COp4Mortar::Precache()
@@ -415,7 +420,21 @@ void COp4Mortar::Spawn()
 	m_hEnemy = nullptr;
 
 	pev->nextthink = gpGlobals->time + 0.01;
+	SetThink(&COp4Mortar::DropInit);
+}
+
+void COp4Mortar::DropInit()
+{
+	// not doing this in Spawn() in case a func_wall floor spawns after the sentry during map init
+	DROP_TO_FLOOR(edict());
+
 	SetThink(&COp4Mortar::MortarThink);
+	pev->nextthink = gpGlobals->time + 0.01;
+}
+
+int	COp4Mortar::Classify(void)
+{
+	return CLASS_NONE; // can't take damage, so nothing should target this
 }
 
 void COp4Mortar::MortarThink()
@@ -445,7 +464,7 @@ void COp4Mortar::MortarThink()
 			m_hEnemy = FindTarget();
 		}
 
-		auto pEnemy = m_hEnemy.Entity<CBaseEntity>();
+		CBaseEntity* pEnemy = m_hEnemy.GetEntity();
 
 		if (pEnemy)
 		{
@@ -506,7 +525,7 @@ void COp4Mortar::MortarThink()
 	}
 }
 
-bool COp4Mortar::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
+int COp4Mortar::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
 	//Ignore all damage
 	return CBaseMonster::TakeDamage(pevInflictor, pevAttacker, 0, bitsDamageType);
@@ -599,7 +618,7 @@ CBaseEntity* COp4Mortar::FindTarget()
 	if (!pPlayerTarget)
 		return pPlayerTarget;
 
-	m_pLink = nullptr;
+	m_hLink = NULL;
 
 	CBaseEntity* pIdealTarget = nullptr;
 	auto flIdealDist = m_maxRange;
@@ -628,9 +647,9 @@ CBaseEntity* COp4Mortar::FindTarget()
 	}
 
 	const Vector maxRange{m_maxRange, m_maxRange, m_maxRange};
-
+	/*
 	CBaseEntity* pList[100];
-	const auto count = UTIL_EntitiesInBox(pList, ARRAYSIZE(pList), pev->origin - maxRange, pev->origin + maxRange, FL_MONSTER | FL_CLIENT);
+	const auto count = UTIL_EntitiesInBox(pList, ARRAYSIZE(pList), pev->origin - maxRange, pev->origin + maxRange, FL_MONSTER | FL_CLIENT, true);
 
 	for (auto i = 0; i < count; ++i)
 	{
@@ -667,8 +686,8 @@ CBaseEntity* COp4Mortar::FindTarget()
 			}
 		}
 	}
-
-	for (auto pEntity = m_pLink; pEntity; pEntity = pEntity->m_pLink)
+	*/
+	for (auto pEntity = m_hLink.GetEntity(); pEntity; pEntity = pEntity->m_hLink.GetEntity())
 	{
 		const auto distance = (pEntity->pev->origin - pev->origin).Length();
 
@@ -793,13 +812,13 @@ void COp4Mortar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 class COp4MortarController : public CBaseToggle
 {
 public:
-	bool Save(CSave& save) override;
-	bool Restore(CRestore& restore) override;
+	int Save(CSave& save) override;
+	int Restore(CRestore& restore) override;
 	static TYPEDESCRIPTION m_SaveData[];
 
 	int ObjectCaps() override { return FCAP_CONTINUOUS_USE; }
 
-	bool KeyValue(KeyValueData* pkvd) override;
+	void KeyValue(KeyValueData* pkvd) override;
 
 	void Spawn() override;
 
@@ -809,29 +828,28 @@ public:
 
 	int m_direction;
 	int m_controller;
-	float m_lastpush;
 };
 
 TYPEDESCRIPTION COp4MortarController::m_SaveData[] =
 	{
 		DEFINE_FIELD(COp4MortarController, m_direction, FIELD_INTEGER),
 		DEFINE_FIELD(COp4MortarController, m_controller, FIELD_INTEGER),
-		DEFINE_FIELD(COp4MortarController, m_lastpush, FIELD_FLOAT),
 };
 
 IMPLEMENT_SAVERESTORE(COp4MortarController, CBaseToggle);
 
 LINK_ENTITY_TO_CLASS(func_op4mortarcontroller, COp4MortarController);
 
-bool COp4MortarController::KeyValue(KeyValueData* pkvd)
+void COp4MortarController::KeyValue(KeyValueData* pkvd)
 {
 	if (FStrEq("mortar_axis", pkvd->szKeyName))
 	{
 		m_controller = atoi(pkvd->szValue);
-		return true;
+		pkvd->fHandled = TRUE;
 	}
-
-	return CBaseToggle::KeyValue(pkvd);
+	else {
+		CBaseToggle::KeyValue(pkvd);
+	}
 }
 
 void COp4MortarController::Spawn()
@@ -844,7 +862,6 @@ void COp4MortarController::Spawn()
 	SET_MODEL(edict(), STRING(pev->model));
 
 	m_direction = 1;
-	m_lastpush = gpGlobals->time;
 }
 
 void COp4MortarController::Reverse()
@@ -855,16 +872,19 @@ void COp4MortarController::Reverse()
 
 void COp4MortarController::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	if (gpGlobals->time - m_lastpush > 0.5)
+	CBasePlayer* plr = UTIL_PlayerByIndex(pActivator->entindex());
+
+	if (plr && (plr->m_afButtonPressed & IN_USE))
 		m_direction = -m_direction;
 
-	for (auto pEntity : UTIL_FindEntitiesByTargetname<COp4Mortar>(STRING(pev->target)))
+	CBaseEntity* pEntity = NULL;
+
+	while ((pEntity = UTIL_FindEntityByTargetname(pEntity, STRING(pev->target))) != NULL)
 	{
 		if (FClassnameIs(pEntity->pev, "op4mortar"))
 		{
-			pEntity->UpdatePosition(m_direction, m_controller);
+			COp4Mortar* mortar = (COp4Mortar*)pEntity;
+			mortar->UpdatePosition(m_direction, m_controller);
 		}
 	}
-
-	m_lastpush = gpGlobals->time;
 }
