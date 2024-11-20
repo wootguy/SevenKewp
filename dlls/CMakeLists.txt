@@ -65,6 +65,7 @@ set(MONSTER_MACHINE_SRC
 	monster/CApache.cpp
 	monster/CBaseTurret.cpp
 	monster/CMiniTurret.cpp
+	monster/COp4Mortar.cpp
 	monster/COsprey.cpp
 	monster/CRoboGrunt.cpp
 	monster/CSentry.cpp
