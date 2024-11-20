@@ -1,6 +1,8 @@
 #pragma once
 #include "CBaseAnimating.h"
 
+struct CustomSentence;
+
 //
 // generic Toggle entity.
 //
@@ -32,6 +34,12 @@ public:
 	Vector				m_vecFinalAngle;
 
 	int					m_bitsDamageInflict;	// DMG_ damage type that the door or tigger does
+
+	CustomSentence*		m_customSent;
+	float				m_customSentStartTime;	// when the sentence began playing
+	float				m_customSentVol;		// overall volume for the custom sentence
+	float				m_customSentAttn;		// attenuation for the custom sentence
+	int					m_customSentLastWord;	// last sentence word which was played
 
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);

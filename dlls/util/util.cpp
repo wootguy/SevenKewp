@@ -2359,6 +2359,11 @@ std::unordered_map<std::string, std::string> loadReplacementFile(const char* pat
 		lineNum++;
 		std::string paths[2];
 
+		int comments = line.find("//");
+		if (comments != -1) {
+			line = line.substr(0, comments);
+		}
+
 		line = trimSpaces(line);
 		if (line.empty()) {
 			continue;

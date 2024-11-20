@@ -4,6 +4,7 @@
 #include "schedule.h"
 #include "CCineMonster.h"
 #include "defaultai.h"
+#include "sentences.h"
 
 class CScriptedSentence : public CBaseToggle
 {
@@ -160,8 +161,11 @@ void CScriptedSentence::Spawn(void)
 }
 
 void CScriptedSentence::Precache(void) {
-	if (m_iszSentence && STRING(m_iszSentence)[0] == '+') {
-		PRECACHE_SOUND(STRING(m_iszSentence) + 1);
+	if (m_iszSentence) {
+		if (STRING(m_iszSentence)[0] == '+')
+			PRECACHE_SOUND(STRING(m_iszSentence) + 1);
+		else
+			PrecacheCustomSentence(this, STRING(m_iszSentence));
 	}
 }
 
