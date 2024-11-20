@@ -88,6 +88,8 @@ cvar_t	*g_developer = NULL;
 cvar_t	*sv_max_client_edicts = NULL;
 cvar_t	*sv_voiceenable = NULL;
 cvar_t	*sv_stepsize = NULL;
+cvar_t	*sv_friction = NULL;
+cvar_t	*sv_stopspeed = NULL;
 cvar_t	*sv_lowercase = NULL;
 
 // END Cvars for Skill Level settings
@@ -311,6 +313,8 @@ void GameDLLInit( void )
 	sv_max_client_edicts = CVAR_GET_POINTER( "sv_max_client_edicts" );
 	sv_voiceenable = CVAR_GET_POINTER( "sv_voiceenable" );
 	sv_stepsize = CVAR_GET_POINTER( "sv_stepsize" );
+	sv_friction = CVAR_GET_POINTER( "sv_friction" );
+	sv_stopspeed = CVAR_GET_POINTER( "sv_stopspeed" );
 	sv_lowercase = CVAR_GET_POINTER( "sv_lowercase" );
 
 	CVAR_REGISTER (&displaysoundlist);
