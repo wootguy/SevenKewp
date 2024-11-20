@@ -59,6 +59,7 @@ public:
 	Vector m_playerPushDir[32]; // push direction from every player touching/using the pushable
 	Vector m_entPushDir; // push direction from other entities
 	bool m_wasPushed;
+	bool m_onMovingPlatform;
 
 	bool m_ignoreLiftUse[32]; // true if use key was held while moving
 	EHANDLE m_hLifter; // player who is lifting the pushable
@@ -251,6 +252,8 @@ void CPushable::UpdatePushDir(CBaseEntity* pOther, int push) {
 	int eidx = pOther->entindex() % 32;
 	Vector& pushDir = pOther->IsPlayer() ? m_playerPushDir[eidx] : m_entPushDir;
 
+	Vector toucherVelocity = pevToucher->velocity;
+
 	float factor = 0.25f;
 
 	// Is entity standing on this pushable ?
@@ -269,6 +272,23 @@ void CPushable::UpdatePushDir(CBaseEntity* pOther, int push) {
 			goto objectboost;
 		playerTouch = 1;
 	}
+	else if (pev->groundentity == pOther->edict() && pOther->pev->velocity.Length()) {
+		// don't get pushed by moving platforms that the pushable is resting on
+		factor = 0;
+		m_onMovingPlatform = true;
+	}
+	else {
+		Vector flatObjectDir = pOther->pev->origin - pev->origin;
+		flatObjectDir.z = 0;
+		Vector flatOtherVel = pOther->pev->velocity;
+		flatOtherVel.z = 0;
+
+		if (DotProduct(flatObjectDir, flatOtherVel) > 0) {
+			// if toucher is moving in the opposite direction of me, don't get pulled along with it.
+			// this can happen a pushable with lower friction touches one with higher friction
+			factor = 0;
+		}
+	}
 
 	if (playerTouch)
 	{
@@ -283,12 +303,36 @@ void CPushable::UpdatePushDir(CBaseEntity* pOther, int push) {
 			else
 				goto objectboost;
 		}
-		else
+		else {
 			factor = 1;
+
+			// use player desired movement speed as the push force so that the pushable
+			// still moves if the player is pressed against a wall and is trying to move
+			// the pushable closer to that wall.
+			if (pevToucher->button & IN_USE) {
+				MAKE_VECTORS(pevToucher->v_angle);
+				Vector wishDir;
+
+				if (pevToucher->button & IN_FORWARD) {
+					wishDir = wishDir + gpGlobals->v_forward;
+				}
+				if (pevToucher->button & IN_BACK) {
+					wishDir = wishDir - gpGlobals->v_forward;
+				}
+				if (pevToucher->button & IN_MOVELEFT) {
+					wishDir = wishDir - gpGlobals->v_right;
+				}
+				if (pevToucher->button & IN_MOVERIGHT) {
+					wishDir = wishDir + gpGlobals->v_right;
+				}
+
+				toucherVelocity = wishDir;
+			}
+		}
 	}
 
-	pushDir.x += pevToucher->velocity.x * factor;
-	pushDir.y += pevToucher->velocity.y * factor;
+	pushDir.x += toucherVelocity.x * factor;
+	pushDir.y += toucherVelocity.y * factor;
 
 objectboost:
 	if (mp_objectboost.value) {
@@ -319,6 +363,28 @@ void CPushable::Move()
 
 		combinedPushDir = combinedPushDir + m_playerPushDir[i].Normalize();
 	}
+
+	// pushables on moving platforms sometimes float around without friction due to an engine bug(?).
+	// This might apply double friction in some cases but that's much less frustrating than a pushable
+	// that keeps falling off something that needs to transport it.
+	// floating pushable test map: con3hl_19
+	float speed = pev->velocity.Length();
+	if (m_onMovingPlatform && speed)
+	{
+		float friction = sv_friction->value;
+
+		float control = (speed < sv_stopspeed->value) ? sv_stopspeed->value : speed;
+		float newspeed = speed - (PUSH_THINK_DELAY * control * friction);
+		if (newspeed < 0.0f)
+			newspeed = 0.0f;
+
+		newspeed = newspeed / speed;
+
+		pev->velocity[0] *= newspeed;
+		pev->velocity[1] *= newspeed;
+	}
+
+	m_onMovingPlatform = false;
 
 	if (combinedPushDir == g_vecZero) {
 		return;
