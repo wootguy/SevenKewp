@@ -1,5 +1,6 @@
 #pragma once
-#include "CBaseEntity.h"
+
+class CBaseEntity;
 
 //
 // EHANDLE. Safe way to point to CBaseEntities who may die between frames

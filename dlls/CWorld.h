@@ -17,10 +17,12 @@ public:
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );
 	void loadReplacementFiles();
+	void loadSentenceFiles();
 	const char* getDisplayName() { return "World"; }
 
 	string_t m_globalModelList;
 	string_t m_globalSoundList;
+	string_t m_sentenceFile;
 	string_t m_wadlist;
 	bool m_freeRoam;
 };

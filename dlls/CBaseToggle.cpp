@@ -3,6 +3,7 @@
 #include "saverestore.h"
 #include "nodes.h"
 #include "CBaseDoor.h"
+#include "sentences.h"
 
 // Global Savedata for Toggle
 TYPEDESCRIPTION	CBaseToggle::m_SaveData[] =
@@ -209,17 +210,36 @@ float CBaseToggle::AxisDelta(int flags, const Vector& angle1, const Vector& angl
 	return angle1.y - angle2.y;
 }
 
-
 void CBaseToggle::PlaySentence(const char* pszSentence, float duration, float volume, float attenuation)
 {
 	if (pszSentence && IsAlive())
 	{
-		if (pszSentence[0] == '!')
-			EMIT_SOUND_DYN(edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, PITCH_NORM);
-		else if (pszSentence[0] == '+')
+		if (pszSentence[0] == '!') {
+			CustomSentence* sent = GetCustomSentence(pszSentence + 1);
+
+			if (sent) {
+				AddCustomSentencePlayer(this, sent, volume, attenuation);
+			}
+			else {
+				// default sentence, let the engine handle it
+				EMIT_SOUND_DYN(edict(), CHAN_VOICE, pszSentence, volume, attenuation, 0, PITCH_NORM);
+			}
+		}
+		else if (pszSentence[0] == '+') {
+			// path to a sound file, not a sentence name
 			EMIT_SOUND_DYN(edict(), CHAN_VOICE, pszSentence + 1, volume, attenuation, 0, PITCH_NORM);
-		else
-			SENTENCEG_PlayRndSz(edict(), pszSentence, volume, attenuation, 0, PITCH_NORM);
+		}
+		else {
+			CustomSentence* sent = GetRandomCustomSentence(pszSentence);
+
+			if (sent) {
+				AddCustomSentencePlayer(this, sent, volume, attenuation);
+			}
+			else {
+				// default sentence, let the engine handle it
+				SENTENCEG_PlayRndSz(edict(), pszSentence, volume, attenuation, 0, PITCH_NORM);
+			}
+		}
 	}
 }
 
