@@ -761,6 +761,55 @@ def parse_titles(titles_path):
 	
 	return titles
 
+def parse_sentences(sent_path):
+	sentences = {}
+
+	with open(sent_path, 'r') as file:
+		for line in file:
+			line = line.strip()
+			
+			if not line or line.startswith("//"):
+				continue
+				
+			parts = line.split()
+			
+			if len(parts) < 2:
+				continue
+				
+			sent_name = parts[0].lower()
+			sent_folder = 'vox'
+			
+			if '/' in parts[1]:
+				sent_folder = parts[1][:parts[1].find("/")]
+				parts[1] = parts[1][parts[1].find("/")+1:]
+			
+			sentences[sent_name] = {}
+			sentences[sent_name]["folder"] = sent_folder
+			sentences[sent_name]["sounds"] = parts[1:]
+			sentences[sent_name]["has_effects"] = True if '(' in line else False
+			sentences[sent_name]["line"] = line
+		
+	return sentences
+
+def write_unique_sentences(hl_sents, sc_sents):
+	unique_sents = {}
+	
+	for key, val in sc_sents.items():
+		if key not in hl_sents:
+			unique_sents[key] = val
+	
+	sorted_keys = sorted(unique_sents.keys())
+	
+	with open("hlcoop_sentences.txt", 'w') as file:
+		last_key = ''
+		for key in sorted_keys:
+			if last_key[:-1] != key[:-1]:
+				file.write("\n")
+			last_key = key
+			file.write(unique_sents[key]["line"] + "\n")
+	
+	return unique_sents
+
 def ents_match(d1, d2, path=""):
 	if len(d1) != len(d2):
 		return False
@@ -797,6 +846,8 @@ bspguy_path = os.path.join(cur_dir, 'bspguy')
 magick_path = 'magick'
 skill_path = os.path.join(cur_dir, "skill.cfg")
 titles_path = os.path.join(cur_dir, "titles.txt")
+#sent_path_hl = os.path.join(cur_dir, "sentences_hl.txt")
+#sent_path_sc = os.path.join(cur_dir, "sentences_sc.txt")
 
 #os.chdir('../compatible_maps')
 
@@ -808,6 +859,9 @@ all_cfgs = get_all_cfgs(maps_dir)
 all_models = get_all_models(models_dir)
 all_skill_cvar_names = get_all_skill_cvar_names(skill_path)
 all_titles = parse_titles(titles_path)
+#sentences_hl = parse_sentences(sent_path_hl)
+#sentences_sc = parse_sentences(sent_path_sc)
+#write_unique_sentences(sentences_hl, sentences_sc)
 
 fix_problems = True
 
