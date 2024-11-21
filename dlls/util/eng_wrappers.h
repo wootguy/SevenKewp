@@ -96,4 +96,5 @@ EXPORT const char* CMD_ARGS();
 EXPORT void CHANGE_LEVEL(const char* pszLevelName, const char* pszLandmarkName);
 EXPORT void PLAYBACK_EVENT_FULL(int flags, const edict_t* pInvoker, unsigned short eventindex, float delay, float* origin, float* angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2);
 EXPORT string_t ALLOC_STRING(const char*);
+EXPORT edict_t* FIND_ENTITY_BY_TARGETNAME(edict_t* entStart, const char* pszName);
 #endif

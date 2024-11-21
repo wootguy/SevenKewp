@@ -155,11 +155,6 @@ inline edict_t *FIND_ENTITY_BY_CLASSNAME(edict_t *entStart, const char *pszName)
 	return FIND_ENTITY_BY_STRING(entStart, "classname", pszName);
 }	
 
-inline edict_t *FIND_ENTITY_BY_TARGETNAME(edict_t *entStart, const char *pszName) 
-{
-	return FIND_ENTITY_BY_STRING(entStart, "targetname", pszName);
-}	
-
 // for doing a reverse lookup. Say you have a door, and want to find its button.
 // Only checks the "target" keyvalue, so this skips multi_manager and other types of target keys
 inline edict_t *FIND_ENTITY_BY_TARGET(edict_t *entStart, const char *pszName) 
@@ -335,8 +330,9 @@ EXPORT void			UTIL_MakeVectors(const Vector& vecAngles);
 EXPORT bool			IsValidPlayer(edict_t* edict); // true if edict is a connected player
 
 // Pass in an array of pointers and an array size, it fills the array and returns the number inserted
-EXPORT int			UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &center, float radius );
-EXPORT int			UTIL_EntitiesInBox( CBaseEntity **pList, int listMax, const Vector &mins, const Vector &maxs, int flagMask, bool ignoreDead);
+EXPORT int UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &center, float radius );
+EXPORT int UTIL_EntitiesInBox( CBaseEntity **pList, int listMax, const Vector &mins, const Vector &maxs,
+	int flagMask, bool ignoreDead, bool collisionOnly=false);
 
 inline void UTIL_MakeVectorsPrivate( const Vector &vecAngles, float *p_vForward, float *p_vRight, float *p_vUp )
 {
