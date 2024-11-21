@@ -17,6 +17,7 @@ class CGameCounter : public CRulePointEntity
 {
 public:
 	void		Spawn(void);
+	void		KeyValue(KeyValueData* pkvd);
 	void		Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	inline BOOL RemoveOnFire(void) { return (pev->spawnflags & SF_GAMECOUNT_FIREONCE) ? TRUE : FALSE; }
 	inline BOOL ResetOnFire(void) { return (pev->spawnflags & SF_GAMECOUNT_RESET) ? TRUE : FALSE; }
@@ -28,6 +29,8 @@ public:
 	inline int	LimitValue(void) { return pev->health; }
 
 	inline BOOL HitLimit(void) { return CountValue() == LimitValue(); }
+
+	string_t m_killtarget;
 
 private:
 
@@ -42,6 +45,17 @@ void CGameCounter::Spawn(void)
 	// Save off the initial count
 	SetInitialValue(CountValue());
 	CRulePointEntity::Spawn();
+}
+
+void CGameCounter::KeyValue(KeyValueData* pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "killtarget"))
+	{
+		m_killtarget = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CRulePointEntity::KeyValue(pkvd);
 }
 
 
@@ -69,6 +83,11 @@ void CGameCounter::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE u
 	if (HitLimit())
 	{
 		SUB_UseTargets(pActivator, USE_TOGGLE, 0);
+
+		if (m_killtarget) {
+			SUB_KillTarget(STRING(m_killtarget));
+		}
+
 		if (RemoveOnFire())
 		{
 			UTIL_Remove(this);

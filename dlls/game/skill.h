@@ -184,6 +184,7 @@ struct skilldata_t
 	float sk_plr_xbow_sniper_bullet;
 	float sk_plr_rpg;
 	float sk_plr_gauss;
+	float sk_plr_secondarygauss;
 	float sk_plr_egon_narrow;
 	float sk_plr_egon_wide;
 	float sk_plr_hand_grenade;

@@ -207,6 +207,7 @@ public:
 	virtual CBaseEntity* Respawn(void) { return NULL; }
 
 	void SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, float value);
+	void SUB_KillTarget(const char* target);
 	// Do the bounding boxes of these two intersect?
 	int		Intersects(CBaseEntity* pOther);
 	void	MakeDormant(void);

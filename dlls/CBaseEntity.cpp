@@ -916,6 +916,21 @@ void CBaseEntity::SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, floa
 	}
 }
 
+void CBaseEntity::SUB_KillTarget(const char* target)
+{
+	edict_t* pentKillTarget = NULL;
+
+	ALERT(at_aiconsole, "KillTarget: %s\n", target);
+	pentKillTarget = FIND_ENTITY_BY_TARGETNAME(NULL, target);
+	while (!FNullEnt(pentKillTarget))
+	{
+		UTIL_Remove(CBaseEntity::Instance(pentKillTarget));
+
+		ALERT(at_aiconsole, "killing %s\n", STRING(pentKillTarget->v.classname));
+		pentKillTarget = FIND_ENTITY_BY_TARGETNAME(pentKillTarget, target);
+	}
+}
+
 //=========================================================
 // SetClassify - sets/changes the monster's classify and
 // clears its current schedule to make it pick a new target

@@ -717,7 +717,7 @@ void PLAYBACK_EVENT_FULL(int flags, const edict_t* pInvoker, unsigned short even
 		iparam1, iparam2, bparam1, bparam2);
 }
 
-EXPORT string_t ALLOC_STRING(const char* str) {
+string_t ALLOC_STRING(const char* str) {
 	auto existing = g_allocedStrings.find(str);
 
 	if (existing != g_allocedStrings.end()) {
@@ -728,4 +728,27 @@ EXPORT string_t ALLOC_STRING(const char* str) {
 	g_allocedStrings[str] = newStr;
 
 	return newStr;
+}
+
+edict_t* FIND_ENTITY_BY_TARGETNAME(edict_t* entStart, const char* pszName) {
+	/*
+	edict_t* edicts = ENT(0);
+	int startAfter = entStart ? ENTINDEX(entStart) : 0;
+
+	for (int e = startAfter + 1; e < gpGlobals->maxEntities; e++)
+	{
+		edict_t* ed = &edicts[e];
+		if (ed->free)
+			continue;
+
+		if (!ed->v.targetname)
+			continue;
+
+		if (!strcmp(STRING(ed->v.targetname), pszName))
+			return ed;
+
+	}
+	return &edicts[0];
+	*/
+	return FIND_ENTITY_BY_STRING(entStart, "targetname", pszName);
 }
