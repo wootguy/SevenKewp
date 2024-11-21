@@ -562,8 +562,8 @@ void CApache :: HuntThink( void )
 		}
 
 		// don't fire rockets and gun on easy mode
-		//if (g_iSkillLevel == SKILL_EASY)
-		m_flNextRocket = gpGlobals->time + 10.0;
+		if (gSkillData.sk_apache_rockets)
+			m_flNextRocket = gpGlobals->time + 10.0;
 	}
 
 	UTIL_MakeAimVectors( pev->angles );

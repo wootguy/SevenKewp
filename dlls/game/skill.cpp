@@ -28,13 +28,21 @@ std::unordered_map<std::string, skill_cvar_t*> g_skillCvars;
 #define DECL_SKILL_CVAR(name, type) {{#name, "0", 0, 0, 0}, offsetof(skilldata_t, name), type}
 
 skill_cvar_t skill_cvars[] = {
-	// Agrunt
+	// Alien Grunt
 	DECL_SKILL_CVAR(sk_agrunt_health, CVAR_TYPE_HEALTH),
 	DECL_SKILL_CVAR(sk_agrunt_dmg_punch, CVAR_TYPE_DAMAGE),
 	DECL_SKILL_CVAR(sk_agrunt_hornet_mode, CVAR_TYPE_AI),
 
+	// Alien Slave
+	DECL_SKILL_CVAR(sk_islave_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_islave_dmg_claw, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_islave_dmg_clawrake, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_islave_dmg_zap, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_islave_speed_zap, CVAR_TYPE_AI),
+
 	// Apache
 	DECL_SKILL_CVAR(sk_apache_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_apache_rockets, CVAR_TYPE_AI),
 
 	// Osprey
 	DECL_SKILL_CVAR(sk_osprey_health, CVAR_TYPE_HEALTH),
@@ -66,6 +74,7 @@ skill_cvar_t skill_cvars[] = {
 
 	// Hassassin
 	DECL_SKILL_CVAR(sk_hassassin_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_hassassin_cloak, CVAR_TYPE_HEALTH),
 
 	// Headcrab
 	DECL_SKILL_CVAR(sk_headcrab_health, CVAR_TYPE_HEALTH),
@@ -76,6 +85,8 @@ skill_cvar_t skill_cvars[] = {
 	DECL_SKILL_CVAR(sk_hgrunt_kick, CVAR_TYPE_DAMAGE),
 	DECL_SKILL_CVAR(sk_hgrunt_pellets, CVAR_TYPE_DAMAGE),
 	DECL_SKILL_CVAR(sk_hgrunt_gspeed, CVAR_TYPE_AI),
+	DECL_SKILL_CVAR(sk_hgrunt_gcover, CVAR_TYPE_AI),
+	DECL_SKILL_CVAR(sk_hgrunt_gwait, CVAR_TYPE_AI),
 
 	// HWGrunt
 	DECL_SKILL_CVAR(sk_hwgrunt_health, CVAR_TYPE_HEALTH),
@@ -83,12 +94,6 @@ skill_cvar_t skill_cvars[] = {
 	// Houndeye
 	DECL_SKILL_CVAR(sk_houndeye_health, CVAR_TYPE_HEALTH),
 	DECL_SKILL_CVAR(sk_houndeye_dmg_blast, CVAR_TYPE_DAMAGE),
-
-	// ISlave
-	DECL_SKILL_CVAR(sk_islave_health, CVAR_TYPE_HEALTH),
-	DECL_SKILL_CVAR(sk_islave_dmg_claw, CVAR_TYPE_DAMAGE),
-	DECL_SKILL_CVAR(sk_islave_dmg_clawrake, CVAR_TYPE_DAMAGE),
-	DECL_SKILL_CVAR(sk_islave_dmg_zap, CVAR_TYPE_DAMAGE),
 
 	// Icthyosaur
 	DECL_SKILL_CVAR(sk_ichthyosaur_health, CVAR_TYPE_HEALTH),

@@ -22,13 +22,21 @@ struct skilldata_t
 {
 	int firstMember; // dummy var used for addressing other members
 
-	// Agrunt
+	// Alien grunt
 	float sk_agrunt_health;
 	float sk_agrunt_dmg_punch;
 	float sk_agrunt_hornet_mode;
 
+	// Alien Slave
+	float sk_islave_health;
+	float sk_islave_dmg_claw;
+	float sk_islave_dmg_clawrake;
+	float sk_islave_dmg_zap;
+	float sk_islave_speed_zap;
+
 	// Apache
 	float sk_apache_health;
+	float sk_apache_rockets;
 
 	// Osprey
 	float sk_osprey_health;
@@ -60,6 +68,7 @@ struct skilldata_t
 
 	// Hassassin
 	float sk_hassassin_health;
+	float sk_hassassin_cloak;
 
 	// Headcrab
 	float sk_headcrab_health;
@@ -70,6 +79,8 @@ struct skilldata_t
 	float sk_hgrunt_kick;
 	float sk_hgrunt_pellets;
 	float sk_hgrunt_gspeed;
+	float sk_hgrunt_gcover;
+	float sk_hgrunt_gwait;
 
 	// HWGrunt
 	float sk_hwgrunt_health;
@@ -77,12 +88,6 @@ struct skilldata_t
 	// Houndeye
 	float sk_houndeye_health;
 	float sk_houndeye_dmg_blast;
-
-	// ISlave
-	float sk_islave_health;
-	float sk_islave_dmg_claw;
-	float sk_islave_dmg_clawrake;
-	float sk_islave_dmg_zap;
 
 	// Icthyosaur
 	float sk_ichthyosaur_health;
