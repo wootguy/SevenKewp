@@ -194,15 +194,24 @@ void dump_missing_files() {
 	std::ofstream resfile;
 	const char* suffix = dumpMissing ? ".miss" : ".res";
 	std::string fname = std::string("res/") + STRING(gpGlobals->mapname) + suffix;
-	resfile.open(fname, std::ios_base::app);
+	resfile.open(fname, std::ios_base::trunc);
 
 	if (!resfile.is_open()) {
 		g_engfuncs.pfnServerPrint("Failed to open file in res/ folder (does it exist?)\n");
 		return;
 	}
 
-	for (std::string item : resList) {
+	for (int i = 0; i < (int)resList.size(); i++) {
+		std::string& item = resList[i];
+
+		if (i < 10)
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("Missing: %s\n", item.c_str()));
+
 		resfile << item + "\n";
+	}
+
+	if (resList.size() > 10) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("%d more items...\n", resList.size() - 10));
 	}
 
 	resfile.close();

@@ -159,11 +159,17 @@ int PRECACHE_GENERIC(const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
 
+	std::string soundPath = lowerPath;
+	if (lowerPath.find("sound/") == 0) {
+		soundPath = lowerPath.substr(6);
+	}
+
 	if (g_modelReplacements.find(path) != g_modelReplacements.end()) {
 		path = g_modelReplacements[path].c_str();
 	}
-	if (g_soundReplacements.find(path) != g_soundReplacements.end()) {
-		path = g_soundReplacements[path].c_str();
+	if (g_soundReplacements.find(soundPath) != g_soundReplacements.end()) {
+		lowerPath = "sound/" + g_soundReplacements[soundPath];
+		path = lowerPath.c_str();
 	}
 
 	if (g_serveractive) {
