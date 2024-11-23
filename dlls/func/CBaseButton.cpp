@@ -318,6 +318,10 @@ void CBaseButton::ButtonUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 	if (m_toggle_state == TS_GOING_UP || m_toggle_state == TS_GOING_DOWN)
 		return;
 
+	if (!RunInventoryRules(pCaller)) {
+		return;
+	}
+
 	m_hActivator = pActivator;
 	if (m_toggle_state == TS_AT_TOP)
 	{
@@ -376,6 +380,10 @@ void CBaseButton::ButtonTouch(CBaseEntity* pOther)
 	{
 		// play button locked sound
 		PlayLockSounds(pev, &m_ls, TRUE, TRUE);
+		return;
+	}
+
+	if (!RunInventoryRules(pOther)) {
 		return;
 	}
 

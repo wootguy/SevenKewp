@@ -35,7 +35,12 @@ int	CFuncTankControls::ObjectCaps(void)
 
 
 void CFuncTankControls::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
-{ // pass the Use command onto the controls
+{ 
+	if (!RunInventoryRules(pCaller)) {
+		return;
+	}
+
+	// pass the Use command onto the controls
 	if (m_hTank)
 		m_hTank->Use(pActivator, pCaller, useType, value);
 

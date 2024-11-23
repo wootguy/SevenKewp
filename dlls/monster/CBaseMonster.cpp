@@ -15,6 +15,8 @@
 #include "CMonsterMaker.h"
 #include "hlds_hooks.h"
 #include "lagcomp.h"
+#include "CItemInventory.h"
+#include "CBasePlayer.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -7594,5 +7596,161 @@ void CBaseMonster::LogPlayerDamage(entvars_t* attacker, float damage) {
 			m_attackers[i].damageDealt = damage;
 			break;
 		}
+	}
+}
+
+CItemInventory* CBaseMonster::GetInventoryItem(const char* name) {
+	CItemInventory* item = m_inventory ? m_inventory.GetEntity()->MyInventoryPointer() : NULL;
+
+	while (item) {
+		if (item->m_item_name && !strcmp(name, STRING(item->m_item_name))) {
+			return item;
+		}
+
+		item = item->m_pNext ? item->m_pNext.GetEntity()->MyInventoryPointer() : NULL;
+	}
+
+	return NULL;
+}
+
+std::vector<CItemInventory*> CBaseMonster::GetInventoryGroupItems(const char* groupName) {
+	std::vector<CItemInventory*> groupItems;
+	CItemInventory* item = m_inventory ? m_inventory.GetEntity()->MyInventoryPointer() : NULL;
+
+	std::vector<std::string> names = splitString(groupName, " ");
+
+	while (item) {
+		for (int i = 0; item->m_item_group && i < (int)names.size(); i++) {
+			if (!strcmp(names[i].c_str(), STRING(item->m_item_group))) {
+				groupItems.push_back(item);
+				break;
+			}
+		}
+
+		item = item->m_pNext ? item->m_pNext.GetEntity()->MyInventoryPointer() : NULL;
+	}
+
+	return groupItems;
+}
+
+int CBaseMonster::CountInventoryItems() {
+	if (!m_inventory) {
+		return 0;
+	}
+
+	CItemInventory* item = m_inventory.GetEntity()->MyInventoryPointer();
+	int count = 1;
+
+	while (item->m_pNext) {
+		count++;
+		item = item->m_pNext.GetEntity()->MyInventoryPointer();
+	}
+
+	return count;
+}
+
+void CBaseMonster::ApplyEffects() {
+	CBasePlayer* plr = IsPlayer() ? (CBasePlayer*)this : NULL;
+
+	Vector total_glow = g_vecZero;
+	float total_damage = 0;
+	float total_respiration = 0;
+	float total_friction = m_friction_modifier;
+	float total_gravity = m_gravity_modifier;
+	float total_speed = m_speed_modifier;
+	bool total_block_weapon = false;
+	bool total_invulnerable = false;
+	bool total_invisible = false;
+	bool total_nonsolid = false;
+	bool any_permanent = false;
+
+	CItemInventory* item = m_inventory ? m_inventory.GetEntity()->MyInventoryPointer() : NULL;
+	while (item) {
+		if (!item->m_effects_wait_until_activated || item->m_is_active) {
+			total_glow = total_glow + item->m_effect_glow;
+			total_block_weapon |= item->m_effect_block_weapons;
+			total_invulnerable |= item->m_effect_invulnerable;
+			total_invisible |= item->m_effect_invisible;
+			total_nonsolid |= item->m_effect_nonsolid;
+			total_respiration += item->m_effect_respiration;
+
+			if (item->m_effect_friction) {
+				if (!total_friction) {
+					total_friction = item->m_effect_friction;
+				}
+				else {
+					total_friction *= item->m_effect_friction;
+				}
+			}
+
+			if (item->m_effect_gravity) {
+				if (!total_gravity) {
+					total_gravity = item->m_effect_gravity;
+				}
+				else {
+					total_gravity *= item->m_effect_gravity;
+				}
+			}
+
+			if (item->m_effect_speed) {
+				if (!total_speed) {
+					total_speed = item->m_effect_speed;
+				}
+				else {
+					total_speed *= item->m_effect_speed;
+				}
+			}
+
+			if (item->m_effect_damage) {
+				if (!total_damage) {
+					total_damage = item->m_effect_damage;
+				}
+				else {
+					total_damage *= item->m_effect_damage;
+				}
+			}
+		}
+
+		any_permanent |= item->m_effects_permanent;
+
+		item = item->m_pNext ? item->m_pNext.GetEntity()->MyInventoryPointer() : NULL;
+	}
+
+	if (any_permanent) {
+		ALERT(at_console, "Permanent item effects not implemented\n");
+	}
+
+	if (total_glow != g_vecZero) {
+		pev->rendermode = kRenderNormal;
+		pev->renderfx = kRenderFxGlowShell;
+		pev->rendercolor.x = V_min(255, total_glow.x);
+		pev->rendercolor.y = V_min(255, total_glow.y);
+		pev->rendercolor.z = V_min(255, total_glow.z);
+		pev->renderamt = 1;
+	}
+	else {
+		pev->renderfx = kRenderFxNone;
+		pev->rendercolor = g_vecZero;
+		pev->renderamt = 0;
+	}
+
+	pev->takedamage = total_invulnerable ? DAMAGE_NO : DAMAGE_YES;
+
+	if (total_invisible) {
+		pev->flags |= FL_NOTARGET;
+	}
+	else {
+		pev->flags &= ~FL_NOTARGET;
+	}
+
+	pev->solid = total_nonsolid ? SOLID_NOT : SOLID_SLIDEBOX;
+	pev->friction = total_friction;
+	pev->gravity = total_gravity;
+	pev->maxspeed = total_speed * sv_maxspeed->value;
+	m_damage_modifier = total_damage ? total_damage : 1.0f;
+
+	if (plr) {
+		plr->DisableWeapons(total_block_weapon);
+		plr->m_airTimeModifier = total_respiration;
 	}
 }

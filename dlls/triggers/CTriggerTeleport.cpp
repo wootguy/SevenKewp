@@ -81,6 +81,10 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 		}
 	}
 
+	if (!RunInventoryRules(pOther)) {
+		return;
+	}
+
 	edict_t* pentTarget = NULL;
 	std::vector<edict_t*> targets;
 	edict_t* ent = NULL;

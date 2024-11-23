@@ -526,6 +526,10 @@ void CBaseDoor::DoorTouch(CBaseEntity* pOther)
 		return;
 	}
 
+	if (!RunInventoryRules(pOther)) {
+		return;
+	}
+
 	m_hActivator = pOther;// remember who activated the door
 
 	if (DoorActivate(USE_TOGGLE))
@@ -543,6 +547,10 @@ void CBaseDoor::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 	bool isStopped = m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_AT_TOP;
 	bool doorOpening = m_toggle_state == TS_GOING_UP || m_toggle_state == TS_AT_TOP;
 	bool doorClosing = m_toggle_state == TS_GOING_DOWN || m_toggle_state == TS_AT_BOTTOM;
+
+	if (!RunInventoryRules(pCaller)) {
+		return;
+	}
 
 	if (m_iObeyTriggerMode == DOOR_OBEY_NO) {
 		// if not ready to be used, ignore "use" command.

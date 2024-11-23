@@ -8,6 +8,7 @@ class CBasePlayerWeapon;
 class CTalkSquadMonster;
 class CBaseToggle;
 class CBaseAnimating;
+class CItemInventory;
 
 void* GET_PRIVATE(const edict_t* pent);
 
@@ -75,6 +76,26 @@ template <class T> T* GetClassPtr(T* a)
 	return allocate ? (T*)RelocateEntIdx(a) : a;
 }
 
+struct InventoryRules {
+	string_t	item_name_required; 			// Inventory : Require these item(s)
+	string_t	item_group_required;			// Inventory : Require an item from these group(s)
+	int			item_group_required_num;		// Inventory : Number of item(s) from the required group(s) required(0 = all)
+	string_t	item_name_canthave; 			// Inventory : Must not have these item(s)
+	string_t	item_group_canthave;			// Inventory : Must not have an item in these group(s)
+	int			item_group_canthave_num; 		// Inventory : Number of item(s) from the can't have group(s) (0 = all)
+	bool		pass_ignore_use_triggers; 		// On pass : Ignore item's on use triggers?
+	string_t	pass_drop_item_name; 			// On pass : Drop item(s)
+	string_t	pass_drop_item_group; 			// On pass : Drop item(s) in these group(s)
+	bool		pass_ignore_drop_triggers;		// On pass : Ignore item's on drop triggers?
+	string_t	pass_return_item_name;			// On pass : Return item(s)
+	string_t	pass_return_item_group; 		// On pass : Return item(s) in these group(s)
+	bool		pass_ignore_return_triggers;	// On pass : Ignore item's on return triggers?
+	string_t	pass_destroy_item_name; 		// On pass : Destroy item(s)
+	string_t	pass_destroy_item_group;		// On pass : Destroy item(s) in these group(s)
+	bool		pass_ignore_destroy_triggers; 	// On pass : Ignore item's on destroy triggers?
+	string_t	target_on_fail; 				// Target : Inventory rules failed
+};
+
 //
 // Base Entity.  All entity types derive from this
 //
@@ -127,6 +148,7 @@ public:
 	virtual CTalkSquadMonster* MyTalkSquadMonsterPointer(void) { return NULL; }
 	virtual CBaseToggle* MyTogglePointer(void) { return NULL; }
 	virtual CBaseAnimating* MyAnimatingPointer(void) { return NULL; }
+	virtual CItemInventory* MyInventoryPointer(void) { return NULL; }
 	virtual	int		GetToggleState(void) { return TS_AT_TOP; }
 	virtual void	AddPoints(int score, BOOL bAllowNegativeScore) {}
 	virtual void	AddPointsToTeam(int score, BOOL bAllowNegativeScore) {}
@@ -328,6 +350,8 @@ public:
 		else m_hidePlayers |= PLRBIT(player);
 	}
 
+	bool RunInventoryRules(CBaseEntity* ent); // returns false if entity inventory forbids activation
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;
@@ -347,10 +371,15 @@ public:
 	int m_fireState;
 	int	m_Classify;		// Classify, to let mappers override the default
 
+	InventoryRules	m_inventoryRules;
+
 	uint32_t m_pasPlayers; // players in the audible set of this entity (invalid for invisible ents)
 	uint32_t m_pvsPlayers; // players in the visible set of this entity (invalid for invisible ents)
 	uint32_t m_netPlayers; // players this entity has been networked to (AddToFullPack returned 1)
 	uint32_t m_hidePlayers; // players this entity will be hidden from (AddToFullPack)
+
+private:
+	bool TestInventoryRules(CBaseMonster* mon, std::unordered_set<CItemInventory*>& usedItems, const char** errorMsg);
 };
 
 inline void* GET_PRIVATE(const edict_t* pent)

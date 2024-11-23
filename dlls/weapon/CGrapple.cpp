@@ -377,7 +377,8 @@ void CGrapple::PrimaryAttack()
 						ClearMultiDamage();
 
 						//float flDamage = GetSkillFloat("plr_grapple"sv);
-						float flDamage = 50;
+						float dmg_mult = m_pPlayer->m_damage_modifier;
+						float flDamage = 50 * dmg_mult;
 
 						pHit->TraceAttack(this->pev, flDamage, gpGlobals->v_forward, &tr, DMG_ALWAYSGIB | DMG_CLUB);
 

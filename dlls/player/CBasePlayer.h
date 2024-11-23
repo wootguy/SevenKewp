@@ -247,6 +247,10 @@ public:
 	bool m_headshot; // last TakeDamage was a headshot
 	Vector m_headshotDir; // direction of headshot
 
+	float m_lastInteractMessage; // last time an interaction message was sent to this player
+	bool m_weaponsDisabled; // if set, disallow using weapons (besides the inventory weapon)
+	float m_airTimeModifier; // how much longer/shorter a player can hold their breath
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
@@ -319,6 +323,7 @@ public:
 	void DropPlayerItem ( char *pszItemName );
 	void DropAmmo(bool secondary);
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
+	CBasePlayerItem* GetNamedPlayerItem(const char* pszItemName);
 	BOOL HasNamedPlayerItem( const char *pszItemName );
 	BOOL HasWeapons( void );// do I have ANY weapons?
 	void SelectPrevItem( int iItem );
@@ -329,6 +334,7 @@ public:
 	void ItemPostFrame( void );
 	void GiveNamedItem( const char *szName );
 	void EnableControl(BOOL fControl);
+	void DisableWeapons(bool disable);
 
 	int  GiveAmmo( int iAmount, const char *szName, int iMax );
 	void SendAmmoUpdate(void);
@@ -434,6 +440,14 @@ public:
 
 	// get ID assigned by the server (starts at 1, and every new player increments this by 1)
 	int GetUserID();
+
+	// show a message to help the understand what is happening in the game
+	// e.g. Why they can't pick up an item or have a monster follow them
+	void ShowInteractMessage(const char* msg);
+
+	// if death=true, only drop items that are not marked to keep on death
+	// if respawn=true, only drop items that are not marked to keep on respawn
+	void DropAllInventoryItems(bool deathDrop = false, bool respawnDrop = false);
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

@@ -10,6 +10,8 @@
 #include	"nodes.h"
 #include "lagcomp.h"
 #include "monsters.h"
+#include "CItemInventory.h"
+#include "CBasePlayer.h"
 
 extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;
@@ -168,6 +170,91 @@ void CBaseEntity::KeyValue(KeyValueData* pkvd) {
 	else if (FStrEq(pkvd->szKeyName, "classify"))
 	{
 		SetClassify(atoi(pkvd->szValue));
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "item_name_required"))
+	{
+		m_inventoryRules.item_name_required = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "item_group_required"))
+	{
+		m_inventoryRules.item_group_required = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "item_group_required_num"))
+	{
+		m_inventoryRules.item_group_required_num = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "item_name_canthave"))
+	{
+		m_inventoryRules.item_name_canthave = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "item_group_canthave"))
+	{
+		m_inventoryRules.item_group_canthave = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "item_group_canthave_num"))
+	{
+		m_inventoryRules.item_group_canthave_num = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "pass_ignore_use_triggers"))
+	{
+		m_inventoryRules.pass_ignore_use_triggers = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "pass_drop_item_name"))
+	{
+		m_inventoryRules.pass_drop_item_name = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "pass_drop_item_group"))
+	{
+		m_inventoryRules.pass_drop_item_group = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "pass_ignore_drop_triggers"))
+	{
+		m_inventoryRules.pass_ignore_drop_triggers = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "pass_return_item_name"))
+	{
+		m_inventoryRules.pass_return_item_name = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "pass_return_item_group"))
+	{
+		m_inventoryRules.pass_return_item_group = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "pass_ignore_return_triggers"))
+	{
+		m_inventoryRules.pass_ignore_return_triggers = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "pass_destroy_item_name"))
+	{
+		m_inventoryRules.pass_destroy_item_name = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "pass_destroy_item_group"))
+	{
+		m_inventoryRules.pass_destroy_item_group = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "pass_ignore_destroy_triggers"))
+	{
+		m_inventoryRules.pass_ignore_destroy_triggers = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "target_on_fail"))
+	{
+		m_inventoryRules.target_on_fail = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else {
@@ -662,6 +749,9 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	ClearMultiDamage();
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
 
+	float dmg_mult = IsMonster() ? ((CBaseMonster*)this)->m_damage_modifier : 1.0f;
+	iDamage *= dmg_mult;
+
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)
 	{
 		//Use player's random seed.
@@ -745,24 +835,24 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			{
 			default:
 			case BULLET_PLAYER_9MM:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_9mm_bullet, vecDir, &tr, DMG_BULLET);
+				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_9mm_bullet * dmg_mult, vecDir, &tr, DMG_BULLET);
 				break;
 
 			case BULLET_PLAYER_MP5:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_9mmAR_bullet, vecDir, &tr, DMG_BULLET);
+				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_9mmAR_bullet * dmg_mult, vecDir, &tr, DMG_BULLET);
 				break;
 
 			case BULLET_PLAYER_BUCKSHOT:
 				// make distance based!
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_buckshot, vecDir, &tr, DMG_BULLET);
+				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_buckshot * dmg_mult, vecDir, &tr, DMG_BULLET);
 				break;
 
 			case BULLET_PLAYER_357:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_357_bullet, vecDir, &tr, DMG_BULLET);
+				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_357_bullet * dmg_mult, vecDir, &tr, DMG_BULLET);
 				break;
 
 			case BULLET_NONE: // FIX 
-				pEntity->TraceAttack(pevAttacker, 50, vecDir, &tr, DMG_CLUB);
+				pEntity->TraceAttack(pevAttacker, 50 * dmg_mult, vecDir, &tr, DMG_CLUB);
 				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
 				// only decal glass
 				if (!FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
@@ -1000,4 +1090,159 @@ bool CBaseEntity::CanReach(CBaseEntity* toucher) {
 	bool enteredItemBox = boxesIntersect(pev->absmin, pev->absmax, tr.vecEndPos, tr.vecEndPos);
 	
 	return hitItemSurface || enteredItemBox;
+}
+
+bool CBaseEntity::TestInventoryRules(CBaseMonster* mon, std::unordered_set<CItemInventory*>& usedItems, const char** errorMsg) {
+	InventoryRules& rules = m_inventoryRules;
+
+	if (rules.item_name_required) {
+		std::vector<std::string> names = splitString(STRING(rules.item_name_required), " ");
+		for (const std::string& name : names) {
+			CItemInventory* item = mon->GetInventoryItem(name.c_str());
+			if (!item) {
+				*errorMsg = "You lack a required item.";
+				return false;
+			}
+			usedItems.insert(item);
+		}
+	}
+
+	if (rules.item_group_required) {
+		std::vector<CItemInventory*> items = mon->GetInventoryGroupItems(STRING(rules.item_group_required));
+
+		int requireCount = rules.item_group_required_num;
+		if (requireCount == 0) {
+			requireCount = CountAllItemsInGroups(STRING(rules.item_group_required));
+		}
+
+		if ((int)items.size() < requireCount) {
+			if (requireCount == 1)
+				*errorMsg = "You lack a required item.";
+			else
+				*errorMsg = "You lack required items.";
+			return false;
+		}
+	}
+
+	if (rules.item_name_canthave) {
+		std::vector<std::string> names = splitString(STRING(rules.item_name_canthave), " ");
+		for (const std::string& name : names) {
+			if (mon->GetInventoryItem(name.c_str())) {
+				*errorMsg = "You are holding a forbidden item.";
+				return false;
+			}
+		}
+	}
+
+	if (rules.item_group_canthave) {
+		std::vector<CItemInventory*> items = mon->GetInventoryGroupItems(STRING(rules.item_group_canthave));
+
+		int forbidCount = rules.item_group_canthave_num;
+		if (forbidCount == 0) {
+			forbidCount = CountAllItemsInGroups(STRING(rules.item_group_canthave));
+		}
+
+		if ((int)items.size() >= forbidCount) {
+			*errorMsg = "You are holding forbidden items.";
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool CBaseEntity::RunInventoryRules(CBaseEntity* ent) {
+	CBaseMonster* mon = ent ? ent->MyMonsterPointer() : NULL;
+
+	if (!mon) {
+		return true; // non-monsters entities don't have inventories to test
+	}
+
+	InventoryRules& rules = m_inventoryRules;
+	std::unordered_set<CItemInventory*> usedItems;
+	const char* errorMsg = "";
+
+	if (!TestInventoryRules(mon, usedItems, &errorMsg)) {
+		if (rules.target_on_fail) {
+			FireTargets(STRING(rules.target_on_fail), ent, this, USE_TOGGLE, 0.0f);
+		}
+
+		if (mon->IsPlayer()) {
+			CBasePlayer* plr = (CBasePlayer*)mon;
+			plr->ShowInteractMessage(UTIL_VarArgs("%s: %s", DisplayName(), errorMsg));
+		}
+
+		return false;
+	}
+
+	if (!rules.pass_ignore_use_triggers) {
+		for (CItemInventory* item : usedItems) {
+			item->FireInvTargets(ent, item->m_target_on_use);
+		}
+	}
+
+	if (rules.pass_drop_item_name) {
+		std::vector<std::string> names = splitString(STRING(rules.pass_drop_item_name), " ");
+		for (const std::string& name : names) {
+			CItemInventory* item = mon->GetInventoryItem(name.c_str());
+			if (item) {
+				item->Detach(!rules.pass_ignore_drop_triggers);
+			}
+		}
+	}
+
+	if (rules.pass_drop_item_group) {
+		std::vector<CItemInventory*> items = mon->GetInventoryGroupItems(STRING(rules.pass_drop_item_group));
+		for (CItemInventory* item : items) {
+			item->Detach(!rules.pass_ignore_drop_triggers);
+		}
+	}
+
+	if (rules.pass_return_item_name) {
+		std::vector<std::string> names = splitString(STRING(rules.pass_return_item_name), " ");
+		for (const std::string& name : names) {
+			CItemInventory* item = mon->GetInventoryItem(name.c_str());
+			if (item) {
+				item->Detach(!rules.pass_ignore_return_triggers);
+				item->ReturnToSpawnPosition();
+			}
+		}
+	}
+
+	if (rules.pass_return_item_group) {
+		std::vector<CItemInventory*> items = mon->GetInventoryGroupItems(STRING(rules.pass_return_item_group));
+		for (CItemInventory* item : items) {
+			item->Detach(!rules.pass_ignore_return_triggers);
+			item->ReturnToSpawnPosition();
+		}
+	}
+
+	if (rules.pass_destroy_item_name) {
+		std::vector<std::string> names = splitString(STRING(rules.pass_destroy_item_name), " ");
+		for (const std::string& name : names) {
+			CItemInventory* item = mon->GetInventoryItem(name.c_str());
+			if (item) {
+				item->Detach(false);
+				if (rules.pass_ignore_destroy_triggers)
+					memset(&item->m_target_on_destroy, 0, sizeof(InvTriggerTargets));
+				item->SetTouch(NULL);
+				item->SetUse(NULL);
+				UTIL_Remove(item);
+			}
+		}
+	}
+
+	if (rules.pass_destroy_item_group) {
+		std::vector<CItemInventory*> items = mon->GetInventoryGroupItems(STRING(rules.pass_destroy_item_group));
+		for (CItemInventory* item : items) {
+			item->Detach(false);
+			if (rules.pass_ignore_destroy_triggers)
+				memset(&item->m_target_on_destroy, 0, sizeof(InvTriggerTargets));
+			item->SetTouch(NULL);
+			item->SetUse(NULL);
+			UTIL_Remove(item);
+		}
+	}
+
+	return true;
 }

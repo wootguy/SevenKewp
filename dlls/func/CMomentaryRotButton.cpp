@@ -128,6 +128,10 @@ float CMomentaryRotButton::GetRotProgress(Vector angles) {
 // current, not future position.
 void CMomentaryRotButton::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	if (!RunInventoryRules(pCaller)) {
+		return;
+	}
+
 	pev->ideal_yaw = GetRotProgress(pev->angles);
 
 	UpdateAllButtons(pev->ideal_yaw, 1);

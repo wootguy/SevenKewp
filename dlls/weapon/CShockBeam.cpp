@@ -181,7 +181,10 @@ void CShockBeam::WaterExplodeThink()
 
 	Explode();
 
-	::RadiusDamage( pev->origin, pev, pOwner, 100.0, 150.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
+	CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
+	float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+
+	::RadiusDamage( pev->origin, pev, pOwner, 100.0 * dmg_mult, 150.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, QUIET_GUN_VOLUME, 0.1);
 
 	UTIL_Remove( this );
@@ -203,7 +206,10 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 
 		ClearMultiDamage();
 
-		const auto damage = gSkillData.sk_plr_shockrifle;
+		CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
+		float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+
+		float damage = gSkillData.sk_plr_shockrifle * dmg_mult;
 
 		auto bitsDamageTypes = DMG_SHOCK;
 
@@ -270,7 +276,10 @@ void CShockBeam::Explode()
 		m_hBeam2 = nullptr;
 	}
 
-	pev->dmg = 40;
+	CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
+	float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+
+	pev->dmg = 40 * dmg_mult;
 
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
 	WRITE_BYTE( TE_DLIGHT );
@@ -316,10 +325,9 @@ CShockBeam* CShockBeam::CreateShockBeam( const Vector& vecOrigin, const Vector& 
 	pBeam->pev->velocity.z = -pBeam->pev->velocity.z;
 
 	pBeam->pev->classname = MAKE_STRING( "shock_beam" );
+	pBeam->pev->owner = pOwner->edict();
 
 	pBeam->Spawn();
-
-	pBeam->pev->owner = pOwner->edict();
 
 	return pBeam;
 }

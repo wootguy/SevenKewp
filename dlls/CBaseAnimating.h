@@ -1,6 +1,6 @@
 #pragma once
 #include "CBaseDelay.h"
-#include "monster/monsterevent.h"
+#include "monsterevent.h"
 
 class EXPORT CBaseAnimating : public CBaseDelay
 {

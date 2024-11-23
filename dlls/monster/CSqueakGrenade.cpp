@@ -122,7 +122,10 @@ void CSqueakGrenade :: Spawn( void )
 	pev->gravity		= 0.5;
 	pev->friction		= 0.5;
 
-	pev->dmg = gSkillData.sk_snark_dmg_pop;
+	CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
+	float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+
+	pev->dmg = gSkillData.sk_snark_dmg_pop * dmg_mult;
 
 	m_flDie = gpGlobals->time + SQUEEK_DETONATE_DELAY;
 
@@ -341,9 +344,12 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 			// and it's not another squeakgrenade
 			if (tr.pHit->v.modelindex != pev->modelindex)
 			{
+				CBaseMonster* owner = m_hOwner->MyMonsterPointer();
+				float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+
 				// ALERT( at_console, "hit enemy\n");
 				ClearMultiDamage( );
-				pOther->TraceAttack(pev, gSkillData.sk_snark_dmg_bite, gpGlobals->v_forward, &tr, DMG_SLASH ); 
+				pOther->TraceAttack(pev, gSkillData.sk_snark_dmg_bite*dmg_mult, gpGlobals->v_forward, &tr, DMG_SLASH );
 				if (m_hOwner != NULL)
 					ApplyMultiDamage( pev, m_hOwner->pev );
 				else
