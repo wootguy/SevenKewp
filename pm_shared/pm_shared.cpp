@@ -3410,7 +3410,7 @@ void PM_Move ( struct playermove_s *ppmove, int server )
 	// reset friction after each movement. FrictionModifier Triggers work still.
 	if (pmove->movetype == MOVETYPE_WALK)
 	{
-		pmove->friction = 1.0f;
+		//pmove->friction = 1.0f;
 	}
 }
 

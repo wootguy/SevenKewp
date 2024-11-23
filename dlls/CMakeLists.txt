@@ -165,6 +165,7 @@ set(ENV_SRC
 
 set(ITEM_HDR
 	item/CItem.h
+	item/CItemInventory.h
 )
 set(ITEM_SRC
 	item/CAirtank.cpp
@@ -173,6 +174,7 @@ set(ITEM_SRC
 	item/CItemAntidote.cpp
 	item/CItemBattery.cpp
 	item/CItemGeneric.cpp
+	item/CItemInventory.cpp
 	item/CItemLongJump.cpp
 	item/CItemSecurity.cpp
 	item/CItemSoda.cpp
@@ -360,6 +362,7 @@ set(WEAPON_HDR
 	weapon/CPipewrench.h
 	weapon/CShockRifle.h
 	weapon/CSporeLauncher.h
+	weapon/CWeaponInventory.h
 	weapon/weapons.h
 )
 set(WEAPON_SRC
@@ -392,6 +395,7 @@ set(WEAPON_SRC
 	weapon/CSporeLauncher.cpp
 	weapon/weapons.cpp
 	weapon/CGlock.cpp
+	weapon/CWeaponInventory.cpp
 	weapon/combat.cpp
 )
 set(AMMO_HDR

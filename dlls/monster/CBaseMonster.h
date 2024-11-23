@@ -17,7 +17,7 @@
 #define BASEMONSTER_H
 
 #include "CBaseToggle.h"
-#include "monster/schedule.h"
+#include "schedule.h"
 
 class CSound;
 
@@ -160,6 +160,13 @@ public:
 	EHANDLE m_lastDamageEnt;
 
 	PlayerAttackInfo m_attackers[32]; // players that attacked this entity
+	EHANDLE m_inventory;
+
+	float m_friction_modifier; // friction modifier used in cumulative effects
+	float m_gravity_modifier; // gravity modifier used in cumulative effects
+	float m_speed_modifier; // speed modifier used in cumulative effects
+	float m_damage_modifier; // attack damage modifier (set automatically by inventory items)
+	float m_last_friction_trigger_touch; // last time this entity touched a friction trigger
 
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
@@ -433,6 +440,16 @@ public:
 	void InitModel();
 	virtual void Nerf(); // reduces monster health and/or spawn count according to cvars
 	void LogPlayerDamage(entvars_t* attacker, float damage);
+
+	CItemInventory* GetInventoryItem(const char* itemName);
+
+	// get inventory items in group names (separated by spaces)
+	std::vector<CItemInventory*> GetInventoryGroupItems(const char* groupNames);
+
+	int CountInventoryItems();
+
+	// applies cumulative effects from inventory, friction, and gravity triggers
+	void ApplyEffects();
 };
 
 

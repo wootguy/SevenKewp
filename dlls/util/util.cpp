@@ -1307,7 +1307,7 @@ void UTIL_ScreenFade( CBaseEntity *pEntity, const Vector &color, float fadeTime,
 // client crashes if lines are longer than ~80 characters
 // server crashes if sending text > 511 characters
 // so truncate and insert newlines to prevent that
-const char* BreakupLongLines(const char* pMessage) {
+const char* BreakupLongLines(const char* pMessage, int lineLength=79) {
 	static char tmp[512];
 	static char tmp2[512];
 
@@ -1319,7 +1319,7 @@ const char* BreakupLongLines(const char* pMessage) {
 
 	int len = strlen(pMessage);
 
-	if (len >= 79) {
+	if (len >= lineLength) {
 		int lastNewline = 0;
 		int lastSpace = 0;
 		int lastSpaceIdx = 0;
@@ -1333,12 +1333,12 @@ const char* BreakupLongLines(const char* pMessage) {
 				lastSpace = i;
 				lastSpaceIdx = idx;
 			}
-			if (i - lastNewline >= 79) {
+			if (i - lastNewline >= lineLength) {
 				if (idx + 1 >= 511) {
 					break;
 				}
 
-				if (i - lastSpaceIdx < 60) {
+				if (i - lastSpaceIdx < V_max(1, lineLength-20)) {
 					// was there a somewhat recent space? Break the line
 					// and reiterate from there so that words stay intact
 					i = lastSpace;
@@ -1450,6 +1450,10 @@ void UTIL_ClientPrintAll(PRINT_TYPE print_type, const char *msg )
 
 void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char * msg)
 {
+	if (print_type == print_center) {
+		msg = BreakupLongLines(msg, 40);
+	}
+
 	if (!client) {
 		g_engfuncs.pfnServerPrint(msg);
 		return;

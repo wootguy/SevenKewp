@@ -109,13 +109,16 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 		// UNDONE: this needs to call TraceAttack instead
 		ClearMultiDamage( );
 
+		CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
+		float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+
 		if ( pOther->IsPlayer() )
 		{
-			pOther->TraceAttack(pevOwner, gSkillData.sk_plr_xbow_bolt_client, pev->velocity.Normalize(), &tr, DMG_NEVERGIB ); 
+			pOther->TraceAttack(pevOwner, gSkillData.sk_plr_xbow_bolt_client*dmg_mult, pev->velocity.Normalize(), &tr, DMG_NEVERGIB );
 		}
 		else
 		{
-			pOther->TraceAttack(pevOwner, gSkillData.sk_plr_xbow_bolt_monster, pev->velocity.Normalize(), &tr, DMG_BULLET | DMG_NEVERGIB );
+			pOther->TraceAttack(pevOwner, gSkillData.sk_plr_xbow_bolt_monster*dmg_mult, pev->velocity.Normalize(), &tr, DMG_BULLET | DMG_NEVERGIB );
 		}
 
 		ApplyMultiDamage( pev, pevOwner );
@@ -379,8 +382,11 @@ void CCrossbow::FireSniperBolt()
 #ifndef CLIENT_DLL
 	if ( tr.pHit->v.takedamage )
 	{
+		float dmg_mult = m_pPlayer->m_damage_modifier;
+
 		ClearMultiDamage( );
-		CBaseEntity::Instance(tr.pHit)->TraceAttack(m_pPlayer->pev, gSkillData.sk_plr_xbow_sniper_bullet, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB );
+		CBaseEntity::Instance(tr.pHit)->TraceAttack(m_pPlayer->pev,
+			gSkillData.sk_plr_xbow_sniper_bullet * dmg_mult, vecDir, &tr, DMG_BULLET | DMG_NEVERGIB );
 		ApplyMultiDamage( pev, m_pPlayer->pev );
 	}
 #endif

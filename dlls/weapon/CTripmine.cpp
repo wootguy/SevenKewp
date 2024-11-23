@@ -112,8 +112,11 @@ void CTripmineGrenade :: Spawn( void )
 	SetThink( &CTripmineGrenade::PowerupThink );
 	pev->nextthink = gpGlobals->time + 0.2;
 
+	CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
+	float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+
 	pev->takedamage = DAMAGE_YES;
-	pev->dmg = gSkillData.sk_plr_tripmine;
+	pev->dmg = gSkillData.sk_plr_tripmine * dmg_mult;
 	pev->health = 1; // don't let die normally
 
 	if (pev->owner != NULL)

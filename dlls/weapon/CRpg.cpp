@@ -120,11 +120,11 @@ CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBa
 
 	UTIL_SetOrigin( pRocket->pev, vecOrigin );
 	pRocket->pev->angles = vecAngles;
+	pRocket->pev->owner = pOwner->edict();
 	pRocket->Spawn();
 	pRocket->SetTouch( &CRpgRocket::RocketTouch );
 	pRocket->m_hLauncher = pLauncher;// remember what RPG fired me. 
 	pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
-	pRocket->pev->owner = pOwner->edict();
 
 	return pRocket;
 }
@@ -156,7 +156,10 @@ void CRpgRocket :: Spawn( void )
 
 	pev->nextthink = gpGlobals->time + 0.4;
 
-	pev->dmg = gSkillData.sk_plr_rpg;
+	CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
+	float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+
+	pev->dmg = gSkillData.sk_plr_rpg * dmg_mult;
 }
 
 //=========================================================

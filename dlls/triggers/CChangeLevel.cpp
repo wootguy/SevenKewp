@@ -230,6 +230,10 @@ void CChangeLevel::TouchChangeLevel(CBaseEntity* pOther)
 	if (!FClassnameIs(pOther->pev, "player"))
 		return;
 
+	if (!RunInventoryRules(pOther)) {
+		return;
+	}
+
 	ChangeLevelNow(pOther);
 }
 
