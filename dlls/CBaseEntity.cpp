@@ -750,7 +750,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	ClearMultiDamage();
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
 
-	float dmg_mult = IsMonster() ? ((CBaseMonster*)this)->m_damage_modifier : 1.0f;
+	float dmg_mult = GetDamageModifier();
 	iDamage *= dmg_mult;
 
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)

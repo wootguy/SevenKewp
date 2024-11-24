@@ -5935,3 +5935,8 @@ void CBasePlayer::Revive() {
 		g_pGameRules->GetNextBestWeapon(this, NULL);
 	}
 }
+
+float CBasePlayer::GetDamageModifier() {
+	float weapon_damage_mult = m_pActiveItem ? m_pActiveItem->GetDamageModifier() : 1.0f;
+	return CBaseMonster::GetDamageModifier() * weapon_damage_mult;
+}

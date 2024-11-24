@@ -213,7 +213,7 @@ int CCrowbar::Swing( int fFirst )
 
 		ClearMultiDamage( );
 
-		float dmg_mult = m_pPlayer->m_damage_modifier;
+		float dmg_mult = GetDamageModifier();
 
 		// JoshA: Changed from < -> <= to fix the full swing logic since client weapon prediction.
 		// -1.0f + 1.0f = 0.0f. UTIL_WeaponTimeBase is always 0 with client weapon prediction (0 time base vs curtime base)

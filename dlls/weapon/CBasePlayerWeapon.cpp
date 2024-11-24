@@ -789,3 +789,7 @@ void CBasePlayerWeapon::SolidifyNearbyCorpses(bool solidState) {
 		}
 	}
 }
+
+float CBasePlayerWeapon::GetDamageModifier() {
+	return pev->dmg ? pev->dmg : 1.0f;
+}

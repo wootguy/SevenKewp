@@ -352,6 +352,8 @@ public:
 
 	bool RunInventoryRules(CBaseEntity* ent); // returns false if entity inventory forbids activation
 
+	virtual float GetDamageModifier() { return 1.0f; }
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;

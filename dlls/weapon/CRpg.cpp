@@ -156,9 +156,7 @@ void CRpgRocket :: Spawn( void )
 
 	pev->nextthink = gpGlobals->time + 0.4;
 
-	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
-	CBaseMonster* ownerMon = owner ? owner->MyMonsterPointer() : NULL;
-	float dmg_mult = ownerMon ? ownerMon->m_damage_modifier : 1.0f;
+	float dmg_mult = GetDamageModifier();
 
 	pev->dmg = gSkillData.sk_plr_rpg * dmg_mult;
 }

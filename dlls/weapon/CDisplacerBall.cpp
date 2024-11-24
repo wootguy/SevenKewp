@@ -255,9 +255,7 @@ void CDisplacerBall::FizzleThink()
 {
 	ClearBeams();
 
-	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
-	CBaseMonster* ownerMon = owner ? owner->MyMonsterPointer() : NULL;
-	float dmg_mult = ownerMon ? ownerMon->m_damage_modifier : 1.0f;
+	float dmg_mult = GetDamageModifier();
 
 	pev->dmg = gSkillData.sk_plr_displacer_other * dmg_mult;
 
@@ -286,9 +284,7 @@ void CDisplacerBall::ExplodeThink()
 {
 	ClearBeams();
 
-	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
-	CBaseMonster* ownerMon = owner ? owner->MyMonsterPointer() : NULL;
-	float dmg_mult = ownerMon ? ownerMon->m_damage_modifier : 1.0f;
+	float dmg_mult = GetDamageModifier();
 
 	pev->dmg = gSkillData.sk_plr_displacer_other * dmg_mult;
 

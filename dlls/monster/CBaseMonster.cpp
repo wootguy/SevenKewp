@@ -7796,3 +7796,16 @@ void CBaseMonster::Revive() {
 	pev->renderfx = m_deathRenderFx;
 	pev->rendercolor = m_deathRenderColor;
 }
+
+float CBaseMonster::GetDamageModifier() {
+	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
+	CBaseMonster* mon = owner ? owner->MyMonsterPointer() : NULL;
+	float owner_damage_mult = mon ? mon->m_damage_modifier : 1.0f;
+	float self_damage_mult = m_damage_modifier ? m_damage_modifier : 1.0f;
+
+	if (owner_damage_mult == 0.0f) {
+		owner_damage_mult = 1.0f;
+	}
+
+	return self_damage_mult * owner_damage_mult;
+}
