@@ -122,8 +122,9 @@ void CSqueakGrenade :: Spawn( void )
 	pev->gravity		= 0.5;
 	pev->friction		= 0.5;
 
-	CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
-	float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
+	CBaseMonster* ownerMon = owner ? owner->MyMonsterPointer() : NULL;
+	float dmg_mult = ownerMon ? ownerMon->m_damage_modifier : 1.0f;
 
 	pev->dmg = gSkillData.sk_snark_dmg_pop * dmg_mult;
 
@@ -344,7 +345,7 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 			// and it's not another squeakgrenade
 			if (tr.pHit->v.modelindex != pev->modelindex)
 			{
-				CBaseMonster* owner = m_hOwner->MyMonsterPointer();
+				CBaseMonster* owner = m_hOwner ? m_hOwner->MyMonsterPointer() : NULL;
 				float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
 
 				// ALERT( at_console, "hit enemy\n");

@@ -181,8 +181,9 @@ void CShockBeam::WaterExplodeThink()
 
 	Explode();
 
-	CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
-	float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
+	CBaseMonster* ownerMon = owner ? owner->MyMonsterPointer() : NULL;
+	float dmg_mult = ownerMon ? ownerMon->m_damage_modifier : 1.0f;
 
 	::RadiusDamage( pev->origin, pev, pOwner, 100.0 * dmg_mult, 150.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, QUIET_GUN_VOLUME, 0.1);
@@ -206,8 +207,9 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 
 		ClearMultiDamage();
 
-		CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
-		float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+		CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
+		CBaseMonster* ownerMon = owner ? owner->MyMonsterPointer() : NULL;
+		float dmg_mult = ownerMon ? ownerMon->m_damage_modifier : 1.0f;
 
 		float damage = gSkillData.sk_plr_shockrifle * dmg_mult;
 
@@ -276,8 +278,9 @@ void CShockBeam::Explode()
 		m_hBeam2 = nullptr;
 	}
 
-	CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
-	float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
+	CBaseMonster* ownerMon = owner ? owner->MyMonsterPointer() : NULL;
+	float dmg_mult = ownerMon ? ownerMon->m_damage_modifier : 1.0f;
 
 	pev->dmg = 40 * dmg_mult;
 

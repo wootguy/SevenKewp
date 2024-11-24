@@ -80,8 +80,9 @@ void CSatchelCharge :: Spawn( void )
 	pev->gravity = 0.5;
 	pev->friction = 0.8;
 
-	CBaseMonster* owner = CBaseEntity::Instance(pev->owner)->MyMonsterPointer();
-	float dmg_mult = owner ? owner->m_damage_modifier : 1.0f;
+	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
+	CBaseMonster* ownerMon = owner ? owner->MyMonsterPointer() : NULL;
+	float dmg_mult = ownerMon ? ownerMon->m_damage_modifier : 1.0f;
 
 	pev->dmg = gSkillData.sk_plr_satchel*dmg_mult;
 	// ResetSequenceInfo( );
