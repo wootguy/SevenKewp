@@ -208,6 +208,10 @@ skill_cvar_t skill_cvars[] = {
 	DECL_SKILL_CVAR(sk_plr_pipewrench_full_damage, CVAR_TYPE_DAMAGE),
 	DECL_SKILL_CVAR(sk_plr_displacer_other, CVAR_TYPE_DAMAGE),
 	DECL_SKILL_CVAR(sk_plr_displacer_radius, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_hpmedic, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_medkit_start_ammo, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_plr_medkit_recharge_delay, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_plr_medkit_revive_cost, CVAR_TYPE_ITEM),
 
 	// Player max ammo
 	DECL_SKILL_CVAR(sk_ammo_max_uranium, CVAR_TYPE_ITEM),
@@ -223,6 +227,7 @@ skill_cvar_t skill_cvars[] = {
 	DECL_SKILL_CVAR(sk_ammo_max_hornets, CVAR_TYPE_ITEM),
 	DECL_SKILL_CVAR(sk_ammo_max_argrenades, CVAR_TYPE_ITEM),
 	DECL_SKILL_CVAR(sk_ammo_max_spores, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_medkit, CVAR_TYPE_ITEM),
 
 	// World weapons
 	DECL_SKILL_CVAR(sk_12mm_bullet, CVAR_TYPE_DAMAGE),

@@ -69,6 +69,9 @@ public:
 		return IsAlive() ? "weapon_crowbar" : "grenade";
 	}
 	void UpdateOnRemove(void);
+	void RemoveBeams();
+
+	virtual void Revive();
 
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
@@ -511,7 +514,7 @@ void CVoltigore::CantFollowSound() {
 	EMIT_SOUND(ENT(pev), CHAN_ITEM, RANDOM_SOUND_ARRAY(pPainSounds), 1, ATTN_NORM);
 }
 
-void CVoltigore::UpdateOnRemove(void) {
+void CVoltigore::RemoveBeams() {
 	UTIL_Remove(m_handShock);
 	for (int i = 0; i < VOLTI_SHOCK_CHARGE_BEAMS; i++) {
 		UTIL_Remove(m_pBeam[i]);
@@ -521,8 +524,16 @@ void CVoltigore::UpdateOnRemove(void) {
 		UTIL_Remove(m_pDeathBeam[i]);
 		m_pDeathBeam[i] = NULL;
 	}
+}
 
+void CVoltigore::UpdateOnRemove(void) {
+	RemoveBeams();
 	CBaseEntity::UpdateOnRemove();
+}
+
+void CVoltigore::Revive() {
+	RemoveBeams();
+	CBaseMonster::Revive();
 }
 
 //

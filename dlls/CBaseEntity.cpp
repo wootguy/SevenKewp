@@ -448,6 +448,7 @@ void CBaseEntity::SUB_StartFadeOut(void)
 		pev->rendermode = kRenderTransTexture;
 	}
 
+	m_isFadingOut = true;
 	pev->solid = SOLID_NOT;
 	pev->avelocity = g_vecZero;
 

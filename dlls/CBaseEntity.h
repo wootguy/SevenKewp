@@ -372,6 +372,7 @@ public:
 	int	m_Classify;		// Classify, to let mappers override the default
 
 	InventoryRules	m_inventoryRules;
+	bool m_isFadingOut; // is a corpse fading out
 
 	uint32_t m_pasPlayers; // players in the audible set of this entity (invalid for invisible ents)
 	uint32_t m_pvsPlayers; // players in the visible set of this entity (invalid for invisible ents)

@@ -196,6 +196,8 @@ public:
 	BOOL FOkToSpeak(void);
 	void JustSpoke(void);
 
+	virtual void Revive();
+
 	CUSTOM_SCHEDULES;
 	static TYPEDESCRIPTION m_SaveData[];
 
@@ -225,6 +227,7 @@ public:
 	int m_iGruntHead;
 
 	int m_iEquipment; // bitfield of MONSTER_EQUIPMENT
+	int m_deadEquipment; // active equipment when the monster was killed
 
 	virtual void InitAiFlags();
 	// AI behavior flags (TODO: make this a bitfield)

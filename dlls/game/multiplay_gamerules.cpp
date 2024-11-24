@@ -279,7 +279,7 @@ BOOL CHalfLifeMultiplay :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerI
 	iBestWeight = -1;// no weapon lower than -1 can be autoswitched to
 	pBest = NULL;
 
-	if ( !pCurrentWeapon->CanHolster() )
+	if (pCurrentWeapon && !pCurrentWeapon->CanHolster() )
 	{
 		// can't put this gun away right now, so can't switch.
 		return FALSE;
@@ -291,7 +291,7 @@ BOOL CHalfLifeMultiplay :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerI
 
 		while ( pCheck )
 		{
-			if ( pCheck->iWeight() > -1 && pCheck->iWeight() == pCurrentWeapon->iWeight() && pCheck != pCurrentWeapon )
+			if (pCurrentWeapon && pCheck->iWeight() > -1 && pCheck->iWeight() == pCurrentWeapon->iWeight() && pCheck != pCurrentWeapon )
 			{
 				// this weapon is from the same category. 
 				if ( pCheck->CanDeploy() )
@@ -442,6 +442,7 @@ void CHalfLifeMultiplay :: ClientDisconnected( edict_t *pClient )
 			pPlayer->pev->frags = 0;
 
 			pPlayer->RemoveAllItems( TRUE );// destroy all of the players weapons and items
+			pPlayer->DropAllInventoryItems();
 		}
 	}
 }
@@ -523,6 +524,12 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
 		pPlayer->GiveAmmo( 68, "9mm", gSkillData.sk_ammo_max_9mm );// 4 full reloads
 	}
+
+	if (mp_default_medkit.value && !g_noMedkit) {
+		pPlayer->GiveNamedItem("weapon_medkit");
+	}
+
+	pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex("health")] = gSkillData.sk_plr_medkit_start_ammo;
 }
 
 //=========================================================

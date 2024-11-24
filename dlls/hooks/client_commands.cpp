@@ -316,6 +316,16 @@ bool CheatCommand(edict_t* pEntity) {
 		const char* newMode = pev->flags & FL_NOTARGET ? "ON" : "OFF";
 		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No target is %s\n", newMode));
 	}
+	else if (FStrEq(pcmd, "revive")) {
+		ABORT_IF_CHEATS_DISABLED("Revive");
+
+		CBaseMonster* ent = CBaseEntity::Instance(pEntity)->MyMonsterPointer();
+
+		if (ent && !ent->IsAlive()) {
+			ent->Revive();
+			CLIENT_PRINTF(pEntity, print_center, "Revived!\n");
+		}
+	}
 	else if (FStrEq(pcmd, "trigger")) {
 		ABORT_IF_CHEATS_DISABLED("Trigger");
 		

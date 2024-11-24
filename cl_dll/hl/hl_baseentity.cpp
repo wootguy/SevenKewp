@@ -177,6 +177,7 @@ void CBaseMonster :: MovementComplete( void ) { }
 int CBaseMonster::TaskIsRunning( void ) { return 0; }
 void CBaseMonster::ScheduleChange( void ) { }
 void CBaseMonster::SetClassify( int ) { }
+void CBaseMonster::Revive( void ) { }
 int CBaseEntity::IRelationship ( CBaseEntity *pTarget ) { return 0; }
 BOOL CBaseMonster :: FindCover ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist ) { return FALSE; }
 BOOL CBaseMonster :: BuildNearestRoute ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist ) { return FALSE; }
@@ -265,7 +266,7 @@ int CBasePlayer :: TakeHealth( float flHealth, int bitsDamageType, float healthc
 void CBasePlayer :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) { }
 int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) { return 0; }
 void CBasePlayer::PackDeadPlayerItems( void ) { }
-void CBasePlayer::RemoveAllItems( BOOL removeSuit ) { }
+void CBasePlayer::RemoveAllItems( BOOL removeSuit, BOOL dontHideItems ) { }
 void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration ) { }
 void CBasePlayer::WaterMove() { }
 BOOL CBasePlayer::IsOnLadder( void ) { return FALSE; }
@@ -324,6 +325,7 @@ int CBasePlayer :: GiveAmmo( int iCount, const char *szName, int iMax ) { return
 void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore ) { } 
 void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore ) { } 
 Vector CBasePlayer::BodyTarget(const Vector& posSrc) { return Vector(); }
+void CBasePlayer::Revive() { }
 
 void ClearMultiDamage(void) { }
 void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker ) { }

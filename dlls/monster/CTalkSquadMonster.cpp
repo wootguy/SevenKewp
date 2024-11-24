@@ -623,7 +623,38 @@ void CTalkSquadMonster::AlertFriends( void )
 	}
 }
 
+void CTalkSquadMonster::Unprovoke(bool friendsToo) {
+	Forget(bits_MEMORY_PROVOKED);
 
+	if (m_hEnemy) {
+		int irel = IRelationship(m_hEnemy);
+
+		if (m_hEnemy && m_hEnemy->IsPlayer() && (irel == R_NO || irel == R_AL)) {
+			m_hEnemy = NULL;
+		}
+	}
+
+	if (friendsToo) {
+		UnprovokeFriends();
+	}
+}
+
+void CTalkSquadMonster::UnprovokeFriends(void) {
+	CBaseEntity* pFriend = NULL;
+	int i;
+
+	// for each friend in this bsp...
+	for (i = 0; i < TLK_CFRIENDS; i++)
+	{
+		while ((pFriend = EnumFriends(pFriend, i, TRUE)) != 0)
+		{
+			CTalkSquadMonster* pMonster = pFriend->MyTalkSquadMonsterPointer();
+			if (pMonster && pMonster->IsAlive()) {
+				pMonster->Unprovoke(false);
+			}
+		}
+	}
+}
 
 void CTalkSquadMonster::ShutUpFriends( void )
 {

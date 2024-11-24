@@ -206,6 +206,8 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	if ( !pActivator->IsPlayer() )
 		return;
 
+	CBasePlayer* plr = (CBasePlayer*)pActivator;
+
 	// if there is no juice left, turn it off
 	if (m_iJuice <= 0)
 	{
@@ -245,10 +247,23 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 		EMIT_SOUND(ENT(pev), CHAN_STATIC, "items/medcharge4.wav", 1.0, ATTN_NORM );
 	}
 
+	int healthAmmoIdx = plr->GetAmmoIndex("health");
+	bool canChargeMedkit = plr->HasNamedPlayerItem("weapon_medkit")
+		&& plr->rgAmmo(healthAmmoIdx) < gSkillData.sk_ammo_max_medkit;
+
+	bool gotHealth = pActivator->TakeHealth(1, DMG_GENERIC);
 
 	// charge the player
-	if ( pActivator->TakeHealth( 1, DMG_GENERIC ) )
+	if (gotHealth || canChargeMedkit)
 	{
+		if (canChargeMedkit) {
+			// always charge the medkit, and charge twice as fast if player is full health.
+			// For when you're looking for a charger so you can revive someone, but may
+			// be low on health yourself.
+			int chargeAmount = gotHealth ? 1 : 2;
+			plr->rgAmmo(healthAmmoIdx,
+				V_min(plr->rgAmmo(healthAmmoIdx) + chargeAmount, gSkillData.sk_ammo_max_medkit));
+		}
 		m_iJuice--;
 	}
 
