@@ -114,9 +114,7 @@ void CHornet :: Spawn( void )
 	if ( !pSoundEnt )
 		pSoundEnt = edict();
 
-	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
-	CBaseMonster* ownerMon = owner ? owner->MyMonsterPointer() : NULL;
-	float dmg_mult = ownerMon ? ownerMon->m_damage_modifier : 1.0f;
+	float dmg_mult = GetDamageModifier();
 
 	if ( !FNullEnt(pev->owner) && (pev->owner->v.flags & FL_CLIENT) )
 	{

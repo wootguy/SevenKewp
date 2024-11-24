@@ -291,7 +291,7 @@ bool CPipewrench::Swing(const bool bFirst)
 				}
 			}
 
-			float dmg_mult = m_pPlayer->m_damage_modifier;
+			float dmg_mult = GetDamageModifier();
 
 			pEntity->TraceAttack(m_pPlayer->pev, flDamage*dmg_mult, gpGlobals->v_forward, &tr, DMG_CLUB);
 
@@ -476,7 +476,7 @@ void CPipewrench::BigSwing()
 				}
 			}
 
-			float dmg_mult = m_pPlayer->m_damage_modifier;
+			float dmg_mult = GetDamageModifier();
 
 			pEntity->TraceAttack(m_pPlayer->pev, flDamage * dmg_mult, gpGlobals->v_forward, &tr, DMG_CLUB);
 

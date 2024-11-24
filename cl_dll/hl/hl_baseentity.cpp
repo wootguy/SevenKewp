@@ -259,6 +259,7 @@ void CBaseMonster::GetAllSchedules(std::unordered_set<Schedule_t*>& schedulesOut
 Schedule_t* CBaseMonster::ScheduleFromTableIdx(uint32_t idx) { return NULL; }
 int CBaseMonster::GetScheduleTableSize() { return 0; }
 int CBaseMonster::GetScheduleTableIdx() { return 0; }
+float CBaseMonster::GetDamageModifier() { return 0; }
 
 int TrainSpeed(int iSpeed, int iMax) { 	return 0; }
 void CBasePlayer :: DeathSound( void ) { }
@@ -326,6 +327,7 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore ) { }
 void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore ) { } 
 Vector CBasePlayer::BodyTarget(const Vector& posSrc) { return Vector(); }
 void CBasePlayer::Revive() { }
+float CBasePlayer::GetDamageModifier() { return 0; }
 
 void ClearMultiDamage(void) { }
 void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker ) { }
@@ -365,6 +367,7 @@ BOOL CBasePlayerWeapon :: AddSecondaryAmmo( int iCount, char *szName, int iMax )
 BOOL CBasePlayerWeapon :: IsUseable( void ) { return TRUE; }
 int CBasePlayerWeapon::PrimaryAmmoIndex( void ) { return -1; }
 int CBasePlayerWeapon::SecondaryAmmoIndex( void ) {	return -1; }
+float CBasePlayerWeapon::GetDamageModifier() { return 0; }
 void CBasePlayerAmmo::Spawn( void ) { }
 CBaseEntity* CBasePlayerAmmo::Respawn( void ) { return this; }
 void CBasePlayerAmmo::Materialize( void ) { }

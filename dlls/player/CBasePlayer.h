@@ -456,6 +456,8 @@ public:
 	void DropAllInventoryItems(bool deathDrop = false, bool respawnDrop = false);
 
 	virtual void Revive();
+
+	float GetDamageModifier();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

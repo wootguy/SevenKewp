@@ -356,7 +356,7 @@ void CGauss::StartFire( void )
 	Vector vecAiming = gpGlobals->v_forward;
 	Vector vecSrc = m_pPlayer->GetGunPosition( ); // + gpGlobals->v_up * -8 + gpGlobals->v_right * 8;
 	
-	float dmg_mult = m_pPlayer->m_damage_modifier;
+	float dmg_mult = GetDamageModifier();
 
 	if ( gpGlobals->time - m_pPlayer->m_flStartCharge > GetFullChargeTime() )
 	{

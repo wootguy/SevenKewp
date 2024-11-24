@@ -316,7 +316,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 
 	float timedist = 0;
 
-	float dmg_mult = m_pPlayer->m_damage_modifier;
+	float dmg_mult = GetDamageModifier();
 
 	switch ( m_fireMode )
 	{

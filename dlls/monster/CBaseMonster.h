@@ -464,6 +464,8 @@ public:
 
 	void SetRevivalVars(); // set vars needed for revival. Call on death.
 	virtual void Revive();
+
+	virtual float GetDamageModifier();
 };
 
 
