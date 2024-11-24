@@ -250,6 +250,7 @@ public:
 	float m_lastInteractMessage; // last time an interaction message was sent to this player
 	bool m_weaponsDisabled; // if set, disallow using weapons (besides the inventory weapon)
 	float m_airTimeModifier; // how much longer/shorter a player can hold their breath
+	bool m_droppedDeathWeapons;
 
 	virtual void Spawn( void );
 
@@ -279,7 +280,11 @@ public:
 	virtual int		Restore( CRestore &restore );
 	void RenewItems(void);
 	void PackDeadPlayerItems( void );
-	void RemoveAllItems( BOOL removeSuit );
+	void HideAllItems();
+	
+	// if removeItemsOnly=true, then remove items server-side, but don't update the client hud
+	// (fixes race condition during player spawn)
+	void RemoveAllItems( BOOL removeSuit, BOOL removeItemsOnly=false );
 	BOOL SwitchWeapon( CBasePlayerItem *pWeapon );
 
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
@@ -314,7 +319,7 @@ public:
 
 	void StartDeathCam( void );
 	void StartObserver( Vector vecPosition, Vector vecViewAngle );
-	void LeaveObserver();
+	void LeaveObserver(bool respawn=true);
 
 	void AddPoints( int score, BOOL bAllowNegativeScore );
 	void AddPointsToTeam( int score, BOOL bAllowNegativeScore );
@@ -368,6 +373,7 @@ public:
 
 	void CleanupWeaponboxes(void);
 
+	void TabulateWeapons( void ); // initializes weapons hud for client
 	void TabulateAmmo( void );
 	int rgAmmo(int ammoIdx);
 	void rgAmmo(int ammoIdx, int newCount);
@@ -448,6 +454,8 @@ public:
 	// if death=true, only drop items that are not marked to keep on death
 	// if respawn=true, only drop items that are not marked to keep on respawn
 	void DropAllInventoryItems(bool deathDrop = false, bool respawnDrop = false);
+
+	virtual void Revive();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

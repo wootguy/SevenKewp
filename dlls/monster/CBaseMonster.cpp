@@ -2158,6 +2158,7 @@ void CBaseMonster::MonsterInit(void)
 	pev->ideal_yaw = pev->angles.y;
 	pev->max_health = pev->health;
 	pev->deadflag = DEAD_NO;
+	m_MonsterState = MONSTERSTATE_NONE;
 	m_IdealMonsterState = MONSTERSTATE_IDLE;// Assume monster will be idle, until proven otherwise
 
 	m_IdealActivity = ACT_IDLE;
@@ -4367,6 +4368,8 @@ void CBaseMonster::Killed(entvars_t* pevAttacker, int iGib)
 			CallGibMonster();
 		return;
 	}
+
+	SetRevivalVars();
 
 	Remember(bits_MEMORY_KILLED);
 
@@ -7753,4 +7756,43 @@ void CBaseMonster::ApplyEffects() {
 		plr->DisableWeapons(total_block_weapon);
 		plr->m_airTimeModifier = total_respiration;
 	}
+}
+
+void CBaseMonster::SetRevivalVars() {
+	m_deathMins = pev->mins;
+	m_deathMaxs = pev->maxs;
+	m_deathHealthMax = pev->max_health;
+	m_deathBody = pev->body;
+	m_deathMovetype = pev->movetype;
+
+	if (m_fShockEffect) {
+		m_deathRenderMode = m_iOldRenderMode;
+		m_deathRenderAmt = m_flOldRenderAmt;
+		m_deathRenderFx = m_iOldRenderFX;
+		m_deathRenderColor = m_OldRenderColor;
+	}
+	else {
+		m_deathRenderMode = pev->rendermode;
+		m_deathRenderAmt = pev->renderamt;
+		m_deathRenderFx = pev->renderfx;
+		m_deathRenderColor = pev->rendercolor;
+	}
+}
+
+void CBaseMonster::Revive() {
+	Forget(bits_MEMORY_KILLED); // forget everything
+	MonsterInit();
+	UTIL_SetSize(pev, m_deathMins, m_deathMaxs);
+
+	pev->max_health = m_deathHealthMax;
+	pev->health = m_deathHealthMax;
+	pev->body = m_deathBody;
+	pev->movetype = m_deathMovetype;
+	pev->solid = SOLID_SLIDEBOX;
+	m_isFadingOut = false;
+
+	pev->rendermode = m_deathRenderMode;
+	pev->renderamt = m_deathRenderAmt;
+	pev->renderfx = m_deathRenderFx;
+	pev->rendercolor = m_deathRenderColor;
 }

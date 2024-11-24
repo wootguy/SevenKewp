@@ -202,6 +202,10 @@ struct skilldata_t
 	float sk_plr_pipewrench_full_damage;
 	float sk_plr_displacer_other;
 	float sk_plr_displacer_radius;
+	float sk_plr_hpmedic;
+	float sk_plr_medkit_start_ammo;
+	float sk_plr_medkit_recharge_delay;
+	float sk_plr_medkit_revive_cost;
 
 	// Player max ammo
 	float sk_ammo_max_uranium;
@@ -217,6 +221,7 @@ struct skilldata_t
 	float sk_ammo_max_hornets;
 	float sk_ammo_max_argrenades;
 	float sk_ammo_max_spores;
+	float sk_ammo_max_medkit;
 
 	// World weapons
 	float sk_12mm_bullet;

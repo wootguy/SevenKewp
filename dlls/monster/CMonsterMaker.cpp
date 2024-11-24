@@ -611,11 +611,7 @@ void CMonsterMaker :: DeathNotice ( entvars_t *pevChild )
 {
 	// ok, we've gotten the deathnotice from our child, now clear out its owner if we don't want it to fade.
 	m_cLiveChildren--;
-
-	if ( !m_fFadeChildren )
-	{
-		pevChild->owner = NULL;
-	}
+	pevChild->owner = NULL;
 }
 
 // return number of triggers that would be removed if all monstermakers were nerfed

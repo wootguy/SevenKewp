@@ -28,7 +28,7 @@ void CItemInventory::Precache(void)
 	PRECACHE_SOUND("items/gunpickup2.wav");
 	PRECACHE_SOUND("tfc/items/itembk2.wav");
 
-	g_mapWeapons.insert("weapon_inventory");
+	AddPrecacheWeapon("weapon_inventory");
 }
 
 void CItemInventory::KeyValue(KeyValueData* pkvd) {

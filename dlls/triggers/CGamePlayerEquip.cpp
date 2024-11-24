@@ -22,6 +22,7 @@ LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip)
 
 bool g_mapCfgExists;
 bool g_noSuit;
+bool g_noMedkit;
 EquipItem g_mapEquipment[MAX_EQUIP];
 
 void CGamePlayerEquip::KeyValue(KeyValueData* pkvd)
@@ -129,6 +130,9 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 	}
 	else if (!strcmp(itemName, "ammo_buckshot")) {
 		pPlayer->GiveAmmo(AMMO_BUCKSHOTBOX_GIVE * count, "buckshot", gSkillData.sk_ammo_max_buckshot);
+	}
+	else if (!strcmp(itemName, "ammo_medkit")) {
+		pPlayer->GiveAmmo(AMMO_MEDKIT_GIVE * count, "health", gSkillData.sk_ammo_max_medkit);
 	}
 	else if (!strcmp(itemName, "weapon_tripmine")) {
 		int giveAmount = count;

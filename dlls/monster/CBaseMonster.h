@@ -156,6 +156,17 @@ public:
 	int m_lastNode;
 	int m_targetNode;
 
+	// properties the monster had before death (for revival)
+	Vector m_deathMins;
+	Vector m_deathMaxs;
+	Vector m_deathRenderColor;
+	float m_deathHealthMax;
+	float m_deathRenderMode;
+	float m_deathRenderAmt;
+	float m_deathRenderFx;
+	int m_deathBody;
+	int m_deathMovetype;
+
 	int m_lastDamageType;
 	EHANDLE m_lastDamageEnt;
 
@@ -450,6 +461,9 @@ public:
 
 	// applies cumulative effects from inventory, friction, and gravity triggers
 	void ApplyEffects();
+
+	void SetRevivalVars(); // set vars needed for revival. Call on death.
+	virtual void Revive();
 };
 
 

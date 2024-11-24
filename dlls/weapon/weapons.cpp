@@ -429,6 +429,7 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_pipewrench");
 	UTIL_RegisterWeapon("weapon_shockrifle");
 	UTIL_RegisterWeapon("weapon_sporelauncher");
+	UTIL_RegisterWeapon("weapon_medkit");
 	UTIL_RegisterWeapon("weapon_inventory");
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 

@@ -468,6 +468,8 @@ BOOL CBasePlayerWeapon::CanDeploy(void)
 		return 0;
 
 	BOOL bHasAmmo = 0;
+	ItemInfo info;
+	GetItemInfo(&info);
 
 	if (!pszAmmo1())
 	{
@@ -487,7 +489,7 @@ BOOL CBasePlayerWeapon::CanDeploy(void)
 	{
 		bHasAmmo |= 1;
 	}
-	if (!bHasAmmo)
+	if (!bHasAmmo && !(info.iFlags & ITEM_FLAG_SELECTONEMPTY))
 	{
 		return FALSE;
 	}

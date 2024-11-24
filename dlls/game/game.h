@@ -74,6 +74,7 @@ EXPORT extern cvar_t	adminlistfile; // name of the admin list file
 EXPORT extern cvar_t	pluginupdatepath; // root path for plugin file updates to be searched
 EXPORT extern cvar_t	pluginautoupdate; // attempt to update plugins after every map change
 EXPORT extern cvar_t	mp_skill_allow; // 0 = no, 1 = yes
+EXPORT extern cvar_t	mp_default_medkit; // provide a medkit by default unless nomedkit is in the cfg
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

@@ -111,13 +111,10 @@ BOOL CGameRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeap
 std::unordered_set<std::string> timeCriticalCvars = {
 	// to know what to precache during this frame
 	"mp_mergemodels",
+	"mp_default_medkit",
 
 	// to decide if the map skill file should be skipped
 	"mp_skill_allow",
-
-	// for determining what to block when map skill is parsed
-	"mp_bulletsponges",
-	"mp_bulletspongemax",
 };
 
 void execMapCfg() {
@@ -165,6 +162,7 @@ void execMapCfg() {
 		"mp_shitcode",
 		"map_plugin",
 		"nosuit",
+		"nomedkit",
 	};
 
 	static unordered_set<string> itemNames = {
@@ -231,6 +229,7 @@ void execMapCfg() {
 	
 	g_mapCfgExists = cfgFile;
 	g_noSuit = false;
+	g_noMedkit = false;
 
 	if (!cfgFile) {
 		// precache default equipment
@@ -257,6 +256,11 @@ void execMapCfg() {
 
 		if (name == "nosuit") {
 			g_noSuit = true;
+			continue;
+		}
+
+		if (name == "nomedkit") {
+			g_noMedkit = true;
 			continue;
 		}
 
@@ -300,6 +304,12 @@ void execMapCfg() {
 				continue;
 			}
 
+			if (mp_default_medkit.value == 0 && name == "weapon_medkit") {
+				// don't want medkits by default unless the map specifically places them
+				// (for a class system or as a special item)
+				continue;
+			}
+
 			g_mapEquipment[equipIdx].itemName = ALLOC_STRING(name.c_str());
 			g_mapEquipment[equipIdx].count = value.size() ? atoi(value.c_str()) : 1;
 
@@ -310,6 +320,10 @@ void execMapCfg() {
 	}
 
 	FREE_FILE(cfgFile);
+
+	if (mp_default_medkit.value && !g_noMedkit) {
+		AddPrecacheWeapon("weapon_medkit");
+	}
 }
 
 void execServerCfg() {
