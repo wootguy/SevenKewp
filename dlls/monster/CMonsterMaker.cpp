@@ -449,8 +449,18 @@ void CMonsterMaker::MakeMonster( void )
 
 	// unstuck monsters if spawned inside the ceiling
 	// (unless it's a barnacle/turret or smth that doesn't move)
-	if (pent->v.movetype == MOVETYPE_STEP && !WALK_MOVE(pent, 0, 0, WALKMOVE_NORMAL)) {
-		DROP_TO_FLOOR(pent);
+	if (pent->v.movetype == MOVETYPE_STEP) {
+		TraceResult tr;
+		TRACE_MONSTER_HULL(pent, pent->v.origin, pent->v.origin, ignore_monsters, pent, &tr);
+
+		if (tr.fStartSolid) {
+			TRACE_MONSTER_HULL(pent, pent->v.origin, pent->v.origin - Vector(0, 0, 4096), ignore_monsters, pent, &tr);
+			UTIL_SetOrigin(&pent->v, tr.vecEndPos);
+
+			// not using this because it will send the monster through solid entities if the monster is spawning
+			// inside of another monster (startSolid)
+			//DROP_TO_FLOOR(pent);
+		}
 	}
 
 	m_cLiveChildren++;// count this monster

@@ -466,13 +466,13 @@ int UTIL_EntitiesInBox( CBaseEntity **pList, int listMax, const Vector &mins, co
 
 		Vector edMin;
 		Vector edMax;
-		if (collisionOnly) {
-			edMin = pEdict->v.origin - pEdict->v.mins;
-			edMax = pEdict->v.origin - pEdict->v.maxs;
+		if (collisionOnly && (pEdict->v.flags & FL_MONSTER)) {
+			edMin = pEdict->v.origin + pEdict->v.mins;
+			edMax = pEdict->v.origin + pEdict->v.maxs;
 		}
 		else {
 			edMin = pEdict->v.absmin;
-			edMax = pEdict->v.absmin;
+			edMax = pEdict->v.absmax;
 		}
 			
 		if (mins.x > edMax.x ||
@@ -3121,3 +3121,8 @@ uint64_t getFreeSpace(const std::string& path) {
 	return (uint64_t)stat.f_bavail * (uint64_t)stat.f_bsize;
 #endif
 }
+
+const char* cstr(string_t s) {
+	return STRING(s);
+}
+

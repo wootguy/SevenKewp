@@ -148,7 +148,7 @@ struct RGBA {
 }
 
 // same as the STRING macro but defined as a function for easy calling in the debugger
-inline const char* cstr(string_t s) { return STRING(s); }
+EXPORT const char* cstr(string_t s);
 
 inline edict_t *FIND_ENTITY_BY_CLASSNAME(edict_t *entStart, const char *pszName) 
 {

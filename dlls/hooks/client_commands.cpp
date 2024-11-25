@@ -340,6 +340,7 @@ bool CheatCommand(edict_t* pEntity) {
 			while (!FNullEnt(pTarget = FIND_ENTITY_BY_TARGETNAME(pTarget, target))) {
 				CBaseEntity* ent = CBaseEntity::Instance(pTarget);
 				if (ent) {
+					te_debug_beam(pEntity->v.origin, ent->Center(), 10, RGBA(0, 255, 0), MSG_ONE_UNRELIABLE, pEntity);
 					ent->Use(world, world, USE_TOGGLE, 0);
 					count++;
 					lastTriggerClass = ent->pev->classname;

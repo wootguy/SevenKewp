@@ -10,8 +10,6 @@
 #include "CCineMonster.h"
 #include "defaultai.h"
 
-#define CLASSNAME "scripted_sequence"
-
 TYPEDESCRIPTION	CCineMonster::m_SaveData[] =
 {
 	DEFINE_FIELD(CCineMonster, m_iszIdle, FIELD_STRING),
@@ -41,7 +39,7 @@ LINK_ENTITY_TO_CLASS(aiscripted_sequence, CCineAI)
 void ScriptEntityCancel(edict_t* pentCine)
 {
 	// make sure they are a scripted_sequence
-	if (FClassnameIs(pentCine, CLASSNAME))
+	if (FClassnameIs(pentCine, "scripted_sequence") || FClassnameIs(pentCine, "aiscripted_sequence"))
 	{
 		CCineMonster* pCineTarget = GetClassPtr((CCineMonster*)VARS(pentCine));
 		// make sure they have a monster in mind for the script
