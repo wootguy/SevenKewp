@@ -619,7 +619,7 @@ void CItemInventory::ItemTouch(CBaseEntity* pOther) {
 	CBaseMonster* mon = pOther->MyMonsterPointer();
 	CBasePlayer* plr = pOther->IsPlayer() ? (CBasePlayer*)pOther : NULL;
 
-	if (!mon) {
+	if (!plr) {
 		return;
 	}
 

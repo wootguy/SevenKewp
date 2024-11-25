@@ -166,6 +166,7 @@ public:
 	float m_deathRenderFx;
 	int m_deathBody;
 	int m_deathMovetype;
+	int m_startDead; // monster spawned dead as a prop or something (monster_scientist_dead)
 
 	int m_lastDamageType;
 	EHANDLE m_lastDamageEnt;
@@ -204,7 +205,7 @@ public:
 
 	virtual BOOL	IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual	BOOL	IsMonster(void) { return TRUE; }
-	virtual	BOOL	IsNormalMonster(void) { return TRUE; }
+	virtual	BOOL	IsNormalMonster(void) { return m_startDead ? FALSE : TRUE; }
 	virtual BOOL	ShouldFadeOnDeath( void );
 	virtual bool	ShouldRoam( void );
 

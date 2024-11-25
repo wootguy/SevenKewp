@@ -75,7 +75,7 @@ public:
 	virtual	BOOL IsNormalMonster(void) { return FALSE; }
 	void SequenceDone ( CBaseMonster *pMonster );
 	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
-	BOOL	CanInterrupt( void );
+	virtual BOOL CanInterrupt( void );
 	void	AllowInterrupt( BOOL fAllow );
 	int		IgnoreConditions( void );
 
@@ -103,6 +103,7 @@ class CCineAI : public CCineMonster
 	void PossessEntity( void );
 	BOOL FCanOverrideState ( void );
 	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
+	virtual BOOL CanInterrupt(void) { return FALSE; }
 };
 
 

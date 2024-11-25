@@ -933,6 +933,10 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		}
 	}
 
+	// in case the player is alone, don't send invalid indexes because it can crash clients
+	killer_index = V_min(killer_index, gpGlobals->maxClients-1);
+	victim_index = V_min(victim_index, gpGlobals->maxClients-1);
+
 	// client crash if the killer name is too long
 	static char shortened_killer_name[30]; // client only has 32 char buffer which prepends "d_"
 	strcpy_safe(shortened_killer_name, killer_weapon_name, 30);
