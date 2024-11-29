@@ -1102,7 +1102,8 @@ void SpectatorThink( edict_t *pEntity )
 // PAS and PVS routines for client messaging
 //
 
-int g_numEdictOverflows[33];
+int g_numEdictOverflows[32];
+int g_numPacketEntities[32];
 
 /*
 ================
@@ -1152,15 +1153,15 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 		plr->m_lastPvs = *pvs;
 	}
 
-	g_packClientIdx = ENTINDEX(pClient);
+	g_packClientIdx = ENTINDEX(pClient) - 1;
 
-	int pnum = g_packClientIdx - 1;
-	if (g_numEdictOverflows[pnum] > 0) {
+	if (g_numEdictOverflows[g_packClientIdx] > 0) {
 		ALERT(at_console, "Overflowed %d edicts for \"%s\", Client: %s\n",
-			g_numEdictOverflows[pnum], STRING(pClient->v.netname), plr->GetClientVersionString());
+			g_numEdictOverflows[g_packClientIdx], STRING(pClient->v.netname), plr->GetClientVersionString());
 	}
 
-	g_numEdictOverflows[pnum] = 0;
+	g_numEdictOverflows[g_packClientIdx] = 0;
+	g_numPacketEntities[g_packClientIdx] = 0;
 }
 
 #include "entity_state.h"
@@ -1370,7 +1371,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		state->usehull      = ( ent->v.flags & FL_DUCKING ) ? 1 : 0;
 		state->health		= ent->v.health;
 
-		if (g_packClientIdx == e) {
+		if (g_packClientIdx+1 == e) {
 			// clients invert their own player model angle for some reason
 			// TODO: fix this in a client mod
 			state->angles.x = ent->v.v_angle.x;
@@ -1378,16 +1379,23 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		
 	}
 
-	int maxClientEdicts = plr->GetMaxClientEdicts();
-	if (e >= maxClientEdicts) {
-		//ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
-		g_numEdictOverflows[player]++;
+	client_info_t client = plr->GetClientInfo();
+	if (e >= client.max_edicts) {
+		ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
+		g_numEdictOverflows[g_packClientIdx]++;
 		plr->SendLegacyClientWarning();
 		return 0;
 	}
-	if (ENTINDEX(ent->v.aiment) >= maxClientEdicts) {
+	if (ENTINDEX(ent->v.aiment) >= client.max_edicts) {
 		//ALERT(at_console, "Can't send attachment %d '%s' (index too high)\n", ENTINDEX(ent->v.aiment), STRING(ent->v.aiment->v.classname));
-		g_numEdictOverflows[player]++;
+		g_numEdictOverflows[g_packClientIdx]++;
+		plr->SendLegacyClientWarning();
+		return 0;
+	}
+	if (g_numPacketEntities[g_packClientIdx] + 1 >= client.max_packet_entities) {
+		ALERT(at_console, "Can't send edict %d '%s' (exceeded %d MAX_PACKET_ENTITIES)\n",
+			e, STRING(ent->v.classname), client.max_packet_entities);
+		g_numEdictOverflows[g_packClientIdx]++;
 		plr->SendLegacyClientWarning();
 		return 0;
 	}
@@ -1398,6 +1406,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		state->eflags &= ~EFLAG_FLESH_SOUND;
 
 	baseent->m_netPlayers |= plrbit;
+	g_numPacketEntities[g_packClientIdx]++;
 
 	return 1;
 }

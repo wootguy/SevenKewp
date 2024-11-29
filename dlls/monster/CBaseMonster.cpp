@@ -4421,7 +4421,7 @@ void CBaseMonster::Killed(entvars_t* pevAttacker, int iGib)
 // take health
 int CBaseMonster::TakeHealth(float flHealth, int bitsDamageType, float healthcap)
 {
-	if (!pev->takedamage)
+	if (!pev->takedamage || !IsAlive())
 		return 0;
 
 	// clear out any damage types we healed.

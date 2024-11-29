@@ -73,6 +73,7 @@ class CLeech : public CBaseMonster
 public:
 	void Spawn( void );
 	void Precache( void );
+	virtual	BOOL IsNormalMonster(void) { return FALSE; }
 
 	void EXPORT SwimThink( void );
 	void EXPORT DeadThink( void );
