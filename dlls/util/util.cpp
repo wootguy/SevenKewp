@@ -2602,7 +2602,7 @@ bool UTIL_isSafeEntIndex(edict_t* ent, int idx, const char* action) {
 		return false;
 	}
 
-	int maxEdicts = plr->GetMaxClientEdicts();
+	int maxEdicts = plr->GetClientInfo().max_edicts;
 
 	if (idx >= maxEdicts) {
 		ALERT(at_error, "Can't %s for edict %d '%s' (max edicts for \"%s\" is %d)\n",

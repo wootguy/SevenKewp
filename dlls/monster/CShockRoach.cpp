@@ -105,6 +105,8 @@ public:
 
 	void MonsterThink() override;
 
+	virtual void Revive();
+
 	int Save( CSave &save ) override;
 	int Restore( CRestore &restore ) override;
 	static TYPEDESCRIPTION m_SaveData[];
@@ -593,4 +595,9 @@ void COFShockRoach::MonsterThink()
 		TakeDamage( pev, pev, pev->health, DMG_NEVERGIB );
 
 	CBaseMonster::MonsterThink();
+}
+
+void COFShockRoach::Revive() {
+	CBaseMonster::Revive();
+	m_flBirthTime = gpGlobals->time;
 }

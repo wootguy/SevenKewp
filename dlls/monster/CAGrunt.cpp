@@ -398,14 +398,14 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			if (gSkillData.sk_agrunt_hornet_mode == 1 && HasConditions(bits_COND_SEE_ENEMY) && m_hEnemy) {
 				// shoot fast hornets in a straight line instead of slowly tracking targets
-				Vector predictedTargetOri = m_hEnemy->Center();
+				Vector predictedTargetOri = m_hEnemy->BodyTarget(pev->origin);
 				float hornetSpeed = 1200;
 
 				if (m_hEnemy->pev->velocity.Length() > 10) {
 					// lead the shot to account for hornet travel time
 					Vector targetDelta = m_vecEnemyLKP - pHornet->pev->origin;
 					float predictedTravelTime = targetDelta.Length() / hornetSpeed;
-					predictedTargetOri = m_hEnemy->Center() + m_hEnemy->pev->velocity * predictedTravelTime;
+					predictedTargetOri = m_hEnemy->BodyTarget(pev->origin) + m_hEnemy->pev->velocity * predictedTravelTime;
 				}
 
 				Vector direction = (predictedTargetOri - pHornet->pev->origin).Normalize();

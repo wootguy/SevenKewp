@@ -90,6 +90,9 @@ enum sbar_data
 #define MAX_CLIENT_ENTS 1665 // default for the latest HL client from steam
 #define MAX_LEGACY_CLIENT_ENTS 1365 // default when using the steam_legacy beta
 
+#define MAX_PACKET_ENTITIES 1024
+#define MAX_LEGACY_PACKET_ENTITIES 256
+
 enum HL_CLIENT_ENGINE_VERSION {
 	CLIENT_ENGINE_NOT_CHECKED,	// player hasn't responded to cvar queries yet
 	CLIENT_ENGINE_HL_LATEST,	// the latest version of the steam HL client from steam
@@ -102,6 +105,13 @@ enum HL_CLIENT_MOD_VERSION {
 	CLIENT_MOD_HL,			// the vanilla half-life mod from steam (or an undetected custom client)
 	CLIENT_MOD_HLBUGFIXED,	// a popular custom client (for cheating!!! but also cool stuff...)
 	CLIENT_MOD_BOT,			// bot's don't use mods
+};
+
+struct client_info_t {
+	int engine_version;
+	int mod_version;
+	int max_edicts;
+	int max_packet_entities;
 };
 
 #define CHAT_INTERVAL 1.0f
@@ -280,7 +290,7 @@ public:
 	virtual int		Restore( CRestore &restore );
 	void RenewItems(void);
 	void PackDeadPlayerItems( void );
-	void HideAllItems();
+	void HideAllItems(bool hideSuit);
 	
 	// if removeItemsOnly=true, then remove items server-side, but don't update the client hud
 	// (fixes race condition during player spawn)
@@ -431,8 +441,7 @@ public:
 
 	void HandleClientCvarResponse(int requestID, const char* pszCvarName, const char* pszValue);
 
-	// get the default edict count for the player's client, to avoid sending invalid indexes
-	int GetMaxClientEdicts();
+	client_info_t GetClientInfo();
 
 	void SendLegacyClientWarning();
 

@@ -773,7 +773,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	iPA = 0;
 	iPW = 0;
 
-	bool bPackItems = TRUE;
+	bool bPackItems = rgpPackWeapons[iPW];
 
 	if (iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE && iWeaponRules == GR_PLR_DROP_GUN_ACTIVE)
 	{
@@ -824,10 +824,10 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	CleanupWeaponboxes();
 }
 
-void CBasePlayer::HideAllItems() {
+void CBasePlayer::HideAllItems(bool hideSuit) {
 	pev->viewmodel = 0;
 	pev->weaponmodel = 0;
-	pev->weapons = 0;
+	pev->weapons = hideSuit ? 0 : (1 << WEAPON_SUIT);
 
 	UpdateClientData();
 
@@ -876,7 +876,7 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit, BOOL removeItemsOnly)
 		m_rgAmmo[i] = 0;
 
 	if (!removeItemsOnly)
-		HideAllItems();
+		HideAllItems(removeSuit);
 }
 
 /*
@@ -905,7 +905,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	g_pGameRules->PlayerKilled( this, pevAttacker, g_pevLastInflictor );
 
-	HideAllItems();
+	HideAllItems(true);
 	ReleaseControlledObjects();
 
 	// this client isn't going to be thinking for a while, so reset the sound until they respawn
@@ -1676,6 +1676,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	m_isObserver = true;
 	m_lastObserverSwitch = gpGlobals->time;
 	pev->viewmodel = 0; // prevent floating view models
+	pev->weapons = 0; // no weapon switching
 
 	// Clear out the status bar
 	m_fInitHUD = TRUE;
@@ -5757,18 +5758,25 @@ void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarNam
 	}
 }
 
-int CBasePlayer::GetMaxClientEdicts() {
-	// return the default from steam
-	// this value can be overridden in liblist.gam but there's no way to know if the client did that
-	// and they will get kicked if this value is overestimated
-	
+client_info_t CBasePlayer::GetClientInfo() {
+	client_info_t info;
+
+	info.engine_version = m_clientEngineVersion;
+	info.mod_version = m_clientModVersion;
+
 	switch (m_clientEngineVersion) {
 	case CLIENT_ENGINE_HL_LATEST:
-		return MAX_CLIENT_ENTS;
+		info.max_edicts = MAX_CLIENT_ENTS;
+		info.max_packet_entities = MAX_PACKET_ENTITIES;
+		break;
 	case CLIENT_ENGINE_HL_LEGACY:
 	default: // better safe than sorry
-		return MAX_LEGACY_CLIENT_ENTS;
+		info.max_edicts = MAX_LEGACY_CLIENT_ENTS;
+		info.max_packet_entities = MAX_LEGACY_PACKET_ENTITIES;
+		break;
 	}
+
+	return info;
 }
 
 void CBasePlayer::SendLegacyClientWarning() {
@@ -5782,9 +5790,7 @@ void CBasePlayer::SendLegacyClientWarning() {
 	UTIL_ClientPrint(this, print_console, "\n-------------------------------------------------------------------------\n");
 	UTIL_ClientPrint(this, print_console, "This mod is not 100% compatible with the \"Pre-25th Anniversary Build\" of Half-Life.\n");
 	UTIL_ClientPrint(this, print_console, "Some objects and effects have been made invisible to you so that you aren't kicked.\n");
-	UTIL_ClientPrint(this, print_console, "To fix this, either set \"Beta Participation\" to \"None\" in Steam, or add \"edicts 2048\"\n");
-	UTIL_ClientPrint(this, print_console, "to your liblist.gam file. Editing liblist.gam should fix the problem, but won't remove\n");
-	UTIL_ClientPrint(this, print_console, "this message (the server can't know if you've made that edit or not).\n");
+	UTIL_ClientPrint(this, print_console, "To fix this, set \"Beta Participation\" to \"None\" in Steam, or wait for the next map.\n");
 	UTIL_ClientPrint(this, print_console, "-------------------------------------------------------------------------\n\n");
 
 	UTIL_LogPlayerEvent(edict(), "was sent the steam_legacy client warning\n");

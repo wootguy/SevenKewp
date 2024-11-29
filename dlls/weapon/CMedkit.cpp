@@ -228,10 +228,20 @@ void CMedkit::SecondaryAttack()
 		if (!mon || mon->IsAlive() || (!mon->IsNormalMonster() && !mon->IsPlayer()) || mon->IsMachine()) {
 			continue;
 		}
-		
-		float dist = (mon->pev->origin - m_pPlayer->pev->origin).Length();
 
-		if (dist < bestDist) {
+		float dist = (mon->pev->origin - m_pPlayer->pev->origin).Length();
+		
+		if (bestTarget == NULL) {
+			bestDist = dist;
+			bestTarget = mon;
+			continue;
+		}
+		
+		// prefer reviving players over monsters, which sometimes have death poses far from where they died
+		bool isBetterClass = mon->IsPlayer() && !bestTarget->IsPlayer();
+		bool isWorseClass = !mon->IsPlayer() && bestTarget->IsPlayer();
+
+		if ((dist < bestDist && !isWorseClass) || isBetterClass) {
 			bestDist = dist;
 			bestTarget = mon;
 		}
