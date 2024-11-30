@@ -375,6 +375,10 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 		case ISLAVE_AE_ZAP_POWERUP:
 		{
+			// Hack to prevent the event from playing again when the animation ends
+			if (m_iTaskStatus == TASKSTATUS_COMPLETE)
+				break;
+
 			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 3.0);
 
 			pev->framerate = gSkillData.sk_islave_speed_zap;
