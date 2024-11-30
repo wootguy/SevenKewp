@@ -263,6 +263,8 @@ void CTentacle :: Spawn( )
 	SetHealth();
 	pev->sequence		= 0;
 
+	m_EFlags |= EFLAG_SLERP; //Always interpolate tentacles since they don't actually move.
+
 	m_spawnHealth = pev->health;
 
 	InitModel();
