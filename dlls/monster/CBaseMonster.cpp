@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "monsters.h"
 #include "env/CSoundEnt.h"
 #include "decals.h"
@@ -9,11 +8,15 @@
 #include "CBreakable.h"
 #include "nodes.h"
 #include "saverestore.h"
-#include "scripted.h"
+#include "CCineMonster.h"
 #include "CTalkSquadMonster.h"
 #include "gamerules.h"
 #include "defaultai.h"
 #include "CMonsterMaker.h"
+#include "hlds_hooks.h"
+#include "lagcomp.h"
+#include "CItemInventory.h"
+#include "CBasePlayer.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -2155,6 +2158,7 @@ void CBaseMonster::MonsterInit(void)
 	pev->ideal_yaw = pev->angles.y;
 	pev->max_health = pev->health;
 	pev->deadflag = DEAD_NO;
+	m_MonsterState = MONSTERSTATE_NONE;
 	m_IdealMonsterState = MONSTERSTATE_IDLE;// Assume monster will be idle, until proven otherwise
 
 	m_IdealActivity = ACT_IDLE;
@@ -3684,6 +3688,8 @@ void CBaseMonster::MonsterInitDead(void)
 	BecomeDead();
 	SetThink(&CBaseMonster::CorpseFallThink);
 	pev->nextthink = gpGlobals->time + 0.5;
+	
+	m_startDead = true;
 }
 
 //=========================================================
@@ -4365,6 +4371,8 @@ void CBaseMonster::Killed(entvars_t* pevAttacker, int iGib)
 		return;
 	}
 
+	SetRevivalVars();
+
 	Remember(bits_MEMORY_KILLED);
 
 	// clear the deceased's sound channels.(may have been firing or reloading when killed)
@@ -4413,7 +4421,7 @@ void CBaseMonster::Killed(entvars_t* pevAttacker, int iGib)
 // take health
 int CBaseMonster::TakeHealth(float flHealth, int bitsDamageType, float healthcap)
 {
-	if (!pev->takedamage)
+	if (!pev->takedamage || !IsAlive())
 		return 0;
 
 	// clear out any damage types we healed.
@@ -4814,10 +4822,12 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 			UTIL_Shrapnel(ptr->vecEndPos, ptr->vecPlaneNormal, flDamage, bitsDamageType);
 		}
 		if (bitsDamageType & DMG_BLOOD) {
+			Vector bloodPos = ptr->vecEndPos + get_lagcomp_offset(entindex());
+
 			// headshots should always show big blood, no matter how little damage was done.
 			// The idea is that blood size should be used primarly as an indicator that you hit the weak point.
 			float bloodSize = ptr->iHitgroup == HITGROUP_HEAD ? V_max(flDamage, 30) : flDamage;
-			SpawnBlood(ptr->vecEndPos, BloodColor(), bloodSize);
+			SpawnBlood(bloodPos, BloodColor(), bloodSize);
 			TraceBleed(bloodSize, vecDir, ptr, bitsDamageType);
 		}
 
@@ -6450,10 +6460,13 @@ void CBaseMonster::StartTask(Task_t* pTask)
 		if (m_hTargetEnt != NULL)
 		{
 			Vector scriptOri = m_hTargetEnt->pev->origin;
-			TraceResult tr;
-			TRACE_MONSTER_HULL(edict(), scriptOri, scriptOri - Vector(0, 0, 512), ignore_monsters, edict(), &tr);
-			
-			pev->origin = tr.vecEndPos;	// Plant on floor under script
+
+			if (scriptOri.z > pev->origin.z) {
+				TraceResult tr;
+				TRACE_MONSTER_HULL(edict(), scriptOri, scriptOri - Vector(0, 0, 512), ignore_monsters, edict(), &tr);
+
+				pev->origin = tr.vecEndPos;	// Plant on floor under script
+			}
 		}
 
 		TaskComplete();
@@ -7018,7 +7031,7 @@ int CBaseMonster::GetScheduleTableSize() {
 }
 
 int CBaseMonster::GetScheduleTableIdx() {
-	for (int i = 0; i < ARRAYSIZE(m_scheduleList); i++) {
+	for (int i = 0; i < (int)ARRAYSIZE(m_scheduleList); i++) {
 		if (m_scheduleList[i] == m_pSchedule) {
 			return i;
 		}
@@ -7258,8 +7271,15 @@ void CBaseMonster::StopFollowing(BOOL clearSchedule)
 
 void CBaseMonster::StartFollowing(CBaseEntity* pLeader)
 {
-	if (m_hCine)
-		((CCineMonster*)m_hCine.GetEntity())->CancelScript();
+	if (m_hCine) {
+		CCineMonster* cine = (CCineMonster*)m_hCine.GetEntity();
+		if (!cine->CanInterrupt()) {
+			return;
+		}
+
+		cine->CancelScript();
+	}
+		
 
 	if (m_hEnemy != NULL)
 		m_IdealMonsterState = MONSTERSTATE_ALERT;
@@ -7444,7 +7464,7 @@ void CBaseMonster::SetSize(Vector defaultMins, Vector defaultMaxs) {
 
 void CBaseMonster::SetHealth() {
 	if (!pev->health)
-		pev->health = GetDefaultHealth(STRING(pev->classname));
+		pev->health = GetDefaultHealth(STRING(pev->classname), true);
 
 	pev->max_health = pev->health;
 }
@@ -7486,7 +7506,7 @@ void CBaseMonster::Nerf() {
 		return;
 	}
 
-	float defaultHealth = GetDefaultHealth(monstertype);
+	float defaultHealth = GetDefaultHealth(monstertype, false);
 
 	if (defaultHealth <= 0) {
 		return; // no default health defined for this entity
@@ -7520,7 +7540,7 @@ void CBaseMonster::Nerf() {
 			while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
 				const char* cname = STRING(ent->v.classname);
 				if (strcmp(cname, "game_counter") && strcmp(cname, "trigger_counter")) {
-					ALERT(at_console, "Not nerfing %d hp %s (triggers '%s' %s)\n", (int)pev->health, monstertype, STRING(m_iszTriggerTarget), cname);
+					ALERT(at_aiconsole, "Not nerfing %d hp %s (triggers '%s' %s)\n", (int)pev->health, monstertype, STRING(m_iszTriggerTarget), cname);
 					shouldNerf = false;
 					break;
 				}
@@ -7529,25 +7549,25 @@ void CBaseMonster::Nerf() {
 		if (monstername && !IsTurret() && strstr(monstertype, "_osprey") == NULL && strstr(monstertype, "_apache") == NULL && !FNullEnt(FIND_ENTITY_BY_TARGET(NULL, STRING(monstername)))) {
 			// sc_tetris has a boss that connects alien controllers with beams
 			// turrets/ospreys/apaches can be toggled on/off and often have a name
-			ALERT(at_console, "Not nerfing %d hp %s (has name '%s')\n", (int)pev->health, monstertype, STRING(monstername));
+			ALERT(at_aiconsole, "Not nerfing %d hp %s (has name '%s')\n", (int)pev->health, monstertype, STRING(monstername));
 			shouldNerf = false;
 		}
 		else if (hasCustomModel || isGlowing) {
 			// this monster looks special for some reason, makes sense for hp to be different
-			ALERT(at_console, "Not nerfing %d hp %s (custom appearance)\n", (int)pev->health, monstertype);
+			ALERT(at_aiconsole, "Not nerfing %d hp %s (custom appearance)\n", (int)pev->health, monstertype);
 			shouldNerf = false;
 		}
 		
 		if (pev->health >= 90000) {
 			// monster is meant to be invincible
-			ALERT(at_console, "Not nerfing %d hp %s (probably meant to be invincible)\n", (int)pev->health, monstertype);
+			ALERT(at_aiconsole, "Not nerfing %d hp %s (probably meant to be invincible)\n", (int)pev->health, monstertype);
 			shouldNerf = false;
 			shouldPartialNerf = false;
 		}
 
 		if (shouldNerf) {
 			// There is likely no good reason for this monster to have extra health
-			ALERT(at_console, "Nerf %s hp: %d -> %d.\n", monstertype, (int)pev->health, (int)defaultHealth);
+			ALERT(at_aiconsole, "Nerf %s hp: %d -> %d.\n", monstertype, (int)pev->health, (int)defaultHealth);
 			g_nerfStats.nerfedMonsterHealth += pev->health - defaultHealth;
 			pev->health = pev->max_health = defaultHealth;
 		}
@@ -7555,7 +7575,7 @@ void CBaseMonster::Nerf() {
 			if (shouldPartialNerf && mp_bulletspongemax.value >= 1) {
 				float maxspongehp = defaultHealth * mp_bulletspongemax.value;
 				if (pev->health > maxspongehp) {
-					ALERT(at_console, "Partially nerf %s hp: %d -> %d\n", monstertype, (int)pev->health, (int)maxspongehp);
+					ALERT(at_aiconsole, "Partially nerf %s hp: %d -> %d\n", monstertype, (int)pev->health, (int)maxspongehp);
 					g_nerfStats.nerfedMonsterHealth += pev->health - maxspongehp;
 					pev->health = pev->max_health = maxspongehp;
 				}
@@ -7592,4 +7612,212 @@ void CBaseMonster::LogPlayerDamage(entvars_t* attacker, float damage) {
 			break;
 		}
 	}
+}
+
+CItemInventory* CBaseMonster::GetInventoryItem(const char* name) {
+	CItemInventory* item = m_inventory ? m_inventory.GetEntity()->MyInventoryPointer() : NULL;
+
+	while (item) {
+		if (item->m_item_name && !strcmp(name, STRING(item->m_item_name))) {
+			return item;
+		}
+
+		item = item->m_pNext ? item->m_pNext.GetEntity()->MyInventoryPointer() : NULL;
+	}
+
+	return NULL;
+}
+
+std::vector<CItemInventory*> CBaseMonster::GetInventoryGroupItems(const char* groupName) {
+	std::vector<CItemInventory*> groupItems;
+	CItemInventory* item = m_inventory ? m_inventory.GetEntity()->MyInventoryPointer() : NULL;
+
+	std::vector<std::string> names = splitString(groupName, " ");
+
+	while (item) {
+		for (int i = 0; item->m_item_group && i < (int)names.size(); i++) {
+			if (!strcmp(names[i].c_str(), STRING(item->m_item_group))) {
+				groupItems.push_back(item);
+				break;
+			}
+		}
+
+		item = item->m_pNext ? item->m_pNext.GetEntity()->MyInventoryPointer() : NULL;
+	}
+
+	return groupItems;
+}
+
+int CBaseMonster::CountInventoryItems() {
+	if (!m_inventory) {
+		return 0;
+	}
+
+	CItemInventory* item = m_inventory.GetEntity()->MyInventoryPointer();
+	int count = 1;
+
+	while (item->m_pNext) {
+		count++;
+		item = item->m_pNext.GetEntity()->MyInventoryPointer();
+	}
+
+	return count;
+}
+
+void CBaseMonster::ApplyEffects() {
+	CBasePlayer* plr = IsPlayer() ? (CBasePlayer*)this : NULL;
+
+	Vector total_glow = g_vecZero;
+	float total_damage = 0;
+	float total_respiration = 0;
+	float total_friction = m_friction_modifier;
+	float total_gravity = m_gravity_modifier;
+	float total_speed = m_speed_modifier;
+	bool total_block_weapon = false;
+	bool total_invulnerable = false;
+	bool total_invisible = false;
+	bool total_nonsolid = false;
+	bool any_permanent = false;
+
+	CItemInventory* item = m_inventory ? m_inventory.GetEntity()->MyInventoryPointer() : NULL;
+	while (item) {
+		if (!item->m_effects_wait_until_activated || item->m_is_active) {
+			total_glow = total_glow + item->m_effect_glow;
+			total_block_weapon |= item->m_effect_block_weapons;
+			total_invulnerable |= item->m_effect_invulnerable;
+			total_invisible |= item->m_effect_invisible;
+			total_nonsolid |= item->m_effect_nonsolid;
+			total_respiration += item->m_effect_respiration;
+
+			if (item->m_effect_friction) {
+				if (!total_friction) {
+					total_friction = item->m_effect_friction;
+				}
+				else {
+					total_friction *= item->m_effect_friction;
+				}
+			}
+
+			if (item->m_effect_gravity) {
+				if (!total_gravity) {
+					total_gravity = item->m_effect_gravity;
+				}
+				else {
+					total_gravity *= item->m_effect_gravity;
+				}
+			}
+
+			if (item->m_effect_speed) {
+				if (!total_speed) {
+					total_speed = item->m_effect_speed;
+				}
+				else {
+					total_speed *= item->m_effect_speed;
+				}
+			}
+
+			if (item->m_effect_damage) {
+				if (!total_damage) {
+					total_damage = item->m_effect_damage;
+				}
+				else {
+					total_damage *= item->m_effect_damage;
+				}
+			}
+		}
+
+		any_permanent |= item->m_effects_permanent;
+
+		item = item->m_pNext ? item->m_pNext.GetEntity()->MyInventoryPointer() : NULL;
+	}
+
+	if (any_permanent) {
+		ALERT(at_console, "Permanent item effects not implemented\n");
+	}
+
+	if (total_glow != g_vecZero) {
+		pev->rendermode = kRenderNormal;
+		pev->renderfx = kRenderFxGlowShell;
+		pev->rendercolor.x = V_min(255, total_glow.x);
+		pev->rendercolor.y = V_min(255, total_glow.y);
+		pev->rendercolor.z = V_min(255, total_glow.z);
+		pev->renderamt = 1;
+	}
+	else {
+		pev->renderfx = kRenderFxNone;
+		pev->rendercolor = g_vecZero;
+		pev->renderamt = 0;
+	}
+
+	pev->takedamage = total_invulnerable ? DAMAGE_NO : DAMAGE_YES;
+
+	if (total_invisible) {
+		pev->flags |= FL_NOTARGET;
+	}
+	else {
+		pev->flags &= ~FL_NOTARGET;
+	}
+
+	pev->solid = total_nonsolid ? SOLID_NOT : SOLID_SLIDEBOX;
+	pev->friction = total_friction;
+	pev->gravity = total_gravity;
+	pev->maxspeed = total_speed * sv_maxspeed->value;
+	m_damage_modifier = total_damage ? total_damage : 1.0f;
+
+	if (plr) {
+		plr->DisableWeapons(total_block_weapon);
+		plr->m_airTimeModifier = total_respiration;
+	}
+}
+
+void CBaseMonster::SetRevivalVars() {
+	m_deathMins = pev->mins;
+	m_deathMaxs = pev->maxs;
+	m_deathHealthMax = pev->max_health;
+	m_deathBody = pev->body;
+	m_deathMovetype = pev->movetype;
+
+	if (m_fShockEffect) {
+		m_deathRenderMode = m_iOldRenderMode;
+		m_deathRenderAmt = m_flOldRenderAmt;
+		m_deathRenderFx = m_iOldRenderFX;
+		m_deathRenderColor = m_OldRenderColor;
+	}
+	else {
+		m_deathRenderMode = pev->rendermode;
+		m_deathRenderAmt = pev->renderamt;
+		m_deathRenderFx = pev->renderfx;
+		m_deathRenderColor = pev->rendercolor;
+	}
+}
+
+void CBaseMonster::Revive() {
+	Forget(bits_MEMORY_KILLED); // forget everything
+	MonsterInit();
+	UTIL_SetSize(pev, m_deathMins, m_deathMaxs);
+
+	pev->max_health = m_deathHealthMax;
+	pev->health = m_deathHealthMax;
+	pev->body = m_deathBody;
+	pev->movetype = m_deathMovetype;
+	pev->solid = SOLID_SLIDEBOX;
+	m_isFadingOut = false;
+
+	pev->rendermode = m_deathRenderMode;
+	pev->renderamt = m_deathRenderAmt;
+	pev->renderfx = m_deathRenderFx;
+	pev->rendercolor = m_deathRenderColor;
+}
+
+float CBaseMonster::GetDamageModifier() {
+	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
+	CBaseMonster* mon = owner ? owner->MyMonsterPointer() : NULL;
+	float owner_damage_mult = mon ? mon->m_damage_modifier : 1.0f;
+	float self_damage_mult = m_damage_modifier ? m_damage_modifier : 1.0f;
+
+	if (owner_damage_mult == 0.0f) {
+		owner_damage_mult = 1.0f;
+	}
+
+	return self_damage_mult * owner_damage_mult;
 }

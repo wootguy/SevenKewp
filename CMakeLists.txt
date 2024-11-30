@@ -30,7 +30,15 @@ include_directories(${CMAKE_SOURCE_DIR}/dlls/item)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/path)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/weapon)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/net)
+include_directories(${CMAKE_SOURCE_DIR}/dlls/hooks)
+include_directories(${CMAKE_SOURCE_DIR}/dlls/util)
+include_directories(${CMAKE_SOURCE_DIR}/dlls/game)
+include_directories(${CMAKE_SOURCE_DIR}/dlls/player)
 include_directories(${CMAKE_SOURCE_DIR}/dlls/)
+
+include_directories(${CMAKE_SOURCE_DIR}/rehlds)
+include_directories(${CMAKE_SOURCE_DIR}/rehlds/rehlds/public)
+include_directories(${CMAKE_SOURCE_DIR}/rehlds/rehlds/common)
 
 project(sevenkewp)
 

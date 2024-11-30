@@ -151,6 +151,8 @@ public:
 	void			TrySmellTalk( void );
 	CBaseEntity		*EnumFriends( CBaseEntity *pentPrevious, int listNumber, BOOL bTrace );
 	void			AlertFriends( void );
+	void			Unprovoke( bool friendsToo );
+	void			UnprovokeFriends( void ); // calms an npc and friends down that was provoked by a player's friendly fire
 	void			ShutUpFriends( void );
 	BOOL			IsTalking( void );
 	void			Talk( float flDuration );	

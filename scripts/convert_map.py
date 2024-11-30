@@ -1,4 +1,4 @@
-import struct, os, subprocess, wave, time, sys, copy, codecs, json, shutil
+import struct, os, subprocess, wave, time, sys, copy, codecs, json, shutil, copy
 from collections import OrderedDict
 
 nonstandard_audio_formats = ["aiff", "asf", "asx", "au", "dls", "flac", "fsb", "it", "m3u", "mid", "midi", "mod", "mp2", "ogg", "pls", "s3m", "vag", "wax", "wma", "xm", "xma"]
@@ -295,6 +295,7 @@ def check_map_problems(all_ents, fix_problems):
 	global magick_path
 	global bspguy_path
 	global nonstandard_audio_formats
+	global all_titles
 	
 	any_problems = False
 	
@@ -491,12 +492,14 @@ def check_map_problems(all_ents, fix_problems):
 					ent['spawnflags'] = "%d" % (spawnflags | 896)
 				any_problems = True
 		
-		if cname == "trigger_changesky":
+		if cname == "trigger_changesky" and ent.get('skyname', ""):
 			skyname = ent.get('skyname', "")
-			if not fix_problems:
+			bsppath = 'models/skybox/%s.bsp' % skyname
+			
+			if not os.path.exists(bsppath) and not fix_problems:
 				err("trigger_changesky requires sky to bsp conversion")
 				any_problems = True
-			else:
+			elif not os.path.exists(bsppath):
 				can_convert = True
 				skybox_image_tmp_path = "_skybox/images"
 				shutil.rmtree(skybox_image_tmp_path)
@@ -526,7 +529,7 @@ def check_map_problems(all_ents, fix_problems):
 					subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 					
 					os.makedirs('models/skybox', exist_ok=True)
-					bsppath = 'models/skybox/%s.bsp' % skyname
+					
 					shutil.copyfile('_skybox/skybox.bsp', bsppath)
 					
 					# rename textures because each texture loaded by the client must have a unique name
@@ -537,6 +540,67 @@ def check_map_problems(all_ents, fix_problems):
 						cmd = [bspguy_path, 'renametex', bsppath, '-old', 'box_%s' % suffix, '-new', newname]
 						print(' '.join(cmd))
 						subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		
+		if cname == 'env_message':
+			title_name = ent.get("message", "").lower()
+		
+			if title_name in all_titles:
+				if not fix_problems:
+					err("env_message using title from titles.txt: %s" % title_name)
+					any_problems = True
+				else:
+					spawnflags = int(ent.get('spawnflags', 0))
+					
+					title = all_titles[title_name]
+					ent['message'] = title["text"].replace('"', "''")
+					ent['x'] = title["x"]
+					ent['y'] = title["y"]
+					ent['fadein'] = title["fadein"]
+					ent['fadeout'] = title["fadeout"]
+					ent['effect'] = title["effect"]
+					ent['color'] = title["color"]
+					ent['color2'] = title["color2"]
+					ent['holdtime'] = title["holdtime"]
+					ent['fxtime'] = title["fxtime"]
+					ent['classname'] = 'game_text'
+					ent["spawnflags"] = "1" if (spawnflags & 2) else 0
+					
+					if (spawnflags & 1):
+						# kill the text after it plays
+						ent["killtarget"] = ent["targetname"]
+					
+					sound = ent.get("messagesound", "")
+					if sound:
+						attn = int(ent.get("messageattenuation", "0"))
+						ori = ent.get("origin", "")
+						ori_parts = ori.split()
+						if (len(ori_parts) > 2):
+							ori_parts[2] = "%d" % (int(ori_parts[2]) + 24)
+							ori = " ".join(ori_parts)
+						
+						newent = {}
+						newent["classname"] = "ambient_generic"
+						newent["targetname"] = ent["targetname"]
+						newent["origin"] = ori
+						newent["message"] = sound
+						newent["health"] = ent.get("messagevolume", "0")
+						newent["pitch"] = "100"
+						
+						spawnflags = 16 | 32
+						
+						if attn == 0:
+							spawnflags |= 2
+						elif attn == 1:
+							spawnflags |= 4
+						elif attn == 2:
+							spawnflags |= 8
+						elif attn == 3:
+							spawnflags |= 1
+							
+						newent["spawnflags"] = "%d" % spawnflags
+						
+						all_ents.append(newent)
+						
 		
 		# custom models with external sequences cause crashes if the "vanilla" model they're referencing
 		# does not exist (e.g. "models/shocktrooper01.mdl" for a custom shocktrooper model)
@@ -575,9 +639,176 @@ def convert_ents(all_ents):
 				ent[key] = 'models/faraon/hgrunt_desert.mdl'
 			if model == 'models/sandstone/rpggruntf.mdl':
 				ent[key] = 'models/faraon/hgrunt_desert.mdl'
-			
-		
 
+def get_all_skill_cvar_names(skill_path):	
+	all_names = set()
+
+	with open(skill_path, 'r') as file:
+		for line in file:
+			line = line.strip().lower()
+			
+			parts = line.split()
+			if len(parts) < 2:
+				continue
+				
+			if parts[0].startswith("sk_"):
+				all_names.add(parts[0].lower())
+				
+	return all_names
+
+def convert_skill_cfg(skill_path):
+	global all_skill_cvar_names
+	new_cvar_lines_idx = {} # maps a cvar line to an index in new_skill_lines
+	best_cvar_levels = {}
+	new_skill_lines = []
+	change_count = 0
+	
+	with open(skill_path, 'r') as file:
+		for line in file:
+			line = line.strip().lower()
+			
+			parts = line.split()
+			if len(parts) < 2:
+				new_skill_lines.append(line)
+				continue
+				
+			skill_name = parts[0].lower()
+			
+			suffix = skill_name[-1]
+			new_skill_name = skill_name[:-1]
+			
+			if suffix in ["1", "2", "3"] and new_skill_name in all_skill_cvar_names:
+				if new_skill_name in best_cvar_levels:
+					# prefer highest skill level setting
+					old_best = int(best_cvar_levels[new_skill_name])
+					new_best = int(suffix)
+					if new_best <= old_best:
+						continue
+				
+				best_cvar_levels[new_skill_name] = suffix
+				
+				if new_skill_name in new_cvar_lines_idx:
+					del new_skill_lines[new_cvar_lines_idx[new_skill_name]]
+				
+				new_skill_lines.append("%s %s" % (new_skill_name, " ".join(parts[1:])))
+				new_cvar_lines_idx[new_skill_name] = len(new_skill_lines)-1
+				change_count += 1
+				
+				continue
+			
+			new_skill_lines.append(line)
+
+	if change_count > 0:
+		with open(skill_path, 'w') as file:
+			for line in new_skill_lines:
+				file.write(line + "\n")
+				
+		print("Rewrote/removed %d skill file lines" % change_count)
+
+def parse_titles(titles_path):
+	titles = {}
+	
+	# defaults copied from the client code
+	current_hud_params = {
+		'color': '100 100 100',
+		'color2': '240 110 0',
+		'x': '-1',
+		'y': '0.7',
+		'fadein': '0.01',
+		'fadeout': '1.5',
+		'fxtime': '0.25',
+		'holdtime': '5'
+	}
+	
+	current_hud_text = ''
+	title_name = ''
+	parsing_hud_text = False
+
+	with open(titles_path, 'r') as file:
+		for line in file:
+			line = line.strip()
+			
+			if not line or line.startswith("//"):
+				continue
+				
+			if not parsing_hud_text and line.startswith("$"):
+				parts = line.split()
+				param_name = parts[0][1:].lower()
+				
+				if param_name == 'position':
+					current_hud_params['x'] = parts[1]
+					current_hud_params['y'] = parts[2]
+				else:
+					param_value = " ".join(parts[1:])
+					current_hud_params[param_name] = param_value
+			elif line.startswith("{"):
+				parsing_hud_text = True
+			elif line.startswith("}"):
+				parsing_hud_text = False
+				current_hud_params['text'] = current_hud_text
+				titles[title_name] = copy.deepcopy(current_hud_params)
+				current_hud_text = current_hud_params['text'] = ''
+			else:
+				if parsing_hud_text:
+					if current_hud_text:
+						current_hud_text += '\n'
+					current_hud_text += line
+				else:
+					title_name = line.lower()
+	
+	#for key, val in titles.items():
+	#	print("%s = %s" % (key, val))
+	
+	return titles
+
+def parse_sentences(sent_path):
+	sentences = {}
+
+	with open(sent_path, 'r') as file:
+		for line in file:
+			line = line.strip()
+			
+			if not line or line.startswith("//"):
+				continue
+				
+			parts = line.split()
+			
+			if len(parts) < 2:
+				continue
+				
+			sent_name = parts[0].lower()
+			sent_folder = 'vox'
+			
+			if '/' in parts[1]:
+				sent_folder = parts[1][:parts[1].find("/")]
+				parts[1] = parts[1][parts[1].find("/")+1:]
+			
+			sentences[sent_name] = {}
+			sentences[sent_name]["folder"] = sent_folder
+			sentences[sent_name]["sounds"] = parts[1:]
+			sentences[sent_name]["has_effects"] = True if '(' in line else False
+			sentences[sent_name]["line"] = line
+		
+	return sentences
+
+def write_unique_sentences(hl_sents, sc_sents):
+	unique_sents = {}
+	
+	for key, val in sc_sents.items():
+		if key not in hl_sents:
+			unique_sents[key] = val
+	
+	sorted_keys = sorted(unique_sents.keys())
+	
+	with open("hlcoop_sentences.txt", 'w') as file:
+		last_key = ''
+		for key in sorted_keys:
+			if last_key[:-1] != key[:-1]:
+				file.write("\n")
+			last_key = key
+			file.write(unique_sents[key]["line"] + "\n")
+	
+	return unique_sents
 
 def ents_match(d1, d2, path=""):
 	if len(d1) != len(d2):
@@ -613,6 +844,10 @@ modelguy_path = os.path.join(cur_dir, 'modelguy')
 wadmaker_path = os.path.join(cur_dir, '_skybox', 'wadmaker')
 bspguy_path = os.path.join(cur_dir, 'bspguy')
 magick_path = 'magick'
+skill_path = os.path.join(cur_dir, "skill.cfg")
+titles_path = os.path.join(cur_dir, "titles.txt")
+#sent_path_hl = os.path.join(cur_dir, "sentences_hl.txt")
+#sent_path_sc = os.path.join(cur_dir, "sentences_sc.txt")
 
 #os.chdir('../compatible_maps')
 
@@ -622,6 +857,11 @@ models_dir = "models"
 all_maps = get_all_maps(maps_dir)
 all_cfgs = get_all_cfgs(maps_dir)
 all_models = get_all_models(models_dir)
+all_skill_cvar_names = get_all_skill_cvar_names(skill_path)
+all_titles = parse_titles(titles_path)
+#sentences_hl = parse_sentences(sent_path_hl)
+#sentences_sc = parse_sentences(sent_path_sc)
+#write_unique_sentences(sentences_hl, sentences_sc)
 
 fix_problems = True
 
@@ -757,6 +997,9 @@ for idx, map_name in enumerate(all_maps):
 		print()
 
 for cfg in all_cfgs:
+	if cfg.endswith("_skl.cfg"):
+		convert_skill_cfg("maps/%s" % cfg)
+		continue
 	with open("maps/%s" % cfg, 'r') as file:
 		for line in file:
 			line = line.strip().lower()

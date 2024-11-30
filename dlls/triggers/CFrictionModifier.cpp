@@ -1,9 +1,9 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
+#include "CBaseMonster.h"
 
 class CFrictionModifier : public CBaseEntity
 {
@@ -47,8 +47,17 @@ void CFrictionModifier::Spawn(void)
 // Sets toucher's friction to m_frictionFraction (1.0 = normal friction)
 void CFrictionModifier::ChangeFriction(CBaseEntity* pOther)
 {
-	if (pOther->pev->movetype != MOVETYPE_BOUNCEMISSILE && pOther->pev->movetype != MOVETYPE_BOUNCE)
-		pOther->pev->friction = m_frictionFraction;
+	if (pOther->pev->movetype != MOVETYPE_BOUNCEMISSILE && pOther->pev->movetype != MOVETYPE_BOUNCE) {
+		CBaseMonster* mon = pOther->MyMonsterPointer();
+		if (mon) {
+			mon->m_friction_modifier = m_frictionFraction;
+			mon->m_last_friction_trigger_touch = gpGlobals->time;
+			mon->ApplyEffects();
+		}
+		else {
+			pOther->pev->friction = m_frictionFraction;
+		}
+	}
 }
 
 

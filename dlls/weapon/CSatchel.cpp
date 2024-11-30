@@ -16,7 +16,6 @@
 
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "skill.h"
 #include "weapons.h"
 #include "nodes.h"
@@ -81,7 +80,9 @@ void CSatchelCharge :: Spawn( void )
 	pev->gravity = 0.5;
 	pev->friction = 0.8;
 
-	pev->dmg = gSkillData.sk_plr_satchel;
+	float dmg_mult = GetDamageModifier();
+
+	pev->dmg = gSkillData.sk_plr_satchel*dmg_mult;
 	// ResetSequenceInfo( );
 	pev->sequence = 1;
 

@@ -13,7 +13,6 @@
  *
  ****/
 
-#include "cbase.h"
 #include "CPipewrench.h"
 
 #define PIPEWRENCH_BODYHIT_VOLUME 128
@@ -292,7 +291,9 @@ bool CPipewrench::Swing(const bool bFirst)
 				}
 			}
 
-			pEntity->TraceAttack(m_pPlayer->pev, flDamage, gpGlobals->v_forward, &tr, DMG_CLUB);
+			float dmg_mult = GetDamageModifier();
+
+			pEntity->TraceAttack(m_pPlayer->pev, flDamage*dmg_mult, gpGlobals->v_forward, &tr, DMG_CLUB);
 
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}
@@ -475,7 +476,9 @@ void CPipewrench::BigSwing()
 				}
 			}
 
-			pEntity->TraceAttack(m_pPlayer->pev, flDamage, gpGlobals->v_forward, &tr, DMG_CLUB);
+			float dmg_mult = GetDamageModifier();
+
+			pEntity->TraceAttack(m_pPlayer->pev, flDamage * dmg_mult, gpGlobals->v_forward, &tr, DMG_CLUB);
 
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}
@@ -625,7 +628,7 @@ int CPipewrench::GetItemInfo(ItemInfo* p)
 	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
-	p->iPosition = 2;
+	p->iPosition = 1;
 	p->iId = WEAPON_PIPEWRENCH;
 	p->iWeight = PIPEWRENCH_WEIGHT;
 	return 1;

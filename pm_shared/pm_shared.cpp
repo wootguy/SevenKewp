@@ -85,7 +85,7 @@ typedef struct hull_s
 } hull_t;
 
 void StartSound(int eidx, int channel, const char* sample, float volume, float attenuation,
-	int fFlags, int pitch, const float* origin, uint32_t messageTargets, BOOL reliable);
+	int fFlags, int pitch, const float* origin, uint32_t messageTargets);
 
 inline uint32_t PLRBIT(int eidx) { return 1 << (eidx & 31); }
 
@@ -95,7 +95,7 @@ inline uint32_t PLRBIT(int eidx) { return 1 << (eidx & 31); }
 #else
 #define PLAY_MOVEMENT_SOUND(channel, sample, volume, attenuation, fFlags, pitch) \
 	StartSound(pmove->player_index+1, channel, sample, volume, attenuation, fFlags | SND_FL_PREDICTED, \
-		pitch, shared_vec3_origin, 0xffffffff & ~PLRBIT(pmove->player_index+1), false);
+		pitch, shared_vec3_origin, 0xffffffff & ~PLRBIT(pmove->player_index+1));
 #endif
 
 
@@ -3410,7 +3410,7 @@ void PM_Move ( struct playermove_s *ppmove, int server )
 	// reset friction after each movement. FrictionModifier Triggers work still.
 	if (pmove->movetype == MOVETYPE_WALK)
 	{
-		pmove->friction = 1.0f;
+		//pmove->friction = 1.0f;
 	}
 }
 

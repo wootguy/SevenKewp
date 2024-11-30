@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
-#include "doors.h"
+#include "CBaseToggle.h"
 
 /*QUAKED func_illusionary (0 .5 .8) ?
 A simple entity that looks solid but lets you walk through it.

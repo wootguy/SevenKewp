@@ -47,11 +47,6 @@
 #define DMG_ALWAYSGIB		(1 << 13)	// with this bit OR'd in, any damage type can be made to gib victims upon death.
 
 
-// time-based damage
-//mask off TF-specific stuff too
-#define DMG_TIMEBASED		(~(0xff003fff))	// mask for time-based damage
-
-
 #define DMG_DROWN			(1 << 14)	// Drowning
 #define DMG_FIRSTTIMEBASED  DMG_DROWN
 

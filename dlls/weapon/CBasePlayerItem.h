@@ -1,5 +1,5 @@
 #pragma once
-#include "cbase.h"
+#include "CBaseEntity.h"
 #include "CBasePlayer.h"
 #include "weapons.h"
 

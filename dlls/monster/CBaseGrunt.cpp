@@ -1,7 +1,6 @@
 #include	"extdll.h"
 #include	"plane.h"
 #include	"util.h"
-#include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"animation.h"
@@ -86,6 +85,8 @@ void CBaseGrunt :: GibMonster ( void )
 
 void CBaseGrunt::Killed(entvars_t* pevAttacker, int iGib)
 {
+	m_deadEquipment = m_iEquipment;
+
 	if (m_MonsterState != MONSTERSTATE_DEAD) //TODO: skip this for medic?
 	{
 		if (HasMemory(bits_MEMORY_SUSPICIOUS) || IsFacing(pevAttacker, pev->origin))
@@ -906,7 +907,7 @@ void CBaseGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/glauncher.wav", 0.8, ATTN_NORM);
 			CGrenade::ShootContact( pev, GetGunPosition(), m_vecTossVelocity );
 			m_fThrowGrenade = FALSE;
-			if (g_iSkillLevel == SKILL_HARD)
+			if (gSkillData.sk_hgrunt_gwait == 0)
 				m_flNextGrenadeCheck = gpGlobals->time + RANDOM_FLOAT( 2, 5 );// wait a random amount of time before shooting again
 			else
 				m_flNextGrenadeCheck = gpGlobals->time + 6;// wait six seconds before even looking again to see if a grenade can be thrown.
@@ -2421,7 +2422,7 @@ Schedule_t* CBaseGrunt :: GetScheduleOfType ( int Type )
 		{
 			if ( InSquad() )
 			{
-				if ( g_iSkillLevel == SKILL_HARD && HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) && HasEquipment(MEQUIP_HAND_GRENADE) && OccupySlot( bits_SLOTS_HGRUNT_GRENADE ) )
+				if ( gSkillData.sk_hgrunt_gcover && HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) && HasEquipment(MEQUIP_HAND_GRENADE) && OccupySlot( bits_SLOTS_HGRUNT_GRENADE ) )
 				{
 					if (FOkToSpeak())
 					{
@@ -2584,6 +2585,11 @@ Schedule_t* CBaseGrunt :: GetScheduleOfType ( int Type )
 	}
 }
 
+void CBaseGrunt::Revive() {
+	m_iEquipment = m_deadEquipment;
+
+	CBaseMonster::Revive();
+}
 
 
 void CBaseRepel::Spawn(void) {

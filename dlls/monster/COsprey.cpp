@@ -14,7 +14,6 @@
 ****/
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "monsters.h"
 #include "weapons.h"
 #include "nodes.h"
@@ -482,7 +481,7 @@ void COsprey::Flight( )
 	// make rotor, engine sounds
 	if (m_iSoundState == 0)
 	{
-		StartSound(edict(), CHAN_ITEM, "apache/ap_rotor4.wav", 1.0f, 0.3f, 0, 110, g_vecZero, 0xffffffff, false);
+		StartSound(edict(), CHAN_ITEM, "apache/ap_rotor4.wav", 1.0f, 0.3f, 0, 110, g_vecZero, 0xffffffff);
 		memset(lastPitch, 0, sizeof(int) * 33);
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 	}
@@ -514,7 +513,7 @@ void COsprey::Flight( )
 			}
 
 			StartSound(edict(), CHAN_ITEM, "apache/ap_rotor4.wav", 1.0f, 0.3f, SND_CHANGE_PITCH,
-				pitch, g_vecZero, PLRBIT(pPlayer->edict()), false);
+				pitch, g_vecZero, PLRBIT(pPlayer->edict()));
 			lastPitch[pPlayer->entindex()] = pitch;
 		}
 	}

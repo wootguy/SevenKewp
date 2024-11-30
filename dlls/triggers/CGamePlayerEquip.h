@@ -32,6 +32,7 @@ struct EquipItem {
 
 extern bool g_mapCfgExists;
 extern bool g_noSuit;
+extern bool g_noMedkit;
 extern EquipItem g_mapEquipment[MAX_EQUIP];
 
 void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count);

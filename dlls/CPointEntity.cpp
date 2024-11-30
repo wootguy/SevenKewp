@@ -1,6 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
+#include "CPointEntity.h"
 
 // Landmark class
 void CPointEntity::Spawn(void)

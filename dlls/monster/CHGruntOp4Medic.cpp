@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "plane.h"
 #include "util.h"
-#include "cbase.h"
 #include "monsters.h"
 #include "schedule.h"
 #include "defaultai.h"
@@ -662,7 +661,7 @@ Schedule_t* CHGruntOp4Medic :: GetScheduleOfType ( int Type )
 		{
 			if ( InSquad() )
 			{
-				if ( g_iSkillLevel == SKILL_HARD && HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) && OccupySlot( bits_SLOTS_HGRUNT_GRENADE ) )
+				if (gSkillData.sk_hgrunt_gcover && HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) && OccupySlot( bits_SLOTS_HGRUNT_GRENADE ) )
 				{
 					if (FOkToSpeak())
 					{

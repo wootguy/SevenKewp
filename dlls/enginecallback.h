@@ -103,12 +103,6 @@ EXPORT void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
 
 #define ENGINE_FPRINTF	(*g_engfuncs.pfnEngineFprintf)
 #define ALLOC_PRIVATE	(*g_engfuncs.pfnPvAllocEntPrivateData)
-inline void *GET_PRIVATE( const edict_t *pent )
-{
-	if ( pent )
-		return pent->pvPrivateData;
-	return NULL;
-}
 
 #define FREE_PRIVATE	(*g_engfuncs.pfnFreeEntPrivateData)
 //#define STRING			(*g_engfuncs.pfnSzFromIndex)

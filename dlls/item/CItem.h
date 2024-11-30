@@ -12,10 +12,8 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#ifndef CITEM_H
-#define CITEM_H
-
-extern int gmsgItemPickup;
+#pragma once
+#include "CBaseAnimating.h"
 
 // constant items
 #define ITEM_HEALTHKIT		1
@@ -30,12 +28,12 @@ class EXPORT CItem : public CBaseAnimating
 public:
 	void	Spawn(void);
 	void KeyValue(KeyValueData* pkvd);
-	CBaseEntity* Respawn(void);
-	void ItemTouch(CBaseEntity* pOther);
+	virtual void ItemTouch(CBaseEntity* pOther);
 	void Materialize(void);
-	void ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	virtual void ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual BOOL MyTouch(CBasePlayer* pPlayer) { return FALSE; };
-	virtual BOOL ShouldRespawn();
+	BOOL ShouldRespawn();
+	virtual CBaseEntity* Respawn(void);
 	const char* GetModel();
 	void SetSize(Vector defaultMins, Vector defaultMaxs);
 	void SetItemModel();
@@ -50,5 +48,3 @@ public:
 
 	float m_flCustomRespawnTime;
 };
-
-#endif // ITEMS_H

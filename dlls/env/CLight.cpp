@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "CLight.h"
 
 LINK_ENTITY_TO_CLASS(light, CLight)

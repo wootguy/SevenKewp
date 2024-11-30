@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "trains.h"
 #include "nodes.h"
 #include "shake.h"

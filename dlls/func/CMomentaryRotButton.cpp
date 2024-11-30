@@ -1,8 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "saverestore.h"
-#include "doors.h"
 #include "CBaseButton.h"
 
 // Make this button behave like a door (HACKHACK)
@@ -130,6 +128,10 @@ float CMomentaryRotButton::GetRotProgress(Vector angles) {
 // current, not future position.
 void CMomentaryRotButton::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	if (!RunInventoryRules(pCaller)) {
+		return;
+	}
+
 	pev->ideal_yaw = GetRotProgress(pev->angles);
 
 	UpdateAllButtons(pev->ideal_yaw, 1);
@@ -175,7 +177,7 @@ void CMomentaryRotButton::UpdateAllButtons(float value, int start)
 	}
 	m_lastProgress = value;
 
-	//ALERT(at_console, "ROT: %f %d %f\n", pev->angles.z, m_overflows, value);
+	//ALERT(at_console, "ROT: %f %d %d %f\n", pev->angles.z, m_direction, m_overflows, value);
 }
 
 void CMomentaryRotButton::UpdateSelf(float value)
@@ -269,6 +271,7 @@ void CMomentaryRotButton::Off(void)
 
 void CMomentaryRotButton::Return(void)
 {
+	m_direction = -1;
 	float value = GetRotProgress(pev->angles);
 
 	UpdateAllButtons(value, 0);	// This will end up calling UpdateSelfReturn() n times, but it still works right

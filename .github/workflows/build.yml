@@ -12,15 +12,27 @@ jobs:
       with:
         submodules: 'false'
 
+    - name: Checkout rehlds
+      uses: actions/checkout@v4
+      with:
+        repository: wootguy/rehlds
+        path: ./rehlds
+
     - name: Checkout plugins
       uses: actions/checkout@v4
       with:
         repository: wootguy/SevenKewp_plugins
         path: ./plugins/SevenKewp_plugins
 
-    - name: Build server and plugins
+    - name: Build server
       run: |
         mkdir build && cd build
+        cmake ..  -A win32 -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=OFF
+        cmake --build . --config Release
+
+    - name: Build plugins
+      run: |
+        cd build
         cmake ..  -A win32 -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=ON
         cmake --build . --config Release
 
@@ -45,6 +57,12 @@ jobs:
       with:
         submodules: 'false'
 
+    - name: Checkout rehlds
+      uses: actions/checkout@v4
+      with:
+        repository: wootguy/rehlds
+        path: ./rehlds
+
     - name: Checkout plugins
       uses: actions/checkout@v4
       with:
@@ -56,7 +74,13 @@ jobs:
         sudo apt install gcc-multilib g++-multilib libc6-dev-i386
         mkdir build
 
-    - name: Build server and plugins
+    - name: Build server
+      run: |
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=OFF
+        make
+
+    - name: Build plugins
       run: |
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=ON

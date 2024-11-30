@@ -1,12 +1,13 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "CBasePlayer.h"
 #include "trains.h"
 #include "nodes.h"
 #include "shake.h"
 #include "decals.h"
 #include "gamerules.h"
+
+#define SF_STRIP_SUIT_TOO 1
 
 class CStripWeapons : public CPointEntity
 {
@@ -32,5 +33,5 @@ void CStripWeapons::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 	}
 
 	if (pPlayer)
-		pPlayer->RemoveAllItems(FALSE);
+		pPlayer->RemoveAllItems(pev->spawnflags & SF_STRIP_SUIT_TOO);
 }

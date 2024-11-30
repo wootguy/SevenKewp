@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "CFuncVehicle.h"
 #include "saverestore.h"
 #include "weapons.h"

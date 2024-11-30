@@ -1,7 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
-#include "doors.h"
 #include "CFuncWall.h"
 
 #define SF_CONVEYOR_VISUAL		0x0001

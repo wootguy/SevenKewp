@@ -16,7 +16,6 @@
 
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "skill.h"
 #include "weapons.h"
 #include "nodes.h"
@@ -297,7 +296,16 @@ void CGauss::SecondaryAttack()
 		if ( m_iSoundState == 0 )
 			ALERT( at_console, "sound state %d\n", m_iSoundState );
 
-		PLAYBACK_EVENT_FULL( FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, pitch, 0, ( m_iSoundState == SND_CHANGE_PITCH ) ? 1 : 0, 0 );
+#ifdef CLIENT_DLL
+		m_lastPitch = 0; // always playback the current pitch
+#endif
+
+		bool pitchChangedEnough = m_lastPitch % 4 == 0 || pitch == 250;
+		if ((pitch != m_lastPitch && pitchChangedEnough) || m_iSoundState != SND_CHANGE_PITCH) {
+			PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usGaussSpin, 0.0, (float*)&g_vecZero, (float*)&g_vecZero, 0.0, 0.0, pitch, 0, (m_iSoundState == SND_CHANGE_PITCH) ? 1 : 0, 0);
+		}
+
+		m_lastPitch = pitch;
 
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 
@@ -348,13 +356,16 @@ void CGauss::StartFire( void )
 	Vector vecAiming = gpGlobals->v_forward;
 	Vector vecSrc = m_pPlayer->GetGunPosition( ); // + gpGlobals->v_up * -8 + gpGlobals->v_right * 8;
 	
+	float dmg_mult = GetDamageModifier();
+
 	if ( gpGlobals->time - m_pPlayer->m_flStartCharge > GetFullChargeTime() )
 	{
-		flDamage = 200;
+		flDamage = gSkillData.sk_plr_secondarygauss * dmg_mult;
 	}
 	else
 	{
-		flDamage = 200 * (( gpGlobals->time - m_pPlayer->m_flStartCharge) / GetFullChargeTime() );
+		flDamage = gSkillData.sk_plr_secondarygauss * dmg_mult * 
+			(( gpGlobals->time - m_pPlayer->m_flStartCharge) / GetFullChargeTime() );
 	}
 
 	if ( m_fPrimaryFire )
@@ -363,7 +374,7 @@ void CGauss::StartFire( void )
 #ifdef CLIENT_DLL
 		flDamage = 20;
 #else 
-		flDamage = gSkillData.sk_plr_gauss;
+		flDamage = gSkillData.sk_plr_gauss * dmg_mult;
 #endif
 	}
 

@@ -16,7 +16,6 @@
 
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "skill.h"
 #include "weapons.h"
 #include "nodes.h"
@@ -121,11 +120,11 @@ CRpgRocket *CRpgRocket::CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBa
 
 	UTIL_SetOrigin( pRocket->pev, vecOrigin );
 	pRocket->pev->angles = vecAngles;
+	pRocket->pev->owner = pOwner->edict();
 	pRocket->Spawn();
 	pRocket->SetTouch( &CRpgRocket::RocketTouch );
 	pRocket->m_hLauncher = pLauncher;// remember what RPG fired me. 
 	pLauncher->m_cActiveRockets++;// register this missile as active for the launcher
-	pRocket->pev->owner = pOwner->edict();
 
 	return pRocket;
 }
@@ -157,7 +156,9 @@ void CRpgRocket :: Spawn( void )
 
 	pev->nextthink = gpGlobals->time + 0.4;
 
-	pev->dmg = gSkillData.sk_plr_rpg;
+	float dmg_mult = GetDamageModifier();
+
+	pev->dmg = gSkillData.sk_plr_rpg * dmg_mult;
 }
 
 //=========================================================
@@ -423,6 +424,8 @@ void CRpg::Precache( void )
 	m_defaultModelP = "models/p_rpg.mdl";
 	m_defaultModelW = "models/w_rpg.mdl";
 	CBasePlayerWeapon::Precache();
+
+	PRECACHE_MODEL("sprites/laserbeam.spr");
 
 	PRECACHE_SOUND("items/9mmclip1.wav");
 

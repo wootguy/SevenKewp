@@ -1,4 +1,5 @@
 #pragma once
+#include "CBaseToggle.h"
 
 // doors
 #define SF_DOOR_ROTATE_Y			0
@@ -15,6 +16,30 @@
 
 #define door_noiseMoving noise1
 #define door_noiseArrived noise2
+
+typedef struct locksounds			// sounds that doors and buttons make when locked/unlocked
+{
+	string_t	sLockedSound;		// sound a door makes when it's locked
+	string_t	sLockedSentence;	// sentence group played when door is locked
+	string_t	sUnlockedSound;		// sound a door makes when it's unlocked
+	string_t	sUnlockedSentence;	// sentence group played when door is unlocked
+
+	int		iLockedSentence;		// which sentence in sentence group to play next
+	int		iUnlockedSentence;		// which sentence in sentence group to play next
+
+	float	flwaitSound;			// time delay between playing consecutive 'locked/unlocked' sounds
+	float	flwaitSentence;			// time delay between playing consecutive sentences
+	BYTE	bEOFLocked;				// true if hit end of list of locked sentences
+	BYTE	bEOFUnlocked;			// true if hit end of list of unlocked sentences
+} locksound_t;
+
+enum ObeyTriggerMode {
+	DOOR_OBEY_NO,			// ignore trigger mode
+	DOOR_OBEY_YES,			// obey trigger mode
+	DOOR_OBEY_YES_MOVING,	// obey trigger mode even if moving
+};
+
+void PlayLockSounds(entvars_t* pev, locksound_t* pls, int flocked, int fbutton);
 
 class CBaseDoor : public CBaseToggle
 {
@@ -45,7 +70,7 @@ public:
 	void EXPORT DoorTouch(CBaseEntity* pOther);
 
 	// local functions
-	int DoorActivate();
+	int DoorActivate(USE_TYPE useType);
 	void EXPORT DoorGoUp(void);
 	void EXPORT DoorGoDown(void);
 	virtual void EXPORT DoorHitTop(void);
@@ -62,4 +87,22 @@ public:
 	BYTE	m_bLockedSentence;
 	BYTE	m_bUnlockedSound;
 	BYTE	m_bUnlockedSentence;
+
+	// TODO: was 12 keyvalues really necessary for this? I think it can be done with 4.
+	// what about the multi_manager style with "#1", or using a multi_manager for things that
+	// always trigger at the same time as the door. Much ripenting needed.
+	string_t m_fireOnOpenStart;
+	string_t m_fireOnOpenEnd;
+	string_t m_fireOnCloseStart;
+	string_t m_fireOnCloseEnd;
+	string_t m_fireOnStart;
+	string_t m_fireOnStop;
+	USE_TYPE m_fireOnOpenStartMode;
+	USE_TYPE m_fireOnOpenEndMode;
+	USE_TYPE m_fireOnCloseStartMode;
+	USE_TYPE m_fireOnCloseEndMode;
+	USE_TYPE m_fireOnStartMode;
+	USE_TYPE m_fireOnStopMode;
+
+	ObeyTriggerMode m_iObeyTriggerMode;
 };

@@ -14,7 +14,6 @@
 ****/
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "weapons.h"
 #include "customentity.h"
 #include "skill.h"
@@ -182,7 +181,9 @@ void CShockBeam::WaterExplodeThink()
 
 	Explode();
 
-	::RadiusDamage( pev->origin, pev, pOwner, 100.0, 150.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
+	float dmg_mult = GetDamageModifier();
+
+	::RadiusDamage( pev->origin, pev, pOwner, 100.0 * dmg_mult, 150.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, QUIET_GUN_VOLUME, 0.1);
 
 	UTIL_Remove( this );
@@ -204,7 +205,9 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 
 		ClearMultiDamage();
 
-		const auto damage = gSkillData.sk_plr_shockrifle;
+		float dmg_mult = GetDamageModifier();
+
+		float damage = gSkillData.sk_plr_shockrifle * dmg_mult;
 
 		auto bitsDamageTypes = DMG_SHOCK;
 
@@ -271,7 +274,9 @@ void CShockBeam::Explode()
 		m_hBeam2 = nullptr;
 	}
 
-	pev->dmg = 40;
+	float dmg_mult = GetDamageModifier();
+
+	pev->dmg = 40 * dmg_mult;
 
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
 	WRITE_BYTE( TE_DLIGHT );
@@ -317,10 +322,9 @@ CShockBeam* CShockBeam::CreateShockBeam( const Vector& vecOrigin, const Vector& 
 	pBeam->pev->velocity.z = -pBeam->pev->velocity.z;
 
 	pBeam->pev->classname = MAKE_STRING( "shock_beam" );
+	pBeam->pev->owner = pOwner->edict();
 
 	pBeam->Spawn();
-
-	pBeam->pev->owner = pOwner->edict();
 
 	return pBeam;
 }

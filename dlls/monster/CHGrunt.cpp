@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "plane.h"
 #include "util.h"
-#include "cbase.h"
 #include "monsters.h"
 #include "schedule.h"
 #include "animation.h"
@@ -159,7 +158,7 @@ void CHGrunt::Precache()
 		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
 	}
 	if (FBitSet(pev->weapons, HGRUNT_ROCKETLAUNCHER)) {
-		ALERT(at_console, "RPG grunt replaced with AR grenade grunt");
+		ALERT(at_console, "RPG grunt replaced with AR grenade grunt\n");
 		m_iEquipment |= MEQUIP_MP5;
 		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
 	}

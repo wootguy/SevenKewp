@@ -14,7 +14,6 @@
 ****/
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "skill.h"
 #include "weapons.h"
 #include "nodes.h"
@@ -113,8 +112,10 @@ void CTripmineGrenade :: Spawn( void )
 	SetThink( &CTripmineGrenade::PowerupThink );
 	pev->nextthink = gpGlobals->time + 0.2;
 
+	float dmg_mult = GetDamageModifier();
+
 	pev->takedamage = DAMAGE_YES;
-	pev->dmg = gSkillData.sk_plr_tripmine;
+	pev->dmg = gSkillData.sk_plr_tripmine * dmg_mult;
 	pev->health = 1; // don't let die normally
 
 	if (pev->owner != NULL)

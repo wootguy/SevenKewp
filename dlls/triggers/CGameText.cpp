@@ -2,7 +2,6 @@
 #include "eiface.h"
 #include "util.h"
 #include "gamerules.h"
-#include "cbase.h"
 #include "CRuleEntity.h"
 
 //
@@ -131,7 +130,7 @@ void CGameText::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 			UTIL_HudMessage(pActivator, m_textParms, MessageGet());
 
 			if (!(pev->spawnflags & SF_NO_CONSOLE_ECHO)) {
-				UTIL_ClientPrint(pActivator->edict(), print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", MessageGet()));
+				UTIL_ClientPrint(pActivator, print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", MessageGet()));
 			}
 		}
 	}

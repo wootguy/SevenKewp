@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "CBasePlayer.h"
 #include "CTalkSquadMonster.h"
 #include "gamerules.h"

@@ -1,7 +1,6 @@
 #pragma once
-
 // shared functions used by logic entities such as trigger_changevalue and trigger_condition
-#include "cbase.h"
+#include "CPointEntity.h"
 
 // generic flags that should be converted to from the child entity's own flags
 #define SF_LOGIC_DONT_USE_X 1

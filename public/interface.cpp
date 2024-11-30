@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "interface.h"
+#include "interface_hlsdk.h"
 
 #if !defined ( _WIN32 )
 #include <dlfcn.h>

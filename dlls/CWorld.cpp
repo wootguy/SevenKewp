@@ -1,9 +1,9 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
+#include "CWorld.h"
 #include "nodes.h"
 #include "env/CSoundEnt.h"
-#include "client.h"
+#include "hlds_hooks.h"
 #include "decals.h"
 #include "skill.h"
 #include "effects.h"
@@ -12,6 +12,7 @@
 #include "teamplay_gamerules.h"
 #include "bodyque.h"
 #include "PluginManager.h"
+#include "sentences.h"
 
 extern CGraph WorldGraph;
 extern CSoundEnt* pSoundEnt;
@@ -100,6 +101,41 @@ void CWorld::loadReplacementFiles() {
 	g_soundReplacements.insert(g_soundReplacementsMod.begin(), g_soundReplacementsMod.end());
 }
 
+void CWorld::loadSentenceFiles() {
+	const char* sentPath = "sound/hlcoop/sentences.txt";
+	static uint64_t lastEditTimeSent = 0;
+
+	std::string spath = getGameFilePath(sentPath);
+
+	if (spath.empty()) {
+		g_customSentencesMod.clear();
+		g_customSentenceGroupsMod.clear();
+		ALERT(at_warning, "Missing sentence file: %s\n", sentPath);
+	}
+
+	uint64_t editTimeSent = getFileModifiedTime(spath.c_str());
+
+	if (lastEditTimeSent != editTimeSent) {
+		lastEditTimeSent = editTimeSent;
+		LoadSentenceFile(sentPath, g_customSentencesMod, g_customSentenceGroupsMod);
+	}
+
+	g_customSentencesMap.clear();
+	g_customSentenceGroupsMap.clear();
+	if (m_sentenceFile) {
+		LoadSentenceFile(STRING(m_sentenceFile), g_customSentencesMap, g_customSentenceGroupsMap);
+	}
+
+	// map models/sounds have priority over mod models
+	g_customSentences.clear();
+	g_customSentences.insert(g_customSentencesMap.begin(), g_customSentencesMap.end());
+	g_customSentences.insert(g_customSentencesMod.begin(), g_customSentencesMod.end());
+
+	g_customSentenceGroups.clear();
+	g_customSentenceGroups.insert(g_customSentenceGroupsMap.begin(), g_customSentenceGroupsMap.end());
+	g_customSentenceGroups.insert(g_customSentenceGroupsMod.begin(), g_customSentenceGroupsMod.end());
+}
+
 void CWorld::Precache(void)
 {
 #if 1
@@ -124,6 +160,10 @@ void CWorld::Precache(void)
 		g_pluginManager.UpdatePlugins();
 	}
 	loadReplacementFiles();
+	loadSentenceFiles();
+
+	// init here so sprites can be replaced
+	g_VoiceGameMgr.Init(&g_GameMgrHelper, gpGlobals->maxClients);
 
 	//!!!UNDONE why is there so much Spawn code in the Precache function? I'll just keep it here 
 
@@ -434,6 +474,11 @@ void CWorld::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "globalsoundlist"))
 	{
 		m_globalSoundList = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "sentence_file"))
+	{
+		m_sentenceFile = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "freeroam"))

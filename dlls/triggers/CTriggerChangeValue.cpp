@@ -2,9 +2,9 @@
 #include "eiface.h"
 #include "util.h"
 #include "gamerules.h"
-#include "cbase.h"
 #include "CRuleEntity.h"
 #include "CBaseLogic.h"
+#include "hlds_hooks.h"
 
 //
 // CTriggerChangeValue / trigger_changevalue -- changes an entity keyvalue

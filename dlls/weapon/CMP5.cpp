@@ -15,7 +15,6 @@
 
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "skill.h"
 #include "weapons.h"
 #include "nodes.h"
@@ -285,7 +284,7 @@ void CMP5::Reload( void )
 			messageTargets &= ~PLRBIT(m_pPlayer->edict());
 		}
 		StartSound(m_pPlayer->edict(), CHAN_ITEM, "weapons/9mmar_reload.wav", 0.8f,
-			ATTN_NORM, SND_FL_PREDICTED, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets, false);
+			ATTN_NORM, SND_FL_PREDICTED, 93 + RANDOM_LONG(0, 15), m_pPlayer->pev->origin, messageTargets);
 #endif
 	}
 }

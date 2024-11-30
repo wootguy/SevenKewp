@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "animation.h"
 #include "effects.h"
 #include "CActAnimating.h"
@@ -33,7 +32,8 @@ void CXenTreeTrigger::Touch(CBaseEntity* pOther)
 	if (pev->owner)
 	{
 		CBaseEntity* pEntity = CBaseEntity::Instance(pev->owner);
-		pEntity->Touch(pOther);
+		if (pEntity)
+			pEntity->Touch(pOther);
 	}
 }
 

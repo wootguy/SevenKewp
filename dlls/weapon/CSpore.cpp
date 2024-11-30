@@ -14,7 +14,6 @@
 ****/
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "weapons.h"
 #include "skill.h"
 #include "CSoundEnt.h"
@@ -99,7 +98,9 @@ void CSpore::Spawn()
 		pev->friction = 0.7;
 	}
 
-	pev->dmg = gSkillData.sk_plr_spore;
+	float dmg_mult = GetDamageModifier();
+
+	pev->dmg = gSkillData.sk_plr_spore * dmg_mult;
 
 	m_flIgniteTime = gpGlobals->time;
 

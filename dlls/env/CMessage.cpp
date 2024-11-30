@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "customentity.h"
 #include "effects.h"
 #include "decals.h"
@@ -101,7 +100,7 @@ void CMessage::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useTy
 		}
 		if (pPlayer) {
 			UTIL_ShowMessage(STRING(pev->message), pPlayer);
-			UTIL_ClientPrint(pPlayer->edict(), print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", STRING(pev->message)));
+			UTIL_ClientPrint(pPlayer, print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", STRING(pev->message)));
 		}
 	}
 	if (pev->noise)

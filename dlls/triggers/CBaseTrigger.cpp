@@ -1,6 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
+#include "CBaseEntity.h"
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
@@ -74,6 +74,10 @@ void CBaseTrigger::MultiTouch(CBaseEntity* pOther)
 				return;         // not facing the right way
 		}
 #endif
+
+		if (!RunInventoryRules(pOther)) {
+			return;
+		}
 
 		ActivateMultiTrigger(pOther);
 	}
@@ -229,6 +233,10 @@ void CBaseTrigger::HurtTouch(CBaseEntity* pOther)
 		// to launch players at lightning speeds, and trigger_hurt will start spamming noises
 		// on weapons and func_breakable.
 		//gpGlobals->force_retouch++;
+	}
+
+	if (!RunInventoryRules(pOther)) {
+		return;
 	}
 
 	// HACKHACK -- In multiplayer, players touch this based on packet receipt.

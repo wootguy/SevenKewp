@@ -53,6 +53,8 @@ Sven Co-op maps often need converting before they can be used in Half-Life. Not 
 1. Create a folder and copy `scripts/convert_map.py` to the new folder.
 2. Add modelguy, ripent, bspguy, and wadmaker to the same folder. modelguy and bspguy need to be built from source because the latest releases are missing features.
 3. Copy `resguy_default_content_hl.txt` [from resguy](https://github.com/wootguy/resguy/blob/master/config/resguy_default_content_hl.txt) to the folder, and rename it to `resguy_default_content.txt`
+1. Copy `skill.cfg` to the folder.
+1. Copy `titles.txt` from the latest version of Sven Co-op to the folder.
 4. Update `valve_path` in the script to point to your `Half-Life/valve` folder.
 5. Install imagemagick and ffmpeg. Make sure `magick` and `ffmpeg` are usable from the command-line.
 1. Extract a map package to the folder (`maps/` should end up next to the script)

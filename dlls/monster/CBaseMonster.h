@@ -16,6 +16,11 @@
 #ifndef BASEMONSTER_H
 #define BASEMONSTER_H
 
+#include "CBaseToggle.h"
+#include "schedule.h"
+
+class CSound;
+
 extern entvars_t* g_pevLastInflictor;
 
 // Clients can push talkmonsters out of their way
@@ -151,10 +156,29 @@ public:
 	int m_lastNode;
 	int m_targetNode;
 
+	// properties the monster had before death (for revival)
+	Vector m_deathMins;
+	Vector m_deathMaxs;
+	Vector m_deathRenderColor;
+	float m_deathHealthMax;
+	float m_deathRenderMode;
+	float m_deathRenderAmt;
+	float m_deathRenderFx;
+	int m_deathBody;
+	int m_deathMovetype;
+	int m_startDead; // monster spawned dead as a prop or something (monster_scientist_dead)
+
 	int m_lastDamageType;
 	EHANDLE m_lastDamageEnt;
 
 	PlayerAttackInfo m_attackers[32]; // players that attacked this entity
+	EHANDLE m_inventory;
+
+	float m_friction_modifier; // friction modifier used in cumulative effects
+	float m_gravity_modifier; // gravity modifier used in cumulative effects
+	float m_speed_modifier; // speed modifier used in cumulative effects
+	float m_damage_modifier; // attack damage modifier (set automatically by inventory items)
+	float m_last_friction_trigger_touch; // last time this entity touched a friction trigger
 
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
@@ -181,7 +205,7 @@ public:
 
 	virtual BOOL	IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual	BOOL	IsMonster(void) { return TRUE; }
-	virtual	BOOL	IsNormalMonster(void) { return TRUE; }
+	virtual	BOOL	IsNormalMonster(void) { return m_startDead ? FALSE : TRUE; }
 	virtual BOOL	ShouldFadeOnDeath( void );
 	virtual bool	ShouldRoam( void );
 
@@ -428,6 +452,21 @@ public:
 	void InitModel();
 	virtual void Nerf(); // reduces monster health and/or spawn count according to cvars
 	void LogPlayerDamage(entvars_t* attacker, float damage);
+
+	CItemInventory* GetInventoryItem(const char* itemName);
+
+	// get inventory items in group names (separated by spaces)
+	std::vector<CItemInventory*> GetInventoryGroupItems(const char* groupNames);
+
+	int CountInventoryItems();
+
+	// applies cumulative effects from inventory, friction, and gravity triggers
+	void ApplyEffects();
+
+	void SetRevivalVars(); // set vars needed for revival. Call on death.
+	virtual void Revive();
+
+	virtual float GetDamageModifier();
 };
 
 

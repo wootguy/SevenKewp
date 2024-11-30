@@ -20,12 +20,12 @@
 
 #include	"extdll.h"
 #include	"util.h"
-#include	"cbase.h"
 #include	"monsters.h"
 #include	"effects.h"
 #include	"schedule.h"
 #include	"weapons.h"
 #include	"CTalkSquadMonster.h"
+#include	"hlds_hooks.h"
 
 //=========================================================
 // Monster's Anim Events Go Here

@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "CBasePlayer.h"
 #include "weapons.h"
 #include "nodes.h"
@@ -469,6 +468,8 @@ BOOL CBasePlayerWeapon::CanDeploy(void)
 		return 0;
 
 	BOOL bHasAmmo = 0;
+	ItemInfo info;
+	GetItemInfo(&info);
 
 	if (!pszAmmo1())
 	{
@@ -488,7 +489,7 @@ BOOL CBasePlayerWeapon::CanDeploy(void)
 	{
 		bHasAmmo |= 1;
 	}
-	if (!bHasAmmo)
+	if (!bHasAmmo && !(info.iFlags & ITEM_FLAG_SELECTONEMPTY))
 	{
 		return FALSE;
 	}
@@ -557,7 +558,7 @@ BOOL CBasePlayerWeapon::PlayEmptySound(void)
 		edict_t* plr = m_pPlayer->edict();
 		uint32_t messageTargets = 0xffffffff & ~PLRBIT(plr);
 		StartSound(plr, CHAN_WEAPON, "weapons/357_cock1.wav", 0.8f,
-			ATTN_NORM, SND_FL_PREDICTED, 100, m_pPlayer->pev->origin, messageTargets, false);
+			ATTN_NORM, SND_FL_PREDICTED, 100, m_pPlayer->pev->origin, messageTargets);
 #endif
 		m_iPlayEmptySound = 0;
 		return 0;
@@ -787,4 +788,8 @@ void CBasePlayerWeapon::SolidifyNearbyCorpses(bool solidState) {
 			UTIL_SetOrigin(&ent->v, ent->v.origin); // reset abs bbox
 		}
 	}
+}
+
+float CBasePlayerWeapon::GetDamageModifier() {
+	return pev->dmg ? pev->dmg : 1.0f;
 }

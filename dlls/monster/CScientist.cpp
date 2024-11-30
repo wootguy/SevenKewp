@@ -18,12 +18,11 @@
 
 #include	"extdll.h"
 #include	"util.h"
-#include	"cbase.h"
 #include	"monsters.h"
 #include	"CTalkSquadMonster.h"
 #include	"schedule.h"
 #include	"defaultai.h"
-#include	"scripted.h"
+#include	"CCineMonster.h"
 #include	"animation.h"
 #include	"env/CSoundEnt.h"
 
@@ -720,6 +719,7 @@ void CScientist :: TalkInit()
 	m_szFriends[0] = "monster_scientist";
 	m_szFriends[1] = "monster_sitting_scientist";
 	m_szFriends[2] = "monster_barney";
+	m_szFriends[3] = "monster_otis";
 
 	// scientists speach group names (group names are in sentences.txt)
 

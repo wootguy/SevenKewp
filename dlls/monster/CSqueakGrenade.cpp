@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "monster/monsters.h"
 #include "weapons.h"
 #include "nodes.h"
@@ -123,7 +122,9 @@ void CSqueakGrenade :: Spawn( void )
 	pev->gravity		= 0.5;
 	pev->friction		= 0.5;
 
-	pev->dmg = gSkillData.sk_snark_dmg_pop;
+	float dmg_mult = GetDamageModifier();
+
+	pev->dmg = gSkillData.sk_snark_dmg_pop * dmg_mult;
 
 	m_flDie = gpGlobals->time + SQUEEK_DETONATE_DELAY;
 
@@ -342,9 +343,14 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 			// and it's not another squeakgrenade
 			if (tr.pHit->v.modelindex != pev->modelindex)
 			{
+				edict_t* oldOwner = pev->owner;
+				pev->owner = m_hOwner.GetEdict();
+				float dmg_mult = GetDamageModifier();
+				pev->owner = oldOwner;
+
 				// ALERT( at_console, "hit enemy\n");
 				ClearMultiDamage( );
-				pOther->TraceAttack(pev, gSkillData.sk_snark_dmg_bite, gpGlobals->v_forward, &tr, DMG_SLASH ); 
+				pOther->TraceAttack(pev, gSkillData.sk_snark_dmg_bite*dmg_mult, gpGlobals->v_forward, &tr, DMG_SLASH );
 				if (m_hOwner != NULL)
 					ApplyMultiDamage( pev, m_hOwner->pev );
 				else

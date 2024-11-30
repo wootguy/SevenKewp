@@ -1,8 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "saverestore.h"
-#include "doors.h"
 
 #define SF_BTARGET_USE		0x0001
 #define SF_BTARGET_ON		0x0002

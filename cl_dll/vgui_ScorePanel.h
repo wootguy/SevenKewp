@@ -155,7 +155,7 @@ public:
 		strcpy(buf, text);
 
 		int len = strlen(buf);
-		while (len && !isspace((uint8_t)buf[--len]))
+		while (len && isspace(buf[--len]))
 		{
 			buf[len] = 0;
 		}

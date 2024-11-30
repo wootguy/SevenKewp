@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
@@ -26,6 +25,9 @@ void CTriggerGravity::GravityTouch(CBaseEntity* pOther)
 	if (!pOther->IsPlayer())
 		return;
 
-	pOther->pev->gravity = pev->gravity;
+	CBasePlayer* plr = (CBasePlayer*)pOther;
+
+	plr->m_gravity_modifier = pev->gravity;
+	plr->ApplyEffects();
 }
 

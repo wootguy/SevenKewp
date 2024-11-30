@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "saverestore.h"
 
 #define SF_GLOBAL_SET			1	// Set global state to initial state on spawn

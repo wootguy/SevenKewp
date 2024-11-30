@@ -1,7 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
-#include "doors.h"
 #include "CBaseButton.h"
 #include "CBaseDoor.h"
 
@@ -137,6 +135,10 @@ void CMomentaryDoor::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 {
 	if (useType != USE_SET)		// Momentary buttons will pass down a float in here
 		return;
+
+	if (!RunInventoryRules(pActivator)) {
+		return;
+	}
 
 	if (value > 1.0)
 		value = 1.0;

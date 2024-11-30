@@ -18,7 +18,6 @@
 
 #include	"extdll.h"
 #include	"util.h"
-#include	"cbase.h"
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"game.h"
@@ -105,6 +104,8 @@ public:
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
 	void MonsterThink() override;
+
+	virtual void Revive();
 
 	int Save( CSave &save ) override;
 	int Restore( CRestore &restore ) override;
@@ -594,4 +595,9 @@ void COFShockRoach::MonsterThink()
 		TakeDamage( pev, pev, pev->health, DMG_NEVERGIB );
 
 	CBaseMonster::MonsterThink();
+}
+
+void COFShockRoach::Revive() {
+	CBaseMonster::Revive();
+	m_flBirthTime = gpGlobals->time;
 }

@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
-#include "ent_globals.h"
+#include "CWorld.h"
 #include "bodyque.h"
 #include "CBaseMonster.h"
 
@@ -11,6 +10,7 @@ class CCorpse : public CBaseMonster
 	virtual int ObjectCaps(void) { return FCAP_DONT_SAVE; }
 	int Classify() { return CLASS_PLAYER; }
 	BOOL IsPlayerCorpse(void) { return TRUE; }
+	BOOL IsNormalMonster(void) { return FALSE; }
 };
 
 LINK_ENTITY_TO_CLASS(bodyque, CCorpse)

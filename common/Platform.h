@@ -65,11 +65,13 @@
 #define DLLIMPORT __declspec(dllimport)
 #else // _WIN32
 #define FALSE 0
-#define TRUE (!FALSE)
 typedef uint32 ULONG;
 typedef unsigned char BYTE;
 typedef int BOOL;
-#define MAX_PATH PATH_MAX
+#ifndef REHLDS_INCLUDE
+	#define MAX_PATH PATH_MAX
+	#define TRUE (!FALSE)
+#endif
 #include <limits.h>
 #include <stdarg.h>
 #define _vsnprintf(a,b,c,d) vsnprintf(a,b,c,d)

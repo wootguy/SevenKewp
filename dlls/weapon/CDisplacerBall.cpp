@@ -12,8 +12,6 @@
  *   without written permission from Valve LLC.
  *
  ****/
-#include "cbase.h"
-
 #include "user_messages.h"
 
 #include "CDisplacerBall.h"
@@ -257,7 +255,9 @@ void CDisplacerBall::FizzleThink()
 {
 	ClearBeams();
 
-	pev->dmg = gSkillData.sk_plr_displacer_other;
+	float dmg_mult = GetDamageModifier();
+
+	pev->dmg = gSkillData.sk_plr_displacer_other * dmg_mult;
 
 	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
 	WRITE_BYTE(TE_DLIGHT);
@@ -284,7 +284,9 @@ void CDisplacerBall::ExplodeThink()
 {
 	ClearBeams();
 
-	pev->dmg = gSkillData.sk_plr_displacer_other;
+	float dmg_mult = GetDamageModifier();
+
+	pev->dmg = gSkillData.sk_plr_displacer_other * dmg_mult;
 
 	edict_t* pOwner = pev->owner;
 	pev->owner = nullptr;

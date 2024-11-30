@@ -1,6 +1,5 @@
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "decals.h"
 #include "explode.h"
 #include "weapons.h"

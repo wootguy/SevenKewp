@@ -18,7 +18,6 @@
 
 #include	"extdll.h"
 #include	"util.h"
-#include	"cbase.h"
 #include	"monsters.h"
 #include	"weapons.h"
 #include	"env/CSoundEnt.h"
@@ -115,14 +114,16 @@ void CHornet :: Spawn( void )
 	if ( !pSoundEnt )
 		pSoundEnt = edict();
 
+	float dmg_mult = GetDamageModifier();
+
 	if ( !FNullEnt(pev->owner) && (pev->owner->v.flags & FL_CLIENT) )
 	{
-		pev->dmg = gSkillData.sk_plr_hornet;
+		pev->dmg = gSkillData.sk_plr_hornet * dmg_mult;
 	}
 	else
 	{
 		// no real owner, or owner isn't a client. 
-		pev->dmg = gSkillData.sk_hornet_dmg;
+		pev->dmg = gSkillData.sk_hornet_dmg * dmg_mult;
 	}
 	
 	m_lastPos = pev->origin;

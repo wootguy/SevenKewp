@@ -1,7 +1,6 @@
 #include "extdll.h"
 #include "plane.h"
 #include "util.h"
-#include "cbase.h"
 #include "monsters.h"
 #include "schedule.h"
 #include "animation.h"
@@ -348,7 +347,7 @@ void CRoboGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 		}
 
 		if (ptr->iHitgroup == HITGROUP_HEAD) {
-			StartSound(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(pHeadshotSounds), 1.0f, ATTN_NORM, 0, RANDOM_LONG(90, 110), pev->origin, 0xffffffff, false);
+			StartSound(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(pHeadshotSounds), 1.0f, ATTN_NORM, 0, RANDOM_LONG(90, 110), pev->origin, 0xffffffff);
 
 			Vector sprPos = ptr->vecEndPos - Vector(0, 0, 10);
 

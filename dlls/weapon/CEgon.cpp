@@ -16,7 +16,6 @@
 
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "CBasePlayer.h"
 #include "skill.h"
 #include "weapons.h"
@@ -317,6 +316,8 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 
 	float timedist = 0;
 
+	float dmg_mult = GetDamageModifier();
+
 	switch ( m_fireMode )
 	{
 	case FIRE_NARROW:
@@ -327,7 +328,7 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 			ClearMultiDamage();
 			if (pEntity->pev->takedamage)
 			{
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.sk_plr_egon_narrow, vecDir, &tr, DMG_ENERGYBEAM );
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.sk_plr_egon_narrow*dmg_mult, vecDir, &tr, DMG_ENERGYBEAM );
 			}
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 
@@ -364,14 +365,14 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 			ClearMultiDamage();
 			if (pEntity->pev->takedamage)
 			{
-				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.sk_plr_egon_wide, vecDir, &tr, DMG_ENERGYBEAM | DMG_ALWAYSGIB);
+				pEntity->TraceAttack( m_pPlayer->pev, gSkillData.sk_plr_egon_wide * dmg_mult, vecDir, &tr, DMG_ENERGYBEAM | DMG_ALWAYSGIB);
 			}
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 
 			if ( g_pGameRules->IsMultiplayer() )
 			{
 				// radius damage a little more potent in multiplayer.
-				::RadiusDamage( tr.vecEndPos, pev, m_pPlayer->pev, gSkillData.sk_plr_egon_wide /4, 128, CLASS_NONE, DMG_ENERGYBEAM | DMG_ALWAYSGIB);
+				::RadiusDamage( tr.vecEndPos, pev, m_pPlayer->pev, (gSkillData.sk_plr_egon_wide/4) * dmg_mult, 128, CLASS_NONE, DMG_ENERGYBEAM | DMG_ALWAYSGIB);
 			}
 
 			if ( !m_pPlayer->IsAlive() )

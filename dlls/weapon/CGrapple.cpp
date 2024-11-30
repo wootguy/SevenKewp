@@ -14,7 +14,6 @@
  ****/
 #include "extdll.h"
 #include "util.h"
-#include "cbase.h"
 #include "weapons.h"
 #include "nodes.h"
 #include "skill.h"
@@ -378,7 +377,8 @@ void CGrapple::PrimaryAttack()
 						ClearMultiDamage();
 
 						//float flDamage = GetSkillFloat("plr_grapple"sv);
-						float flDamage = 50;
+						float dmg_mult = GetDamageModifier();
+						float flDamage = 50 * dmg_mult;
 
 						pHit->TraceAttack(this->pev, flDamage, gpGlobals->v_forward, &tr, DMG_ALWAYSGIB | DMG_CLUB);
 
