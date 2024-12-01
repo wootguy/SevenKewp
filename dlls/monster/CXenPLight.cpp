@@ -4,7 +4,7 @@
 #include "effects.h"
 #include "CActAnimating.h"
 
-#define SF_XEN_PLATN_LIGHT_IGNORE_PLAYER 64
+#define SF_XEN_PLANT_LIGHT_IGNORE_PLAYER 64
 
 #define XEN_PLANT_GLOW_SPRITE		"sprites/flare3.spr"
 #define XEN_PLANT_HIDE_TIME			5
@@ -49,6 +49,12 @@ void CXenPLight::Spawn(void)
 	SetActivity(ACT_IDLE);
 	pev->nextthink = gpGlobals->time + 0.1;
 	pev->frame = RANDOM_FLOAT(0, 255);
+	
+	if (FBitSet(pev->spawnflags, SF_XEN_PLANT_DROP_TO_FLOOR))
+		DropToFloor();
+
+	if (FBitSet(pev->flags, FL_KILLME))
+		return;
 
 	m_pGlow = CSprite::SpriteCreate(XEN_PLANT_GLOW_SPRITE, pev->origin + Vector(0, 0, (pev->mins.z + pev->maxs.z) * 0.5), FALSE);
 	m_pGlow->SetTransparency(kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx);
@@ -100,7 +106,7 @@ void CXenPLight::Think(void)
 
 void CXenPLight::Touch(CBaseEntity* pOther)
 {
-	if( !FBitSet(pev->spawnflags, SF_XEN_PLATN_LIGHT_IGNORE_PLAYER) && pOther->IsPlayer() )
+	if( !FBitSet(pev->spawnflags, SF_XEN_PLANT_LIGHT_IGNORE_PLAYER) && pOther->IsPlayer() )
 	{
 		pev->dmgtime = gpGlobals->time + XEN_PLANT_HIDE_TIME;
 		if (GetActivity() == ACT_IDLE || GetActivity() == ACT_STAND)
