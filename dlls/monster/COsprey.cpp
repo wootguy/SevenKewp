@@ -154,7 +154,7 @@ void COsprey :: Spawn( void )
 	SetSize(Vector( -480, -480, -100), Vector(480, 480, 64));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	pev->flags |= FL_MONSTER;
+	pev->flags |= FL_MONSTER | FL_FLY;
 	pev->takedamage		= DAMAGE_YES;
 	
 	SetHealth();
