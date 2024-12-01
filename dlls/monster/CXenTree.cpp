@@ -96,7 +96,8 @@ void CXenTree::Spawn(void)
 	triggerPosition = pev->origin + (triggerPosition * 64);
 	// Create the trigger
 	m_pTrigger = CXenTreeTrigger::TriggerCreate(edict(), triggerPosition);
-	UTIL_SetSize(m_pTrigger->pev, Vector(-24, -24, 0), Vector(24, 24, 128));
+	if (m_pTrigger)
+		UTIL_SetSize(m_pTrigger->pev, Vector(-24, -24, 0), Vector(24, 24, 128));
 }
 
 const char* CXenTree::pAttackHitSounds[] =

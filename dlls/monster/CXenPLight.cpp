@@ -57,8 +57,11 @@ void CXenPLight::Spawn(void)
 		return;
 
 	m_pGlow = CSprite::SpriteCreate(XEN_PLANT_GLOW_SPRITE, pev->origin + Vector(0, 0, (pev->mins.z + pev->maxs.z) * 0.5), FALSE);
-	m_pGlow->SetTransparency(kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx);
-	m_pGlow->SetAttachment(edict(), 1);
+	if (m_pGlow)
+	{
+		m_pGlow->SetTransparency(kRenderGlow, pev->rendercolor.x, pev->rendercolor.y, pev->rendercolor.z, pev->renderamt, pev->renderfx);
+		m_pGlow->SetAttachment(edict(), 1);
+	}
 }
 
 
