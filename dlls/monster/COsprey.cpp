@@ -66,9 +66,10 @@ public:
 	void EXPORT DyingThink( void );
 	void EXPORT CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
-	// int  TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
+	int  TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
 	void ShowDamage( void );
+	void Update();
 
 	EHANDLE m_hGoalEnt;
 	Vector m_vel1;
@@ -370,8 +371,7 @@ void COsprey :: HoverThink( void )
 
 	pev->nextthink = gpGlobals->time + 0.1;
 	UTIL_MakeAimVectors( pev->angles );
-	ShowDamage( );
-	FCheckAITrigger();
+	Update();
 	UpdateShockEffect();
 }
 
@@ -410,7 +410,6 @@ void COsprey::UpdateGoal( )
 void COsprey::FlyThink( void )
 {
 	StudioFrameAdvance( );
-	FCheckAITrigger();
 	UpdateShockEffect();
 	pev->nextthink = gpGlobals->time + 0.1;
 
@@ -433,7 +432,7 @@ void COsprey::FlyThink( void )
 	}
 
 	Flight( );
-	ShowDamage( );
+	Update();
 }
 
 
@@ -526,11 +525,18 @@ void COsprey::HitTouch( CBaseEntity *pOther )
 	pev->nextthink = gpGlobals->time + 2.0;
 }
 
+void COsprey::Update()
+{
+	Look(4092); // Look around so AI triggers work.
+	Listen(); // Listen for sounds so AI triggers work.
 
-/*
+	ShowDamage();
+	FCheckAITrigger();
+}
+
 int COsprey::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	if (m_flRotortilt <= -90)
+/*	if (m_flRotortilt <= -90)
 	{
 		m_flRotortilt = 0;
 	}
@@ -539,9 +545,15 @@ int COsprey::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 		m_flRotortilt -= 45;
 	}
 	SetBoneController( 0, m_flRotortilt );
-	return 0;
+	return 0;*/
+
+	//Set enemy to last attacker.
+	//Ospreys are not capable of fighting so they'll get angry at whatever shoots at them, not whatever looks like an enemy.
+	m_hEnemy = Instance(pevAttacker);
+	//It's on now!
+	m_MonsterState = MONSTERSTATE_COMBAT;
+	return CBaseMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 }
-*/
 
 
 
@@ -590,7 +602,7 @@ void COsprey :: DyingThink( void )
 	if (m_startTime > gpGlobals->time )
 	{
 		UTIL_MakeAimVectors( pev->angles );
-		ShowDamage( );
+		ShowDamage();
 
 		Vector vecSpot = pev->origin + pev->velocity * 0.2;
 
