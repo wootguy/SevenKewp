@@ -103,6 +103,10 @@ struct skilldata_t
 	float sk_controller_speedball;
 	float sk_controller_dmgball;
 
+	// Stukabat
+	float sk_stukabat_health;
+	float sk_stukabat_dmg_bite;
+
 	// Nihilanth
 	float sk_nihilanth_health;
 	float sk_nihilanth_zap;

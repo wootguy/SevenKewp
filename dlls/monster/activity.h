@@ -104,7 +104,7 @@ typedef struct {
 	const char *name;
 } activity_map_t;
 
-extern activity_map_t activity_map[];
+EXPORT extern activity_map_t activity_map[];
 
 
 #endif	//ACTIVITY_H

@@ -109,6 +109,10 @@ skill_cvar_t skill_cvars[] = {
 	DECL_SKILL_CVAR(sk_controller_speedball, CVAR_TYPE_AI),
 	DECL_SKILL_CVAR(sk_controller_dmgball, CVAR_TYPE_DAMAGE),
 
+	// stukabat
+	DECL_SKILL_CVAR(sk_stukabat_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_stukabat_dmg_bite, CVAR_TYPE_DAMAGE),
+
 	// Nihilanth
 	DECL_SKILL_CVAR(sk_nihilanth_health, CVAR_TYPE_HEALTH),
 	DECL_SKILL_CVAR(sk_nihilanth_zap, CVAR_TYPE_DAMAGE),
@@ -349,7 +353,7 @@ void RefreshSkillData(bool mapSkills) {
 	hpDict["monster_sitting_scientist"] = gSkillData.sk_scientist_health;
 	hpDict["monster_snark"] = gSkillData.sk_snark_health;
 	hpDict["monster_sqknest"] = 100;
-	hpDict["monster_stukabat"] = gSkillData.sk_controller_health;
+	hpDict["monster_stukabat"] = gSkillData.sk_stukabat_health;
 	hpDict["monster_tentacle"] = 4000;
 	hpDict["monster_torch_ally_repel"] = gSkillData.sk_hgrunt_health;
 	hpDict["monster_turret"] = gSkillData.sk_turret_health;

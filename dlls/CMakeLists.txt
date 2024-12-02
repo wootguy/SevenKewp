@@ -109,6 +109,7 @@ set(MONSTER_ALIEN_SRC
 	monster/CShockRoach.cpp
 	monster/CShockTrooper.cpp
 	monster/CSqueakGrenade.cpp
+	monster/CStukabat.cpp
 	monster/CTentacle.cpp
 	monster/CTor.cpp
 	monster/CVoltigore.cpp
