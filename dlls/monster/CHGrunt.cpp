@@ -21,6 +21,7 @@
 #define GUN_MP5						0
 #define GUN_SHOTGUN					1
 #define GUN_NONE					2
+#define GUN_ROCKETLAUNCHER			3
 
 class CHGrunt : public CBaseGrunt
 {
@@ -103,6 +104,14 @@ void CHGrunt::Spawn() {
 		SetBodygroup(GUN_GROUP, GUN_SHOTGUN);
 		m_cClipSize = 8;
 	}
+	else if (FBitSet(pev->weapons, HGRUNT_ROCKETLAUNCHER))
+	{
+		SetBodygroup(GUN_GROUP, GUN_ROCKETLAUNCHER);
+		m_cClipSize = 1;
+		m_flDistTooFar = 4096.0;
+		m_flDistLook = 4096.0;
+		maxShootDist = 4096;
+	}
 	else
 	{
 		m_cClipSize = GRUNT_CLIP_SIZE;
@@ -158,9 +167,7 @@ void CHGrunt::Precache()
 		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
 	}
 	if (FBitSet(pev->weapons, HGRUNT_ROCKETLAUNCHER)) {
-		ALERT(at_console, "RPG grunt replaced with AR grenade grunt\n");
-		m_iEquipment |= MEQUIP_MP5;
-		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
+		m_iEquipment |= MEQUIP_RPG;
 	}
 
 	BasePrecache();

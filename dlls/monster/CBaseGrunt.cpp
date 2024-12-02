@@ -14,8 +14,10 @@
 #include	"defaultai.h"
 #include	"weapon/CGrenade.h"
 #include	"skill.h"
+#include	"CRpg.h"
 
 int g_fGruntQuestion;
+const float safe_rpg_explosion_distance = 300;
 
 TYPEDESCRIPTION	CBaseGrunt::m_SaveData[] = 
 {
@@ -105,6 +107,8 @@ void CBaseGrunt::Killed(entvars_t* pevAttacker, int iGib)
 		else
 			medic->HealMe(NULL);
 	}
+
+	RemoveRpgLaser();
 
 	SetUse(NULL);
 	CTalkSquadMonster::Killed(pevAttacker, iGib);
@@ -223,6 +227,10 @@ BOOL CBaseGrunt :: CheckMeleeAttack1 ( float flDot, float flDist )
 BOOL CBaseGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 {
 	if (!HasEquipment(ANY_RANGED_WEAPON)) {
+		return FALSE;
+	}
+
+	if (HasEquipment(MEQUIP_RPG) && flDist < safe_rpg_explosion_distance) {
 		return FALSE;
 	}
 
@@ -630,6 +638,10 @@ void CBaseGrunt::Shoot(bool firstRound)
 	else if (HasEquipment(MEQUIP_357) && gpGlobals->time - m_flLastShot > 0.11) {
 		Shoot357(vecShootOrigin, vecShootDir);
 	}
+	else if (HasEquipment(MEQUIP_RPG)) {
+		ShootRPG(vecShootOrigin, vecShootDir);
+		return;
+	}
 	else {
 		return;
 	}
@@ -767,6 +779,120 @@ void CBaseGrunt::Shoot357(Vector& vecShootOrigin, Vector& vecShootDir) {
 	PLAY_DISTANT_SOUND(edict(), DISTANT_357);
 }
 
+void CBaseGrunt::ShootRPG(Vector& vecShootOrigin, Vector& vecShootDir) {
+	Vector attachAngles;
+	if (GetAttachmentCount() > 0)
+		GetAttachment(1, vecShootOrigin, attachAngles);
+
+	if (HasConditions(bits_COND_ENEMY_OCCLUDED)) {
+		vecShootDir = m_vecEnemyLKP - vecShootOrigin;
+	}
+	else {
+		// TODO: monster origins depend on movement animations
+		// so the rocket will miss when the target is a walking monster
+		vecShootDir = m_hEnemy->Center() - vecShootOrigin;
+	}
+	
+	MakeIdealYaw(m_vecEnemyLKP);
+	ChangeYaw(pev->yaw_speed);	
+	PointAtEnemy();
+
+	if (!m_hRpgSpot) {
+		m_hRpgSpot = CLaserSpot::CreateSpot();
+	}
+	CLaserSpot* spot = (CLaserSpot*)m_hRpgSpot.GetEntity();
+
+	Vector vecSrc = vecShootOrigin;
+	Vector vecAiming = vecShootDir;
+
+	TraceResult tr;
+	UTIL_TraceLine(vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, edict(), &tr);
+
+	UTIL_SetOrigin(spot->pev, tr.vecEndPos);
+	
+	if (!m_hRpgBeam) {
+		CBeam* beam = CBeam::BeamCreate("sprites/laserbeam.spr", 8);
+		beam->PointsInit(tr.vecEndPos, vecShootOrigin);
+		beam->SetEndAttachment(1);
+		beam->SetColor(255, 32, 32);
+		beam->SetNoise(0);
+		beam->SetBrightness(48);
+		beam->SetScrollRate(64);
+		m_hRpgBeam = beam;
+	}
+
+	CBeam* beam = (CBeam*)m_hRpgBeam.GetEntity();
+	if (beam) {
+		beam->pev->effects = spot->pev->effects;
+		beam->PointsInit(tr.vecEndPos, vecShootOrigin);
+	}
+
+	if (m_aimingRocket) {
+		if (!m_hRpgRocket) {
+			m_aimingRocket = false;
+			SetActivity(ACT_IDLE_ANGRY);
+			TaskComplete();
+			return;
+		}
+	}
+	else if (gpGlobals->time - m_rpgAimTime > 1.0f && m_cAmmoLoaded) {
+		// can check for friendly fire now
+		CBaseEntity* pOther = NULL;
+
+		bool canShoot = !m_occludeTime;
+		while ((pOther = UTIL_FindEntityInSphere(pOther, spot->pev->origin, safe_rpg_explosion_distance)) != NULL) {
+			if (!pOther->IsNormalMonster() || !pOther->IsAlive()) {
+				continue;
+			}
+
+			if (IRelationship(pOther) == R_AL) {
+				canShoot = false; // don't want to hit friendlies
+				m_rpgAimTime = gpGlobals->time; // don't shoot if laser only briefly hits a safe area
+				
+				if (this == pOther) {
+					ALERT(at_aiconsole, "Target too close!\n");
+					TaskFail();
+					m_aimingRocket = false;
+					SetActivity(ACT_IDLE_ANGRY);
+					return;
+				}
+
+				ALERT(at_aiconsole, "Don't want to hit a friendly!\n");
+				break;
+			}
+		}
+
+		if (canShoot) {
+			EMIT_SOUND_DYN(edict(), CHAN_WEAPON, "weapons/rocketfire1.wav", VOL_NORM, ATTN_NORM, 0, 100);
+			m_hRpgRocket = CRpgRocket::CreateRpgRocket(vecSrc, pev->angles, this, NULL);
+			m_aimingRocket = true;
+
+			pev->sequence = 90;
+			pev->frame = 0;
+			ResetSequenceInfo();
+
+			pev->effects |= EF_MUZZLEFLASH;
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
+			m_cAmmoLoaded--;
+		}
+	}
+
+	if (HasConditions(bits_COND_ENEMY_OCCLUDED)) {
+		if (!m_aimingRocket && !m_occludeTime) {
+			m_occludeTime = gpGlobals->time;
+		}
+	}
+	else if (m_occludeTime) {
+		m_rpgAimTime = gpGlobals->time; // don't fire instantly when out of cover
+		m_occludeTime = 0;
+	}
+	
+	if (!m_aimingRocket && !m_cAmmoLoaded || (m_occludeTime && gpGlobals->time - m_occludeTime > 2.0f)) {
+		SetActivity(ACT_IDLE_ANGRY);
+		TaskFail();
+	}
+}
+
 void CBaseGrunt::DropEquipmentToss(const char* cname, Vector vecGunPos, Vector vecGunAngles, Vector velocity, Vector aVelocity) {
 	CBaseEntity* item = DropItem(cname, vecGunPos, vecGunAngles);
 
@@ -816,6 +942,10 @@ bool CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity
 	}
 	if (equipmentToDrop & MEQUIP_AKIMBO_UZIS) {
 		DropEquipmentToss("weapon_uziakimbo", vecGunPos, vecGunAngles, velocity, aVelocity);
+		droppedAnything = true;
+	}
+	if (equipmentToDrop & MEQUIP_RPG) {
+		DropEquipmentToss("weapon_rpg", vecGunPos, vecGunAngles, velocity, aVelocity);
 		droppedAnything = true;
 	}
 
@@ -1051,6 +1181,9 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 		PRECACHE_SOUND("weapons/357_shot2.wav");
 		AddPrecacheWeapon("weapon_357");
 	}
+	if (equipment & MEQUIP_RPG) {
+		AddPrecacheWeapon("weapon_rpg");
+	}
 	if (equipment & MEQUIP_DEAGLE) {
 		PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
 		PRECACHE_SOUND("weapons/desert_eagle_reload.wav");
@@ -1092,7 +1225,12 @@ void CBaseGrunt :: StartTask ( Task_t *pTask )
 		}
 		TaskComplete();
 		break;
-
+	case TASK_GRUNT_AIM_RPG:
+		pev->sequence = 89;
+		pev->frame = 0;
+		m_rpgAimTime = gpGlobals->time;
+		ResetSequenceInfo();
+		break;
 	case TASK_GRUNT_SPEAK_SENTENCE:
 		SpeakSentence();
 		TaskComplete();
@@ -1143,6 +1281,20 @@ void CBaseGrunt :: RunTask ( Task_t *pTask )
 			}
 			break;
 		}
+	case TASK_GRUNT_AIM_RPG:
+		Shoot(true);
+
+		if (m_fSequenceFinished) {
+			pev->sequence = 89;
+			pev->frame = 0;
+			ResetSequenceInfo();
+		}
+
+		if (!m_hEnemy) {
+			TaskComplete();
+		}
+
+		break;
 	default:
 		{
 			CTalkSquadMonster :: RunTask( pTask );
@@ -1156,6 +1308,7 @@ const char* CBaseGrunt::GetTaskName(int taskIdx) {
 	case TASK_GRUNT_FACE_TOSS_DIR: return "TASK_GRUNT_FACE_TOSS_DIR";
 	case TASK_GRUNT_SPEAK_SENTENCE: return "TASK_GRUNT_SPEAK_SENTENCE";
 	case TASK_GRUNT_CHECK_FIRE: return "TASK_GRUNT_CHECK_FIRE";
+	case TASK_GRUNT_AIM_RPG: return "TASK_GRUNT_AIM_RPG";
 	default:
 		return CTalkSquadMonster::GetTaskName(taskIdx);
 	}
@@ -1715,6 +1868,33 @@ Schedule_t	slGruntRangeAttack1C[] =
 	},
 };
 
+
+// Range attack for rpg
+Task_t	tlGruntRangeAttackRpg[] =
+{
+	{ TASK_STOP_MOVING,			(float)0		},
+	{ TASK_FACE_ENEMY,			(float)0		},
+	{ TASK_GRUNT_CHECK_FIRE,	(float)0		},
+	{ TASK_SET_FAIL_SCHEDULE,	SCHED_TAKE_COVER_FROM_ENEMY	},
+	{ TASK_GRUNT_AIM_RPG,		(float)0		},
+};
+
+Schedule_t	slGruntRangeAttackRpg[] =
+{
+	{
+		tlGruntRangeAttackRpg,
+		ARRAYSIZE(tlGruntRangeAttackRpg),
+		bits_COND_NEW_ENEMY |
+		bits_COND_ENEMY_DEAD |
+		bits_COND_HEAVY_DAMAGE |
+		bits_COND_HEAR_SOUND |
+		bits_COND_GRUNT_NOFIRE,
+
+		bits_SOUND_DANGER,
+		"GRUNT_RANGE_ATTACK_RPG"
+	},
+};
+
 //=========================================================
 // secondary range attack. Overriden because base class stops attacking when the enemy is occluded.
 // grunt's grenade toss requires the enemy be occluded.
@@ -1880,6 +2060,7 @@ DEFINE_CUSTOM_SCHEDULES( CBaseGrunt )
 	slGruntRangeAttack1A,
 	slGruntRangeAttack1B,
 	slGruntRangeAttack1C,
+	slGruntRangeAttackRpg,
 	slGruntRangeAttack2,
 	slGruntRepel,
 	slGruntRepelAttack,
@@ -2479,7 +2660,9 @@ Schedule_t* CBaseGrunt :: GetScheduleOfType ( int Type )
 			if (RANDOM_LONG(0,9) == 0)
 				m_fStanding = RANDOM_LONG(0,1);
 		 
-			if (m_fStanding)
+			if (HasEquipment(MEQUIP_RPG))
+				return &slGruntRangeAttackRpg[0];
+			else if (m_fStanding)
 				return &slGruntRangeAttack1B[ 0 ];
 			else
 				return &slGruntRangeAttack1A[ 0 ];
@@ -2583,6 +2766,28 @@ Schedule_t* CBaseGrunt :: GetScheduleOfType ( int Type )
 			return CTalkSquadMonster :: GetScheduleOfType ( Type );
 		}
 	}
+}
+
+void CBaseGrunt::RemoveRpgLaser(void) {
+	if (m_hRpgSpot) {
+		UTIL_Remove(m_hRpgSpot);
+	}
+	if (m_hRpgBeam) {
+		UTIL_Remove(m_hRpgBeam);
+	}
+}
+
+void CBaseGrunt::ScheduleChange(void) {
+	RemoveRpgLaser();
+	if (m_aimingRocket) {
+		m_aimingRocket = false;
+		m_cAmmoLoaded = 0;
+	}
+}
+
+void CBaseGrunt::UpdateOnRemove(void) {
+	RemoveRpgLaser();
+	CBaseEntity::UpdateOnRemove();
 }
 
 void CBaseGrunt::Revive() {

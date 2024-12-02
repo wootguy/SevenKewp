@@ -59,6 +59,7 @@ enum
 	TASK_GRUNT_FACE_TOSS_DIR = LAST_TALKMONSTER_TASK + 1,
 	TASK_GRUNT_SPEAK_SENTENCE,
 	TASK_GRUNT_CHECK_FIRE,
+	TASK_GRUNT_AIM_RPG,	// keep aiming rpg until the rocket hits or taking too long to get a clear shot
 	LAST_BASE_GRUNT_TASK
 };
 
@@ -90,17 +91,18 @@ enum MONSTER_EQUIPMENT
 	MEQUIP_GLOCK			= 1 << 6,
 	MEQUIP_DEAGLE			= 1 << 7,
 	MEQUIP_357				= 1 << 8,
-	MEQUIP_MINIGUN			= 1 << 9,
-	MEQUIP_AKIMBO_UZIS		= 1 << 10,
-	MEQUIP_NEEDLE			= 1 << 11, // for healing
-	MEQUIP_HELMET			= 1 << 12,
+	MEQUIP_RPG				= 1 << 9,
+	MEQUIP_MINIGUN			= 1 << 10,
+	MEQUIP_AKIMBO_UZIS		= 1 << 11,
+	MEQUIP_NEEDLE			= 1 << 12, // for healing
+	MEQUIP_HELMET			= 1 << 13,
 };
 
 #define MEQUIP_EVERYTHING 0xffffffff
 
 #define ANY_RANGED_WEAPON (MEQUIP_MP5 | MEQUIP_SHOTGUN | MEQUIP_SAW | MEQUIP_SNIPER \
 						  | MEQUIP_GLOCK | MEQUIP_DEAGLE | MEQUIP_357 | MEQUIP_MINIGUN \
-						  | MEQUIP_AKIMBO_UZIS)
+						  | MEQUIP_AKIMBO_UZIS | MEQUIP_RPG)
 
 extern Schedule_t	slGruntFail[];
 extern Schedule_t	slGruntCombatFail[];
@@ -166,6 +168,7 @@ public:
 	void ShootGlock(Vector& vecShootOrigin, Vector& vecShootDir);
 	void ShootDeagle(Vector& vecShootOrigin, Vector& vecShootDir);
 	void Shoot357(Vector& vecShootOrigin, Vector& vecShootDir);
+	void ShootRPG(Vector& vecShootOrigin, Vector& vecShootDir);
 	void Reload();
 	void PointAtEnemy();
 	virtual void PrescheduleThink(void);
@@ -188,6 +191,9 @@ public:
 	Schedule_t* GetEnemyOccludedSchedule(void);
 	virtual Schedule_t* GetSchedule(void);
 	virtual Schedule_t* GetScheduleOfType(int Type);
+	virtual void ScheduleChange(void);
+	virtual void UpdateOnRemove(void);
+	void RemoveRpgLaser(void);
 	virtual void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	virtual int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 
@@ -221,6 +227,13 @@ public:
 	int m_iShotgunShell;
 	int m_iSawShell;
 	int m_iSawLink;
+
+	float m_rpgAimTime; // time rpg begun aiming (delays fire)
+	float m_occludeTime; // time enemy was occluded
+	bool m_aimingRocket; // currently aiming a rocket?
+	EHANDLE m_hRpgSpot; // rpg laser spot
+	EHANDLE m_hRpgBeam; // rpg laser
+	EHANDLE m_hRpgRocket; // rocket being aimed
 
 	int		m_iSentence;
 
