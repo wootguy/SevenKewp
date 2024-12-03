@@ -590,9 +590,10 @@ int CBaseDoor::DoorActivate(USE_TYPE useType)
 
 	if (FBitSet(pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && shouldClose)
 	{// door should close
-		DoorGoDown();
+		if (m_toggle_state != TS_AT_BOTTOM)
+			DoorGoDown();
 	}
-	else
+	else if (m_toggle_state != TS_AT_TOP)
 	{// door should open
 
 		if (m_hActivator != NULL && m_hActivator->IsPlayer())
