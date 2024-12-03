@@ -20,7 +20,7 @@
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
-//#define DEBUG_MONSTER "monster_male_assassin" // uncomment to enable verbose logging
+#define DEBUG_MONSTER "monster_human_grunt" // uncomment to enable verbose logging
 
 std::vector<std::unordered_map<std::string, std::string>> g_monsterSoundReplacements;
 std::unordered_set<std::string> g_shuffledMonsterSounds;
@@ -1753,7 +1753,7 @@ BOOL CBaseMonster::FTriangulate(const Vector& vecStart, const Vector& vecEnd, fl
 
 	vecLeft = pev->origin + (vecForward * (flDist + sizeX)) - vecDir * (sizeX * 3);
 	vecRight = pev->origin + (vecForward * (flDist + sizeX)) + vecDir * (sizeX * 3);
-	if (pev->movetype == MOVETYPE_FLY)
+	if (pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE)
 	{
 		vecTop = pev->origin + (vecForward * flDist) + (vecDirUp * sizeZ * 3);
 		vecBottom = pev->origin + (vecForward * flDist) - (vecDirUp * sizeZ * 3);
@@ -1762,7 +1762,7 @@ BOOL CBaseMonster::FTriangulate(const Vector& vecStart, const Vector& vecEnd, fl
 	vecFarSide = m_Route[m_iRouteIndex].vecLocation;
 
 	vecDir = vecDir * sizeX * 2;
-	if (pev->movetype == MOVETYPE_FLY)
+	if (pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE)
 		vecDirUp = vecDirUp * sizeZ * 2;
 
 	for (i = 0; i < 8; i++)
@@ -1791,7 +1791,7 @@ BOOL CBaseMonster::FTriangulate(const Vector& vecStart, const Vector& vecEnd, fl
 #endif
 
 #if 0
-		if (pev->movetype == MOVETYPE_FLY)
+		if (pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE)
 		{
 			MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
 			WRITE_BYTE(TE_SHOWLINE);
@@ -1842,7 +1842,7 @@ BOOL CBaseMonster::FTriangulate(const Vector& vecStart, const Vector& vecEnd, fl
 			}
 		}
 
-		if (pev->movetype == MOVETYPE_FLY)
+		if (pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE)
 		{
 			if (CheckLocalMove(pev->origin, vecTop, pTargetEnt, NULL) == LOCALMOVE_VALID)
 			{
@@ -1876,7 +1876,7 @@ BOOL CBaseMonster::FTriangulate(const Vector& vecStart, const Vector& vecEnd, fl
 
 		vecRight = vecRight + vecDir;
 		vecLeft = vecLeft - vecDir;
-		if (pev->movetype == MOVETYPE_FLY)
+		if (pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE)
 		{
 			vecTop = vecTop + vecDirUp;
 			vecBottom = vecBottom - vecDirUp;
@@ -2224,7 +2224,7 @@ void CBaseMonster::StartMonster(void)
 	}
 
 	// Raise monster off the floor one unit, then drop to floor
-	if (pev->movetype != MOVETYPE_FLY && !FBitSet(pev->spawnflags, SF_MONSTER_FALL_TO_GROUND))
+	if (pev->movetype != MOVETYPE_FLY && pev->movetype != MOVETYPE_BOUNCE && !FBitSet(pev->spawnflags, SF_MONSTER_FALL_TO_GROUND))
 	{
 		pev->origin.z += 1;
 		DROP_TO_FLOOR(ENT(pev));
@@ -2268,7 +2268,7 @@ void CBaseMonster::StartMonster(void)
 			// JAYJAY
 			m_movementGoal = MOVEGOAL_PATHCORNER;
 
-			if (pev->movetype == MOVETYPE_FLY)
+			if (pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE)
 				m_movementActivity = ACT_FLY;
 			else
 				m_movementActivity = ACT_WALK;
@@ -6317,7 +6317,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	}
 	case TASK_WALK_PATH:
 	{
-		if (pev->movetype == MOVETYPE_FLY)
+		if (pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE)
 		{
 			m_movementActivity = ACT_FLY;
 		}

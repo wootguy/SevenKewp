@@ -210,9 +210,11 @@ void CRpgRocket :: Precache( void )
 
 void CRpgRocket :: IgniteThink( void  )
 {
-	// pev->movetype = MOVETYPE_TOSS;
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
 
-	pev->movetype = MOVETYPE_FLY;
 	pev->effects |= EF_LIGHT;
 
 	// make rocket sound

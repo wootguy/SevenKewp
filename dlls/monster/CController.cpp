@@ -1182,7 +1182,12 @@ void CControllerHeadBall :: Spawn( void )
 
 	Precache( );
 	// motor
-	pev->movetype = MOVETYPE_FLY;
+	
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
+
 	pev->solid = SOLID_BBOX;
 
 	SET_MODEL(ENT(pev), "sprites/xspark4.spr");
@@ -1334,7 +1339,12 @@ void CControllerZapBall :: Spawn( void )
 {
 	Precache( );
 	// motor
-	pev->movetype = MOVETYPE_FLY;
+	
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
+
 	pev->solid = SOLID_BBOX;
 
 	SET_MODEL(ENT(pev), "sprites/xspark4.spr");

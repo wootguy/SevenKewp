@@ -54,8 +54,12 @@ void CSpore::Spawn()
 
 	if( m_SporeType == SporeType::GRENADE )
 		pev->movetype = MOVETYPE_BOUNCE;
-	else
-		pev->movetype = MOVETYPE_FLY;
+	else {
+		// FLY movetype but with client interpolation
+		pev->movetype = MOVETYPE_BOUNCE;
+		pev->gravity = FLT_MIN;
+		pev->friction = 1.0f;
+	}
 
 	pev->solid = SOLID_BBOX;
 
@@ -89,8 +93,9 @@ void CSpore::Spawn()
 		{
 			pev->velocity = gpGlobals->v_forward * 800;
 		}
-
-		pev->gravity = 1;
+		else {
+			pev->gravity = 1;
+		}
 	}
 	else
 	{

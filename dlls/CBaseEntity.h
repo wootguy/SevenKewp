@@ -354,6 +354,14 @@ public:
 
 	virtual float GetDamageModifier() { return 1.0f; }
 
+	// Smooths the movement of projectile models or sprites that use one of the following movetypes:
+	//		NONE, STEP, WALK, FLY.
+	// Call this in a think function which has a constant interval, and pass that interval as flInterval.
+	// Angles cannot be controlled. In most cases you're better off using a different movetype.
+	// (e.g. FLY -> BOUNCE with gravity=FLT_MIN and friction=1.0f)
+	// EFLAG_SLERP only interpolates animated MDLs that are moved manually (not with velocity)
+	void ParametricInterpolation(float flInterval);
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;

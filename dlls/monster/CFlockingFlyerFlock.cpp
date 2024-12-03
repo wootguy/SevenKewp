@@ -208,7 +208,6 @@ void CFlockingFlyerFlock :: SpawnFlock( void )
 		vecSpot = pev->origin + vecSpot;
 
 		UTIL_SetOrigin(pBoid->pev, vecSpot);
-		pBoid->pev->movetype = MOVETYPE_FLY;
 		pBoid->SpawnCommonCode();
 		pBoid->pev->flags &= ~FL_ONGROUND;
 		pBoid->pev->velocity = g_vecZero;
@@ -329,9 +328,13 @@ void CFlockingFlyer :: SpawnCommonCode( )
 	pev->deadflag	= DEAD_NO;
 	pev->classname	= MAKE_STRING("monster_flyer");
 	pev->solid		= SOLID_SLIDEBOX;
-	pev->movetype	= MOVETYPE_FLY;
 	pev->takedamage	= DAMAGE_NO;
 	pev->health		= 1;
+
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
 
 	m_fPathBlocked	= FALSE;// obstacles will be detected
 	m_flFieldOfView	= 0.2;

@@ -217,16 +217,16 @@ void CSqueakGrenade::HuntThink( void )
 	// float
 	if (pev->waterlevel != 0)
 	{
-		if (pev->movetype == MOVETYPE_BOUNCE)
+		if (pev->gravity != FLT_MIN)
 		{
-			pev->movetype = MOVETYPE_FLY;
+			pev->gravity = FLT_MIN;
 		}
 		pev->velocity = pev->velocity * 0.9;
 		pev->velocity.z += 8.0;
 	}
-	else if (pev->movetype == MOVETYPE_FLY)
+	else if (pev->gravity == FLT_MIN)
 	{
-		pev->movetype = MOVETYPE_BOUNCE;
+		pev->gravity = 0;
 	}
 
 	// return if not time to hunt

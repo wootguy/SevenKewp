@@ -469,7 +469,11 @@ void CGonome::CantFollowSound() {
 
 void CGonomeSpit::Spawn(void)
 {
-	pev->movetype = MOVETYPE_FLY;
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
+
 	pev->classname = MAKE_STRING("gonomespit");
 
 	pev->solid = SOLID_BBOX;

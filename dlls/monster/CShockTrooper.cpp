@@ -1141,7 +1141,7 @@ void CShockTrooper::StartTask(Task_t* pTask)
 	case TASK_FACE_IDEAL:
 	case TASK_FACE_ENEMY:
 		CTalkSquadMonster::StartTask(pTask);
-		if (pev->movetype == MOVETYPE_FLY)
+		if (pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE)
 		{
 			m_IdealActivity = ACT_GLIDE;
 		}
@@ -1901,7 +1901,7 @@ Schedule_t* CShockTrooper::GetSchedule()
 	m_iSentence = ShockTrooper_SENT_NONE;
 
 	// flying? If PRONE, barnacle has me. IF not, it's assumed I am rapelling.
-	if (pev->movetype == MOVETYPE_FLY && m_MonsterState != MONSTERSTATE_PRONE)
+	if ((pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE) && m_MonsterState != MONSTERSTATE_PRONE)
 	{
 		if ((pev->flags & FL_ONGROUND) != 0)
 		{
@@ -2376,7 +2376,12 @@ void CShockTrooperRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller,
 
 	CBaseEntity* pEntity = Create("monster_shocktrooper", pev->origin, pev->angles);
 	CBaseMonster* pGrunt = pEntity->MyMonsterPointer();
-	pGrunt->pev->movetype = MOVETYPE_FLY;
+	
+	// FLY movetype but with client interpolation
+	pGrunt->pev->movetype = MOVETYPE_BOUNCE;
+	pGrunt->pev->gravity = FLT_MIN;
+	pGrunt->pev->friction = 1.0f;
+
 	pGrunt->pev->velocity = Vector(0, 0, RANDOM_FLOAT(-196, -128));
 	pGrunt->SetActivity(ACT_GLIDE);
 	// UNDONE: position?

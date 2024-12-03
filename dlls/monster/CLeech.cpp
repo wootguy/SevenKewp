@@ -191,8 +191,12 @@ void CLeech::Spawn( void )
 	SetSize(Vector(-1,-1,0), Vector(1,1,2));
 	// Don't push the minz down too much or the water check will fail because this entity is really point-sized
 	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_FLY;
 	SetBits(pev->flags, FL_SWIM);
+
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
 
 	m_flFieldOfView		= -0.5;	// 180 degree FOV
 	m_flDistLook		= 750;
@@ -520,7 +524,11 @@ void CLeech::UpdateMotion( void )
 	}
 	else if ( pev->movetype == MOVETYPE_TOSS )
 	{
-		pev->movetype = MOVETYPE_FLY;
+		// FLY movetype but with client interpolation
+		pev->movetype = MOVETYPE_BOUNCE;
+		pev->gravity = FLT_MIN;
+		pev->friction = 1.0f;
+
 		pev->flags &= ~FL_ONGROUND;
 		RecalculateWaterlevel();
 		m_waterTime = gpGlobals->time + 2;	// Recalc again soon, water may be rising
