@@ -798,7 +798,7 @@ void CBaseGrunt::ShootRPG(Vector& vecShootOrigin, Vector& vecShootDir) {
 	PointAtEnemy();
 
 	if (!m_hRpgSpot) {
-		m_hRpgSpot = CLaserSpot::CreateSpot();
+		m_hRpgSpot = CLaserSpot::CreateSpot(edict());
 	}
 	CLaserSpot* spot = (CLaserSpot*)m_hRpgSpot.GetEntity();
 
