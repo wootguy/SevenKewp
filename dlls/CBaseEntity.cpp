@@ -1247,3 +1247,20 @@ bool CBaseEntity::RunInventoryRules(CBaseEntity* ent) {
 
 	return true;
 }
+
+void CBaseEntity::ParametricInterpolation(float flInterval) {
+	pev->startpos = pev->origin;
+	pev->endpos = pev->origin + pev->velocity;
+	pev->starttime = gpGlobals->time;
+	pev->impacttime = gpGlobals->time + flInterval * (1.0f / flInterval);
+
+#if 0
+	// Interpolate past position to current.
+	// This should in theory create smoother movement due to clients not predicting
+	// the wrong path if the velocity changes, but I can't tell any difference.
+	pev->startpos = m_oldOrigin;
+	pev->endpos = pev->origin;
+	pev->starttime = gpGlobals->time;
+	pev->impacttime = gpGlobals->time + flInterval;
+#endif
+}

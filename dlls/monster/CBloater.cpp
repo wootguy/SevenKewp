@@ -201,7 +201,12 @@ void CBloater :: Spawn()
 	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid			= SOLID_SLIDEBOX;
-	pev->movetype		= MOVETYPE_FLY;
+	
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
+
 	pev->spawnflags		|= FL_FLY;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.

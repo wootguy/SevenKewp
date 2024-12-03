@@ -61,10 +61,12 @@ CCrossbowBolt *CCrossbowBolt::BoltCreate( void )
 void CCrossbowBolt::Spawn( )
 {
 	Precache( );
-	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	pev->gravity = 0.5;
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
 
 	SET_MODEL(ENT(pev), "models/crossbow_bolt.mdl");
 

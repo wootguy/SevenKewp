@@ -125,8 +125,12 @@ void CApache :: Spawn( void )
 {
 	Precache( );
 	// motor
-	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
+
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
 
 	InitModel();
 	SetSize(Vector( -32, -32, -64 ), Vector( 32, 32, 0 ) );
@@ -1103,8 +1107,12 @@ void CApacheHVR :: Spawn( void )
 {
 	Precache( );
 	// motor
-	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
+
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
 
 	SetGrenadeModel();
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
@@ -1134,9 +1142,6 @@ void CApacheHVR :: Precache( void )
 
 void CApacheHVR :: IgniteThink( void  )
 {
-	// pev->movetype = MOVETYPE_TOSS;
-
-	// pev->movetype = MOVETYPE_FLY;
 	pev->effects |= EF_LIGHT;
 
 	// make rocket sound

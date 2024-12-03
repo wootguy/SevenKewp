@@ -578,7 +578,7 @@ Schedule_t *CHGruntOp4Medic :: GetSchedule( void )
 	m_iSentence = HGRUNT_SENT_NONE;
 
 	// flying? If PRONE, barnacle has me. IF not, it's assumed I am rapelling. 
-	if ( pev->movetype == MOVETYPE_FLY && m_MonsterState != MONSTERSTATE_PRONE )
+	if ( (pev->movetype == MOVETYPE_BOUNCE || pev->movetype == MOVETYPE_FLY) && m_MonsterState != MONSTERSTATE_PRONE )
 	{
 		if (pev->flags & FL_ONGROUND)
 		{

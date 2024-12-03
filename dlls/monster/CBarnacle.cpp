@@ -295,6 +295,7 @@ void CBarnacle :: BarnacleThink ( void )
 
 				m_hEnemy = pTouchEnt;
 
+				// TODO: use BOUNCE for interpolation. Save previous gravity and friction values somewhere
 				pTouchEnt->pev->movetype = MOVETYPE_FLY;
 				pTouchEnt->pev->velocity = g_vecZero;
 				pTouchEnt->pev->basevelocity = g_vecZero;

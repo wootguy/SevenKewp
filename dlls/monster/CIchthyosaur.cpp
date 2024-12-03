@@ -507,7 +507,6 @@ void CIchthyosaur :: Spawn()
 	SetSize(Vector( -32, -32, -32 ), Vector( 32, 32, 32 ) );
 
 	pev->solid			= SOLID_BBOX;
-	pev->movetype		= MOVETYPE_FLY;
 	m_bloodColor		= BLOOD_COLOR_GREEN;
 	pev->view_ofs		= Vector ( 0, 0, 16 );
 	m_flFieldOfView		= VIEW_FIELD_WIDE;
@@ -515,6 +514,11 @@ void CIchthyosaur :: Spawn()
 	SetBits(pev->flags, FL_SWIM);
 	SetFlyingSpeed( ICHTHYOSAUR_SPEED );
 	SetFlyingMomentum( 2.5 );	// Set momentum constant
+
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
 
 	m_afCapability		= bits_CAP_RANGE_ATTACK1 | bits_CAP_SWIM;
 
@@ -849,7 +853,7 @@ float CIchthyosaur::FlPitchDiff( void )
 
 float CIchthyosaur :: ChangePitch( int pitchSpeed)
 {
-	if ( pev->movetype == MOVETYPE_FLY )
+	if ( pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE )
 	{
 		float diff = FlPitchDiff();
 		float target = 0;
@@ -882,7 +886,7 @@ float CIchthyosaur :: ChangePitch( int pitchSpeed)
 
 float CIchthyosaur::ChangeYaw( int yawSpeed)
 {
-	if ( pev->movetype == MOVETYPE_FLY )
+	if ( pev->movetype == MOVETYPE_FLY || pev->movetype == MOVETYPE_BOUNCE )
 	{
 		float diff = FlYawDiff();
 		float target = 0;
@@ -916,7 +920,7 @@ float CIchthyosaur::ChangeYaw( int yawSpeed)
 
 Activity CIchthyosaur:: GetStoppedActivity( void )
 { 
-	if ( pev->movetype != MOVETYPE_FLY )		// UNDONE: Ground idle here, IDLE may be something else
+	if ( pev->movetype != MOVETYPE_FLY && pev->movetype != MOVETYPE_BOUNCE )		// UNDONE: Ground idle here, IDLE may be something else
 		return ACT_IDLE;
 	return ACT_WALK;
 }

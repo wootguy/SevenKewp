@@ -98,9 +98,13 @@ void CPitdroneSpike::Precache()
 
 void CPitdroneSpike:: Spawn( void )
 {
-	pev->movetype = MOVETYPE_FLY;
 	pev->classname = MAKE_STRING( "pitdronespike" );
 	
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
+
 	pev->solid = SOLID_BBOX;
 	pev->takedamage = DAMAGE_YES;
 	pev->flags |= FL_MONSTER;

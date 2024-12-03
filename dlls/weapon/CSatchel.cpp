@@ -133,17 +133,18 @@ void CSatchelCharge :: SatchelThink( void )
 
 	if (pev->waterlevel == 3)
 	{
-		pev->movetype = MOVETYPE_FLY;
+		pev->gravity = FLT_MIN;
 		pev->velocity = pev->velocity * 0.8;
 		pev->avelocity = pev->avelocity * 0.9;
 		pev->velocity.z += 8;
 	}
 	else if (pev->waterlevel == 0)
 	{
-		pev->movetype = MOVETYPE_BOUNCE;
+		pev->gravity = 0;
 	}
 	else
 	{
+		pev->gravity = FLT_MIN;
 		pev->velocity.z -= 8;
 	}	
 }

@@ -85,9 +85,12 @@ void CDisplacerBall::Precache()
 void CDisplacerBall::Spawn()
 {
 	Precache();
-
-	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
+
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
 
 	SET_MODEL(edict(), "sprites/exit1.spr");
 
