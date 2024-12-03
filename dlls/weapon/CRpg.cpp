@@ -38,6 +38,8 @@ enum rpg_e {
 
 LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg )
 
+int laserBeamIdx;
+
 #ifndef CLIENT_DLL
 
 LINK_ENTITY_TO_CLASS( laser_spot, CLaserSpot )
@@ -58,12 +60,13 @@ IMPLEMENT_SAVERESTORE(CRpgRocket, CGrenade)
 
 //=========================================================
 //=========================================================
-CLaserSpot *CLaserSpot::CreateSpot( void )
+CLaserSpot *CLaserSpot::CreateSpot(edict_t* owner)
 {
 	CLaserSpot *pSpot = GetClassPtr( (CLaserSpot *)NULL );
 	pSpot->Spawn();
 
 	pSpot->pev->classname = MAKE_STRING("laser_spot");
+	pSpot->pev->owner = owner;
 
 	return pSpot;
 }
@@ -73,7 +76,7 @@ CLaserSpot *CLaserSpot::CreateSpot( void )
 void CLaserSpot::Spawn( void )
 {
 	Precache( );
-	pev->movetype = MOVETYPE_NONE;
+	pev->movetype = MOVETYPE_NOCLIP;
 	pev->solid = SOLID_NOT;
 
 	pev->rendermode = kRenderGlow;
@@ -195,6 +198,13 @@ void CRpgRocket::Explode(TraceResult* pTrace, int bitsDamageType)
 	}
 
 	CGrenade::Explode(pTrace, bitsDamageType);
+
+	// stay visible for another think so the interpolated beam effect has time to catch up
+	pev->velocity = g_vecZero;
+	pev->movetype = MOVETYPE_NONE;
+	pev->effects = 0;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 1;
 }
 
 //=========================================================
@@ -243,6 +253,10 @@ void CRpgRocket :: FollowThink( void  )
 
 	vecTarget = gpGlobals->v_forward;
 	flMax = 4096;
+
+	float bestDot = -1.0f;
+	float bestDist = FLT_MAX;
+	Vector bestDir = vecTarget;
 	
 	// Examine all entities within a reasonable radius
 	while ((pOther = UTIL_FindEntityByClassname( pOther, "laser_spot" )) != NULL)
@@ -256,14 +270,30 @@ void CRpgRocket :: FollowThink( void  )
 
 		UTIL_TraceLine(pev->origin, vSpotLocation, dont_ignore_monsters, ENT(pev), &tr);
 		// ALERT( at_console, "%f\n", tr.flFraction );
-		if (tr.flFraction >= 0.90)
+		if ((tr.vecEndPos - vSpotLocation).Length() < 16)
 		{
 			vecDir = pOther->pev->origin - pev->origin;
 			flDist = vecDir.Length( );
 			vecDir = vecDir.Normalize( );
 			flDot = DotProduct( gpGlobals->v_forward, vecDir );
-			if ((flDot > 0) && (flDist * (1 - flDot) < flMax))
+
+			bool isBetter = true;
+
+			if (mp_rpg_laser_mode.value == 1) {
+				// the best target is the brightest and most centered
+				bool isMoreCentered = flDot > bestDot;
+				bool isBrighter = (flDist * 2 < bestDist && fabs(flDot - bestDot) < 0.05f);
+				bool isDimmer = (flDist > bestDist * 2 && fabs(flDot - bestDot) < 0.05f);
+				isBetter = (isMoreCentered || isBrighter) && !isDimmer;
+			}
+			else if (mp_rpg_laser_mode.value == 2) {
+				isBetter = pev->owner == pOther->pev->owner;
+			}
+
+			if ((flDot > 0) && (flDist * (1 - flDot) < flMax) && isBetter)
 			{
+				bestDot = flDot;
+				bestDist = flDist;
 				flMax = flDist * (1 - flDot);
 				vecTarget = vecDir;
 			}
@@ -378,8 +408,6 @@ void CRpg::Reload( void )
 		CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 		m_pSpot->Suspend( 2.1 );
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.1;
-
-		m_hBeam->pev->effects |= EF_NODRAW;
 	}
 #endif
 
@@ -429,7 +457,7 @@ void CRpg::Precache( void )
 	m_defaultModelW = "models/w_rpg.mdl";
 	CBasePlayerWeapon::Precache();
 
-	PRECACHE_MODEL("sprites/laserbeam.spr");
+	laserBeamIdx = PRECACHE_MODEL("sprites/laserbeam.spr");
 
 	PRECACHE_SOUND("items/9mmclip1.wav");
 
@@ -506,13 +534,9 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 		m_pSpot->Killed( NULL, GIB_NEVER );
 		m_hSpot = NULL;
 	}
-	if (m_hBeam) {
-		UTIL_Remove(m_hBeam);
-	}
 #endif
 
 }
-
 
 
 void CRpg::PrimaryAttack()
@@ -576,8 +600,6 @@ void CRpg::SecondaryAttack()
 	{
 		m_pSpot->Killed( NULL, GIB_NORMAL );
 		m_hSpot = NULL;
-
-		UTIL_Remove(m_hBeam);
 	}
 #endif
 
@@ -640,56 +662,52 @@ void CRpg::UpdateSpot( void )
 
 	if (m_fSpotActive)
 	{
-		if (!m_hSpot)
-		{
-			m_hSpot = CLaserSpot::CreateSpot();
+		if (!m_hSpot) {
+			m_hSpot = CLaserSpot::CreateSpot(m_pPlayer->edict());
 		}
 		CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
-		Vector vecSrc = m_pPlayer->GetGunPosition( );;
+		Vector vecSrc = m_pPlayer->GetGunPosition( );
 		Vector vecAiming = gpGlobals->v_forward;
 
 		TraceResult tr;
 		UTIL_TraceLine ( vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr );
 		
-		UTIL_SetOrigin( m_pSpot->pev, tr.vecEndPos );
+		if (UTIL_PointContents(tr.vecEndPos) == CONTENTS_SKY) {
+			// back up until out of the sky, or else the client won't render the laser beam
+			Vector delta = tr.vecEndPos - vecSrc;
+			Vector bestPos = tr.vecEndPos;
+			for (float f = 0.01f; f <= 1.0f; f += 0.02f) {
+				bestPos = tr.vecEndPos - (delta * f);
+				if (UTIL_PointContents(bestPos) != CONTENTS_SKY) {
+					break;
+				}
+			}
 
-		if (!m_hBeam) {
-			CBeam* beam = CBeam::BeamCreate("sprites/laserbeam.spr", 8);
-			beam->PointEntInit(tr.vecEndPos, m_pPlayer->entindex());
-			beam->SetEndAttachment(1);
-			beam->SetColor(255, 32, 32);
-			beam->SetNoise(0);
-			beam->SetBrightness(48);
-			beam->SetScrollRate(64);
-			m_hBeam = beam;
+			m_pSpot->pev->renderamt = 1; // almost invisible, but still rendered so laser beam works
+			UTIL_SetOrigin(m_pSpot->pev, bestPos);
+		}
+		else {
+			m_pSpot->pev->renderamt = 255;
+			UTIL_SetOrigin(m_pSpot->pev, tr.vecEndPos);
 		}
 
-		CBeam* beam = (CBeam*)m_hBeam.GetEntity();
-		if (beam) {
-			beam->pev->effects = m_pSpot->pev->effects;
-
-			const bool fix_crash = true;
-
-			if (fix_crash || UTIL_PointContents(tr.vecEndPos) == CONTENTS_SKY) {
-				// dot exits the PVS in this case
-				beam->PointEntInit(tr.vecEndPos, m_pPlayer->entindex());
-				beam->SetEndAttachment(1);
-			}
-			else {
-				// DON'T DO THIS. Somehow, it is causing client crashes.
-				// In a replay, I see a laser spot switches from index 922 to 934
-				// and then every client loses connection at the same time.
-				// Can't reproduce and I've only seen it happen twice in months.
-				// The player index never changes so that should be safe.
-				// Removing the dot randomly doesn't crash. Messing with attachments
-				// here doesn't crash. idk what happened.
-
-				beam->EntsInit(m_pPlayer->entindex(), m_pSpot->entindex());
-				beam->SetStartAttachment(1);
-			}
+		if (gpGlobals->time - m_lastBeamUpdate >= 0.95f && !(m_pSpot->pev->effects & EF_NODRAW)) {
+			// WARNING: Creating a beam entity that uses attachments has caused client crashes before,
+			// but I haven't seen that happen yet with TE_BEAMENTS. If this causes crashes again,
+			// then revert to using BeamEntPoint (attached to the player, not spot).
+			m_lastBeamUpdate = gpGlobals->time;
+			UTIL_BeamEnts(m_pSpot->entindex(), 0, m_pPlayer->entindex(), 1, false, laserBeamIdx,
+				0, 0, 10, 8, 0, RGBA(255, 32, 32, 48), 64, MSG_PVS, m_pPlayer->pev->origin);
 		}
+	}
+	else if (m_lastBeamUpdate) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, m_pPlayer->pev->origin);
+		WRITE_BYTE(TE_KILLBEAM);
+		WRITE_SHORT(m_pPlayer->entindex());
+		MESSAGE_END();
+		m_lastBeamUpdate = 0;
 	}
 #endif
 

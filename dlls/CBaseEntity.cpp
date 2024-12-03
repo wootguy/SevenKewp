@@ -1257,7 +1257,8 @@ void CBaseEntity::ParametricInterpolation(float flInterval) {
 #if 0
 	// Interpolate past position to current.
 	// This should in theory create smoother movement due to clients not predicting
-	// the wrong path if the velocity changes, but I can't tell any difference.
+	// the wrong path if the velocity changes, but I can't tell any difference unless
+	// the entity has the TE_BEAMFOLLOW effect
 	pev->startpos = m_oldOrigin;
 	pev->endpos = pev->origin;
 	pev->starttime = gpGlobals->time;

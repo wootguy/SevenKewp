@@ -75,6 +75,7 @@ EXPORT extern cvar_t	pluginupdatepath; // root path for plugin file updates to b
 EXPORT extern cvar_t	pluginautoupdate; // attempt to update plugins after every map change
 EXPORT extern cvar_t	mp_skill_allow; // 0 = no, 1 = yes
 EXPORT extern cvar_t	mp_default_medkit; // provide a medkit by default unless nomedkit is in the cfg
+EXPORT extern cvar_t	mp_rpg_laser_mode; // 0 = HL, 1 = realistic, 2 = rockets follow owner's laser
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
