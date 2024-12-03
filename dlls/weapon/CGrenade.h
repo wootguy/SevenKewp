@@ -40,4 +40,5 @@ public:
 	virtual	BOOL IsNormalMonster(void) { return FALSE; }
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
+	Vector m_effectOrigin; // where to play the explosion effects (offset from real origin so sprites look nice)
 };

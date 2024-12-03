@@ -45,9 +45,14 @@ void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacke
 	else
 		falloff = 1.0;
 
-	int bInWater = (UTIL_PointContents ( vecSrc ) == CONTENTS_WATER);
+	int pointContents = UTIL_PointContents(vecSrc);
+	int bInWater = (pointContents == CONTENTS_WATER);
 
 	vecSrc.z += 1;// in case grenade is lying on the ground
+
+	if (mp_explosionbug.value == 0 && UTIL_PointContents(vecSrc) != pointContents) {
+		vecSrc.z -= 1; // must have hit a ceiling
+	}
 
 	if ( !pevAttacker )
 		pevAttacker = pevInflictor;
