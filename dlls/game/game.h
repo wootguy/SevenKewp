@@ -80,6 +80,9 @@ EXPORT extern cvar_t	mp_default_medkit; // provide a medkit by default unless no
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
 EXPORT extern cvar_t	mp_objectboost;
 
+// Enables classic hit detection for explosives (grenade in vent hits everything nearby)
+EXPORT extern cvar_t	mp_explosionbug;
+
 // write network messages to log file for debugging
 EXPORT extern cvar_t	mp_debugmsg;
 
