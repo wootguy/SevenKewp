@@ -232,7 +232,6 @@ public:
 	float m_occludeTime; // time enemy was occluded
 	bool m_aimingRocket; // currently aiming a rocket?
 	EHANDLE m_hRpgSpot; // rpg laser spot
-	EHANDLE m_hRpgBeam; // rpg laser
 	EHANDLE m_hRpgRocket; // rocket being aimed
 
 	int		m_iSentence;

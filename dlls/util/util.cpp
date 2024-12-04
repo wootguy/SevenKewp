@@ -935,6 +935,16 @@ void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx,
 	SAFE_MESSAGE_ENT_LOGIC(UTIL_BeamEntPoint_msg, entindex, attachment, point, modelIdx, frameStart, framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
 }
 
+void UTIL_KillBeam_msg(int entindex, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
+	WRITE_BYTE(TE_KILLBEAM);
+	WRITE_SHORT(entindex);
+	MESSAGE_END();
+}
+void UTIL_KillBeam(int entindex, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	SAFE_MESSAGE_ENT_LOGIC(UTIL_KillBeam_msg, entindex, msgMode, msgOrigin, targetEnt);
+}
+
 void UTIL_BeamEnts_msg(int entindex, int attachment, int entindex2, int attachment2, bool ringMode, int modelIdx, uint8_t frameStart,
 	uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed,
 	int msgMode, const float* msgOrigin, edict_t* targetEnt) {
