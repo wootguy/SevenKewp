@@ -335,7 +335,7 @@ void CBarnacle :: BarnacleThink ( void )
 
 	// ALERT( at_console, "tounge %f\n", m_flAltitude + m_flTongueAdj );
 	SetBoneController( 0, -(m_flAltitude + m_flTongueAdj) );
-	StudioFrameAdvance( 0.1 );
+	StudioFrameAdvance();
 }
 
 //=========================================================
@@ -365,7 +365,7 @@ void CBarnacle :: Killed( entvars_t *pevAttacker, int iGib )
 	SetActivity ( ACT_DIESIMPLE );
 	SetBoneController( 0, 0 );
 
-	StudioFrameAdvance( 0.1 );
+	StudioFrameAdvance();
 
 	pev->nextthink = gpGlobals->time + 0.1;
 	SetThink ( &CBarnacle::WaitTillDead );
@@ -377,7 +377,7 @@ void CBarnacle :: WaitTillDead ( void )
 {
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	float flInterval = StudioFrameAdvance( 0.1 );
+	float flInterval = StudioFrameAdvance();
 	DispatchAnimEvents ( flInterval );
 	UpdateShockEffect();
 

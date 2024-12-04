@@ -1147,29 +1147,28 @@ void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target) {
 	// surround with ; to prevent multiple commands being joined when sent in the same frame(?)
 	// this fixes music sometimes not loading/starting/stopping
 	std::string mp3Path = normalize_path(UTIL_VarArgs("sound/%s", path));
-	std::string mp3Command = UTIL_VarArgs(";mp3 %s %s;", (loop ? "loop" : "play"), mp3Path.c_str());
+	std::string mp3Command = UTIL_VarArgs("mp3 %s %s", (loop ? "loop" : "play"), mp3Path.c_str());
 
 	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
-	WRITE_STRING(mp3Command.c_str());
+	WRITE_STRING((mp3Command + "\n").c_str());
 	MESSAGE_END();
 
 	if (!target) {
-		g_mp3Command = mp3Command;
+		g_mp3Command = mp3Command + "\n";
 		ALERT(at_console, "MP3 Command: '%s'\n", g_mp3Command.c_str());
 	}
 }
 
 void UTIL_StopGlobalMp3(edict_t* target) {
-	const char* cmd = ";mp3 stop;";
 
 	MESSAGE_BEGIN(target ? MSG_ONE : MSG_ALL, SVC_STUFFTEXT, NULL, target);
-	WRITE_STRING(cmd);
+	WRITE_STRING("mp3 stop\n");
 	//WRITE_STRING(";cd fadeout;"); // blocked by cl_filterstuffcmd
 	MESSAGE_END();
 
 	if (!target) {
 		g_mp3Command = "";
-		ALERT(at_console, "MP3 Command: '%s'\n", cmd);
+		ALERT(at_console, "MP3 Command: 'mp3 stop'\n");
 	}
 }
 
@@ -2857,32 +2856,30 @@ Vector VecBModelOrigin(entvars_t* pevBModel)
 
 void PlayCDTrack(int iTrack)
 {
-	edict_t* pClient;
-
-	// manually find the single player. 
-	pClient = g_engfuncs.pfnPEntityOfEntIndex(1);
-
-	// Can't play if the client is not connected!
-	if (!pClient)
-		return;
-
 	if (iTrack < -1 || iTrack > 30)
 	{
 		ALERT(at_console, "TriggerCDAudio - Track %d out of range\n");
 		return;
 	}
 
+	std::string cdCommand = "";
+
 	if (iTrack == -1)
 	{
-		CLIENT_COMMAND(pClient, "cd stop\n");
+		cdCommand = "cd stop";
+		g_mp3Command = "";
 	}
 	else
 	{
-		char string[64];
-
-		snprintf(string, 64, "cd play %3d\n", iTrack);
-		CLIENT_COMMAND(pClient, string);
+		cdCommand = UTIL_VarArgs("cd play %d", iTrack);
+		g_mp3Command = cdCommand + "\n"; // play for new joiners later
 	}
+
+	MESSAGE_BEGIN(MSG_ALL, SVC_STUFFTEXT);
+	WRITE_STRING((cdCommand + "\n").c_str());
+	MESSAGE_END();
+
+	ALERT(at_console, "CD Command: '%s'\n", cdCommand.c_str());
 }
 
 std::string sanitize_cvar_value(std::string val) {

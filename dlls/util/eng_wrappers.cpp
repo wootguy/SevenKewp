@@ -337,8 +337,14 @@ void PRECACHE_MODEL_EXTRAS(const char* path, studiohdr_t* mdl) {
 				if (opt[0] == '*')
 					opt = opt.substr(1); // not sure why some models do this, it looks pointless.
 
-				// model sounds are loaded on demand, not precached
-				PRECACHE_GENERIC(STRING(ALLOC_STRING(normalize_path("sound/" + opt).c_str())));
+				if (evt->event == 5004) {
+					// sound is loaded by the client on-demand
+					PRECACHE_GENERIC(STRING(ALLOC_STRING(normalize_path("sound/" + opt).c_str())));
+				}
+				else {
+					// sound is played by the server
+					PRECACHE_SOUND_ENT(NULL, STRING(ALLOC_STRING(opt.c_str())));
+				}
 			}
 			if (evt->event == 5001 || evt->event == 5011 || evt->event == 5021 || evt->event == 5031) { // muzzleflash sprite
 				PRECACHE_GENERIC(STRING(ALLOC_STRING(normalize_path(opt).c_str())));

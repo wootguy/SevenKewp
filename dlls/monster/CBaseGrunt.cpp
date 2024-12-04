@@ -858,7 +858,7 @@ void CBaseGrunt::ShootRPG(Vector& vecShootOrigin, Vector& vecShootDir) {
 		m_occludeTime = 0;
 	}
 	
-	if (!m_aimingRocket && !m_cAmmoLoaded || (m_occludeTime && gpGlobals->time - m_occludeTime > 2.0f)) {
+	if ((!m_aimingRocket && !m_cAmmoLoaded) || (m_occludeTime && gpGlobals->time - m_occludeTime > 2.0f)) {
 		SetActivity(ACT_IDLE_ANGRY);
 		TaskFail();
 	}
@@ -2516,6 +2516,8 @@ Schedule_t *CBaseGrunt :: GetSchedule( void )
 		{
 			// just landed
 			pev->movetype = MOVETYPE_STEP;
+			pev->gravity = 0;
+			pev->friction = 0;
 			return GetScheduleOfType(SCHED_GRUNT_REPEL_LAND);
 		}
 		else
@@ -2858,7 +2860,7 @@ void CBaseRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	// FLY movetype but with client interpolation
 	pGrunt->pev->movetype = MOVETYPE_BOUNCE;
 	pGrunt->pev->gravity = FLT_MIN;
-	pGrunt->pev->friction = 1.0f;
+	pGrunt->pev->friction = 2.0f; // don't fly away if landing on a slope
 
 	pGrunt->pev->velocity = Vector(0, 0, RANDOM_FLOAT(-196, -128));
 	pGrunt->SetActivity(ACT_GLIDE);

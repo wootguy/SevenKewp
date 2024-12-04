@@ -1907,6 +1907,8 @@ Schedule_t* CShockTrooper::GetSchedule()
 		{
 			// just landed
 			pev->movetype = MOVETYPE_STEP;
+			pev->gravity = 0;
+			pev->friction = 0;
 			return GetScheduleOfType(SCHED_GRUNT_REPEL_LAND);
 		}
 		else
