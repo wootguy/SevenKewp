@@ -107,6 +107,14 @@ struct skilldata_t
 	float sk_stukabat_health;
 	float sk_stukabat_dmg_bite;
 
+	// Kingpin
+	float sk_kingpin_health;
+	float sk_kingpin_lightning;
+	float sk_kingpin_tele_blast;
+	float sk_kingpin_plasma_blast;
+	float sk_kingpin_melee;
+	float sk_kingpin_telefrag;
+
 	// Nihilanth
 	float sk_nihilanth_health;
 	float sk_nihilanth_zap;

@@ -31,7 +31,7 @@
 #define SLAM_ATTACK_ENEMY_COUNT 2 // minimum enemies nearby needed to do a slam
 
 #define MAX_BEAM_SHOTS  5
-#define SHOOT_RANGE 4096
+#define TOR_SHOOT_RANGE 4096
 
 #define SUMMON_DISTANCE 256
 #define SUMMON_HEIGHT 80
@@ -119,7 +119,6 @@ private:
 };
 
 LINK_ENTITY_TO_CLASS(monster_alien_tor, CTor)
-LINK_ENTITY_TO_CLASS(monster_kingpin, CTor)
 
 const char* CTor::pAttackHitSounds[] =
 {
@@ -329,7 +328,7 @@ void CTor::MonsterThink(void) {
 				Vector vecDir1 = (target->BodyTarget(pev->origin) - vecSrc).Normalize();
 
 				TraceResult	tr;
-				UTIL_TraceLine(vecSrc, vecSrc + vecDir1 * SHOOT_RANGE, dont_ignore_monsters, edict(), &tr);
+				UTIL_TraceLine(vecSrc, vecSrc + vecDir1 * TOR_SHOOT_RANGE, dont_ignore_monsters, edict(), &tr);
 
 				CBeam* beam = CBeam::BeamCreate(SHOOT_BEAM_SPRITE, 50);
 				beam->PointsInit(vecSrc, tr.vecEndPos);
@@ -390,7 +389,7 @@ void CTor::MonsterThink(void) {
 
 BOOL CTor::CheckRangeAttack1(float flDot, float flDist)
 {
-	if (!startedSummon && flDist > MELEE_CHASE_DISTANCE && flDist < SHOOT_RANGE) {
+	if (!startedSummon && flDist > MELEE_CHASE_DISTANCE && flDist < TOR_SHOOT_RANGE) {
 		if (gpGlobals->time > nextShoot)
 			return TRUE;
 	}
