@@ -5229,7 +5229,10 @@ BOOL CBaseMonster::FScheduleDone(void)
 //=========================================================
 void CBaseMonster::ChangeSchedule(Schedule_t* pNewSchedule)
 {
-	ASSERT(pNewSchedule != NULL);
+	if (!pNewSchedule) {
+		ALERT(at_console, "Attempted to change to NULL schedule\n");
+		return;
+	}
 
 	m_pSchedule = pNewSchedule;
 	m_iScheduleIndex = 0;
@@ -5430,13 +5433,18 @@ void CBaseMonster::MaintainSchedule(void)
 		{
 			Task_t* pTask = GetTask();
 			ASSERT(pTask != NULL);
-			TaskBegin();
-			#ifdef DEBUG_MONSTER
-			if (FClassnameIs(pev, DEBUG_MONSTER)) {
-				ALERT(at_console, "    Start Task %s with data %f\n", GetTaskName(pTask->iTask), pTask->flData);
+			if (pTask) {
+				TaskBegin();
+#ifdef DEBUG_MONSTER
+				if (FClassnameIs(pev, DEBUG_MONSTER)) {
+					ALERT(at_console, "    Start Task %s with data %f\n", GetTaskName(pTask->iTask), pTask->flData);
+				}
+#endif
+				StartTask(pTask);
 			}
-			#endif
-			StartTask(pTask);
+			else {
+				ALERT(at_console, "Monster %s has NULL task\n", STRING(pev->classname));
+			}
 		}
 
 		// UNDONE: Twice?!!!
@@ -5453,7 +5461,13 @@ void CBaseMonster::MaintainSchedule(void)
 	{
 		Task_t* pTask = GetTask();
 		ASSERT(pTask != NULL);
-		RunTask(pTask);
+		if (pTask) {
+			RunTask(pTask);
+		}
+		else {
+			ALERT(at_console, "Failed to run NULL task for %s (%s)\n",
+				STRING(pev->targetname), STRING(pev->classname));
+		}
 	}
 
 	// UNDONE: We have to do this so that we have an animation set to blend to if RunTask changes the animation

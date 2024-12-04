@@ -4550,8 +4550,10 @@ void CBasePlayer :: UpdateClientData( void )
 	// Update all the items
 	for ( int i = 0; i < MAX_ITEM_TYPES; i++ )
 	{
-		if ( m_rgpPlayerItems[i] )  // each item updates it's successors
-			((CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity())->UpdateClientData(this);
+		CBaseEntity* ent = m_rgpPlayerItems[i].GetEntity();
+		CBasePlayerItem* item = ent ? ent->GetWeaponPtr() : NULL;
+		if (item)  // each item updates it's successors
+			item->UpdateClientData(this);
 	}
 
 	// Cache and client weapon change

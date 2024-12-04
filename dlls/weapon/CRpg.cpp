@@ -290,7 +290,6 @@ void CRpgRocket :: FollowThink( void  )
 
 	float bestDot = -1.0f;
 	float bestDist = FLT_MAX;
-	Vector bestDir = vecTarget;
 	
 	// Examine all entities within a reasonable radius
 	while ((pOther = UTIL_FindEntityByClassname( pOther, "laser_spot" )) != NULL)
