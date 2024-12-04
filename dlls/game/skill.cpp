@@ -113,6 +113,14 @@ skill_cvar_t skill_cvars[] = {
 	DECL_SKILL_CVAR(sk_stukabat_health, CVAR_TYPE_HEALTH),
 	DECL_SKILL_CVAR(sk_stukabat_dmg_bite, CVAR_TYPE_DAMAGE),
 
+	// Kingpin
+	DECL_SKILL_CVAR(sk_kingpin_health, CVAR_TYPE_HEALTH),
+	DECL_SKILL_CVAR(sk_kingpin_lightning, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_kingpin_tele_blast, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_kingpin_plasma_blast, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_kingpin_melee, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_kingpin_telefrag, CVAR_TYPE_DAMAGE),
+
 	// Nihilanth
 	DECL_SKILL_CVAR(sk_nihilanth_health, CVAR_TYPE_HEALTH),
 	DECL_SKILL_CVAR(sk_nihilanth_zap, CVAR_TYPE_DAMAGE),
@@ -334,7 +342,7 @@ void RefreshSkillData(bool mapSkills) {
 	hpDict["monster_hwgrunt"] = gSkillData.sk_hwgrunt_health;
 	hpDict["monster_hwgrunt_repel"] = gSkillData.sk_hwgrunt_health;
 	hpDict["monster_ichthyosaur"] = gSkillData.sk_ichthyosaur_health;
-	hpDict["monster_kingpin"] = gSkillData.sk_tor_health;
+	hpDict["monster_kingpin"] = gSkillData.sk_kingpin_health;
 	hpDict["monster_leech"] = gSkillData.sk_leech_health;
 	hpDict["monster_male_assassin"] = gSkillData.sk_massassin_health;
 	hpDict["monster_medic_ally_repel"] = gSkillData.sk_hgrunt_health;

@@ -104,6 +104,7 @@ set(MONSTER_ALIEN_SRC
 	monster/CHoundeye.cpp
 	monster/CIchthyosaur.cpp
 	monster/CISlave.cpp
+	monster/CKingpin.cpp
 	monster/CNihilanth.cpp
 	monster/CPitdrone.cpp
 	monster/CShockRoach.cpp
