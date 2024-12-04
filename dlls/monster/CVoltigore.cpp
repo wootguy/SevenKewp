@@ -542,11 +542,7 @@ void CVoltigore::Revive() {
 
 void CVoltigoreShock::Spawn(void)
 {
-	// FLY movetype but with client interpolation
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->gravity = FLT_MIN;
-	pev->friction = 1.0f;
-
+	pev->movetype = MOVETYPE_FLY;
 	pev->classname = MAKE_STRING("voltigoreshock");
 
 	pev->solid = SOLID_BBOX;
@@ -587,6 +583,7 @@ void CVoltigoreShock::Spawn(void)
 void CVoltigoreShock::Fly(void)
 {
 	pev->nextthink = gpGlobals->time + 0.1;
+	ParametricInterpolation(0.1f);
 
 	for (int i = 0; i < 2; i++) {
 		CBeam* beam = (CBeam*)m_pBeam[beamUpdateIdx].GetEntity();
@@ -630,6 +627,7 @@ void CVoltigoreShock::Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelo
 
 	pSpit->SetThink(&CVoltigoreShock::Fly);
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+	pSpit->ParametricInterpolation(0.1f);
 }
 
 void CVoltigoreShock::Touch(CBaseEntity* pOther)

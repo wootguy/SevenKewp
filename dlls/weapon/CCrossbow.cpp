@@ -62,12 +62,7 @@ void CCrossbowBolt::Spawn( )
 {
 	Precache( );
 	pev->solid = SOLID_BBOX;
-
-	// FLY movetype but with client interpolation
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->gravity = FLT_MIN;
-	pev->friction = 1.0f;
-
+	pev->movetype = MOVETYPE_FLY;
 	SET_MODEL(ENT(pev), "models/crossbow_bolt.mdl");
 
 	UTIL_SetOrigin( pev, pev->origin );
@@ -75,7 +70,9 @@ void CCrossbowBolt::Spawn( )
 
 	SetTouch( &CCrossbowBolt::BoltTouch );
 	SetThink( &CCrossbowBolt::BubbleThink );
-	pev->nextthink = gpGlobals->time + 0.2;
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	ParametricInterpolation(0.1f);
 }
 
 
@@ -176,6 +173,7 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 void CCrossbowBolt::BubbleThink( void )
 {
 	pev->nextthink = gpGlobals->time + 0.1;
+	ParametricInterpolation(0.1f);
 
 	if (pev->waterlevel == 0)
 		return;

@@ -102,7 +102,8 @@ void CGrappleTip::Spawn()
 	pev->solid = SOLID_BBOX;
 
 	// FLY movetype but with client interpolation
-	pev->movetype = MOVETYPE_BOUNCE;
+	// not using parametric because it causes the tongue beam to sometimes point to the world origin
+	pev->movetype = MOVETYPE_FLY;
 	pev->gravity = FLT_MIN;
 	pev->friction = 1.0f;
 

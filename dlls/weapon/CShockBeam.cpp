@@ -27,7 +27,6 @@
 TYPEDESCRIPTION CShockBeam::m_SaveData[] =
 {
 	DEFINE_FIELD(CShockBeam, m_hBeam1, FIELD_EHANDLE),
-	DEFINE_FIELD(CShockBeam, m_hBeam2, FIELD_EHANDLE),
 	DEFINE_FIELD(CShockBeam, m_hSprite, FIELD_EHANDLE),
 };
 
@@ -55,11 +54,6 @@ void CShockBeam::Spawn()
 	Precache();
 
 	pev->solid = SOLID_TRIGGER;
-
-	// FLY movetype but with client interpolation
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->gravity = FLT_MIN;
-	pev->friction = 1.0f;
 
 	SetGrenadeModel();
 
@@ -106,36 +100,19 @@ void CShockBeam::Spawn()
 		m_pBeam1->SetNoise( 0 );
 
 		m_pBeam1->SetScrollRate( 10 );
-
-		if( g_pGameRules->IsMultiplayer() )
-		{
-			pev->nextthink = gpGlobals->time + 0.01;
-			return;
-		}
-
-		CBeam* m_pBeam2 = CBeam::BeamCreate( "sprites/lgtning.spr", 20 );
-		m_hBeam2 = m_pBeam2;
-
-		if( m_pBeam2 )
-		{
-			UTIL_SetOrigin( m_pBeam2->pev, pev->origin );
-
-			m_pBeam2->EntsInit( entindex(), entindex() );
-
-			m_pBeam2->SetStartAttachment( 1 );
-			m_pBeam2->SetEndAttachment( 2 );
-
-			m_pBeam2->SetColor( 255, 255, 157 );
-
-			m_pBeam2->SetFlags( BEAM_FSHADEOUT );
-			m_pBeam2->SetBrightness( 180 );
-			m_pBeam2->SetNoise( 30 );
-
-			m_pBeam2->SetScrollRate( 30 );
-
-			pev->nextthink = gpGlobals->time + 0.01;
-		}
 	}
+
+	// Parametric interpolation is used here because the projectiles fly in a straight line,
+	// and because other movetypes cause a bug with the beam attachment. For some reason,
+	// the beam can spawn unlinked from one side and extend to the world origin instead.
+	// This bug lasts the duration of ex_interp. No idea why it happens. Parametric looks
+	// better for projectiles because they aren't rendered with a delay (beam is 20 feet
+	// in front of you before it starts rendering on the client). It also shows a more
+	// accurate location for the beam because the client is predicting a future position.
+	pev->movetype = MOVETYPE_FLY;
+	ParametricInterpolation(0.05f);
+
+	pev->nextthink = gpGlobals->time + 0.05;
 }
 
 void CShockBeam::FlyThink()
@@ -159,6 +136,7 @@ void CShockBeam::FlyThink()
 	*/
 	// removed in favor of sv_retouch in rehlds. This wasn't working with gargs.
 
+	ParametricInterpolation(0.05f);
 	pev->nextthink = gpGlobals->time + 0.05;
 }
 
@@ -270,12 +248,6 @@ void CShockBeam::Explode()
 	{
 		UTIL_Remove(m_hBeam1);
 		m_hBeam1 = nullptr;
-	}
-
-	if( m_hBeam2 )
-	{
-		UTIL_Remove(m_hBeam2);
-		m_hBeam2 = nullptr;
 	}
 
 	float dmg_mult = GetDamageModifier();

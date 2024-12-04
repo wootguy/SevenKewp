@@ -56,7 +56,6 @@ private:
 
 public:
 	EHANDLE m_hBeam1;
-	EHANDLE m_hBeam2;
 
 	EHANDLE m_hSprite;
 

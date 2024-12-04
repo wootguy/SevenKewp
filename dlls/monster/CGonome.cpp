@@ -469,11 +469,7 @@ void CGonome::CantFollowSound() {
 
 void CGonomeSpit::Spawn(void)
 {
-	// FLY movetype but with client interpolation
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->gravity = FLT_MIN;
-	pev->friction = 1.0f;
-
+	pev->movetype = MOVETYPE_FLY;
 	pev->classname = MAKE_STRING("gonomespit");
 
 	pev->solid = SOLID_BBOX;
@@ -500,6 +496,8 @@ void CGonomeSpit::Animate(void)
 			pev->frame = 0;
 		}
 	}
+
+	ParametricInterpolation(0.1f);
 }
 
 void CGonomeSpit::Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity)
@@ -513,6 +511,7 @@ void CGonomeSpit::Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity
 
 	pSpit->SetThink(&CGonomeSpit::Animate);
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+	pSpit->ParametricInterpolation(0.1f);
 }
 
 void CGonomeSpit::Touch(CBaseEntity* pOther)

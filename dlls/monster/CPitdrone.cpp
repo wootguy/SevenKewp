@@ -68,6 +68,7 @@ public:
 	void EXPORT SpikeTouch( CBaseEntity *pOther );
 
 	void EXPORT StartTrail();
+	void EXPORT FlyThink();
 
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 
@@ -99,11 +100,7 @@ void CPitdroneSpike::Precache()
 void CPitdroneSpike:: Spawn( void )
 {
 	pev->classname = MAKE_STRING( "pitdronespike" );
-	
-	// FLY movetype but with client interpolation
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->gravity = FLT_MIN;
-	pev->friction = 1.0f;
+	pev->movetype = MOVETYPE_FLY;
 
 	pev->solid = SOLID_BBOX;
 	pev->takedamage = DAMAGE_YES;
@@ -133,6 +130,7 @@ void CPitdroneSpike::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelo
 
 	pSpit->SetThink ( &CPitdroneSpike::StartTrail );
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
+	pSpit->ParametricInterpolation(0.1f);
 }
 
 void CPitdroneSpike::SpikeTouch( CBaseEntity *pOther )
@@ -187,7 +185,15 @@ void CPitdroneSpike::StartTrail()
 	UTIL_BeamFollow(entindex(), iSpikeTrail, 2, 1, RGBA(197, 194, 11, 192));
 
 	SetTouch( &CPitdroneSpike::SpikeTouch );
-	SetThink( nullptr );
+	SetThink( &CPitdroneSpike::FlyThink );
+
+	pev->nextthink = gpGlobals->time + 0.1f;
+	ParametricInterpolation(0.1f);
+}
+
+void CPitdroneSpike::FlyThink() {
+	pev->nextthink = gpGlobals->time + 0.1f;
+	ParametricInterpolation(0.1f);
 }
 
 //=========================================================

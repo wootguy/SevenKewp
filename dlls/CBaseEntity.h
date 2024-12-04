@@ -360,6 +360,10 @@ public:
 	// Angles cannot be controlled. In most cases you're better off using a different movetype.
 	// (e.g. FLY -> BOUNCE with gravity=FLT_MIN and friction=1.0f)
 	// EFLAG_SLERP only interpolates animated MDLs that are moved manually (not with velocity)
+	// Benefits to using this over an interpolated movetype:
+	// - more accurate position seen on the client (client predicts future location using velocity)
+	// - projectiles render immediately, not ex_interp seconds after the entity is created
+	//   (this also fixes a glitch when using attachments on the interpolated entity)
 	void ParametricInterpolation(float flInterval);
 
 	//We use this variables to store each ammo count.

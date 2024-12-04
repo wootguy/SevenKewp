@@ -55,10 +55,7 @@ void CSpore::Spawn()
 	if( m_SporeType == SporeType::GRENADE )
 		pev->movetype = MOVETYPE_BOUNCE;
 	else {
-		// FLY movetype but with client interpolation
-		pev->movetype = MOVETYPE_BOUNCE;
-		pev->gravity = FLT_MIN;
-		pev->friction = 1.0f;
+		pev->movetype = MOVETYPE_FLY;
 	}
 
 	pev->solid = SOLID_BBOX;
@@ -223,6 +220,9 @@ void CSpore::FlyThink()
 	}
 
 	pev->nextthink = gpGlobals->time + 0.03;
+
+	if (pev->movetype == MOVETYPE_FLY)
+		ParametricInterpolation(0.03f);
 }
 
 void CSpore::GibThink()

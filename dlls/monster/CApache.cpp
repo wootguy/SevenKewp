@@ -1108,11 +1108,7 @@ void CApacheHVR :: Spawn( void )
 	Precache( );
 	// motor
 	pev->solid = SOLID_BBOX;
-
-	// FLY movetype but with client interpolation
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->gravity = FLT_MIN;
-	pev->friction = 1.0f;
+	pev->movetype = MOVETYPE_FLY;
 
 	SetGrenadeModel();
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
@@ -1152,6 +1148,7 @@ void CApacheHVR :: IgniteThink( void  )
 	// set to accelerate
 	SetThink( &CApacheHVR::AccelerateThink );
 	pev->nextthink = gpGlobals->time + 0.1;
+	ParametricInterpolation(0.1f);
 }
 
 
@@ -1175,4 +1172,5 @@ void CApacheHVR :: AccelerateThink( void  )
 	pev->angles = UTIL_VecToAngles( pev->velocity );
 
 	pev->nextthink = gpGlobals->time + 0.1;
+	ParametricInterpolation(0.1f);
 }

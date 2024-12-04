@@ -1375,7 +1375,11 @@ void CNihilanthHVR :: HoverThink( void  )
 
 void CNihilanthHVR :: ZapInit( CBaseEntity *pEnemy )
 {
-	pev->movetype = MOVETYPE_FLY;
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
+
 	pev->solid = SOLID_BBOX;
 
 	SET_MODEL(edict(), "sprites/nhth1.spr");
@@ -1471,7 +1475,11 @@ void CNihilanthHVR::ZapTouch( CBaseEntity *pOther )
 
 void CNihilanthHVR :: TeleportInit( CNihilanth *pOwner, CBaseEntity *pEnemy, CBaseEntity *pTarget, CBaseEntity *pTouch )
 {
-	pev->movetype = MOVETYPE_FLY;
+	// FLY movetype but with client interpolation
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = FLT_MIN;
+	pev->friction = 1.0f;
+
 	pev->solid = SOLID_BBOX;
 
 	pev->rendercolor.x = 255;

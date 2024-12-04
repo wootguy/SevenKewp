@@ -268,11 +268,6 @@ void CShockRifle::BeamAttack(bool isSecondary) {
 	CShockBeam* pBeam = CShockBeam::CreateShockBeam(vecSrc, vecAnglesAim, m_pPlayer);
 
 	UTIL_SetOrigin(pBeam->m_hBeam1->pev, pBeam->pev->origin);
-
-	if (!g_pGameRules->IsMultiplayer())
-	{
-		UTIL_SetOrigin(pBeam->m_hBeam2->pev, pBeam->pev->origin);
-	}
 #endif
 
 	/*

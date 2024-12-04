@@ -86,11 +86,7 @@ void CDisplacerBall::Spawn()
 {
 	Precache();
 	pev->solid = SOLID_BBOX;
-
-	// FLY movetype but with client interpolation
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->gravity = FLT_MIN;
-	pev->friction = 1.0f;
+	pev->movetype = MOVETYPE_FLY;
 
 	SET_MODEL(edict(), "sprites/exit1.spr");
 
@@ -108,6 +104,7 @@ void CDisplacerBall::Spawn()
 	SetThink(&CDisplacerBall::FlyThink);
 
 	pev->nextthink = gpGlobals->time + 0.2;
+	ParametricInterpolation(0.2f);
 
 	InitBeams();
 }
@@ -242,6 +239,7 @@ void CDisplacerBall::FlyThink()
 	ArmBeam(-1);
 	ArmBeam(1);
 	pev->nextthink = gpGlobals->time + 0.05;
+	ParametricInterpolation(0.05f);
 }
 
 void CDisplacerBall::FlyThink2()
