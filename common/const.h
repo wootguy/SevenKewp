@@ -84,7 +84,7 @@
 #define	MOVETYPE_TOSS			6		// gravity/collisions
 #define	MOVETYPE_PUSH			7		// no clip to world, push and crush
 #define	MOVETYPE_NOCLIP			8		// No gravity, no collisions, still do velocity/avelocity
-#define	MOVETYPE_FLYMISSILE		9		// extra size to monsters
+#define	MOVETYPE_FLYMISSILE		9		// extra size to monsters (hardcoded bbox of +/-15 units)
 #define	MOVETYPE_BOUNCE			10		// Just like Toss, but reflect velocity when contacting surfaces
 #define MOVETYPE_BOUNCEMISSILE	11		// bounce w/o gravity
 #define MOVETYPE_FOLLOW			12		// track movement of aiment

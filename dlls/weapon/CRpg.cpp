@@ -254,6 +254,7 @@ void CRpgRocket :: Precache( void )
 void CRpgRocket :: IgniteThink( void  )
 {
 	// FLY movetype but with client interpolation
+	// not using Parametric interp because rocket trails look weird when following a laser
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->gravity = FLT_MIN;
 	pev->friction = 1.0f;

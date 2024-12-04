@@ -72,12 +72,11 @@ int CHornet :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, floa
 void CHornet :: Spawn( void )
 {
 	Precache();
-
-	// FLY movetype but with client interpolation
+	
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->gravity = FLT_MIN;
 	pev->friction = 1.0f;
-	
+
 	pev->solid		= SOLID_TRIGGER;
 	pev->takedamage = DAMAGE_YES;
 	pev->flags		|= FL_MONSTER;
@@ -404,6 +403,13 @@ void CHornet::DartThink(void) {
 	}
 
 	pev->nextthink = gpGlobals->time + 0.01f;
+
+	// using parametric for darting hornets only because it fixes the trail
+	// stopping short of the impact point. Not using it for tracking hornets
+	// because they move erraticaly and sometimes show trails into the world origin
+	// or player due getting stuck inside things and then coming back into view.
+	pev->movetype = MOVETYPE_FLY;
+	ParametricInterpolation(0.01f);
 }
 
 //=========================================================

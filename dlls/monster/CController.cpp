@@ -1339,12 +1339,7 @@ void CControllerZapBall :: Spawn( void )
 {
 	Precache( );
 	// motor
-	
-	// FLY movetype but with client interpolation
-	pev->movetype = MOVETYPE_BOUNCE;
-	pev->gravity = FLT_MIN;
-	pev->friction = 1.0f;
-
+	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
 	SET_MODEL(ENT(pev), "sprites/xspark4.spr");
@@ -1364,6 +1359,10 @@ void CControllerZapBall :: Spawn( void )
 	m_hOwner = Instance( pev->owner );
 	pev->dmgtime = gpGlobals->time; // keep track of when ball spawned
 	pev->nextthink = gpGlobals->time + 0.1;
+	ParametricInterpolation(0.1f);
+
+	// TODO: balls stutter on the first/second think, maybe some special interpolation
+	// needs to be done on the first call?
 }
 
 
@@ -1386,6 +1385,8 @@ void CControllerZapBall :: AnimateThink( void  )
 		SetTouch( NULL );
 		UTIL_Remove( this );
 	}
+
+	ParametricInterpolation(0.1f);
 }
 
 
