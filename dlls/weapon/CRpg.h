@@ -5,6 +5,8 @@
 #define RPG_MAX_CLIP			1
 #define RPG_DEFAULT_GIVE		1
 
+extern int g_laserBeamIdx;
+
 class CLaserSpot : public CBaseEntity
 {
 	void Spawn( void );
@@ -15,6 +17,11 @@ class CLaserSpot : public CBaseEntity
 public:
 	void Suspend( float flSuspendTime );
 	void EXPORT Revive( void );
+
+	void EXPORT MonsterAimThink();
+
+	// updates faster than monster AI so that laser movement is smooth and accurate
+	void ActivateMonsterControl();
 	
 	static CLaserSpot *CreateSpot( edict_t* owner );
 };

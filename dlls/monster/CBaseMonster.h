@@ -180,6 +180,8 @@ public:
 	float m_damage_modifier; // attack damage modifier (set automatically by inventory items)
 	float m_last_friction_trigger_touch; // last time this entity touched a friction trigger
 
+	Vector m_lastInterpOrigin; // for interpolated origin calculation
+
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
 	virtual int		Save( CSave &save ); 
@@ -241,6 +243,12 @@ public:
 		virtual void Move( float flInterval = 0.1 );
 		virtual void MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval );
 		virtual BOOL ShouldAdvanceRoute( float flWaypointDist );
+
+		// returns position between previous and current origins. Monster origins are only updated 
+		// at 10fps normally, so this can be used to get a smoother (less accurate) origin.
+		// This may be out-of-sync with client's visualization of the monster origin because of
+		// double interpolation (if this origin is used with an interpolated entity).
+		Vector GetInterpolatedOrigin(); 
 
 		virtual Activity GetStoppedActivity( void ) { return ACT_IDLE; }
 		virtual void Stop( void ) { m_IdealActivity = GetStoppedActivity(); }

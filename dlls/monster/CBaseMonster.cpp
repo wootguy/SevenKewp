@@ -20,7 +20,7 @@
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
-#define DEBUG_MONSTER "monster_human_grunt" // uncomment to enable verbose logging
+//#define DEBUG_MONSTER "monster_human_grunt" // uncomment to enable verbose logging
 
 std::vector<std::unordered_map<std::string, std::string>> g_monsterSoundReplacements;
 std::unordered_set<std::string> g_shuffledMonsterSounds;
@@ -2104,6 +2104,16 @@ void CBaseMonster::MoveExecute(CBaseEntity* pTargetEnt, const Vector& vecDir, fl
 	// ALERT( at_console, "dist %f\n", m_flGroundSpeed * pev->framerate * flInterval );
 }
 
+Vector CBaseMonster::GetInterpolatedOrigin() {
+	if (!pev->nextthink) {
+		return pev->origin;
+	}
+
+	float t = 1.0f - (pev->nextthink - gpGlobals->time) / 0.1f;
+	return m_lastInterpOrigin + (pev->origin - m_lastInterpOrigin)*t;
+
+}
+
 void CBaseMonster::Precache(void) {
 	if (g_monsterSoundReplacements.empty())
 		g_monsterSoundReplacements.resize(gpGlobals->maxEntities);
@@ -2179,6 +2189,8 @@ void CBaseMonster::MonsterInit(void)
 
 	m_flDistTooFar = 1024.0;
 	m_flDistLook = 2048.0;
+
+	m_lastInterpOrigin = pev->origin;
 
 	// set eye position
 	SetEyePosition();
@@ -4978,6 +4990,8 @@ void CBaseMonster::RunAI(void)
 	// we throw them out cause we don't want them sitting around through the lifespan of a schedule
 	// that doesn't use them. 
 	m_afConditions &= ~(bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE);
+
+	m_lastInterpOrigin = pev->origin;
 }
 
 //=========================================================

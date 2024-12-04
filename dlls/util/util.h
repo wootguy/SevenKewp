@@ -824,6 +824,7 @@ EXPORT void UTIL_ELight(int entindex, int attachment, Vector origin, float radiu
 EXPORT void UTIL_BeamPoints(Vector start, Vector end, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
 EXPORT void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
 EXPORT void UTIL_BeamEnts(int startEnt, int startAttachment, int endEnt, int endAttachment, bool ringMode, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
+EXPORT void UTIL_KillBeam(int entindex, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
 EXPORT void UTIL_BSPDecal(int entindex, Vector origin, int decalIdx, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
 EXPORT void UTIL_PlayerDecal(int entindex, int playernum, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
 EXPORT void UTIL_GunshotDecal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);

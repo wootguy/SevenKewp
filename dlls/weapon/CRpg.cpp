@@ -38,7 +38,7 @@ enum rpg_e {
 
 LINK_ENTITY_TO_CLASS( weapon_rpg, CRpg )
 
-int laserBeamIdx;
+int g_laserBeamIdx;
 
 #ifndef CLIENT_DLL
 
@@ -106,6 +106,39 @@ void CLaserSpot::Revive( void )
 	pev->effects &= ~EF_NODRAW;
 
 	SetThink( NULL );
+}
+
+void CLaserSpot::MonsterAimThink() {
+	CBaseEntity* ent = Instance(pev->owner);
+	CBaseMonster* owner = ent ? ent->MyMonsterPointer() : NULL;
+
+	if (!owner) {
+		return;
+	}
+	
+	Vector vecShootDir = g_vecZero;
+	Vector attachOrigin, attachAngles;
+	if (owner->GetAttachmentCount() > 0)
+		owner->GetAttachment(1, attachOrigin, attachAngles);
+
+	if (!owner->m_hEnemy || owner->HasConditions(bits_COND_ENEMY_OCCLUDED)) {
+		vecShootDir = owner->m_vecEnemyLKP - attachOrigin;
+	}
+	else {
+		vecShootDir = owner->m_hEnemy->Center() - attachOrigin;
+	}
+
+	TraceResult tr;
+	UTIL_TraceLine(attachOrigin, attachOrigin + vecShootDir * 8192, dont_ignore_monsters, edict(), &tr);
+
+	UTIL_SetOrigin(pev, tr.vecEndPos);
+
+	pev->nextthink = gpGlobals->time + 0.01f;
+}
+
+void CLaserSpot::ActivateMonsterControl() {
+	SetThink(&CLaserSpot::MonsterAimThink);
+	MonsterAimThink();
 }
 
 void CLaserSpot::Precache( void )
@@ -457,7 +490,7 @@ void CRpg::Precache( void )
 	m_defaultModelW = "models/w_rpg.mdl";
 	CBasePlayerWeapon::Precache();
 
-	laserBeamIdx = PRECACHE_MODEL("sprites/laserbeam.spr");
+	g_laserBeamIdx = PRECACHE_MODEL("sprites/laserbeam.spr");
 
 	PRECACHE_SOUND("items/9mmclip1.wav");
 
@@ -698,15 +731,12 @@ void CRpg::UpdateSpot( void )
 			// but I haven't seen that happen yet with TE_BEAMENTS. If this causes crashes again,
 			// then revert to using BeamEntPoint (attached to the player, not spot).
 			m_lastBeamUpdate = gpGlobals->time;
-			UTIL_BeamEnts(m_pSpot->entindex(), 0, m_pPlayer->entindex(), 1, false, laserBeamIdx,
+			UTIL_BeamEnts(m_pSpot->entindex(), 0, m_pPlayer->entindex(), 1, false, g_laserBeamIdx,
 				0, 0, 10, 8, 0, RGBA(255, 32, 32, 48), 64, MSG_PVS, m_pPlayer->pev->origin);
 		}
 	}
 	else if (m_lastBeamUpdate) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, m_pPlayer->pev->origin);
-		WRITE_BYTE(TE_KILLBEAM);
-		WRITE_SHORT(m_pPlayer->entindex());
-		MESSAGE_END();
+		UTIL_KillBeam(m_pPlayer->entindex(), MSG_PVS, m_pPlayer->pev->origin);
 		m_lastBeamUpdate = 0;
 	}
 #endif

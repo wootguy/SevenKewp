@@ -779,53 +779,20 @@ void CBaseGrunt::Shoot357(Vector& vecShootOrigin, Vector& vecShootDir) {
 	PLAY_DISTANT_SOUND(edict(), DISTANT_357);
 }
 
-void CBaseGrunt::ShootRPG(Vector& vecShootOrigin, Vector& vecShootDir) {
-	Vector attachAngles;
-	if (GetAttachmentCount() > 0)
-		GetAttachment(1, vecShootOrigin, attachAngles);
-
-	if (HasConditions(bits_COND_ENEMY_OCCLUDED)) {
-		vecShootDir = m_vecEnemyLKP - vecShootOrigin;
-	}
-	else {
-		// TODO: monster origins depend on movement animations
-		// so the rocket will miss when the target is a walking monster
-		vecShootDir = m_hEnemy->Center() - vecShootOrigin;
-	}
-	
+void CBaseGrunt::ShootRPG(Vector& vecShootOrigin, Vector& vecShootDir) {	
 	MakeIdealYaw(m_vecEnemyLKP);
 	ChangeYaw(pev->yaw_speed);	
 	PointAtEnemy();
 
 	if (!m_hRpgSpot) {
-		m_hRpgSpot = CLaserSpot::CreateSpot(edict());
+		CLaserSpot* spot = CLaserSpot::CreateSpot(edict());
+		spot->ActivateMonsterControl();
+		m_hRpgSpot = spot;
 	}
 	CLaserSpot* spot = (CLaserSpot*)m_hRpgSpot.GetEntity();
 
-	Vector vecSrc = vecShootOrigin;
-	Vector vecAiming = vecShootDir;
-
-	TraceResult tr;
-	UTIL_TraceLine(vecSrc, vecSrc + vecAiming * 8192, dont_ignore_monsters, edict(), &tr);
-
-	UTIL_SetOrigin(spot->pev, tr.vecEndPos);
-	
-	if (!m_hRpgBeam) {
-		CBeam* beam = CBeam::BeamCreate("sprites/laserbeam.spr", 8);
-		beam->PointsInit(tr.vecEndPos, vecShootOrigin);
-		beam->SetEndAttachment(1);
-		beam->SetColor(255, 32, 32);
-		beam->SetNoise(0);
-		beam->SetBrightness(48);
-		beam->SetScrollRate(64);
-		m_hRpgBeam = beam;
-	}
-
-	CBeam* beam = (CBeam*)m_hRpgBeam.GetEntity();
-	if (beam) {
-		beam->pev->effects = spot->pev->effects;
-		beam->PointsInit(tr.vecEndPos, vecShootOrigin);
-	}
+	UTIL_BeamEnts(spot->entindex(), 0, entindex(), 1, false, g_laserBeamIdx,
+		0, 0, 1, 8, 0, RGBA(255, 32, 32, 48), 64, MSG_PVS, Center());
 
 	if (m_aimingRocket) {
 		if (!m_hRpgRocket) {
@@ -863,8 +830,12 @@ void CBaseGrunt::ShootRPG(Vector& vecShootOrigin, Vector& vecShootDir) {
 		}
 
 		if (canShoot) {
+			Vector attachOrigin, attachAngles;
+			if (GetAttachmentCount() > 0)
+				GetAttachment(1, attachOrigin, attachAngles);
+
 			EMIT_SOUND_DYN(edict(), CHAN_WEAPON, "weapons/rocketfire1.wav", VOL_NORM, ATTN_NORM, 0, 100);
-			m_hRpgRocket = CRpgRocket::CreateRpgRocket(vecSrc, pev->angles, this, NULL);
+			m_hRpgRocket = CRpgRocket::CreateRpgRocket(attachOrigin, pev->angles, this, NULL);
 			m_aimingRocket = true;
 
 			pev->sequence = 90;
@@ -2771,9 +2742,7 @@ Schedule_t* CBaseGrunt :: GetScheduleOfType ( int Type )
 void CBaseGrunt::RemoveRpgLaser(void) {
 	if (m_hRpgSpot) {
 		UTIL_Remove(m_hRpgSpot);
-	}
-	if (m_hRpgBeam) {
-		UTIL_Remove(m_hRpgBeam);
+		UTIL_KillBeam(entindex(), MSG_PVS, pev->origin);
 	}
 }
 
