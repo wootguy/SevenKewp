@@ -490,6 +490,7 @@ void ServerDeactivate( void )
 	g_mapWeapons.clear();
 	g_wavInfos.clear();
 	g_weaponClassnames.clear();
+	g_nomaptrans.clear();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";
 	g_monstersNerfed = false;
@@ -1199,9 +1200,12 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 					 (!ent->v.modelindex || !STRING(ent->v.model)) ||
 					 ((ent->v.flags & FL_SPECTATOR) && (ent != host));
 
+	// solid entities should always be sent to clients for collision prediction
+	bool solid = ent->v.solid >= SOLID_BBOX && ent->v.modelindex;
+
 	bool forceVisChecks = baseent->ForceVisChecks();
 
-	if (invisible && !forceVisChecks) {
+	if (invisible && !forceVisChecks && !solid) {
 		return 0; // exit now unless a vis check was requested for this ent
 	}
 
@@ -1222,7 +1226,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		return 0;
 	}
 
-	if (invisible || forceVisChecks || (baseent->m_hidePlayers & plrbit)) {
+	if ((invisible && !solid) || forceVisChecks || (baseent->m_hidePlayers & plrbit)) {
 		return 0;
 	}
 

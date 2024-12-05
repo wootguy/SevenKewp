@@ -5054,6 +5054,11 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 		// item we want to drop and hit a BREAK;  pWeapon is the item.
 		if ( pWeapon )
 		{
+			if (!strcmp(STRING(pWeapon->pev->classname), "weapon_inventory")) {
+				DropAllInventoryItems();
+				return;
+			}
+
 			if ( !g_pGameRules->GetNextBestWeapon( this, pWeapon ) && !pWeapon->CanHolster())
 				return; // can't drop the item they asked for, may be something we can't holster
 
@@ -5064,13 +5069,6 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 			pev->weapons &= ~(1<<pWeapon->m_iId);// take item off hud
 
 			SetAnimation(PLAYER_DROP_ITEM);
-
-			if (!strcmp(STRING(pWeapon->pev->classname), "weapon_inventory")) {
-				if (RemovePlayerItem(pWeapon) && m_inventory) {
-					DropAllInventoryItems();
-				}
-				return;
-			}
 
 			if (!strcmp(STRING(pWeapon->pev->classname), "weapon_shockrifle")) {
 				// fixme: logic duplicated in kill code
@@ -5844,9 +5842,9 @@ void CBasePlayer::ShowInteractMessage(const char* msg) {
 	}
 }
 
-void CBasePlayer::DropAllInventoryItems(bool deathDrop, bool respawnDrop) {
+bool CBasePlayer::DropAllInventoryItems(bool deathDrop, bool respawnDrop) {
 	if (!m_inventory) {
-		return;
+		return true;
 	}
 
 	int itemCount = CountInventoryItems();
@@ -5887,6 +5885,8 @@ void CBasePlayer::DropAllInventoryItems(bool deathDrop, bool respawnDrop) {
 	}
 
 	pev->v_angle = old_vangle;
+
+	return !m_inventory;
 }
 
 void CBasePlayer::Revive() {

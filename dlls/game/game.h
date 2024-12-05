@@ -170,6 +170,8 @@ EXPORT extern std::unordered_set<std::string> g_shuffledMonsterSounds; // classe
 
 EXPORT extern bool g_cfgsExecuted; // set to true after server and map cfgs are executed
 
+EXPORT extern std::unordered_set<std::string> g_nomaptrans; // trigger_changelevel disabled for these maps
+
 // mark a palyer weapon for precaching (alias names are ok)
 EXPORT void AddPrecacheWeapon(std::string wepName);
 

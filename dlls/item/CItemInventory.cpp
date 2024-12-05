@@ -862,6 +862,14 @@ void CItemInventory::ItemThink() {
 		pev->aiment = NULL;
 		pev->movetype = MOVETYPE_NOCLIP;
 
+		if (m_is_viewing != m_was_viewing) {
+			// show dropped model properties in case it has an animation for hovering above the player
+			// (will look very wrong if rotated)
+			ApplyModelProperties(!m_is_viewing);
+		}
+
+		m_was_viewing = m_is_viewing;
+
 		if (m_is_viewing) {
 			Vector angles = carrier->pev->v_angle;
 			angles.x += sinf(g_engfuncs.pfnTime() * 0.1f); // keep it moving so avelocity is smoothed
@@ -962,6 +970,7 @@ void CItemInventory::FireInvTargets(CBaseEntity* activator, InvTriggerTargets ta
 }
 
 void CItemInventory::UpdateOnRemove(void) {
+	Detach(false);
 	FireInvTargets(this, m_target_on_destroy);
 }
 

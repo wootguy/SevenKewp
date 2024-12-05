@@ -462,7 +462,8 @@ public:
 
 	// if death=true, only drop items that are not marked to keep on death
 	// if respawn=true, only drop items that are not marked to keep on respawn
-	void DropAllInventoryItems(bool deathDrop = false, bool respawnDrop = false);
+	// returns false if not all inventory items were dropped due to restrictions
+	bool DropAllInventoryItems(bool deathDrop = false, bool respawnDrop = false);
 
 	virtual void Revive();
 
