@@ -338,12 +338,20 @@ def check_map_problems(all_ents, fix_problems):
 
 	for ent in all_ents:
 		cname = ent.get('classname', '')
+		
+		# lazy way to bulk replace music files in maps
+		should_music = [
+			#"bm_nightmare/boss_music2.wav",
+		]
 	
 		if cname in ['ambient_music', 'ambient_generic', 'scripted_sentence']:
 			spawnflags = int(ent.get("spawnflags", 0))
 			is_global = (cname == 'ambient_generic' and (spawnflags & 1)) or cname == 'ambient_music'
 			is_music = 'ambient_music' in ent['classname']
 			soundFile = ent.get('sentence', '').lower() if cname == 'scripted_sentence' else ent.get('message', '').lower()
+			
+			if soundFile in should_music:
+				is_music = True
 			
 			prefix = ''
 			if soundFile.startswith('+'):
@@ -601,6 +609,13 @@ def check_map_problems(all_ents, fix_problems):
 						
 						all_ents.append(newent)
 						
+		
+		if cname == 'func_vehicle_custom':
+			if not fix_problems:
+				err("func_vehicle_custom used instead of func_vehicle")
+				any_problems = True
+			else:
+				ent["classname"] = "func_vehicle"
 		
 		# custom models with external sequences cause crashes if the "vanilla" model they're referencing
 		# does not exist (e.g. "models/shocktrooper01.mdl" for a custom shocktrooper model)
@@ -897,7 +912,23 @@ if fix_problems:
 			
 			for tex in  data["textures"]:
 				if tex["width"] > 512 or tex["height"] > 512:
-					print("ERROR: Model %s has invalid texture (%s %dx%d)" % (mdl, tex["name"], tex["width"], tex["height"]))
+					newWidth = 0
+					newHeight = 0
+					if tex["width"] > tex["height"]:
+						newWidth = 512
+						newHeight = (tex["height"] * (512.0 / tex["width"]) + 0.5)
+					else:
+						newHeight = 512
+						newWidth = (tex["width"] * (512.0 / tex["height"]) + 0.5)
+					
+					# pixel count must be divisble by 8 or else game crashes with "GL_Upload8: s&3"
+					newWidth =  int((newWidth + 4) / 8) * 8
+					newHeight = int((newHeight + 4) / 8) * 8
+					
+					print("Resizing invalid texture in %s (%s %dx%d -> %dx%d)" % (mdl, tex["name"], tex["width"], tex["height"], newWidth, newHeight))
+					mdlguy_command = [modelguy_path, 'resize', tex["name"], "%d" % newWidth, "%d" % newHeight, mdl, json_path]
+					#print(' '.join(mdlguy_command))
+					subprocess.run(mdlguy_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			
 			for evt in data["events"]:
 				for fmt in nonstandard_audio_formats:
