@@ -21,6 +21,8 @@ public:
 	void EXPORT ExecuteChangeLevel(void);
 	void EXPORT TouchChangeLevel(CBaseEntity* pOther);
 	void ChangeLevelNow(CBaseEntity* pActivator);
+	int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // in case it's made solid
+
 
 	static edict_t* FindLandmark(const char* pLandmarkName);
 	static int ChangeList(LEVELLIST* pLevelList, int maxList);
@@ -109,6 +111,20 @@ void CChangeLevel::Spawn(void)
 	if (!(pev->spawnflags & SF_CHANGELEVEL_USEONLY))
 		SetTouch(&CChangeLevel::TouchChangeLevel);
 	//	ALERT( at_console, "TRANSITION: %s (%s)\n", m_szMapName, m_szLandmarkName );
+
+	if (g_nomaptrans.count(toLowerCase(m_szMapName))) {
+		
+		pev->movetype = MOVETYPE_PUSH;
+		pev->solid = SOLID_BSP;
+		
+		// rehlds won't call AddToFullPack if EF_NODRAW is used
+		pev->effects = 0;
+		pev->renderamt = 0;
+		pev->rendermode = kRenderTransTexture;
+
+		SetTouch(NULL);
+		UTIL_SetOrigin(pev, pev->origin);
+	}
 }
 
 

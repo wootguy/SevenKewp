@@ -108,6 +108,7 @@ public:
 	// runtime state
 	bool m_is_moved;	// true if the item was picked up or dropped (unset after returning)
 	bool m_is_viewing;	// true if player is viewing the item on their "HUD"
+	bool m_was_viewing;	// true if player was viewing the item last think
 	EHANDLE m_hHolder;	// monster holding this item
 	EHANDLE m_pNext;	// next item in the monster's inventory
 	int m_activation_count;

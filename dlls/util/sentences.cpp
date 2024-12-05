@@ -104,6 +104,20 @@ CustomSentence ParseSentence(std::string sentenceLine) {
 		parts[1] = parts[1].substr(slashIdx + 1);
 	}
 
+	// merge space-separated parts that are enclosed in parentheses
+	for (int i = 0; i < (int)parts.size(); i++) {
+		if (parts[i].find("(") != -1 && parts[i].find(")") == -1) {
+			while (i+1 < parts.size()) {
+				int k = i + 1;
+				parts[i] = parts[i] + " " + parts[k];
+				parts.erase(parts.begin() + k);
+				if (parts[i].find(")") != -1) {
+					break;
+				}
+			}
+		}
+	}
+
 	CustomSentence sent;
 	sent.name = sentName;
 

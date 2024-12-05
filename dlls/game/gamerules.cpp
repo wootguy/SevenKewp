@@ -43,6 +43,8 @@ extern DLL_GLOBAL BOOL	g_fGameOver;
 extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgMOTD;
 
+std::unordered_set<std::string> g_nomaptrans;
+
 int g_teamplay = 0;
 
 //=========================================================
@@ -163,6 +165,7 @@ void execMapCfg() {
 		"map_plugin",
 		"nosuit",
 		"nomedkit",
+		"nomaptrans",
 	};
 
 	static unordered_set<string> itemNames = {
@@ -261,6 +264,11 @@ void execMapCfg() {
 
 		if (name == "nomedkit") {
 			g_noMedkit = true;
+			continue;
+		}
+
+		if (name == "nomaptrans") {
+			g_nomaptrans.insert(value);
 			continue;
 		}
 

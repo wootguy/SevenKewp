@@ -308,6 +308,7 @@ private:
 	float m_lastBeam;
 
 	int m_iSpitSprite;
+	int m_numAttachments;
 
 	static const char* pAttackHitSounds[];
 	static const char* pAttackMissSounds[];
@@ -453,6 +454,8 @@ void CKingpin::Spawn()
 	m_eyes[1].angle = 180; // back
 	m_eyes[2].angle = -90; // right
 	m_eyes[3].angle = 90; //left
+
+	m_numAttachments = GetAttachmentCount();
 }
 
 void CKingpin::Precache()
@@ -659,7 +662,14 @@ void CKingpin::LaserEyesThink() {
 		kingpin_eye_t& eye = m_eyes[i];
 
 		Vector attachOri, attachAngles;
-		GetAttachment(eye.iAttachment, attachOri, attachAngles);
+
+		if (eye.iAttachment < m_numAttachments) {
+			GetAttachment(eye.iAttachment, attachOri, attachAngles);
+		}
+		else {
+			attachOri = Center();
+		}
+		
 		MAKE_VECTORS(Vector(0, pev->angles.y + eye.angle, 0));
 		Vector eyeDir = gpGlobals->v_forward;
 
@@ -701,8 +711,8 @@ void CKingpin::LaserEyesThink() {
 				CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 
 				RGBA color = RGBA(m_beamColor.x, m_beamColor.y, m_beamColor.z, 150);
-				UTIL_BeamEntPoint(entindex(), eye.iAttachment+1, target->Center(), kingBeamSpriteIdx, 0, 0, 2, 50, 32,
-					color, 0, MSG_PVS, pev->origin);
+				UTIL_BeamEntPoint(entindex(), eye.iAttachment + 1, target->Center(), kingBeamSpriteIdx,
+					0, 0, 2, 50, 32, color, 0, MSG_PVS, pev->origin);
 
 				CSprite* flr = CSprite::SpriteCreate(KINGPIN_FLARE_SPRITE, pev->origin, FALSE);
 				flr->SetAttachment(edict(), eye.iAttachment + 1);
