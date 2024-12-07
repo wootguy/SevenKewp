@@ -259,6 +259,7 @@ set(FUNC_HDR
 	func/CBasePlatTrain.h
 	func/CBreakable.h
 	func/CBaseDoor.h
+	func/CFuncConveyor.h
 	func/CFuncPlat.h
 	func/CFuncPlatRot.h
 	func/CFuncTank.h

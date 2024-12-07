@@ -1,7 +1,7 @@
 #include "extdll.h"
 #include "util.h"
 #include "saverestore.h"
-#include "CBaseButton.h"
+#include "CFuncConveyor.h"
 
 #define RAIN_MODEL_SMALL "models/weather/rain0_128.bsp"
 #define RAIN_MODEL_BIG "models/weather/rain1_128.bsp"
@@ -10,6 +10,9 @@
 #define RAIN_OUT_SOUND "weather/rain.wav"
 #define RAIN_GLASS_SOUND "weather/rain_glass.wav"
 #define RAIN_SPLASH_SPR "sprites/rain_splash.spr"
+
+#define SNOW_MODEL_SMALL "models/weather/snow0_128.bsp"
+#define SNOW_MODEL_BIG "models/weather/snow1_128.bsp"
 
 #define MAX_WORLD_DIM 65536
 #define RAIN_TEST_DIST 1024
@@ -58,6 +61,11 @@ struct weather_sound_t {
 std::vector<weather_ent_t> g_weatherEnts;
 bool g_weather_init_done;
 
+enum weather_modes {
+	WEATHER_RAIN,
+	WEATHER_SNOW
+};
+
 class CEnvWeather : public CBaseEntity
 {
 public:
@@ -72,7 +80,7 @@ public:
 	bool TraceToSky(Vector pos, Vector& skyPos); // trace upwards until hitting the sky
 	bool CanSeePosition(CBasePlayer* plr, Vector pos);
 	void WeatherEntsThink();
-	int UpdateRainVisibility(CBasePlayer* plr); // returns number of nearby rain conveyors
+	int UpdateWeatherVisibility(CBasePlayer* plr); // returns number of nearby conveyors
 
 	// find a neighbor suitable for merging
 	int FindNeighborSpot(std::vector<weather_spot_t>& spots, Vector pos, weather_spot_t& self);
@@ -92,14 +100,14 @@ public:
 
 	weather_sound_t m_rainSnd_out; // outdoor rain sound
 	weather_sound_t m_rainSnd_glass; // rain hitting window sound
-
 	int m_historyIdx;
-
 	int m_rainSplashSpr;
+	int m_weatherMode;
 };
 
 LINK_ENTITY_TO_CLASS(env_weather, CEnvWeather)
 LINK_ENTITY_TO_CLASS(env_rain, CEnvWeather)
+LINK_ENTITY_TO_CLASS(env_snow, CEnvWeather)
 
 int weather_sound_t::GetAverageLoudness(int playerindex) {
 	float avg = 0;
@@ -398,14 +406,23 @@ std::vector<weather_spot_t> CEnvWeather::FindWeatherSpots() {
 				}
 
 				bool unevenGround = IsUnevenGround(bottom, WEATHER_SIZE * 0.5f);
-				const char* model = unevenGround ? RAIN_MODEL_SMALL : RAIN_MODEL_SMALL_PUDDLES;
+				const char* model = NOT_PRECACHED_MODEL;
+				const char* stackModel = NOT_PRECACHED_MODEL;
+
+				if (m_weatherMode == WEATHER_RAIN) {
+					model = unevenGround ? RAIN_MODEL_SMALL : RAIN_MODEL_SMALL_PUDDLES;
+					stackModel = RAIN_MODEL_SMALL;
+				}
+				else if (m_weatherMode == WEATHER_SNOW) {
+					stackModel = model = SNOW_MODEL_SMALL;
+				}
 
 				lastRainZ = bottom.z;
 				spots.push_back({ bottom, model, 1, true, shouldFloat, unevenGround });
 
 				int stacks = ((bottom - top).Length() + WEATHER_HEIGHT * 0.5f) / WEATHER_HEIGHT;
 				for (int i = 1; i < stacks; i++) {
-					spots.push_back({ bottom + Vector(0,0,WEATHER_HEIGHT * i), RAIN_MODEL_SMALL, 1, true, true, false });
+					spots.push_back({ bottom + Vector(0,0,WEATHER_HEIGHT * i), stackModel, 1, true, true, false });
 				}
 			}
 		}
@@ -431,7 +448,15 @@ void CEnvWeather::MergeWeatherSpots(std::vector<weather_spot_t>& spots) {
 		if (right != -1 && bottom != -1 && botrt != -1) {
 			Vector center = (spot.pos + spots[right].pos + spots[bottom].pos + spots[botrt].pos) / 4.0f;
 			bool uneven = spot.isUnevenGround || spots[right].isUnevenGround || spots[bottom].isUnevenGround || spots[botrt].isUnevenGround;
-			const char* model = (spot.isFloating || uneven) ? RAIN_MODEL_BIG : RAIN_MODEL_BIG_PUDDLES;
+			const char* model = NOT_PRECACHED_MODEL;
+			
+			if (m_weatherMode == WEATHER_RAIN) {
+				model = (spot.isFloating || uneven) ? RAIN_MODEL_BIG : RAIN_MODEL_BIG_PUDDLES;
+			}
+			else if (m_weatherMode == WEATHER_SNOW) {
+				model = SNOW_MODEL_BIG;
+			}
+			
 			spots.push_back({ center, model, 4, true, spot.isFloating, uneven });
 			spots[i].valid = false;
 			spots[right].valid = false;
@@ -448,6 +473,10 @@ void CEnvWeather::Spawn(void)
 			STRING(pev->targetname), STRING(pev->classname));
 		UTIL_Remove(this);
 		return;
+	}
+
+	if (FClassnameIs(pev, "env_snow")) {
+		m_weatherMode = WEATHER_SNOW;
 	}
 
 	pev->solid = SOLID_NOT;
@@ -472,7 +501,7 @@ void CEnvWeather::Spawn(void)
 	Precache();
 
 	std::vector<weather_spot_t> spots = FindWeatherSpots();
-	int validRains = spots.size();
+	int validSpots = spots.size();
 
 	MergeWeatherSpots(spots);
 
@@ -501,28 +530,34 @@ void CEnvWeather::Spawn(void)
 	m_rainSnd_out.channel = CHAN_BODY;
 	m_rainSnd_glass.channel = CHAN_ITEM;
 
-	ALERT(at_console, "Found %d potential rain locations. Merged to %d\n",
-		validRains, g_weatherEnts.size());
+	ALERT(at_console, "Found %d potential weather locations. Merged to %d\n",
+		validSpots, g_weatherEnts.size());
 
 	g_weather_init_done = true;
 }
 
 void CEnvWeather::Precache(void)
 {
-	PRECACHE_MODEL(RAIN_MODEL_SMALL);
-	PRECACHE_MODEL(RAIN_MODEL_BIG);
-	PRECACHE_MODEL(RAIN_MODEL_SMALL_PUDDLES);
-	PRECACHE_MODEL(RAIN_MODEL_BIG_PUDDLES);
-	m_rainSplashSpr = PRECACHE_MODEL(RAIN_SPLASH_SPR);
-	PRECACHE_SOUND(RAIN_OUT_SOUND);
-	PRECACHE_SOUND(RAIN_GLASS_SOUND);
+	if (m_weatherMode == WEATHER_RAIN) {
+		PRECACHE_MODEL(RAIN_MODEL_SMALL);
+		PRECACHE_MODEL(RAIN_MODEL_BIG);
+		PRECACHE_MODEL(RAIN_MODEL_SMALL_PUDDLES);
+		PRECACHE_MODEL(RAIN_MODEL_BIG_PUDDLES);
+		m_rainSplashSpr = PRECACHE_MODEL(RAIN_SPLASH_SPR);
+		PRECACHE_SOUND(RAIN_OUT_SOUND);
+		PRECACHE_SOUND(RAIN_GLASS_SOUND);
+	}
+	else if (m_weatherMode == WEATHER_SNOW) {
+		PRECACHE_MODEL(SNOW_MODEL_SMALL);
+		PRECACHE_MODEL(SNOW_MODEL_BIG);
+	}
 }
 
 void CEnvWeather::KeyValue(KeyValueData* pkvd)
 {
-	if (FStrEq(pkvd->szKeyName, "asdf"))
+	if (FStrEq(pkvd->szKeyName, "mode"))
 	{
-		//m_flDelay = atof(pkvd->szValue);
+		m_weatherMode = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -595,15 +630,26 @@ void CEnvWeather::WeatherEntsThink() {
 			std::unordered_map<std::string, std::string> keys = {
 				{"spawnflags", "3"},
 				{"model", weather.model},
-				{"speed", UTIL_VarArgs("%d", RANDOM_LONG(150, 200))},
-				{"rendermode", "5"},
-				{"renderamt", "50"},
 			};
 
-			CBaseEntity* ent = Create("func_conveyor", weather.pos, Vector(0, 0, 0), NULL, keys);
+			CFuncConveyor* ent = (CFuncConveyor*)Create("func_conveyor", weather.pos, Vector(0, 0, 0), NULL, keys);
 			ent->pev->solid = SOLID_NOT;
-
 			ent->pev->movetype = weather.isFloating ? MOVETYPE_NONE : MOVETYPE_TOSS;
+			ent->pev->rendermode = kRenderTransAdd;
+			ent->pev->renderamt = 50;
+
+			
+			if (m_weatherMode == WEATHER_RAIN) {
+				ent->UpdateSpeed(RANDOM_LONG(150, 200));
+			}
+			else if (m_weatherMode == WEATHER_SNOW) {
+				ent->UpdateSpeed(48);
+				ent->pev->gravity = 0.2f;
+				ent->pev->renderamt = 100;
+			}
+
+			// each face has a unique texture to prevent particles perfectly lining up
+			ent->pev->angles.y = RANDOM_LONG(0, 3)*90;
 			
 			// not setting point size because that can fall through tiny cracks 
 			// or even solid ents sometimes (wreckhouse2 misaligned glass ceil)
@@ -622,6 +668,11 @@ void CEnvWeather::WeatherEntsThink() {
 			ent->pev->flags &= ~FL_ONGROUND;
 			weather.pos.z = weather.h_ent->pev->origin.z; // so it isn't re-created hovering in the air
 			
+			// copy renderamt from weather entity, if set
+			if (pev->renderamt) {
+				ent->pev->renderamt = pev->renderamt;
+			}
+
 			// don't slide down slopes
 			ent->pev->origin.x = weather.pos.x;
 			ent->pev->origin.y = weather.pos.y;
@@ -743,7 +794,7 @@ int CEnvWeather::WaterSplashes(CBasePlayer* plr) {
 	return numSplash;
 }
 
-int CEnvWeather::UpdateRainVisibility(CBasePlayer* plr) {
+int CEnvWeather::UpdateWeatherVisibility(CBasePlayer* plr) {
 	bool anyNearbyRain = false;
 	Vector playerOri = plr->GetViewPosition();
 	int plrbit = PLRBIT(plr->edict());
@@ -826,20 +877,22 @@ void CEnvWeather::WeatherThink(void)
 		
 		int numVis = 0;
 		if (!hideAll) {
-			numVis = UpdateRainVisibility(plr);
+			numVis = UpdateWeatherVisibility(plr);
 		}
 
-		// water splashes
-		int numSplash = 0;
-		if (numVis > 0) {
-			numSplash = WaterSplashes(plr);
-		}
-		else {
-			m_rainSnd_glass.loudHist[pidx][m_historyIdx] = 0;
-			m_rainSnd_out.loudHist[pidx][m_historyIdx] = 0;
-		}
+		if (m_weatherMode == WEATHER_RAIN) {
+			// water splashes
+			int numSplash = 0;
+			if (numVis > 0) {
+				numSplash = WaterSplashes(plr);
+			}
+			else {
+				m_rainSnd_glass.loudHist[pidx][m_historyIdx] = 0;
+				m_rainSnd_out.loudHist[pidx][m_historyIdx] = 0;
+			}
 
-		PlayWeatherSounds(plr);
+			PlayWeatherSounds(plr);
+		}
 
 		/*
 		ALERT(at_console, "%d / %d rain vis, %d|%d loud, %d splash\n",
