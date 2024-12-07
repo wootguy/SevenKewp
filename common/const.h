@@ -610,16 +610,9 @@
 
 #define	CONTENTS_LADDER				-16
 
-#define	CONTENT_FLYFIELD			-17
-#define	CONTENT_GRAVITY_FLYFIELD	-18
-#define	CONTENT_FOG					-19
-
-#define CONTENT_EMPTY	-1
-#define CONTENT_SOLID	-2
-#define	CONTENT_WATER	-3
-#define CONTENT_SLIME	-4
-#define CONTENT_LAVA	-5
-#define CONTENT_SKY		-6
+#define	CONTENTS_FLYFIELD			-17
+#define	CONTENTS_GRAVITY_FLYFIELD	-18
+#define	CONTENTS_FOG					-19
 
 // channels
 #define CHAN_AUTO			0
