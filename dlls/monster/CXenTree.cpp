@@ -85,12 +85,19 @@ void CXenTree::Spawn(void)
 	pev->frame = RANDOM_FLOAT(0, 255);
 	pev->framerate = RANDOM_FLOAT(0.7, 1.4);
 
+	if (FBitSet(pev->spawnflags, SF_XEN_PLANT_DROP_TO_FLOOR))
+		DropToFloor();
+
+	if (FBitSet(pev->flags, FL_KILLME))
+		return;
+
 	Vector triggerPosition;
 	UTIL_MakeVectorsPrivate(pev->angles, triggerPosition, NULL, NULL);
 	triggerPosition = pev->origin + (triggerPosition * 64);
 	// Create the trigger
 	m_pTrigger = CXenTreeTrigger::TriggerCreate(edict(), triggerPosition);
-	UTIL_SetSize(m_pTrigger->pev, Vector(-24, -24, 0), Vector(24, 24, 128));
+	if (m_pTrigger)
+		UTIL_SetSize(m_pTrigger->pev, Vector(-24, -24, 0), Vector(24, 24, 128));
 }
 
 const char* CXenTree::pAttackHitSounds[] =

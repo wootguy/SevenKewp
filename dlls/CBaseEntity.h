@@ -108,7 +108,9 @@ public:
 
 	// path corners
 	EHANDLE m_hGoalEnt;// path corner we are heading towards
-	EHANDLE m_hLink;// used for temporary link-list operations. 
+	EHANDLE m_hLink;// used for temporary link-list operations.
+
+	byte m_EFlags;
 
 	// initialization functions
 	virtual void	Spawn(void) { return; }

@@ -162,7 +162,7 @@ const char* CISlave::DisplayName() {
 
 int CISlave::IRelationship( CBaseEntity *pTarget )
 {
-	if ( (pTarget->IsPlayer()) )
+	if( ( pTarget && pTarget->IsPlayer() ) )
 		if ( (pev->spawnflags & SF_MONSTER_WAIT_UNTIL_PROVOKED ) && ! (m_afMemory & bits_MEMORY_PROVOKED ))
 			return R_NO;
 	return CBaseMonster::IRelationship( pTarget );
@@ -375,6 +375,10 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 		case ISLAVE_AE_ZAP_POWERUP:
 		{
+			// Hack to prevent the event from playing again when the animation ends
+			if (m_iTaskStatus == TASKSTATUS_COMPLETE)
+				break;
+
 			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 3.0);
 
 			pev->framerate = gSkillData.sk_islave_speed_zap;

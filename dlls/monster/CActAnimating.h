@@ -1,6 +1,8 @@
 #pragma once
 #include "CBaseAnimating.h"
 
+#define SF_XEN_PLANT_DROP_TO_FLOOR 2
+
 class CActAnimating : public CBaseAnimating
 {
 public:
@@ -13,6 +15,8 @@ public:
 	virtual int	Restore(CRestore& restore);
 	static	TYPEDESCRIPTION m_SaveData[];
 
+protected:
+	void DropToFloor();
 private:
 	Activity	m_Activity;
 };

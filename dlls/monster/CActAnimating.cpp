@@ -22,3 +22,12 @@ void CActAnimating::SetActivity(Activity act)
 		ResetSequenceInfo();
 	}
 }
+
+void CActAnimating::DropToFloor()
+{
+	if( DROP_TO_FLOOR(ENT( pev ) ) == 0 )
+	{
+		ALERT(at_error, "Entity %s fell out of level at %f,%f,%f\n", STRING( pev->classname ), pev->origin.x, pev->origin.y, pev->origin.z);
+		UTIL_Remove( this );
+	}
+}

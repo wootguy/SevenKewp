@@ -292,7 +292,7 @@ void CNihilanth :: Spawn( void )
 	SetSize(Vector( -32, -32, 0), Vector(32, 32, 64));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	pev->flags			|= FL_MONSTER;
+	pev->flags			|= FL_MONSTER | FL_FLY;
 	pev->takedamage		= DAMAGE_AIM;
 	SetHealth();
 	pev->view_ofs		= Vector( 0, 0, 300 );

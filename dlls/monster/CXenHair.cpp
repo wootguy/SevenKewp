@@ -33,6 +33,9 @@ void CXenHair::Spawn(void)
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
 	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.1, 0.4);	// Load balance these a bit
+
+	if (FBitSet(pev->spawnflags, SF_XEN_PLANT_DROP_TO_FLOOR))
+		DropToFloor();
 }
 
 
