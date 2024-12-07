@@ -372,6 +372,7 @@ EXPORT TraceResult	UTIL_GetGlobalTrace		(void);
 EXPORT void			UTIL_TraceModel			(const Vector &vecStart, const Vector &vecEnd, int hullNumber, edict_t *pentModel, TraceResult *ptr);
 EXPORT Vector		UTIL_GetAimVector		(edict_t* pent, float flSpeed);
 EXPORT int			UTIL_PointContents		(const Vector &vec);
+EXPORT bool			UTIL_PointInLiquid(const Vector& vec);
 
 EXPORT int			UTIL_IsMasterTriggered	(string_t sMaster, CBaseEntity *pActivator);
 EXPORT void			UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount );

@@ -148,6 +148,7 @@ set(ENV_SRC
 	env/CEnvShooter.cpp
 	env/CEnvSound.cpp
 	env/CEnvSpark.cpp
+	env/CEnvWeather.cpp
 	env/CFade.cpp
 	env/CGib.cpp
 	env/CGibShooter.cpp

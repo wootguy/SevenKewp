@@ -64,6 +64,7 @@ extern void CopyToBodyQue(entvars_t* pev);
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
 extern int g_teamplay;
+extern bool g_weather_init_done;
 
 // client index that is receiving AddFullToPack calls
 int g_packClientIdx = 0;
@@ -495,6 +496,7 @@ void ServerDeactivate( void )
 	g_mp3Command = "";
 	g_monstersNerfed = false;
 	g_cfgsExecuted = false;
+	g_weather_init_done = false;
 
 	memset(&g_nerfStats, 0, sizeof(NerfStats));
 	memset(&g_textureStats, 0, sizeof(TextureTypeStats));

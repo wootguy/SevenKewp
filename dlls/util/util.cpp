@@ -1732,6 +1732,20 @@ int UTIL_PointContents(	const Vector &vec )
 	return POINT_CONTENTS(vec);
 }
 
+bool UTIL_PointInLiquid(const Vector& vec)
+{
+	int contents = POINT_CONTENTS(vec);
+
+	switch (contents) {
+	case CONTENTS_WATER:
+	case CONTENTS_SLIME:
+	case CONTENTS_LAVA:
+		return true;
+	}
+
+	return false;
+}
+
 void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount )
 {
 	if ( !UTIL_ShouldShowBlood( color ) )
