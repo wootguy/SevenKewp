@@ -8,7 +8,6 @@ class CEnvSound : public CPointEntity
 {
 public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // TODO: needed for VIS checks but it shouldn't be
-	virtual bool ForceVisChecks() { return true; }
 	void KeyValue(KeyValueData* pkvd);
 	void Spawn(void);
 
@@ -209,8 +208,8 @@ void CEnvSound::Spawn()
 	// spread think times
 	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.0, 0.5);
 
-	// must set a model for rehlds to call AddFullToPack
-	SET_MODEL(edict(), "models/player.mdl");
+	// model is needed for rehlds to call AddToFullPack
+	SET_MODEL(edict(), NOT_PRECACHED_MODEL);
 	pev->rendermode = kRenderTransTexture;
-	pev->renderamt = 0;
+	m_hidePlayers = 0xffffffff; // do visibility checks but don't network the entity.
 }

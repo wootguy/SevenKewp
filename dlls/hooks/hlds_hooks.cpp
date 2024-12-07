@@ -1203,10 +1203,8 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	// solid entities should always be sent to clients for collision prediction
 	bool solid = ent->v.solid >= SOLID_BBOX && ent->v.modelindex;
 
-	bool forceVisChecks = baseent->ForceVisChecks();
-
-	if (invisible && !forceVisChecks && !solid) {
-		return 0; // exit now unless a vis check was requested for this ent
+	if (invisible && !solid) {
+		return 0; 
 	}
 
 	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(host);
@@ -1226,7 +1224,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		return 0;
 	}
 
-	if ((invisible && !solid) || forceVisChecks || (baseent->m_hidePlayers & plrbit)) {
+	if (baseent->m_hidePlayers & plrbit) {
 		return 0;
 	}
 
