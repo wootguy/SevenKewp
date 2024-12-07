@@ -369,7 +369,9 @@ void CDisplacerBall::ArmBeam(int iSide)
 	if (!m_pBeam[m_uiBeams])
 		m_pBeam[m_uiBeams] = CBeam::BeamCreate("sprites/lgtning.spr", 30);
 
-	if (!m_pBeam[m_uiBeams])
+	CBeam* beam = (CBeam*)m_pBeam[m_uiBeams].GetEntity();
+
+	if (!beam)
 		return;
 
 	auto pHit = Instance(tr.pHit);
@@ -377,22 +379,22 @@ void CDisplacerBall::ArmBeam(int iSide)
 	if (pHit && pHit->pev->takedamage != DAMAGE_NO)
 	{
 		// Beam hit something, deal radius damage to it.
-		m_pBeam[m_uiBeams]->EntsInit(pHit->entindex(), entindex());
+		beam->EntsInit(pHit->entindex(), entindex());
 
-		m_pBeam[m_uiBeams]->SetColor(255, 255, 255);
+		beam->SetColor(255, 255, 255);
 
-		m_pBeam[m_uiBeams]->SetBrightness(255);
+		beam->SetBrightness(255);
 
 		RadiusDamage(tr.vecEndPos, pev, &pev->owner->v, 25, 15, CLASS_NONE, DMG_ENERGYBEAM);
 	}
 	else
 	{
-		m_pBeam[m_uiBeams]->PointEntInit(tr.vecEndPos, entindex());
-		m_pBeam[m_uiBeams]->SetEndAttachment(iSide < 0 ? 2 : 1);
+		beam->PointEntInit(tr.vecEndPos, entindex());
+		beam->SetEndAttachment(iSide < 0 ? 2 : 1);
 		// m_pBeam[ m_uiBeams ]->SetColor( 180, 255, 96 );
-		m_pBeam[m_uiBeams]->SetColor(96, 128, 16);
-		m_pBeam[m_uiBeams]->SetBrightness(255);
-		m_pBeam[m_uiBeams]->SetNoise(80);
+		beam->SetColor(96, 128, 16);
+		beam->SetBrightness(255);
+		beam->SetNoise(80);
 	}
 
 	++m_uiBeams;

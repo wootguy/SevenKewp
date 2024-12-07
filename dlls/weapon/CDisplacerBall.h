@@ -47,7 +47,7 @@ public:
 private:
 	int m_iTrail;
 
-	CBeam* m_pBeam[NUM_BEAMS];
+	EHANDLE m_pBeam[NUM_BEAMS];
 
 	size_t m_uiBeams;
 
