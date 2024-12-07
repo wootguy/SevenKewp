@@ -481,11 +481,14 @@ mstream* BuildStartSoundMessage(edict_t* ent, int channel, const char* sample, f
 	int ient = ENTINDEX(ent);
 	int volume = clampf(fvolume, 0, 1.0f) * 255;
 
-	if (volume != DEFAULT_SOUND_PACKET_VOLUME)
+	// Note: the engine does not check CHANGE_VOL or CHANGE_PITCH like this does here,
+	// so never send the default values if using the engine funcs to play sound
+
+	if ((volume != DEFAULT_SOUND_PACKET_VOLUME) || (fFlags & SND_CHANGE_VOL))
 		field_mask |= SND_FL_VOLUME;
 	if (attenuation != DEFAULT_SOUND_PACKET_ATTENUATION)
 		field_mask |= SND_FL_ATTENUATION;
-	if (pitch != DEFAULT_SOUND_PACKET_PITCH)
+	if (pitch != DEFAULT_SOUND_PACKET_PITCH || (fFlags & SND_CHANGE_PITCH))
 		field_mask |= SND_FL_PITCH;
 	if (sound_num > 255)
 		field_mask |= SND_FL_LARGE_INDEX;

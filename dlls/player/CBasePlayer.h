@@ -468,6 +468,9 @@ public:
 	virtual void Revive();
 
 	float GetDamageModifier();
+
+	// accounts for active cameras and view offset
+	Vector GetViewPosition() { return m_hViewEntity ? m_hViewEntity->pev->origin : GetGunPosition(); }
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();
