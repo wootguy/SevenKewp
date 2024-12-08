@@ -176,6 +176,8 @@ public:
 	virtual BOOL	IsNetClient(void) { return FALSE; }
 	virtual BOOL	IsBreakable(void) { return FALSE; }
 	virtual BOOL	IsMachine(void) { return FALSE; };
+	virtual BOOL	IsWeather(void) { return FALSE; };
+	virtual BOOL	IsBeam(void) { return FALSE; };
 	virtual const char* TeamID(void) { return ""; }
 	virtual const char* DisplayName() { return STRING(pev->classname); }
 	virtual const char* GetDeathNoticeWeapon() { return STRING(pev->classname); };
@@ -387,10 +389,13 @@ public:
 	InventoryRules	m_inventoryRules;
 	bool m_isFadingOut; // is a corpse fading out
 
+	Vector m_fakeFollowOffset; // offset applied to player origin when entity is fake following
+
 	uint32_t m_pasPlayers; // players in the audible set of this entity (invalid for invisible ents)
 	uint32_t m_pvsPlayers; // players in the visible set of this entity (invalid for invisible ents)
 	uint32_t m_netPlayers; // players this entity has been networked to (AddToFullPack returned 1)
 	uint32_t m_hidePlayers; // players this entity will be hidden from (AddToFullPack)
+	uint32_t m_fakeFollow; // players this entity will attach to, ignoring true origin (AddToFullPack)
 
 private:
 	bool TestInventoryRules(CBaseMonster* mon, std::unordered_set<CItemInventory*>& usedItems, const char** errorMsg);

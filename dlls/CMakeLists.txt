@@ -641,6 +641,7 @@ set(ALL_SRC
 	${PLAYER_SRC} ${PLAYER_HDR}
 	${HOOKS_SRC} ${HOOKS_HDR}
 	${MISC_HDR}
+	env/fog_colors.cpp
 )
 
 # don't compile individual entity files

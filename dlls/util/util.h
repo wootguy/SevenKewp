@@ -127,6 +127,16 @@ enum merged_item_bodies {
 	MERGE_MDL_SHOCK_EFFECT,
 };
 
+#undef RGB
+
+struct RGB {
+	uint8_t r, g, b;
+
+	RGB(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
+	RGB(Vector v) : r(v.x), g(v.y), b(v.z) {}
+	RGB(uint32_t hex) : r((hex >> 16) & 0xff), g((hex >> 8) & 0xff), b(hex & 0xff) {}
+};
+
 struct RGBA {
 	uint8_t r, g, b, a;
 
@@ -134,6 +144,7 @@ struct RGBA {
 	RGBA(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b), a(255) {}
 	RGBA(Vector v) : r(v.x), g(v.y), b(v.z), a(255) {}
 	RGBA(Vector v, uint8_t a) : r(v.x), g(v.y), b(v.z), a(a) {}
+	RGBA(RGB rgb) : r(rgb.r), g(rgb.g), b(rgb.b), a(255) {}
 };
 
 // Use this instead of ALLOC_STRING on constant strings
