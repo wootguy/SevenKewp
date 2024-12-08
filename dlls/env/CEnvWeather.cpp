@@ -14,11 +14,27 @@
 #define SNOW_MODEL_SMALL "models/weather/snow0_128.bsp"
 #define SNOW_MODEL_BIG "models/weather/snow1_128.bsp"
 
+#define FOG_MODEL "models/weather/fog.mdl"
+#define FOG_MAX_DIST 131072 // maximum radius of the fog sphere at the max sequence and frame
+#define FOG_LAYERS 16
+#define FOG_OFFSET_Z 16384 // fog model is offset so that the BRIGHTFIELD effect is invisible
+
 #define MAX_WORLD_DIM 65536
 #define RAIN_TEST_DIST 1024
 #define WEATHER_SIZE 128 // width of a weather conveyor
 #define WEATHER_HEIGHT 960 // height of a weather conveyor
 #define WEATHER_VOL_HIST_SZ 25
+
+#define SF_WEATHER_START_OFF 1
+
+extern RGB g_fog_palette[61][256];
+extern int g_fog_skins;
+
+bool g_fog_enabled;
+int g_fog_start_dist;
+int g_fog_end_dist;
+
+EHANDLE g_fog_ents[FOG_LAYERS];
 
 struct weather_ent_t {
 	EHANDLE h_ent;
@@ -62,8 +78,22 @@ std::vector<weather_ent_t> g_weatherEnts;
 bool g_weather_init_done;
 
 enum weather_modes {
+	WEATHER_NONE,
 	WEATHER_RAIN,
 	WEATHER_SNOW
+};
+
+class CFogLayer : public CBaseAnimating
+{
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
+	void Spawn(void);
+	void Precache(void);
+	BOOL IsWeather(void) { return TRUE; };
+};
+
+class CWeatherConveyor : public CFuncConveyor
+{
+	BOOL IsWeather(void) { return TRUE; };
 };
 
 class CEnvWeather : public CBaseEntity
@@ -74,12 +104,15 @@ public:
 	void	Precache(void);
 	void	EXPORT WeatherThink(void);
 	void	KeyValue(KeyValueData* pkvd);
+	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	BOOL	IsWeather(void) { return TRUE; };
 
 	bool GetRainPosition(Vector pos, Vector& bottom, Vector& top, bool largeHull, bool debug);
 	bool IsSky(TraceResult& tr, Vector traceStart);
 	bool TraceToSky(Vector pos, Vector& skyPos); // trace upwards until hitting the sky
 	bool CanSeePosition(CBasePlayer* plr, Vector pos);
 	void WeatherEntsThink();
+	void UpdateFog();
 	int UpdateWeatherVisibility(CBasePlayer* plr); // returns number of nearby conveyors
 
 	// find a neighbor suitable for merging
@@ -98,16 +131,33 @@ public:
 
 	bool IsUnevenGround(Vector pos, float radius);
 
+	// adjusts the size of a fog sphere
+	void SetFogSphereRadius(CBaseAnimating* fog, float radius);
+
+	void SetFogColor(RGB color);
+
 	weather_sound_t m_rainSnd_out; // outdoor rain sound
 	weather_sound_t m_rainSnd_glass; // rain hitting window sound
 	int m_historyIdx;
 	int m_rainSplashSpr;
 	int m_weatherMode;
+	bool m_isActive;
+
+	Vector m_fogColor;
+	int m_fogBody; // model texture to use (palette of 256 colors)
+	int m_fogSkin; // model uv coordinates for the texture (pixel in the palette)
+	int m_fogStartDist;
+	int m_fogEndDist;
+	bool m_useFog;
 };
 
 LINK_ENTITY_TO_CLASS(env_weather, CEnvWeather)
 LINK_ENTITY_TO_CLASS(env_rain, CEnvWeather)
 LINK_ENTITY_TO_CLASS(env_snow, CEnvWeather)
+LINK_ENTITY_TO_CLASS(env_fog, CEnvWeather)
+
+LINK_ENTITY_TO_CLASS(fog_layer, CFogLayer)
+LINK_ENTITY_TO_CLASS(weather_conveyor, CWeatherConveyor)
 
 int weather_sound_t::GetAverageLoudness(int playerindex) {
 	float avg = 0;
@@ -124,6 +174,34 @@ int weather_sound_t::GetAverageLoudness(int playerindex) {
 	return snapped;
 }
 
+void CFogLayer::Spawn() {
+	pev->solid = SOLID_NOT;
+	pev->movetype = MOVETYPE_NOCLIP;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 128;
+
+	SET_MODEL(edict(), FOG_MODEL);
+
+	pev->sequence = 0;
+	pev->frame = 0;
+	ResetSequenceInfo();
+	pev->framerate = FLT_MIN;
+
+	m_fakeFollow = 0xffffffff;
+	m_fakeFollowOffset = Vector(0, 0, -FOG_OFFSET_Z);
+
+	// render everywhere
+	static Vector galaxySize = Vector(65536, 65536, 65536);
+	UTIL_SetSize(pev, galaxySize * -1, galaxySize);
+
+	// hack to make the model full bright
+	pev->effects = EF_BRIGHTLIGHT;
+}
+
+void CFogLayer::Precache() {
+	PRECACHE_MODEL(FOG_MODEL);
+}
+
 bool CEnvWeather::IsSky(TraceResult& tr, Vector traceStart) {
 	if (POINT_CONTENTS(tr.vecEndPos) == CONTENTS_SKY) {
 		return true;
@@ -136,8 +214,6 @@ bool CEnvWeather::IsSky(TraceResult& tr, Vector traceStart) {
 }
 
 bool CEnvWeather::GetRainPosition(Vector pos, Vector& bottom, Vector& top, bool largeHull, bool debug) {
-	Vector worldPosition = pos;
-
 	TraceResult tr;
 
 	Vector start = pos;
@@ -311,7 +387,7 @@ bool CEnvWeather::GetRainPosition(Vector pos, Vector& bottom, Vector& top, bool 
 		}
 	}
 
-	te_debug_beam(bottom, top, 1, RGBA(0, 255, 0));
+	//te_debug_beam(bottom, top, 1, RGBA(0, 255, 0));
 
 	// can be inside world if on a slope, despite point_contents saying it's not
 	bottom.z += 1.0f;
@@ -478,6 +554,23 @@ void CEnvWeather::Spawn(void)
 	if (FClassnameIs(pev, "env_snow")) {
 		m_weatherMode = WEATHER_SNOW;
 	}
+	if (FClassnameIs(pev, "env_rain")) {
+		m_weatherMode = WEATHER_RAIN;
+	}
+	if (FClassnameIs(pev, "env_fog")) {
+		g_fog_enabled = true;
+		m_useFog = true;
+
+		if (pev->iuser2) {
+			m_fogStartDist = pev->iuser2;
+		}
+
+		if (pev->iuser3) {
+			m_fogEndDist = pev->iuser3;
+		}
+
+		m_fogColor = pev->rendercolor;
+	}
 
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NOCLIP;
@@ -500,40 +593,57 @@ void CEnvWeather::Spawn(void)
 
 	Precache();
 
-	std::vector<weather_spot_t> spots = FindWeatherSpots();
-	int validSpots = spots.size();
+	if (m_weatherMode != WEATHER_NONE) {
+		std::vector<weather_spot_t> spots = FindWeatherSpots();
+		int validSpots = spots.size();
 
-	MergeWeatherSpots(spots);
+		MergeWeatherSpots(spots);
 
-	g_weatherEnts.clear();
+		g_weatherEnts.clear();
 
-	for (int i = 0; i < (int)spots.size(); i++) {
-		weather_spot_t& spot = spots[i];
+		for (int i = 0; i < (int)spots.size(); i++) {
+			weather_spot_t& spot = spots[i];
 
-		if (!spot.valid) {
-			continue;
+			if (!spot.valid) {
+				continue;
+			}
+
+			weather_ent_t weather;
+			weather.h_ent = NULL;
+			weather.model = spot.model;
+			weather.pos = spot.pos;
+			weather.size = spot.size;
+			weather.isFloating = spot.isFloating;
+			weather.visPlayers = 0;
+			weather.isUnevenGround = spot.isUnevenGround;
+			g_weatherEnts.push_back(weather);
 		}
 
-		weather_ent_t weather;
-		weather.h_ent = NULL;
-		weather.model = spot.model;
-		weather.pos = spot.pos;
-		weather.size = spot.size;
-		weather.isFloating = spot.isFloating;
-		weather.visPlayers = 0;
-		weather.isUnevenGround = spot.isUnevenGround;
-		g_weatherEnts.push_back(weather);
+		m_rainSnd_out.file = RAIN_OUT_SOUND;
+		m_rainSnd_glass.file = RAIN_GLASS_SOUND;
+		m_rainSnd_out.channel = CHAN_BODY;
+		m_rainSnd_glass.channel = CHAN_ITEM;
+
+		ALERT(at_console, "Found %d potential weather locations. Merged to %d\n",
+			validSpots, g_weatherEnts.size());
+
+		g_weather_init_done = true;
 	}
 
-	m_rainSnd_out.file = RAIN_OUT_SOUND;
-	m_rainSnd_glass.file = RAIN_GLASS_SOUND;
-	m_rainSnd_out.channel = CHAN_BODY;
-	m_rainSnd_glass.channel = CHAN_ITEM;
+	m_isActive = !FBitSet(pev->spawnflags, SF_WEATHER_START_OFF);
 
-	ALERT(at_console, "Found %d potential weather locations. Merged to %d\n",
-		validSpots, g_weatherEnts.size());
+	if (m_useFog) {
 
-	g_weather_init_done = true;
+		// reverse order so fog renders correctly
+		for (int k = FOG_LAYERS - 1; k >= 0; k--) {
+			if (!g_fog_ents[k]) {
+				g_fog_ents[k] = Create("fog_layer", g_vecZero, g_vecZero, NULL);
+			}
+		}
+
+		if (m_isActive)
+			UpdateFog();
+	}
 }
 
 void CEnvWeather::Precache(void)
@@ -551,6 +661,10 @@ void CEnvWeather::Precache(void)
 		PRECACHE_MODEL(SNOW_MODEL_SMALL);
 		PRECACHE_MODEL(SNOW_MODEL_BIG);
 	}
+
+	if (m_useFog) {
+		UTIL_PrecacheOther("fog_layer");
+	}
 }
 
 void CEnvWeather::KeyValue(KeyValueData* pkvd)
@@ -560,8 +674,68 @@ void CEnvWeather::KeyValue(KeyValueData* pkvd)
 		m_weatherMode = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "startdist"))
+	{
+		m_fogStartDist = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "enddist"))
+	{
+		m_fogEndDist = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseEntity::KeyValue(pkvd);
+}
+
+void CEnvWeather::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {
+	m_isActive = useType == USE_TOGGLE ? !m_isActive : useType == USE_ON;
+	
+	if (m_isActive) {
+		// disable all other weather entities
+		CBaseEntity* pWeather = NULL;
+		while ((pWeather = UTIL_FindEntityByClassname(pWeather, "env_weather")) != NULL) {
+			pWeather->Use(pActivator, this, USE_OFF, 0.0f);
+		}
+	}
+
+	if (m_useFog) {
+		g_fog_enabled = m_isActive;
+
+		if (m_isActive) {
+			UpdateFog();
+		}
+
+		for (int k = 0; k < FOG_LAYERS; k++) {
+			CFogLayer* fog = (CFogLayer*)g_fog_ents[k].GetEntity();
+			if (!fog) {
+				continue;
+			}
+
+			if (m_isActive) {
+				fog->pev->effects &= ~EF_NODRAW;
+			}
+			else {
+				fog->pev->effects |= EF_NODRAW;
+			}
+		}
+	}
+
+	if (m_weatherMode != WEATHER_NONE && !m_isActive) {
+		for (int k = 0; k < (int)g_weatherEnts.size(); k++) {
+			weather_ent_t& weather = g_weatherEnts[k];
+
+			weather.visPlayers = 0;
+			UTIL_Remove(weather.h_ent);
+		}
+
+		// TODO: fade out
+		weather_sound_t* sounds[2] = { &m_rainSnd_out, &m_rainSnd_glass };
+		for (int k = 0; k < 2; k++) {
+			weather_sound_t* snd = sounds[k];
+			STOP_SOUND(edict(), snd->channel, snd->file);
+		}
+	}
 }
 
 bool CEnvWeather::CanSeePosition(CBasePlayer* plr, Vector pos) {
@@ -620,6 +794,85 @@ bool CEnvWeather::TraceToSky(Vector pos, Vector& skyPos) {
 	return false;
 }
 
+void CEnvWeather::SetFogSphereRadius(CBaseAnimating* fog, float radius) {
+	// each sequence has a larger max distance for the sphere, but reduced accuracy
+	int sequences[] = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+	int thresholds[] = { 65536, 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 0 };
+
+	for (int i = 0; i < 10; ++i) {
+		if (radius > thresholds[i]) {
+			fog->pev->sequence = sequences[i];
+			break;
+		}
+	}
+
+	float sphereMaxDist = 256 << (fog->pev->sequence-1);
+
+	fog->pev->frame = clampf(roundf((radius / sphereMaxDist) * 256.0f) - 1, 0, 255);
+
+	fog->ResetSequenceInfo();
+	fog->pev->framerate = FLT_MIN;
+}
+
+void CEnvWeather::SetFogColor(RGB color) {
+	int bestDist = INT_MAX;
+	int bestSkin = 0;
+	int bestBody = 0;
+
+	for (int i = 0; i < g_fog_skins && bestDist; i++) {
+		for (int k = 0; k < 256; k++) {
+			RGB& p = g_fog_palette[i][k];
+			int dist = abs(p.r - color.r) + abs(p.g - color.g) + abs(p.b - color.b);
+
+			if (dist < bestDist) {
+				bestDist = dist;
+				bestSkin = i;
+				bestBody = k;
+
+				if (dist == 0) {
+					break;
+				}
+			}
+		}
+	}
+
+	m_fogSkin = bestSkin;
+	m_fogBody = bestBody;
+}
+
+void CEnvWeather::UpdateFog() {
+	g_fog_start_dist = m_fogStartDist;
+	g_fog_end_dist = m_fogEndDist;
+
+	float spanDist = g_fog_end_dist - g_fog_start_dist;
+
+	SetFogColor(m_fogColor);
+
+	// manually tested values that look close to sven in mystic_radar_v1 (16 fog layers)
+	float renderamt = 10;
+	float scalingFactor = 1.2f;
+
+	for (int k = 0; k < FOG_LAYERS; k++) {
+		CFogLayer* fog = (CFogLayer*)g_fog_ents[k].GetEntity();
+
+		fog->pev->skin = m_fogSkin;
+		fog->pev->body = m_fogBody;
+
+		float t = k / (float)(FOG_LAYERS - 1);
+		SetFogSphereRadius(fog, g_fog_start_dist + spanDist * t);
+
+		fog->pev->renderamt = renderamt;
+		renderamt *= scalingFactor;
+
+		// last fog completely blocks view
+		if (k == FOG_LAYERS - 1) {
+			fog->pev->renderamt = 255;
+		}
+	}
+
+	//ALERT(at_console, "Fog: %d ents, dist %d -> %d\n", fogCount, g_fog_start_dist, g_fog_end_dist);
+}
+
 void CEnvWeather::WeatherEntsThink() {
 	int totalVis = 0;
 
@@ -632,12 +885,11 @@ void CEnvWeather::WeatherEntsThink() {
 				{"model", weather.model},
 			};
 
-			CFuncConveyor* ent = (CFuncConveyor*)Create("func_conveyor", weather.pos, Vector(0, 0, 0), NULL, keys);
+			CFuncConveyor* ent = (CFuncConveyor*)Create("weather_conveyor", weather.pos, Vector(0, 0, 0), NULL, keys);
 			ent->pev->solid = SOLID_NOT;
 			ent->pev->movetype = weather.isFloating ? MOVETYPE_NONE : MOVETYPE_TOSS;
 			ent->pev->rendermode = kRenderTransAdd;
 			ent->pev->renderamt = 50;
-
 			
 			if (m_weatherMode == WEATHER_RAIN) {
 				ent->UpdateSpeed(RANDOM_LONG(150, 200));
@@ -795,7 +1047,6 @@ int CEnvWeather::WaterSplashes(CBasePlayer* plr) {
 }
 
 int CEnvWeather::UpdateWeatherVisibility(CBasePlayer* plr) {
-	bool anyNearbyRain = false;
 	Vector playerOri = plr->GetViewPosition();
 	int plrbit = PLRBIT(plr->edict());
 	int numVis = 0;
@@ -808,7 +1059,6 @@ int CEnvWeather::UpdateWeatherVisibility(CBasePlayer* plr) {
 		const float renderDist = 1100;
 
 		if (delta.Length() < renderDist) {
-			anyNearbyRain = true;
 			weather.visPlayers |= plrbit;
 			numVis++;
 		}
@@ -822,12 +1072,10 @@ void CEnvWeather::PlayWeatherSounds(CBasePlayer* plr) {
 	int pidx = plr->entindex() - 1;
 
 	weather_sound_t* sounds[2] = { &m_rainSnd_out, &m_rainSnd_glass };
-	int vols[2];
 
 	for (int k = 0; k < 2; k++) {
 		weather_sound_t* snd = sounds[k];
 		int vol = snd->GetAverageLoudness(pidx);
-		vols[k] = vol;
 
 		if (snd->lastVol[pidx] == vol) {
 			continue;
@@ -844,63 +1092,79 @@ void CEnvWeather::PlayWeatherSounds(CBasePlayer* plr) {
 
 void CEnvWeather::WeatherThink(void)
 {
-	WeatherEntsThink();
-
-	// reset vis
-	for (int k = 0; k < (int)g_weatherEnts.size(); k++) {
-		weather_ent_t& weather = g_weatherEnts[k];
-		weather.visPlayers = 0;
+	if (g_fog_enabled && m_useFog) {
+		for (int k = 0; k < FOG_LAYERS; k++) {
+			CFogLayer* fog = (CFogLayer*)g_fog_ents[k].GetEntity();
+			if (fog) {
+				// smoothes movement somehow.
+				// TODO: HOW? velocity is not sent to the client and the origin will be overridden
+				// later with m_fakeFollow.
+				fog->pev->velocity = Vector(0, 0, 1) * sinf(gpGlobals->time);
+			}
+		}
 	}
 
-	for (int i = 1; i <= gpGlobals->maxClients; i++) {
-		CBasePlayer* plr = (CBasePlayer*)UTIL_PlayerByIndex(i);
-		if (!plr) {
-			continue;
+	if (m_weatherMode != WEATHER_NONE && m_isActive) {
+		WeatherEntsThink();
+
+		// reset vis
+		for (int k = 0; k < (int)g_weatherEnts.size(); k++) {
+			weather_ent_t& weather = g_weatherEnts[k];
+			weather.visPlayers = 0;
 		}
 
-		int pidx = i - 1;
-		bool hideAll = false;
-
-		/*
-		static Vector testPos;
-		if (plr->pev->button & IN_USE) {
-			testPos = plr->pev->origin;
-			testPos.x = (int)((testPos.x + 64) / WEATHER_SIZE) * WEATHER_SIZE;
-			testPos.y = (int)((testPos.y + 64) / WEATHER_SIZE) * WEATHER_SIZE;
-			testPos.z = (int)((testPos.z + 64) / 128) * 128;
-		}
-		
-		hideAll = plr->pev->button & IN_RELOAD;
-		Vector bottom, top;
-		GetRainPosition(testPos, bottom, top, true, true);
-		*/
-		
-		int numVis = 0;
-		if (!hideAll) {
-			numVis = UpdateWeatherVisibility(plr);
-		}
-
-		if (m_weatherMode == WEATHER_RAIN) {
-			// water splashes
-			int numSplash = 0;
-			if (numVis > 0) {
-				numSplash = WaterSplashes(plr);
-			}
-			else {
-				m_rainSnd_glass.loudHist[pidx][m_historyIdx] = 0;
-				m_rainSnd_out.loudHist[pidx][m_historyIdx] = 0;
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = (CBasePlayer*)UTIL_PlayerByIndex(i);
+			if (!plr) {
+				continue;
 			}
 
-			PlayWeatherSounds(plr);
-		}
+			int pidx = i - 1;
+			bool hideAll = false;
 
-		/*
-		ALERT(at_console, "%d / %d rain vis, %d|%d loud, %d splash\n",
-			numVis, g_weatherEnts.size(),
-			m_rainSnd_out.GetAverageLoudness(pidx), m_rainSnd_glass.GetAverageLoudness(pidx), numSplash);
+			/*
+			static Vector testPos;
+			if (plr->pev->button & IN_USE) {
+				testPos = plr->pev->origin;
+				testPos.x = (int)((testPos.x + 64) / WEATHER_SIZE) * WEATHER_SIZE;
+				testPos.y = (int)((testPos.y + 64) / WEATHER_SIZE) * WEATHER_SIZE;
+				testPos.z = (int)((testPos.z + 64) / 128) * 128;
+			}
+		
+			hideAll = plr->pev->button & IN_RELOAD;
+			Vector bottom, top;
+			GetRainPosition(testPos, bottom, top, true, true);
 			*/
+		
+			int numVis = 0;
+			if (!hideAll) {
+				numVis = UpdateWeatherVisibility(plr);
+			}
+
+			if (m_weatherMode == WEATHER_RAIN) {
+				// water splashes
+				//int numSplash = 0;
+				if (numVis > 0) {
+					//numSplash = WaterSplashes(plr);
+					WaterSplashes(plr);
+				}
+				else {
+					m_rainSnd_glass.loudHist[pidx][m_historyIdx] = 0;
+					m_rainSnd_out.loudHist[pidx][m_historyIdx] = 0;
+				}
+
+				PlayWeatherSounds(plr);
+			}
+
+			/*
+			ALERT(at_console, "%d / %d rain vis, %d|%d loud, %d splash\n",
+				numVis, g_weatherEnts.size(),
+				m_rainSnd_out.GetAverageLoudness(pidx), m_rainSnd_glass.GetAverageLoudness(pidx), numSplash);
+				*/
+		}
+
+		m_historyIdx = (m_historyIdx + 1) % WEATHER_VOL_HIST_SZ;
 	}
 
-	m_historyIdx = (m_historyIdx + 1) % WEATHER_VOL_HIST_SZ;
 	pev->nextthink = gpGlobals->time + 0.05;
 }

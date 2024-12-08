@@ -25,6 +25,7 @@ public:
 		return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | flags;
 	}
 	virtual const char* DisplayName() { return "Laser"; }
+	virtual BOOL	IsBeam(void) { return TRUE; };
 
 	void EXPORT TriggerTouch(CBaseEntity* pOther);
 
