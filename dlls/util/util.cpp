@@ -1124,6 +1124,12 @@ void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char 
 		}
 	}
 
+	if (!g_precachedSounds.count(toLowerCase(samp))) {
+		// client crash if you try to play this sound
+		ALERT(at_console, "EmitAmbientSound not precached: %s\n", samp);
+		return;
+	}
+
 	if (dest) {
 		if (UTIL_isSafeEntIndex(dest, ENTINDEX(entity), "play ambient sound")) {
 			ambientsound_msg(entity, rgfl, samp, vol, attenuation, fFlags, pitch, MSG_ONE, dest);
