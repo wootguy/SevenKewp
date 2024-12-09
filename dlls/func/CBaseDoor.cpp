@@ -306,6 +306,20 @@ void CBaseDoor::Spawn()
 	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs(pev->movedir.x * (pev->size.x - 2)) + fabs(pev->movedir.y * (pev->size.y - 2)) + fabs(pev->movedir.z * (pev->size.z - 2)) - m_flLip));
 	ASSERTSZ(m_vecPosition1 != m_vecPosition2, "door start/end positions are equal\n");
 
+	InitDoorTriggers();
+
+	m_toggle_state = TS_AT_BOTTOM;
+
+	// if the door is flagged for USE button activation only, use NULL touch function
+	if (FBitSet(pev->spawnflags, SF_DOOR_USE_ONLY))
+	{
+		SetTouch(NULL);
+	}
+	else // touchable button
+		SetTouch(&CBaseDoor::DoorTouch);
+}
+
+void CBaseDoor::InitDoorTriggers() {
 	// TODO: ripent this stuff
 	if (pev->netname && !m_fireOnCloseEnd) {
 		// legacy fire on opened/closed keys
@@ -331,16 +345,6 @@ void CBaseDoor::Spawn()
 		SWAP(m_fireOnCloseStartMode, m_fireOnOpenStartMode, USE_TYPE);
 		SWAP(m_fireOnCloseEndMode, m_fireOnOpenEndMode, USE_TYPE);
 	}
-
-	m_toggle_state = TS_AT_BOTTOM;
-
-	// if the door is flagged for USE button activation only, use NULL touch function
-	if (FBitSet(pev->spawnflags, SF_DOOR_USE_ONLY))
-	{
-		SetTouch(NULL);
-	}
-	else // touchable button
-		SetTouch(&CBaseDoor::DoorTouch);
 }
 
 

@@ -294,6 +294,10 @@ void CRpgRocket :: FollowThink( void  )
 	// Examine all entities within a reasonable radius
 	while ((pOther = UTIL_FindEntityByClassname( pOther, "laser_spot" )) != NULL)
 	{
+		if (pOther->pev->effects & EF_NODRAW) {
+			continue; // laser isn't removed when a player reloads
+		}
+
 		Vector vSpotLocation = pOther->pev->origin;
 
 		if (UTIL_PointContents(vSpotLocation) == CONTENTS_SKY)
