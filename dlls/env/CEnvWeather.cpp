@@ -27,8 +27,8 @@
 
 #define SF_WEATHER_START_OFF 1
 
-extern RGB g_fog_palette[61][256];
-extern int g_fog_skins;
+extern "C" uint32_t g_fog_palette[61][256];
+extern "C" int g_fog_skins;
 
 bool g_fog_enabled;
 int g_fog_start_dist;
@@ -821,7 +821,7 @@ void CEnvWeather::SetFogColor(RGB color) {
 
 	for (int i = 0; i < g_fog_skins && bestDist; i++) {
 		for (int k = 0; k < 256; k++) {
-			RGB& p = g_fog_palette[i][k];
+			RGB p = RGB(g_fog_palette[i][k]);
 			int dist = abs(p.r - color.r) + abs(p.g - color.g) + abs(p.b - color.b);
 
 			if (dist < bestDist) {
