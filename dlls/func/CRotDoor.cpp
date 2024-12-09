@@ -95,6 +95,8 @@ void CRotDoor::Spawn(void)
 		pev->movedir = pev->movedir * -1;
 	}
 
+	InitDoorTriggers();
+
 	m_toggle_state = TS_AT_BOTTOM;
 
 	if (FBitSet(pev->spawnflags, SF_DOOR_USE_ONLY))

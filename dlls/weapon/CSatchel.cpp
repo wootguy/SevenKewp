@@ -49,6 +49,8 @@ IMPLEMENT_SAVERESTORE(CSatchel, CBasePlayerWeapon)
 LINK_ENTITY_TO_CLASS(weapon_satchel, CSatchel)
 LINK_ENTITY_TO_CLASS(monster_satchel, CSatchelCharge)
 
+#define SATCHEL_GRAVITY 0.5f
+
 //=========================================================
 // Deactivate - do whatever it is we do to an orphaned 
 // satchel when we don't want it in the world anymore.
@@ -77,7 +79,7 @@ void CSatchelCharge :: Spawn( void )
 	SetThink( &CSatchelCharge::SatchelThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 
-	pev->gravity = 0.5;
+	pev->gravity = SATCHEL_GRAVITY;
 	pev->friction = 0.8;
 
 	float dmg_mult = GetDamageModifier();
@@ -140,7 +142,7 @@ void CSatchelCharge :: SatchelThink( void )
 	}
 	else if (pev->waterlevel == 0)
 	{
-		pev->gravity = 0;
+		pev->gravity = SATCHEL_GRAVITY;
 	}
 	else
 	{
