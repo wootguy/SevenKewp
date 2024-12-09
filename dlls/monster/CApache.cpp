@@ -150,14 +150,15 @@ void CApache :: Spawn( void )
 
 	if (pev->spawnflags & SF_WAITFORTRIGGER)
 	{
+		SetThink( &CApache::NullThink );
 		SetUse( &CApache::StartupUse );
 	}
 	else
 	{
 		SetThink( &CApache::HuntThink );
 		SetTouch( &CApache::FlyTouch );
-		pev->nextthink = gpGlobals->time + 1.0;
 	}
+	pev->nextthink = gpGlobals->time + 1.0;
 
 	m_iRockets = 10;
 }
@@ -488,7 +489,19 @@ void CApache :: HuntThink( void )
 	{
 		Look( 4092 );
 		m_hEnemy = BestVisibleEnemy( );
+
+		//If i have an enemy i'm in combat, otherwise i'm patrolling.
+		if (m_hEnemy != NULL)
+		{
+			m_MonsterState = MONSTERSTATE_COMBAT;
+		}
+		else
+		{
+			m_MonsterState = MONSTERSTATE_ALERT;
+		}
 	}
+
+	Listen(); // Listen for sounds so AI triggers work.
 
 	// generic speed up
 	if (m_flGoalSpeed < 800)
@@ -943,7 +956,28 @@ int CApache :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	*/
 
 	// ALERT( at_console, "%.0f\n", flDamage );
-	return CBaseEntity::TakeDamage(  pevInflictor, pevAttacker, flDamage, bitsDamageType );
+	//Are we damaged at all?
+	if (pev->health < pev->max_health)
+	{
+		//Took some damage.
+		SetConditions(bits_COND_LIGHT_DAMAGE);
+		if (pev->health < (pev->max_health / 2))
+		{
+			//Seriously damaged now.
+			SetConditions(bits_COND_HEAVY_DAMAGE);
+		}
+		else
+		{
+			//Maybe somebody healed us somehow (trigger_hurt with negative damage?), clear this.
+			ClearConditions(bits_COND_HEAVY_DAMAGE);
+		}
+	}
+	else
+	{
+		//Maybe somebody healed us somehow (trigger_hurt with negative damage?), clear this.
+		ClearConditions(bits_COND_LIGHT_DAMAGE);
+	}
+	return CBaseEntity::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
 
