@@ -367,6 +367,9 @@ public:
 	//   (this also fixes a glitch when using attachments on the interpolated entity)
 	void ParametricInterpolation(float flInterval);
 
+	// used to override state sent to player
+	virtual int AddToFullPack(struct entity_state_s* state, CBasePlayer* player) { return 1; }
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;
@@ -389,13 +392,10 @@ public:
 	InventoryRules	m_inventoryRules;
 	bool m_isFadingOut; // is a corpse fading out
 
-	Vector m_fakeFollowOffset; // offset applied to player origin when entity is fake following
-
 	uint32_t m_pasPlayers; // players in the audible set of this entity (invalid for invisible ents)
 	uint32_t m_pvsPlayers; // players in the visible set of this entity (invalid for invisible ents)
 	uint32_t m_netPlayers; // players this entity has been networked to (AddToFullPack returned 1)
 	uint32_t m_hidePlayers; // players this entity will be hidden from (AddToFullPack)
-	uint32_t m_fakeFollow; // players this entity will attach to, ignoring true origin (AddToFullPack)
 
 private:
 	bool TestInventoryRules(CBaseMonster* mon, std::unordered_set<CItemInventory*>& usedItems, const char** errorMsg);

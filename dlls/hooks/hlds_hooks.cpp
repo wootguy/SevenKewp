@@ -1284,13 +1284,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	// Round animtime to nearest millisecond
 	state->animtime   = (int)(1000.0 * ent->v.animtime ) / 1000.0;
 
-	if (baseent->m_fakeFollow & plrbit) {
-		state->origin = plr->GetViewPosition() + baseent->m_fakeFollowOffset;
-	}
-	else {
-		memcpy(state->origin, ent->v.origin, 3 * sizeof(float));
-	}
-
+	memcpy(state->origin, ent->v.origin, 3 * sizeof(float));
 	memcpy( state->angles, ent->v.angles, 3 * sizeof( float ) );
 	memcpy( state->mins, ent->v.mins, 3 * sizeof( float ) );
 	memcpy( state->maxs, ent->v.maxs, 3 * sizeof( float ) );
@@ -1344,30 +1338,6 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	state->rendercolor.r = ent->v.rendercolor.x;
 	state->rendercolor.g = ent->v.rendercolor.y;
 	state->rendercolor.b = ent->v.rendercolor.z;
-
-	if (g_fog_enabled && ent->v.renderamt) {
-		bool isBuggedMode = (ent->v.rendermode != kRenderNormal
-							&& ent->v.rendermode != kRenderTransAlpha);
-
-		if (isBuggedMode && !baseent->IsWeather() && state->entityType != ENTITY_BEAM) {
-			float size = ((ent->v.absmax - ent->v.absmin)).Length()*0.5f;
-			float dist = (plr->GetViewPosition() - baseent->Center()).Length();
-
-			if (dist + size > g_fog_start_dist && dist - size < g_fog_end_dist) {
-				// fog models always render in front of transparent entities, which makes them invisible.
-				// Set the entity render mode to opaque so you can at least see them.
-				// TODO: No way to change render order? I tried moving ent indexes around with no luck
-
-				// glow ignores the Z buffer and has the effect of "Normal" for BSP models and MDL
-				state->rendermode = kRenderGlow;
-				state->renderfx = kRenderFxNoDissipation;
-				state->renderamt *= 1.0f - (dist - g_fog_start_dist) / (g_fog_end_dist - g_fog_start_dist);
-			}
-			else if (dist - size > g_fog_end_dist) {
-				state->renderamt = 0;
-			}
-		}
-	}
 
 	state->aiment = 0;
 	if ( ent->v.aiment )
@@ -1446,6 +1416,10 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 
 	baseent->m_netPlayers |= plrbit;
 	g_numPacketEntities[g_packClientIdx]++;
+
+	if (!baseent->AddToFullPack(state, plr)) {
+		return 0;
+	}
 
 	return 1;
 }
