@@ -18,7 +18,13 @@
 #pragma once
 
 #include "archtypes.h"     // DAL
-#define	MAX_PHYSENTS 600 		  // Must have room for all entities in the world.
+
+#ifdef CLIENT_DLL
+#define	MAX_PHYSENTS 600  // Must have room for all entities in the world. Must match client engine or else instacrash.
+#else
+#define	MAX_PHYSENTS 2048 // Must match rehlds or else the server crashes instantly.
+#endif
+
 #define MAX_MOVEENTS 64
 #define	MAX_CLIP_PLANES	5
 
