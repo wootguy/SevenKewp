@@ -1112,6 +1112,7 @@ void SpectatorThink( edict_t *pEntity )
 
 int g_numEdictOverflows[32];
 int g_numPacketEntities[32];
+int g_newPacketEnts;
 
 /*
 ================
@@ -1170,6 +1171,7 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 
 	g_numEdictOverflows[g_packClientIdx] = 0;
 	g_numPacketEntities[g_packClientIdx] = 0;
+	g_newPacketEnts = 0;	
 }
 
 #include "entity_state.h"
@@ -1196,6 +1198,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		return 0; // should never happen?
 
 	uint32_t plrbit = PLRBIT(host);
+	bool isNewlyVisible = !(baseent->m_netPlayers & plrbit);
 	baseent->m_pvsPlayers &= ~plrbit;
 	baseent->m_pasPlayers &= ~plrbit;
 	baseent->m_netPlayers &= ~plrbit;
@@ -1385,12 +1388,20 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			// TODO: fix this in a client mod
 			state->angles.x = ent->v.v_angle.x;
 		}
-		
+	}
+
+	if (baseent->Classify() != CLASS_NONE && baseent->Classify() != CLASS_MACHINE)
+		state->eflags |= EFLAG_FLESH_SOUND;
+	else
+		state->eflags &= ~EFLAG_FLESH_SOUND;
+
+	if (!baseent->AddToFullPack(state, plr)) {
+		return 0;
 	}
 
 	client_info_t client = plr->GetClientInfo();
 	if (e >= client.max_edicts) {
-		ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
+		//ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
 		g_numEdictOverflows[g_packClientIdx]++;
 		plr->SendLegacyClientWarning();
 		return 0;
@@ -1401,25 +1412,25 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		plr->SendLegacyClientWarning();
 		return 0;
 	}
-	if (g_numPacketEntities[g_packClientIdx] + 1 >= client.max_packet_entities) {
-		ALERT(at_console, "Can't send edict %d '%s' (exceeded %d MAX_PACKET_ENTITIES)\n",
-			e, STRING(ent->v.classname), client.max_packet_entities);
+	if (g_numPacketEntities[g_packClientIdx] >= client.max_packet_entities) {
+		//ALERT(at_console, "Can't send edict %d '%s' (exceeded %d MAX_PACKET_ENTITIES)\n",
+		//	e, STRING(ent->v.classname), client.max_packet_entities);
 		g_numEdictOverflows[g_packClientIdx]++;
 		plr->SendLegacyClientWarning();
 		return 0;
 	}
 
-	if (baseent->Classify() != CLASS_NONE && baseent->Classify() != CLASS_MACHINE)
-		state->eflags |= EFLAG_FLESH_SOUND;
-	else
-		state->eflags &= ~EFLAG_FLESH_SOUND;
+	if (isNewlyVisible) {
+		if (g_newPacketEnts > MAX_NEW_PACKET_ENTITIES) {
+			// don't send too many new entities at once or else the client freezes with "datagram overflow"
+			return 0;
+		}
+
+		g_newPacketEnts++;
+	}
 
 	baseent->m_netPlayers |= plrbit;
 	g_numPacketEntities[g_packClientIdx]++;
-
-	if (!baseent->AddToFullPack(state, plr)) {
-		return 0;
-	}
 
 	return 1;
 }

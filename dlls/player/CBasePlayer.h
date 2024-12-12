@@ -90,8 +90,19 @@ enum sbar_data
 #define MAX_CLIENT_ENTS 1665 // default for the latest HL client from steam
 #define MAX_LEGACY_CLIENT_ENTS 1365 // default when using the steam_legacy beta
 
-#define MAX_PACKET_ENTITIES 1024
+// This was increased to 1024 for HL25 but client limits make most of those new slots useless.
+// Sending more than ~800 crashes the client
+// Sending more than 512 makes temporary effects disappear (explosions)
+// Sending more than 500 makes temporary effects flicker and sometimes disappear
+#define MAX_PACKET_ENTITIES 500
+
+// unlike HL25, temporary effects don't start disappearing near the packet entity limit
 #define MAX_LEGACY_PACKET_ENTITIES 256
+
+// max number of new entities per packet
+// more than ~128 new ents ar once makes clients freeze with "datagram overflow" which is not
+// always recoverable. 64 fills up MAX_PACKET_ENTITIES very fast even at cl_updaterate 10
+#define MAX_NEW_PACKET_ENTITIES 64
 
 enum HL_CLIENT_ENGINE_VERSION {
 	CLIENT_ENGINE_NOT_CHECKED,	// player hasn't responded to cvar queries yet
