@@ -106,12 +106,12 @@ CustomSentence ParseSentence(std::string sentenceLine) {
 
 	// merge space-separated parts that are enclosed in parentheses
 	for (int i = 0; i < (int)parts.size(); i++) {
-		if (parts[i].find("(") != -1 && parts[i].find(")") == -1) {
-			while (i+1 < parts.size()) {
+		if (parts[i].find("(") != std::string::npos && parts[i].find(")") == std::string::npos) {
+			while (i+1 < (int)parts.size()) {
 				int k = i + 1;
 				parts[i] = parts[i] + " " + parts[k];
 				parts.erase(parts.begin() + k);
-				if (parts[i].find(")") != -1) {
+				if (parts[i].find(")") != std::string::npos) {
 					break;
 				}
 			}

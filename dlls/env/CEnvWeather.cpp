@@ -566,13 +566,6 @@ void CEnvWeather::MergeWeatherSpots(std::vector<weather_spot_t>& spots) {
 
 void CEnvWeather::Spawn(void)
 {
-	if (g_weather_init_done) {
-		ALERT(at_console, "Removing %s (%s). Only one can weather entity can exist in the map\n",
-			STRING(pev->targetname), STRING(pev->classname));
-		UTIL_Remove(this);
-		return;
-	}
-
 	if (FClassnameIs(pev, "env_snow")) {
 		m_weatherMode = WEATHER_SNOW;
 	}
@@ -616,6 +609,13 @@ void CEnvWeather::Spawn(void)
 	Precache();
 
 	if (m_weatherMode != WEATHER_NONE) {
+		if (g_weather_init_done) {
+			ALERT(at_console, "Removing %s (%s). Only one can weather entity can exist in the map\n",
+				STRING(pev->targetname), STRING(pev->classname));
+			UTIL_Remove(this);
+			return;
+		}
+
 		std::vector<weather_spot_t> spots = FindWeatherSpots();
 		int validSpots = spots.size();
 
@@ -901,8 +901,6 @@ void CEnvWeather::UpdateFog() {
 		fog->pev->skin = m_fogSkin;
 		fog->pev->body = m_fogBody;
 
-		int layerOffset = k;
-
 		if (k == FOG_LAYERS - 1) {
 			// final black layer is fully solid
 			fog->pev->rendermode = kRenderNormal;
@@ -929,11 +927,9 @@ void CEnvWeather::UpdateFog() {
 				fog->pev->renderamt = renderamtAdd;
 				renderamtAdd *= scalingFactorAdd;
 
+				// use same distance as upcoming black layer
 				fog->pev->aiment = g_fog_ents[k+1].GetEdict();
 				fog->pev->movetype = MOVETYPE_FOLLOW;
-
-				// use same distance as upcoming black layer
-				layerOffset = k + 1;
 			}
 		}
 
@@ -1176,8 +1172,6 @@ void CEnvWeather::WeatherThink(void)
 				softwarePlayers |= PLRBIT(i);
 			}
 		}
-
-		CFogLayer* fog0 = (CFogLayer*)g_fog_ents[0].GetEntity();
 
 		for (int k = 0; k < FOG_LAYERS; k++) {
 			CFogLayer* fog = (CFogLayer*)g_fog_ents[k].GetEntity();
