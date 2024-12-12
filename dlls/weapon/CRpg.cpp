@@ -532,12 +532,22 @@ int CRpg::GetItemInfo(ItemInfo *p)
 
 BOOL CRpg::Deploy( )
 {
+	int ret = 0;
+
 	if ( m_iClip == 0 )
 	{
-		return DefaultDeploy(GetModelV(), GetModelP(), RPG_DRAW_UL, "rpg" );
+		ret = DefaultDeploy(GetModelV(), GetModelP(), RPG_DRAW_UL, "rpg" );
 	}
 
-	return DefaultDeploy(GetModelV(), GetModelP(), RPG_DRAW1, "rpg" );
+	ret = DefaultDeploy(GetModelV(), GetModelP(), RPG_DRAW1, "rpg" );
+
+#ifndef CLIENT_DLL
+	SET_MODEL(edict(), GetModelV());
+	m_hasLaserAttachment = GetAttachmentCount() > 0;
+	SetWeaponModelW();
+#endif
+
+	return ret;
 }
 
 
@@ -735,8 +745,26 @@ void CRpg::UpdateSpot( void )
 			// but I haven't seen that happen yet with TE_BEAMENTS. If this causes crashes again,
 			// then revert to using BeamEntPoint (attached to the player, not spot).
 			m_lastBeamUpdate = gpGlobals->time;
-			UTIL_BeamEnts(m_pSpot->entindex(), 0, m_pPlayer->entindex(), 1, false, g_laserBeamIdx,
-				0, 0, 10, 8, 0, RGBA(255, 32, 32, 48), 64, MSG_PVS, m_pPlayer->pev->origin);
+
+			if (m_hasLaserAttachment) {
+				UTIL_BeamEnts(m_pSpot->entindex(), 0, m_pPlayer->entindex(), 1, false, g_laserBeamIdx,
+					0, 0, 10, 8, 0, RGBA(255, 32, 32, 48), 64, MSG_PVS, m_pPlayer->pev->origin);
+			}
+			else {
+				// show the beam to everyone except the player, unless they're in a third-person view
+				for (int i = 1; i < gpGlobals->maxClients; i++) {
+					CBasePlayer* plr = UTIL_PlayerByIndex(i);
+					if (!plr || (plr == m_pPlayer && plr->m_hViewEntity.GetEntity() == plr)) {
+						continue;
+					}
+
+					edict_t* ed = plr->edict();
+					if (m_pPlayer->isVisibleTo(ed) || m_pSpot->isVisibleTo(ed)) {
+						UTIL_BeamEnts(m_pSpot->entindex(), 0, m_pPlayer->entindex(), 1, false, g_laserBeamIdx,
+							0, 0, 10, 8, 0, RGBA(255, 32, 32, 48), 64, MSG_ONE_UNRELIABLE, NULL, ed);
+					}
+				}
+			}
 		}
 	}
 	else if (m_lastBeamUpdate) {

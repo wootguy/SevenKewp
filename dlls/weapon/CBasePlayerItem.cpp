@@ -164,6 +164,7 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 
 	if (pNewWeapon)
 	{
+		pNewWeapon->pev->dmg = pev->dmg;
 		pNewWeapon->pev->effects |= EF_NODRAW;// invisible for now
 		pNewWeapon->SetTouch(NULL);// no touch
 		pNewWeapon->SetThink(&CBasePlayerItem::AttemptToMaterialize);

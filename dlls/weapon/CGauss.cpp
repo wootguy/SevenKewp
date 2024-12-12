@@ -350,8 +350,13 @@ void CGauss::StartFire( void )
 	// and we end up ear blasting the player!
 	m_pPlayer->m_flStartCharge = V_min(m_pPlayer->m_flStartCharge, gpGlobals->time);
 
-	float flDamage;
+	float flDamage = 20;
+	float secondaryBaseDamage = 200;
 	
+#ifndef CLIENT_DLL
+	secondaryBaseDamage = gSkillData.sk_plr_secondarygauss;
+#endif
+
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 	Vector vecAiming = gpGlobals->v_forward;
 	Vector vecSrc = m_pPlayer->GetGunPosition( ); // + gpGlobals->v_up * -8 + gpGlobals->v_right * 8;
@@ -360,11 +365,11 @@ void CGauss::StartFire( void )
 
 	if ( gpGlobals->time - m_pPlayer->m_flStartCharge > GetFullChargeTime() )
 	{
-		flDamage = gSkillData.sk_plr_secondarygauss * dmg_mult;
+		flDamage = secondaryBaseDamage * dmg_mult;
 	}
 	else
 	{
-		flDamage = gSkillData.sk_plr_secondarygauss * dmg_mult * 
+		flDamage = secondaryBaseDamage * dmg_mult *
 			(( gpGlobals->time - m_pPlayer->m_flStartCharge) / GetFullChargeTime() );
 	}
 

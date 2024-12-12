@@ -58,6 +58,7 @@ public:
 	int m_fSpotActive;
 	int m_cActiveRockets;// how many missiles in flight from this launcher right now?
 	float m_lastBeamUpdate;
+	bool m_hasLaserAttachment;
 
 	virtual int MergedModelBody() { return MERGE_MDL_W_RPG; }
 

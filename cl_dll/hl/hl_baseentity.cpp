@@ -367,7 +367,7 @@ BOOL CBasePlayerWeapon :: AddSecondaryAmmo( int iCount, char *szName, int iMax )
 BOOL CBasePlayerWeapon :: IsUseable( void ) { return TRUE; }
 int CBasePlayerWeapon::PrimaryAmmoIndex( void ) { return -1; }
 int CBasePlayerWeapon::SecondaryAmmoIndex( void ) {	return -1; }
-float CBasePlayerWeapon::GetDamageModifier() { return 0; }
+float CBasePlayerWeapon::GetDamageModifier() { return 1.0f; }
 void CBasePlayerAmmo::Spawn( void ) { }
 CBaseEntity* CBasePlayerAmmo::Respawn( void ) { return this; }
 void CBasePlayerAmmo::Materialize( void ) { }
