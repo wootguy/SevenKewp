@@ -118,9 +118,16 @@ enum HL_CLIENT_MOD_VERSION {
 	CLIENT_MOD_BOT,			// bot's don't use mods
 };
 
+enum HL_CLIENT_RENDERER {
+	CLIENT_RENDERER_NOT_CHECKED, // player hasn't responded to cvar queries yet
+	CLIENT_RENDERER_OPENGL,
+	CLIENT_RENDERER_SOFTWARE
+};
+
 struct client_info_t {
 	int engine_version;
 	int mod_version;
+	int renderer;
 	int max_edicts;
 	int max_packet_entities;
 };
@@ -437,9 +444,10 @@ public:
 	float m_extraRespawnDelay; // set to non-zero to increase respawn delay (sums with map default)
 
 	float m_initSoundTime;
-
+	
 	HL_CLIENT_ENGINE_VERSION m_clientEngineVersion; // which game engine is the is this player using?
 	HL_CLIENT_MOD_VERSION m_clientModVersion; // which mod is this player using?
+	HL_CLIENT_RENDERER m_clientRenderer;
 	string_t m_clientModVersionString; // version string for the client mod
 	bool m_sentClientWarning; // has this client been warned about their client incompatability?
 

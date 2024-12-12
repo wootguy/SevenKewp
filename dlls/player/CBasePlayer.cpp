@@ -5754,6 +5754,12 @@ void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarNam
 		bool hasCvar = strstr(pszValue, "Bad CVAR request") == 0;
 		m_clientEngineVersion = hasCvar ? CLIENT_ENGINE_HL_LATEST : CLIENT_ENGINE_HL_LEGACY;
 
+		g_engfuncs.pfnQueryClientCvarValue2(edict(), "gl_fog", 2);
+	}
+	else if (requestID == 2) {
+		bool hasCvar = strstr(pszValue, "Bad CVAR request") == 0;
+		m_clientRenderer = hasCvar ? CLIENT_RENDERER_OPENGL : CLIENT_RENDERER_SOFTWARE;
+
 		UTIL_LogPlayerEvent(edict(), "Client version: %s\n", GetClientVersionString());
 	}
 }
@@ -5763,6 +5769,7 @@ client_info_t CBasePlayer::GetClientInfo() {
 
 	info.engine_version = m_clientEngineVersion;
 	info.mod_version = m_clientModVersion;
+	info.renderer = m_clientRenderer;
 
 	switch (m_clientEngineVersion) {
 	case CLIENT_ENGINE_HL_LATEST:
@@ -5798,11 +5805,17 @@ void CBasePlayer::SendLegacyClientWarning() {
 
 const char* CBasePlayer::GetClientVersionString() {
 	const char* engineVersion = "";
+	const char* renderer = "";
 
 	if (m_clientEngineVersion == CLIENT_ENGINE_HL_LEGACY)
 		engineVersion = " (steam_legacy)";
 
-	return UTIL_VarArgs("%s%s", STRING(m_clientModVersionString), engineVersion);
+	if (m_clientRenderer == CLIENT_RENDERER_OPENGL)
+		renderer = " (OpenGL)";
+	else if (m_clientRenderer == CLIENT_RENDERER_SOFTWARE)
+		renderer = " (Software)";
+
+	return UTIL_VarArgs("%s%s%s", STRING(m_clientModVersionString), engineVersion, renderer);
 }
 
 const char* CBasePlayer::GetSteamID() {

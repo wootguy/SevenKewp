@@ -158,6 +158,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// called before the mod processes a newly uploaded customization (tempdecal.wad spray)
 	HOOK_RETURN_DATA (*pfnPlayerCustomization)(edict_t* pEntity, customization_t* pCust);
+
+	// called when a client responds to a cvar query
+	HOOK_RETURN_DATA (*pfnCvarValue2)(const edict_t* pEntity, int requestID, const char* pszCvarName, const char* pszValue);
 };
 
 // do not call directly, use RegisterPlugin instead
