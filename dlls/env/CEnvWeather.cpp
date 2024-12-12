@@ -219,7 +219,8 @@ void CFogLayer::Precache() {
 }
 
 int CFogLayer::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) {
-	state->origin = player->GetViewPosition();
+	if (pev->movetype != MOVETYPE_FOLLOW)
+		state->origin = player->GetViewPosition();
 	return 1;
 }
 
@@ -928,6 +929,9 @@ void CEnvWeather::UpdateFog() {
 				fog->pev->renderamt = renderamtAdd;
 				renderamtAdd *= scalingFactorAdd;
 
+				fog->pev->aiment = g_fog_ents[k+1].GetEdict();
+				fog->pev->movetype = MOVETYPE_FOLLOW;
+
 				// use same distance as upcoming black layer
 				layerOffset = k + 1;
 			}
@@ -1160,6 +1164,21 @@ void CEnvWeather::PlayWeatherSounds(CBasePlayer* plr) {
 void CEnvWeather::WeatherThink(void)
 {
 	if (g_fog_enabled && m_useFog) {
+		uint32_t softwarePlayers = 0;
+
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = (CBasePlayer*)UTIL_PlayerByIndex(i);
+			if (!plr) {
+				continue;
+			}
+
+			if (plr->m_clientRenderer == CLIENT_RENDERER_SOFTWARE) {
+				softwarePlayers |= PLRBIT(i);
+			}
+		}
+
+		CFogLayer* fog0 = (CFogLayer*)g_fog_ents[0].GetEntity();
+
 		for (int k = 0; k < FOG_LAYERS; k++) {
 			CFogLayer* fog = (CFogLayer*)g_fog_ents[k].GetEntity();
 			if (fog) {
@@ -1167,6 +1186,9 @@ void CEnvWeather::WeatherThink(void)
 				// TODO: HOW? velocity is not sent to the client and the origin will be overridden
 				// later with m_fakeFollow.
 				fog->pev->velocity = Vector(0, 0, 1) * sinf(gpGlobals->time);
+
+				// overdraw is the software mode killer. Don't even try to render fog.
+				fog->m_hidePlayers |= softwarePlayers;
 			}
 		}
 	}

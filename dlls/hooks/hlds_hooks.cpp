@@ -243,6 +243,7 @@ void ClientDisconnect( edict_t *pEntity )
 			ent->m_pvsPlayers &= ~plrbit;
 			ent->m_pasPlayers &= ~plrbit;
 			ent->m_netPlayers &= ~plrbit;
+			ent->m_hidePlayers &= ~plrbit;
 		}
 	}
 
@@ -337,6 +338,8 @@ void ClientKill( edict_t *pEntity )
 
 
 void CvarValue2(const edict_t* pEnt, int requestID, const char* pszCvarName, const char* pszValue) {
+	CALL_HOOKS_VOID(pfnCvarValue2, pEnt, requestID, pszCvarName, pszValue);
+
 	CBasePlayer* plr = UTIL_PlayerByIndex(ENTINDEX(pEnt));
 
 	if (!plr || strstr(pszValue, "Bad Player")) {
