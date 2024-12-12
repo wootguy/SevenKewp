@@ -653,6 +653,10 @@ target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
 
 target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS -D_CRT_SECURE_NO_DEPRECATE)
 
+if (INCREASED_SERVER_LIMITS)
+	target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DINCREASED_SERVER_LIMITS)
+endif()
+
 if(UNIX)
 	set(ASAN_OPTS "")
 	if (ASAN)

@@ -19,10 +19,10 @@
 
 #include "archtypes.h"     // DAL
 
-#ifdef CLIENT_DLL
-#define	MAX_PHYSENTS 600  // Must have room for all entities in the world. Must match client engine or else instacrash.
+#if defined(INCREASED_SERVER_LIMITS) && !defined(CLIENT_DLL)
+#define	MAX_PHYSENTS 2048  // Must match rehlds or else instacrash.
 #else
-#define	MAX_PHYSENTS 2048 // Must match rehlds or else the server crashes instantly.
+#define	MAX_PHYSENTS 600  // Must have room for all entities in the world. Must match client engine or else instacrash.
 #endif
 
 #define MAX_MOVEENTS 64
