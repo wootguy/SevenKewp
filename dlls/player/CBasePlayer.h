@@ -115,6 +115,7 @@ enum HL_CLIENT_MOD_VERSION {
 	CLIENT_MOD_NOT_CHECKED,	// player hasn't responded to cvar queries yet
 	CLIENT_MOD_HL,			// the vanilla half-life mod from steam (or an undetected custom client)
 	CLIENT_MOD_HLBUGFIXED,	// a popular custom client (for cheating!!! but also cool stuff...)
+	CLIENT_MOD_ADRENALINE,	// another popular custom client (players with names like "^1J^2E^3F^4F")
 	CLIENT_MOD_BOT,			// bot's don't use mods
 };
 

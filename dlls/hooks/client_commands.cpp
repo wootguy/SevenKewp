@@ -211,6 +211,8 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	if ((int)strlen(p) > j)
 		p[j] = 0;
 
+	CALL_HOOKS_VOID(pfnChatMessage, player, (const char**)&p);
+
 	strcat_safe(text, p, 128);
 	strcat_safe(text, "\n", 128);
 

@@ -412,6 +412,8 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	if ( !pEntity->pvPrivateData )
 		return;
 
+	std::string beforeHooksName = g_engfuncs.pfnInfoKeyValue(infobuffer, "name");
+
 	CALL_HOOKS_VOID(pfnClientUserInfoChanged, pEntity, infobuffer);
 
 	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
@@ -419,6 +421,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	{
 		char sName[256];
 		char *pName = g_engfuncs.pfnInfoKeyValue( infobuffer, "name" );
+		bool changedByServer = beforeHooksName != pName;
 		strncpy( sName, pName, sizeof(sName) - 1 );
 		sName[ sizeof(sName) - 1 ] = '\0';
 
@@ -433,10 +436,13 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		// Set the name
 		g_engfuncs.pfnSetClientKeyValue( ENTINDEX(pEntity), infobuffer, "name", sName );
 
+		const char* reason = changedByServer ? "was renamed" : "changed name";
+
 		if (gpGlobals->maxClients > 1)
 		{
 			char text[256];
-			snprintf( text, 256, "* %s changed name to %s\n", STRING(pEntity->v.netname), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+			snprintf( text, 256, "* %s %s to %s\n", STRING(pEntity->v.netname), reason,
+				g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ));
 			MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
 				WRITE_BYTE( ENTINDEX(pEntity) );
 				WRITE_STRING( text );
@@ -444,8 +450,8 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		}
 
 		// team match?
-		UTIL_LogPlayerEvent(pEntity, "changed name to \\%s\\\n",
-			g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
+		UTIL_LogPlayerEvent(pEntity, "%s to \\%s\\\n",
+			reason, g_engfuncs.pfnInfoKeyValue(infobuffer, "name"));
 	}
 
 	g_pGameRules->ClientUserInfoChanged( GetClassPtr((CBasePlayer *)&pEntity->v), infobuffer );
