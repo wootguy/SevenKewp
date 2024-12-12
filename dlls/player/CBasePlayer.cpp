@@ -5735,29 +5735,40 @@ void CBasePlayer::QueryClientType() {
 }
 
 void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarName, const char* pszValue) {
+	bool hasCvar = strstr(pszValue, "Bad CVAR request") == NULL;
+	
 	if (requestID == 0) {
-		bool hasCvar = strstr(pszValue, "Bad CVAR request") == 0;
 		if (hasCvar) {
 			m_clientModVersion = CLIENT_MOD_HLBUGFIXED;
 			m_clientModVersionString = ALLOC_STRING((std::string("HLBugFixed ") + pszValue).c_str());
 		}
-		else {
+
+		// Adrenaline Gamer test
+		g_engfuncs.pfnQueryClientCvarValue2(edict(), "cl_autorecord", 1);
+	}
+	else if (requestID == 1) {
+		if (hasCvar) {
+			if (m_clientModVersion != CLIENT_MOD_NOT_CHECKED) {
+				ALERT(at_error, "Client detection error. Client has both HLBugFixed and AG cvars.\n");
+			}
+			m_clientModVersion = CLIENT_MOD_ADRENALINE;
+			m_clientModVersionString = ALLOC_STRING("Adrenaline Gamer");
+		}
+		else if (m_clientModVersion == CLIENT_MOD_NOT_CHECKED) {
 			// could also be using an unknown custom client, no way to know...
 			m_clientModVersion = CLIENT_MOD_HL;
 			m_clientModVersionString = MAKE_STRING("Half-Life");
 		}
 
 		// sv_allow_shaders was added to HL 25, so if it's missing, then it must be the legacy client
-		g_engfuncs.pfnQueryClientCvarValue2(edict(), "sv_allow_shaders", 1);
-	}
-	else if (requestID == 1) {
-		bool hasCvar = strstr(pszValue, "Bad CVAR request") == 0;
-		m_clientEngineVersion = hasCvar ? CLIENT_ENGINE_HL_LATEST : CLIENT_ENGINE_HL_LEGACY;
-
-		g_engfuncs.pfnQueryClientCvarValue2(edict(), "gl_fog", 2);
+		g_engfuncs.pfnQueryClientCvarValue2(edict(), "sv_allow_shaders", 2);
 	}
 	else if (requestID == 2) {
-		bool hasCvar = strstr(pszValue, "Bad CVAR request") == 0;
+		m_clientEngineVersion = hasCvar ? CLIENT_ENGINE_HL_LATEST : CLIENT_ENGINE_HL_LEGACY;
+
+		g_engfuncs.pfnQueryClientCvarValue2(edict(), "gl_fog", 3);
+	}
+	else if (requestID == 3) {
 		m_clientRenderer = hasCvar ? CLIENT_RENDERER_OPENGL : CLIENT_RENDERER_SOFTWARE;
 
 		UTIL_LogPlayerEvent(edict(), "Client version: %s\n", GetClientVersionString());

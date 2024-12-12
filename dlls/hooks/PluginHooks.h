@@ -161,6 +161,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// called when a client responds to a cvar query
 	HOOK_RETURN_DATA (*pfnCvarValue2)(const edict_t* pEntity, int requestID, const char* pszCvarName, const char* pszValue);
+	
+	// called before a chat message is sent. Update the message pointer to change the message.
+	HOOK_RETURN_DATA (*pfnChatMessage)(CBasePlayer* plr, const char** message);
 };
 
 // do not call directly, use RegisterPlugin instead
