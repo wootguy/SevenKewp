@@ -532,6 +532,10 @@ int CRpg::GetItemInfo(ItemInfo *p)
 
 BOOL CRpg::Deploy( )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return FALSE;
+
 	int ret = 0;
 
 	if ( m_iClip == 0 )
@@ -544,7 +548,7 @@ BOOL CRpg::Deploy( )
 #ifndef CLIENT_DLL
 	SET_MODEL(edict(), GetModelV());
 	m_hasLaserAttachment = GetAttachmentCount() > 0;
-	SetWeaponModelW();
+	AttachToPlayer(m_pPlayer); // setting a model will make it visible again, undo that
 #endif
 
 	return ret;

@@ -59,7 +59,19 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	// Pull out of the wall a bit
 	if (pTrace->flFraction != 1.0)
 	{
-		m_effectOrigin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * (pev->dmg - 24) * 0.6);
+		float dist = (pev->dmg - 24) * 0.6;
+		m_effectOrigin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * dist);
+
+		if (mp_explosionbug.value == 0) {
+			// Move damage origin closer to sprite origin so explosions don't detonate inside
+			// tiny puddles and do no damage. TODO: duplicated in CEnvExplosion.
+			Vector damageOrigin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * V_min(32, dist));
+			
+			TraceResult tr;
+			TRACE_LINE(pev->origin, damageOrigin, ignore_monsters, NULL, &tr);
+			if (!tr.fStartSolid)
+				pev->origin = tr.vecEndPos;
+		}
 	}
 
 	int iContents = UTIL_PointContents ( pev->origin );
