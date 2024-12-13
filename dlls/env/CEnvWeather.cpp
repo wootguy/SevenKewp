@@ -18,9 +18,19 @@
 #define FOG_MAX_DIST 131072 // maximum radius of the fog sphere at the max sequence and frame
 #define FOG_LAYERS 32
 
-// amount of distance the fog can be out of sync due to lag (longjumping at 250 ping)
-// without this the fog will clip into held weapons, and transparent entities will sometimes be invisible when moving
-#define FOG_LAG_DIST_INTERP 384
+// an offset is baked into the model so that additive layers don't conflict with 1st-person muzzle flashes
+#define FOG_OFFSET_Z 300
+
+// amount of distance the fog can be out of sync due to lag (longjumping at 250 ping). Without this,
+// the fog will clip into held weapons, and transparent entities will sometimes be invisible when moving
+#define FOG_LAG_DIST 350
+
+// min distance for there to be no transparency glitches
+#define FOG_MIN_DIST_COLOR (FOG_OFFSET_Z + FOG_LAG_DIST)
+
+// black fog doesn't use an additive layer, so no Z offset is needed
+// no idea why the 100 is needed, but without it transparent ents still sometimes are invisible when moving
+#define FOG_MIN_DIST_BLACK (FOG_LAG_DIST + 100)
 
 // Fog ideas tried and failed:
 // - using a dither pattern with an alpha-tested model.
@@ -32,10 +42,10 @@
 // - additive render mode
 //   pros: full bright without lighting
 //   cons: very strange looking if not using white fog
-// - use a small offset for the model:
+// - use a small offset for the model with EF_BRIGHTLIGHT
 //   pros: fixes transparent entities within that offset
 //   cons: requires a higher minimum fog distance (1000). light effect is visible sometimes.
-// - combining additive color layer and solid black layer in the model
+// - combine additive color layer and solid black layer in the model
 //   Failed because additive textures in models are affected by lighting, unlike the additive render mode.
 // - Scaling model normals to trick the renderer into making the model brighter than it should be.
 //   Failed. The client engine must be normalizing.
@@ -154,7 +164,7 @@ public:
 	bool IsUnevenGround(Vector pos, float radius);
 
 	// adjusts the size of a fog sphere
-	void SetFogSphereRadius(CBaseAnimating* fog, float radius);
+	void SetFogSphereRadius(CBaseAnimating* fog, float radius, bool useOffsetAnims);
 
 	void SetFogColor(RGB color);
 
@@ -219,8 +229,16 @@ void CFogLayer::Precache() {
 }
 
 int CFogLayer::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) {
-	if (pev->movetype != MOVETYPE_FOLLOW)
+	if (pev->movetype == MOVETYPE_FOLLOW) {
+		return 1;
+	}
+
+	if (pev->sequence > 10) {
+		state->origin = player->GetViewPosition() + Vector(0, 0, -FOG_OFFSET_Z);
+	}
+	else {
 		state->origin = player->GetViewPosition();
+	}
 	return 1;
 }
 
@@ -655,11 +673,12 @@ void CEnvWeather::Spawn(void)
 	m_isActive = !FBitSet(pev->spawnflags, SF_WEATHER_START_OFF);
 
 	if (m_useFog) {
-		int newMin = V_max(FOG_LAG_DIST_INTERP, m_fogStartDist);
-		int newMax = V_max(m_fogStartDist + 128, m_fogEndDist); // fog won't look nice if too compacted
+		int minDist = m_fogColor == g_vecZero ? FOG_MIN_DIST_BLACK : FOG_MIN_DIST_COLOR;
+		int newMin = V_max(minDist, m_fogStartDist);
+		int newMax = V_max(newMin + 100, m_fogEndDist); // fog won't look nice if too compacted
 
 		if (newMin > m_fogStartDist || newMax > m_fogEndDist) {
-			ALERT(at_console, "env_weather: fog distance increased ([%d - %d] -> [%d - %d]) to prevent rendering errors.\n",
+			ALERT(at_console, "env_weather: fog distance increased to prevent rendering errors. [%d - %d] -> [%d - %d]\n",
 				m_fogStartDist, m_fogEndDist, newMin, newMax);
 		}
 
@@ -670,6 +689,8 @@ void CEnvWeather::Spawn(void)
 		for (int k = FOG_LAYERS - 1; k >= 0; k--) {
 			if (!g_fog_ents[k]) {
 				g_fog_ents[k] = Create("fog_layer", g_vecZero, g_vecZero, NULL);
+				if (!m_isActive)
+					g_fog_ents[k]->pev->effects = EF_NODRAW;;
 			}
 		}
 
@@ -826,7 +847,7 @@ bool CEnvWeather::TraceToSky(Vector pos, Vector& skyPos) {
 	return false;
 }
 
-void CEnvWeather::SetFogSphereRadius(CBaseAnimating* fog, float radius) {
+void CEnvWeather::SetFogSphereRadius(CBaseAnimating* fog, float radius, bool useOffsetAnims) {
 	// each sequence has a larger max distance for the sphere, but reduced accuracy
 	int sequences[] = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 	int thresholds[] = { 65536, 32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 0 };
@@ -841,6 +862,10 @@ void CEnvWeather::SetFogSphereRadius(CBaseAnimating* fog, float radius) {
 	float sphereMaxDist = 256 << (fog->pev->sequence-1);
 
 	fog->pev->frame = clampf(roundf((radius / sphereMaxDist) * 256.0f) - 1, 0, 255);
+
+	if (useOffsetAnims) {
+		fog->pev->sequence += 10; // use animations with an offset baked into them
+	}
 
 	fog->ResetSequenceInfo();
 	fog->pev->framerate = FLT_MIN;
@@ -895,30 +920,35 @@ void CEnvWeather::UpdateFog() {
 	float renderamtAdd = 15;
 	float scalingFactorAdd = 1.15f;
 
+	bool colorFog = m_fogColor != g_vecZero;
+
 	for (int k = 0; k < FOG_LAYERS; k++) {
 		CFogLayer* fog = (CFogLayer*)g_fog_ents[k].GetEntity();
-
-		fog->pev->skin = m_fogSkin;
-		fog->pev->body = m_fogBody;
-
-		if (k == FOG_LAYERS - 1) {
-			// final black layer is fully solid
-			fog->pev->rendermode = kRenderNormal;
-			fog->pev->skin = 0;
-			fog->pev->body = 0;
-		}
-		else if (k % 2 == 1) {
+		
+		if (k % 2 == 1) {
 			// black layer as a backdrop for the additive layer, for light removal
-			fog->pev->rendermode = kRenderTransTexture;
 			fog->pev->skin = 0;
 			fog->pev->body = 0;
 
-			fog->pev->renderamt = renderamtBlack;
-			renderamtBlack *= scalingFactorBlack;
+			if (k == FOG_LAYERS - 1) {
+				// final black layer is fully solid
+				fog->pev->rendermode = kRenderNormal;
+			}
+			else {
+				fog->pev->rendermode = kRenderTransTexture;
+				fog->pev->renderamt = renderamtBlack;
+				renderamtBlack *= scalingFactorBlack;
+			}
+
+			float t = k / (float)(FOG_LAYERS - 1);
+			SetFogSphereRadius(fog, g_fog_start_dist + spanDist * t, colorFog);
 		}
 		else {
 			// color layer
-			if (m_fogColor == g_vecZero) {
+			fog->pev->skin = m_fogSkin;
+			fog->pev->body = m_fogBody;
+
+			if (!colorFog) {
 				fog->pev->effects = EF_NODRAW;
 			}
 			else {
@@ -927,14 +957,14 @@ void CEnvWeather::UpdateFog() {
 				fog->pev->renderamt = renderamtAdd;
 				renderamtAdd *= scalingFactorAdd;
 
-				// use same distance as upcoming black layer
-				fog->pev->aiment = g_fog_ents[k+1].GetEdict();
+				fog->pev->aiment = g_fog_ents[k + 1].GetEdict();
 				fog->pev->movetype = MOVETYPE_FOLLOW;
+
+				// use same scale as upcoming black layer, so they perfectly overlap
+				float t = (k+1) / (float)(FOG_LAYERS - 1);
+				SetFogSphereRadius(fog, g_fog_start_dist + spanDist * t, colorFog);
 			}
 		}
-
-		float t = (k + 1) / (float)(FOG_LAYERS - 1);
-		SetFogSphereRadius(fog, g_fog_start_dist + spanDist * t);
 	}
 
 	//ALERT(at_console, "Fog: %d ents, dist %d -> %d\n", fogCount, g_fog_start_dist, g_fog_end_dist);
