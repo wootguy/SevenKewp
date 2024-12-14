@@ -394,6 +394,10 @@ protected:
 	virtual void ChangeLevel( void );
 	virtual void GoToIntermission( void );
 	float m_flIntermissionEndTime;
+	bool m_sentTimeupMessage;
+	bool m_sentTime60Message;
+	bool m_sentTime300Message;
+	bool m_sentTime600Message;
 	void SendMOTDToClient( edict_t *client );
 };
 
