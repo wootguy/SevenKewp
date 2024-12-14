@@ -433,24 +433,24 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_inventory");
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 
-	g_sModelIndexFireball = PRECACHE_MODEL ("sprites/zerogxplode.spr");// fireball
-	g_sModelIndexWExplosion = PRECACHE_MODEL ("sprites/WXplo1.spr");// underwater fireball
-	g_sModelIndexSmoke = PRECACHE_MODEL ("sprites/steam1.spr");// smoke
-	g_sModelIndexBubbles = PRECACHE_MODEL ("sprites/bubble.spr");//bubbles
-	g_sModelIndexBloodSpray = PRECACHE_MODEL ("sprites/bloodspray.spr"); // initial blood
-	g_sModelIndexBloodDrop = PRECACHE_MODEL ("sprites/blood.spr"); // splattered blood 
+	g_sModelIndexFireball = PRECACHE_MODEL_ENT(NULL, "sprites/zerogxplode.spr");// fireball
+	g_sModelIndexWExplosion = PRECACHE_MODEL_ENT(NULL, "sprites/WXplo1.spr");// underwater fireball
+	g_sModelIndexSmoke = PRECACHE_MODEL_ENT(NULL, "sprites/steam1.spr");// smoke
+	g_sModelIndexBubbles = PRECACHE_MODEL_ENT(NULL, "sprites/bubble.spr");//bubbles
+	g_sModelIndexBloodSpray = PRECACHE_MODEL_ENT(NULL, "sprites/bloodspray.spr"); // initial blood
+	g_sModelIndexBloodDrop = PRECACHE_MODEL_ENT(NULL, "sprites/blood.spr"); // splattered blood 
 
-	g_sModelIndexLaser = PRECACHE_MODEL( (char *)g_pModelNameLaser );
-	g_sModelIndexLaserDot = PRECACHE_MODEL("sprites/laserdot.spr");
+	g_sModelIndexLaser = PRECACHE_MODEL_ENT(NULL, (char *)g_pModelNameLaser );
+	g_sModelIndexLaserDot = PRECACHE_MODEL_ENT(NULL, "sprites/laserdot.spr");
 
 	// shrapnel effect ("blood" for machines)
-	g_sModelIndexShrapnelHit = PRECACHE_MODEL("sprites/shraphit.spr");
-	g_sModelIndexShrapnel = PRECACHE_MODEL("models/bigshrapnel.mdl");
+	g_sModelIndexShrapnelHit = PRECACHE_MODEL_ENT(NULL, "sprites/shraphit.spr");
+	g_sModelIndexShrapnel = PRECACHE_MODEL_ENT(NULL, "models/bigshrapnel.mdl");
 
 	// used by explosions
-	PRECACHE_MODEL ("models/grenade.mdl");
-	PRECACHE_MODEL ("models/w_grenade.mdl");
-	PRECACHE_MODEL ("sprites/explode1.spr");
+	PRECACHE_MODEL_ENT(NULL, "models/grenade.mdl");
+	PRECACHE_MODEL_ENT(NULL, "models/w_grenade.mdl");
+	PRECACHE_MODEL_ENT(NULL, "sprites/explode1.spr");
 
 	PRECACHE_SOUND_ENT(NULL, "weapons/debris1.wav");// explosion aftermaths
 	PRECACHE_SOUND_ENT(NULL, "weapons/debris2.wav");// explosion aftermaths

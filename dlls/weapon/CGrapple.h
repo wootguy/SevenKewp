@@ -90,4 +90,6 @@ private:
 	bool m_bMissed;
 
 	bool m_bMomentaryStuck;
+
+	static const char* pChewSounds[];
 };

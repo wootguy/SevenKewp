@@ -26,12 +26,7 @@ void CBaseButton::Precache(void)
 
 	if (FBitSet(pev->spawnflags, SF_BUTTON_SPARK_IF_OFF))// this button should spark in OFF state
 	{
-		PRECACHE_SOUND("buttons/spark1.wav");
-		PRECACHE_SOUND("buttons/spark2.wav");
-		PRECACHE_SOUND("buttons/spark3.wav");
-		PRECACHE_SOUND("buttons/spark4.wav");
-		PRECACHE_SOUND("buttons/spark5.wav");
-		PRECACHE_SOUND("buttons/spark6.wav");
+		PRECACHE_SOUND_ARRAY(g_sparkSounds);
 	}
 
 	// get door button sounds, for doors which require buttons to open
@@ -288,15 +283,7 @@ void DoSpark(entvars_t* pev, const Vector& location)
 	UTIL_Sparks(tmp);
 
 	float flVolume = RANDOM_FLOAT(0.25, 0.75) * 0.4;//random volume range
-	switch ((int)(RANDOM_FLOAT(0, 1) * 6))
-	{
-	case 0: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark1.wav", flVolume, ATTN_NORM);	break;
-	case 1: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark2.wav", flVolume, ATTN_NORM);	break;
-	case 2: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark3.wav", flVolume, ATTN_NORM);	break;
-	case 3: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark4.wav", flVolume, ATTN_NORM);	break;
-	case 4: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark5.wav", flVolume, ATTN_NORM);	break;
-	case 5: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark6.wav", flVolume, ATTN_NORM);	break;
-	}
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(g_sparkSounds), flVolume, ATTN_NORM);
 }
 
 void CBaseButton::ButtonSpark(void)

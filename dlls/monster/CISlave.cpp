@@ -606,7 +606,6 @@ void CISlave :: Precache()
 	PRECACHE_SOUND("debris/zap4.wav");
 	PRECACHE_SOUND("weapons/electro4.wav");
 	PRECACHE_SOUND("hassault/hw_shoot1.wav");
-	PRECACHE_SOUND("zombie/zo_pain2.wav");
 	PRECACHE_SOUND("headcrab/hc_headbite.wav");
 	PRECACHE_SOUND("weapons/cbar_miss1.wav");
 

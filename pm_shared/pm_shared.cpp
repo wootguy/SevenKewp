@@ -98,7 +98,88 @@ inline uint32_t PLRBIT(int eidx) { return 1 << (eidx & 31); }
 		pitch, shared_vec3_origin, 0xffffffff & ~PLRBIT(pmove->player_index+1));
 #endif
 
+const char* g_stepSoundsConcrete[4] =
+{
+	// left foot
+	"player/pl_step1.wav",
+	"player/pl_step3.wav",
 
+	// right root
+	"player/pl_step2.wav",
+	"player/pl_step4.wav",
+};
+
+const char* g_stepSoundsMetal[4] =
+{
+	"player/pl_metal1.wav",
+	"player/pl_metal3.wav",
+	"player/pl_metal2.wav",
+	"player/pl_metal4.wav",
+};
+
+const char* g_stepSoundsDirt[4] =
+{
+	"player/pl_dirt1.wav",
+	"player/pl_dirt3.wav",
+	"player/pl_dirt2.wav",
+	"player/pl_dirt4.wav",
+};
+
+const char* g_stepSoundsDuct[4] =
+{
+	"player/pl_duct1.wav",
+	"player/pl_duct3.wav",
+	"player/pl_duct2.wav",
+	"player/pl_duct4.wav",
+};
+
+const char* g_stepSoundsGrate[4] =
+{
+	"player/pl_grate1.wav",
+	"player/pl_grate3.wav",
+	"player/pl_grate2.wav",
+	"player/pl_grate4.wav",
+};
+
+const char* g_stepSoundsTile[4] =
+{
+	"player/pl_tile1.wav",
+	"player/pl_tile3.wav",
+	"player/pl_tile2.wav",
+	"player/pl_tile4.wav",
+};
+
+const char* g_stepSoundsSlosh[4] =
+{
+	"player/pl_slosh1.wav",
+	"player/pl_slosh3.wav",
+	"player/pl_slosh2.wav",
+	"player/pl_slosh4.wav",
+};
+
+const char* g_stepSoundsWade[4] =
+{
+	"player/pl_wade1.wav",
+	"player/pl_wade3.wav",
+	"player/pl_wade2.wav",
+	"player/pl_wade4.wav",
+};
+
+const char* g_stepSoundsLadder[4] =
+{
+	"player/pl_ladder1.wav",
+	"player/pl_ladder3.wav",
+	"player/pl_ladder2.wav",
+	"player/pl_ladder4.wav",
+};
+
+const char* g_swimSounds[4] =
+{
+	"player/pl_swim1.wav",
+	"player/pl_swim2.wav",
+	"player/pl_swim3.wav",
+	"player/pl_swim4.wav",
+};
 
 // Ducking time
 #define TIME_TO_DUCK		0.4
@@ -180,6 +261,7 @@ static char grgszTextureName[CTEXTURESMAX][CBTEXTURENAMEMAX];
 static char grgchTextureType[CTEXTURESMAX];
 
 int g_onladder = 0;
+int g_footstepVariety = 2;
 
 void PM_SwapTextures( int i, int j )
 {
@@ -331,7 +413,7 @@ void PM_PlayStepSound( int step, float fvol )
 		return;
 	}
 	
-	irand = pmove->RandomLong(0,1) + ( pmove->iStepLeft * 2 );
+	irand = pmove->RandomLong(0,g_footstepVariety-1) + ( pmove->iStepLeft * 2);
 
 	// FIXME mp_footsteps needs to be a movevar
 	if ( pmove->multiplayer && !pmove->movevars->footsteps )
@@ -353,86 +435,34 @@ void PM_PlayStepSound( int step, float fvol )
 	{
 	default:
 	case STEP_CONCRETE:
-		switch (irand)
-		{
-		// right foot
-		case 0:	stepSound = "player/pl_step1.wav"; break;
-		case 1:	stepSound = "player/pl_step3.wav";	break;
-		// left foot
-		case 2:	stepSound ="player/pl_step2.wav";	break;
-		case 3:	stepSound ="player/pl_step4.wav";	break;
-		}
+		stepSound = g_stepSoundsConcrete[irand];
 		break;
 	case STEP_METAL:
-		switch(irand)
-		{
-		// right foot
-		case 0:	stepSound ="player/pl_metal1.wav";	break;
-		case 1:	stepSound ="player/pl_metal3.wav";	break;
-		// left foot
-		case 2:	stepSound ="player/pl_metal2.wav";	break;
-		case 3:	stepSound ="player/pl_metal4.wav";	break;
-		}
+		stepSound = g_stepSoundsMetal[irand];
 		break;
 	case STEP_DIRT:
-		switch(irand)
-		{
-		// right foot
-		case 0:	stepSound ="player/pl_dirt1.wav";	break;
-		case 1:	stepSound ="player/pl_dirt3.wav";	break;
-		// left foot
-		case 2:	stepSound ="player/pl_dirt2.wav";	break;
-		case 3:	stepSound ="player/pl_dirt4.wav";	break;
-		}
+		stepSound = g_stepSoundsDirt[irand];
 		break;
 	case STEP_VENT:
-		switch(irand)
-		{
-		// right foot
-		case 0:	stepSound ="player/pl_duct1.wav";	break;
-		case 1:	stepSound ="player/pl_duct3.wav";	break;
-		// left foot
-		case 2:	stepSound ="player/pl_duct2.wav";	break;
-		case 3:	stepSound ="player/pl_duct4.wav";	break;
-		}
+		stepSound = g_stepSoundsDuct[irand];
 		break;
 	case STEP_GRATE:
-		switch(irand)
-		{
-		// right foot
-		case 0:	stepSound ="player/pl_grate1.wav";	break;
-		case 1:	stepSound ="player/pl_grate3.wav";	break;
-		// left foot
-		case 2:	stepSound ="player/pl_grate2.wav";	break;
-		case 3:	stepSound ="player/pl_grate4.wav";	break;
-		}
+		stepSound = g_stepSoundsGrate[irand];
 		break;
 	case STEP_TILE:
-		if ( !pmove->RandomLong(0,4) )
-			irand = 4;
-		switch(irand)
-		{
-		// right foot
-		case 0:	stepSound ="player/pl_tile1.wav";	break;
-		case 1:	stepSound ="player/pl_tile3.wav";	break;
-		// left foot
-		case 2:	stepSound ="player/pl_tile2.wav";	break;
-		case 3:	stepSound ="player/pl_tile4.wav";	break;
-		case 4: stepSound ="player/pl_tile5.wav";	break;
-		}
+		stepSound = g_stepSoundsTile[irand];
+
+		if (!pmove->RandomLong(0, 4) && g_footstepVariety >= 2)
+			stepSound = "player/pl_tile5.wav";
+
 		break;
 	case STEP_SLOSH:
-		switch(irand)
-		{
-		// right foot
-		case 0:	stepSound ="player/pl_slosh1.wav";	break;
-		case 1:	stepSound ="player/pl_slosh3.wav";	break;
-		// left foot
-		case 2:	stepSound ="player/pl_slosh2.wav";	break;
-		case 3:	stepSound ="player/pl_slosh4.wav";	break;
-		}
+		stepSound = g_stepSoundsSlosh[irand];
 		break;
 	case STEP_WADE:
+		// all wade sounds are always precached because the engine uses them too
+		irand = pmove->RandomLong(0, 1) + (pmove->iStepLeft * 2);
+
 		if ( iSkipStep == 0 )
 		{
 			iSkipStep++;
@@ -444,30 +474,14 @@ void PM_PlayStepSound( int step, float fvol )
 			iSkipStep = 0;
 		}
 
-		switch (irand)
-		{
-		// right foot
-		case 0:	stepSound ="player/pl_wade1.wav";	break;
-		case 1:	stepSound ="player/pl_wade2.wav";	break;
-		// left foot
-		case 2:	stepSound ="player/pl_wade3.wav";	break;
-		case 3:	stepSound ="player/pl_wade4.wav";	break;
-		}
+		stepSound = g_stepSoundsWade[irand];
 		break;
 	case STEP_LADDER:
 		if (pmove->flags & FL_IMMUNE_LAVA) {
 			// special flag set by the grapple weapon to indicate the player is flying and not on a ladder
 			break;
 		}
-		switch(irand)
-		{
-		// right foot
-		case 0:	stepSound ="player/pl_ladder1.wav";	break;
-		case 1:	stepSound ="player/pl_ladder3.wav";	break;
-		// left foot
-		case 2:	stepSound ="player/pl_ladder2.wav";	break;
-		case 3:	stepSound ="player/pl_ladder4.wav";	break;
-		}
+		stepSound = g_stepSoundsLadder[irand];
 		break;
 	}
 

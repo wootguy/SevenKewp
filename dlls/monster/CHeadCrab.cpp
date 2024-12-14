@@ -138,8 +138,8 @@ const char *CHeadCrab::pPainSounds[] =
 };
 const char *CHeadCrab::pAttackSounds[] = 
 {
+	"headcrab/hc_attack2.wav", // comes first because it's also used as a follow sound
 	"headcrab/hc_attack1.wav",
-	"headcrab/hc_attack2.wav",
 	"headcrab/hc_attack3.wav",
 };
 

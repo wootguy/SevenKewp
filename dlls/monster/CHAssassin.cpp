@@ -773,13 +773,8 @@ void CHAssassin :: RunAI( void )
 		iStep = ! iStep;
 		if (iStep)
 		{
-			switch( RANDOM_LONG( 0, 3 ) )
-			{
-			case 0:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step1.wav", 0.5, ATTN_NORM);	break;
-			case 1:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step3.wav", 0.5, ATTN_NORM);	break;
-			case 2:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step2.wav", 0.5, ATTN_NORM);	break;
-			case 3:	EMIT_SOUND( ENT(pev), CHAN_BODY, "player/pl_step4.wav", 0.5, ATTN_NORM);	break;
-			}
+			int idx = RANDOM_LONG(0, 1) * 2 + RANDOM_LONG(0, g_footstepVariety - 1);
+			EMIT_SOUND(ENT(pev), CHAN_BODY, g_stepSoundsConcrete[idx], 0.5, ATTN_NORM);
 		}
 	}
 }

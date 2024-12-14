@@ -197,7 +197,7 @@ void COsprey::Precache( void )
 	PRECACHE_MODEL(GetModel());
 	PRECACHE_MODEL("models/HVR.mdl");
 
-	PRECACHE_SOUND("apache/ap_rotor4.wav");
+	PRECACHE_SOUND("apache/ap_rotor2.wav");
 	PRECACHE_SOUND("weapons/mortarhit.wav");
 
 	m_iSpriteTexture = PRECACHE_MODEL( "sprites/rope.spr" );
@@ -476,11 +476,12 @@ void COsprey::Flight( )
 
 
 	static int lastPitch[33];
+	const int pitchShift = -20;
 
 	// make rotor, engine sounds
 	if (m_iSoundState == 0)
 	{
-		StartSound(edict(), CHAN_ITEM, "apache/ap_rotor4.wav", 1.0f, 0.3f, 0, 110, g_vecZero, 0xffffffff);
+		StartSound(edict(), CHAN_ITEM, "apache/ap_rotor2.wav", 1.0f, 0.3f, 0, 100 + pitchShift, g_vecZero, 0xffffffff);
 		memset(lastPitch, 0, sizeof(int) * 33);
 		m_iSoundState = SND_CHANGE_PITCH; // hack for going through level transitions
 	}
@@ -495,7 +496,7 @@ void COsprey::Flight( )
 
 			float dot = DotProduct(pev->velocity - pPlayer->pev->velocity, (pPlayer->pev->origin - pev->origin).Normalize());
 
-			int pitch = (int)(100 + dot / 75.0);
+			int pitch = (int)(100 + dot / 75.0) + pitchShift;
 
 			if (pitch > 250)
 				pitch = 250;
@@ -511,7 +512,7 @@ void COsprey::Flight( )
 				continue;
 			}
 
-			StartSound(edict(), CHAN_ITEM, "apache/ap_rotor4.wav", 1.0f, 0.3f, SND_CHANGE_PITCH,
+			StartSound(edict(), CHAN_ITEM, "apache/ap_rotor2.wav", 1.0f, 0.3f, SND_CHANGE_PITCH,
 				pitch, g_vecZero, PLRBIT(pPlayer->edict()));
 			lastPitch[pPlayer->entindex()] = pitch;
 		}
@@ -565,7 +566,7 @@ void COsprey :: Killed( entvars_t *pevAttacker, int iGib )
 	pev->gravity = 0.3;
 	pev->velocity = m_velocity;
 	pev->avelocity = Vector( RANDOM_FLOAT( -20, 20 ), 0, RANDOM_FLOAT( -50, 50 ) );
-	STOP_SOUND(ENT(pev), CHAN_ITEM, "apache/ap_rotor4.wav");
+	STOP_SOUND(ENT(pev), CHAN_ITEM, "apache/ap_rotor2.wav");
 
 	UTIL_SetSize( pev, Vector( -32, -32, -64), Vector( 32, 32, 0) );
 	SetThink( &COsprey::DyingThink );

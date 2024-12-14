@@ -45,6 +45,9 @@ class CSqueakGrenade : public CGrenade
 	Vector m_posPrev;
 	EHANDLE m_hOwner;
 	int  m_iMyClass;
+
+private:
+	static const char* pHuntSounds[];
 };
 
 float CSqueakGrenade::m_flNextBounceSoundTime = 0;
@@ -63,6 +66,13 @@ TYPEDESCRIPTION	CSqueakGrenade::m_SaveData[] =
 IMPLEMENT_SAVERESTORE( CSqueakGrenade, CGrenade )
 
 #define SQUEEK_DETONATE_DELAY	15.0
+
+const char* CSqueakGrenade::pHuntSounds[] =
+{
+	"squeek/sqk_hunt2.wav",
+	"squeek/sqk_hunt3.wav",
+	"squeek/sqk_hunt1.wav",
+};
 
 int CSqueakGrenade :: Classify ( void )
 {
@@ -143,12 +153,12 @@ void CSqueakGrenade::Precache( void )
 {
 	m_defaultModel = "models/w_squeak.mdl";
 	PRECACHE_MODEL(GetModel());
+
+	PRECACHE_SOUND_ARRAY(pHuntSounds);
+
 	PRECACHE_SOUND("squeek/sqk_blast1.wav");
 	PRECACHE_SOUND("common/bodysplat.wav");
 	PRECACHE_SOUND("squeek/sqk_die1.wav");
-	PRECACHE_SOUND("squeek/sqk_hunt1.wav");
-	PRECACHE_SOUND("squeek/sqk_hunt2.wav");
-	PRECACHE_SOUND("squeek/sqk_hunt3.wav");
 	PRECACHE_SOUND("squeek/sqk_deploy1.wav");
 }
 
@@ -385,15 +395,8 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 
 	if (!(pev->flags & FL_ONGROUND))
 	{
-		// play bounce sound
-		float flRndSound = RANDOM_FLOAT ( 0 , 1 );
-
-		if ( flRndSound <= 0.33 )
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt1.wav", 1, ATTN_NORM, 0, (int)flpitch);		
-		else if (flRndSound <= 0.66)
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_NORM, 0, (int)flpitch);
-		else 
-			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, (int)flpitch);
+		// bounce sound
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pHuntSounds), 1, ATTN_NORM, 0, (int)flpitch);
 		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 256, 0.25 );
 	}
 	else

@@ -441,6 +441,19 @@ void CBaseGruntOp4::Precache()
 	// reduce speech arrays to 1 instantly
 	soundvariety.value = soundvariety.value > 0 ? 1 : soundvariety.value;
 
+	if (mp_npcidletalk.value) {
+		PRECACHE_SOUND_ARRAY(pCheckSounds);
+		PRECACHE_SOUND_ARRAY(pIdleSounds);
+		PRECACHE_SOUND_ARRAY(pScaredSounds);
+		PRECACHE_SOUND_ARRAY(pHelloSounds);
+		PRECACHE_SOUND_ARRAY(pCureSounds);
+		PRECACHE_SOUND_ARRAY(pAnswerSounds);
+		PRECACHE_SOUND_ARRAY(pQuestionSounds);
+		PRECACHE_SOUND_ARRAY(pWoundSounds);
+		PRECACHE_SOUND_ARRAY(pMortalSounds);
+		PRECACHE_SOUND_ARRAY(pClearSounds);
+	}
+
 	PRECACHE_SOUND_ARRAY(pGrenSounds);
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
 	PRECACHE_SOUND_ARRAY(pMonsterSounds);
@@ -452,18 +465,8 @@ void CBaseGruntOp4::Precache()
 	PRECACHE_SOUND_ARRAY(pMadSounds);
 	PRECACHE_SOUND_ARRAY(pKillSounds);
 	PRECACHE_SOUND_ARRAY(pAttackSounds)
-	PRECACHE_SOUND_ARRAY(pCheckSounds);
-	PRECACHE_SOUND_ARRAY(pClearSounds);
-	PRECACHE_SOUND_ARRAY(pIdleSounds);
 	PRECACHE_SOUND_ARRAY(pStopSounds);
-	PRECACHE_SOUND_ARRAY(pScaredSounds);
-	PRECACHE_SOUND_ARRAY(pHelloSounds);
-	PRECACHE_SOUND_ARRAY(pCureSounds);
-	PRECACHE_SOUND_ARRAY(pAnswerSounds);
-	PRECACHE_SOUND_ARRAY(pQuestionSounds);
 	PRECACHE_SOUND_ARRAY(pPokSounds);
-	PRECACHE_SOUND_ARRAY(pWoundSounds);
-	PRECACHE_SOUND_ARRAY(pMortalSounds);
 
 	// follow/unfollow sounds should have more variety because players activate them often
 	soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 3) ? 3 : soundvariety.value;
@@ -490,6 +493,8 @@ void CBaseGruntOp4::PlaySentence(const char* pszSentence, float duration, float 
 
 	int oldSoundVariety = soundvariety.value;
 	soundvariety.value = soundvariety.value > 0 ? 1 : soundvariety.value;
+
+	bool isIdleSound = false;
 
 	if (!strcmp(pszSentence, "FG_GREN")) {
 		sample = RANDOM_SOUND_ARRAY(pGrenSounds);
@@ -523,12 +528,15 @@ void CBaseGruntOp4::PlaySentence(const char* pszSentence, float duration, float 
 	}
 	else if (!strcmp(pszSentence, "FG_ANSWER")) {
 		sample = RANDOM_SOUND_ARRAY(pAnswerSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "FG_QUESTION")) {
 		sample = RANDOM_SOUND_ARRAY(pQuestionSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "FG_IDLE")) {
 		sample = RANDOM_SOUND_ARRAY(pIdleSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "FG_OK")) {
 		soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 3) ? 3 : soundvariety.value;
@@ -543,18 +551,23 @@ void CBaseGruntOp4::PlaySentence(const char* pszSentence, float duration, float 
 	}
 	else if (!strcmp(pszSentence, "FG_SCARED")) {
 		sample = RANDOM_SOUND_ARRAY(pScaredSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "FG_HELLO")) {
 		sample = RANDOM_SOUND_ARRAY(pHelloSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "!FG_CUREA") || !strcmp(pszSentence, "!FG_CUREB") || !strcmp(pszSentence, "!FG_CUREC")) {
 		sample = RANDOM_SOUND_ARRAY(pCureSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "FG_WOUND")) {
 		sample = RANDOM_SOUND_ARRAY(pWoundSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "FG_MORTAL")) {
 		sample = RANDOM_SOUND_ARRAY(pMortalSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "FG_ATTACK")) {
 		sample = RANDOM_SOUND_ARRAY(pAttackSounds);
@@ -564,9 +577,11 @@ void CBaseGruntOp4::PlaySentence(const char* pszSentence, float duration, float 
 	}
 	else if (!strcmp(pszSentence, "FG_CHECK")) {
 		sample = RANDOM_SOUND_ARRAY(pCheckSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "FG_CLEAR")) {
 		sample = RANDOM_SOUND_ARRAY(pClearSounds);
+		isIdleSound = true;
 	}
 	else {
 		ALERT(at_console, "Invalid sentence: %s\n", pszSentence);
@@ -575,7 +590,8 @@ void CBaseGruntOp4::PlaySentence(const char* pszSentence, float duration, float 
 
 	soundvariety.value = oldSoundVariety;
 
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, sample, volume, attenuation, 0, GetVoicePitch());
+	if (!isIdleSound || mp_npcidletalk.value)
+		EMIT_SOUND_DYN(edict(), CHAN_VOICE, sample, volume, attenuation, 0, GetVoicePitch());
 
 	// If you say anything, don't greet the player - you may have already spoken to them
 	SetBits(m_bitsSaid, bit_saidHelloPlayer);

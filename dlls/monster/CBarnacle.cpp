@@ -64,8 +64,8 @@ LINK_ENTITY_TO_CLASS( monster_barnacle, CBarnacle )
 
 const char* CBarnacle::pChewSounds[] =
 {
+	"barnacle/bcl_chew2.wav", // used for gonome effect
 	"barnacle/bcl_chew1.wav",
-	"barnacle/bcl_chew2.wav",
 	"barnacle/bcl_chew3.wav",
 };
 

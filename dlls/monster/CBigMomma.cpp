@@ -316,6 +316,7 @@ public:
 	static const char *pAlertSounds[];
 	static const char *pPainSounds[];
 	static const char *pFootSounds[];
+	static const char *pSpitSounds[];
 
 	bool m_mapHasMommaPath;
 
@@ -401,6 +402,11 @@ const char *CBigMomma::pFootSounds[] =
 	"gonarch/gon_step3.wav",
 };
 
+const char* CBigMomma::pSpitSounds[] =
+{
+	"bullchicken/bc_spithit1.wav",
+	"bullchicken/bc_spithit2.wav",
+};
 
 
 void CBigMomma :: KeyValue( KeyValueData *pkvd )
@@ -753,6 +759,7 @@ void CBigMomma :: Precache()
 	PRECACHE_SOUND_ARRAY( pAlertSounds );
 	PRECACHE_SOUND_ARRAY( pPainSounds );
 	PRECACHE_SOUND_ARRAY( pFootSounds );
+	PRECACHE_SOUND_ARRAY(pSpitSounds);
 
 	UTIL_PrecacheOther( BIG_CHILDCLASS );
 
@@ -762,8 +769,6 @@ void CBigMomma :: Precache()
 	gSpitDebrisSprite = PRECACHE_MODEL("sprites/mommablob.spr" );
 
 	PRECACHE_SOUND( "bullchicken/bc_acid1.wav" );
-	PRECACHE_SOUND( "bullchicken/bc_spithit1.wav" );
-	PRECACHE_SOUND( "bullchicken/bc_spithit2.wav" );
 }	
 
 
@@ -1301,16 +1306,7 @@ void CBMortar::Touch( CBaseEntity *pOther )
 	iPitch = RANDOM_FLOAT( 90, 110 );
 
 	EMIT_SOUND_DYN( ENT(pev), CHAN_VOICE, "bullchicken/bc_acid1.wav", 1, ATTN_NORM, 0, iPitch );	
-
-	switch ( RANDOM_LONG( 0, 1 ) )
-	{
-	case 0:
-		EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "bullchicken/bc_spithit1.wav", 1, ATTN_NORM, 0, iPitch );	
-		break;
-	case 1:
-		EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "bullchicken/bc_spithit2.wav", 1, ATTN_NORM, 0, iPitch );	
-		break;
-	}
+	EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(CBigMomma::pSpitSounds), 1, ATTN_NORM, 0, iPitch);
 
 	if ( pOther->IsBSPModel() )
 	{

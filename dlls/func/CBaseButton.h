@@ -11,6 +11,8 @@ const char* ButtonSound(int sound);				// get string of button sound number
 
 void DoSpark(entvars_t* pev, const Vector& location);
 
+extern const char* g_sparkSounds[6];
+
 //
 // Generic Button
 //

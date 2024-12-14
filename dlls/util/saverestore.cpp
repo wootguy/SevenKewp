@@ -523,7 +523,7 @@ int CRestore::ReadField(void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCoun
 	TYPEDESCRIPTION* pTest;
 	float	time, timeData;
 	Vector	position;
-	edict_t* pent;
+	edict_t* pent = NULL;
 	char* pString;
 
 	time = 0;
@@ -585,7 +585,7 @@ int CRestore::ReadField(void* pBaseData, TYPEDESCRIPTION* pFields, int fieldCoun
 							if (!FStringNull(string) && m_precache)
 							{
 								if (pTest->fieldType == FIELD_MODELNAME)
-									PRECACHE_MODEL((char*)STRING(string));
+									PRECACHE_MODEL_ENT(CBaseEntity::Instance(pent), (char*)STRING(string));
 								else if (pTest->fieldType == FIELD_SOUNDNAME)
 									PRECACHE_SOUND_ENT(NULL, (char*)STRING(string));
 							}

@@ -22,7 +22,6 @@ public:
 	float	m_flDelay;
 };
 
-
 TYPEDESCRIPTION CEnvSpark::m_SaveData[] =
 {
 	DEFINE_FIELD(CEnvSpark, m_flDelay, FIELD_FLOAT),
@@ -32,6 +31,18 @@ IMPLEMENT_SAVERESTORE(CEnvSpark, CBaseEntity)
 
 LINK_ENTITY_TO_CLASS(env_spark, CEnvSpark)
 LINK_ENTITY_TO_CLASS(env_debris, CEnvSpark)
+
+const char* g_sparkSounds[6] =
+{
+	// sounds used by other entities and world textures
+	"buttons/spark5.wav",
+	"buttons/spark6.wav",
+
+	"buttons/spark1.wav",
+	"buttons/spark2.wav",
+	"buttons/spark3.wav",
+	"buttons/spark4.wav",
+};
 
 void CEnvSpark::Spawn(void)
 {
@@ -62,12 +73,7 @@ void CEnvSpark::Spawn(void)
 
 void CEnvSpark::Precache(void)
 {
-	PRECACHE_SOUND("buttons/spark1.wav");
-	PRECACHE_SOUND("buttons/spark2.wav");
-	PRECACHE_SOUND("buttons/spark3.wav");
-	PRECACHE_SOUND("buttons/spark4.wav");
-	PRECACHE_SOUND("buttons/spark5.wav");
-	PRECACHE_SOUND("buttons/spark6.wav");
+	PRECACHE_SOUND_ARRAY(g_sparkSounds);
 }
 
 void CEnvSpark::KeyValue(KeyValueData* pkvd)

@@ -1413,13 +1413,8 @@ void CBasePlayer::WaterMove()
 	air = (int)(pev->air_finished - gpGlobals->time);
 	if (!RANDOM_LONG(0,0x1f) && RANDOM_LONG(0,(AIRTIME + m_airTimeModifier)-1) >= air && IsAlive())
 	{
-		switch (RANDOM_LONG(0,3))
-			{
-			case 0:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim1.wav", 0.8, ATTN_NORM); break;
-			case 1:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim2.wav", 0.8, ATTN_NORM); break;
-			case 2:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim3.wav", 0.8, ATTN_NORM); break;
-			case 3:	EMIT_SOUND(ENT(pev), CHAN_BODY, "player/pl_swim4.wav", 0.8, ATTN_NORM); break;
-		}
+		int irand = RANDOM_LONG(0, g_footstepVariety - 1) + (RANDOM_LONG(0, 1) * 2);
+		EMIT_SOUND(ENT(pev), CHAN_BODY, g_swimSounds[irand], 0.8, ATTN_NORM);
 	}
 
 	if (pev->watertype == CONTENTS_LAVA)		// do damage

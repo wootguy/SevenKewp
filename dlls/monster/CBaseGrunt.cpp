@@ -37,6 +37,18 @@ TYPEDESCRIPTION	CBaseGrunt::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CBaseGrunt, CTalkSquadMonster )
 
+const char* CBaseGrunt::pMp5BurstSounds[] =
+{
+	"hgrunt/gr_mgun1.wav",
+	"hgrunt/gr_mgun2.wav",
+};
+
+const char* CBaseGrunt::pUziSounds[] =
+{
+	"weapons/uzi/fire_both1.wav",
+	"weapons/uzi/fire_both2.wav",
+};
+
 //=========================================================
 // Speak Sentence - say your cued up sentence.
 //
@@ -611,7 +623,7 @@ void CBaseGrunt::Shoot(bool firstRound)
 		ShootMp5(vecShootOrigin, vecShootDir);
 		if (firstRound) {
 			// the first round of the three round burst plays the sound and puts a sound in the world sound list.
-			EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_LONG(0, 1) ? "hgrunt/gr_mgun1.wav" : "hgrunt/gr_mgun2.wav", 1, ATTN_NORM);
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pMp5BurstSounds), 1, ATTN_NORM);
 		}
 	}
 	else if (HasEquipment(MEQUIP_AKIMBO_UZIS)) {
@@ -679,8 +691,7 @@ void CBaseGrunt::ShootUzis(Vector& vecShootOrigin, Vector& vecShootDir) {
 	EjectBrass(vecShootOrigin - vecShootDir * 24, rightShellVelocity, pev->angles.y, m_iBrassShell, TE_BOUNCE_SHELL);
 	FireBullets(2, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, 2048, BULLET_MONSTER_MP5); // shoot +-5 degrees;
 	
-	const char* sound = RANDOM_LONG(0, 1) ? "weapons/uzi/fire_both1.wav" : "weapons/uzi/fire_both2.wav";
-	EMIT_SOUND(ENT(pev), CHAN_STATIC, sound, 1, ATTN_NORM);
+	EMIT_SOUND(ENT(pev), CHAN_STATIC, RANDOM_SOUND_ARRAY(pUziSounds), 1, ATTN_NORM);
 	PLAY_DISTANT_SOUND(edict(), DISTANT_9MM);
 }
 
@@ -1125,8 +1136,7 @@ void CBaseGrunt::BasePrecache() {
 
 void CBaseGrunt::PrecacheEquipment(int equipment) {
 	if (equipment & MEQUIP_MP5) {
-		PRECACHE_SOUND("hgrunt/gr_mgun1.wav");
-		PRECACHE_SOUND("hgrunt/gr_mgun2.wav");
+		PRECACHE_SOUND_ARRAY(pMp5BurstSounds);
 
 		AddPrecacheWeapon("weapon_9mmAR");
 	}
@@ -1141,8 +1151,8 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 	}
 	if (equipment & MEQUIP_SAW) {
 		PRECACHE_SOUND("weapons/saw_fire1.wav");
-		PRECACHE_SOUND("weapons/saw_fire2.wav");
-		PRECACHE_SOUND("weapons/saw_fire3.wav");
+		//PRECACHE_SOUND("weapons/saw_fire2.wav");
+		//PRECACHE_SOUND("weapons/saw_fire3.wav");
 		PRECACHE_SOUND("weapons/saw_reload.wav");
 
 		//AddPrecacheWeapon("weapon_9mmAR");
@@ -1176,8 +1186,7 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 		PRECACHE_SOUND("hassault/hw_spindown.wav");
 	}
 	if (equipment & MEQUIP_AKIMBO_UZIS) {
-		PRECACHE_SOUND("weapons/uzi/fire_both1.wav");
-		PRECACHE_SOUND("weapons/uzi/fire_both2.wav");
+		PRECACHE_SOUND_ARRAY(pUziSounds);
 
 		AddPrecacheWeapon("weapon_9mmAR");
 	}

@@ -57,17 +57,21 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 EXPORT int PRECACHE_GENERIC(const char* path);
 EXPORT int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path);
 EXPORT int PRECACHE_SOUND_NULLENT(const char* path);
-EXPORT int PRECACHE_MODEL(const char* model);
-EXPORT int PRECACHE_REPLACEMENT_MODEL(const char* model); // only precache the model if it will be replaced
+EXPORT int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* model);
+EXPORT void PRECACHE_MODEL_SEQUENCE(const char* path, int sequence); // precache sounds/sprites used by a single animation
+EXPORT int PRECACHE_REPLACEMENT_MODEL_ENT(CBaseEntity* ent, const char* model); // only precache the model if it will be replaced
 EXPORT int PRECACHE_EVENT(int id, const char* path);
 EXPORT bool SET_MODEL(edict_t* edict, const char* model); // returns true if the given model was swapped with something else
 EXPORT bool SET_MODEL_MERGED(edict_t* edict, const char* model, int mergeId); // will set the merged model and body if the given model was not replaced
 EXPORT const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
 EXPORT int MODEL_INDEX(const char* model);
 EXPORT int SOUND_INDEX(const char* model);
-EXPORT void* GET_MODEL_PTR(edict_t* edict);
+EXPORT studiohdr_t* GET_MODEL_PTR(edict_t* edict);
+EXPORT studiohdr_t* GET_MODEL_PTR(int modelIdx);
 EXPORT edict_t* CREATE_NAMED_ENTITY(string_t cname);
 #define PRECACHE_SOUND(path) PRECACHE_SOUND_ENT(this, path)
+#define PRECACHE_MODEL(path) PRECACHE_MODEL_ENT(this, path)
+#define PRECACHE_REPLACEMENT_MODEL(path) PRECACHE_REPLACEMENT_MODEL_ENT(this, path)
 
 EXPORT void PRECACHE_DETAIL_TEXTURES();
 

@@ -591,14 +591,9 @@ void CGargantua::PrecacheCommon(void) {
 	gStompSprite = PRECACHE_MODEL(GARG_STOMP_SPRITE_NAME);
 	PRECACHE_SOUND(GARG_STOMP_BUZZ_SOUND);
 
-	for (int i = 0; i < (int)ARRAYSIZE(pAttackHitSounds); i++)
-		PRECACHE_SOUND((char*)pAttackHitSounds[i]);
-
-	for (int i = 0; i < (int)ARRAYSIZE(pAttackMissSounds); i++)
-		PRECACHE_SOUND((char*)pAttackMissSounds[i]);
-
-	for (int i = 0; i < (int)ARRAYSIZE(pRicSounds); i++)
-		PRECACHE_SOUND((char*)pRicSounds[i]);
+	PRECACHE_SOUND_ARRAY(pAttackHitSounds);
+	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
+	//PRECACHE_SOUND_ARRAY(pRicSounds);
 }
 
 void CGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
@@ -786,10 +781,10 @@ void CGargantua::HandleAnimEvent(MonsterEvent_t *pEvent)
 					}
 					
 				}
-				EMIT_SOUND_DYN ( edict(), CHAN_WEAPON, pAttackHitSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackHitSounds)-1) ], 1.0, ATTN_NORM, 0, 50 + RANDOM_LONG(0,15) );
+				EMIT_SOUND_DYN ( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackHitSounds), 1.0, ATTN_NORM, 0, 50 + RANDOM_LONG(0,15) );
 			}
 			else // Play a random attack miss sound
-				EMIT_SOUND_DYN ( edict(), CHAN_WEAPON, pAttackMissSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackMissSounds)-1) ], 1.0, ATTN_NORM, 0, 50 + RANDOM_LONG(0,15) );
+				EMIT_SOUND_DYN ( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackMissSounds), 1.0, ATTN_NORM, 0, 50 + RANDOM_LONG(0,15) );
 
 			Vector forward;
 			UTIL_MakeVectorsPrivate( pev->angles, forward, NULL, NULL );
