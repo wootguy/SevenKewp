@@ -1,0 +1,22 @@
+name: Checkout Repositories
+description: A composite action to checkout all required repositories.
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout rehlds
+      uses: actions/checkout@v4
+      with:
+        repository: wootguy/rehlds
+        path: ./rehlds
+
+    - name: Checkout map plugins
+      uses: actions/checkout@v4
+      with:
+        repository: wootguy/SevenKewp_plugins
+        path: ./plugins/SevenKewp_plugins
+
+    - name: Checkout rcbot plugin
+      uses: actions/checkout@v4
+      with:
+        repository: wootguy/rcbot
+        path: ./plugins/rcbot
