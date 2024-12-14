@@ -5985,3 +5985,7 @@ void CBasePlayer::PenalizeDeath() {
 	m_iDeaths += 1;
 	m_scoreMultiplier = V_max(0.01f, 1.0f / (m_iDeaths+1));
 }
+
+float CBasePlayer::GetIdleTime() {
+	return g_engfuncs.pfnTime() - m_lastUserInput;
+}

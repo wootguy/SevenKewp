@@ -398,6 +398,8 @@ void ClientCommand(edict_t* pEntity)
 		return;
 	}
 
+	pPlayer->m_lastUserInput = g_engfuncs.pfnTime();
+
 	CALL_HOOKS_VOID(pfnClientCommand, pPlayer);
 
 	TextMenuClientCommandHook(pPlayer);
