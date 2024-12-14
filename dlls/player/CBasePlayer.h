@@ -282,6 +282,10 @@ public:
 	bool m_droppedDeathWeapons;
 
 	float m_scoreMultiplier;
+	
+	// for calculating idle time
+	int m_lastUserButtonState;
+	float m_lastUserInput;
 
 	virtual void Spawn( void );
 
@@ -496,6 +500,9 @@ public:
 
 	// for scoring
 	void PenalizeDeath();
+
+	// how long has it been since the player last pressed any buttons or typed in chat
+	float GetIdleTime();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

@@ -406,6 +406,8 @@ void ClientPutInServer( edict_t *pEntity )
 		pPlayer->m_scoreMultiplier = 1.0f;
 	}
 
+	pPlayer->m_lastUserInput = g_engfuncs.pfnTime();
+
 	CALL_HOOKS_VOID(pfnClientPutInServer, pPlayer);
 
 	// Allocate a CBasePlayer for pev, and call spawn
@@ -1963,6 +1965,12 @@ void CmdStart( const edict_t *player, const struct usercmd_s *cmd, unsigned int 
 
 	if( !pl )
 		return;
+
+	int inputState = cmd->buttons | (cmd->impulse << 16);
+	if (inputState != pl->m_lastUserButtonState) {
+		pl->m_lastUserInput = g_engfuncs.pfnTime();
+	}
+	pl->m_lastUserButtonState = inputState;
 
 	if ( pl->pev->groupinfo != 0 )
 	{
