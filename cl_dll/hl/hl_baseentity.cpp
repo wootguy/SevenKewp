@@ -65,6 +65,8 @@ CBaseEntity * CBaseEntity::Create( const char *szName, const Vector &vecOrigin, 
 void CBaseEntity::SUB_Remove( void ) { }
 void CBaseEntity::UpdateOnRemove( void ) { }
 void CBaseEntity::SetClassify( int ) { }
+Vector CBaseEntity::GetLookDirection() { return g_vecZero; }
+Vector CBasePlayer::GetLookDirection() { return g_vecZero; }
 
 // CBaseDelay Stubs
 void CBaseDelay :: KeyValue( struct KeyValueData_s * ) { }

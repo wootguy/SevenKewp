@@ -143,6 +143,7 @@ public:
 	virtual void	TraceBleed(float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	virtual BOOL    IsTriggered(CBaseEntity* pActivator) { return TRUE; }
 	virtual CBaseMonster* MyMonsterPointer(void) { return NULL; }
+	virtual CBasePlayer* MyPlayerPointer(void) { return NULL; }
 	virtual CBasePlayerWeapon* GetWeaponPtr(void) { return NULL; };
 	virtual CTalkSquadMonster* MyTalkSquadMonsterPointer(void) { return NULL; }
 	virtual CBaseToggle* MyTogglePointer(void) { return NULL; }
@@ -369,6 +370,8 @@ public:
 
 	// used to override state sent to player
 	virtual int AddToFullPack(struct entity_state_s* state, CBasePlayer* player) { return 1; }
+
+	virtual Vector GetLookDirection();
 
 	//We use this variables to store each ammo count.
 	int ammo_9mm;

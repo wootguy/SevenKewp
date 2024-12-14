@@ -64,6 +64,9 @@ int gEvilImpulse101;
 extern DLL_GLOBAL int gDisplayTitle;
 extern float g_flWeaponCheat;
 
+// how long the use key can be held before cancelling the use for antiblock or momentary buttons
+#define MAX_USE_HOLD_TIME 0.3f
+
 BOOL gInitHUD = TRUE;
 
 extern void CopyToBodyQue(entvars_t* pev);
@@ -1734,6 +1737,10 @@ void CBasePlayer::PlayerUse ( void )
 {
 	CALL_HOOKS_VOID(pfnPlayerUse, this);
 
+	if (m_useExpired) {
+		return;
+	}
+
 	if ( IsObserver() )
 		return;
 
@@ -1802,37 +1809,47 @@ void CBasePlayer::PlayerUse ( void )
 		}
 	}
 
-	CBaseEntity *pObject = NULL;
-	CBaseEntity *pClosest = NULL;
-	CBaseEntity *pInside = NULL;
+	CBaseEntity* pObject = NULL;
+	CBaseEntity* pClosest = NULL;
+	CBaseEntity* pInside = NULL;
+	CBaseEntity* pLooking = NULL;
 	Vector		vecLOS;
 	Vector viewPos = pev->origin + pev->view_ofs;
 	float flMaxDot = VIEW_FIELD_NARROW;
 	float flDot;
 	float bestDist = FLT_MAX;
 
-	UTIL_MakeVectors ( pev->v_angle );// so we know which way we are facing
-	
-	while ((pObject = UTIL_FindEntityInSphere( pObject, pev->origin, PLAYER_SEARCH_RADIUS )) != NULL)
-	{
+	UTIL_MakeVectors(pev->v_angle);// so we know which way we are facing
 
+	TraceResult tr;
+	TRACE_LINE(viewPos, viewPos + gpGlobals->v_forward * PLAYER_SEARCH_RADIUS*2, dont_ignore_monsters, edict(), &tr);
+	pLooking = Instance(tr.pHit);
+
+	while ((pObject = UTIL_FindEntityInSphere(pObject, pev->origin, PLAYER_SEARCH_RADIUS)) != NULL)
+	{
 		if (pObject->ObjectCaps() & (FCAP_IMPULSE_USE | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE))
 		{
+			// object is being looked at directly. No other option can be better than this
+			if (pObject == pLooking) {
+				pClosest = pObject;
+				break;
+			}
+
 			// !!!PERFORMANCE- should this check be done on a per case basis AFTER we've determined that
 			// this object is actually usable? This dot is being done for every object within PLAYER_SEARCH_RADIUS
 			// when player hits the use key. How many objects can be in that area, anyway? (sjb)
-			vecLOS = (VecBModelOrigin( pObject->pev ) - viewPos);
-			
+			vecLOS = (VecBModelOrigin(pObject->pev) - viewPos);
+
 			// This essentially moves the origin of the target to the corner nearest the player to test to see 
 			// if it's "hull" is in the view cone
-			vecLOS = UTIL_ClampVectorToBox( vecLOS, pObject->pev->size * 0.5 );
-			
-			flDot = DotProduct (vecLOS , gpGlobals->v_forward);
+			vecLOS = UTIL_ClampVectorToBox(vecLOS, pObject->pev->size * 0.5);
+
+			flDot = DotProduct(vecLOS, gpGlobals->v_forward);
 			if (flDot > flMaxDot)
 			{// only if the item is in front of the user
 				pClosest = pObject;
 				flMaxDot = flDot;
-//				ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
+				//				ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
 			}
 
 			// player is INSIDE the usable entity. View direction may the opposite of expected
@@ -1843,38 +1860,81 @@ void CBasePlayer::PlayerUse ( void )
 				bestDist = dist;
 			}
 
-//			ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
+			//			ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
 		}
 	}
 	pObject = pClosest ? pClosest : pInside;
 
-	// Found an object
-	if (pObject )
+	bool useExpiring = (mp_antiblock.value && GetUseTime() > MAX_USE_HOLD_TIME)
+					|| (!mp_antiblock.value && (m_afButtonPressed & IN_USE));
+
+	if (useExpiring && mp_antiblock.value && (!m_usingMomentary || pLooking->IsPlayer())) {
+		int antiblockRet = TryAntiBlock();
+
+		if (antiblockRet) {
+			if (antiblockRet == 1) {
+				EMIT_SOUND_DYN(edict(), CHAN_BODY, "weapons/xbow_hitbod2.wav", 0.7f, 1.0f, 0, 130 + RANDOM_LONG(0, 10));
+			}
+			else {
+				EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/wpn_denyselect.wav", 0.8, ATTN_NORM);
+			}
+			
+			// swap logic ran. Don't also use an entity
+			m_useExpired = true;
+			return;
+		}
+	}
+
+	if (pObject)
 	{
 		//!!!UNDONE: traceline here to prevent USEing buttons through walls			
 		int caps = pObject->ObjectCaps();
+		bool isContinuousUse = (pev->button & IN_USE) && (caps & FCAP_CONTINUOUS_USE);
+		
+		// if antiblock is enabled, don't trigger things until the button is released
+		// because the player might be holding it down for an antiblock attempt
+		bool isToggleUse;
+		if (mp_antiblock.value) {
+			isToggleUse = (m_afButtonReleased & IN_USE) && (caps & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE));
+		}
+		else {
+			isToggleUse = (m_afButtonPressed & IN_USE) && (caps & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE));
+		}
 
-		if ( m_afButtonPressed & IN_USE )
-			EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/wpn_select.wav", 0.4, ATTN_NORM);
-
-		if ( ( (pev->button & IN_USE) && (caps & FCAP_CONTINUOUS_USE) ) ||
-			 ( (m_afButtonPressed & IN_USE) && (caps & (FCAP_IMPULSE_USE|FCAP_ONOFF_USE)) ) )
+		if (isContinuousUse || isToggleUse)
 		{
+			if (isToggleUse || ((m_afButtonPressed & IN_USE) && isContinuousUse))
+				EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/wpn_select.wav", 0.4, ATTN_NORM);
+
+			if (isToggleUse) {
+				m_useExpired = true;
+			}
+			else {
+				m_usingMomentary = true;
+			}
+
 			if ( caps & FCAP_CONTINUOUS_USE )
 				m_afPhysicsFlags |= PFLAG_USING;
 
 			pObject->Use( this, this, USE_SET, 1 );
+
+			return;
 		}
 		// UNDONE: Send different USE codes for ON/OFF.  Cache last ONOFF_USE object to send 'off' if you turn away
-		else if ( (m_afButtonReleased & IN_USE) && (pObject->ObjectCaps() & FCAP_ONOFF_USE) )	// BUGBUG This is an "off" use
+		else if ((m_afButtonReleased & IN_USE) && (pObject->ObjectCaps() & FCAP_ONOFF_USE) )	// BUGBUG This is an "off" use
 		{
 			pObject->Use( this, this, USE_SET, 0 );
+			m_useExpired = true;
+
+			return;
 		}
 	}
-	else
-	{
-		if ( m_afButtonPressed & IN_USE )
-			EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/wpn_denyselect.wav", 0.4, ATTN_NORM);
+
+	// nothing has been activated within the use time limit, cancel use and don't consider any more
+	// uses until the next key press
+	if (useExpiring || (m_afButtonReleased & IN_USE)) {
+		EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/wpn_denyselect.wav", 0.8, ATTN_NORM);
+		m_useExpired = true; // don't consider any more uses until the button is pressed again
 	}
 }
 
@@ -4738,8 +4798,7 @@ Vector CBasePlayer :: GetAutoaimVector( float flDelta )
 {
 	//if (g_iSkillLevel == SKILL_HARD)
 	{
-		UTIL_MakeVectors( pev->v_angle + pev->punchangle );
-		return gpGlobals->v_forward;
+		return GetLookDirection();
 	}
 	/*
 
@@ -4815,6 +4874,11 @@ Vector CBasePlayer :: GetAutoaimVector( float flDelta )
 	UTIL_MakeVectors( pev->v_angle + pev->punchangle + m_vecAutoAim );
 	return gpGlobals->v_forward;
 	*/
+}
+
+Vector CBasePlayer::GetLookDirection() {
+	MAKE_VECTORS(pev->v_angle + pev->punchangle);
+	return gpGlobals->v_forward;
 }
 
 Vector CBasePlayer :: AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  )
@@ -5988,4 +6052,179 @@ void CBasePlayer::PenalizeDeath() {
 
 float CBasePlayer::GetIdleTime() {
 	return g_engfuncs.pfnTime() - m_lastUserInput;
+}
+
+float CBasePlayer::GetUseTime() {
+	if (!m_useKeyTime) {
+		return 0;
+	}
+
+	return g_engfuncs.pfnTime() - m_useKeyTime;
+}
+
+Vector CBasePlayer::GetSnappedLookDir() {
+	Vector angles = pev->v_angle;
+
+	// snap to 90 degree angles
+	angles.y = (int((angles.y + 180 + 45) / 90) * 90) - 180;
+	angles.x = (int((angles.x + 180 + 45) / 90) * 90) - 180;
+
+	// vertical unblocking has priority, unless on the floor and looking down
+	CBaseEntity* groundEnt = Instance(pev->groundentity);
+	bool lookingDownOnBspModel = (pev->flags & FL_ONGROUND) && angles.x > 0
+		&& groundEnt && groundEnt->IsBSPModel();
+
+	if (angles.x != 0 && !lookingDownOnBspModel) {
+		angles.y = 0;
+	}
+	else {
+		angles.x = 0;
+	}
+
+	MAKE_VECTORS(angles);
+
+	return gpGlobals->v_forward;
+}
+
+int CBasePlayer::GetTraceHull() {
+	return (pev->flags & FL_DUCKING) ? head_hull : human_hull;
+}
+
+CBaseEntity* CBasePlayer::AntiBlockTrace() {
+	const float distance = 8.0f; // long enough so antiblock works on monsters walking away from you
+
+	TraceResult tr;
+	Vector snappedLookDir = GetSnappedLookDir();
+	int hullType = GetTraceHull();
+	TRACE_HULL(pev->origin, pev->origin + snappedLookDir*distance, dont_ignore_monsters, hullType, edict(), &tr);
+
+	// try again in case the blocker is on a slope or stair
+	if (snappedLookDir.z == 0 && tr.pHit && (tr.pHit->v.solid == SOLID_BSP || tr.pHit->v.movetype == MOVETYPE_PUSHSTEP)) {
+		Vector verticalDir = Vector(0, 0, 36);
+		if (!(pev->flags & FL_ONGROUND)) {
+			// probably on the ceiling, so try starting the trace lower instead (e.g. negative gravity or ladder)
+			verticalDir.z = -36;
+		}
+
+		// first see how far up/down the trace can go
+		TRACE_HULL(pev->origin, pev->origin + verticalDir, dont_ignore_monsters, hullType, edict(), &tr);
+
+		if (!tr.pHit || (tr.pHit->v.solid == SOLID_BSP || tr.pHit->v.movetype == MOVETYPE_PUSHSTEP)) {
+			// now do the outward trace
+			TRACE_HULL(tr.vecEndPos, tr.vecEndPos + snappedLookDir*distance, dont_ignore_monsters, hullType, edict(), &tr);
+		}
+	}
+
+	return Instance(tr.pHit);
+}
+
+int CBasePlayer::TryAntiBlock() {
+	CBaseEntity* target = AntiBlockTrace();
+
+	if (!target || (!target->IsNormalMonster() && !target->IsPlayer())) {
+		return 0;
+	}
+
+	if (target->IsPlayer() && m_nextAntiBlock > gpGlobals->time) {
+		float timeLeft = m_nextAntiBlock - gpGlobals->time;
+		UTIL_ClientPrint(this, print_center, UTIL_VarArgs("Wait %.1fs", timeLeft + 0.05f));
+		return 2;
+	}
+
+	CBaseMonster* mon = target->MyMonsterPointer();
+
+	if (mon) {
+		if (IRelationship(mon) > R_NO) {
+			UTIL_ClientPrint(this, print_center, "Can't swap with enemy NPCs");
+			return 2;
+		}
+		if (mon->m_hCine) {
+			UTIL_ClientPrint(this, print_center, "Swap failed; target is busy");
+			return 2;
+		}
+	}
+
+	CBasePlayer* targetPlr = target->MyPlayerPointer();
+	Vector lookDir = GetLookDirection();
+	Vector targetLookDir = target->GetLookDirection();
+
+	// long cooldown if the target doesn't see this happening. The swapper is
+	// probably being rude or impatient. If not, it's still jarring to be
+	// moved around by something you didn't see coming
+	bool canBeRudeTo = !targetPlr || targetPlr->GetIdleTime() > 5;
+	bool isRude = !canBeRudeTo && DotProduct(lookDir, targetLookDir) > -0.5;
+
+	Vector srcOri = pev->origin;
+	bool srcDucking = (pev->flags & FL_DUCKING) != 0;
+	bool dstDucking = (target->pev->flags & FL_DUCKING) != 0 || !targetPlr;
+
+	Vector oldOriginSelf = pev->origin;
+	Vector oldOriginTarget = target->pev->origin;
+
+	pev->origin = target->pev->origin;
+	target->pev->origin = srcOri;
+
+	if (!targetPlr) {
+		// swapping with a monster
+		float zDiff = srcDucking ? 18 : 36;
+		pev->origin.z += zDiff;
+		target->pev->origin.z -= zDiff;
+	}
+
+	bool dstElev = !FNullEnt(target->pev->groundentity) && target->pev->groundentity->v.velocity.z != 0;
+	bool srcElev = !FNullEnt(pev->groundentity) && pev->groundentity->v.velocity.z != 0;
+
+	// prevent elevator gibbing
+	if (dstElev) {
+		pev->origin.z += 18;
+	}
+	if (srcElev) {
+		target->pev->origin.z += 18;
+	}
+
+	if (dstDucking) {
+		pev->flDuckTime = 26;
+		pev->flags |= FL_DUCKING;
+		pev->view_ofs = Vector(0, 0, 12);
+
+		// prevent gibbing on elevators when swapper is crouching and swappee is not
+		// (additional height needed on top of the default extra height)
+		if (!srcDucking && dstElev) {
+			pev->origin.z += 18;
+		}
+	}
+
+	if (srcDucking) {
+		target->pev->flDuckTime = 26;
+		target->pev->flags |= FL_DUCKING;
+		target->pev->view_ofs = Vector(0, 0, 12);
+
+		if (!dstDucking && srcElev) {
+			target->pev->origin.z += 18;
+		}
+	}
+
+	TraceResult tr;
+	if (targetPlr) {
+		TRACE_HULL(target->pev->origin, target->pev->origin, ignore_monsters, targetPlr->GetTraceHull(), NULL, &tr);
+	}
+	else {
+		TRACE_MONSTER_HULL(target->edict(), target->pev->origin, target->pev->origin, ignore_monsters, NULL, &tr);
+	}
+	if (tr.fStartSolid) {
+		pev->origin = oldOriginSelf;
+		target->pev->origin = oldOriginTarget;
+		UTIL_ClientPrint(this, print_center, "Swap failed; target would be stuck");
+		return 2;
+	}
+
+	// link the edicts for triggers
+	UTIL_SetOrigin(pev, pev->origin);
+	UTIL_SetOrigin(target->pev, target->pev->origin);
+
+	if (isRude) {
+		m_nextAntiBlock = gpGlobals->time + mp_antiblock_cooldown.value;
+	}
+	
+	return 1;
 }
