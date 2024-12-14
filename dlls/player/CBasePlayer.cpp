@@ -903,6 +903,8 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	if ( m_pActiveItem )
 		((CBasePlayerItem*)m_pActiveItem.GetEntity())->Holster();
 
+	PenalizeDeath();
+
 	g_pGameRules->PlayerKilled( this, pevAttacker, g_pevLastInflictor );
 
 	HideAllItems(true);
@@ -1467,16 +1469,25 @@ void CBasePlayer::PlayerDeathThink(void)
 	float deadTime = gpGlobals->time - m_lastKillTime;
 	float respawnDelay = mp_respawndelay.value + m_extraRespawnDelay;
 
-	if (deadTime < respawnDelay + 1.0f) {
+	if (deadTime > 1.0f && deadTime < respawnDelay + 2.0f) {
 		if (gpGlobals->time - m_lastSpawnMessage > 0.2f) {
 			int timeLeft = (int)ceilf(respawnDelay - deadTime);
-			const char* msg = UTIL_VarArgs("Respawn allowed in %d seconds", timeLeft);
+			std::string delayMsg = UTIL_VarArgs("Respawn allowed in %d seconds", timeLeft);
 
 			if (deadTime >= respawnDelay) {
-				msg = "You can respawn now!";
+				delayMsg = "You can respawn now!";
 			} else if (timeLeft == 1) {
-				msg = "Respawn allowed in 1 second";
+				delayMsg = "Respawn allowed in 1 second";
 			}
+
+			std::string pointsMessage;
+			if (mp_score_mode.value == 1) {
+				// deaths are penalized. Show current score multiplier
+				pointsMessage = UTIL_VarArgs("\n\nNew score multiplier: %d%% (%d death%s)",
+					(int)roundf(m_scoreMultiplier*100.0f), m_iDeaths, m_iDeaths == 1 ? "" : "s");
+			}
+
+			const char* msg = UTIL_VarArgs("%s%s", delayMsg.c_str(), pointsMessage.c_str());
 
 			CLIENT_PRINTF(edict(), print_center, msg);
 			m_lastSpawnMessage = gpGlobals->time;
@@ -1622,8 +1633,10 @@ void CBasePlayer::StartDeathCam( void )
 
 void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 {
-	if (IsAlive())
+	if (IsAlive()) {
 		SetRevivalVars();
+		PenalizeDeath();
+	}
 
 	// clear any clientside entities attached to this player
 	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
@@ -5966,4 +5979,9 @@ void CBasePlayer::Revive() {
 float CBasePlayer::GetDamageModifier() {
 	float weapon_damage_mult = m_pActiveItem ? m_pActiveItem->GetDamageModifier() : 1.0f;
 	return CBaseMonster::GetDamageModifier() * weapon_damage_mult;
+}
+
+void CBasePlayer::PenalizeDeath() {
+	m_iDeaths += 1;
+	m_scoreMultiplier = V_max(0.01f, 1.0f / (m_iDeaths+1));
 }

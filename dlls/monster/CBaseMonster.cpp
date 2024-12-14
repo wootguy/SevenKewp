@@ -4657,10 +4657,16 @@ void CBaseMonster::GiveScorePoints(entvars_t* pevAttacker, float damageDealt) {
 	
 	// give points proportional to how much damage will be dealt, ignoring overkill damage
 	if (attackMon && (pevAttacker->flags & FL_CLIENT) && pev->health > 0) {
-		const float MONSTER_POINTS_PER_HP = 0.01f; // how many points to give per hitpoint of damage dealt
 		float damageAmt = damageDealt > 0 ? V_min(damageDealt, pev->health) : V_min(damageDealt, pev->max_health - pev->health);
+		float multiplier = attackMon->IsPlayer() ? ((CBasePlayer*)attackMon)->m_scoreMultiplier : 1.0f;
 		bool isFriendly = attackMon->IRelationship(this) == R_AL;
-		pevAttacker->frags += damageAmt * (isFriendly ? -1 : 1) * MONSTER_POINTS_PER_HP;
+
+		if (isFriendly) {
+			// always take full penalty for friendly fire
+			multiplier = 1.0f;
+		}
+
+		pevAttacker->frags += damageAmt * (isFriendly ? -1 : 1) * mp_damage_points.value * multiplier;
 
 		LogPlayerDamage(pevAttacker, damageAmt);
 	}

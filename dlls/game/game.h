@@ -77,6 +77,8 @@ EXPORT extern cvar_t	mp_skill_allow; // 0 = no, 1 = yes
 EXPORT extern cvar_t	mp_default_medkit; // provide a medkit by default unless nomedkit is in the cfg
 EXPORT extern cvar_t	mp_rpg_laser_mode; // 0 = HL, 1 = realistic, 2 = rockets follow owner's laser
 EXPORT extern cvar_t	mp_series_intermission; // 0 = allow game_end, 1 = skip game_end, 2 = skip waiting period and show a message for series level changes
+EXPORT extern cvar_t	mp_score_mode; // 0 = get points for damage, 1 = point multiplier reduced after death + no suicide penalty
+EXPORT extern cvar_t	mp_damage_points; // score points given per point of damage dealt
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
@@ -184,6 +186,7 @@ EXPORT extern CMultiplayGameMgrHelper g_GameMgrHelper;
 
 struct player_score_t {
 	float frags;
+	float multiplier;
 	int deaths;
 };
 
