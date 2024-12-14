@@ -60,20 +60,20 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=OFF
-        cmake --build . --config Release
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=OFF
+        cmake --build .
 
     - name: Build plugins
       run: |
         cd build
-        cmake .. -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=ON
-        cmake --build . --config Release
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=ON
+        cmake --build .
 
     - name: Build client
       run: |
         cd build
-        cmake .. -DBUILD_CLIENT=ON -DBUILD_SERVER=OFF -DBUILD_PLUGINS=OFF
-        cmake --build . --config Release
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=ON -DBUILD_SERVER=OFF -DBUILD_PLUGINS=OFF
+        cmake --build .
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
