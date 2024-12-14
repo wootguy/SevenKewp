@@ -78,6 +78,10 @@ CHalfLifeMultiplay :: CHalfLifeMultiplay()
 {
 	m_flIntermissionEndTime = 0;
 	g_flIntermissionStartTime = 0;
+	m_sentTimeupMessage = false;
+	m_sentTime60Message = false;
+	m_sentTime300Message = false;
+	m_sentTime600Message = false;
 	mapcycle.items = NULL;
 	
 	// 11/8/98
@@ -158,11 +162,30 @@ void CHalfLifeMultiplay :: Think ( void )
 	float flFragLimit = fraglimit.value;
 
 	time_remaining = (int)(flTimeLimit ? ( flTimeLimit - gpGlobals->time ) : 0);
-	
-	if ( flTimeLimit != 0 && gpGlobals->time >= flTimeLimit )
+
+	if ( flTimeLimit != 0 )
 	{
-		GoToIntermission();
-		return;
+		if (!m_sentTime600Message && timelimit.value > 10 && gpGlobals->time >= flTimeLimit - 60*10) {
+			m_sentTime600Message = true;
+			UTIL_ClientPrintAll(print_chat, "10 minutes remaining...\n");
+		}
+		if (!m_sentTime300Message && timelimit.value > 5 && gpGlobals->time >= flTimeLimit - 60*5) {
+			m_sentTime300Message = true;
+			UTIL_ClientPrintAll(print_chat, "5 minutes remaining...\n");
+		}
+		if (!m_sentTime60Message && timelimit.value > 1 && gpGlobals->time >= flTimeLimit - 60) {
+			m_sentTime60Message = true;
+			UTIL_ClientPrintAll(print_chat, "1 minute remaining...\n");
+		}
+		if (!m_sentTimeupMessage && gpGlobals->time >= flTimeLimit - 1.0f) {
+			m_sentTimeupMessage = true;
+			UTIL_ClientPrintAll(print_chat, "Time's up!\n");
+		}
+
+		if (gpGlobals->time >= flTimeLimit) {
+			GoToIntermission();
+			return;
+		}
 	}
 
 	if ( flFragLimit )
@@ -1356,7 +1379,7 @@ void CHalfLifeMultiplay :: GoToIntermission( void )
 
 				MESSAGE_BEGIN(MSG_BROADCAST, gmsgSayText);
 				WRITE_BYTE(0); // not a player
-				WRITE_STRING(UTIL_VarArgs("Loading %s...", nextmapname));
+				WRITE_STRING(UTIL_VarArgs("Loading %s...\n", nextmapname));
 				MESSAGE_END();
 
 				m_flIntermissionEndTime = gpGlobals->time + 0.05f;
