@@ -109,6 +109,8 @@ std::unordered_map<std::string, std::string> g_soundReplacements;
 
 std::unordered_set<std::string> g_mapWeapons;
 
+std::unordered_map<uint64_t, player_score_t> g_playerScores;
+
 std::unordered_map<std::string, const char*> g_itemNameRemap = {
 	{"weapon_9mmar", "weapon_9mmAR"},
 	{"weapon_mp5", "weapon_9mmAR"},

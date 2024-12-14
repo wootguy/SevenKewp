@@ -67,6 +67,7 @@ struct mapcycle_item_t
 	mapcycle_item_t* next;
 	char mapname[32];
 	int seriesIdx; // order in map series
+	int seriesNum; // unique id for a series for all maps on the server
 };
 
 struct mapcycle_t
@@ -375,7 +376,7 @@ public:
 	virtual const char *GetTeamID( CBaseEntity *pEntity ) {return "";}
 	virtual int PlayerRelationship( CBaseEntity *pPlayer, CBaseEntity *pTarget );
 
-	virtual BOOL PlayTextureSounds( void ) { return FALSE; }
+	virtual BOOL PlayTextureSounds( void ) { return TRUE; }
 	virtual BOOL PlayFootstepSounds( CBasePlayer *pl, float fvol );
 
 // Monsters

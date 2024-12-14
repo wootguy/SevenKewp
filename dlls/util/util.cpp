@@ -98,6 +98,8 @@ std::unordered_map<std::string, int> g_admins;
 std::thread::id g_main_thread_id = std::this_thread::get_id();
 ThreadSafeQueue<AlertMsgCall> g_thread_prints;
 
+std::string g_lastMapName;
+
 TYPEDESCRIPTION	gEntvarsDescription[] =
 {
 	DEFINE_ENTITY_FIELD(classname, FIELD_STRING),

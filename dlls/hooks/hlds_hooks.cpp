@@ -393,6 +393,16 @@ void ClientPutInServer( edict_t *pEntity )
 
 	pPlayer->QueryClientType();
 
+	auto previousScore = g_playerScores.find(pPlayer->GetSteamID64());
+	if (previousScore != g_playerScores.end()) {
+		player_score_t score = previousScore->second;
+		pPlayer->pev->frags = score.frags;
+		pPlayer->m_iDeaths = score.deaths;
+	}
+	else {
+		pPlayer->pev->frags = 0;
+	}
+
 	CALL_HOOKS_VOID(pfnClientPutInServer, pPlayer);
 
 	// Allocate a CBasePlayer for pev, and call spawn
@@ -486,6 +496,7 @@ void ServerDeactivate( void )
 			(int)plr->pev->frags, plr->m_iDeaths);
 	}
 
+	g_lastMapName = STRING(gpGlobals->mapname);
 
 	g_serveractive = 0;
 	g_edictsinit = 0;
@@ -734,6 +745,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	const char* current_map = STRING(gpGlobals->mapname);
 	mapcycle_item_t* cycleMap = g_pGameRules->GetMapCyleMap(current_map);
+	mapcycle_item_t* lastCycleMap = g_pGameRules->GetMapCyleMap(g_lastMapName.c_str());
 
 	if (cycleMap) {
 		CVAR_SET_STRING("mp_nextmap", cycleMap->next->mapname);
@@ -747,6 +759,11 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			ALERT(at_console, "Map cycle empty. Clearning mp_nextmap.\n");
 			CVAR_SET_STRING("mp_nextmap", "");
 		}
+	}
+
+	// clear saved scores if switching to map that isn't part of the same series
+	if (!cycleMap || !lastCycleMap || cycleMap->seriesNum != lastCycleMap->seriesNum) {
+		g_playerScores.clear();
 	}
 
 	PrintEntindexStats();

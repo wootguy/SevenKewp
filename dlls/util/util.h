@@ -67,6 +67,8 @@ struct AlertMsgCall {
 extern std::thread::id g_main_thread_id;
 extern ThreadSafeQueue<AlertMsgCall> g_thread_prints;
 
+EXPORT extern std::string g_lastMapName;
+
 #define NOT_PRECACHED_MODEL "models/" MOD_MODEL_FOLDER "not_precached.mdl"
 #define MERGED_ITEMS_MODEL "models/" MOD_MODEL_FOLDER "w_items_v2.mdl"
 #define NOT_PRECACHED_SOUND "common/null.wav"

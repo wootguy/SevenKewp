@@ -181,4 +181,12 @@ EXPORT void AddPrecacheWeapon(std::string wepName);
 EXPORT extern CVoiceGameMgr g_VoiceGameMgr;
 EXPORT extern CMultiplayGameMgrHelper g_GameMgrHelper;
 
+struct player_score_t {
+	float frags;
+	int deaths;
+};
+
+// maps a steam ID to their score, for preserving scores across level changes and disconnects
+EXPORT extern std::unordered_map<uint64_t, player_score_t> g_playerScores;
+
 #endif		// GAME_H
