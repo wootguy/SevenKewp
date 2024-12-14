@@ -1,0 +1,37 @@
+# not using this because action steps in the github UI are not separated. So, you can't easily see what failed.
+
+name: Build Everything
+description: A composite action to build all repositories.
+inputs:
+  cmake-args:
+    description: cmake generate options
+    default:
+    required: false
+  cmd-shell:
+    description: shell to execute commands with
+    default:
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Build server
+      shell: ${{ inputs.cmd-shell }}
+      run: |
+        mkdir build
+        cd build
+        cmake ..  ${{ inputs.cmake-args }} -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=OFF
+        cmake --build . --config Release
+
+    - name: Build plugins
+      shell: ${{ inputs.cmd-shell }}
+      run: |
+        cd build
+        cmake ..  ${{ inputs.cmake-args }} -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=ON
+        cmake --build . --config Release
+
+    - name: Build client
+      shell: ${{ inputs.cmd-shell }}
+      run: |
+        cd build
+        cmake ..  ${{ inputs.cmake-args }} -DBUILD_CLIENT=ON -DBUILD_SERVER=OFF -DBUILD_PLUGINS=OFF
+        cmake --build . --config Release
