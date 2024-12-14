@@ -622,46 +622,30 @@ void PrecacheWeapons() {
 
 void PrecacheTextureSounds() {
 	if (g_textureStats.tex_concrete) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_step1.wav");		// walk on concrete
-		PRECACHE_SOUND_ENT(NULL, "player/pl_step2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_step3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_step4.wav");
+		PRECACHE_FOOTSTEP_SOUNDS(g_stepSoundsConcrete)
 	}
 
 	if (g_textureStats.tex_metal) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_metal1.wav");		// walk on metal
-		PRECACHE_SOUND_ENT(NULL, "player/pl_metal2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_metal3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_metal4.wav");
+		PRECACHE_FOOTSTEP_SOUNDS(g_stepSoundsMetal)
 	}
 
 	if (g_textureStats.tex_dirt) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt1.wav");		// walk on dirt
-		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_dirt4.wav");
+		PRECACHE_FOOTSTEP_SOUNDS(g_stepSoundsDirt)
 	}
 
 	if (g_textureStats.tex_duct) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_duct1.wav");		// walk in duct
-		PRECACHE_SOUND_ENT(NULL, "player/pl_duct2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_duct3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_duct4.wav");
+		PRECACHE_FOOTSTEP_SOUNDS(g_stepSoundsDuct)
 	}
 
 	if (g_textureStats.tex_grate) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_grate1.wav");		// walk on grate
-		PRECACHE_SOUND_ENT(NULL, "player/pl_grate2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_grate3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_grate4.wav");
+		PRECACHE_FOOTSTEP_SOUNDS(g_stepSoundsGrate)
 	}
 
 	if (g_textureStats.tex_tile) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_tile1.wav");		// walk on tile
-		PRECACHE_SOUND_ENT(NULL, "player/pl_tile2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_tile3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_tile4.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_tile5.wav");
+		PRECACHE_FOOTSTEP_SOUNDS(g_stepSoundsTile)
+
+		if (g_footstepVariety >= 2)
+			PRECACHE_SOUND_ENT(NULL, "player/pl_tile5.wav");
 	}
 
 	if (g_textureStats.tex_wood) {
@@ -682,17 +666,10 @@ void PrecacheTextureSounds() {
 	}
 
 	if (g_textureStats.tex_water) {
-		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh1.wav");		// walk in shallow water
-		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_slosh4.wav");
+		PRECACHE_FOOTSTEP_SOUNDS(g_stepSoundsSlosh)
+		PRECACHE_FOOTSTEP_SOUNDS(g_swimSounds)
 
-		PRECACHE_SOUND_ENT(NULL, "player/pl_swim1.wav");		// breathe bubbles
-		PRECACHE_SOUND_ENT(NULL, "player/pl_swim2.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_swim3.wav");
-		PRECACHE_SOUND_ENT(NULL, "player/pl_swim4.wav");
-
-		// Note: wade sounds are used by the engine for state transtitions
+		// Note: ALL wade sounds are used by the engine for state transtitions
 		PRECACHE_SOUND_ENT(NULL, "player/pl_wade1.wav");		// wade in water
 		PRECACHE_SOUND_ENT(NULL, "player/pl_wade2.wav");
 		PRECACHE_SOUND_ENT(NULL, "player/pl_wade3.wav");
@@ -972,7 +949,7 @@ void ClientPrecache( void )
 	//PRECACHE_SOUND_ENT(NULL, "player/pl_pain6.wav");
 	//PRECACHE_SOUND_ENT(NULL, "player/pl_pain7.wav");
 
-	PRECACHE_MODEL("models/player.mdl");
+	PRECACHE_MODEL_ENT(NULL, "models/player.mdl");
 	
 #ifdef CLIENT_DLL
 	// geiger sounds (used by client only, played automatically when near radioactive trigger_hurt)
@@ -1410,20 +1387,20 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 
 	client_info_t client = plr->GetClientInfo();
 	if (e >= client.max_edicts) {
-		//ALERT(at_console, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
+		ALERT(at_aiconsole, "Can't send edict %d '%s' (index too high)\n", e, STRING(ent->v.classname));
 		g_numEdictOverflows[g_packClientIdx]++;
 		plr->SendLegacyClientWarning();
 		return 0;
 	}
 	if (ENTINDEX(ent->v.aiment) >= client.max_edicts) {
-		//ALERT(at_console, "Can't send attachment %d '%s' (index too high)\n", ENTINDEX(ent->v.aiment), STRING(ent->v.aiment->v.classname));
+		ALERT(at_aiconsole, "Can't send attachment %d '%s' (index too high)\n", ENTINDEX(ent->v.aiment), STRING(ent->v.aiment->v.classname));
 		g_numEdictOverflows[g_packClientIdx]++;
 		plr->SendLegacyClientWarning();
 		return 0;
 	}
 	if (g_numPacketEntities[g_packClientIdx] >= client.max_packet_entities) {
-		//ALERT(at_console, "Can't send edict %d '%s' (exceeded %d MAX_PACKET_ENTITIES)\n",
-		//	e, STRING(ent->v.classname), client.max_packet_entities);
+		ALERT(at_aiconsole, "Can't send edict %d '%s' (exceeded %d MAX_PACKET_ENTITIES)\n",
+			e, STRING(ent->v.classname), client.max_packet_entities);
 		g_numEdictOverflows[g_packClientIdx]++;
 		plr->SendLegacyClientWarning();
 		return 0;

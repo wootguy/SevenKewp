@@ -31,4 +31,5 @@ public:
 
 private:
 	unsigned short m_usSnarkFire;
+	static const char* pHuntSounds[];
 };

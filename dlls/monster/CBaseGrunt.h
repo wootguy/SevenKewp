@@ -256,6 +256,9 @@ public:
 
 private:
 	void DropEquipmentToss(const char* cname, Vector vecGunPos, Vector vecGunAngles, Vector velocity, Vector aVelocity);
+
+	static const char* pMp5BurstSounds[];
+	static const char* pUziSounds[];
 };
 
 class CBaseRepel : public CBaseMonster {

@@ -50,6 +50,13 @@ public:
 	static const char* pSoundsGlass[];
 	static const char* pSoundsMetal[];
 	static const char* pSoundsConcrete[];
+
+	static const char* pBustSoundsWood[];
+	static const char* pBustSoundsFlesh[];
+	static const char* pBustSoundsGlass[];
+	static const char* pBustSoundsMetal[];
+	static const char* pBustSoundsConcrete[];
+
 	static const char* pSpawnObjects[];
 
 	static	TYPEDESCRIPTION m_SaveData[];

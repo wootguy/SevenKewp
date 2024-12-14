@@ -33,6 +33,13 @@
 
 LINK_ENTITY_TO_CLASS(weapon_grapple, CGrapple)
 
+const char* CGrapple::pChewSounds[] =
+{
+	"barnacle/bcl_chew2.wav", // used for gonome effect
+	"barnacle/bcl_chew1.wav",
+	"barnacle/bcl_chew3.wav",
+};
+
 void CGrapple::Spawn()
 {
 	Precache();
@@ -50,6 +57,8 @@ void CGrapple::Precache()
 	m_defaultModelW = "models/w_bgrap.mdl";
 	CBasePlayerWeapon::Precache();
 
+	PRECACHE_SOUND_ARRAY(pChewSounds);
+		
 	PRECACHE_SOUND("weapons/bgrapple_release.wav");
 	PRECACHE_SOUND("weapons/bgrapple_impact.wav");
 	PRECACHE_SOUND("weapons/bgrapple_fire.wav");
@@ -57,9 +66,6 @@ void CGrapple::Precache()
 	PRECACHE_SOUND("weapons/bgrapple_pull.wav");
 	PRECACHE_SOUND("weapons/bgrapple_wait.wav");
 	PRECACHE_SOUND("weapons/alienweap_draw.wav");
-	PRECACHE_SOUND("barnacle/bcl_chew1.wav");
-	PRECACHE_SOUND("barnacle/bcl_chew2.wav");
-	PRECACHE_SOUND("barnacle/bcl_chew3.wav");
 
 	PRECACHE_MODEL("sprites/tongue.spr");
 
@@ -387,23 +393,7 @@ void CGrapple::PrimaryAttack()
 
 						m_flDamageTime = gpGlobals->time;
 
-						const char* pszSample;
-
-						switch (RANDOM_LONG(0, 2))
-						{
-						default:
-						case 0:
-							pszSample = "barnacle/bcl_chew1.wav";
-							break;
-						case 1:
-							pszSample = "barnacle/bcl_chew2.wav";
-							break;
-						case 2:
-							pszSample = "barnacle/bcl_chew3.wav";
-							break;
-						}
-
-						EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_VOICE, pszSample, VOL_NORM, ATTN_NORM, 0, 125);
+						EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pChewSounds), VOL_NORM, ATTN_NORM, 0, 125);
 					}
 				}
 			}

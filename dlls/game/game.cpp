@@ -70,6 +70,7 @@ cvar_t	mp_default_medkit ={"mp_default_medkit", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_rpg_laser_mode ={"mp_rpg_laser_mode", "1", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
 
 cvar_t	mp_npckill = { "mp_npckill", "1", FCVAR_SERVER, 0, 0 };
 cvar_t	killnpc = { "killnpc", "1", FCVAR_SERVER, 0, 0 };
@@ -283,6 +284,20 @@ void freespace_command() {
 	ALERT(at_console, "Free space at %s is %.2f GB\n", path.c_str(), (float)gb);
 }
 
+void list_precached_sounds() {
+	std::vector<std::string> allSounds;
+
+	for (std::string item : g_precachedSounds) {
+		allSounds.push_back(item);
+	}
+
+	sort(allSounds.begin(), allSounds.end());
+
+	for (std::string item : allSounds) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", item.c_str()));
+	}
+}
+
 void test_command() {
 	int id = GetUserMsgInfo("VoiceMask", NULL);
 
@@ -316,6 +331,7 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("updateplugin", update_plugin);
 	g_engfuncs.pfnAddServerCommand("updateplugins", update_plugins);
 	g_engfuncs.pfnAddServerCommand("freespace", freespace_command);
+	g_engfuncs.pfnAddServerCommand("listsounds", list_precached_sounds);
 	
 	// Register cvars here:
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
@@ -380,6 +396,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_skill_allow);
 	CVAR_REGISTER (&mp_default_medkit);
 	CVAR_REGISTER (&mp_rpg_laser_mode);
+	CVAR_REGISTER (&mp_npcidletalk);
 
 	CVAR_REGISTER (&mp_chattime);
 

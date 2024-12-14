@@ -265,12 +265,6 @@ void CWorld::Precache(void)
 		PRECACHE_MODEL("models/agibs.mdl");
 	}
 
-	PRECACHE_SOUND("weapons/ric1.wav");
-	PRECACHE_SOUND("weapons/ric2.wav");
-	PRECACHE_SOUND("weapons/ric3.wav");
-	PRECACHE_SOUND("weapons/ric4.wav");
-	PRECACHE_SOUND("weapons/ric5.wav");
-
 	PRECACHE_SOUND("weapons/distant/crack_9mm.wav");
 	PRECACHE_SOUND("weapons/distant/crack_357.wav");
 	PRECACHE_SOUND("weapons/distant/crack_556.wav");

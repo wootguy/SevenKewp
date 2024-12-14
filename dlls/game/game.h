@@ -97,6 +97,9 @@ EXPORT extern cvar_t	mp_prefer_server_maxspeed;
 // 0 disables. 1+ = max sounds per action (death/pain/idle/etc.)
 EXPORT extern cvar_t	soundvariety;
 
+// disables idle talking for some npcs to save precache slots (otis/fgrunt/bodyguard/rgrunt/strooper)
+EXPORT extern cvar_t	mp_npcidletalk;
+
 EXPORT extern cvar_t	mp_npckill;
 EXPORT extern cvar_t	killnpc; // legacy setting. When set to 0, makes scientists and barneys invulnerable
 

@@ -206,6 +206,36 @@ const char* CBreakable::pSoundsGlass[] =
 	"debris/glass3.wav",
 };
 
+const char* CBreakable::pBustSoundsWood[] =
+{
+	"debris/bustcrate1.wav",
+	"debris/bustcrate2.wav",
+};
+
+const char* CBreakable::pBustSoundsFlesh[] =
+{
+	"debris/bustflesh1.wav",
+	"debris/bustflesh2.wav",
+};
+
+const char* CBreakable::pBustSoundsMetal[] =
+{
+	"debris/bustmetal1.wav",
+	"debris/bustmetal2.wav",
+};
+
+const char* CBreakable::pBustSoundsConcrete[] =
+{
+	"debris/bustconcrete1.wav",
+	"debris/bustconcrete2.wav",
+};
+
+const char* CBreakable::pBustSoundsGlass[] =
+{
+	"debris/bustglass1.wav",
+	"debris/bustglass2.wav",
+};
+
 const char** CBreakable::MaterialSoundList(Materials precacheMaterial, int& soundCount)
 {
 	const char** pSoundList = NULL;
@@ -256,8 +286,7 @@ void CBreakable::MaterialSoundPrecache(Materials precacheMaterial)
 
 	pSoundList = MaterialSoundList(precacheMaterial, soundCount);
 
-	for (i = 0; i < soundCount; i++)
-	{
+	for (i = 0; i < soundCount && i < soundvariety.value; i++) {
 		PRECACHE_SOUND_ENT(NULL, (char*)pSoundList[i]);
 	}
 }
@@ -269,8 +298,10 @@ void CBreakable::MaterialSoundRandom(edict_t* pEdict, Materials soundMaterial, f
 
 	pSoundList = MaterialSoundList(soundMaterial, soundCount);
 
-	if (soundCount)
-		EMIT_SOUND(pEdict, CHAN_BODY, pSoundList[RANDOM_LONG(0, soundCount - 1)], volume, 1.0);
+	if (pSoundList) {
+		int idx = RANDOM_LONG(0, V_min(soundCount, soundvariety.value) - 1);
+		EMIT_SOUND(pEdict, CHAN_BODY, pSoundList[idx], volume, 1.0);
+	}
 }
 
 
@@ -284,50 +315,41 @@ void CBreakable::Precache(void)
 	case matWood:
 		pGibName = "models/woodgibs.mdl";
 
-		PRECACHE_SOUND("debris/bustcrate1.wav");
-		PRECACHE_SOUND("debris/bustcrate2.wav");
+		PRECACHE_SOUND_ARRAY(pBustSoundsWood);
 		break;
 	case matFlesh:
 		pGibName = "models/fleshgibs.mdl";
 
-		PRECACHE_SOUND("debris/bustflesh1.wav");
-		PRECACHE_SOUND("debris/bustflesh2.wav");
+		PRECACHE_SOUND_ARRAY(pBustSoundsFlesh);
 		break;
 	case matComputer:
 		PRECACHE_SOUND("buttons/spark5.wav");
 		PRECACHE_SOUND("buttons/spark6.wav");
 		pGibName = "models/computergibs.mdl";
 
-		PRECACHE_SOUND("debris/metal1.wav");
-		PRECACHE_SOUND("debris/metal3.wav");
-		PRECACHE_SOUND("debris/bustmetal1.wav");
-		PRECACHE_SOUND("debris/bustmetal2.wav");
+		PRECACHE_SOUND_ARRAY(pBustSoundsMetal);
 		break;
 
 	case matUnbreakableGlass:
 	case matGlass:
 		pGibName = "models/glassgibs.mdl";
 
-		PRECACHE_SOUND("debris/bustglass1.wav");
-		PRECACHE_SOUND("debris/bustglass2.wav");
+		PRECACHE_SOUND_ARRAY(pBustSoundsGlass);
 		break;
 	case matMetal:
 		pGibName = "models/metalplategibs.mdl";
 
-		PRECACHE_SOUND("debris/bustmetal1.wav");
-		PRECACHE_SOUND("debris/bustmetal2.wav");
+		PRECACHE_SOUND_ARRAY(pBustSoundsMetal);
 		break;
 	case matCinderBlock:
 		pGibName = "models/cindergibs.mdl";
 
-		PRECACHE_SOUND("debris/bustconcrete1.wav");
-		PRECACHE_SOUND("debris/bustconcrete2.wav");
+		PRECACHE_SOUND_ARRAY(pBustSoundsConcrete);
 		break;
 	case matRocks:
 		pGibName = "models/rockgibs.mdl";
 
-		PRECACHE_SOUND("debris/bustconcrete1.wav");
-		PRECACHE_SOUND("debris/bustconcrete2.wav");
+		PRECACHE_SOUND_ARRAY(pBustSoundsConcrete);
 		break;
 	case matCeilingTile:
 		pGibName = "models/ceilinggibs.mdl";
@@ -335,7 +357,13 @@ void CBreakable::Precache(void)
 		PRECACHE_SOUND("debris/bustceiling.wav");
 		break;
 	}
+
 	MaterialSoundPrecache(m_Material);
+
+	if (m_Material == matComputer) {
+		MaterialSoundPrecache(matMetal);
+	}
+
 	if (m_iszGibModel)
 		pGibName = STRING(m_iszGibModel);
 
@@ -354,8 +382,6 @@ void CBreakable::DamageSound(void)
 {
 	int pitch;
 	float fvol;
-	const char* rgpsz[6];
-	int i;
 	int material = m_Material;
 
 	//	if (RANDOM_LONG(0,1))
@@ -371,58 +397,13 @@ void CBreakable::DamageSound(void)
 	if (material == matComputer && RANDOM_LONG(0, 1))
 		material = matMetal;
 
-	switch (material)
-	{
-	case matComputer:
-	case matGlass:
-	case matUnbreakableGlass:
-		rgpsz[0] = "debris/glass1.wav";
-		rgpsz[1] = "debris/glass2.wav";
-		rgpsz[2] = "debris/glass3.wav";
-		i = 3;
-		break;
+	int soundCount = 0;
+	const char** dmgSoundList = MaterialSoundList((Materials)material, soundCount);
 
-	case matWood:
-		rgpsz[0] = "debris/wood1.wav";
-		rgpsz[1] = "debris/wood2.wav";
-		rgpsz[2] = "debris/wood3.wav";
-		i = 3;
-		break;
-
-	case matMetal:
-		rgpsz[0] = "debris/metal1.wav";
-		rgpsz[1] = "debris/metal3.wav";
-		rgpsz[2] = "debris/metal2.wav";
-		i = 2;
-		break;
-
-	case matFlesh:
-		rgpsz[0] = "debris/flesh1.wav";
-		rgpsz[1] = "debris/flesh2.wav";
-		rgpsz[2] = "debris/flesh3.wav";
-		rgpsz[3] = "debris/flesh5.wav";
-		rgpsz[4] = "debris/flesh6.wav";
-		rgpsz[5] = "debris/flesh7.wav";
-		i = 6;
-		break;
-
-	case matRocks:
-	case matCinderBlock:
-		rgpsz[0] = "debris/concrete1.wav";
-		rgpsz[1] = "debris/concrete2.wav";
-		rgpsz[2] = "debris/concrete3.wav";
-		i = 3;
-		break;
-
-	default:
-	case matCeilingTile:
-		// UNDONE: no ceiling tile shard sound yet
-		i = 0;
-		break;
+	if (dmgSoundList) {
+		int idx = RANDOM_LONG(0, V_min(soundCount, soundvariety.value)-1);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, dmgSoundList[idx], fvol, ATTN_NORM, 0, pitch);
 	}
-
-	if (i)
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, rgpsz[RANDOM_LONG(0, i - 1)], fvol, ATTN_NORM, 0, pitch);
 }
 
 const char* CBreakable::DisplayName() {
@@ -635,59 +616,29 @@ void CBreakable::Die()
 	switch (m_Material)
 	{
 	case matGlass:
-		switch (RANDOM_LONG(0, 1))
-		{
-		case 0:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustglass1.wav", fvol, ATTN_NORM, 0, pitch);
-			break;
-		case 1:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustglass2.wav", fvol, ATTN_NORM, 0, pitch);
-			break;
-		}
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBustSoundsGlass), fvol, ATTN_NORM, 0, pitch);
 		cFlag = BREAK_GLASS;
 		break;
 
 	case matWood:
-		switch (RANDOM_LONG(0, 1))
-		{
-		case 0:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustcrate1.wav", fvol, ATTN_NORM, 0, pitch);
-			break;
-		case 1:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustcrate2.wav", fvol, ATTN_NORM, 0, pitch);
-			break;
-		}
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBustSoundsWood), fvol, ATTN_NORM, 0, pitch);
 		cFlag = BREAK_WOOD;
 		break;
 
 	case matComputer:
 	case matMetal:
-		switch (RANDOM_LONG(0, 1))
-		{
-		case 0:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustmetal1.wav", fvol, ATTN_NORM, 0, pitch);
-			break;
-		case 1:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustmetal2.wav", fvol, ATTN_NORM, 0, pitch);
-			break;
-		}
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBustSoundsMetal), fvol, ATTN_NORM, 0, pitch);
 		cFlag = BREAK_METAL;
 		break;
 
 	case matFlesh:
-		switch (RANDOM_LONG(0, 1))
-		{
-		case 0:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustflesh1.wav", fvol, ATTN_NORM, 0, pitch);
-			break;
-		case 1:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustflesh2.wav", fvol, ATTN_NORM, 0, pitch);
-			break;
-		}
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBustSoundsFlesh), fvol, ATTN_NORM, 0, pitch);
 		cFlag = BREAK_FLESH;
 		break;
 
 	case matRocks:
 	case matCinderBlock:
-		switch (RANDOM_LONG(0, 1))
-		{
-		case 0:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustconcrete1.wav", fvol, ATTN_NORM, 0, pitch);
-			break;
-		case 1:	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustconcrete2.wav", fvol, ATTN_NORM, 0, pitch);
-			break;
-		}
+		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBustSoundsConcrete), fvol, ATTN_NORM, 0, pitch);
 		cFlag = BREAK_CONCRETE;
 		break;
 

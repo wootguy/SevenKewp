@@ -398,16 +398,19 @@ void CBodyGuard::Precache()
 	// reduce speech arrays to 1 instantly
 	soundvariety.value = soundvariety.value > 0 ? 1 : soundvariety.value;
 
+	if (mp_npcidletalk.value) {
+		PRECACHE_SOUND_ARRAY(pIdleSounds);
+		PRECACHE_SOUND_ARRAY(pScaredSounds);
+		PRECACHE_SOUND_ARRAY(pHelloSounds);
+		PRECACHE_SOUND_ARRAY(pCureSounds);
+		PRECACHE_SOUND_ARRAY(pQuestionSounds);
+		PRECACHE_SOUND_ARRAY(pAnswerSounds);
+	}
+
 	PRECACHE_SOUND_ARRAY(pShotSounds);
 	PRECACHE_SOUND_ARRAY(pMadSounds);
 	PRECACHE_SOUND_ARRAY(pKillSounds);
-	PRECACHE_SOUND_ARRAY(pIdleSounds);
 	PRECACHE_SOUND_ARRAY(pStopSounds);
-	PRECACHE_SOUND_ARRAY(pScaredSounds);
-	PRECACHE_SOUND_ARRAY(pHelloSounds);
-	PRECACHE_SOUND_ARRAY(pCureSounds);
-	PRECACHE_SOUND_ARRAY(pQuestionSounds);
-	PRECACHE_SOUND_ARRAY(pAnswerSounds);
 
 	// follow/unfollow sounds should have more variety because players activate them often
 	soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 3) ? 3 : soundvariety.value;
@@ -552,6 +555,8 @@ void CBodyGuard::PlaySentence(const char* pszSentence, float duration, float vol
 	int oldSoundVariety = soundvariety.value;
 	soundvariety.value = soundvariety.value > 0 ? 1 : soundvariety.value;
 
+	bool isIdleSound = false;
+
 	if (!strcmp(pszSentence, "BG_SHOT")) {
 		sample = RANDOM_SOUND_ARRAY(pShotSounds);
 	}
@@ -563,6 +568,7 @@ void CBodyGuard::PlaySentence(const char* pszSentence, float duration, float vol
 	}
 	else if (!strcmp(pszSentence, "BG_IDLE")) {
 		sample = RANDOM_SOUND_ARRAY(pIdleSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "BG_OK")) {
 		soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 3) ? 3 : soundvariety.value;
@@ -577,18 +583,23 @@ void CBodyGuard::PlaySentence(const char* pszSentence, float duration, float vol
 	}
 	else if (!strcmp(pszSentence, "BG_SCARED")) {
 		sample = RANDOM_SOUND_ARRAY(pScaredSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "BG_HELLO")) {
 		sample = RANDOM_SOUND_ARRAY(pHelloSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "!BG_CUREA") || !strcmp(pszSentence, "!BG_CUREB") || !strcmp(pszSentence, "!BG_CUREC")) {
 		sample = RANDOM_SOUND_ARRAY(pCureSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "BG_QUESTION")) {
 		sample = RANDOM_SOUND_ARRAY(pQuestionSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "BG_ANSWER")) {
 		sample = RANDOM_SOUND_ARRAY(pAnswerSounds);
+		isIdleSound = true;
 	}
 	else {
 		ALERT(at_console, "Invalid sentence: %s\n", pszSentence);
@@ -597,7 +608,8 @@ void CBodyGuard::PlaySentence(const char* pszSentence, float duration, float vol
 
 	soundvariety.value = oldSoundVariety;
 
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, sample, volume, attenuation, 0, GetVoicePitch());
+	if (!isIdleSound || mp_npcidletalk.value)
+		EMIT_SOUND_DYN(edict(), CHAN_VOICE, sample, volume, attenuation, 0, GetVoicePitch());
 
 	// If you say anything, don't greet the player - you may have already spoken to them
 	SetBits(m_bitsSaid, bit_saidHelloPlayer);

@@ -715,6 +715,10 @@ void CShockTrooper::SetYawSpeed()
 
 void CShockTrooper::IdleSound()
 {
+	if (!mp_npcidletalk.value) {
+		return;
+	}
+
 	if (FOkToSpeak() && (0 != g_fShockTrooperQuestion || RANDOM_LONG(0, 1)))
 	{
 		if (0 == g_fShockTrooperQuestion)
@@ -1070,16 +1074,17 @@ void CShockTrooper::Precache()
 	PRECACHE_SOUND("weapons/shock_fire.wav");
 	PRECACHE_SOUND("shocktrooper/shock_trooper_attack.wav");
 
+	if (mp_npcidletalk.value) {
+		PRECACHE_SOUND("shocktrooper/st_check0.wav");
+		PRECACHE_SOUND("shocktrooper/st_quest0.wav");
+		PRECACHE_SOUND("shocktrooper/st_idle0.wav");
+		PRECACHE_SOUND("shocktrooper/st_clear0.wav");
+		PRECACHE_SOUND("shocktrooper/st_answer0.wav");
+	}
+
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDieSounds);
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
-
-	PRECACHE_SOUND("shocktrooper/st_check0.wav");
-	PRECACHE_SOUND("shocktrooper/st_quest0.wav");
-	PRECACHE_SOUND("shocktrooper/st_idle0.wav");
-
-	PRECACHE_SOUND("shocktrooper/st_clear0.wav");
-	PRECACHE_SOUND("shocktrooper/st_answer0.wav");
 
 	PRECACHE_SOUND("shocktrooper/st_charge0.wav");
 	PRECACHE_SOUND("shocktrooper/st_gren0.wav");

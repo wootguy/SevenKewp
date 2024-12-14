@@ -173,7 +173,7 @@ void CAmbientGeneric::Precache(void)
 	{
 		if (m_isGlobalMp3)
 			PRECACHE_GENERIC((std::string("sound/") + szSoundFile).c_str());
-		if (*szSoundFile != '!')
+		else if (*szSoundFile != '!')
 			PRECACHE_SOUND(szSoundFile);
 	}
 	// init all dynamic modulation parms

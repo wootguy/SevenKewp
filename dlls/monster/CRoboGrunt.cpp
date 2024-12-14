@@ -12,6 +12,7 @@
 #include "customentity.h"
 #include "CBaseGrunt.h"
 #include "explode.h"
+#include "CBaseButton.h"
 
 #define GUN_GROUP					2
 #define GUN_MP5						0
@@ -71,7 +72,6 @@ private:
 	static const char* pQuestSounds[];
 	static const char* pTauntSounds[];
 	static const char* pThrowSounds[];
-	static const char* pHeadshotSounds[];
 };
 
 class CRoboGruntRepel : public CBaseRepel
@@ -144,13 +144,6 @@ const char* CRoboGrunt::pThrowSounds[] =
 {
 	"rgrunt/rb_throw0.wav",
 };
-const char* CRoboGrunt::pHeadshotSounds[] =
-{
-	"buttons/spark1.wav",
-	"buttons/spark2.wav",
-	"buttons/spark3.wav",
-	"buttons/spark4.wav",
-};
 
 const char* CRoboGrunt::pGruntSentences[] =
 {
@@ -216,20 +209,23 @@ void CRoboGrunt::Precache()
 
 	m_iHeadshotSpr = PRECACHE_MODEL("sprites/xspark2.spr");
 
+	if (mp_npcidletalk.value) {
+		PRECACHE_SOUND_ARRAY(pAnswerSounds);
+		PRECACHE_SOUND_ARRAY(pCheckSounds);
+		PRECACHE_SOUND_ARRAY(pClearSounds);
+		PRECACHE_SOUND_ARRAY(pQuestSounds);
+	}
+
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
 
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
-	PRECACHE_SOUND_ARRAY(pAnswerSounds);
 	PRECACHE_SOUND_ARRAY(pChargeSounds);
-	PRECACHE_SOUND_ARRAY(pCheckSounds);
-	PRECACHE_SOUND_ARRAY(pClearSounds);
 	PRECACHE_SOUND_ARRAY(pCoverSounds);
 	PRECACHE_SOUND_ARRAY(pGrenSounds);
 	PRECACHE_SOUND_ARRAY(pMonstSounds);
-	PRECACHE_SOUND_ARRAY(pQuestSounds);
 	PRECACHE_SOUND_ARRAY(pTauntSounds);
 	PRECACHE_SOUND_ARRAY(pThrowSounds);
-	PRECACHE_SOUND_ARRAY(pHeadshotSounds);
+	PRECACHE_SOUND_ARRAY(g_sparkSounds);
 
 	PRECACHE_SOUND(RGRUNT_FOLLOW_SOUND);
 	PRECACHE_SOUND(RGRUNT_UNFOLLOW_SOUND);
@@ -347,7 +343,7 @@ void CRoboGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 		}
 
 		if (ptr->iHitgroup == HITGROUP_HEAD) {
-			StartSound(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(pHeadshotSounds), 1.0f, ATTN_NORM, 0, RANDOM_LONG(90, 110), pev->origin, 0xffffffff);
+			StartSound(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(g_sparkSounds), 1.0f, ATTN_NORM, 0, RANDOM_LONG(90, 110), pev->origin, 0xffffffff);
 
 			Vector sprPos = ptr->vecEndPos - Vector(0, 0, 10);
 
@@ -376,6 +372,10 @@ void CRoboGrunt::DeathSound(void)
 
 void CRoboGrunt::IdleSound(void)
 {
+	if (!mp_npcidletalk.value) {
+		return;
+	}
+
 	if (FOkToSpeak() && (g_fGruntQuestion || RANDOM_LONG(0, 1)))
 	{
 		if (!g_fGruntQuestion)

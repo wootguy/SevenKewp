@@ -310,22 +310,20 @@ void CTentacle :: Precache( )
 	PRECACHE_SOUND("ambience/flies.wav");
 	PRECACHE_SOUND("ambience/squirm2.wav");
 
-	PRECACHE_SOUND("tentacle/te_alert1.wav");
-	PRECACHE_SOUND("tentacle/te_alert2.wav");
-	PRECACHE_SOUND("tentacle/te_flies1.wav");
+	//PRECACHE_SOUND("tentacle/te_alert1.wav");
+	//PRECACHE_SOUND("tentacle/te_alert2.wav");
+	//PRECACHE_SOUND("tentacle/te_flies1.wav");
 	PRECACHE_SOUND("tentacle/te_move1.wav");
 	PRECACHE_SOUND("tentacle/te_move2.wav");
 	PRECACHE_SOUND("tentacle/te_roar1.wav");
 	PRECACHE_SOUND("tentacle/te_roar2.wav");
-	PRECACHE_SOUND("tentacle/te_search1.wav");
-	PRECACHE_SOUND("tentacle/te_search2.wav");
+	//PRECACHE_SOUND("tentacle/te_search1.wav");
+	//PRECACHE_SOUND("tentacle/te_search2.wav");
 	PRECACHE_SOUND("tentacle/te_sing1.wav");
 	PRECACHE_SOUND("tentacle/te_sing2.wav");
-	PRECACHE_SOUND("tentacle/te_squirm2.wav");
-	PRECACHE_SOUND("tentacle/te_strike1.wav");
-	PRECACHE_SOUND("tentacle/te_strike2.wav");
-	PRECACHE_SOUND("tentacle/te_swing1.wav");
-	PRECACHE_SOUND("tentacle/te_swing2.wav");
+	//PRECACHE_SOUND("tentacle/te_squirm2.wav");
+	//PRECACHE_SOUND("tentacle/te_swing1.wav");
+	//PRECACHE_SOUND("tentacle/te_swing2.wav");
 
 	PRECACHE_SOUND_ARRAY( pHitSilo );
 	PRECACHE_SOUND_ARRAY( pHitDirt );
@@ -910,7 +908,7 @@ void CTentacle :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		UTIL_EmitAmbientSound(ENT(pev), pev->origin + Vector( 0, 0, MyHeight()), sound, 1.0, ATTN_NORM, 0, 100);
 		break;
 
-	case 8: // search
+	case 8: // search (does not exist in model)
 		switch( RANDOM_LONG(0,1) )
 		{
 		default:

@@ -249,29 +249,119 @@ int PRECACHE_SOUND_NULLENT(const char* path) {
 	return PRECACHE_SOUND_ENT(NULL, path);
 }
 
-void PRECACHE_MODEL_EXTRAS(const char* path, studiohdr_t* mdl) {
-	if (!mdl || !path) {
-		return;
+bool validate_mdl(const char* path, studiohdr_t* mdl) {
+	if (!path || !mdl) {
+		return false;
 	}
 
 	// Verify the model is valid
 	if (strlen(mdl->name) <= 0) {
 		// Ignore T Models being used directly. Maybe it was in a custom_precache entity or something.
-		return;
+		return false;
 	}
 	if (mdl->id != 1414743113) {
 		ALERT(at_error, "Invalid ID in model header: %s\n", path);
-		return;
+		return false;
 	}
 	if (mdl->version != 10) {
 		ALERT(at_error, "Invalid version in model header: %s\n", path);
-		return;
+		return false;
 	}
 	if (mdl->numseqgroups >= 10000)
 	{
 		ALERT(at_error, "Too many seqgroups (%d) for model: %s\n", mdl->numseqgroups, path);
+		return false;
+	}
+
+	return true;
+}
+
+void PRECACHE_MODEL_SEQUENCE(const char* path, studiohdr_t* mdl, int sequence) {
+	if (sequence >= mdl->numseq) {
+		ALERT(at_warning, "Invalid sequence precache %d (max %d) on model %s\n", sequence, mdl->numseq, path);
 		return;
 	}
+
+	mstudioseqdesc_t* seq = (mstudioseqdesc_t*)((byte*)mdl + mdl->seqindex) + sequence;
+
+	for (int k = 0; k < seq->numevents; k++) {
+		mstudioevent_t* evt = (mstudioevent_t*)((byte*)mdl + seq->eventindex) + k;
+
+		std::string opt(evt->options, 64);
+		int lastDot = opt.find(".");
+
+		if (lastDot == -1 || lastDot == (int)opt.size() - 1)
+			continue; // no file extension
+
+		if (evt->event == 1004 || evt->event == 1008 || evt->event == 5004) { // play sound
+			if (opt[0] == '*')
+				opt = opt.substr(1); // not sure why some models do this, it looks pointless.
+
+			if (evt->event == 5004) {
+				// sound is loaded by the client on-demand
+				PRECACHE_GENERIC(STRING(ALLOC_STRING(normalize_path("sound/" + opt).c_str())));
+			}
+			else {
+				// sound is played by the server
+				PRECACHE_SOUND_ENT(NULL, STRING(ALLOC_STRING(opt.c_str())));
+			}
+		}
+		if (evt->event == 5001 || evt->event == 5011 || evt->event == 5021 || evt->event == 5031) { // muzzleflash sprite
+			PRECACHE_GENERIC(STRING(ALLOC_STRING(normalize_path(opt).c_str())));
+		}
+		if (evt->event == 5005) { // custom muzzleflash (sven co-op only, likely requires custom client)
+			std::string muzzle_txt = normalize_path("events/" + opt);
+			ALERT(at_console, "unimplemented custom muzzle flash '%s' on model: %s\n",
+				muzzle_txt.c_str(), path);
+			/*
+			PRECACHE_GENERIC(muzzle_txt.c_str());
+
+			std::string muzzle_txt_path = getGameFilePath(muzzle_txt.c_str());
+			if (muzzle_txt_path.empty())
+				continue;
+
+			// parse muzzleflash config for sprite name
+			std::ifstream file(muzzle_txt_path);
+			if (file.is_open()) {
+				int line_num = 0;
+				std::string line;
+				while (getline(file, line)) {
+					line_num++;
+
+					line = trimSpaces(line);
+					if (line.find("//") == 0 || line.length() == 0)
+						continue;
+
+					line = replaceString(line, "\t", " ");
+
+					if (line.find("spritename") == 0) {
+						std::string val = trimSpaces(line.substr(line.find("spritename") + strlen("spritename")));
+						val.erase(std::remove(val.begin(), val.end(), '\"'), val.end());
+						PRECACHE_GENERIC(val);
+					}
+				}
+			}
+			file.close();
+			*/
+		}
+	}
+}
+
+void PRECACHE_MODEL_SEQUENCE(const char* path, int sequence) {
+	studiohdr_t* mdl = GET_MODEL_PTR(MODEL_INDEX(path));
+
+	if (!validate_mdl(path, mdl)) {
+		return;
+	}
+
+	PRECACHE_MODEL_SEQUENCE(path, mdl, sequence);
+}
+
+void PRECACHE_MODEL_EXTRAS(CBaseEntity* ent, const char* path, studiohdr_t* mdl) {
+	if (!validate_mdl(path, mdl)) {
+		return;
+	}
+
 	// TODO: might want to get the file size from disk to prevent reading invalid memory
 
 	std::string normalizedPath = normalize_path(path);
@@ -322,73 +412,20 @@ void PRECACHE_MODEL_EXTRAS(const char* path, studiohdr_t* mdl) {
 
 	// sounds and sprites attached to events
 	for (int i = 0; i < mdl->numseq; i++) {
-		mstudioseqdesc_t* seq = (mstudioseqdesc_t*)((byte*)mdl + mdl->seqindex) + i;
-
-		for (int k = 0; k < seq->numevents; k++) {
-			mstudioevent_t* evt = (mstudioevent_t*)((byte*)mdl + seq->eventindex) + k;
-
-			std::string opt(evt->options, 64);
-			lastDot = opt.find(".");
-
-			if (lastDot == -1 || lastDot == (int)opt.size() - 1)
-				continue; // no file extension
-
-			if (evt->event == 1004 || evt->event == 1008 || evt->event == 5004) { // play sound
-				if (opt[0] == '*')
-					opt = opt.substr(1); // not sure why some models do this, it looks pointless.
-
-				if (evt->event == 5004) {
-					// sound is loaded by the client on-demand
-					PRECACHE_GENERIC(STRING(ALLOC_STRING(normalize_path("sound/" + opt).c_str())));
-				}
-				else {
-					// sound is played by the server
-					PRECACHE_SOUND_ENT(NULL, STRING(ALLOC_STRING(opt.c_str())));
-				}
-			}
-			if (evt->event == 5001 || evt->event == 5011 || evt->event == 5021 || evt->event == 5031) { // muzzleflash sprite
-				PRECACHE_GENERIC(STRING(ALLOC_STRING(normalize_path(opt).c_str())));
-			}
-			if (evt->event == 5005) { // custom muzzleflash (sven co-op only, likely requires custom client)
-				std::string muzzle_txt = normalize_path("events/" + opt);
-				ALERT(at_console, "unimplemented custom muzzle flash '%s' on model: %s\n",
-					muzzle_txt.c_str(), path);
-				/*
-				PRECACHE_GENERIC(muzzle_txt.c_str());
-
-				std::string muzzle_txt_path = getGameFilePath(muzzle_txt.c_str());
-				if (muzzle_txt_path.empty())
-					continue;
-
-				// parse muzzleflash config for sprite name
-				std::ifstream file(muzzle_txt_path);
-				if (file.is_open()) {
-					int line_num = 0;
-					std::string line;
-					while (getline(file, line)) {
-						line_num++;
-
-						line = trimSpaces(line);
-						if (line.find("//") == 0 || line.length() == 0)
-							continue;
-
-						line = replaceString(line, "\t", " ");
-
-						if (line.find("spritename") == 0) {
-							std::string val = trimSpaces(line.substr(line.find("spritename") + strlen("spritename")));
-							val.erase(std::remove(val.begin(), val.end(), '\"'), val.end());
-							PRECACHE_GENERIC(val);
-						}
-					}
-				}
-				file.close();
-				*/
+		if (ent && ent->IsMonster()) {
+			mstudioseqdesc_t* seq = (mstudioseqdesc_t*)((byte*)mdl + mdl->seqindex) + i;
+			if (seq->activity == 0) {
+				// don't precache sequences that the monster doesn't use normally.
+				// scripted_sequence will need to precache whichever sequences are needed
+				continue;
 			}
 		}
+
+		PRECACHE_MODEL_SEQUENCE(path, mdl, i);
 	}
 }
 
-int PRECACHE_MODEL(const char* path) {
+int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
 
@@ -438,12 +475,7 @@ int PRECACHE_MODEL(const char* path) {
 
 		std::string pathstr = std::string(path);
 		if (pathstr.find(".mdl") == pathstr.size() - 4) {
-			// temporarily attach the model to an entity to avoid loading the model from disk again
-			edict_t* world = ENT(0);
-			int oldModelIdx = world->v.modelindex;
-			world->v.modelindex = modelIdx;
-			PRECACHE_MODEL_EXTRAS(path, (studiohdr_t*)GET_MODEL_PTR(world));
-			world->v.modelindex = oldModelIdx;
+			PRECACHE_MODEL_EXTRAS(ent, path, GET_MODEL_PTR(modelIdx));
 		}
 
 		CALL_HOOKS(int, pfnPrecacheModelPost, path);
@@ -455,12 +487,12 @@ int PRECACHE_MODEL(const char* path) {
 	}
 }
 
-int PRECACHE_REPLACEMENT_MODEL(const char* path) {
+int PRECACHE_REPLACEMENT_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
 
 	if (!mp_mergemodels.value || g_modelReplacements.find(path) != g_modelReplacements.end()) {
-		return PRECACHE_MODEL(path);
+		return PRECACHE_MODEL_ENT(ent, path);
 	}
 
 	return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
@@ -579,7 +611,7 @@ int SOUND_INDEX(const char* sound) {
 }
 
 
-void* GET_MODEL_PTR(edict_t* edict) {
+studiohdr_t* GET_MODEL_PTR(edict_t* edict) {
 	studiohdr_t* header = (studiohdr_t*)g_engfuncs.pfnGetModelPtr(edict);
 
 	if (!header) {
@@ -587,6 +619,17 @@ void* GET_MODEL_PTR(edict_t* edict) {
 	}
 
 	return header;
+}
+
+studiohdr_t* GET_MODEL_PTR(int modelIdx) {
+	// temporarily attach the model to an entity to avoid loading the model from disk again
+	edict_t* world = ENT(0);
+	int oldModelIdx = world->v.modelindex;
+	world->v.modelindex = modelIdx;
+	studiohdr_t* ptr = (studiohdr_t*)GET_MODEL_PTR(world);
+	world->v.modelindex = oldModelIdx;
+
+	return ptr;
 }
 
 void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed) {

@@ -71,6 +71,8 @@ public:
 
 	CUSTOM_SCHEDULES;
 
+	static const char* pSpitSounds[];
+
 private:
 	float m_rangeAttackCooldown; // next time a range attack can be considered
 	float m_nextBloodSound; // next time the grabbing blood sound should be played (should really be an animation event)
@@ -136,16 +138,21 @@ const char* CGonome::pDieSounds[] =
 	"gonome/gonome_death4.wav",
 };
 
+const char* CGonome::pSpitSounds[] =
+{
+	"bullchicken/bc_spithit1.wav",
+	"bullchicken/bc_spithit2.wav",
+};
+
 const char* CGonome::pEventSounds[] =
 {
+	// here for sound replacement
 	"gonome/gonome_melee1.wav",
 	"gonome/gonome_melee2.wav",
 	"gonome/gonome_eat.wav",
 
 	// not actually event sounds but wtv
 	"bullchicken/bc_acid1.wav",
-	"bullchicken/bc_spithit1.wav",
-	"bullchicken/bc_spithit2.wav",
 };
 
 // Chase enemy schedule
@@ -338,6 +345,7 @@ void CGonome::Precache()
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDieSounds);
+	PRECACHE_SOUND_ARRAY(pSpitSounds);
 
 	// not affected by mp_soundvariety (but should be)
 	for (int i = 0; i < (int)ARRAYSIZE(pEventSounds); i++) \
@@ -524,15 +532,8 @@ void CGonomeSpit::Touch(CBaseEntity* pOther)
 
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "bullchicken/bc_acid1.wav", 1, ATTN_NORM, 0, iPitch);
 
-	switch (RANDOM_LONG(0, 1))
-	{
-	case 0:
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "bullchicken/bc_spithit1.wav", 1, ATTN_NORM, 0, iPitch);
-		break;
-	case 1:
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "bullchicken/bc_spithit2.wav", 1, ATTN_NORM, 0, iPitch);
-		break;
-	}
+
+	EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(CGonome::pSpitSounds), 1, ATTN_NORM, 0, iPitch);
 
 	if (!pOther->pev->takedamage)
 	{

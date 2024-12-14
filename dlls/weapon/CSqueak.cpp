@@ -36,6 +36,12 @@ enum squeak_e {
 
 LINK_ENTITY_TO_CLASS( weapon_snark, CSqueak )
 
+const char* CSqueak::pHuntSounds[] =
+{
+	"squeek/sqk_hunt2.wav",
+	"squeek/sqk_hunt3.wav",
+	"squeek/sqk_hunt1.wav",
+};
 
 void CSqueak::Spawn( )
 {
@@ -60,8 +66,7 @@ void CSqueak::Precache( void )
 	m_defaultModelW = "models/w_sqknest.mdl";
 	CBasePlayerWeapon::Precache();
 
-	PRECACHE_SOUND("squeek/sqk_hunt2.wav");
-	PRECACHE_SOUND("squeek/sqk_hunt3.wav");
+	PRECACHE_SOUND_ARRAY(pHuntSounds);
 	UTIL_PrecacheOther("monster_snark");
 
 	PrecacheEvents();
@@ -98,12 +103,7 @@ BOOL CSqueak::Deploy( )
 		return 0;
 
 	// play hunt sound
-	float flRndSound = RANDOM_FLOAT ( 0 , 1 );
-
-	if ( flRndSound <= 0.5 )
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_NORM, 0, 100);
-	else 
-		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 100);
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pHuntSounds), 1, ATTN_NORM, 0, 100);
 
 	m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 
@@ -177,12 +177,7 @@ void CSqueak::PrimaryAttack()
 #endif
 
 			// play hunt sound
-			float flRndSound = RANDOM_FLOAT ( 0 , 1 );
-
-			if ( flRndSound <= 0.5 )
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt2.wav", 1, ATTN_NORM, 0, 105);
-			else 
-				EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_hunt3.wav", 1, ATTN_NORM, 0, 105);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pHuntSounds), 1, ATTN_NORM, 0, 105);
 
 			m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
 

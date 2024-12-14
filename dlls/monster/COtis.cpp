@@ -683,14 +683,17 @@ void COtis :: Precache()
 	int oldSoundVariety = soundvariety.value;
 	soundvariety.value = soundvariety.value > 0 ? 1 : soundvariety.value;
 
-	PRECACHE_SOUND_ARRAY(pAnswerSounds);
-	PRECACHE_SOUND_ARRAY(pQuestionSounds);
-	PRECACHE_SOUND_ARRAY(pIdleSounds);
-	PRECACHE_SOUND_ARRAY(pScaredSounds);
-	PRECACHE_SOUND_ARRAY(pHelloSounds);
-	PRECACHE_SOUND_ARRAY(pSmellSounds);
-	PRECACHE_SOUND_ARRAY(pWoundSounds);
-	PRECACHE_SOUND_ARRAY(pMortalSounds);
+	if (mp_npcidletalk.value) {
+		PRECACHE_SOUND_ARRAY(pAnswerSounds);
+		PRECACHE_SOUND_ARRAY(pQuestionSounds);
+		PRECACHE_SOUND_ARRAY(pIdleSounds);
+		PRECACHE_SOUND_ARRAY(pHelloSounds);
+		PRECACHE_SOUND_ARRAY(pSmellSounds);
+		PRECACHE_SOUND_ARRAY(pScaredSounds);
+		PRECACHE_SOUND_ARRAY(pWoundSounds);
+		PRECACHE_SOUND_ARRAY(pMortalSounds);
+	}
+	
 	PRECACHE_SOUND_ARRAY(pMadSounds);
 	PRECACHE_SOUND_ARRAY(pShotSounds);
 	PRECACHE_SOUND_ARRAY(pKillSounds);
@@ -781,14 +784,28 @@ void COtis::PlaySentence(const char* pszSentence, float duration, float volume, 
 	int oldSoundVariety = soundvariety.value;
 	soundvariety.value = soundvariety.value > 0 ? 1 : soundvariety.value;
 
+	bool isIdleSound = false;
+
+	PRECACHE_SOUND_ARRAY(pAnswerSounds);
+	PRECACHE_SOUND_ARRAY(pQuestionSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pHelloSounds);
+	PRECACHE_SOUND_ARRAY(pSmellSounds);
+	PRECACHE_SOUND_ARRAY(pScaredSounds);
+	PRECACHE_SOUND_ARRAY(pWoundSounds);
+	PRECACHE_SOUND_ARRAY(pMortalSounds);
+
 	if (!strcmp(pszSentence, "OT_ANSWER")) {
 		sample = RANDOM_SOUND_ARRAY(pAnswerSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "OT_QUESTION")) {
 		sample = RANDOM_SOUND_ARRAY(pQuestionSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "OT_IDLE")) {
 		sample = RANDOM_SOUND_ARRAY(pIdleSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "OT_OK")) {
 		soundvariety.value = (oldSoundVariety > 0 && oldSoundVariety > 2) ? 3 : soundvariety.value;
@@ -800,18 +817,23 @@ void COtis::PlaySentence(const char* pszSentence, float duration, float volume, 
 	}
 	else if (!strcmp(pszSentence, "OT_SCARED")) {
 		sample = RANDOM_SOUND_ARRAY(pScaredSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "OT_HELLO")) {
 		sample = RANDOM_SOUND_ARRAY(pHelloSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "OT_SMELL")) {
 		sample = RANDOM_SOUND_ARRAY(pSmellSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "OT_WOUND")) {
 		sample = RANDOM_SOUND_ARRAY(pWoundSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "OT_MORTAL")) {
 		sample = RANDOM_SOUND_ARRAY(pMortalSounds);
+		isIdleSound = true;
 	}
 	else if (!strcmp(pszSentence, "OT_MAD")) {
 		sample = RANDOM_SOUND_ARRAY(pMadSounds);
@@ -829,7 +851,8 @@ void COtis::PlaySentence(const char* pszSentence, float duration, float volume, 
 
 	soundvariety.value = oldSoundVariety;
 
-	EMIT_SOUND_DYN(edict(), CHAN_VOICE, sample, volume, attenuation, 0, GetVoicePitch());
+	if (!isIdleSound || mp_npcidletalk.value)
+		EMIT_SOUND_DYN(edict(), CHAN_VOICE, sample, volume, attenuation, 0, GetVoicePitch());
 
 	// If you say anything, don't greet the player - you may have already spoken to them
 	SetBits(m_bitsSaid, bit_saidHelloPlayer);

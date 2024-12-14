@@ -527,6 +527,7 @@ void COFShockRoach::RifleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 //=========================================================
 void COFShockRoach :: IdleSound ( void )
 {
+	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pIdleSounds), 1, ATTN_NORM);
 }
 
 //=========================================================

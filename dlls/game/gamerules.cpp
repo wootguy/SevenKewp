@@ -166,6 +166,7 @@ void execMapCfg() {
 		"nosuit",
 		"nomedkit",
 		"nomaptrans",
+		"mp_npcidletalk",
 	};
 
 	static unordered_set<string> itemNames = {
@@ -265,6 +266,11 @@ void execMapCfg() {
 		if (name == "nomedkit") {
 			g_noMedkit = true;
 			continue;
+		}
+
+		if (name == "mp_soundvariety") {
+			// footsteps are important enough to have a minimum of 2 for each type
+			g_footstepVariety = atoi(value.c_str()) > 2 ? 2 : 1;
 		}
 
 		if (name == "nomaptrans") {

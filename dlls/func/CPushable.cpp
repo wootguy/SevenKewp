@@ -110,8 +110,7 @@ void CPushable::Spawn(void)
 
 void CPushable::Precache(void)
 {
-	for (int i = 0; i < 3; i++)
-		PRECACHE_SOUND(m_soundNames[i]);
+	PRECACHE_SOUND_ARRAY(m_soundNames);
 
 	if (pev->spawnflags & SF_PUSH_BREAKABLE)
 		CBreakable::Precache();
@@ -416,7 +415,7 @@ void CPushable::PostMove(bool clampSpeed) {
 		m_soundTime = gpGlobals->time;
 		if (length > 10 && FBitSet(pev->flags, FL_ONGROUND))
 		{
-			m_lastSound = RANDOM_LONG(0, 2);
+			m_lastSound = RANDOM_SOUND_ARRAY_IDX(m_soundNames);
 			EMIT_SOUND(ENT(pev), CHAN_WEAPON, m_soundNames[m_lastSound], 0.5, ATTN_NORM);
 			//			SetThink( StopSound );
 			//			pev->nextthink = pev->ltime + 0.1;

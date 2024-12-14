@@ -689,7 +689,14 @@ EXPORT void EMIT_GROUPID_SUIT(edict_t *entity, int isentenceg);
 EXPORT void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 
 // macros for precaching sound arrays and selecting random sounds which are affected my mp_soundvariety
-#define RANDOM_SOUND_ARRAY_IDX( array ) RANDOM_LONG(0,(soundvariety.value > 0 ? V_min(ARRAYSIZE( (array) ), soundvariety.value) : ARRAYSIZE( (array) ))-1)
+#ifdef CLIENT_DLL
+#define PRECACHE_SOUND_ARRAY( a ) \
+	{ \
+		for (int i = 0; i < ARRAYSIZE( (a) ); i++ ) \
+			PRECACHE_SOUND((char *) (a) [i]); \
+	}
+#define RANDOM_SOUND_ARRAY_IDX( array ) RANDOM_LONG(0,(ARRAYSIZE( (array) ))-1)
+#else
 #define PRECACHE_SOUND_ARRAY( a ) \
 	{ \
 		int count = ARRAYSIZE( (a) ); \
@@ -698,6 +705,16 @@ EXPORT void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 		} \
 		for (int i = 0; i < count; i++ ) \
 			PRECACHE_SOUND((char *) (a) [i]); \
+	}
+#define RANDOM_SOUND_ARRAY_IDX( array ) RANDOM_LONG(0,(soundvariety.value > 0 ? V_min(ARRAYSIZE( (array) ), soundvariety.value) : ARRAYSIZE( (array) ))-1)
+#endif
+
+#define PRECACHE_FOOTSTEP_SOUNDS(array) \
+	for (int i = 0; i < (int)ARRAY_SZ(array); i++) { \
+		if ((i % 2) && g_footstepVariety < 2) { \
+			continue; \
+		} \
+		PRECACHE_SOUND_ENT(NULL, array[i]); \
 	}
 
 #define EMIT_SOUND_ARRAY_DYN( chan, array ) \
@@ -710,6 +727,19 @@ EXPORT void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 #define ARRAY_SZ(array) (sizeof(array) / sizeof(array[0]))
 #define SHUFFLE_SOUND_ARRAY(array) UTIL_ShuffleSoundArray(array, ARRAY_SZ(array));
 EXPORT void UTIL_ShuffleSoundArray(const char** arr, size_t n);
+
+extern int g_footstepVariety;
+extern const char* g_stepSoundsConcrete[4];
+extern const char* g_stepSoundsMetal[4];
+extern const char* g_stepSoundsDirt[4];
+extern const char* g_stepSoundsDuct[4];
+extern const char* g_stepSoundsDuct[4];
+extern const char* g_stepSoundsGrate[4];
+extern const char* g_stepSoundsTile[4];
+extern const char* g_stepSoundsSlosh[4];
+extern const char* g_stepSoundsWade[4];
+extern const char* g_stepSoundsLadder[4];
+extern const char* g_swimSounds[4];
 
 #define PLAYBACK_EVENT( flags, who, index ) PLAYBACK_EVENT_FULL( flags, who, index, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
 #define PLAYBACK_EVENT_DELAY( flags, who, index, delay ) PLAYBACK_EVENT_FULL( flags, who, index, delay, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );

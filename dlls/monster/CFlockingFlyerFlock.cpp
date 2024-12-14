@@ -43,11 +43,11 @@ public:
 	virtual int		Restore( CRestore &restore );
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	// Sounds are shared by the flock
-	static  void PrecacheFlockSounds( void );
-
 	int		m_cFlockSize;
 	float	m_flFlockRadius;
+
+	static const char* pAlertSounds[];
+	static const char* pIdleSounds[];
 };
 
 TYPEDESCRIPTION	CFlockingFlyerFlock::m_SaveData[] = 
@@ -57,6 +57,18 @@ TYPEDESCRIPTION	CFlockingFlyerFlock::m_SaveData[] =
 };
 
 IMPLEMENT_SAVERESTORE( CFlockingFlyerFlock, CBaseMonster )
+
+const char* CFlockingFlyerFlock::pAlertSounds[] =
+{
+	"boid/boid_alert1.wav",
+	"boid/boid_alert2.wav",
+};
+
+const char* CFlockingFlyerFlock::pIdleSounds[] =
+{
+	"boid/boid_idle1.wav",
+	"boid/boid_idle2.wav",
+};
 
 //=========================================================
 //=========================================================
@@ -165,17 +177,8 @@ void CFlockingFlyerFlock :: Precache( )
 	m_defaultModel = "models/boid.mdl";
 	PRECACHE_MODEL(GetModel());
 
-	PrecacheFlockSounds();
-}
-
-
-void CFlockingFlyerFlock :: PrecacheFlockSounds( void )
-{
-	PRECACHE_SOUND_ENT(NULL, "boid/boid_alert1.wav" );
-	PRECACHE_SOUND_ENT(NULL, "boid/boid_alert2.wav" );
-
-	PRECACHE_SOUND_ENT(NULL, "boid/boid_idle1.wav" );
-	PRECACHE_SOUND_ENT(NULL, "boid/boid_idle2.wav" );
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
 }
 
 //=========================================================
@@ -245,7 +248,9 @@ void CFlockingFlyer :: Precache( )
 	//PRECACHE_MODEL("models/aflock.mdl");
 	m_defaultModel = "models/boid.mdl";
 	PRECACHE_MODEL(GetModel());
-	CFlockingFlyerFlock::PrecacheFlockSounds();
+
+	PRECACHE_SOUND_ARRAY(CFlockingFlyerFlock::pIdleSounds);
+	PRECACHE_SOUND_ARRAY(CFlockingFlyerFlock::pAlertSounds);
 }
 
 //=========================================================
@@ -255,21 +260,12 @@ void CFlockingFlyer :: MakeSound( void )
 	if ( m_flAlertTime > gpGlobals->time )
 	{
 		// make agitated sounds
-		switch ( RANDOM_LONG( 0, 1 ) )
-		{
-		case 0:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "boid/boid_alert1.wav", 1, ATTN_NORM );	break;
-		case 1:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "boid/boid_alert2.wav", 1, ATTN_NORM );	break;
-		}
-
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(CFlockingFlyerFlock::pAlertSounds), 1, ATTN_NORM);
 		return;
 	}
 
 	// make normal sound
-	switch ( RANDOM_LONG( 0, 1 ) )
-	{
-	case 0:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "boid/boid_idle1.wav", 1, ATTN_NORM );	break;
-	case 1:	EMIT_SOUND( ENT(pev), CHAN_WEAPON, "boid/boid_idle2.wav", 1, ATTN_NORM );	break;
-	}
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(CFlockingFlyerFlock::pIdleSounds), 1, ATTN_NORM);
 }
 
 //=========================================================

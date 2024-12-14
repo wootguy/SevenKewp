@@ -546,9 +546,8 @@ BOOL CRpg::Deploy( )
 	ret = DefaultDeploy(GetModelV(), GetModelP(), RPG_DRAW1, "rpg" );
 
 #ifndef CLIENT_DLL
-	SET_MODEL(edict(), GetModelV());
-	m_hasLaserAttachment = GetAttachmentCount() > 0;
-	AttachToPlayer(m_pPlayer); // setting a model will make it visible again, undo that
+	studiohdr_t* mdl = GET_MODEL_PTR(PRECACHE_MODEL(GetModelV()));
+	m_hasLaserAttachment = mdl && mdl->numattachments > 0;
 #endif
 
 	return ret;

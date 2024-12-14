@@ -1013,8 +1013,12 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 	case CHAR_TEX_DIRT:	fvol = 0.9; fvolbar = 0.1;
 		rgsz[0] = "player/pl_dirt1.wav";
 		rgsz[1] = "player/pl_dirt2.wav";
-		rgsz[2] = "player/pl_dirt3.wav";
-		cnt = 3;
+		cnt = 2;
+
+		if (g_footstepVariety >= 2) {
+			rgsz[2] = "player/pl_dirt3.wav";
+			cnt = 3;
+		}
 		break;
 	case CHAR_TEX_VENT:	fvol = 0.5; fvolbar = 0.3;
 		rgsz[0] = "player/pl_duct1.wav";
@@ -1023,22 +1027,30 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 		break;
 	case CHAR_TEX_GRATE: fvol = 0.9; fvolbar = 0.5;
 		rgsz[0] = "player/pl_grate1.wav";
-		rgsz[1] = "player/pl_grate4.wav";
+		rgsz[1] = g_footstepVariety >= 2 ? "player/pl_grate4.wav" : "player/pl_grate2.wav";
 		cnt = 2;
 		break;
 	case CHAR_TEX_TILE:	fvol = 0.8; fvolbar = 0.2;
 		rgsz[0] = "player/pl_tile1.wav";
-		rgsz[1] = "player/pl_tile3.wav";
-		rgsz[2] = "player/pl_tile2.wav";
-		rgsz[3] = "player/pl_tile4.wav";
-		cnt = 4;
+		rgsz[1] = "player/pl_tile2.wav";
+		cnt = 2;
+
+		if (g_footstepVariety >= 2) {
+			rgsz[2] = "player/pl_tile3.wav";
+			rgsz[3] = "player/pl_tile4.wav";
+			cnt = 4;
+		}
 		break;
 	case CHAR_TEX_SLOSH: fvol = 0.9; fvolbar = 0.0;
 		rgsz[0] = "player/pl_slosh1.wav";
-		rgsz[1] = "player/pl_slosh3.wav";
-		rgsz[2] = "player/pl_slosh2.wav";
-		rgsz[3] = "player/pl_slosh4.wav";
-		cnt = 4;
+		rgsz[1] = "player/pl_slosh2.wav";
+		cnt = 2;
+
+		if (g_footstepVariety >= 2) {
+			rgsz[2] = "player/pl_slosh3.wav";
+			rgsz[3] = "player/pl_slosh4.wav";
+			cnt = 4;
+		}
 		break;
 	case CHAR_TEX_WOOD: fvol = 0.9; fvolbar = 0.2;
 		rgsz[0] = "debris/wood1.wav";
