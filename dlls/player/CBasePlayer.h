@@ -287,6 +287,11 @@ public:
 	int m_lastUserButtonState;
 	float m_lastUserInput;
 
+	float m_useKeyTime; // when the use key was last pressed. 0 if not currently pressed
+	float m_nextAntiBlock; // next time player is allowed to swap
+	bool m_useExpired; // use was held for too long. Player must release and press the key again to use
+	bool m_usingMomentary; // player activated a momentary button any time during this key press
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
@@ -306,6 +311,7 @@ public:
 	virtual BOOL IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
 	virtual BOOL ShouldFadeOnDeath( void ) { return FALSE; }
 	virtual	BOOL IsPlayer( void ) { return TRUE; }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
+	virtual CBasePlayer* MyPlayerPointer(void) { return this; };
 
 	virtual BOOL IsNetClient( void ) { return TRUE; }		// Bots should return FALSE for this, they can't receive NET messages
 															// Spectators should return TRUE for this
@@ -398,6 +404,7 @@ public:
 	void ResetAutoaim( void );
 	Vector GetAutoaimVector( float flDelta  );
 	Vector AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  );
+	virtual Vector GetLookDirection();
 
 	void ForceClientDllUpdate( void );  // Forces all client .dll specific data to be resent to client.
 
@@ -503,6 +510,19 @@ public:
 
 	// how long has it been since the player last pressed any buttons or typed in chat
 	float GetIdleTime();
+	
+	// how long the use key has been held down for
+	float GetUseTime();
+
+	// get look direction snapped to the closest X, Y, or Z axis
+	Vector GetSnappedLookDir();
+
+	int GetTraceHull();
+
+	CBaseEntity* AntiBlockTrace();
+
+	// 0 = no target, 1 = swapped, 2 = swap failed with error message
+	int TryAntiBlock();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

@@ -79,6 +79,8 @@ EXPORT extern cvar_t	mp_rpg_laser_mode; // 0 = HL, 1 = realistic, 2 = rockets fo
 EXPORT extern cvar_t	mp_series_intermission; // 0 = allow game_end, 1 = skip game_end, 2 = skip waiting period and show a message for series level changes
 EXPORT extern cvar_t	mp_score_mode; // 0 = get points for damage, 1 = point multiplier reduced after death + no suicide penalty
 EXPORT extern cvar_t	mp_damage_points; // score points given per point of damage dealt
+EXPORT extern cvar_t	mp_antiblock; // enables player swapping with +use
+EXPORT extern cvar_t	mp_antiblock_cooldown; // how long a player needs to wait before swapping again after a "rude" swap
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

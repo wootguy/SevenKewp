@@ -1275,3 +1275,12 @@ void CBaseEntity::ParametricInterpolation(float flInterval) {
 	pev->impacttime = gpGlobals->time + flInterval;
 #endif
 }
+
+Vector CBaseEntity::GetLookDirection() {
+	Vector angles = pev->angles + pev->punchangle;
+	angles.x *= -1;
+
+	MAKE_VECTORS(angles);
+
+	return gpGlobals->v_forward;
+}

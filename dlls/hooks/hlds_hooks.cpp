@@ -742,6 +742,9 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	PrecacheWeapons();
 	PrecacheTextureSounds();
 
+	if (mp_antiblock.value)
+		PRECACHE_SOUND_ENT(NULL, "weapons/xbow_hitbod2.wav");
+
 	// Every call to ServerActivate should be matched by a call to ServerDeactivate
 	g_serveractive = 1;
 
@@ -1969,6 +1972,15 @@ void CmdStart( const edict_t *player, const struct usercmd_s *cmd, unsigned int 
 	int inputState = cmd->buttons | (cmd->impulse << 16);
 	if (inputState != pl->m_lastUserButtonState) {
 		pl->m_lastUserInput = g_engfuncs.pfnTime();
+		
+		if (!(pl->m_lastUserButtonState & IN_USE) && (inputState & IN_USE)) {
+			pl->m_useKeyTime = g_engfuncs.pfnTime();
+			pl->m_useExpired = false;
+			pl->m_usingMomentary = false;
+		}
+		else if (!(inputState & IN_USE)) {
+			pl->m_useKeyTime = 0;
+		}
 	}
 	pl->m_lastUserButtonState = inputState;
 
