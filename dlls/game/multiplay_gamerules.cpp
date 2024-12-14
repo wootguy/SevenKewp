@@ -440,6 +440,7 @@ void CHalfLifeMultiplay :: ClientDisconnected( edict_t *pClient )
 			player_score_t score;
 			score.frags = pPlayer->pev->frags;
 			score.deaths = pPlayer->m_iDeaths;
+			score.multiplier = pPlayer->m_scoreMultiplier;
 			g_playerScores[pPlayer->GetSteamID64()] = score;
 			
 			pPlayer->pev->frags = 0;
@@ -572,9 +573,6 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 {
 	pVictim->m_deathMessageSent = true;
 
-	pVictim->m_iDeaths += 1;
-
-
 	FireTargets( "game_playerdie", pVictim, pVictim, USE_TOGGLE, 0 );
 	CBasePlayer *peKiller = NULL;
 	CBaseEntity *ktmp = CBaseEntity::Instance( pKiller );
@@ -582,8 +580,9 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 		peKiller = (CBasePlayer*)ktmp;
 
 	if ( pVictim->pev == pKiller )  
-	{  // killed self
-		pKiller->frags -= 1;
+	{  // killed self, only penalize if PvP is enabled (npcs don't care that you stole their point)
+		if (mp_score_mode.value == 0 || friendlyfire.value == 1)
+			pKiller->frags -= 1;
 	}
 	else if ( ktmp && ktmp->IsPlayer() )
 	{
@@ -594,7 +593,8 @@ void CHalfLifeMultiplay :: PlayerKilled( CBasePlayer *pVictim, entvars_t *pKille
 	}
 	else
 	{  // killed by the world
-		pKiller->frags -= 1;
+		if (mp_score_mode.value == 0 || friendlyfire.value == 1)
+			pKiller->frags -= 1;
 	}
 
 	// update the scores

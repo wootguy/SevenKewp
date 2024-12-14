@@ -281,6 +281,8 @@ public:
 	float m_airTimeModifier; // how much longer/shorter a player can hold their breath
 	bool m_droppedDeathWeapons;
 
+	float m_scoreMultiplier;
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
@@ -491,6 +493,9 @@ public:
 
 	// accounts for active cameras and view offset
 	Vector GetViewPosition() { return m_hViewEntity ? m_hViewEntity->pev->origin : GetGunPosition(); }
+
+	// for scoring
+	void PenalizeDeath();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

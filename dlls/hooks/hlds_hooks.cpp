@@ -398,9 +398,12 @@ void ClientPutInServer( edict_t *pEntity )
 		player_score_t score = previousScore->second;
 		pPlayer->pev->frags = score.frags;
 		pPlayer->m_iDeaths = score.deaths;
+		pPlayer->m_scoreMultiplier = score.multiplier;
 	}
 	else {
 		pPlayer->pev->frags = 0;
+		pPlayer->m_iDeaths = 0;
+		pPlayer->m_scoreMultiplier = 1.0f;
 	}
 
 	CALL_HOOKS_VOID(pfnClientPutInServer, pPlayer);

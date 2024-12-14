@@ -622,6 +622,10 @@ studiohdr_t* GET_MODEL_PTR(edict_t* edict) {
 }
 
 studiohdr_t* GET_MODEL_PTR(int modelIdx) {
+	if (modelIdx == -1) {
+		return NULL;
+	}
+
 	// temporarily attach the model to an entity to avoid loading the model from disk again
 	edict_t* world = ENT(0);
 	int oldModelIdx = world->v.modelindex;
