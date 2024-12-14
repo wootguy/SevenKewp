@@ -377,6 +377,12 @@ void ClientPutInServer( edict_t *pEntity )
 		UTIL_StopGlobalMp3(pEntity);
 	}
 
+	// httpstop allows restarting the map with a different set of resources without breaking fastdl
+	// (for sound shuffling or a plugin that precaches player models)
+	MESSAGE_BEGIN(MSG_ONE, SVC_STUFFTEXT, NULL, pEntity);
+	WRITE_STRING("httpstop\n");
+	MESSAGE_END();
+
 	pPlayer->m_initSoundTime = gpGlobals->time + 1.0f;
 
 	pPlayer->pev->iuser1 = 0;	// disable any spec modes
