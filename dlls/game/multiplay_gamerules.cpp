@@ -439,7 +439,13 @@ void CHalfLifeMultiplay :: ClientDisconnected( edict_t *pClient )
 			else
 				UTIL_LogPlayerEvent(pClient, "disconnected\n");
 
+			player_score_t score;
+			score.frags = pPlayer->pev->frags;
+			score.deaths = pPlayer->m_iDeaths;
+			g_playerScores[pPlayer->GetSteamID64()] = score;
+			
 			pPlayer->pev->frags = 0;
+			pPlayer->m_iDeaths = 0;
 
 			pPlayer->RemoveAllItems( TRUE );// destroy all of the players weapons and items
 			pPlayer->DropAllInventoryItems();
@@ -1484,17 +1490,20 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 	if ( pFileList && length )
 	{
 		int seriesIdx = 0;
+		int seriesNum = 0;
 
 		while (pFileList)
 		{
 			if (seriesIdx != 0 && !COM_TokenWaiting(pFileList)) {
 				seriesIdx = 0; // end of line
+				seriesNum++;
 			}
 
 			pFileList = COM_Parse(pFileList);
 
 			if (strlen(com_token) <= 0) {
 				seriesIdx = 0;
+				seriesNum++;
 				continue;
 			}
 
@@ -1511,6 +1520,7 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 			strcpy_safe(item->mapname, szMap, 32);
 			item->mapname[31] = 0;
 			item->seriesIdx = seriesIdx++;
+			item->seriesNum = seriesNum;
 			item->next = cycle->items;
 			cycle->items = item;
 		}
