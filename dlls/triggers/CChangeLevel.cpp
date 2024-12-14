@@ -235,7 +235,16 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 	*/
 
 	ALERT(at_console, "CHANGE LEVEL: %s\n", st_szNextMap);
-	CHANGE_LEVEL(st_szNextMap, NULL);
+
+	if (mp_series_intermission.value == 2) {
+		// show scores and a chat message before executing the level change
+		CVAR_SET_STRING("mp_nextmap", st_szNextMap);
+		g_pGameRules->EndMultiplayerGame();
+		UTIL_Remove(this);
+	}
+	else {
+		CHANGE_LEVEL(st_szNextMap, NULL);
+	}
 }
 
 //
