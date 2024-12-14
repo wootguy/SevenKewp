@@ -68,6 +68,7 @@ cvar_t	pluginautoupdate ={"plugin_auto_update", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_skill_allow ={"mp_skill_allow", "1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_default_medkit ={"mp_default_medkit", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_rpg_laser_mode ={"mp_rpg_laser_mode", "1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_series_intermission ={"mp_series_intermission", "2", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
@@ -399,6 +400,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_default_medkit);
 	CVAR_REGISTER (&mp_rpg_laser_mode);
 	CVAR_REGISTER (&mp_npcidletalk);
+	CVAR_REGISTER (&mp_series_intermission);
 
 	CVAR_REGISTER (&mp_chattime);
 

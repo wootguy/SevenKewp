@@ -76,6 +76,7 @@ EXPORT extern cvar_t	pluginautoupdate; // attempt to update plugins after every 
 EXPORT extern cvar_t	mp_skill_allow; // 0 = no, 1 = yes
 EXPORT extern cvar_t	mp_default_medkit; // provide a medkit by default unless nomedkit is in the cfg
 EXPORT extern cvar_t	mp_rpg_laser_mode; // 0 = HL, 1 = realistic, 2 = rockets follow owner's laser
+EXPORT extern cvar_t	mp_series_intermission; // 0 = allow game_end, 1 = skip game_end, 2 = skip waiting period and show a message for series level changes
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

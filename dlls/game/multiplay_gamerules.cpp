@@ -146,10 +146,8 @@ void CHalfLifeMultiplay :: Think ( void )
 		else if ( time > MAX_INTERMISSION_TIME )
 			CVAR_SET_STRING( "mp_chattime", UTIL_dtos1( MAX_INTERMISSION_TIME ) );
 
-		m_flIntermissionEndTime = g_flIntermissionStartTime + mp_chattime.value;
-
 		// check to see if we should change levels now
-		if ( m_flIntermissionEndTime < gpGlobals->time ) {
+		if (m_flIntermissionEndTime < gpGlobals->time ) {
 			ChangeLevel();
 		}
 
@@ -1321,9 +1319,6 @@ void CHalfLifeMultiplay :: GoToIntermission( void )
 		}
 	}
 
-	MESSAGE_BEGIN(MSG_ALL, SVC_INTERMISSION);
-	MESSAGE_END();
-
 	// bounds check
 	int time = (int)CVAR_GET_FLOAT( "mp_chattime" );
 	if ( time < 1 )
@@ -1335,6 +1330,44 @@ void CHalfLifeMultiplay :: GoToIntermission( void )
 	g_flIntermissionStartTime = gpGlobals->time;
 
 	g_fGameOver = TRUE;
+
+	if (mp_series_intermission.value > 0) {
+		const char* nextmapname = CVAR_GET_STRING("mp_nextmap");
+		mapcycle_item_t* currentMap = g_pGameRules->GetMapCyleMap(STRING(gpGlobals->mapname));
+		mapcycle_item_t* nextMap = g_pGameRules->GetMapCyleMap(nextmapname);
+		bool nextMapSameSeries = currentMap && nextMap && currentMap->seriesNum == nextMap->seriesNum;
+
+		if (nextMapSameSeries) {
+			// the next map is part of the same series, so the "map" isn't really over yet.
+			// Not all map series use trigger_changelevel to instantly change maps. Some use game_end 
+			// and assume you set up the cycle correctly.
+
+			if (mp_series_intermission.value == 1) {
+				// end instantly, as if this were a trigger_changelevel
+				m_flIntermissionEndTime = gpGlobals->time;
+			}
+			else {
+				// end almost instantly, but long enough to send these last couple of messages.
+				// Using the unreliable channel means these messages won't always be received
+				// but it's faster than using reliable channel, which might also not show
+				// if its backed up with lots of data.
+				MESSAGE_BEGIN(MSG_BROADCAST, SVC_INTERMISSION);
+				MESSAGE_END();
+
+				MESSAGE_BEGIN(MSG_BROADCAST, gmsgSayText);
+				WRITE_BYTE(0); // not a player
+				WRITE_STRING(UTIL_VarArgs("Loading %s...", nextmapname));
+				MESSAGE_END();
+
+				m_flIntermissionEndTime = gpGlobals->time + 0.05f;
+			}
+
+			return;
+		}
+	}
+
+	MESSAGE_BEGIN(MSG_ALL, SVC_INTERMISSION);
+	MESSAGE_END();
 }
 
 
@@ -1805,6 +1838,7 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 	}
 
 	g_fGameOver = TRUE;
+	m_flIntermissionEndTime = 0;
 
 	ALERT( at_console, "CHANGE LEVEL: %s\n", next_map);
 	
