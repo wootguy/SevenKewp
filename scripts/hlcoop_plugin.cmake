@@ -1,10 +1,7 @@
-cmake_minimum_required(VERSION 3.6)
-
 # setup standard include directories and compile settings
 function(hlcoop_setup_plugin OUTPUT_PATH)
 	if(UNIX)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -g -O2 -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter") 
-		set(CMAKE_SHARED_LINKER_FLAGS "m32 -g") 
+		set(DEBUG_WARN_FLAGS "-Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter")
 		
 		# Static linking libstd++ and libgcc so that the plugin can load on distros other than one it was compiled on.
 		# -fvisibility=hidden fixes a weird bug where the metamod confuses game functions with plugin functions.
@@ -14,22 +11,23 @@ function(hlcoop_setup_plugin OUTPUT_PATH)
 		#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -static-libgcc -g" PARENT_SCOPE)
 		
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -fvisibility=hidden -g" PARENT_SCOPE)
-		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" PARENT_SCOPE)
-		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -w -Wfatal-errors" PARENT_SCOPE)
+		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 ${DEBUG_WARN_FLAGS}" PARENT_SCOPE)
+		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -w" PARENT_SCOPE)
 		
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -g" PARENT_SCOPE)
-		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -Wall" PARENT_SCOPE)
-		set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Os -w -Wfatal-errors" PARENT_SCOPE)
+		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 ${DEBUG_WARN_FLAGS}" PARENT_SCOPE)
+		set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -w" PARENT_SCOPE)
 		
 		set(CMAKE_SHARED_LIBRARY_PREFIX "" PARENT_SCOPE)
 		
 	elseif(MSVC)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4") 
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") 
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP") 
 		
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /w" PARENT_SCOPE)
-		#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}" PARENT_SCOPE)
+		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4" PARENT_SCOPE)
 		set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /w" PARENT_SCOPE)
-		#set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}" PARENT_SCOPE)
+		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /W4" PARENT_SCOPE)
 	else()
 		message(FATAL_ERROR "TODO: Mac support")
 	endif()

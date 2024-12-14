@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.20)
 
 option(BUILD_SERVER "Disable this if you don't want to build the server library" ON)
 option(BUILD_CLIENT "Enable this if you want to build the client library" OFF)
