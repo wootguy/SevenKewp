@@ -523,6 +523,12 @@ public:
 
 	// 0 = no target, 1 = swapped, 2 = swap failed with error message
 	int TryAntiBlock();
+
+	// save score to global state
+	void SaveScore();
+
+	// load score from global state, or initialize to 0
+	void LoadScore();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

@@ -1162,8 +1162,8 @@ void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target) {
 	MESSAGE_END();
 
 	if (!target) {
+		ALERT(at_console, "MP3 Command: '%s'\n", mp3Command.c_str());
 		g_mp3Command = mp3Command + "\n";
-		ALERT(at_console, "MP3 Command: '%s'\n", g_mp3Command.c_str());
 	}
 }
 

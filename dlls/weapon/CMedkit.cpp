@@ -185,6 +185,8 @@ void CMedkit::PrimaryAttack()
 		m_pPlayer->m_iWeaponVolume = MEDKIT_VOLUME;
 
 		mon->TakeHealth(healAmount, DMG_MEDKITHEAL);
+		mon->GiveScorePoints(m_pPlayer->pev, -healAmount);
+
 		CTalkSquadMonster* talkMon = mon->MyTalkSquadMonsterPointer();
 		if (talkMon) {
 			talkMon->Unprovoke(true);
@@ -272,9 +274,11 @@ void CMedkit::SecondaryAttack()
 		SendWeaponAnim(MEDKIT_SHORTUSE);
 		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "weapons/electro4.wav", 1, ATTN_NORM);
 		m_flNextSecondaryAttack = GetNextAttackDelay(2.0f);
-		bestTarget->Revive();
 
+		bestTarget->Revive();
 		bestTarget->pev->health = V_min(bestTarget->pev->max_health, 50);
+
+		bestTarget->GiveScorePoints(m_pPlayer->pev, -bestTarget->pev->health);
 
 		CTalkSquadMonster* talkMon = bestTarget->MyTalkSquadMonsterPointer();
 		if (talkMon) {

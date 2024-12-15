@@ -1284,3 +1284,27 @@ Vector CBaseEntity::GetLookDirection() {
 
 	return gpGlobals->v_forward;
 }
+
+void CBaseEntity::GiveScorePoints(entvars_t* pevAttacker, float damageDealt) {
+	CBaseEntity* baseEnt = CBaseEntity::Instance(pevAttacker);
+	CBaseMonster* attackMon = baseEnt ? baseEnt->MyMonsterPointer() : NULL;
+
+	// give points proportional to how much damage will be dealt, ignoring overkill damage
+	if (attackMon && (pevAttacker->flags & FL_CLIENT) && pev->health > 0) {
+		float damageAmt = damageDealt > 0 ? V_min(damageDealt, pev->health) : V_min(damageDealt, pev->max_health - pev->health);
+		float multiplier = attackMon->IsPlayer() ? ((CBasePlayer*)attackMon)->m_scoreMultiplier : 1.0f;
+		bool isFriendly = attackMon->IRelationship(this) == R_AL;
+
+		if (isFriendly) {
+			// always take full penalty for friendly fire
+			multiplier = 1.0f;
+		}
+
+		pevAttacker->frags += damageAmt * (isFriendly ? -1 : 1) * mp_damage_points.value * multiplier;
+
+		CBaseMonster* selfMon = MyMonsterPointer();
+		if (selfMon) {
+			selfMon->LogPlayerDamage(pevAttacker, damageAmt);
+		}
+	}
+}

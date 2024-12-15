@@ -373,6 +373,9 @@ public:
 
 	virtual Vector GetLookDirection();
 
+	// award attackers with points for damage dealt. Call this before updating monster health.
+	void GiveScorePoints(entvars_t* pevAttacker, float damageDealt);
+
 	//We use this variables to store each ammo count.
 	int ammo_9mm;
 	int ammo_357;
