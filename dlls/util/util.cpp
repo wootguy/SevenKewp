@@ -2878,9 +2878,43 @@ Vector VecBModelOrigin(entvars_t* pevBModel)
 
 void PlayCDTrack(int iTrack)
 {
-	if (iTrack < -1 || iTrack > 30)
+	static const char* CdAudioTracks[30] = {
+		// "cd play 0" and "cd play 1" do nothing
+		"",
+		"",
+		"media/Half-Life01.mp3", // "cd play 2"
+		"media/Prospero01.mp3",
+		"media/Half-Life12.mp3",
+		"media/Half-Life07.mp3",
+		"media/Half-Life10.mp3",
+		"media/Suspense01.mp3",
+		"media/Suspense03.mp3",
+		"media/Half-Life09.mp3",
+		"media/Half-Life02.mp3",
+		"media/Half-Life13.mp3",
+		"media/Half-Life04.mp3",
+		"media/Half-Life15.mp3",
+		"media/Half-Life14.mp3",
+		"media/Half-Life16.mp3",
+		"media/Suspense02.mp3",
+		"media/Half-Life03.mp3",
+		"media/Half-Life08.mp3",
+		"media/Prospero02.mp3",
+		"media/Half-Life05.mp3",
+		"media/Prospero04.mp3",
+		"media/Half-Life11.mp3",
+		"media/Half-Life06.mp3",
+		"media/Prospero03.mp3",
+		"media/Half-Life17.mp3",
+		"media/Prospero05.mp3",
+		"media/Suspense05.mp3",
+		"media/Suspense07.mp3",
+		"media/Suspense07.mp3", // "cd play 29". yes, this is valid and it's the same as 28
+	};
+
+	if (iTrack != -1 && (iTrack < 2 || iTrack > 29))
 	{
-		ALERT(at_console, "TriggerCDAudio - Track %d out of range\n");
+		ALERT(at_warning, "TriggerCDAudio - Track %d out of range\n", iTrack);
 		return;
 	}
 
@@ -2888,12 +2922,12 @@ void PlayCDTrack(int iTrack)
 
 	if (iTrack == -1)
 	{
-		cdCommand = "cd stop";
+		cdCommand = "mp3 stop";
 		g_mp3Command = "";
 	}
 	else
 	{
-		cdCommand = UTIL_VarArgs("cd play %d", iTrack);
+		cdCommand = UTIL_VarArgs("mp3 play %s", CdAudioTracks[iTrack]);
 		g_mp3Command = cdCommand + "\n"; // play for new joiners later
 	}
 
