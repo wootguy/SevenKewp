@@ -392,20 +392,7 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->pev->effects |= EF_NOINTERP;
 
 	pPlayer->QueryClientType();
-
-	auto previousScore = g_playerScores.find(pPlayer->GetSteamID64());
-	if (previousScore != g_playerScores.end()) {
-		player_score_t score = previousScore->second;
-		pPlayer->pev->frags = score.frags;
-		pPlayer->m_iDeaths = score.deaths;
-		pPlayer->m_scoreMultiplier = score.multiplier;
-	}
-	else {
-		pPlayer->pev->frags = 0;
-		pPlayer->m_iDeaths = 0;
-		pPlayer->m_scoreMultiplier = 1.0f;
-	}
-
+	pPlayer->LoadScore();
 	pPlayer->m_lastUserInput = g_engfuncs.pfnTime();
 
 	CALL_HOOKS_VOID(pfnClientPutInServer, pPlayer);
@@ -496,6 +483,8 @@ void ServerDeactivate( void )
 		if (!plr) {
 			continue;
 		}
+
+		plr->SaveScore();
 
 		UTIL_LogPlayerEvent(plr->edict(), "%d points, %d deaths\n", 
 			(int)plr->pev->frags, plr->m_iDeaths);

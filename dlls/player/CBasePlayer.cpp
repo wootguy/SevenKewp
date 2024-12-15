@@ -6228,3 +6228,26 @@ int CBasePlayer::TryAntiBlock() {
 	
 	return 1;
 }
+
+void CBasePlayer::SaveScore() {
+	player_score_t score;
+	score.frags = pev->frags;
+	score.deaths = m_iDeaths;
+	score.multiplier = m_scoreMultiplier;
+	g_playerScores[GetSteamID64()] = score;
+}
+
+void CBasePlayer::LoadScore() {
+	auto previousScore = g_playerScores.find(GetSteamID64());
+	if (previousScore != g_playerScores.end()) {
+		player_score_t score = previousScore->second;
+		pev->frags = score.frags;
+		m_iDeaths = score.deaths;
+		m_scoreMultiplier = score.multiplier;
+	}
+	else {
+		pev->frags = 0;
+		m_iDeaths = 0;
+		m_scoreMultiplier = 1.0f;
+	}
+}

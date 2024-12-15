@@ -460,11 +460,7 @@ void CHalfLifeMultiplay :: ClientDisconnected( edict_t *pClient )
 			else
 				UTIL_LogPlayerEvent(pClient, "disconnected\n");
 
-			player_score_t score;
-			score.frags = pPlayer->pev->frags;
-			score.deaths = pPlayer->m_iDeaths;
-			score.multiplier = pPlayer->m_scoreMultiplier;
-			g_playerScores[pPlayer->GetSteamID64()] = score;
+			pPlayer->SaveScore();
 			
 			pPlayer->pev->frags = 0;
 			pPlayer->m_iDeaths = 0;

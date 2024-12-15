@@ -4,6 +4,7 @@
 #include "CBreakable.h"
 #include "decals.h"
 #include "explode.h"
+#include "CBaseMonster.h"
 
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 
@@ -569,6 +570,14 @@ int CBreakable::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 
 	// this global is still used for glass and other non-monster killables, along with decals.
 	g_vecAttackDir = vecTemp.Normalize();
+
+	// give points if this breakable triggers something, unless it's supposed to be invincible
+	// and the mapper didn't know how to check the "only trigger" flag. Giving half points to compensate
+	// for many breakables being useless and taking no skill to destroy
+	// TODO: determine if a breakable is useless. Hard problem. Opening a shortcut is not useless.
+	// Need the path finder and map solver done first.
+	if ((pev->target || m_iszKillTarget) && pev->max_health <= 10000)
+		GiveScorePoints(pevAttacker, flDamage*0.5f);
 
 	// do the damage
 	pev->health = V_min(pev->max_health, pev->health - flDamage);
