@@ -1486,8 +1486,16 @@ void CBasePlayer::PlayerDeathThink(void)
 			std::string pointsMessage;
 			if (mp_score_mode.value == 1) {
 				// deaths are penalized. Show current score multiplier
-				pointsMessage = UTIL_VarArgs("\n\nNew score multiplier: %d%% (%d death%s)",
-					(int)roundf(m_scoreMultiplier*100.0f), m_iDeaths, m_iDeaths == 1 ? "" : "s");
+				bool sameAsLast = m_iDeaths > 1 && GetScoreMultiplier() == GetScoreMultiplier(m_iDeaths - 1);
+
+				if (sameAsLast) {
+					pointsMessage = UTIL_VarArgs("\n\nScore multiplier: %d%%",
+						(int)roundf(m_scoreMultiplier * 100.0f), m_iDeaths == 1 ? "" : "s");
+				}
+				else {
+					pointsMessage = UTIL_VarArgs("\n\nNew score multiplier: %d%% (%d death%s)",
+						(int)roundf(m_scoreMultiplier * 100.0f), m_iDeaths, m_iDeaths == 1 ? "" : "s");
+				}
 			}
 
 			const char* msg = UTIL_VarArgs("%s%s", delayMsg.c_str(), pointsMessage.c_str());
@@ -6047,7 +6055,14 @@ float CBasePlayer::GetDamageModifier() {
 
 void CBasePlayer::PenalizeDeath() {
 	m_iDeaths += 1;
-	m_scoreMultiplier = V_max(0.01f, 1.0f / (m_iDeaths+1));
+	m_scoreMultiplier = GetScoreMultiplier();
+}
+
+float CBasePlayer::GetScoreMultiplier(int deaths) {
+	if (deaths < 0) {
+		deaths = m_iDeaths;
+	}
+	return V_max(mp_min_score_mult.value / 100.0f, 1.0f / (deaths + 1));
 }
 
 float CBasePlayer::GetIdleTime() {

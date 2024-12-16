@@ -81,6 +81,7 @@ EXPORT extern cvar_t	mp_score_mode; // 0 = get points for damage, 1 = point mult
 EXPORT extern cvar_t	mp_damage_points; // score points given per point of damage dealt
 EXPORT extern cvar_t	mp_antiblock; // enables player swapping with +use
 EXPORT extern cvar_t	mp_antiblock_cooldown; // how long a player needs to wait before swapping again after a "rude" swap
+EXPORT extern cvar_t	mp_min_score_mult; // minimum score multiplier for death penalties
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
