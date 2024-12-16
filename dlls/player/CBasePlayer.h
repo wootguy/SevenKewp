@@ -508,6 +508,9 @@ public:
 	// for scoring
 	void PenalizeDeath();
 
+	// -1 deaths = use current death counter
+	float GetScoreMultiplier(int deaths = -1);
+
 	// how long has it been since the player last pressed any buttons or typed in chat
 	float GetIdleTime();
 	
