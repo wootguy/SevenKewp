@@ -37,8 +37,9 @@ int g_plugin_id = 0;
 
 #ifdef _WIN32
 #include "windows.h"
-#define LOADLIB_FUNC_NAME "LoadLibrary"
+#define LOADLIB_FUNC_NAME ""
 #define PLUGIN_EXT ".dll"
+#define LibLoadError() (std::string("LoadLibrary error code ") + std::to_string(GetLastError()).c_str())
 #else
 #include <dlfcn.h>
 #define PLUGIN_EXT ".so"
@@ -47,6 +48,7 @@ int g_plugin_id = 0;
 #define GetLastError dlerror
 #define FreeLibrary dlclose
 #define HMODULE void*
+#define LibLoadError() dlerror()
 #endif
 
 typedef int(*PLUGIN_INIT_FUNCTION)(void);
@@ -92,8 +94,7 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 #endif
 
 	if (!plugin.h_module) {
-		ALERT(at_error, "Plugin load failed '%s' (" LOADLIB_FUNC_NAME " error code %d)\n",
-			plugin.fpath.c_str(), GetLastError());
+		ALERT(at_error, "Plugin load failed '%s' (%s)\n", plugin.fpath.c_str(), LibLoadError());
 		return false;
 	}
 
