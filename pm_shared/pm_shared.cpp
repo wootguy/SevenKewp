@@ -33,6 +33,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <cstdint>
 
 extern std::unordered_map<std::string, std::string> g_soundReplacements;
 
