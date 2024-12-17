@@ -427,6 +427,10 @@ EXPORT void			UTIL_PrecacheOther( const char *szClassname, std::unordered_map<st
 EXPORT void			UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char* msg);
 EXPORT void			UTIL_ClientPrintAll(PRINT_TYPE print_type, const char *msg);
 
+// handles coloring and logs to the server console and file
+// don't include the newline
+EXPORT void			UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix=NULL, const char* customLogPrefix=NULL, bool teamMessage=false);
+
 class CBasePlayerItem;
 class CBasePlayer;
 EXPORT BOOL UTIL_GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );

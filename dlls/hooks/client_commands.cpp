@@ -143,7 +143,6 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	CBasePlayer* client;
 	int		j;
 	char* p;
-	char	text[128];
 	char    szTemp[256];
 	const char* cpSay = "say";
 	const char* cpSayTeam = "say_team";
@@ -198,95 +197,11 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	if (!p || !p[0] || !Q_UnicodeValidate(p))
 		return;  // no character found, so say nothing
 
-// turn on color set 2  (color on,  no sound)
-	// turn on color set 2  (color on,  no sound)
-	if (player->IsObserver() && (teamonly))
-		snprintf(text, 128, "%c(SPEC) %s: ", 2, STRING(pEntity->v.netname));
-	else if (teamonly)
-		snprintf(text, 128, "%c(TEAM) %s: ", 2, STRING(pEntity->v.netname));
-	else
-		snprintf(text, 128, "%c%s: ", 2, STRING(pEntity->v.netname));
-
-	j = sizeof(text) - 2 - strlen(text);  // -2 for /n and null terminator
-	if ((int)strlen(p) > j)
-		p[j] = 0;
-
-	CALL_HOOKS_VOID(pfnChatMessage, player, (const char**)&p);
-
-	strcat_safe(text, p, 128);
-	strcat_safe(text, "\n", 128);
-
+	CALL_HOOKS_VOID(pfnChatMessage, player, (const char**)&p, teamonly);
 
 	player->m_flNextChatTime = gpGlobals->time + CHAT_INTERVAL;
 
-	// loop through all players
-	// Start with the first player.
-	// This may return the world in single player if the client types something between levels or during spawn
-	// so check it, or it will infinite loop
-
-	client = NULL;
-	while (((client = (CBasePlayer*)UTIL_FindEntityByClassname(client, "player")) != NULL) && (!FNullEnt(client->edict())))
-	{
-		if (!client->pev)
-			continue;
-
-		if (client->edict() == pEntity)
-			continue;
-
-		if (!(client->IsNetClient()))	// Not a client ? (should never be true)
-			continue;
-
-		// can the receiver hear the sender? or has he muted him?
-		// TODO: voice muting has a buggy implementation that causes random ppl to get muted
-		// when you change servers. Create a new system.
-		//if (g_VoiceGameMgr.PlayerHasBlockedPlayer(client, player))
-		//	continue;
-
-		/*
-		if (!player->IsObserver() && teamonly && g_pGameRules->PlayerRelationship(client, CBaseEntity::Instance(pEntity)) != GR_TEAMMATE)
-			continue;
-
-		// Spectators can only talk to other specs
-		if (player->IsObserver() && teamonly)
-			if (!client->IsObserver())
-				continue;
-		*/
-
-		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, client->pev);
-		WRITE_BYTE(ENTINDEX(pEntity));
-		WRITE_STRING(text);
-		MESSAGE_END();
-
-	}
-
-	if (player->tempNameActive) {
-		player->Rename(player->DisplayName(), true, MSG_ONE, player->edict());
-		player->UpdateTeamInfo(-1, MSG_ONE, player->edict());
-	}
-
-	// print to the sending client
-	MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, &pEntity->v);
-	WRITE_BYTE(ENTINDEX(pEntity));
-	WRITE_STRING(text);
-	MESSAGE_END();
-
-	if (player->tempNameActive) {
-		player->Rename(player->m_tempName, false, MSG_ONE, player->edict());
-		player->UpdateTeamInfo(player->m_tempTeam, MSG_ONE, player->edict());
-	}
-
-	// echo to server console for listen servers, dedicated servers should have logs enabled
-	if (!IS_DEDICATED_SERVER())
-		g_engfuncs.pfnServerPrint(text);
-
-	const char* temp;
-	if (teamonly)
-		temp = "say_team";
-	else
-		temp = "say";
-
-	// team match?
-	UTIL_LogPlayerEvent(pEntity, "%s \"%s\"\n", temp, p);
+	UTIL_ClientSay(player, p, NULL, NULL, teamonly);
 }
 
 #define ABORT_IF_CHEATS_DISABLED(cheatName) \
