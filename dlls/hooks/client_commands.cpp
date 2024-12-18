@@ -197,7 +197,19 @@ void Host_Say(edict_t* pEntity, int teamonly)
 
 	player->m_flNextChatTime = gpGlobals->time + CHAT_INTERVAL;
 
-	UTIL_ClientSay(player, p, NULL, NULL, teamonly);
+	UTIL_ClientSay(player, p, NULL, teamonly, NULL);
+
+	// echo to server console for listen servers, dedicated servers should have logs enabled
+	if (!IS_DEDICATED_SERVER())
+		g_engfuncs.pfnServerPrint(p);
+
+	const char* temp;
+	if (teamonly)
+		temp = "say_team";
+	else
+		temp = "say";
+
+	UTIL_LogPlayerEvent(player->edict(), "%s \"%s\"\n", temp, p);
 }
 
 #define ABORT_IF_CHEATS_DISABLED(cheatName) \
