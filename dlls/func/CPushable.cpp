@@ -165,11 +165,12 @@ void CPushable::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 		return;
 	}
 
-	if (pev->spawnflags & SF_PUSH_LIFTABLE) {
+	CBasePlayer* plr = pActivator->MyPlayerPointer();
+
+	if (plr && (pev->spawnflags & SF_PUSH_LIFTABLE)) {
 		int eidx = pActivator->entindex() % 32;
-		CBasePlayer* plr = (CBasePlayer*)pActivator;
 		bool isMoving = plr->pev->button & (IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT);
-		bool releasedUseKey = value == 0;
+		bool releasedUseKey = plr->m_afButtonReleased & IN_USE;
 		bool notHoldingOtherPushable = !plr->m_pPushable || plr->m_pPushable.GetEntity() == this;
 		bool wasMovingWithUse = m_ignoreLiftUse[eidx] || isMoving;
 		bool isCurrentLifter = m_hLifter.GetEntity() == plr;

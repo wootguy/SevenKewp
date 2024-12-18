@@ -140,12 +140,8 @@ bool Q_UnicodeValidate(const char* pUTF8)
 //
 void Host_Say(edict_t* pEntity, int teamonly)
 {
-	CBasePlayer* client;
-	int		j;
 	char* p;
 	char    szTemp[256];
-	const char* cpSay = "say";
-	const char* cpSayTeam = "say_team";
 	const char* pcmd = CMD_ARGV(0);
 
 	// We can get a raw string now, without the "say " prepended
@@ -159,7 +155,7 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	if (player->m_flNextChatTime > gpGlobals->time)
 		return;
 
-	if (!stricmp(pcmd, cpSay) || !stricmp(pcmd, cpSayTeam))
+	if (!stricmp(pcmd, "say") || !stricmp(pcmd, "say_team"))
 	{
 		if (CMD_ARGC() >= 2)
 		{
