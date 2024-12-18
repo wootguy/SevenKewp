@@ -4,10 +4,6 @@
 
 #define MAX_MENU_OPTIONS 128
 #define MAX_PAGE_OPTIONS 5
-#define ITEMS_PER_PAGE (MAX_PAGE_OPTIONS-3) // leave room for next, more, and exit options
-#define BACK_OPTION_IDX (ITEMS_PER_PAGE)
-#define MORE_OPTION_IDX (ITEMS_PER_PAGE+1)
-#define MAX_ITEMS_NO_PAGES (ITEMS_PER_PAGE+2)
 #define MAX_PLAYERS 32
 
 class CTriggerVote;
@@ -40,6 +36,11 @@ public:
 
 	EXPORT void SetTitle(std::string title);
 
+	EXPORT void SetPaginationText(std::string backText, std::string moreText);
+
+	// remove exit as a menu option
+	EXPORT void RemoveExit();
+
 	EXPORT void AddItem(std::string displayText, std::string optionData);
 
 	// set player to NULL to send to all players.
@@ -58,6 +59,11 @@ private:
 	void initEnt(EntityTextMenuCallback callback, CBaseEntity* ent);
 	void initCommon();
 
+	int ItemsPerPage();
+	int BackOptionIdx();
+	int MoreOptionIdx();
+	int MaxItemsNoPages();
+
 private:
 	EntityTextMenuCallback entCallback = NULL;
 	TextMenuCallback anonCallback = NULL;
@@ -69,6 +75,9 @@ private:
 	int numOptions = 0;
 	int8_t lastPage = 0;
 	int8_t lastDuration = 0;
+	bool noexit;
+	std::string backText;
+	std::string moreText;
 
 	bool isActive = false;
 

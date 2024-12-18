@@ -68,6 +68,8 @@ void TextMenu::initCommon() {
 	}
 	TextMenuItem exitItem = { "Exit", "exit" };
 	options[MAX_MENU_OPTIONS - 1] = exitItem;
+	backText = "Back";
+	moreText = "More";
 }
 
 void TextMenu::initAnon(TextMenuCallback newCallback) {
@@ -117,22 +119,22 @@ void TextMenu::handleMenuselectCmd(CBasePlayer* pPlayer, int selection) {
 	int playerbit = PLRBIT(pPlayer->edict());
 
 	if (viewers & playerbit) {
-		if (selection == g_exitOptionNum-1) {
+		if (!noexit && selection == g_exitOptionNum-1) {
 			// exit menu
 			viewers &= ~playerbit;
 		}
-		else if (isPaginated() && selection == BACK_OPTION_IDX) {
+		else if (isPaginated() && selection == BackOptionIdx()) {
 			Open(lastDuration, lastPage - 1, pPlayer);
 		}
-		else if (isPaginated() && selection == MORE_OPTION_IDX) {
+		else if (isPaginated() && selection == MoreOptionIdx()) {
 			Open(lastDuration, lastPage + 1, pPlayer);
 		}
 		else if (selection < numOptions && IsValidPlayer(pPlayer->edict())) {
 			if (anonCallback)
-				anonCallback(this, pPlayer, selection, options[lastPage*ITEMS_PER_PAGE + selection]);
+				anonCallback(this, pPlayer, selection, options[lastPage*ItemsPerPage() + selection]);
 			if (entCallback) {
 				if (h_ent)
-					(((CTriggerVote*)h_ent.GetEntity())->*entCallback)(this, pPlayer, selection, options[lastPage * ITEMS_PER_PAGE + selection]);
+					(((CTriggerVote*)h_ent.GetEntity())->*entCallback)(this, pPlayer, selection, options[lastPage * ItemsPerPage() + selection]);
 			}
 
 			viewers &= ~playerbit;
@@ -144,11 +146,36 @@ void TextMenu::handleMenuselectCmd(CBasePlayer* pPlayer, int selection) {
 }
 
 bool TextMenu::isPaginated() {
-	return numOptions > MAX_ITEMS_NO_PAGES;
+	return numOptions > MaxItemsNoPages();
 }
 
 void TextMenu::SetTitle(std::string newTitle) {
 	this->title = newTitle;
+}
+
+void TextMenu::SetPaginationText(std::string backText, std::string moreText) {
+	this->backText = backText;
+	this->moreText = moreText;
+}
+
+void TextMenu::RemoveExit() {
+	noexit = true;
+}
+
+int TextMenu::ItemsPerPage() {
+	return noexit ? MAX_PAGE_OPTIONS - 2 : MAX_PAGE_OPTIONS - 3;
+}
+
+int TextMenu::BackOptionIdx() {
+	return ItemsPerPage();
+}
+
+int TextMenu::MoreOptionIdx() {
+	return ItemsPerPage() + 1;
+}
+
+int TextMenu::MaxItemsNoPages() {
+	return ItemsPerPage() + 2;
 }
 
 void TextMenu::AddItem(std::string displayText, std::string optionData) {
@@ -164,16 +191,24 @@ void TextMenu::AddItem(std::string displayText, std::string optionData) {
 }
 
 void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
-	std::string menuText = title + "\n\n";
-
-	uint16_t validSlots = (1 << (g_exitOptionNum-1)); // exit option always valid
+	uint16_t validSlots = 0;
+	
+	if (!noexit)
+		validSlots = (1 << (g_exitOptionNum - 1)); // exit option always valid
 
 	lastPage = page;
 	lastDuration = duration;
 	
-	int limitPerPage = isPaginated() ? ITEMS_PER_PAGE : MAX_ITEMS_NO_PAGES;
-	int itemOffset = page * ITEMS_PER_PAGE;
-	int totalPages = (numOptions+(ITEMS_PER_PAGE-1)) / ITEMS_PER_PAGE;
+	int limitPerPage = isPaginated() ? ItemsPerPage() : ItemsPerPage();
+	int itemOffset = page * ItemsPerPage();
+	int totalPages = (numOptions+(ItemsPerPage() -1)) / ItemsPerPage();
+
+	std::string pageSuffix = "";
+	if (isPaginated()) {
+		pageSuffix = UTIL_VarArgs(" (%d/%d)", page + 1, totalPages);
+	}
+
+	std::string menuText = title + pageSuffix + "\n\n";
 
 	int addedOptions = 0;
 	for (int i = itemOffset, k = 0; i < itemOffset+limitPerPage && i < numOptions; i++, k++) {
@@ -182,7 +217,7 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 		addedOptions++;
 	}
 
-	while (isPaginated() && addedOptions < ITEMS_PER_PAGE) {
+	while (isPaginated() && addedOptions < ItemsPerPage()) {
 		menuText += "\n";
 		addedOptions++;
 	}
@@ -191,22 +226,23 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 
 	if (isPaginated()) {
 		if (page > 0) {
-			menuText += std::to_string(BACK_OPTION_IDX+1) + ": Back\n";
-			validSlots |= (1 << (ITEMS_PER_PAGE));
+			menuText += std::to_string(BackOptionIdx()+ 1) + ": " + backText + "\n";
+			validSlots |= (1 << (ItemsPerPage()));
 		}
 		else {
 			menuText += "\n";
 		}
 		if (page < totalPages - 1) {
-			menuText += std::to_string(MORE_OPTION_IDX+1) + ": More\n";
-			validSlots |= (1 << (ITEMS_PER_PAGE + 1));
+			menuText += std::to_string(MoreOptionIdx() + 1) + ": " + moreText + "\n";
+			validSlots |= (1 << (ItemsPerPage() + 1));
 		}
 		else {
 			menuText += "\n";
 		}
 	}
 
-	menuText += std::to_string(g_exitOptionNum % 10) + ": Exit";
+	if (!noexit)
+		menuText += std::to_string(g_exitOptionNum % 10) + ": Exit";
 
 	if (player && IsValidPlayer(player->edict())) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, player->edict());

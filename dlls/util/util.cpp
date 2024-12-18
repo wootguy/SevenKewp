@@ -1490,7 +1490,7 @@ void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char * m
 	}
 }
 
-void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix, const char* customLogPrefix, bool teamMessage) {
+void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix, bool teamMessage, edict_t* target) {
 	if (!plr || !text) {
 		return;
 	}
@@ -1514,31 +1514,23 @@ void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix
 	
 	const char* msg = UTIL_VarArgs("%c%s%s\n", 2, prefix.c_str(), textTmp.c_str());
 
-	// print to the sending client
-	MESSAGE_BEGIN(MSG_ALL, gmsgSayText);
-	WRITE_BYTE(plr->entindex());
-	WRITE_STRING(msg);
-	MESSAGE_END();
+	if (target) {
+		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, target);
+		WRITE_BYTE(plr->entindex());
+		WRITE_STRING(msg);
+		MESSAGE_END();
+	}
+	else {
+		MESSAGE_BEGIN(MSG_ALL, gmsgSayText);
+		WRITE_BYTE(plr->entindex());
+		WRITE_STRING(msg);
+		MESSAGE_END();
+	}
 
 	if (plr->tempNameActive) {
 		plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
 		plr->UpdateTeamInfo(plr->m_tempTeam, MSG_ONE, plr->edict());
 	}
-
-	// echo to server console for listen servers, dedicated servers should have logs enabled
-	if (!IS_DEDICATED_SERVER())
-		g_engfuncs.pfnServerPrint(text);
-
-	const char* temp;
-	if (customLogPrefix)
-		temp = customLogPrefix;
-	else if (teamMessage)
-		temp = "say_team";
-	else
-		temp = "say";
-
-	// team match?
-	UTIL_LogPlayerEvent(plr->edict(), "%s \"%s\"\n", temp, text);
 }
 
 char *UTIL_dtos1( int d )
