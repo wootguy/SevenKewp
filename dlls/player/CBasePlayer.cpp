@@ -1745,10 +1745,6 @@ void CBasePlayer::PlayerUse ( void )
 {
 	CALL_HOOKS_VOID(pfnPlayerUse, this);
 
-	if (m_useExpired) {
-		return;
-	}
-
 	if ( IsObserver() )
 		return;
 
@@ -1780,6 +1776,8 @@ void CBasePlayer::PlayerUse ( void )
 				if (pTrain && (pTrain->Classify() == CLASS_VEHICLE))
 					((CFuncVehicle*)pTrain)->m_pDriver = NULL;
 
+				m_useExpired = true;
+
 				return;
 			}
 			else
@@ -1802,6 +1800,9 @@ void CBasePlayer::PlayerUse ( void )
 					}
 					else
 						EMIT_SOUND(ENT(pev), CHAN_ITEM, "plats/train_use1.wav", 0.8, ATTN_NORM);
+
+					m_useExpired = true;
+
 					return;
 				}
 			}
@@ -1876,7 +1877,7 @@ void CBasePlayer::PlayerUse ( void )
 	bool useExpiring = (mp_antiblock.value && GetUseTime() > MAX_USE_HOLD_TIME)
 					|| (!mp_antiblock.value && (m_afButtonPressed & IN_USE));
 
-	if (useExpiring && mp_antiblock.value && (!m_usingMomentary || pLooking->IsPlayer())) {
+	if (!m_useExpired && useExpiring && mp_antiblock.value && (!m_usingMomentary || pLooking->IsPlayer())) {
 		int antiblockRet = TryAntiBlock();
 
 		if (antiblockRet) {
@@ -1898,20 +1899,21 @@ void CBasePlayer::PlayerUse ( void )
 		//!!!UNDONE: traceline here to prevent USEing buttons through walls			
 		int caps = pObject->ObjectCaps();
 		bool isContinuousUse = (pev->button & IN_USE) && (caps & FCAP_CONTINUOUS_USE);
-		
+		bool shouldToggle = (m_afButtonReleased & IN_USE) || useExpiring;
+
 		// if antiblock is enabled, don't trigger things until the button is released
 		// because the player might be holding it down for an antiblock attempt
 		bool isToggleUse;
 		if (mp_antiblock.value) {
-			isToggleUse = (m_afButtonReleased & IN_USE) && (caps & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE));
+			isToggleUse = shouldToggle && (caps & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE));
 		}
 		else {
-			isToggleUse = (m_afButtonPressed & IN_USE) && (caps & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE));
+			isToggleUse = shouldToggle && (caps & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE));
 		}
 
-		if (isContinuousUse || isToggleUse)
+		if (isContinuousUse || (isToggleUse && !m_useExpired))
 		{
-			if (isToggleUse || ((m_afButtonPressed & IN_USE) && isContinuousUse))
+			if ((isToggleUse || ((m_afButtonPressed & IN_USE) && isContinuousUse)) && !m_usingMomentary)
 				EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/wpn_select.wav", 0.4, ATTN_NORM);
 
 			if (isToggleUse) {
@@ -1928,20 +1930,13 @@ void CBasePlayer::PlayerUse ( void )
 
 			return;
 		}
-		// UNDONE: Send different USE codes for ON/OFF.  Cache last ONOFF_USE object to send 'off' if you turn away
-		else if ((m_afButtonReleased & IN_USE) && (pObject->ObjectCaps() & FCAP_ONOFF_USE) )	// BUGBUG This is an "off" use
-		{
-			pObject->Use( this, this, USE_SET, 0 );
-			m_useExpired = true;
-
-			return;
-		}
 	}
 
 	// nothing has been activated within the use time limit, cancel use and don't consider any more
 	// uses until the next key press
 	if (useExpiring || (m_afButtonReleased & IN_USE)) {
-		EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/wpn_denyselect.wav", 0.8, ATTN_NORM);
+		if (!m_usingMomentary && !m_useExpired)
+			EMIT_SOUND(ENT(pev), CHAN_ITEM, "common/wpn_denyselect.wav", 0.8, ATTN_NORM);
 		m_useExpired = true; // don't consider any more uses until the button is pressed again
 	}
 }
