@@ -6048,6 +6048,10 @@ float CBasePlayer::GetDamageModifier() {
 	return CBaseMonster::GetDamageModifier() * weapon_damage_mult;
 }
 
+float CBasePlayer::GetDamage(float defaultDamage) {
+	return m_pActiveItem ? m_pActiveItem->GetDamage(defaultDamage) : CBaseMonster::GetDamage(defaultDamage);
+}
+
 void CBasePlayer::PenalizeDeath() {
 	m_iDeaths += 1;
 	m_scoreMultiplier = GetScoreMultiplier();

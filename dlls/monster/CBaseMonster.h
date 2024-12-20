@@ -474,6 +474,8 @@ public:
 	virtual void Revive();
 
 	virtual float GetDamageModifier();
+
+	virtual float GetDamage(float defaultDamage);
 };
 
 

@@ -213,19 +213,17 @@ int CCrowbar::Swing( int fFirst )
 
 		ClearMultiDamage( );
 
-		float dmg_mult = GetDamageModifier();
-
 		// JoshA: Changed from < -> <= to fix the full swing logic since client weapon prediction.
 		// -1.0f + 1.0f = 0.0f. UTIL_WeaponTimeBase is always 0 with client weapon prediction (0 time base vs curtime base)
 		if ( (m_flNextPrimaryAttack + 1 <= UTIL_WeaponTimeBase() ) || g_pGameRules->IsMultiplayer() )
 		{
 			// first swing does full damage
-			pEntity->TraceAttack(m_pPlayer->pev, gSkillData.sk_plr_crowbar* dmg_mult, gpGlobals->v_forward, &tr, DMG_CLUB );
+			pEntity->TraceAttack(m_pPlayer->pev, GetDamage(gSkillData.sk_plr_crowbar), gpGlobals->v_forward, &tr, DMG_CLUB );
 		}
 		else
 		{
 			// subsequent swings do half
-			pEntity->TraceAttack(m_pPlayer->pev, (gSkillData.sk_plr_crowbar / 2) * dmg_mult, gpGlobals->v_forward, &tr, DMG_CLUB );
+			pEntity->TraceAttack(m_pPlayer->pev, GetDamage(gSkillData.sk_plr_crowbar) / 2, gpGlobals->v_forward, &tr, DMG_CLUB );
 		}	
 		ApplyMultiDamage( m_pPlayer->pev, m_pPlayer->pev );
 

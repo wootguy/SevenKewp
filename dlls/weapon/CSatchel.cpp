@@ -82,9 +82,7 @@ void CSatchelCharge :: Spawn( void )
 	pev->gravity = SATCHEL_GRAVITY;
 	pev->friction = 0.8;
 
-	float dmg_mult = GetDamageModifier();
-
-	pev->dmg = gSkillData.sk_plr_satchel*dmg_mult;
+	pev->dmg = GetDamage(gSkillData.sk_plr_satchel);
 	// ResetSequenceInfo( );
 	pev->sequence = 1;
 
