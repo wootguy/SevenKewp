@@ -256,9 +256,7 @@ void CDisplacerBall::FizzleThink()
 {
 	ClearBeams();
 
-	float dmg_mult = GetDamageModifier();
-
-	pev->dmg = gSkillData.sk_plr_displacer_other * dmg_mult;
+	pev->dmg = GetDamage(gSkillData.sk_plr_displacer_other);
 
 	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
 	WRITE_BYTE(TE_DLIGHT);
@@ -285,9 +283,7 @@ void CDisplacerBall::ExplodeThink()
 {
 	ClearBeams();
 
-	float dmg_mult = GetDamageModifier();
-
-	pev->dmg = gSkillData.sk_plr_displacer_other * dmg_mult;
+	pev->dmg = GetDamage(gSkillData.sk_plr_displacer_other);
 
 	edict_t* pOwner = pev->owner;
 	pev->owner = nullptr;

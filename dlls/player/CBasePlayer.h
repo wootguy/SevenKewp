@@ -502,6 +502,8 @@ public:
 
 	float GetDamageModifier();
 
+	float GetDamage(float defaultDamage);
+
 	// accounts for active cameras and view offset
 	Vector GetViewPosition() { return m_hViewEntity ? m_hViewEntity->pev->origin : GetGunPosition(); }
 

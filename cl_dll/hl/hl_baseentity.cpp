@@ -180,6 +180,7 @@ int CBaseMonster::TaskIsRunning( void ) { return 0; }
 void CBaseMonster::ScheduleChange( void ) { }
 void CBaseMonster::SetClassify( int ) { }
 void CBaseMonster::Revive( void ) { }
+float CBaseMonster::GetDamage(float defaultDamage) { return defaultDamage; }
 int CBaseEntity::IRelationship ( CBaseEntity *pTarget ) { return 0; }
 BOOL CBaseMonster :: FindCover ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist ) { return FALSE; }
 BOOL CBaseMonster :: BuildNearestRoute ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist ) { return FALSE; }
@@ -330,6 +331,7 @@ void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore ) { }
 Vector CBasePlayer::BodyTarget(const Vector& posSrc) { return Vector(); }
 void CBasePlayer::Revive() { }
 float CBasePlayer::GetDamageModifier() { return 0; }
+float CBasePlayer::GetDamage(float defaultDamage) { return defaultDamage; }
 
 void ClearMultiDamage(void) { }
 void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker ) { }
@@ -369,7 +371,6 @@ BOOL CBasePlayerWeapon :: AddSecondaryAmmo( int iCount, char *szName, int iMax )
 BOOL CBasePlayerWeapon :: IsUseable( void ) { return TRUE; }
 int CBasePlayerWeapon::PrimaryAmmoIndex( void ) { return -1; }
 int CBasePlayerWeapon::SecondaryAmmoIndex( void ) {	return -1; }
-float CBasePlayerWeapon::GetDamageModifier() { return 1.0f; }
 void CBasePlayerAmmo::Spawn( void ) { }
 CBaseEntity* CBasePlayerAmmo::Respawn( void ) { return this; }
 void CBasePlayerAmmo::Materialize( void ) { }

@@ -356,6 +356,8 @@ public:
 
 	virtual float GetDamageModifier() { return 1.0f; }
 
+	virtual float GetDamage(float defaultDamage) { return (pev->dmg ? pev->dmg : defaultDamage) * GetDamageModifier(); }
+
 	// Smooths the movement of projectile models or sprites that use one of the following movetypes:
 	//		NONE, STEP, WALK, FLY.
 	// Call this in a think function which has a constant interval, and pass that interval as flInterval.

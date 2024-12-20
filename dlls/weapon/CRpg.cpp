@@ -194,9 +194,7 @@ void CRpgRocket :: Spawn( void )
 
 	pev->nextthink = gpGlobals->time + 0.4;
 
-	float dmg_mult = GetDamageModifier();
-
-	pev->dmg = gSkillData.sk_plr_rpg * dmg_mult;
+	pev->dmg = GetDamage(gSkillData.sk_plr_rpg);
 }
 
 //=========================================================

@@ -163,9 +163,7 @@ void CShockBeam::WaterExplodeThink()
 
 	Explode();
 
-	float dmg_mult = GetDamageModifier();
-
-	::RadiusDamage( pev->origin, pev, pOwner, 100.0 * dmg_mult, 150.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
+	::RadiusDamage( pev->origin, pev, pOwner, GetDamage(100.0), 150.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, QUIET_GUN_VOLUME, 0.1);
 
 	UTIL_Remove( this );
@@ -187,9 +185,7 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 
 		ClearMultiDamage();
 
-		float dmg_mult = GetDamageModifier();
-
-		float damage = gSkillData.sk_plr_shockrifle * dmg_mult;
+		float damage = GetDamage(gSkillData.sk_plr_shockrifle);
 
 		auto bitsDamageTypes = DMG_SHOCK;
 
@@ -250,9 +246,7 @@ void CShockBeam::Explode()
 		m_hBeam1 = nullptr;
 	}
 
-	float dmg_mult = GetDamageModifier();
-
-	pev->dmg = 40 * dmg_mult;
+	pev->dmg = GetDamage(40);
 
 	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
 	WRITE_BYTE( TE_DLIGHT );

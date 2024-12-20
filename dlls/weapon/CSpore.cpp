@@ -100,9 +100,7 @@ void CSpore::Spawn()
 		pev->friction = 0.7;
 	}
 
-	float dmg_mult = GetDamageModifier();
-
-	pev->dmg = gSkillData.sk_plr_spore * dmg_mult;
+	pev->dmg = GetDamage(gSkillData.sk_plr_spore);
 
 	m_flIgniteTime = gpGlobals->time;
 

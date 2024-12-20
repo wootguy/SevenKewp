@@ -7834,3 +7834,11 @@ float CBaseMonster::GetDamageModifier() {
 
 	return self_damage_mult * owner_damage_mult;
 }
+
+float CBaseMonster::GetDamage(float defaultDamage) {
+	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
+	CBaseMonster* mon = owner ? owner->MyMonsterPointer() : NULL;
+	
+	// owner damage overrides self damage (snarks, grenades, etc.)
+	return (mon ? mon->GetDamage(defaultDamage) : defaultDamage) * GetDamageModifier();
+}

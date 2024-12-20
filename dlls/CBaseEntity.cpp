@@ -750,8 +750,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	ClearMultiDamage();
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
 
-	float dmg_mult = GetDamageModifier();
-	iDamage *= dmg_mult;
+	iDamage = GetDamage(iDamage);
 
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)
 	{
@@ -836,24 +835,24 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			{
 			default:
 			case BULLET_PLAYER_9MM:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_9mm_bullet * dmg_mult, vecDir, &tr, DMG_BULLET);
+				pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_9mm_bullet), vecDir, &tr, DMG_BULLET);
 				break;
 
 			case BULLET_PLAYER_MP5:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_9mmAR_bullet * dmg_mult, vecDir, &tr, DMG_BULLET);
+				pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_9mmAR_bullet), vecDir, &tr, DMG_BULLET);
 				break;
 
 			case BULLET_PLAYER_BUCKSHOT:
 				// make distance based!
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_buckshot * dmg_mult, vecDir, &tr, DMG_BULLET);
+				pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_buckshot), vecDir, &tr, DMG_BULLET);
 				break;
 
 			case BULLET_PLAYER_357:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_plr_357_bullet * dmg_mult, vecDir, &tr, DMG_BULLET);
+				pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_357_bullet), vecDir, &tr, DMG_BULLET);
 				break;
 
 			case BULLET_NONE: // FIX 
-				pEntity->TraceAttack(pevAttacker, 50 * dmg_mult, vecDir, &tr, DMG_CLUB);
+				pEntity->TraceAttack(pevAttacker, GetDamage(50), vecDir, &tr, DMG_CLUB);
 				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
 				// only decal glass
 				if (!FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
