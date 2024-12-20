@@ -1512,18 +1512,23 @@ void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix
 	else
 		prefix = UTIL_VarArgs("%s: ", STRING(plr->pev->netname));
 	
-	const char* msg = UTIL_VarArgs("%c%s%s\n", 2, prefix.c_str(), textTmp.c_str());
+	std::string msg = UTIL_VarArgs("%c%s%s\n", 2, prefix.c_str(), textTmp.c_str());
+
+	// prevent crash from sending too large of a message
+	if (msg.length() > 190) {
+		msg = msg.substr(0, 190);
+	}
 
 	if (target) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, target);
 		WRITE_BYTE(plr->entindex());
-		WRITE_STRING(msg);
+		WRITE_STRING(msg.c_str());
 		MESSAGE_END();
 	}
 	else {
 		MESSAGE_BEGIN(MSG_ALL, gmsgSayText);
 		WRITE_BYTE(plr->entindex());
-		WRITE_STRING(msg);
+		WRITE_STRING(msg.c_str());
 		MESSAGE_END();
 	}
 
