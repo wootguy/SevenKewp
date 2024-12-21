@@ -335,6 +335,7 @@ EXPORT CBaseEntity	*UTIL_FindEntityGeneric(const char *szName, Vector &vecSrc, f
 EXPORT extern CBasePlayer	*UTIL_PlayerByIndex( int playerIndex );
 EXPORT extern CBasePlayer	*UTIL_PlayerByUserId( int userid );
 EXPORT extern CBasePlayer	*UTIL_PlayerBySteamId(const char* id);
+EXPORT extern CBasePlayer	*UTIL_PlayerBySteamId64(uint64_t id);
 
 #define UTIL_EntitiesInPVS(pent)			(*g_engfuncs.pfnEntitiesInPVS)(pent)
 EXPORT edict_t*		UTIL_ClientsInPVS(edict_t* edict, int& playerCount);

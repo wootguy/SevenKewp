@@ -673,6 +673,18 @@ CBasePlayer* UTIL_PlayerBySteamId(const char* id) {
 	return NULL;
 }
 
+CBasePlayer* UTIL_PlayerBySteamId64(uint64_t id) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
+
+		if (pPlayer && id == pPlayer->GetSteamID64()) {
+			return pPlayer;
+		}
+	}
+
+	return NULL;
+}
+
 edict_t* UTIL_ClientsInPVS(edict_t* edict, int& playerCount) {
 	// TODO: reimplement engine func so that it only iterates 32 edicts
 	edict_t* pvsents = UTIL_EntitiesInPVS(edict);
