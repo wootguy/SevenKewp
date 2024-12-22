@@ -231,6 +231,10 @@ void CMedkit::SecondaryAttack()
 			continue;
 		}
 
+		if (mon->IsPlayer() && mon->pev->iuser1) {
+			continue; // don't revive spectators
+		}
+
 		float dist = (mon->pev->origin - m_pPlayer->pev->origin).Length();
 		
 		if (bestTarget == NULL) {

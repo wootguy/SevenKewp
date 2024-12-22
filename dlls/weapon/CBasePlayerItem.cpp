@@ -300,7 +300,7 @@ void CBasePlayerItem::DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, 
 }
 
 int CBasePlayerItem::ObjectCaps() {
-	if (pev->effects == MOVETYPE_FOLLOW || (pev->effects & EF_NODRAW)) {
+	if (pev->movetype == MOVETYPE_FOLLOW || (pev->effects & EF_NODRAW)) {
 		return CBaseEntity::ObjectCaps();
 	}
 	else {

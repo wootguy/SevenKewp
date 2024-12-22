@@ -32,7 +32,7 @@ public:
 	void Materialize(void);
 	virtual void ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual BOOL MyTouch(CBasePlayer* pPlayer) { return FALSE; };
-	BOOL ShouldRespawn();
+	virtual BOOL ShouldRespawn();
 	virtual CBaseEntity* Respawn(void);
 	const char* GetModel();
 	void SetSize(Vector defaultMins, Vector defaultMaxs);
