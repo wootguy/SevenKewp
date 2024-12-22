@@ -272,18 +272,18 @@ void CPushable::UpdatePushDir(CBaseEntity* pOther, int push) {
 			goto objectboost;
 		playerTouch = 1;
 	}
-	else if (pev->groundentity == pOther->edict() && pOther->pev->velocity.Length()) {
+	else if (pev->groundentity == pOther->edict() && (pOther->pev->velocity.Length() || pOther->pev->avelocity.Length())) {
 		// don't get pushed by moving platforms that the pushable is resting on
 		factor = 0;
 		m_onMovingPlatform = true;
 	}
 	else {
-		Vector flatObjectDir = pOther->pev->origin - pev->origin;
+		Vector flatObjectDir = pOther->Center() - Center();
 		flatObjectDir.z = 0;
 		Vector flatOtherVel = pOther->pev->velocity;
 		flatOtherVel.z = 0;
 
-		if (DotProduct(flatObjectDir, flatOtherVel) > 0) {
+		if (DotProduct(flatObjectDir.Normalize(), flatOtherVel.Normalize()) > 0) {
 			// if toucher is moving in the opposite direction of me, don't get pulled along with it.
 			// this can happen a pushable with lower friction touches one with higher friction
 			factor = 0;

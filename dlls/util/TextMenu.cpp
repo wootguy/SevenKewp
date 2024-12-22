@@ -199,7 +199,8 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 	lastPage = page;
 	lastDuration = duration;
 	
-	int limitPerPage = isPaginated() ? ItemsPerPage() : ItemsPerPage();
+	int maxItemsWithoutPagination = MAX_PAGE_OPTIONS - (noexit ? 0 : 1);
+	int limitPerPage = isPaginated() ? ItemsPerPage() : maxItemsWithoutPagination;
 	int itemOffset = page * ItemsPerPage();
 	int totalPages = (numOptions+(ItemsPerPage() -1)) / ItemsPerPage();
 

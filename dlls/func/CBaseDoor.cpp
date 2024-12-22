@@ -306,6 +306,13 @@ void CBaseDoor::Spawn()
 	m_vecPosition2 = m_vecPosition1 + (pev->movedir * (fabs(pev->movedir.x * (pev->size.x - 2)) + fabs(pev->movedir.y * (pev->size.y - 2)) + fabs(pev->movedir.z * (pev->size.z - 2)) - m_flLip));
 	ASSERTSZ(m_vecPosition1 != m_vecPosition2, "door start/end positions are equal\n");
 
+	if (FBitSet(pev->spawnflags, SF_DOOR_START_OPEN))
+	{	// swap pos1 and pos2, put door at pos2
+		UTIL_SetOrigin(pev, m_vecPosition2);
+		m_vecPosition2 = m_vecPosition1;
+		m_vecPosition1 = pev->origin;
+	}
+
 	InitDoorTriggers();
 
 	m_toggle_state = TS_AT_BOTTOM;
@@ -334,12 +341,7 @@ void CBaseDoor::InitDoorTriggers() {
 	if (m_fireOnStartMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
 	if (m_fireOnStopMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
 
-	if (FBitSet(pev->spawnflags, SF_DOOR_START_OPEN))
-	{	// swap pos1 and pos2, put door at pos2
-		UTIL_SetOrigin(pev, m_vecPosition2);
-		m_vecPosition2 = m_vecPosition1;
-		m_vecPosition1 = pev->origin;
-
+	if (FBitSet(pev->spawnflags, SF_DOOR_START_OPEN)) {
 		SWAP(m_fireOnCloseStart, m_fireOnOpenStart, string_t);
 		SWAP(m_fireOnCloseEnd, m_fireOnOpenEnd, string_t);
 		SWAP(m_fireOnCloseStartMode, m_fireOnOpenStartMode, USE_TYPE);
