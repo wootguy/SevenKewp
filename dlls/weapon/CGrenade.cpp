@@ -59,7 +59,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	// Pull out of the wall a bit
 	if (pTrace->flFraction != 1.0)
 	{
-		float dist = (pev->dmg - 24) * 0.6;
+		float dist = V_max(16, (pev->dmg - 24)) * 0.6;
 		m_effectOrigin = pTrace->vecEndPos + (pTrace->vecPlaneNormal * dist);
 
 		if (mp_explosionbug.value == 0) {

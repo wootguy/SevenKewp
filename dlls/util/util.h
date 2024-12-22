@@ -55,6 +55,7 @@ extern int g_edictsinit; // 1 if all edicts were allocated so that relocations c
 extern std::unordered_map<std::string, int> g_admins;
 
 EXPORT extern std::string g_mp3Command; // current global mp3 command
+EXPORT extern bool g_seriesMusic; // true if music should keep playing after level change within the same series
 
 extern TYPEDESCRIPTION	gEntvarsDescription[];
 extern const int ENTVARS_COUNT;

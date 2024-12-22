@@ -1373,9 +1373,22 @@ void CHalfLifeMultiplay :: GoToIntermission( void )
 				MESSAGE_BEGIN(MSG_BROADCAST, SVC_INTERMISSION);
 				MESSAGE_END();
 
+				int seriesIdx = nextMap->seriesIdx + 1;
+				int seriesCount = seriesIdx;
+
+				// count maps in series
+				mapcycle_item_t* map = nextMap;
+				while (map->next) {
+					map = map->next;
+					if (map->seriesNum != currentMap->seriesNum || map->seriesIdx < seriesIdx) {
+						break;
+					}
+					seriesCount = map->seriesIdx + 1;
+				}
+
 				MESSAGE_BEGIN(MSG_BROADCAST, gmsgSayText);
 				WRITE_BYTE(0); // not a player
-				WRITE_STRING(UTIL_VarArgs("Loading %s...\n", nextmapname));
+				WRITE_STRING(UTIL_VarArgs("Loading map %s (%d of %d)...\n", nextmapname, seriesIdx, seriesCount));
 				MESSAGE_END();
 
 				m_flIntermissionEndTime = gpGlobals->time + 0.05f;

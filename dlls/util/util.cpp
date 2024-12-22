@@ -92,6 +92,7 @@ unsigned int seed_table[ 256 ] =
 };
 
 std::string g_mp3Command;
+bool g_seriesMusic; // true if music should keep playing after level change within the same series
 
 std::unordered_map<std::string, int> g_admins;
 
@@ -1176,6 +1177,7 @@ void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target) {
 	if (!target) {
 		ALERT(at_console, "MP3 Command: '%s'\n", mp3Command.c_str());
 		g_mp3Command = mp3Command + "\n";
+		g_seriesMusic = false;
 	}
 }
 
@@ -1188,6 +1190,7 @@ void UTIL_StopGlobalMp3(edict_t* target) {
 
 	if (!target) {
 		g_mp3Command = "";
+		g_seriesMusic = false;
 		ALERT(at_console, "MP3 Command: 'mp3 stop'\n");
 	}
 }
@@ -2994,6 +2997,9 @@ void PlayCDTrack(int iTrack)
 	MESSAGE_BEGIN(MSG_ALL, SVC_STUFFTEXT);
 	WRITE_STRING((cdCommand + "\n").c_str());
 	MESSAGE_END();
+
+	// HL behavior. Music plays through multiple levels.
+	g_seriesMusic = true;
 
 	ALERT(at_console, "CD Command: '%s'\n", cdCommand.c_str());
 }

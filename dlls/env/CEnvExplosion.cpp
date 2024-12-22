@@ -90,7 +90,7 @@ void CEnvExplosion::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 	// Pull out of the wall a bit
 	if (tr.flFraction != 1.0)
 	{
-		float dist = (m_iMagnitude - 24) * 0.6;
+		float dist = V_max(16, (m_iMagnitude - 24)) * 0.6;
 		m_effectOrigin = tr.vecEndPos + (tr.vecPlaneNormal * dist);
 
 		if (mp_explosionbug.value == 0) {

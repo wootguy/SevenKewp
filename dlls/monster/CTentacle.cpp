@@ -484,6 +484,7 @@ void CTentacle :: Cycle( void )
 
 	DispatchAnimEvents( );
 	StudioFrameAdvance( );
+	UpdateShockEffect();
 
 	ChangeYaw( pev->yaw_speed );
 
@@ -756,6 +757,7 @@ void CTentacle :: DieThink( void )
 
 	DispatchAnimEvents( );
 	StudioFrameAdvance( );
+	UpdateShockEffect();
 
 	ChangeYaw( 24 );
 

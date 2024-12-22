@@ -34,6 +34,8 @@ class CItemSuit : public CItem
 			EMIT_SOUND_SUIT(pPlayer->edict(), "!HEV_AAx");	// long version of suit logon
 
 		pPlayer->pev->weapons |= (1 << WEAPON_SUIT);
+		pPlayer->m_iHideHUD &= ~HIDEHUD_HEALTH;
+
 		return TRUE;
 	}
 };

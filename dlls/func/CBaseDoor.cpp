@@ -23,6 +23,10 @@ IMPLEMENT_SAVERESTORE(CBaseDoor, CBaseToggle)
 #define DOOR_SOUNDWAIT		3
 #define BUTTON_SOUNDWAIT	0.5
 
+// minimum amount of seconds before applying block damage again
+// (should be more than 0 to prevent damage every frame when a player gets stuck inside a door)
+#define DOOR_SMASH_MIN_DELAY 0.5
+
 // play door or button locked or unlocked sounds. 
 // pass in pointer to valid locksound struct. 
 // if flocked is true, play 'door is locked' sound,
@@ -780,7 +784,10 @@ void CBaseDoor::Blocked(CBaseEntity* pOther)
 
 	// Hurt the blocker a little.
 	if (pev->dmg || FClassnameIs(pOther->pev, "monster_tripmine")) {
-		pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
+		if (gpGlobals->time - lastDamage > DOOR_SMASH_MIN_DELAY) {
+			lastDamage = gpGlobals->time;
+			pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
+		}
 	}
 
 	if (pOther->IsMonster() && !pOther->IsAlive()) {

@@ -293,7 +293,7 @@ void PRECACHE_MODEL_SEQUENCE(const char* path, studiohdr_t* mdl, int sequence) {
 		if (lastDot == -1 || lastDot == (int)opt.size() - 1)
 			continue; // no file extension
 
-		if (evt->event == 1004 || evt->event == 1008 || evt->event == 5004) { // play sound
+		if (evt->event == 1011 || evt->event == 1004 || evt->event == 1008 || evt->event == 5004) { // play sound
 			if (opt[0] == '*')
 				opt = opt.substr(1); // not sure why some models do this, it looks pointless.
 

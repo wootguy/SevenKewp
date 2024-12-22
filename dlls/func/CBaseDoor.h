@@ -106,4 +106,6 @@ public:
 	USE_TYPE m_fireOnStopMode;
 
 	ObeyTriggerMode m_iObeyTriggerMode;
+
+	float lastDamage;
 };

@@ -195,5 +195,6 @@ struct player_score_t {
 
 // maps a steam ID to their score, for preserving scores across level changes and disconnects
 EXPORT extern std::unordered_map<uint64_t, player_score_t> g_playerScores;
+EXPORT extern std::unordered_map<uint64_t, player_score_t> g_oldPlayerScores; // state on level load, used in case of map restarts
 
 #endif		// GAME_H

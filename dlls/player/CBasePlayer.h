@@ -237,6 +237,7 @@ public:
 	int			m_iClientHealth;	// the health currently known by the client.  If this changes, send a new
 	int			m_iClientBattery;	// the Battery currently known by the client.  If this changes, send a new
 	int			m_iHideHUD;		// the players hud weapon info is to be hidden
+	bool		m_fakeSuit; // tell client they have a suit, even if they don't, so they can switch weapons
 	int			m_iClientHideHUD;
 	int			m_iFOV;			// field of view
 	int			m_iClientFOV;	// client's known FOV
