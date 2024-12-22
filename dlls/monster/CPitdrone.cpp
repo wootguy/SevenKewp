@@ -30,6 +30,7 @@
 
 int			   iSpikeTrail;
 int iPitdroneSpitSprite;
+#define PITDRONE_CLIP_SIZE 6
 	
 
 //=========================================================
@@ -694,7 +695,7 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				else
 				{
 					SetBodygroup( PitdroneBodygroup::Weapons, PitdroneWeapon::Full );
-					m_cAmmoLoaded = 6;
+					m_cAmmoLoaded = PITDRONE_CLIP_SIZE;
 				}
 
 				ClearConditions( bits_COND_NO_AMMO_LOADED );
@@ -725,22 +726,20 @@ void CPitdrone :: Spawn()
 
 	m_flNextSpikeTime = gpGlobals->time;
 
-	if( m_iInitialAmmo == -1 )
-	{
-		SetBodygroup( PitdroneBodygroup::Weapons, PitdroneWeapon::Full );
+	// if not specified, randomly decide to havepreloaded ammo
+	if (m_iInitialAmmo == 0 && RANDOM_LONG(0,2) >= 1) {
+		m_iInitialAmmo = PITDRONE_CLIP_SIZE;
 	}
-	else if( m_iInitialAmmo <= 0 )
+
+	if( m_iInitialAmmo < 0 )
 	{
-		m_iInitialAmmo = -1;
-		SetBodygroup( PitdroneBodygroup::Weapons, PitdroneWeapon::Empty );
+		m_iInitialAmmo = 0;
+		SetBodygroup(PitdroneBodygroup::Weapons, PitdroneWeapon::Empty);
 	}
 	else
 	{
 		SetBodygroup( PitdroneBodygroup::Weapons, PitdroneWeapon::One - m_iInitialAmmo );
 	}
-
-	if( m_iInitialAmmo == -1 )
-		m_iInitialAmmo = 0;
 
 	m_cAmmoLoaded = m_iInitialAmmo;
 

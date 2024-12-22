@@ -411,7 +411,10 @@ const char* CBreakable::DisplayName() {
 	if (m_displayName) {
 		return STRING(m_displayName);
 	}
-	return Explodable() && !(pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) ? "Explosives" : "Breakable";
+
+	// May show "Explosives (explosives only)" in the HUD, but that's better than 
+	// "Breakable (explosives only)" which is less imformative.
+	return Explodable() ? "Explosives" : "Breakable";
 }
 
 void CBreakable::BreakTouch(CBaseEntity* pOther)

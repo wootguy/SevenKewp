@@ -644,7 +644,7 @@ int CController::LookupFloat( )
 void CController :: RunTask ( Task_t *pTask )
 {
 
-	if (m_flShootEnd > gpGlobals->time)
+	if (m_flShootEnd > gpGlobals->time && IsAlive())
 	{
 		Vector vecHand, vecAngle;
 		

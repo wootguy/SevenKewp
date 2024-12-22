@@ -747,23 +747,29 @@ void CRpg::UpdateSpot( void )
 			// then revert to using BeamEntPoint (attached to the player, not spot).
 			m_lastBeamUpdate = gpGlobals->time;
 
-			if (m_hasLaserAttachment) {
-				UTIL_BeamEnts(m_pSpot->entindex(), 0, m_pPlayer->entindex(), 1, false, g_laserBeamIdx,
-					0, 0, 10, 8, 0, RGBA(255, 32, 32, 48), 64, MSG_PVS, m_pPlayer->pev->origin);
-			}
-			else {
-				// show the beam to everyone except the player, unless they're in a third-person view
-				for (int i = 1; i < gpGlobals->maxClients; i++) {
-					CBasePlayer* plr = UTIL_PlayerByIndex(i);
-					if (!plr || (plr == m_pPlayer && plr->m_hViewEntity.GetEntity() == plr)) {
-						continue;
-					}
+			// show the beam to everyone except the player, unless they're in a third-person view
+			for (int i = 1; i < gpGlobals->maxClients; i++) {
+				CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
-					edict_t* ed = plr->edict();
-					if (m_pPlayer->isVisibleTo(ed) || m_pSpot->isVisibleTo(ed)) {
-						UTIL_BeamEnts(m_pSpot->entindex(), 0, m_pPlayer->entindex(), 1, false, g_laserBeamIdx,
-							0, 0, 10, 8, 0, RGBA(255, 32, 32, 48), 64, MSG_ONE_UNRELIABLE, NULL, ed);
-					}
+				if (!plr) {
+					continue;
+				}
+
+				int beamWidth = 8;
+
+				// is first-person and owner
+				if (plr == m_pPlayer && plr->m_hViewEntity.GetEntity() == plr) {
+					if (!m_hasLaserAttachment)
+						continue;
+
+					// width 8 looks too thick in first-person view but just thick enough for others
+					beamWidth = 1;
+				}
+
+				edict_t* ed = plr->edict();
+				if (plr == m_pPlayer || m_pPlayer->isVisibleTo(ed) || m_pSpot->isVisibleTo(ed)) {
+					UTIL_BeamEnts(m_pSpot->entindex(), 0, m_pPlayer->entindex(), 1, false, g_laserBeamIdx,
+						0, 0, 10, beamWidth, 0, RGBA(255, 32, 32, 48), 64, MSG_ONE_UNRELIABLE, NULL, ed);
 				}
 			}
 		}

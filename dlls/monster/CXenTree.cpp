@@ -48,6 +48,7 @@ public:
 	void		HandleAnimEvent(MonsterEvent_t* pEvent);
 	void		Attack(void);
 	int			Classify(void) { return CLASS_BARNACLE; }
+	const char* DisplayName() { return "Xen Tree"; }
 
 	virtual int	Save(CSave& save);
 	virtual int	Restore(CRestore& restore);

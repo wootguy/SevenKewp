@@ -209,6 +209,8 @@ void lagcomp_end() {
 
 	edict_t* edicts = ENT(0);
 
+	WorldState& worldState = g_worldHistory[g_currentRewindIdx];
+
 	for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++)
 	{
 		if (!g_rewinds[i].isCompensated)
@@ -216,9 +218,15 @@ void lagcomp_end() {
 
 		entvars_t& vars = edicts[i].v;
 
+		EntState& rewindState = worldState.ents[i];
 		EntState& restoreState = g_rewinds[i].restoreState;
-		vars.sequence = restoreState.sequence;
-		vars.frame = restoreState.frame;
+
+		// make sure the sequence wasn't updated after the entity was attacked (xen_tree)
+		if (vars.sequence == rewindState.sequence) {
+			vars.sequence = restoreState.sequence;
+			vars.frame = restoreState.frame;
+		}
+		
 		vars.angles = restoreState.angles;
 		UTIL_SetOrigin(&vars, restoreState.origin);
 	}

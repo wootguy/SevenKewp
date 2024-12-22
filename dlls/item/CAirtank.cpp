@@ -26,6 +26,7 @@ class CAirtank : public CGrenade
 	void EXPORT TankTouch( CBaseEntity *pOther );
 	int	 BloodColor( void ) { return DONT_BLEED; };
 	void Killed( entvars_t *pevAttacker, int iGib );
+	const char* DisplayName() { return "Air Tank"; }
 
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );

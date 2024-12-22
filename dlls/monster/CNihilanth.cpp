@@ -182,6 +182,7 @@ public:
 
 	void Spawn( void );
 	void Precache( void );
+	const char* DisplayName();
 
 	void CircleInit( CBaseEntity *pTarget );
 	void AbsorbInit( void );
@@ -329,7 +330,6 @@ void CNihilanth :: Spawn( void )
 	pev->health = 100;
 	*/
 }
-
 
 void CNihilanth::Precache( void )
 {
@@ -1371,7 +1371,16 @@ void CNihilanthHVR :: HoverThink( void  )
 }
 
 
+const char* CNihilanthHVR::DisplayName() {
+	if (pev->owner) {
+		CBaseEntity* owner = Instance(pev->owner);
+		if (owner) {
+			return owner->DisplayName();
+		}
+	}
 
+	return "Energy Ball";
+}
 
 void CNihilanthHVR :: ZapInit( CBaseEntity *pEnemy )
 {

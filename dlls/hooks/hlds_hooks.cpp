@@ -365,8 +365,11 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer = GetClassPtr((CBasePlayer *)pev);
 	pPlayer->SetCustomDecalFrames(-1); // Assume none;
 	pPlayer->m_flLastSetRoomtype = -1; // fixup room type if joining from another server
-
-	if (g_mp3Command.size()) {
+	
+	if (g_seriesMusic) {
+		// continue playing from last map
+	}
+	else if (g_mp3Command.size()) {
 		// start global music
 		MESSAGE_BEGIN(MSG_ONE, SVC_STUFFTEXT, NULL, pEntity);
 		WRITE_STRING(g_mp3Command.c_str());
@@ -399,10 +402,6 @@ void ClientPutInServer( edict_t *pEntity )
 
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();
-
-	if (g_pGameRules->IsMultiplayer()) {
-		FireTargets("game_playerjoin", pPlayer, pPlayer, USE_TOGGLE, 0);
-	}
 }
 
 /*
@@ -762,6 +761,12 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	if (!cycleMap || !lastCycleMap || cycleMap->seriesNum != lastCycleMap->seriesNum) {
 		g_playerScores.clear();
 	}
+
+	// reset scores if map was restarted
+	if (toLowerCase(g_lastMapName) == toLowerCase(STRING(gpGlobals->mapname))) {
+		g_playerScores = g_oldPlayerScores;
+	}
+	g_oldPlayerScores = g_playerScores;
 
 	PrintEntindexStats();
 
@@ -1855,6 +1860,10 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 	cd->waterlevel		= pev->waterlevel;
 	cd->watertype		= pev->watertype;
 	cd->weapons			= pev->weapons;
+
+	if (pl->m_fakeSuit) {
+		cd->weapons |= 1 << WEAPON_SUIT;
+	}
 
 	// Vectors
 	cd->origin			= pev->origin;
