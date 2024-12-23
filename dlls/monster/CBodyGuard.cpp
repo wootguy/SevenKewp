@@ -48,7 +48,6 @@ public:
 	void Killed(entvars_t* pevAttacker, int iGib);
 	void ShuffleSoundArrays();
 
-	void SetActivity(Activity NewActivity);
 	int GetActivitySequence(Activity NewActivity);
 	Schedule_t* GetScheduleOfType(int Type);
 
@@ -67,18 +66,10 @@ public:
 	void TalkInit();
 	void OnTaskComplete(Task_t task);
 
-	void PrescheduleThink(void);
-
 	MONSTERSTATE GetIdealState()
 	{
 		return CTalkSquadMonster::GetIdealState();
 	}
-
-	int minigunShootSeq;
-	int minigunSpinupSeq;
-	float nextMinigunShoot;
-	bool minigunIsSpinning;
-	float minigunSpinupTime;
 
 private:
 	static const char* pGruntSentences[];
@@ -234,9 +225,6 @@ void CBodyGuard::GibMonster(void)
 
 void CBodyGuard::Killed(entvars_t* pevAttacker, int iGib)
 {
-	// stop minigun spin sound
-	minigunIsSpinning = false;
-	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 	CBaseGrunt::Killed(pevAttacker, iGib);
 }
 
@@ -263,21 +251,6 @@ void CBodyGuard::HandleAnimEvent(MonsterEvent_t* pEvent)
 	}
 }
 
-void CBodyGuard::PrescheduleThink(void) {
-	CBaseGrunt::PrescheduleThink();
-
-	if (pev->sequence == minigunShootSeq && gpGlobals->time >= nextMinigunShoot) {
-		pev->nextthink = nextMinigunShoot = gpGlobals->time + 0.07f;
-		Shoot(false);
-	}
-	if (minigunIsSpinning && minigunSpinupTime && gpGlobals->time - minigunSpinupTime > 1.0f) {
-		EMIT_SOUND_DYN(edict(), CHAN_ITEM, "hassault/hw_spin.wav", 0.7f, ATTN_STATIC, 0, 100);
-		minigunSpinupTime = 0; // sound loops automatically, don't need to keep playing
-	}
-	if (pev->sequence == minigunSpinupSeq) {
-		PointAtEnemy();
-	}
-}
 
 void CBodyGuard::OnTaskComplete(Task_t task) {
 	// the model is missing events for most of the reload animations, so reloading on task completion instead
@@ -444,33 +417,30 @@ IMPLEMENT_CUSTOM_SCHEDULES(CBodyGuard, CBaseGrunt)
 
 Schedule_t* CBodyGuard::GetScheduleOfType(int Type)
 {
+	bool wasSpinning = minigunSpinState != 0;
+	if (minigunSpinState && Type != SCHED_RANGE_ATTACK1) {
+		minigunSpinState = 0;
+		EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+	}
+
 	switch (Type)
 	{
+	case SCHED_TAKE_COVER_FROM_ENEMY:
+	case SCHED_TAKE_COVER_FROM_BEST_SOUND:
+		if (HasEquipment(MEQUIP_MINIGUN)) {
+			return CBaseMonster::GetSchedule(); // don't take cover from sounds (too slow to react)
+		}
+		else {
+			break;
+		}
 	case SCHED_RANGE_ATTACK1:
-		if (HasEquipment(MEQUIP_MINIGUN) && !minigunIsSpinning) {
-			minigunIsSpinning = true;
-			minigunSpinupTime = gpGlobals->time;
+		if (HasEquipment(MEQUIP_MINIGUN) && minigunSpinState == 0) {
 			return &slMinigunSpinup[0];
 		}
 		return &slGruntRangeAttack1C[0]; // prevent crouching or angry idle animations
 	default:
-		if (minigunIsSpinning) {
-			minigunIsSpinning = false;
-			minigunSpinupTime = 0;
-			EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
-			return &slMinigunSpindown[0];
-		}
-		return CBaseGrunt::GetScheduleOfType(Type);
-	}
-}
-
-void CBodyGuard::SetActivity(Activity NewActivity) {
-	CBaseGrunt::SetActivity(NewActivity);
-
-	if (NewActivity == ACT_THREAT_DISPLAY) {
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spinup.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
-		PointAtEnemy();
+		return wasSpinning ? &slMinigunSpindown[0] : CBaseGrunt::GetScheduleOfType(Type);
 	}
 }
 
