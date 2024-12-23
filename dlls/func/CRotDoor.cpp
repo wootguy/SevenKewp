@@ -129,10 +129,12 @@ void CRotDoor::Blocked(CBaseEntity* pOther)
 {
 	pev->dmg = initialDamage;
 
-	// increase damage exponentially as time goes on to account for monsters with insane health values
-	// and only hurt the entity preventing the door from opening
-	if (++blockedCounter > 8 && m_toggle_state == TS_GOING_UP) {
-		pev->dmg += V_min(1000, powf(10, (blockedCounter / 8)));
+	if (gpGlobals->time - lastDamage > DOOR_SMASH_MIN_DELAY) {
+		// increase damage exponentially as time goes on to account for monsters with insane health values
+		// and only hurt the entity preventing the door from opening
+		if (++blockedCounter > 8 && m_toggle_state == TS_GOING_UP) {
+			pev->dmg += V_min(1000, powf(10, (blockedCounter / 8)));
+		}
 	}
 
 	CBaseDoor::Blocked(pOther);

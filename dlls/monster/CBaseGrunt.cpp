@@ -105,9 +105,7 @@ void CBaseGrunt::Killed(entvars_t* pevAttacker, int iGib)
 	{
 		if (HasMemory(bits_MEMORY_SUSPICIOUS) || IsFacing(pevAttacker, pev->origin))
 		{
-			Remember(bits_MEMORY_PROVOKED);
-
-			StopFollowing(true);
+			Provoke((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)));
 		}
 	}
 
@@ -479,8 +477,7 @@ int CBaseGrunt :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 				// Alright, now I'm pissed!
 				PlaySentenceSound(HGRUNT_SENT_MAD);
 
-				Remember(bits_MEMORY_PROVOKED);
-				StopFollowing(TRUE);
+				Provoke(attacker);
 				ALERT(at_console, "Monster is now MAD!\n");
 			}
 			else
@@ -720,7 +717,7 @@ void CBaseGrunt::ShootMinigun(Vector& vecShootOrigin, Vector& vecShootDir) {
 void CBaseGrunt::ShootSniper(Vector& vecShootOrigin, Vector& vecShootDir) {
 	//TODO: why is this 556? is 762 too damaging?
 	FireBullets(1, vecShootOrigin, vecShootDir, VECTOR_CONE_1DEGREES, 8192, BULLET_MONSTER_762);
-	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sniper_fire.wav", 1, 0.3);
+	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/sniper_fire.wav", 1, 0.2);
 }
 
 void CBaseGrunt ::ShootShotgun(Vector& vecShootOrigin, Vector& vecShootDir)
@@ -888,6 +885,11 @@ bool CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity
 	Vector	vecGunPos;
 	Vector	vecGunAngles;
 	GetAttachment(attachmentIdx, vecGunPos, vecGunAngles);
+
+	if (POINT_CONTENTS(vecGunPos) == CONTENTS_SOLID) {
+		vecGunPos = pev->origin;
+		vecGunPos.z += pev->maxs.z * 0.5f;
+	}
 
 	int equipmentToDrop = m_iEquipment & equipMask;
 	bool droppedAnything = false;
@@ -1117,7 +1119,9 @@ void CBaseGrunt::InitAiFlags() {
 	canCallMedic = false;
 	suppressOccludedTarget = false;
 	maxSuppressTime = 3.0f;
-	maxShootDist = 2048;
+
+	if (!maxShootDist)
+		maxShootDist = 2048;
 }
 
 void CBaseGrunt::BasePrecache() {

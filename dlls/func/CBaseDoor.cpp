@@ -793,6 +793,7 @@ void CBaseDoor::Blocked(CBaseEntity* pOther)
 	if (pOther->IsMonster() && !pOther->IsAlive()) {
 		// don't let corpses block doors
 		pOther->Killed(pev, GIB_ALWAYS);
+		lastDamage = 0; // allow gibbing multiple players
 		return; // don't bounce back because the path is clear now
 	}
 

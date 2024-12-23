@@ -286,7 +286,7 @@ void CVoltigore::Spawn()
 		beam->EntsInit(entindex(), entindex());
 		beam->SetStartAttachment(i+1); // head, left hand, right hand
 		beam->SetEndAttachment(4);
-		if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+		if (CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
 			beam->SetColor(140, 255, 96);
 		}
 		else {
@@ -558,7 +558,7 @@ void CVoltigoreShock::Spawn(void)
 
 	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
 	CBaseMonster* mon = owner ? owner->MyMonsterPointer() : NULL;
-	bool isAllyShock = mon && CBaseMonster::IRelationship(mon->Classify(), CLASS_PLAYER) == R_AL;
+	bool isAllyShock = mon && CBaseEntity::IRelationship(mon->Classify(), CLASS_PLAYER) == R_AL;
 
 	for (int i = 0; i < VOLTI_SHOCK_FLY_BEAMS; i++) {
 		CBeam* beam = CBeam::BeamCreate(VOLTI_BEAM_SPRITE, 30);

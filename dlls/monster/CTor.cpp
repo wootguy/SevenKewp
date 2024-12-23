@@ -542,7 +542,7 @@ void CTor::Spawn()
 
 	MonsterInit();
 
-	if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+	if (CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
 		beamColor1 = Vector(16, 255, 255);
 		beamColor2 = Vector(128, 255, 255);
 	}

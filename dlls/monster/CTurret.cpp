@@ -61,7 +61,7 @@ void CTurret::Spawn()
 	// setup friendly glow
 	bool oldOn = m_iOn;
 	m_iOn = true;
-	if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+	if (CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
 		eye->SetTransparency(kRenderGlow, 0, 255, 0, 0, kRenderFxNoDissipation);
 	}
 	else {

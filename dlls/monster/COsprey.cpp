@@ -229,12 +229,12 @@ void COsprey :: FindAllThink( void )
 {
 	CBaseEntity *pEntity = NULL;
 
-	bool isOspreyPlayerAlly = IRelationship(Classify(), CLASS_PLAYER) == R_AL;
+	bool isOspreyPlayerAlly = CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL;
 
 	m_iUnits = 0;
 	while (m_iUnits < OSPREY_MAX_CARRY && (pEntity = UTIL_FindEntityByClassname( pEntity, replenishMonster)) != NULL)
 	{
-		bool isUnitPlayerAlly = IRelationship(pEntity->Classify(), CLASS_PLAYER) == R_AL;
+		bool isUnitPlayerAlly = CBaseEntity::IRelationship(pEntity->Classify(), CLASS_PLAYER) == R_AL;
 		if (pEntity->IsAlive() && isUnitPlayerAlly == isOspreyPlayerAlly)
 		{
 			m_hGrunt[m_iUnits]		= pEntity;

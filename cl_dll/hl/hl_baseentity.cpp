@@ -180,6 +180,10 @@ int CBaseMonster::TaskIsRunning( void ) { return 0; }
 void CBaseMonster::ScheduleChange( void ) { }
 void CBaseMonster::SetClassify( int ) { }
 void CBaseMonster::Revive( void ) { }
+void CBaseMonster::Provoke(CBaseEntity* attacker) {}
+void CBaseMonster::OnKillProvoker(CBaseEntity* provoker) {}
+void CBaseMonster::Unprovoke(bool friendsToo) {}
+int CBaseMonster::IRelationship(CBaseEntity* pTarget) { return 0; }
 float CBaseMonster::GetDamage(float defaultDamage) { return defaultDamage; }
 int CBaseEntity::IRelationship ( CBaseEntity *pTarget ) { return 0; }
 BOOL CBaseMonster :: FindCover ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist ) { return FALSE; }

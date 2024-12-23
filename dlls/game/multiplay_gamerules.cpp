@@ -917,7 +917,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 				break;
 			}
 
-			switch (pVictim->IRelationship(pVictim->Classify(), CLASS_PLAYER)) {
+			switch (CBaseEntity::IRelationship(pVictim->Classify(), CLASS_PLAYER)) {
 			case R_AL:
 				victimColor = FRIEND_TEAM_COLOR;
 				break;

@@ -874,6 +874,7 @@ int COtis :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float 
 	{
 		m_flPlayerDamage += flDamage;
 
+		ALERT(at_console, "MY enemy is %s\n", m_hEnemy ? m_hEnemy->DisplayName() : "NULL");
 		// This is a heurstic to determine if the player intended to harm me
 		// If I have an enemy, we can't establish intent (may just be crossfire)
 		if ( m_hEnemy == NULL )
@@ -884,8 +885,7 @@ int COtis :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float 
 				// Alright, now I'm pissed!
 				PlaySentence( "OT_MAD", 4, VOL_NORM, ATTN_NORM );
 
-				Remember( bits_MEMORY_PROVOKED );
-				StopFollowing( TRUE );
+				Provoke(attacker);
 			}
 			else
 			{
@@ -1030,10 +1030,8 @@ Schedule_t *COtis :: GetSchedule ( void )
 		if ( pSound && (pSound->m_iType & bits_SOUND_DANGER) )
 			return GetScheduleOfType( SCHED_TAKE_COVER_FROM_BEST_SOUND );
 	}
-	if ( HasConditions( bits_COND_ENEMY_DEAD ) && FOkToSpeak() )
-	{
+	if ( HasConditions( bits_COND_ENEMY_DEAD ) && FOkToSpeak())
 		PlaySentence( "OT_KILL", 4, VOL_NORM, ATTN_NORM );
-	}
 
 	switch( m_MonsterState )
 	{

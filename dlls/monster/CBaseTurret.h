@@ -32,7 +32,7 @@ public:
 	virtual int	 Classify(void);
 	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
 	BOOL IsMachine() { return 1; } // ignore classification overrides
-	BOOL IsTurret() { return 1; }
+	BOOL IsNormalMonster(void) { return FALSE; }
 	void DeathSound();
 
 	int BloodColor(void) { return DONT_BLEED; }

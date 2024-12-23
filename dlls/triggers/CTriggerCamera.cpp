@@ -12,7 +12,7 @@
 #define SF_CAMERA_PLAYER_TAKECONTROL 4 // freeze viewers
 #define SF_CAMERA_ALL_PLAYERS 8 // force everyone to view, dead or alive
 #define SF_CAMERA_FORCE_VIEW 16 // activator is forced to view even if dead ("all players" also does this)
-#define SF_CAMERA_NO_INSTANT_TURN 32 // if enabled, smoothly rotate to face targets
+#define SF_CAMERA_INSTANT_TURN 32 // if enabled, don't smoothly rotate to face target
 #define SF_CAMERA_PLAYER_INVULNERABLE 256 // disable viewer damage while camera is active
 
 class CTriggerCamera : public CBaseDelay
@@ -257,7 +257,7 @@ void CTriggerCamera::FollowTarget()
 	Vector vecGoal = UTIL_VecToAngles(m_hTarget->pev->origin - pev->origin);
 	vecGoal.x = -vecGoal.x;
 
-	if (pev->spawnflags & SF_CAMERA_NO_INSTANT_TURN) {
+	if (!(pev->spawnflags & SF_CAMERA_INSTANT_TURN)) {
 		if (pev->angles.y > 360)
 			pev->angles.y -= 360;
 

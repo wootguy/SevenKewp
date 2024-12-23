@@ -249,7 +249,7 @@ old colors
 */
 	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
 	CBaseMonster* mon = owner ? owner->MyMonsterPointer() : NULL;
-	bool firedByAllyMonster = mon && !mon->IsPlayer() && mon->IRelationship(mon->Classify(), CLASS_PLAYER) == R_AL;
+	bool firedByAllyMonster = mon && !mon->IsPlayer() && CBaseEntity::IRelationship(mon->Classify(), CLASS_PLAYER) == R_AL;
 
 	// trail
 	RGBA color = RGBA(255,255,255);
