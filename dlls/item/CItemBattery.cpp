@@ -80,7 +80,8 @@ class CItemBattery : public CItem
 			if (pct > 0)
 				pct--;
 
-			snprintf(szcharge, 64, "!HEV_%1dP", pct);
+			if (pct > 0)
+				snprintf(szcharge, 64, "!HEV_%1dP", pct);
 
 			//EMIT_SOUND_SUIT(ENT(pev), szcharge);
 			pPlayer->SetSuitUpdate(szcharge, FALSE, SUIT_NEXT_IN_30SEC);

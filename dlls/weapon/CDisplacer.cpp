@@ -367,7 +367,7 @@ void CDisplacer::FireThink()
 
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0)
 	{
-		m_pPlayer->SetSuitUpdate("!HEV_AMO0", TRUE, SUIT_REPEAT_OK);
+		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, SUIT_REPEAT_OK);
 	}
 #endif
 
@@ -476,7 +476,7 @@ void CDisplacer::AltFireThink()
 		//if (0 == GetMagazine1())
 		{
 			if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
-				m_pPlayer->SetSuitUpdate("!HEV_AMO0", TRUE, SUIT_REPEAT_OK);
+				m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, SUIT_REPEAT_OK);
 		}
 
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase();

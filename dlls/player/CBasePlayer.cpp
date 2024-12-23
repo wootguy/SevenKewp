@@ -443,6 +443,8 @@ int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 		float flArmor;
 
 		flArmor = (flDamage - flNew) * flBonus;
+		
+		float oldArmor = pev->armorvalue;
 
 		// Does this use more armor than we have?
 		if (flArmor > pev->armorvalue)
@@ -456,6 +458,15 @@ int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 			pev->armorvalue -= flArmor;
 		
 		flDamage = flNew;
+
+		
+		if (oldArmor > 0 && pev->armorvalue < 1) {
+			SetSuitUpdate("!HEV_E0", FALSE, SUIT_NEXT_IN_30SEC); // armor compromised
+		}
+		else if (oldArmor - pev->armorvalue > 50) {
+			// heavy hit
+			SetSuitUpdate("!HEV_E4", FALSE, SUIT_NEXT_IN_30SEC); // hev damage sustained
+		}
 	}
 
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
@@ -1426,6 +1437,7 @@ void CBasePlayer::WaterMove()
 	{
 		if (pev->dmgtime < gpGlobals->time) {
 			TakeDamage(VARS(eoNullEntity), VARS(eoNullEntity), 10 * pev->waterlevel, DMG_BURN);
+			SetSuitUpdate("!HEV_FIRE", FALSE, SUIT_NEXT_IN_1MIN); // extreme heat damage
 			pev->dmgtime = gpGlobals->time + 1.0f;
 		}
 	}
@@ -2881,7 +2893,13 @@ void CBasePlayer::CheckSuitUpdate()
 			m_flSuitUpdate = 0;
 	}
 }
- 
+
+bool IsBatteryUpdateSuitSentence(const char* name) {
+	int len = strlen(name);
+	return len >= 7 && len <= 8 && strstr(name, "!HEV_") == name
+		&& isdigit(name[5]) && ((isdigit(name[6]) && name[7] == 'P') || name[6] == 'P');
+}
+
 // add sentence to suit playlist queue. if fgroup is true, then
 // name is a sentence group (HEV_AA), otherwise name is a specific
 // sentence name ie: !HEV_AA0.  If iNoRepeat is specified in
@@ -2893,11 +2911,6 @@ void CBasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeatTime)
 	int isentence;
 	int iempty = -1;
 	
-	
-	// Ignore suit updates if no suit
-	if ( !(pev->weapons & (1<<WEAPON_SUIT)) )
-		return;
-
 	if (!mp_hevsuit_voice.value)
 	{
 		// due to static channel design, etc. We don't play HEV sounds in multiplayer right now.
@@ -2905,13 +2918,16 @@ void CBasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeatTime)
 	}
 
 	// if name == NULL, then clear out the queue
-
-	if (!name)
-	{
+	if (!name) {
 		for (i = 0; i < CSUITPLAYLIST; i++)
 			m_rgSuitPlayList[i] = 0;
 		return;
 	}
+	
+	// Ignore suit updates if no suit
+	if ( !(pev->weapons & (1<<WEAPON_SUIT)) )
+		return;
+	
 	// get sentence or group number
 	if (!fgroup)
 	{
@@ -2963,11 +2979,31 @@ void CBasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeatTime)
 		m_rgflSuitNoRepeatTime[iempty] = iNoRepeatTime + gpGlobals->time;
 	}
 
-	// find empty spot in queue, or overwrite last spot
-	
-	m_rgSuitPlayList[m_iSuitPlayNext++] = isentence;
-	if (m_iSuitPlayNext == CSUITPLAYLIST)
-		m_iSuitPlayNext = 0;
+	bool replacedExisting = false;
+	if (IsBatteryUpdateSuitSentence(name)) {
+		for (int i = 0; i < CSUITPLAYLIST; i++) {
+			if (!m_rgSuitPlayList[i]) {
+				continue;
+			}
+
+			char sentence[CBSENTENCENAME_MAX + 1];
+			strcpy_safe(sentence, "!", CBSENTENCENAME_MAX + 1);
+			strcat_safe(sentence, gszallsentencenames[m_rgSuitPlayList[i]], CBSENTENCENAME_MAX + 1);
+
+			if (IsBatteryUpdateSuitSentence(sentence)) {
+				m_rgSuitPlayList[i] = isentence;
+				replacedExisting = true;
+				break;
+			}
+		}
+	}
+
+	if (!replacedExisting) {
+		// find empty spot in queue, or overwrite last spot
+		m_rgSuitPlayList[m_iSuitPlayNext++] = isentence;
+		if (m_iSuitPlayNext == CSUITPLAYLIST)
+			m_iSuitPlayNext = 0;
+	}
 
 	if (m_flSuitUpdate <= gpGlobals->time)
 	{
@@ -3476,6 +3512,9 @@ void CBasePlayer::Spawn( void )
 
 	DropAllInventoryItems(false, true);
 	ApplyEffects();
+
+	// don't play suit sounds for items given when spawning
+	SetSuitUpdate(NULL, FALSE, 0);
 }
 
 void CBasePlayer :: Precache( void )
@@ -4556,6 +4595,10 @@ void CBasePlayer :: UpdateClientData( void )
 			{
 				m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
 				m_iFlashBattery--;
+
+				if (m_iFlashBattery < 8) {
+					SetSuitUpdate("!HEV_0P", FALSE, SUIT_NEXT_IN_1MIN);
+				}
 				
 				if (!m_iFlashBattery)
 					FlashlightTurnOff();

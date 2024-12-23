@@ -125,6 +125,10 @@ void CEgon::Holster( int skiplocal /* = 0 */ )
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	SendWeaponAnim( EGON_HOLSTER );
 
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0) {
+		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, SUIT_REPEAT_OK);
+	}
+
     EndAttack();
 }
 
