@@ -539,6 +539,7 @@ void CTor::Spawn()
 
 	summon_cname = ALLOC_STRING(SUMMON_CLASSNAME);
 	numChildren = 0;
+	m_flinchChance = 33;
 
 	MonsterInit();
 

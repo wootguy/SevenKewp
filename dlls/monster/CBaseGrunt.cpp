@@ -175,7 +175,7 @@ void CBaseGrunt :: PrescheduleThink ( void )
 {
 	if (HasEquipment(MEQUIP_MINIGUN)) {
 		if (minigunSpinState == 2) {
-			EMIT_SOUND_DYN(edict(), CHAN_ITEM, "hassault/hw_spin.wav", 0.7f, ATTN_STATIC, SND_CHANGE_PITCH, 100);
+			EMIT_SOUND_DYN(edict(), CHAN_ITEM, "hassault/hw_spin.wav", 0.8f, ATTN_STATIC, SND_CHANGE_PITCH, 100);
 		}
 		if (pev->sequence == minigunShootSeq && gpGlobals->time >= nextMinigunShoot) {
 			pev->nextthink = nextMinigunShoot = gpGlobals->time + 0.07f;
@@ -1122,6 +1122,10 @@ void CBaseGrunt::BaseSpawn()
 	InitModel();
 	SetSize(VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
+	if (HasEquipment(MEQUIP_MINIGUN)) {
+		m_flinchChance = 33;
+	}
+
 	MonsterInit();
 
 	InitAiFlags();
@@ -1261,6 +1265,9 @@ void CBaseGrunt :: StartTask ( Task_t *pTask )
 	case TASK_GRUNT_MINIGUN_SPINUP:
 		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spinup.wav", 1.0, ATTN_NORM, 0, 90);
 		
+		m_IdealActivity = m_Activity = ACT_THREAT_DISPLAY;
+
+		// doing this because SetActivity is playing idle animations sometimes
 		pev->sequence = LookupActivity(ACT_THREAT_DISPLAY);
 		pev->frame = 0;
 		m_rpgAimTime = gpGlobals->time;
@@ -1307,7 +1314,6 @@ void CBaseGrunt :: RunTask ( Task_t *pTask )
 		break;
 	case TASK_GRUNT_MINIGUN_SPINUP:
 		if (pev->frame > 180) {
-			EMIT_SOUND_DYN(edict(), CHAN_ITEM, "hassault/hw_spin.wav", 0.7f, ATTN_STATIC, SND_CHANGE_PITCH, 100);
 			minigunSpinState = 2;
 			TaskComplete();
 		}
@@ -2361,19 +2367,18 @@ Schedule_t* CBaseGrunt::GetMonsterStateSchedule(void) {
 
 		if (HasConditions(bits_COND_HEAVY_DAMAGE))
 		{
-			// flinch for heavy damage but not too often
-			if (RANDOM_LONG(0, 2) == 0) {
-				return GetScheduleOfType(SCHED_SMALL_FLINCH);
+			// flinch for heavy damage and reset minigun spinup if not already spinning
+			if (minigunSpinState == 1) {
+				minigunSpinState = 0;
+				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, 90);
 			}
-			else {
-				ClearConditions(bits_COND_HEAVY_DAMAGE);
-				return CTalkSquadMonster::GetSchedule();
-			}
+			return GetScheduleOfType(SCHED_SMALL_FLINCH);
 		}
 		else if (HasConditions(bits_COND_LIGHT_DAMAGE))
 		{
-			ClearConditions(bits_COND_LIGHT_DAMAGE);
 			// never flinch or retreat from light damage
+			ClearConditions(bits_COND_LIGHT_DAMAGE);
+			
 			return CTalkSquadMonster::GetSchedule();
 		}
 	}

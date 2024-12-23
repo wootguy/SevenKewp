@@ -183,6 +183,8 @@ public:
 
 	Vector m_lastInterpOrigin; // for interpolated origin calculation
 
+	int m_flinchChance; // 0-100 chance the HEAVY_DAMAGE condition is set (0 = 100, -1 = 0)
+
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
 	virtual int		Save( CSave &save ); 
