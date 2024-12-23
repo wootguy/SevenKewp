@@ -1035,6 +1035,7 @@ int CBaseMonster::CheckEnemy(CBaseEntity* pEnemy)
 
 	if (!pEnemy->IsAlive())
 	{
+		OnKillProvoker(m_hEnemy);
 		SetConditions(bits_COND_ENEMY_DEAD);
 		ClearConditions(bits_COND_SEE_ENEMY | bits_COND_ENEMY_OCCLUDED);
 		return FALSE;
@@ -2187,8 +2188,10 @@ void CBaseMonster::MonsterInit(void)
 
 	m_hEnemy = NULL;
 
-	m_flDistTooFar = 1024.0;
-	m_flDistLook = 2048.0;
+	if (m_flDistLook == 0) {
+		m_flDistTooFar = 1024.0;
+		m_flDistLook = 2048.0;
+	}
 
 	m_lastInterpOrigin = pev->origin;
 
@@ -2372,7 +2375,7 @@ int CBaseMonster::Classify(int defaultClassify) {
 
 	// if player ally is set, then ally status towards players is inverted
 	if (m_IsPlayerAlly) {
-		bool isDefaultPlayerAlly = IRelationship(defaultClassify, CLASS_PLAYER) == R_AL;
+		bool isDefaultPlayerAlly = CBaseEntity::IRelationship(defaultClassify, CLASS_PLAYER) == R_AL;
 
 		if (isDefaultPlayerAlly) {
 			// if the monster is allied by default, then isPlayerAlly makes it hostile.
@@ -3796,6 +3799,10 @@ BOOL CBaseMonster::GetEnemy(void)
 				}
 			}
 		}
+	}
+
+	if (m_hEnemy && (m_hEnemy->pev->flags & FL_NOTARGET)) {
+		m_hEnemy = NULL;
 	}
 
 	// remember old enemies
@@ -7316,7 +7323,7 @@ BOOL CBaseMonster::CanFollow(void)
 	if (!IsAlive())
 		return FALSE;
 
-	return !IsFollowing();
+	return TRUE;
 }
 
 
@@ -7333,7 +7340,7 @@ void CBaseMonster::FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		{
 			DeclineFollowing();
 		}
-		else if (CanFollow())
+		else if (CanFollow() && (!IsFollowing() || m_hTargetEnt.GetEntity() != pActivator))
 		{
 			if (canBeMadAtPlayer && (m_afMemory & bits_MEMORY_PROVOKED)) {
 				const char* name = DisplayName();
@@ -7484,7 +7491,7 @@ void CBaseMonster::SetHealth() {
 
 void CBaseMonster::InitModel() {
 	SET_MODEL(edict(), GetModel());
-	bool isAlly = IRelationship(Classify(), CLASS_PLAYER) == R_AL;
+	bool isAlly = CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL;
 
 	if (isAlly != m_friendlySkinFirst) {
 		// use friendly skin
@@ -7511,7 +7518,7 @@ void CBaseMonster::Nerf() {
 		}
 	}
 
-	if (IRelationship(CLASS_PLAYER, Classify()) <= R_NO && !IsMachine()) {
+	if (CBaseEntity::IRelationship(CLASS_PLAYER, Classify()) <= R_NO && !IsMachine()) {
 		return; // don't care about friendlies
 	}
 
@@ -7601,7 +7608,7 @@ void CBaseMonster::Nerf() {
 		// allow the custom extra health
 	}
 
-	if (IRelationship(CLASS_PLAYER, Classify()) > R_NO || (IsTurret() && !m_IsPlayerAlly)) {
+	if (CBaseEntity::IRelationship(CLASS_PLAYER, Classify()) > R_NO || (IsTurret() && !m_IsPlayerAlly)) {
 		g_nerfStats.totalMonsterHealth += pev->health;
 		g_nerfStats.totalMonsters++;
 	}
@@ -7841,4 +7848,63 @@ float CBaseMonster::GetDamage(float defaultDamage) {
 	
 	// owner damage overrides self damage (snarks, grenades, etc.)
 	return (mon ? mon->GetDamage(defaultDamage) : defaultDamage) * GetDamageModifier();
+}
+
+void CBaseMonster::Provoke(CBaseEntity* attacker) {
+	Remember(bits_MEMORY_PROVOKED);
+	StopFollowing(TRUE);
+
+	if (attacker)
+		m_bMadPlayer[attacker->entindex() - 1] = true;
+}
+
+void CBaseMonster::OnKillProvoker(CBaseEntity* provoker) {
+	if (!provoker || !provoker->IsPlayer()) {
+		return;
+	}
+
+	m_bMadPlayer[provoker->entindex() - 1] = false;
+
+	bool anyTargetsLeft = false;
+	for (int i = 0; i < 32; i++) {
+		if (m_bMadPlayer[i]) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i + 1);
+
+			if (!plr) {
+				m_bMadPlayer[i] = false;
+				continue;
+			}
+
+			anyTargetsLeft = true;
+		}
+	}
+
+	if (!anyTargetsLeft) {
+		Forget(bits_MEMORY_PROVOKED);
+	}
+}
+
+void CBaseMonster::Unprovoke(bool friendsToo) {
+	Forget(bits_MEMORY_PROVOKED);
+
+	if (m_hEnemy) {
+		int irel = IRelationship(m_hEnemy);
+
+		if (m_hEnemy && m_hEnemy->IsPlayer() && (irel == R_NO || irel == R_AL)) {
+			m_hEnemy = NULL;
+		}
+	}
+
+	if (friendsToo) {
+		UnprovokeFriends();
+	}
+}
+
+int CBaseMonster::IRelationship(CBaseEntity* pTarget)
+{
+	if (m_afMemory & bits_MEMORY_PROVOKED)
+		if (pTarget->IsPlayer() && m_bMadPlayer[pTarget->entindex() - 1])
+			return R_HT;
+
+	return CBaseToggle::IRelationship(pTarget);
 }

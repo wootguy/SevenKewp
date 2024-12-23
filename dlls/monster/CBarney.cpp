@@ -562,8 +562,7 @@ int CBarney :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 				// Alright, now I'm pissed!
 				PlaySentence( "BA_MAD", 4, VOL_NORM, ATTN_NORM );
 
-				Remember( bits_MEMORY_PROVOKED );
-				StopFollowing( TRUE );
+				Provoke(attacker);
 			}
 			else
 			{

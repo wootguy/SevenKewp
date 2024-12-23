@@ -152,6 +152,7 @@ public:
 	bool m_friendlySkinFirst; // true if the friendly skin comes before the enemy skin
 
 	bool canBeMadAtPlayer; // grunt will retaliate on too much friendly fire
+	bool m_bMadPlayer[32]; // players this friendly is mad at
 	int m_freeroam;
 	int m_lastNode;
 	int m_targetNode;
@@ -476,6 +477,12 @@ public:
 	virtual float GetDamageModifier();
 
 	virtual float GetDamage(float defaultDamage);
+
+	virtual void Provoke(CBaseEntity* attacker);
+	virtual void OnKillProvoker(CBaseEntity* provoker);
+	virtual void Unprovoke(bool friendsToo);
+	virtual void UnprovokeFriends(void) {} // calms an npc and friends down that was provoked by a player's friendly fire
+	virtual int IRelationship(CBaseEntity* pTarget) override;
 };
 
 

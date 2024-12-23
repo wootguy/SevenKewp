@@ -325,10 +325,17 @@ void CShockTrooper::GibMonster()
 
 		if (mon)
 		{
+			// prevent dropping roach inside walls
+			TraceResult tr;
+			TRACE_MONSTER_HULL(mon->edict(), mon->pev->origin, mon->pev->origin, ignore_monsters, NULL, &tr);
+			if (tr.fStartSolid) {
+				UTIL_SetOrigin(mon->pev, pev->origin + Vector(0, 0, pev->maxs.z * 0.5f));
+			}
+
 			mon->pev->velocity = Vector(RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(-100, 100), RANDOM_FLOAT(200, 300));
 			mon->pev->avelocity = Vector(0, RANDOM_FLOAT(200, 400), 0);
 
-			if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+			if (CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
 				mon->pev->skin = 1;
 				mon->m_IsPlayerAlly = TRUE;
 			}
@@ -939,7 +946,7 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 				mon->pev->velocity = Vector(RANDOM_FLOAT(-20, 20), RANDOM_FLOAT(-20, 20), RANDOM_FLOAT(20, 30));
 				mon->pev->avelocity = Vector(0, RANDOM_FLOAT(20, 40), 0);
 
-				if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+				if (CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
 					mon->pev->skin = 1;
 					mon->m_IsPlayerAlly = TRUE;
 				}

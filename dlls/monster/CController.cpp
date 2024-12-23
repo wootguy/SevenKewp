@@ -323,7 +323,7 @@ void CController :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			pBall->pev->velocity = Vector( 0, 0, 32 );
 			pBall->m_hEnemy = m_hEnemy;
 
-			if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+			if (CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
 				pBall->pev->rendercolor = Vector(0, 255, 255);
 			}
 
@@ -673,7 +673,7 @@ void CController :: RunTask ( Task_t *pTask )
 				CBaseMonster *pBall = (CBaseMonster*)Create( "controller_energy_ball", vecSrc, pev->angles, edict() );
 				pBall->pev->velocity = vecDir;
 
-				if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+				if (CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
 					pBall->pev->rendercolor = Vector(0, 255, 255);
 				}
 			}
@@ -881,7 +881,7 @@ void CController :: RunAI( void )
 			ball->SetAttachment( edict(), (i + 3) );
 			ball->SetScale( 1.0 );
 
-			if (CBaseMonster::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
+			if (CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {
 				ball->SetColor(0, 255, 255);
 			}
 

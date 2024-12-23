@@ -750,7 +750,7 @@ void CMonsterMaker::Nerf() {
 
 	int clazz = Classify();
 
-	if (IRelationship(CLASS_PLAYER, clazz) <= R_NO || !strcmp(spawnCname, "monster_snark")) {
+	if (CBaseEntity::IRelationship(CLASS_PLAYER, clazz) <= R_NO || !strcmp(spawnCname, "monster_snark")) {
 		return; // don't care about nerfing friendlies/insects/snarks
 	}
 

@@ -478,7 +478,7 @@ void CTalkSquadMonster :: RunTask( Task_t *pTask )
 		break;
 
 	case TASK_TLK_EYECONTACT:
-		if (!IsMoving() && IsTalking() && m_hTalkTarget != NULL)
+		if (!IsMoving() && IsTalking() && m_hTalkTarget != NULL && !IsFollowing())
 		{
 			// ALERT( at_console, "waiting %f\n", m_flStopTalkTime - gpGlobals->time );
 			IdleHeadTurn( m_hTalkTarget->pev->origin );
@@ -546,7 +546,7 @@ void CTalkSquadMonster :: Killed( entvars_t *pevAttacker, int iGib )
 	// If a client killed me (unless I was already Barnacle'd), make everyone else mad/afraid of him
 	if ((pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE )
 	{
-		AlertFriends();
+		AlertFriends((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)));
 		//LimitFollowers( CBaseEntity::Instance(pevAttacker), 0 );
 	}
 
@@ -604,7 +604,7 @@ CBaseEntity	*CTalkSquadMonster::EnumFriends( CBaseEntity *pPrevious, int listNum
 }
 
 
-void CTalkSquadMonster::AlertFriends( void )
+void CTalkSquadMonster::AlertFriends(CBaseEntity* attacker)
 {
 	CBaseEntity *pFriend = NULL;
 	int i;
@@ -618,24 +618,11 @@ void CTalkSquadMonster::AlertFriends( void )
 			if (pMonster && pMonster->IsAlive() && pMonster->canBeMadAtPlayer) {
 				// don't provoke a friend that's playing a death animation. They're a goner
 				pMonster->m_afMemory |= bits_MEMORY_PROVOKED;
+
+				if (attacker)
+					pMonster->m_bMadPlayer[attacker->entindex()-1] = true;
 			}
 		}
-	}
-}
-
-void CTalkSquadMonster::Unprovoke(bool friendsToo) {
-	Forget(bits_MEMORY_PROVOKED);
-
-	if (m_hEnemy) {
-		int irel = IRelationship(m_hEnemy);
-
-		if (m_hEnemy && m_hEnemy->IsPlayer() && (irel == R_NO || irel == R_AL)) {
-			m_hEnemy = NULL;
-		}
-	}
-
-	if (friendsToo) {
-		UnprovokeFriends();
 	}
 }
 
@@ -1125,7 +1112,7 @@ Schedule_t* CTalkSquadMonster :: GetScheduleOfType ( int Type )
 		// speak during 'use'
 		if (RANDOM_LONG(0,99) < 2)
 			//ALERT ( at_console, "target chase speak\n" );
-			return slIdleSpeakWait;
+			return IsFollowing() ? slIdleSpeak : slIdleSpeakWait;
 		else
 			return slFaceTarget;
 		
@@ -1245,16 +1232,6 @@ void CTalkSquadMonster :: TrySmellTalk( void )
 		m_flLastSaidSmelled = gpGlobals->time + 60;// don't talk about the stinky for a while.
 		SetBits(m_bitsSaid, bit_saidSmelled);
 	}
-}
-
-
-
-int CTalkSquadMonster::IRelationship( CBaseEntity *pTarget )
-{
-	if ( pTarget->IsPlayer() )
-		if ( m_afMemory & bits_MEMORY_PROVOKED )
-			return R_HT;
-	return CBaseMonster::IRelationship( pTarget );
 }
 
 

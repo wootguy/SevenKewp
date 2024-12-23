@@ -1117,7 +1117,8 @@ Schedule_t *CBullsquid :: GetSchedule( void )
 				return GetScheduleOfType ( SCHED_MELEE_ATTACK2 );
 			}
 			
-			return GetScheduleOfType ( SCHED_CHASE_ENEMY );
+			if (m_hEnemy && m_hEnemy->IsAlive())
+				return GetScheduleOfType ( SCHED_CHASE_ENEMY );
 
 			break;
 		}

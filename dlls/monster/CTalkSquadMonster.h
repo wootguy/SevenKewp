@@ -124,7 +124,6 @@ public:
 	virtual void	Precache( void );
 	int				TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
 	void			Killed( entvars_t *pevAttacker, int iGib );
-	int				IRelationship ( CBaseEntity *pTarget );
 	virtual int		CanPlaySentence( BOOL fDisregardState );
 	virtual void	PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
 	virtual void	PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
@@ -150,9 +149,8 @@ public:
 	int				FOkToSpeak( void );
 	void			TrySmellTalk( void );
 	CBaseEntity		*EnumFriends( CBaseEntity *pentPrevious, int listNumber, BOOL bTrace );
-	void			AlertFriends( void );
-	void			Unprovoke( bool friendsToo );
-	void			UnprovokeFriends( void ); // calms an npc and friends down that was provoked by a player's friendly fire
+	void			AlertFriends( CBaseEntity* attacker);
+	virtual void	UnprovokeFriends( void ); // calms an npc and friends down that was provoked by a player's friendly fire
 	void			ShutUpFriends( void );
 	BOOL			IsTalking( void );
 	void			Talk( float flDuration );	

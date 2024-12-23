@@ -763,8 +763,7 @@ int CScientist :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 
 	if ( pevInflictor && pevInflictor->flags & FL_CLIENT )
 	{
-		Remember( bits_MEMORY_PROVOKED );
-		StopFollowing( TRUE );
+		Provoke((CBaseEntity*)GET_PRIVATE(ENT(pevAttacker)));
 	}
 
 	// make sure friends talk about it if player hurts scientist...
