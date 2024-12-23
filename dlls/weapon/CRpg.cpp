@@ -575,6 +575,10 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 	
 	SendWeaponAnim( RPG_HOLSTER1 );
 
+	if (m_iClip == 0 && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0) {
+		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, SUIT_REPEAT_OK);
+	}
+
 #ifndef CLIENT_DLL
 	CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 	if (m_pSpot)

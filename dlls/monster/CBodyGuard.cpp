@@ -440,8 +440,10 @@ Schedule_t* CBodyGuard::GetScheduleOfType(int Type)
 		}
 		return &slGruntRangeAttack1C[0]; // prevent crouching or angry idle animations
 	default:
-		return wasSpinning ? &slMinigunSpindown[0] : CBaseGrunt::GetScheduleOfType(Type);
+		break;
 	}
+
+	return wasSpinning ? &slMinigunSpindown[0] : CBaseGrunt::GetScheduleOfType(Type);
 }
 
 int CBodyGuard::GetActivitySequence(Activity NewActivity) {
