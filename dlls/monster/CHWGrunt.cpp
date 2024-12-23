@@ -71,11 +71,8 @@ public:
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	Schedule_t* GetScheduleOfType(int Type);
 	const char* GetTaskName(int taskIdx);
-	void SetActivity(Activity NewActivity);
 	int GetActivitySequence(Activity NewActivity);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
-	void PrescheduleThink(void);
-	Schedule_t* GetEnemyOccludedSchedule(void);
 	int LookupActivity(int activity);
 	Schedule_t* GetMonsterStateSchedule(void);
 	void StartTask(Task_t* pTask);
@@ -91,11 +88,6 @@ private:
 	static const char* pDeathSounds[];
 	static const char* pGruntSentences[];
 
-	bool minigunIsSpinning;
-	float minigunSpinupTime;
-	int minigunSpinupSeq;
-	int minigunShootSeq;
-	float nextMinigunShoot;
 	int secondaryClipSize;
 	int secondaryBody;
 	float nextFindMinigunTime; // next time grunt is allowed to find a minigun
@@ -181,7 +173,6 @@ void CHWGrunt::Precache()
 	}
 	*/
 
-	minigunIsSpinning = false;
 	m_cAmmoLoaded = m_cClipSize = INT_MAX;
 	nextMinigunShoot = 0;
 	nextFindMinigunTime = 0;
@@ -297,9 +288,6 @@ void CHWGrunt::DropMinigun(Vector vecDir) {
 
 void CHWGrunt::Killed(entvars_t* pevAttacker, int iGib)
 {
-	// stop minigun spin sound
-	minigunIsSpinning = false;
-	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
 	CBaseGrunt::Killed(pevAttacker, iGib);
 }
 
@@ -358,16 +346,18 @@ IMPLEMENT_CUSTOM_SCHEDULES(CHWGrunt, CBaseGrunt)
 
 Schedule_t* CHWGrunt::GetScheduleOfType(int Type)
 {
+	bool wasSpinning = minigunSpinState != 0;
+	if (minigunSpinState && Type != SCHED_RANGE_ATTACK1 && Type != SCHED_SMALL_FLINCH) {
+		minigunSpinState = 0;
+		EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
+	}
+
 	switch (Type)
 	{
 	case SCHED_RANGE_ATTACK1:
-		if (HasEquipment(MEQUIP_MINIGUN) && !minigunIsSpinning) {
-			if (!minigunIsSpinning) {
-				minigunIsSpinning = true;
-				minigunSpinupTime = gpGlobals->time;
-				return &slMinigunSpinup[0];
-			}
-			return &slGruntRangeAttack1C[0]; // prevent crouching or angry idle animations
+		if (HasEquipment(MEQUIP_MINIGUN) && minigunSpinState == 0) {
+			return &slMinigunSpinup[0];
 		}
 		return &slGruntRangeAttack1C[0]; // TODO: crouch shooting
 	case SCHED_HWGRUNT_FIND_MINIGUN:
@@ -383,21 +373,10 @@ Schedule_t* CHWGrunt::GetScheduleOfType(int Type)
 	case SCHED_DIE:
 		return CBaseGrunt::GetScheduleOfType(Type);
 	case SCHED_TAKE_COVER_FROM_BEST_SOUND:
-		if (minigunIsSpinning)
-			return CBaseMonster::GetSchedule(); // don't take cover from sounds (too slow to react)
-		else
-			return CBaseGrunt::GetScheduleOfType(Type);
+	case SCHED_TAKE_COVER_FROM_ENEMY:
+		return CBaseMonster::GetSchedule(); // don't take cover from sounds (too slow to react)
 	default:
-		if (minigunIsSpinning) {
-			minigunIsSpinning = false;
-			minigunSpinupTime = 0;
-			//STOP_SOUND(edict(), CHAN_ITEM, "hassault/hw_spin.wav");
-			EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "common/null.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
-			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
-			return &slMinigunSpindown[0];
-		}
-
-		return CBaseGrunt::GetScheduleOfType(Type);
+		return wasSpinning ? &slMinigunSpindown[0] : CBaseGrunt::GetScheduleOfType(Type);
 	}
 }
 
@@ -406,15 +385,6 @@ const char* CHWGrunt::GetTaskName(int taskIdx) {
 	case TASK_GET_PATH_TO_BEST_MINIGUN: return "TASK_GET_PATH_TO_BEST_MINIGUN";
 	default:
 		return CBaseGrunt::GetTaskName(taskIdx);
-	}
-}
-
-void CHWGrunt::SetActivity(Activity NewActivity) {
-	CBaseGrunt::SetActivity(NewActivity);
-
-	if (NewActivity == ACT_THREAT_DISPLAY) {
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_spinup.wav", 1.0, ATTN_NORM, 0, m_voicePitch);
-		PointAtEnemy(); // otherwise he looks at the ground when starting the animation
 	}
 }
 
@@ -483,28 +453,6 @@ void CHWGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 	}
 }
 
-void CHWGrunt::PrescheduleThink(void) {
-	CBaseGrunt::PrescheduleThink();
-
-	if (HasEquipment(MEQUIP_MINIGUN)) {
-		if (pev->sequence == minigunShootSeq && gpGlobals->time >= nextMinigunShoot) {
-			pev->nextthink = nextMinigunShoot = gpGlobals->time + 0.07f;
-			Shoot(false);
-		}
-		if (minigunIsSpinning && minigunSpinupTime && gpGlobals->time - minigunSpinupTime > 1.0f) {
-			EMIT_SOUND_DYN(edict(), CHAN_ITEM, "hassault/hw_spin.wav", 0.7f, ATTN_STATIC, 0, 100);
-			minigunSpinupTime = 0; // sound loops automatically, don't need to keep playing
-		}
-		if (pev->sequence == minigunSpinupSeq) {
-			PointAtEnemy();
-		}
-	}
-}
-
-Schedule_t* CHWGrunt::GetEnemyOccludedSchedule(void)
-{
-	return CBaseGrunt::GetEnemyOccludedSchedule();
-}
 
 int CHWGrunt::LookupActivity(int activity) {
 	// model only has turning animations for the minigun stance
@@ -595,7 +543,7 @@ void CHWGrunt::RunTask(Task_t* pTask)
 	{
 	case TASK_MOVE_TO_TARGET_RANGE:
 	{
-		CBaseMonster::RunTask(pTask);
+		CBaseGrunt::RunTask(pTask);
 
 		// always run when following someone because the walk speed is painfully slow
 		m_movementActivity = ACT_RUN;
@@ -603,7 +551,7 @@ void CHWGrunt::RunTask(Task_t* pTask)
 	}
 	default:
 	{
-		CBaseMonster::RunTask(pTask);
+		CBaseGrunt::RunTask(pTask);
 	}
 	}
 }

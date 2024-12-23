@@ -122,21 +122,21 @@ public:
 	
 	// Base Monster functions
 	virtual void	Precache( void );
-	int				TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
-	void			Killed( entvars_t *pevAttacker, int iGib );
+	virtual int		TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+	virtual void	Killed( entvars_t *pevAttacker, int iGib );
 	virtual int		CanPlaySentence( BOOL fDisregardState );
 	virtual void	PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
 	virtual void	PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
 	virtual void	KeyValue( KeyValueData *pkvd );
 
 	// AI functions
-	void			SetActivity ( Activity newActivity );
-	Schedule_t		*GetScheduleOfType ( int Type );
-	void			StartTask( Task_t *pTask );
-	void			RunTask( Task_t *pTask );
+	virtual void	SetActivity ( Activity newActivity );
+	virtual Schedule_t	*GetScheduleOfType ( int Type );
+	virtual void	StartTask( Task_t *pTask ) override;
+	virtual void	RunTask( Task_t *pTask ) override;
 	virtual const char* GetTaskName(int taskIdx);
-	void			HandleAnimEvent( MonsterEvent_t *pEvent );
-	void			PrescheduleThink( void );
+	virtual void	HandleAnimEvent( MonsterEvent_t *pEvent );
+	virtual void	PrescheduleThink( void );
 	
 
 	// Conversations / communication
@@ -199,11 +199,11 @@ public:
 	// squad member info
 	int		m_iMySlot;// this is the behaviour slot that the monster currently holds in the squad. 
 
-	int  CheckEnemy(CBaseEntity* pEnemy);
+	virtual int  CheckEnemy(CBaseEntity* pEnemy);
 	virtual void StartMonster(void);
-	void VacateSlot(void);
-	void ScheduleChange(void);
-	BOOL OccupySlot(int iDesiredSlot);
+	virtual void VacateSlot(void);
+	virtual void ScheduleChange(void);
+	virtual BOOL OccupySlot(int iDesiredSlot);
 	virtual BOOL NoFriendlyFire(void);
 
 	// squad functions still left in base class
@@ -241,7 +241,7 @@ public:
 
 	BOOL FValidateCover(const Vector& vecCoverLocation);
 
-	MONSTERSTATE GetIdealState(void);
+	virtual MONSTERSTATE GetIdealState(void);
 
 	//
 	// opposing force

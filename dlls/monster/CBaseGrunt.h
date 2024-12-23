@@ -60,6 +60,7 @@ enum
 	TASK_GRUNT_SPEAK_SENTENCE,
 	TASK_GRUNT_CHECK_FIRE,
 	TASK_GRUNT_AIM_RPG,	// keep aiming rpg until the rocket hits or taking too long to get a clear shot
+	TASK_GRUNT_MINIGUN_SPINUP, // mark the minigun as spinning
 	LAST_BASE_GRUNT_TASK
 };
 
@@ -154,7 +155,7 @@ public:
 	virtual void SetActivity(Activity NewActivity);
 	virtual int GetActivitySequence(Activity NewActivity);
 	virtual void StartTask(Task_t* pTask);
-	void RunTask(Task_t* pTask);
+	virtual void RunTask(Task_t* pTask) override;
 	virtual const char* GetTaskName(int taskIdx);
 	Vector GetGunPosition(void);
 	bool HasEquipment(int equipItems);
@@ -233,6 +234,11 @@ public:
 	bool m_aimingRocket; // currently aiming a rocket?
 	EHANDLE m_hRpgSpot; // rpg laser spot
 	EHANDLE m_hRpgRocket; // rocket being aimed
+
+	int minigunShootSeq;
+	int minigunSpinupSeq;
+	float nextMinigunShoot;
+	int minigunSpinState;
 
 	int		m_iSentence;
 
