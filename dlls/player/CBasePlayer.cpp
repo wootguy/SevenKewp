@@ -2839,7 +2839,7 @@ void CBasePlayer::CheckSuitUpdate()
 	// if in range of radiation source, ping geiger counter
 	UpdateGeigerCounter();
 
-	if ( g_pGameRules->IsMultiplayer() )
+	if (!mp_hevsuit_voice.value)
 	{
 		// don't bother updating HEV voice in multiplayer.
 		return;
@@ -2898,7 +2898,7 @@ void CBasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeatTime)
 	if ( !(pev->weapons & (1<<WEAPON_SUIT)) )
 		return;
 
-	if ( g_pGameRules->IsMultiplayer() )
+	if (!mp_hevsuit_voice.value)
 	{
 		// due to static channel design, etc. We don't play HEV sounds in multiplayer right now.
 		return;
@@ -4449,6 +4449,15 @@ void CBasePlayer :: UpdateClientData( void )
 		FireTargets( "game_playerspawn", this, this, USE_TOGGLE, 0 );
 
 		InitStatusBar();
+
+		if (m_fLongJump) {
+			MESSAGE_BEGIN(MSG_ONE, gmsgItemPickup, NULL, pev);
+			WRITE_STRING("item_longjump");
+			MESSAGE_END();
+
+			if (pev->weapons & (1 << WEAPON_SUIT))
+				EMIT_SOUND_SUIT(edict(), "!HEV_A1");
+		}
 	}
 
 	if ( m_iHideHUD != m_iClientHideHUD )

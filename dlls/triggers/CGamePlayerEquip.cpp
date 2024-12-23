@@ -17,6 +17,7 @@
 #include "CHandGrenade.h"
 #include "CSqueak.h"
 #include "skill.h"
+#include "user_messages.h"
 
 LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip)
 
@@ -169,6 +170,10 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 		}
 		if (giveAmount > 0)
 			pPlayer->GiveAmmo(HANDGRENADE_DEFAULT_GIVE * giveAmount, "Hand Grenade", gSkillData.sk_ammo_max_grenades);
+	}
+	else if (!strcmp(itemName, "item_longjump")) {
+		pPlayer->m_fLongJump = TRUE;
+		g_engfuncs.pfnSetPhysicsKeyValue(pPlayer->edict(), "slj", "1");
 	}
 	else {
 		for (int j = 0; j < count; j++) {
