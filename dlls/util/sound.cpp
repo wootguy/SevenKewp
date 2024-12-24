@@ -735,7 +735,7 @@ void EMIT_SOUND_SUIT(edict_t *entity, const char *sample)
 		pitch = RANDOM_LONG(0,6) + 98;
 
 	if (fvol > 0.05)
-		EMIT_SOUND_DYN(entity, CHAN_STATIC, sample, fvol, ATTN_NORM, 0, pitch);
+		EMIT_SOUND_DYN(entity, CHAN_STATIC, sample, fvol, ATTN_IDLE, 0, pitch);
 }
 
 // play a sentence, randomly selected from the passed in group id, over the HEV suit speaker
@@ -750,7 +750,7 @@ void EMIT_GROUPID_SUIT(edict_t *entity, int isentenceg)
 		pitch = RANDOM_LONG(0,6) + 98;
 
 	if (fvol > 0.05)
-		SENTENCEG_PlayRndI(entity, isentenceg, fvol, ATTN_NORM, 0, pitch);
+		SENTENCEG_PlayRndI(entity, isentenceg, fvol, ATTN_IDLE, 0, pitch);
 }
 
 // play a sentence, randomly selected from the passed in groupname
@@ -765,7 +765,7 @@ void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname)
 		pitch = RANDOM_LONG(0,6) + 98;
 
 	if (fvol > 0.05)
-		SENTENCEG_PlayRndSz(entity, groupname, fvol, ATTN_NORM, 0, pitch);
+		SENTENCEG_PlayRndSz(entity, groupname, fvol, ATTN_IDLE, 0, pitch);
 }
 
 void UTIL_ShuffleSoundArray(const char** arr, size_t n) {
