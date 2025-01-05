@@ -38,8 +38,8 @@ public:
 			pev->movetype = MOVETYPE_FOLLOW;
 		}
 	}
-	void TurnOff(void);
-	void TurnOn(void);
+	void EXPORT TurnOff(void);
+	void EXPORT TurnOn(void);
 	inline float Frames(void) { return m_maxFrame; }
 	inline void SetTransparency(int rendermode, int r, int g, int b, int a, int fx)
 	{
@@ -68,7 +68,7 @@ public:
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
 	static	TYPEDESCRIPTION m_SaveData[];
-	static CSprite* SpriteCreate(const char* pSpriteName, const Vector& origin, BOOL animate);
+	static EXPORT CSprite* SpriteCreate(const char* pSpriteName, const Vector& origin, BOOL animate);
 
 private:
 

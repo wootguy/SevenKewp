@@ -169,7 +169,7 @@ void CEnvExplosion::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 
 		for (int i = 0; i < sparkCount; i++)
 		{
-			Create("spark_shower", m_effectOrigin, tr.vecPlaneNormal, NULL);
+			Create("spark_shower", m_effectOrigin, tr.vecPlaneNormal);
 		}
 	}
 }
@@ -202,7 +202,7 @@ void ExplosionCreate(const Vector& center, const Vector& angles, edict_t* pOwner
 	KeyValueData	kvd;
 	char			buf[128];
 
-	CBaseEntity* pExplosion = CBaseEntity::Create("env_explosion", center, angles, pOwner);
+	CBaseEntity* pExplosion = CBaseEntity::Create("env_explosion", center, angles, true, pOwner);
 	snprintf(buf, 128, "%3d", magnitude);
 	kvd.szKeyName = "iMagnitude";
 	kvd.szValue = buf;

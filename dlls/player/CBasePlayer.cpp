@@ -766,7 +766,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 			static std::unordered_map<std::string, std::string> keys = { {"is_player_ally", "1"} };
 			Vector angles(0, pev->angles.y, 0);
 			CBaseEntity* pRoach = CBaseEntity::Create("monster_shockroach",
-				pev->origin + gpGlobals->v_forward * 10, angles, edict(), keys);
+				pev->origin + gpGlobals->v_forward * 10, angles, true, edict(), keys);
 			pRoach->pev->velocity = pev->velocity * 1.2;
 		
 		}
@@ -775,7 +775,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	}
 
 // create a box to pack the stuff into.
-	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin, pev->angles, edict() );
+	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin, pev->angles, true, edict() );
 
 	pWeaponBox->pev->angles.x = 0;// don't let weaponbox tilt.
 	pWeaponBox->pev->angles.z = 0;
@@ -5218,13 +5218,13 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 					static std::unordered_map<std::string, std::string> keys = { {"is_player_ally", "1"} };
 					Vector angles(0, pev->angles.y, 0);
 					CBaseEntity* pRoach = CBaseEntity::Create("monster_shockroach",
-						pev->origin + gpGlobals->v_forward * 10, angles, edict(), keys);
+						pev->origin + gpGlobals->v_forward * 10, angles, true, edict(), keys);
 					pRoach->pev->velocity = gpGlobals->v_forward * 400;
 				}
 				return;
 			}
 
-			CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, edict() );
+			CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, true, edict() );
 			pWeaponBox->pev->angles.x = 0;
 			pWeaponBox->pev->angles.z = 0;
 			pWeaponBox->pev->avelocity = Vector(0, 256, 256);
@@ -5327,7 +5327,7 @@ void CBasePlayer::DropAmmo(bool secondary) {
 	string_t model = 0;
 	int body = 0;
 	int sequence = 0;
-	CBaseEntity* ammoEnt = (CBaseEntity*)CBaseEntity::Create(ammoEntName, pev->origin, pev->angles, edict());
+	CBaseEntity* ammoEnt = (CBaseEntity*)CBaseEntity::Create(ammoEntName, pev->origin, pev->angles, true, edict());
 	if (!ammoEnt) {
 		ALERT(at_console, "Invalid ent in DropAmmo: %s\n", ammoEntName);
 		return;
@@ -5337,7 +5337,7 @@ void CBasePlayer::DropAmmo(bool secondary) {
 	body = ammoEnt->pev->body;
 	sequence = ammoEnt->pev->sequence;
 
-	CWeaponBox* pWeaponBox = (CWeaponBox*)CBaseEntity::Create("weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, edict());
+	CWeaponBox* pWeaponBox = (CWeaponBox*)CBaseEntity::Create("weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, true, edict());
 	pWeaponBox->pev->angles.x = 0;
 	pWeaponBox->pev->angles.z = 0;
 	pWeaponBox->pev->avelocity = Vector(0, 256, 256);

@@ -328,7 +328,7 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 				keys["is_player_ally"] = "1";
 			}
 
-			pEntity = Create(replenishMonster, vecSrc, pev->angles, NULL, keys);
+			pEntity = Create(replenishMonster, vecSrc, pev->angles, true, NULL, keys);
 			pGrunt = pEntity->MyMonsterPointer( );
 			pGrunt->pev->movetype = MOVETYPE_FLY;
 			pGrunt->pev->velocity = Vector( 0, 0, RANDOM_FLOAT( -196, -128 ) );

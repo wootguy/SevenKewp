@@ -674,7 +674,7 @@ void CGargantua::DeathEffect( void )
 		position.z += 15;
 	}
 
-	CBaseEntity *pSmoker = CBaseEntity::Create( "env_smoker", pev->origin, g_vecZero, NULL );
+	CBaseEntity *pSmoker = CBaseEntity::Create( "env_smoker", pev->origin, g_vecZero );
 	pSmoker->pev->health = 1;	// 1 smoke balls
 	pSmoker->pev->scale = 46;	// 4.6X normal size
 	pSmoker->pev->dmg = 0;		// 0 radial distribution
@@ -1298,7 +1298,7 @@ void SpawnExplosion( Vector center, float randomRange, float time, int magnitude
 	center.x += RANDOM_FLOAT( -randomRange, randomRange );
 	center.y += RANDOM_FLOAT( -randomRange, randomRange );
 
-	CBaseEntity *pExplosion = CBaseEntity::Create( "env_explosion", center, g_vecZero, NULL );
+	CBaseEntity *pExplosion = CBaseEntity::Create( "env_explosion", center, g_vecZero );
 	snprintf( buf, 128, "%3d", magnitude );
 	kvd.szKeyName = "iMagnitude";
 	kvd.szValue = buf;

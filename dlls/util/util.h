@@ -47,7 +47,8 @@ class CBasePlayer;
 
 extern EXPORT globalvars_t				*gpGlobals;
 
-extern std::unordered_set<std::string> g_weaponClassnames;
+extern std::unordered_set<std::string> g_weaponNames; // names given by weapons (may have a prefix: "hlcoop/weapon_grapple")
+extern std::unordered_set<std::string> g_weaponClassnames; // valid weapon classnames
 
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin

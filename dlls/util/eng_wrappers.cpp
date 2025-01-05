@@ -498,6 +498,10 @@ int PRECACHE_REPLACEMENT_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
 }
 
+int PRECACHE_MODEL_NULLENT(const char* path) {
+	return PRECACHE_MODEL_ENT(NULL, path);
+}
+
 int PRECACHE_EVENT(int id, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();

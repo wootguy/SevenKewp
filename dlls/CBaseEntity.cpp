@@ -406,7 +406,8 @@ int	CBaseEntity::DamageDecal(int bitsDamageType)
 
 // NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity
 // will keep a pointer to it after this call.
-CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, edict_t* pentOwner, std::unordered_map<std::string, std::string> keys)
+CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles,
+	bool spawn, edict_t* pentOwner, std::unordered_map<std::string, std::string> keys)
 {
 	edict_t* pent;
 	CBaseEntity* pEntity;
@@ -431,7 +432,9 @@ CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, co
 		DispatchKeyValue(pent, &dat);
 	}
 
-	DispatchSpawn(pEntity->edict());
+	if (spawn)
+		DispatchSpawn(pEntity->edict());
+
 	return pEntity;
 }
 

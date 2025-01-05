@@ -688,7 +688,7 @@ void CEnvWeather::Spawn(void)
 		// reverse order so fog renders correctly
 		for (int k = FOG_LAYERS - 1; k >= 0; k--) {
 			if (!g_fog_ents[k]) {
-				g_fog_ents[k] = Create("fog_layer", g_vecZero, g_vecZero, NULL);
+				g_fog_ents[k] = Create("fog_layer", g_vecZero, g_vecZero);
 				if (!m_isActive)
 					g_fog_ents[k]->pev->effects = EF_NODRAW;;
 			}
@@ -982,7 +982,7 @@ void CEnvWeather::WeatherEntsThink() {
 				{"model", weather.model},
 			};
 
-			CFuncConveyor* ent = (CFuncConveyor*)Create("weather_conveyor", weather.pos, Vector(0, 0, 0), NULL, keys);
+			CFuncConveyor* ent = (CFuncConveyor*)Create("weather_conveyor", weather.pos, Vector(0, 0, 0), true, NULL, keys);
 			ent->pev->solid = SOLID_NOT;
 			ent->pev->movetype = weather.isFloating ? MOVETYPE_NONE : MOVETYPE_TOSS;
 			ent->pev->rendermode = kRenderTransAdd;

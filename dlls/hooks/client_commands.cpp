@@ -375,7 +375,7 @@ void ClientCommand(edict_t* pEntity)
 	{
 		pPlayer->SelectItem((char*)CMD_ARGV(1));
 	}
-	else if (g_weaponClassnames.count(pcmd))
+	else if (g_weaponNames.count(pcmd))
 	{
 		// custom weapon was selected (weapon name includes a folder path to force clients to load HUD files from there)
 		const char* wepCname = pcmd;

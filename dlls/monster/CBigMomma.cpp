@@ -662,7 +662,7 @@ void CBigMomma :: LayHeadcrab( void )
 		keys["classify"] = m_Classify;
 	}
 
-	CBaseEntity *pChild = CBaseEntity::Create( BIG_CHILDCLASS, pev->origin, pev->angles, edict(), keys );
+	CBaseEntity *pChild = CBaseEntity::Create( BIG_CHILDCLASS, pev->origin, pev->angles, true, edict(), keys );
 
 	pChild->pev->spawnflags |= SF_MONSTER_FALL_TO_GROUND;
 

@@ -58,6 +58,7 @@ EXPORT int PRECACHE_GENERIC(const char* path);
 EXPORT int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path);
 EXPORT int PRECACHE_SOUND_NULLENT(const char* path);
 EXPORT int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* model);
+EXPORT int PRECACHE_MODEL_NULLENT(const char* model);
 EXPORT void PRECACHE_MODEL_SEQUENCE(const char* path, int sequence); // precache sounds/sprites used by a single animation
 EXPORT int PRECACHE_REPLACEMENT_MODEL_ENT(CBaseEntity* ent, const char* model); // only precache the model if it will be replaced
 EXPORT int PRECACHE_EVENT(int id, const char* path);

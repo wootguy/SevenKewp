@@ -352,7 +352,7 @@ void CWorld::Precache(void)
 	if (pev->netname)
 	{
 		ALERT(at_aiconsole, "Chapter title: %s\n", STRING(pev->netname));
-		CBaseEntity* pEntity = CBaseEntity::Create("env_message", g_vecZero, g_vecZero, NULL);
+		CBaseEntity* pEntity = CBaseEntity::Create("env_message", g_vecZero, g_vecZero);
 		if (pEntity)
 		{
 			pEntity->SetThink(&CBaseEntity::SUB_CallUseToggle);
