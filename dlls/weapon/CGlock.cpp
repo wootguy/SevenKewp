@@ -69,6 +69,7 @@ void CGlock::Precache( void )
 	PRECACHE_SOUND ("weapons/pl_gun3.wav");//handgun
 
 	UTIL_PrecacheOther("ammo_9mm");
+	UTIL_PrecacheOther("ammo_9mmclip");
 
 	PrecacheEvents();
 }

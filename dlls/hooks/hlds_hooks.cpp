@@ -558,81 +558,6 @@ void ServerDeactivate( void )
 
 #include "lagcomp.h"
 
-void PrecacheWeapons() {
-	if (g_mapWeapons.find("weapon_shotgun") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_shotgun");
-		UTIL_PrecacheOther("ammo_buckshot");
-	}
-	if (g_mapWeapons.find("weapon_crowbar") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_crowbar");
-	}
-	if (g_mapWeapons.find("weapon_9mmhandgun") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_9mmhandgun");
-		UTIL_PrecacheOther("ammo_9mmclip");
-	}
-	if (g_mapWeapons.find("weapon_9mmAR") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_9mmAR");
-		UTIL_PrecacheOther("ammo_9mmAR");
-		UTIL_PrecacheOther("ammo_ARgrenades");
-	}
-	if (g_mapWeapons.find("weapon_357") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_357");
-		UTIL_PrecacheOther("ammo_357");
-	}
-	if (g_mapWeapons.find("weapon_gauss") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_gauss");
-		UTIL_PrecacheOther("ammo_gaussclip");
-	}
-	if (g_mapWeapons.find("weapon_rpg") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_rpg");
-		UTIL_PrecacheOther("ammo_rpgclip");
-	}
-	if (g_mapWeapons.find("weapon_crossbow") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_crossbow");
-		UTIL_PrecacheOther("ammo_crossbow");
-	}
-	if (g_mapWeapons.find("weapon_egon") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_egon");
-		UTIL_PrecacheOther("ammo_gaussclip");
-	}
-	if (g_mapWeapons.find("weapon_tripmine") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_tripmine");
-	}
-	if (g_mapWeapons.find("weapon_satchel") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_satchel");
-	}
-	if (g_mapWeapons.find("weapon_handgrenade") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_handgrenade");
-	}
-	if (g_mapWeapons.find("weapon_snark") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_snark");
-	}
-	if (g_mapWeapons.find("weapon_hornetgun") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_hornetgun");
-	}
-	if (g_mapWeapons.find("weapon_grapple") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_grapple");
-	}
-	if (g_mapWeapons.find("weapon_pipewrench") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_pipewrench");
-	}
-	if (g_mapWeapons.find("weapon_displacer") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_displacer");
-	}
-	if (g_mapWeapons.find("weapon_shockrifle") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_shockrifle");
-	}
-	if (g_mapWeapons.find("weapon_sporelauncher") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_sporelauncher");
-	}
-	if (g_mapWeapons.find("weapon_medkit") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_medkit");
-	}
-	if (g_mapWeapons.find("weapon_inventory") != g_mapWeapons.end()) {
-		UTIL_PrecacheOther("weapon_inventory");
-	}
-}
-
 void PrecacheTextureSounds() {
 	if (g_textureStats.tex_concrete) {
 		PRECACHE_FOOTSTEP_SOUNDS(g_stepSoundsConcrete)
@@ -690,6 +615,41 @@ void PrecacheTextureSounds() {
 	}
 }
 
+int g_weaponSlotMasks[MAX_WEAPONS];
+
+void MarkWeaponSlotConflicts() {
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		ItemInfo& II = CBasePlayerItem::ItemInfoArray[i];
+
+		if (!II.iId)
+			continue;
+
+		int mask = 1 << II.iId;
+
+		for (int i = 0; i < MAX_WEAPONS; i++)
+		{
+			ItemInfo& II2 = CBasePlayerItem::ItemInfoArray[i];
+
+			if (!II2.iId)
+				continue;
+
+			// when multiple weapons share a slot, the client may not show any weapon in the menu
+			// if only one weapon is held from that slot (depending on weapon ID order). For example,
+			// if picking up ID 1, the menu slot is filled as expected, but then immediately removed
+			// because ID 2 isn't held, which shares the same slot (see WeaponsResource::DropWeapon).
+			// So, the client will be told that it holds every possible weapon for that slot, if any
+			// any weapon is held for that slot. A network message controls which weapon is rendered
+			// in the shared slot.
+			if (II.iSlot == II2.iSlot && II.iPosition == II2.iPosition) {
+				mask |= 1 << II2.iId;
+			}
+		}
+
+		g_weaponSlotMasks[II.iId] = mask;
+	}
+}
+
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
 	int				i;
@@ -732,8 +692,13 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	AddMapPluginEquipment();
 
-	PrecacheWeapons();
+	for (std::string wepName : g_mapWeapons) {
+		UTIL_PrecacheOther(wepName.c_str());
+	}
+	
 	PrecacheTextureSounds();
+
+	MarkWeaponSlotConflicts();
 
 	if (mp_antiblock.value)
 		PRECACHE_SOUND_ENT(NULL, "weapons/xbow_hitbod2.wav");
@@ -1865,6 +1830,14 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 	cd->waterlevel		= pev->waterlevel;
 	cd->watertype		= pev->watertype;
 	cd->weapons			= pev->weapons;
+
+	for (int i = 0; i < MAX_WEAPONS; i++) {
+		if (pev->weapons & (1 << i)) {
+			// weapons that share slots occupy multiple bits so that the menu renders correctly
+			// (client may think the slot is empty if only one weapon is held from a shared slot)
+			cd->weapons |= g_weaponSlotMasks[i];
+		}
+	}
 
 	if (pl->m_fakeSuit) {
 		cd->weapons |= 1 << WEAPON_SUIT;
