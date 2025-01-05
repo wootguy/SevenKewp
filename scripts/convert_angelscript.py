@@ -49,6 +49,7 @@ terms = [
 	('g_Game.PrecacheModel', 'PRECACHE_MODEL'),
 	('g_SoundSystem.PrecacheSound', 'PRECACHE_SOUND'),
 	('self.', ''),
+	('self->', ''),
 	('g_ItemRegistry.RegisterWeapon', 'UTIL_RegisterWeapon'),
 	('g_EntityFuncs.SetModel(self', 'SET_MODEL(edict()'),
 	('g_EntityFuncs.SetModel', 'SET_MODEL'),
@@ -73,6 +74,9 @@ terms = [
 	('& in ', '&'),
 	('& out ', '&'),
 	('& inout ', '&'),
+	('EHandle ', 'EHANDLE'),
+	('this.', 'this->'),
+	('RemoveEntity', 'UTIL_Remove'),
 ]
 
 def convert_script(fpath):
@@ -91,6 +95,6 @@ def convert_script(fpath):
 if os.path.isdir(path):
 	for filename in os.listdir(path):
 		if filename.endswith('.as'):
-			convert_script(fpath)
+			convert_script(os.path.join(path, filename))
 else:
 	convert_script(path)
