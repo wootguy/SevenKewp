@@ -166,7 +166,7 @@ void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		}
 	}
 
-	CBaseEntity::Create(STRING(m_childClass), pev->origin, pev->angles, NULL, keys);
+	CBaseEntity::Create(STRING(m_childClass), pev->origin, pev->angles, true, NULL, keys);
 
 	if (m_triggerAfterSpawn) {
 		FireLogicTargets(STRING(m_triggerAfterSpawn), USE_TOGGLE, 0);

@@ -31,6 +31,8 @@ EXPORT extern unsigned int g_schedule_id; // don't touch this
 // there should only be one instance of this in the game (g_Scheduler)
 class Scheduler {
 public:
+    static const int REPEAT_INFINITE_TIMES = -1;
+
     std::vector<ScheduledFunction_internal> functions;
 
     template <typename F, typename... Args>

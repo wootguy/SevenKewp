@@ -421,7 +421,7 @@ void CSatchel::Throw( void )
 		Vector vecThrow = gpGlobals->v_forward * 274 + m_pPlayer->pev->velocity;
 
 #ifndef CLIENT_DLL
-		CBaseEntity *pSatchel = Create( "monster_satchel", vecSrc, Vector( 0, 0, 0), m_pPlayer->edict() );
+		CBaseEntity *pSatchel = Create( "monster_satchel", vecSrc, Vector( 0, 0, 0), true, m_pPlayer->edict() );
 		SET_MODEL(pSatchel->edict(), GetModelW());
 		pSatchel->pev->velocity = vecThrow;
 		pSatchel->pev->avelocity.y = 400;

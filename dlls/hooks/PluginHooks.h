@@ -5,6 +5,7 @@
 
 #define HLCOOP_API_VERSION 2
 
+class CBaseEntity;
 class CBasePlayer;
 
 struct HOOK_RETURN_DATA {
@@ -164,6 +165,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 	
 	// called before a chat message is sent. Update the message pointer to change the message.
 	HOOK_RETURN_DATA (*pfnChatMessage)(CBasePlayer* plr, const char** message, bool teamOnly);
+
+	// called when an entity is created and keyvalues are applied, but before it spawns
+	HOOK_RETURN_DATA (*pfnEntityCreated)(CBaseEntity* pEntity);
 };
 
 // do not call directly, use RegisterPlugin instead

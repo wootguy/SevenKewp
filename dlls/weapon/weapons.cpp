@@ -232,7 +232,7 @@ CBaseEntity* ShootMortar(edict_t* pentOwner, Vector vecStart, Vector vecVelocity
 	TraceResult tr;
 	UTIL_TraceLine(vecStart, vecStart + Vector(0, 0, -4096), ignore_monsters, pentOwner, &tr);
 
-	CBaseEntity* pMortar = CBaseEntity::Create("monster_mortar", tr.vecEndPos, Vector(0, 0, 0), pentOwner);
+	CBaseEntity* pMortar = CBaseEntity::Create("monster_mortar", tr.vecEndPos, Vector(0, 0, 0), true, pentOwner);
 
 	pMortar->pev->nextthink = gpGlobals->time;
 
@@ -275,6 +275,7 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 
 
 bool g_registeringCustomWeps = false;
+std::unordered_set<std::string> g_weaponNames;
 std::unordered_set<std::string> g_weaponClassnames;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
@@ -369,7 +370,8 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 		AddAmmoNameToAmmoRegistry(info.pszAmmo2);
 	}
 
-	g_weaponClassnames.insert(info.pszName);
+	g_weaponNames.insert(info.pszName);
+	g_weaponClassnames.insert(szClassname);
 
 	// events must always be precached, and in the correct order, or else
 	// vanilla clients will play the wrong weapon events

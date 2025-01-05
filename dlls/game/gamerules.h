@@ -401,4 +401,4 @@ protected:
 	void SendMOTDToClient( edict_t *client );
 };
 
-extern DLL_GLOBAL CGameRules*	g_pGameRules;
+EXPORT extern DLL_GLOBAL CGameRules* g_pGameRules;

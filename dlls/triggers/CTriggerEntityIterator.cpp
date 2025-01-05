@@ -216,7 +216,7 @@ void CTriggerEntityIterator::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, 
 
 	if (m_run_mode == RUN_MODE_ONCE_MULTITHREADED) {
 		CTriggerEntityIterator* child = (CTriggerEntityIterator*)CBaseEntity::Create(
-			"trigger_entity_iterator", pev->origin, pev->angles, NULL);
+			"trigger_entity_iterator", pev->origin, pev->angles);
 
 		if (child) {
 			child->pev->target = pev->target;

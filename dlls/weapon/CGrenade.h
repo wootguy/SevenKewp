@@ -11,13 +11,13 @@ public:
 
 	typedef enum { SATCHEL_DETONATE = 0, SATCHEL_RELEASE } SATCHELCODE;
 
-	static CGrenade *ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time, const char* model=NULL);
-	static CGrenade *ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
-	static CGrenade *ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
-	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
+	EXPORT static CGrenade *ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time, const char* model=NULL);
+	EXPORT static CGrenade *ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
+	EXPORT static CGrenade *ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
+	EXPORT static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
-	void Explode( Vector vecSrc, Vector vecAim );
-	virtual void Explode( TraceResult *pTrace, int bitsDamageType );
+	void EXPORT Explode( Vector vecSrc, Vector vecAim );
+	virtual void EXPORT Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
 
 	void EXPORT BounceTouch( CBaseEntity *pOther );
@@ -29,7 +29,7 @@ public:
 	void EXPORT DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void EXPORT TumbleThink( void );
 
-	virtual void BounceSound( void );
+	virtual EXPORT void BounceSound( void );
 	virtual int	BloodColor( void ) { return DONT_BLEED; }
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 	virtual const char* GetDeathNoticeWeapon() { return "monster_grenade"; }

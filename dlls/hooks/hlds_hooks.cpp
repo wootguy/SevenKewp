@@ -61,6 +61,7 @@ void PM_Init(struct playermove_s* ppmove);
 char PM_FindTextureType(char* name);
 extern Vector VecBModelOrigin(entvars_t* pevBModel);
 extern void CopyToBodyQue(entvars_t* pev);
+extern void AddMapPluginEquipment();
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
 extern int g_teamplay;
@@ -398,10 +399,10 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->LoadScore();
 	pPlayer->m_lastUserInput = g_engfuncs.pfnTime();
 
-	CALL_HOOKS_VOID(pfnClientPutInServer, pPlayer);
-
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();
+
+	CALL_HOOKS_VOID(pfnClientPutInServer, pPlayer);
 }
 
 /*
@@ -514,7 +515,9 @@ void ServerDeactivate( void )
 	g_mapWeapons.clear();
 	g_wavInfos.clear();
 	g_weaponClassnames.clear();
+	g_weaponNames.clear();
 	g_nomaptrans.clear();
+	g_unrecognizedCfgEquipment.clear();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";
 	g_monstersNerfed = false;
@@ -727,6 +730,8 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		}
 	}
 
+	AddMapPluginEquipment();
+
 	PrecacheWeapons();
 	PrecacheTextureSounds();
 
@@ -774,7 +779,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		g_tryPrecacheModels.size() + g_bsp.modelCount, g_tryPrecacheModels.size(), g_bsp.modelCount, 
 		g_tryPrecacheSounds.size(), g_tryPrecacheGeneric.size(), g_tryPrecacheEvents.size()));
 
-	if (g_tryPrecacheModels.size() > g_precachedModels.size()) {
+	if (g_tryPrecacheModels.size() + g_bsp.entityBspModelCount + 1 > MAX_PRECACHE_MODEL) {
 		ALERT(at_error, "Model precache overflow (%d / %d). The following models were not precached:\n",
 			g_tryPrecacheModels.size() + g_bsp.modelCount, MAX_PRECACHE);
 
@@ -2153,6 +2158,8 @@ edict_t* SpawnEdict(edict_t* pent) {
 	pEntity->pev->absmin = pEntity->pev->origin - Vector(1, 1, 1);
 	pEntity->pev->absmax = pEntity->pev->origin + Vector(1, 1, 1);
 
+	CALL_HOOKS(edict_t*, pfnEntityCreated, pEntity);
+
 	pEntity->Spawn();
 
 	// Try to get the pointer again, in case the spawn function deleted the entity.
@@ -2176,16 +2183,27 @@ edict_t* SpawnEdict(edict_t* pent) {
 		{
 			// Already dead? delete
 			if (pGlobal->state == GLOBAL_DEAD) {
+				// source of bugs
+				ALERT(at_console, "Removed '%s' (%s) due to global state\n",
+					STRING(pEntity->pev->targetname), STRING(pEntity->pev->classname));
+
 				REMOVE_ENTITY(pent);
 				return NULL;
 			}
 
-			else if (!FStrEq(STRING(gpGlobals->mapname), pGlobal->levelName))
+			else if (!FStrEq(STRING(gpGlobals->mapname), pGlobal->levelName)) {
+				ALERT(at_console, "Hiding '%s' (%s) due to global state\n",
+					STRING(pEntity->pev->targetname), STRING(pEntity->pev->classname));
+
 				pEntity->MakeDormant();	// Hasn't been moved to this level yet, wait but stay alive
+			}
 			// In this level & not dead, continue on as normal
 		}
 		else
 		{
+			ALERT(at_console, "Activating '%s' (%s) due to global state\n",
+				STRING(pEntity->pev->targetname), STRING(pEntity->pev->classname));
+
 			// Spawned entities default to 'On'
 			gGlobalState.EntityAdd(pEntity->pev->globalname, gpGlobals->mapname, GLOBAL_ON);
 			//				ALERT( at_console, "Added global entity %s (%s)\n", STRING(pEntity->pev->classname), STRING(pEntity->pev->globalname) );

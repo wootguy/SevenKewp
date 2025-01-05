@@ -137,7 +137,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	{
 		int sparkCount = RANDOM_LONG(0,3);
 		for ( int i = 0; i < sparkCount; i++ )
-			Create( "spark_shower", m_effectOrigin, pTrace->vecPlaneNormal, NULL );
+			Create( "spark_shower", m_effectOrigin, pTrace->vecPlaneNormal );
 	}
 }
 

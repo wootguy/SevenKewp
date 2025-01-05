@@ -525,7 +525,7 @@ void CKingpin::HandleAnimEvent(MonsterEvent_t* pEvent)
 	case KINGPIN_AE_CONJURE_ORB: {
 		if (!m_orb) {
 			Vector orbPosition = pev->origin + Vector(0, 0, 64);
-			m_orb = Create("kingpin_plasma_ball", orbPosition, g_vecZero, edict());
+			m_orb = Create("kingpin_plasma_ball", orbPosition, g_vecZero, true, edict());
 			m_orb->pev->scale = 0.1f;
 			pev->framerate = 0.3f; // slow down to let the orb grow
 			EMIT_SOUND_DYN(m_orb->edict(), CHAN_WEAPON, ORB_GROW_SOUND, 1.0, ATTN_NORM, 0, RANDOM_LONG(95, 105));

@@ -119,6 +119,38 @@ std::unordered_set<std::string> timeCriticalCvars = {
 	"mp_skill_allow",
 };
 
+std::vector<std::pair<std::string, std::string>> g_unrecognizedCfgEquipment;
+extern int g_mapEquipIdx;
+
+void AddMapEquipment(std::string name, std::string value) {
+	if (g_mapEquipIdx >= MAX_EQUIP) {
+		ALERT(at_error, "Failed to add equipment '%s'. Max equipment reached.\n", name.c_str());
+		return;
+	}
+
+	if (mp_default_medkit.value == 0 && name == "weapon_medkit") {
+		// don't want medkits by default unless the map specifically places them
+		// (for a class system or as a special item)
+		return;
+	}
+
+	g_mapEquipment[g_mapEquipIdx].itemName = ALLOC_STRING(name.c_str());
+	g_mapEquipment[g_mapEquipIdx].count = value.size() ? atoi(value.c_str()) : 1;
+
+	AddPrecacheWeapon(name);
+
+	g_mapEquipIdx++;
+}
+
+void AddMapPluginEquipment() {
+	for (auto pair : g_unrecognizedCfgEquipment) {
+		if (g_weaponClassnames.count(pair.first)) {
+			AddMapEquipment(pair.first, pair.second);
+		}
+	}
+	g_unrecognizedCfgEquipment.clear();
+}
+
 void execMapCfg() {
 	// Map CFGs are low trust so only whitelisted commands are allowed.
 	// Server owners shouldn't have to check each map for things like "rcon_password HAHA_GOT_YOU"
@@ -245,7 +277,7 @@ void execMapCfg() {
 	std::stringstream data_stream(cfgFile);
 	string line;
 
-	int equipIdx = 0;
+	g_mapEquipIdx = 0;
 
 	while (std::getline(data_stream, line))
 	{
@@ -312,24 +344,11 @@ void execMapCfg() {
 
 			SERVER_COMMAND(UTIL_VarArgs("%s %s\n", name.c_str(), value.c_str()));
 		}
-		else if (itemNames.find(name) != itemNames.end()) {
-			if (equipIdx >= MAX_EQUIP) {
-				ALERT(at_error, "Failed to add equipment '%s'. Max equipment reached.\n", line.c_str());
-				continue;
-			}
-
-			if (mp_default_medkit.value == 0 && name == "weapon_medkit") {
-				// don't want medkits by default unless the map specifically places them
-				// (for a class system or as a special item)
-				continue;
-			}
-
-			g_mapEquipment[equipIdx].itemName = ALLOC_STRING(name.c_str());
-			g_mapEquipment[equipIdx].count = value.size() ? atoi(value.c_str()) : 1;
-
-			AddPrecacheWeapon(name);
-
-			equipIdx++;
+		else if (itemNames.count(name)) {
+			AddMapEquipment(name, value);
+		}
+		else {
+			g_unrecognizedCfgEquipment.push_back({ name, value });
 		}
 	}
 

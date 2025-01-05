@@ -826,7 +826,7 @@ void CApache :: FireRocket( void )
 		WRITE_BYTE( 12 ); // framerate
 	MESSAGE_END();
 
-	CBaseEntity *pRocket = CBaseEntity::Create( "hvr_rocket", vecSrc, pev->angles, edict() );
+	CBaseEntity *pRocket = CBaseEntity::Create( "hvr_rocket", vecSrc, pev->angles, true, edict() );
 	if (pRocket)
 		pRocket->pev->velocity = pev->velocity + gpGlobals->v_forward * 100;
 

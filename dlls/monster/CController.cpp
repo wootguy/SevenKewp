@@ -318,7 +318,7 @@ void CController :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 			const char* soundlist = m_soundReplacementPath ? STRING(m_soundReplacementPath) : "";
 			std::unordered_map<std::string, std::string> keys = { {"soundlist", soundlist} };
-			CBaseMonster *pBall = (CBaseMonster*)Create( "controller_head_ball", vecStart, pev->angles, edict(), keys);
+			CBaseMonster *pBall = (CBaseMonster*)Create( "controller_head_ball", vecStart, pev->angles, true, edict(), keys);
 
 			pBall->pev->velocity = Vector( 0, 0, 32 );
 			pBall->m_hEnemy = m_hEnemy;
@@ -670,7 +670,7 @@ void CController :: RunTask ( Task_t *pTask )
 				vecDir = vecDir + Vector( RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ), RANDOM_FLOAT( -delta, delta ) ) * gSkillData.sk_controller_speedball;
 
 				vecSrc = vecSrc + vecDir * (gpGlobals->time - m_flShootTime);
-				CBaseMonster *pBall = (CBaseMonster*)Create( "controller_energy_ball", vecSrc, pev->angles, edict() );
+				CBaseMonster *pBall = (CBaseMonster*)Create( "controller_energy_ball", vecSrc, pev->angles, true, edict() );
 				pBall->pev->velocity = vecDir;
 
 				if (CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL) {

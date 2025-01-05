@@ -182,6 +182,10 @@ EXPORT extern bool g_cfgsExecuted; // set to true after server and map cfgs are 
 
 EXPORT extern std::unordered_set<std::string> g_nomaptrans; // trigger_changelevel disabled for these maps
 
+// lines in the cfg which could possibly be custom weapons. Not known until map plugins are loaded,
+// and map plugins aren't known until the cfg finishes parsing
+EXPORT extern std::vector<std::pair<std::string, std::string>> g_unrecognizedCfgEquipment;
+
 // mark a palyer weapon for precaching (alias names are ok)
 EXPORT void AddPrecacheWeapon(std::string wepName);
 
