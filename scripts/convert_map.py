@@ -1,5 +1,6 @@
 import struct, os, subprocess, wave, time, sys, copy, codecs, json, shutil, copy
 from collections import OrderedDict
+from PIL import Image
 
 nonstandard_audio_formats = ["aiff", "asf", "asx", "au", "dls", "flac", "fsb", "it", "m3u", "mid", "midi", "mod", "mp2", "ogg", "pls", "s3m", "vag", "wax", "wma", "xm", "xma"]
 
@@ -110,6 +111,14 @@ def get_all_cfgs(maps_dir):
 		all_cfgs.append(file)
 		
 	return sorted(all_cfgs, key=lambda v: v.upper())
+
+def get_all_skies(skies_dir):
+	sky_files = []
+	for file in os.listdir(skies_dir):
+		if file.endswith('.tga') or file.endswith('.bmp'):
+			sky_files.append(os.path.join(skies_dir, file))
+	
+	return sky_files
 
 def convert_audio(file, out_format, samp_rate):
 	global converted_files
@@ -872,6 +881,7 @@ models_dir = "models"
 all_maps = get_all_maps(maps_dir)
 all_cfgs = get_all_cfgs(maps_dir)
 all_models = get_all_models(models_dir)
+all_skies = get_all_skies('gfx/env')
 all_skill_cvar_names = get_all_skill_cvar_names(skill_path)
 all_titles = parse_titles(titles_path)
 #sentences_hl = parse_sentences(sent_path_hl)
@@ -926,7 +936,7 @@ if fix_problems:
 					newHeight = int((newHeight + 4) / 8) * 8
 					
 					print("Resizing invalid texture in %s (%s %dx%d -> %dx%d)" % (mdl, tex["name"], tex["width"], tex["height"], newWidth, newHeight))
-					mdlguy_command = [modelguy_path, 'resize', tex["name"], "%d" % newWidth, "%d" % newHeight, mdl, json_path]
+					mdlguy_command = [modelguy_path, 'resize', tex["name"], "%dx%d" % (newWidth, newHeight), mdl]
 					#print(' '.join(mdlguy_command))
 					subprocess.run(mdlguy_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			
@@ -947,6 +957,18 @@ if fix_problems:
 				print(' '.join(mdlguy_command))
 				subprocess.run(mdlguy_command)
 		os.remove(json_path)
+	
+	print ("Converting skies")
+	for sky in all_skies:
+		with Image.open(sky) as image:
+			width, height = image.size
+			
+			if width > 256:
+				x = 256
+				y = 256
+				print("Resizing invalid sky texture: %s (%dx%d -> %dx%d)" % (sky, width, height, x, y))
+				image = image.resize((x, y), Image.ANTIALIAS)
+				image.save(sky)
 
 print("\nSearching for incompatible entity settings...")
 
