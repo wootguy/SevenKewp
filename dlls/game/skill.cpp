@@ -240,6 +240,7 @@ skill_cvar_t skill_cvars[] = {
 	DECL_SKILL_CVAR(sk_ammo_max_argrenades, CVAR_TYPE_ITEM),
 	DECL_SKILL_CVAR(sk_ammo_max_spores, CVAR_TYPE_ITEM),
 	DECL_SKILL_CVAR(sk_ammo_max_medkit, CVAR_TYPE_ITEM),
+	DECL_SKILL_CVAR(sk_ammo_max_556, CVAR_TYPE_ITEM),
 
 	// World weapons
 	DECL_SKILL_CVAR(sk_12mm_bullet, CVAR_TYPE_DAMAGE),

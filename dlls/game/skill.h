@@ -234,6 +234,7 @@ struct skilldata_t
 	float sk_ammo_max_argrenades;
 	float sk_ammo_max_spores;
 	float sk_ammo_max_medkit;
+	float sk_ammo_max_556;
 
 	// World weapons
 	float sk_12mm_bullet;
