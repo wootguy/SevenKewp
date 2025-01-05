@@ -1277,7 +1277,7 @@ void CBasePlayer::TabulateWeapons(void) {
 			CBasePlayerItem* pPlayerItem = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
 
 			while (pPlayerItem) {
-				pev->weapons |= (1 << pPlayerItem->m_iId);
+				pev->weapons |= g_weaponSlotMasks[pPlayerItem->m_iId];
 				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
 			}
 		}
@@ -4241,6 +4241,8 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 			SwitchWeapon( pItem );
 		}
 
+		ResolveWeaponSlotConflict(pItem->m_iId);
+
 		return TRUE;
 	}
 	else if (gEvilImpulse101)
@@ -4657,31 +4659,37 @@ void CBasePlayer :: UpdateClientData( void )
 
 		for (i = 0; i < MAX_WEAPONS; i++)
 		{
-			ItemInfo& II = CBasePlayerItem::ItemInfoArray[i];
+			ItemInfo* II = &CBasePlayerItem::ItemInfoArray[i];
 
-			if ( !II.iId )
+			int conflictId = GetCurrentIdForConflictedSlot(i);
+			if (conflictId != -1 && conflictId != i) {
+				// all weapon infos that share a slot must point to currently held weapon in the shared slot
+				// or else the client won't render the menu correctly
+				II = &CBasePlayerItem::ItemInfoArray[conflictId];
+			}
+
+			if ( !II->iId )
 				continue;
 
 			const char *pszName;
-			if (!II.pszName)
+			if (!II->pszName)
 				pszName = "Empty";
 			else
-				pszName = II.pszName;
+				pszName = II->pszName;
 
-			MESSAGE_BEGIN( MSG_ONE, gmsgWeaponList, NULL, pev );  
-				WRITE_STRING(pszName);			// string	weapon name
-				WRITE_BYTE(GetAmmoIndex(II.pszAmmo1));	// byte		Ammo Type
-				WRITE_BYTE(II.iMaxAmmo1);				// byte     Max Ammo 1
-				WRITE_BYTE(GetAmmoIndex(II.pszAmmo2));	// byte		Ammo2 Type
-				WRITE_BYTE(II.iMaxAmmo2);				// byte     Max Ammo 2
-				WRITE_BYTE(II.iSlot);					// byte		bucket
-				WRITE_BYTE(II.iPosition);				// byte		bucket pos
-				WRITE_BYTE(II.iId);						// byte		id (bit index into pev->weapons)
-				WRITE_BYTE(II.iFlags);					// byte		Flags
+			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
+			WRITE_STRING(II->pszName);			// string	weapon name
+			WRITE_BYTE(GetAmmoIndex(II->pszAmmo1));	// byte		Ammo Type
+			WRITE_BYTE(II->iMaxAmmo1);				// byte     Max Ammo 1
+			WRITE_BYTE(GetAmmoIndex(II->pszAmmo2));	// byte		Ammo2 Type
+			WRITE_BYTE(II->iMaxAmmo2);				// byte     Max Ammo 2
+			WRITE_BYTE(II->iSlot);					// byte		bucket
+			WRITE_BYTE(II->iPosition);				// byte		bucket pos
+			WRITE_BYTE(i);							// byte		id (bit index into pev->weapons)
+			WRITE_BYTE(II->iFlags);					// byte		Flags
 			MESSAGE_END();
 		}
 	}
-
 
 	SendAmmoUpdate();
 
@@ -5140,7 +5148,7 @@ void CBasePlayer::CleanupWeaponboxes(void)
 // DropPlayerItem - drop the named item, or if no name,
 // the active item. 
 //=========================================================
-void CBasePlayer::DropPlayerItem ( char *pszItemName )
+void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 {
 	if ( !g_pGameRules->IsMultiplayer() )
 	{
@@ -5169,10 +5177,13 @@ void CBasePlayer::DropPlayerItem ( char *pszItemName )
 
 		while ( pWeapon )
 		{
+			ItemInfo info;
+			pWeapon->GetItemInfo(&info);
+
 			if ( pszItemName )
 			{
-				// try to match by name. 
-				if ( !strcmp( pszItemName, STRING( pWeapon->pev->classname ) ) )
+				// try to match by classname or name. 
+				if ( !strcmp( pszItemName, STRING( pWeapon->pev->classname ) ) || !strcmp(pszItemName, info.pszName))
 				{
 					// match! 
 					break;
@@ -6331,4 +6342,62 @@ void CBasePlayer::LoadScore() {
 		m_iDeaths = 0;
 		m_scoreMultiplier = 1.0f;
 	}
+}
+
+void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
+	int mask = g_weaponSlotMasks[wepId];
+
+	if (count_bits_set(mask) <= 1) {
+		return; // impossible for there to be a conflict
+	}
+
+	ItemInfo& II = CBasePlayerItem::ItemInfoArray[wepId];
+
+	for (int i = 0; i < MAX_WEAPONS; i++) {
+		int bit = (1 << i);
+		if (mask & bit) {
+			if ((pev->weapons & bit) && i != wepId) {
+				// player is already holding a weapon that fills this slot.
+				// Drop this held weapon because the player won't be able to choose which
+				// weapon they want from that slot.
+				ItemInfo& dropInfo = CBasePlayerItem::ItemInfoArray[i];
+				DropPlayerItem(dropInfo.pszName);
+			}
+
+			// redirect all item info to the weapon with the given ID
+			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
+			WRITE_STRING(II.pszName);			// string	weapon name
+			WRITE_BYTE(GetAmmoIndex(II.pszAmmo1));	// byte		Ammo Type
+			WRITE_BYTE(II.iMaxAmmo1);				// byte     Max Ammo 1
+			WRITE_BYTE(GetAmmoIndex(II.pszAmmo2));	// byte		Ammo2 Type
+			WRITE_BYTE(II.iMaxAmmo2);				// byte     Max Ammo 2
+			WRITE_BYTE(II.iSlot);					// byte		bucket
+			WRITE_BYTE(II.iPosition);				// byte		bucket pos
+			WRITE_BYTE(i);							// byte		id (bit index into pev->weapons)
+			WRITE_BYTE(II.iFlags);					// byte		Flags
+			MESSAGE_END();
+			ALERT(at_console, "acktually, ID %d is now for %s\n", i, II.pszName);
+		}
+	}
+}
+
+int CBasePlayer::GetCurrentIdForConflictedSlot(int wepId) {
+	int mask = g_weaponSlotMasks[wepId];
+
+	ItemInfo& II = CBasePlayerItem::ItemInfoArray[wepId];
+
+	if (count_bits_set(mask) <= 1) {
+		return wepId; // impossible for there to be a conflict
+	}
+
+	for (int i = 0; i < MAX_WEAPONS; i++) {
+		int bit = (1 << i);
+		if (mask & bit) {
+			if ((pev->weapons & bit) && i != wepId) {
+				return i;
+			}
+		}
+	}
+
+	return -1;
 }

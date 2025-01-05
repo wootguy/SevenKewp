@@ -49,6 +49,7 @@ extern EXPORT globalvars_t				*gpGlobals;
 
 extern std::unordered_set<std::string> g_weaponNames; // names given by weapons (may have a prefix: "hlcoop/weapon_grapple")
 extern std::unordered_set<std::string> g_weaponClassnames; // valid weapon classnames
+extern int g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict
 
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
@@ -868,6 +869,8 @@ EXPORT bool createFolder(const std::string& path);
 EXPORT bool folderExists(const std::string& path);
 
 EXPORT uint64_t getFreeSpace(const std::string& path);
+
+EXPORT uint32_t count_bits_set(uint32_t v);
 
 EXPORT void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
 EXPORT void UTIL_Fizz(int eidx, int modelIdx, uint8_t density, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);

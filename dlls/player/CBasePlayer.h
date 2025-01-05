@@ -367,7 +367,7 @@ public:
 	void AddPointsToTeam( int score, BOOL bAllowNegativeScore );
 	BOOL AddPlayerItem( CBasePlayerItem *pItem );
 	BOOL RemovePlayerItem( CBasePlayerItem *pItem );
-	void DropPlayerItem ( char *pszItemName );
+	void DropPlayerItem ( const char *pszItemName );
 	void DropAmmo(bool secondary);
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
 	CBasePlayerItem* GetNamedPlayerItem(const char* pszItemName);
@@ -535,6 +535,15 @@ public:
 
 	// load score from global state, or initialize to 0
 	void LoadScore();
+
+	// tell the client which weapon belongs in a slot which multiple weapons can fill
+	void ResolveWeaponSlotConflict(int wepId);
+
+	// if a weapon slot can be filled by multiple weapons, this returns the weapon ID
+	// that is currently held in that slot. If no weapon is filling the slot
+	// that queryWepId fills, then -1 is returned.
+	// queryWepId can be any weapon that fills the slot in question
+	int GetCurrentIdForConflictedSlot(int queryWepId);
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

@@ -342,7 +342,7 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 		}
 
 		if (info.iPosition < 0) {
-			ALERT(at_error, "Failed to register weapon '%s' (slot %d has too many weapons)\n",
+			ALERT(at_error, "Failed to register weapon '%s' (slot %d has too many weapons for automatic assignment)\n",
 				szClassname, info.iSlot);
 			goto cleanup;
 		}
@@ -351,14 +351,6 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 			szClassname, info.iPosition, MAX_WEAPON_POSITIONS - 1);
 		goto cleanup;
 	}
-
-	if (g_filledWeaponSlots[info.iSlot][info.iPosition]) {
-		ALERT(at_error, "Failed to register weapon '%s' (slot %d position %d is filled by '%s')\n",
-			szClassname, info.iSlot, info.iPosition, g_filledWeaponSlots[info.iSlot][info.iPosition]);
-		goto cleanup;
-	}
-
-	g_filledWeaponSlots[info.iSlot][info.iPosition] = szClassname;
 
 	CBasePlayerItem::ItemInfoArray[info.iId] = info;
 
@@ -380,9 +372,14 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 	if (g_registeringCustomWeps) {
 		PRECACHE_HUD_FILES(("sprites/" + std::string(info.pszName) + ".txt").c_str());
 
-		ALERT(at_console, "Registered custom weapon '%s' (ID %d) to slot %d position %d\n",
-			szClassname, info.iId, info.iSlot, info.iPosition);
+		const char* conflictWep = g_filledWeaponSlots[info.iSlot][info.iPosition];
+		std::string conflict = conflictWep ? UTIL_VarArgs(" (conflicts with %s)", conflictWep) : "";
+
+		ALERT(at_console, "Registered custom weapon '%s' (ID %d) to slot %d position %d%s\n",
+			szClassname, info.iId, info.iSlot, info.iPosition, conflict.c_str());
 	}
+
+	g_filledWeaponSlots[info.iSlot][info.iPosition] = szClassname;
 
 cleanup:
 	REMOVE_ENTITY(pent);
