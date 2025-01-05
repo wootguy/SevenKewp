@@ -25,4 +25,3 @@ class CMP5AmmoBox : public CBasePlayerAmmo
 };
 
 LINK_ENTITY_TO_CLASS( ammo_9mmbox, CMP5AmmoBox)
-LINK_ENTITY_TO_CLASS( ammo_556, CMP5AmmoBox)

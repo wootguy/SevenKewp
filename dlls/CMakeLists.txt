@@ -410,6 +410,7 @@ set(AMMO_HDR
 )
 set(AMMO_SRC
 	weapon/CBasePlayerAmmo.cpp
+	weapon/CAmmo556.cpp
 	weapon/CCrossbowAmmo.cpp
 	weapon/CGaussAmmo.cpp
 	weapon/CGlockAmmo.cpp

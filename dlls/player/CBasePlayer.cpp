@@ -4435,10 +4435,18 @@ void CBasePlayer::SendAmmoUpdate(void)
 			ASSERT( m_rgAmmo[i] >= 0 );
 			ASSERT( m_rgAmmo[i] < 255 );
 
+			uint8_t ammoVal = m_rgAmmo[i];
+
+			// can't update max ammo counter without a client update
+			// this will at least show the client that ammo is being spent
+			if (m_rgAmmo[i] > 255) {
+				ammoVal = 250 + (m_rgAmmo[i] % 6);
+			}
+
 			// send "Ammo" update message
 			MESSAGE_BEGIN( MSG_ONE, gmsgAmmoX, NULL, pev );
 				WRITE_BYTE( i );
-				WRITE_BYTE( V_max( V_min( m_rgAmmo[i], 254 ), 0 ) );  // clamp the value to one byte
+				WRITE_BYTE(ammoVal);
 			MESSAGE_END();
 		}
 	}
