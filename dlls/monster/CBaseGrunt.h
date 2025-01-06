@@ -29,6 +29,7 @@
 #define HGRUNT_GRENADELAUNCHER		( 1 << 2)
 #define HGRUNT_SHOTGUN				( 1 << 3)
 #define HGRUNT_ROCKETLAUNCHER		( 1 << 6)
+#define HGRUNT_SNIPERRIFLE			( 1 << 7)
 
 #define	GRUNT_SENTENCE_VOLUME (float)0.35 // volume of grunt sentences
 

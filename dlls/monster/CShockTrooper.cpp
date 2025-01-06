@@ -313,7 +313,7 @@ void CShockTrooper::GibMonster()
 	Vector vecGunPos;
 	Vector vecGunAngles;
 
-	if (GetBodygroup(STrooperBodyGroup::Weapons) != STrooperWeapon::None)
+	if (GetBodygroup(STrooperBodyGroup::Weapons) != STrooperWeapon::None && npc_dropweapons.value)
 	{ // throw a gun if the grunt has one
 		GetAttachment(0, vecGunPos, vecGunAngles);
 
@@ -923,7 +923,7 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 	case STROOPER_AE_DROP_GUN:
 	{
-		if (GetBodygroup(STrooperBodyGroup::Weapons) != STrooperWeapon::None)
+		if (GetBodygroup(STrooperBodyGroup::Weapons) != STrooperWeapon::None && npc_dropweapons.value)
 		{
 			Vector vecGunPos;
 			//Zero this out so we don't end up with garbage angles later on
