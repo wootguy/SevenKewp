@@ -199,6 +199,7 @@ void execMapCfg() {
 		"nomedkit",
 		"nomaptrans",
 		"mp_npcidletalk",
+		"npc_dropweapons",
 	};
 
 	static unordered_set<string> itemNames = {

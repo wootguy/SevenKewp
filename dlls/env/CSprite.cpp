@@ -19,7 +19,7 @@ IMPLEMENT_SAVERESTORE(CSprite, CPointEntity)
 void CSprite::Spawn(void)
 {
 	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NONE;
+	pev->movetype = MOVETYPE_NOCLIP;
 	pev->effects = 0;
 	pev->frame = 0;
 

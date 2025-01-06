@@ -898,6 +898,10 @@ void CBaseGrunt::DropEquipmentToss(const char* cname, Vector vecGunPos, Vector v
 }
 
 bool CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity, Vector aVelocity) {
+	if (!npc_dropweapons.value) {
+		return false;
+	}
+	
 	Vector	vecGunPos;
 	Vector	vecGunAngles;
 	GetAttachment(attachmentIdx, vecGunPos, vecGunAngles);
