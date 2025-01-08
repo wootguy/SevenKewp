@@ -150,6 +150,9 @@ struct RGBA {
 	RGBA(Vector v) : r(v.x), g(v.y), b(v.z), a(255) {}
 	RGBA(Vector v, uint8_t a) : r(v.x), g(v.y), b(v.z), a(a) {}
 	RGBA(RGB rgb) : r(rgb.r), g(rgb.g), b(rgb.b), a(255) {}
+	RGBA() : r(0), g(0), b(0), a(0) {}
+
+	Vector ToVector() { return Vector(r, g, b); }
 };
 
 // Use this instead of ALLOC_STRING on constant strings
@@ -162,6 +165,18 @@ struct RGBA {
 	(a) = (b); \
 	(b) = _temp; \
 }
+
+struct custom_muzzle_flash_t {
+	string_t sprite;
+	uint8_t attachment;
+	uint8_t bone;
+	uint8_t scale;
+	uint8_t rendermode;
+	RGBA color;
+	Vector offset;
+};
+
+extern std::unordered_map<std::string, custom_muzzle_flash_t> g_customMuzzleFlashes;
 
 // same as the STRING macro but defined as a function for easy calling in the debugger
 EXPORT const char* cstr(string_t s);
@@ -823,6 +838,9 @@ EXPORT std::string getGameFilePath(const char* path);
 // loads a global model/sound replacement file
 // format: "file_path" "replacement_file_path"
 EXPORT std::unordered_map<std::string, std::string> loadReplacementFile(const char* path);
+
+// loads muzzle flash details from file on the first call, then returns cached results
+EXPORT custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path);
 
 EXPORT void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType=MSG_BROADCAST, edict_t* dest=NULL);
 
