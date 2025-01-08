@@ -119,6 +119,8 @@ std::unordered_set<std::string> g_mapWeapons;
 
 std::unordered_map<uint64_t, player_score_t> g_playerScores;
 std::unordered_map<uint64_t, player_score_t> g_oldPlayerScores;
+std::unordered_map<uint64_t, player_inventory_t> g_playerInventory;
+bool g_clearInventoriesNextMap = true;
 
 std::unordered_map<std::string, const char*> g_itemNameRemap = {
 	{"weapon_9mmar", "weapon_9mmAR"},

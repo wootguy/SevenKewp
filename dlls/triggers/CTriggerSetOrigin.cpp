@@ -128,15 +128,20 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 		// This doesn't apply when "Skip initial set" is active, which causes the offset key
 		// to be totally ignored, for some reason.
 
+		UTIL_MakeVectors(m_hCopyEnt->pev->angles);
+
 		for (int i = 0; i < m_targetCount; i++) {
 			if (pev->spawnflags & SF_TSORI_SKIP_INITIAL_SET) {
-				m_lockOffsets[i] = m_hTargets[i]->pev->origin - m_hCopyEnt->pev->origin;
+				Vector offset = m_hTargets[i]->pev->origin - m_hCopyEnt->pev->origin;
+				m_lockOffsets[i] = (gpGlobals->v_forward * offset.x) + (gpGlobals->v_right * offset.y) + (gpGlobals->v_up * offset.z);
 			}
 			else {
 				m_lockOffsets[i] = Vector(0, 0, 0); // TODO: just guessing after reading docs
 			}
 
-			m_lockOffsetAngles[i] = m_hTargets[i]->pev->angles - m_hCopyEnt->pev->angles;
+			if (!(pev->spawnflags & SF_TSORI_SKIP_INITIAL_SET)) {
+				m_lockOffsetAngles[i] = m_hTargets[i]->pev->angles - m_hCopyEnt->pev->angles;
+			}
 		}
 	}
 

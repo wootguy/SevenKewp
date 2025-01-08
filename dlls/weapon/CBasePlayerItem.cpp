@@ -45,16 +45,8 @@ void CBasePlayerItem::FallInit(void)
 {
 	if (pev->movetype == 0)
 		pev->movetype = MOVETYPE_TOSS;
-	pev->solid = SOLID_TRIGGER;
-
-	UTIL_SetOrigin(pev, pev->origin);
-	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));//pointsize until it lands on the ground.
-
-	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
-		SetTouch(&CBasePlayerItem::DefaultTouch);
-
-	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
-		SetUse(&CBasePlayerItem::DefaultUse);
+	
+	Materialize();
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }

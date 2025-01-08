@@ -1817,6 +1817,12 @@ bool UTIL_PointInLiquid(const Vector& vec)
 	return false;
 }
 
+bool UTIL_PointInBox(const Vector& vec, Vector mins, Vector maxs) {
+	return (vec.x >= mins.x && vec.x <= maxs.x) &&
+		(vec.y >= mins.y && vec.y <= maxs.y) &&
+		(vec.z >= mins.z && vec.z <= maxs.z);
+}
+
 void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount )
 {
 	if ( !UTIL_ShouldShowBlood( color ) )

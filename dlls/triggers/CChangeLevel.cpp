@@ -6,6 +6,7 @@
 #include "CBaseTrigger.h"
 #include "CFireAndDie.h"
 #include "hlds_hooks.h"
+#include "CBasePlayer.h"
 
 #define SF_CHANGELEVEL_USEONLY		0x0002
 
@@ -38,6 +39,7 @@ public:
 	char m_szLandmarkName[cchMapNameMost];		// trigger_changelevel only:  landmark on next map
 	int		m_changeTarget;
 	float	m_changeTargetDelay;
+	bool m_bKeepInventory;
 };
 LINK_ENTITY_TO_CLASS(trigger_changelevel, CChangeLevel)
 
@@ -84,6 +86,11 @@ void CChangeLevel::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "changedelay"))
 	{
 		m_changeTargetDelay = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "keep_inventory"))
+	{
+		m_bKeepInventory = atoi(pkvd->szValue) != 0;
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -233,6 +240,19 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 	ALERT(at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot);
 	CHANGE_LEVEL(st_szNextMap, st_szNextSpot);
 	*/
+
+	if (m_bKeepInventory) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = (CBasePlayer*)UTIL_PlayerByIndex(i);
+			if (!plr) {
+				continue;
+			}
+
+			plr->SaveInventory();
+		}
+
+		g_clearInventoriesNextMap = false;
+	}
 
 	ALERT(at_console, "CHANGE LEVEL: %s\n", st_szNextMap);
 

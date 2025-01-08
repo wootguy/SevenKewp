@@ -23,7 +23,7 @@ public:
 	void DefaultTouch( CBaseEntity *pOther );	// default weapon touch
 	void DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void FallThink ( void );// when an item is first spawned, this think is run to determine when the object has hit the ground.
-	void Materialize( void );// make a weapon visible and tangible
+	virtual void Materialize( void );// make a weapon visible and tangible
 	void AttemptToMaterialize( void );  // the weapon desires to become visible and tangible, if the game rules allow for it
 	virtual CBaseEntity* Respawn ( void );// copy a weapon
 	void FallInit( void );

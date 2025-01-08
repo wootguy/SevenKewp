@@ -554,6 +554,8 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 	}
 
 	pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex("health")] = gSkillData.sk_plr_medkit_start_ammo;
+
+	pPlayer->LoadInventory();
 }
 
 //=========================================================

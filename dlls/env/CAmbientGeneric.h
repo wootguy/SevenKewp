@@ -75,6 +75,7 @@ public:
 	void RampThink(void);
 	void InitModulationParms(void);
 	void InitSoundForNewJoiner(edict_t* target);
+	void UpdateOnRemove(void);
 
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
