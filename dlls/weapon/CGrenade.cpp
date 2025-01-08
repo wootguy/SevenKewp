@@ -204,6 +204,13 @@ void CGrenade::PreDetonate( void )
 
 void CGrenade::Detonate( void )
 {
+	FCheckAITrigger();
+	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
+	CBaseEntity* pOwner = CBaseEntity::Instance(pev->owner);
+	if (pOwner) {
+		pOwner->DeathNotice(pev);
+	}
+
 	TraceResult tr;
 	Vector		vecSpot;// trace starts here!
 
@@ -377,16 +384,32 @@ void CGrenade :: TumbleThink( void )
 void CGrenade:: Spawn( void )
 {
 	pev->movetype = MOVETYPE_BOUNCE;
-	pev->classname = MAKE_STRING( "grenade" );
-	
 	pev->solid = SOLID_BBOX;
 
 	m_defaultModel = "models/w_grenade.mdl";
 	SET_MODEL(ENT(pev), GetModel());
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 
-	pev->dmg = 100;
+	pev->dmg = GetDamage(100);
 	m_fRegisteredSound = FALSE;
+
+	if (FClassnameIs(pev, "monster_handgrenade")) {
+		SetTouch(&CGrenade::BounceTouch);	// Bounce if touched
+
+		float time = 3.5f;
+		pev->dmgtime = gpGlobals->time + time;
+		SetThink(&CGrenade::TumbleThink);
+		pev->nextthink = gpGlobals->time + 0.1;
+
+		pev->sequence = RANDOM_LONG(3, 6);
+		pev->framerate = 1.0;
+
+		pev->gravity = 0.5;
+		pev->friction = 0.8;
+	}
+	else {
+		pev->classname = MAKE_STRING("grenade");
+	}
 }
 
 
@@ -523,6 +546,8 @@ void CGrenade :: UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code )
 		pentFind = FIND_ENTITY_BY_CLASSNAME( pentFind, "grenade" );
 	}
 }
+
+LINK_ENTITY_TO_CLASS(monster_handgrenade, CGrenade)
 
 //======================end grenade
 

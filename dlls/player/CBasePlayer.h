@@ -536,6 +536,12 @@ public:
 	// load score from global state, or initialize to 0
 	void LoadScore();
 
+	// save inventory to global state
+	void SaveInventory();
+
+	// equip inventory from global state
+	void LoadInventory();
+
 	// tell the client which weapon belongs in a slot which multiple weapons can fill
 	void ResolveWeaponSlotConflict(int wepId);
 
@@ -544,6 +550,8 @@ public:
 	// that queryWepId fills, then -1 is returned.
 	// queryWepId can be any weapon that fills the slot in question
 	int GetCurrentIdForConflictedSlot(int queryWepId);
+
+	const char* GetDeathNoticeWeapon();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

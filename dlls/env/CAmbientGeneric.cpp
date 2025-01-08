@@ -859,3 +859,20 @@ void CAmbientGeneric::InitSoundForNewJoiner(edict_t* target) {
 	}
 	// mp3 audio is initiliazed elsewhere, don't play here
 }
+
+void CAmbientGeneric::UpdateOnRemove(void) {
+	char* szSoundFile = (char*)STRING(pev->message);
+
+	if (m_fActive) {
+		// shut sound off now - may be interrupting a long non-looping sound
+		if (m_isGlobalMp3) {
+			if (g_lastMp3PlayerEnt.GetEntity() == this)
+				UTIL_StopGlobalMp3();
+		}
+		else {
+			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
+		}
+	}
+
+	CBaseEntity::UpdateOnRemove();
+}

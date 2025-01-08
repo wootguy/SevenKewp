@@ -11,3 +11,6 @@ void CPointEntity::Spawn(void)
 
 // Lightning target, just alias landmark
 LINK_ENTITY_TO_CLASS(info_target, CPointEntity)
+
+// TODO: implement. This should allow players to click things in the camera view
+LINK_ENTITY_TO_CLASS(trigger_cameratarget, CPointEntity)

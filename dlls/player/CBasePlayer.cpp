@@ -6352,6 +6352,42 @@ void CBasePlayer::LoadScore() {
 	}
 }
 
+void CBasePlayer::SaveInventory() {
+	player_inventory_t inv;
+	
+	for (int i = 0; i < MAX_ITEM_TYPES; i++) {
+		if (m_rgpPlayerItems[i]) {
+			CBasePlayerItem* pPlayerItem = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
+
+			while (pPlayerItem) {
+				inv.weapons.insert(STRING(pPlayerItem->pev->classname));
+				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
+			}
+		}
+	}
+
+	memcpy(inv.m_rgAmmo, m_rgAmmo, MAX_AMMO_SLOTS * sizeof(int));
+	
+	g_playerInventory[GetSteamID64()] = inv;
+}
+
+void CBasePlayer::LoadInventory() {
+	auto previousInv = g_playerInventory.find(GetSteamID64());
+	if (previousInv != g_playerInventory.end()) {
+		player_inventory_t inv = previousInv->second;
+		
+		for (std::string item : inv.weapons) {
+			if (!HasNamedPlayerItem(item.c_str())) {
+				GiveNamedItem(STRING(ALLOC_STRING(item.c_str())));
+			}
+		}
+
+		for (int i = 0; i < MAX_AMMO_SLOTS; i++) {
+			m_rgAmmo[i] = V_max(m_rgAmmo[i], inv.m_rgAmmo[i]);
+		}
+	}
+}
+
 void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 	int mask = g_weaponSlotMasks[wepId];
 
@@ -6384,7 +6420,6 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 			WRITE_BYTE(i);							// byte		id (bit index into pev->weapons)
 			WRITE_BYTE(II.iFlags);					// byte		Flags
 			MESSAGE_END();
-			ALERT(at_console, "acktually, ID %d is now for %s\n", i, II.pszName);
 		}
 	}
 }
@@ -6408,4 +6443,8 @@ int CBasePlayer::GetCurrentIdForConflictedSlot(int wepId) {
 	}
 
 	return -1;
+}
+
+const char* CBasePlayer::GetDeathNoticeWeapon() {
+	return m_pActiveItem ? m_pActiveItem->GetDeathNoticeWeapon() : "skull";
 }
