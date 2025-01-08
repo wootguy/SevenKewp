@@ -356,7 +356,7 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 	for (; index < pseqdesc->numevents; index++)
 	{
 		// Don't send client-side events to the server AI
-		if ( pevent[index].event >= EVENT_CLIENT )
+		if ( pevent[index].event >= EVENT_CLIENT && pevent[index].event != 5005)
 			continue;
 
 		if ( (pevent[index].frame >= flStart && pevent[index].frame < flEnd) || 

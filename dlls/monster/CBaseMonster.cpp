@@ -17,6 +17,7 @@
 #include "lagcomp.h"
 #include "CItemInventory.h"
 #include "CBasePlayer.h"
+#include "CSprite.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -3021,6 +3022,49 @@ void CBaseMonster::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 		// NO MONSTER may use this anim event unless that monster's precache precaches this sound!!!
 		EMIT_SOUND(ENT(pev), CHAN_BODY, "zombie/claw_miss2.wav", 1, ATTN_NORM);
+		break;
+	}
+
+	case SCRIPT_EVENT_MUZZLE_FLASH:
+	{
+		custom_muzzle_flash_t flash = loadCustomMuzzleFlash(pEvent->options);
+
+		if (flash.sprite) {
+			Vector origin, angles;
+
+			if (flash.attachment != -1) {
+				GetAttachment(flash.attachment, origin, angles);
+			}
+			else if (flash.bone != -1) {
+				GetBonePosition(flash.bone, origin, angles);
+				origin = origin + flash.offset;
+			}
+			else {
+				origin = pev->origin;
+			}
+
+			/*
+			CSprite* spr = CSprite::SpriteCreate(STRING(flash.sprite), origin, TRUE);
+			spr->pev->rendermode = flash.rendermode;
+			spr->pev->rendercolor = flash.color.ToVector();
+			spr->pev->renderamt = flash.color.a;
+			spr->pev->scale = flash.scale*0.1f;
+			spr->AnimateUntilDead();
+			*/
+
+			int alphatest = flash.rendermode == 4 ? 1 : 0;
+
+			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, origin);
+			WRITE_BYTE(TE_EXPLOSION);
+			WRITE_COORD(origin.x);
+			WRITE_COORD(origin.y);
+			WRITE_COORD(origin.z - 8);
+			WRITE_SHORT(MODEL_INDEX(STRING(flash.sprite)));
+			WRITE_BYTE(flash.scale*0.2f);
+			WRITE_BYTE(50);
+			WRITE_BYTE(alphatest | 2 | 4 | 8);
+			MESSAGE_END();
+		}
 		break;
 	}
 

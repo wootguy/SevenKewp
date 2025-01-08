@@ -309,40 +309,10 @@ void PRECACHE_MODEL_SEQUENCE(const char* path, studiohdr_t* mdl, int sequence) {
 		if (evt->event == 5001 || evt->event == 5011 || evt->event == 5021 || evt->event == 5031) { // muzzleflash sprite
 			PRECACHE_GENERIC(STRING(ALLOC_STRING(normalize_path(opt).c_str())));
 		}
-		if (evt->event == 5005) { // custom muzzleflash (sven co-op only, likely requires custom client)
-			std::string muzzle_txt = normalize_path("events/" + opt);
-			ALERT(at_console, "unimplemented custom muzzle flash '%s' on model: %s\n",
-				muzzle_txt.c_str(), path);
-			/*
-			PRECACHE_GENERIC(muzzle_txt.c_str());
-
-			std::string muzzle_txt_path = getGameFilePath(muzzle_txt.c_str());
-			if (muzzle_txt_path.empty())
-				continue;
-
-			// parse muzzleflash config for sprite name
-			std::ifstream file(muzzle_txt_path);
-			if (file.is_open()) {
-				int line_num = 0;
-				std::string line;
-				while (getline(file, line)) {
-					line_num++;
-
-					line = trimSpaces(line);
-					if (line.find("//") == 0 || line.length() == 0)
-						continue;
-
-					line = replaceString(line, "\t", " ");
-
-					if (line.find("spritename") == 0) {
-						std::string val = trimSpaces(line.substr(line.find("spritename") + strlen("spritename")));
-						val.erase(std::remove(val.begin(), val.end(), '\"'), val.end());
-						PRECACHE_GENERIC(val);
-					}
-				}
-			}
-			file.close();
-			*/
+		if (evt->event == 5005) { // custom muzzleflash
+			custom_muzzle_flash_t flash = loadCustomMuzzleFlash(opt.c_str());
+			if (flash.sprite)
+				PRECACHE_MODEL_ENT(NULL, STRING(flash.sprite));
 		}
 	}
 }

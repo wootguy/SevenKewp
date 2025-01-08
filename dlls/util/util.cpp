@@ -101,6 +101,8 @@ ThreadSafeQueue<AlertMsgCall> g_thread_prints;
 
 std::string g_lastMapName;
 
+std::unordered_map<std::string, custom_muzzle_flash_t> g_customMuzzleFlashes;
+
 TYPEDESCRIPTION	gEntvarsDescription[] =
 {
 	DEFINE_ENTITY_FIELD(classname, FIELD_STRING),
@@ -2534,6 +2536,88 @@ std::unordered_map<std::string, std::string> loadReplacementFile(const char* pat
 	}
 
 	return replacements;
+}
+
+custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path) {
+	auto cache = g_customMuzzleFlashes.find(path);
+	if (cache != g_customMuzzleFlashes.end()) {
+		return cache->second;
+	}
+
+	custom_muzzle_flash_t flash;
+	memset(&flash, 0, sizeof(custom_muzzle_flash_t));
+
+	std::string fpath = getGameFilePath((std::string("events/") + path).c_str());
+	std::ifstream infile(fpath);
+
+	if (fpath.empty() || !infile.is_open()) {
+		ALERT(at_console, "Failed to load custom muzzle flash file: %s\n", path);
+		return flash;
+	}
+
+	int lineNum = 0;
+	std::string line;
+	while (std::getline(infile, line))
+	{
+		lineNum++;
+		std::string paths[2];
+
+		int comments = line.find("//");
+		if (comments != -1) {
+			line = line.substr(0, comments);
+		}
+
+		line = trimSpaces(line);
+		if (line.empty()) {
+			continue;
+		}
+
+		std::vector<std::string> parts = splitString(line, " \t");
+
+		if (parts.empty()) {
+			continue;
+		}
+
+		std::string name = trimSpaces(toLowerCase(parts[0]));
+		std::string value = parts.size() > 1 ? trimSpaces(parts[1]) : "";
+
+		if (name == "attachment") {
+			flash.attachment = atoi(value.c_str());
+		}
+		else if (name == "bone") {
+			flash.bone = atoi(value.c_str());
+		}
+		else if (name == "spritename") {
+			flash.sprite = ALLOC_STRING(value.c_str());
+		}
+		else if (name == "scale") {
+			flash.scale = atoi(value.c_str());
+		}
+		else if (name == "rendermode") {
+			flash.rendermode = atoi(value.c_str());
+		}
+		else if (name == "colorr") {
+			flash.color.r = atoi(value.c_str());
+		}
+		else if (name == "colorg") {
+			flash.color.g = atoi(value.c_str());
+		}
+		else if (name == "colorb") {
+			flash.color.b = atoi(value.c_str());
+		}
+		else if (name == "transparency") {
+			flash.color.a = atoi(value.c_str());
+		}
+		else if (name == "offset" && parts.size() >= 4) {
+			flash.offset.x = atof(parts[1].c_str());
+			flash.offset.y = atof(parts[2].c_str());
+			flash.offset.z = atof(parts[3].c_str());
+		}
+	}
+
+	g_customMuzzleFlashes[path] = flash;
+
+	return flash;
 }
 
 void InitEdictRelocations() {
