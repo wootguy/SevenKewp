@@ -34,4 +34,9 @@ void CTriggerMultiple::Spawn(void)
 	{
 		SetTouch(&CTriggerMultiple::MultiTouch);
 	}
+
+	if (pev->spawnflags & (SF_TRIGGER_FIRE_ON_ENTER | SF_TRIGGER_FIRE_ON_EXIT)) {
+		SetThink(&CBaseTrigger::UntouchThink);
+		pev->nextthink = gpGlobals->time;
+	}
 }

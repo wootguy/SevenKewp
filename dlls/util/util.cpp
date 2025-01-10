@@ -3356,3 +3356,17 @@ uint32_t count_bits_set(uint32_t v) {
 	return c;
 }
 
+void UTIL_ForceRetouch(edict_t* ent) {
+	// hack to call SV_LinkEdict(ent, TRUE) in the engine, which calls Touch on all touched triggers
+	Vector oldOrigin = ent->v.origin;
+	edict_t* oldGround = ent->v.groundentity;
+	int oldFlags = ent->v.flags;
+	ent->v.flags |= FL_FLY | FL_PARTIALGROUND;
+
+	WALK_MOVE(ent, 0, 0, WALKMOVE_WORLDONLY);
+
+	ent->v.flags = oldFlags;
+	ent->v.groundentity = oldGround;
+	ent->v.origin = oldOrigin;
+	UTIL_SetOrigin(&ent->v, ent->v.origin);
+}
