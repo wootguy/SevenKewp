@@ -55,6 +55,8 @@ void CBaseTrigger::KeyValue(KeyValueData* pkvd)
 
 void CBaseTrigger::MultiTouch(CBaseEntity* pOther)
 {
+	m_testTouch = true;
+
 	entvars_t* pevToucher;
 
 	pevToucher = pOther->pev;
@@ -79,7 +81,7 @@ void CBaseTrigger::MultiTouch(CBaseEntity* pOther)
 			return;
 		}
 
-		ActivateMultiTrigger(pOther);
+		ActivateMultiTrigger(pOther, false);
 	}
 }
 
@@ -89,11 +91,44 @@ void CBaseTrigger::MultiTouch(CBaseEntity* pOther)
 // self.enemy should be set to the activator so it can be held through a delay
 // so wait for the delay time before firing
 //
-void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator)
+void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator, bool isUntouch)
 {
-	if (pev->nextthink > gpGlobals->time)
-		return;         // still waiting for reset time
+	if (isUntouch) {
+		if (!(pev->spawnflags & SF_TRIGGER_FIRE_ON_EXIT)) {
+			return;
+		}
 
+		//ALERT(at_console, "EXIT TOUCH BY %s\n", pActivator->DisplayName());
+	}
+	else if (pev->spawnflags & (SF_TRIGGER_FIRE_ON_ENTER | SF_TRIGGER_FIRE_ON_EXIT)) {
+		int emptySlot = -1;
+
+		bool alreadyTouching = false;
+		for (int i = 0; i < MAX_TOUCHERS; i++) {
+			if (m_touchers[i].GetEntity() == pActivator) {
+				return;
+			}
+			else if (emptySlot == -1 && !m_touchers[i]) {
+				emptySlot = i;
+			}
+		}
+
+		if (emptySlot == -1) {
+			ALERT(at_error, "%s Exceeded max trigger touch trackers\n", STRING(pev->classname));
+			return;
+		}
+
+		//ALERT(at_console, "ENTER TOUCH BY %s\n", pActivator->DisplayName());
+		m_touchers[emptySlot] = pActivator;
+
+		if (!(pev->spawnflags & SF_TRIGGER_FIRE_ON_ENTER)) {
+			return;
+		}
+	}
+	else if (m_nextTouch > gpGlobals->time) {
+		return;         // still waiting for reset time
+	}
+	
 	if (!UTIL_IsMasterTriggered(m_sMaster, pActivator))
 		return;
 
@@ -121,8 +156,8 @@ void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator)
 
 	if (m_flWait > 0)
 	{
-		SetThink(&CBaseTrigger::MultiWaitOver);
-		pev->nextthink = gpGlobals->time + m_flWait;
+		//SetThink(&CBaseTrigger::MultiWaitOver); // replaced by sv_forceretouch in rehlds
+		m_nextTouch = gpGlobals->time + m_flWait;
 	}
 	else
 	{
@@ -135,6 +170,7 @@ void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator)
 }
 
 
+/*
 // the wait time has passed, so set back up for another activation
 void CBaseTrigger::MultiWaitOver(void)
 {
@@ -149,7 +185,7 @@ void CBaseTrigger::MultiWaitOver(void)
 	// retouch to check if stationary entity is touching the trigger
 	gpGlobals->force_retouch++;
 }
-
+*/
 
 // ========================= COUNTING TRIGGER =====================================
 
@@ -188,7 +224,7 @@ void CBaseTrigger::CounterUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE
 	if (fTellActivator)
 		ALERT(at_console, "Sequence completed!");
 
-	ActivateMultiTrigger(m_hActivator);
+	ActivateMultiTrigger(m_hActivator, false);
 }
 
 //
@@ -356,3 +392,22 @@ void CBaseTrigger::HurtTouch(CBaseEntity* pOther)
 	}
 }
 
+
+void CBaseTrigger::UntouchThink() {
+	for (int i = 0; i < MAX_TOUCHERS; i++) {
+		if (!m_touchers[i]) {
+			continue;
+		}
+		
+		m_testTouch = false;
+		UTIL_ForceRetouch(m_touchers[i].GetEdict());
+
+		if (!m_testTouch) {
+			// trigger no longer touched
+			ActivateMultiTrigger(m_touchers[i], true);
+			m_touchers[i] = NULL;
+		}
+	}
+
+	pev->nextthink = gpGlobals->time + 0.01f;
+}

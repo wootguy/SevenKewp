@@ -891,6 +891,8 @@ EXPORT uint64_t getFreeSpace(const std::string& path);
 
 EXPORT uint32_t count_bits_set(uint32_t v);
 
+EXPORT void UTIL_ForceRetouch(edict_t* ent); // force entity to Touch() all triggers it is in contact with
+
 EXPORT void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
 EXPORT void UTIL_Fizz(int eidx, int modelIdx, uint8_t density, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
 EXPORT void UTIL_ELight(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
