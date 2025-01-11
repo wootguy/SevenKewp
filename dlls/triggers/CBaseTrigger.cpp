@@ -103,7 +103,6 @@ void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator, bool isUntouch)
 	else if (pev->spawnflags & (SF_TRIGGER_FIRE_ON_ENTER | SF_TRIGGER_FIRE_ON_EXIT)) {
 		int emptySlot = -1;
 
-		bool alreadyTouching = false;
 		for (int i = 0; i < MAX_TOUCHERS; i++) {
 			if (m_touchers[i].GetEntity() == pActivator) {
 				return;

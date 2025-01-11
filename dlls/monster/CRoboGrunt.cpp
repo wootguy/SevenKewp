@@ -18,6 +18,8 @@
 #define GUN_MP5						0
 #define GUN_SHOTGUN					1
 #define GUN_NONE					2
+#define GUN_ROCKETLAUNCHER			3
+#define GUN_SNIPERRIFLE				4
 
 #define HGRUNT_9MMAR				( 1 << 0)
 #define HGRUNT_HANDGRENADE			( 1 << 1)
@@ -164,6 +166,22 @@ void CRoboGrunt::Spawn() {
 		SetBodygroup(GUN_GROUP, GUN_SHOTGUN);
 		m_cClipSize = 8;
 	}
+	else if (FBitSet(pev->weapons, HGRUNT_ROCKETLAUNCHER))
+	{
+		SetBodygroup(GUN_GROUP, GUN_ROCKETLAUNCHER);
+		m_cClipSize = 1;
+		m_flDistTooFar = 4096.0;
+		m_flDistLook = 4096.0;
+		maxShootDist = 4096;
+	}
+	else if (m_iEquipment & MEQUIP_SNIPER)
+	{
+		SetBodygroup(GUN_GROUP, GUN_SNIPERRIFLE);
+		m_cClipSize = 1;
+		m_flDistTooFar = 4096.0;
+		m_flDistLook = 4096.0;
+		maxShootDist = 4096;
+	}
 	else
 	{
 		m_cClipSize = GRUNT_CLIP_SIZE;
@@ -199,6 +217,12 @@ void CRoboGrunt::Precache()
 	}
 	if (FBitSet(pev->weapons, HGRUNT_GRENADELAUNCHER)) {
 		m_iEquipment |= MEQUIP_GRENADE_LAUNCHER;
+	}
+	if (FBitSet(pev->weapons, HGRUNT_ROCKETLAUNCHER)) {
+		m_iEquipment |= MEQUIP_RPG;
+	}
+	if (FBitSet(pev->weapons, HGRUNT_SNIPERRIFLE)) {
+		m_iEquipment |= MEQUIP_SNIPER;
 	}
 
 	BasePrecache();

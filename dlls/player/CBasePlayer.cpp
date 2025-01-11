@@ -4679,12 +4679,6 @@ void CBasePlayer :: UpdateClientData( void )
 			if ( !II->iId )
 				continue;
 
-			const char *pszName;
-			if (!II->pszName)
-				pszName = "Empty";
-			else
-				pszName = II->pszName;
-
 			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
 			WRITE_STRING(II->pszName);			// string	weapon name
 			WRITE_BYTE(GetAmmoIndex(II->pszAmmo1));	// byte		Ammo Type
@@ -6426,8 +6420,6 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 
 int CBasePlayer::GetCurrentIdForConflictedSlot(int wepId) {
 	int mask = g_weaponSlotMasks[wepId];
-
-	ItemInfo& II = CBasePlayerItem::ItemInfoArray[wepId];
 
 	if (count_bits_set(mask) <= 1) {
 		return wepId; // impossible for there to be a conflict
