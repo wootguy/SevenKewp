@@ -478,7 +478,7 @@ void CBaseEntity::SUB_FadeOut(void)
 // FVisible - returns true if a line can be traced from
 // the caller's eyes to the target
 //=========================================================
-BOOL CBaseEntity::FVisible(CBaseEntity* pEntity)
+BOOL CBaseEntity::FVisible(CBaseEntity* pEntity, bool fIgnoreGlass)
 {
 	TraceResult tr;
 	Vector		vecLookerOrigin;
@@ -495,7 +495,8 @@ BOOL CBaseEntity::FVisible(CBaseEntity* pEntity)
 	vecLookerOrigin = pev->origin + pev->view_ofs;//look through the caller's 'eyes'
 	vecTargetOrigin = pEntity->IsBSPModel() ? pEntity->Center() : pEntity->EyePosition();
 
-	UTIL_TraceLine(vecLookerOrigin, vecTargetOrigin, ignore_monsters, ignore_glass, ENT(pev)/*pentIgnore*/, &tr);
+	IGNORE_GLASS ignore = fIgnoreGlass ? ignore_glass : dont_ignore_glass;
+	UTIL_TraceLine(vecLookerOrigin, vecTargetOrigin, ignore_monsters, ignore, ENT(pev)/*pentIgnore*/, &tr);
 
 	if (tr.flFraction != 1.0 && tr.pHit != pEntity->edict())
 	{
@@ -511,14 +512,15 @@ BOOL CBaseEntity::FVisible(CBaseEntity* pEntity)
 // FVisible - returns true if a line can be traced from
 // the caller's eyes to the target vector
 //=========================================================
-BOOL CBaseEntity::FVisible(const Vector& vecOrigin)
+BOOL CBaseEntity::FVisible(const Vector& vecOrigin, bool fIgnoreGlass)
 {
 	TraceResult tr;
 	Vector		vecLookerOrigin;
 
 	vecLookerOrigin = EyePosition();//look through the caller's 'eyes'
 
-	UTIL_TraceLine(vecLookerOrigin, vecOrigin, ignore_monsters, ignore_glass, ENT(pev)/*pentIgnore*/, &tr);
+	IGNORE_GLASS ignore = fIgnoreGlass ? ignore_glass : dont_ignore_glass;
+	UTIL_TraceLine(vecLookerOrigin, vecOrigin, ignore_monsters, ignore, ENT(pev)/*pentIgnore*/, &tr);
 
 	if (tr.flFraction != 1.0)
 	{

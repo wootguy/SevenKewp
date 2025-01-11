@@ -381,7 +381,7 @@ float GetDefaultHealth(const char* monstertype, bool mapSkills) {
 		return defaultHp->second;
 	}
 	else {
-		ALERT(at_console, "Monster type %s has no default health\n", monstertype);
+		ALERT(at_aiconsole, "Monster type %s has no default health\n", monstertype);
 		return 0;
 	}
 }

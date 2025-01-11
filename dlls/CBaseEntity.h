@@ -1,6 +1,7 @@
 #pragma once
 #include "EHandle.h"
 #include "saverestore.h"
+#include <stdint.h>
 
 class CBaseEntity;
 class CBaseMonster;
@@ -322,8 +323,8 @@ public:
 
 	virtual int Illumination() { return GETENTITYILLUM(ENT(pev)); };
 
-	virtual	BOOL FVisible(CBaseEntity* pEntity);
-	virtual	BOOL FVisible(const Vector& vecOrigin);
+	virtual	BOOL FVisible(CBaseEntity* pEntity, bool fIgnoreGlass=true);
+	virtual	BOOL FVisible(const Vector& vecOrigin, bool fIgnoreGlass=true);
 
 	virtual void SetClassify(int iNewClassify);
 	virtual int IRelationship(CBaseEntity* pTarget);
