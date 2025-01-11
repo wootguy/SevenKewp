@@ -2412,12 +2412,12 @@ void CBasePlayer::PreThink(void)
 
 	CheckSuitUpdate();
 
-	// hide weapon hud if player has no weapons
-	if (!(pev->weapons & (1 << WEAPON_SUIT))) {
-		m_iHideHUD |= HIDEHUD_WEAPONS;
+	// only show weapon hud if player has a weapon besides the suit
+	if (pev->weapons & ~(1 << WEAPON_SUIT)) {
+		m_iHideHUD &= ~HIDEHUD_WEAPONS;
 	}
 	else {
-		m_iHideHUD &= ~HIDEHUD_WEAPONS;
+		m_iHideHUD |= HIDEHUD_WEAPONS;
 	}
 
 	// Observer Button Handling

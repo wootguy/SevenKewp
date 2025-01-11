@@ -1112,7 +1112,7 @@ Schedule_t *CPitdrone :: GetSchedule( void )
 				return GetScheduleOfType ( SCHED_WAKE_ANGRY );
 			}
 
-			if( HasConditions( bits_COND_SEE_HATE ) && m_iInitialAmmo != -1 )
+			if( HasConditions( bits_COND_SEE_HATE ) && m_iInitialAmmo != -1 && LookupActivity(ACT_RELOAD) != ACTIVITY_NOT_AVAILABLE)
 			{
 				int ammoSubModel = GetBodygroup(PitdroneBodygroup::Weapons);
 				if (ammoSubModel == 0)
