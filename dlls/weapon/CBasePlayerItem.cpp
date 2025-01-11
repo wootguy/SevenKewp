@@ -45,6 +45,8 @@ void CBasePlayerItem::FallInit(void)
 {
 	if (pev->movetype == 0)
 		pev->movetype = MOVETYPE_TOSS;
+	else if (pev->movetype == -1)
+		pev->movetype = MOVETYPE_NONE;
 	
 	Materialize();
 
