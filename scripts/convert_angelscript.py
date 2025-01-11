@@ -55,6 +55,11 @@ terms = [
 	('g_EntityFuncs.SetModel', 'SET_MODEL'),
 	('g_EntityFuncs.EjectBrass', 'EjectBrass'),
 	('g_EntityFuncs.Instance', 'CBaseEntity::Instance'),
+	('g_EntityFuncs.SetSize', 'UTIL_SetSize'),
+	('g_EntityFuncs.SetOrigin', 'UTIL_SetOrigin'),
+	('g_SoundSystem.EmitSound', 'EMIT_SOUND'),
+	('g_Game.PrecacheOther', 'UTIL_PrecacheOther'),
+	('Math.VecToAngles', 'UTIL_VecToAngles'),
 	('g_Utility.GetCircularGaussianSpread', 'GetCircularGaussianSpread'),
 	('bool GetItemInfo(ItemInfo& out info)', 'int GetItemInfo(ItemInfo* info)'),
 	('bool GetItemInfo(ItemInfo& info)', 'int GetItemInfo(ItemInfo* info)'),
@@ -93,8 +98,11 @@ def convert_script(fpath):
 		file.truncate()
 
 if os.path.isdir(path):
-	for filename in os.listdir(path):
-		if filename.endswith('.as'):
-			convert_script(os.path.join(path, filename))
+	for root, dirs, files in os.walk(path):
+		for file in files:
+			if file.endswith('.as'):
+				fpath = os.path.join(root, file)
+				convert_script(fpath)
+				os.rename(fpath, fpath.replace(".as", ".cpp"))
 else:
 	convert_script(path)

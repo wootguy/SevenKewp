@@ -191,8 +191,8 @@ BOOL CBaseMonster :: BuildNearestRoute ( Vector vecThreat, Vector vecViewOffset,
 CBaseEntity *CBaseMonster :: BestVisibleEnemy ( void ) { return NULL; }
 BOOL CBaseMonster :: FInViewCone ( CBaseEntity *pEntity ) { return FALSE; }
 BOOL CBaseMonster :: FInViewCone ( Vector *pOrigin ) { return FALSE; }
-BOOL CBaseEntity :: FVisible ( CBaseEntity *pEntity ) { return FALSE; }
-BOOL CBaseEntity :: FVisible ( const Vector &vecOrigin ) { return FALSE; }
+BOOL CBaseEntity :: FVisible ( CBaseEntity *pEntity, bool fIgnoreGlass ) { return FALSE; }
+BOOL CBaseEntity :: FVisible ( const Vector &vecOrigin, bool fIgnoreGlass) { return FALSE; }
 void CBaseMonster :: MakeIdealYaw( Vector vecTarget ) { }
 float	CBaseMonster::FlYawDiff ( void ) { return 0.0; }
 float CBaseMonster::ChangeYaw ( int yawSpeed ) { return 0; }
@@ -267,6 +267,7 @@ Schedule_t* CBaseMonster::ScheduleFromTableIdx(uint32_t idx) { return NULL; }
 int CBaseMonster::GetScheduleTableSize() { return 0; }
 int CBaseMonster::GetScheduleTableIdx() { return 0; }
 float CBaseMonster::GetDamageModifier() { return 0; }
+BOOL CBaseMonster::NoFriendlyFire() { return 0; }
 
 int TrainSpeed(int iSpeed, int iMax) { 	return 0; }
 void CBasePlayer :: DeathSound( void ) { }

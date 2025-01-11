@@ -27,6 +27,6 @@ EXPORT extern DLL_GLOBAL	short	g_sModelIndexFireball;
 EXPORT extern DLL_GLOBAL	short	g_sModelIndexSmoke;
 
 
-extern void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, BOOL doDamage );
+EXPORT extern void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, BOOL doDamage );
 
 #endif			//EXPLODE_H
