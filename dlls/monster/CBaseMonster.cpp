@@ -3032,10 +3032,10 @@ void CBaseMonster::HandleAnimEvent(MonsterEvent_t* pEvent)
 		if (flash.sprite) {
 			Vector origin, angles;
 
-			if (flash.attachment != -1) {
+			if (flash.attachment != (uint8_t)-1) {
 				GetAttachment(flash.attachment, origin, angles);
 			}
-			else if (flash.bone != -1) {
+			else if (flash.bone != (uint8_t)-1) {
 				GetBonePosition(flash.bone, origin, angles);
 				origin = origin + flash.offset;
 			}

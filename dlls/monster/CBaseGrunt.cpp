@@ -2281,8 +2281,8 @@ Schedule_t* CBaseGrunt::GetShootSchedule(void) {
 	else
 	{
 		
-		if (HasMemory(bits_MEMORY_MOVE_FAILED)) {
-			// tried and failed to take cover, just shoot
+		if (HasMemory(bits_MEMORY_MOVE_FAILED) || HasEquipment(MEQUIP_MINIGUN)) {
+			// tried and failed to take cover, or too slow to take cover, so just shoot
 			return GetScheduleOfType(SCHED_RANGE_ATTACK1);
 		}
 		else {

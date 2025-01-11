@@ -162,6 +162,10 @@ void CAmbientGeneric::Spawn(void)
 		m_fLooping = m_forceLoop;
 	}
 
+	// prevent sound direction looping around to the other side of the world due to short coordinates
+	Vector v = pev->origin;
+	UTIL_SetOrigin(pev, Vector(clampf(v.x, -4095, 4095), clampf(v.y, -4095, 4095), clampf(v.z, -4095, 4095)));
+
 	Precache();
 }
 

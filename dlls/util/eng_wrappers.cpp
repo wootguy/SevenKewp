@@ -189,6 +189,10 @@ int PRECACHE_GENERIC(const char* path) {
 		return -1;
 	}
 
+	if (!path || !path[0]) {
+		return -1;
+	}
+
 	g_tryPrecacheGeneric.insert(path);
 
 	if (g_tryPrecacheGeneric.size() < MAX_PRECACHE) {
@@ -232,6 +236,10 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 			ALERT(at_warning, "PrecacheSound failed: %s\n", path);
 			return -1;
 		}
+	}
+
+	if (!path || !path[0]) {
+		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
 	}
 
 	g_tryPrecacheSounds.insert(path);
@@ -433,6 +441,10 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 			ALERT(at_warning, "PrecacheModel failed: %s\n", path);
 			return -1;
 		}
+	}
+
+	if (!path || !path[0]) {
+		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
 	}
 
 	g_tryPrecacheModels.insert(path);

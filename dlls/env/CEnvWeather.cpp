@@ -58,6 +58,11 @@
 
 #define SF_WEATHER_START_OFF 1
 
+// don't auto adjust fog minimum distance, for when you're sure that there will be no issues
+// with transparent entities in the map (for instance if fog is only active during a cutscene,
+// or if there is no way for a player to move fast from longjumps or falling).
+#define SF_WEATHER_FOG_NO_ADJUST 1024
+
 extern "C" uint32_t g_fog_palette[61][256];
 extern "C" int g_fog_skins;
 
@@ -678,8 +683,15 @@ void CEnvWeather::Spawn(void)
 		int newMax = V_max(newMin + 100, m_fogEndDist); // fog won't look nice if too compacted
 
 		if (newMin > m_fogStartDist || newMax > m_fogEndDist) {
-			ALERT(at_console, "env_weather: fog distance increased to prevent rendering errors. [%d - %d] -> [%d - %d]\n",
-				m_fogStartDist, m_fogEndDist, newMin, newMax);
+			if (pev->spawnflags & SF_WEATHER_FOG_NO_ADJUST) {
+				newMin = m_fogStartDist;
+				newMax = m_fogEndDist;
+				ALERT(at_console, "env_weather: fog distance adjustment disabled via flag. Rendering errors may occur.\n");
+			}
+			else {
+				ALERT(at_console, "env_weather: fog distance increased to prevent rendering errors. [%d - %d] -> [%d - %d]\n",
+					m_fogStartDist, m_fogEndDist, newMin, newMax);
+			}
 		}
 
 		m_fogStartDist = newMin;

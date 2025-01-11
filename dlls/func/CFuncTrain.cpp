@@ -29,6 +29,7 @@ public:
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	entvars_t* m_pevCurrentTarget;
+	EHANDLE m_previousTarget;
 	int			m_sounds;
 	int		m_activated; // 0 = never activated, 1 = activated, 2 = toggled off after activate
 };
@@ -161,8 +162,10 @@ void CFuncTrain::Next(void)
 		return;
 	}
 
-	if (m_activated != 2 && ENT(m_pevCurrentTarget) == pTarg->edict()) {
-		return; // prevent infinite recursion
+	
+	edict_t* prevTarg = m_previousTarget.GetEdict();
+	if (prevTarg == ENT(m_pevCurrentTarget) && prevTarg == pTarg->edict()) {
+		return; // prevent infinite recursion (path_corner targeting itself with no distance to move)
 	}
 
 	// Save last target in case we need to find it again
@@ -176,6 +179,7 @@ void CFuncTrain::Next(void)
 		pev->speed = m_pevCurrentTarget->speed;
 		ALERT(at_aiconsole, "Train %s speed to %4.2f\n", STRING(pev->targetname), pev->speed);
 	}
+	m_previousTarget = ENT(m_pevCurrentTarget);
 	m_pevCurrentTarget = pTarg->pev;// keep track of this since path corners change our target for us.
 
 	pev->enemy = pTarg->edict();//hack
