@@ -2481,7 +2481,7 @@ void CBasePlayer::PreThink(void)
 				//ALERT( at_error, "In train mode with no train!\n" );
 				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 				m_iTrain = TRAIN_NEW|TRAIN_OFF;
-				if (pTrain->Classify() == CLASS_VEHICLE)
+				if (pTrain && pTrain->Classify() == CLASS_VEHICLE)
 					((CFuncVehicle*)pTrain)->m_pDriver = NULL;
 				return;
 			}
