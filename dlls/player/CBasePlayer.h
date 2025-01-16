@@ -63,6 +63,10 @@
 
 #define TEAM_NAME_LENGTH	16
 
+#define FAM_NOTHING 0
+#define FAM_FORCEVIEWANGLES 1
+#define FAM_ADDAVELOCITY 2
+
 typedef enum
 {
 	PLAYER_IDLE,

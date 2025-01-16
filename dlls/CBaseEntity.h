@@ -131,6 +131,7 @@ public:
 	// Classify - returns the type of group (i.e, "houndeye", or "human military" so that monsters with different classnames
 	// still realize that they are teammates. (overridden for monsters that form groups)
 	virtual int Classify(void) { return m_Classify; };
+	virtual void SetClassification(int newClass) { m_Classify = newClass; };
 	virtual void DeathNotice(entvars_t* pevChild) {}// monster maker children use this to tell the monster maker that they have died.
 
 
@@ -196,7 +197,7 @@ public:
 
 	virtual void Think(void) { if (m_pfnThink) (this->*m_pfnThink)(); };
 	virtual void Touch(CBaseEntity* pOther) { if (m_pfnTouch) (this->*m_pfnTouch)(pOther); };
-	virtual void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
+	virtual void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value=0.0f)
 	{
 		if (m_pfnUse)
 			(this->*m_pfnUse)(pActivator, pCaller, useType, value);

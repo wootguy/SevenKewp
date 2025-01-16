@@ -2826,7 +2826,13 @@ void CBaseGrunt::Revive() {
 void CBaseRepel::Spawn(void) {
 	Precache();
 	pev->solid = SOLID_NOT;
-	SetUse(&CBaseRepel::RepelUse);
+
+	if (pev->targetname) {
+		SetUse(&CBaseRepel::RepelUse);
+	}
+	else {
+		RepelUse(this, this, USE_TOGGLE, 0.0f);
+	}
 }
 
 void CBaseRepel::Precache(void) {
