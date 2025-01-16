@@ -99,6 +99,10 @@ void lagcomp_update() {
 	g_nextHistoryUpdate = now + g_historyUpdateInterval;
 
 	edict_t* edicts = ENT(0);
+	if (!edicts) {
+		return; // map change?
+	}
+
 	WorldState& worldState = g_worldHistory[g_historyIdx];
 	worldState.time = g_engfuncs.pfnTime();
 
