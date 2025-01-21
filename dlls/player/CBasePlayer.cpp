@@ -4435,7 +4435,7 @@ void CBasePlayer::SendAmmoUpdate(void)
 			ASSERT( m_rgAmmo[i] >= 0 );
 			ASSERT( m_rgAmmo[i] < 255 );
 
-			uint8_t ammoVal = m_rgAmmo[i];
+			uint8_t ammoVal = V_max(0, m_rgAmmo[i]);
 
 			// can't update max ammo counter without a client update
 			// this will at least show the client that ammo is being spent
