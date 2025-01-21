@@ -78,6 +78,7 @@ private:
 	bool noexit;
 	std::string backText;
 	std::string moreText;
+	std::string optionColor;
 
 	bool isActive = false;
 

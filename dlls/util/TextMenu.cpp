@@ -70,6 +70,7 @@ void TextMenu::initCommon() {
 	options[MAX_MENU_OPTIONS - 1] = exitItem;
 	backText = "Back";
 	moreText = "More";
+	noexit = false;
 }
 
 void TextMenu::initAnon(TextMenuCallback newCallback) {
@@ -209,11 +210,11 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 		pageSuffix = UTIL_VarArgs(" (%d/%d)", page + 1, totalPages);
 	}
 
-	std::string menuText = title + pageSuffix + "\n\n";
+	std::string menuText = "\\y" + title + pageSuffix + "\n\n";
 
 	int addedOptions = 0;
 	for (int i = itemOffset, k = 0; i < itemOffset+limitPerPage && i < numOptions; i++, k++) {
-		menuText += std::to_string(k+1) + ": " + options[i].displayText + "\n";
+		menuText += "\\y" + std::to_string(k + 1) + ":\\w " + options[i].displayText + "\n";
 		validSlots |= (1 << k);
 		addedOptions++;
 	}
@@ -227,14 +228,14 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 
 	if (isPaginated()) {
 		if (page > 0) {
-			menuText += std::to_string(BackOptionIdx()+ 1) + ": " + backText + "\n";
+			menuText += "\\y" + std::to_string(BackOptionIdx() + 1) + ":\\w " + backText + "\n";
 			validSlots |= (1 << (ItemsPerPage()));
 		}
 		else {
 			menuText += "\n";
 		}
 		if (page < totalPages - 1) {
-			menuText += std::to_string(MoreOptionIdx() + 1) + ": " + moreText + "\n";
+			menuText += "\\y" + std::to_string(MoreOptionIdx() + 1) + ":\\w " + moreText + "\n";
 			validSlots |= (1 << (ItemsPerPage() + 1));
 		}
 		else {
@@ -243,7 +244,7 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 	}
 
 	if (!noexit)
-		menuText += std::to_string(g_exitOptionNum % 10) + ": Exit";
+		menuText += "\\y" + std::to_string(g_exitOptionNum % 10) + ":\\w Exit";
 
 	if (player && IsValidPlayer(player->edict())) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, player->edict());
