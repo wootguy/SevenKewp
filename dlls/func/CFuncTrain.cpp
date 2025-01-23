@@ -32,6 +32,8 @@ public:
 	EHANDLE m_previousTarget;
 	int			m_sounds;
 	int		m_activated; // 0 = never activated, 1 = activated, 2 = toggled off after activate
+	float m_lastNext;
+	int m_nextRecursions;
 };
 
 LINK_ENTITY_TO_CLASS(func_train, CFuncTrain)
@@ -162,11 +164,19 @@ void CFuncTrain::Next(void)
 		return;
 	}
 
-	
-	edict_t* prevTarg = m_previousTarget.GetEdict();
-	if (prevTarg == ENT(m_pevCurrentTarget) && prevTarg == pTarg->edict()) {
-		return; // prevent infinite recursion (path_corner targeting itself with no distance to move)
+	if (m_lastNext == gpGlobals->time) {
+		// prevent infinite recursion (path_corner targeting itself with no distance to move)
+		// Some recursion is needed for hl_u12_a5. Adding even one frame of delay totally breaks the machine.
+		// TODO: which map crashed due to recursion?
+		if (m_nextRecursions++ > 32) {
+			ALERT(at_console, "Exceeded max func_train Next() recursion! %s -> %s\n", STRING(pev->targetname), STRING(m_pevCurrentTarget->targetname));
+			return;
+		}
 	}
+	else {
+		m_nextRecursions = 0;
+	}
+	m_lastNext = gpGlobals->time;
 
 	// Save last target in case we need to find it again
 	pev->message = pev->target;
