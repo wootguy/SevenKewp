@@ -246,6 +246,9 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 	if (!noexit)
 		menuText += "\\y" + std::to_string(g_exitOptionNum % 10) + ":\\w Exit";
 
+	if (menuText.size() > 187)
+		menuText = menuText.substr(0, 187);
+
 	if (player && IsValidPlayer(player->edict())) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, player->edict());
 		WRITE_SHORT(validSlots);
