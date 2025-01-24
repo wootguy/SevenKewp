@@ -259,7 +259,7 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 	if (mp_series_intermission.value == 2) {
 		// show scores and a chat message before executing the level change
 		CVAR_SET_STRING("mp_nextmap", st_szNextMap);
-		g_pGameRules->EndMultiplayerGame();
+		g_pGameRules->EndMultiplayerGame(INTERMISSION_LEVEL_END);
 		UTIL_Remove(this);
 	}
 	else {

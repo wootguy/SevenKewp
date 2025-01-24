@@ -31,6 +31,7 @@
 #include "CBasePlayerItem.h"
 #include "CSatchel.h"
 #include "monsters.h"
+#include "PluginManager.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -183,7 +184,7 @@ void CHalfLifeMultiplay :: Think ( void )
 		}
 
 		if (gpGlobals->time >= flTimeLimit) {
-			GoToIntermission();
+			GoToIntermission(INTERMISSION_TIME_LIMIT);
 			return;
 		}
 	}
@@ -200,7 +201,7 @@ void CHalfLifeMultiplay :: Think ( void )
 
 			if ( pPlayer && pPlayer->pev->frags >= flFragLimit )
 			{
-				GoToIntermission();
+				GoToIntermission(INTERMISSION_FRAG_LIMIT);
 				return;
 			}
 
@@ -1325,10 +1326,12 @@ BOOL CHalfLifeMultiplay :: FAllowMonsters( void )
 //======== CHalfLifeMultiplay private functions ===========
 #define INTERMISSION_TIME		6
 
-void CHalfLifeMultiplay :: GoToIntermission( void )
+void CHalfLifeMultiplay :: GoToIntermission(INTERMISSION_REASON reason)
 {
 	if ( g_fGameOver )
 		return;  // intermission has already been triggered, so ignore.
+
+	CALL_HOOKS_VOID(pfnIntermission, reason);
 
 	// undo status bar name changes so scoreboard looks correct
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {

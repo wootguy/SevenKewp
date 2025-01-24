@@ -39,6 +39,13 @@ struct HOOK_RETURN_DATA {
 // return true if the player's chat should be hidden (if the command was sent from chat)
 typedef bool (*plugin_cmd_callback)(CBasePlayer* pPlayer, const CommandArgs& args);
 
+enum INTERMISSION_REASON
+{
+	INTERMISSION_LEVEL_END, // game_end or trigger_changelevel if mp_series_intermission > 0
+	INTERMISSION_TIME_LIMIT,
+	INTERMISSION_FRAG_LIMIT
+};
+
 struct HLCOOP_PLUGIN_HOOKS {
 	// called when the server starts, after worldspawn is precached and before any entities spawn
 	HOOK_RETURN_DATA (*pfnMapInit)();
@@ -168,6 +175,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// called when an entity is created and keyvalues are applied, but before it spawns
 	HOOK_RETURN_DATA (*pfnEntityCreated)(CBaseEntity* pEntity);
+
+	// called when the game enters intermission, before the map changes
+	HOOK_RETURN_DATA (*pfnIntermission)(INTERMISSION_REASON reason);
 };
 
 // do not call directly, use RegisterPlugin instead
