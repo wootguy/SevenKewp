@@ -183,7 +183,7 @@ public:
 	virtual BOOL FAllowMonsters( void ) = 0;//are monsters allowed
 
 	// Immediately end a multiplayer game
-	virtual void EndMultiplayerGame( void ) {}
+	virtual void EndMultiplayerGame(INTERMISSION_REASON reason) {}
 
 	virtual mapcycle_item_t* GetMapCyleMap(const char* map) { return NULL;  }
 };
@@ -383,7 +383,7 @@ public:
 	virtual BOOL FAllowMonsters( void );
 
 	// Immediately end a multiplayer game
-	virtual void EndMultiplayerGame( void ) { GoToIntermission(); }
+	virtual void EndMultiplayerGame(INTERMISSION_REASON reason) override { GoToIntermission(reason); }
 
 	// finds the map cycle item for the given map name
 	virtual mapcycle_item_t* GetMapCyleMap(const char* map);
@@ -392,7 +392,7 @@ public:
 
 protected:
 	virtual void ChangeLevel( void );
-	virtual void GoToIntermission( void );
+	virtual void GoToIntermission( INTERMISSION_REASON reason );
 	float m_flIntermissionEndTime;
 	bool m_sentTimeupMessage;
 	bool m_sentTime60Message;

@@ -21,5 +21,5 @@ void CGameEnd::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useTy
 	if (!CanFireForActivator(pActivator))
 		return;
 
-	g_pGameRules->EndMultiplayerGame();
+	g_pGameRules->EndMultiplayerGame(INTERMISSION_LEVEL_END);
 }
