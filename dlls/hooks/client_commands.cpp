@@ -251,6 +251,16 @@ bool CheatCommand(edict_t* pEntity) {
 			CLIENT_PRINTF(pEntity, print_center, "Revived!\n");
 		}
 	}
+	else if (FStrEq(pcmd, "strip")) {
+		ABORT_IF_CHEATS_DISABLED("Revive");
+
+		CBasePlayer* ent = CBaseEntity::Instance(pEntity)->MyPlayerPointer();
+
+		if (ent) {
+			ent->RemoveAllItems(true);
+			CLIENT_PRINTF(pEntity, print_center, "Stripped!\n");
+		}
+	}
 	else if (FStrEq(pcmd, "trigger")) {
 		ABORT_IF_CHEATS_DISABLED("Trigger");
 		

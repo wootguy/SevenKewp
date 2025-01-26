@@ -7986,6 +7986,15 @@ float CBaseMonster::GetDamageModifier() {
 float CBaseMonster::GetDamage(float defaultDamage) {
 	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
 	CBaseMonster* mon = owner ? owner->MyMonsterPointer() : NULL;
+
+	if (owner && owner->pev->owner && pev == &owner->pev->owner->v) {
+		// two entities which "own" each other will trigger an infinite loop.
+		// use the default damage in this case. TODO: this can still happen when 3+ entities form a loop.
+		mon = NULL;
+
+		ALERT(at_error, "Entities own each other (%s and %s)\n",
+			STRING(pev->classname), STRING(owner->pev->classname));
+	}
 	
 	// owner damage overrides self damage (snarks, grenades, etc.)
 	return (mon ? mon->GetDamage(defaultDamage) : defaultDamage) * GetDamageModifier();
