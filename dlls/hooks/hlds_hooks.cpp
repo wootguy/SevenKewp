@@ -690,7 +690,21 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		}
 	}
 
+	// reset player inventories
+	if (g_clearInventoriesNextMap) {
+		g_playerInventory.clear();
+	}
+	g_clearInventoriesNextMap = true; // set to false by trigger_changelevel
+
 	AddMapPluginEquipment();
+
+	int oldMapWepSz = g_mapWeapons.size();
+	for (auto item : g_playerInventory) {
+		g_mapWeapons.insert(item.second.weapons.begin(), item.second.weapons.end());
+	}
+	int keepInventoryAdditions = g_mapWeapons.size() - oldMapWepSz;
+	if (keepInventoryAdditions)
+		ALERT(at_console, "Added %d precache weapons from the previous map (keep_inventory)\n", keepInventoryAdditions);
 
 	for (std::string wepName : g_mapWeapons) {
 		UTIL_PrecacheOther(wepName.c_str());
@@ -737,12 +751,6 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		g_playerScores = g_oldPlayerScores;
 	}
 	g_oldPlayerScores = g_playerScores;
-
-	// reset player inventories
-	if (g_clearInventoriesNextMap) {
-		g_playerInventory.clear();
-	}
-	g_clearInventoriesNextMap = true; // set to false by trigger_changelevel
 
 	g_customMuzzleFlashes.clear();
 
