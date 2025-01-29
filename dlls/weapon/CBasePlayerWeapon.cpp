@@ -332,8 +332,17 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 		pPlayer->m_fWeapon = TRUE;
 	}
 
-	if (m_pNext)
-		((CBasePlayerItem*)m_pNext.GetEntity())->UpdateClientData(pPlayer);
+	CBaseEntity* next = m_pNext.GetEntity();
+	CBasePlayerItem* item = next ? next->GetWeaponPtr() : NULL;
+
+	if (item) {
+		item->UpdateClientData(pPlayer);
+	}
+	else if (next && !item) {
+		ALERT(at_error, "Player inventory for %s was corrupted! Removed invalid item: %s\n",
+			pPlayer->DisplayName(), STRING(next->pev->classname));
+		m_pNext = NULL;
+	}
 
 	return 1;
 }
