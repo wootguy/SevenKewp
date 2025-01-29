@@ -418,8 +418,8 @@ inline void* GET_PRIVATE(const edict_t* pent)
 
 		if (bent && bent->pev != &pent->v) {
 			// TODO: pev was linked wrong somehow. mem corruption?
-			ALERT(at_error, "Entity pev not linked to edict %d pev (%s)\n",
-				ENTINDEX(pent), STRING(pent->v.classname));
+			ALERT(at_error, "Entity pev not linked to edict %d pev (%s != %s)\n",
+				ENTINDEX(pent), STRING(pent->v.classname), STRING(bent->pev->classname));
 			bent->pev = (entvars_t*)&pent->v;
 			return NULL;
 		}
