@@ -2316,11 +2316,11 @@ void UTIL_LogPlayerEvent(const edict_t* plr, const char* fmt, ...)
 	vsnprintf ( string, 1024, fmt, argptr );
 	va_end   ( argptr );
 
+	const char* name = plr && plr->v.netname ? STRING(plr->v.netname) : "NULL";
+	const char* id = plr ? GETPLAYERAUTHID(plr) : "0";
+
 	// Print to server console
-	g_engfuncs.pfnAlertMessage( at_logged, "\\%s\\%s\\ %s",
-		plr->v.netname ? STRING(plr->v.netname) : "",
-		GETPLAYERAUTHID(plr),
-		string );
+	g_engfuncs.pfnAlertMessage( at_logged, "\\%s\\%s\\ %s", name, id, string);
 }
 
 //=========================================================
