@@ -5,7 +5,7 @@
 #include "CBasePlayer.h"
 
 #define MAX_UNLAG_STATES 50
-#define MAX_EDICTS 4096 // set larger than the max value gpGlobals->maxEntities can be
+#define MAX_EDICTS (4096+512) // set larger than the max value gpGlobals->maxEntities can be
 #define PING_SMOOTHING_COUNT 100 // number of ping states used to calculate a stable ping value
 
 struct EntState {
@@ -106,7 +106,12 @@ void lagcomp_update() {
 	WorldState& worldState = g_worldHistory[g_historyIdx];
 	worldState.time = g_engfuncs.pfnTime();
 
-	for (int i = gpGlobals->maxClients+1; i < gpGlobals->maxEntities; i++)
+	if (gpGlobals->maxEntities >= MAX_EDICTS) {
+		ALERT(at_console, "Max edicts exceeds lag comp buffers!\n");
+	}
+	int maxi = V_min(MAX_EDICTS, gpGlobals->maxEntities);
+
+	for (int i = gpGlobals->maxClients+1; i < maxi; i++)
 	{
 		g_rewinds[i].isCompensated = false;
 
@@ -181,8 +186,10 @@ void lagcomp_begin(CBasePlayer* plr) {
 
 	edict_t* edicts = ENT(0);
 
+	int maxi = V_min(MAX_EDICTS, gpGlobals->maxEntities);
+
 	// not rewinding players because the engine also does that when sv_unlag != 0
-	for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++)
+	for (int i = gpGlobals->maxClients + 1; i < maxi; i++)
 	{		
 		if (!g_rewinds[i].isCompensated)
 			continue;
@@ -214,8 +221,9 @@ void lagcomp_end() {
 	edict_t* edicts = ENT(0);
 
 	WorldState& worldState = g_worldHistory[g_currentRewindIdx];
+	int maxi = V_min(MAX_EDICTS, gpGlobals->maxEntities);
 
-	for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++)
+	for (int i = gpGlobals->maxClients + 1; i < maxi; i++)
 	{
 		if (!g_rewinds[i].isCompensated)
 			continue;

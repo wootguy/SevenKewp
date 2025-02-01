@@ -3,6 +3,11 @@ function(hlcoop_setup_plugin OUTPUT_PATH)
 	if(UNIX)
 		set(DEBUG_WARN_FLAGS "-Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter")
 		
+		if (ASAN)
+			set(ASAN_CFLAGS "-fsanitize=address -fno-omit-frame-pointer")
+			set(ASAN_LFLAGS "-fsanitize=address")
+		endif()
+		
 		# Static linking libstd++ and libgcc so that the plugin can load on distros other than one it was compiled on.
 		# -fvisibility=hidden fixes a weird bug where the metamod confuses game functions with plugin functions.
 		# -g includes debug symbols which provides useful crash logs, but also inflates the .so file size a lot.
@@ -10,11 +15,11 @@ function(hlcoop_setup_plugin OUTPUT_PATH)
 		#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -fvisibility=hidden -static-libstdc++ -static-libgcc -g" PARENT_SCOPE)
 		#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -static-libgcc -g" PARENT_SCOPE)
 		
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -fvisibility=hidden -g" PARENT_SCOPE)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -fvisibility=hidden -g ${ASAN_CFLAGS}" PARENT_SCOPE)
 		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 ${DEBUG_WARN_FLAGS}" PARENT_SCOPE)
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -w" PARENT_SCOPE)
 		
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -g" PARENT_SCOPE)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -g ${ASAN_CFLAGS}" PARENT_SCOPE)
 		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 ${DEBUG_WARN_FLAGS}" PARENT_SCOPE)
 		set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -w" PARENT_SCOPE)
 		

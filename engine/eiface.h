@@ -1434,7 +1434,8 @@ typedef struct enginefuncs_s
 	int (*pfnCheckParm)(const char* pszCmdLineToken, char** ppNext);
 
 	// new mystery function from hl 25th sdk update
-	edict_t* (*pfnPEntityOfEntIndexAllEntities) (int iEntIndex);
+	// disabled because rehlds doesn't have it
+	//edict_t* (*pfnPEntityOfEntIndexAllEntities) (int iEntIndex);
 } enginefuncs_t;
 
 
