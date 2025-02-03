@@ -8004,7 +8004,7 @@ void CBaseMonster::Provoke(CBaseEntity* attacker) {
 	Remember(bits_MEMORY_PROVOKED);
 	StopFollowing(TRUE);
 
-	if (attacker)
+	if (attacker && attacker->IsPlayer())
 		m_bMadPlayer[attacker->entindex() - 1] = true;
 }
 

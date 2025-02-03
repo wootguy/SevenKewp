@@ -685,7 +685,8 @@ void CBasePlayer::PackDeadPlayerItems( void )
 		if ( m_rgpPlayerItems[ i ] )
 		{
 			// there's a weapon here. Should I pack it?
-			CBasePlayerItem *pPlayerItem = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
+			CBaseEntity* item = m_rgpPlayerItems[i].GetEntity();
+			CBasePlayerWeapon *pPlayerItem = item ? item->GetWeaponPtr() : NULL;
 
 			while ( pPlayerItem )
 			{
@@ -719,7 +720,8 @@ void CBasePlayer::PackDeadPlayerItems( void )
 					break;
 				}
 
-				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
+				CBaseEntity* next = pPlayerItem->m_pNext.GetEntity();
+				pPlayerItem = next ? next->GetWeaponPtr() : NULL;
 			}
 		}
 	}
@@ -871,15 +873,17 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit, BOOL removeItemsOnly)
 	m_pLastItem = NULL;
 
 	int i;
-	CBasePlayerItem *pPendingItem;
+	CBaseEntity*pPendingItem;
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
 		m_pActiveItem = m_rgpPlayerItems[i].GetEntity();
 		while (m_pActiveItem)
 		{
-			CBasePlayerItem* item = (CBasePlayerItem*)m_pActiveItem.GetEntity();
-			pPendingItem = (CBasePlayerItem*)item->m_pNext.GetEntity();
-			item->Drop( );
+			CBaseEntity* ent = m_pActiveItem.GetEntity();
+			CBasePlayerItem* item = ent ? ent->GetWeaponPtr() : NULL;
+			pPendingItem = item ? item->m_pNext.GetEntity() : NULL;
+			if (item)
+				item->Drop( );
 			m_pActiveItem = pPendingItem;
 		}
 		m_rgpPlayerItems[i] = NULL;
@@ -1274,11 +1278,14 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 void CBasePlayer::TabulateWeapons(void) {
 	for (int i = 0; i < MAX_ITEM_TYPES; i++) {
 		if (m_rgpPlayerItems[i]) {
-			CBasePlayerItem* pPlayerItem = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
+			CBaseEntity* ent = m_rgpPlayerItems[i].GetEntity();
+			CBasePlayerItem* pPlayerItem = ent ? ent->GetWeaponPtr() : NULL;
 
 			while (pPlayerItem) {
 				pev->weapons |= g_weaponSlotMasks[pPlayerItem->m_iId];
-				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
+
+				CBaseEntity* next = pPlayerItem->m_pNext.GetEntity();
+				pPlayerItem = next ? next->GetWeaponPtr() : NULL;
 			}
 		}
 	}
@@ -3285,11 +3292,11 @@ pt_end:
 	{
 		if ( m_rgpPlayerItems[ i ] )
 		{
-			CBasePlayerItem *pPlayerItem = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
+			CBaseEntity *pPlayerItem = m_rgpPlayerItems[i].GetEntity();
 
 			while ( pPlayerItem )
 			{
-				CBasePlayerWeapon *gun = (CBasePlayerWeapon *)pPlayerItem->GetWeaponPtr();
+				CBasePlayerWeapon *gun = pPlayerItem->GetWeaponPtr();
 				
 				if ( gun && gun->UseDecrement() )
 				{
@@ -3314,7 +3321,7 @@ pt_end:
 					
 				}
 
-				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
+				pPlayerItem = gun ? gun->m_pNext.GetEntity() : NULL;
 			}
 		}
 	}
@@ -3650,10 +3657,10 @@ int CBasePlayer::Restore( CRestore &restore )
 
 void CBasePlayer::SelectNextItem( int iItem )
 {
-	CBasePlayerItem *pItem;
-
-	pItem = (CBasePlayerItem*)m_rgpPlayerItems[iItem].GetEntity();
-	CBasePlayerItem* activeItem = (CBasePlayerItem*)m_pActiveItem.GetEntity();
+	CBaseEntity* pItemEnt = m_rgpPlayerItems[iItem].GetEntity();
+	CBaseEntity* activeItemEnt = m_pActiveItem.GetEntity();
+	CBasePlayerWeapon* pItem = pItemEnt ? pItemEnt->GetWeaponPtr() : NULL;
+	CBasePlayerWeapon* activeItem = activeItemEnt ? activeItemEnt->GetWeaponPtr() : NULL;
 
 	if (!pItem)
 		return;
@@ -3661,16 +3668,18 @@ void CBasePlayer::SelectNextItem( int iItem )
 	if (pItem == activeItem)
 	{
 		// select the next one in the chain
-		pItem = (CBasePlayerItem*)activeItem->m_pNext.GetEntity();;
+		CBaseEntity* nextWep = activeItem->m_pNext.GetEntity();
+		pItem = nextWep ? nextWep->GetWeaponPtr() : NULL;
 		if (! pItem)
 		{
 			return;
 		}
 
-		CBasePlayerItem *pLast;
-		pLast = pItem;
-		while (pLast->m_pNext)
-			pLast = (CBasePlayerItem*)pLast->m_pNext.GetEntity();
+		CBasePlayerWeapon* pLast = pItem;
+		while (pLast->m_pNext) {
+			CBaseEntity* pLastEnt = pLast->m_pNext.GetEntity();
+			pLast = pLastEnt ? pLastEnt->GetWeaponPtr() : NULL;
+		}
 
 		// relink chain
 		pLast->m_pNext = activeItem;
@@ -3688,11 +3697,10 @@ void CBasePlayer::SelectNextItem( int iItem )
 	
 	m_pActiveItem = pItem;
 
-	if (m_pActiveItem)
+	if (pItem)
 	{
-		activeItem = (CBasePlayerItem*)m_pActiveItem.GetEntity();
-		activeItem->Deploy( );
-		activeItem->UpdateItemInfo( );
+		pItem->Deploy( );
+		pItem->UpdateItemInfo( );
 	}
 }
 
@@ -3711,13 +3719,16 @@ void CBasePlayer::SelectItem(const char *pstr)
 	{
 		if (m_rgpPlayerItems[i])
 		{
-			pItem = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
+			CBaseEntity* itemEnt = m_rgpPlayerItems[i].GetEntity();
+			pItem = itemEnt ? itemEnt->GetWeaponPtr() : NULL;
 	
 			while (pItem)
 			{
 				if (FClassnameIs(pItem->pev, pstr))
 					break;
-				pItem = (CBasePlayerItem*)pItem->m_pNext.GetEntity();
+
+				CBaseEntity* next = pItem->m_pNext.GetEntity();
+				pItem = next ? next->GetWeaponPtr() : NULL;
 			}
 		}
 
@@ -3743,11 +3754,10 @@ void CBasePlayer::SelectItem(const char *pstr)
 	m_pLastItem = activeItem;
 	m_pActiveItem = pItem;
 
-	if (m_pActiveItem)
+	if (pItem)
 	{
-		activeItem = (CBasePlayerItem*)m_pActiveItem.GetEntity();
-		activeItem->Deploy( );
-		activeItem->UpdateItemInfo( );
+		pItem->Deploy( );
+		pItem->UpdateItemInfo( );
 	}
 }
 
@@ -4195,10 +4205,9 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 // Add a weapon to the player (Item == Weapon == Selectable Object)
 //
 int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
-{
-	CBasePlayerItem *pInsert;
-	
-	pInsert = (CBasePlayerItem*)m_rgpPlayerItems[pItem->iItemSlot()].GetEntity();
+{	
+	CBaseEntity* pInsertEnt = m_rgpPlayerItems[pItem->iItemSlot()].GetEntity();
+	CBasePlayerItem* pInsert = pInsertEnt ? pInsertEnt->GetWeaponPtr() : NULL;
 
 	while (pInsert)
 	{
@@ -4211,8 +4220,11 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 
 				// ugly hack to update clip w/o an update clip message
 				pInsert->UpdateItemInfo( );
-				if (m_pActiveItem)
-					((CBasePlayerItem*)m_pActiveItem.GetEntity())->UpdateItemInfo();
+				if (m_pActiveItem) {
+					CBasePlayerWeapon* activeWep = m_pActiveItem.GetEntity()->GetWeaponPtr();
+					if (activeWep)
+						activeWep->UpdateItemInfo();
+				}
 
 				pItem->Kill( );
 			}
@@ -4223,7 +4235,9 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 			}
 			return FALSE;
 		}
-		pInsert = (CBasePlayerItem*)pInsert->m_pNext.GetEntity();
+
+		CBaseEntity* next = pInsert->m_pNext.GetEntity();
+		pInsert = next ? next->GetWeaponPtr() : NULL;
 	}
 
 
@@ -4232,7 +4246,7 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 		g_pGameRules->PlayerGotWeapon ( this, pItem );
 		pItem->CheckRespawn();
 
-		pItem->m_pNext = (CBasePlayerItem*)m_rgpPlayerItems[pItem->iItemSlot()].GetEntity();
+		pItem->m_pNext = m_rgpPlayerItems[pItem->iItemSlot()].GetEntity();
 		m_rgpPlayerItems[pItem->iItemSlot()] = pItem;
 
 		// should we switch to this item?
@@ -4255,6 +4269,10 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 
 int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem )
 {
+	if (!pItem) {
+		return FALSE;
+	}
+
 	if (m_pActiveItem.GetEntity() == pItem)
 	{
 		ResetAutoaim( );
@@ -4270,22 +4288,24 @@ int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem )
 
 	pev->weapons &= ~(1 << pItem->m_iId); // take item off hud
 
-	CBasePlayerItem *pPrev = (CBasePlayerItem*)m_rgpPlayerItems[pItem->iItemSlot()].GetEntity();
+	CBaseEntity* pPrevEnt = m_rgpPlayerItems[pItem->iItemSlot()].GetEntity();
+	CBasePlayerItem *pPrev = pPrevEnt ? pPrevEnt->GetWeaponPtr() : NULL;
 
 	if (pPrev == pItem)
 	{
-		m_rgpPlayerItems[pItem->iItemSlot()] = pItem->m_pNext;
+		m_rgpPlayerItems[pItem->iItemSlot()] = pItem->m_pNext.GetEntity();
 		return TRUE;
 	}
 	else
 	{
 		while (pPrev && pPrev->m_pNext.GetEntity() != pItem)
 		{
-			pPrev = (CBasePlayerItem*)pPrev->m_pNext.GetEntity();
+			CBaseEntity* pPrevEnt = pPrev->m_pNext.GetEntity();
+			pPrev = pPrevEnt ? pPrevEnt->GetWeaponPtr() : NULL;
 		}
 		if (pPrev)
 		{
-			pPrev->m_pNext = pItem->m_pNext;
+			pPrev->m_pNext = pItem->m_pNext.GetEntity();
 			return TRUE;
 		}
 	}
@@ -4705,7 +4725,7 @@ void CBasePlayer :: UpdateClientData( void )
 	}
 
 	// Cache and client weapon change
-	m_pClientActiveItem = (CBasePlayerItem*)m_pActiveItem.GetEntity();
+	m_pClientActiveItem = m_pActiveItem.GetEntity();
 	m_iClientFOV = m_iFOV;
 
 	// Update Status Bar
@@ -5170,12 +5190,10 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 		pszItemName = NULL;
 	} 
 
-	CBasePlayerItem *pWeapon;
-	int i;
-
-	for ( i = 0 ; i < MAX_ITEM_TYPES ; i++ )
+	for ( int i = 0 ; i < MAX_ITEM_TYPES ; i++ )
 	{
-		pWeapon = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
+		CBaseEntity* ent = m_rgpPlayerItems[i].GetEntity();
+		CBasePlayerItem* pWeapon = ent ? ent->GetWeaponPtr() : NULL;
 
 		while ( pWeapon )
 		{
@@ -5201,7 +5219,8 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 				}
 			}
 
-			pWeapon = (CBasePlayerItem*)pWeapon->m_pNext.GetEntity();
+			CBaseEntity* next = pWeapon->m_pNext.GetEntity();
+			pWeapon = next ? next->GetWeaponPtr() : NULL;
 		}
 
 		
@@ -5399,7 +5418,8 @@ void CBasePlayer::DropAmmo(bool secondary) {
 //=========================================================
 BOOL CBasePlayer::HasPlayerItem( CBasePlayerItem *pCheckItem )
 {
-	CBasePlayerItem* pItem = (CBasePlayerItem*)m_rgpPlayerItems[pCheckItem->iItemSlot()].GetEntity();
+	CBaseEntity* ent = m_rgpPlayerItems[pCheckItem->iItemSlot()].GetEntity();
+	CBasePlayerItem* pItem = ent ? ent->GetWeaponPtr() : NULL;
 
 	while (pItem)
 	{
@@ -5407,7 +5427,9 @@ BOOL CBasePlayer::HasPlayerItem( CBasePlayerItem *pCheckItem )
 		{
 			return TRUE;
 		}
-		pItem = (CBasePlayerItem*)pItem->m_pNext.GetEntity();
+
+		CBaseEntity* ent = pItem->m_pNext.GetEntity();
+		pItem = ent ? ent->GetWeaponPtr() : NULL;
 	}
 
 	return FALSE;
@@ -6351,11 +6373,13 @@ void CBasePlayer::SaveInventory() {
 	
 	for (int i = 0; i < MAX_ITEM_TYPES; i++) {
 		if (m_rgpPlayerItems[i]) {
-			CBasePlayerItem* pPlayerItem = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
+			CBaseEntity* ent = m_rgpPlayerItems[i].GetEntity();
+			CBasePlayerItem* pPlayerItem = ent ? ent->GetWeaponPtr() : NULL;
 
 			while (pPlayerItem) {
 				inv.weapons.insert(STRING(pPlayerItem->pev->classname));
-				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
+				CBaseEntity* next = pPlayerItem->m_pNext.GetEntity();
+				pPlayerItem = next ? next->GetWeaponPtr() : NULL;
 			}
 		}
 	}

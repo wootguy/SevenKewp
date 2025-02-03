@@ -1767,11 +1767,11 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 		if ( pl->m_rgpPlayerItems[ i ] )
 		{
 			// there's a weapon here. Should I pack it?
-			CBasePlayerItem *pPlayerItem = (CBasePlayerItem*)pl->m_rgpPlayerItems[i].GetEntity();
+			CBaseEntity *pPlayerItem = pl->m_rgpPlayerItems[i].GetEntity();
 
 			while ( pPlayerItem )
 			{
-				gun = dynamic_cast<CBasePlayerWeapon *>( pPlayerItem->GetWeaponPtr() );
+				gun = pPlayerItem->GetWeaponPtr();
 				if ( gun && gun->UseDecrement() )
 				{
 					// Get The ID.
@@ -1801,7 +1801,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 //						item->m_flPumpTime				= V_max( gun->m_flPumpTime, -0.001f );
 					}
 				}
-				pPlayerItem = (CBasePlayerItem*)pPlayerItem->m_pNext.GetEntity();
+				pPlayerItem = gun ? gun->m_pNext.GetEntity() : NULL;
 			}
 		}
 	}
