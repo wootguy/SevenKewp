@@ -690,18 +690,30 @@ void CItemInventory::ApplyModelProperties(bool carriedNotDropped) {
 	if (carriedNotDropped) {
 		pev->skin = m_carried_skin;
 		pev->body = m_carried_body;
-		if (m_carried_sequence) {
-			pev->sequence = LookupSequence(STRING(m_carried_sequence));
+
+		if (m_carried_sequence >= 0) {
+			pev->sequence = m_carried_sequence;
 		}
-		pev->sequence = m_carried_sequence;
+		else if (m_carried_sequencename) {
+			pev->sequence = LookupSequence(STRING(m_carried_sequencename));
+		}
+		else {
+			pev->sequence = 0;
+		}
 	}
 	else {
 		pev->skin = m_return_skin;
 		pev->body = m_return_body;
-		if (m_sequence_name) {
+
+		if (m_return_sequence >= 0) {
+			pev->sequence = m_return_sequence;
+		}
+		else if (m_sequence_name) {
 			pev->sequence = LookupSequence(STRING(m_sequence_name));
 		}
-		pev->sequence = m_return_sequence;
+		else {
+			pev->sequence = 0;
+		}
 	}
 
 	ResetSequenceInfo();

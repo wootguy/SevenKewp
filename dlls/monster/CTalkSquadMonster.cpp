@@ -619,7 +619,7 @@ void CTalkSquadMonster::AlertFriends(CBaseEntity* attacker)
 				// don't provoke a friend that's playing a death animation. They're a goner
 				pMonster->m_afMemory |= bits_MEMORY_PROVOKED;
 
-				if (attacker)
+				if (attacker && attacker->IsPlayer())
 					pMonster->m_bMadPlayer[attacker->entindex()-1] = true;
 			}
 		}

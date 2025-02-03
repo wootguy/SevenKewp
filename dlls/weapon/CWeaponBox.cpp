@@ -168,13 +168,17 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 			{
 				//ALERT ( at_console, "trying to give %s\n", STRING( m_rgpPlayerItems[ i ]->pev->classname ) );
 
-				pItem = (CBasePlayerItem*)m_rghPlayerItems[i].GetEntity();
-				m_rghPlayerItems[i] = pItem->m_pNext.GetEntity();// unlink this weapon from the box
-				hadWeapon = true;
+				CBaseEntity* ent = m_rghPlayerItems[i].GetEntity();
+				pItem = ent ? ent->GetWeaponPtr() : NULL;
 
-				if (pPlayer->AddPlayerItem(pItem))
-				{
-					pItem->AttachToPlayer(pPlayer);
+				if (pItem) {
+					m_rghPlayerItems[i] = pItem->m_pNext.GetEntity();// unlink this weapon from the box
+					hadWeapon = true;
+
+					if (pPlayer->AddPlayerItem(pItem))
+					{
+						pItem->AttachToPlayer(pPlayer);
+					}
 				}
 			}
 		}

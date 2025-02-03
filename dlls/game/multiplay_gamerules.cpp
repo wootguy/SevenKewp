@@ -309,7 +309,8 @@ BOOL CHalfLifeMultiplay :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerI
 
 	for ( i = 0 ; i < MAX_ITEM_TYPES ; i++ )
 	{
-		pCheck = (CBasePlayerItem*)pPlayer->m_rgpPlayerItems[i].GetEntity();
+		CBaseEntity* pCheckEnt = pPlayer->m_rgpPlayerItems[i].GetEntity();
+		pCheck = pCheckEnt ? pCheckEnt->GetWeaponPtr() : NULL;
 
 		while ( pCheck )
 		{
@@ -338,7 +339,8 @@ BOOL CHalfLifeMultiplay :: GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerI
 				}
 			}
 
-			pCheck = (CBasePlayerItem*)pCheck->m_pNext.GetEntity();
+			CBaseEntity* next = pCheck->m_pNext.GetEntity();
+			pCheck = next ? next->GetWeaponPtr() : NULL;
 		}
 	}
 
@@ -1153,7 +1155,8 @@ BOOL CHalfLifeMultiplay::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerIte
 		// check if the player already has this weapon
 		for ( int i = 0 ; i < MAX_ITEM_TYPES ; i++ )
 		{
-			CBasePlayerItem *it = (CBasePlayerItem*)pPlayer->m_rgpPlayerItems[i].GetEntity();
+			CBaseEntity* ent = pPlayer->m_rgpPlayerItems[i].GetEntity();
+			CBasePlayerItem *it = ent ? ent->GetWeaponPtr() : NULL;
 
 			while ( it != NULL )
 			{
@@ -1162,7 +1165,8 @@ BOOL CHalfLifeMultiplay::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerIte
 					return FALSE;
 				}
 
-				it = (CBasePlayerItem*)it->m_pNext.GetEntity();
+				CBaseEntity* next = it->m_pNext.GetEntity();
+				it = next ? next->GetWeaponPtr() : NULL;
 			}
 		}
 	}
