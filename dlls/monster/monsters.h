@@ -162,6 +162,8 @@ public:
 	int		m_cBloodDecals;
 	int		m_material;
 	float	m_lifeTime;
+	// start fading even if gib had not stopped moving at this time. This is to prevent gibs endlessly rotating on edges
+	float m_startFadeTime;
 };
 
 

@@ -242,10 +242,13 @@ void CGib::WaitTillLand(void)
 		return;
 	}
 
-	if (pev->velocity == g_vecZero)
+	if( pev->velocity == g_vecZero || (m_startFadeTime != 0 && m_startFadeTime <= gpGlobals->time) )
 	{
 		SetThink(&CGib::SUB_StartFadeOut);
-		pev->nextthink = gpGlobals->time + m_lifeTime;
+		if (pev->velocity == g_vecZero)
+			pev->nextthink = gpGlobals->time + m_lifeTime;
+		else
+			pev->nextthink = gpGlobals->time;
 
 		// If you bleed, you stink!
 		if (m_bloodColor != DONT_BLEED)
@@ -353,6 +356,7 @@ void CGib::Spawn(const char* szGibModel)
 
 	pev->nextthink = gpGlobals->time + 4;
 	m_lifeTime = 10;
+	m_startFadeTime = gpGlobals->time + 35;
 	SetThink(&CGib::WaitTillLand);
 	SetTouch(&CGib::BounceGibTouch);
 
