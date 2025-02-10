@@ -242,7 +242,8 @@ void CGib::WaitTillLand(void)
 		return;
 	}
 
-	if( pev->velocity == g_vecZero || (m_startFadeTime != 0 && m_startFadeTime <= gpGlobals->time) )
+	if( pev->velocity == g_vecZero ||
+		(m_bornTime + m_lifeTime + 10 <= gpGlobals->time) ) // start fading even if gib had not stopped moving at this time. This is to prevent gibs endlessly rotating on edges
 	{
 		SetThink(&CGib::SUB_StartFadeOut);
 		if (pev->velocity == g_vecZero)
@@ -356,10 +357,24 @@ void CGib::Spawn(const char* szGibModel)
 
 	pev->nextthink = gpGlobals->time + 4;
 	m_lifeTime = 10;
-	m_startFadeTime = gpGlobals->time + 35;
+	m_bornTime = gpGlobals->time;
 	SetThink(&CGib::WaitTillLand);
 	SetTouch(&CGib::BounceGibTouch);
 
 	m_material = matNone;
 	m_cBloodDecals = 5;// how many blood decals this gib can place (1 per bounce until none remain). 
+}
+
+void CGib::StartFadeOut()
+{
+	if( pev->rendermode == kRenderNormal )
+	{
+		pev->renderamt = 255;
+		pev->rendermode = kRenderTransTexture;
+	}
+
+	pev->avelocity = g_vecZero;
+
+	pev->nextthink = gpGlobals->time + 0.1f;
+	SetThink( &CBaseEntity::SUB_FadeOut );
 }
