@@ -54,6 +54,7 @@ jobs:
     
     - name: Download and install dependencies
       run: |
+        sudo apt update
         sudo apt install gcc-multilib g++-multilib libc6-dev-i386
 
     - name: Build server
