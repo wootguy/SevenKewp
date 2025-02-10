@@ -39,16 +39,16 @@ int g_plugin_id = 0;
 #include "windows.h"
 #define LOADLIB_FUNC_NAME ""
 #define PLUGIN_EXT ".dll"
-#define LibLoadError() (std::string("LoadLibrary error code ") + std::to_string(GetLastError()).c_str())
+#define LibError() (std::string("error code ") + std::to_string(GetLastError()).c_str())
 #else
 #include <dlfcn.h>
 #define PLUGIN_EXT ".so"
 #define LOADLIB_FUNC_NAME "dlopen"
 #define GetProcAddress dlsym
 #define GetLastError dlerror
-#define FreeLibrary dlclose
+#define FreeLibrary !dlclose
 #define HMODULE void*
-#define LibLoadError() dlerror()
+#define LibError() dlerror()
 #endif
 
 typedef int(*PLUGIN_INIT_FUNCTION)(void);
@@ -94,7 +94,7 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 #endif
 
 	if (!plugin.h_module) {
-		ALERT(at_error, "Plugin load failed '%s' (%s)\n", plugin.fpath.c_str(), LibLoadError());
+		ALERT(at_error, "Plugin '%s' failed to load with: %s\n", plugin.fpath.c_str(), LibError());
 		return false;
 	}
 
@@ -110,14 +110,18 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 		}
 		else {
 			ALERT(at_error, "PluginInit call failed in plugin '%s'.\n", plugin.fpath.c_str());
-			FreeLibrary((HMODULE)plugin.h_module);
+			if (!FreeLibrary((HMODULE)plugin.h_module)) {
+				ALERT(at_error, "Library unload failed with: %s", LibError());
+			}
 			g_initPlugin = NULL;
 			return false;
 		}
 	}
 	else {
 		ALERT(at_error, "PluginInit not found in plugin '%s'\n", plugin.fpath.c_str());
-		FreeLibrary((HMODULE)plugin.h_module);
+		if (!FreeLibrary((HMODULE)plugin.h_module)) {
+			ALERT(at_error, "Library unload failed with: %s", LibError());
+		}
 		return false;
 	}
 
@@ -139,7 +143,9 @@ void PluginManager::UnloadPlugin(const Plugin& plugin) {
 
 	g_Scheduler.RemoveTimers(plugin.name);
 
-	FreeLibrary((HMODULE)plugin.h_module);
+	if (!FreeLibrary((HMODULE)plugin.h_module)) {
+		ALERT(at_error, "Library unload failed with: %s", LibError());
+	}
 }
 
 void PluginManager::RemovePlugin(const Plugin& plugin) {
