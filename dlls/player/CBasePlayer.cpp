@@ -2144,7 +2144,7 @@ void CBasePlayer::UpdateStatusBar()
 
 		bool ignoreMonster = FClassnameIs(pEntity->pev, "monster_furniture");
 
-		if (pEntity->Classify() == CLASS_PLAYER )
+		if (pEntity->IsPlayer() )
 		{
 			newSBarState[ SBAR_ID_TARGETNAME ] = ENTINDEX( pEntity->edict() );
 			strcpy_safe( sbuf1, "1 %p1", SBAR_STRING_SIZE );
