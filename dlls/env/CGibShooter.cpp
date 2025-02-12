@@ -92,13 +92,14 @@ void CGibShooter::Spawn(void)
 }
 
 
-CGib* CGibShooter::CreateGib(void)
+CGib *CGibShooter::CreateGib( float lifeTime )
 {
 	if (CVAR_GET_FLOAT("violence_hgibs") == 0)
 		return NULL;
 
 	CGib* pGib = GetClassPtr((CGib*)NULL);
 	pGib->Spawn("models/hgibs.mdl");
+	pGib->m_lifeTime = lifeTime;
 	pGib->m_bloodColor = BLOOD_COLOR_RED;
 
 	if (pev->body <= 1)
@@ -125,7 +126,8 @@ void CGibShooter::ShootThink(void)
 	vecShootDir = vecShootDir + gpGlobals->v_up * RANDOM_FLOAT(-1, 1) * m_flVariance;;
 
 	vecShootDir = vecShootDir.Normalize();
-	CGib* pGib = CreateGib();
+	const float lifeTime = ( m_flGibLife * RANDOM_FLOAT( 0.95f, 1.05f ) );	// +/- 5%
+	CGib *pGib = CreateGib(lifeTime);
 
 	if (pGib)
 	{
@@ -137,7 +139,6 @@ void CGibShooter::ShootThink(void)
 
 		float thinkTime = pGib->pev->nextthink - gpGlobals->time;
 
-		pGib->m_lifeTime = (m_flGibLife * RANDOM_FLOAT(0.95, 1.05));	// +/- 5%
 		if (pGib->m_lifeTime < thinkTime)
 		{
 			pGib->pev->nextthink = gpGlobals->time + pGib->m_lifeTime;

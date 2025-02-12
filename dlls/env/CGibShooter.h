@@ -12,7 +12,7 @@ public:
 	void EXPORT ShootThink(void);
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 
-	virtual CGib* CreateGib(void);
+	virtual CGib *CreateGib( float lifeTime );
 
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);

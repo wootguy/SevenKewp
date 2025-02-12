@@ -315,6 +315,8 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 	if ( tr.pHit && Instance( tr.pHit )->pev->solid != SOLID_BSP) 
 		return NULL;
 
+	Vector spawnAngles = pev->angles;
+	spawnAngles.x = spawnAngles.z = 0;
 	for (int i = 0; i < m_iUnits; i++)
 	{
 		if (m_hGrunt[i] == NULL || !m_hGrunt[i]->IsAlive())
@@ -328,7 +330,7 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 				keys["is_player_ally"] = "1";
 			}
 
-			pEntity = Create(replenishMonster, vecSrc, pev->angles, true, NULL, keys);
+			pEntity = Create(replenishMonster, vecSrc, spawnAngles, true, NULL, keys);
 			pGrunt = pEntity->MyMonsterPointer( );
 			pGrunt->pev->movetype = MOVETYPE_FLY;
 			pGrunt->pev->velocity = Vector( 0, 0, RANDOM_FLOAT( -196, -128 ) );

@@ -8,12 +8,14 @@
 #include "shake.h"
 #include "CGibShooter.h"
 
+#define SF_ENVSHOOTER_DONT_WAIT_TILL_LAND 4
+
 class CEnvShooter : public CGibShooter
 {
 	void		Precache(void);
 	void		KeyValue(KeyValueData* pkvd);
 
-	CGib* CreateGib(void);
+	CGib *CreateGib( float lifeTime );
 };
 
 LINK_ENTITY_TO_CLASS(env_shooter, CEnvShooter)
@@ -67,11 +69,20 @@ void CEnvShooter::Precache(void)
 }
 
 
-CGib* CEnvShooter::CreateGib(void)
+CGib *CEnvShooter::CreateGib( float lifeTime )
 {
 	CGib* pGib = GetClassPtr((CGib*)NULL);
+	if (!pGib)
+		return NULL;
 
 	pGib->Spawn(STRING(pev->model));
+	pGib->m_lifeTime = lifeTime;
+
+	if (FBitSet(pev->spawnflags, SF_ENVSHOOTER_DONT_WAIT_TILL_LAND))
+	{
+		pGib->SetThink( &CGib::StartFadeOut );
+		pGib->pev->nextthink = gpGlobals->time + lifeTime;
+	}
 
 	int bodyPart = 0;
 
