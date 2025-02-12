@@ -36,6 +36,7 @@ class CRuleBrushEntity : public CRuleEntity
 {
 public:
 	void		Spawn(void);
+	int ObjectCaps() { return CRuleEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
 private:
 };

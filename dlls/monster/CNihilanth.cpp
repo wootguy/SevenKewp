@@ -1413,7 +1413,7 @@ void CNihilanthHVR :: ZapThink( void  )
 	pev->nextthink = gpGlobals->time + 0.05;
 
 	// check world boundaries
-	if (m_hEnemy == NULL ||  pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096)
+	if( m_hEnemy == NULL || !IsInWorld() )
 	{
 		SetTouch( NULL );
 		UTIL_Remove( this );
@@ -1532,7 +1532,7 @@ void CNihilanthHVR :: TeleportThink( void  )
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	// check world boundaries
-	if (m_hEnemy == NULL || !m_hEnemy->IsAlive() || pev->origin.x < -4096 || pev->origin.x > 4096 || pev->origin.y < -4096 || pev->origin.y > 4096 || pev->origin.z < -4096 || pev->origin.z > 4096)
+	if( m_hEnemy == NULL || !m_hEnemy->IsAlive() || !IsInWorld() )
 	{
 		STOP_SOUND(edict(), CHAN_WEAPON, "x/x_teleattack1.wav" );
 		UTIL_Remove( this );
