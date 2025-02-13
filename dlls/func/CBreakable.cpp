@@ -5,8 +5,7 @@
 #include "decals.h"
 #include "explode.h"
 #include "CBaseMonster.h"
-
-extern DLL_GLOBAL Vector		g_vecAttackDir;
+#include "monsters.h"
 
 // =================== FUNC_Breakable ==============================================
 

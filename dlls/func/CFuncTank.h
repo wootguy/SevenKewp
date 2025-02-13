@@ -1,12 +1,13 @@
 #pragma once
 
-#define SF_TANK_ACTIVE			0x0001
-#define SF_TANK_PLAYER			0x0002
-#define SF_TANK_HUMANS			0x0004
-#define SF_TANK_ALIENS			0x0008
-#define SF_TANK_LINEOFSIGHT		0x0010
-#define SF_TANK_CANCONTROL		0x0020
-#define SF_TANK_SOUNDON			0x8000
+#define SF_TANK_ACTIVE			(1<<0)
+#define SF_TANK_PLAYER			(1<<1)
+#define SF_TANK_HUMANS			(1<<2)
+#define SF_TANK_ALIENS			(1<<3)
+#define SF_TANK_LINEOFSIGHT		(1<<4)
+#define SF_TANK_CANCONTROL		(1<<5)
+#define SF_TANK_USE_RELATIONS	(1<<9)
+#define SF_TANK_SOUNDON			(1<<15)
 
 enum TANKBULLET
 {
@@ -34,6 +35,7 @@ public:
 	void	TrackTarget(void);
 	virtual const char* DisplayName() { return "Mounted Gun"; }
 	virtual const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; };
+	virtual int IRelationship(CBaseEntity* pTarget);
 
 	virtual void Fire(const Vector& barrelEnd, const Vector& forward, entvars_t* pevAttacker);
 	virtual Vector UpdateTargetPosition(CBaseEntity* pTarget)
@@ -53,16 +55,23 @@ public:
 	inline BOOL CanFire(void) { return (gpGlobals->time - m_lastSightTime) < m_persist; }
 	BOOL		InRange(float range);
 
-	// Acquire a target.  pPlayer is a player in the PVS
-	edict_t* FindTarget(edict_t* pPlayer);
+	// Acquire a target.
+	CBaseEntity* FindTarget(Vector forward);
 
 	void		TankTrace(const Vector& vecStart, const Vector& vecForward, const Vector& vecSpread, TraceResult& tr);
 
-	Vector		BarrelPosition(void)
+	// tipNotBase = true to get the tip of the barrell rather than the base of it
+	Vector		BarrelPosition(bool tipNotBase)
 	{
 		Vector forward, right, up;
 		UTIL_MakeVectorsPrivate(pev->angles, forward, right, up);
-		return pev->origin + (forward * m_barrelPos.x) + (right * m_barrelPos.y) + (up * m_barrelPos.z);
+		
+		if (tipNotBase) {
+			return pev->origin + (forward * m_barrelPos.x) + (right * m_barrelPos.y) + (up * m_barrelPos.z);
+		}
+		else {
+			return pev->origin + (right * m_barrelPos.y) + (up * m_barrelPos.z);
+		}
 	}
 
 	void		AdjustAnglesForBarrel(Vector& angles, float distance);
@@ -110,4 +119,6 @@ protected:
 	Vector		m_sightOrigin;	// Last sight of target
 	int			m_spread;		// firing spread
 	int			m_iszMaster;	// Master entity (game_team_master or multisource)
+
+	int8_t		m_iRelation[16]; // manual relationship settings
 };

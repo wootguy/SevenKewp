@@ -141,7 +141,10 @@ void CSprite::Animate(float frames)
 	pev->frame += frames;
 	if (pev->frame > m_maxFrame)
 	{
-		if (pev->spawnflags & SF_SPRITE_ONCE)
+		if (pev->spawnflags & SF_SPRITE_ONCE_AND_REMOVE) {
+			UTIL_Remove(this);
+		}
+		else if (pev->spawnflags & SF_SPRITE_ONCE)
 		{
 			TurnOff();
 		}
@@ -164,7 +167,7 @@ void CSprite::TurnOff(void)
 void CSprite::TurnOn(void)
 {
 	pev->effects = 0;
-	if ((pev->framerate && m_maxFrame > 1.0) || (pev->spawnflags & SF_SPRITE_ONCE))
+	if ((pev->framerate && m_maxFrame > 1.0) || (pev->spawnflags & (SF_SPRITE_ONCE | SF_SPRITE_ONCE_AND_REMOVE)))
 	{
 		SetThink(&CSprite::AnimateThink);
 		pev->nextthink = gpGlobals->time;

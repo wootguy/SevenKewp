@@ -4,6 +4,7 @@
 
 #define SF_SPRITE_STARTON		0x0001
 #define SF_SPRITE_ONCE			0x0002
+#define SF_SPRITE_ONCE_AND_REMOVE 0x0004
 #define SF_SPRITE_TEMPORARY		0x8000
 
 class CSprite : public CPointEntity

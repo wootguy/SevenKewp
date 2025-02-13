@@ -60,23 +60,15 @@ void CPathTrack::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 	}
 }
 
-
 void CPathTrack::Link(void)
 {
-	edict_t* pentTarget;
-
 	if (!FStringNull(pev->target))
 	{
-		pentTarget = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target));
-		if (!FNullEnt(pentTarget))
+		CPathTrack* next = (CPathTrack*)UTIL_FindEntityClassByTargetname(NULL, "path_track", STRING(pev->target));
+		if (next)
 		{
-			CPathTrack* next = CPathTrack::Instance(pentTarget);
 			m_hNext = next;
-
-			if (next)		// If no next pointer, this is the end of a path
-			{
-				next->SetPrevious(this);
-			}
+			next->SetPrevious(this);
 		}
 		else
 			ALERT(at_console, "Dead end link %s\n", STRING(pev->target));
@@ -85,20 +77,14 @@ void CPathTrack::Link(void)
 	// Find "alternate" path
 	if (m_altName)
 	{
-		pentTarget = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_altName));
-		if (!FNullEnt(pentTarget))
+		CPathTrack* alt = (CPathTrack*)UTIL_FindEntityClassByTargetname(NULL, "path_track", STRING(m_altName));
+		if (alt)
 		{
-			CPathTrack* alt = CPathTrack::Instance(pentTarget);
 			m_hAltpath = alt;
-
-			if (alt)		// If no next pointer, this is the end of a path
-			{
-				alt->SetPrevious(this);
-			}
+			alt->SetPrevious(this);
 		}
 	}
 }
-
 
 void CPathTrack::Spawn(void)
 {
@@ -295,7 +281,7 @@ CPathTrack* CPathTrack::Nearest(Vector origin)
 
 CPathTrack* CPathTrack::Instance(edict_t* pent)
 {
-	if (FClassnameIs(pent, "path_track"))
+	if (pent && FClassnameIs(pent, "path_track"))
 		return (CPathTrack*)GET_PRIVATE(pent);
 	return NULL;
 }

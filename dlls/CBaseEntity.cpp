@@ -1046,8 +1046,10 @@ int CBaseEntity::IRelationship(CBaseEntity* pTarget)
 }
 
 int CBaseEntity::IRelationship(int attackerClass, int victimClass) {
+	const int classCnt = 16;
+
 	//TODO: need to update the entries for military ally & race x
-	static int iEnemy[16][16] =
+	static int iEnemy[classCnt][classCnt] =
 	{				//   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN	RACEX	RACEXP
 		/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
 		/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL,	R_DL,	R_DL	},
@@ -1067,7 +1069,11 @@ int CBaseEntity::IRelationship(int attackerClass, int victimClass) {
 		/*RACEX (pit)*/	{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_HT	,R_DL	,R_NO	,R_NO	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_AL,	R_AL	}
 	};
 
-	return iEnemy[clampi(attackerClass, 0, 15)][clampi(victimClass, 0, 15)];
+	if (attackerClass < 0 || attackerClass >= classCnt || victimClass < 0 || victimClass >= classCnt) {
+		return R_NO;
+	}
+
+	return iEnemy[attackerClass][victimClass];
 }
 
 bool CBaseEntity::ShouldBlockFriendlyFire(entvars_t* attacker) {
