@@ -4,6 +4,7 @@
 #include <fstream>
 #include "Scheduler.h"
 #include "CBasePlayer.h"
+#include "CTriggerScript.h"
 
 PluginManager g_pluginManager;
 
@@ -11,6 +12,7 @@ Plugin* g_initPlugin; // the plugin currently being initialized
 
 #define MAX_PLUGIN_CVARS 256
 #define MAX_PLUGIN_COMMANDS 256
+#define MAX_PLUGIN_ENT_CALLBACKS 256
 
 struct ExternalCvar {
 	int pluginId;
@@ -27,11 +29,20 @@ struct ExternalCommand {
 	plugin_cmd_callback callback;
 };
 
+struct TriggerScriptCallback {
+	int pluginId;
+	char name[64];
+	plugin_ent_callback callback;
+};
+
 ExternalCvar g_plugin_cvars[MAX_PLUGIN_CVARS];
 int g_plugin_cvar_count = 0;
 
 ExternalCommand g_plugin_commands[MAX_PLUGIN_COMMANDS];
 int g_plugin_command_count = 0;
+
+TriggerScriptCallback g_plugin_ent_callbacks[MAX_PLUGIN_ENT_CALLBACKS];
+int g_plugin_ent_callback_count = 0;
 
 int g_plugin_id = 0;
 
@@ -141,7 +152,16 @@ void PluginManager::UnloadPlugin(const Plugin& plugin) {
 		ALERT(at_console, "PluginExit not found in plugin '%s'\n", plugin.fpath.c_str());
 	}
 
+	// invalidate any pending timers to prevent calling functions from the unloaded plugins
 	g_Scheduler.RemoveTimers(plugin.name);
+
+	// invalidate all trigger_script callback pointers.
+	// Don't bother being smart about this. It's not expensive to find them again and
+	// mid-map plugin unloading should only happen during development
+	CBaseEntity* pScript = NULL;
+	while (pScript = UTIL_FindEntityByClassname(pScript, "trigger_script")) {
+		((CTriggerScript*)pScript)->m_callback = NULL;
+	}
 
 	if (!FreeLibrary((HMODULE)plugin.h_module)) {
 		ALERT(at_error, "Library unload failed with: %s", LibError());
@@ -713,6 +733,65 @@ void RegisterPluginCommand(const char* cmd, plugin_cmd_callback callback, int fl
 	g_plugin_command_count++;
 
 	g_engfuncs.pfnAddServerCommand(ecmd.name, ExternalPluginCommand);
+}
+
+plugin_ent_callback PluginManager::GetEntityCallback(const char* funcName) {
+	TriggerScriptCallback* tscall = NULL;
+
+	for (int i = 0; i < g_plugin_ent_callback_count; i++) {
+		if (!strcmp(g_plugin_ent_callbacks[i].name, funcName)) {
+			tscall = &g_plugin_ent_callbacks[i];
+			break;
+		}
+	}
+
+	if (!tscall) {
+		ALERT(at_console, "Unrecognized plugin entity callback: %s\n", funcName);
+		return NULL;
+	}
+
+	Plugin* plugin = g_pluginManager.FindPlugin(tscall->pluginId);
+
+	if (!plugin) {
+		ALERT(at_console, "Entity callback from unloaded plugin can't be called: %s\n", funcName);
+		return NULL;
+	}
+
+	ALERT(at_console, "Loaded entity callback '%s' from plugin %s\n", funcName, plugin->name);
+
+	return tscall->callback;
+}
+
+void PluginManager::ClearEntityCallbacks() {
+	memset(g_plugin_ent_callbacks, 0, sizeof(TriggerScriptCallback) * MAX_PLUGIN_ENT_CALLBACKS);
+	g_plugin_ent_callback_count = 0;
+}
+
+void RegisterPluginEntCallback_internal(const char* funcName, plugin_ent_callback callback) {
+	if (!g_initPlugin) {
+		ALERT(at_error, "Plugin entity callbacks can only be registered during initialization. Failed to register: %s\n", funcName);
+		return;
+	}
+
+	if (g_plugin_ent_callback_count >= MAX_PLUGIN_ENT_CALLBACKS) {
+		ALERT(at_error, "Plugin entity callback limit exceeded! Failed to register: %s\n", funcName);
+		return;
+	}
+
+	for (int i = 0; i < g_plugin_ent_callback_count; i++) {
+		if (!strcmp(g_plugin_ent_callbacks[i].name, funcName)) {
+			//g_engfuncs.pfnServerPrint(UTIL_VarArgs("Plugin command already registered: %s\n", cmd));
+			g_plugin_ent_callbacks[i].pluginId = g_initPlugin->id;
+			g_plugin_ent_callbacks[i].callback = callback;
+			return;
+		}
+	}
+
+	TriggerScriptCallback& tscall = g_plugin_ent_callbacks[g_plugin_ent_callback_count];
+	tscall.pluginId = g_initPlugin->id;
+	tscall.callback = callback;
+	strcpy_safe(tscall.name, funcName, sizeof(tscall.name));
+	g_plugin_ent_callback_count++;
 }
 
 int RegisterPlugin_internal(HLCOOP_PLUGIN_HOOKS* hooks, int hooksSz, const char* name, int ifaceVersion) {

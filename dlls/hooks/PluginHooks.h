@@ -39,6 +39,12 @@ struct HOOK_RETURN_DATA {
 // return true if the player's chat should be hidden (if the command was sent from chat)
 typedef bool (*plugin_cmd_callback)(CBasePlayer* pPlayer, const CommandArgs& args);
 
+// callback for trigger_script
+// pActivator = entity which started the call chain, or the trigger_script if in "think" mode
+// pCaller = entity which triggered the trigger_script, or the trigger_script itself if in "think" mode
+// useType/flValue = Use parameters passed to the trigger_script, or USE_TOGGLE and 0.0f if in "think" mode
+typedef void (*plugin_ent_callback)(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float flValue);
+
 enum INTERMISSION_REASON
 {
 	INTERMISSION_LEVEL_END, // game_end or trigger_changelevel if mp_series_intermission > 0
@@ -197,6 +203,12 @@ EXPORT cvar_t* RegisterPluginCVar(const char* name, const char* strDefaultValue,
 //            simultaneously in an attempt to cause lag or crashes.
 EXPORT void RegisterPluginCommand(const char* cmd, plugin_cmd_callback callback,
 	int flags=FL_CMD_SERVER, float cooldown=0.1f);
+
+// do not call directly, use RegisterPluginEntCallback macro instead
+EXPORT void RegisterPluginEntCallback_internal(const char* funcName, plugin_ent_callback callback);
+
+// register a plugin function to be called by a trigger_script entity
+#define RegisterPluginEntCallback(funcName) RegisterPluginEntCallback_internal(#funcName, funcName)
 
 // boilerplate for PluginInit functions
 // must be inline so that plugins don't reference the mod definitions of HLCOOP_API_VERSION, PLUGIN_NAME,

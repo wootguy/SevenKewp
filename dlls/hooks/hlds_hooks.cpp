@@ -496,6 +496,7 @@ void ServerDeactivate( void )
 	g_edictsinit = 0;
 
 	g_pluginManager.RemovePlugins(true);
+	g_pluginManager.ClearEntityCallbacks();
 
 	g_customKeyValues.clear();
 	g_monsterSoundReplacements.clear();
