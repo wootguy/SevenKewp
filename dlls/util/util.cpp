@@ -609,6 +609,21 @@ CBaseEntity *UTIL_FindEntityByTargetname( CBaseEntity *pStartEntity, const char 
 	return UTIL_FindEntityByString( pStartEntity, "targetname", szName );
 }
 
+CBaseEntity* UTIL_FindEntityClassByTargetname(CBaseEntity* pStartEntity, const char* szClass, const char* szName)
+{
+	if (!szClass || !szName) {
+		return NULL;
+	}
+
+	while (pStartEntity = UTIL_FindEntityByString(pStartEntity, "targetname", szName)) {
+		if (pStartEntity->pev->classname && !strcmp(STRING(pStartEntity->pev->classname), szClass)) {
+			return pStartEntity;
+		}
+	}
+
+	return NULL;
+}
+
 
 CBaseEntity *UTIL_FindEntityGeneric( const char *szWhatever, Vector &vecSrc, float flRadius )
 {

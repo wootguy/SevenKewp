@@ -13,7 +13,7 @@ const float GARG_ATTACKDIST = 80.0;
 
 
 // Gargantua is immune to any damage but this
-#define GARG_DAMAGE					(DMG_ENERGYBEAM|DMG_CRUSH|DMG_MORTAR|DMG_BLAST)
+#define GARG_DAMAGE					(DMG_ENERGYBEAM|DMG_CRUSH|DMG_MORTAR|DMG_BLAST|DMG_SHOCK)
 #define GARG_EYE_SPRITE_NAME		"sprites/gargeye1.spr"
 #define GARG_BEAM_SPRITE_NAME		"sprites/xbeam3.spr"
 #define GARG_BEAM_SPRITE2			"sprites/xbeam3.spr"

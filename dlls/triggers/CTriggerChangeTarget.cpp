@@ -5,6 +5,7 @@
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
 #include "CBaseTrigger.h"
+#include "CPathTrack.h"
 
 // this is a really bad idea.
 class CTriggerChangeTarget : public CBaseDelay
@@ -60,6 +61,17 @@ void CTriggerChangeTarget::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		if (pMonster)
 		{
 			pMonster->m_hGoalEnt = NULL;
+		}
+
+		if (FClassnameIs(pTarget->pev, "path_track")) {
+			CPathTrack* track = (CPathTrack*)pTarget;
+
+			CPathTrack* next = CPathTrack::Instance(track->m_hNext.GetEdict());
+			if (next) {
+				next->m_hPrevious = NULL;
+			}
+
+			track->Link();
 		}
 	}
 }

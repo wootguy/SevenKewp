@@ -6,6 +6,7 @@
 #include "CBasePlayer.h"
 #include "CFuncTank.h"
 #include "CBasePlayerItem.h"
+#include "monsters.h"
 
 
 TYPEDESCRIPTION	CFuncTank::m_SaveData[] =
@@ -65,7 +66,7 @@ void CFuncTank::Spawn(void)
 	if (IsActive())
 		pev->nextthink = pev->ltime + 1.0;
 
-	m_sightOrigin = BarrelPosition(); // Point at the end of the barrel
+	m_sightOrigin = BarrelPosition(true); // Point at the end of the barrel
 
 	if (m_fireRate <= 0)
 		m_fireRate = 1;
@@ -195,6 +196,81 @@ void CFuncTank::KeyValue(KeyValueData* pkvd)
 		m_iszMaster = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "relation_monster_bioweapon"))
+	{
+		m_iRelation[CLASS_ALIEN_BIOWEAPON] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_player_bioweapon"))
+	{
+		m_iRelation[CLASS_PLAYER_BIOWEAPON] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_player_ally"))
+	{
+		m_iRelation[CLASS_PLAYER_ALLY] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_insect"))
+	{
+		m_iRelation[CLASS_INSECT] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_alien_predator"))
+	{
+		m_iRelation[CLASS_ALIEN_PREDATOR] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_alien_prey"))
+	{
+		m_iRelation[CLASS_ALIEN_PREY] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_alien_monster"))
+	{
+		m_iRelation[CLASS_ALIEN_MONSTER] = atoi(pkvd->szValue);
+
+		// TODO: add keyvalues for these?
+		m_iRelation[CLASS_ALIEN_RACE_X] = m_iRelation[CLASS_ALIEN_MONSTER];
+		m_iRelation[CLASS_ALIEN_RACE_X_PITDRONE] = m_iRelation[CLASS_ALIEN_MONSTER];
+		
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_alien_passive"))
+	{
+		m_iRelation[CLASS_ALIEN_PASSIVE] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_alien_militar")) // TODO: typo in sven fgd?
+	{
+		m_iRelation[CLASS_ALIEN_MILITARY] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_human_militar")) // TODO: typo in sven fgd?
+	{
+		m_iRelation[CLASS_HUMAN_MILITARY] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_human_passive"))
+	{
+		m_iRelation[CLASS_HUMAN_PASSIVE] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_machine"))
+	{
+		m_iRelation[CLASS_MACHINE] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_none"))
+	{
+		m_iRelation[CLASS_NONE] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "relation_player"))
+	{
+		m_iRelation[CLASS_PLAYER] = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseEntity::KeyValue(pkvd);
 }
@@ -285,7 +361,7 @@ void CFuncTank::ControllerPostFrame(void)
 
 		m_fireLast = gpGlobals->time - (1 / m_fireRate) - 0.01;  // to make sure the gun doesn't fire too many bullets
 
-		Fire(BarrelPosition(), vecForward, m_pController->pev);
+		Fire(BarrelPosition(true), vecForward, m_pController->pev);
 
 		// HACKHACK -- make some noise (that the AI can hear)
 		if (m_pController && m_pController->IsPlayer())
@@ -333,12 +409,72 @@ void CFuncTank::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 	}
 }
 
+int CFuncTank::IRelationship(CBaseEntity* pTarget) {
+	if (pev->spawnflags & SF_TANK_USE_RELATIONS) {
+		int clazz = pTarget->Classify();
+		
+		if (clazz < 0 || clazz >= 16) {
+			return R_NO;
+		}
 
-edict_t* CFuncTank::FindTarget(edict_t* pPlayer)
-{
-	return pPlayer;
+		return m_iRelation[clazz];
+	}
+	
+	return pTarget->IsPlayer() ? R_DL : R_NO;
 }
 
+CBaseEntity* CFuncTank::FindTarget(Vector forward)
+{
+	TraceResult tr;
+
+	// target entity that is most aligned with the tank aim direction
+	CBaseEntity* bestTarget = NULL;
+	float bestDot = -1.0f;
+
+	const int iDistance = m_maxRange ? m_maxRange : 8192;
+	Vector delta = Vector(iDistance, iDistance, iDistance);
+	CBaseEntity* pList[100];
+	CBaseEntity* pSightEnt = NULL;// the current visible entity that we're dealing with
+
+	Vector barrelBase = BarrelPosition(false);
+
+	// Find only monsters/clients in box, NOT limited to PVS
+	int count = UTIL_EntitiesInBox(pList, 100, pev->origin - delta, pev->origin + delta, FL_CLIENT | FL_MONSTER | FL_POSSIBLE_TARGET, true);
+	
+	for (int i = 0; i < count; i++)
+	{
+		pSightEnt = pList[i];
+
+		if ((pSightEnt->pev->flags & FL_NOTARGET) || pSightEnt == this) {
+			continue;
+		}
+		if (pSightEnt->pev->spawnflags & SF_MONSTER_PRISONER) {
+			continue;
+		}
+		if (IRelationship(pSightEnt) <= R_NO) {
+			continue;
+		}
+
+		Vector targetPosition = pSightEnt->IsPlayer() ? pSightEnt->EyePosition() : pSightEnt->Center();
+
+		if (!InRange((targetPosition - barrelBase).Length())) {
+			continue;
+		}
+
+		Vector dir = (targetPosition - pev->origin).Normalize();
+		float dot = DotProduct(forward, dir);
+
+		UTIL_TraceLine(barrelBase, targetPosition, dont_ignore_monsters, edict(), &tr);
+		bool hasLineOfSight = tr.flFraction >= 1.0f || tr.pHit == pSightEnt->edict();
+
+		if (hasLineOfSight && dot > bestDot) {
+			bestTarget = pSightEnt;
+			bestDot = dot;
+		}
+	}
+
+	return bestTarget;
+}
 
 
 BOOL CFuncTank::InRange(float range)
@@ -350,7 +486,6 @@ BOOL CFuncTank::InRange(float range)
 
 	return TRUE;
 }
-
 
 void CFuncTank::Think(void)
 {
@@ -368,35 +503,12 @@ void CFuncTank::TrackTarget(void)
 	TraceResult tr;
 	BOOL updateTime = FALSE;
 	Vector angles, direction, targetPosition;
-	edict_t* pTarget = NULL;
-	Vector barrelEnd = BarrelPosition();
+	Vector barrelEnd = BarrelPosition(true);
 	CBasePlayer* m_pController = (CBasePlayer*)m_hController.GetEntity();
+	CBaseEntity* pTarget = NULL;
 
-	// target player that is most aligned with the tank aim direction
-	edict_t* pPlayer = INDEXENT(0);
-	edict_t* bestPlayer = INDEXENT(0);
 	Vector forward, right, up;
 	UTIL_MakeVectorsPrivate(pev->angles, forward, right, up);
-	float bestDot = -1.0f;
-
-	for (int i = 1; i < gpGlobals->maxClients; i++) {
-		pPlayer = INDEXENT(i);
-		if (!IsValidPlayer(pPlayer) || pPlayer->v.deadflag != DEAD_NO) {
-			continue;
-		}
-
-		Vector dir = (pPlayer->v.origin - pev->origin).Normalize();
-		float dot = DotProduct(forward, dir);
-
-		UTIL_TraceLine(barrelEnd, pPlayer->v.origin, ignore_monsters, edict(), &tr);
-		bool hasLineOfSight = tr.flFraction > 0.99f;
-
-		if (hasLineOfSight && dot > bestDot) {
-			bestPlayer = pPlayer;
-			bestDot = dot;
-		}
-	}
-	pPlayer = bestPlayer;
 
 	// Get a position to aim for
 	if (m_pController)
@@ -413,41 +525,19 @@ void CFuncTank::TrackTarget(void)
 		else
 			return;
 
-		if (FNullEnt(pPlayer))
+		pTarget = FindTarget(forward);
+
+		if (!pTarget)
 		{
 			if (IsActive())
 				pev->nextthink = pev->ltime + 0.5f;	// idle
 			m_fireLast = 0;
 			return;
 		}
-		pTarget = FindTarget(pPlayer);
-		if (!pTarget) {
-			m_fireLast = 0;
-			return;
-		}
 
 		// Calculate angle needed to aim at target
-		barrelEnd = BarrelPosition();
-		targetPosition = pTarget->v.origin + pTarget->v.view_ofs;
-		float range = (targetPosition - barrelEnd).Length();
-
-		if (!InRange(range)) {
-			m_fireLast = 0;
-			return;
-		}
-
-		UTIL_TraceLine(barrelEnd, targetPosition, dont_ignore_monsters, edict(), &tr);
-
-		// No line of sight, don't track
-		if (tr.flFraction == 1.0 || tr.pHit == pTarget)
-		{
-			CBaseEntity* pInstance = CBaseEntity::Instance(pTarget);
-			if (InRange(range) && pInstance && pInstance->IsAlive())
-			{
-				updateTime = TRUE;
-				m_sightOrigin = UpdateTargetPosition(pInstance);
-			}
-		}
+		updateTime = TRUE;
+		m_sightOrigin = UpdateTargetPosition(pTarget);
 
 		// Track sight origin
 
@@ -516,7 +606,7 @@ void CFuncTank::TrackTarget(void)
 		{
 			float length = direction.Length();
 			UTIL_TraceLine(barrelEnd, barrelEnd + forward * length, dont_ignore_monsters, edict(), &tr);
-			if (tr.pHit == pTarget)
+			if (pTarget && tr.pHit == pTarget->edict())
 				fire = TRUE;
 		}
 		else
@@ -524,7 +614,7 @@ void CFuncTank::TrackTarget(void)
 
 		if (fire)
 		{
-			Fire(BarrelPosition(), forward, pev);
+			Fire(BarrelPosition(true), forward, pev);
 		}
 		else
 			m_fireLast = 0;

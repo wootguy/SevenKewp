@@ -83,6 +83,12 @@ void CTriggerVote::MenuCallback(TextMenu* menu, CBasePlayer* player, int itemNum
 }
 
 void CTriggerVote::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {
+	if (pev->nextthink) {
+		ALERT(at_console, "%s (trigger_vote): Trigger ignored because the current vote hasn't finished\n",
+			STRING(pev->targetname));
+		return;
+	}
+	
 	const char* voteMessage = STRING(pev->message);
 	const char* yesString = m_iszYesString ? STRING(m_iszYesString) : "Yes";
 	const char* noString = m_iszNoString ? STRING(m_iszNoString) : "No";
