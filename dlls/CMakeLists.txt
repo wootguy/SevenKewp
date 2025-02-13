@@ -193,6 +193,7 @@ set(TRIGGER_HDR
 	triggers/CMultiSource.h
 	triggers/CRuleEntity.h
 	triggers/CTriggerMultiple.h
+	triggers/CTriggerScript.h
 	triggers/CTriggerVote.h
 )
 set(TRIGGER_SRC
@@ -234,6 +235,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CTriggerRelay.cpp
 	triggers/CTriggerRenamePlayer.cpp
 	triggers/CTriggerRespawn.cpp
+	triggers/CTriggerScript.cpp
 	triggers/CTriggerSetCvar.cpp
 	triggers/CTriggerSetOrigin.cpp
 	triggers/CTriggerVote.cpp

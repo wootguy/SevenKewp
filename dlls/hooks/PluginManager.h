@@ -99,6 +99,12 @@ public:
 	}
 
 	ENTITYINIT GetCustomEntityInitFunc(const char* pname);
+
+	plugin_ent_callback GetEntityCallback(const char* funcName);
+
+	// clear trigger_script callback info. Does not invalidate trigger_script callback pointers
+	// call on map change
+	void ClearEntityCallbacks();
 };
 
 extern PluginManager g_pluginManager;
