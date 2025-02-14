@@ -98,4 +98,10 @@ EXPORT extern void RestoreGlobalState(SAVERESTOREDATA* pSaveData);
 EXPORT extern void ResetGlobalState(void);
 EXPORT extern void SetObjectCollisionBox(entvars_t* pev);
 
+// for convenience
+EXPORT extern void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, const char* value);
+EXPORT extern void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, float value);
+EXPORT extern void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, int value);
+EXPORT extern void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, Vector value);
+
 #endif		// CLIENT_H

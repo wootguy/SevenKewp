@@ -29,11 +29,39 @@
 
 extern BOOL FEntIsVisible(entvars_t* pev, entvars_t* pevTarget);
 
-void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+void FireTargetsDelayed(const char* target, string_t killTarget, CBaseEntity* pActivator, USE_TYPE useType, float delay) {
+	// create a temp object to fire at a later time
+	CBaseDelay* pTemp = GetClassPtr((CBaseDelay*)NULL);
+	pTemp->pev->classname = MAKE_STRING("DelayedUse");
+	pTemp->pev->nextthink = gpGlobals->time + delay;
+	pTemp->SetThink(&CBaseDelay::DelayThink);
+
+	// Save the useType
+	pTemp->pev->button = (int)useType;
+	pTemp->m_flDelay = 0; // prevent "recursion"
+	pTemp->pev->target = ALLOC_STRING(target);
+	pTemp->m_iszKillTarget = killTarget;
+
+	// HACKHACK
+	// This wasn't in the release build of Half-Life.  We should have moved m_hActivator into this class
+	// but changing member variable hierarchy would break save/restore without some ugly code.
+	// This code is not as ugly as that code
+	if (pActivator && pActivator->IsPlayer()) {		// If a player activates, then save it
+		pTemp->pev->owner = pActivator->edict();
+	}
+}
+
+void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value, float delay )
 {
 	edict_t *pentTarget = NULL;
 	if ( !targetName )
 		return;
+
+	if (delay != 0)
+	{
+		FireTargetsDelayed(targetName, 0, pActivator, useType, delay);
+		return;
+	}
 
 	ALERT( at_aiconsole, "Firing: (%s)\n", targetName );
 

@@ -46,33 +46,7 @@ void CBaseDelay::SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, float
 	//
 	if (m_flDelay != 0)
 	{
-		// create a temp object to fire at a later time
-		CBaseDelay* pTemp = GetClassPtr((CBaseDelay*)NULL);
-		pTemp->pev->classname = MAKE_STRING("DelayedUse");
-
-		pTemp->pev->nextthink = gpGlobals->time + m_flDelay;
-
-		pTemp->SetThink(&CBaseDelay::DelayThink);
-
-		// Save the useType
-		pTemp->pev->button = (int)useType;
-		pTemp->m_iszKillTarget = m_iszKillTarget;
-		pTemp->m_flDelay = 0; // prevent "recursion"
-		pTemp->pev->target = pev->target;
-
-		// HACKHACK
-		// This wasn't in the release build of Half-Life.  We should have moved m_hActivator into this class
-		// but changing member variable hierarchy would break save/restore without some ugly code.
-		// This code is not as ugly as that code
-		if (pActivator && pActivator->IsPlayer())		// If a player activates, then save it
-		{
-			pTemp->pev->owner = pActivator->edict();
-		}
-		else
-		{
-			pTemp->pev->owner = NULL;
-		}
-
+		FireTargetsDelayed(STRING(pev->target), m_iszKillTarget, pActivator, useType, m_flDelay);
 		return;
 	}
 
