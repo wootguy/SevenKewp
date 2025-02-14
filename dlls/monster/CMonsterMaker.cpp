@@ -268,6 +268,7 @@ void CMonsterMaker :: Spawn( )
 		if ( FBitSet ( pev->spawnflags, SF_MONSTERMAKER_START_ON ) )
 		{// start making monsters as soon as monstermaker spawns
 			m_fActive = TRUE;
+			pev->nextthink = gpGlobals->time + m_flDelay;
 			SetThink ( &CMonsterMaker::MakerThink );
 		}
 		else
