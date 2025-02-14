@@ -56,6 +56,14 @@ void CBaseDMStart::SpawnPlayer(CBasePlayer* plr) {
 		plr->pev->targetname = pev->netname;
 	}
 
+	// try spawning ducked if there's no room to stand
+	TraceResult tr;
+	TRACE_HULL(plr->pev->origin, plr->pev->origin, ignore_monsters, human_hull, NULL, &tr);
+	if (tr.fStartSolid) {
+		plr->pev->flags |= FL_DUCKING;
+		plr->pev->view_ofs = VEC_DUCK_VIEW;
+	}
+
 	if (pev->spawnflags & FL_SPAWN_TRIGGER) {
 		FireTargets(STRING(pev->target), plr, this, (USE_TYPE)triggerState, 0.0f);
 	}

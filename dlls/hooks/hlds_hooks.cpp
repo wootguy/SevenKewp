@@ -2236,6 +2236,28 @@ void DispatchKeyValue(edict_t* pentKeyvalue, KeyValueData* pkvd)
 	pEntity->KeyValue(pkvd);
 }
 
+void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, const char* value) {
+	KeyValueData dat;
+	dat.fHandled = false;
+	dat.szClassName = (char*)STRING(pentKeyvalue->v.classname);
+	dat.szKeyName = (char*)key;
+	dat.szValue = (char*)value;
+
+	DispatchKeyValue(pentKeyvalue, &dat);
+}
+
+void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, float value) {
+	DispatchKeyValue(pentKeyvalue, key, UTIL_VarArgs("%f", value));
+}
+
+void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, int value) {
+	DispatchKeyValue(pentKeyvalue, key, UTIL_VarArgs("%d", value));
+}
+
+void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, Vector value) {
+	DispatchKeyValue(pentKeyvalue, key, UTIL_VarArgs("%f %f %f", value.x, value.y, value.z));
+}
+
 // HACKHACK -- this is a hack to keep the node graph entity from "touching" things (like triggers)
 // while it builds the graph
 BOOL gTouchDisabled = FALSE;

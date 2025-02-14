@@ -254,6 +254,7 @@ public:
 	virtual BOOL	IsMachine(void) { return FALSE; };
 	virtual BOOL	IsWeather(void) { return FALSE; };
 	virtual BOOL	IsBeam(void) { return FALSE; };
+	virtual BOOL	IsButton() { return FALSE; }
 	virtual const char* TeamID(void) { return ""; }
 	virtual const char* DisplayName();
 	virtual const char* GetDeathNoticeWeapon() { return STRING(pev->classname); };

@@ -444,8 +444,10 @@ void CBaseEntity::KeyValue(KeyValueData* pkvd) {
 	}
 	else if (FStrEq(pkvd->szKeyName, "breakable"))
 	{
-		m_breakFlags |= atoi(pkvd->szValue) ? FL_BREAK_IS_BREAKABLE : 0;
-		pev->takedamage = DAMAGE_YES;
+		if (atoi(pkvd->szValue)) {
+			m_breakFlags |= FL_BREAK_IS_BREAKABLE;
+			pev->takedamage = DAMAGE_YES;
+		}
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "fireonbreak"))

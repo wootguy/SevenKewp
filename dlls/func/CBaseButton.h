@@ -23,6 +23,7 @@ public:
 	virtual void Precache(void);
 	void RotSpawn(void);
 	virtual void KeyValue(KeyValueData* pkvd);
+	virtual const char* DisplayName() { return "Button"; }
 
 	void ButtonActivate();
 	void SparkSoundCache(void);
@@ -38,6 +39,7 @@ public:
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
 	virtual BOOL IsAllowedToSpeak() { return TRUE; }
+	virtual BOOL IsButton() { return TRUE; }
 
 	enum BUTTON_CODE { BUTTON_NOTHING, BUTTON_ACTIVATE, BUTTON_RETURN };
 	BUTTON_CODE	ButtonResponseToTouch(void);

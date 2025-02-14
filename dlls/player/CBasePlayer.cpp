@@ -54,6 +54,7 @@
 #include "CItemInventory.h"
 #include "CWeaponInventory.h"
 #include "CGamePlayerEquip.h"
+#include "CBaseButton.h"
 
 // #define DUCKFIX
 
@@ -2156,7 +2157,6 @@ void CBasePlayer::UpdateStatusBar()
 			newSBarState[ SBAR_ID_TARGETHEALTH ] = pEntity->pev->health;
 			newSBarState[ SBAR_ID_TARGETARMOR ] = pEntity->pev->armorvalue;
 
-			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			lookingAtStatusEnt = true;
 		}
 		else if (pEntity->IsMonster() && pEntity->IsAlive() && !ignoreMonster) {
@@ -2200,8 +2200,31 @@ void CBasePlayer::UpdateStatusBar()
 			newSBarState[SBAR_ID_TARGETNAME] = entindex();
 			newSBarState[SBAR_ID_TARGETHEALTH] = hp;
 
-			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			lookingAtStatusEnt = true;
+		}
+		else if (pEntity->IsButton()) {
+			CBaseButton* but = (CBaseButton*)pEntity;
+			bool damagable = pEntity->pev->takedamage == DAMAGE_YES;
+			bool touchable = pEntity->pev->spawnflags & SF_BUTTON_TOUCH_ONLY;
+			bool canTriggerNow = but->m_toggle_state == TS_AT_BOTTOM;
+			bool repeatableTrigger = !but->m_fStayPushed || (but->pev->spawnflags & SF_BUTTON_TOGGLE);
+
+			if ((canTriggerNow || repeatableTrigger) && (damagable || touchable)) {
+				name = replaceString(pEntity->DisplayName(), "\n", " ");
+
+				const char* hint = "";
+				if (damagable) {
+					hint = " (shootable)";
+				}
+				else if (touchable) {
+					hint = " (touch only)";
+				}
+
+				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name.c_str(), hint), SBAR_STRING_SIZE);
+				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
+
+				lookingAtStatusEnt = true;
+			}
 		}
 		else if (pEntity->IsBreakable() && !(pEntity->m_breakFlags & FL_BREAK_TRIGGER_ONLY)) {
 
@@ -2250,7 +2273,6 @@ void CBasePlayer::UpdateStatusBar()
 			strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
 			newSBarState[SBAR_ID_TARGETHEALTH] = hp;
 
-			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			lookingAtStatusEnt = true;
 		}
 		else if (FClassnameIs(pEntity->pev, "func_pushable")) {
@@ -2270,10 +2292,12 @@ void CBasePlayer::UpdateStatusBar()
 			newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
 			newSBarState[SBAR_ID_TARGETHEALTH] = 1;
 
-			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			lookingAtStatusEnt = true;
 		}
 		
+		if (lookingAtStatusEnt) {
+			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+		}
 	}
 	
 	if ( !lookingAtStatusEnt && m_flStatusBarDisappearDelay > gpGlobals->time )
