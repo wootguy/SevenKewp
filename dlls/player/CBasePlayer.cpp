@@ -2203,7 +2203,7 @@ void CBasePlayer::UpdateStatusBar()
 			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 			lookingAtStatusEnt = true;
 		}
-		else if (pEntity->IsBreakable() && !(pEntity->pev->spawnflags & SF_BREAK_TRIGGER_ONLY)) {
+		else if (pEntity->IsBreakable() && !(pEntity->m_breakFlags & FL_BREAK_TRIGGER_ONLY)) {
 
 			name = replaceString(pEntity->DisplayName(), "\n", " ");
 			int hp = roundf(pEntity->pev->health);
@@ -2213,13 +2213,13 @@ void CBasePlayer::UpdateStatusBar()
 			if (irel == R_AL) {
 				hint = " (wrench repairs)";
 			}
-			else if (pEntity->pev->spawnflags & SF_BREAK_EXPLOSIVES_ONLY) {
+			else if (pEntity->m_breakFlags & FL_BREAK_EXPLOSIVES_ONLY) {
 				hint = " (explosives only)";
 			}
-			else if (pEntity->pev->spawnflags & SF_BREAK_INSTANT) {
+			else if (pEntity->m_breakFlags & FL_BREAK_INSTANT) {
 				CBreakable* breakable = (CBreakable*)pEntity;
 
-				if (breakable->m_instantBreakWeapon == BREAK_INSTANT_WRENCH) {
+				if (breakable->m_breakWeapon == BREAK_INSTANT_WRENCH) {
 					hint = " (use wrench)";
 				}
 				else {
@@ -3439,6 +3439,8 @@ void CBasePlayer::Spawn( void )
 	g_pGameRules->SetDefaultPlayerTeam( this );
 	edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( this );
 
+	pev->view_ofs = VEC_VIEW;
+
 	if (!FNullEnt(pentSpawnSpot)) {
 		CBaseDMStart* spawn = (CBaseDMStart*)CBaseEntity::Instance(pentSpawnSpot);
 		spawn->SpawnPlayer(this);
@@ -3461,7 +3463,6 @@ void CBasePlayer::Spawn( void )
 	else
 		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
 
-    pev->view_ofs = VEC_VIEW;
 	Precache();
 	m_HackedGunPos		= Vector( 0, 32, 0 );
 

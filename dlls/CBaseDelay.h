@@ -14,6 +14,7 @@ public:
 	virtual void	KeyValue(KeyValueData* pkvd);
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
+	virtual CBaseDelay* MyDelayPointer(void) { return this; }
 
 	static	TYPEDESCRIPTION m_SaveData[];
 	// common member functions
