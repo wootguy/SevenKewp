@@ -281,6 +281,7 @@ LINK_ENTITY_TO_CLASS(func_water, CBaseDoor)
 
 void CBaseDoor::Spawn()
 {
+	CBaseEntity::Spawn();
 	Precache();
 	SetMovedir(pev);
 
@@ -552,6 +553,9 @@ void CBaseDoor::DoorTouch(CBaseEntity* pOther)
 //
 void CBaseDoor::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	if (BreakableUse(pActivator, pCaller, useType, value))
+		return;
+
 	m_hActivator = pActivator;
 
 	bool isStopped = m_toggle_state == TS_AT_BOTTOM || m_toggle_state == TS_AT_TOP;

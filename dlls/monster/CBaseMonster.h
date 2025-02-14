@@ -142,7 +142,6 @@ public:
 	float m_flLastYawTime; // Last time yaw change was computed
 
 	const char* m_defaultModel;
-	string_t m_displayName;
 	string_t m_soundReplacementPath;
 	Vector m_maxHullSize;
 	Vector m_minHullSize;

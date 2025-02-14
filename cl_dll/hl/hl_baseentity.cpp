@@ -65,6 +65,12 @@ CBaseEntity * CBaseEntity::Create( const char *szName, const Vector &vecOrigin, 
 void CBaseEntity::SUB_Remove( void ) { }
 void CBaseEntity::UpdateOnRemove( void ) { }
 void CBaseEntity::SetClassify( int ) { }
+void CBaseEntity::Spawn() { }
+void CBaseEntity::Precache() { }
+const char* CBaseEntity::DisplayName() { return NULL; }
+bool CBaseEntity::BreakableUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) { return false; }
+void CBaseEntity::BreakableDie(CBaseEntity* pActivator) { }
+void CBaseEntity::BreakableDamageSound() { }
 Vector CBaseEntity::GetLookDirection() { return g_vecZero; }
 Vector CBasePlayer::GetLookDirection() { return g_vecZero; }
 

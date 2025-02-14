@@ -161,7 +161,7 @@ void CPushable::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 	if (!pActivator || !pActivator->IsPlayer())
 	{
 		if (pev->spawnflags & SF_PUSH_BREAKABLE)
-			this->CBreakable::Use(pActivator, pCaller, useType, value);
+			CBreakable::Use(pActivator, pCaller, useType, value);
 		return;
 	}
 
@@ -430,7 +430,7 @@ const char* CPushable::DisplayName() {
 	if (m_displayName) {
 		return STRING(m_displayName);
 	}
-	return Explodable() ? "Pushable Explosives" : "Pushable";
+	return m_breakExplodeMag ? "Pushable Explosives" : "Pushable";
 }
 
 void CPushable::Lift() {

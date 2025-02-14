@@ -276,7 +276,10 @@ bool CPipewrench::Swing(const bool bFirst)
 				flDamage = gSkillData.sk_plr_pipewrench;
 			}
 
-			if (m_pPlayer->IRelationship(pEntity) == R_AL && (pEntity->IsMachine() || pEntity->IsBSPModel())) {
+			bool repairable = (m_pPlayer->IRelationship(pEntity) == R_AL && pEntity->IsMachine())
+				|| (pEntity->IsBreakable() && (pEntity->m_breakFlags & FL_BREAK_REPAIRABLE));
+
+			if (repairable) {
 				flDamage *= -1;
 				bHitWorld = false;
 

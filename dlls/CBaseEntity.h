@@ -7,6 +7,7 @@ class CBaseEntity;
 class CBaseMonster;
 class CBasePlayerWeapon;
 class CTalkSquadMonster;
+class CBaseDelay;
 class CBaseToggle;
 class CBaseAnimating;
 class CItemInventory;
@@ -97,6 +98,32 @@ struct InventoryRules {
 	string_t	target_on_fail; 				// Target : Inventory rules failed
 };
 
+// shared breakable flags
+#define FL_BREAK_IS_BREAKABLE		(1<<0) // entity can be broken like a func_breakable
+#define FL_BREAK_CAN_TRIGGER		(1<<1) // can be broken via trigger
+#define FL_BREAK_TRIGGER_ONLY		(1<<2) // can only be broken via trigger
+#define FL_BREAK_INSTANT			(1<<3) // can be broken instantly with the right weapon
+#define FL_BREAK_EXPLOSIVES_ONLY	(1<<4) // can only be damaged by explosives
+#define FL_BREAK_DIRECTIONAL_GIBS	(1<<5) // shoot gibs relative to attack direction when destroyed
+#define FL_BREAK_REPAIRABLE			(1<<6) // can be repaired with the wrench
+#define FL_BREAK_IMMUNE_TO_CLIENTS	(1<<7) // clients can't damage
+
+#define BREAK_INSTANT_WRENCH 20
+
+enum Materials {
+	matGlass = 0,
+	matWood,
+	matMetal,
+	matFlesh,
+	matCinderBlock,
+	matCeilingTile,
+	matComputer,
+	matUnbreakableGlass,
+	matRocks,
+	matNone,
+	matLastMaterial
+};
+
 //
 // Base Entity.  All entity types derive from this
 //
@@ -107,13 +134,58 @@ public:
 	// pointers to engine data
 	entvars_t* pev;		// Don't need to save/restore this pointer, the engine resets it
 
-	// path corners
+	// path corners, monsters
 	EHANDLE m_hGoalEnt;// path corner we are heading towards
 	EHANDLE m_hLink;// used for temporary link-list operations. 
 
+	//We use this variables to store each ammo count.
+	// TODO: Shouldn't this be in CBasePlayer?
+	int ammo_9mm;
+	int ammo_357;
+	int ammo_bolts;
+	int ammo_buckshot;
+	int ammo_rockets;
+	int ammo_uranium;
+	int ammo_hornets;
+	int ammo_argrens;
+	//Special stuff for grenades and satchels.
+	float m_flStartThrow;
+	float m_flReleaseThrow;
+	int m_chargeReady;
+	int m_fInAttack;
+
+	// TODO: Why here? Move to CEgon?
+	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
+	int m_fireState;
+	int	m_Classify;		// Classify, to let mappers override the default
+
+	InventoryRules m_inventoryRules;
+	bool m_isFadingOut; // is a corpse fading out (TODO: move to CBaseMonster?)
+
+	uint32_t m_pasPlayers; // players in the audible set of this entity (invalid for invisible ents)
+	uint32_t m_pvsPlayers; // players in the visible set of this entity (invalid for invisible ents)
+	uint32_t m_netPlayers; // players this entity has been networked to (AddToFullPack returned 1)
+	uint32_t m_hidePlayers; // players this entity will be hidden from (force AddToFullPack to skip)
+
+	uint8_t m_breakFlags;
+	uint8_t m_breakMaterial;
+	uint8_t m_breakWeapon; // instant break weapon ID
+	string_t m_breakTrigger;
+	string_t m_breakModel;
+	uint16_t m_breakModelId;
+	int m_breakExplodeMag; // 0 = no explosion on break
+
+	string_t m_displayName;
+
+	// fundamental callbacks
+	void (CBaseEntity ::* m_pfnThink)(void);
+	void (CBaseEntity ::* m_pfnTouch)(CBaseEntity* pOther);
+	void (CBaseEntity ::* m_pfnUse)(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void (CBaseEntity ::* m_pfnBlocked)(CBaseEntity* pOther);
+
 	// initialization functions
-	virtual void	Spawn(void) { return; }
-	virtual void	Precache(void) { return; }
+	virtual void	Spawn(void);
+	virtual void	Precache(void);
 	virtual void	KeyValue(KeyValueData* pkvd);
 	virtual CKeyValue GetKeyValue(const char* keyName);
 	CKeyValue GetCustomKeyValue(const char* keyName);
@@ -149,6 +221,7 @@ public:
 	virtual CBasePlayerWeapon* GetWeaponPtr(void) { return NULL; };
 	virtual CTalkSquadMonster* MyTalkSquadMonsterPointer(void) { return NULL; }
 	virtual CBaseToggle* MyTogglePointer(void) { return NULL; }
+	virtual CBaseDelay* MyDelayPointer(void) { return NULL; }
 	virtual CBaseAnimating* MyAnimatingPointer(void) { return NULL; }
 	virtual CItemInventory* MyInventoryPointer(void) { return NULL; }
 	virtual	int		GetToggleState(void) { return TS_AT_TOP; }
@@ -177,23 +250,17 @@ public:
 	virtual	BOOL	IsPlayer(void) { return FALSE; }
 	virtual	BOOL	IsPlayerCorpse(void) { return FALSE; }
 	virtual BOOL	IsNetClient(void) { return FALSE; }
-	virtual BOOL	IsBreakable(void) { return FALSE; }
+	virtual BOOL	IsBreakable(void) { return (m_breakFlags & FL_BREAK_IS_BREAKABLE) != 0 && m_breakMaterial != matUnbreakableGlass; }
 	virtual BOOL	IsMachine(void) { return FALSE; };
 	virtual BOOL	IsWeather(void) { return FALSE; };
 	virtual BOOL	IsBeam(void) { return FALSE; };
 	virtual const char* TeamID(void) { return ""; }
-	virtual const char* DisplayName() { return STRING(pev->classname); }
+	virtual const char* DisplayName();
 	virtual const char* GetDeathNoticeWeapon() { return STRING(pev->classname); };
 
 
 	//	virtual void	SetActivator( CBaseEntity *pActivator ) {}
 	virtual CBaseEntity* GetNextTarget(void);
-
-	// fundamental callbacks
-	void (CBaseEntity ::* m_pfnThink)(void);
-	void (CBaseEntity ::* m_pfnTouch)(CBaseEntity* pOther);
-	void (CBaseEntity ::* m_pfnUse)(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	void (CBaseEntity ::* m_pfnBlocked)(CBaseEntity* pOther);
 
 	virtual void Think(void) { if (m_pfnThink) (this->*m_pfnThink)(); };
 	virtual void Touch(CBaseEntity* pOther) { if (m_pfnTouch) (this->*m_pfnTouch)(pOther); };
@@ -380,34 +447,28 @@ public:
 	// award attackers with points for damage dealt. Call this before updating monster health.
 	void GiveScorePoints(entvars_t* pevAttacker, float damageDealt);
 
-	//We use this variables to store each ammo count.
-	int ammo_9mm;
-	int ammo_357;
-	int ammo_bolts;
-	int ammo_buckshot;
-	int ammo_rockets;
-	int ammo_uranium;
-	int ammo_hornets;
-	int ammo_argrens;
-	//Special stuff for grenades and satchels.
-	float m_flStartThrow;
-	float m_flReleaseThrow;
-	int m_chargeReady;
-	int m_fInAttack;
+	// do breakable effects and triggers, if the entity is breakable
+	virtual void BreakableDie(CBaseEntity* pActivator);
+	virtual bool BreakableUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	virtual void BreakableDamageSound();
 
-	enum EGON_FIRESTATE { FIRE_OFF, FIRE_CHARGE };
-	int m_fireState;
-	int	m_Classify;		// Classify, to let mappers override the default
-
-	InventoryRules	m_inventoryRules;
-	bool m_isFadingOut; // is a corpse fading out
-
-	uint32_t m_pasPlayers; // players in the audible set of this entity (invalid for invisible ents)
-	uint32_t m_pvsPlayers; // players in the visible set of this entity (invalid for invisible ents)
-	uint32_t m_netPlayers; // players this entity has been networked to (AddToFullPack returned 1)
-	uint32_t m_hidePlayers; // players this entity will be hidden from (AddToFullPack)
+	static void MaterialSoundPrecache(Materials precacheMaterial);
+	static void MaterialSoundRandom(edict_t* pEdict, Materials soundMaterial, float volume);
+	static const char** MaterialSoundList(Materials precacheMaterial, int& soundCount);
 
 private:
+	static const char* pSoundsWood[];
+	static const char* pSoundsFlesh[];
+	static const char* pSoundsGlass[];
+	static const char* pSoundsMetal[];
+	static const char* pSoundsConcrete[];
+
+	static const char* pBustSoundsWood[];
+	static const char* pBustSoundsFlesh[];
+	static const char* pBustSoundsGlass[];
+	static const char* pBustSoundsMetal[];
+	static const char* pBustSoundsConcrete[];
+
 	bool TestInventoryRules(CBaseMonster* mon, std::unordered_set<CItemInventory*>& usedItems, const char** errorMsg);
 };
 
