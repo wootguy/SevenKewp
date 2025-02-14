@@ -76,9 +76,8 @@ void CPlayerRespawnZone::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 			// Players are merely teleported to active spawn points
 			edict_t* spawnPoint = EntSelectSpawnPoint(pPlayer);
 			if (!FNullEnt(spawnPoint)) {
-				pPlayer->pev->origin = spawnPoint->v.origin;
-				pPlayer->pev->angles = spawnPoint->v.angles;
-				pPlayer->pev->fixangle = 1; // force view angles
+				CBaseDMStart* spawn = (CBaseDMStart*)CBaseEntity::Instance(spawnPoint);
+				spawn->SpawnPlayer(pPlayer);
 			}
 		}
 	}

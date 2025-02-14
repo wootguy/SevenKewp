@@ -39,9 +39,8 @@ void CTriggerRespawn::RespawnTarget(CBaseEntity* target) {
 	// always move player entity, dead or alive
 	edict_t* spawnPoint = EntSelectSpawnPoint(target);
 	if (!FNullEnt(spawnPoint)) {
-		target->pev->origin = spawnPoint->v.origin;
-		target->pev->angles = spawnPoint->v.angles;
-		target->pev->fixangle = 1; // force view angles
+		CBaseDMStart* spawn = (CBaseDMStart*)CBaseEntity::Instance(spawnPoint);
+		spawn->SpawnPlayer(plr);
 	}
 
 	if (target->IsAlive()) {

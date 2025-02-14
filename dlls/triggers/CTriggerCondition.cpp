@@ -137,7 +137,7 @@ void CTriggerCondition::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 {
 	isActive = useType == USE_TOGGLE ? !isActive : useType == USE_ON;
 
-	h_activator = (pev->spawnflags & SF_TCOND_KEEP_ACTIVATOR) ? pActivator : this;
+	h_activator = pActivator;
 	h_caller = pCaller;
 
 	m_checkedFirstResult = false;
@@ -253,6 +253,12 @@ void CTriggerCondition::Evaluate() {
 	}
 
 	if (shouldFireResultTarget) {
+		EHANDLE h_oldActivator = h_activator;
+
+		if (!(pev->spawnflags & SF_TCOND_KEEP_ACTIVATOR)) {
+			h_activator = this;
+		}
+
 		if (result && pev->netname) {
 			//ALERT(at_console, "'%s' (%s): Firing TRUE target %s\n",
 			//	pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), STRING(pev->netname));
@@ -263,6 +269,8 @@ void CTriggerCondition::Evaluate() {
 			//	pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), STRING(pev->netname));
 			FireLogicTargets(STRING(pev->message), USE_TOGGLE, 0.0f);
 		}
+
+		h_activator = h_oldActivator;
 	}
 
 	m_checkedFirstResult = true;

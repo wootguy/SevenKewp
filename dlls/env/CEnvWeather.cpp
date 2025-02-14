@@ -937,6 +937,10 @@ void CEnvWeather::UpdateFog() {
 	for (int k = 0; k < FOG_LAYERS; k++) {
 		CFogLayer* fog = (CFogLayer*)g_fog_ents[k].GetEntity();
 		
+		if (!fog || !fog->MyAnimatingPointer()) {
+			continue;
+		}
+		
 		if (k % 2 == 1) {
 			// black layer as a backdrop for the additive layer, for light removal
 			fog->pev->skin = 0;
