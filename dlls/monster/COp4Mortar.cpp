@@ -52,9 +52,9 @@ TYPEDESCRIPTION CMortarShell::m_SaveData[] =
 		DEFINE_FIELD(CMortarShell, m_iSoundedOff, FIELD_BOOLEAN),
 };
 
-IMPLEMENT_SAVERESTORE(CMortarShell, CGrenade);
+IMPLEMENT_SAVERESTORE(CMortarShell, CGrenade)
 
-LINK_ENTITY_TO_CLASS(mortar_shell, CMortarShell);
+LINK_ENTITY_TO_CLASS(mortar_shell, CMortarShell)
 
 void CMortarShell::Precache()
 {
@@ -325,9 +325,9 @@ TYPEDESCRIPTION COp4Mortar::m_SaveData[] =
 		DEFINE_FIELD(COp4Mortar, m_vIdealGunAngle, FIELD_VECTOR),
 };
 
-IMPLEMENT_SAVERESTORE(COp4Mortar, CBaseMonster);
+IMPLEMENT_SAVERESTORE(COp4Mortar, CBaseMonster)
 
-LINK_ENTITY_TO_CLASS(op4mortar, COp4Mortar);
+LINK_ENTITY_TO_CLASS(op4mortar, COp4Mortar)
 
 void COp4Mortar::KeyValue(KeyValueData* pkvd)
 {
@@ -836,9 +836,9 @@ TYPEDESCRIPTION COp4MortarController::m_SaveData[] =
 		DEFINE_FIELD(COp4MortarController, m_controller, FIELD_INTEGER),
 };
 
-IMPLEMENT_SAVERESTORE(COp4MortarController, CBaseToggle);
+IMPLEMENT_SAVERESTORE(COp4MortarController, CBaseToggle)
 
-LINK_ENTITY_TO_CLASS(func_op4mortarcontroller, COp4MortarController);
+LINK_ENTITY_TO_CLASS(func_op4mortarcontroller, COp4MortarController)
 
 void COp4MortarController::KeyValue(KeyValueData* pkvd)
 {

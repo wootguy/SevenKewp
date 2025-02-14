@@ -159,7 +159,7 @@ void PluginManager::UnloadPlugin(const Plugin& plugin) {
 	// Don't bother being smart about this. It's not expensive to find them again and
 	// mid-map plugin unloading should only happen during development
 	CBaseEntity* pScript = NULL;
-	while (pScript = UTIL_FindEntityByClassname(pScript, "trigger_script")) {
+	while ((pScript = UTIL_FindEntityByClassname(pScript, "trigger_script")) != NULL) {
 		((CTriggerScript*)pScript)->m_callback = NULL;
 	}
 

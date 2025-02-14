@@ -615,7 +615,7 @@ CBaseEntity* UTIL_FindEntityClassByTargetname(CBaseEntity* pStartEntity, const c
 		return NULL;
 	}
 
-	while (pStartEntity = UTIL_FindEntityByString(pStartEntity, "targetname", szName)) {
+	while ((pStartEntity = UTIL_FindEntityByString(pStartEntity, "targetname", szName)) != NULL) {
 		if (pStartEntity->pev->classname && !strcmp(STRING(pStartEntity->pev->classname), szClass)) {
 			return pStartEntity;
 		}
