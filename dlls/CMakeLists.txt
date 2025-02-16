@@ -661,16 +661,17 @@ if (INCREASED_SERVER_LIMITS)
 endif()
 
 if(UNIX)
-	set(ASAN_OPTS "")
+	set(OPT_FLAG "-O2")
 	if (ASAN)
 		set(ASAN_CFLAGS "-fsanitize=address -fno-omit-frame-pointer")
 		set(ASAN_LFLAGS "-fsanitize=address")
+		set(OPT_FLAG "-Og")
 	endif()
 
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32 -g -O2 -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter ${ASAN_CFLAGS}"
-		LINK_FLAGS "-m32 -g  ${ASAN_LFLAGS}"
+		COMPILE_FLAGS "-m32 -g -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter ${OPT_FLAG} ${ASAN_CFLAGS}"
+		LINK_FLAGS "-m32 -g ${ASAN_LFLAGS}"
 	)
 	
 elseif(MSVC)

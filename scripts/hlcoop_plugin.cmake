@@ -3,9 +3,11 @@ function(hlcoop_setup_plugin OUTPUT_PATH)
 	if(UNIX)
 		set(DEBUG_WARN_FLAGS "-Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter")
 		
+		set(OPT_FLAG "-O2")
 		if (ASAN)
 			set(ASAN_CFLAGS "-fsanitize=address -fno-omit-frame-pointer")
 			set(ASAN_LFLAGS "-fsanitize=address")
+			set(OPT_FLAG "-Og")
 		endif()
 		
 		# Static linking libstd++ and libgcc so that the plugin can load on distros other than one it was compiled on.
@@ -17,11 +19,11 @@ function(hlcoop_setup_plugin OUTPUT_PATH)
 		
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -fvisibility=hidden -g ${ASAN_CFLAGS}" PARENT_SCOPE)
 		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 ${DEBUG_WARN_FLAGS}" PARENT_SCOPE)
-		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -w" PARENT_SCOPE)
+		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OPT_FLAG} -w" PARENT_SCOPE)
 		
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -g ${ASAN_CFLAGS}" PARENT_SCOPE)
 		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 ${DEBUG_WARN_FLAGS}" PARENT_SCOPE)
-		set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -w" PARENT_SCOPE)
+		set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${OPT_FLAG} -w" PARENT_SCOPE)
 		
 		set(CMAKE_SHARED_LIBRARY_PREFIX "" PARENT_SCOPE)
 		
