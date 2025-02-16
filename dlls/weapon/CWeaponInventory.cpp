@@ -141,7 +141,14 @@ void CWeaponInventory::Reload(void)
 		return;
 	}
 
-	m_itemIdx = (m_itemIdx + 1) % m_pPlayer->CountInventoryItems();
+	int numItems = m_pPlayer->CountInventoryItems();
+
+	if (numItems > 0) {
+		m_itemIdx = (m_itemIdx + 1) % numItems;
+	}
+	else {
+		m_itemIdx = 0;
+	}
 
 	UpdateInventoryHud();
 }
