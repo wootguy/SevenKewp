@@ -135,5 +135,13 @@ void CGameText::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 		}
 	}
 
+	// prevent infinite recursion
+	// TODO: should be default behavior.
+	//       Can't use for all entities? sven multi_manager can trigger itself in a loop and crash
+	string_t oldName = pev->targetname;
+	pev->targetname = 0;
+
 	SUB_UseTargets(pActivator, USE_TOGGLE, 0.0f);
+
+	pev->targetname = oldName;
 }
