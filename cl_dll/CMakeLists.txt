@@ -124,6 +124,7 @@ set(UTIL_SRC
 	cdll_int.cpp
 	interpolation.cpp
 	util.cpp
+	../dlls/util/HashMap.cpp
 	../common/parsemsg.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp

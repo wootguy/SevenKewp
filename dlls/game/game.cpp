@@ -21,6 +21,7 @@
 #include "skill.h"
 #include "PluginManager.h"
 #include "user_messages.h"
+#include "HashMap.h"
 
 cvar_t	displaysoundlist = {"displaysoundlist","0", 0, 0, 0};
 
@@ -107,13 +108,13 @@ cvar_t	*sv_lowercase = NULL;
 
 // END Cvars for Skill Level settings
 
-std::unordered_map<std::string, std::string> g_modelReplacementsMod;
-std::unordered_map<std::string, std::string> g_modelReplacementsMap;
-std::unordered_map<std::string, std::string> g_modelReplacements;
+std::string g_modelReplacementsMap;
+StringMap g_modelReplacementsMod;
+StringMap g_modelReplacements;
 
-std::unordered_map<std::string, std::string> g_soundReplacementsMod;
-std::unordered_map<std::string, std::string> g_soundReplacementsMap;
-std::unordered_map<std::string, std::string> g_soundReplacements;
+std::string g_soundReplacementsMap;
+StringMap g_soundReplacementsMod;
+StringMap g_soundReplacements;
 
 std::unordered_set<std::string> g_mapWeapons;
 
@@ -300,8 +301,8 @@ void freespace_command() {
 void list_precached_sounds() {
 	std::vector<std::string> allSounds;
 
-	for (std::string item : g_precachedSounds) {
-		allSounds.push_back(item);
+	for (auto item : g_precachedSounds) {
+		allSounds.push_back(item.first);
 	}
 
 	sort(allSounds.begin(), allSounds.end());

@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <string>
 #include <unordered_set>
+#include "HashMap.h"
 
 extern void GameDLLInit( void );
 
@@ -156,20 +157,16 @@ struct TextureTypeStats {
 
 EXPORT extern TextureTypeStats g_textureStats;
 
-EXPORT extern std::unordered_map<std::string, std::string> g_modelReplacementsMap; // model replacements for the current map
-EXPORT extern std::unordered_map<std::string, std::string> g_modelReplacementsMod; // model replacements for this mod
-EXPORT extern std::unordered_map<std::string, std::string> g_modelReplacements; // combined model replacements
+EXPORT extern std::string g_modelReplacementsMap; // model replacements for the current map (key for g_replacementFiles)
+EXPORT extern StringMap g_modelReplacementsMod; // model replacements for this mod
+EXPORT extern StringMap g_modelReplacements; // combined model replacements
 
-EXPORT extern std::unordered_map<std::string, std::string> g_soundReplacementsMod; // sound replacements for the current map
-EXPORT extern std::unordered_map<std::string, std::string> g_soundReplacementsMap; // sound replacements for this mod
-EXPORT extern std::unordered_map<std::string, std::string> g_soundReplacements; // combined sound replacements
+EXPORT extern std::string g_soundReplacementsMap; // sound replacements for the current map (key for g_replacementFiles)
+EXPORT extern StringMap g_soundReplacementsMod; // sound replacements for this mod
+EXPORT extern StringMap g_soundReplacements; // combined sound replacements
 
 EXPORT extern std::unordered_set<std::string> g_mapWeapons; // weapons which should be precached (don't use aliases here)
 EXPORT extern std::unordered_map<std::string, const char*> g_itemNameRemap;
-
-// per-monster sound replacement maps
-// should be a class member, but I'm afraid of the bugs that will come from using non-POD class members
-EXPORT extern std::vector<std::unordered_map<std::string, std::string>> g_monsterSoundReplacements;
 
 // map for each entity, containing custom keyvalues
 // using a global vector instead of a class member because the map is not POD

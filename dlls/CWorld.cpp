@@ -71,12 +71,12 @@ void CWorld::loadReplacementFiles() {
 
 	if (lastEditTimeGmr != editTimeGmr) {
 		lastEditTimeGmr = editTimeGmr;
-		g_modelReplacementsMod = loadReplacementFile(gmrPath);
+		loadReplacementFile(gmrPath, g_modelReplacementsMod);
 	}
 
 	if (lastEditTimeGsr != editTimeGsr) {
 		lastEditTimeGsr = editTimeGsr;
-		g_soundReplacementsMod = loadReplacementFile(gsrPath);
+		loadReplacementFile(gsrPath, g_soundReplacementsMod);
 	}
 
 	g_modelReplacementsMap.clear();
@@ -92,13 +92,15 @@ void CWorld::loadReplacementFiles() {
 	}
 
 	// map models/sounds have priority over mod models
+	StringMap& modelReplacementsMap = g_replacementFiles[g_modelReplacementsMap];
 	g_modelReplacements.clear();
-	g_modelReplacements.insert(g_modelReplacementsMap.begin(), g_modelReplacementsMap.end());
-	g_modelReplacements.insert(g_modelReplacementsMod.begin(), g_modelReplacementsMod.end());
+	g_modelReplacements.putAll(modelReplacementsMap);
+	g_modelReplacements.putAll(g_soundReplacementsMod);
 
+	StringMap& soundReplacementsMap = g_replacementFiles[g_soundReplacementsMap];
 	g_soundReplacements.clear();
-	g_soundReplacements.insert(g_soundReplacementsMap.begin(), g_soundReplacementsMap.end());
-	g_soundReplacements.insert(g_soundReplacementsMod.begin(), g_soundReplacementsMod.end());
+	g_soundReplacements.putAll(soundReplacementsMap);
+	g_soundReplacements.putAll(g_soundReplacementsMod);
 }
 
 void CWorld::loadSentenceFiles() {

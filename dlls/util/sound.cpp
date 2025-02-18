@@ -583,19 +583,7 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 		return;
 	}
 
-	if (entity->v.flags & FL_MONSTER) {
-		int eidx = ENTINDEX(entity);
-
-		if (g_monsterSoundReplacements[eidx].find(sample) != g_monsterSoundReplacements[eidx].end()) {
-			sample = g_monsterSoundReplacements[eidx][sample].c_str();
-		}
-		else if (g_soundReplacements.find(sample) != g_soundReplacements.end()) {
-			sample = g_soundReplacements[sample].c_str();
-		}
-	}
-	else if (g_soundReplacements.find(sample) != g_soundReplacements.end()) {
-		sample = g_soundReplacements[sample].c_str();
-	}
+	sample = UTIL_GetReplacementSound(entity, sample);
 	
 	if (sample && *sample == '!')
 	{

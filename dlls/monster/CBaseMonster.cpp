@@ -23,7 +23,6 @@
 
 //#define DEBUG_MONSTER "monster_human_grunt" // uncomment to enable verbose logging
 
-std::vector<std::unordered_map<std::string, std::string>> g_monsterSoundReplacements;
 std::unordered_set<std::string> g_shuffledMonsterSounds;
 
 extern bool g_freeRoam;
@@ -2117,30 +2116,35 @@ Vector CBaseMonster::GetInterpolatedOrigin() {
 }
 
 void CBaseMonster::Precache(void) {
-	if (g_monsterSoundReplacements.empty())
-		g_monsterSoundReplacements.resize(gpGlobals->maxEntities);
-
-	int eidx = entindex();
-	if (m_soundReplacementPath && strlen(STRING(m_soundReplacementPath))) {
+	if (m_soundReplacementKey && strlen(STRING(m_soundReplacementKey))) {
 		const char* filePath = UTIL_VarArgs("sound/%s/%s",
-			STRING(gpGlobals->mapname), STRING(m_soundReplacementPath));
+			STRING(gpGlobals->mapname), STRING(m_soundReplacementKey));
 
-		g_monsterSoundReplacements[eidx] = loadReplacementFile(filePath);
-	}
-	else {
-		g_monsterSoundReplacements[eidx].clear();
-	}
+		m_soundReplacementPath = ALLOC_STRING(loadReplacementFile(filePath).c_str());
 
-	for (auto item : g_monsterSoundReplacements[eidx]) {
 		
-		// sentences aren't precached by monster code, so precache the replacement here
-		if (item.first.size() && item.first[0] == '!') {
-			if (item.second.size() && item.second[0] == '!') {
-				ALERT(at_console, "Monster sentence replacment not implemented.\n");
-				continue;
+
+		if (strstr(STRING(m_soundReplacementPath), "uboazombie")) {
+			ALERT(at_console, "Zomg soundlist %s\n", STRING(m_soundReplacementPath));
+		}
+
+		StringMap& soundReplacements =
+			g_replacementFiles[STRING(m_soundReplacementPath)];
+
+		size_t offset = 0;
+		const char* key, *value;
+		while (soundReplacements.iterate(offset, &key, &value)) {
+
+			// sentences aren't precached by monster code, so precache the replacement here
+			if (strlen(key) && key[0] == '!') {
+				if (strlen(value) && value[0] == '!') {
+					ALERT(at_console, "Monster sentence replacment not implemented.\n");
+					continue;
+				}
+
+				PRECACHE_SOUND(value);
+				ALERT(at_console, "PRECACHE REPLACEMENT: %s\n", value);
 			}
-			
-			PRECACHE_SOUND(item.second.c_str());
 		}
 	}
 }
@@ -3437,7 +3441,7 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 	}
 	else if (FStrEq(pkvd->szKeyName, "soundlist"))
 	{
-		m_soundReplacementPath = ALLOC_STRING(pkvd->szValue);
+		m_soundReplacementKey = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "minhullsize"))
@@ -7684,10 +7688,11 @@ void CBaseMonster::Nerf() {
 
 		bool hasCustomModel = pev->model;
 		if (!isMonsterMaker) {
+			const char* replacementModel = g_modelReplacementsMod.get(m_defaultModel);
+
 			// ignore models that were swapped by the default model replacement file
 			hasCustomModel = m_defaultModel && strcmp(STRING(pev->model), m_defaultModel)
-				&& g_modelReplacementsMod.find(m_defaultModel) != g_modelReplacementsMod.end()
-				&& g_modelReplacementsMod[m_defaultModel] != STRING(pev->model);
+				&& replacementModel && strcmp(replacementModel, STRING(pev->model));
 		}
 
 		if (m_iszTriggerTarget) {

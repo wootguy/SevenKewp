@@ -499,7 +499,6 @@ void ServerDeactivate( void )
 	g_pluginManager.ClearEntityCallbacks();
 
 	g_customKeyValues.clear();
-	g_monsterSoundReplacements.clear();
 	g_shuffledMonsterSounds.clear();
 	g_bsp.delete_lumps();
 
@@ -519,6 +518,7 @@ void ServerDeactivate( void )
 	g_weaponNames.clear();
 	g_nomaptrans.clear();
 	g_unrecognizedCfgEquipment.clear();
+	g_replacementFiles.clear();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";
 	g_monstersNerfed = false;

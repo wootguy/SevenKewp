@@ -1,6 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "CBaseEntity.h"
+#include "CBaseMonster.h"
 #include "pm_materials.h"
 #include "pm_shared.h"
 #include "eng_wrappers.h"
@@ -10,7 +10,7 @@
 
 std::unordered_set<std::string> g_precachedModels;
 std::unordered_set<std::string> g_missingModels;
-std::unordered_set<std::string> g_precachedSounds;
+std::unordered_map<std::string, int> g_precachedSounds;
 std::unordered_set<std::string> g_precachedGeneric;
 std::unordered_map<std::string, int> g_precachedEvents;
 std::unordered_set<std::string> g_tryPrecacheModels;
@@ -120,8 +120,9 @@ void PRECACHE_HUD_FILES(const char* hudConfigPath) {
 	std::string lowerPath = toLowerCase(hudConfigPath);
 	hudConfigPath = lowerPath.c_str();
 
-	if (g_modelReplacements.find(hudConfigPath) != g_modelReplacements.end()) {
-		hudConfigPath = g_modelReplacements[hudConfigPath].c_str();
+	const char* replacement = g_modelReplacements.get(hudConfigPath);
+	if (replacement) {
+		hudConfigPath = replacement;
 	}
 
 	std::string fpath = getGameFilePath(hudConfigPath);
@@ -164,11 +165,13 @@ int PRECACHE_GENERIC(const char* path) {
 		soundPath = lowerPath.substr(6);
 	}
 
-	if (g_modelReplacements.find(path) != g_modelReplacements.end()) {
-		path = g_modelReplacements[path].c_str();
+	const char* replacedModel = g_modelReplacements.get(path);
+	const char* replacedSound = g_soundReplacements.get(soundPath.c_str());
+	if (replacedModel) {
+		path = replacedModel;
 	}
-	if (g_soundReplacements.find(soundPath) != g_soundReplacements.end()) {
-		lowerPath = "sound/" + g_soundReplacements[soundPath];
+	else if (replacedSound) {
+		lowerPath = std::string("sound/") + replacedSound;
 		path = lowerPath.c_str();
 	}
 
@@ -208,18 +211,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
 
-	bool hadMonsterSoundReplacement = false;
-	if (ent && ent->IsMonster() && (int)g_monsterSoundReplacements.size() >= ent->entindex()) {
-		std::unordered_map<std::string, std::string>& replacementMap = g_monsterSoundReplacements[ent->entindex()];
-		if (replacementMap.find(path) != replacementMap.end()) {
-			path = replacementMap[path].c_str();
-			hadMonsterSoundReplacement = true;
-		}
-	}
-
-	if (!hadMonsterSoundReplacement && g_soundReplacements.find(path) != g_soundReplacements.end()) {
-		path = g_soundReplacements[path].c_str();
-	}
+	path = UTIL_GetReplacementSound(ent ? ent->edict() : NULL, path);
 
 	if (lowerPath.find(" ") != std::string::npos) {
 		// files with spaces causes clients to hang at "Verifying resources"
@@ -229,8 +221,9 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 	}
 
 	if (g_serveractive) {
-		if (g_precachedSounds.find(path) != g_precachedSounds.end()) {
-			return g_engfuncs.pfnPrecacheSound(STRING(ALLOC_STRING(path)));
+		auto precache = g_precachedSounds.find(path);
+		if (precache != g_precachedSounds.end()) {
+			return precache->second;
 		}
 		else {
 			ALERT(at_warning, "PrecacheSound failed: %s\n", path);
@@ -245,8 +238,9 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 	g_tryPrecacheSounds.insert(path);
 
 	if (g_tryPrecacheSounds.size() <= MAX_PRECACHE_SOUND) {
-		g_precachedSounds.insert(path);
-		return g_engfuncs.pfnPrecacheSound(STRING(ALLOC_STRING(path)));
+		int soundIdx = g_engfuncs.pfnPrecacheSound(STRING(ALLOC_STRING(path)));
+		g_precachedSounds[path] = soundIdx;
+		return soundIdx;
 	}
 	else {
 		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
@@ -407,8 +401,9 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
 
-	if (g_modelReplacements.find(path) != g_modelReplacements.end()) {
-		path = g_modelReplacements[path].c_str();
+	const char* replacement = g_modelReplacements.get(path);
+	if (replacement) {
+		path = replacement;
 	}
 
 	// loading BSP here because ServerActivate is not soon enough and GameDLLInit is only called once
@@ -473,7 +468,7 @@ int PRECACHE_REPLACEMENT_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
 
-	if (!mp_mergemodels.value || g_modelReplacements.find(path) != g_modelReplacements.end()) {
+	if (!mp_mergemodels.value || g_modelReplacements.get(path)) {
 		return PRECACHE_MODEL_ENT(ent, path);
 	}
 
@@ -524,8 +519,9 @@ bool SET_MODEL(edict_t* edict, const char* model) {
 	model = lowerPath.c_str();
 	bool replaced = false;
 
-	if (g_modelReplacements.find(model) != g_modelReplacements.end()) {
-		model = g_modelReplacements[model].c_str();
+	const char* replacement = g_modelReplacements.get(model);
+	if (replacement) {
+		model = replacement;
 		replaced = true;
 	}
 
@@ -556,8 +552,9 @@ bool SET_MODEL_MERGED(edict_t* edict, const char* model, int mergeId) {
 const char* GET_MODEL(const char* model) {
 	std::string lowerPath = toLowerCase(model);
 
-	if (g_modelReplacements.find(lowerPath) != g_modelReplacements.end()) {
-		model = g_modelReplacements[lowerPath].c_str();
+	const char* replacement = g_modelReplacements.get(lowerPath.c_str());
+	if (replacement) {
+		model = replacement;
 		lowerPath = toLowerCase(model);
 	}
 
@@ -588,12 +585,13 @@ int SOUND_INDEX(const char* sound) {
 	std::string lowerPath = toLowerCase(sound);
 	sound = lowerPath.c_str();
 
-	if (!g_precachedSounds.count(lowerPath)) {
+	auto precache = g_precachedSounds.find(lowerPath);
+	if (precache == g_precachedSounds.end()) {
 		ALERT(at_error, "SOUND_INDEX not precached: %s\n", sound);
-		return g_engfuncs.pfnModelIndex(NOT_PRECACHED_SOUND);
+		return g_precachedSounds[NOT_PRECACHED_SOUND];
 	}
 
-	return g_engfuncs.pfnPrecacheSound(sound);
+	return precache->second;
 }
 
 
