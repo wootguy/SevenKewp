@@ -2122,12 +2122,6 @@ void CBaseMonster::Precache(void) {
 
 		m_soundReplacementPath = ALLOC_STRING(loadReplacementFile(filePath).c_str());
 
-		
-
-		if (strstr(STRING(m_soundReplacementPath), "uboazombie")) {
-			ALERT(at_console, "Zomg soundlist %s\n", STRING(m_soundReplacementPath));
-		}
-
 		StringMap& soundReplacements =
 			g_replacementFiles[STRING(m_soundReplacementPath)];
 
@@ -2143,7 +2137,6 @@ void CBaseMonster::Precache(void) {
 				}
 
 				PRECACHE_SOUND(value);
-				ALERT(at_console, "PRECACHE REPLACEMENT: %s\n", value);
 			}
 		}
 	}
