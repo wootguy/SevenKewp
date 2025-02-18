@@ -83,8 +83,8 @@ void LoadSentenceFile(const char* path,
 }
 
 void CalculateAndSetPlaybackTime(SentencePart& word) {
-	auto replacedSound = g_soundReplacements.find(toLowerCase(word.file));
-	std::string sound = replacedSound != g_soundReplacements.end() ? replacedSound->second : word.file;
+	const char* replacedSound = g_soundReplacements.get(toLowerCase(word.file).c_str());
+	std::string sound = replacedSound ? replacedSound : word.file;
 	
 	WavInfo wav = getWaveFileInfo(sound.c_str());
 	float percentPlayed = (word.end - word.start) / 100.0f;

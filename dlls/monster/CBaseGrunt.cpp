@@ -2839,8 +2839,8 @@ void CBaseRepel::Precache(void) {
 	CBaseMonster::Precache();
 
 	std::unordered_map<std::string, std::string> keys;
-	if (m_soundReplacementPath)
-		keys["soundlist"] = STRING(m_soundReplacementPath);
+	if (m_soundReplacementKey)
+		keys["soundlist"] = STRING(m_soundReplacementKey);
 	if (m_IsPlayerAlly)
 		keys["is_player_ally"] = "1";
 	if (pev->weapons)

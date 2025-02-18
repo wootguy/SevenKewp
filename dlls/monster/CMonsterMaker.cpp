@@ -301,8 +301,8 @@ void CMonsterMaker :: Precache( void )
 	CBaseMonster::Precache();
 
 	std::unordered_map<std::string, std::string> keys;
-	if (m_soundReplacementPath)
-		keys["soundlist"] = STRING(m_soundReplacementPath);
+	if (m_soundReplacementKey)
+		keys["soundlist"] = STRING(m_soundReplacementKey);
 	if (m_IsPlayerAlly)
 		keys["is_player_ally"] = "1";
 	if (pev->weapons)
@@ -410,10 +410,9 @@ void CMonsterMaker::MakeMonster( void )
 		mon->m_displayName = m_displayName;
 		mon->m_Classify = m_Classify;
 		mon->m_IsPlayerAlly = m_IsPlayerAlly;
-		mon->m_soundReplacementPath = m_soundReplacementPath;
+		mon->m_soundReplacementKey = m_soundReplacementKey;
 		mon->m_minHullSize = m_minHullSize;
 		mon->m_maxHullSize = m_maxHullSize;
-		g_monsterSoundReplacements[mon->entindex()] = g_monsterSoundReplacements[entindex()];
 	}
 
 	CBasePlayerWeapon* wep = ((CBaseEntity*)GET_PRIVATE(pent))->GetWeaponPtr();

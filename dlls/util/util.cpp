@@ -103,6 +103,9 @@ std::string g_lastMapName;
 
 std::unordered_map<std::string, custom_muzzle_flash_t> g_customMuzzleFlashes;
 
+// maps a lower-cased file path to a replacement map
+std::unordered_map<std::string, StringMap> g_replacementFiles;
+
 TYPEDESCRIPTION	gEntvarsDescription[] =
 {
 	DEFINE_ENTITY_FIELD(classname, FIELD_STRING),
@@ -1131,19 +1134,7 @@ void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char 
 	float rgfl[3];
 	memcpy(rgfl, vecOrigin, 3 * sizeof(float));
 
-	int eidx = ENTINDEX(entity);
-
-	if (entity->v.flags & FL_MONSTER) {
-		if (g_monsterSoundReplacements[eidx].find(samp) != g_monsterSoundReplacements[eidx].end()) {
-			samp = g_monsterSoundReplacements[eidx][samp].c_str();
-		}
-		else if (g_soundReplacements.find(samp) != g_soundReplacements.end()) {
-			samp = g_soundReplacements[samp].c_str();
-		}
-	}
-	else if (g_soundReplacements.find(samp) != g_soundReplacements.end()) {
-		samp = g_soundReplacements[samp].c_str();
-	}
+	samp = UTIL_GetReplacementSound(entity, samp);
 
 	char name[32];
 	if (samp && *samp == '!') {
@@ -2471,15 +2462,15 @@ void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd )
 	}
 }
 
-std::unordered_map<std::string, std::string> loadReplacementFile(const char* path) {
-	std::unordered_map<std::string, std::string> replacements;
+bool loadReplacementFile(const char* path, StringMap& replacements) {
+	replacements.clear();
 
 	std::string fpath = getGameFilePath(path);
 	std::ifstream infile(fpath);
 
 	if (fpath.empty() || !infile.is_open()) {
 		ALERT(at_console, "Failed to load replacement file: %s\n", path);
-		return replacements;
+		return false;
 	}
 
 	int lineNum = 0;
@@ -2546,11 +2537,29 @@ std::unordered_map<std::string, std::string> loadReplacementFile(const char* pat
 			}
 		}
 		
-		replacements[toLowerCase(paths[0])] = toLowerCase(paths[1]);
+		replacements.put(toLowerCase(paths[0]).c_str(), toLowerCase(paths[1]).c_str());
 		//ALERT(at_console, "REP: %s -> %s\n", paths[0].c_str(), paths[1].c_str());
 	}
 
-	return replacements;
+	return true;
+}
+
+std::string loadReplacementFile(const char* path) {
+	static char lowerPath[256];
+	strcpy_safe(lowerPath, path, 256);
+	for (int i = 0; lowerPath[i]; i++) {
+		lowerPath[i] = tolower(lowerPath[i]);
+	}
+
+	if (g_replacementFiles.find(lowerPath) != g_replacementFiles.end()) {
+		return lowerPath;
+	}
+
+	if (!loadReplacementFile(path, g_replacementFiles[lowerPath])) {
+		return "";
+	}
+
+	return lowerPath;
 }
 
 custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path) {
@@ -2733,11 +2742,6 @@ CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity) {
 		if (!g_customKeyValues.empty()) {
 			g_customKeyValues[bestIdx] = g_customKeyValues[eidx];
 			g_customKeyValues[eidx].clear();
-		}
-
-		if (!g_monsterSoundReplacements.empty()) {
-			g_monsterSoundReplacements[bestIdx] = g_monsterSoundReplacements[eidx];
-			g_monsterSoundReplacements[eidx].clear();
 		}
 
 		pEntity->pev = &edicts[bestIdx].v;
@@ -3012,7 +3016,7 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 	g_engfuncs.pfnAlertMessage(target, "%s", log_line);
 
 	if (target == at_error) {
-		if (lastMapName != STRING(gpGlobals->mapname)) {
+		if (gpGlobals->mapname && lastMapName != STRING(gpGlobals->mapname)) {
 			lastMapName = STRING(gpGlobals->mapname);
 			writeDebugLog(g_errorFile, g_errorLogName, "error", "--- Errors for map: " + lastMapName);
 		}
@@ -3384,4 +3388,27 @@ void UTIL_ForceRetouch(edict_t* ent) {
 	ent->v.groundentity = oldGround;
 	ent->v.origin = oldOrigin;
 	UTIL_SetOrigin(&ent->v, ent->v.origin);
+}
+
+const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound) {
+	CBaseEntity* base = CBaseEntity::Instance(ent);
+	CBaseMonster* monst = base ? base->MyMonsterPointer() : NULL;
+
+	if (monst && monst->m_soundReplacementPath) {
+		StringMap& soundReplacements =
+			g_replacementFiles[STRING(monst->m_soundReplacementPath)];
+
+		const char* replacement = soundReplacements.get(sound);
+
+		if (replacement) {
+			return replacement;
+		}
+	}
+	
+	const char* globalReplacement = g_soundReplacements.get(sound);
+	if (globalReplacement) {
+		return globalReplacement;
+	}
+
+	return sound;
 }

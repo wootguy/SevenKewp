@@ -42,6 +42,7 @@
 #include "wav.h"
 #include "ThreadSafeQueue.h"
 #include <thread>
+#include "HashMap.h"
 
 class CBasePlayer;
 
@@ -177,6 +178,8 @@ struct custom_muzzle_flash_t {
 };
 
 extern std::unordered_map<std::string, custom_muzzle_flash_t> g_customMuzzleFlashes;
+
+extern std::unordered_map<std::string, StringMap> g_replacementFiles;
 
 // same as the STRING macro but defined as a function for easy calling in the debugger
 EXPORT const char* cstr(string_t s);
@@ -838,9 +841,12 @@ EXPORT std::string normalize_path(std::string s);
 // returns an empty string if the file can't be found
 EXPORT std::string getGameFilePath(const char* path);
 
-// loads a global model/sound replacement file
+// loads a global model/sound replacement file. Returns a key that you can use with g_replacementFiles
 // format: "file_path" "replacement_file_path"
-EXPORT std::unordered_map<std::string, std::string> loadReplacementFile(const char* path);
+EXPORT std::string loadReplacementFile(const char* path);
+
+// load replacement file directly into a map. Returns true on success.
+EXPORT bool loadReplacementFile(const char* path, StringMap& replacements);
 
 // loads muzzle flash details from file on the first call, then returns cached results
 EXPORT custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path);
@@ -895,6 +901,9 @@ EXPORT uint64_t getFreeSpace(const std::string& path);
 EXPORT uint32_t count_bits_set(uint32_t v);
 
 EXPORT void UTIL_ForceRetouch(edict_t* ent); // force entity to Touch() all triggers it is in contact with
+
+// return global or per-monster sound replacement, or the same path if not replaced 
+EXPORT const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound);
 
 EXPORT void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
 EXPORT void UTIL_Fizz(int eidx, int modelIdx, uint8_t density, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);

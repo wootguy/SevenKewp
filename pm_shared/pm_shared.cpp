@@ -34,8 +34,9 @@
 #include <unordered_map>
 #include <string>
 #include <cstdint>
+#include "HashMap.h"
 
-extern std::unordered_map<std::string, std::string> g_soundReplacements;
+extern StringMap g_soundReplacements;
 
 #ifdef CLIENT_DLL
 	// Spectator Mode
@@ -486,8 +487,9 @@ void PM_PlayStepSound( int step, float fvol )
 		break;
 	}
 
-	if (g_soundReplacements.find(stepSound) != g_soundReplacements.end()) {
-		stepSound = g_soundReplacements[stepSound].c_str();
+	const char* replacement = g_soundReplacements.get(stepSound);
+	if (replacement) {
+		stepSound = replacement;
 	}
 
 	PLAY_MOVEMENT_SOUND(CHAN_BODY, stepSound, fvol, ATTN_NORM, 0, PITCH_NORM);
@@ -2597,8 +2599,9 @@ void PM_Jump (void)
 				break;
 			}
 
-			if (g_soundReplacements.find(wadeSound) != g_soundReplacements.end()) {
-				wadeSound = g_soundReplacements[wadeSound].c_str();
+			const char* replacement = g_soundReplacements.get(wadeSound);
+			if (replacement) {
+				wadeSound = replacement;
 			}
 
 			PLAY_MOVEMENT_SOUND(CHAN_BODY, wadeSound, 1, ATTN_NORM, 0, PITCH_NORM);
@@ -2767,9 +2770,9 @@ void PM_CheckFalling( void )
 			//case 1:
 
 			const char* fallSound = "player/pl_fallpain3.wav";
-
-			if (g_soundReplacements.find(fallSound) != g_soundReplacements.end()) {
-				fallSound = g_soundReplacements[fallSound].c_str();
+			const char* replacement = g_soundReplacements.get(fallSound);
+			if (replacement) {
+				fallSound = replacement;
 			}
 				
 			PLAY_MOVEMENT_SOUND( CHAN_VOICE, fallSound, 1, ATTN_NORM, 0, PITCH_NORM );
@@ -2851,8 +2854,9 @@ void PM_PlayWaterSounds( void )
 			break;
 		}
 
-		if (g_soundReplacements.find(wadeSound) != g_soundReplacements.end()) {
-			wadeSound = g_soundReplacements[wadeSound].c_str();
+		const char* replacement = g_soundReplacements.get(wadeSound);
+		if (replacement) {
+			wadeSound = replacement;
 		}
 
 		PLAY_MOVEMENT_SOUND(CHAN_BODY, wadeSound, 1, ATTN_NORM, 0, PITCH_NORM);
