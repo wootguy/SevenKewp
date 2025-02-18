@@ -95,12 +95,14 @@ void CWorld::loadReplacementFiles() {
 	StringMap& modelReplacementsMap = g_replacementFiles[g_modelReplacementsMap];
 	g_modelReplacements.clear();
 	g_modelReplacements.putAll(modelReplacementsMap);
-	g_modelReplacements.putAll(g_soundReplacementsMod);
+	g_modelReplacements.putAll(g_modelReplacementsMod);
 
 	StringMap& soundReplacementsMap = g_replacementFiles[g_soundReplacementsMap];
 	g_soundReplacements.clear();
 	g_soundReplacements.putAll(soundReplacementsMap);
 	g_soundReplacements.putAll(g_soundReplacementsMod);
+
+
 }
 
 void CWorld::loadSentenceFiles() {
