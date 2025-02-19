@@ -364,6 +364,8 @@ bool BaseHashMap::resizeHashTable(size_t newMaxEntries) {
     delete[] oldDat;
 
     //printStats();
+
+    return true;
 }
 
 void BaseHashMap::printStats() {
