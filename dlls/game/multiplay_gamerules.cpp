@@ -1671,14 +1671,14 @@ BOOL CHalfLifeMultiplay::SurvivalModeCanSpawn( CBasePlayer* pPlayer )
 	if( !SurvivalModeEnabled() )
 		return TRUE;
 
-	std::string szID = std::string( GETPLAYERAUTHID( pPlayer->edict() ) );
+	const char* szID = GETPLAYERAUTHID( pPlayer->edict() );
 
-	if( SurvivalPlayerData[ szID ] )
+	if( SurvivalPlayerData.hasKey(szID) )
 		return FALSE;
 
 	CLIENT_PRINTF( pPlayer->edict(), print_chat, "Survival Mode is enabled, no more respawning allowed." );
 
-	SurvivalPlayerData[ szID ] = true;
+	SurvivalPlayerData.put(szID);
 
 	return TRUE;
 }
@@ -1702,7 +1702,7 @@ void CHalfLifeMultiplay::SurvivalModeThink()
 
 		if( !SurvivalModeEnabled() )
 		{
-			SurvivalPlayerData[ std::string( GETPLAYERAUTHID( pPlayer->edict() ) ) ] = false;
+			SurvivalPlayerData.del(GETPLAYERAUTHID(pPlayer->edict()));
 		}
 		else
 		{

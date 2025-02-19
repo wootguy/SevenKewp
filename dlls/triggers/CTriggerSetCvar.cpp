@@ -29,7 +29,7 @@ void CTriggerSetCVar::KeyValue(KeyValueData* pkvd)
 
 void CTriggerSetCVar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	static std::unordered_set<std::string> valid_cvars = {
+	static StringSet valid_cvars = {
 		"mp_falldamage",
 		"mp_flashlight",
 		"mp_forcerespawn",
@@ -47,7 +47,7 @@ void CTriggerSetCVar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 		"sv_waterfriction",
 	};
 
-	static std::unordered_set<std::string> unimpl_cvars = {
+	static StringSet unimpl_cvars = {
 		"mp_allowmonsterinfo",
 		"mp_banana",
 		"mp_barnacle_paralyze",
@@ -82,13 +82,13 @@ void CTriggerSetCVar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	cvar_t* skillCvar = GetSkillCvar(cvarname);
 
 	if (!skillCvar) {
-		if (unimpl_cvars.count(cvarname)) {
+		if (unimpl_cvars.hasKey(cvarname)) {
 			ALERT(at_error, "%s (trigger_setcvar): unimplemented cvar '%s'\n",
 				STRING(pev->targetname), cvarname);
 			return;
 		}
 
-		if (!valid_cvars.count(cvarname)) {
+		if (!valid_cvars.hasKey(cvarname)) {
 			ALERT(at_error, "%s (trigger_setcvar): invalid cvar '%s'\n",
 				STRING(pev->targetname), cvarname);
 			return;

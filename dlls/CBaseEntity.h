@@ -2,6 +2,7 @@
 #include "EHandle.h"
 #include "saverestore.h"
 #include <stdint.h>
+#include <unordered_set>
 
 class CBaseEntity;
 class CBaseMonster;
@@ -189,7 +190,7 @@ public:
 	virtual void	KeyValue(KeyValueData* pkvd);
 	virtual CKeyValue GetKeyValue(const char* keyName);
 	CKeyValue GetCustomKeyValue(const char* keyName);
-	std::unordered_map<std::string, CKeyValue>* GetCustomKeyValues();
+	HashMap<CKeyValue>* GetCustomKeyValues();
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
 	virtual int		ObjectCaps(void) { return FCAP_ACROSS_TRANSITION; }
@@ -378,7 +379,7 @@ public:
 
 
 	//
-	static CBaseEntity* Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, bool spawn=true, edict_t* pentOwner = NULL, const StringMap& keys = StringMap());
+	static CBaseEntity* Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, bool spawn=true, edict_t* pentOwner = NULL, const StringMap& keys = g_emptyStringMap);
 
 	virtual BOOL FBecomeProne(void) { return FALSE; };
 	edict_t* edict() { return ENT(pev); };
@@ -480,8 +481,12 @@ inline void* GET_PRIVATE(const edict_t* pent)
 
 		if (bent && bent->pev != &pent->v) {
 			// TODO: pev was linked wrong somehow. mem corruption?
+			uint8_t* edicts = (uint8_t*)ENT(0);
+			uint8_t* endEdicts = edicts + sizeof(edict_t) * gpGlobals->maxEntities;
+			bool validBasePev = (uint8_t*)bent->pev >= edicts && (uint8_t*)bent->pev < endEdicts;
+
 			ALERT(at_error, "Entity pev not linked to edict %d pev (%s != %s)\n",
-				ENTINDEX(pent), STRING(pent->v.classname), STRING(bent->pev->classname));
+				ENTINDEX(pent), STRING(pent->v.classname), validBasePev ? STRING(bent->pev->classname) : "<BAT PTR>");
 			bent->pev = (entvars_t*)&pent->v;
 			return NULL;
 		}

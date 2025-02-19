@@ -3,8 +3,6 @@
 #include "EHandle.h"
 #include <string>
 #include <vector>
-#include <unordered_map>
-#include <unordered_set>
 #include <cstdint>
 #include "HashMap.h"
 #include "StringPool.h"

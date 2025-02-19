@@ -33,7 +33,6 @@
 #include <sstream>
 #include <string>
 #include <fstream>
-#include <unordered_set>
 #include <algorithm>
 
 using namespace std;
@@ -43,7 +42,7 @@ extern DLL_GLOBAL BOOL	g_fGameOver;
 extern int gmsgDeathMsg;	// client dll messages
 extern int gmsgMOTD;
 
-std::unordered_set<std::string> g_nomaptrans;
+StringSet g_nomaptrans;
 
 int g_teamplay = 0;
 
@@ -110,7 +109,7 @@ BOOL CGameRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeap
 	return TRUE;
 }
 
-std::unordered_set<std::string> timeCriticalCvars = {
+StringSet timeCriticalCvars = {
 	// to know what to precache during this frame
 	"mp_mergemodels",
 	"mp_default_medkit",
@@ -144,7 +143,7 @@ void AddMapEquipment(std::string name, std::string value) {
 
 void AddMapPluginEquipment() {
 	for (auto pair : g_unrecognizedCfgEquipment) {
-		if (g_weaponClassnames.count(pair.first)) {
+		if (g_weaponClassnames.hasKey(pair.first.c_str())) {
 			AddMapEquipment(pair.first, pair.second);
 		}
 	}
@@ -155,7 +154,7 @@ void execMapCfg() {
 	// Map CFGs are low trust so only whitelisted commands are allowed.
 	// Server owners shouldn't have to check each map for things like "rcon_password HAHA_GOT_YOU"
 
-	static unordered_set<string> whitelistCommands = {
+	static StringSet whitelistCommands = {
 		"sv_gravity",
 		"sv_friction",
 		"sv_accelerate",
@@ -202,7 +201,7 @@ void execMapCfg() {
 		"npc_dropweapons",
 	};
 
-	static unordered_set<string> itemNames = {
+	static StringSet itemNames = {
 		"weapon_crossbow",
 		"weapon_crowbar",
 		"weapon_egon",
@@ -307,11 +306,11 @@ void execMapCfg() {
 		}
 
 		if (name == "nomaptrans") {
-			g_nomaptrans.insert(value);
+			g_nomaptrans.put(value.c_str());
 			continue;
 		}
 
-		if (parts.size() > 1 && whitelistCommands.find(name) != whitelistCommands.end()) {
+		if (parts.size() > 1 && whitelistCommands.hasKey(name.c_str())) {
 			if (mp_prefer_server_maxspeed.value == 1 && name == "sv_maxspeed") {
 				int maxspeed = atoi(value.c_str());
 				if (maxspeed == 270 || maxspeed == 320) { // default speeds for Half-Life (320) and Sven Co-op (270)
@@ -332,7 +331,7 @@ void execMapCfg() {
 			}
 
 			// must know this value now to know what to precache during this frame
-			if (timeCriticalCvars.count(name)) {
+			if (timeCriticalCvars.hasKey(name.c_str())) {
 				CVAR_SET_FLOAT(name.c_str(), atoi(value.c_str()));
 				continue;
 			}
@@ -345,7 +344,7 @@ void execMapCfg() {
 
 			SERVER_COMMAND(UTIL_VarArgs("%s %s\n", name.c_str(), value.c_str()));
 		}
-		else if (itemNames.count(name)) {
+		else if (itemNames.hasKey(name.c_str())) {
 			AddMapEquipment(name, value);
 		}
 		else {
@@ -388,7 +387,7 @@ void execServerCfg() {
 		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
 		
 		// TODO: duplicated in map cfg exec
-		if (timeCriticalCvars.count(name)) {
+		if (timeCriticalCvars.hasKey(name.c_str())) {
 			CVAR_SET_FLOAT(name.c_str(), atoi(value.c_str()));
 			continue;
 		}
@@ -415,8 +414,6 @@ void execSkillCfg(const char* fname, bool isMapSkill) {
 
 	int numChanges = 0;
 
-	std::unordered_set<std::string> cfgChanges;
-
 	while (std::getline(data_stream, line))
 	{
 		vector<string> parts = splitString(line, " \t");
@@ -427,10 +424,10 @@ void execSkillCfg(const char* fname, bool isMapSkill) {
 
 		string name = trimSpaces(toLowerCase(parts[0]));
 		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
-		auto cvar = g_skillCvars.find(name);
+		skill_cvar_t** cvar = g_skillCvars.get(name.c_str());
 
-		if (cvar != g_skillCvars.end()) {
-			float oldVal = cvar->second->cvar.value;
+		if (cvar) {
+			float oldVal = (*cvar)->cvar.value;
 			float newVal = atof(value.c_str());
 
 			if (oldVal == newVal) {

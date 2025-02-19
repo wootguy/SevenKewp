@@ -291,10 +291,10 @@ void CBodyGuard::Spawn()
 }
 
 void CBodyGuard::ShuffleSoundArrays() {
-	if (g_shuffledMonsterSounds.count("bodyguard")) {
+	if (g_shuffledMonsterSounds.hasKey("bodyguard")) {
 		return;
 	}
-	g_shuffledMonsterSounds.insert("bodyguard");
+	g_shuffledMonsterSounds.put("bodyguard");
 
 	SHUFFLE_SOUND_ARRAY(pShotSounds);
 	SHUFFLE_SOUND_ARRAY(pMadSounds);

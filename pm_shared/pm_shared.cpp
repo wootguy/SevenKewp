@@ -31,7 +31,6 @@
 #include <ctype.h>  // isspace
 #include "shared_util.h"
 
-#include <unordered_map>
 #include <string>
 #include <cstdint>
 #include "HashMap.h"

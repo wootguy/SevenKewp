@@ -407,7 +407,7 @@ void CController::Precache()
 	PRECACHE_SOUND("weapons/electro4.wav");
 
 	const char* soundlist = m_soundReplacementKey ? STRING(m_soundReplacementKey) : "";
-	std::unordered_map<std::string, std::string> keys = { {"soundlist", soundlist} };
+	StringMap keys = { {"soundlist", soundlist} };
 	UTIL_PrecacheOther( "controller_head_ball", keys);
 }	
 

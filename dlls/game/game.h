@@ -20,7 +20,6 @@
 #include "voice_gamemgr.h"
 #include <unordered_map>
 #include <string>
-#include <unordered_set>
 #include "HashMap.h"
 
 extern void GameDLLInit( void );
@@ -165,20 +164,20 @@ EXPORT extern std::string g_soundReplacementsMap; // sound replacements for the 
 EXPORT extern StringMap g_soundReplacementsMod; // sound replacements for this mod
 EXPORT extern StringMap g_soundReplacements; // combined sound replacements
 
-EXPORT extern std::unordered_set<std::string> g_mapWeapons; // weapons which should be precached (don't use aliases here)
-EXPORT extern std::unordered_map<std::string, const char*> g_itemNameRemap;
+EXPORT extern StringSet g_mapWeapons; // weapons which should be precached (don't use aliases here)
+EXPORT extern StringMap g_itemNameRemap;
 
 // map for each entity, containing custom keyvalues
 // using a global vector instead of a class member because the map is not POD
-EXPORT extern std::vector<std::unordered_map<std::string, CKeyValue>> g_customKeyValues;
+EXPORT extern std::vector<HashMap<CKeyValue>> g_customKeyValues;
 
 EXPORT extern CKeyValue g_emptyKeyValue; // a keyvalue initialized with zeroes
 
-EXPORT extern std::unordered_set<std::string> g_shuffledMonsterSounds; // classes that had their sounds shuffled this map
+EXPORT extern StringSet g_shuffledMonsterSounds; // classes that had their sounds shuffled this map
 
 EXPORT extern bool g_cfgsExecuted; // set to true after server and map cfgs are executed
 
-EXPORT extern std::unordered_set<std::string> g_nomaptrans; // trigger_changelevel disabled for these maps
+EXPORT extern StringSet g_nomaptrans; // trigger_changelevel disabled for these maps
 
 // lines in the cfg which could possibly be custom weapons. Not known until map plugins are loaded,
 // and map plugins aren't known until the cfg finishes parsing
@@ -201,7 +200,7 @@ EXPORT extern std::unordered_map<uint64_t, player_score_t> g_playerScores;
 EXPORT extern std::unordered_map<uint64_t, player_score_t> g_oldPlayerScores; // state on level load, used in case of map restarts
 
 struct player_inventory_t {
-	std::unordered_set<std::string> weapons;
+	StringSet weapons;
 	int	m_rgAmmo[MAX_AMMO_SLOTS];
 };
 

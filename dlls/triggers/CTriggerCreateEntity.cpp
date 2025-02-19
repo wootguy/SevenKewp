@@ -89,14 +89,14 @@ void CTriggerCreateEntity::KeyValue(KeyValueData* pkvd)
 }
 
 void CTriggerCreateEntity::Precache() {
-	std::unordered_map<std::string, std::string> keys;
+	StringMap keys;
 	
 	for (int i = 0; i < m_iKeys; i++) {
 		if (m_keys[i].valueType == CREATE_KEY_COPY) {
 			continue; // don't care about copied keys. The copied ent should precache itself.
 		}
 
-		keys[STRING(m_keys[i].key_name)] = STRING(m_keys[i].key_value);
+		keys.put(STRING(m_keys[i].key_name), STRING(m_keys[i].key_value));
 	}
 
 	if (m_childClass)

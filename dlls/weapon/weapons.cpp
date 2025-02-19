@@ -275,8 +275,8 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 
 
 bool g_registeringCustomWeps = false;
-std::unordered_set<std::string> g_weaponNames;
-std::unordered_set<std::string> g_weaponClassnames;
+StringSet g_weaponNames;
+StringSet g_weaponClassnames;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 
@@ -362,8 +362,8 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 		AddAmmoNameToAmmoRegistry(info.pszAmmo2);
 	}
 
-	g_weaponNames.insert(info.pszName);
-	g_weaponClassnames.insert(szClassname);
+	g_weaponNames.put(info.pszName);
+	g_weaponClassnames.put(szClassname);
 
 	// events must always be precached, and in the correct order, or else
 	// vanilla clients will play the wrong weapon events

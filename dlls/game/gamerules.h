@@ -300,7 +300,7 @@ public:
 	virtual BOOL IsCoOp( void );
 
 protected:
-    std::unordered_map<std::string, bool> SurvivalPlayerData;
+    StringSet SurvivalPlayerData;
 public:
 	virtual BOOL SurvivalModeEnabled( void );
 	virtual BOOL SurvivalModeCanSpawn( CBasePlayer *pPlayer );
