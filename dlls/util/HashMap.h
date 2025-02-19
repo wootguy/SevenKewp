@@ -76,7 +76,7 @@ protected:
 
     void copyFrom(const BaseHashMap& other);
 
-    virtual void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) = 0;
+    virtual void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) = 0;
 };
 
 // Maps strings to other strings.
@@ -106,7 +106,7 @@ public:
     EXPORT std::vector<std::pair<std::string, std::string>> print() override;
 
 private:
-    EXPORT void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) override;
+    EXPORT void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override;
 };
 
 // Hash table for strings
@@ -133,7 +133,7 @@ public:
     EXPORT bool iterate(iterator_t& iter) const;
 
 private:
-    EXPORT void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) override;
+    EXPORT void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override;
 };
 
 // Maps a string to a POD type (not anything with a constructor like std::string or std::vector)
@@ -183,7 +183,7 @@ public:
     }
 
 private:
-    void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) override {
+    void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override {
         for (size_t i = 0; i < otherEntryCount; i++) {
             hash_map_entry_t* entry = (hash_map_entry_t*)(otherData + otherStringPoolSz + i * entrySz);
             if (!entry->occupied) {

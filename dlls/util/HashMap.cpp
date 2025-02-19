@@ -264,7 +264,7 @@ std::vector<std::pair<std::string, std::string>> BaseHashMap::print() {
 
     std::vector<std::pair<std::string, std::string>> ret;
 
-    for (int i = 0; i < maxEntries; i++) {
+    for (size_t i = 0; i < maxEntries; i++) {
         hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + i * entrySz);
 
         if (entry->occupied) {
@@ -280,7 +280,7 @@ std::vector<std::pair<std::string, std::string>> StringMap::print() {
 
     std::vector<std::pair<std::string, std::string>> ret;
 
-    for (int i = 0; i < maxEntries; i++) {
+    for (size_t i = 0; i < maxEntries; i++) {
         hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + i * entrySz);
 
         if (entry->occupied) {
@@ -347,10 +347,7 @@ bool BaseHashMap::resizeHashTable(size_t newMaxEntries) {
     //ALERT(at_console, "StringMap resized hash table from %d to %d entries\n", (int)maxEntries, (int)newMaxEntries);
 
     char* oldDat = data;
-    char* oldStringPool = data;
-    char* oldEntries = oldDat + stringPoolSz;
     size_t oldMaxEntries = maxEntries;
-    int oldSz = size();
 
     maxEntries = newMaxEntries;
     int dataSz = stringPoolSz + maxEntries * entrySz;
@@ -394,7 +391,7 @@ bool StringMap::put(const char* key, const char* value) {
     return BaseHashMap::put(key, &ival);
 }
 
-void StringMap::putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) {
+void StringMap::putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) {
     for (size_t i = 0; i < otherEntryCount; i++) {
         hash_map_entry_t* entry = (hash_map_entry_t*)(otherData + otherStringPoolSz + i * entrySz);
         if (!entry->occupied) {
@@ -440,7 +437,7 @@ bool StringSet::put(const char* key) {
     return BaseHashMap::put(key, NULL);
 }
 
-void StringSet::putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) {
+void StringSet::putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) {
     for (size_t i = 0; i < otherEntryCount; i++) {
         hash_map_entry_t* entry = (hash_map_entry_t*)(otherData + otherStringPoolSz + i * entrySz);
         if (!entry->occupied) {
