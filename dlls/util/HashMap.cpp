@@ -413,16 +413,16 @@ const char* StringMap::get(const char* key) const {
     return offset ? (data + *offset) : NULL;
 }
 
-bool StringMap::iterate(size_t& offset, const char** key, const char** value) const {
+bool StringMap::iterate(iterator_t& iter) const {
     char* stringPool = data;
 
-    for (; offset < maxEntries; offset++) {
-        hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + offset*entrySz);
+    for (; iter.offset < maxEntries; iter.offset++) {
+        hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + iter.offset * entrySz);
 
         if (entry->occupied) {
-            *key = stringPool + entry->key;
-            *value = stringPool + *(uint16_t*)((char*)entry + sizeof(hash_map_entry_t));
-            offset++;
+            iter.key = stringPool + entry->key;
+            iter.value = stringPool + *(uint16_t*)((char*)entry + sizeof(hash_map_entry_t));
+            iter.offset++;
             return true;
         }
     }
@@ -457,15 +457,15 @@ bool StringSet::hasKey(const char* key) const {
     return getValue(key) != NULL;
 }
 
-bool StringSet::iterate(size_t& offset, const char** key) const {
+bool StringSet::iterate(iterator_t& iter) const {
     char* stringPool = data;
 
-    for (; offset < maxEntries; offset++) {
-        hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + offset * entrySz);
+    for (; iter.offset < maxEntries; iter.offset++) {
+        hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + iter.offset * entrySz);
 
         if (entry->occupied) {
-            *key = stringPool + entry->key;
-            offset++;
+            iter.key = stringPool + entry->key;
+            iter.offset++;
             return true;
         }
     }

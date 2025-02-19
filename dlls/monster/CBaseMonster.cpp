@@ -2125,18 +2125,17 @@ void CBaseMonster::Precache(void) {
 		StringMap& soundReplacements =
 			g_replacementFiles[STRING(m_soundReplacementPath)];
 
-		size_t offset = 0;
-		const char* key, *value;
-		while (soundReplacements.iterate(offset, &key, &value)) {
+		StringMap::iterator_t iter;
+		while (soundReplacements.iterate(iter)) {
 
 			// sentences aren't precached by monster code, so precache the replacement here
-			if (strlen(key) && key[0] == '!') {
-				if (strlen(value) && value[0] == '!') {
+			if (strlen(iter.key) && iter.key[0] == '!') {
+				if (strlen(iter.value) && iter.value[0] == '!') {
 					ALERT(at_console, "Monster sentence replacment not implemented.\n");
 					continue;
 				}
 
-				PRECACHE_SOUND(value);
+				PRECACHE_SOUND(iter.value);
 			}
 		}
 	}

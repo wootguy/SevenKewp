@@ -6422,11 +6422,10 @@ void CBasePlayer::LoadInventory() {
 	if (previousInv != g_playerInventory.end()) {
 		player_inventory_t inv = previousInv->second;
 		
-		size_t offset = 0;
-		const char* key;
-		while (inv.weapons.iterate(offset, &key)) {
-			if (!HasNamedPlayerItem(key)) {
-				GiveNamedItem(STRING(ALLOC_STRING(key)));
+		StringSet::iterator_t iter;
+		while (inv.weapons.iterate(iter)) {
+			if (!HasNamedPlayerItem(iter.key)) {
+				GiveNamedItem(STRING(ALLOC_STRING(iter.key)));
 			}
 		}
 

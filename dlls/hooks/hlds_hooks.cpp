@@ -707,10 +707,9 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	if (keepInventoryAdditions)
 		ALERT(at_console, "Added %d precache weapons from the previous map (keep_inventory)\n", keepInventoryAdditions);
 
-	size_t offset = 0;
-	const char* key;
-	while (g_mapWeapons.iterate(offset, &key)) {
-		UTIL_PrecacheOther(key);
+	StringSet::iterator_t iter;
+	while (g_mapWeapons.iterate(iter)) {
+		UTIL_PrecacheOther(iter.key);
 	}
 	
 	PrecacheTextureSounds();
@@ -768,11 +767,10 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		ALERT(at_error, "Model precache overflow (%d / %d). The following models were not precached:\n",
 			g_tryPrecacheModels.size() + g_bsp.modelCount, MAX_PRECACHE);
 
-		size_t offset = 0;
-		const char* key;
-		while (g_tryPrecacheModels.iterate(offset, &key)) {
-			if (!g_precachedModels.hasKey(key)) {
-				ALERT(at_console, "    %s\n", key);
+		StringSet::iterator_t iter;
+		while (g_tryPrecacheModels.iterate(iter)) {
+			if (!g_precachedModels.hasKey(iter.key)) {
+				ALERT(at_console, "    %s\n", iter.key);
 			}
 		}
 	}
@@ -780,11 +778,10 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		ALERT(at_error, "Sound precache overflow (%d / %d). The following sounds were not precached:\n",
 			g_tryPrecacheSounds.size(), MAX_PRECACHE_SOUND);
 
-		size_t offset = 0;
-		const char* key;
-		while (g_tryPrecacheSounds.iterate(offset, &key)) {
-			if (!g_precachedSounds.get(key)) {
-				g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", key));
+		StringSet::iterator_t iter;
+		while (g_tryPrecacheSounds.iterate(iter)) {
+			if (!g_precachedSounds.get(iter.key)) {
+				g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", iter.key));
 			}
 		}
 	}
@@ -792,11 +789,10 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		ALERT(at_error, "Generic precache overflow (%d / %d). The following resources were not precached:\n",
 			g_tryPrecacheGeneric.size(), MAX_PRECACHE_MODEL);
 
-		size_t offset = 0;
-		const char* key;
-		while (g_tryPrecacheGeneric.iterate(offset, &key)) {
-			if (!g_precachedGeneric.hasKey(key)) {
-				g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", key));
+		StringSet::iterator_t iter;
+		while (g_tryPrecacheGeneric.iterate(iter)) {
+			if (!g_precachedGeneric.hasKey(iter.key)) {
+				g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", iter.key));
 			}
 		}
 	}
@@ -804,11 +800,10 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		ALERT(at_error, "Event precache overflow (%d / %d). The following resources were not precached:\n",
 			g_tryPrecacheEvents.size(), MAX_PRECACHE_EVENT);
 
-		size_t offset = 0;
-		const char* key;
-		while (g_tryPrecacheEvents.iterate(offset, &key)) {
-			if (!g_precachedEvents.get(key)) {
-				g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", key));
+		StringSet::iterator_t iter;
+		while (g_tryPrecacheEvents.iterate(iter)) {
+			if (!g_precachedEvents.get(iter.key)) {
+				g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", iter.key));
 			}
 		}
 	}

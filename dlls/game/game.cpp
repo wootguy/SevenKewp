@@ -186,23 +186,22 @@ void dump_missing_files() {
 	allPrecacheFiles.putAll(g_tryPrecacheGeneric);
 	allPrecacheFiles.putAll(g_tryPrecacheEvents);
 
-	size_t offset = 0;
-	const char* key;
-	while (g_tryPrecacheSounds.iterate(offset, &key)) {
+	StringSet::iterator_t iter;
+	while (g_tryPrecacheSounds.iterate(iter)) {
 		std::string putKey;
 
-		if (strlen(key) > 1) {
-			if (key[0] == '*' || key[0] == '!') {
-				putKey = key + 1; // client will ignore this character and load the path after this
+		if (strlen(iter.key) > 1) {
+			if (iter.key[0] == '*' || iter.key[0] == '!') {
+				putKey = iter.key + 1; // client will ignore this character and load the path after this
 			}
 		}
 
 		allPrecacheFiles.put(("sound/" + putKey).c_str());
 	}
 
-	offset = 0;
-	while (allPrecacheFiles.iterate(offset, &key)) {
-		std::string lowerItem = normalize_path(toLowerCase(key));
+	StringSet::iterator_t iter2;
+	while (allPrecacheFiles.iterate(iter2)) {
+		std::string lowerItem = normalize_path(toLowerCase(iter2.key));
 
 		if (getGameFilePath(lowerItem.c_str()).empty() == dumpMissing) {
 			resList.push_back(lowerItem);
@@ -307,11 +306,9 @@ void freespace_command() {
 void list_precached_sounds() {
 	std::vector<std::string> allSounds;
 
-	size_t offset = 0;
-	const char* key;
-	int* value;
-	while (g_precachedSounds.iterate(offset, &key, &value)) {
-		allSounds.push_back(key);
+	HashMap<int>::iterator_t iter;
+	while (g_precachedSounds.iterate(iter)) {
+		allSounds.push_back(iter.key);
 	}
 
 	sort(allSounds.begin(), allSounds.end());
