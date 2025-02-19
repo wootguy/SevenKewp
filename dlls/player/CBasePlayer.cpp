@@ -766,7 +766,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	if (iWeaponRules == GR_PLR_DROP_GUN_ACTIVE && firstWep && !strcmp(STRING(firstWep->pev->classname), "weapon_shockrifle")) {
 		if (RemovePlayerItem(firstWep)) {
 			// fixme: logic duplicated in weapon drop code
-			static std::unordered_map<std::string, std::string> keys = { {"is_player_ally", "1"} };
+			static StringMap keys = { {"is_player_ally", "1"} };
 			Vector angles(0, pev->angles.y, 0);
 			CBaseEntity* pRoach = CBaseEntity::Create("monster_shockroach",
 				pev->origin + gpGlobals->v_forward * 10, angles, true, edict(), keys);
@@ -5275,7 +5275,7 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 			if (!strcmp(STRING(pWeapon->pev->classname), "weapon_shockrifle")) {
 				// fixme: logic duplicated in kill code
 				if (RemovePlayerItem(pWeapon)) {
-					static std::unordered_map<std::string, std::string> keys = { {"is_player_ally", "1"} };
+					static StringMap keys = { {"is_player_ally", "1"} };
 					Vector angles(0, pev->angles.y, 0);
 					CBaseEntity* pRoach = CBaseEntity::Create("monster_shockroach",
 						pev->origin + gpGlobals->v_forward * 10, angles, true, edict(), keys);

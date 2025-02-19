@@ -117,14 +117,14 @@ void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		return;
 	}
 
-	std::unordered_map<std::string, std::string> keys;
+	StringMap keys;
 
 	for (int i = 0; i < m_iKeys; i++) {
 		const char* keyName = STRING(m_keys[i].key_name);
 		const char* keyValue = STRING(m_keys[i].key_value);
 
 		if (m_keys[i].valueType == CREATE_KEY_STATIC) {
-			keys[keyName] = keyValue;
+			keys.put(keyName, keyValue);
 			continue;
 		}
 
@@ -142,17 +142,17 @@ void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		if (srcKey.keyType) {
 			switch (srcKey.keyType) {
 			case KEY_TYPE_FLOAT:
-				keys[keyName] = UTIL_VarArgs("%f", srcKey.fVal);
+				keys.put(keyName, UTIL_VarArgs("%f", srcKey.fVal));
 				break;
 			case KEY_TYPE_INT:
-				keys[keyName] = UTIL_VarArgs("%d", srcKey.iVal);
+				keys.put(keyName,  UTIL_VarArgs("%d", srcKey.iVal));
 				break;
 			case KEY_TYPE_VECTOR: {
-				keys[keyName] = UTIL_VarArgs("%f %f %f", srcKey.vVal[0], srcKey.vVal[1], srcKey.vVal[2]);
+				keys.put(keyName, UTIL_VarArgs("%f %f %f", srcKey.vVal[0], srcKey.vVal[1], srcKey.vVal[2]));
 				break;
 			}
 			case KEY_TYPE_STRING:
-				keys[keyName] = STRING(srcKey.sVal);
+				keys.put(keyName, STRING(srcKey.sVal));
 				break;
 			default:
 				ALERT(at_console, "'%s' (%s): failed to copy keyvalue '%s' (invalid type)\n",

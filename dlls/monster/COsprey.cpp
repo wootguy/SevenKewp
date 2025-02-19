@@ -325,9 +325,9 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 			{
 				m_hGrunt[i]->SUB_StartFadeOut( );
 			}
-			std::unordered_map<std::string, std::string> keys;
+			StringMap keys;
 			if (m_IsPlayerAlly) {
-				keys["is_player_ally"] = "1";
+				keys.put("is_player_ally", "1");
 			}
 
 			pEntity = Create(replenishMonster, vecSrc, spawnAngles, true, NULL, keys);

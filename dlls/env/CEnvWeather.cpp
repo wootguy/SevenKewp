@@ -993,7 +993,7 @@ void CEnvWeather::WeatherEntsThink() {
 		weather_ent_t& weather = g_weatherEnts[k];
 
 		if (weather.visPlayers && !weather.h_ent) {
-			std::unordered_map<std::string, std::string> keys = {
+			StringMap keys = {
 				{"spawnflags", "3"},
 				{"model", weather.model},
 			};
