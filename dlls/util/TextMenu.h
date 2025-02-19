@@ -1,6 +1,6 @@
 #pragma once
 #include "CBaseEntity.h"
-#include <string>
+#include "StringPool.h"
 
 #define MAX_MENU_OPTIONS 128
 #define MAX_PAGE_OPTIONS 5
@@ -16,8 +16,8 @@ void TextMenuMessageBeginHook(int msg_dest, int msg_type, const float* pOrigin, 
 bool TextMenuClientCommandHook(CBasePlayer* pEntity);
 
 struct TextMenuItem {
-	std::string displayText;
-	std::string data;
+	const char* displayText;
+	const char* data;
 };
 
 typedef void (CTriggerVote::*EntityTextMenuCallback)(class TextMenu* menu, CBasePlayer* player, int itemNumber, TextMenuItem& item);
@@ -34,14 +34,14 @@ public:
 
 	EXPORT static TextMenu* init(CBasePlayer* player, EntityTextMenuCallback callback, CBaseEntity* ent);
 
-	EXPORT void SetTitle(std::string title);
+	EXPORT void SetTitle(const char* title);
 
-	EXPORT void SetPaginationText(std::string backText, std::string moreText);
+	EXPORT void SetPaginationText(const char* backText, const char* moreText);
 
 	// remove exit as a menu option
 	EXPORT void RemoveExit();
 
-	EXPORT void AddItem(std::string displayText, std::string optionData);
+	EXPORT void AddItem(const char* displayText, const char* optionData);
 
 	// set player to NULL to send to all players.
 	// This should be the same target as was used with initMenuForPlayer
@@ -65,20 +65,28 @@ private:
 	int MaxItemsNoPages();
 
 private:
+	struct TextMenuItem_internal {
+		mod_string_t displayText;
+		mod_string_t data;
+
+		TextMenuItem publicItem();
+	};
+
 	EntityTextMenuCallback entCallback = NULL;
 	TextMenuCallback anonCallback = NULL;
 	EHANDLE h_ent; // entity which started the vote
 	float openTime = 0; // time when the menu was opened
 	uint32_t viewers; // bitfield indicating who can see the menu
-	std::string title;
-	TextMenuItem options[MAX_MENU_OPTIONS];
+	TextMenuItem_internal options[MAX_MENU_OPTIONS];
 	int numOptions = 0;
 	int8_t lastPage = 0;
 	int8_t lastDuration = 0;
 	bool noexit;
-	std::string backText;
-	std::string moreText;
-	std::string optionColor;
+	mod_string_t title;
+	mod_string_t backText;
+	mod_string_t moreText;
+	mod_string_t optionColor;
+	StringPool m_strings;
 
 	bool isActive = false;
 

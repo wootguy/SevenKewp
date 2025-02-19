@@ -10,6 +10,7 @@ struct mod_string_t {
     uint32_t offset;
 
     const char* str();
+    void clear();
 };
 
 // allocates strings from a single buffer, using fewer allocations than alternatives like std::string.

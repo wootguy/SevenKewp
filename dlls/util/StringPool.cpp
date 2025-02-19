@@ -66,6 +66,11 @@ const char* mod_string_t::str() {
     return pool ? pool->str(offset) : NULL;
 }
 
+void mod_string_t::clear() {
+    pool = NULL;
+    offset = 0;
+}
+
 bool StringPool::resize(uint32_t newPoolSz) {
     newPoolSz = V_min(MAX_STRING_POOL_SIZE, newPoolSz);
 

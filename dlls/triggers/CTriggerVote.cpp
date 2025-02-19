@@ -77,9 +77,9 @@ void CTriggerVote::MenuCallback(TextMenu* menu, CBasePlayer* player, int itemNum
 		return;
 	}
 
-	UTIL_ClientPrintAll(print_console, UTIL_VarArgs("'%s' voted '%s'\n", player->DisplayName(), item.displayText.c_str()));
-	UTIL_ClientPrint(player, print_center, UTIL_VarArgs("You voted '%s'\n", item.displayText.c_str()));
-	ALERT(at_logged, "trigger_vote: '%s' voted '%s'\n", player->DisplayName(), item.displayText.c_str());
+	UTIL_ClientPrintAll(print_console, UTIL_VarArgs("'%s' voted '%s'\n", player->DisplayName(), item.displayText));
+	UTIL_ClientPrint(player, print_center, UTIL_VarArgs("You voted '%s'\n", item.displayText));
+	ALERT(at_logged, "trigger_vote: '%s' voted '%s'\n", player->DisplayName(), item.displayText);
 }
 
 void CTriggerVote::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {
