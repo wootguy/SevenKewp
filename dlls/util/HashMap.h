@@ -93,8 +93,15 @@ public:
     // get value by key
     const char* get(const char* key) const;
 
-    // return each entry in the map. pass 0 for first iteration. Returns false at the end of iteration
-    bool iterate(size_t& offset, const char** key, const char** value) const;
+    struct iterator_t {
+        size_t offset;
+        const char* key;
+        const char* value;
+
+        iterator_t() : offset(0) {}
+    };
+
+    bool iterate(iterator_t& iter) const;
 
     EXPORT std::vector<std::pair<std::string, std::string>> print() override;
 
@@ -115,8 +122,15 @@ public:
     // returns true if the key exists in the set
     EXPORT bool hasKey(const char* key) const;
 
+    struct iterator_t {
+        size_t offset;
+        const char* key;
+
+        iterator_t() : offset(0) {}
+    };
+
     // return each entry in the map. pass 0 for first iteration. Returns false at the end of iteration
-    EXPORT bool iterate(size_t& offset, const char** key) const;
+    EXPORT bool iterate(iterator_t& iter) const;
 
 private:
     EXPORT void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) override;
@@ -143,16 +157,24 @@ public:
         return (T*)getValue(key);
     }
 
-    bool iterate(size_t& offset, const char** key, T** value) const {
+    struct iterator_t {
+        size_t offset;
+        const char* key;
+        T* value;
+
+        iterator_t() : offset(0) {}
+    };
+
+    bool iterate(iterator_t& iter) const {
         char* stringPool = data;
 
-        for (; offset < maxEntries; offset++) {
-            hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + offset * entrySz);
+        for (; iter.offset < maxEntries; iter.offset++) {
+            hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + iter.offset * entrySz);
 
             if (entry->occupied) {
-                *key = stringPool + entry->key;
-                *value = (T*)((char*)entry + sizeof(hash_map_entry_t));
-                offset++;
+                iter.key = stringPool + entry->key;
+                iter.value = (T*)((char*)entry + sizeof(hash_map_entry_t));
+                iter.offset++;
                 return true;
             }
         }

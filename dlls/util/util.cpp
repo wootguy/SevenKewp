@@ -2295,14 +2295,13 @@ void UTIL_PrecacheOther( const char *szClassname, const StringMap& keys)
 	CBaseEntity *pEntity = CBaseEntity::Instance (VARS( pent ));
 
 	if (pEntity) {
-		size_t offset = 0;
-		const char* key, *value;
-		while (keys.iterate(offset, &key, &value)) {
+		StringMap::iterator_t iter;
+		while (keys.iterate(iter)) {
 			KeyValueData dat;
 			dat.fHandled = false;
 			dat.szClassName = (char*)STRING(pEntity->pev->classname);
-			dat.szKeyName = (char*)key;
-			dat.szValue = (char*)value;
+			dat.szKeyName = (char*)iter.key;
+			dat.szValue = (char*)iter.value;
 			DispatchKeyValue(pent, &dat);
 		}
 
