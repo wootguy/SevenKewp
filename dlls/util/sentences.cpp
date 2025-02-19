@@ -5,20 +5,14 @@
 #include "wav.h"
 #include "eng_wrappers.h"
 
-CustomSentenceMap g_customSentencesMod;
-CustomSentenceMap g_customSentencesMap;
-CustomSentenceMap g_customSentences;
-std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroupsMod;
-std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroupsMap;
-std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroups;
+CustomSentences g_customSentencesMod;
+CustomSentences g_customSentencesMap;
+CustomSentences g_customSentences;
 std::vector<EHANDLE> g_activeSentencePlayers;
 
-void LoadSentenceFile(const char* path,
-	CustomSentenceMap& sentences,
-	std::unordered_map<std::string, std::vector<std::string>>& sentenceGroups)
+void LoadSentenceFile(const char* path, CustomSentences& sentences)
 {
 	sentences.clear();
-	sentenceGroups.clear();
 
 	std::string fpath = getGameFilePath(path);
 	std::ifstream infile(fpath);
@@ -59,25 +53,33 @@ void LoadSentenceFile(const char* path,
 			}
 		}
 		
-		auto groupSents = sentenceGroups.find(groupName);
+		SentenceGroup* group = sentences.groups.get(groupName.c_str());
 
-		if (groupSents != sentenceGroups.end()) {
-			std::vector<std::string>& group = groupSents->second;
+		if (group) {
 
 			bool isUnique = true;
-			for (int i = 0; i < (int)group.size(); i++) {
-				if (group[i] == sentName) {
+			for (int i = 0; i < (int)group->numSents; i++) {
+				if (group->sents[i].str() == sentName) {
 					isUnique = false;
 					break;
 				}
 			}
 
 			if (isUnique) {
-				group.push_back(sentName);
+				if (group->numSents < MAX_GROUP_SENTS) {
+					group->sents[group->numSents++] = sentences.strings.alloc(sentName.c_str());
+				}
+				else {
+					ALERT(at_error, "Exceeded max sentence group members for: %s\n", groupName.c_str());
+				}
 			}
 		}
 		else {
-			sentenceGroups[groupName].push_back(sentName);
+			SentenceGroup group;
+			memset(&group, 0, sizeof(SentenceGroup));
+			group.sents[group.numSents++] = sentences.strings.alloc(sentName.c_str());
+
+			sentences.groups.put(groupName.c_str(), group);
 		}
 	}
 }
@@ -240,20 +242,18 @@ CustomSentence* GetCustomSentence(std::string sentenceName) {
 }
 
 CustomSentence* GetRandomCustomSentence(std::string sentenceGroupName) {
-	auto sentGroup = g_customSentenceGroups.find(toUpperCase(sentenceGroupName));
+	SentenceGroup* sentGroup = g_customSentences.groups.get(toUpperCase(sentenceGroupName).c_str());
 
-	if (sentGroup == g_customSentenceGroups.end()) {
+	if (!sentGroup) {
 		return NULL;
 	}
 
-	std::vector<std::string>& groupVec = sentGroup->second;
-
-	if (sentGroup->second.empty()) {
+	if (!sentGroup->numSents) {
 		ALERT(at_console, "Custom sentence group is empty '%s'\n", sentenceGroupName.c_str());
 		return NULL;
 	}
 
-	std::string randomSentName = groupVec[RANDOM_LONG(0, groupVec.size()-1)];
+	std::string randomSentName = sentGroup->sents[RANDOM_LONG(0, sentGroup->numSents-1)].str();
 
 	CustomSentence* sent = GetCustomSentence(randomSentName);
 
@@ -306,22 +306,22 @@ bool PrecacheCustomSentence(CBaseEntity* ent, std::string name) {
 	name = toUpperCase(name);
 
 	if (name[0] != '!') {
-		auto sentGroup = g_customSentenceGroups.find(toUpperCase(name));
+		SentenceGroup* sentGroup = g_customSentences.groups.get(toUpperCase(name).c_str());
 
-		if (sentGroup == g_customSentenceGroups.end()) {
+		if (!sentGroup) {
 			return false;
 		}
 		
 		bool allSuccess = true;
-
-		for (const std::string& item : sentGroup->second) {
-			CustomSentence* sent = GetCustomSentence(item);
+		for (int i = 0; i < sentGroup->numSents; i++) {
+			CustomSentence* sent = GetCustomSentence(sentGroup->sents[i].str());
 			if (sent) {
 				PrecacheCustomSentence_internal(ent, sent);
 			}
 			else {
 				allSuccess = false;
-				ALERT(at_console, "PrecacheCustomSentence failed: Group has invalid member %s\n", item.c_str());
+				ALERT(at_console, "PrecacheCustomSentence failed: Group has invalid member %s\n",
+					sentGroup->sents[i].str());
 			}
 		}
 
