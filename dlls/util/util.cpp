@@ -94,14 +94,14 @@ unsigned int seed_table[ 256 ] =
 std::string g_mp3Command;
 bool g_seriesMusic; // true if music should keep playing after level change within the same series
 
-std::unordered_map<std::string, int> g_admins;
+HashMap<int> g_admins;
 
 std::thread::id g_main_thread_id = std::this_thread::get_id();
 ThreadSafeQueue<AlertMsgCall> g_thread_prints;
 
 std::string g_lastMapName;
 
-std::unordered_map<std::string, custom_muzzle_flash_t> g_customMuzzleFlashes;
+HashMap<custom_muzzle_flash_t> g_customMuzzleFlashes;
 
 // maps a lower-cased file path to a replacement map
 std::unordered_map<std::string, StringMap> g_replacementFiles;
@@ -1147,7 +1147,7 @@ void UTIL_EmitAmbientSound( edict_t *entity, const float* vecOrigin, const char 
 		}
 	}
 
-	if (!g_precachedSounds.count(toLowerCase(samp))) {
+	if (!g_precachedSounds.get(toLowerCase(samp).c_str())) {
 		// client crash if you try to play this sound
 		ALERT(at_console, "EmitAmbientSound not precached: %s\n", samp);
 		return;
@@ -2281,7 +2281,7 @@ BOOL UTIL_IsValidEntity( edict_t *pent )
 }
 
 
-void UTIL_PrecacheOther( const char *szClassname, std::unordered_map<std::string, std::string> keys)
+void UTIL_PrecacheOther( const char *szClassname, const StringMap& keys)
 {
 	edict_t	*pent;
 
@@ -2295,12 +2295,14 @@ void UTIL_PrecacheOther( const char *szClassname, std::unordered_map<std::string
 	CBaseEntity *pEntity = CBaseEntity::Instance (VARS( pent ));
 
 	if (pEntity) {
-		for (auto item : keys) {
+		size_t offset = 0;
+		const char* key, *value;
+		while (keys.iterate(offset, &key, &value)) {
 			KeyValueData dat;
 			dat.fHandled = false;
 			dat.szClassName = (char*)STRING(pEntity->pev->classname);
-			dat.szKeyName = (char*)item.first.c_str();
-			dat.szValue = (char*)item.second.c_str();
+			dat.szKeyName = (char*)key;
+			dat.szValue = (char*)value;
 			DispatchKeyValue(pent, &dat);
 		}
 
@@ -2563,9 +2565,9 @@ std::string loadReplacementFile(const char* path) {
 }
 
 custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path) {
-	auto cache = g_customMuzzleFlashes.find(path);
-	if (cache != g_customMuzzleFlashes.end()) {
-		return cache->second;
+	custom_muzzle_flash_t* cache = g_customMuzzleFlashes.get(path);
+	if (cache) {
+		return *cache;
 	}
 
 	custom_muzzle_flash_t flash;
@@ -2639,7 +2641,7 @@ custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path) {
 		}
 	}
 
-	g_customMuzzleFlashes[path] = flash;
+	g_customMuzzleFlashes.put(path, flash);
 
 	return flash;
 }
@@ -3195,7 +3197,7 @@ void LoadAdminList(bool forceUpdate) {
 			line = line.substr(1);
 		}
 
-		g_admins[line] = adminLevel;
+		g_admins.put(line.c_str(), adminLevel);
 	}
 
 	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded %d admin(s) from file\n", g_admins.size()));
@@ -3214,9 +3216,9 @@ int AdminLevel(CBasePlayer* plr) {
 		}
 	}
 
-	auto adminStatus = g_admins.find(steamId);
-	if (adminStatus != g_admins.end()) {
-		return adminStatus->second;
+	int* adminStatus = g_admins.get(steamId.c_str());
+	if (adminStatus) {
+		return *adminStatus;
 	}
 
 	return ADMIN_NO;

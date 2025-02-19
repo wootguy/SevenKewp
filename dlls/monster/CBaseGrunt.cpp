@@ -2838,13 +2838,13 @@ void CBaseRepel::Spawn(void) {
 void CBaseRepel::Precache(void) {
 	CBaseMonster::Precache();
 
-	std::unordered_map<std::string, std::string> keys;
+	StringMap keys;
 	if (m_soundReplacementKey)
-		keys["soundlist"] = STRING(m_soundReplacementKey);
+		keys.put("soundlist", STRING(m_soundReplacementKey));
 	if (m_IsPlayerAlly)
-		keys["is_player_ally"] = "1";
+		keys.put("is_player_ally", "1");
 	if (pev->weapons)
-		keys["weapons"] = UTIL_VarArgs("%d", pev->weapons);
+		keys.put("weapons", UTIL_VarArgs("%d", pev->weapons));
 
 	UTIL_PrecacheOther(GetMonsterType(), keys);
 	m_iSpriteTexture = PRECACHE_MODEL("sprites/rope.spr");

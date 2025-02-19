@@ -6405,7 +6405,7 @@ void CBasePlayer::SaveInventory() {
 			CBasePlayerItem* pPlayerItem = ent ? ent->GetWeaponPtr() : NULL;
 
 			while (pPlayerItem) {
-				inv.weapons.insert(STRING(pPlayerItem->pev->classname));
+				inv.weapons.put(STRING(pPlayerItem->pev->classname));
 				CBaseEntity* next = pPlayerItem->m_pNext.GetEntity();
 				pPlayerItem = next ? next->GetWeaponPtr() : NULL;
 			}
@@ -6422,9 +6422,11 @@ void CBasePlayer::LoadInventory() {
 	if (previousInv != g_playerInventory.end()) {
 		player_inventory_t inv = previousInv->second;
 		
-		for (std::string item : inv.weapons) {
-			if (!HasNamedPlayerItem(item.c_str())) {
-				GiveNamedItem(STRING(ALLOC_STRING(item.c_str())));
+		size_t offset = 0;
+		const char* key;
+		while (inv.weapons.iterate(offset, &key)) {
+			if (!HasNamedPlayerItem(key)) {
+				GiveNamedItem(STRING(ALLOC_STRING(key)));
 			}
 		}
 

@@ -119,7 +119,7 @@ void CChangeLevel::Spawn(void)
 		SetTouch(&CChangeLevel::TouchChangeLevel);
 	//	ALERT( at_console, "TRANSITION: %s (%s)\n", m_szMapName, m_szLandmarkName );
 
-	if (g_nomaptrans.count(toLowerCase(m_szMapName))) {
+	if (g_nomaptrans.hasKey(toLowerCase(m_szMapName).c_str())) {
 		
 		pev->movetype = MOVETYPE_PUSH;
 		pev->solid = SOLID_BSP;

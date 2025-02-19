@@ -284,9 +284,9 @@ struct skill_cvar_t {
 
 EXPORT extern DLL_GLOBAL skilldata_t gSkillData;
 
-EXPORT extern std::unordered_map<std::string, float> g_defaultMonsterHealthMap;
-EXPORT extern std::unordered_map<std::string, float> g_defaultMonsterHealthServer;
-EXPORT extern std::unordered_map<std::string, skill_cvar_t*> g_skillCvars;
+EXPORT extern HashMap<float> g_defaultMonsterHealthMap;
+EXPORT extern HashMap<float> g_defaultMonsterHealthServer;
+EXPORT extern HashMap<skill_cvar_t*> g_skillCvars;
 
 // mapSkills = true if updating skill settings for a specific map
 void RefreshSkillData(bool mapSkills);

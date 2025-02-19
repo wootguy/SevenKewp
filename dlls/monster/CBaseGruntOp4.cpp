@@ -267,10 +267,10 @@ void CBaseGruntOp4::ShuffleSoundArrays() {
 	// don't use a classname because child classes will cause more shuffling during map load
 	// don't allow sounds to be shared between shuffled arrays, or else precache count
 	// will flucuate on each map load
-	if (g_shuffledMonsterSounds.count("op4grunt")) {
+	if (g_shuffledMonsterSounds.hasKey("op4grunt")) {
 		return;
 	}
-	g_shuffledMonsterSounds.insert("op4grunt");
+	g_shuffledMonsterSounds.put("op4grunt");
 
 	SHUFFLE_SOUND_ARRAY(pPainSounds);
 	SHUFFLE_SOUND_ARRAY(pDieSounds);

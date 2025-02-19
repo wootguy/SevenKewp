@@ -2,11 +2,12 @@
 #include "util.h"
 #include "wav.h"
 
-std::unordered_map<std::string, WavInfo> g_wavInfos;
+HashMap<WavInfo> g_wavInfos;
 
 WavInfo getWaveFileInfo(const char* path) {
-	if (g_wavInfos.find(path) != g_wavInfos.end()) {
-		return g_wavInfos[path];
+	WavInfo* cached = g_wavInfos.get(path);
+	if (cached) {
+		return *cached;
 	}
 
 	std::string fpath = getGameFilePath(UTIL_VarArgs("sound/%s", path));
@@ -221,7 +222,7 @@ WavInfo getWaveFileInfo(const char* path) {
 	}
 
 cleanup:
-	g_wavInfos[path] = info;
+	g_wavInfos.put(path, info);
 	if (file) {
 		fclose(file);
 	}

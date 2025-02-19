@@ -8,20 +8,20 @@ class CBaseEntity;
 EXPORT extern Bsp g_bsp;
 
 // resources that were successfully precached
-EXPORT extern std::unordered_set<std::string> g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
-EXPORT extern std::unordered_set<std::string> g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
-EXPORT extern std::unordered_map<std::string, int> g_precachedSounds;
-EXPORT extern std::unordered_set<std::string> g_precachedGeneric;
-EXPORT extern std::unordered_map<std::string, int> g_precachedEvents;
+EXPORT extern StringSet g_precachedModels; // storing values so GET_MODEL can be used with MAKE_STRING
+EXPORT extern StringSet g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
+EXPORT extern HashMap<int> g_precachedSounds;
+EXPORT extern StringSet g_precachedGeneric;
+EXPORT extern HashMap<int> g_precachedEvents;
 
 // resources that attempted to precache but may have been replaced with a failure model
-EXPORT extern std::unordered_set<std::string> g_tryPrecacheModels;
-EXPORT extern std::unordered_set<std::string> g_tryPrecacheSounds;
-EXPORT extern std::unordered_set<std::string> g_tryPrecacheGeneric;
-EXPORT extern std::unordered_set<std::string> g_tryPrecacheEvents;
+EXPORT extern StringSet g_tryPrecacheModels;
+EXPORT extern StringSet g_tryPrecacheSounds;
+EXPORT extern StringSet g_tryPrecacheGeneric;
+EXPORT extern StringSet g_tryPrecacheEvents;
 
 // find an already alloc'd string by its contents (used by ALLOC_STRING)
-extern std::unordered_map<std::string, string_t> g_allocedStrings;
+extern HashMap<string_t> g_allocedStrings;
 
 #ifdef CLIENT_DLL
 #define PRECACHE_MODEL	(*g_engfuncs.pfnPrecacheModel)

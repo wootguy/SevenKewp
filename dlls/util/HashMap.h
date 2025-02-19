@@ -3,6 +3,8 @@
 #include <stddef.h>
 #include <initializer_list>
 #include <utility>
+#include <unordered_map>
+#include <vector>
 
 typedef uint16_t hmap_string_t;
 
@@ -26,6 +28,8 @@ public:
     EXPORT BaseHashMap(int valueSz);
     EXPORT BaseHashMap(int valueSz, int maxEntries, uint16_t stringPoolSz);
     EXPORT ~BaseHashMap();
+    EXPORT BaseHashMap(const BaseHashMap& other);
+    EXPORT BaseHashMap& operator=(const BaseHashMap& other);
 
     void clear();
 
@@ -47,6 +51,9 @@ public:
     // delete key (TODO: does not clear string memory)
     void del(const char* key);
 
+    // for debugging
+    virtual std::vector<std::pair<std::string, std::string>> print();
+
 protected:
     char* data; // allocated memory for both strings and entries
     size_t maxEntries;
@@ -65,7 +72,9 @@ protected:
 
     bool resizeHashTable(size_t newMaxEntries);
 
-    void* getValue(const char* key) const;
+    EXPORT void* getValue(const char* key) const;
+
+    void copyFrom(const BaseHashMap& other);
 
     virtual void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) = 0;
 };
@@ -87,6 +96,28 @@ public:
     // return each entry in the map. pass 0 for first iteration. Returns false at the end of iteration
     bool iterate(size_t& offset, const char** key, const char** value) const;
 
+    EXPORT std::vector<std::pair<std::string, std::string>> print() override;
+
+private:
+    EXPORT void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) override;
+};
+
+// Hash table for strings
+class StringSet : public BaseHashMap {
+public:
+    StringSet() : BaseHashMap(0) {}
+    StringSet(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(0, maxEntries, stringPoolSz) {}
+    EXPORT StringSet(std::initializer_list<const char*> init);
+
+    // add a key to the map
+    bool put(const char* key);
+
+    // returns true if the key exists in the set
+    EXPORT bool hasKey(const char* key) const;
+
+    // return each entry in the map. pass 0 for first iteration. Returns false at the end of iteration
+    EXPORT bool iterate(size_t& offset, const char** key) const;
+
 private:
     EXPORT void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) override;
 };
@@ -96,8 +127,6 @@ private:
 template <typename T>
 class HashMap : public BaseHashMap {
 public:
-    hash_map_stats_t stats;
-
     HashMap() : BaseHashMap(sizeof(T)) {}
     HashMap(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(sizeof(T), maxEntries, stringPoolSz) {}
     HashMap(std::initializer_list<std::pair<const char*, T>> init) : BaseHashMap(sizeof(T)) {
@@ -145,3 +174,5 @@ private:
         }
     }
 };
+
+EXPORT extern const StringMap g_emptyStringMap;

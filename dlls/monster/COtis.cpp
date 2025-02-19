@@ -751,10 +751,10 @@ void COtis :: TalkInit()
 }
 
 void COtis::ShuffleSoundArrays() {
-	if (g_shuffledMonsterSounds.count("otis")) {
+	if (g_shuffledMonsterSounds.hasKey("otis")) {
 		return;
 	}
-	g_shuffledMonsterSounds.insert("otis");
+	g_shuffledMonsterSounds.put("otis");
 
 	SHUFFLE_SOUND_ARRAY(pAnswerSounds);
 	SHUFFLE_SOUND_ARRAY(pQuestionSounds);

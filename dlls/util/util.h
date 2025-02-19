@@ -30,7 +30,6 @@
 #include <string>
 #include "game.h"
 #include <unordered_map>
-#include <unordered_set>
 #include <string>
 #include "mstream.h"
 #include <float.h>
@@ -48,14 +47,14 @@ class CBasePlayer;
 
 extern EXPORT globalvars_t				*gpGlobals;
 
-extern std::unordered_set<std::string> g_weaponNames; // names given by weapons (may have a prefix: "hlcoop/weapon_grapple")
-extern std::unordered_set<std::string> g_weaponClassnames; // valid weapon classnames
+extern StringSet g_weaponNames; // names given by weapons (may have a prefix: "hlcoop/weapon_grapple")
+extern StringSet g_weaponClassnames; // valid weapon classnames
 extern int g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict
 
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
 
-extern std::unordered_map<std::string, int> g_admins;
+extern HashMap<int> g_admins;
 
 EXPORT extern std::string g_mp3Command; // current global mp3 command
 EXPORT extern bool g_seriesMusic; // true if music should keep playing after level change within the same series
@@ -177,7 +176,7 @@ struct custom_muzzle_flash_t {
 	Vector offset;
 };
 
-extern std::unordered_map<std::string, custom_muzzle_flash_t> g_customMuzzleFlashes;
+extern HashMap<custom_muzzle_flash_t> g_customMuzzleFlashes;
 
 extern std::unordered_map<std::string, StringMap> g_replacementFiles;
 
@@ -445,7 +444,7 @@ EXPORT void			UTIL_Bubbles( Vector mins, Vector maxs, int count );
 EXPORT void			UTIL_BubbleTrail( Vector from, Vector to, int count );
 
 // allows precacheing of other entities
-EXPORT void			UTIL_PrecacheOther( const char *szClassname, std::unordered_map<std::string, std::string> keys=std::unordered_map<std::string, std::string>() );
+EXPORT void			UTIL_PrecacheOther( const char *szClassname, const StringMap& keys=g_emptyStringMap);
 
 // prints a message to the client.
 EXPORT void			UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char* msg);

@@ -23,7 +23,7 @@
 
 //#define DEBUG_MONSTER "monster_human_grunt" // uncomment to enable verbose logging
 
-std::unordered_set<std::string> g_shuffledMonsterSounds;
+StringSet g_shuffledMonsterSounds;
 
 extern bool g_freeRoam;
 
@@ -2409,7 +2409,7 @@ int CBaseMonster::Classify(int defaultClassify) {
 
 int CBaseMonster::DefaultClassify(const char* monstertype) {
 	// Keep this map in sync with each monster's Classify method
-	static std::unordered_map<std::string, int> classMap = {
+	static HashMap<int> classMap = {
 		{"hornet", CLASS_ALIEN_BIOWEAPON},
 		{"monster_alien_babyvoltigore", CLASS_ALIEN_MONSTER},
 		{"monster_alien_controller", CLASS_ALIEN_MILITARY},
@@ -2476,8 +2476,9 @@ int CBaseMonster::DefaultClassify(const char* monstertype) {
 		{"player", CLASS_PLAYER}
 	};
 
-	if (classMap.find(monstertype) != classMap.end()) {
-		return classMap[monstertype];
+	int* mtype = classMap.get(monstertype);
+	if (mtype) {
+		return *mtype;
 	}
 
 	return CLASS_NONE;

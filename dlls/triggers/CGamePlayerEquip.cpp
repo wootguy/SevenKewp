@@ -98,8 +98,9 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 
 	std::string itemLower = toLowerCase(itemName);
 	
-	if (g_itemNameRemap.find(itemLower) != g_itemNameRemap.end()) {
-		itemName = g_itemNameRemap[itemLower];
+	const char* remap = g_itemNameRemap.get(itemLower.c_str());
+	if (remap) {
+		itemName = remap;
 	}
 
 	if (!strcmp(itemName, "<keyvalue>")) {

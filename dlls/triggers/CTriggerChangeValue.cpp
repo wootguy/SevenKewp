@@ -469,7 +469,7 @@ void CTriggerChangeValue::LoadSourceValues() {
 }
 
 bool CTriggerChangeValue::LoadSpecialStaticValue(const char* val, int& specialVal) {
-	static std::unordered_map<std::string, int> special_vals = {
+	static HashMap<int> special_vals = {
 		{"FL_FLY", FL_FLY},
 		{"FL_SWIM", FL_SWIM},
 		{"FL_CONVEYOR", FL_CONVEYOR},
@@ -607,8 +607,9 @@ bool CTriggerChangeValue::LoadSpecialStaticValue(const char* val, int& specialVa
 
 	std::string upperVal = toUpperCase(val);
 
-	if (special_vals.find(upperVal) != special_vals.end()) {
-		specialVal = special_vals[upperVal];
+	int* special = special_vals.get(upperVal.c_str());
+	if (special) {
+		specialVal = *special;
 		return true;
 	}
 

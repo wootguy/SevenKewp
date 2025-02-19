@@ -12,6 +12,8 @@
 // blocked space)
 #define HMAP_MAX_FILL_PERCENT 0.5f
 
+const StringMap g_emptyStringMap;
+
 BaseHashMap::BaseHashMap(int valueSz) {
     data = NULL;
     stringOffset = 1; // skip 0 for NULL value
@@ -24,6 +26,39 @@ BaseHashMap::BaseHashMap(int valueSz) {
 BaseHashMap::BaseHashMap(int valueSz, int maxEntries, uint16_t stringPoolSz) {
     this->entrySz = valueSz + sizeof(hash_map_entry_t);
     init(maxEntries, stringPoolSz);
+}
+
+BaseHashMap::BaseHashMap(const BaseHashMap& other) {
+    copyFrom(other);
+}
+
+void BaseHashMap::copyFrom(const BaseHashMap& other) {
+    memcpy(&stats, &other.stats, sizeof(hash_map_stats_t));
+    maxEntries = other.maxEntries;
+    stringOffset = other.stringOffset;
+    stringPoolSz = other.stringPoolSz;
+    entrySz = other.entrySz;
+
+    if (other.data) {
+        int dataSz = stringPoolSz + maxEntries * entrySz;
+        data = new char[dataSz];
+        memcpy(data, other.data, dataSz);
+    }
+    else {
+        data = NULL;
+    }
+}
+
+BaseHashMap& BaseHashMap::operator=(const BaseHashMap& other) {
+    if (this != &other) {
+        if (data) {
+            delete[] data;
+            data = NULL;
+        }
+
+        copyFrom(other);
+    }
+    return *this;
 }
 
 void BaseHashMap::init(int maxEntries, uint16_t stringPoolSz) {
@@ -95,7 +130,6 @@ bool BaseHashMap::put(const char* key, void* value) {
 
     uint32_t index = hash(key);
     uint32_t startIndex = index;
-    int oldSz = size();
 
     int depth = 0;
 
@@ -107,7 +141,8 @@ bool BaseHashMap::put(const char* key, void* value) {
         const char* entryKey = stringPool + entry->key;
 
         if (!strcmp(entryKey, key)) {
-            memcpy((char*)entry + sizeof(hash_map_entry_t), value, valueSz); // update existing
+            if (value)
+                memcpy((char*)entry + sizeof(hash_map_entry_t), value, valueSz); // update existing
             return true;
         }
 
@@ -117,7 +152,7 @@ bool BaseHashMap::put(const char* key, void* value) {
         depth += 1;
 
         if (index == startIndex) {
-            ALERT(at_error, "StringMap is full. Failed to insert '%s' = '%s'\n", key, value);
+            ALERT(at_error, "HashMap is full. Failed to insert '%s'\n", key);
             return false;
         }
     }
@@ -129,11 +164,12 @@ bool BaseHashMap::put(const char* key, void* value) {
     // new entry
     entry->key = ikey;
     entry->occupied = true;
-    memcpy((char*)entry + sizeof(hash_map_entry_t), value, valueSz);
+    if (value)
+        memcpy((char*)entry + sizeof(hash_map_entry_t), value, valueSz);
 
     if (!entry->key) {
         entry->occupied = false;
-        ALERT(at_error, "StringMap failed to insert '%s' = '%s'\n", key, value);
+        ALERT(at_error, "HashMap failed to insert '%s'\n", key);
         return false;
     }
 
@@ -221,6 +257,39 @@ void BaseHashMap::del(const char* key) {
             return;
         }
     }
+}
+
+std::vector<std::pair<std::string, std::string>> BaseHashMap::print() {
+    char* stringPool = data;
+
+    std::vector<std::pair<std::string, std::string>> ret;
+
+    for (int i = 0; i < maxEntries; i++) {
+        hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + i * entrySz);
+
+        if (entry->occupied) {
+            ret.push_back({stringPool + entry->key, "" });
+        }
+    }
+
+    return ret;
+}
+
+std::vector<std::pair<std::string, std::string>> StringMap::print() {
+    char* stringPool = data;
+
+    std::vector<std::pair<std::string, std::string>> ret;
+
+    for (int i = 0; i < maxEntries; i++) {
+        hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + i * entrySz);
+
+        if (entry->occupied) {
+            const char* val = stringPool + *(uint16_t*)((char*)entry + sizeof(hash_map_entry_t));
+            ret.push_back({ stringPool + entry->key, val });
+        }
+    }
+
+    return ret;
 }
 
 int BaseHashMap::size() {
@@ -353,6 +422,49 @@ bool StringMap::iterate(size_t& offset, const char** key, const char** value) co
         if (entry->occupied) {
             *key = stringPool + entry->key;
             *value = stringPool + *(uint16_t*)((char*)entry + sizeof(hash_map_entry_t));
+            offset++;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+StringSet::StringSet(std::initializer_list<const char*> init) : BaseHashMap(0) {
+    for (const auto& str : init) {
+        put(str);
+    }
+}
+
+bool StringSet::put(const char* key) {
+    return BaseHashMap::put(key, NULL);
+}
+
+void StringSet::putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) {
+    for (size_t i = 0; i < otherEntryCount; i++) {
+        hash_map_entry_t* entry = (hash_map_entry_t*)(otherData + otherStringPoolSz + i * entrySz);
+        if (!entry->occupied) {
+            continue;
+        }
+
+        if (!StringSet::put(otherData + entry->key)) {
+            ALERT(at_error, "StringSet failed to put during table resize\n");
+        }
+    }
+}
+
+bool StringSet::hasKey(const char* key) const {
+    return getValue(key) != NULL;
+}
+
+bool StringSet::iterate(size_t& offset, const char** key) const {
+    char* stringPool = data;
+
+    for (; offset < maxEntries; offset++) {
+        hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + offset * entrySz);
+
+        if (entry->occupied) {
+            *key = stringPool + entry->key;
             offset++;
             return true;
         }

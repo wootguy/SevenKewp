@@ -17,7 +17,7 @@
 extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 
-std::vector<std::unordered_map<std::string, CKeyValue>> g_customKeyValues;
+std::vector<HashMap<CKeyValue>> g_customKeyValues;
 CKeyValue g_emptyKeyValue;
 
 CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName);
@@ -300,17 +300,17 @@ void CBaseEntity::KeyValue(KeyValueData* pkvd) {
 			return;
 		}
 
-		std::unordered_map<std::string, CKeyValue>& customKeys = *GetCustomKeyValues();
-		std::unordered_map<std::string, CKeyValue>::iterator it = customKeys.find(pkvd->szKeyName);
+		HashMap<CKeyValue>* customKeys = GetCustomKeyValues();
+		CKeyValue* val = customKeys->get(pkvd->szKeyName);
 
-		if (it != customKeys.end()) {
-			value.keyName = it->second.keyName; // reuse the key name to save string memory
+		if (val) {
+			value.keyName = val->keyName; // reuse the key name to save string memory
 		}
 		else {
 			value.keyName = STRING(ALLOC_STRING(pkvd->szKeyName));
 		}
 
-		customKeys[pkvd->szKeyName] = value;
+		customKeys->put(pkvd->szKeyName, value);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "classify"))
@@ -495,11 +495,11 @@ CKeyValue CBaseEntity::GetCustomKeyValue(const char* keyName) {
 		return g_emptyKeyValue;
 	}
 
-	std::unordered_map<std::string, CKeyValue>* customKeys = GetCustomKeyValues();
-	std::unordered_map<std::string, CKeyValue>::iterator it = customKeys->find(keyName);
+	HashMap<CKeyValue>* customKeys = GetCustomKeyValues();
+	CKeyValue* key = customKeys->get(keyName);
 
-	if (it != customKeys->end()) {
-		return it->second;
+	if (key) {
+		return *key;
 	}
 	
 	ALERT(at_console, "%s (%s) has no custom key named %s\n",
@@ -515,7 +515,7 @@ CKeyValue CBaseEntity::GetKeyValue(const char* keyName) {
 	return GetEntvarsKeyvalue(pev, keyName);
 }
 
-std::unordered_map<std::string, CKeyValue>* CBaseEntity::GetCustomKeyValues() {
+HashMap<CKeyValue>* CBaseEntity::GetCustomKeyValues() {
 	if (g_customKeyValues.empty())
 		g_customKeyValues.resize(gpGlobals->maxEntities);
 
@@ -1081,7 +1081,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 				if (g_debugMonster) {
 					UTIL_Remove(g_debugCycler);
 					CBaseEntity* debugMon = g_debugMonster;
-					std::unordered_map<std::string, std::string> keys;
+					StringMap keys;
 					keys["model"] = STRING(debugMon->pev->model);
 					CBaseMonster* cycler = (CBaseMonster*)Create("cycler", debugMon->pev->origin, debugMon->pev->angles, 0, keys);
 					cycler->pev->solid = SOLID_NOT;

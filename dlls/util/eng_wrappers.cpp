@@ -8,17 +8,17 @@
 #include "PluginManager.h"
 #include <fstream>
 
-std::unordered_set<std::string> g_precachedModels;
-std::unordered_set<std::string> g_missingModels;
-std::unordered_map<std::string, int> g_precachedSounds;
-std::unordered_set<std::string> g_precachedGeneric;
-std::unordered_map<std::string, int> g_precachedEvents;
-std::unordered_set<std::string> g_tryPrecacheModels;
-std::unordered_set<std::string> g_tryPrecacheSounds;
-std::unordered_set<std::string> g_tryPrecacheGeneric;
-std::unordered_set<std::string> g_tryPrecacheEvents;
+StringSet g_precachedModels;
+StringSet g_missingModels;
+HashMap<int> g_precachedSounds;
+StringSet g_precachedGeneric;
+HashMap<int> g_precachedEvents;
+StringSet g_tryPrecacheModels;
+StringSet g_tryPrecacheSounds;
+StringSet g_tryPrecacheGeneric;
+StringSet g_tryPrecacheEvents;
 
-std::unordered_map<std::string, string_t> g_allocedStrings;
+HashMap<string_t> g_allocedStrings;
 
 Bsp g_bsp;
 
@@ -176,7 +176,7 @@ int PRECACHE_GENERIC(const char* path) {
 	}
 
 	if (g_serveractive) {
-		if (g_precachedGeneric.find(path) != g_precachedGeneric.end()) {
+		if (g_precachedGeneric.hasKey(path)) {
 			return g_engfuncs.pfnPrecacheGeneric(STRING(ALLOC_STRING(path)));
 		}
 		else {
@@ -196,10 +196,10 @@ int PRECACHE_GENERIC(const char* path) {
 		return -1;
 	}
 
-	g_tryPrecacheGeneric.insert(path);
+	g_tryPrecacheGeneric.put(path);
 
 	if (g_tryPrecacheGeneric.size() < MAX_PRECACHE) {
-		g_precachedGeneric.insert(path);
+		g_precachedGeneric.put(path);
 		return g_engfuncs.pfnPrecacheGeneric(STRING(ALLOC_STRING(path)));
 	}
 	else {
@@ -221,9 +221,9 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 	}
 
 	if (g_serveractive) {
-		auto precache = g_precachedSounds.find(path);
-		if (precache != g_precachedSounds.end()) {
-			return precache->second;
+		int* precache = g_precachedSounds.get(path);
+		if (precache) {
+			return *precache;
 		}
 		else {
 			ALERT(at_warning, "PrecacheSound failed: %s\n", path);
@@ -235,11 +235,11 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
 	}
 
-	g_tryPrecacheSounds.insert(path);
+	g_tryPrecacheSounds.put(path);
 
 	if (g_tryPrecacheSounds.size() <= MAX_PRECACHE_SOUND) {
 		int soundIdx = g_engfuncs.pfnPrecacheSound(STRING(ALLOC_STRING(path)));
-		g_precachedSounds[path] = soundIdx;
+		g_precachedSounds.put(path, soundIdx);
 		return soundIdx;
 	}
 	else {
@@ -418,18 +418,18 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
 	}
 
-	bool alreadyPrecached = g_precachedModels.find(path) != g_precachedModels.end();
+	bool alreadyPrecached = g_precachedModels.hasKey(path);
 	if (!alreadyPrecached && getGameFilePath(path).empty()) {
-		if (!g_missingModels.count(path)) {
+		if (!g_missingModels.hasKey(path)) {
 			ALERT(at_error, "Model precache failed. File not found: %s\n", path);
-			g_missingModels.insert(path);
+			g_missingModels.put(path);
 		}
 
 		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
 	}
 
 	if (g_serveractive) {
-		if (g_precachedModels.find(path) != g_precachedModels.end()) {
+		if (g_precachedModels.hasKey(path)) {
 			return g_engfuncs.pfnPrecacheModel(STRING(ALLOC_STRING(path)));
 		}
 		else {
@@ -442,12 +442,12 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
 	}
 
-	g_tryPrecacheModels.insert(path);
+	g_tryPrecacheModels.put(path);
 
 	// Tested with sc_darknebula.
 	if (g_tryPrecacheModels.size() + g_bsp.entityBspModelCount + 1 <= MAX_PRECACHE_MODEL) {
-		if (g_precachedModels.find(path) == g_precachedModels.end())
-			g_precachedModels.insert(path);
+		if (!g_precachedModels.hasKey(path))
+			g_precachedModels.put(path);
 		int modelIdx = g_engfuncs.pfnPrecacheModel(STRING(ALLOC_STRING(path)));
 
 		std::string pathstr = std::string(path);
@@ -484,8 +484,9 @@ int PRECACHE_EVENT(int id, const char* path) {
 	path = lowerPath.c_str();
 
 	if (g_serveractive) {
-		if (g_precachedEvents.find(path) != g_precachedEvents.end()) {
-			return g_precachedEvents[path];
+		int* existing = g_precachedEvents.get(path);
+		if (existing) {
+			return *existing;
 		}
 		else {
 			ALERT(at_warning, "PrecacheEvent failed: %s\n", path);
@@ -493,11 +494,12 @@ int PRECACHE_EVENT(int id, const char* path) {
 		}
 	}
 
-	g_tryPrecacheEvents.insert(path);
+	g_tryPrecacheEvents.put(path);
 
 	if (g_tryPrecacheEvents.size() < MAX_PRECACHE_EVENT) {
-		g_precachedEvents[path] = g_engfuncs.pfnPrecacheEvent(id, STRING(ALLOC_STRING(path)));
-		return g_precachedEvents[path];
+		int idx = g_engfuncs.pfnPrecacheEvent(id, STRING(ALLOC_STRING(path)));
+		g_precachedEvents.put(path, idx);
+		return idx;
 	}
 	else {
 		return -1;
@@ -510,7 +512,7 @@ bool SET_MODEL(edict_t* edict, const char* model) {
 		CALL_HOOKS(bool, pfnSetModel, edict, model);
 		g_engfuncs.pfnSetModel(edict, model);
 		if (!g_serveractive)
-			g_precachedModels.insert(model); // engine precaches entity BSP models automatically
+			g_precachedModels.put(model); // engine precaches entity BSP models automatically
 		CALL_HOOKS(bool, pfnSetModelPost, edict, model);
 		return false;
 	}
@@ -525,7 +527,7 @@ bool SET_MODEL(edict_t* edict, const char* model) {
 		replaced = true;
 	}
 
-	if (g_precachedModels.find(model) == g_precachedModels.end()) {
+	if (!g_precachedModels.hasKey(model)) {
 		model = NOT_PRECACHED_MODEL;
 	}
 
@@ -558,7 +560,7 @@ const char* GET_MODEL(const char* model) {
 		lowerPath = toLowerCase(model);
 	}
 
-	if (g_precachedModels.find(lowerPath) == g_precachedModels.end()) {
+	if (!g_precachedModels.hasKey(lowerPath.c_str())) {
 		return NOT_PRECACHED_MODEL;
 	}
 
@@ -573,7 +575,7 @@ int MODEL_INDEX(const char* model) {
 		return 0;
 	}
 
-	if (!g_precachedModels.count(lowerPath)) {
+	if (!g_precachedModels.hasKey(lowerPath.c_str())) {
 		ALERT(at_error, "MODEL_INDEX not precached: %s\n", model);
 		return g_engfuncs.pfnModelIndex(NOT_PRECACHED_MODEL);
 	}
@@ -585,13 +587,14 @@ int SOUND_INDEX(const char* sound) {
 	std::string lowerPath = toLowerCase(sound);
 	sound = lowerPath.c_str();
 
-	auto precache = g_precachedSounds.find(lowerPath);
-	if (precache == g_precachedSounds.end()) {
+	int* precache = g_precachedSounds.get(lowerPath.c_str());
+	if (!precache) {
 		ALERT(at_error, "SOUND_INDEX not precached: %s\n", sound);
-		return g_precachedSounds[NOT_PRECACHED_SOUND];
+		int* notPrecached = g_precachedSounds.get(NOT_PRECACHED_SOUND);
+		return notPrecached ? *notPrecached : 0;
 	}
 
-	return precache->second;
+	return *precache;
 }
 
 
@@ -761,14 +764,14 @@ void PLAYBACK_EVENT_FULL(int flags, const edict_t* pInvoker, unsigned short even
 }
 
 string_t ALLOC_STRING(const char* str) {
-	auto existing = g_allocedStrings.find(str);
+	string_t* existing = g_allocedStrings.get(str);
 
-	if (existing != g_allocedStrings.end()) {
-		return existing->second;
+	if (existing) {
+		return *existing;
 	}
 
 	string_t newStr = g_engfuncs.pfnAllocString(str);
-	g_allocedStrings[str] = newStr;
+	g_allocedStrings.put(str, newStr);
 
 	return newStr;
 }
