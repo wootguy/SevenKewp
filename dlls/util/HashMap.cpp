@@ -1,7 +1,7 @@
-#include "HashMap.h"
-#include <string.h>
 #include "extdll.h"
 #include "util.h"
+#include "HashMap.h"
+#include <string.h>
 
 #define HMAP_DEFAULT_MAX_ENTRIES 8
 #define HMAP_DEFAULT_STRING_POOL_SZ 64
@@ -44,7 +44,7 @@ void BaseHashMap::clear() {
 }
 
 // FNV1a algorithm
-uint32_t BaseHashMap::hash(const char* str) {
+uint32_t BaseHashMap::hash(const char* str) const {
     uint64 hash = 14695981039346656037ULL;
     uint32_t c;
 
@@ -56,7 +56,10 @@ uint32_t BaseHashMap::hash(const char* str) {
 }
 
 BaseHashMap::~BaseHashMap() {
-    delete[] data;
+    if (data) {
+        delete[] data;
+        data = NULL;
+    }
 }
 
 // Store string in preallocated memory pool (avoiding malloc)
@@ -164,7 +167,7 @@ bool BaseHashMap::putAll(const BaseHashMap& other) {
     return true;
 }
 
-void* BaseHashMap::getValue(const char* key) {
+void* BaseHashMap::getValue(const char* key) const {
     if (!data) {
         return NULL;
     }
@@ -306,6 +309,12 @@ void BaseHashMap::printStats() {
         (float)dataSz / 1024.0f, (int)(maxEntries * entrySz), (int)stringPoolSz);
 }
 
+StringMap::StringMap(std::initializer_list<std::pair<const char*, const char*>> init) : BaseHashMap(sizeof(hmap_string_t)) {
+    for (const auto& pair : init) {
+        put(pair.first, pair.second);
+    }
+}
+
 bool StringMap::put(const char* key, const char* value) {
     if (!data) {
         init(HMAP_DEFAULT_MAX_ENTRIES, HMAP_DEFAULT_STRING_POOL_SZ);
@@ -330,12 +339,12 @@ void StringMap::putAll_internal(char* otherData, int otherEntryCount, int otherS
     }
 }
 
-const char* StringMap::get(const char* key) {
+const char* StringMap::get(const char* key) const {
     uint16_t* offset = (uint16_t*)getValue(key);
     return offset ? (data + *offset) : NULL;
 }
 
-bool StringMap::iterate(size_t& offset, const char** key, const char** value) {
+bool StringMap::iterate(size_t& offset, const char** key, const char** value) const {
     char* stringPool = data;
 
     for (; offset < maxEntries; offset++) {

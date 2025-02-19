@@ -654,12 +654,12 @@ void CBigMomma::GibMonster()
 
 void CBigMomma :: LayHeadcrab( void )
 {
-	std::unordered_map<std::string, std::string> keys;
+	StringMap keys;
 	if (m_IsPlayerAlly) {
-		keys["is_player_ally"] = "1";
+		keys.put("is_player_ally", "1");
 	}
 	if (m_Classify) {
-		keys["classify"] = m_Classify;
+		keys.put("classify", std::to_string(m_Classify).c_str());
 	}
 
 	CBaseEntity *pChild = CBaseEntity::Create( BIG_CHILDCLASS, pev->origin, pev->angles, true, edict(), keys );
