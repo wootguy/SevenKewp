@@ -1,13 +1,14 @@
-#include "StringPool.h"
-#include <string.h>
 #include "extdll.h"
 #include "util.h"
+#include "StringPool.h"
+#include <string.h>
 
-#define DEFAULT_STRING_POOL_SIZE 256
+#define DEFAULT_STRING_POOL_SIZE 64
 #define MAX_STRING_POOL_SIZE 1024*1024*8 // prevent insane size growth/leaks
 
 StringPool::StringPool() {
-	init(DEFAULT_STRING_POOL_SIZE);
+    data = NULL;
+    offset = 0;
 }
 
 StringPool::StringPool(uint32_t poolSz) {
@@ -15,7 +16,10 @@ StringPool::StringPool(uint32_t poolSz) {
 }
 
 StringPool::~StringPool() {
-    delete[] data;
+    if (data) {
+        delete[] data;
+        data = NULL;
+    }
 }
 
 void StringPool::init(uint32_t sz) {
@@ -26,11 +30,17 @@ void StringPool::init(uint32_t sz) {
 }
 
 void StringPool::clear() {
-    delete[] data;
-    init(DEFAULT_STRING_POOL_SIZE);
+    if (data) {
+        delete[] data;
+        data = NULL;
+    }
 }
 
 mod_string_t StringPool::alloc(const char* str) {
+    if (!data) {
+        init(DEFAULT_STRING_POOL_SIZE);
+    }
+
     size_t len = strlen(str) + 1;  // Include null terminator
 
     mod_string_t ret;
@@ -59,6 +69,10 @@ mod_string_t StringPool::alloc(const char* str) {
 }
 
 const char* StringPool::str(uint32_t offset) {
+    if (!data) {
+        return NULL;
+    }
+
     return (offset && offset < poolSz) ? (data + offset) : NULL;
 }
 
@@ -90,4 +104,80 @@ bool StringPool::resize(uint32_t newPoolSz) {
     poolSz = newPoolSz;
 
     return true;
+}
+
+bool StringPool::iterate(iterator_t& iter) {
+    if (!data || iter.offset >= offset) {
+        return false;
+    }
+
+    iter.value = data + iter.offset;
+    iter.offset += strlen(iter.value) + 1;
+
+    return true;
+}
+
+bool StringPool::hasString(const char* str) {
+    iterator_t iter;
+
+    while (iterate(iter)) {
+        if (!strcmp(iter.value, str)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+StringPool::StringPool(const StringPool& other) {
+    copyFrom(other);
+}
+
+StringPool& StringPool::operator=(const StringPool& other) {
+    if (this != &other) {
+        if (data) {
+            delete[] data;
+            data = NULL;
+        }
+
+        copyFrom(other);
+    }
+    return *this;
+}
+
+void StringPool::copyFrom(const StringPool& other) {
+    offset = other.offset;
+    poolSz = other.poolSz;
+
+    if (other.data) {
+        data = new char[poolSz];
+        memcpy(data, other.data, poolSz);
+    }
+    else {
+        data = NULL;
+    }
+}
+
+const char* StringPool::first() {
+    if (!data) {
+        return NULL;
+    }
+
+    return data + 1;
+}
+
+const char* StringPool::last() {
+    if (!data) {
+        return NULL;
+    }
+
+    int lastOffset = 0;
+
+    for (int i = offset - 2; i > 0; i--) {
+        if (!data[i]) {
+            return data + i + 1;
+        }
+    }
+
+    return data + 1;
 }

@@ -31,28 +31,28 @@ public:
     EXPORT BaseHashMap(const BaseHashMap& other);
     EXPORT BaseHashMap& operator=(const BaseHashMap& other);
 
-    void clear();
+    EXPORT void clear();
 
     // returns number of filled slots
-    int size();
+    EXPORT int size();
 
     // returns total number of slots in the allocated memory
-    int reservedSize();
+    EXPORT int reservedSize();
 
     // show map statistics
-    void printStats();
+    EXPORT void printStats();
 
     // add a key to the map
-    bool put(const char* key, void* value);
+    EXPORT bool put(const char* key, void* value);
 
     // insert all keys from the other map into this one, overwriting any key values that already exist
-    bool putAll(const BaseHashMap& other);
+    EXPORT bool putAll(const BaseHashMap& other);
 
     // delete key (TODO: does not clear string memory)
-    void del(const char* key);
+    EXPORT void del(const char* key);
 
     // for debugging
-    virtual std::vector<std::pair<std::string, std::string>> print();
+    EXPORT virtual std::vector<std::pair<std::string, std::string>> print();
 
 protected:
     char* data; // allocated memory for both strings and entries
@@ -88,10 +88,10 @@ public:
     EXPORT StringMap(std::initializer_list<std::pair<const char*, const char*>> init);
 
     // add a key to the map
-    bool put(const char* key, const char* value);
+    EXPORT bool put(const char* key, const char* value);
 
     // get value by key
-    const char* get(const char* key) const;
+    EXPORT const char* get(const char* key) const;
 
     struct iterator_t {
         size_t offset;
@@ -101,7 +101,7 @@ public:
         iterator_t() : offset(0) {}
     };
 
-    bool iterate(iterator_t& iter) const;
+    EXPORT bool iterate(iterator_t& iter) const;
 
     EXPORT std::vector<std::pair<std::string, std::string>> print() override;
 
@@ -117,7 +117,7 @@ public:
     EXPORT StringSet(std::initializer_list<const char*> init);
 
     // add a key to the map
-    bool put(const char* key);
+    EXPORT bool put(const char* key);
 
     // returns true if the key exists in the set
     EXPORT bool hasKey(const char* key) const;
