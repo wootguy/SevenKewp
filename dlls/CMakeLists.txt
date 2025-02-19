@@ -448,6 +448,7 @@ set(UTIL_HDR
 	util/ThreadSafeQueue.h
 	util/wav.h
 	util/HashMap.h
+	util/StringPool.h
 	../game_shared/shared_util.h
 )
 set(UTIL_SRC
@@ -471,6 +472,7 @@ set(UTIL_SRC
 	util/ThreadSafeQueue.cpp
 	util/wav.cpp
 	util/HashMap.cpp
+	util/StringPool.cpp
 	../game_shared/shared_util.cpp
 )
 set(PLAYER_HDR

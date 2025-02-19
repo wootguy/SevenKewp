@@ -3,15 +3,14 @@
 #include "extdll.h"
 #include "util.h"
 
-#define HMAP_INVALID_STRING 65535
 #define HMAP_DEFAULT_MAX_ENTRIES 8
 #define HMAP_DEFAULT_STRING_POOL_SZ 64
-#define HMAP_MAX_STRING_POOL_SZ 65534 // don't overlap the invalid string value
+#define HMAP_MAX_STRING_POOL_SZ UINT16_MAX
 #define HMAP_MAX_FILL_PERCENT 0.7f // how full the map can be before it's resized
 
 BaseHashMap::BaseHashMap(int valueSz) {
     data = NULL;
-    stringOffset = 0;
+    stringOffset = 1; // skip 0 for NULL value
     maxEntries = 0;
     stringPoolSz = 0;
     this->entrySz = valueSz + sizeof(hash_map_entry_t);
@@ -24,7 +23,7 @@ BaseHashMap::BaseHashMap(int valueSz, int maxEntries, uint16_t stringPoolSz) {
 }
 
 void BaseHashMap::init(int maxEntries, uint16_t stringPoolSz) {
-    stringOffset = 0;
+    stringOffset = 1; // skip 0 for NULL value
     this->maxEntries = maxEntries;
     this->stringPoolSz = stringPoolSz;
 
@@ -68,16 +67,18 @@ uint16_t BaseHashMap::storeString(const char* str) {
         }
 
         if (!resizeStringPool(newPoolSz)) {
-            return HMAP_INVALID_STRING;  // Out of memory
+            ALERT(at_error, "String pool out of memory!\n");
+            return 0;  // out of memory
         }
     }
 
+    uint16_t retOffset = stringOffset;
     char* stringPool = data;
     char* stored = stringPool + stringOffset;
     memcpy(stored, str, len);
     stringOffset += len;
 
-    return stored - stringPool;
+    return retOffset;
 }
 
 bool BaseHashMap::put(const char* key, void* value) {
@@ -123,7 +124,7 @@ bool BaseHashMap::put(const char* key, void* value) {
     entry->occupied = true;
     memcpy((char*)entry + sizeof(hash_map_entry_t), value, valueSz);
 
-    if (entry->key == HMAP_INVALID_STRING) {
+    if (!entry->key) {
         entry->occupied = false;
         ALERT(at_error, "StringMap failed to insert '%s' = '%s'\n", key, value);
         return false;
@@ -274,7 +275,7 @@ bool BaseHashMap::resizeHashTable(size_t newMaxEntries) {
     int dataSz = stringPoolSz + maxEntries * entrySz;
     data = new char[dataSz];
     memset(data, 0, dataSz);
-    stringOffset = 0;
+    stringOffset = 1;
 
     // reset stats so new growth isn't affected by old size stats
     memset(&stats, 0, sizeof(hash_map_stats_t));
@@ -306,11 +307,6 @@ bool StringMap::put(const char* key, const char* value) {
     return BaseHashMap::put(key, &ival);
 }
 
-template <typename T>
-bool HashMap<T>::put(const char* key, const T& value) {
-    return BaseHashMap::put(key, &value);
-}
-
 void StringMap::putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) {
     for (size_t i = 0; i < otherEntryCount; i++) {
         hash_map_entry_t* entry = (hash_map_entry_t*)(otherData + otherStringPoolSz + i * entrySz);
@@ -325,28 +321,9 @@ void StringMap::putAll_internal(char* otherData, int otherEntryCount, int otherS
     }
 }
 
-template <typename T>
-void HashMap<T>::putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) {
-    for (size_t i = 0; i < otherEntryCount; i++) {
-        hash_map_entry_t* entry = (hash_map_entry_t*)(otherData + otherStringPoolSz + i * entrySz);
-        if (!entry->occupied) {
-            continue;
-        }
-
-        if (!BaseHashMap::put(otherData + entry->key, (char*)entry + sizeof(hash_map_entry_t))) {
-            ALERT(at_error, "StringMap failed to put during table resize\n");
-        }
-    }
-}
-
 const char* StringMap::get(const char* key) {
     uint16_t* offset = (uint16_t*)getValue(key);
     return offset ? (data + *offset) : NULL;
-}
-
-template <typename T>
-T* HashMap<T>::get(const char* key) {
-    return (T*)getValue(key);
 }
 
 bool StringMap::iterate(size_t& offset, const char** key, const char** value) {
@@ -358,24 +335,6 @@ bool StringMap::iterate(size_t& offset, const char** key, const char** value) {
         if (entry->occupied) {
             *key = stringPool + entry->key;
             *value = stringPool + *(uint16_t*)((char*)entry + sizeof(hash_map_entry_t));
-            offset++;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-template <typename T>
-bool HashMap<T>::iterate(size_t& offset, const char** key, T** value) {
-    char* stringPool = data;
-
-    for (; offset < maxEntries; offset++) {
-        hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + offset * entrySz);
-
-        if (entry->occupied) {
-            *key = stringPool + entry->key;
-            *value = (char*)entry + sizeof(hash_map_entry_t);
             offset++;
             return true;
         }

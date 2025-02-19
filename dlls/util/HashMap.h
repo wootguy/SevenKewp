@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+typedef uint16_t hmap_string_t;
+
 struct hash_map_stats_t {
     uint16_t collisions;
     uint16_t maxDepth;
@@ -11,7 +13,7 @@ struct hash_map_stats_t {
 
 struct hash_map_entry_t {
     bool occupied;
-    uint16_t key; // offset into string pool
+    hmap_string_t key; // offset into string pool
     // value follows the header, which could be any size
 };
 
@@ -71,8 +73,8 @@ protected:
 // StringMap allocates both keys and values using the same string pool
 class StringMap : public BaseHashMap {
 public:
-    StringMap() : BaseHashMap(sizeof(uint16_t)) {}
-    StringMap(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(sizeof(uint16_t), maxEntries, stringPoolSz) {}
+    StringMap() : BaseHashMap(sizeof(hmap_string_t)) {}
+    StringMap(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(sizeof(hmap_string_t), maxEntries, stringPoolSz) {}
 
     // add a key to the map
     bool put(const char* key, const char* value);
@@ -97,15 +99,42 @@ public:
     HashMap() : BaseHashMap(sizeof(T)) {}
     HashMap(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(sizeof(T), maxEntries, stringPoolSz) {}
 
-    // add a key to the map
-    bool put(const char* key, const T& value);
+    bool put(const char* key, const T& value) {
+        return BaseHashMap::put(key, (void*)&value);
+    }
 
-    // get value by key
-    T* get(const char* key);
+    T* get(const char* key) {
+        return (T*)getValue(key);
+    }
 
-    // return each entry in the map. pass 0 for first iteration. Returns false at the end of iteration
-    bool iterate(size_t& offset, const char** key, T** value);
+    bool iterate(size_t& offset, const char** key, T** value) {
+        char* stringPool = data;
+
+        for (; offset < maxEntries; offset++) {
+            hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + offset * entrySz);
+
+            if (entry->occupied) {
+                *key = stringPool + entry->key;
+                *value = (T*)((char*)entry + sizeof(hash_map_entry_t));
+                offset++;
+                return true;
+            }
+        }
+
+        return false;
+    }
 
 private:
-    void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) override;
+    void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) override {
+        for (size_t i = 0; i < otherEntryCount; i++) {
+            hash_map_entry_t* entry = (hash_map_entry_t*)(otherData + otherStringPoolSz + i * entrySz);
+            if (!entry->occupied) {
+                continue;
+            }
+
+            if (!BaseHashMap::put(otherData + entry->key, (char*)entry + sizeof(hash_map_entry_t))) {
+                //ALERT(at_error, "StringMap failed to put during table resize\n");
+            }
+        }
+    }
 };
