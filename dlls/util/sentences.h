@@ -29,30 +29,32 @@ struct CustomSentence {
 	uint8_t numWords;
 };
 
-struct CustomSentenceMap {
+#define MAX_GROUP_SENTS 32 // max number of sentences in a sentence group
+
+struct SentenceGroup {
+	mod_string_t sents[MAX_GROUP_SENTS];
+	uint8_t numSents;
+};
+
+struct CustomSentences {
 	HashMap<CustomSentence> map;
-	StringPool strings; // string pool which sentence values allocate from
+	HashMap<SentenceGroup> groups; // maps a sentence group name ("SC_OK") to a list of custom sentence names ("SC_OK0", "SC_OK1", "SC_OK2")
+	StringPool strings; // string pool which sentence/group values allocate from
 
 	void clear() {
 		map.clear();
+		groups.clear();
 		strings.clear();
 	}
 };
 
 // maps a sentence name ("SC_OK1") to a a custom sentence 
-extern CustomSentenceMap g_customSentencesMod;
-extern CustomSentenceMap g_customSentencesMap;
-extern CustomSentenceMap g_customSentences; // combined mod and map sentences
-
-// maps a sentence group name ("SC_OK") to a list of custom sentence names ("SC_OK0", "SC_OK1", "SC_OK2")
-extern std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroupsMod;
-extern std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroupsMap;
-extern std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroups; // combined mod and map sentence groups
+extern CustomSentences g_customSentencesMod;
+extern CustomSentences g_customSentencesMap;
+extern CustomSentences g_customSentences; // combined mod and map sentences
 
 // do not call this while the map is running or else entity sentence pointers are invalidated
-void LoadSentenceFile(const char* path,
-	CustomSentenceMap& sentences,
-	std::unordered_map<std::string, std::vector<std::string>>& sentenceGroups);
+void LoadSentenceFile(const char* path, CustomSentences& sentences);
 
 // parses a line from sentences.txt (example: "WILD5 ambience/(v50 p97) quail1, quail1(t15)")
 EXPORT CustomSentence ParseSentence(StringPool& stringPool, std::string sentenceLine);

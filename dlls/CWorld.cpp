@@ -94,15 +94,13 @@ void CWorld::loadReplacementFiles() {
 	// map models/sounds have priority over mod models
 	StringMap& modelReplacementsMap = g_replacementFiles[g_modelReplacementsMap];
 	g_modelReplacements.clear();
-	g_modelReplacements.putAll(modelReplacementsMap);
 	g_modelReplacements.putAll(g_modelReplacementsMod);
+	g_modelReplacements.putAll(modelReplacementsMap);
 
 	StringMap& soundReplacementsMap = g_replacementFiles[g_soundReplacementsMap];
 	g_soundReplacements.clear();
-	g_soundReplacements.putAll(soundReplacementsMap);
 	g_soundReplacements.putAll(g_soundReplacementsMod);
-
-
+	g_soundReplacements.putAll(soundReplacementsMap);
 }
 
 void CWorld::loadSentenceFiles() {
@@ -113,7 +111,6 @@ void CWorld::loadSentenceFiles() {
 
 	if (spath.empty()) {
 		g_customSentencesMod.clear();
-		g_customSentenceGroupsMod.clear();
 		ALERT(at_warning, "Missing sentence file: %s\n", sentPath);
 	}
 
@@ -121,23 +118,23 @@ void CWorld::loadSentenceFiles() {
 
 	if (lastEditTimeSent != editTimeSent) {
 		lastEditTimeSent = editTimeSent;
-		LoadSentenceFile(sentPath, g_customSentencesMod, g_customSentenceGroupsMod);
+		LoadSentenceFile(sentPath, g_customSentencesMod);
 	}
 
 	g_customSentencesMap.clear();
-	g_customSentenceGroupsMap.clear();
 	if (m_sentenceFile) {
-		LoadSentenceFile(STRING(m_sentenceFile), g_customSentencesMap, g_customSentenceGroupsMap);
+		LoadSentenceFile(STRING(m_sentenceFile), g_customSentencesMap);
 	}
 
 	// map models/sounds have priority over mod models
 	g_customSentences.clear();
-	g_customSentences.map.putAll(g_customSentencesMap.map);
 	g_customSentences.map.putAll(g_customSentencesMod.map);
+	g_customSentences.map.putAll(g_customSentencesMap.map);
+	g_customSentences.groups.putAll(g_customSentencesMod.groups);
+	g_customSentences.groups.putAll(g_customSentencesMap.groups);
 
-	g_customSentenceGroups.clear();
-	g_customSentenceGroups.insert(g_customSentenceGroupsMap.begin(), g_customSentenceGroupsMap.end());
-	g_customSentenceGroups.insert(g_customSentenceGroupsMod.begin(), g_customSentenceGroupsMod.end());
+	//g_customSentences.map.printStats();
+	//g_customSentences.groups.printStats();
 }
 
 void CWorld::Precache(void)

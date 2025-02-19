@@ -6,7 +6,11 @@
 #define HMAP_DEFAULT_MAX_ENTRIES 8
 #define HMAP_DEFAULT_STRING_POOL_SZ 64
 #define HMAP_MAX_STRING_POOL_SZ UINT16_MAX
-#define HMAP_MAX_FILL_PERCENT 0.7f // how full the map can be before it's resized
+
+// how full the map can be before it's resized, should be a low percentage because open addressing
+// has problems with clustering (collisions in separate "buckets" merging to create giant chains of
+// blocked space)
+#define HMAP_MAX_FILL_PERCENT 0.5f
 
 BaseHashMap::BaseHashMap(int valueSz) {
     data = NULL;
@@ -198,7 +202,12 @@ void BaseHashMap::del(const char* key) {
 
     while (entry->occupied) {
         if (entry->occupied && !strcmp(stringPool + entry->key, key)) {
-            entry->occupied = false;  // mark as deleted
+            // can't actually free the node because lookups are aborted when a free node is found
+            //entry->occupied = false;
+            entry->key = 0;
+            
+            // TODO: mark with special flag, then re-hash the table if there are too many deleted nodes
+            // don't just wait for the next resize
             return;
         }
 
@@ -292,9 +301,9 @@ void BaseHashMap::printStats() {
     int dataSz = stringPoolSz + maxEntries * entrySz + sizeof(StringMap);
     float avgDepth = stats.totalPuts ? (float)stats.totalDepth / (float)stats.totalPuts : 0.0f;
 
-    ALERT(at_console, "Collisions: %d, Max: %d, Avg: %.2f | Fullness: %d / %d | %d B = %d B entries + %d B strings\n",
+    ALERT(at_console, "Collisions: %d, Max: %d, Avg: %.2f | Fullness: %d / %d | %.1f KB = %d B entries + %d B strings\n",
         stats.collisions, stats.maxDepth, avgDepth, size(), reservedSize(),
-        dataSz, (int)(maxEntries * entrySz), (int)stringPoolSz);
+        (float)dataSz / 1024.0f, (int)(maxEntries * entrySz), (int)stringPoolSz);
 }
 
 bool StringMap::put(const char* key, const char* value) {

@@ -68,9 +68,8 @@ protected:
     virtual void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) = 0;
 };
 
-// Hash map using open addressing and a string pool to avoid excessive memory allocations.
-// Keys/value strings can not be used after a put() or class destruction.
-// StringMap allocates both keys and values using the same string pool
+// Maps strings to other strings.
+// open addressing and a string pool is used to avoid excessive memory allocations.
 class StringMap : public BaseHashMap {
 public:
     StringMap() : BaseHashMap(sizeof(hmap_string_t)) {}
@@ -89,8 +88,8 @@ private:
     void putAll_internal(char* otherData, int otherEntryCount, int otherStringPoolSz) override;
 };
 
-// Hash map using open addressing and a string pool to avoid excessive memory allocations.
-// Templatized to take any POD as values (not anything complex like std::string or std::vector)
+// Maps a string to a POD type (not anything with a constructor like std::string or std::vector)
+// open addressing and a string pool is used to avoid excessive memory allocations.
 template <typename T>
 class HashMap : public BaseHashMap {
 public:
