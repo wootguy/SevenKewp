@@ -5,7 +5,7 @@
 #include "CBasePlayer.h"
 
 #define MAX_UNLAG_STATES 50
-#define MAX_EDICTS (4096+512) // set larger than the max value gpGlobals->maxEntities can be
+#define MAX_UNLAG_EDICTS MAX_CLIENT_ENTS // only need to unlag the edicts which can potentially be networked
 #define PING_SMOOTHING_COUNT 100 // number of ping states used to calculate a stable ping value
 
 struct EntState {
@@ -17,11 +17,12 @@ struct EntState {
 
 struct WorldState {
 	float time;
-	EntState ents[MAX_EDICTS];
+	EntState ents[MAX_UNLAG_EDICTS];
 };
 
 struct RewindInfo {
 	bool isCompensated;
+	bool setOriginCalled;
 	EntState restoreState;
 };
 
@@ -31,7 +32,7 @@ int g_historyWritten = 0;
 float g_nextHistoryUpdate = 0;
 float g_historyUpdateInterval = 0.02f;
 WorldState g_worldHistory[MAX_UNLAG_STATES];
-RewindInfo g_rewinds[MAX_EDICTS];
+RewindInfo g_rewinds[MAX_UNLAG_EDICTS];
 bool g_didRewind = false;
 bool g_lagcomp_enabled = false;
 cvar_t* sv_unlag = NULL;
@@ -106,10 +107,7 @@ void lagcomp_update() {
 	WorldState& worldState = g_worldHistory[g_historyIdx];
 	worldState.time = g_engfuncs.pfnTime();
 
-	if (gpGlobals->maxEntities >= MAX_EDICTS) {
-		ALERT(at_console, "Max edicts exceeds lag comp buffers!\n");
-	}
-	int maxi = V_min(MAX_EDICTS, gpGlobals->maxEntities);
+	int maxi = V_min(MAX_UNLAG_EDICTS, gpGlobals->maxEntities);
 
 	for (int i = gpGlobals->maxClients+1; i < maxi; i++)
 	{
@@ -186,7 +184,7 @@ void lagcomp_begin(CBasePlayer* plr) {
 
 	edict_t* edicts = ENT(0);
 
-	int maxi = V_min(MAX_EDICTS, gpGlobals->maxEntities);
+	int maxi = V_min(MAX_UNLAG_EDICTS, gpGlobals->maxEntities);
 
 	// not rewinding players because the engine also does that when sv_unlag != 0
 	for (int i = gpGlobals->maxClients + 1; i < maxi; i++)
@@ -207,7 +205,16 @@ void lagcomp_begin(CBasePlayer* plr) {
 		vars.sequence = rewindState.sequence;
 		vars.frame = rewindState.frame;
 		vars.angles = rewindState.angles;
-		UTIL_SetOrigin(&vars, rewindState.origin);
+
+		if ((rewindState.origin - restoreState.origin).Length() > 1.0f) {
+			// SetOrigin is an expensive call, don't do it unless necessary
+			// TODO: is it ever?
+			g_rewinds[i].setOriginCalled = true;
+			UTIL_SetOrigin(&vars, rewindState.origin);
+		}
+		else {
+			g_rewinds[i].setOriginCalled = false;
+		}
 	}
 
 	g_didRewind = true;
@@ -221,7 +228,7 @@ void lagcomp_end() {
 	edict_t* edicts = ENT(0);
 
 	WorldState& worldState = g_worldHistory[g_currentRewindIdx];
-	int maxi = V_min(MAX_EDICTS, gpGlobals->maxEntities);
+	int maxi = V_min(MAX_UNLAG_EDICTS, gpGlobals->maxEntities);
 
 	for (int i = gpGlobals->maxClients + 1; i < maxi; i++)
 	{
@@ -240,7 +247,10 @@ void lagcomp_end() {
 		}
 		
 		vars.angles = restoreState.angles;
-		UTIL_SetOrigin(&vars, restoreState.origin);
+		
+		// only need to SetOrigin if compensation moved the entity
+		if (g_rewinds[i].setOriginCalled)
+			UTIL_SetOrigin(&vars, restoreState.origin);
 	}
 
 	g_didRewind = false;
