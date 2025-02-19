@@ -132,8 +132,8 @@ void CWorld::loadSentenceFiles() {
 
 	// map models/sounds have priority over mod models
 	g_customSentences.clear();
-	g_customSentences.insert(g_customSentencesMap.begin(), g_customSentencesMap.end());
-	g_customSentences.insert(g_customSentencesMod.begin(), g_customSentencesMod.end());
+	g_customSentences.map.putAll(g_customSentencesMap.map);
+	g_customSentences.map.putAll(g_customSentencesMod.map);
 
 	g_customSentenceGroups.clear();
 	g_customSentenceGroups.insert(g_customSentenceGroupsMap.begin(), g_customSentenceGroupsMap.end());

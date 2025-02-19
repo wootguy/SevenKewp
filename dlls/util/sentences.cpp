@@ -5,16 +5,16 @@
 #include "wav.h"
 #include "eng_wrappers.h"
 
-std::unordered_map<std::string, CustomSentence> g_customSentencesMod;
-std::unordered_map<std::string, CustomSentence> g_customSentencesMap;
+CustomSentenceMap g_customSentencesMod;
+CustomSentenceMap g_customSentencesMap;
+CustomSentenceMap g_customSentences;
 std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroupsMod;
 std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroupsMap;
-std::unordered_map<std::string, CustomSentence> g_customSentences;
 std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroups;
 std::vector<EHANDLE> g_activeSentencePlayers;
 
 void LoadSentenceFile(const char* path,
-	std::unordered_map<std::string, CustomSentence>& sentences, 
+	CustomSentenceMap& sentences,
 	std::unordered_map<std::string, std::vector<std::string>>& sentenceGroups)
 {
 	sentences.clear();
@@ -45,9 +45,9 @@ void LoadSentenceFile(const char* path,
 			continue;
 		}
 
-		CustomSentence sent = ParseSentence(line);
-		std::string sentName = toUpperCase(sent.name);
-		sentences[sentName] = sent;
+		CustomSentence sent = ParseSentence(sentences.strings, line);
+		std::string sentName = toUpperCase(sent.name.str());
+		sentences.map.put(sentName.c_str(), sent);
 
 		std::string groupName = sentName;
 		for (int i = 0; i < 2; i++) {
@@ -83,16 +83,16 @@ void LoadSentenceFile(const char* path,
 }
 
 void CalculateAndSetPlaybackTime(SentencePart& word) {
-	const char* replacedSound = g_soundReplacements.get(toLowerCase(word.file).c_str());
-	std::string sound = replacedSound ? replacedSound : word.file;
+	const char* replacedSound = g_soundReplacements.get(toLowerCase(word.file.str()).c_str());
+	const char* sound = replacedSound ? replacedSound : word.file.str();
 	
-	WavInfo wav = getWaveFileInfo(sound.c_str());
+	WavInfo wav = getWaveFileInfo(sound);
 	float percentPlayed = (word.end - word.start) / 100.0f;
 	float playbackSpeed = (float)word.pitch / 100.0f;
 	word.duration = ((float)wav.durationMillis * percentPlayed) / playbackSpeed;
 }
 
-CustomSentence ParseSentence(std::string sentenceLine) {
+CustomSentence ParseSentence(StringPool& stringPool, std::string sentenceLine) {
 	std::vector<std::string> parts = splitString(sentenceLine, " \t");
 
 	std::string sentName = parts[0];
@@ -119,7 +119,8 @@ CustomSentence ParseSentence(std::string sentenceLine) {
 	}
 
 	CustomSentence sent;
-	sent.name = sentName;
+	memset(&sent, 0, sizeof(CustomSentence));
+	sent.name = stringPool.alloc(sentName.c_str());
 
 	uint8_t globalTempo = 0;
 	uint8_t globalPitch = 100;
@@ -205,22 +206,29 @@ CustomSentence ParseSentence(std::string sentenceLine) {
 			globalVol = part.volume;
 		}
 		else {
-			part.file = folder + "/" + word + ".wav";
-			sent.words.push_back(part);
-		}
-
-		if (hasPeriod) {
-			part.file = folder + "/_period.wav";
-			sent.words.push_back(part);
-		}
-
-		if (hasComma) {
-			part.file = folder + "/_comma.wav";
-			sent.words.push_back(part);
+			part.file = stringPool.alloc((folder + "/" + word + ".wav").c_str());
+			sent.words[sent.numWords++] = part;
 		}
 
 		if (isMalformed) {
 			ALERT(at_console, "Malformed sentence part in '%s' at '%s'\n", sentName.c_str(), originalPart.c_str());
+		}
+
+		if (sent.numWords < MAX_SENTENCE_WORDS) {
+			if (hasPeriod) {
+				part.file = stringPool.alloc((folder + "/_period.wav").c_str());
+				sent.words[sent.numWords++] = part;
+			}
+
+			if (hasComma) {
+				part.file = stringPool.alloc((folder + "/_comma.wav").c_str());
+				sent.words[sent.numWords++] = part;
+			}
+		}
+
+		if (sent.numWords >= MAX_SENTENCE_WORDS) {
+			ALERT(at_error, "Max sentence words exceeded for %s\n", sentName.c_str());
+			break;
 		}
 	}
 
@@ -228,8 +236,7 @@ CustomSentence ParseSentence(std::string sentenceLine) {
 }
 
 CustomSentence* GetCustomSentence(std::string sentenceName) {
-	auto sent = g_customSentences.find(toUpperCase(sentenceName));
-	return sent == g_customSentences.end() ? NULL : &sent->second;
+	return g_customSentences.map.get(toUpperCase(sentenceName).c_str());
 }
 
 CustomSentence* GetRandomCustomSentence(std::string sentenceGroupName) {
@@ -284,10 +291,11 @@ bool PrecacheCustomSentence_internal(CBaseEntity* ent, CustomSentence* sent) {
 		return false;
 	}
 
-	for (SentencePart& part : sent->words) {
+	for (int i = 0; i < sent->numWords; i++) {
 		// TODO: per-monster sound replacement won't work here, because the duration of the sound clips
 		// is stored globally in the sentence data. So, passing NULL here for now
-		PRECACHE_SOUND_ENT(NULL, part.file.c_str());
+		SentencePart& part = sent->words[i];
+		PRECACHE_SOUND_ENT(NULL, part.file.str());
 		CalculateAndSetPlaybackTime(part);
 	}
 
@@ -336,7 +344,7 @@ bool PlayCustomSentence(CBaseToggle* ent) {
 
 	CustomSentence* sent = ent->m_customSent;
 
-	if (!sent || ent->m_customSentLastWord == (int)sent->words.size() - 1) {
+	if (!sent || ent->m_customSentLastWord == (int)sent->numWords - 1) {
 		ent->m_customSent = NULL;
 		
 		// this technically isn't the end of sound playback, but nothing needs to know that yet
@@ -348,7 +356,7 @@ bool PlayCustomSentence(CBaseToggle* ent) {
 
 	SentencePart* playWord = NULL;
 
-	for (int i = 0; i < (int)sent->words.size(); i++) {
+	for (int i = 0; i < (int)sent->numWords; i++) {
 		SentencePart& part = sent->words[i];
 
 		if (t >= sentTime && i > ent->m_customSentLastWord) {
@@ -360,7 +368,7 @@ bool PlayCustomSentence(CBaseToggle* ent) {
 	}
 
 	if (playWord) {
-		const char* sound = playWord->file.c_str();
+		const char* sound = playWord->file.str();
 		float vol = (playWord->volume / 100.0f) * ent->m_customSentVol;
 		float attn = ent->m_customSentAttn;
 		EMIT_SOUND_DYN(ent->edict(), CHAN_VOICE, sound, vol, attn, 0, playWord->pitch);

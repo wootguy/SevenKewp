@@ -310,6 +310,8 @@ void CBodyGuard::ShuffleSoundArrays() {
 
 void CBodyGuard::Precache()
 {
+	TalkInit();
+
 	if (pev->weapons <= 0 || pev->weapons > 7) {
 		pev->weapons = RANDOM_LONG(1, 7);
 
@@ -394,8 +396,6 @@ void CBodyGuard::Precache()
 
 	m_defaultModel = "models/bgman.mdl";
 	PRECACHE_MODEL(GetModel());
-
-	TalkInit();
 }
 
 void CBodyGuard::InitAiFlags() {

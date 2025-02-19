@@ -693,6 +693,10 @@ void CScientist :: Spawn( void )
 //=========================================================
 void CScientist :: Precache( void )
 {
+	// every new scientist must call this, otherwise
+	// when a level is loaded, nobody will talk (time is reset to 0)
+	TalkInit();
+
 	CTalkSquadMonster::Precache();
 
 	m_isCleansuit = FClassnameIs(pev, "monster_cleansuit_scientist");
@@ -702,10 +706,6 @@ void CScientist :: Precache( void )
 	PRECACHE_MODEL(GetModel());
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
-
-	// every new scientist must call this, otherwise
-	// when a level is loaded, nobody will talk (time is reset to 0)
-	TalkInit();
 }	
 
 // Init talk data
@@ -1265,10 +1265,10 @@ void CSittingScientist :: Spawn( )
 void CSittingScientist :: Precache( void )
 {
 	m_defaultModel = "models/scientist.mdl";
-	CBaseMonster::Precache();
 	PRECACHE_MODEL(GetModel());
 	m_baseSequence = LookupSequence( "sitlookleft" );
 	TalkInit();
+	CTalkSquadMonster::Precache();
 }
 
 //=========================================================

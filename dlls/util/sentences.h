@@ -6,11 +6,15 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <cstdint>
+#include "HashMap.h"
+#include "StringPool.h"
 
 class CBaseToggle;
 
+#define MAX_SENTENCE_WORDS 16
+
 struct SentencePart {
-	std::string file; // path to the sound file
+	mod_string_t file; // path to the sound file
 	uint8_t volume; // 0-100
 	uint8_t pitch; // 0-255
 	uint8_t start; // 0-100 (can't implement for vanilla hl clients)
@@ -20,31 +24,38 @@ struct SentencePart {
 };
 
 struct CustomSentence {
-	std::string name; // name, excluding the number suffix
-	std::vector<SentencePart> words;
+	mod_string_t name; // name, excluding the number suffix
+	SentencePart words[MAX_SENTENCE_WORDS];
+	uint8_t numWords;
+};
+
+struct CustomSentenceMap {
+	HashMap<CustomSentence> map;
+	StringPool strings; // string pool which sentence values allocate from
+
+	void clear() {
+		map.clear();
+		strings.clear();
+	}
 };
 
 // maps a sentence name ("SC_OK1") to a a custom sentence 
-extern std::unordered_map<std::string, CustomSentence> g_customSentencesMod;
-extern std::unordered_map<std::string, CustomSentence> g_customSentencesMap;
+extern CustomSentenceMap g_customSentencesMod;
+extern CustomSentenceMap g_customSentencesMap;
+extern CustomSentenceMap g_customSentences; // combined mod and map sentences
 
 // maps a sentence group name ("SC_OK") to a list of custom sentence names ("SC_OK0", "SC_OK1", "SC_OK2")
 extern std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroupsMod;
 extern std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroupsMap;
-
-// combined mod and map sentences
-extern std::unordered_map<std::string, CustomSentence> g_customSentences;
-
-// combined mod and map sentence groups
-extern std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroups;
+extern std::unordered_map<std::string, std::vector<std::string>> g_customSentenceGroups; // combined mod and map sentence groups
 
 // do not call this while the map is running or else entity sentence pointers are invalidated
 void LoadSentenceFile(const char* path,
-	std::unordered_map<std::string, CustomSentence>& sentences,
+	CustomSentenceMap& sentences,
 	std::unordered_map<std::string, std::vector<std::string>>& sentenceGroups);
 
 // parses a line from sentences.txt (example: "WILD5 ambience/(v50 p97) quail1, quail1(t15)")
-EXPORT CustomSentence ParseSentence(std::string sentenceLine);
+EXPORT CustomSentence ParseSentence(StringPool& stringPool, std::string sentenceLine);
 
 // get custom sentence by exact name
 // pointer is invalidated if sentence maps are touched

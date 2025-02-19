@@ -22,6 +22,7 @@
 #include "env/CSoundEnt.h"
 #include "animation.h"
 #include "plane.h"
+#include "sentences.h"
 
 extern Schedule_t	slChaseEnemyFailed[];
 
@@ -1260,6 +1261,12 @@ void CTalkSquadMonster::Precache( void )
 		m_szGrp[TLK_USE] = STRING( m_iszUse );
 	if ( m_iszUnUse )
 		m_szGrp[TLK_UNUSE] = STRING( m_iszUnUse );
+
+	for (int i = 0; i < TLK_CGROUPS; i++) {
+		if (m_szGrp[i]) {
+			PrecacheCustomSentence(this, m_szGrp[i]);
+		}
+	}
 }
 
 
