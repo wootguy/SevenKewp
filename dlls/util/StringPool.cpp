@@ -171,8 +171,6 @@ const char* StringPool::last() {
         return NULL;
     }
 
-    int lastOffset = 0;
-
     for (int i = offset - 2; i > 0; i--) {
         if (!data[i]) {
             return data + i + 1;
