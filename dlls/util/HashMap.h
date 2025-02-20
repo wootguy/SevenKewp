@@ -6,134 +6,142 @@
 #include <unordered_map>
 #include <vector>
 
-typedef uint16_t hmap_string_t;
+typedef uint16_t hmap_string_t; // offset into a hashmap's string pool
 
 struct hash_map_stats_t {
-    uint16_t collisions;
-    uint16_t maxDepth;
-    uint16_t totalDepth;
-    uint16_t totalPuts;
-};
-
-struct hash_map_entry_t {
-    bool occupied;
-    hmap_string_t key; // offset into string pool
-    // value follows the header, which could be any size
+	uint16_t collisions;
+	uint16_t maxDepth;
+	uint16_t totalDepth;
 };
 
 class BaseHashMap {
 public:
-    hash_map_stats_t stats;
+	struct entry_header_t {
+		bool occupied;
+		hmap_string_t key;
+		// value follows this header, which could be any size
+	};
 
-    EXPORT BaseHashMap(int valueSz);
-    EXPORT BaseHashMap(int valueSz, int maxEntries, uint16_t stringPoolSz);
-    EXPORT ~BaseHashMap();
-    EXPORT BaseHashMap(const BaseHashMap& other);
-    EXPORT BaseHashMap& operator=(const BaseHashMap& other);
+	hash_map_stats_t stats;
 
-    EXPORT void clear();
+	EXPORT BaseHashMap(int valueSz);
+	EXPORT BaseHashMap(int valueSz, int maxEntries, uint16_t stringPoolSz);
+	EXPORT ~BaseHashMap();
+	EXPORT BaseHashMap(const BaseHashMap& other);
+	EXPORT BaseHashMap& operator=(const BaseHashMap& other);
 
-    // returns number of filled slots
-    EXPORT int size();
+	EXPORT void clear();
 
-    // returns total number of slots in the allocated memory
-    EXPORT int reservedSize();
+	// returns number of filled slots
+	EXPORT int size();
 
-    // show map statistics
-    EXPORT void printStats();
+	// returns total number of slots in the allocated memory
+	EXPORT int reservedSize();
 
-    // add a key to the map
-    EXPORT bool put(const char* key, void* value);
+	// show map statistics
+	EXPORT void printStats();
 
-    // insert all keys from the other map into this one, overwriting any key values that already exist
-    EXPORT bool putAll(const BaseHashMap& other);
+	// add a key to the map
+	EXPORT bool put(const char* key, void* value);
 
-    // delete key (TODO: does not clear string memory)
-    EXPORT void del(const char* key);
+	// insert all keys from the other map into this one, overwriting any key values that already exist
+	EXPORT bool putAll(const BaseHashMap& other);
 
-    // for debugging
-    EXPORT virtual std::vector<std::pair<std::string, std::string>> print();
+	// delete key (TODO: does not clear string memory)
+	EXPORT void del(const char* key);
+
+	// for debugging
+	EXPORT virtual std::vector<std::pair<std::string, std::string>> print();
+
+	EXPORT static void global_hash_stats();
 
 protected:
-    char* data; // allocated memory for both strings and entries
-    size_t maxEntries;
-    uint16_t stringOffset;    // next free space in string pool
-    uint16_t stringPoolSz;
-    int entrySz;
+	char* data; // allocated memory for both strings and entries
+	size_t maxEntries;
+	size_t entryCount;
+	uint16_t stringOffset;    // next free space in string pool
+	uint16_t stringPoolSz;
+	int entrySz;
 
-    uint32_t hash(const char* str) const;
+	uint32_t hash(const char* str) const;
 
-    // store string in string pool. May reallocate data.
-    uint16_t storeString(const char* str);
+	// store string in string pool. May reallocate data.
+	uint16_t storeString(const char* str);
 
-    void init(int maxEntries, uint16_t stringPoolSz);
+	// returns:
+	// - true if the value was found. index points to table index
+	// - false if not found. index points to free space for insertion
+	// depth is the amount of table elements that needed to be checked before finding/not finding the key
+	bool find(const char* key, uint32_t& index, uint32_t& depth) const;
 
-    bool resizeStringPool(size_t newPoolSz);
+	void init(int maxEntries, uint16_t stringPoolSz);
 
-    bool resizeHashTable(size_t newMaxEntries);
+	bool resizeStringPool(size_t newPoolSz);
 
-    EXPORT void* getValue(const char* key) const;
+	bool resizeHashTable(size_t newMaxEntries);
 
-    void copyFrom(const BaseHashMap& other);
+	EXPORT void* getValue(const char* key) const;
 
-    virtual void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) = 0;
+	void copyFrom(const BaseHashMap& other);
+
+	virtual void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) = 0;
 };
 
 // Maps strings to other strings.
 // open addressing and a string pool is used to avoid excessive memory allocations.
 class StringMap : public BaseHashMap {
 public:
-    StringMap() : BaseHashMap(sizeof(hmap_string_t)) {}
-    StringMap(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(sizeof(hmap_string_t), maxEntries, stringPoolSz) {}
-    EXPORT StringMap(std::initializer_list<std::pair<const char*, const char*>> init);
+	StringMap() : BaseHashMap(sizeof(hmap_string_t)) {}
+	StringMap(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(sizeof(hmap_string_t), maxEntries, stringPoolSz) {}
+	EXPORT StringMap(std::initializer_list<std::pair<const char*, const char*>> init);
 
-    // add a key to the map
-    EXPORT bool put(const char* key, const char* value);
+	// add a key to the map
+	EXPORT bool put(const char* key, const char* value);
 
-    // get value by key
-    EXPORT const char* get(const char* key) const;
+	// get value by key
+	EXPORT const char* get(const char* key) const;
 
-    struct iterator_t {
-        size_t offset;
-        const char* key;
-        const char* value;
+	struct iterator_t {
+		size_t offset;
+		const char* key;
+		const char* value;
 
-        iterator_t() : offset(0) {}
-    };
+		iterator_t() : offset(0) {}
+	};
 
-    EXPORT bool iterate(iterator_t& iter) const;
+	EXPORT bool iterate(iterator_t& iter) const;
 
-    EXPORT std::vector<std::pair<std::string, std::string>> print() override;
+	EXPORT std::vector<std::pair<std::string, std::string>> print() override;
 
 private:
-    EXPORT void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override;
+	EXPORT void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override;
 };
 
 // Hash table for strings
 class StringSet : public BaseHashMap {
 public:
-    StringSet() : BaseHashMap(0) {}
-    StringSet(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(0, maxEntries, stringPoolSz) {}
-    EXPORT StringSet(std::initializer_list<const char*> init);
+	StringSet() : BaseHashMap(0) {}
+	StringSet(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(0, maxEntries, stringPoolSz) {}
+	EXPORT StringSet(std::initializer_list<const char*> init);
 
-    // add a key to the map
-    EXPORT bool put(const char* key);
+	// add a key to the map
+	EXPORT bool put(const char* key);
 
-    // returns true if the key exists in the set
-    EXPORT bool hasKey(const char* key) const;
+	// returns true if the key exists in the set
+	EXPORT bool hasKey(const char* key) const;
 
-    struct iterator_t {
-        size_t offset;
-        const char* key;
+	struct iterator_t {
+		size_t offset;
+		const char* key;
 
-        iterator_t() : offset(0) {}
-    };
+		iterator_t() : offset(0) {}
+	};
 
-    // return each entry in the map. pass 0 for first iteration. Returns false at the end of iteration
-    EXPORT bool iterate(iterator_t& iter) const;
+	// return each entry in the map. pass 0 for first iteration. Returns false at the end of iteration
+	EXPORT bool iterate(iterator_t& iter) const;
 
 private:
-    EXPORT void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override;
+	EXPORT void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override;
 };
 
 // Maps a string to a POD type (not anything with a constructor like std::string or std::vector)
@@ -141,60 +149,60 @@ private:
 template <typename T>
 class HashMap : public BaseHashMap {
 public:
-    HashMap() : BaseHashMap(sizeof(T)) {}
-    HashMap(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(sizeof(T), maxEntries, stringPoolSz) {}
-    HashMap(std::initializer_list<std::pair<const char*, T>> init) : BaseHashMap(sizeof(T)) {
-        for (const auto& pair : init) {
-            put(pair.first, pair.second);
-        }
-    }
+	HashMap() : BaseHashMap(sizeof(T)) {}
+	HashMap(int maxEntries, uint16_t stringPoolSz) : BaseHashMap(sizeof(T), maxEntries, stringPoolSz) {}
+	HashMap(std::initializer_list<std::pair<const char*, T>> init) : BaseHashMap(sizeof(T)) {
+		for (const auto& pair : init) {
+			put(pair.first, pair.second);
+		}
+	}
 
-    bool put(const char* key, const T& value) {
-        return BaseHashMap::put(key, (void*)&value);
-    }
+	bool put(const char* key, const T& value) {
+		return BaseHashMap::put(key, (void*)&value);
+	}
 
-    T* get(const char* key) const {
-        return (T*)getValue(key);
-    }
+	T* get(const char* key) const {
+		return (T*)getValue(key);
+	}
 
-    struct iterator_t {
-        size_t offset;
-        const char* key;
-        T* value;
+	struct iterator_t {
+		size_t offset;
+		const char* key;
+		T* value;
 
-        iterator_t() : offset(0) {}
-    };
+		iterator_t() : offset(0) {}
+	};
 
-    bool iterate(iterator_t& iter) const {
-        char* stringPool = data;
+	bool iterate(iterator_t& iter) const {
+		char* stringPool = data;
 
-        for (; iter.offset < maxEntries; iter.offset++) {
-            hash_map_entry_t* entry = (hash_map_entry_t*)(data + stringPoolSz + iter.offset * entrySz);
+		for (; iter.offset < maxEntries; iter.offset++) {
+			entry_header_t* entry = (entry_header_t*)(data + stringPoolSz + iter.offset * entrySz);
 
-            if (entry->occupied) {
-                iter.key = stringPool + entry->key;
-                iter.value = (T*)((char*)entry + sizeof(hash_map_entry_t));
-                iter.offset++;
-                return true;
-            }
-        }
+			if (entry->occupied) {
+				iter.key = stringPool + entry->key;
+				iter.value = (T*)((char*)entry + sizeof(entry_header_t));
+				iter.offset++;
+				return true;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 
 private:
-    void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override {
-        for (size_t i = 0; i < otherEntryCount; i++) {
-            hash_map_entry_t* entry = (hash_map_entry_t*)(otherData + otherStringPoolSz + i * entrySz);
-            if (!entry->occupied) {
-                continue;
-            }
+	void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override {
+		for (size_t i = 0; i < otherEntryCount; i++) {
+			entry_header_t* entry = (entry_header_t*)(otherData + otherStringPoolSz + i * entrySz);
+			if (!entry->occupied) {
+				continue;
+			}
 
-            if (!BaseHashMap::put(otherData + entry->key, (char*)entry + sizeof(hash_map_entry_t))) {
-                //ALERT(at_error, "StringMap failed to put during table resize\n");
-            }
-        }
-    }
+			if (!BaseHashMap::put(otherData + entry->key, (char*)entry + sizeof(entry_header_t))) {
+				//ALERT(at_error, "StringMap failed to put during table resize\n");
+			}
+		}
+	}
 };
 
 EXPORT extern const StringMap g_emptyStringMap;

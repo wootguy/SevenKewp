@@ -2991,7 +2991,7 @@ void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, 
 std::string lastMapName;
 
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
-	if (target < at_warning && g_developer->value == 0) {
+	if (target < at_warning && (g_developer && g_developer->value == 0)) {
 		return;
 	}
 
