@@ -124,6 +124,10 @@ uint16_t BaseHashMap::storeString(const char* str) {
 }
 
 bool BaseHashMap::put(const char* key, void* value) {
+    if (!key) {
+        return false;
+    }
+    
     if (!data) {
         init(HMAP_DEFAULT_MAX_ENTRIES, HMAP_DEFAULT_STRING_POOL_SZ);
     }
@@ -204,7 +208,7 @@ bool BaseHashMap::putAll(const BaseHashMap& other) {
 }
 
 void* BaseHashMap::getValue(const char* key) const {
-    if (!data) {
+    if (!data || !key) {
         return NULL;
     }
 
@@ -386,6 +390,10 @@ StringMap::StringMap(std::initializer_list<std::pair<const char*, const char*>> 
 bool StringMap::put(const char* key, const char* value) {
     if (!data) {
         init(HMAP_DEFAULT_MAX_ENTRIES, HMAP_DEFAULT_STRING_POOL_SZ);
+    }
+
+    if (!key || !value) {
+        return false;
     }
 
     uint16_t ival = storeString(value);
