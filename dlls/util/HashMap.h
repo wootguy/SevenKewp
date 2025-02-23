@@ -5,6 +5,7 @@
 #include <utility>
 #include <unordered_map>
 #include <vector>
+#include "shared_util.h"
 
 typedef uint16_t hmap_string_t; // offset into a hashmap's string pool
 
@@ -51,7 +52,7 @@ public:
 	EXPORT void del(const char* key);
 
 	// for debugging
-	EXPORT virtual std::vector<std::pair<std::string, std::string>> print();
+	EXPORT std::vector<std::pair<std::string, std::string>> print();
 
 	EXPORT static void global_hash_stats();
 
@@ -80,9 +81,11 @@ protected:
 
 	bool resizeHashTable(size_t newMaxEntries);
 
+	void copyFrom(const BaseHashMap& other);
+
 	EXPORT void* getValue(const char* key) const;
 
-	void copyFrom(const BaseHashMap& other);
+	virtual const char* getValueString(void* value) = 0;
 
 	virtual void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) = 0;
 };
@@ -111,10 +114,10 @@ public:
 
 	EXPORT bool iterate(iterator_t& iter) const;
 
-	EXPORT std::vector<std::pair<std::string, std::string>> print() override;
-
 private:
 	EXPORT void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override;
+
+	EXPORT const char* getValueString(void* value) override;
 };
 
 // Hash table for strings
@@ -142,7 +145,11 @@ public:
 
 private:
 	EXPORT void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override;
+
+	EXPORT const char* getValueString(void* value) override { return ""; };
 };
+
+EXPORT char* UTIL_VarArgs(const char* format, ...);
 
 // Maps a string to a POD type (not anything with a constructor like std::string or std::vector)
 // open addressing and a string pool is used to avoid excessive memory allocations.
@@ -203,6 +210,46 @@ private:
 			}
 		}
 	}
+
+	const char* str(void* value) {
+		// treat as bytes if there are no specialized overloads
+		const int max_value_len = 64;
+		static char output[max_value_len];
+		int valueSz = entrySz - sizeof(entry_header_t);
+
+		output[0] = 0;
+		strcat_safe(output, "0x", max_value_len);
+
+		uint8_t* bytes = (uint8_t*)value;
+		for (int i = valueSz - 1; i >= 0; i--) {
+			strcat_safe(output, UTIL_VarArgs("%02X", (int)bytes[i]), max_value_len);
+		}
+		if (strlen(output) >= max_value_len - 1) {
+			output[max_value_len - 16] = 0;
+			strcat_safe(output, UTIL_VarArgs("... (%d bytes)", valueSz), max_value_len);
+		}
+
+		return output;
+	}
+
+	const char* getValueString(void* value) override {
+		return str(value);
+	}
 };
+
+template <> EXPORT const char* HashMap<bool>::str(void* value);
+template <> EXPORT const char* HashMap<char>::str(void* value);
+template <> EXPORT const char* HashMap<short>::str(void* value);
+template <> EXPORT const char* HashMap<int>::str(void* value);
+template <> EXPORT const char* HashMap<long>::str(void* value);
+template <> EXPORT const char* HashMap<uint8_t>::str(void* value);
+template <> EXPORT const char* HashMap<uint16_t>::str(void* value);
+template <> EXPORT const char* HashMap<uint32_t>::str(void* value);
+template <> EXPORT const char* HashMap<unsigned long>::str(void* value);
+template <> EXPORT const char* HashMap<int64_t>::str(void* value);
+template <> EXPORT const char* HashMap<uint64_t>::str(void* value);
+template <> EXPORT const char* HashMap<float>::str(void* value);
+template <> EXPORT const char* HashMap<double>::str(void* value);
+template <> EXPORT const char* HashMap<long double>::str(void* value);
 
 EXPORT extern const StringMap g_emptyStringMap;

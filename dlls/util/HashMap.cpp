@@ -180,7 +180,7 @@ bool BaseHashMap::find(const char* key, uint32_t& index, uint32_t& depth) const 
 
 	// Must be coprime to the table size to be sure all cells are visited.
 	// By setting the table size to a prime number, any value less than 
-	// the table size is guarunteed to be coprime.
+	// the table size is guaranteed to be coprime.
 	uint32_t stepSize = 1 + (hashedKey % (maxEntries - 1));
 
 	depth = 0;
@@ -327,28 +327,18 @@ std::vector<std::pair<std::string, std::string>> BaseHashMap::print() {
 		entry_header_t* entry = (entry_header_t*)(data + stringPoolSz + i * entrySz);
 
 		if (entry->occupied) {
-			ret.push_back({ stringPool + entry->key, "" });
+			const char* value = getValueString((char*)entry + sizeof(entry_header_t));
+			ALERT(at_console, "{\"%s\", %s}\n", stringPool + entry->key, value);
+			ret.push_back({ stringPool + entry->key, value });
 		}
 	}
 
 	return ret;
 }
 
-std::vector<std::pair<std::string, std::string>> StringMap::print() {
+const char* StringMap::getValueString(void* value) {
 	char* stringPool = data;
-
-	std::vector<std::pair<std::string, std::string>> ret;
-
-	for (size_t i = 0; i < maxEntries; i++) {
-		entry_header_t* entry = (entry_header_t*)(data + stringPoolSz + i * entrySz);
-
-		if (entry->occupied) {
-			const char* val = stringPool + *(uint16_t*)((char*)entry + sizeof(entry_header_t));
-			ret.push_back({ stringPool + entry->key, val });
-		}
-	}
-
-	return ret;
+	return UTIL_VarArgs("\"%s\"", stringPool + *(uint16_t*)value);
 }
 
 int BaseHashMap::size() {
@@ -538,3 +528,18 @@ bool StringSet::iterate(iterator_t& iter) const {
 
 	return false;
 }
+
+template <> const char* HashMap<bool>::str(void* value) { return UTIL_VarArgs("%d", (int)*(bool*)value); }
+template <> const char* HashMap<char>::str(void* value) { return UTIL_VarArgs("%d", (int)*(char*)value); }
+template <> const char* HashMap<short>::str(void* value) { return UTIL_VarArgs("%d", (int)*(short*)value); }
+template <> const char* HashMap<int>::str(void* value) { return UTIL_VarArgs("%d", *(int*)value); }
+template <> const char* HashMap<long>::str(void* value) { return UTIL_VarArgs("%d", *(long*)value); }
+template <> const char* HashMap<uint8_t>::str(void* value) { return UTIL_VarArgs("%u", *(uint8_t*)value); }
+template <> const char* HashMap<uint16_t>::str(void* value) { return UTIL_VarArgs("%u", *(uint16_t*)value); }
+template <> const char* HashMap<uint32_t>::str(void* value) { return UTIL_VarArgs("%u", *(uint32_t*)value); }
+template <> const char* HashMap<unsigned long>::str(void* value) { return UTIL_VarArgs("%u", *(unsigned long*)value); }
+template <> const char* HashMap<int64_t>::str(void* value) { return UTIL_VarArgs("%ll", *(int64_t*)value); }
+template <> const char* HashMap<uint64_t>::str(void* value) { return UTIL_VarArgs("%llu", *(uint64_t*)value); }
+template <> const char* HashMap<float>::str(void* value) { return UTIL_VarArgs("%f", *(float*)value); }
+template <> const char* HashMap<double>::str(void* value) { return UTIL_VarArgs("%f", *(double*)value); }
+template <> const char* HashMap<long double>::str(void* value) { return UTIL_VarArgs("%Lf", *(long double*)value); }
