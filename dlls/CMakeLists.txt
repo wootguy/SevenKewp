@@ -674,7 +674,7 @@ if(UNIX)
 
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32 -g -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter ${OPT_FLAG} ${ASAN_CFLAGS}"
+		COMPILE_FLAGS "-m32 -g -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter -fno-omit-frame-pointer ${OPT_FLAG} ${ASAN_CFLAGS}"
 		LINK_FLAGS "-m32 -g ${ASAN_LFLAGS}"
 	)
 	
