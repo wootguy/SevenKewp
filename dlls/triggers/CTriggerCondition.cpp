@@ -308,7 +308,7 @@ bool CTriggerCondition::CompareFloats(const CKeyValue& monitorKey, const CKeyVal
 	case COMPARE_BITSET:
 	default:
 		ALERT(at_console, "'%s' (%s): invalid compare type %d used on float key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.keyName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_checkType, monitorKey.keyName);
 		return false;
 	}
 }
@@ -324,7 +324,7 @@ bool CTriggerCondition::CompareInts(const CKeyValue& monitorKey, const CKeyValue
 	case COMPARE_BITSET: return monitorKey.iVal & getValueAsInt(compareKey);
 	default:
 		ALERT(at_console, "'%s' (%s): invalid compare type %d used on int key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.keyName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_checkType, monitorKey.keyName);
 		return false;
 	}
 }
@@ -381,7 +381,7 @@ bool CTriggerCondition::CompareVectors(const CKeyValue& monitorKey, const CKeyVa
 	case COMPARE_BITSET:
 	default:
 		ALERT(at_console, "'%s' (%s): invalid compare type %d used on vector key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.keyName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_checkType, monitorKey.keyName);
 		return false;
 	}
 }
@@ -397,7 +397,7 @@ bool CTriggerCondition::CompareStrings(const CKeyValue& monitorKey, const CKeyVa
 	case COMPARE_BITSET:
 	default:
 		ALERT(at_console, "'%s' (%s): invalid compare type %d used on string key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.keyName);
+			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_checkType, monitorKey.keyName);
 		return false;
 	}
 }
