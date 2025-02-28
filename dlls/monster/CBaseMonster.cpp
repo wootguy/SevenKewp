@@ -7771,8 +7771,11 @@ void CBaseMonster::LogPlayerDamage(entvars_t* attacker, float damage) {
 CItemInventory* CBaseMonster::GetInventoryItem(const char* name) {
 	CItemInventory* item = m_inventory ? m_inventory.GetEntity()->MyInventoryPointer() : NULL;
 
+	std::string lowerTest = toLowerCase(name);
+
 	while (item) {
-		if (item->m_item_name && !strcmp(name, STRING(item->m_item_name))) {
+		std::string lowerItem = toLowerCase(STRING(item->m_item_name));
+		if (item->m_item_name && lowerItem == lowerTest) {
 			return item;
 		}
 
@@ -7786,11 +7789,13 @@ std::vector<CItemInventory*> CBaseMonster::GetInventoryGroupItems(const char* gr
 	std::vector<CItemInventory*> groupItems;
 	CItemInventory* item = m_inventory ? m_inventory.GetEntity()->MyInventoryPointer() : NULL;
 
-	std::vector<std::string> names = splitString(groupName, " ");
+	std::vector<std::string> names = splitString(toLowerCase(groupName), " ");
 
 	while (item) {
+		std::string lowerGroup = toLowerCase(STRING(item->m_item_group));
+
 		for (int i = 0; item->m_item_group && i < (int)names.size(); i++) {
-			if (!strcmp(names[i].c_str(), STRING(item->m_item_group))) {
+			if (names[i] == lowerGroup) {
 				groupItems.push_back(item);
 				break;
 			}

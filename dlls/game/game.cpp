@@ -188,7 +188,7 @@ void dump_missing_files() {
 
 	StringSet::iterator_t iter;
 	while (g_tryPrecacheSounds.iterate(iter)) {
-		std::string putKey;
+		std::string putKey = iter.key;
 
 		if (strlen(iter.key) > 1) {
 			if (iter.key[0] == '*' || iter.key[0] == '!') {

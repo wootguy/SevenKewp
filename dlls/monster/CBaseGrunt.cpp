@@ -2845,6 +2845,8 @@ void CBaseRepel::Precache(void) {
 		keys.put("is_player_ally", "1");
 	if (pev->weapons)
 		keys.put("weapons", UTIL_VarArgs("%d", pev->weapons));
+	if (pev->model)
+		keys.put("model", STRING(pev->model));
 
 	UTIL_PrecacheOther(GetMonsterType(), keys);
 	m_iSpriteTexture = PRECACHE_MODEL("sprites/rope.spr");
