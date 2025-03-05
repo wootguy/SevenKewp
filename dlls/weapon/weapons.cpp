@@ -249,6 +249,7 @@ void GetCircularGaussianSpread(float& x, float& y) {
 }
 
 int giAmmoIndex = 0;
+bool g_using556ammo = false; // so 556 ammo can be replaced with 9mm if there are no 556 weapons
 
 // Precaches the ammo and queues the ammo info for sending to clients
 void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
@@ -268,6 +269,10 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 	ASSERT( giAmmoIndex < MAX_AMMO_SLOTS );
 	if ( giAmmoIndex >= MAX_AMMO_SLOTS )
 		giAmmoIndex = 0;
+
+	if (!strcmp(szAmmoname, "556")) {
+		g_using556ammo = true;
+	}
 
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].pszName = szAmmoname;
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].iId = giAmmoIndex;   // yes, this info is redundant
@@ -408,6 +413,7 @@ void W_Precache(void)
 		memset(g_filledWeaponSlots[i], 0, MAX_WEAPON_POSITIONS * sizeof(const char*));
 	}
 
+	g_using556ammo = false;
 	g_registeringCustomWeps = false;
 	UTIL_RegisterWeapon("weapon_shotgun");
 	UTIL_RegisterWeapon("weapon_crowbar");
