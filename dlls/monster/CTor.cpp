@@ -768,7 +768,7 @@ void CTor::SpawnGrunt() {
 	}
 
 	DispatchSpawn(ENT(pevCreate));
-	pevCreate->owner = edict();
+	pevCreate->owner = edict(); // TODO: this causes alien grunts to be owned by their hornets when tor dies
 
 	
 	CAGrunt* agrunt = dynamic_cast<CAGrunt*>(ent);
