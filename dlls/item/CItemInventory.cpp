@@ -748,7 +748,7 @@ void CItemInventory::Attach(CBaseMonster* mon) {
 		m_drop_time = gpGlobals->time + m_holder_timelimit;
 	}
 
-	m_wearout_time = gpGlobals->time + m_holder_time_wearout;
+	m_wearout_time = gpGlobals->time + V_max(0, m_holder_timelimit - m_holder_time_wearout);
 
 	if (mon->IsPlayer() && mon->IsAlive()) {
 		CBasePlayer* pPlayer = (CBasePlayer*)mon;

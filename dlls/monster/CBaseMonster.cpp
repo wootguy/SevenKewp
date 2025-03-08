@@ -7985,7 +7985,7 @@ float CBaseMonster::GetDamage(float defaultDamage) {
 	CBaseEntity* owner = CBaseEntity::Instance(pev->owner);
 	CBaseMonster* mon = owner ? owner->MyMonsterPointer() : NULL;
 
-	if (owner && owner->pev->owner && pev == &owner->pev->owner->v) {
+	if (owner && CBaseEntity::Instance(owner->pev->owner) == this) {
 		// two entities which "own" each other will trigger an infinite loop.
 		// use the default damage in this case. TODO: this can still happen when 3+ entities form a loop.
 		mon = NULL;
