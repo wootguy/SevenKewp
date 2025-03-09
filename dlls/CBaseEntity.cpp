@@ -1429,6 +1429,13 @@ bool CBaseEntity::TestInventoryRules(CBaseMonster* mon, std::unordered_set<CItem
 	return true;
 }
 
+bool CBaseEntity::HasInventoryRules() {
+	InventoryRules& rules = m_inventoryRules;
+
+	return rules.item_name_required || rules.item_group_required || rules.item_name_canthave
+		|| rules.item_group_canthave;
+}
+
 bool CBaseEntity::RunInventoryRules(CBaseEntity* ent) {
 	CBaseMonster* mon = ent ? ent->MyMonsterPointer() : NULL;
 
