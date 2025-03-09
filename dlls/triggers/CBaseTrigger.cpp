@@ -272,7 +272,9 @@ void CBaseTrigger::HurtTouch(CBaseEntity* pOther)
 
 	// rules are inverted for damage triggers.
 	// "Need item" = you need this item or else pain is delivered
-	if (RunInventoryRules(pOther)) {
+	// this should only pass if the entity has inventory rules at all
+	// otherwise this is always true.
+	if (HasInventoryRules() && RunInventoryRules(pOther)) {
 		return;
 	}
 

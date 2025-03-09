@@ -423,6 +423,8 @@ public:
 		else m_hidePlayers |= PLRBIT(player);
 	}
 
+	bool HasInventoryRules(); // true if entity can only be activated by some combination/lack of inventory items
+
 	bool RunInventoryRules(CBaseEntity* ent); // returns false if entity inventory forbids activation
 
 	virtual float GetDamageModifier() { return 1.0f; }
