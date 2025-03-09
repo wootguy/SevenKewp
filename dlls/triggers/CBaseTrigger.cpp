@@ -270,7 +270,9 @@ void CBaseTrigger::HurtTouch(CBaseEntity* pOther)
 		//gpGlobals->force_retouch++;
 	}
 
-	if (!RunInventoryRules(pOther)) {
+	// rules are inverted for damage triggers.
+	// "Need item" = you need this item or else pain is delivered
+	if (RunInventoryRules(pOther)) {
 		return;
 	}
 
