@@ -12,8 +12,8 @@ runs:
     - name: Checkout map plugins
       uses: actions/checkout@v4
       with:
-        repository: wootguy/SevenKewp_plugins
-        path: ./plugins/SevenKewp_plugins
+        repository: wootguy/HLCMapPlugins
+        path: ./plugins/HLCMapPlugins
 
     - name: Checkout rcbot plugin
       uses: actions/checkout@v4
