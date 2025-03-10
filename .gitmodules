@@ -4,3 +4,6 @@
 [submodule "rehlds"]
 	path = rehlds
 	url = https://github.com/wootguy/rehlds
+[submodule "plugins/HLCMapPlugins"]
+	path = plugins/HLCMapPlugins
+	url = https://github.com/wootguy/HLCMapPlugins
