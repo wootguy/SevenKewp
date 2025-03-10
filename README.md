@@ -25,7 +25,7 @@ Native plugins are tightly integrated with the mod code and have full access to 
 
 1. Set up the mod project as described in the previous section
 2. Open a shell in `SevenKewp/plugins/`
-3. Clone all the plugin repos you want. Example: `git clone https://github.com/wootguy/SevenKewp_plugins/`
+3. Clone all the plugin repos you want. Example: `git clone https://github.com/wootguy/HLCMapPlugins/`
 4. Run the build script again: `scripts/build_game_and_plugins.bat` (Windows) or `scripts/build_game_and_plugins.sh` (Linux)
 5. Copy the contents of `SevenKewp/build/output/` to `valve/` on your dedicated server.
 6. Repeat steps 4 and 5 whenever the mod updates.

@@ -8,7 +8,7 @@ option(INCREASED_SERVER_LIMITS "Build a server library with increased limits (se
 option(SETUP_IDE "Install binaries to the game folder")
 
 set(SERVER_WORK_DIR "C:/Games/hlds/steamapps/common/Half-Life" CACHE STRING "Path to your server root folder")
-set(SERVER_ARGS "+map c1a1 -dll dlls/server.dll -num_edicts 2047 +maxplayers 32 +developer 1 +sv_cheats 1 +log on -port 27016" CACHE STRING "server launch arguments")
+set(SERVER_ARGS "+map c1a1 -dll dlls/server.dll -num_edicts 2047 -heapsize 65536 +maxplayers 32 +developer 1 +sv_cheats 1 +log on -port 27016" CACHE STRING "server launch arguments")
 set(SERVER_EXE "hlds.exe" CACHE STRING "Name of the executable that starts the server")
 
 set(CLIENT_WORK_DIR "C:/Games/Steam/steamapps/common/Half-Life" CACHE STRING "Path to your client root folder")
