@@ -16,10 +16,6 @@ class CItemInventory;
 void* GET_PRIVATE(const edict_t* pent);
 
 enum entindex_priority {
-	// entity should have an index lower than 512 so that sprite attachments work
-	// (skin is sent with 9 bits in delta.lst and this can't be changed for vanilla HL clients)
-	ENTIDX_PRIORITY_HIGH,
-
 	// entity is likely to be sent to clients (monsters, sprites, doors, etc.)
 	ENTIDX_PRIORITY_NORMAL,
 
