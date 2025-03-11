@@ -184,6 +184,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// called when the game enters intermission, before the map changes
 	HOOK_RETURN_DATA (*pfnIntermission)(INTERMISSION_REASON reason);
+
+	// called after a player has spawned
+	HOOK_RETURN_DATA (*pfnPlayerSpawn)(CBasePlayer* plr);
 };
 
 // do not call directly, use RegisterPlugin instead

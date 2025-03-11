@@ -326,7 +326,7 @@ std::vector<std::pair<std::string, std::string>> BaseHashMap::print() {
 	for (size_t i = 0; i < maxEntries; i++) {
 		entry_header_t* entry = (entry_header_t*)(data + stringPoolSz + i * entrySz);
 
-		if (entry->occupied) {
+		if (entry->occupied && entry->key) {
 			const char* value = getValueString((char*)entry + sizeof(entry_header_t));
 			ALERT(at_console, "{\"%s\", %s}\n", stringPool + entry->key, value);
 			ret.push_back({ stringPool + entry->key, value });
@@ -475,7 +475,7 @@ bool StringMap::iterate(iterator_t& iter) const {
 	for (; iter.offset < maxEntries; iter.offset++) {
 		entry_header_t* entry = (entry_header_t*)(data + stringPoolSz + iter.offset * entrySz);
 
-		if (entry->occupied) {
+		if (entry->occupied && entry->key) {
 			iter.key = stringPool + entry->key;
 			iter.value = stringPool + *(uint16_t*)((char*)entry + sizeof(entry_header_t));
 			iter.offset++;
@@ -519,7 +519,7 @@ bool StringSet::iterate(iterator_t& iter) const {
 	for (; iter.offset < maxEntries; iter.offset++) {
 		entry_header_t* entry = (entry_header_t*)(data + stringPoolSz + iter.offset * entrySz);
 
-		if (entry->occupied) {
+		if (entry->occupied && entry->key) {
 			iter.key = stringPool + entry->key;
 			iter.offset++;
 			return true;

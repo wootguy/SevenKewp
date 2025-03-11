@@ -424,6 +424,7 @@ EXPORT void			UTIL_Ricochet( const Vector &position, float scale );
 EXPORT void			UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType);
 EXPORT void			UTIL_StringToVector( float *pVector, const char *pString );
 EXPORT bool			UTIL_StringIsVector( const char *pString );
+EXPORT const char*	UTIL_VectorToString(const Vector& v);
 EXPORT void			UTIL_StringToIntArray( int *pVector, int count, const char *pString );
 EXPORT Vector		UTIL_ClampVectorToBox( const Vector &input, const Vector &clampSize );
 EXPORT float		UTIL_Approach( float target, float value, float speed );
@@ -903,6 +904,12 @@ EXPORT void UTIL_ForceRetouch(edict_t* ent); // force entity to Touch() all trig
 
 // return global or per-monster sound replacement, or the same path if not replaced 
 EXPORT const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound);
+
+// move a player to an active spawnpoint, and optionally respawn them or restore health
+// moveLivingPlayers will skip living players if false
+// respawnDeadPlayers will also restore hp for living players if true
+EXPORT void UTIL_RespawnPlayer(CBasePlayer* plr, bool moveLivingPlayers=true, bool respawnDeadPlayers=true);
+EXPORT void UTIL_RespawnAllPlayers(bool moveLivingPlayers=true, bool respawnDeadPlayers=true);
 
 EXPORT void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
 EXPORT void UTIL_Fizz(int eidx, int modelIdx, uint8_t density, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);

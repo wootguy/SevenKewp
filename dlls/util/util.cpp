@@ -38,6 +38,7 @@
 #include "TextMenu.h"
 #include "debug.h"
 #include "hlds_hooks.h"
+#include "CBaseDMStart.h"
 
 #include <fstream>
 #include <sys/types.h>
@@ -585,20 +586,74 @@ CBaseEntity *UTIL_FindEntityInSphere( CBaseEntity *pStartEntity, const Vector &v
 	return NULL;
 }
 
+// gets byte offset in entvars_t by field name
+int getEntvarsOffsetForString(const char* pszField)
+{
+	static HashMap<int> fieldOffsets = {
+		{ "classname", offsetof(entvars_t, classname) },
+		{ "model", offsetof(entvars_t, model) },
+		{ "viewmodel", offsetof(entvars_t, viewmodel) },
+		{ "weaponmodel", offsetof(entvars_t, weaponmodel) },
+		{ "netname", offsetof(entvars_t, netname) },
+		{ "target", offsetof(entvars_t, target) },
+		{ "targetname", offsetof(entvars_t, targetname) },
+		{ "message", offsetof(entvars_t, message) },
+		{ "noise", offsetof(entvars_t, noise) },
+		{ "noise1", offsetof(entvars_t, noise1) },
+		{ "noise2", offsetof(entvars_t, noise2) },
+		{ "noise3", offsetof(entvars_t, noise3) },
+		{ "globalname", offsetof(entvars_t, globalname) },
+	};
+
+	int* val = fieldOffsets.get(pszField);
+
+	return val ? *val : -1;
+}
 
 CBaseEntity *UTIL_FindEntityByString( CBaseEntity *pStartEntity, const char *szKeyword, const char *szValue )
 {
-	edict_t	*pentEntity;
+	int iField = getEntvarsOffsetForString(szKeyword);
+	if (iField == -1)
+		return NULL;
 
-	if (pStartEntity)
-		pentEntity = pStartEntity->edict();
-	else
-		pentEntity = NULL;
+	edict_t* pentEntity = NULL;
+	edict_t* edicts = ENT(0);
+	int startAt = pStartEntity ? pStartEntity->entindex() : 0;
+	
+	static char asterisk_search[256];
+	const char* asterisk = strstr(szValue, "*");
+	if (asterisk) {
+		strcpy_safe(asterisk_search, szValue, 256);
+		asterisk_search[asterisk - szValue] = 0;
+	}
 
-	pentEntity = FIND_ENTITY_BY_STRING( pentEntity, szKeyword, szValue );
+	for (int e = startAt + 1; e < gpGlobals->maxEntities; e++)
+	{
+		edict_t* ed = &edicts[e];
+		if (ed->free)
+			continue;
+
+		const char* t = STRING(*(string_t*)((size_t)&ed->v + iField));
+		if (t == 0 || t[0] == 0)
+			continue;
+
+		if (asterisk) {
+			if (strstr(t, asterisk_search)) {
+				pentEntity = ed;
+				break;
+			}
+		}
+		else {
+			if (!strcmp(t, szValue)) {
+				pentEntity = ed;
+				break;
+			}
+		}
+	}
 
 	if (!FNullEnt(pentEntity))
 		return CBaseEntity::Instance(pentEntity);
+
 	return NULL;
 }
 
@@ -2116,6 +2171,10 @@ bool UTIL_StringIsVector(const char* pString) {
 	return j > 2;
 }
 
+const char* UTIL_VectorToString(const Vector& v) {
+	return UTIL_VarArgs("%f %f %f", v.x, v.y, v.z);
+}
+
 void UTIL_StringToIntArray( int *pVector, int count, const char *pString )
 {
 	char *pstr, *pfront, tempString[128];
@@ -2358,6 +2417,37 @@ void UTIL_StripToken( const char *pKey, char *pDest, int nLen)
 		i++;
 	}
 	pDest[i] = 0;
+}
+
+void UTIL_RespawnPlayer(CBasePlayer* plr, bool moveLivingPlayers, bool respawnDeadPlayers) {
+	if (!plr || plr->IsObserver()) {
+		return;
+	}
+
+	if (plr->IsAlive() && !moveLivingPlayers) {
+		return;
+	}
+
+	// always move player entity, dead or alive
+	edict_t* spawnPoint = EntSelectSpawnPoint(plr);
+	if (!FNullEnt(spawnPoint)) {
+		CBaseDMStart* spawn = (CBaseDMStart*)CBaseEntity::Instance(spawnPoint);
+		spawn->SpawnPlayer(plr);
+	}
+
+	if (plr->IsAlive()) {
+		if (respawnDeadPlayers)
+			plr->pev->health = plr->pev->max_health;
+	}
+	else if (respawnDeadPlayers) {
+		plr->Spawn();
+	}
+}
+
+void UTIL_RespawnAllPlayers(bool moveLivingPlayers, bool respawnDeadPlayers) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		UTIL_RespawnPlayer(UTIL_PlayerByIndex(i), moveLivingPlayers, respawnDeadPlayers);
+	}
 }
 
 CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName) {

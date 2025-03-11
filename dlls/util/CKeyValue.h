@@ -21,4 +21,6 @@ struct CKeyValue {
 		string_t sVal;
 		float vVal[3];
 	};
+
+	bool exists() { return keyName != NULL; }
 };

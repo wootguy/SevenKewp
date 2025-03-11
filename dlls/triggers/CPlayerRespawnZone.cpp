@@ -74,11 +74,7 @@ void CPlayerRespawnZone::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_
 		if ((bool)trace.fStartSolid == respawnInside) {
 			// Despite the entity name, players are not actually respawned.
 			// Players are merely teleported to active spawn points
-			edict_t* spawnPoint = EntSelectSpawnPoint(pPlayer);
-			if (!FNullEnt(spawnPoint)) {
-				CBaseDMStart* spawn = (CBaseDMStart*)CBaseEntity::Instance(spawnPoint);
-				spawn->SpawnPlayer(pPlayer);
-			}
+			UTIL_RespawnPlayer(pPlayer, true, false);
 		}
 	}
 }

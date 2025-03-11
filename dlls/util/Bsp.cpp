@@ -31,6 +31,8 @@ void Bsp::delete_lumps() {
 
 bool Bsp::load_lumps(string fpath)
 {
+	delete_lumps();
+
 	loaded = true;
 	valid = true;
 
@@ -84,7 +86,7 @@ bool Bsp::load_lumps(string fpath)
 
 	update_lump_pointers();
 
-	count_entity_bsp_models();
+	parseEntities();
 
 	return valid;
 }
@@ -137,8 +139,7 @@ void Bsp::update_lump_pointers() {
 	if (visDataLength > MAX_MAP_VISDATA) ALERT(at_console, "Overflowed visdata !!!\n");
 }
 
-void Bsp::count_entity_bsp_models()
-{
+void Bsp::parseEntities() {
 	membuf sbuf((char*)lumps[LUMP_ENTITIES], header.lump[LUMP_ENTITIES].nLength);
 	istream in(&sbuf);
 
@@ -146,6 +147,9 @@ void Bsp::count_entity_bsp_models()
 	int lastBracket = -1;
 
 	StringSet unique_bsp_models;
+	StringMap ent;
+
+	ents.clear();
 
 	string line = "";
 	while (getline(in, line))
@@ -170,15 +174,19 @@ void Bsp::count_entity_bsp_models()
 			lastBracket = 1;
 
 			// you can end/start an ent on the same line, you know
-			if (line.find("{") != string::npos)
-			{
+			if (line.find("{") != string::npos) {
 				lastBracket = 0;
 			}
+
+			ents.push_back(ent);
+			ent.clear();
 		}
 		else if (lastBracket == 0) // currently defining an entity
 		{
 			string key, value;
 			parse_keyvalue(line, key, value);
+			ent.put(key.c_str(), value.c_str());
+
 			if (key == "model" && value[0] == '*') {
 				unique_bsp_models.put(value.c_str());
 			}
