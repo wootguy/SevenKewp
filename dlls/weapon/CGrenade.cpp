@@ -300,21 +300,18 @@ void CGrenade::BounceTouch( CBaseEntity *pOther )
 	if (pev->flags & FL_ONGROUND)
 	{
 		// add a bit of static friction
-		pev->velocity = pev->velocity * 0.8;
+		pev->velocity = pev->velocity * 0.985;
 
-		pev->sequence = RANDOM_LONG( 1, 1 );
+		if (pev->sequence != 1) {
+			pev->sequence = 1;
+			ResetSequenceInfo();
+		}
 	}
 	else
 	{
 		// play bounce sound
 		BounceSound();
 	}
-	pev->framerate = pev->velocity.Length() / 200.0;
-	if (pev->framerate > 1.0)
-		pev->framerate = 1;
-	else if (pev->framerate < 0.5)
-		pev->framerate = 0;
-
 }
 
 
@@ -377,6 +374,19 @@ void CGrenade :: TumbleThink( void )
 	{
 		pev->velocity = pev->velocity * 0.5;
 		pev->framerate = 0.2;
+	}
+
+	if (pev->sequence == 1) {
+		pev->framerate = pev->velocity.Length() / 40.0;
+		if (pev->framerate > 8.0)
+			pev->framerate = 8;
+		else if (pev->velocity.Length() < 50) {
+			pev->framerate = FLT_MIN;
+		}
+
+		if (pev->flags & FL_ONGROUND && pev->velocity.Length() < 100) {
+			pev->velocity = pev->velocity * 0.6f;
+		}
 	}
 }
 
