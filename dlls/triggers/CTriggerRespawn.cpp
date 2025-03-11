@@ -16,58 +16,22 @@ class CTriggerRespawn : public CRulePointEntity
 {
 public:
 	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	void RespawnTarget(CBaseEntity* target);
-private:
 };
 
 LINK_ENTITY_TO_CLASS(trigger_respawn, CTriggerRespawn)
 
-void CTriggerRespawn::RespawnTarget(CBaseEntity* target) {
-	if (!target) {
-		return;
-	}
-
-	if (target->IsAlive() && (pev->spawnflags & SF_TRESPAWN_DONT_MOVE_LIVING)) {
-		return;
-	}
-
-	CBasePlayer* plr = (CBasePlayer*)target;
-	if (target->IsPlayer() && plr->IsObserver()) {
-		return;
-	}
-
-	// always move player entity, dead or alive
-	edict_t* spawnPoint = EntSelectSpawnPoint(target);
-	if (!FNullEnt(spawnPoint)) {
-		CBaseDMStart* spawn = (CBaseDMStart*)CBaseEntity::Instance(spawnPoint);
-		spawn->SpawnPlayer(plr);
-	}
-
-	if (target->IsAlive()) {
-		target->pev->health = target->pev->max_health;
-	}
-	else if (pev->spawnflags & SF_TRESPAWN_DEAD_PLAYERS) {
-		target->Spawn();
-	}
-}
-
 void CTriggerRespawn::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	bool moveLiving = !(pev->spawnflags & SF_TRESPAWN_DONT_MOVE_LIVING);
+	bool respawnDead = pev->spawnflags & SF_TRESPAWN_DEAD_PLAYERS;
+
 	if (pev->spawnflags & SF_TRESPAWN_TARGET) {
 		edict_t* ent = NULL;
 		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(pev->target)))) {
-			RespawnTarget(CBaseEntity::Instance(ent));
+			UTIL_RespawnPlayer(UTIL_PlayerByIndex(ENTINDEX(ent)), moveLiving, respawnDead);
 		}
 		return;
 	}
-
-	for (int i = 1; i <= gpGlobals->maxClients; i++) {
-		edict_t* ent = INDEXENT(i);
-
-		if (!IsValidPlayer(ent)) {
-			continue;
-		}
-
-		RespawnTarget(CBaseEntity::Instance(ent));
-	}
+	
+	UTIL_RespawnAllPlayers(moveLiving, respawnDead);
 }

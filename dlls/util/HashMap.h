@@ -186,7 +186,7 @@ public:
 		for (; iter.offset < maxEntries; iter.offset++) {
 			entry_header_t* entry = (entry_header_t*)(data + stringPoolSz + iter.offset * entrySz);
 
-			if (entry->occupied) {
+			if (entry->occupied && entry->key) {
 				iter.key = stringPool + entry->key;
 				iter.value = (T*)((char*)entry + sizeof(entry_header_t));
 				iter.offset++;

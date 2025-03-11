@@ -3550,6 +3550,8 @@ void CBasePlayer::Spawn( void )
 
 	// don't play suit sounds for items given when spawning
 	SetSuitUpdate(NULL, FALSE, 0);
+
+	CALL_HOOKS_VOID(pfnPlayerSpawn, this);
 }
 
 void CBasePlayer :: Precache( void )

@@ -669,8 +669,10 @@ CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, co
 		DispatchKeyValue(pent, &dat);
 	}
 
-	if (spawn)
-		DispatchSpawn(pEntity->edict());
+	if (spawn) {
+		DispatchSpawn(pent);
+		pEntity = CBaseEntity::Instance(pent); // may have been relocatd by spawn code
+	}
 
 	return pEntity;
 }
