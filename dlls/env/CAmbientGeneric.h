@@ -67,7 +67,6 @@ typedef struct dynpitchvol
 class EXPORT CAmbientGeneric : public CBaseEntity
 {
 public:
-	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	void KeyValue(KeyValueData* pkvd);
 	void Spawn(void);
 	void Precache(void);

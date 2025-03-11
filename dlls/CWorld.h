@@ -12,7 +12,6 @@ extern edict_t* g_pBodyQueueHead;
 class EXPORT CWorld : public CBaseEntity
 {
 public:
-	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_HIGH; }
 	void Spawn( void );
 	void Precache( void );
 	void KeyValue( KeyValueData *pkvd );
