@@ -95,7 +95,7 @@ public:
 	void SonicAttack( void );
 	void PrescheduleThink( void );
 	void SetActivity ( Activity NewActivity );
-	void WriteBeamColor ( void );
+	RGB GetBeamColor ( void );
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	BOOL FValidateHintType ( short sHint );
 	BOOL FCanActiveIdle ( void );
@@ -508,7 +508,7 @@ void CHoundeye::CantFollowSound() {
 // WriteBeamColor - writes a color vector to the network 
 // based on the size of the group. 
 //=========================================================
-void CHoundeye :: WriteBeamColor ( void )
+RGB CHoundeye :: GetBeamColor( void )
 {
 	BYTE	bRed, bGreen, bBlue;
 
@@ -548,9 +548,7 @@ void CHoundeye :: WriteBeamColor ( void )
 		bBlue	= 255;
 	}
 	
-	WRITE_BYTE( bRed   );
-	WRITE_BYTE( bGreen );
-	WRITE_BYTE( bBlue  );
+	return RGB(bRed, bGreen, bBlue);
 }
 		
 
@@ -565,47 +563,12 @@ void CHoundeye :: SonicAttack ( void )
 	EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pBlastSounds), 1, ATTN_NORM);
 
 	// blast circles
-	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_BEAMCYLINDER );
-		WRITE_COORD( pev->origin.x);
-		WRITE_COORD( pev->origin.y);
-		WRITE_COORD( pev->origin.z + 16);
-		WRITE_COORD( pev->origin.x);
-		WRITE_COORD( pev->origin.y);
-		WRITE_COORD( pev->origin.z + 16 + HOUNDEYE_MAX_ATTACK_RADIUS / .2); // reach damage radius over .3 seconds
-		WRITE_SHORT( m_iSpriteTexture );
-		WRITE_BYTE( 0 ); // startframe
-		WRITE_BYTE( 0 ); // framerate
-		WRITE_BYTE( 2 ); // life
-		WRITE_BYTE( 16 );  // width
-		WRITE_BYTE( 0 );   // noise
-
-		WriteBeamColor();
-
-		WRITE_BYTE( 255 ); //brightness
-		WRITE_BYTE( 0 );		// speed
-	MESSAGE_END();
-
-	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_BEAMCYLINDER );
-		WRITE_COORD( pev->origin.x);
-		WRITE_COORD( pev->origin.y);
-		WRITE_COORD( pev->origin.z + 16);
-		WRITE_COORD( pev->origin.x);
-		WRITE_COORD( pev->origin.y);
-		WRITE_COORD( pev->origin.z + 16 + ( HOUNDEYE_MAX_ATTACK_RADIUS / 2 ) / .2); // reach damage radius over .3 seconds
-		WRITE_SHORT( m_iSpriteTexture );
-		WRITE_BYTE( 0 ); // startframe
-		WRITE_BYTE( 0 ); // framerate
-		WRITE_BYTE( 2 ); // life
-		WRITE_BYTE( 16 );  // width
-		WRITE_BYTE( 0 );   // noise
-
-		WriteBeamColor();
-		
-		WRITE_BYTE( 255 ); //brightness
-		WRITE_BYTE( 0 );		// speed
-	MESSAGE_END();
+	Vector pos = pev->origin + Vector(0, 0, 16);
+	RGBA color = RGBA(GetBeamColor(), 255);
+	float radius1 = HOUNDEYE_MAX_ATTACK_RADIUS / .2;
+	float radius2 = (HOUNDEYE_MAX_ATTACK_RADIUS / 2) / .2;
+	UTIL_BeamCylinder(pos, radius1, m_iSpriteTexture, 0, 0, 2, 16, 0, color, 0);
+	UTIL_BeamCylinder(pos, radius2, m_iSpriteTexture, 0, 0, 2, 16, 0, color, 0);
 
 	PLAY_DISTANT_SOUND(edict(), DISTANT_BOOM);
 

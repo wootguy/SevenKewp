@@ -18,6 +18,7 @@
 #include "CItemInventory.h"
 #include "CBasePlayer.h"
 #include "CSprite.h"
+#include "te_effects.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -3050,17 +3051,8 @@ void CBaseMonster::HandleAnimEvent(MonsterEvent_t* pEvent)
 			*/
 
 			int alphatest = flash.rendermode == 4 ? 1 : 0;
-
-			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, origin);
-			WRITE_BYTE(TE_EXPLOSION);
-			WRITE_COORD(origin.x);
-			WRITE_COORD(origin.y);
-			WRITE_COORD(origin.z - 8);
-			WRITE_SHORT(MODEL_INDEX(STRING(flash.sprite)));
-			WRITE_BYTE(flash.scale*0.2f);
-			WRITE_BYTE(50);
-			WRITE_BYTE(alphatest | 2 | 4 | 8);
-			MESSAGE_END();
+			UTIL_Explosion(origin, MODEL_INDEX(STRING(flash.sprite)), flash.scale * 0.2f, 50,
+				alphatest | 2 | 4 | 8);
 		}
 		break;
 	}
@@ -4218,25 +4210,9 @@ void CBaseMonster::GibMonster(void)
 		position.z += (pev->maxs.z - pev->mins.z) * 0.5f;
 		Vector size = (pev->maxs - pev->mins);
 		Vector vecVelocity = Vector(0, 0, 150);
-		int gibModelId = PRECACHE_MODEL((char*)"models/computergibs.mdl");
 
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, position);
-		WRITE_BYTE(TE_BREAKMODEL);
-		WRITE_COORD(position.x);
-		WRITE_COORD(position.y);
-		WRITE_COORD(position.z);
-		WRITE_COORD(size.x);
-		WRITE_COORD(size.y);
-		WRITE_COORD(size.z);
-		WRITE_COORD(vecVelocity.x);
-		WRITE_COORD(vecVelocity.y);
-		WRITE_COORD(vecVelocity.z);
-		WRITE_BYTE(30); // randomization
-		WRITE_SHORT(gibModelId); // model id#
-		WRITE_BYTE(0);	// let client decide # of shards
-		WRITE_BYTE(25);// duration 2.5 seconds
-		WRITE_BYTE(BREAK_METAL); // flags
-		MESSAGE_END();
+		UTIL_BreakModel(position, size, vecVelocity, 30, MODEL_INDEX("models/computergibs.mdl"),
+			0, 25, BREAK_METAL);
 
 		gibbed = TRUE;
 	}
@@ -4266,11 +4242,23 @@ void CBaseMonster::GibMonster(void)
 			// don't remove players or player corpses!
 			SetThink(&CBaseMonster::SUB_Remove);
 			pev->nextthink = gpGlobals->time;
+
+			// if the entity is outside the valid range for sound origins, then it needs
+			// to be networked at least until the sound starts playing or else clients won't hear it.
+			if (!UTIL_IsValidTempEntOrigin(pev->origin)) {
+				pev->flags &= ~FL_MONSTER; // prevent the crowbar thinking this is a valid target
+				pev->renderamt = 0;
+				pev->rendermode = kRenderTransTexture;
+				pev->nextthink = gpGlobals->time + 0.1f;
+			}
 		}
 		else
 		{
 			FadeMonster();
 		}
+	}
+	else {
+		pev->effects |= EF_NODRAW;
 	}
 }
 
@@ -4491,7 +4479,6 @@ void CBaseMonster::CallGibMonster(void)
 	}
 	else
 	{
-		pev->effects = EF_NODRAW; // make the model invisible.
 		GibMonster();
 	}
 
@@ -4504,8 +4491,19 @@ void CBaseMonster::CallGibMonster(void)
 		pev->health = 0;
 	}
 
-	if (ShouldFadeOnDeath() && !fade && !IsPlayerCorpse())
-		UTIL_Remove(this);
+	if (ShouldFadeOnDeath() && !fade && !IsPlayerCorpse()) {
+		SetThink(&CBaseMonster::SUB_Remove);
+		pev->nextthink = gpGlobals->time;
+
+		// if the entity is outside the valid range for sound origins, then it needs
+		// to be networked at least until the sound starts playing or else clients won't hear it.
+		if (!UTIL_IsValidTempEntOrigin(pev->origin)) {
+			pev->flags &= ~FL_MONSTER; // prevent the crowbar thinking this is a valid target
+			pev->renderamt = 0;
+			pev->rendermode = kRenderTransTexture;
+			pev->nextthink = gpGlobals->time + 0.1f;
+		}
+	}
 }
 
 /*

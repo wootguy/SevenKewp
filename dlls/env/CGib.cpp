@@ -265,6 +265,38 @@ void CGib::WaitTillLand(void)
 	}
 }
 
+void CGib::BreakThink() {
+	if (pev->flags & (FL_ONGROUND | FL_PARTIALGROUND)) {
+		pev->angles.x = 0;
+		pev->angles.z = 0;
+		pev->avelocity.x = 0;
+		pev->avelocity.z = 0;
+	}
+
+	if (gpGlobals->time > m_lifeTime) {
+		SetThink(&CGib::StartFadeOut);
+	}
+	pev->nextthink = gpGlobals->time + 0.05f;
+}
+
+void CGib::SprayThink() {
+	if ((pev->flags & (FL_ONGROUND | FL_PARTIALGROUND)) || pev->renderamt < 21) {
+		pev->renderamt = 0;
+		UTIL_Remove(this);
+		return;
+	}
+
+	// manually applying gravity so a non-interpolated movetype can be used
+	pev->velocity.z -= 400 * 0.05f;
+
+
+	if (gpGlobals->time > m_lifeTime) {
+		pev->renderamt -= 30;
+	}
+	
+	pev->nextthink = gpGlobals->time + 0.05f;
+}
+
 //
 // Gib bounces on the ground or wall, sponges some blood down, too!
 //
@@ -278,7 +310,7 @@ void CGib::BounceGibTouch(CBaseEntity* pOther)
 
 	if (pev->flags & FL_ONGROUND)
 	{
-		pev->velocity = pev->velocity * 0.9;
+		pev->velocity = pev->velocity * m_slideFriction;
 		pev->angles.x = 0;
 		pev->angles.z = 0;
 		pev->avelocity.x = 0;
@@ -296,14 +328,21 @@ void CGib::BounceGibTouch(CBaseEntity* pOther)
 			m_cBloodDecals--;
 		}
 
-		if (m_material != matNone && RANDOM_LONG(0, 2) == 0)
+		if (m_material != matNone) {
+			// breakmodel gibs slide less
+			pev->velocity.x = pev->velocity.x * m_slideFriction;
+			pev->velocity.y = pev->velocity.y * m_slideFriction;
+		}
+		
+		if (m_material != matNone && RANDOM_LONG(0,1) == 0 && gpGlobals->time - m_lastBounceSound > 0.5f)
 		{
-			float volume;
 			float zvel = fabs(pev->velocity.z);
+			float volume = 1.0f * V_min(1.0, ((float)zvel) / 200.0);
 
-			volume = 0.8 * V_min(1.0, ((float)zvel) / 450.0);
-
-			CBreakable::MaterialSoundRandom(edict(), (Materials)m_material, volume);
+			if (volume > 0.2f) {
+				m_lastBounceSound = gpGlobals->time;
+				CBreakable::MaterialSoundRandom(edict(), (Materials)m_material, volume);
+			}
 		}
 	}
 }
@@ -336,6 +375,10 @@ void CGib::StickyGibTouch(CBaseEntity* pOther)
 	pev->movetype = MOVETYPE_NONE;
 }
 
+void CGib::SprayTouch(CBaseEntity* pOther) {
+	UTIL_Remove(this);
+}
+
 //
 // Throw a chunk
 //
@@ -351,6 +394,8 @@ void CGib::Spawn(const char* szGibModel)
 	pev->renderfx = kRenderFxNone;
 	pev->solid = SOLID_SLIDEBOX;/// hopefully this will fix the VELOCITY TOO LOW crap
 	pev->classname = MAKE_STRING("gib");
+	pev->flags |= FL_NOCLIP_EVERYTHING_ELSE; // prevent gibs getting stuck inside each other
+	m_slideFriction = 0.9;
 
 	SET_MODEL(ENT(pev), szGibModel);
 	UTIL_SetSize(pev, Vector(0, 0, 0), Vector(0, 0, 0));

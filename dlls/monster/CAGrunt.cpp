@@ -24,6 +24,7 @@
 #include	"env/CSoundEnt.h"
 #include	"CHornet.h"
 #include	"CAGrunt.h"
+#include "te_effects.h"
 
 int iAgruntMuzzleFlash;
 
@@ -147,16 +148,7 @@ void CAGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecD
 
 			vecTracerDir = vecTracerDir * -512;
 
-			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, ptr->vecEndPos );
-			WRITE_BYTE( TE_TRACER );
-				WRITE_COORD( ptr->vecEndPos.x );
-				WRITE_COORD( ptr->vecEndPos.y );
-				WRITE_COORD( ptr->vecEndPos.z );
-
-				WRITE_COORD( vecTracerDir.x );
-				WRITE_COORD( vecTracerDir.y );
-				WRITE_COORD( vecTracerDir.z );
-			MESSAGE_END();
+			UTIL_Tracer(ptr->vecEndPos, ptr->vecEndPos + vecTracerDir);
 		}
 
 		flDamage -= 20;
@@ -380,15 +372,7 @@ void CAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			GetAttachment( 0, vecArmPos, vecArmDir );
 
 			vecArmPos = vecArmPos + vecDirToEnemy * 32;
-			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecArmPos );
-				WRITE_BYTE( TE_SPRITE );
-				WRITE_COORD( vecArmPos.x );	// pos
-				WRITE_COORD( vecArmPos.y );	
-				WRITE_COORD( vecArmPos.z );	
-				WRITE_SHORT( iAgruntMuzzleFlash );		// model
-				WRITE_BYTE( 6 );				// size * 10
-				WRITE_BYTE( 128 );			// brightness
-			MESSAGE_END();
+			UTIL_Sprite(vecArmPos, iAgruntMuzzleFlash, 6, 128);
 
 			CBaseEntity *pHornet = CBaseEntity::Create( "hornet", vecArmPos, UTIL_VecToAngles( vecDirToEnemy ), true, edict() );
 			UTIL_MakeVectors ( pHornet->pev->angles );

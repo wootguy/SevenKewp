@@ -77,6 +77,7 @@ cvar_t	mp_antiblock_cooldown ={"mp_antiblock_cooldown", "3", FCVAR_SERVER, 0, 0 
 cvar_t	mp_min_score_mult ={"mp_min_score_mult", "20", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_hevsuit_voice ={"mp_hevsuit_voice", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	npc_dropweapons ={"npc_dropweapons", "1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_bigmap ={"mp_bigmap", "0", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
@@ -425,6 +426,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_min_score_mult);
 	CVAR_REGISTER (&mp_hevsuit_voice);
 	CVAR_REGISTER (&npc_dropweapons);
+	CVAR_REGISTER (&mp_bigmap);
 
 	CVAR_REGISTER (&mp_chattime);
 

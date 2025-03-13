@@ -2,6 +2,7 @@
 #include "util.h"
 #include "saverestore.h"
 #include "CBaseButton.h"
+#include "te_effects.h"
 
 // CBaseButton
 TYPEDESCRIPTION CBaseButton::m_SaveData[] =

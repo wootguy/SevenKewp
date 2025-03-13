@@ -24,10 +24,6 @@
 
 extern void GameDLLInit( void );
 
-// subfolders created to separate mod files from vanilla HL files
-#define MOD_MODEL_FOLDER "hlcoop_v2/"
-#define MOD_SPRITE_FOLDER "hlcoop/"
-
 #define DEFAULT_TEAM_NAME "Team" // name seen in the scoreboard
 #define ENEMY_TEAM_NAME "Bad Guys" // name seen in the scoreboard
 #define DEFAULT_TEAM_COLOR 1
@@ -84,6 +80,7 @@ EXPORT extern cvar_t	mp_antiblock_cooldown; // how long a player needs to wait b
 EXPORT extern cvar_t	mp_min_score_mult; // minimum score multiplier for death penalties
 EXPORT extern cvar_t	mp_hevsuit_voice; // enable/disable the hev suit voice
 EXPORT extern cvar_t	npc_dropweapons; // enable/disable npcs dropping weapons
+EXPORT extern cvar_t	mp_bigmap; // precaches models/sounds so common effects can work outside +/-4096
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

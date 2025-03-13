@@ -113,35 +113,9 @@ void CDisplacerBall::BallTouch(CBaseEntity* pOther)
 {
 	pev->velocity = g_vecZero;
 
-	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(TE_BEAMCYLINDER);
-	WRITE_COORD_VECTOR(pev->origin); // coord coord coord (center position)
-	WRITE_COORD(pev->origin.x);		 // coord coord coord (axis and radius)
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z + 800.0);
-	WRITE_SHORT(m_iTrail); // short (sprite index)
-	WRITE_BYTE(0);		   // byte (starting frame)
-	WRITE_BYTE(0);		   // byte (frame rate in 0.1's)
-	WRITE_BYTE(3);		   // byte (life in 0.1's)
-	WRITE_BYTE(16);		   // byte (line width in 0.1's)
-	WRITE_BYTE(0);		   // byte (noise amplitude in 0.01's)
-	WRITE_BYTE(255);	   // byte,byte,byte (color)
-	WRITE_BYTE(255);
-	WRITE_BYTE(255);
-	WRITE_BYTE(255); // byte (brightness)
-	WRITE_BYTE(0);	 // byte (scroll speed in 0.1's)
-	MESSAGE_END();
+	UTIL_BeamCylinder(pev->origin, 800, m_iTrail, 0, 0, 3, 16, 0, RGBA(255, 255, 255, 255), 0);
 
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(TE_DLIGHT);
-	WRITE_COORD_VECTOR(pev->origin); // coord, coord, coord (pos)
-	WRITE_BYTE(16);					 // byte (radius in 10's)
-	WRITE_BYTE(255);				 // byte byte byte (color)
-	WRITE_BYTE(180);
-	WRITE_BYTE(96);
-	WRITE_BYTE(10); // byte (brightness)
-	WRITE_BYTE(10); // byte (life in 10's)
-	MESSAGE_END();
+	UTIL_DLight(pev->origin, 16, RGB(255, 180, 96), 10, 10);
 
 	m_hDisplacedTarget = nullptr;
 
@@ -258,16 +232,7 @@ void CDisplacerBall::FizzleThink()
 
 	pev->dmg = GetDamage(gSkillData.sk_plr_displacer_other);
 
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(TE_DLIGHT);
-	WRITE_COORD_VECTOR(pev->origin);
-	WRITE_BYTE(16);
-	WRITE_BYTE(255);
-	WRITE_BYTE(180);
-	WRITE_BYTE(96);
-	WRITE_BYTE(10);
-	WRITE_BYTE(10);
-	MESSAGE_END();
+	UTIL_DLight(pev->origin, 16, RGB(255, 180, 96), 10, 10);
 
 	edict_t* pOwner = pev->owner;
 	pev->owner = nullptr;

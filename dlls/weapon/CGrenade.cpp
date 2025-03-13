@@ -26,6 +26,7 @@
 #include "env/CSoundEnt.h"
 #include "decals.h"
 #include "weapon/CGrenade.h"
+#include "te_effects.h"
 
 //===================grenade
 
@@ -76,23 +77,8 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 
 	int iContents = UTIL_PointContents ( pev->origin );
 	
-	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, m_effectOrigin );
-		WRITE_BYTE( TE_EXPLOSION );		// This makes a dynamic light and the explosion sprites/sound
-		WRITE_COORD(m_effectOrigin.x);	// Send to PAS because of the sound
-		WRITE_COORD(m_effectOrigin.y);
-		WRITE_COORD(m_effectOrigin.z);
-		if (iContents != CONTENTS_WATER)
-		{
-			WRITE_SHORT( g_sModelIndexFireball );
-		}
-		else
-		{
-			WRITE_SHORT( g_sModelIndexWExplosion );
-		}
-		WRITE_BYTE( (pev->dmg - 50) * .60  ); // scale * 10
-		WRITE_BYTE( 15  ); // framerate
-		WRITE_BYTE( TE_EXPLFLAG_NONE );
-	MESSAGE_END();
+	int spr = iContents != CONTENTS_WATER ? g_sModelIndexFireball : g_sModelIndexWExplosion;
+	UTIL_Explosion(m_effectOrigin, spr, (pev->dmg - 50) * .60, 15, TE_EXPLFLAG_NONE);
 
 	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
 	entvars_t *pevOwner;
@@ -128,14 +114,18 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 
 	PLAY_DISTANT_SOUND(edict(), DISTANT_BOOM);
 
-	pev->effects |= EF_NODRAW;
+	// not using EF_NODRAW so sounds work out of bounds
+	pev->renderamt = 0;
+	pev->rendermode = kRenderTransTexture;
+
 	SetThink( &CGrenade::Smoke );
 	pev->velocity = g_vecZero;
 	pev->nextthink = gpGlobals->time + 0.3;
 
 	if (iContents != CONTENTS_WATER)
 	{
-		int sparkCount = RANDOM_LONG(0,3);
+		int maxShowers = UTIL_IsValidTempEntOrigin(m_effectOrigin) ? 3 : 2;
+		int sparkCount = RANDOM_LONG(0, maxShowers);
 		for ( int i = 0; i < sparkCount; i++ )
 			Create( "spark_shower", m_effectOrigin, pTrace->vecPlaneNormal );
 	}
@@ -150,15 +140,7 @@ void CGrenade::Smoke( void )
 	}
 	else
 	{
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, m_effectOrigin);
-			WRITE_BYTE( TE_SMOKE );
-			WRITE_COORD(m_effectOrigin.x );
-			WRITE_COORD(m_effectOrigin.y );
-			WRITE_COORD(m_effectOrigin.z );
-			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( (pev->dmg - 50) * 0.80 ); // scale * 10
-			WRITE_BYTE( 12  ); // framerate
-		MESSAGE_END();
+		UTIL_Smoke(m_effectOrigin, g_sModelIndexSmoke, (pev->dmg - 50) * 0.80, 12);
 	}
 	UTIL_Remove( this );
 }

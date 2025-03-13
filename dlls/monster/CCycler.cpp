@@ -27,7 +27,7 @@
 #include "weapons.h"
 #include "CBasePlayer.h"
 #include "CBasePlayerWeapon.h"
-
+#include "te_effects.h"
 
 #define TEMP_FOR_SCREEN_SHOTS
 #ifdef TEMP_FOR_SCREEN_SHOTS //===================================================
@@ -469,13 +469,5 @@ void CWreckage::Think( void )
 	VecSrc.y = RANDOM_FLOAT( pev->absmin.y, pev->absmax.y );
 	VecSrc.z = RANDOM_FLOAT( pev->absmin.z, pev->absmax.z );
 
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, VecSrc );
-		WRITE_BYTE( TE_SMOKE );
-		WRITE_COORD( VecSrc.x );
-		WRITE_COORD( VecSrc.y );
-		WRITE_COORD( VecSrc.z );
-		WRITE_SHORT( g_sModelIndexSmoke );
-		WRITE_BYTE( RANDOM_LONG(0,49) + 50 ); // scale * 10
-		WRITE_BYTE( RANDOM_LONG(0, 3) + 8  ); // framerate
-	MESSAGE_END();
+	UTIL_Smoke(VecSrc, g_sModelIndexSmoke, RANDOM_LONG(0, 49) + 50, RANDOM_LONG(0, 3) + 8);
 }

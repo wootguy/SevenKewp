@@ -149,9 +149,12 @@ public:
 	void Spawn( const char *szGibModel );
 	void BounceGibTouch ( CBaseEntity *pOther );
 	void StickyGibTouch ( CBaseEntity *pOther );
+	void SprayTouch ( CBaseEntity *pOther );
 	void WaitTillLand( void );
 	void StartFadeOut ( void );
 	void LimitVelocity( void );
+	void BreakThink();
+	void SprayThink();
 
 	virtual int	ObjectCaps( void ) { return (CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE; }
 	static	void SpawnHeadGib( entvars_t *pevVictim );
@@ -164,6 +167,8 @@ public:
 	int		m_material;
 	float	m_lifeTime;
 	float	m_bornTime;
+	float	m_slideFriction; // additional friction applied while on ground
+	float	m_lastBounceSound;
 };
 
 

@@ -204,15 +204,15 @@ void CChumtoad::PrescheduleThink() {
 
 			// using vanilla HL effects until this mod is standalone
 			Vector pos = pev->origin + Vector(RANDOM_FLOAT(pev->mins.x, pev->maxs.x)*8, RANDOM_FLOAT(pev->mins.y, pev->maxs.y)*8, 1.0f);
-			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
-			WRITE_BYTE(TE_SMOKE);
-			WRITE_COORD(pos.x);
-			WRITE_COORD(pos.y);
-			WRITE_COORD(pos.z);
-			WRITE_SHORT(m_iSmokeSpr);
-			WRITE_BYTE(RANDOM_LONG(80, 120));
-			WRITE_BYTE(RANDOM_LONG(15, 25));
-			MESSAGE_END();
+			
+			CBaseEntity* smoke = CBaseEntity::Create("te_smoke", pos, g_vecZero, true);
+			SET_MODEL(smoke->edict(), TOXIC_SPRITE);
+			smoke->pev->scale = RANDOM_LONG(80, 120) / 10.0f;
+			smoke->pev->framerate = RANDOM_LONG(15, 25);
+			smoke->pev->rendercolor = Vector(240, 0, 255) * RANDOM_FLOAT(0.4f, 0.7f);
+			smoke->pev->velocity = g_vecZero; // save some net data
+
+			//UTIL_Smoke(pos, TOXIC_SPRITE, RANDOM_LONG(80, 120), RANDOM_LONG(15, 25));
 		}
 	}
 }

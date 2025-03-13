@@ -26,6 +26,7 @@
 #include	"CCineMonster.h"
 #include	"weapons.h"
 #include	"env/CSoundEnt.h"
+#include "te_effects.h"
 
 //=========================================================
 // Monster's Anim Events Go Here

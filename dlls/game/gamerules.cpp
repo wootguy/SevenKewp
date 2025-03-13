@@ -112,6 +112,7 @@ BOOL CGameRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeap
 StringSet timeCriticalCvars = {
 	// to know what to precache during this frame
 	"mp_mergemodels",
+	"mp_bigmap",
 	"mp_default_medkit",
 
 	// to decide if the map skill file should be skipped
@@ -185,6 +186,7 @@ void execMapCfg() {
 		"mp_maxmonsterrespawns",
 		"mp_mergemodels",
 		"mp_skill_allow",
+		"mp_bigmap",
 		"killnpc",
 		"mp_npckill",
 		"startarmor",

@@ -31,7 +31,7 @@ extern EXPORT enginefuncs_t g_engfuncs;
 //#define SET_MODEL		(*g_engfuncs.pfnSetModel)
 //#define MODEL_INDEX		(*g_engfuncs.pfnModelIndex)
 
-#define MODEL_FRAMES	(*g_engfuncs.pfnModelFrames)
+#define MODEL_FRAMES	(*g_engfuncs.pfnModelFrames) // returns sprite frames or model bodies
 #define SET_SIZE		(*g_engfuncs.pfnSetSize)
 #define GET_SPAWN_PARMS	(*g_engfuncs.pfnGetSpawnParms)
 #define SAVE_SPAWN_PARMS (*g_engfuncs.pfnSaveSpawnParms)

@@ -390,19 +390,7 @@ void CVoltigore::ExplodeThink(void) {
 		const int count = 200;
 		const int speed = 96;
 		const int noise = 128;
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, sprayPos);
-		WRITE_BYTE(TE_SPRITE_SPRAY);
-			WRITE_COORD(sprayPos.x);
-			WRITE_COORD(sprayPos.y);
-			WRITE_COORD(sprayPos.z);
-			WRITE_COORD(sprayDir.x);
-			WRITE_COORD(sprayDir.y);
-			WRITE_COORD(sprayDir.z);
-			WRITE_SHORT(sporeExplodeSprIdx);
-			WRITE_BYTE(count);
-			WRITE_BYTE(speed);
-			WRITE_BYTE(noise);
-		MESSAGE_END();
+		UTIL_SpriteSpray(sprayPos, sprayDir, sporeExplodeSprIdx, count, speed, noise);
 
 		::RadiusDamage(pev->origin, pev, pev, gSkillData.sk_voltigore_dmg_explode, 512, 0, DMG_POISON | DMG_ACID);
 

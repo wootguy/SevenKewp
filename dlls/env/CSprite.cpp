@@ -81,8 +81,10 @@ CSprite* CSprite::SpriteCreate(const char* pSpriteName, const Vector& origin, BO
 	pSprite->pev->classname = MAKE_STRING("env_sprite");
 	pSprite->pev->solid = SOLID_NOT;
 	pSprite->pev->movetype = MOVETYPE_NOCLIP;
-	if (animate)
+	if (animate) {
+		pSprite->pev->framerate = 10;
 		pSprite->TurnOn();
+	}
 
 	return pSprite;
 }
@@ -92,7 +94,7 @@ void CSprite::AnimateThink(void)
 {
 	Animate(pev->framerate * (gpGlobals->time - m_lastTime));
 
-	pev->nextthink = gpGlobals->time + 0.1;
+	pev->nextthink = gpGlobals->time + 0.05f;
 	m_lastTime = gpGlobals->time;
 }
 
@@ -172,6 +174,10 @@ void CSprite::TurnOn(void)
 		SetThink(&CSprite::AnimateThink);
 		pev->nextthink = gpGlobals->time;
 		m_lastTime = gpGlobals->time;
+	}
+	if (m_maxFrame <= 1.0) {
+		SetThink(&CSprite::SUB_Remove);
+		pev->nextthink = 1.0f / pev->framerate;
 	}
 	pev->frame = 0;
 }

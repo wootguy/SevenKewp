@@ -23,6 +23,7 @@
 #include "CTalkSquadMonster.h"
 #include "gamerules.h"
 #include "PluginManager.h"
+#include "te_effects.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -924,7 +925,7 @@ char TEXTURETYPE_Find(char *name)
 // original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
 // returns volume of strike instrument (crowbar) to play
 
-float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType)
+float TEXTURETYPE_PlaySound(TraceResult *ptr, Vector vecSrc, Vector vecEnd, int iBulletType, edict_t* emitter)
 {
 // hit the world, try to play sound based on texture material type
 	
@@ -1084,8 +1085,8 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 			float flVolume = RANDOM_FLOAT ( 0.7 , 1.0 );//random volume range
 			switch ( RANDOM_LONG(0,1) )
 			{
-				case 0: UTIL_EmitAmbientSound(ENT(0), ptr->vecEndPos, "buttons/spark5.wav", flVolume, ATTN_NORM, 0, 100); break;
-				case 1: UTIL_EmitAmbientSound(ENT(0), ptr->vecEndPos, "buttons/spark6.wav", flVolume, ATTN_NORM, 0, 100); break;
+				case 0: UTIL_EmitAmbientSound(emitter, ptr->vecEndPos, "buttons/spark5.wav", flVolume, ATTN_NORM, 0, 100); break;
+				case 1: UTIL_EmitAmbientSound(emitter, ptr->vecEndPos, "buttons/spark6.wav", flVolume, ATTN_NORM, 0, 100); break;
 				// case 0: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark5.wav", flVolume, ATTN_NORM);	break;
 				// case 1: EMIT_SOUND(ENT(pev), CHAN_VOICE, "buttons/spark6.wav", flVolume, ATTN_NORM);	break;
 			}
@@ -1093,7 +1094,7 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 	}
 
 	// play material hit sound
-	UTIL_EmitAmbientSound(ENT(0), ptr->vecEndPos, rgsz[RANDOM_LONG(0,cnt-1)], fvol, fattn, 0, 96 + RANDOM_LONG(0,0xf));
+	UTIL_EmitAmbientSound(emitter, ptr->vecEndPos, rgsz[RANDOM_LONG(0,cnt-1)], fvol, fattn, 0, 96 + RANDOM_LONG(0,0xf));
 	//EMIT_SOUND_DYN( ENT(m_pPlayer->pev), CHAN_WEAPON, rgsz[RANDOM_LONG(0,cnt-1)], fvol, ATTN_NORM, 0, 96 + RANDOM_LONG(0,0xf));
 			
 	return fvolbar;

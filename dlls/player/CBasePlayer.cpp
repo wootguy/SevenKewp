@@ -55,6 +55,7 @@
 #include "CWeaponInventory.h"
 #include "CGamePlayerEquip.h"
 #include "CBaseButton.h"
+#include "te_effects.h"
 
 // #define DUCKFIX
 

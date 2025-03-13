@@ -20,6 +20,7 @@
 #include "effects.h"
 #include "weapon/CGrenade.h"
 #include "skill.h"
+#include "te_effects.h"
 
 #define SF_WAITFORTRIGGER	(0x04 | 0x40) // UNDONE: Fix!
 #define SF_NOWRECKAGE		0x08
@@ -252,63 +253,16 @@ void CApache :: DyingThink( void )
 	if (m_flNextRocket > gpGlobals->time )
 	{
 		// random explosions
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-			WRITE_BYTE( TE_EXPLOSION);		// This just makes a dynamic light now
-			WRITE_COORD( pev->origin.x + RANDOM_FLOAT( -150, 150 ));
-			WRITE_COORD( pev->origin.y + RANDOM_FLOAT( -150, 150 ));
-			WRITE_COORD( pev->origin.z + RANDOM_FLOAT( -150, -50 ));
-			WRITE_SHORT( g_sModelIndexFireball );
-			WRITE_BYTE( RANDOM_LONG(0,29) + 30  ); // scale * 10
-			WRITE_BYTE( 12  ); // framerate
-			WRITE_BYTE( TE_EXPLFLAG_NONE );
-		MESSAGE_END();
+		Vector ori = pev->origin + Vector(RANDOM_FLOAT(-150, 150), RANDOM_FLOAT(-150, 150), RANDOM_FLOAT(-150, -50));
+		UTIL_Explosion(ori, g_sModelIndexFireball, RANDOM_LONG(0, 29) + 30, 12, TE_EXPLFLAG_NONE);
 
 		// lots of smoke
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-			WRITE_BYTE( TE_SMOKE );
-			WRITE_COORD( pev->origin.x + RANDOM_FLOAT( -150, 150 ));
-			WRITE_COORD( pev->origin.y + RANDOM_FLOAT( -150, 150 ));
-			WRITE_COORD( pev->origin.z + RANDOM_FLOAT( -150, -50 ));
-			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( 100 ); // scale * 10
-			WRITE_BYTE( 10  ); // framerate
-		MESSAGE_END();
+		UTIL_Smoke(pev->origin, g_sModelIndexSmoke, 100, 10);
 
 		Vector vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
-			WRITE_BYTE( TE_BREAKMODEL);
-
-			// position
-			WRITE_COORD( vecSpot.x );
-			WRITE_COORD( vecSpot.y );
-			WRITE_COORD( vecSpot.z );
-
-			// size
-			WRITE_COORD( 400 );
-			WRITE_COORD( 400 );
-			WRITE_COORD( 132 );
-
-			// velocity
-			WRITE_COORD( pev->velocity.x ); 
-			WRITE_COORD( pev->velocity.y );
-			WRITE_COORD( pev->velocity.z );
-
-			// randomization
-			WRITE_BYTE( 50 ); 
-
-			// Model
-			WRITE_SHORT( m_iBodyGibs );	//model id#
-
-			// # of shards
-			WRITE_BYTE( 4 );	// let client decide
-
-			// duration
-			WRITE_BYTE( 30 );// 3.0 seconds
-
-			// flags
-
-			WRITE_BYTE( BREAK_METAL );
-		MESSAGE_END();
+		int gibCount = UTIL_IsValidTempEntOrigin(vecSpot) ? 4 : 1;
+		UTIL_BreakModel(vecSpot, Vector(400, 400, 132), pev->velocity, 50,
+			m_iBodyGibs, gibCount, 30, BREAK_METAL);
 
 		// don't stop it we touch a entity
 		pev->flags &= ~FL_ONGROUND;
@@ -319,61 +273,14 @@ void CApache :: DyingThink( void )
 	{
 		Vector vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
 
-		/*
-		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-			WRITE_BYTE( TE_EXPLOSION);		// This just makes a dynamic light now
-			WRITE_COORD( vecSpot.x );
-			WRITE_COORD( vecSpot.y );
-			WRITE_COORD( vecSpot.z + 300 );
-			WRITE_SHORT( g_sModelIndexFireball );
-			WRITE_BYTE( 250 ); // scale * 10
-			WRITE_BYTE( 8  ); // framerate
-		MESSAGE_END();
-		*/
-
 		// fireball
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
-			WRITE_BYTE( TE_SPRITE );
-			WRITE_COORD( vecSpot.x );
-			WRITE_COORD( vecSpot.y );
-			WRITE_COORD( vecSpot.z + 256 );
-			WRITE_SHORT( m_iExplode );
-			WRITE_BYTE( 120 ); // scale * 10
-			WRITE_BYTE( 255 ); // brightness
-		MESSAGE_END();
+		UTIL_Sprite(vecSpot, m_iExplode, 120, 255);
 		
 		// big smoke
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
-			WRITE_BYTE( TE_SMOKE );
-			WRITE_COORD( vecSpot.x );
-			WRITE_COORD( vecSpot.y );
-			WRITE_COORD( vecSpot.z + 512 );
-			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( 250 ); // scale * 10
-			WRITE_BYTE( 5  ); // framerate
-		MESSAGE_END();
+		UTIL_Smoke(vecSpot, g_sModelIndexSmoke, 250, 5);
 
 		// blast circle
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-			WRITE_BYTE( TE_BEAMCYLINDER );
-			WRITE_COORD( pev->origin.x);
-			WRITE_COORD( pev->origin.y);
-			WRITE_COORD( pev->origin.z);
-			WRITE_COORD( pev->origin.x);
-			WRITE_COORD( pev->origin.y);
-			WRITE_COORD( pev->origin.z + 2000 ); // reach damage radius over .2 seconds
-			WRITE_SHORT( m_iSpriteTexture );
-			WRITE_BYTE( 0 ); // startframe
-			WRITE_BYTE( 0 ); // framerate
-			WRITE_BYTE( 4 ); // life
-			WRITE_BYTE( 32 );  // width
-			WRITE_BYTE( 0 );   // noise
-			WRITE_BYTE( 255 );   // r, g, b
-			WRITE_BYTE( 255 );   // r, g, b
-			WRITE_BYTE( 192 );   // r, g, b
-			WRITE_BYTE( 128 ); // brightness
-			WRITE_BYTE( 0 );		// speed
-		MESSAGE_END();
+		UTIL_BeamCylinder(pev->origin, 2000, m_iSpriteTexture, 0, 0, 4, 32, 0, RGBA(255, 255, 192, 128), 0);
 
 		EMIT_SOUND(ENT(pev), CHAN_STATIC, "weapons/mortarhit.wav", 1.0, 0.3);
 
@@ -392,40 +299,8 @@ void CApache :: DyingThink( void )
 
 		// gibs
 		vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
-			WRITE_BYTE( TE_BREAKMODEL);
-
-			// position
-			WRITE_COORD( vecSpot.x );
-			WRITE_COORD( vecSpot.y );
-			WRITE_COORD( vecSpot.z + 64);
-
-			// size
-			WRITE_COORD( 400 );
-			WRITE_COORD( 400 );
-			WRITE_COORD( 128 );
-
-			// velocity
-			WRITE_COORD( 0 ); 
-			WRITE_COORD( 0 );
-			WRITE_COORD( 200 );
-
-			// randomization
-			WRITE_BYTE( 30 ); 
-
-			// Model
-			WRITE_SHORT( m_iBodyGibs );	//model id#
-
-			// # of shards
-			WRITE_BYTE( 200 );
-
-			// duration
-			WRITE_BYTE( 200 );// 10.0 seconds
-
-			// flags
-
-			WRITE_BYTE( BREAK_METAL );
-		MESSAGE_END();
+		UTIL_BreakModel(vecSpot, Vector(400, 400, 128), Vector(0,0,200), 30,
+			m_iBodyGibs, 200, 200, BREAK_METAL);
 
 		SetThink( &CApache::SUB_Remove );
 		pev->nextthink = gpGlobals->time + 0.1;
@@ -816,15 +691,7 @@ void CApache :: FireRocket( void )
 	case 4: break;
 	}
 
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
-		WRITE_BYTE( TE_SMOKE );
-		WRITE_COORD( vecSrc.x );
-		WRITE_COORD( vecSrc.y );
-		WRITE_COORD( vecSrc.z );
-		WRITE_SHORT( g_sModelIndexSmoke );
-		WRITE_BYTE( 20 ); // scale * 10
-		WRITE_BYTE( 12 ); // framerate
-	MESSAGE_END();
+	UTIL_Smoke(vecSrc, g_sModelIndexSmoke, 20, 12);
 
 	CBaseEntity *pRocket = CBaseEntity::Create( "hvr_rocket", vecSrc, pev->angles, true, edict() );
 	if (pRocket)
@@ -917,15 +784,7 @@ void CApache :: ShowDamage( void )
 {
 	if (m_iDoSmokePuff > 0 || RANDOM_LONG(0,99) > pev->health)
 	{
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-			WRITE_BYTE( TE_SMOKE );
-			WRITE_COORD( pev->origin.x );
-			WRITE_COORD( pev->origin.y );
-			WRITE_COORD( pev->origin.z - 32 );
-			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( RANDOM_LONG(0,9) + 20 ); // scale * 10
-			WRITE_BYTE( 12 ); // framerate
-		MESSAGE_END();
+		UTIL_Smoke(pev->origin, g_sModelIndexSmoke, RANDOM_LONG(0, 9) + 20, 12);
 	}
 	if (m_iDoSmokePuff > 0)
 		m_iDoSmokePuff--;
@@ -1037,23 +896,12 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 
 		Vector sprPos = pos + dir * 4;
 		if (hitWeakpoint) {
-			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
-			WRITE_BYTE(TE_EXPLOSION);
-			WRITE_COORD(sprPos.x);
-			WRITE_COORD(sprPos.y);
-			WRITE_COORD(sprPos.z);
 			if (ptr->iHitgroup == 1) {
-				WRITE_SHORT(m_iGlassHit);
-				WRITE_BYTE(24); // scale
-				WRITE_BYTE(80); // framerate
+				UTIL_Explosion(sprPos, m_iGlassHit, 24, 80, 2 | 4 | 8);
 			}
 			else {
-				WRITE_SHORT(m_iEngineHit);
-				WRITE_BYTE(12); // scale
-				WRITE_BYTE(50); // framerate
+				UTIL_Explosion(sprPos, m_iEngineHit, 12, 50, 2 | 4 | 8);
 			}
-			WRITE_BYTE(2 | 4 | 8);
-			MESSAGE_END();
 		}
 
 		gibCount = 1 + (int)(flDamage / 30.0);
@@ -1072,23 +920,7 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		}
 		dir = dir * (isBlast ? 400 : 200);
 
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
-		WRITE_BYTE(TE_BREAKMODEL);
-		WRITE_COORD(pos.x);
-		WRITE_COORD(pos.y);
-		WRITE_COORD(pos.z);
-		WRITE_COORD(0);
-		WRITE_COORD(0);
-		WRITE_COORD(0);
-		WRITE_COORD(dir.x);
-		WRITE_COORD(dir.y);
-		WRITE_COORD(dir.z);
-		WRITE_BYTE(isBlast ? 30 : 15); // randomization
-		WRITE_SHORT(gibModel); // model id#
-		WRITE_BYTE(gibCount);
-		WRITE_BYTE(1);// duration 0.1 seconds
-		WRITE_BYTE(gibFlags); // flags
-		MESSAGE_END();
+		UTIL_BreakModel(pos, g_vecZero, dir, isBlast ? 30 : 15, gibModel, gibCount, 1, gibFlags);
 	}
 
 	// hit hard, hits cockpit, hits engines

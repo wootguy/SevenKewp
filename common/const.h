@@ -75,20 +75,22 @@
 #define WALKMOVE_CHECKONLY	2 // move, but don't touch triggers
 
 // edict->movetype values
-#define	MOVETYPE_NONE			0		// never moves
+// Use an interpolated type for smoother movement
+// Use a non-interpolated type for faster creation (reactions to player input, such as an explosion)
+#define	MOVETYPE_NONE			0		// never moves (not interpolated)
 //#define	MOVETYPE_ANGLENOCLIP	1
 //#define	MOVETYPE_ANGLECLIP		2
-#define	MOVETYPE_WALK			3		// Player only - moving on the ground
-#define	MOVETYPE_STEP			4		// gravity, special edge handling -- monsters use this
-#define	MOVETYPE_FLY			5		// No gravity, but still collides with stuff
-#define	MOVETYPE_TOSS			6		// gravity/collisions
-#define	MOVETYPE_PUSH			7		// no clip to world, push and crush
-#define	MOVETYPE_NOCLIP			8		// No gravity, no collisions, still do velocity/avelocity
-#define	MOVETYPE_FLYMISSILE		9		// extra size to monsters (hardcoded bbox of +/-15 units)
-#define	MOVETYPE_BOUNCE			10		// Just like Toss, but reflect velocity when contacting surfaces
-#define MOVETYPE_BOUNCEMISSILE	11		// bounce w/o gravity
+#define	MOVETYPE_WALK			3		// Player only - moving on the ground (not interpolated)
+#define	MOVETYPE_STEP			4		// gravity, special edge handling -- monsters use this (not interpolated)
+#define	MOVETYPE_FLY			5		// No gravity, but still collides with stuff (not interpolated)
+#define	MOVETYPE_TOSS			6		// gravity/collisions (interpolated)
+#define	MOVETYPE_PUSH			7		// no clip to world, push and crush (interpolated)
+#define	MOVETYPE_NOCLIP			8		// No gravity, no collisions, still do velocity/avelocity (interpolated)
+#define	MOVETYPE_FLYMISSILE		9		// extra size to monsters (hardcoded bbox of +/-15 units) (interpolated)
+#define	MOVETYPE_BOUNCE			10		// Just like Toss, but reflect velocity when contacting surfaces (interpolated)
+#define MOVETYPE_BOUNCEMISSILE	11		// bounce w/o gravity (interpolated)
 #define MOVETYPE_FOLLOW			12		// track movement of aiment
-#define	MOVETYPE_PUSHSTEP		13		// BSP model that needs physics/world collisions (uses nearest hull for world collision)
+#define	MOVETYPE_PUSHSTEP		13		// BSP model that needs physics/world collisions (uses nearest hull for world collision) (interpolated)
 
 // edict->solid values
 // NOTE: Some movetypes will cause collisions independent of SOLID_NOT/SOLID_TRIGGER when the entity moves
@@ -860,6 +862,20 @@
 #define SF_ITEM_TOUCH_ONLY 128 // Pick this item up only by touching it.
 #define SF_ITEM_USE_ONLY 256 // Pick this item up only by using it ('USE' key).
 #define SF_ITEM_USE_WITHOUT_LOS 512 // Player can pick up this item even when it's not within his line of sight.
+
+// subfolders created to separate mod files from vanilla HL files
+#define MOD_MODEL_FOLDER "hlcoop_v2/"
+#define MOD_SPRITE_FOLDER "hlcoop/"
+
+#define NOT_PRECACHED_MODEL "models/" MOD_MODEL_FOLDER "not_precached.mdl"
+#define MERGED_ITEMS_MODEL "models/" MOD_MODEL_FOLDER "w_items_v2.mdl"
+#define NOT_PRECACHED_SOUND "common/null.wav"
+#define MAX_PRECACHE 512
+#define MAX_PRECACHE_SOUND 511
+#define MAX_PRECACHE_MODEL 510
+#define MAX_PRECACHE_EVENT 256
+
+#define MAX_ENT_COORD 32768 // keep this in sync with delta.lst
 
 typedef enum { USE_OFF = 0, USE_ON = 1, USE_SET = 2, USE_TOGGLE = 3 } USE_TYPE;
 

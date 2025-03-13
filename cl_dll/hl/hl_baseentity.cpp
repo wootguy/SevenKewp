@@ -92,8 +92,8 @@ void DBG_AssertFunction(BOOL fExpr,	const char*	szExpr,	const char*	szFile,	int 
 void UTIL_PrecacheOther( const char *szClassname ) { }
 void UTIL_PrecacheOther( const char *szClassname, const StringMap& keys ) { }
 void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, int amount ) { }
-void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber ) { }
-void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber ) { }
+edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber) { return NULL; }
+edict_t* UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber ) { return NULL; }
 void UTIL_MakeVectors( const Vector &vecAngles ) { }
 BOOL UTIL_IsValidEntity( edict_t *pent ) { return TRUE; }
 void UTIL_SetOrigin( entvars_t *, const Vector &org ) { }
@@ -351,7 +351,7 @@ void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker ) { }
 void AddMultiDamage( entvars_t *pevInflictor, CBaseEntity *pEntity, float flDamage, int bitsDamageType) { }
 void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage) { }
 int DamageDecal( CBaseEntity *pEntity, int bitsDamageType ) { return 0; }
-void DecalGunshot( TraceResult *pTrace, int iBulletType ) { }
+void DecalGunshot( TraceResult *pTrace, int iBulletType, bool playTextureSound, Vector vecSrc, Vector vecEnd ) { }
 void EjectBrass ( const Vector &vecOrigin, const Vector &vecVelocity, float rotation, int model, int soundtype ) { }
 void AddAmmoNameToAmmoRegistry( const char *szAmmoname ) { }
 int CBasePlayerItem::Restore( class CRestore & ) { return 1; }

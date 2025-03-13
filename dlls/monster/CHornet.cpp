@@ -375,17 +375,7 @@ void CHornet :: TrackTarget ( void )
 	{
 		if ( flDelta >= 0.4 && ( pev->origin - m_vecEnemyLKP ).Length() <= 300 )
 		{
-			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-				WRITE_BYTE( TE_SPRITE );
-				WRITE_COORD( pev->origin.x);	// pos
-				WRITE_COORD( pev->origin.y);
-				WRITE_COORD( pev->origin.z);
-				WRITE_SHORT( iHornetPuff );		// model
-				// WRITE_BYTE( 0 );				// life * 10
-				WRITE_BYTE( 2 );				// size * 10
-				WRITE_BYTE( 128 );			// brightness
-			MESSAGE_END();
-
+			UTIL_Sprite(pev->origin, iHornetPuff, 2, 128);
 			EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pBuzzSounds), HORNET_BUZZ_VOLUME, ATTN_NORM);
 			pev->velocity = pev->velocity * 2;
 			m_flNextTrack = gpGlobals->time + 1.0;

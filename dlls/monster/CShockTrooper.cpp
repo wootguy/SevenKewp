@@ -354,6 +354,15 @@ void CShockTrooper::GibMonster()
 	// don't remove players!
 	SetThink(&CBaseMonster::SUB_Remove);
 	pev->nextthink = gpGlobals->time;
+
+	// if the entity is outside the valid range for sound origins, then it needs
+	// to be networked at least until the sound starts playing or else clients won't hear it.
+	if (!UTIL_IsValidTempEntOrigin(pev->origin)) {
+		pev->flags &= ~FL_MONSTER; // prevent the crowbar thinking this is a valid target
+		pev->renderamt = 0;
+		pev->rendermode = kRenderTransTexture;
+		pev->nextthink = gpGlobals->time + 0.1f;
+	}
 }
 
 //=========================================================
@@ -974,15 +983,7 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 		GetAttachment(0, vecArmPos, vecArmAngles);
 
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, vecArmPos);
-		WRITE_BYTE(TE_SPRITE);
-		WRITE_COORD(vecArmPos.x);
-		WRITE_COORD(vecArmPos.y);
-		WRITE_COORD(vecArmPos.z);
-		WRITE_SHORT(iShockTrooperMuzzleFlash);
-		WRITE_BYTE(4);
-		WRITE_BYTE(128);
-		MESSAGE_END();
+		UTIL_Sprite(vecArmPos, iShockTrooperMuzzleFlash, 4, 128);
 
 		Shoot();
 

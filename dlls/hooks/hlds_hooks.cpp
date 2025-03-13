@@ -46,6 +46,9 @@
 #include "PluginManager.h"
 #include "Scheduler.h"
 #include "sentences.h"
+#include "lagcomp.h"
+#include "eng_wrappers.h"
+#include "te_effects.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -528,6 +531,8 @@ void ServerDeactivate( void )
 
 	memset(&g_nerfStats, 0, sizeof(NerfStats));
 	memset(&g_textureStats, 0, sizeof(TextureTypeStats));
+	memset(g_indexModels, 0, sizeof(g_indexModels));
+	memset(g_indexSounds, 0, sizeof(g_indexSounds));
 
 	// in case the next map doesn't configure a sky or light_environment
 	CVAR_SET_STRING("sv_skyname", "");
@@ -1398,6 +1403,26 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		state->eflags |= EFLAG_FLESH_SOUND;
 	else
 		state->eflags &= ~EFLAG_FLESH_SOUND;
+
+	/*
+	if (baseent->IsBSPModel() && baseent->pev->solid != SOLID_NOT) {
+		if (baseent->pev->velocity.Length() > 1 || baseent->pev->avelocity.Length() > 1) {
+			float ping = get_smoothed_ping(plr);
+			bool ridingPlat = plr->pev->groundentity == ent && (plr->pev->flags & FL_ONGROUND);
+
+			if (!(plr->pev->button & IN_RELOAD) && !ridingPlat) {
+				// send a future state of moving entities to the player so that platforming is easier.
+				// this code alone gets you 80% of the way there. You can aim for a platform and land
+				// as expected. However, there's something very wrong with the prediction. You land
+				// server side but not client-side. If you lead your jump as in sven then prediction
+				// thinks you landed, but you were too early both visibily and server-side.
+				state->origin = state->origin + baseent->pev->velocity * ping;
+				state->velocity = state->origin + baseent->pev->velocity * ping;
+				state->angles = state->angles + baseent->pev->avelocity * ping;
+			}
+		}
+	}
+	*/
 
 	if (!baseent->AddToFullPack(state, plr)) {
 		return 0;

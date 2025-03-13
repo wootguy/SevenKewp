@@ -143,30 +143,30 @@ void CShockBeam::FlyThink()
 void CShockBeam::ExplodeThink()
 {
 	Explode();
-	UTIL_Remove( this );
+	
+	SetThink(&CShockBeam::SUB_Remove);
+	pev->nextthink = gpGlobals->time + 0.1f; // give time for sound
+	pev->solid = SOLID_NOT;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
 }
 
 void CShockBeam::WaterExplodeThink()
 {
 	auto pOwner = VARS( pev->owner );
 
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(TE_EXPLOSION);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z);
-	WRITE_SHORT(m_waterExplodeSpr);
-	WRITE_BYTE(30); // scale * 10
-	WRITE_BYTE(50); // framerate
-	WRITE_BYTE(2 | 4 | 8); // no light, sound, nor particles
-	MESSAGE_END();
+	UTIL_Explosion(pev->origin, m_waterExplodeSpr, 30, 50, 2 | 4 | 8);
 
 	Explode();
 
 	::RadiusDamage( pev->origin, pev, pOwner, GetDamage(100.0), 150.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, QUIET_GUN_VOLUME, 0.1);
 
-	UTIL_Remove( this );
+	SetThink(&CShockBeam::SUB_Remove);
+	pev->nextthink = gpGlobals->time + 0.1f; // give time for sound
+	pev->solid = SOLID_NOT;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
 }
 
 void CShockBeam::BallTouch( CBaseEntity* pOther )
@@ -223,12 +223,7 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 
 		UTIL_DecalTrace( &tr, DECAL_OFSCORCH1 + RANDOM_LONG( 0, 2 ) );
 
-		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_SPARKS );
-		WRITE_COORD( pev->origin.x );
-		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z );
-		MESSAGE_END();
+		UTIL_Sparks(pev->origin);
 	}
 }
 
@@ -248,18 +243,7 @@ void CShockBeam::Explode()
 
 	pev->dmg = GetDamage(40);
 
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-	WRITE_BYTE( TE_DLIGHT );
-	WRITE_COORD( pev->origin.x );
-	WRITE_COORD( pev->origin.y );
-	WRITE_COORD( pev->origin.z );
-	WRITE_BYTE( 8 );
-	WRITE_BYTE( 0 );
-	WRITE_BYTE( 253 );
-	WRITE_BYTE( 253 );
-	WRITE_BYTE( 5 );
-	WRITE_BYTE( 10 );
-	MESSAGE_END();
+	UTIL_DLight(pev->origin, 8, RGB(0, 253, 253), 5, 10);
 
 	// gib corpses
 	edict_t* ent = NULL;

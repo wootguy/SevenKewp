@@ -141,14 +141,8 @@ EXPORT extern DLL_GLOBAL	short	g_sModelIndexShrapnel;// holds the model index fo
 EXPORT void ClearMultiDamage(void);
 EXPORT void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker );
 EXPORT void AddMultiDamage( entvars_t *pevInflictor, CBaseEntity *pEntity, float flDamage, int bitsDamageType);
-
-EXPORT void DecalGunshot( TraceResult *pTrace, int iBulletType );
-EXPORT void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage);
-EXPORT int DamageDecal( CBaseEntity *pEntity, int bitsDamageType );
 EXPORT void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType );
 
-EXPORT void EjectBrass(const Vector& vecOrigin, const Vector& vecVelocity, float rotation, int model, int soundtype);
-EXPORT void ExplodeModel(const Vector& vecOrigin, float speed, int model, int count);
 EXPORT CBaseEntity* ShootMortar(edict_t* pentOwner, Vector vecStart, Vector vecVelocity);
 EXPORT void GetCircularGaussianSpread(float& x, float& y);
 
