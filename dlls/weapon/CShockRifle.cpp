@@ -188,16 +188,7 @@ void CShockRifle::BeamAttack(bool isSecondary) {
 
 		const int ammoCount = m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
 
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
-		WRITE_BYTE(TE_EXPLOSION);
-		WRITE_COORD(pev->origin.x);
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z);
-		WRITE_SHORT(m_waterExplodeSpr);
-		WRITE_BYTE(30); // scale * 10
-		WRITE_BYTE(50); // framerate
-		WRITE_BYTE(2 | 4 | 8); // no light, sound, nor particles
-		MESSAGE_END();
+		UTIL_Explosion(pev->origin, m_waterExplodeSpr, 30, 50, 2 | 4 | 8);
 
 		RadiusDamage(pev->origin, m_pPlayer->pev, m_pPlayer->pev, ammoCount * 100, ammoCount * 150, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST);
 

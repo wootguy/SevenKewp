@@ -1227,19 +1227,7 @@ Vector VecCheckSplatToss( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot
 // ---------------------------------
 void MortarSpray( const Vector &position, const Vector &direction, int spriteModel, int count )
 {
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, position );
-		WRITE_BYTE( TE_SPRITE_SPRAY );
-		WRITE_COORD( position.x);	// pos
-		WRITE_COORD( position.y);	
-		WRITE_COORD( position.z);	
-		WRITE_COORD( direction.x);	// dir
-		WRITE_COORD( direction.y);	
-		WRITE_COORD( direction.z);	
-		WRITE_SHORT( spriteModel );	// model
-		WRITE_BYTE ( count );			// count
-		WRITE_BYTE ( 130 );			// speed
-		WRITE_BYTE ( 80 );			// noise ( client will divide by 100 )
-	MESSAGE_END();
+	UTIL_SpriteSpray(position, direction, spriteModel, count, 130, 80);
 }
 
 
@@ -1310,9 +1298,9 @@ void CBMortar::Touch( CBaseEntity *pOther )
 
 	if ( pOther->IsBSPModel() )
 	{
-
 		// make a splat on the wall
-		UTIL_TraceLine( pev->origin, pev->origin + pev->velocity * 10, dont_ignore_monsters, ENT( pev ), &tr );
+		Vector dir = pev->velocity == g_vecZero ? Vector(0, 0, -100) : pev->velocity;
+		UTIL_TraceLine( pev->origin, pev->origin + dir * 10, ignore_monsters, ENT( pev ), &tr );
 		UTIL_DecalTrace(&tr, DECAL_MOMMASPLAT);
 	}
 	else
@@ -1328,7 +1316,12 @@ void CBMortar::Touch( CBaseEntity *pOther )
 		pevOwner = VARS(pev->owner);
 
 	RadiusDamage( pev->origin, pev, pevOwner, gSkillData.sk_bigmomma_dmg_blast, gSkillData.sk_bigmomma_radius_blast, CLASS_NONE, DMG_ACID );
-	UTIL_Remove( this );
+	
+	SetThink(&CBMortar::SUB_Remove);
+	pev->nextthink = gpGlobals->time + 0.1f; // give time for sound
+	pev->solid = SOLID_NOT;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
 }
 
 #endif

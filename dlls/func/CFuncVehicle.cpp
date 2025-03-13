@@ -978,7 +978,7 @@ void CFuncVehicle :: Spawn( void )
 	m_flTurnStartTime = -1;
 
 	if ( FStringNull(pev->target) )
-		ALERT( at_console, "Vehicle with no target" );
+		ALERT( at_console, "Vehicle with no target\n" );
 
 	if ( pev->spawnflags & SF_TRACKTRAIN_PASSABLE )
 		pev->solid = SOLID_NOT;
@@ -1020,7 +1020,7 @@ void CFuncVehicle :: Restart( void )
 	m_pDriver = NULL;
 
 	if ( FStringNull(pev->target) )
-		ALERT( at_console, "Vehicle with no target" );
+		ALERT( at_console, "Vehicle with no target\n" );
 
 	UTIL_SetOrigin( pev, pev->oldorigin );
 

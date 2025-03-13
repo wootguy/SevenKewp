@@ -6,6 +6,7 @@
 #include "CBreakable.h"
 #include "shake.h"
 #include "CBeam.h"
+#include "te_effects.h"
 
 LINK_ENTITY_TO_CLASS(beam, CBeam)
 
@@ -77,6 +78,11 @@ CBeam* CBeam::BeamCreate(const char* pSpriteName, int width)
 
 void CBeam::BeamInit(const char* pSpriteName, int width)
 {
+	if (!g_precachedModels.hasKey(toLowerCase(GET_MODEL(pSpriteName)).c_str())) {
+		ALERT(at_error, "Beam sprite not precached: %s\n", pSpriteName);
+		pSpriteName = "sprites/lgtning.spr"; // prevent client crash
+	}
+
 	pev->flags |= FL_CUSTOMENTITY;
 	SetColor(255, 255, 255);
 	SetBrightness(255);

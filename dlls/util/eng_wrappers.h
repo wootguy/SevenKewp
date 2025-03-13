@@ -19,6 +19,8 @@ EXPORT extern StringSet g_tryPrecacheModels;
 EXPORT extern StringSet g_tryPrecacheSounds;
 EXPORT extern StringSet g_tryPrecacheGeneric;
 EXPORT extern StringSet g_tryPrecacheEvents;
+extern string_t g_indexModels[MAX_PRECACHE]; // use INDEX_MODEL to get model name for index
+extern string_t g_indexSounds[MAX_PRECACHE]; // use INDEX_SOUND to get sound name for index
 
 // find an already alloc'd string by its contents (used by ALLOC_STRING)
 extern HashMap<string_t> g_allocedStrings;
@@ -66,7 +68,9 @@ EXPORT bool SET_MODEL(edict_t* edict, const char* model); // returns true if the
 EXPORT bool SET_MODEL_MERGED(edict_t* edict, const char* model, int mergeId); // will set the merged model and body if the given model was not replaced
 EXPORT const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
 EXPORT int MODEL_INDEX(const char* model);
+EXPORT const char* INDEX_MODEL(int modelIdx);
 EXPORT int SOUND_INDEX(const char* model);
+EXPORT const char* INDEX_SOUND(int soundIdx);
 EXPORT studiohdr_t* GET_MODEL_PTR(edict_t* edict);
 EXPORT studiohdr_t* GET_MODEL_PTR(int modelIdx);
 EXPORT edict_t* CREATE_NAMED_ENTITY(string_t cname);

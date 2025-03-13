@@ -156,19 +156,7 @@ void CSquidSpit :: Touch ( CBaseEntity *pOther )
 		UTIL_DecalTrace(&tr, DECAL_SPIT1 + RANDOM_LONG(0,1));
 
 		// make some flecks
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, tr.vecEndPos );
-			WRITE_BYTE( TE_SPRITE_SPRAY );
-			WRITE_COORD( tr.vecEndPos.x);	// pos
-			WRITE_COORD( tr.vecEndPos.y);	
-			WRITE_COORD( tr.vecEndPos.z);	
-			WRITE_COORD( tr.vecPlaneNormal.x);	// dir
-			WRITE_COORD( tr.vecPlaneNormal.y);	
-			WRITE_COORD( tr.vecPlaneNormal.z);	
-			WRITE_SHORT( iSquidSpitSprite );	// model
-			WRITE_BYTE ( 5 );			// count
-			WRITE_BYTE ( 30 );			// speed
-			WRITE_BYTE ( 80 );			// noise ( client will divide by 100 )
-		MESSAGE_END();
+		UTIL_SpriteSpray(tr.vecEndPos, tr.vecPlaneNormal, iSquidSpitSprite, 5, 30, 80);
 	}
 	else
 	{
@@ -176,7 +164,10 @@ void CSquidSpit :: Touch ( CBaseEntity *pOther )
 	}
 
 	SetThink ( &CSquidSpit::SUB_Remove );
-	pev->nextthink = gpGlobals->time;
+	pev->nextthink = gpGlobals->time + 0.1f; // wait for sound to play
+	pev->solid = SOLID_NOT;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
 }
 
 //=========================================================
@@ -588,19 +579,8 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			AttackSound();
 
 			// spew the spittle temporary ents.
-			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpitOffset );
-				WRITE_BYTE( TE_SPRITE_SPRAY );
-				WRITE_COORD( vecSpitOffset.x);	// pos
-				WRITE_COORD( vecSpitOffset.y);	
-				WRITE_COORD( vecSpitOffset.z);	
-				WRITE_COORD( vecSpitDir.x);	// dir
-				WRITE_COORD( vecSpitDir.y);	
-				WRITE_COORD( vecSpitDir.z);	
-				WRITE_SHORT( iSquidSpitSprite );	// model
-				WRITE_BYTE ( 15 );			// count
-				WRITE_BYTE ( 210 );			// speed
-				WRITE_BYTE ( 25 );			// noise ( client will divide by 100 )
-			MESSAGE_END();
+			int count = UTIL_IsValidTempEntOrigin(vecSpitOffset) ? 15 : 5;
+			UTIL_SpriteSpray(vecSpitOffset, vecSpitDir, iSquidSpitSprite, count, 210, 25);
 
 			CSquidSpit::Shoot( pev, vecSpitOffset, vecSpitDir * 900 );
 			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);

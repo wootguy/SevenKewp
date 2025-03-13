@@ -577,7 +577,7 @@ void CFuncTrackTrain::Spawn(void)
 	m_dir = 1;
 
 	if (FStringNull(pev->target))
-		ALERT(at_console, "FuncTrain with no target");
+		ALERT(at_console, "FuncTrain with no target\n");
 
 	if (pev->spawnflags & SF_TRACKTRAIN_PASSABLE)
 		pev->solid = SOLID_NOT;

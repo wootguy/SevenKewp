@@ -15,6 +15,7 @@
 #include "voice_gamemgr.h"
 #include "TextMenu.h"
 #include "PluginManager.h"
+#include "te_effects.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
 extern int gmsgSayText;

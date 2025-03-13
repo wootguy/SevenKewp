@@ -130,6 +130,7 @@ set(ENV_HDR
 	env/decals.h
 	env/effects.h
 	env/explode.h
+	env/te_effects.h
 	../engine/shake.h
 )
 set(ENV_SRC
@@ -164,6 +165,8 @@ set(ENV_SRC
 	env/CSprayCan.cpp
 	env/CSprite.cpp
 	env/CTestEffect.cpp
+	env/te_effects.cpp
+	env/te_effect_ents.cpp
 )
 
 set(ITEM_HDR

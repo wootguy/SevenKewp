@@ -5,6 +5,7 @@
 #include "decals.h"
 #include "CBreakable.h"
 #include "shake.h"
+#include "te_effects.h"
 
 // Blood effects
 class CBlood : public CPointEntity

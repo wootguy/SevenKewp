@@ -498,16 +498,7 @@ void CTor::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, Tr
 
 			vecTracerDir = vecTracerDir * -512;
 
-			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, ptr->vecEndPos);
-				WRITE_BYTE(TE_TRACER);
-				WRITE_COORD(ptr->vecEndPos.x);
-				WRITE_COORD(ptr->vecEndPos.y);
-				WRITE_COORD(ptr->vecEndPos.z);
-
-				WRITE_COORD(vecTracerDir.x);
-				WRITE_COORD(vecTracerDir.y);
-				WRITE_COORD(vecTracerDir.z);
-			MESSAGE_END();
+			UTIL_Tracer(ptr->vecEndPos, ptr->vecEndPos + vecTracerDir);
 		}
 
 		flDamage -= 20;
@@ -655,28 +646,8 @@ void CTor::SlamAttack() {
 	int pitch = 100 + RANDOM_LONG(-5, 5);
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pSlamSounds), 1.0, ATTN_NORM, 0, pitch);
 
-	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
-		WRITE_BYTE(TE_BEAMCYLINDER);
-		WRITE_COORD(pev->origin.x);
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z + 16);
-		WRITE_COORD(pev->origin.x);
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z + 16 + (SLAM_ATTACK_RADIUS + 50) / 0.3f); // reach damage radius over .3 seconds
-		WRITE_SHORT(slamSpriteIdx);
-		WRITE_BYTE(0); // startframe
-		WRITE_BYTE(0); // framerate
-		WRITE_BYTE(2); // life
-		WRITE_BYTE(12);  // width
-		WRITE_BYTE(0);   // noise
-
-		WRITE_BYTE(255);	// red
-		WRITE_BYTE(255);	// green
-		WRITE_BYTE(255);	// blue
-
-		WRITE_BYTE(255); //brightness
-		WRITE_BYTE(0);		// speed
-	MESSAGE_END();
+	float radius = (SLAM_ATTACK_RADIUS + 50) / 0.3f;
+	UTIL_BeamCylinder(pev->origin, radius, slamSpriteIdx, 0, 0, 2, 12, 0, RGBA(255, 255, 255, 255), 0);
 
 	PLAY_DISTANT_SOUND(edict(), DISTANT_BOOM);
 }

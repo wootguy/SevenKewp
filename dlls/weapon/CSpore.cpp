@@ -148,52 +148,22 @@ void CSpore::IgniteThink()
 
 	UTIL_DecalTrace( &tr, DECAL_SPR_SPLT1 + RANDOM_LONG( 0, 2 ) );
 
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_SPRITE_SPRAY );
-		WRITE_COORD_VECTOR( pev->origin );
-		WRITE_COORD_VECTOR( tr.vecPlaneNormal );
-		WRITE_SHORT( m_iSpitSprite );
-		WRITE_BYTE( 100 );
-		WRITE_BYTE( 40 );
-		WRITE_BYTE( 180 );
-	MESSAGE_END();
+	UTIL_SpriteSpray(pev->origin, tr.vecPlaneNormal, m_iSpitSprite, 100, 40, 180);
 
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_DLIGHT );
-		WRITE_COORD_VECTOR( pev->origin );
-		WRITE_BYTE( 10 );
-		WRITE_BYTE( 15 );
-		WRITE_BYTE( 220 );
-		WRITE_BYTE( 40 );
-		WRITE_BYTE( 5 );
-		WRITE_BYTE( 10 );
-	MESSAGE_END();
+	UTIL_DLight(pev->origin, 10, RGB(15, 220, 40), 5, 10);
 
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_SPRITE );
-		WRITE_COORD_VECTOR( pev->origin );
-		WRITE_SHORT( RANDOM_LONG( 0, 1 ) ? m_iBlow : m_iBlowSmall );
-		WRITE_BYTE( 20 );
-		WRITE_BYTE( 128 );
-	MESSAGE_END();
+	int spr = RANDOM_LONG(0, 1) ? m_iBlow : m_iBlowSmall;
+	UTIL_Sprite(pev->origin, spr, 20, 128);
 
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_SPRITE_SPRAY );
-		WRITE_COORD_VECTOR( pev->origin );
-		WRITE_COORD( RANDOM_FLOAT( -1, 1 ) );
-		WRITE_COORD( 1 );
-		WRITE_COORD( RANDOM_FLOAT( -1, 1 ) );
-		WRITE_SHORT( m_iTrail );
-		WRITE_BYTE( 2 );
-		WRITE_BYTE( 20 );
-		WRITE_BYTE( 80 );
-	MESSAGE_END();
+	UTIL_SpriteSpray(pev->origin, Vector(RANDOM_FLOAT(-1, 1), 1, RANDOM_FLOAT(-1, 1)), m_iTrail, 2, 20, 80);
 
 	::RadiusDamage( pev->origin, pev, VARS( pev->owner ), pev->dmg, 200, CLASS_NONE, DMG_ALWAYSGIB | DMG_POISON);
 
 	SetThink( &CSpore::SUB_Remove );
-
-	pev->nextthink = gpGlobals->time;
+	pev->nextthink = gpGlobals->time + 0.1f; // give time for sound
+	pev->solid = SOLID_NOT;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
 }
 
 void CSpore::FlyThink()
@@ -202,15 +172,13 @@ void CSpore::FlyThink()
 
 	if( m_SporeType != SporeType::GRENADE || ( gpGlobals->time <= m_flIgniteTime + flDelay ) )
 	{
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_SPRITE_SPRAY );
-			WRITE_COORD_VECTOR( pev->origin );
-			WRITE_COORD_VECTOR( pev->velocity.Normalize() );
-			WRITE_SHORT( m_iTrail );
-			WRITE_BYTE( 2 );
-			WRITE_BYTE( 20 );
-			WRITE_BYTE( 80 );
-		MESSAGE_END();
+		if (UTIL_IsValidTempEntOrigin(pev->origin)) {
+			UTIL_SpriteSpray(pev->origin, pev->velocity.Normalize(), m_iTrail, 2, 20, 80);
+		}
+		else {
+			if (RANDOM_LONG(0,1) == 0)
+				UTIL_SpriteSpray(pev->origin, pev->velocity.Normalize(), m_iTrail, 1, 20, 80);
+		}
 	}
 	else
 	{

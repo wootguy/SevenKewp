@@ -3,10 +3,12 @@
 #include "decals.h"
 #include "explode.h"
 #include "weapons.h"
+#include "te_effects.h"
 
 class CEnvExplosion : public CPointEntity
 {
 public:
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // for sound
 	void Spawn();
 	void EXPORT Smoke(void);
 	void KeyValue(KeyValueData* pkvd);
@@ -46,6 +48,14 @@ void CEnvExplosion::Spawn(void)
 {
 	pev->solid = SOLID_NOT;
 	pev->effects = EF_NODRAW;
+
+	if (!UTIL_IsValidTempEntOrigin(pev->origin)) {
+		// must be networked so distant sound plays
+		pev->effects = 0;
+		pev->rendermode = kRenderTransTexture;
+		pev->renderamt = 0;
+		SET_MODEL(ENT(pev), "models/player.mdl");
+	}
 
 	pev->movetype = MOVETYPE_NONE;
 	/*
@@ -125,29 +135,11 @@ void CEnvExplosion::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 	// draw fireball
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NOFIREBALL))
 	{
-		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, m_effectOrigin);
-		WRITE_BYTE(TE_EXPLOSION);
-		WRITE_COORD(m_effectOrigin.x);
-		WRITE_COORD(m_effectOrigin.y);
-		WRITE_COORD(m_effectOrigin.z);
-		WRITE_SHORT(g_sModelIndexFireball);
-		WRITE_BYTE((BYTE)m_spriteScale); // scale * 10
-		WRITE_BYTE(15); // framerate
-		WRITE_BYTE(TE_EXPLFLAG_NONE);
-		MESSAGE_END();
+		UTIL_Explosion(m_effectOrigin, g_sModelIndexFireball, m_spriteScale, 15, TE_EXPLFLAG_NONE);
 	}
 	else
 	{
-		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
-		WRITE_BYTE(TE_EXPLOSION);
-		WRITE_COORD(m_effectOrigin.x);
-		WRITE_COORD(m_effectOrigin.y);
-		WRITE_COORD(m_effectOrigin.z);
-		WRITE_SHORT(g_sModelIndexFireball);
-		WRITE_BYTE(0); // no sprite
-		WRITE_BYTE(15); // framerate
-		WRITE_BYTE(TE_EXPLFLAG_NONE);
-		MESSAGE_END();
+		UTIL_Explosion(m_effectOrigin, g_sModelIndexFireball, 0, 15, TE_EXPLFLAG_NONE);
 	}
 
 	PLAY_DISTANT_SOUND(edict(), DISTANT_BOOM);
@@ -165,7 +157,8 @@ void CEnvExplosion::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 	// draw sparks
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NOSPARKS))
 	{
-		int sparkCount = RANDOM_LONG(0, 3);
+		int maxShowers = UTIL_IsValidTempEntOrigin(m_effectOrigin) ? 3 : 2;
+		int sparkCount = RANDOM_LONG(0, maxShowers);
 
 		for (int i = 0; i < sparkCount; i++)
 		{
@@ -178,15 +171,7 @@ void CEnvExplosion::Smoke(void)
 {
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_NOSMOKE))
 	{
-		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, m_effectOrigin);
-		WRITE_BYTE(TE_SMOKE);
-		WRITE_COORD(m_effectOrigin.x);
-		WRITE_COORD(m_effectOrigin.y);
-		WRITE_COORD(m_effectOrigin.z);
-		WRITE_SHORT(g_sModelIndexSmoke);
-		WRITE_BYTE((BYTE)m_spriteScale); // scale * 10
-		WRITE_BYTE(12); // framerate
-		MESSAGE_END();
+		UTIL_Smoke(m_effectOrigin, g_sModelIndexSmoke, m_spriteScale, 12);
 	}
 
 	if (!(pev->spawnflags & SF_ENVEXPLOSION_REPEATABLE))

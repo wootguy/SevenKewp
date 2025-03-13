@@ -548,28 +548,9 @@ void CMonsterMaker :: XenmakerEffect() {
 	// even if the animation hasn't finished, and the framerate can be changed. 
 	// No one is going to see the sprite because they're all at 1 opacity by default,
 	// so I'll just use TE_SPRITE here.
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, position);
-	WRITE_BYTE(TE_SPRITE);
-	WRITE_COORD(position.x);
-	WRITE_COORD(position.y);
-	WRITE_COORD(position.z);
-	WRITE_SHORT(xen->m_xenSpriteIdx);
-	WRITE_BYTE(V_min(255, xen->m_flStartSpriteScale*10));
-	WRITE_BYTE(m_iStartSpriteAlpha);
-	MESSAGE_END();
+	UTIL_Sprite(position, m_xenSpriteIdx, V_min(255, xen->m_flStartSpriteScale * 10), m_iStartSpriteAlpha);
 
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, position);
-	WRITE_BYTE(TE_DLIGHT);
-	WRITE_COORD(position.x);
-	WRITE_COORD(position.y);
-	WRITE_COORD(position.z);
-	WRITE_BYTE(xen->m_flLightRadius / 10);
-	WRITE_BYTE(xen->m_vLightColor.x);
-	WRITE_BYTE(xen->m_vLightColor.y);
-	WRITE_BYTE(xen->m_vLightColor.z);
-	WRITE_BYTE(effectDuration); // life
-	WRITE_BYTE(0); // decay rate
-	MESSAGE_END();
+	UTIL_DLight(position, xen->m_flLightRadius / 10, xen->m_vLightColor, effectDuration, 0);
 
 	int createdBeams = 0;
 	TraceResult tr;

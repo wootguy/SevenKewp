@@ -13,6 +13,10 @@ void CSprayCan::Spawn(entvars_t* pevOwner)
 	pev->owner = ENT(pevOwner);
 	pev->frame = 0;
 
+	SET_MODEL(edict(), "models/player.mdl");
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
+
 	pev->nextthink = gpGlobals->time + 0.1;
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, "player/sprayer.wav", 1, ATTN_NORM);
 }

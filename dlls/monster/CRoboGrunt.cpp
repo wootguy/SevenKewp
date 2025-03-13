@@ -312,15 +312,11 @@ void CRoboGrunt::ExplodeThink(void)
 	}
 
 	// lots of smoke
-	MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-	WRITE_BYTE(TE_SMOKE);
-	WRITE_COORD(RANDOM_FLOAT(pev->absmin.x, pev->absmax.x));
-	WRITE_COORD(RANDOM_FLOAT(pev->absmin.y, pev->absmax.y));
-	WRITE_COORD(pev->origin.z + 16);
-	WRITE_SHORT(g_sModelIndexSmoke);
-	WRITE_BYTE(25); // scale * 10
-	WRITE_BYTE(10); // framerate
-	MESSAGE_END();
+	Vector ori = Vector(
+		RANDOM_FLOAT(pev->absmin.x, pev->absmax.x),
+		RANDOM_FLOAT(pev->absmin.y, pev->absmax.y),
+		pev->origin.z + 16);
+	UTIL_Smoke(ori, g_sModelIndexSmoke, 25, 10);
 
 	pev->nextthink = gpGlobals->time + 0.2;
 }
@@ -371,16 +367,7 @@ void CRoboGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 
 			Vector sprPos = ptr->vecEndPos - Vector(0, 0, 10);
 
-			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, ptr->vecEndPos);
-			WRITE_BYTE(TE_EXPLOSION);
-			WRITE_COORD(sprPos.x);
-			WRITE_COORD(sprPos.y);
-			WRITE_COORD(sprPos.z);
-			WRITE_SHORT(m_iHeadshotSpr);
-			WRITE_BYTE(RANDOM_LONG(6, 8));
-			WRITE_BYTE(50); // framerate
-			WRITE_BYTE(2 | 4 | 8);
-			MESSAGE_END();
+			UTIL_Explosion(sprPos, m_iHeadshotSpr, RANDOM_LONG(6, 8), 50, 2 | 4 | 8);
 		}
 	}
 

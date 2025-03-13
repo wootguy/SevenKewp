@@ -29,6 +29,7 @@
 #include	"explode.h"
 #include	"CBreakable.h"
 #include	"CGargantua.h"
+#include	"te_effects.h"
 
 // TODO:
 // - add kick event to model
@@ -946,41 +947,9 @@ void CGargantua::RunTask( Task_t *pTask )
 				pGib->pev->nextthink = gpGlobals->time + 1.25;
 				pGib->SetThink( &CGib::SUB_FadeOut );
 			}
-			MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-				WRITE_BYTE( TE_BREAKMODEL);
 
-				// position
-				WRITE_COORD( pev->origin.x );
-				WRITE_COORD( pev->origin.y );
-				WRITE_COORD( pev->origin.z );
-
-				// size
-				WRITE_COORD( 200 );
-				WRITE_COORD( 200 );
-				WRITE_COORD( 128 );
-
-				// velocity
-				WRITE_COORD( 0 ); 
-				WRITE_COORD( 0 );
-				WRITE_COORD( 0 );
-
-				// randomization
-				WRITE_BYTE( 200 ); 
-
-				// Model
-				WRITE_SHORT( gGargGibModel );	//model id#
-
-				// # of shards
-				WRITE_BYTE( 50 );
-
-				// duration
-				WRITE_BYTE( 20 );// 3.0 seconds
-
-				// flags
-
-				WRITE_BYTE( BREAK_FLESH );
-			MESSAGE_END();
-
+			UTIL_BreakModel(pev->origin, Vector(200, 200, 128), g_vecZero, 200,
+				gGargGibModel, 50, 20, BREAK_FLESH);
 			return;
 		}
 		else
@@ -1105,12 +1074,12 @@ CStomp* CStomp::StompCreate(const Vector& origin, const Vector& end, edict_t* ow
 
 void CStomp::Spawn(void)
 {
-	pev->nextthink = gpGlobals->time;
+	pev->nextthink = gpGlobals->time + 0.1f;
 	pev->classname = MAKE_STRING("garg_stomp");
 	pev->dmgtime = gpGlobals->time;
 
 	pev->framerate = 30;
-	pev->model = MAKE_STRING(GARG_STOMP_SPRITE_NAME);
+	SET_MODEL(edict(), GARG_STOMP_SPRITE_NAME);
 	pev->rendermode = kRenderTransTexture;
 	pev->renderamt = 0;
 	EMIT_SOUND_DYN(edict(), CHAN_BODY, GARG_STOMP_BUZZ_SOUND, 1, ATTN_NORM, 0, PITCH_NORM * 0.55);
@@ -1190,15 +1159,8 @@ void CSmoker::Spawn( void )
 void CSmoker::Think( void )
 {
 	// lots of smoke
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_SMOKE );
-		WRITE_COORD( pev->origin.x + RANDOM_FLOAT( -pev->dmg, pev->dmg ));
-		WRITE_COORD( pev->origin.y + RANDOM_FLOAT( -pev->dmg, pev->dmg ));
-		WRITE_COORD( pev->origin.z);
-		WRITE_SHORT( g_sModelIndexSmoke );
-		WRITE_BYTE( RANDOM_LONG(pev->scale, pev->scale * 1.1) );
-		WRITE_BYTE( RANDOM_LONG(8,14)  ); // framerate
-	MESSAGE_END();
+	Vector ori = pev->origin + Vector(RANDOM_FLOAT(-pev->dmg, pev->dmg), RANDOM_FLOAT(-pev->dmg, pev->dmg), 0);
+	UTIL_Smoke(ori, g_sModelIndexSmoke, RANDOM_LONG(pev->scale, pev->scale * 1.1), RANDOM_LONG(8, 14));
 
 	pev->health--;
 	if ( pev->health > 0 )

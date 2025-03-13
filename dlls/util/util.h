@@ -72,14 +72,6 @@ extern ThreadSafeQueue<AlertMsgCall> g_thread_prints;
 
 EXPORT extern std::string g_lastMapName;
 
-#define NOT_PRECACHED_MODEL "models/" MOD_MODEL_FOLDER "not_precached.mdl"
-#define MERGED_ITEMS_MODEL "models/" MOD_MODEL_FOLDER "w_items_v2.mdl"
-#define NOT_PRECACHED_SOUND "common/null.wav"
-#define MAX_PRECACHE 512
-#define MAX_PRECACHE_SOUND 511
-#define MAX_PRECACHE_MODEL 510
-#define MAX_PRECACHE_EVENT 256
-
 enum AdminLevel {
 	ADMIN_NO,
 	ADMIN_YES,
@@ -140,6 +132,8 @@ struct RGB {
 	RGB(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
 	RGB(Vector v) : r(v.x), g(v.y), b(v.z) {}
 	RGB(uint32_t hex) : r((hex >> 16) & 0xff), g((hex >> 8) & 0xff), b(hex & 0xff) {}
+
+	Vector ToVector() { return Vector(r, g, b); }
 };
 
 struct RGBA {
@@ -150,6 +144,7 @@ struct RGBA {
 	RGBA(Vector v) : r(v.x), g(v.y), b(v.z), a(255) {}
 	RGBA(Vector v, uint8_t a) : r(v.x), g(v.y), b(v.z), a(a) {}
 	RGBA(RGB rgb) : r(rgb.r), g(rgb.g), b(rgb.b), a(255) {}
+	RGBA(RGB rgb, uint8_t a) : r(rgb.r), g(rgb.g), b(rgb.b), a(a) {}
 	RGBA() : r(0), g(0), b(0), a(0) {}
 
 	Vector ToVector() { return Vector(r, g, b); }
@@ -340,6 +335,7 @@ class CBaseEntity;
 EXPORT void			UTIL_SetSize			(entvars_t* pev, const Vector &vecMin, const Vector &vecMax);
 EXPORT float		UTIL_VecToYaw			(const Vector &vec);
 EXPORT Vector		UTIL_VecToAngles		(const Vector &vec);
+EXPORT Vector		UTIL_VecToSpriteAngles	(const Vector &vec); // for oriented sprites
 EXPORT float		UTIL_AngleMod			(float a);
 EXPORT float		UTIL_AngleDiff			( float destAngle, float srcAngle );
 
@@ -411,17 +407,8 @@ EXPORT bool			UTIL_PointInLiquid(const Vector& vec);
 EXPORT bool			UTIL_PointInBox(const Vector& vec, Vector mins, Vector maxs);
 
 EXPORT int			UTIL_IsMasterTriggered	(string_t sMaster, CBaseEntity *pActivator);
-EXPORT void			UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount );
-EXPORT void			UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, int amount );
 EXPORT Vector		UTIL_RandomBloodVector( void );
 EXPORT BOOL			UTIL_ShouldShowBlood( int bloodColor );
-EXPORT void			UTIL_BloodDecalTrace( TraceResult *pTrace, int bloodColor );
-EXPORT void			UTIL_DecalTrace( TraceResult *pTrace, int decalNumber );
-EXPORT void			UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber, BOOL bIsCustom );
-EXPORT void			UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber );
-EXPORT void			UTIL_Sparks( const Vector &position );
-EXPORT void			UTIL_Ricochet( const Vector &position, float scale );
-EXPORT void			UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType);
 EXPORT void			UTIL_StringToVector( float *pVector, const char *pString );
 EXPORT bool			UTIL_StringIsVector( const char *pString );
 EXPORT const char*	UTIL_VectorToString(const Vector& v);
@@ -430,6 +417,7 @@ EXPORT Vector		UTIL_ClampVectorToBox( const Vector &input, const Vector &clampSi
 EXPORT float		UTIL_Approach( float target, float value, float speed );
 EXPORT float		UTIL_ApproachAngle( float target, float value, float speed );
 EXPORT float		UTIL_AngleDistance( float next, float cur );
+EXPORT bool			UTIL_IsValidTempEntOrigin( const Vector& v ); // true if the origin can be used with temporary entity effects TE_*
 
 EXPORT char			*UTIL_VarArgs( const char *format, ... );
 EXPORT void			UTIL_Remove( CBaseEntity *pEntity );
@@ -441,8 +429,6 @@ EXPORT float		UTIL_SplineFraction( float value, float scale );
 
 // Search for water transition along a vertical line
 EXPORT float		UTIL_WaterLevel( const Vector &position, float minz, float maxz );
-EXPORT void			UTIL_Bubbles( Vector mins, Vector maxs, int count );
-EXPORT void			UTIL_BubbleTrail( Vector from, Vector to, int count );
 
 // allows precacheing of other entities
 EXPORT void			UTIL_PrecacheOther( const char *szClassname, const StringMap& keys=g_emptyStringMap);
@@ -674,7 +660,7 @@ EXPORT int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz);
 
 EXPORT void TEXTURETYPE_Init();
 EXPORT char TEXTURETYPE_Find(char *name);
-EXPORT float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType);
+EXPORT float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType, edict_t* emitter=ENT(0));
 
 // NOTE: use EMIT_SOUND_DYN to set the pitch of a sound. Pitch of 100
 // is no pitch shift.  Pitch > 100 up to 255 is a higher pitch, pitch < 100
@@ -851,8 +837,6 @@ EXPORT bool loadReplacementFile(const char* path, StringMap& replacements);
 // loads muzzle flash details from file on the first call, then returns cached results
 EXPORT custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path);
 
-EXPORT void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType=MSG_BROADCAST, edict_t* dest=NULL);
-
 //
 // BModelOrigin - calculates origin of a bmodel from absmin/size because all bmodel origins are 0 0 0
 //
@@ -911,14 +895,8 @@ EXPORT const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound);
 EXPORT void UTIL_RespawnPlayer(CBasePlayer* plr, bool moveLivingPlayers=true, bool respawnDeadPlayers=true);
 EXPORT void UTIL_RespawnAllPlayers(bool moveLivingPlayers=true, bool respawnDeadPlayers=true);
 
-EXPORT void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
-EXPORT void UTIL_Fizz(int eidx, int modelIdx, uint8_t density, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
-EXPORT void UTIL_ELight(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
-EXPORT void UTIL_BeamPoints(Vector start, Vector end, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
-EXPORT void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
-EXPORT void UTIL_BeamEnts(int startEnt, int startAttachment, int endEnt, int endAttachment, bool ringMode, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
-EXPORT void UTIL_KillBeam(int entindex, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
-EXPORT void UTIL_BSPDecal(int entindex, Vector origin, int decalIdx, int msgMode=MSG_BROADCAST, const float* msgOrigin=NULL, edict_t* targetEnt=NULL);
-EXPORT void UTIL_PlayerDecal(int entindex, int playernum, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
-EXPORT void UTIL_GunshotDecal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
-EXPORT void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
+// rotates a point around 0,0,0 using YXZ euler rotation order
+EXPORT Vector UTIL_RotatePoint(Vector pos, Vector angles);
+EXPORT Vector UTIL_UnwindPoint(Vector pos, Vector angles);
+
+

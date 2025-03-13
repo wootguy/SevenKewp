@@ -99,19 +99,7 @@ void CMortarShell::BurnThink()
 
 	pev->angles.x -= 90;
 
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(TE_SPRITE_SPRAY);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z);
-	WRITE_COORD(0.0);
-	WRITE_COORD(0.0);
-	WRITE_COORD(1.0);
-	WRITE_SHORT(m_iTrail);
-	WRITE_BYTE(1);
-	WRITE_BYTE(12);
-	WRITE_BYTE(120);
-	MESSAGE_END();
+	UTIL_SpriteSpray(pev->origin, Vector(0,0,1), m_iTrail, 1, 12, 120);
 
 	if (gpGlobals->time > m_flIgniteTime + 0.2)
 	{
@@ -158,21 +146,8 @@ void CMortarShell::MortarExplodeTouch(CBaseEntity* pOther)
 
 	const auto contents = UTIL_PointContents(pev->origin);
 
-	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(TE_EXPLOSION);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z);
-
-	if (contents == CONTENTS_WATER)
-		g_engfuncs.pfnWriteShort(g_sModelIndexWExplosion);
-	else
-		g_engfuncs.pfnWriteShort(g_sModelIndexFireball);
-
-	WRITE_BYTE(static_cast<int>((pev->dmg - 50.0) * 5.0));
-	WRITE_BYTE(10);
-	WRITE_BYTE(TE_EXPLFLAG_NONE);
-	MESSAGE_END();
+	int spr = contents != CONTENTS_WATER ? g_sModelIndexFireball : g_sModelIndexWExplosion;
+	UTIL_Explosion(pev->origin, spr, static_cast<int>((pev->dmg - 50.0) * 5.0), 10, TE_EXPLFLAG_NONE);
 
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 1024, 3.0);
 
@@ -212,7 +187,8 @@ void CMortarShell::MortarExplodeTouch(CBaseEntity* pOther)
 
 	if (contents != CONTENTS_WATER)
 	{
-		const auto sparkCount = g_engfuncs.pfnRandomLong(0, 3);
+		int maxShowers = UTIL_IsValidTempEntOrigin(m_effectOrigin) ? 3 : 2;
+		const auto sparkCount = g_engfuncs.pfnRandomLong(0, maxShowers);
 
 		for (auto i = 0; i < sparkCount; ++i)
 		{

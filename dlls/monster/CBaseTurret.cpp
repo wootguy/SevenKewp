@@ -690,15 +690,11 @@ void CBaseTurret::TurretDeath(void)
 	if (pev->dmgtime + RANDOM_FLOAT(0, 2) > gpGlobals->time)
 	{
 		// lots of smoke
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_SMOKE);
-		WRITE_COORD(RANDOM_FLOAT(pev->absmin.x, pev->absmax.x));
-		WRITE_COORD(RANDOM_FLOAT(pev->absmin.y, pev->absmax.y));
-		WRITE_COORD(pev->origin.z - m_iOrientation * 64);
-		WRITE_SHORT(g_sModelIndexSmoke);
-		WRITE_BYTE(25); // scale * 10
-		WRITE_BYTE(10 - m_iOrientation * 5); // framerate
-		MESSAGE_END();
+		Vector ori = Vector(
+			RANDOM_FLOAT(pev->absmin.x, pev->absmax.x),
+			RANDOM_FLOAT(pev->absmin.y, pev->absmax.y),
+			pev->origin.z - m_iOrientation * 64);
+		UTIL_Smoke(ori, g_sModelIndexSmoke, 25, 10 - m_iOrientation * 5);
 	}
 
 	if (pev->dmgtime + RANDOM_FLOAT(0, 5) > gpGlobals->time)
@@ -753,23 +749,7 @@ void CBaseTurret::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vec
 
 		if (isBlast && flDamage > pev->health) {
 			// turret was effectively gibbed
-			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
-			WRITE_BYTE(TE_BREAKMODEL);
-			WRITE_COORD(pos.x);
-			WRITE_COORD(pos.y);
-			WRITE_COORD(pos.z);
-			WRITE_COORD(0);
-			WRITE_COORD(0);
-			WRITE_COORD(0);
-			WRITE_COORD(dir.x);
-			WRITE_COORD(dir.y);
-			WRITE_COORD(dir.z);
-			WRITE_BYTE(15); // randomization
-			WRITE_SHORT(m_iGibModel); // model id#
-			WRITE_BYTE(16);
-			WRITE_BYTE(1);// duration 0.1 seconds
-			WRITE_BYTE(BREAK_METAL); // flags
-			MESSAGE_END();
+			UTIL_BreakModel(pos, g_vecZero, dir, 15, m_iGibModel, 16, 1, BREAK_METAL);
 		}
 	}
 

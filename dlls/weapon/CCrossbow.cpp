@@ -22,6 +22,7 @@
 #include "CBasePlayer.h"
 #include "gamerules.h"
 #include "weapon/CCrossbow.h"
+#include "te_effects.h"
 
 #ifndef CLIENT_DLL
 #define BOLT_AIR_VELOCITY	2000
@@ -187,23 +188,8 @@ void CCrossbowBolt::ExplodeThink( void )
 	pev->dmg = 40;
 	iScale = 10;
 
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_EXPLOSION);		
-		WRITE_COORD( pev->origin.x );
-		WRITE_COORD( pev->origin.y );
-		WRITE_COORD( pev->origin.z );
-		if (iContents != CONTENTS_WATER)
-		{
-			WRITE_SHORT( g_sModelIndexFireball );
-		}
-		else
-		{
-			WRITE_SHORT( g_sModelIndexWExplosion );
-		}
-		WRITE_BYTE( iScale  ); // scale * 10
-		WRITE_BYTE( 15  ); // framerate
-		WRITE_BYTE( TE_EXPLFLAG_NONE );
-	MESSAGE_END();
+	int spr = iContents != CONTENTS_WATER ? g_sModelIndexFireball : g_sModelIndexWExplosion;
+	UTIL_Explosion(pev->origin, spr, iScale, 15, TE_EXPLFLAG_NONE);
 
 	PLAY_DISTANT_SOUND(edict(), DISTANT_556);
 
@@ -219,7 +205,12 @@ void CCrossbowBolt::ExplodeThink( void )
 	::RadiusDamage( pev->origin, pev, pevOwner, pev->dmg, 128, CLASS_NONE, DMG_BLAST | DMG_ALWAYSGIB );
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, SMALL_EXPLOSION_VOLUME, 0.3);
 
-	UTIL_Remove(this);
+	// give time for sound to play
+	SetThink(&CBaseEntity::SUB_Remove);
+	pev->solid = SOLID_NOT;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
+	pev->nextthink = gpGlobals->time + 0.1f;
 }
 #endif
 

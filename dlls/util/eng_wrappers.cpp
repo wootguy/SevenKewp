@@ -18,6 +18,9 @@ StringSet g_tryPrecacheSounds;
 StringSet g_tryPrecacheGeneric;
 StringSet g_tryPrecacheEvents;
 
+string_t g_indexModels[MAX_PRECACHE]; // maps an index to a model name
+string_t g_indexSounds[MAX_PRECACHE]; // maps an index to a model name
+
 HashMap<string_t> g_allocedStrings;
 
 Bsp g_bsp;
@@ -238,8 +241,10 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 	g_tryPrecacheSounds.put(path);
 
 	if (g_tryPrecacheSounds.size() <= MAX_PRECACHE_SOUND) {
-		int soundIdx = g_engfuncs.pfnPrecacheSound(STRING(ALLOC_STRING(path)));
+		string_t spath = ALLOC_STRING(path);
+		int soundIdx = g_engfuncs.pfnPrecacheSound(STRING(spath));
 		g_precachedSounds.put(path, soundIdx);
+		g_indexSounds[soundIdx] = spath;
 		return soundIdx;
 	}
 	else {
@@ -448,7 +453,9 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	if (g_tryPrecacheModels.size() + g_bsp.entityBspModelCount + 1 <= MAX_PRECACHE_MODEL) {
 		if (!g_precachedModels.hasKey(path))
 			g_precachedModels.put(path);
-		int modelIdx = g_engfuncs.pfnPrecacheModel(STRING(ALLOC_STRING(path)));
+		string_t spath = ALLOC_STRING(path);
+		int modelIdx = g_engfuncs.pfnPrecacheModel(STRING(spath));
+		g_indexModels[modelIdx] = spath;
 
 		std::string pathstr = std::string(path);
 		if (pathstr.find(".mdl") == pathstr.size() - 4) {
@@ -575,12 +582,26 @@ int MODEL_INDEX(const char* model) {
 		return 0;
 	}
 
+	const char* replacement = g_modelReplacements.get(model);
+	if (replacement) {
+		lowerPath = toLowerCase(replacement);
+		model = lowerPath.c_str();
+	}
+
 	if (!g_precachedModels.hasKey(lowerPath.c_str())) {
 		ALERT(at_error, "MODEL_INDEX not precached: %s\n", model);
 		return g_engfuncs.pfnModelIndex(NOT_PRECACHED_MODEL);
 	}
 
 	return g_engfuncs.pfnModelIndex(model);
+}
+
+const char* INDEX_MODEL(int modelIdx) {
+	if (modelIdx >= 0 && modelIdx < MAX_PRECACHE) {
+		return STRING(g_indexModels[modelIdx]);
+	}
+
+	return NOT_PRECACHED_MODEL;
 }
 
 int SOUND_INDEX(const char* sound) {
@@ -595,6 +616,14 @@ int SOUND_INDEX(const char* sound) {
 	}
 
 	return *precache;
+}
+
+const char* INDEX_SOUND(int soundIdx) {
+	if (soundIdx >= 0 && soundIdx < MAX_PRECACHE) {
+		return STRING(g_indexSounds[soundIdx]);
+	}
+
+	return NOT_PRECACHED_SOUND;
 }
 
 

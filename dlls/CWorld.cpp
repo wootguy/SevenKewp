@@ -272,11 +272,14 @@ void CWorld::Precache(void)
 	PRECACHE_SOUND("weapons/distant/explode3.wav");
 	//PRECACHE_SOUND("weapons/distant/explode4.wav");
 	PRECACHE_SOUND("weapons/distant/explode5.wav");
+
+	if (mp_bigmap.value)
+		UTIL_PrecacheLargeWorldEffects();
+
 	//
 	// Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
 	//
-
-		// 0 normal
+	// 0 normal
 	LIGHT_STYLE(0, "m");
 
 	// 1 FLICKER (first variety)

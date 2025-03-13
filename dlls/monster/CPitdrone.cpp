@@ -573,19 +573,8 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				vecSpitDir.z += RANDOM_FLOAT( -0.05, 0 );
 
 				// spew the spittle temporary ents.
-				MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpitOffset );
-				WRITE_BYTE( TE_SPRITE_SPRAY );
-				WRITE_COORD( vecSpitOffset.x );	// pos
-				WRITE_COORD( vecSpitOffset.y );
-				WRITE_COORD( vecSpitOffset.z );
-				WRITE_COORD( vecSpitDir.x );	// dir
-				WRITE_COORD( vecSpitDir.y );
-				WRITE_COORD( vecSpitDir.z );
-				WRITE_SHORT( iPitdroneSpitSprite );	// model
-				WRITE_BYTE( 10 );			// count
-				WRITE_BYTE( 110 );			// speed
-				WRITE_BYTE( 25 );			// noise ( client will divide by 100 )
-				MESSAGE_END();
+				int count = UTIL_IsValidTempEntOrigin(vecSpitOffset) ? 10 : 5;
+				UTIL_SpriteSpray(vecSpitOffset, vecSpitDir, iPitdroneSpitSprite, count, 110, 25);
 
 				CPitdroneSpike::Shoot( pev, vecSpitOffset, vecSpitDir * 900, UTIL_VecToAngles( vecSpitDir ) );
 				CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
@@ -1289,6 +1278,15 @@ void CPitdrone::GibMonster()
 	// don't remove players!
 	SetThink( &CBaseMonster::SUB_Remove );
 	pev->nextthink = gpGlobals->time;
+
+	// if the entity is outside the valid range for sound origins, then it needs
+	// to be networked at least until the sound starts playing or else clients won't hear it.
+	if (!UTIL_IsValidTempEntOrigin(pev->origin)) {
+		pev->flags &= ~FL_MONSTER; // prevent the crowbar thinking this is a valid target
+		pev->renderamt = 0;
+		pev->rendermode = kRenderTransTexture;
+		pev->nextthink = gpGlobals->time + 0.1f;
+	}
 }
 
 void CPitdrone::KeyValue( KeyValueData* pkvd )

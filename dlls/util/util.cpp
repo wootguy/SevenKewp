@@ -437,6 +437,16 @@ Vector UTIL_VecToAngles( const Vector &vec )
 	VEC_TO_ANGLES(vec, rgflVecOut);
 	return Vector(rgflVecOut);
 }
+
+Vector UTIL_VecToSpriteAngles(const Vector& vec)
+{
+	float rgflVecOut[3];
+	VEC_TO_ANGLES(vec, rgflVecOut);
+	Vector out = Vector(rgflVecOut);
+	out.x = -out.x + 180;
+	out.z = 90; // TODO: this isn't enough to align with parent object angles
+	return out;
+}
 	
 //	float UTIL_MoveToOrigin( edict_t *pent, const Vector vecGoal, float flDist, int iMoveType )
 void UTIL_MoveToOrigin( edict_t *pent, const Vector &vecGoal, float flDist, int iMoveType )
@@ -638,7 +648,7 @@ CBaseEntity *UTIL_FindEntityByString( CBaseEntity *pStartEntity, const char *szK
 			continue;
 
 		if (asterisk) {
-			if (strstr(t, asterisk_search)) {
+			if (strstr(t, asterisk_search) == t) {
 				pentEntity = ed;
 				break;
 			}
@@ -883,302 +893,6 @@ void WRITE_BYTES(uint8_t* bytes, int count) {
 		bytePtr++;
 	}
 }
-
-// This logic makes sure that a network message does not get sent to
-// a client that can't handle a high entity index, if one is given.
-// entindex is assumed to be the entity used for PVS/PAS tests, if using that message mode.
-// Required variadic args:
-//    int msgMode = the network message mode
-//    const float* msgOrigin = origin used by the engine for some message send modes (PVS/PAS)
-//    edict_t* targetEnt = the target entity of the network message (NULL for broadcasts)
-// NOTE: This code is mostly duplicated in UTIL_BeamEnts, which checks multiple indexes
-#define SAFE_MESSAGE_ENT_LOGIC(msg_func, entindex, ...) \
-	if (entindex < MAX_LEGACY_CLIENT_ENTS) { \
-		msg_func(entindex, __VA_ARGS__); \
-		return; \
-	} \
-	\
-	if (msgMode == MSG_ONE || msgMode == MSG_ONE_UNRELIABLE) { \
-		if (UTIL_isSafeEntIndex(targetEnt, entindex, __FUNCTION__)) { \
-			msg_func(entindex, __VA_ARGS__); \
-		} \
-		return; \
-	} \
-	\
-	int originalMsgMode = msgMode; /* saved in case PVS/PAS was passed, for testing later */ \
-	msgMode = GetIndividualNetMessageMode(msgMode); /* sending individual messages instead of a broadcast */\
-	msgOrigin = NULL; /* don't send this to the engine because PVS/PAS testing will be done here */ \
-	for (int i = 1; i <= gpGlobals->maxClients; i++) { \
-		targetEnt = INDEXENT(i); \
-	\
-		if (TestMsgVis(targetEnt, entindex, originalMsgMode) && UTIL_isSafeEntIndex(targetEnt, entindex, __FUNCTION__)) { \
-			msg_func(entindex, __VA_ARGS__); \
-		} \
-	}
-
-// tests if a player would receive a message given a send mode
-// and the entity which is emitting the message
-bool TestMsgVis(edict_t* plr, int testEntIdx, int netMsgMode) {
-	CBaseEntity* ent = CBaseEntity::Instance(INDEXENT(testEntIdx));
-
-	if (!ent) {
-		return false;
-	}
-
-	switch (netMsgMode) {
-	case MSG_PVS:
-	case MSG_PVS_R:
-		return ent->InPVS(plr);
-	case MSG_PAS:
-	case MSG_PAS_R:
-		return ent->InPAS(plr);
-	default:
-		return true;
-	}
-}
-
-// converts a broadcast message mode to an individual mode
-// while preserving the reliable/unreliable channel selection
-int GetIndividualNetMessageMode(int msgMode) {
-	switch (msgMode) {
-	case MSG_ALL:
-	case MSG_PVS_R:
-	case MSG_PAS_R:
-	case MSG_ONE:
-		return MSG_ONE;
-	default:
-		return MSG_ONE_UNRELIABLE;
-	}
-}
-
-void UTIL_BeamFollow_msg(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(TE_BEAMFOLLOW);
-	WRITE_SHORT(entindex);
-	WRITE_SHORT(modelIdx);
-	WRITE_BYTE(life);
-	WRITE_BYTE(width);
-	WRITE_BYTE(color.r);
-	WRITE_BYTE(color.g);
-	WRITE_BYTE(color.b);
-	WRITE_BYTE(color.a);
-	MESSAGE_END();
-}
-void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	SAFE_MESSAGE_ENT_LOGIC(UTIL_BeamFollow_msg, entindex, modelIdx, life, width, color, msgMode, msgOrigin, targetEnt);
-}
-
-void UTIL_Fizz_msg(int entindex, int modelIdx, uint8_t density, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(TE_FIZZ);
-	WRITE_SHORT(entindex);
-	WRITE_SHORT(modelIdx);
-	WRITE_BYTE(density);
-	MESSAGE_END();
-}
-void UTIL_Fizz(int entindex, int modelIdx, uint8_t density, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	SAFE_MESSAGE_ENT_LOGIC(UTIL_Fizz_msg, entindex, modelIdx, density, msgMode, msgOrigin, targetEnt);
-}
-
-void UTIL_ELight_msg(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(TE_ELIGHT);
-	WRITE_SHORT(entindex + (attachment << 12));
-	WRITE_COORD(origin.x);
-	WRITE_COORD(origin.y);
-	WRITE_COORD(origin.z);
-	WRITE_COORD(radius);
-	WRITE_BYTE(color.r);
-	WRITE_BYTE(color.g);
-	WRITE_BYTE(color.b);
-	WRITE_BYTE(life);
-	WRITE_COORD(decay);
-	MESSAGE_END();
-}
-void UTIL_ELight(int entindex, int attachment, Vector origin, float radius, RGBA color, int life, float decay, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	SAFE_MESSAGE_ENT_LOGIC(UTIL_ELight_msg, entindex, attachment, origin, radius, color, life, decay, msgMode, msgOrigin, targetEnt);
-}
-
-void UTIL_BeamEntPoint_msg(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart,
-	uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, 
-	int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(TE_BEAMENTPOINT);
-	WRITE_SHORT(entindex + (attachment << 12));
-	WRITE_COORD(point.x);
-	WRITE_COORD(point.y);
-	WRITE_COORD(point.z);
-	WRITE_SHORT(modelIdx);
-	WRITE_BYTE(frameStart);
-	WRITE_BYTE(framerate);
-	WRITE_BYTE(life);
-	WRITE_BYTE(width);
-	WRITE_BYTE(noise);
-	WRITE_BYTE(color.r);
-	WRITE_BYTE(color.g);
-	WRITE_BYTE(color.b);
-	WRITE_BYTE(color.a);
-	WRITE_BYTE(speed);
-	MESSAGE_END();
-}
-void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	SAFE_MESSAGE_ENT_LOGIC(UTIL_BeamEntPoint_msg, entindex, attachment, point, modelIdx, frameStart, framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
-}
-
-void UTIL_KillBeam_msg(int entindex, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(TE_KILLBEAM);
-	WRITE_SHORT(entindex);
-	MESSAGE_END();
-}
-void UTIL_KillBeam(int entindex, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	SAFE_MESSAGE_ENT_LOGIC(UTIL_KillBeam_msg, entindex, msgMode, msgOrigin, targetEnt);
-}
-
-void UTIL_BeamEnts_msg(int entindex, int attachment, int entindex2, int attachment2, bool ringMode, int modelIdx, uint8_t frameStart,
-	uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed,
-	int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(ringMode ? TE_BEAMRING : TE_BEAMENTS);
-	WRITE_SHORT(entindex + (attachment << 12));
-	WRITE_SHORT(entindex2 + (attachment2 << 12));
-	WRITE_SHORT(g_sModelIndexLaser);
-	WRITE_BYTE(frameStart);
-	WRITE_BYTE(framerate);
-	WRITE_BYTE(life);
-	WRITE_BYTE(width);
-	WRITE_BYTE(noise);
-	WRITE_BYTE(color.r);
-	WRITE_BYTE(color.g);
-	WRITE_BYTE(color.b);
-	WRITE_BYTE(color.a);
-	WRITE_BYTE(speed);
-	MESSAGE_END();
-}
-void UTIL_BeamEnts(int startEnt, int startAttachment, int endEnt, int endAttachment, bool ringMode, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	// NOTE: This code is mostly duplicated in the SAFE_MESSAGE_ENT_LOGIC macro
-	if (startEnt < MAX_LEGACY_CLIENT_ENTS && endEnt < MAX_LEGACY_CLIENT_ENTS) {
-		UTIL_BeamEnts_msg(startEnt, startAttachment, endEnt, endAttachment, ringMode, modelIdx, frameStart,
-			framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
-		return;
-	}
-
-	if (msgMode == MSG_ONE || msgMode == MSG_ONE_UNRELIABLE) {
-		if (UTIL_isSafeEntIndex(targetEnt, startEnt, __FUNCTION__) && UTIL_isSafeEntIndex(targetEnt, endEnt, __FUNCTION__)) {
-			UTIL_BeamEnts_msg(startEnt, startAttachment, endEnt, endAttachment, ringMode, modelIdx, frameStart,
-				framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
-		}
-		return;
-	}
-
-	int originalMsgMode = msgMode; /* saved in case PVS/PAS was passed, for testing later */
-	msgMode = GetIndividualNetMessageMode(msgMode); /* sending individual messages instead of a broadcast */
-	msgOrigin = NULL; /* don't send this to the engine because PVS/PAS testing will be done here */
-	for (int i = 1; i <= gpGlobals->maxClients; i++) {
-		targetEnt = INDEXENT(i);
-
-		bool isVisible = TestMsgVis(targetEnt, startEnt, originalMsgMode) || TestMsgVis(targetEnt, endEnt, originalMsgMode);
-		bool isSafeIndex = UTIL_isSafeEntIndex(targetEnt, startEnt, __FUNCTION__) && UTIL_isSafeEntIndex(targetEnt, endEnt, __FUNCTION__);
-
-		if (isVisible && isSafeIndex) {
-			UTIL_BeamEnts_msg(startEnt, startAttachment, endEnt, endAttachment, ringMode, modelIdx, frameStart,
-				framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
-		}
-	}
-}
-
-void UTIL_BeamPoints(Vector start, Vector end, int modelIdx, uint8_t frameStart, uint8_t framerate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t speed, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(TE_BEAMPOINTS);
-	WRITE_COORD(start.x);
-	WRITE_COORD(start.y);
-	WRITE_COORD(start.z);
-	WRITE_COORD(end.x);
-	WRITE_COORD(end.y);
-	WRITE_COORD(end.z);
-	WRITE_SHORT(modelIdx);
-	WRITE_BYTE(frameStart);
-	WRITE_BYTE(framerate);
-	WRITE_BYTE(life);
-	WRITE_BYTE(width);
-	WRITE_BYTE(noise);
-	WRITE_BYTE(color.r);
-	WRITE_BYTE(color.g);
-	WRITE_BYTE(color.b);
-	WRITE_BYTE(color.a);
-	WRITE_BYTE(speed);
-	MESSAGE_END();
-}
-
-void UTIL_BSPDecal_msg(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(TE_BSPDECAL);
-	WRITE_COORD(origin.x);
-	WRITE_COORD(origin.y);
-	WRITE_COORD(origin.z);
-	WRITE_SHORT(decalIdx);
-	WRITE_SHORT(entindex);
-	if (entindex)
-		WRITE_SHORT(ENT(entindex)->v.modelindex);
-	MESSAGE_END();
-}
-void UTIL_BSPDecal(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	SAFE_MESSAGE_ENT_LOGIC(UTIL_BSPDecal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
-}
-
-void UTIL_PlayerDecal_msg(int entindex, int playernum, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(TE_PLAYERDECAL);
-	WRITE_BYTE(playernum);
-	WRITE_COORD(origin.x);
-	WRITE_COORD(origin.y);
-	WRITE_COORD(origin.z);
-	WRITE_SHORT(entindex);
-	WRITE_BYTE(decalIdx);
-	MESSAGE_END();
-}
-void UTIL_PlayerDecal(int entindex, int playernum, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	SAFE_MESSAGE_ENT_LOGIC(UTIL_PlayerDecal_msg, entindex, playernum, origin, decalIdx, msgMode, msgOrigin, targetEnt);
-}
-
-void UTIL_GunshotDecal_msg(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(TE_GUNSHOTDECAL);
-	WRITE_COORD(origin.x);
-	WRITE_COORD(origin.y);
-	WRITE_COORD(origin.z);
-	WRITE_SHORT(entindex);
-	WRITE_BYTE(decalIdx);
-	MESSAGE_END();
-}
-void UTIL_GunshotDecal(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	SAFE_MESSAGE_ENT_LOGIC(UTIL_GunshotDecal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
-}
-
-void UTIL_Decal_msg(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	int mode = TE_DECAL;
-
-	if (entindex) {
-		mode = decalIdx > 255 ? TE_DECALHIGH : TE_DECAL;
-	}
-	else {
-		mode = decalIdx > 255 ? TE_WORLDDECALHIGH : TE_WORLDDECAL;
-	}
-	
-	MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin, targetEnt);
-	WRITE_BYTE(mode);
-	WRITE_COORD(origin.x);
-	WRITE_COORD(origin.y);
-	WRITE_COORD(origin.z);
-	WRITE_BYTE(decalIdx);
-	if (entindex)
-		WRITE_SHORT(entindex);
-	MESSAGE_END();
-}
-void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	SAFE_MESSAGE_ENT_LOGIC(UTIL_Decal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
-}
-
 
 void WRITE_FLOAT(float f) {
 	WRITE_LONG(*(uint32_t*)&f);
@@ -1790,6 +1504,9 @@ float UTIL_AngleDistance( float next, float cur )
 	return delta;
 }
 
+bool UTIL_IsValidTempEntOrigin(const Vector& v) {
+	return v.x > -4096 && v.x < 4095 && v.y > -4096 && v.y < 4095 && v.z > -4096 && v.z < 4095;
+}
 
 float UTIL_SplineFraction( float value, float scale )
 {
@@ -1886,60 +1603,6 @@ bool UTIL_PointInBox(const Vector& vec, Vector mins, Vector maxs) {
 		(vec.z >= mins.z && vec.z <= maxs.z);
 }
 
-void UTIL_BloodStream( const Vector &origin, const Vector &direction, int color, int amount )
-{
-	if ( !UTIL_ShouldShowBlood( color ) )
-		return;
-
-	if ( g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED )
-		color = 0;
-
-	
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );
-		WRITE_BYTE( TE_BLOODSTREAM );
-		WRITE_COORD( origin.x );
-		WRITE_COORD( origin.y );
-		WRITE_COORD( origin.z );
-		WRITE_COORD( direction.x );
-		WRITE_COORD( direction.y );
-		WRITE_COORD( direction.z );
-		WRITE_BYTE( color );
-		WRITE_BYTE( V_min( amount, 255 ) );
-	MESSAGE_END();
-}				
-
-void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, int amount )
-{
-	if ( !UTIL_ShouldShowBlood( color ) )
-		return;
-
-	if ( color == DONT_BLEED || amount == 0 )
-		return;
-
-	if ( g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED )
-		color = 0;
-
-	if ( g_pGameRules->IsMultiplayer() )
-	{
-		// scale up blood effect in multiplayer for better visibility
-		amount *= 2;
-	}
-
-	if ( amount > 255 )
-		amount = 255;
-
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );
-		WRITE_BYTE( TE_BLOODSPRITE );
-		WRITE_COORD( origin.x);								// pos
-		WRITE_COORD( origin.y);
-		WRITE_COORD( origin.z);
-		WRITE_SHORT( g_sModelIndexBloodSpray );				// initial sprite model
-		WRITE_SHORT( g_sModelIndexBloodDrop );				// droplet sprite models
-		WRITE_BYTE( color );								// color index into host_basepal
-		WRITE_BYTE( V_min( V_max( 3, amount / 10 ), 16 ) );		// size
-	MESSAGE_END();
-}				
-
 Vector UTIL_RandomBloodVector( void )
 {
 	Vector direction;
@@ -1950,162 +1613,6 @@ Vector UTIL_RandomBloodVector( void )
 
 	return direction;
 }
-
-
-void UTIL_BloodDecalTrace( TraceResult *pTrace, int bloodColor )
-{
-	if ( UTIL_ShouldShowBlood( bloodColor ) )
-	{
-		if ( bloodColor == BLOOD_COLOR_RED )
-			UTIL_DecalTrace( pTrace, DECAL_BLOOD1 + RANDOM_LONG(0,5) );
-		else
-			UTIL_DecalTrace( pTrace, DECAL_YBLOOD1 + RANDOM_LONG(0,5) );
-	}
-}
-
-
-void UTIL_DecalTrace( TraceResult *pTrace, int decalNumber )
-{
-	short entityIndex;
-	int index;
-
-	if ( decalNumber < 0 )
-		return;
-
-	index = gDecals[ decalNumber ].index;
-
-	if ( index < 0 )
-		return;
-
-	if (pTrace->flFraction == 1.0)
-		return;
-
-	// Only decal BSP models
-	if ( pTrace->pHit )
-	{
-		CBaseEntity *pEntity = CBaseEntity::Instance( pTrace->pHit );
-		if ( pEntity && !pEntity->IsBSPModel() )
-			return;
-		entityIndex = ENTINDEX( pTrace->pHit );
-	}
-	else 
-		entityIndex = 0;
-	
-	UTIL_Decal(entityIndex, pTrace->vecEndPos, index);
-}
-
-/*
-==============
-UTIL_PlayerDecalTrace
-
-A player is trying to apply his custom decal for the spray can.
-Tell connected clients to display it, or use the default spray can decal
-if the custom can't be loaded.
-==============
-*/
-void UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int decalNumber, BOOL bIsCustom )
-{
-	int index;
-	
-	if (!bIsCustom)
-	{
-		if ( decalNumber < 0 )
-			return;
-
-		index = gDecals[ decalNumber ].index;
-		if ( index < 0 )
-			return;
-	}
-	else
-		index = decalNumber;
-
-	if (pTrace->flFraction == 1.0)
-		return;
-
-	UTIL_PlayerDecal(ENTINDEX(pTrace->pHit), playernum, pTrace->vecEndPos, index);
-}
-
-void UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber )
-{
-	if ( decalNumber < 0 )
-		return;
-
-	int index = gDecals[ decalNumber ].index;
-	if ( index < 0 )
-		return;
-
-	if (pTrace->flFraction == 1.0)
-		return;
-
-	UTIL_GunshotDecal(ENTINDEX(pTrace->pHit), pTrace->vecEndPos, index, MSG_PAS, pTrace->vecEndPos);
-}
-
-
-void UTIL_Sparks( const Vector &position )
-{
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, position );
-		WRITE_BYTE( TE_SPARKS );
-		WRITE_COORD( position.x );
-		WRITE_COORD( position.y );
-		WRITE_COORD( position.z );
-	MESSAGE_END();
-}
-
-
-void UTIL_Ricochet( const Vector &position, float scale )
-{
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, position );
-		WRITE_BYTE( TE_ARMOR_RICOCHET );
-		WRITE_COORD( position.x );
-		WRITE_COORD( position.y );
-		WRITE_COORD( position.z );
-		WRITE_BYTE( (int)(scale*10) );
-	MESSAGE_END();
-}
-
-void UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType) {
-	Vector sprPos = pos - Vector(0, 0, 10);
-	bool isBlast = bitsDamageType & DMG_BLAST;
-	int gibCount = V_min(128, flDamage / 10);
-
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
-	WRITE_BYTE(TE_EXPLOSION);
-	WRITE_COORD(sprPos.x);
-	WRITE_COORD(sprPos.y);
-	WRITE_COORD(sprPos.z);
-	WRITE_SHORT(g_sModelIndexShrapnelHit);
-	WRITE_BYTE(V_min(8, RANDOM_LONG(3, 4) + (flDamage / 20)));
-	WRITE_BYTE(50); // framerate
-	WRITE_BYTE(2 | 4 | 8);
-	MESSAGE_END();
-
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
-	WRITE_BYTE(TE_BREAKMODEL);
-	WRITE_COORD(pos.x);
-	WRITE_COORD(pos.y);
-	WRITE_COORD(pos.z);
-	WRITE_COORD(0);
-	WRITE_COORD(0);
-	WRITE_COORD(0);
-	WRITE_COORD(dir.x);
-	WRITE_COORD(dir.y);
-	WRITE_COORD(dir.z);
-	WRITE_BYTE(isBlast ? 30 : 15); // randomization
-	WRITE_SHORT(g_sModelIndexShrapnel); // model id#
-	WRITE_BYTE(gibCount);
-	WRITE_BYTE(1);// duration 0.1 seconds
-	WRITE_BYTE(0); // flags
-	MESSAGE_END();
-
-	// saving this in case it's useful for a similar effect. The sounds make more sense for small gibs
-	// and they have higher gravity and less bounce. Much higher network usage for lots of gibs though.
-	/*
-	for (int i = 0; i < gibCount; i++) {
-		EjectBrass(pos, dir * 200, RANDOM_LONG(0, 1.0f), MODEL_INDEX("models/shrapnel.mdl"), TE_BOUNCE_SHELL);
-	}
-	*/
-}
-
 
 BOOL UTIL_TeamsMatch( const char *pTeamName1, const char *pTeamName2 )
 {
@@ -2261,66 +1768,6 @@ float UTIL_WaterLevel( const Vector &position, float minz, float maxz )
 	return midUp.z;
 }
 
-
-extern DLL_GLOBAL	short	g_sModelIndexBubbles;// holds the index for the bubbles model
-
-void UTIL_Bubbles( Vector mins, Vector maxs, int count )
-{
-	Vector mid =  (mins + maxs) * 0.5;
-
-	float flHeight = UTIL_WaterLevel( mid,  mid.z, mid.z + 1024 );
-	flHeight = flHeight - mins.z;
-
-	MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, mid );
-		WRITE_BYTE( TE_BUBBLES );
-		WRITE_COORD( mins.x );	// mins
-		WRITE_COORD( mins.y );
-		WRITE_COORD( mins.z );
-		WRITE_COORD( maxs.x );	// maxz
-		WRITE_COORD( maxs.y );
-		WRITE_COORD( maxs.z );
-		WRITE_COORD( flHeight );			// height
-		WRITE_SHORT( g_sModelIndexBubbles );
-		WRITE_BYTE( count ); // count
-		WRITE_COORD( 8 ); // speed
-	MESSAGE_END();
-}
-
-void UTIL_BubbleTrail( Vector from, Vector to, int count )
-{
-	float flHeight = UTIL_WaterLevel( from,  from.z, from.z + 256 );
-	flHeight = flHeight - from.z;
-
-	if (flHeight < 8)
-	{
-		flHeight = UTIL_WaterLevel( to,  to.z, to.z + 256 );
-		flHeight = flHeight - to.z;
-		if (flHeight < 8)
-			return;
-
-		// UNDONE: do a ploink sound
-		flHeight = flHeight + to.z - from.z;
-	}
-
-	if (count > 255) 
-		count = 255;
-
-	MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-		WRITE_BYTE( TE_BUBBLETRAIL );
-		WRITE_COORD( from.x );	// mins
-		WRITE_COORD( from.y );
-		WRITE_COORD( from.z );
-		WRITE_COORD( to.x );	// maxz
-		WRITE_COORD( to.y );
-		WRITE_COORD( to.z );
-		WRITE_COORD( flHeight );			// height
-		WRITE_SHORT( g_sModelIndexBubbles );
-		WRITE_BYTE( count ); // count
-		WRITE_COORD( 8 ); // speed
-	MESSAGE_END();
-}
-
-
 void UTIL_Remove( CBaseEntity *pEntity )
 {
 	if ( !pEntity )
@@ -2331,14 +1778,12 @@ void UTIL_Remove( CBaseEntity *pEntity )
 	pEntity->pev->targetname = 0;
 }
 
-
 BOOL UTIL_IsValidEntity( edict_t *pent )
 {
 	if ( !pent || pent->free || (pent->v.flags & FL_KILLME) )
 		return FALSE;
 	return TRUE;
 }
-
 
 void UTIL_PrecacheOther( const char *szClassname, const StringMap& keys)
 {
@@ -2760,30 +2205,23 @@ void InitEdictRelocations() {
 void PrintEntindexStats() {
 	int totalFreeLowPrio = 0;
 	int totalFreeNormalPrio = 0;
-	int totalFreeHighPrio = 0;
 	int lowPrioMin = sv_max_client_edicts ? sv_max_client_edicts->value : MAX_LEGACY_CLIENT_ENTS;
-	int normalPrioMin = 512;
 	int reservedSlots = gpGlobals->maxClients + 1;
 
 	edict_t* edicts = ENT(0);
-	for (int i = reservedSlots; i < normalPrioMin; i++) {
-		totalFreeHighPrio += edicts[i].free;
-	}
-	for (int i = normalPrioMin; i < lowPrioMin; i++) {
+	for (int i = reservedSlots; i < lowPrioMin; i++) {
 		totalFreeNormalPrio += edicts[i].free;
 	}
 	for (int i = lowPrioMin; i < gpGlobals->maxEntities; i++) {
 		totalFreeLowPrio += edicts[i].free;
 	}
 
-	int totalHighSlots = normalPrioMin;
-	int totalNormalSlots = lowPrioMin - normalPrioMin;
+	int totalNormalSlots = lowPrioMin;
 	int totalLowSlots = gpGlobals->maxEntities - lowPrioMin;
-	int totalFree = totalFreeHighPrio + totalFreeNormalPrio + totalFreeLowPrio;
+	int totalFree = totalFreeNormalPrio + totalFreeLowPrio;
 
-	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Edict stats: %d/%d TOTAL (%d/%d HIGH, %d/%d NORM, %d/%d LOW)\n",
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Edict stats: %d/%d TOTAL (%d/%d NORM, %d/%d LOW)\n",
 		gpGlobals->maxEntities - totalFree, gpGlobals->maxEntities,
-		totalHighSlots - totalFreeHighPrio, totalHighSlots,
 		totalNormalSlots - totalFreeNormalPrio, totalNormalSlots,
 		totalLowSlots - totalFreeLowPrio, totalLowSlots));
 }
@@ -2808,15 +2246,6 @@ CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity) {
 	if (iprio == ENTIDX_PRIORITY_LOW && eidx < lowPrioMin) {
 		// try to find a slot in the low priority area, else a normal slot, else whatever it is now
 		for (int i = gpGlobals->maxEntities - 1; i >= normalPrioMin; i--) {
-			if (edicts[i].free) {
-				bestIdx = i;
-				break;
-			}
-		}
-	}
-	else if (iprio == ENTIDX_PRIORITY_NORMAL && eidx < normalPrioMin) {
-		// try to find a slot in the normal priority area, else keep using the high priority slot
-		for (int i = normalPrioMin; i < lowPrioMin; i++) {
 			if (edicts[i].free) {
 				bestIdx = i;
 				break;
@@ -3070,12 +2499,6 @@ std::string getGameFilePath(const char* path) {
 	}
 
 	return "";
-}
-
-void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, edict_t* dest)
-{
-	UTIL_BeamPoints(start, end, MODEL_INDEX("sprites/laserbeam.spr"), 0, 0, life, 16, 0,
-		c, 0, msgType, NULL, dest);
 }
 
 std::string lastMapName;
@@ -3502,4 +2925,101 @@ const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound) {
 	}
 
 	return sound;
+}
+
+// multiply a matrix with a vector (assumes w component of vector is 1.0f) 
+Vector matMultVector(const std::vector<float>& rotMat, const Vector& v)
+{
+	Vector outv;
+	outv.x = rotMat[0] * v.x + rotMat[4] * v.y + rotMat[8] * v.z + rotMat[12];
+	outv.y = rotMat[1] * v.x + rotMat[5] * v.y + rotMat[9] * v.z + rotMat[13];
+	outv.z = rotMat[2] * v.x + rotMat[6] * v.y + rotMat[10] * v.z + rotMat[14];
+	return outv;
+}
+
+std::vector<float> rotationMatrix(Vector axis, float angle)
+{
+	axis = axis.Normalize();
+	float s = sin(angle);
+	float c = cos(angle);
+	float oc = 1.0 - c;
+
+	return {
+		oc * axis.x * axis.x + c,          oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s, 0.0,
+		oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c,          oc * axis.y * axis.z - axis.x * s, 0.0,
+		oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c,			 0.0,
+		0.0,                               0.0,                               0.0,								 1.0
+	};
+}
+
+Vector UTIL_RotatePoint(Vector pos, Vector angles)
+{
+	Vector yawAxis = Vector(0, 0, 1);
+	Vector pitAxis = Vector(0, 1, 0);
+	Vector rollAxis = Vector(1, 0, 0);
+
+	const float toRadians = M_PI / 180.0f;
+
+	std::vector<float> yawRotMat = rotationMatrix(yawAxis,angles.y * toRadians);
+	pitAxis = matMultVector(yawRotMat, pitAxis);
+	rollAxis = matMultVector(yawRotMat, rollAxis);
+
+	std::vector<float> pitRotMat = rotationMatrix(pitAxis, angles.x * toRadians);
+	rollAxis = matMultVector(pitRotMat, rollAxis);
+
+	std::vector<float> rollRotMat = rotationMatrix(rollAxis, angles.z * toRadians);
+
+	pos = matMultVector(yawRotMat, pos);
+	pos = matMultVector(pitRotMat, pos);
+	pos = matMultVector(rollRotMat, pos);
+
+	return pos;
+}
+
+// Given a point that has been rotated around 0,0,0 by "angles", figure out
+// where the point would be if we were to unapply all of those rotations.
+Vector UTIL_UnwindPoint(Vector pos, Vector angles)
+{
+	const float toRadians = M_PI / 180.0f;
+
+	Vector yawAxis = Vector(0, 0, 1);
+	Vector pitAxis = Vector(0, 1, 0);
+	Vector rollAxis = Vector(1, 0, 0);
+	angles.x = angles.x * toRadians;
+	angles.y = angles.y * toRadians;
+	angles.z = angles.z * toRadians;
+
+	// get rotation axes from angles
+	std::vector<float> yawRotMat = rotationMatrix(yawAxis, angles.y);
+	pitAxis = matMultVector(yawRotMat, pitAxis);
+	rollAxis = matMultVector(yawRotMat, rollAxis);
+	std::vector<float> pitRotMat = rotationMatrix(pitAxis, angles.x);
+	rollAxis = matMultVector(pitRotMat, rollAxis);
+
+	// create matrices that undo the rotations
+	yawRotMat = rotationMatrix(yawAxis, -angles.y);
+	pitRotMat = rotationMatrix(pitAxis, -angles.x);
+	std::vector<float> rollRotMat = rotationMatrix(rollAxis, -angles.z);
+
+	// apply opposite rotations in reverse order
+	pos = matMultVector(rollRotMat, pos);
+	pos = matMultVector(pitRotMat, pos);
+	pos = matMultVector(yawRotMat, pos);
+
+	/*
+	angles.x *= -toRadians;
+	angles.y *= -toRadians;
+	angles.z *= -toRadians;
+
+	// Compute rotation matrices (negated angles)
+	std::vector<float> rollRotMat = rotationMatrix(Vector(0, 0, 1), angles.z);
+	std::vector<float> pitchRotMat = rotationMatrix(Vector(1, 0, 0), angles.x);
+	std::vector<float> yawRotMat = rotationMatrix(Vector(0, 1, 0), angles.y);
+
+	// Apply rotations in **reverse order** (undoing the original transform)
+	pos = matMultVector(yawRotMat, pos);
+	pos = matMultVector(pitchRotMat, pos);
+	pos = matMultVector(rollRotMat, pos);
+	*/
+	return pos;
 }

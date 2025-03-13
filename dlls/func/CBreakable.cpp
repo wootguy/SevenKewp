@@ -95,7 +95,6 @@ TYPEDESCRIPTION CBreakable::m_SaveData[] =
 	//	DEFINE_FIELD( CBreakable, m_idShard, FIELD_INTEGER ),
 
 		DEFINE_FIELD(CBreakable, m_angle, FIELD_FLOAT),
-		DEFINE_FIELD(CBreakable, m_breakModel, FIELD_STRING),
 		DEFINE_FIELD(CBreakable, m_iszSpawnObject, FIELD_STRING),
 
 		// Explosion magnitude is stored in pev->impulse

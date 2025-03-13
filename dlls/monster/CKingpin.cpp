@@ -180,44 +180,11 @@ void CKingpinBall::MovetoTarget(Vector vecTarget) {
 
 void CKingpinBall::ExplodeTouch(CBaseEntity* pOther)
 {
-	for (int i = 0; i < 2; i++) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
-		WRITE_BYTE(i == 0 ? TE_BEAMCYLINDER : TE_BEAMDISK);
-		WRITE_COORD(pev->origin.x);
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z + 16);
-		WRITE_COORD(pev->origin.x);
-		WRITE_COORD(pev->origin.y);
-		WRITE_COORD(pev->origin.z + 16 + (ORB_ATTACK_RADIUS + 50) / 0.3f); // reach damage radius over .3 seconds
-		WRITE_SHORT(orbShockWaveSpriteIdx);
-		WRITE_BYTE(0); // startframe
-		WRITE_BYTE(0); // framerate
-		WRITE_BYTE(2); // life
-		WRITE_BYTE(12);  // width
-		WRITE_BYTE(0);   // noise
-
-		WRITE_BYTE(170);	// red
-		WRITE_BYTE(120);	// green
-		WRITE_BYTE(160);	// blue
-
-		WRITE_BYTE(255); //brightness
-		WRITE_BYTE(0);		// speed
-		MESSAGE_END();
-	}
-
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pev->origin);
-	WRITE_BYTE(TE_DLIGHT);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z);
-	WRITE_BYTE(40); // radius
-	WRITE_BYTE(170);
-	WRITE_BYTE(120);
-	WRITE_BYTE(160);
-	WRITE_BYTE(100); // life
-	WRITE_BYTE(64); // decay rate
-	MESSAGE_END();
-
+	float radius = (ORB_ATTACK_RADIUS + 50) / 0.3f;
+	RGBA color = RGBA(170, 120, 160, 255);
+	UTIL_BeamCylinder(pev->origin, radius, orbShockWaveSpriteIdx, 0, 0, 2, 12, 0, color, 0);
+	UTIL_BeamDisk(pev->origin, radius, orbShockWaveSpriteIdx, 0, 0, 2, 12, 0, color, 0);
+	UTIL_DLight(pev->origin, 40, RGB(170, 120, 160), 100, 64);
 	UTIL_ELight(entindex(), 0, pev->origin, 128, RGBA(170, 120, 160), 2, 10, MSG_PVS, pev->origin);
 
 	::RadiusDamage(pev->origin, pev, VARS(pev->owner), gSkillData.sk_kingpin_plasma_blast, ORB_ATTACK_RADIUS, CLASS_NONE, DMG_ALWAYSGIB | DMG_ENERGYBEAM);
@@ -800,19 +767,7 @@ void CKingpin::GibMonster() {
 
 	for (int i = 0; i < 2; i++) {
 		Vector sprayOri = ori + Vector(0, 0, 40 + 48 * i);
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, sprayOri);
-		WRITE_BYTE(TE_SPRITE_SPRAY);
-		WRITE_COORD(sprayOri.x);	// pos
-		WRITE_COORD(sprayOri.y);
-		WRITE_COORD(sprayOri.z);
-		WRITE_COORD(dir.x);	// dir
-		WRITE_COORD(dir.y);
-		WRITE_COORD(dir.z);
-		WRITE_SHORT(m_iSpitSprite);	// model
-		WRITE_BYTE(20);			// count
-		WRITE_BYTE(100 - 50 * i);			// speed
-		WRITE_BYTE(40 + 40 * i);			// noise ( client will divide by 100 )
-		MESSAGE_END();
+		UTIL_SpriteSpray(sprayOri, dir, m_iSpitSprite, 20, 100 - 50 * i, 40 + 40 * i);
 	}
 
 	for (int i = 0; i < 4; i++) {

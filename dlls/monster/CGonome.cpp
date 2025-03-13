@@ -556,5 +556,8 @@ void CGonomeSpit::Touch(CBaseEntity* pOther)
 	pOther->TakeDamage(pev, &pev->owner->v, gSkillData.sk_gonome_dmg_guts, DMG_GENERIC);
 
 	SetThink(&CGonomeSpit::SUB_Remove);
-	pev->nextthink = gpGlobals->time;
+	pev->nextthink = gpGlobals->time + 0.1f; // wait for sound to play
+	pev->solid = SOLID_NOT;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
 }

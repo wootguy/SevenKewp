@@ -610,66 +610,18 @@ void COsprey :: DyingThink( void )
 		Vector vecSpot = pev->origin + pev->velocity * 0.2;
 
 		// random explosions
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
-			WRITE_BYTE( TE_EXPLOSION);		// This just makes a dynamic light now
-			WRITE_COORD( vecSpot.x + RANDOM_FLOAT( -150, 150 ));
-			WRITE_COORD( vecSpot.y + RANDOM_FLOAT( -150, 150 ));
-			WRITE_COORD( vecSpot.z + RANDOM_FLOAT( -150, -50 ));
-			WRITE_SHORT( g_sModelIndexFireball );
-			WRITE_BYTE( RANDOM_LONG(0,29) + 30  ); // scale * 10
-			WRITE_BYTE( 12  ); // framerate
-			WRITE_BYTE( TE_EXPLFLAG_NONE );
-		MESSAGE_END();
+		Vector ori = vecSpot + Vector(RANDOM_FLOAT(-150, 150), RANDOM_FLOAT(-150, 150), RANDOM_FLOAT(-150, -50));
+		UTIL_Explosion(ori, g_sModelIndexFireball, RANDOM_LONG(0, 29) + 30, 12, TE_EXPLFLAG_NONE);
 
 		// lots of smoke
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
-			WRITE_BYTE( TE_SMOKE );
-			WRITE_COORD( vecSpot.x + RANDOM_FLOAT( -150, 150 ));
-			WRITE_COORD( vecSpot.y + RANDOM_FLOAT( -150, 150 ));
-			WRITE_COORD( vecSpot.z + RANDOM_FLOAT( -150, -50 ));
-			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( 100 ); // scale * 10
-			WRITE_BYTE( 10  ); // framerate
-		MESSAGE_END();
-
+		ori = vecSpot + Vector(RANDOM_FLOAT(-150, 150), RANDOM_FLOAT(-150, 150), RANDOM_FLOAT(-150, -50));
+		UTIL_Smoke(ori, g_sModelIndexSmoke, 100, 10);
 
 		vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
-			WRITE_BYTE( TE_BREAKMODEL);
 
-			// position
-			WRITE_COORD( vecSpot.x );
-			WRITE_COORD( vecSpot.y );
-			WRITE_COORD( vecSpot.z );
-
-			// size
-			WRITE_COORD( 800 );
-			WRITE_COORD( 800 );
-			WRITE_COORD( 132 );
-
-			// velocity
-			WRITE_COORD( pev->velocity.x ); 
-			WRITE_COORD( pev->velocity.y );
-			WRITE_COORD( pev->velocity.z );
-
-			// randomization
-			WRITE_BYTE( 50 ); 
-
-			// Model
-			WRITE_SHORT( m_iTailGibs );	//model id#
-
-			// # of shards
-			WRITE_BYTE( 8 );	// let client decide
-
-			// duration
-			WRITE_BYTE( 200 );// 10.0 seconds
-
-			// flags
-
-			WRITE_BYTE( BREAK_METAL );
-		MESSAGE_END();
-
-
+		int gibCount = UTIL_IsValidTempEntOrigin(vecSpot) ? 8 : 1;
+		UTIL_BreakModel(vecSpot, Vector(800, 800, 132), pev->velocity, 50,
+			m_iTailGibs, gibCount, 20, BREAK_METAL);
 
 		// don't stop it we touch a entity
 		pev->flags &= ~FL_ONGROUND;
@@ -680,62 +632,10 @@ void COsprey :: DyingThink( void )
 	{
 		Vector vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
 
-		/*
-		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-			WRITE_BYTE( TE_EXPLOSION);		// This just makes a dynamic light now
-			WRITE_COORD( vecSpot.x );
-			WRITE_COORD( vecSpot.y );
-			WRITE_COORD( vecSpot.z + 512 );
-			WRITE_SHORT( m_iExplode );
-			WRITE_BYTE( 250 ); // scale * 10
-			WRITE_BYTE( 10  ); // framerate
-		MESSAGE_END();
-		*/
-
-		// gibs
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
-			WRITE_BYTE( TE_SPRITE );
-			WRITE_COORD( vecSpot.x );
-			WRITE_COORD( vecSpot.y );
-			WRITE_COORD( vecSpot.z + 512 );
-			WRITE_SHORT( m_iExplode );
-			WRITE_BYTE( 250 ); // scale * 10
-			WRITE_BYTE( 255 ); // brightness
-		MESSAGE_END();
-
-		/*
-		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
-			WRITE_BYTE( TE_SMOKE );
-			WRITE_COORD( vecSpot.x );
-			WRITE_COORD( vecSpot.y );
-			WRITE_COORD( vecSpot.z + 300 );
-			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( 250 ); // scale * 10
-			WRITE_BYTE( 6  ); // framerate
-		MESSAGE_END();
-		*/
+		UTIL_Sprite(vecSpot, m_iExplode, 250, 255);
 
 		// blast circle
-		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
-			WRITE_BYTE( TE_BEAMCYLINDER );
-			WRITE_COORD( pev->origin.x);
-			WRITE_COORD( pev->origin.y);
-			WRITE_COORD( pev->origin.z);
-			WRITE_COORD( pev->origin.x);
-			WRITE_COORD( pev->origin.y);
-			WRITE_COORD( pev->origin.z + 2000 ); // reach damage radius over .2 seconds
-			WRITE_SHORT( m_iSpriteTexture );
-			WRITE_BYTE( 0 ); // startframe
-			WRITE_BYTE( 0 ); // framerate
-			WRITE_BYTE( 4 ); // life
-			WRITE_BYTE( 32 );  // width
-			WRITE_BYTE( 0 );   // noise
-			WRITE_BYTE( 255 );   // r, g, b
-			WRITE_BYTE( 255 );   // r, g, b
-			WRITE_BYTE( 192 );   // r, g, b
-			WRITE_BYTE( 128 ); // brightness
-			WRITE_BYTE( 0 );		// speed
-		MESSAGE_END();
+		UTIL_BeamCylinder(pev->origin, 2000, m_iSpriteTexture, 0, 0, 4, 32, 0, RGBA(255, 255, 192, 128), 0);
 
 		EMIT_SOUND(ENT(pev), CHAN_STATIC, "weapons/mortarhit.wav", 1.0, 0.3);
 
@@ -743,41 +643,8 @@ void COsprey :: DyingThink( void )
 
 		// gibs
 		vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
-		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, vecSpot );
-			WRITE_BYTE( TE_BREAKMODEL);
-
-			// position
-			WRITE_COORD( vecSpot.x );
-			WRITE_COORD( vecSpot.y );
-			WRITE_COORD( vecSpot.z + 64);
-
-			// size
-			WRITE_COORD( 800 );
-			WRITE_COORD( 800 );
-			WRITE_COORD( 128 );
-
-			// velocity
-			WRITE_COORD( m_velocity.x ); 
-			WRITE_COORD( m_velocity.y );
-			WRITE_COORD( fabs( m_velocity.z ) * 0.25 );
-
-			// randomization
-			WRITE_BYTE( 40 ); 
-
-			// Model
-			WRITE_SHORT( m_iBodyGibs );	//model id#
-
-			// # of shards
-			WRITE_BYTE( 128 );
-
-			// duration
-			WRITE_BYTE( 200 );// 10.0 seconds
-
-			// flags
-
-			WRITE_BYTE( BREAK_METAL );
-		MESSAGE_END();
-
+		UTIL_BreakModel(vecSpot, Vector(800, 800, 128), m_velocity, 40,
+			m_iBodyGibs, 128, 200, BREAK_METAL);
 		UTIL_Remove( this );
 	}
 }
@@ -788,28 +655,12 @@ void COsprey :: ShowDamage( void )
 	if (m_flLeftHealth < 0)
 	{
 		Vector vecSrc = pev->origin + gpGlobals->v_right * -340;
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
-			WRITE_BYTE( TE_SMOKE );
-			WRITE_COORD( vecSrc.x );
-			WRITE_COORD( vecSrc.y );
-			WRITE_COORD( vecSrc.z );
-			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( RANDOM_LONG(0,9) + 20 ); // scale * 10
-			WRITE_BYTE( 12 ); // framerate
-		MESSAGE_END();
+		UTIL_Smoke(vecSrc, g_sModelIndexSmoke, RANDOM_LONG(0, 9) + 20, 12);
 	}
 	if (m_flRightHealth < 0)
 	{
 		Vector vecSrc = pev->origin + gpGlobals->v_right * 340;
-		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSrc );
-			WRITE_BYTE( TE_SMOKE );
-			WRITE_COORD( vecSrc.x );
-			WRITE_COORD( vecSrc.y );
-			WRITE_COORD( vecSrc.z );
-			WRITE_SHORT( g_sModelIndexSmoke );
-			WRITE_BYTE( RANDOM_LONG(0,9) + 20 ); // scale * 10
-			WRITE_BYTE( 12 ); // framerate
-		MESSAGE_END();
+		UTIL_Smoke(vecSrc, g_sModelIndexSmoke, RANDOM_LONG(0, 9) + 20, 12);
 	}
 }
 
@@ -908,23 +759,13 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 			
 			if (ptr->iHitgroup == 1 || ptr->iHitgroup == 2 || ptr->iHitgroup == 3) {
 				Vector sprPos = pos + dir * 4;
-				MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
-				WRITE_BYTE(TE_EXPLOSION);
-				WRITE_COORD(sprPos.x);
-				WRITE_COORD(sprPos.y);
-				WRITE_COORD(sprPos.z);
+
 				if (ptr->iHitgroup == 1) {
-					WRITE_SHORT(m_iGlassHit);
-					WRITE_BYTE(12); // scale
-					WRITE_BYTE(80); // framerate
+					UTIL_Explosion(sprPos, m_iGlassHit, 12, 80, 2 | 4 | 8);
 				}
 				else {
-					WRITE_SHORT(m_iEngineHit);
-					WRITE_BYTE(6 + (flDamage / 10)); // scale
-					WRITE_BYTE(50); // framerate
+					UTIL_Explosion(sprPos, m_iEngineHit, 6 + (flDamage / 10), 50, 2 | 4 | 8);
 				}
-				WRITE_BYTE(2 | 4 | 8);
-				MESSAGE_END();
 			}
 		}
 
@@ -940,23 +781,8 @@ void COsprey::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 			}
 			dir = dir * (isBlast ? 400 : 200);
 
-			MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
-			WRITE_BYTE(TE_BREAKMODEL);
-			WRITE_COORD(pos.x);
-			WRITE_COORD(pos.y);
-			WRITE_COORD(pos.z);
-			WRITE_COORD(0);
-			WRITE_COORD(0);
-			WRITE_COORD(0);
-			WRITE_COORD(dir.x);
-			WRITE_COORD(dir.y);
-			WRITE_COORD(dir.z);
-			WRITE_BYTE(isBlast ? 30 : 15); // randomization
-			WRITE_SHORT(gibModel); // model id#
-			WRITE_BYTE(gibCount);
-			WRITE_BYTE(1);// duration 0.1 seconds
-			WRITE_BYTE(gibModel == m_iBodyGibs ? BREAK_METAL : 0); // flags
-			MESSAGE_END();
+			UTIL_BreakModel(pos, g_vecZero, dir, isBlast ? 30 : 15,
+				gibModel, gibCount, 1, gibModel == m_iBodyGibs ? BREAK_METAL : 0);
 		}
 
 		// ALERT( at_console, "%.0f\n", flDamage );

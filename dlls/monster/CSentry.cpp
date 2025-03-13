@@ -161,15 +161,8 @@ void CSentry::SentryDeath(void)
 	if (pev->dmgtime + RANDOM_FLOAT(0, 2) > gpGlobals->time)
 	{
 		// lots of smoke
-		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-		WRITE_BYTE(TE_SMOKE);
-		WRITE_COORD(vecSrc.x + RANDOM_FLOAT(-16, 16));
-		WRITE_COORD(vecSrc.y + RANDOM_FLOAT(-16, 16));
-		WRITE_COORD(vecSrc.z - 32);
-		WRITE_SHORT(g_sModelIndexSmoke);
-		WRITE_BYTE(15); // scale * 10
-		WRITE_BYTE(8); // framerate
-		MESSAGE_END();
+		Vector ori = vecSrc + Vector(RANDOM_FLOAT(-16, 16), RANDOM_FLOAT(-16, 16), -32);
+		UTIL_Smoke(ori, g_sModelIndexSmoke, 15, 8);
 	}
 
 	if (pev->dmgtime + RANDOM_FLOAT(0, 8) > gpGlobals->time)

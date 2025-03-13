@@ -13,6 +13,7 @@
 #include "CItemInventory.h"
 #include "CBasePlayer.h"
 #include "explode.h"
+#include "te_effects.h"
 
 extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;
@@ -260,7 +261,8 @@ void CBaseEntity::Killed(entvars_t* pevAttacker, int iGib)
 {
 	pev->takedamage = DAMAGE_NO;
 	pev->deadflag = DEAD_DEAD;
-	UTIL_Remove(this);
+	SetThink(&CBaseEntity::SUB_Remove);
+	pev->nextthink = gpGlobals->time;
 }
 
 CBaseEntity* CBaseEntity::GetNextTarget(void)
@@ -594,19 +596,19 @@ int CBaseEntity::IsDormant(void)
 BOOL CBaseEntity::IsInWorld(void)
 {
 	// position 
-	if (pev->origin.x >= 8192) return FALSE;
-	if (pev->origin.y >= 8192) return FALSE;
-	if (pev->origin.z >= 8192) return FALSE;
-	if (pev->origin.x <= -8192) return FALSE;
-	if (pev->origin.y <= -8192) return FALSE;
-	if (pev->origin.z <= -8192) return FALSE;
+	if (pev->origin.x > MAX_ENT_COORD) return FALSE;
+	if (pev->origin.y > MAX_ENT_COORD) return FALSE;
+	if (pev->origin.z > MAX_ENT_COORD) return FALSE;
+	if (pev->origin.x < -MAX_ENT_COORD) return FALSE;
+	if (pev->origin.y < -MAX_ENT_COORD) return FALSE;
+	if (pev->origin.z < -MAX_ENT_COORD) return FALSE;
 	// speed
-	if (pev->velocity.x >= 2000) return FALSE;
-	if (pev->velocity.y >= 2000) return FALSE;
-	if (pev->velocity.z >= 2000) return FALSE;
-	if (pev->velocity.x <= -2000) return FALSE;
-	if (pev->velocity.y <= -2000) return FALSE;
-	if (pev->velocity.z <= -2000) return FALSE;
+	if (pev->velocity.x > 4096) return FALSE;
+	if (pev->velocity.y > 4096) return FALSE;
+	if (pev->velocity.z > 4096) return FALSE;
+	if (pev->velocity.x < -4096) return FALSE;
+	if (pev->velocity.y < -4096) return FALSE;
+	if (pev->velocity.z < -4096) return FALSE;
 
 	return TRUE;
 }
@@ -909,15 +911,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 			case BULLET_MONSTER_12MM:
 			case BULLET_PLAYER_556:
 			default:
-				MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, vecTracerSrc);
-				WRITE_BYTE(TE_TRACER);
-				WRITE_COORD(vecTracerSrc.x);
-				WRITE_COORD(vecTracerSrc.y);
-				WRITE_COORD(vecTracerSrc.z);
-				WRITE_COORD(tr.vecEndPos.x);
-				WRITE_COORD(tr.vecEndPos.y);
-				WRITE_COORD(tr.vecEndPos.z);
-				MESSAGE_END();
+				UTIL_Tracer(vecTracerSrc, tr.vecEndPos);
 				break;
 			}
 		}
@@ -930,8 +924,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 			{
 				pEntity->TraceAttack(pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? DMG_ALWAYSGIB : DMG_NEVERGIB));
 
-				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-				DecalGunshot(&tr, iBulletType);
+				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 			}
 			else switch (iBulletType)
 			{
@@ -939,32 +932,28 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 			case BULLET_MONSTER_9MM:
 				pEntity->TraceAttack(pevAttacker, gSkillData.sk_9mm_bullet, vecDir, &tr, DMG_BULLET);
 
-				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-				DecalGunshot(&tr, iBulletType);
+				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 
 				break;
 
 			case BULLET_MONSTER_MP5:
 				pEntity->TraceAttack(pevAttacker, gSkillData.sk_9mmAR_bullet, vecDir, &tr, DMG_BULLET);
 
-				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-				DecalGunshot(&tr, iBulletType);
+				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 
 				break;
 
 			case BULLET_PLAYER_556:
 				pEntity->TraceAttack(pevAttacker, gSkillData.sk_556_bullet, vecDir, &tr, DMG_BULLET);
 
-				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-				DecalGunshot(&tr, iBulletType);
+				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 
 				break;
 
 			case BULLET_MONSTER_762:
 				pEntity->TraceAttack(pevAttacker, gSkillData.sk_762_bullet, vecDir, &tr, DMG_BULLET);
 
-				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-				DecalGunshot(&tr, iBulletType);
+				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 
 				break;
 
@@ -972,8 +961,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 				pEntity->TraceAttack(pevAttacker, gSkillData.sk_12mm_bullet, vecDir, &tr, DMG_BULLET);
 				if (!tracer)
 				{
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot(&tr, iBulletType);
+					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 				}
 				break;
 
@@ -1102,8 +1090,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			{
 				pEntity->TraceAttack(pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? DMG_ALWAYSGIB : DMG_NEVERGIB));
 
-				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-				DecalGunshot(&tr, iBulletType);
+				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 			}
 			else switch (iBulletType)
 			{
@@ -1735,6 +1722,7 @@ void CBaseEntity::Precache(void) {
 		if (m_breakModel)
 			pGibName = STRING(m_breakModel);
 
+		m_breakModel = ALLOC_STRING(pGibName);
 		m_breakModelId = PRECACHE_MODEL((char*)pGibName);
 	}
 }
@@ -1830,39 +1818,7 @@ void CBaseEntity::BreakableDie(CBaseEntity* pActivator) {
 	}
 
 	vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
-	MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, vecSpot);
-	WRITE_BYTE(TE_BREAKMODEL);
-
-	// position
-	WRITE_COORD(vecSpot.x);
-	WRITE_COORD(vecSpot.y);
-	WRITE_COORD(vecSpot.z);
-
-	// size
-	WRITE_COORD(pev->size.x);
-	WRITE_COORD(pev->size.y);
-	WRITE_COORD(pev->size.z);
-
-	// velocity
-	WRITE_COORD(vecVelocity.x);
-	WRITE_COORD(vecVelocity.y);
-	WRITE_COORD(vecVelocity.z);
-
-	// randomization
-	WRITE_BYTE(10);
-
-	// Model
-	WRITE_SHORT(m_breakModelId);	//model id#
-
-	// # of shards
-	WRITE_BYTE(0);	// let client decide
-
-	// duration
-	WRITE_BYTE(25);// 2.5 seconds
-
-	// flags
-	WRITE_BYTE(cFlag);
-	MESSAGE_END();
+	UTIL_BreakModel(vecSpot, pev->size, vecVelocity, 10, m_breakModelId, 0, 25, cFlag);
 
 	float size = pev->size.x;
 	if (size < pev->size.y)
@@ -1893,10 +1849,11 @@ void CBaseEntity::BreakableDie(CBaseEntity* pActivator) {
 		ExplosionCreate(Center(), pev->angles, edict(), m_breakExplodeMag, TRUE);
 	}
 
-	pev->solid = SOLID_NOT;
-
 	SetThink(&CBaseEntity::SUB_Remove);
-	pev->nextthink = pev->ltime + 0.1f; // give time for damage sound(?)
+	pev->nextthink = pev->ltime + 0.1f; // give time for damage sound (in case origin is out of bounds)
+	pev->solid = SOLID_NOT;
+	pev->rendermode = kRenderTransTexture;
+	pev->renderamt = 0;
 
 	// Don't fire something that could fire myself
 	pev->targetname = 0;
