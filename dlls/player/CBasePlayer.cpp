@@ -56,6 +56,7 @@
 #include "CGamePlayerEquip.h"
 #include "CBaseButton.h"
 #include "te_effects.h"
+#include "CGib.h"
 
 // #define DUCKFIX
 
@@ -4103,7 +4104,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 	case 102:
 		RETURN_IF_CHEATS_DISABLED()
 		// Gibbage!!!
-		CGib::SpawnRandomGibs( pev, 1, 1 );
+		CGib::SpawnMonsterGibs( pev, 1, 1 );
 		break;
 
 	case 103:

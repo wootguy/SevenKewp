@@ -761,6 +761,7 @@ void UTIL_Sprite(const Vector& position, int sprIndex, uint8_t scale, uint8_t op
 		spr->pev->rendermode = kRenderTransAdd;
 		spr->pev->renderamt = opacity;
 		spr->pev->scale = scale * 0.1f;
+		spr->TurnOn();
 	}
 }
 
@@ -980,6 +981,15 @@ void UTIL_DLight(Vector pos, uint8_t radius, RGB color, uint8_t time, uint8_t de
 		ent->SetThink(&CBaseEntity::SUB_Remove);
 		ent->pev->nextthink = gpGlobals->time + time * 0.1f;
 	}
+}
+
+void UTIL_TempSound(Vector pos, const char* sample, float volume, float attenuation, int flags, int pitch) {
+	CBaseEntity* ent = CBaseEntity::Create("te_target", pos, g_vecZero, true);
+
+	EMIT_SOUND_DYN(ent->edict(), CHAN_WEAPON, sample, volume, attenuation, flags, pitch);
+
+	ent->SetThink(&CBaseEntity::SUB_Remove);
+	ent->pev->nextthink = gpGlobals->time + 0.1f;
 }
 
 void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage)

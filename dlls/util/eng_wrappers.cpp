@@ -475,7 +475,14 @@ int PRECACHE_REPLACEMENT_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
 
-	if (!mp_mergemodels.value || g_modelReplacements.get(path)) {
+	const char* mapReplacement = g_modelReplacements.get(path);
+	const char* modReplacement = g_modelReplacementsMod.get(path);
+	if (!mapReplacement) mapReplacement = "";
+	if (!modReplacement) modReplacement = "";
+
+	// only precache the model if the model is replaced with something
+	// the mod doesn't already replace it with.
+	if (!mp_mergemodels.value || strcmp(mapReplacement, modReplacement)) {
 		return PRECACHE_MODEL_ENT(ent, path);
 	}
 

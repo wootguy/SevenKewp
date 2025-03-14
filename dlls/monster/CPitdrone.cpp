@@ -746,7 +746,7 @@ void CPitdrone :: Precache()
 
 	m_defaultModel = "models/pit_drone.mdl";
 	PRECACHE_MODEL(GetModel());
-	PRECACHE_MODEL("models/pit_drone_gibs.mdl" );
+	PRECACHE_REPLACEMENT_MODEL("models/pit_drone_gibs.mdl" );
 
 	UTIL_PrecacheOther( "pitdronespike" );
 	
@@ -1272,7 +1272,7 @@ void CPitdrone::GibMonster()
 	if( CVAR_GET_FLOAT( "violence_agibs" ) != 0 )	// Should never get here, but someone might call it directly
 	{
 		//Note: the original doesn't check for German censorship
-		CGib::SpawnRandomGibs( pev, 6, "models/pit_drone_gibs.mdl", 7, 0 );	// Throw alien gibs
+		CGib::SpawnRandomMergedGibs( pev, 6, MERGE_MDL_PIT_DRONE_GIBS, 0 );	// Throw alien gibs
 	}
 
 	// don't remove players!

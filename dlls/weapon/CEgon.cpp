@@ -87,7 +87,6 @@ void CEgon::Precache( void )
 	m_defaultModelW = "models/w_egon.mdl";
 	CBasePlayerWeapon::Precache();
 
-	PRECACHE_MODEL("models/w_9mmclip.mdl");
 	PRECACHE_SOUND("items/9mmclip1.wav");
 
 	PRECACHE_SOUND( EGON_SOUND_OFF );

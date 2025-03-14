@@ -787,7 +787,7 @@ EXPORT float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
 EXPORT float UTIL_WeaponTimeBase( void );
 
 EXPORT void InitEdictRelocations();
-EXPORT void PrintEntindexStats();
+EXPORT void PrintEntindexStats(bool showCounts=false);
 EXPORT CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity);
 
 // returns false if the entity index would overflow the client, and prints an error message in that case

@@ -16,6 +16,7 @@
 class CFuncMonsterClip : public CFuncWall
 {
 public:
+	int		GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void	Spawn(void);
 	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {}		// Clear out func_wall's use function
 };

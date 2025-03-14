@@ -307,8 +307,8 @@ void freespace_command() {
 void list_precached_sounds() {
 	std::vector<std::string> allSounds;
 
-	HashMap<int>::iterator_t iter;
-	while (g_precachedSounds.iterate(iter)) {
+	StringSet::iterator_t iter;
+	while (g_tryPrecacheSounds.iterate(iter)) {
 		allSounds.push_back(iter.key);
 	}
 
@@ -319,21 +319,34 @@ void list_precached_sounds() {
 	}
 }
 
-void test_command() {
-	int id = GetUserMsgInfo("VoiceMask", NULL);
+void list_precached_models() {
+	std::vector<std::string> allModels;
 
-	MESSAGE_BEGIN(MSG_ALL, id);
-	int dw;
-	for (dw = 0; dw < VOICE_MAX_PLAYERS_DW; dw++)
-	{
-		WRITE_LONG(0);
-		WRITE_LONG(0);
+	StringSet::iterator_t iter;
+	while (g_tryPrecacheModels.iterate(iter)) {
+		allModels.push_back(iter.key);
 	}
-	MESSAGE_END();
+
+	sort(allModels.begin(), allModels.end());
+
+	for (std::string item : allModels) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", item.c_str()));
+	}
+}
+
+void test_command() {
 }
 
 void cfg_exec_finished() {
 	g_cfgsExecuted = true;
+}
+
+void PrintEdictStatsCmd() {
+	PrintEntindexStats(false);
+}
+
+void PrintEdictStatsCmd2() {
+	PrintEntindexStats(true);
 }
 
 // Register your console variables here
@@ -344,7 +357,8 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("dcache", dump_missing_files);
 	g_engfuncs.pfnAddServerCommand("dmiss", dump_missing_files);
 	g_engfuncs.pfnAddServerCommand("cfg_exec_finished", cfg_exec_finished);
-	g_engfuncs.pfnAddServerCommand("edicts", PrintEntindexStats);
+	g_engfuncs.pfnAddServerCommand("edicts", PrintEdictStatsCmd);
+	g_engfuncs.pfnAddServerCommand("edictstats", PrintEdictStatsCmd2);
 	g_engfuncs.pfnAddServerCommand("reloadplugins", reload_plugins);
 	g_engfuncs.pfnAddServerCommand("listplugins", list_plugins);
 	g_engfuncs.pfnAddServerCommand("removeplugin", remove_plugin);
@@ -352,7 +366,8 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("updateplugin", update_plugin);
 	g_engfuncs.pfnAddServerCommand("updateplugins", update_plugins);
 	g_engfuncs.pfnAddServerCommand("freespace", freespace_command);
-	g_engfuncs.pfnAddServerCommand("listsounds", list_precached_sounds);
+	g_engfuncs.pfnAddServerCommand("sounds", list_precached_sounds);
+	g_engfuncs.pfnAddServerCommand("models", list_precached_models);
 	
 	// Register cvars here:
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );

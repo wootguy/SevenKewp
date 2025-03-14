@@ -484,9 +484,6 @@ void CRpg::Spawn( )
 
 void CRpg::Precache( void )
 {
-	PRECACHE_MODEL("models/w_rpg.mdl");
-	PRECACHE_MODEL("models/v_rpg.mdl");
-	PRECACHE_MODEL("models/p_rpg.mdl");
 	m_defaultModelV = "models/v_rpg.mdl";
 	m_defaultModelP = "models/p_rpg.mdl";
 	m_defaultModelW = "models/w_rpg.mdl";

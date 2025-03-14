@@ -169,15 +169,18 @@ void CSprite::TurnOff(void)
 void CSprite::TurnOn(void)
 {
 	pev->effects = 0;
-	if ((pev->framerate && m_maxFrame > 1.0) || (pev->spawnflags & (SF_SPRITE_ONCE | SF_SPRITE_ONCE_AND_REMOVE)))
+
+	bool removeAfterPlay = pev->spawnflags & (SF_SPRITE_ONCE | SF_SPRITE_ONCE_AND_REMOVE);
+	if (m_maxFrame <= 1.0 && removeAfterPlay) {
+		SetThink(&CSprite::SUB_Remove);
+		pev->nextthink = gpGlobals->time + (pev->framerate ? (1.0f / pev->framerate) : 0.1f);
+		pev->movetype = MOVETYPE_NONE; // appear faster
+	}
+	else if ((pev->framerate && m_maxFrame > 1.0) || removeAfterPlay)
 	{
 		SetThink(&CSprite::AnimateThink);
 		pev->nextthink = gpGlobals->time;
 		m_lastTime = gpGlobals->time;
-	}
-	if (m_maxFrame <= 1.0) {
-		SetThink(&CSprite::SUB_Remove);
-		pev->nextthink = 1.0f / pev->framerate;
 	}
 	pev->frame = 0;
 }

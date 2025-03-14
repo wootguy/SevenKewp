@@ -864,11 +864,11 @@
 #define SF_ITEM_USE_WITHOUT_LOS 512 // Player can pick up this item even when it's not within his line of sight.
 
 // subfolders created to separate mod files from vanilla HL files
-#define MOD_MODEL_FOLDER "hlcoop_v2/"
 #define MOD_SPRITE_FOLDER "hlcoop/"
 
-#define NOT_PRECACHED_MODEL "models/" MOD_MODEL_FOLDER "not_precached.mdl"
-#define MERGED_ITEMS_MODEL "models/" MOD_MODEL_FOLDER "w_items_v2.mdl"
+#define NOT_PRECACHED_MODEL "models/not_precached.mdl"
+#define MERGED_ITEMS_MODEL "models/w_items_v2.mdl"
+#define MERGED_GIBS_MODEL "models/gibs.mdl"
 #define NOT_PRECACHED_SOUND "common/null.wav"
 #define MAX_PRECACHE 512
 #define MAX_PRECACHE_SOUND 511
