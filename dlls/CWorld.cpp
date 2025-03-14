@@ -252,8 +252,10 @@ void CWorld::Precache(void)
 
 	PRECACHE_MODEL(NOT_PRECACHED_MODEL);
 
-	if (mp_mergemodels.value)
+	if (mp_mergemodels.value) {
 		PRECACHE_MODEL(MERGED_ITEMS_MODEL);
+		PRECACHE_MODEL(MERGED_GIBS_MODEL);
+	}
 
 	g_Language = (int)CVAR_GET_FLOAT("sv_language");
 	if (g_Language == LANGUAGE_GERMAN)
@@ -262,8 +264,8 @@ void CWorld::Precache(void)
 	}
 	else
 	{
-		PRECACHE_MODEL("models/hgibs.mdl");
-		PRECACHE_MODEL("models/agibs.mdl");
+		PRECACHE_REPLACEMENT_MODEL("models/hgibs.mdl");
+		PRECACHE_REPLACEMENT_MODEL("models/agibs.mdl");
 	}
 
 	PRECACHE_SOUND("weapons/distant/crack_9mm.wav");

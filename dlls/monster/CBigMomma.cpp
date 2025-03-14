@@ -642,9 +642,9 @@ void CBigMomma::GibMonster()
 
 	if (CVAR_GET_FLOAT("violence_agibs") != 0)
 	{
-		CGib::SpawnRandomGibs(pev, 1, "models/bm_sack.mdl", 1, 0);
-		CGib::SpawnRandomGibs(pev, 1, "models/bm_shell.mdl", 1, 0);
-		CGib::SpawnRandomGibs(pev, 4, "models/bm_leg.mdl", 1, 0);
+		CGib::SpawnRandomMergedGibs(pev, 1, MERGE_MDL_BM_SACK, 0);
+		CGib::SpawnRandomMergedGibs(pev, 1, MERGE_MDL_BM_SHELL, 0);
+		CGib::SpawnRandomMergedGibs(pev, 4, MERGE_MDL_BM_LEG, 0);
 	}
 
 	// don't remove players!
@@ -745,10 +745,9 @@ void CBigMomma :: Precache()
 	m_defaultModel = "models/big_mom.mdl";
 	PRECACHE_MODEL(GetModel());
 
-	// TODO: combine these into one model
-	PRECACHE_MODEL("models/bm_sack.mdl");
-	PRECACHE_MODEL("models/bm_leg.mdl");
-	PRECACHE_MODEL("models/bm_shell.mdl");
+	PRECACHE_REPLACEMENT_MODEL("models/bm_sack.mdl");
+	PRECACHE_REPLACEMENT_MODEL("models/bm_leg.mdl");
+	PRECACHE_REPLACEMENT_MODEL("models/bm_shell.mdl");
 
 	PRECACHE_SOUND_ARRAY( pChildDieSounds );
 	PRECACHE_SOUND_ARRAY( pSackSounds );

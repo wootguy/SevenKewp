@@ -215,6 +215,13 @@ void CAmbientGeneric::Precache(void)
 	}
 }
 
+int	CAmbientGeneric::GetEntindexPriority() {
+	char* szSoundFile = (char*)STRING(pev->message);
+	bool isGlobalMp3 = toLowerCase(szSoundFile).find(".mp3") == strlen(szSoundFile) - 4;
+
+	return isGlobalMp3 ? ENTIDX_PRIORITY_LOW : ENTIDX_PRIORITY_NORMAL;
+}
+
 // RampThink - Think at 5hz if we are dynamically modifying 
 // pitch or volume of the playing sound.  This function will
 // ramp pitch and/or volume up or down, modify pitch/volume

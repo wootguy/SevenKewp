@@ -348,7 +348,7 @@ void CShockTrooper::GibMonster()
 
 	if (CVAR_GET_FLOAT("violence_agibs") != 0) // Should never get here, but someone might call it directly
 	{
-		CGib::SpawnRandomGibs( pev, 6, "models/strooper_gibs.mdl", 8, 0 );	// Throw alien gibs
+		CGib::SpawnRandomMergedGibs( pev, 6, MERGE_MDL_STROOPER_GIBS, 0 );	// Throw alien gibs
 	}
 
 	// don't remove players!
@@ -1077,7 +1077,7 @@ void CShockTrooper::Precache()
 
 	m_defaultModel = "models/strooper.mdl";
 	PRECACHE_MODEL(GetModel());
-	PRECACHE_MODEL("models/strooper_gibs.mdl");
+	PRECACHE_REPLACEMENT_MODEL("models/strooper_gibs.mdl");
 
 	PRECACHE_SOUND("weapons/shock_fire.wav");
 	PRECACHE_SOUND("shocktrooper/shock_trooper_attack.wav");

@@ -5,11 +5,39 @@
 #include "decals.h"
 #include "animation.h"
 #include "CBreakable.h"
+#include "CGib.h"
 
 #define GERMAN_GIB_COUNT		4
 #define	HUMAN_GIB_COUNT			6
 #define ALIEN_GIB_COUNT			4
 
+GibInfo g_gibInfo[MERGE_MDL_GIB_MODELS] = {
+	{"models/agibs.mdl",				0,		4	},
+	{"models/bigshrapnel.mdl",			4,		3	},
+	{"models/blkop_bodygibs.mdl",		7,		17	},
+	{"models/blkop_enginegibs.mdl",		24,		11	},
+	{"models/blkop_tailgibs.mdl",		35,		8	},
+	{"models/bm_leg.mdl",				43,		1	},
+	{"models/bm_sack.mdl",				44,		1	},
+	{"models/bm_shell.mdl",				45,		1	},
+	{"models/ceilinggibs.mdl",			46,		4	},
+	{"models/chromegibs.mdl",			50,		10	},
+	{"models/cindergibs.mdl",			60,		5	},
+	{"models/computergibs.mdl",			65,		13	},
+	{"models/fleshgibs.mdl",			78,		4	},
+	{"models/glassgibs.mdl",			82,		7	},
+	{"models/hgibs.mdl",				89,		11	},
+	{"models/mechgibs.mdl",				100,	5	},
+	{"models/metalplategibs_green.mdl",	105,	11	},
+	{"models/metalplategibs.mdl",		116,	11	},
+	{"models/osprey_bodygibs.mdl",		127,	17	},
+	{"models/osprey_enginegibs.mdl",	144,	11	},
+	{"models/osprey_tailgibs.mdl",		155,	8	},
+	{"models/pit_drone_gibs.mdl",		163,	7	},
+	{"models/strooper_gibs.mdl",		170,	8	},
+	{"models/vgibs.mdl",				178,	9	},
+	{"models/woodgibs.mdl",				187,	3	},
+};
 
 // HACKHACK -- The gib velocity equations don't work
 void CGib::LimitVelocity(void)
@@ -103,8 +131,14 @@ void CGib::SpawnHeadGib(entvars_t* pevVictim)
 	}
 	else
 	{
-		pGib->Spawn("models/hgibs.mdl");// throw one head
-		pGib->pev->body = 0;
+		if (mp_mergemodels.value) {
+			pGib->Spawn(MERGED_GIBS_MODEL);// throw one head
+			pGib->pev->body = g_gibInfo[MERGE_MDL_HGIBS].mergeOffset;
+		}
+		else {
+			pGib->Spawn("models/hgibs.mdl");// throw one head
+			pGib->pev->body = 0;
+		}
 	}
 
 	if (pevVictim)
@@ -153,7 +187,8 @@ void CGib::SpawnHeadGib(entvars_t* pevVictim)
 	pGib->LimitVelocity();
 }
 
-void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, const char* gibModel, int gibModelBodyGroups, int bodyGroupSkip) {
+void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, const char* gibModel, int gibModelBodyGroups,
+	int bodyGroupSkip, int bodyOffset) {
 	int cSplat;
 
 	for (cSplat = 0; cSplat < cGibs; cSplat++)
@@ -161,7 +196,7 @@ void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, const char* gibModel
 		CGib* pGib = GetClassPtr((CGib*)NULL);
 
 		pGib->Spawn(gibModel);
-		pGib->pev->body = RANDOM_LONG(bodyGroupSkip, gibModelBodyGroups - 1);
+		pGib->pev->body = RANDOM_LONG(bodyOffset + bodyGroupSkip, bodyOffset + gibModelBodyGroups - 1);
 
 		if (pevVictim)
 		{
@@ -205,11 +240,26 @@ void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, const char* gibModel
 	}
 }
 
-void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, int human)
+void CGib::SpawnRandomMergedGibs(entvars_t* pevVictim, int cGibs, int gibModel, int bodyGroupSkip) {
+	if (gibModel < 0 || gibModel >= ARRAY_SZ(g_gibInfo)) {
+		return;
+	}
+
+	const GibInfo& info = g_gibInfo[gibModel];
+
+	if (mp_mergemodels.value) {
+		SpawnRandomGibs(pevVictim, cGibs, MERGED_GIBS_MODEL, info.bodyCount, bodyGroupSkip, info.mergeOffset);
+	}
+	else {
+		SpawnRandomGibs(pevVictim, cGibs, info.model, info.bodyCount, bodyGroupSkip, 0);
+	}
+}
+
+void CGib::SpawnMonsterGibs(entvars_t* pevVictim, int cGibs, int human)
 {
 	if (g_Language == LANGUAGE_GERMAN)
 	{
-		SpawnRandomGibs(pevVictim, cGibs, "models/germangibs.mdl", GERMAN_GIB_COUNT, 0);
+		SpawnRandomGibs(pevVictim, cGibs, "models/germangibs.mdl", GERMAN_GIB_COUNT, 0, 0);
 	}
 	else
 	{
@@ -217,12 +267,12 @@ void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, int human)
 		{
 			// human pieces
 			// starts at one to avoid throwing random amounts of skulls (0th gib)
-			SpawnRandomGibs(pevVictim, cGibs, "models/hgibs.mdl", GERMAN_GIB_COUNT, 1);
+			SpawnRandomMergedGibs(pevVictim, cGibs, MERGE_MDL_HGIBS, 1);
 		}
 		else
 		{
 			// aliens
-			SpawnRandomGibs(pevVictim, cGibs, "models/agibs.mdl", ALIEN_GIB_COUNT, 1);
+			SpawnRandomMergedGibs(pevVictim, cGibs, MERGE_MDL_AGIBS, 1);
 		}
 	}
 }

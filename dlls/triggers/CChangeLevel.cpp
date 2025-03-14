@@ -22,7 +22,7 @@ public:
 	void EXPORT ExecuteChangeLevel(void);
 	void EXPORT TouchChangeLevel(CBaseEntity* pOther);
 	void ChangeLevelNow(CBaseEntity* pActivator);
-	int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // in case it's made solid
+	int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // in case it's made solid by nomaptrans
 
 
 	static edict_t* FindLandmark(const char* pLandmarkName);

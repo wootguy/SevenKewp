@@ -1,4 +1,5 @@
 #pragma once
+#include "CGib.h"
 
 #define	SF_GIBSHOOTER_REPEATABLE	1 // allows a gibshooter to be refired
 

@@ -19,6 +19,7 @@
 #include "CBasePlayer.h"
 #include "CSprite.h"
 #include "te_effects.h"
+#include "CGib.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -4222,7 +4223,7 @@ void CBaseMonster::GibMonster(void)
 		if (CVAR_GET_FLOAT("violence_hgibs") != 0)	// Only the player will ever get here
 		{
 			CGib::SpawnHeadGib(pev);
-			CGib::SpawnRandomGibs(pev, 4, 1);	// throw some human gibs.
+			CGib::SpawnMonsterGibs(pev, 4, 1);	// throw some human gibs.
 		}
 		gibbed = TRUE;
 	}
@@ -4230,7 +4231,7 @@ void CBaseMonster::GibMonster(void)
 	{
 		if (CVAR_GET_FLOAT("violence_agibs") != 0)	// Should never get here, but someone might call it directly
 		{
-			CGib::SpawnRandomGibs(pev, 4, 0);	// Throw alien gibs
+			CGib::SpawnMonsterGibs(pev, 4, 0);	// Throw alien gibs
 		}
 		gibbed = TRUE;
 	}

@@ -127,6 +127,7 @@ set(ENV_HDR
 	env/CSoundEnt.h
 	env/CSprayCan.h
 	env/CSprite.h
+	env/CGib.h
 	env/decals.h
 	env/effects.h
 	env/explode.h

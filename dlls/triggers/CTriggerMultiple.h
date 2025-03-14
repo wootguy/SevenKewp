@@ -19,6 +19,5 @@ if a trigger has a NETNAME, that NETNAME will become the TARGET of the triggered
 class CTriggerMultiple : public CBaseTrigger
 {
 public:
-	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // for ActivateMultiTrigger sound
 	void Spawn(void);
 };

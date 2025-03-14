@@ -5,6 +5,7 @@
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
 #include "CBaseTrigger.h"
+#include "te_effects.h"
 
 LINK_ENTITY_TO_CLASS(trigger, CBaseTrigger)
 
@@ -138,8 +139,9 @@ void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator, bool isUntouch)
 		gpGlobals->found_secrets++;
 	}
 
-	if (!FStringNull(pev->noise))
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noise), 1, ATTN_NORM);
+	if (!FStringNull(pev->noise)) {
+		UTIL_TempSound(pev->origin, STRING(pev->noise));
+	}
 
 	// don't trigger again until reset
 	// pev->takedamage = DAMAGE_NO;

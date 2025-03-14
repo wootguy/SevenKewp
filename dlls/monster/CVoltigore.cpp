@@ -23,7 +23,6 @@
 
 #define VOLTI_SHOCK_SPRITE "sprites/blueflare2.spr"
 #define VOLTI_BEAM_SPRITE "sprites/lgtning.spr"
-#define VOLTI_GIB_MODEL "models/vgibs.mdl"
 #define VOLTI_SPORE_EXPLODE_SPRITE "sprites/spore_exp_01.spr"
 #define VOLTI_SPORE_EXPLODE_SPRITE2 "sprites/tinyspit.spr"
 #define VOLTI_SPORE_EXPLODE_SOUND "weapons/splauncher_impact.wav"
@@ -328,7 +327,7 @@ void CVoltigore::Precache()
 
 	m_defaultModel = "models/voltigore.mdl";
 	PRECACHE_MODEL(GetModel());
-	PRECACHE_MODEL(VOLTI_GIB_MODEL);
+	PRECACHE_REPLACEMENT_MODEL("models/vgibs.mdl");
 	PRECACHE_MODEL(VOLTI_BEAM_SPRITE);
 	PRECACHE_MODEL(VOLTI_SHOCK_SPRITE);
 	PRECACHE_MODEL(VOLTI_SPORE_EXPLODE_SPRITE);
@@ -377,7 +376,7 @@ void CVoltigore::ExplodeThink(void) {
 		pev->health = -100; // speeds up the gibs
 		g_vecAttackDir = Vector(0,0,-1);
 		pev->absmin.z += 16; // prevent gibs from spawning inside the floor
-		CGib::SpawnRandomGibs(pev, 10, VOLTI_GIB_MODEL, 9, 0);
+		CGib::SpawnRandomMergedGibs(pev, 10, MERGE_MDL_VGIBS, 0);
 
 		CSprite* expSprite = CSprite::SpriteCreate(VOLTI_SPORE_EXPLODE_SPRITE, pev->origin + Vector(0,0,64), TRUE);
 		expSprite->SetScale(4.0f);

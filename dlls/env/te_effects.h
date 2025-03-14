@@ -50,6 +50,9 @@ EXPORT void DecalGunshot(TraceResult* pTrace, int iBulletType, bool playTextureS
 EXPORT void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage);
 EXPORT int DamageDecal(CBaseEntity* pEntity, int bitsDamageType);
 
+// create a new entity which plays a sound and then kills itself. Not for use with looping sounds.
+EXPORT void UTIL_TempSound(Vector pos, const char* sample, float volume=1.0f, float attenuation=ATTN_NORM, int flags=0, int pitch=100);
+
 class CTeBeamRing : public CBaseEntity
 {
 public:

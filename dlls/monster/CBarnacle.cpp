@@ -21,6 +21,7 @@
 #include	"monsters.h"
 #include	"schedule.h"
 #include "monster/CBaseMonster.h"
+#include "CGib.h"
 
 #define	BARNACLE_BODY_HEIGHT	44 // how 'tall' the barnacle's model is.
 #define BARNACLE_KILL_VICTIM_DELAY	5 // how many seconds after pulling prey in to gib them. 
@@ -112,7 +113,7 @@ void CBarnacle :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	switch( pEvent->event )
 	{
 	case BARNACLE_AE_PUKEGIB:
-		CGib::SpawnRandomGibs( pev, 1, 1 );	
+		CGib::SpawnMonsterGibs( pev, 1, 1 );
 		break;
 	default:
 		CBaseMonster::HandleAnimEvent( pEvent );
@@ -275,7 +276,7 @@ void CBarnacle :: BarnacleThink ( void )
 		if ( m_cGibs && RANDOM_LONG(0,99) == 1 )
 		{
 			// cough up a gib.
-			CGib::SpawnRandomGibs( pev, 1, 1 );
+			CGib::SpawnMonsterGibs( pev, 1, 1 );
 			m_cGibs--;
 
 			EMIT_SOUND(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pChewSounds), 1, ATTN_NORM);

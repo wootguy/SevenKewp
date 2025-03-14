@@ -284,7 +284,7 @@ void DoSpark(entvars_t* pev, const Vector& location)
 	UTIL_Sparks(tmp);
 
 	float flVolume = RANDOM_FLOAT(0.25, 0.75) * 0.4;//random volume range
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(g_sparkSounds), flVolume, ATTN_NORM);
+	UTIL_TempSound(pev->origin, RANDOM_SOUND_ARRAY(g_sparkSounds), flVolume);
 }
 
 void CBaseButton::ButtonSpark(void)

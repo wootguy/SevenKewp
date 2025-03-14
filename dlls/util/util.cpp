@@ -2202,7 +2202,7 @@ void InitEdictRelocations() {
 	}
 }
 
-void PrintEntindexStats() {
+void PrintEntindexStats(bool showCounts) {
 	int totalFreeLowPrio = 0;
 	int totalFreeNormalPrio = 0;
 	int lowPrioMin = sv_max_client_edicts ? sv_max_client_edicts->value : MAX_LEGACY_CLIENT_ENTS;
@@ -2224,6 +2224,47 @@ void PrintEntindexStats() {
 		gpGlobals->maxEntities - totalFree, gpGlobals->maxEntities,
 		totalNormalSlots - totalFreeNormalPrio, totalNormalSlots,
 		totalLowSlots - totalFreeLowPrio, totalLowSlots));
+
+	if (showCounts) {
+		HashMap<int> normalEnts;
+
+		edict_t* edicts = ENT(0);
+		for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++) {
+			CBaseEntity* ent = CBaseEntity::Instance(INDEXENT(i));
+
+			if (!FNullEnt(ent) && ent->GetEntindexPriority() == ENTIDX_PRIORITY_NORMAL) {
+				int* val = normalEnts.get(STRING(ent->pev->classname));
+				normalEnts.put(STRING(ent->pev->classname), val ? *val + 1 : 1);
+			}
+		}
+
+		struct EdictStat {
+			const char* name;
+			int count;
+		};
+
+		std::vector<EdictStat> sortedStats;
+
+		int totalNorm = 0;
+		HashMap<int>::iterator_t it;
+		while (normalEnts.iterate(it)) {
+			EdictStat statz;
+			statz.name = it.key;
+			statz.count = *it.value;
+			totalNorm += *it.value;
+			sortedStats.push_back(statz);
+		}
+
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Normal priority edicts (%d):\n", totalNorm));
+
+		std::sort(sortedStats.begin(), sortedStats.end(), [](const EdictStat& a, const EdictStat& b) {
+			return a.count > b.count;
+		});
+
+		for (EdictStat& statz : sortedStats) {
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("%-32s: %d\n", statz.name, statz.count));
+		}
+	}
 }
 
 // Moves an entity somewhere else in the edict list, based on its priority.

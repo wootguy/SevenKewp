@@ -140,38 +140,6 @@ enum
 		9 : "Hear Combat"
 */
 
-//
-// A gib is a chunk of a body, or a piece of wood/metal/rocks/etc.
-//
-class EXPORT CGib : public CBaseEntity
-{
-public:
-	void Spawn( const char *szGibModel );
-	void BounceGibTouch ( CBaseEntity *pOther );
-	void StickyGibTouch ( CBaseEntity *pOther );
-	void SprayTouch ( CBaseEntity *pOther );
-	void WaitTillLand( void );
-	void StartFadeOut ( void );
-	void LimitVelocity( void );
-	void BreakThink();
-	void SprayThink();
-
-	virtual int	ObjectCaps( void ) { return (CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE; }
-	static	void SpawnHeadGib( entvars_t *pevVictim );
-	static	void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human );
-	static	void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, const char* gibModel, int gibModelBodyGroups, int bodyGroupSkip);
-	static  void SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs );
-
-	int		m_bloodColor;
-	int		m_cBloodDecals;
-	int		m_material;
-	float	m_lifeTime;
-	float	m_bornTime;
-	float	m_slideFriction; // additional friction applied while on ground
-	float	m_lastBounceSound;
-};
-
-
 #define CUSTOM_SCHEDULES\
 		virtual Schedule_t *ScheduleFromName( const char *pName );\
 		virtual Schedule_t* ScheduleFromTableIdx(uint32_t idx); \

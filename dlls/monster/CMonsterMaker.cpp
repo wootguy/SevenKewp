@@ -570,7 +570,7 @@ void CMonsterMaker :: XenmakerEffect() {
 		}
 	}
 
-	EMIT_SOUND(ENT(pev), CHAN_VOICE, XENMAKER_SOUND1, 1.0f, ATTN_NORM);
+	UTIL_TempSound(pev->origin, XENMAKER_SOUND1);
 
 	m_nextXenSound = gpGlobals->time + 1.0f;
 
@@ -589,7 +589,7 @@ void CMonsterMaker :: MakerThink ( void )
 
 	if (m_nextXenSound && gpGlobals->time >= m_nextXenSound) {
 		m_nextXenSound = 0;
-		EMIT_SOUND(ENT(pev), CHAN_VOICE, XENMAKER_SOUND2, 1.0f, ATTN_NORM);
+		UTIL_TempSound(pev->origin, XENMAKER_SOUND2);
 	}
 
 	if (m_fActive) {
