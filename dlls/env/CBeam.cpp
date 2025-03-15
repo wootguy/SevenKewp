@@ -43,7 +43,8 @@ const Vector& CBeam::GetStartPos(void)
 	if (GetType() == BEAM_ENTS)
 	{
 		edict_t* pent = g_engfuncs.pfnPEntityOfEntIndex(GetStartEntity());
-		return pent->v.origin;
+		if (pent)
+			return pent->v.origin;
 	}
 	return pev->origin;
 }
