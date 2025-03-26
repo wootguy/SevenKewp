@@ -6,31 +6,34 @@
 
 mstream::mstream()
 {
-	currentBit = start = end = pos = 0;
+	start = end = pos = NULL;
+	currentBit = 0;
 	eomFlag = true;
 }
 
-mstream::mstream(char * buf, uint64_t len)
+mstream::mstream(char* buf, uint64_t len)
 {
-	start = (uint64_t)buf;
+	start = buf;
 	end = start + len;
 	pos = start;
 	eomFlag = false;
+	currentBit = 0;
 }
 
-mstream::mstream( uint64_t len )
+mstream::mstream(uint64_t len)
 {
-	start = (uint64_t)new char[len];
+	start = new char[len];
 	end = start + len;
 	pos = start;
 	eomFlag = false;
+	currentBit = 0;
 }
 
-uint64_t mstream::read( void * dest, uint64_t bytes )
+uint64_t mstream::read(void* dest, uint64_t bytes)
 {
 	if (eomFlag)
 		return 0;
-	uint64_t newpos = pos + bytes;
+	char* newpos = pos + bytes;
 	if (newpos > end || newpos < start)
 	{
 		eomFlag = true;
@@ -114,18 +117,18 @@ bool mstream::endBitReading() {
 			eomFlag = true;
 			pos = end;
 		}
-		
+
 		return true;
 	}
 
 	return false;
 }
 
-uint64_t mstream::write( void * src, uint64_t bytes )
+uint64_t mstream::write(void* src, uint64_t bytes)
 {
 	if (eomFlag)
 		return 0;
-	uint64_t newpos = pos + bytes;
+	char* newpos = pos + bytes;
 	if (newpos > end || newpos < start)
 	{
 		eomFlag = true;
@@ -146,7 +149,7 @@ bool mstream::writeBit(bool value) {
 			eomFlag = true;
 			return 0;
 		}
-		
+
 		pos++;
 		currentBit = 0;
 	}
@@ -176,7 +179,7 @@ uint8_t mstream::writeBits(uint64_t value, uint8_t bitCount) {
 	return bitCount;
 }
 
-bool mstream::endBitWriting() {	
+bool mstream::endBitWriting() {
 	if (currentBit == 0 || eomFlag) {
 		return false;
 	}
@@ -234,7 +237,7 @@ bool mstream::writeBitVec3Coord(const float* fa) {
 	return !eom();
 }
 
-void mstream::seek( uint64_t to )
+void mstream::seek(uint64_t to)
 {
 	pos = start + to;
 	currentBit = 0;
@@ -263,9 +266,9 @@ void mstream::seekBits(uint64_t to) {
 	}
 }
 
-void mstream::seek( uint64_t to, int whence )
+void mstream::seek(uint64_t to, int whence)
 {
-	switch(whence)
+	switch (whence)
 	{
 	case (SEEK_SET):
 		pos = start + to;
@@ -283,11 +286,11 @@ void mstream::seek( uint64_t to, int whence )
 		eomFlag = true;
 }
 
-uint64_t mstream::skip( uint64_t bytes )
+uint64_t mstream::skip(uint64_t bytes)
 {
 	if (eomFlag)
 		return 0;
-	uint64_t newpos = pos + bytes;
+	char* newpos = pos + bytes;
 	if (newpos >= end || newpos < start)
 	{
 		bytes = end - pos;
@@ -307,13 +310,13 @@ uint64_t mstream::tellBits() {
 	return (pos - start) * 8 + currentBit;
 }
 
-char * mstream::getBuffer()
+char* mstream::getBuffer()
 {
 	return (char*)start;
 }
 
 char* mstream::getOffsetBuffer() {
-	return (char*)start + pos;
+	return (char*)pos;
 }
 
 bool mstream::eom()
@@ -324,11 +327,11 @@ bool mstream::eom()
 void mstream::freeBuf()
 {
 	if (start)
-		delete [] (char*)start;
+		delete[](char*)start;
 	start = 0;
 }
 
-mstream::~mstream( void )
+mstream::~mstream(void)
 {
 
 }
