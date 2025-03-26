@@ -1,7 +1,7 @@
 # setup standard include directories and compile settings
 function(hlcoop_setup_plugin OUTPUT_PATH)
 	if(UNIX)
-		set(DEBUG_WARN_FLAGS "-Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter")
+		set(DEBUG_WARN_FLAGS "-Wall -Wextra -Wpedantic -Werror=return-type -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter")
 		
 		set(OPT_FLAG "-O2")
 		if (ASAN)
@@ -28,8 +28,8 @@ function(hlcoop_setup_plugin OUTPUT_PATH)
 		set(CMAKE_SHARED_LIBRARY_PREFIX "" PARENT_SCOPE)
 		
 	elseif(MSVC)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP") 
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP") 
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /we4715") 
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP /we4715") 
 		
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /w" PARENT_SCOPE)
 		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4" PARENT_SCOPE)

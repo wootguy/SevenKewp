@@ -235,7 +235,7 @@ if(UNIX)
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32 -Wno-format-truncation -Wno-unused-result" LINK_FLAGS "-m32 -L ../../linux/release -L ../../linux"
+		COMPILE_FLAGS "-m32 -Werror=return-type -Wno-format-truncation -Wno-unused-result" LINK_FLAGS "-m32 -L ../../linux/release -L ../../linux"
 	)
 
 elseif(MSVC)
@@ -251,7 +251,7 @@ elseif(MSVC)
 		VS_DEBUGGER_COMMAND_ARGUMENTS "${CLIENT_ARGS}"
 	)
 	
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W0") 
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W0 /we4715") 
 
 	source_group("Header Files\\Entities" FILES ${ENTITY_HDR})	
 	source_group("Header Files\\Weapons" FILES ${WEAPON_HDR})	

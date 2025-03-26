@@ -678,12 +678,12 @@ if(UNIX)
 
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32 -g -fno-strict-aliasing -Wall -Wextra -Wpedantic -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter -fno-omit-frame-pointer ${OPT_FLAG} ${ASAN_CFLAGS}"
+		COMPILE_FLAGS "-m32 -g -fno-strict-aliasing -Wall -Wextra -Wpedantic -Werror=return-type -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter -fno-omit-frame-pointer ${OPT_FLAG} ${ASAN_CFLAGS}"
 		LINK_FLAGS "-m32 -g ${ASAN_LFLAGS}"
 	)
 	
 elseif(MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4 /we4715")
 	
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		VS_DEBUGGER_COMMAND "${SERVER_WORK_DIR}/${SERVER_EXE}"
