@@ -89,7 +89,7 @@ public:
 	void freeBuf();
 
 private:
-	uint64_t start, end, pos;
+	char* start, * end, * pos;
 	uint8_t currentBit = 0;
 	bool eomFlag; // end of memory buffer reached
 };
