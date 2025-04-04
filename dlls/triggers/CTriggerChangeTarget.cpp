@@ -52,10 +52,9 @@ void CTriggerChangeTarget::Spawn(void)
 
 void CTriggerChangeTarget::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	CBaseEntity* pTarget = UTIL_FindEntityByString(NULL, "targetname", STRING(pev->target));
+	CBaseEntity* pTarget = NULL;
 
-	if (pTarget)
-	{
+	while (!FNullEnt(pTarget = UTIL_FindEntityByString(pTarget, "targetname", STRING(pev->target)))) {
 		pTarget->pev->target = m_iszNewTarget;
 		CBaseMonster* pMonster = pTarget->MyMonsterPointer();
 		if (pMonster)
