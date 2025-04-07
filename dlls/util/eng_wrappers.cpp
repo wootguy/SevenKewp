@@ -402,6 +402,15 @@ void PRECACHE_MODEL_EXTRAS(CBaseEntity* ent, const char* path, studiohdr_t* mdl)
 	}
 }
 
+const char* getNotPrecachedModelPath() {
+	const char* replacement = g_modelReplacements.get(NOT_PRECACHED_MODEL);
+	if (replacement) {
+		// TODO: haven't tested if string_t conversion is necessary for the listen server.
+		return STRING(ALLOC_STRING(replacement));
+	}
+	return STRING(ALLOC_STRING(NOT_PRECACHED_MODEL));
+}
+
 int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
@@ -420,7 +429,7 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 		// files with spaces causes clients to hang at "Verifying resources"
 		// and the file doesn't download
 		ALERT(at_error, "Precached model with spaces: '%s'\n", path);
-		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
+		return g_engfuncs.pfnPrecacheModel(getNotPrecachedModelPath());
 	}
 
 	bool alreadyPrecached = g_precachedModels.hasKey(path);
@@ -430,7 +439,7 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 			g_missingModels.put(path);
 		}
 
-		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
+		return g_engfuncs.pfnPrecacheModel(getNotPrecachedModelPath());
 	}
 
 	if (g_serveractive) {
@@ -444,7 +453,7 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	}
 
 	if (!path || !path[0]) {
-		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
+		return g_engfuncs.pfnPrecacheModel(getNotPrecachedModelPath());
 	}
 
 	g_tryPrecacheModels.put(path);
@@ -467,7 +476,7 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 		return modelIdx;
 	}
 	else {
-		return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
+		return g_engfuncs.pfnPrecacheModel(getNotPrecachedModelPath());
 	}
 }
 
@@ -486,7 +495,7 @@ int PRECACHE_REPLACEMENT_MODEL_ENT(CBaseEntity* ent, const char* path) {
 		return PRECACHE_MODEL_ENT(ent, path);
 	}
 
-	return g_engfuncs.pfnPrecacheModel(NOT_PRECACHED_MODEL);
+	return g_engfuncs.pfnPrecacheModel(getNotPrecachedModelPath());
 }
 
 int PRECACHE_MODEL_NULLENT(const char* path) {
@@ -602,7 +611,7 @@ int MODEL_INDEX(const char* model) {
 
 	if (!g_precachedModels.hasKey(lowerPath.c_str())) {
 		ALERT(at_error, "MODEL_INDEX not precached: %s\n", model);
-		return g_engfuncs.pfnModelIndex(NOT_PRECACHED_MODEL);
+		return g_engfuncs.pfnModelIndex(getNotPrecachedModelPath());
 	}
 
 	return g_engfuncs.pfnModelIndex(model);
