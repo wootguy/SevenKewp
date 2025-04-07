@@ -630,6 +630,7 @@ int PrecacheBspModels(bool serverSideModels) {
 	edict_t* edicts = ENT(0);
 
 	int numPrecached = 0;
+	StringSet uniqueBspModels;
 
 	for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++)
 	{
@@ -652,12 +653,12 @@ int PrecacheBspModels(bool serverSideModels) {
 			if (isServerSideEntity == serverSideModels) {
 				PRECACHE_MODEL_ENT(pClass, model);
 				SET_MODEL(pClass->edict(), model);
-				numPrecached++;
+				uniqueBspModels.put(model);
 			}
 		}
 	}
 
-	return numPrecached;
+	return uniqueBspModels.size();
 }
 
 int g_weaponSlotMasks[MAX_WEAPONS];
