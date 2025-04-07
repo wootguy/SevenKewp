@@ -121,6 +121,7 @@ EXPORT extern cvar_t	*sv_friction;
 EXPORT extern cvar_t	*sv_stopspeed;
 EXPORT extern cvar_t	*sv_maxspeed;
 EXPORT extern cvar_t	*sv_lowercase;
+EXPORT extern cvar_t	*sv_precache_bspmodels; // 0 gives the game more control over precaching
 
 struct NerfStats {
 	int nerfedMonsterHealth;

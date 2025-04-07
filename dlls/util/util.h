@@ -52,6 +52,7 @@ extern StringSet g_weaponClassnames; // valid weapon classnames
 extern int g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict
 
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
+extern bool g_precaching_bsp_models; // false if bsp models aren't being precached yet (skip SET_MODEL calls)
 extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
 
 extern HashMap<int> g_admins;
