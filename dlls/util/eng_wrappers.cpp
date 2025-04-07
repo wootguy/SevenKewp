@@ -415,6 +415,11 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	std::string lowerPath = toLowerCase(path);
 	path = lowerPath.c_str();
 
+	// don't track BSP models in MDL hashmaps
+	if (path[0] == '*') {
+		return g_engfuncs.pfnPrecacheModel(path);
+	}
+
 	const char* replacement = g_modelReplacements.get(path);
 	if (replacement) {
 		path = replacement;
@@ -458,8 +463,11 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 
 	g_tryPrecacheModels.put(path);
 
+	// account for automatic engine precaching of bsp models
+	int precachedBspModels = sv_precache_bspmodels->value ? g_bsp.entityBspModelCount : 0;
+
 	// Tested with sc_darknebula.
-	if (g_tryPrecacheModels.size() + g_bsp.entityBspModelCount + 1 <= MAX_PRECACHE_MODEL) {
+	if (g_tryPrecacheModels.size() + precachedBspModels + 1 <= MAX_PRECACHE_MODEL) {
 		if (!g_precachedModels.hasKey(path))
 			g_precachedModels.put(path);
 		string_t spath = ALLOC_STRING(path);
@@ -467,7 +475,7 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 		g_indexModels[modelIdx] = spath;
 
 		std::string pathstr = std::string(path);
-		if (pathstr.find(".mdl") == pathstr.size() - 4) {
+		if (pathstr.size() && pathstr.find(".mdl") == pathstr.size() - 4) {
 			PRECACHE_MODEL_EXTRAS(ent, path, GET_MODEL_PTR(modelIdx));
 		}
 
@@ -533,6 +541,10 @@ bool SET_MODEL(edict_t* edict, const char* model) {
 	if (model && model[0] == '*') {
 		// BSP model. No special handling.
 		CALL_HOOKS(bool, pfnSetModel, edict, model);
+		
+		if (!g_precaching_bsp_models && !sv_precache_bspmodels->value)
+			return false;
+
 		g_engfuncs.pfnSetModel(edict, model);
 		if (!g_serveractive)
 			g_precachedModels.put(model); // engine precaches entity BSP models automatically

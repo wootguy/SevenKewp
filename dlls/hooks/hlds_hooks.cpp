@@ -469,6 +469,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 }
 
 int g_serveractive = 0;
+bool g_precaching_bsp_models = false;
 int g_edictsinit = 0;
 bool g_monstersNerfed = false;
 
@@ -497,6 +498,7 @@ void ServerDeactivate( void )
 
 	g_serveractive = 0;
 	g_edictsinit = 0;
+	g_precaching_bsp_models = false;
 
 	g_pluginManager.RemovePlugins(true);
 	g_pluginManager.ClearEntityCallbacks();
@@ -621,6 +623,43 @@ void PrecacheTextureSounds() {
 	}
 }
 
+int PrecacheBspModels(bool serverSideModels) {
+	if (sv_precache_bspmodels->value)
+		return 0;
+
+	edict_t* edicts = ENT(0);
+
+	int numPrecached = 0;
+
+	for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++)
+	{
+		if (edicts[i].free || !edicts[i].pvPrivateData)
+			continue;
+
+		CBaseEntity* pClass = CBaseEntity::Instance(&edicts[i]);
+		if (!pClass || !pClass->pev->model) {
+			continue;
+		}
+
+		const char* model = STRING(pClass->pev->model);
+		if (model[0] == '*') {
+			// Precache BSP models in networked entities first.
+			// In the 2nd pass, precache BSP models that only the server needs (e.g. trigger_once).
+			// This allows more models to be precached in total when using a higher model limit with rehlds,
+			// even with vanilla HL clients. Low priority BSP models are not sent to clients for precaching
+			// unless under the much lower 512 client limit.
+			bool isServerSideEntity = pClass->GetEntindexPriority() == ENTIDX_PRIORITY_LOW;
+			if (isServerSideEntity == serverSideModels) {
+				PRECACHE_MODEL_ENT(pClass, model);
+				SET_MODEL(pClass->edict(), model);
+				numPrecached++;
+			}
+		}
+	}
+
+	return numPrecached;
+}
+
 int g_weaponSlotMasks[MAX_WEAPONS];
 
 void MarkWeaponSlotConflicts() {
@@ -719,6 +758,16 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	
 	PrecacheTextureSounds();
 
+	g_precaching_bsp_models = true;
+	int precachedBspModels = g_bsp.entityBspModelCount;
+	int serverSideBspModels = 0;
+	if (!sv_precache_bspmodels->value) {
+		precachedBspModels = PrecacheBspModels(false);
+		serverSideBspModels = PrecacheBspModels(true);
+	}
+	g_precaching_bsp_models = false;
+	
+
 	MarkWeaponSlotConflicts();
 
 	if (mp_antiblock.value)
@@ -763,14 +812,15 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	PrintEntindexStats();
 
-	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Precache stats: %d models (%d MDL, %d BSP), %d sounds, %d generic, %d events\n",
-		g_tryPrecacheModels.size() + g_bsp.modelCount, g_tryPrecacheModels.size(), g_bsp.modelCount, 
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Precache stats: %d cl models (%d MDL/SPR, %d BSP), %d sv models (cl+%d BSP), %d sounds, %d generic, %d events\n",
+		g_tryPrecacheModels.size() + precachedBspModels,
+		g_tryPrecacheModels.size(), precachedBspModels,
+		g_tryPrecacheModels.size() + precachedBspModels + serverSideBspModels, serverSideBspModels,
 		g_tryPrecacheSounds.size(), g_tryPrecacheGeneric.size(), g_tryPrecacheEvents.size()));
-
 	
-	if (g_tryPrecacheModels.size() + g_bsp.entityBspModelCount + 1 > MAX_PRECACHE_MODEL) {
+	if (g_tryPrecacheModels.size() + precachedBspModels + 1 > MAX_PRECACHE_MODEL) {
 		ALERT(at_error, "Model precache overflow (%d / %d). The following models were not precached:\n",
-			g_tryPrecacheModels.size() + g_bsp.modelCount, MAX_PRECACHE);
+			g_tryPrecacheModels.size() + g_bsp.modelCount, MAX_PRECACHE_MODEL);
 
 		StringSet::iterator_t iter;
 		while (g_tryPrecacheModels.iterate(iter)) {
@@ -792,7 +842,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	}
 	if (g_tryPrecacheGeneric.size() > g_precachedGeneric.size()) {
 		ALERT(at_error, "Generic precache overflow (%d / %d). The following resources were not precached:\n",
-			g_tryPrecacheGeneric.size(), MAX_PRECACHE_MODEL);
+			g_tryPrecacheGeneric.size(), MAX_PRECACHE_GENERIC);
 
 		StringSet::iterator_t iter;
 		while (g_tryPrecacheGeneric.iterate(iter)) {

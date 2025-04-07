@@ -873,6 +873,7 @@
 #define MAX_PRECACHE 512
 #define MAX_PRECACHE_SOUND 511
 #define MAX_PRECACHE_MODEL 510
+#define MAX_PRECACHE_GENERIC 511
 #define MAX_PRECACHE_EVENT 256
 
 #define MAX_ENT_COORD 32768 // keep this in sync with delta.lst

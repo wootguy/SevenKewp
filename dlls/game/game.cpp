@@ -106,6 +106,7 @@ cvar_t	*sv_friction = NULL;
 cvar_t	*sv_stopspeed = NULL;
 cvar_t	*sv_maxspeed = NULL;
 cvar_t	*sv_lowercase = NULL;
+cvar_t	*sv_precache_bspmodels = NULL;
 
 // END Cvars for Skill Level settings
 
@@ -382,6 +383,7 @@ void GameDLLInit( void )
 	sv_stopspeed = CVAR_GET_POINTER( "sv_stopspeed" );
 	sv_maxspeed = CVAR_GET_POINTER( "sv_maxspeed" );
 	sv_lowercase = CVAR_GET_POINTER( "sv_lowercase" );
+	sv_precache_bspmodels = CVAR_GET_POINTER( "sv_precache_bspmodels" );
 
 	CVAR_REGISTER (&displaysoundlist);
 	CVAR_REGISTER( &allow_spectators );
