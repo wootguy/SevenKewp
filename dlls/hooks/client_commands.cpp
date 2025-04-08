@@ -262,9 +262,19 @@ bool CheatCommand(edict_t* pEntity) {
 			CLIENT_PRINTF(pEntity, print_center, "Stripped!\n");
 		}
 	}
-	else if (FStrEq(pcmd, "trigger")) {
+	else if (FStrEq(pcmd, "trigger") || FStrEq(pcmd, "trigger0") || FStrEq(pcmd, "trigger1") || FStrEq(pcmd, "trigger2")) {
 		ABORT_IF_CHEATS_DISABLED("Trigger");
 		
+		bool shouldkill = FStrEq(pcmd, "trigger2");
+		USE_TYPE triggerMode = USE_TOGGLE;
+		
+		if (FStrEq(pcmd, "trigger0")) {
+			triggerMode = USE_OFF;
+		}
+		if (FStrEq(pcmd, "trigger1")) {
+			triggerMode = USE_ON;
+		}
+
 		const char* target = CMD_ARGV(1);
 		CBaseEntity* world = (CBaseEntity*)GET_PRIVATE(INDEXENT(0));
 		int count = 0;
@@ -272,15 +282,26 @@ bool CheatCommand(edict_t* pEntity) {
 		string_t lastTriggerClass = 0;
 
 		if (target[0] != '\0') {
+			std::vector<CBaseEntity*> targets;
 			edict_t* pTarget = NULL;
+
 			while (!FNullEnt(pTarget = FIND_ENTITY_BY_TARGETNAME(pTarget, target))) {
 				CBaseEntity* ent = CBaseEntity::Instance(pTarget);
 				if (ent) {
-					te_debug_beam(pEntity->v.origin, ent->Center(), 10, RGBA(0, 255, 0), MSG_ONE_UNRELIABLE, pEntity);
-					ent->Use(world, world, USE_TOGGLE, 0);
-					count++;
-					lastTriggerClass = ent->pev->classname;
+					targets.push_back(ent);
 				}
+			}
+			
+			for (CBaseEntity* ent : targets) {
+				te_debug_beam(pEntity->v.origin, ent->Center(), 10, RGBA(0, 255, 0), MSG_ONE_UNRELIABLE, pEntity);
+				if (shouldkill) {
+					UTIL_Remove(ent);
+				}
+				else {
+					ent->Use(world, world, triggerMode, 0);
+				}
+				count++;
+				lastTriggerClass = ent->pev->classname;
 			}
 		}
 		else {
@@ -294,7 +315,12 @@ bool CheatCommand(edict_t* pEntity) {
 			CBaseEntity* activator = CBaseEntity::Instance(pEntity);
 			CBaseEntity* phit = CBaseEntity::Instance(tr.pHit);
 			if (activator && phit && !FNullEnt(tr.pHit)) {
-				phit->Use(activator, activator, USE_TOGGLE, 0);
+				if (shouldkill) {
+					UTIL_Remove(phit);
+				}
+				else {
+					phit->Use(activator, activator, triggerMode, 0);
+				}
 				count++;
 				lastTriggerClass = phit->pev->classname;
 			}

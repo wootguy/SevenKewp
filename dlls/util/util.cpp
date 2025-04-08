@@ -2227,12 +2227,19 @@ void PrintEntindexStats(bool showCounts) {
 
 	if (showCounts) {
 		HashMap<int> normalEnts;
+		int numFreeNorm = 0;
 
 		edict_t* edicts = ENT(0);
 		for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++) {
 			CBaseEntity* ent = CBaseEntity::Instance(INDEXENT(i));
 
-			if (!FNullEnt(ent) && ent->GetEntindexPriority() == ENTIDX_PRIORITY_NORMAL) {
+			if (FNullEnt(ent)) {
+				if (i < lowPrioMin)
+					numFreeNorm++;
+				continue;
+			}
+
+			if (ent->GetEntindexPriority() == ENTIDX_PRIORITY_NORMAL) {
 				int* val = normalEnts.get(STRING(ent->pev->classname));
 				normalEnts.put(STRING(ent->pev->classname), val ? *val + 1 : 1);
 			}
@@ -2255,7 +2262,8 @@ void PrintEntindexStats(bool showCounts) {
 			sortedStats.push_back(statz);
 		}
 
-		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Normal priority edicts (%d):\n", totalNorm));
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Normal priority edicts (%d used, %d free):\n",
+			totalNorm, numFreeNorm));
 
 		std::sort(sortedStats.begin(), sortedStats.end(), [](const EdictStat& a, const EdictStat& b) {
 			return a.count > b.count;
@@ -2280,13 +2288,11 @@ CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity) {
 	int iprio = pEntity->GetEntindexPriority();
 	int eidx = pEntity->entindex();
 	int bestIdx = eidx;
-	int lowPrioMin = sv_max_client_edicts ? sv_max_client_edicts->value : MAX_LEGACY_CLIENT_ENTS;
-	int normalPrioMin = 512;
 	edict_t* edicts = ENT(0);
 
-	if (iprio == ENTIDX_PRIORITY_LOW && eidx < lowPrioMin) {
+	if (iprio == ENTIDX_PRIORITY_LOW) {
 		// try to find a slot in the low priority area, else a normal slot, else whatever it is now
-		for (int i = gpGlobals->maxEntities - 1; i >= normalPrioMin; i--) {
+		for (int i = gpGlobals->maxEntities - 1; i >= 0; i--) {
 			if (edicts[i].free) {
 				bestIdx = i;
 				break;

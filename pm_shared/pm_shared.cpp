@@ -99,6 +99,18 @@ inline uint32_t PLRBIT(int eidx) { return 1 << (eidx & 31); }
 		pitch, shared_vec3_origin, 0xffffffff & ~PLRBIT(pmove->player_index+1));
 #endif
 
+typedef enum
+{
+	at_notice,
+	at_console,		// same as at_notice, but forces a ConPrintf, not a message box
+	at_aiconsole,	// same as at_console, but only shown if developer level is 2!
+	at_warning,
+	at_error,
+	at_logged		// Server print to console ( only in multiplayer games ).
+} ALERT_TYPE;
+
+void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
+
 const char* g_stepSoundsConcrete[4] =
 {
 	// left foot
@@ -3056,6 +3068,14 @@ void PM_PlayerMove ( qboolean server )
 
 	// Convert view angles to vectors
 	AngleVectors (pmove->angles, pmove->forward, pmove->right, pmove->up);
+
+	if (pmove->numvisent >= MAX_PHYSENTS) {
+		static float lastMessage = 0;
+		if (pmove->time - lastMessage > 10000.0f) {
+			DEBUG_MSG(at_error, "Exceeded MAX_PHYSENTS. Collision will be broken for some entities.\n  To fix, increase the limit in ReHLDS and game dll.\n");
+			lastMessage = pmove->time;
+		}
+	}
 
 	// PM_ShowClipBox();
 

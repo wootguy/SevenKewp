@@ -653,6 +653,7 @@ int PrecacheBspModels(bool serverSideModels) {
 			if (isServerSideEntity == serverSideModels) {
 				PRECACHE_MODEL_ENT(pClass, model);
 				SET_MODEL(pClass->edict(), model);
+				pClass->Spawn(); // lazy but safe way to make the doors and things calculate move positions
 				uniqueBspModels.put(model);
 			}
 		}

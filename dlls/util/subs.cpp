@@ -86,6 +86,9 @@ just constant angles.
 */
 void SetMovedir( entvars_t *pev )
 {
+	if (pev->movedir != g_vecZero)
+		return; // Spawn() called again
+
 	if (pev->angles == Vector(0, -1, 0))
 	{
 		pev->movedir = Vector(0, 0, 1);
