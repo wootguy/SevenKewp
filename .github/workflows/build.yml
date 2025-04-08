@@ -41,7 +41,7 @@ jobs:
         path: build/output/
 
   build-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout main repository
