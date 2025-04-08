@@ -7,7 +7,7 @@
 class CEnvSound : public CPointEntity
 {
 public:
-	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // TODO: needed for VIS checks but it shouldn't be
+	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	void KeyValue(KeyValueData* pkvd);
 	void Spawn(void);
 
