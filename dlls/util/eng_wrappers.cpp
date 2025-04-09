@@ -542,7 +542,7 @@ bool SET_MODEL(edict_t* edict, const char* model) {
 		// BSP model. No special handling.
 		CALL_HOOKS(bool, pfnSetModel, edict, model);
 		
-		if (!g_precaching_bsp_models && !sv_precache_bspmodels->value)
+		if (!g_can_set_bsp_models && !sv_precache_bspmodels->value)
 			return false;
 
 		g_engfuncs.pfnSetModel(edict, model);
@@ -581,7 +581,7 @@ bool SET_MODEL(edict_t* edict, const char* model) {
 }
 
 bool SET_MODEL_MERGED(edict_t* edict, const char* model, int mergeId) {
-	if (!SET_MODEL(edict, model) && mp_mergemodels.value) {
+	if ((!strcmp(model, MERGED_ITEMS_MODEL) || !SET_MODEL(edict, model)) && mp_mergemodels.value) {
 		// save on model slots by using the merged model that contains many different submodels
 		SET_MODEL(edict, MERGED_ITEMS_MODEL);
 		edict->v.body = mergeId;
