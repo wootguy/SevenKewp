@@ -672,7 +672,7 @@ CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, co
 	}
 
 	if (spawn) {
-		DispatchSpawn(pent);
+		DispatchSpawnGame(pent);
 		pEntity = CBaseEntity::Instance(pent); // may have been relocatd by spawn code
 	}
 

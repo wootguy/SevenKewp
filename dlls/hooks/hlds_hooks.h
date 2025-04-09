@@ -82,7 +82,8 @@ extern "C" DLLEXPORT int GetEntityAPI(DLL_FUNCTIONS * pFunctionTable, int interf
 extern "C" DLLEXPORT int GetEntityAPI2(DLL_FUNCTIONS * pFunctionTable, int* interfaceVersion);
 extern "C" DLLEXPORT int GetNewDLLFunctions(NEW_DLL_FUNCTIONS * pNewFunctionTable, int* interfaceVersion);
 
-EXPORT extern int DispatchSpawn(edict_t* pent);
+EXPORT extern int DispatchSpawn(edict_t* pent); // called by the engine
+EXPORT extern int DispatchSpawnGame(edict_t*& pent); // alternate version called by game code which updates the edict if relocated
 EXPORT extern void DispatchKeyValue(edict_t* pentKeyvalue, KeyValueData* pkvd);
 EXPORT extern void DispatchTouch(edict_t* pentTouched, edict_t* pentOther);
 EXPORT extern void DispatchUse(edict_t* pentUsed, edict_t* pentOther);

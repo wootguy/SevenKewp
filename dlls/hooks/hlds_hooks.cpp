@@ -469,7 +469,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 }
 
 int g_serveractive = 0;
-bool g_precaching_bsp_models = false;
+bool g_can_set_bsp_models = false;
 int g_edictsinit = 0;
 bool g_monstersNerfed = false;
 
@@ -498,7 +498,7 @@ void ServerDeactivate( void )
 
 	g_serveractive = 0;
 	g_edictsinit = 0;
-	g_precaching_bsp_models = false;
+	g_can_set_bsp_models = false;
 
 	g_pluginManager.RemovePlugins(true);
 	g_pluginManager.ClearEntityCallbacks();
@@ -652,9 +652,13 @@ int PrecacheBspModels(bool serverSideModels) {
 			bool isServerSideEntity = pClass->GetEntindexPriority() == ENTIDX_PRIORITY_LOW;
 			if (isServerSideEntity == serverSideModels) {
 				PRECACHE_MODEL_ENT(pClass, model);
-				SET_MODEL(pClass->edict(), model);
-				pClass->Spawn(); // lazy but safe way to make the doors and things calculate move positions
 				uniqueBspModels.put(model);
+				
+				// lazy but safe way to make the doors and things calculate move positions properly.
+				// TODO: consider reducing repeated code by using Activate()
+				// or maybe don't... techinically any entity can use a BSP model.
+				// This could be a huge change and break lots of things.
+				pClass->Spawn();
 			}
 		}
 	}
@@ -699,44 +703,6 @@ void MarkWeaponSlotConflicts() {
 
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
-	int				i;
-	CBaseEntity		*pClass;
-
-	// Clients have not been initialized yet
-	for ( i = 0; i < edictCount; i++ )
-	{
-		if ( pEdictList[i].free )
-			continue;
-		
-		// Clients aren't necessarily initialized until ClientPutInServer()
-		if ( i < clientMax || !pEdictList[i].pvPrivateData )
-			continue;
-
-		bool isBspModel = pEdictList[i].v.model && STRING(pEdictList[i].v.model)[0] == '*';
-		bool isSwimmable = pEdictList[i].v.skin <= CONTENTS_WATER && pEdictList[i].v.skin > CONTENTS_TRANSLUCENT;
-		if (isBspModel && isSwimmable) {
-			g_textureStats.tex_water = true;
-		}
-
-		pClass = CBaseEntity::Instance( &pEdictList[i] );
-		// Activate this entity if it's got a class & isn't dormant
-		if ( pClass && !(pClass->pev->flags & FL_DORMANT) )
-		{
-			pClass->Activate();
-		}
-		else
-		{
-			ALERT( at_console, "Can't instance %s\n", STRING(pEdictList[i].v.classname) );
-			continue;
-		}
-
-		// nerf monster health/spawners now that all entities have spawned (can check/update connections)
-		CBaseMonster* monster = pClass->MyMonsterPointer();
-		if (monster) {
-			pClass->MyMonsterPointer()->Nerf();
-		}
-	}
-
 	// reset player inventories
 	if (g_clearInventoriesNextMap) {
 		g_playerInventory.clear();
@@ -760,15 +726,48 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	
 	PrecacheTextureSounds();
 
-	g_precaching_bsp_models = true;
+	g_can_set_bsp_models = true;
 	int precachedBspModels = g_bsp.entityBspModelCount;
 	int serverSideBspModels = 0;
 	if (!sv_precache_bspmodels->value) {
 		precachedBspModels = PrecacheBspModels(false);
 		serverSideBspModels = PrecacheBspModels(true);
 	}
-	g_precaching_bsp_models = false;
-	
+
+	// Clients have not been initialized yet
+	for (int i = 0; i < edictCount; i++)
+	{
+		if (pEdictList[i].free)
+			continue;
+
+		// Clients aren't necessarily initialized until ClientPutInServer()
+		if (i < clientMax || !pEdictList[i].pvPrivateData)
+			continue;
+
+		bool isBspModel = pEdictList[i].v.model && STRING(pEdictList[i].v.model)[0] == '*';
+		bool isSwimmable = pEdictList[i].v.skin <= CONTENTS_WATER && pEdictList[i].v.skin > CONTENTS_TRANSLUCENT;
+		if (isBspModel && isSwimmable) {
+			g_textureStats.tex_water = true;
+		}
+
+		CBaseEntity* pClass = CBaseEntity::Instance(&pEdictList[i]);
+		// Activate this entity if it's got a class & isn't dormant
+		if (pClass && !(pClass->pev->flags & FL_DORMANT))
+		{
+			pClass->Activate();
+		}
+		else
+		{
+			ALERT(at_console, "Can't instance %s\n", STRING(pEdictList[i].v.classname));
+			continue;
+		}
+
+		// nerf monster health/spawners now that all entities have spawned (can check/update connections)
+		CBaseMonster* monster = pClass->MyMonsterPointer();
+		if (monster) {
+			pClass->MyMonsterPointer()->Nerf();
+		}
+	}
 
 	MarkWeaponSlotConflicts();
 
@@ -2295,6 +2294,16 @@ int DispatchSpawn(edict_t* pent)
 	// never ask the engine to delete the edict, because relocation will have invalidated its pointer.
 	return 0;
 }
+
+int DispatchSpawnGame(edict_t*& pent)
+{
+	CALL_HOOKS(int, pfnDispatchSpawn, pent);
+
+	pent = SpawnEdict(pent);
+
+	return 0; // unused
+}
+
 
 void DispatchKeyValue(edict_t* pentKeyvalue, KeyValueData* pkvd)
 {

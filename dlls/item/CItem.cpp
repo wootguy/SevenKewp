@@ -43,10 +43,10 @@ void CItem::Spawn(void)
 		}
 	}
 	
-	if (m_sequence_name) {
+	if (m_sequence_name && !pev->sequence) {
 		pev->sequence = LookupSequence(STRING(m_sequence_name));
-		ResetSequenceInfo();
 	}
+	ResetSequenceInfo();
 }
 
 void CItem::KeyValue(KeyValueData* pkvd) {
