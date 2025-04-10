@@ -113,6 +113,13 @@ struct weather_sound_t {
 std::vector<weather_ent_t> g_weatherEnts;
 bool g_weather_init_done;
 
+void EnvWeatherMapInit() {
+	// ehandles might be pointing to ents from the previous map
+	for (int i = 0; i < FOG_LAYERS; i++) {
+		g_fog_ents[i] = NULL;
+	}
+}
+
 enum weather_modes {
 	WEATHER_NONE,
 	WEATHER_RAIN,

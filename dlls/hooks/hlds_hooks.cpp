@@ -76,6 +76,7 @@ int g_packClientIdx = 0;
 extern bool g_fog_enabled;
 extern int g_fog_start_dist;
 extern int g_fog_end_dist;
+void EnvWeatherMapInit();
 
 DLL_FUNCTIONS dllFuncs = {
 	GameDLLInit,				//pfnGameInit
@@ -703,6 +704,8 @@ void MarkWeaponSlotConflicts() {
 
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
+	EnvWeatherMapInit();
+
 	// reset player inventories
 	if (g_clearInventoriesNextMap) {
 		g_playerInventory.clear();
