@@ -76,7 +76,7 @@ void CGamePlayerZone::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
 		pPlayer = UTIL_PlayerByIndex(i);
-		if (pPlayer)
+		if (pPlayer && pPlayer->IsAlive())
 		{
 			TraceResult trace;
 			int			hullNumber;

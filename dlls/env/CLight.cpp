@@ -8,6 +8,7 @@ LINK_ENTITY_TO_CLASS(light, CLight)
 // shut up spawn functions for new spotlights
 //
 LINK_ENTITY_TO_CLASS(light_spot, CLight)
+LINK_ENTITY_TO_CLASS(light_surface, CLight)
 
 TYPEDESCRIPTION	CLight::m_SaveData[] =
 {
