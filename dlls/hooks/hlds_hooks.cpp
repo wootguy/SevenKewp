@@ -822,9 +822,9 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		g_tryPrecacheModels.size() + precachedBspModels + serverSideBspModels, serverSideBspModels,
 		g_tryPrecacheSounds.size(), g_tryPrecacheGeneric.size(), g_tryPrecacheEvents.size()));
 	
-	if (g_tryPrecacheModels.size() + precachedBspModels + 1 > MAX_PRECACHE_MODEL) {
+	if (g_tryPrecacheModels.size() + precachedBspModels > MAX_PRECACHE_MODEL) {
 		ALERT(at_error, "Model precache overflow (%d / %d). The following models were not precached:\n",
-			g_tryPrecacheModels.size() + g_bsp.modelCount, MAX_PRECACHE_MODEL);
+			g_tryPrecacheModels.size() + precachedBspModels, MAX_PRECACHE_MODEL);
 
 		StringSet::iterator_t iter;
 		while (g_tryPrecacheModels.iterate(iter)) {

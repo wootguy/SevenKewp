@@ -467,7 +467,7 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	int precachedBspModels = sv_precache_bspmodels->value ? g_bsp.entityBspModelCount : 0;
 
 	// Tested with sc_darknebula.
-	if (g_tryPrecacheModels.size() + precachedBspModels + 1 <= MAX_PRECACHE_MODEL) {
+	if (g_tryPrecacheModels.size() + precachedBspModels < MAX_PRECACHE_MODEL) {
 		if (!g_precachedModels.hasKey(path))
 			g_precachedModels.put(path);
 		string_t spath = ALLOC_STRING(path);
