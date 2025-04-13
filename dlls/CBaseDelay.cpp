@@ -64,7 +64,13 @@ void CBaseDelay::SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, float
 	//
 	if (!FStringNull(pev->target))
 	{
-		FireTargets(STRING(pev->target), pActivator, this, useType, value);
+		if (!FStringNull(pev->targetname) && !strcmp(STRING(pev->target), STRING(pev->targetname))) {
+			// prevent infinite loop
+			ALERT(at_error, "Entity targets itself with 0 delay: '%s' (%s)\n", STRING(pev->targetname), STRING(pev->classname));
+		}
+		else {
+			FireTargets(STRING(pev->target), pActivator, this, useType, value);
+		}
 	}
 }
 
