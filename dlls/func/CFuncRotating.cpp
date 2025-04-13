@@ -41,6 +41,7 @@ public:
 
 	float m_lastPitch;
 	float m_nextSoundUpdate;
+	int m_iObeyTriggerMode;
 };
 
 TYPEDESCRIPTION	CFuncRotating::m_SaveData[] =
@@ -85,6 +86,11 @@ void CFuncRotating::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "sounds"))
 	{
 		m_sounds = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "m_iObeyTriggerMode"))
+	{
+		m_iObeyTriggerMode = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -422,11 +428,14 @@ void CFuncRotating::Rotate(void)
 //=========================================================
 void CFuncRotating::RotatingUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	bool shouldSpinDown = m_iObeyTriggerMode == 1 && useType == USE_OFF;
+	bool shouldSpinUp = m_iObeyTriggerMode == 1 && useType == USE_ON;
+
 	// is this a brush that should accelerate and decelerate when turned on/off (fan)?
 	if (FBitSet(pev->spawnflags, SF_BRUSH_ACCDCC))
 	{
 		// fan is spinning, so stop it.
-		if (pev->avelocity != g_vecZero)
+		if ((pev->avelocity != g_vecZero || shouldSpinDown) && !shouldSpinUp)
 		{
 			SetThink(&CFuncRotating::SpinDown);
 			//EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, (char *)STRING(pev->noiseStop), 
@@ -446,7 +455,7 @@ void CFuncRotating::RotatingUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 	}
 	else if (!FBitSet(pev->spawnflags, SF_BRUSH_ACCDCC))//this is a normal start/stop brush.
 	{
-		if (pev->avelocity != g_vecZero)
+		if ((pev->avelocity != g_vecZero || shouldSpinDown) && !shouldSpinUp)
 		{
 			// play stopping sound here
 			SetThink(&CFuncRotating::SpinDown);

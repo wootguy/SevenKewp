@@ -202,7 +202,8 @@ void CTriggerEntityIterator::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, 
 {
 	h_activator = pActivator;
 
-	if (m_isRunning && useType != USE_ON && m_run_mode != RUN_MODE_ONCE_MULTITHREADED_CHILD) {
+	bool shouldToggleOff = (m_isRunning && useType != USE_ON) || useType == USE_OFF;
+	if (shouldToggleOff && m_run_mode != RUN_MODE_ONCE_MULTITHREADED_CHILD) {
 		m_isRunning = false;
 		SetThink(NULL);
 		pev->nextthink = 0;
