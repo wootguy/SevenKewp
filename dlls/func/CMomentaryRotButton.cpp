@@ -64,6 +64,9 @@ LINK_ENTITY_TO_CLASS(momentary_rot_button, CMomentaryRotButton)
 
 void CMomentaryRotButton::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	CBaseToggle::AxisDir(pev);
 
 	if (pev->speed == 0)

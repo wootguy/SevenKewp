@@ -37,6 +37,9 @@ IMPLEMENT_SAVERESTORE(CFrictionModifier, CBaseEntity)
 // Modify an entity's friction
 void CFrictionModifier::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	pev->solid = SOLID_TRIGGER;
 	SET_MODEL(ENT(pev), STRING(pev->model));    // set size and link into world
 	pev->movetype = MOVETYPE_NONE;

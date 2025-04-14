@@ -43,6 +43,9 @@ void CFuncTrainControls::Find(void)
 
 void CFuncTrainControls::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
 	SET_MODEL(ENT(pev), STRING(pev->model));

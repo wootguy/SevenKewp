@@ -16,6 +16,9 @@ InitTrigger
 */
 void CBaseTrigger::InitTrigger()
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	// trigger angles are used for one-way touches.  An angle of 0 is assumed
 	// to mean no restrictions, so use a yaw of 360 instead.
 	if (pev->angles != g_vecZero)

@@ -19,6 +19,9 @@ LINK_ENTITY_TO_CLASS(button_target, CButtonTarget)
 
 void CButtonTarget::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	pev->movetype = MOVETYPE_PUSH;
 	pev->solid = SOLID_BSP;
 	SET_MODEL(ENT(pev), STRING(pev->model));

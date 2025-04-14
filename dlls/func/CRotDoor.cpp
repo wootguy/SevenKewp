@@ -58,6 +58,9 @@ LINK_ENTITY_TO_CLASS(func_door_rotating, CRotDoor)
 
 void CRotDoor::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	Precache();
 	// set the axis of rotation
 	CBaseToggle::AxisDir(pev);

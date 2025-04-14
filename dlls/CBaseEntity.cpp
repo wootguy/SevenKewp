@@ -1903,3 +1903,7 @@ const char* CBaseEntity::DisplayName() {
 
 	return STRING(pev->classname);
 }
+
+bool CBaseEntity::IsDelaySpawned() {
+	return !sv_precache_bspmodels->value && !g_can_set_bsp_models && pev->model && STRING(pev->model)[0] == '*';
+}

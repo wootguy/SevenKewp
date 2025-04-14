@@ -55,6 +55,9 @@ void CLadder::Precache(void)
 
 void CLadder::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	Precache();
 
 	SET_MODEL(ENT(pev), STRING(pev->model));    // set size and link into world

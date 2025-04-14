@@ -21,6 +21,9 @@ LINK_ENTITY_TO_CLASS(trigger_monsterjump, CTriggerMonsterJump)
 
 void CTriggerMonsterJump::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	SetMovedir(pev);
 
 	InitTrigger();

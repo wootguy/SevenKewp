@@ -57,6 +57,9 @@ IMPLEMENT_SAVERESTORE(CGunTarget, CBaseMonster)
 
 void CGunTarget::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	pev->solid = SOLID_BSP;
 	pev->movetype = MOVETYPE_PUSH;
 

@@ -25,6 +25,9 @@ LINK_ENTITY_TO_CLASS(func_clip, CFuncClip)
 
 void CFuncClip::Spawn()
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	Solidify(!(pev->spawnflags & SF_FCLIP_START_OFF));
 
 	SET_MODEL(ENT(pev), STRING(pev->model));

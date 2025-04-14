@@ -73,6 +73,7 @@ const char* CBaseEntity::DisplayName() { return NULL; }
 bool CBaseEntity::BreakableUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) { return false; }
 void CBaseEntity::BreakableDie(CBaseEntity* pActivator) { }
 void CBaseEntity::BreakableDamageSound() { }
+bool CBaseEntity::IsDelaySpawned() { return 0; }
 Vector CBaseEntity::GetLookDirection() { return g_vecZero; }
 Vector CBasePlayer::GetLookDirection() { return g_vecZero; }
 

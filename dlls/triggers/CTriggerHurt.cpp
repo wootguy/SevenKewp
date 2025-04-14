@@ -24,6 +24,9 @@ LINK_ENTITY_TO_CLASS(trigger_hurt, CTriggerHurt)
 
 void CTriggerHurt::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	InitTrigger();
 	SetTouch(&CTriggerHurt::HurtTouch);
 

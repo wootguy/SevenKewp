@@ -29,6 +29,9 @@ void CFuncIllusionary::KeyValue(KeyValueData* pkvd)
 
 void CFuncIllusionary::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	pev->angles = (pev->spawnflags & SF_WALL_USE_ANGLES) ? pev->angles : g_vecZero;
 	pev->movetype = MOVETYPE_NONE;
 	pev->solid = SOLID_NOT;// always solid_not 

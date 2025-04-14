@@ -26,6 +26,9 @@ IMPLEMENT_SAVERESTORE(CFuncTrackChange, CFuncPlatRot)
 
 void CFuncTrackChange::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	Setup();
 	if (FBitSet(pev->spawnflags, SF_TRACK_DONT_MOVE))
 		m_vecPosition2.z = pev->origin.z;

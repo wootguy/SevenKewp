@@ -33,6 +33,9 @@ IMPLEMENT_SAVERESTORE(CMomentaryDoor, CBaseToggle)
 
 void CMomentaryDoor::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	SetMovedir(pev);
 
 	pev->solid = SOLID_BSP;

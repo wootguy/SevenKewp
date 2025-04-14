@@ -5,6 +5,9 @@
 LINK_ENTITY_TO_CLASS(func_conveyor, CFuncConveyor)
 void CFuncConveyor::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	SetMovedir(pev);
 	CFuncWall::Spawn();
 

@@ -39,6 +39,9 @@ void CFuncPlatRot::SetupRotation(void)
 
 void CFuncPlatRot::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	CFuncPlat::Spawn();
 	SetupRotation();
 }

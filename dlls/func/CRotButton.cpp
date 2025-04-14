@@ -17,6 +17,9 @@ LINK_ENTITY_TO_CLASS(func_rot_button, CRotButton)
 
 void CRotButton::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	const char* pszSound;
 	//----------------------------------------------------
 	//determine sounds for buttons

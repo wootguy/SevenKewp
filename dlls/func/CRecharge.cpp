@@ -83,6 +83,9 @@ void CRecharge::KeyValue( KeyValueData *pkvd )
 
 void CRecharge::Spawn()
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	Precache( );
 
 	pev->solid		= SOLID_BSP;

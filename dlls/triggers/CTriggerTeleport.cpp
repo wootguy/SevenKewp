@@ -33,6 +33,9 @@ LINK_ENTITY_TO_CLASS(trigger_teleport, CTriggerTeleport)
 
 void CTriggerTeleport::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	InitTrigger();
 
 	if (m_startInactive) {
