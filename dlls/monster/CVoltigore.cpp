@@ -515,7 +515,7 @@ void CVoltigore::RemoveBeams() {
 
 void CVoltigore::UpdateOnRemove(void) {
 	RemoveBeams();
-	CBaseEntity::UpdateOnRemove();
+	CBaseMonster::UpdateOnRemove();
 }
 
 void CVoltigore::Revive() {

@@ -8055,3 +8055,19 @@ int CBaseMonster::IRelationship(CBaseEntity* pTarget)
 
 	return CBaseToggle::IRelationship(pTarget);
 }
+
+void CBaseMonster::UpdateOnRemove(void) {
+	// notify owner so more monsters can be spawned
+	CBaseEntity* pOwner = CBaseEntity::Instance(pev->owner);
+	if (pOwner) {
+		pOwner->DeathNotice(pev);
+	}
+	
+	/*
+	pev->health = 0;
+	pev->deadflag = DEAD_DEAD;
+	FCheckAITrigger();
+	*/
+
+	CBaseEntity::UpdateOnRemove();
+}
