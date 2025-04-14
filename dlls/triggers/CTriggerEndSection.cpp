@@ -35,6 +35,9 @@ void CTriggerEndSection::EndSectionUse(CBaseEntity* pActivator, CBaseEntity* pCa
 
 void CTriggerEndSection::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	if (g_pGameRules->IsDeathmatch())
 	{
 		REMOVE_ENTITY(ENT(pev));

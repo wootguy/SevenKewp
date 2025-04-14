@@ -21,6 +21,9 @@ LINK_ENTITY_TO_CLASS(trigger_counter, CTriggerCounter)
 
 void CTriggerCounter::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	// By making the flWait be -1, this counter-trigger will disappear after it's activated
 	// (but of course it needs cTriggersLeft "uses" before that happens).
 	m_flWait = -1;

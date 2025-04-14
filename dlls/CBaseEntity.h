@@ -452,6 +452,9 @@ public:
 	virtual bool BreakableUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual void BreakableDamageSound();
 
+	// will this entity Spawn() again after all other entities have precached?
+	bool IsDelaySpawned();
+
 	static void MaterialSoundPrecache(Materials precacheMaterial);
 	static void MaterialSoundRandom(edict_t* pEdict, Materials soundMaterial, float volume);
 	static const char** MaterialSoundList(Materials precacheMaterial, int& soundCount);

@@ -11,6 +11,9 @@ LINK_ENTITY_TO_CLASS(trigger_multiple, CTriggerMultiple)
 
 void CTriggerMultiple::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	if (m_flWait == 0)
 		m_flWait = 0.2;
 

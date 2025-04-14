@@ -564,6 +564,9 @@ sounds
 
 void CFuncTrackTrain::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	if (pev->speed == 0)
 		m_speed = 100;
 	else

@@ -26,6 +26,9 @@ public:
 LINK_ENTITY_TO_CLASS(trigger_once, CTriggerOnce)
 void CTriggerOnce::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	m_flWait = -1;
 
 	CTriggerMultiple::Spawn();

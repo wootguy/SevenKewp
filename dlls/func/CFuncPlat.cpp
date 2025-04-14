@@ -26,6 +26,9 @@ LINK_ENTITY_TO_CLASS(func_plat, CFuncPlat)
 
 void CFuncPlat::Setup(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	//pev->plat_noiseMoving = MAKE_STRING("plats/platmove1.wav");
 	//pev->plat_noiseArrived = MAKE_STRING("plats/platstop1.wav");
 

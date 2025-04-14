@@ -80,6 +80,9 @@ const char* CPushable::m_soundNames[3] = { "debris/pushbox1.wav", "debris/pushbo
 
 void CPushable::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	if (pev->spawnflags & SF_PUSH_BREAKABLE)
 		CBreakable::Spawn();
 	else

@@ -18,6 +18,9 @@ LINK_ENTITY_TO_CLASS(func_wall_toggle, CFuncWallToggle)
 
 void CFuncWallToggle::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	CFuncWall::Spawn();
 	if (pev->spawnflags & SF_WALL_START_OFF)
 		TurnOff();

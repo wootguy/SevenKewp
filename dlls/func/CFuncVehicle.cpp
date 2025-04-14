@@ -958,6 +958,9 @@ int CFuncVehicle::Classify(void)
 
 void CFuncVehicle :: Spawn( void )
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	if ( pev->speed == 0 )
 		m_speed = 165;
 	else

@@ -69,6 +69,9 @@ void CPendulum::KeyValue(KeyValueData* pkvd)
 
 void CPendulum::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	// set the axis of rotation
 	CBaseToggle::AxisDir(pev);
 

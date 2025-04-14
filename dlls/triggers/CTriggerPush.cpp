@@ -31,6 +31,9 @@ Pushes the player
 
 void CTriggerPush::Spawn()
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	if (pev->angles == g_vecZero)
 		pev->angles.y = 360;
 	InitTrigger();

@@ -15,6 +15,9 @@ LINK_ENTITY_TO_CLASS(trigger_autosave, CTriggerSave)
 
 void CTriggerSave::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	if (g_pGameRules->IsDeathmatch())
 	{
 		REMOVE_ENTITY(ENT(pev));

@@ -281,6 +281,9 @@ LINK_ENTITY_TO_CLASS(func_water, CBaseDoor)
 
 void CBaseDoor::Spawn()
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	CBaseEntity::Spawn();
 	Precache();
 	SetMovedir(pev);

@@ -37,6 +37,9 @@ void CTriggerCDAudio::Touch(CBaseEntity* pOther)
 
 void CTriggerCDAudio::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	InitTrigger();
 }
 

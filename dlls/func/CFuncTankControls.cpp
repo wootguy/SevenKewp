@@ -68,6 +68,9 @@ void CFuncTankControls::Think(void)
 
 void CFuncTankControls::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	pev->solid = SOLID_TRIGGER;
 	pev->movetype = MOVETYPE_NONE;
 	pev->effects |= EF_NODRAW;

@@ -542,8 +542,11 @@ bool SET_MODEL(edict_t* edict, const char* model) {
 		// BSP model. No special handling.
 		CALL_HOOKS(bool, pfnSetModel, edict, model);
 		
-		if (!g_can_set_bsp_models && !sv_precache_bspmodels->value)
+		if (!g_can_set_bsp_models && !sv_precache_bspmodels->value) {
+			// update the Spawn() function if you see this
+			ALERT(at_error, "%s set brush model before the bsp model precache phase\n", STRING(edict->v.classname));
 			return false;
+		}
 
 		g_engfuncs.pfnSetModel(edict, model);
 		if (!g_serveractive)

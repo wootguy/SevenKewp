@@ -54,6 +54,9 @@ Vector gTankSpread[] =
 
 void CFuncTank::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	Precache();
 
 	pev->movetype = MOVETYPE_PUSH;  // so it doesn't get pushed by anything

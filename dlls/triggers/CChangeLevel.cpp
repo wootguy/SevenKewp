@@ -104,6 +104,9 @@ When the player touches this, he gets sent to the map listed in the "map" variab
 
 void CChangeLevel::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	if (FStrEq(m_szMapName, ""))
 		ALERT(at_console, "a trigger_changelevel doesn't have a map");
 

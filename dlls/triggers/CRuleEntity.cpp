@@ -52,6 +52,9 @@ void CRulePointEntity::Spawn(void)
 
 void CRuleBrushEntity::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	SET_MODEL(edict(), STRING(pev->model));
 	CRuleEntity::Spawn();
 }

@@ -78,6 +78,9 @@ void CFuncMortarField::KeyValue(KeyValueData* pkvd)
 // Drop bombs from above
 void CFuncMortarField::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	pev->solid = SOLID_NOT;
 	SET_MODEL(ENT(pev), STRING(pev->model));    // set size and link into world
 	pev->movetype = MOVETYPE_NONE;

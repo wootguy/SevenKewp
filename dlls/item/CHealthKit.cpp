@@ -176,6 +176,9 @@ void CWallHealth::KeyValue( KeyValueData *pkvd )
 
 void CWallHealth::Spawn()
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	Precache( );
 
 	pev->solid		= SOLID_BSP;

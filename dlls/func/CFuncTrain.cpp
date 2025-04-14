@@ -255,6 +255,9 @@ sounds
 
 void CFuncTrain::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	Precache();
 	if (pev->speed == 0)
 		pev->speed = 100;

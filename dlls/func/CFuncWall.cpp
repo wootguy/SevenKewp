@@ -6,6 +6,9 @@ LINK_ENTITY_TO_CLASS(func_wall, CFuncWall)
 
 void CFuncWall::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	pev->angles = (pev->spawnflags & SF_WALL_USE_ANGLES) ? pev->angles : g_vecZero;
 	pev->movetype = MOVETYPE_PUSH;  // so it doesn't get pushed by anything
 	pev->solid = SOLID_BSP;

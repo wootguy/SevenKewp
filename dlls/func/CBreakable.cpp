@@ -104,6 +104,9 @@ IMPLEMENT_SAVERESTORE(CBreakable, CBaseEntity)
 
 void CBreakable::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	// translate func_breakable flags into common breakable flags
 	m_breakFlags |= FL_BREAK_IS_BREAKABLE | FL_BREAK_CAN_TRIGGER;
 	if (pev->spawnflags & SF_BREAK_TRIGGER_ONLY)

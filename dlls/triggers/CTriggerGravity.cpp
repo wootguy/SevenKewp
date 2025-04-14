@@ -15,6 +15,9 @@ LINK_ENTITY_TO_CLASS(trigger_gravity, CTriggerGravity)
 
 void CTriggerGravity::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	InitTrigger();
 	SetTouch(&CTriggerGravity::GravityTouch);
 }

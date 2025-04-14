@@ -113,6 +113,9 @@ REVERSE will cause the it to rotate in the opposite direction.
 
 void CFuncRotating::Spawn()
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	// set final pitch.  Must not be PITCH_NORM, since we
 	// plan on pitch shifting later.
 
