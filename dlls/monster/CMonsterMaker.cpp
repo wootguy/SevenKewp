@@ -252,6 +252,11 @@ void CMonsterMaker :: Spawn( )
 		m_blockedSpawnMode = SPAWN_BLOCK_IGNORE;
 	}
 
+	if ((m_iszTriggerTarget || pev->target) && m_blockedSpawnMode == SPAWN_BLOCK_LEGACY) {
+		// prevent softlocks from blocked spawns
+		m_blockedSpawnMode = SPAWN_BLOCK_IGNORE;
+	}
+
 	pev->classname = MAKE_STRING("monstermaker");
 
 	if ( !FStringNull ( pev->targetname ) )

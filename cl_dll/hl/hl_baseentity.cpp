@@ -65,6 +65,7 @@ int	CBaseEntity :: DamageDecal( int bitsDamageType ) { return -1; }
 CBaseEntity * CBaseEntity::Create( const char *szName, const Vector &vecOrigin, const Vector &vecAngles, bool spawn, edict_t *pentOwner, const StringMap& keys) { return NULL; }
 void CBaseEntity::SUB_Remove( void ) { }
 void CBaseEntity::UpdateOnRemove( void ) { }
+void CBaseMonster::UpdateOnRemove( void ) { }
 void CBaseEntity::SetClassify( int ) { }
 void CBaseEntity::Spawn() { }
 void CBaseEntity::Precache() { }

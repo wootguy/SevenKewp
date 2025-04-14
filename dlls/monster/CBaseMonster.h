@@ -484,6 +484,8 @@ public:
 	virtual void Unprovoke(bool friendsToo);
 	virtual void UnprovokeFriends(void) {} // calms an npc and friends down that was provoked by a player's friendly fire
 	virtual int IRelationship(CBaseEntity* pTarget) override;
+
+	void UpdateOnRemove(void) override;
 };
 
 

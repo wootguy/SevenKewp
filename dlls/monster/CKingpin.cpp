@@ -201,7 +201,7 @@ int	CKingpinBall::Classify(void)
 
 void CKingpinBall::UpdateOnRemove(void) {
 	STOP_SOUND(edict(), CHAN_WEAPON, ORB_MOVE_SOUND);
-	CBaseEntity::UpdateOnRemove();
+	CBaseMonster::UpdateOnRemove();
 }
 
 
@@ -608,7 +608,7 @@ void CKingpin::UpdateOnRemove(void) {
 		UTIL_Remove(m_eyes[i].h_flare);
 	}
 
-	CBaseEntity::UpdateOnRemove();
+	CBaseMonster::UpdateOnRemove();
 }
 
 void CKingpin::LaserEyesThink() {
