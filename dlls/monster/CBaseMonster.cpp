@@ -4442,6 +4442,10 @@ void CBaseMonster::BecomeDead(void)
 
 	// make the corpse fly away from the attack vector
 	pev->movetype = MOVETYPE_TOSS;
+
+	m_killedTime = gpGlobals->time;
+
+	CleanupLocalCorpses();
 	//pev->flags &= ~FL_ONGROUND;
 	//pev->origin.z += 2;
 	//pev->velocity = g_vecAttackDir * -1;
@@ -8063,6 +8067,7 @@ void CBaseMonster::UpdateOnRemove(void) {
 		pOwner->DeathNotice(pev);
 	}
 	
+	// doing this breaks/crashes maps (frightmanor), need to ripent
 	/*
 	pev->health = 0;
 	pev->deadflag = DEAD_DEAD;
@@ -8070,4 +8075,38 @@ void CBaseMonster::UpdateOnRemove(void) {
 	*/
 
 	CBaseEntity::UpdateOnRemove();
+}
+
+void CBaseMonster::CleanupLocalCorpses() {
+	unsigned char* pvs = ENGINE_SET_PVS((float*)&pev->origin);
+
+	std::vector<CBaseMonster*> corpses;
+
+	CBaseEntity* ent = NULL;
+	float bestCorpseTime = FLT_MAX;
+	while ((ent = UTIL_FindEntityByClassname(ent, "monster_*")) != NULL) {
+		CBaseMonster* mon = ent->MyMonsterPointer();
+
+		if (!mon || !mon->IsNormalMonster() || !mon->m_killedTime || mon->m_isFadingOut) {
+			continue;
+		}
+
+		if (ENGINE_CHECK_VISIBILITY(ent->edict(), pvs)) {
+			corpses.push_back(mon);
+		}
+	}
+
+	if (corpses.size() > mp_max_pvs_corpses.value) {
+		std::sort(corpses.begin(), corpses.end(), [](const CBaseMonster* a, const CBaseMonster* b) {
+			return a->m_killedTime < b->m_killedTime;
+		});
+
+		int removeCount = corpses.size() - mp_max_pvs_corpses.value;
+		for (int i = 0; i < removeCount && i < corpses.size(); i++) {
+			corpses[i]->SUB_StartFadeOut();
+		}
+		
+		ALERT(at_console, "Fading %d old corpses (%d / %d in PVS)\n",
+			removeCount, corpses.size(), (int)mp_max_pvs_corpses.value);
+	}
 }
