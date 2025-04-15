@@ -50,7 +50,7 @@ public:
 	virtual void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual void Blocked(CBaseEntity* pOther);
 	virtual const char* DisplayName() { return "Door"; }
-	void InitDoorTriggers();
+	void InitStateTriggers() override;
 
 
 	virtual int	ObjectCaps(void)
@@ -88,22 +88,6 @@ public:
 	BYTE	m_bLockedSentence;
 	BYTE	m_bUnlockedSound;
 	BYTE	m_bUnlockedSentence;
-
-	// TODO: was 12 keyvalues really necessary for this? I think it can be done with 4.
-	// what about the multi_manager style with "#1", or using a multi_manager for things that
-	// always trigger at the same time as the door. Much ripenting needed.
-	string_t m_fireOnOpenStart;
-	string_t m_fireOnOpenEnd;
-	string_t m_fireOnCloseStart;
-	string_t m_fireOnCloseEnd;
-	string_t m_fireOnStart;
-	string_t m_fireOnStop;
-	USE_TYPE m_fireOnOpenStartMode;
-	USE_TYPE m_fireOnOpenEndMode;
-	USE_TYPE m_fireOnCloseStartMode;
-	USE_TYPE m_fireOnCloseEndMode;
-	USE_TYPE m_fireOnStartMode;
-	USE_TYPE m_fireOnStopMode;
 
 	ObeyTriggerMode m_iObeyTriggerMode;
 

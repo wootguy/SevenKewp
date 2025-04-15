@@ -53,6 +53,73 @@ void CBaseToggle::KeyValue(KeyValueData* pkvd)
 		m_flMoveDistance = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "fireonstart"))
+	{
+		m_fireOnStart = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonstart_triggerstate"))
+	{
+		m_fireOnStartMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonstop"))
+	{
+		m_fireOnStop = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonstop_triggerstate"))
+	{
+		m_fireOnStopMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonopening"))
+	{
+		m_fireOnOpenStart = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonopening_triggerstate"))
+	{
+		m_fireOnOpenStartMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonclosing"))
+	{
+		m_fireOnCloseStart = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonclosing_triggerstate"))
+	{
+		m_fireOnCloseStartMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonopened"))
+	{
+		m_fireOnOpenEnd = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonopen"))
+	{
+		// TODO: ripent. This is a legacy key
+		m_fireOnOpenEnd = ALLOC_STRING(pkvd->szValue);
+		m_fireOnOpenEndMode = USE_TOGGLE;
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonopened_triggerstate"))
+	{
+		m_fireOnOpenEndMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonclosed"))
+	{
+		m_fireOnCloseEnd = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "fireonclosed_triggerstate"))
+	{
+		m_fireOnCloseEndMode = (USE_TYPE)atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseDelay::KeyValue(pkvd);
 }
@@ -253,4 +320,49 @@ void CBaseToggle::PlayScriptedSentence(const char* pszSentence, float duration, 
 void CBaseToggle::SentenceStop(void)
 {
 	EMIT_SOUND(edict(), CHAN_VOICE, "common/null.wav", 1.0, ATTN_IDLE);
+}
+
+void CBaseToggle::FireStateTriggers() {
+	switch (m_toggle_state) {
+	case TS_GOING_UP:
+		if (m_fireOnOpenStart)
+			FireTargets(STRING(m_fireOnOpenStart), m_hActivator, this, m_fireOnOpenStartMode, 0);
+		if (m_fireOnStart)
+			FireTargets(STRING(m_fireOnStart), m_hActivator, this, m_fireOnStartMode, 0);
+		break;
+	case TS_AT_TOP:
+		if (m_fireOnOpenEnd)
+			FireTargets(STRING(m_fireOnOpenEnd), m_hActivator, this, m_fireOnOpenEndMode, 0);
+		if (m_fireOnStop)
+			FireTargets(STRING(m_fireOnStop), m_hActivator, this, m_fireOnStopMode, 0);
+		break;
+	case TS_GOING_DOWN:
+		if (m_fireOnCloseStart)
+			FireTargets(STRING(m_fireOnCloseStart), m_hActivator, this, m_fireOnCloseStartMode, 0);
+		if (m_fireOnStart)
+			FireTargets(STRING(m_fireOnStart), m_hActivator, this, m_fireOnStartMode, 0);
+		break;
+	case TS_AT_BOTTOM:
+		if (m_fireOnCloseEnd)
+			FireTargets(STRING(m_fireOnCloseEnd), m_hActivator, this, m_fireOnCloseEndMode, 0);
+		if (m_fireOnStop)
+			FireTargets(STRING(m_fireOnStop), m_hActivator, this, m_fireOnStopMode, 0);
+		break;
+	}
+}
+
+void CBaseToggle::InitStateTriggers() {
+	// TODO: ripent this stuff
+	if (pev->netname && !m_fireOnCloseEnd) {
+		// legacy fire on opened/closed keys
+		m_fireOnCloseEnd = pev->netname;
+		m_fireOnCloseEndMode = USE_TOGGLE;
+		pev->netname = 0;
+	}
+	if (m_fireOnOpenStartMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+	if (m_fireOnOpenEndMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+	if (m_fireOnCloseStartMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+	if (m_fireOnCloseEndMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+	if (m_fireOnStartMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
+	if (m_fireOnStopMode == 2) m_fireOnCloseEndMode = USE_TOGGLE;
 }

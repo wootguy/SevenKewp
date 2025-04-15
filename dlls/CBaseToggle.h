@@ -41,6 +41,28 @@ public:
 	float				m_customSentAttn;		// attenuation for the custom sentence
 	int					m_customSentLastWord;	// last sentence word which was played
 
+	// TODO: was 12 keyvalues really necessary for this? I think it can be done with 4.
+	// what about the multi_manager style with "#1", or using a multi_manager for things that
+	// always trigger at the same time as the door. Much ripenting needed.
+	string_t m_fireOnOpenStart;
+	string_t m_fireOnOpenEnd;
+	string_t m_fireOnCloseStart;
+	string_t m_fireOnCloseEnd;
+	string_t m_fireOnStart;
+	string_t m_fireOnStop;
+	USE_TYPE m_fireOnOpenStartMode;
+	USE_TYPE m_fireOnOpenEndMode;
+	USE_TYPE m_fireOnCloseStartMode;
+	USE_TYPE m_fireOnCloseEndMode;
+	USE_TYPE m_fireOnStartMode;
+	USE_TYPE m_fireOnStopMode;
+
+	string_t m_sMaster;		// If this button has a master switch, this is the targetname.
+	// A master switch must be of the multisource type. If all 
+	// of the switches in the multisource have been triggered, then
+	// the button will be allowed to operate. Otherwise, it will be
+	// deactivated.
+
 	virtual int		Save(CSave& save);
 	virtual int		Restore(CRestore& restore);
 
@@ -64,14 +86,12 @@ public:
 	virtual void SentenceStop(void);
 	virtual BOOL IsAllowedToSpeak() { return FALSE; }
 
+	// call when toggle state changes to handle open/close triggers
+	void FireStateTriggers();
+	virtual void InitStateTriggers();
+
 	static float		AxisValue(int flags, const Vector& angles);
 	static void			AxisDir(entvars_t* pev);
 	static float		AxisDelta(int flags, const Vector& angle1, const Vector& angle2);
-
-	string_t m_sMaster;		// If this button has a master switch, this is the targetname.
-							// A master switch must be of the multisource type. If all 
-							// of the switches in the multisource have been triggered, then
-							// the button will be allowed to operate. Otherwise, it will be
-							// deactivated.
 };
 #define SetMoveDone( a ) m_pfnCallWhenMoveDone = static_cast <void (CBaseToggle::*)(void)> (a)

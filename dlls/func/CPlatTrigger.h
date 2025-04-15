@@ -9,6 +9,8 @@ public:
 	void SpawnInsideTrigger(CFuncPlat* pPlatform);
 	void Touch(CBaseEntity* pOther);
 	EHANDLE m_hPlatform;
+	float m_lastTouch;
+	float m_nextMove;
 };
 
 void PlatSpawnInsideTrigger(entvars_t* pevPlatform);

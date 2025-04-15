@@ -108,6 +108,8 @@ void ClientPrint( entvars_t *client, int msg_dest, const char *msg_name, const c
 int CBaseToggle::Restore( class CRestore & ) { return 1; }
 int CBaseToggle::Save( class CSave & ) { return 1; }
 void CBaseToggle :: KeyValue( struct KeyValueData_s * ) { }
+void CBaseToggle :: InitStateTriggers() { }
+void CBaseToggle :: FireStateTriggers() { }
 
 // CGrenade Stubs
 void CGrenade::BounceSound( void ) { }
