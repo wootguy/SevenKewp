@@ -791,6 +791,9 @@ EXPORT void InitEdictRelocations();
 EXPORT void PrintEntindexStats(bool showCounts=false);
 EXPORT CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity);
 
+// removes the oldest corpses/gibs/weaponboxes
+EXPORT void UTIL_CleanupEntities(int removeCount);
+
 // returns false if the entity index would overflow the client, and prints an error message in that case
 EXPORT bool UTIL_isSafeEntIndex(edict_t* plr, int idx, const char* action);
 

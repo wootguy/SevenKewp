@@ -2248,6 +2248,15 @@ edict_t* SpawnEdict(edict_t* pent) {
 			REMOVE_ENTITY(pent);
 			return NULL;
 		}
+
+		// cleanup up dead things and items if we're about to overflow edicts for some players
+		int cleanupEntBegin = MAX_LEGACY_CLIENT_ENTS - 65; // give some time for corpses to fade out
+		int removeCount = pEntity->entindex() - cleanupEntBegin;
+		if (pEntity->GetEntindexPriority() == ENTIDX_PRIORITY_NORMAL && removeCount > 0) {
+			ALERT(at_console, "Cleanup %d ents because %s got high index %d\n",
+				removeCount, STRING(pEntity->pev->classname), pEntity->entindex());
+			UTIL_CleanupEntities(removeCount);
+		}
 	}
 
 	// Handle global stuff here

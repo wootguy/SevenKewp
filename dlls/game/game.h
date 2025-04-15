@@ -81,6 +81,7 @@ EXPORT extern cvar_t	mp_min_score_mult; // minimum score multiplier for death pe
 EXPORT extern cvar_t	mp_hevsuit_voice; // enable/disable the hev suit voice
 EXPORT extern cvar_t	npc_dropweapons; // enable/disable npcs dropping weapons
 EXPORT extern cvar_t	mp_bigmap; // precaches models/sounds so common effects can work outside +/-4096
+EXPORT extern cvar_t	mp_max_pvs_corpses; // limit number of corpses in a VIS zone
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

@@ -2318,6 +2318,32 @@ CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity) {
 	return pEntity;
 }
 
+void UTIL_CleanupEntities(int removeCount) {
+	std::vector<CBaseMonster*> corpses;
+
+	CBaseEntity* ent = NULL;
+	float bestCorpseTime = FLT_MAX;
+	while ((ent = UTIL_FindEntityByClassname(ent, "monster_*")) != NULL) {
+		CBaseMonster* mon = ent->MyMonsterPointer();
+
+		if (!mon || !mon->IsNormalMonster() || !mon->m_killedTime || mon->m_isFadingOut) {
+			continue;
+		}
+
+		corpses.push_back(mon);
+	}
+
+	std::sort(corpses.begin(), corpses.end(), [](const CBaseMonster* a, const CBaseMonster* b) {
+		return a->m_killedTime < b->m_killedTime;
+	});
+
+	for (int i = 0; i < removeCount && i < corpses.size(); i++) {
+		corpses[i]->SUB_StartFadeOut();
+	}
+
+	ALERT(at_console, "Faded %d old corpses\n", V_min(corpses.size(), removeCount));
+}
+
 edict_t* CREATE_NAMED_ENTITY(string_t cname) {
 	edict_t* ed = g_engfuncs.pfnCreateNamedEntity(cname);
 

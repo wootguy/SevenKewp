@@ -185,6 +185,8 @@ public:
 
 	int m_flinchChance; // 0-100 chance the HEAVY_DAMAGE condition is set (0 = 100, -1 = 0)
 
+	float m_killedTime; // time monster became dead
+
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
@@ -486,6 +488,9 @@ public:
 	virtual int IRelationship(CBaseEntity* pTarget) override;
 
 	void UpdateOnRemove(void) override;
+
+	// scan for other corpses in this corpes' PVS and remove them if over the limit
+	void CleanupLocalCorpses();
 };
 
 
