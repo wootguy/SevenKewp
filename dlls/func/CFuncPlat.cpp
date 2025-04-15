@@ -26,9 +26,6 @@ LINK_ENTITY_TO_CLASS(func_plat, CFuncPlat)
 
 void CFuncPlat::Setup(void)
 {
-	if (IsDelaySpawned())
-		return; // prevent double-spawn bugs
-
 	//pev->plat_noiseMoving = MAKE_STRING("plats/platmove1.wav");
 	//pev->plat_noiseArrived = MAKE_STRING("plats/platstop1.wav");
 
@@ -60,7 +57,6 @@ void CFuncPlat::Setup(void)
 		m_volume = 0.85;
 }
 
-
 void CFuncPlat::Precache()
 {
 	CBasePlatTrain::Precache();
@@ -73,6 +69,9 @@ void CFuncPlat::Precache()
 
 void CFuncPlat::Spawn()
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	Setup();
 
 	Precache();
@@ -90,6 +89,8 @@ void CFuncPlat::Spawn()
 		UTIL_SetOrigin(pev, m_vecPosition2);
 		m_toggle_state = TS_AT_BOTTOM;
 	}
+
+	InitStateTriggers();
 }
 
 
@@ -134,6 +135,8 @@ void CFuncPlat::GoDown(void)
 	m_toggle_state = TS_GOING_DOWN;
 	SetMoveDone(&CFuncPlat::CallHitBottom);
 	LinearMove(m_vecPosition2, pev->speed);
+
+	FireStateTriggers();
 }
 
 
@@ -150,6 +153,8 @@ void CFuncPlat::HitBottom(void)
 
 	ASSERT(m_toggle_state == TS_GOING_DOWN);
 	m_toggle_state = TS_AT_BOTTOM;
+
+	FireStateTriggers();
 }
 
 
@@ -165,6 +170,8 @@ void CFuncPlat::GoUp(void)
 	m_toggle_state = TS_GOING_UP;
 	SetMoveDone(&CFuncPlat::CallHitTop);
 	LinearMove(m_vecPosition1, pev->speed);
+
+	FireStateTriggers();
 }
 
 
@@ -188,6 +195,8 @@ void CFuncPlat::HitTop(void)
 		SetThink(&CFuncPlat::CallGoDown);
 		pev->nextthink = pev->ltime + 3;
 	}
+
+	FireStateTriggers();
 }
 
 

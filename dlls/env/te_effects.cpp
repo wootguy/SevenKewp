@@ -73,6 +73,38 @@ void UTIL_PlayRicochetSound(edict_t* ent) {
 	EMIT_SOUND_DYN(ent, CHAN_WEAPON, RANDOM_SOUND_ARRAY(g_teRicochetSounds), 1.0f, ATTN_NORM, 0, 100);
 }
 
+void te_debug_box(Vector mins, Vector maxs, uint8_t life, RGBA c, int msgType, edict_t* dest) {
+	Vector corners[8];
+
+	// Generate all 8 corners of the box
+	corners[0] = Vector(mins.x, mins.y, mins.z);
+	corners[1] = Vector(maxs.x, mins.y, mins.z);
+	corners[2] = Vector(maxs.x, maxs.y, mins.z);
+	corners[3] = Vector(mins.x, maxs.y, mins.z);
+	corners[4] = Vector(mins.x, mins.y, maxs.z);
+	corners[5] = Vector(maxs.x, mins.y, maxs.z);
+	corners[6] = Vector(maxs.x, maxs.y, maxs.z);
+	corners[7] = Vector(mins.x, maxs.y, maxs.z);
+
+	// Bottom edges
+	te_debug_beam(corners[0], corners[1], life, c, msgType, dest);
+	te_debug_beam(corners[1], corners[2], life, c, msgType, dest);
+	te_debug_beam(corners[2], corners[3], life, c, msgType, dest);
+	te_debug_beam(corners[3], corners[0], life, c, msgType, dest);
+
+	// Top edges
+	te_debug_beam(corners[4], corners[5], life, c, msgType, dest);
+	te_debug_beam(corners[5], corners[6], life, c, msgType, dest);
+	te_debug_beam(corners[6], corners[7], life, c, msgType, dest);
+	te_debug_beam(corners[7], corners[4], life, c, msgType, dest);
+
+	// Vertical edges
+	te_debug_beam(corners[0], corners[4], life, c, msgType, dest);
+	te_debug_beam(corners[1], corners[5], life, c, msgType, dest);
+	te_debug_beam(corners[2], corners[6], life, c, msgType, dest);
+	te_debug_beam(corners[3], corners[7], life, c, msgType, dest);
+}
+
 void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, edict_t* dest)
 {
 	UTIL_BeamPoints(start, end, MODEL_INDEX("sprites/laserbeam.spr"), 0, 0, life, 16, 0,

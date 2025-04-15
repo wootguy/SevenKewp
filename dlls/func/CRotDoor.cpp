@@ -98,7 +98,7 @@ void CRotDoor::Spawn(void)
 		pev->movedir = pev->movedir * -1;
 	}
 
-	InitDoorTriggers();
+	InitStateTriggers();
 
 	m_toggle_state = TS_AT_BOTTOM;
 

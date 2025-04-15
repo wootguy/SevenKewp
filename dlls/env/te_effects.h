@@ -6,6 +6,7 @@ EXPORT extern DLL_GLOBAL short g_sModelIndexSmoke;
 
 EXPORT RGB GetTeColor(uint8_t color);
 
+EXPORT void te_debug_box(Vector mins, Vector maxs, uint8_t life, RGBA c, int msgType = MSG_BROADCAST, edict_t* dest = NULL);
 EXPORT void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType = MSG_BROADCAST, edict_t* dest = NULL);
 
 EXPORT void UTIL_PlayRicochetSound(edict_t* ent);

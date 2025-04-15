@@ -10,9 +10,6 @@ public:
 	void Precache(void);
 	virtual const char* DisplayName() { return "Elevator"; }
 
-	// This is done to fix spawn flag collisions between this class and a derived class
-	virtual BOOL IsTogglePlat(void) { return (pev->spawnflags & SF_PLAT_TOGGLE) ? TRUE : FALSE; }
-
 	virtual int	Save(CSave& save);
 	virtual int	Restore(CRestore& restore);
 	static	TYPEDESCRIPTION m_SaveData[];
