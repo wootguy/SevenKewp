@@ -3506,7 +3506,7 @@ BOOL CBaseMonster::FCheckAITrigger(void)
 		}
 		break;
 	case AITRIGGER_HALFHEALTH:
-		if (IsAlive() && pev->health <= (pev->max_health / 2))
+		if (!IsAlive() || pev->health <= (pev->max_health / 2))
 		{
 			fFireTarget = TRUE;
 		}
