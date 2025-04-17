@@ -110,9 +110,9 @@ enum sbar_data
 
 enum HL_CLIENT_ENGINE_VERSION {
 	CLIENT_ENGINE_NOT_CHECKED,	// player hasn't responded to cvar queries yet
-	CLIENT_ENGINE_HL_LATEST,	// the latest version of the steam HL client from steam
+	CLIENT_ENGINE_HL_LATEST,	// the latest version of the HL client from steam
 	CLIENT_ENGINE_HL_LEGACY,	// the legacy version of HL from steam
-	CLIENT_ENGINE_BOT,			// bot's don't use a client
+	CLIENT_ENGINE_BOT,			// bots don't use a client
 };
 
 enum HL_CLIENT_MOD_VERSION {
@@ -120,7 +120,7 @@ enum HL_CLIENT_MOD_VERSION {
 	CLIENT_MOD_HL,			// the vanilla half-life mod from steam (or an undetected custom client)
 	CLIENT_MOD_HLBUGFIXED,	// a popular custom client (for cheating!!! but also cool stuff...)
 	CLIENT_MOD_ADRENALINE,	// another popular custom client (players with names like "^1J^2E^3F^4F")
-	CLIENT_MOD_BOT,			// bot's don't use mods
+	CLIENT_MOD_BOT,			// bots don't use mods
 };
 
 enum HL_CLIENT_RENDERER {
