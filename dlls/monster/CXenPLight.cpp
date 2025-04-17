@@ -15,7 +15,8 @@ public:
 	void		Spawn(void);
 	void		Precache(void);
 	void		Touch(CBaseEntity* pOther);
-	void		Think(void);
+	void		AnimateThink(void);
+	void		DropThink(void);
 
 	void		LightOn(void);
 	void		LightOff(void);
@@ -47,11 +48,11 @@ void CXenPLight::Spawn(void)
 
 	UTIL_SetSize(pev, Vector(-80, -80, 0), Vector(80, 80, 32));
 	SetActivity(ACT_IDLE);
-	pev->nextthink = gpGlobals->time + 0.1;
+	
 	pev->frame = RANDOM_FLOAT(0, 255);
 	
-	if (FBitSet(pev->spawnflags, SF_XEN_PLANT_DROP_TO_FLOOR))
-		DropToFloor();
+	SetThink(&CXenPLight::DropThink);
+	pev->nextthink = gpGlobals->time;
 
 	if (FBitSet(pev->flags, FL_KILLME))
 		return;
@@ -64,6 +65,15 @@ void CXenPLight::Spawn(void)
 	}
 }
 
+void CXenPLight::DropThink(void)
+{
+	if (FBitSet(pev->spawnflags, SF_XEN_PLANT_DROP_TO_FLOOR))
+		DropToFloor();
+
+	SetThink(&CXenPLight::AnimateThink);
+	pev->nextthink = gpGlobals->time + 0.1;
+}
+
 
 void CXenPLight::Precache(void)
 {
@@ -72,7 +82,7 @@ void CXenPLight::Precache(void)
 }
 
 
-void CXenPLight::Think(void)
+void CXenPLight::AnimateThink(void)
 {
 	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.1;

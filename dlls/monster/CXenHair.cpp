@@ -9,7 +9,8 @@ class CXenHair : public CActAnimating
 public:
 	void		Spawn(void);
 	void		Precache(void);
-	void		Think(void);
+	void		AnimateThink(void);
+	void		DropThink(void);
 };
 
 LINK_ENTITY_TO_CLASS(xen_hair, CXenHair)
@@ -32,14 +33,22 @@ void CXenHair::Spawn(void)
 
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
-	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.1, 0.4);	// Load balance these a bit
-
-	if (FBitSet(pev->spawnflags, SF_XEN_PLANT_DROP_TO_FLOOR))
-		DropToFloor();
+	
+	// wait for solid entities to spawn
+	SetThink(&CXenHair::DropThink);
+	pev->nextthink = gpGlobals->time;
 }
 
+void CXenHair::DropThink(void)
+{
+	if (FBitSet(pev->spawnflags, SF_XEN_PLANT_DROP_TO_FLOOR))
+		DropToFloor();
 
-void CXenHair::Think(void)
+	SetThink(&CXenHair::AnimateThink);
+	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.1, 0.4);	// Load balance these a bit
+}
+
+void CXenHair::AnimateThink(void)
 {
 	StudioFrameAdvance();
 	pev->nextthink = gpGlobals->time + 0.5;

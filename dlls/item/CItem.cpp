@@ -30,23 +30,31 @@ void CItem::Spawn(void)
 	}
 
 	if (pev->movetype == MOVETYPE_TOSS) {
-		int dropResult = DROP_TO_FLOOR(ENT(pev));
-
-		if (dropResult == 0)
-		{
-			ALERT(at_warning, "Item %s fell out of level at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
-			UTIL_Remove(this);
-			return;
-		}
-		else if (dropResult == -1) {
-			ALERT(at_warning, "Item %s spawned inside solid at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
-		}
+		// wait for solid entities to spawn
+		SetThink(&CItem::DropThink);
+		pev->nextthink = gpGlobals->time;
 	}
 	
 	if (m_sequence_name && !pev->sequence) {
 		pev->sequence = LookupSequence(STRING(m_sequence_name));
 	}
 	ResetSequenceInfo();
+}
+
+void CItem::DropThink() {
+	int dropResult = DROP_TO_FLOOR(ENT(pev));
+
+	if (dropResult == 0)
+	{
+		ALERT(at_warning, "Item %s fell out of level at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
+		UTIL_Remove(this);
+		return;
+	}
+	else if (dropResult == -1) {
+		ALERT(at_warning, "Item %s spawned inside solid at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
+	}
+
+	SetThink(NULL);
 }
 
 void CItem::KeyValue(KeyValueData* pkvd) {
@@ -91,7 +99,6 @@ void CItem::SetItemModel() {
 		SET_MODEL_MERGED(ENT(pev), GetModel(), MergedModelBody());
 	}
 }
-
 
 extern int gEvilImpulse101;
 

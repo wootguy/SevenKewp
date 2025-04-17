@@ -1182,6 +1182,7 @@ public:
 	void Spawn( void );
 	void  Precache( void );
 
+	void EXPORT DropThink( void );
 	void EXPORT SittingThink( void );
 	int	Classify ( void );
 	virtual int		Save( CSave &save );
@@ -1256,10 +1257,9 @@ void CSittingScientist :: Spawn( )
 	pev->sequence = m_baseSequence + RANDOM_LONG(0,4);
 	ResetSequenceInfo( );
 	
-	SetThink (&CSittingScientist::SittingThink);
+	// wait for solid entities to spawn
+	SetThink(&CSittingScientist::DropThink);
 	pev->nextthink = gpGlobals->time + 0.1;
-
-	DROP_TO_FLOOR ( ENT(pev) );
 }
 
 void CSittingScientist :: Precache( void )
@@ -1288,7 +1288,12 @@ int CSittingScientist::FriendNumber( int arrayNumber )
 	return arrayNumber;
 }
 
+void CSittingScientist::DropThink() {
+	DROP_TO_FLOOR(ENT(pev));
 
+	SetThink(&CSittingScientist::SittingThink);
+	pev->nextthink = gpGlobals->time + 0.1;
+}
 
 //=========================================================
 // sit, do stuff

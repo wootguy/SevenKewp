@@ -17,7 +17,8 @@ public:
 	void		Spawn(void);
 	void		Precache(void);
 	void		Touch(CBaseEntity* pOther);
-	void		Think(void);
+	void		AnimateThink(void);
+	void		DropThink(void);
 	int			TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) { Attack(); return 0; }
 	//	void		HandleAnimEvent( MonsterEvent_t *pEvent );
 	void		Attack(void) {}
@@ -128,10 +129,9 @@ void CXenSpore::Spawn(void)
 	pev->frame = RANDOM_FLOAT(0, 255);
 	pev->framerate = RANDOM_FLOAT(0.7, 1.4);
 	ResetSequenceInfo();
-	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.1, 0.4);	// Load balance these a bit
 
-	if (FBitSet(pev->spawnflags, SF_XEN_PLANT_DROP_TO_FLOOR))
-		DropToFloor();
+	SetThink(&CXenSpore::DropThink);
+	pev->nextthink = gpGlobals->time;
 }
 
 const char* CXenSpore::pModelNames[] =
@@ -152,8 +152,16 @@ void CXenSpore::Touch(CBaseEntity* pOther)
 {
 }
 
+void CXenSpore::DropThink(void)
+{
+	if (FBitSet(pev->spawnflags, SF_XEN_PLANT_DROP_TO_FLOOR))
+		DropToFloor();
 
-void CXenSpore::Think(void)
+	SetThink(&CXenSpore::AnimateThink);
+	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.1, 0.4);	// Load balance these a bit
+}
+
+void CXenSpore::AnimateThink(void)
 {
 	pev->nextthink = gpGlobals->time + 0.1;
 

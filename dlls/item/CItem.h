@@ -39,6 +39,7 @@ public:
 	void SetItemModel();
 	virtual int MergedModelBody() { return -1; }
 	virtual int	ObjectCaps(void);
+	void DropThink();
 
 	const char* m_defaultModel;
 	string_t m_sequence_name;
