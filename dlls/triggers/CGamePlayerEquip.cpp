@@ -69,7 +69,7 @@ void CGamePlayerEquip::EquipPlayer(CBaseEntity* pEntity)
 {
 	CBasePlayer* pPlayer = NULL;
 
-	if (pEntity->IsPlayer())
+	if (pEntity && pEntity->IsPlayer())
 	{
 		pPlayer = (CBasePlayer*)pEntity;
 	}
