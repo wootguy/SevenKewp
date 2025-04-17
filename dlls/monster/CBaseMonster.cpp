@@ -314,12 +314,17 @@ void CBaseMonster::Look(int iDistance)
 	// See no evil if prisoner is set
 	if (!FBitSet(pev->spawnflags, SF_MONSTER_PRISONER))
 	{
-		CBaseEntity* pList[100];
+		const int maxLookEnts = 1024;
+		static CBaseEntity* pList[maxLookEnts];
 
 		Vector delta = Vector(iDistance, iDistance, iDistance);
 
 		// Find only monsters/clients in box, NOT limited to PVS
-		int count = UTIL_EntitiesInBox(pList, 100, pev->origin - delta, pev->origin + delta, FL_CLIENT | FL_MONSTER | FL_POSSIBLE_TARGET, false);
+		int count = UTIL_EntitiesInBox(pList, maxLookEnts, pev->origin - delta, pev->origin + delta, FL_CLIENT | FL_MONSTER | FL_POSSIBLE_TARGET, false);
+		if (count == maxLookEnts) {
+			ALERT(at_error, "Max Look entities reached for %s\n", STRING(pev->classname));
+		}
+		
 		for (int i = 0; i < count; i++)
 		{
 			pSightEnt = pList[i];

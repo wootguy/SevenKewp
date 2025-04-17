@@ -830,6 +830,9 @@ Schedule_t* CScientist :: GetScheduleOfType ( int Type )
 {
 	Schedule_t *psched;
 
+	// react to player sounds when an enemy
+	bool IsPlayerAlly = CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) <= R_NO;
+
 	switch( Type )
 	{
 	// Hook these to make a looping schedule
@@ -838,7 +841,7 @@ Schedule_t* CScientist :: GetScheduleOfType ( int Type )
 		// when 'used' 
 		psched = CTalkSquadMonster::GetScheduleOfType(Type);
 
-		if (psched == slIdleStand)
+		if (psched == slIdleStand && IsPlayerAlly)
 			return slSciFaceTarget;	// override this for different target face behavior
 		else
 			return psched;
@@ -863,7 +866,7 @@ Schedule_t* CScientist :: GetScheduleOfType ( int Type )
 		// when standing during idle
 		psched = CTalkSquadMonster::GetScheduleOfType(Type);
 
-		if (psched == slIdleStand)
+		if (psched == slIdleStand && IsPlayerAlly)
 			return slIdleSciStand;
 		else
 			return psched;

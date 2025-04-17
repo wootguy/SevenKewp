@@ -223,7 +223,7 @@ Task_t	tlTlkIdleWatchClientStare[] =
 
 Schedule_t	slTlkIdleWatchClient[] =
 {
-	{ 
+	{
 		tlTlkIdleWatchClient,
 		ARRAYSIZE ( tlTlkIdleWatchClient ), 
 		bits_COND_NEW_ENEMY		|
@@ -818,6 +818,11 @@ int CTalkSquadMonster :: FOkToSpeak( void )
 	if (gpGlobals->time <= CTalkSquadMonster::g_talkWaitTime)
 		return FALSE;
 
+	// don't get stuck in an infinite loop if there's no one to talk to
+	if (gpGlobals->time < m_lastTalkFail + 2.0f) {
+		return FALSE;
+	}
+
 	if ( pev->spawnflags & SF_MONSTER_GAG )
 		return FALSE;
 
@@ -863,9 +868,6 @@ int CTalkSquadMonster :: FIdleStare( void )
 //=========================================================
 int CTalkSquadMonster :: FIdleHello( void )
 {
-	if (!FOkToSpeak())
-		return FALSE;
-
 	// if this is first time scientist has seen player, greet him
 	if (!FBitSet(m_bitsSaid, bit_saidHelloPlayer))
 	{
@@ -889,6 +891,8 @@ int CTalkSquadMonster :: FIdleHello( void )
 			}
 		}
 	}
+
+	Talk(0); // don't keep trying
 	return FALSE;
 }
 
@@ -1056,10 +1060,11 @@ void CTalkSquadMonster::PlaySentence( const char *pszSentence, float duration, f
 //=========================================================
 void CTalkSquadMonster :: Talk( float flDuration )
 {
-	if ( flDuration <= 0 )
+	if (flDuration <= 0)
 	{
 		// no duration :( 
-		m_flStopTalkTime = gpGlobals->time + 3;
+		//m_flStopTalkTime = gpGlobals->time + 3;
+		m_lastTalkFail = gpGlobals->time;
 	}
 	else
 	{
@@ -1120,7 +1125,7 @@ Schedule_t* CTalkSquadMonster :: GetScheduleOfType ( int Type )
 	case SCHED_IDLE_STAND:
 		{	
 			// if never seen player, try to greet him
-			if (!FBitSet(m_bitsSaid, bit_saidHelloPlayer))
+			if (!FBitSet(m_bitsSaid, bit_saidHelloPlayer) && HasConditions(bits_COND_SEE_CLIENT))
 			{
 				return slIdleHello;
 			}

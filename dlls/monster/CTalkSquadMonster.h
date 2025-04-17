@@ -170,6 +170,7 @@ public:
 	
 	static const char *m_szFriends[TLK_CFRIENDS];		// array of friend names
 	static float g_talkWaitTime;
+	float m_lastTalkFail; // prevent infinite schedule loops which reduce awareness
 	
 	int			m_bitsSaid;						// set bits for sentences we don't want repeated
 	int			m_nSpeak;						// number of times initiated talking
