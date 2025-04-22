@@ -1218,14 +1218,15 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 	*pvs = ENGINE_SET_PVS ( (float *)&org );
 	*pas = ENGINE_SET_PAS ( (float *)&org );
 
+	g_packClientIdx = ENTINDEX(pClient) - 1;
+
 	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(pClient);
 	if (plr) {
 		plr->m_hViewEntity.Set(pView);
 		plr->m_lastPas = *pas;
 		plr->m_lastPvs = *pvs;
+		plr->m_lastPacketEnts = g_numPacketEntities[g_packClientIdx];
 	}
-
-	g_packClientIdx = ENTINDEX(pClient) - 1;
 
 	if (g_numEdictOverflows[g_packClientIdx] > 0) {
 		ALERT(at_console, "Overflowed %d edicts for \"%s\", Client: %s\n",
@@ -1234,7 +1235,7 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 
 	g_numEdictOverflows[g_packClientIdx] = 0;
 	g_numPacketEntities[g_packClientIdx] = 0;
-	g_newPacketEnts = 0;	
+	g_newPacketEnts = 0;
 }
 
 #include "entity_state.h"

@@ -288,12 +288,8 @@ void CRoboGrunt::Killed(entvars_t* pevAttacker, int iGib)
 {
 	CBaseGrunt::Killed(pevAttacker, iGib);
 
-	if (ShouldGibMonster(iGib)) {
-		m_explodeTime = 0.1;
-		return;
-	}
-	if (m_explodeTime > 0) {
-		return;
+	if (m_didExplosion || m_explodeTime > 0) {
+		return; // was gibbed in Killed() or Killed() called again after more damage(?)
 	}
 
 	EMIT_SOUND(ENT(pev), CHAN_BODY, RANDOM_SOUND_ARRAY(pDeathSounds), 1.0, ATTN_NORM);
