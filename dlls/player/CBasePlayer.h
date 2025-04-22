@@ -296,6 +296,8 @@ public:
 	bool m_useExpired; // use was held for too long. Player must release and press the key again to use
 	bool m_usingMomentary; // player activated a momentary button any time during this key press
 
+	int m_lastPacketEnts; // number of packet entities sent in the previous frame
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
