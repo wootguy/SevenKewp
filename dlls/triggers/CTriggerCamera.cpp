@@ -1,53 +1,12 @@
-#include "extdll.h"
-#include "util.h"
-#include "CBasePlayer.h"
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
 #include "CBaseTrigger.h"
 #include "path/CPathCorner.h"
+#include "CTriggerCamera.h"
 
-#define SF_CAMERA_PLAYER_POSITION	1 // camera position starts at the activator
-#define SF_CAMERA_PLAYER_TARGET		2 // camera follows the activator
-#define SF_CAMERA_PLAYER_TAKECONTROL 4 // freeze viewers
-#define SF_CAMERA_ALL_PLAYERS 8 // force everyone to view, dead or alive
-#define SF_CAMERA_FORCE_VIEW 16 // activator is forced to view even if dead ("all players" also does this)
-#define SF_CAMERA_INSTANT_TURN 32 // if enabled, don't smoothly rotate to face target
-#define SF_CAMERA_PLAYER_INVULNERABLE 256 // disable viewer damage while camera is active
+EHANDLE g_active_camera;
 
-class CTriggerCamera : public CBaseDelay
-{
-public:
-	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
-	void Spawn(void);
-	void KeyValue(KeyValueData* pkvd);
-	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	void EXPORT FollowTarget(void);
-	void Move(void);
-	void TogglePlayerViews(bool enabled);
-	void TogglePlayerView(CBasePlayer* plr, bool enabled);
-
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
-	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	EHANDLE m_hPlayer;
-	EHANDLE m_hTarget;
-	CBaseEntity* m_pentPath;
-	int	  m_sPath;
-	float m_flWait;
-	float m_flReturnTime;
-	float m_flStopTime;
-	float m_moveDistance;
-	float m_targetSpeed;
-	float m_initialSpeed;
-	float m_acceleration;
-	float m_deceleration;
-	float m_turnspeed;
-	int	  m_state;
-
-};
 LINK_ENTITY_TO_CLASS(trigger_camera, CTriggerCamera)
 
 // Global Savedata for changelevel friction modifier
@@ -72,13 +31,15 @@ IMPLEMENT_SAVERESTORE(CTriggerCamera, CBaseDelay)
 
 void CTriggerCamera::Spawn(void)
 {
+	Precache();
+
 	pev->movetype = MOVETYPE_NOCLIP;
 	pev->solid = SOLID_NOT;							// Remove model & collisions
-	pev->renderamt = 0;								// The engine won't draw this model if this is set to 0 and blending is on
+	pev->renderamt = 0;
 	pev->rendermode = kRenderTransTexture;
 
 	// views won't update if camera doesn't have a model, even if invisible
-	SET_MODEL(ENT(pev), "models/player.mdl");
+	SET_MODEL(ENT(pev), "models/camera.mdl");
 
 	m_initialSpeed = pev->speed;
 	if (m_acceleration == 0)
@@ -87,6 +48,10 @@ void CTriggerCamera::Spawn(void)
 		m_deceleration = 500;
 	if (m_turnspeed == 0)
 		m_turnspeed = 40;
+}
+
+void CTriggerCamera::Precache(void) {
+	PRECACHE_MODEL("models/camera.mdl");
 }
 
 
@@ -152,6 +117,8 @@ void CTriggerCamera::TogglePlayerViews(bool enabled) {
 
 			TogglePlayerView(plr, enabled);
 		}
+
+		g_active_camera = enabled ? this : NULL;
 	}
 	else if (IsValidPlayer(m_hPlayer.GetEdict())) {
 		CBasePlayer* plr = (CBasePlayer*)m_hPlayer.GetEntity();
@@ -162,6 +129,25 @@ void CTriggerCamera::TogglePlayerViews(bool enabled) {
 
 		TogglePlayerView(plr, enabled);
 	}
+}
+
+int CTriggerCamera::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) {
+	CBaseEntity* playerCam = player->m_hViewEntity.GetEntity();
+	CBaseEntity* globalCam = g_active_camera.GetEntity();
+	
+	if (playerCam != this) {
+		// camera model pitch is inverse of the view angle.
+		// but don't invert if the player is viewing it, because then the view is also inverted.
+		state->angles.x = -state->angles.x;
+	}
+	
+	// render camera model if it's an "All players" camera that the player exited from
+	// so that they can pose and make silly faces at the players still viewing it
+	if (globalCam == this && playerCam != this) {
+		state->renderamt = 255;
+	}
+
+	return 1;
 }
 
 void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
@@ -176,6 +162,8 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 		m_flReturnTime = gpGlobals->time;
 		return;
 	}
+
+	m_activateTime = gpGlobals->time;
 
 	m_hPlayer = pActivator;
 

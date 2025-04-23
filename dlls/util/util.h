@@ -176,6 +176,14 @@ extern HashMap<custom_muzzle_flash_t> g_customMuzzleFlashes;
 
 extern std::unordered_map<std::string, StringMap> g_replacementFiles;
 
+struct MessageHistoryItem {
+	float startTime;
+	float endTime;
+};
+
+#define MAX_TEXT_CHANNELS 4
+extern MessageHistoryItem g_hudMsgHistory[MAX_TEXT_CHANNELS];
+
 // same as the STRING macro but defined as a function for easy calling in the debugger
 EXPORT const char* cstr(string_t s);
 

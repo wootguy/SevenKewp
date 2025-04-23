@@ -12,6 +12,8 @@ EXPORT extern StringSet g_precachedModels; // storing values so GET_MODEL can be
 EXPORT extern StringSet g_missingModels; // storing values so GET_MODEL can be used with MAKE_STRING
 EXPORT extern HashMap<int> g_precachedSounds;
 EXPORT extern StringSet g_precachedGeneric;
+EXPORT extern StringSet g_precachedSpr; // subset of g_precachedModels
+EXPORT extern StringSet g_precachedMdl; // subset of g_precachedModels
 EXPORT extern HashMap<int> g_precachedEvents;
 
 // resources that attempted to precache but may have been replaced with a failure model

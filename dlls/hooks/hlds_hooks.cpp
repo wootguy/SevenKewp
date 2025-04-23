@@ -49,6 +49,7 @@
 #include "lagcomp.h"
 #include "eng_wrappers.h"
 #include "te_effects.h"
+#include "CTriggerCamera.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -406,6 +407,11 @@ void ClientPutInServer( edict_t *pEntity )
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();
 
+	CTriggerCamera* activeCam = g_active_camera ? g_active_camera->MyCameraPointer() : NULL;
+	if (activeCam) {
+		activeCam->TogglePlayerView(pPlayer, true);
+	}
+
 	CALL_HOOKS_VOID(pfnClientPutInServer, pPlayer);
 }
 
@@ -515,6 +521,8 @@ void ServerDeactivate( void )
 	g_missingModels.clear();
 	g_precachedSounds.clear();
 	g_precachedEvents.clear();
+	g_precachedSpr.clear();
+	g_precachedMdl.clear();
 	g_tryPrecacheGeneric.clear();
 	g_tryPrecacheModels.clear();
 	g_tryPrecacheSounds.clear();
@@ -533,6 +541,8 @@ void ServerDeactivate( void )
 	g_cfgsExecuted = false;
 	g_weather_init_done = false;
 	g_fog_enabled = false;
+
+	g_active_camera = NULL;
 
 	memset(&g_nerfStats, 0, sizeof(NerfStats));
 	memset(&g_textureStats, 0, sizeof(TextureTypeStats));

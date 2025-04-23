@@ -452,31 +452,6 @@ void CMonsterMaker::MakeMonster( void )
 		pevCreate->targetname = pev->netname;
 	}
 
-	// unstuck monsters if spawned inside the floor/ceiling
-	// (unless it's a barnacle/turret or smth that doesn't move)
-	if (pent->v.movetype == MOVETYPE_STEP) {
-		TraceResult tr;
-		TRACE_MONSTER_HULL(pent, pent->v.origin, pent->v.origin + Vector(0, 0, maxs.z), ignore_monsters, pent, &tr);
-
-		if (tr.fAllSolid) {
-			Vector upPos = tr.vecEndPos;
-			TRACE_MONSTER_HULL(pent, upPos, upPos - Vector(0, 0, 4096), ignore_monsters, pent, &tr);
-			
-			if (!tr.fAllSolid)
-				UTIL_SetOrigin(&pent->v, tr.vecEndPos);
-
-			// not using this because it will send the monster through solid entities if the monster is spawning
-			// inside of another monster (startSolid)
-			//DROP_TO_FLOOR(pent);
-		}
-		else if (tr.fStartSolid) {
-			// was stuck in the floor, drop from the upward trace position
-			TRACE_MONSTER_HULL(pent, tr.vecEndPos, tr.vecEndPos - Vector(0, 0, maxs.z), ignore_monsters, pent, &tr);
-			if (!tr.fAllSolid)
-				UTIL_SetOrigin(&pent->v, tr.vecEndPos);
-		}
-	}
-
 	m_cLiveChildren++;// count this monster
 	m_cNumMonsters--;
 

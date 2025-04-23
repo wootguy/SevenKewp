@@ -1479,6 +1479,19 @@ void CBasePlayer::PlayerDeathThink(void)
 {
 	float flForward;
 
+	// make sure a death animation is playing
+	// (can be different if killed by multiple explosives during the same frame by shooting them)
+	switch (m_IdealActivity) {
+	case ACT_DIESIMPLE:
+	case ACT_DIE_HEADSHOT:
+	case ACT_DIE_GUTSHOT:
+	case ACT_DIEFORWARD:
+	case ACT_DIEBACKWARD:
+		break;
+	default:
+		SetAnimation(PLAYER_DIE);
+	}
+
 	if (FBitSet(pev->flags, FL_ONGROUND))
 	{
 		flForward = pev->velocity.Length() - 20;

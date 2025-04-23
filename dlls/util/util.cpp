@@ -107,6 +107,8 @@ HashMap<custom_muzzle_flash_t> g_customMuzzleFlashes;
 // maps a lower-cased file path to a replacement map
 std::unordered_map<std::string, StringMap> g_replacementFiles;
 
+MessageHistoryItem g_hudMsgHistory[MAX_TEXT_CHANNELS];
+
 TYPEDESCRIPTION	gEntvarsDescription[] =
 {
 	DEFINE_ENTITY_FIELD(classname, FIELD_STRING),
@@ -1203,12 +1205,42 @@ void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, con
 		MESSAGE_END();
 	}
 	else {
+		int chan = textparms.channel % MAX_TEXT_CHANNELS;
+		uint16_t y = FixedSigned16(textparms.y, 1 << 13);
+		float holdTime = textparms.holdTime;
+
+		if (textparms.effect != 2) {
+			MessageHistoryItem& lastMessage = g_hudMsgHistory[chan];
+			float now = g_engfuncs.pfnTime();
+
+			if (lastMessage.endTime >= now) {
+				// A previous message using this channel hasn't ended yet. Sending a new message does
+				// not reset the fading effects. To prevent this message from fading out too quickly,
+				// the previous message's hold time must be extended.
+				float timePassed = now - lastMessage.startTime;
+				holdTime += timePassed;
+				if (timePassed >= 255.0f) {
+					ALERT(at_console, "HUD message hold time extended past 255 seconds. Text will flicker/fadeout unexpectedly.\n", holdTime);
+					lastMessage.startTime = 0;
+					lastMessage.endTime = 0;
+				}
+				else {
+					//ALERT(at_console, "HUD message hold time extended to %.1f to avoid early fadeout\n", holdTime);
+				}
+			}
+			else {
+				lastMessage.startTime = now;
+			}
+
+			lastMessage.endTime = lastMessage.startTime + textparms.fadeinTime + holdTime + textparms.fadeoutTime;
+		}
+
 		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, NULL, pEntity ? pEntity->edict() : NULL);
 		WRITE_BYTE(TE_TEXTMESSAGE);
-		WRITE_BYTE(textparms.channel & 0xFF);
+		WRITE_BYTE(chan);
 
 		WRITE_SHORT(FixedSigned16(textparms.x, 1 << 13));
-		WRITE_SHORT(FixedSigned16(textparms.y, 1 << 13));
+		WRITE_SHORT(y);
 		WRITE_BYTE(textparms.effect);
 
 		WRITE_BYTE(textparms.r1);
@@ -1223,7 +1255,7 @@ void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, con
 
 		WRITE_SHORT(FixedUnsigned16(textparms.fadeinTime, 1 << 8));
 		WRITE_SHORT(FixedUnsigned16(textparms.fadeoutTime, 1 << 8));
-		WRITE_SHORT(FixedUnsigned16(textparms.holdTime, 1 << 8));
+		WRITE_SHORT(FixedUnsigned16(holdTime, 1 << 8));
 
 		if (textparms.effect == 2)
 			WRITE_SHORT(FixedUnsigned16(textparms.fxTime, 1 << 8));

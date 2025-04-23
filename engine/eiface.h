@@ -127,6 +127,7 @@ typedef struct enginefuncs_s
 
 	/**
 	*	Sets the model of the given entity. Also changes the entity bounds based on the model.
+	*   This will change the casing of the model path if precached with a different path.
 	*	@param pEdict Entity to set the model on.
 	*	@param pszModelName Name of the model to set. This string must live for at least as long as the map itself.
 	*	@see pfnPrecacheModel

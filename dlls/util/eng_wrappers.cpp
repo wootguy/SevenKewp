@@ -17,6 +17,8 @@ StringSet g_tryPrecacheModels;
 StringSet g_tryPrecacheSounds;
 StringSet g_tryPrecacheGeneric;
 StringSet g_tryPrecacheEvents;
+StringSet g_precachedSpr;
+StringSet g_precachedMdl;
 
 string_t g_indexModels[MAX_PRECACHE]; // maps an index to a model name
 string_t g_indexSounds[MAX_PRECACHE]; // maps an index to a model name
@@ -466,17 +468,19 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 	// account for automatic engine precaching of bsp models
 	int precachedBspModels = sv_precache_bspmodels->value ? g_bsp.entityBspModelCount : 0;
 
-	// Tested with sc_darknebula.
 	if (g_tryPrecacheModels.size() + precachedBspModels < MAX_PRECACHE_MODEL) {
-		if (!g_precachedModels.hasKey(path))
-			g_precachedModels.put(path);
+		g_precachedModels.put(path);
 		string_t spath = ALLOC_STRING(path);
 		int modelIdx = g_engfuncs.pfnPrecacheModel(STRING(spath));
 		g_indexModels[modelIdx] = spath;
 
 		std::string pathstr = std::string(path);
 		if (pathstr.size() && pathstr.find(".mdl") == pathstr.size() - 4) {
+			g_precachedMdl.put(path);
 			PRECACHE_MODEL_EXTRAS(ent, path, GET_MODEL_PTR(modelIdx));
+		}
+		if (pathstr.size() && pathstr.find(".spr") == pathstr.size() - 4) {
+			g_precachedSpr.put(path);
 		}
 
 		CALL_HOOKS(int, pfnPrecacheModelPost, path);
@@ -664,6 +668,10 @@ const char* INDEX_SOUND(int soundIdx) {
 
 
 studiohdr_t* GET_MODEL_PTR(edict_t* edict) {
+	if (edict->v.model && g_precachedSpr.hasKey(STRING(edict->v.model))) {
+		return NULL; // engine crash if getting model ptr for a sprite
+	}
+
 	studiohdr_t* header = (studiohdr_t*)g_engfuncs.pfnGetModelPtr(edict);
 
 	if (!header) {

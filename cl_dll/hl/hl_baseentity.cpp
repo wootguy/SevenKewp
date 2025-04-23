@@ -184,6 +184,7 @@ void CBaseMonster :: Move ( float flInterval ) { }
 BOOL CBaseMonster:: ShouldAdvanceRoute( float flWaypointDist ) { return FALSE; }
 void CBaseMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval ) { }
 void CBaseMonster :: MonsterInit ( void ) { }
+void CBaseMonster :: UnstuckSpawnPosition ( void ) { }
 void CBaseMonster :: MonsterInitThink ( void ) { }
 void CBaseMonster :: StartMonster ( void ) { }
 void CBaseMonster :: MovementComplete( void ) { }

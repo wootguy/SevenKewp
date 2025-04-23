@@ -232,6 +232,7 @@ public:
 		static int DefaultClassify(const char* monstertype);
 		virtual void Precache ( void ); // handles replacement file logic
 		virtual void MonsterInit ( void );
+		virtual void UnstuckSpawnPosition ( void ); // move into the world if spawned stuck in the floor/ceiling
 		virtual void MonsterInitDead( void );	// Call after animation/pose is set up
 		virtual void BecomeDead( void );
 		void CorpseFallThink( void );
