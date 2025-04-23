@@ -586,7 +586,7 @@ void CBigMomma :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 void CBigMomma :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
 {
-	if ( ptr->iHitgroup != 1 )
+	if ( ptr->iHitgroup != 1 && !(bitsDamageType & DMG_SHOCK) )
 	{
 		// didn't hit the sack?
 		

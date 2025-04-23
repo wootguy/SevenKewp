@@ -20,7 +20,7 @@ public:
 	void ConstantThink();
 	void HurtAllTargets();
 	void HurtTarget(CBaseEntity* target);
-	virtual const char* DisplayName() { return "Injury"; }
+	virtual const char* DisplayName() { return "Hazard"; }
 
 	string_t m_targetClass;
 	float m_armorDmg;
