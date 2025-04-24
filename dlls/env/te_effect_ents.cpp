@@ -13,7 +13,6 @@
 // - player sprays (impossible? Can't be applied to precached BSPs)
 // - TE_BUBBLETRAIL (underwater bullets)
 // - crosshairs shake a bit beyond 8192, and a lot near 32768 (how tf can origin affect that?)
-// - smoke should be more grey
 
 #define TE_EXPLOSION_SPR "sprites/zerogxplode.spr"
 

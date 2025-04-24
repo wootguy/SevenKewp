@@ -341,7 +341,7 @@ int CBullsquid::IRelationship ( CBaseEntity *pTarget )
 //=========================================================
 int CBullsquid :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	if (IsImmune(pevAttacker))
+	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
 	float flDist;

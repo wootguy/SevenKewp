@@ -539,7 +539,7 @@ BOOL IsFacing( entvars_t *pevTest, const Vector &reference )
 
 int CBarney :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
-	if (IsImmune(pevAttacker))
+	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
 	// make sure friends talk about it if player hurts talkmonsters...

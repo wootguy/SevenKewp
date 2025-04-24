@@ -493,8 +493,10 @@ void UTIL_Smoke(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate) {
 		MESSAGE_END();
 	}
 	else {
-		CBaseEntity* ent = CBaseEntity::Create("te_smoke", origin, g_vecZero, false);
-		SET_MODEL(ent->edict(), INDEX_MODEL(sprIndex));
+		StringMap keys = {
+			{"model", INDEX_MODEL(sprIndex)}
+		};
+		CBaseEntity* ent = CBaseEntity::Create("te_smoke", origin, g_vecZero, false, NULL, keys);
 		ent->pev->scale = scale / 10.0f;
 		ent->pev->framerate = framerate;
 		int brightness = RANDOM_LONG(1, 32);

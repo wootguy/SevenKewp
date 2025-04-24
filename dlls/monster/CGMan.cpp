@@ -213,7 +213,7 @@ void CGMan :: RunTask( Task_t *pTask )
 //=========================================================
 int CGMan :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
 {
-	if (IsImmune(pevAttacker))
+	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
 	pev->health = pev->max_health / 2; // always trigger the 50% damage aitrigger

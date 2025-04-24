@@ -762,16 +762,17 @@ void CBaseTurret::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vec
 // take damage. bitsDamageType indicates type of damage sustained, ie: DMG_BULLET
 int CBaseTurret::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
-	if (IsImmune(pevAttacker) && flDamage > 0) {
+	if (IsImmune(pevAttacker, flDamage)) {
 		return 0;
 	}
 
 	if (!m_iOn)
 		flDamage /= 10.0;
 
-	GiveScorePoints(pevAttacker, flDamage);
-
+	float oldHealth = pev->health;
 	pev->health = V_min(pev->max_health, pev->health - flDamage);
+
+	GiveScorePoints(pevAttacker, oldHealth - pev->health);
 
 	if (pev->health <= 0)
 	{

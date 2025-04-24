@@ -616,7 +616,7 @@ void CBigMomma :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 
 int CBigMomma :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	if (IsImmune(pevAttacker))
+	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
 	// Don't take any acid damage -- BigMomma's mortar is acid

@@ -1451,14 +1451,14 @@ void CBasePlayer::WaterMove()
 		if (pev->dmgtime < gpGlobals->time) {
 			TakeDamage(VARS(eoNullEntity), VARS(eoNullEntity), 10 * pev->waterlevel, DMG_BURN);
 			SetSuitUpdate("!HEV_FIRE", FALSE, SUIT_NEXT_IN_1MIN); // extreme heat damage
-			pev->dmgtime = gpGlobals->time + 1.0f;
+			pev->dmgtime = gpGlobals->time + 0.1f;
 		}
 	}
 	else if (pev->watertype == CONTENTS_SLIME)		// do damage
 	{
 		if (pev->dmgtime < gpGlobals->time) {
-			TakeDamage(VARS(eoNullEntity), VARS(eoNullEntity), 4 * pev->waterlevel, DMG_ACID);
-			pev->dmgtime = gpGlobals->time + 1.0f;
+			TakeDamage(VARS(eoNullEntity), VARS(eoNullEntity), 10 * pev->waterlevel, DMG_ACID);
+			pev->dmgtime = gpGlobals->time + 0.1f;
 		}
 	}
 	
@@ -3256,7 +3256,7 @@ void CBasePlayer::PostThink()
 
 			TraceResult tr;
 			int hullType = (pev->flags & FL_DUCKING) ? head_hull : human_hull;
-			TRACE_HULL(pev->origin, pev->origin + Vector(0,0,-1), dont_ignore_monsters, hullType, edict(), &tr);
+			TRACE_HULL(pev->origin, pev->origin + Vector(0,0,-8), dont_ignore_monsters, hullType, edict(), &tr);
 
 			// split fall damage with self and whatever ent was landed on
 			CBaseMonster* ent = CBaseEntity::Instance(tr.pHit)->MyMonsterPointer();

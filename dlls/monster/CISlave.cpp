@@ -613,7 +613,7 @@ void CISlave :: Precache()
 
 int CISlave :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
-	if (IsImmune(pevAttacker))
+	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
 	// don't slash one of your own

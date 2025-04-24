@@ -1209,7 +1209,7 @@ void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, con
 		uint16_t y = FixedSigned16(textparms.y, 1 << 13);
 		float holdTime = textparms.holdTime;
 
-		if (textparms.effect != 2) {
+		if (textparms.effect != 2 && !pEntity) {
 			MessageHistoryItem& lastMessage = g_hudMsgHistory[chan];
 			float now = g_engfuncs.pfnTime();
 

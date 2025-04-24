@@ -205,8 +205,10 @@ void CChumtoad::PrescheduleThink() {
 			// using vanilla HL effects until this mod is standalone
 			Vector pos = pev->origin + Vector(RANDOM_FLOAT(pev->mins.x, pev->maxs.x)*8, RANDOM_FLOAT(pev->mins.y, pev->maxs.y)*8, 1.0f);
 			
-			CBaseEntity* smoke = CBaseEntity::Create("te_smoke", pos, g_vecZero, true);
-			SET_MODEL(smoke->edict(), TOXIC_SPRITE);
+			static StringMap keys = {
+				{"model", TOXIC_SPRITE}
+			};
+			CBaseEntity* smoke = CBaseEntity::Create("te_smoke", pos, g_vecZero, true, NULL, keys);
 			smoke->pev->scale = RANDOM_LONG(80, 120) / 10.0f;
 			smoke->pev->framerate = RANDOM_LONG(15, 25);
 			smoke->pev->rendercolor = Vector(240, 0, 255) * RANDOM_FLOAT(0.4f, 0.7f);
