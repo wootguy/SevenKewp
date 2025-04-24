@@ -86,7 +86,7 @@ void CSentry::Shoot(Vector& vecSrc, Vector& vecDirToEnemy)
 
 int CSentry::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
-	if (IsImmune(pevAttacker))
+	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
 	if (!m_iOn)
@@ -96,9 +96,11 @@ int CSentry::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float f
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 
-	GiveScorePoints(pevAttacker, flDamage);
+	float oldHealth = pev->health;
+	pev->health = V_min(pev->max_health, pev->health - flDamage);
 
-	pev->health -= flDamage;
+	GiveScorePoints(pevAttacker, oldHealth - pev->health);
+
 	if (pev->health <= 0)
 	{
 		CBaseMonster::Killed(pev, GIB_NEVER); // for monstermaker death notice + death trigger

@@ -1735,8 +1735,7 @@ bool CBaseEntity::BreakableUse(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 	{
 		//pev->angles.y = m_angle; // TODO: original HL code. what was this for? seems like it would break anything without an origin brush
 		
-		UTIL_MakeVectors(pev->angles);
-		g_vecAttackDir = gpGlobals->v_forward;
+		g_vecAttackDir = Vector(0,0,0);
 
 		BreakableDie(pActivator);
 
@@ -1808,15 +1807,7 @@ void CBaseEntity::BreakableDie(CBaseEntity* pActivator) {
 		break;
 	}
 
-	if (m_breakFlags & FL_BREAK_DIRECTIONAL_GIBS)
-		vecVelocity = g_vecAttackDir * 200;
-	else
-	{
-		vecVelocity.x = 0;
-		vecVelocity.y = 0;
-		vecVelocity.z = 0;
-	}
-
+	vecVelocity = (m_breakFlags & FL_BREAK_DIRECTIONAL_GIBS) ? g_vecAttackDir * 150 : g_vecZero;
 	vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
 	UTIL_BreakModel(vecSpot, pev->size, vecVelocity, 10, m_breakModelId, 0, 25, cFlag);
 

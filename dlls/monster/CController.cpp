@@ -190,7 +190,7 @@ void CController :: SetYawSpeed ( void )
 
 int CController :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	if (IsImmune(pevAttacker))
+	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
 	// HACK HACK -- until we fix this.

@@ -455,7 +455,7 @@ public:
 	virtual const char* DisplayName();
 
 	// handles mp_npckill/killnpc cvars and takedamage key
-	bool IsImmune(entvars_t* attacker);
+	bool IsImmune(entvars_t* attacker, float damage);
 
 	virtual BOOL IsTurret() { return 0; } // sentry/turret/miniturret
 
