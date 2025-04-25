@@ -233,6 +233,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CTriggerChangeValue.cpp
 	triggers/CTriggerCondition.cpp
 	triggers/CTriggerCreateEntity.cpp
+	triggers/CTriggerEffect.cpp
 	triggers/CTriggerEntityIterator.cpp
 	triggers/CTriggerHurtRemote.cpp
 	triggers/CTriggerRandom.cpp

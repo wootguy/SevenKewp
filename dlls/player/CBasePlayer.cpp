@@ -2462,7 +2462,7 @@ void CBasePlayer::PreThink(void)
 	CheckSuitUpdate();
 
 	// only show weapon hud if player has a weapon besides the suit
-	if (pev->weapons & ~(1 << WEAPON_SUIT)) {
+	if (pev->weapons & ~(1 << WEAPON_SUIT) && !m_weaponsDisabled) {
 		m_iHideHUD &= ~HIDEHUD_WEAPONS;
 	}
 	else {
@@ -3435,11 +3435,7 @@ void CBasePlayer::Spawn( void )
 	m_lastDropTime = 0;
 	m_lastDamageEnt = NULL;
 	m_lastDamageType = 0;
-	m_friction_modifier = 1.0f;
-	m_gravity_modifier = 0;
-	m_speed_modifier = 0;
-	m_airTimeModifier = 0;
-	m_weaponsDisabled = false;
+	ResetEffects();
 	m_droppedDeathWeapons = false;
 	if (m_flashlightEnabled && flashlight.value >= 2) {
 		UTIL_ScreenFade(this, g_vecZero, 0, 0, 0, 0, true); // remove nightvision fade
@@ -4953,11 +4949,33 @@ void CBasePlayer :: EnableControl(BOOL fControl)
 }
 
 void CBasePlayer::DisableWeapons(bool disable) {
-	if (disable) {
-		SelectItem("weapon_inventory");
+	bool changed = m_weaponsDisabled != disable;
+	m_weaponsDisabled = disable;
+
+	if (!changed) {
+		return;
 	}
 
-	m_weaponsDisabled = disable;
+	if (disable) {
+		if (HasNamedPlayerItem("weapon_inventory")) {
+			SelectItem("weapon_inventory");
+		}
+		else if (m_pActiveItem) {
+			CBasePlayerWeapon* wep = m_pActiveItem.GetEntity()->GetWeaponPtr();
+			wep->Holster();
+			m_pLastItem = m_pActiveItem;
+			m_pActiveItem = NULL;
+		}
+	}
+	else {
+		CBasePlayerWeapon* wep = m_pLastItem ? m_pLastItem.GetEntity()->GetWeaponPtr() : NULL;
+		if (wep) {
+			SwitchWeapon(wep);
+		}
+		else {
+			g_pGameRules->GetNextBestWeapon(this, NULL);
+		}
+	}
 }
 
 //=========================================================
@@ -6213,11 +6231,6 @@ void CBasePlayer::Revive() {
 		// or next best weapon
 		g_pGameRules->GetNextBestWeapon(this, NULL);
 	}
-}
-
-float CBasePlayer::GetDamageModifier() {
-	float weapon_damage_mult = m_pActiveItem ? m_pActiveItem->GetDamageModifier() : 1.0f;
-	return CBaseMonster::GetDamageModifier() * weapon_damage_mult;
 }
 
 float CBasePlayer::GetDamage(float defaultDamage) {
