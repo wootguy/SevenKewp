@@ -376,6 +376,7 @@ void CTripmine::Spawn( )
 
 void CTripmine::Precache( void )
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_tripmine.mdl";
 	m_defaultModelP = "models/p_tripmine.mdl";
 	m_defaultModelW = "models/v_tripmine.mdl";

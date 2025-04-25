@@ -247,6 +247,7 @@ void CCrossbow::Spawn( )
 
 void CCrossbow::Precache( void )
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_crossbow.mdl";
 	m_defaultModelP = "models/p_crossbow.mdl";
 	m_defaultModelW = "models/w_crossbow.mdl";

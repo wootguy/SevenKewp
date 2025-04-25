@@ -68,6 +68,7 @@ void CPython::Spawn( )
 
 void CPython::Precache( void )
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_357.mdl";
 	m_defaultModelP = "models/p_357.mdl";
 	m_defaultModelW = "models/w_357.mdl";

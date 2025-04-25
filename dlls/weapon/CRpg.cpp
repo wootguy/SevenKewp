@@ -484,6 +484,7 @@ void CRpg::Spawn( )
 
 void CRpg::Precache( void )
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_rpg.mdl";
 	m_defaultModelP = "models/p_rpg.mdl";
 	m_defaultModelW = "models/w_rpg.mdl";

@@ -114,6 +114,7 @@ StringSet timeCriticalCvars = {
 	"mp_mergemodels",
 	"mp_bigmap",
 	"mp_default_medkit",
+	"mp_weaponhands",
 
 	// to decide if the map skill file should be skipped
 	"mp_skill_allow",
@@ -201,11 +202,14 @@ void execMapCfg() {
 		"nomaptrans",
 		"mp_npcidletalk",
 		"npc_dropweapons",
+		"mp_default_medkit",
+		"mp_weaponhands",
 	};
 
 	static StringSet itemNames = {
 		"weapon_crossbow",
 		"weapon_crowbar",
+		"weapon_knife",
 		"weapon_egon",
 		"weapon_gauss",
 		"weapon_handgrenade",
@@ -334,7 +338,12 @@ void execMapCfg() {
 
 			// must know this value now to know what to precache during this frame
 			if (timeCriticalCvars.hasKey(name.c_str())) {
-				CVAR_SET_FLOAT(name.c_str(), atoi(value.c_str()));
+				if (name == "mp_weaponhands") {
+					CVAR_SET_STRING(name.c_str(), value.c_str());
+				}
+				else {
+					CVAR_SET_FLOAT(name.c_str(), atoi(value.c_str()));
+				}
 				continue;
 			}
 

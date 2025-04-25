@@ -400,7 +400,7 @@ void CBasePlayerWeapon::RetireWeapon(void) { }
 void CBasePlayerWeapon::KeyValue(KeyValueData* pkvd) {}
 void CBasePlayerWeapon::Precache() {}
 CBaseEntity* CBasePlayerWeapon::Respawn() { return NULL;  }
-const char* CBasePlayerWeapon::GetModelV() { return 0; }
+const char* CBasePlayerWeapon::GetModelV(const char*) { return 0; }
 const char* CBasePlayerWeapon::GetModelP() { return 0; }
 const char* CBasePlayerWeapon::GetModelW() { return 0; }
 void CBasePlayerWeapon::SetWeaponModelW() { }

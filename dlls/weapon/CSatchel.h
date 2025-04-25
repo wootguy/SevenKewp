@@ -25,6 +25,7 @@ public:
 	BOOL CanDeploy( void );
 	BOOL Deploy( void );
 	BOOL IsUseable( void );
+	const char* GetSatchelRadioModel();
 	
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle( void );
