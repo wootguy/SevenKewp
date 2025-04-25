@@ -183,7 +183,7 @@ struct MessageHistoryItem {
 };
 
 #define MAX_TEXT_CHANNELS 4
-extern MessageHistoryItem g_hudMsgHistory[MAX_TEXT_CHANNELS];
+extern MessageHistoryItem g_hudMsgHistory[MAX_TEXT_CHANNELS*33];
 
 // same as the STRING macro but defined as a function for easy calling in the debugger
 EXPORT const char* cstr(string_t s);

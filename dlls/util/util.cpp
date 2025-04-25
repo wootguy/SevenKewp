@@ -107,7 +107,7 @@ HashMap<custom_muzzle_flash_t> g_customMuzzleFlashes;
 // maps a lower-cased file path to a replacement map
 std::unordered_map<std::string, StringMap> g_replacementFiles;
 
-MessageHistoryItem g_hudMsgHistory[MAX_TEXT_CHANNELS];
+MessageHistoryItem g_hudMsgHistory[MAX_TEXT_CHANNELS*33];
 
 TYPEDESCRIPTION	gEntvarsDescription[] =
 {
@@ -1209,8 +1209,9 @@ void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, con
 		uint16_t y = FixedSigned16(textparms.y, 1 << 13);
 		float holdTime = textparms.holdTime;
 
-		if (textparms.effect != 2 && !pEntity) {
-			MessageHistoryItem& lastMessage = g_hudMsgHistory[chan];
+		if (textparms.effect != 2) {
+			int poffset = pEntity ? pEntity->entindex()*MAX_TEXT_CHANNELS : 0;
+			MessageHistoryItem& lastMessage = g_hudMsgHistory[poffset + chan];
 			float now = g_engfuncs.pfnTime();
 
 			if (lastMessage.endTime >= now) {
@@ -1233,6 +1234,13 @@ void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, con
 			}
 
 			lastMessage.endTime = lastMessage.startTime + textparms.fadeinTime + holdTime + textparms.fadeoutTime;
+
+			if (!pEntity) {
+				// update history for all players on this channel
+				for (int i = 1; i < 33; i++) {
+					g_hudMsgHistory[i * MAX_TEXT_CHANNELS + chan] = lastMessage;
+				}
+			}
 		}
 
 		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, NULL, pEntity ? pEntity->edict() : NULL);
