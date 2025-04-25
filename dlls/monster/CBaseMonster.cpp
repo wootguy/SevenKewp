@@ -2227,6 +2227,7 @@ void CBaseMonster::MonsterInit(void)
 	ClearSchedule();
 	RouteClear();
 	InitBoneControllers(); // FIX: should be done in Spawn
+	ResetEffects();
 
 	m_iHintNode = NO_NODE;
 
@@ -7918,17 +7919,23 @@ int CBaseMonster::CountInventoryItems() {
 void CBaseMonster::ApplyEffects() {
 	CBasePlayer* plr = IsPlayer() ? (CBasePlayer*)this : NULL;
 
-	Vector total_glow = g_vecZero;
-	float total_damage = 0;
-	float total_respiration = 0;
+	Vector total_glow = m_tef_glow;
+	float total_damage = m_tef_damage;
+	float total_respiration = m_tef_respiration;
 	float total_friction = m_friction_modifier;
 	float total_gravity = m_gravity_modifier;
 	float total_speed = m_speed_modifier;
-	bool total_block_weapon = false;
-	bool total_invulnerable = false;
-	bool total_invisible = false;
-	bool total_nonsolid = false;
+	bool total_block_weapon = m_tef_block_weapons;
+	bool total_invulnerable = m_tef_invulnerable;
+	bool total_invisible = m_tef_invisible;
+	bool total_nonsolid = m_tef_nonsolid;
 	bool any_permanent = false;
+
+	// use effect values if no other entities are applying modifiers, else multiply them together
+	total_friction = total_friction ? total_friction*m_tef_friction : m_tef_friction;
+	total_gravity = total_gravity ? total_gravity * m_tef_gravity : m_tef_gravity;
+	total_damage = total_damage ? total_damage * m_tef_damage : m_tef_damage;
+	total_speed = total_speed ? total_speed * m_tef_speed : m_tef_speed;
 
 	CItemInventory* item = m_inventory ? m_inventory.GetEntity()->MyInventoryPointer() : NULL;
 	while (item) {
@@ -8015,10 +8022,47 @@ void CBaseMonster::ApplyEffects() {
 	pev->maxspeed = total_speed * sv_maxspeed->value;
 	m_damage_modifier = total_damage ? total_damage : 1.0f;
 
+	// 0 = default, so set the smallest possible speed if set to 0 (synced with delta.lst)
+	if (pev->gravity == 0) {
+		pev->gravity = 1.0f / 32.0f;
+	}
+	if (pev->friction == 0) {
+		pev->friction = 1.0f / 8.0f;
+	}
+	if (pev->maxspeed == 0) {
+		pev->maxspeed = 1.0f / 10.0f;
+	}
+
 	if (plr) {
 		plr->DisableWeapons(total_block_weapon);
+
+		total_respiration = V_max(-2.9f, total_respiration); // prevent water exit sound spam
+		float airChange = total_respiration - plr->m_airTimeModifier;
 		plr->m_airTimeModifier = total_respiration;
+		plr->pev->air_finished += airChange;
 	}
+}
+
+void CBaseMonster::ResetEffects() {
+	// modifiers from item_inventory, func_friction, trigger_gravity
+	m_friction_modifier = 1.0f;
+	m_gravity_modifier = 1.0f;
+	m_speed_modifier = 1.0f;
+	m_airTimeModifier = 0;
+	m_damage_modifier = 1.0f;
+	m_weaponsDisabled = false;
+
+	// trigger_effect modifiers
+	m_tef_glow = g_vecZero;
+	m_tef_block_weapons = false;
+	m_tef_invulnerable = false;
+	m_tef_invisible = false;
+	m_tef_nonsolid = false;
+	m_tef_respiration = 0;
+	m_tef_friction = 1.0f;
+	m_tef_gravity = 1.0f;
+	m_tef_speed = 1.0f;
+	m_tef_damage = 1.0f;
 }
 
 void CBaseMonster::SetRevivalVars() {

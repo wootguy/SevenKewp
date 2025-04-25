@@ -347,7 +347,6 @@ void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore ) { }
 void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore ) { } 
 Vector CBasePlayer::BodyTarget(const Vector& posSrc) { return Vector(); }
 void CBasePlayer::Revive() { }
-float CBasePlayer::GetDamageModifier() { return 0; }
 float CBasePlayer::GetDamage(float defaultDamage) { return defaultDamage; }
 const char* CBasePlayer::GetDeathNoticeWeapon() { return 0; }
 

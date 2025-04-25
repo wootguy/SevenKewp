@@ -73,6 +73,11 @@ public:
 	// hack to allow corpse gibbing of non-solid corpses
 	void SolidifyNearbyCorpses(bool solidState);
 
+	virtual float GetDamageModifier() {
+		CBasePlayer* plr = GetPlayer();
+		return plr ? plr->GetDamageModifier() : 1.0f;
+	}
+
 	float m_flPumpTime;
 	int		m_fInSpecialReload;									// Are we in the middle of a reload for the shotguns
 	float	m_flNextPrimaryAttack;								// soonest time ItemPostFrame will call PrimaryAttack

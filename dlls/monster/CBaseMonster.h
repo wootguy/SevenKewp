@@ -180,6 +180,20 @@ public:
 	float m_speed_modifier; // speed modifier used in cumulative effects
 	float m_damage_modifier; // attack damage modifier (set automatically by inventory items)
 	float m_last_friction_trigger_touch; // last time this entity touched a friction trigger
+	bool m_weaponsDisabled; // if set, disallow using weapons (besides the inventory weapon)
+	float m_airTimeModifier; // how much longer/shorter a player can hold their breath
+
+	// trigger_effect modifiers. Combined with modifiers from item_inventory/func_friction/etc.
+	Vector m_tef_glow;
+	bool m_tef_block_weapons;
+	bool m_tef_invulnerable;
+	bool m_tef_invisible;
+	bool m_tef_nonsolid;
+	float m_tef_respiration;
+	float m_tef_friction;
+	float m_tef_gravity;
+	float m_tef_speed;
+	float m_tef_damage;
 
 	Vector m_lastInterpOrigin; // for interpolated origin calculation
 
@@ -475,10 +489,12 @@ public:
 	// applies cumulative effects from inventory, friction, and gravity triggers
 	void ApplyEffects();
 
+	void ResetEffects();
+
 	void SetRevivalVars(); // set vars needed for revival. Call on death.
 	virtual void Revive();
 
-	virtual float GetDamageModifier();
+	virtual float GetDamageModifier() override;
 
 	virtual float GetDamage(float defaultDamage);
 
