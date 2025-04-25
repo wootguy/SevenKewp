@@ -3326,6 +3326,8 @@ void CBasePlayer::PostThink()
 	//UpdateMonsterInfo();
 	UpdateScore();
 
+	NightvisionUpdate();
+
 pt_end:
 #if defined( CLIENT_WEAPONS )
 		// Decay timers on weapons
@@ -3907,7 +3909,7 @@ CBaseEntity *FindEntityForward( CBaseEntity *pMe )
 
 BOOL CBasePlayer :: FlashlightIsOn( void )
 {
-	return FBitSet(pev->effects, EF_DIMLIGHT);
+	return m_flashlightEnabled;
 }
 
 void CBasePlayer :: FlashlightTurnOn( void )
@@ -3919,29 +3921,48 @@ void CBasePlayer :: FlashlightTurnOn( void )
 
 	if ( (pev->weapons & (1<<WEAPON_SUIT)) )
 	{
-		EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
-		SetBits(pev->effects, EF_DIMLIGHT);
+		m_flashlightEnabled = true;
+
+		if (flashlight.value == 1) {
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM);
+			SetBits(pev->effects, EF_DIMLIGHT);
+		}
+		else {
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, SOUND_NIGHTVISION_ON, 1.0, ATTN_NORM, 0, PITCH_NORM);
+			UTIL_ScreenFade(this, m_nightvisionColor.ToVector(), 0.1f, 5.0f, 255, FFADE_MODULATE | FFADE_OUT);
+			
+			// give some time to fade in
+			m_lastNightvisionUpdate = m_lastNightvisionFadeUpdate = g_engfuncs.pfnTime();
+		}
+		
 		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 		WRITE_BYTE(1);
 		WRITE_BYTE(m_iFlashBattery);
 		MESSAGE_END();
 
 		m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
-
 	}
 }
 
 void CBasePlayer :: FlashlightTurnOff( void )
 {
-	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
-    ClearBits(pev->effects, EF_DIMLIGHT);
+	m_flashlightEnabled = false;
+
+	if (flashlight.value == 1) {
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM);
+		ClearBits(pev->effects, EF_DIMLIGHT);
+	}
+	else {
+		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, SOUND_NIGHTVISION_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM);
+		UTIL_ScreenFade(this, m_nightvisionColor.ToVector(), 0.1f, 0.15f, 255, FFADE_MODULATE | FFADE_IN);
+	}
+
 	MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 	WRITE_BYTE(0);
 	WRITE_BYTE(m_iFlashBattery);
 	MESSAGE_END();
 
 	m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
-
 }
 
 /*
@@ -6509,4 +6530,43 @@ int CBasePlayer::GetCurrentIdForConflictedSlot(int wepId) {
 
 const char* CBasePlayer::GetDeathNoticeWeapon() {
 	return m_pActiveItem ? m_pActiveItem->GetDeathNoticeWeapon() : "skull";
+}
+
+void CBasePlayer::NightvisionUpdate() {
+
+	if (!m_flashlightEnabled || flashlight.value < 2 || g_engfuncs.pfnTime() - m_lastNightvisionUpdate < 0.05f) {
+		return;
+	}
+
+	m_lastNightvisionUpdate = g_engfuncs.pfnTime();
+
+	const int radius = 100; // 255 makes more sense, but it's really laggy for all PCs
+	const RGB color = RGB(128, 128, 128);
+	const int life = 2;
+	const int decay = 1;
+
+	if (UTIL_IsValidTempEntOrigin(pev->origin)) {
+		// unreliable messages can be sent faster
+		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, pev);
+		WRITE_BYTE(TE_DLIGHT);
+		WRITE_COORD_VECTOR(pev->origin);
+		WRITE_BYTE(radius);
+		WRITE_BYTE(color.r);
+		WRITE_BYTE(color.g);
+		WRITE_BYTE(color.b);
+		WRITE_BYTE(life);
+		WRITE_BYTE(decay);
+		MESSAGE_END();
+	}
+	else {
+		UTIL_DLight(pev->origin, radius, color, life, decay);
+	}
+
+	if (g_engfuncs.pfnTime() - m_lastNightvisionFadeUpdate < 0.5f) {
+		return;
+	}
+	m_lastNightvisionFadeUpdate = g_engfuncs.pfnTime();
+
+	// no need for a reliable message. At least 1 of 10 attempts should succeeded
+	UTIL_ScreenFade(this, m_nightvisionColor.ToVector(), 0.1f, 5.0f, 255, FFADE_MODULATE | FFADE_IN, false);
 }

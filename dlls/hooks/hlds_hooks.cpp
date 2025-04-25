@@ -404,6 +404,8 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->LoadScore();
 	pPlayer->m_lastUserInput = g_engfuncs.pfnTime();
 
+	pPlayer->m_nightvisionColor = RGB(0, 255, 0);
+
 	// Allocate a CBasePlayer for pev, and call spawn
 	pPlayer->Spawn();
 
@@ -1024,8 +1026,10 @@ void ClientPrecache( void )
 	PRECACHE_SOUND_ENT(NULL, "common/npc_step3.wav");
 	PRECACHE_SOUND_ENT(NULL, "common/npc_step4.wav");
 
-	PRECACHE_SOUND_ENT(NULL,  SOUND_FLASHLIGHT_ON );
-	PRECACHE_SOUND_ENT(NULL,  SOUND_FLASHLIGHT_OFF );
+	PRECACHE_SOUND_ENT(NULL, SOUND_FLASHLIGHT_ON );
+	PRECACHE_SOUND_ENT(NULL, SOUND_FLASHLIGHT_OFF );
+	PRECACHE_SOUND_ENT(NULL, SOUND_NIGHTVISION_ON);
+	PRECACHE_SOUND_ENT(NULL, SOUND_NIGHTVISION_OFF);
 
 	// player gib sound
 	PRECACHE_SOUND_ENT(NULL, "common/bodysplat.wav");

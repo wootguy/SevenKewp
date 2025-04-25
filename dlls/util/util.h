@@ -127,28 +127,29 @@ enum merged_item_bodies {
 
 #undef RGB
 
-struct RGB {
+struct EXPORT RGB {
 	uint8_t r, g, b;
 
+	RGB() : r(0), g(0), b(0) {}
 	RGB(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
 	RGB(Vector v) : r(v.x), g(v.y), b(v.z) {}
 	RGB(uint32_t hex) : r((hex >> 16) & 0xff), g((hex >> 8) & 0xff), b(hex & 0xff) {}
 
-	Vector ToVector() { return Vector(r, g, b); }
+	inline Vector ToVector() { return Vector(r, g, b); }
 };
 
-struct RGBA {
+struct EXPORT RGBA {
 	uint8_t r, g, b, a;
 
+	RGBA() : r(0), g(0), b(0), a(0) {}
 	RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r(r), g(g), b(b), a(a) {}
 	RGBA(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b), a(255) {}
 	RGBA(Vector v) : r(v.x), g(v.y), b(v.z), a(255) {}
 	RGBA(Vector v, uint8_t a) : r(v.x), g(v.y), b(v.z), a(a) {}
 	RGBA(RGB rgb) : r(rgb.r), g(rgb.g), b(rgb.b), a(255) {}
 	RGBA(RGB rgb, uint8_t a) : r(rgb.r), g(rgb.g), b(rgb.b), a(a) {}
-	RGBA() : r(0), g(0), b(0), a(0) {}
 
-	Vector ToVector() { return Vector(r, g, b); }
+	inline Vector ToVector() { return Vector(r, g, b); }
 };
 
 // Use this instead of ALLOC_STRING on constant strings
@@ -390,7 +391,7 @@ EXPORT void			UTIL_ScreenShakeAll		( const Vector &center, float amplitude, floa
 EXPORT void			UTIL_ShowMessage		( const char *pString, CBaseEntity *pPlayer );
 EXPORT void			UTIL_ShowMessageAll		( const char *pString );
 EXPORT void			UTIL_ScreenFadeAll		( const Vector &color, float fadeTime, float holdTime, int alpha, int flags );
-EXPORT void			UTIL_ScreenFade			( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags );
+EXPORT void			UTIL_ScreenFade			( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags, bool reliable=true );
 
 // duplicate of the engine function with the ability to change the message mode and target entity
 EXPORT void ambientsound_msg(edict_t* entity, float* pos, const char* samp, float vol, float attenuation,
