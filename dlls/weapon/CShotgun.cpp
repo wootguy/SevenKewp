@@ -66,6 +66,7 @@ void CShotgun::Spawn( )
 
 void CShotgun::Precache( void )
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_shotgun.mdl";
 	m_defaultModelP = "models/p_shotgun.mdl";
 	m_defaultModelW = "models/w_shotgun.mdl";

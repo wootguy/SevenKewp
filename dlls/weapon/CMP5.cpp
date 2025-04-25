@@ -71,6 +71,7 @@ void CMP5::Spawn( )
 
 void CMP5::Precache( void )
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_9mmAR.mdl";
 	m_defaultModelP = "models/p_9mmAR.mdl";
 	m_defaultModelW = "models/w_9mmAR.mdl";

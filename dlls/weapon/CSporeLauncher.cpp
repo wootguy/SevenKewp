@@ -44,6 +44,7 @@ void CSporeLauncher::Spawn()
 
 void CSporeLauncher::Precache()
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_spore_launcher.mdl";
 	m_defaultModelP = "models/p_spore_launcher.mdl";
 	m_defaultModelW = "models/w_spore_launcher.mdl";

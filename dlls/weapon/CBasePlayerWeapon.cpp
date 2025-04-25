@@ -720,8 +720,21 @@ float CBasePlayerWeapon::GetNextAttackDelay(float delay)
 	return flNextAttack;
 }
 
-const char* CBasePlayerWeapon::GetModelV() {
-	return m_customModelV ? STRING(m_customModelV) : m_defaultModelV;
+const char* CBasePlayerWeapon::GetModelV(const char* defaultModel) {
+	if (m_customModelV) {
+		return STRING(m_customModelV);
+	}
+
+	if (!defaultModel)
+		defaultModel = m_defaultModelV;
+
+	if (m_hasHandModels && mp_weaponhands.string && mp_weaponhands.string[0] && strlen(defaultModel) > 7) {
+		const char* noModelsPath = defaultModel + 7; // skip "models/"
+		const char* handsPath = UTIL_VarArgs("models/hands/%s/%s", mp_weaponhands.string, noModelsPath);
+		return STRING(ALLOC_STRING(handsPath));
+	}
+
+	return defaultModel;
 }
 
 const char* CBasePlayerWeapon::GetModelP() {

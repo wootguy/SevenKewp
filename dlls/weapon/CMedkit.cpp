@@ -52,6 +52,7 @@ void CMedkit::Spawn( )
 
 void CMedkit::Precache( void )
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_medkit.mdl";
 	m_defaultModelP = "models/p_medkit.mdl";
 	m_defaultModelW = "models/w_pmedkit.mdl";

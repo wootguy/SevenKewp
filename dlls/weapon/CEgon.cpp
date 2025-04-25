@@ -82,6 +82,7 @@ void CEgon::Spawn( )
 
 void CEgon::Precache( void )
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_egon.mdl";
 	m_defaultModelP = "models/p_egon.mdl";
 	m_defaultModelW = "models/w_egon.mdl";

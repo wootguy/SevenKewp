@@ -56,6 +56,7 @@ void CCrowbar::Spawn( )
 
 void CCrowbar::Precache( void )
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_crowbar.mdl";
 	m_defaultModelP = "models/p_crowbar.mdl";
 	m_defaultModelW = "models/w_crowbar.mdl";

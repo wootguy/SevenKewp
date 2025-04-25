@@ -63,6 +63,7 @@ void CPipewrench::Spawn()
 
 void CPipewrench::Precache()
 {
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_pipe_wrench.mdl";
 	m_defaultModelP = "models/p_pipe_wrench.mdl";
 	m_defaultModelW = "models/w_pipe_wrench.mdl";

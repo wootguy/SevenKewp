@@ -244,20 +244,19 @@ void CSatchel::Spawn( )
 		pev->sequence = mergedIdle;
 }
 
-
 void CSatchel::Precache( void )
 {
-	PRECACHE_MODEL("models/v_satchel_radio.mdl");
-	PRECACHE_MODEL("models/p_satchel_radio.mdl");
-
+	m_hasHandModels = true;
 	m_defaultModelV = "models/v_satchel.mdl";
 	m_defaultModelP = "models/p_satchel.mdl";
 	m_defaultModelW = "models/w_satchel.mdl";
 	CBasePlayerWeapon::Precache();
 
+	PRECACHE_MODEL(GetModelV("models/v_satchel_radio.mdl"));
+	PRECACHE_MODEL("models/p_satchel_radio.mdl");
+
 	UTIL_PrecacheOther( "monster_satchel" );
 }
-
 
 int CSatchel::GetItemInfo(ItemInfo *p)
 {
@@ -330,7 +329,7 @@ BOOL CSatchel::Deploy( )
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + UTIL_SharedRandomFloat( m_pPlayer->random_seed, 10, 15 );
 
 	if ( m_chargeReady )
-		return DefaultDeploy(GET_MODEL("models/v_satchel_radio.mdl"), GET_MODEL("models/p_satchel_radio.mdl"), SATCHEL_RADIO_DRAW, "hive" );
+		return DefaultDeploy(GET_MODEL(GetModelV("models/v_satchel_radio.mdl")), GET_MODEL("models/p_satchel_radio.mdl"), SATCHEL_RADIO_DRAW, "hive" );
 
 	return DefaultDeploy(GetModelV(), GetModelP(), SATCHEL_DRAW, "trip" );
 }
@@ -426,7 +425,7 @@ void CSatchel::Throw( void )
 		pSatchel->pev->velocity = vecThrow;
 		pSatchel->pev->avelocity.y = 400;
 
-		m_pPlayer->pev->viewmodel = MAKE_STRING(GET_MODEL("models/v_satchel_radio.mdl"));
+		m_pPlayer->pev->viewmodel = MAKE_STRING(GET_MODEL(GetModelV("models/v_satchel_radio.mdl")));
 		m_pPlayer->pev->weaponmodel = MAKE_STRING(GET_MODEL("models/p_satchel_radio.mdl"));
 #else
 		LoadVModel ( "models/v_satchel_radio.mdl", m_pPlayer );
