@@ -728,7 +728,8 @@ const char* CBasePlayerWeapon::GetModelV(const char* defaultModel) {
 	if (!defaultModel)
 		defaultModel = m_defaultModelV;
 
-	if (m_hasHandModels && mp_weaponhands.string && mp_weaponhands.string[0] && strlen(defaultModel) > 7) {
+	bool validWeaponHandsCvar = mp_weaponhands.string && mp_weaponhands.string[0] && strcmp(mp_weaponhands.string, "0");
+	if (m_hasHandModels && validWeaponHandsCvar && strlen(defaultModel) > 7) {
 		const char* noModelsPath = defaultModel + 7; // skip "models/"
 		const char* handsPath = UTIL_VarArgs("models/hands/%s/%s", mp_weaponhands.string, noModelsPath);
 		return STRING(ALLOC_STRING(handsPath));
