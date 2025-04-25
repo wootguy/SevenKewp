@@ -60,6 +60,8 @@
 
 #define	SOUND_FLASHLIGHT_ON		"items/flashlight1.wav"
 #define	SOUND_FLASHLIGHT_OFF	"items/flashlight1.wav"
+#define	SOUND_NIGHTVISION_ON	"items/nightvision1.wav"
+#define	SOUND_NIGHTVISION_OFF	"items/nightvision2.wav"
 
 #define TEAM_NAME_LENGTH	16
 
@@ -174,6 +176,10 @@ public:
 	
 	float				m_flFlashLightTime;	// Time until next battery draw/Recharge
 	int					m_iFlashBattery;		// Flashlight Battery Draw
+	bool				m_flashlightEnabled;
+	float				m_lastNightvisionUpdate;
+	float				m_lastNightvisionFadeUpdate;
+	RGB					m_nightvisionColor;
 
 	int					m_afButtonLast;
 	int					m_afButtonPressed;
@@ -557,6 +563,8 @@ public:
 	int GetCurrentIdForConflictedSlot(int queryWepId);
 
 	const char* GetDeathNoticeWeapon();
+
+	void NightvisionUpdate();
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

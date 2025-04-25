@@ -1071,12 +1071,12 @@ void UTIL_ScreenFadeBuild( ScreenFade &fade, const Vector &color, float fadeTime
 }
 
 
-void UTIL_ScreenFadeWrite( const ScreenFade &fade, CBaseEntity *pEntity )
+void UTIL_ScreenFadeWrite( const ScreenFade &fade, CBaseEntity *pEntity, bool reliable)
 {
 	if ( !pEntity || !pEntity->IsNetClient() )
 		return;
 
-	MESSAGE_BEGIN( MSG_ONE, gmsgFade, NULL, pEntity->edict() );		// use the magic #1 for "one client"
+	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgFade, NULL, pEntity->edict() );		// use the magic #1 for "one client"
 		
 		WRITE_SHORT( fade.duration );		// fade lasts this long
 		WRITE_SHORT( fade.holdTime );		// fade lasts this long
@@ -1102,17 +1102,17 @@ void UTIL_ScreenFadeAll( const Vector &color, float fadeTime, float fadeHold, in
 	{
 		CBaseEntity *pPlayer = UTIL_PlayerByIndex( i );
 	
-		UTIL_ScreenFadeWrite( fade, pPlayer );
+		UTIL_ScreenFadeWrite( fade, pPlayer, true );
 	}
 }
 
 
-void UTIL_ScreenFade( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags )
+void UTIL_ScreenFade( CBaseEntity *pEntity, const Vector &color, float fadeTime, float fadeHold, int alpha, int flags, bool reliable )
 {
 	ScreenFade	fade;
 
 	UTIL_ScreenFadeBuild( fade, color, fadeTime, fadeHold, alpha, flags );
-	UTIL_ScreenFadeWrite( fade, pEntity );
+	UTIL_ScreenFadeWrite( fade, pEntity, reliable );
 }
 
 // client crashes if lines are longer than ~80 characters
