@@ -374,6 +374,7 @@ set(WEAPON_HDR
 	weapon/CShockRifle.h
 	weapon/CSporeLauncher.h
 	weapon/CWeaponInventory.h
+	weapon/CKnife.h
 	weapon/weapons.h
 )
 set(WEAPON_SRC
@@ -408,6 +409,7 @@ set(WEAPON_SRC
 	weapon/weapons.cpp
 	weapon/CGlock.cpp
 	weapon/CWeaponInventory.cpp
+	weapon/CKnife.cpp
 	weapon/combat.cpp
 )
 set(AMMO_HDR
