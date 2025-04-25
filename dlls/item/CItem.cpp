@@ -15,6 +15,10 @@ void CItem::Spawn(void)
 	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
 		SetUse(&CItem::ItemUse);
 
+	// both "Touch only" and "Use only" set so it can't be collected. Assume "Use only" is what they wanted.
+	if ((pev->spawnflags & (SF_ITEM_USE_ONLY|SF_ITEM_TOUCH_ONLY)) == (SF_ITEM_USE_ONLY | SF_ITEM_TOUCH_ONLY))
+		SetUse(&CItem::ItemUse);
+
 	if (!pev->movetype) {
 		pev->movetype = MOVETYPE_TOSS;
 	}
