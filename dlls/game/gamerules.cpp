@@ -204,6 +204,7 @@ void execMapCfg() {
 		"npc_dropweapons",
 		"mp_default_medkit",
 		"mp_weaponhands",
+		"mp_hevsuit_voice",
 	};
 
 	static StringSet itemNames = {

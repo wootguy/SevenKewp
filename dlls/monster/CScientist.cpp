@@ -1138,14 +1138,21 @@ void CDeadScientist::KeyValue( KeyValueData *pkvd )
 		CBaseMonster::KeyValue( pkvd );
 }
 LINK_ENTITY_TO_CLASS( monster_scientist_dead, CDeadScientist )
+LINK_ENTITY_TO_CLASS( monster_cleansuit_scientist_dead, CDeadScientist )
 
 //
 // ********** DeadScientist SPAWN **********
 //
 void CDeadScientist :: Spawn( )
 {
-	PRECACHE_MODEL("models/scientist.mdl");
-	SET_MODEL(ENT(pev), "models/scientist.mdl");
+	const char* model = "models/scientist.mdl";
+
+	if (FClassnameIs(pev, "monster_cleansuit_scientist_dead")) {
+		model = "models/cleansuit_scientist.mdl";
+	}
+
+	PRECACHE_MODEL(model);
+	SET_MODEL(ENT(pev), model);
 	
 	pev->effects		= 0;
 	pev->sequence		= 0;

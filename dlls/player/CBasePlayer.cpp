@@ -3441,6 +3441,10 @@ void CBasePlayer::Spawn( void )
 	m_airTimeModifier = 0;
 	m_weaponsDisabled = false;
 	m_droppedDeathWeapons = false;
+	if (m_flashlightEnabled && flashlight.value >= 2) {
+		UTIL_ScreenFade(this, g_vecZero, 0, 0, 0, 0, true); // remove nightvision fade
+	}
+	m_flashlightEnabled = false;
 	memset(m_nextItemPickups, 0, sizeof(float) * MAX_WEAPONS);
 
 	if( pev->iuser1 != OBS_NONE )
@@ -6562,11 +6566,10 @@ void CBasePlayer::NightvisionUpdate() {
 		UTIL_DLight(pev->origin, radius, color, life, decay);
 	}
 
-	if (g_engfuncs.pfnTime() - m_lastNightvisionFadeUpdate < 0.5f) {
+	if (g_engfuncs.pfnTime() - m_lastNightvisionFadeUpdate < 1.0f) {
 		return;
 	}
 	m_lastNightvisionFadeUpdate = g_engfuncs.pfnTime();
 
-	// no need for a reliable message. At least 1 of 10 attempts should succeeded
-	UTIL_ScreenFade(this, m_nightvisionColor.ToVector(), 0.1f, 5.0f, 255, FFADE_MODULATE | FFADE_IN, false);
+	UTIL_ScreenFade(this, m_nightvisionColor.ToVector(), 0.1f, 3.0f, 255, FFADE_MODULATE | FFADE_IN, true);
 }

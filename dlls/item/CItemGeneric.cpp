@@ -12,6 +12,9 @@ class CItemGeneric : public CItem
 		Precache();
 		SET_MODEL(ENT(pev), GetModel());
 		CItem::Spawn();
+		
+		// set smaller bbox so that it drops to the floor when close to walls
+		UTIL_SetSize(pev, Vector(-4, -4, 0), Vector(4, 4, 8));
 
 		pev->solid = SOLID_NOT;
 	}
