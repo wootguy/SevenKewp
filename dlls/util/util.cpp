@@ -3019,11 +3019,10 @@ void UTIL_ForceRetouch(edict_t* ent) {
 
 const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound) {
 	CBaseEntity* base = CBaseEntity::Instance(ent);
-	CBaseMonster* monst = base ? base->MyMonsterPointer() : NULL;
 
-	if (monst && monst->m_soundReplacementPath) {
+	if (base && base->m_soundReplacementPath) {
 		StringMap& soundReplacements =
-			g_replacementFiles[STRING(monst->m_soundReplacementPath)];
+			g_replacementFiles[STRING(base->m_soundReplacementPath)];
 
 		const char* replacement = soundReplacements.get(sound);
 
