@@ -2,6 +2,7 @@
 #include "util.h"
 #include "gamerules.h"
 #include "CAmbientGeneric.h"
+#include "CBasePlayer.h"
 
 #include <string>
 
@@ -111,6 +112,7 @@ void CAmbientGeneric::Spawn(void)
 
 		m_forceLoop = m_playmode == PLAYMODE_LOOP || m_playmode == PLAYMODE_LOOP_LINEAR;
 		m_forceOnce = m_playmode == PLAYMODE_ONCE || m_playmode == PLAYMODE_ONCE_LINEAR;
+		m_isLinear = m_playmode == PLAYMODE_LOOP_LINEAR || m_playmode == PLAYMODE_ONCE_LINEAR;
 	}	
 
 	char* szSoundFile = (char*)STRING(pev->message);
@@ -240,11 +242,18 @@ void CAmbientGeneric::RampThink(void)
 		// forcing a looped sound to play once, or an unlooped sound to loop
 		float endTime = m_lastPlayTime + (m_wavInfo.durationMillis / 1000.0f);
 		float timeLeft = endTime - g_engfuncs.pfnTime();
+		float attn = m_isLinear ? 0.0f : m_flAttenuation;
 
 		if (m_forceLoop && m_fActive) {
-			// restart the sound when it stops
-			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
-				(vol * 0.01), m_flAttenuation, SND_CHANGE_PITCH, pitch);
+			if (!m_isLinear) {
+				// restart the sound when it stops
+				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
+					(vol * 0.01), m_flAttenuation, SND_CHANGE_PITCH, pitch);
+			}
+			else {
+				// force new volumes to be calculated and replay the sound
+				memset(m_lastLinearVolume, 0, sizeof(m_lastLinearVolume));
+			}
 
 			if (timeLeft <= 0) {
 				m_lastPlayTime = g_engfuncs.pfnTime();
@@ -278,7 +287,7 @@ void CAmbientGeneric::RampThink(void)
 		pev->nextthink = V_max(pev->nextthink, gpGlobals->time);
 	}
 
-	
+	UpdateLinearVolume();
 
 	if (!m_dpv.spinup && !m_dpv.spindown && !m_dpv.fadein && !m_dpv.fadeout && !m_dpv.lfotype) {
 		return;						// no ramps or lfo, stop thinking
@@ -472,6 +481,57 @@ void CAmbientGeneric::RampThink(void)
 	// update ramps at 5hz
 	pev->nextthink = gpGlobals->time + 0.2;
 	return;
+}
+
+void CAmbientGeneric::UpdateLinearVolume() {
+	if ((m_fLooping && !m_fActive) || !m_isLinear)
+		return;
+
+	float endTime = m_lastPlayTime + (m_wavInfo.durationMillis / 1000.0f);
+	if (endTime - gpGlobals->time < 0.2f) {
+		return; // don't update too close to the end or the sound will restart
+	}
+
+	if (!pev->nextthink || pev->nextthink - gpGlobals->time > 0.1f)
+		pev->nextthink = gpGlobals->time + 0.1f;
+
+	char* szSoundFile = (char*)STRING(pev->message);
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+		int idx = i - 1;
+
+		if (!plr)
+			continue;
+
+		float dist = (plr->GetViewPosition() - pev->origin).Length();
+
+		if (dist > m_linearEnd) {
+			if (m_lastLinearVolume[idx] != 1) {
+				// "stop" the sound, but set volume to the minimum possible so that the client keeps
+				// playing it. This way music doesn't restart when briefly leaving the audible range.
+				const float minVolume = 1.0f / 255.0f;
+				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
+					minVolume, 0.0f, SND_CHANGE_VOL, m_dpv.pitch, plr->edict());
+			}
+
+			m_lastLinearVolume[idx] = 1;
+			continue;
+		}
+
+		float t = V_min(1.0f, 1.0f - ((dist - m_linearStart) / (m_linearEnd - m_linearStart)));
+		float vol = m_dpv.vol * t * 0.01f;
+
+		int ivol = ((int)(vol * 255) / 5) * 5; // round to multiple of 5 for fewer messages
+
+		if (ivol != m_lastLinearVolume[idx]) {
+			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, vol, 0.0f,
+				SND_CHANGE_VOL, m_dpv.pitch, plr->edict());
+			//ALERT(at_console, "Linear vol for %s: %f %f (%d)\n", szSoundFile, vol, t, ivol);
+		}
+		
+		m_lastLinearVolume[idx] = ivol;
+	}
 }
 
 // Init all ramp params in preparation to 
@@ -681,11 +741,17 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 			UTIL_PlayGlobalMp3(szSoundFile, m_fLooping);
 			g_lastMp3PlayerEnt = this;
 		}
+		else if (m_isLinear) {
+			UpdateLinearVolume();
+			
+			// Need to send the message twice for first playback for some reason
+			memset(m_lastLinearVolume, 0, sizeof(m_lastLinearVolume));
+		}
 		else {
 			UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
 				(m_dpv.vol * 0.01), m_flAttenuation, 0, m_dpv.pitch);
 		}
-		
+
 		m_lastPlayTime = g_engfuncs.pfnTime();
 		pev->nextthink = gpGlobals->time + 0.1;
 
@@ -853,6 +919,16 @@ void CAmbientGeneric::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "volume"))
 	{
 		pev->health = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "linearmin"))
+	{
+		m_linearStart = atoi(pkvd->szValue)*256;
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "linearmax"))
+	{
+		m_linearEnd = atoi(pkvd->szValue)*256;
 		pkvd->fHandled = TRUE;
 	}
 	else

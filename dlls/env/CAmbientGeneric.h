@@ -73,6 +73,7 @@ public:
 	void Precache(void);
 	void ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void RampThink(void);
+	void UpdateLinearVolume();
 	void InitModulationParms(void);
 	void InitSoundForNewJoiner(edict_t* target);
 	void UpdateOnRemove(void);
@@ -89,6 +90,11 @@ public:
 	BOOL	m_fLooping;	// TRUE when the sound played will loop
 	bool m_forceLoop; // true if mapper wants the sound to loop even if the file has no cue points
 	bool m_forceOnce; // true if mapper wants the sound to play once even if the file has cue points
+	
+	bool m_isLinear;
+	int m_linearStart;
+	int m_linearEnd;
+	uint8_t m_lastLinearVolume[32]; // last volume sent to player
 
 	// use the mp3 player for music, if an mp3 file is used with the "play everywhere" flag
 	bool m_isGlobalMp3;
