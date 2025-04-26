@@ -45,6 +45,9 @@ IMPLEMENT_SAVERESTORE(CBubbling, CBaseEntity)
 
 void CBubbling::Spawn(void)
 {
+	if (IsDelaySpawned())
+		return; // prevent double-spawn bugs
+
 	Precache();
 	SET_MODEL(ENT(pev), STRING(pev->model));		// Set size
 

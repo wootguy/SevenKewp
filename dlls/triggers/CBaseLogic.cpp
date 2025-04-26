@@ -78,7 +78,7 @@ void CBaseLogic::FireLogicTargets(const char* targetName, USE_TYPE useType, floa
 		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, targetName))) {
 			CBaseEntity* pent = CBaseEntity::Instance(ent);
 
-			if (pent && !(pent->pev->flags & FL_KILLME)) {
+			if (pent && !(pent->pev->flags & FL_KILLME) && pent != this) {
 				ALERT(at_aiconsole, "Found: %s, firing (%s)\n", STRING(pent->pev->classname), targetName);
 				pent->Use(h_activator, h_caller, useType, value);
 			}

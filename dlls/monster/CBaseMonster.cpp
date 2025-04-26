@@ -2165,29 +2165,7 @@ Vector CBaseMonster::GetInterpolatedOrigin() {
 }
 
 void CBaseMonster::Precache(void) {
-	if (m_soundReplacementKey && strlen(STRING(m_soundReplacementKey))) {
-		const char* filePath = UTIL_VarArgs("sound/%s/%s",
-			STRING(gpGlobals->mapname), STRING(m_soundReplacementKey));
-
-		m_soundReplacementPath = ALLOC_STRING(loadReplacementFile(filePath).c_str());
-
-		StringMap& soundReplacements =
-			g_replacementFiles[STRING(m_soundReplacementPath)];
-
-		StringMap::iterator_t iter;
-		while (soundReplacements.iterate(iter)) {
-
-			// sentences aren't precached by monster code, so precache the replacement here
-			if (strlen(iter.key) && iter.key[0] == '!') {
-				if (strlen(iter.value) && iter.value[0] == '!') {
-					ALERT(at_console, "Monster sentence replacment not implemented.\n");
-					continue;
-				}
-
-				PRECACHE_SOUND(iter.value);
-			}
-		}
-	}
+	CBaseEntity::Precache();
 }
 
 //=========================================================
@@ -3512,11 +3490,6 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "TriggerCondition"))
 	{
 		m_iTriggerCondition = atoi(pkvd->szValue);
-		pkvd->fHandled = TRUE;
-	}
-	else if (FStrEq(pkvd->szKeyName, "soundlist"))
-	{
-		m_soundReplacementKey = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "minhullsize"))

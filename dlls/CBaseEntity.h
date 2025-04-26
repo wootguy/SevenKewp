@@ -175,6 +175,9 @@ public:
 
 	string_t m_displayName;
 
+	string_t m_soundReplacementKey; // path specified in entity keyvalue
+	string_t m_soundReplacementPath; // normalized file system path and key for g_replacementFiles
+
 	// fundamental callbacks
 	void (CBaseEntity ::* m_pfnThink)(void);
 	void (CBaseEntity ::* m_pfnTouch)(CBaseEntity* pOther);

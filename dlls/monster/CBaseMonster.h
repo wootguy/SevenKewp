@@ -142,8 +142,6 @@ public:
 	float m_flLastYawTime; // Last time yaw change was computed
 
 	const char* m_defaultModel;
-	string_t m_soundReplacementKey; // path specified in entity keyvalue
-	string_t m_soundReplacementPath; // normalized file system path and key for g_replacementFiles
 	Vector m_maxHullSize;
 	Vector m_minHullSize;
 

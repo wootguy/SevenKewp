@@ -67,7 +67,7 @@ void CFade::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType,
 
 	if (pev->spawnflags & SF_FADE_ONLYONE)
 	{
-		if (pActivator->IsNetClient())
+		if (pActivator && pActivator->IsNetClient())
 		{
 			UTIL_ScreenFade(pActivator, pev->rendercolor, Duration(), HoldTime(), pev->renderamt, fadeFlags);
 		}
