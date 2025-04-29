@@ -114,11 +114,22 @@ def get_all_cfgs(maps_dir):
 
 def get_all_skies(skies_dir):
 	sky_files = []
-	for file in os.listdir(skies_dir):
-		if file.endswith('.tga') or file.endswith('.bmp'):
-			sky_files.append(os.path.join(skies_dir, file))
+	
+	if os.path.exists(skies_dir):
+		for file in os.listdir(skies_dir):
+			if file.endswith('.tga') or file.endswith('.bmp'):
+				sky_files.append(os.path.join(skies_dir, file))
 	
 	return sky_files
+
+def get_all_wavs(sounds_dir):
+	wav_files = []
+	for root, dirs, files in os.walk(sounds_dir):
+		for file in files:
+			if file.endswith('.wav'):
+				wav_files.append(os.path.join(root, file))
+	
+	return wav_files
 
 def convert_audio(file, out_format, samp_rate):
 	global converted_files
@@ -138,7 +149,8 @@ def convert_audio(file, out_format, samp_rate):
 	samp_rate = min(22050, samp_rate)
 	
 	if out_format == 'mp3':
-		samp_rate = max(samp_rate, 11025) # 8000 or less breaks the mp3 player
+		#samp_rate = max(samp_rate, 11025) # 8000 or less breaks the mp3 player
+		samp_rate = 22050
 	
 	wav = None
 	if file.endswith(".wav"):
@@ -163,7 +175,7 @@ def convert_audio(file, out_format, samp_rate):
 	if out_format == 'wav':
 		ffmpeg_command = ["ffmpeg", "-i", 'sound/' + file, '-c:a', 'pcm_u8', '-ac', '1', '-ar', '%d' % samp_rate, "-y", 'sound/' + new_file]
 	elif out_format == 'mp3':
-		ffmpeg_command = ["ffmpeg", "-i", 'sound/' + file, '-c:a', 'libmp3lame', '-ar', '%d' % samp_rate, '-q:a', '6', "-y", 'sound/' + new_file]
+		ffmpeg_command = ["ffmpeg", "-i", 'sound/' + file, '-c:a', 'libmp3lame', '-ar', '%d' % samp_rate, '-q:a', '5', "-y", 'sound/' + new_file]
 	else:
 		print("invalid target format: %s" % out_format)
 
@@ -296,6 +308,56 @@ def add_wave_cue_points(fpath, cue_points):
 
 converted_files = {}
 
+unique_errors = set()
+
+def err(text):
+	if text in unique_errors:
+		return
+	unique_errors.add(text)
+	print('\n%s' % text, end='')
+
+def wav_needs_conversion(soundPath, fix_problems):
+	cue_points = get_wave_cue_points(soundPath)
+	cue_string = ' CUE' if len(cue_points) else ''
+
+	chans = 0
+	samprate = 0
+	sampsz = 0
+	numsamps = 0
+
+	try:
+		wav = wave.open(soundPath, 'rb')
+		chans = wav.getnchannels()
+		samprate = wav.getframerate()
+		sampsz = wav.getsampwidth()
+		numsamps = wav.getnframes()
+		wav.close()
+	except Exception as e:
+		if 'unknown format' not in '%s' % e:
+			raise e
+	
+	invalid_format = chans != 1 or samprate > 44100 or sampsz > 2
+	bad_format = samprate > 22050 or sampsz > 1 # HL audio is 22050 and you can't tell 8-bit from 16-bit
+	fmt_str = 'Invalid' if invalid_format else 'Suboptimal'
+	
+	bad_cues = False
+	mid_point = numsamps*0.5
+	if len(cue_points) == 1 and cue_points[0] >= mid_point:
+		bad_cues = True
+		if not fix_problems:
+			err("WAV cue point placed after mid point: %s" % (soundPath))
+	if len(cue_points) > 1 and cue_points[0] > cue_points[1]:
+		bad_cues = True
+		if not fix_problems:
+			err("WAV cue points inverted: %s" % (soundPath))
+	
+	needs_convert = chans != 1 or samprate > 22050 or sampsz > 1 or bad_cues
+	
+	if not fix_problems and needs_convert:
+		err("%s WAV format: %s (%d chan %d %d-bit%s)" % (fmt_str, soundPath, chans, samprate, sampsz*8, cue_string))
+	
+	return (needs_convert, samprate)
+
 def check_map_problems(all_ents, fix_problems):
 	global default_files
 	global converted_files
@@ -336,14 +398,6 @@ def check_map_problems(all_ents, fix_problems):
 						any_problems = True
 					break
 			break
-	
-	unique_errors = set()
-	
-	def err(text):
-		if text in unique_errors:
-			return
-		unique_errors.add(text)
-		print('\n%s' % text, end='')
 
 	for ent in all_ents:
 		cname = ent.get('classname', '')
@@ -352,6 +406,54 @@ def check_map_problems(all_ents, fix_problems):
 		should_music = [
 			#"bm_nightmare/boss_music2.wav",
 		]
+		
+		if cname in ['ambient_music', 'ambient_generic']:
+			soundFile = ent.get('message', '').lower()
+			
+			if 'media/half-life' in soundFile and soundFile.endswith('.mp3'):
+				# maps a sven cd track to an HL cd track
+				sven_to_hl_cd_tracks = {
+					"half-life01.mp3": 2,
+					"half-life02.mp3": 3,
+					"half-life03.mp3": 4,
+					"half-life04.mp3": 5,
+					"half-life05.mp3": 6,
+					"half-life06.mp3": 7,
+					"half-life07.mp3": 8,
+					"half-life08.mp3": 9,
+					"half-life09.mp3": 10,
+					"half-life10.mp3": 11,
+					"half-life11.mp3": 12,
+					"half-life12.mp3": 13,
+					"half-life13.mp3": 14,
+					"half-life14.mp3": 15,
+					"half-life15.mp3": 16,
+					"half-life16.mp3": 17,
+					"half-life17.mp3": 18,
+					"half-life18.mp3": 19,
+					"half-life19.mp3": 20,
+					"half-life20.mp3": 21,
+					"half-life21.mp3": 22,
+					"half-life22.mp3": 23,
+					"half-life23.mp3": 24,
+					"half-life24.mp3": 25,
+					"half-life25.mp3": 26,
+					"half-life26.mp3": 27,
+					"half-life27.mp3": 28
+				}
+				
+				cdtrack = 0
+				for key, val in sven_to_hl_cd_tracks.items():
+					if key in soundFile:
+						cdtrack = val
+						break
+				
+				if not fix_problems:
+					err("%s should use CD audio track %d: %s" % (cname, cdtrack, soundFile))
+					any_problems = True
+				else:
+					ent["classname"] = "target_cdaudio"
+					ent["health"] = cdtrack
 	
 		if cname in ['ambient_music', 'ambient_generic', 'scripted_sentence']:
 			spawnflags = int(ent.get("spawnflags", 0))
@@ -408,50 +510,16 @@ def check_map_problems(all_ents, fix_problems):
 				continue
 			
 			if ext == 'wav':
-				cue_points = get_wave_cue_points(soundPath)
-				cue_string = ' CUE' if len(cue_points) else ''
-			
-				chans = 0
-				samprate = 0
-				sampsz = 0
-				numsamps = 0
-			
-				try:
-					wav = wave.open(soundPath, 'rb')
-					chans = wav.getnchannels()
-					samprate = wav.getframerate()
-					sampsz = wav.getsampwidth()
-					numsamps = wav.getnframes()
-					wav.close()
-				except Exception as e:
-					if 'unknown format' not in '%s' % e:
-						raise e
-				
-				invalid_format = chans != 1 or samprate > 44100 or sampsz > 2
-				bad_format = samprate > 22050 or sampsz > 1 # HL audio is 22050 and you can't tell 8-bit from 16-bit
-				fmt_str = 'Invalid' if invalid_format else 'Suboptimal'
-				
-				bad_cues = False
-				mid_point = numsamps*0.5
-				if len(cue_points) == 1 and cue_points[0] >= mid_point:
-					bad_cues = True
-					if not fix_problems:
-						err("WAV cue point placed after mid point: %s" % (soundFile))
-				if len(cue_points) > 1 and cue_points[0] > cue_points[1]:
-					bad_cues = True
-					if not fix_problems:
-						err("WAV cue points inverted: %s" % (soundFile))
+				needs_convert, samprate = wav_needs_conversion(soundPath, fix_problems)
 				
 				if is_music:
 					if not fix_problems:
-						err("WAV used in ambient_music: %s" % (fmt_str))
+						err("WAV used in ambient_music: %s" % (soundFile))
 					else:
 						ent['message'] = prefix + convert_audio(soundFile, 'mp3', samprate)
 					any_problems = True
-				if (chans != 1 or samprate > 22050 or sampsz > 1 or bad_cues):
-					if not fix_problems:
-						err("%s WAV format: %s (%d chan %d %d-bit%s)" % (fmt_str, soundFile, chans, samprate, sampsz*8, cue_string))
-					else:
+				if needs_convert:
+					if fix_problems:
 						ent['message'] = prefix + convert_audio(soundFile, 'wav', samprate)
 					any_problems = True
 					
@@ -629,7 +697,7 @@ def check_map_problems(all_ents, fix_problems):
 		# custom models with external sequences cause crashes if the "vanilla" model they're referencing
 		# does not exist (e.g. "models/shocktrooper01.mdl" for a custom shocktrooper model)
 		for key, value in ent.items():
-			value = value.lower()
+			value = ('%s' % value).lower()
 			if '.mdl' in value:
 				if os.path.exists(value) and os.path.exists(value.replace(".mdl", "01.mdl")):
 					if not fix_problems:
@@ -921,7 +989,7 @@ if fix_problems:
 			data = json.load(file)
 			
 			for tex in  data["textures"]:
-				if tex["width"] > 512 or tex["height"] > 512:
+				if tex["width"] * tex["height"] > 512*512:
 					newWidth = 0
 					newHeight = 0
 					if tex["width"] > tex["height"]:
@@ -937,7 +1005,7 @@ if fix_problems:
 					
 					print("Resizing invalid texture in %s (%s %dx%d -> %dx%d)" % (mdl, tex["name"], tex["width"], tex["height"], newWidth, newHeight))
 					mdlguy_command = [modelguy_path, 'resize', tex["name"], "%dx%d" % (newWidth, newHeight), mdl]
-					#print(' '.join(mdlguy_command))
+					print(' '.join(mdlguy_command))
 					subprocess.run(mdlguy_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 			
 			for evt in data["events"]:
@@ -1103,8 +1171,15 @@ for gsr in gsr_files:
 		with open(gsr, 'w') as file:
 			for line in new_lines:
 				file.write(line + "\n")
-	
 
+# convert whatever wavs are left. Some may be referenced in scripts and so weren't detected earlier
+all_wavs = get_all_wavs('sound')
+for wav in all_wavs:
+	needs_convert, samprate = wav_needs_conversion(wav, False)
+	if needs_convert:
+		print()
+		file = wav[len('sound/'):]
+		convert_audio(file, 'wav', samprate)
 
 print()
 os.system('pause')
