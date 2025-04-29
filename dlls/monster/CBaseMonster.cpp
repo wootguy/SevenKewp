@@ -1556,7 +1556,10 @@ float CBaseMonster::OpenDoorAndWait(entvars_t* pevDoor)
 			{
 				pentTarget = UTIL_FindEntityByTargetname(pentTarget, STRING(pcbeDoor->pev->targetname));
 
-				if (pentTarget && VARS(pentTarget->pev) != pcbeDoor->pev)
+				if (!pentTarget)
+					break;
+
+				if (pentTarget != pcbeDoor)
 				{
 					if (FClassnameIs(pentTarget->pev, STRING(pcbeDoor->pev->classname)))
 					{

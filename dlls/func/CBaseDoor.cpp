@@ -175,6 +175,11 @@ void CBaseDoor::KeyValue(KeyValueData* pkvd)
 		m_iObeyTriggerMode = (ObeyTriggerMode)atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "m_fIgnoreTargetname"))
+	{
+		m_fIgnoreTargetname = atoi(pkvd->szValue) != 0;
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseToggle::KeyValue(pkvd);
 }
@@ -453,7 +458,7 @@ void CBaseDoor::DoorTouch(CBaseEntity* pOther)
 	// If door is somebody's target, then touching does nothing.
 	// You have to activate the owner (e.g. button).
 
-	if (!FStringNull(pev->targetname))
+	if (!m_fIgnoreTargetname && !FStringNull(pev->targetname))
 	{
 		// play locked sound
 		PlayLockSounds(pev, &m_ls, TRUE, FALSE);
@@ -734,7 +739,10 @@ void CBaseDoor::Blocked(CBaseEntity* pOther)
 		{
 			pentTarget = UTIL_FindEntityByTargetname(pentTarget, STRING(pev->targetname));
 
-			if (pentTarget && pentTarget->pev != pev)
+			if (!pentTarget)
+				break;
+
+			if (pentTarget->pev != pev)
 			{
 				if (FClassnameIs(pentTarget->pev, "func_door") || FClassnameIs(pentTarget->pev, "func_door_rotating"))
 				{

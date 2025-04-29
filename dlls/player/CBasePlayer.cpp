@@ -837,7 +837,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 		pWeaponBox->pev->avelocity = Vector(0, 256, 256);
 	}
 	else {
-		REMOVE_ENTITY(pWeaponBox->edict());
+		UTIL_Remove(pWeaponBox);
 	}
 
 	CleanupWeaponboxes();
@@ -5470,13 +5470,13 @@ void CBasePlayer::DropAmmo(bool secondary) {
 			pWeaponBox->PackWeapon(ammoWep);
 		}
 		else {
-			REMOVE_ENTITY(ammoEnt->edict());
+			UTIL_Remove(ammoEnt);
 			ALERT(at_console, "Failed to drop ammo for exhaustible weapon %s\n", STRING(ammoEntName));
 		}
 		
 	}
 	else {
-		REMOVE_ENTITY(ammoEnt->edict());
+		UTIL_Remove(ammoEnt);
 		const char* ammoName = secondary ? wep->pszAmmo2() : wep->pszAmmo1();
 		pWeaponBox->PackAmmo(MAKE_STRING(ammoName), ammoTake);
 	}

@@ -1234,7 +1234,7 @@ void CBaseEntity::SUB_Remove(void)
 		ALERT(at_aiconsole, "SUB_Remove called on entity with health > 0\n");
 	}
 
-	REMOVE_ENTITY(ENT(pev));
+	UTIL_Remove(this);
 }
 
 // Convenient way to explicitly do nothing (passed to functions that require a method)

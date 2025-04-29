@@ -176,7 +176,7 @@ void CTriggerEntityIterator::Iterate() {
 		if (m_run_mode == RUN_MODE_ONCE_MULTITHREADED_CHILD) {
 			SetThink(NULL);
 			pev->nextthink = 0;
-			REMOVE_ENTITY(edict());
+			UTIL_Remove(this);
 			return;
 		}
 

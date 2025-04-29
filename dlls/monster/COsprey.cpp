@@ -153,7 +153,9 @@ void COsprey :: Spawn( void )
 
 	InitModel();
 	SetSize(Vector( -480, -480, -100), Vector(480, 480, 64));
-	UTIL_SetOrigin( pev, pev->origin );
+
+	Vector offset = Vector(0, 0, -134); // so what you see in the editor matches the game
+	UTIL_SetOrigin( pev, pev->origin + offset );
 
 	pev->flags |= FL_MONSTER;
 	pev->takedamage		= DAMAGE_YES;
