@@ -10,13 +10,6 @@ void CItemInventory::Spawn(void) {
 
 	CItem::Spawn();
 
-	m_return_pos = pev->origin;
-	m_return_angles = pev->angles;
-	m_return_move_type = pev->movetype;
-	m_return_skin = pev->skin;
-	m_return_body = pev->body;
-	m_return_sequence = pev->sequence;
-
 	SetThink(&CItemInventory::ItemThink);
 	pev->nextthink = gpGlobals->time + 0.1f;
 }
@@ -735,6 +728,16 @@ void CItemInventory::Attach(CBaseMonster* mon) {
 		}
 
 		item->m_pNext = this;
+	}
+
+	if (!m_is_moved) {
+		// collected for the first time, or after returning
+		m_return_pos = pev->origin;
+		m_return_angles = pev->angles;
+		m_return_move_type = pev->movetype;
+		m_return_skin = pev->skin;
+		m_return_body = pev->body;
+		m_return_sequence = pev->sequence;
 	}
 
 	m_pNext = NULL;

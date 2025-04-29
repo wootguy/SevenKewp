@@ -90,6 +90,7 @@ public:
 	BYTE	m_bUnlockedSentence;
 
 	ObeyTriggerMode m_iObeyTriggerMode;
+	bool m_fIgnoreTargetname;
 
 	float lastDamage;
 };

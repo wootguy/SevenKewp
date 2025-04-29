@@ -515,6 +515,12 @@ void CLightning::BeamUpdateVars(void)
 
 	CBaseEntity* pStart = UTIL_FindEntityByTargetname(NULL, STRING(m_iszStartEntity));
 	CBaseEntity* pEnd = UTIL_FindEntityByTargetname(NULL, STRING(m_iszEndEntity));
+
+	if (!pStart)
+		pStart = CBaseEntity::Instance(ENT(0));
+	if (!pEnd)
+		pEnd = CBaseEntity::Instance(ENT(0));
+
 	pointStart = IsPointEntity(pStart);
 	pointEnd = IsPointEntity(pEnd);
 

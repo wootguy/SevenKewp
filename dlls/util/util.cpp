@@ -1974,15 +1974,33 @@ CKeyValue GetEntvarsKeyvalue(entvars_t* pev, const char* keyName) {
 				keyvalue.keyType = KEY_TYPE_VECTOR;
 				break;
 
-			default:
-			case FIELD_EVARS:
-			case FIELD_CLASSPTR:
-			case FIELD_EDICT:
-			case FIELD_ENTITY:
-			case FIELD_POINTER:
+			case FIELD_EVARS: {
+				entvars_t* vars = (*(entvars_t**)((char*)pev + pField->fieldOffset));
+				keyvalue.sVal = vars ? vars->targetname : 0;
+				keyvalue.keyType = KEY_TYPE_STRING;
 				break;
 			}
-			break;
+			case FIELD_CLASSPTR: {
+				CBaseEntity* ent = (*(CBaseEntity**)((char*)pev + pField->fieldOffset));
+				keyvalue.sVal = ent ? ent->pev->targetname : 0;
+				keyvalue.keyType = KEY_TYPE_STRING;
+				break;
+			}
+			case FIELD_EDICT: {
+				edict_t* ent = (*(edict_t**)((char*)pev + pField->fieldOffset));
+				keyvalue.sVal = ent ? ent->v.targetname : 0;
+				keyvalue.keyType = KEY_TYPE_STRING;
+				break;
+			}
+			case FIELD_ENTITY: {
+				edict_t* ent = ENT((*(EOFFSET*)((char*)pev + pField->fieldOffset)));
+				keyvalue.sVal = ent ? ent->v.targetname : 0;
+				keyvalue.keyType = KEY_TYPE_STRING;
+				break;
+			}
+			default:
+				break;
+			}
 		}
 	}
 

@@ -23,7 +23,7 @@ void CTriggerRenamePlayer::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 		pActivator->pev->targetname = pev->netname;
 
 		if (!(pev->spawnflags & SF_RPLR_REUSABLE)) {
-			REMOVE_ENTITY(edict());
+			UTIL_Remove(this);
 		}
 	}
 }
