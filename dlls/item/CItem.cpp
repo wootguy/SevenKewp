@@ -22,8 +22,9 @@ void CItem::Spawn(void)
 	if (!pev->movetype) {
 		pev->movetype = MOVETYPE_TOSS;
 	}
-	else if (pev->movetype == -1) {
-		pev->movetype = MOVETYPE_NONE;
+	else if (pev->movetype == -1 || pev->movetype == MOVETYPE_FLY) {
+		pev->movetype = MOVETYPE_NOCLIP;
+		pev->velocity.z = -FLT_MIN; // needed for interpolation if given avelocity
 	}
 
 	if (!pev->solid) {

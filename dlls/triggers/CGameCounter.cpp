@@ -12,6 +12,7 @@
 
 #define SF_GAMECOUNT_FIREONCE			0x0001
 #define SF_GAMECOUNT_RESET				0x0002
+#define SF_GAMECOUNT_FIRE_OVER_LIMIT	0x0004
 
 class CGameCounter : public CRulePointEntity
 {
@@ -28,7 +29,12 @@ public:
 	inline int  CountValue(void) { return pev->frags; }
 	inline int	LimitValue(void) { return pev->health; }
 
-	inline BOOL HitLimit(void) { return CountValue() == LimitValue(); }
+	inline BOOL HitLimit(void) { 
+		if (pev->spawnflags & SF_GAMECOUNT_FIRE_OVER_LIMIT) {
+			return CountValue() >= LimitValue();
+		}
+		return CountValue() == LimitValue();
+	}
 
 	string_t m_killtarget;
 

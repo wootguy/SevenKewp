@@ -6197,6 +6197,7 @@ void CBasePlayer::Revive() {
 	pev->health = pev->max_health * 0.5f;
 	pev->deadflag = DEAD_NO;
 	pev->solid = SOLID_SLIDEBOX;
+	pev->effects &= ~EF_NODRAW;
 
 	pev->fov = m_iFOV = 0;// init field of view.
 	m_iClientFOV = -1; // make sure fov reset is sent

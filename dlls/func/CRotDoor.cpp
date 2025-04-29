@@ -61,6 +61,7 @@ void CRotDoor::Spawn(void)
 	if (IsDelaySpawned())
 		return; // prevent double-spawn bugs
 
+	CBaseEntity::Spawn();
 	Precache();
 	// set the axis of rotation
 	CBaseToggle::AxisDir(pev);

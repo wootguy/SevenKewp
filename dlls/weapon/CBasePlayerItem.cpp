@@ -158,6 +158,10 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 
 	if (pNewWeapon)
 	{
+		pNewWeapon->pev->rendermode = pev->rendermode;
+		pNewWeapon->pev->renderamt = pev->renderamt;
+		pNewWeapon->pev->rendercolor = pev->rendercolor;
+		pNewWeapon->pev->renderfx = pev->renderfx;
 		pNewWeapon->pev->dmg = pev->dmg;
 		pNewWeapon->pev->effects |= EF_NODRAW;// invisible for now
 		pNewWeapon->SetTouch(NULL);// no touch
