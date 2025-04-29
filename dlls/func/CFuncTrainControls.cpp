@@ -22,20 +22,20 @@ LINK_ENTITY_TO_CLASS(func_traincontrols, CFuncTrainControls)
 
 void CFuncTrainControls::Find(void)
 {
-	edict_t* pTarget = NULL;
+	CBaseEntity* pTarget = NULL;
 
 	do
 	{
-		pTarget = FIND_ENTITY_BY_TARGETNAME(pTarget, STRING(pev->target));
-	} while (!FNullEnt(pTarget) && !FClassnameIs(pTarget, "func_tracktrain"));
+		pTarget = UTIL_FindEntityByTargetname(pTarget, STRING(pev->target));
+	} while (pTarget && !FClassnameIs(pTarget->pev, "func_tracktrain"));
 
-	if (FNullEnt(pTarget))
+	if (!pTarget)
 	{
 		ALERT(at_console, "No train %s\n", STRING(pev->target));
 		return;
 	}
 
-	CFuncTrackTrain* ptrain = CFuncTrackTrain::Instance(pTarget);
+	CFuncTrackTrain* ptrain = CFuncTrackTrain::Instance(pTarget->edict());
 	ptrain->SetControls(pev);
 	UTIL_Remove(this);
 }

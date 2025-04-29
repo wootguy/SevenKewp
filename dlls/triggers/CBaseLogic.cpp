@@ -23,7 +23,7 @@ CBaseEntity* CBaseLogic::FindLogicEntity(string_t targetname) {
 		return h_caller;
 	}
 
-	return CBaseEntity::Instance( FIND_ENTITY_BY_TARGETNAME(NULL, STRING(targetname)) );
+	return UTIL_FindEntityByTargetname(NULL, STRING(targetname));
 }
 
 std::vector<CBaseEntity*> CBaseLogic::FindLogicEntities(const char* targetName) {
@@ -43,12 +43,10 @@ std::vector<CBaseEntity*> CBaseLogic::FindLogicEntities(const char* targetName) 
 		}
 	}
 	else {
-		edict_t* ent = NULL;
-		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, targetName))) {
-			CBaseEntity* pent = CBaseEntity::Instance(ent);
-
-			if (pent && !(pent->pev->flags & FL_KILLME)) {
-				foundEnts.push_back(pent);
+		CBaseEntity* ent = NULL;
+		while ((ent = UTIL_FindEntityByTargetname(ent, targetName))) {
+			if (ent && !(ent->pev->flags & FL_KILLME)) {
+				foundEnts.push_back(ent);
 			}
 		}
 	}
@@ -74,13 +72,11 @@ void CBaseLogic::FireLogicTargets(const char* targetName, USE_TYPE useType, floa
 		}
 	}
 	else {
-		edict_t* ent = NULL;
-		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, targetName))) {
-			CBaseEntity* pent = CBaseEntity::Instance(ent);
-
-			if (pent && !(pent->pev->flags & FL_KILLME) && pent != this) {
-				ALERT(at_aiconsole, "Found: %s, firing (%s)\n", STRING(pent->pev->classname), targetName);
-				pent->Use(h_activator, h_caller, useType, value);
+		CBaseEntity* ent = NULL;
+		while ((ent = UTIL_FindEntityByTargetname(ent, targetName))) {
+			if (ent && !(ent->pev->flags & FL_KILLME) && ent != this) {
+				ALERT(at_aiconsole, "Found: %s, firing (%s)\n", STRING(ent->pev->classname), targetName);
+				ent->Use(h_activator, h_caller, useType, value);
 			}
 		}
 	}

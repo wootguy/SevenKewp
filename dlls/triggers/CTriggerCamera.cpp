@@ -182,7 +182,7 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 
 	if (m_sPath)
 	{
-		m_pentPath = Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_sPath)));
+		m_pentPath = UTIL_FindEntityByTargetname(NULL, STRING(m_sPath));
 	}
 	else
 	{

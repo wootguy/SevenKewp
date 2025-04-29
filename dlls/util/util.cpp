@@ -1584,11 +1584,10 @@ int UTIL_IsMasterTriggered(string_t sMaster, CBaseEntity *pActivator)
 {
 	if (sMaster)
 	{
-		edict_t *pentTarget = NULL;
+		CBaseEntity *pMaster = NULL;
 	
-		while (!FNullEnt(pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(sMaster))))
+		while ((pMaster = UTIL_FindEntityByTargetname(pMaster, STRING(sMaster))))
 		{
-			CBaseEntity *pMaster = CBaseEntity::Instance(pentTarget);
 			if ( pMaster && (pMaster->ObjectCaps() & FCAP_MASTER) )
 				return pMaster->IsTriggered( pActivator );
 		}

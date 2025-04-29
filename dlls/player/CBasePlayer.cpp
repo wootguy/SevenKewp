@@ -1629,7 +1629,7 @@ void CBasePlayer::PlayerDeathThink(void)
 //=========================================================
 void CBasePlayer::StartDeathCam( void )
 {
-	edict_t *pSpot, *pNewSpot;
+	CBaseEntity *pSpot, *pNewSpot;
 	int iRand;
 
 	if ( pev->view_ofs == g_vecZero )
@@ -1638,16 +1638,16 @@ void CBasePlayer::StartDeathCam( void )
 		return;
 	}
 
-	pSpot = FIND_ENTITY_BY_CLASSNAME( NULL, "info_intermission");	
+	pSpot = UTIL_FindEntityByClassname( NULL, "info_intermission");
 
-	if ( !FNullEnt( pSpot ) )
+	if ( pSpot )
 	{
 		// at least one intermission spot in the world.
 		iRand = RANDOM_LONG( 0, 3 );
 
 		while ( iRand > 0 )
 		{
-			pNewSpot = FIND_ENTITY_BY_CLASSNAME( pSpot, "info_intermission");
+			pNewSpot = UTIL_FindEntityByClassname( pSpot, "info_intermission");
 			
 			if ( pNewSpot )
 			{
@@ -1659,8 +1659,8 @@ void CBasePlayer::StartDeathCam( void )
 
 		CopyToBodyQue( pev );
 
-		UTIL_SetOrigin( pev, pSpot->v.origin );
-		pev->angles = pev->v_angle = pSpot->v.v_angle;
+		UTIL_SetOrigin( pev, pSpot->pev->origin );
+		pev->angles = pev->v_angle = pSpot->pev->v_angle;
 	}
 	else
 	{
@@ -2416,17 +2416,17 @@ void CBasePlayer::PreThink(void)
 
 	if (m_initSoundTime && gpGlobals->time >= m_initSoundTime) {
 		m_initSoundTime = 0;
-		edict_t* ent = NULL;
+		CBaseEntity* ent = NULL;
 
-		while (!FNullEnt(ent = FIND_ENTITY_BY_CLASSNAME(ent, "ambient_generic"))) {
-			CAmbientGeneric* ambient = (CAmbientGeneric*)GET_PRIVATE(ent);
+		while ((ent = UTIL_FindEntityByClassname(ent, "ambient_generic"))) {
+			CAmbientGeneric* ambient = (CAmbientGeneric*)ent;
 			if (ambient)
 				ambient->InitSoundForNewJoiner(edict());
 		}
 
 		ent = NULL;
-		while (!FNullEnt(ent = FIND_ENTITY_BY_CLASSNAME(ent, "ambient_music"))) {
-			CAmbientGeneric* ambient = (CAmbientGeneric*)GET_PRIVATE(ent);
+		while ((ent = UTIL_FindEntityByClassname(ent, "ambient_music"))) {
+			CAmbientGeneric* ambient = (CAmbientGeneric*)ent;
 			if (ambient)
 				ambient->InitSoundForNewJoiner(edict());
 		}
@@ -5233,14 +5233,14 @@ int CBasePlayer :: GetCustomDecalFrames( void )
 
 void CBasePlayer::CleanupWeaponboxes(void)
 {
-	edict_t* ent = NULL;
+	CBaseEntity* ent = NULL;
 	CBaseEntity* oldestBox = NULL;
 	float oldestTime = FLT_MAX;
 	int totalBoxes = 0;
 	int thisEntIdx = ENTINDEX(edict());
-	while (!FNullEnt(ent = FIND_ENTITY_BY_CLASSNAME(ent, "weaponbox"))) {
-		CWeaponBox* oldbox = (CWeaponBox*)GET_PRIVATE(ent);
-		if (oldbox && ent->v.owner && ENTINDEX(ent->v.owner) == thisEntIdx) {
+	while ((ent = UTIL_FindEntityByClassname(ent, "weaponbox"))) {
+		CWeaponBox* oldbox = (CWeaponBox*)ent;
+		if (oldbox && ent->pev->owner && ENTINDEX(ent->pev->owner) == thisEntIdx) {
 			totalBoxes++;
 			if (oldbox->m_spawnTime < oldestTime) {
 				oldestBox = oldbox;

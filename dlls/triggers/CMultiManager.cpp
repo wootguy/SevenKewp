@@ -159,9 +159,9 @@ void CMultiManager::ManagerThink(void)
 		const char* targetName = STRING(m_iTargetName[m_index]);
 
 		if (m_triggerMode[m_index] == 2) { // USE_SET(2) means KILL in this context
-			edict_t* pentKillTarget = NULL;
-			while (!FNullEnt(pentKillTarget = FIND_ENTITY_BY_TARGETNAME(pentKillTarget, targetName))) {
-				UTIL_Remove(CBaseEntity::Instance(pentKillTarget));
+			CBaseEntity* pentKillTarget = NULL;
+			while ((pentKillTarget = UTIL_FindEntityByTargetname(pentKillTarget, targetName))) {
+				UTIL_Remove(pentKillTarget);
 			}
 		}
 		else {

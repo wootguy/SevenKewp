@@ -115,7 +115,7 @@ BOOL CMultiSource::IsTriggered(CBaseEntity*)
 
 void CMultiSource::Register(void)
 {
-	edict_t* pentTarget = NULL;
+	CBaseEntity* pentTarget = NULL;
 
 	m_iTotal = 0;
 	memset(m_rgEntities, 0, MS_MAX_TARGETS * sizeof(EHANDLE));
@@ -124,25 +124,22 @@ void CMultiSource::Register(void)
 
 	// search for all entities which target this multisource (pev->targetname)
 
-	pentTarget = FIND_ENTITY_BY_STRING(NULL, "target", STRING(pev->targetname));
+	pentTarget = UTIL_FindEntityByString(NULL, "target", STRING(pev->targetname));
 
-	while (!FNullEnt(pentTarget) && (m_iTotal < MS_MAX_TARGETS))
+	while (pentTarget && (m_iTotal < MS_MAX_TARGETS))
 	{
-		CBaseEntity* pTarget = CBaseEntity::Instance(pentTarget);
-		if (pTarget)
-			m_rgEntities[m_iTotal++] = pTarget;
+		m_rgEntities[m_iTotal++] = pentTarget;
 
-		pentTarget = FIND_ENTITY_BY_STRING(pentTarget, "target", STRING(pev->targetname));
+		pentTarget = UTIL_FindEntityByString(pentTarget, "target", STRING(pev->targetname));
 	}
 
-	pentTarget = FIND_ENTITY_BY_STRING(NULL, "classname", "multi_manager");
-	while (!FNullEnt(pentTarget) && (m_iTotal < MS_MAX_TARGETS))
+	pentTarget = UTIL_FindEntityByClassname(NULL, "multi_manager");
+	while (pentTarget && (m_iTotal < MS_MAX_TARGETS))
 	{
-		CBaseEntity* pTarget = CBaseEntity::Instance(pentTarget);
-		if (pTarget && pTarget->HasTarget(pev->targetname))
-			m_rgEntities[m_iTotal++] = pTarget;
+		if (pentTarget->HasTarget(pev->targetname))
+			m_rgEntities[m_iTotal++] = pentTarget;
 
-		pentTarget = FIND_ENTITY_BY_STRING(pentTarget, "classname", "multi_manager");
+		pentTarget = UTIL_FindEntityByClassname(pentTarget, "multi_manager");
 	}
 
 	pev->spawnflags &= ~SF_MULTI_INIT;

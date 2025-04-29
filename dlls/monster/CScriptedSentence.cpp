@@ -222,23 +222,23 @@ BOOL CScriptedSentence::AcceptableSpeaker(CBaseMonster* pMonster)
 
 CBaseMonster* CScriptedSentence::FindEntity(void)
 {
-	edict_t* pentTarget;
+	CBaseEntity* pentTarget;
 	CBaseMonster* pMonster;
 
 
-	pentTarget = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_iszEntity));
+	pentTarget = UTIL_FindEntityByTargetname(NULL, STRING(m_iszEntity));
 	pMonster = NULL;
 
-	while (!FNullEnt(pentTarget))
+	while (pentTarget)
 	{
-		pMonster = GetMonsterPointer(pentTarget);
+		pMonster = pentTarget->MyMonsterPointer();
 		if (pMonster != NULL)
 		{
 			if (AcceptableSpeaker(pMonster))
 				return pMonster;
 			//			ALERT( at_console, "%s (%s), not acceptable\n", STRING(pMonster->pev->classname), STRING(pMonster->pev->targetname) );
 		}
-		pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(m_iszEntity));
+		pentTarget = UTIL_FindEntityByTargetname(pentTarget, STRING(m_iszEntity));
 	}
 
 	CBaseEntity* pEntity = NULL;

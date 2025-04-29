@@ -269,11 +269,7 @@ CBaseEntity* CBaseEntity::GetNextTarget(void)
 {
 	if (FStringNull(pev->target))
 		return NULL;
-	edict_t* pTarget = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target));
-	if (FNullEnt(pTarget))
-		return NULL;
-
-	return Instance(pTarget);
+	return UTIL_FindEntityByTargetname(NULL, STRING(pev->target));
 }
 
 void CBaseEntity::KeyValue(KeyValueData* pkvd) {
@@ -1274,16 +1270,16 @@ void CBaseEntity::SUB_UseTargets(CBaseEntity* pActivator, USE_TYPE useType, floa
 
 void CBaseEntity::SUB_KillTarget(const char* target)
 {
-	edict_t* pentKillTarget = NULL;
+	CBaseEntity* pentKillTarget = NULL;
 
 	ALERT(at_aiconsole, "KillTarget: %s\n", target);
-	pentKillTarget = FIND_ENTITY_BY_TARGETNAME(NULL, target);
-	while (!FNullEnt(pentKillTarget))
+	pentKillTarget = UTIL_FindEntityByTargetname(NULL, target);
+	while (pentKillTarget)
 	{
-		UTIL_Remove(CBaseEntity::Instance(pentKillTarget));
+		UTIL_Remove(pentKillTarget);
 
-		ALERT(at_aiconsole, "killing %s\n", STRING(pentKillTarget->v.classname));
-		pentKillTarget = FIND_ENTITY_BY_TARGETNAME(pentKillTarget, target);
+		ALERT(at_aiconsole, "killing %s\n", STRING(pentKillTarget->pev->classname));
+		pentKillTarget = UTIL_FindEntityByTargetname(pentKillTarget, target);
 	}
 }
 

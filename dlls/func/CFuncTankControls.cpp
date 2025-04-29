@@ -50,20 +50,20 @@ void CFuncTankControls::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 
 void CFuncTankControls::Think(void)
 {
-	edict_t* pTarget = NULL;
+	CBaseEntity* pTarget = NULL;
 
 	do
 	{
-		pTarget = FIND_ENTITY_BY_TARGETNAME(pTarget, STRING(pev->target));
-	} while (!FNullEnt(pTarget) && strncmp(STRING(pTarget->v.classname), "func_tank", 9));
+		pTarget = UTIL_FindEntityByTargetname(pTarget, STRING(pev->target));
+	} while (pTarget && strncmp(STRING(pTarget->pev->classname), "func_tank", 9));
 
-	if (FNullEnt(pTarget))
+	if (!pTarget)
 	{
 		ALERT(at_console, "No tank %s\n", STRING(pev->target));
 		return;
 	}
 
-	m_hTank = (CFuncTank*)Instance(pTarget);
+	m_hTank = (CFuncTank*)pTarget;
 }
 
 void CFuncTankControls::Spawn(void)

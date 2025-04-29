@@ -65,17 +65,17 @@ CLaser* CFuncTankLaser::GetLaser(void)
 	if (m_hLaser)
 		return (CLaser*)m_hLaser.GetEntity();
 
-	edict_t* pentLaser = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->message));
-	while (!FNullEnt(pentLaser))
+	CBaseEntity* pentLaser = UTIL_FindEntityByTargetname(NULL, STRING(pev->message));
+	while (pentLaser)
 	{
 		// Found the landmark
-		if (FClassnameIs(pentLaser, "env_laser"))
+		if (FClassnameIs(pentLaser->pev, "env_laser"))
 		{
-			m_hLaser = (CLaser*)CBaseEntity::Instance(pentLaser);
+			m_hLaser = (CLaser*)pentLaser;
 			return (CLaser*)m_hLaser.GetEntity();
 		}
 		else
-			pentLaser = FIND_ENTITY_BY_TARGETNAME(pentLaser, STRING(pev->message));
+			pentLaser = UTIL_FindEntityByTargetname(pentLaser, STRING(pev->message));
 	}
 
 	return NULL;

@@ -225,12 +225,16 @@ void CFuncTrain::Activate(void)
 	if (!m_activated)
 	{
 		m_activated = 1;
-		entvars_t* pevTarg = VARS(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target)));
+		CBaseEntity* targ = UTIL_FindEntityByTargetname(NULL, STRING(pev->target));
 
-		pev->target = pevTarg->target;
-		m_pevCurrentTarget = pevTarg;// keep track of this since path corners change our target for us.
+		if (targ) {
+			entvars_t* pevTarg = VARS(targ->edict());
 
-		UTIL_SetOrigin(pev, pevTarg->origin - (pev->mins + pev->maxs) * 0.5);
+			pev->target = pevTarg->target;
+			m_pevCurrentTarget = pevTarg;// keep track of this since path corners change our target for us.
+
+			UTIL_SetOrigin(pev, pevTarg->origin - (pev->mins + pev->maxs) * 0.5);
+		}
 
 		if (FStringNull(pev->targetname))
 		{	// not triggered, so start immediately

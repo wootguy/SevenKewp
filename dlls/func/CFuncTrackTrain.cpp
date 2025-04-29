@@ -453,7 +453,8 @@ BOOL CFuncTrackTrain::OnControls(entvars_t* pevTest)
 
 void CFuncTrackTrain::Find(void)
 {
-	CPathTrack* m_ppath = CPathTrack::Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target)));
+	CBaseEntity* pathent = UTIL_FindEntityByTargetname(NULL, STRING(pev->target));
+	CPathTrack* m_ppath = pathent ? CPathTrack::Instance(pathent->edict()) : NULL;
 	m_hPath = m_ppath;
 	if (!m_ppath)
 		return;

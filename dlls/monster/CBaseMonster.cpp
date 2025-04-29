@@ -1551,21 +1551,16 @@ float CBaseMonster::OpenDoorAndWait(entvars_t* pevDoor)
 		//ALERT(at_aiconsole, "Waiting %d ms\n", (int)(1000*flTravelTime));
 		if (pcbeDoor->pev->targetname)
 		{
-			edict_t* pentTarget = NULL;
+			CBaseEntity* pentTarget = NULL;
 			for (;;)
 			{
-				pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(pcbeDoor->pev->targetname));
+				pentTarget = UTIL_FindEntityByTargetname(pentTarget, STRING(pcbeDoor->pev->targetname));
 
-				if (VARS(pentTarget) != pcbeDoor->pev)
+				if (pentTarget && VARS(pentTarget->pev) != pcbeDoor->pev)
 				{
-					if (FNullEnt(pentTarget))
-						break;
-
-					if (FClassnameIs(pentTarget, STRING(pcbeDoor->pev->classname)))
+					if (FClassnameIs(pentTarget->pev, STRING(pcbeDoor->pev->classname)))
 					{
-						CBaseEntity* pDoor = Instance(pentTarget);
-						if (pDoor)
-							pDoor->Use(this, this, USE_ON, 0.0);
+						pentTarget->Use(this, this, USE_ON, 0.0);
 					}
 				}
 			}
@@ -2331,7 +2326,7 @@ void CBaseMonster::StartMonster(void)
 	if (!FStringNull(pev->target))// this monster has a target
 	{
 		// Find the monster's initial target entity, stash it
-		m_hGoalEnt = CBaseEntity::Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(pev->target)));
+		m_hGoalEnt = UTIL_FindEntityByTargetname(NULL, STRING(pev->target));
 
 		if (!m_hGoalEnt)
 		{
@@ -6423,7 +6418,7 @@ void CBaseMonster::StartTask(Task_t* pTask)
 	break;
 	case TASK_GET_PATH_TO_SPOT:
 	{
-		CBaseEntity* pPlayer = CBaseEntity::Instance(FIND_ENTITY_BY_CLASSNAME(NULL, "player"));
+		CBaseEntity* pPlayer = UTIL_FindEntityByClassname(NULL, "player");
 		if (BuildRoute(m_vecMoveGoal, bits_MF_TO_LOCATION, pPlayer, true))
 		{
 			TaskComplete();
@@ -7756,9 +7751,9 @@ void CBaseMonster::Nerf() {
 
 		if (m_iszTriggerTarget) {
 			// check if the monster triggers something special (like a game_end, but not a monster counter)
-			edict_t* ent = NULL;
-			while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(m_iszTriggerTarget)))) {
-				const char* cname = STRING(ent->v.classname);
+			CBaseEntity* ent = NULL;
+			while ((ent = UTIL_FindEntityByTargetname(ent, STRING(m_iszTriggerTarget)))) {
+				const char* cname = STRING(ent->pev->classname);
 				if (strcmp(cname, "game_counter") && strcmp(cname, "trigger_counter")) {
 					ALERT(at_aiconsole, "Not nerfing %d hp %s (triggers '%s' %s)\n", (int)pev->health, monstertype, STRING(m_iszTriggerTarget), cname);
 					shouldNerf = false;

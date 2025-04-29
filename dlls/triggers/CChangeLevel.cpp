@@ -25,7 +25,7 @@ public:
 	int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; } // in case it's made solid by nomaptrans
 
 
-	static edict_t* FindLandmark(const char* pLandmarkName);
+	static CBaseEntity* FindLandmark(const char* pLandmarkName);
 	static int ChangeList(LEVELLIST* pLevelList, int maxList);
 	static int AddTransitionToList(LEVELLIST* pLevelList, int listCount, const char* pMapName, const char* pLandmarkName, edict_t* pentLandmark);
 	static int InTransitionVolume(CBaseEntity* pEntity, char* pVolumeName);
@@ -153,18 +153,16 @@ void CChangeLevel::ExecuteChangeLevel(void)
 FILE_GLOBAL char st_szNextMap[cchMapNameMost];
 //FILE_GLOBAL char st_szNextSpot[cchMapNameMost];
 
-edict_t* CChangeLevel::FindLandmark(const char* pLandmarkName)
+CBaseEntity* CChangeLevel::FindLandmark(const char* pLandmarkName)
 {
-	edict_t* pentLandmark;
-
-	pentLandmark = FIND_ENTITY_BY_STRING(NULL, "targetname", pLandmarkName);
-	while (!FNullEnt(pentLandmark))
+	CBaseEntity* pentLandmark = UTIL_FindEntityByTargetname(NULL, pLandmarkName);
+	while (pentLandmark)
 	{
 		// Found the landmark
-		if (FClassnameIs(pentLandmark, "info_landmark"))
+		if (FClassnameIs(pentLandmark->pev, "info_landmark"))
 			return pentLandmark;
 		else
-			pentLandmark = FIND_ENTITY_BY_STRING(pentLandmark, "targetname", pLandmarkName);
+			pentLandmark = UTIL_FindEntityByTargetname(pentLandmark, pLandmarkName);
 	}
 	ALERT(at_error, "Can't find landmark %s\n", pLandmarkName);
 	return NULL;
@@ -316,7 +314,7 @@ int BuildChangeList(LEVELLIST* pLevelList, int maxList)
 
 int CChangeLevel::InTransitionVolume(CBaseEntity* pEntity, char* pVolumeName)
 {
-	edict_t* pentVolume;
+	CBaseEntity* pVolume;
 
 
 	if (pEntity->ObjectCaps() & FCAP_FORCE_TRANSITION)
@@ -331,11 +329,9 @@ int CChangeLevel::InTransitionVolume(CBaseEntity* pEntity, char* pVolumeName)
 
 	int inVolume = 1;	// Unless we find a trigger_transition, everything is in the volume
 
-	pentVolume = FIND_ENTITY_BY_TARGETNAME(NULL, pVolumeName);
-	while (!FNullEnt(pentVolume))
+	pVolume = UTIL_FindEntityByTargetname(NULL, pVolumeName);
+	while (pVolume)
 	{
-		CBaseEntity* pVolume = CBaseEntity::Instance(pentVolume);
-
 		if (pVolume && FClassnameIs(pVolume->pev, "trigger_transition"))
 		{
 			if (pVolume->Intersects(pEntity))	// It touches one, it's in the volume
@@ -343,7 +339,7 @@ int CChangeLevel::InTransitionVolume(CBaseEntity* pEntity, char* pVolumeName)
 			else
 				inVolume = 0;	// Found a trigger_transition, but I don't intersect it -- if I don't find another, don't go!
 		}
-		pentVolume = FIND_ENTITY_BY_TARGETNAME(pentVolume, pVolumeName);
+		pVolume = UTIL_FindEntityByTargetname(pVolume, pVolumeName);
 	}
 
 	return inVolume;
@@ -359,20 +355,20 @@ int CChangeLevel::InTransitionVolume(CBaseEntity* pEntity, char* pVolumeName)
 // be moved across.
 int CChangeLevel::ChangeList(LEVELLIST* pLevelList, int maxList)
 {
-	edict_t* pentChangelevel, * pentLandmark;
+	CBaseEntity* pentChangelevel, *pentLandmark;
 	int			i, count;
 
 	count = 0;
 
 	// Find all of the possible level changes on this BSP
-	pentChangelevel = FIND_ENTITY_BY_STRING(NULL, "classname", "trigger_changelevel");
-	if (FNullEnt(pentChangelevel))
+	pentChangelevel = UTIL_FindEntityByClassname(NULL, "trigger_changelevel");
+	if (!pentChangelevel)
 		return 0;
-	while (!FNullEnt(pentChangelevel))
+	while (pentChangelevel)
 	{
 		CChangeLevel* pTrigger;
 
-		pTrigger = GetClassPtr((CChangeLevel*)VARS(pentChangelevel));
+		pTrigger = (CChangeLevel*)pentChangelevel;
 		if (pTrigger)
 		{
 			// Find the corresponding landmark
@@ -380,7 +376,7 @@ int CChangeLevel::ChangeList(LEVELLIST* pLevelList, int maxList)
 			if (pentLandmark)
 			{
 				// Build a list of unique transitions
-				if (AddTransitionToList(pLevelList, count, pTrigger->m_szMapName, pTrigger->m_szLandmarkName, pentLandmark))
+				if (AddTransitionToList(pLevelList, count, pTrigger->m_szMapName, pTrigger->m_szLandmarkName, pentLandmark->edict()))
 				{
 					count++;
 					if (count >= maxList)		// FULL!!
@@ -388,7 +384,7 @@ int CChangeLevel::ChangeList(LEVELLIST* pLevelList, int maxList)
 				}
 			}
 		}
-		pentChangelevel = FIND_ENTITY_BY_STRING(pentChangelevel, "classname", "trigger_changelevel");
+		pentChangelevel = UTIL_FindEntityByClassname(pentChangelevel, "trigger_changelevel");
 	}
 
 	if (gpGlobals->pSaveData && ((SAVERESTOREDATA*)gpGlobals->pSaveData)->pTable)
@@ -464,21 +460,21 @@ only called if a time or frag limit has expired
 */
 void NextLevel(void)
 {
-	edict_t* pent;
+	CBaseEntity* pent;
 	CChangeLevel* pChange;
 
 	// find a trigger_changelevel
-	pent = FIND_ENTITY_BY_CLASSNAME(NULL, "trigger_changelevel");
+	pent = UTIL_FindEntityByClassname(NULL, "trigger_changelevel");
 
 	// go back to start if no trigger_changelevel
-	if (FNullEnt(pent))
+	if (!pent)
 	{
 		gpGlobals->mapname = ALLOC_STRING("start");
 		pChange = GetClassPtr((CChangeLevel*)NULL);
 		strcpy_safe(pChange->m_szMapName, "start", 32);
 	}
 	else
-		pChange = GetClassPtr((CChangeLevel*)VARS(pent));
+		pChange = (CChangeLevel*)pent;
 
 	strcpy_safe(st_szNextMap, pChange->m_szMapName, 32);
 	g_fGameOver = TRUE;

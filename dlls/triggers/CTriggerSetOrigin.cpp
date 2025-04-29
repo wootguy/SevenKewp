@@ -104,13 +104,13 @@ void CTriggerSetOrigin::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 	m_hCopyEnt = m_copyPointer ? UTIL_FindEntityByTargetname(NULL, STRING(m_copyPointer)) : NULL;
 
 	m_targetCount = 0;
-	edict_t* ent = NULL;
-	while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(pev->target)))) {
+	CBaseEntity* ent = NULL;
+	while ((ent = UTIL_FindEntityByTargetname(ent, STRING(pev->target)))) {
 		if (m_targetCount >= TSORI_MAX_TARGETS) {
 			ALERT(at_console, "trigger_setorigin (%s): Max target count exceeded!", STRING(pev->targetname));
 			break;
 		}
-		m_hTargets[m_targetCount++] = CBaseEntity::Instance(ent);
+		m_hTargets[m_targetCount++] = ent;
 	}
 	
 	if (FNullEnt(m_hCopyEnt.GetEntity()) || m_targetCount == 0) {

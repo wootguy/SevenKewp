@@ -108,13 +108,9 @@ void CTriggerHurtRemote::HurtAllTargets() {
 		}
 	}
 	else if (m_targetClass) {
-		edict_t* ent = NULL;
-		while (!FNullEnt(ent = FIND_ENTITY_BY_CLASSNAME(ent, STRING(m_targetClass)))) {
-			CBaseEntity* pent = CBaseEntity::Instance(ent);
-
-			if (pent) {
-				HurtTarget(pent);
-			}
+		CBaseEntity* ent = NULL;
+		while ((ent = UTIL_FindEntityByClassname(ent, STRING(m_targetClass)))) {
+			HurtTarget(ent);
 		}
 	}
 }
