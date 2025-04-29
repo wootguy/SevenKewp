@@ -503,14 +503,13 @@ void CSatchel::WeaponIdle( void )
 //=========================================================
 void DeactivateSatchels(CBasePlayer* pOwner)
 {
-	edict_t* pFind;
+	CBaseEntity* pFind;
 
-	pFind = FIND_ENTITY_BY_CLASSNAME(NULL, "monster_satchel");
+	pFind = UTIL_FindEntityByClassname(NULL, "monster_satchel");
 
-	while (!FNullEnt(pFind))
+	while (pFind)
 	{
-		CBaseEntity* pEnt = CBaseEntity::Instance(pFind);
-		CSatchelCharge* pSatchel = (CSatchelCharge*)pEnt;
+		CSatchelCharge* pSatchel = (CSatchelCharge*)pFind;
 
 		if (pSatchel)
 		{
@@ -520,7 +519,7 @@ void DeactivateSatchels(CBasePlayer* pOwner)
 			}
 		}
 
-		pFind = FIND_ENTITY_BY_CLASSNAME(pFind, "monster_satchel");
+		pFind = UTIL_FindEntityByClassname(pFind, "monster_satchel");
 	}
 }
 

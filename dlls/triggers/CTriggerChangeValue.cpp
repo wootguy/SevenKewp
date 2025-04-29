@@ -648,10 +648,10 @@ void CTriggerChangeValue::ChangeValues() {
 		HandleTarget(h_caller);
 	}
 	else {
-		edict_t* ent = NULL;
+		CBaseEntity* ent = NULL;
 
-		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, target))) {
-			HandleTarget(CBaseEntity::Instance(ent));
+		while ((ent = UTIL_FindEntityByTargetname(ent, target))) {
+			HandleTarget(ent);
 
 			if (isCopyValue && !(pev->spawnflags & SF_TCVAL_MULTIPLE_DESTINATIONS)) {
 				break;

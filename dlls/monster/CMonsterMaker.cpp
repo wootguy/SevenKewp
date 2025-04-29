@@ -511,9 +511,9 @@ void CMonsterMaker :: XenmakerEffect() {
 
 	if (m_xenmakerTemplate) {
 		// searching every spawn so that entity order doesn't matter during map init
-		edict_t* ent = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_xenmakerTemplate));
-		if (!FNullEnt(ent) && !strcmp(STRING(ent->v.classname), "env_xenmaker")) {
-			xen = (CMonsterMaker*)GET_PRIVATE(ent);
+		CBaseEntity* ent = UTIL_FindEntityByTargetname(NULL, STRING(m_xenmakerTemplate));
+		if (ent && !strcmp(STRING(ent->pev->classname), "env_xenmaker")) {
+			xen = (CMonsterMaker*)ent->MyMonsterPointer();
 		}
 	}
 
@@ -653,9 +653,9 @@ bool CMonsterMaker::NerfMonsterCounters(string_t target) {
 		return false;
 	}
 
-	edict_t* ent = NULL;
-	while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(target)))) {
-		if (strcmp(STRING(ent->v.classname), "game_counter") && strcmp(STRING(ent->v.classname), "trigger_counter")) {
+	CBaseEntity* ent = NULL;
+	while ((ent = UTIL_FindEntityByTargetname(ent, STRING(target)))) {
+		if (strcmp(STRING(ent->pev->classname), "game_counter") && strcmp(STRING(ent->pev->classname), "trigger_counter")) {
 			ALERT(at_aiconsole, "Not nerfing %d count %s maker (triggers '%s')\n",
 				m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(target));
 			return false;
@@ -665,21 +665,21 @@ bool CMonsterMaker::NerfMonsterCounters(string_t target) {
 	if (shouldNerf) {
 		ent = NULL;
 		int reducedCount = m_cNumMonsters - maxNerfedSpawnCount;
-		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(target)))) {
-			if (!strcmp(STRING(ent->v.classname), "game_counter")) {
+		while ((ent = UTIL_FindEntityByTargetname(ent, STRING(target)))) {
+			if (!strcmp(STRING(ent->pev->classname), "game_counter")) {
 				int trigCount = CountMonsterTriggerNerfs(target);
-				if (trigCount == -1 || trigCount >= (int)ent->v.health) {
+				if (trigCount == -1 || trigCount >= (int)ent->pev->health) {
 					ALERT(at_aiconsole, "Not nerfing %d count %s maker because game_counter '%s' would be nerfed into a negative count (%d > %d)\n",
-						m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(target), trigCount, (int)ent->v.health);
+						m_cNumMonsters, STRING(m_iszMonsterClassname), STRING(target), trigCount, (int)ent->pev->health);
 					return false;
 				}
 
-				ent->v.health -= reducedCount;
+				ent->pev->health -= reducedCount;
 				ALERT(at_aiconsole, "Reduced game_counter %s limit by %d (%d total)\n",
-					STRING(target), reducedCount, (int)ent->v.health);
+					STRING(target), reducedCount, (int)ent->pev->health);
 			}
-			else if (!strcmp(STRING(ent->v.classname), "trigger_counter")) {
-				CBaseToggle* trig = (CBaseToggle*)GET_PRIVATE(ent);
+			else if (!strcmp(STRING(ent->pev->classname), "trigger_counter")) {
+				CBaseToggle* trig = (CBaseToggle*)ent;
 				if (trig) {
 					int trigCount = CountMonsterTriggerNerfs(target);
 					if (trigCount == -1 || trigCount >= trig->m_cTriggersLeft) {

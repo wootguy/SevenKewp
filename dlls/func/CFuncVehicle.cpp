@@ -843,7 +843,8 @@ BOOL CFuncVehicle :: OnControls( entvars_t *pevTest )
 
 void CFuncVehicle :: Find( void )
 {
-	m_ppath = CPathTrack::Instance(FIND_ENTITY_BY_TARGETNAME( NULL, STRING(pev->target) ));
+	CBaseEntity* pathent = UTIL_FindEntityByTargetname(NULL, STRING(pev->target));
+	m_ppath = pathent ? CPathTrack::Instance(pathent->edict()) : NULL;
 	if ( !m_ppath )
 		return;
 
@@ -1073,20 +1074,20 @@ LINK_ENTITY_TO_CLASS( func_vehiclecontrols, CFuncVehicleControls )
 
 void CFuncVehicleControls :: Find( void )
 {
-	edict_t *pTarget = NULL;
+	CBaseEntity *pTarget = NULL;
 
 	do 
 	{
-		pTarget = FIND_ENTITY_BY_TARGETNAME( pTarget, STRING(pev->target) );
-	} while ( !FNullEnt(pTarget) && !FClassnameIs(pTarget, "func_vehicle") );
+		pTarget = UTIL_FindEntityByTargetname( pTarget, STRING(pev->target) );
+	} while ( pTarget && !FClassnameIs(pTarget->pev, "func_vehicle") );
 
-	if ( FNullEnt( pTarget ) )
+	if ( !pTarget )
 	{
 		ALERT( at_console, "No vehicle %s\n", STRING(pev->target) );
 		return;
 	}
 
-	CFuncVehicle *pvehicle = CFuncVehicle::Instance(pTarget);
+	CFuncVehicle *pvehicle = CFuncVehicle::Instance(pTarget->edict());
 	pvehicle->SetControls( pev );
 	UTIL_Remove( this );
 }

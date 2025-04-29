@@ -88,11 +88,11 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 		return;
 	}
 
-	edict_t* pentTarget = NULL;
-	std::vector<edict_t*> targets;
-	edict_t* ent = NULL;
-	while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(pev->target)))) {
-		if (!strcmp(STRING(ent->v.classname), "info_teleport_destination")) {
+	CBaseEntity* pentTarget = NULL;
+	std::vector<CBaseEntity*> targets;
+	CBaseEntity* ent = NULL;
+	while ((ent = UTIL_FindEntityByTargetname(ent, STRING(pev->target)))) {
+		if (!strcmp(STRING(ent->pev->classname), "info_teleport_destination")) {
 			targets.push_back(ent);
 		}
 		else if (!pentTarget) {
@@ -110,7 +110,7 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 	if (!pentTarget)
 		return;
 
-	Vector tmp = VARS(pentTarget)->origin;
+	Vector tmp = pentTarget->pev->origin;
 
 	if (pOther->IsPlayer() && !(pev->spawnflags & (SF_TELE_RELATIVE | SF_TELE_SEAMLESS_TRANSITION)))
 	{
@@ -128,7 +128,7 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 		float len = offset.Length();
 		Vector vecAngles = UTIL_VecToAngles(offset.Normalize());
 		vecAngles.x *= -1;
-		UTIL_MakeVectors(vecAngles + pentTarget->v.angles);
+		UTIL_MakeVectors(vecAngles + pentTarget->pev->angles);
 		offset = gpGlobals->v_forward * len;
 		tmp = tmp + offset;
 	}
@@ -144,7 +144,7 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 		float speed = pevToucher->velocity.Length();
 		Vector vecAngles = UTIL_VecToAngles(pevToucher->velocity);
 		vecAngles.x *= -1;
-		UTIL_MakeVectors(vecAngles + pentTarget->v.angles);
+		UTIL_MakeVectors(vecAngles + pentTarget->pev->angles);
 		pevToucher->velocity = gpGlobals->v_forward * speed;
 
 		// TODO: players will continue to send movement commands using their old angles which
@@ -156,7 +156,7 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 
 	if (pev->spawnflags & (SF_TELE_ROTATE_ANGLES | SF_TELE_SEAMLESS_TRANSITION)) {
 		// rotate angles
-		pevToucher->angles = pevToucher->v_angle + pentTarget->v.angles;
+		pevToucher->angles = pevToucher->v_angle + pentTarget->pev->angles;
 
 		if (pOther->IsPlayer()) {
 			pevToucher->fixangle = TRUE;
@@ -164,16 +164,16 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 	}
 	else if (!(pev->spawnflags & SF_TELE_KEEP_ANGLES)) {
 		// copy angles
-		pevToucher->angles = pentTarget->v.angles;
+		pevToucher->angles = pentTarget->pev->angles;
 
 		if (pOther->IsPlayer()) {
 			pevToucher->fixangle = TRUE;
 		}
 	}
 
-	if (FClassnameIs(pentTarget, "info_teleport_destination") 
-		&& (pentTarget->v.spawnflags & SF_TELE_DEST_TRIGGER_ON_ARRIVAL) && pentTarget->v.target) {
-		FireTargets(STRING(pentTarget->v.target), pOther, CBaseEntity::Instance(pentTarget), USE_TOGGLE, 0.0f);
+	if (FClassnameIs(pentTarget->pev, "info_teleport_destination") 
+		&& (pentTarget->pev->spawnflags & SF_TELE_DEST_TRIGGER_ON_ARRIVAL) && pentTarget->pev->target) {
+		FireTargets(STRING(pentTarget->pev->target), pOther, pentTarget, USE_TOGGLE, 0.0f);
 	}
 }
 

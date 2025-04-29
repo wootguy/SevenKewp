@@ -150,17 +150,17 @@ void CMomentaryRotButton::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE
 void CMomentaryRotButton::UpdateAllButtons(float value, int start)
 {
 	// Update all rot buttons attached to the same target
-	edict_t* pentTarget = NULL;
+	CBaseEntity* pentTarget = NULL;
 	for (;;)
 	{
 
-		pentTarget = FIND_ENTITY_BY_STRING(pentTarget, "target", STRING(pev->target));
-		if (FNullEnt(pentTarget))
+		pentTarget = UTIL_FindEntityByString(pentTarget, "target", STRING(pev->target));
+		if (!pentTarget)
 			break;
 
-		if (FClassnameIs(VARS(pentTarget), "momentary_rot_button"))
+		if (FClassnameIs(pentTarget->pev, "momentary_rot_button"))
 		{
-			CMomentaryRotButton* pEntity = CMomentaryRotButton::Instance(pentTarget);
+			CMomentaryRotButton* pEntity = CMomentaryRotButton::Instance(pentTarget->edict());
 			if (pEntity)
 			{
 				if (start)
@@ -239,13 +239,13 @@ void CMomentaryRotButton::UpdateTarget(float value)
 {
 	if (!FStringNull(pev->target))
 	{
-		edict_t* pentTarget = NULL;
+		CBaseEntity* pentTarget = NULL;
 		for (;;)
 		{
-			pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(pev->target));
-			if (FNullEnt(pentTarget))
+			pentTarget = UTIL_FindEntityByTargetname(pentTarget, STRING(pev->target));
+			if (!pentTarget)
 				break;
-			CBaseEntity* pEntity = CBaseEntity::Instance(pentTarget);
+			CBaseEntity* pEntity = CBaseEntity::Instance(pentTarget->edict());
 			if (pEntity)
 			{
 				pEntity->Use(this, this, USE_SET, value);

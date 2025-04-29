@@ -505,20 +505,18 @@ void CBaseButton::ButtonBackHome(void)
 
 	if (!FStringNull(pev->target))
 	{
-		edict_t* pentTarget = NULL;
+		CBaseEntity* pentTarget = NULL;
 		for (;;)
 		{
-			pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(pev->target));
+			pentTarget = UTIL_FindEntityByTargetname(pentTarget, STRING(pev->target));
 
-			if (FNullEnt(pentTarget))
+			if (!pentTarget)
 				break;
 
-			if (!FClassnameIs(pentTarget, "multisource"))
+			if (!FClassnameIs(pentTarget->pev, "multisource"))
 				continue;
-			CBaseEntity* pTarget = CBaseEntity::Instance(pentTarget);
 
-			if (pTarget)
-				pTarget->Use(m_hActivator, this, USE_TOGGLE, 0);
+			pentTarget->Use(m_hActivator, this, USE_TOGGLE, 0);
 		}
 	}
 

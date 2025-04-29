@@ -126,6 +126,7 @@ void UTIL_Remove( CBaseEntity *pEntity ){ }
 struct skilldata_t  gSkillData;
 void UTIL_SetSize( entvars_t *pev, const Vector &vecMin, const Vector &vecMax ){ }
 CBaseEntity *UTIL_FindEntityInSphere( CBaseEntity *pStartEntity, const Vector &vecCenter, float flRadius ){ return 0;}
+CBaseEntity *UTIL_FindEntityByClassname(CBaseEntity* pStartEntity, const char* szName){ return 0;}
 
 Vector UTIL_VecToAngles( const Vector &vec ){ return 0; }
 CSprite *CSprite::SpriteCreate( const char *pSpriteName, const Vector &origin, BOOL animate ) { return 0; }

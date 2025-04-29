@@ -38,14 +38,14 @@ void CRenderFxManager::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TY
 {
 	if (!FStringNull(pev->target))
 	{
-		edict_t* pentTarget = NULL;
+		CBaseEntity* pentTarget = NULL;
 		while (1)
 		{
-			pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, STRING(pev->target));
-			if (FNullEnt(pentTarget))
+			pentTarget = UTIL_FindEntityByTargetname(pentTarget, STRING(pev->target));
+			if (!pentTarget)
 				break;
 
-			entvars_t* pevTarget = VARS(pentTarget);
+			entvars_t* pevTarget = pentTarget->pev;
 			if (!FBitSet(pev->spawnflags, SF_RENDER_MASKFX))
 				pevTarget->renderfx = pev->renderfx;
 			if (!FBitSet(pev->spawnflags, SF_RENDER_MASKAMT))

@@ -2564,7 +2564,7 @@ int CGraph :: FSaveGraph ( char *szMapName )
 int CGraph :: FSetGraphPointers ( void )
 {
 	int	i;
-	edict_t	*pentLinkEnt;
+	CBaseEntity	*pentLinkEnt;
 
 	for ( i = 0 ; i < m_cLinks ; i++ )
 	{// go through all of the links
@@ -2579,9 +2579,9 @@ int CGraph :: FSetGraphPointers ( void )
 			// m_szLinkEntModelname is not necessarily NULL terminated (so we can store it in a more alignment-friendly 4 bytes)
 			memcpy( name, m_pLinkPool[ i ].m_szLinkEntModelname, 4 );
 			name[4] = 0;
-			pentLinkEnt =  FIND_ENTITY_BY_STRING( NULL, "model", name );
+			pentLinkEnt = UTIL_FindEntityByString( NULL, "model", name );
 
-			if ( FNullEnt ( pentLinkEnt ) )
+			if ( !pentLinkEnt )
 			{
 			// the ent isn't around anymore? Either there is a major problem, or it was removed from the world
 			// ( like a func_breakable that's been destroyed or something ). Make sure that LinkEnt is null.
@@ -2590,7 +2590,7 @@ int CGraph :: FSetGraphPointers ( void )
 			}
 			else
 			{
-				m_pLinkPool[ i ].m_pLinkEnt = VARS( pentLinkEnt );
+				m_pLinkPool[ i ].m_pLinkEnt = pentLinkEnt->pev;
 
 				if ( !FBitSet( m_pLinkPool[ i ].m_pLinkEnt->flags, FL_GRAPHED ) )
 				{

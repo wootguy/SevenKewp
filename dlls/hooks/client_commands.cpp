@@ -283,13 +283,10 @@ bool CheatCommand(edict_t* pEntity) {
 
 		if (target[0] != '\0') {
 			std::vector<CBaseEntity*> targets;
-			edict_t* pTarget = NULL;
+			CBaseEntity* pTarget = NULL;
 
-			while (!FNullEnt(pTarget = FIND_ENTITY_BY_TARGETNAME(pTarget, target))) {
-				CBaseEntity* ent = CBaseEntity::Instance(pTarget);
-				if (ent) {
-					targets.push_back(ent);
-				}
+			while ((pTarget = UTIL_FindEntityByTargetname(pTarget, target))) {
+				targets.push_back(pTarget);
 			}
 			
 			for (CBaseEntity* ent : targets) {

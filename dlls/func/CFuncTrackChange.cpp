@@ -109,22 +109,22 @@ void CFuncTrackChange::OverrideReset(void)
 void CFuncTrackChange::Find(void)
 {
 	// Find track entities
-	edict_t* target;
+	CBaseEntity* target;
 
-	target = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_trackTopName));
-	if (!FNullEnt(target))
+	target = UTIL_FindEntityByTargetname(NULL, STRING(m_trackTopName));
+	if (target)
 	{
-		CPathTrack* top = CPathTrack::Instance(target);
+		CPathTrack* top = CPathTrack::Instance(target->edict());
 		m_hTrackTop = top;
-		target = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_trackBottomName));
-		if (!FNullEnt(target))
+		target = UTIL_FindEntityByTargetname(NULL, STRING(m_trackBottomName));
+		if (target)
 		{
-			CPathTrack* bottom = CPathTrack::Instance(target);
+			CPathTrack* bottom = CPathTrack::Instance(target->edict());
 			m_hTrackBottom = bottom;
-			target = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_trainName));
-			if (!FNullEnt(target))
+			target = UTIL_FindEntityByTargetname(NULL, STRING(m_trainName));
+			if (target)
 			{
-				m_hTrain = CFuncTrackTrain::Instance(FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_trainName)));
+				m_hTrain = CFuncTrackTrain::Instance(target->edict());
 				if (!m_hTrain)
 				{
 					ALERT(at_error, "Can't find train for track change! %s\n", STRING(m_trainName));
@@ -140,7 +140,7 @@ void CFuncTrackChange::Find(void)
 			else
 			{
 				ALERT(at_error, "Can't find train for track change! %s\n", STRING(m_trainName));
-				target = FIND_ENTITY_BY_TARGETNAME(NULL, STRING(m_trainName));
+				target = UTIL_FindEntityByTargetname(NULL, STRING(m_trainName));
 			}
 		}
 		else

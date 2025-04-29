@@ -53,7 +53,7 @@ void FireTargetsDelayed(const char* target, string_t killTarget, CBaseEntity* pA
 
 void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value, float delay )
 {
-	edict_t *pentTarget = NULL;
+	CBaseEntity * pTarget = NULL;
 	if ( !targetName )
 		return;
 
@@ -67,11 +67,10 @@ void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *
 
 	for (;;)
 	{
-		pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, targetName);
-		if (FNullEnt(pentTarget))
+		pTarget = UTIL_FindEntityByTargetname(pTarget, targetName);
+		if (!pTarget)
 			break;
 
-		CBaseEntity *pTarget = CBaseEntity::Instance( pentTarget );
 		if ( pTarget && !(pTarget->pev->flags & FL_KILLME) )	// Don't use dying ents
 		{
 			ALERT( at_aiconsole, "Found: %s, firing (%s)\n", STRING(pTarget->pev->classname), targetName );

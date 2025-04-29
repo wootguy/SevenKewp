@@ -26,9 +26,9 @@ void CTriggerRespawn::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	bool respawnDead = pev->spawnflags & SF_TRESPAWN_DEAD_PLAYERS;
 
 	if (pev->spawnflags & SF_TRESPAWN_TARGET) {
-		edict_t* ent = NULL;
-		while (!FNullEnt(ent = FIND_ENTITY_BY_TARGETNAME(ent, STRING(pev->target)))) {
-			UTIL_RespawnPlayer(UTIL_PlayerByIndex(ENTINDEX(ent)), moveLiving, respawnDead);
+		CBaseEntity* ent = NULL;
+		while ((ent = UTIL_FindEntityByTargetname(ent, STRING(pev->target)))) {
+			UTIL_RespawnPlayer(UTIL_PlayerByIndex(ent->entindex()), moveLiving, respawnDead);
 		}
 		return;
 	}
