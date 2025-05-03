@@ -8073,6 +8073,8 @@ void CBaseMonster::Revive() {
 	pev->renderamt = m_deathRenderAmt;
 	pev->renderfx = m_deathRenderFx;
 	pev->rendercolor = m_deathRenderColor;
+
+	memset(m_lastHurtTriggers, 0, sizeof(m_lastHurtTriggers));
 }
 
 float CBaseMonster::GetDamageModifier() {
@@ -8213,4 +8215,53 @@ void CBaseMonster::CleanupLocalCorpses() {
 		ALERT(at_console, "Fading %d old corpses (%d / %d in PVS)\n",
 			removeCount, corpses.size(), (int)mp_max_pvs_corpses.value);
 	}
+}
+
+// store time this trigger hurt the monster
+void CBaseMonster::RememberHurtTrigger(CBaseEntity* ent) {
+	int emptySlot = -1;
+	int oldestSlot = 0;
+	float oldestTime = FLT_MAX;
+
+	for (int i = 0; i < MAX_MONSTER_HURT_TRIGGERS; i++) {
+		HurtTime& hurt = m_lastHurtTriggers[i];
+		if (hurt.hurtTrigger.GetEntity() == ent) {
+			hurt.hurtTrigger = ent;
+			hurt.lastHurt = gpGlobals->time;
+			return;
+		}
+
+		if (hurt.lastHurt < oldestTime) {
+			oldestTime = hurt.lastHurt;
+			oldestSlot = i;
+		}
+
+		if (emptySlot == -1 && !hurt.hurtTrigger) {
+			emptySlot = i;
+		}
+	}
+
+	// if not already tracked, find an empty slot or push out the oldest memory
+	int newSlot = emptySlot != -1 ? emptySlot : oldestSlot;
+
+	if (newSlot != -1) {
+		HurtTime& hurt = m_lastHurtTriggers[newSlot];
+		hurt.hurtTrigger = ent;
+		hurt.lastHurt = gpGlobals->time;
+	}
+
+	if (emptySlot == -1)
+		ALERT(at_error, "Too many overlapping hurt triggers for %s\n", STRING(pev->classname));
+}
+
+// get last time the hurt trigger hurt the monster
+float CBaseMonster::LastHurtTriggerTime(CBaseEntity* ent) {
+	for (int i = 0; i < MAX_MONSTER_HURT_TRIGGERS; i++) {
+		HurtTime& hurt = m_lastHurtTriggers[i];
+		if (hurt.hurtTrigger.GetEntity() == ent) {
+			return hurt.lastHurt;
+		}
+	}
+
+	return 0;
 }

@@ -31,6 +31,13 @@ struct PlayerAttackInfo {
 	float damageDealt;
 };
 
+struct HurtTime {
+	EHANDLE hurtTrigger;
+	float lastHurt; // time this monster was last hurt by the trigger
+};
+
+#define MAX_MONSTER_HURT_TRIGGERS 16
+
 //
 // generic Monster
 //
@@ -198,6 +205,8 @@ public:
 	int m_flinchChance; // 0-100 chance the HEAVY_DAMAGE condition is set (0 = 100, -1 = 0)
 
 	float m_killedTime; // time monster became dead
+
+	HurtTime m_lastHurtTriggers[MAX_MONSTER_HURT_TRIGGERS];
 
 	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
 	virtual int		Save( CSave &save ); 
@@ -506,6 +515,12 @@ public:
 
 	// scan for other corpses in this corpes' PVS and remove them if over the limit
 	void CleanupLocalCorpses();
+
+	// store time this trigger hurt the monster
+	void RememberHurtTrigger(CBaseEntity* ent);
+
+	// get last time the hurt trigger hurt the monster
+	float LastHurtTriggerTime(CBaseEntity* ent);
 };
 
 

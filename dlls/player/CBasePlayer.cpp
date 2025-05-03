@@ -3442,6 +3442,7 @@ void CBasePlayer::Spawn( void )
 	}
 	m_flashlightEnabled = false;
 	memset(m_nextItemPickups, 0, sizeof(float) * MAX_WEAPONS);
+	memset(m_lastHurtTriggers, 0, sizeof(m_lastHurtTriggers));
 
 	if( pev->iuser1 != OBS_NONE )
 		LeaveObserver();
