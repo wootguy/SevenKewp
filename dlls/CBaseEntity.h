@@ -13,6 +13,7 @@ class CBaseToggle;
 class CBaseAnimating;
 class CItemInventory;
 class CTriggerCamera;
+class CLight;
 
 void* GET_PRIVATE(const edict_t* pent);
 
@@ -226,6 +227,7 @@ public:
 	virtual CBaseAnimating* MyAnimatingPointer(void) { return NULL; }
 	virtual CItemInventory* MyInventoryPointer(void) { return NULL; }
 	virtual CTriggerCamera* MyCameraPointer(void) { return NULL; }
+	virtual CLight* MyLightPointer(void) { return NULL; }
 	virtual	int		GetToggleState(void) { return TS_AT_TOP; }
 	virtual void	AddPoints(int score, BOOL bAllowNegativeScore) {}
 	virtual void	AddPointsToTeam(int score, BOOL bAllowNegativeScore) {}

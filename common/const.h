@@ -878,6 +878,9 @@
 
 #define MAX_ENT_COORD 32768 // keep this in sync with delta.lst
 
+// max number of patterns usable with LIGHT_STYLE()
+#define MAX_LIGHTSTYLE_PATTERNS 32
+
 typedef enum { USE_OFF = 0, USE_ON = 1, USE_SET = 2, USE_TOGGLE = 3 } USE_TYPE;
 
 // Things that toggle (buttons/triggers/doors) need this
