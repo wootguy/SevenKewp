@@ -227,6 +227,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CStripWeapons.cpp
 	triggers/CTriggerCamera.cpp
 	triggers/CTargetCDAudio.cpp
+	triggers/CTriggerChangeClass.cpp
 	triggers/CTriggerChangeModel.cpp
 	triggers/CTriggerChangeSky.cpp
 	triggers/CTriggerChangeTarget.cpp

@@ -561,6 +561,8 @@ public:
 	const char* GetDeathNoticeWeapon();
 
 	void NightvisionUpdate();
+
+	virtual void SetClassification(int newClass) override { CBaseEntity::SetClassification(newClass); }
 	
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

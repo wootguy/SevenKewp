@@ -281,6 +281,7 @@ int CBaseMonster::GetScheduleTableSize() { return 0; }
 int CBaseMonster::GetScheduleTableIdx() { return 0; }
 float CBaseMonster::GetDamageModifier() { return 0; }
 BOOL CBaseMonster::NoFriendlyFire() { return 0; }
+void CBaseMonster::SetClassification(int newclass) { }
 
 int TrainSpeed(int iSpeed, int iMax) { 	return 0; }
 void CBasePlayer :: DeathSound( void ) { }
