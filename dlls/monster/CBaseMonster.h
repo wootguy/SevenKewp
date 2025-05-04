@@ -483,6 +483,7 @@ public:
 	void SetSize(Vector defaultMins, Vector defaultMaxs);
 	void SetHealth();
 	void InitModel();
+	void InitSkin(); // set friendly/enemy skin depending on player relation
 	virtual void Nerf(); // reduces monster health and/or spawn count according to cvars
 	void LogPlayerDamage(entvars_t* attacker, float damage);
 
@@ -521,6 +522,8 @@ public:
 
 	// get last time the hurt trigger hurt the monster
 	float LastHurtTriggerTime(CBaseEntity* ent);
+
+	virtual void SetClassification(int newClass) override;
 };
 
 
