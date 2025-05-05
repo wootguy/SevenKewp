@@ -232,7 +232,7 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 		}
 		else {
 			ALERT(at_warning, "PrecacheSound failed: %s\n", path);
-			return -1;
+			return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
 		}
 	}
 
