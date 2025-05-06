@@ -150,6 +150,7 @@ public:
 	void	KeyValue(KeyValueData* pkvd);
 	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	BOOL	IsWeather(void) { return TRUE; };
+	void	UpdateOnRemove(void);
 
 	bool GetRainPosition(Vector pos, Vector& bottom, Vector& top, bool largeHull, bool debug);
 	bool IsSky(TraceResult& tr, Vector traceStart);
@@ -808,6 +809,36 @@ void CEnvWeather::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE us
 			STOP_SOUND(edict(), snd->channel, snd->file);
 		}
 	}
+}
+
+void CEnvWeather::UpdateOnRemove(void) {
+	if (m_useFog && m_isActive) {
+		for (int k = 0; k < FOG_LAYERS; k++) {
+			CFogLayer* fog = (CFogLayer*)g_fog_ents[k].GetEntity();
+			if (!fog) {
+				continue;
+			}
+
+			fog->pev->effects |= EF_NODRAW;
+		}
+	}
+
+	if (m_weatherMode != WEATHER_NONE && m_isActive) {
+		for (int k = 0; k < (int)g_weatherEnts.size(); k++) {
+			weather_ent_t& weather = g_weatherEnts[k];
+
+			weather.visPlayers = 0;
+			UTIL_Remove(weather.h_ent);
+		}
+
+		weather_sound_t* sounds[2] = { &m_rainSnd_out, &m_rainSnd_glass };
+		for (int k = 0; k < 2; k++) {
+			weather_sound_t* snd = sounds[k];
+			STOP_SOUND(edict(), snd->channel, snd->file);
+		}
+	}
+
+	CBaseEntity::UpdateOnRemove();
 }
 
 bool CEnvWeather::CanSeePosition(CBasePlayer* plr, Vector pos) {

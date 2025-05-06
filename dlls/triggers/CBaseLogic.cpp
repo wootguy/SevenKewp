@@ -45,7 +45,7 @@ std::vector<CBaseEntity*> CBaseLogic::FindLogicEntities(const char* targetName) 
 	else {
 		CBaseEntity* ent = NULL;
 		while ((ent = UTIL_FindEntityByTargetname(ent, targetName))) {
-			if (ent && !(ent->pev->flags & FL_KILLME)) {
+			if (!(ent->pev->flags & FL_KILLME)) {
 				foundEnts.push_back(ent);
 			}
 		}

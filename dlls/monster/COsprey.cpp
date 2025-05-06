@@ -33,9 +33,15 @@ typedef struct
 
 
 #define SF_OSPREY_WAITFORTRIGGER	0x40
-
-
 #define OSPREY_MAX_CARRY	24
+
+enum OverrideGruntType {
+	OSPREY_GRUNT_DEFAULT,
+	OSPREY_GRUNT_OP4,
+	OSPREY_GRUNT_RANDOM,				// randomly choose from: op4, hecu
+	OSPREY_GRUNT_RANDOM_HWGRUNT,		// randomly choose from: op4, hecu, hw
+	OSPREY_GRUNT_RANDOM_HWGRUNT_SNIPER	// randomly choose from: op4, hecu, hw, sniper
+};
 
 class COsprey : public CBaseMonster
 {
@@ -46,6 +52,7 @@ public:
 	int		ObjectCaps( void ) { return CBaseMonster :: ObjectCaps() & ~(FCAP_IMPULSE_USE | FCAP_ACROSS_TRANSITION); }
 	
 	void Spawn( void );
+	void KeyValue(KeyValueData* pkvd);
 	void Precache( void );
 	int  Classify( void ) { return CBaseMonster::Classify(CLASS_MACHINE); };
 	BOOL IsMachine() { return 1; } // ignore classification overrides
@@ -107,6 +114,8 @@ public:
 	int m_iGlassGibs;
 	int m_iMechGibs;
 
+	int m_overrideGruntCount;
+	int m_overrideGruntType;
 	const char* replenishMonster;
 };
 
@@ -183,8 +192,26 @@ void COsprey :: Spawn( void )
 	m_pos2 = pev->origin;
 	m_ang2 = pev->angles;
 	m_vel2 = pev->velocity;
+
+	m_overrideGruntCount = V_min(OSPREY_MAX_CARRY, m_overrideGruntCount);
 }
 
+void COsprey::KeyValue(KeyValueData* pkvd) {
+	if (FStrEq(pkvd->szKeyName, "num"))
+	{
+		m_overrideGruntCount = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "grunttype"))
+	{
+		m_overrideGruntType = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+	{
+		CBaseMonster::KeyValue(pkvd);
+	}
+}
 
 void COsprey::Precache( void )
 {
@@ -252,6 +279,11 @@ void COsprey :: FindAllThink( void )
 		//UTIL_Remove( this );
 		//return;
 	}
+
+	if (m_overrideGruntCount > 0) {
+		m_iUnits = m_overrideGruntCount;
+	}
+
 	SetThink( &COsprey::FlyThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 	m_startTime = gpGlobals->time;
@@ -327,12 +359,75 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 			{
 				m_hGrunt[i]->SUB_StartFadeOut( );
 			}
+			
+			const char* spawnGrunt = replenishMonster;
+			bool invertAlly = false;
 			StringMap keys;
-			if (m_IsPlayerAlly) {
+
+			switch (m_overrideGruntType) {
+			case OSPREY_GRUNT_OP4:
+				spawnGrunt = "monster_human_grunt_ally";
+				invertAlly = true;
+				break;
+			case OSPREY_GRUNT_RANDOM: {
+				switch (RANDOM_LONG(0, 1)) {
+				case 0:
+					spawnGrunt = "monster_human_grunt_ally";
+					invertAlly = true;
+					break;
+				default:
+					spawnGrunt = "monster_human_grunt";
+					break;
+				}
+				break;
+			}
+			case OSPREY_GRUNT_RANDOM_HWGRUNT: {
+				switch (RANDOM_LONG(0, 4)) {
+				case 0:
+				case 1:
+					spawnGrunt = "monster_human_grunt_ally";
+					invertAlly = true;
+					break;
+				case 2:
+				case 3:
+					spawnGrunt = "monster_human_grunt";
+					break;
+				case 4:
+					spawnGrunt = "monster_hwgrunt";
+					break;
+				}
+				break;
+			}
+			case OSPREY_GRUNT_RANDOM_HWGRUNT_SNIPER: {
+				switch (RANDOM_LONG(0, 5)) {
+				case 0:
+				case 1:
+					spawnGrunt = "monster_human_grunt_ally";
+					invertAlly = true;
+					break;
+				case 2:
+				case 3:
+					spawnGrunt = "monster_human_grunt";
+					break;
+				case 4:
+					spawnGrunt = "monster_hwgrunt";
+					break;
+				case 5:
+					spawnGrunt = "monster_human_grunt";
+					keys.put("weapons", "130");
+					break;
+				}
+			}
+			case OSPREY_GRUNT_DEFAULT:
+			default:
+				break;
+			}
+
+			if (m_IsPlayerAlly != invertAlly) {
 				keys.put("is_player_ally", "1");
 			}
 
-			pEntity = Create(replenishMonster, vecSrc, spawnAngles, true, NULL, keys);
+			pEntity = Create(spawnGrunt, vecSrc, spawnAngles, true, NULL, keys);
 			pGrunt = pEntity->MyMonsterPointer( );
 			pGrunt->pev->movetype = MOVETYPE_FLY;
 			pGrunt->pev->velocity = Vector( 0, 0, RANDOM_FLOAT( -196, -128 ) );

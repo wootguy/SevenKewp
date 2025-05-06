@@ -93,6 +93,8 @@ terms = [
 	('g_EntityFuncs.FindEntityInSphere', 'UTIL_FindEntityInSphere'),
 	('g_PlayerFuncs.RespawnAllPlayers', 'UTIL_RespawnAllPlayers'),
 	('g_EntityFuncs.FindEntityByClassname', 'UTIL_FindEntityByClassname'),
+	('CBaseEntity::CreateSprite', 'CSprite::SpriteCreate'),
+	('CBaseEntity::CreateBeam', 'CBeam::BeamCreate'),
 ]
 
 def convert_script(fpath):

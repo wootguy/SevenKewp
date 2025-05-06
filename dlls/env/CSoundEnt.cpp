@@ -209,7 +209,7 @@ void CSoundEnt :: InsertSound ( int iType, const Vector &vecOrigin, int iVolume,
 
 	if ( iThisSound == SOUNDLIST_EMPTY )
 	{
-		ALERT ( at_console, "Could not AllocSound() for InsertSound() (DLL)\n" );
+		ALERT ( at_error, "Could not AllocSound() for InsertSound() (DLL)\n" );
 		return;
 	}
 
