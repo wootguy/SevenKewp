@@ -21,7 +21,7 @@
 // lists.
 //=========================================================
 
-#define	MAX_WORLD_SOUNDS	64 // maximum number of sounds handled by the world at one time.
+#define	MAX_WORLD_SOUNDS	256 // maximum number of sounds handled by the world at one time.
 
 #define bits_SOUND_NONE		0
 #define	bits_SOUND_COMBAT	( 1 << 0 )// gunshots, explosions
@@ -67,7 +67,7 @@ public:
 // the world spawns. The SoundEnt's job is to update the 
 // world's Free and Active sound lists.
 //=========================================================
-class CSoundEnt : public CBaseEntity 
+class EXPORT CSoundEnt : public CBaseEntity 
 {
 public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }

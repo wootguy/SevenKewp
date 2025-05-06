@@ -131,6 +131,11 @@ CBaseEntity *UTIL_FindEntityByClassname(CBaseEntity* pStartEntity, const char* s
 Vector UTIL_VecToAngles( const Vector &vec ){ return 0; }
 CSprite *CSprite::SpriteCreate( const char *pSpriteName, const Vector &origin, BOOL animate ) { return 0; }
 void CBeam::PointEntInit( const Vector &start, int endIndex ) { }
+void CBeam::Spawn() { }
+void CBeam::Precache() { }
+void CBeam::BeamDamage(TraceResult* ptr) {}
+const Vector& CBeam::GetStartPos(void) { return g_vecZero; }
+const Vector& CBeam::GetEndPos(void) { return g_vecZero; }
 CBeam *CBeam::BeamCreate( const char *pSpriteName, int width ) { return NULL; }
 void CSprite::Expand( float scaleSpeed, float fadeSpeed ) { }
 
@@ -407,6 +412,9 @@ const char* CBasePlayerWeapon::GetModelW() { return 0; }
 void CBasePlayerWeapon::SetWeaponModelW() { }
 void CGrenade::SetGrenadeModel() { }
 void CSoundEnt::InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration ) {}
+void CSoundEnt::Precache() {}
+void CSoundEnt::Spawn() {}
+void CSoundEnt::Think() {}
 void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType ){}
 void StartSound(edict_t* entity, int channel, const char* sample, float volume, float attenuation,
 	int fFlags, int pitch, const float* origin, uint32_t messageTargets) {}

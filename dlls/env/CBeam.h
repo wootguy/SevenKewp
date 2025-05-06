@@ -12,7 +12,7 @@
 #define SF_BEAM_SHADEOUT		0x0100
 #define SF_BEAM_TEMPORARY		0x8000
 
-class CBeam : public CBaseEntity
+class EXPORT CBeam : public CBaseEntity
 {
 public:
 	void	Spawn(void);
@@ -27,7 +27,7 @@ public:
 	virtual const char* DisplayName() { return "Laser"; }
 	virtual BOOL	IsBeam(void) { return TRUE; };
 
-	void EXPORT TriggerTouch(CBaseEntity* pOther);
+	void TriggerTouch(CBaseEntity* pOther);
 
 	// These functions are here to show the way beams are encoded as entities.
 	// Encoding beams as entities simplifies their management in the client/server architecture
