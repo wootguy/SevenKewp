@@ -170,7 +170,10 @@ void CTriggerHurt::HurtTouch(CBaseEntity* pOther)
 	}
 
 	// don't let laggy players or speedhackers bypass damage ticks by pausing packets
-	int numHurts = lastHurtTime > 0 ? V_max(1, timeSinceLastHurt / TRIGGER_HURT_DELAY) : 1;
+	// TODO: detect when not touching trigger to stop stacking hurts after leaving it
+	//int numHurts = lastHurtTime > 0 ? V_max(1, timeSinceLastHurt / TRIGGER_HURT_DELAY) : 1;
+	
+	int numHurts = 1;
 
 	// If this is time_based damage (poison, radiation), override the pev->dmg with a 
 	// default for the given damage type.  Monsters only take time-based damage
