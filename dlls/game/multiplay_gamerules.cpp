@@ -32,6 +32,7 @@
 #include "CSatchel.h"
 #include "monsters.h"
 #include "PluginManager.h"
+#include "user_messages.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -39,14 +40,7 @@
 
 extern DLL_GLOBAL CGameRules	*g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;
-extern int gmsgDeathMsg;	// client dll messages
-extern int gmsgScoreInfo;
-extern int gmsgMOTD;
-extern int gmsgServerName;
-
 extern int g_teamplay;
-extern int gmsgTeamNames;
-extern int gmsgTeamInfo;
 
 #define ITEM_RESPAWN_TIME	30
 #define WEAPON_RESPAWN_TIME	20
@@ -377,6 +371,7 @@ extern int gmsgGameMode;
 
 void CHalfLifeMultiplay :: UpdateGameMode( CBasePlayer *pPlayer )
 {
+
 	MESSAGE_BEGIN( MSG_ONE, gmsgGameMode, NULL, pPlayer->edict() );
 		//WRITE_BYTE( 0 );  // game mode none
 		WRITE_BYTE( 1 );  // team game
@@ -398,15 +393,17 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 	);
 
 	// Send down the team names
-	MESSAGE_BEGIN(MSG_ONE, gmsgTeamNames, NULL, pl->edict());
-	WRITE_BYTE(4);
-	WRITE_STRING(DEFAULT_TEAM_NAME);
-	WRITE_STRING(ENEMY_TEAM_NAME);
-	WRITE_STRING(DEFAULT_TEAM_NAME);
-	WRITE_STRING(DEFAULT_TEAM_NAME);
-	MESSAGE_END();
+	if (pl->m_clientModVersion != CLIENT_MOD_CSTRIKE) {
+		MESSAGE_BEGIN(MSG_ONE, gmsgTeamNames, NULL, pl->edict());
+		WRITE_BYTE(4);
+		WRITE_STRING(DEFAULT_TEAM_NAME);
+		WRITE_STRING(ENEMY_TEAM_NAME);
+		WRITE_STRING(DEFAULT_TEAM_NAME);
+		WRITE_STRING(DEFAULT_TEAM_NAME);
+		MESSAGE_END();
+	}
 
-	UpdateGameMode( pl );
+	UpdateGameMode(pl);
 
 	// sending just one score makes the hud scoreboard active;  otherwise
 	// it is just disabled for single play
@@ -433,7 +430,7 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 
 			MESSAGE_BEGIN(MSG_ONE, gmsgTeamInfo, NULL, pl->edict());
 			WRITE_BYTE(i);
-			WRITE_STRING(plr->IsObserver() ? "" : DEFAULT_TEAM_NAME);
+			WRITE_STRING(plr->GetTeamName(plr->m_clientModVersion));
 			//WRITE_STRING(DEFAULT_TEAM_NAME);
 			MESSAGE_END();
 		}

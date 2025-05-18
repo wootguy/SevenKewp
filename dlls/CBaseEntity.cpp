@@ -1133,6 +1133,254 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	return Vector(x * vecSpread.x, y * vecSpread.y, 0.0);
 }
 
+// Go to the trouble of combining multiple pellets into a single damage call.
+// This version is used by Players, uses the random seed generator to sync client and server side shots.
+Vector& CBaseEntity::FireBulletsCS16(Vector& vecSrc, Vector& vecDirShooting, float vecSpread, float flDistance, int iPenetration, int iBulletType, int iDamage, float flRangeModifier, entvars_t* pevAttacker, bool bPistol, int shared_rand)
+{
+	static Vector vecRet;
+
+	int iOriginalPenetration = iPenetration;
+	int iPenetrationPower;
+	float flPenetrationDistance;
+	int iCurrentDamage = iDamage;
+	float flCurrentDistance;
+
+	TraceResult tr, tr2;
+	Vector vecRight, vecUp;
+
+	bool bHitMetal = false;
+	int iSparksAmount = 1;
+
+	vecRight = gpGlobals->v_right;
+	vecUp = gpGlobals->v_up;
+
+	switch (iBulletType)
+	{
+	case BULLET_PLAYER_9MM:
+		iPenetrationPower = 21;
+		flPenetrationDistance = 800;
+		break;
+		/*
+		case BULLET_PLAYER_45ACP:
+			iPenetrationPower = 15;
+			flPenetrationDistance = 500;
+			break;
+		case BULLET_PLAYER_50AE:
+			iPenetrationPower = 30;
+			flPenetrationDistance = 1000;
+			break;
+		case BULLET_PLAYER_762MM:
+			iPenetrationPower = 39;
+			flPenetrationDistance = 5000;
+			break;
+		case BULLET_PLAYER_556MM:
+			iPenetrationPower = 35;
+			flPenetrationDistance = 4000;
+			break;
+		case BULLET_PLAYER_338MAG:
+			iPenetrationPower = 45;
+			flPenetrationDistance = 8000;
+			break;
+		case BULLET_PLAYER_57MM:
+			iPenetrationPower = 30;
+			flPenetrationDistance = 2000;
+			break;
+		case BULLET_PLAYER_357SIG:
+			iPenetrationPower = 25;
+			flPenetrationDistance = 800;
+			break;
+		*/
+	default:
+		iPenetrationPower = 0;
+		flPenetrationDistance = 0;
+		break;
+	}
+
+	if (!pevAttacker)
+	{
+		// the default attacker is ourselves
+		pevAttacker = pev;
+	}
+
+	gMultiDamage.type = (DMG_BULLET | DMG_NEVERGIB);
+
+	float x, y, z;
+
+	if (IsPlayer())
+	{
+		// Use player's random seed.
+		// get circular gaussian spread
+		x = UTIL_SharedRandomFloat(shared_rand, -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + 1, -0.5, 0.5);
+		y = UTIL_SharedRandomFloat(shared_rand + 2, -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + 3, -0.5, 0.5);
+	}
+	else
+	{
+		do
+		{
+			x = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
+			y = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
+			z = x * x + y * y;
+		} while (z > 1);
+	}
+
+	Vector vecDir, vecEnd;
+	Vector vecOldSrc, vecNewSrc;
+
+	vecDir = vecDirShooting + x * vecSpread * vecRight + y * vecSpread * vecUp;
+	vecEnd = vecSrc + vecDir * flDistance;
+
+	float flDamageModifier = 0.5;
+
+	int iStartPenetration = iPenetration;
+	while (iPenetration != 0)
+	{
+		ClearMultiDamage();
+
+#ifdef REGAMEDLL_ADD
+		gpGlobals->trace_flags = FTRACE_BULLET;
+#endif
+		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
+
+		/*
+		if (TheBots && tr.flFraction != 1.0f)
+		{
+			TheBots->OnEvent(EVENT_BULLET_IMPACT, this, (CBaseEntity*)&tr.vecEndPos);
+		}
+		*/
+
+		char cTextureType = UTIL_TextureHit(&tr, vecSrc, vecEnd);
+		bool bSparks = false;
+
+		switch (cTextureType)
+		{
+		case CHAR_TEX_METAL:
+			bHitMetal = true;
+			bSparks = true;
+
+			iPenetrationPower *= 0.15;
+			flDamageModifier = 0.2;
+			break;
+		case CHAR_TEX_CONCRETE:
+			iPenetrationPower *= 0.25;
+			break;
+		case CHAR_TEX_GRATE:
+			bHitMetal = true;
+			bSparks = true;
+
+			iPenetrationPower *= 0.5;
+			flDamageModifier = 0.4;
+			break;
+		case CHAR_TEX_VENT:
+			bHitMetal = true;
+			bSparks = true;
+
+			iPenetrationPower *= 0.5;
+			flDamageModifier = 0.45;
+			break;
+		case CHAR_TEX_TILE:
+			iPenetrationPower *= 0.65;
+			flDamageModifier = 0.3;
+			break;
+		case CHAR_TEX_COMPUTER:
+			bHitMetal = true;
+			bSparks = true;
+
+			iPenetrationPower *= 0.4;
+			flDamageModifier = 0.45;
+			break;
+		case CHAR_TEX_WOOD:
+			flDamageModifier = 0.6;
+			break;
+		default:
+			break;
+		}
+
+		if (tr.flFraction != 1.0f)
+		{
+			CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+			int iPenetrationCur = iPenetration;
+			iPenetration--;
+
+			flCurrentDistance = tr.flFraction * flDistance;
+			iCurrentDamage *= powf(flRangeModifier, flCurrentDistance / 500);
+
+			if (flCurrentDistance > flPenetrationDistance)
+			{
+				iPenetration = 0;
+			}
+
+			//bool bIsPenatrable = g_ReGameHookchains.m_IsPenetrableEntity.callChain(IsPenetrableEntity_default, vecSrc, tr.vecEndPos, pevAttacker, tr.pHit);
+			bool bIsPenatrable = true;
+
+			if (!bIsPenatrable)
+				iPenetration = 0;
+
+			/*
+			if (tr.iHitgroup == HITGROUP_SHIELD)
+			{
+				EMIT_SOUND(pEntity->edict(), CHAN_VOICE, (RANDOM_LONG(0, 1) == 1) ? "weapons/ric_metal-1.wav" : "weapons/ric_metal-2.wav", VOL_NORM, ATTN_NORM);
+				UTIL_Sparks(tr.vecEndPos);
+
+				pEntity->pev->punchangle.x = iCurrentDamage * RANDOM_FLOAT(-0.15, 0.15);
+				pEntity->pev->punchangle.z = iCurrentDamage * RANDOM_FLOAT(-0.15, 0.15);
+
+#ifndef REGAMEDLL_FIXES
+				if (pEntity->pev->punchangle.x < 4)
+#else
+				if (pEntity->pev->punchangle.x < -4)
+#endif
+				{
+					pEntity->pev->punchangle.x = -4;
+				}
+
+				if (pEntity->pev->punchangle.z < -5)
+				{
+					pEntity->pev->punchangle.z = -5;
+				}
+				else if (pEntity->pev->punchangle.z > 5)
+				{
+					pEntity->pev->punchangle.z = 5;
+				}
+
+				break;
+			}
+			*/
+
+			float flDistanceModifier;
+			if (VARS(tr.pHit)->solid != SOLID_BSP || !iPenetration)
+			{
+				iPenetrationPower = 42;
+				flDamageModifier = 0.75;
+				flDistanceModifier = 0.75;
+			}
+			else
+				flDistanceModifier = 0.5;
+
+			DecalGunshot(&tr, iBulletType, (!bPistol && RANDOM_LONG(0, 3)), vecSrc, vecEnd);
+
+			vecSrc = tr.vecEndPos + (vecDir * iPenetrationPower);
+			flDistance = (flDistance - flCurrentDistance) * flDistanceModifier;
+			vecEnd = vecSrc + (vecDir * flDistance);
+
+			//pEntity->SetDmgPenetrationLevel(iStartPenetration - iPenetrationCur);
+			pEntity->m_ucDmgPenetrationLevel = (iStartPenetration - iPenetrationCur);
+			pEntity->TraceAttack(pevAttacker, iCurrentDamage, vecDir, &tr, (DMG_BULLET | DMG_NEVERGIB));
+			iCurrentDamage *= flDamageModifier;
+		}
+		else
+			iPenetration = 0;
+
+		ApplyMultiDamage(pev, pevAttacker);
+	}
+
+	vecRet.x = x * vecSpread;
+	vecRet.y = y * vecSpread;
+	vecRet.z = 0;
+
+	return vecRet;
+}
+
+
 void CBaseEntity::TraceBleed(float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType)
 {
 	if (BloodColor() == DONT_BLEED)

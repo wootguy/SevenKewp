@@ -45,3 +45,7 @@ EXPORT extern IRehldsServerStatic* g_RehldsSvs;
 // msgMode = MSG_BROADCAST or MSG_ONE_UNRELIABLE
 // entindex = 1-based player index
 EXPORT void rehlds_SendBigMessage(int msgMode, int msgType, void* data, int sz, int playerindex);
+
+// end an unregistered network message
+// isVariableLength = true if message has string parameters
+EXPORT void rehlds_MESSAGE_END(bool isVariableLength);

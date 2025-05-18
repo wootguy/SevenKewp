@@ -348,6 +348,15 @@ set(ENTITY_SRC
 	path/CPathTrack.cpp
 )
 
+set(WEAPON_CS16_HDR
+	weapon/cs16/CCsPlayerWeapon.h
+	weapon/cs16/CGlock18.h
+)
+set(WEAPON_CS16_SRC
+	weapon/cs16/CCsPlayerWeapon.cpp
+	weapon/cs16/CGlock18.cpp
+)
+
 set(WEAPON_HDR
 	weapon/CShockBeam.h
 	weapon/CGrapple.h
@@ -415,6 +424,10 @@ set(WEAPON_SRC
 	weapon/CKnife.cpp
 	weapon/combat.cpp
 )
+
+set(ALL_WEAPON_SRC ${WEAPON_SRC} ${WEAPON_CS16_SRC})
+set(ALL_WEAPON_HDR ${WEAPON_HDR} ${WEAPON_CS16_HDR})
+
 set(AMMO_HDR
 	weapon/CBasePlayerAmmo.h
 	weapon/ammo.h
@@ -569,7 +582,7 @@ set(ENT_SRC
 	${ALL_TRIGGER_POINT_SRC}
 	${ALL_TRIGGER_BRUSH_SRC}
 	${ALL_TRIGGER_MISC_SRC}
-	${WEAPON_SRC}
+	${ALL_WEAPON_SRC}
 	${AMMO_SRC}
 	${ENV_SRC}
 	${ITEM_SRC}
@@ -584,7 +597,7 @@ set(ENT_HDR
 	${ITEM_HDR}
 	${PATH_HDR}
 	${TRIGGER_HDR}
-	${WEAPON_HDR}
+	${ALL_WEAPON_HDR}
 	${AMMO_HDR}
 )
 
@@ -621,7 +634,7 @@ write_ent_source_file("${MONSTER_ALIEN_SRC}" monsters_aliens.cpp)
 write_ent_source_file("${MONSTER_HUMAN_SRC}" monsters_humans.cpp)
 write_ent_source_file("${MONSTER_MACHINE_SRC}" monsters_machines.cpp)
 write_ent_source_file("${MONSTER_MISC_SRC}" monsters_misc.cpp)
-write_ent_source_file("${WEAPON_SRC}" all_weapons.cpp)
+write_ent_source_file("${ALL_WEAPON_SRC}" all_weapons.cpp)
 write_ent_source_file("${AMMO_SRC}" all_ammo.cpp)
 write_ent_source_file("${ALL_TRIGGER_POINT_SRC}" triggers_point.cpp)
 write_ent_source_file("${ALL_TRIGGER_BRUSH_SRC}" triggers_brush.cpp)
@@ -705,6 +718,7 @@ elseif(MSVC)
 	source_group("Header Files\\Entities\\player" FILES ${PLAYER_HDR})
 	source_group("Header Files\\Entities\\trigger" FILES ${TRIGGER_HDR})
 	source_group("Header Files\\Entities\\weapon" FILES ${WEAPON_HDR})
+	source_group("Header Files\\Entities\\weapon\\cs16" FILES ${WEAPON_CS16_HDR})
 	source_group("Header Files\\Entities\\weapon\\ammo" FILES ${AMMO_HDR})
 	source_group("Header Files\\Game" FILES ${GAME_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})
@@ -728,6 +742,7 @@ elseif(MSVC)
 	source_group("Source Files\\Entities\\trigger\\brush" FILES ${TRIGGER_BRUSHED_SRC})
 	source_group("Source Files\\Entities\\trigger\\obsolete" FILES ${TRIGGER_OBSOLETE_SRC})
 	source_group("Source Files\\Entities\\weapon" FILES ${WEAPON_SRC})
+	source_group("Source Files\\Entities\\weapon\\cs16" FILES ${WEAPON_CS16_SRC})
 	source_group("Source Files\\Entities\\weapon\\ammo" FILES ${AMMO_SRC})
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})
 	source_group("Source Files\\Network" FILES ${NET_SRC})

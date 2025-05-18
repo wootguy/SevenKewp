@@ -107,4 +107,7 @@ public:
 	const char* m_ammoModel2;
 
 	bool m_hasHandModels; // true if hands are visible on this model and can be swapped
+
+	// CS 1.6 vars
+	int m_iWeaponState;
 };

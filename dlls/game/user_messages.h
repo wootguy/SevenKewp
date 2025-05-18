@@ -42,6 +42,15 @@ EXPORT extern int gmsgStatusValue;
 
 EXPORT extern int gmsgToxicCloud;
 
+// If a message in another mod shares the same name as an HL message, then you can reuse the existing ID.
+// Otherwise you need to register it so the client can hook it and associate the server's ID.
+// If messages from different mods use the same name but have different data lengths, then you'll need
+// to use the ReHlds function to end the message with the correct writer or else get SVC_BAD.
+// The following are CS 1.6 client messages that don't exist in Half-Life.
+EXPORT extern int gmsgAllowSpec_cs16;
+EXPORT extern int gmsgForceCam_cs16;
+EXPORT extern int gmsgRadar_cs16;
+
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 
 typedef struct _SelAmmo

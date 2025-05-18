@@ -341,6 +341,39 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_medkit");
 	UTIL_RegisterWeapon("weapon_inventory");
 	UTIL_RegisterWeapon("weapon_knife");
+	UTIL_RegisterWeapon("weapon_glock18");
+
+	/*
+	UTIL_RegisterWeapon("weapon_awp");
+	UTIL_RegisterWeapon("weapon_g3sg1");
+	UTIL_RegisterWeapon("weapon_ak47");
+	UTIL_RegisterWeapon("weapon_scout");
+	UTIL_RegisterWeapon("weapon_m249");
+	UTIL_RegisterWeapon("weapon_m4a1");
+	UTIL_RegisterWeapon("weapon_sg552");
+	UTIL_RegisterWeapon("weapon_aug");
+	UTIL_RegisterWeapon("weapon_sg550");
+	UTIL_RegisterWeapon("weapon_m3");
+	UTIL_RegisterWeapon("weapon_xm1014");
+	UTIL_RegisterWeapon("weapon_usp");
+	UTIL_RegisterWeapon("weapon_mac10");
+	UTIL_RegisterWeapon("weapon_ump45");
+	UTIL_RegisterWeapon("weapon_fiveseven");
+	UTIL_RegisterWeapon("weapon_p90");
+	UTIL_RegisterWeapon("weapon_deagle");
+	UTIL_RegisterWeapon("weapon_p228");
+	UTIL_RegisterWeapon("weapon_knife");
+	UTIL_RegisterWeapon("weapon_glock18");
+	UTIL_RegisterWeapon("weapon_mp5navy");
+	UTIL_RegisterWeapon("weapon_tmp");
+	UTIL_RegisterWeapon("weapon_elite");
+	UTIL_RegisterWeapon("weapon_flashbang");
+	UTIL_RegisterWeapon("weapon_hegrenade");
+	UTIL_RegisterWeapon("weapon_smokegrenade");
+	UTIL_RegisterWeapon("weapon_c4");
+	UTIL_RegisterWeapon("weapon_galil");
+	UTIL_RegisterWeapon("weapon_famas");
+	*/
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 
 	g_sModelIndexFireball = PRECACHE_MODEL_ENT(NULL, "sprites/zerogxplode.spr");// fireball

@@ -50,6 +50,7 @@
 #include "eng_wrappers.h"
 #include "te_effects.h"
 #include "CTriggerCamera.h"
+#include "cs16/CCsPlayerWeapon.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -1462,6 +1463,14 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		state->usehull      = ( ent->v.flags & FL_DUCKING ) ? 1 : 0;
 		state->health		= ent->v.health;
 
+		if (plr->m_clientModVersion == CLIENT_MOD_CSTRIKE) {
+			// temporary fix to make HL models look directly forward of right
+			state->controller[0] = 128; 
+			state->controller[1] = 128;
+			state->controller[2] = 128;
+			state->controller[3] = 128;
+		}
+
 		if (g_packClientIdx+1 == e) {
 			// clients invert their own player model angle for some reason
 			// TODO: fix this in a client mod
@@ -1874,6 +1883,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 			while ( pPlayerItem )
 			{
 				gun = pPlayerItem->GetWeaponPtr();
+				CCsPlayerWeapon* cswep = pPlayerItem->GetWeaponPtrCs16();
 				if ( gun && gun->UseDecrement() )
 				{
 					// Get The ID.
@@ -1899,8 +1909,16 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 						item->iuser2					= gun->m_fInAttack;
 						item->iuser3					= gun->m_fireState;
 						
-											
-//						item->m_flPumpTime				= V_max( gun->m_flPumpTime, -0.001f );
+						// CS 1.6 vars
+						if (cswep) {
+							item->m_flNextReload = V_max(cswep->m_flNextReload, -0.001f);
+							item->m_fInZoom = cswep->m_iShotsFired;
+							item->m_fAimedDamage = cswep->m_flLastFire;
+							item->m_iWeaponState = cswep->m_iWeaponState;
+							item->iuser1 = cswep->m_iSwing;
+							item->m_flPumpTime = V_max(cswep->m_flPumpTime, -0.001f );
+						}
+						
 					}
 				}
 				pPlayerItem = gun ? gun->m_pNext.GetEntity() : NULL;
@@ -1994,6 +2012,9 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 		cd->iuser2			= pev->iuser2;
 	}
 
+	if (pl->m_clientModVersion == CLIENT_MOD_CSTRIKE) {
+		cd->iuser3 = 1; // allow using weapons
+	}
 	
 
 #if defined( CLIENT_WEAPONS )
@@ -2004,14 +2025,32 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 			cd->m_flNextAttack	= pl->m_flNextAttack;
 			cd->fuser2			= pl->m_flNextAmmoBurn;
 			cd->fuser3			= pl->m_flAmmoStartCharge;
-			cd->vuser1.x		= pl->ammo_9mm;
-			cd->vuser1.y		= pl->ammo_357;
-			cd->vuser1.z		= pl->ammo_argrens;
-			cd->ammo_nails		= pl->ammo_bolts;
-			cd->ammo_shells		= pl->ammo_buckshot;
-			cd->ammo_rockets	= pl->ammo_rockets;
-			cd->ammo_cells		= pl->ammo_uranium;
-			cd->vuser2.x		= pl->ammo_hornets;
+			
+			if (pl->m_clientModVersion == CLIENT_MOD_CSTRIKE) {
+				cd->ammo_shells = pl->ammo_buckshot;
+				cd->ammo_nails = pl->ammo_9mm;
+				/*
+				cd->ammo_cells = pl->ammo_556nato;
+				cd->ammo_rockets = pl->ammo_556natobox;
+				cd->vuser2.x = pl->ammo_762nato;
+				cd->vuser2.y = pl->ammo_45acp;
+				cd->vuser2.z = pl->ammo_50ae;
+				cd->vuser3.x = pl->ammo_338mag;
+				cd->vuser3.y = pl->ammo_57mm;
+				cd->vuser3.z = pl->ammo_357sig;
+				*/
+			}
+			else {
+				cd->vuser1.x = pl->ammo_9mm;
+				cd->vuser1.y = pl->ammo_357;
+				cd->vuser1.z = pl->ammo_argrens;
+				cd->ammo_nails = pl->ammo_bolts;
+				cd->ammo_shells = pl->ammo_buckshot;
+				cd->ammo_rockets = pl->ammo_rockets;
+				cd->ammo_cells = pl->ammo_uranium;
+				cd->vuser2.x = pl->ammo_hornets;
+			}
+			
 			
 			CBasePlayerItem* activeItem = (CBasePlayerItem*)pl->m_pActiveItem.GetEntity();
 

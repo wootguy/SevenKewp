@@ -2454,6 +2454,9 @@ void CBasePlayer::PreThink(void)
 		m_iHideHUD = HIDEHUD_FLASHLIGHT | HIDEHUD_HEALTH;
 	}
 
+	if (m_clientModVersion == CLIENT_MOD_CSTRIKE)
+		m_iHideHUD |= HIDEHUD_CS16_TIMER | HIDEHUD_CS16_MONEY;
+
 	// JOHN: checks if new client data (for HUD and view control) needs to be sent to the client
 	UpdateClientData();
 	
@@ -3532,6 +3535,9 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 	
 	m_flNextChatTime = gpGlobals->time;
+
+	// CS 1.6 state
+	m_bCanShoot = true;
 
 	// clear respawn text
 	// (also prevents bug where last printed text shows during intermission)
@@ -5951,18 +5957,24 @@ void CBasePlayer::UpdateScore() {
 }
 
 void CBasePlayer::UpdateTeamInfo(int color, int msg_mode, edict_t* dst) {
-	MESSAGE_BEGIN(msg_mode, gmsgScoreInfo, 0, dst);
-	WRITE_BYTE(entindex());	// client number
-	WRITE_SHORT(clampf(pev->frags, INT16_MIN, INT16_MAX));
-	WRITE_SHORT(m_iDeaths);
-	WRITE_SHORT(0);
-	WRITE_SHORT(color == -1 ? GetNameColor() : color);
-	MESSAGE_END();
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+		if (!plr || (dst && dst != plr->edict()))
+			continue;
 
-	MESSAGE_BEGIN(msg_mode, gmsgTeamInfo, 0, dst);
-	WRITE_BYTE(entindex());
-	WRITE_STRING((IsObserver() && color == -1) ? "" : GetTeamName());
-	MESSAGE_END();
+		MESSAGE_BEGIN(MSG_ONE, gmsgScoreInfo, 0, plr->edict());
+		WRITE_BYTE(entindex());	// client number
+		WRITE_SHORT(clampf(pev->frags, INT16_MIN, INT16_MAX));
+		WRITE_SHORT(m_iDeaths);
+		WRITE_SHORT(0);
+		WRITE_SHORT(color == -1 ? GetNameColor() : color);
+		MESSAGE_END();
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgTeamInfo, 0, plr->edict());
+		WRITE_BYTE(entindex());
+		WRITE_STRING((IsObserver() && color == -1) ? "" : GetTeamName(plr->m_clientModVersion));
+		MESSAGE_END();
+	}
 }
 
 int CBasePlayer::GetNameColor() {
@@ -5977,16 +5989,29 @@ int CBasePlayer::GetNameColor() {
 	return DEFAULT_TEAM_COLOR;
 }
 
-const char* CBasePlayer::GetTeamName() {
-	if (IsObserver()) {
-		return "";
-	}
-	
-	if (m_allowFriendlyFire) {
-		return ENEMY_TEAM_NAME;
-	}
+const char* CBasePlayer::GetTeamName(int forMod) {
+	if (forMod == CLIENT_MOD_CSTRIKE) {
+		if (IsObserver()) {
+			return "SPECTATOR";
+		}
 
-	return DEFAULT_TEAM_NAME;
+		if (m_allowFriendlyFire) {
+			return "TERRORIST";
+		}
+
+		return "CT";
+	}
+	else {
+		if (IsObserver()) {
+			return "";
+		}
+
+		if (m_allowFriendlyFire) {
+			return ENEMY_TEAM_NAME;
+		}
+
+		return DEFAULT_TEAM_NAME;
+	}
 }
 
 void CBasePlayer::QueryClientType() {
@@ -5994,6 +6019,14 @@ void CBasePlayer::QueryClientType() {
 		m_clientEngineVersion = CLIENT_ENGINE_BOT;
 		m_clientModVersion = CLIENT_MOD_BOT;
 		return;
+	}
+
+	char* info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
+	char* gamedir = g_engfuncs.pfnInfoKeyValue(info, "_gd");
+
+	if (!strcmp(gamedir, "cstrike")) {
+		m_clientModVersion = CLIENT_MOD_CSTRIKE;
+		m_clientModVersionString = MAKE_STRING("CS");
 	}
 
 	// first check for custom clients, next step depends on the output of this

@@ -68,7 +68,7 @@ struct AlertMsgCall {
 	std::string msg;
 };
 
-extern std::thread::id g_main_thread_id;
+EXPORT extern std::thread::id g_main_thread_id;
 extern ThreadSafeQueue<AlertMsgCall> g_thread_prints;
 
 EXPORT extern std::string g_lastMapName;
@@ -912,4 +912,4 @@ EXPORT void UTIL_RespawnAllPlayers(bool moveLivingPlayers=true, bool respawnDead
 EXPORT Vector UTIL_RotatePoint(Vector pos, Vector angles);
 EXPORT Vector UTIL_UnwindPoint(Vector pos, Vector angles);
 
-
+EXPORT char UTIL_TextureHit(TraceResult* ptr, Vector vecSrc, Vector vecEnd);

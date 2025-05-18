@@ -112,8 +112,8 @@ enum sbar_data
 
 enum HL_CLIENT_ENGINE_VERSION {
 	CLIENT_ENGINE_NOT_CHECKED,	// player hasn't responded to cvar queries yet
-	CLIENT_ENGINE_HL_LATEST,	// the latest version of the HL client from steam
-	CLIENT_ENGINE_HL_LEGACY,	// the legacy version of HL from steam
+	CLIENT_ENGINE_HL_LATEST,	// the latest version of the HL engine from steam
+	CLIENT_ENGINE_HL_LEGACY,	// the legacy version of the HL engine from steam
 	CLIENT_ENGINE_BOT,			// bots don't use a client
 };
 
@@ -122,6 +122,7 @@ enum HL_CLIENT_MOD_VERSION {
 	CLIENT_MOD_HL,			// the vanilla half-life mod from steam (or an undetected custom client)
 	CLIENT_MOD_HLBUGFIXED,	// a popular custom client (for cheating!!! but also cool stuff...)
 	CLIENT_MOD_ADRENALINE,	// another popular custom client (players with names like "^1J^2E^3F^4F")
+	CLIENT_MOD_CSTRIKE,		// counter-strike 1.6
 	CLIENT_MOD_BOT,			// bots don't use mods
 };
 
@@ -302,6 +303,13 @@ public:
 
 	int m_lastPacketEnts; // number of packet entities sent in the previous frame
 
+	// CS 1.6 weapon state
+	int m_iLastZoom;
+	bool m_bResumeZoom;
+	float m_flEjectBrass;
+	bool m_bCanShoot;
+	bool m_bIsDefusing;
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
@@ -477,7 +485,7 @@ public:
 
 	int GetNameColor();
 
-	const char* GetTeamName();
+	const char* GetTeamName(int forMod=CLIENT_MOD_HL);
 
 	// checks client cvars to determine which engine and mod is being used. Called when the player first enters the server.
 	void QueryClientType();

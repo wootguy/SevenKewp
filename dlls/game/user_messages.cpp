@@ -46,6 +46,10 @@ int gmsgStatusValue = 0;
 
 int gmsgToxicCloud = 0;
 
+int gmsgAllowSpec_cs16;
+int gmsgForceCam_cs16;
+int gmsgRadar_cs16;
+
 std::vector<UserMessage> g_userMessages;
 
 int REG_USER_MSG(const char* name, int size) {
@@ -136,5 +140,11 @@ void LinkUserMessages(void)
 	gmsgStatusText = REG_USER_MSG("StatusText", -1);
 	gmsgStatusValue = REG_USER_MSG("StatusValue", 3);
 
+	// Sven Co-op messages (unused)
 	gmsgToxicCloud = REG_USER_MSG("ToxicCloud", 4);
+
+	// CS 1.6 messages
+	//gmsgAllowSpec_cs16 = REG_USER_MSG("AllowSpec", 1);
+	//gmsgForceCam_cs16 = REG_USER_MSG("ForceCam", 3);
+	//gmsgRadar_cs16 = REG_USER_MSG("Radar", 7);
 }

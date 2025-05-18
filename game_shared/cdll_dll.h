@@ -32,6 +32,10 @@
 #define	HIDEHUD_ALL			( 1<<2 )
 #define 	HIDEHUD_HEALTH		( 1<<3 )
 
+// CS 1.6
+#define HIDEHUD_CS16_TIMER	(1 << 4)
+#define HIDEHUD_CS16_MONEY	(1 << 5)
+
 #define	MAX_AMMO_TYPES	32		// ???
 #define MAX_AMMO_SLOTS  32		// not really slots
 

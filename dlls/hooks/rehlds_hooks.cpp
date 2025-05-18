@@ -35,6 +35,16 @@ void rehlds_SendBigMessage(int msgMode, int msgType, void* data, int sz, int pla
 	}
 }
 
+void rehlds_MESSAGE_END(bool isVariableLength) {
+	if (!g_RehldsFuncs) {
+		ALERT(at_console, "Rehlds API not initialized!\n");
+		MESSAGE_END();
+		return;
+	}
+
+	g_RehldsFuncs->MessageEnd_Unregistered(isVariableLength);
+}
+
 void SV_ParseVoiceData_hlcoop(IGameClient* cl) {
 	uint8_t chReceived[4096];
 	unsigned int nDataLength = g_RehldsFuncs->MSG_ReadShort();

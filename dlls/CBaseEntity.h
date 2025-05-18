@@ -7,6 +7,7 @@
 class CBaseEntity;
 class CBaseMonster;
 class CBasePlayerWeapon;
+class CCsPlayerWeapon;
 class CTalkSquadMonster;
 class CBaseDelay;
 class CBaseToggle;
@@ -179,6 +180,8 @@ public:
 	string_t m_soundReplacementKey; // path specified in entity keyvalue
 	string_t m_soundReplacementPath; // normalized file system path and key for g_replacementFiles
 
+	unsigned char m_ucDmgPenetrationLevel; // penetration level of the damage caused by the inflictor
+
 	// fundamental callbacks
 	void (CBaseEntity ::* m_pfnThink)(void);
 	void (CBaseEntity ::* m_pfnTouch)(CBaseEntity* pOther);
@@ -221,6 +224,7 @@ public:
 	virtual CBaseMonster* MyMonsterPointer(void) { return NULL; }
 	virtual CBasePlayer* MyPlayerPointer(void) { return NULL; }
 	virtual CBasePlayerWeapon* GetWeaponPtr(void) { return NULL; };
+	virtual CCsPlayerWeapon* GetWeaponPtrCs16(void) { return NULL; };
 	virtual CTalkSquadMonster* MyTalkSquadMonsterPointer(void) { return NULL; }
 	virtual CBaseToggle* MyTogglePointer(void) { return NULL; }
 	virtual CBaseDelay* MyDelayPointer(void) { return NULL; }
@@ -301,6 +305,7 @@ public:
 	int			ShouldToggle(USE_TYPE useType, BOOL currentState);
 	void		FireBullets(ULONG	cShots, Vector  vecSrc, Vector	vecDirShooting, Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = NULL);
 	Vector		FireBulletsPlayer(ULONG	cShots, Vector  vecSrc, Vector	vecDirShooting, Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = NULL, int shared_rand = 0);
+	Vector&		FireBulletsCS16(Vector& vecSrc, Vector& vecDirShooting, float vecSpread, float flDistance, int iPenetration, int iBulletType, int iDamage, float flRangeModifier, entvars_t* pevAttacker, bool bPistol, int shared_rand);
 
 	virtual CBaseEntity* Respawn(void) { return NULL; }
 
