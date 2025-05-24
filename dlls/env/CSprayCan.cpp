@@ -57,7 +57,7 @@ void CSprayCan::Think(void)
 	// No customization present.
 	if (nFrames == -1)
 	{
-		UTIL_DecalTrace(&tr, DECAL_LAMBDA4);
+		UTIL_DecalTrace(&tr, DECAL_LAMBDA6);
 		UTIL_Remove(this);
 	}
 	else
