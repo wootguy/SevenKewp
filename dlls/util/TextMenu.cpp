@@ -73,6 +73,7 @@ void TextMenu::initCommon() {
 	options[MAX_MENU_OPTIONS - 1] = exitItem;
 	backText = m_strings.alloc("Back");
 	moreText = m_strings.alloc("More");
+	extraText = m_strings.alloc("");
 	noexit = false;
 }
 
@@ -134,19 +135,19 @@ void TextMenu::handleMenuselectCmd(CBasePlayer* pPlayer, int selection) {
 			Open(lastDuration, lastPage + 1, pPlayer);
 		}
 		else if (selection < numOptions && IsValidPlayer(pPlayer->edict())) {
+			viewers &= ~playerbit;
+			
 			if (anonCallback) {
 				TextMenuItem callbackItem = options[lastPage * ItemsPerPage() + selection].publicItem();
 				anonCallback(this, pPlayer, selection, callbackItem);
 			}
-				
+
 			if (entCallback) {
 				if (h_ent) {
 					TextMenuItem callbackItem = options[lastPage * ItemsPerPage() + selection].publicItem();
 					(((CTriggerVote*)h_ent.GetEntity())->*entCallback)(this, pPlayer, selection, callbackItem);
 				}
 			}
-
-			viewers &= ~playerbit;
 		}
 	}
 	else {
@@ -165,6 +166,10 @@ void TextMenu::SetTitle(const char* newTitle) {
 void TextMenu::SetPaginationText(const char* backText, const char* moreText) {
 	this->backText = m_strings.alloc(backText);
 	this->moreText = m_strings.alloc(moreText);
+}
+
+void TextMenu::SetExtraText(const char* extraText) {
+	this->extraText = m_strings.alloc(extraText);
 }
 
 void TextMenu::RemoveExit() {
@@ -228,9 +233,13 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 
 	int addedOptions = 0;
 	for (int i = itemOffset, k = 0; i < itemOffset+limitPerPage && i < numOptions; i++, k++) {
-		menuText += "\\y" + std::to_string(k + 1) + ":\\w " + options[i].displayText.str() + "\n";
-		validSlots |= (1 << k);
 		addedOptions++;
+
+		if (!strcmp(options[i].displayText.str(), "") && !strcmp(options[i].data.str(), ""))
+			continue; // don't display blank options (so plugins can control option numbers)
+
+		validSlots |= (1 << k);
+		menuText += "\\y" + std::to_string(k + 1) + ":\\w " + options[i].displayText.str() + "\n";
 	}
 
 	while (isPaginated() && addedOptions < ItemsPerPage()) {
@@ -259,6 +268,8 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 
 	if (!noexit)
 		menuText += "\\y" + std::to_string(g_exitOptionNum % 10) + ":\\w Exit";
+
+	menuText += extraText.str();
 
 	if (menuText.size() > 187)
 		menuText = menuText.substr(0, 187);

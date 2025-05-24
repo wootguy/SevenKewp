@@ -62,9 +62,6 @@ int g_plugin_id = 0;
 #define LibError() dlerror()
 #endif
 
-typedef int(*PLUGIN_INIT_FUNCTION)(void);
-typedef void(*PLUGIN_EXIT_FUNCTION)(void);
-
 bool PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
 	std::string gamePath = fpath;
 
@@ -765,6 +762,45 @@ plugin_ent_callback PluginManager::GetEntityCallback(const char* funcName) {
 void PluginManager::ClearEntityCallbacks() {
 	memset(g_plugin_ent_callbacks, 0, sizeof(TriggerScriptCallback) * MAX_PLUGIN_ENT_CALLBACKS);
 	g_plugin_ent_callback_count = 0;
+}
+
+bool CrossPluginFunctionHandle_internal(const char* pluginName, const char* funcName, void*& func, int& pluginId) {	
+	if (pluginName && func) {
+		// already loaded. Check that it's still valid
+		for (int i = 0; i < (int)g_pluginManager.plugins.size(); i++) {
+			const Plugin& plugin = g_pluginManager.plugins[i];
+
+			if (plugin.id == pluginId) {
+				return func != NULL;
+			}
+		}
+
+		// not found. Try loading again
+	}
+
+	func = NULL;
+	pluginId = -1;
+
+	if (!pluginName)
+		return false;
+
+	for (int i = 0; i < (int)g_pluginManager.plugins.size(); i++) {
+		const Plugin& plugin = g_pluginManager.plugins[i];
+
+		if (!strcmp(pluginName, plugin.name)) {
+			func = GetProcAddress((HMODULE)plugin.h_module, funcName);
+			if (func) {
+				pluginId = plugin.id;
+			}
+			break;
+		}
+	}
+
+	if (!func) {
+		ALERT(at_console, "Cross-plugin function not found: %s -> %s\n", pluginName, funcName);
+	}
+
+	return func != NULL;
 }
 
 void RegisterPluginEntCallback_internal(const char* funcName, plugin_ent_callback callback) {

@@ -16,13 +16,49 @@ void rehlds_SendBigMessage_internal(int msgType, void* data, int sz, int playeri
 	g_RehldsFuncs->MSG_WriteBuf(dstDatagram, sz, data);
 }
 
+// show a mute icon and return true if the listener muted the sender
+bool handleMutedPlayer(int senderIdx, int listenerIdx, bool forceMute) {
+	static float lastIconTime[33][33];
+
+	if (Voice_GetClientListening(listenerIdx, senderIdx) && !forceMute) {
+		return false;
+	}
+
+	// indicate that the player is muted
+	if (gpGlobals->time - lastIconTime[senderIdx][listenerIdx] > 0.15f || lastIconTime[senderIdx][listenerIdx] > gpGlobals->time) {
+		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, INDEXENT(listenerIdx));
+		WRITE_BYTE(TE_PLAYERATTACHMENT);
+		WRITE_BYTE(senderIdx);
+		WRITE_COORD(45);
+		WRITE_SHORT(MODEL_INDEX(GET_MODEL("sprites/voiceicon_m.spr")));
+		WRITE_SHORT(2);
+		MESSAGE_END();
+
+		lastIconTime[senderIdx][listenerIdx] = gpGlobals->time;
+	}
+
+	return true;
+}
+
 void rehlds_SendBigMessage(int msgMode, int msgType, void* data, int sz, int playerindex) {
 	if (!g_RehldsFuncs) {
 		ALERT(at_console, "Rehlds API not initialized!\n");
 		return;
 	}
 
+	CALL_HOOKS_VOID(pfnSendBigMessage, msgMode, msgType, data, sz, playerindex);
+
+	bool pluginWantsMute = false;
+
 	if (msgMode != MSG_BROADCAST) {
+		if (msgType == SVC_VOICEDATA) {
+			int senderIdx = ((uint8_t*)data)[0];
+			CALL_HOOKS_VOID(pfnSendVoiceData, senderIdx+1, playerindex, ((uint8_t*)data) + 3, sz-3, pluginWantsMute);
+			if (handleMutedPlayer(senderIdx + 1, playerindex, pluginWantsMute)) {
+				return;
+			}
+		}
+
 		if (playerindex > 0 && playerindex <= gpGlobals->maxClients)
 			rehlds_SendBigMessage_internal(msgType, data, sz, playerindex);
 		return;
@@ -30,8 +66,23 @@ void rehlds_SendBigMessage(int msgMode, int msgType, void* data, int sz, int pla
 	
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
-		if (plr)
-			rehlds_SendBigMessage_internal(msgType, data, sz, i);
+		if (!plr) {
+			continue;
+		}
+
+		if (msgType == SVC_VOICEDATA) {
+			int senderIdx = ((uint8_t*)data)[0];
+			CALL_HOOKS_VOID(pfnSendVoiceData, senderIdx + 1, playerindex, ((uint8_t*)data) + 3, sz-3, pluginWantsMute);
+			if (pluginWantsMute) {
+				return;
+			}
+
+			if (handleMutedPlayer(senderIdx + 1, playerindex, pluginWantsMute)) {
+				continue;
+			}
+		}
+
+		rehlds_SendBigMessage_internal(msgType, data, sz, i);
 	}
 }
 
@@ -49,8 +100,6 @@ void SV_ParseVoiceData_hlcoop(IGameClient* cl) {
 	if (sv_voiceenable->value == 0.0f)
 		return;
 
-	static float lastIconTime[33];
-
 	int sender = cl->GetId();
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
@@ -64,21 +113,7 @@ void SV_ParseVoiceData_hlcoop(IGameClient* cl) {
 
 		CALL_HOOKS_VOID(pfnSendVoiceData, sender + 1, i, chReceived, nDataLength, pluginWantsMute);
 
-		if (!g_engfuncs.pfnVoice_GetClientListening(i, sender+1) || pluginWantsMute) {
-
-			// indicate that the player is muted
-			if (gpGlobals->time - lastIconTime[i] > 0.15f || lastIconTime[i] > gpGlobals->time) {
-				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, plr->edict());
-				WRITE_BYTE(TE_PLAYERATTACHMENT);
-				WRITE_BYTE(sender + 1);
-				WRITE_COORD(45);
-				WRITE_SHORT(MODEL_INDEX(GET_MODEL("sprites/voiceicon_m.spr")));
-				WRITE_SHORT(2);
-				MESSAGE_END();
-
-				lastIconTime[i] = gpGlobals->time;
-			}
-			
+		if (handleMutedPlayer(sender + 1, i, pluginWantsMute)) {
 			continue;
 		}
 

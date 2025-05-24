@@ -194,11 +194,12 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	if (!p || !p[0] || !Q_UnicodeValidate(p))
 		return;  // no character found, so say nothing
 
-	CALL_HOOKS_VOID(pfnChatMessage, player, (const char**)&p, teamonly);
+	uint32_t mutes = 0;
+	CALL_HOOKS_VOID(pfnChatMessage, player, (const char**)&p, teamonly, mutes);
 
 	player->m_flNextChatTime = gpGlobals->time + CHAT_INTERVAL;
 
-	UTIL_ClientSay(player, p, NULL, teamonly, NULL);
+	UTIL_ClientSay(player, p, NULL, teamonly, NULL, mutes);
 
 	// echo to server console for listen servers, dedicated servers should have logs enabled
 	if (!IS_DEDICATED_SERVER())

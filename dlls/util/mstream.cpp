@@ -124,7 +124,7 @@ bool mstream::endBitReading() {
 	return false;
 }
 
-uint64_t mstream::write(void* src, uint64_t bytes)
+uint64_t mstream::write(const void* src, uint64_t bytes)
 {
 	if (eomFlag)
 		return 0;

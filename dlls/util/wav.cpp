@@ -4,41 +4,14 @@
 
 HashMap<WavInfo> g_wavInfos;
 
-WavInfo getWaveFileInfo(const char* path) {
-	WavInfo* cached = g_wavInfos.get(path);
-	if (cached) {
-		return *cached;
-	}
-
-	std::string fpath = getGameFilePath(UTIL_VarArgs("sound/%s", path));
-
-	WavInfo info;
-	info.durationMillis = 0;
-	info.isLooped = false;
+int parseWaveInfo(FILE* file, WavInfo& info) {
+	memset(&info, 0, sizeof(WavInfo));	
 
 	int sampleRate = 0;
 	int bytesPerSample = 0;
 	int numSamples = 0;
 	int read = 0;
 	int fsize = 0;
-	FILE* file = NULL;
-
-	float durationSeconds = 0;
-	bool fatalWave = false;
-	float cues[2];
-	int numCues = 0;
-
-	if (!fpath.size()) {
-		ALERT(at_console, "Missing WAVE file: %s\n", path);
-		goto cleanup;
-	}
-
-	// open file
-	file = fopen(fpath.c_str(), "rb");
-	if (file == NULL) {
-		ALERT(at_error, "Failed to open WAVE file: %s\n", fpath.c_str());
-		goto cleanup;
-	}
 
 	fseek(file, 0, SEEK_END);
 	fsize = ftell(file);
@@ -50,8 +23,8 @@ WavInfo getWaveFileInfo(const char* path) {
 
 		if (!read || strncmp((const char*)header.riff, "RIFF", 4)
 			|| strncmp((const char*)header.wave, "WAVE", 4)) {
-			ALERT(at_error, "Invalid WAVE header: %s\n", fpath.c_str());
-			goto cleanup;
+
+			return WAVERR_INVALID_HEADER;
 		}
 	}
 
@@ -77,29 +50,32 @@ WavInfo getWaveFileInfo(const char* path) {
 		int seekSize = ((chunk.size + 1) / 2) * 2; // round up to nearest word size
 
 		if (chunkName == "fmt ") {
-
 			if (chunk.size == 16 || chunk.size == 18 || chunk.size == 40) {
 				WAVE_CHUNK_FMT cdata;
 				read = fread(&cdata, chunk.size, 1, file);
 
-				bytesPerSample = cdata.channels * (cdata.bits_per_sample / 8);
-				sampleRate = cdata.sample_rate;
+				bytesPerSample = cdata.common.channels * (cdata.common.bits_per_sample / 8);
+				sampleRate = cdata.common.sample_rate;
+				info.bytesPerSample = bytesPerSample;
+				info.channels = cdata.common.channels;
+				info.sampleRate = cdata.common.sample_rate;
 
 				if (!read || !bytesPerSample || !sampleRate) {
-					ALERT(at_error, "Invalid WAVE fmt chunk: %s\n", fpath.c_str());
-					goto cleanup;
+					return WAVERR_INVALID_FMT;
 				}
 			}
 			else {
-				ALERT(at_error, "Invalid WAVE fmt chunk: %s\n", fpath.c_str());
-				goto cleanup;
+				return WAVERR_INVALID_FMT;
 			}
 		}
 		else if (chunkName == "data") {
 			if (bytesPerSample && sampleRate && chunk.size) {
 				numSamples = chunk.size / bytesPerSample;
 				info.durationMillis = ((float)numSamples / sampleRate) * 1000.0f;
+				info.numSamples = numSamples;
 			}
+
+			info.sampleFileOffset = ftell(file);
 
 			fseek(file, seekSize, SEEK_CUR);
 		}
@@ -108,8 +84,7 @@ WavInfo getWaveFileInfo(const char* path) {
 			read = fread(&cdata, sizeof(WAVE_CUE_HEADER), 1, file);
 
 			if (!read) {
-				ALERT(at_error, "Invalid WAVE cue chunk: %s\n", fpath.c_str());
-				goto cleanup;
+				return WAVERR_INVALID_CUE;
 			}
 
 			// How cue points work:
@@ -128,19 +103,18 @@ WavInfo getWaveFileInfo(const char* path) {
 
 				std::string dataChunkId = std::string(cue.dataChunkId, 4);
 				if (!read || (dataChunkId != "data" && dataChunkId != "slnt")) {
-					ALERT(at_error, "Invalid WAVE cue chunk: %s\n", fpath.c_str());
-					goto cleanup;
+					return WAVERR_INVALID_CUE;
 				}
 
 				float sampTime = sampleRate ? cue.sampleStart / (float)sampleRate : 0;
-				cues[i] = sampTime;
+				info.cues[i] = sampTime;
 				//cueString += UTIL_VarArgs("%.2f  ", sampTime);
 			}
 			//cueString += "\n";
 			//ALERT(at_console, cueString.c_str());
 
 			info.isLooped = cdata.numCuePoints > 0;
-			numCues = cdata.numCuePoints;
+			info.numCues = cdata.numCuePoints;
 		}
 		/*
 		else if (chunkName == "LIST") {
@@ -199,32 +173,116 @@ WavInfo getWaveFileInfo(const char* path) {
 		}
 	}
 
-	durationSeconds = info.durationMillis / 1000.0f;
-	fatalWave = false;
+	return 0;
+}
 
-	if (numCues == 1 && cues[0] > durationSeconds * 0.495f) { // better safe than sorry here - don't use 0.5 exactly
-		ALERT(at_error, "'%s' has 1 cue point and it was placed after the mid point! This file will crash clients.\n", path);
-		fatalWave = true;
-	}
-	else if (numCues >= 2 && cues[0] > cues[1]) {
-		ALERT(at_error, "'%s' start/end cue points are inverted! This file will crash clients.\n", path);
-		fatalWave = true;
+WavInfo getWaveFileInfo(const char* path) {
+	WavInfo* cached = g_wavInfos.get(path);
+	if (cached) {
+		return *cached;
 	}
 
-	if (fatalWave) {
-		// don't allow anyone to download this file! Not all server ops know that you need to rename
-		// a file after updating it. Then if some people got the old file, they will crash and others
-		// will be like "idk works for me" and people will have to delete their hl folder to fix this.
-		// Or worse, they'll just live with it for years because it's just a few maps they crash on.
-		ALERT(at_error, "Server shutting down to prevent distribution of the broken file.\n", path);
-		g_engfuncs.pfnServerCommand("quit\n");
-		g_engfuncs.pfnServerExecute();
+	std::string fpath = getGameFilePath(UTIL_VarArgs("sound/%s", path));
+	WavInfo info;
+	memset(&info, 0, sizeof(WavInfo));
+		
+	if (!fpath.size()) {
+		ALERT(at_console, "Missing WAVE file: %s\n", path);
+		g_wavInfos.put(path, info);
+		return info;
 	}
 
-cleanup:
+	FILE* file = NULL;
+
+	// open file
+	file = fopen(fpath.c_str(), "rb");
+	if (file == NULL) {
+		ALERT(at_error, "Failed to open WAVE file: %s\n", path);
+		return info;
+	}
+	
+	int ret = parseWaveInfo(file, info);
+
+	if (!ret) {
+		float durationSeconds = info.durationMillis / 1000.0f;
+		bool fatalWave = false;
+
+		if (info.numCues == 1 && info.cues[0] > durationSeconds * 0.495f) { // better safe than sorry here - don't use 0.5 exactly
+			ALERT(at_error, "'%s' has 1 cue point and it was placed after the mid point! This file will crash clients.\n", path);
+			fatalWave = true;
+		}
+		else if (info.numCues >= 2 && info.cues[0] > info.cues[1]) {
+			ALERT(at_error, "'%s' start/end cue points are inverted! This file will crash clients.\n", path);
+			fatalWave = true;
+		}
+
+		if (fatalWave) {
+			// don't allow anyone to download this file! Not all server ops know that you need to rename
+			// a file after updating it. Then if some people got the old file, they will crash and others
+			// will be like "idk works for me" and people will have to delete their hl folder to fix this.
+			// Or worse, they'll just live with it for years because it's just a few maps they crash on.
+			ALERT(at_error, "Server shutting down to prevent distribution of the broken file.\n", path);
+			g_engfuncs.pfnServerCommand("quit\n");
+			g_engfuncs.pfnServerExecute();
+		}
+	}
+	else {
+		switch (ret) {
+		case WAVERR_INVALID_HEADER:
+			ALERT(at_error, "Invalid WAVE header: %s\n", fpath);
+			break;
+		case WAVERR_INVALID_FMT:
+			ALERT(at_error, "Invalid WAVE fmt chunk: %s\n", fpath);
+			break;
+		case WAVERR_INVALID_CUE:
+			ALERT(at_error, "Invalid WAVE cue chunk: %s\n", fpath);
+			break;
+		default:
+			ALERT(at_error, "Invalid WAVE: %s\n", fpath);
+			break;
+		}
+	}
+
 	g_wavInfos.put(path, info);
-	if (file) {
-		fclose(file);
-	}
 	return info;
+}
+
+EXPORT void writeWavFile(const char* fpath, void* samples, int numSamples, int samprate, int bytesPerSample) {
+	int headerSizes = sizeof(RIFF_HEADER) + sizeof(WAVE_CHUNK_HEADER)*2 + sizeof(WAVE_CHUNK_FMT_COMMON);
+
+	FILE* fp = fopen(fpath, "wb");
+
+	if (!fp) {
+		ALERT(at_error, "Failed to open file for writing: %s\n", fpath);
+		return;
+	}
+
+	RIFF_HEADER header;
+	memcpy(header.riff, "RIFF", 4);
+	header.overall_size = (numSamples * bytesPerSample) + headerSizes;
+	memcpy(header.wave, "WAVE", 4);
+	fwrite(&header, sizeof(RIFF_HEADER), 1, fp);
+
+	WAVE_CHUNK_HEADER fmtheader;
+	memcpy(fmtheader.name, "fmt ", 4);
+	fmtheader.size = 16;
+	fwrite(&fmtheader, sizeof(WAVE_CHUNK_HEADER), 1, fp);
+
+	WAVE_CHUNK_FMT_COMMON fmt;
+	memset(&fmt, 0, sizeof(WAVE_CHUNK_FMT_COMMON));
+	fmt.bits_per_sample = bytesPerSample*8;
+	fmt.channels = 1;
+	fmt.block_align = (fmt.channels * fmt.bits_per_sample) / 8;
+	fmt.byterate = samprate * 1 *bytesPerSample;
+	fmt.format_type = 1;
+	fmt.sample_rate = samprate;
+	fwrite(&fmt, sizeof(WAVE_CHUNK_FMT_COMMON), 1, fp);
+
+	WAVE_CHUNK_HEADER datheader;
+	memcpy(datheader.name, "data", 4);
+	datheader.size = numSamples*bytesPerSample;
+	fwrite(&datheader, sizeof(WAVE_CHUNK_HEADER), 1, fp);
+	fwrite(samples, bytesPerSample*numSamples, 1, fp);
+
+	fclose(fp);
 }

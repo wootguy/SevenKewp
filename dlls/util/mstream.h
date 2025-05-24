@@ -37,7 +37,7 @@ public:
 	bool endBitReading();
 
 	// returns number of bytes that could be written into the buffer
-	uint64_t write(void * src, uint64_t bytes);
+	uint64_t write(const void * src, uint64_t bytes);
 
 	// write a 0 or 1 bit, partially filling a byte. Returns true on success.
 	bool writeBit(bool value);

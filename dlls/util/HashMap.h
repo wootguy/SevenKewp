@@ -7,7 +7,7 @@
 #include <vector>
 #include "shared_util.h"
 
-typedef uint16_t hmap_string_t; // offset into a hashmap's string pool
+typedef uint32_t hmap_string_t; // offset into a hashmap's string pool
 
 struct hash_map_stats_t {
 	uint16_t collisions;
@@ -26,7 +26,7 @@ public:
 	hash_map_stats_t stats;
 
 	EXPORT BaseHashMap(int valueSz);
-	EXPORT BaseHashMap(int valueSz, int maxEntries, uint16_t stringPoolSz);
+	EXPORT BaseHashMap(int valueSz, int maxEntries, uint32_t stringPoolSz);
 	EXPORT ~BaseHashMap();
 	EXPORT BaseHashMap(const BaseHashMap& other);
 	EXPORT BaseHashMap& operator=(const BaseHashMap& other);
@@ -60,14 +60,14 @@ protected:
 	char* data; // allocated memory for both strings and entries
 	size_t maxEntries;
 	size_t entryCount;
-	uint16_t stringOffset;    // next free space in string pool
-	uint16_t stringPoolSz;
+	uint32_t stringOffset;    // next free space in string pool
+	uint32_t stringPoolSz;
 	int entrySz;
 
 	uint32_t hash(const char* str) const;
 
 	// store string in string pool. May reallocate data.
-	uint16_t storeString(const char* str);
+	uint32_t storeString(const char* str);
 
 	// returns:
 	// - true if the value was found. index points to table index
@@ -75,7 +75,7 @@ protected:
 	// depth is the amount of table elements that needed to be checked before finding/not finding the key
 	bool find(const char* key, uint32_t& index, uint32_t& depth) const;
 
-	void init(int maxEntries, uint16_t stringPoolSz);
+	void init(int maxEntries, uint32_t stringPoolSz);
 
 	bool resizeStringPool(size_t newPoolSz);
 

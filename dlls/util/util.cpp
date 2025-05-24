@@ -749,6 +749,38 @@ CBasePlayer* UTIL_PlayerByUserId(int userid)
 	return NULL;
 }
 
+CBasePlayer* UTIL_PlayerBySearchString(const char* search, CBasePlayer* ignorePlayer, bool& multipleMatches)
+{
+	if (!search) {
+		return NULL;
+	}
+
+	std::string lowerSearch = trimSpaces(toLowerCase(search));
+	CBasePlayer* retPlr = NULL;
+	multipleMatches = false;
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
+	{
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+		if (!plr || plr == ignorePlayer) {
+			continue;
+		}
+		
+		std::string lowerName = toLowerCase(plr->DisplayName());
+		std::string lowerId = toLowerCase(plr->GetSteamID());
+
+		if (lowerId == lowerSearch || lowerName.find(lowerSearch) != -1) {
+			if (retPlr) {
+				multipleMatches = true;
+				return NULL;
+			}
+			retPlr = plr;
+		}
+	}
+
+	return retPlr;
+}
+
 CBasePlayer* UTIL_PlayerBySteamId(const char* id) {
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* pPlayer = UTIL_PlayerByIndex(i);
@@ -1322,12 +1354,17 @@ void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char * m
 	}
 }
 
-void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix, bool teamMessage, edict_t* target) {
+void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix, bool teamMessage,
+		edict_t* target, uint32_t mutes, int customColor, const char* customName) {
 	if (!plr || !text) {
 		return;
 	}
 
-	if (plr->tempNameActive) {
+	if (customColor != -1 && customName) {
+		plr->Rename(customName, true);
+		plr->UpdateTeamInfo(customColor);
+	}
+	else if (plr->tempNameActive) {
 		plr->Rename(plr->DisplayName(), true, MSG_ONE, plr->edict());
 		plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
 	}
@@ -1352,18 +1389,30 @@ void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix
 	}
 
 	if (target) {
-		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, target);
-		WRITE_BYTE(plr->entindex());
-		WRITE_STRING(msg.c_str());
-		MESSAGE_END();
+		if (!(mutes & PLRBIT(target))) {
+			MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, target);
+			WRITE_BYTE(plr->entindex());
+			WRITE_STRING(msg.c_str());
+			MESSAGE_END();
+		}
 	}
 	else {
-		MESSAGE_BEGIN(MSG_ALL, gmsgSayText);
-		WRITE_BYTE(plr->entindex());
-		WRITE_STRING(msg.c_str());
-		MESSAGE_END();
-	}
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* reader = UTIL_PlayerByIndex(i);
+			if (!reader || (mutes & PLRBIT(reader->entindex())))
+				continue;
 
+			MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, reader->edict());
+			WRITE_BYTE(plr->entindex());
+			WRITE_STRING(msg.c_str());
+			MESSAGE_END();
+		}
+	}
+	if (customColor != -1 && customName) {
+		plr->Rename(plr->DisplayName(), false);
+		plr->UpdateTeamInfo(-1);
+		// TODO: if a temp name is active, this might overflow that player from all the renaming
+	}
 	if (plr->tempNameActive) {
 		plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
 		plr->UpdateTeamInfo(plr->m_tempTeam, MSG_ONE, plr->edict());

@@ -4,9 +4,9 @@
 
 class IPV4;
 
-bool initNet();
-void netStop();
-IPV4 getLocalIP();
+EXPORT bool initNet();
+EXPORT void netStop();
+EXPORT IPV4 getLocalIP();
 
 // IP headers are AT LEAST 20/40 bytes, maybe more
 // UDP headers are always 8 bytes
