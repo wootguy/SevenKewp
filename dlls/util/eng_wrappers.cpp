@@ -871,3 +871,8 @@ edict_t* FIND_ENTITY_BY_TARGETNAME(edict_t* entStart, const char* pszName) {
 	*/
 	return FIND_ENTITY_BY_STRING(entStart, "targetname", pszName);
 }
+
+EXPORT bool Voice_GetClientListening(int receiver, int sender) {
+	CALL_HOOKS(bool, pfnVoice_GetClientListening, receiver, sender);
+	return g_engfuncs.pfnVoice_GetClientListening(receiver, sender);
+}

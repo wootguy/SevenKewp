@@ -11,4 +11,6 @@ public:
 	void	Think(void);
 
 	virtual int	ObjectCaps(void) { return FCAP_DONT_SAVE; }
+
+	bool sprayOverride;
 };

@@ -18,22 +18,29 @@ struct RIFF_FMT_PCM {
 	uint16_t bits_per_sample;	// bits per sample, 8- 8bits, 16- 16 bits etc
 };
 
-struct WAVE_CHUNK_FMT {
-	// common format fields
+// common format fields
+struct WAVE_CHUNK_FMT_COMMON {
 	uint16_t format_type;		// format type. 1-PCM, 3- IEEE float, 6 - 8bit A law, 7 - 8bit mu law
 	uint16_t channels;			// no.of channels
 	uint32_t sample_rate;		// sampling rate (blocks per second)
 	uint32_t byterate;			// SampleRate * NumChannels * BitsPerSample/8
 	uint16_t block_align;		// NumChannels * BitsPerSample/8
 	uint16_t bits_per_sample;	// bits per sample, 8- 8bits, 16- 16 bits etc
+};
 
-	// non-pcm format field
+// non-pcm format fields
+struct WAVE_CHUNK_FMT_EXTENDED {
 	uint16_t cbSize;			// size of the extension
 
 	// extensible format fields
 	uint16_t validBitsPerSample;
 	uint32_t dwChannelMask;
 	uint8_t subFormat[16];
+};
+
+struct WAVE_CHUNK_FMT {
+	WAVE_CHUNK_FMT_COMMON common;
+	WAVE_CHUNK_FMT_EXTENDED extended; // optional
 };
 
 struct WAVE_CUE_HEADER {
@@ -86,8 +93,28 @@ struct WAVE_CHUNK_HEADER {
 struct WavInfo {
 	int durationMillis;
 	bool isLooped; // sound is looped with cue points
+	uint8_t channels;
+	uint8_t bytesPerSample;
+	uint8_t numCues;
+	int numSamples;
+	int sampleFileOffset; // file offset where sample data begins
+	int sampleRate;
+	float cues[2];
 };
 
 extern HashMap<WavInfo> g_wavInfos; // cached wav info, cleared on map change
 
+enum wav_error_codes {
+	WAVERR_INVALID_HEADER, // invalid file header
+	WAVERR_INVALID_FMT, // invalid fmt chunk
+	WAVERR_INVALID_CUE, // invalid cue chunk
+};
+
+// parses wav data from a file, returns 0 on sucess, else an error code
+EXPORT int parseWaveInfo(FILE* fp, WavInfo& info);
+
+// similar to parseWaveInfo, but caches results, searches game paths for the file, and shuts
+// down the server if a fatal wave is detected (bad cue points which crash the client)
 EXPORT WavInfo getWaveFileInfo(const char* path);
+
+EXPORT void writeWavFile(const char* fpath, void* samples, int numSamples, int samprate, int bytesPerSample);

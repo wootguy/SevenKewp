@@ -5,7 +5,7 @@
 #include <unordered_set>
 
 #define HMAP_DEFAULT_STRING_POOL_SZ 64
-#define HMAP_MAX_STRING_POOL_SZ UINT16_MAX
+#define HMAP_MAX_STRING_POOL_SZ (1024*1024*16)
 //#define PROFILE_MODE // uncomment to be able to print global hash table stats
 #define MAX_PRIME_DOUBLES 30
 
@@ -60,7 +60,7 @@ BaseHashMap::BaseHashMap(int valueSz) {
 	memset(&stats, 0, sizeof(hash_map_stats_t));
 }
 
-BaseHashMap::BaseHashMap(int valueSz, int maxEntries, uint16_t stringPoolSz) {
+BaseHashMap::BaseHashMap(int valueSz, int maxEntries, uint32_t stringPoolSz) {
 	this->entrySz = valueSz + sizeof(entry_header_t);
 	init(maxEntries, stringPoolSz);
 }
@@ -99,7 +99,7 @@ BaseHashMap& BaseHashMap::operator=(const BaseHashMap& other) {
 	return *this;
 }
 
-void BaseHashMap::init(int maxEntries, uint16_t stringPoolSz) {
+void BaseHashMap::init(int maxEntries, uint32_t stringPoolSz) {
 	stringOffset = 1; // skip 0 for NULL value
 	entryCount = 0;
 	this->maxEntries = maxEntries;
@@ -148,7 +148,7 @@ BaseHashMap::~BaseHashMap() {
 }
 
 // Store string in preallocated memory pool (avoiding malloc)
-uint16_t BaseHashMap::storeString(const char* str) {
+uint32_t BaseHashMap::storeString(const char* str) {
 	size_t len = strlen(str) + 1;  // Include null terminator
 
 	if ((size_t)stringOffset + len >= (size_t)stringPoolSz) {
@@ -164,7 +164,7 @@ uint16_t BaseHashMap::storeString(const char* str) {
 		}
 	}
 
-	uint16_t retOffset = stringOffset;
+	uint32_t retOffset = stringOffset;
 	char* stringPool = data;
 	char* stored = stringPool + stringOffset;
 	memcpy(stored, str, len);
@@ -233,7 +233,7 @@ bool BaseHashMap::put(const char* key, void* value) {
 
 	// add new entry
 
-	uint16_t ikey = storeString(key);
+	uint32_t ikey = storeString(key);
 	entry_header_t* entry = (entry_header_t*)(data + stringPoolSz + index * entrySz);
 		
 	entry->key = ikey;
@@ -445,7 +445,7 @@ bool StringMap::put(const char* key, const char* value) {
 		return false;
 	}
 
-	uint16_t ival = storeString(value);
+	uint32_t ival = storeString(value);
 
 	return BaseHashMap::put(key, &ival);
 }
@@ -457,7 +457,7 @@ void StringMap::putAll_internal(char* otherData, size_t otherEntryCount, size_t 
 			continue;
 		}
 
-		uint16_t offset = *(uint16_t*)((char*)entry + sizeof(entry_header_t));
+		uint32_t offset = *(uint32_t*)((char*)entry + sizeof(entry_header_t));
 		if (!StringMap::put(otherData + entry->key, otherData + offset)) {
 			ALERT(at_error, "StringMap failed to put during table resize\n");
 		}
@@ -465,7 +465,7 @@ void StringMap::putAll_internal(char* otherData, size_t otherEntryCount, size_t 
 }
 
 const char* StringMap::get(const char* key) const {
-	uint16_t* offset = (uint16_t*)getValue(key);
+	uint32_t* offset = (uint32_t*)getValue(key);
 	return offset ? (data + *offset) : NULL;
 }
 
@@ -477,7 +477,7 @@ bool StringMap::iterate(iterator_t& iter) const {
 
 		if (entry->occupied && entry->key) {
 			iter.key = stringPool + entry->key;
-			iter.value = stringPool + *(uint16_t*)((char*)entry + sizeof(entry_header_t));
+			iter.value = stringPool + *(uint32_t*)((char*)entry + sizeof(entry_header_t));
 			iter.offset++;
 			return true;
 		}

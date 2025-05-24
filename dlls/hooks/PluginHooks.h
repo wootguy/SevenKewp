@@ -169,15 +169,28 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// called before voice data is sent to a player. Set mute to true to block the message to the receiver
 	HOOK_RETURN_DATA (*pfnSendVoiceData)(int senderidx, int receiveridx, uint8_t* data, int sz, bool& mute);
+	
+	// called before the engine function
+	HOOK_RETURN_DATA (*pfnVoice_GetClientListening)(int receiver, int sender);
+
+	// called before a large network message is sent. playerindex is 1-based
+	HOOK_RETURN_DATA (*pfnSendBigMessage)(int msgMode, int msgType, void* data, int sz, int playerindex);
 
 	// called before the mod processes a newly uploaded customization (tempdecal.wad spray)
 	HOOK_RETURN_DATA (*pfnPlayerCustomization)(edict_t* pEntity, customization_t* pCust);
+
+	// called before a player spray is applied
+	HOOK_RETURN_DATA(*pfnPlayerSpray)(CBasePlayer* plr, TraceResult* pTrace);
 
 	// called when a client responds to a cvar query
 	HOOK_RETURN_DATA (*pfnCvarValue2)(const edict_t* pEntity, int requestID, const char* pszCvarName, const char* pszValue);
 	
 	// called before a chat message is sent. Update the message pointer to change the message.
-	HOOK_RETURN_DATA (*pfnChatMessage)(CBasePlayer* plr, const char** message, bool teamOnly);
+	// plr = player who sent the message
+	// message = pointer to the message. set *message to something else to replace the text
+	// teamonly = player sent the message using the say_team command
+	// readers = bitfield representing which players will see the message
+	HOOK_RETURN_DATA (*pfnChatMessage)(CBasePlayer* plr, const char** message, bool teamOnly, uint32_t& readers);
 
 	// called when an entity is created and keyvalues are applied, but before it spawns
 	HOOK_RETURN_DATA (*pfnEntityCreated)(CBaseEntity* pEntity);

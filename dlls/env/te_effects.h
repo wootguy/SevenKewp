@@ -30,7 +30,7 @@ EXPORT void UTIL_PlayerDecal(int entindex, int playernum, Vector origin, int dec
 EXPORT void UTIL_GunshotDecal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
 EXPORT void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
 EXPORT void	UTIL_BloodDecalTrace(TraceResult* pTrace, int bloodColor);
-EXPORT edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber);
+EXPORT edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber, int msgMode=MSG_ALL, edict_t* targetEnt=NULL);
 EXPORT void	UTIL_PlayerDecalTrace(TraceResult* pTrace, int playernum, int decalNumber, BOOL bIsCustom);
 EXPORT edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber);
 EXPORT void	UTIL_Sparks(const Vector& position);

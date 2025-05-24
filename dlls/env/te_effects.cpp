@@ -650,7 +650,7 @@ void UTIL_BloodDecalTrace(TraceResult* pTrace, int bloodColor)
 }
 
 
-edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber)
+edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber, int msgMode, edict_t* targetEnt)
 {
 	short entityIndex;
 	int index;
@@ -689,7 +689,7 @@ edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber)
 		return decal->edict();
 	}
 
-	UTIL_Decal(entityIndex, pTrace->vecEndPos, index);
+	UTIL_Decal(entityIndex, pTrace->vecEndPos, index, msgMode, 0, targetEnt);
 	return pTrace->pHit;
 }
 

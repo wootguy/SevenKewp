@@ -68,7 +68,7 @@ struct AlertMsgCall {
 	std::string msg;
 };
 
-extern std::thread::id g_main_thread_id;
+EXPORT extern std::thread::id g_main_thread_id;
 extern ThreadSafeQueue<AlertMsgCall> g_thread_prints;
 
 EXPORT extern std::string g_lastMapName;
@@ -363,6 +363,7 @@ EXPORT extern CBasePlayer	*UTIL_PlayerByIndex( int playerIndex );
 EXPORT extern CBasePlayer	*UTIL_PlayerByUserId( int userid );
 EXPORT extern CBasePlayer	*UTIL_PlayerBySteamId(const char* id);
 EXPORT extern CBasePlayer	*UTIL_PlayerBySteamId64(uint64_t id);
+EXPORT extern CBasePlayer* UTIL_PlayerBySearchString(const char* search, CBasePlayer* ignorePlayer, bool& multipleMatches);
 
 #define UTIL_EntitiesInPVS(pent)			(*g_engfuncs.pfnEntitiesInPVS)(pent)
 EXPORT edict_t*		UTIL_ClientsInPVS(edict_t* edict, int& playerCount);
@@ -449,7 +450,7 @@ EXPORT void			UTIL_ClientPrintAll(PRINT_TYPE print_type, const char *msg);
 
 // handles coloring and name prefix. Don't include the newline
 EXPORT void			UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix=NULL,
-						bool teamMessage=false, edict_t* target=NULL);
+						bool teamMessage=false, edict_t* target=NULL, uint32_t mutes=0, int customColor=-1, const char* customName=NULL);
 
 class CBasePlayerItem;
 class CBasePlayer;

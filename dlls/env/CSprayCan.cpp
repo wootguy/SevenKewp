@@ -5,6 +5,7 @@
 #include "env/CSoundEnt.h"
 #include "decals.h"
 #include "CSprayCan.h"
+#include "PluginManager.h"
 
 void CSprayCan::Spawn(entvars_t* pevOwner)
 {
@@ -28,6 +29,11 @@ void CSprayCan::Think(void)
 	int nFrames;
 	CBasePlayer* pPlayer;
 
+	if (sprayOverride) {
+		UTIL_Remove(this);
+		return;
+	}
+
 	pPlayer = (CBasePlayer*)GET_PRIVATE(pev->owner);
 
 	if (pPlayer)
@@ -42,10 +48,16 @@ void CSprayCan::Think(void)
 	UTIL_MakeVectors(pev->angles);
 	UTIL_TraceLine(pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, &tr);
 
+	pev->nextthink = gpGlobals->time + 0.1;
+
+	sprayOverride = true;
+	CALL_HOOKS_VOID(pfnPlayerSpray, pPlayer, &tr);
+	sprayOverride = false;
+
 	// No customization present.
 	if (nFrames == -1)
 	{
-		UTIL_DecalTrace(&tr, DECAL_LAMBDA6);
+		UTIL_DecalTrace(&tr, DECAL_LAMBDA4);
 		UTIL_Remove(this);
 	}
 	else
@@ -55,7 +67,5 @@ void CSprayCan::Think(void)
 		if (pev->frame++ >= (nFrames - 1))
 			UTIL_Remove(this);
 	}
-
-	pev->nextthink = gpGlobals->time + 0.1;
 }
 

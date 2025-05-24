@@ -38,6 +38,8 @@ public:
 
 	EXPORT void SetPaginationText(const char* backText, const char* moreText);
 
+	EXPORT void SetExtraText(const char* extraText);
+
 	// remove exit as a menu option
 	EXPORT void RemoveExit();
 
@@ -86,6 +88,7 @@ private:
 	mod_string_t backText;
 	mod_string_t moreText;
 	mod_string_t optionColor;
+	mod_string_t extraText;
 	StringPool m_strings;
 
 	bool isActive = false;
