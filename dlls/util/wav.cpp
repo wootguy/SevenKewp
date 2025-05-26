@@ -243,6 +243,7 @@ WavInfo getWaveFileInfo(const char* path) {
 		}
 	}
 
+	fclose(file);
 	g_wavInfos.put(path, info);
 	return info;
 }
