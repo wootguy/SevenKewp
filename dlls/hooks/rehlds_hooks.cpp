@@ -8,7 +8,7 @@ void rehlds_SendBigMessage_internal(int msgType, void* data, int sz, int playeri
 	sizebuf_t* dstDatagram = dstClient->GetDatagram();
 
 	if (dstDatagram->cursize + sz + 3 >= dstDatagram->maxsize) {
-		ALERT(at_error, "Message %s too large: %d\n", msgTypeStr(msgType), sz);
+		ALERT(at_console, "Message %s too large: %d\n", msgTypeStr(msgType), sz);
 		return;
 	}
 

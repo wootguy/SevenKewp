@@ -28,7 +28,12 @@ EXPORT void UTIL_KillBeam(int entindex, int msgMode = MSG_BROADCAST, const float
 EXPORT void UTIL_BSPDecal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
 EXPORT void UTIL_PlayerDecal(int entindex, int playernum, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
 EXPORT void UTIL_GunshotDecal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
+
+// Important: Don't send reliable decals to connecting clients or else they crash with:
+// "Used decal #X without a name"
+// MSG_ALL will send to connecting clients
 EXPORT void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
+
 EXPORT void	UTIL_BloodDecalTrace(TraceResult* pTrace, int bloodColor);
 EXPORT edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber, int msgMode=MSG_BROADCAST, edict_t* targetEnt=NULL);
 EXPORT void	UTIL_PlayerDecalTrace(TraceResult* pTrace, int playernum, int decalNumber, BOOL bIsCustom);
