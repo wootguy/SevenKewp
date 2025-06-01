@@ -13,12 +13,25 @@ Note: If you're a player, you don't need to install anything or build this mod. 
    Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386`
 1. Open a shell somewhere and clone the repo: `git clone --recurse-submodules https://github.com/wootguy/SevenKewp`
 1. Run `scripts/build_game_and_plugins.bat` (Windows) or `scripts/build_game_and_plugins.sh` (Linux).
-2. Copy the contents of `build/output/` to `valve/` on your Half-Life dedicated server.
-3. Build and install [my fork of ReHLDS](https://github.com/wootguy/rehlds). This is required for some maps.
-1. Copy the contents of `sevenkewp/` to `valve/` on your dedicated server. The `.cfg` files must be in `valve/`, but you can copy everything else to `valve_downloads/` if you want.
-1. Add `-dll dlls/server.dll` (Windows) or `-dll dlls/server.so` (Linux) to the launch options of your dedicated server. If you use metamod, then add `gamedll dlls/server.dll` (or `.so`) to metamod's `config.ini` instead.
+2. Intall the official Half-Life dedicated server from [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD#Downloading_SteamCMD). The `steam_legacy` beta is needed for ReHLDS compatibility:
+   ```
+   login anonymous
+   app_set_config 90 mod cstrike
+   app_update 90 -beta steam_legacy validate
+   ```
+3. Copy the contents of `SevenKewp/build/output/` to `Half-Life/valve/` in your Half-Life dedicated server.
+4. Build and install [my fork of ReHLDS](https://github.com/wootguy/rehlds). This is required for some maps.
+    1. Windows users:
+        1. Open `rehlds/msvc/ReHLDS.sln`. Select `OK` if asked to retarget.
+        4. Optional: If you're setting up a public server, right-click the `ReHLDS` project and select `Properties` -> `Configuration Manager`. Change the `Active solution configuration` to `Release`. This gives much better performance.
+        5. Right click `Solution 'ReHLDS'` and select `Build Solution`
+        6. Copy the `.exe` and `.dll` files from `SevenKewp/rehlds/msvc/Debug` (or `Release`) over the existing files in your `Half-Life/` folder on the dedicated server. `Director.dll` is special and goes into `Half-Life/valve/dlls/` instead.
+1. Copy the contents of `SevenKewp/sevenkewp/` to `Half-Life/valve/` on your dedicated server. The `.cfg` files must be in `valve/`, but you can copy everything else to `valve_downloads/` if you want.
+1. Add `-dll dlls/server.dll` (Windows) or `-dll dlls/server.so` (Linux) to the launch options of your dedicated server. If you use metamod, then add `gamedll dlls/server.dll` (or `.so`) to metamod's `config.ini` instead.  
+1. Try it out! Example launch command:  
+   `hlds.exe +map c1a1 -dll dlls/server.dll +maxplayers 32 +developer 1 -heapsize 65536 -num_edicts 4096 +servercfg "" +log on`
 
-Currently, the mod is designed to run as a replacement server library for Half-Life, rather than a new mod with its own server list and client. The mod doesn't work with Sven Co-op clients yet.
+Currently, the mod is designed to run as a replacement server library for Half-Life, rather than a new mod with its own server list and client.
 
 # Building native plugins
 Native plugins are tightly integrated with the mod code and have full access to its classes and utilities. This makes native plugins powerful but easily broken by mod updates. Here's how to build them.
@@ -63,3 +76,58 @@ Sven Co-op maps often need converting before they can be used in Half-Life. Not 
 The script will fail on certain things like models with invalid textures. Those models need manual edits. Maps made for Sven Co-op 5.x sometimes need special attention (map moving/splitting to fit in the +/-4096 grid, texture resizing, etc.). The master branch of [bspguy](https://github.com/wootguy/bspguy) has porting tools to help with this.
 
 So far, I've had the only server hosting sven maps so I don't bother renaming files that the script modifies. That's a horrible practice and will cause crashes once other server ops start hosting without reading this section.
+
+# Setting up Visual Studio for development
+This section will set you up to develop/debug the mod and native plugins.  
+
+1. Set up the mod as described [here](https://github.com/wootguy/SevenKewp?tab=readme-ov-file#building-the-mod)
+2. Open `SevenKewp/build/sevenkewp.sln`
+3. Right click the `server` project and select `Properties`.  
+4. Set `General` -> `Output Directory` to the `dlls` path on your dedicated server (`Half-Life/valve/dlls`)  
+5. Set up the `Debugging` section:  
+    - Set `Command` to `hlds.exe`  
+    - Set `Command Arguments` to whatever you want to launch with.  
+       Example: `+map sc_test -dll dlls/server.dll -num_edicts 2047 -heapsize 65536 +maxplayers 32 +developer 1 +sv_cheats 1 +log on`  
+   - Set the `Working Directory` to your server path (`Half-Life/`). The path must end with a slash.
+6. Repeat step 4-5 for any other configurations you want to use (Debug/Release/...)  
+7. Right click the `server` project and select `Set as Startup Project`.  
+8. Press F5. The server should start with the debugger attached.
+
+<details>
+<summary>Visual aids</summary>  
+      
+![image](https://github.com/user-attachments/assets/5651c1b6-f9ef-48ff-b1b6-754221f12a6a)  
+![image](https://github.com/user-attachments/assets/b7078bac-b1a8-4487-8b28-bf02670522a9)
+  
+</details>
+
+## Creating a new plugin
+
+You can make a new plugin by duplicating an existing one and renaming the project inside `CMakeLists.txt`. A simple one to copy is `plugins/HLCoopMapPlugins/restriction/`. You may want to change the `hlcoop_setup_plugin()` line too depending on which type of plugin you're making. Map plugins use `"plugins/maps/"` and server plugins use `"plugins/server/"`. Map plugins function the same as server plugins except that they're loaded/unloaded by specific maps via .cfg files. Server plugins are always loaded.
+
+### Adding the plugin to the solution
+New plugins don't show up in Visual Studio until you reconfigure CMake. To do that:  
+
+1. Open the CMake GUI  
+2. Set the `source code` and `binaries` directories to `SevenKewp` and `SevenKewp/build` respectively.  
+3. Click `Configure`, and then `Generate`  
+4. If all goes well, Visual Studio should ask you to reload the projects and you'll see the new project. You may need to update your `CMakeLists.txt` file if there was an error.
+  <details>
+  <summary>Visual aid</summary>  
+      
+  ![image](https://github.com/user-attachments/assets/0d530473-3dee-4cb9-8c7e-d43567ed8782)
+
+  </details>
+
+## Troubleshooting
+| Problem | Solution |
+| --- | --- |
+| `Unable to load engine, image is corrupt` &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Check that the server.dll file is in the right place. Be sure you installed the `steam_legacy` version of hlds from SteamCMD. |
+| Crash on startup or when loading plugins | Right click the `Solution` and choose `Rebuild Solution`. This is necessary when changing build modes or updating APIs. Make sure the .dll files are in the right place, too. Each mode (Debug/Release/...) has a separate configuration you need to configure. |
+| Dead on join and can't respawn | Make sure `sevenkewp/server.cfg` was copied to the `valve/` folder on your dedicated server. CFG files must be in `valve/` |
+
+## Tips
+
+- Don't use the `build_game_and_plugins` script while developing. It discards all local changes not pushed to github.
+- Change the startup project to the one you're actively working on. This way, building with F5 will pick up changes and build only what's needed to test that project.
+- ASAN is great for debugging memory corruption (crashes that make no sense or have corrupted stacks pointing to nowhere). Enable in the project setting `C/C++` -> `General` -> `Enable Address Sanitizer`. The server will run much slower so it's not something you want to have on normally.
