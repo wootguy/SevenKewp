@@ -139,8 +139,6 @@ struct client_info_t {
 	int max_packet_entities;
 };
 
-#define CHAT_INTERVAL 1.0f
-
 class EXPORT CBasePlayer : public CBaseMonster
 {
 public:

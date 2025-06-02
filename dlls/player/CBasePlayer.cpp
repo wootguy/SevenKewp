@@ -2313,6 +2313,8 @@ void CBasePlayer::UpdateStatusBar()
 		if (lookingAtStatusEnt) {
 			m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
 		}
+
+		CALL_HOOKS_VOID(pfnClientStatusBar, pEntity, this, sbuf1, sbuf0, SBAR_STRING_SIZE);
 	}
 	
 	if ( !lookingAtStatusEnt && m_flStatusBarDisappearDelay > gpGlobals->time )
@@ -4580,6 +4582,8 @@ void CBasePlayer :: UpdateClientData( void )
 			if (g_pGameRules->IsMultiplayer()) {
 				FireTargets("game_playerjoin", this, this, USE_TOGGLE, 0);
 			}
+
+			CALL_HOOKS_VOID(pfnClientJoin, this);
 		}
 
 		FireTargets( "game_playerspawn", this, this, USE_TOGGLE, 0 );

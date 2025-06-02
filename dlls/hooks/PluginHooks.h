@@ -86,6 +86,15 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// called when a player is fully connected to the server and is about to spawn
 	HOOK_RETURN_DATA (*pfnClientPutInServer)(CBasePlayer* pPlayer);
 
+	// called after a player has fully joined the server with an initialized HUD
+	// Players cannot receive chat messages before this.
+	HOOK_RETURN_DATA(*pfnClientJoin)(CBasePlayer* pPlayer);
+
+	// called before a status bar update is sent to a player
+	// override the text in line1/line2 to change displayed text
+	// bufferSize = char buffer size for each line
+	HOOK_RETURN_DATA(*pfnClientStatusBar)(CBaseEntity* pTarget, CBasePlayer* pLooker, char* line1, char* line2, int bufferSize);
+
 	// called when a player changes model, name, colors, etc.
 	HOOK_RETURN_DATA (*pfnClientUserInfoChanged)(edict_t* pPlayer, char* infobuffer);
 

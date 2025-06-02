@@ -10,6 +10,9 @@ PluginManager g_pluginManager;
 
 Plugin* g_initPlugin; // the plugin currently being initialized
 
+// increases whenever plugins are loaded/updated
+int g_plugin_load_counter;
+
 #define MAX_PLUGIN_CVARS 256
 #define MAX_PLUGIN_COMMANDS 256
 #define MAX_PLUGIN_ENT_CALLBACKS 256
@@ -132,6 +135,8 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 		}
 		return false;
 	}
+
+	g_plugin_load_counter++;
 
 	return true;
 }
@@ -764,8 +769,9 @@ void PluginManager::ClearEntityCallbacks() {
 	g_plugin_ent_callback_count = 0;
 }
 
-bool CrossPluginFunctionHandle_internal(const char* pluginName, const char* funcName, void*& func, int& pluginId) {	
-	if (pluginName && func) {
+bool CrossPluginFunctionHandle_internal(const char* pluginName, const char* funcName, void*& func,
+	int& pluginId, int& plugin_load_counter) {
+	if (pluginName && func && plugin_load_counter == g_plugin_load_counter) {
 		// already loaded. Check that it's still valid
 		for (int i = 0; i < (int)g_pluginManager.plugins.size(); i++) {
 			const Plugin& plugin = g_pluginManager.plugins[i];
@@ -780,6 +786,7 @@ bool CrossPluginFunctionHandle_internal(const char* pluginName, const char* func
 
 	func = NULL;
 	pluginId = -1;
+	plugin_load_counter = g_plugin_load_counter;
 
 	if (!pluginName)
 		return false;

@@ -115,7 +115,7 @@ public:
 
 extern PluginManager g_pluginManager;
 
-EXPORT bool CrossPluginFunctionHandle_internal(const char* pluginName, const char* funcName, void*& func, int& pluginId);
+EXPORT bool CrossPluginFunctionHandle_internal(const char* pluginName, const char* funcName, void*& func, int& pluginId, int& plugin_load_counter);
 
 template <typename Ret, typename... Args>
 struct PluginFuncHandle {
@@ -125,9 +125,11 @@ struct PluginFuncHandle {
 	void* func;              // raw function pointer
 	const char* pluginName;
 	const char* funcName;
+	int last_plugin_load_counter; // prevent crash from updated plugins (plugins retain ID for commands/cvars)
 
 	PluginFuncHandle(const char* pluginName, const char* funcName)
 		: pluginId(-1), func(nullptr), pluginName(pluginName), funcName(funcName) {
+		last_plugin_load_counter = -1;
 	}
 
 	// For non-void return types
@@ -150,7 +152,7 @@ struct PluginFuncHandle {
 	}
 
 	bool valid() {
-		return CrossPluginFunctionHandle_internal(pluginName, funcName, func, pluginId);
+		return CrossPluginFunctionHandle_internal(pluginName, funcName, func, pluginId, last_plugin_load_counter);
 	}
 };
 
