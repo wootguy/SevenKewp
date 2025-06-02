@@ -133,6 +133,10 @@ void CDecal::StaticDecal(void)
 	// TODO: selectively send decal messages when clients join instead
 	// of calling the engine function which does that automatically
 	if (entityIndex < MAX_LEGACY_CLIENT_ENTS) {
+		if (pev->skin >= 222) {
+			ALERT(at_error, "Attempted to draw invalid decal index %d\n", pev->skin);
+			pev->skin = 0;
+		}
 		g_engfuncs.pfnStaticDecal(pev->origin, (int)pev->skin, entityIndex, modelIndex);
 	}
 	else {

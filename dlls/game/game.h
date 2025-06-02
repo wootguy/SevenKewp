@@ -83,6 +83,7 @@ EXPORT extern cvar_t	npc_dropweapons; // enable/disable npcs dropping weapons
 EXPORT extern cvar_t	mp_bigmap; // precaches models/sounds so common effects can work outside +/-4096
 EXPORT extern cvar_t	mp_max_pvs_corpses; // limit number of corpses in a VIS zone
 EXPORT extern cvar_t	mp_weaponhands; // set default weapon model hands (hl, op4, bshift)
+EXPORT extern cvar_t	mp_chat_interval; // suppress player chats faster than this (seconds)
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

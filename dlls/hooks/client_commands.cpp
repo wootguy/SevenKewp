@@ -197,7 +197,7 @@ void Host_Say(edict_t* pEntity, int teamonly)
 	uint32_t mutes = 0;
 	CALL_HOOKS_VOID(pfnChatMessage, player, (const char**)&p, teamonly, mutes);
 
-	player->m_flNextChatTime = gpGlobals->time + CHAT_INTERVAL;
+	player->m_flNextChatTime = gpGlobals->time + mp_chat_interval.value;
 
 	UTIL_ClientSay(player, p, NULL, teamonly, NULL, mutes);
 
