@@ -17,11 +17,11 @@ function(hlcoop_setup_plugin OUTPUT_PATH)
 		#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -fvisibility=hidden -static-libstdc++ -static-libgcc -g" PARENT_SCOPE)
 		#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -static-libgcc -g" PARENT_SCOPE)
 		
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -fvisibility=hidden -g ${ASAN_CFLAGS}" PARENT_SCOPE)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -std=c++11 -fvisibility=hidden -fno-omit-frame-pointer -g ${ASAN_CFLAGS}" PARENT_SCOPE)
 		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 ${DEBUG_WARN_FLAGS}" PARENT_SCOPE)
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OPT_FLAG} -w" PARENT_SCOPE)
 		
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -g ${ASAN_CFLAGS}" PARENT_SCOPE)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -g -fno-omit-frame-pointer ${ASAN_CFLAGS}" PARENT_SCOPE)
 		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 ${DEBUG_WARN_FLAGS}" PARENT_SCOPE)
 		set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${OPT_FLAG} -w" PARENT_SCOPE)
 		
