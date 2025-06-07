@@ -1,6 +1,8 @@
 #include "rehlds.h"
 #include "util.h"
 #include "PluginManager.h"
+
+#undef MAX_PACKET_ENTITIES
 #include "CBasePlayer.h"
 
 void rehlds_SendBigMessage_internal(int msgType, void* data, int sz, int playerindex) {

@@ -429,7 +429,6 @@ public:
 		pev->movetype = MOVETYPE_NOCLIP; // interpolate
 
 		MAKE_VECTORS(h_parent->pev->angles);
-		Vector attachUp = gpGlobals->v_up;
 
 		// rotate position around target
 		Vector newOri = m_selfStartOrigin + (h_parent->pev->origin - m_attachStartOrigin);

@@ -769,7 +769,7 @@ CBasePlayer* UTIL_PlayerBySearchString(const char* search, CBasePlayer* ignorePl
 		std::string lowerName = toLowerCase(plr->DisplayName());
 		std::string lowerId = toLowerCase(plr->GetSteamID());
 
-		if (lowerId == lowerSearch || lowerName.find(lowerSearch) != -1) {
+		if (lowerId == lowerSearch || lowerName.find(lowerSearch) != std::string::npos) {
 			if (retPlr) {
 				multipleMatches = true;
 				return NULL;
@@ -2335,7 +2335,6 @@ void PrintEntindexStats(bool showCounts) {
 		HashMap<int> normalEnts;
 		int numFreeNorm = 0;
 
-		edict_t* edicts = ENT(0);
 		for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++) {
 			CBaseEntity* ent = CBaseEntity::Instance(INDEXENT(i));
 
@@ -2428,7 +2427,6 @@ void UTIL_CleanupEntities(int removeCount) {
 	std::vector<CBaseMonster*> corpses;
 
 	CBaseEntity* ent = NULL;
-	float bestCorpseTime = FLT_MAX;
 	while ((ent = UTIL_FindEntityByClassname(ent, "monster_*")) != NULL) {
 		CBaseMonster* mon = ent->MyMonsterPointer();
 
@@ -2443,11 +2441,11 @@ void UTIL_CleanupEntities(int removeCount) {
 		return a->m_killedTime < b->m_killedTime;
 	});
 
-	for (int i = 0; i < removeCount && i < corpses.size(); i++) {
+	for (int i = 0; i < removeCount && i < (int)corpses.size(); i++) {
 		corpses[i]->SUB_StartFadeOut();
 	}
 
-	ALERT(at_console, "Faded %d old corpses\n", V_min(corpses.size(), removeCount));
+	ALERT(at_console, "Faded %d old corpses\n", V_min((int)corpses.size(), removeCount));
 }
 
 edict_t* CREATE_NAMED_ENTITY(string_t cname) {
