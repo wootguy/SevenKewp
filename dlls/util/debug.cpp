@@ -386,15 +386,3 @@ bool ModelIsValid(entvars_t* edict, studiohdr_t* header) {
 
 	return true;
 }
-
-void write_perf_marker(const char* msg) {
-#ifndef WIN32
-	if (mp_perf.value) {
-		int fd = open("/sys/kernel/debug/tracing/trace_marker", O_WRONLY);
-		if (fd >= 0) {
-			write(fd, msg, strlen(msg));
-			close(fd);
-		}
-	}
-#endif
-}

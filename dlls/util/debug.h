@@ -82,6 +82,3 @@ EXPORT void clearNetworkMessageHistory();
 
 // for debugging
 bool ModelIsValid(entvars_t* edict, studiohdr_t* header);
-
-// writes a trace_marker for perf (Linux)
-void write_perf_marker(const char* msg);
