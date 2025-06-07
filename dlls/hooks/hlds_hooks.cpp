@@ -486,7 +486,6 @@ uint64_t g_levelChangePluginTime = 0; // time spent in level change plugin hooks
 
 void ServerDeactivate( void )
 {
-	write_perf_marker("level_change_start");
 	g_levelChangeTime = getEpochMillis();
 
 	// It's possible that the engine will call this function more times than is necessary
@@ -893,12 +892,11 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	g_levelChangePluginTime += getEpochMillis() - hookStartTime;
 
 	if (mp_perf.value && g_levelChangeTime) {
-		write_perf_marker("level_change_end");
 		uint64_t now = getEpochMillis();
 		uint32_t totalTime = now - g_levelChangeTime;
 		uint32_t gameTime = totalTime - g_levelChangePluginTime;
 		uint32_t pluginTime = g_levelChangePluginTime;
-		ALERT(at_logged, "Level change finished in %u ms (%u game, %u plugins)", totalTime, gameTime, pluginTime);
+		ALERT(at_logged, "Level change finished in %ums (%ums game, %ums plugins)\n", totalTime, gameTime, pluginTime);
 	}
 }
 
