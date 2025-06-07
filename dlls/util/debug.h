@@ -66,6 +66,8 @@ std::string getLogTimeStr();
 
 void writeDebugLog(std::ofstream& outFile, std::string lastLogName, std::string prefix, std::string line);
 
+EXPORT void writeDebugLog(std::string prefix, std::string line);
+
 EXPORT const char* msgDestStr(int msg_dest);
 
 EXPORT const char* msgTypeStr(int msg_type);
@@ -80,3 +82,6 @@ EXPORT void clearNetworkMessageHistory();
 
 // for debugging
 bool ModelIsValid(entvars_t* edict, studiohdr_t* header);
+
+// writes a trace_marker for perf (Linux)
+void write_perf_marker(const char* msg);
