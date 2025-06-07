@@ -5,6 +5,12 @@
 #include <queue>
 #include <fstream>
 
+#ifndef WIN32
+#include <fcntl.h>
+#include <unistd.h>
+#include <cstring>
+#endif
+
 msg_info g_lastMsg;
 char g_msgStrPool[512];
 int g_nextStrOffset = 0;
@@ -96,6 +102,11 @@ void writeDebugLog(std::ofstream& outFile, std::string lastLogName, std::string 
 	}
 
 	outFile << getLogTimeStr() << line << "\n";
+	outFile.flush();
+}
+
+void writeDebugLog(std::string prefix, std::string line) {
+	writeDebugLog(g_debugFile, g_debugLogName, prefix, line);
 }
 
 const char* msgDestStr(int msg_dest) {
@@ -374,4 +385,16 @@ bool ModelIsValid(entvars_t* edict, studiohdr_t* header) {
 	}
 
 	return true;
+}
+
+void write_perf_marker(const char* msg) {
+#ifndef WIN32
+	if (mp_perf.value) {
+		int fd = open("/sys/kernel/debug/tracing/trace_marker", O_WRONLY);
+		if (fd >= 0) {
+			write(fd, msg, strlen(msg));
+			close(fd);
+		}
+	}
+#endif
 }

@@ -18,6 +18,7 @@ extern CGraph WorldGraph;
 extern CSoundEnt* pSoundEnt;
 DLL_GLOBAL edict_t* g_pBodyQueueHead;
 extern DLL_GLOBAL	int			gDisplayTitle;
+extern uint64_t g_levelChangePluginTime;
 
 bool g_freeRoam;
 
@@ -363,7 +364,9 @@ void CWorld::Precache(void)
 		CVAR_SET_FLOAT("mp_defaultteam", 0);
 	}
 
+	uint64_t hookStartTime = getEpochMillis();
 	CALL_HOOKS_VOID(pfnMapInit);
+	g_levelChangePluginTime += getEpochMillis() - hookStartTime;
 }
 
 
