@@ -271,7 +271,7 @@ void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx,
 			Vector attachOri, attachAngles;
 			GET_ATTACHMENT(ent, attachment, attachOri, attachAngles);
 			Vector entOri = ent->v.origin + attachOri;
-			UTIL_BeamPoints(INDEXENT(entindex)->v.origin, point, modelIdx, frameStart, framerate, life,
+			UTIL_BeamPoints(entOri, point, modelIdx, frameStart, framerate, life,
 				width, noise, color, speed, msgMode, msgOrigin, targetEnt);
 		}
 	}

@@ -242,7 +242,6 @@ void CAmbientGeneric::RampThink(void)
 		// forcing a looped sound to play once, or an unlooped sound to loop
 		float endTime = m_lastPlayTime + (m_wavInfo.durationMillis / 1000.0f);
 		float timeLeft = endTime - g_engfuncs.pfnTime();
-		float attn = m_isLinear ? 0.0f : m_flAttenuation;
 
 		if (m_forceLoop && m_fActive) {
 			if (!m_isLinear) {

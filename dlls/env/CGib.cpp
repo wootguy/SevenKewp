@@ -241,7 +241,7 @@ void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, const char* gibModel
 }
 
 void CGib::SpawnRandomMergedGibs(entvars_t* pevVictim, int cGibs, int gibModel, int bodyGroupSkip) {
-	if (gibModel < 0 || gibModel >= ARRAY_SZ(g_gibInfo)) {
+	if (gibModel < 0 || gibModel >= (int)ARRAY_SZ(g_gibInfo)) {
 		return;
 	}
 

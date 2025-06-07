@@ -652,7 +652,6 @@ int PrecacheBspModels(bool serverSideModels) {
 
 	edict_t* edicts = ENT(0);
 
-	int numPrecached = 0;
 	StringSet uniqueBspModels;
 
 	for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities; i++)
@@ -899,7 +898,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		uint32_t totalTime = now - g_levelChangeTime;
 		uint32_t gameTime = totalTime - g_levelChangePluginTime;
 		uint32_t pluginTime = g_levelChangePluginTime;
-		ALERT(at_console, "Level change finished in %u ms (%u game, %u plugins)", totalTime, gameTime, pluginTime);
+		ALERT(at_logged, "Level change finished in %u ms (%u game, %u plugins)", totalTime, gameTime, pluginTime);
 	}
 }
 
@@ -1060,7 +1059,6 @@ void ClientPrecache( void )
 	//PRECACHE_SOUND_ENT(NULL, "player/pl_pain7.wav");
 
 	PRECACHE_MODEL_ENT(NULL, "models/player.mdl");
-	PRECACHE_MODEL_ENT(NULL, "models/player_sc.mdl");
 	
 #ifdef CLIENT_DLL
 	// geiger sounds (used by client only, played automatically when near radioactive trigger_hurt)

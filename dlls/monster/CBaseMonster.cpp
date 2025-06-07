@@ -1398,7 +1398,7 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 	}
 
 	// unsolidify push fields
-	for (int i = 0; i < nearbyPushes.size(); i++) {
+	for (int i = 0; i < (int)nearbyPushes.size(); i++) {
 		nearbyPushes[i]->pev->solid = SOLID_TRIGGER;
 		nearbyPushes[i]->pev->movetype = MOVETYPE_NONE;
 		UTIL_SetOrigin(nearbyPushes[i]->pev, nearbyPushes[i]->pev->origin);
@@ -8193,7 +8193,6 @@ void CBaseMonster::CleanupLocalCorpses() {
 	std::vector<CBaseMonster*> corpses;
 
 	CBaseEntity* ent = NULL;
-	float bestCorpseTime = FLT_MAX;
 	while ((ent = UTIL_FindEntityByClassname(ent, "monster_*")) != NULL) {
 		CBaseMonster* mon = ent->MyMonsterPointer();
 
@@ -8212,7 +8211,7 @@ void CBaseMonster::CleanupLocalCorpses() {
 		});
 
 		int removeCount = corpses.size() - mp_max_pvs_corpses.value;
-		for (int i = 0; i < removeCount && i < corpses.size(); i++) {
+		for (int i = 0; i < removeCount && i < (int)corpses.size(); i++) {
 			corpses[i]->SUB_StartFadeOut();
 		}
 		
