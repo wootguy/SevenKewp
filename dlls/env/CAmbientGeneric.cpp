@@ -935,15 +935,25 @@ void CAmbientGeneric::KeyValue(KeyValueData* pkvd)
 }
 
 void CAmbientGeneric::InitSoundForNewJoiner(edict_t* target) {
-	if (m_isWav && m_fActive && m_fLooping) {
-		char* szSoundFile = (char*)STRING(pev->message);
-		int pitch = m_dpv.pitch;
-		int vol = m_dpv.vol;
+	if (m_isLinear)
+		return; // these are constantly updated and so don't need manual restarting
+	if (!m_isWav)
+		return; // mp3 audio is initiliazed elsewhere, don't play here
 
+	float playTime = (g_engfuncs.pfnTime() - m_lastPlayTime) / (m_wavInfo.durationMillis / 1000.0f);
+	bool shouldRestartOnceSound = !m_wavInfo.isLooped && m_lastPlayTime && playTime < 0.5f;
+
+	bool isActuallyLooped = m_forceLoop || (m_wavInfo.isLooped && !m_forceOnce);
+	bool shouldRestartLoopSound = isActuallyLooped && m_fActive;
+
+	char* szSoundFile = (char*)STRING(pev->message);
+	int pitch = m_dpv.pitch;
+	int vol = m_dpv.vol;
+
+	if (shouldRestartLoopSound || shouldRestartOnceSound) {
 		UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
 			(vol * 0.01), m_flAttenuation, SND_CHANGE_VOL, pitch, target);
 	}
-	// mp3 audio is initiliazed elsewhere, don't play here
 }
 
 void CAmbientGeneric::UpdateOnRemove(void) {

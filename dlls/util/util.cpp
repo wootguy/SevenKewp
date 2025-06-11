@@ -39,6 +39,7 @@
 #include "debug.h"
 #include "hlds_hooks.h"
 #include "CBaseDMStart.h"
+#include "CAmbientGeneric.h"
 
 #include <fstream>
 #include <sys/types.h>
@@ -3198,4 +3199,32 @@ Vector UTIL_UnwindPoint(Vector pos, Vector angles)
 	pos = matMultVector(rollRotMat, pos);
 	*/
 	return pos;
+}
+
+
+void UTIL_ResetVoiceChannel(CBasePlayer* plr) {
+	if (!plr)
+		return;
+
+	// TODO: this doesn't always work. Rapidly toggle thirdperson around a player using mic and
+	// it should start stuttering. The distance you are from the player affects stuttering.
+	// You can slowly walk back and forth over an invisible boundary to fix/break the mic audio.
+	/*
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* otherp = UTIL_PlayerByIndex(i);
+
+		if (otherp) {
+			uint16_t dat = (otherp->entindex() << 3) | CHAN_NETWORKVOICE_BASE;
+			MESSAGE_BEGIN(MSG_ONE, SVC_STOPSOUND, NULL, plr->edict());
+			WRITE_SHORT(dat);
+			MESSAGE_END();
+		}
+	}
+	*/
+
+	MESSAGE_BEGIN(MSG_ONE, SVC_STUFFTEXT, NULL, plr->edict());
+	WRITE_STRING("stopsound\n");
+	MESSAGE_END();
+
+	plr->m_initSoundTime = gpGlobals->time + 0.1f; // restart ambient sounds
 }

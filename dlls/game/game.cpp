@@ -81,7 +81,7 @@ cvar_t	mp_bigmap ={"mp_bigmap", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_max_pvs_corpses ={"mp_max_pvs_corpses", "32", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_weaponhands ={"mp_weaponhands", "", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_chat_interval ={"mp_chat_interval", "1.0", FCVAR_SERVER, 0, 0 };
-cvar_t	mp_perf ={"mp_perf", "1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_perf ={"mp_perf", "0", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };

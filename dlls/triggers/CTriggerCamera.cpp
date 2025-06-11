@@ -101,6 +101,8 @@ void CTriggerCamera::TogglePlayerView(CBasePlayer* plr, bool enabled) {
 
 	SET_VIEW(plr->edict(), enabled ? edict() : plr->edict());
 	plr->m_hActiveCamera = enabled ? this : NULL;
+
+	UTIL_ResetVoiceChannel(plr);
 }
 
 void CTriggerCamera::TogglePlayerViews(bool enabled) {
