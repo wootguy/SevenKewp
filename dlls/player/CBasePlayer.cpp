@@ -3571,6 +3571,9 @@ void CBasePlayer::Spawn( void )
 	// don't play suit sounds for items given when spawning
 	SetSuitUpdate(NULL, FALSE, 0);
 
+	// for when mic audio breaks due to teleports or something else I don't understand yet
+	UTIL_ResetVoiceChannel(this);
+
 	CALL_HOOKS_VOID(pfnPlayerSpawn, this);
 }
 

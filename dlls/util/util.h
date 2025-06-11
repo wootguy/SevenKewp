@@ -913,4 +913,6 @@ EXPORT void UTIL_RespawnAllPlayers(bool moveLivingPlayers=true, bool respawnDead
 EXPORT Vector UTIL_RotatePoint(Vector pos, Vector angles);
 EXPORT Vector UTIL_UnwindPoint(Vector pos, Vector angles);
 
-
+// stop currently playing voice audio for this player to fix stuttering caused by cameras,
+// teleports, new VIS areas, etc.
+EXPORT void UTIL_ResetVoiceChannel(CBasePlayer* plr);
