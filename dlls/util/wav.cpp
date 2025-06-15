@@ -221,7 +221,7 @@ WavInfo getWaveFileInfo(const char* path) {
 			// a file after updating it. Then if some people got the old file, they will crash and others
 			// will be like "idk works for me" and people will have to delete their hl folder to fix this.
 			// Or worse, they'll just live with it for years because it's just a few maps they crash on.
-			ALERT(at_error, "Server shutting down to prevent distribution of the broken file.\n", path);
+			ALERT(at_error, "Server shutting down to prevent distribution of the broken file: %s\n", path);
 			g_engfuncs.pfnServerCommand("quit\n");
 			g_engfuncs.pfnServerExecute();
 		}
@@ -229,16 +229,16 @@ WavInfo getWaveFileInfo(const char* path) {
 	else {
 		switch (ret) {
 		case WAVERR_INVALID_HEADER:
-			ALERT(at_error, "Invalid WAVE header: %s\n", fpath);
+			ALERT(at_error, "Invalid WAVE header: %s\n", fpath.c_str());
 			break;
 		case WAVERR_INVALID_FMT:
-			ALERT(at_error, "Invalid WAVE fmt chunk: %s\n", fpath);
+			ALERT(at_error, "Invalid WAVE fmt chunk: %s\n", fpath.c_str());
 			break;
 		case WAVERR_INVALID_CUE:
-			ALERT(at_error, "Invalid WAVE cue chunk: %s\n", fpath);
+			ALERT(at_error, "Invalid WAVE cue chunk: %s\n", fpath.c_str());
 			break;
 		default:
-			ALERT(at_error, "Invalid WAVE: %s\n", fpath);
+			ALERT(at_error, "Invalid WAVE: %s\n", fpath.c_str());
 			break;
 		}
 	}

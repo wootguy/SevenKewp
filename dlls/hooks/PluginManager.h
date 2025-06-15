@@ -152,7 +152,11 @@ struct PluginFuncHandle {
 	}
 
 	bool valid() {
-		return CrossPluginFunctionHandle_internal(pluginName, funcName, func, pluginId, last_plugin_load_counter);
+		bool ret = CrossPluginFunctionHandle_internal(pluginName, funcName, func, pluginId, last_plugin_load_counter);
+		if (!ret) {
+			ALERT(at_error, "Cross-plugin function not found: %s -> %s\n", pluginName, funcName);
+		}
+		return ret;
 	}
 };
 
