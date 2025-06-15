@@ -803,10 +803,6 @@ bool CrossPluginFunctionHandle_internal(const char* pluginName, const char* func
 		}
 	}
 
-	if (!func) {
-		ALERT(at_console, "Cross-plugin function not found: %s -> %s\n", pluginName, funcName);
-	}
-
 	return func != NULL;
 }
 
