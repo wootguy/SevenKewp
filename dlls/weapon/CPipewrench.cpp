@@ -295,7 +295,12 @@ bool CPipewrench::Swing(const bool bFirst)
 				}
 			}
 
-			pEntity->TraceAttack(m_pPlayer->pev, GetDamage(flDamage), gpGlobals->v_forward, &tr, DMG_CLUB);
+			if (repairable) {
+				pEntity->TakeHealth(-GetDamage(flDamage), DMG_CLUB, pEntity->pev->max_health);
+			}
+			else {
+				pEntity->TraceAttack(m_pPlayer->pev, GetDamage(flDamage), gpGlobals->v_forward, &tr, DMG_CLUB);
+			}
 
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}

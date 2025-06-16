@@ -92,6 +92,12 @@ void CAmbientGeneric::Spawn(void)
 		if (FBitSet(pev->spawnflags, AMBIENT_SOUND_EVERYWHERE))
 		{
 			m_flAttenuation = ATTN_NONE;
+
+			// disable falloff
+			if (m_playmode == PLAYMODE_LOOP_LINEAR)
+				m_playmode = PLAYMODE_LOOP;
+			if (m_playmode == PLAYMODE_ONCE_LINEAR)
+				m_playmode = PLAYMODE_ONCE;
 		}
 		else if (FBitSet(pev->spawnflags, AMBIENT_SOUND_SMALLRADIUS))
 		{
