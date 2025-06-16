@@ -30,14 +30,17 @@ void CFuncTankGun::Fire(const Vector& barrelEnd, const Vector& forward, entvars_
 				{
 				case TANK_BULLET_9MM:
 					FireBullets(1, barrelEnd, forward, gTankSpread[m_spread], 4096, BULLET_MONSTER_9MM, 1, m_iBulletDamage, pevAttacker);
+					PLAY_DISTANT_SOUND(edict(), DISTANT_357);
 					break;
 
 				case TANK_BULLET_MP5:
 					FireBullets(1, barrelEnd, forward, gTankSpread[m_spread], 4096, BULLET_MONSTER_MP5, 1, m_iBulletDamage, pevAttacker);
+					PLAY_DISTANT_SOUND(edict(), DISTANT_357);
 					break;
 
 				case TANK_BULLET_12MM:
 					FireBullets(1, barrelEnd, forward, gTankSpread[m_spread], 4096, BULLET_MONSTER_12MM, 1, m_iBulletDamage, pevAttacker);
+					PLAY_DISTANT_SOUND(edict(), DISTANT_357);
 					break;
 
 				default:
@@ -48,9 +51,8 @@ void CFuncTankGun::Fire(const Vector& barrelEnd, const Vector& forward, entvars_
 			CFuncTank::Fire(barrelEnd, forward, pevAttacker);
 		}
 	}
-	else
+	else {
 		CFuncTank::Fire(barrelEnd, forward, pevAttacker);
-
-	PLAY_DISTANT_SOUND(edict(), DISTANT_357);
+	}
 }
 

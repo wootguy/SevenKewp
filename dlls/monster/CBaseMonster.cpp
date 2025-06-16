@@ -4732,7 +4732,7 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	GiveScorePoints(pevAttacker, flTake);
 
 	// do the damage
-	pev->health = V_min(pev->max_health, pev->health - flTake);
+	pev->health = pev->health - flTake;
 
 	// HACKHACK Don't kill monsters in a script.  Let them break their scripts first
 	if (m_MonsterState == MONSTERSTATE_SCRIPT)

@@ -164,6 +164,11 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 		pNewWeapon->pev->renderfx = pev->renderfx;
 		pNewWeapon->pev->dmg = pev->dmg;
 		pNewWeapon->pev->effects |= EF_NODRAW;// invisible for now
+
+		CBasePlayerItem* wep = (CBasePlayerItem*)pNewWeapon->GetWeaponPtr();
+		if (wep)
+			wep->m_flCustomRespawnTime = m_flCustomRespawnTime;
+		
 		pNewWeapon->SetTouch(NULL);// no touch
 		pNewWeapon->SetThink(&CBasePlayerItem::AttemptToMaterialize);
 
