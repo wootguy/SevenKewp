@@ -44,8 +44,9 @@ void CShower::Think(void)
 	pev->speed -= 0.1;
 	if (pev->speed > 0)
 		pev->nextthink = gpGlobals->time + 0.1;
-	else
+	else {
 		UTIL_Remove(this);
+	}
 	pev->flags &= ~FL_ONGROUND;
 }
 

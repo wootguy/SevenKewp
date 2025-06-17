@@ -4611,6 +4611,7 @@ void CBaseMonster::Killed(entvars_t* pevAttacker, int iGib)
 	if (pOwner)
 	{
 		pOwner->DeathNotice(pev);
+		pev->owner = NULL;
 	}
 
 	if (ShouldGibMonster(iGib))
@@ -8173,13 +8174,7 @@ int CBaseMonster::IRelationship(CBaseEntity* pTarget)
 	return CBaseToggle::IRelationship(pTarget);
 }
 
-void CBaseMonster::UpdateOnRemove(void) {
-	// notify owner so more monsters can be spawned
-	CBaseEntity* pOwner = CBaseEntity::Instance(pev->owner);
-	if (pOwner) {
-		pOwner->DeathNotice(pev);
-	}
-	
+void CBaseMonster::UpdateOnRemove(void) {	
 	// doing this breaks/crashes maps (frightmanor), need to ripent
 	/*
 	pev->health = 0;
