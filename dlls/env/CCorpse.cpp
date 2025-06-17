@@ -26,6 +26,11 @@ void CopyToBodyQue(entvars_t* pev)
 	if ((pev->effects & EF_NODRAW) || pev->modelindex == 0)
 		return;
 
+	if (!g_pBodyQueueHead) {
+		ALERT(at_error, "Body queue is NULL. Can't create corpse.\n");
+		return;
+	}
+
 	entvars_t* pevHead = VARS(g_pBodyQueueHead);
 
 	pevHead->angles = pev->angles;

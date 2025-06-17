@@ -189,9 +189,9 @@ void CGrenade::Detonate( void )
 	FCheckAITrigger();
 	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
 	CBaseEntity* pOwner = CBaseEntity::Instance(pev->owner);
-	if (pOwner) {
+	if (pOwner && !m_deathNoticeSent) {
 		pOwner->DeathNotice(pev);
-		pev->owner = NULL;
+		m_deathNoticeSent = true;
 	}
 
 	TraceResult tr;

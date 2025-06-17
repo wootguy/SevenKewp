@@ -441,20 +441,24 @@ void CMonsterMaker::MakeMonster( void )
 
 	DispatchSpawnGame( pent );
 
-	pevCreate = &pent->v; // ent may have been relocated
-	pevCreate->owner = edict();
+	if (pent) {
+		// ent may have been relocated
+		pevCreate = &pent->v;
+		pevCreate->owner = edict();
 
-	if (pev->body > 0) {
-		pent->v.body = pev->body;
-	}
+		if (pev->body > 0) {
+			pent->v.body = pev->body;
+		}
 
-	if ( !FStringNull( pev->netname ) )
-	{
-		// if I have a netname (overloaded), give the child monster that name as a targetname
-		pevCreate->targetname = pev->netname;
-	}
+		if (!FStringNull(pev->netname))
+		{
+			// if I have a netname (overloaded), give the child monster that name as a targetname
+			pevCreate->targetname = pev->netname;
+		}
 
-	m_cLiveChildren++;// count this monster
+		m_cLiveChildren++;// count this monster
+	} // else deleted as soon as it spawned
+
 	m_cNumMonsters--;
 
 	if ( m_cNumMonsters == 0 )
