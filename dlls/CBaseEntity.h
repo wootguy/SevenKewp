@@ -179,6 +179,8 @@ public:
 	string_t m_soundReplacementKey; // path specified in entity keyvalue
 	string_t m_soundReplacementPath; // normalized file system path and key for g_replacementFiles
 
+	bool m_deathNoticeSent; // true if monster already sent a death notice to its owner
+
 	// fundamental callbacks
 	void (CBaseEntity ::* m_pfnThink)(void);
 	void (CBaseEntity ::* m_pfnTouch)(CBaseEntity* pOther);
