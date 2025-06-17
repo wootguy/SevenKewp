@@ -439,7 +439,9 @@ void CMonsterMaker::MakeMonster( void )
 	// copy prisoner/script flags to child
 	pevCreate->spawnflags |= pev->spawnflags & (SF_MONSTERMAKER_PRISONER | SF_MONSTERMAKER_WAIT_SCRIPT);
 
-	DispatchSpawn( ENT( pevCreate ) );
+	DispatchSpawnGame( pent );
+
+	pevCreate = &pent->v; // ent may have been relocated
 	pevCreate->owner = edict();
 
 	if (pev->body > 0) {
