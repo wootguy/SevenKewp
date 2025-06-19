@@ -472,9 +472,7 @@ int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 		}
 	}
 
-	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
-	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
-	fTookDamage = CBaseMonster::TakeDamage(pevInflictor, pevAttacker, (int)flDamage, bitsDamageType);
+	fTookDamage = CBaseMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 
 	// reset damage time countdown for each type of time based damage player just sustained
 
@@ -2169,8 +2167,8 @@ void CBasePlayer::UpdateStatusBar()
 			strcpy_safe( sbuf1, "1 %p1", SBAR_STRING_SIZE );
 			strcpy_safe( sbuf0, "2 Health: %i2\n3 Armor: %i3", SBAR_STRING_SIZE);
 
-			newSBarState[ SBAR_ID_TARGETHEALTH ] = pEntity->pev->health;
-			newSBarState[ SBAR_ID_TARGETARMOR ] = pEntity->pev->armorvalue;
+			newSBarState[ SBAR_ID_TARGETHEALTH ] = clampi(pEntity->pev->health, INT16_MIN, INT16_MAX);
+			newSBarState[ SBAR_ID_TARGETARMOR ] = clampi(pEntity->pev->armorvalue, INT16_MIN, INT16_MAX);
 
 			lookingAtStatusEnt = true;
 		}
@@ -2213,7 +2211,7 @@ void CBasePlayer::UpdateStatusBar()
 			}
 
 			newSBarState[SBAR_ID_TARGETNAME] = entindex();
-			newSBarState[SBAR_ID_TARGETHEALTH] = hp;
+			newSBarState[SBAR_ID_TARGETHEALTH] = clampi(hp, INT16_MIN, INT16_MAX);
 
 			lookingAtStatusEnt = true;
 		}
@@ -2286,7 +2284,7 @@ void CBasePlayer::UpdateStatusBar()
 			}
 				
 			strcpy_safe(sbuf0, UTIL_VarArgs("2 Health: %d", hp), SBAR_STRING_SIZE);
-			newSBarState[SBAR_ID_TARGETHEALTH] = hp;
+			newSBarState[SBAR_ID_TARGETHEALTH] = clampi(hp, INT16_MIN, INT16_MAX);
 
 			lookingAtStatusEnt = true;
 		}
