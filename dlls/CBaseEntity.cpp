@@ -194,7 +194,7 @@ int CBaseEntity::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, flo
 		// do the damage
 		pev->health = pev->health - flDamage;
 
-		if ((int)pev->health <= 0)
+		if (pev->health < 1)
 		{
 			Killed(pevAttacker, GIB_NORMAL);
 			BreakableDie(Instance(pevAttacker));
