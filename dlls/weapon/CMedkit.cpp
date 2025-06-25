@@ -178,7 +178,7 @@ void CMedkit::PrimaryAttack()
 		healAmount = V_min(gSkillData.sk_plr_hpmedic*0.2f, healAmount);
 	}
 
-	healAmount = (int)V_min(ammoLeft, healAmount);
+	healAmount = (int)V_min(ammoLeft, roundf(healAmount));
 
 	if (mon->IsAlive() && CanHealTarget(mon) && healAmount > 0) {
 		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
