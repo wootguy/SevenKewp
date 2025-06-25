@@ -2167,8 +2167,8 @@ void CBasePlayer::UpdateStatusBar()
 			strcpy_safe( sbuf1, "1 %p1", SBAR_STRING_SIZE );
 			strcpy_safe( sbuf0, "2 Health: %i2\n3 Armor: %i3", SBAR_STRING_SIZE);
 
-			newSBarState[ SBAR_ID_TARGETHEALTH ] = clampi(pEntity->pev->health, INT16_MIN, INT16_MAX);
-			newSBarState[ SBAR_ID_TARGETARMOR ] = clampi(pEntity->pev->armorvalue, INT16_MIN, INT16_MAX);
+			newSBarState[ SBAR_ID_TARGETHEALTH ] = clampi(roundf(pEntity->pev->health), INT16_MIN, INT16_MAX);
+			newSBarState[ SBAR_ID_TARGETARMOR ] = clampi(roundf(pEntity->pev->armorvalue), INT16_MIN, INT16_MAX);
 
 			lookingAtStatusEnt = true;
 		}
