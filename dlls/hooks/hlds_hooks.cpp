@@ -50,6 +50,7 @@
 #include "eng_wrappers.h"
 #include "te_effects.h"
 #include "CTriggerCamera.h"
+#include "animation.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -432,6 +433,10 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	if ( !pEntity->pvPrivateData )
 		return;
 
+	CBasePlayer* plr = UTIL_PlayerByIndex(ENTINDEX(pEntity));
+	if (!plr)
+		return;
+
 	std::string beforeHooksName = g_engfuncs.pfnInfoKeyValue(infobuffer, "name");
 
 	CALL_HOOKS_VOID(pfnClientUserInfoChanged, pEntity, infobuffer);
@@ -473,6 +478,16 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 		UTIL_LogPlayerEvent(pEntity, "%s to \\%s\\\n",
 			reason, g_engfuncs.pfnInfoKeyValue(infobuffer, "name"));
 	}
+
+	std::string oldModel = STRING(plr->m_playerModelName);
+	std::string newModel = toLowerCase(g_engfuncs.pfnInfoKeyValue(infobuffer, "model"));
+
+	if (oldModel != newModel) {
+		plr->m_playerModel = GetPlayerModelPtr(newModel.c_str());
+		plr->m_playerModelName = ALLOC_STRING(newModel.c_str());
+		plr->m_playerModelAnimSet = GetPlayerModelAnimSet(plr->m_playerModel);
+	}
+	
 
 	g_pGameRules->ClientUserInfoChanged( GetClassPtr((CBasePlayer *)&pEntity->v), infobuffer );
 }
@@ -541,6 +556,7 @@ void ServerDeactivate( void )
 	g_nomaptrans.clear();
 	g_unrecognizedCfgEquipment.clear();
 	g_replacementFiles.clear();
+	ClearPlayerModelCache();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";
 	g_monstersNerfed = false;

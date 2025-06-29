@@ -286,9 +286,16 @@ int CCrossbow::GetItemInfo(ItemInfo *p)
 
 BOOL CCrossbow::Deploy( )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return FALSE;
+
+	// the HL bow doesn't have a shoot animation so use the gauss anims instead
+	const char* animext = m_pPlayer->m_playerModelAnimSet == PMODEL_ANIMS_HALF_LIFE ? "gauss" : "bow";
+
 	if (m_iClip)
-		return DefaultDeploy( GetModelV(), GetModelP(), CROSSBOW_DRAW1, "bow" );
-	return DefaultDeploy( GetModelV(), GetModelP(), CROSSBOW_DRAW2, "bow" );
+		return DefaultDeploy( GetModelV(), GetModelP(), CROSSBOW_DRAW1, animext);
+	return DefaultDeploy( GetModelV(), GetModelP(), CROSSBOW_DRAW2, animext);
 }
 
 void CCrossbow::Holster( int skiplocal /* = 0 */ )
@@ -466,7 +473,12 @@ void CCrossbow::SecondaryAttack()
 		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 20;
 		m_fInZoom = 1;
 	}
-	
+
+	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE)
+		strcpy_safe(m_pPlayer->m_szAnimExtention, m_fInZoom ? "bowscope" : "bow", 32);
+	else
+		strcpy_safe(m_pPlayer->m_szAnimExtention, m_fInZoom ? "onehanded" : "gauss", 32);
+
 	pev->nextthink = UTIL_WeaponTimeBase() + 0.1;
 	m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 1.0;
 }

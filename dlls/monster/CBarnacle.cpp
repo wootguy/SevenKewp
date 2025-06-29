@@ -180,10 +180,18 @@ void CBarnacle :: BarnacleThink ( void )
 	{
 // barnacle has prey.
 
-		if ( !m_hEnemy->IsAlive() )
+		if ( !m_hEnemy->IsAlive() || m_hEnemy->pev->movetype == MOVETYPE_NOCLIP)
 		{
 			// someone (maybe even the barnacle) killed the prey. Reset barnacle.
 			m_fLiftingPrey = FALSE;// indicate that we're not lifting prey.
+			
+			pVictim = m_hEnemy->MyMonsterPointer();
+			if (pVictim)
+				pVictim->BarnacleVictimReleased();
+			
+			if (m_hEnemy->pev->movetype == MOVETYPE_NOCLIP)
+				m_hEnemy->pev->movetype = MOVETYPE_NOCLIP; // cheater
+
 			m_hEnemy = NULL;
 			return;
 		}
@@ -287,7 +295,7 @@ void CBarnacle :: BarnacleThink ( void )
 		if ( pTouchEnt != NULL && m_fTongueExtended )
 		{
 			// tongue is fully extended, and is touching someone.
-			if ( pTouchEnt->FBecomeProne() )
+			if ( pTouchEnt->BarnacleVictimCaught() )
 			{
 				EMIT_SOUND( ENT(pev), CHAN_WEAPON, "barnacle/bcl_alert2.wav", 1, ATTN_NORM );	
 
@@ -438,6 +446,9 @@ CBaseEntity *CBarnacle :: TongueTouchEnt ( float *pflLength )
 	{
 		for ( int i = 0; i < count; i++ )
 		{
+			if (pList[i]->pev->movetype == MOVETYPE_NOCLIP)
+				continue;
+
 			// only clients and monsters
 			if ( pList[i] != this && IRelationship( pList[i] ) > R_NO && pList[ i ]->pev->deadflag == DEAD_NO )	// this ent is one of our enemies. Barnacle tries to eat it.
 			{

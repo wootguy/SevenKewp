@@ -334,7 +334,10 @@ void CDisplacer::FireThink()
 
 	SendWeaponAnim(DISPLACER_FIRE);
 
+	// egon doesn't have a fire animation so use the gauss one
+	strcpy_safe(m_pPlayer->m_szAnimExtention, "gauss", 32);
 	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+	strcpy_safe(m_pPlayer->m_szAnimExtention, "egon", 32);
 
 	m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
 

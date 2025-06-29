@@ -237,8 +237,9 @@ void CMP5::SecondaryAttack( void )
 			
 	m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]--;
 
-	// player "shoot" animation
-	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+	strcpy_safe(m_pPlayer->m_szAnimExtention, "gauss", 32); // not enough recoil in the mp5 animation
+	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+	strcpy_safe(m_pPlayer->m_szAnimExtention, "mp5", 32);
 
  	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 

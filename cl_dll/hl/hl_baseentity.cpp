@@ -167,7 +167,7 @@ BOOL CBaseMonster::MoveToTarget( Activity movementAct, float waitTime ) { return
 BOOL CBaseMonster::MoveToNode( Activity movementAct, float waitTime, const Vector &goal ) { return FALSE; }
 int ShouldSimplify( int routeType ) { return TRUE; }
 void CBaseMonster :: RouteSimplify( CBaseEntity *pTargetEnt ) { }
-BOOL CBaseMonster :: FBecomeProne ( void ) { return TRUE; }
+BOOL CBaseMonster :: BarnacleVictimCaught ( void ) { return TRUE; }
 BOOL CBaseMonster :: CheckRangeAttack1 ( float flDot, float flDist ) { return FALSE; }
 BOOL CBaseMonster :: CheckRangeAttack2 ( float flDot, float flDist ) { return FALSE; }
 BOOL CBaseMonster :: CheckMeleeAttack1 ( float flDot, float flDist ) { return FALSE; }
@@ -334,7 +334,7 @@ int CBasePlayer::AmmoInventory( int iAmmoIndex ) { return -1; }
 int CBasePlayer::GetAmmoIndex(const char *psz) { return -1; }
 void CBasePlayer::SendAmmoUpdate(void) { }
 void CBasePlayer :: UpdateClientData( void ) { }
-BOOL CBasePlayer :: FBecomeProne ( void ) { return TRUE; }
+BOOL CBasePlayer ::BarnacleVictimCaught( void ) { return TRUE; }
 void CBasePlayer :: BarnacleVictimBitten ( entvars_t *pevBarnacle ) { }
 void CBasePlayer :: BarnacleVictimReleased ( void ) { }
 int CBasePlayer :: Illumination( void ) { return 0; }
@@ -342,6 +342,7 @@ void CBasePlayer :: EnableControl(BOOL fControl) { }
 Vector CBasePlayer :: GetAutoaimVector( float flDelta ) { return g_vecZero; }
 Vector CBasePlayer :: AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  ) { return g_vecZero; }
 void CBasePlayer :: ResetAutoaim( ) { }
+void CBasePlayer :: ResetSequenceInfo( ) { }
 void CBasePlayer :: SetCustomDecalFrames( int nFrames ) { }
 int CBasePlayer :: GetCustomDecalFrames( void ) { return -1; }
 void CBasePlayer::DropPlayerItem ( const char *pszItemName ) { }

@@ -5,6 +5,7 @@
 #include <utility>
 #include <unordered_map>
 #include <vector>
+#include <string>
 #include "shared_util.h"
 
 typedef uint32_t hmap_string_t; // offset into a hashmap's string pool

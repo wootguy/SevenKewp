@@ -519,11 +519,14 @@ BOOL CBasePlayerWeapon::DefaultDeploy(const char* szViewModel, const char* szWea
 	m_pPlayer->pev->viewmodel = MAKE_STRING(GET_MODEL(szViewModel));
 	m_pPlayer->pev->weaponmodel = MAKE_STRING(GET_MODEL(szWeaponModel));
 	strcpy_safe(m_pPlayer->m_szAnimExtention, szAnimExt, 32);
+	strcpy_safe(m_pPlayer->m_szAnimAction, "aim", 32);
 	SendWeaponAnim(iAnim, skiplocal, body);
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 1.0;
 	m_flLastFireTime = 0.0;
+
+	m_pPlayer->SetAnimation(PLAYER_DEPLOY_WEAPON);
 
 	return TRUE;
 }

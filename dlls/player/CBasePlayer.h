@@ -18,7 +18,7 @@
 
 #include "pm_materials.h"
 #include "monster/CBaseMonster.h"
-
+#include "animation.h"
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
@@ -80,6 +80,10 @@ typedef enum
 	PLAYER_RELOAD,
 	PLAYER_DROP_ITEM,
 	PLAYER_USE,
+	PLAYER_DEPLOY_WEAPON,
+	PLAYER_COCK_WEAPON,
+	PLAYER_BARNACLE_HIT,
+	PLAYER_BARNACLE_CRUNCH,
 } PLAYER_ANIM;
 
 #define MAX_ID_RANGE 4096
@@ -300,6 +304,12 @@ public:
 
 	int m_lastPacketEnts; // number of packet entities sent in the previous frame
 
+	string_t m_playerModelName;
+	studiohdr_t* m_playerModel; // raw player model data (NULL if not installed on the server)
+	PLAYER_MODEL_ANIM_SET m_playerModelAnimSet;
+
+	bool m_isBarnacleFood; // player is being eaten after being pulled up to the barnacle
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
@@ -361,6 +371,7 @@ public:
 	void SetAnimation( PLAYER_ANIM playerAnim, float duration=0 );
 	void SetWeaponAnimType( const char *szExtention );
 	char m_szAnimExtention[32];
+	char m_szAnimAction[32]; // "aim" or "hold"
 
 	// custom player functions
 	virtual void ImpulseCommands( void );
@@ -402,7 +413,7 @@ public:
 	void UpdateGeigerCounter( void );
 	void CheckTimeBasedDamage( void );
 
-	BOOL FBecomeProne ( void );
+	BOOL BarnacleVictimCaught( void );
 	void BarnacleVictimBitten ( entvars_t *pevBarnacle );
 	void BarnacleVictimReleased ( void );
 	static int GetAmmoIndex(const char *psz);
@@ -562,6 +573,13 @@ public:
 
 	virtual void SetClassification(int newClass) override { CBaseEntity::SetClassification(newClass); }
 	
+	void ResetSequenceInfo() override;
+
+	// syncs upper and lower body animations for a custom model
+	// gaitSpeed = 2D movement speed
+	// defaultSyncMultiplier = multiplier that syncs the upper/lower body on player.mdl
+	void SyncGaitAnimations(int animDesired, float gaitSpeed, float defaultSyncMultiplier);
+
 	// for sven-style monster info
 	//void UpdateMonsterInfo();
 	//float m_lastMonsterInfoMsg;

@@ -21,6 +21,19 @@
 #include "monsterevent.h"
 #endif
 
+enum PLAYER_MODEL_ANIM_SET {
+	PMODEL_ANIMS_HALF_LIFE,			// standard valve player model animations
+	PMODEL_ANIMS_HALF_LIFE_COOP,	// sven co-op 5.x model ported to this mod (preserves HL anim order)
+	PMODEL_ANIMS_SVEN_COOP_5,		// standard sven co-op 5.x player model animations
+};
+
+// will load from memory if cached, otherwise loads the model data from disk
+EXPORT studiohdr_t* GetPlayerModelPtr(const char* name);
+
+EXPORT PLAYER_MODEL_ANIM_SET GetPlayerModelAnimSet(studiohdr_t* mdl);
+
+EXPORT void ClearPlayerModelCache();
+
 EXPORT int IsSoundEvent( int eventNumber );
 
 // Ranomly pick a sequence tagged with the given activity
