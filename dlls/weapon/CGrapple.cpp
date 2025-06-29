@@ -77,7 +77,7 @@ void CGrapple::Precache()
 
 BOOL CGrapple::Deploy()
 {
-	return DefaultDeploy(GetModelV(), GetModelP(), BGRAPPLE_UP, "gauss");
+	return DefaultDeploy(GetModelV(), GetModelP(), BGRAPPLE_UP, "hive");
 }
 
 void CGrapple::Holster(int skiplocal)
@@ -315,6 +315,7 @@ void CGrapple::PrimaryAttack()
 		}
 
 		EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_WEAPON, "weapons/bgrapple_fire.wav", 0.98, ATTN_NORM, 0, 125);
+		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
 		m_FireState = FireState::CHARGE;
 	}

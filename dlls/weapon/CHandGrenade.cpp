@@ -83,8 +83,13 @@ int CHandGrenade::GetItemInfo(ItemInfo *p)
 
 BOOL CHandGrenade::Deploy( )
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return FALSE;
+
 	m_flReleaseThrow = -1;
-	return DefaultDeploy(GetModelV(), GetModelP(), HANDGRENADE_DRAW, "crowbar" );
+	const char* animext = m_pPlayer->m_playerModelAnimSet == PMODEL_ANIMS_HALF_LIFE ? "squeak" : "gren";
+	return DefaultDeploy(GetModelV(), GetModelP(), HANDGRENADE_DRAW, animext);
 }
 
 BOOL CHandGrenade::CanHolster( void )
@@ -129,6 +134,13 @@ void CHandGrenade::PrimaryAttack()
 
 		SendWeaponAnim( HANDGRENADE_PINPULL );
 		m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5;
+
+		if (m_pPlayer->m_playerModelAnimSet == PMODEL_ANIMS_HALF_LIFE)
+			strcpy_safe(m_pPlayer->m_szAnimExtention, "crowbar", 32);
+		else {
+			m_pPlayer->SetAnimation(PLAYER_COCK_WEAPON);
+			strcpy_safe(m_pPlayer->m_szAnimAction, "hold", 32);
+		}
 	}
 }
 
@@ -187,6 +199,11 @@ void CHandGrenade::WeaponIdle( void )
 
 		// player "shoot" animation
 		m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
+
+		if (m_pPlayer->m_playerModelAnimSet == PMODEL_ANIMS_HALF_LIFE)
+			strcpy_safe(m_pPlayer->m_szAnimExtention, "squeak", 32);
+		else
+			strcpy_safe(m_pPlayer->m_szAnimAction, "aim", 32);
 
 		m_flReleaseThrow = 0;
 		m_flStartThrow = 0;

@@ -47,12 +47,101 @@ typedef unsigned char byte;
 
 #include "util.h"
 
+#include "HashMap.h"
+
 extern globalvars_t				*gpGlobals;
 
 #ifdef _WIN32
 #pragma warning( disable : 4244 )
 #endif
 
+// prevent players rapidly changing models and consuming too much memory
+#define MAX_CACHED_PLAYER_MODELS 128
+
+struct PModelCacheEntry {
+	studiohdr_t* data;
+	uint64_t lastAccess; // when this model was last accessed
+};
+
+HashMap<PModelCacheEntry> g_playerModelCache;
+
+studiohdr_t* GetPlayerModelPtr(const char* name) {
+	std::string lowerName = toLowerCase(name);
+	name = lowerName.c_str();
+
+	PModelCacheEntry* cachedModel = g_playerModelCache.get(name);
+	if (cachedModel) {
+		cachedModel->lastAccess = getEpochMillis();
+		return cachedModel->data;
+	}
+
+	int plen;
+	const char* mdlPath = UTIL_VarArgs("models/player/%s/%s.mdl", name, name);
+	studiohdr_t* pmodel = (studiohdr_t*)LOAD_FILE_FOR_ME(mdlPath, &plen);
+
+	if (!pmodel) {
+		ALERT(at_console, "Player model not found: %s\n", name);
+	}
+
+	PModelCacheEntry entry;
+	entry.data = pmodel;
+	entry.lastAccess = getEpochMillis();
+	g_playerModelCache.put(name, entry);
+
+	ALERT(at_console, "Cached player model '%s'\n", name);
+
+	if (g_playerModelCache.size() > MAX_CACHED_PLAYER_MODELS) {
+		uint64_t oldestModel = -1;
+		const char* oldestKey = NULL;
+
+		HashMap<PModelCacheEntry>::iterator_t iter;
+		while (g_playerModelCache.iterate(iter)) {
+			if (iter.value->lastAccess < oldestModel) {
+				oldestModel = iter.value->lastAccess;
+				oldestKey = iter.key;
+			}
+		}
+
+		if (oldestKey) {
+			PModelCacheEntry* entry = g_playerModelCache.get(oldestKey);
+			if (entry) {
+				FREE_FILE(entry->data);
+				g_playerModelCache.del(oldestKey);
+				ALERT(at_console, "Freed cached player model '%s'\n", name);
+				// NOTE: hashmap deletes aren't fully implemented. Size will never decrease.
+			}
+		}
+	}
+
+	return pmodel;
+}
+
+void ClearPlayerModelCache() {
+	HashMap<PModelCacheEntry>::iterator_t iter;
+	while (g_playerModelCache.iterate(iter)) {
+		if (iter.value) {
+			FREE_FILE(iter.value->data);
+		}
+	}
+
+	g_playerModelCache.clear();
+}
+
+PLAYER_MODEL_ANIM_SET GetPlayerModelAnimSet(studiohdr_t* mdl) {
+	if (mdl) {
+		int drawCrowbarSeq = LookupSequence(mdl, "ref_draw_crowbar");
+
+		switch (drawCrowbarSeq) {
+		case 19: return PMODEL_ANIMS_SVEN_COOP_5;
+		case 81: return PMODEL_ANIMS_HALF_LIFE_COOP;
+		default:
+			break;
+		}
+	}
+
+	// assume HL because no other formats are implemented
+	return PMODEL_ANIMS_HALF_LIFE;
+}
 
 int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
 {

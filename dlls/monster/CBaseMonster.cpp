@@ -894,12 +894,7 @@ void CBaseMonster::RouteSimplify(CBaseEntity* pTargetEnt)
 #endif
 }
 
-//=========================================================
-// FBecomeProne - tries to send a monster into PRONE state.
-// right now only used when a barnacle snatches someone, so 
-// may have some special case stuff for that.
-//=========================================================
-BOOL CBaseMonster::FBecomeProne(void)
+BOOL CBaseMonster::BarnacleVictimCaught(void)
 {
 	if (FBitSet(pev->flags, FL_ONGROUND))
 	{

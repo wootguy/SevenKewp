@@ -57,6 +57,7 @@ public:
 	BOOL Deploy() override;
 	void Holster(int skiplocal = 0) override;
 	void WeaponIdle() override;
+	void PlayerModelSwingAnim();
 
 	int GetItemInfo(ItemInfo* p) override;
 

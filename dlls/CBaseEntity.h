@@ -386,7 +386,7 @@ public:
 	//
 	static CBaseEntity* Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, bool spawn=true, edict_t* pentOwner = NULL, const StringMap& keys = g_emptyStringMap);
 
-	virtual BOOL FBecomeProne(void) { return FALSE; };
+	virtual BOOL BarnacleVictimCaught(void) { return FALSE; };
 	edict_t* edict() { return ENT(pev); };
 	EOFFSET eoffset() { return OFFSET(pev); };
 	int	  entindex() { return ENTINDEX(edict()); };
