@@ -1021,7 +1021,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 
 	bool hasNewAnims = m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE;
 
-	if (!hasNewAnims && (playerAnim == PLAYER_DEPLOY_WEAPON || playerAnim == PLAYER_COCK_WEAPON)) {
+	if (!hasNewAnims && playerAnim == PLAYER_DEPLOY_WEAPON) {
 		return; // HL models don't have these animations
 	}
 
@@ -1303,9 +1303,15 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 			seqName = ducking ? "crouch_shoot_trip" : "ref_shoot_trip";
 		}
 		else if (m_IdealActivity == ACT_THREAT_DISPLAY) {
-			strcpy_safe(szAnim, ducking ? "crouch_cock_" : "ref_cock_", 64);
-			strcat_safe(szAnim, m_szAnimExtention, 64);
-			seqName = szAnim;
+			if (hasNewAnims) {
+				strcpy_safe(szAnim, ducking ? "crouch_cock_" : "ref_cock_", 64);
+				strcat_safe(szAnim, m_szAnimExtention, 64);
+				seqName = szAnim;
+			}
+			else {
+				// the only animation that looks like charging up is a reversed crowbar swing
+				seqName = "ref_shoot_crowbar";
+			}
 		}
 		else { // reload
 
@@ -1341,6 +1347,22 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 
 		pev->sequence = animDesired;
 		ResetSequenceInfo();
+
+		if (m_IdealActivity == ACT_THREAT_DISPLAY && !hasNewAnims) {
+			bool isGrenade = !strcmp(m_szAnimExtention, "grenade");
+
+			if (isGrenade) {
+				pev->frame = (3.0f / 13.0f) * 255.0f;
+				ResetSequenceInfo();
+				pev->framerate = -0.08f;
+			}
+			else { // wrench
+				pev->frame = (3.5f / 13.0f) * 255.0f;
+				ResetSequenceInfo();
+				pev->framerate = -0.05f;
+			}
+		}
+
 		break;
 	}
 	case ACT_WALK:
@@ -1389,6 +1411,17 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 		else
 		{
 			animDesired = pev->sequence;
+
+			if (m_Activity == ACT_THREAT_DISPLAY && !hasNewAnims) {
+				// stop the chargeup animation
+				bool isGrenade = !strcmp(m_szAnimExtention, "grenade");
+				float endFrame = ((isGrenade ? 2.2f : 2.5f) / 13.0f) * 255.0f;
+
+				if (pev->frame < endFrame) {
+					pev->frame = endFrame;
+					pev->framerate = FLT_MIN;
+				}
+			}
 		}
 	}
 	}
@@ -1959,6 +1992,26 @@ void CBasePlayer::PlayerUse ( void )
 	if ( ! ((pev->button | m_afButtonPressed | m_afButtonReleased) & IN_USE) )
 		return;
 
+	// continuous use animation
+	if ((pev->button & IN_USE) && (m_Activity == ACT_WALK || m_Activity == ACT_USE)) {
+		if (m_Activity != ACT_USE) {
+			SetAnimation(PLAYER_USE);
+		}
+		else {
+			if (pev->framerate > 0 && pev->frame > 85) {
+				pev->frame = 85;
+				pev->framerate = -0.2f;
+			}
+			else if (pev->framerate < 0 && pev->frame < 65) {
+				pev->frame = 65;
+				pev->framerate = 0.2f;
+			}
+		}
+	}
+	else if (m_Activity == ACT_USE) {
+		pev->framerate = 1.0f;
+	}
+
 	// Hit Use on a train?
 	if ( m_afButtonPressed & IN_USE )
 	{
@@ -2110,13 +2163,7 @@ void CBasePlayer::PlayerUse ( void )
 
 		// if antiblock is enabled, don't trigger things until the button is released
 		// because the player might be holding it down for an antiblock attempt
-		bool isToggleUse;
-		if (mp_antiblock.value) {
-			isToggleUse = shouldToggle && (caps & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE));
-		}
-		else {
-			isToggleUse = shouldToggle && (caps & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE));
-		}
+		bool isToggleUse = shouldToggle && (caps & (FCAP_IMPULSE_USE | FCAP_ONOFF_USE));
 
 		if (isContinuousUse || (isToggleUse && !m_useExpired))
 		{
