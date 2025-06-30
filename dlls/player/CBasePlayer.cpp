@@ -5089,7 +5089,7 @@ BOOL CBasePlayer ::BarnacleVictimCaught( void )
 void CBasePlayer :: BarnacleVictimBitten ( entvars_t *pevBarnacle )
 {
 	m_isBarnacleFood = true;
-	TakeDamage ( pevBarnacle, pevBarnacle, pev->health + pev->armorvalue, DMG_SLASH | DMG_ALWAYSGIB );
+	TakeDamage ( pevBarnacle, pevBarnacle, gSkillData.sk_barnacle_dmg_bite, DMG_SLASH | DMG_ALWAYSGIB );
 	SetAnimation(PLAYER_BARNACLE_CRUNCH);
 }
 
