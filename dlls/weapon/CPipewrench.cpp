@@ -94,8 +94,7 @@ BOOL CPipewrench::Deploy()
 	if (!m_pPlayer)
 		return FALSE;
 
-	const char* animext = m_pPlayer->m_playerModelAnimSet == PMODEL_ANIMS_HALF_LIFE ? "hive" : "crowbar";
-	return DefaultDeploy(GetModelV(), GetModelP(), PIPEWRENCH_DRAW, animext);
+	return DefaultDeploy(GetModelV(), GetModelP(), PIPEWRENCH_DRAW, "crowbar");
 }
 
 void CPipewrench::Holster(int skiplocal)
@@ -134,13 +133,19 @@ void CPipewrench::SecondaryAttack()
 		SendWeaponAnim(PIPEWRENCH_BIG_SWING_START);
 		m_flBigSwingStart = gpGlobals->time;
 
-		if (m_pPlayer->m_playerModelAnimSet == PMODEL_ANIMS_HALF_LIFE) {
-			strcpy_safe(m_pPlayer->m_szAnimExtention, "crowbar", 32);
-		}
-		else {
+		
+		if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE) {
 			strcpy_safe(m_pPlayer->m_szAnimExtention, "wrench", 32);
 			strcpy_safe(m_pPlayer->m_szAnimAction, "cock", 32);
+		}
+		m_pPlayer->SetAnimation(PLAYER_COCK_WEAPON);
+	}
+	else if (m_pPlayer->m_playerModelAnimSet == PMODEL_ANIMS_HALF_LIFE) {
+		// reset the cocking animation if interrupted 
+		if (m_pPlayer->m_Activity == ACT_WALK) {
 			m_pPlayer->SetAnimation(PLAYER_COCK_WEAPON);
+			m_pPlayer->pev->frame = 1; // last frame estimate
+			m_pPlayer->SetAnimation(PLAYER_WALK); // find the actual last frame
 		}
 	}
 
@@ -586,6 +591,7 @@ void CPipewrench::BigSwing()
 	}
 
 	PlayerModelSwingAnim();
+	m_iSwingMode = SWING_NONE;
 }
 
 void CPipewrench::WeaponIdle()
@@ -638,14 +644,10 @@ void CPipewrench::PlayerModelSwingAnim() {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
+	
+	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
-	if (m_pPlayer->m_playerModelAnimSet == PMODEL_ANIMS_HALF_LIFE) {
-		strcpy_safe(m_pPlayer->m_szAnimExtention, "crowbar", 32);
-		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
-		strcpy_safe(m_pPlayer->m_szAnimExtention, "hive", 32);
-	}
-	else {
-		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE) {
 		strcpy_safe(m_pPlayer->m_szAnimExtention, "crowbar", 32);
 		strcpy_safe(m_pPlayer->m_szAnimAction, "aim", 32);
 	}
