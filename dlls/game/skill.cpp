@@ -53,6 +53,7 @@ skill_cvar_t skill_cvars[] = {
 	// Barnacle
 	DECL_SKILL_CVAR(sk_barnacle_health, CVAR_TYPE_HEALTH),
 	DECL_SKILL_CVAR(sk_barnacle_pullspeed, CVAR_TYPE_AI),
+	DECL_SKILL_CVAR(sk_barnacle_dmg_bite, CVAR_TYPE_DAMAGE),
 
 	// Bullsquid
 	DECL_SKILL_CVAR(sk_bullsquid_health, CVAR_TYPE_HEALTH),

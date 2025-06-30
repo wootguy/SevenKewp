@@ -47,6 +47,7 @@ struct skilldata_t
 	// Barnacle
 	float sk_barnacle_health;
 	float sk_barnacle_pullspeed;
+	float sk_barnacle_dmg_bite;
 
 	// Bullsquid
 	float sk_bullsquid_health;
