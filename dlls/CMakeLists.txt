@@ -458,6 +458,7 @@ set(UTIL_HDR
 	util/wav.h
 	util/HashMap.h
 	util/StringPool.h
+	util/md5.h
 	../game_shared/shared_util.h
 )
 set(UTIL_SRC
@@ -482,6 +483,7 @@ set(UTIL_SRC
 	util/wav.cpp
 	util/HashMap.cpp
 	util/StringPool.cpp
+	util/md5.cpp
 	../game_shared/shared_util.cpp
 )
 set(PLAYER_HDR
