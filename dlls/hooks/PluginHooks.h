@@ -62,6 +62,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// called after a map has finished loading
 	HOOK_RETURN_DATA (*pfnServerActivate)();
 
+	// called when the map is fully initialized (resource lists created and 16 frames of physics run)
+	HOOK_RETURN_DATA(*pfnMapStart)();
+
 	// called when the server is about to load a new map
 	HOOK_RETURN_DATA (*pfnChangeLevel)(const char* pszLevelName, const char* pszLandmarkName);
 
@@ -209,6 +212,10 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// called after a player has spawned
 	HOOK_RETURN_DATA (*pfnPlayerSpawn)(CBasePlayer* plr);
+
+	// called after a player's model is changed
+	// or set for the first time after joining (oldModel will be blank in that case)
+	HOOK_RETURN_DATA (*pfnPlayerModelChanged)(CBasePlayer* plr, const char* oldModel, const char* newModel);
 };
 
 // do not call directly, use RegisterPlugin instead

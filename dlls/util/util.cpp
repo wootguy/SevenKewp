@@ -40,6 +40,7 @@
 #include "hlds_hooks.h"
 #include "CBaseDMStart.h"
 #include "CAmbientGeneric.h"
+#include "md5.h"
 
 #include <fstream>
 #include <sys/types.h>
@@ -3227,4 +3228,22 @@ void UTIL_ResetVoiceChannel(CBasePlayer* plr) {
 	MESSAGE_END();
 
 	plr->m_initSoundTime = gpGlobals->time + 0.1f; // restart ambient sounds
+}
+
+void UTIL_MD5HashData(uint8_t digest[16], uint8_t* data, int dataLen) {
+	MD5Context mdc;
+	MD5Init(&mdc);
+	MD5Update(&mdc, data, dataLen);
+	MD5Final(digest, &mdc);
+}
+
+void UTIL_MD5HashFile(uint8_t digest[16], const char* fpath) {
+	int len;
+	unsigned char* data = LOAD_FILE_FOR_ME(fpath, &len);
+	if (!data) {
+		ALERT(at_console, "Hash file failed to load '%s'\n", fpath);
+		return;
+	}
+	UTIL_MD5HashData(digest, data, len);
+	FREE_FILE(data);
 }

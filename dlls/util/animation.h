@@ -28,7 +28,7 @@ enum PLAYER_MODEL_ANIM_SET {
 };
 
 // will load from memory if cached, otherwise loads the model data from disk
-EXPORT studiohdr_t* GetPlayerModelPtr(const char* name);
+EXPORT studiohdr_t* GetPlayerModelPtr(const char* name, int& len);
 
 EXPORT PLAYER_MODEL_ANIM_SET GetPlayerModelAnimSet(studiohdr_t* mdl);
 

@@ -75,6 +75,8 @@ extern bool g_weather_init_done;
 // client index that is receiving AddFullToPack calls
 int g_packClientIdx = 0;
 
+uint32_t g_frameCount; // server frames since the last map change
+
 extern bool g_fog_enabled;
 extern int g_fog_start_dist;
 extern int g_fog_end_dist;
@@ -483,13 +485,11 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	std::string newModel = toLowerCase(g_engfuncs.pfnInfoKeyValue(infobuffer, "model"));
 
 	if (oldModel != newModel) {
-		plr->m_playerModel = GetPlayerModelPtr(newModel.c_str());
+		plr->m_playerModel = GetPlayerModelPtr(newModel.c_str(), plr->m_playerModelSize);
 		plr->m_playerModelName = ALLOC_STRING(newModel.c_str());
 		plr->m_playerModelAnimSet = GetPlayerModelAnimSet(plr->m_playerModel);
+		CALL_HOOKS_VOID(pfnPlayerModelChanged, plr, oldModel.c_str(), newModel.c_str());
 	}
-	
-
-	g_pGameRules->ClientUserInfoChanged( GetClassPtr((CBasePlayer *)&pEntity->v), infobuffer );
 }
 
 int g_serveractive = 0;
@@ -600,6 +600,8 @@ void ServerDeactivate( void )
 	uint64_t hookStartTime = getEpochMillis();
 	CALL_HOOKS_VOID(pfnServerDeactivate);
 	g_levelChangePluginTime = getEpochMillis() - hookStartTime;
+
+	g_frameCount = 0;
 }
 
 #include "lagcomp.h"
@@ -715,7 +717,7 @@ void MarkWeaponSlotConflicts() {
 
 		int mask = 1 << II.iId;
 
-		for (int i = 0; i < MAX_WEAPONS; i++)
+		for (int k = 0; k < MAX_WEAPONS; k++)
 		{
 			ItemInfo& II2 = CBasePlayerItem::ItemInfoArray[i];
 
@@ -756,9 +758,9 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	if (keepInventoryAdditions)
 		ALERT(at_console, "Added %d precache weapons from the previous map (keep_inventory)\n", keepInventoryAdditions);
 
-	StringSet::iterator_t iter;
-	while (g_mapWeapons.iterate(iter)) {
-		UTIL_PrecacheOther(iter.key);
+	StringSet::iterator_t witer;
+	while (g_mapWeapons.iterate(witer)) {
+		UTIL_PrecacheOther(witer.key);
 	}
 	
 	PrecacheTextureSounds();
@@ -1039,6 +1041,13 @@ void StartFrame( void )
 	PlayCustomSentences();
 
 	handleThreadPrints();
+
+	// the engine runs 16 frames of physics before creating resource lists and finalizing map init
+	if (g_frameCount == 16) {
+		CALL_HOOKS_VOID(pfnMapStart);
+	}
+
+	g_frameCount++;
 }
 
 

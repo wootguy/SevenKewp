@@ -60,24 +60,25 @@ extern globalvars_t				*gpGlobals;
 
 struct PModelCacheEntry {
 	studiohdr_t* data;
+	int sz;
 	uint64_t lastAccess; // when this model was last accessed
 };
 
 HashMap<PModelCacheEntry> g_playerModelCache;
 
-studiohdr_t* GetPlayerModelPtr(const char* name) {
+studiohdr_t* GetPlayerModelPtr(const char* name, int& len) {
 	std::string lowerName = toLowerCase(name);
 	name = lowerName.c_str();
 
 	PModelCacheEntry* cachedModel = g_playerModelCache.get(name);
 	if (cachedModel) {
+		len = cachedModel->sz;
 		cachedModel->lastAccess = getEpochMillis();
 		return cachedModel->data;
 	}
 
-	int plen;
 	const char* mdlPath = UTIL_VarArgs("models/player/%s/%s.mdl", name, name);
-	studiohdr_t* pmodel = (studiohdr_t*)LOAD_FILE_FOR_ME(mdlPath, &plen);
+	studiohdr_t* pmodel = (studiohdr_t*)LOAD_FILE_FOR_ME(mdlPath, &len);
 
 	if (!pmodel) {
 		ALERT(at_console, "Player model not found: %s\n", name);
@@ -85,10 +86,11 @@ studiohdr_t* GetPlayerModelPtr(const char* name) {
 
 	PModelCacheEntry entry;
 	entry.data = pmodel;
+	entry.sz = len;
 	entry.lastAccess = getEpochMillis();
 	g_playerModelCache.put(name, entry);
 
-	ALERT(at_console, "Cached player model '%s'\n", name);
+	//ALERT(at_console, "Cached player model '%s'\n", name);
 
 	if (g_playerModelCache.size() > MAX_CACHED_PLAYER_MODELS) {
 		uint64_t oldestModel = -1;
