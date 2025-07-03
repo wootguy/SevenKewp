@@ -306,6 +306,7 @@ public:
 
 	string_t m_playerModelName;
 	studiohdr_t* m_playerModel; // raw player model data (NULL if not installed on the server)
+	int m_playerModelSize; // file size in bytes
 	PLAYER_MODEL_ANIM_SET m_playerModelAnimSet;
 
 	bool m_isBarnacleFood; // player is being eaten after being pulled up to the barnacle

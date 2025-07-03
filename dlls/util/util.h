@@ -916,3 +916,7 @@ EXPORT Vector UTIL_UnwindPoint(Vector pos, Vector angles);
 // stop currently playing voice audio for this player to fix stuttering caused by cameras,
 // teleports, new VIS areas, etc.
 EXPORT void UTIL_ResetVoiceChannel(CBasePlayer* plr);
+
+EXPORT void UTIL_MD5HashData(uint8_t digest[16], uint8_t* data, int dataLen);
+
+EXPORT void UTIL_MD5HashFile(uint8_t digest[16], const char* fpath);
