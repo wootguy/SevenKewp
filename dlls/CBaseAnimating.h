@@ -31,6 +31,7 @@ public:
 	int GetAttachmentCount();
 	void SetBodygroup(int iGroup, int iValue);
 	int GetBodygroup(int iGroup);
+	int GetBodygroups();
 	int ExtractBbox(int sequence, float* mins, float* maxs);
 	void SetSequenceBox(void);
 	bool ActivityHasEvent(int activity, int event);

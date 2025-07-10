@@ -59,6 +59,7 @@ EXPORT void SequencePrecache( void *pmodel, const char *pSequenceName );
 EXPORT int FindTransition( void *pmodel, int iEndingAnim, int iGoalAnim, int *piDir );
 EXPORT void SetBodygroup( void *pmodel, entvars_t *pev, int iGroup, int iValue );
 EXPORT int GetBodygroup( void *pmodel, entvars_t *pev, int iGroup );
+EXPORT int GetBodygroups( void *pmodel, entvars_t *pev );
 
 EXPORT int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEvent, float flStart, float flEnd, int index );
 EXPORT int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs );

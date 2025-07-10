@@ -651,6 +651,15 @@ void SetBodygroup( void *pmodel, entvars_t *pev, int iGroup, int iValue )
 	pev->body = (pev->body - (iCurrent * pbodypart->base) + (iValue * pbodypart->base));
 }
 
+int GetBodygroups(void* pmodel, entvars_t* pev) {
+	studiohdr_t* pstudiohdr;
+
+	pstudiohdr = (studiohdr_t*)pmodel;
+	if (!pstudiohdr)
+		return 0;
+
+	return pstudiohdr->numbodyparts;
+}
 
 int GetBodygroup( void *pmodel, entvars_t *pev, int iGroup )
 {

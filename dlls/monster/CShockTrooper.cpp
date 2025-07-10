@@ -449,14 +449,8 @@ void CShockTrooper::PrescheduleThink()
 //=========================================================
 BOOL CShockTrooper::FCanCheckAttacks()
 {
-	if (!HasConditions(bits_COND_ENEMY_TOOFAR))
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+	// if you can see the enemy but can't move into optimal range, try attacking it anyway	
+	return !HasConditions(bits_COND_ENEMY_TOOFAR) || HasMemory(bits_MEMORY_MOVE_FAILED);
 }
 
 
@@ -1252,6 +1246,7 @@ Task_t tlShockTrooperCombatFail[] =
 {
 	{TASK_STOP_MOVING, 0},
 	{TASK_SET_ACTIVITY, (float)ACT_IDLE},
+	{TASK_REMEMBER, (float)bits_MEMORY_MOVE_FAILED},
 	{TASK_WAIT_FACE_ENEMY, (float)2},
 	{TASK_WAIT_PVS, (float)0},
 };

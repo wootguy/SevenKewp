@@ -2937,7 +2937,11 @@ void CBaseRepel::RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	pBeam->SetThink(&CBeam::SUB_Remove);
 	pBeam->pev->nextthink = gpGlobals->time + -4096.0 * tr.flFraction / pGrunt->pev->velocity.z + 0.5;
 
-	UTIL_Remove(this);
+	m_deathNoticeSent = true; // the repelling grunt will send a notice instead
+	
+	// live enough for the monstermaker to count this entity towards its max live children
+	SetThink(&CBaseEntity::SUB_Remove);
+	pev->nextthink = gpGlobals->time;
 }
 
 void CBaseDead::BaseSpawn(const char* model)

@@ -107,6 +107,7 @@ private:
 	Vector summonPos;
 	Vector beamColor1;
 	Vector beamColor2;
+	int m_failedMelees; // don't keep meleeing if the player is moving back and forth to avoid it
 
 	static const char* pAttackHitSounds[];
 	static const char* pAttackMissSounds[];
@@ -258,6 +259,7 @@ void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
 			shotsFired = 0;
 			nextShoot = gpGlobals->time + 3.0f;
 		}
+		m_failedMelees = 0;
 		break;
 	case EVENT_SUMMON_GRUNT:
 		//ALERT(at_console, "SUMMON EVENT\n");
@@ -271,6 +273,7 @@ void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 		if (pHurt)
 		{
+			m_failedMelees = 0;
 			if (pHurt->pev->flags & (FL_MONSTER | FL_CLIENT))
 			{
 				if (isRightSwing) {
@@ -286,8 +289,11 @@ void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
 			// Play a random attack hit sound
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackHitSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
 		}
-		else // Play a random attack miss sound
+		else { // Play a random attack miss sound
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackMissSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5, 5));
+			m_failedMelees++;
+			ALERT(at_console, "OOF MISSED %d\n", m_failedMelees);
+		}
 		break;
 	}
 	case EVENT_STEP_LEFT:
@@ -412,7 +418,8 @@ void CTor::MonsterThink(void) {
 
 BOOL CTor::CheckRangeAttack1(float flDot, float flDist)
 {
-	if (!startedSummon && flDist > MELEE_CHASE_DISTANCE && flDist < TOR_SHOOT_RANGE) {
+	bool shouldMelee = flDist < MELEE_CHASE_DISTANCE && m_failedMelees < 2;
+	if (!startedSummon && !shouldMelee && flDist < TOR_SHOOT_RANGE) {
 		if (gpGlobals->time > nextShoot)
 			return TRUE;
 	}

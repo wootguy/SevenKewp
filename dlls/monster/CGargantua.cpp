@@ -654,6 +654,11 @@ int CGargantua::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, flo
 			SetConditions( bits_COND_LIGHT_DAMAGE );
 	}
 
+	// turn around if tickled with bullets and there's no current enemy
+	if (flDamage == 0 && !HasConditions(bits_COND_SEE_ENEMY)) {
+		SetConditions(bits_COND_LIGHT_DAMAGE);
+	}
+
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 

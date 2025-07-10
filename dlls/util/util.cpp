@@ -2435,6 +2435,8 @@ void UTIL_CleanupEntities(int removeCount) {
 		if (!mon || !mon->IsNormalMonster() || !mon->m_killedTime || mon->m_isFadingOut) {
 			continue;
 		}
+		if (mon->pev->deadflag == DEAD_DYING || mon->pev->deadflag == DEAD_NO)
+			continue;
 
 		corpses.push_back(mon);
 	}
@@ -2443,11 +2445,13 @@ void UTIL_CleanupEntities(int removeCount) {
 		return a->m_killedTime < b->m_killedTime;
 	});
 
-	for (int i = 0; i < removeCount && i < (int)corpses.size(); i++) {
+	removeCount = V_min((int)corpses.size(), removeCount);
+	for (int i = 0; i < removeCount; i++) {
 		corpses[i]->SUB_StartFadeOut();
 	}
 
-	ALERT(at_console, "Faded %d old corpses\n", V_min((int)corpses.size(), removeCount));
+	if (removeCount)
+		ALERT(at_console, "Faded %d old corpses\n", removeCount);
 }
 
 edict_t* CREATE_NAMED_ENTITY(string_t cname) {

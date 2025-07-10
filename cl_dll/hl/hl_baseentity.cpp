@@ -232,6 +232,7 @@ int CBaseAnimating :: FindTransition( int iEndingSequence, int iGoalSequence, in
 void CBaseAnimating :: GetAutomovement( Vector &origin, Vector &angles, float flInterval ) { }
 void CBaseAnimating :: SetBodygroup( int iGroup, int iValue ) { }
 int CBaseAnimating :: GetBodygroup( int iGroup ) { return 0; }
+int CBaseAnimating :: GetBodygroups( ) { return 0; }
 Vector CBaseMonster :: GetGunPosition( void ) { return g_vecZero; }
 void CBaseEntity::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) { }
 void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker ) { }

@@ -95,6 +95,7 @@ public:
 	float	m_flNextHornetAttackCheck;
 
 	float m_flNextPainTime;
+	float m_lastEnemySee;
 
 	// three hacky fields for speech stuff. These don't really need to be saved.
 	float	m_flNextSpeakTime;

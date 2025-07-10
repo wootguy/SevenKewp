@@ -16,9 +16,10 @@ public:
 	void Spawn(void);
 	void Precache(void);
 	void KeyValue(KeyValueData* pkvd);
-	virtual void ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	virtual void ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
 	bool CanCollect(CBaseMonster* pPlayer, const char** errorMsg);
-	virtual void ItemTouch(CBaseEntity* pOther);
+	virtual void ItemBounce(CBaseEntity* pOther);
+	virtual void ItemTouch(CBaseEntity* pOther) override;
 	virtual BOOL ShouldRespawn() { return FALSE; } // can only have one instance of itself in the world
 	virtual int	ObjectCaps(void);
 	virtual CItemInventory* MyInventoryPointer(void) { return this; }

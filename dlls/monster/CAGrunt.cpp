@@ -592,7 +592,8 @@ Task_t	tlAGruntCombatFail[] =
 {
 	{ TASK_STOP_MOVING,			0				},
 	{ TASK_SET_ACTIVITY,		(float)ACT_IDLE },
-	{ TASK_WAIT_FACE_ENEMY,		(float)2		},
+	{ TASK_REMEMBER,			(float)bits_MEMORY_MOVE_FAILED},
+	{ TASK_WAIT_FACE_ENEMY,		(float)1		},
 	{ TASK_WAIT_PVS,			(float)0		},
 };
 
@@ -817,14 +818,8 @@ IMPLEMENT_CUSTOM_SCHEDULES( CAGrunt, CTalkSquadMonster )
 //=========================================================
 BOOL CAGrunt :: FCanCheckAttacks ( void )
 {
-	if ( !HasConditions( bits_COND_ENEMY_TOOFAR ) )
-	{
-		return TRUE;
-	}
-	else
-	{
-		return FALSE;
-	}
+	// if you can see the enemy but can't move into optimal range, try attacking it anyway	
+	return !HasConditions(bits_COND_ENEMY_TOOFAR) || HasMemory(bits_MEMORY_MOVE_FAILED);
 }
 
 //=========================================================
@@ -854,7 +849,7 @@ BOOL CAGrunt :: CheckRangeAttack1 ( float flDot, float flDist )
 		return m_fCanHornetAttack;
 	}
 
-	if ( HasConditions( bits_COND_SEE_ENEMY ) && flDist >= AGRUNT_MELEE_DIST && flDist <= 1024 && flDot >= 0.5 && NoFriendlyFire() )
+	if ( HasConditions( bits_COND_SEE_ENEMY ) && flDist >= AGRUNT_MELEE_DIST && flDist <= 2048 && flDot >= 0.5 && NoFriendlyFire() )
 	{
 		TraceResult	tr;
 		Vector	vecArmPos, vecArmDir;
@@ -1063,6 +1058,15 @@ Schedule_t* CAGrunt :: GetScheduleOfType ( int Type )
 	case SCHED_TAKE_COVER_FROM_ENEMY:
 		return &slAGruntTakeCoverFromEnemy[ 0 ];
 		break;
+
+	case SCHED_CHASE_ENEMY_FAILED:
+		if (HasConditions(bits_COND_SEE_ENEMY)) {
+			m_lastEnemySee = gpGlobals->time;
+		}
+		if (HasConditions(bits_COND_SEE_ENEMY) || gpGlobals->time - m_lastEnemySee < 4.0f) {
+			return GetScheduleOfType(SCHED_RANGE_ATTACK1);
+		}
+		return CBaseMonster::GetScheduleOfType(Type);
 	
 	case SCHED_RANGE_ATTACK1:
 		if ( HasConditions( bits_COND_SEE_ENEMY ) )
