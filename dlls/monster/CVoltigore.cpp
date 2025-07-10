@@ -454,6 +454,16 @@ Schedule_t* CVoltigore::GetScheduleOfType(int Type) {
 		ShowChargeBeam();
 	}
 
+	switch (Type) {
+	case SCHED_CHASE_ENEMY_FAILED:
+		if (HasConditions(bits_COND_SEE_ENEMY)) {
+			return GetScheduleOfType(SCHED_RANGE_ATTACK1);
+		}
+		return CBaseMonster::GetScheduleOfType(Type);
+	default:
+		return CBaseMonster::GetScheduleOfType(Type);
+	}
+
 	return CBaseMonster::GetScheduleOfType(Type);
 }
 

@@ -5148,6 +5148,10 @@ void CBasePlayer :: BarnacleVictimReleased ( void )
 {
 	m_isBarnacleFood = false;
 	m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
+	
+	if (pev->movetype == MOVETYPE_FLY) {
+		pev->movetype = MOVETYPE_WALK; // needed when released inside a wall
+	}
 }
 
 //=========================================================

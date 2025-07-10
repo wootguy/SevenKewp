@@ -463,6 +463,7 @@ void CHalfLifeMultiplay :: ClientDisconnected( edict_t *pClient )
 			else
 				UTIL_LogPlayerEvent(pClient, "disconnected\n");
 
+			pPlayer->PenalizeDeath();
 			pPlayer->SaveScore();
 			
 			pPlayer->pev->frags = 0;

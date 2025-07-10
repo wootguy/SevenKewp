@@ -8,7 +8,7 @@
 class CCorpse : public CBaseMonster
 {
 	virtual int ObjectCaps(void) { return FCAP_DONT_SAVE; }
-	int Classify() { return CLASS_PLAYER; }
+	int Classify() { return CLASS_NONE; }
 	BOOL IsPlayerCorpse(void) { return TRUE; }
 	BOOL IsNormalMonster(void) { return FALSE; }
 };

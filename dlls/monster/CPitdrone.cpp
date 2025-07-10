@@ -271,6 +271,9 @@ public:
 	float m_flNextSpikeTime;// last time the pit drone used the spike attack.
 	int m_iInitialAmmo;
 	float m_flNextEatTime;
+	bool m_hasAmmoGroup;
+	bool m_hasSpitEvent;
+	bool m_didSpit;
 
 private:
 	static const char* pAlertSounds[];
@@ -551,7 +554,9 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 	{
 		case PITDRONE_AE_SPIT:
 		{
-			if( m_iInitialAmmo != -1 && GetBodygroup( PitdroneBodygroup::Weapons ) != PitdroneWeapon::Empty )
+			bool hasAmmoLoaded = GetBodygroup(PitdroneBodygroup::Weapons) != PitdroneWeapon::Empty;
+
+			if( m_iInitialAmmo != -1 && (!m_hasAmmoGroup || hasAmmoLoaded))
 			{
 				Vector	vecSpitOffset;
 				Vector	vecSpitDir;
@@ -579,20 +584,22 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				CPitdroneSpike::Shoot( pev, vecSpitOffset, vecSpitDir * 900, UTIL_VecToAngles( vecSpitDir ) );
 				CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 
-				auto ammoSubModel = GetBodygroup( PitdroneBodygroup::Weapons );
+				if (m_hasAmmoGroup) {
+					auto ammoSubModel = GetBodygroup(PitdroneBodygroup::Weapons);
 
-				//TODO: needs to be fixed so all spikes can be fired?
-				if( ammoSubModel == PitdroneWeapon::Two )
-				{
-					ammoSubModel = PitdroneWeapon::Empty;
-				}
-				else
-				{
-					++ammoSubModel;
-				}
+					//TODO: needs to be fixed so all spikes can be fired?
+					if (ammoSubModel == PitdroneWeapon::Two)
+					{
+						ammoSubModel = PitdroneWeapon::Empty;
+					}
+					else
+					{
+						++ammoSubModel;
+					}
 
-				SetBodygroup( PitdroneBodygroup::Weapons, ammoSubModel );
-				--m_cAmmoLoaded;
+					SetBodygroup(PitdroneBodygroup::Weapons, ammoSubModel);
+					--m_cAmmoLoaded;
+				}
 			}
 		}
 		break;
@@ -720,19 +727,29 @@ void CPitdrone :: Spawn()
 		m_iInitialAmmo = PITDRONE_CLIP_SIZE;
 	}
 
-	if( m_iInitialAmmo < 0 )
-	{
-		m_iInitialAmmo = 0;
-		SetBodygroup(PitdroneBodygroup::Weapons, PitdroneWeapon::Empty);
+	m_hasAmmoGroup = GetBodygroups() > PitdroneBodygroup::Weapons;
+
+	if (m_hasAmmoGroup) {
+		if (m_iInitialAmmo < 0)
+		{
+			m_iInitialAmmo = 0;
+			SetBodygroup(PitdroneBodygroup::Weapons, PitdroneWeapon::Empty);
+		}
+		else
+		{
+			SetBodygroup(PitdroneBodygroup::Weapons, PitdroneWeapon::One - m_iInitialAmmo);
+		}
 	}
-	else
-	{
-		SetBodygroup( PitdroneBodygroup::Weapons, PitdroneWeapon::One - m_iInitialAmmo );
+	else {
+		m_iInitialAmmo = 10;
 	}
+	
 
 	m_cAmmoLoaded = m_iInitialAmmo;
 
 	m_flNextEatTime = gpGlobals->time;
+
+	m_hasSpitEvent = ActivityHasEvent(ACT_RANGE_ATTACK1, PITDRONE_AE_SPIT);
 
 	MonsterInit();
 }
@@ -786,6 +803,18 @@ void CPitdrone :: RunAI ( void )
 		}
 	}
 
+	if (m_Activity == ACT_RANGE_ATTACK1) {
+		if (!m_hasSpitEvent && !m_didSpit && pev->frame > 128) {
+			m_didSpit = true;
+			MonsterEvent_t fakeEvt;
+			fakeEvt.event = PITDRONE_AE_SPIT;
+			fakeEvt.options = "";
+			HandleAnimEvent(&fakeEvt);
+		}
+	}
+	else {
+		m_didSpit = false;
+	}
 }
 
 //========================================================

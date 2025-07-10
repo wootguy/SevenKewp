@@ -588,7 +588,7 @@ bool CItemInventory::CanCollect(CBaseMonster* pPlayer, const char** errorMsg) {
 	return true;
 }
 
-void CItemInventory::ItemTouch(CBaseEntity* pOther) {
+void CItemInventory::ItemBounce(CBaseEntity* pOther) {
 	if (pev->movetype == MOVETYPE_BOUNCE && pOther->IsBSPModel()) {
 		if (pev->velocity.Length() > 100) {
 			pev->velocity = pev->velocity * 0.5f;
@@ -608,6 +608,10 @@ void CItemInventory::ItemTouch(CBaseEntity* pOther) {
 		pev->angles.x = 0;
 		pev->angles.z = 0;
 	}
+}
+
+void CItemInventory::ItemTouch(CBaseEntity* pOther) {
+	ItemBounce(pOther);
 
 	CBaseMonster* mon = pOther->MyMonsterPointer();
 	CBasePlayer* plr = pOther->IsPlayer() ? (CBasePlayer*)pOther : NULL;
@@ -793,8 +797,10 @@ void CItemInventory::Detach(bool fireDropTrigger) {
 
 	UTIL_SetOrigin(pev, carrier->GetGunPosition());
 
-	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
-		SetTouch(&CItem::ItemTouch);
+	if (pev->spawnflags & SF_ITEM_USE_ONLY)
+		SetTouch(&CItemInventory::ItemBounce);
+	else
+		SetTouch(&CItemInventory::ItemTouch);
 
 	ApplyModelProperties(false);
 	m_wearout_time = 0;
@@ -931,8 +937,10 @@ void CItemInventory::ItemThink() {
 	}
 
 	if (m_waiting_to_materialize) {
-		if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
-			SetTouch(&CItem::ItemTouch);
+		if (pev->spawnflags & SF_ITEM_USE_ONLY)
+			SetTouch(&CItemInventory::ItemBounce);
+		else
+			SetTouch(&CItemInventory::ItemTouch);
 		pev->solid = SOLID_TRIGGER;
 		pev->effects &= !EF_NODRAW;
 		m_waiting_to_materialize = false;

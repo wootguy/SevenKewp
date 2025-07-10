@@ -41,7 +41,9 @@ const char* const grapple_small[] =
 		"monster_flyer_flock",
 		"monster_headcrab",
 		"monster_leech",
-		"monster_penguin"};
+		"monster_penguin",
+		"monster_stukabat"
+};
 
 const char* const grapple_medium[] =
 	{
@@ -62,11 +64,13 @@ const char* const grapple_medium[] =
 		"monster_scientist",
 		"monster_zombie",
 		"monster_zombie_barney",
-		"monster_zombie_soldier"};
+		"monster_zombie_soldier"
+};
 
 const char* const grapple_large[] =
 	{
 		"monster_alien_grunt",
+		"monster_alien_tor",
 		"monster_alien_voltigore",
 		"monster_assassin_repel",
 		"monster_grunt_ally_repel",
@@ -79,7 +83,9 @@ const char* const grapple_large[] =
 		"monster_nihilanth",
 		"monster_pitworm",
 		"monster_pitworm_up",
-		"monster_shocktrooper"};
+		"monster_shocktrooper",
+		"monster_kingpin"
+};
 
 const char* const grapple_fixed[] =
 	{
@@ -87,7 +93,8 @@ const char* const grapple_fixed[] =
 		"monster_sitting_cleansuit_scientist",
 		"monster_sitting_scientist",
 		"monster_tentacle",
-		"ammo_spore"};
+		"ammo_spore"
+};
 }
 
 void CGrappleTip::Precache()

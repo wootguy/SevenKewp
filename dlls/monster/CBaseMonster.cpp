@@ -8192,6 +8192,8 @@ void CBaseMonster::CleanupLocalCorpses() {
 		if (!mon || !mon->IsNormalMonster() || !mon->m_killedTime || mon->m_isFadingOut) {
 			continue;
 		}
+		if (mon->pev->deadflag == DEAD_DYING || mon->pev->deadflag == DEAD_NO)
+			continue;
 
 		if (ENGINE_CHECK_VISIBILITY(ent->edict(), pvs)) {
 			corpses.push_back(mon);
