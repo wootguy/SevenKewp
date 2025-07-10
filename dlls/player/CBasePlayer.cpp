@@ -6820,6 +6820,12 @@ void CBasePlayer::ResetSequenceInfo() {
 		// m_flFrameRate must match the model or else the animations stutters
 		float oldFrameRate = m_flFrameRate;
 		GetSequenceInfo(m_playerModel, pev, &m_flFrameRate, &m_flGroundSpeed);
+
+		if (m_flFrameRate == 0) {
+			// Fun fact: allowing 0 makes hitboxes gigantic sometimes (bigratshit on assaultmesa2).
+			m_flFrameRate = oldFrameRate;
+		}
+
 		pev->framerate *= oldFrameRate / m_flFrameRate;
 	}
 }
