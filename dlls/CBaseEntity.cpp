@@ -927,55 +927,56 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 
 				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 			}
-			else switch (iBulletType)
-			{
-			default:
-			case BULLET_MONSTER_9MM:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_9mm_bullet, vecDir, &tr, DMG_BULLET);
+			else {
+				switch (iBulletType) {
+				default:
+				case BULLET_MONSTER_9MM:
+					pEntity->TraceAttack(pevAttacker, gSkillData.sk_9mm_bullet, vecDir, &tr, DMG_BULLET);
 
-				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
-
-				break;
-
-			case BULLET_MONSTER_MP5:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_9mmAR_bullet, vecDir, &tr, DMG_BULLET);
-
-				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
-
-				break;
-
-			case BULLET_PLAYER_556:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_556_bullet, vecDir, &tr, DMG_BULLET);
-
-				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
-
-				break;
-
-			case BULLET_MONSTER_762:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_762_bullet, vecDir, &tr, DMG_BULLET);
-
-				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
-
-				break;
-
-			case BULLET_MONSTER_12MM:
-				pEntity->TraceAttack(pevAttacker, gSkillData.sk_12mm_bullet, vecDir, &tr, DMG_BULLET);
-				if (!tracer)
-				{
 					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
-				}
-				break;
 
-			case BULLET_NONE: // FIX 
-				pEntity->TraceAttack(pevAttacker, 50, vecDir, &tr, DMG_CLUB);
-				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-				// only decal glass
-				if (!FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
-				{
-					UTIL_DecalTrace(&tr, DECAL_GLASSBREAK1 + RANDOM_LONG(0, 2));
-				}
+					break;
 
-				break;
+				case BULLET_MONSTER_MP5:
+					pEntity->TraceAttack(pevAttacker, gSkillData.sk_9mmAR_bullet, vecDir, &tr, DMG_BULLET);
+
+					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
+
+					break;
+
+				case BULLET_PLAYER_556:
+					pEntity->TraceAttack(pevAttacker, gSkillData.sk_556_bullet, vecDir, &tr, DMG_BULLET);
+
+					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
+
+					break;
+
+				case BULLET_MONSTER_762:
+					pEntity->TraceAttack(pevAttacker, gSkillData.sk_762_bullet, vecDir, &tr, DMG_BULLET);
+
+					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
+
+					break;
+
+				case BULLET_MONSTER_12MM:
+					pEntity->TraceAttack(pevAttacker, gSkillData.sk_12mm_bullet, vecDir, &tr, DMG_BULLET);
+					if (!tracer)
+					{
+						DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
+					}
+					break;
+
+				case BULLET_NONE: // FIX 
+					pEntity->TraceAttack(pevAttacker, 50, vecDir, &tr, DMG_CLUB);
+					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+					// only decal glass
+					if (!FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
+					{
+						UTIL_DecalTrace(&tr, DECAL_GLASSBREAK1 + RANDOM_LONG(0, 2));
+					}
+
+					break;
+				}
 			}
 		}
 		// make bullet trails
