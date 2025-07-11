@@ -146,11 +146,20 @@ void Rehlds_HandleNetCommand(IRehldsHook_HandleNetCommand* chain, IGameClient* c
 	chain->callNext(cl, opcode);
 }
 
+void Rehlds_SV_WriteFullClientUpdate(IRehldsHook_SV_WriteFullClientUpdate* chain,
+	IGameClient* client, char* info, size_t maxlen, sizebuf_t* sb, IGameClient* receiver) {
+
+	CALL_HOOKS_VOID(pfnUserInfo, receiver->GetEdict(), client->GetEdict(), info);
+
+	chain->callNext(client, info, maxlen, sb, receiver);
+}
+
 void RegisterRehldsHooks() {
 	if (!g_RehldsHookchains) {
 		return;
 	}
 	g_RehldsHookchains->HandleNetCommand()->registerHook(&Rehlds_HandleNetCommand, HC_PRIORITY_DEFAULT + 1);
+	g_RehldsHookchains->SV_WriteFullClientUpdate()->registerHook(&Rehlds_SV_WriteFullClientUpdate);
 }
 
 void UnregisterRehldsHooks() {
@@ -158,4 +167,5 @@ void UnregisterRehldsHooks() {
 		return;
 	}
 	g_RehldsHookchains->HandleNetCommand()->unregisterHook(&Rehlds_HandleNetCommand);
+	g_RehldsHookchains->SV_WriteFullClientUpdate()->unregisterHook(&Rehlds_SV_WriteFullClientUpdate);
 }

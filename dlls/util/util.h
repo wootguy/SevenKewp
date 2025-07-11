@@ -920,3 +920,7 @@ EXPORT void UTIL_ResetVoiceChannel(CBasePlayer* plr);
 EXPORT void UTIL_MD5HashData(uint8_t digest[16], uint8_t* data, int dataLen);
 
 EXPORT void UTIL_MD5HashFile(uint8_t digest[16], const char* fpath);
+
+void UTIL_SendUserInfo_internal(edict_t* msgPlayer, edict_t* infoPlayer, char* info);
+
+EXPORT void UTIL_SendUserInfo(edict_t* msgPlayer, edict_t* infoPlayer, char* info);

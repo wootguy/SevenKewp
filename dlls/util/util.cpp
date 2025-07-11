@@ -1367,7 +1367,7 @@ void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix
 		plr->UpdateTeamInfo(customColor);
 	}
 	else if (plr->tempNameActive) {
-		plr->Rename(plr->DisplayName(), true, MSG_ONE, plr->edict());
+		plr->Rename(plr->DisplayName(), true, plr->edict());
 		plr->UpdateTeamInfo(-1, MSG_ONE, plr->edict());
 	}
 
@@ -1416,7 +1416,7 @@ void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix
 		// TODO: if a temp name is active, this might overflow that player from all the renaming
 	}
 	if (plr->tempNameActive) {
-		plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
+		plr->Rename(plr->m_tempName, false, plr->edict());
 		plr->UpdateTeamInfo(plr->m_tempTeam, MSG_ONE, plr->edict());
 	}
 }
@@ -3250,4 +3250,20 @@ void UTIL_MD5HashFile(uint8_t digest[16], const char* fpath) {
 	}
 	UTIL_MD5HashData(digest, data, len);
 	FREE_FILE(data);
+}
+
+void UTIL_SendUserInfo_internal(edict_t* msgPlayer, edict_t* infoPlayer, char* info) {
+	CALL_HOOKS_VOID(pfnUserInfo, msgPlayer, infoPlayer, info);
+	UTIL_SendUserInfo(msgPlayer, infoPlayer, info);
+}
+
+void UTIL_SendUserInfo(edict_t* msgPlayer, edict_t* infoPlayer, char* info) {
+	MESSAGE_BEGIN(MSG_ONE, SVC_UPDATEUSERINFO, 0, msgPlayer);
+	WRITE_BYTE(ENTINDEX(infoPlayer) - 1);
+	WRITE_LONG(0); // client user id (???)
+	WRITE_STRING(info);
+	for (int i = 0; i < 16; i++) {
+		WRITE_BYTE(0x00); // CD Key hash (???)
+	}
+	MESSAGE_END();
 }
