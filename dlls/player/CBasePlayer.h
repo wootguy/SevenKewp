@@ -115,6 +115,7 @@ enum sbar_data
 #define MAX_NEW_PACKET_ENTITIES 64
 
 enum HL_CLIENT_SYSTEM {
+	CLIENT_SYSTEM_NOT_CHECKED, // player hasn't responded to cvar queries yet
 	CLIENT_SYSTEM_WINDOWS,
 	CLIENT_SYSTEM_LINUX
 };
@@ -356,7 +357,7 @@ public:
 	virtual void UpdateClientData( void );
 
 	// if fast, then only send essential user info because it will be reset shortly
-	void Rename(const char* newName, bool fast, int msg_mode = MSG_ALL, edict_t* dst = NULL);
+	void Rename(const char* newName, bool fast, edict_t* dst = NULL);
 
 	void SetPrefsFromUserinfo(char* infobuffer);
 	

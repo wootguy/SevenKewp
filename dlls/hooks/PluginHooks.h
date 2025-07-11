@@ -216,6 +216,10 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// called after a player's model is changed
 	// or set for the first time after joining (oldModel will be blank in that case)
 	HOOK_RETURN_DATA (*pfnPlayerModelChanged)(CBasePlayer* plr, const char* oldModel, const char* newModel);
+	
+	// A userinfo string is about to be sent from infoPlayer to msgPlayer.
+	// infoPlayer is NULL during client connection
+	HOOK_RETURN_DATA (*pfnUserInfo)(edict_t* msgPlayer, edict_t* infoPlayer, char* info);
 };
 
 // do not call directly, use RegisterPlugin instead

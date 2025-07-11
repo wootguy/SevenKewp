@@ -949,7 +949,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	if (pVictim->IsPlayer()) {
 		CBasePlayer* plr = (CBasePlayer*)pVictim;
 		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
-			plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
+			plr->Rename(STRING(plr->pev->netname), true, plr->edict());
 			plr->UpdateTeamInfo(plr->GetNameColor(), MSG_ONE, plr->edict());
 		}
 	}
@@ -957,7 +957,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		CBasePlayer* plr = (CBasePlayer*)Killer;
 		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
 			if (!originalKillerName)
-				plr->Rename(STRING(plr->pev->netname), true, MSG_ONE, plr->edict());
+				plr->Rename(STRING(plr->pev->netname), true, plr->edict());
 			plr->UpdateTeamInfo(plr->GetNameColor(), MSG_ONE, plr->edict());
 		}
 	}
@@ -983,7 +983,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		
 		// TODO: this is sending the hacked player double the network packets, and these are already heavy
 		if (hackedPlayer1->tempNameActive) {
-			hackedPlayer1->Rename(hackedPlayer1->m_tempName, false, MSG_ONE, hackedPlayer1->edict());
+			hackedPlayer1->Rename(hackedPlayer1->m_tempName, false, hackedPlayer1->edict());
 			hackedPlayer1->UpdateTeamInfo(hackedPlayer1->m_tempTeam, MSG_ONE, hackedPlayer1->edict());
 		}
 	}
@@ -997,7 +997,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 		hackedPlayer2->UpdateTeamInfo(hackedPlayer2->GetNameColor());
 
 		if (hackedPlayer2->tempNameActive) {
-			hackedPlayer2->Rename(hackedPlayer2->m_tempName, false, MSG_ONE, hackedPlayer2->edict());
+			hackedPlayer2->Rename(hackedPlayer2->m_tempName, false, hackedPlayer2->edict());
 			hackedPlayer2->UpdateTeamInfo(hackedPlayer2->m_tempTeam, MSG_ONE, hackedPlayer2->edict());
 		}
 	}
@@ -1006,14 +1006,14 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	if (pVictim->IsPlayer()) {
 		CBasePlayer* plr = (CBasePlayer*)pVictim;
 		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
-			plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
+			plr->Rename(plr->m_tempName, false, plr->edict());
 			plr->UpdateTeamInfo(plr->m_tempTeam, MSG_ONE, plr->edict());
 		}
 	}
 	if (Killer->IsPlayer()) {
 		CBasePlayer* plr = (CBasePlayer*)Killer;
 		if (plr->tempNameActive && plr != hackedPlayer1 && plr != hackedPlayer2) {
-			plr->Rename(plr->m_tempName, false, MSG_ONE, plr->edict());
+			plr->Rename(plr->m_tempName, false, plr->edict());
 			plr->UpdateTeamInfo(plr->m_tempTeam, MSG_ONE, plr->edict());
 		}
 	}
@@ -1343,7 +1343,7 @@ void CHalfLifeMultiplay :: GoToIntermission(INTERMISSION_REASON reason)
 		CBasePlayer* pEnt = UTIL_PlayerByIndex(i);
 
 		if (pEnt && pEnt->tempNameActive) {
-			pEnt->Rename(pEnt->DisplayName(), false, MSG_ONE, pEnt->edict());
+			pEnt->Rename(pEnt->DisplayName(), false, pEnt->edict());
 			pEnt->UpdateTeamInfo(-1, MSG_ONE, pEnt->edict());
 		}
 	}
