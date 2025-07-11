@@ -1244,7 +1244,7 @@ void CEnvWeather::PlayWeatherSounds(CBasePlayer* plr) {
 void CEnvWeather::WeatherThink(void)
 {
 	if (g_fog_enabled && m_useFog) {
-		uint32_t softwarePlayers = 0;
+		uint32_t incompatClientPlayers = 0;
 
 		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = (CBasePlayer*)UTIL_PlayerByIndex(i);
@@ -1253,7 +1253,13 @@ void CEnvWeather::WeatherThink(void)
 			}
 
 			if (plr->m_clientRenderer == CLIENT_RENDERER_SOFTWARE) {
-				softwarePlayers |= PLRBIT(i);
+				// overdraw is the software mode killer. Don't even try to render fog.
+				incompatClientPlayers |= PLRBIT(i);
+			}
+			if (plr->m_clientSystem == CLIENT_SYSTEM_LINUX) {
+				// The black fog layers flicker when you move for an unknown reason.
+				// Only additive rendermode layers render correctly. A totally different fog method is needed.
+				incompatClientPlayers |= PLRBIT(i);
 			}
 		}
 
@@ -1265,8 +1271,7 @@ void CEnvWeather::WeatherThink(void)
 				// later with m_fakeFollow.
 				fog->pev->velocity = Vector(0, 0, 1) * sinf(gpGlobals->time);
 
-				// overdraw is the software mode killer. Don't even try to render fog.
-				fog->m_hidePlayers |= softwarePlayers;
+				fog->m_hidePlayers |= incompatClientPlayers;
 			}
 		}
 	}
