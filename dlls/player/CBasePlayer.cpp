@@ -6265,6 +6265,11 @@ void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarNam
 	else if (requestID == 3) {
 		m_clientRenderer = hasCvar ? CLIENT_RENDERER_OPENGL : CLIENT_RENDERER_SOFTWARE;
 
+		g_engfuncs.pfnQueryClientCvarValue2(edict(), "m_mousethread_sleep", 4);
+	}
+	else if (requestID == 4) {
+		m_clientSystem = hasCvar ? CLIENT_SYSTEM_WINDOWS : CLIENT_SYSTEM_LINUX;
+
 		UTIL_LogPlayerEvent(edict(), "Client version: %s\n", GetClientVersionString());
 	}
 }
@@ -6311,6 +6316,7 @@ void CBasePlayer::SendLegacyClientWarning() {
 const char* CBasePlayer::GetClientVersionString() {
 	const char* engineVersion = "";
 	const char* renderer = "";
+	const char* system = "";
 
 	if (m_clientEngineVersion == CLIENT_ENGINE_HL_LEGACY)
 		engineVersion = " (steam_legacy)";
@@ -6320,7 +6326,12 @@ const char* CBasePlayer::GetClientVersionString() {
 	else if (m_clientRenderer == CLIENT_RENDERER_SOFTWARE)
 		renderer = " (Software)";
 
-	return UTIL_VarArgs("%s%s%s", STRING(m_clientModVersionString), engineVersion, renderer);
+	if (m_clientSystem == CLIENT_SYSTEM_WINDOWS)
+		system = " (Windows)";
+	else if (m_clientSystem == CLIENT_SYSTEM_LINUX)
+		system = " (Linux)";
+
+	return UTIL_VarArgs("%s%s%s%s", STRING(m_clientModVersionString), engineVersion, renderer, system);
 }
 
 const char* CBasePlayer::GetSteamID() {

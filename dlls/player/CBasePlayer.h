@@ -114,6 +114,11 @@ enum sbar_data
 // always recoverable. 64 fills up MAX_PACKET_ENTITIES very fast even at cl_updaterate 10
 #define MAX_NEW_PACKET_ENTITIES 64
 
+enum HL_CLIENT_SYSTEM {
+	CLIENT_SYSTEM_WINDOWS,
+	CLIENT_SYSTEM_LINUX
+};
+
 enum HL_CLIENT_ENGINE_VERSION {
 	CLIENT_ENGINE_NOT_CHECKED,	// player hasn't responded to cvar queries yet
 	CLIENT_ENGINE_HL_LATEST,	// the latest version of the HL client from steam
@@ -482,6 +487,7 @@ public:
 	HL_CLIENT_ENGINE_VERSION m_clientEngineVersion; // which game engine is the is this player using?
 	HL_CLIENT_MOD_VERSION m_clientModVersion; // which mod is this player using?
 	HL_CLIENT_RENDERER m_clientRenderer;
+	HL_CLIENT_SYSTEM m_clientSystem;
 	string_t m_clientModVersionString; // version string for the client mod
 	bool m_sentClientWarning; // has this client been warned about their client incompatability?
 
