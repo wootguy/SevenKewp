@@ -7,12 +7,15 @@
 #define HMAP_DEFAULT_STRING_POOL_SZ 64
 #define HMAP_MAX_STRING_POOL_SZ (1024*1024*16)
 //#define PROFILE_MODE // uncomment to be able to print global hash table stats
-#define MAX_PRIME_DOUBLES 30
+#define MAX_PRIME_DOUBLES 29
 
 // how full the map can be before it's resized, should be a low percentage because open addressing
 // has problems with clustering (collisions in separate "buckets" merging to create giant chains of
 // blocked space)
 #define HMAP_MAX_FILL_PERCENT 0.5f
+
+// how empty the map can be before it's resized.
+#define HMAP_MIN_SHRINK_PERCENT 0.1f
 
 const StringMap g_emptyStringMap;
 std::unordered_set<BaseHashMap*> g_hashMaps;
@@ -56,6 +59,7 @@ BaseHashMap::BaseHashMap(int valueSz) {
 	maxEntries = 0;
 	stringPoolSz = 0;
 	entryCount = 0;
+	delCount = 0;
 	this->entrySz = valueSz + sizeof(entry_header_t);
 	memset(&stats, 0, sizeof(hash_map_stats_t));
 }
@@ -76,6 +80,7 @@ void BaseHashMap::copyFrom(const BaseHashMap& other) {
 	stringPoolSz = other.stringPoolSz;
 	entrySz = other.entrySz;
 	entryCount = other.entryCount;
+	delCount = other.delCount;
 
 	if (other.data) {
 		int dataSz = stringPoolSz + maxEntries * entrySz;
@@ -102,6 +107,7 @@ BaseHashMap& BaseHashMap::operator=(const BaseHashMap& other) {
 void BaseHashMap::init(int maxEntries, uint32_t stringPoolSz) {
 	stringOffset = 1; // skip 0 for NULL value
 	entryCount = 0;
+	delCount = 0;
 	this->maxEntries = maxEntries;
 	this->stringPoolSz = stringPoolSz;
 
@@ -255,15 +261,20 @@ bool BaseHashMap::put(const char* key, void* value) {
 	}
 
 	// resize before there's a problem
-	if (size() >= reservedSize() * HMAP_MAX_FILL_PERCENT) {
+	if (entryCount >= reservedSize() * HMAP_MAX_FILL_PERCENT) {	
+		int actualKeys = entryCount - delCount;
+
 		// use a prime number for table size to keep the step hash function simple
 		uint32_t nextSz = maxEntries;
-		for (int i = 0; i < MAX_PRIME_DOUBLES; i++) {
-			if (g_primeDoubles[i] > nextSz) {
-				nextSz = g_primeDoubles[i];
-				break;
+
+		if (actualKeys > delCount) {
+			for (int i = 0; i < MAX_PRIME_DOUBLES; i++) {
+				if (g_primeDoubles[i] > nextSz) {
+					nextSz = g_primeDoubles[i];
+					break;
+				}
 			}
-		}
+		} // else just rehash the table to get rid of the deleted keys
 
 		resizeHashTable(nextSz);
 	}
@@ -307,14 +318,30 @@ void BaseHashMap::del(const char* key) {
 	uint32_t index, depth;
 	if (find(key, index, depth)) {
 		entry_header_t* entry = (entry_header_t*)(data + stringPoolSz + index*entrySz);
-		// can't actually free the node because lookups are aborted when a free node is found
-		// TODO: mark with special flag, then re-hash the table if there are too many deleted nodes
-		// don't just wait for the next resize
-		// 
+		// can't actually free the node because lookups are aborted when a free node is found.
 		//entry->occupied = false;
 		//entryCount--;
 
 		entry->key = 0;
+		delCount++;
+
+		int actualKeys = entryCount - delCount;
+		bool shouldShrink = actualKeys <= reservedSize() * HMAP_MIN_SHRINK_PERCENT;
+		bool manyDeleted = delCount > actualKeys;
+		if (manyDeleted && shouldShrink && maxEntries > g_primeDoubles[0]) {
+			// use a prime number for table size to keep the step hash function simple
+			// the next size should hold a little more than double so that it doesn't
+			// resize back up immediately
+			uint32_t nextSz = actualKeys * (1.0f / HMAP_MAX_FILL_PERCENT)*1.5f;
+			for (int i = 0; i < MAX_PRIME_DOUBLES; i++) {
+				if (g_primeDoubles[i] > nextSz) {
+					nextSz = g_primeDoubles[i];
+					break;
+				}
+			}
+			
+			resizeHashTable(nextSz);
+		}
 	}
 }
 
@@ -342,7 +369,7 @@ const char* StringMap::getValueString(void* value) {
 }
 
 int BaseHashMap::size() {
-	return entryCount;
+	return entryCount - delCount;
 
 	/*
 	if (!data) {
@@ -391,11 +418,6 @@ bool BaseHashMap::resizeStringPool(size_t newPoolSz) {
 }
 
 bool BaseHashMap::resizeHashTable(size_t newMaxEntries) {
-	if (newMaxEntries <= maxEntries) {
-		ALERT(at_error, "StringMap can't make the hash table any larger!\n");
-		return false;
-	}
-
 	//ALERT(at_console, "Hash table resized from %d to %d entries\n", (int)maxEntries, (int)newMaxEntries);
 
 	char* oldDat = data;
@@ -407,6 +429,7 @@ bool BaseHashMap::resizeHashTable(size_t newMaxEntries) {
 	memset(data, 0, dataSz);
 	stringOffset = 1;
 	entryCount = 0;
+	delCount = 0;
 
 	// reset stats so new growth isn't affected by old size stats
 	//uint16_t oldWorst = stats.maxDepth;
@@ -425,8 +448,9 @@ void BaseHashMap::printStats() {
 	int dataSz = stringPoolSz + maxEntries * entrySz + sizeof(StringMap);
 	float avgDepth = entryCount ? (float)stats.totalDepth / (float)entryCount : 0.0f;
 
-	ALERT(at_console, "Collisions: %3d, Max: %3d, Avg: %.1f | Fullness: %4d / %-4d | %4.1f KB = %d B entries + %d B strings\n",
-		stats.collisions, stats.maxDepth, avgDepth, size(), reservedSize(),
+	ALERT(at_console, "Collisions: %3d, Max: %3d, Avg: %.1f | Table: %4d / %-4d (%4d + %4d del) | %4.1f KB = %d B tbl + %d B str\n",
+		stats.collisions, stats.maxDepth, avgDepth, entryCount, reservedSize(),
+		entryCount - delCount, delCount,
 		(float)dataSz / 1024.0f, (int)(maxEntries * entrySz), (int)stringPoolSz);
 }
 

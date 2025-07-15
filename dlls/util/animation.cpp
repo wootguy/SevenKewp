@@ -107,10 +107,10 @@ studiohdr_t* GetPlayerModelPtr(const char* name, int& len) {
 		if (oldestKey) {
 			PModelCacheEntry* entry = g_playerModelCache.get(oldestKey);
 			if (entry) {
+				ALERT(at_console, "Free cached player model '%s'\n", oldestKey);
 				FREE_FILE(entry->data);
 				g_playerModelCache.del(oldestKey);
-				ALERT(at_console, "Freed cached player model '%s'\n", name);
-				// NOTE: hashmap deletes aren't fully implemented. Size will never decrease.
+
 			}
 		}
 	}

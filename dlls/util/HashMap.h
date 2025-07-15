@@ -61,6 +61,7 @@ protected:
 	char* data; // allocated memory for both strings and entries
 	size_t maxEntries;
 	size_t entryCount;
+	size_t delCount; // number of deleted items that are still taking up space in the table
 	uint32_t stringOffset;    // next free space in string pool
 	uint32_t stringPoolSz;
 	int entrySz;
@@ -202,7 +203,7 @@ private:
 	void putAll_internal(char* otherData, size_t otherEntryCount, size_t otherStringPoolSz) override {
 		for (size_t i = 0; i < otherEntryCount; i++) {
 			entry_header_t* entry = (entry_header_t*)(otherData + otherStringPoolSz + i * entrySz);
-			if (!entry->occupied) {
+			if (!entry->occupied || !entry->key) {
 				continue;
 			}
 
