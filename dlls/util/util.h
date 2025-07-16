@@ -921,6 +921,8 @@ EXPORT void UTIL_MD5HashData(uint8_t digest[16], uint8_t* data, int dataLen);
 
 EXPORT void UTIL_MD5HashFile(uint8_t digest[16], const char* fpath);
 
-void UTIL_SendUserInfo_internal(edict_t* msgPlayer, edict_t* infoPlayer, char* info);
+// will call plugin hooks, so don't call this in a userinfo hook or else you'll have an infinite loop
+EXPORT void UTIL_SendUserInfo_hooked(edict_t* msgPlayer, edict_t* infoPlayer, char* info);
 
+// helper for sending the userinfo message
 EXPORT void UTIL_SendUserInfo(edict_t* msgPlayer, edict_t* infoPlayer, char* info);

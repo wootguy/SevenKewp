@@ -234,7 +234,8 @@ int CCrowbar::Swing( int fFirst )
 
 		if (pEntity)
 		{
-			if ( pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine() && !pEntity->IsBSPModel() )
+			bool suitableClass = pEntity->Classify() != CLASS_NONE || pEntity->IsPlayerCorpse();
+			if (suitableClass && !pEntity->IsMachine() && !pEntity->IsBSPModel() )
 			{
 				// play thwack or smack sound
 				switch( RANDOM_LONG(0,2) )

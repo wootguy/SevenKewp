@@ -5064,7 +5064,7 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 		strcat(userinfo, botcolor);
 
 		if (dst) {
-			UTIL_SendUserInfo_internal(dst, edict(), userinfo);
+			UTIL_SendUserInfo_hooked(dst, edict(), userinfo);
 		}
 		else {
 			for (int i = 1; i < gpGlobals->maxClients; i++) {
@@ -5072,7 +5072,7 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 				if (!msgPlr)
 					continue;
 
-				UTIL_SendUserInfo_internal(msgPlr->edict(), edict(), userinfo);
+				UTIL_SendUserInfo_hooked(msgPlr->edict(), edict(), userinfo);
 			}
 		}
 
@@ -5100,7 +5100,7 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 		strcpy(userinfo + offset, nameEnd);
 
 	if (dst) {
-		UTIL_SendUserInfo_internal(dst, edict(), userinfo);
+		UTIL_SendUserInfo_hooked(dst, edict(), userinfo);
 	}
 	else {
 		for (int i = 1; i < gpGlobals->maxClients; i++) {
@@ -5108,7 +5108,7 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 			if (!msgPlr)
 				continue;
 
-			UTIL_SendUserInfo_internal(msgPlr->edict(), edict(), userinfo);
+			UTIL_SendUserInfo_hooked(msgPlr->edict(), edict(), userinfo);
 		}
 	}
 }

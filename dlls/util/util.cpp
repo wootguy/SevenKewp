@@ -3252,7 +3252,7 @@ void UTIL_MD5HashFile(uint8_t digest[16], const char* fpath) {
 	FREE_FILE(data);
 }
 
-void UTIL_SendUserInfo_internal(edict_t* msgPlayer, edict_t* infoPlayer, char* info) {
+void UTIL_SendUserInfo_hooked(edict_t* msgPlayer, edict_t* infoPlayer, char* info) {
 	CALL_HOOKS_VOID(pfnUserInfo, msgPlayer, infoPlayer, info);
 	UTIL_SendUserInfo(msgPlayer, infoPlayer, info);
 }
