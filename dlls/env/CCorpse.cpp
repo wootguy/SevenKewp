@@ -4,17 +4,9 @@
 #include "bodyque.h"
 #include "CBaseMonster.h"
 
-// Body queue class here.... It's really just CBaseEntity
-class CCorpse : public CBaseMonster
-{
-	virtual int ObjectCaps(void) { return FCAP_DONT_SAVE; }
-	int Classify() { return CLASS_NONE; }
-	BOOL IsPlayerCorpse(void) { return TRUE; }
-	BOOL IsNormalMonster(void) { return FALSE; }
-};
-
 LINK_ENTITY_TO_CLASS(bodyque, CCorpse)
 
+#define MAX_PLAYER_CORPSES 63
 
 //
 // make a body que entry for the given ent so the ent can be respawned elsewhere
@@ -53,6 +45,7 @@ void CopyToBodyQue(entvars_t* pev)
 
 	pevHead->sequence = pev->sequence;
 	pevHead->animtime = pev->animtime;	
+	pevHead->effects &= ~EF_NODRAW;
 
 	CBaseEntity* pent = CBaseEntity::Instance(ENT(pevHead));
 	if (pent) {
@@ -82,7 +75,7 @@ void InitBodyQue(void)
 	entvars_t* pev = VARS(g_pBodyQueueHead);
 
 	// Reserve 31 more slots for dead bodies
-	for (int i = 0; i < 31; i++)
+	for (int i = 0; i < MAX_PLAYER_CORPSES-1; i++)
 	{
 		pev->owner = CREATE_NAMED_ENTITY(istrClassname);
 		pev = VARS(pev->owner);

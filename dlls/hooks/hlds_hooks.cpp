@@ -481,15 +481,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 			reason, g_engfuncs.pfnInfoKeyValue(infobuffer, "name"));
 	}
 
-	std::string oldModel = STRING(plr->m_playerModelName);
-	std::string newModel = toLowerCase(g_engfuncs.pfnInfoKeyValue(infobuffer, "model"));
-
-	if (oldModel != newModel) {
-		plr->m_playerModel = GetPlayerModelPtr(newModel.c_str(), plr->m_playerModelSize);
-		plr->m_playerModelName = ALLOC_STRING(newModel.c_str());
-		plr->m_playerModelAnimSet = GetPlayerModelAnimSet(plr->m_playerModel);
-		CALL_HOOKS_VOID(pfnPlayerModelChanged, plr, oldModel.c_str(), newModel.c_str());
-	}
+	plr->ChangePlayerModel(g_engfuncs.pfnInfoKeyValue(infobuffer, "model"), false);
 }
 
 int g_serveractive = 0;
