@@ -145,6 +145,31 @@ PLAYER_MODEL_ANIM_SET GetPlayerModelAnimSet(studiohdr_t* mdl) {
 	return PMODEL_ANIMS_HALF_LIFE;
 }
 
+int CountModelPolys(studiohdr_t* header, int len) {
+	mstream data((char*)header, len);
+	int bodyValue = 255; // cl_himodels 1
+	int polyCount = 0;
+
+	for (int b = 0; b < header->numbodyparts; b++) {
+		data.seek(header->bodypartindex + b * sizeof(mstudiobodyparts_t));
+		mstudiobodyparts_t* bod = (mstudiobodyparts_t*)data.getOffsetBuffer();
+
+		int activeModel = (bodyValue / bod->base) % bod->nummodels;
+		bodyValue -= activeModel * bod->base;
+
+		data.seek(bod->modelindex + activeModel * sizeof(mstudiomodel_t));
+		mstudiomodel_t* mod = (mstudiomodel_t*)data.getOffsetBuffer();
+
+		for (int k = 0; k < mod->nummesh; k++) {
+			data.seek(mod->meshindex + k * sizeof(mstudiomesh_t));
+			mstudiomesh_t* mesh = (mstudiomesh_t*)data.getOffsetBuffer();
+			polyCount += mesh->numtris;
+		}
+	}
+
+	return polyCount;
+}
+
 int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs )
 {
 	studiohdr_t *pstudiohdr;

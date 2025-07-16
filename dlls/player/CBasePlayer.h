@@ -588,6 +588,12 @@ public:
 	// defaultSyncMultiplier = multiplier that syncs the upper/lower body on player.mdl
 	void SyncGaitAnimations(int animDesired, float gaitSpeed, float defaultSyncMultiplier);
 
+	// loads player model data and triggers plugin hooks. Conditionally broadcasts info to other players.
+	void ChangePlayerModel(const char* newModel, bool broadcast=true);
+
+	// send current userinfo to all players (name, model, etc.)
+	void BroadcastUserInfo();
+
 	// for sven-style monster info
 	//void UpdateMonsterInfo();
 	//float m_lastMonsterInfoMsg;

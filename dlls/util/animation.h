@@ -32,6 +32,8 @@ EXPORT studiohdr_t* GetPlayerModelPtr(const char* name, int& len);
 
 EXPORT PLAYER_MODEL_ANIM_SET GetPlayerModelAnimSet(studiohdr_t* mdl);
 
+EXPORT int CountModelPolys(studiohdr_t* header, int len);
+
 EXPORT void ClearPlayerModelCache();
 
 EXPORT int IsSoundEvent( int eventNumber );

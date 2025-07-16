@@ -1449,7 +1449,12 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 	else
 	{
 		// pev->gaitsequence	= LookupActivity( ACT_WALK );
-		pev->gaitsequence = LookupSequence("deep_idle");
+		if (hasNewAnims) {
+			pev->gaitsequence = pev->sequence;
+		}
+		else {
+			pev->gaitsequence = LookupSequence("deep_idle");
+		}
 	}
 
 	if (duration) {
@@ -6884,4 +6889,32 @@ void CBasePlayer::SyncGaitAnimations(int animDesired, float gaitSpeed, float def
 
 	// TODO: predict gait frame calculated by the client.
 	// Arm and leg movements are starting on the wrong frames.
+}
+
+void CBasePlayer::ChangePlayerModel(const char* newModel, bool broadcast) {
+	std::string oldModelStd = STRING(m_playerModelName);
+	std::string newModelStd = toLowerCase(newModel);
+
+	if (oldModelStd != newModelStd) {
+		m_playerModel = GetPlayerModelPtr(newModel, m_playerModelSize);
+		m_playerModelName = ALLOC_STRING(newModel);
+		m_playerModelAnimSet = GetPlayerModelAnimSet(m_playerModel);
+		CALL_HOOKS_VOID(pfnPlayerModelChanged, this, oldModelStd.c_str(), newModelStd.c_str());
+	
+		if (broadcast) {
+			BroadcastUserInfo();
+		}
+	}
+}
+
+void CBasePlayer::BroadcastUserInfo() {
+	char* info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
+
+	for (int i = 1; i < gpGlobals->maxClients; i++) {
+		CBasePlayer* msgPlr = UTIL_PlayerByIndex(i);
+		if (!msgPlr)
+			continue;
+
+		UTIL_SendUserInfo(msgPlr->edict(), edict(), info);
+	}
 }
