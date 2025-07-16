@@ -340,7 +340,8 @@ bool CPipewrench::Swing(const bool bFirst)
 
 		if (pEntity)
 		{
-			if (pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine() && !pEntity->IsBSPModel())
+			bool suitableClass = pEntity->Classify() != CLASS_NONE || pEntity->IsPlayerCorpse();
+			if (suitableClass && !pEntity->IsMachine() && !pEntity->IsBSPModel())
 			{
 				// play thwack or smack sound
 				switch (RANDOM_LONG(0, 2))
@@ -505,7 +506,8 @@ void CPipewrench::BigSwing()
 
 		if (pEntity)
 		{
-			if (pEntity->Classify() != CLASS_NONE && !pEntity->IsMachine() && !pEntity->IsBSPModel())
+			bool suitableClass = pEntity->Classify() != CLASS_NONE || pEntity->IsPlayerCorpse();
+			if (suitableClass && !pEntity->IsMachine() && !pEntity->IsBSPModel())
 			{
 				// play thwack or smack sound
 				// (not using the big hit sound because it lags behind the impact effect)
