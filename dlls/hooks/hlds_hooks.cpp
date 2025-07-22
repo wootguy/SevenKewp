@@ -1323,6 +1323,9 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 
 	// solid entities should always be sent to clients for collision prediction
 	bool solid = ent->v.solid >= SOLID_BBOX && ent->v.modelindex;
+	
+	// send the ent even if outside of the player's VIS range
+	bool forceVis = baseent->m_forceVisPlayers & plrbit;
 
 	if (invisible && !solid) {
 		return 0; 
@@ -1339,7 +1342,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	if (ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPvs)) {
 		baseent->m_pvsPlayers |= plrbit;
 	}
-	else if(ent != host) {
+	else if (ent != host && !forceVis) {
 		// Ignore if not the host and not touching a PVS leaf
 		// If pSet is NULL, then the test will always succeed and the entity will be added to the update
 		return 0;
