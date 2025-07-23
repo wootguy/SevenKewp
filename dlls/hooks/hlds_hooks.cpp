@@ -711,7 +711,7 @@ void MarkWeaponSlotConflicts() {
 
 		for (int k = 0; k < MAX_WEAPONS; k++)
 		{
-			ItemInfo& II2 = CBasePlayerItem::ItemInfoArray[i];
+			ItemInfo& II2 = CBasePlayerItem::ItemInfoArray[k];
 
 			if (!II2.iId)
 				continue;
