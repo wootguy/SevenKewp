@@ -90,6 +90,7 @@ public:
 	static const char* pPainSounds[];
 	static const char* pIdleSounds[];
 	static const char* pAlertSounds[];
+	static const char* pFireSounds[];
 
 	BOOL	m_fCanHornetAttack;
 	float	m_flNextHornetAttackCheck;

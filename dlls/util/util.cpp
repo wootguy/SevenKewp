@@ -2134,8 +2134,20 @@ bool loadReplacementFile(const char* path, StringMap& replacements) {
 			continue;
 		}
 
+		int i = 0;
 		int quotedPaths = 0;
-		for (int i = 0; i < 2; i++) {
+
+		// sentence replacement
+		if (line[0] == '!') {
+			int sep = line.find_first_of(" \t");
+			if (sep != -1) {
+				paths[i++] = line.substr(0, sep);
+				line = line.substr(sep + 1);
+				quotedPaths++;
+			}
+		}
+		
+		for (; i < 2; i++) {
 			int startQuote = line.find('"');
 			if (startQuote == -1) {
 				break;
@@ -2181,7 +2193,9 @@ bool loadReplacementFile(const char* path, StringMap& replacements) {
 			}
 		}
 		
-		replacements.put(toLowerCase(paths[0]).c_str(), toLowerCase(paths[1]).c_str());
+		std::string p1 = paths[0][0] == '!' ? toUpperCase(paths[0]) : toLowerCase(paths[0]);
+		std::string p2 = paths[1][0] == '!' ? toUpperCase(paths[1]) : toLowerCase(paths[1]);
+		replacements.put(p1.c_str(), p2.c_str());
 		//ALERT(at_console, "REP: %s -> %s\n", paths[0].c_str(), paths[1].c_str());
 	}
 

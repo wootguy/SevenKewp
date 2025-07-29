@@ -94,25 +94,7 @@ void CWeaponBox::Kill(void)
 //=========================================================
 void CWeaponBox::Touch(CBaseEntity* pOther)
 {
-	if (pev->movetype == MOVETYPE_BOUNCE && pOther->IsBSPModel()) {
-		if (pev->velocity.Length() > 100) {
-			pev->velocity = pev->velocity * 0.5f;
-			if (RANDOM_LONG(0, 1)) {
-				pev->avelocity.x *= -1;
-				pev->avelocity.z *= -1;
-			}
-		}
-		else {
-			pev->movetype = MOVETYPE_TOSS;
-			pev->avelocity = Vector(0, 0, 0);
-		}
-
-		int channel = (m_lastSoundChannel++ % 2) == 1 ? CHAN_VOICE : CHAN_ITEM;
-		EMIT_SOUND_DYN(ENT(pev), channel, "items/weapondrop1.wav", 0.7f, ATTN_IDLE, 0, RANDOM_LONG(90, 110));
-
-		pev->angles.x = 0;
-		pev->angles.z = 0;
-	}
+	ItemBounceTouch(pOther);
 
 	if (!pOther->IsPlayer())
 	{

@@ -1268,8 +1268,23 @@ void CTalkSquadMonster::Precache( void )
 		m_szGrp[TLK_UNUSE] = STRING( m_iszUnUse );
 
 	for (int i = 0; i < TLK_CGROUPS; i++) {
-		if (m_szGrp[i] && g_customSentencesMap.groups.get(m_szGrp[i])) {
-			PrecacheCustomSentence(this, m_szGrp[i]);
+		if (m_szGrp[i]) {
+			int groupSz = SENTENCEG_GroupCount(m_szGrp[i]);
+
+			for (int k = 0; k < groupSz; k++) {
+				const char* sentName = UTIL_VarArgs("!%s%d", m_szGrp[i], k);
+				const char* sentReplacement = g_soundReplacements.get(sentName);
+			
+				if (sentReplacement) {
+					if (sentReplacement[0] != '!') {
+						PRECACHE_SOUND(sentReplacement);
+					}
+				}
+			}
+
+			if (g_customSentencesMap.groups.get(m_szGrp[i])) {
+				PrecacheCustomSentence(this, m_szGrp[i]);
+			}
 		}
 	}
 }

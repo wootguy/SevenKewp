@@ -971,60 +971,12 @@ if fix_problems:
 			print(' '.join(mdlguy_command))
 			subprocess.run(mdlguy_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-	print("Converting model event sounds")
+	print("Converting models")
 	for mdl in all_models:
-		json_path = 'temp.json'
-		
-		mdlguy_command = [modelguy_path, 'info', mdl, json_path]
+		mdlguy_command = [modelguy_path, 'porthl', mdl, '-noanim']
 		#print(' '.join(mdlguy_command))
-		subprocess.run(mdlguy_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-		
-		if not os.path.exists(json_path):
-			print("Zomg failed to info model %s" % mdl)
-			continue
-		
-		had_nonstandard_audio = False
-		
-		with open(json_path, 'r') as file:
-			data = json.load(file)
-			
-			for tex in  data["textures"]:
-				if tex["width"] * tex["height"] > 512*512:
-					newWidth = 0
-					newHeight = 0
-					if tex["width"] > tex["height"]:
-						newWidth = 512
-						newHeight = (tex["height"] * (512.0 / tex["width"]) + 0.5)
-					else:
-						newHeight = 512
-						newWidth = (tex["width"] * (512.0 / tex["height"]) + 0.5)
-					
-					# pixel count must be divisble by 8 or else game crashes with "GL_Upload8: s&3"
-					newWidth =  int((newWidth + 4) / 8) * 8
-					newHeight = int((newHeight + 4) / 8) * 8
-					
-					print("Resizing invalid texture in %s (%s %dx%d -> %dx%d)" % (mdl, tex["name"], tex["width"], tex["height"], newWidth, newHeight))
-					mdlguy_command = [modelguy_path, 'resize', tex["name"], "%dx%d" % (newWidth, newHeight), mdl]
-					print(' '.join(mdlguy_command))
-					subprocess.run(mdlguy_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-			
-			for evt in data["events"]:
-				for fmt in nonstandard_audio_formats:
-					if ('.%s' % fmt) in evt['options']:
-						path = 'sound/%s' % evt["options"]
-						had_nonstandard_audio = True
-						
-						if os.path.exists(path):
-							convert_audio(evt["options"], 'wav', 22050)
-						elif not os.path.exists(os.path.splitext(path)[0] + ".wav"):
-							print("Missing model audio: %s" % path)
-						break
-						
-			if had_nonstandard_audio:
-				mdlguy_command = [modelguy_path, 'wavify', mdl]
-				print(' '.join(mdlguy_command))
-				subprocess.run(mdlguy_command)
-		os.remove(json_path)
+		#subprocess.run(mdlguy_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode
+		subprocess.run(mdlguy_command)
 	
 	print ("Converting skies")
 	for sky in all_skies:

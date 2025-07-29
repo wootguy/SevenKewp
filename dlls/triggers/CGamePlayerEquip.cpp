@@ -77,6 +77,12 @@ void CGamePlayerEquip::EquipPlayer(CBaseEntity* pEntity)
 	if (!pPlayer || !pPlayer->IsAlive())
 		return;
 
+	if (pev->spawnflags & SF_PLAYEREQUIP_FILTER_NAME) {
+		if (strcmp(STRING(pEntity->pev->targetname), STRING(pev->target))) {
+			return;
+		}
+	}
+
 	for (int i = 0; i < MAX_EQUIP; i++)
 	{
 		if (!m_weaponNames[i])

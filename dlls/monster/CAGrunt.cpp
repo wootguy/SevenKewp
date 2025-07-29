@@ -94,6 +94,13 @@ const char *CAGrunt::pAlertSounds[] =
 	"agrunt/ag_alert5.wav",
 };
 
+const char* CAGrunt::pFireSounds[] =
+{
+	"agrunt/ag_fire1.wav",
+	"agrunt/ag_fire2.wav",
+	"agrunt/ag_fire3.wav",
+};
+
 //=========================================================
 // IRelationship - overridden because Human Grunts are 
 // Alien Grunt's nemesis.
@@ -548,6 +555,7 @@ void CAGrunt :: Precache()
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pAttackSounds);
 	PRECACHE_SOUND_ARRAY(pAlertSounds);
+	PRECACHE_SOUND_ARRAY(pFireSounds);
 	
 	PRECACHE_FOOTSTEP_SOUNDS(g_stepSoundsLadder)
 

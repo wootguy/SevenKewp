@@ -106,6 +106,8 @@ void CBasePlayerItem::Materialize(void)
 
 	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
 		SetTouch(&CBasePlayerItem::DefaultTouch);
+	else
+		SetTouch(&CBaseEntity::ItemBounceTouch);
 
 	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
 		SetUse(&CBasePlayerItem::DefaultUse);
@@ -163,6 +165,7 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 		pNewWeapon->pev->rendercolor = pev->rendercolor;
 		pNewWeapon->pev->renderfx = pev->renderfx;
 		pNewWeapon->pev->dmg = pev->dmg;
+		pNewWeapon->pev->movetype = pev->movetype;
 		pNewWeapon->pev->effects |= EF_NODRAW;// invisible for now
 
 		CBasePlayerItem* wep = (CBasePlayerItem*)pNewWeapon->GetWeaponPtr();
@@ -188,6 +191,8 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 
 void CBasePlayerItem::DefaultTouch(CBaseEntity* pOther)
 {
+	ItemBounceTouch(pOther);
+
 	// if it's not a player, ignore
 	if (!pOther->IsPlayer())
 		return;

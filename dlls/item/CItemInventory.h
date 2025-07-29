@@ -18,7 +18,6 @@ public:
 	void KeyValue(KeyValueData* pkvd);
 	virtual void ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
 	bool CanCollect(CBaseMonster* pPlayer, const char** errorMsg);
-	virtual void ItemBounce(CBaseEntity* pOther);
 	virtual void ItemTouch(CBaseEntity* pOther) override;
 	virtual BOOL ShouldRespawn() { return FALSE; } // can only have one instance of itself in the world
 	virtual int	ObjectCaps(void);
@@ -126,5 +125,4 @@ public:
 	float m_return_time; // time when item will be forced back to its starting position. 0 = never
 	float m_wearout_time;
 	bool m_waiting_to_materialize;
-	int m_lastSoundChannel;
 };

@@ -488,6 +488,23 @@ void CBaseEntity::KeyValue(KeyValueData* pkvd) {
 		m_soundReplacementKey = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "angle"))
+	{
+		float value = (float)atof(pkvd->szValue);
+
+		// engine logic is duplicated here so that ents can be spawned late with the right angles.
+		if (value >= 0.0) {
+			pev->angles.y = value;
+		}
+		else if ((int)value == -1) {
+			pev->angles = Vector(-90, 0, 0);
+		}
+		else {
+			pev->angles = Vector(90, 0, 0);
+		}
+
+		pkvd->fHandled = TRUE;
+	}
 	else {
 		pkvd->fHandled = FALSE;
 	}
@@ -1928,4 +1945,42 @@ const char* CBaseEntity::DisplayName() {
 
 bool CBaseEntity::IsDelaySpawned() {
 	return !sv_precache_bspmodels->value && !g_can_set_bsp_models && pev->model && STRING(pev->model)[0] == '*';
+}
+
+void CBaseEntity::ItemBounceTouch(CBaseEntity* pOther) {
+	if (pev->movetype == MOVETYPE_BOUNCE && pOther->IsBSPModel()) {
+		bool hitRotatingObject = pOther->pev->avelocity.x != 0 || pOther->pev->avelocity.y != 0;
+		bool hitHard = pev->velocity.Length() > 100;
+
+		if (hitHard || hitRotatingObject) {
+			pev->velocity = pev->velocity * 0.5f;
+
+			if (hitHard && pev->avelocity == g_vecZero) {
+				// engine stopped rotation because it settled on something
+				// but it has started moving again.
+				pev->avelocity = Vector(0, 256, 256);
+				if (!strcmp(STRING(pev->classname), "weapon_9mmAR")) {
+					// mp5 bounces look better with X rotations
+					pev->avelocity = Vector(256, 256, 0);
+				}
+			}
+			if (RANDOM_LONG(0, 1)) {
+				pev->avelocity.x *= -1;
+				pev->avelocity.z *= -1;
+			}
+		}
+		else {
+			pev->movetype = MOVETYPE_TOSS;
+			pev->avelocity = Vector(0, 0, 0);
+		}
+
+		if (gpGlobals->time - m_lastBounceSound > 0.1f && pev->velocity.Length() > 20) {
+			int channel = (m_lastBounceSoundChannel++ % 2) == 1 ? CHAN_VOICE : CHAN_ITEM;
+			EMIT_SOUND_DYN(ENT(pev), channel, "items/weapondrop1.wav", 0.7f, ATTN_IDLE, 0, RANDOM_LONG(90, 110));
+			m_lastBounceSound = gpGlobals->time;
+		}
+		
+		pev->angles.x = 0;
+		pev->angles.z = 0;
+	}
 }

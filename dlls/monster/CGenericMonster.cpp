@@ -47,7 +47,7 @@ LINK_ENTITY_TO_CLASS( monster_generic, CGenericMonster )
 //=========================================================
 int	CGenericMonster :: Classify ( void )
 {
-	return	CBaseMonster::Classify(CLASS_PLAYER_ALLY);
+	return	CBaseMonster::Classify(CLASS_NONE);
 }
 
 const char* CGenericMonster::DisplayName() {

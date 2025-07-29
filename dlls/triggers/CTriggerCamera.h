@@ -45,6 +45,7 @@ public:
 	float m_turnspeed;
 	int	  m_state;
 	float m_activateTime; // time camera was activated
+	string_t m_iszTurnedOffTarget;
 };
 
 // currently active "All players" camera. Sent to new joiners.

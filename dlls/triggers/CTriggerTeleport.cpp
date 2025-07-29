@@ -62,7 +62,7 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 	entvars_t* pevToucher = pOther->pev;
 
 	// Only teleport monsters or clients
-	if (!FBitSet(pevToucher->flags, FL_CLIENT | FL_MONSTER))
+	if (!FBitSet(pev->spawnflags, SF_TRIGGER_EVERYTHING_ELSE) && !FBitSet(pevToucher->flags, FL_CLIENT | FL_MONSTER))
 		return;
 
 	if (!UTIL_IsMasterTriggered(m_sMaster, pOther))

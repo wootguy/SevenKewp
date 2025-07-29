@@ -620,6 +620,7 @@ enum svc_commands_e
 #define	SF_TRIGGER_ALLOWMONSTERS	1// monsters allowed to fire this trigger
 #define	SF_TRIGGER_NOCLIENTS		2// players not allowed to fire this trigger
 #define SF_TRIGGER_PUSHABLES		4// only pushables can fire this trigger
+#define SF_TRIGGER_EVERYTHING_ELSE	8// anything can trigger
 
 // func breakable
 #define SF_BREAK_TRIGGER_ONLY	1// may only be broken by trigger
@@ -668,6 +669,7 @@ EXPORT int SENTENCEG_PlayRndSz(edict_t *entity, const char *szrootname, float vo
 EXPORT int SENTENCEG_PlaySequentialSz(edict_t *entity, const char *szrootname, float volume, float attenuation, int flags, int pitch, int ipick, int freset);
 EXPORT int SENTENCEG_GetIndex(const char *szrootname);
 EXPORT int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz);
+EXPORT int SENTENCEG_GroupCount(const char *groupName);
 
 EXPORT void TEXTURETYPE_Init();
 EXPORT char TEXTURETYPE_Find(char *name);

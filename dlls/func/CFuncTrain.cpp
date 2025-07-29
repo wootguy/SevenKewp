@@ -189,7 +189,7 @@ void CFuncTrain::Next(void)
 		pev->speed = m_pevCurrentTarget->speed;
 		ALERT(at_aiconsole, "Train %s speed to %4.2f\n", STRING(pev->targetname), pev->speed);
 	}
-	m_previousTarget = ENT(m_pevCurrentTarget);
+	m_previousTarget = m_pevCurrentTarget ? ENT(m_pevCurrentTarget) : NULL;
 	m_pevCurrentTarget = pTarg->pev;// keep track of this since path corners change our target for us.
 
 	pev->enemy = pTarg->edict();//hack

@@ -82,6 +82,11 @@ void CTriggerCamera::KeyValue(KeyValueData* pkvd)
 		m_turnspeed = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "m_iszTurnedOffTarget"))
+	{
+		m_iszTurnedOffTarget = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseDelay::KeyValue(pkvd);
 }
@@ -130,6 +135,10 @@ void CTriggerCamera::TogglePlayerViews(bool enabled) {
 		}
 
 		TogglePlayerView(plr, enabled);
+	}
+
+	if (m_iszTurnedOffTarget && !enabled) {
+		FireTargets(STRING(m_iszTurnedOffTarget), this, this, USE_TOGGLE);
 	}
 }
 

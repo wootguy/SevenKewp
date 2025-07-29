@@ -6,6 +6,7 @@
 // Flag: USE Only
 
 #define SF_PLAYEREQUIP_USEONLY			0x0001
+#define SF_PLAYEREQUIP_FILTER_NAME		2
 #define MAX_EQUIP		32
 
 class CGamePlayerEquip : public CRulePointEntity

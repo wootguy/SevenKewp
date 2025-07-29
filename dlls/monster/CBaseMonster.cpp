@@ -1408,6 +1408,8 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 		return LOCALMOVE_INVALID;
 	}
 
+	UnblockScriptedMove(true);
+
 	//pev->origin.z = vecStartPos.z;//!!!HACKHACK
 
 //	pev->origin = vecStart;
@@ -1500,6 +1502,8 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 			nextStepSize = LOCAL_STEP_SIZE;
 		}
 	}
+
+	UnblockScriptedMove(false);
 
 	if (iReturn == LOCALMOVE_VALID && !(pev->flags & (FL_FLY | FL_SWIM)) && (!pTarget || (pTarget->pev->flags & FL_ONGROUND)))
 	{
@@ -2138,6 +2142,8 @@ void CBaseMonster::MoveExecute(CBaseEntity* pTargetEnt, const Vector& vecDir, fl
 	if (m_IdealActivity != m_movementActivity)
 		m_IdealActivity = m_movementActivity;
 
+	UnblockScriptedMove(true);
+
 	float flTotal = m_flGroundSpeed * pev->framerate * flInterval;
 	float flStep;
 	while (flTotal > 0.001)
@@ -2148,6 +2154,8 @@ void CBaseMonster::MoveExecute(CBaseEntity* pTargetEnt, const Vector& vecDir, fl
 		flTotal -= flStep;
 	}
 	// ALERT( at_console, "dist %f\n", m_flGroundSpeed * pev->framerate * flInterval );
+
+	UnblockScriptedMove(false);
 }
 
 Vector CBaseMonster::GetInterpolatedOrigin() {
@@ -2497,7 +2505,7 @@ int CBaseMonster::DefaultClassify(const char* monstertype) {
 		{"monster_cleansuit_scientist", CLASS_HUMAN_PASSIVE},
 		{"monster_cockroach", CLASS_INSECT},
 		{"monster_gargantua", CLASS_ALIEN_MONSTER},
-		{"monster_generic", CLASS_PLAYER_ALLY},
+		{"monster_generic", CLASS_NONE},
 		{"monster_gonome", CLASS_ALIEN_MONSTER},
 		{"monster_grunt_ally_repel", CLASS_PLAYER_ALLY},
 		{"monster_grunt_repel", CLASS_HUMAN_MILITARY},
@@ -4253,7 +4261,6 @@ void CBaseMonster::FadeMonster(void)
 void CBaseMonster::GibMonster(void)
 {
 	TraceResult	tr;
-	BOOL		gibbed = FALSE;
 
 	if (!HasMemory(bits_MEMORY_KILLED)) {
 		// make sure death triggers are called (in case GibMonster was called directly)
@@ -4272,18 +4279,6 @@ void CBaseMonster::GibMonster(void)
 
 		UTIL_BreakModel(position, size, vecVelocity, 30, MODEL_INDEX("models/computergibs.mdl"),
 			0, 25, BREAK_METAL);
-
-		gibbed = TRUE;
-	}
-	else if (HasHumanGibs())
-	{
-		// only humans throw skulls !!!UNDONE - eventually monsters will have their own sets of gibs
-		if (CVAR_GET_FLOAT("violence_hgibs") != 0)	// Only the player will ever get here
-		{
-			CGib::SpawnHeadGib(pev);
-			CGib::SpawnMonsterGibs(pev, 4, 1);	// throw some human gibs.
-		}
-		gibbed = TRUE;
 	}
 	else if (HasAlienGibs())
 	{
@@ -4291,29 +4286,30 @@ void CBaseMonster::GibMonster(void)
 		{
 			CGib::SpawnMonsterGibs(pev, 4, 0);	// Throw alien gibs
 		}
-		gibbed = TRUE;
+	}
+	else
+	{
+		// only humans throw skulls !!!UNDONE - eventually monsters will have their own sets of gibs
+		if (CVAR_GET_FLOAT("violence_hgibs") != 0)	// Only the player will ever get here
+		{
+			CGib::SpawnHeadGib(pev);
+			CGib::SpawnMonsterGibs(pev, 4, 1);	// throw some human gibs.
+		}
 	}
 
 	if (!IsPlayer() && !IsPlayerCorpse())
 	{
-		if (gibbed)
-		{
-			// don't remove players or player corpses!
-			SetThink(&CBaseMonster::SUB_Remove);
-			pev->nextthink = gpGlobals->time;
+		// don't remove players or player corpses!
+		SetThink(&CBaseMonster::SUB_Remove);
+		pev->nextthink = gpGlobals->time;
 
-			// if the entity is outside the valid range for sound origins, then it needs
-			// to be networked at least until the sound starts playing or else clients won't hear it.
-			if (!UTIL_IsValidTempEntOrigin(pev->origin)) {
-				pev->flags &= ~FL_MONSTER; // prevent the crowbar thinking this is a valid target
-				pev->renderamt = 0;
-				pev->rendermode = kRenderTransTexture;
-				pev->nextthink = gpGlobals->time + 0.1f;
-			}
-		}
-		else
-		{
-			FadeMonster();
+		// if the entity is outside the valid range for sound origins, then it needs
+		// to be networked at least until the sound starts playing or else clients won't hear it.
+		if (!UTIL_IsValidTempEntOrigin(pev->origin)) {
+			pev->flags &= ~FL_MONSTER; // prevent the crowbar thinking this is a valid target
+			pev->renderamt = 0;
+			pev->rendermode = kRenderTransTexture;
+			pev->nextthink = gpGlobals->time + 0.1f;
 		}
 	}
 	else {
@@ -8267,4 +8263,26 @@ float CBaseMonster::LastHurtTriggerTime(CBaseEntity* ent) {
 void CBaseMonster::SetClassification(int newClass) {
 	CBaseEntity::SetClassification(newClass);
 	InitSkin();
+}
+
+void CBaseMonster::UnblockScriptedMove(bool moveBeginNotEnd) {
+	static int oldPlayerSolidStates[33];
+
+	if (m_MonsterState != MONSTERSTATE_SCRIPT) {
+		return; // not in a script
+	}
+
+	// don't let players block monsters in a script and softlock the map
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+		if (plr) {
+			if (moveBeginNotEnd) {
+				oldPlayerSolidStates[i] = plr->pev->solid;
+				plr->pev->solid = SOLID_NOT;
+			}
+			else {
+				plr->pev->solid = oldPlayerSolidStates[i];
+			}
+		}
+	}
 }

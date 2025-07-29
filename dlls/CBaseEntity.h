@@ -182,6 +182,9 @@ public:
 
 	bool m_deathNoticeSent; // true if monster already sent a death notice to its owner
 
+	int m_lastBounceSoundChannel;
+	float m_lastBounceSound;
+
 	// fundamental callbacks
 	void (CBaseEntity ::* m_pfnThink)(void);
 	void (CBaseEntity ::* m_pfnTouch)(CBaseEntity* pOther);
@@ -464,6 +467,8 @@ public:
 
 	// will this entity Spawn() again after all other entities have precached?
 	bool IsDelaySpawned();
+
+	void ItemBounceTouch(CBaseEntity* pOther);
 
 	static void MaterialSoundPrecache(Materials precacheMaterial);
 	static void MaterialSoundRandom(edict_t* pEdict, Materials soundMaterial, float volume);

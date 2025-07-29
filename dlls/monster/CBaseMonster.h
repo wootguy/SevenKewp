@@ -524,6 +524,9 @@ public:
 	float LastHurtTriggerTime(CBaseEntity* ent);
 
 	virtual void SetClassification(int newClass) override;
+
+	// temporarily make players non-solid for scripted movements
+	void UnblockScriptedMove(bool moveBeginNotEnd);
 };
 
 

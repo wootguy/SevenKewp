@@ -588,30 +588,8 @@ bool CItemInventory::CanCollect(CBaseMonster* pPlayer, const char** errorMsg) {
 	return true;
 }
 
-void CItemInventory::ItemBounce(CBaseEntity* pOther) {
-	if (pev->movetype == MOVETYPE_BOUNCE && pOther->IsBSPModel()) {
-		if (pev->velocity.Length() > 100) {
-			pev->velocity = pev->velocity * 0.5f;
-			if (RANDOM_LONG(0, 1)) {
-				pev->avelocity.x *= -1;
-				pev->avelocity.z *= -1;
-			}
-		}
-		else {
-			pev->movetype = MOVETYPE_TOSS;
-			pev->avelocity = Vector(0, 0, 0);
-		}
-
-		int channel = (m_lastSoundChannel++ % 2) == 1 ? CHAN_VOICE : CHAN_ITEM;
-		EMIT_SOUND_DYN(ENT(pev), channel, "items/weapondrop1.wav", 0.7f, ATTN_IDLE, 0, RANDOM_LONG(90, 110));
-
-		pev->angles.x = 0;
-		pev->angles.z = 0;
-	}
-}
-
 void CItemInventory::ItemTouch(CBaseEntity* pOther) {
-	ItemBounce(pOther);
+	ItemBounceTouch(pOther);
 
 	CBaseMonster* mon = pOther->MyMonsterPointer();
 	CBasePlayer* plr = pOther->IsPlayer() ? (CBasePlayer*)pOther : NULL;
@@ -798,7 +776,7 @@ void CItemInventory::Detach(bool fireDropTrigger) {
 	UTIL_SetOrigin(pev, carrier->GetGunPosition());
 
 	if (pev->spawnflags & SF_ITEM_USE_ONLY)
-		SetTouch(&CItemInventory::ItemBounce);
+		SetTouch(&CBaseEntity::ItemBounceTouch);
 	else
 		SetTouch(&CItemInventory::ItemTouch);
 
@@ -938,7 +916,7 @@ void CItemInventory::ItemThink() {
 
 	if (m_waiting_to_materialize) {
 		if (pev->spawnflags & SF_ITEM_USE_ONLY)
-			SetTouch(&CItemInventory::ItemBounce);
+			SetTouch(&CBaseEntity::ItemBounceTouch);
 		else
 			SetTouch(&CItemInventory::ItemTouch);
 		pev->solid = SOLID_TRIGGER;

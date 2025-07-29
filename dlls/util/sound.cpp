@@ -452,6 +452,11 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz)
 	return -1;
 }
 
+int SENTENCEG_GroupCount(const char* groupName) {
+	int idx = SENTENCEG_GetIndex(groupName);
+	return idx != -1 ? rgsentenceg[idx].count : 0;
+}
+
 mstream* BuildStartSoundMessage(edict_t* ent, int channel, const char* sample, float fvolume, float attenuation,
 	int fFlags, int pitch, const float* origin) {
 	int sound_num;

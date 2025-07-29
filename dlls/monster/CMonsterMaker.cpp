@@ -270,7 +270,7 @@ void CMonsterMaker :: Spawn( )
 			SetUse ( &CMonsterMaker::ToggleUse );// so can be turned on/off
 		}
 
-		if ( FBitSet ( pev->spawnflags, SF_MONSTERMAKER_START_ON ) )
+		if ( FBitSet ( pev->spawnflags, SF_MONSTERMAKER_START_ON ) && !FBitSet(pev->spawnflags, SF_MONSTERMAKER_CYCLIC))
 		{// start making monsters as soon as monstermaker spawns
 			m_fActive = TRUE;
 			pev->nextthink = gpGlobals->time + m_flDelay;
