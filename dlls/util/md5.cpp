@@ -164,7 +164,7 @@ void MD5Final (unsigned char digest[16], struct MD5Context *ctx)
     MD5Transform (ctx->buf, (uint32_t *) ctx->in);
     byteReverse ((unsigned char *) ctx->buf, 4);
     memcpy (digest, ctx->buf, 16);
-    memset (ctx, 0, sizeof (ctx));      /* In case it's sensitive */
+    memset (ctx, 0, sizeof (MD5Context));      /* In case it's sensitive */
 }
 
 #ifndef ASM_MD5
@@ -188,7 +188,7 @@ void MD5Final (unsigned char digest[16], struct MD5Context *ctx)
  */
 void MD5Transform (uint32_t buf[4], uint32_t const in[16])
 {
-    register uint32_t a, b, c, d;
+    uint32_t a, b, c, d;
 
     a = buf[0];
     b = buf[1];

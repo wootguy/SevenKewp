@@ -318,7 +318,7 @@ public:
 	static const char *pFootSounds[];
 	static const char *pSpitSounds[];
 
-	bool m_mapHasMommaPath; // -1 = not checked, 0 = no, 1 = yes
+	bool m_mapHasMommaPath;
 
 	CUSTOM_SCHEDULES;
 

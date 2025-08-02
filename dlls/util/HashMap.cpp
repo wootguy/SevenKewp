@@ -267,7 +267,7 @@ bool BaseHashMap::put(const char* key, void* value) {
 		// use a prime number for table size to keep the step hash function simple
 		uint32_t nextSz = maxEntries;
 
-		if (actualKeys > delCount) {
+		if (actualKeys > (int)delCount) {
 			for (int i = 0; i < MAX_PRIME_DOUBLES; i++) {
 				if (g_primeDoubles[i] > nextSz) {
 					nextSz = g_primeDoubles[i];
@@ -327,7 +327,7 @@ void BaseHashMap::del(const char* key) {
 
 		int actualKeys = entryCount - delCount;
 		bool shouldShrink = actualKeys <= reservedSize() * HMAP_MIN_SHRINK_PERCENT;
-		bool manyDeleted = delCount > actualKeys;
+		bool manyDeleted = (int)delCount > actualKeys;
 		if (manyDeleted && shouldShrink && maxEntries > g_primeDoubles[0]) {
 			// use a prime number for table size to keep the step hash function simple
 			// the next size should hold a little more than double so that it doesn't

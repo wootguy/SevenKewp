@@ -806,9 +806,10 @@ void CPitdrone :: RunAI ( void )
 	if (m_Activity == ACT_RANGE_ATTACK1) {
 		if (!m_hasSpitEvent && !m_didSpit && pev->frame > 128) {
 			m_didSpit = true;
+			static char fakeops[1];
 			MonsterEvent_t fakeEvt;
 			fakeEvt.event = PITDRONE_AE_SPIT;
-			fakeEvt.options = "";
+			fakeEvt.options = fakeops;
 			HandleAnimEvent(&fakeEvt);
 		}
 	}
