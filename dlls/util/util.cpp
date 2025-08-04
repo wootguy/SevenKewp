@@ -637,8 +637,14 @@ CBaseEntity *UTIL_FindEntityByString( CBaseEntity *pStartEntity, const char *szK
 	static char asterisk_search[256];
 	const char* asterisk = strstr(szValue, "*");
 	if (asterisk) {
-		strcpy_safe(asterisk_search, szValue, 256);
-		asterisk_search[asterisk - szValue] = 0;
+		if (szValue[1] == 0) {
+			strcpy_safe(asterisk_search, szValue, 256);
+			asterisk_search[asterisk - szValue] = 0;
+		}
+		else {
+			// asterisk must be at the end of the string so that searches for BSP models work (*123)
+			asterisk = NULL;
+		}
 	}
 
 	for (int e = startAt + 1; e < gpGlobals->maxEntities; e++)
@@ -2701,8 +2707,20 @@ std::string getGameFilePath(const char* path) {
 std::string lastMapName;
 
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
-	if (target < at_warning && (g_developer && g_developer->value == 0)) {
-		return;
+	switch (target) {
+	case at_console:
+	case at_notice:
+		if (g_developer->value < 1) {
+			return;
+		}
+		break;
+	case at_aiconsole:
+		if (g_developer->value < 2) {
+			return;
+		}
+		break;
+	default:
+		break;
 	}
 
 	static std::mutex m; // only allow one thread at a time to access static buffers

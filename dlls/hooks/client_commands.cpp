@@ -16,6 +16,7 @@
 #include "TextMenu.h"
 #include "PluginManager.h"
 #include "te_effects.h"
+#include "nodes.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
 extern int gmsgSayText;
@@ -254,13 +255,49 @@ bool CheatCommand(edict_t* pEntity) {
 		}
 	}
 	else if (FStrEq(pcmd, "strip")) {
-		ABORT_IF_CHEATS_DISABLED("Revive");
+		ABORT_IF_CHEATS_DISABLED("Strip");
 
 		CBasePlayer* ent = CBaseEntity::Instance(pEntity)->MyPlayerPointer();
 
 		if (ent) {
 			ent->RemoveAllItems(true);
 			CLIENT_PRINTF(pEntity, print_center, "Stripped!\n");
+		}
+	}
+	else if (FStrEq(pcmd, "nodes")) {
+		ABORT_IF_CHEATS_DISABLED("nodes");
+
+		CBasePlayer* ent = CBaseEntity::Instance(pEntity)->MyPlayerPointer();
+
+		if (ent) {
+			ent->m_debugFlags ^= DF_NODES;
+			CLIENT_PRINTF(pEntity, print_center, "Nodes enabled\n");
+		}
+	}
+	else if (FStrEq(pcmd, "route")) {
+		ABORT_IF_CHEATS_DISABLED("Route");
+
+		CBasePlayer* ent = CBaseEntity::Instance(pEntity)->MyPlayerPointer();
+
+		if (ent) {
+			int iSrc = atoi(CMD_ARGV(1));
+			int iDst = atoi(CMD_ARGV(2));
+			int iHull = CMD_ARGC() > 3 ? atoi(CMD_ARGV(3)) : NODE_HUMAN_HULL;
+			int iCap = CMD_ARGC() > 4 ? atoi(CMD_ARGV(4)) : bits_CAP_DOORS_GROUP;
+			int iPath[MAX_PATH_SIZE];
+			int iResult = WorldGraph.FindShortestPath(iPath, iSrc, iDst, iHull, iCap);
+			if (iResult) {
+				CLIENT_PRINTF(pEntity, print_console, UTIL_VarArgs("\nPath from %d to %d (HULL %d):\n", iSrc, iDst, iResult, iHull));
+				for (int i = 0; i < iResult; i++) {
+					CLIENT_PRINTF(pEntity, print_console, UTIL_VarArgs("%d", iPath[i]));
+					if (i < iResult-1)
+						CLIENT_PRINTF(pEntity, print_console, ", ");
+				}
+				CLIENT_PRINTF(pEntity, print_console, "\n\n");
+			}
+			else {
+				CLIENT_PRINTF(pEntity, print_console, UTIL_VarArgs("No path from %d to %d (HULL %d)\n", iSrc, iDst, iHull));
+			}
 		}
 	}
 	else if (FStrEq(pcmd, "trigger") || FStrEq(pcmd, "trigger0") || FStrEq(pcmd, "trigger1") || FStrEq(pcmd, "trigger2")) {

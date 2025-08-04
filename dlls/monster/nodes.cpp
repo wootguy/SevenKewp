@@ -1770,6 +1770,15 @@ void CTestHull :: BuildNodeGraph( void )
 		return;
 	}
 
+	// make monsterclips non-solid for graph connection checks, for monster that don't have the
+	// monsterclip flag
+	std::vector<CBaseEntity*> monsterClips;
+	CBaseEntity* clip = NULL;
+	while ((clip = UTIL_FindEntityByClassname(clip, "func_monsterclip")) != 0) {
+		clip->pev->solid = SOLID_NOT;
+		monsterClips.push_back(clip);
+	}
+
 // send the walkhull to all of this node's connections now. We'll do this here since
 // so much of it relies on being able to control the test hull.
 	fprintf ( file, "----------------------------------------------------------------------------\n" );
@@ -1935,6 +1944,11 @@ void CTestHull :: BuildNodeGraph( void )
 		}
 	}
 	fprintf ( file, "-------------------------------------------------------------------------------\n\n\n");
+
+	// restore monsterclip solidity
+	for (CBaseEntity* clip : monsterClips) {
+		clip->pev->solid = SOLID_BSP;
+	}
 
 	cPoolLinks -= WorldGraph.RejectInlineLinks ( pTempPool, file );
 

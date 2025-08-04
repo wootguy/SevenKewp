@@ -3547,6 +3547,8 @@ void CBasePlayer::PostThink()
 
 	NightvisionUpdate();
 
+	DebugThink();
+
 pt_end:
 #if defined( CLIENT_WEAPONS )
 		// Decay timers on weapons
@@ -6916,5 +6918,158 @@ void CBasePlayer::BroadcastUserInfo() {
 			continue;
 
 		UTIL_SendUserInfo(msgPlr->edict(), edict(), info);
+	}
+}
+
+void CBasePlayer::DebugThink() {
+	if (!m_debugFlags) {
+		return;
+	}
+
+	if ((m_debugFlags & DF_NODES) && gpGlobals->time - m_lastNodeUpdate > 0.25f) {
+		m_lastNodeUpdate = gpGlobals->time;
+
+		Vector viewOri = GetViewPosition();
+
+		struct RenderLink {
+			uint8_t flags;
+			entvars_t* blocker;
+		};
+
+		// maps a node pair to its link flags and blocking entity
+		std::unordered_map<uint32_t, RenderLink> nodePairLinks;
+
+		int drawCount = 0;
+
+		CNode* closestNode = NULL;
+		int closestNodeId = 0;
+		float closestDist = FLT_MAX;
+		int modelIdx = MODEL_INDEX("sprites/laserbeam.spr");
+		int w = 4;
+		int lif = 2;
+		const float drawDist = 1024;
+
+		for (int i = 0; i < WorldGraph.m_cNodes; i++) {
+			CNode& srcNode = WorldGraph.m_pNodes[i];
+
+			float dist = (srcNode.m_vecOriginPeek - viewOri).Length();
+
+			if (dist < closestDist) {
+				closestDist = dist;
+				closestNode = &srcNode;
+				closestNodeId = i;
+			}
+
+			for (int k = 0; k < srcNode.m_cNumLinks; k++) {
+				CLink& link = WorldGraph.NodeLink(i, k);
+				CNode& dstNode = WorldGraph.m_pNodes[ link.m_iDestNode ];
+
+				TraceResult tr, tr2;
+				UTIL_TraceLine(viewOri, srcNode.m_vecOriginPeek, ignore_monsters, NULL, &tr);
+				UTIL_TraceLine(viewOri, dstNode.m_vecOriginPeek, ignore_monsters, NULL, &tr2);
+				if (tr.flFraction < 1.0f && tr2.flFraction < 1.0f)
+					continue;
+
+				float dist2 = (dstNode.m_vecOriginPeek - viewOri).Length();
+				if (dist > drawDist && dist2 > drawDist) {
+					continue;
+				}
+
+				uint32_t src = i;
+				uint32_t dst = link.m_iDestNode;
+				uint32_t nodePairHash = src > dst ? ((src << 16) | dst) : ((dst << 16) | src);
+
+				uint8_t flags = link.m_afLinkInfo;
+
+				if (nodePairLinks.find(nodePairHash) != nodePairLinks.end()) {
+					if (nodePairLinks[nodePairHash].flags != flags) {
+						if (flags > nodePairLinks[nodePairHash].flags) {
+							// display the smallest hull that can cross both directions
+							flags = link.m_afLinkInfo;
+						}
+						//ALERT(at_console, "asymetric link between %d and %d\n", i, k);
+					}
+				}
+
+				RenderLink& rlink = nodePairLinks[nodePairHash];
+				rlink.flags = flags;
+				if (link.m_pLinkEnt) {
+					rlink.blocker = link.m_pLinkEnt;
+				}
+				rlink.flags = flags;
+			}
+		}
+
+		for (auto item : nodePairLinks) {
+			uint32_t hash = item.first;
+			uint16_t nodeA = hash >> 16;
+			uint16_t nodeB = hash & 0xffff;
+			uint8_t linkFlags = item.second.flags;
+			entvars_t* blocker = item.second.blocker;
+
+			CNode& srcNode = WorldGraph.m_pNodes[nodeA];
+			CNode& dstNode = WorldGraph.m_pNodes[nodeB];
+
+			RGBA color(0, 0, 0, 255);
+			if (linkFlags & bits_LINK_LARGE_HULL) {
+				color.r += 255;
+				color.b += 128;
+			}
+			else if (linkFlags & bits_LINK_HUMAN_HULL) {
+				color.g += 128;
+				color.b += 255;
+			}
+			else if (linkFlags & bits_LINK_SMALL_HULL) {
+				color.r += 255;
+				color.g += 128;
+			}
+			else if (linkFlags & bits_LINK_FLY_HULL) {
+				color.r += 255;
+				color.g += 255;
+			}
+			else {
+				color.r += 255;
+			}
+
+			Vector dir = (dstNode.m_vecOriginPeek - srcNode.m_vecOriginPeek).Normalize();
+			UTIL_MakeVectors(UTIL_VecToAngles(dir));
+			Vector offset = Vector(0,0,0);
+			Vector start = srcNode.m_vecOriginPeek + offset;
+			Vector end = dstNode.m_vecOriginPeek + offset;
+
+			int width = blocker ? w*8 : w;
+			UTIL_BeamPoints(start, end, modelIdx, 0, 0, lif, width, 0, color, 0, MSG_ONE_UNRELIABLE, 0, edict());
+			drawCount++;
+		}
+
+		if (closestNode) {
+			hudtextparms_t params;
+			memset(&params, 0, sizeof(hudtextparms_t));
+			params.effect = 0;
+			params.fadeinTime = 0;
+			params.fadeoutTime = 0.1;
+			params.holdTime = 1.0f;
+			params.x = 0;
+			params.y = -1;
+			params.channel = 3;
+			params.r1 = 255;
+			params.g1 = 255;
+			params.b1 = 255;
+			params.a1 = 128;
+
+			std::string hintStr = "None";
+			if (closestNode->m_sHintType) {
+				hintStr = UTIL_VarArgs("Type %d, Act %d, Yaw %.1f", (int)closestNode->m_sHintType,
+					(int)closestNode->m_sHintActivity, closestNode->m_flHintYaw);
+			}
+
+			UTIL_HudMessage(this, params, UTIL_VarArgs("Node %d\nType: %s\nOrigin: %.2f %.2f %.2f\nHint: %s\n\nVisible Links: %d",
+				closestNodeId,
+				(closestNode->m_afNodeInfo & bits_NODE_AIR) ? "Air" : "Land",
+				closestNode->m_vecOriginPeek.x, closestNode->m_vecOriginPeek.y, closestNode->m_vecOriginPeek.z,
+				hintStr.c_str(), drawCount));
+			Vector closestPos = closestNode->m_vecOriginPeek;
+			UTIL_BeamPoints(closestPos, closestPos + Vector(0, 0, 32), modelIdx, 0, 0, lif, w, 0, RGB(255, 255, 255), 0, MSG_ONE_UNRELIABLE, 0, edict());
+		}
 	}
 }

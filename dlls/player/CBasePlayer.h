@@ -149,6 +149,9 @@ struct client_info_t {
 	int max_packet_entities;
 };
 
+// debug flags
+#define DF_NODES 1 // display nearby nodes and connections
+
 class EXPORT CBasePlayer : public CBaseMonster
 {
 public:
@@ -316,6 +319,9 @@ public:
 	PLAYER_MODEL_ANIM_SET m_playerModelAnimSet;
 
 	bool m_isBarnacleFood; // player is being eaten after being pulled up to the barnacle
+
+	uint32_t m_debugFlags; // misc flags for developers and mappers
+	float m_lastNodeUpdate;
 
 	virtual void Spawn( void );
 
@@ -593,6 +599,8 @@ public:
 
 	// send current userinfo to all players (name, model, etc.)
 	void BroadcastUserInfo();
+
+	void DebugThink();
 
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

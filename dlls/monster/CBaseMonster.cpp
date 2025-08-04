@@ -3203,6 +3203,12 @@ BOOL CBaseMonster::FGetNodeRoute(Vector vecDest)
 	int iNodeHull = WorldGraph.HullIndex(this); // make this a monster virtual function
 	iResult = WorldGraph.FindShortestPath(iPath, iSrcNode, iDestNode, iNodeHull, m_afCapability);
 
+	if (!iResult) {
+		// try again with door opening abilities. There's a chance the door is already open.
+		int caps = m_afCapability | bits_CAP_DOORS_GROUP;
+		iResult = WorldGraph.FindShortestPath(iPath, iSrcNode, iDestNode, iNodeHull, caps);
+	}
+
 	if (!iResult)
 	{
 #if 1
@@ -8268,8 +8274,11 @@ void CBaseMonster::SetClassification(int newClass) {
 void CBaseMonster::UnblockScriptedMove(bool moveBeginNotEnd) {
 	static int oldPlayerSolidStates[33];
 
-	if (m_MonsterState != MONSTERSTATE_SCRIPT) {
-		return; // not in a script
+	bool isInScript = m_MonsterState == MONSTERSTATE_SCRIPT;
+	bool isFollowing = m_hTargetEnt && m_hTargetEnt->IsPlayer();
+
+	if (!isInScript && !isFollowing) {
+		return;
 	}
 
 	// don't let players block monsters in a script and softlock the map
