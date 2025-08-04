@@ -187,6 +187,8 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 
 	if (!IS_MAP_VALID(m_szMapName)) {
 		UTIL_ClientPrintAll(print_center, UTIL_VarArgs("Next map not found:\n%s", m_szMapName));
+		ALERT(at_error, UTIL_VarArgs("Next map not found: %s\n", m_szMapName));
+		UTIL_Remove(this); // don't keep checking the disk (lag)
 		return;
 	}
 

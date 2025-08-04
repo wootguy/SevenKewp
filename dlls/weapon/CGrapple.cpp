@@ -160,7 +160,7 @@ void CGrapple::PrimaryAttack()
 		{
 			CBaseEntity* pTarget = m_pTip->GetGrappleTarget();
 
-			if (!pTarget)
+			if (!pTarget || pTarget->pev->solid == SOLID_NOT)
 			{
 				EndAttack();
 				return;

@@ -493,7 +493,7 @@ void CAmbientGeneric::UpdateLinearVolume() {
 		return;
 
 	float endTime = m_lastPlayTime + (m_wavInfo.durationMillis / 1000.0f);
-	if (endTime - gpGlobals->time < 0.2f) {
+	if (endTime - g_engfuncs.pfnTime() < 0.2f) {
 		return; // don't update too close to the end or the sound will restart
 	}
 

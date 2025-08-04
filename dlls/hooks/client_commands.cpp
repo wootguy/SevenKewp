@@ -300,6 +300,18 @@ bool CheatCommand(edict_t* pEntity) {
 			}
 		}
 	}
+	else if (FStrEq(pcmd, "break")) {
+		ABORT_IF_CHEATS_DISABLED("Break");
+
+		CBasePlayer* ent = CBaseEntity::Instance(pEntity)->MyPlayerPointer();
+
+		if (ent) {
+			const char* trigger = CMD_ARGV(1);
+			g_debug_target = ALLOC_STRING(trigger);
+			CLIENT_PRINTF(pEntity, print_console, UTIL_VarArgs("Breakpoint placed for trigger '%s'", trigger));
+			ALERT(at_logged, UTIL_VarArgs("Breakpoint placed for trigger '%s'\n", trigger));
+		}
+	}
 	else if (FStrEq(pcmd, "trigger") || FStrEq(pcmd, "trigger0") || FStrEq(pcmd, "trigger1") || FStrEq(pcmd, "trigger2")) {
 		ABORT_IF_CHEATS_DISABLED("Trigger");
 		

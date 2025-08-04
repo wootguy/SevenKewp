@@ -693,6 +693,8 @@ void CGargantua::Killed( entvars_t *pevAttacker, int iGib )
 	EyeOff();
 	UTIL_Remove( m_hEyeGlow );
 	m_hEyeGlow = NULL;
+	SetBoneController(0, 0);
+	SetBoneController(1, 0);
 	CBaseMonster::Killed( pevAttacker, pev->deadflag == DEAD_DEAD ? iGib : GIB_NEVER);
 }
 

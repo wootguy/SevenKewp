@@ -3625,6 +3625,8 @@ pt_end:
 
 void CBasePlayer::Spawn( void )
 {
+	DropAllInventoryItems(false, true);
+
 	// not hiding HUD elements because the client can end up with no HUD after spawn finishes
 	RemoveAllItems(TRUE, TRUE);
 
@@ -3784,7 +3786,6 @@ void CBasePlayer::Spawn( void )
 		m_wantToExitObserver = true;
 	}
 
-	DropAllInventoryItems(false, true);
 	ApplyEffects();
 
 	// don't play suit sounds for items given when spawning
@@ -6386,7 +6387,7 @@ void CBasePlayer::ShowInteractMessage(const char* msg) {
 	}
 }
 
-bool CBasePlayer::DropAllInventoryItems(bool deathDrop, bool respawnDrop) {
+bool CBasePlayer::DropAllInventoryItems(bool deathDrop, bool respawnDrop, bool forceDrop) {
 	if (!m_inventory) {
 		return true;
 	}
@@ -6413,6 +6414,9 @@ bool CBasePlayer::DropAllInventoryItems(bool deathDrop, bool respawnDrop) {
 		}
 		if (respawnDrop) {
 			shouldDrop = !item->m_holder_keep_on_respawn;
+		}
+		if (forceDrop) {
+			shouldDrop = true;
 		}
 
 		if (shouldDrop) {
@@ -6551,7 +6555,7 @@ CBaseEntity* CBasePlayer::AntiBlockTrace() {
 	TraceResult tr;
 	Vector snappedLookDir = GetSnappedLookDir();
 	int hullType = GetTraceHull();
-	TRACE_HULL(pev->origin, pev->origin + snappedLookDir*distance, dont_ignore_monsters, hullType, edict(), &tr);
+	TRACE_HULL(pev->origin, pev->origin + snappedLookDir * distance, dont_ignore_monsters, hullType, edict(), &tr);
 
 	// try again in case the blocker is on a slope or stair
 	if (snappedLookDir.z == 0 && tr.pHit && (tr.pHit->v.solid == SOLID_BSP || tr.pHit->v.movetype == MOVETYPE_PUSHSTEP)) {
@@ -6566,7 +6570,17 @@ CBaseEntity* CBasePlayer::AntiBlockTrace() {
 
 		if (!tr.pHit || (tr.pHit->v.solid == SOLID_BSP || tr.pHit->v.movetype == MOVETYPE_PUSHSTEP)) {
 			// now do the outward trace
-			TRACE_HULL(tr.vecEndPos, tr.vecEndPos + snappedLookDir*distance, dont_ignore_monsters, hullType, edict(), &tr);
+			TRACE_HULL(tr.vecEndPos, tr.vecEndPos + snappedLookDir * distance, dont_ignore_monsters, hullType, edict(), &tr);
+		}
+	}
+
+	if (tr.pHit) {
+		Vector dir = (tr.pHit->v.origin - pev->origin).Normalize();
+		if (DotProduct(dir, GetLookDirection()) < 0) {
+			// probably stuck inside of the target
+			// skipping prevents double swapping where both players are moving forward against
+			// each other and swapping at the same time
+			return NULL; 
 		}
 	}
 
@@ -6987,7 +7001,7 @@ void CBasePlayer::DebugThink() {
 							// display the smallest hull that can cross both directions
 							flags = link.m_afLinkInfo;
 						}
-						//ALERT(at_console, "asymetric link between %d and %d\n", i, k);
+						//ALERT(at_console, "asymetric link between %d and %d\n", src, dst);
 					}
 				}
 

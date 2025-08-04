@@ -555,6 +555,7 @@ void ServerDeactivate( void )
 	g_cfgsExecuted = false;
 	g_weather_init_done = false;
 	g_fog_enabled = false;
+	g_debug_target = 0;
 
 	g_active_camera = NULL;
 

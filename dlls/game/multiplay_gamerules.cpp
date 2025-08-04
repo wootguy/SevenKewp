@@ -470,7 +470,7 @@ void CHalfLifeMultiplay :: ClientDisconnected( edict_t *pClient )
 			pPlayer->m_iDeaths = 0;
 
 			pPlayer->RemoveAllItems( TRUE );// destroy all of the players weapons and items
-			pPlayer->DropAllInventoryItems();
+			pPlayer->DropAllInventoryItems(false, false, true);
 		}
 	}
 }
@@ -700,7 +700,8 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 			}
 		}
 
-		if (pVictim->m_lastDamageType == DMG_FALL) {
+		bool timeBasedDamageOnly = !(pVictim->m_lastDamageType & ~DMG_TIMEBASED);
+		if (pVictim->m_lastDamageType == DMG_FALL || timeBasedDamageOnly) {
 			killer_weapon_name = "skull";
 		}
 	}
@@ -1266,7 +1267,7 @@ Vector CHalfLifeMultiplay::VecAmmoRespawnSpot( CBasePlayerAmmo *pAmmo )
 //=========================================================
 float CHalfLifeMultiplay::FlHealthChargerRechargeTime( void )
 {
-	return 60;
+	return 30;
 }
 
 

@@ -27,6 +27,8 @@
 #include "CBaseDoor.h"
 #include "skill.h"
 
+string_t g_debug_target; // for breakpointing on triggers
+
 extern BOOL FEntIsVisible(entvars_t* pev, entvars_t* pevTarget);
 
 void FireTargetsDelayed(const char* target, string_t killTarget, CBaseEntity* pActivator, USE_TYPE useType, float delay) {
@@ -65,6 +67,8 @@ void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *
 
 	ALERT( at_aiconsole, "Firing: (%s)\n", targetName );
 
+	bool isDebugTrigger = g_debug_target && !strcmp(STRING(g_debug_target), targetName);
+
 	for (;;)
 	{
 		pTarget = UTIL_FindEntityByTargetname(pTarget, targetName);
@@ -74,6 +78,9 @@ void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *
 		if ( pTarget && !(pTarget->pev->flags & FL_KILLME) )	// Don't use dying ents
 		{
 			ALERT( at_aiconsole, "Found: %s, firing (%s)\n", STRING(pTarget->pev->classname), targetName );
+			if (isDebugTrigger) {
+				ALERT(at_aiconsole, ""); // place a breakpoint here to debug specific triggers
+			}
 			pTarget->Use( pActivator, pCaller, useType, value );
 		}
 	}

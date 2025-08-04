@@ -190,6 +190,10 @@ void CRecharge::Off(void)
 	if (m_iOn > 1)
 		STOP_SOUND( ENT(pev), CHAN_STATIC, "items/suitcharge1.wav" );
 
+	if (m_iOn == 0) {
+		return; // don't reset the timer
+	}
+
 	m_iOn = 0;
 
 	if ((!m_iJuice) &&  ( ( m_iReactivate = g_pGameRules->FlHEVChargerRechargeTime() ) > 0) )

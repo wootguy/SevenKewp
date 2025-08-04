@@ -528,15 +528,16 @@ public:
 
 	// if death=true, only drop items that are not marked to keep on death
 	// if respawn=true, only drop items that are not marked to keep on respawn
+	// if forceDrop=true, force drop all items ignoring any "can't drop" rules
 	// returns false if not all inventory items were dropped due to restrictions
-	bool DropAllInventoryItems(bool deathDrop = false, bool respawnDrop = false);
+	bool DropAllInventoryItems(bool deathDrop = false, bool respawnDrop = false, bool forceDrop = false);
 
 	virtual void Revive();
 
 	float GetDamage(float defaultDamage);
 
 	// accounts for active cameras and view offset
-	Vector GetViewPosition() { return m_hViewEntity ? m_hViewEntity->pev->origin : GetGunPosition(); }
+	Vector GetViewPosition() { return !IsFirstPerson() ? m_hViewEntity->pev->origin : GetGunPosition(); }
 
 	// for scoring
 	void PenalizeDeath();

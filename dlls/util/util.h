@@ -496,6 +496,7 @@ EXPORT Vector VecBModelOrigin( entvars_t* pevBModel );
 EXPORT int BuildChangeList( LEVELLIST *pLevelList, int maxList );
 
 EXPORT extern const Vector g_vecZero;
+EXPORT extern string_t g_debug_target;
 
 //
 // Constants that were used only by QC (maybe not used at all now)
@@ -928,3 +929,6 @@ EXPORT void UTIL_SendUserInfo_hooked(edict_t* msgPlayer, edict_t* infoPlayer, ch
 
 // helper for sending the userinfo message
 EXPORT void UTIL_SendUserInfo(edict_t* msgPlayer, edict_t* infoPlayer, char* info);
+
+// returns: -1 no intersect, 0 = ray starts inside box, >0 = intersection distance
+EXPORT float UTIL_RayBoxIntersect(Vector start, Vector rayDir, Vector mins, Vector maxs);

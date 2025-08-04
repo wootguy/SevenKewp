@@ -3299,3 +3299,87 @@ void UTIL_SendUserInfo(edict_t* msgPlayer, edict_t* infoPlayer, char* info) {
 	}
 	MESSAGE_END();
 }
+
+float UTIL_RayBoxIntersect(Vector start, Vector rayDir, Vector mins, Vector maxs) {
+	bool foundBetterPick = false;
+
+	/*
+	Fast Ray-Box Intersection
+	by Andrew Woo
+	from "Graphics Gems", Academic Press, 1990
+	https://web.archive.org/web/20090803054252/http://tog.acm.org/resources/GraphicsGems/gems/RayBox.c
+	*/
+
+	bool inside = true;
+	char quadrant[3];
+	register int i;
+	int whichPlane;
+	double maxT[3];
+	double candidatePlane[3];
+
+	float* origin = (float*)&start;
+	float* dir = (float*)&rayDir;
+	float* minB = (float*)&mins;
+	float* maxB = (float*)&maxs;
+	float coord[3];
+
+	const char RIGHT = 0;
+	const char LEFT = 1;
+	const char MIDDLE = 2;
+
+	/* Find candidate planes; this loop can be avoided if
+	rays cast all from the eye(assume perpsective view) */
+	for (i = 0; i < 3; i++) {
+		if (origin[i] < minB[i]) {
+			quadrant[i] = LEFT;
+			candidatePlane[i] = minB[i];
+			inside = false;
+		}
+		else if (origin[i] > maxB[i]) {
+			quadrant[i] = RIGHT;
+			candidatePlane[i] = maxB[i];
+			inside = false;
+		}
+		else {
+			quadrant[i] = MIDDLE;
+		}
+	}
+
+	/* Ray origin inside bounding box */
+	if (inside) {
+		return 0;
+	}
+
+	/* Calculate T distances to candidate planes */
+	for (i = 0; i < 3; i++) {
+		if (quadrant[i] != MIDDLE && dir[i] != 0.0f)
+			maxT[i] = (candidatePlane[i] - origin[i]) / dir[i];
+		else
+			maxT[i] = -1.0f;
+	}
+
+	/* Get largest of the maxT's for final choice of intersection */
+	whichPlane = 0;
+	for (i = 1; i < 3; i++) {
+		if (maxT[whichPlane] < maxT[i])
+			whichPlane = i;
+	}
+
+	/* Check final candidate actually inside box */
+	if (maxT[whichPlane] < 0.0f)
+		return -1;
+	for (i = 0; i < 3; i++) {
+		if (whichPlane != i) {
+			coord[i] = origin[i] + maxT[whichPlane] * dir[i];
+			if (coord[i] < minB[i] || coord[i] > maxB[i])
+				return -1;
+		}
+		else {
+			coord[i] = candidatePlane[i];
+		}
+	}
+	/* ray hits box */
+
+	Vector intersectPoint(coord[0], coord[1], coord[2]);
+	return (intersectPoint - start).Length();
+}

@@ -305,16 +305,26 @@ void CBaseTurret::ActiveThink(void)
 		}
 	}
 
-	Vector vecMid = pev->origin + pev->view_ofs;
-	Vector vecMidEnemy = m_hEnemy->BodyTarget(vecMid);
+	Vector vecSrc, vecAng;
+	GetAttachment(0, vecSrc, vecAng);
+
+	Vector vecMidEnemy = m_hEnemy->BodyTarget(vecSrc);
+
+	if ((vecSrc - vecMidEnemy).Length() < 64) {
+		// don't use barrel end position as start position for close targets, otherwise
+		// it goes berserk.
+		vecSrc = pev->origin + pev->view_ofs;
+	}
+
+	te_debug_beam(vecSrc, vecMidEnemy, 1, RGB(255, 0, 0));
 
 	// Look for our current enemy
 	int fEnemyVisible = FBoxVisible(pev, m_hEnemy->pev, vecMidEnemy);
 
-	vecDirToEnemy = vecMidEnemy - vecMid;	// calculate dir and dist to enemy
+	vecDirToEnemy = vecMidEnemy - vecSrc;	// calculate dir and dist to enemy
 	float flDistToEnemy = vecDirToEnemy.Length();
 
-	Vector vec = UTIL_VecToAngles(vecMidEnemy - vecMid);
+	Vector vec = UTIL_VecToAngles(vecMidEnemy - vecSrc);
 
 	// Current enmey is not visible.
 	if (!fEnemyVisible || (flDistToEnemy > m_flSightRange))
@@ -359,8 +369,6 @@ void CBaseTurret::ActiveThink(void)
 	// fire the gun
 	if (m_iSpin && ((fAttack) || (m_fBeserk)))
 	{
-		Vector vecSrc, vecAng;
-		GetAttachment(0, vecSrc, vecAng);
 		SetTurretAnim(TURRET_ANIM_FIRE);
 		Shoot(vecSrc, gpGlobals->v_forward);
 	}

@@ -18,6 +18,8 @@ public:
 	int m_iSwing;
 	TraceResult m_trHit;
 
+	virtual const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+
 	//virtual int MergedModelBody() { return MERGE_MDL_W_CROWBAR; }
 
 	BOOL IsClientWeapon() { return FALSE; }

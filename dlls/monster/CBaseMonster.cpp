@@ -2246,7 +2246,7 @@ void CBaseMonster::MonsterInit(void)
 void CBaseMonster::UnstuckSpawnPosition() {
 	// unstuck monsters if spawned inside the floor/ceiling
 	// (unless it's a barnacle/turret or smth that doesn't move)
-	if (pev->movetype == MOVETYPE_STEP) {
+	if (pev->movetype == MOVETYPE_STEP && !(pev->spawnflags & SF_MONSTER_PRISONER)) {
 		edict_t* pent = edict();
 		TraceResult tr;
 		

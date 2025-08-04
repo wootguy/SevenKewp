@@ -33,6 +33,8 @@ public:
 	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void	Think(void);
 	void	TrackTarget(void);
+	BOOL	IsTank() { return TRUE; }
+	virtual CFuncTank* MyTankPointer(void) { return this; }
 	virtual const char* DisplayName() { return "Mounted Gun"; }
 	virtual const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; };
 	virtual int IRelationship(CBaseEntity* pTarget);
@@ -85,9 +87,9 @@ public:
 	void StopControl(void);
 	void ControllerPostFrame(void);
 
+	EHANDLE		m_hController;
 
 protected:
-	EHANDLE		m_hController;
 	float		m_flNextAttack;
 	Vector		m_vecControllerUsePos;
 

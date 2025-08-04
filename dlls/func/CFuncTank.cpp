@@ -436,13 +436,13 @@ CBaseEntity* CFuncTank::FindTarget(Vector forward)
 
 	const int iDistance = m_maxRange ? m_maxRange : 8192;
 	Vector delta = Vector(iDistance, iDistance, iDistance);
-	CBaseEntity* pList[100];
+	CBaseEntity* pList[512];
 	CBaseEntity* pSightEnt = NULL;// the current visible entity that we're dealing with
 
 	Vector barrelBase = BarrelPosition(false);
 
 	// Find only monsters/clients in box, NOT limited to PVS
-	int count = UTIL_EntitiesInBox(pList, 100, pev->origin - delta, pev->origin + delta, FL_CLIENT | FL_MONSTER | FL_POSSIBLE_TARGET, true);
+	int count = UTIL_EntitiesInBox(pList, 512, pev->origin - delta, pev->origin + delta, FL_CLIENT | FL_MONSTER | FL_POSSIBLE_TARGET, true);
 	
 	for (int i = 0; i < count; i++)
 	{
@@ -457,7 +457,10 @@ CBaseEntity* CFuncTank::FindTarget(Vector forward)
 		if (IRelationship(pSightEnt) <= R_NO) {
 			continue;
 		}
+		if (pSightEnt->IsBSPModel() && !pSightEnt->IsBreakable())
+			continue;
 
+		
 		Vector targetPosition = pSightEnt->IsPlayer() ? pSightEnt->EyePosition() : pSightEnt->Center();
 
 		if (!InRange((targetPosition - barrelBase).Length())) {

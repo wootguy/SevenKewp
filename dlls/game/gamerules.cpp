@@ -129,12 +129,6 @@ void AddMapEquipment(std::string name, std::string value) {
 		return;
 	}
 
-	if (mp_default_medkit.value == 0 && name == "weapon_medkit") {
-		// don't want medkits by default unless the map specifically places them
-		// (for a class system or as a special item)
-		return;
-	}
-
 	g_mapEquipment[g_mapEquipIdx].itemName = ALLOC_STRING(name.c_str());
 	g_mapEquipment[g_mapEquipIdx].count = value.size() ? atoi(value.c_str()) : 1;
 

@@ -31,6 +31,7 @@
 #include "gamerules.h"
 #include "CBasePlayerWeapon.h"
 #include "explode.h"
+#include "CFuncTank.h"
 
 extern CGraph	WorldGraph;
 extern int gEvilImpulse101;
@@ -109,6 +110,13 @@ void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker )
 	
 	if ( !gMultiDamage.pEntity )
 		return;
+
+	CBaseEntity* attacker = CBaseEntity::Instance(pevAttacker);
+	CFuncTank* tank = attacker ? attacker->MyTankPointer() : NULL;
+	if (tank && tank->m_hController) {
+		pevInflictor = tank->pev;
+		pevAttacker = tank->m_hController->pev;
+	}
 
 	gMultiDamage.pEntity->TakeDamage(pevInflictor, pevAttacker, gMultiDamage.amount, gMultiDamage.type );
 }
