@@ -316,7 +316,7 @@ void CBaseTurret::ActiveThink(void)
 		vecSrc = pev->origin + pev->view_ofs;
 	}
 
-	te_debug_beam(vecSrc, vecMidEnemy, 1, RGB(255, 0, 0));
+	//te_debug_beam(vecSrc, vecMidEnemy, 1, RGB(255, 0, 0));
 
 	// Look for our current enemy
 	int fEnemyVisible = FBoxVisible(pev, m_hEnemy->pev, vecMidEnemy);
