@@ -115,6 +115,106 @@ void CM249::WeaponIdle()
 	}
 }
 
+#include "event_args.h"
+
+#define	DEFAULT_VIEWHEIGHT	28
+
+void EV_GetDefaultShellInfo(CBasePlayer* plr, event_args_t* args, float* origin, float* velocity,
+	float* ShellVelocity, float* ShellOrigin, float* forward, float* right, float* up,
+	float forwardScale, float upScale, float rightScale)
+{
+	int i;
+	Vector view_ofs;
+	float fR, fU;
+
+	int idx;
+
+	idx = args->entindex;
+
+	/*
+	view_ofs[2] = DEFAULT_VIEWHEIGHT;
+
+	if (EV_IsPlayer(idx))
+	{
+		if (EV_IsLocal(idx))
+		{
+			gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(view_ofs);
+		}
+		else if (args->ducking == 1)
+		{
+			view_ofs[2] = VEC_DUCK_VIEW;
+		}
+	}
+	*/
+	view_ofs = plr->pev->view_ofs;
+
+	fR = RANDOM_FLOAT(50, 70);
+	fU = RANDOM_FLOAT(100, 150);
+
+	for (i = 0; i < 3; i++)
+	{
+		ShellVelocity[i] = velocity[i] + right[i] * fR + up[i] * fU + forward[i] * 25;
+		ShellOrigin[i] = origin[i] + view_ofs[i] + up[i] * upScale + forward[i] * forwardScale + right[i] * rightScale;
+	}
+}
+
+void CM249::EV_FireM249(event_args_t* args) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	int iBody = args->iparam1;
+
+	const bool bAlternatingEject = args->bparam1 != 0;
+
+	Vector up, right, forward;
+
+	UTIL_MakeVectorsPrivate(args->angles, forward, right, up);
+
+	int iShell = bAlternatingEject ? m_iLink : m_iShell;
+
+	SetBodygroup(0, iBody);
+	//EV_MuzzleFlash();
+	SendWeaponAnim(RANDOM_LONG(0, 2) + M249_SHOOT1, 1, iBody);
+	m_pPlayer->pev->punchangle.x = RANDOM_FLOAT(-2, 2);
+	m_pPlayer->pev->punchangle.y = RANDOM_FLOAT(-1, 1);
+
+	Vector ShellVelocity;
+	Vector ShellOrigin;
+
+	EV_GetDefaultShellInfo(
+		m_pPlayer,
+		args,
+		args->origin, args->velocity,
+		ShellVelocity,
+		ShellOrigin,
+		forward, right, up,
+		14.0, -12.0, 4.0);
+
+	EjectBrass(ShellOrigin, ShellVelocity, args->angles[1], iShell, TE_BOUNCE_SHELL);
+
+	EMIT_SOUND_DYN(m_pPlayer->edict(), CHAN_WEAPON, "weapons/saw_fire1.wav",
+		VOL_NORM, ATTN_NORM, 0, 94 + RANDOM_LONG(0, 15));
+
+	/*
+	Vector vecSrc;
+
+	m_pPlayer->GetGunPosition(args, vecSrc, args->origin);
+
+	Vector vecAiming = forward;
+
+	EV_HLDM_FireBullets(
+		args->entindex,
+		forward, right, up,
+		1,
+		vecSrc, vecAiming,
+		8192.0,
+		BULLET_PLAYER_556,
+		0, nullptr,
+		args->fparam1, args->fparam2);
+	*/
+}
+
 void CM249::PrimaryAttack()
 {
 	CBasePlayer* m_pPlayer = GetPlayer();
@@ -217,6 +317,22 @@ void CM249::PrimaryAttack()
 		pev->body, 0,
 		m_bAlternatingEject ? 1 : 0, 0);
 	*/
+	event_args_t args;
+	memset(&args, 0, sizeof(event_args_t));
+	args.flags = flags;
+	args.entindex = m_pPlayer->entindex();
+	args.origin[0] = m_pPlayer->pev->origin.x;
+	args.origin[1] = m_pPlayer->pev->origin.y;
+	args.origin[2] = m_pPlayer->pev->origin.z;
+	args.angles[0] = m_pPlayer->pev->angles.x;
+	args.angles[1] = m_pPlayer->pev->angles.y;
+	args.angles[2] = m_pPlayer->pev->angles.z;
+	args.fparam1 = vecDir.x;
+	args.fparam2 = vecDir.y;
+	args.iparam1 = pev->body;
+	args.bparam1 = m_bAlternatingEject ? 1 : 0;
+
+	EV_FireM249(&args);
 
 	if (m_iClip == 0)
 	{

@@ -47,6 +47,8 @@ public:
 
 	BOOL IsClientWeapon() { return FALSE; }
 
+	void EV_FireM249(struct event_args_s* args);
+
 private:
 	static int RecalculateBody(int iClip);
 

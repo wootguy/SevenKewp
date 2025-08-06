@@ -269,6 +269,20 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 		goto cleanup;
 	}
 
+	// client-side checks copied here
+	if (info.iId < 0 || info.iId >= MAX_WEAPONS) {
+		ALERT(at_error, "Failed to register weapon '%s' (invalid ID %d)\n", szClassname, info.iId);
+		goto cleanup;
+	}
+	if (info.pszAmmo1 && info.iMaxAmmo1 == 0) {
+		ALERT(at_error, "Failed to register weapon '%s' (0 max primary ammo)\n", szClassname);
+		goto cleanup;
+	}
+	if (info.pszAmmo2 && info.iMaxAmmo2 == 0) {
+		ALERT(at_error, "Failed to register weapon '%s' (0 max secndary ammo)\n", szClassname);
+		goto cleanup;
+	}
+
 	CBasePlayerItem::ItemInfoArray[info.iId] = info;
 
 	if (info.pszAmmo1 && *info.pszAmmo1) {
