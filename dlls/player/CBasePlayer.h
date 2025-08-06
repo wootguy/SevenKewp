@@ -483,7 +483,6 @@ public:
 	void UpdateTeamInfo(int color=-1, int msg_mode=MSG_ALL, edict_t* dst=NULL);
 
 	float m_lastSpawnMessage;
-	float m_lastKillTime;
 	bool m_deathMessageSent;
 	bool m_allowFriendlyFire; // true if this player allows incoming friendly fire
 

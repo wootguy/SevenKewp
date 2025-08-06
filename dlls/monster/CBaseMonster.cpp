@@ -4303,9 +4303,9 @@ void CBaseMonster::GibMonster(void)
 		}
 	}
 
-	if (!IsPlayer() && !IsPlayerCorpse())
+	if (!IsPlayer())
 	{
-		// don't remove players or player corpses!
+		// don't remove players!
 		SetThink(&CBaseMonster::SUB_Remove);
 		pev->nextthink = gpGlobals->time;
 
@@ -8191,7 +8191,7 @@ void CBaseMonster::CleanupLocalCorpses() {
 	while ((ent = UTIL_FindEntityByClassname(ent, "monster_*")) != NULL) {
 		CBaseMonster* mon = ent->MyMonsterPointer();
 
-		if (!mon || !mon->IsNormalMonster() || !mon->m_killedTime || mon->m_isFadingOut) {
+		if (!mon || (!mon->IsNormalMonster() && !mon->IsPlayerCorpse()) || !mon->m_killedTime || mon->m_isFadingOut) {
 			continue;
 		}
 		if (mon->pev->deadflag == DEAD_DYING || mon->pev->deadflag == DEAD_NO)
@@ -8209,7 +8209,13 @@ void CBaseMonster::CleanupLocalCorpses() {
 
 		int removeCount = corpses.size() - mp_max_pvs_corpses.value;
 		for (int i = 0; i < removeCount && i < (int)corpses.size(); i++) {
-			corpses[i]->SUB_StartFadeOut();
+			if (corpses[i]->IsPlayerCorpse()) {
+				// renderamt is used for model selection so can't fade it
+				UTIL_Remove(corpses[i]);
+			}
+			else {
+				corpses[i]->SUB_StartFadeOut();
+			}
 		}
 		
 		ALERT(at_console, "Fading %d old corpses (%d / %d in PVS)\n",

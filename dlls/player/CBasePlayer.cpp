@@ -57,6 +57,7 @@
 #include "CBaseButton.h"
 #include "te_effects.h"
 #include "CGib.h"
+#include "bodyque.h"
 
 // #define DUCKFIX
 
@@ -72,7 +73,6 @@ extern float g_flWeaponCheat;
 
 BOOL gInitHUD = TRUE;
 
-extern void CopyToBodyQue(entvars_t* pev);
 extern void respawn(entvars_t *pev, BOOL fCopyCorpse);
 extern Vector VecBModelOrigin(entvars_t *pevBModel );
 
@@ -916,7 +916,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	SetRevivalVars();
 
-	m_lastKillTime = gpGlobals->time;
+	m_killedTime = gpGlobals->time;
 
 	// Holster weapon immediately, to allow it to cleanup
 	if ( m_pActiveItem )
@@ -1714,7 +1714,7 @@ void CBasePlayer::PlayerDeathThink(void)
 		m_droppedDeathWeapons = true;
 	}
 
-	float deadTime = gpGlobals->time - m_lastKillTime;
+	float deadTime = gpGlobals->time - m_killedTime;
 	float respawnDelay = mp_respawndelay.value + m_extraRespawnDelay;
 
 	if (deadTime > 1.0f && deadTime < respawnDelay + 2.0f) {
@@ -1764,7 +1764,7 @@ void CBasePlayer::PlayerDeathThink(void)
 		//Once we finish animating, if we're in multiplayer just make a copy of our body right away.
 		if (m_fSequenceFinished && g_pGameRules->IsMultiplayer() && pev->movetype == MOVETYPE_NONE)
 		{
-			CopyToBodyQue(pev);
+			CreatePlayerCorpse(this);
 			pev->modelindex = 0;
 		}
 
@@ -1860,7 +1860,7 @@ void CBasePlayer::StartDeathCam( void )
 			iRand--;
 		}
 
-		CopyToBodyQue( pev );
+		CreatePlayerCorpse( this );
 
 		UTIL_SetOrigin( pev, pSpot->pev->origin );
 		pev->angles = pev->v_angle = pSpot->pev->v_angle;
@@ -1869,7 +1869,7 @@ void CBasePlayer::StartDeathCam( void )
 	{
 		// no intermission spot. Push them up in the air, looking down at their corpse
 		TraceResult tr;
-		CopyToBodyQue( pev );
+		CreatePlayerCorpse( this );
 		UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, 128 ), ignore_monsters, edict(), &tr );
 
 		UTIL_SetOrigin( pev, tr.vecEndPos );

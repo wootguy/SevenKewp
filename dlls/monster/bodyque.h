@@ -9,6 +9,4 @@ class EXPORT CCorpse : public CBaseMonster
 	BOOL IsNormalMonster(void) { return FALSE; }
 };
 
-EXPORT void InitBodyQue(void);
-
-EXPORT void CopyToBodyQue(entvars_t* pev);
+EXPORT void CreatePlayerCorpse(CBasePlayer* plr);

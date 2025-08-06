@@ -51,6 +51,7 @@
 #include "te_effects.h"
 #include "CTriggerCamera.h"
 #include "animation.h"
+#include "bodyque.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -65,7 +66,6 @@ void PM_Move(struct playermove_s* ppmove, int server);
 void PM_Init(struct playermove_s* ppmove);
 char PM_FindTextureType(char* name);
 extern Vector VecBModelOrigin(entvars_t* pevBModel);
-extern void CopyToBodyQue(entvars_t* pev);
 extern void AddMapPluginEquipment();
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
@@ -288,7 +288,7 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 		return;
 	}
 
-	float deadTime = gpGlobals->time - plr->m_lastKillTime;
+	float deadTime = gpGlobals->time - plr->m_killedTime;
 	if (deadTime < mp_respawndelay.value + plr->m_extraRespawnDelay) {
 		return;
 	}
@@ -299,7 +299,7 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 		{
 			// make a copy of the dead body for appearances sake
 			pev->effects &= ~EF_DIMLIGHT; // turn off flashlight
-			CopyToBodyQue(pev);
+			CreatePlayerCorpse(plr);
 		}
 
 		// respawn player

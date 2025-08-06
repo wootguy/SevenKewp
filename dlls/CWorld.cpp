@@ -16,7 +16,6 @@
 
 extern CGraph WorldGraph;
 extern CSoundEnt* pSoundEnt;
-DLL_GLOBAL edict_t* g_pBodyQueueHead;
 extern DLL_GLOBAL	int			gDisplayTitle;
 extern uint64_t g_levelChangePluginTime;
 
@@ -178,8 +177,6 @@ void CWorld::Precache(void)
 	{
 		ALERT(at_console, "**COULD NOT CREATE SOUNDENT**\n");
 	}
-
-	InitBodyQue();
 
 	// init sentence group playback stuff from sentences.txt.
 	// ok to call this multiple times, calls after first are ignored.

@@ -2,28 +2,26 @@
 #include "util.h"
 #include "CWorld.h"
 #include "bodyque.h"
-#include "CBaseMonster.h"
+#include "CBasePlayer.h"
 
-LINK_ENTITY_TO_CLASS(bodyque, CCorpse)
-
-#define MAX_PLAYER_CORPSES 63
+LINK_ENTITY_TO_CLASS(monster_player_corpse, CCorpse) 
 
 //
 // make a body que entry for the given ent so the ent can be respawned elsewhere
 //
-// GLOBALS ASSUMED SET:  g_eoBodyQueueHead
-//
-void CopyToBodyQue(entvars_t* pev)
+void CreatePlayerCorpse(CBasePlayer* plr)
 {
-	if ((pev->effects & EF_NODRAW) || pev->modelindex == 0)
+	if ((plr->pev->effects & EF_NODRAW) || plr->pev->modelindex == 0)
 		return;
 
-	if (!g_pBodyQueueHead) {
-		ALERT(at_error, "Body queue is NULL. Can't create corpse.\n");
+	edict_t* corpse = CREATE_NAMED_ENTITY(MAKE_STRING("monster_player_corpse"));
+	if (!corpse) {
+		ALERT(at_error, "Failed to create corpse entity\n");
 		return;
 	}
 
-	entvars_t* pevHead = VARS(g_pBodyQueueHead);
+	entvars_t* pev = plr->pev;
+	entvars_t* pevHead = VARS(corpse);
 
 	pevHead->angles = pev->angles;
 	pevHead->model = pev->model;
@@ -34,7 +32,7 @@ void CopyToBodyQue(entvars_t* pev)
 	pevHead->solid = SOLID_NOT;
 	pevHead->velocity = pev->velocity;
 	pevHead->flags = FL_MONSTER;
-	pevHead->deadflag = pev->deadflag;
+	pevHead->deadflag = DEAD_DEAD;
 	
 	// render player model instead of entity model
 	pevHead->renderfx = kRenderFxDeadPlayer;
@@ -47,15 +45,6 @@ void CopyToBodyQue(entvars_t* pev)
 	pevHead->animtime = pev->animtime;	
 	pevHead->effects &= ~EF_NODRAW;
 
-	CBaseEntity* pent = CBaseEntity::Instance(ENT(pevHead));
-	if (pent) {
-		CBaseMonster* mon = pent->MyMonsterPointer();
-		if (mon) {
-			mon->m_bloodColor = BLOOD_COLOR_RED;
-			mon->InitBoneControllers(); // init server version of the player model (disable renderfx to see why)
-		}
-	}
-
 	UTIL_SetOrigin(pevHead, pev->origin);
 	
 	// TODO: setting a size that isn't g_vecZero causes you to hit an invisible bbox when aiming at the
@@ -64,22 +53,14 @@ void CopyToBodyQue(entvars_t* pev)
 	// entirely, for some reason...
 	UTIL_SetSize(pevHead, Vector(-8, -8, -36), Vector(8, 8, 36));
 
-	g_pBodyQueueHead = pevHead->owner;
-}
-
-void InitBodyQue(void)
-{
-	string_t	istrClassname = MAKE_STRING("bodyque");
-
-	g_pBodyQueueHead = CREATE_NAMED_ENTITY(istrClassname);
-	entvars_t* pev = VARS(g_pBodyQueueHead);
-
-	// Reserve 31 more slots for dead bodies
-	for (int i = 0; i < MAX_PLAYER_CORPSES-1; i++)
-	{
-		pev->owner = CREATE_NAMED_ENTITY(istrClassname);
-		pev = VARS(pev->owner);
+	CBaseEntity* pent = CBaseEntity::Instance(ENT(pevHead));
+	if (pent) {
+		CBaseMonster* mon = pent->MyMonsterPointer();
+		if (mon) {
+			mon->m_killedTime = plr->m_killedTime;
+			mon->m_bloodColor = BLOOD_COLOR_RED;
+			mon->InitBoneControllers(); // init server version of the player model (disable renderfx to see why)
+			mon->CleanupLocalCorpses();
+		}
 	}
-
-	pev->owner = g_pBodyQueueHead;
 }

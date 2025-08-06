@@ -1,8 +1,6 @@
 #pragma once
 #include "CBaseEntity.h"
 
-extern edict_t* g_pBodyQueueHead;
-
 // this moved here from world.cpp, to allow classes to be derived from it
 //=======================
 // CWorld
