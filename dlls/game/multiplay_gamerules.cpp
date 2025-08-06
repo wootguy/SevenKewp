@@ -700,7 +700,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 			}
 		}
 
-		bool timeBasedDamageOnly = !(pVictim->m_lastDamageType & ~DMG_TIMEBASED);
+		bool timeBasedDamageOnly = pVictim->m_lastDamageType != 0 && !(pVictim->m_lastDamageType & ~DMG_TIMEBASED);
 		if (pVictim->m_lastDamageType == DMG_FALL || timeBasedDamageOnly) {
 			killer_weapon_name = "skull";
 		}
