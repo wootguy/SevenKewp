@@ -3,6 +3,7 @@
 #include "shake.h"
 #include "user_messages.h"
 #include "PluginManager.h"
+#include "custom_weapon.h"
 
 int giPrecacheGrunt = 0;
 int gmsgShake = 0;
@@ -44,6 +45,8 @@ int gmsgTeamNames = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
+int gmsgCustomWeapon = 0;
+int gmsgSoundIdx = 0;
 int gmsgToxicCloud = 0;
 
 std::vector<UserMessage> g_userMessages;
@@ -136,5 +139,7 @@ void LinkUserMessages(void)
 	gmsgStatusText = REG_USER_MSG("StatusText", -1);
 	gmsgStatusValue = REG_USER_MSG("StatusValue", 3);
 
+	gmsgCustomWeapon = REG_USER_MSG("CustomWep", -1);
+	gmsgSoundIdx = REG_USER_MSG("SoundIdx", -1);
 	gmsgToxicCloud = REG_USER_MSG("ToxicCloud", 4);
 }

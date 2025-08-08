@@ -32,6 +32,7 @@
 #include "CBasePlayerWeapon.h"
 #include "explode.h"
 #include "CFuncTank.h"
+#include "CWeaponCustom.h"
 
 extern CGraph	WorldGraph;
 extern int gEvilImpulse101;
@@ -228,6 +229,10 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 		goto cleanup;
 	}
 
+	// events must always be precached, and in the correct order, or else
+	// vanilla clients will play the wrong weapon events
+	wep->PrecacheEvents();
+
 	if (!wep->GetItemInfo(&II)) {
 		ALERT(at_error, "Failed to register weapon '%s' (GetItemInfo() returned FALSE)\n", szClassname);
 		goto cleanup;
@@ -296,10 +301,6 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 	g_weaponNames.put(info.pszName);
 	g_weaponClassnames.put(szClassname);
 
-	// events must always be precached, and in the correct order, or else
-	// vanilla clients will play the wrong weapon events
-	wep->PrecacheEvents();
-
 	if (g_registeringCustomWeps) {
 		PRECACHE_HUD_FILES(("sprites/" + std::string(info.pszName) + ".txt").c_str());
 
@@ -363,6 +364,8 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_medkit");
 	UTIL_RegisterWeapon("weapon_inventory");
 	UTIL_RegisterWeapon("weapon_knife");
+	UTIL_RegisterWeapon("weapon_m249");
+	CWeaponCustom::PrecacheEvent();
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 
 	g_sModelIndexFireball = PRECACHE_MODEL_ENT(NULL, "sprites/zerogxplode.spr");// fireball

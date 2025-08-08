@@ -28,6 +28,9 @@
 
 #include "ammohistory.h"
 #include "vgui_TeamFortressViewport.h"
+#include "custom_weapon.h"
+
+CustomWeaponParams* GetCustomWeaponParams(int id);
 
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
@@ -244,6 +247,8 @@ HSPRITE ghsprBuckets;					// Sprite for top row of weapons menu
 
 DECLARE_MESSAGE(m_Ammo, CurWeapon );	// Current weapon and clip
 DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
+DECLARE_MESSAGE(m_Ammo, CustomWep);		// custom weapon parameters
+DECLARE_MESSAGE(m_Ammo, SoundIdx);		// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, AmmoX);			// update known ammo type's count
 DECLARE_MESSAGE(m_Ammo, AmmoPickup);	// flashes an ammo pickup record
 DECLARE_MESSAGE(m_Ammo, WeapPickup);    // flashes a weapon pickup record
@@ -276,6 +281,8 @@ int CHudAmmo::Init(void)
 
 	HOOK_MESSAGE(CurWeapon);
 	HOOK_MESSAGE(WeaponList);
+	HOOK_MESSAGE(CustomWep);
+	HOOK_MESSAGE(SoundIdx);
 	HOOK_MESSAGE(AmmoPickup);
 	HOOK_MESSAGE(WeapPickup);
 	HOOK_MESSAGE(ItemPickup);
@@ -700,7 +707,127 @@ int CHudAmmo::MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf )
 	gWR.AddWeapon( &Weapon );
 
 	return 1;
+}
 
+// set up parameters for custom weapon prediction
+int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	int weaponId = READ_BYTE();
+	
+	if (weaponId < 0 || weaponId >= MAX_WEAPONS)
+		return 0;
+
+	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId);
+	memset(&parms, 0, sizeof(CustomWeaponParams));
+
+	parms.flags = READ_BYTE();
+	parms.maxClip = READ_SHORT();
+
+	parms.vmodel = READ_SHORT();
+	parms.deployAnim = READ_BYTE();
+
+	for (int k = 0; k < 3; k++) {
+		WeaponCustomReload& reload = parms.reloadStage[k];
+		reload.anim = READ_BYTE();
+		reload.time = READ_SHORT();
+
+		if (!(parms.flags & FL_WC_WEP_SHOTGUN_RELOAD))
+			break;
+	}
+
+	for (int k = 0; k < 4; k++) {
+		WeaponCustomIdle& idle = parms.idles[k];
+		idle.anim = READ_BYTE();
+		idle.weight = READ_BYTE();
+		idle.time = READ_SHORT();
+	}
+
+	for (int i = 0; i < 2; i++) {
+		if (!(parms.flags & FL_WC_WEP_HAS_PRIMARY) && i == 0)
+			continue;
+		if (!(parms.flags & FL_WC_WEP_HAS_SECONDARY) && i == 1)
+			continue;
+
+		CustomWeaponShootOpts& opts = parms.shootOpts[i];
+		opts.flags = READ_BYTE();
+		opts.ammoCost = READ_BYTE();
+		opts.cooldown = READ_SHORT();
+	}
+
+	parms.numEvents = READ_BYTE();
+	for (int i = 0; i < parms.numEvents; i++) {
+		uint32_t packedHeader = READ_LONG();
+		WepEvt& evt = parms.events[i];
+		memset(&evt, 0, sizeof(WepEvt));
+
+		evt.evtType = packedHeader >> 28;
+		evt.trigger = (packedHeader >> 24) & 0xF;
+		evt.triggerArg = (packedHeader >> 14) & 0x3FF;
+		evt.delay = packedHeader & 0x3FFF;
+
+		switch (evt.evtType) {
+		case WC_EVT_PLAY_SOUND:
+			evt.playSound.sound = READ_SHORT();
+			evt.playSound.volume = READ_BYTE();
+			evt.playSound.pitchMin = READ_BYTE();
+			evt.playSound.pitchMax = READ_BYTE();
+			break;
+		case WC_EVT_EJECT_SHELL:
+			evt.ejectShell.model = READ_SHORT();
+			evt.ejectShell.offsetForward = READ_SHORT();
+			evt.ejectShell.offsetUp = READ_SHORT();
+			evt.ejectShell.offsetRight = READ_SHORT();
+			break;
+		case WC_EVT_PUNCH_SET:
+		case WC_EVT_PUNCH_RANDOM:
+			evt.punch.x = READ_SHORT();
+			evt.punch.y = READ_SHORT();
+			evt.punch.z = READ_SHORT();
+			break;
+		case WC_EVT_SET_BODY:
+			evt.setBody.newBody = READ_BYTE();
+			break;
+		case WC_EVT_WEP_ANIM:
+			evt.anim.animMin = READ_BYTE();
+			evt.anim.animMax = READ_BYTE();
+			break;
+		case WC_EVT_BULLETS:
+			evt.bullets.count = READ_BYTE();
+			//evt.bullets.damage = READ_SHORT();
+			evt.bullets.spreadX = READ_SHORT();
+			evt.bullets.spreadY = READ_SHORT();
+			evt.bullets.btype = READ_BYTE();
+			evt.bullets.tracerFreq = READ_BYTE();
+			evt.bullets.flags = READ_BYTE();
+			break;
+		case WC_EVT_KICKBACK:
+			evt.kickback.pushForce = READ_SHORT();
+			break;
+		default:
+			gEngfuncs.Con_Printf("Bad custom weapon event type read %d\n", (int)evt.evtType);
+			break;
+		}
+	}
+
+	return 1;
+}
+
+void AddWeaponCustomSoundMapping(int idx, const char* path);
+
+int CHudAmmo::MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf) {
+	BEGIN_READ(pbuf, iSize);
+
+	int soundCount = READ_SHORT();
+
+	for (int i = 0; i < soundCount; i++) {
+		int idx = READ_SHORT();
+		const char* soundPath = READ_STRING();
+		AddWeaponCustomSoundMapping(idx, soundPath);
+	}
+
+	return 1;
 }
 
 //------------------------------------------------------------------------

@@ -32,6 +32,7 @@ extern HashMap<string_t> g_allocedStrings;
 #define SET_MODEL		(*g_engfuncs.pfnSetModel)
 #define PRECACHE_SOUND	(*g_engfuncs.pfnPrecacheSound)
 #define PRECACHE_EVENT	(*g_engfuncs.pfnPrecacheEvent)
+#define PRECACHE_GENERIC(path)
 #define MODEL_INDEX		(*g_engfuncs.pfnModelIndex)
 #define GET_MODEL(model) model
 inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NULL, edict_t* ed = NULL) {

@@ -379,6 +379,7 @@ set(WEAPON_HDR
 	weapon/CWeaponInventory.h
 	weapon/CKnife.h
 	weapon/CM249.h
+	weapon/CWeaponCustom.h
 	weapon/weapons.h
 )
 set(WEAPON_SRC
@@ -415,6 +416,7 @@ set(WEAPON_SRC
 	weapon/CWeaponInventory.cpp
 	weapon/CKnife.cpp
 	weapon/CM249.cpp
+	weapon/CWeaponCustom.cpp
 	weapon/combat.cpp
 )
 set(AMMO_HDR

@@ -40,6 +40,8 @@ EXPORT extern int gmsgTeamNames;
 EXPORT extern int gmsgStatusText;
 EXPORT extern int gmsgStatusValue;
 
+EXPORT extern int gmsgCustomWeapon;
+EXPORT extern int gmsgSoundIdx;
 EXPORT extern int gmsgToxicCloud;
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages

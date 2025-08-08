@@ -43,6 +43,7 @@
 #include "weapon/CSatchel.h"
 #include "weapon/CTripmine.h"
 #include "weapon/CSqueak.h"
+#include "weapon/CWeaponCustom.h"
 
 extern globalvars_t *gpGlobals;
 extern int g_iUser1;
@@ -79,7 +80,37 @@ CHandGrenade g_HandGren;
 CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
+CWeaponCustom g_customWeapon[MAX_WEAPONS];
 
+CustomWeaponParams* GetCustomWeaponParams(int id) {
+	if (id >= 0 && id < MAX_WEAPONS)
+		return &g_customWeapon[id].params;
+
+	gEngfuncs.Con_Printf("Invalid custom weapon ID %d\n", id);
+	return NULL;
+}
+
+int GetCustomWeaponBody(int id) {
+	if (id >= 0 && id < MAX_WEAPONS)
+		return g_customWeapon[id].pev->body;
+
+	gEngfuncs.Con_Printf("Invalid custom weapon ID %d\n", id);
+	return 0;
+}
+
+void AddWeaponCustomSoundMapping(int idx, const char* path) {
+	if (idx >= 0 && idx < MAX_PRECACHE_SOUND) {
+		strcpy_safe(CWeaponCustom::m_soundPaths[idx], path, 256);
+	}
+}
+
+const char* GetWeaponCustomSound(int idx) {
+	if (idx >= 0 && idx < MAX_PRECACHE_SOUND) {
+		return CWeaponCustom::m_soundPaths[idx];
+	}
+
+	return "";
+}
 
 /*
 ======================
@@ -310,7 +341,7 @@ Only produces random numbers to match the server ones.
 */
 Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand )
 {
-	float x, y, z;
+	float x = 0, y = 0, z = 0;
 
 	for ( ULONG iShot = 1; iShot <= cShots; iShot++ )
 	{
@@ -347,6 +378,8 @@ Handles weapon firing, reloading, etc.
 void CBasePlayerWeapon::ItemPostFrame( void )
 {
 	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
 
 	if ((m_fInReload) && (m_pPlayer->m_flNextAttack <= 0.0))
 	{
@@ -643,6 +676,18 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Satchel	, &player );
 	HUD_PrepEntity( &g_Tripmine	, &player );
 	HUD_PrepEntity( &g_Snark	, &player );
+
+	CWeaponCustom::PrecacheEvent();
+
+	// fill remaining slots with dummy weapons
+	for (int i = 1; i < MAX_WEAPONS; i++) {
+		if (!g_pWpns[i]) {
+			HUD_PrepEntity(&g_customWeapon[i], NULL);
+			g_customWeapon[i].m_hPlayer = &player;
+			g_customWeapon[i].m_iId = i;
+			g_pWpns[i] = &g_customWeapon[i];
+		}
+	}
 }
 
 /*
@@ -763,6 +808,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
 			break;
+
+		default:
+			if (from->client.m_iId >= 0 && from->client.m_iId < MAX_WEAPONS)
+				pWeapon = &g_customWeapon[from->client.m_iId];
+			break;
 	}
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it
@@ -864,6 +914,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	player.ammo_hornets		= (int)from->client.vuser2[0];
 	player.ammo_rockets		= (int)from->client.ammo_rockets;
 
+	CBasePlayerItem* oldActiveItem = player.m_pActiveItem;
+	bool serverWeaponChanged = player.m_pActiveItem && player.m_pActiveItem->m_iId != to->client.m_iId;
 	
 	// Point to current weapon object
 	if ( from->client.m_iId )
@@ -910,12 +962,32 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 				// Deploy new weapon
 				if (player.m_pActiveItem)
 				{
+					int oldRunfuncs = g_runfuncs;
+					g_runfuncs = 1; // force the animation to play
 					player.m_pActiveItem->Deploy( );
+					g_runfuncs = oldRunfuncs;
 				}
 
 				// Update weapon id so we can predict things correctly.
 				to->client.m_iId = cmd->weaponselect;
 			}
+		}
+	}
+
+	if (serverWeaponChanged) {
+		// weapon changed via server logic
+		// Put away old weapon
+		if (oldActiveItem)
+			oldActiveItem->Holster();
+
+		player.m_pLastItem = oldActiveItem;
+
+		// Deploy new weapon
+		if (player.m_pActiveItem) {
+			int oldRunfuncs = g_runfuncs;
+			g_runfuncs = 1; // force the animation to play
+			player.m_pActiveItem->Deploy();
+			g_runfuncs = oldRunfuncs;
 		}
 	}
 
@@ -947,7 +1019,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	// Make sure that weapon animation matches what the game .dll is telling us
 	//  over the wire ( fixes some animation glitches )
-	if ( g_runfuncs && ( HUD_GetWeaponAnim() != to->client.weaponanim ) )
+	if ( g_runfuncs && ( HUD_GetWeaponAnim() != to->client.weaponanim ) && !pWeapon->IsWeaponCustom())
 	{
 		int body = 2;
 

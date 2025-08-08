@@ -58,6 +58,7 @@
 #include "te_effects.h"
 #include "CGib.h"
 #include "bodyque.h"
+#include "CWeaponCustom.h"
 
 // #define DUCKFIX
 
@@ -5005,6 +5006,26 @@ void CBasePlayer :: UpdateClientData( void )
 			WRITE_BYTE(II->iFlags);					// byte		Flags
 			MESSAGE_END();
 		}
+		
+		int soundCount = 0;
+		for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
+			if (g_customWeaponSounds[i]) {
+				soundCount++;
+			}
+		}
+
+		int soundListBytes = 0;
+		MESSAGE_BEGIN(MSG_ONE, gmsgSoundIdx, NULL, pev);
+		WRITE_SHORT(soundCount); soundListBytes += 1;
+		for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
+			if (g_customWeaponSounds[i]) {
+				const char* path = INDEX_SOUND(i);
+				WRITE_SHORT(i); soundListBytes += 2;
+				WRITE_STRING(path); soundListBytes += strlen(path) + 1;
+			}
+		}
+		MESSAGE_END();
+		ALERT(at_console, "Sent %d sound list bytes\n", soundListBytes);
 	}
 
 	SendAmmoUpdate();

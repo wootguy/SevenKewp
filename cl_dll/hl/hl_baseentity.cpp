@@ -358,6 +358,7 @@ Vector CBasePlayer::BodyTarget(const Vector& posSrc) { return Vector(); }
 void CBasePlayer::Revive() { }
 float CBasePlayer::GetDamage(float defaultDamage) { return defaultDamage; }
 const char* CBasePlayer::GetDeathNoticeWeapon() { return 0; }
+void CBasePlayer::TabulateAmmo() { }
 
 void ClearMultiDamage(void) { }
 void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker ) { }

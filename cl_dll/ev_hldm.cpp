@@ -34,6 +34,7 @@
 
 #include "r_studioint.h"
 #include "com_model.h"
+#include "custom_weapon.h"
 
 extern engine_studio_api_t IEngineStudio;
 
@@ -68,6 +69,7 @@ void EV_EgonStop( struct event_args_s *args  );
 void EV_HornetGunFire( struct event_args_s *args  );
 void EV_TripmineFire( struct event_args_s *args  );
 void EV_SnarkFire( struct event_args_s *args  );
+void EV_FireCustom( struct event_args_s *args  );
 
 
 void EV_TrainPitchAdjust( struct event_args_s *args );
@@ -1719,4 +1721,106 @@ void EV_TrainPitchAdjust( event_args_t *args )
 int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 )
 {
 	return 0;
+}
+
+CustomWeaponParams* GetCustomWeaponParams(int id);
+extern int g_irunninggausspred;
+const char* GetWeaponCustomSound(int idx);
+int GetCustomWeaponBody(int id);
+
+void EV_FireCustom(event_args_t* args) {
+	int wepid = args->iparam1;
+	int evtidx = args->iparam2;
+	CustomWeaponParams* params = GetCustomWeaponParams(wepid);
+
+	if (!params) {
+		return;
+	}
+
+	if (evtidx < 0 && evtidx >= MAX_CUSTOM_WEAPON_EVENTS)
+		return;
+
+	WepEvt& evt = params->events[evtidx];
+
+	gEngfuncs.Con_Printf("Hello wep event %d\n", (int)evt.evtType);
+	int idx = args->entindex;
+
+	vec3_t origin;
+	vec3_t angles;
+	vec3_t velocity;
+
+	vec3_t vecSrc;
+	vec3_t up, right, forward;
+
+	idx = args->entindex;
+	VectorCopy(args->origin, origin);
+	VectorCopy(args->angles, angles);
+	VectorCopy(args->velocity, velocity);
+
+	AngleVectors(angles, forward, right, up);
+
+	switch (evt.evtType) {
+	case WC_EVT_PLAY_SOUND: {
+		const char* soundPath = GetWeaponCustomSound(evt.playSound.sound);
+		float vol = evt.playSound.volume / 255.0f;
+		int pitch = gEngfuncs.pfnRandomLong(evt.playSound.pitchMin, evt.playSound.pitchMax);
+		gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, soundPath, vol, ATTN_NORM, 0, pitch);
+		break;
+	}
+	case WC_EVT_EJECT_SHELL: {
+		vec3_t ShellVelocity;
+		vec3_t ShellOrigin;
+
+		float forwardScale = evt.ejectShell.offsetForward * 0.01f;
+		float upScale = evt.ejectShell.offsetUp * 0.01f;
+		float rightScale = evt.ejectShell.offsetRight * 0.01f;
+
+		EV_GetDefaultShellInfo(args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up,
+			forwardScale, upScale, rightScale);
+		EV_EjectBrass(ShellOrigin, ShellVelocity, angles[YAW], evt.ejectShell.model, TE_BOUNCE_SHELL);
+		break;
+	}
+	case WC_EVT_PUNCH_SET:
+	case WC_EVT_PUNCH_RANDOM: {
+		float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.x);
+		float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.y);
+		float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.z);
+
+		if (evt.evtType == WC_EVT_PUNCH_RANDOM) {
+			V_PunchAxis(0, gEngfuncs.pfnRandomFloat(-punchAngleX, punchAngleX));
+			V_PunchAxis(1, gEngfuncs.pfnRandomFloat(-punchAngleY, punchAngleY));
+			V_PunchAxis(2, gEngfuncs.pfnRandomFloat(-punchAngleZ, punchAngleZ));
+		}
+		else if (evt.evtType == WC_EVT_PUNCH_SET) {
+			V_PunchAxis(0, punchAngleX);
+			V_PunchAxis(1, punchAngleY);
+			V_PunchAxis(2, punchAngleZ);
+		}
+		break;
+	}
+	case WC_EVT_SET_BODY:
+		break;
+	case WC_EVT_WEP_ANIM:
+		if (EV_IsLocal(idx))
+		{
+			int anim = gEngfuncs.pfnRandomLong(evt.anim.animMin, evt.anim.animMax);
+			gEngfuncs.pEventAPI->EV_WeaponAnimation(anim, GetCustomWeaponBody(wepid));
+		}
+		break;
+	case WC_EVT_BULLETS:
+		EV_GetGunPosition(args, vecSrc, origin);
+		EV_HLDM_FireBullets(idx, forward, right, up, evt.bullets.count, vecSrc, forward, 8192,
+			evt.bullets.btype, evt.bullets.tracerFreq, &tracerCount[idx - 1], args->fparam1, args->fparam2);
+
+		if (EV_IsLocal(idx) && evt.bullets.flags & FL_WC_BULLETS_MUZZLE_FLASH)
+			EV_MuzzleFlash();
+		break;
+	case WC_EVT_KICKBACK:
+		g_irunninggausspred = 1;
+		g_flApplyVel = evt.kickback.pushForce / 5.0f;
+		break;
+	default:
+		gEngfuncs.Con_Printf("Bad custom weapon event type playback %d\n", (int)evt.evtType);
+		break;
+	}
 }
