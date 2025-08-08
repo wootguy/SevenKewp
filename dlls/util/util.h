@@ -674,7 +674,9 @@ EXPORT int SENTENCEG_GroupCount(const char *groupName);
 
 EXPORT void TEXTURETYPE_Init();
 EXPORT char TEXTURETYPE_Find(char *name);
-EXPORT float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType, edict_t* emitter=ENT(0));
+
+// bulletEmitter = if set, message will be sent to all HL clients besides this player (otherwise all players)
+EXPORT float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType, edict_t* emitter=ENT(0), edict_t* bulletEmitter=NULL);
 
 // NOTE: use EMIT_SOUND_DYN to set the pitch of a sound. Pitch of 100
 // is no pitch shift.  Pitch > 100 up to 255 is a higher pitch, pitch < 100
@@ -932,3 +934,5 @@ EXPORT void UTIL_SendUserInfo(edict_t* msgPlayer, edict_t* infoPlayer, char* inf
 
 // returns: -1 no intersect, 0 = ray starts inside box, >0 = intersection distance
 EXPORT float UTIL_RayBoxIntersect(Vector start, Vector rayDir, Vector mins, Vector maxs);
+
+EXPORT const char* UTIL_SevenKewpClientString(int version);

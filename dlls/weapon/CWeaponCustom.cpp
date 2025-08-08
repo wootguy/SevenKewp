@@ -2,14 +2,16 @@
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud_iface.h"
-#define CLALERT(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
 #include "eng_wrappers.h"
+#define CLALERT(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
 #else
 #define CLALERT(fmt, ...)
+#include "game.h"
 #endif
 
 int CWeaponCustom::m_usCustom = 0;
 char CWeaponCustom::m_soundPaths[MAX_PRECACHE][256];
+int CWeaponCustom::m_tracerCount[32];
 
 bool g_customWeaponSounds[MAX_PRECACHE_SOUND];
 
@@ -29,6 +31,9 @@ void CWeaponCustom::PrecacheEvents() {
 		if (evt.evtType == WC_EVT_PLAY_SOUND && evt.playSound.sound)
 			g_customWeaponSounds[evt.playSound.sound] = true;
 	}
+
+	if (wrongClientWeapon)
+		UTIL_PrecacheOther(wrongClientWeapon);
 }
 
 void CWeaponCustom::AddEvent(WepEvt evt) {
@@ -41,11 +46,35 @@ void CWeaponCustom::AddEvent(WepEvt evt) {
 }
 
 void CWeaponCustom::PrecacheEvent() {
-	m_usCustom = PRECACHE_EVENT(1, "events/customwep.sc");
-	PRECACHE_GENERIC("events/customwep.sc");
+	// .sc files are blacklisted for download but the client can precache and use a .txt just the same
+	m_usCustom = PRECACHE_EVENT(1, "events/customwep.txt");
+	PRECACHE_GENERIC("events/customwep.txt");
 }
 
 int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
+#ifndef CLIENT_DLL
+	if (!pPlayer->IsSevenKewpClient()) {
+		if (pPlayer->HasNamedPlayerItem(wrongClientWeapon)) {
+			return 0;
+		}
+
+		pPlayer->GiveNamedItem(wrongClientWeapon);
+		CBasePlayerItem* wep = pPlayer->GetNamedPlayerItem(wrongClientWeapon);
+
+		if (!wep || pPlayer->m_sentSevenKewpNotice || !mp_sevenkewp_client_notice.value)
+			return 0;
+
+		std::string clientReq = UTIL_SevenKewpClientString(MIN_SEVENKEWP_VERSION);
+		UTIL_ClientPrint(pPlayer, print_chat, UTIL_VarArgs(
+			"The \"%s\" requires the \"%s\" client. You were given the \"%s\" instead. Check your console for more info.\n",
+			DisplayName(), clientReq.c_str(), wep->DisplayName()));
+
+		pPlayer->SendSevenKewpClientNotice();
+
+		return 0;
+	}
+#endif
+
 	SendPredictionData(pPlayer->edict());
 	return CBasePlayerWeapon::AddToPlayer(pPlayer);
 }
@@ -244,6 +273,22 @@ void CWeaponCustom::Cooldown(int millis) {
 	m_flTimeWeaponIdle = nextAttack + 1.0f;
 }
 
+bool CWeaponCustom::CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq)
+{
+	if (idx < 0 || idx >= gpGlobals->maxClients) {
+		return false;
+	}
+
+	if (iTracerFreq != 0 && ((m_tracerCount[idx])++ % iTracerFreq) == 0)
+	{
+		// adjust for player
+		vecSrc = vecSrc + Vector(0,0,-4) + right * 2 + forward * 16;
+		return true;
+	}
+
+	return false;
+}
+
 Vector CWeaponCustom::ProcessBulletEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	Vector spread(SPREAD_TO_FLOAT(evt.bullets.spreadX), SPREAD_TO_FLOAT(evt.bullets.spreadY), 0);
 
@@ -265,11 +310,28 @@ Vector CWeaponCustom::ProcessBulletEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+	Vector vecEnd;
 
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
-		evt.bullets.btype, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev, m_pPlayer->random_seed);
+		evt.bullets.btype, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
+		m_pPlayer->random_seed, &vecEnd, true);
 	lagcomp_end();
+
+#ifndef CLIENT_DLL
+	bool showTracer = CheckTracer(m_pPlayer->entindex() - 1, vecSrc, vecDir, gpGlobals->v_right, evt.bullets.tracerFreq);
+
+	// send tracer to all non-SevenKewp clients because they don't know how to play the event
+	if (showTracer) {
+		for (int i = 1; i < gpGlobals->time; i++) {
+			CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+			if (listener && !listener->IsSevenKewpClient() && m_pPlayer->InPAS(listener->edict())) {
+				UTIL_Tracer(vecSrc, vecEnd, MSG_ONE_UNRELIABLE, listener->edict());
+			}
+		}
+	}
+#endif
 
 	return vecDir;
 }
@@ -280,6 +342,17 @@ void CWeaponCustom::ProcessKickbackEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 #endif
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
 	m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - vecAiming * evt.kickback.pushForce;
+}
+
+void CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
+#ifndef CLIENT_DLL
+	uint32_t messageTargets = GetOtherHlClients(m_pPlayer->edict());
+
+	// send sound to all non-SevenKewp clients because they don't know how to play the event
+	StartSound(m_pPlayer->edict(), CHAN_WEAPON, INDEX_SOUND(evt.playSound.sound),
+		evt.playSound.volume / 255.0f, ATTN_NORM, SND_FL_PREDICTED, 100,
+		m_pPlayer->pev->origin, messageTargets);
+#endif
 }
 
 void CWeaponCustom::ProcessEvents(int trigger, int triggerArg) {
@@ -306,6 +379,9 @@ void CWeaponCustom::ProcessEvents(int trigger, int triggerArg) {
 			break;
 		case WC_EVT_KICKBACK:
 			ProcessKickbackEvent(evt, m_pPlayer);
+			break;
+		case WC_EVT_PLAY_SOUND:
+			ProcessSoundEvent(evt, m_pPlayer);
 			break;
 		}
 
@@ -406,4 +482,21 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 
 	ALERT(at_console, "Sent %d prediction bytes\n", sentBytes);
 #endif
+}
+
+uint32_t CWeaponCustom::GetOtherHlClients(edict_t* plr) {
+	uint32_t messageTargets = 0;
+
+#ifndef CLIENT_DLL
+	// send sound to all non-SevenKewp clients because they don't know how to play the event
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener && listener->edict() != plr && !listener->IsSevenKewpClient()) {
+			messageTargets |= PLRBIT(listener->edict());
+		}
+	}
+#endif
+
+	return messageTargets;
 }

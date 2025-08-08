@@ -48,6 +48,8 @@ StringMap g_soundReplacements;
 
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch) { }
 char* UTIL_VarArgs(const char* format, ...) { return ""; }
+void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char* msg) {}
+const char* UTIL_SevenKewpClientString(int version) { return ""; }
 
 // CBaseEntity Stubs
 int CBaseEntity :: TakeHealth( float flHealth, int bitsDamageType, float healthcap) { return 1; }
@@ -359,13 +361,18 @@ void CBasePlayer::Revive() { }
 float CBasePlayer::GetDamage(float defaultDamage) { return defaultDamage; }
 const char* CBasePlayer::GetDeathNoticeWeapon() { return 0; }
 void CBasePlayer::TabulateAmmo() { }
+CBasePlayerItem* CBasePlayer::GetNamedPlayerItem(const char* pszItemName) { return 0; }
+BOOL CBasePlayer::HasNamedPlayerItem(const char* pszItemName) { return FALSE; }
+void CBasePlayer::GiveNamedItem(const char* pszName) {}
+void CBasePlayer::SendSevenKewpClientNotice() {}
+bool CBasePlayer::IsSevenKewpClient() { return false; }
 
 void ClearMultiDamage(void) { }
 void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker ) { }
 void AddMultiDamage( entvars_t *pevInflictor, CBaseEntity *pEntity, float flDamage, int bitsDamageType) { }
 void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage) { }
 int DamageDecal( CBaseEntity *pEntity, int bitsDamageType ) { return 0; }
-void DecalGunshot( TraceResult *pTrace, int iBulletType, bool playTextureSound, Vector vecSrc, Vector vecEnd ) { }
+void DecalGunshot( TraceResult *pTrace, int iBulletType, bool playTextureSound, Vector vecSrc, Vector vecEnd, edict_t* emitter ) { }
 void EjectBrass ( const Vector &vecOrigin, const Vector &vecVelocity, float rotation, int model, int soundtype ) { }
 void AddAmmoNameToAmmoRegistry( const char *szAmmoname ) { }
 int CBasePlayerItem::Restore( class CRestore & ) { return 1; }

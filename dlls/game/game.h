@@ -85,6 +85,8 @@ EXPORT extern cvar_t	mp_max_pvs_corpses; // limit number of corpses in a VIS zon
 EXPORT extern cvar_t	mp_weaponhands; // set default weapon model hands (hl, op4, bshift)
 EXPORT extern cvar_t	mp_chat_interval; // suppress player chats faster than this (seconds)
 EXPORT extern cvar_t	mp_perf; // enables performance logging
+EXPORT extern cvar_t	mp_debug_tracers; // compare your client predicted tracers with the server tracers
+EXPORT extern cvar_t	mp_sevenkewp_client_notice; // tell players where to download the sevenkewp client so they can use all the weapons
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

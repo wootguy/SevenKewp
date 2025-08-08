@@ -339,7 +339,7 @@ CBaseEntity::FireBulletsPlayer
 Only produces random numbers to match the server ones.
 =====================
 */
-Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand )
+Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand, Vector* vecEndOut, bool sevenkewpEvent)
 {
 	float x = 0, y = 0, z = 0;
 
@@ -923,7 +923,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		player.m_pActiveItem = g_pWpns[ from->client.m_iId ];
 	}
 
-	if ( player.m_pActiveItem->m_iId == WEAPON_RPG )
+	if (player.m_pActiveItem && player.m_pActiveItem->m_iId == WEAPON_RPG )
 	{
 		 ( ( CRpg * )player.m_pActiveItem)->m_fSpotActive = (int)from->client.vuser2[ 1 ];
 		 ( ( CRpg * )player.m_pActiveItem)->m_cActiveRockets = (int)from->client.vuser2[ 2 ];
@@ -1011,7 +1011,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	to->client.vuser2[0]				= player.ammo_hornets;
 	to->client.ammo_rockets				= player.ammo_rockets;
 
-	if ( player.m_pActiveItem->m_iId == WEAPON_RPG )
+	if (player.m_pActiveItem && player.m_pActiveItem->m_iId == WEAPON_RPG )
 	{
 		 from->client.vuser2[ 1 ] = ( ( CRpg * )player.m_pActiveItem)->m_fSpotActive;
 		 from->client.vuser2[ 2 ] = ( ( CRpg * )player.m_pActiveItem)->m_cActiveRockets;
@@ -1019,7 +1019,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	// Make sure that weapon animation matches what the game .dll is telling us
 	//  over the wire ( fixes some animation glitches )
-	if ( g_runfuncs && ( HUD_GetWeaponAnim() != to->client.weaponanim ) && !pWeapon->IsWeaponCustom())
+	if ( g_runfuncs && ( HUD_GetWeaponAnim() != to->client.weaponanim ) && !pWeapon->IsSevenKewpWeapon())
 	{
 		int body = 2;
 

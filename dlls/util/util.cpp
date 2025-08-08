@@ -3387,3 +3387,9 @@ float UTIL_RayBoxIntersect(Vector start, Vector rayDir, Vector mins, Vector maxs
 	Vector intersectPoint(coord[0], coord[1], coord[2]);
 	return (intersectPoint - start).Length();
 }
+
+const char* UTIL_SevenKewpClientString(int version) {
+	int major = version / 100;
+	int minor = version % 100;
+	return UTIL_VarArgs("SevenKewp %d.%02d", major, minor);
+}

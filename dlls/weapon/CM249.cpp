@@ -14,8 +14,8 @@
  ****/
 #include "CM249.h"
 
-//LINK_ENTITY_TO_CLASS(weapon_m249, CM249)
-//LINK_ENTITY_TO_CLASS(weapon_saw, CM249)
+LINK_ENTITY_TO_CLASS(weapon_m249, CM249)
+LINK_ENTITY_TO_CLASS(weapon_saw, CM249)
 
 void CM249::Spawn()
 {
@@ -51,6 +51,7 @@ void CM249::PrecacheEvents()
 	int shootSnd = PRECACHE_SOUND("weapons/saw_fire1.wav");
 
 	animExt = "mp5";
+	wrongClientWeapon = "weapon_9mmAR";
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY;
 	params.vmodel = MODEL_INDEX(GetModelV());

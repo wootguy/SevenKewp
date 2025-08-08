@@ -156,7 +156,7 @@ EXPORT void GetCircularGaussianSpread(float& x, float& y);
 // Returns an ItemInfo with reassigned id and position.
 EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname);
 
-EXPORT void AddAmmoNameToAmmoRegistry(const char* szAmmoname);
+EXPORT void AddAmmoNameToAmmoRegistry(const char* szAmmoname, bool isSevenKewpGun);
 
 typedef struct 
 {

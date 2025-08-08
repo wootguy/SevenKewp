@@ -23,6 +23,7 @@ public:
 	void WeaponIdle( void );
 	float m_flNextAnimTime;
 	int m_iShell;
+	const char* DisplayName() override { return "MP5"; }
 
 	virtual int MergedModelBody() { return MERGE_MDL_W_9MMAR; }
 

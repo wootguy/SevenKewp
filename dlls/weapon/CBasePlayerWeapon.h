@@ -54,7 +54,7 @@ public:
 	virtual void Holster( int skiplocal = 0 );
 	virtual BOOL UseDecrement( void ) { return FALSE; };
 	virtual BOOL IsClientWeapon() { return TRUE; }; // true if the client DLL predicts this weapon
-	virtual BOOL IsWeaponCustom() { return FALSE; };
+	virtual BOOL IsSevenKewpWeapon() { return FALSE; } // true if HL players can't use this
 	
 	int	PrimaryAmmoIndex(); 
 	int	SecondaryAmmoIndex(); 

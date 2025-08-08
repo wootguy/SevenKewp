@@ -440,9 +440,9 @@ void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode, const fl
 	SAFE_MESSAGE_ENT_LOGIC(UTIL_Decal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
 }
 
-void UTIL_Tracer(Vector start, Vector end) {
+void UTIL_Tracer(Vector start, Vector end, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(start) && UTIL_IsValidTempEntOrigin(end)) {
-		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, start);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, start, targetEnt);
 		WRITE_BYTE(TE_TRACER);
 		WRITE_COORD(start.x);
 		WRITE_COORD(start.y);
@@ -724,7 +724,7 @@ void UTIL_PlayerDecalTrace(TraceResult* pTrace, int playernum, int decalNumber, 
 	UTIL_PlayerDecal(ENTINDEX(pTrace->pHit), playernum, pTrace->vecEndPos, index);
 }
 
-edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber)
+edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber, edict_t* emitter)
 {
 	if (decalNumber < 0)
 		return pTrace->pHit;
@@ -740,7 +740,18 @@ edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber)
 		return UTIL_DecalTrace(pTrace, decalNumber);
 	}
 
-	UTIL_GunshotDecal(ENTINDEX(pTrace->pHit), pTrace->vecEndPos, index, MSG_PAS, pTrace->vecEndPos);
+	if (emitter) {
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (plr && !plr->IsSevenKewpClient() && plr->edict() != emitter) {
+				UTIL_GunshotDecal(ENTINDEX(pTrace->pHit), pTrace->vecEndPos, index, MSG_ONE_UNRELIABLE, pTrace->vecEndPos, plr->edict());
+			}
+		}
+	}
+	else {
+		UTIL_GunshotDecal(ENTINDEX(pTrace->pHit), pTrace->vecEndPos, index, MSG_PAS, pTrace->vecEndPos);
+	}
 	return pTrace->pHit;
 }
 
@@ -1039,7 +1050,7 @@ int DamageDecal(CBaseEntity* pEntity, int bitsDamageType)
 	return pEntity->DamageDecal(bitsDamageType);
 }
 
-void DecalGunshot(TraceResult* pTrace, int iBulletType, bool playTextureSound, Vector vecSrc, Vector vecEnd)
+void DecalGunshot(TraceResult* pTrace, int iBulletType, bool playTextureSound, Vector vecSrc, Vector vecEnd, edict_t* bulletEmitter)
 {
 	// Is the entity valid
 	if (!UTIL_IsValidEntity(pTrace->pHit))
@@ -1068,11 +1079,11 @@ void DecalGunshot(TraceResult* pTrace, int iBulletType, bool playTextureSound, V
 		case BULLET_PLAYER_556:
 		default:
 			// smoke and decal
-			soundEmitter = UTIL_GunshotDecalTrace(pTrace, DamageDecal(pEntity, DMG_BULLET));
+			soundEmitter = UTIL_GunshotDecalTrace(pTrace, DamageDecal(pEntity, DMG_BULLET), bulletEmitter);
 			break;
 		case BULLET_MONSTER_12MM:
 			// smoke and decal
-			soundEmitter = UTIL_GunshotDecalTrace(pTrace, DamageDecal(pEntity, DMG_BULLET));
+			soundEmitter = UTIL_GunshotDecalTrace(pTrace, DamageDecal(pEntity, DMG_BULLET), bulletEmitter);
 			break;
 		case BULLET_PLAYER_CROWBAR:
 			// wall decal
@@ -1088,7 +1099,7 @@ void DecalGunshot(TraceResult* pTrace, int iBulletType, bool playTextureSound, V
 	}
 
 	if (playTextureSound) {
-		TEXTURETYPE_PlaySound(pTrace, vecSrc, vecEnd, iBulletType, soundEmitter);
+		TEXTURETYPE_PlaySound(pTrace, vecSrc, vecEnd, iBulletType, soundEmitter, bulletEmitter);
 	}
 }
 

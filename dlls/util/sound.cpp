@@ -24,6 +24,7 @@
 #include "gamerules.h"
 #include "PluginManager.h"
 #include "te_effects.h"
+#include "CWeaponCustom.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -930,7 +931,8 @@ char TEXTURETYPE_Find(char *name)
 // original traceline endpoints used by the attacker, iBulletType is the type of bullet that hit the texture.
 // returns volume of strike instrument (crowbar) to play
 
-float TEXTURETYPE_PlaySound(TraceResult *ptr, Vector vecSrc, Vector vecEnd, int iBulletType, edict_t* emitter)
+float TEXTURETYPE_PlaySound(TraceResult *ptr, Vector vecSrc, Vector vecEnd, int iBulletType,
+	edict_t* emitter, edict_t* bulletEmitter)
 {
 // hit the world, try to play sound based on texture material type
 	
@@ -1098,8 +1100,17 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr, Vector vecSrc, Vector vecEnd, int 
 		}
 	}
 
+	if (bulletEmitter) {
+		uint32_t messageTargets = CWeaponCustom::GetOtherHlClients(bulletEmitter);
+
+		StartSound(emitter, CHAN_STATIC, rgsz[RANDOM_LONG(0, cnt - 1)],
+			fvol, fattn, SND_FL_PREDICTED, 96 + RANDOM_LONG(0, 0xf), emitter->v.origin, messageTargets);
+	}
+	else {
+		UTIL_EmitAmbientSound(emitter, ptr->vecEndPos, rgsz[RANDOM_LONG(0, cnt - 1)], fvol, fattn, 0, 96 + RANDOM_LONG(0, 0xf));
+	}
 	// play material hit sound
-	UTIL_EmitAmbientSound(emitter, ptr->vecEndPos, rgsz[RANDOM_LONG(0,cnt-1)], fvol, fattn, 0, 96 + RANDOM_LONG(0,0xf));
+	
 	//EMIT_SOUND_DYN( ENT(m_pPlayer->pev), CHAN_WEAPON, rgsz[RANDOM_LONG(0,cnt-1)], fvol, ATTN_NORM, 0, 96 + RANDOM_LONG(0,0xf));
 			
 	return fvolbar;

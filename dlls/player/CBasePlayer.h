@@ -114,6 +114,10 @@ enum sbar_data
 // always recoverable. 64 fills up MAX_PACKET_ENTITIES very fast even at cl_updaterate 10
 #define MAX_NEW_PACKET_ENTITIES 64
 
+// Minimum version allowed for the server to treat this client as a sevenkewp client instead
+// of an HL client. This prevents prevent crashes and SVC_BAD.
+#define MIN_SEVENKEWP_VERSION 1
+
 enum HL_CLIENT_SYSTEM {
 	CLIENT_SYSTEM_NOT_CHECKED, // player hasn't responded to cvar queries yet
 	CLIENT_SYSTEM_WINDOWS,
@@ -130,6 +134,7 @@ enum HL_CLIENT_ENGINE_VERSION {
 enum HL_CLIENT_MOD_VERSION {
 	CLIENT_MOD_NOT_CHECKED,	// player hasn't responded to cvar queries yet
 	CLIENT_MOD_HL,			// the vanilla half-life mod from steam (or an undetected custom client)
+	CLIENT_MOD_SEVENKEWP,	// The client for this mod
 	CLIENT_MOD_HLBUGFIXED,	// a popular custom client (for cheating!!! but also cool stuff...)
 	CLIENT_MOD_ADRENALINE,	// another popular custom client (players with names like "^1J^2E^3F^4F")
 	CLIENT_MOD_BOT,			// bots don't use mods
@@ -495,7 +500,9 @@ public:
 	HL_CLIENT_RENDERER m_clientRenderer;
 	HL_CLIENT_SYSTEM m_clientSystem;
 	string_t m_clientModVersionString; // version string for the client mod
+	int m_sevenkewpVersion; // version number for this mod's client
 	bool m_sentClientWarning; // has this client been warned about their client incompatability?
+	bool m_sentSevenKewpNotice; // has this client been told about the sevenkewp client?
 
 	int GetNameColor();
 
@@ -510,7 +517,11 @@ public:
 
 	void SendLegacyClientWarning();
 
+	void SendSevenKewpClientNotice();
+
 	const char* GetClientVersionString();
+
+	bool IsSevenKewpClient();
 
 	// gets legacy steam id (e.g. STEAM_0:0:12345679)
 	const char* GetSteamID();

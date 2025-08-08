@@ -37,7 +37,8 @@ EXPORT void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode = 
 EXPORT void	UTIL_BloodDecalTrace(TraceResult* pTrace, int bloodColor);
 EXPORT edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber, int msgMode=MSG_BROADCAST, edict_t* targetEnt=NULL);
 EXPORT void	UTIL_PlayerDecalTrace(TraceResult* pTrace, int playernum, int decalNumber, BOOL bIsCustom);
-EXPORT edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber);
+// emitter = If set, impact effects will be sent to all HL clients except this player (otherwise all players)
+EXPORT edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber, edict_t* emitter=NULL);
 EXPORT void	UTIL_Sparks(const Vector& position);
 EXPORT void	UTIL_Ricochet(const Vector& position, float scale);
 EXPORT void	UTIL_Sprite(const Vector& position, int sprIndex, uint8_t scale, uint8_t opacity);
@@ -45,14 +46,15 @@ EXPORT void	UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector&
 							uint8_t noise, int modelIdx, uint8_t shards, uint8_t duration, uint8_t flags);
 EXPORT void UTIL_SpriteSpray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint8_t speed, uint8_t noise, bool test=false);
 EXPORT void	UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType);
-EXPORT void UTIL_Tracer(Vector start, Vector end);
+EXPORT void UTIL_Tracer(Vector start, Vector end, int msgMode = MSG_PAS, edict_t* targetEnt = NULL);
 EXPORT void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate, uint8_t flags);
 EXPORT void UTIL_Smoke(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate);
 EXPORT void UTIL_BeamCylinder(Vector pos, float radius, int modelIdx, uint8_t startFrame, uint8_t frameRate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed);
 EXPORT void UTIL_BeamDisk(Vector pos, float radius, int modelIdx, uint8_t startFrame, uint8_t frameRate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed);
 
 EXPORT void EjectBrass(const Vector& vecOrigin, const Vector& vecVelocity, float rotation, int model, int soundtype);
-EXPORT void DecalGunshot(TraceResult* pTrace, int iBulletType, bool playTextureSound = false, Vector vecSrc = g_vecZero, Vector vecEnd = g_vecZero);
+// emitter = If set, impact effects will be sent to all HL clients except this player (otherwise all players)
+EXPORT void DecalGunshot(TraceResult* pTrace, int iBulletType, bool playTextureSound = false, Vector vecSrc = g_vecZero, Vector vecEnd = g_vecZero, edict_t* emitter=NULL);
 EXPORT void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage);
 EXPORT int DamageDecal(CBaseEntity* pEntity, int bitsDamageType);
 

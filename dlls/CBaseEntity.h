@@ -309,7 +309,11 @@ public:
 	void SUB_CallUseToggle(void) { this->Use(this, this, USE_TOGGLE, 0); }
 	int			ShouldToggle(USE_TYPE useType, BOOL currentState);
 	void		FireBullets(ULONG	cShots, Vector  vecSrc, Vector	vecDirShooting, Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = NULL);
-	Vector		FireBulletsPlayer(ULONG	cShots, Vector  vecSrc, Vector	vecDirShooting, Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = NULL, int shared_rand = 0);
+
+	// 
+	// notPredicted = set to true if this call is triggered by a custom client event that HL clients
+	//                can't predict. Impact effects will be sent to all non-sevenkewp clients.
+	Vector		FireBulletsPlayer(ULONG	cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = NULL, int shared_rand = 0, Vector* vecEndOut = NULL, bool sevenkewpEvent=false);
 
 	virtual CBaseEntity* Respawn(void) { return NULL; }
 

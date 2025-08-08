@@ -5006,26 +5006,28 @@ void CBasePlayer :: UpdateClientData( void )
 			WRITE_BYTE(II->iFlags);					// byte		Flags
 			MESSAGE_END();
 		}
-		
-		int soundCount = 0;
-		for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
-			if (g_customWeaponSounds[i]) {
-				soundCount++;
-			}
-		}
 
-		int soundListBytes = 0;
-		MESSAGE_BEGIN(MSG_ONE, gmsgSoundIdx, NULL, pev);
-		WRITE_SHORT(soundCount); soundListBytes += 1;
-		for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
-			if (g_customWeaponSounds[i]) {
-				const char* path = INDEX_SOUND(i);
-				WRITE_SHORT(i); soundListBytes += 2;
-				WRITE_STRING(path); soundListBytes += strlen(path) + 1;
+		if (IsSevenKewpClient()) {
+			int soundCount = 0;
+			for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
+				if (g_customWeaponSounds[i]) {
+					soundCount++;
+				}
 			}
+
+			int soundListBytes = 0;
+			MESSAGE_BEGIN(MSG_ONE, gmsgSoundIdx, NULL, pev);
+			WRITE_SHORT(soundCount); soundListBytes += 1;
+			for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
+				if (g_customWeaponSounds[i]) {
+					const char* path = INDEX_SOUND(i);
+					WRITE_SHORT(i); soundListBytes += 2;
+					WRITE_STRING(path); soundListBytes += strlen(path) + 1;
+				}
+			}
+			MESSAGE_END();
+			ALERT(at_console, "Sent %d sound list bytes\n", soundListBytes);
 		}
-		MESSAGE_END();
-		ALERT(at_console, "Sent %d sound list bytes\n", soundListBytes);
 	}
 
 	SendAmmoUpdate();
@@ -6261,8 +6263,14 @@ void CBasePlayer::QueryClientType() {
 		return;
 	}
 
-	// first check for custom clients, next step depends on the output of this
-	g_engfuncs.pfnQueryClientCvarValue2(edict(), "aghl_version", 0); // BugfixedHL cvar
+	if (m_sevenkewpVersion > 0) {
+		// skip the client cvar tests and check the engine
+		g_engfuncs.pfnQueryClientCvarValue2(edict(), "sv_allow_shaders", 2);
+	}
+	else {
+		// first check for custom clients, next step depends on the output of this
+		g_engfuncs.pfnQueryClientCvarValue2(edict(), "aghl_version", 0); // BugfixedHL cvar
+	}
 }
 
 void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarName, const char* pszValue) {
@@ -6348,6 +6356,18 @@ void CBasePlayer::SendLegacyClientWarning() {
 	UTIL_ClientPrint(this, print_console, "-------------------------------------------------------------------------\n\n");
 
 	UTIL_LogPlayerEvent(edict(), "was sent the steam_legacy client warning\n");
+}
+
+void CBasePlayer::SendSevenKewpClientNotice() {
+	std::string clientReq = UTIL_SevenKewpClientString(MIN_SEVENKEWP_VERSION);
+	UTIL_ClientPrint(this, print_console, "\n-------------------------------------------------------------------------\n");
+	UTIL_ClientPrint(this, print_console, UTIL_VarArgs("This server requires the \"%s\" client to use certain weapons.\n", clientReq.c_str()));
+	UTIL_ClientPrint(this, print_console, "Download the latest SevenKewp client here:\n\n");
+	UTIL_ClientPrint(this, print_console, "https://github.com/wootguy/SevenKewp/releases/latest\n\n");
+	UTIL_ClientPrint(this, print_console, "The server detected that you are using this client:\n");
+	UTIL_ClientPrint(this, print_console, STRING(m_clientModVersionString));
+	UTIL_ClientPrint(this, print_console, "\n-------------------------------------------------------------------------\n\n");
+	m_sentSevenKewpNotice = true;
 }
 
 const char* CBasePlayer::GetClientVersionString() {
@@ -7107,4 +7127,9 @@ void CBasePlayer::DebugThink() {
 			UTIL_BeamPoints(closestPos, closestPos + Vector(0, 0, 32), modelIdx, 0, 0, lif, w, 0, RGB(255, 255, 255), 0, MSG_ONE_UNRELIABLE, 0, edict());
 		}
 	}
+}
+
+bool CBasePlayer::IsSevenKewpClient() {
+	//return true;
+	return m_sevenkewpVersion >= MIN_SEVENKEWP_VERSION;
 }

@@ -25,4 +25,5 @@ public:
 	void PrecacheEvents() override;
 	int GetItemInfo(ItemInfo* p);
 	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
+	const char* DisplayName() override { return "M249"; }
 };

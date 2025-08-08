@@ -162,10 +162,10 @@ void GetCircularGaussianSpread(float& x, float& y) {
 }
 
 int giAmmoIndex = 0;
-bool g_using556ammo = false; // so 556 ammo can be replaced with 9mm if there are no 556 weapons
+bool g_hlPlayersCanPickup556 = false; // so 556 ammo can be replaced with 9mm if there are no 556 weapons
 
 // Precaches the ammo and queues the ammo info for sending to clients
-void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
+void AddAmmoNameToAmmoRegistry( const char *szAmmoname, bool isSevenKewpGun)
 {
 	// make sure it's not already in the registry
 	for ( int i = 0; i < MAX_AMMO_SLOTS; i++ )
@@ -184,7 +184,9 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname )
 		giAmmoIndex = 0;
 
 	if (!strcmp(szAmmoname, "556")) {
-		g_using556ammo = true;
+		// allow HL players to pick up this ammo type if they have a weapon that uses it
+		if (!isSevenKewpGun)
+			g_hlPlayersCanPickup556 = true;
 	}
 
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].pszName = szAmmoname;
@@ -291,11 +293,11 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 	CBasePlayerItem::ItemInfoArray[info.iId] = info;
 
 	if (info.pszAmmo1 && *info.pszAmmo1) {
-		AddAmmoNameToAmmoRegistry(info.pszAmmo1);
+		AddAmmoNameToAmmoRegistry(info.pszAmmo1, wep->IsSevenKewpWeapon());
 	}
 
 	if (info.pszAmmo2 && *info.pszAmmo2) {
-		AddAmmoNameToAmmoRegistry(info.pszAmmo2);
+		AddAmmoNameToAmmoRegistry(info.pszAmmo2, wep->IsSevenKewpWeapon());
 	}
 
 	g_weaponNames.put(info.pszName);
@@ -340,7 +342,7 @@ void W_Precache(void)
 		memset(g_filledWeaponSlots[i], 0, MAX_WEAPON_POSITIONS * sizeof(const char*));
 	}
 
-	g_using556ammo = false;
+	g_hlPlayersCanPickup556 = false;
 	g_registeringCustomWeps = false;
 	UTIL_RegisterWeapon("weapon_shotgun");
 	UTIL_RegisterWeapon("weapon_crowbar");

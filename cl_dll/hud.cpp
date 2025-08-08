@@ -34,6 +34,8 @@
 hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info from the engine
 extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player info sent directly to the client dll
 
+#define HLCOOP_VERSION "1"
+
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
 {
 public:
@@ -335,10 +337,15 @@ void CHud :: Init( void )
 
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE );
 	CVAR_CREATE( "cl_autowepswitch", "1", FCVAR_USERINFO|FCVAR_ARCHIVE );
+	CVAR_CREATE( "hlcoop_version", "0", FCVAR_USERINFO);
 	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
+
+	// change the cvar so that it's always included in the userinfo
+	gEngfuncs.Cvar_Set("hlcoop_version", "0");
+	gEngfuncs.Cvar_Set("hlcoop_version", HLCOOP_VERSION);
 
 	m_pSpriteList = NULL;
 
