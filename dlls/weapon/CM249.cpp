@@ -71,7 +71,7 @@ void CM249::PrecacheEvents()
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PunchRandom(2, 1));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Kickback(35));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Bullets(1, 1000, spread, spread, btype, 1, bulletf));
+	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Bullets(1, gSkillData.sk_plr_556_bullet, spread, spread, btype, 1, bulletf));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_EVEN).EjectShell(m_iShell, 14, -12, 4));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_ODD).EjectShell(m_iLink, 14, -12, 4));
 

@@ -194,6 +194,7 @@ struct skilldata_t
 	float sk_plr_crowbar;
 	float sk_plr_9mm_bullet;
 	float sk_plr_357_bullet;
+	float sk_plr_556_bullet;
 	float sk_plr_9mmAR_bullet;
 	float sk_plr_9mmAR_grenade;
 	float sk_plr_buckshot;

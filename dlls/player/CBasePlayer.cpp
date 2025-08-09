@@ -4330,11 +4330,10 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "item_battery" );
 		GiveNamedItem( "weapon_crowbar" );
 		GiveNamedItem( "weapon_9mmhandgun" );
-		GiveNamedItem( "ammo_9mmclip" );
 		GiveNamedItem( "weapon_shotgun" );
 		GiveNamedItem( "ammo_buckshot" );
 		GiveNamedItem( "weapon_9mmAR" );
-		GiveNamedItem( "ammo_9mmAR" );
+		GiveNamedItem( "ammo_9mmbox" );
 		GiveNamedItem( "ammo_ARgrenades" );
 		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
@@ -4358,6 +4357,10 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_medkit" );
 		if (!m_fLongJump) {
 			GiveNamedItem("item_longjump");
+		}
+		if (IsSevenKewpClient()) {
+			GiveNamedItem("weapon_m249");
+			GiveNamedItem("ammo_556");
 		}
 		gEvilImpulse101 = FALSE;
 		break;

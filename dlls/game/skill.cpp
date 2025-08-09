@@ -200,6 +200,7 @@ skill_cvar_t skill_cvars[] = {
 	DECL_SKILL_CVAR(sk_plr_crowbar, CVAR_TYPE_DAMAGE),
 	DECL_SKILL_CVAR(sk_plr_9mm_bullet, CVAR_TYPE_DAMAGE),
 	DECL_SKILL_CVAR(sk_plr_357_bullet, CVAR_TYPE_DAMAGE),
+	DECL_SKILL_CVAR(sk_plr_556_bullet, CVAR_TYPE_DAMAGE),
 	DECL_SKILL_CVAR(sk_plr_9mmAR_bullet, CVAR_TYPE_DAMAGE),
 	DECL_SKILL_CVAR(sk_plr_9mmAR_grenade, CVAR_TYPE_DAMAGE),
 	DECL_SKILL_CVAR(sk_plr_buckshot, CVAR_TYPE_DAMAGE),
