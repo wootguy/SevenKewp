@@ -68,7 +68,7 @@ void CM249::PrecacheEvents()
 	int btype = BULLET_PLAYER_9MM;
 
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).WepAnim(M249_SHOOT1, M249_SHOOT1 + 2));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PlaySound(shootSnd, 1.0f, 94, 94+15));
+	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PunchRandom(2, 1));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Kickback(35));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Bullets(1, 1000, spread, spread, btype, 1, bulletf));
@@ -84,8 +84,8 @@ void CM249::PrecacheEvents()
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 6).SetBody(2));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 7).SetBody(1));
 
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 16).PlaySound(reloadSnd1, 1.0f, 100));
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).PlaySound(reloadSnd2, 1.0f, 100));
+	AddEvent(WepEvt(WC_TRIG_RELOAD, 16).PlaySound(reloadSnd1, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
+	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).PlaySound(reloadSnd2, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
 	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).SetBody(0));
 	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).WepAnim(M249_RELOAD_END));
 

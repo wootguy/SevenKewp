@@ -50,9 +50,12 @@ struct WepEvt {
 	union {
 		struct {
 			uint16_t sound;
+			uint8_t channel;
 			uint8_t volume;
+			uint8_t attn;
 			uint8_t pitchMin;
 			uint8_t pitchMax;
+			uint8_t distantSound;
 		} playSound;
 
 		struct {
@@ -92,6 +95,7 @@ struct WepEvt {
 		} kickback;
 	};
 
+#ifndef CLIENT_DLL
 	WepEvt() {}
 
 	WepEvt(int trigger, int delay=0, int triggerArg=0) {
@@ -101,21 +105,26 @@ struct WepEvt {
 		this->delay = delay;
 	}
 
-	WepEvt PlaySound(int sound, float volume, int pitch) {
+	WepEvt PlaySound(int sound, uint8_t channel, float volume, float attn, int pitch) {
 		evtType = WC_EVT_PLAY_SOUND;
 		playSound.sound = sound;
+		playSound.channel = channel;
 		playSound.volume = (int)(volume * 255.5f);
+		playSound.attn = clampf(attn * 64, 0, 255.0f);
 		playSound.pitchMin = pitch;
 		playSound.pitchMax = pitch;
 		return *this;
 	}
 
-	WepEvt PlaySound(int sound, float volume, int pitchMin, int pitchMax) {
+	WepEvt PlaySound(int sound, uint8_t channel, float volume, float attn, int pitchMin, int pitchMax, uint8_t distantSound) {
 		evtType = WC_EVT_PLAY_SOUND;
 		playSound.sound = sound;
+		playSound.channel = channel;
 		playSound.volume = (int)(volume * 255.5f);
+		playSound.attn = clampf(attn * 64, 0, 255.0f);
 		playSound.pitchMin = pitchMin;
 		playSound.pitchMax = pitchMax;
+		playSound.distantSound = distantSound;
 		return *this;
 	}
 
@@ -181,6 +190,7 @@ struct WepEvt {
 		kickback.pushForce = pushForce;
 		return *this;
 	}
+#endif
 };
 
 struct CustomWeaponShootOpts {

@@ -88,14 +88,6 @@ BOOL CWeaponCustom::Deploy()
 
 	m_flReloadEnd = 0;
 	m_bInReload = false;
-	const char* validAnimExt = animExt;
-	
-	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE_COOP) {
-		// half-life models are missing animations for some weapons, so fallback to valid HL anims
-		if (!strcmp(animExt, "saw")) {
-			validAnimExt = "mp5";
-		}
-	}
 
 #ifdef CLIENT_DLL
 	if (!CanDeploy())
@@ -112,6 +104,15 @@ BOOL CWeaponCustom::Deploy()
 	ProcessEvents(WC_TRIG_DEPLOY, 0);
 	return TRUE;
 #else
+	const char* validAnimExt = animExt;
+
+	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE_COOP) {
+		// half-life models are missing animations for some weapons, so fallback to valid HL anims
+		if (!strcmp(animExt, "saw")) {
+			validAnimExt = "mp5";
+		}
+	}
+
 	return DefaultDeploy(STRING(g_indexModels[params.vmodel]), m_defaultModelP, params.deployAnim, validAnimExt, 1);
 #endif
 }
@@ -365,9 +366,13 @@ void CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	uint32_t messageTargets = GetOtherHlClients(m_pPlayer->edict());
 
 	// send sound to all non-SevenKewp clients because they don't know how to play the event
-	StartSound(m_pPlayer->edict(), CHAN_WEAPON, INDEX_SOUND(evt.playSound.sound),
-		evt.playSound.volume / 255.0f, ATTN_NORM, SND_FL_PREDICTED, 100,
+	StartSound(m_pPlayer->edict(), evt.playSound.channel, INDEX_SOUND(evt.playSound.sound),
+		evt.playSound.volume / 255.0f, evt.playSound.attn / 64.0f, SND_FL_PREDICTED, 100,
 		m_pPlayer->pev->origin, messageTargets);
+
+	if (evt.playSound.distantSound) {
+		PLAY_DISTANT_SOUND(m_pPlayer->edict(), evt.playSound.distantSound);
+	}
 #endif
 }
 
@@ -442,9 +447,12 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		switch (evt.evtType) {
 		case WC_EVT_PLAY_SOUND:
 			WRITE_SHORT(evt.playSound.sound); sentBytes += 2;
+			WRITE_BYTE(evt.playSound.channel); sentBytes += 1;
 			WRITE_BYTE(evt.playSound.volume); sentBytes += 1;
+			WRITE_BYTE(evt.playSound.attn); sentBytes += 1;
 			WRITE_BYTE(evt.playSound.pitchMin); sentBytes += 1;
 			WRITE_BYTE(evt.playSound.pitchMax); sentBytes += 1;
+			//WRITE_BYTE(evt.playSound.distantSound); sentBytes += 1; // not needed for prediction
 			break;
 		case WC_EVT_EJECT_SHELL:
 			WRITE_SHORT(evt.ejectShell.model); sentBytes += 2;
@@ -513,7 +521,7 @@ void CWeaponCustom::QueueDelayedEvent(int eventIdx, float fireTime) {
 		if (qevt.fireTime == 0) {
 			qevt.eventIdx = eventIdx;
 			qevt.fireTime = fireTime;
-			CLALERT("Queue event %d\n", eventIdx);
+			//CLALERT("Queue event %d\n", eventIdx);
 			return;
 		}
 	}

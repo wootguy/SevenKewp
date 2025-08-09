@@ -1773,7 +1773,8 @@ void EV_FireCustom(event_args_t* args) {
 		const char* soundPath = GetWeaponCustomSound(evt.playSound.sound);
 		float vol = evt.playSound.volume / 255.0f;
 		int pitch = gEngfuncs.pfnRandomLong(evt.playSound.pitchMin, evt.playSound.pitchMax);
-		gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, CHAN_WEAPON, soundPath, vol, ATTN_NORM, 0, pitch);
+		gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, evt.playSound.channel, soundPath, vol,
+			evt.playSound.attn / 64.0f, 0, pitch);
 		break;
 	}
 	case WC_EVT_EJECT_SHELL: {

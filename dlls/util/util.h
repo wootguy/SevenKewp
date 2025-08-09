@@ -80,6 +80,7 @@ enum AdminLevel {
 };
 
 enum distant_sound_types {
+	DISTANT_NONE,
 	DISTANT_9MM, // light tapping noise
 	DISTANT_357, // deeper tap
 	DISTANT_556, // deep tap / small explosion

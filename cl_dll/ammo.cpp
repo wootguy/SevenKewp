@@ -770,7 +770,9 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		switch (evt.evtType) {
 		case WC_EVT_PLAY_SOUND:
 			evt.playSound.sound = READ_SHORT();
+			evt.playSound.channel = READ_BYTE();
 			evt.playSound.volume = READ_BYTE();
+			evt.playSound.attn = READ_BYTE();
 			evt.playSound.pitchMin = READ_BYTE();
 			evt.playSound.pitchMax = READ_BYTE();
 			break;
