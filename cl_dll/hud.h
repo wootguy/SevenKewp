@@ -234,6 +234,8 @@ protected:
 
 	// an array of colors...one color for each line
 	float *m_pflNameColors[MAX_STATUSBAR_LINES];
+
+	struct cvar_s* m_HUD_centerid;
 };
 
 struct extra_player_info_t 
