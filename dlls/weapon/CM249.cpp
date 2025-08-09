@@ -29,10 +29,6 @@ void CM249::Spawn()
 
 void CM249::Precache()
 {
-	// model sounds
-	PRECACHE_SOUND("weapons/saw_reload.wav");
-	PRECACHE_SOUND("weapons/saw_reload2.wav");
-
 	// client-side HUD sprites and config
 	PRECACHE_HUD_FILES("sprites/weapon_m249.txt");
 	PrecacheEvents();
@@ -49,8 +45,10 @@ void CM249::PrecacheEvents()
 	int m_iShell = PRECACHE_MODEL("models/saw_shell.mdl");
 	int m_iLink = PRECACHE_MODEL("models/saw_link.mdl");
 	int shootSnd = PRECACHE_SOUND("weapons/saw_fire1.wav");
+	int reloadSnd1 = PRECACHE_SOUND("weapons/saw_reload.wav");
+	int reloadSnd2 = PRECACHE_SOUND("weapons/saw_reload2.wav");
 
-	animExt = "mp5";
+	animExt = "saw";
 	wrongClientWeapon = "weapon_9mmAR";
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY;
@@ -86,6 +84,8 @@ void CM249::PrecacheEvents()
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 6).SetBody(2));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 7).SetBody(1));
 
+	AddEvent(WepEvt(WC_TRIG_RELOAD, 16).PlaySound(reloadSnd1, 1.0f, 100));
+	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).PlaySound(reloadSnd2, 1.0f, 100));
 	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).SetBody(0));
 	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).WepAnim(M249_RELOAD_END));
 

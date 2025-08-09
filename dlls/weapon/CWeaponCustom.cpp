@@ -4,6 +4,7 @@
 #include "../cl_dll/hud_iface.h"
 #include "eng_wrappers.h"
 #define CLALERT(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
+extern int g_runfuncs;
 #else
 #define CLALERT(fmt, ...)
 #include "game.h"
@@ -81,12 +82,22 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 
 BOOL CWeaponCustom::Deploy()
 {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return FALSE;
+
 	m_flReloadEnd = 0;
 	m_bInReload = false;
+	const char* validAnimExt = animExt;
+	
+	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE_COOP) {
+		// half-life models are missing animations for some weapons, so fallback to valid HL anims
+		if (!strcmp(animExt, "saw")) {
+			validAnimExt = "mp5";
+		}
+	}
 
 #ifdef CLIENT_DLL
-	CBasePlayer* m_pPlayer = GetPlayer();
-
 	if (!CanDeploy())
 		return FALSE;
 
@@ -101,7 +112,7 @@ BOOL CWeaponCustom::Deploy()
 	ProcessEvents(WC_TRIG_DEPLOY, 0);
 	return TRUE;
 #else
-	return DefaultDeploy(STRING(g_indexModels[params.vmodel]), m_defaultModelP, params.deployAnim, animExt, 1);
+	return DefaultDeploy(STRING(g_indexModels[params.vmodel]), m_defaultModelP, params.deployAnim, validAnimExt, 1);
 #endif
 }
 
@@ -127,14 +138,17 @@ void CWeaponCustom::Reload() {
 
 	SendWeaponAnim(params.reloadStage[0].anim, 1, pev->body);
 
-	CLALERT("Start Reload %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
+	//CLALERT("Start Reload %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 
 	m_bInReload = true;
 
 	ProcessEvents(WC_TRIG_RELOAD, 0);
 
 	int totalReloadTime = params.reloadStage[0].time;
+	
 	Cooldown(totalReloadTime);
+	m_pPlayer->SetAnimation(PLAYER_RELOAD, totalReloadTime*0.001f);
+
 	m_pPlayer->m_flNextAttack = 0; // keep calling post frame for complex reloads
 	m_flReloadStart = gpGlobals->time;
 	m_flReloadEnd = gpGlobals->time + totalReloadTime*0.001f;
@@ -182,14 +196,16 @@ void CWeaponCustom::ItemPostFrame() {
 	if (!m_pPlayer)
 		return;
 
+	PlayDelayedEvents();
+
 	// update reload stage
 	if (m_bInReload && gpGlobals->time >= m_flReloadEnd) {
 		// complete the reload.
 		int j = V_min(params.maxClip - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
-		CLALERT("Finish Reload1 %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
+		//CLALERT("Finish Reload1 %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 		m_iClip += j;
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
-		CLALERT("Finish Reload2 %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
+		//CLALERT("Finish Reload2 %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 		m_pPlayer->TabulateAmmo();
 		m_bInReload = false;
 		m_flReloadEnd = gpGlobals->time;
@@ -368,25 +384,13 @@ void CWeaponCustom::ProcessEvents(int trigger, int triggerArg) {
 		if (trigger == WC_TRIG_SHOOT_PRIMARY_CLIPSIZE && triggerArg != evt.triggerArg)
 			continue;
 
-		Vector vecDir;
-
-		switch (evt.evtType) {
-		case WC_EVT_SET_BODY:
-			pev->body = evt.setBody.newBody;
-			break;
-		case WC_EVT_BULLETS:
-			vecDir = ProcessBulletEvent(evt, m_pPlayer);
-			break;
-		case WC_EVT_KICKBACK:
-			ProcessKickbackEvent(evt, m_pPlayer);
-			break;
-		case WC_EVT_PLAY_SOUND:
-			ProcessSoundEvent(evt, m_pPlayer);
-			break;
+		if (evt.delay == 0) {
+			PlayEvent(i);
 		}
+		else {
 
-		PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usCustom, evt.delay * 0.001f,
-			(float*)&g_vecZero, (float*)&g_vecZero, vecDir.x, vecDir.y, m_iId, i, 0, 0);
+			QueueDelayedEvent(i, WallTime() + evt.delay * 0.001f);
+		}
 	}
 }
 
@@ -480,7 +484,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 	}
 	MESSAGE_END();
 
-	ALERT(at_console, "Sent %d prediction bytes\n", sentBytes);
+	ALERT(at_console, "Sent %d prediction bytes for %s\n", sentBytes, STRING(pev->classname));
 #endif
 }
 
@@ -499,4 +503,77 @@ uint32_t CWeaponCustom::GetOtherHlClients(edict_t* plr) {
 #endif
 
 	return messageTargets;
+}
+
+void CWeaponCustom::QueueDelayedEvent(int eventIdx, float fireTime) {
+	for (int i = 0; i < WC_SERVER_EVENT_QUEUE_SZ; i++) {
+		WcDelayEvent& qevt = eventQueue[i];
+
+		// find an empty slot
+		if (qevt.fireTime == 0) {
+			qevt.eventIdx = eventIdx;
+			qevt.fireTime = fireTime;
+			CLALERT("Queue event %d\n", eventIdx);
+			return;
+		}
+	}
+
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+	ALERT(at_console, "Server event queue is full for %s on player %s\n", STRING(pev->classname), m_pPlayer->DisplayName());
+}
+
+void CWeaponCustom::PlayEvent(int eventIdx) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	Vector vecDir;
+	WepEvt& evt = params.events[eventIdx];
+
+	switch (evt.evtType) {
+	case WC_EVT_SET_BODY:
+		pev->body = evt.setBody.newBody;
+		break;
+	case WC_EVT_BULLETS:
+		vecDir = ProcessBulletEvent(evt, m_pPlayer);
+		break;
+	case WC_EVT_KICKBACK:
+		ProcessKickbackEvent(evt, m_pPlayer);
+		break;
+	case WC_EVT_PLAY_SOUND:
+		ProcessSoundEvent(evt, m_pPlayer);
+		break;
+	}
+
+	//ALERT(at_console, "Play event %d\n", eventIdx);
+
+	PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usCustom, 0,
+		(float*)&g_vecZero, (float*)&g_vecZero, vecDir.x, vecDir.y, m_iId, eventIdx, 0, 0);
+}
+
+void CWeaponCustom::PlayDelayedEvents() {
+#ifdef CLIENT_DLL
+	if (!g_runfuncs)
+		return;
+#endif
+
+	for (int i = 0; i < WC_SERVER_EVENT_QUEUE_SZ; i++) {
+		WcDelayEvent& qevt = eventQueue[i];
+
+		if (!qevt.fireTime || qevt.fireTime > WallTime())
+			continue;
+
+		PlayEvent(qevt.eventIdx);
+		qevt.fireTime = 0; // free the slot
+	}
+}
+
+float CWeaponCustom::WallTime() {
+#ifdef CLIENT_DLL
+	return gEngfuncs.GetClientTime();
+#else
+	return g_engfuncs.pfnTime();
+#endif
 }

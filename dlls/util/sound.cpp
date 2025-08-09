@@ -953,8 +953,9 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr, Vector vecSrc, Vector vecEnd, int 
 	CBaseEntity *pEntity = CBaseEntity::Instance(ptr->pHit);
 
 	chTextureType = 0;
+	bool hitMonster = pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE;
 
-	if (pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE)
+	if (hitMonster)
 		// hit body
 		chTextureType = CHAR_TEX_FLESH;
 	else
@@ -1100,7 +1101,7 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr, Vector vecSrc, Vector vecEnd, int 
 		}
 	}
 
-	if (bulletEmitter) {
+	if (bulletEmitter && !hitMonster) {
 		uint32_t messageTargets = CWeaponCustom::GetOtherHlClients(bulletEmitter);
 
 		StartSound(emitter, CHAN_STATIC, rgsz[RANDOM_LONG(0, cnt - 1)],
