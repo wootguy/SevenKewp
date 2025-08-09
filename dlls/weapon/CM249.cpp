@@ -29,13 +29,6 @@ void CM249::Spawn()
 
 void CM249::Precache()
 {
-	// client-side HUD sprites and config
-	PRECACHE_HUD_FILES("sprites/weapon_m249.txt");
-	PrecacheEvents();
-}
-
-void CM249::PrecacheEvents()
-{
 	m_hasHandModels = true;
 	m_defaultModelV = "models/v_saw.mdl";
 	m_defaultModelP = "models/p_saw.mdl";
@@ -55,7 +48,7 @@ void CM249::PrecacheEvents()
 	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = M249_DRAW;
 	params.maxClip = M249_MAX_CLIP;
-	params.reloadStage[0] = {M249_RELOAD_START, 1330 + 2470};
+	params.reloadStage[0] = { M249_RELOAD_START, 1330 + 2470 };
 	params.idles[0] = { M249_SLOWIDLE, 95, 5000 };
 	params.idles[1] = { M249_IDLE2, 5, 6160 };
 
@@ -89,6 +82,13 @@ void CM249::PrecacheEvents()
 	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).SetBody(0));
 	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).WepAnim(M249_RELOAD_END));
 
+	// client-side HUD sprites and config
+	PRECACHE_HUD_FILES("sprites/weapon_m249.txt");
+	PrecacheEvents();
+}
+
+void CM249::PrecacheEvents()
+{
 	CWeaponCustom::PrecacheEvents();
 }
 
