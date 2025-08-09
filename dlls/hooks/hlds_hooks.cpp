@@ -482,18 +482,6 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	}
 
 	plr->ChangePlayerModel(g_engfuncs.pfnInfoKeyValue(infobuffer, "model"), false);
-
-	if (!plr->m_fGameHUDInitialized) {
-		char* hlcoopClientVersion = g_engfuncs.pfnInfoKeyValue(infobuffer, "hlcoop_version");
-		if (hlcoopClientVersion[0]) {
-			plr->m_sevenkewpVersion = atoi(hlcoopClientVersion);
-			plr->m_clientModVersion = CLIENT_MOD_SEVENKEWP;
-			plr->m_clientModVersionString = ALLOC_STRING(UTIL_SevenKewpClientString(plr->m_sevenkewpVersion));
-		}
-		else {
-			plr->m_sevenkewpVersion = 0;
-		}
-	}
 }
 
 int g_serveractive = 0;

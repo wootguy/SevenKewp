@@ -511,6 +511,9 @@ public:
 	// checks client cvars to determine which engine and mod is being used. Called when the player first enters the server.
 	void QueryClientType();
 
+	// we know which client the player is using now (probably)
+	void QueryClientTypeFinished();
+
 	void HandleClientCvarResponse(int requestID, const char* pszCvarName, const char* pszValue);
 
 	client_info_t GetClientInfo();

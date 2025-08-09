@@ -169,7 +169,9 @@ EXPORT extern StringMap g_soundReplacementsMod; // sound replacements for this m
 EXPORT extern StringMap g_soundReplacements; // combined sound replacements
 
 EXPORT extern StringSet g_mapWeapons; // weapons which should be precached (don't use aliases here)
-EXPORT extern StringMap g_itemNameRemap;
+EXPORT extern StringMap g_itemNameRemap; // item names remapped for everyone
+EXPORT extern StringMap g_itemNameRemapHL; // item names remapped for HL players only
+
 
 // map for each entity, containing custom keyvalues
 // using a global vector instead of a class member because the map is not POD

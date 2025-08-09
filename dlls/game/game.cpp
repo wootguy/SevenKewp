@@ -137,8 +137,6 @@ StringMap g_itemNameRemap = {
 	{"weapon_uzi", "weapon_9mmAR"},
 	{"weapon_uziakimbo", "weapon_9mmAR"},
 	{"weapon_m16", "weapon_9mmAR"},
-	{"weapon_m249", "weapon_9mmAR"},
-	{"weapon_saw", "weapon_9mmAR"},
 	{"weapon_minigun", "weapon_9mmAR"},
 	{"weapon_eagle", "weapon_357"},
 	{"weapon_python", "weapon_357"},
@@ -164,6 +162,11 @@ StringMap g_itemNameRemap = {
 	{"master", "<keyvalue>"},
 	{"killtarget", "<keyvalue>"},
 	{"ondestroyfn", "<keyvalue>"},
+};
+
+StringMap g_itemNameRemapHL = {
+	{"weapon_m249", "weapon_9mmAR"},
+	{"weapon_saw", "weapon_9mmAR"},
 };
 
 void AddPrecacheWeapon(std::string wepName) {

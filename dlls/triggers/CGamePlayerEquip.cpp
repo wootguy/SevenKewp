@@ -109,6 +109,13 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 		itemName = remap;
 	}
 
+	if (!pPlayer->IsSevenKewpClient()) {
+		const char* hlremap = g_itemNameRemapHL.get(itemName);
+		if (hlremap) {
+			itemName = hlremap;
+		}
+	}
+
 	if (!strcmp(itemName, "<keyvalue>")) {
 		return;
 	}
