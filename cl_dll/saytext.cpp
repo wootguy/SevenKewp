@@ -30,7 +30,9 @@
 
 extern float *GetClientColor( int clientIndex );
 
-#define MAX_LINES	5
+extern cvar_t* hud_saytext_lines;
+
+#define MAX_LINES	20
 #define MAX_CHARS_PER_LINE	256  /* it can be less than this, depending on char size */
 
 // allow 20 pixels on either side of the text
@@ -58,6 +60,7 @@ int CHudSayText :: Init( void )
 
 	m_HUD_saytext =			gEngfuncs.pfnRegisterVariable( "hud_saytext", "1", 0 );
 	m_HUD_saytext_time =	gEngfuncs.pfnRegisterVariable( "hud_saytext_time", "5", 0 );
+	m_HUD_saytext_lines =	gEngfuncs.pfnRegisterVariable( "hud_saytext_lines", "10", 0 );
 
 	m_iFlags |= HUD_INTERMISSION; // is always drawn during an intermission
 
@@ -80,7 +83,6 @@ int CHudSayText :: VidInit( void )
 
 int ScrollTextUp( void )
 {
-	ConsolePrint( g_szLineBuffer[0] ); // move the first line into the console buffer
 	g_szLineBuffer[MAX_LINES][0] = 0;
 	memmove( g_szLineBuffer[0], g_szLineBuffer[1], sizeof(g_szLineBuffer) - sizeof(g_szLineBuffer[0]) ); // overwrite the first line
 	memmove( &g_pflNameColors[0], &g_pflNameColors[1], sizeof(g_pflNameColors) - sizeof(g_pflNameColors[0]) );
@@ -99,6 +101,11 @@ int ScrollTextUp( void )
 int CHudSayText :: Draw( float flTime )
 {
 	int y = Y_START;
+	int wantLines = MaxLines();
+	
+	if (wantLines != MAX_LINES) {
+		y += (MAX_LINES - m_HUD_saytext_lines->value) * line_height;
+	}
 
 	if ( ( gViewPort && gViewPort->AllowedToPrintText() == FALSE) || !m_HUD_saytext->value )
 		return 1;
@@ -123,7 +130,7 @@ int CHudSayText :: Draw( float flTime )
 		}
 	}
 
-	for ( int i = 0; i < MAX_LINES; i++ )
+	for ( int i = 0; i < MAX_LINES && i < wantLines; i++ )
 	{
 		if ( *g_szLineBuffer[i] )
 		{
@@ -173,27 +180,32 @@ int CHudSayText :: MsgFunc_SayText( const char *pszName, int iSize, void *pbuf )
 	return 1;
 }
 
+int CHudSayText::MaxLines() {
+	return V_max(1, V_min(m_HUD_saytext_lines->value, MAX_LINES));
+}
+
 void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize, int clientIndex )
 {
+	ConsolePrint(pszBuf);
+
 	if ( gViewPort && gViewPort->AllowedToPrintText() == FALSE )
 	{
-		// Print it straight to the console
-		ConsolePrint( pszBuf );
-		return;
+		return; // only print to the console
 	}
 
+	int maxLines = MaxLines();
 	int i;
 	// find an empty string slot
-	for ( i = 0; i < MAX_LINES; i++ )
+	for ( i = 0; i < maxLines; i++ )
 	{
 		if ( ! *g_szLineBuffer[i] )
 			break;
 	}
-	if ( i == MAX_LINES )
+	if ( i == maxLines)
 	{
 		// force scroll buffer up
 		ScrollTextUp();
-		i = MAX_LINES - 1;
+		i = maxLines - 1;
 	}
 
 	g_iNameLengths[i] = 0;
