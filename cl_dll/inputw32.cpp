@@ -235,6 +235,7 @@ DWORD WINAPI MousePos_ThreadFunction( LPVOID p )
 // 3 = entered the game and undid the center. No more undoing.
 int mouse_uncenter_phase = 0;
 int mouse_undo_x, mouse_undo_y;
+SDL_Window* g_sdl_window;
 
 void SaveMouseUndoPos() {
 	SDL_GetGlobalMouseState(&mouse_undo_x, &mouse_undo_y);
@@ -251,10 +252,9 @@ bool ShouldCaptureMouse() {
 		return true;
 
 #ifdef WIN32
-	SDL_Window* window = SDL_GetMouseFocus();
 	SDL_SysWMinfo wmInfo;
 	SDL_VERSION(&wmInfo.version);
-	if (SDL_GetWindowWMInfo(window, &wmInfo)) {
+	if (SDL_GetWindowWMInfo(g_sdl_window, &wmInfo)) {
 		HWND hwnd = wmInfo.info.win.window;
 		
 		POINT pt;
@@ -285,6 +285,34 @@ void UndoOrCaptureMouse() {
 
 	mouse_uncenter_phase = 3;
 }
+
+
+#ifdef WIN32
+
+HWND g_window_hwnd;
+
+void AdjustWindowStyles() {
+	// Get current window styles
+	LONG style = GetWindowLong(g_window_hwnd, GWL_STYLE);
+	LONG exstyle = GetWindowLong(g_window_hwnd, GWL_EXSTYLE);
+
+	// Remove WS_POPUP
+	style &= ~WS_POPUP;
+
+	// Ensure visible and overlapped (borderless still possible without WS_POPUP)
+	style |= (WS_VISIBLE | WS_OVERLAPPED);
+
+	// Apply updated styles
+	SetWindowLong(g_window_hwnd, GWL_STYLE, style);
+	SetWindowLong(g_window_hwnd, GWL_EXSTYLE, exstyle);
+
+	// Tell Windows to reapply the frame changes
+	SetWindowPos(g_window_hwnd, nullptr, 0, 0, 0, 0,
+		SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+		SWP_FRAMECHANGED | SWP_NOACTIVATE);
+}
+
+#endif
 
 /*
 ===========
@@ -318,6 +346,19 @@ IN_DeactivateMouse
 void CL_DLLEXPORT IN_DeactivateMouse (void)
 {
 	if (mouse_uncenter_phase == 1) {
+		g_sdl_window = SDL_GetMouseFocus();
+#ifdef WIN32
+		if (!g_window_hwnd) {
+			SDL_SysWMinfo wmInfo;
+			SDL_VERSION(&wmInfo.version);
+			if (SDL_GetWindowWMInfo(g_sdl_window, &wmInfo)) {
+				g_window_hwnd = wmInfo.info.win.window;
+				if (gEngfuncs.CheckParm("-nofso", NULL))
+					AdjustWindowStyles();
+			}
+		}
+#endif
+
 		UndoMouseCenter();
 		mouse_uncenter_phase = 2;
 	}
