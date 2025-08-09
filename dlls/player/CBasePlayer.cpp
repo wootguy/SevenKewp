@@ -72,6 +72,13 @@ extern float g_flWeaponCheat;
 // how long the use key can be held before cancelling the use for antiblock or momentary buttons
 #define MAX_USE_HOLD_TIME 0.3f
 
+#define CVAR_REQ_SEVENKEWP			0	// SevenKewp test
+#define CVAR_REQ_BUGFIXEDHL			1	// BugfixedHL test
+#define CVAR_REQ_ADRENALINE_GAMER	2	// Adrenaline Gamer test
+#define CVAR_REQ_HL25				3	// HL25 test
+#define CVAR_REQ_OPENGL				4	// OpenGL test
+#define CVAR_REQ_LINUX				5	// Linux test
+
 BOOL gInitHUD = TRUE;
 
 extern void respawn(entvars_t *pev, BOOL fCopyCorpse);
@@ -6246,72 +6253,67 @@ void CBasePlayer::QueryClientType() {
 	}
 
 	m_sevenkewpVersion = 0;
+	memset(m_queryResults, 0, sizeof(string_t) * 6);
 
-	// first check for custom clients, next step depends on the output of this
-	g_engfuncs.pfnQueryClientCvarValue2(edict(), "hlcoop_version", 0);
+	g_engfuncs.pfnQueryClientCvarValue2(edict(), "hlcoop_version", CVAR_REQ_SEVENKEWP);
+	g_engfuncs.pfnQueryClientCvarValue2(edict(), "aghl_version", CVAR_REQ_BUGFIXEDHL);
+	g_engfuncs.pfnQueryClientCvarValue2(edict(), "cl_autorecord", CVAR_REQ_ADRENALINE_GAMER);
+	g_engfuncs.pfnQueryClientCvarValue2(edict(), "sv_allow_shaders", CVAR_REQ_HL25);
+	g_engfuncs.pfnQueryClientCvarValue2(edict(), "gl_fog", CVAR_REQ_OPENGL);
+	g_engfuncs.pfnQueryClientCvarValue2(edict(), "m_mousethread_sleep", CVAR_REQ_LINUX);
 }
 
 void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarName, const char* pszValue) {
 	bool hasCvar = strstr(pszValue, "Bad CVAR request") == NULL;
 	
-	if (requestID == 0) {
-		if (hasCvar) {
-			m_sevenkewpVersion = atoi(pszValue);
+	if (requestID >= 0 && requestID < 6) {
+		m_queryResults[requestID] = ALLOC_STRING(pszValue);
+
+		bool hasCvar[6];
+		for (int i = 0; i < 6; i++) {
+			if (!m_queryResults[i]) {
+				return;
+			}
+			hasCvar[i] = strstr(STRING(m_queryResults[i]), "Bad CVAR request") == NULL;
+		}
+
+		// all queries finished
+
+		if (hasCvar[CVAR_REQ_SEVENKEWP] + hasCvar[CVAR_REQ_BUGFIXEDHL] + hasCvar[CVAR_REQ_ADRENALINE_GAMER] > 1) {
+			std::string clientStr;
+			if (hasCvar[CVAR_REQ_SEVENKEWP])
+				clientStr += "SevenKewp. ";
+			if (hasCvar[CVAR_REQ_BUGFIXEDHL])
+				clientStr += "BHL, ";
+			if (hasCvar[CVAR_REQ_ADRENALINE_GAMER])
+				clientStr += "AG, ";
+			clientStr = clientStr.substr(0, clientStr.size() - 2);
+			ALERT(at_error, "Client detection error. Client has cvars from multiple clients: %s\n", clientStr.c_str());
+		}
+		else if (hasCvar[CVAR_REQ_SEVENKEWP]) {
+			m_sevenkewpVersion = atoi(STRING(m_queryResults[CVAR_REQ_SEVENKEWP]));
 			m_clientModVersion = CLIENT_MOD_SEVENKEWP;
 			m_clientModVersionString = ALLOC_STRING(UTIL_SevenKewpClientString(m_sevenkewpVersion));
 		}
-
-		// BugfixedHL test
-		g_engfuncs.pfnQueryClientCvarValue2(edict(), "aghl_version", 1);
-	}
-	else if (requestID == 1) {
-		if (hasCvar) {
-			if (m_clientModVersion != CLIENT_MOD_NOT_CHECKED) {
-				ALERT(at_error, "Client detection error. Client has both SevenKewp and HLBugFixed cvars.\n");
-			}
-			m_sevenkewpVersion = 0;
+		else if (hasCvar[CVAR_REQ_BUGFIXEDHL]) {
+			m_clientModVersion = CLIENT_MOD_HLBUGFIXED;
+			m_clientModVersionString = m_queryResults[CVAR_REQ_SEVENKEWP];
+		}
+		else if (hasCvar[CVAR_REQ_ADRENALINE_GAMER]) {
 			m_clientModVersion = CLIENT_MOD_ADRENALINE;
 			m_clientModVersionString = ALLOC_STRING("Adrenaline Gamer");
 		}
-
-		// Adrenaline Gamer test
-		g_engfuncs.pfnQueryClientCvarValue2(edict(), "cl_autorecord", 2);
-	}
-	else if (requestID == 2) {
-		if (hasCvar) {
-			if (m_clientModVersion != CLIENT_MOD_NOT_CHECKED) {
-				ALERT(at_error, "Client detection error. Client has both HLBugFixed and AG cvars.\n");
-			}
-			m_sevenkewpVersion = 0;
-			m_clientModVersion = CLIENT_MOD_ADRENALINE;
-			m_clientModVersionString = ALLOC_STRING("Adrenaline Gamer");
-		}
-		else if (m_clientModVersion == CLIENT_MOD_NOT_CHECKED) {
+		else {
 			// could also be using an unknown custom client, no way to know...
 			m_clientModVersion = CLIENT_MOD_HL;
 			m_clientModVersionString = MAKE_STRING("Half-Life");
 		}
 
-		// sv_allow_shaders was added to HL 25, so if it's missing, then it must be the legacy client
-		g_engfuncs.pfnQueryClientCvarValue2(edict(), "sv_allow_shaders", 3);
-	}
-	else if (requestID == 3) {
-		m_clientEngineVersion = hasCvar ? CLIENT_ENGINE_HL_LATEST : CLIENT_ENGINE_HL_LEGACY;
-
-		// OpenGL test
-		g_engfuncs.pfnQueryClientCvarValue2(edict(), "gl_fog", 4);
-	}
-	else if (requestID == 4) {
-		m_clientRenderer = hasCvar ? CLIENT_RENDERER_OPENGL : CLIENT_RENDERER_SOFTWARE;
-
-		// Linux test
-		g_engfuncs.pfnQueryClientCvarValue2(edict(), "m_mousethread_sleep", 5);
-	}
-	else if (requestID == 5) {
-		m_clientSystem = hasCvar ? CLIENT_SYSTEM_WINDOWS : CLIENT_SYSTEM_LINUX;
-
+		m_clientEngineVersion = hasCvar[CVAR_REQ_HL25] ? CLIENT_ENGINE_HL_LATEST : CLIENT_ENGINE_HL_LEGACY;
+		m_clientRenderer = hasCvar[CVAR_REQ_OPENGL] ? CLIENT_RENDERER_OPENGL : CLIENT_RENDERER_SOFTWARE;
+		m_clientSystem = hasCvar[CVAR_REQ_LINUX] ? CLIENT_SYSTEM_WINDOWS : CLIENT_SYSTEM_LINUX;
+		
 		UTIL_LogPlayerEvent(edict(), "Client version: %s\n", GetClientVersionString());
-
 		QueryClientTypeFinished();
 	}
 }

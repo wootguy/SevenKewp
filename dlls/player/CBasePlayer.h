@@ -504,6 +504,8 @@ public:
 	bool m_sentClientWarning; // has this client been warned about their client incompatability?
 	bool m_sentSevenKewpNotice; // has this client been told about the sevenkewp client?
 
+	string_t m_queryResults[6]; // one for each request in QueryClientType
+
 	int GetNameColor();
 
 	const char* GetTeamName();
