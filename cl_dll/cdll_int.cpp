@@ -229,9 +229,15 @@ returns 1 if anything has been changed, 0 otherwise.
 ==========================
 */
 
+extern int mouse_uncenter_phase;
+void UndoOrCaptureMouse();
+
 int CL_DLLEXPORT HUD_UpdateClientData(client_data_t *pcldata, float flTime )
 {
 //	RecClHudUpdateClientData(pcldata, flTime);
+	if (mouse_uncenter_phase == 2) {
+		UndoOrCaptureMouse();
+	}
 
 	IN_Commands();
 
@@ -253,6 +259,10 @@ void CL_DLLEXPORT HUD_Reset( void )
 	gHUD.VidInit();
 }
 
+extern int mouse_uncenter_phase;
+void UndoMouseCenter();
+void SaveMouseUndoPos();
+
 /*
 ==========================
 HUD_Frame
@@ -268,6 +278,10 @@ void CL_DLLEXPORT HUD_Frame( double time )
 	ServersThink( time );
 
 	GetClientVoiceMgr()->Frame(time);
+
+	if (mouse_uncenter_phase == 2) {
+		SaveMouseUndoPos();
+	}
 }
 
 

@@ -6297,7 +6297,7 @@ void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarNam
 		}
 		else if (hasCvar[CVAR_REQ_BUGFIXEDHL]) {
 			m_clientModVersion = CLIENT_MOD_HLBUGFIXED;
-			m_clientModVersionString = m_queryResults[CVAR_REQ_SEVENKEWP];
+			m_clientModVersionString = ALLOC_STRING(UTIL_VarArgs("BugfixedHL %s", STRING(m_queryResults[CVAR_REQ_BUGFIXEDHL])));
 		}
 		else if (hasCvar[CVAR_REQ_ADRENALINE_GAMER]) {
 			m_clientModVersion = CLIENT_MOD_ADRENALINE;

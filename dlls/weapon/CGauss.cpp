@@ -365,25 +365,28 @@ void CGauss::StartFire( void )
 	Vector vecAiming = gpGlobals->v_forward;
 	Vector vecSrc = m_pPlayer->GetGunPosition( ); // + gpGlobals->v_up * -8 + gpGlobals->v_right * 8;
 
+#ifndef CLIENT_DLL
+	secondaryBaseDamage = GetDamage(secondaryBaseDamage);
+#endif 
+
 	if ( gpGlobals->time - m_pPlayer->m_flStartCharge > GetFullChargeTime() )
 	{
-		flDamage = GetDamage(secondaryBaseDamage);
+		flDamage = secondaryBaseDamage;
 	}
 	else
 	{
-		flDamage = GetDamage(secondaryBaseDamage) *
+		flDamage = secondaryBaseDamage *
 			(( gpGlobals->time - m_pPlayer->m_flStartCharge) / GetFullChargeTime() );
 	}
 
 	if ( m_fPrimaryFire )
 	{
 		// fixed damage on primary attack
-#ifdef CLIENT_DLL
-		flDamage = 20;
-#else 
+#ifndef CLIENT_DLL
 		flDamage = GetDamage(gSkillData.sk_plr_gauss);
 #endif
 	}
+
 
 	if (m_fInAttack != 3)
 	{

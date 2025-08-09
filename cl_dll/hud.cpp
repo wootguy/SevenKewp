@@ -36,6 +36,8 @@ extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player in
 
 #define HLCOOP_VERSION "1"
 
+extern int mouse_uncenter_phase;
+
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
 {
 public:
@@ -536,6 +538,9 @@ void CHud :: VidInit( void )
 	m_TextMessage.VidInit();
 	m_StatusIcons.VidInit();
 	GetClientVoiceMgr()->VidInit();
+
+	if (mouse_uncenter_phase == 3) // reset mouse uncentering logic for new server connection
+		mouse_uncenter_phase = 2;
 }
 
 int CHud::MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf)

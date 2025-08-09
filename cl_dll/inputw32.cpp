@@ -26,6 +26,7 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_gamecontroller.h>
+#include <SDL2/SDL_syswm.h>
 
 #define MOUSE_BUTTON_COUNT 5
 
@@ -227,6 +228,64 @@ DWORD WINAPI MousePos_ThreadFunction( LPVOID p )
 }
 #endif
 
+// mouse centering happens twice when connecting to a server. This keeps track of the current phase:
+// 0 = started connection. Should grab the mouse position for a reset when ActivateMouse is called
+// 1 = IN_ActivateMouse mouse was called. Be ready to undo the centering in IN_DeactivateMouse
+// 2 = IN_DeactivateMouse was called. One more centering is coming when the map is loaded.
+// 3 = entered the game and undid the center. No more undoing.
+int mouse_uncenter_phase = 0;
+int mouse_undo_x, mouse_undo_y;
+
+void SaveMouseUndoPos() {
+	SDL_GetGlobalMouseState(&mouse_undo_x, &mouse_undo_y);
+}
+
+void UndoMouseCenter() {
+	SDL_Window* window = SDL_GetMouseFocus();
+	SDL_SetWindowGrab(window, SDL_FALSE);
+	SDL_WarpMouseGlobal(mouse_undo_x, mouse_undo_y);
+}
+
+bool ShouldCaptureMouse() {
+	if (mouse_uncenter_phase == 3)
+		return true;
+
+#ifdef WIN32
+	SDL_Window* window = SDL_GetMouseFocus();
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	if (SDL_GetWindowWMInfo(window, &wmInfo)) {
+		HWND hwnd = wmInfo.info.win.window;
+		
+		POINT pt;
+		pt.x = mouse_undo_x;
+		pt.y = mouse_undo_y;
+		HWND hwndUnderCursor = WindowFromPoint(pt);
+
+		return hwnd == hwndUnderCursor;
+	}
+#endif
+
+	return true;
+}
+
+#include "vgui_TeamFortressViewport.h"
+extern TeamFortressViewport* gViewPort;
+
+// final mouse capturing phase entered. Decide whether to capture or reset the mouse
+void UndoOrCaptureMouse() {
+	if (ShouldCaptureMouse()) {
+		// mouse is hovering over the window. User must want to play
+		gViewPort->UpdateCursorState();
+	}
+	else {
+		UndoMouseCenter();
+		gEngfuncs.pfnClientCmd("toggleconsole\n");
+	}
+
+	mouse_uncenter_phase = 3;
+}
+
 /*
 ===========
 IN_ActivateMouse
@@ -234,6 +293,11 @@ IN_ActivateMouse
 */
 void CL_DLLEXPORT IN_ActivateMouse (void)
 {
+	if (mouse_uncenter_phase == 0) {
+		SaveMouseUndoPos();
+		mouse_uncenter_phase = 1;
+	}
+
 	if (mouseinitialized)
 	{
 #ifdef _WIN32
@@ -253,6 +317,11 @@ IN_DeactivateMouse
 */
 void CL_DLLEXPORT IN_DeactivateMouse (void)
 {
+	if (mouse_uncenter_phase == 1) {
+		UndoMouseCenter();
+		mouse_uncenter_phase = 2;
+	}
+
 	if (mouseinitialized)
 	{
 #ifdef _WIN32
