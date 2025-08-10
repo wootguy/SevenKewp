@@ -1,11 +1,32 @@
 # SevenKewp
-The goal for this project is to become a generic Half-Life co-op mod which is easy to customize. Default content and gameplay will stay faithful to classic Half-Life. That means there won't be any: tacticool weapons, HD models, bullet-sponge enemies, etc. This isn't strictly a Sven Co-op clone, but recreating its entities and features is a high priority because nearly all GoldSrc co-op maps were made for sven.
+The goal for this project is to become a generic Half-Life co-op mod which is easy to customize. Default content and gameplay will stay faithful to classic Half-Life. That means there won't be any: tacticool weapons, HD models, bullet-sponge enemies, etc. This isn't strictly a Sven Co-op clone, but recreating its entities and features is a high priority because nearly all GoldSrc co-op maps were made for sven. The mod is designed to run as a Half-Life addon, rather than a new mod with its own server list and launcher.
 
 View project status [here](https://github.com/wootguy/SevenKewp/issues/8).
 
 This repo was forked from an early version of [halflife-updated](https://github.com/twhl-community/halflife-updated/tree/8cb9d9eb9016ff56fcba099a09a3b6e6563853b1) (Nov 2021).
 
-# Building the mod
+# Building the client
+If you're a player, you don't need to install anything or build this mod. Just join a server showing "Half-Life Co-op" in the game column. Vanilla Half-Life clients are able to play with a few limitations.
+
+Build instructions:
+1. Install dependendies.  
+   Windows: Install Git, CMake, and Visual Studio  
+   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386`
+1. Open a shell somewhere and clone the repo: `git clone --recurse-submodules https://github.com/wootguy/SevenKewp`
+1. Run `scripts/build_client.bat` (Windows) or `scripts/build_client.sh` (Linux).
+1. Copy the contents of `SevenKewp/build_client/output/` to `Steam/steamapps/common/Half-Life/valve_addon/`.
+   - Create the `valve_addon` folder if it doesn't already exist.
+1. Launch the game and enable `Options` -> `Content` -> `Allow custom addon content`
+   - This forces the game to load files in `valve_addon` before `valve`, meaning the client library you just built will be loaded in place of the default one.
+1. Try it out! Join a Half-Life Co-op server. Some features are disabled if you join a deathmatch server to prevent cheating (e.g. thirdperson camera)
+
+### WARNING: USE CUSTOM CLIENTS AT YOUR OWN RISK
+
+Executables distributed outside of Steam are subject to Valve Anti-Cheat (VAC) detection. Running this client may trigger VAC protections and result in a permanent VAC ban on your Steam account.
+
+That said, I have observed players using the [HLBugfixed](https://github.com/tmp64/BugfixedHL-Rebased) and [Adrenaline Gamer](https://openag.pro/) clients for one year on my secure server without them being VAC banned. According to my understanding of the [VAC documentation](https://partner.steamgames.com/doc/features/anticheat), executables need to be manually reported as a cheat to Valve for its signature to be detected. I have not added cheats to this client.
+
+# Building the server
 Note: If you're a player, you don't need to install anything or build this mod. Just join a server showing "Half-Life Co-op" in the game column. The mod is totally server-side. A custom client might be created later but it will be optional.  
 
 1. Install dependendies.  
@@ -30,8 +51,6 @@ Note: If you're a player, you don't need to install anything or build this mod. 
 1. Add `-dll dlls/server.dll` (Windows) or `-dll dlls/server.so` (Linux) to the launch options of your dedicated server. If you use metamod, then add `gamedll dlls/server.dll` (or `.so`) to metamod's `config.ini` instead.  
 1. Try it out! Example launch command:  
    `hlds.exe +map c1a1 -dll dlls/server.dll +maxplayers 32 +developer 1 -heapsize 65536 -num_edicts 4096 +servercfg "" +log on`
-
-Currently, the mod is designed to run as a replacement server library for Half-Life, rather than a new mod with its own server list and client.
 
 # Building native plugins
 Native plugins are tightly integrated with the mod code and have full access to its classes and utilities. This makes native plugins powerful but easily broken by mod updates. Here's how to build them.
@@ -131,3 +150,4 @@ New plugins don't show up in Visual Studio until you reconfigure CMake. To do th
 - Don't use the `build_game_and_plugins` script while developing. It discards all local changes not pushed to github.
 - Change the startup project to the one you're actively working on. This way, building with F5 will pick up changes and build only what's needed to test that project.
 - ASAN is great for debugging memory corruption (crashes that make no sense or have corrupted stacks pointing to nowhere). Enable in the project setting `C/C++` -> `General` -> `Enable Address Sanitizer`. The server will run much slower so it's not something you want to have on normally.
+- Visual Studio can't debug the server and client at the same time. Create a new build folder and solution via CMake if you want to do that.
