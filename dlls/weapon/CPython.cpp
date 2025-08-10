@@ -173,9 +173,7 @@ void CPython::PrimaryAttack()
 
 	if (m_iClip <= 0)
 	{
-		if (!m_fFireOnEmpty)
-			Reload( );
-		else
+		if (m_fFireOnEmpty)
 		{
 			PlayEmptySound();
 			m_flNextPrimaryAttack = 0.15;
