@@ -37,6 +37,8 @@ extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player in
 #define HLCOOP_VERSION "1"
 
 extern int mouse_uncenter_phase;
+bool g_playing_on_sevenkewp_server; // disables features that could be used to cheat on DM servers
+bool g_map_loaded;
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
 {
@@ -541,6 +543,8 @@ void CHud :: VidInit( void )
 
 	if (mouse_uncenter_phase == 3) // reset mouse uncentering logic for new server connection
 		mouse_uncenter_phase = 2;
+	g_playing_on_sevenkewp_server = false;
+	g_map_loaded = false;
 }
 
 int CHud::MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf)

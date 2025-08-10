@@ -15,10 +15,10 @@
 extern vec3_t cam_ofs;
 // Using third person camera
 extern int cam_thirdperson;
+extern int g_camAdjustState;
+extern int iMouseInUse;
 
 void CAM_Init( void );
-void CAM_ClearStates( void );
-void CAM_StartMouseMove(void);
-void CAM_EndMouseMove(void);
+void CAM_MouseWheeled(bool mouseWheelUpNotDown);
 
 #endif		// _CAMERA_H_

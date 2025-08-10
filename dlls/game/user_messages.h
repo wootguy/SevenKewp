@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 EXPORT extern int giPrecacheGrunt;
 EXPORT extern int gmsgShake;
@@ -40,9 +41,10 @@ EXPORT extern int gmsgTeamNames;
 EXPORT extern int gmsgStatusText;
 EXPORT extern int gmsgStatusValue;
 
-EXPORT extern int gmsgCustomWeapon;
-EXPORT extern int gmsgSoundIdx;
-EXPORT extern int gmsgToxicCloud;
+EXPORT extern int gmsgCustomWeapon; // custom weapon prediction parameters
+EXPORT extern int gmsgSoundIdx; // mapping of sound indexes to file paths
+EXPORT extern int gmesgServerCfg; // mod-specific server configuration
+EXPORT extern int gmsgToxicCloud; // chumtoad attack
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 

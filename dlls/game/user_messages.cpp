@@ -47,6 +47,7 @@ int gmsgStatusValue = 0;
 
 int gmsgCustomWeapon = 0;
 int gmsgSoundIdx = 0;
+int gmesgServerCfg = 0;
 int gmsgToxicCloud = 0;
 
 std::vector<UserMessage> g_userMessages;
@@ -141,5 +142,6 @@ void LinkUserMessages(void)
 
 	gmsgCustomWeapon = REG_USER_MSG("CustomWep", -1);
 	gmsgSoundIdx = REG_USER_MSG("SoundIdx", -1);
+	gmesgServerCfg = REG_USER_MSG("ServerCfg", 2);
 	gmsgToxicCloud = REG_USER_MSG("ToxicCloud", 4);
 }

@@ -230,6 +230,7 @@ returns 1 if anything has been changed, 0 otherwise.
 */
 
 extern int mouse_uncenter_phase;
+extern bool g_map_loaded;
 void UndoOrCaptureMouse();
 
 int CL_DLLEXPORT HUD_UpdateClientData(client_data_t *pcldata, float flTime )
@@ -238,6 +239,7 @@ int CL_DLLEXPORT HUD_UpdateClientData(client_data_t *pcldata, float flTime )
 	if (mouse_uncenter_phase == 2) {
 		UndoOrCaptureMouse();
 	}
+	g_map_loaded = true;
 
 	IN_Commands();
 

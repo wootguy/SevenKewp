@@ -39,3 +39,5 @@ typedef int (*pfnUserMsgHook)(const char *pszName, int iSize, void *pbuf);
 #include "../dlls/cdll_dll.h"
 
 extern cl_enginefunc_t gEngfuncs;
+
+#define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, __VA_ARGS__)

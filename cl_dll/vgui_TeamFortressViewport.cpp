@@ -2305,6 +2305,13 @@ int	TeamFortressViewport::KeyInput( int down, int keynum, const char *pszCurrent
 		}
 	}
 
+	bool mouseWheeled = keynum == K_MWHEELDOWN || keynum == K_MWHEELUP;
+	if (mouseWheeled && g_camAdjustState) {
+		CAM_MouseWheeled(keynum == K_MWHEELUP);
+		return 0;
+	}
+	
+
 	return 1;
 }
 
