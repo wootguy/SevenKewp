@@ -937,3 +937,6 @@ EXPORT void UTIL_SendUserInfo(edict_t* msgPlayer, edict_t* infoPlayer, char* inf
 EXPORT float UTIL_RayBoxIntersect(Vector start, Vector rayDir, Vector mins, Vector maxs);
 
 EXPORT const char* UTIL_SevenKewpClientString(int version);
+
+// returns a bit mask representing all players that are using the specified client
+EXPORT uint32_t UTIL_ClientBitMask(int clientMod);

@@ -302,14 +302,18 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 	if (pEntity == NULL)
 		return;
 
-	if ( g_pGameRules->IsMultiplayer() )
+	CSprite* m_pSprite = (CSprite*)m_hSprite.GetEntity();
+
+	if ( g_pGameRules->IsMultiplayer() && m_pSprite)
 	{
-		CSprite* m_pSprite = (CSprite*)m_hSprite.GetEntity();
-		if ( m_pSprite && pEntity->pev->takedamage )
+		// don't send flare to sevenkewp clients that are predicting it
+		m_pSprite->m_hidePlayers = UTIL_ClientBitMask(CLIENT_MOD_SEVENKEWP);
+
+		if (pEntity->pev->takedamage)
 		{
 			m_pSprite->pev->effects &= ~EF_NODRAW;
 		}
-		else if ( m_pSprite )
+		else
 		{
 			m_pSprite->pev->effects |= EF_NODRAW;
 		}

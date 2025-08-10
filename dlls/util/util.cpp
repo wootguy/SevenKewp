@@ -3393,3 +3393,17 @@ const char* UTIL_SevenKewpClientString(int version) {
 	int minor = version % 100;
 	return UTIL_VarArgs("SevenKewp %d.%02d", major, minor);
 }
+
+uint32_t UTIL_ClientBitMask(int clientMod) {
+	uint32_t bits = 0;
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+		if (plr && plr->m_clientModVersion == clientMod) {
+			bits |= PLRBIT(plr->edict());
+		}
+	}
+
+	return bits;
+}

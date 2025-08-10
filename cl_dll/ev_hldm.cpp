@@ -1407,6 +1407,21 @@ enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
 BEAM *pBeam;
 BEAM *pBeam2;
 
+
+
+TEMPENTITY* pFlare; //Egon beam flare
+
+void EV_EgonFlareCallback(struct tempent_s* ent, float frametime, float currenttime)
+{
+	float delta = currenttime - ent->tentOffset.z; // time past since the last scale
+	if (delta >= ent->tentOffset.y)
+	{
+		ent->entity.curstate.scale += ent->tentOffset.x * delta;
+		ent->tentOffset.z = currenttime;
+	}
+}
+
+
 void EV_EgonFire( event_args_t *args )
 {
 	int idx, iFireState, iFireMode;
@@ -1480,6 +1495,13 @@ void EV_EgonFire( event_args_t *args )
 				g /= 100.0f;
 			}
 				
+			// Egon beam flare
+			pFlare = gEngfuncs.pEfxAPI->R_TempSprite(tr.endpos, vec3_origin, 1.0, gEngfuncs.pEventAPI->EV_FindModelIndex(EGON_FLARE_SPRITE), kRenderGlow, kRenderFxNoDissipation, 1.0, 99999, FTENT_SPRCYCLE | FTENT_PERSIST);
+
+			if (pFlare) // Store the last mode for EV_EgonStop()
+			{
+				pFlare->tentOffset.x = (iFireMode == FIRE_WIDE) ? 1.0f : 0.0f;
+			}
 		
 			pBeam = gEngfuncs.pEfxAPI->R_BeamEntPoint ( idx | 0x1000, tr.endpos, iBeamModelIndex, 99999, 3.5, 0.2, 0.7, 55, 0, 0, r, g, b );
 
@@ -1518,6 +1540,26 @@ void EV_EgonStop( event_args_t *args )
 			pBeam2->die = 0.0;
 			pBeam2 = NULL;
 		}
+	}
+
+	if (pFlare) // Vit_amiN: egon beam flare
+	{
+		pFlare->die = gEngfuncs.GetClientTime();
+
+		if (gEngfuncs.GetMaxClients() == 1 || !(pFlare->flags & FTENT_NOMODEL))
+		{
+			if (pFlare->tentOffset.x != 0.0f)	// true for iFireMode == FIRE_WIDE
+			{
+				pFlare->callback = &EV_EgonFlareCallback;
+				pFlare->fadeSpeed = 2.0;			// fade out will take 0.5 sec
+				pFlare->tentOffset.x = 10.0;		// scaling speed per second
+				pFlare->tentOffset.y = 0.1;			// min time between two scales
+				pFlare->tentOffset.z = pFlare->die;	// the last callback run time
+				pFlare->flags = FTENT_FADEOUT | FTENT_CLIENTCUSTOM;
+			}
+		}
+
+		pFlare = NULL;
 	}
 }
 //======================
