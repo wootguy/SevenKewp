@@ -21,6 +21,7 @@
 #include "bench.h"
 
 #include "vgui_TeamFortressViewport.h"
+#include "engine_pv.h"
 
 #define MAX_LOGO_FRAMES 56
 

@@ -24,6 +24,7 @@
 #undef INTERFACE_H
 #include "../public/interface_hlsdk.h"
 //#include "vgui_schememanager.h"
+#include "engine_pv.h"
 
 #include "pm_shared.h"
 
@@ -51,6 +52,9 @@ TeamFortressViewport *gViewPort = NULL;
 #include "particleman.h"
 CSysModule *g_hParticleManModule = NULL;
 IParticleMan *g_pParticleMan = NULL;
+
+bool is_steam_legacy_engine;
+bool is_software_renderer;
 
 void CL_LoadParticleMan( void );
 void CL_UnloadParticleMan( void );
@@ -174,6 +178,10 @@ int CL_DLLEXPORT HUD_VidInit( void )
 	gHUD.VidInit();
 
 	VGui_Startup();
+
+	is_steam_legacy_engine = CVAR_GET_PTR("sv_allow_shaders") == NULL;
+	is_software_renderer = CVAR_GET_PTR("gl_fog") == NULL;
+	InitEnginePv();
 
 	return 1;
 }

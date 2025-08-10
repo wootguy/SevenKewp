@@ -55,6 +55,7 @@ set(HUD_SRC
 	menu.cpp
 	message.cpp
 	saytext.cpp
+	clientstats.cpp
 	status_icons.cpp
 	statusbar.cpp
 	text_message.cpp
@@ -112,6 +113,7 @@ set(MISC_HDR
 set(UTIL_HDR
 	cl_util.h
 	interpolation.h
+	engine_pv.h
 	util_vector.h
 	../common/parsemsg.h
 	../pm_shared/pm_debug.h
@@ -124,6 +126,7 @@ set(UTIL_HDR
 set(UTIL_SRC
 	cdll_int.cpp
 	interpolation.cpp
+	engine_pv.cpp
 	util.cpp
 	../dlls/util/HashMap.cpp
 	../common/parsemsg.cpp
