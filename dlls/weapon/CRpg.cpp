@@ -23,6 +23,15 @@
 #include "gamerules.h"
 #include "weapon/CRpg.h"
 
+#ifdef CLIENT_DLL
+#include "../cl_dll/hud_iface.h"
+#define PRINTF(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
+
+void EV_RpgLaserOn();
+void EV_RpgLaserOff();
+extern int g_runfuncs;
+#endif
+
 enum rpg_e {
 	RPG_IDLE = 0,
 	RPG_FIDGET,
@@ -444,6 +453,8 @@ void CRpg::Reload( void )
 		m_pSpot->Suspend( 2.1 );
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.1;
 	}
+#else
+	EV_RpgLaserOff();
 #endif
 
 	if (m_iClip == 0) {
@@ -584,6 +595,8 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 		m_pSpot->Killed( NULL, GIB_NEVER );
 		m_hSpot = NULL;
 	}
+#else
+	EV_RpgLaserOff();
 #endif
 
 }
@@ -639,17 +652,21 @@ void CRpg::PrimaryAttack()
 	UpdateSpot( );
 }
 
-
 void CRpg::SecondaryAttack()
 {
-	m_fSpotActive = ! m_fSpotActive;
-
 #ifndef CLIENT_DLL
+	m_fSpotActive = !m_fSpotActive;
+
 	CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
 	if (!m_fSpotActive && m_pSpot)
 	{
 		m_pSpot->Killed( NULL, GIB_NORMAL );
 		m_hSpot = NULL;
+	}
+#else
+	if (g_runfuncs) {
+		m_lastBeamUpdate = gEngfuncs.GetClientTime();
+		m_fSpotActive = !m_fSpotActive;
 	}
 #endif
 
@@ -704,6 +721,12 @@ void CRpg::WeaponIdle( void )
 
 void CRpg::UpdateSpot( void )
 {
+#ifdef CLIENT_DLL
+	if (m_fSpotActive)
+		EV_RpgLaserOn();
+	else
+		EV_RpgLaserOff();
+#endif
 
 #ifndef CLIENT_DLL
 	CBasePlayer* m_pPlayer = GetPlayer();
@@ -716,6 +739,10 @@ void CRpg::UpdateSpot( void )
 			m_hSpot = CLaserSpot::CreateSpot(m_pPlayer->edict());
 		}
 		CLaserSpot* m_pSpot = (CLaserSpot*)m_hSpot.GetEntity();
+
+		// sevenkewp clients predict the dot
+		if (m_pPlayer->IsSevenKewpClient())
+			m_pSpot->m_hidePlayers |= PLRBIT(m_pPlayer->edict());
 
 		UTIL_MakeVectors( m_pPlayer->pev->v_angle );
 		Vector vecSrc = m_pPlayer->GetGunPosition( );
@@ -758,6 +785,9 @@ void CRpg::UpdateSpot( void )
 				}
 
 				int beamWidth = 8;
+
+				if (plr == m_pPlayer && plr->IsSevenKewpClient())
+					continue; // own laser is predicted
 
 				// is first-person and owner
 				if (plr == m_pPlayer && plr->m_hViewEntity.GetEntity() == plr) {

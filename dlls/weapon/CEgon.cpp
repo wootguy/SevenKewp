@@ -306,8 +306,9 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 
 	if ( g_pGameRules->IsMultiplayer() && m_pSprite)
 	{
-		// don't send flare to sevenkewp clients that are predicting it
-		m_pSprite->m_hidePlayers = UTIL_ClientBitMask(CLIENT_MOD_SEVENKEWP);
+		// don't send flare to sevenkewp client that's predicting it
+		if (m_pPlayer->IsSevenKewpClient())
+			m_pSprite->m_hidePlayers |= PLRBIT(m_pPlayer->edict());
 
 		if (pEntity->pev->takedamage)
 		{

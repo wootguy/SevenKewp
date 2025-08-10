@@ -29,6 +29,7 @@
 extern BEAM *pBeam;
 extern BEAM *pBeam2;
 extern TEMPENTITY* pFlare; // Egon's energy flare
+extern TEMPENTITY* pLaserDot;
 
 void HUD_GetLastOrg( float *org );
 
@@ -63,7 +64,7 @@ void UpdateBeams ( void )
 	gEngfuncs.pEventAPI->EV_SetTraceHull( 2 );
 	gEngfuncs.pEventAPI->EV_PlayerTrace( vecSrc, vecEnd, PM_NORMAL, -1, &tr );
 
-	gEngfuncs.pEventAPI->EV_PopPMStates();
+	
 
 	if ( pBeam )
 	{
@@ -96,10 +97,16 @@ void UpdateBeams ( void )
 					pFlare->flags &= ~FTENT_NOMODEL;
 				}
 			}
-
-			PRINTF("Flare vis? %d\n", !(pFlare->flags & FTENT_NOMODEL));
 		}
 	}
+
+	if (pLaserDot)
+	{
+		pLaserDot->entity.origin = tr.endpos;
+		pLaserDot->die = gEngfuncs.GetClientTime() + 0.1;
+	}
+
+	gEngfuncs.pEventAPI->EV_PopPMStates();
 }
 
 /*
@@ -111,6 +118,6 @@ Add game specific, client-side objects here
 */
 void Game_AddObjects(void)
 {
-	if (pBeam || pBeam2 || pFlare)
+	if (pBeam || pBeam2 || pFlare || pLaserDot)
 		UpdateBeams();
 }

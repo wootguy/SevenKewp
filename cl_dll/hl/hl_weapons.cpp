@@ -932,8 +932,13 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	if (player.m_pActiveItem && player.m_pActiveItem->m_iId == WEAPON_RPG )
 	{
-		 ( ( CRpg * )player.m_pActiveItem)->m_fSpotActive = (int)from->client.vuser2[ 1 ];
-		 ( ( CRpg * )player.m_pActiveItem)->m_cActiveRockets = (int)from->client.vuser2[ 2 ];
+		CRpg* rpg = (CRpg*)player.m_pActiveItem;
+	
+		// only sync when laser hasn't been togglered recently to prevent flickering
+		if (rpg->m_lastBeamUpdate - gEngfuncs.GetClientTime() > 0.5f)
+			rpg->m_fSpotActive = (int)from->client.vuser2[ 1 ];
+
+		rpg->m_cActiveRockets = (int)from->client.vuser2[ 2 ];
 	}
 	
 	// Don't go firing anything if we have died or are spectating

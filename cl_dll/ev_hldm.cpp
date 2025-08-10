@@ -1401,15 +1401,15 @@ enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
 #define EGON_SOUND_OFF			"weapons/egon_off1.wav"
 #define EGON_SOUND_RUN			"weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP		"weapons/egon_windup2.wav"
+#define RPG_BEAM_SPRITE			"sprites/laserbeam.spr"
+#define LASER_DOT_SPRITE		"sprites/laserdot.spr"
 
 #define ARRAYSIZE(p)		(sizeof(p)/sizeof(p[0]))
 
 BEAM *pBeam;
 BEAM *pBeam2;
-
-
-
 TEMPENTITY* pFlare; //Egon beam flare
+TEMPENTITY* pLaserDot; // RPG laser dot
 
 void EV_EgonFlareCallback(struct tempent_s* ent, float frametime, float currenttime)
 {
@@ -1565,6 +1565,68 @@ void EV_EgonStop( event_args_t *args )
 //======================
 //	    EGON END 
 //======================
+
+extern int g_runfuncs;
+
+// Not really an event but the laser dot is special and needs server-side entity which has to
+// be networked to HL players anyway.
+void EV_RpgLaserOn() {
+	cl_entity_t* player = gEngfuncs.GetLocalPlayer();
+	Vector origin = player->origin;
+	int idx = player->index;
+
+	if (!pBeam && cl_lw->value) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
+	{
+		vec3_t vecSrc, vecEnd, origin, forward, right, up;
+		pmtrace_t tr;
+
+		cl_entity_t* pl = gEngfuncs.GetEntityByIndex(idx);
+
+		if (pl)
+		{
+			AngleVectors(gHUD.m_vecAngles, forward, right, up);
+
+			EV_GetGunPosition(idx, player->curstate.usehull == 1, vecSrc, pl->origin);
+
+			VectorMA(vecSrc, 2048, forward, vecEnd);
+
+			//gEngfuncs.pEventAPI->EV_SetUpPlayerPrediction(false, true);
+			//gEngfuncs.pEventAPI->EV_PushPMStates();
+			//gEngfuncs.pEventAPI->EV_SetSolidPlayers(idx - 1);
+			//gEngfuncs.pEventAPI->EV_SetTraceHull(2);
+			gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_NORMAL, -1, &tr);
+			//gEngfuncs.pEventAPI->EV_PopPMStates();
+
+			float a = 0.1875f;
+			float r = 1.0f * a;
+			float g = 0.125f * a;
+			float b = 0.125f * a;
+
+			pLaserDot = gEngfuncs.pEfxAPI->R_TempSprite(tr.endpos, vec3_origin, 1.0,
+				gEngfuncs.pEventAPI->EV_FindModelIndex(LASER_DOT_SPRITE),
+				kRenderGlow, kRenderFxNoDissipation, 1.0, 99999, FTENT_PERSIST);
+
+			pBeam = gEngfuncs.pEfxAPI->R_BeamEntPoint(idx | 0x1000, tr.endpos,
+				gEngfuncs.pEventAPI->EV_FindModelIndex(RPG_BEAM_SPRITE),
+				99999, 0.1f, 0, 0.7, 55, 0, 0, r, g, b);
+		}
+	}
+}
+
+void EV_RpgLaserOff()
+{
+	if (pBeam)
+	{
+		pBeam->die = 0.0;
+		pBeam = NULL;
+	}
+
+	if (pLaserDot)
+	{
+		pLaserDot->die = 0.0;
+		pLaserDot = NULL;
+	}
+}
 
 //======================
 //	   HORNET START
