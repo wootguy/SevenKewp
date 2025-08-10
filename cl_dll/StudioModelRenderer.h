@@ -141,7 +141,7 @@ public:
 	studiohdr_t		*m_pStudioHeader;
 	
 	// Pointers to current body part and submodel
-	mstudiobodyparts_t *m_pBodyPart;
+	mstudiobodyparts_t *m_pBodyPart; // https://github.com/ValveSoftware/halflife/issues/1655
 	mstudiomodel_t	*m_pSubModel;
 
 	// Palette substition for top and bottom of model

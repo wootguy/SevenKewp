@@ -383,9 +383,16 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 	if ((m_fInReload) && (m_pPlayer->m_flNextAttack <= 0.0))
 	{
-#if 0 // FIXME, need ammo on client to make this work right
+#if 1 // FIXME, need ammo on client to make this work right
 		// complete the reload. 
-		int j = V_min( iMaxClip() - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);	
+		// https://github.com/ValveSoftware/halflife/issues/2301#issuecomment-487010423
+		ItemInfo ii;
+
+		memset(&ii, 0, sizeof(ii));
+
+		GetItemInfo(&ii);
+
+		int j = V_min(ii.iMaxClip - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 
 		// Add them to the clip
 		m_iClip += j;

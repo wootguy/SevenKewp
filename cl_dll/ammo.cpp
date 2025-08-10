@@ -757,6 +757,10 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 	}
 
 	parms.numEvents = READ_BYTE();
+	if (parms.numEvents > MAX_CUSTOM_WEAPON_EVENTS) {
+		return 0;
+	}
+	
 	for (int i = 0; i < parms.numEvents; i++) {
 		uint32_t packedHeader = READ_LONG();
 		WepEvt& evt = parms.events[i];

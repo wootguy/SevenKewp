@@ -43,7 +43,7 @@ void CSound :: Reset ( void )
 	m_vecOrigin		= g_vecZero;
 	m_iType			= 0;
 	m_iVolume		= 0;
-	m_iNext			= SOUNDLIST_EMPTY;
+	//m_iNext			= SOUNDLIST_EMPTY; // https://github.com/ValveSoftware/halflife/issues/1652
 }
 
 //=========================================================
