@@ -53,6 +53,7 @@
 #include "animation.h"
 #include "bodyque.h"
 #include "CWeaponCustom.h"
+#include "CEnvWeather.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>

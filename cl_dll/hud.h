@@ -575,6 +575,22 @@ private:
 	int 	m_nCompositeScore;
 };
 
+class CFog : public CHudBase
+{
+public:
+	int Init(void);
+	int VidInit(void) { return 1; }
+	int MsgFunc_Fog(const char* pszName, int iSize, void* pbuf);
+	void SetupFog();
+	virtual const char* HudName() { return "CFog"; }
+
+private:
+	bool enabled;
+	Vector color;
+	float startDist;
+	float endDist;
+};
+
 //
 //-----------------------------------------------------
 //
@@ -639,7 +655,7 @@ public:
 
 	CHudAmmo		m_Ammo;
 	CHudHealth		m_Health;
-	CHudSpectator		m_Spectator;
+	CHudSpectator	m_Spectator;
 	CHudGeiger		m_Geiger;
 	CHudBattery		m_Battery;
 	CHudTrain		m_Train;
@@ -654,6 +670,7 @@ public:
 	CHudStatusIcons m_StatusIcons;
 	CHudBenchmark	m_Benchmark;
 	CHudClientStats	m_ClientStats;
+	CFog			m_Fog;
 
 	void Init( void );
 	void VidInit( void );

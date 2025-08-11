@@ -14,3 +14,5 @@
 /plugins
 /msvc
 /msvc_client
+/build_client
+/plugins_DISABLED

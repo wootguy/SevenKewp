@@ -60,6 +60,7 @@ set(HUD_SRC
 	statusbar.cpp
 	text_message.cpp
 	train.cpp
+	fog.cpp
 )
 
 set(VGUI_HDR
@@ -247,6 +248,7 @@ elseif(MSVC)
 		${CMAKE_CURRENT_SOURCE_DIR}/../utils/vgui/lib/win32_vc6/vgui.lib
 		wsock32
 		${CMAKE_CURRENT_SOURCE_DIR}/../lib/public/sdl2.lib
+		opengl32
 	)
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES

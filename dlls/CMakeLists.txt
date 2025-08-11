@@ -121,6 +121,7 @@ set(ENV_HDR
 	env/CAmbientGeneric.h
 	env/CBeam.h
 	env/CBloodSplat.h
+	env/CEnvWeather.h
 	env/CGibShooter.h
 	env/CLaser.h
 	env/CLight.h

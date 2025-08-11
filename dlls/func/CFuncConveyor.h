@@ -1,3 +1,4 @@
+#pragma once
 #include "CFuncWall.h"
 
 #define SF_CONVEYOR_VISUAL		0x0001

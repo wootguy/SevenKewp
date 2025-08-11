@@ -43,9 +43,10 @@ EXPORT extern int gmsgStatusValue;
 
 EXPORT extern int gmsgCustomWeapon; // custom weapon prediction parameters
 EXPORT extern int gmsgSoundIdx; // mapping of sound indexes to file paths
-EXPORT extern int gmesgServerCfg; // mod-specific server configuration
-EXPORT extern int gmesgNextMap; // next map name
-EXPORT extern int gmesgTimeLeft; // seconds left before map ends (0 = infinite)
+EXPORT extern int gmsgServerCfg; // mod-specific server configuration
+EXPORT extern int gmsgNextMap; // next map name
+EXPORT extern int gmsgTimeLeft; // seconds left before map ends (0 = infinite)
+EXPORT extern int gmsgFog; // fog rendering parameters
 EXPORT extern int gmsgToxicCloud; // chumtoad attack
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages

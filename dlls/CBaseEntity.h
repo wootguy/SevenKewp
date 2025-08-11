@@ -15,6 +15,7 @@ class CItemInventory;
 class CTriggerCamera;
 class CLight;
 class CFuncTank;
+class CEnvWeather;
 
 void* GET_PRIVATE(const edict_t* pent);
 
@@ -236,6 +237,7 @@ public:
 	virtual CTriggerCamera* MyCameraPointer(void) { return NULL; }
 	virtual CFuncTank* MyTankPointer(void) { return NULL; }
 	virtual CLight* MyLightPointer(void) { return NULL; }
+	virtual CEnvWeather* MyWeatherPointer(void) { return NULL; }
 	virtual	int		GetToggleState(void) { return TS_AT_TOP; }
 	virtual void	AddPoints(int score, BOOL bAllowNegativeScore) {}
 	virtual void	AddPointsToTeam(int score, BOOL bAllowNegativeScore) {}

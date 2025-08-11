@@ -59,6 +59,7 @@
 #include "CGib.h"
 #include "bodyque.h"
 #include "CWeaponCustom.h"
+#include "CEnvWeather.h"
 
 // #define DUCKFIX
 
@@ -6189,14 +6190,14 @@ void CBasePlayer::UpdateScore() {
 		float now = g_engfuncs.pfnTime();
 		if (now - m_lastTimeLeftUpdate > 0.9f) { // a little fast so seconds aren't skipped
 			int timeleft = timelimit.value*60 - gpGlobals->time;
-			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmesgTimeLeft, 0, edict());
+			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTimeLeft, 0, edict());
 			WRITE_LONG(timelimit.value > 0 ? timeleft : -1);
 			MESSAGE_END();
 
 			const char* nextmap = CVAR_GET_STRING("mp_nextmap");
 			if (m_lastTimeLeftUpdate == 0 || strcmp(m_lastNextMap, nextmap)) {
 				strcpy_safe(m_lastNextMap, nextmap, sizeof(m_lastNextMap));
-				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmesgNextMap, 0, edict());
+				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgNextMap, 0, edict());
 				WRITE_STRING(nextmap);
 				MESSAGE_END();
 			}
@@ -6382,9 +6383,21 @@ void CBasePlayer::QueryClientTypeFinished() {
 		MESSAGE_END();
 		ALERT(at_console, "Sent %d sound list bytes\n", soundListBytes);
 
-		MESSAGE_BEGIN(MSG_ONE, gmesgServerCfg, NULL, pev);
+		MESSAGE_BEGIN(MSG_ONE, gmsgServerCfg, NULL, pev);
 		WRITE_SHORT(MIN_SEVENKEWP_VERSION);
 		MESSAGE_END();
+
+		// activate fog
+		if (g_fog_enabled) {
+			CBaseEntity* ent = NULL;
+			while ((ent = UTIL_FindEntityByClassname(ent, "env_*"))) {
+				CEnvWeather* weather = ent->MyWeatherPointer();
+				if (weather && weather->m_useFog && weather->m_isActive) {
+					weather->SendFogMessage(this);
+					break;
+				}
+			}
+		}
 	}
 
 	// equip the player now that we know which weapons they can use
