@@ -24,6 +24,10 @@
 extern cl_enginefunc_t gEngfuncs;
 extern bool g_playing_on_sevenkewp_server;
 extern bool g_map_loaded;
+extern SDL_Window* g_sdl_window;
+
+extern cvar_t* cl_pitchdown;
+extern cvar_t* cl_pitchup;
 
 //-------------------------------------------------- Constants
 
@@ -58,8 +62,18 @@ void CAM_ToFirstPerson(void);
 
 void SDL_GetCursorPos( POINT *p )
 {
-	gEngfuncs.GetMousePosition( (int *)&p->x, (int *)&p->y );
-//	SDL_GetMouseState( (int *)&p->x, (int *)&p->y );
+//	gEngfuncs.GetMousePosition( (int *)&p->x, (int *)&p->y );
+	SDL_GetMouseState( (int *)&p->x, (int *)&p->y );
+}
+
+// https://stackoverflow.com/questions/1628386/normalise-orientation-between-0-and-360
+float normalizeRangef(const float value, const float start, const float end)
+{
+	const float width = end - start;
+	const float offsetValue = value - start;   // value relative to 0
+
+	return (offsetValue - (floorf(offsetValue / width) * width)) + start;
+	// + start to reset back to start of original range
 }
 
 void CL_DLLEXPORT CAM_Think( void )
@@ -69,6 +83,10 @@ void CL_DLLEXPORT CAM_Think( void )
 
 	cl_entity_t* player = gEngfuncs.GetLocalPlayer();
 	float now = gEngfuncs.GetClientTime();
+
+	Vector viewangles, view_ofs;
+	gEngfuncs.GetViewAngles((float*)viewangles);
+	gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(view_ofs);
 
 	if (g_camPressedTime && now - g_camPressedTime > 0.2f)
 	{
@@ -82,10 +100,18 @@ void CL_DLLEXPORT CAM_Think( void )
 		}
 
 		//get windows cursor position
-		POINT cam_mouse;
-		SDL_GetCursorPos(&cam_mouse);
-		int camDeltaX = gEngfuncs.GetWindowCenterX() - cam_mouse.x;
-		int camDeltaY = gEngfuncs.GetWindowCenterY() - cam_mouse.y;
+		int mx, my, winX, winY;
+		SDL_GetMouseState(&mx, &my);
+		SDL_GetWindowPosition(g_sdl_window, &winX, &winY);
+		int centerX = gEngfuncs.GetWindowCenterX() - winX;
+		int centerY = gEngfuncs.GetWindowCenterY() - winY;
+		
+		int camDeltaX = centerX - mx;
+		int camDeltaY = centerY - my;
+
+#ifndef WIN32
+		SDL_WarpMouseInWindow(g_sdl_window, centerX, centerY);
+#endif
 
 		float sensitivity = gHUD.GetSensitivity();
 		if (!sensitivity)
@@ -93,7 +119,15 @@ void CL_DLLEXPORT CAM_Think( void )
 
 		g_camPressAngles.x += camDeltaY * -sensitivity;
 		g_camPressAngles.y += camDeltaX * sensitivity;
-		g_camPressAngles.x = clamp(g_camPressAngles.x, -90, 90);
+
+		if (viewangles.x + g_camPressAngles.x > cl_pitchdown->value) {
+			g_camPressAngles.x = cl_pitchdown->value - viewangles.x;
+		}
+		if (viewangles.x + g_camPressAngles.x < -cl_pitchup->value) {
+			g_camPressAngles.x = -cl_pitchup->value - viewangles.x;
+		}
+
+		g_camPressAngles.y = normalizeRangef(g_camPressAngles.y, -180, 180);
 
 		// zoom in/out
 		if (g_camWheelAdjust) {
@@ -130,9 +164,6 @@ void CL_DLLEXPORT CAM_Think( void )
 		}
 	}
 
-	Vector viewangles, view_ofs;
-	gEngfuncs.GetViewAngles((float*)viewangles);
-	gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(view_ofs);
 	Vector origin = player->origin + view_ofs;
 	viewangles = viewangles + g_camPressAngles + Vector(0.0f, cam_idealyaw->value, 0.0f);
 
