@@ -2459,6 +2459,20 @@ int TeamFortressViewport::MsgFunc_ServerName( const char *pszName, int iSize, vo
 	return 1;
 }
 
+int TeamFortressViewport::MsgFunc_NextMap(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	safe_strcpy(m_szNextMap, READ_STRING(), sizeof(m_szNextMap));
+	return 1;
+}
+
+int TeamFortressViewport::MsgFunc_TimeLeft(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	m_timeLeft = READ_LONG();
+	return 1;
+}
+
 int TeamFortressViewport::MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );

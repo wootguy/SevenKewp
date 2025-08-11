@@ -243,6 +243,9 @@ private:
 private:
 
 	Label			m_TitleLabel;
+	Label			m_CurrentMapLabel;
+	Label			m_NextMapLabel;
+	Label			m_TimeleftLabel;
 	
 	// Here is how these controls are arranged hierarchically.
 	// m_HeaderGrid

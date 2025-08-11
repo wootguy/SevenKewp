@@ -6181,7 +6181,30 @@ void CBasePlayer::UpdateMonsterInfo() {
 */
 
 void CBasePlayer::UpdateScore() {
-	if (m_lastScore == (int)pev->frags || g_engfuncs.pfnTime() - m_lastScoreUpdate < 0.1f) {
+	int idleTime = g_engfuncs.pfnTime() - m_lastUserInput;
+	bool statusChanged = GetScoreboardStatus() != m_lastScoreStatus;
+	bool scoreChanged = m_lastScore != (int)pev->frags;
+
+	if (IsSevenKewpClient()) {
+		float now = g_engfuncs.pfnTime();
+		if (now - m_lastTimeLeftUpdate > 0.9f) { // a little fast so seconds aren't skipped
+			int timeleft = timelimit.value*60 - gpGlobals->time;
+			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmesgTimeLeft, 0, edict());
+			WRITE_LONG(timelimit.value > 0 ? timeleft : -1);
+			MESSAGE_END();
+
+			const char* nextmap = CVAR_GET_STRING("mp_nextmap");
+			if (m_lastTimeLeftUpdate == 0 || strcmp(m_lastNextMap, nextmap)) {
+				strcpy_safe(m_lastNextMap, nextmap, sizeof(m_lastNextMap));
+				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmesgNextMap, 0, edict());
+				WRITE_STRING(nextmap);
+				MESSAGE_END();
+			}
+			m_lastTimeLeftUpdate = now;
+		}
+	}	
+
+	if ((!statusChanged && !scoreChanged) || g_engfuncs.pfnTime() - m_lastScoreUpdate < 0.1f) {
 		return;
 	}
 	m_lastScoreUpdate = g_engfuncs.pfnTime();
@@ -6203,15 +6226,33 @@ void CBasePlayer::UpdateScore() {
 	else {
 		UpdateTeamInfo();
 	}
-	
+}
+
+uint16_t CBasePlayer::GetScoreboardStatus() {
+	uint16_t status = 0;
+	float idleTime = g_engfuncs.pfnTime() - m_lastUserInput;
+	if (idleTime >= PLR_IDLE_STATE_TIME3)
+		status = 5;
+	else if (idleTime >= PLR_IDLE_STATE_TIME2)
+		status = 4;
+	else if (idleTime >= PLR_IDLE_STATE_TIME)
+		status = 3;
+	else if (IsAlive())
+		status = 1;
+	else if (IsObserver())
+		status = 2;
+
+	return status;
 }
 
 void CBasePlayer::UpdateTeamInfo(int color, int msg_mode, edict_t* dst) {
+	m_lastScoreStatus = GetScoreboardStatus();
+
 	MESSAGE_BEGIN(msg_mode, gmsgScoreInfo, 0, dst);
 	WRITE_BYTE(entindex());	// client number
 	WRITE_SHORT(clampf(pev->frags, INT16_MIN, INT16_MAX));
 	WRITE_SHORT(m_iDeaths);
-	WRITE_SHORT(0);
+	WRITE_SHORT(m_lastScoreStatus); // playerclass, overridden to mean status
 	WRITE_SHORT(color == -1 ? GetNameColor() : color);
 	MESSAGE_END();
 

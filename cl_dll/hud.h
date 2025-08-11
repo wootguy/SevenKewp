@@ -249,7 +249,7 @@ struct extra_player_info_t
 {
 	short frags;
 	short deaths;
-	short playerclass;
+	uint16_t playerclass;
 	short health; // UNUSED currently, spectator UI would like this
 	bool dead; // UNUSED currently, spectator UI would like this
 	short teamnumber;
@@ -268,6 +268,7 @@ struct team_info_t
 	int already_drawn;
 	int scores_overriden;
 	int teamnumber;
+	int activePercent; // percent of players active (alive and not idle)
 };
 
 #include "player_info.h"
@@ -673,6 +674,8 @@ public:
 	int _cdecl MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf);
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
 
+	int  _cdecl MsgFunc_NextMap( const char *pszName, int iSize, void *pbuf );
+	int  _cdecl MsgFunc_TimeLeft( const char *pszName, int iSize, void *pbuf );
 	int  _cdecl MsgFunc_ToxicCloud( const char *pszName, int iSize, void *pbuf );
 
 	// Screen information

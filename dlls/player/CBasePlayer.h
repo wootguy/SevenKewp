@@ -69,6 +69,12 @@
 #define FAM_FORCEVIEWANGLES 1
 #define FAM_ADDAVELOCITY 2
 
+#define PLR_IDLE_STATE_TIME 20 // number of idle seconds until considered IDLE in the scoreboard
+#define PLR_IDLE_STATE_TIME2 60 // time for big idle
+#define PLR_IDLE_STATE_TIME3 120 // time for super idle
+
+#define MAX_MAP_NAME 32
+
 typedef enum
 {
 	PLAYER_IDLE,
@@ -310,6 +316,7 @@ public:
 	// for calculating idle time
 	int m_lastUserButtonState;
 	float m_lastUserInput;
+	int m_lastScoreStatus; // last status sent to player scoreboards
 
 	float m_useKeyTime; // when the use key was last pressed. 0 if not currently pressed
 	float m_nextAntiBlock; // next time player is allowed to swap
@@ -482,9 +489,12 @@ public:
 	int m_iAutoWepSwitch;
 
 	float m_lastScoreUpdate;
+	float m_lastTimeLeftUpdate;
+	char m_lastNextMap[MAX_MAP_NAME];
 	int m_lastScore;
 	void UpdateScore();
 
+	uint16_t GetScoreboardStatus();
 	void UpdateTeamInfo(int color=-1, int msg_mode=MSG_ALL, edict_t* dst=NULL);
 
 	float m_lastSpawnMessage;

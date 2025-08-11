@@ -426,7 +426,7 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 				WRITE_BYTE( i );	// client number
 				WRITE_SHORT( plr->pev->frags );
 				WRITE_SHORT( plr->m_iDeaths );
-				WRITE_SHORT( 0 );
+				WRITE_SHORT( plr->GetScoreboardStatus() );
 				WRITE_SHORT(plr->GetNameColor());
 				//WRITE_SHORT(DEFAULT_TEAM_COLOR);
 			MESSAGE_END();

@@ -104,6 +104,8 @@ extern TeamFortressViewport *gViewPort;
 #define CLMENU_PLAYER_INDENT	(((float)CLMENU_SIZE_X / 3) * 2)
 #define CLMENU_INDENT_Y			(((float)ScreenHeight - CLMENU_SIZE_Y) / 2)
 
+#define MAX_MAPNAME 256
+
 // Arrows
 enum
 {
@@ -612,6 +614,8 @@ public:
 	int MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_NextMap( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_TimeLeft( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
@@ -642,6 +646,8 @@ public:
 	ScorePanel		*m_pScoreBoard;
 	SpectatorPanel *		m_pSpectatorPanel;
 	char			m_szServerName[ MAX_SERVERNAME_LENGTH ];
+	char			m_szNextMap[ MAX_MAPNAME ];
+	int				m_timeLeft;
 };
 
 //============================================================
@@ -1211,8 +1217,6 @@ public:
 		return false;
 	}
 };
-
-#define MAX_MAPNAME 256
 
 class MapButton : public CommandButton
 {

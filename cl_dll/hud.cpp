@@ -243,6 +243,20 @@ int __MsgFunc_ServerName(const char *pszName, int iSize, void *pbuf)
 	return 0;
 }
 
+int __MsgFunc_NextMap(const char* pszName, int iSize, void* pbuf)
+{
+	if (gViewPort)
+		return gViewPort->MsgFunc_NextMap(pszName, iSize, pbuf);
+	return 0;
+}
+
+int __MsgFunc_TimeLeft(const char* pszName, int iSize, void* pbuf)
+{
+	if (gViewPort)
+		return gViewPort->MsgFunc_TimeLeft(pszName, iSize, pbuf);
+	return 0;
+}
+
 int __MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pbuf)
 {
 	if (gViewPort)
@@ -319,6 +333,8 @@ void CHud :: Init( void )
 	HOOK_MESSAGE( BuildSt );
 	HOOK_MESSAGE( RandomPC );
 	HOOK_MESSAGE( ServerName );
+	HOOK_MESSAGE( NextMap );
+	HOOK_MESSAGE( TimeLeft );
 	HOOK_MESSAGE( ScoreInfo );
 	HOOK_MESSAGE( TeamScore );
 	HOOK_MESSAGE( TeamInfo );
