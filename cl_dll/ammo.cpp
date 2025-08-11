@@ -41,7 +41,6 @@ client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes
 WeaponsResource gWR;
 
 int g_weaponselect = 0;
-extern bool g_playing_on_sevenkewp_server;
 
 void WeaponsResource :: LoadAllWeaponSprites( void )
 {
@@ -250,7 +249,6 @@ DECLARE_MESSAGE(m_Ammo, CurWeapon );	// Current weapon and clip
 DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
 DECLARE_MESSAGE(m_Ammo, CustomWep);		// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, SoundIdx);		// sound index to file path mapping
-DECLARE_MESSAGE(m_Ammo, ServerCfg);		// server config
 DECLARE_MESSAGE(m_Ammo, AmmoX);			// update known ammo type's count
 DECLARE_MESSAGE(m_Ammo, AmmoPickup);	// flashes an ammo pickup record
 DECLARE_MESSAGE(m_Ammo, WeapPickup);    // flashes a weapon pickup record
@@ -285,7 +283,6 @@ int CHudAmmo::Init(void)
 	HOOK_MESSAGE(WeaponList);
 	HOOK_MESSAGE(CustomWep);
 	HOOK_MESSAGE(SoundIdx);
-	HOOK_MESSAGE(ServerCfg);
 	HOOK_MESSAGE(AmmoPickup);
 	HOOK_MESSAGE(WeapPickup);
 	HOOK_MESSAGE(ItemPickup);
@@ -836,18 +833,6 @@ int CHudAmmo::MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf) {
 		AddWeaponCustomSoundMapping(idx, soundPath);
 	}
 
-	return 1;
-}
-
-int CHudAmmo::MsgFunc_ServerCfg(const char* pszName, int iSize, void* pbuf) {
-	BEGIN_READ(pbuf, iSize);
-	int serverVersion = READ_SHORT();
-
-	int major = serverVersion / 100;
-	int minor = serverVersion % 100;
-	gEngfuncs.Con_Printf("Server version: SevenKewp %d.%02d\n", major, minor);
-
-	g_playing_on_sevenkewp_server = true;
 	return 1;
 }
 

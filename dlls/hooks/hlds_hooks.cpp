@@ -738,6 +738,10 @@ void MarkWeaponSlotConflicts() {
 
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
+	char* serverinfo = (char*)g_engfuncs.pfnGetInfoKeyBuffer(g_engfuncs.pfnPEntityOfEntIndex(0));
+	g_engfuncs.pfnSetKeyValue(serverinfo, "skv", UTIL_VarArgs("%d", MIN_SEVENKEWP_VERSION));
+	g_engfuncs.pfnSetKeyValue(serverinfo, "hud", "hlcoop/hud.txt");
+
 	// reset player inventories
 	if (g_clearInventoriesNextMap) {
 		g_playerInventory.clear();

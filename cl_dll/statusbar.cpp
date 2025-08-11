@@ -52,13 +52,6 @@ int CHudStatusBar :: Init( void )
 	return 1;
 }
 
-int CHudStatusBar :: VidInit( void )
-{
-	// Load sprites here
-
-	return 1;
-}
-
 void CHudStatusBar :: Reset( void )
 {
 	int i = 0;

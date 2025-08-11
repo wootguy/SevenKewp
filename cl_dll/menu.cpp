@@ -58,11 +58,6 @@ void CHudMenu :: Reset( void )
 	m_fWaitingForMore = FALSE;
 }
 
-int CHudMenu :: VidInit( void )
-{
-	return 1;
-}
-
 
 /*=================================
   ParseEscapeToken

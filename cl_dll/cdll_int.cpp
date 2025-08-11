@@ -172,6 +172,8 @@ so the HUD can reinitialize itself.
 ==========================
 */
 
+int g_connection_phase;
+
 int CL_DLLEXPORT HUD_VidInit( void )
 {
 //	RecClHudVidInit();
@@ -182,6 +184,8 @@ int CL_DLLEXPORT HUD_VidInit( void )
 	is_steam_legacy_engine = CVAR_GET_PTR("sv_allow_shaders") == NULL;
 	is_software_renderer = CVAR_GET_PTR("gl_fog") == NULL;
 	InitEnginePv();
+
+	g_connection_phase = 0;
 
 	return 1;
 }
@@ -291,6 +295,25 @@ void CL_DLLEXPORT HUD_Frame( double time )
 
 	if (mouse_uncenter_phase == 2) {
 		SaveMouseUndoPos();
+	}
+
+	// using the world entity state to detect when all resources have downloaded and the player is
+	// preparing to spawn. A good time to load other resources that depend on downloaded files.
+	if (g_connection_phase == 0) {
+		cl_entity_t* world = gEngfuncs.GetEntityByIndex(0);
+
+		if (world) {
+			world->curstate.scale = 1337;
+			g_connection_phase = 1;
+		}
+	}
+	else if (g_connection_phase == 1) {
+		cl_entity_t* world = gEngfuncs.GetEntityByIndex(0);
+
+		if (world && world->curstate.scale != 1337) {
+			gHUD.WorldInit();
+			g_connection_phase = 2;
+		}
 	}
 }
 

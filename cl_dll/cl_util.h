@@ -177,6 +177,17 @@ inline int safe_sprintf( char *dst, int len_dst, const char *format, ...)
 	return 0;
 }
 
+inline bool fileExists(const char* path) {
+	FILE* file = fopen(path, "r");
+
+	if (file) {
+		fclose(file);
+		return true;
+	}
+
+	return false;
+}
+
 // sound functions
 inline void PlaySound( const char *szSound, float vol ) { gEngfuncs.pfnPlaySoundByName( szSound, vol ); }
 inline void PlaySound( int iSound, float vol ) { gEngfuncs.pfnPlaySoundByIndex( iSound, vol ); }

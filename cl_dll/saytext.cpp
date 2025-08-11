@@ -75,11 +75,6 @@ void CHudSayText :: InitHUDData( void )
 	memset( g_iNameLengths, 0, sizeof g_iNameLengths );
 }
 
-int CHudSayText :: VidInit( void )
-{
-	return 1;
-}
-
 
 int ScrollTextUp( void )
 {

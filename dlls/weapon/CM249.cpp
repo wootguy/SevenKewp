@@ -99,8 +99,8 @@ int CM249::GetItemInfo(ItemInfo* p)
 	p->pszAmmo1 = "556";
 	p->iMaxClip = M249_MAX_CLIP;
 	p->iMaxAmmo1 = 200;
-	p->iSlot = 2;
-	p->iPosition = 4;
+	p->iSlot = 5;
+	p->iPosition = 0;
 	p->iId = WEAPON_M249;
 	p->iWeight = M249_WEIGHT;
 	return true;

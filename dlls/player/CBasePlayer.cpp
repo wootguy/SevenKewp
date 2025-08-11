@@ -6383,10 +6383,6 @@ void CBasePlayer::QueryClientTypeFinished() {
 		MESSAGE_END();
 		ALERT(at_console, "Sent %d sound list bytes\n", soundListBytes);
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgServerCfg, NULL, pev);
-		WRITE_SHORT(MIN_SEVENKEWP_VERSION);
-		MESSAGE_END();
-
 		// activate fog
 		if (g_fog_enabled) {
 			CBaseEntity* ent = NULL;

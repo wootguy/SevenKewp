@@ -111,7 +111,6 @@ public:
 	int MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf);
-	int MsgFunc_ServerCfg(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_AmmoX(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_AmmoPickup( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_WeapPickup( const char *pszName, int iSize, void *pbuf );
@@ -150,7 +149,6 @@ class CHudAmmoSecondary: public CHudBase
 {
 public:
 	int Init( void );
-	int VidInit( void );
 	void Reset( void );
 	int Draw(float flTime);
 	virtual const char* HudName() { return "CHudAmmoSecondary"; }
@@ -182,7 +180,6 @@ class CHudGeiger: public CHudBase
 {
 public:
 	int Init( void );
-	int VidInit( void );
 	int Draw(float flTime);
 	int MsgFunc_Geiger(const char *pszName, int iSize, void *pbuf);
 	virtual const char* HudName() { return "CHudGeiger"; }
@@ -217,7 +214,6 @@ class CHudStatusBar : public CHudBase
 {
 public:
 	int Init( void );
-	int VidInit( void );
 	int Draw( float flTime );
 	void Reset( void );
 	void ParseStatusString( int line_num );
@@ -298,7 +294,6 @@ class CHudMenu : public CHudBase
 public:
 	int Init( void );
 	void InitHUDData( void );
-	int VidInit( void );
 	void Reset( void );
 	int Draw( float flTime );
 	int MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf );
@@ -320,7 +315,6 @@ class CHudSayText : public CHudBase
 public:
 	int Init( void );
 	void InitHUDData( void );
-	int VidInit( void );
 	int Draw( float flTime );
 	int MsgFunc_SayText( const char *pszName, int iSize, void *pbuf );
 	void SayTextPrint( const char *pszBuf, int iBufSize, int clientIndex = -1 );
@@ -607,6 +601,7 @@ private:
 	int							m_iSpriteCountAllRes;
 	float						m_flMouseSensitivity;
 	int							m_iConcussionEffect; 
+	char						m_customHudPath[256];
 
 public:
 
@@ -623,6 +618,7 @@ public:
 	int		m_iRes;
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
+	int m_sevenkewpVersion;
 
 	int m_iFontHeight;
 	int DrawHudNumber(int x, int y, int iFlags, int iNumber, int r, int g, int b );
@@ -630,6 +626,9 @@ public:
 	int DrawHudStringReverse( int xpos, int ypos, int iMinX, char *szString, int r, int g, int b );
 	int DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b );
 	int GetNumWidth(int iNumber, int iFlags);
+
+	// for disabling features that could be used to cheat on vanilla servers
+	inline bool IsSevenKewpServer() { return m_sevenkewpVersion > 0; }
 
 private:
 	// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.
@@ -673,7 +672,10 @@ public:
 	CFog			m_Fog;
 
 	void Init( void );
-	void VidInit( void );
+	void VidInit( void ); // called on server connection or video mode change
+	void LoadHudSprites( void );
+	void ParseServerInfo( void ); // parse sevenkewp-specific server data
+	void WorldInit( void ); // called when world is laoded and we're about to spawn
 	void Think(void);
 	int Redraw( float flTime, int intermission );
 	int UpdateClientData( client_data_t *cdata, float time );

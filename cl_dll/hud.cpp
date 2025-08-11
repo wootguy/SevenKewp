@@ -37,7 +37,6 @@ extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player in
 #define HLCOOP_VERSION "1"
 
 extern int mouse_uncenter_phase;
-bool g_playing_on_sevenkewp_server; // disables features that could be used to cheat on DM servers
 bool g_map_loaded;
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
@@ -457,8 +456,8 @@ void CHud :: VidInit( void )
 	// Load Sprites
 	// ---------
 //	m_hsprFont = LoadSprite("sprites/%d_font.spr");
-	
-	m_hsprLogo = 0;	
+
+	m_hsprLogo = 0;
 	m_hsprCursor = 0;
 
 #if !defined( _TFC )
@@ -466,19 +465,48 @@ void CHud :: VidInit( void )
 		m_iRes = 2560;
 	else if (ScreenWidth >= 1280 && ScreenHeight > 720)
 		m_iRes = 1280;
-	else 
-#endif
-	if (ScreenWidth >= 640)
-		m_iRes = 640;
 	else
-		m_iRes = 320;
-	
+#endif
+		if (ScreenWidth >= 640)
+			m_iRes = 640;
+		else
+			m_iRes = 320;
 
+	if (mouse_uncenter_phase == 3) // reset mouse uncentering logic for new server connection
+		mouse_uncenter_phase = 2;
+	g_map_loaded = false;
+
+	// this is probably going to annoy someone but HL only binds up to slot 5 which breaks weapon selection and big menus.
+	EngineClientCmd("bind 1 slot1\n");
+	EngineClientCmd("bind 2 slot2\n");
+	EngineClientCmd("bind 3 slot3\n");
+	EngineClientCmd("bind 4 slot4\n");
+	EngineClientCmd("bind 5 slot5\n");
+	EngineClientCmd("bind 6 slot6\n");
+	EngineClientCmd("bind 7 slot7\n");
+	EngineClientCmd("bind 8 slot8\n");
+	EngineClientCmd("bind 9 slot9\n");
+	EngineClientCmd("bind 0 slot10\n");
+
+	GetClientVoiceMgr()->VidInit();
+}
+
+void CHud::LoadHudSprites(void) {
 	// Only load this once
-	if ( !m_pSpriteList )
+	if (!m_pSpriteList)
 	{
+		static char hudPathAbs[256];
+		static char hudPathGame[256];
+		safe_sprintf(hudPathAbs, 256, "valve_downloads/sprites/%s", m_customHudPath);
+		safe_sprintf(hudPathGame, 256, "sprites/%s", m_customHudPath);
+
+		const char* hudPath = "sprites/hud.txt";
+		if (fileExists(hudPathAbs)) {
+			hudPath = hudPathGame;
+		}
+
 		// we need to load the hud.txt, and all sprites within
-		m_pSpriteList = SPR_GetList("sprites/hud.txt", &m_iSpriteCountAllRes);
+		m_pSpriteList = SPR_GetList(hudPath, &m_iSpriteCountAllRes);
 
 		if (m_pSpriteList)
 		{
@@ -536,33 +564,42 @@ void CHud :: VidInit( void )
 			p++;
 		}
 	}
+}
+
+void CHud::ParseServerInfo() {
+	const char* sevenkewpVersion = gEngfuncs.ServerInfo_ValueForKey("skv");
+	m_sevenkewpVersion = atoi(sevenkewpVersion);
+	if (sevenkewpVersion[0] && m_sevenkewpVersion > 0) {
+		int major = m_sevenkewpVersion / 100;
+		int minor = m_sevenkewpVersion % 100;
+		gEngfuncs.Con_Printf("SevenKewp server version %d.%02d\n", major, minor);
+	}
+	else {
+		gEngfuncs.Con_Printf("This is not a SevenKewp server. Some client features will be disabled.\n");
+		m_sevenkewpVersion = 0;
+	}
+
+	const char* serverHudFile = gEngfuncs.ServerInfo_ValueForKey("hud");
+	safe_strcpy(m_customHudPath, serverHudFile, sizeof(m_customHudPath));
+}
+
+void CHud::WorldInit(void) {
+	ParseServerInfo();
+	LoadHudSprites();
 
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially
-	m_HUD_number_0 = GetSpriteIndex( "number_0" );
+	m_HUD_number_0 = GetSpriteIndex("number_0");
 
 	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
 
 	m_Ammo.VidInit();
 	m_Health.VidInit();
 	m_Spectator.VidInit();
-	m_Geiger.VidInit();
 	m_Train.VidInit();
 	m_Battery.VidInit();
 	m_Flash.VidInit();
 	m_Message.VidInit();
-	m_StatusBar.VidInit();
 	m_DeathNotice.VidInit();
-	m_SayText.VidInit();
-	m_Menu.VidInit();
-	m_AmmoSecondary.VidInit();
-	m_TextMessage.VidInit();
-	m_StatusIcons.VidInit();
-	GetClientVoiceMgr()->VidInit();
-
-	if (mouse_uncenter_phase == 3) // reset mouse uncentering logic for new server connection
-		mouse_uncenter_phase = 2;
-	g_playing_on_sevenkewp_server = false;
-	g_map_loaded = false;
 }
 
 int CHud::MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf)

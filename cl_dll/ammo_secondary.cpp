@@ -48,11 +48,6 @@ void CHudAmmoSecondary :: Reset( void )
 	m_fFade = 0;
 }
 
-int CHudAmmoSecondary :: VidInit( void )
-{
-	return 1;
-}
-
 int CHudAmmoSecondary :: Draw(float flTime)
 {
 	if ( (gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL )) )

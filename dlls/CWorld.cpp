@@ -273,6 +273,9 @@ void CWorld::Precache(void)
 	//PRECACHE_SOUND("weapons/distant/explode4.wav");
 	PRECACHE_SOUND("weapons/distant/explode5.wav");
 
+	// for sevenkewp clients
+	PRECACHE_GENERIC("sprites/" MOD_SPRITE_FOLDER "hud.txt");
+
 	if (mp_bigmap.value)
 		UTIL_PrecacheLargeWorldEffects();
 

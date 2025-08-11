@@ -74,7 +74,7 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define WEAPON_SUIT				31	// ?????
 
 #define MAX_WEAPONS			32
-#define MAX_WEAPON_SLOTS	5
+#define MAX_WEAPON_SLOTS	6
 #define MAX_WEAPON_POSITIONS 5
 
 

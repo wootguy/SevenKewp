@@ -35,7 +35,6 @@ extern hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info fro
 extern extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player info sent directly to the client dll
 team_info_t			 g_TeamInfo[MAX_TEAMS+1];
 int					 g_IsSpectator[MAX_PLAYERS+1];
-extern bool g_playing_on_sevenkewp_server;
 
 int HUD_IsGame( const char *game );
 int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 );
@@ -301,7 +300,7 @@ void ScorePanel::Update()
 		m_TitleLabel.setText(sz);
 	}
 
-	if (g_playing_on_sevenkewp_server) {
+	if (gHUD.IsSevenKewpServer()) {
 		static char mapname[MAX_MAPNAME];
 		const char* mappath = gEngfuncs.pfnGetLevelName();
 		if (strlen(mappath) > 5) {
@@ -849,7 +848,7 @@ void ScorePanel::FillGrid()
 					GetClientVoiceMgr()->UpdateSpeakerImage(pLabel, m_iSortedRows[row]);
 					break;
 				case COLUMN_CLASS: {
-					if (!g_playing_on_sevenkewp_server)
+					if (!gHUD.IsSevenKewpServer())
 						break;
 
 					int status = pl_extra_info->playerclass;

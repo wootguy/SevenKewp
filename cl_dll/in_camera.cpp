@@ -22,7 +22,6 @@
 #include "event_api.h"
 
 extern cl_enginefunc_t gEngfuncs;
-extern bool g_playing_on_sevenkewp_server;
 extern bool g_map_loaded;
 extern SDL_Window* g_sdl_window;
 
@@ -226,7 +225,7 @@ void CAM_CamButtonRelease(void)
 void CAM_ToThirdPerson(void) { 
 	vec3_t viewangles;
 
-	if ( gEngfuncs.GetMaxClients() > 1 && !g_playing_on_sevenkewp_server )
+	if ( gEngfuncs.GetMaxClients() > 1 && gHUD.IsSevenKewpServer())
 	{
 		// no thirdperson in multiplayer.
 		return;
