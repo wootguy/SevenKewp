@@ -601,7 +601,6 @@ private:
 	int							m_iSpriteCountAllRes;
 	float						m_flMouseSensitivity;
 	int							m_iConcussionEffect; 
-	char						m_customHudPath[256];
 
 public:
 

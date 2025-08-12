@@ -463,8 +463,8 @@ set(UTIL_HDR
 	util/wav.h
 	util/HashMap.h
 	util/StringPool.h
-	util/md5.h
 	../game_shared/shared_util.h
+	../game_shared/md5.h
 )
 set(UTIL_SRC
 	util/animation.cpp
@@ -488,8 +488,8 @@ set(UTIL_SRC
 	util/wav.cpp
 	util/HashMap.cpp
 	util/StringPool.cpp
-	util/md5.cpp
 	../game_shared/shared_util.cpp
+	../game_shared/md5.cpp
 )
 set(PLAYER_HDR
 	../pm_shared/pm_debug.h

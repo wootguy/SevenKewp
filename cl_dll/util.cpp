@@ -56,3 +56,48 @@ HSPRITE LoadSprite(const char *pszName)
 	return SPR_Load(sz);
 }
 
+bool fileExists(const char* path) {
+	FILE* file = fopen(path, "r");
+
+	if (file) {
+		fclose(file);
+		return true;
+	}
+
+	return false;
+}
+
+char* UTIL_VarArgs(const char* format, ...) {
+	va_list		argptr;
+	static char	string[1024];
+
+	va_start(argptr, format);
+	vsnprintf(string, 1024, format, argptr);
+	va_end(argptr);
+
+	string[1023] = 0;
+
+	return string;
+}
+
+const char* FindGameFile(const char* path) {
+	if (!path || !path[0])
+		return NULL;
+
+	const char* gamedir = gEngfuncs.pfnGetGameDirectory();
+	const char* search_suffix[4] = {
+		"_addon",
+		"_hd",
+		"",
+		"_downloads",
+	};
+
+	for (int i = 0; i < 4; i++) {
+		const char* searchPath = UTIL_VarArgs("%s%s/%s", gamedir, search_suffix[i], path);
+		if (fileExists(searchPath)) {
+			return searchPath;
+		}
+	}
+
+	return NULL;
+}

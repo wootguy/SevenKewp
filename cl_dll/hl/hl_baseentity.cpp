@@ -47,7 +47,6 @@ ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 StringMap g_soundReplacements;
 
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch) { }
-char* UTIL_VarArgs(const char* format, ...) { return ""; }
 void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char* msg) {}
 const char* UTIL_SevenKewpClientString(int version) { return ""; }
 

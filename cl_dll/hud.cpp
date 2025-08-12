@@ -494,19 +494,12 @@ void CHud :: VidInit( void )
 void CHud::LoadHudSprites(void) {
 	// Only load this once
 	if (!m_pSpriteList)
-	{
-		static char hudPathAbs[256];
-		static char hudPathGame[256];
-		safe_sprintf(hudPathAbs, 256, "valve_downloads/sprites/%s", m_customHudPath);
-		safe_sprintf(hudPathGame, 256, "sprites/%s", m_customHudPath);
-
-		const char* hudPath = "sprites/hud.txt";
-		if (fileExists(hudPathAbs)) {
-			hudPath = hudPathGame;
-		}
+	{		
+		const char* customHudPath = FindGameFile("sprites/hlcoop/hud.txt");
+		const char* useHudPath = customHudPath ? customHudPath : "sprites/hud.txt";
 
 		// we need to load the hud.txt, and all sprites within
-		m_pSpriteList = SPR_GetList(hudPath, &m_iSpriteCountAllRes);
+		m_pSpriteList = SPR_GetList(useHudPath, &m_iSpriteCountAllRes);
 
 		if (m_pSpriteList)
 		{
@@ -579,12 +572,19 @@ void CHud::ParseServerInfo() {
 		m_sevenkewpVersion = 0;
 	}
 
-	const char* serverHudFile = gEngfuncs.ServerInfo_ValueForKey("hud");
-	safe_strcpy(m_customHudPath, serverHudFile, sizeof(m_customHudPath));
+	const char* serverHash = gEngfuncs.ServerInfo_ValueForKey("skmd5");
+	const char* myHash = UTIL_HashClientDataFiles();
+
+	if (strcmp(serverHash, myHash)) {
+		PRINTF("Preparing SevenKewp data update (%s != %s)\n", serverHash, myHash);
+		UTIL_DeleteClientDataFiles();
+	}
+	else {
+		PRINTF("SevenKewp data is up-to-date (%s)\n", serverHash);
+	}
 }
 
 void CHud::WorldInit(void) {
-	ParseServerInfo();
 	LoadHudSprites();
 
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially

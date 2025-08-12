@@ -123,6 +123,8 @@ set(UTIL_HDR
 	../pm_shared/pm_materials.h
 	../pm_shared/pm_movevars.h
 	../pm_shared/pm_shared.h
+	../game_shared/shared_util.h
+	../game_shared/md5.h
 )
 set(UTIL_SRC
 	cdll_int.cpp
@@ -136,6 +138,7 @@ set(UTIL_SRC
 	../pm_shared/pm_shared.cpp
 	../public/interface.cpp
 	../game_shared/shared_util.cpp
+	../game_shared/md5.cpp
 )
 
 set(GAME_HDR

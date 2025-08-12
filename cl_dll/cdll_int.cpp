@@ -304,6 +304,7 @@ void CL_DLLEXPORT HUD_Frame( double time )
 
 		if (world) {
 			world->curstate.scale = 1337;
+			gHUD.ParseServerInfo();
 			g_connection_phase = 1;
 		}
 	}
