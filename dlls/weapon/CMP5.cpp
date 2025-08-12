@@ -42,8 +42,6 @@ LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 )
 LINK_ENTITY_TO_CLASS( weapon_9mmar, CMP5 )
 
 // TODO: implement these weapons instead of remapping them
-LINK_ENTITY_TO_CLASS(weapon_uzi, CMP5)
-LINK_ENTITY_TO_CLASS(weapon_uziakimbo, CMP5)
 LINK_ENTITY_TO_CLASS(weapon_m16, CMP5)
 LINK_ENTITY_TO_CLASS(weapon_minigun, CMP5)
 

@@ -277,6 +277,8 @@ DECLARE_COMMAND(m_Ammo, PrevWeapon);
 
 #define HISTORY_DRAW_TIME	"5"
 
+void ResetCustomWeaponStates();
+
 int CHudAmmo::Init(void)
 {
 	gHUD.AddHudElem(this);
@@ -361,6 +363,8 @@ int CHudAmmo::VidInit(void)
 
 	giABWidth = 10 * nScale;
 	giABHeight = 2 * nScale;
+
+	ResetCustomWeaponStates();
 
 	return 1;
 }
@@ -804,7 +808,7 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 	}
 
 	parms.numEvents = READ_BYTE();
-	if (parms.numEvents > MAX_CUSTOM_WEAPON_EVENTS) {
+	if (parms.numEvents >= MAX_WC_EVENTS) {
 		return 0;
 	}
 	
@@ -828,8 +832,13 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 			evt.playSound.attn = READ_BYTE();
 			evt.playSound.pitchMin = READ_BYTE();
 			evt.playSound.pitchMax = READ_BYTE();
-		}
+
+			evt.playSound.numAdditionalSounds = READ_BYTE();
+			for (int k = 0; k < evt.playSound.numAdditionalSounds && k < MAX_WC_RANDOM_SELECTION; k++) {
+				evt.playSound.additionalSounds[k] = READ_SHORT();
+			}
 			break;
+		}
 		case WC_EVT_EJECT_SHELL:
 			evt.ejectShell.model = READ_SHORT();
 			evt.ejectShell.offsetForward = READ_SHORT();

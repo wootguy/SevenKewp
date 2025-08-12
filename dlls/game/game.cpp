@@ -134,8 +134,6 @@ bool g_clearInventoriesNextMap = true;
 StringMap g_itemNameRemap = {
 	{"weapon_9mmar", "weapon_9mmAR"},
 	{"weapon_mp5", "weapon_9mmAR"},
-	{"weapon_uzi", "weapon_9mmAR"},
-	{"weapon_uziakimbo", "weapon_9mmAR"},
 	{"weapon_m16", "weapon_9mmAR"},
 	{"weapon_minigun", "weapon_9mmAR"},
 	{"weapon_eagle", "weapon_357"},
@@ -145,7 +143,6 @@ StringMap g_itemNameRemap = {
 	{"ammo_9mmar", "ammo_9mmAR"},
 	{"ammo_mp5clip", "ammo_9mmAR"},
 	{"ammo_556clip", "ammo_9mmAR"},
-	{"ammo_uziclip", "ammo_9mmAR"},
 	{"ammo_glockclip", "ammo_9mmclip"},
 	{"ammo_9mm", "ammo_9mmclip"},
 	{"ammo_egonclip", "ammo_gaussclip"},
@@ -165,6 +162,8 @@ StringMap g_itemNameRemapHL = {
 	{"weapon_m249", "weapon_9mmAR"},
 	{"weapon_saw", "weapon_9mmAR"},
 	{"weapon_sniperrifle", "weapon_crossbow"},
+	{"weapon_uzi", "weapon_9mmAR"},
+	{"weapon_uziakimbo", "weapon_9mmAR"},
 };
 
 void AddPrecacheWeapon(std::string wepName) {

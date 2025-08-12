@@ -69,6 +69,7 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define	WEAPON_KNIFE			22
 #define	WEAPON_M249				23
 #define	WEAPON_M40A1			24
+#define	WEAPON_UZI				25
 
 #define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
 
@@ -91,6 +92,7 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define MP5_WEIGHT				15
 #define M249_WEIGHT				20
 #define M40A1_WEIGHT			20
+#define UZI_WEIGHT				15
 #define SHOTGUN_WEIGHT			15
 #define SHOCKRIFLE_WEIGHT		15
 #define CROSSBOW_WEIGHT			10

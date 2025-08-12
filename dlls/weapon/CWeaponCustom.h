@@ -5,6 +5,10 @@
 
 #define WC_SERVER_EVENT_QUEUE_SZ 32
 
+// number of seconds to delay replaying of events while the prediction code waits for a new state
+// from the server
+#define MAX_PREDICTION_WAIT 0.5f
+
 struct WcDelayEvent {
 	int eventIdx;
 	float fireTime;
@@ -25,7 +29,10 @@ public:
 	const char* animExt; // third person player animation set
 	const char* animExtZoom; // animation set used while zoomed
 	const char* wrongClientWeapon; // weapon given to players who don't have the correct client to use this one
-	float m_lastZoomToggle; // prevent flickering between zoom levels
+	
+	// for prediction code, don't spam events/toggles while waiting for the new server state
+	float m_lastZoomToggle;
+	float m_lastDeploy;
 
 	WcDelayEvent eventQueue[WC_SERVER_EVENT_QUEUE_SZ]; // for playing server-side events with a delay
 
@@ -54,7 +61,7 @@ public:
 	bool CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq);
 	Vector ProcessBulletEvent(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void ProcessKickbackEvent(WepEvt& evt, CBasePlayer* m_pPlayer);
-	void ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer);
+	int ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer); // returns sound index to play
 	void ProcessEvents(int trigger, int triggerArg);
 	void SendPredictionData(edict_t* target);
 

@@ -381,6 +381,7 @@ set(WEAPON_HDR
 	weapon/CKnife.h
 	weapon/CM249.h
 	weapon/CSniperRifle.h
+	weapon/CUzi.h
 	weapon/CWeaponCustom.h
 	weapon/weapons.h
 )
@@ -419,6 +420,7 @@ set(WEAPON_SRC
 	weapon/CKnife.cpp
 	weapon/CM249.cpp
 	weapon/CSniperRifle.cpp
+	weapon/CUzi.cpp
 	weapon/CWeaponCustom.cpp
 	weapon/combat.cpp
 )
@@ -437,6 +439,7 @@ set(AMMO_SRC
 	weapon/CMP5AmmoBox.cpp
 	weapon/CMP5AmmoClip.cpp
 	weapon/CMP5AmmoGrenade.cpp
+	weapon/CUziClip.cpp
 	weapon/CPythonAmmo.cpp
 	weapon/CRpgAmmo.cpp
 	weapon/CShotgunAmmo.cpp

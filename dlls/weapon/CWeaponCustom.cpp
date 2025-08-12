@@ -29,8 +29,13 @@ void CWeaponCustom::Precache() {
 void CWeaponCustom::PrecacheEvents() {
 	for (int i = 0; i < params.numEvents; i++) {
 		WepEvt& evt = params.events[i];
-		if (evt.evtType == WC_EVT_PLAY_SOUND && evt.playSound.sound) {
-			m_customWeaponSounds[evt.playSound.sound] = true;
+		if (evt.evtType == WC_EVT_PLAY_SOUND) {
+			if (evt.playSound.sound)
+				m_customWeaponSounds[evt.playSound.sound] = true;
+			for (int k = 0; k < evt.playSound.numAdditionalSounds; k++) {
+				if (evt.playSound.additionalSounds[k] && k < MAX_WC_RANDOM_SELECTION)
+					m_customWeaponSounds[evt.playSound.additionalSounds[k]] = true;
+			}
 		}
 	}
 
@@ -39,7 +44,7 @@ void CWeaponCustom::PrecacheEvents() {
 }
 
 void CWeaponCustom::AddEvent(WepEvt evt) {
-	if (params.numEvents >= MAX_CUSTOM_WEAPON_EVENTS) {
+	if (params.numEvents >= MAX_WC_EVENTS) {
 		ALERT(at_error, "Exceeded max custom weapon events for %s\n", STRING(pev->classname));
 		return;
 	}
@@ -75,9 +80,10 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 
 		return 0;
 	}
-#endif
 
 	SendPredictionData(pPlayer->edict());
+#endif
+	
 	return CBasePlayerWeapon::AddToPlayer(pPlayer);
 }
 
@@ -112,6 +118,7 @@ BOOL CWeaponCustom::Deploy()
 
 	m_flReloadEnd = 0;
 	m_bInReload = false;
+	int ret = TRUE;
 
 #ifdef CLIENT_DLL
 	if (!CanDeploy())
@@ -125,13 +132,25 @@ BOOL CWeaponCustom::Deploy()
 	m_pPlayer->m_flNextAttack = 0.5;
 	m_flReloadEnd = 0;
 	m_flTimeWeaponIdle = 1.0;
-	ProcessEvents(WC_TRIG_DEPLOY, 0);
-	return TRUE;
 #else
 	const char* animSet = GetAnimSet(false);
 
-	return DefaultDeploy(STRING(g_indexModels[params.vmodel]), m_defaultModelP, params.deployAnim, animSet, 1);
+	ret = DefaultDeploy(STRING(g_indexModels[params.vmodel]), m_defaultModelP, params.deployAnim, animSet, 1);
 #endif
+
+	if (gpGlobals->time - m_lastDeploy > MAX_PREDICTION_WAIT) {
+		ProcessEvents(WC_TRIG_DEPLOY, 0);
+	}
+
+	if (params.deployTime) {
+		float nextAttack = UTIL_WeaponTimeBase() + params.deployTime * 0.001f;
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = nextAttack;
+		m_flTimeWeaponIdle = nextAttack + 0.5f;
+	}
+
+	m_pPlayer->m_flNextAttack = 0; // allow thinking during deployment
+
+	return ret;
 }
 
 void CWeaponCustom::Holster(int skiplocal) {
@@ -474,7 +493,15 @@ void CWeaponCustom::ProcessKickbackEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - vecAiming * evt.kickback.pushForce;
 }
 
-void CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
+int CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
+	uint16_t idx = evt.playSound.sound;
+	if (evt.playSound.numAdditionalSounds) {
+		int rnd = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.playSound.numAdditionalSounds);
+		if (rnd > 0) {
+			idx = evt.playSound.additionalSounds[rnd - 1];
+		}
+	}
+
 #ifndef CLIENT_DLL
 	uint32_t messageTargets = GetOtherHlClients(m_pPlayer->edict());
 
@@ -493,7 +520,7 @@ void CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	}
 
 	// send sound to all non-SevenKewp clients because they don't know how to play the event
-	StartSound(m_pPlayer->edict(), evt.playSound.channel, INDEX_SOUND(evt.playSound.sound),
+	StartSound(m_pPlayer->edict(), evt.playSound.channel, INDEX_SOUND(idx),
 		evt.playSound.volume / 255.0f, evt.playSound.attn / 64.0f, SND_FL_PREDICTED, 100,
 		m_pPlayer->pev->origin, messageTargets);
 
@@ -501,6 +528,8 @@ void CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		PLAY_DISTANT_SOUND(m_pPlayer->edict(), evt.playSound.distantSound);
 	}
 #endif
+
+	return idx;
 }
 
 void CWeaponCustom::ProcessEvents(int trigger, int triggerArg) {
@@ -584,6 +613,12 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 			WRITE_BYTE(evt.playSound.attn); sentBytes += 1;
 			WRITE_BYTE(evt.playSound.pitchMin); sentBytes += 1;
 			WRITE_BYTE(evt.playSound.pitchMax); sentBytes += 1;
+
+			WRITE_BYTE(evt.playSound.numAdditionalSounds);
+			for (int i = 0; i < evt.playSound.numAdditionalSounds; i++) {
+				WRITE_SHORT(evt.playSound.additionalSounds[i]);
+			}
+
 			//WRITE_BYTE(evt.playSound.distantSound); sentBytes += 1; // not needed for prediction
 		}
 			break;
@@ -668,7 +703,7 @@ void CWeaponCustom::SendSoundMapping(CBasePlayer* target) {
 		const char* path = INDEX_SOUND(i);
 		int addSz = strlen(path) + 2;
 
-		if (chunkSz + addSz > 190) {
+		if (chunkSz + addSz > 186) {
 			// filled up a message buffer. Send it before continuing.
 			soundListBytes += SendSoundMappingChunk(target, chunk);
 			chunkSz = 1;
@@ -747,7 +782,7 @@ void CWeaponCustom::PlayEvent(int eventIdx) {
 		ProcessKickbackEvent(evt, m_pPlayer);
 		break;
 	case WC_EVT_PLAY_SOUND:
-		ProcessSoundEvent(evt, m_pPlayer);
+		vecDir.x = ProcessSoundEvent(evt, m_pPlayer) + 0.1f; // prevent rounding error
 		break;
 	case WC_EVT_TOGGLE_ZOOM:
 		ToggleZoom(evt.zoomToggle.zoomFov);

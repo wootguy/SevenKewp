@@ -7,7 +7,8 @@
 #define FLOAT_TO_SPREAD(val) (clamp((int)(val * 65535), 0, UINT16_MAX))
 #define SPREAD_TO_FLOAT(val) (val / 65535.0f)
 
-#define MAX_CUSTOM_WEAPON_EVENTS 64
+#define MAX_WC_EVENTS 64
+#define MAX_WC_RANDOM_SELECTION 8
 
 #define FL_WC_WEP_HAS_PRIMARY 1
 #define FL_WC_WEP_HAS_SECONDARY 2
@@ -83,6 +84,10 @@ struct WepEvt {
 			uint8_t pitchMin;
 			uint8_t pitchMax;
 
+			// add more sounds for random selection
+			uint8_t numAdditionalSounds;
+			uint16_t additionalSounds[MAX_WC_RANDOM_SELECTION];
+
 			uint8_t distantSound; // not for prediction
 		} playSound;
 
@@ -124,7 +129,7 @@ struct WepEvt {
 		} kickback;
 
 		struct {
-			uint8_t zoomFov; // Push force applied to player in opposite direction of aim
+			uint8_t zoomFov;
 		} zoomToggle;
 
 		struct {
@@ -165,6 +170,22 @@ struct WepEvt {
 		playSound.pitchMin = pitchMin;
 		playSound.pitchMax = pitchMax;
 		playSound.distantSound = distantSound;
+		return *this;
+	}
+
+	// add an additional sound to an existing PlaySound event, for random selection
+	WepEvt AddSound(int sound) {
+		if (evtType == WC_EVT_PLAY_SOUND) {
+			if (playSound.numAdditionalSounds < MAX_WC_RANDOM_SELECTION) {
+				playSound.additionalSounds[playSound.numAdditionalSounds++] = sound;
+			}
+			else {
+				ALERT(at_error, "AddSound exceeded max random sounds\n");
+			}
+		}
+		else {
+			ALERT(at_error, "AddSound can be called on PlaySound events only\n");
+		}
 		return *this;
 	}
 
@@ -282,5 +303,5 @@ struct CustomWeaponParams {
 	CustomWeaponShootOpts shootOpts[2]; // primary and secondary fire
 	
 	uint8_t numEvents;
-	WepEvt events[MAX_CUSTOM_WEAPON_EVENTS];
+	WepEvt events[MAX_WC_EVENTS];
 };

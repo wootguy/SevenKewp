@@ -1842,7 +1842,7 @@ void EV_FireCustom(event_args_t* args) {
 		return;
 	}
 
-	if (evtidx < 0 && evtidx >= MAX_CUSTOM_WEAPON_EVENTS)
+	if (evtidx < 0 && evtidx >= MAX_WC_EVENTS)
 		return;
 
 	WepEvt& evt = params->events[evtidx];
@@ -1874,7 +1874,8 @@ void EV_FireCustom(event_args_t* args) {
 
 	switch (evt.evtType) {
 	case WC_EVT_PLAY_SOUND: {
-		const char* soundPath = GetWeaponCustomSound(evt.playSound.sound);
+		int soundIdx = args->fparam1;
+		const char* soundPath = GetWeaponCustomSound(soundIdx);
 		float vol = evt.playSound.volume / 255.0f;
 		int pitch = gEngfuncs.pfnRandomLong(evt.playSound.pitchMin, evt.playSound.pitchMax);
 		gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, evt.playSound.channel, soundPath, vol,
