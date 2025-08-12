@@ -380,6 +380,7 @@ set(WEAPON_HDR
 	weapon/CWeaponInventory.h
 	weapon/CKnife.h
 	weapon/CM249.h
+	weapon/CSniperRifle.h
 	weapon/CWeaponCustom.h
 	weapon/weapons.h
 )
@@ -417,6 +418,7 @@ set(WEAPON_SRC
 	weapon/CWeaponInventory.cpp
 	weapon/CKnife.cpp
 	weapon/CM249.cpp
+	weapon/CSniperRifle.cpp
 	weapon/CWeaponCustom.cpp
 	weapon/combat.cpp
 )
@@ -427,6 +429,7 @@ set(AMMO_HDR
 set(AMMO_SRC
 	weapon/CBasePlayerAmmo.cpp
 	weapon/CAmmo556.cpp
+	weapon/CAmmo762.cpp
 	weapon/CCrossbowAmmo.cpp
 	weapon/CGaussAmmo.cpp
 	weapon/CGlockAmmo.cpp

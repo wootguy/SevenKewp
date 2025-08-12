@@ -107,6 +107,7 @@ public:
 	void Reset(void);
 	virtual const char* HudName() { return "CHudAmmo"; }
 	int DrawWList(float flTime);
+	void UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget);
 	int CurWeapon(int iState, int iId, int iClip);
 	int MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_CurWeaponX(const char *pszName, int iSize, void *pbuf);

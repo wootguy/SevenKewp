@@ -57,11 +57,11 @@ void CM249::Precache()
 	primary.cooldown = 67;
 
 	float spread = VECTOR_CONE_6DEGREES.x;
-	int bulletf = FL_WC_BULLETS_MUZZLE_FLASH | FL_WC_BULLETS_DYNAMIC_SPREAD;
+	int bulletf = FL_WC_BULLETS_DYNAMIC_SPREAD;
 	int btype = BULLET_PLAYER_9MM;
 
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).WepAnim(M249_SHOOT1, M249_SHOOT1 + 2));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556));
+	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556, WC_AIVOL_LOUD));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PunchRandom(2, 1));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Kickback(35));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Bullets(1, gSkillData.sk_plr_556_bullet, spread, spread, btype, 1, bulletf));

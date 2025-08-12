@@ -367,6 +367,7 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_inventory");
 	UTIL_RegisterWeapon("weapon_knife");
 	UTIL_RegisterWeapon("weapon_m249");
+	UTIL_RegisterWeapon("weapon_sniperrifle");
 	CWeaponCustom::PrecacheEvent();
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 

@@ -26,4 +26,3 @@ class CCrossbowAmmo : public CBasePlayerAmmo
 	}
 };
 LINK_ENTITY_TO_CLASS( ammo_crossbow, CCrossbowAmmo )
-LINK_ENTITY_TO_CLASS( ammo_762, CCrossbowAmmo )

@@ -1924,12 +1924,14 @@ void EV_FireCustom(event_args_t* args) {
 		EV_HLDM_FireBullets(idx, forward, right, up, evt.bullets.count, vecSrc, forward, 8192,
 			evt.bullets.btype, evt.bullets.tracerFreq, &tracerCount[idx - 1], args->fparam1, args->fparam2);
 
-		if (EV_IsLocal(idx) && evt.bullets.flags & FL_WC_BULLETS_MUZZLE_FLASH)
+		if (EV_IsLocal(idx) && evt.bullets.flashSz)
 			EV_MuzzleFlash();
 		break;
 	case WC_EVT_KICKBACK:
 		g_irunninggausspred = 1;
 		g_flApplyVel = evt.kickback.pushForce / 5.0f;
+		break;
+	case WC_EVT_TOGGLE_ZOOM:
 		break;
 	default:
 		gEngfuncs.Con_Printf("Bad custom weapon event type playback %d\n", (int)evt.evtType);

@@ -4369,7 +4369,9 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		}
 		if (IsSevenKewpClient()) {
 			GiveNamedItem("weapon_m249");
+			GiveNamedItem("weapon_sniperrifle");
 			GiveNamedItem("ammo_556");
+			GiveNamedItem("ammo_762");
 		}
 		gEvilImpulse101 = FALSE;
 		break;
@@ -6374,26 +6376,7 @@ void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarNam
 
 void CBasePlayer::QueryClientTypeFinished() {
 	if (IsSevenKewpClient()) {
-		// send over the sound index mapping
-		int soundCount = 0;
-		for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
-			if (g_customWeaponSounds[i]) {
-				soundCount++;
-			}
-		}
-
-		int soundListBytes = 0;
-		MESSAGE_BEGIN(MSG_ONE, gmsgSoundIdx, NULL, pev);
-		WRITE_SHORT(soundCount); soundListBytes += 1;
-		for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
-			if (g_customWeaponSounds[i]) {
-				const char* path = INDEX_SOUND(i);
-				WRITE_SHORT(i); soundListBytes += 2;
-				WRITE_STRING(path); soundListBytes += strlen(path) + 1;
-			}
-		}
-		MESSAGE_END();
-		ALERT(at_console, "Sent %d sound list bytes\n", soundListBytes);
+		CWeaponCustom::SendSoundMapping(this);
 
 		// activate fog
 		if (g_fog_enabled) {

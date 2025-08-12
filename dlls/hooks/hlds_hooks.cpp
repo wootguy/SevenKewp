@@ -566,7 +566,7 @@ void ServerDeactivate( void )
 	memset(g_indexModels, 0, sizeof(g_indexModels));
 	memset(g_indexSounds, 0, sizeof(g_indexSounds));
 	memset(g_hudMsgHistory, 0, sizeof(g_hudMsgHistory));
-	memset(g_customWeaponSounds, 0, sizeof(g_customWeaponSounds));
+	memset(CWeaponCustom::m_customWeaponSounds, 0, sizeof(CWeaponCustom::m_customWeaponSounds));
 
 	// in case the next map doesn't configure a sky or light_environment
 	CVAR_SET_STRING("sv_skyname", "");

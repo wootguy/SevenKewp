@@ -230,7 +230,6 @@ enum crossbow_e {
 };
 
 LINK_ENTITY_TO_CLASS( weapon_crossbow, CCrossbow )
-LINK_ENTITY_TO_CLASS(weapon_sniperrifle, CCrossbow) // TODO: implement
 
 void CCrossbow::Spawn( )
 {

@@ -1118,7 +1118,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 
 			if (iDamage)
 			{
-				pEntity->TraceAttack(pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? DMG_ALWAYSGIB : DMG_NEVERGIB));
+				pEntity->TraceAttack(pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? 0 : DMG_NEVERGIB));
 				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd, sevenkewpEvent ? edict() : NULL);
 			}
 			else switch (iBulletType)

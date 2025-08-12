@@ -5,6 +5,7 @@
 #include "eng_wrappers.h"
 #define CLALERT(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
 extern int g_runfuncs;
+void UpdateZoomCrosshair(int id, bool zoom);
 #else
 #define CLALERT(fmt, ...)
 #include "game.h"
@@ -13,8 +14,7 @@ extern int g_runfuncs;
 int CWeaponCustom::m_usCustom = 0;
 char CWeaponCustom::m_soundPaths[MAX_PRECACHE][256];
 int CWeaponCustom::m_tracerCount[32];
-
-bool g_customWeaponSounds[MAX_PRECACHE_SOUND];
+bool CWeaponCustom::m_customWeaponSounds[MAX_PRECACHE_SOUND];
 
 void CWeaponCustom::Spawn() {
 	Precache();
@@ -29,8 +29,9 @@ void CWeaponCustom::Precache() {
 void CWeaponCustom::PrecacheEvents() {
 	for (int i = 0; i < params.numEvents; i++) {
 		WepEvt& evt = params.events[i];
-		if (evt.evtType == WC_EVT_PLAY_SOUND && evt.playSound.sound)
-			g_customWeaponSounds[evt.playSound.sound] = true;
+		if (evt.evtType == WC_EVT_PLAY_SOUND && evt.playSound.sound) {
+			m_customWeaponSounds[evt.playSound.sound] = true;
+		}
 	}
 
 	if (wrongClientWeapon)
@@ -80,6 +81,29 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 	return CBasePlayerWeapon::AddToPlayer(pPlayer);
 }
 
+const char* CWeaponCustom::GetAnimSet(bool zoomed) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return FALSE;
+
+	const char* validAnimExt = zoomed ? animExtZoom : animExt;
+
+	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE_COOP) {
+		// half-life models are missing animations for some weapons, so fallback to valid HL anims
+		if (!strcmp(validAnimExt, "saw")) {
+			validAnimExt = "mp5";
+		}
+		else if (!strcmp(validAnimExt, "sniper")) {
+			validAnimExt = "shotgun";
+		}
+		else if (!strcmp(validAnimExt, "sniperscope")) {
+			validAnimExt = "onehanded";
+		}
+	}
+
+	return validAnimExt;
+}
+
 BOOL CWeaponCustom::Deploy()
 {
 	CBasePlayer* m_pPlayer = GetPlayer();
@@ -104,17 +128,15 @@ BOOL CWeaponCustom::Deploy()
 	ProcessEvents(WC_TRIG_DEPLOY, 0);
 	return TRUE;
 #else
-	const char* validAnimExt = animExt;
+	const char* animSet = GetAnimSet(false);
 
-	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE_COOP) {
-		// half-life models are missing animations for some weapons, so fallback to valid HL anims
-		if (!strcmp(animExt, "saw")) {
-			validAnimExt = "mp5";
-		}
-	}
-
-	return DefaultDeploy(STRING(g_indexModels[params.vmodel]), m_defaultModelP, params.deployAnim, validAnimExt, 1);
+	return DefaultDeploy(STRING(g_indexModels[params.vmodel]), m_defaultModelP, params.deployAnim, animSet, 1);
 #endif
+}
+
+void CWeaponCustom::Holster(int skiplocal) {
+	CBasePlayerWeapon::Holster();
+	CancelZoom();
 }
 
 void CWeaponCustom::Reload() {
@@ -133,22 +155,47 @@ void CWeaponCustom::Reload() {
 	if (j == 0)
 		return;
 
+	if (m_flNextPrimaryAttack > 0)
+		return;
+
 	if (gpGlobals->time - m_flReloadEnd < 0.350f) {
 		return; // will prevent auto-reload loops for players with less than about 250 ping
 	}
 
-	SendWeaponAnim(params.reloadStage[0].anim, 1, pev->body);
+#ifdef CLIENT_DLL
+	if (!g_runfuncs)
+		return;
+#endif
+
+	WeaponCustomReload* reloadStage = &params.reloadStage[0];
+
+	// in normal reload mode, the second reload stage is for empty reloads
+	if (m_iClip == 0 && params.reloadStage[1].time) {
+		reloadStage = &params.reloadStage[1];
+	}
+
+	CancelZoom();
+
+	SendWeaponAnim(reloadStage->anim, 1, pev->body);
 
 	//CLALERT("Start Reload %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 
 	m_bInReload = true;
 
+	int totalReloadTime = reloadStage->time;
+	
+	float nextAttack = totalReloadTime * 0.001f;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = nextAttack;
+	m_pPlayer->SetAnimation(PLAYER_RELOAD, totalReloadTime*0.001f);
+
 	ProcessEvents(WC_TRIG_RELOAD, 0);
 
-	int totalReloadTime = params.reloadStage[0].time;
-	
-	Cooldown(totalReloadTime);
-	m_pPlayer->SetAnimation(PLAYER_RELOAD, totalReloadTime*0.001f);
+	if (m_iClip == 0) {
+		ProcessEvents(WC_TRIG_RELOAD_EMPTY, 0);
+	}
+	else {
+		ProcessEvents(WC_TRIG_RELOAD_NOT_EMPTY, 0);
+	}
 
 	m_pPlayer->m_flNextAttack = 0; // keep calling post frame for complex reloads
 	m_flReloadStart = gpGlobals->time;
@@ -226,6 +273,10 @@ void CWeaponCustom::PrimaryAttack() {
 			else {
 				ProcessEvents(WC_TRIG_SHOOT_PRIMARY_ODD, 0);
 			}
+
+			if (m_iClip != 0) {
+				ProcessEvents(WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY, 0);
+			}
 		}
 	}
 }
@@ -244,50 +295,99 @@ bool CWeaponCustom::CommonAttack(int attackIdx) {
 	if (!m_pPlayer)
 		return false;
 
+	bool isNormalAttack = !(opts.flags & FL_WC_SHOOT_NO_ATTACK);
+
 	int clipLeft = m_iClip;
 
 	if (attackIdx == 1) {
 		clipLeft = m_iSecondaryAmmoType >= 0 ? m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] : 0;
 	}
 
-	if (clipLeft < opts.ammoCost) {
-		if (!m_fInReload)
-		{
-			PlayEmptySound();
-			m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
+	if (isNormalAttack) {
+		if (clipLeft < opts.ammoCost) {
+			if (!m_fInReload) {
+				Cooldown(attackIdx, 150);
+				PlayEmptySound();
+			}
+			return false;
 		}
 
-		return false;
-	}
-
-	if (m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD && !(opts.flags & FL_WC_SHOOT_UNDERWATER))
-	{
-		PlayEmptySound();
-		m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.15;
-		return false;
+		if (m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD && !(opts.flags & FL_WC_SHOOT_UNDERWATER)) {
+			Cooldown(attackIdx, 150);
+			PlayEmptySound();
+			return false;
+		}
 	}
 
 	m_iClip -= opts.ammoCost;
-	m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
-	m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 
-	if (clipLeft <= 0)
-	{
-		if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
-		{
+	int ammoIdx = attackIdx == 0 ? m_iPrimaryAmmoType : m_iSecondaryAmmoType;
+
+	if (isNormalAttack) {
+		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+
+		if (clipLeft <= 0 && ammoIdx >= 0 && m_pPlayer->m_rgAmmo[ammoIdx] <= 0) {
 			m_pPlayer->SetSuitUpdate("!HEV_AMO0", SUIT_REPEAT_OK, 0);
 		}
 	}
 
-	Cooldown(opts.cooldown);
+	Cooldown(attackIdx);
 
 	return true;
 }
 
-void CWeaponCustom::Cooldown(int millis) {
+void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
+	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+
+	int millis = overrideMillis != -1 ? overrideMillis : opts.cooldown;
 	float nextAttack = UTIL_WeaponTimeBase() + millis * 0.001f;
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = nextAttack;
-	m_flTimeWeaponIdle = nextAttack + 1.0f;
+	
+	if (params.flags & FL_WC_WEP_UNLINK_COOLDOWNS) {
+		if (attackIdx == 0) {
+			m_flNextPrimaryAttack = nextAttack;
+		}
+		else {
+			m_flNextSecondaryAttack = nextAttack;
+		}
+	}
+	else {
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = nextAttack;
+	}
+
+	if (!(opts.flags & FL_WC_SHOOT_NO_ATTACK))
+		m_flTimeWeaponIdle = nextAttack + 1.0f;
+}
+
+void CWeaponCustom::ToggleZoom(int zoomFov) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	if (m_pPlayer->m_iFOV) {
+		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
+	}
+	else {
+		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = zoomFov;
+	}
+
+#ifdef CLIENT_DLL
+	UpdateZoomCrosshair(m_iId, m_pPlayer->m_iFOV != 0);
+#else
+	const char* animset = GetAnimSet(m_pPlayer->m_iFOV != 0);
+	strcpy_safe(m_pPlayer->m_szAnimExtention, animset, sizeof(m_pPlayer->m_szAnimExtention));
+#endif
+
+	m_lastZoomToggle = gpGlobals->time;
+}
+
+void CWeaponCustom::CancelZoom() {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	if (m_pPlayer->m_iFOV) {
+		ToggleZoom(0);
+	}
 }
 
 bool CWeaponCustom::CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq)
@@ -320,9 +420,22 @@ Vector CWeaponCustom::ProcessBulletEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		}
 	}
 
-	if (evt.bullets.flags & FL_WC_BULLETS_MUZZLE_FLASH) {
-		m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
+	if (evt.bullets.flashSz) {
 		m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
+
+		switch (evt.bullets.flashSz) {
+		case WC_FLASH_DIM:
+			m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
+			break;
+		case WC_FLASH_NORMAL:
+			m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
+			break;
+		case WC_FLASH_BRIGHT:
+			m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
+			break;
+		default:
+			break;
+		}
 	}
 
 	Vector vecSrc = m_pPlayer->GetGunPosition();
@@ -365,6 +478,20 @@ void CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 #ifndef CLIENT_DLL
 	uint32_t messageTargets = GetOtherHlClients(m_pPlayer->edict());
 
+	switch (evt.playSound.aiVol) {
+	case WC_AIVOL_QUIET:
+		m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
+		break;
+	case WC_AIVOL_NORMAL:
+		m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
+		break;
+	case WC_AIVOL_LOUD:
+		m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
+		break;
+	default:
+		break;
+	}
+
 	// send sound to all non-SevenKewp clients because they don't know how to play the event
 	StartSound(m_pPlayer->edict(), evt.playSound.channel, INDEX_SOUND(evt.playSound.sound),
 		evt.playSound.volume / 255.0f, evt.playSound.attn / 64.0f, SND_FL_PREDICTED, 100,
@@ -377,6 +504,11 @@ void CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 }
 
 void CWeaponCustom::ProcessEvents(int trigger, int triggerArg) {
+#ifdef CLIENT_DLL
+	if (!g_runfuncs)
+		return;
+#endif
+
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
@@ -415,7 +547,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		WRITE_BYTE(reload.anim); sentBytes += 1;
 		WRITE_SHORT(reload.time); sentBytes += 2;
 
-		if (!(params.flags & FL_WC_WEP_SHOTGUN_RELOAD))
+		if (k == 2 && !(params.flags & FL_WC_WEP_SHOTGUN_RELOAD))
 			break;
 	}
 
@@ -445,14 +577,15 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		WRITE_LONG(packedHeader); sentBytes += 4;
 
 		switch (evt.evtType) {
-		case WC_EVT_PLAY_SOUND:
-			WRITE_SHORT(evt.playSound.sound); sentBytes += 2;
-			WRITE_BYTE(evt.playSound.channel); sentBytes += 1;
+		case WC_EVT_PLAY_SOUND: {
+			uint16_t packedFlags = evt.playSound.sound << 5 | evt.playSound.channel << 2 | evt.playSound.aiVol;
+			WRITE_SHORT(packedFlags); sentBytes += 2;
 			WRITE_BYTE(evt.playSound.volume); sentBytes += 1;
 			WRITE_BYTE(evt.playSound.attn); sentBytes += 1;
 			WRITE_BYTE(evt.playSound.pitchMin); sentBytes += 1;
 			WRITE_BYTE(evt.playSound.pitchMax); sentBytes += 1;
 			//WRITE_BYTE(evt.playSound.distantSound); sentBytes += 1; // not needed for prediction
+		}
 			break;
 		case WC_EVT_EJECT_SHELL:
 			WRITE_SHORT(evt.ejectShell.model); sentBytes += 2;
@@ -473,17 +606,27 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 			WRITE_BYTE(evt.anim.animMin); sentBytes += 1;
 			WRITE_BYTE(evt.anim.animMax); sentBytes += 1;
 			break;
-		case WC_EVT_BULLETS:
+		case WC_EVT_BULLETS: {
 			WRITE_BYTE(evt.bullets.count); sentBytes += 1;
 			//WRITE_SHORT(evt.bullets.damage); sentBytes += 2; // not needed for prediction
 			WRITE_SHORT(evt.bullets.spreadX); sentBytes += 2;
 			WRITE_SHORT(evt.bullets.spreadY); sentBytes += 2;
 			WRITE_BYTE(evt.bullets.btype); sentBytes += 1;
 			WRITE_BYTE(evt.bullets.tracerFreq); sentBytes += 1;
-			WRITE_BYTE(evt.bullets.flags); sentBytes += 1;
+
+			uint8_t packedFlags = (evt.bullets.flags << 4) | evt.bullets.flashSz;
+			WRITE_BYTE(packedFlags); sentBytes += 1;
+		}
 			break;
 		case WC_EVT_KICKBACK:
 			WRITE_SHORT(evt.kickback.pushForce); sentBytes += 2;
+			break;
+		case WC_EVT_TOGGLE_ZOOM:
+			WRITE_BYTE(evt.zoomToggle.zoomFov); sentBytes += 1;
+			break;
+		case WC_EVT_COOLDOWN:
+			WRITE_SHORT(evt.cooldown.millis); sentBytes += 2;
+			WRITE_BYTE(evt.cooldown.targets); sentBytes += 1;
 			break;
 		default:
 			ALERT(at_error, "Invalid custom weapon event type %d\n", evt.evtType);
@@ -493,6 +636,59 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 	MESSAGE_END();
 
 	ALERT(at_console, "Sent %d prediction bytes for %s\n", sentBytes, STRING(pev->classname));
+#endif
+}
+
+int CWeaponCustom::SendSoundMappingChunk(CBasePlayer* target, std::vector<SoundMapping>& chunk) {
+	int sentBytes = 0;
+#ifndef CLIENT_DLL
+	MESSAGE_BEGIN(MSG_ONE, gmsgSoundIdx, NULL, target->pev);
+	WRITE_BYTE(chunk.size()); sentBytes += 1;
+	for (int k = 0; k < chunk.size(); k++) {
+		WRITE_SHORT(chunk[k].idx); sentBytes += 2;
+		WRITE_STRING(chunk[k].path); sentBytes += strlen(chunk[k].path) + 1;
+	}
+	MESSAGE_END();
+#endif
+	return sentBytes;
+}
+
+void CWeaponCustom::SendSoundMapping(CBasePlayer* target) {
+	// send over the sound index mapping
+#ifndef CLIENT_DLL
+	std::vector<SoundMapping> chunk;
+	int soundListBytes = 0;
+	int soundCount = 0;
+	int chunkSz = 1;
+	int chunkCount = 0;
+	for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
+		if (!m_customWeaponSounds[i]) {
+			continue;
+		}
+		const char* path = INDEX_SOUND(i);
+		int addSz = strlen(path) + 2;
+
+		if (chunkSz + addSz > 190) {
+			// filled up a message buffer. Send it before continuing.
+			soundListBytes += SendSoundMappingChunk(target, chunk);
+			chunkSz = 1;
+			chunkCount++;
+			chunk.clear();
+		}
+		chunkSz += addSz;
+
+		SoundMapping mapping;
+		mapping.idx = i;
+		mapping.path = path;
+		chunk.push_back(mapping);
+	}
+
+	if (chunk.size()) {
+		soundListBytes += SendSoundMappingChunk(target, chunk);
+		chunkCount++;
+	}
+
+	ALERT(at_console, "Sent %d sound list bytes in %d chunks\n", soundListBytes, chunkCount);
 #endif
 }
 
@@ -553,6 +749,21 @@ void CWeaponCustom::PlayEvent(int eventIdx) {
 	case WC_EVT_PLAY_SOUND:
 		ProcessSoundEvent(evt, m_pPlayer);
 		break;
+	case WC_EVT_TOGGLE_ZOOM:
+		ToggleZoom(evt.zoomToggle.zoomFov);
+	case WC_EVT_COOLDOWN: {
+		float nextAction = UTIL_WeaponTimeBase() + evt.cooldown.millis * 0.001f;
+		if (evt.cooldown.targets & FL_WC_COOLDOWN_PRIMARY) {
+			m_flNextPrimaryAttack = nextAction;
+		}
+		if (evt.cooldown.targets & FL_WC_COOLDOWN_SECONDARY) {
+			m_flNextSecondaryAttack = nextAction;
+		}
+		if (evt.cooldown.targets & FL_WC_COOLDOWN_IDLE) {
+			m_flTimeWeaponIdle = nextAction;
+		}
+		break;
+	}
 	}
 
 	//ALERT(at_console, "Play event %d\n", eventIdx);

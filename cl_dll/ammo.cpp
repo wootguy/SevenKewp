@@ -598,6 +598,36 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 //  numbers match a real ammo type.
 //
 
+void CHudAmmo::UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget) {
+	if (id < 1)
+		return;
+
+	WEAPON* pWeapon = gWR.GetWeapon(id);
+
+	if (!pWeapon)
+		return;
+
+	if (!zoom)
+	{ // normal crosshairs
+		if (autoaimOnTarget && m_pWeapon->hAutoaim)
+			SetCrosshair(m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 255, 255);
+		else
+			SetCrosshair(m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255);
+	}
+	else
+	{ // zoomed crosshairs
+		if (autoaimOnTarget && m_pWeapon->hZoomedAutoaim)
+			SetCrosshair(m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 255, 255);
+		else
+			SetCrosshair(m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255);
+	}
+}
+
+// for updating in prediction code
+void UpdateZoomCrosshair(int id, bool zoom) {
+	gHUD.m_Ammo.UpdateZoomCrosshair(id, zoom, true);
+}
+
 int CHudAmmo::CurWeapon(int iState, int iId, int iClip) {
 	static wrect_t nullrc;
 	int fOnTarget = FALSE;
@@ -642,21 +672,7 @@ int CHudAmmo::CurWeapon(int iState, int iId, int iClip) {
 
 	m_pWeapon = pWeapon;
 
-	if ( gHUD.m_iFOV >= 90 )
-	{ // normal crosshairs
-		if (fOnTarget && m_pWeapon->hAutoaim)
-			SetCrosshair(m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 255, 255);
-		else
-			SetCrosshair(m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255);
-	}
-	else
-	{ // zoomed crosshairs
-		if (fOnTarget && m_pWeapon->hZoomedAutoaim)
-			SetCrosshair(m_pWeapon->hZoomedAutoaim, m_pWeapon->rcZoomedAutoaim, 255, 255, 255);
-		else
-			SetCrosshair(m_pWeapon->hZoomedCrosshair, m_pWeapon->rcZoomedCrosshair, 255, 255, 255);
-
-	}
+	UpdateZoomCrosshair(iId, gHUD.m_iFOV < 90, fOnTarget);
 
 	m_fFade = 200.0f; //!!!
 	m_iFlags |= HUD_ACTIVE;
@@ -764,7 +780,7 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		reload.anim = READ_BYTE();
 		reload.time = READ_SHORT();
 
-		if (!(parms.flags & FL_WC_WEP_SHOTGUN_RELOAD))
+		if (k == 2 && !(parms.flags & FL_WC_WEP_SHOTGUN_RELOAD))
 			break;
 	}
 
@@ -803,13 +819,16 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		evt.delay = packedHeader & 0x3FFF;
 
 		switch (evt.evtType) {
-		case WC_EVT_PLAY_SOUND:
-			evt.playSound.sound = READ_SHORT();
-			evt.playSound.channel = READ_BYTE();
+		case WC_EVT_PLAY_SOUND: {
+			uint16_t packedFlags = READ_SHORT();
+			evt.playSound.sound = packedFlags >> 5;
+			evt.playSound.channel = (packedFlags >> 2) & 0x7;
+			evt.playSound.aiVol = (packedFlags >> 0) & 0x3;
 			evt.playSound.volume = READ_BYTE();
 			evt.playSound.attn = READ_BYTE();
 			evt.playSound.pitchMin = READ_BYTE();
 			evt.playSound.pitchMax = READ_BYTE();
+		}
 			break;
 		case WC_EVT_EJECT_SHELL:
 			evt.ejectShell.model = READ_SHORT();
@@ -830,17 +849,28 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 			evt.anim.animMin = READ_BYTE();
 			evt.anim.animMax = READ_BYTE();
 			break;
-		case WC_EVT_BULLETS:
+		case WC_EVT_BULLETS: {
 			evt.bullets.count = READ_BYTE();
 			//evt.bullets.damage = READ_SHORT();
 			evt.bullets.spreadX = READ_SHORT();
 			evt.bullets.spreadY = READ_SHORT();
 			evt.bullets.btype = READ_BYTE();
 			evt.bullets.tracerFreq = READ_BYTE();
-			evt.bullets.flags = READ_BYTE();
+			
+			uint8_t packedFlags = READ_BYTE();
+			evt.bullets.flags = packedFlags >> 4;
+			evt.bullets.flashSz = packedFlags & 0xf;
 			break;
+		}
 		case WC_EVT_KICKBACK:
 			evt.kickback.pushForce = READ_SHORT();
+			break;
+		case WC_EVT_TOGGLE_ZOOM:
+			evt.zoomToggle.zoomFov = READ_BYTE();
+			break;
+		case WC_EVT_COOLDOWN:
+			evt.cooldown.millis = READ_SHORT();
+			evt.cooldown.targets = READ_BYTE();
 			break;
 		default:
 			gEngfuncs.Con_Printf("Bad custom weapon event type read %d\n", (int)evt.evtType);
@@ -856,7 +886,7 @@ void AddWeaponCustomSoundMapping(int idx, const char* path);
 int CHudAmmo::MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf) {
 	BEGIN_READ(pbuf, iSize);
 
-	int soundCount = READ_SHORT();
+	int soundCount = READ_BYTE();
 
 	for (int i = 0; i < soundCount; i++) {
 		int idx = READ_SHORT();
