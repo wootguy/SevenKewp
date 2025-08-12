@@ -341,7 +341,7 @@ void CVoiceStatus::CreateEntities()
 	if(!m_VoiceHeadModel)
 		return;
 
-	cl_entity_t *localPlayer = gEngfuncs.GetLocalPlayer();
+	cl_entity_t *localPlayer = GetLocalPlayer();
 
 	int iOutModel = 0;
 	for(int i=0; i < VOICE_MAX_PLAYERS; i++)
@@ -405,7 +405,7 @@ void CVoiceStatus::UpdateSpeakerStatus( int entindex, qboolean bTalking )
 		gEngfuncs.pfnConsolePrint( msg );
 	}
 
-	int iLocalPlayerIndex = gEngfuncs.GetLocalPlayer()->index;
+	int iLocalPlayerIndex = GetLocalPlayer()->index;
 
 	// Is it the local player talking?
 	if ( entindex == -1 )

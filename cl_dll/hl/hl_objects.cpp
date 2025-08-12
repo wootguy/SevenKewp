@@ -38,7 +38,7 @@ void UpdateBeams ( void )
 	vec3_t forward, vecSrc, vecEnd, origin, angles, right, up;
 	vec3_t view_ofs;
 	pmtrace_t tr;
-	cl_entity_t *pthisplayer = gEngfuncs.GetLocalPlayer();
+	cl_entity_t *pthisplayer = GetLocalPlayer();
 	int idx = pthisplayer->index;
 		
 	// Get our exact viewangles from engine

@@ -433,7 +433,7 @@ void V_CalcIntermissionRefdef ( struct ref_params_s *pparams )
 	float		old;
 
 	// ent is the player model ( visible when out of body )
-	ent = gEngfuncs.GetLocalPlayer();
+	ent = GetLocalPlayer();
 	
 	// view is the weapon model (only visible from inside body )
 	view = gEngfuncs.GetViewModel();
@@ -507,7 +507,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	else
 	{
 		// ent is the player model ( visible when out of body )
-		ent = gEngfuncs.GetLocalPlayer();
+		ent = GetLocalPlayer();
 	}
 	
 	// view is the weapon model (only visible from inside body )

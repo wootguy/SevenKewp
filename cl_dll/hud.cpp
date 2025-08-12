@@ -37,7 +37,6 @@ extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player in
 #define HLCOOP_VERSION "1"
 
 extern int mouse_uncenter_phase;
-bool g_map_loaded;
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
 {
@@ -474,7 +473,7 @@ void CHud :: VidInit( void )
 
 	if (mouse_uncenter_phase == 3) // reset mouse uncentering logic for new server connection
 		mouse_uncenter_phase = 2;
-	g_map_loaded = false;
+	gHUD.m_is_map_loaded = false;
 
 	// this is probably going to annoy someone but HL only binds up to slot 5 which breaks weapon selection and big menus.
 	EngineClientCmd("bind 1 slot1\n");

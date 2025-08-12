@@ -242,7 +242,6 @@ returns 1 if anything has been changed, 0 otherwise.
 */
 
 extern int mouse_uncenter_phase;
-extern bool g_map_loaded;
 void UndoOrCaptureMouse();
 
 int CL_DLLEXPORT HUD_UpdateClientData(client_data_t *pcldata, float flTime )
@@ -251,7 +250,7 @@ int CL_DLLEXPORT HUD_UpdateClientData(client_data_t *pcldata, float flTime )
 	if (mouse_uncenter_phase == 2) {
 		UndoOrCaptureMouse();
 	}
-	g_map_loaded = true;
+	gHUD.m_is_map_loaded = true;
 
 	IN_Commands();
 
@@ -314,6 +313,13 @@ void CL_DLLEXPORT HUD_Frame( double time )
 		if (world && world->curstate.scale != 1337) {
 			gHUD.WorldInit();
 			g_connection_phase = 2;
+		}
+	} else if (g_connection_phase == 2) {
+		cl_entity_t* world = gEngfuncs.GetEntityByIndex(0);
+		if (!world) {
+			// disconnected or retried connection
+			g_connection_phase = 0;
+			gHUD.m_is_map_loaded = false;
 		}
 	}
 }

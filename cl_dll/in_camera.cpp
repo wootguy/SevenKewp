@@ -22,7 +22,6 @@
 #include "event_api.h"
 
 extern cl_enginefunc_t gEngfuncs;
-extern bool g_map_loaded;
 extern SDL_Window* g_sdl_window;
 
 extern cvar_t* cl_pitchdown;
@@ -77,10 +76,10 @@ float normalizeRangef(const float value, const float start, const float end)
 
 void CL_DLLEXPORT CAM_Think( void )
 {
-	if( !cam_thirdperson || !g_map_loaded )
+	if( !cam_thirdperson || !gHUD.m_is_map_loaded)
 		return;
 
-	cl_entity_t* player = gEngfuncs.GetLocalPlayer();
+	cl_entity_t* player = GetLocalPlayer();
 	float now = gEngfuncs.GetClientTime();
 
 	Vector viewangles, view_ofs;
@@ -225,7 +224,7 @@ void CAM_CamButtonRelease(void)
 void CAM_ToThirdPerson(void) { 
 	vec3_t viewangles;
 
-	if ( gEngfuncs.GetMaxClients() > 1 && gHUD.IsSevenKewpServer())
+	if ( gEngfuncs.GetMaxClients() > 1 && !gHUD.IsSevenKewpServer())
 	{
 		// no thirdperson in multiplayer.
 		return;
@@ -266,7 +265,7 @@ void CAM_Init( void )
 int CL_DLLEXPORT CL_IsThirdPerson( void ) {
 //	RecClCL_IsThirdPerson();
 
-	return (cam_thirdperson ? 1 : 0) || (g_iUser1 && (g_iUser2 == gEngfuncs.GetLocalPlayer()->index) );
+	return (cam_thirdperson ? 1 : 0) || (g_iUser1 && (g_iUser2 == GetLocalPlayer()->index) );
 }
 
 void CL_DLLEXPORT CL_CameraOffset( float *ofs ) {

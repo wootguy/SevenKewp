@@ -143,7 +143,7 @@ void CHudStatusIcons::EnableIcon( const char *pszIconName, unsigned char red, un
 	// Hack: Play Timer sound when a grenade icon is played (in 0.8 seconds)
 	if ( strstr(m_IconList[i].szSpriteName, "grenade") )
 	{
-		cl_entity_t *pthisplayer = gEngfuncs.GetLocalPlayer();
+		cl_entity_t *pthisplayer = GetLocalPlayer();
 		gEngfuncs.pEventAPI->EV_PlaySound( pthisplayer->index, pthisplayer->origin, CHAN_STATIC, "weapons/timer.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
 	}
 }

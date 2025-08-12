@@ -1301,7 +1301,7 @@ int CStudioModelRenderer::StudioDrawModel( int flags )
 			// we're not spectating, this is OUR view model
 			else 
 			{
-				pTarget = gEngfuncs.GetLocalPlayer();
+				pTarget = GetLocalPlayer();
 			}
 
 			if ( pTarget && pTarget->curstate.renderfx == kRenderFxGlowShell )

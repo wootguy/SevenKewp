@@ -1,8 +1,8 @@
 #pragma once
 #include "CWeaponCustom.h"
 
-#define M249_DEFAULT_GIVE 100
-#define M249_MAX_CLIP 100
+#define M249_DEFAULT_GIVE 200
+#define M249_MAX_CLIP 200
 
 enum M249Anim
 {

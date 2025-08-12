@@ -1239,7 +1239,7 @@ bool CHudSpectator::IsActivePlayer(cl_entity_t * ent)
 	return ( ent && 
 			 ent->player && 
 			 ent->curstate.solid != SOLID_NOT &&
-			 ent != gEngfuncs.GetLocalPlayer() &&
+			 ent != GetLocalPlayer() &&
 			 g_PlayerInfoList[ent->index].name != NULL
 			);
 }

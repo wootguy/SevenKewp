@@ -1571,7 +1571,7 @@ extern int g_runfuncs;
 // Not really an event but the laser dot is special and needs server-side entity which has to
 // be networked to HL players anyway.
 void EV_RpgLaserOn() {
-	cl_entity_t* player = gEngfuncs.GetLocalPlayer();
+	cl_entity_t* player = GetLocalPlayer();
 	Vector origin = player->origin;
 	int idx = player->index;
 

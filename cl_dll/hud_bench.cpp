@@ -833,7 +833,7 @@ void HUD_CreateBenchObjects( vec3_t origin )
 	if ( failed )
 		return;
 
-	player = gEngfuncs.GetLocalPlayer();
+	player = GetLocalPlayer();
 	if ( !player )
 	{
 		failed = true;
