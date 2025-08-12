@@ -15,6 +15,7 @@ int gmsgResetHUD = 0;
 int gmsgInitHUD = 0;
 int gmsgShowGameTitle = 0;
 int gmsgCurWeapon = 0;
+int gmsgCurWeaponX = 0;
 int gmsgHealth = 0;
 int gmsgDamage = 0;
 int gmsgBattery = 0;
@@ -22,6 +23,7 @@ int gmsgTrain = 0;
 int gmsgLogo = 0;
 int gmsgWeaponList = 0;
 int gmsgAmmoX = 0;
+int gmsgAmmoXX = 0;
 int gmsgHudText = 0;
 int gmsgDeathMsg = 0;
 int gmsgScoreInfo = 0;
@@ -106,6 +108,7 @@ void LinkUserMessages(void)
 
 	gmsgSelAmmo = REG_USER_MSG("SelAmmo", sizeof(SelAmmo));
 	gmsgCurWeapon = REG_USER_MSG("CurWeapon", 3);
+	gmsgCurWeaponX = REG_USER_MSG("CurWeaponX", 4);
 	gmsgGeigerRange = REG_USER_MSG("Geiger", 1);
 	gmsgFlashlight = REG_USER_MSG("Flashlight", 2);
 	gmsgFlashBattery = REG_USER_MSG("FlashBat", 1);
@@ -137,6 +140,7 @@ void LinkUserMessages(void)
 	gmsgShake = REG_USER_MSG("ScreenShake", sizeof(ScreenShake));
 	gmsgFade = REG_USER_MSG("ScreenFade", sizeof(ScreenFade));
 	gmsgAmmoX = REG_USER_MSG("AmmoX", 2);
+	gmsgAmmoXX = REG_USER_MSG("AmmoXX", 3);
 	gmsgTeamNames = REG_USER_MSG("TeamNames", -1);
 
 	gmsgStatusText = REG_USER_MSG("StatusText", -1);

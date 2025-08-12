@@ -107,11 +107,14 @@ public:
 	void Reset(void);
 	virtual const char* HudName() { return "CHudAmmo"; }
 	int DrawWList(float flTime);
+	int CurWeapon(int iState, int iId, int iClip);
 	int MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf);
+	int MsgFunc_CurWeaponX(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_AmmoX(const char *pszName, int iSize, void *pbuf);
+	int MsgFunc_AmmoXX(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_AmmoPickup( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_WeapPickup( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_ItemPickup( const char *pszName, int iSize, void *pbuf );

@@ -246,10 +246,12 @@ int giBucketHeight, giBucketWidth, giABHeight, giABWidth; // Ammo Bar width and 
 HSPRITE ghsprBuckets;					// Sprite for top row of weapons menu
 
 DECLARE_MESSAGE(m_Ammo, CurWeapon );	// Current weapon and clip
+DECLARE_MESSAGE(m_Ammo, CurWeaponX );	// Current weapon and clip (large clip)
 DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
 DECLARE_MESSAGE(m_Ammo, CustomWep);		// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, SoundIdx);		// sound index to file path mapping
 DECLARE_MESSAGE(m_Ammo, AmmoX);			// update known ammo type's count
+DECLARE_MESSAGE(m_Ammo, AmmoXX);		// update known ammo type's count (higher max count)
 DECLARE_MESSAGE(m_Ammo, AmmoPickup);	// flashes an ammo pickup record
 DECLARE_MESSAGE(m_Ammo, WeapPickup);    // flashes a weapon pickup record
 DECLARE_MESSAGE(m_Ammo, HideWeapon);	// hides the weapon, ammo, and crosshair displays temporarily
@@ -280,6 +282,7 @@ int CHudAmmo::Init(void)
 	gHUD.AddHudElem(this);
 
 	HOOK_MESSAGE(CurWeapon);
+	HOOK_MESSAGE(CurWeaponX);
 	HOOK_MESSAGE(WeaponList);
 	HOOK_MESSAGE(CustomWep);
 	HOOK_MESSAGE(SoundIdx);
@@ -288,6 +291,7 @@ int CHudAmmo::Init(void)
 	HOOK_MESSAGE(ItemPickup);
 	HOOK_MESSAGE(HideWeapon);
 	HOOK_MESSAGE(AmmoX);
+	HOOK_MESSAGE(AmmoXX);
 
 	HOOK_COMMAND("slot1", Slot1);
 	HOOK_COMMAND("slot2", Slot2);
@@ -517,6 +521,18 @@ int CHudAmmo::MsgFunc_AmmoX(const char *pszName, int iSize, void *pbuf)
 	return 1;
 }
 
+int CHudAmmo::MsgFunc_AmmoXX(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	int iIndex = READ_BYTE();
+	int iCount = (uint16_t)READ_SHORT();
+
+	gWR.SetAmmo(iIndex, abs(iCount));
+
+	return 1;
+}
+
 int CHudAmmo::MsgFunc_AmmoPickup( const char *pszName, int iSize, void *pbuf )
 {
 	BEGIN_READ( pbuf, iSize );
@@ -581,17 +597,11 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 //  counts are updated with AmmoX. Server assures that the Weapon ammo type 
 //  numbers match a real ammo type.
 //
-int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf )
-{
+
+int CHudAmmo::CurWeapon(int iState, int iId, int iClip) {
 	static wrect_t nullrc;
 	int fOnTarget = FALSE;
-
-	BEGIN_READ( pbuf, iSize );
-
-	int iState = READ_BYTE();
-	int iId = READ_CHAR();
-	int iClip = READ_CHAR();
-
+	
 	// detect if we're also on target
 	if ( iState > 1 )
 	{
@@ -652,6 +662,27 @@ int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf )
 	m_iFlags |= HUD_ACTIVE;
 	
 	return 1;
+}
+
+int CHudAmmo::MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf )
+{
+	BEGIN_READ( pbuf, iSize );
+
+	int iState = READ_BYTE();
+	int iId = READ_CHAR();
+	int iClip = READ_CHAR();
+
+	return CurWeapon(iState, iId, iClip);
+}
+
+int CHudAmmo::MsgFunc_CurWeaponX(const char* pszName, int iSize, void* pbuf) {
+	BEGIN_READ(pbuf, iSize);
+
+	int iState = READ_BYTE();
+	int iId = READ_CHAR();
+	int iClip = (uint16_t)READ_SHORT();
+
+	return CurWeapon(iState, iId, iClip);
 }
 
 //

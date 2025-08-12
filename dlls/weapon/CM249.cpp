@@ -98,7 +98,7 @@ int CM249::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_m249";
 	p->pszAmmo1 = "556";
 	p->iMaxClip = M249_MAX_CLIP;
-	p->iMaxAmmo1 = 200;
+	p->iMaxAmmo1 = 600;
 	p->iSlot = 5;
 	p->iPosition = 0;
 	p->iId = WEAPON_M249;

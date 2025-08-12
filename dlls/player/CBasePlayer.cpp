@@ -4757,22 +4757,34 @@ void CBasePlayer::SendAmmoUpdate(void)
 		{
 			m_rgAmmoLast[i] = m_rgAmmo[i];
 
-			ASSERT( m_rgAmmo[i] >= 0 );
-			ASSERT( m_rgAmmo[i] < 255 );
+			if (IsSevenKewpClient()) {
+				uint16_t ammoVal = V_max(0, m_rgAmmo[i]);
 
-			uint8_t ammoVal = V_max(0, m_rgAmmo[i]);
+				// can't update max ammo counter without a client update
+				// this will at least show the client that ammo is being spent
+				if (m_rgAmmo[i] > 999) {
+					ammoVal = 990 + (m_rgAmmo[i] % 10);
+				}
 
-			// can't update max ammo counter without a client update
-			// this will at least show the client that ammo is being spent
-			if (m_rgAmmo[i] > 255) {
-				ammoVal = 250 + (m_rgAmmo[i] % 6);
+				MESSAGE_BEGIN(MSG_ONE, gmsgAmmoXX, NULL, pev);
+				WRITE_BYTE(i);
+				WRITE_SHORT(ammoVal);
+				MESSAGE_END();
 			}
+			else {
+				uint8_t ammoVal = V_max(0, m_rgAmmo[i]);
 
-			// send "Ammo" update message
-			MESSAGE_BEGIN( MSG_ONE, gmsgAmmoX, NULL, pev );
-				WRITE_BYTE( i );
+				// can't update max ammo counter without a client update
+				// this will at least show the client that ammo is being spent
+				if (m_rgAmmo[i] > 255) {
+					ammoVal = 250 + (m_rgAmmo[i] % 6);
+				}
+
+				MESSAGE_BEGIN(MSG_ONE, gmsgAmmoX, NULL, pev);
+				WRITE_BYTE(i);
 				WRITE_BYTE(ammoVal);
-			MESSAGE_END();
+				MESSAGE_END();
+			}
 		}
 	}
 }

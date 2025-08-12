@@ -321,11 +321,27 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 
 	if (bSend)
 	{
-		MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pPlayer->pev);
-		WRITE_BYTE(state);
-		WRITE_BYTE(m_iId);
-		WRITE_BYTE(m_iClip);
-		MESSAGE_END();
+		if (m_iClip > 127 && pPlayer->IsSevenKewpClient()) {
+			uint16_t ammoVal = V_max(0, m_iClip);
+
+			// show the client that ammo is being spent, if exceeding max renderable ammo
+			if (m_iClip > 999) {
+				ammoVal = 990 + (m_iClip % 10);
+			}
+
+			MESSAGE_BEGIN(MSG_ONE, gmsgCurWeaponX, NULL, pPlayer->pev);
+			WRITE_BYTE(state);
+			WRITE_BYTE(m_iId);
+			WRITE_SHORT(ammoVal);
+			MESSAGE_END();
+		}
+		else {
+			MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pPlayer->pev);
+			WRITE_BYTE(state);
+			WRITE_BYTE(m_iId);
+			WRITE_BYTE(m_iClip);
+			MESSAGE_END();
+		}
 
 		m_iClientClip = m_iClip;
 		m_iClientWeaponState = state;

@@ -11,6 +11,7 @@ EXPORT extern int gmsgResetHUD;
 EXPORT extern int gmsgInitHUD;
 EXPORT extern int gmsgShowGameTitle;
 EXPORT extern int gmsgCurWeapon;
+EXPORT extern int gmsgCurWeaponX; // Larger clip size
 EXPORT extern int gmsgHealth;
 EXPORT extern int gmsgDamage;
 EXPORT extern int gmsgBattery;
@@ -18,6 +19,7 @@ EXPORT extern int gmsgTrain;
 EXPORT extern int gmsgLogo;
 EXPORT extern int gmsgWeaponList;
 EXPORT extern int gmsgAmmoX;
+EXPORT extern int gmsgAmmoXX; // Extra-Extra-Large ammo count <:)
 EXPORT extern int gmsgHudText;
 EXPORT extern int gmsgDeathMsg;
 EXPORT extern int gmsgScoreInfo;
