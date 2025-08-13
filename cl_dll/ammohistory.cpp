@@ -35,6 +35,8 @@ HistoryResource gHR;
 #define MAX_ITEM_NAME	32
 int HISTORY_DRAW_TIME = 5;
 
+bool CanWeaponAkimbo(int id);
+
 // keep a list of items
 struct ITEM_INFO
 {
@@ -156,10 +158,14 @@ int HistoryResource :: DrawAmmoHistory( float flTime )
 				float scale = (rgAmmoHistory[i].DisplayTime - flTime) * 80;
 				ScaleColors(r, g, b, V_min(scale, 255) );
 
+				bool akimbo = CanWeaponAkimbo(weap->iId);
+				HSPRITE inactiveSpr = akimbo ? weap->hAkimboInactive : weap->hInactive;
+				wrect_t rcInactive = akimbo ? weap->rcAkimboInactive : weap->rcInactive;
+
 				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
-				int xpos = ScreenWidth - (weap->rcInactive.right - weap->rcInactive.left);
-				SPR_Set( weap->hInactive, r, g, b );
-				SPR_DrawAdditive( 0, xpos, ypos, &weap->rcInactive );
+				int xpos = ScreenWidth - (rcInactive.right - rcInactive.left);
+				SPR_Set(inactiveSpr, r, g, b );
+				SPR_DrawAdditive( 0, xpos, ypos, &rcInactive);
 			}
 			else if ( rgAmmoHistory[i].type == HISTSLOT_ITEM )
 			{

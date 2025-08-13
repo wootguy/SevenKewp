@@ -5,9 +5,11 @@
 #include "eng_wrappers.h"
 #define CLALERT(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
 extern int g_runfuncs;
+extern int g_runningKickbackPred;
+extern Vector g_vApplyVel;
 void UpdateZoomCrosshair(int id, bool zoom);
 #else
-#define CLALERT(fmt, ...)
+#define PRINTF(fmt, ...)
 #include "game.h"
 #endif
 
@@ -38,6 +40,11 @@ void CWeaponCustom::PrecacheEvents() {
 			}
 		}
 	}
+
+	if (pmodelAkimbo)
+		PRECACHE_MODEL(pmodelAkimbo);
+	if (wmodelAkimbo)
+		PRECACHE_MODEL(wmodelAkimbo);
 
 	if (wrongClientWeapon)
 		UTIL_PrecacheOther(wrongClientWeapon);
@@ -81,18 +88,27 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 		return 0;
 	}
 
+	if (params.flags & FL_WC_WEP_AKIMBO)
+		SetAkimboClip(m_iDefaultAmmo);
+
 	SendPredictionData(pPlayer->edict());
 #endif
 	
 	return CBasePlayerWeapon::AddToPlayer(pPlayer);
 }
 
-const char* CWeaponCustom::GetAnimSet(bool zoomed) {
+const char* CWeaponCustom::GetAnimSet() {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
-		return FALSE;
+		return NULL;
 
-	const char* validAnimExt = zoomed ? animExtZoom : animExt;
+#ifndef CLIENT_DLL
+	const char* validAnimExt = animExt;
+
+	if (IsAkimbo())
+		validAnimExt = animExtAkimbo;
+	else if (m_pPlayer->m_iFOV != 0)
+		validAnimExt = animExtZoom;
 
 	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE_COOP) {
 		// half-life models are missing animations for some weapons, so fallback to valid HL anims
@@ -105,9 +121,25 @@ const char* CWeaponCustom::GetAnimSet(bool zoomed) {
 		else if (!strcmp(validAnimExt, "sniperscope")) {
 			validAnimExt = "onehanded";
 		}
+		else if (!strcmp(validAnimExt, "uzis")) {
+			validAnimExt = "onehanded";
+		}
 	}
 
 	return validAnimExt;
+#else
+	return NULL;
+#endif
+}
+
+void CWeaponCustom::UpdateAnimSet() {
+#ifndef CLIENT_DLL
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	strcpy_safe(m_pPlayer->m_szAnimExtention, GetAnimSet(), sizeof(m_pPlayer->m_szAnimExtention));
+#endif
 }
 
 BOOL CWeaponCustom::Deploy()
@@ -118,7 +150,10 @@ BOOL CWeaponCustom::Deploy()
 
 	m_flReloadEnd = 0;
 	m_bInReload = false;
+	m_bInAkimboReload = false;
 	int ret = TRUE;
+
+	int deployAnim = IsAkimbo() ? params.akimbo.akimboDeployAnim : params.deployAnim;
 
 #ifdef CLIENT_DLL
 	if (!CanDeploy())
@@ -126,29 +161,35 @@ BOOL CWeaponCustom::Deploy()
 
 	m_pPlayer->pev->viewmodel = params.vmodel;
 
-	SendWeaponAnim(params.deployAnim, 1, pev->body);
+	SendWeaponAnim(deployAnim, 1, pev->body);
 
 	g_irunninggausspred = false;
 	m_pPlayer->m_flNextAttack = 0.5;
 	m_flReloadEnd = 0;
 	m_flTimeWeaponIdle = 1.0;
 #else
-	const char* animSet = GetAnimSet(false);
+	const char* animSet = GetAnimSet();
 
-	ret = DefaultDeploy(STRING(g_indexModels[params.vmodel]), m_defaultModelP, params.deployAnim, animSet, 1);
+	ret = DefaultDeploy(STRING(g_indexModels[params.vmodel]), m_defaultModelP, deployAnim, animSet, 1);
 #endif
 
-	if (gpGlobals->time - m_lastDeploy > MAX_PREDICTION_WAIT) {
-		ProcessEvents(WC_TRIG_DEPLOY, 0);
-	}
+	if (IsAkimbo())
+		SendAkimboAnim(deployAnim);
 
-	if (params.deployTime) {
-		float nextAttack = UTIL_WeaponTimeBase() + params.deployTime * 0.001f;
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = nextAttack;
-		m_flTimeWeaponIdle = nextAttack + 0.5f;
-	}
+	int deployTime = IsAkimbo() ? params.akimbo.akimboDeployTime : params.deployTime;
+	if (!deployTime)
+		deployTime = 500; // default
+
+	float nextAttack = UTIL_WeaponTimeBase() + deployTime * 0.001f;
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = nextAttack;
+	m_flTimeWeaponIdle = nextAttack + 0.5f;
 
 	m_pPlayer->m_flNextAttack = 0; // allow thinking during deployment
+
+	if (gpGlobals->time - m_lastDeploy > MAX_PREDICTION_WAIT) {
+		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
+		ProcessEvents(WC_TRIG_DEPLOY, akimboArg);
+	}
 
 	return ret;
 }
@@ -163,15 +204,20 @@ void CWeaponCustom::Reload() {
 	if (!m_pPlayer)
 		return;
 
+#ifdef CLIENT_DLL
+	if (!g_runfuncs)
+		return;
+#endif
+
 	if (m_bInReload)
 		return;
 
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		return;
 
-	int j = V_min(params.maxClip - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
+	bool canAkimboReload = IsAkimbo() && GetAkimboClip() < params.maxClip;
 
-	if (j == 0)
+	if (m_iClip >= params.maxClip && !canAkimboReload)
 		return;
 
 	if (m_flNextPrimaryAttack > 0)
@@ -181,39 +227,52 @@ void CWeaponCustom::Reload() {
 		return; // will prevent auto-reload loops for players with less than about 250 ping
 	}
 
-#ifdef CLIENT_DLL
-	if (!g_runfuncs)
-		return;
-#endif
-
 	WeaponCustomReload* reloadStage = &params.reloadStage[0];
 
-	// in normal reload mode, the second reload stage is for empty reloads
-	if (m_iClip == 0 && params.reloadStage[1].time) {
+	if (IsAkimbo()) {
+		reloadStage = &params.akimbo.reload;
+	}
+	else if (m_iClip == 0 && params.reloadStage[1].time) {
+		// in normal reload mode, the second reload stage is for empty reloads
 		reloadStage = &params.reloadStage[1];
 	}
 
 	CancelZoom();
 
-	SendWeaponAnim(reloadStage->anim, 1, pev->body);
-
 	//CLALERT("Start Reload %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 
 	m_bInReload = true;
+	m_bInAkimboReload = IsAkimbo() && (m_iClip >= params.maxClip || GetAkimboClip() < m_iClip);
 
 	int totalReloadTime = reloadStage->time;
-	
 	float nextAttack = totalReloadTime * 0.001f;
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flTimeWeaponIdle = nextAttack;
-	m_pPlayer->SetAnimation(PLAYER_RELOAD, totalReloadTime*0.001f);
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = m_flTimeWeaponIdle = nextAttack;
 
-	ProcessEvents(WC_TRIG_RELOAD, 0);
-
-	if (m_iClip == 0) {
-		ProcessEvents(WC_TRIG_RELOAD_EMPTY, 0);
+	if (IsAkimbo()) {
+		if (m_bInAkimboReload) {
+			SendAkimboAnim(reloadStage->anim);
+			SendWeaponAnim(params.akimbo.holsterAnim, 1, pev->body);
+			m_pPlayer->SetAnimation(PLAYER_RELOAD2, totalReloadTime * 0.001f);
+		}
+		else {
+			SendAkimboAnim(params.akimbo.holsterAnim);
+			SendWeaponAnim(reloadStage->anim, 1, pev->body);
+			m_pPlayer->SetAnimation(PLAYER_RELOAD3, totalReloadTime * 0.001f);
+		}
 	}
 	else {
-		ProcessEvents(WC_TRIG_RELOAD_NOT_EMPTY, 0);
+		SendWeaponAnim(reloadStage->anim, 1, pev->body);
+		m_pPlayer->SetAnimation(PLAYER_RELOAD, totalReloadTime * 0.001f);
+	}
+
+	int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
+	ProcessEvents(WC_TRIG_RELOAD, akimboArg);
+
+	if (m_iClip == 0) {
+		ProcessEvents(WC_TRIG_RELOAD_EMPTY, akimboArg);
+	}
+	else {
+		ProcessEvents(WC_TRIG_RELOAD_NOT_EMPTY, akimboArg);
 	}
 
 	m_pPlayer->m_flNextAttack = 0; // keep calling post frame for complex reloads
@@ -226,6 +285,23 @@ void CWeaponCustom::WeaponIdle() {
 	if (!m_pPlayer)
 		return;
 
+	if (m_lastCanAkimbo != CanAkimbo()) {
+#ifdef CLIENT_DLL
+		if (!g_runfuncs) {
+			return;
+		}
+#endif
+		SetAkimbo(CanAkimbo());
+		Deploy();
+		m_lastCanAkimbo = CanAkimbo();
+		return;
+	}
+
+	m_lastCanAkimbo = CanAkimbo();
+
+	if (IsAkimbo() && (GetAkimboClip() == 0 && m_iClip == 0 || m_bWantAkimboReload))
+		Reload();
+
 	if (m_bInReload)
 		return;
 
@@ -237,15 +313,17 @@ void CWeaponCustom::WeaponIdle() {
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
+	WeaponCustomIdle* idles = IsAkimbo() ? params.akimbo.idles : params.idles;
+
 	int idleSum = 0;
 	for (int i = 0; i < 4; i++) {
-		idleSum += params.idles[i].weight;
+		idleSum += idles[i].weight;
 	}
 
 	int idleRnd = (UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0.0, 1.0) + 0.005f) * idleSum;
 
 	for (int i = 0; i < 4; i++) {
-		WeaponCustomIdle& idle = params.idles[i];
+		WeaponCustomIdle& idle = idles[i];
 		idleRnd -= idle.weight;
 
 		if (idleRnd <= 0) {
@@ -265,50 +343,142 @@ void CWeaponCustom::ItemPostFrame() {
 
 	PlayDelayedEvents();
 
+#ifdef CLIENT_DLL
+	if (!g_runfuncs) {
+		return;
+	}
+#endif
+
 	// update reload stage
 	if (m_bInReload && gpGlobals->time >= m_flReloadEnd) {
 		// complete the reload.
-		int j = V_min(params.maxClip - m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
-		//CLALERT("Finish Reload1 %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
-		m_iClip += j;
+		int& clip = m_bInAkimboReload ? m_chargeReady : m_iClip;
+		int j = V_min(params.maxClip - clip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
+		clip += j;
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
-		//CLALERT("Finish Reload2 %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 		m_pPlayer->TabulateAmmo();
 		m_bInReload = false;
+		m_bWantAkimboReload = false;
 		m_flReloadEnd = gpGlobals->time;
+
+		if (IsAkimbo()) {
+			if (m_bInAkimboReload) {
+				SendWeaponAnim(params.akimbo.deployAnim, 1, pev->body);
+			}
+			else {
+				SendAkimboAnim(params.akimbo.deployAnim);
+			}
+			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f + params.akimbo.deployTime * 0.001f;
+			if (m_iClip < params.maxClip || GetAkimboClip() < params.maxClip) {
+				m_bWantAkimboReload = true;
+			}
+		}
+
+		m_bInAkimboReload = false;
+		
 		return;
 	}
 }
 
-void CWeaponCustom::PrimaryAttack() {
-	if (params.flags & FL_WC_WEP_HAS_PRIMARY) {
-		if (CommonAttack(0)) {
-			ProcessEvents(WC_TRIG_SHOOT_PRIMARY, 0);
-			ProcessEvents(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, m_iClip);
+const char* CWeaponCustom::GetModelP() {
+	return pmodelAkimbo && IsAkimbo() ? pmodelAkimbo : CBasePlayerWeapon::GetModelP();
+}
 
-			if (m_iClip % 2 == 0) {
-				ProcessEvents(WC_TRIG_SHOOT_PRIMARY_EVEN, 0);
+const char* CWeaponCustom::GetModelW() {
+	return wmodelAkimbo && CanAkimbo() ? wmodelAkimbo : CBasePlayerWeapon::GetModelW();
+}
+
+void CWeaponCustom::PrimaryAttack() {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	if ((params.shootOpts[0].flags & FL_WC_SHOOT_NEED_AKIMBO) && !CanAkimbo())
+		return;
+
+	if (params.flags & FL_WC_WEP_HAS_PRIMARY) {
+		int& clip = IsAkimbo() ? m_chargeReady : m_iClip;
+
+		if (CommonAttack(0, clip, IsAkimbo(), false)) {
+			int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
+
+			ProcessEvents(WC_TRIG_SHOOT_PRIMARY, akimboArg, IsAkimbo());
+			ProcessEvents(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, clip, IsAkimbo());
+
+			if (clip % 2 == 0) {
+				ProcessEvents(WC_TRIG_SHOOT_PRIMARY_EVEN, akimboArg, IsAkimbo());
 			}
 			else {
-				ProcessEvents(WC_TRIG_SHOOT_PRIMARY_ODD, 0);
+				ProcessEvents(WC_TRIG_SHOOT_PRIMARY_ODD, akimboArg, IsAkimbo());
 			}
 
-			if (m_iClip != 0) {
-				ProcessEvents(WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY, 0);
+			if (clip != 0) {
+				ProcessEvents(WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY, akimboArg, IsAkimbo());
 			}
 		}
 	}
+
+#ifdef CLIENT_DLL
+	if (m_runningKickbackPred) {
+		g_runningKickbackPred = 1;
+		g_vApplyVel = m_kickbackPredVel;
+
+		if (m_runningKickbackPred == 2 && g_runfuncs) {
+			m_runningKickbackPred = 0;
+			m_kickbackPredVel = Vector();
+			g_runningKickbackPred = 0;
+		}
+
+		if (m_runningKickbackPred == 1)
+			m_runningKickbackPred = 2;
+	}
+#endif
 }
 
 void CWeaponCustom::SecondaryAttack() {
-	if (params.flags & FL_WC_WEP_HAS_SECONDARY) {
-		if (CommonAttack(1)) {
-			ProcessEvents(WC_TRIG_SHOOT_SECONDARY, 0);
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	if ((params.shootOpts[1].flags & FL_WC_SHOOT_NEED_AKIMBO) && !CanAkimbo())
+		return;
+
+	if (IsAkimbo()) {
+		bool fireBoth = (m_pPlayer->pev->button & IN_ATTACK) && GetAkimboClip() >= params.shootOpts[0].ammoCost;
+
+		if (CommonAttack(0, m_iClip, false, fireBoth)) {
+			ProcessEvents(WC_TRIG_SHOOT_PRIMARY, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth);
+		}
+		
+		m_pPlayer->random_seed++; // so bullets don't hit the same spot (seed only updates once per cmd)
+		if (fireBoth && CommonAttack(0, m_chargeReady, true, fireBoth)) {
+			ProcessEvents(WC_TRIG_SHOOT_PRIMARY, WC_TRIG_SHOOT_ARG_AKIMBO, true, fireBoth);
+		}
+	}
+	else if (params.flags & FL_WC_WEP_HAS_SECONDARY) {
+		int clip2 = m_iSecondaryAmmoType >= 0 ? m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] : 0;
+		if (CommonAttack(1, clip2, false, false)) {
+			int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
+			ProcessEvents(WC_TRIG_SHOOT_SECONDARY, akimboArg);
 		}
 	}
 }
 
-bool CWeaponCustom::CommonAttack(int attackIdx) {
+void CWeaponCustom::TertiaryAttack() {
+	if ((params.shootOpts[2].flags & FL_WC_SHOOT_NEED_AKIMBO) && !CanAkimbo())
+		return;
+
+	if (params.flags & FL_WC_WEP_HAS_TERTIARY) {
+		int tclip = 0;
+		if (CommonAttack(2, tclip, false, false)) {
+			int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
+
+			ProcessEvents(WC_TRIG_SHOOT_TERTIARY, akimboArg);
+		}
+	}
+}
+
+bool CWeaponCustom::CommonAttack(int attackIdx, int& clip, bool leftHand, bool akimboFire) {
 	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
@@ -316,7 +486,9 @@ bool CWeaponCustom::CommonAttack(int attackIdx) {
 
 	bool isNormalAttack = !(opts.flags & FL_WC_SHOOT_NO_ATTACK);
 
-	int clipLeft = m_iClip;
+	int clipLeft = clip;
+
+	m_bWantAkimboReload = false;
 
 	if (attackIdx == 1) {
 		clipLeft = m_iSecondaryAmmoType >= 0 ? m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] : 0;
@@ -325,25 +497,35 @@ bool CWeaponCustom::CommonAttack(int attackIdx) {
 	if (isNormalAttack) {
 		if (clipLeft < opts.ammoCost) {
 			if (!m_fInReload) {
-				Cooldown(attackIdx, 150);
+				Cooldown(-1, 150);
 				PlayEmptySound();
 			}
 			return false;
 		}
 
 		if (m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD && !(opts.flags & FL_WC_SHOOT_UNDERWATER)) {
-			Cooldown(attackIdx, 150);
+			Cooldown(-1, 150);
 			PlayEmptySound();
 			return false;
 		}
 	}
 
-	m_iClip -= opts.ammoCost;
+	clip -= opts.ammoCost;
 
 	int ammoIdx = attackIdx == 0 ? m_iPrimaryAmmoType : m_iSecondaryAmmoType;
 
 	if (isNormalAttack) {
-		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+		if (IsAkimbo()) {
+			if (akimboFire)
+				m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+			else if (leftHand)
+				m_pPlayer->SetAnimation(PLAYER_ATTACK2);
+			else
+				m_pPlayer->SetAnimation(PLAYER_ATTACK3);
+		}
+		else {
+			m_pPlayer->SetAnimation(PLAYER_ATTACK1);
+		}
 
 		if (clipLeft <= 0 && ammoIdx >= 0 && m_pPlayer->m_rgAmmo[ammoIdx] <= 0) {
 			m_pPlayer->SetSuitUpdate("!HEV_AMO0", SUIT_REPEAT_OK, 0);
@@ -361,16 +543,21 @@ void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 	int millis = overrideMillis != -1 ? overrideMillis : opts.cooldown;
 	float nextAttack = UTIL_WeaponTimeBase() + millis * 0.001f;
 	
-	if (params.flags & FL_WC_WEP_UNLINK_COOLDOWNS) {
-		if (attackIdx == 0) {
-			m_flNextPrimaryAttack = nextAttack;
+	if (attackIdx != -1) {
+		if (params.flags & FL_WC_WEP_UNLINK_COOLDOWNS) {
+			if (attackIdx == 0) {
+				m_flNextPrimaryAttack = nextAttack;
+			}
+			else if (attackIdx == 1) {
+				m_flNextSecondaryAttack = nextAttack;
+			}
+			else {
+				m_flNextTertiaryAttack = nextAttack;
+			}
 		}
 		else {
-			m_flNextSecondaryAttack = nextAttack;
+			m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = nextAttack;
 		}
-	}
-	else {
-		m_flNextPrimaryAttack = m_flNextSecondaryAttack = nextAttack;
 	}
 
 	if (!(opts.flags & FL_WC_SHOOT_NO_ATTACK))
@@ -392,8 +579,7 @@ void CWeaponCustom::ToggleZoom(int zoomFov) {
 #ifdef CLIENT_DLL
 	UpdateZoomCrosshair(m_iId, m_pPlayer->m_iFOV != 0);
 #else
-	const char* animset = GetAnimSet(m_pPlayer->m_iFOV != 0);
-	strcpy_safe(m_pPlayer->m_szAnimExtention, animset, sizeof(m_pPlayer->m_szAnimExtention));
+	UpdateAnimSet();
 #endif
 
 	m_lastZoomToggle = gpGlobals->time;
@@ -487,10 +673,15 @@ Vector CWeaponCustom::ProcessBulletEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 
 void CWeaponCustom::ProcessKickbackEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 #ifdef CLIENT_DLL
-	g_irunninggausspred = true; // for prediction
+	Vector forward, right, up;
+	gEngfuncs.pfnAngleVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle, forward, right, up);
+	m_runningKickbackPred = 1;
+	m_kickbackPredVel = forward * -evt.kickback.pushForce;
+#else
+	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
+	Vector vecDir = gpGlobals->v_forward;
+	m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - vecDir * evt.kickback.pushForce;
 #endif
-	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
-	m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - vecAiming * evt.kickback.pushForce;
 }
 
 int CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
@@ -532,7 +723,7 @@ int CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	return idx;
 }
 
-void CWeaponCustom::ProcessEvents(int trigger, int triggerArg) {
+void CWeaponCustom::ProcessEvents(int trigger, int triggerArg, bool leftHand, bool akimboFire) {
 #ifdef CLIENT_DLL
 	if (!g_runfuncs)
 		return;
@@ -547,15 +738,37 @@ void CWeaponCustom::ProcessEvents(int trigger, int triggerArg) {
 
 		if (evt.trigger != trigger)
 			continue;
-		if (trigger == WC_TRIG_SHOOT_PRIMARY_CLIPSIZE && triggerArg != evt.triggerArg)
+
+		bool argMatch = true;
+		switch (trigger) {
+		
+		case WC_TRIG_SHOOT_PRIMARY:
+		case WC_TRIG_SHOOT_SECONDARY:
+		case WC_TRIG_SHOOT_TERTIARY:
+		case WC_TRIG_SHOOT_PRIMARY_EVEN:
+		case WC_TRIG_SHOOT_PRIMARY_ODD:
+		case WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY:
+		case WC_TRIG_RELOAD:
+		case WC_TRIG_RELOAD_EMPTY:
+		case WC_TRIG_RELOAD_NOT_EMPTY:
+		case WC_TRIG_DEPLOY:
+			argMatch = evt.triggerArg == WC_TRIG_SHOOT_ARG_ALWAYS || triggerArg == evt.triggerArg;
+			break;
+		case WC_TRIG_SHOOT_PRIMARY_CLIPSIZE:
+			argMatch = triggerArg == evt.triggerArg;
+			break;
+		default:
+			break;
+		}
+
+		if (!argMatch)
 			continue;
 
 		if (evt.delay == 0) {
-			PlayEvent(i);
+			PlayEvent(i, leftHand, akimboFire);
 		}
 		else {
-
-			QueueDelayedEvent(i, WallTime() + evt.delay * 0.001f);
+			QueueDelayedEvent(i, WallTime() + evt.delay * 0.001f, leftHand, akimboFire);
 		}
 	}
 }
@@ -587,10 +800,31 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		WRITE_SHORT(idle.time); sentBytes += 2;
 	}
 
-	for (int k = 0; k < 2; k++) {
+	if (params.flags & FL_WC_WEP_AKIMBO) {
+		for (int k = 0; k < 4; k++) {
+			WeaponCustomIdle& idle = params.akimbo.idles[k];
+			WRITE_BYTE(idle.anim); sentBytes += 1;
+			WRITE_BYTE(idle.weight); sentBytes += 1;
+			WRITE_SHORT(idle.time); sentBytes += 2;
+		}
+
+		WRITE_BYTE(params.akimbo.reload.anim); sentBytes += 1;
+		WRITE_SHORT(params.akimbo.reload.time); sentBytes += 2;
+
+		WRITE_BYTE(params.akimbo.deployAnim); sentBytes += 1;
+		WRITE_SHORT(params.akimbo.deployTime); sentBytes += 2;
+		WRITE_BYTE(params.akimbo.akimboDeployAnim); sentBytes += 1;
+		WRITE_SHORT(params.akimbo.akimboDeployTime); sentBytes += 2;
+		WRITE_BYTE(params.akimbo.holsterAnim); sentBytes += 1;
+		WRITE_SHORT(params.akimbo.holsterTime); sentBytes += 2;
+	}
+
+	for (int k = 0; k < 3; k++) {
 		if (!(params.flags & FL_WC_WEP_HAS_PRIMARY) && k == 0)
 			continue;
 		if (!(params.flags & FL_WC_WEP_HAS_SECONDARY) && k == 1)
+			continue;
+		if (!(params.flags & FL_WC_WEP_HAS_TERTIARY) && k == 2)
 			continue;
 
 		CustomWeaponShootOpts& opts = params.shootOpts[k];
@@ -598,12 +832,20 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		WRITE_BYTE(opts.ammoCost); sentBytes += 1;
 		WRITE_SHORT(opts.cooldown); sentBytes += 2;
 	}
+	MESSAGE_END();
 
+	int mainBytes = sentBytes;
+	sentBytes = 0;
+
+	MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
+	WRITE_BYTE(m_iId); sentBytes += 1;
 	WRITE_BYTE(params.numEvents); sentBytes += 1;
 	for (int k = 0; k < params.numEvents; k++) {
 		WepEvt& evt = params.events[k];
-		uint32_t packedHeader = (evt.evtType << 28) | (evt.trigger << 24) | (evt.triggerArg << 14) | evt.delay;
-		WRITE_LONG(packedHeader); sentBytes += 4;
+		uint8_t packedHeader = (evt.evtType << 4) | evt.trigger;
+		uint16_t packedHeader2 = (evt.delay << 4) | evt.triggerArg;
+		WRITE_BYTE(packedHeader); sentBytes += 1;
+		WRITE_SHORT(packedHeader2); sentBytes += 2;
 
 		switch (evt.evtType) {
 		case WC_EVT_PLAY_SOUND: {
@@ -640,6 +882,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		case WC_EVT_WEP_ANIM:
 			WRITE_BYTE(evt.anim.animMin); sentBytes += 1;
 			WRITE_BYTE(evt.anim.animMax); sentBytes += 1;
+			WRITE_BYTE(evt.anim.akimbo); sentBytes += 1;
 			break;
 		case WC_EVT_BULLETS: {
 			WRITE_BYTE(evt.bullets.count); sentBytes += 1;
@@ -663,6 +906,8 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 			WRITE_SHORT(evt.cooldown.millis); sentBytes += 2;
 			WRITE_BYTE(evt.cooldown.targets); sentBytes += 1;
 			break;
+		case WC_EVT_TOGGLE_AKIMBO:
+			break;
 		default:
 			ALERT(at_error, "Invalid custom weapon event type %d\n", evt.evtType);
 			break;
@@ -670,7 +915,9 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 	}
 	MESSAGE_END();
 
-	ALERT(at_console, "Sent %d prediction bytes for %s\n", sentBytes, STRING(pev->classname));
+	int evBytes = sentBytes;
+	ALERT(at_console, "Sent %d prediction bytes for %s (%d + %d evt)\n",
+		evBytes + mainBytes, STRING(pev->classname), mainBytes, evBytes);
 #endif
 }
 
@@ -744,7 +991,7 @@ uint32_t CWeaponCustom::GetOtherHlClients(edict_t* plr) {
 	return messageTargets;
 }
 
-void CWeaponCustom::QueueDelayedEvent(int eventIdx, float fireTime) {
+void CWeaponCustom::QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire) {
 	for (int i = 0; i < WC_SERVER_EVENT_QUEUE_SZ; i++) {
 		WcDelayEvent& qevt = eventQueue[i];
 
@@ -752,6 +999,8 @@ void CWeaponCustom::QueueDelayedEvent(int eventIdx, float fireTime) {
 		if (qevt.fireTime == 0) {
 			qevt.eventIdx = eventIdx;
 			qevt.fireTime = fireTime;
+			qevt.leftHand = leftHand;
+			qevt.akimboFire = akimboFire;
 			//CLALERT("Queue event %d\n", eventIdx);
 			return;
 		}
@@ -763,7 +1012,7 @@ void CWeaponCustom::QueueDelayedEvent(int eventIdx, float fireTime) {
 	ALERT(at_console, "Server event queue is full for %s on player %s\n", STRING(pev->classname), m_pPlayer->DisplayName());
 }
 
-void CWeaponCustom::PlayEvent(int eventIdx) {
+void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
@@ -783,9 +1032,20 @@ void CWeaponCustom::PlayEvent(int eventIdx) {
 		break;
 	case WC_EVT_PLAY_SOUND:
 		vecDir.x = ProcessSoundEvent(evt, m_pPlayer) + 0.1f; // prevent rounding error
+		if (akimboFire)
+			vecDir.y = leftHand ? 1 : 2; // signal the event player to pan the audio
 		break;
 	case WC_EVT_TOGGLE_ZOOM:
 		ToggleZoom(evt.zoomToggle.zoomFov);
+	case WC_EVT_WEP_ANIM: {
+		bool leftOnly = evt.anim.akimbo == WC_ANIM_LEFT_HAND || (evt.anim.akimbo == WC_ANIM_TRIG_HAND && leftHand);
+		if (evt.anim.akimbo == WC_ANIM_BOTH_HANDS || leftOnly) {
+			SendAkimboAnim(UTIL_SharedRandomLong(m_pPlayer->random_seed, evt.anim.animMin, evt.anim.animMax));
+			if (leftOnly)
+				return; // don't play the right hand event
+		}
+		break;
+	}
 	case WC_EVT_COOLDOWN: {
 		float nextAction = UTIL_WeaponTimeBase() + evt.cooldown.millis * 0.001f;
 		if (evt.cooldown.targets & FL_WC_COOLDOWN_PRIMARY) {
@@ -796,6 +1056,18 @@ void CWeaponCustom::PlayEvent(int eventIdx) {
 		}
 		if (evt.cooldown.targets & FL_WC_COOLDOWN_IDLE) {
 			m_flTimeWeaponIdle = nextAction;
+		}
+		break;
+	}
+	case WC_EVT_TOGGLE_AKIMBO: {
+		SetAkimbo(!IsAkimbo());
+
+		if (IsAkimbo()) {
+			SendAkimboAnim(params.akimbo.deployAnim);
+		}
+		else {
+			Deploy();
+			return;
 		}
 		break;
 	}
@@ -819,7 +1091,7 @@ void CWeaponCustom::PlayDelayedEvents() {
 		if (!qevt.fireTime || qevt.fireTime > WallTime())
 			continue;
 
-		PlayEvent(qevt.eventIdx);
+		PlayEvent(qevt.eventIdx, qevt.leftHand, qevt.akimboFire);
 		qevt.fireTime = 0; // free the slot
 	}
 }
@@ -830,4 +1102,50 @@ float CWeaponCustom::WallTime() {
 #else
 	return g_engfuncs.pfnTime();
 #endif
+}
+
+void CWeaponCustom::SetAkimbo(bool akimbo) {
+	m_fireState = akimbo ? 1 : 0;
+
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	UpdateAnimSet();
+	m_pPlayer->pev->weaponmodel = MAKE_STRING(GET_MODEL(GetModelP()));
+	m_pPlayer->SetAnimation(PLAYER_DEPLOY_WEAPON);
+}
+
+void CWeaponCustom::SendAkimboAnim(int iAnim) {
+	m_akimboAnim = iAnim;
+	m_akimboAnimTime = WallTime();
+}
+
+int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
+	CBasePlayer* pPlayer = pOriginal ? pOriginal->GetPlayer() : NULL;
+	if (!pPlayer)
+		return 0;
+
+	CWeaponCustom* wep = pOriginal ? pOriginal->MyWeaponCustomPtr() : NULL;
+
+	if (wep && wep->IsAkimboWeapon() && !wep->CanAkimbo()) {
+		wep->SetCanAkimbo(true);
+
+		if (m_isDroppedWeapon) {
+			// prevent ammo duping in dropped weapons
+			wep->SetAkimboClip(m_iClip);
+		}
+		else {
+			wep->SetAkimboClip(m_iDefaultAmmo);
+		}
+		
+		EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
+		WRITE_BYTE(m_iId);
+		MESSAGE_END();
+		return 1;
+	}
+
+	return CBasePlayerWeapon::AddDuplicate(pOriginal);
 }

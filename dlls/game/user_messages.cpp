@@ -48,6 +48,7 @@ int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
 int gmsgCustomWeapon = 0;
+int gmsgCustomWeaponEvents = 0;
 int gmsgSoundIdx = 0;
 int gmsgNextMap = 0;
 int gmsgTimeLeft = 0;
@@ -147,6 +148,7 @@ void LinkUserMessages(void)
 	gmsgStatusValue = REG_USER_MSG("StatusValue", 3);
 
 	gmsgCustomWeapon = REG_USER_MSG("CustomWep", -1);
+	gmsgCustomWeaponEvents = REG_USER_MSG("CustomWepEv", -1);
 	gmsgSoundIdx = REG_USER_MSG("SoundIdx", -1);
 	gmsgNextMap = REG_USER_MSG("NextMap", -1);
 	gmsgTimeLeft = REG_USER_MSG("TimeLeft", 4);

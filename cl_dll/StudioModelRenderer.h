@@ -11,6 +11,8 @@
 #pragma once
 #endif
 
+struct CustomWeaponParams;
+
 /*
 ====================
 CStudioModelRenderer
@@ -29,7 +31,7 @@ public:
 
 public:  
 	// Public Interfaces
-	virtual int StudioDrawModel ( int flags );
+	virtual int StudioDrawModel ( int flags, bool mirrored, CustomWeaponParams* wcParams);
 	virtual int StudioDrawPlayer ( int flags, struct entity_state_s *pplayer );
 
 public:
@@ -40,10 +42,10 @@ public:
 	virtual mstudioanim_t *StudioGetAnim ( model_t *m_pSubModel, mstudioseqdesc_t *pseqdesc );
 
 	// Interpolate model position and angles and set up matrices
-	virtual void StudioSetUpTransform (int trivial_accept);
+	virtual void StudioSetUpTransform (int trivial_accept, bool mirrored);
 
 	// Set up model bone positions
-	virtual void StudioSetupBones ( void );	
+	virtual void StudioSetupBones (CustomWeaponParams* wcParams);
 
 	// Find final attachment points
 	virtual void StudioCalcAttachments ( void );
@@ -58,7 +60,7 @@ public:
 	virtual float StudioEstimateInterpolant( void );
 
 	// Determine current frame for rendering
-	virtual float StudioEstimateFrame ( mstudioseqdesc_t *pseqdesc );
+	virtual float StudioEstimateFrame ( mstudioseqdesc_t *pseqdesc, float animTime );
 
 	// Apply special effects to transform matrix
 	virtual void StudioFxTransform( cl_entity_t *ent, float transform[3][4] );
@@ -79,14 +81,14 @@ public:
 	virtual void StudioCalcRotations ( float pos[][3], vec4_t *q, mstudioseqdesc_t *pseqdesc, mstudioanim_t *panim, float f );
 
 	// Send bones and verts to renderer
-	virtual void StudioRenderModel ( void );
+	virtual void StudioRenderModel ( bool mirrored );
 
 	// Finalize rendering
-	virtual void StudioRenderFinal (void);
+	virtual void StudioRenderFinal (bool mirrored);
 	
 	// GL&D3D vs. Software renderer finishing functions
-	virtual void StudioRenderFinal_Software ( void );
-	virtual void StudioRenderFinal_Hardware ( void );
+	virtual void StudioRenderFinal_Software (bool mirrored);
+	virtual void StudioRenderFinal_Hardware ( bool mirrored );
 
 	// Player specific data
 	// Determine pitch and blending amounts for players
@@ -97,6 +99,9 @@ public:
 
 	// Process movement of player
 	virtual void StudioProcessGait ( entity_state_t *pplayer );
+
+	// manually play akimbo animation events
+	virtual void StudioPlayAkimboEvents ();
 
 public:
 

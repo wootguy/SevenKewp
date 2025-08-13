@@ -28,6 +28,8 @@
 #include "GameStudioModelRenderer.h"
 #include "Exports.h"
 
+#include "custom_weapon.h"
+
 //
 // Override the StudioModelRender virtual member functions here to implement custom bone
 // setup, blending, etc.
@@ -63,6 +65,9 @@ int R_StudioDrawPlayer( int flags, entity_state_t *pplayer )
 	return g_StudioRenderer.StudioDrawPlayer( flags, pplayer );
 }
 
+bool IsViewModelAkimbo();
+CustomWeaponParams* GetCurrentCustomWeaponParams();
+
 /*
 ====================
 R_StudioDrawModel
@@ -71,7 +76,13 @@ R_StudioDrawModel
 */
 int R_StudioDrawModel( int flags )
 {
-	return g_StudioRenderer.StudioDrawModel( flags );
+	if (IEngineStudio.GetCurrentEntity() == gEngfuncs.GetViewModel() && IsViewModelAkimbo()) {
+		CustomWeaponParams* params = GetCurrentCustomWeaponParams();
+		g_StudioRenderer.StudioDrawModel(flags, false, NULL);
+		return g_StudioRenderer.StudioDrawModel(flags, true, params);
+	}
+
+	return g_StudioRenderer.StudioDrawModel(flags, false, NULL);
 }
 
 /*

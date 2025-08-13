@@ -1934,6 +1934,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 						item->m_flTimeWeaponIdle		= V_max( gun->m_flTimeWeaponIdle, -0.001f );
 						item->m_flNextPrimaryAttack		= V_max( gun->m_flNextPrimaryAttack, -0.001f );
 						item->m_flNextSecondaryAttack	= V_max( gun->m_flNextSecondaryAttack, -0.001f );
+						item->fuser4					= V_max( gun->m_flNextTertiaryAttack, -0.001f );
 						item->m_fInReload				= gun->m_fInReload;
 						item->m_fInSpecialReload		= gun->m_fInSpecialReload;
 						item->fuser1					= V_max( gun->pev->fuser1, -0.001f );

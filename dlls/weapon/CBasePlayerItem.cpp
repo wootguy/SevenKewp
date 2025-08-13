@@ -7,6 +7,7 @@
 #include "decals.h"
 #include "gamerules.h"
 #include "CBasePlayerItem.h"
+#include "CWeaponCustom.h"
 
 extern int gEvilImpulse101;
 
@@ -167,6 +168,12 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 		pNewWeapon->pev->dmg = pev->dmg;
 		pNewWeapon->pev->movetype = pev->movetype;
 		pNewWeapon->pev->effects |= EF_NODRAW;// invisible for now
+
+		CWeaponCustom* thisCustom = MyWeaponCustomPtr();
+		CWeaponCustom* newCustom = pNewWeapon->MyWeaponCustomPtr();
+		if (thisCustom && newCustom) {
+			newCustom->SetCanAkimbo(thisCustom->CanAkimbo());
+		}
 
 		CBasePlayerItem* wep = (CBasePlayerItem*)pNewWeapon->GetWeaponPtr();
 		if (wep)

@@ -28,9 +28,6 @@ public:
 
 	virtual void UpdateItemInfo( void ) {};	// updates HUD state
 
-	int m_iPlayEmptySound;
-	int m_fFireOnEmpty;		// True when the gun is empty and the player is still holding down the
-							// attack key(s)
 	virtual BOOL PlayEmptySound( void );
 	virtual void ResetEmptySound( void );
 
@@ -46,6 +43,7 @@ public:
 	// called by CBasePlayerWeapons ItemPostFrame()
 	virtual void PrimaryAttack( void ) { return; }				// do "+ATTACK"
 	virtual void SecondaryAttack( void ) { return; }			// do "+ATTACK2"
+	virtual void TertiaryAttack( void ) { return; }
 	virtual void Reload( void ) { return; }						// do "+RELOAD"
 	virtual void WeaponIdle( void ) { return; }					// called when no buttons pressed
 	virtual int UpdateClientData( CBasePlayer *pPlayer );		// sends hud info to client dll, if things have changed
@@ -55,6 +53,11 @@ public:
 	virtual BOOL UseDecrement( void ) { return FALSE; };
 	virtual BOOL IsClientWeapon() { return TRUE; }; // true if the client DLL predicts this weapon
 	virtual BOOL IsSevenKewpWeapon() { return FALSE; } // true if HL players can't use this
+	virtual BOOL CanAkimbo() { return FALSE; } // true if akimbo can be activated now
+	virtual BOOL IsAkimbo() { return FALSE; } // true if akimbo mode is active right now
+	virtual BOOL IsAkimboWeapon() { return FALSE; } // true if this weapon can ever enter akimbo mode
+	inline int GetAkimboClip() { return IsAkimbo() ? m_chargeReady : -1; }
+	inline void SetAkimboClip(int clip) { m_chargeReady = clip; }
 	
 	int	PrimaryAmmoIndex(); 
 	int	SecondaryAmmoIndex(); 
@@ -65,9 +68,9 @@ public:
 	virtual CBaseEntity* Respawn(void);// copy a weapon
 	float GetNextAttackDelay( float delay );
 
-	const char* GetModelV(const char* defaultModel=NULL);
-	const char* GetModelP();
-	const char* GetModelW();
+	virtual const char* GetModelV(const char* defaultModel=NULL);
+	virtual const char* GetModelP();
+	virtual const char* GetModelW();
 	virtual int MergedModelBody() { return -1; } // body index to use in the merged items model (-1 = don't use merged model)
 	void SetWeaponModelW(); // accounts for merged models
 
@@ -79,10 +82,15 @@ public:
 		return plr ? plr->GetDamageModifier() : 1.0f;
 	}
 
+	int m_iPlayEmptySound;
+	int m_fFireOnEmpty;		// True when the gun is empty and the player is still holding down the
+	// attack key(s)
+
 	float m_flPumpTime;
 	int		m_fInSpecialReload;									// Are we in the middle of a reload for the shotguns
 	float	m_flNextPrimaryAttack;								// soonest time ItemPostFrame will call PrimaryAttack
 	float	m_flNextSecondaryAttack;							// soonest time ItemPostFrame will call SecondaryAttack
+	float	m_flNextTertiaryAttack;								// soonest time ItemPostFrame will call TertiaryAttack
 	float	m_flTimeWeaponIdle;									// soonest time ItemPostFrame will call WeaponIdle
 	int		m_iPrimaryAmmoType;									// "primary" ammo index into players m_rgAmmo[]
 	int		m_iSecondaryAmmoType;								// "secondary" ammo index into players m_rgAmmo[]

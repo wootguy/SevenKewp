@@ -31,6 +31,8 @@
 #include "custom_weapon.h"
 
 CustomWeaponParams* GetCustomWeaponParams(int id);
+void GetCurrentCustomWeaponState(int id, int& akimboClip);
+bool CanWeaponAkimbo(int id);
 
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
@@ -183,6 +185,26 @@ void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon )
 	else
 		pWeapon->hActive = 0;
 
+	p = GetSpriteList(pList, "akimbo", iRes, i);
+	if (p)
+	{
+		sprintf(sz, "sprites/%s.spr", p->szSprite);
+		pWeapon->hAkimboInactive = SPR_Load(sz);
+		pWeapon->rcAkimboInactive = p->rc;
+	}
+	else
+		pWeapon->hAkimboInactive = 0;
+
+	p = GetSpriteList(pList, "akimbo_s", iRes, i);
+	if (p)
+	{
+		sprintf(sz, "sprites/%s.spr", p->szSprite);
+		pWeapon->hAkimboActive = SPR_Load(sz);
+		pWeapon->rcAkimboActive = p->rc;
+	}
+	else
+		pWeapon->hAkimboActive = 0;
+
 	p = GetSpriteList(pList, "ammo", iRes, i);
 	if (p)
 	{
@@ -249,6 +271,7 @@ DECLARE_MESSAGE(m_Ammo, CurWeapon );	// Current weapon and clip
 DECLARE_MESSAGE(m_Ammo, CurWeaponX );	// Current weapon and clip (large clip)
 DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
 DECLARE_MESSAGE(m_Ammo, CustomWep);		// custom weapon parameters
+DECLARE_MESSAGE(m_Ammo, CustomWepEv);	// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, SoundIdx);		// sound index to file path mapping
 DECLARE_MESSAGE(m_Ammo, AmmoX);			// update known ammo type's count
 DECLARE_MESSAGE(m_Ammo, AmmoXX);		// update known ammo type's count (higher max count)
@@ -287,6 +310,7 @@ int CHudAmmo::Init(void)
 	HOOK_MESSAGE(CurWeaponX);
 	HOOK_MESSAGE(WeaponList);
 	HOOK_MESSAGE(CustomWep);
+	HOOK_MESSAGE(CustomWepEv);
 	HOOK_MESSAGE(SoundIdx);
 	HOOK_MESSAGE(AmmoPickup);
 	HOOK_MESSAGE(WeapPickup);
@@ -795,10 +819,31 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		idle.time = READ_SHORT();
 	}
 
-	for (int i = 0; i < 2; i++) {
+	if (parms.flags & FL_WC_WEP_AKIMBO) {
+		for (int k = 0; k < 4; k++) {
+			WeaponCustomIdle& idle = parms.akimbo.idles[k];
+			idle.anim = READ_BYTE();
+			idle.weight = READ_BYTE();
+			idle.time = READ_SHORT();
+		}
+
+		parms.akimbo.reload.anim = READ_BYTE();
+		parms.akimbo.reload.time = READ_SHORT();
+
+		parms.akimbo.deployAnim = READ_BYTE();
+		parms.akimbo.deployTime = READ_SHORT();
+		parms.akimbo.akimboDeployAnim = READ_BYTE();
+		parms.akimbo.akimboDeployTime = READ_SHORT();
+		parms.akimbo.holsterAnim = READ_BYTE();
+		parms.akimbo.holsterTime = READ_SHORT();
+	}
+
+	for (int i = 0; i < 3; i++) {
 		if (!(parms.flags & FL_WC_WEP_HAS_PRIMARY) && i == 0)
 			continue;
 		if (!(parms.flags & FL_WC_WEP_HAS_SECONDARY) && i == 1)
+			continue;
+		if (!(parms.flags & FL_WC_WEP_HAS_TERTIARY) && i == 2)
 			continue;
 
 		CustomWeaponShootOpts& opts = parms.shootOpts[i];
@@ -807,20 +852,35 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		opts.cooldown = READ_SHORT();
 	}
 
+	return 1;
+}
+
+int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	int weaponId = READ_BYTE();
+
+	if (weaponId < 0 || weaponId >= MAX_WEAPONS)
+		return 0;
+
+	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId);
+
 	parms.numEvents = READ_BYTE();
 	if (parms.numEvents >= MAX_WC_EVENTS) {
 		return 0;
 	}
-	
+
 	for (int i = 0; i < parms.numEvents; i++) {
-		uint32_t packedHeader = READ_LONG();
+		uint8_t packedHeader = READ_BYTE();
+		uint16_t packedHeader2 = READ_SHORT();
 		WepEvt& evt = parms.events[i];
 		memset(&evt, 0, sizeof(WepEvt));
 
-		evt.evtType = packedHeader >> 28;
-		evt.trigger = (packedHeader >> 24) & 0xF;
-		evt.triggerArg = (packedHeader >> 14) & 0x3FF;
-		evt.delay = packedHeader & 0x3FFF;
+		evt.evtType = packedHeader >> 4;
+		evt.trigger = packedHeader & 0xF;
+		evt.triggerArg = packedHeader2 & 0xF;
+		evt.delay = packedHeader2 >> 4;
 
 		switch (evt.evtType) {
 		case WC_EVT_PLAY_SOUND: {
@@ -857,6 +917,7 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		case WC_EVT_WEP_ANIM:
 			evt.anim.animMin = READ_BYTE();
 			evt.anim.animMax = READ_BYTE();
+			evt.anim.akimbo = READ_BYTE();
 			break;
 		case WC_EVT_BULLETS: {
 			evt.bullets.count = READ_BYTE();
@@ -865,7 +926,7 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 			evt.bullets.spreadY = READ_SHORT();
 			evt.bullets.btype = READ_BYTE();
 			evt.bullets.tracerFreq = READ_BYTE();
-			
+
 			uint8_t packedFlags = READ_BYTE();
 			evt.bullets.flags = packedFlags >> 4;
 			evt.bullets.flashSz = packedFlags & 0xf;
@@ -880,6 +941,8 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		case WC_EVT_COOLDOWN:
 			evt.cooldown.millis = READ_SHORT();
 			evt.cooldown.targets = READ_BYTE();
+			break;
+		case WC_EVT_TOGGLE_AKIMBO:
 			break;
 		default:
 			gEngfuncs.Con_Printf("Bad custom weapon event type read %d\n", (int)evt.evtType);
@@ -1115,17 +1178,22 @@ int CHudAmmo::Draw(float flTime)
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight/2;
 	y += (int)(gHUD.m_iFontHeight * 0.2f);
 
+	int akimboClip = 0;
+	GetCurrentCustomWeaponState(pw->iId, akimboClip);
+
 	// Does weapon have any ammo at all?
 	if (m_pWeapon->iAmmoType > 0)
 	{
 		int iIconWidth = m_pWeapon->rcAmmo.right - m_pWeapon->rcAmmo.left;
 		
-		if (pw->iClip >= 0)
+		int clip = akimboClip >= 0 ? akimboClip : pw->iClip;
+
+		if (clip >= 0)
 		{
 			// room for the number and the '|' and the current ammo
 			
 			x = ScreenWidth - (8 * AmmoWidth) - iIconWidth;
-			x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, pw->iClip, r, g, b);
+			x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, clip, r, g, b);
 
 			wrect_t rc;
 			rc.top = 0;
@@ -1164,7 +1232,18 @@ int CHudAmmo::Draw(float flTime)
 	}
 
 	// Does weapon have seconday ammo?
-	if (pw->iAmmo2Type > 0) 
+	if (akimboClip >= 0) {
+		int iIconWidth = m_pWeapon->rcAmmo2.right - m_pWeapon->rcAmmo2.left;
+		y -= gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4;
+		x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
+		x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, pw->iClip, r, g, b);
+
+		// Draw the ammo Icon
+		SPR_Set(m_pWeapon->hAmmo, r, g, b);
+		int iOffset = (m_pWeapon->rcAmmo.bottom - m_pWeapon->rcAmmo.top) / 8;
+		SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo);
+	}
+	else if (pw->iAmmo2Type > 0) 
 	{
 		int iIconWidth = m_pWeapon->rcAmmo2.right - m_pWeapon->rcAmmo2.left;
 
@@ -1327,6 +1406,7 @@ int CHudAmmo::DrawWList(float flTime)
 		if ( i == iActiveSlot )
 		{
 			WEAPON *p = gWR.GetFirstPos( i );
+
 			int iWidth = giBucketWidth;
 			if ( p )
 				iWidth = p->rcActive.right - p->rcActive.left;
@@ -1338,14 +1418,20 @@ int CHudAmmo::DrawWList(float flTime)
 				if ( !p || !p->iId )
 					continue;
 
+				bool akimbo = CanWeaponAkimbo(p->iId);
+				HSPRITE activeSpr = akimbo ? p->hAkimboActive : p->hActive;
+				HSPRITE inactiveSpr = akimbo ? p->hAkimboInactive : p->hInactive;
+				wrect_t rcActive = akimbo ? p->rcAkimboActive : p->rcActive;
+				wrect_t rcInactive = akimbo ? p->rcAkimboInactive : p->rcInactive;
+
 				UnpackRGB( r,g,b, RGB_YELLOWISH );
 			
 				// if active, then we must have ammo.
 
 				if ( gpActiveSel == p )
 				{
-					SPR_Set(p->hActive, r, g, b );
-					SPR_DrawAdditive(0, x, y, &p->rcActive);
+					SPR_Set(activeSpr, r, g, b );
+					SPR_DrawAdditive(0, x, y, &rcActive);
 
 					SPR_Set(gHUD.GetSprite(m_HUD_selection), r, g, b );
 					SPR_DrawAdditive(0, x, y, &gHUD.GetSpriteRect(m_HUD_selection));
@@ -1362,8 +1448,8 @@ int CHudAmmo::DrawWList(float flTime)
 						ScaleColors(r, g, b, 128);
 					}
 
-					SPR_Set( p->hInactive, r, g, b );
-					SPR_DrawAdditive( 0, x, y, &p->rcInactive );
+					SPR_Set(inactiveSpr, r, g, b );
+					SPR_DrawAdditive( 0, x, y, &rcInactive);
 				}
 
 				// Draw Ammo Bar

@@ -12,11 +12,14 @@
 
 #define FL_WC_WEP_HAS_PRIMARY 1
 #define FL_WC_WEP_HAS_SECONDARY 2
-#define FL_WC_WEP_SHOTGUN_RELOAD 4 // start animation + load animation (repeated) + finish animation
-#define FL_WC_WEP_UNLINK_COOLDOWNS 8 // primary and secondary attacks cooldown independently
+#define FL_WC_WEP_HAS_TERTIARY 4
+#define FL_WC_WEP_SHOTGUN_RELOAD 8		// start animation + load animation (repeated) + finish animation
+#define FL_WC_WEP_UNLINK_COOLDOWNS 16	// primary and secondary attacks cooldown independently
+#define FL_WC_WEP_AKIMBO 32				// weapon has an akimbo mode
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2 // don't run standard weapon attack logic (shoot animations, clicking)
+#define FL_WC_SHOOT_NEED_AKIMBO 4 // don't allow attack if not holding the akimbo version of the weapon
 
 #define FL_WC_BULLETS_DYNAMIC_SPREAD 1 // spread widens while moving and tightens while crouching
 
@@ -24,17 +27,24 @@
 #define FL_WC_COOLDOWN_SECONDARY 2
 #define FL_WC_COOLDOWN_IDLE 4
 
+enum WeaponCustomEventTriggerShootArg {
+	WC_TRIG_SHOOT_ARG_ALWAYS,		// always fire the shoot event
+	WC_TRIG_SHOOT_ARG_AKIMBO,		// only fire the event when in akimbo mode
+	WC_TRIG_SHOOT_ARG_NOT_AKIMBO,	// only fire the event when not in akimbo mode
+};
+
 enum WeaponCustomEventTriggers {
-	WC_TRIG_SHOOT_PRIMARY,
-	WC_TRIG_SHOOT_SECONDARY,
+	WC_TRIG_SHOOT_PRIMARY, // trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_SHOOT_SECONDARY, // trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_SHOOT_TERTIARY,
 	WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, // trigger arg is the clip size to trigger on
 	WC_TRIG_SHOOT_PRIMARY_ODD, // triggers on odd clip sizes after firing
 	WC_TRIG_SHOOT_PRIMARY_EVEN, // triggers on even clip sizes after firing
 	WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY, // triggers on non-empty clip size after firing
-	WC_TRIG_RELOAD, // triggers when a reload begins
-	WC_TRIG_RELOAD_EMPTY, // triggers when an empty clip reload begins
-	WC_TRIG_RELOAD_NOT_EMPTY, // triggers when a non-empty clip reload begins
-	WC_TRIG_DEPLOY,
+	WC_TRIG_RELOAD, // triggers when a reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_RELOAD_EMPTY, // triggers when an empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_RELOAD_NOT_EMPTY, // triggers when a non-empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_DEPLOY, // Trigger arg : WeaponCustomEventTriggerShootArg
 };
 
 enum WeaponCustomEventType {
@@ -49,6 +59,7 @@ enum WeaponCustomEventType {
 	WC_EVT_MUZZLE_FLASH,
 	WC_EVT_TOGGLE_ZOOM,
 	WC_EVT_COOLDOWN, // adjust cooldowns (by default every action is cooled down after an attack)
+	WC_EVT_TOGGLE_AKIMBO, // toggle dual-wield mode
 };
 
 // how loud the sound is for AI (reaction distance) (0 = silent)
@@ -66,11 +77,18 @@ enum WeaponCustomFlashSz {
 	WC_FLASH_BRIGHT,
 };
 
+enum WeaponCustomAnimHand {
+	WC_ANIM_BOTH_HANDS,
+	WC_ANIM_LEFT_HAND,
+	WC_ANIM_RIGHT_HAND,
+	WC_ANIM_TRIG_HAND, // play on the hand that triggered this event
+};
+
 struct WepEvt {
 	uint32_t evtType : 4;
 	uint32_t trigger : 4; // when to trigger the event
-	uint32_t triggerArg : 10; // additional args for event triggering
-	uint32_t delay : 14; // milliseconds beforing firing the event
+	uint32_t triggerArg : 4; // additional args for event triggering
+	uint32_t delay : 12; // milliseconds beforing firing the event
 
 	// event arguments
 	union {
@@ -111,6 +129,7 @@ struct WepEvt {
 		struct {
 			uint8_t animMin;
 			uint8_t animMax;
+			uint8_t akimbo; // 0 = both hands, 1 = left hand, 2 = right hand
 		} anim;
 
 		struct {
@@ -227,10 +246,11 @@ struct WepEvt {
 		return *this;
 	}
 
-	WepEvt WepAnim(uint8_t animMin, uint8_t animMax) {
+	WepEvt WepAnim(uint8_t animMin, uint8_t animMax, uint8_t akimbo) {
 		evtType = WC_EVT_WEP_ANIM;
 		anim.animMin = animMin;
 		anim.animMax = animMax;
+		anim.akimbo = akimbo;
 		return *this;
 	}
 
@@ -265,6 +285,11 @@ struct WepEvt {
 		cooldown.targets = targets;
 		return *this;
 	}
+
+	WepEvt ToggleAkimbo() {
+		evtType = WC_EVT_TOGGLE_AKIMBO;
+		return *this;
+	}
 #endif
 };
 
@@ -285,11 +310,22 @@ struct WeaponCustomIdle {
 	uint16_t time; // milliseconds before playing another idle animations
 };
 
+struct WeaponCustomAkimbo {
+	WeaponCustomIdle idles[4];
+	WeaponCustomReload reload;
+	uint8_t deployAnim; // deploy anim for a single weapon (used for reloading and toggling akimbo mode)
+	uint16_t deployTime;
+	uint8_t akimboDeployAnim; // deploy anim when selecting the weapon
+	uint16_t akimboDeployTime;
+	uint8_t holsterAnim; // for reloading a single weapon
+	uint16_t holsterTime;
+};
+
 struct CustomWeaponParams {
 	uint8_t flags; // FL_WC_WEP_*
 	uint16_t maxClip;
 	uint16_t vmodel;
-	uint16_t deployAnim;
+	uint8_t deployAnim;
 	uint16_t deployTime;
 
 	// stage 0 and 1 usage depends on weapon flags:
@@ -300,7 +336,9 @@ struct CustomWeaponParams {
 
 	WeaponCustomIdle idles[4]; // randomly selected idle animations
 
-	CustomWeaponShootOpts shootOpts[2]; // primary and secondary fire
+	CustomWeaponShootOpts shootOpts[3]; // primary, secondary, and tertiary fire
+
+	WeaponCustomAkimbo akimbo;
 	
 	uint8_t numEvents;
 	WepEvt events[MAX_WC_EVENTS];

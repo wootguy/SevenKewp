@@ -1035,9 +1035,25 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 	}
 
 	speed = pev->velocity.Length2D();
-	bool upperBodyActing = (m_Activity == ACT_RANGE_ATTACK1 || m_Activity == ACT_RELOAD
-		|| m_Activity == ACT_USE || m_Activity == ACT_ARM || m_Activity == ACT_DISARM
-		|| m_Activity == ACT_THREAT_DISPLAY);
+
+	bool upperBodyActing = false;
+
+	switch (m_Activity) {
+	case ACT_RANGE_ATTACK1:
+	case ACT_SPECIAL_ATTACK1:
+	case ACT_SPECIAL_ATTACK2:
+	case ACT_RELOAD:
+	case ACT_SIGNAL1:
+	case ACT_SIGNAL2:
+	case ACT_USE:
+	case ACT_ARM:
+	case ACT_DISARM:
+	case ACT_THREAT_DISPLAY:
+		upperBodyActing = true;
+		break;
+	default:
+		break;
+	}
 
 	if (pev->flags & FL_FROZEN)
 	{
@@ -1061,7 +1077,11 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 		break;
 
 	case PLAYER_RELOAD:
+	case PLAYER_RELOAD2:
+	case PLAYER_RELOAD3:
 	case PLAYER_ATTACK1:
+	case PLAYER_ATTACK2:
+	case PLAYER_ATTACK3:
 	case PLAYER_USE:
 	case PLAYER_DROP_ITEM:
 	case PLAYER_DEPLOY_WEAPON:
@@ -1075,8 +1095,20 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 			if (playerAnim == PLAYER_RELOAD) {
 				m_IdealActivity = ACT_RELOAD;
 			}
+			else if (playerAnim == PLAYER_RELOAD2) {
+				m_IdealActivity = ACT_SIGNAL1;
+			}
+			else if (playerAnim == PLAYER_RELOAD3) {
+				m_IdealActivity = ACT_SIGNAL2;
+			}
 			else if (playerAnim == PLAYER_ATTACK1) {
 				m_IdealActivity = ACT_RANGE_ATTACK1;
+			}
+			else if (playerAnim == PLAYER_ATTACK2) {
+				m_IdealActivity = ACT_SPECIAL_ATTACK1;
+			}
+			else if (playerAnim == PLAYER_ATTACK3) {
+				m_IdealActivity = ACT_SPECIAL_ATTACK2;
 			}
 			else if (playerAnim == PLAYER_DROP_ITEM) {
 				m_IdealActivity = ACT_DISARM;
@@ -1165,6 +1197,8 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 		return;
 	}
 	case ACT_RANGE_ATTACK1:
+	case ACT_SPECIAL_ATTACK1:
+	case ACT_SPECIAL_ATTACK2:
 	{
 		int minAttackFrame = hasNewAnims ? 58 : 220;
 		if ((m_Activity == ACT_HOP || m_Activity == ACT_LEAP) && pev->frame < minAttackFrame) {
@@ -1181,6 +1215,18 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 
 		if (hasNewAnims && !strcmp(m_szAnimExtention, "shotgun")) {
 			strcat_safe(szAnim, "2", 64); // the second anim includes cocking
+		}
+
+		if (hasNewAnims && !strcmp(m_szAnimExtention, "uzis")) {
+			if (m_IdealActivity == ACT_RANGE_ATTACK1) {
+				strcat_safe(szAnim, "_both", 64);
+			}
+			else if (m_IdealActivity == ACT_SPECIAL_ATTACK1) {
+				strcat_safe(szAnim, "_left", 64);
+			}
+			else if (m_IdealActivity == ACT_SPECIAL_ATTACK2) {
+				strcat_safe(szAnim, "_right", 64);
+			}
 		}
 
 
@@ -1290,6 +1336,8 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 	case ACT_DISARM:
 	case ACT_ARM:
 	case ACT_RELOAD:
+	case ACT_SIGNAL1:
+	case ACT_SIGNAL2:
 	case ACT_THREAT_DISPLAY:
 	{
 		if ((m_Activity == ACT_HOP || m_Activity == ACT_LEAP) && pev->frame < 200) {
@@ -1328,10 +1376,17 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 			seqName = ducking ? "crouch_aim_squeak" : "ref_aim_squeak";
 
 			if (hasNewAnims) {
-				duration = 0; // this hacky way to add new anims is not needed for SC models where each gun has its own anim.
+				duration = 0; // the hacky way to add new anims is not needed for SC models where each gun has its own anim.
 				strcpy_safe(szAnim, ducking ? "crouch_reload_" : "ref_reload_", 64);
 				strcat_safe(szAnim, m_szAnimExtention, 64);
 				seqName = szAnim;
+
+				if (!strcmp(m_szAnimExtention, "uzis")) {
+					if (m_IdealActivity == ACT_SIGNAL1)
+						strcat_safe(szAnim, "_left", 64);
+					else if (m_IdealActivity == ACT_SIGNAL2)
+						strcat_safe(szAnim, "_right", 64);
+				}
 			}
 		}
 
@@ -3454,10 +3509,10 @@ void CBasePlayer::PostThink()
 		}
 	}
 
+	ImpulseCommands();
+
 // do weapon stuff
 	ItemPostFrame( );
-
-	ImpulseCommands();
 
 // check to see if player landed hard enough to make a sound
 // falling farther than half of the maximum safe distance, but not as far a max safe distance will
@@ -3576,6 +3631,7 @@ pt_end:
 				{
 					gun->m_flNextPrimaryAttack		= V_max( gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0f );
 					gun->m_flNextSecondaryAttack	= V_max( gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001f );
+					gun->m_flNextTertiaryAttack		= V_max( gun->m_flNextTertiaryAttack - gpGlobals->frametime, -0.001f );
 
 					if ( gun->m_flTimeWeaponIdle != 1000 )
 					{
@@ -4235,6 +4291,9 @@ void CBasePlayer::ImpulseCommands( )
 
 	// Handle use events
 	PlayerUse();
+
+	int oldButtons = pev->button;
+	bool tertiaryPressed = false;
 		
 	int iImpulse = (int)pev->impulse;
 	switch (iImpulse)
@@ -4295,11 +4354,20 @@ void CBasePlayer::ImpulseCommands( )
 		}
 
 		break;
+	case 222:
+		// tertiary attack
+		tertiaryPressed = true;
+		break;
 
 	default:
 		// check all of the cheat impulse commands now
 		CheatImpulseCommands( iImpulse );
 		break;
+	}
+
+	if (tertiaryPressed) {
+		pev->button |= IN_ATTACK3;
+		m_afButtonPressed |= IN_ATTACK3;
 	}
 	
 	pev->impulse = 0;
@@ -4370,6 +4438,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		if (IsSevenKewpClient()) {
 			GiveNamedItem("weapon_m249");
 			GiveNamedItem("weapon_sniperrifle");
+			GiveNamedItem("weapon_uziakimbo");
 			GiveNamedItem("ammo_556");
 			GiveNamedItem("ammo_762");
 		}
@@ -5593,16 +5662,34 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 				return;
 			}
 
-			if ( !g_pGameRules->GetNextBestWeapon( this, pWeapon ) && !pWeapon->CanHolster())
+			if (!pWeapon->CanHolster())
 				return; // can't drop the item they asked for, may be something we can't holster
 
 			m_lastDropTime = gpGlobals->time;
-
 			UTIL_MakeVectors ( pev->v_angle ); 
-
-			pev->weapons &= ~(1<<pWeapon->m_iId);// take item off hud
-
 			SetAnimation(PLAYER_DROP_ITEM);
+
+			CWeaponCustom* cwep = pWeapon->MyWeaponCustomPtr();
+			if (cwep && cwep->CanAkimbo()) {
+				// only drop the left weapon
+				Vector angles(0, pev->angles.y, 0);
+				CBaseEntity* pOneWep = CBaseEntity::Create(STRING(pWeapon->pev->classname),
+					pev->origin + gpGlobals->v_forward * 10, angles, true, edict());
+				pOneWep->pev->velocity = gpGlobals->v_forward * 400;
+				CWeaponCustom* cOneWep = pOneWep->MyWeaponCustomPtr();
+				cOneWep->m_iClip = cwep->GetAkimboClip();
+				cOneWep->m_iDefaultAmmo = 0;
+				cwep->SetAkimboClip(0);
+				cwep->SetCanAkimbo(false);
+				cwep->SetAkimbo(false);
+				pWeapon = cOneWep;
+			}
+			else {
+				pev->weapons &= ~(1 << pWeapon->m_iId);// take item off hud
+				g_pGameRules->GetNextBestWeapon(this, pWeapon);
+			}
+
+			pWeapon->m_isDroppedWeapon = true;
 
 			if (!strcmp(STRING(pWeapon->pev->classname), "weapon_shockrifle")) {
 				// fixme: logic duplicated in kill code

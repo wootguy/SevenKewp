@@ -203,6 +203,12 @@ void CBasePlayerWeapon::ItemPostFrame(void)
 		m_pPlayer->TabulateAmmo();
 		PrimaryAttack();
 	}
+	else if ((m_pPlayer->pev->button & IN_ATTACK3) && CanAttack(m_flNextTertiaryAttack, gpGlobals->time, UseDecrement()))
+	{
+		m_pPlayer->TabulateAmmo();
+		TertiaryAttack();
+		m_pPlayer->pev->button &= ~IN_ATTACK3;
+	}
 	else if (m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload)
 	{
 		// reload when reload is pressed, or if no buttons are down and weapon is empty.
@@ -225,8 +231,10 @@ void CBasePlayerWeapon::ItemPostFrame(void)
 		}
 		else
 		{
+			bool emptyClip = IsAkimbo() ? (!m_iClip && !GetAkimboClip()) : !m_iClip;
+
 			// weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
-			if (m_iClip == 0 && !(iFlags() & ITEM_FLAG_NOAUTORELOAD) && m_flNextPrimaryAttack < (UseDecrement() ? 0.0 : gpGlobals->time))
+			if (emptyClip && !(iFlags() & ITEM_FLAG_NOAUTORELOAD) && m_flNextPrimaryAttack < (UseDecrement() ? 0.0 : gpGlobals->time))
 			{
 				Reload();
 				return;

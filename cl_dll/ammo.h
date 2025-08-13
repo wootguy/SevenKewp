@@ -42,6 +42,10 @@ struct WEAPON
 	wrect_t rcActive;
 	HSPRITE hInactive;
 	wrect_t rcInactive;
+	HSPRITE hAkimboActive;
+	wrect_t rcAkimboActive;
+	HSPRITE hAkimboInactive;
+	wrect_t rcAkimboInactive;
 	HSPRITE	hAmmo;
 	wrect_t rcAmmo;
 	HSPRITE hAmmo2;

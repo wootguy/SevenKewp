@@ -913,7 +913,7 @@ void EV_FireGauss( event_args_t *args )
 		gEngfuncs.pEventAPI->EV_WeaponAnimation( GAUSS_FIRE2, 2 );
 
 		if ( m_fPrimaryFire == false )
-			 g_flApplyVel = flDamage;	
+			 g_flApplyVel = flDamage * 5.0f;	
 			 
 	}
 
@@ -1858,26 +1858,36 @@ void EV_FireCustom(event_args_t* args) {
 		}
 	}
 
-	vec3_t origin;
-	vec3_t angles;
-	vec3_t velocity;
+	Vector origin = args->origin;
+	Vector angles = args->angles;
+	Vector velocity = args->velocity;;
 
-	vec3_t vecSrc;
-	vec3_t up, right, forward;
+	Vector vecSrc;
+	Vector up, right, forward;
 
 	idx = args->entindex;
-	VectorCopy(args->origin, origin);
-	VectorCopy(args->angles, angles);
-	VectorCopy(args->velocity, velocity);
-
 	AngleVectors(angles, forward, right, up);
 
 	switch (evt.evtType) {
 	case WC_EVT_PLAY_SOUND: {
 		int soundIdx = args->fparam1;
+		int panning = args->fparam2;
 		const char* soundPath = GetWeaponCustomSound(soundIdx);
 		float vol = evt.playSound.volume / 255.0f;
 		int pitch = gEngfuncs.pfnRandomLong(evt.playSound.pitchMin, evt.playSound.pitchMax);
+
+		if (panning == 1) {
+			// playing sounds in stereo sounds kind of cool but this method of panning is bad
+			// and shifts ears as you turn around
+			//origin = origin + right * -8;
+			//idx = 0;
+
+			vol *= 0.8f;
+		}
+		else if (panning == 2) {
+			vol *= 0.8f;
+		}
+
 		gEngfuncs.pEventAPI->EV_PlaySound(idx, origin, evt.playSound.channel, soundPath, vol,
 			evt.playSound.attn / 64.0f, 0, pitch);
 		break;
@@ -1929,10 +1939,9 @@ void EV_FireCustom(event_args_t* args) {
 			EV_MuzzleFlash();
 		break;
 	case WC_EVT_KICKBACK:
-		g_irunninggausspred = 1;
-		g_flApplyVel = evt.kickback.pushForce / 5.0f;
-		break;
+	case WC_EVT_COOLDOWN:
 	case WC_EVT_TOGGLE_ZOOM:
+	case WC_EVT_TOGGLE_AKIMBO:
 		break;
 	default:
 		gEngfuncs.Con_Printf("Bad custom weapon event type playback %d\n", (int)evt.evtType);

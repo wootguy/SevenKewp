@@ -45,6 +45,8 @@
 #include "weapon/CSqueak.h"
 #include "weapon/CWeaponCustom.h"
 
+#include "studio.h"
+
 extern globalvars_t *gpGlobals;
 extern int g_iUser1;
 
@@ -61,7 +63,12 @@ static globalvars_t	Globals;
 static CBasePlayerWeapon *g_pWpns[ 32 ];
 
 float g_flApplyVel = 0.0;
+Vector g_vApplyVel;
 int   g_irunninggausspred = 0;
+int   g_runningKickbackPred = 0;
+
+// prevents spammed deployment events while waiting for new server wep id to match client's
+float g_lastClientWeaponSwitch = 0;
 
 vec3_t previousorigin;
 
@@ -82,12 +89,53 @@ CTripmine g_Tripmine;
 CSqueak g_Snark;
 CWeaponCustom g_customWeapon[MAX_WEAPONS];
 
+CWeaponCustom* g_activeWeaponCustom = NULL;
+
 CustomWeaponParams* GetCustomWeaponParams(int id) {
 	if (id >= 0 && id < MAX_WEAPONS)
 		return &g_customWeapon[id].params;
 
 	gEngfuncs.Con_Printf("Invalid custom weapon ID %d\n", id);
 	return NULL;
+}
+
+CustomWeaponParams* GetCurrentCustomWeaponParams() {
+	return g_activeWeaponCustom ? &g_activeWeaponCustom->params : NULL;
+}
+
+void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, float** m_lastEventFrame) {
+	if (g_activeWeaponCustom) {
+		seq = g_activeWeaponCustom->m_akimboAnim;
+		animtime = g_activeWeaponCustom->m_akimboAnimTime;
+		if (m_lastEventFrame)
+			*m_lastEventFrame = &g_activeWeaponCustom->m_akimboLastEventFrame;
+
+		// in case a state for the wrong model is selected
+		seq = clamp(seq, 0, header->numseq - 1);
+	}
+	else {
+		static float dummyData;
+		seq = 0;
+		animtime = 0;
+		if (m_lastEventFrame)
+			*m_lastEventFrame = &dummyData;
+	}
+}
+
+bool CanWeaponAkimbo(int id) {
+	if (id >= 0 && id < MAX_WEAPONS)
+		return g_customWeapon[id].CanAkimbo();
+	
+	return false;
+}
+
+void GetCurrentCustomWeaponState(int id, int& akimboClip) {
+	if (id >= 0 && id < MAX_WEAPONS)
+		akimboClip = g_customWeapon[id].GetAkimboClip();
+}
+
+bool IsViewModelAkimbo() {
+	return g_activeWeaponCustom && g_activeWeaponCustom->IsAkimbo();
 }
 
 int GetCustomWeaponBody(int id) {
@@ -116,7 +164,10 @@ void ResetCustomWeaponStates() {
 	for (int i = 0; i < MAX_WEAPONS; i++) {
 		g_customWeapon[i].m_lastZoomToggle = 0;
 		g_customWeapon[i].m_lastDeploy = 0;
+		g_customWeapon[i].m_flReloadEnd = 0;
+		g_customWeapon[i].SetAkimbo(false);
 	}
+	g_lastClientWeaponSwitch = 0;
 }
 
 /*
@@ -429,6 +480,10 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 
 		PrimaryAttack();
 	}
+	else if ((m_pPlayer->pev->button & IN_ATTACK3) && (m_flNextTertiaryAttack <= 0.0))
+	{
+		TertiaryAttack();
+	}
 	else if ( m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload ) 
 	{
 		// reload when reload is pressed, or if no buttons are down and weapon is empty.
@@ -439,9 +494,10 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		// no fire buttons down
 
 		m_fFireOnEmpty = FALSE;
+		bool emptyClip = IsAkimbo() ? (!m_iClip && !GetAkimboClip()) : !m_iClip;
 
 		// weapon is useable. Reload if empty and weapon has waited as long as it has to after firing
-		if ( m_iClip == 0 && !(iFlags() & ITEM_FLAG_NOAUTORELOAD) && m_flNextPrimaryAttack < 0.0 )
+		if (emptyClip && !(iFlags() & ITEM_FLAG_NOAUTORELOAD) && m_flNextPrimaryAttack < 0.0)
 		{
 			Reload();
 			return;
@@ -763,6 +819,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	// Get current clock
 	gpGlobals->time = time;
 
+	g_activeWeaponCustom = NULL;
+
 	// Fill in data based on selected weapon
 	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
 	switch ( from->client.m_iId )
@@ -871,6 +929,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pCurrent->m_iClip				= pfrom->m_iClip;
 		pCurrent->m_flNextPrimaryAttack	= pfrom->m_flNextPrimaryAttack;
 		pCurrent->m_flNextSecondaryAttack = pfrom->m_flNextSecondaryAttack;
+		pCurrent->m_flNextTertiaryAttack = pfrom->fuser4;
 		pCurrent->m_flTimeWeaponIdle	= pfrom->m_flTimeWeaponIdle;
 		pCurrent->pev->fuser1			= pfrom->fuser1;
 		pCurrent->m_flStartThrow		= pfrom->fuser2;
@@ -912,12 +971,19 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	player.pev->waterlevel = from->client.waterlevel;
 	player.pev->maxspeed    = from->client.maxspeed;
 	
-	// client only sets zoom state once per click, so don't let the server and client states
-	// fight each other until the state is likely synced
+	
 	CWeaponCustom* wc = pWeapon->MyWeaponCustomPtr();
-	if (wc && gpGlobals->time - wc->m_lastZoomToggle > 0.5f) {
-		player.pev->fov = from->client.fov;
+	g_activeWeaponCustom = wc;
+
+	if (wc) {
+		// client only sets zoom state once per click, so don't let the server and client states
+		// fight each other until the state is likely synced
+		if (gpGlobals->time - wc->m_lastZoomToggle > 0.5f) {
+			player.pev->fov = from->client.fov;
+		}
 	}
+
+	
 	
 	player.pev->weaponanim = from->client.weaponanim;
 	player.pev->viewmodel = from->client.viewmodel;
@@ -958,6 +1024,9 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		rpg->m_cActiveRockets = (int)from->client.vuser2[ 2 ];
 	}
 	
+	if (cmd->impulse == 222)
+		player.pev->button |= IN_ATTACK3;
+		
 	// Don't go firing anything if we have died or are spectating
 	// Or if we don't have a weapon model deployed
 	if ( ( player.pev->deadflag != ( DEAD_DISCARDBODY + 1 ) ) && 
@@ -972,9 +1041,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	// Assume that we are not going to switch weapons
 	to->client.m_iId					= from->client.m_iId;
 
-	// prevents spammed deployment events while waiting for new server wep id to match client's
-	static float lastClientWeaponSwitch = 0;
-
 	// Now see if we issued a changeweapon command ( and we're not dead )
 	if ( cmd->weaponselect && ( player.pev->deadflag != ( DEAD_DISCARDBODY + 1 ) ) )
 	{
@@ -984,7 +1050,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			CBasePlayerWeapon *pNew = g_pWpns[ cmd->weaponselect ];
 			if ( pNew && ( pNew != pWeapon ) )
 			{
-				lastClientWeaponSwitch = gpGlobals->time;
+				g_lastClientWeaponSwitch = gpGlobals->time;
 
 				// Put away old weapon
 				if (player.m_pActiveItem) {
@@ -1013,7 +1079,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		}
 	}
 
-	if (serverWeaponChanged && gpGlobals->time - lastClientWeaponSwitch > 0.5f) {
+	if (serverWeaponChanged && gpGlobals->time - g_lastClientWeaponSwitch > 0.5f) {
 		// weapon changed via server logic
 		// Put away old weapon
 		if (oldActiveItem) {
@@ -1097,6 +1163,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pto->m_iClip					= pCurrent->m_iClip; 
 		pto->m_flNextPrimaryAttack		= pCurrent->m_flNextPrimaryAttack;
 		pto->m_flNextSecondaryAttack	= pCurrent->m_flNextSecondaryAttack;
+		pto->fuser4						= pCurrent->m_flNextTertiaryAttack;
 		pto->m_flTimeWeaponIdle			= pCurrent->m_flTimeWeaponIdle;
 		pto->fuser1						= pCurrent->pev->fuser1;
 		pto->fuser2						= pCurrent->m_flStartThrow;
@@ -1110,6 +1177,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pto->m_fNextAimBonus			-= cmd->msec / 1000.0;
 		pto->m_flNextPrimaryAttack		-= cmd->msec / 1000.0;
 		pto->m_flNextSecondaryAttack	-= cmd->msec / 1000.0;
+		pto->fuser4						-= cmd->msec / 1000.0;
 		pto->m_flTimeWeaponIdle			-= cmd->msec / 1000.0;
 		pto->fuser1						-= cmd->msec / 1000.0;
 
@@ -1138,6 +1206,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		if ( pto->m_flNextSecondaryAttack < -0.001 )
 		{
 			pto->m_flNextSecondaryAttack = -0.001;
+		}
+
+		if (pto->fuser4 < -0.001)
+		{
+			pto->fuser4 = -0.001;
 		}
 
 		if ( pto->m_flTimeWeaponIdle < -0.001 )
@@ -1210,7 +1283,13 @@ void CL_DLLEXPORT HUD_PostRunCmd( struct local_state_s *from, struct local_state
 		to->client.fov = g_lastFOV;
 	}
 
-	if ( g_irunninggausspred == 1 )
+	if (g_runningKickbackPred == 1)
+	{
+		to->client.velocity = to->client.velocity + g_vApplyVel;
+		g_runningKickbackPred = 0;
+	}
+
+	if (g_irunninggausspred == 1)
 	{
 		Vector forward;
 		gEngfuncs.pfnAngleVectors( v_angles, forward, NULL, NULL );

@@ -24,7 +24,7 @@
 #include	"skill.h"
 #include	"game.h"
 #include "CGamePlayerEquip.h"
-#include "CBasePlayerItem.h"
+#include "CBasePlayerWeapon.h"
 #include "PluginManager.h"
 #include "game.h"
 #include "CBaseDMStart.h"
@@ -98,9 +98,17 @@ BOOL CGameRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeap
 	}
 	else
 	{
-		// weapon doesn't use ammo, don't take another if you already have it.
-		if ( pPlayer->HasPlayerItem( pWeapon ) )
+		
+		CBasePlayerItem* item = pPlayer->GetNamedPlayerItem(STRING(pWeapon->pev->classname));
+		CBasePlayerWeapon* wep = item ? item->GetWeaponPtr() : NULL;
+		
+		if (item)
 		{
+			// have a single handed version of the weapon now. Give them the dual version
+			if (wep && wep->IsAkimboWeapon() && !wep->CanAkimbo())
+				return TRUE;
+
+			// weapon doesn't use ammo, don't take another if you already have it.
 			return FALSE;
 		}
 	}

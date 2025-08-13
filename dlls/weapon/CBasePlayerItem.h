@@ -74,6 +74,9 @@ public:
 	int		m_iId;												// WEAPON_???
 	float m_flCustomRespawnTime;
 
+	// lazy fix for ammo duping in dropped weapons
+	bool m_isDroppedWeapon;
+
 	virtual int iItemSlot( void ) { return 0; }			// return 0 to MAX_ITEMS_SLOTS, used in hud
 
 	int			iItemPosition( void ) { return ItemInfoArray[ m_iId ].iPosition; }
