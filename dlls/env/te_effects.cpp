@@ -744,7 +744,7 @@ edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber, edict_t* e
 		for (int i = 1; i < gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
-			if (plr && !plr->IsSevenKewpClient() && plr->edict() != emitter) {
+			if (plr && plr->edict() != emitter) {
 				UTIL_GunshotDecal(ENTINDEX(pTrace->pHit), pTrace->vecEndPos, index, MSG_ONE_UNRELIABLE, pTrace->vecEndPos, plr->edict());
 			}
 		}

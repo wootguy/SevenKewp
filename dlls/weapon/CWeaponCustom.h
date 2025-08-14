@@ -78,15 +78,22 @@ public:
 	void ToggleZoom(int zoomFov);
 	void CancelZoom();
 	bool CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq);
-	Vector ProcessBulletEvent(WepEvt& evt, CBasePlayer* m_pPlayer);
-	void ProcessKickbackEvent(WepEvt& evt, CBasePlayer* m_pPlayer);
-	int ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer); // returns sound index to play
-	void ProcessEvents(int trigger, int triggerArg, bool leftHand=false, bool akimboFire=false);
 	void SendPredictionData(edict_t* target);
 
+	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false);
 	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire);
 	void PlayDelayedEvents();
+
+	Vector PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
+	void PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
+	void PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_ToggleAkimbo(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire);
+
 	float WallTime();
 
 	// repurposing these weapon vars so I don't have to network something new to the client
@@ -96,17 +103,11 @@ public:
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);
 	int AddDuplicate(CBasePlayerItem* pOriginal) override;
-
-	// get all HL clients as a bitfield for sound messages. Excludes the given player.
-	// This is used to send sounds to clients that can't play custom sevenkewp events.
-	static uint32_t GetOtherHlClients(edict_t* plr);
 	
 	static int SendSoundMappingChunk(CBasePlayer* target, std::vector<SoundMapping>& chunk);
 	static void SendSoundMapping(CBasePlayer* target);
 
 	// same event used for all custom weapons
-	static void PrecacheEvent();
-	static int m_usCustom;
 	static char m_soundPaths[MAX_PRECACHE][256];
 	static int m_tracerCount[32];
 

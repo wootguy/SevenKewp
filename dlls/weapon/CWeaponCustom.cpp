@@ -8,12 +8,16 @@ extern int g_runfuncs;
 extern int g_runningKickbackPred;
 extern Vector g_vApplyVel;
 void UpdateZoomCrosshair(int id, bool zoom);
+void WC_EV_LocalSound(WepEvt& evt, int soundIdx, int panning);
+void WC_EV_EjectShell(WepEvt& evt);
+void WC_EV_PunchAngle(WepEvt& evt, int seed);
+void WC_EV_WepAnim(WepEvt& evt, int wepid);
+void WC_EV_Bullets(WepEvt& evt, float spreadX, float spreadY, bool showTracer);
 #else
 #define PRINTF(fmt, ...)
 #include "game.h"
 #endif
 
-int CWeaponCustom::m_usCustom = 0;
 char CWeaponCustom::m_soundPaths[MAX_PRECACHE][256];
 int CWeaponCustom::m_tracerCount[32];
 bool CWeaponCustom::m_customWeaponSounds[MAX_PRECACHE_SOUND];
@@ -57,12 +61,6 @@ void CWeaponCustom::AddEvent(WepEvt evt) {
 	}
 
 	params.events[params.numEvents++] = evt;
-}
-
-void CWeaponCustom::PrecacheEvent() {
-	// .sc files are blacklisted for download but the client can precache and use a .txt just the same
-	m_usCustom = PRECACHE_EVENT(1, "events/customwep.txt");
-	PRECACHE_GENERIC("events/customwep.txt");
 }
 
 int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
@@ -419,6 +417,7 @@ void CWeaponCustom::PrimaryAttack() {
 	}
 
 #ifdef CLIENT_DLL
+	// TODO: run for every attack
 	if (m_runningKickbackPred) {
 		g_runningKickbackPred = 1;
 		g_vApplyVel = m_kickbackPredVel;
@@ -611,167 +610,7 @@ bool CWeaponCustom::CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector 
 	return false;
 }
 
-Vector CWeaponCustom::ProcessBulletEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
-	Vector spread(SPREAD_TO_FLOAT(evt.bullets.spreadX), SPREAD_TO_FLOAT(evt.bullets.spreadY), 0);
 
-	if (evt.bullets.flags & FL_WC_BULLETS_DYNAMIC_SPREAD) {
-		if ((m_pPlayer->pev->button & IN_DUCK) != 0)
-		{
-			spread = spread * 0.5f;
-		}
-		else if ((m_pPlayer->pev->button & (IN_MOVERIGHT | IN_MOVELEFT | IN_FORWARD | IN_BACK)) != 0)
-		{
-			spread = spread * 2.0f;
-		}
-	}
-
-	if (evt.bullets.flashSz) {
-		m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
-
-		switch (evt.bullets.flashSz) {
-		case WC_FLASH_DIM:
-			m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
-			break;
-		case WC_FLASH_NORMAL:
-			m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
-			break;
-		case WC_FLASH_BRIGHT:
-			m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
-			break;
-		default:
-			break;
-		}
-	}
-
-	Vector vecSrc = m_pPlayer->GetGunPosition();
-	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
-	Vector vecEnd;
-
-	lagcomp_begin(m_pPlayer);
-	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
-		evt.bullets.btype, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
-		m_pPlayer->random_seed, &vecEnd, true);
-	lagcomp_end();
-
-#ifndef CLIENT_DLL
-	bool showTracer = CheckTracer(m_pPlayer->entindex() - 1, vecSrc, vecDir, gpGlobals->v_right, evt.bullets.tracerFreq);
-
-	// send tracer to all non-SevenKewp clients because they don't know how to play the event
-	if (showTracer) {
-		for (int i = 1; i < gpGlobals->time; i++) {
-			CBasePlayer* listener = UTIL_PlayerByIndex(i);
-
-			if (listener && !listener->IsSevenKewpClient() && m_pPlayer->InPAS(listener->edict())) {
-				UTIL_Tracer(vecSrc, vecEnd, MSG_ONE_UNRELIABLE, listener->edict());
-			}
-		}
-	}
-#endif
-
-	return vecDir;
-}
-
-void CWeaponCustom::ProcessKickbackEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
-#ifdef CLIENT_DLL
-	Vector forward, right, up;
-	gEngfuncs.pfnAngleVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle, forward, right, up);
-	m_runningKickbackPred = 1;
-	m_kickbackPredVel = forward * -evt.kickback.pushForce;
-#else
-	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
-	Vector vecDir = gpGlobals->v_forward;
-	m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - vecDir * evt.kickback.pushForce;
-#endif
-}
-
-int CWeaponCustom::ProcessSoundEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {
-	uint16_t idx = evt.playSound.sound;
-	if (evt.playSound.numAdditionalSounds) {
-		int rnd = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.playSound.numAdditionalSounds);
-		if (rnd > 0) {
-			idx = evt.playSound.additionalSounds[rnd - 1];
-		}
-	}
-
-#ifndef CLIENT_DLL
-	uint32_t messageTargets = GetOtherHlClients(m_pPlayer->edict());
-
-	switch (evt.playSound.aiVol) {
-	case WC_AIVOL_QUIET:
-		m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
-		break;
-	case WC_AIVOL_NORMAL:
-		m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
-		break;
-	case WC_AIVOL_LOUD:
-		m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
-		break;
-	default:
-		break;
-	}
-
-	// send sound to all non-SevenKewp clients because they don't know how to play the event
-	StartSound(m_pPlayer->edict(), evt.playSound.channel, INDEX_SOUND(idx),
-		evt.playSound.volume / 255.0f, evt.playSound.attn / 64.0f, SND_FL_PREDICTED, 100,
-		m_pPlayer->pev->origin, messageTargets);
-
-	if (evt.playSound.distantSound) {
-		PLAY_DISTANT_SOUND(m_pPlayer->edict(), evt.playSound.distantSound);
-	}
-#endif
-
-	return idx;
-}
-
-void CWeaponCustom::ProcessEvents(int trigger, int triggerArg, bool leftHand, bool akimboFire) {
-#ifdef CLIENT_DLL
-	if (!g_runfuncs)
-		return;
-#endif
-
-	CBasePlayer* m_pPlayer = GetPlayer();
-	if (!m_pPlayer)
-		return;
-
-	for (int i = 0; i < params.numEvents; i++) {
-		WepEvt& evt = params.events[i];
-
-		if (evt.trigger != trigger)
-			continue;
-
-		bool argMatch = true;
-		switch (trigger) {
-		
-		case WC_TRIG_SHOOT_PRIMARY:
-		case WC_TRIG_SHOOT_SECONDARY:
-		case WC_TRIG_SHOOT_TERTIARY:
-		case WC_TRIG_SHOOT_PRIMARY_EVEN:
-		case WC_TRIG_SHOOT_PRIMARY_ODD:
-		case WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY:
-		case WC_TRIG_RELOAD:
-		case WC_TRIG_RELOAD_EMPTY:
-		case WC_TRIG_RELOAD_NOT_EMPTY:
-		case WC_TRIG_DEPLOY:
-			argMatch = evt.triggerArg == WC_TRIG_SHOOT_ARG_ALWAYS || triggerArg == evt.triggerArg;
-			break;
-		case WC_TRIG_SHOOT_PRIMARY_CLIPSIZE:
-			argMatch = triggerArg == evt.triggerArg;
-			break;
-		default:
-			break;
-		}
-
-		if (!argMatch)
-			continue;
-
-		if (evt.delay == 0) {
-			PlayEvent(i, leftHand, akimboFire);
-		}
-		else {
-			QueueDelayedEvent(i, WallTime() + evt.delay * 0.001f, leftHand, akimboFire);
-		}
-	}
-}
 
 void CWeaponCustom::SendPredictionData(edict_t* target) {
 #ifndef CLIENT_DLL
@@ -974,21 +813,56 @@ void CWeaponCustom::SendSoundMapping(CBasePlayer* target) {
 #endif
 }
 
-uint32_t CWeaponCustom::GetOtherHlClients(edict_t* plr) {
-	uint32_t messageTargets = 0;
 
-#ifndef CLIENT_DLL
-	// send sound to all non-SevenKewp clients because they don't know how to play the event
-	for (int i = 1; i < gpGlobals->time; i++) {
-		CBasePlayer* listener = UTIL_PlayerByIndex(i);
 
-		if (listener && listener->edict() != plr && !listener->IsSevenKewpClient()) {
-			messageTargets |= PLRBIT(listener->edict());
-		}
-	}
+void CWeaponCustom::ProcessEvents(int trigger, int triggerArg, bool leftHand, bool akimboFire) {
+#ifdef CLIENT_DLL
+	if (!g_runfuncs)
+		return;
 #endif
 
-	return messageTargets;
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	for (int i = 0; i < params.numEvents; i++) {
+		WepEvt& evt = params.events[i];
+
+		if (evt.trigger != trigger)
+			continue;
+
+		bool argMatch = true;
+		switch (trigger) {
+
+		case WC_TRIG_SHOOT_PRIMARY:
+		case WC_TRIG_SHOOT_SECONDARY:
+		case WC_TRIG_SHOOT_TERTIARY:
+		case WC_TRIG_SHOOT_PRIMARY_EVEN:
+		case WC_TRIG_SHOOT_PRIMARY_ODD:
+		case WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY:
+		case WC_TRIG_RELOAD:
+		case WC_TRIG_RELOAD_EMPTY:
+		case WC_TRIG_RELOAD_NOT_EMPTY:
+		case WC_TRIG_DEPLOY:
+			argMatch = evt.triggerArg == WC_TRIG_SHOOT_ARG_ALWAYS || triggerArg == evt.triggerArg;
+			break;
+		case WC_TRIG_SHOOT_PRIMARY_CLIPSIZE:
+			argMatch = triggerArg == evt.triggerArg;
+			break;
+		default:
+			break;
+		}
+
+		if (!argMatch)
+			continue;
+
+		if (evt.delay == 0) {
+			PlayEvent(i, leftHand, akimboFire);
+		}
+		else {
+			QueueDelayedEvent(i, WallTime() + evt.delay * 0.001f, leftHand, akimboFire);
+		}
+	}
 }
 
 void CWeaponCustom::QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire) {
@@ -1012,6 +886,198 @@ void CWeaponCustom::QueueDelayedEvent(int eventIdx, float fireTime, bool leftHan
 	ALERT(at_console, "Server event queue is full for %s on player %s\n", STRING(pev->classname), m_pPlayer->DisplayName());
 }
 
+Vector CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer) {
+	Vector spread(SPREAD_TO_FLOAT(evt.bullets.spreadX), SPREAD_TO_FLOAT(evt.bullets.spreadY), 0);
+
+	if (evt.bullets.flags & FL_WC_BULLETS_DYNAMIC_SPREAD) {
+		if ((m_pPlayer->pev->button & IN_DUCK) != 0)
+		{
+			spread = spread * 0.5f;
+		}
+		else if ((m_pPlayer->pev->button & (IN_MOVERIGHT | IN_MOVELEFT | IN_FORWARD | IN_BACK)) != 0)
+		{
+			spread = spread * 2.0f;
+		}
+	}
+
+	if (evt.bullets.flashSz) {
+		m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
+
+		switch (evt.bullets.flashSz) {
+		case WC_FLASH_DIM:
+			m_pPlayer->m_iWeaponFlash = DIM_GUN_FLASH;
+			break;
+		case WC_FLASH_NORMAL:
+			m_pPlayer->m_iWeaponFlash = NORMAL_GUN_FLASH;
+			break;
+		case WC_FLASH_BRIGHT:
+			m_pPlayer->m_iWeaponFlash = BRIGHT_GUN_FLASH;
+			break;
+		default:
+			break;
+		}
+	}
+
+	Vector vecSrc = m_pPlayer->GetGunPosition();
+	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+	Vector vecEnd;
+
+	lagcomp_begin(m_pPlayer);
+	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
+		evt.bullets.btype, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
+		m_pPlayer->random_seed, &vecEnd, true);
+	lagcomp_end();
+
+#ifdef CLIENT_DLL
+	int eidx = 0;
+#else
+	int eidx = m_pPlayer->entindex() - 1;
+#endif
+
+	bool showTracer = CheckTracer(eidx, vecSrc, vecDir, gpGlobals->v_right, evt.bullets.tracerFreq);
+
+#ifdef CLIENT_DLL
+	WC_EV_Bullets(evt, vecDir.x, vecDir.y, showTracer);
+#else
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (!listener) {
+			continue;
+		}
+
+		if (m_pPlayer->InPAS(listener->edict())) {
+			UTIL_Tracer(vecSrc, vecEnd, MSG_ONE_UNRELIABLE, listener->edict());
+		}
+	}
+#endif
+
+	return vecDir;
+}
+
+void CWeaponCustom::PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer) {
+#ifdef CLIENT_DLL
+	Vector forward, right, up;
+	gEngfuncs.pfnAngleVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle, forward, right, up);
+	m_runningKickbackPred = 1;
+	m_kickbackPredVel = forward * -evt.kickback.pushForce;
+#else
+	UTIL_MakeVectors(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
+	Vector vecDir = gpGlobals->v_forward;
+	m_pPlayer->pev->velocity = m_pPlayer->pev->velocity - vecDir * evt.kickback.pushForce;
+#endif
+}
+
+void CWeaponCustom::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire) {
+	uint16_t idx = evt.playSound.sound;
+	if (evt.playSound.numAdditionalSounds) {
+		int rnd = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.playSound.numAdditionalSounds);
+		if (rnd > 0) {
+			idx = evt.playSound.additionalSounds[rnd - 1];
+		}
+	}
+
+#ifdef CLIENT_DLL
+	int panning = 0;
+	if (akimboFire)
+		panning = leftHand ? 1 : 2; // signal the event player to pan the audio
+
+	WC_EV_LocalSound(evt, idx, panning);
+#else
+	uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
+
+	switch (evt.playSound.aiVol) {
+	case WC_AIVOL_QUIET:
+		m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
+		break;
+	case WC_AIVOL_NORMAL:
+		m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
+		break;
+	case WC_AIVOL_LOUD:
+		m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
+		break;
+	default:
+		break;
+	}
+
+	StartSound(m_pPlayer->edict(), evt.playSound.channel, INDEX_SOUND(idx),
+		evt.playSound.volume / 255.0f, evt.playSound.attn / 64.0f, SND_FL_PREDICTED, 100,
+		m_pPlayer->pev->origin, messageTargets);
+
+	if (evt.playSound.distantSound) {
+		PLAY_DISTANT_SOUND(m_pPlayer->edict(), evt.playSound.distantSound);
+	}
+#endif
+}
+
+void CWeaponCustom::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer) {
+#ifdef CLIENT_DLL
+	WC_EV_EjectShell(evt);
+#else
+	// TODO: te_model?
+#endif
+}
+
+void CWeaponCustom::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
+#ifdef CLIENT_DLL
+	WC_EV_PunchAngle(evt, m_pPlayer->random_seed);
+#else
+	float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.x);
+	float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.y);
+	float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.z);
+
+	if (evt.evtType == WC_EVT_PUNCH_RANDOM) {
+		m_pPlayer->pev->punchangle = Vector(
+			UTIL_SharedRandomFloat(m_pPlayer->random_seed, -punchAngleX, punchAngleX),
+			UTIL_SharedRandomFloat(m_pPlayer->random_seed+1, -punchAngleY, punchAngleY),
+			UTIL_SharedRandomFloat(m_pPlayer->random_seed+2, -punchAngleZ, punchAngleZ)
+		);
+	}
+	else if (evt.evtType == WC_EVT_PUNCH_SET) {
+		m_pPlayer->pev->punchangle = Vector(punchAngleX, punchAngleY, punchAngleZ);
+	}
+#endif
+}
+
+void CWeaponCustom::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand) {
+	bool leftOnly = evt.anim.akimbo == WC_ANIM_LEFT_HAND || (evt.anim.akimbo == WC_ANIM_TRIG_HAND && leftHand);
+	if (evt.anim.akimbo == WC_ANIM_BOTH_HANDS || leftOnly) {
+		SendAkimboAnim(UTIL_SharedRandomLong(m_pPlayer->random_seed, evt.anim.animMin, evt.anim.animMax));
+		if (leftOnly)
+			return; // don't play the right hand event
+	}
+
+#ifdef CLIENT_DLL
+	WC_EV_WepAnim(evt, m_iId);
+#else
+	//SendWeaponAnim()
+#endif
+}
+
+void CWeaponCustom::PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer) {
+	float nextAction = UTIL_WeaponTimeBase() + evt.cooldown.millis * 0.001f;
+	if (evt.cooldown.targets & FL_WC_COOLDOWN_PRIMARY) {
+		m_flNextPrimaryAttack = nextAction;
+	}
+	if (evt.cooldown.targets & FL_WC_COOLDOWN_SECONDARY) {
+		m_flNextSecondaryAttack = nextAction;
+	}
+	if (evt.cooldown.targets & FL_WC_COOLDOWN_IDLE) {
+		m_flTimeWeaponIdle = nextAction;
+	}
+}
+
+void CWeaponCustom::PlayEvent_ToggleAkimbo(WepEvt& evt, CBasePlayer* m_pPlayer) {
+	SetAkimbo(!IsAkimbo());
+
+	if (IsAkimbo()) {
+		SendAkimboAnim(params.akimbo.deployAnim);
+	}
+	else {
+		Deploy();
+	}
+}
+
 void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
@@ -1025,58 +1091,38 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 		pev->body = evt.setBody.newBody;
 		break;
 	case WC_EVT_BULLETS:
-		vecDir = ProcessBulletEvent(evt, m_pPlayer);
+		PlayEvent_Bullets(evt, m_pPlayer);
 		break;
 	case WC_EVT_KICKBACK:
-		ProcessKickbackEvent(evt, m_pPlayer);
+		PlayEvent_Kickback(evt, m_pPlayer);
+		break;
+	case WC_EVT_EJECT_SHELL:
+		PlayEvent_EjectShell(evt, m_pPlayer);
+		break;
+	case WC_EVT_PUNCH_RANDOM:
+	case WC_EVT_PUNCH_SET:
+		PlayEvent_PunchAngle(evt, m_pPlayer);
 		break;
 	case WC_EVT_PLAY_SOUND:
-		vecDir.x = ProcessSoundEvent(evt, m_pPlayer) + 0.1f; // prevent rounding error
-		if (akimboFire)
-			vecDir.y = leftHand ? 1 : 2; // signal the event player to pan the audio
+		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire);
 		break;
 	case WC_EVT_TOGGLE_ZOOM:
 		ToggleZoom(evt.zoomToggle.zoomFov);
-	case WC_EVT_WEP_ANIM: {
-		bool leftOnly = evt.anim.akimbo == WC_ANIM_LEFT_HAND || (evt.anim.akimbo == WC_ANIM_TRIG_HAND && leftHand);
-		if (evt.anim.akimbo == WC_ANIM_BOTH_HANDS || leftOnly) {
-			SendAkimboAnim(UTIL_SharedRandomLong(m_pPlayer->random_seed, evt.anim.animMin, evt.anim.animMax));
-			if (leftOnly)
-				return; // don't play the right hand event
-		}
 		break;
-	}
-	case WC_EVT_COOLDOWN: {
-		float nextAction = UTIL_WeaponTimeBase() + evt.cooldown.millis * 0.001f;
-		if (evt.cooldown.targets & FL_WC_COOLDOWN_PRIMARY) {
-			m_flNextPrimaryAttack = nextAction;
-		}
-		if (evt.cooldown.targets & FL_WC_COOLDOWN_SECONDARY) {
-			m_flNextSecondaryAttack = nextAction;
-		}
-		if (evt.cooldown.targets & FL_WC_COOLDOWN_IDLE) {
-			m_flTimeWeaponIdle = nextAction;
-		}
+	case WC_EVT_WEP_ANIM:
+		PlayEvent_WepAnim(evt, m_pPlayer, leftHand);
 		break;
-	}
+	case WC_EVT_COOLDOWN:
+		PlayEvent_Cooldown(evt, m_pPlayer);
+		break;
 	case WC_EVT_TOGGLE_AKIMBO: {
-		SetAkimbo(!IsAkimbo());
-
-		if (IsAkimbo()) {
-			SendAkimboAnim(params.akimbo.deployAnim);
-		}
-		else {
-			Deploy();
-			return;
-		}
+		PlayEvent_ToggleAkimbo(evt, m_pPlayer);
 		break;
 	}
+	default:
+		ALERT(at_error, "Unhandled weapon event type %d\n", evt.evtType);
+		break;
 	}
-
-	//ALERT(at_console, "Play event %d\n", eventIdx);
-
-	PLAYBACK_EVENT_FULL(FEV_NOTHOST, m_pPlayer->edict(), m_usCustom, 0,
-		(float*)&g_vecZero, (float*)&g_vecZero, vecDir.x, vecDir.y, m_iId, eventIdx, 0, 0);
 }
 
 void CWeaponCustom::PlayDelayedEvents() {
@@ -1095,6 +1141,8 @@ void CWeaponCustom::PlayDelayedEvents() {
 		qevt.fireTime = 0; // free the slot
 	}
 }
+
+
 
 float CWeaponCustom::WallTime() {
 #ifdef CLIENT_DLL

@@ -56,14 +56,14 @@ void CSniperRifle::Precache()
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY).WepAnim(M40A1_FIRE));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 0).WepAnim(M40A1_FIRE_LAST));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY, 620)
-		.PlaySound(boltSnd1, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
+		.PlaySound(boltSnd1, CHAN_ITEM, 1.0f, ATTN_IDLE, 100));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 620, 0)
-		.PlaySound(boltSnd2, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
+		.PlaySound(boltSnd2, CHAN_ITEM, 1.0f, ATTN_IDLE, 100));
 	
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY)
 		.PlaySound(shootSnd, CHAN_WEAPON, 1.0f, 0.2f, 94, 109, DISTANT_NONE, WC_AIVOL_NORMAL));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PunchSet(-2, 0));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Bullets(1, gSkillData.sk_plr_762_bullet, spread, spread, btype, 1, bulletf));
+	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PunchSet(-2, 0));
 
 	AddEvent(WepEvt(WC_TRIG_SHOOT_SECONDARY).PlaySound(zoomSnd, CHAN_ITEM, 1.0f, ATTN_IDLE, 100));
 	AddEvent(WepEvt(WC_TRIG_SHOOT_SECONDARY).ToggleZoom(18));

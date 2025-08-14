@@ -747,8 +747,6 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Tripmine	, &player );
 	HUD_PrepEntity( &g_Snark	, &player );
 
-	CWeaponCustom::PrecacheEvent();
-
 	// fill remaining slots with dummy weapons
 	for (int i = 1; i < MAX_WEAPONS; i++) {
 		if (!g_pWpns[i]) {

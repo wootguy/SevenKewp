@@ -1102,7 +1102,7 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr, Vector vecSrc, Vector vecEnd, int 
 	}
 
 	if (bulletEmitter && !hitMonster) {
-		uint32_t messageTargets = CWeaponCustom::GetOtherHlClients(bulletEmitter);
+		uint32_t messageTargets = 0xffffff & ~PLRBIT(bulletEmitter);
 
 		StartSound(emitter, CHAN_STATIC, rgsz[RANDOM_LONG(0, cnt - 1)],
 			fvol, fattn, SND_FL_PREDICTED, 96 + RANDOM_LONG(0, 0xf), emitter->v.origin, messageTargets);

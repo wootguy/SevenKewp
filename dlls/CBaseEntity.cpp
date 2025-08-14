@@ -1045,6 +1045,8 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		Vector vecDir = vecDirShooting +
 			x * vecSpread.x * vecRight +
 			y * vecSpread.y * vecUp;
+		//ALERT(at_console, "Forward: %.4f %.4f %.4f\n", vecDirShooting.x, vecDirShooting.y, vecDirShooting.z);
+		//ALERT(at_console, "VECDIR: %.4f %.4f %.4f\n", vecDir.x, vecDir.y, vecDir.z);
 		Vector vecEnd;
 
 		vecEnd = vecSrc + vecDir * flDistance;

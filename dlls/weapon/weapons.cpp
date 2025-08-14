@@ -369,7 +369,6 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_m249");
 	UTIL_RegisterWeapon("weapon_sniperrifle");
 	UTIL_RegisterWeapon("weapon_uzi");
-	CWeaponCustom::PrecacheEvent();
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 
 	g_sModelIndexFireball = PRECACHE_MODEL_ENT(NULL, "sprites/zerogxplode.spr");// fireball
