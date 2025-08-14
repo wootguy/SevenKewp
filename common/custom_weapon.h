@@ -22,6 +22,8 @@
 #define FL_WC_SHOOT_NEED_AKIMBO 4 // don't allow attack if not holding the akimbo version of the weapon
 
 #define FL_WC_BULLETS_DYNAMIC_SPREAD 1 // spread widens while moving and tightens while crouching
+#define FL_WC_BULLETS_NO_DECAL 2 // don't show gunshot particles and decal at impact point
+#define FL_WC_BULLETS_NO_SOUND 4 // don't play texture sound at impact point
 
 #define FL_WC_COOLDOWN_PRIMARY 1
 #define FL_WC_COOLDOWN_SECONDARY 2
@@ -127,17 +129,16 @@ struct WepEvt {
 		} punch;
 
 		struct {
-			uint8_t animMin;
-			uint8_t animMax;
-			uint8_t akimbo; // 0 = both hands, 1 = left hand, 2 = right hand
+			uint8_t akimbo : 4; // WeaponCustomAnimHand
+			uint8_t numAnim : 4;
+			uint8_t anims[MAX_WC_RANDOM_SELECTION];
 		} anim;
 
 		struct {
 			uint8_t count; // how many bullets are shot at once
-			uint16_t damage; // damage per pellet
+			uint16_t damage; // damage per bullet
 			uint16_t spreadX; // accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
 			uint16_t spreadY; // accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
-			uint8_t btype; // BULLET_PLAYER_* (affects impact sounds and decals)
 			uint8_t tracerFreq; // how often to display a tracer (0 = never, 1 = always, 2 = every other shot)
 			uint8_t flashSz : 4; // WeaponCustomFlashSz
 			uint8_t flags : 4; // FL_WC_BULLETS_*
@@ -158,13 +159,103 @@ struct WepEvt {
 	};
 
 #ifndef CLIENT_DLL
-	WepEvt() {}
+	WepEvt() {
+		memset(this, 0, sizeof(WepEvt));
+	}
 
 	WepEvt(int trigger, int delay=0, int triggerArg=0) {
 		memset(this, 0, sizeof(WepEvt));
 		this->trigger = trigger;
 		this->triggerArg = triggerArg;
 		this->delay = delay;
+	}
+
+	WepEvt Primary() {
+		this->trigger = WC_TRIG_SHOOT_PRIMARY;
+		return *this;
+	}
+
+	WepEvt Secondary() {
+		this->trigger = WC_TRIG_SHOOT_SECONDARY;
+		return *this;
+	}
+
+	WepEvt Tertiary() {
+		this->trigger = WC_TRIG_SHOOT_TERTIARY;
+		return *this;
+	}
+
+	WepEvt PrimaryClip(uint8_t clipSize) {
+		this->trigger = WC_TRIG_SHOOT_PRIMARY_CLIPSIZE;
+		this->triggerArg = clipSize;
+		return *this;
+	}
+
+	WepEvt PrimaryOdd() {
+		this->trigger = WC_TRIG_SHOOT_PRIMARY_ODD;
+		return *this;
+	}
+
+	WepEvt PrimaryEven() {
+		this->trigger = WC_TRIG_SHOOT_PRIMARY_EVEN;
+		return *this;
+	}
+
+	WepEvt PrimaryEmpty() {
+		this->trigger = WC_TRIG_SHOOT_PRIMARY_CLIPSIZE;
+		this->triggerArg = 0;
+		return *this;
+	}
+
+	WepEvt PrimaryNotEmpty() {
+		this->trigger = WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY;
+		return *this;
+	}
+
+	WepEvt Reload() {
+		this->trigger = WC_TRIG_RELOAD;
+		return *this;
+	}
+
+	WepEvt ReloadEmpty() {
+		this->trigger = WC_TRIG_RELOAD_EMPTY;
+		return *this;
+	}
+
+	WepEvt ReloadNotEmpty() {
+		this->trigger = WC_TRIG_RELOAD_NOT_EMPTY;
+		return *this;
+	}
+
+	WepEvt Deploy() {
+		this->trigger = WC_TRIG_DEPLOY;
+		return *this;
+	}
+
+	WepEvt Delay(uint16_t millis) {
+		this->delay = millis;
+		return *this;
+	}
+
+	WepEvt NotAkimbo() {
+		this->triggerArg = WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
+		return *this;
+	}
+
+	WepEvt AkimboOnly() {
+		this->triggerArg = WC_TRIG_SHOOT_ARG_AKIMBO;
+		return *this;
+	}
+
+	WepEvt IdleSound(int sound, float volume=1.0f) {
+		evtType = WC_EVT_PLAY_SOUND;
+		playSound.sound = sound;
+		playSound.channel = CHAN_STATIC;
+		playSound.volume = (int)(volume * 255.5f);
+		playSound.attn = clampf(ATTN_IDLE * 64, 0, 255.0f);
+		playSound.pitchMin = 100;
+		playSound.pitchMax = 100;
+		return *this;
 	}
 
 	WepEvt PlaySound(int sound, uint8_t channel, float volume, float attn, int pitch) {
@@ -223,6 +314,7 @@ struct WepEvt {
 		return *this;
 	}
 
+	// prefer adding this AFTER a bullets event for prediction accuracy
 	WepEvt PunchSet(float x, float y, float z = 0) {
 		evtType = WC_EVT_PUNCH_SET;
 		punch.x = FLOAT_TO_FP_10_6(x);
@@ -231,6 +323,7 @@ struct WepEvt {
 		return *this;
 	}
 
+	// prefer adding this AFTER a bullets event for prediction accuracy
 	WepEvt PunchRandom(float x, float y, float z=0) {
 		evtType = WC_EVT_PUNCH_RANDOM;
 		punch.x = FLOAT_TO_FP_10_6(x);
@@ -239,29 +332,36 @@ struct WepEvt {
 		return *this;
 	}
 
-	WepEvt WepAnim(uint8_t animIdx) {
+	WepEvt WepAnim(uint8_t animIdx, uint8_t akimbo=WC_ANIM_BOTH_HANDS) {
 		evtType = WC_EVT_WEP_ANIM;
-		anim.animMin = animIdx;
-		anim.animMax = animIdx;
-		return *this;
-	}
-
-	WepEvt WepAnim(uint8_t animMin, uint8_t animMax, uint8_t akimbo) {
-		evtType = WC_EVT_WEP_ANIM;
-		anim.animMin = animMin;
-		anim.animMax = animMax;
+		anim.anims[0] = animIdx;
+		anim.numAnim = 1;
 		anim.akimbo = akimbo;
 		return *this;
 	}
 
-	WepEvt Bullets(uint8_t count, uint16_t damage, float spreadX, float spreadY, uint8_t bulletType,
+	WepEvt AddAnim(uint8_t animIdx) {
+		if (evtType == WC_EVT_WEP_ANIM) {
+			if (playSound.numAdditionalSounds < MAX_WC_RANDOM_SELECTION) {
+				anim.anims[anim.numAnim++] = animIdx;
+			}
+			else {
+				ALERT(at_error, "AddAnim exceeded max random animations\n");
+			}
+		}
+		else {
+			ALERT(at_error, "AddAnim can be called on WepAnim events only\n");
+		}
+		return *this;
+	}
+
+	WepEvt Bullets(uint8_t count, uint16_t damage, float spreadX, float spreadY,
 		uint8_t tracerFreq = 1, uint8_t flasSz=WC_FLASH_NORMAL, uint8_t flags=0) {
 		evtType = WC_EVT_BULLETS;
 		bullets.count = count;
 		bullets.damage = damage;
 		bullets.spreadX = FLOAT_TO_SPREAD(spreadX);
 		bullets.spreadY = FLOAT_TO_SPREAD(spreadY);
-		bullets.btype = bulletType;
 		bullets.tracerFreq = tracerFreq;
 		bullets.flags = flags;
 		return *this;

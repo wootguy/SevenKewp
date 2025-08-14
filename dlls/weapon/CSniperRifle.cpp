@@ -51,26 +51,23 @@ void CSniperRifle::Precache()
 
 	float spread = VECTOR_CONE_1DEGREES.x * 0.5f;
 	int bulletf = FL_WC_BULLETS_DYNAMIC_SPREAD;
-	int btype = BULLET_PLAYER_9MM;
 
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY).WepAnim(M40A1_FIRE));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 0).WepAnim(M40A1_FIRE_LAST));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY, 620)
-		.PlaySound(boltSnd1, CHAN_ITEM, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 620, 0)
-		.PlaySound(boltSnd2, CHAN_ITEM, 1.0f, ATTN_IDLE, 100));
-	
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY)
-		.PlaySound(shootSnd, CHAN_WEAPON, 1.0f, 0.2f, 94, 109, DISTANT_NONE, WC_AIVOL_NORMAL));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Bullets(1, gSkillData.sk_plr_762_bullet, spread, spread, btype, 1, bulletf));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PunchSet(-2, 0));
+	AddEvent(WepEvt().Primary().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, 0.2f, 94, 109, DISTANT_NONE, WC_AIVOL_NORMAL));
+	AddEvent(WepEvt().Primary().Bullets(1, gSkillData.sk_plr_762_bullet, spread, spread, 0, WC_FLASH_NORMAL, bulletf));
+	AddEvent(WepEvt().Primary().PunchSet(-2, 0));
 
-	AddEvent(WepEvt(WC_TRIG_SHOOT_SECONDARY).PlaySound(zoomSnd, CHAN_ITEM, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_SECONDARY).ToggleZoom(18));
+	AddEvent(WepEvt().PrimaryNotEmpty().WepAnim(M40A1_FIRE));
+	AddEvent(WepEvt().PrimaryNotEmpty().Delay(620).PlaySound(boltSnd1, CHAN_STATIC, 1.0f, ATTN_IDLE, 100));
 
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 16).PlaySound(reloadSnd1, CHAN_ITEM, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_RELOAD_EMPTY, 2324).PlaySound(reloadSnd2, CHAN_ITEM, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_RELOAD_EMPTY, 2324).WepAnim(M40A1_RELOAD2));
+	AddEvent(WepEvt().PrimaryEmpty().WepAnim(M40A1_FIRE_LAST));
+	AddEvent(WepEvt().PrimaryEmpty().Delay(620).PlaySound(boltSnd2, CHAN_STATIC, 1.0f, ATTN_IDLE, 100));
+
+	AddEvent(WepEvt().Secondary().PlaySound(zoomSnd, CHAN_STATIC, 1.0f, ATTN_IDLE, 100));
+	AddEvent(WepEvt().Secondary().ToggleZoom(18));
+
+	AddEvent(WepEvt().Reload().Delay(16).PlaySound(reloadSnd1, CHAN_STATIC, 1.0f, ATTN_IDLE, 100));
+	AddEvent(WepEvt().ReloadEmpty().Delay(2324).PlaySound(reloadSnd2, CHAN_STATIC, 1.0f, ATTN_IDLE, 100));
+	AddEvent(WepEvt().ReloadEmpty().Delay(2324).WepAnim(M40A1_RELOAD2));
 
 	// client-side HUD sprites and config
 	PRECACHE_HUD_FILES("sprites/weapon_sniperrifle.txt");

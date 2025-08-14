@@ -1882,6 +1882,7 @@ void WC_EV_EjectShell(WepEvt& evt) {
 }
 
 float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);
+int UTIL_SharedRandomLong(unsigned int seed, int low, int high);
 
 void WC_EV_PunchAngle(WepEvt& evt, int seed) {
 	float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.x);
@@ -1900,9 +1901,8 @@ void WC_EV_PunchAngle(WepEvt& evt, int seed) {
 	}
 }
 
-void WC_EV_WepAnim(WepEvt& evt, int wepid) {
-	int anim = gEngfuncs.pfnRandomLong(evt.anim.animMin, evt.anim.animMax);
-	gEngfuncs.pEventAPI->EV_WeaponAnimation(anim, GetCustomWeaponBody(wepid));
+void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx) {
+	gEngfuncs.pEventAPI->EV_WeaponAnimation(animIdx, GetCustomWeaponBody(wepid));
 }
 
 extern vec3_t ev_punchangle;
@@ -1954,8 +1954,8 @@ void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunsh
 }
 
 
-void WC_EV_Bullets(WepEvt& evt, float spreadX, float spreadY, bool showTracer) {
-	WC_EV_FireBullets(spreadX, spreadY, showTracer, true, true);
+void WC_EV_Bullets(WepEvt& evt, float spreadX, float spreadY, bool showTracer, bool decal, bool texSound) {
+	WC_EV_FireBullets(spreadX, spreadY, showTracer, decal, texSound);
 
 	if (evt.bullets.flashSz)
 		EV_MuzzleFlash();

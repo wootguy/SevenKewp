@@ -58,29 +58,29 @@ void CM249::Precache()
 
 	float spread = VECTOR_CONE_6DEGREES.x;
 	int bulletf = FL_WC_BULLETS_DYNAMIC_SPREAD;
-	int btype = BULLET_PLAYER_9MM;
+	int dmg = gSkillData.sk_plr_556_bullet;
 
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).WepAnim(M249_SHOOT1, M249_SHOOT1 + 2, 0));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556, WC_AIVOL_LOUD));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Bullets(1, gSkillData.sk_plr_556_bullet, spread, spread, btype, 2, bulletf));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).Kickback(35));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY).PunchRandom(2, 1));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_EVEN).EjectShell(m_iShell, 14, -12, 4));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_ODD).EjectShell(m_iLink, 14, -12, 4));
+	AddEvent(WepEvt().Primary().WepAnim(M249_SHOOT1).AddAnim(M249_SHOOT2).AddAnim(M249_SHOOT3));
+	AddEvent(WepEvt().Primary().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556, WC_AIVOL_LOUD));
+	AddEvent(WepEvt().Primary().Bullets(1, dmg, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
+	AddEvent(WepEvt().Primary().Kickback(35));
+	AddEvent(WepEvt().Primary().PunchRandom(2, 1));
+	AddEvent(WepEvt().PrimaryEven().EjectShell(m_iShell, 14, -12, 4));
+	AddEvent(WepEvt().PrimaryOdd().EjectShell(m_iLink, 14, -12, 4));
 
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 0).SetBody(8));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 1).SetBody(7));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 2).SetBody(6));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 3).SetBody(5));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 4).SetBody(4));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 5).SetBody(3));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 6).SetBody(2));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, 0, 7).SetBody(1));
+	AddEvent(WepEvt().PrimaryClip(0).SetBody(8));
+	AddEvent(WepEvt().PrimaryClip(1).SetBody(7));
+	AddEvent(WepEvt().PrimaryClip(2).SetBody(6));
+	AddEvent(WepEvt().PrimaryClip(3).SetBody(5));
+	AddEvent(WepEvt().PrimaryClip(4).SetBody(4));
+	AddEvent(WepEvt().PrimaryClip(5).SetBody(3));
+	AddEvent(WepEvt().PrimaryClip(6).SetBody(2));
+	AddEvent(WepEvt().PrimaryClip(7).SetBody(1));
 
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 16).PlaySound(reloadSnd1, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).PlaySound(reloadSnd2, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).SetBody(0));
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 1330).WepAnim(M249_RELOAD_END));
+	AddEvent(WepEvt().Reload().Delay(16).IdleSound(reloadSnd1));
+	AddEvent(WepEvt().Reload().Delay(1330).IdleSound(reloadSnd2));
+	AddEvent(WepEvt().Reload().Delay(1330).SetBody(0));
+	AddEvent(WepEvt().Reload().Delay(1330).WepAnim(M249_RELOAD_END));
 
 	// client-side HUD sprites and config
 	PRECACHE_HUD_FILES("sprites/weapon_m249.txt");

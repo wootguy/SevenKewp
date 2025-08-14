@@ -914,17 +914,20 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 		case WC_EVT_SET_BODY:
 			evt.setBody.newBody = READ_BYTE();
 			break;
-		case WC_EVT_WEP_ANIM:
-			evt.anim.animMin = READ_BYTE();
-			evt.anim.animMax = READ_BYTE();
-			evt.anim.akimbo = READ_BYTE();
+		case WC_EVT_WEP_ANIM: {
+			uint8_t packedHeader = READ_BYTE();
+			evt.anim.akimbo = packedHeader >> 4;
+			evt.anim.numAnim = packedHeader & 0xf;
+			for (int k = 0; k < evt.anim.numAnim && k < MAX_WC_RANDOM_SELECTION; k++) {
+				evt.anim.anims[k] = READ_BYTE();
+			}
 			break;
+		}
 		case WC_EVT_BULLETS: {
 			evt.bullets.count = READ_BYTE();
 			//evt.bullets.damage = READ_SHORT();
 			evt.bullets.spreadX = READ_SHORT();
 			evt.bullets.spreadY = READ_SHORT();
-			evt.bullets.btype = READ_BYTE();
 			evt.bullets.tracerFreq = READ_BYTE();
 
 			uint8_t packedFlags = READ_BYTE();

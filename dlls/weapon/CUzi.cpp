@@ -72,62 +72,39 @@ void CUzi::Precache()
 	params.akimbo.akimboDeployTime = 500;
 
 	float spread = VECTOR_CONE_6DEGREES.x;
-	int bulletf = FL_WC_BULLETS_DYNAMIC_SPREAD;
-	int btype = BULLET_PLAYER_9MM;
+	int bulletf = 0;
 
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY, 0, WC_TRIG_SHOOT_ARG_NOT_AKIMBO)
-		.WepAnim(UZI_SHOOT));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY, 0, WC_TRIG_SHOOT_ARG_AKIMBO)
-		.WepAnim(UZI_AKIMBO_FIRE_RIGHT, UZI_AKIMBO_FIRE_RIGHT, WC_ANIM_TRIG_HAND));
+	AddEvent(WepEvt().Primary().NotAkimbo().WepAnim(UZI_SHOOT));
+	AddEvent(WepEvt().Primary().AkimboOnly().WepAnim(UZI_AKIMBO_FIRE_RIGHT, WC_ANIM_TRIG_HAND));
 	
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY)
+	AddEvent(WepEvt().Primary()
 		.PlaySound(shootSnd1, CHAN_STATIC, 0.7f, ATTN_NORM, 96, 104, DISTANT_9MM, WC_AIVOL_NORMAL)
 		.AddSound(shootSnd2)
 		.AddSound(shootSnd3));
 
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY)
-		.PunchRandom(2, 0));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_PRIMARY)
-		.Bullets(1, gSkillData.sk_plr_9mm_bullet, spread, spread, btype, 2, bulletf));
+	AddEvent(WepEvt().Primary().Bullets(1, gSkillData.sk_plr_9mm_bullet, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
+	AddEvent(WepEvt().Primary().PunchRandom(2, 0));
 
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 300)
-		.PlaySound(reloadSnd1, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 800, WC_TRIG_SHOOT_ARG_NOT_AKIMBO)
-		.PlaySound(akimboPullSnd2, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 1000, WC_TRIG_SHOOT_ARG_AKIMBO)
-		.PlaySound(reloadSnd2, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 1200, WC_TRIG_SHOOT_ARG_NOT_AKIMBO)
-		.PlaySound(reloadSnd2, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_RELOAD, 1900, WC_TRIG_SHOOT_ARG_NOT_AKIMBO)
-		.PlaySound(reloadSnd3, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
+	AddEvent(WepEvt().Reload().Delay(300).IdleSound(reloadSnd1));
+	AddEvent(WepEvt().Reload().NotAkimbo().Delay(800).IdleSound(akimboPullSnd2));
+	AddEvent(WepEvt().Reload().AkimboOnly().Delay(1000).IdleSound(reloadSnd2));
+	AddEvent(WepEvt().Reload().NotAkimbo().Delay(1200).IdleSound(reloadSnd2));
+	AddEvent(WepEvt().Reload().NotAkimbo().Delay(1900).IdleSound(reloadSnd3));
 
-	AddEvent(WepEvt(WC_TRIG_DEPLOY, 100, WC_TRIG_SHOOT_ARG_NOT_AKIMBO)
-		.PlaySound(deploySnd, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
+	AddEvent(WepEvt().Deploy().NotAkimbo().Delay(100).IdleSound(deploySnd));
 
-	AddEvent(WepEvt(WC_TRIG_DEPLOY, 0, WC_TRIG_SHOOT_ARG_AKIMBO)
-		.PlaySound(akimboDeploySnd, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_DEPLOY, 0, WC_TRIG_SHOOT_ARG_AKIMBO)
-		.Cooldown(1170, FL_WC_COOLDOWN_IDLE));
+	AddEvent(WepEvt().Deploy().AkimboOnly().IdleSound(akimboDeploySnd));
+	AddEvent(WepEvt().Deploy().AkimboOnly().Cooldown(1170, FL_WC_COOLDOWN_IDLE));
 
-	AddEvent(WepEvt(WC_TRIG_SHOOT_TERTIARY, 0, WC_TRIG_SHOOT_ARG_NOT_AKIMBO)
-		.WepAnim(UZI_AKIMBO_PULL));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_TERTIARY, 100, WC_TRIG_SHOOT_ARG_NOT_AKIMBO)
-		.PlaySound(akimboPullSnd2, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_TERTIARY, 400, WC_TRIG_SHOOT_ARG_NOT_AKIMBO)
-		.PlaySound(akimboPullSnd1, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_TERTIARY, 1000, WC_TRIG_SHOOT_ARG_NOT_AKIMBO)
-		.PlaySound(deploySnd2, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_TERTIARY, 1200, WC_TRIG_SHOOT_ARG_NOT_AKIMBO)
-		.ToggleAkimbo());
+	AddEvent(WepEvt().Tertiary().NotAkimbo().WepAnim(UZI_AKIMBO_PULL));
+	AddEvent(WepEvt().Tertiary().NotAkimbo().Delay(100).IdleSound(akimboPullSnd2));
+	AddEvent(WepEvt().Tertiary().NotAkimbo().Delay(400).IdleSound(akimboPullSnd1));
+	AddEvent(WepEvt().Tertiary().NotAkimbo().Delay(1000).IdleSound(deploySnd2));
+	AddEvent(WepEvt().Tertiary().NotAkimbo().Delay(1200).ToggleAkimbo());
 
-	AddEvent(WepEvt(WC_TRIG_SHOOT_TERTIARY, 0, WC_TRIG_SHOOT_ARG_AKIMBO)
-		.WepAnim(UZI_AKIMBO_HOLSTER, UZI_AKIMBO_HOLSTER, WC_ANIM_BOTH_HANDS));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_TERTIARY)
-		.Cooldown(tertiary.cooldown, FL_WC_COOLDOWN_IDLE));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_TERTIARY, 0, WC_TRIG_SHOOT_ARG_AKIMBO)
-		.PlaySound(deploySnd2, CHAN_WEAPON, 1.0f, ATTN_IDLE, 100));
-	AddEvent(WepEvt(WC_TRIG_SHOOT_TERTIARY, 500, WC_TRIG_SHOOT_ARG_AKIMBO)
-		.ToggleAkimbo());
+	AddEvent(WepEvt().Tertiary().AkimboOnly().WepAnim(UZI_AKIMBO_HOLSTER, WC_ANIM_BOTH_HANDS));
+	AddEvent(WepEvt().Tertiary().AkimboOnly().IdleSound(deploySnd2));
+	AddEvent(WepEvt().Tertiary().AkimboOnly().Delay(500).ToggleAkimbo());
 
 	// client-side HUD sprites and config
 	PRECACHE_HUD_FILES("sprites/weapon_uzi.txt");

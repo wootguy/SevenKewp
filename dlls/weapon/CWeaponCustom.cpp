@@ -11,8 +11,8 @@ void UpdateZoomCrosshair(int id, bool zoom);
 void WC_EV_LocalSound(WepEvt& evt, int soundIdx, int panning);
 void WC_EV_EjectShell(WepEvt& evt);
 void WC_EV_PunchAngle(WepEvt& evt, int seed);
-void WC_EV_WepAnim(WepEvt& evt, int wepid);
-void WC_EV_Bullets(WepEvt& evt, float spreadX, float spreadY, bool showTracer);
+void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
+void WC_EV_Bullets(WepEvt& evt, float spreadX, float spreadY, bool showTracer, bool decal, bool texSound);
 #else
 #define PRINTF(fmt, ...)
 #include "game.h"
@@ -701,8 +701,8 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 			}
 
 			//WRITE_BYTE(evt.playSound.distantSound); sentBytes += 1; // not needed for prediction
-		}
 			break;
+		}
 		case WC_EVT_EJECT_SHELL:
 			WRITE_SHORT(evt.ejectShell.model); sentBytes += 2;
 			WRITE_SHORT(evt.ejectShell.offsetForward); sentBytes += 2;
@@ -718,17 +718,19 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		case WC_EVT_SET_BODY:
 			WRITE_BYTE(evt.setBody.newBody); sentBytes += 1;
 			break;
-		case WC_EVT_WEP_ANIM:
-			WRITE_BYTE(evt.anim.animMin); sentBytes += 1;
-			WRITE_BYTE(evt.anim.animMax); sentBytes += 1;
-			WRITE_BYTE(evt.anim.akimbo); sentBytes += 1;
+		case WC_EVT_WEP_ANIM: {
+			uint8_t packedHeader = evt.anim.akimbo << 4 | evt.anim.numAnim;
+			WRITE_BYTE(packedHeader); sentBytes += 1;
+			for (int i = 0; i < evt.anim.numAnim; i++) {
+				WRITE_BYTE(evt.anim.anims[i]); sentBytes += 1;
+			}
 			break;
+		}
 		case WC_EVT_BULLETS: {
 			WRITE_BYTE(evt.bullets.count); sentBytes += 1;
 			//WRITE_SHORT(evt.bullets.damage); sentBytes += 2; // not needed for prediction
 			WRITE_SHORT(evt.bullets.spreadX); sentBytes += 2;
 			WRITE_SHORT(evt.bullets.spreadY); sentBytes += 2;
-			WRITE_BYTE(evt.bullets.btype); sentBytes += 1;
 			WRITE_BYTE(evt.bullets.tracerFreq); sentBytes += 1;
 
 			uint8_t packedFlags = (evt.bullets.flags << 4) | evt.bullets.flashSz;
@@ -924,7 +926,7 @@ Vector CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer) {
 
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
-		evt.bullets.btype, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
+		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
 		m_pPlayer->random_seed, &vecEnd, true);
 	lagcomp_end();
 
@@ -937,7 +939,9 @@ Vector CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	bool showTracer = CheckTracer(eidx, vecSrc, vecDir, gpGlobals->v_right, evt.bullets.tracerFreq);
 
 #ifdef CLIENT_DLL
-	WC_EV_Bullets(evt, vecDir.x, vecDir.y, showTracer);
+	bool decal = !(evt.bullets.flags & FL_WC_BULLETS_NO_DECAL);
+	bool texSound = !(evt.bullets.flags & FL_WC_BULLETS_NO_SOUND);
+	WC_EV_Bullets(evt, vecDir.x, vecDir.y, showTracer, decal, texSound);
 #else
 	for (int i = 1; i < gpGlobals->time; i++) {
 		CBasePlayer* listener = UTIL_PlayerByIndex(i);
@@ -1040,15 +1044,18 @@ void CWeaponCustom::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
 }
 
 void CWeaponCustom::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand) {
+	int idx = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.anim.numAnim - 1);
+	int anim = evt.anim.anims[idx];
+
 	bool leftOnly = evt.anim.akimbo == WC_ANIM_LEFT_HAND || (evt.anim.akimbo == WC_ANIM_TRIG_HAND && leftHand);
 	if (evt.anim.akimbo == WC_ANIM_BOTH_HANDS || leftOnly) {
-		SendAkimboAnim(UTIL_SharedRandomLong(m_pPlayer->random_seed, evt.anim.animMin, evt.anim.animMax));
+		SendAkimboAnim(anim);
 		if (leftOnly)
 			return; // don't play the right hand event
 	}
 
 #ifdef CLIENT_DLL
-	WC_EV_WepAnim(evt, m_iId);
+	WC_EV_WepAnim(evt, m_iId, anim);
 #else
 	//SendWeaponAnim()
 #endif
