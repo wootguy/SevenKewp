@@ -1831,10 +1831,8 @@ extern int g_irunninggausspred;
 const char* GetWeaponCustomSound(int idx);
 int GetCustomWeaponBody(int id);
 
-void WC_EV_LocalSound(WepEvt& evt, int soundIdx, int panning) {
-	const char* soundPath = GetWeaponCustomSound(soundIdx);
-	float vol = evt.playSound.volume / 255.0f;
-	int pitch = gEngfuncs.pfnRandomLong(evt.playSound.pitchMin, evt.playSound.pitchMax);
+void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning) {
+	const char* soundPath = GetWeaponCustomSound(sndIdx);
 	cl_entity_t* player = GetLocalPlayer();
 	int entidx = player->index;
 	Vector origin = player->origin;
@@ -1851,8 +1849,7 @@ void WC_EV_LocalSound(WepEvt& evt, int soundIdx, int panning) {
 		vol *= 0.8f;
 	}
 
-	gEngfuncs.pEventAPI->EV_PlaySound(entidx, origin, evt.playSound.channel, soundPath, vol,
-		evt.playSound.attn / 64.0f, 0, pitch);
+	gEngfuncs.pEventAPI->EV_PlaySound(entidx, origin, chan, soundPath, vol, attn, 0, pitch);
 }
 
 extern vec3_t v_angles;

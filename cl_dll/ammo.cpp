@@ -883,6 +883,12 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 		evt.delay = packedHeader2 >> 4;
 
 		switch (evt.evtType) {
+		case WC_EVT_IDLE_SOUND: {
+			uint16_t packedFlags = READ_SHORT();
+			evt.idleSound.sound = packedFlags >> 7;
+			evt.idleSound.volume = packedFlags & 0x7F;
+			break;
+		}
 		case WC_EVT_PLAY_SOUND: {
 			uint16_t packedFlags = READ_SHORT();
 			evt.playSound.sound = packedFlags >> 5;

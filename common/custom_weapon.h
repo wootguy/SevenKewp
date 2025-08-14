@@ -50,7 +50,8 @@ enum WeaponCustomEventTriggers {
 };
 
 enum WeaponCustomEventType {
-	WC_EVT_PLAY_SOUND,
+	WC_EVT_IDLE_SOUND, // simple sound playback for reloads
+	WC_EVT_PLAY_SOUND, // advanced sound playback
 	WC_EVT_EJECT_SHELL,
 	WC_EVT_PUNCH_SET, // set punch angles to the given values
 	WC_EVT_PUNCH_RANDOM, // set random punch angle between +/- the given angles
@@ -94,6 +95,11 @@ struct WepEvt {
 
 	// event arguments
 	union {
+		struct {
+			uint16_t sound : 9;
+			uint16_t volume : 7;
+		} idleSound;
+
 		struct {
 			uint16_t sound : 9;
 			uint16_t channel : 3;
@@ -248,13 +254,9 @@ struct WepEvt {
 	}
 
 	WepEvt IdleSound(int sound, float volume=1.0f) {
-		evtType = WC_EVT_PLAY_SOUND;
-		playSound.sound = sound;
-		playSound.channel = CHAN_STATIC;
-		playSound.volume = (int)(volume * 255.5f);
-		playSound.attn = clampf(ATTN_IDLE * 64, 0, 255.0f);
-		playSound.pitchMin = 100;
-		playSound.pitchMax = 100;
+		evtType = WC_EVT_IDLE_SOUND;
+		idleSound.sound = sound;
+		idleSound.volume = (int)(volume * 127.5f);
 		return *this;
 	}
 

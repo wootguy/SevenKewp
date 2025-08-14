@@ -8,7 +8,7 @@ extern int g_runfuncs;
 extern int g_runningKickbackPred;
 extern Vector g_vApplyVel;
 void UpdateZoomCrosshair(int id, bool zoom);
-void WC_EV_LocalSound(WepEvt& evt, int soundIdx, int panning);
+void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning);
 void WC_EV_EjectShell(WepEvt& evt);
 void WC_EV_PunchAngle(WepEvt& evt, int seed);
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
@@ -42,6 +42,10 @@ void CWeaponCustom::PrecacheEvents() {
 				if (evt.playSound.additionalSounds[k] && k < MAX_WC_RANDOM_SELECTION)
 					m_customWeaponSounds[evt.playSound.additionalSounds[k]] = true;
 			}
+		}
+		if (evt.evtType == WC_EVT_IDLE_SOUND) {
+			if (evt.idleSound.sound)
+				m_customWeaponSounds[evt.idleSound.sound] = true;
 		}
 	}
 
@@ -687,6 +691,11 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		WRITE_SHORT(packedHeader2); sentBytes += 2;
 
 		switch (evt.evtType) {
+		case WC_EVT_IDLE_SOUND: {
+			uint16_t packedFlags = (evt.idleSound.sound << 7) | evt.idleSound.volume;
+			WRITE_SHORT(packedFlags); sentBytes += 2;
+			break;
+		}
 		case WC_EVT_PLAY_SOUND: {
 			uint16_t packedFlags = evt.playSound.sound << 5 | evt.playSound.channel << 2 | evt.playSound.aiVol;
 			WRITE_SHORT(packedFlags); sentBytes += 2;
@@ -973,11 +982,38 @@ void CWeaponCustom::PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer) {
 }
 
 void CWeaponCustom::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire) {
-	uint16_t idx = evt.playSound.sound;
-	if (evt.playSound.numAdditionalSounds) {
-		int rnd = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.playSound.numAdditionalSounds);
-		if (rnd > 0) {
-			idx = evt.playSound.additionalSounds[rnd - 1];
+	int channel = CHAN_STATIC;
+	int pitch = 100;
+	float volume = evt.idleSound.volume / 127.0f;
+	float attn = ATTN_IDLE;
+	int idx = evt.idleSound.sound;
+
+	if (evt.evtType == WC_EVT_PLAY_SOUND) {
+		idx = evt.playSound.sound;
+		if (evt.playSound.numAdditionalSounds) {
+			int rnd = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.playSound.numAdditionalSounds);
+			if (rnd > 0) {
+				idx = evt.playSound.additionalSounds[rnd - 1];
+			}
+		}
+
+		channel = evt.playSound.channel;
+		pitch = UTIL_SharedRandomLong(m_pPlayer->random_seed, evt.playSound.pitchMin, evt.playSound.pitchMax);
+		volume = evt.playSound.volume / 255.0f;
+		attn = evt.playSound.attn / 64.0f;
+
+		switch (evt.playSound.aiVol) {
+		case WC_AIVOL_QUIET:
+			m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
+			break;
+		case WC_AIVOL_NORMAL:
+			m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
+			break;
+		case WC_AIVOL_LOUD:
+			m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -986,27 +1022,12 @@ void CWeaponCustom::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 	if (akimboFire)
 		panning = leftHand ? 1 : 2; // signal the event player to pan the audio
 
-	WC_EV_LocalSound(evt, idx, panning);
+	WC_EV_LocalSound(evt, idx, channel, pitch, volume, attn, panning);
 #else
 	uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
 
-	switch (evt.playSound.aiVol) {
-	case WC_AIVOL_QUIET:
-		m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
-		break;
-	case WC_AIVOL_NORMAL:
-		m_pPlayer->m_iWeaponVolume = NORMAL_GUN_VOLUME;
-		break;
-	case WC_AIVOL_LOUD:
-		m_pPlayer->m_iWeaponVolume = LOUD_GUN_VOLUME;
-		break;
-	default:
-		break;
-	}
-
-	StartSound(m_pPlayer->edict(), evt.playSound.channel, INDEX_SOUND(idx),
-		evt.playSound.volume / 255.0f, evt.playSound.attn / 64.0f, SND_FL_PREDICTED, 100,
-		m_pPlayer->pev->origin, messageTargets);
+	StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(idx), volume, attn,
+		SND_FL_PREDICTED, 100, m_pPlayer->pev->origin, messageTargets);
 
 	if (evt.playSound.distantSound) {
 		PLAY_DISTANT_SOUND(m_pPlayer->edict(), evt.playSound.distantSound);
@@ -1109,6 +1130,9 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 	case WC_EVT_PUNCH_RANDOM:
 	case WC_EVT_PUNCH_SET:
 		PlayEvent_PunchAngle(evt, m_pPlayer);
+		break;
+	case WC_EVT_IDLE_SOUND:
+		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire);
 		break;
 	case WC_EVT_PLAY_SOUND:
 		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire);
