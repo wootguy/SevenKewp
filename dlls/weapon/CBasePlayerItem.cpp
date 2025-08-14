@@ -173,6 +173,7 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 		CWeaponCustom* newCustom = pNewWeapon->MyWeaponCustomPtr();
 		if (thisCustom && newCustom) {
 			newCustom->SetCanAkimbo(thisCustom->CanAkimbo());
+			newCustom->SetAkimbo(thisCustom->IsAkimbo());
 		}
 
 		CBasePlayerItem* wep = (CBasePlayerItem*)pNewWeapon->GetWeaponPtr();

@@ -69,7 +69,7 @@ extern cvar_t	*cl_vsmoothing;
 #define	CAM_MODE_RELAX		1
 #define CAM_MODE_FOCUS		2
 
-vec3_t		v_origin, v_angles, v_cl_angles, v_sim_org, v_lastAngles;
+vec3_t		v_origin, v_angles, v_cl_angles, v_sim_org, v_sim_vel, v_lastAngles;
 float		v_frametime, v_lastDistance;	
 float		v_cameraRelaxAngle	= 5.0f;
 float		v_cameraFocusAngle	= 35.0f;
@@ -499,6 +499,9 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	cl_entity_t *pwater;
 
 	V_DriftPitch ( pparams );
+
+	VectorCopy(pparams->simorg, v_sim_org);
+	VectorCopy(pparams->simvel, v_sim_vel);
 
 	if ( gEngfuncs.IsSpectateOnly() )
 	{

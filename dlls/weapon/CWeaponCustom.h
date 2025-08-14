@@ -87,7 +87,7 @@ public:
 	Vector PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
-	void PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
 	void PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
 	void PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer);

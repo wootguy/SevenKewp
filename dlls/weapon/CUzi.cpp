@@ -37,6 +37,8 @@ void CUzi::Precache()
 	int akimboPullSnd1 = PRECACHE_SOUND("weapons/uzi/akimbo_pull1.wav");
 	int akimboPullSnd2 = PRECACHE_SOUND("weapons/uzi/akimbo_pull2.wav");
 
+	int iShell = PRECACHE_MODEL("models/shell.mdl");
+
 	animExt = "onehanded";
 	animExtAkimbo = "uzis";
 	pmodelAkimbo = "models/p_2uzis.mdl";
@@ -84,6 +86,7 @@ void CUzi::Precache()
 
 	AddEvent(WepEvt().Primary().Bullets(1, gSkillData.sk_plr_9mm_bullet, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().PunchRandom(2, 0));
+	AddEvent(WepEvt().Primary().EjectShell(iShell, 28, -12, 16));
 
 	AddEvent(WepEvt().Reload().Delay(300).IdleSound(reloadSnd1));
 	AddEvent(WepEvt().Reload().NotAkimbo().Delay(800).IdleSound(akimboPullSnd2));
@@ -95,6 +98,8 @@ void CUzi::Precache()
 
 	AddEvent(WepEvt().Deploy().AkimboOnly().IdleSound(akimboDeploySnd));
 	AddEvent(WepEvt().Deploy().AkimboOnly().Cooldown(1170, FL_WC_COOLDOWN_IDLE));
+
+	AddEvent(WepEvt().Tertiary().Cooldown(2500, FL_WC_COOLDOWN_IDLE));
 
 	AddEvent(WepEvt().Tertiary().NotAkimbo().WepAnim(UZI_AKIMBO_PULL));
 	AddEvent(WepEvt().Tertiary().NotAkimbo().Delay(100).IdleSound(akimboPullSnd2));

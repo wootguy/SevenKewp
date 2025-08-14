@@ -414,6 +414,7 @@ int CBasePlayerWeapon::ExtractClipAmmo( CBasePlayerWeapon *pWeapon ) { return 0;
 void CBasePlayerWeapon::RetireWeapon(void) { }
 void CBasePlayerWeapon::KeyValue(KeyValueData* pkvd) {}
 void CBasePlayerWeapon::Precache() {}
+void CBasePlayerWeapon::SendWeaponAnimSpec(int iAnim) {}
 CBaseEntity* CBasePlayerWeapon::Respawn() { return NULL;  }
 const char* CBasePlayerWeapon::GetModelV(const char*) { return 0; }
 const char* CBasePlayerWeapon::GetModelP() { return 0; }

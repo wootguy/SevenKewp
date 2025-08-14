@@ -32,6 +32,7 @@ public:
 	virtual void ResetEmptySound( void );
 
 	virtual void SendWeaponAnim( int iAnim, int skiplocal = 1, int body = 0 );  // skiplocal is 1 if client is predicting weapon animations
+	virtual void SendWeaponAnimSpec(int iAnim); // send a weapon anim to spectators
 
 	virtual BOOL CanDeploy( void );
 	virtual BOOL IsUseable( void );

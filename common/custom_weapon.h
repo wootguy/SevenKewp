@@ -27,7 +27,8 @@
 
 #define FL_WC_COOLDOWN_PRIMARY 1
 #define FL_WC_COOLDOWN_SECONDARY 2
-#define FL_WC_COOLDOWN_IDLE 4
+#define FL_WC_COOLDOWN_TERTIARY 4
+#define FL_WC_COOLDOWN_IDLE 8
 
 enum WeaponCustomEventTriggerShootArg {
 	WC_TRIG_SHOOT_ARG_ALWAYS,		// always fire the shoot event
@@ -104,7 +105,7 @@ struct WepEvt {
 			uint16_t sound : 9;
 			uint16_t channel : 3;
 			uint16_t aiVol : 2; // WeaponCustomAiVol
-			uint8_t reserved : 2;
+			uint16_t reserved : 2;
 			uint8_t volume;
 			uint8_t attn;
 			uint8_t pitchMin;

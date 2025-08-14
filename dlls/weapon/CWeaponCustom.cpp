@@ -9,7 +9,7 @@ extern int g_runningKickbackPred;
 extern Vector g_vApplyVel;
 void UpdateZoomCrosshair(int id, bool zoom);
 void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning);
-void WC_EV_EjectShell(WepEvt& evt);
+void WC_EV_EjectShell(WepEvt& evt, bool leftHand);
 void WC_EV_PunchAngle(WepEvt& evt, int seed);
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
 void WC_EV_Bullets(WepEvt& evt, float spreadX, float spreadY, bool showTracer, bool decal, bool texSound);
@@ -172,7 +172,7 @@ BOOL CWeaponCustom::Deploy()
 #else
 	const char* animSet = GetAnimSet();
 
-	ret = DefaultDeploy(STRING(g_indexModels[params.vmodel]), m_defaultModelP, deployAnim, animSet, 1);
+	ret = DefaultDeploy(STRING(g_indexModels[params.vmodel]), GetModelP(), deployAnim, animSet, 1);
 #endif
 
 	if (IsAkimbo())
@@ -254,16 +254,19 @@ void CWeaponCustom::Reload() {
 		if (m_bInAkimboReload) {
 			SendAkimboAnim(reloadStage->anim);
 			SendWeaponAnim(params.akimbo.holsterAnim, 1, pev->body);
+			SendWeaponAnimSpec(params.akimbo.holsterAnim);
 			m_pPlayer->SetAnimation(PLAYER_RELOAD2, totalReloadTime * 0.001f);
 		}
 		else {
 			SendAkimboAnim(params.akimbo.holsterAnim);
 			SendWeaponAnim(reloadStage->anim, 1, pev->body);
+			SendWeaponAnimSpec(reloadStage->anim);
 			m_pPlayer->SetAnimation(PLAYER_RELOAD3, totalReloadTime * 0.001f);
 		}
 	}
 	else {
 		SendWeaponAnim(reloadStage->anim, 1, pev->body);
+		SendWeaponAnimSpec(reloadStage->anim);
 		m_pPlayer->SetAnimation(PLAYER_RELOAD, totalReloadTime * 0.001f);
 	}
 
@@ -331,6 +334,7 @@ void CWeaponCustom::WeaponIdle() {
 		if (idleRnd <= 0) {
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + idle.time * 0.001f;
 			SendWeaponAnim(idle.anim, 1, pev->body);
+			SendWeaponAnimSpec(idle.anim);
 			break;
 		}
 	}
@@ -366,6 +370,7 @@ void CWeaponCustom::ItemPostFrame() {
 		if (IsAkimbo()) {
 			if (m_bInAkimboReload) {
 				SendWeaponAnim(params.akimbo.deployAnim, 1, pev->body);
+				SendWeaponAnimSpec(params.akimbo.deployAnim);
 			}
 			else {
 				SendAkimboAnim(params.akimbo.deployAnim);
@@ -600,7 +605,7 @@ void CWeaponCustom::CancelZoom() {
 
 bool CWeaponCustom::CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq)
 {
-	if (idx < 0 || idx >= gpGlobals->maxClients) {
+	if (idx < 0 || idx >= 32) {
 		return false;
 	}
 
@@ -952,15 +957,17 @@ Vector CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	bool texSound = !(evt.bullets.flags & FL_WC_BULLETS_NO_SOUND);
 	WC_EV_Bullets(evt, vecDir.x, vecDir.y, showTracer, decal, texSound);
 #else
-	for (int i = 1; i < gpGlobals->time; i++) {
-		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+	if (showTracer) {
+		for (int i = 1; i < gpGlobals->time; i++) {
+			CBasePlayer* listener = UTIL_PlayerByIndex(i);
 
-		if (!listener) {
-			continue;
-		}
+			if (!listener) {
+				continue;
+			}
 
-		if (m_pPlayer->InPAS(listener->edict())) {
-			UTIL_Tracer(vecSrc, vecEnd, MSG_ONE_UNRELIABLE, listener->edict());
+			if (m_pPlayer != listener && m_pPlayer->InPAS(listener->edict())) {
+				UTIL_Tracer(vecSrc, vecEnd, MSG_ONE_UNRELIABLE, listener->edict());
+			}
 		}
 	}
 #endif
@@ -1035,11 +1042,40 @@ void CWeaponCustom::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 #endif
 }
 
-void CWeaponCustom::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer) {
+void CWeaponCustom::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand) {
 #ifdef CLIENT_DLL
-	WC_EV_EjectShell(evt);
+	WC_EV_EjectShell(evt, leftHand);
 #else
-	// TODO: te_model?
+	Vector ori = m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs;
+	Vector vel = m_pPlayer->pev->velocity;
+	Vector angles = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
+
+	Vector forward, right, up;
+	UTIL_MakeVectorsPrivate(angles, forward, right, up);
+
+	if (leftHand)
+		right = right * -1;
+
+	float forwardScale = evt.ejectShell.offsetForward * 0.01f;
+	float upScale = evt.ejectShell.offsetUp * 0.01f;
+	float rightScale = evt.ejectShell.offsetRight * 0.01f;
+
+	float fR = RANDOM_FLOAT(50, 70);
+	float fU = RANDOM_FLOAT(100, 150);
+
+	Vector ShellVelocity = vel + right * fR + up * fU + forward * 25;
+	Vector ShellOrigin = ori + up* upScale + forward*forwardScale + right*rightScale;
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+		if (!plr || plr == m_pPlayer)
+			continue;
+
+		if (m_pPlayer->InPAS(plr->edict())) {
+			EjectBrass(ShellOrigin, ShellVelocity, angles.y, evt.ejectShell.model, TE_BOUNCE_SHELL, plr->edict());
+		}		
+	}
 #endif
 }
 
@@ -1078,7 +1114,7 @@ void CWeaponCustom::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 #ifdef CLIENT_DLL
 	WC_EV_WepAnim(evt, m_iId, anim);
 #else
-	//SendWeaponAnim()
+	SendWeaponAnimSpec(anim);
 #endif
 }
 
@@ -1089,6 +1125,9 @@ void CWeaponCustom::PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	}
 	if (evt.cooldown.targets & FL_WC_COOLDOWN_SECONDARY) {
 		m_flNextSecondaryAttack = nextAction;
+	}
+	if (evt.cooldown.targets & FL_WC_COOLDOWN_TERTIARY) {
+		m_flNextTertiaryAttack = nextAction;
 	}
 	if (evt.cooldown.targets & FL_WC_COOLDOWN_IDLE) {
 		m_flTimeWeaponIdle = nextAction;
@@ -1125,7 +1164,7 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 		PlayEvent_Kickback(evt, m_pPlayer);
 		break;
 	case WC_EVT_EJECT_SHELL:
-		PlayEvent_EjectShell(evt, m_pPlayer);
+		PlayEvent_EjectShell(evt, m_pPlayer, leftHand);
 		break;
 	case WC_EVT_PUNCH_RANDOM:
 	case WC_EVT_PUNCH_SET:

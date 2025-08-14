@@ -1853,16 +1853,20 @@ void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, f
 }
 
 extern vec3_t v_angles;
+extern vec3_t v_sim_org;
+extern vec3_t v_sim_vel;
 
-void WC_EV_EjectShell(WepEvt& evt) {
+void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 	cl_entity_t* player = GetLocalPlayer();
 	int entidx = player->index;
-	Vector origin = player->origin;
 	Vector angles = v_angles;
-	Vector velocity = player->curstate.velocity;
 	Vector forward, right, up;
-	AngleVectors(angles, forward, right, up);
+ 	AngleVectors(angles, forward, right, up);
 	
+	Vector view_ofs;
+	gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(view_ofs);
+	Vector origin = v_sim_org;
+
 	Vector ShellVelocity;
 	Vector ShellOrigin;
 
@@ -1873,8 +1877,13 @@ void WC_EV_EjectShell(WepEvt& evt) {
 	static event_args_s args;
 	args.entindex = entidx;
 
-	EV_GetDefaultShellInfo(&args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up,
+	if (leftHand) {
+		right = right * -1;
+	}
+
+	EV_GetDefaultShellInfo(&args, origin, v_sim_vel, ShellVelocity, ShellOrigin, forward, right, up,
 		forwardScale, upScale, rightScale);
+
 	EV_EjectBrass(ShellOrigin, ShellVelocity, angles[YAW], evt.ejectShell.model, TE_BOUNCE_SHELL);
 }
 
@@ -1936,6 +1945,12 @@ void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunsh
 	int m_iBeam = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/smoke.spr");
 	gEngfuncs.pEfxAPI->R_BeamPoints(vecSrc, vecEnd, m_iBeam, 5, 1, 0, 1, 0, 0, 0, 0, 1, 1);
 	*/
+
+	if (showTracer) {
+		Vector offset(0, 0, -4);
+		Vector vecTracerSrc = vecSrc + offset + right * 2 + forward * 16;
+		EV_CreateTracer(vecTracerSrc, tr.endpos);
+	}
 
 	// do damage, paint decals
 	if (tr.fraction != 1.0) {

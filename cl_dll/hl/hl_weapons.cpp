@@ -980,6 +980,9 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			player.pev->fov = from->client.fov;
 		}
 	}
+	else {
+		player.pev->fov = from->client.fov;
+	}
 
 	
 	

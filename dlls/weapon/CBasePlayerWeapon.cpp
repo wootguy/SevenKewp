@@ -395,6 +395,14 @@ void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 	WRITE_BYTE(pev->body);					// weaponmodel bodygroup.
 	MESSAGE_END();
 
+	SendWeaponAnimSpec(iAnim);
+}
+
+void CBasePlayerWeapon::SendWeaponAnimSpec(int iAnim) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	// play animation for spectators
 	for (int i = 1; i < gpGlobals->maxClients; i++) {
 		CBasePlayer* spec = (CBasePlayer*)UTIL_PlayerByIndex(i);
@@ -407,6 +415,7 @@ void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 		}
 	}
 }
+
 
 BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, char* szName, int iMaxClip, int iMaxCarry)
 {
