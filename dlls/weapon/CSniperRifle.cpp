@@ -5,11 +5,9 @@ LINK_ENTITY_TO_CLASS(weapon_sniperrifle, CSniperRifle)
 void CSniperRifle::Spawn()
 {
 	pev->classname = MAKE_STRING("weapon_sniperrifle"); // hack to allow for old names
-	Precache();
-	SetWeaponModelW();
 	m_iId = WEAPON_M40A1;
 	m_iDefaultAmmo = M40A1_DEFAULT_GIVE;
-	FallInit();
+	CWeaponCustom::Spawn();
 }
 
 void CSniperRifle::Precache()

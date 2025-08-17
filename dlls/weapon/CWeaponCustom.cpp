@@ -27,6 +27,10 @@ void CWeaponCustom::Spawn() {
 	Precache();
 	SetWeaponModelW();
 	FallInit();// get ready to fall down.
+
+	if (params.flags & FL_WC_WEP_USE_ONLY) {
+		SetTouch(&CBaseEntity::ItemBounceTouch);
+	}
 }
 
 void CWeaponCustom::Precache() {

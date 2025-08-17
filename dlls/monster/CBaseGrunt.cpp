@@ -928,21 +928,25 @@ bool CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity
 		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_SAW) {
-		//DropEquipmentToss("weapon_m249", vecGunPos, vecGunAngles, velocity, aVelocity);
+		DropEquipmentToss("weapon_m249", vecGunPos, vecGunAngles, velocity, aVelocity);
+		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_DEAGLE) {
 		//DropEquipmentToss("weapon_eagle", vecGunPos, vecGunAngles, velocity, aVelocity);
 		DropEquipmentToss("weapon_357", vecGunPos, vecGunAngles, velocity, aVelocity);
+		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_GLOCK) {
 		DropEquipmentToss("weapon_9mmhandgun", vecGunPos, vecGunAngles, velocity, aVelocity);
 		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_SNIPER) {
-		//DropEquipmentToss("weapon_sniperrifle", vecGunPos, vecGunAngles, velocity, aVelocity);
+		DropEquipmentToss("weapon_sniperrifle", vecGunPos, vecGunAngles, velocity, aVelocity);
+		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_MINIGUN) {
-		//DropEquipmentToss("weapon_minigun", vecGunPos, vecGunAngles, velocity, aVelocity);
+		DropEquipmentToss("weapon_minigun", vecGunPos, vecGunAngles, velocity, aVelocity);
+		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_AKIMBO_UZIS) {
 		DropEquipmentToss("weapon_uziakimbo", vecGunPos, vecGunAngles, velocity, aVelocity);
@@ -1183,7 +1187,7 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 		//PRECACHE_SOUND("weapons/saw_fire3.wav");
 		PRECACHE_SOUND("weapons/saw_reload.wav");
 
-		//AddPrecacheWeapon("weapon_9mmAR");
+		AddPrecacheWeapon("weapon_m249");
 	}
 	if (equipment & MEQUIP_357) {
 		PRECACHE_SOUND("weapons/357_shot1.wav");
@@ -1203,10 +1207,10 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 	}
 	if (equipment & MEQUIP_SNIPER) {
 		PRECACHE_SOUND("weapons/sniper_fire.wav");
-		//AddPrecacheWeapon("weapon_9mmAR");
+		AddPrecacheWeapon("weapon_sniperrifle");
 	}
 	if (equipment & MEQUIP_MINIGUN) {
-		//AddPrecacheWeapon("weapon_9mmAR");
+		AddPrecacheWeapon("weapon_minigun");
 		PRECACHE_SOUND("hassault/hw_shoot2.wav");
 		PRECACHE_SOUND("hassault/hw_shoot3.wav");
 		PRECACHE_SOUND("hassault/hw_spinup.wav");

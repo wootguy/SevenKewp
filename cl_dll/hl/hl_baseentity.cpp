@@ -75,6 +75,7 @@ bool CBaseEntity::BreakableUse(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 void CBaseEntity::BreakableDie(CBaseEntity* pActivator) { }
 void CBaseEntity::BreakableDamageSound() { }
 bool CBaseEntity::IsDelaySpawned() { return 0; }
+void CBaseEntity::ItemBounceTouch(CBaseEntity* pOther) {}
 Vector CBaseEntity::GetLookDirection() { return g_vecZero; }
 Vector CBasePlayer::GetLookDirection() { return g_vecZero; }
 

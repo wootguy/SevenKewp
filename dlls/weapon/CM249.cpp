@@ -20,11 +20,9 @@ LINK_ENTITY_TO_CLASS(weapon_saw, CM249)
 void CM249::Spawn()
 {
 	pev->classname = MAKE_STRING("weapon_m249"); // hack to allow for old names
-	Precache();
-	SetWeaponModelW();
 	m_iId = WEAPON_M249;
 	m_iDefaultAmmo = M249_DEFAULT_GIVE;
-	FallInit();
+	CWeaponCustom::Spawn();
 }
 
 void CM249::Precache()

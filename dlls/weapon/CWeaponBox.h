@@ -8,7 +8,7 @@ class CWeaponBox : public CBaseEntity
 {
 	void Precache( void );
 	void Spawn( void );
-	void Touch( CBaseEntity *pOther );
+	void DefaultTouch( CBaseEntity *pOther );
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void KeyValue( KeyValueData *pkvd );
 	BOOL IsEmpty( void );

@@ -188,6 +188,7 @@ void CHWGrunt::Precache()
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
 
 	UTIL_PrecacheOther("weapon_minigun");
+	UTIL_PrecacheOther("weapon_glock");
 }
 
 int	CHWGrunt::Classify(void)
@@ -446,8 +447,14 @@ void CHWGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 		PickupMinigun();
 		break;
 	case HGRUNT_AE_DROP_GUN:
-		if (DropEquipment(0, false))
-			SetBodygroup(HWGRUNT_GUN_GROUP, GUN_NONE);
+		if (DropEquipment(0, false)) {
+			// don't let players farm miniguns with a medkit
+			m_iEquipment = m_deadEquipment = MEQUIP_GLOCK;
+			SetBodygroup(HWGRUNT_GUN_GROUP, HWGRUNT_GUN_GLOCK);
+			m_deathBody = pev->body;
+
+			SetBodygroup(HWGRUNT_GUN_GROUP, HWGRUNT_GUN_NONE);
+		}
 		break;
 	default:
 		CBaseGrunt::HandleAnimEvent(pEvent);
@@ -488,7 +495,7 @@ CBaseEntity* CHWGrunt::PBestMinigun(void)
 	CBaseEntity* ent = NULL;
 	while ((ent = UTIL_FindEntityInSphere(ent, eyePos, HWGRUNT_MINIGUN_FIND_DISTANCE)) != NULL)
 	{
-		if (ent->pev->effects != EF_NODRAW && FClassnameIs(ent->pev, "weapon_9mmAR")) { // TODO: Minigun
+		if (ent->pev->effects != EF_NODRAW && FClassnameIs(ent->pev, "weapon_minigun")) {
 			TraceResult tr;
 			UTIL_TraceLine(eyePos, ent->pev->origin, ignore_monsters, dont_ignore_glass, ENT(pev), &tr);
 			bool reachable = tr.flFraction >= 1.0f;

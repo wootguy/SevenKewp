@@ -22,6 +22,7 @@
 #define FL_WC_WEP_LINK_CHARGEUPS 128	// primary and secondary chargeup state and events are shared (minigun behavior)
 #define FL_WC_WEP_PRIMARY_PRIORITY 256	// primary fire has priority over secondary when both attack buttons are pressed
 #define FL_WC_WEP_EXCLUSIVE_HOLD 512	// weapon must be dropped before switching to other weapons
+#define FL_WC_WEP_USE_ONLY 1024			// weapon is collectable with the use key, not by touching
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2		// don't run standard weapon attack logic (shoot animations, clicking)

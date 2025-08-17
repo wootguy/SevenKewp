@@ -5,11 +5,9 @@ LINK_ENTITY_TO_CLASS(weapon_minigun, CMinigun)
 void CMinigun::Spawn()
 {
 	pev->classname = MAKE_STRING("weapon_minigun"); // hack to allow for old names
-	Precache();
-	SetWeaponModelW();
 	m_iId = WEAPON_MINIGUN;
 	m_iDefaultAmmo = MINIGUN_DEFAULT_GIVE;
-	FallInit();
+	CWeaponCustom::Spawn();
 }
 
 void CMinigun::Precache()
@@ -31,7 +29,7 @@ void CMinigun::Precache()
 	wrongClientWeapon = "weapon_9mmAR";
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_SECONDARY | FL_WC_WEP_LINK_CHARGEUPS
-		| FL_WC_WEP_PRIMARY_PRIORITY | FL_WC_WEP_EXCLUSIVE_HOLD;
+		| FL_WC_WEP_PRIMARY_PRIORITY | FL_WC_WEP_EXCLUSIVE_HOLD | FL_WC_WEP_USE_ONLY;
 	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = MINIGUN_DRAW;
 	params.idles[0] = { MINIGUN_GENTLEIDLE, 85, 6200 };

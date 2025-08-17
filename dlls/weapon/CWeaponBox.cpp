@@ -60,6 +60,8 @@ void CWeaponBox::Spawn(void)
 	UTIL_SetSize(pev, g_vecZero, g_vecZero);
 
 	SET_MODEL_MERGED(ENT(pev), "models/w_weaponbox.mdl", MERGE_MDL_W_WEAPONBOX);
+
+	SetTouch(&CWeaponBox::DefaultTouch);
 }
 
 //=========================================================
@@ -92,7 +94,7 @@ void CWeaponBox::Kill(void)
 // CWeaponBox - Touch: try to add my contents to the toucher
 // if the toucher is a player.
 //=========================================================
-void CWeaponBox::Touch(CBaseEntity* pOther)
+void CWeaponBox::DefaultTouch(CBaseEntity* pOther)
 {
 	ItemBounceTouch(pOther);
 
@@ -175,7 +177,7 @@ void CWeaponBox::Touch(CBaseEntity* pOther)
 void CWeaponBox::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
 	if (pCaller && pCaller->IsPlayer() && CanReach(pCaller)) {
-		Touch(pCaller);
+		DefaultTouch(pCaller);
 	}
 }
 

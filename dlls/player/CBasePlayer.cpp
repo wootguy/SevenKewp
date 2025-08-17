@@ -5752,6 +5752,10 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 			pWeaponBox->SetThink(&CWeaponBox::Kill);
 			pWeaponBox->pev->nextthink = gpGlobals->time + item_despawn_time.value;
 
+			if (cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY)) {
+				pWeaponBox->SetTouch(&CBaseEntity::ItemBounceTouch);
+			}
+
 			// drop half of the ammo for this weapon.
 			int	iAmmoIndex;
 

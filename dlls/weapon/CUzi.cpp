@@ -10,11 +10,9 @@ void CUzi::Spawn()
 		SetAkimbo(true);
 
 	pev->classname = MAKE_STRING("weapon_uzi"); // hack to allow for old names
-	Precache();
-	SetWeaponModelW();
 	m_iId = WEAPON_UZI;
 	m_iDefaultAmmo = UZI_DEFAULT_GIVE;
-	FallInit();
+	CWeaponCustom::Spawn();
 }
 
 void CUzi::Precache()
