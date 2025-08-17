@@ -8,6 +8,8 @@ This repo was forked from an early version of [halflife-updated](https://github.
 # Building the client
 If you're a player, you don't need to install anything or build this mod. Just join a server showing "Half-Life Co-op" in the game column. Vanilla Half-Life clients are able to play with a few limitations.
 
+### 2025/08/17: The client isn't ready yet. It will not work properly if you join the server using it. I updated this page early not thinking anyone would try bulding it. I need about a week or 2 to get a testable version ready. I'm planning to add an auto-updater so you don't need to manually install a new version every day.
+
 Build instructions:
 1. Install dependendies.  
    Windows: Install Git, CMake, and Visual Studio  
