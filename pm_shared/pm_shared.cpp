@@ -109,6 +109,8 @@ typedef enum
 	at_logged		// Server print to console ( only in multiplayer games ).
 } ALERT_TYPE;
 
+float g_lastJump; // prevents sticking to the ground with small jump velocities
+
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
 
 const char* g_stepSoundsConcrete[4] =
@@ -1635,7 +1637,12 @@ void PM_CatagorizePosition (void)
 	point[1] = pmove->origin[1];
 	point[2] = pmove->origin[2] - 2;
 
-	if (pmove->velocity[2] > 180)   // Shooting up really fast.  Definitely not on ground.
+	if (pmove->velocity[2] < 0)
+		g_lastJump = 0;
+	float timeSinceLastJump = pmove->time - g_lastJump;
+	bool isJumping = pmove->velocity[2] > 10 && timeSinceLastJump < 50;
+
+	if (pmove->velocity[2] > 180 || isJumping)   // Shooting up really fast.  Definitely not on ground.
 	{
 		pmove->onground = -1;
 	}
@@ -2634,6 +2641,14 @@ void PM_Jump (void)
 	if ( pmove->oldbuttons & IN_JUMP )
 		return;		// don't pogo stick
 
+	int jumpPower = atoi(pmove->PM_Info_ValueForKey(pmove->physinfo, "jmp"));
+
+	if (jumpPower < 0) {
+		return; // jumping disabled
+	}
+	if (jumpPower == 0)
+		jumpPower = 800; // default velocity
+
 	// In the air now.
     pmove->onground = -1;
 
@@ -2669,17 +2684,19 @@ void PM_Jump (void)
 				pmove->velocity[i] = pmove->forward[i] * PLAYER_LONGJUMP_SPEED * 1.6;
 			}
 		
-			pmove->velocity[2] = sqrt(2 * 800 * 56.0);
+			pmove->velocity[2] = sqrt(2 * jumpPower * 56.0);
 		}
 		else
 		{
-			pmove->velocity[2] = sqrt(2 * 800 * 45.0);
+			pmove->velocity[2] = sqrt(2 * jumpPower * 45.0);
 		}
 	}
 	else
 	{
-		pmove->velocity[2] = sqrt(2 * 800 * 45.0);
+		pmove->velocity[2] = sqrt(2 * jumpPower * 45.0);
 	}
+
+	g_lastJump = pmove->time;
 
 	// Decay it for simulation
 	PM_FixupGravityVelocity();

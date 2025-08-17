@@ -365,6 +365,8 @@ BOOL CBasePlayer::HasNamedPlayerItem(const char* pszItemName) { return FALSE; }
 void CBasePlayer::GiveNamedItem(const char* pszName) {}
 void CBasePlayer::SendSevenKewpClientNotice() {}
 bool CBasePlayer::IsSevenKewpClient() { return false; }
+void CBasePlayer::SetThirdPersonWeaponAnim(int anim, float fps) { }
+void CBasePlayer::SetJumpPower(int power) {}
 
 void ClearMultiDamage(void) { }
 void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker ) { }

@@ -560,6 +560,9 @@ BOOL CBasePlayerWeapon::DefaultDeploy(const char* szViewModel, const char* szWea
 	m_flLastFireTime = 0.0;
 
 	m_pPlayer->SetAnimation(PLAYER_DEPLOY_WEAPON);
+	
+	m_pPlayer->ApplyEffects();
+	m_pPlayer->SetJumpPower(0);
 
 	return TRUE;
 }

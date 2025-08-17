@@ -84,7 +84,7 @@ void CUzi::Precache()
 		.AddSound(shootSnd2)
 		.AddSound(shootSnd3));
 
-	AddEvent(WepEvt().Primary().Bullets(1, gSkillData.sk_plr_9mm_bullet, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
+	AddEvent(WepEvt().Primary().Bullets(1, 1, gSkillData.sk_plr_9mm_bullet, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().PunchRandom(2, 0));
 	AddEvent(WepEvt().Primary().EjectShell(iShell, 28, -12, 16));
 

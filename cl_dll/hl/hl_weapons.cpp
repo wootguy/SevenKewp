@@ -47,6 +47,8 @@
 
 #include "studio.h"
 
+#include "../ModPlayerState.h"
+
 extern globalvars_t *gpGlobals;
 extern int g_iUser1;
 
@@ -90,6 +92,8 @@ CSqueak g_Snark;
 CWeaponCustom g_customWeapon[MAX_WEAPONS];
 
 CWeaponCustom* g_activeWeaponCustom = NULL;
+
+ModPlayerState g_modPlayerStates[32];
 
 CustomWeaponParams* GetCustomWeaponParams(int id) {
 	if (id >= 0 && id < MAX_WEAPONS)
@@ -152,6 +156,11 @@ void AddWeaponCustomSoundMapping(int idx, const char* path) {
 	}
 }
 
+bool IsExclusiveWeapon(int id) {
+	CustomWeaponParams* params = GetCustomWeaponParams(id);
+	return params && (params->flags & FL_WC_WEP_EXCLUSIVE_HOLD);
+}
+
 const char* GetWeaponCustomSound(int idx) {
 	if (idx >= 0 && idx < MAX_PRECACHE_SOUND) {
 		return CWeaponCustom::m_soundPaths[idx];
@@ -168,6 +177,8 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].SetAkimbo(false);
 	}
 	g_lastClientWeaponSwitch = 0;
+
+	memset(g_modPlayerStates, 0, sizeof(g_modPlayerStates));
 }
 
 /*

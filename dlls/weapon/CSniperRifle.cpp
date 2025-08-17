@@ -53,7 +53,7 @@ void CSniperRifle::Precache()
 	int bulletf = FL_WC_BULLETS_DYNAMIC_SPREAD;
 
 	AddEvent(WepEvt().Primary().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, 0.2f, 94, 109, DISTANT_NONE, WC_AIVOL_NORMAL));
-	AddEvent(WepEvt().Primary().Bullets(1, gSkillData.sk_plr_762_bullet, spread, spread, 0, WC_FLASH_NORMAL, bulletf));
+	AddEvent(WepEvt().Primary().Bullets(1, 1, gSkillData.sk_plr_762_bullet, spread, spread, 0, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().PunchSet(-2, 0));
 
 	AddEvent(WepEvt().PrimaryNotEmpty().WepAnim(M40A1_FIRE));

@@ -25,6 +25,8 @@ class CWeaponCustom : public CBasePlayerWeapon {
 public:
 	CustomWeaponParams params;
 
+	float m_flChargeStartPrimary; // time weapon started charging for a primary attack (0 = not started)
+	float m_flChargeStartSecondary; // time weapon started charging for a secondary attack (0 = not started)
 	float m_flReloadStart;
 	float m_flReloadEnd; // for preventing reload loops
 	bool m_bInReload; // like m_fInReload but allows the weapon to think during the reload
@@ -42,6 +44,10 @@ public:
 	float m_lastDeploy;
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
 	Vector m_kickbackPredVel;
+	bool m_primaryCalled;
+	bool m_secondaryCalled;
+	bool m_waitForNextRunfuncs; // don't attack until the next g_runfuncs call
+	int m_bulletFireCount; // for odd/even effects (m_iClip is unreliable)
 
 	int m_akimboAnim;
 	float m_akimboAnimTime;
@@ -73,8 +79,12 @@ public:
 	void PrimaryAttack(void) override;
 	void SecondaryAttack(void) override;
 	void TertiaryAttack(void) override;
-	bool CommonAttack(int attackIdx, int& clip, bool leftHand, bool akimboFire); // true if attacked
+	bool CommonAttack(int attackIdx, int* clip, bool leftHand, bool akimboFire); // true if attacked
 	void Cooldown(int attackIdx, int overrideMillis=-1);
+	bool Chargeup(int attackIdx, bool leftHand, bool akimboFire);
+	void FinishAttack(int attackIdx);
+	void FailAttack(int attackIdx, bool leftHand, bool akimboFire);
+	void KickbackPrediction();
 	void ToggleZoom(int zoomFov);
 	void CancelZoom();
 	bool CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq);
@@ -83,8 +93,9 @@ public:
 	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false);
 	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire);
 	void PlayDelayedEvents();
+	void CancelDelayedEvents();
 
-	Vector PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
 	void PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
 	void PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
@@ -103,6 +114,7 @@ public:
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);
 	int AddDuplicate(CBasePlayerItem* pOriginal) override;
+	inline bool IsExclusiveHold() { return params.flags & FL_WC_WEP_EXCLUSIVE_HOLD; }
 	
 	static int SendSoundMappingChunk(CBasePlayer* target, std::vector<SoundMapping>& chunk);
 	static void SendSoundMapping(CBasePlayer* target);

@@ -237,7 +237,8 @@ UTIL_SharedRandomFloat
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high )
 {
 	//
-	unsigned int range;
+	//unsigned int range;
+	float range;
 
 	U_Srand( (int)seed + *(int *)&low + *(int *)&high );
 

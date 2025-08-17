@@ -7,6 +7,9 @@
 #define FLOAT_TO_SPREAD(val) (clamp((int)(val * 65535), 0, UINT16_MAX))
 #define SPREAD_TO_FLOAT(val) (val / 65535.0f)
 
+#define FLOAT_TO_MOVESPEED_MULT(val) clamp((val * 65535.0f), 1, 65535)
+#define MOVESPEED_MULT_TO_FLOAT(val) (val ? val / 65535.0f : 1.0f)
+
 #define MAX_WC_EVENTS 64
 #define MAX_WC_RANDOM_SELECTION 8
 
@@ -16,19 +19,30 @@
 #define FL_WC_WEP_SHOTGUN_RELOAD 8		// start animation + load animation (repeated) + finish animation
 #define FL_WC_WEP_UNLINK_COOLDOWNS 16	// primary and secondary attacks cooldown independently
 #define FL_WC_WEP_AKIMBO 32				// weapon has an akimbo mode
+#define FL_WC_WEP_LINK_CHARGEUPS 128	// primary and secondary chargeup state and events are shared (minigun behavior)
+#define FL_WC_WEP_PRIMARY_PRIORITY 256	// primary fire has priority over secondary when both attack buttons are pressed
+#define FL_WC_WEP_EXCLUSIVE_HOLD 512	// weapon must be dropped before switching to other weapons
 
 #define FL_WC_SHOOT_UNDERWATER 1
-#define FL_WC_SHOOT_NO_ATTACK 2 // don't run standard weapon attack logic (shoot animations, clicking)
-#define FL_WC_SHOOT_NEED_AKIMBO 4 // don't allow attack if not holding the akimbo version of the weapon
+#define FL_WC_SHOOT_NO_ATTACK 2		// don't run standard weapon attack logic (shoot animations, clicking)
+#define FL_WC_SHOOT_NEED_AKIMBO 4	// don't allow attack if not holding the akimbo version of the weapon
 
-#define FL_WC_BULLETS_DYNAMIC_SPREAD 1 // spread widens while moving and tightens while crouching
-#define FL_WC_BULLETS_NO_DECAL 2 // don't show gunshot particles and decal at impact point
-#define FL_WC_BULLETS_NO_SOUND 4 // don't play texture sound at impact point
+#define FL_WC_BULLETS_DYNAMIC_SPREAD 1	// spread widens while moving and tightens while crouching
+#define FL_WC_BULLETS_NO_DECAL 2		// don't show gunshot particles and decal at impact point
+#define FL_WC_BULLETS_NO_SOUND 4		// don't play texture sound at impact point
 
 #define FL_WC_COOLDOWN_PRIMARY 1
 #define FL_WC_COOLDOWN_SECONDARY 2
 #define FL_WC_COOLDOWN_TERTIARY 4
 #define FL_WC_COOLDOWN_IDLE 8
+
+#define FL_WC_ANIM_NO_RESET 1	// don't restart the animation if the desired anim is already playing
+#define FL_WC_ANIM_PMODEL 2		// animate the third-person weapon model, not the first-person one 
+
+#define FL_WC_PUNCH_SET 1		// don't randomize angles, set to exactly what was given
+#define FL_WC_PUNCH_NO_RETURN 2	// view does not return to center after the punch
+#define FL_WC_PUNCH_DUCK 4		// apply punch angles only when ducked
+#define FL_WC_PUNCH_STAND 8		// apply punch angles only while standing
 
 enum WeaponCustomEventTriggerShootArg {
 	WC_TRIG_SHOOT_ARG_ALWAYS,		// always fire the shoot event
@@ -37,33 +51,39 @@ enum WeaponCustomEventTriggerShootArg {
 };
 
 enum WeaponCustomEventTriggers {
-	WC_TRIG_SHOOT_PRIMARY, // trigger arg: WeaponCustomEventTriggerShootArg
-	WC_TRIG_SHOOT_SECONDARY, // trigger arg: WeaponCustomEventTriggerShootArg
-	WC_TRIG_SHOOT_TERTIARY,
-	WC_TRIG_SHOOT_PRIMARY_CLIPSIZE, // trigger arg is the clip size to trigger on
-	WC_TRIG_SHOOT_PRIMARY_ODD, // triggers on odd clip sizes after firing
-	WC_TRIG_SHOOT_PRIMARY_EVEN, // triggers on even clip sizes after firing
-	WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY, // triggers on non-empty clip size after firing
-	WC_TRIG_RELOAD, // triggers when a reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
-	WC_TRIG_RELOAD_EMPTY, // triggers when an empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
-	WC_TRIG_RELOAD_NOT_EMPTY, // triggers when a non-empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
-	WC_TRIG_DEPLOY, // Trigger arg : WeaponCustomEventTriggerShootArg
+	WC_TRIG_PRIMARY,			// trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_SECONDARY,			// trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_TERTIARY,
+	WC_TRIG_PRIMARY_CLIPSIZE,	// trigger arg is the clip size to trigger on
+	WC_TRIG_PRIMARY_ODD,		// triggers on odd clip sizes after firing
+	WC_TRIG_PRIMARY_EVEN,		// triggers on even clip sizes after firing
+	WC_TRIG_PRIMARY_NOT_EMPTY,	// triggers on non-empty clip size after firing
+	WC_TRIG_PRIMARY_CHARGE,		// triggers when primary fire begins charging
+	WC_TRIG_PRIMARY_STOP,		// triggers when primary fire key is released
+	WC_TRIG_PRIMARY_FAIL,		// triggers when primary fire fails (no ammo, underwater, ...)
+	WC_TRIG_SECONDARY_CHARGE,	// triggers when secondary fire begins charging
+	WC_TRIG_SECONDARY_STOP,		// triggers when secondary fire key is released
+	WC_TRIG_SECONDARY_FAIL,		// triggers when secondar fire fails (no ammo, underwater, ...)
+	WC_TRIG_RELOAD,				// triggers when a reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_RELOAD_EMPTY,		// triggers when an empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_RELOAD_NOT_EMPTY,	// triggers when a non-empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_DEPLOY,				// Trigger arg : WeaponCustomEventTriggerShootArg
+	WC_TRIG_BULLET_FIRED,		// triggered when a bullet is fired
 };
 
 enum WeaponCustomEventType {
-	WC_EVT_IDLE_SOUND, // simple sound playback for reloads
-	WC_EVT_PLAY_SOUND, // advanced sound playback
+	WC_EVT_IDLE_SOUND,		// simple sound playback for reloads
+	WC_EVT_PLAY_SOUND,		// advanced sound playback
 	WC_EVT_EJECT_SHELL,
-	WC_EVT_PUNCH_SET, // set punch angles to the given values
-	WC_EVT_PUNCH_RANDOM, // set random punch angle between +/- the given angles
+	WC_EVT_PUNCH,			// set punch angles to the given values
 	WC_EVT_SET_BODY,
 	WC_EVT_WEP_ANIM,
 	WC_EVT_BULLETS,
 	WC_EVT_KICKBACK,
 	WC_EVT_MUZZLE_FLASH,
 	WC_EVT_TOGGLE_ZOOM,
-	WC_EVT_COOLDOWN, // adjust cooldowns (by default every action is cooled down after an attack)
-	WC_EVT_TOGGLE_AKIMBO, // toggle dual-wield mode
+	WC_EVT_COOLDOWN,		// adjust cooldowns (by default every action is cooled down after an attack)
+	WC_EVT_TOGGLE_AKIMBO,	// toggle dual-wield mode
 };
 
 // how loud the sound is for AI (reaction distance) (0 = silent)
@@ -89,10 +109,11 @@ enum WeaponCustomAnimHand {
 };
 
 struct WepEvt {
-	uint32_t evtType : 4;
-	uint32_t trigger : 4; // when to trigger the event
-	uint32_t triggerArg : 4; // additional args for event triggering
-	uint32_t delay : 12; // milliseconds beforing firing the event
+	uint16_t evtType : 5;
+	uint16_t trigger : 5;		// when to trigger the event
+	uint16_t triggerArg : 5;	// additional args for event triggering
+	uint16_t hasDelay : 1;
+	uint16_t delay : 16;		// milliseconds before firing the event
 
 	// event arguments
 	union {
@@ -130,25 +151,28 @@ struct WepEvt {
 		} ejectShell;
 
 		struct {
+			uint8_t flags;
 			int16_t x; // 10.6 fixed point int
 			int16_t y;
 			int16_t z;
 		} punch;
 
 		struct {
-			uint8_t akimbo : 4; // WeaponCustomAnimHand
-			uint8_t numAnim : 4;
+			uint8_t flags : 2; // FL_WC_ANIM_*
+			uint8_t akimbo : 3; // WeaponCustomAnimHand
+			uint8_t numAnim : 3;
 			uint8_t anims[MAX_WC_RANDOM_SELECTION];
 		} anim;
 
 		struct {
-			uint8_t count; // how many bullets are shot at once
-			uint16_t damage; // damage per bullet
-			uint16_t spreadX; // accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
-			uint16_t spreadY; // accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
-			uint8_t tracerFreq; // how often to display a tracer (0 = never, 1 = always, 2 = every other shot)
-			uint8_t flashSz : 4; // WeaponCustomFlashSz
-			uint8_t flags : 4; // FL_WC_BULLETS_*
+			uint8_t count;			// how many bullets are shot at once
+			uint8_t cost;			// how much ammo is used for this event
+			uint16_t damage;		// damage per bullet
+			uint16_t spreadX;		// accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
+			uint16_t spreadY;		// accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
+			uint8_t tracerFreq;		// how often to display a tracer (0 = never, 1 = always, 2 = every other shot)
+			uint8_t flashSz : 4;	// WeaponCustomFlashSz
+			uint8_t flags : 4;		// FL_WC_BULLETS_*
 		} bullets;
 
 		struct {
@@ -178,44 +202,74 @@ struct WepEvt {
 	}
 
 	WepEvt Primary() {
-		this->trigger = WC_TRIG_SHOOT_PRIMARY;
+		this->trigger = WC_TRIG_PRIMARY;
 		return *this;
 	}
 
 	WepEvt Secondary() {
-		this->trigger = WC_TRIG_SHOOT_SECONDARY;
+		this->trigger = WC_TRIG_SECONDARY;
 		return *this;
 	}
 
 	WepEvt Tertiary() {
-		this->trigger = WC_TRIG_SHOOT_TERTIARY;
+		this->trigger = WC_TRIG_TERTIARY;
 		return *this;
 	}
 
 	WepEvt PrimaryClip(uint8_t clipSize) {
-		this->trigger = WC_TRIG_SHOOT_PRIMARY_CLIPSIZE;
+		this->trigger = WC_TRIG_PRIMARY_CLIPSIZE;
 		this->triggerArg = clipSize;
 		return *this;
 	}
 
 	WepEvt PrimaryOdd() {
-		this->trigger = WC_TRIG_SHOOT_PRIMARY_ODD;
+		this->trigger = WC_TRIG_PRIMARY_ODD;
 		return *this;
 	}
 
 	WepEvt PrimaryEven() {
-		this->trigger = WC_TRIG_SHOOT_PRIMARY_EVEN;
+		this->trigger = WC_TRIG_PRIMARY_EVEN;
 		return *this;
 	}
 
 	WepEvt PrimaryEmpty() {
-		this->trigger = WC_TRIG_SHOOT_PRIMARY_CLIPSIZE;
+		this->trigger = WC_TRIG_PRIMARY_CLIPSIZE;
 		this->triggerArg = 0;
 		return *this;
 	}
 
 	WepEvt PrimaryNotEmpty() {
-		this->trigger = WC_TRIG_SHOOT_PRIMARY_NOT_EMPTY;
+		this->trigger = WC_TRIG_PRIMARY_NOT_EMPTY;
+		return *this;
+	}
+
+	WepEvt PrimaryCharge() {
+		this->trigger = WC_TRIG_PRIMARY_CHARGE;
+		return *this;
+	}
+
+	WepEvt SecondaryCharge() {
+		this->trigger = WC_TRIG_SECONDARY_CHARGE;
+		return *this;
+	}
+
+	WepEvt PrimaryStop() {
+		this->trigger = WC_TRIG_PRIMARY_STOP;
+		return *this;
+	}
+
+	WepEvt SecondaryStop() {
+		this->trigger = WC_TRIG_SECONDARY_STOP;
+		return *this;
+	}
+
+	WepEvt PrimaryFail() {
+		this->trigger = WC_TRIG_PRIMARY_FAIL;
+		return *this;
+	}
+
+	WepEvt SecondaryFail() {
+		this->trigger = WC_TRIG_SECONDARY_FAIL;
 		return *this;
 	}
 
@@ -241,6 +295,7 @@ struct WepEvt {
 
 	WepEvt Delay(uint16_t millis) {
 		this->delay = millis;
+		this->hasDelay = millis != 0;
 		return *this;
 	}
 
@@ -319,7 +374,8 @@ struct WepEvt {
 
 	// prefer adding this AFTER a bullets event for prediction accuracy
 	WepEvt PunchSet(float x, float y, float z = 0) {
-		evtType = WC_EVT_PUNCH_SET;
+		evtType = WC_EVT_PUNCH;
+		punch.flags = FL_WC_PUNCH_SET;
 		punch.x = FLOAT_TO_FP_10_6(x);
 		punch.y = FLOAT_TO_FP_10_6(y);
 		punch.z = FLOAT_TO_FP_10_6(z);
@@ -328,18 +384,51 @@ struct WepEvt {
 
 	// prefer adding this AFTER a bullets event for prediction accuracy
 	WepEvt PunchRandom(float x, float y, float z=0) {
-		evtType = WC_EVT_PUNCH_RANDOM;
+		evtType = WC_EVT_PUNCH;
 		punch.x = FLOAT_TO_FP_10_6(x);
 		punch.y = FLOAT_TO_FP_10_6(y);
 		punch.z = FLOAT_TO_FP_10_6(z);
 		return *this;
 	}
 
-	WepEvt WepAnim(uint8_t animIdx, uint8_t akimbo=WC_ANIM_BOTH_HANDS) {
+	// prefer adding this AFTER a bullets event for prediction accuracy
+	WepEvt RotateView(float x, float y, float z = 0) {
+		evtType = WC_EVT_PUNCH;
+		punch.flags |= FL_WC_PUNCH_NO_RETURN;
+		punch.x = FLOAT_TO_FP_10_6(x);
+		punch.y = FLOAT_TO_FP_10_6(y);
+		punch.z = FLOAT_TO_FP_10_6(z);
+		return *this;
+	}
+
+	WepEvt DuckOnly() {
+		if (evtType == WC_EVT_PUNCH) {
+			punch.flags |= FL_WC_PUNCH_DUCK;
+			punch.flags &= ~FL_WC_PUNCH_STAND;
+		}
+		else {
+			ALERT(at_error, "DuckOnly can be called on Punch events only\n");
+		}
+		return *this;
+	}
+
+	WepEvt StandOnly() {
+		if (evtType == WC_EVT_PUNCH) {
+			punch.flags |= FL_WC_PUNCH_STAND;
+			punch.flags &= ~FL_WC_PUNCH_DUCK;
+		}
+		else {
+			ALERT(at_error, "StandOnly can be called on Punch events only\n");
+		}
+		return *this;
+	}
+
+	WepEvt WepAnim(uint8_t animIdx, uint8_t akimbo=WC_ANIM_BOTH_HANDS, uint8_t flags=0) {
 		evtType = WC_EVT_WEP_ANIM;
 		anim.anims[0] = animIdx;
 		anim.numAnim = 1;
 		anim.akimbo = akimbo;
+		anim.flags = flags;
 		return *this;
 	}
 
@@ -358,15 +447,21 @@ struct WepEvt {
 		return *this;
 	}
 
-	WepEvt Bullets(uint8_t count, uint16_t damage, float spreadX, float spreadY,
+	WepEvt Bullets(uint8_t count, uint8_t cost, uint16_t damage, float spreadX, float spreadY,
 		uint8_t tracerFreq = 1, uint8_t flasSz=WC_FLASH_NORMAL, uint8_t flags=0) {
 		evtType = WC_EVT_BULLETS;
 		bullets.count = count;
+		bullets.cost = cost;
 		bullets.damage = damage;
 		bullets.spreadX = FLOAT_TO_SPREAD(spreadX);
 		bullets.spreadY = FLOAT_TO_SPREAD(spreadY);
 		bullets.tracerFreq = tracerFreq;
 		bullets.flags = flags;
+		return *this;
+	}
+
+	WepEvt BulletFired() {
+		trigger = WC_TRIG_BULLET_FIRED;
 		return *this;
 	}
 
@@ -397,9 +492,12 @@ struct WepEvt {
 };
 
 struct CustomWeaponShootOpts {
-	uint8_t flags; // FL_WC_SHOOT_*
-	uint8_t ammoCost;
-	uint16_t cooldown; // milliseconds
+	uint8_t flags;				// FL_WC_SHOOT_*
+	uint8_t ammoCost;			// ammo cost of each attack
+	uint16_t cooldown;			// time between attacks (milliseconds)
+	uint16_t cooldownFail;		// cooldown after a failed attack (out of ammo, underwater) (milliseconds)
+	uint16_t chargeTime;		// how long the attack button must be held before the attack begins (milliseconds)
+	uint16_t chargeCancelTime;	// minimum time before a charge can be cancelled (milliseconds)
 };
 
 struct WeaponCustomReload {
@@ -409,27 +507,29 @@ struct WeaponCustomReload {
 
 struct WeaponCustomIdle {
 	uint8_t anim;
-	uint8_t weight; // chance of selection (prefer 0-100 with all idles adding up to 100)
-	uint16_t time; // milliseconds before playing another idle animations
+	uint8_t weight;	// chance of selection (prefer 0-100 with all idles adding up to 100)
+	uint16_t time;	// milliseconds before playing another idle animations
 };
 
 struct WeaponCustomAkimbo {
 	WeaponCustomIdle idles[4];
 	WeaponCustomReload reload;
-	uint8_t deployAnim; // deploy anim for a single weapon (used for reloading and toggling akimbo mode)
+	uint8_t deployAnim;			// deploy anim for a single weapon (used for reloading and toggling akimbo mode)
 	uint16_t deployTime;
-	uint8_t akimboDeployAnim; // deploy anim when selecting the weapon
+	uint8_t akimboDeployAnim;	// deploy anim when selecting the weapon
 	uint16_t akimboDeployTime;
-	uint8_t holsterAnim; // for reloading a single weapon
+	uint8_t holsterAnim;		// for reloading a single weapon
 	uint16_t holsterTime;
 };
 
 struct CustomWeaponParams {
-	uint8_t flags; // FL_WC_WEP_*
+	uint16_t flags; // FL_WC_WEP_*
 	uint16_t maxClip;
 	uint16_t vmodel;
 	uint8_t deployAnim;
 	uint16_t deployTime;
+	uint16_t moveSpeedMult; // move speed multiplier (1-65535) (65535 = 100%) (0 = don't change)
+	int jumpPower;			// -1 = disabled, 0 = default velocity (800), 1+ = custom velocity
 
 	// stage 0 and 1 usage depends on weapon flags:
 	// 0 = simple reload animation OR starting animation for shotgun reload mode

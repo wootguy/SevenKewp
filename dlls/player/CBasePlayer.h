@@ -632,6 +632,13 @@ public:
 
 	void DebugThink();
 
+	void SetThirdPersonWeaponAnim(int sequence, float fps=1.0f);
+
+	// 0 = default velocity (800)
+	// -1 = jumping disabled
+	// 1+ = custom velocity
+	void SetJumpPower(int power);
+
 	// for sven-style monster info
 	//void UpdateMonsterInfo();
 	//float m_lastMonsterInfoMsg;

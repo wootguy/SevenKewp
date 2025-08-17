@@ -49,6 +49,7 @@ EXPORT extern int gmsgSoundIdx; // mapping of sound indexes to file paths
 EXPORT extern int gmsgNextMap; // next map name
 EXPORT extern int gmsgTimeLeft; // seconds left before map ends (0 = infinite)
 EXPORT extern int gmsgFog; // fog rendering parameters
+EXPORT extern int gmsgPmodelAnim; // third person weapon animation
 EXPORT extern int gmsgToxicCloud; // chumtoad attack
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages

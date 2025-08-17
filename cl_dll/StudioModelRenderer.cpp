@@ -24,6 +24,7 @@
 
 #include <GL/gl.h>
 #include "custom_weapon.h"
+#include "ModPlayerState.h"
 
 extern cvar_t *tfc_newmodels;
 
@@ -1745,55 +1746,12 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 #endif
 			m_pStudioHeader = (studiohdr_t *)IEngineStudio.Mod_Extradata (pweaponmodel);
 			IEngineStudio.StudioSetHeader( m_pStudioHeader );
-
-#ifdef _TFC		
-			//Do spinning stuff for the HWGuy minigun
-			if ( strstr ( m_pStudioHeader->name, "p_mini.mdl" ) )
-			{
-				if ( g_flSpinUpTime[ m_nPlayerIndex ] && g_flSpinUpTime[ m_nPlayerIndex ] > gEngfuncs.GetClientTime() )
-				{
-					float flmod = ( g_flSpinUpTime[ m_nPlayerIndex ] - ( gEngfuncs.GetClientTime() + 3.5 ) );
-					flmod *= -30;
-				
-					m_pCurrentEntity->curstate.frame = flmod;
-					m_pCurrentEntity->curstate.sequence = 2;
-				}
-				
-				else if ( g_flSpinUpTime[ m_nPlayerIndex ] && g_flSpinUpTime[ m_nPlayerIndex ] <= gEngfuncs.GetClientTime() )
-					g_flSpinUpTime[ m_nPlayerIndex ] = 0.0;
-								
-				else if ( g_flSpinDownTime[ m_nPlayerIndex ] && g_flSpinDownTime[ m_nPlayerIndex ] > gEngfuncs.GetClientTime() && !g_flSpinUpTime[ m_nPlayerIndex ] )
-				{
-					float flmod = ( g_flSpinDownTime[ m_nPlayerIndex ] - ( gEngfuncs.GetClientTime() + 3.5 ) );
-					flmod *= -30;
-				
-					m_pCurrentEntity->curstate.frame = flmod;
-					m_pCurrentEntity->curstate.sequence = 3;
-				}
-				
-				else if ( g_flSpinDownTime[ m_nPlayerIndex ] && g_flSpinDownTime[ m_nPlayerIndex ] <= gEngfuncs.GetClientTime() && !g_flSpinUpTime[ m_nPlayerIndex ] )
-					g_flSpinDownTime[ m_nPlayerIndex ] = 0.0;
-
-				if ( m_pCurrentEntity->curstate.sequence == 70 || m_pCurrentEntity->curstate.sequence == 72 )
-				{
-					if ( g_flSpinUpTime[ m_nPlayerIndex ] )
-						g_flSpinUpTime[ m_nPlayerIndex ] = 0.0;
-				
-					m_pCurrentEntity->curstate.sequence = 1;
-				}
-
-				StudioSetupBones( );
-			}
-			else
-			{
-				if ( g_flSpinUpTime[ m_nPlayerIndex ] || g_flSpinDownTime[ m_nPlayerIndex ] )
-				{
-					g_flSpinUpTime[ m_nPlayerIndex ] = 0.0;
-					g_flSpinDownTime[ m_nPlayerIndex ] = 0.0;
-				}
-			}
-
-#endif
+			
+			// p model animation
+			int eidx = clamp(m_pCurrentEntity->index - 1, 0, 31);
+			ModPlayerState& pstate = g_modPlayerStates[eidx];
+			m_pCurrentEntity->curstate.sequence = g_modPlayerStates[eidx].pmodelanim;
+			m_pCurrentEntity->curstate.animtime = pstate.pmodelAnimTime;
 
 			StudioMergeBones( pweaponmodel );
 

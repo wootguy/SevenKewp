@@ -3742,6 +3742,7 @@ void CBasePlayer::Spawn( void )
 
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
+	SetJumpPower(0);
 
 	pev->fov = m_iFOV				= 0;// init field of view.
 	m_iClientFOV		= -1; // make sure fov reset is sent
@@ -3765,6 +3766,8 @@ void CBasePlayer::Spawn( void )
 // dont let uninitialized value here hurt the player
 	m_flFallVelocity = 0;
 	m_deathMessageSent = false;
+
+	SetThirdPersonWeaponAnim(0);
 
 	g_pGameRules->SetDefaultPlayerTeam( this );
 	edict_t* pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( this );
@@ -4052,6 +4055,12 @@ void CBasePlayer::SelectItem(const char *pstr)
 		return;
 	}
 
+	CWeaponCustom* wc = m_pActiveItem ? m_pActiveItem->MyWeaponCustomPtr() : NULL;
+	if (wc && wc->IsExclusiveHold()) {
+		UTIL_ClientPrint(this, print_center, "Drop this weapon to select another.");
+		return;
+	}
+
 	CBasePlayerItem *pItem = NULL;
 
 	for (int i = 0; i < MAX_ITEM_TYPES; i++)
@@ -4108,6 +4117,12 @@ void CBasePlayer::SelectLastItem(void)
 	}
 
 	if (m_weaponsDisabled) {
+		return;
+	}
+
+	CWeaponCustom* wc = m_pActiveItem ? m_pActiveItem->MyWeaponCustomPtr() : NULL;
+	if (wc && wc->IsExclusiveHold()) {
+		UTIL_ClientPrint(this, print_center, "Drop this weapon to select another.");
 		return;
 	}
 
@@ -5668,6 +5683,7 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 			m_lastDropTime = gpGlobals->time;
 			UTIL_MakeVectors ( pev->v_angle ); 
 			SetAnimation(PLAYER_DROP_ITEM);
+			SetJumpPower(0);
 
 			CWeaponCustom* cwep = pWeapon->MyWeaponCustomPtr();
 			if (cwep && cwep->CanAkimbo()) {
@@ -5760,6 +5776,7 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 
 			}
 
+			ApplyEffects();
 			CleanupWeaponboxes();
 
 			return;// we're done, so stop searching with the FOR loop.
@@ -5924,13 +5941,13 @@ BOOL CBasePlayer :: SwitchWeapon( CBasePlayerItem *pWeapon )
 	if (m_weaponsDisabled) {
 		return FALSE;
 	}
-	
-	ResetAutoaim( );
-	
+
 	if (m_pActiveItem)
 	{
 		((CBasePlayerItem*)m_pActiveItem.GetEntity())->Holster();
 	}
+
+	ResetAutoaim();
 
 	m_pActiveItem = pWeapon;
 	pWeapon->Deploy( );
@@ -7295,4 +7312,15 @@ void CBasePlayer::DebugThink() {
 bool CBasePlayer::IsSevenKewpClient() {
 	//return true;
 	return m_sevenkewpVersion >= MIN_SEVENKEWP_VERSION;
+}
+
+void CBasePlayer::SetThirdPersonWeaponAnim(int sequence, float fps) {
+	MESSAGE_BEGIN(MSG_ALL, gmsgPmodelAnim);
+	WRITE_BYTE(entindex()-1);
+	WRITE_BYTE(sequence);
+	MESSAGE_END();
+}
+
+void CBasePlayer::SetJumpPower(int power) {
+	g_engfuncs.pfnSetPhysicsKeyValue(edict(), "jmp", UTIL_VarArgs("%d", power));
 }

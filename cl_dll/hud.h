@@ -114,6 +114,7 @@ public:
 	int MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf);
+	int MsgFunc_PmodelAnim(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_AmmoX(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_AmmoXX(const char *pszName, int iSize, void *pbuf);
@@ -137,10 +138,11 @@ public:
 	void _cdecl UserCmd_NextWeapon( void );
 	void _cdecl UserCmd_PrevWeapon( void );
 
+	WEAPON* m_pWeapon;
+
 private:
 	float m_fFade;
-	RGBA  m_rgba;
-	WEAPON *m_pWeapon;
+	RGBA  m_rgba;	
 	int	m_HUD_bucket0;
 	int m_HUD_selection;
 

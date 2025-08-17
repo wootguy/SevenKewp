@@ -20,6 +20,7 @@
 #include "CSprite.h"
 #include "te_effects.h"
 #include "CGib.h"
+#include "CWeaponCustom.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -7963,6 +7964,18 @@ void CBaseMonster::ApplyEffects() {
 		any_permanent |= item->m_effects_permanent;
 
 		item = item->m_pNext ? item->m_pNext.GetEntity()->MyInventoryPointer() : NULL;
+	}
+
+	if (plr) {
+		CWeaponCustom* wc = plr->m_pActiveItem ? plr->m_pActiveItem->MyWeaponCustomPtr() : NULL;
+		if (wc && wc->params.moveSpeedMult) {
+			if (!total_speed) {
+				total_speed = MOVESPEED_MULT_TO_FLOAT(wc->params.moveSpeedMult);
+			}
+			else {
+				total_speed *= MOVESPEED_MULT_TO_FLOAT(wc->params.moveSpeedMult);
+			}
+		}
 	}
 
 	if (any_permanent) {

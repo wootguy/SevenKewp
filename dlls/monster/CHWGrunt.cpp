@@ -186,6 +186,8 @@ void CHWGrunt::Precache()
 
 	PRECACHE_SOUND_ARRAY(pPainSounds);
 	PRECACHE_SOUND_ARRAY(pDeathSounds);
+
+	UTIL_PrecacheOther("weapon_minigun");
 }
 
 int	CHWGrunt::Classify(void)

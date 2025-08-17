@@ -16,3 +16,5 @@ const char* UTIL_HashClientDataFiles();
 
 // called by the client only to delete sevenkewp files to prepare for an update
 void UTIL_DeleteClientDataFiles();
+
+EXPORT float normalizeRangef(const float value, const float start, const float end);

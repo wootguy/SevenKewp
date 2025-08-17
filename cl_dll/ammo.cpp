@@ -29,10 +29,22 @@
 #include "ammohistory.h"
 #include "vgui_TeamFortressViewport.h"
 #include "custom_weapon.h"
+#include "ModPlayerState.h"
 
 CustomWeaponParams* GetCustomWeaponParams(int id);
 void GetCurrentCustomWeaponState(int id, int& akimboClip);
 bool CanWeaponAkimbo(int id);
+bool IsExclusiveWeapon(int id);
+
+// for aborting an action while holding an exclusive weapon
+bool ExclusiveWeaponAbort() {
+	if (gHUD.m_Ammo.m_pWeapon && IsExclusiveWeapon(gHUD.m_Ammo.m_pWeapon->iId)) {
+		gEngfuncs.pfnCenterPrint("Drop this weapon to select another.");
+		return true;
+	}
+
+	return false;
+}
 
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
@@ -272,6 +284,7 @@ DECLARE_MESSAGE(m_Ammo, CurWeaponX );	// Current weapon and clip (large clip)
 DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
 DECLARE_MESSAGE(m_Ammo, CustomWep);		// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, CustomWepEv);	// custom weapon parameters
+DECLARE_MESSAGE(m_Ammo, PmodelAnim);	// player model anim
 DECLARE_MESSAGE(m_Ammo, SoundIdx);		// sound index to file path mapping
 DECLARE_MESSAGE(m_Ammo, AmmoX);			// update known ammo type's count
 DECLARE_MESSAGE(m_Ammo, AmmoXX);		// update known ammo type's count (higher max count)
@@ -311,6 +324,7 @@ int CHudAmmo::Init(void)
 	HOOK_MESSAGE(WeaponList);
 	HOOK_MESSAGE(CustomWep);
 	HOOK_MESSAGE(CustomWepEv);
+	HOOK_MESSAGE(PmodelAnim);
 	HOOK_MESSAGE(SoundIdx);
 	HOOK_MESSAGE(AmmoPickup);
 	HOOK_MESSAGE(WeapPickup);
@@ -428,8 +442,10 @@ void CHudAmmo::Think(void)
 	{
 		if (gpActiveSel != (WEAPON *)1)
 		{
-			ServerCmd(gpActiveSel->szName);
-			g_weaponselect = gpActiveSel->iId;
+			if (!ExclusiveWeaponAbort()) {
+				ServerCmd(gpActiveSel->szName);
+				g_weaponselect = gpActiveSel->iId;
+			}
 		}
 
 		gpLastSel = gpActiveSel;
@@ -439,6 +455,10 @@ void CHudAmmo::Think(void)
 		PlaySound("common/wpn_select.wav", 1);
 	}
 
+	if (ExclusiveWeaponAbort() && (gpActiveSel || (gHUD.m_iKeyBits & IN_ATTACK))) {
+		gpActiveSel = NULL;
+		gHUD.m_iKeyBits &= ~IN_ATTACK;
+	}
 }
 
 //
@@ -502,8 +522,10 @@ void WeaponsResource :: SelectSlot( int iSlot, int fAdvance, int iDirection )
 			WEAPON *p2 = GetNextActivePos( p->iSlot, p->iSlotPos );
 			if ( !p2 )
 			{	// only one active item in bucket, so change directly to weapon
-				ServerCmd( p->szName );
-				g_weaponselect = p->iId;
+				if (!ExclusiveWeaponAbort()) {
+					ServerCmd(p->szName);
+					g_weaponselect = p->iId;
+				}
 				return;
 			}
 		}
@@ -797,7 +819,7 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId);
 	memset(&parms, 0, sizeof(CustomWeaponParams));
 
-	parms.flags = READ_BYTE();
+	parms.flags = READ_SHORT();
 	parms.maxClip = READ_SHORT();
 
 	parms.vmodel = READ_SHORT();
@@ -850,6 +872,9 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		opts.flags = READ_BYTE();
 		opts.ammoCost = READ_BYTE();
 		opts.cooldown = READ_SHORT();
+		opts.cooldownFail = READ_SHORT();
+		opts.chargeTime = READ_SHORT();
+		opts.chargeCancelTime = READ_SHORT();
 	}
 
 	return 1;
@@ -872,15 +897,17 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 	}
 
 	for (int i = 0; i < parms.numEvents; i++) {
-		uint8_t packedHeader = READ_BYTE();
-		uint16_t packedHeader2 = READ_SHORT();
+		uint16_t packedHeader = READ_SHORT();
 		WepEvt& evt = parms.events[i];
 		memset(&evt, 0, sizeof(WepEvt));
 
-		evt.evtType = packedHeader >> 4;
-		evt.trigger = packedHeader & 0xF;
-		evt.triggerArg = packedHeader2 & 0xF;
-		evt.delay = packedHeader2 >> 4;
+		evt.evtType = packedHeader & 0x1F;
+		evt.trigger = (packedHeader >> 5) & 0x1F;
+		evt.triggerArg = (packedHeader >> 10) & 0x1F;
+		evt.hasDelay = packedHeader >> 15;
+
+		if (evt.hasDelay)
+			evt.delay = READ_SHORT();
 
 		switch (evt.evtType) {
 		case WC_EVT_IDLE_SOUND: {
@@ -911,8 +938,8 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			evt.ejectShell.offsetUp = READ_SHORT();
 			evt.ejectShell.offsetRight = READ_SHORT();
 			break;
-		case WC_EVT_PUNCH_SET:
-		case WC_EVT_PUNCH_RANDOM:
+		case WC_EVT_PUNCH:
+			evt.punch.flags = READ_BYTE();
 			evt.punch.x = READ_SHORT();
 			evt.punch.y = READ_SHORT();
 			evt.punch.z = READ_SHORT();
@@ -922,8 +949,9 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			break;
 		case WC_EVT_WEP_ANIM: {
 			uint8_t packedHeader = READ_BYTE();
-			evt.anim.akimbo = packedHeader >> 4;
-			evt.anim.numAnim = packedHeader & 0xf;
+			evt.anim.flags = packedHeader >> 6;
+			evt.anim.akimbo = (packedHeader >> 3) & 0x7;
+			evt.anim.numAnim = packedHeader & 0x7;
 			for (int k = 0; k < evt.anim.numAnim && k < MAX_WC_RANDOM_SELECTION; k++) {
 				evt.anim.anims[k] = READ_BYTE();
 			}
@@ -931,6 +959,7 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 		}
 		case WC_EVT_BULLETS: {
 			evt.bullets.count = READ_BYTE();
+			evt.bullets.cost = READ_BYTE();
 			//evt.bullets.damage = READ_SHORT();
 			evt.bullets.spreadX = READ_SHORT();
 			evt.bullets.spreadY = READ_SHORT();
@@ -962,6 +991,22 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 	return 1;
 }
 
+int CHudAmmo::MsgFunc_PmodelAnim(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	int playeridx = READ_BYTE();
+
+	if (playeridx < 0 || playeridx > 32)
+		return 0;
+
+	ModPlayerState& state = g_modPlayerStates[playeridx];
+	state.pmodelanim = READ_BYTE();
+	state.pmodelAnimTime = gEngfuncs.GetClientTime();
+
+	return 1;
+}
+
 void AddWeaponCustomSoundMapping(int idx, const char* path);
 
 int CHudAmmo::MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf) {
@@ -986,6 +1031,10 @@ void CHudAmmo::SlotInput( int iSlot )
 {
 	if ( gViewPort && gViewPort->SlotInput( iSlot ) )
 		return;
+
+	if (ExclusiveWeaponAbort()) {
+		return;
+	}
 
 	gWR.SelectSlot(iSlot, FALSE, 1);
 }

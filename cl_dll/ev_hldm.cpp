@@ -1895,15 +1895,34 @@ void WC_EV_PunchAngle(WepEvt& evt, int seed) {
 	float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.y);
 	float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.z);
 
-	if (evt.evtType == WC_EVT_PUNCH_RANDOM) {
-		V_PunchAxis(0, UTIL_SharedRandomFloat(seed, -punchAngleX, punchAngleX));
-		V_PunchAxis(1, UTIL_SharedRandomFloat(seed+1, -punchAngleY, punchAngleY));
-		V_PunchAxis(2, UTIL_SharedRandomFloat(seed+2, -punchAngleZ, punchAngleZ));
+	if (evt.punch.flags & FL_WC_PUNCH_NO_RETURN) {
+		Vector angles;
+		gEngfuncs.GetViewAngles(angles);
+
+		if (evt.punch.flags & FL_WC_PUNCH_SET) {
+			angles = angles + Vector(punchAngleX, punchAngleY, punchAngleZ);
+		}
+		else {
+			angles = angles + Vector(
+				UTIL_SharedRandomFloat(seed, -punchAngleX, punchAngleX),
+				UTIL_SharedRandomFloat(seed + 1, -punchAngleY, punchAngleY),
+				UTIL_SharedRandomFloat(seed + 2, -punchAngleZ, punchAngleZ)
+			);
+		}
+
+		gEngfuncs.SetViewAngles(angles);
 	}
-	else if (evt.evtType == WC_EVT_PUNCH_SET) {
-		V_PunchAxis(0, punchAngleX);
-		V_PunchAxis(1, punchAngleY);
-		V_PunchAxis(2, punchAngleZ);
+	else {
+		if (evt.punch.flags & FL_WC_PUNCH_SET) {
+			V_PunchAxis(0, punchAngleX);
+			V_PunchAxis(1, punchAngleY);
+			V_PunchAxis(2, punchAngleZ);
+		}
+		else {
+			V_PunchAxis(0, UTIL_SharedRandomFloat(seed, -punchAngleX, punchAngleX));
+			V_PunchAxis(1, UTIL_SharedRandomFloat(seed + 1, -punchAngleY, punchAngleY));
+			V_PunchAxis(2, UTIL_SharedRandomFloat(seed + 2, -punchAngleZ, punchAngleZ));
+		}
 	}
 }
 
@@ -1920,7 +1939,7 @@ void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunsh
 	cl_entity_t* player = GetLocalPlayer();
 	int idx = player->index;
 
-	Vector origin = player->origin;
+	Vector origin = v_sim_org;
 	Vector view_ofs;
 	gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(view_ofs);
 

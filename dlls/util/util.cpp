@@ -315,7 +315,8 @@ UTIL_SharedRandomFloat
 float UTIL_SharedRandomFloat( unsigned int seed, float low, float high )
 {
 	//
-	unsigned int range;
+	//unsigned int range;
+	float range;
 
 	U_Srand( (int)seed + *(int *)&low + *(int *)&high );
 
@@ -3043,16 +3044,6 @@ void KickPlayer(edict_t* ent, const char* reason) {
 	int userid = g_engfuncs.pfnGetPlayerUserId(ent);
 	g_engfuncs.pfnServerCommand(UTIL_VarArgs("kick #%d %s\n", userid, reason));
 	g_engfuncs.pfnServerExecute();
-}
-
-// https://stackoverflow.com/questions/1628386/normalise-orientation-between-0-and-360
-float normalizeRangef(const float value, const float start, const float end)
-{
-	const float width = end - start;
-	const float offsetValue = value - start;   // value relative to 0
-
-	return (offsetValue - (floorf(offsetValue / width) * width)) + start;
-	// + start to reset back to start of original range
 }
 
 bool createFolder(const std::string& path) {
