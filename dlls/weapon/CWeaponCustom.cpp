@@ -660,7 +660,10 @@ void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 		}
 	}
 
-	if (!(opts.flags & FL_WC_SHOOT_NO_ATTACK))
+	bool noAttack = (opts.flags & FL_WC_SHOOT_NO_ATTACK);
+	bool alwaysIdleCooldown = opts.flags & FL_WC_SHOOT_COOLDOWN_IDLE;
+		
+	if (alwaysIdleCooldown || !noAttack)
 		m_flTimeWeaponIdle = nextAttack + 1.0f;
 }
 
@@ -1514,6 +1517,8 @@ void CWeaponCustom::SetAkimbo(bool akimbo) {
 }
 
 void CWeaponCustom::SendAkimboAnim(int iAnim) {
+	if (!g_runfuncs)
+		return;
 	m_akimboAnim = iAnim;
 	m_akimboAnimTime = WallTime();
 }

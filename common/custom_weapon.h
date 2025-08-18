@@ -28,7 +28,8 @@
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2		// don't run standard weapon attack logic (shoot animations, clicking)
-#define FL_WC_SHOOT_NEED_AKIMBO 4	// don't allow attack if not holding the akimbo version of the weapon
+#define FL_WC_SHOOT_COOLDOWN_IDLE 4	// cooldown the idle animations even if not attacking
+#define FL_WC_SHOOT_NEED_AKIMBO 8	// don't allow attack if not holding the akimbo version of the weapon
 
 #define FL_WC_BULLETS_DYNAMIC_SPREAD 1	// spread widens while moving and tightens while crouching
 #define FL_WC_BULLETS_NO_DECAL 2		// don't show gunshot particles and decal at impact point

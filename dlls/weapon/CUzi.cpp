@@ -59,7 +59,7 @@ void CUzi::Precache()
 	CustomWeaponShootOpts& tertiary = params.shootOpts[2];
 	tertiary.ammoCost = 0;
 	tertiary.cooldown = 1870;
-	tertiary.flags = FL_WC_SHOOT_NO_ATTACK | FL_WC_SHOOT_NEED_AKIMBO;
+	tertiary.flags = FL_WC_SHOOT_NO_ATTACK | FL_WC_SHOOT_NEED_AKIMBO | FL_WC_SHOOT_COOLDOWN_IDLE;
 
 	params.akimbo.idles[0] = { UZI_AKIMBO_IDLE, 100, 2000 };
 	params.akimbo.deployAnim = UZI_AKIMBO_DEPLOY2;
