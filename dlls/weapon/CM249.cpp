@@ -60,7 +60,7 @@ void CM249::Precache()
 
 	AddEvent(WepEvt().Primary().WepAnim(M249_SHOOT1).AddAnim(M249_SHOOT2).AddAnim(M249_SHOOT3));
 	AddEvent(WepEvt().Primary().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556, WC_AIVOL_LOUD));
-	AddEvent(WepEvt().Primary().Bullets(1, 1, dmg, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
+	AddEvent(WepEvt().Primary().Bullets(1, 0, dmg, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().Kickback(35));
 	AddEvent(WepEvt().Primary().PunchRandom(2, 1));
 	AddEvent(WepEvt().PrimaryEven().EjectShell(m_iShell, 14, -12, 4));

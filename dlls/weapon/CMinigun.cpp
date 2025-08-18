@@ -39,7 +39,7 @@ void CMinigun::Precache()
 	params.jumpPower = 200;
 
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
-	primary.ammoCost = 1;
+	primary.ammoCost = 2;
 	primary.cooldown = 50;
 	primary.cooldownFail = 200;
 	primary.chargeTime = 800;
@@ -56,8 +56,7 @@ void CMinigun::Precache()
 	int dmg = gSkillData.sk_plr_556_bullet;
 
 	AddEvent(WepEvt().Primary().WepAnim(MINIGUN_SPINFIRE));
-	AddEvent(WepEvt().Primary().Delay(00).Bullets(1, 1, dmg, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
-	AddEvent(WepEvt().Primary().Delay(25).Bullets(1, 1, dmg, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
+	AddEvent(WepEvt().Primary().Bullets(2, 25, dmg, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
 	
 	AddEvent(WepEvt().BulletFired().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556, WC_AIVOL_LOUD));
 	AddEvent(WepEvt().BulletFired().RotateView(1.3f, 1.3f).StandOnly());

@@ -49,6 +49,10 @@
 
 #include "../ModPlayerState.h"
 
+#include "../cl_dll/hud_iface.h"
+#include "eng_wrappers.h"
+#define PRINTF(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
+
 extern globalvars_t *gpGlobals;
 extern int g_iUser1;
 
@@ -172,9 +176,11 @@ const char* GetWeaponCustomSound(int idx) {
 void ResetCustomWeaponStates() {
 	for (int i = 0; i < MAX_WEAPONS; i++) {
 		g_customWeapon[i].m_lastZoomToggle = 0;
+		g_customWeapon[i].m_lastLaserToggle = 0;
 		g_customWeapon[i].m_lastDeploy = 0;
-		g_customWeapon[i].m_flReloadEnd = 0;
+		g_customWeapon[i].m_laserOnTime = 0;
 		g_customWeapon[i].SetAkimbo(false);
+		g_customWeapon[i].SetLaser(false);
 	}
 	g_lastClientWeaponSwitch = 0;
 

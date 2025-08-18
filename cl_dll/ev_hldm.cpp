@@ -1401,7 +1401,7 @@ enum EGON_FIREMODE { FIRE_NARROW, FIRE_WIDE};
 #define EGON_SOUND_RUN			"weapons/egon_run3.wav"
 #define EGON_SOUND_STARTUP		"weapons/egon_windup2.wav"
 #define RPG_BEAM_SPRITE			"sprites/laserbeam.spr"
-#define LASER_DOT_SPRITE		"sprites/laserdot.spr"
+#define LASER_DOT_SPRITE		"sprites/hlcoop/laserdot.spr"
 
 #define ARRAYSIZE(p)		(sizeof(p)/sizeof(p[0]))
 
@@ -1569,12 +1569,16 @@ extern int g_runfuncs;
 
 // Not really an event but the laser dot is special and needs server-side entity which has to
 // be networked to HL players anyway.
-void EV_RpgLaserOn() {
+void EV_LaserOn(int dotSprite, float dotSz, int beamSprite, float beamWidth, int beamAttachment) {
+	bool needCreate = (beamSprite && !pBeam) || (dotSprite && !pLaserDot);
+	if (!needCreate)
+		return;
+	
 	cl_entity_t* player = GetLocalPlayer();
 	Vector origin = player->origin;
 	int idx = player->index;
 
-	if (!pBeam && cl_lw->value) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
+	if (needCreate && cl_lw->value) //Adrian: Added the cl_lw check for those lital people that hate weapon prediction.
 	{
 		vec3_t vecSrc, vecEnd, origin, forward, right, up;
 		pmtrace_t tr;
@@ -1601,18 +1605,20 @@ void EV_RpgLaserOn() {
 			float g = 0.125f * a;
 			float b = 0.125f * a;
 
-			pLaserDot = gEngfuncs.pEfxAPI->R_TempSprite(tr.endpos, vec3_origin, 1.0,
-				gEngfuncs.pEventAPI->EV_FindModelIndex(LASER_DOT_SPRITE),
-				kRenderGlow, kRenderFxNoDissipation, 1.0, 99999, FTENT_PERSIST);
-
-			pBeam = gEngfuncs.pEfxAPI->R_BeamEntPoint(idx | 0x1000, tr.endpos,
-				gEngfuncs.pEventAPI->EV_FindModelIndex(RPG_BEAM_SPRITE),
-				99999, 0.1f, 0, 0.7, 55, 0, 0, r, g, b);
+			if (dotSprite) {
+				pLaserDot = gEngfuncs.pEfxAPI->R_TempSprite(tr.endpos, vec3_origin, dotSz, dotSprite,
+					kRenderGlow, kRenderFxNoDissipation, 1.0, 99999, FTENT_PERSIST);
+			}
+			
+			if (beamSprite) {
+				pBeam = gEngfuncs.pEfxAPI->R_BeamEntPoint(idx | (0x1000 * beamAttachment),
+					tr.endpos, beamSprite, 99999, beamWidth, 0, 0.7, 55, 0, 0, r, g, b);
+			}
 		}
 	}
 }
 
-void EV_RpgLaserOff()
+void EV_LaserOff()
 {
 	if (pBeam)
 	{

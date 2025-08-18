@@ -25,10 +25,11 @@
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud_iface.h"
+#include "../common/event_api.h"
 #define PRINTF(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
 
-void EV_RpgLaserOn();
-void EV_RpgLaserOff();
+void EV_LaserOn(int dotSprite, float dotSz, int beamSprite, float beamWidth, int beamAttachment);
+void EV_LaserOff();
 extern int g_runfuncs;
 #endif
 
@@ -454,7 +455,7 @@ void CRpg::Reload( void )
 		m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 2.1;
 	}
 #else
-	EV_RpgLaserOff();
+	EV_LaserOff();
 #endif
 
 	if (m_iClip == 0) {
@@ -599,7 +600,7 @@ void CRpg::Holster( int skiplocal /* = 0 */ )
 		m_hSpot = NULL;
 	}
 #else
-	EV_RpgLaserOff();
+	EV_LaserOff();
 #endif
 
 }
@@ -725,10 +726,13 @@ void CRpg::WeaponIdle( void )
 void CRpg::UpdateSpot( void )
 {
 #ifdef CLIENT_DLL
-	if (m_fSpotActive)
-		EV_RpgLaserOn();
+	if (m_fSpotActive) {
+		int dotSprite = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/hlcoop/laserdot.spr");
+		int beamSprite = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/laserbeam.spr");
+		EV_LaserOn(dotSprite, 1.0f, beamSprite, 0.1f, 1);
+	}
 	else
-		EV_RpgLaserOff();
+		EV_LaserOff();
 #endif
 
 #ifndef CLIENT_DLL

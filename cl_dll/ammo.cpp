@@ -860,12 +860,29 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		parms.akimbo.holsterTime = READ_SHORT();
 	}
 
-	for (int i = 0; i < 3; i++) {
+	if (parms.flags & FL_WC_WEP_HAS_LASER) {
+		for (int k = 0; k < 4; k++) {
+			WeaponCustomIdle& idle = parms.laser.idles[k];
+			idle.anim = READ_BYTE();
+			idle.weight = READ_BYTE();
+			idle.time = READ_SHORT();
+		}
+
+		parms.laser.dotSprite = READ_SHORT();
+		parms.laser.beamSprite = READ_SHORT();
+		parms.laser.dotSz = READ_BYTE();
+		parms.laser.beamWidth = READ_BYTE();
+		parms.laser.attachment = READ_BYTE();
+	}
+
+	for (int i = 0; i < 4; i++) {
 		if (!(parms.flags & FL_WC_WEP_HAS_PRIMARY) && i == 0)
 			continue;
 		if (!(parms.flags & FL_WC_WEP_HAS_SECONDARY) && i == 1)
 			continue;
 		if (!(parms.flags & FL_WC_WEP_HAS_TERTIARY) && i == 2)
+			continue;
+		if (!(parms.flags & FL_WC_WEP_HAS_ALT_PRIMARY) && i == 3)
 			continue;
 
 		CustomWeaponShootOpts& opts = parms.shootOpts[i];
@@ -959,7 +976,7 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 		}
 		case WC_EVT_BULLETS: {
 			evt.bullets.count = READ_BYTE();
-			evt.bullets.cost = READ_BYTE();
+			evt.bullets.burstDelay = READ_SHORT();
 			//evt.bullets.damage = READ_SHORT();
 			evt.bullets.spreadX = READ_SHORT();
 			evt.bullets.spreadY = READ_SHORT();
@@ -976,11 +993,15 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 		case WC_EVT_TOGGLE_ZOOM:
 			evt.zoomToggle.zoomFov = READ_BYTE();
 			break;
+		case WC_EVT_HIDE_LASER:
+			evt.laserHide.millis = READ_SHORT();
+			break;
 		case WC_EVT_COOLDOWN:
 			evt.cooldown.millis = READ_SHORT();
 			evt.cooldown.targets = READ_BYTE();
 			break;
 		case WC_EVT_TOGGLE_AKIMBO:
+		case WC_EVT_TOGGLE_LASER:
 			break;
 		default:
 			gEngfuncs.Con_Printf("Bad custom weapon event type read %d\n", (int)evt.evtType);

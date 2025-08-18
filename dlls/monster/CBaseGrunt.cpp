@@ -932,8 +932,7 @@ bool CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity
 		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_DEAGLE) {
-		//DropEquipmentToss("weapon_eagle", vecGunPos, vecGunAngles, velocity, aVelocity);
-		DropEquipmentToss("weapon_357", vecGunPos, vecGunAngles, velocity, aVelocity);
+		DropEquipmentToss("weapon_eagle", vecGunPos, vecGunAngles, velocity, aVelocity);
 		droppedAnything = true;
 	}
 	if (equipmentToDrop & MEQUIP_GLOCK) {
@@ -1200,7 +1199,7 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 	if (equipment & MEQUIP_DEAGLE) {
 		PRECACHE_SOUND("weapons/desert_eagle_fire.wav");
 		PRECACHE_SOUND("weapons/desert_eagle_reload.wav");
-		AddPrecacheWeapon("weapon_357");
+		AddPrecacheWeapon("weapon_eagle");
 	}
 	if (equipment & MEQUIP_GLOCK) {
 		AddPrecacheWeapon("weapon_9mmhandgun");

@@ -4454,6 +4454,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			GiveNamedItem("weapon_m249");
 			GiveNamedItem("weapon_sniperrifle");
 			GiveNamedItem("weapon_uziakimbo");
+			GiveNamedItem("weapon_eagle");
 			GiveNamedItem("ammo_556");
 			GiveNamedItem("ammo_762");
 		}

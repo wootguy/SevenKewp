@@ -13,16 +13,18 @@
 #define MAX_WC_EVENTS 64
 #define MAX_WC_RANDOM_SELECTION 8
 
-#define FL_WC_WEP_HAS_PRIMARY 1
-#define FL_WC_WEP_HAS_SECONDARY 2
-#define FL_WC_WEP_HAS_TERTIARY 4
-#define FL_WC_WEP_SHOTGUN_RELOAD 8		// start animation + load animation (repeated) + finish animation
-#define FL_WC_WEP_UNLINK_COOLDOWNS 16	// primary and secondary attacks cooldown independently
-#define FL_WC_WEP_AKIMBO 32				// weapon has an akimbo mode
-#define FL_WC_WEP_LINK_CHARGEUPS 128	// primary and secondary chargeup state and events are shared (minigun behavior)
-#define FL_WC_WEP_PRIMARY_PRIORITY 256	// primary fire has priority over secondary when both attack buttons are pressed
-#define FL_WC_WEP_EXCLUSIVE_HOLD 512	// weapon must be dropped before switching to other weapons
-#define FL_WC_WEP_USE_ONLY 1024			// weapon is collectable with the use key, not by touching
+#define FL_WC_WEP_HAS_PRIMARY		(1<<0)
+#define FL_WC_WEP_HAS_SECONDARY		(1<<1)
+#define FL_WC_WEP_HAS_TERTIARY		(1<<2)
+#define FL_WC_WEP_HAS_ALT_PRIMARY	(1<<3)	// alternate primary fire toggled by laser or zooming
+#define FL_WC_WEP_SHOTGUN_RELOAD	(1<<4)	// start animation + load animation (repeated) + finish animation
+#define FL_WC_WEP_UNLINK_COOLDOWNS	(1<<5)	// primary and secondary attacks cooldown independently
+#define FL_WC_WEP_AKIMBO			(1<<6)	// weapon has an akimbo mode
+#define FL_WC_WEP_LINK_CHARGEUPS	(1<<7)	// primary and secondary chargeup state and events are shared (minigun behavior)
+#define FL_WC_WEP_PRIMARY_PRIORITY	(1<<8)	// primary fire has priority over secondary when both attack buttons are pressed
+#define FL_WC_WEP_EXCLUSIVE_HOLD	(1<<9)	// weapon must be dropped before switching to other weapons
+#define FL_WC_WEP_USE_ONLY			(1<<10)	// weapon is collectable with the use key, not by touching
+#define FL_WC_WEP_HAS_LASER			(1<<11)
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2		// don't run standard weapon attack logic (shoot animations, clicking)
@@ -52,9 +54,10 @@ enum WeaponCustomEventTriggerShootArg {
 };
 
 enum WeaponCustomEventTriggers {
-	WC_TRIG_PRIMARY,			// trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_PRIMARY,			// trigger arg: WeaponCustomEventTriggerShootArg (does not trigger when alternate fire is active)
 	WC_TRIG_SECONDARY,			// trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_TERTIARY,
+	WC_TRIG_PRIMARY_ALT,		// triggers on alternate primary fire (laser/zoom)
 	WC_TRIG_PRIMARY_CLIPSIZE,	// trigger arg is the clip size to trigger on
 	WC_TRIG_PRIMARY_ODD,		// triggers on odd clip sizes after firing
 	WC_TRIG_PRIMARY_EVEN,		// triggers on even clip sizes after firing
@@ -70,6 +73,10 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_RELOAD_NOT_EMPTY,	// triggers when a non-empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_DEPLOY,				// Trigger arg : WeaponCustomEventTriggerShootArg
 	WC_TRIG_BULLET_FIRED,		// triggered when a bullet is fired
+	WC_TRIG_LASER_ON,			// triggered when the laser is enabled
+	WC_TRIG_LASER_OFF,			// triggered when the laser is disabled
+	WC_TRIG_ZOOM_IN,			// triggered when zooming in
+	WC_TRIG_ZOOM_OUT,			// triggered when zooming out
 };
 
 enum WeaponCustomEventType {
@@ -83,6 +90,8 @@ enum WeaponCustomEventType {
 	WC_EVT_KICKBACK,
 	WC_EVT_MUZZLE_FLASH,
 	WC_EVT_TOGGLE_ZOOM,
+	WC_EVT_TOGGLE_LASER,
+	WC_EVT_HIDE_LASER,		// temporarily hide the laser
 	WC_EVT_COOLDOWN,		// adjust cooldowns (by default every action is cooled down after an attack)
 	WC_EVT_TOGGLE_AKIMBO,	// toggle dual-wield mode
 };
@@ -167,7 +176,7 @@ struct WepEvt {
 
 		struct {
 			uint8_t count;			// how many bullets are shot at once
-			uint8_t cost;			// how much ammo is used for this event
+			uint16_t burstDelay;	// milliseconds betwen shots, for burst fire
 			uint16_t damage;		// damage per bullet
 			uint16_t spreadX;		// accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
 			uint16_t spreadY;		// accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
@@ -188,6 +197,10 @@ struct WepEvt {
 			uint16_t millis;
 			uint8_t targets; // FL_WC_COOLDOWN_*
 		} cooldown;
+
+		struct {
+			uint16_t millis; // how long to wait before enabling the laser again
+		} laserHide;
 	};
 
 #ifndef CLIENT_DLL
@@ -214,6 +227,11 @@ struct WepEvt {
 
 	WepEvt Tertiary() {
 		this->trigger = WC_TRIG_TERTIARY;
+		return *this;
+	}
+
+	WepEvt PrimaryAlt() {
+		this->trigger = WC_TRIG_PRIMARY_ALT;
 		return *this;
 	}
 
@@ -448,11 +466,12 @@ struct WepEvt {
 		return *this;
 	}
 
-	WepEvt Bullets(uint8_t count, uint8_t cost, uint16_t damage, float spreadX, float spreadY,
+	// cost = unused
+	WepEvt Bullets(uint8_t count, uint16_t burstDelay, uint16_t damage, float spreadX, float spreadY,
 		uint8_t tracerFreq = 1, uint8_t flasSz=WC_FLASH_NORMAL, uint8_t flags=0) {
 		evtType = WC_EVT_BULLETS;
 		bullets.count = count;
-		bullets.cost = cost;
+		bullets.burstDelay = burstDelay;
 		bullets.damage = damage;
 		bullets.spreadX = FLOAT_TO_SPREAD(spreadX);
 		bullets.spreadY = FLOAT_TO_SPREAD(spreadY);
@@ -466,6 +485,32 @@ struct WepEvt {
 		return *this;
 	}
 
+	WepEvt LaserOn() {
+		trigger = WC_TRIG_LASER_ON;
+		return *this;
+	}
+
+	WepEvt LaserOff() {
+		trigger = WC_TRIG_LASER_OFF;
+		return *this;
+	}
+
+	WepEvt HideLaser(uint16_t millis) {
+		evtType = WC_EVT_HIDE_LASER;
+		laserHide.millis = millis;
+		return *this;
+	}
+
+	WepEvt ZoomIn() {
+		trigger = WC_TRIG_ZOOM_IN;
+		return *this;
+	}
+
+	WepEvt ZoomOut() {
+		trigger = WC_TRIG_ZOOM_OUT;
+		return *this;
+	}
+
 	WepEvt Kickback(int16_t pushForce) {
 		evtType = WC_EVT_KICKBACK;
 		kickback.pushForce = pushForce;
@@ -475,6 +520,11 @@ struct WepEvt {
 	WepEvt ToggleZoom(uint8_t zoomFov) {
 		evtType = WC_EVT_TOGGLE_ZOOM;
 		zoomToggle.zoomFov = zoomFov;
+		return *this;
+	}
+
+	WepEvt ToggleLaser() {
+		evtType = WC_EVT_TOGGLE_LASER;
 		return *this;
 	}
 
@@ -523,6 +573,15 @@ struct WeaponCustomAkimbo {
 	uint16_t holsterTime;
 };
 
+struct WeaponCustomLaser {
+	WeaponCustomIdle idles[4];	// alternate set of idle animations that don't twist the laser
+	uint16_t dotSprite;			// sprite used for the end point of the laser
+	uint16_t beamSprite;		// sprite used for the beam of the laser
+	uint8_t dotSz;				// dot sprite scale*10
+	uint8_t beamWidth;
+	uint8_t attachment;			// model attachment point for the beam effect (required for beam to display)
+};
+
 struct CustomWeaponParams {
 	uint16_t flags; // FL_WC_WEP_*
 	uint16_t maxClip;
@@ -539,10 +598,9 @@ struct CustomWeaponParams {
 	WeaponCustomReload reloadStage[3];
 
 	WeaponCustomIdle idles[4]; // randomly selected idle animations
-
-	CustomWeaponShootOpts shootOpts[3]; // primary, secondary, and tertiary fire
-
+	CustomWeaponShootOpts shootOpts[4]; // primary, secondary, tertiary, and alt primary fire
 	WeaponCustomAkimbo akimbo;
+	WeaponCustomLaser laser;
 	
 	uint8_t numEvents;
 	WepEvt events[MAX_WC_EVENTS];

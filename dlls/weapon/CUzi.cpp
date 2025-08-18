@@ -82,7 +82,7 @@ void CUzi::Precache()
 		.AddSound(shootSnd2)
 		.AddSound(shootSnd3));
 
-	AddEvent(WepEvt().Primary().Bullets(1, 1, gSkillData.sk_plr_9mm_bullet, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
+	AddEvent(WepEvt().Primary().Bullets(1, 0, gSkillData.sk_plr_9mm_bullet, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().PunchRandom(2, 0));
 	AddEvent(WepEvt().Primary().EjectShell(iShell, 28, -12, 16));
 
@@ -129,7 +129,7 @@ int CUzi::GetItemInfo(ItemInfo* p)
 	p->iMaxClip = UZI_MAX_CLIP;
 	p->iMaxAmmo1 = 200;
 	p->iSlot = 1;
-	p->iPosition = 2;
+	p->iPosition = 3;
 	p->iId = WEAPON_UZI;
 	p->iWeight = UZI_WEIGHT;
 	return true;

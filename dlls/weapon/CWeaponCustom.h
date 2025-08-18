@@ -27,11 +27,11 @@ public:
 
 	float m_flChargeStartPrimary; // time weapon started charging for a primary attack (0 = not started)
 	float m_flChargeStartSecondary; // time weapon started charging for a secondary attack (0 = not started)
-	float m_flReloadStart;
-	float m_flReloadEnd; // for preventing reload loops
-	bool m_bInReload; // like m_fInReload but allows the weapon to think during the reload
+	float m_lastBeamUpdate;
+	float m_laserOnTime; // turn laser on after this time
 	bool m_bInAkimboReload;
-	bool m_bWantAkimboReload;
+	bool m_bWantAkimboReload; // want to keep reloading until both guns are full
+	bool m_hasLaserAttachment;
 	const char* animExt; // third person player animation set
 	const char* animExtZoom; // animation set used while zoomed
 	const char* animExtAkimbo; // animation set used while in akimbo mode
@@ -41,6 +41,7 @@ public:
 
 	// for prediction code, don't spam events/toggles while waiting for the new server state
 	float m_lastZoomToggle;
+	float m_lastLaserToggle;
 	float m_lastDeploy;
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
 	Vector m_kickbackPredVel;
@@ -55,6 +56,8 @@ public:
 	bool m_lastCanAkimbo; // was akimbo possible during the last think?
 
 	WcDelayEvent eventQueue[WC_SERVER_EVENT_QUEUE_SZ]; // for playing server-side events with a delay
+
+	EHANDLE m_hLaserSpot;
 
 	void Spawn() override;
 	void Precache() override;
@@ -86,11 +89,13 @@ public:
 	void FailAttack(int attackIdx, bool leftHand, bool akimboFire);
 	void KickbackPrediction();
 	void ToggleZoom(int zoomFov);
+	void ToggleLaser();
+	void HideLaser(bool hideNotUnhide);
 	void CancelZoom();
 	bool CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq);
 	void SendPredictionData(edict_t* target);
 
-	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false);
+	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft=0);
 	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire);
 	void PlayDelayedEvents();
 	void CancelDelayedEvents();
@@ -103,6 +108,7 @@ public:
 	void PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
 	void PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_ToggleAkimbo(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_HideLaser(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire);
 
 	float WallTime();
@@ -113,6 +119,13 @@ public:
 	BOOL IsAkimbo() { return m_fireState != 0; }
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);
+
+	BOOL IsLaserOn() { return m_flReleaseThrow != 0; }
+	void SetLaser(bool enable);
+	void UpdateLaser();
+	bool IsPrimaryAltActive() { return (params.flags & FL_WC_WEP_HAS_ALT_PRIMARY) && IsLaserOn(); }
+	CustomWeaponShootOpts& GetShootOpts(int attackIdx);
+
 	int AddDuplicate(CBasePlayerItem* pOriginal) override;
 	inline bool IsExclusiveHold() { return params.flags & FL_WC_WEP_EXCLUSIVE_HOLD; }
 	
