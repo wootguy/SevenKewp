@@ -41,7 +41,7 @@ LINK_ENTITY_TO_CLASS( weapon_mp5, CMP5 )
 LINK_ENTITY_TO_CLASS( weapon_9mmAR, CMP5 )
 LINK_ENTITY_TO_CLASS( weapon_9mmar, CMP5 )
 
-// TODO: implement these weapons instead of remapping them
+// Don't want to use the m16 yet
 LINK_ENTITY_TO_CLASS(weapon_m16, CMP5)
 
 //=========================================================

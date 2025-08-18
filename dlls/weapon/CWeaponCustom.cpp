@@ -543,11 +543,12 @@ void CWeaponCustom::SecondaryAttack() {
 		}
 	}
 	else if (params.flags & FL_WC_WEP_HAS_SECONDARY) {
-		int clip2 = m_iSecondaryAmmoType >= 0 ? m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] : 0;
+		static int nullclip;
+		int* clip2 = m_iSecondaryAmmoType >= 0 ? &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] : &nullclip;
 		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
-		if (CommonAttack(1, &clip2, false, false)) {
-			ProcessEvents(WC_TRIG_SECONDARY, akimboArg, clip2);
+		if (CommonAttack(1, clip2, false, false)) {
+			ProcessEvents(WC_TRIG_SECONDARY, akimboArg, *clip2);
 		}
 	}
 
@@ -988,6 +989,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 			break;
 		case WC_EVT_TOGGLE_AKIMBO:
 		case WC_EVT_TOGGLE_LASER:
+		case WC_EVT_PROJECTILE:
 			break;
 		default:
 			ALERT(at_error, "Invalid custom weapon event type %d\n", evt.evtType);
@@ -1213,6 +1215,217 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	ProcessEvents(WC_TRIG_BULLET_FIRED, akimboArg, leftHand, akimboFire);
 }
 
+void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
+#ifndef CLIENT_DLL
+	MAKE_VECTORS(m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle);
+
+	float x = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
+	float y = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
+
+	Vector vForward = gpGlobals->v_forward;
+	Vector vRight = gpGlobals->v_right;
+	Vector vUp = gpGlobals->v_up;
+	Vector vecSpread(evt.proj.spreadX, evt.proj.spreadY, 0);
+	
+	Vector vecDir = vForward +
+		x * vecSpread.x * vRight +
+		y * vecSpread.y * vUp;
+
+	// Get amount of player velocity to add to projectile.
+	Vector inf = evt.proj.player_vel_inf;
+	Vector pvel = m_pPlayer->pev->velocity;
+	pvel =	vRight		* DotProduct(vRight,	pvel)	* inf.x +
+			vUp			* DotProduct(vUp,		pvel)	* inf.y +
+			vForward	* DotProduct(vForward,	pvel)	* inf.z;
+
+	Vector dir = evt.proj.dir;
+	Vector projectile_velocity = pvel +
+		dir.x * evt.proj.speed * vRight +
+		dir.y * evt.proj.speed * Vector(0, 0, 1) +
+		dir.z * evt.proj.speed * vForward;
+
+	Vector offsetOpts = evt.proj.offset;
+	Vector ofs = vRight * offsetOpts.x + vForward * offsetOpts.y + vUp * offsetOpts.z;
+	Vector projectile_ori = m_pPlayer->GetGunPosition() + ofs;
+	Vector projectile_dir_angles = UTIL_VecToAngles(projectile_velocity.Normalize());
+	float grenadeTime = evt.proj.life != 0 ? evt.proj.life : 3.5f; // timed grenades only
+	//if (state.active_opts.windup_time > 0)
+	//	grenadeTime = Math.max(0, grenadeTime - (g_Engine.time - state.windupStart));
+
+	CBaseEntity* shootEnt = NULL;
+	switch (evt.proj.type) {
+	case WC_PROJECTILE_ARGRENADE:
+		shootEnt = CGrenade::ShootContact(m_pPlayer->pev, projectile_ori, projectile_velocity);
+		break;
+	case WC_PROJECTILE_BANANA:
+		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_BANANA Not implemented\n");
+		break;
+	case WC_PROJECTILE_BOLT:
+		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_BOLT Not implemented\n");
+		break;
+	case WC_PROJECTILE_HVR:
+		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_HVR Not implemented\n");
+		break;
+	case WC_PROJECTILE_SHOCK:
+		shootEnt = CShockBeam::CreateShockBeam(projectile_ori, projectile_dir_angles, m_pPlayer);
+		break;
+	case WC_PROJECTILE_HORNET:
+		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_HORNET Not implemented\n");
+		break;
+	case WC_PROJECTILE_DISPLACER:
+		shootEnt = CDisplacerBall::CreateDisplacerBall(projectile_ori, projectile_dir_angles, m_pPlayer);
+		break;
+	case WC_PROJECTILE_GRENADE:
+		shootEnt = CGrenade::ShootTimed(m_pPlayer->pev, projectile_ori, projectile_velocity, grenadeTime);
+		break;
+	case WC_PROJECTILE_MORTAR:
+		shootEnt = ShootMortar(m_pPlayer->edict(), projectile_ori, projectile_velocity);
+		break;
+	case WC_PROJECTILE_RPG:
+		shootEnt = CRpgRocket::CreateRpgRocket(projectile_ori, m_pPlayer->pev->v_angle, m_pPlayer, NULL);
+		break;
+	case WC_PROJECTILE_WEAPON:
+		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_WEAPON Not implemented\n");
+		break;
+	case WC_PROJECTILE_TRIPMINE: {
+		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_TRIPMINE Not implemented\n");
+		/*
+		// assumes MakeVectors was already called
+		Vector vecSrc = m_pPlayer->GetGunPosition();
+
+		// Find a good tripmine location
+		TraceResult tr;
+		Vector vecEnd = vecSrc + vForward * state.active_opts.max_range;
+		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, m_pPlayer->edict(), &tr);
+		if (tr.flFraction >= 1.0 && state.active_opts.pev.spawnflags & FL_SHOOT_IF_NOT_MISS != 0)
+		{
+			state.abortAttack = true;
+		}
+		else
+		{
+			Vector tripOri = tr.vecEndPos + tr.vecPlaneNormal * 8;
+			Vector angles = UTIL_VecToAngles(tr.vecPlaneNormal);
+			angles.x *= -1; // not sure why hlsdk doesn't do this
+			const char* tripClass = evt.proj.entity_class ? STRING(evt.proj.entity_class) : "monster_tripmine";
+			shootEnt = ShootCustomProjectile(state, tripClass, tripOri, projectile_velocity, angles);
+		}
+		*/
+		break;
+	}
+	case WC_PROJECTILE_CUSTOM:
+		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_CUSTOM Not implemented\n");
+		break;
+	case WC_PROJECTILE_OTHER:
+		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_OTHER Not implemented\n");
+		break;
+	default:
+		ALERT(at_error, "WeaponCustom: Unknown projectile type %d\n", evt.proj.type);
+		break;
+	}
+
+	if (shootEnt)
+	{
+		if (evt.proj.follow_mode != WC_PROJ_FOLLOW_NONE)
+		{
+			EHANDLE h_plr = m_pPlayer->edict();
+			EHANDLE h_proj = shootEnt->edict();
+			float dur = evt.proj.follow_time[1];
+			ALERT(at_error, "WeaponCustom: Projectile follow mode not implemented\n");
+			//g_Scheduler.SetTimeout("projectile_follow_aim", evt.proj.follow_time[0], h_plr, h_proj, @state.active_opts, dur);
+		}
+
+		EHANDLE mdlHandle = shootEnt->edict();
+		EHANDLE sprHandle;
+
+		// TODO: Kill this when follow target dies (and its not a custom entity)
+		if (evt.proj.sprite)
+		{
+			Vector ori = shootEnt->pev->origin;
+			RGBA c = evt.proj.sprite_color;
+			std::string colorString = UTIL_VarArgs("%d %d %d", (int)c.r, (int)c.g, (int)c.b);
+			std::string scaleString = UTIL_VarArgs("%.4f", evt.proj.sprite_scale);
+			StringMap keyvalues = {
+				{"model", INDEX_MODEL(evt.proj.sprite)},
+				{"rendermode", "5"},
+				{"renderamt", std::to_string(evt.proj.sprite_color[3]).c_str()},
+				{"rendercolor", colorString.c_str()},
+				{"scale", scaleString.c_str()},
+			};
+			CBaseEntity* spr = CBaseEntity::Create("env_sprite", ori, g_vecZero, true, NULL, keyvalues);
+			spr->pev->movetype = MOVETYPE_FOLLOW;
+			spr->pev->aiment = shootEnt->edict();
+			spr->pev->skin = shootEnt->entindex();
+			spr->pev->body = 0; // attachement point
+			sprHandle = spr;
+		}
+
+		/*
+		WeaponCustomProjectile@ shootEnt_c = cast<WeaponCustomProjectile@>(CastToScriptClass(shootEnt));
+		if (shootEnt_c !is null)
+			shootEnt_c.spriteAttachment = sprHandle;
+		*/
+
+		// attach a trail
+		if (evt.proj.trail_spr)
+		{
+			MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+			WRITE_BYTE(TE_BEAMFOLLOW);
+			WRITE_SHORT(shootEnt->entindex());
+			WRITE_SHORT(evt.proj.trail_spr);
+			WRITE_BYTE(evt.proj.trail_life);
+			WRITE_BYTE(evt.proj.trail_width);
+			WRITE_BYTE(evt.proj.trail_color[0]);
+			WRITE_BYTE(evt.proj.trail_color[1]);
+			WRITE_BYTE(evt.proj.trail_color[2]);
+			WRITE_BYTE(evt.proj.trail_color[3]);
+			MESSAGE_END();
+		}
+
+		if (evt.proj.life)
+			ALERT(at_error, "WeaponCustom: Projectile life not implemented\n");
+
+		/*
+		if (evt.proj.life > 0)
+			g_Scheduler.SetTimeout("killProjectile", options.life, mdlHandle, sprHandle, state.active_opts);
+
+		if (state.c_wep !is null and (state.c_wep.settings.max_live_projectiles > 0 or state.c_wep.settings.pev.spawnflags & FL_WEP_WAIT_FOR_PROJECTILES != 0))
+		{
+			state.liveProjectiles++;
+			MonitorProjectileLife(state, mdlHandle);
+		}
+		*/
+
+		if (evt.proj.hasAvel)
+			shootEnt->pev->avelocity = evt.proj.avel;
+
+		// TODO: Allow setting projectile class and ally status
+		int rel = m_pPlayer->IRelationship(shootEnt);
+		bool isFriendly = rel == R_AL || rel == R_NO;
+		if (shootEnt->IsMonster() && !isFriendly)
+			shootEnt->SetClassification(CLASS_PLAYER_ALLY);
+
+		// TODO: health set here
+		shootEnt->pev->friction = 1.0f - evt.proj.elasticity;
+		shootEnt->pev->gravity = evt.proj.gravity;
+
+		/*
+		if (shootEnt->pev->gravity == 0)
+		{
+			if (evt.proj.world_event != WC_PROJ_ACT_BOUNCE && evt.proj.monster_event != WC_PROJ_ACT_BOUNCE)
+				shootEnt->pev->movetype = MOVETYPE_FLY; // fixes jittering in grapple tongue shoot
+			else
+				shootEnt->pev->movetype = MOVETYPE_BOUNCEMISSILE;
+		}
+		*/
+	}
+
+	// remove weapon from player if they threw it
+	if (evt.proj.type == WC_PROJECTILE_WEAPON) {
+		UTIL_Remove(this);
+	}
+#endif
+}
+
 void CWeaponCustom::PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer) {
 #ifdef CLIENT_DLL
 	Vector forward, right, up;
@@ -1428,6 +1641,9 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 	case WC_EVT_BULLETS:
 		PlayEvent_Bullets(evt, m_pPlayer, leftHand, akimboFire);
 		break;
+	case WC_EVT_PROJECTILE:
+		PlayEvent_Projectile(evt, m_pPlayer);
+		break;
 	case WC_EVT_KICKBACK:
 		PlayEvent_Kickback(evt, m_pPlayer);
 		break;
@@ -1460,10 +1676,9 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 	case WC_EVT_COOLDOWN:
 		PlayEvent_Cooldown(evt, m_pPlayer);
 		break;
-	case WC_EVT_TOGGLE_AKIMBO: {
+	case WC_EVT_TOGGLE_AKIMBO:
 		PlayEvent_ToggleAkimbo(evt, m_pPlayer);
 		break;
-	}
 	default:
 		ALERT(at_error, "Unhandled weapon event type %d\n", evt.evtType);
 		break;

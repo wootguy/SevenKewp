@@ -149,6 +149,7 @@ struct EXPORT RGBA {
 	RGBA(Vector v, uint8_t a) : r(v.x), g(v.y), b(v.z), a(a) {}
 	RGBA(RGB rgb) : r(rgb.r), g(rgb.g), b(rgb.b), a(255) {}
 	RGBA(RGB rgb, uint8_t a) : r(rgb.r), g(rgb.g), b(rgb.b), a(a) {}
+	RGBA(uint8_t rgfl[4]) { r = rgfl[0]; g = rgfl[1]; b = rgfl[2]; a = rgfl[3]; }
 
 	inline Vector ToVector() { return Vector(r, g, b); }
 };

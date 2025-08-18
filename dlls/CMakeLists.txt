@@ -384,6 +384,7 @@ set(WEAPON_HDR
 	weapon/CUzi.h
 	weapon/CMinigun.h
 	weapon/CEagle.h
+	weapon/CM16.h
 	weapon/CWeaponCustom.h
 	weapon/weapons.h
 )
@@ -425,6 +426,7 @@ set(WEAPON_SRC
 	weapon/CUzi.cpp
 	weapon/CMinigun.cpp
 	weapon/CEagle.cpp
+	weapon/CM16.cpp
 	weapon/CWeaponCustom.cpp
 	weapon/combat.cpp
 )
@@ -435,6 +437,7 @@ set(AMMO_HDR
 set(AMMO_SRC
 	weapon/CBasePlayerAmmo.cpp
 	weapon/CAmmo556.cpp
+	weapon/CAmmo556Clip.cpp
 	weapon/CAmmo762.cpp
 	weapon/CCrossbowAmmo.cpp
 	weapon/CGaussAmmo.cpp

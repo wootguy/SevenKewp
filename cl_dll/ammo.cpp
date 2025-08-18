@@ -1002,6 +1002,7 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			break;
 		case WC_EVT_TOGGLE_AKIMBO:
 		case WC_EVT_TOGGLE_LASER:
+		case WC_EVT_PROJECTILE:
 			break;
 		default:
 			gEngfuncs.Con_Printf("Bad custom weapon event type read %d\n", (int)evt.evtType);

@@ -101,6 +101,7 @@ public:
 	void CancelDelayedEvents();
 
 	void PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
+	void PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
 	void PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
