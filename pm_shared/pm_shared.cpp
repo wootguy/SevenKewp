@@ -109,8 +109,6 @@ typedef enum
 	at_logged		// Server print to console ( only in multiplayer games ).
 } ALERT_TYPE;
 
-float g_lastJump; // prevents sticking to the ground with small jump velocities
-
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
 
 const char* g_stepSoundsConcrete[4] =
@@ -1633,16 +1631,16 @@ void PM_CatagorizePosition (void)
 	// water on each call, and the converse case will correct itself if called twice.
 	PM_CheckWater();
 
+	// try to stick to the floor while moving down slopes.
+	// While moving up, don't check very far because the player is likely colliding with the slope
+	// or trying to jump.
+	float downCheck = pmove->velocity[2] > 0 ? 0.2f : 2.0f;
+
 	point[0] = pmove->origin[0];
 	point[1] = pmove->origin[1];
-	point[2] = pmove->origin[2] - 2;
+	point[2] = pmove->origin[2] - downCheck;
 
-	if (pmove->velocity[2] < 0)
-		g_lastJump = 0;
-	float timeSinceLastJump = pmove->time - g_lastJump;
-	bool isJumping = pmove->velocity[2] > 10 && timeSinceLastJump < 50;
-
-	if (pmove->velocity[2] > 180 || isJumping)   // Shooting up really fast.  Definitely not on ground.
+	if (pmove->velocity[2] > 180 || pmove->movetype == MOVETYPE_NOCLIP)   // Shooting up really fast.  Definitely not on ground.
 	{
 		pmove->onground = -1;
 	}
@@ -2695,8 +2693,6 @@ void PM_Jump (void)
 	{
 		pmove->velocity[2] = sqrt(2 * jumpPower * 45.0);
 	}
-
-	g_lastJump = pmove->time;
 
 	// Decay it for simulation
 	PM_FixupGravityVelocity();
