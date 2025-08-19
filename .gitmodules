@@ -7,3 +7,6 @@
 [submodule "plugins/HLCMapPlugins"]
 	path = plugins/HLCMapPlugins
 	url = https://github.com/wootguy/HLCMapPlugins
+[submodule "external/curl"]
+	path = external/curl
+	url = https://github.com/curl/curl

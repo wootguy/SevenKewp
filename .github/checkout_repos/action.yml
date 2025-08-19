@@ -3,6 +3,13 @@ description: A composite action to checkout all required repositories.
 runs:
   using: "composite"
   steps:
+    - name: Checkout curl
+      uses: actions/checkout@v4
+      with:
+        repository: curl/curl
+        path: ./external/curl
+        ref: curl-8_15_0
+
     - name: Checkout rehlds
       uses: actions/checkout@v4
       with:

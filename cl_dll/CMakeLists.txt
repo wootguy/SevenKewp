@@ -225,10 +225,11 @@ set(ALL_SRC
 
 include_directories(${CMAKE_SOURCE_DIR}/utils/vgui/include)
 include_directories(${CMAKE_SOURCE_DIR}/external)
+include_directories(${CMAKE_SOURCE_DIR}/external/curl/include/)
 
 add_library(${CLIENT_DLL_NAME} SHARED ${ALL_SRC})
 
-target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DCLIENT_DLL -DCLIENT_WEAPONS -DHL_DLL)
+target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DCLIENT_DLL -DCLIENT_WEAPONS -DHL_DLL -DCURL_STATICLIB)
 
 if(UNIX)
 	add_definitions(-DLINUX)
@@ -239,6 +240,7 @@ if(UNIX)
 		stdc++
 		SDL2
 		:vgui.so
+		${CMAKE_SOURCE_DIR}/external/curl/build/lib/libcurl.a
 	)
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
@@ -246,12 +248,14 @@ if(UNIX)
 		COMPILE_FLAGS "-m32 -Werror=return-type -Wno-format-truncation -Wno-unused-result" LINK_FLAGS "-m32 -L ../../linux/release -L ../../linux"
 	)
 
-elseif(MSVC)
+elseif(MSVC)	
 	target_link_libraries(${CLIENT_DLL_NAME} 
-		${CMAKE_CURRENT_SOURCE_DIR}/../utils/vgui/lib/win32_vc6/vgui.lib
+		${CMAKE_SOURCE_DIR}/utils/vgui/lib/win32_vc6/vgui.lib
 		wsock32
-		${CMAKE_CURRENT_SOURCE_DIR}/../lib/public/sdl2.lib
+		${CMAKE_SOURCE_DIR}/lib/public/sdl2.lib
 		opengl32
+		Ws2_32 Crypt32 Secur32 Wldap32 iphlpapi # curl dependencies
+		${CMAKE_SOURCE_DIR}/external/curl/build/lib/Release/libcurl.lib
 	)
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES

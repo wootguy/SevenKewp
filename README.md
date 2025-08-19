@@ -13,7 +13,7 @@ If you're a player, you don't need to install anything or build this mod. Just j
 Build instructions:
 1. Install dependendies.  
    Windows: Install Git, CMake, and Visual Studio  
-   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev`
+   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev libssl-dev:i386`
 1. Open a shell somewhere and clone the repo: `git clone --recurse-submodules https://github.com/wootguy/SevenKewp`
 1. Run `scripts/build_client.bat` (Windows) or `scripts/build_client.sh` (Linux).
 1. Copy the contents of `SevenKewp/build_client/output/` to `Steam/steamapps/common/Half-Life/valve_addon/`.
@@ -33,7 +33,7 @@ Note: If you're a player, you don't need to install anything or build this mod. 
 
 1. Install dependendies.  
    Windows: Install Git, CMake, and Visual Studio  
-   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev`
+   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev libssl-dev:i386`
 1. Open a shell somewhere and clone the repo: `git clone --recurse-submodules https://github.com/wootguy/SevenKewp`
 1. Run `scripts/build_game_and_plugins.bat` (Windows) or `scripts/build_game_and_plugins.sh` (Linux).
 2. Intall the official Half-Life dedicated server from [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD#Downloading_SteamCMD). The `steam_legacy` beta is needed for ReHLDS compatibility:

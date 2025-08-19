@@ -686,8 +686,9 @@ set_source_files_properties(${ENT_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
 add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
 target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
+target_include_directories(${SERVER_DLL_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/curl/include/)
 
-target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS -D_CRT_SECURE_NO_DEPRECATE)
+target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS -D_CRT_SECURE_NO_DEPRECATE -DCURL_STATICLIB)
 
 if (INCREASED_SERVER_LIMITS)
 	target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DINCREASED_SERVER_LIMITS)
@@ -700,6 +701,10 @@ if(UNIX)
 		set(ASAN_LFLAGS "-fsanitize=address")
 		set(OPT_FLAG "-Og")
 	endif()
+
+	target_link_libraries(${PROJECT_NAME} PRIVATE
+		${CMAKE_SOURCE_DIR}/external/curl/build/lib/libcurl.a
+	)
 
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		PREFIX ""
@@ -755,7 +760,10 @@ elseif(MSVC)
 	source_group("Source Files\\Hooks" FILES ${HOOKS_SRC})
 	
 	# WinSock libraries for network utils
-	target_link_libraries(${PROJECT_NAME} PRIVATE WS2_32 IPHLPAPI)
+	target_link_libraries(${PROJECT_NAME} PRIVATE
+		Ws2_32 Crypt32 Secur32 Wldap32 iphlpapi # curl dependencies
+		${CMAKE_SOURCE_DIR}/external/curl/build/lib/Release/libcurl.lib
+	)
 
 else()
 	message(FATAL_ERROR "TODO: Mac support")

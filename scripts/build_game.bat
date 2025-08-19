@@ -1,6 +1,8 @@
 @echo off
 cls
 
+call build_curl.bat
+
 :: run from the location of this script
 cd %~dp0
 cd ..
