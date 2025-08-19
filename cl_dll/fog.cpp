@@ -15,6 +15,12 @@ int CFog::Init(void)
 	return 1;
 }
 
+int CFog::VidInit(void) {
+	enabled = false;
+
+	return 1;
+}
+
 int CFog::MsgFunc_Fog(const char* pszName, int iSize, void* pbuf) {
 	BEGIN_READ(pbuf, iSize);
 	enabled = READ_BYTE();

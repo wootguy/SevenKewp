@@ -488,6 +488,7 @@ void CHud :: VidInit( void )
 	EngineClientCmd("bind 0 slot10\n");
 
 	GetClientVoiceMgr()->VidInit();
+	m_Fog.VidInit();
 }
 
 void CHud::LoadHudSprites(void) {

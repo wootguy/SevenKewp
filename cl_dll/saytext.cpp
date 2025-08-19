@@ -179,6 +179,15 @@ int CHudSayText::MaxLines() {
 	return V_max(1, V_min(m_HUD_saytext_lines->value, MAX_LINES));
 }
 
+int CHudSayText::ChatHeight(bool maxlines) {
+	return line_height * ((maxlines ? MAX_LINES : MaxLines()) + 1);
+}
+
+void CHudSayText::SetChatInputPos(int* x, int* y) {
+	*x = LINE_START;
+	*y = Y_START + MAX_LINES * line_height;
+}
+
 void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize, int clientIndex )
 {
 	ConsolePrint(pszBuf);
@@ -238,7 +247,23 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize, int clientIn
 	m_iFlags |= HUD_ACTIVE;
 	PlaySound( "misc/talk.wav", 1 );
 
-	Y_START = ScreenHeight - 60 - ( line_height * (MAX_LINES+2) );
+	int bottom = (ScreenHeight * 8) / 10.0f; // ideal chat position
+	int top = bottom - ChatHeight(false);
+
+	int padding = gHUD.m_iFontHeight * 2.0f;
+	int maxTop = ScreenHeight/2 + padding*2; // don't want chat covering the crosshair
+	int maxBottom = ScreenHeight - padding; // don't want it covering the health hud either
+
+	const int SPECTATOR_PANEL_HEIGHT = YRES_HD(64);
+	int maxBottomSpec = ScreenHeight - (SPECTATOR_PANEL_HEIGHT + 5);
+	maxBottom = V_min(maxBottom, maxBottomSpec);
+
+	if (top < maxTop)
+		bottom += maxTop - top;
+	if (bottom > maxBottom)
+		bottom -= bottom - maxBottom;
+
+	Y_START = bottom - ChatHeight(true);
 }
 
 void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )

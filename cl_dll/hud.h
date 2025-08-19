@@ -328,6 +328,8 @@ public:
 	void SayTextPrint( const char *pszBuf, int iBufSize, int clientIndex = -1 );
 	void EnsureTextFitsInOneLineAndWrapIfHaveTo( int line );
 	int MaxLines(); // max lines client wants to see
+	int ChatHeight(bool maxlines); // max height of all chat lines + some padding
+	void SetChatInputPos(int* x, int* y);
 	virtual const char* HudName() { return "CHudSayText"; }
 friend class CHudSpectator;
 
@@ -581,7 +583,7 @@ class CFog : public CHudBase
 {
 public:
 	int Init(void);
-	int VidInit(void) { return 1; }
+	int VidInit(void);
 	int MsgFunc_Fog(const char* pszName, int iSize, void* pbuf);
 	void SetupFog();
 	virtual const char* HudName() { return "CFog"; }
