@@ -25,7 +25,7 @@ class CItemSuit : public CItem
 	}
 	BOOL MyTouch(CBasePlayer* pPlayer)
 	{
-		if (pPlayer->pev->weapons & (1 << WEAPON_SUIT))
+		if (pPlayer->m_weaponBits & (1ULL << WEAPON_SUIT))
 			return FALSE;
 
 		if (pev->spawnflags & SF_SUIT_SHORTLOGON)
@@ -33,7 +33,7 @@ class CItemSuit : public CItem
 		else
 			EMIT_SOUND_SUIT(pPlayer->edict(), "!HEV_AAx");	// long version of suit logon
 
-		pPlayer->pev->weapons |= (1 << WEAPON_SUIT);
+		pPlayer->m_weaponBits |= (1ULL << WEAPON_SUIT);
 		pPlayer->m_iHideHUD &= ~HIDEHUD_HEALTH;
 
 		return TRUE;

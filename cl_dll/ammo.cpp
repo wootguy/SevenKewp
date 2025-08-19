@@ -285,6 +285,7 @@ DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
 DECLARE_MESSAGE(m_Ammo, CustomWep);		// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, CustomWepEv);	// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, PmodelAnim);	// player model anim
+DECLARE_MESSAGE(m_Ammo, WeaponBits);	// currently held weapons
 DECLARE_MESSAGE(m_Ammo, SoundIdx);		// sound index to file path mapping
 DECLARE_MESSAGE(m_Ammo, AmmoX);			// update known ammo type's count
 DECLARE_MESSAGE(m_Ammo, AmmoXX);		// update known ammo type's count (higher max count)
@@ -315,6 +316,11 @@ DECLARE_COMMAND(m_Ammo, PrevWeapon);
 
 void ResetCustomWeaponStates();
 
+ModPlayerState& GetLocalPlayerState() {
+	int idx = GetLocalPlayer()->index;
+	return g_modPlayerStates[idx];
+}
+
 int CHudAmmo::Init(void)
 {
 	gHUD.AddHudElem(this);
@@ -325,6 +331,7 @@ int CHudAmmo::Init(void)
 	HOOK_MESSAGE(CustomWep);
 	HOOK_MESSAGE(CustomWepEv);
 	HOOK_MESSAGE(PmodelAnim);
+	HOOK_MESSAGE(WeaponBits);
 	HOOK_MESSAGE(SoundIdx);
 	HOOK_MESSAGE(AmmoPickup);
 	HOOK_MESSAGE(WeapPickup);
@@ -426,7 +433,7 @@ void CHudAmmo::Think(void)
 
 			if ( p )
 			{
-				if ( gHUD.m_iWeaponBits & ( 1 << p->iId ) )
+				if ( gHUD.m_iWeaponBits & ( 1ULL << p->iId ) )
 					gWR.PickupWeapon( p );
 				else
 					gWR.DropWeapon( p );
@@ -501,10 +508,10 @@ void WeaponsResource :: SelectSlot( int iSlot, int fAdvance, int iDirection )
 	if ( gHUD.m_fPlayerDead || gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) )
 		return;
 
-	if (!(gHUD.m_iWeaponBits & (1<<(WEAPON_SUIT)) ))
+	if (!(gHUD.m_iWeaponBits & (1ULL<<(WEAPON_SUIT)) ))
 		return;
 
-	if ( ! ( gHUD.m_iWeaponBits & ~(1<<(WEAPON_SUIT)) ))
+	if ( ! ( gHUD.m_iWeaponBits & ~(1ULL<<(WEAPON_SUIT)) ))
 		return;
 
 	WEAPON *p = NULL;
@@ -1029,6 +1036,19 @@ int CHudAmmo::MsgFunc_PmodelAnim(const char* pszName, int iSize, void* pbuf)
 	return 1;
 }
 
+int CHudAmmo::MsgFunc_WeaponBits(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	uint64_t low = (uint32_t)READ_LONG();
+	uint64_t high = (uint32_t)READ_LONG();
+
+	ModPlayerState& state = GetLocalPlayerState();
+	state.weaponBits = (high << 32) | low;
+
+	return 1;
+}
+
 void AddWeaponCustomSoundMapping(int idx, const char* path);
 
 int CHudAmmo::MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf) {
@@ -1217,7 +1237,7 @@ int CHudAmmo::Draw(float flTime)
 	int a, x, y, r, g, b;
 	int AmmoWidth;
 
-	if (!(gHUD.m_iWeaponBits & (1<<(WEAPON_SUIT)) ))
+	if (!(gHUD.m_iWeaponBits & (1ULL<<(WEAPON_SUIT)) ))
 		return 1;
 
 	if ( (gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL )) )

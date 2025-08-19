@@ -273,7 +273,7 @@ int CBasePlayerWeapon::AddToPlayer(CBasePlayer* pPlayer)
 {
 	int bResult = CBasePlayerItem::AddToPlayer(pPlayer);
 
-	pPlayer->pev->weapons |= (1 << m_iId);
+	pPlayer->m_weaponBits |= (1ULL << m_iId);
 
 	if (!m_iPrimaryAmmoType)
 	{

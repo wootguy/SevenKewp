@@ -105,7 +105,7 @@ int CHudBattery::Draw(float flTime)
 
 	UnpackRGB(r,g,b, RGB_YELLOWISH);
 
-	if (!(gHUD.m_iWeaponBits & (1<<(WEAPON_SUIT)) ))
+	if (!(gHUD.m_iWeaponBits & (1ULL<<(WEAPON_SUIT)) ))
 		return 1;
 
 	// Has health changed? Flash the health #

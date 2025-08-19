@@ -853,7 +853,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 void CBasePlayer::HideAllItems(bool hideSuit) {
 	pev->viewmodel = 0;
 	pev->weaponmodel = 0;
-	pev->weapons = hideSuit ? 0 : (1 << WEAPON_SUIT);
+	m_weaponBits = hideSuit ? 0 : (1ULL << WEAPON_SUIT);
 
 	UpdateClientData();
 
@@ -1552,7 +1552,7 @@ void CBasePlayer::TabulateWeapons(void) {
 			CBasePlayerItem* pPlayerItem = ent ? ent->GetWeaponPtr() : NULL;
 
 			while (pPlayerItem) {
-				pev->weapons |= g_weaponSlotMasks[pPlayerItem->m_iId];
+				m_weaponBits |= g_weaponSlotMasks[pPlayerItem->m_iId];
 
 				CBaseEntity* next = pPlayerItem->m_pNext.GetEntity();
 				pPlayerItem = next ? next->GetWeaponPtr() : NULL;
@@ -1561,7 +1561,7 @@ void CBasePlayer::TabulateWeapons(void) {
 	}
 
 	if (!g_noSuit)
-		pev->weapons |= (1 << WEAPON_SUIT);
+		m_weaponBits |= (1ULL << WEAPON_SUIT);
 }
 
 /*
@@ -2004,7 +2004,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	m_isObserver = true;
 	m_lastObserverSwitch = gpGlobals->time;
 	pev->viewmodel = 0; // prevent floating view models
-	pev->weapons = 0; // no weapon switching
+	m_weaponBits = 0; // no weapon switching
 
 	// Clear out the status bar
 	m_fInitHUD = TRUE;
@@ -2732,7 +2732,7 @@ void CBasePlayer::PreThink(void)
 
 	// tell client they have a suit if they don't but have weapons
 	// otherwise they can't switch weapons
-	if (pev->weapons && !(pev->weapons & (1 << WEAPON_SUIT))) {
+	if (m_weaponBits && !(m_weaponBits & (1ULL << WEAPON_SUIT))) {
 		m_fakeSuit = true;
 		m_iHideHUD = HIDEHUD_FLASHLIGHT | HIDEHUD_HEALTH;
 	}
@@ -2745,7 +2745,7 @@ void CBasePlayer::PreThink(void)
 	CheckSuitUpdate();
 
 	// only show weapon hud if player has a weapon besides the suit
-	if (pev->weapons & ~(1 << WEAPON_SUIT) && !m_weaponsDisabled) {
+	if (m_weaponBits & ~(1ULL << WEAPON_SUIT) && !m_weaponsDisabled) {
 		m_iHideHUD &= ~HIDEHUD_WEAPONS;
 	}
 	else {
@@ -3177,7 +3177,7 @@ void CBasePlayer::CheckSuitUpdate()
 	int isearch = m_iSuitPlayNext;
 	
 	// Ignore suit updates if no suit
-	if ( !(pev->weapons & (1<<WEAPON_SUIT)) )
+	if ( !(m_weaponBits & (1ULL<<WEAPON_SUIT)) )
 		return;
 
 	// if in range of radiation source, ping geiger counter
@@ -3257,7 +3257,7 @@ void CBasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeatTime)
 	}
 	
 	// Ignore suit updates if no suit
-	if ( !(pev->weapons & (1<<WEAPON_SUIT)) )
+	if ( !(m_weaponBits & (1ULL<<WEAPON_SUIT)) )
 		return;
 	
 	// get sentence or group number
@@ -3612,6 +3612,8 @@ void CBasePlayer::PostThink()
 	NightvisionUpdate();
 
 	DebugThink();
+
+	SyncWeaponBits();
 
 pt_end:
 #if defined( CLIENT_WEAPONS )
@@ -4226,7 +4228,7 @@ void CBasePlayer :: FlashlightTurnOn( void )
 		return;
 	}
 
-	if ( (pev->weapons & (1<<WEAPON_SUIT)) )
+	if ( (m_weaponBits & (1ULL<<WEAPON_SUIT)) )
 	{
 		m_flashlightEnabled = true;
 
@@ -4678,7 +4680,7 @@ int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem )
 	else if ( m_pLastItem.GetEntity() == pItem )
 		m_pLastItem = NULL;
 
-	pev->weapons &= ~(1 << pItem->m_iId); // take item off hud
+	m_weaponBits &= ~(1ULL << pItem->m_iId); // take item off hud
 
 	CBaseEntity* pPrevEnt = m_rgpPlayerItems[pItem->iItemSlot()].GetEntity();
 	CBasePlayerItem *pPrev = pPrevEnt ? pPrevEnt->GetWeaponPtr() : NULL;
@@ -4930,7 +4932,7 @@ void CBasePlayer :: UpdateClientData( void )
 			WRITE_STRING("item_longjump");
 			MESSAGE_END();
 
-			if (pev->weapons & (1 << WEAPON_SUIT))
+			if (m_weaponBits & (1ULL << WEAPON_SUIT))
 				EMIT_SOUND_SUIT(edict(), "!HEV_A1");
 		}
 	}
@@ -5702,7 +5704,7 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 				pWeapon = cOneWep;
 			}
 			else {
-				pev->weapons &= ~(1 << pWeapon->m_iId);// take item off hud
+				m_weaponBits &= ~(1ULL << pWeapon->m_iId);// take item off hud
 				g_pGameRules->GetNextBestWeapon(this, pWeapon);
 			}
 
@@ -6987,7 +6989,7 @@ void CBasePlayer::LoadInventory() {
 }
 
 void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
-	int mask = g_weaponSlotMasks[wepId];
+	uint64_t mask = g_weaponSlotMasks[wepId];
 
 	if (count_bits_set(mask) <= 1) {
 		return; // impossible for there to be a conflict
@@ -6996,9 +6998,9 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 	ItemInfo& II = CBasePlayerItem::ItemInfoArray[wepId];
 
 	for (int i = 0; i < MAX_WEAPONS; i++) {
-		int bit = (1 << i);
+		uint64_t bit = (1ULL << i);
 		if (mask & bit) {
-			if ((pev->weapons & bit) && i != wepId) {
+			if ((m_weaponBits & bit) && i != wepId) {
 				// player is already holding a weapon that fills this slot.
 				// Drop this held weapon because the player won't be able to choose which
 				// weapon they want from that slot.
@@ -7023,16 +7025,16 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 }
 
 int CBasePlayer::GetCurrentIdForConflictedSlot(int wepId) {
-	int mask = g_weaponSlotMasks[wepId];
+	uint64_t mask = g_weaponSlotMasks[wepId];
 
 	if (count_bits_set(mask) <= 1) {
 		return wepId; // impossible for there to be a conflict
 	}
 
 	for (int i = 0; i < MAX_WEAPONS; i++) {
-		int bit = (1 << i);
+		uint64_t bit = (1ULL << i);
 		if (mask & bit) {
-			if ((pev->weapons & bit) && i != wepId) {
+			if ((m_weaponBits & bit) && i != wepId) {
 				return i;
 			}
 		}
@@ -7328,4 +7330,37 @@ void CBasePlayer::SetThirdPersonWeaponAnim(int sequence, float fps) {
 
 void CBasePlayer::SetJumpPower(int power) {
 	g_engfuncs.pfnSetPhysicsKeyValue(edict(), "jmp", UTIL_VarArgs("%d", power));
+}
+
+void CBasePlayer::SyncWeaponBits() {
+	// weapons field sent to HL clients
+	pev->weapons = m_lastWeaponBits & 0xffffffff;
+	
+	if (m_weaponBits == m_lastWeaponBits || !IsSevenKewpClient()) {
+		return;
+	}
+
+	// TODO: slot conflict logic from UpdateClientData
+
+	uint64_t sentValue = m_weaponBits;
+
+	for (int i = 0; i < MAX_WEAPONS; i++) {
+		if (m_weaponBits & (1ULL << i)) {
+			// weapons that share slots occupy multiple bits so that the menu renders correctly
+			// (client may think the slot is empty if only one weapon is held from a shared slot)
+			sentValue |= g_weaponSlotMasks[i];
+		}
+	}
+
+	uint32_t high = sentValue >> 32;
+	uint32_t low = sentValue & 0xffffffff;
+
+	ALERT(at_console, "Send weapon bits: %08X %08X\n", high, low);
+
+	MESSAGE_BEGIN(MSG_ONE, gmsgWeaponBits, 0, edict());
+	WRITE_LONG(low);
+	WRITE_LONG(high);
+	MESSAGE_END();
+
+	m_lastWeaponBits = m_weaponBits;
 }

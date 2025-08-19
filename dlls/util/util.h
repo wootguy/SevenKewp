@@ -49,7 +49,7 @@ extern EXPORT globalvars_t				*gpGlobals;
 
 extern StringSet g_weaponNames; // names given by weapons (may have a prefix: "hlcoop/weapon_grapple")
 extern StringSet g_weaponClassnames; // valid weapon classnames
-extern int g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict
+extern uint64_t g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict
 
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 extern bool g_can_set_bsp_models; // false if bsp models aren't precached yet (skip SET_MODEL calls)
@@ -903,7 +903,7 @@ EXPORT bool folderExists(const std::string& path);
 
 EXPORT uint64_t getFreeSpace(const std::string& path);
 
-EXPORT uint32_t count_bits_set(uint32_t v);
+EXPORT int count_bits_set(uint64_t v);
 
 EXPORT void UTIL_ForceRetouch(edict_t* ent); // force entity to Touch() all triggers it is in contact with
 

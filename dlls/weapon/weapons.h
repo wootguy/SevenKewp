@@ -67,18 +67,20 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define	WEAPON_INVENTORY		20
 #define	WEAPON_MEDKIT			21
 #define	WEAPON_KNIFE			22
-#define	WEAPON_M249				23
-#define	WEAPON_M40A1			24
-#define	WEAPON_UZI				25
-#define	WEAPON_MINIGUN			26
-#define	WEAPON_EAGLE			27
-#define	WEAPON_M16				28
 
-#define WEAPON_ALLWEAPONS		(~(1<<WEAPON_SUIT))
+// leaving a gap here for custom weapons that vanilla HL players can pick up (HL max weapons = 32)
 
 #define WEAPON_SUIT				31	// ?????
+#define	WEAPON_M249				32
+#define	WEAPON_M40A1			33
+#define	WEAPON_UZI				34
+#define	WEAPON_MINIGUN			35
+#define	WEAPON_EAGLE			36
+#define	WEAPON_M16				37
 
-#define MAX_WEAPONS			32
+#define WEAPON_ALLWEAPONS		(~(1ULL<<WEAPON_SUIT))
+
+#define MAX_WEAPONS			64
 #define MAX_WEAPON_SLOTS	6
 #define MAX_WEAPON_POSITIONS 5
 

@@ -701,7 +701,7 @@ int PrecacheBspModels(bool serverSideModels) {
 	return uniqueBspModels.size();
 }
 
-int g_weaponSlotMasks[MAX_WEAPONS];
+uint64_t g_weaponSlotMasks[MAX_WEAPONS];
 
 void MarkWeaponSlotConflicts() {
 	for (int i = 0; i < MAX_WEAPONS; i++)
@@ -711,7 +711,7 @@ void MarkWeaponSlotConflicts() {
 		if (!II.iId)
 			continue;
 
-		int mask = 1 << II.iId;
+		uint64_t mask = 1ULL << II.iId;
 
 		for (int k = 0; k < MAX_WEAPONS; k++)
 		{
@@ -728,7 +728,7 @@ void MarkWeaponSlotConflicts() {
 			// any weapon is held for that slot. A network message controls which weapon is rendered
 			// in the shared slot.
 			if (II.iSlot == II2.iSlot && II.iPosition == II2.iPosition) {
-				mask |= 1 << II2.iId;
+				mask |= 1ULL << II2.iId;
 			}
 		}
 
@@ -1902,7 +1902,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 	
 	ItemInfo II;
 
-	memset( info, 0, 32 * sizeof( weapon_data_t ) );
+	memset( info, 0, MAX_WEAPONS * sizeof( weapon_data_t ) );
 
 	if ( !pl )
 		return 1;
@@ -1924,7 +1924,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 					memset( &II, 0, sizeof( II ) );
 					gun->GetItemInfo( &II );
 
-					if ( II.iId >= 0 && II.iId < 32 )
+					if ( II.iId >= 0 && II.iId < MAX_WEAPONS )
 					{
 						item = &info[ II.iId ];
 					 	
@@ -1953,7 +1953,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 		}
 	}
 #else
-	memset( info, 0, 32 * sizeof( weapon_data_t ) );
+	memset( info, 0, MAX_WEAPONS * sizeof( weapon_data_t ) );
 #endif
 	return 1;
 }
@@ -1994,7 +1994,7 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 	cd->watertype		= pev->watertype;
 	cd->weapons			= pev->weapons;
 
-	for (int i = 0; i < MAX_WEAPONS; i++) {
+	for (int i = 0; i < 32; i++) {
 		if (pev->weapons & (1 << i)) {
 			// weapons that share slots occupy multiple bits so that the menu renders correctly
 			// (client may think the slot is empty if only one weapon is held from a shared slot)

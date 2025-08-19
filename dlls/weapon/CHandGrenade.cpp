@@ -113,7 +113,7 @@ void CHandGrenade::Holster( int skiplocal /* = 0 */ )
 	else
 	{
 		// no more grenades!
-		m_pPlayer->pev->weapons &= ~(1<<WEAPON_HANDGRENADE);
+		m_pPlayer->m_weaponBits &= ~(1ULL<<WEAPON_HANDGRENADE);
 		SetThink( &CHandGrenade::DestroyItem );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}

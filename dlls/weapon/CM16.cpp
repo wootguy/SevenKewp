@@ -57,6 +57,7 @@ void CM16::Precache()
 	AddEvent(WepEvt().BulletFired().WepAnim(M16_SHOOT_1).AddAnim(M16_SHOOT_2));
 
 	AddEvent(WepEvt().Secondary().WepAnim(M16_LAUNCH));
+	AddEvent(WepEvt().Secondary().PunchSet(-10, 0));
 	AddEvent(WepEvt().Secondary()
 		.PlaySound(launchSnd1, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556, WC_AIVOL_LOUD)
 		.AddSound(launchSnd2));

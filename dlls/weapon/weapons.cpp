@@ -200,6 +200,15 @@ StringSet g_weaponClassnames;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 
+int NextAutoWeaponId() {
+	for (int i = 1; i < MAX_WEAPONS; i++) {
+		if (!CBasePlayerItem::ItemInfoArray[i].iId) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 // Queues the weapon info for sending to clients
 ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 {
@@ -248,7 +257,7 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 	}
 
 	if (info.iId < 0 || info.iId >= MAX_WEAPONS) {
-		info.iId = g_weaponClassnames.size() + 1;
+		info.iId = NextAutoWeaponId();
 	}
 
 	if (info.iSlot < 0 || info.iSlot >= MAX_WEAPON_SLOTS) {
@@ -371,7 +380,7 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_uzi");
 	UTIL_RegisterWeapon("weapon_minigun");
 	UTIL_RegisterWeapon("weapon_eagle");
-	UTIL_RegisterWeapon("weapon_m16");
+	//UTIL_RegisterWeapon("weapon_m16");
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 
 	g_sModelIndexFireball = PRECACHE_MODEL_ENT(NULL, "sprites/zerogxplode.spr");// fireball

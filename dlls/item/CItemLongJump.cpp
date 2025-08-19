@@ -27,7 +27,7 @@ class CItemLongJump : public CItem
 			return FALSE;
 		}
 
-		if ((pPlayer->pev->weapons & (1 << WEAPON_SUIT)))
+		if ((pPlayer->m_weaponBits & (1ULL << WEAPON_SUIT)))
 		{
 			pPlayer->m_fLongJump = TRUE;// player now has longjump module
 

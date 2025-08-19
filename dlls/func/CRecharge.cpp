@@ -119,8 +119,11 @@ void CRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 		Off();
 	}
 
+	CBasePlayer* plr = pActivator->MyPlayerPointer();
+	bool hasSuit = plr && (plr->m_weaponBits & (1ULL << WEAPON_SUIT));
+
 	// if the player doesn't have the suit, or there is no juice left, make the deny noise
-	if ((m_iJuice <= 0) || (!(pActivator->pev->weapons & (1<<WEAPON_SUIT))))
+	if ((m_iJuice <= 0) || !hasSuit)
 	{
 		if (m_flSoundTime <= gpGlobals->time)
 		{

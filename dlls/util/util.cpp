@@ -3090,9 +3090,9 @@ const char* cstr(string_t s) {
 	return STRING(s);
 }
 
-uint32_t count_bits_set(uint32_t v) {
+int count_bits_set(uint64_t v) {
 	// https://graphics.stanford.edu/~seander/bithacks.html
-	uint32_t c; // c accumulates the total bits set in v
+	int c; // c accumulates the total bits set in v
 
 	for (c = 0; v; c++) {
 		v &= v - 1; // clear the least significant bit set

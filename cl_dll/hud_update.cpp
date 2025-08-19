@@ -21,6 +21,7 @@
 #include "cl_util.h"
 #include <stdlib.h>
 #include <memory.h>
+#include "ModPlayerState.h"
 
 int CL_ButtonBits( int );
 void CL_ResetButtonBits( int bits );
@@ -33,9 +34,11 @@ int CHud::UpdateClientData(client_data_t *cdata, float time)
 {
 	memcpy(m_vecOrigin, cdata->origin, sizeof(vec3_t));
 	memcpy(m_vecAngles, cdata->viewangles, sizeof(vec3_t));
-	
+
 	m_iKeyBits = CL_ButtonBits( 0 );
-	m_iWeaponBits = cdata->iWeaponBits;
+
+	ModPlayerState& modstate = GetLocalPlayerState();
+	m_iWeaponBits = (uint32_t)cdata->iWeaponBits | modstate.weaponBits;
 
 	in_fov = cdata->fov;
 

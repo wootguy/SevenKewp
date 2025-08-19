@@ -339,6 +339,10 @@ public:
 	uint32_t m_debugFlags; // misc flags for developers and mappers
 	float m_lastNodeUpdate;
 
+	// currently held weapons
+	uint64_t m_weaponBits;
+	uint64_t m_lastWeaponBits;
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
@@ -638,6 +642,8 @@ public:
 	// -1 = jumping disabled
 	// 1+ = custom velocity
 	void SetJumpPower(int power);
+
+	void SyncWeaponBits();
 
 	// for sven-style monster info
 	//void UpdateMonsterInfo();
