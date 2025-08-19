@@ -23,6 +23,7 @@ int g_runfuncs = 1;
 char CWeaponCustom::m_soundPaths[MAX_PRECACHE][256];
 int CWeaponCustom::m_tracerCount[32];
 bool CWeaponCustom::m_customWeaponSounds[MAX_PRECACHE_SOUND];
+uint32_t CWeaponCustom::m_predDataSent[MAX_WEAPONS];
 
 void CWeaponCustom::Spawn() {
 	Precache();
@@ -824,6 +825,11 @@ bool CWeaponCustom::CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector 
 
 void CWeaponCustom::SendPredictionData(edict_t* target) {
 #ifndef CLIENT_DLL
+	if (m_predDataSent[m_iId] & PLRBIT(target)) {
+		//ALERT(at_console, "PLayer already has the prediction data\n");
+		return;
+	}
+
 	int sentBytes = 0;
 	MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeapon, NULL, target);
 	WRITE_BYTE(m_iId); sentBytes += 1;
@@ -1001,6 +1007,8 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 	int evBytes = sentBytes;
 	ALERT(at_console, "Sent %d prediction bytes for %s (%d + %d evt)\n",
 		evBytes + mainBytes, STRING(pev->classname), mainBytes, evBytes);
+
+	m_predDataSent[m_iId] |= PLRBIT(target);
 #endif
 }
 

@@ -7355,8 +7355,6 @@ void CBasePlayer::SyncWeaponBits() {
 	uint32_t high = sentValue >> 32;
 	uint32_t low = sentValue & 0xffffffff;
 
-	ALERT(at_console, "Send weapon bits: %08X %08X\n", high, low);
-
 	MESSAGE_BEGIN(MSG_ONE, gmsgWeaponBits, 0, edict());
 	WRITE_LONG(low);
 	WRITE_LONG(high);

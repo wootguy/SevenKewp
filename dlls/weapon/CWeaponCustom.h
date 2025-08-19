@@ -136,6 +136,7 @@ public:
 	// same event used for all custom weapons
 	static char m_soundPaths[MAX_PRECACHE][256];
 	static int m_tracerCount[32];
+	static uint32_t m_predDataSent[MAX_WEAPONS]; // bitfields indicating which players received prediction data
 
 	// marks sound indexes that are used by custom weapons. Thes need to be sent to clients
 	// so that they know which sound path to use, given an index. The client has no API

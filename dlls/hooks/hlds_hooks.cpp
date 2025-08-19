@@ -258,6 +258,10 @@ void ClientDisconnect( edict_t *pEntity )
 		}
 	}
 
+	for (int i = 0; i < MAX_WEAPONS; i++) {
+		CWeaponCustom::m_predDataSent[i] &= ~plrbit;
+	}
+
 // since the edict doesn't get deleted, fix it so it doesn't interfere.
 	pEntity->v.takedamage = DAMAGE_NO;// don't attract autoaim
 	pEntity->v.solid = SOLID_NOT;// nonsolid
@@ -567,6 +571,7 @@ void ServerDeactivate( void )
 	memset(g_indexSounds, 0, sizeof(g_indexSounds));
 	memset(g_hudMsgHistory, 0, sizeof(g_hudMsgHistory));
 	memset(CWeaponCustom::m_customWeaponSounds, 0, sizeof(CWeaponCustom::m_customWeaponSounds));
+	memset(CWeaponCustom::m_predDataSent, 0, sizeof(CWeaponCustom::m_predDataSent));
 
 	// in case the next map doesn't configure a sky or light_environment
 	CVAR_SET_STRING("sv_skyname", "");
