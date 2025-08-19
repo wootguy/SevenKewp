@@ -2,6 +2,9 @@
 #include "md5.h"
 #include <curl/curl.h>
 #include <string>
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud.h"
@@ -182,6 +185,10 @@ int webRequest(std::string url, std::string& response_string) {
 
 		curl_easy_cleanup(curl);
 		curl = NULL;
+
+		// placeholder code
+		rapidjson::Document json;
+		json.Parse(response_string.c_str());
 
 		return response_code;
 	}

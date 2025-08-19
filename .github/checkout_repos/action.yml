@@ -10,6 +10,13 @@ runs:
         path: ./external/curl
         ref: curl-8_15_0
 
+    - name: Checkout rapidjson
+      uses: actions/checkout@v4
+      with:
+        repository: Tencent/rapidjson
+        path: ./external/rapidjson
+        ref: 24b5e7a8b27f42fa16b96fc70aade9106cf7102f
+
     - name: Checkout rehlds
       uses: actions/checkout@v4
       with:

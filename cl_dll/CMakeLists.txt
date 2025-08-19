@@ -226,6 +226,7 @@ set(ALL_SRC
 include_directories(${CMAKE_SOURCE_DIR}/utils/vgui/include)
 include_directories(${CMAKE_SOURCE_DIR}/external)
 include_directories(${CMAKE_SOURCE_DIR}/external/curl/include/)
+include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson/include/)
 
 add_library(${CLIENT_DLL_NAME} SHARED ${ALL_SRC})
 
