@@ -503,6 +503,7 @@ set(UTIL_SRC
 	util/StringPool.cpp
 	../game_shared/shared_util.cpp
 	../game_shared/md5.cpp
+	../game_shared/miniz.c
 )
 set(PLAYER_HDR
 	../pm_shared/pm_debug.h

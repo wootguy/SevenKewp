@@ -139,6 +139,7 @@ set(UTIL_SRC
 	../public/interface.cpp
 	../game_shared/shared_util.cpp
 	../game_shared/md5.cpp
+	../game_shared/miniz.c
 )
 
 set(GAME_HDR
