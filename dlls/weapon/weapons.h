@@ -82,7 +82,7 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 
 #define MAX_WEAPONS			64
 #define MAX_WEAPON_SLOTS	6
-#define MAX_WEAPON_POSITIONS 5
+#define MAX_WEAPON_POSITIONS 8
 
 
 // weapon weight factors (for auto-switching)   (-1 = noswitch)

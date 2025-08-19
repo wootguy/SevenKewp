@@ -101,7 +101,7 @@ int CEagle::GetItemInfo(ItemInfo* p)
 	p->iMaxClip = EAGLE_MAX_CLIP;
 	p->iMaxAmmo1 = gSkillData.sk_ammo_max_357;
 	p->iSlot = 1;
-	p->iPosition = 2;
+	p->iPosition = 5;
 	p->iId = WEAPON_EAGLE;
 	p->iWeight = EAGLE_WEIGHT;
 	return true;
