@@ -11,9 +11,13 @@ runs:
         repository: Mbed-TLS/mbedtls
         path: ./external/mbedtls
         ref: v3.6.4
-        submodules: recursive
-        fetch-depth: 1
-        submodules-fetch-depth: 1
+
+    - name: Checkout mbedtls/framework
+      uses: actions/checkout@v4
+      with:
+        repository: Mbed-TLS/mbedtls-framework
+        path: ./external/mbedtls/framework
+        ref: 2a3e2c5ea053c14b745dbdf41f609b1edc6a72fa
 
     - name: Checkout curl
       uses: actions/checkout@v4
@@ -29,25 +33,21 @@ runs:
         repository: Tencent/rapidjson
         path: ./external/rapidjson
         ref: 24b5e7a8b27f42fa16b96fc70aade9106cf7102f
-        fetch-depth: 1 
 
     - name: Checkout rehlds
       uses: actions/checkout@v4
       with:
         repository: wootguy/rehlds
         path: ./rehlds
-        fetch-depth: 1 
 
     - name: Checkout map plugins
       uses: actions/checkout@v4
       with:
         repository: wootguy/HLCMapPlugins
         path: ./plugins/HLCMapPlugins
-        fetch-depth: 1 
 
     - name: Checkout rcbot plugin
       uses: actions/checkout@v4
       with:
         repository: wootguy/rcbot
         path: ./plugins/rcbot
-        fetch-depth: 1 

@@ -37,7 +37,7 @@ std::string g_update_tag_name;
 uint32_t g_update_tag_vernum;
 
 std::thread g_update_thread;
-std::atomic<int> g_updateThreadStatus = CUPDATE_STATUS_RUNNING;
+std::atomic<int> g_updateThreadStatus(CUPDATE_STATUS_RUNNING);
 
 // function parameters for the init func
 typedef void(*CLIENT_DLL_INIT_FUNCTION)(void*);
@@ -183,8 +183,14 @@ void CheckForUpdate() {
 	int code = UTIL_CurlRequest(UPDATE_URL, response_string);
 
 	if (code != 200) {
-		g_updateThreadError = "ERROR: Unexpected HTTP response code " + std::to_string(code) + "\n"
-			+ "Response data from server:\n" + response_string;
+		if (code <= 0) {
+			g_updateThreadError = "ERROR: Curl responded with:%s\n" + response_string;
+		}
+		else {
+			g_updateThreadError = "ERROR: Unexpected HTTP response code " + std::to_string(code) + "\n"
+				+ "Response data from server:\n" + response_string;
+		}
+		
 		g_updateThreadStatus = CUPDATE_STATUS_ERROR;
 		return;
 	}

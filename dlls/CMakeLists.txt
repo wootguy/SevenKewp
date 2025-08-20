@@ -696,6 +696,10 @@ if (INCREASED_SERVER_LIMITS)
 	target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DINCREASED_SERVER_LIMITS)
 endif()
 
+if (ENABLE_CURL)
+	target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DENABLE_CURL)
+endif()
+
 if(UNIX)
 	set(OPT_FLAG "-O2")
 	if (ASAN)
@@ -703,10 +707,13 @@ if(UNIX)
 		set(ASAN_LFLAGS "-fsanitize=address")
 		set(OPT_FLAG "-Og")
 	endif()
-
-	target_link_libraries(${PROJECT_NAME} PRIVATE
-		${CMAKE_SOURCE_DIR}/external/curl/build/lib/libcurl.a
-	)
+	
+	if (ENABLE_CURL)
+		target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DENABLE_CURL)
+		target_link_libraries(${SERVER_DLL_NAME}
+			${CMAKE_SOURCE_DIR}/external/curl/build/lib/libcurl.a
+		)
+	endif()
 
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		PREFIX ""
@@ -762,10 +769,22 @@ elseif(MSVC)
 	source_group("Source Files\\Hooks" FILES ${HOOKS_SRC})
 	
 	# WinSock libraries for network utils
-	target_link_libraries(${PROJECT_NAME} PRIVATE
-		Ws2_32 Crypt32 Secur32 Wldap32 iphlpapi # curl dependencies
-		${CMAKE_SOURCE_DIR}/external/curl/build/lib/Release/libcurl.lib
+	target_link_libraries(${SERVER_DLL_NAME}
+		Ws2_32 iphlpapi
 	)
+	
+	if (ENABLE_CURL)
+		set(LIB_BUILD_PATH "build")
+		if (STATIC_MSVC_RUNTIME)
+			set(LIB_BUILD_PATH "build_static")
+		endif()
+	
+		target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DENABLE_CURL)
+		target_link_libraries(${SERVER_DLL_NAME} 
+			Ws2_32 Crypt32 Secur32 Wldap32 iphlpapi # curl dependencies
+			${CMAKE_SOURCE_DIR}/external/curl/${LIB_BUILD_PATH}/lib/Release/libcurl.lib
+		)
+	endif()
 
 else()
 	message(FATAL_ERROR "TODO: Mac support")

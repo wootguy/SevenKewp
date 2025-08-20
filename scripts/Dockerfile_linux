@@ -1,0 +1,25 @@
+# To build a container for github:
+# 1) echo <personal_access_token> | docker login ghcr.io -u <username> --password-stdin
+# 2) docker build -t ubuntu18 .
+# 3) docker tag ubuntu18 ghcr.io/wootguy/ubuntu18:latest
+# 4) docker push ghcr.io/wootguy/ubuntu18:latest
+
+# Bump this version to the next LTS if the client crashes on startup with the latest ubuntu LTS.
+# I wanted to target 12.04 (year of the first Steam release) but it looks like SDL dependencies
+# have breaking changes every few years. I guess 18.04 is old enough. I couldn't get Steam
+# running on 12.04 or 14.04 anyway.
+FROM ubuntu:18.04
+
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Update package list and install packages
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
+    apt-get install -y git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev
+
+# Set working directory inside container
+WORKDIR /src
+
+# Default command
+CMD ["/bin/bash"]

@@ -1,11 +1,13 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.10)
 
-option(BUILD_SERVER "Disable this if you don't want to build the server library" ON)
+option(BUILD_SERVER "Disable this if you don't want to build the server library" OFF)
 option(BUILD_CLIENT "Enable this if you want to build the client library" OFF)
 option(BUILD_PLUGINS "Build everything in the plugins/ folder")
 option(UPDATE_PLUGINS "Discard local changes and update everything in the plugins/ folder")
 option(INCREASED_SERVER_LIMITS "Build a server library with increased limits (server crashes instantly if this does not match rehlds)")
 option(SETUP_IDE "Install binaries to the game folder")
+option(STATIC_MSVC_RUNTIME "Build using the static MSVC runtime")
+option(ENABLE_CURL "Use the CURL library for plugin features and client updates" ON)
 
 set(SERVER_WORK_DIR "C:/Games/hlds/steamapps/common/Half-Life" CACHE STRING "Path to your server root folder")
 set(SERVER_ARGS "+map c1a1 -dll dlls/server.dll -num_edicts 4096 -heapsize 65536 +maxplayers 32 +developer 1 +sv_cheats 1 +log on -port 27016" CACHE STRING "server launch arguments")

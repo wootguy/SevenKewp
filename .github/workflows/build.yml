@@ -1,9 +1,9 @@
 name: C/C++ CI
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  build-windows:
+  build-windows-server:
     runs-on: windows-2022
   
     steps: 
@@ -19,31 +19,74 @@ jobs:
       run: scripts/build_curl.bat
 
     - name: Build server
-      run: |
-        mkdir build
-        cd build
-        cmake ..  -A Win32 -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=OFF
-        cmake --build . --config Release
+      run: scripts/build_server.bat
 
     - name: Build plugins
-      run: |
-        cd build
-        cmake ..  -A Win32 -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=ON
-        cmake --build . --config Release
-
-    - name: Build client
-      run: |
-        cd build
-        cmake ..  -A Win32 -DBUILD_CLIENT=ON -DBUILD_SERVER=OFF -DBUILD_PLUGINS=OFF
-        cmake --build . --config Release
+      run: scripts/build_server_and_plugins.bat
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: sevenkewp-windows
+        name: windows-server
         path: build/output/
 
-  build-linux:
+# Doing this as a separate job because it statically links dependencies, so libs can't be shared with the server build
+  build-windows-client:
+    runs-on: windows-2022
+  
+    steps: 
+    - name: Checkout main repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'false'
+
+    - name: Checkout repositories
+      uses: ./.github/checkout_repos
+
+    # Building with a windows 7 compatible toolset
+    - name: Build curl
+      run: scripts/build_curl.bat win7
+
+    - name: Build client
+      run: scripts/build_client.bat win7
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-client
+        path: build_client_win7/output/
+
+  build-linux-server:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout main repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'false'
+
+    - name: Download and install dependencies
+      run: sudo apt install gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev
+
+    - name: Checkout repositories
+      uses: ./.github/checkout_repos
+
+    - name: Build curl
+      run: sh scripts/build_curl.sh
+
+    - name: Build server
+      run: sh scripts/build_server.sh
+
+    - name: Build plugins
+      run: sh scripts/build_server_and_plugins.sh
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-server
+        path: build/output/
+
+  build-linux-client:
     runs-on: ubuntu-24.04
 
     steps:
@@ -54,34 +97,57 @@ jobs:
 
     - name: Checkout repositories
       uses: ./.github/checkout_repos
-    
-    - name: Download and install dependencies
-      run: sudo apt install gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev
 
+    # Building in an ubuntu 18.04 docker for maximum compatibility
     - name: Build curl
-      run: sh scripts/build_curl.sh
-
-    - name: Build server
       run: |
-        mkdir build
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=OFF
-        cmake --build .
-
-    - name: Build plugins
-      run: |
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_PLUGINS=ON
-        cmake --build .
+        docker run -u $(id -u):$(id -g) --rm -v ${{ github.workspace }}:/src ghcr.io/wootguy/ubuntu18:latest bash -c "
+        sh /src/scripts/build_curl.sh
+        "
 
     - name: Build client
       run: |
-        cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=ON -DBUILD_SERVER=OFF -DBUILD_PLUGINS=OFF
-        cmake --build .
+        docker run -u $(id -u):$(id -g) --rm -v ${{ github.workspace }}:/src ghcr.io/wootguy/ubuntu18:latest bash -c "
+        sh /src/scripts/build_client.sh
+        "
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: sevenkewp-linux
-        path: build/output/
+        name: linux-client
+        path: build_client/output/
+
+  create-release-zip:
+    runs-on: ubuntu-24.04
+    needs: [build-linux-client, build-windows-client]
+
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        with:
+          submodules: 'false'
+
+      - name: Download windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-client
+          path: artifacts/windows-client
+
+      - name: Download linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-client
+          path: artifacts/linux-client
+
+      - name: Prepare release folder
+        run: |
+          mkdir -p final/valve_addon/cl_dlls
+          cp artifacts/windows-client/cl_dlls/client.dll final/valve_addon/cl_dlls/
+          cp artifacts/linux-client/cl_dlls/client.so final/valve_addon/cl_dlls/
+          cp cl_dll/client_install_readme.txt final/readme.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SevenKewp_client_v0.0.0
+          path: final/

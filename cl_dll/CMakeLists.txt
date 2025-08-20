@@ -230,6 +230,12 @@ include_directories(${CMAKE_SOURCE_DIR}/external)
 include_directories(${CMAKE_SOURCE_DIR}/external/curl/include/)
 include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson/include/)
 
+if (STATIC_MSVC_RUNTIME)
+	# static runtime
+	add_compile_options(/MT)
+	add_definitions(-UHAVE___BUILTIN_ASSUME_ALIGNED) # probably only needed for v141_xp
+endif()
+
 add_library(${CLIENT_DLL_NAME} SHARED ${ALL_SRC})
 
 target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DCLIENT_DLL -DCLIENT_WEAPONS -DHL_DLL -DCURL_STATICLIB)
@@ -241,28 +247,58 @@ if(UNIX)
 		dl
 		pthread
 		stdc++
-		SDL2
+		${CMAKE_SOURCE_DIR}/linux/libSDL2-2.0.so.0
 		:vgui.so
-		${CMAKE_SOURCE_DIR}/external/curl/build/lib/libcurl.a
-		${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedtls.a
-		${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedx509.a
-		${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedcrypto.a
 	)
+	
+	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -static-libgcc -static-libstdc++")
+	
+	if (ENABLE_CURL)
+		target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DENABLE_CURL)
+		target_link_libraries(${CLIENT_DLL_NAME} 
+			${CMAKE_SOURCE_DIR}/external/curl/build/lib/libcurl.a
+			${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedtls.a
+			${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedx509.a
+			${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedcrypto.a
+		)
+	endif()
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
 		PREFIX ""
 		COMPILE_FLAGS "-m32 -Werror=return-type -Wno-format-truncation -Wno-unused-result" LINK_FLAGS "-m32 -L ../../linux/release -L ../../linux"
 	)
 
-elseif(MSVC)	
-	target_link_libraries(${CLIENT_DLL_NAME} 
-		${CMAKE_SOURCE_DIR}/utils/vgui/lib/win32_vc6/vgui.lib
-		wsock32
+elseif(MINGW)
+	target_link_libraries(${CLIENT_DLL_NAME} wsock32 opengl32
+		${CMAKE_SOURCE_DIR}/utils/vgui/lib/vgui.dll # this doesn't work. The C++ ABI is incompatible. Need a C wrapper lib.
 		${CMAKE_SOURCE_DIR}/lib/public/sdl2.lib
-		opengl32
-		Ws2_32 Crypt32 Secur32 Wldap32 iphlpapi # curl dependencies
-		${CMAKE_SOURCE_DIR}/external/curl/build/lib/Release/libcurl.lib
 	)
+	
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -w")
+	
+	target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DMINGW)
+	
+	set(CMAKE_CXX_STANDARD 17)
+	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+	set(CMAKE_CXX_EXTENSIONS OFF)
+
+elseif(MSVC)
+	target_link_libraries(${CLIENT_DLL_NAME} wsock32 opengl32
+		${CMAKE_SOURCE_DIR}/utils/vgui/lib/win32_vc6/vgui.lib
+		${CMAKE_SOURCE_DIR}/lib/public/sdl2.lib
+	)
+	
+	if (ENABLE_CURL)
+		set(LIB_BUILD_PATH "build")
+		if (STATIC_MSVC_RUNTIME)
+			set(LIB_BUILD_PATH "build_static")
+		endif()
+	
+		target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DENABLE_CURL)
+		target_link_libraries(${CLIENT_DLL_NAME} Ws2_32 Crypt32 Secur32 Wldap32 iphlpapi
+			${CMAKE_SOURCE_DIR}/external/curl/${LIB_BUILD_PATH}/lib/Release/libcurl.lib
+		)
+	endif()
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
 		VS_DEBUGGER_COMMAND "${CLIENT_WORK_DIR}/${CLIENT_EXE}"

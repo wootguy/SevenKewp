@@ -1,0 +1,39 @@
+# escape=`
+
+# Use the latest Windows Server Core 2022 image.
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop';"]
+
+# Install CMake
+RUN New-Item -ItemType Directory -Path C:\TEMP
+RUN Invoke-WebRequest -Uri "https://github.com/Kitware/CMake/releases/download/v3.30.0/cmake-3.30.0-windows-x86_64.msi" -OutFile "C:\\TEMP\\cmake.msi"
+RUN Start-Process msiexec.exe -ArgumentList '/i C:\TEMP\cmake.msi /quiet /norestart ADD_CMAKE_TO_PATH=System' -Wait
+
+# Restore the default Windows shell for correct batch processing.
+SHELL ["cmd", "/S", "/C"]
+
+RUN `
+    # Download the Build Tools bootstrapper.
+    curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe `
+    `
+    # Install Build Tools with the Microsoft.VisualStudio.Workload.AzureBuildTools workload, excluding workloads and components with known issues.
+    && (start /w vs_buildtools.exe --quiet --wait --norestart --nocache `
+        --installPath "%ProgramFiles(x86)%\Microsoft Visual Studio\2022\BuildTools" `
+        --add Microsoft.VisualStudio.Workload.VCTools;includeRecommended `
+        --add Microsoft.VisualStudio.Component.WinXP `
+        --remove Microsoft.VisualStudio.Component.Windows10SDK.10240 `
+        --remove Microsoft.VisualStudio.Component.Windows10SDK.10586 `
+        --remove Microsoft.VisualStudio.Component.Windows10SDK.14393 `
+        --remove Microsoft.VisualStudio.Component.Windows81SDK `
+        || IF "%ERRORLEVEL%"=="3010" EXIT 0) `
+    `
+    # Cleanup
+    && del /q vs_buildtools.exe
+
+# CMake can't detect the compiler without rc.exe being in the right place
+RUN copy "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x86\rc.exe" "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\bin\HostX64\x86\"
+
+WORKDIR "C:\src"
+
+CMD ["cmd.exe"]

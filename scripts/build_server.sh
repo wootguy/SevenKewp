@@ -2,8 +2,10 @@
 set -e
 
 # run from the location of this script
-cd "$(dirname "$0")"
-sh build_curl.sh
+(
+	cd "$(dirname "$0")"
+	sh build_curl.sh
+)
 
 cd "$(dirname "$0")"
 cd ..

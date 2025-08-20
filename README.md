@@ -13,7 +13,7 @@ If you're a player, you don't need to install anything or build this mod. Just j
 Build instructions:
 1. Install dependendies.  
    Windows: Install Git, CMake, and Visual Studio  
-   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev libssl-dev:i386`
+   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev`
 1. Open a shell somewhere and clone the repo: `git clone --recurse-submodules https://github.com/wootguy/SevenKewp`
 1. Run `scripts/build_client.bat` (Windows) or `scripts/build_client.sh` (Linux).
 1. Copy the contents of `SevenKewp/build_client/output/` to `Steam/steamapps/common/Half-Life/valve_addon/`.
@@ -33,9 +33,9 @@ Note: If you're a player, you don't need to install anything or build this mod. 
 
 1. Install dependendies.  
    Windows: Install Git, CMake, and Visual Studio  
-   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev libssl-dev:i386`
+   Debian: `apt install git cmake build-essential gcc-multilib g++-multilib libc6-dev-i386 mesa-common-dev`
 1. Open a shell somewhere and clone the repo: `git clone --recurse-submodules https://github.com/wootguy/SevenKewp`
-1. Run `scripts/build_game_and_plugins.bat` (Windows) or `scripts/build_game_and_plugins.sh` (Linux).
+1. Run `scripts/build_server_and_plugins.bat` (Windows) or `scripts/build_server_and_plugins.sh` (Linux).
 2. Intall the official Half-Life dedicated server from [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD#Downloading_SteamCMD). The `steam_legacy` beta is needed for ReHLDS compatibility:
    ```
    login anonymous
@@ -60,7 +60,7 @@ Native plugins are tightly integrated with the mod code and have full access to 
 1. Set up the mod project as described in the previous section
 2. Open a shell in `SevenKewp/plugins/`
 3. Clone all the plugin repos you want. Example: `git clone https://github.com/wootguy/HLCMapPlugins/`
-4. Run the build script again: `scripts/build_game_and_plugins.bat` (Windows) or `scripts/build_game_and_plugins.sh` (Linux)
+4. Run the build script again: `scripts/build_server_and_plugins.bat` (Windows) or `scripts/build_server_and_plugins.sh` (Linux)
 5. Copy the contents of `SevenKewp/build/output/` to `valve/` on your dedicated server.
 6. Repeat steps 4 and 5 whenever the mod updates.
 
@@ -149,7 +149,7 @@ New plugins don't show up in Visual Studio until you reconfigure CMake. To do th
 
 ## Tips
 
-- Don't use the `build_game_and_plugins` script while developing. It discards all local changes not pushed to github.
+- Don't use the `build_server_and_plugins` script while developing. It discards all local changes not pushed to github.
 - Change the startup project to the one you're actively working on. This way, building with F5 will pick up changes and build only what's needed to test that project.
 - ASAN is great for debugging memory corruption (crashes that make no sense or have corrupted stacks pointing to nowhere). Enable in the project setting `C/C++` -> `General` -> `Enable Address Sanitizer`. The server will run much slower so it's not something you want to have on normally.
 - Visual Studio can't debug the server and client at the same time. Create a new build folder and solution via CMake if you want to do that.

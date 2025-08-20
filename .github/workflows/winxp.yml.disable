@@ -1,0 +1,32 @@
+# not using this because it takes too long to finish
+
+  build-windows-xp:
+    runs-on: windows-2022
+  
+    steps: 
+    - name: Checkout main repository
+      uses: actions/checkout@v4
+      with:
+        submodules: 'false'
+
+    - name: Checkout repositories
+      uses: ./.github/checkout_repos
+
+    # This takes 5 minutes to install, but a custom docker image with this pre-installed takes 5 minutes to extract.
+    - name: Install v141_xp Toolset
+      run: scripts/msvc_xp_toolset.bat
+
+    - name: Build curl
+      run: scripts/build_curl.bat
+
+    - name: Build client
+      run: |
+        cd build
+        cmake ..  -A Win32 -T v141_xp -DBUILD_CLIENT=ON -DENABLE_CURL=ON -DBUILD_SERVER=OFF -DBUILD_PLUGINS=OFF
+        cmake --build . --config Release
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sevenkewp-windows-xp
+        path: build_client_winxp/output/

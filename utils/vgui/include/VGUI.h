@@ -77,7 +77,9 @@
 //		then App can come along later and fire all the signals
 //TODO: Change all method naming to starting with a capital letter.
 
-#ifdef _WIN32
+#include <cstddef>
+
+#if defined(_WIN32) || defined(MINGW)
 # define VGUIAPI __declspec( dllexport )
 #else
 # define VGUIAPI  __attribute__ ((visibility("default")))
@@ -91,11 +93,14 @@ typedef unsigned short ushort;
 typedef unsigned int   uint;
 typedef unsigned long  ulong;
 
+typedef void* (*vgui_malloc_fn)(size_t);
+typedef void  (*vgui_free_fn)(void* memblock);
+
 namespace vgui
 {
 
-VGUIAPI void  vgui_setMalloc(void *(*malloc)(size_t size) );
-VGUIAPI void  vgui_setFree(void (*free)(void* memblock));
+VGUIAPI void  vgui_setMalloc(vgui_malloc_fn malloc_fn);
+VGUIAPI void  vgui_setFree(vgui_free_fn free_fn);
 VGUIAPI void  vgui_strcpy(char* dst,int dstLen,const char* src);
 VGUIAPI char* vgui_strdup(const char* src);
 VGUIAPI int   vgui_printf(const char* format,...);

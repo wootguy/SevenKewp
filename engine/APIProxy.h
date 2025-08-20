@@ -18,6 +18,8 @@ typedef struct cmdalias_s
 	char	*value;
 } cmdalias_t;
 
+#include "enums.h"
+
 
 // ********************************************************
 // Functions exported by the client .dll

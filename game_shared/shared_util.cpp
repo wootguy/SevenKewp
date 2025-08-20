@@ -1,23 +1,29 @@
 #include "shared_util.h"
 #include "md5.h"
-#include <curl/curl.h>
 #include <string>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 #include <chrono>
 
+#ifdef ENABLE_CURL
+#include <curl/curl.h>
+#endif
+
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud.h"
 #include "../cl_dll/cl_util.h"
+#define PRINTERR(fmt, ...) PRINTF(fmt, ##__VA_ARGS__) 
 #else
 #include "extdll.h"
 #include "util.h"
+#define PRINTERR(fmt, ...) ALERT(at_error, fmt, ##__VA_ARGS__) 
 #endif
 
 #if defined(WIN32) || defined(_WIN32)
-#include <Windows.h>
+#include <windows.h>
 #include <direct.h>
+#include <sys/stat.h>
 #define GetCurrentDir _getcwd
 #ifdef WIN32
 #include <io.h>
@@ -226,10 +232,15 @@ std::string replaceString(std::string subject, std::string search, std::string r
 
 std::string UTIL_UrlEncode(const std::string& decoded)
 {
+#ifdef ENABLE_CURL
 	const auto encoded_value = curl_easy_escape(nullptr, decoded.c_str(), static_cast<int>(decoded.length()));
 	std::string result(encoded_value);
 	curl_free(encoded_value);
 	return result;
+#else
+	PRINTERR("UTIL_UrlEncode requires ENABLE_CURL build flag in cmake\n");
+	return "";
+#endif
 }
 
 bool dirExists(const std::string& path)
@@ -316,6 +327,7 @@ size_t curlWriteFile(void* ptr, size_t size, size_t nmemb, void* stream) {
 #endif
 
 int UTIL_CurlRequest_internal(std::string url, void* writeData, bool isString) {
+#ifdef ENABLE_CURL
 	auto curl = curl_easy_init();
 
 	if (curl) {
@@ -331,6 +343,10 @@ int UTIL_CurlRequest_internal(std::string url, void* writeData, bool isString) {
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, isString ? curlWriteString : curlWriteFile);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, writeData);
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L); // follow redirects
+
+		// disables HTTPS verifications. No certs needed. Big security hole.
+		//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+		//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
 		CURLcode res = curl_easy_perform(curl);
 
@@ -348,7 +364,9 @@ int UTIL_CurlRequest_internal(std::string url, void* writeData, bool isString) {
 
 		return response_code;
 	}
-
+#else
+	PRINTERR("UTIL_Curl* requires ENABLE_CURL build flag in cmake\n");
+#endif
 	return 0;
 }
 
@@ -371,7 +389,7 @@ int UTIL_CurlDownload(std::string url, std::string fpath) {
 }
 
 void* GetFunctionAddress(void* libHandle, const char* funcName) {
-	return GetProcAddress((HMODULE)libHandle, funcName);
+	return (void*)GetProcAddress((HMODULE)libHandle, funcName);
 }
 
 const char* UTIL_SevenKewpClientString(int version, bool includeModName) {

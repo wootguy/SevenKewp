@@ -927,13 +927,20 @@ try
 
 		pfile = gEngfuncs.COM_ParseFile(pfile, token);
 	}
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(MINGW)
 }
 catch( CException *e )
 {
 	e;
 	//e->Delete();
 	e = NULL;
+	m_iInitialized = false;
+	return newIndex;
+}
+#elif defined(MINGW)
+}
+catch (...)
+{
 	m_iInitialized = false;
 	return newIndex;
 }

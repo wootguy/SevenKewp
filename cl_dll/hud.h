@@ -29,6 +29,10 @@
 #define _cdecl 
 #endif
 
+#ifdef MINGW
+#define _cdecl __attribute__((cdecl))
+#endif
+
 #include "wrect.h"
 #include "cl_dll.h"
 #include "ammo.h"
