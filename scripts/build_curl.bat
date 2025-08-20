@@ -7,7 +7,7 @@ cd ..\external\curl\ || exit /b 1
 if not exist build mkdir build
 cd build
 
-if exist external\Release\libcurl.lib (
+if exist lib\Release\libcurl.lib (
 	echo Curl is already built. Delete "external\curl\build\" if you want to rebuild it.
 	echo.
 )
@@ -29,9 +29,17 @@ cmake .. ^
     -DCURL_ZSTD=OFF ^
     -DENABLE_CURL_MANUAL=OFF ^
     -DENABLE_THREADED_RESOLVER=OFF ^
-    -DUSE_LIBIDN2=OFF ^
-    -DUSE_NGHTTP2=OFF ^
+    -DHTTP_ONLY=ON ^
+    -DCURL_DISABLE_PROXY=ON ^
+    -DCURL_DISABLE_WEBSOCKETS=ON ^
+    -DCURL_DISABLE_KERBEROS_AUTH=ON ^
+    -DCURL_DISABLE_ALTSVC=ON ^
+    -DCURL_DISABLE_HSTS=ON ^
+    -DENABLE_IPV6=OFF ^
+    -DCURL_DISABLE_NTLM=ON ^
     -DCURL_USE_LIBPSL=OFF ^
+    -DCURL_DISABLE_NEGOTIATE_AUTH=ON ^
+    -DENABLE_UNIX_SOCKETS=OFF ^
     -DBUILD_EXAMPLES=OFF ^
     -DCURL_USE_SCHANNEL=ON
 

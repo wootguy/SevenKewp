@@ -244,6 +244,9 @@ if(UNIX)
 		SDL2
 		:vgui.so
 		${CMAKE_SOURCE_DIR}/external/curl/build/lib/libcurl.a
+		${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedtls.a
+		${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedx509.a
+		${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedcrypto.a
 	)
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
