@@ -42,6 +42,7 @@
 #include "ThreadSafeQueue.h"
 #include <thread>
 #include "HashMap.h"
+#include "version.h"
 
 class CBasePlayer;
 
@@ -821,16 +822,6 @@ inline void WRITE_COORD_VECTOR(const Vector& vec)
 	WRITE_COORD(vec.z);
 }
 
-EXPORT std::vector<std::string> splitString(std::string str, const char* delimitters);
-
-EXPORT std::string toLowerCase(std::string str);
-
-EXPORT std::string toUpperCase(std::string str);
-
-EXPORT std::string trimSpaces(std::string s);
-
-EXPORT std::string replaceString(std::string subject, std::string search, std::string replace);
-
 EXPORT bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins2, const Vector& maxs2);
 
 EXPORT float clampf(float val, float min, float max);
@@ -878,10 +869,6 @@ EXPORT void LoadAdminList(bool forceUpdate=false); // call on each map change, s
 
 // returns ADMIN_YES for admins, ADMIN_NO for normal players, ADMIN_OWNER for NULL or listen server host
 EXPORT int AdminLevel(CBasePlayer* player);
-
-EXPORT uint64_t getEpochMillis();
-
-EXPORT double TimeDifference(uint64_t start, uint64_t end);
 
 EXPORT std::vector<std::string> getDirFiles(std::string path, std::string extension, std::string startswith, bool onlyOne);
 
@@ -936,8 +923,6 @@ EXPORT void UTIL_SendUserInfo(edict_t* msgPlayer, edict_t* infoPlayer, char* inf
 
 // returns: -1 no intersect, 0 = ray starts inside box, >0 = intersection distance
 EXPORT float UTIL_RayBoxIntersect(Vector start, Vector rayDir, Vector mins, Vector maxs);
-
-EXPORT const char* UTIL_SevenKewpClientString(int version);
 
 // returns a bit mask representing all players that are using the specified client
 EXPORT uint32_t UTIL_ClientBitMask(int clientMod);

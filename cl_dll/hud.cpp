@@ -34,8 +34,6 @@
 hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info from the engine
 extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player info sent directly to the client dll
 
-#define HLCOOP_VERSION "1"
-
 extern int mouse_uncenter_phase;
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
@@ -352,10 +350,11 @@ void CHud :: Init( void )
 
 	m_iLogo = 0;
 	m_iFOV = 0;
-
+	
+	std::string versionString = UTIL_VarArgs("%d", SEVENKEWP_VERSION);
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE );
 	CVAR_CREATE( "cl_autowepswitch", "1", FCVAR_USERINFO|FCVAR_ARCHIVE );
-	CVAR_CREATE( "hlcoop_version", HLCOOP_VERSION, 0);
+	CVAR_CREATE( "hlcoop_version", versionString.c_str(), 0);
 	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
@@ -395,6 +394,7 @@ void CHud :: Init( void )
 	m_StatusIcons.Init();
 	m_ClientStats.Init();
 	m_Fog.Init();
+	m_ClientUpdater.Init();
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
 
 	m_Menu.Init();

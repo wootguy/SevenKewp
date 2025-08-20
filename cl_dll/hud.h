@@ -358,6 +358,28 @@ private:
 	RGB m_textColor;
 };
 
+enum ClientUpdateState {
+	CUPDATE_NONE,		// no update in progress
+	CUPDATE_CHECK,		// checking for a new release
+	CUPDATE_DOWNLOAD,	// downloading the new release
+	CUPDATE_FINISH		// update applied and pending restart
+};
+
+class CHudClientUpdater : public CHudBase
+{
+public:
+	int Init(void);
+	int VidInit(void) { return 1; }
+	int Draw(float flTime);
+	void Think();
+	virtual const char* HudName() { return "CHudClientUpdater"; }
+
+	int m_updateState;
+
+private:
+	cvar_t* ver_cvar;
+};
+
 //
 //-----------------------------------------------------
 //
@@ -680,6 +702,7 @@ public:
 	CHudBenchmark	m_Benchmark;
 	CHudClientStats	m_ClientStats;
 	CFog			m_Fog;
+	CHudClientUpdater	m_ClientUpdater;
 
 	void Init( void );
 	void VidInit( void ); // called on server connection or video mode change

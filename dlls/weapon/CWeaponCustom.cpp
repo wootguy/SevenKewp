@@ -87,7 +87,7 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 		if (!wep || pPlayer->m_sentSevenKewpNotice || !mp_sevenkewp_client_notice.value)
 			return 0;
 
-		std::string clientReq = UTIL_SevenKewpClientString(MIN_SEVENKEWP_VERSION);
+		std::string clientReq = UTIL_SevenKewpClientString(SEVENKEWP_VERSION);
 		UTIL_ClientPrint(pPlayer, print_chat, UTIL_VarArgs(
 			"The \"%s\" requires the \"%s\" client. You were given the \"%s\" instead. Check your console for more info.\n",
 			DisplayName(), clientReq.c_str(), wep->DisplayName()));

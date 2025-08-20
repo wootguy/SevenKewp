@@ -28,6 +28,7 @@
 #include <string.h> // for strncpy()
 #include "rgb.h"
 #include "shared_util.h"
+#include "version.h"
 
 // Macros to hook function calls into the HUD object
 #define HOOK_MESSAGE(x) gEngfuncs.pfnHookUserMsg(#x, __MsgFunc_##x );
@@ -44,7 +45,7 @@
 								gHUD.y.UserCmd_##x( ); \
 							}
 
-#define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, __VA_ARGS__)
+#define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 
 inline float CVAR_GET_FLOAT( const char *x ) {	return gEngfuncs.pfnGetCvarFloat( (char*)x ); }
 inline struct cvar_s* CVAR_GET_PTR( const char *x ) { return gEngfuncs.pfnGetCvarPointer( (char*)x ); }

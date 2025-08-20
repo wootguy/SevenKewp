@@ -2547,61 +2547,6 @@ bool UTIL_isSafeEntIndex(edict_t* ent, int idx, const char* action) {
 	return true;
 }
 
-std::vector<std::string> splitString(std::string str, const char* delimiters)
-{
-	std::vector<std::string> split;
-
-	const char* c_str = str.c_str();
-	size_t str_len = strlen(c_str);
-
-	size_t start = strspn(c_str, delimiters);
-
-	while (start < str_len)
-	{
-		size_t end = strcspn(c_str + start, delimiters);
-		split.push_back(str.substr(start, end));
-		start += end + strspn(c_str + start + end, delimiters);
-	}
-
-	return split;
-}
-
-std::string toLowerCase(std::string str) {
-	std::string out = str;
-
-	for (int i = 0; str[i]; i++) {
-		out[i] = tolower(str[i]);
-	}
-
-	return out;
-}
-
-std::string toUpperCase(std::string str) {
-	std::string out = str;
-
-	for (int i = 0; str[i]; i++) {
-		out[i] = toupper(str[i]);
-	}
-
-	return out;
-}
-
-std::string trimSpaces(std::string s) {
-	size_t start = s.find_first_not_of(" \t\n\r");
-	size_t end = s.find_last_not_of(" \t\n\r");
-	return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
-}
-
-std::string replaceString(std::string subject, std::string search, std::string replace) {
-	size_t pos = 0;
-	while ((pos = subject.find(search, pos)) != std::string::npos)
-	{
-		subject.replace(pos, search.length(), replace);
-		pos += replace.length();
-	}
-	return subject;
-}
-
 bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins2, const Vector& maxs2) {
 	return  (maxs1.x >= mins2.x && mins1.x <= maxs2.x) &&
 		(maxs1.y >= mins2.y && mins1.y <= maxs2.y) &&
@@ -2865,19 +2810,6 @@ const char* getActiveWeapon(entvars_t* pev) {
 	CBasePlayer* plr = (CBasePlayer*)ent;
 	
 	return  plr->m_pActiveItem ? STRING(plr->m_pActiveItem->pev->classname) : "";
-}
-
-uint64_t getEpochMillis() {
-	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-}
-
-double TimeDifference(uint64_t start, uint64_t end) {
-	if (end > start) {
-		return (end - start) / 1000.0;
-	}
-	else {
-		return -((start - end) / 1000.0);
-	}
 }
 
 void LoadAdminList(bool forceUpdate) {
@@ -3377,12 +3309,6 @@ float UTIL_RayBoxIntersect(Vector start, Vector rayDir, Vector mins, Vector maxs
 
 	Vector intersectPoint(coord[0], coord[1], coord[2]);
 	return (intersectPoint - start).Length();
-}
-
-const char* UTIL_SevenKewpClientString(int version) {
-	int major = version / 100;
-	int minor = version % 100;
-	return UTIL_VarArgs("SevenKewp %d.%02d", major, minor);
 }
 
 uint32_t UTIL_ClientBitMask(int clientMod) {

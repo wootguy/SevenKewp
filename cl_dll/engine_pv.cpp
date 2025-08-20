@@ -23,7 +23,7 @@ uintptr_t GetModuleBase(const char* moduleName) {
 	if (!fp) return 0;
 
 	char line[512];
-	uintptr_t base = 0;
+	long unsigned int base = 0;
 	while (fgets(line, sizeof(line), fp)) {
 		if (strstr(line, fullModuleName)) {
 			sscanf(line, "%lx-", &base);

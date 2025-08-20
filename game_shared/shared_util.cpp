@@ -5,6 +5,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
+#include <chrono>
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud.h"
@@ -13,6 +14,30 @@
 #include "extdll.h"
 #include "util.h"
 #endif
+
+#if defined(WIN32) || defined(_WIN32)
+#include <Windows.h>
+#include <direct.h>
+#define GetCurrentDir _getcwd
+#ifdef WIN32
+#include <io.h>
+#define F_OK 0
+#define access _access
+#endif
+#else
+#include <time.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dlfcn.h>
+#define GetCurrentDir getcwd
+#define GetProcAddress dlsym
+#define HMODULE void*
+#endif
+
+using namespace std::chrono;
 
 char* strcpy_safe(char* dest, const char* src, size_t size) {
 	if (size > 0) {
@@ -144,8 +169,62 @@ float normalizeRangef(const float value, const float start, const float end)
 	// + start to reset back to start of original range
 }
 
+std::vector<std::string> splitString(std::string str, const char* delimiters)
+{
+	std::vector<std::string> split;
 
-std::string url_encode(const std::string& decoded)
+	const char* c_str = str.c_str();
+	size_t str_len = strlen(c_str);
+
+	size_t start = strspn(c_str, delimiters);
+
+	while (start < str_len)
+	{
+		size_t end = strcspn(c_str + start, delimiters);
+		split.push_back(str.substr(start, end));
+		start += end + strspn(c_str + start + end, delimiters);
+	}
+
+	return split;
+}
+
+std::string toLowerCase(std::string str) {
+	std::string out = str;
+
+	for (int i = 0; str[i]; i++) {
+		out[i] = tolower(str[i]);
+	}
+
+	return out;
+}
+
+std::string toUpperCase(std::string str) {
+	std::string out = str;
+
+	for (int i = 0; str[i]; i++) {
+		out[i] = toupper(str[i]);
+	}
+
+	return out;
+}
+
+std::string trimSpaces(std::string s) {
+	size_t start = s.find_first_not_of(" \t\n\r");
+	size_t end = s.find_last_not_of(" \t\n\r");
+	return (start == std::string::npos) ? "" : s.substr(start, end - start + 1);
+}
+
+std::string replaceString(std::string subject, std::string search, std::string replace) {
+	size_t pos = 0;
+	while ((pos = subject.find(search, pos)) != std::string::npos)
+	{
+		subject.replace(pos, search.length(), replace);
+		pos += replace.length();
+	}
+	return subject;
+}
+
+std::string UTIL_UrlEncode(const std::string& decoded)
 {
 	const auto encoded_value = curl_easy_escape(nullptr, decoded.c_str(), static_cast<int>(decoded.length()));
 	std::string result(encoded_value);
@@ -153,17 +232,91 @@ std::string url_encode(const std::string& decoded)
 	return result;
 }
 
-size_t writeFunction(void* ptr, size_t size, size_t nmemb, std::string* data) {
+bool dirExists(const std::string& path)
+{
+	struct stat info;
+
+	if (stat(path.c_str(), &info) != 0)
+		return false;
+	else if (info.st_mode & S_IFDIR)
+		return true;
+	return false;
+}
+
+bool createDir(const std::string& path) {
+	if (dirExists(path))
+		return true;
+
+	int nError = 0;
+#if defined(_WIN32)
+	nError = _mkdir(path.c_str());
+#else 
+	nError = mkdir(path.c_str(), 0733);
+#endif
+	if (nError != 0) {
+		printf("Failed to create directory (error %d)\n", nError);
+	}
+	return nError == 0;
+}
+
+bool isAbsolutePath(const std::string& path) {
+	if (path.length() > 1 && path[1] == ':') {
+		return true;
+	}
+	if (path.length() > 1 && (path[0] == '\\' || path[0] == '/' || path[0] == '~')) {
+		return true;
+	}
+	return false;
+}
+
+std::string getAbsolutePath(const std::string& relpath) {
+	if (isAbsolutePath(relpath)) {
+		return relpath;
+	}
+
+	char buffer[256];
+	if (getcwd(buffer, sizeof(buffer)) != NULL) {
+		std::string abspath = std::string(buffer) + "/" + relpath;
+
+#if defined(WIN32)	
+		replace(abspath.begin(), abspath.end(), '/', '\\'); // convert to windows slashes
+#endif
+
+		return abspath;
+	}
+	else {
+		return "Error: Unable to get current working directory";
+	}
+
+	return relpath;
+}
+
+size_t curlWriteString(void* ptr, size_t size, size_t nmemb, void* data) {
 	if (!ptr || !data) {
 		return 0;
 	}
-	data->append((char*)ptr, size * nmemb);
+	((std::string*)data)->append((char*)ptr, size * nmemb);
 	return size * nmemb;
 }
 
-int webRequest(std::string url, std::string& response_string) {
+size_t curlWriteFile(void* ptr, size_t size, size_t nmemb, void* stream) {
+	return fwrite(ptr, size, nmemb, (FILE*)stream);
+}
+
+#ifdef WIN32
+#define USER_AGENT_SYSTEM "(Windows)"
+#else
+#define USER_AGENT_SYSTEM "(Linux)"
+#endif
+
+#ifdef CLIENT_DLL
+#define USER_AGENT_APP "SevenKewp Client"
+#else
+#define USER_AGENT_APP "SevenKewp Server"
+#endif
+
+int UTIL_CurlRequest_internal(std::string url, void* writeData, bool isString) {
 	auto curl = curl_easy_init();
-	response_string = "";
 
 	if (curl) {
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -171,12 +324,19 @@ int webRequest(std::string url, std::string& response_string) {
 		curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
 		curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
 
-		//std::string header_string;
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
-		//curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_string);
+		std::string verString = UTIL_SevenKewpClientString(SEVENKEWP_VERSION);
+		std::string agent = UTIL_VarArgs("%s %s %s", USER_AGENT_APP, verString.c_str(), USER_AGENT_SYSTEM);
 
-		curl_easy_perform(curl);
+		curl_easy_setopt(curl, CURLOPT_USERAGENT, agent.c_str());
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, isString ? curlWriteString : curlWriteFile);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, writeData);
+		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L); // follow redirects
+
+		CURLcode res = curl_easy_perform(curl);
+
+		if (res != CURLE_OK && isString) {
+			*((std::string*)writeData) = std::string("CURL Error: ") + curl_easy_strerror(res);
+		}
 
 		long response_code;
 		double elapsed;
@@ -186,12 +346,49 @@ int webRequest(std::string url, std::string& response_string) {
 		curl_easy_cleanup(curl);
 		curl = NULL;
 
-		// placeholder code
-		rapidjson::Document json;
-		json.Parse(response_string.c_str());
-
 		return response_code;
 	}
 
 	return 0;
+}
+
+int UTIL_CurlRequest(std::string url, std::string& response_string) {
+	response_string = "";
+	return UTIL_CurlRequest_internal(url, &response_string, true);
+}
+
+int UTIL_CurlDownload(std::string url, std::string fpath) {
+	FILE* fp = fopen(fpath.c_str(), "wb");
+	
+	if (!fp)
+		return -1;
+
+	int ret = UTIL_CurlRequest_internal(url, fp, false);
+
+	fclose(fp);
+
+	return ret;
+}
+
+void* GetFunctionAddress(void* libHandle, const char* funcName) {
+	return GetProcAddress((HMODULE)libHandle, funcName);
+}
+
+const char* UTIL_SevenKewpClientString(int version, bool includeModName) {
+	int major = version / 100;
+	int minor = version % 100;
+	return UTIL_VarArgs("%s%d.%02d", includeModName ? "SevenKewp " : "", major, minor);
+}
+
+uint64_t getEpochMillis() {
+	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
+double TimeDifference(uint64_t start, uint64_t end) {
+	if (end > start) {
+		return (end - start) / 1000.0;
+	}
+	else {
+		return -((start - end) / 1000.0);
+	}
 }

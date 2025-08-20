@@ -124,10 +124,6 @@ enum sbar_data
 // always recoverable. 64 fills up MAX_PACKET_ENTITIES very fast even at cl_updaterate 10
 #define MAX_NEW_PACKET_ENTITIES 64
 
-// Minimum version allowed for the server to treat this client as a sevenkewp client instead
-// of an HL client. This prevents prevent crashes and SVC_BAD.
-#define MIN_SEVENKEWP_VERSION 1
-
 enum HL_CLIENT_SYSTEM {
 	CLIENT_SYSTEM_NOT_CHECKED, // player hasn't responded to cvar queries yet
 	CLIENT_SYSTEM_WINDOWS,

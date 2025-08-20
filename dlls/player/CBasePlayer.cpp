@@ -6546,7 +6546,7 @@ void CBasePlayer::SendLegacyClientWarning() {
 }
 
 void CBasePlayer::SendSevenKewpClientNotice() {
-	std::string clientReq = UTIL_SevenKewpClientString(MIN_SEVENKEWP_VERSION);
+	std::string clientReq = UTIL_SevenKewpClientString(SEVENKEWP_VERSION);
 	UTIL_ClientPrint(this, print_console, "\n-------------------------------------------------------------------------\n");
 	UTIL_ClientPrint(this, print_console, UTIL_VarArgs("This server requires the \"%s\" client to use certain weapons.\n", clientReq.c_str()));
 	UTIL_ClientPrint(this, print_console, "Download the latest SevenKewp client here:\n\n");
@@ -7318,7 +7318,7 @@ void CBasePlayer::DebugThink() {
 
 bool CBasePlayer::IsSevenKewpClient() {
 	//return true;
-	return m_sevenkewpVersion >= MIN_SEVENKEWP_VERSION;
+	return m_sevenkewpVersion == SEVENKEWP_VERSION;
 }
 
 void CBasePlayer::SetThirdPersonWeaponAnim(int sequence, float fps) {
@@ -7334,7 +7334,7 @@ void CBasePlayer::SetJumpPower(int power) {
 
 void CBasePlayer::SyncWeaponBits() {
 	// weapons field sent to HL clients
-	pev->weapons = m_lastWeaponBits & 0xffffffff;
+	pev->weapons = m_weaponBits & 0xffffffff;
 	
 	if (m_weaponBits == m_lastWeaponBits || !IsSevenKewpClient()) {
 		return;

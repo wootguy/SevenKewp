@@ -61,6 +61,7 @@ set(HUD_SRC
 	text_message.cpp
 	train.cpp
 	fog.cpp
+	updater.cpp
 )
 
 set(VGUI_HDR
