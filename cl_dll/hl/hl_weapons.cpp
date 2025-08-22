@@ -173,12 +173,18 @@ const char* GetWeaponCustomSound(int idx) {
 	return "";
 }
 
+void InitCustomWeapon(int id) {
+	if (id >= 0 && id < MAX_WEAPONS)
+		g_customWeapon[id].m_hasPredictionData = true;
+}
+
 void ResetCustomWeaponStates() {
 	for (int i = 0; i < MAX_WEAPONS; i++) {
 		g_customWeapon[i].m_lastZoomToggle = 0;
 		g_customWeapon[i].m_lastLaserToggle = 0;
 		g_customWeapon[i].m_lastDeploy = 0;
 		g_customWeapon[i].m_laserOnTime = 0;
+		g_customWeapon[i].m_hasPredictionData = false;
 		g_customWeapon[i].SetAkimbo(false);
 		g_customWeapon[i].SetLaser(false);
 	}
@@ -930,8 +936,11 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		lasthealth = to->client.health;
 	}
 
+	CWeaponCustom* wc = pWeapon->MyWeaponCustomPtr();
+	g_activeWeaponCustom = wc;
+
 	// We are not predicting the current weapon, just bow out here.
-	if ( !pWeapon )
+	if ( !pWeapon || (wc && !wc->m_hasPredictionData) )
 		return;
 
 	for ( i = 0; i < MAX_WEAPONS; i++ )
@@ -992,9 +1001,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	player.pev->waterlevel = from->client.waterlevel;
 	player.pev->maxspeed    = from->client.maxspeed;
 	
-	
-	CWeaponCustom* wc = pWeapon->MyWeaponCustomPtr();
-	g_activeWeaponCustom = wc;
 
 	if (wc) {
 		// client only sets zoom state once per click, so don't let the server and client states

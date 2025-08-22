@@ -49,6 +49,7 @@ public:
 	bool m_secondaryCalled;
 	bool m_waitForNextRunfuncs; // don't attack until the next g_runfuncs call
 	int m_bulletFireCount; // for odd/even effects (m_iClip is unreliable)
+	bool m_hasPredictionData; // was the client sent a prediction message for this weapon?
 
 	int m_akimboAnim;
 	float m_akimboAnimTime;
@@ -129,7 +130,7 @@ public:
 
 	int AddDuplicate(CBasePlayerItem* pOriginal) override;
 	inline bool IsExclusiveHold() { return params.flags & FL_WC_WEP_EXCLUSIVE_HOLD; }
-	
+
 	static int SendSoundMappingChunk(CBasePlayer* target, std::vector<SoundMapping>& chunk);
 	static void SendSoundMapping(CBasePlayer* target);
 

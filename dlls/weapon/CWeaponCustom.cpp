@@ -1882,6 +1882,7 @@ int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
 
 	if (wep && wep->IsAkimboWeapon() && !wep->CanAkimbo()) {
 		wep->SetCanAkimbo(true);
+		wep->SetAkimbo(true);
 
 		if (m_isDroppedWeapon) {
 			// prevent ammo duping in dropped weapons

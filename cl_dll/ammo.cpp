@@ -35,6 +35,7 @@ CustomWeaponParams* GetCustomWeaponParams(int id);
 void GetCurrentCustomWeaponState(int id, int& akimboClip);
 bool CanWeaponAkimbo(int id);
 bool IsExclusiveWeapon(int id);
+void InitCustomWeapon(int id);
 
 // for aborting an action while holding an exclusive weapon
 bool ExclusiveWeaponAbort() {
@@ -823,6 +824,8 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 	if (weaponId < 0 || weaponId >= MAX_WEAPONS)
 		return 0;
 
+	
+	InitCustomWeapon(weaponId);
 	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId);
 	memset(&parms, 0, sizeof(CustomWeaponParams));
 
