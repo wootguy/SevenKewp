@@ -40,10 +40,14 @@ extern cvar_t* hud_saytext_lines;
 #define LINE_START  10
 static float SCROLL_SPEED = 5;
 
-static char g_szLineBuffer[ MAX_LINES + 1 ][ MAX_CHARS_PER_LINE ];
-static float *g_pflNameColors[ MAX_LINES + 1 ];
-static int g_iNameLengths[ MAX_LINES + 1 ];
-static float flScrollTime = 0;  // the time at which the lines next scroll up
+struct ChatMessage {
+	char text[MAX_CHARS_PER_LINE];
+	float chatTime; // when this message appeared
+	float* nameColor;
+	int nameLength;
+};
+
+static ChatMessage g_chatBuffer[ MAX_LINES + 1 ];
 
 static int Y_START = 0;
 static int line_height = 0;
@@ -59,7 +63,7 @@ int CHudSayText :: Init( void )
 	InitHUDData();
 
 	m_HUD_saytext =			gEngfuncs.pfnRegisterVariable( "hud_saytext", "1", 0 );
-	m_HUD_saytext_time =	gEngfuncs.pfnRegisterVariable( "hud_saytext_time", "5", 0 );
+	m_HUD_saytext_time =	gEngfuncs.pfnRegisterVariable( "hud_saytext_time", "10", 0 );
 	m_HUD_saytext_lines =	gEngfuncs.pfnRegisterVariable( "hud_saytext_lines", "10", 0 );
 
 	m_iFlags |= HUD_INTERMISSION; // is always drawn during an intermission
@@ -70,80 +74,53 @@ int CHudSayText :: Init( void )
 
 void CHudSayText :: InitHUDData( void )
 {
-	memset( g_szLineBuffer, 0, sizeof g_szLineBuffer );
-	memset( g_pflNameColors, 0, sizeof g_pflNameColors );
-	memset( g_iNameLengths, 0, sizeof g_iNameLengths );
+	memset(g_chatBuffer, 0, sizeof g_chatBuffer);
+	m_lastChatIput = 0;
 }
 
 
 int ScrollTextUp( void )
 {
-	g_szLineBuffer[MAX_LINES][0] = 0;
-	memmove( g_szLineBuffer[0], g_szLineBuffer[1], sizeof(g_szLineBuffer) - sizeof(g_szLineBuffer[0]) ); // overwrite the first line
-	memmove( &g_pflNameColors[0], &g_pflNameColors[1], sizeof(g_pflNameColors) - sizeof(g_pflNameColors[0]) );
-	memmove( &g_iNameLengths[0], &g_iNameLengths[1], sizeof(g_iNameLengths) - sizeof(g_iNameLengths[0]) );
-	g_szLineBuffer[MAX_LINES-1][0] = 0;
-
-	if ( g_szLineBuffer[0][0] == ' ' ) // also scroll up following lines
-	{
-		g_szLineBuffer[0][0] = 2;
-		return 1 + ScrollTextUp();
-	}
+	memmove(g_chatBuffer + 0, g_chatBuffer + 1, sizeof(g_chatBuffer) - sizeof(g_chatBuffer[0]) ); // overwrite the first line
+	memset(g_chatBuffer + MAX_LINES, 0, sizeof(ChatMessage));
 
 	return 1;
 }
 
 int CHudSayText :: Draw( float flTime )
 {
-	int y = Y_START;
+	int y = Y_START + (MAX_LINES-1)*line_height;
 	int wantLines = MaxLines();
-	
-	if (wantLines != MAX_LINES) {
-		y += (MAX_LINES - m_HUD_saytext_lines->value) * line_height;
-	}
 
 	if ( ( gViewPort && gViewPort->AllowedToPrintText() == FALSE) || !m_HUD_saytext->value )
 		return 1;
 
-	// make sure the scrolltime is within reasonable bounds,  to guard against the clock being reset
-	flScrollTime = V_min( flScrollTime, flTime + m_HUD_saytext_time->value );
+	float now = gEngfuncs.GetClientTime();
+	bool isTyping = now - m_lastChatIput < 0.1f;
 
-	// make sure the scrolltime is within reasonable bounds,  to guard against the clock being reset
-	flScrollTime = V_min( flScrollTime, flTime + m_HUD_saytext_time->value );
-
-	if ( flScrollTime <= flTime )
+	for ( int i = MAX_LINES-1, drawnLines = 0; i >= 0 && drawnLines < wantLines; i-- )
 	{
-		if ( *g_szLineBuffer[0] )
-		{
-			flScrollTime = flTime + m_HUD_saytext_time->value;
-			// push the console up
-			ScrollTextUp();
-		}
-		else
-		{ // buffer is empty,  just disable drawing of this section
-			m_iFlags &= ~HUD_ACTIVE;
-		}
-	}
+		ChatMessage& chat = g_chatBuffer[i];
+		float age = now - chat.chatTime;
+		bool shouldDisplay = isTyping || (age < m_HUD_saytext_time->value && age > 0);
 
-	for ( int i = 0; i < MAX_LINES && i < wantLines; i++ )
-	{
-		if ( *g_szLineBuffer[i] )
+		if ( *chat.text && shouldDisplay)
 		{
-			if ( *g_szLineBuffer[i] == 2 && g_pflNameColors[i] )
+			if (chat.nameColor )
 			{
 				// it's a saytext string
-				char *buf = static_cast<char *>( _alloca( strlen( g_szLineBuffer[i] ) ) );
+				char *buf = static_cast<char *>( _alloca( strlen(chat.text ) ) );
 				if ( buf )
 				{
 					//char buf[MAX_PLAYER_NAME_LENGTH+32];
 
 					// draw the first x characters in the player color
-					strncpy( buf, g_szLineBuffer[i], V_min(g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH+32) );
-					buf[ V_min(g_iNameLengths[i], MAX_PLAYER_NAME_LENGTH+31) ] = 0;
-					gEngfuncs.pfnDrawSetTextColor( g_pflNameColors[i][0], g_pflNameColors[i][1], g_pflNameColors[i][2] );
+					strncpy( buf, chat.text, V_min(chat.nameLength, MAX_PLAYER_NAME_LENGTH+32) );
+					buf[ V_min(chat.nameLength, MAX_PLAYER_NAME_LENGTH+31) ] = 0;
+					gEngfuncs.pfnDrawSetTextColor(chat.nameColor[0], chat.nameColor[1], chat.nameColor[2] );
 					int x = DrawConsoleString( LINE_START, y, buf + 1 ); // don't draw the control code at the start
-					strncpy( buf, g_szLineBuffer[i] + g_iNameLengths[i], strlen( g_szLineBuffer[i] ));
-					buf[ strlen( g_szLineBuffer[i] + g_iNameLengths[i] ) - 1 ] = '\0';
+					strncpy( buf, chat.text + chat.nameLength, strlen(chat.text));
+					buf[ strlen(chat.text + chat.nameLength) - 1 ] = '\0';
 					// color is reset after each string draw
 					DrawConsoleString( x, y, buf ); 
 				}
@@ -155,11 +132,12 @@ int CHudSayText :: Draw( float flTime )
 			else
 			{
 				// normal draw
-				DrawConsoleString( LINE_START, y, g_szLineBuffer[i] );
+				DrawConsoleString( LINE_START, y, chat.text );
 			}
-		}
 
-		y += line_height;
+			drawnLines++;
+			y -= line_height;
+		}		
 	}
 
 	return 1;
@@ -184,8 +162,30 @@ int CHudSayText::ChatHeight(bool maxlines) {
 }
 
 void CHudSayText::SetChatInputPos(int* x, int* y) {
+	UpdateChatPosition();
 	*x = LINE_START;
 	*y = Y_START + MAX_LINES * line_height;
+	m_lastChatIput = gEngfuncs.GetClientTime();
+}
+
+void CHudSayText::UpdateChatPosition() {
+	int bottom = (ScreenHeight * 8) / 10.0f; // ideal chat position
+	int top = bottom - ChatHeight(false);
+
+	int padding = gHUD.m_iFontHeight * 2.0f;
+	int maxTop = ScreenHeight / 2 + padding * 2; // don't want chat covering the crosshair
+	int maxBottom = ScreenHeight - padding; // don't want it covering the health hud either
+
+	const int SPECTATOR_PANEL_HEIGHT = YRES_HD(64);
+	int maxBottomSpec = ScreenHeight - (SPECTATOR_PANEL_HEIGHT + 5);
+	maxBottom = V_min(maxBottom, maxBottomSpec);
+
+	if (top < maxTop)
+		bottom += maxTop - top;
+	if (bottom > maxBottom)
+		bottom -= bottom - maxBottom;
+
+	Y_START = bottom - ChatHeight(true);
 }
 
 void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize, int clientIndex )
@@ -202,7 +202,7 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize, int clientIn
 	// find an empty string slot
 	for ( i = 0; i < maxLines; i++ )
 	{
-		if ( ! *g_szLineBuffer[i] )
+		if ( ! *g_chatBuffer[i].text)
 			break;
 	}
 	if ( i == maxLines)
@@ -212,8 +212,8 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize, int clientIn
 		i = maxLines - 1;
 	}
 
-	g_iNameLengths[i] = 0;
-	g_pflNameColors[i] = NULL;
+	g_chatBuffer[i].nameLength = 0;
+	g_chatBuffer[i].nameColor = NULL;
 
 	// if it's a say message, search for the players name in the string
 	if ( *pszBuf == 2 && clientIndex > 0 )
@@ -227,49 +227,28 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize, int clientIn
 
 			if ( nameInString )
 			{
-				g_iNameLengths[i] = strlen( pName ) + (nameInString - pszBuf);
-				g_pflNameColors[i] = GetClientColor( clientIndex );
+				g_chatBuffer[i].nameLength = strlen( pName ) + (nameInString - pszBuf);
+				g_chatBuffer[i].nameColor = GetClientColor( clientIndex );
 			}
 		}
 	}
 
-	strncpy( g_szLineBuffer[i], pszBuf, V_max(iBufSize , MAX_CHARS_PER_LINE) );
+	strncpy(g_chatBuffer[i].text, pszBuf, V_max(iBufSize , MAX_CHARS_PER_LINE) );
+	g_chatBuffer[i].chatTime = gEngfuncs.GetClientTime();
 
 	// make sure the text fits in one line
 	EnsureTextFitsInOneLineAndWrapIfHaveTo( i );
 
-	// Set scroll time
-	if ( i == 0 )
-	{
-		flScrollTime = gHUD.m_flTime + m_HUD_saytext_time->value;
-	}
-
 	m_iFlags |= HUD_ACTIVE;
 	PlaySound( "misc/talk.wav", 1 );
 
-	int bottom = (ScreenHeight * 8) / 10.0f; // ideal chat position
-	int top = bottom - ChatHeight(false);
-
-	int padding = gHUD.m_iFontHeight * 2.0f;
-	int maxTop = ScreenHeight/2 + padding*2; // don't want chat covering the crosshair
-	int maxBottom = ScreenHeight - padding; // don't want it covering the health hud either
-
-	const int SPECTATOR_PANEL_HEIGHT = YRES_HD(64);
-	int maxBottomSpec = ScreenHeight - (SPECTATOR_PANEL_HEIGHT + 5);
-	maxBottom = V_min(maxBottom, maxBottomSpec);
-
-	if (top < maxTop)
-		bottom += maxTop - top;
-	if (bottom > maxBottom)
-		bottom -= bottom - maxBottom;
-
-	Y_START = bottom - ChatHeight(true);
+	UpdateChatPosition();
 }
 
 void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 {
 	int line_width = 0;
-	GetConsoleStringSize( g_szLineBuffer[line], &line_width, &line_height );
+	GetConsoleStringSize(g_chatBuffer[line].text, &line_width, &line_height );
 
 	if ( (line_width + LINE_START) > MAX_LINE_WIDTH )
 	{ // string is too long to fit on line
@@ -277,7 +256,7 @@ void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 		int length = LINE_START;
 		int tmp_len = 0;
 		char *last_break = NULL;
-		for ( char *x = g_szLineBuffer[line]; *x != 0; x++ )
+		for ( char *x = g_chatBuffer[line].text; *x != 0; x++ )
 		{
 			// check for a color change, if so skip past it
 			if ( x[0] == '/' && x[1] == '(' )
@@ -297,7 +276,7 @@ void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 			char buf[2];
 			buf[1] = 0;
 
-			if ( *x == ' ' && x != g_szLineBuffer[line] )  // store each line break,  except for the very first character
+			if ( *x == ' ' && x != g_chatBuffer[line].text )  // store each line break,  except for the very first character
 				last_break = x;
 
 			buf[0] = *x;  // get the length of the current character
@@ -317,7 +296,7 @@ void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 				{
 					for ( j = 0; j < MAX_LINES; j++ )
 					{
-						if ( ! *g_szLineBuffer[j] )
+						if ( ! *g_chatBuffer[j].text )
 							break;
 					}
 					if ( j == MAX_LINES )
@@ -325,7 +304,7 @@ void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 						// need to make more room to display text, scroll stuff up then fix the pointers
 						int linesmoved = ScrollTextUp();
 						line -= linesmoved;
-						last_break = last_break - (sizeof(g_szLineBuffer[0]) * linesmoved);
+						last_break = last_break - (sizeof(g_chatBuffer[0].text) * linesmoved);
 					}
 				}
 				while ( j == MAX_LINES );
@@ -333,18 +312,18 @@ void CHudSayText :: EnsureTextFitsInOneLineAndWrapIfHaveTo( int line )
 				// copy remaining string into next buffer,  making sure it starts with a space character
 				if ( (char)*last_break == (char)' ' )
 				{
-					int linelen = strlen(g_szLineBuffer[j]);
+					int linelen = strlen(g_chatBuffer[j].text);
 					int remaininglen = strlen(last_break);
 
 					if ( (linelen - remaininglen) <= MAX_CHARS_PER_LINE )
-						strcat( g_szLineBuffer[j], last_break );
+						strcat(g_chatBuffer[j].text, last_break );
 				}
 				else
 				{
-					if ( (strlen(g_szLineBuffer[j]) - strlen(last_break) - 2) < MAX_CHARS_PER_LINE )
+					if ( (strlen(g_chatBuffer[j].text) - strlen(last_break) - 2) < MAX_CHARS_PER_LINE )
 					{
-						strcat( g_szLineBuffer[j], " " );
-						strcat( g_szLineBuffer[j], last_break );
+						strcat(g_chatBuffer[j].text, " " );
+						strcat(g_chatBuffer[j].text, last_break );
 					}
 				}
 

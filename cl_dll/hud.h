@@ -333,12 +333,13 @@ public:
 	void EnsureTextFitsInOneLineAndWrapIfHaveTo( int line );
 	int MaxLines(); // max lines client wants to see
 	int ChatHeight(bool maxlines); // max height of all chat lines + some padding
+	void UpdateChatPosition();
 	void SetChatInputPos(int* x, int* y);
 	virtual const char* HudName() { return "CHudSayText"; }
 friend class CHudSpectator;
 
 private:
-
+	float m_lastChatIput;
 	struct cvar_s *	m_HUD_saytext;
 	struct cvar_s *	m_HUD_saytext_time;
 	struct cvar_s *	m_HUD_saytext_lines;
