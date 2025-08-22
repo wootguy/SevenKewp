@@ -251,7 +251,8 @@ if(UNIX)
 		:vgui.so
 	)
 	
-	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -static-libgcc -static-libstdc++")
+	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -static-libgcc -static-libstdc++ -Wl,--gc-sections")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 	
 	if (ENABLE_CURL)
 		target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DENABLE_CURL)

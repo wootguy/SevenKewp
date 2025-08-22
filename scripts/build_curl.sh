@@ -27,7 +27,7 @@ echo
 
 # Configure 32-bit static build
 cmake .. \
-    -DCMAKE_C_FLAGS="-m32 -fPIC" \
+    -DCMAKE_C_FLAGS="-m32 -fPIC -ffunction-sections -fdata-sections" \
     -DBUILD_CURL_EXE=OFF \
     -DBUILD_LIBCURL_DOCS=OFF \
     -DBUILD_MISC_DOCS=OFF \

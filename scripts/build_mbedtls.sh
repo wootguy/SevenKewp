@@ -22,7 +22,7 @@ echo
 # Configure 32-bit static build
 cmake .. \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_C_FLAGS="-m32 -fPIC" \
+  -DCMAKE_C_FLAGS="-m32 -fPIC -ffunction-sections -fdata-sections" \
   -DBUILD_SHARED_LIBS=OFF \
   -DENABLE_PROGRAMS=OFF \
   -DENABLE_TESTING=OFF
