@@ -184,7 +184,7 @@ void CheckForUpdate() {
 
 	if (code != 200) {
 		if (code <= 0) {
-			g_updateThreadError = "ERROR: Curl responded with:%s\n" + response_string;
+			g_updateThreadError = "ERROR: Curl responded with:\n" + response_string;
 		}
 		else {
 			g_updateThreadError = "ERROR: Unexpected HTTP response code " + std::to_string(code) + "\n"
@@ -342,10 +342,17 @@ bool ApplyUpdate() {
 void UpdateClientCommand() {
 	if (gHUD.m_ClientUpdater.m_updateState != CUPDATE_NONE) {
 		PRINTF("\nAn update is already in progress.\n");
+		gEngfuncs.pfnCenterPrint("An update is already in progress.");
 		return;
 	}
-	if (getEpochMillis() - g_lastUpdateTime < 5000) {
+	if (getEpochMillis() - g_lastUpdateTime < 3000) {
 		PRINTF("Wait a few seconds before attempting to update again.\n");
+		gEngfuncs.pfnCenterPrint("Wait a few seconds before attempting\nto update again.");
+		return;
+	}
+
+	if ((int)CVAR_GET_FLOAT("hlcoop_version") == gHUD.m_sevenkewpVersion) {
+		gEngfuncs.pfnCenterPrint("Your client is up-to-date");
 		return;
 	}
 
@@ -364,9 +371,6 @@ void UpdateClientCommand() {
 int CHudClientUpdater::Init() {
 	gHUD.AddHudElem(this);
 
-	gEngfuncs.pfnAddCommand("cupdate", UpdateClientCommand);
-	gEngfuncs.pfnAddCommand("reboot", RestartGame);
-
 	cvar_t* ver_cvar = CVAR_GET_PTR("hlcoop_version");
 
 	m_iFlags |= HUD_INTERMISSION | HUD_ACTIVE;
@@ -375,7 +379,6 @@ int CHudClientUpdater::Init() {
 }
 
 void CHudClientUpdater::Think() {
-
 	if (m_updateState == CUPDATE_NONE || g_updateThreadStatus == CUPDATE_STATUS_RUNNING)
 		return;
 
@@ -447,10 +450,30 @@ int CHudClientUpdater::Draw(float flTime) {
 		return 1;
 	}
 
-	const char* updateMessage = "Type \"cupdate\" in console to update your client.";
-	if (clientVerNum > gHUD.m_sevenkewpVersion) {
+	if (clientVerNum < 0) {
+		return 1; // in case you don't want to update, you can set the cvar to -1 to hide the notice
+	}
+
+	const char* commandBtn = gEngfuncs.Key_LookupBinding("commandmenu");
+	std::string commandBtnTip = commandBtn ? std::string(" with [") + commandBtn + "]" : "";
+	const char* additionalTip = commandBtn ? "" : " (type or bind \"+commandmenu\" to open the menu)";
+	const char* updateMessage = UTIL_VarArgs(
+		"Open the command menu%s and choose \"Update Client\"%s",
+		commandBtnTip.c_str(), additionalTip);
+
+	if (m_updateState == CUPDATE_CHECK) {
+		updateMessage = "Checking for update...\n";
+	}
+	else if (m_updateState == CUPDATE_DOWNLOAD) {
+		updateMessage = "Downloading update...\n";
+	}
+	else if (m_updateState == CUPDATE_FINISH) {
+		updateMessage = "Update finished!\n";
+	}
+	else if (clientVerNum > gHUD.m_sevenkewpVersion) {
 		updateMessage = "This server needs an update for your client to work.";
 	}
+	
 
 	int w, h;
 	GetConsoleStringSize(updateMessage, &w, &h);
@@ -469,7 +492,19 @@ int CHudClientUpdater::Draw(float flTime) {
 	GetConsoleStringSize(versionMessage, &w, &h);
 	x = (ScreenWidth - w) / 2;
 
-	DrawConsoleString(x, y - h, versionMessage, RGB(0, 255, 255));
+	if (m_updateState == CUPDATE_NONE)
+		DrawConsoleString(x, y - h, versionMessage, RGB(0, 255, 255));
+
+	const char* warnMessage = "Your client is out-of-date!";
+	if (clientVerNum > gHUD.m_sevenkewpVersion) {
+		warnMessage = "Your client is too new!";
+	}
+
+	GetConsoleStringSize(warnMessage, &w, &h);
+	x = (ScreenWidth - w) / 2;
+
+	if (m_updateState == CUPDATE_NONE)
+		DrawConsoleString(x, y - h*2, warnMessage, RGB(0, 255, 255));
 
 	return 1;
 }

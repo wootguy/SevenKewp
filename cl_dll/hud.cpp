@@ -142,14 +142,6 @@ void __CmdFunc_OpenCommandMenu(void)
 	}
 }
 
-// TFC "special" command
-void __CmdFunc_InputPlayerSpecial(void)
-{
-	if ( gViewPort )
-	{
-		gViewPort->InputPlayerSpecial();
-	}
-}
 
 void __CmdFunc_CloseCommandMenu(void)
 {
@@ -318,7 +310,6 @@ void CHud :: Init( void )
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
 	HOOK_COMMAND( "-commandmenu", CloseCommandMenu );
 	HOOK_COMMAND( "ForceCloseCommandMenu", ForceCloseCommandMenu );
-	HOOK_COMMAND( "special", InputPlayerSpecial );
 	HOOK_COMMAND( "togglebrowser", ToggleServerBrowser );
 
 	HOOK_MESSAGE( ValClass );
@@ -578,6 +569,7 @@ void CHud::ParseServerInfo() {
 	if (strcmp(serverHash, myHash)) {
 		PRINTF("Preparing SevenKewp data update (%s != %s)\n", serverHash, myHash);
 		UTIL_DeleteClientDataFiles();
+		m_sevenkewpDataUpdating = true;
 	}
 	else {
 		PRINTF("SevenKewp data is up-to-date (%s)\n", serverHash);
@@ -600,6 +592,11 @@ void CHud::WorldInit(void) {
 	m_Flash.VidInit();
 	m_Message.VidInit();
 	m_DeathNotice.VidInit();
+
+	if (m_sevenkewpDataUpdating) {
+		m_sevenkewpDataUpdating = false;
+		gViewPort->ReloadCommandMenu();
+	}
 }
 
 int CHud::MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf)

@@ -276,6 +276,7 @@ void CWorld::Precache(void)
 	// for sevenkewp clients
 	PRECACHE_GENERIC("sprites/" MOD_SPRITE_FOLDER "hud.txt");
 	PRECACHE_GENERIC("sprites/" MOD_SPRITE_FOLDER "weapon_buckets.spr");
+	PRECACHE_GENERIC("commandmenu_sk.txt");
 
 	if (mp_bigmap.value)
 		UTIL_PrecacheLargeWorldEffects();

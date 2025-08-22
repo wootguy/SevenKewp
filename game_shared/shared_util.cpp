@@ -114,9 +114,10 @@ uint8_t* UTIL_AppendFileData(const char* fpath, uint8_t* existingData, int& len)
 	return newData;
 }
 
-#define NUM_AUTO_UPDATE_FILES 1
+#define NUM_AUTO_UPDATE_FILES 2
 const char* g_autoUpdateFiles[NUM_AUTO_UPDATE_FILES] = {
-	"sprites/hlcoop/hud.txt"
+	"sprites/hlcoop/hud.txt",
+	"commandmenu_sk.txt",
 };
 
 const char* UTIL_HashClientDataFiles() {

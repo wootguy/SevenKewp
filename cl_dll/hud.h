@@ -654,6 +654,7 @@ public:
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
 	int m_sevenkewpVersion;
+	bool m_sevenkewpDataUpdating;
 	bool m_is_map_loaded;
 
 	int m_iFontHeight;
