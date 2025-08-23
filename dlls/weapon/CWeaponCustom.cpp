@@ -1549,6 +1549,9 @@ void CWeaponCustom::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
 #ifdef CLIENT_DLL
 	WC_EV_PunchAngle(evt, m_pPlayer->random_seed);
 #else
+	// predicted weapons don't set a punchangle server-side, but if these weapons are ever
+	// used by clients that don't have the prediction data, then uncomment this.
+	/*
 	float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.x);
 	float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.y);
 	float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.z);
@@ -1565,6 +1568,7 @@ void CWeaponCustom::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
 			);
 		}
 	}
+	*/
 #endif
 }
 
