@@ -401,7 +401,7 @@ const char* UTIL_SevenKewpClientString(int version, bool includeModName) {
 }
 
 bool UTIL_AreSevenKewpVersionsCompatible(int clientVersion, int serverVersion) {
-	return (clientVersion / 10000) == (serverVersion / 10000);
+	return (clientVersion / 10000) == (serverVersion / 10000) && clientVersion > 0 && serverVersion > 0;
 }
 
 uint64_t getEpochMillis() {

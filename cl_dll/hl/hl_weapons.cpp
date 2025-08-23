@@ -1323,7 +1323,7 @@ void CL_DLLEXPORT HUD_PostRunCmd( struct local_state_s *from, struct local_state
 	{
 		Vector forward;
 		gEngfuncs.pfnAngleVectors( v_angles, forward, NULL, NULL );
-		to->client.velocity = to->client.velocity - forward * g_flApplyVel * 5; 
+		to->client.velocity = to->client.velocity - forward * g_flApplyVel; 
 		g_irunninggausspred = false;
 	}
 	
