@@ -366,6 +366,7 @@ private:
 enum ClientUpdateState {
 	CUPDATE_NONE,		// no update in progress
 	CUPDATE_CHECK,		// checking for a new release
+	CUPDATE_CONFIRM,	// waiting for user to confirm the update
 	CUPDATE_DOWNLOAD,	// downloading the new release
 	CUPDATE_FINISH		// update applied and pending restart
 };
@@ -380,6 +381,7 @@ public:
 	virtual const char* HudName() { return "CHudClientUpdater"; }
 
 	int m_updateState;
+	bool m_updateDeclined;
 
 private:
 	cvar_t* ver_cvar;

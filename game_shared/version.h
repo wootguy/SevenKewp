@@ -1,5 +1,6 @@
-// Version required for the server to treat a client as a sevenkewp client instead
-// of an HL client. This prevents prevent crashes and SVC_BAD.
-//
-// Bump this whenever there is a breaking change that requires a client update
-#define SEVENKEWP_VERSION 1
+#define SEVENKEWP_VERSION_MAJOR 0 // Set to 1 on release, then never touch again
+#define SEVENKEWP_VERSION_MINOR 0 // Bump when there is a backwards incompatible change (e.g. new/changed network messages)
+#define SEVENKEWP_VERSION_PATCH 1 // Bump when there is an optional update which doesn't affect the API
+
+#define SEVENKEWP_VERSION \
+((SEVENKEWP_VERSION_MAJOR*10000*10000) + (SEVENKEWP_VERSION_MINOR * 10000) + SEVENKEWP_VERSION_PATCH)

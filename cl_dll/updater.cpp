@@ -11,6 +11,9 @@
 #include "cl_util.h"
 #include "net_api.h"
 
+#include "vgui_int.h"
+#include "vgui_TeamFortressViewport.h"
+
 #define EXT_FUNC
 #include "interface.h"
 
@@ -34,6 +37,8 @@ std::string g_updateThreadError;
 std::string g_update_dir;
 std::string g_update_zip;
 std::string g_update_tag_name;
+std::string g_update_details;
+std::string g_update_title;
 uint32_t g_update_tag_vernum;
 
 std::thread g_update_thread;
@@ -41,6 +46,8 @@ std::atomic<int> g_updateThreadStatus(CUPDATE_STATUS_RUNNING);
 
 // function parameters for the init func
 typedef void(*CLIENT_DLL_INIT_FUNCTION)(void*);
+
+void DownloadUpdateFile();
 
 void UpdateFinish() {
 	g_lastUpdateTime = getEpochMillis();
@@ -53,6 +60,42 @@ void AbortUpdate() {
 	PRINTF("%s\n\n", MANUAL_UPDATE_URL);
 	gEngfuncs.pfnCenterPrint("Update failed!\nCheck your console for errors.");
 	UpdateFinish();
+}
+
+void ConfirmUpdate() {
+	if (gHUD.m_ClientUpdater.m_updateState == CUPDATE_CONFIRM) {
+		PRINTF("Using update archive:   %s\n", g_updateFileName.c_str());
+		PRINTF("\nDownloading:\n%s\n", g_updateUrl.c_str());
+		gHUD.m_ClientUpdater.m_updateState = CUPDATE_DOWNLOAD;
+		g_updateThreadStatus = CUPDATE_STATUS_RUNNING;
+		g_update_thread = std::thread(DownloadUpdateFile);
+		g_update_thread.detach();
+		gHUD.m_ClientUpdater.m_updateDeclined = false;
+	}
+	else {
+		PRINTF("ERROR: Updater in unexpected state %d\n", gHUD.m_ClientUpdater.m_updateState);
+	}
+}
+
+void CancelUpdate() {
+	if (gHUD.m_ClientUpdater.m_updateState == CUPDATE_CONFIRM) {
+		UpdateFinish();
+		gEngfuncs.pfnCenterPrint("Update cancelled");
+	}
+	else {
+		PRINTF("ERROR: Updater in unexpected state %d\n", gHUD.m_ClientUpdater.m_updateState);
+	}
+}
+
+void DeclineUpdate() {
+	if (gHUD.m_ClientUpdater.m_updateState == CUPDATE_CONFIRM) {
+		UpdateFinish();
+		gEngfuncs.pfnCenterPrint("Update declined\nMessage hidden until next game launch");
+		gHUD.m_ClientUpdater.m_updateDeclined = true;
+	}
+	else {
+		PRINTF("ERROR: Updater in unexpected state %d\n", gHUD.m_ClientUpdater.m_updateState);
+	}
 }
 
 // return true on success
@@ -269,6 +312,20 @@ void CheckForUpdate() {
 	g_updateUrl = asset["browser_download_url"].GetString();
 	g_updateFileName = asset["name"].GetString();
 
+	if (json.HasMember("body") && json["body"].IsString()) {
+		g_update_details = json["body"].GetString();
+	}
+	else {
+		g_update_details = "<missing update description>";
+	}
+
+	if (json.HasMember("name") && json["name"].IsString()) {
+		g_update_title = json["name"].GetString();
+	}
+	else {
+		g_update_title = "<missing update title>";
+	}
+
 	// just in case, don't ever break out of the update folder
 	g_updateFileName = replaceString(g_updateFileName, "/", "");
 	g_updateFileName = replaceString(g_updateFileName, "\\", "");
@@ -401,12 +458,15 @@ void CHudClientUpdater::Think() {
 			return;
 		}
 
-		PRINTF("Using update archive:   %s\n", g_updateFileName.c_str());
-		PRINTF("\nDownloading:\n%s\n", g_updateUrl.c_str());
-		m_updateState = CUPDATE_DOWNLOAD;
-		g_updateThreadStatus = CUPDATE_STATUS_RUNNING;
-		g_update_thread = std::thread(DownloadUpdateFile);
-		g_update_thread.detach();
+		gViewPort->SetPatchNotes(g_update_title.c_str(), g_update_details.c_str());
+		gViewPort->ShowVGUIMenu(MENU_PATCH_NOTES);
+
+		m_updateState = CUPDATE_CONFIRM;
+	}
+	else if (m_updateState == CUPDATE_CONFIRM) {
+		if (!gViewPort->IsMessageWindowVisible()) {
+			UpdateFinish();
+		}
 	}
 	else if (m_updateState == CUPDATE_DOWNLOAD) {
 		if (g_updateThreadStatus != CUPDATE_STATUS_SUCCESS) {
@@ -450,8 +510,8 @@ int CHudClientUpdater::Draw(float flTime) {
 		return 1;
 	}
 
-	if (clientVerNum < 0) {
-		return 1; // in case you don't want to update, you can set the cvar to -1 to hide the notice
+	if (gHUD.m_ClientUpdater.m_updateDeclined) {
+		return 1;
 	}
 
 	const char* commandBtn = gEngfuncs.Key_LookupBinding("commandmenu");
@@ -462,16 +522,19 @@ int CHudClientUpdater::Draw(float flTime) {
 		commandBtnTip.c_str(), additionalTip);
 
 	if (m_updateState == CUPDATE_CHECK) {
-		updateMessage = "Checking for update...\n";
+		updateMessage = "Checking for update...";
+	}
+	else if (m_updateState == CUPDATE_CONFIRM) {
+		updateMessage = "Waiting for confirmation";
 	}
 	else if (m_updateState == CUPDATE_DOWNLOAD) {
-		updateMessage = "Downloading update...\n";
+		updateMessage = "Downloading update...";
 	}
 	else if (m_updateState == CUPDATE_FINISH) {
-		updateMessage = "Update finished!\n";
+		updateMessage = "Update finished!";
 	}
 	else if (clientVerNum > gHUD.m_sevenkewpVersion) {
-		updateMessage = "This server needs an update for your client to work.";
+		updateMessage = "This server may need an update for your client to work.";
 	}
 	
 
@@ -495,8 +558,11 @@ int CHudClientUpdater::Draw(float flTime) {
 	if (m_updateState == CUPDATE_NONE)
 		DrawConsoleString(x, y - h, versionMessage, RGB(0, 255, 255));
 
-	const char* warnMessage = "Your client is out-of-date!";
-	if (clientVerNum > gHUD.m_sevenkewpVersion) {
+	const char* warnMessage = "Your client is too old!";
+	if (clientVerNum < gHUD.m_sevenkewpVersion && UTIL_AreSevenKewpVersionsCompatible(clientVerNum, gHUD.m_sevenkewpVersion)) {
+		warnMessage = "Client update available.";
+	}
+	else if (clientVerNum > gHUD.m_sevenkewpVersion) {
 		warnMessage = "Your client is too new!";
 	}
 

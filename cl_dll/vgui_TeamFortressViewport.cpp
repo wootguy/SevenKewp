@@ -79,7 +79,7 @@ int g_iUser3 = 0;
 
 void IN_ResetMouse( void );
 void IN_ResetRelativeMouseState( void );
-extern CMenuPanel *CMessageWindowPanel_Create( const char *szMOTD, const char *szTitle, int iShadeFullscreen, int iRemoveMe, int x, int y, int wide, int tall );
+extern CMenuPanel *CMessageWindowPanel_Create( const char *szMOTD, const char *szTitle, int iShadeFullscreen, int iRemoveMe, int x, int y, int wide, int tall, MESSAGE_WINDOW_TYPE windowType);
 extern float * GetClientColor( int clientIndex );
 
 using namespace vgui;
@@ -1072,6 +1072,14 @@ bool TeamFortressViewport::IsScoreBoardVisible( void )
 	return false;
 }
 
+bool TeamFortressViewport::IsMessageWindowVisible(void)
+{
+	if (m_pCurrentMenu)
+		return m_pCurrentMenu->isVisible();
+
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: Hide the scoreboard
 //-----------------------------------------------------------------------------
@@ -1357,6 +1365,21 @@ void TeamFortressViewport::SetCurrentMenu( CMenuPanel *pMenu )
 	}
 }
 
+void TeamFortressViewport::SetPatchNotes(const char* title, const char* details) {
+	if (title) {
+		strcpy_safe(m_szPatchNotesTitle, title, sizeof(m_szPatchNotesTitle));
+	}
+	else {
+		m_szPatchNotesTitle[0] = 0;
+	}
+	if (details) {
+		strcpy_safe(m_szPatchNotes, details, sizeof(m_szPatchNotes));
+	}
+	else {
+		m_szPatchNotes[0] = 0;
+	}
+}
+
 //================================================================
 // Text Window
 CMenuPanel* TeamFortressViewport::CreateTextWindow( int iTextToShow )
@@ -1366,6 +1389,8 @@ CMenuPanel* TeamFortressViewport::CreateTextWindow( int iTextToShow )
 	char *pfile = NULL;
 	static const int MAX_TITLE_LENGTH = 64;
 	char cTitle[MAX_TITLE_LENGTH];
+
+	MESSAGE_WINDOW_TYPE windowType = MESSAGE_WINDOW_OK;
 
 	if ( iTextToShow == SHOW_MOTD )
 	{
@@ -1433,9 +1458,19 @@ CMenuPanel* TeamFortressViewport::CreateTextWindow( int iTextToShow )
 			cText = pfile;
 		}
 	}
+	else if (iTextToShow == SHOW_PATCH_NOTES)
+	{
+		if (!m_szPatchNotesTitle || !m_szPatchNotesTitle[0])
+			strcpy_safe(cTitle, "Update Details", sizeof(cTitle));
+		else
+			strcpy_safe(cTitle, m_szPatchNotesTitle, sizeof(cTitle));
+		cTitle[sizeof(cTitle) - 1] = 0;
+		cText = m_szPatchNotes;
+		windowType = MESSAGE_WINDOW_UPDATE_CANCEL;
+	}
 
 	// if we're in the game (ie. have selected a class), flag the menu to be only grayed in the dialog box, instead of full screen
-	CMenuPanel *pMOTDPanel = CMessageWindowPanel_Create( cText, cTitle, g_iPlayerClass == PC_UNDEFINED, false, 0, 0, ScreenWidth, ScreenHeight );
+	CMenuPanel *pMOTDPanel = CMessageWindowPanel_Create( cText, cTitle, g_iPlayerClass == PC_UNDEFINED, false, 0, 0, ScreenWidth, ScreenHeight, windowType );
 	pMOTDPanel->setParent( this );
 
 	if ( pfile )
@@ -1496,6 +1531,10 @@ void TeamFortressViewport::ShowVGUIMenu( int iMenu )
 		break;
 	case MENU_CLASS:
 		pNewMenu = ShowClassMenu();
+		break;
+
+	case MENU_PATCH_NOTES:
+		pNewMenu = CreateTextWindow(SHOW_PATCH_NOTES);
 		break;
 
 	default:
@@ -2268,6 +2307,10 @@ int TeamFortressViewport::MsgFunc_SpecFade( const char *pszName, int iSize, void
 
 void UpdateClientCommand();
 void RestartGame();
+void CustomMessageWindowAction(const char* action);
+void ConfirmUpdate();
+void CancelUpdate();
+void DeclineUpdate();
 
 void RunProtectedCommand(const char* cmd) {
 	if (!strcmp(cmd, "updategame")) {
@@ -2281,5 +2324,20 @@ void RunProtectedCommand(const char* cmd) {
 	}
 	else {
 		PRINTF("Unrecognized protected command: %s\n", cmd);
+	}
+}
+
+void CustomMessageWindowAction(const char* action) {
+	if (!strcmp(action, "update_confirm")) {
+		ConfirmUpdate();
+	}
+	else if (!strcmp(action, "update_cancel")) {
+		CancelUpdate();
+	}
+	else if (!strcmp(action, "update_decline")) {
+		DeclineUpdate();
+	}
+	else {
+		PRINTF("ERROR: Unknown message window action '%s'\n", action);
 	}
 }

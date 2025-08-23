@@ -394,9 +394,14 @@ void* GetFunctionAddress(void* libHandle, const char* funcName) {
 }
 
 const char* UTIL_SevenKewpClientString(int version, bool includeModName) {
-	int major = version / 100;
-	int minor = version % 100;
-	return UTIL_VarArgs("%s%d.%02d", includeModName ? "SevenKewp " : "", major, minor);
+	int patch = version % 10000;			// minor bugfix / optional update
+	int minor = (version / 10000) % 10000;	// required update
+	int major = version / (10000*10000);	// 0 = pre-release, 1 = post-release
+	return UTIL_VarArgs("%s%d.%d.%d", includeModName ? "SevenKewp " : "", major, minor, patch);
+}
+
+bool UTIL_AreSevenKewpVersionsCompatible(int clientVersion, int serverVersion) {
+	return (clientVersion / 10000) == (serverVersion / 10000);
 }
 
 uint64_t getEpochMillis() {

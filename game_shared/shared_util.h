@@ -56,7 +56,12 @@ EXPORT int UTIL_CurlDownload(std::string url, std::string fpath);
 // get function address in a loaded library
 EXPORT void* GetFunctionAddress(void* libHandle, const char* funcName);
 
+// 0.0.0 or "SevenKewp 0.0.0" if including the mod name
 EXPORT const char* UTIL_SevenKewpClientString(int version, bool includeModName = true);
+
+// versions are compatible if their major.minor versions are the same.
+// patch versions can differ. Incompatible clients have most features disabled.
+EXPORT bool UTIL_AreSevenKewpVersionsCompatible(int clientVersion, int serverVersion);
 
 EXPORT uint64_t getEpochMillis();
 

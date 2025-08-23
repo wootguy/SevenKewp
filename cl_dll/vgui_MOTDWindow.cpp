@@ -40,13 +40,15 @@
 #define MOTD_WINDOW_SIZE_X			XRES(424)
 #define MOTD_WINDOW_SIZE_Y			YRES(312)
 
+
 //-----------------------------------------------------------------------------
 // Purpose: Displays the MOTD and basic server information
 //-----------------------------------------------------------------------------
 class CMessageWindowPanel : public CMenuPanel
 {
 public:
-	CMessageWindowPanel( const char *szMOTD, const char *szTitle, int iShadeFullScreen, int iRemoveMe, int x, int y, int wide, int tall );
+	CMessageWindowPanel( const char *szMOTD, const char *szTitle, int iShadeFullScreen,
+		int iRemoveMe, int x, int y, int wide, int tall, MESSAGE_WINDOW_TYPE windowType );
 
 private:
 	CTransparentPanel *m_pBackgroundPanel;
@@ -57,15 +59,15 @@ private:
 // Purpose: Creates a new CMessageWindowPanel
 // Output : CMenuPanel - interface to the panel
 //-----------------------------------------------------------------------------
-CMenuPanel *CMessageWindowPanel_Create( const char *szMOTD, const char *szTitle, int iShadeFullscreen, int iRemoveMe, int x, int y, int wide, int tall )
+CMenuPanel *CMessageWindowPanel_Create( const char *szMOTD, const char *szTitle, int iShadeFullscreen, int iRemoveMe, int x, int y, int wide, int tall, MESSAGE_WINDOW_TYPE windowType)
 {
-	return new CMessageWindowPanel( szMOTD, szTitle, iShadeFullscreen, iRemoveMe, x, y, wide, tall );
+	return new CMessageWindowPanel( szMOTD, szTitle, iShadeFullscreen, iRemoveMe, x, y, wide, tall, windowType);
 }
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructs a message panel
 //-----------------------------------------------------------------------------
-CMessageWindowPanel::CMessageWindowPanel( const char *szMOTD, const char *szTitle, int iShadeFullscreen, int iRemoveMe, int x, int y, int wide, int tall ) : CMenuPanel( iShadeFullscreen ? 100 : 255, iRemoveMe, x, y, wide, tall )
+CMessageWindowPanel::CMessageWindowPanel( const char *szMOTD, const char *szTitle, int iShadeFullscreen, int iRemoveMe, int x, int y, int wide, int tall, MESSAGE_WINDOW_TYPE windowType) : CMenuPanel( iShadeFullscreen ? 100 : 255, iRemoveMe, x, y, wide, tall )
 {
 	// Get the scheme used for the Titles
 	CSchemeManager *pSchemes = gViewPort->GetSchemeManager();
@@ -141,10 +143,27 @@ CMessageWindowPanel::CMessageWindowPanel( const char *szMOTD, const char *szTitl
 
 	pScrollPanel->validate();
 
-	CommandButton *pButton = new CommandButton( CHudTextMessage::BufferedLocaliseTextString( "#Menu_OK" ), iXPos + XRES(16), iYPos + iYSize - YRES(16) - BUTTON_SIZE_Y, CMENU_SIZE_X, BUTTON_SIZE_Y);
-	pButton->addActionSignal(new CMenuHandler_TextWindow(HIDE_TEXTWINDOW));
-	pButton->setParent(this);
+	if (windowType == MESSAGE_WINDOW_UPDATE_CANCEL) {
+		int btnWidth = CMENU_SIZE_X * 2 / 3.0f;
+		int btnWidthPad = btnWidth + 10;
 
+		CommandButton* pButton = new CommandButton(CHudTextMessage::BufferedLocaliseTextString("Update"), iXPos + XRES(16), iYPos + iYSize - YRES(16) - BUTTON_SIZE_Y, btnWidth, BUTTON_SIZE_Y);
+		pButton->addActionSignal(new CMenuHandler_TextWindowCustomAction("update_confirm"));
+		pButton->setParent(this);
+
+		CommandButton* pButton2 = new CommandButton(CHudTextMessage::BufferedLocaliseTextString("Cancel"), iXPos + XRES(16) + btnWidthPad, iYPos + iYSize - YRES(16) - BUTTON_SIZE_Y, btnWidth, BUTTON_SIZE_Y);
+		pButton2->addActionSignal(new CMenuHandler_TextWindowCustomAction("update_cancel"));
+		pButton2->setParent(this);
+
+		CommandButton* pButton3 = new CommandButton(CHudTextMessage::BufferedLocaliseTextString("Decline"), iXPos + XRES(16) + btnWidthPad*2, iYPos + iYSize - YRES(16) - BUTTON_SIZE_Y, btnWidth, BUTTON_SIZE_Y);
+		pButton3->addActionSignal(new CMenuHandler_TextWindowCustomAction("update_decline"));
+		pButton3->setParent(this);
+	}
+	else {
+		CommandButton* pButton = new CommandButton(CHudTextMessage::BufferedLocaliseTextString("#Menu_OK"), iXPos + XRES(16), iYPos + iYSize - YRES(16) - BUTTON_SIZE_Y, CMENU_SIZE_X, BUTTON_SIZE_Y);
+		pButton->addActionSignal(new CMenuHandler_TextWindow(HIDE_TEXTWINDOW));
+		pButton->setParent(this);
+	}
 }
 
 

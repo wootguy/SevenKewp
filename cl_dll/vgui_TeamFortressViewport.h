@@ -40,6 +40,7 @@
 #define MENU_CLASSHELP2 			7
 #define MENU_REPEATHELP 			8
 #define MENU_SPECHELP				9
+#define MENU_PATCH_NOTES			10
 #endif
 using namespace vgui;
 
@@ -112,10 +113,18 @@ enum
 	ARROW_RIGHT,
 };
 
+enum MESSAGE_WINDOW_TYPE {
+	MESSAGE_WINDOW_OK,
+	MESSAGE_WINDOW_UPDATE_CANCEL,
+};
+
 // run a command that can only be executed from the command menu (stufftext protection)
 // Make sure to also not bind a key to menu items that trigger this, because then the server
 // could send "+commandmenu;slot2" and run the protected command.
 void RunProtectedCommand(const char* cmd);
+
+// custom action performed by button in a message window
+void CustomMessageWindowAction(const char* action);
 
 //==============================================================================
 // VIEWPORT PIECES
@@ -524,6 +533,7 @@ private:
 	// MOTD
 	int		m_iGotAllMOTD;
 	char	m_szMOTD[ MAX_MOTD_LENGTH ];
+	char	m_szPatchNotes[ MAX_MOTD_LENGTH ];
 
 	//  Command Menu Team buttons
 	CommandButton *m_pTeamButtons[6];
@@ -579,9 +589,12 @@ public:
 	void SetCurrentCommandMenu( CCommandMenu *pNewMenu );
 	void SetCurrentMenu( CMenuPanel *pMenu );
 
+	void SetPatchNotes(const char* title, const char* details);
+
 	void ShowScoreBoard( void );
 	void HideScoreBoard( void );
 	bool IsScoreBoardVisible( void );
+	bool IsMessageWindowVisible( void );
 
 	bool AllowedToPrintText( void );
 
@@ -647,6 +660,7 @@ public:
 	ScorePanel		*m_pScoreBoard;
 	SpectatorPanel *		m_pSpectatorPanel;
 	char			m_szServerName[ MAX_SERVERNAME_LENGTH ];
+	char			m_szPatchNotesTitle[ MAX_SERVERNAME_LENGTH ];
 	char			m_szNextMap[ MAX_MAPNAME ];
 	int				m_timeLeft;
 };
@@ -832,6 +846,7 @@ public:
 #define SHOW_CLASSDESC		2
 #define SHOW_MOTD			3
 #define SHOW_SPECHELP		4
+#define SHOW_PATCH_NOTES	5
 
 class CMenuHandler_TextWindow : public ActionSignal
 {
@@ -854,6 +869,23 @@ public:
 			gViewPort->HideCommandMenu();
 			gViewPort->ShowVGUIMenu( m_iState );
 		}
+	}
+};
+
+class CMenuHandler_TextWindowCustomAction : public ActionSignal
+{
+private:
+	char m_szAction[256];
+public:
+	CMenuHandler_TextWindowCustomAction(const char* actionName)
+	{
+		strcpy_safe(m_szAction, actionName, sizeof(m_szAction));
+	}
+
+	virtual void actionPerformed(Panel* panel)
+	{
+		gViewPort->HideTopMenu();
+		CustomMessageWindowAction(m_szAction);
 	}
 };
 
