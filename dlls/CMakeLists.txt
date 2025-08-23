@@ -712,6 +712,9 @@ if(UNIX)
 		target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DENABLE_CURL)
 		target_link_libraries(${SERVER_DLL_NAME}
 			${CMAKE_SOURCE_DIR}/external/curl/build/lib/libcurl.a
+			${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedtls.a
+			${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedx509.a
+			${CMAKE_SOURCE_DIR}/external/mbedtls/build/library/libmbedcrypto.a
 		)
 	endif()
 
