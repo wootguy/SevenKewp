@@ -104,12 +104,12 @@ BaseHashMap& BaseHashMap::operator=(const BaseHashMap& other) {
 	return *this;
 }
 
-void BaseHashMap::init(int maxEntries, uint32_t stringPoolSz) {
+void BaseHashMap::init(int newMaxEntries, uint32_t newStringPoolSz) {
 	stringOffset = 1; // skip 0 for NULL value
 	entryCount = 0;
 	delCount = 0;
-	this->maxEntries = maxEntries;
-	this->stringPoolSz = stringPoolSz;
+	maxEntries = newMaxEntries;
+	stringPoolSz = newStringPoolSz;
 
 	int dataSz = stringPoolSz + maxEntries * entrySz;
 

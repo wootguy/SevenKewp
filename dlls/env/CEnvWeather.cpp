@@ -1071,8 +1071,6 @@ void CEnvWeather::PlayWeatherSounds(CBasePlayer* plr) {
 
 	weather_sound_t* sounds[2] = { &m_rainSnd_out, &m_rainSnd_glass };
 
-	bool forcePlay = plr->m_initSoundTime + 1.0f > gpGlobals->time;
-
 	for (int k = 0; k < 2; k++) {
 		weather_sound_t* snd = sounds[k];
 		int vol = snd->GetAverageLoudness(pidx);

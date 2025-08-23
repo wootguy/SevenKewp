@@ -68,12 +68,12 @@ mod_string_t StringPool::alloc(const char* str) {
     return ret;
 }
 
-const char* StringPool::str(uint32_t offset) {
+const char* StringPool::str(uint32_t strOffset) {
     if (!data) {
         return NULL;
     }
 
-    return (offset && offset < poolSz) ? (data + offset) : NULL;
+    return (strOffset && strOffset < poolSz) ? (data + strOffset) : NULL;
 }
 
 const char* mod_string_t::str() {

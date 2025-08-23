@@ -16,7 +16,7 @@ public:
 	EXPORT static CGrenade *ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
 	EXPORT static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
-	void EXPORT Explode( Vector vecSrc, Vector vecAim );
+	virtual void EXPORT Explode( Vector vecSrc, Vector vecAim );
 	virtual void EXPORT Explode( TraceResult *pTrace, int bitsDamageType );
 	void EXPORT Smoke( void );
 

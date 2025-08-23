@@ -2181,9 +2181,9 @@ bool loadReplacementFile(const char* path, StringMap& replacements) {
 			
 			std::vector<std::string> parts = splitString(line, " \t");
 			std::vector<std::string> nonemptyParts;
-			for (int i = 0; i < (int)parts.size(); i++) {
-				if (parts[i].size()) {
-					nonemptyParts.push_back(parts[i]);
+			for (int k = 0; k < (int)parts.size(); k++) {
+				if (parts[k].size()) {
+					nonemptyParts.push_back(parts[k]);
 				}
 			}
 

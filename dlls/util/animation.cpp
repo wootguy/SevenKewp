@@ -93,7 +93,7 @@ studiohdr_t* GetPlayerModelPtr(const char* name, int& len) {
 	//ALERT(at_console, "Cached player model '%s'\n", name);
 
 	if (g_playerModelCache.size() > MAX_CACHED_PLAYER_MODELS) {
-		uint64_t oldestModel = -1;
+		uint64_t oldestModel = UINT64_MAX;
 		const char* oldestKey = NULL;
 
 		HashMap<PModelCacheEntry>::iterator_t iter;
@@ -105,10 +105,10 @@ studiohdr_t* GetPlayerModelPtr(const char* name, int& len) {
 		}
 
 		if (oldestKey) {
-			PModelCacheEntry* entry = g_playerModelCache.get(oldestKey);
-			if (entry) {
+			PModelCacheEntry* pentry = g_playerModelCache.get(oldestKey);
+			if (pentry) {
 				ALERT(at_console, "Free cached player model '%s'\n", oldestKey);
-				FREE_FILE(entry->data);
+				FREE_FILE(pentry->data);
 				g_playerModelCache.del(oldestKey);
 
 			}

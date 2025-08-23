@@ -108,10 +108,10 @@ void CEnvExplosion::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 			// tiny puddles and do no damage. TODO: duplicated in CGrenade.
 			Vector damageOrigin = tr.vecEndPos + (tr.vecPlaneNormal * V_min(32, dist));
 
-			TraceResult tr;
-			TRACE_LINE(pev->origin, damageOrigin, ignore_monsters, NULL, &tr);
-			if (!tr.fStartSolid)
-				pev->origin = tr.vecEndPos;
+			TraceResult tr2;
+			TRACE_LINE(pev->origin, damageOrigin, ignore_monsters, NULL, &tr2);
+			if (!tr2.fStartSolid)
+				pev->origin = tr2.vecEndPos;
 		}
 	}
 

@@ -1943,8 +1943,8 @@ void CTestHull :: BuildNodeGraph( void )
 	fprintf ( file, "-------------------------------------------------------------------------------\n\n\n");
 
 	// restore monsterclip solidity
-	for (CBaseEntity* clip : monsterClips) {
-		clip->pev->solid = SOLID_BSP;
+	for (CBaseEntity* oldclip : monsterClips) {
+		oldclip->pev->solid = SOLID_BSP;
 	}
 
 	cPoolLinks -= WorldGraph.RejectInlineLinks ( pTempPool, file );

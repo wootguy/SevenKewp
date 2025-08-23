@@ -31,6 +31,8 @@ typedef unsigned char mz_validate_uint16[sizeof(mz_uint16) == 2 ? 1 : -1];
 typedef unsigned char mz_validate_uint32[sizeof(mz_uint32) == 4 ? 1 : -1];
 typedef unsigned char mz_validate_uint64[sizeof(mz_uint64) == 8 ? 1 : -1];
 
+//#define BUILD_64BIT // uncomment for 64bit build
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -322,9 +324,11 @@ int mz_compress2(unsigned char *pDest, mz_ulong *pDest_len, const unsigned char 
     mz_stream stream;
     memset(&stream, 0, sizeof(stream));
 
+#ifdef BUILD_64BIT
     /* In case mz_ulong is 64-bits (argh I hate longs). */
-    if ((mz_uint64)(source_len | *pDest_len) > 0xFFFFFFFFU)
+    if ((mz_uint64)(source_len | *pDest_len) > 0xFFFFFFFFULL)
         return MZ_PARAM_ERROR;
+#endif
 
     stream.next_in = pSource;
     stream.avail_in = (mz_uint32)source_len;
@@ -565,9 +569,11 @@ int mz_uncompress2(unsigned char *pDest, mz_ulong *pDest_len, const unsigned cha
     int status;
     memset(&stream, 0, sizeof(stream));
 
+#ifdef BUILD_64BIT
     /* In case mz_ulong is 64-bits (argh I hate longs). */
-    if ((mz_uint64)(*pSource_len | *pDest_len) > 0xFFFFFFFFU)
+    if ((mz_uint64)(*pSource_len | *pDest_len) > 0xFFFFFFFFULL)
         return MZ_PARAM_ERROR;
+#endif
 
     stream.next_in = pSource;
     stream.avail_in = (mz_uint32)*pSource_len;
@@ -3182,7 +3188,7 @@ static int mz_stat64(const char *path, struct __stat64 *buffer)
 #define MZ_DELETE_FILE remove
 
 #else
-#pragma message("Using fopen, ftello, fseeko, stat() etc. path for file I/O - this path may not support large files.")
+//#pragma message("Using fopen, ftello, fseeko, stat() etc. path for file I/O - this path may not support large files.")
 #ifndef MINIZ_NO_TIME
 #include <utime.h>
 #endif
@@ -6247,11 +6253,13 @@ mz_bool mz_zip_writer_add_mem_ex_v2(mz_zip_archive *pZip, const char *pArchive_n
             pState->m_zip64 = MZ_TRUE;
             /*return mz_zip_set_error(pZip, MZ_ZIP_TOO_MANY_FILES); */
         }
-        if (((mz_uint64)buf_size > 0xFFFFFFFF) || (uncomp_size > 0xFFFFFFFF))
+#ifdef BUILD_64BIT
+        if (((mz_uint64)buf_size > 0xFFFFFFFFULL) || (uncomp_size > 0xFFFFFFFFULL))
         {
             pState->m_zip64 = MZ_TRUE;
             /*return mz_zip_set_error(pZip, MZ_ZIP_ARCHIVE_TOO_LARGE); */
         }
+#endif
     }
 
     if ((!(level_and_flags & MZ_ZIP_FLAG_COMPRESSED_DATA)) && (uncomp_size))

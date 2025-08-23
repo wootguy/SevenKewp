@@ -325,7 +325,7 @@ void CWeaponCustom::WeaponIdle() {
 	if (!m_pPlayer)
 		return;
 
-	if (m_lastCanAkimbo != CanAkimbo()) {
+	if (m_lastCanAkimbo != (bool)CanAkimbo()) {
 		if (!g_runfuncs) {
 			return;
 		}
@@ -691,8 +691,6 @@ bool CWeaponCustom::Chargeup(int attackIdx, bool leftHand, bool akimboFire) {
 }
 
 void CWeaponCustom::FinishAttack(int attackIdx) {
-	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
-
 	if (params.flags & FL_WC_WEP_LINK_CHARGEUPS) {
 		attackIdx = 0;
 	}
@@ -920,8 +918,9 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		WepEvt& evt = params.events[k];
 		uint16_t packedHeader = (evt.hasDelay << 15) | (evt.triggerArg << 10) | (evt.trigger << 5) | evt.evtType;
 		WRITE_SHORT(packedHeader); sentBytes += 2;
-		if (evt.hasDelay)
+		if (evt.hasDelay) {
 			WRITE_SHORT(evt.delay); sentBytes += 2;
+		}
 
 		switch (evt.evtType) {
 		case WC_EVT_IDLE_SOUND: {
@@ -961,8 +960,8 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 			WRITE_BYTE(evt.setBody.newBody); sentBytes += 1;
 			break;
 		case WC_EVT_WEP_ANIM: {
-			uint8_t packedHeader = (evt.anim.flags << 6) | (evt.anim.akimbo << 3) | evt.anim.numAnim;
-			WRITE_BYTE(packedHeader); sentBytes += 1;
+			uint8_t packedAnimHeader = (evt.anim.flags << 6) | (evt.anim.akimbo << 3) | evt.anim.numAnim;
+			WRITE_BYTE(packedAnimHeader); sentBytes += 1;
 			for (int i = 0; i < evt.anim.numAnim; i++) {
 				WRITE_BYTE(evt.anim.anims[i]); sentBytes += 1;
 			}
@@ -1017,7 +1016,7 @@ int CWeaponCustom::SendSoundMappingChunk(CBasePlayer* target, std::vector<SoundM
 #ifndef CLIENT_DLL
 	MESSAGE_BEGIN(MSG_ONE, gmsgSoundIdx, NULL, target->pev);
 	WRITE_BYTE(chunk.size()); sentBytes += 1;
-	for (int k = 0; k < chunk.size(); k++) {
+	for (int k = 0; k < (int)chunk.size(); k++) {
 		WRITE_SHORT(chunk[k].idx); sentBytes += 2;
 		WRITE_STRING(chunk[k].path); sentBytes += strlen(chunk[k].path) + 1;
 	}
@@ -1031,7 +1030,6 @@ void CWeaponCustom::SendSoundMapping(CBasePlayer* target) {
 #ifndef CLIENT_DLL
 	std::vector<SoundMapping> chunk;
 	int soundListBytes = 0;
-	int soundCount = 0;
 	int chunkSz = 1;
 	int chunkCount = 0;
 	for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
@@ -1250,7 +1248,7 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	Vector projectile_velocity = pvel +
 		dir.x * evt.proj.speed * vRight +
 		dir.y * evt.proj.speed * Vector(0, 0, 1) +
-		dir.z * evt.proj.speed * vForward;
+		dir.z * evt.proj.speed * vecDir;
 
 	Vector offsetOpts = evt.proj.offset;
 	Vector ofs = vRight * offsetOpts.x + vForward * offsetOpts.y + vUp * offsetOpts.z;
@@ -1335,14 +1333,14 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	{
 		if (evt.proj.follow_mode != WC_PROJ_FOLLOW_NONE)
 		{
-			EHANDLE h_plr = m_pPlayer->edict();
-			EHANDLE h_proj = shootEnt->edict();
-			float dur = evt.proj.follow_time[1];
+			//EHANDLE h_plr = m_pPlayer->edict();
+			//EHANDLE h_proj = shootEnt->edict();
+			//float dur = evt.proj.follow_time[1];
 			ALERT(at_error, "WeaponCustom: Projectile follow mode not implemented\n");
 			//g_Scheduler.SetTimeout("projectile_follow_aim", evt.proj.follow_time[0], h_plr, h_proj, @state.active_opts, dur);
 		}
 
-		EHANDLE mdlHandle = shootEnt->edict();
+		//EHANDLE mdlHandle = shootEnt->edict();
 		EHANDLE sprHandle;
 
 		// TODO: Kill this when follow target dies (and its not a custom entity)
@@ -1493,7 +1491,7 @@ void CWeaponCustom::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 	uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
 
 	StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(idx), volume, attn,
-		SND_FL_PREDICTED, 100, m_pPlayer->pev->origin, messageTargets);
+		SND_FL_PREDICTED, pitch, m_pPlayer->pev->origin, messageTargets);
 
 	if (evt.playSound.distantSound) {
 		PLAY_DISTANT_SOUND(m_pPlayer->edict(), evt.playSound.distantSound);

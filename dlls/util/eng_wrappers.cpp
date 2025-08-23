@@ -572,7 +572,7 @@ bool SET_MODEL(edict_t* edict, const char* model) {
 	if (!g_precachedModels.hasKey(model)) {
 		model = NOT_PRECACHED_MODEL;
 
-		const char* replacement = g_modelReplacements.get(model);
+		replacement = g_modelReplacements.get(model);
 		if (replacement) {
 			model = replacement;
 		}

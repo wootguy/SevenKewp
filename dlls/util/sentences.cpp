@@ -75,11 +75,11 @@ void LoadSentenceFile(const char* path, CustomSentences& sentences)
 			}
 		}
 		else {
-			SentenceGroup group;
-			memset(&group, 0, sizeof(SentenceGroup));
-			group.sents[group.numSents++] = sentences.strings.alloc(sentName.c_str());
+			SentenceGroup tmpgroup;
+			memset(&tmpgroup, 0, sizeof(SentenceGroup));
+			tmpgroup.sents[tmpgroup.numSents++] = sentences.strings.alloc(sentName.c_str());
 
-			sentences.groups.put(groupName.c_str(), group);
+			sentences.groups.put(groupName.c_str(), tmpgroup);
 		}
 	}
 }

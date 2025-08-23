@@ -461,7 +461,7 @@ Schedule_t* CVoltigore::GetScheduleOfType(int Type) {
 		}
 		return CBaseMonster::GetScheduleOfType(Type);
 	default:
-		return CBaseMonster::GetScheduleOfType(Type);
+		break;
 	}
 
 	return CBaseMonster::GetScheduleOfType(Type);

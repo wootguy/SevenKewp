@@ -287,7 +287,7 @@ std::string getAbsolutePath(const std::string& relpath) {
 	}
 
 	char buffer[256];
-	if (getcwd(buffer, sizeof(buffer)) != NULL) {
+	if (GetCurrentDir(buffer, sizeof(buffer)) != NULL) {
 		std::string abspath = std::string(buffer) + "/" + relpath;
 
 #if defined(WIN32)	

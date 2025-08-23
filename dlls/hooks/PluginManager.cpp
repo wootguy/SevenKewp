@@ -53,7 +53,7 @@ int g_plugin_id = 0;
 #include "windows.h"
 #define LOADLIB_FUNC_NAME ""
 #define PLUGIN_EXT ".dll"
-#define LibError() (std::string("error code ") + std::to_string(GetLastError()).c_str())
+#define LibError() (std::string("error code ") + std::to_string(GetLastError()))
 #else
 #include <dlfcn.h>
 #define PLUGIN_EXT ".so"
@@ -62,7 +62,7 @@ int g_plugin_id = 0;
 #define GetLastError dlerror
 #define FreeLibrary !dlclose
 #define HMODULE void*
-#define LibError() dlerror()
+#define LibError() std::string(dlerror())
 #endif
 
 bool PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
@@ -105,7 +105,8 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 #endif
 
 	if (!plugin.h_module) {
-		ALERT(at_error, "Plugin '%s' failed to load with: %s\n", plugin.fpath.c_str(), LibError());
+		std::string err = LibError();
+		ALERT(at_error, "Plugin '%s' failed to load with: %s\n", plugin.fpath.c_str(), err.c_str());
 		return false;
 	}
 
@@ -122,7 +123,8 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 		else {
 			ALERT(at_error, "PluginInit call failed in plugin '%s'.\n", plugin.fpath.c_str());
 			if (!FreeLibrary((HMODULE)plugin.h_module)) {
-				ALERT(at_error, "Library unload failed with: %s", LibError());
+				std::string err = LibError();
+				ALERT(at_error, "Library unload failed with: %s", err.c_str());
 			}
 			g_initPlugin = NULL;
 			return false;
@@ -131,7 +133,8 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 	else {
 		ALERT(at_error, "PluginInit not found in plugin '%s'\n", plugin.fpath.c_str());
 		if (!FreeLibrary((HMODULE)plugin.h_module)) {
-			ALERT(at_error, "Library unload failed with: %s", LibError());
+			std::string err = LibError();
+			ALERT(at_error, "Library unload failed with: %s", err.c_str());
 		}
 		return false;
 	}
@@ -166,7 +169,8 @@ void PluginManager::UnloadPlugin(const Plugin& plugin) {
 	}
 
 	if (!FreeLibrary((HMODULE)plugin.h_module)) {
-		ALERT(at_error, "Library unload failed with: %s", LibError());
+		std::string err = LibError();
+		ALERT(at_error, "Library unload failed with: %s", err.c_str());
 	}
 }
 

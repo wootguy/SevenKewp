@@ -900,8 +900,8 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit, BOOL removeItemsOnly)
 	}
 	m_pActiveItem = NULL;
 
-	for (int i = 0; i < MAX_AMMO_SLOTS; i++)
-		m_rgAmmo[i] = 0;
+	for (int k = 0; k < MAX_AMMO_SLOTS; k++)
+		m_rgAmmo[k] = 0;
 
 	if (!removeItemsOnly)
 		HideAllItems(removeSuit);
@@ -3313,17 +3313,17 @@ void CBasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeatTime)
 
 	bool replacedExisting = false;
 	if (IsBatteryUpdateSuitSentence(name)) {
-		for (int i = 0; i < CSUITPLAYLIST; i++) {
-			if (!m_rgSuitPlayList[i]) {
+		for (int k = 0; k < CSUITPLAYLIST; k++) {
+			if (!m_rgSuitPlayList[k]) {
 				continue;
 			}
 
 			char sentence[CBSENTENCENAME_MAX + 1];
 			strcpy_safe(sentence, "!", CBSENTENCENAME_MAX + 1);
-			strcat_safe(sentence, gszallsentencenames[m_rgSuitPlayList[i]], CBSENTENCENAME_MAX + 1);
+			strcat_safe(sentence, gszallsentencenames[m_rgSuitPlayList[k]], CBSENTENCENAME_MAX + 1);
 
 			if (IsBatteryUpdateSuitSentence(sentence)) {
-				m_rgSuitPlayList[i] = isentence;
+				m_rgSuitPlayList[k] = isentence;
 				replacedExisting = true;
 				break;
 			}
@@ -4309,7 +4309,6 @@ void CBasePlayer::ImpulseCommands( )
 	// Handle use events
 	PlayerUse();
 
-	int oldButtons = pev->button;
 	bool tertiaryPressed = false;
 		
 	int iImpulse = (int)pev->impulse;
@@ -4373,6 +4372,7 @@ void CBasePlayer::ImpulseCommands( )
 		break;
 	case 222:
 		// tertiary attack
+		// An impulse is used because buttons can only have 16 bits and all are used
 		tertiaryPressed = true;
 		break;
 
@@ -4694,7 +4694,7 @@ int CBasePlayer::RemovePlayerItem( CBasePlayerItem *pItem )
 	{
 		while (pPrev && pPrev->m_pNext.GetEntity() != pItem)
 		{
-			CBaseEntity* pPrevEnt = pPrev->m_pNext.GetEntity();
+			pPrevEnt = pPrev->m_pNext.GetEntity();
 			pPrev = pPrevEnt ? pPrevEnt->GetWeaponPtr() : NULL;
 		}
 		if (pPrev)
@@ -5899,7 +5899,7 @@ BOOL CBasePlayer::HasPlayerItem( CBasePlayerItem *pCheckItem )
 			return TRUE;
 		}
 
-		CBaseEntity* ent = pItem->m_pNext.GetEntity();
+		ent = pItem->m_pNext.GetEntity();
 		pItem = ent ? ent->GetWeaponPtr() : NULL;
 	}
 
@@ -6307,7 +6307,6 @@ void CBasePlayer::UpdateMonsterInfo() {
 */
 
 void CBasePlayer::UpdateScore() {
-	int idleTime = g_engfuncs.pfnTime() - m_lastUserInput;
 	bool statusChanged = GetScoreboardStatus() != m_lastScoreStatus;
 	bool scoreChanged = m_lastScore != (int)pev->frags;
 
@@ -6431,8 +6430,6 @@ void CBasePlayer::QueryClientType() {
 }
 
 void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarName, const char* pszValue) {
-	bool hasCvar = strstr(pszValue, "Bad CVAR request") == NULL;
-	
 	if (requestID >= 0 && requestID < 6) {
 		m_queryResults[requestID] = ALLOC_STRING(pszValue);
 

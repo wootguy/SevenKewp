@@ -163,13 +163,13 @@ void TextMenu::SetTitle(const char* newTitle) {
 	this->title = m_strings.alloc(newTitle);
 }
 
-void TextMenu::SetPaginationText(const char* backText, const char* moreText) {
-	this->backText = m_strings.alloc(backText);
-	this->moreText = m_strings.alloc(moreText);
+void TextMenu::SetPaginationText(const char* backTextArg, const char* moreTextArg) {
+	backText = m_strings.alloc(backTextArg);
+	moreText = m_strings.alloc(moreTextArg);
 }
 
-void TextMenu::SetExtraText(const char* extraText) {
-	this->extraText = m_strings.alloc(extraText);
+void TextMenu::SetExtraText(const char* extraTextArg) {
+	extraText = m_strings.alloc(extraTextArg);
 }
 
 void TextMenu::RemoveExit() {

@@ -425,7 +425,7 @@ CBaseMonster *COsprey :: MakeGrunt( Vector vecSrc )
 				break;
 			}
 
-			if (m_IsPlayerAlly != invertAlly) {
+			if ((bool)m_IsPlayerAlly != invertAlly) {
 				keys.put("is_player_ally", "1");
 			}
 
