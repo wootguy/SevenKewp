@@ -2745,7 +2745,7 @@ void CBasePlayer::PreThink(void)
 	CheckSuitUpdate();
 
 	// only show weapon hud if player has a weapon besides the suit
-	if (m_weaponBits & ~(1ULL << WEAPON_SUIT) && !m_weaponsDisabled) {
+	if ((m_weaponBits & ~(1ULL << WEAPON_SUIT)) && !m_weaponsDisabled) {
 		m_iHideHUD &= ~HIDEHUD_WEAPONS;
 	}
 	else {
@@ -6501,6 +6501,9 @@ void CBasePlayer::QueryClientTypeFinished() {
 
 	// equip the player now that we know which weapons they can use
 	g_pGameRules->PlayerSpawn(this);
+
+	// recalculate HUD visibility
+	m_iClientHideHUD = 0xffffffff;
 }
 
 client_info_t CBasePlayer::GetClientInfo() {

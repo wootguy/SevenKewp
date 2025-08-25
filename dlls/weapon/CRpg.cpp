@@ -669,7 +669,7 @@ void CRpg::SecondaryAttack()
 	}
 #else
 	if (g_runfuncs) {
-		m_lastBeamUpdate = gEngfuncs.GetClientTime();
+		m_lastLaserToggle = m_lastBeamUpdate = gEngfuncs.GetClientTime();
 		m_fSpotActive = !m_fSpotActive;
 	}
 #endif
@@ -726,6 +726,11 @@ void CRpg::WeaponIdle( void )
 void CRpg::UpdateSpot( void )
 {
 #ifdef CLIENT_DLL
+	// sync with server after state is stable
+	if (gEngfuncs.GetClientTime() - m_lastLaserToggle > 0.5f) {
+		m_fSpotActive = m_fireState;
+	}
+
 	if (m_fSpotActive) {
 		int dotSprite = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/hlcoop/laserdot.spr");
 		int beamSprite = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/laserbeam.spr");
@@ -739,6 +744,9 @@ void CRpg::UpdateSpot( void )
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
+
+	// assign to a networked variable for client prediction
+	m_fireState = m_fSpotActive;
 
 	if (m_fSpotActive)
 	{

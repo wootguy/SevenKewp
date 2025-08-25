@@ -188,10 +188,6 @@ BOOL CWeaponCustom::Deploy()
 	m_pPlayer->m_flNextAttack = 0.5;
 	m_flTimeWeaponIdle = 1.0;
 
-	if (IsLaserOn()) {
-		// re-create the effect
-		HideLaser(false);
-	}
 #else
 	const char* animSet = GetAnimSet();
 
@@ -205,19 +201,29 @@ BOOL CWeaponCustom::Deploy()
 		SendAkimboAnim(deployAnim);
 
 	int deployTime = IsAkimbo() ? params.akimbo.akimboDeployTime : params.deployTime;
+	int deployAnimTime = IsAkimbo() ? params.akimbo.akimboDeployAnimTime : params.deployAnimTime;
 	if (!deployTime)
 		deployTime = 500; // default
+	if (!deployAnimTime)
+		deployAnimTime = 1000; // default
 
 	float nextAttack = UTIL_WeaponTimeBase() + deployTime * 0.001f;
+	float nextIdle = UTIL_WeaponTimeBase() + deployAnimTime * 0.001f;
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = nextAttack;
-	m_flTimeWeaponIdle = nextAttack + 0.5f;
+	m_flTimeWeaponIdle = nextIdle;
+	
+	if (IsLaserOn()) {
+		m_laserOnTime = WallTime() + m_flTimeWeaponIdle;
+	}
 
 	m_pPlayer->m_flNextAttack = 0; // allow thinking during deployment
 
-	if (gpGlobals->time - m_lastDeploy > MAX_PREDICTION_WAIT) {
+	if (WallTime() - m_lastDeploy > MAX_PREDICTION_WAIT) {
 		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 		ProcessEvents(WC_TRIG_DEPLOY, akimboArg);
 	}
+
+	m_lastDeploy = WallTime();
 
 	if (params.jumpPower)
 		m_pPlayer->SetJumpPower(params.jumpPower);
@@ -232,6 +238,7 @@ void CWeaponCustom::Holster(int skiplocal) {
 #ifdef CLIENT_DLL
 	EV_LaserOff();
 #endif
+	m_lastDeploy = WallTime();
 }
 
 void CWeaponCustom::Reload() {
@@ -836,6 +843,8 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 
 	WRITE_SHORT(params.vmodel); sentBytes += 2;
 	WRITE_BYTE(params.deployAnim); sentBytes += 1;
+	WRITE_SHORT(params.deployTime); sentBytes += 2;
+	WRITE_SHORT(params.deployAnimTime); sentBytes += 2;
 
 	for (int k = 0; k < 3; k++) {
 		WeaponCustomReload& reload = params.reloadStage[k];
@@ -868,6 +877,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		WRITE_SHORT(params.akimbo.deployTime); sentBytes += 2;
 		WRITE_BYTE(params.akimbo.akimboDeployAnim); sentBytes += 1;
 		WRITE_SHORT(params.akimbo.akimboDeployTime); sentBytes += 2;
+		WRITE_SHORT(params.akimbo.akimboDeployAnimTime); sentBytes += 2;
 		WRITE_BYTE(params.akimbo.holsterAnim); sentBytes += 1;
 		WRITE_SHORT(params.akimbo.holsterTime); sentBytes += 2;
 	}

@@ -29,6 +29,9 @@
 #include "rgb.h"
 #include "shared_util.h"
 #include "version.h"
+#include "com_model.h"
+#include "studio.h"
+#include "r_studioint.h"
 
 // Macros to hook function calls into the HUD object
 #define HOOK_MESSAGE(x) gEngfuncs.pfnHookUserMsg(#x, __MsgFunc_##x );
@@ -100,6 +103,14 @@ inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int fl
 inline cl_entity_t* GetLocalPlayer() {
 	static cl_entity_t dummyPlayer;
 	return gHUD.m_is_map_loaded ? gEngfuncs.GetLocalPlayer() : &dummyPlayer;
+}
+
+extern engine_studio_api_t IEngineStudio;
+
+inline studiohdr_t* GetStudioModel(cl_entity_t* ent) {
+	if (ent && ent->model)
+		return (studiohdr_t*)IEngineStudio.Mod_Extradata(ent->model);
+	return NULL;
 }
 
 

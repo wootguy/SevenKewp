@@ -32,6 +32,7 @@ void CEagle::Precache()
 		| FL_WC_WEP_HAS_LASER | FL_WC_WEP_HAS_ALT_PRIMARY;
 	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = EAGLE_DRAW;
+	params.deployAnimTime = 890;
 	params.maxClip = EAGLE_MAX_CLIP;
 	params.reloadStage[0] = { EAGLE_RELOAD_NOSHOT, 1680 };
 	params.reloadStage[1] = { EAGLE_RELOAD, 1680 };

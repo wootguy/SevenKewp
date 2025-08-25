@@ -41,6 +41,7 @@ extern engine_studio_api_t IEngineStudio;
 static int tracerCount[ 32 ];
 
 #include "pm_shared.h"
+#include "studio.h"
 
 void V_PunchAxis( int axis, float punch );
 void VectorAngles( const float *forward, float *angles );
@@ -1573,6 +1574,17 @@ void EV_LaserOn(int dotSprite, float dotSz, int beamSprite, float beamWidth, int
 	bool needCreate = (beamSprite && !pBeam) || (dotSprite && !pLaserDot);
 	if (!needCreate)
 		return;
+
+	bool mdlHasAttachment = true;
+
+	if (beamSprite) {
+		studiohdr_t* mdl = GetStudioModel(gEngfuncs.GetViewModel());
+		mdlHasAttachment = mdl && mdl->numattachments >= beamAttachment;
+		
+		if (!mdlHasAttachment && pLaserDot) {
+			return; // can't create a beam and the dot is already created
+		}
+	}
 	
 	cl_entity_t* player = GetLocalPlayer();
 	Vector origin = player->origin;
@@ -1610,7 +1622,7 @@ void EV_LaserOn(int dotSprite, float dotSz, int beamSprite, float beamWidth, int
 					kRenderGlow, kRenderFxNoDissipation, 1.0, 99999, FTENT_PERSIST);
 			}
 			
-			if (beamSprite) {
+			if (beamSprite && mdlHasAttachment) {
 				pBeam = gEngfuncs.pEfxAPI->R_BeamEntPoint(idx | (0x1000 * beamAttachment),
 					tr.endpos, beamSprite, 99999, beamWidth, 0, 0.7, 55, 0, 0, r, g, b);
 			}

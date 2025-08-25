@@ -73,9 +73,6 @@ Vector g_vApplyVel;
 int   g_irunninggausspred = 0;
 int   g_runningKickbackPred = 0;
 
-// prevents spammed deployment events while waiting for new server wep id to match client's
-float g_lastClientWeaponSwitch = 0;
-
 vec3_t previousorigin;
 
 // HLDM Weapon placeholder entities.
@@ -188,7 +185,6 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].SetAkimbo(false);
 		g_customWeapon[i].SetLaser(false);
 	}
-	g_lastClientWeaponSwitch = 0;
 
 	memset(g_modPlayerStates, 0, sizeof(g_modPlayerStates));
 }
@@ -939,9 +935,25 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	CWeaponCustom* wc = pWeapon->MyWeaponCustomPtr();
 	g_activeWeaponCustom = wc;
 
+	CBasePlayerItem* oldActiveItem = player.m_pActiveItem;
+	bool serverWeaponChanged = !player.m_pActiveItem || player.m_pActiveItem->m_iId != to->client.m_iId;
+
+	// Point to current weapon object
+	if (from->client.m_iId)
+	{
+		player.m_pActiveItem = g_pWpns[from->client.m_iId];
+	}
+	else {
+		player.m_pActiveItem = NULL;
+	}
+
 	// We are not predicting the current weapon, just bow out here.
-	if ( !pWeapon || (wc && !wc->m_hasPredictionData) )
+	if (!pWeapon || (wc && !wc->m_hasPredictionData)) {
+		if (oldActiveItem && oldActiveItem != wc) {
+			oldActiveItem->Holster(); // otherwise not called when switching from a predicted weapon
+		}
 		return;
+	}
 
 	for ( i = 0; i < MAX_WEAPONS; i++ )
 	{
@@ -1031,26 +1043,9 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	player.ammo_hornets		= (int)from->client.vuser2[0];
 	player.ammo_rockets		= (int)from->client.ammo_rockets;
 
-	CBasePlayerItem* oldActiveItem = player.m_pActiveItem;
-	bool serverWeaponChanged = player.m_pActiveItem && player.m_pActiveItem->m_iId != to->client.m_iId;
-	
-	// Point to current weapon object
-	if ( from->client.m_iId )
-	{
-		player.m_pActiveItem = g_pWpns[ from->client.m_iId ];
-	}
-	else {
-		player.m_pActiveItem = NULL;
-	}
-
 	if (player.m_pActiveItem && player.m_pActiveItem->m_iId == WEAPON_RPG )
 	{
 		CRpg* rpg = (CRpg*)player.m_pActiveItem;
-	
-		// only sync when laser hasn't been togglered recently to prevent flickering
-		if (rpg->m_lastBeamUpdate - gEngfuncs.GetClientTime() > 0.5f)
-			rpg->m_fSpotActive = (int)from->client.vuser2[ 1 ];
-
 		rpg->m_cActiveRockets = (int)from->client.vuser2[ 2 ];
 	}
 	
@@ -1080,8 +1075,6 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 			CBasePlayerWeapon *pNew = g_pWpns[ cmd->weaponselect ];
 			if ( pNew && ( pNew != pWeapon ) )
 			{
-				g_lastClientWeaponSwitch = gpGlobals->time;
-
 				// Put away old weapon
 				if (player.m_pActiveItem) {
 					player.m_pActiveItem->Holster();
@@ -1109,7 +1102,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		}
 	}
 
-	if (serverWeaponChanged && gpGlobals->time - g_lastClientWeaponSwitch > 0.5f) {
+	if (serverWeaponChanged) {
 		// weapon changed via server logic
 		// Put away old weapon
 		if (oldActiveItem) {

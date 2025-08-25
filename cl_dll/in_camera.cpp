@@ -57,6 +57,8 @@ float g_camWheelAdjust; // mouse wheel distance adjustment, added to offset grad
 
 void CAM_ToThirdPerson(void);
 void CAM_ToFirstPerson(void);
+bool IN_UseRawInput();
+bool IN_InvertMouse();
 
 void SDL_GetCursorPos( POINT *p )
 {
@@ -79,6 +81,7 @@ void CL_DLLEXPORT CAM_Think( void )
 	if (g_camPressedTime && now - g_camPressedTime > 0.2f)
 	{
 		//iMouseInUse = 1;
+		bool firstAdjust = g_camAdjustState == 0;
 		if (g_camAdjustState == 0) {
 			g_camAdjustState = 1;
 			gEngfuncs.GetViewAngles((float*)g_camPressViewAngles);
@@ -99,7 +102,18 @@ void CL_DLLEXPORT CAM_Think( void )
 
 #ifndef WIN32
 		SDL_WarpMouseInWindow(g_sdl_window, centerX, centerY);
+#else
+		if (IN_UseRawInput()) {
+			SDL_WarpMouseInWindow(g_sdl_window, centerX, centerY);
+
+			if (firstAdjust) { // view jumps otherwise
+				camDeltaX = camDeltaY = 0;
+			}
+		}
 #endif
+
+		if (IN_InvertMouse())
+			camDeltaY *= -1;
 
 		float sensitivity = gHUD.GetSensitivity();
 		if (!sensitivity)

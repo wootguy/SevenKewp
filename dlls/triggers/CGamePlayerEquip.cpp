@@ -21,6 +21,8 @@
 
 LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip)
 
+extern bool g_hlPlayersCanPickup556;
+
 bool g_mapCfgExists;
 bool g_noSuit;
 bool g_noMedkit;
@@ -149,6 +151,12 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 	}
 	else if (!strcmp(itemName, "ammo_medkit")) {
 		pPlayer->GiveAmmo(AMMO_MEDKIT_GIVE * count, "health", gSkillData.sk_ammo_max_medkit);
+	}
+	else if (!strcmp(itemName, "ammo_556")) {
+		if (g_hlPlayersCanPickup556 || pPlayer->IsSevenKewpClient())
+			pPlayer->GiveAmmo(AMMO_556_BOX_GIVE * count, "556", gSkillData.sk_ammo_max_556);
+		else
+			pPlayer->GiveAmmo(AMMO_CHAINBOX_GIVE * count, "9mm", gSkillData.sk_ammo_max_9mm);
 	}
 	else if (!strcmp(itemName, "weapon_tripmine")) {
 		int giveAmount = count;

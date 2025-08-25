@@ -680,7 +680,8 @@ struct WeaponCustomAkimbo {
 	uint8_t deployAnim;			// deploy anim for a single weapon (used for reloading and toggling akimbo mode)
 	uint16_t deployTime;
 	uint8_t akimboDeployAnim;	// deploy anim when selecting the weapon
-	uint16_t akimboDeployTime;
+	uint16_t akimboDeployTime;  // time before you can attack
+	uint16_t akimboDeployAnimTime;  // time before the weapon idles
 	uint8_t holsterAnim;		// for reloading a single weapon
 	uint16_t holsterTime;
 };
@@ -699,7 +700,8 @@ struct CustomWeaponParams {
 	uint16_t maxClip;
 	uint16_t vmodel;
 	uint8_t deployAnim;
-	uint16_t deployTime;
+	uint16_t deployTime; // time before you can attack
+	uint16_t deployAnimTime; // time before the weapon idles (length of the deployment animation)
 	uint16_t moveSpeedMult; // move speed multiplier (1-65535) (65535 = 100%) (0 = don't change)
 	int jumpPower;			// -1 = disabled, 0 = default velocity (800), 1+ = custom velocity
 

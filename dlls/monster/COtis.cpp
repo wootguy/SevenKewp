@@ -710,6 +710,8 @@ void COtis :: Precache()
 	soundvariety.value = oldSoundVariety;
 
 	canBeMadAtPlayer = true;
+
+	AddPrecacheWeapon("weapon_eagle");
 }	
 
 // Init talk data

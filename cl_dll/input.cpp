@@ -121,6 +121,11 @@ typedef struct kblist_s
 
 kblist_t *g_kbkeys = NULL;
 
+bool IN_InvertMouse()
+{
+	return m_pitch ? (m_pitch->value < 0) : false;
+}
+
 /*
 ============
 KB_ConvertString

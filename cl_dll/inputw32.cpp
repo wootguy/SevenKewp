@@ -80,7 +80,7 @@ static cvar_t *m_mousethread_sleep;
 
 static cvar_t* m_rawinput = nullptr;
 
-static bool IN_UseRawInput()
+bool IN_UseRawInput()
 {
 	return m_rawinput ? ( m_rawinput->value != 0 ) : false;
 }

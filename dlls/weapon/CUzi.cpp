@@ -78,7 +78,7 @@ void CUzi::Precache()
 	AddEvent(WepEvt().Primary().AkimboOnly().WepAnim(UZI_AKIMBO_FIRE_RIGHT, WC_ANIM_TRIG_HAND));
 	
 	AddEvent(WepEvt().Primary()
-		.PlaySound(shootSnd1, CHAN_STATIC, 0.7f, ATTN_NORM, 96, 104, DISTANT_9MM, WC_AIVOL_NORMAL)
+		.PlaySound(shootSnd1, CHAN_STATIC, 0.6f, ATTN_NORM, 96, 104, DISTANT_9MM, WC_AIVOL_NORMAL)
 		.AddSound(shootSnd2)
 		.AddSound(shootSnd3));
 

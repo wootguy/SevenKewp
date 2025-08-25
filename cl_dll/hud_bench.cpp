@@ -611,23 +611,6 @@ void Bench_SpotPosition( vec3_t dot, vec3_t target )
 	gHUD.m_Benchmark.SetScore( delta.Length() );
 }
 
-typedef struct model_s
-{
-	char		name[64];
-	qboolean	needload;		// bmodels and sprites don't cache normally
-
-	int			type;
-	int			numframes;
-	int			synctype;
-	
-	int			flags;
-
-//
-// volume occupied by the model
-//		
-	vec3_t		mins, maxs;
-} model_t;
-
 static vec3_t g_dotorg;
 vec3_t g_aimorg;
 float g_fZAdjust = 0.0;

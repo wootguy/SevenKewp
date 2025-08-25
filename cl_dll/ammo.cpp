@@ -834,6 +834,8 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 
 	parms.vmodel = READ_SHORT();
 	parms.deployAnim = READ_BYTE();
+	parms.deployTime = READ_SHORT();
+	parms.deployAnimTime = READ_SHORT();
 
 	for (int k = 0; k < 3; k++) {
 		WeaponCustomReload& reload = parms.reloadStage[k];
@@ -866,6 +868,7 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		parms.akimbo.deployTime = READ_SHORT();
 		parms.akimbo.akimboDeployAnim = READ_BYTE();
 		parms.akimbo.akimboDeployTime = READ_SHORT();
+		parms.akimbo.akimboDeployAnimTime = READ_SHORT();
 		parms.akimbo.holsterAnim = READ_BYTE();
 		parms.akimbo.holsterTime = READ_SHORT();
 	}

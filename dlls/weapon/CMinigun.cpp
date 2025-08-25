@@ -58,7 +58,7 @@ void CMinigun::Precache()
 	AddEvent(WepEvt().Primary().WepAnim(MINIGUN_SPINFIRE));
 	AddEvent(WepEvt().Primary().Bullets(2, 25, dmg, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
 	
-	AddEvent(WepEvt().BulletFired().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556, WC_AIVOL_LOUD));
+	AddEvent(WepEvt().BulletFired().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_9MM, WC_AIVOL_LOUD));
 	AddEvent(WepEvt().BulletFired().RotateView(1.3f, 1.3f).StandOnly());
 	AddEvent(WepEvt().BulletFired().RotateView(1.0f, 1.0f).DuckOnly());
 	AddEvent(WepEvt().PrimaryEven().EjectShell(m_iLink, 14, -12, 4));
@@ -99,7 +99,7 @@ int CMinigun::GetItemInfo(ItemInfo* p)
 	p->iSlot = 5;
 	p->iPosition = 2;
 	p->iId = WEAPON_MINIGUN;
-	p->iFlags = ITEM_FLAG_NOAUTOSWITCHEMPTY | ITEM_FLAG_NOAUTORELOAD;
+	p->iFlags = ITEM_FLAG_NOAUTOSWITCHEMPTY | ITEM_FLAG_NOAUTORELOAD | ITEM_FLAG_SELECTONEMPTY;
 	p->iWeight = MINIGUN_WEIGHT;
 	return true;
 }

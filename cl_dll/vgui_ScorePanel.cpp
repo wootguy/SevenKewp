@@ -41,7 +41,7 @@ int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 );
 
 // Scoreboard dimensions
 #define SBOARD_TITLE_SIZE_Y			YRES(42)
-#define MAPNAME_SIZE_Y				YRES(8)
+#define MAPNAME_SIZE_Y				YRES(10)
 
 #define X_BORDER					XRES(4)
 
@@ -134,7 +134,7 @@ ScorePanel::ScorePanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 	m_CurrentMapLabel.setBgColor(0, 0, 0, 255);
 	m_CurrentMapLabel.setFgColor(Scheme::sc_primary1);
 	m_CurrentMapLabel.setContentAlignment(vgui::Label::a_west);
-	m_CurrentMapLabel.setBounds(xpos, SBOARD_TITLE_SIZE_Y-40, wideBox, MAPNAME_SIZE_Y);
+	m_CurrentMapLabel.setBounds(xpos, SBOARD_TITLE_SIZE_Y - YRES(10), wideBox, MAPNAME_SIZE_Y);
 	m_CurrentMapLabel.setContentFitted(false);
 	m_CurrentMapLabel.setParent(this);
 
@@ -143,7 +143,7 @@ ScorePanel::ScorePanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 	m_NextMapLabel.setBgColor(0, 0, 0, 255);
 	m_NextMapLabel.setFgColor(Scheme::sc_primary1);
 	m_NextMapLabel.setContentAlignment(vgui::Label::a_center);
-	m_NextMapLabel.setBounds(xpos, SBOARD_TITLE_SIZE_Y - 40, wideBox, MAPNAME_SIZE_Y);
+	m_NextMapLabel.setBounds(xpos, SBOARD_TITLE_SIZE_Y - YRES(10), wideBox, MAPNAME_SIZE_Y);
 	m_NextMapLabel.setContentFitted(false);
 	m_NextMapLabel.setParent(this);
 
@@ -152,7 +152,7 @@ ScorePanel::ScorePanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 	m_TimeleftLabel.setBgColor(0, 0, 0, 255);
 	m_TimeleftLabel.setFgColor(Scheme::sc_primary1);
 	m_TimeleftLabel.setContentAlignment(vgui::Label::a_east);
-	m_TimeleftLabel.setBounds(xpos, SBOARD_TITLE_SIZE_Y - 40, wideBox, MAPNAME_SIZE_Y);
+	m_TimeleftLabel.setBounds(xpos, SBOARD_TITLE_SIZE_Y - YRES(10), wideBox, MAPNAME_SIZE_Y);
 	m_TimeleftLabel.setContentFitted(false);
 	m_TimeleftLabel.setParent(this);
 
@@ -209,7 +209,7 @@ ScorePanel::ScorePanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 	m_HeaderGrid.SetColumnWidth(NUM_COLUMNS - 1, (wide - X_BORDER) - (ex + ew));
 
 	m_HeaderGrid.AutoSetRowHeights();
-	m_HeaderGrid.setBounds(X_BORDER, SBOARD_TITLE_SIZE_Y, wide - X_BORDER*2, m_HeaderGrid.GetRowHeight(0));
+	m_HeaderGrid.setBounds(X_BORDER, SBOARD_TITLE_SIZE_Y + MAPNAME_SIZE_Y, wide - X_BORDER*2, m_HeaderGrid.GetRowHeight(0));
 	m_HeaderGrid.setParent(this);
 	m_HeaderGrid.setBgColor(0,0,0,255);
 

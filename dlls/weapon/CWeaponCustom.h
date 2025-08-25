@@ -7,7 +7,7 @@
 
 // number of seconds to delay replaying of events while the prediction code waits for a new state
 // from the server
-#define MAX_PREDICTION_WAIT 0.5f
+#define MAX_PREDICTION_WAIT 0.1f
 
 struct WcDelayEvent {
 	int eventIdx;

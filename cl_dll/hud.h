@@ -267,8 +267,8 @@ struct extra_player_info_t
 struct team_info_t 
 {
 	char name[MAX_TEAM_NAME];
-	short frags;
-	short deaths;
+	int frags;
+	int deaths;
 	short ping;
 	short packetloss;
 	short ownteam;
