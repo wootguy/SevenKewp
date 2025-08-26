@@ -2573,15 +2573,6 @@ int clampi(int val, int min, int max) {
 	return val;
 }
 
-uint64_t getFileModifiedTime(const char* path) {
-	struct stat result;
-	if (stat(path, &result) == 0) {
-		return result.st_mtime;
-	}
-
-	return 0;
-}
-
 bool fileExists(const char* path) {
 	FILE* file = fopen(path, "r");
 	if (file) {

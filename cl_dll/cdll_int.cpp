@@ -143,6 +143,8 @@ void CL_DLLEXPORT HUD_PlayerMove( struct playermove_s *ppmove, int server )
 	PM_Move( ppmove, server );
 }
 
+void ReconnectAfterUpdate();
+
 int CL_DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 {
 	gEngfuncs = *pEnginefuncs;
@@ -156,6 +158,8 @@ int CL_DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 
 	EV_HookEvents();
 	CL_LoadParticleMan();
+
+	ReconnectAfterUpdate();
 
 	// get tracker interface, if any
 	return 1;

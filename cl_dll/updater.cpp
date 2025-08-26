@@ -189,6 +189,12 @@ bool IsLanIP(uint8_t* ip) {
 	return false;
 }
 
+std::string GetReconnectFilePath() {
+	// using the .cfg extension so servers can't inject this file
+	return UTIL_VarArgs("%s_addon/%s/reconnect_ip.cfg",
+		gEngfuncs.pfnGetGameDirectory(), DOWNLOAD_FOLDER);
+}
+
 void RestartGame() {
 	net_status_t netstatus;
 	gEngfuncs.pNetAPI->Status(&netstatus);
@@ -199,25 +205,73 @@ void RestartGame() {
 
 	std::string restartCmd;
 
-	if (netstatus.connected && !IsLanIP(ip)) {
-		restartCmd = UTIL_VarArgs("steam://connect/%d.%d.%d.%d:%d",
+	restartCmd = UTIL_VarArgs("steam://rungameid/%d", gEngfuncs.pfnGetAppID());
+
+	if (netstatus.connected) {
+		std::string reconnectIp = UTIL_VarArgs("%d.%d.%d.%d:%d",
 			(int)ip[0], (int)ip[1], (int)ip[2], (int)ip[3], (int)port);
-	}
-	else {
-		restartCmd = UTIL_VarArgs("steam://rungameid/%d", gEngfuncs.pfnGetAppID());
+
+		std::string reconnectFpath = GetReconnectFilePath();
+
+		FILE* f = fopen(reconnectFpath.c_str(), "w");
+		if (f) {
+			fwrite(reconnectIp.c_str(), reconnectFpath.size(), 1, f);
+			fclose(f);
+		}
+		else {
+			PRINTF("Failed to open reconnect ip file for writing: %s\n", reconnectFpath.c_str());
+		}
 	}
 
 	EngineClientCmd("quit\n");
 
 	// run restart command in a detached shell and with a delay to give the game time to close
 #ifdef WIN32
-	restartCmd = "cmd /C start /b cmd /C \"timeout /t 3 /nobreak && start " + restartCmd + "\"";
+	// not using "steam://connect/ip:port" because it doesn't work on Windows for some reason.
+	// Probably from trying to nest quotes with a cmd command. I can see the connect window pop up
+	// but nothing happens. If there's a password on the server, it works.
+	restartCmd = "start \"\" cmd /C \"timeout /t 3 /nobreak && start " + restartCmd + "\"";
 #else
 	restartCmd = "sh -c \"sleep 3 && xdg-open " + restartCmd + "\" &";
 #endif
 
 	PRINTF("Restarting game with shell command:\n%s", restartCmd.c_str());
 	system(restartCmd.c_str());
+}
+
+void ReconnectAfterUpdate() {
+	std::string reconnectFpath = GetReconnectFilePath();
+
+	if (!fileExists(reconnectFpath.c_str())) {
+		return;
+	}
+
+	uint64_t mtime = getFileModifiedTime(reconnectFpath.c_str());
+
+	float ageSeconds = TimeDifference(mtime*1000ULL, getEpochMillis());
+
+	if (ageSeconds > 60.0f) {
+		// file is too old, probably from a previous update or the player decided to quit
+		// instead of reconnect
+		remove(reconnectFpath.c_str());
+		return;
+	}
+
+	FILE* f = fopen(reconnectFpath.c_str(), "r");
+	if (f) {
+		static char ipaddr[24];
+		fread(ipaddr, 1, 22, f);
+
+		PRINTF("Got reconnect IP: '%s'\n", ipaddr);
+
+		fclose(f);
+		remove(reconnectFpath.c_str());
+
+		EngineClientCmd(UTIL_VarArgs("connect %s\n", ipaddr));
+	}
+	else {
+		PRINTF("Failed to open reconnect ip file for reading: %s\n", reconnectFpath.c_str());
+	}
 }
 
 // sets thread status code: -1 = error, 0 = no update neeeded, 1 = update found
@@ -362,7 +416,7 @@ bool ApplyUpdate() {
 	const char* libName = "client.so";
 #endif
 
-	std::string zipLibPath = UTIL_VarArgs("cl_dlls/%s", libName);
+	std::string zipLibPath = UTIL_VarArgs("valve_addon/cl_dlls/%s", libName);
 	std::string tempLibPath = UTIL_VarArgs("%s/%s", g_update_dir.c_str(), libName);
 
 	if (fileExists(tempLibPath.c_str())) {

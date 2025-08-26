@@ -416,3 +416,12 @@ double TimeDifference(uint64_t start, uint64_t end) {
 		return -((start - end) / 1000.0);
 	}
 }
+
+uint64_t getFileModifiedTime(const char* path) {
+	struct stat result;
+	if (stat(path, &result) == 0) {
+		return result.st_mtime;
+	}
+
+	return 0;
+}

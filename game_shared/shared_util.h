@@ -66,3 +66,6 @@ EXPORT bool UTIL_AreSevenKewpVersionsCompatible(int clientVersion, int serverVer
 EXPORT uint64_t getEpochMillis();
 
 EXPORT double TimeDifference(uint64_t start, uint64_t end);
+
+// returns 0 if the file doesn't exist
+EXPORT uint64_t getFileModifiedTime(const char* path);

@@ -828,9 +828,6 @@ EXPORT float clampf(float val, float min, float max);
 
 EXPORT int clampi(int val, int min, int max);
 
-// returns 0 if the file doesn't exist
-EXPORT uint64_t getFileModifiedTime(const char* path);
-
 EXPORT bool fileExists(const char* path);
 
 EXPORT std::string normalize_path(std::string s);
