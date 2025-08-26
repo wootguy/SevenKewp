@@ -641,6 +641,8 @@ public:
 
 	void SyncWeaponBits();
 
+	bool HasSuit();
+
 	// for sven-style monster info
 	//void UpdateMonsterInfo();
 	//float m_lastMonsterInfoMsg;

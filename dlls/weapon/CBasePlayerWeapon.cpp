@@ -329,7 +329,7 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 		bSend = TRUE;
 	}
 
-	if (bSend)
+	if (bSend && pPlayer->m_clientCheckFinished)
 	{
 		if (m_iClip > 127 && pPlayer->IsSevenKewpClient()) {
 			uint16_t ammoVal = V_max(0, m_iClip);

@@ -2730,9 +2730,14 @@ void CBasePlayer::PreThink(void)
 	else
 		m_iHideHUD |= HIDEHUD_FLASHLIGHT;
 
-	// tell client they have a suit if they don't but have weapons
-	// otherwise they can't switch weapons
-	if (m_weaponBits && !(m_weaponBits & (1ULL << WEAPON_SUIT))) {
+	if (HasSuit()) {
+		// set every frame for lossy connections that don't initialize on join properly
+		m_iHideHUD &= ~HIDEHUD_HEALTH;
+		m_fakeSuit = false;
+	}
+	else if (m_weaponBits) {
+		// Tell client they have a suit if they don't but DO have weapons.
+		// Otherwise they can't switch weapons
 		m_fakeSuit = true;
 		m_iHideHUD = HIDEHUD_FLASHLIGHT | HIDEHUD_HEALTH;
 	}
@@ -3177,7 +3182,7 @@ void CBasePlayer::CheckSuitUpdate()
 	int isearch = m_iSuitPlayNext;
 	
 	// Ignore suit updates if no suit
-	if ( !(m_weaponBits & (1ULL<<WEAPON_SUIT)) )
+	if ( !HasSuit() )
 		return;
 
 	// if in range of radiation source, ping geiger counter
@@ -3257,7 +3262,7 @@ void CBasePlayer::SetSuitUpdate(const char *name, int fgroup, int iNoRepeatTime)
 	}
 	
 	// Ignore suit updates if no suit
-	if ( !(m_weaponBits & (1ULL<<WEAPON_SUIT)) )
+	if ( !HasSuit() )
 		return;
 	
 	// get sentence or group number
@@ -4228,7 +4233,7 @@ void CBasePlayer :: FlashlightTurnOn( void )
 		return;
 	}
 
-	if ( (m_weaponBits & (1ULL<<WEAPON_SUIT)) )
+	if (HasSuit())
 	{
 		m_flashlightEnabled = true;
 
@@ -4932,7 +4937,7 @@ void CBasePlayer :: UpdateClientData( void )
 			WRITE_STRING("item_longjump");
 			MESSAGE_END();
 
-			if (m_weaponBits & (1ULL << WEAPON_SUIT))
+			if (HasSuit())
 				EMIT_SOUND_SUIT(edict(), "!HEV_A1");
 		}
 	}
@@ -6494,7 +6499,7 @@ void CBasePlayer::QueryClientTypeFinished() {
 	g_pGameRules->PlayerSpawn(this);
 
 	// recalculate HUD visibility
-	m_iClientHideHUD = 0xffffffff;
+	m_iClientHideHUD = -1;
 
 	CALL_HOOKS_VOID(pfnPlayerClientTypeQueryFinish, this);
 }
@@ -7354,4 +7359,8 @@ void CBasePlayer::SyncWeaponBits() {
 	MESSAGE_END();
 
 	m_lastWeaponBits = m_weaponBits;
+}
+
+bool CBasePlayer::HasSuit() {
+	return m_weaponBits & (1ULL << WEAPON_SUIT);
 }

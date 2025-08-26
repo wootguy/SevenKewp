@@ -194,7 +194,9 @@ BOOL CWeaponCustom::Deploy()
 	studiohdr_t* mdl = GET_MODEL_PTR(PRECACHE_MODEL(GetModelV()));
 	m_hasLaserAttachment = mdl && mdl->numattachments > params.laser.attachment;
 
-	ret = DefaultDeploy(STRING(g_indexModels[params.vmodel]), GetModelP(), deployAnim, animSet, 1);
+	const char* vmodel = GetModelV(STRING(g_indexModels[params.vmodel]));
+
+	ret = DefaultDeploy(vmodel, GetModelP(), deployAnim, animSet, 1);
 #endif
 
 	if (IsAkimbo())
