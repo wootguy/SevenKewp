@@ -6504,6 +6504,8 @@ void CBasePlayer::QueryClientTypeFinished() {
 
 	// recalculate HUD visibility
 	m_iClientHideHUD = 0xffffffff;
+
+	CALL_HOOKS_VOID(pfnPlayerClientTypeQueryFinish, this);
 }
 
 client_info_t CBasePlayer::GetClientInfo() {
