@@ -5107,6 +5107,9 @@ void CBasePlayer :: UpdateClientData( void )
 			if ( !II->iId )
 				continue;
 
+			if (!IsSevenKewpClient() && II->iId >= 32)
+				continue;
+
 			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
 			WRITE_STRING(II->pszName);			// string	weapon name
 			WRITE_BYTE(GetAmmoIndex(II->pszAmmo1));	// byte		Ammo Type

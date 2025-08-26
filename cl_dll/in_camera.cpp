@@ -250,6 +250,7 @@ void CAM_ToThirdPerson(void) {
 
 void CAM_ToFirstPerson(void) { 
 	cam_thirdperson = 0;
+	g_camAdjustState = 0;
 	g_camPressAngles = Vector(0, 0, 0);
 }
 
