@@ -243,6 +243,8 @@ void ClientDisconnect( edict_t *pEntity )
 	edict_t* edicts = ENT(0);
 	uint32_t plrbit = PLRBIT(pEntity);
 
+	plr->m_clientCheckFinished = false;
+
 	// remove visibility flags for all entities
 	for (int i = 1; i < gpGlobals->maxEntities; i++)
 	{

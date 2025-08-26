@@ -5073,27 +5073,12 @@ void CBasePlayer :: UpdateClientData( void )
 	//
 	// New Weapon?
 	//
-	if (!m_fKnownItem)
+	if (!m_fKnownItem && m_clientCheckFinished)
 	{
 		m_fKnownItem = TRUE;
-
-	// WeaponInit Message
-	// byte  = # of weapons
-	//
-	// for each weapon:
-	// byte		name str length (not including null)
-	// bytes... name
-	// byte		Ammo Type
-	// byte		Ammo2 Type
-	// byte		bucket
-	// byte		bucket pos
-	// byte		flags	
-	// ????		Icons
 		
 		// Send ALL the weapon info now
-		int i;
-
-		for (i = 0; i < MAX_WEAPONS; i++)
+		for (int i = 0; i < MAX_WEAPONS; i++)
 		{
 			ItemInfo* II = &CBasePlayerItem::ItemInfoArray[i];
 
@@ -5108,7 +5093,7 @@ void CBasePlayer :: UpdateClientData( void )
 				continue;
 
 			if (!IsSevenKewpClient() && II->iId >= 32)
-				continue;
+				continue; // crash on AG if sending too high of an ID
 
 			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
 			WRITE_STRING(II->pszName);			// string	weapon name
@@ -6501,6 +6486,9 @@ void CBasePlayer::QueryClientTypeFinished() {
 			}
 		}
 	}
+
+	// can init the weapon hud now without crashing certain clients
+	m_clientCheckFinished = true;
 
 	// equip the player now that we know which weapons they can use
 	g_pGameRules->PlayerSpawn(this);
