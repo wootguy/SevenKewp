@@ -71,7 +71,8 @@ void CUzi::Precache()
 	params.akimbo.akimboDeployAnim = UZI_AKIMBO_DEPLOY;
 	params.akimbo.akimboDeployTime = 500;
 
-	float spread = VECTOR_CONE_6DEGREES.x;
+	float spreadSingle = VECTOR_CONE_6DEGREES.x;
+	float spreadDual = VECTOR_CONE_9DEGREES.x;
 	int bulletf = 0;
 
 	AddEvent(WepEvt().Primary().NotAkimbo().WepAnim(UZI_SHOOT));
@@ -82,7 +83,8 @@ void CUzi::Precache()
 		.AddSound(shootSnd2)
 		.AddSound(shootSnd3));
 
-	AddEvent(WepEvt().Primary().Bullets(1, 0, gSkillData.sk_plr_9mm_bullet, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
+	AddEvent(WepEvt().Primary().NotAkimbo().Bullets(1, 0, gSkillData.sk_plr_9mm_bullet, spreadSingle, spreadSingle, 2, WC_FLASH_NORMAL, bulletf));
+	AddEvent(WepEvt().Primary().AkimboOnly().Bullets(1, 0, gSkillData.sk_plr_9mm_bullet, spreadDual, spreadDual, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().PunchRandom(2, 0));
 	AddEvent(WepEvt().Primary().EjectShell(iShell, 28, -12, 16));
 

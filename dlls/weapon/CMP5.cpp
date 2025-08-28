@@ -163,13 +163,24 @@ void CMP5::PrimaryAttack()
 	lagcomp_begin(m_pPlayer);
 
 #ifdef CLIENT_DLL
-	if ( bIsMultiplayer() )
+	bool isMultiPlayer = bIsMultiplayer();
+	bool isSevenKewp = false;
 #else
-	if ( g_pGameRules->IsMultiplayer() )
+	bool isMultiPlayer = g_pGameRules->IsMultiplayer();
+	bool isSevenKewp = false;
 #endif
+
+	if (isMultiPlayer)
 	{
-		// optimized multiplayer. Widened to make it easier to hit a moving player
-		vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_6DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+		if (isSevenKewp) {
+			// accuracy increase to give it an advantage over the uzi
+			// TODO: actually do this. Needs a client update.
+			vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, VECTOR_CONE_4DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
+		}
+		else {
+			// optimized multiplayer. Widened to make it easier to hit a moving player
+			vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, VECTOR_CONE_6DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed);
+		}
 	}
 	else
 	{

@@ -26,4 +26,5 @@ public:
 	int GetItemInfo(ItemInfo* p);
 	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
 	const char* DisplayName() override { return "M40A1"; }
+	const char* GetDeathNoticeWeapon() { return "weapon_crossbow"; }
 };

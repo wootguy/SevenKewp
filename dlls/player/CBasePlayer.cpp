@@ -7320,10 +7320,17 @@ bool CBasePlayer::IsSevenKewpClient() {
 }
 
 void CBasePlayer::SetThirdPersonWeaponAnim(int sequence, float fps) {
-	MESSAGE_BEGIN(MSG_ALL, gmsgPmodelAnim);
-	WRITE_BYTE(entindex()-1);
-	WRITE_BYTE(sequence);
-	MESSAGE_END();
+	for (int i = 1; i < gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+		
+		if (!plr || !plr->IsSevenKewpClient())
+			continue;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgPmodelAnim, 0, plr->edict());
+		WRITE_BYTE(entindex() - 1);
+		WRITE_BYTE(sequence);
+		MESSAGE_END();
+	}
 }
 
 void CBasePlayer::SetJumpPower(int power) {

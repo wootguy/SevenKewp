@@ -48,6 +48,7 @@ StringMap g_soundReplacements;
 
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch) { }
 void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char* msg) {}
+void AddPrecacheWeapon(std::string wepName) {}
 
 // CBaseEntity Stubs
 int CBaseEntity :: TakeHealth( float flHealth, int bitsDamageType, float healthcap) { return 1; }

@@ -61,8 +61,9 @@ void CWeaponCustom::PrecacheEvents() {
 	if (wmodelAkimbo)
 		PRECACHE_MODEL(wmodelAkimbo);
 
-	if (wrongClientWeapon)
+	if (wrongClientWeapon) {
 		UTIL_PrecacheOther(wrongClientWeapon);
+	}
 }
 
 void CWeaponCustom::AddEvent(WepEvt evt) {
@@ -191,10 +192,10 @@ BOOL CWeaponCustom::Deploy()
 #else
 	const char* animSet = GetAnimSet();
 
-	studiohdr_t* mdl = GET_MODEL_PTR(PRECACHE_MODEL(GetModelV()));
-	m_hasLaserAttachment = mdl && mdl->numattachments > params.laser.attachment;
+	const char* vmodel = GetModelV();
 
-	const char* vmodel = GetModelV(STRING(g_indexModels[params.vmodel]));
+	studiohdr_t* mdl = GET_MODEL_PTR(PRECACHE_MODEL(vmodel));
+	m_hasLaserAttachment = mdl && mdl->numattachments > params.laser.attachment;
 
 	ret = DefaultDeploy(vmodel, GetModelP(), deployAnim, animSet, 1);
 #endif

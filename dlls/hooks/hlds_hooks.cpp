@@ -414,6 +414,7 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->QueryClientType();
 	pPlayer->LoadScore();
 	pPlayer->m_lastUserInput = g_engfuncs.pfnTime();
+	pPlayer->m_lastTimeLeftUpdate = 0;
 
 	pPlayer->m_nightvisionColor = RGB(0, 255, 0);
 

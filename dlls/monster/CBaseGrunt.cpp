@@ -1219,7 +1219,7 @@ void CBaseGrunt::PrecacheEquipment(int equipment) {
 	if (equipment & MEQUIP_AKIMBO_UZIS) {
 		PRECACHE_SOUND_ARRAY(pUziSounds);
 
-		AddPrecacheWeapon("weapon_9mmAR");
+		AddPrecacheWeapon("weapon_uzi");
 	}
 }
 
