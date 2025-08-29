@@ -113,6 +113,7 @@ public:
 	void PlayEvent_HideLaser(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire);
 
+	float GetActiveMovespeedMult();
 	float WallTime();
 
 	// repurposing these weapon vars so I don't have to network something new to the client

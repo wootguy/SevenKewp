@@ -661,6 +661,7 @@ struct CustomWeaponShootOpts {
 	uint16_t cooldownFail;		// cooldown after a failed attack (out of ammo, underwater) (milliseconds)
 	uint16_t chargeTime;		// how long the attack button must be held before the attack begins (milliseconds)
 	uint16_t chargeCancelTime;	// minimum time before a charge can be cancelled (milliseconds)
+	uint16_t chargeMoveSpeedMult; // movement speed multiplier while charging (1-65535) (65535 = 100%) (0 = don't change)
 };
 
 struct WeaponCustomReload {

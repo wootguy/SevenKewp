@@ -682,6 +682,10 @@ void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 bool CWeaponCustom::Chargeup(int attackIdx, bool leftHand, bool akimboFire) {
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return false;
+
 	if (!opts.chargeTime)
 		return true;
 
@@ -695,6 +699,7 @@ bool CWeaponCustom::Chargeup(int attackIdx, bool leftHand, bool akimboFire) {
 		chargeStart = WallTime();
 		int e = (attackIdx == 0) ? WC_TRIG_PRIMARY_CHARGE : WC_TRIG_SECONDARY_CHARGE;
 		ProcessEvents(e, 0, leftHand, akimboFire);
+		m_pPlayer->ApplyEffects();
 	}
 
 	return WallTime() - chargeStart > opts.chargeTime * 0.001f;
@@ -709,6 +714,10 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 		return;
 	}
 
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	bool attackCalled = attackIdx == 0 ? m_primaryCalled : m_secondaryCalled;
 	float& chargeVar = attackIdx == 0 ? m_flChargeStartPrimary : m_flChargeStartSecondary;
 	int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_STOP : WC_TRIG_SECONDARY_STOP;
@@ -722,6 +731,7 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 			m_waitForNextRunfuncs = true;
 			CancelDelayedEvents();
 			ProcessEvents(ievt, 0, false, false);
+			m_pPlayer->ApplyEffects();
 		}
 	}
 }
@@ -1733,6 +1743,28 @@ void CWeaponCustom::CancelDelayedEvents() {
 }
 
 
+float CWeaponCustom::GetActiveMovespeedMult() {
+	// TODO: This multiplier is used server-side only. clients rubber-band when beginning a chargeup.
+	// You might think duplicating the gauss or kickback prediction code would work for maxspeed,
+	// but it doesn't. Updating maxspeed somehow retroactively affects previous movement simulations
+	// which rubber bands you the instant that maxspeed is changed. Bascially creating the opposite
+	// problem. Your job, should you choose to accept it, is to figure out why velocity and maxspeed
+	// aren't predicted similarly despite being reset and updated just like any other state var.
+	// I was able to get the beginning of a chargeup to feel right by saving a timestamp of when the
+	// chargeup began and applying the multiplier in PM_Move() only when (pmove->time + ping) was
+	// greater than that timestamp. That broke a lot of other predictions but gives a clue on how it
+	// can work. PM_Move() is constantly repeating a small section of time and maxspeed changes affect
+	// all steps of that time window instead of just after the point it changed.
+
+	if (m_flChargeStartPrimary) {
+		return MOVESPEED_MULT_TO_FLOAT(params.shootOpts[0].chargeMoveSpeedMult);
+	}
+	if (m_flChargeStartSecondary) {
+		return MOVESPEED_MULT_TO_FLOAT(params.shootOpts[1].chargeMoveSpeedMult);
+	}
+
+	return 1.0f;
+}
 
 float CWeaponCustom::WallTime() {
 #ifdef CLIENT_DLL

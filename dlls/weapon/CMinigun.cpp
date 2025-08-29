@@ -44,12 +44,14 @@ void CMinigun::Precache()
 	primary.cooldownFail = 200;
 	primary.chargeTime = 800;
 	primary.chargeCancelTime = 800;
+	primary.chargeMoveSpeedMult = FLOAT_TO_MOVESPEED_MULT(0.4f);
 
 	CustomWeaponShootOpts& secondary = params.shootOpts[1];
 	secondary.cooldown = 200;
 	secondary.chargeTime = 800;
 	secondary.chargeCancelTime = 800;
 	secondary.flags = FL_WC_SHOOT_NO_ATTACK;
+	secondary.chargeMoveSpeedMult = FLOAT_TO_MOVESPEED_MULT(0.4f);
 
 	float spread = VECTOR_CONE_4DEGREES.x;
 	int bulletf = 0;

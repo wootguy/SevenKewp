@@ -7969,11 +7969,22 @@ void CBaseMonster::ApplyEffects() {
 	if (plr) {
 		CWeaponCustom* wc = plr->m_pActiveItem ? plr->m_pActiveItem->MyWeaponCustomPtr() : NULL;
 		if (wc && wc->params.moveSpeedMult) {
+			float baseMult = MOVESPEED_MULT_TO_FLOAT(wc->params.moveSpeedMult);
 			if (!total_speed) {
-				total_speed = MOVESPEED_MULT_TO_FLOAT(wc->params.moveSpeedMult);
+				total_speed = baseMult;
 			}
 			else {
-				total_speed *= MOVESPEED_MULT_TO_FLOAT(wc->params.moveSpeedMult);
+				total_speed *= baseMult;
+			}
+		}
+
+		float activeMult = wc ? wc->GetActiveMovespeedMult() : 1.0f;
+		if (activeMult != 1.0f) {
+			if (!total_speed) {
+				total_speed = activeMult;
+			}
+			else {
+				total_speed *= activeMult;
 			}
 		}
 	}
