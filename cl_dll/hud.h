@@ -258,10 +258,13 @@ struct extra_player_info_t
 	short frags;
 	short deaths;
 	uint16_t playerclass;
-	short health; // UNUSED currently, spectator UI would like this
+	short health;
+	int specMode; // which spectate mode the player is in
+	int specTarget; // which player is being spectated
 	bool dead; // UNUSED currently, spectator UI would like this
 	short teamnumber;
 	char teamname[MAX_TEAM_NAME];
+	int x, y, z; // coordinates for tag rendering
 };
 
 struct team_info_t 
@@ -385,6 +388,19 @@ public:
 
 private:
 	cvar_t* ver_cvar;
+};
+
+class CHudNametags : public CHudBase
+{
+public:
+	int Init(void);
+	int VidInit(void) { return 1; }
+	int Draw(float flTime);
+	virtual const char* HudName() { return "CHudNametags"; }
+
+private:
+	struct cvar_s* m_HUD_nametags;
+	struct cvar_s* m_HUD_nametag_hp;
 };
 
 //
@@ -656,6 +672,7 @@ public:
 	int		m_iRes;
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
+	cvar_t* default_fov;
 	int m_sevenkewpVersion;
 	bool m_sevenkewpDataUpdating;
 	bool m_is_map_loaded;
@@ -677,7 +694,7 @@ private:
 	wrect_t *m_rgrcRects;	/*[HUD_SPRITE_COUNT]*/
 	char *m_rgszSpriteNames; /*[HUD_SPRITE_COUNT][MAX_SPRITE_NAME_LENGTH]*/
 
-	struct cvar_s *default_fov;
+	
 public:
 	HSPRITE GetSprite( int index ) 
 	{
@@ -711,6 +728,7 @@ public:
 	CHudClientStats	m_ClientStats;
 	CFog			m_Fog;
 	CHudClientUpdater	m_ClientUpdater;
+	CHudNametags	m_Nametags;
 
 	void Init( void );
 	void VidInit( void ); // called on server connection or video mode change

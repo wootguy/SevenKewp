@@ -338,6 +338,11 @@ public:
 	uint64_t m_weaponBits;
 	uint64_t m_lastWeaponBits;
 
+	// updates for frequently updated details like HP
+	float m_lastTagUpdate;
+	uint8_t m_lastTagHp;
+	uint8_t m_lastTagObserver;
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
@@ -496,6 +501,12 @@ public:
 	char m_lastNextMap[MAX_MAP_NAME];
 	int m_lastScore;
 	void UpdateScore();
+
+	void UpdateTag(CBasePlayer* dst=NULL);
+
+	int16_t m_lastTagPos[32][3];
+	float m_lastTagPosUpdate;
+	void UpdateTagPos();
 
 	uint16_t GetScoreboardStatus();
 	void UpdateTeamInfo(int color=-1, int msg_mode=MSG_ALL, edict_t* dst=NULL);

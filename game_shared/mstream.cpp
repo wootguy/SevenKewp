@@ -1,8 +1,14 @@
+#ifdef CLIENT_DLL
+#include "mstream.h"
+#include "string.h"
+#else
 #include "extdll.h"
 #include "mstream.h"
 #include "stdio.h"
 #include "string.h"
 #include "util.h"
+#endif
+
 
 mstream::mstream()
 {
@@ -75,6 +81,7 @@ uint64_t mstream::readBits(uint8_t bitCount)
 	return val;
 }
 
+#ifndef CLIENT_DLL
 Vector mstream::readBitVec3Coord() {
 	bool xflag = readBit();
 	bool yflag = readBit();
@@ -91,6 +98,7 @@ Vector mstream::readBitVec3Coord() {
 
 	return vout;
 }
+#endif
 
 float mstream::readBitCoord() {
 	bool hasIntVal = readBit();
@@ -200,8 +208,8 @@ bool mstream::endBitWriting() {
 
 bool mstream::writeBitCoord(const float f) {
 	int signbit = f <= -0.125;
-	int intval = abs((int32)f);
-	int fractval = (int32_t)abs(f * 8) & 7;
+	int intval = abs((int32_t)f);
+	int fractval = (int32_t)fabs(f * 8) & 7;
 
 	writeBit(intval);
 	writeBit(fractval);

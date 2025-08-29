@@ -57,6 +57,7 @@
 
 #include "shake.h"
 #include "screenfade.h"
+#include "mstream.h"
 
 extern int g_iVisibleMouse;
 class CCommandMenu;
@@ -2113,6 +2114,63 @@ int TeamFortressViewport::MsgFunc_ScoreInfo( const char *pszName, int iSize, voi
 			 g_PlayerExtraInfo[cl].teamnumber = 0;
 
 		UpdateOnPlayerInfo();
+	}
+
+	return 1;
+}
+
+int TeamFortressViewport::MsgFunc_TagInfo(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+	uint8_t cl = READ_BYTE();
+	uint8_t health = READ_BYTE();
+	uint8_t observer = READ_BYTE();
+
+	if (cl > 0 && cl <= MAX_PLAYERS)
+	{
+		g_PlayerExtraInfo[cl].health = health;
+		g_PlayerExtraInfo[cl].specMode = observer & 0x7;
+		g_PlayerExtraInfo[cl].specTarget = observer >> 3;
+
+		// not needed yet because hp isn't displayed anywhere in VGUI yet
+		//UpdateOnPlayerInfo();
+	}
+
+	return 1;
+}
+
+// sign extend a fixed point value that was stored in an unsigned integer, which may have 0 in its higher bits
+inline int32_t SIGN_EXTEND_FIXED(uint32_t x, int total_bits) {
+	uint32_t b = total_bits;
+	int m = 1U << (b - 1); // sign bit mask
+	x = x & ((1U << b) - 1); // remove sign bit
+	return (x ^ m) - m; // sign extended version of x
+}
+
+int TeamFortressViewport::MsgFunc_PlayerPos(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	static uint8_t tagData[32 * 8];
+	mstream dat((char*) tagData, 32 * 8);
+
+	int sz = READ_BYTE();
+	for (int i = 0; i < sz; i++) {
+		tagData[i] = READ_BYTE();
+	}
+
+	for (int i = 0; i < 32; i++) {
+		if (!dat.readBit())
+			continue;
+
+		extra_player_info_t& info = g_PlayerExtraInfo[i+1];
+
+		if (dat.readBit())
+			info.x = SIGN_EXTEND_FIXED(dat.readBits(13), 13) * 8;
+		if (dat.readBit())
+			info.y = SIGN_EXTEND_FIXED(dat.readBits(13), 13) * 8;
+		if (dat.readBit())
+			info.z = SIGN_EXTEND_FIXED(dat.readBits(13), 13) * 8;
 	}
 
 	return 1;

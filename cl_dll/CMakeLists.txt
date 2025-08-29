@@ -52,6 +52,7 @@ set(HUD_SRC
 	hud_servers.cpp
 	hud_spectator.cpp
 	hud_update.cpp
+	hud_nametags.cpp
 	menu.cpp
 	message.cpp
 	saytext.cpp
@@ -126,6 +127,7 @@ set(UTIL_HDR
 	../pm_shared/pm_shared.h
 	../game_shared/shared_util.h
 	../game_shared/md5.h
+	../game_shared/mstream.h
 )
 set(UTIL_SRC
 	cdll_int.cpp
@@ -140,6 +142,7 @@ set(UTIL_SRC
 	../public/interface.cpp
 	../game_shared/shared_util.cpp
 	../game_shared/md5.cpp
+	../game_shared/mstream.cpp
 	../game_shared/miniz.c
 )
 

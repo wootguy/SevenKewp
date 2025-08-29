@@ -1,4 +1,4 @@
-/***
+﻿/***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
 *	
@@ -252,6 +252,20 @@ int __MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pbuf)
 	return 0;
 }
 
+int __MsgFunc_TagInfo(const char* pszName, int iSize, void* pbuf)
+{
+	if (gViewPort)
+		return gViewPort->MsgFunc_TagInfo(pszName, iSize, pbuf);
+	return 0;
+}
+
+int __MsgFunc_PlayerPos(const char* pszName, int iSize, void* pbuf)
+{
+	if (gViewPort)
+		return gViewPort->MsgFunc_PlayerPos(pszName, iSize, pbuf);
+	return 0;
+}
+
 int __MsgFunc_TeamScore(const char *pszName, int iSize, void *pbuf)
 {
 	if (gViewPort)
@@ -323,6 +337,8 @@ void CHud :: Init( void )
 	HOOK_MESSAGE( NextMap );
 	HOOK_MESSAGE( TimeLeft );
 	HOOK_MESSAGE( ScoreInfo );
+	HOOK_MESSAGE( TagInfo );
+	HOOK_MESSAGE( PlayerPos );
 	HOOK_MESSAGE( TeamScore );
 	HOOK_MESSAGE( TeamInfo );
 
@@ -386,6 +402,7 @@ void CHud :: Init( void )
 	m_ClientStats.Init();
 	m_Fog.Init();
 	m_ClientUpdater.Init();
+	m_Nametags.Init();
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
 
 	m_Menu.Init();

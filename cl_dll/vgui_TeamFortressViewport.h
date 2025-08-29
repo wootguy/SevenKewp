@@ -631,6 +631,8 @@ public:
 	int MsgFunc_NextMap( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TimeLeft( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_TagInfo( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_PlayerPos( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf );

@@ -465,7 +465,6 @@ set(UTIL_HDR
 	util/plane.h
 	util/saverestore.h
 	util/util.h
-	util/mstream.h
 	util/lagcomp.h
 	util/vector.h
 	util/Scheduler.h
@@ -476,6 +475,7 @@ set(UTIL_HDR
 	util/wav.h
 	util/HashMap.h
 	util/StringPool.h
+	../game_shared/mstream.h
 	../game_shared/shared_util.h
 	../game_shared/md5.h
 )
@@ -489,7 +489,6 @@ set(UTIL_SRC
 	util/plane.cpp
 	util/sound.cpp
 	util/util.cpp
-	util/mstream.cpp
 	util/lagcomp.cpp
 	util/saverestore.cpp
 	util/Scheduler.cpp
@@ -501,6 +500,7 @@ set(UTIL_SRC
 	util/wav.cpp
 	util/HashMap.cpp
 	util/StringPool.cpp
+	../game_shared/mstream.cpp
 	../game_shared/shared_util.cpp
 	../game_shared/md5.cpp
 	../game_shared/miniz.c

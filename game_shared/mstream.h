@@ -1,6 +1,10 @@
 #pragma once
 #include "Platform.h"
+
+#ifndef CLIENT_DLL
 #include "vector.h"
+#endif
+
 #include <stdint.h>
 
 class EXPORT mstream
@@ -28,8 +32,10 @@ public:
 
 	uint64_t readBits(uint8_t bitCount);
 
+#ifndef CLIENT_DLL
 	Vector readBitVec3Coord();
-	
+#endif
+
 	float readBitCoord();
 
 	// increment to the next byte if current bit is not 0

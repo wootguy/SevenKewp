@@ -51,6 +51,8 @@ EXPORT extern int gmsgTimeLeft; // seconds left before map ends (0 = infinite)
 EXPORT extern int gmsgFog; // fog rendering parameters
 EXPORT extern int gmsgPmodelAnim; // third person weapon animation
 EXPORT extern int gmsgWeaponBits; // which weapons does this client have (for weapon IDs >= 32)
+EXPORT extern int gmsgTagInfo; // data for name tags
+EXPORT extern int gmsgPlayerPos; // tag positions for players outside of the PVS
 EXPORT extern int gmsgToxicCloud; // chumtoad attack
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages

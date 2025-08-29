@@ -8,6 +8,9 @@
 #include <vector>
 #include <stdint.h>
 
+// In case this ever changes
+#define M_PI			3.14159265358979323846
+
 // same as strncpy except it ensures the destination is null terminated, even if the buffer is too small
 EXPORT char* strcpy_safe(char* dest, const char* src, size_t size);
 

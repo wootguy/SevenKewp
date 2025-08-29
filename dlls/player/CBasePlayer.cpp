@@ -3497,6 +3497,9 @@ void CBasePlayer::PostThink()
 	if ( g_fGameOver )
 		goto pt_end;         // intermission or finale
 
+	UpdateTag();
+	UpdateTagPos();
+
 	if (!IsAlive())
 		goto pt_end;
 
@@ -6346,6 +6349,130 @@ void CBasePlayer::UpdateScore() {
 	}
 }
 
+void CBasePlayer::UpdateTag(CBasePlayer* dst) {
+	int hpPercent = IsAlive() ? ((pev->health / pev->max_health) * 100 + 0.5f) : 0;
+	uint8_t hp = V_max(0, hpPercent);
+	uint8_t observer = ((pev->iuser2-1) << 3) | (pev->iuser1 & 0x7);
+	bool statusChanged = hp != m_lastTagHp || observer != m_lastTagObserver;
+
+	if (!dst) {
+		if ((!statusChanged) || g_engfuncs.pfnTime() - m_lastTagUpdate < 0.05f) {
+			return;
+		}
+	}
+
+	m_lastTagUpdate = g_engfuncs.pfnTime();
+	m_lastTagHp = hp;
+	m_lastTagObserver = observer;
+
+	for (int i = 1; i < gpGlobals->maxClients; i++) {
+		CBasePlayer* targetPlr = UTIL_PlayerByIndex(i);
+
+		if (!targetPlr || !targetPlr->IsSevenKewpClient())
+			continue;
+
+		if (dst && dst != targetPlr)
+			continue;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgTagInfo, 0, targetPlr->edict());
+		WRITE_BYTE(entindex());
+		WRITE_BYTE(hp);
+		WRITE_BYTE(observer);
+		MESSAGE_END();
+	}	
+}
+
+void CBasePlayer::UpdateTagPos() {
+	if (!IsSevenKewpClient())
+		return;
+
+	if (g_engfuncs.pfnTime() - m_lastTagPosUpdate < 0.1f) {
+		return;
+	}
+	m_lastTagPosUpdate = g_engfuncs.pfnTime();
+
+	char* info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
+	char* nametags = g_engfuncs.pfnInfoKeyValue(info, "cl_nametags");
+	if (!nametags || atoi(nametags) < 2) {
+		return;
+	}
+
+	static uint8_t tagData[32*8];
+	mstream dat((char*)tagData, 32 * 8);
+
+	bool anyUpdates = false;
+
+	for (int i = 1; i < gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+		if (!plr || plr == this || plr->InPVS(edict())) {
+			dat.writeBit(0);
+			continue;
+		}
+			
+		int16_t x = clamp((int)(plr->pev->origin.x / 8), INT16_MIN, INT16_MAX);
+		int16_t y = clamp((int)(plr->pev->origin.y / 8), INT16_MIN, INT16_MAX);
+		int16_t z = clamp((int)(plr->pev->origin.z / 8), INT16_MIN, INT16_MAX);
+
+		int k = i - 1;
+		if (m_lastTagPos[k][0] == x && m_lastTagPos[k][1] == y && m_lastTagPos[k][2] == z) {
+			dat.writeBit(0);
+			continue;
+		}
+
+		if (dat.tell() >= 180) {
+			dat.writeBit(0);
+			ALERT(at_error, "Exceeded max PlayerPos bytes\n");
+			continue;
+		}
+
+		dat.writeBit(1);
+
+		if (x != m_lastTagPos[k][0]) {
+			dat.writeBit(1);
+			dat.writeBits(x, 13);
+		}
+		else {
+			dat.writeBit(0);
+		}
+
+		if (y != m_lastTagPos[k][1]) {
+			dat.writeBit(1);
+			dat.writeBits(y, 13);
+		}
+		else {
+			dat.writeBit(0);
+		}
+
+		if (z != m_lastTagPos[k][2]) {
+			dat.writeBit(1);
+			dat.writeBits(z, 13);
+		}
+		else {
+			dat.writeBit(0);
+		}
+
+		m_lastTagPos[k][0] = x;
+		m_lastTagPos[k][1] = y;
+		m_lastTagPos[k][2] = z;
+		
+		anyUpdates = true;
+	}
+
+	dat.endBitWriting();
+	int sz = dat.tell();
+
+	if (!anyUpdates)
+		return;
+
+	MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgPlayerPos, 0, edict());
+	WRITE_BYTE(sz);
+	for (int i = 0; i < sz; i++) {
+		WRITE_BYTE(tagData[i]);
+	}
+	MESSAGE_END();
+}
+
 uint16_t CBasePlayer::GetScoreboardStatus() {
 	uint16_t status = 0;
 	float idleTime = g_engfuncs.pfnTime() - m_lastUserInput;
@@ -6490,6 +6617,23 @@ void CBasePlayer::QueryClientTypeFinished() {
 				}
 			}
 		}
+
+		// get health of other players
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* otherPlr = UTIL_PlayerByIndex(i);
+
+			if (otherPlr)
+				otherPlr->UpdateTag(this);
+		}
+	}
+
+	// reset update timers
+	m_lastTagHp = 0;
+	m_lastTagUpdate = 0;
+	m_lastTagPosUpdate = 0;
+
+	for (int i = 0; i < 32; i++) {
+		memset(m_lastTagPos[i], 0, sizeof(m_lastTagPos[i]));
 	}
 
 	// can init the weapon hud now without crashing certain clients

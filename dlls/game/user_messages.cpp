@@ -55,6 +55,8 @@ int gmsgTimeLeft = 0;
 int gmsgFog = 0;
 int gmsgPmodelAnim = 0;
 int gmsgWeaponBits = 0;
+int gmsgTagInfo = 0;
+int gmsgPlayerPos = 0;
 int gmsgToxicCloud = 0;
 
 std::vector<UserMessage> g_userMessages;
@@ -158,4 +160,6 @@ void LinkUserMessages(void)
 	gmsgToxicCloud = REG_USER_MSG("ToxicCloud", 4);
 	gmsgPmodelAnim = REG_USER_MSG("PmodelAnim", 2);
 	gmsgWeaponBits = REG_USER_MSG("WeaponBits", 8);
+	gmsgTagInfo = REG_USER_MSG("TagInfo", 3);
+	gmsgPlayerPos = REG_USER_MSG("PlayerPos", -1);
 }
