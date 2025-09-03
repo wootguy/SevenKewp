@@ -848,6 +848,12 @@ void CItemInventory::ReturnToSpawnPosition() {
 	pev->velocity = g_vecZero;
 	pev->avelocity = g_vecZero;
 
+	if (pev->movetype == MOVETYPE_NOCLIP) {
+		// the engine adds gravity for one frame for some reason when you die with the item
+		// this prevents it clipping into the void and being uncollectable
+		pev->gravity = FLT_MIN;
+	}
+
 	CBaseEntity* activator = carrier ? carrier : (CBaseEntity*)this;
 	FireInvTargets(activator, m_target_on_return);
 }
