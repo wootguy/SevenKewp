@@ -45,6 +45,9 @@
 
 using namespace std::chrono;
 
+const std::vector<std::string> g_emptyCurlHeaders;
+const std::string g_emptyCurlPostData;
+
 char* strcpy_safe(char* dest, const char* src, size_t size) {
 	if (size > 0) {
 		size_t i;
@@ -327,7 +330,8 @@ size_t curlWriteFile(void* ptr, size_t size, size_t nmemb, void* stream) {
 #define USER_AGENT_APP "SevenKewp Server"
 #endif
 
-int UTIL_CurlRequest_internal(std::string url, void* writeData, bool isString) {
+int UTIL_CurlRequest_internal(std::string url, void* writeData, bool isString,
+	const std::string& postData=g_emptyCurlPostData, const std::vector<std::string>& headers=g_emptyCurlHeaders) {
 #ifdef ENABLE_CURL
 	auto curl = curl_easy_init();
 
@@ -344,6 +348,18 @@ int UTIL_CurlRequest_internal(std::string url, void* writeData, bool isString) {
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, isString ? curlWriteString : curlWriteFile);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, writeData);
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L); // follow redirects
+
+		if (headers.size()) {
+			struct curl_slist* curlHeaders = NULL;
+			for (std::string header : headers) {
+				curlHeaders = curl_slist_append(curlHeaders, header.c_str());
+			}
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curlHeaders);
+		}
+
+		if (postData.size()) {
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData.c_str());
+		}
 
 		// disables HTTPS verifications. No certs needed. Big security hole.
 		//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -371,9 +387,9 @@ int UTIL_CurlRequest_internal(std::string url, void* writeData, bool isString) {
 	return 0;
 }
 
-int UTIL_CurlRequest(std::string url, std::string& response_string) {
+int UTIL_CurlRequest(std::string url, std::string& response_string, const std::string& postData, const std::vector<std::string>& headers) {
 	response_string = "";
-	return UTIL_CurlRequest_internal(url, &response_string, true);
+	return UTIL_CurlRequest_internal(url, &response_string, true, postData, headers);
 }
 
 int UTIL_CurlDownload(std::string url, std::string fpath) {

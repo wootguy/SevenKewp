@@ -688,7 +688,6 @@ add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
 target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
 target_include_directories(${SERVER_DLL_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/curl/include/)
-target_include_directories(${SERVER_DLL_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/rapidjson/include/)
 
 target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS -D_CRT_SECURE_NO_DEPRECATE -DCURL_STATICLIB)
 

@@ -220,9 +220,6 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// A userinfo string is about to be sent from infoPlayer to msgPlayer.
 	// infoPlayer is NULL during client connection
 	HOOK_RETURN_DATA (*pfnUserInfo)(edict_t* msgPlayer, edict_t* infoPlayer, char* info);
-
-	// called after a player has responded to all client type queries (which os/engine/mod/renderer is used)
-	HOOK_RETURN_DATA (*pfnPlayerClientTypeQueryFinish)(CBasePlayer* plr);
 };
 
 // do not call directly, use RegisterPlugin instead

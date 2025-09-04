@@ -11,6 +11,9 @@
 // In case this ever changes
 #define M_PI			3.14159265358979323846
 
+EXPORT extern const std::vector<std::string> g_emptyCurlHeaders;
+EXPORT extern const std::string g_emptyCurlPostData;
+
 // same as strncpy except it ensures the destination is null terminated, even if the buffer is too small
 EXPORT char* strcpy_safe(char* dest, const char* src, size_t size);
 
@@ -51,7 +54,11 @@ EXPORT std::string UTIL_UrlEncode(const std::string& decoded);
 //     400-499 = client error
 //     500-599 = server error
 // response_string = response data from the server
-EXPORT int UTIL_CurlRequest(std::string url, std::string& response_string);
+// postFields = data to send for POST request
+// headers = HTTP headers
+EXPORT int UTIL_CurlRequest(std::string url, std::string& response_string,
+	const std::string& postData = g_emptyCurlPostData,
+	const std::vector<std::string>& headers = g_emptyCurlHeaders);
 
 // returns the HTTP response code, or -1 if the file failed to open for writing
 EXPORT int UTIL_CurlDownload(std::string url, std::string fpath);

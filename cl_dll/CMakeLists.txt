@@ -231,7 +231,6 @@ set(ALL_SRC
 include_directories(${CMAKE_SOURCE_DIR}/utils/vgui/include)
 include_directories(${CMAKE_SOURCE_DIR}/external)
 include_directories(${CMAKE_SOURCE_DIR}/external/curl/include/)
-include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson/include/)
 
 if (STATIC_MSVC_RUNTIME)
 	# static runtime

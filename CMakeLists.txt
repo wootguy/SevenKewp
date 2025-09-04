@@ -43,6 +43,8 @@ include_directories(${CMAKE_SOURCE_DIR}/rehlds)
 include_directories(${CMAKE_SOURCE_DIR}/rehlds/rehlds/public)
 include_directories(${CMAKE_SOURCE_DIR}/rehlds/rehlds/common)
 
+include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson/include/)
+
 project(sevenkewp)
 
 if (BUILD_SERVER)
