@@ -45,6 +45,9 @@ public:
 
 	void Precache() override;
 
+	void KeyValue(KeyValueData* pkvd) override;
+	CBaseEntity* Respawn() override;
+
 	BOOL Deploy(void) override;
 
 	void Holster(int skiplocal = 0) override;
@@ -101,4 +104,6 @@ private:
 
 	float m_lastAttack;
 	EHANDLE h_beams[2];
+
+	string_t m_iszTeleportDestination;
 };

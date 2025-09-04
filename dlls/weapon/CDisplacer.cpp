@@ -43,6 +43,29 @@ void CDisplacer::Spawn()
 	FallInit();// get ready to fall down.
 }
 
+void CDisplacer::KeyValue(KeyValueData* pkvd)
+{
+	if (FStrEq(pkvd->szKeyName, "m_iszTeleportDestination"))
+	{
+		m_iszTeleportDestination = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else
+		CBasePlayerWeapon::KeyValue(pkvd);
+}
+
+CBaseEntity* CDisplacer::Respawn(void)
+{
+	CBaseEntity* pNewWeapon = CBasePlayerWeapon::Respawn();
+
+	CDisplacer* wep = (CDisplacer*)pNewWeapon->GetWeaponPtr();
+	if (wep) {
+		wep->m_iszTeleportDestination = m_iszTeleportDestination;
+	}
+
+	return pNewWeapon;
+}
+
 void CDisplacer::Precache()
 {
 	m_hasHandModels = true;
@@ -419,7 +442,18 @@ void CDisplacer::AltFireThink()
 	//if (!g_pGameRules->IsMultiplayer() || g_pGameRules->IsCoOp())
 	if (true)
 	{
-		pDestination = UTIL_FindEntityByClassname(nullptr, "info_displacer_xen_target");
+		if (m_iszTeleportDestination) {			
+			CBaseEntity* ent = NULL;
+			while ((ent = UTIL_FindEntityByTargetname(ent, STRING(m_iszTeleportDestination)))) {
+				if (!strcmp(STRING(ent->pev->classname), "info_teleport_destination")) {
+					pDestination = ent;
+					break;
+				}
+			}
+		}
+		else {
+			pDestination = UTIL_FindEntityByClassname(nullptr, "info_displacer_xen_target");
+		}
 	}
 	else
 	{
