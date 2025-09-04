@@ -4899,6 +4899,9 @@ reflecting all of the HUD state info.
 */
 void CBasePlayer :: UpdateClientData( void )
 {
+	if (!m_clientCheckFinished) 
+		return; // need to know client type before sending client-specific HUD messages
+
 	if (m_fInitHUD)
 	{
 		m_fInitHUD = FALSE;
@@ -5081,7 +5084,7 @@ void CBasePlayer :: UpdateClientData( void )
 	//
 	// New Weapon?
 	//
-	if (!m_fKnownItem && m_clientCheckFinished)
+	if (!m_fKnownItem)
 	{
 		m_fKnownItem = TRUE;
 		
