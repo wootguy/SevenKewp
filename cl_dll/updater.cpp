@@ -314,20 +314,19 @@ void CheckForUpdate() {
 	rapidjson::Value& resp = json["tag_name"];
 	g_update_tag_name = resp.GetString();
 
-	// strip non-numeric characters
-	std::string tagnum;
-	for (int i = 0; i < g_update_tag_name.size(); i++) {
-		if (isdigit(g_update_tag_name[i]))
-			tagnum += g_update_tag_name[i];
-	}
+	// parse version from tag name
+	std::vector<std::string> parts = splitString(g_update_tag_name, ".");
 
-	if (tagnum.empty()) {
+	if (parts.size() < 3 || parts[0].size() < 2) {
 		g_updateThreadError = "ERROR: tag_name has unexpected format: '" + g_update_tag_name + "'\n";
 		g_updateThreadStatus = CUPDATE_STATUS_ERROR;
 		return;
 	}
+	int major = atoi(parts[0].c_str() + 1);
+	int minor = atoi(parts[1].c_str());
+	int patch = atoi(parts[2].c_str());
 
-	g_update_tag_vernum = atoi(tagnum.c_str());
+	g_update_tag_vernum = (major * 10000 * 10000) + (minor * 10000) + patch;
 
 	if (g_update_tag_vernum <= SEVENKEWP_VERSION) {
 		g_updateThreadError = "";
