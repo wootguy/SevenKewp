@@ -169,6 +169,7 @@ BOOL CWeaponCustom::Deploy()
 	m_flChargeStartSecondary = 0;
 	m_bulletFireCount = 0;
 	m_lastBeamUpdate = 0;
+	m_lastChargeDown = 0;
 	m_fInReload = false;
 	m_bInAkimboReload = false;
 	int ret = TRUE;
@@ -689,6 +690,10 @@ bool CWeaponCustom::Chargeup(int attackIdx, bool leftHand, bool akimboFire) {
 	if (!opts.chargeTime)
 		return true;
 
+	if (gpGlobals->time - m_lastChargeDown < 0.01f) {
+		return false;
+	}
+
 	if (params.flags & FL_WC_WEP_LINK_CHARGEUPS) {
 		attackIdx = 0;
 	}
@@ -732,6 +737,7 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 			CancelDelayedEvents();
 			ProcessEvents(ievt, 0, false, false);
 			m_pPlayer->ApplyEffects();
+			m_lastChargeDown = gpGlobals->time;
 		}
 	}
 }

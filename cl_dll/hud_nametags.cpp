@@ -78,6 +78,7 @@ int CHudNametags::Draw(float flTime)
     if (cam_thirdperson) {
         angles.x = cam_ofs.x;
         angles.y = cam_ofs.y;
+        angles.z = 0; // tilt isn't applied in thirdperson
     }
 
     float fov = gHUD.m_iFOV;
@@ -103,7 +104,7 @@ int CHudNametags::Draw(float flTime)
 		cl_entity_s* pClient = gEngfuncs.GetEntityByIndex(i + 1);
         extra_player_info_t& info = g_PlayerExtraInfo[i + 1];
 
-        if (!pClient || !g_PlayerInfoList[i + 1].name)
+        if (!pClient || !g_PlayerInfoList[i + 1].name || !g_PlayerInfoList[i + 1].name[0])
             continue;
 
         bool clientVisible = pClient->curstate.messagenum >= localPlayer->curstate.messagenum;

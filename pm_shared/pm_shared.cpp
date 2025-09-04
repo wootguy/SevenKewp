@@ -1631,10 +1631,20 @@ void PM_CatagorizePosition (void)
 	// water on each call, and the converse case will correct itself if called twice.
 	PM_CheckWater();
 
+	int jumpPower = atoi(pmove->PM_Info_ValueForKey(pmove->physinfo, "jmp"));
+
 	// try to stick to the floor while moving down slopes.
-	// While moving up, don't check very far because the player is likely colliding with the slope
-	// or trying to jump.
-	float downCheck = pmove->velocity[2] > 0 ? 0.2f : 2.0f;
+	float downCheck = 2.0f;
+
+	if (jumpPower != 0 && jumpPower < 800 && pmove->velocity[2] > 0) {
+		// While moving up, don't check very far because the player is likely colliding with the slope
+		// or trying to jump. Small jump powers can not even leave the ground if the downwards check
+		// is too far. This is only applied at low jump powers because it has subtle effects on other
+		// physics tricks. For instance, on gf_greybox, there's a staircase which forces you to jump
+		// up every single stair. If you spam the jump button while holding forward then you get up
+		// them quickly because the 2.0f distance check latches you onto the next step.
+		downCheck = 0.2f;
+	}
 
 	point[0] = pmove->origin[0];
 	point[1] = pmove->origin[1];

@@ -43,6 +43,7 @@ public:
 	float m_lastZoomToggle;
 	float m_lastLaserToggle;
 	float m_lastDeploy;
+	float m_lastChargeDown; // lazy fix for chargedown effects playing twice
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
 	Vector m_kickbackPredVel;
 	bool m_primaryCalled;
