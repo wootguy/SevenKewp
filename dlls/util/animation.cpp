@@ -154,6 +154,9 @@ int CountModelPolys(studiohdr_t* header, int len) {
 		data.seek(header->bodypartindex + b * sizeof(mstudiobodyparts_t));
 		mstudiobodyparts_t* bod = (mstudiobodyparts_t*)data.getOffsetBuffer();
 
+		if (bod->nummodels <= 0)
+			continue;
+
 		int activeModel = (bodyValue / bod->base) % bod->nummodels;
 		bodyValue -= activeModel * bod->base;
 
