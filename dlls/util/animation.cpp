@@ -150,6 +150,11 @@ int CountModelPolys(studiohdr_t* header, int len) {
 	int bodyValue = 255; // cl_himodels 1
 	int polyCount = 0;
 
+	if (header->numbodyparts > 255) {
+		ALERT(at_logged, "CountModelPolys: Zomg too many body parts\n");
+		return 0;
+	}
+
 	for (int b = 0; b < header->numbodyparts; b++) {
 		data.seek(header->bodypartindex + b * sizeof(mstudiobodyparts_t));
 		mstudiobodyparts_t* bod = (mstudiobodyparts_t*)data.getOffsetBuffer();
@@ -162,6 +167,11 @@ int CountModelPolys(studiohdr_t* header, int len) {
 
 		data.seek(bod->modelindex + activeModel * sizeof(mstudiomodel_t));
 		mstudiomodel_t* mod = (mstudiomodel_t*)data.getOffsetBuffer();
+
+		if (mod->nummesh > 255) {
+			ALERT(at_logged, "CountModelPolys: Zomg too many meshes\n");
+			return 0;
+		}
 
 		for (int k = 0; k < mod->nummesh; k++) {
 			data.seek(mod->meshindex + k * sizeof(mstudiomesh_t));
