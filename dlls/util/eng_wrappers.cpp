@@ -20,7 +20,7 @@ StringSet g_tryPrecacheEvents;
 StringSet g_precachedSpr;
 StringSet g_precachedMdl;
 
-string_t g_indexModels[MAX_PRECACHE]; // maps an index to a model name
+string_t g_indexModels[MAX_MODELS_REHLDS]; // maps an index to a model name
 string_t g_indexSounds[MAX_PRECACHE]; // maps an index to a model name
 
 HashMap<string_t> g_allocedStrings;
@@ -246,7 +246,12 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 		string_t spath = ALLOC_STRING(path);
 		int soundIdx = g_engfuncs.pfnPrecacheSound(STRING(spath));
 		g_precachedSounds.put(path, soundIdx);
-		g_indexSounds[soundIdx] = spath;
+
+		if (soundIdx < MAX_PRECACHE)
+			g_indexSounds[soundIdx] = spath;
+		else
+			ALERT(at_error, "Overflowed g_indexSounds!\n");
+
 		return soundIdx;
 	}
 	else {
@@ -472,7 +477,13 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 		g_precachedModels.put(path);
 		string_t spath = ALLOC_STRING(path);
 		int modelIdx = g_engfuncs.pfnPrecacheModel(STRING(spath));
-		g_indexModels[modelIdx] = spath;
+
+		if (modelIdx < MAX_MODELS_REHLDS) {
+			g_indexModels[modelIdx] = spath;
+		}
+		else {
+			ALERT(at_error, "Overflowed g_indexModels!\n");
+		}
 
 		std::string pathstr = std::string(path);
 		if (pathstr.size() && pathstr.find(".mdl") == pathstr.size() - 4) {
@@ -637,7 +648,7 @@ int MODEL_INDEX(const char* model) {
 }
 
 const char* INDEX_MODEL(int modelIdx) {
-	if (modelIdx >= 0 && modelIdx < MAX_PRECACHE) {
+	if (modelIdx >= 0 && modelIdx < MAX_MODELS_REHLDS) {
 		return STRING(g_indexModels[modelIdx]);
 	}
 

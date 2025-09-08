@@ -21,7 +21,7 @@ EXPORT extern StringSet g_tryPrecacheModels;
 EXPORT extern StringSet g_tryPrecacheSounds;
 EXPORT extern StringSet g_tryPrecacheGeneric;
 EXPORT extern StringSet g_tryPrecacheEvents;
-extern string_t g_indexModels[MAX_PRECACHE]; // use INDEX_MODEL to get model name for index
+extern string_t g_indexModels[MAX_MODELS_REHLDS]; // use INDEX_MODEL to get model name for index
 extern string_t g_indexSounds[MAX_PRECACHE]; // use INDEX_SOUND to get sound name for index
 
 // find an already alloc'd string by its contents (used by ALLOC_STRING)
