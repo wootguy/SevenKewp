@@ -920,3 +920,6 @@ EXPORT float UTIL_RayBoxIntersect(Vector start, Vector rayDir, Vector mins, Vect
 
 // returns a bit mask representing all players that are using the specified client
 EXPORT uint32_t UTIL_ClientBitMask(int clientMod);
+
+// relative to the game directory. Will search all game directores (valve, valve_addon, valve_downloads)
+EXPORT uint8_t* UTIL_LoadFile(const char* fpath, int* size=NULL);

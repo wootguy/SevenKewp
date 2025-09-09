@@ -3315,3 +3315,42 @@ uint32_t UTIL_ClientBitMask(int clientMod) {
 
 	return bits;
 }
+
+uint8_t* UTIL_LoadFile(const char* fpath, int* outSz) {
+	std::string gpath = getGameFilePath(fpath);
+
+	if (outSz)
+		*outSz = 0;
+
+	if (gpath.empty())
+		return NULL;
+
+	FILE* f = fopen(gpath.c_str(), "rb");
+	if (!f) {
+		return NULL;
+	}
+
+	fseek(f, 0, SEEK_END);
+	int sz = ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	if (sz < 0) {
+		fclose(f);
+		return NULL;
+	}
+
+	uint8_t* buffer = new uint8_t[sz];
+
+	if ((int)fread(buffer, 1, sz, f) != sz) {
+		delete[] buffer;
+		fclose(f);
+		return NULL;
+	}
+
+	fclose(f);
+
+	if (outSz)
+		*outSz = sz;
+
+	return buffer;
+}

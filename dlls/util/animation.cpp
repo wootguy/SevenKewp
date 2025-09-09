@@ -78,7 +78,8 @@ studiohdr_t* GetPlayerModelPtr(const char* name, int& len) {
 	}
 
 	const char* mdlPath = UTIL_VarArgs("models/player/%s/%s.mdl", name, name);
-	studiohdr_t* pmodel = (studiohdr_t*)LOAD_FILE_FOR_ME(mdlPath, &len);
+	studiohdr_t* pmodel = (studiohdr_t*)UTIL_LoadFile(mdlPath, &len);
+
 
 	if (!pmodel) {
 		ALERT(at_console, "Player model not found: %s\n", name);
@@ -108,7 +109,7 @@ studiohdr_t* GetPlayerModelPtr(const char* name, int& len) {
 			PModelCacheEntry* pentry = g_playerModelCache.get(oldestKey);
 			if (pentry) {
 				ALERT(at_console, "Free cached player model '%s'\n", oldestKey);
-				FREE_FILE(pentry->data);
+				delete[] pentry->data;
 				g_playerModelCache.del(oldestKey);
 
 			}
@@ -122,7 +123,7 @@ void ClearPlayerModelCache() {
 	HashMap<PModelCacheEntry>::iterator_t iter;
 	while (g_playerModelCache.iterate(iter)) {
 		if (iter.value) {
-			FREE_FILE(iter.value->data);
+			delete[] iter.value->data;
 		}
 	}
 
