@@ -458,7 +458,7 @@ void CBaseDoor::DoorTouch(CBaseEntity* pOther)
 	// If door is somebody's target, then touching does nothing.
 	// You have to activate the owner (e.g. button).
 
-	if (!m_fIgnoreTargetname && !FStringNull(pev->targetname))
+	if (!TouchActivates())
 	{
 		// play locked sound
 		PlayLockSounds(pev, &m_ls, TRUE, FALSE);
@@ -697,6 +697,10 @@ void CBaseDoor::DoorHitBottom(void)
 	FireStateTriggers();
 }
 
+bool CBaseDoor::TouchActivates() {
+	return m_fIgnoreTargetname || FStringNull(pev->targetname);
+}
+
 void CBaseDoor::Blocked(CBaseEntity* pOther)
 {
 	CBaseEntity* pentTarget = NULL;
@@ -715,6 +719,18 @@ void CBaseDoor::Blocked(CBaseEntity* pOther)
 		pOther->Killed(pev, GIB_ALWAYS);
 		lastDamage = 0; // allow gibbing multiple players
 		return; // don't bounce back because the path is clear now
+	}
+
+	if (m_flWait < 0 || !TouchActivates()) {
+		// prevent softlocks by doors that only open once getting blocked by something
+		if (pOther->IsMonster()) {
+			pOther->Killed(pev, GIB_ALWAYS);
+			return;
+		}
+		if (pOther->IsBreakable()) {
+			pOther->BreakableDie(this);
+			return;
+		}
 	}
 
 	// if a door has a negative wait, it would never come back if blocked,

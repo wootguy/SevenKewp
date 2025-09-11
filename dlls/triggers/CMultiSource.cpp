@@ -74,7 +74,8 @@ void CMultiSource::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE u
 
 	// CONSIDER: a Use input to the multisource always toggles.  Could check useType for ON/OFF/TOGGLE
 
-	m_rgTriggered[i - 1] ^= 1;
+	if (i > 0)
+		m_rgTriggered[i - 1] ^= 1;
 
 	// 
 	if (IsTriggered(pActivator))
@@ -124,22 +125,17 @@ void CMultiSource::Register(void)
 
 	// search for all entities which target this multisource (pev->targetname)
 
-	pentTarget = UTIL_FindEntityByString(NULL, "target", STRING(pev->targetname));
-
-	while (pentTarget && (m_iTotal < MS_MAX_TARGETS))
+	edict_t* edicts = ENT(0);
+	for (int i = gpGlobals->maxClients + 1; i < gpGlobals->maxEntities && m_iTotal < MS_MAX_TARGETS; i++)
 	{
-		m_rgEntities[m_iTotal++] = pentTarget;
+		if (edicts[i].free)
+			continue;
 
-		pentTarget = UTIL_FindEntityByString(pentTarget, "target", STRING(pev->targetname));
-	}
+		CBaseEntity* ent = CBaseEntity::Instance(&edicts[i].v);
 
-	pentTarget = UTIL_FindEntityByClassname(NULL, "multi_manager");
-	while (pentTarget && (m_iTotal < MS_MAX_TARGETS))
-	{
-		if (pentTarget->HasTarget(pev->targetname))
-			m_rgEntities[m_iTotal++] = pentTarget;
-
-		pentTarget = UTIL_FindEntityByClassname(pentTarget, "multi_manager");
+		if (ent && ent->HasTarget(pev->targetname)) {
+			m_rgEntities[m_iTotal++] = ent;
+		}
 	}
 
 	pev->spawnflags &= ~SF_MULTI_INIT;

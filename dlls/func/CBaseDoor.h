@@ -77,6 +77,8 @@ public:
 	virtual void EXPORT DoorHitTop(void);
 	void EXPORT DoorHitBottom(void);
 
+	bool TouchActivates();
+
 	BYTE	m_bHealthValue;// some doors are medi-kit doors, they give players health
 
 	BYTE	m_bMoveSnd;			// sound a door makes while moving
