@@ -19,8 +19,7 @@ public:
 	TraceResult m_trHit;
 
 	virtual const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
-
-	//virtual int MergedModelBody() { return MERGE_MDL_W_CROWBAR; }
+	virtual int MergedModelBody() { return MERGE_MDL_W_KNIFE; }
 
 	BOOL IsClientWeapon() { return FALSE; }
 

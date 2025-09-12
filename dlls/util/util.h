@@ -125,6 +125,19 @@ enum merged_item_bodies {
 	MERGE_MDL_RPGROCKET,
 	MERGE_MDL_SPORE,
 	MERGE_MDL_SHOCK_EFFECT,
+	MERGE_MDL_W_2UZIS,
+	MERGE_MDL_W_UZI,
+	MERGE_MDL_W_UZI_CLIP,
+	MERGE_MDL_W_SAW,
+	MERGE_MDL_W_SAW_CLIP,
+	MERGE_MDL_W_DESERT_EAGLE,
+	MERGE_MDL_W_M40A1,
+	MERGE_MDL_W_M40A1_CLIP,
+	MERGE_MDL_W_MINIGUN,
+	MERGE_MDL_W_KNIFE,
+	MERGE_MDL_W_M16,
+	MERGE_MDL_W_PMEDKIT,
+	MERGE_MDL_CAMERA,
 };
 
 #undef RGB
@@ -923,3 +936,6 @@ EXPORT uint32_t UTIL_ClientBitMask(int clientMod);
 
 // relative to the game directory. Will search all game directores (valve, valve_addon, valve_downloads)
 EXPORT uint8_t* UTIL_LoadFile(const char* fpath, int* size=NULL);
+
+// returns true if the map replaces the model (ignores standard mod replacements)
+EXPORT bool UTIL_MapReplacesModel(const char* fpath);

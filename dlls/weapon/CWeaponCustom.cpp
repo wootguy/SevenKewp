@@ -40,6 +40,7 @@ void CWeaponCustom::Precache() {
 }
 
 void CWeaponCustom::PrecacheEvents() {
+#ifndef CLIENT_DLL
 	for (int i = 0; i < params.numEvents; i++) {
 		WepEvt& evt = params.events[i];
 		if (evt.evtType == WC_EVT_PLAY_SOUND) {
@@ -58,12 +59,17 @@ void CWeaponCustom::PrecacheEvents() {
 
 	if (pmodelAkimbo)
 		PRECACHE_MODEL(pmodelAkimbo);
-	if (wmodelAkimbo)
-		PRECACHE_MODEL(wmodelAkimbo);
+	if (wmodelAkimbo) {
+		bool hasMergeBody = mp_mergemodels.value && MergedModelBodyAkimbo() != -1;
+		if (!hasMergeBody || UTIL_MapReplacesModel(wmodelAkimbo)) {
+			PRECACHE_MODEL(wmodelAkimbo);
+		}
+	}
 
 	if (wrongClientWeapon) {
 		UTIL_PrecacheOther(wrongClientWeapon);
 	}
+#endif
 }
 
 void CWeaponCustom::AddEvent(WepEvt evt) {
@@ -461,7 +467,14 @@ const char* CWeaponCustom::GetModelP() {
 }
 
 const char* CWeaponCustom::GetModelW() {
-	return wmodelAkimbo && CanAkimbo() ? wmodelAkimbo : CBasePlayerWeapon::GetModelW();
+#ifndef CLIENT_DLL
+	if (wmodelAkimbo && CanAkimbo()) {
+		bool hasMergeBody = mp_mergemodels.value && MergedModelBodyAkimbo() != -1;
+		return hasMergeBody && !UTIL_MapReplacesModel(wmodelAkimbo) ? MERGED_ITEMS_MODEL : wmodelAkimbo;
+	}
+#endif
+
+	return CBasePlayerWeapon::GetModelW();
 }
 
 void CWeaponCustom::PrimaryAttack() {

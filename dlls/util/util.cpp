@@ -3354,3 +3354,17 @@ uint8_t* UTIL_LoadFile(const char* fpath, int* outSz) {
 
 	return buffer;
 }
+
+bool UTIL_MapReplacesModel(const char* fpath) {
+	std::string lowerPath = toLowerCase(fpath);
+	fpath = lowerPath.c_str();
+
+	const char* mapReplacement = g_modelReplacements.get(fpath);
+	const char* modReplacement = g_modelReplacementsMod.get(fpath);
+	if (!mapReplacement) mapReplacement = "";
+	if (!modReplacement) modReplacement = "";
+
+	// only precache the model if the model is replaced with something
+	// the mod doesn't already replace it with.
+	return strcmp(mapReplacement, modReplacement);
+}

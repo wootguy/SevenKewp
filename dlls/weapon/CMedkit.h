@@ -17,7 +17,7 @@ public:
 	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
 	virtual int AddToPlayer(CBasePlayer* pPlayer);
 
-	//virtual int MergedModelBody() { return MERGE_MDL_W_CROWBAR; }
+	virtual int MergedModelBody() { return MERGE_MDL_W_PMEDKIT; }
 
 	BOOL IsClientWeapon() { return FALSE; }
 

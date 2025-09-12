@@ -27,4 +27,5 @@ public:
 	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
 	const char* DisplayName() override { return "M249"; }
 	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
+	virtual int MergedModelBody() { return MERGE_MDL_W_SAW; }
 };

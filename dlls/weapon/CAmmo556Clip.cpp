@@ -10,15 +10,13 @@ class CAmmo556Clip : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache( );
-		//SET_MODEL_MERGED(ENT(pev), "models/w_9mmARclip.mdl", MERGE_MDL_W_CHAINAMMO);
-		SET_MODEL(ENT(pev), "models/w_9mmARclip.mdl");
+		SET_MODEL_MERGED(ENT(pev), "models/w_9mmARclip.mdl", MERGE_MDL_W_9MMARCLIP);
 		
 		CBasePlayerAmmo::Spawn( );
 	}
 	void Precache( void )
 	{
-		//PRECACHE_REPLACEMENT_MODEL("models/w_9mmARclip.mdl");
-		PRECACHE_MODEL("models/w_9mmARclip.mdl");
+		PRECACHE_REPLACEMENT_MODEL("models/w_9mmARclip.mdl");
 		
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}

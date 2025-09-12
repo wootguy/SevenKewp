@@ -73,6 +73,7 @@ public:
 	virtual const char* GetModelP();
 	virtual const char* GetModelW();
 	virtual int MergedModelBody() { return -1; } // body index to use in the merged items model (-1 = don't use merged model)
+	virtual int MergedModelBodyAkimbo() { return -1; } // body index to use in the merged items model (-1 = don't use merged model)
 	void SetWeaponModelW(); // accounts for merged models
 
 	// hack to allow corpse gibbing of non-solid corpses

@@ -27,8 +27,6 @@ public:
 	BOOL IsClientWeapon() { return FALSE; }
 	virtual const char* GetDeathNoticeWeapon() { return "weapon_inventory"; }
 
-	virtual int MergedModelBody() { return MERGE_MDL_W_BGRAP; }
-
 	char m_previousHudText[512];
 	float m_lastHudUpdate;
 	float m_nextAction;

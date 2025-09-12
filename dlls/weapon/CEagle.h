@@ -29,4 +29,5 @@ public:
 	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
 	const char* DisplayName() override { return "Desert Eagle"; }
 	const char* GetDeathNoticeWeapon() { return "weapon_357"; }
+	virtual int MergedModelBody() { return MERGE_MDL_W_DESERT_EAGLE; }
 };

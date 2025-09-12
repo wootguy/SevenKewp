@@ -39,7 +39,7 @@ void CTriggerCamera::Spawn(void)
 	pev->rendermode = kRenderTransTexture;
 
 	// views won't update if camera doesn't have a model, even if invisible
-	SET_MODEL(ENT(pev), "models/camera.mdl");
+	SET_MODEL_MERGED(ENT(pev), "models/camera.mdl", MERGE_MDL_CAMERA);
 
 	m_initialSpeed = pev->speed;
 	if (m_acceleration == 0)
@@ -51,7 +51,7 @@ void CTriggerCamera::Spawn(void)
 }
 
 void CTriggerCamera::Precache(void) {
-	PRECACHE_MODEL("models/camera.mdl");
+	PRECACHE_REPLACEMENT_MODEL("models/camera.mdl");
 }
 
 

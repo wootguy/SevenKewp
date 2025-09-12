@@ -8,16 +8,13 @@ class CAmmo762 : public CBasePlayerAmmo
 	void Spawn( void )
 	{ 
 		Precache( );
-		//SET_MODEL_MERGED(ENT(pev), "models/w_saw_clip.mdl", MERGE_MDL_W_CHAINAMMO);
-		SET_MODEL(ENT(pev), "models/w_m40a1clip.mdl");
+		SET_MODEL_MERGED(ENT(pev), "models/w_m40a1clip.mdl", MERGE_MDL_W_M40A1_CLIP);
 		
 		CBasePlayerAmmo::Spawn( );
 	}
 	void Precache( void )
 	{
-		//PRECACHE_REPLACEMENT_MODEL("models/w_saw_clip.mdl");
-		PRECACHE_MODEL("models/w_m40a1clip.mdl");
-		
+		PRECACHE_REPLACEMENT_MODEL("models/w_m40a1clip.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
 	BOOL AddAmmo( CBaseEntity *pOther ) 

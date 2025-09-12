@@ -64,6 +64,7 @@ void CCrossbowBolt::Spawn( )
 	Precache( );
 	pev->solid = SOLID_BBOX;
 	pev->movetype = MOVETYPE_FLY;
+	//SET_MODEL_MERGED(ENT(pev), "models/crossbow_bolt.mdl", MERGE_MDL_CROSSBOW_BOLT);
 	SET_MODEL(ENT(pev), "models/crossbow_bolt.mdl");
 
 	UTIL_SetOrigin( pev, pev->origin );
@@ -79,7 +80,8 @@ void CCrossbowBolt::Spawn( )
 
 void CCrossbowBolt::Precache( )
 {
-	PRECACHE_MODEL ("models/crossbow_bolt.mdl"); // used client side so can't be replaced without removing event
+	//PRECACHE_REPLACEMENT_MODEL("models/crossbow_bolt.mdl"); // used client side so can't be replaced without removing event
+	PRECACHE_MODEL("models/crossbow_bolt.mdl");
 	PRECACHE_SOUND("weapons/xbow_hitbod1.wav");
 	PRECACHE_SOUND("weapons/xbow_hitbod2.wav");
 	PRECACHE_SOUND("weapons/xbow_fly1.wav");

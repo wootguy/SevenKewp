@@ -828,7 +828,10 @@ void CBasePlayer::PackDeadPlayerItems( void )
 
 			if (iAmmoRules == GR_PLR_DROP_AMMO_ACTIVE) {
 				SET_MODEL(pWeaponBox->edict(), rgpPackWeapons[iPW]->GetModelW());
-				pWeaponBox->pev->body = rgpPackWeapons[iPW]->MergedModelBody() != -1 ? rgpPackWeapons[iPW]->MergedModelBody() : 0;
+				int mergeBody = rgpPackWeapons[iPW]->CanAkimbo() ?
+					rgpPackWeapons[iPW]->MergedModelBodyAkimbo() :
+					rgpPackWeapons[iPW]->MergedModelBody();
+				pWeaponBox->pev->body = mergeBody != -1 ? mergeBody : 0;
 				pWeaponBox->pev->sequence = rgpPackWeapons[iPW]->pev->sequence;
 
 				if (!strcmp(STRING(rgpPackWeapons[iPW]->pev->classname), "weapon_tripmine")) {
@@ -5737,7 +5740,8 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 			CBasePlayerWeapon* wep = pWeapon->GetWeaponPtr();
 			if (wep) {
 				SET_MODEL(pWeaponBox->edict(), wep->GetModelW());
-				pWeaponBox->pev->body = wep->MergedModelBody() != -1 ? wep->MergedModelBody() : 0;
+				int mergeBody = wep->CanAkimbo() ? wep->MergedModelBodyAkimbo() : wep->MergedModelBody();
+				pWeaponBox->pev->body = mergeBody ? mergeBody : 0;
 				pWeaponBox->pev->sequence = wep->pev->sequence;
 
 				if (!strcmp(STRING(pWeapon->pev->classname), "weapon_tripmine")) {
