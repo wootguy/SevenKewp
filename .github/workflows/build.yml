@@ -78,7 +78,7 @@ jobs:
       run: sh scripts/build_server.sh
 
     - name: Build plugins
-      run: sh scripts/build_server_and_plugins.sh
+      run: cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SERVER=ON -DBUILD_PLUGINS=ON -DUPDATE_PLUGINS=ON .. && cmake --build .
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
