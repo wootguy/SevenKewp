@@ -57,7 +57,7 @@ class CTripmineGrenade : public CGrenade
 	float		m_flBeamLength;
 
 	EHANDLE		m_hOwner;
-	CBeam		*m_pBeam;
+	EHANDLE		m_hBeam;
 	Vector		m_posOwner;
 	Vector		m_angleOwner;
 	edict_t		*m_pRealOwner;// tracelines don't hit PEV->OWNER, which means a player couldn't detonate his own trip mine, so we store the owner here.
@@ -72,7 +72,7 @@ TYPEDESCRIPTION	CTripmineGrenade::m_SaveData[] =
 	DEFINE_FIELD( CTripmineGrenade, m_vecEnd, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CTripmineGrenade, m_flBeamLength, FIELD_FLOAT ),
 	DEFINE_FIELD( CTripmineGrenade, m_hOwner, FIELD_EHANDLE ),
-	DEFINE_FIELD( CTripmineGrenade, m_pBeam, FIELD_CLASSPTR ),
+	DEFINE_FIELD( CTripmineGrenade, m_hBeam, FIELD_EHANDLE ),
 	DEFINE_FIELD( CTripmineGrenade, m_posOwner, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CTripmineGrenade, m_angleOwner, FIELD_VECTOR ),
 	DEFINE_FIELD( CTripmineGrenade, m_pRealOwner, FIELD_EDICT ),
@@ -221,10 +221,10 @@ void CTripmineGrenade :: PowerupThink( void  )
 
 void CTripmineGrenade :: KillBeam( void )
 {
-	if ( m_pBeam )
+	if ( m_hBeam )
 	{
-		UTIL_Remove( m_pBeam );
-		m_pBeam = NULL;
+		UTIL_Remove(m_hBeam);
+		m_hBeam = NULL;
 	}
 }
 
@@ -245,11 +245,12 @@ void CTripmineGrenade :: MakeBeam( void )
 
 	Vector vecTmpEnd = pev->origin + m_vecDir * 2048 * m_flBeamLength;
 
-	m_pBeam = CBeam::BeamCreate( g_pModelNameLaser, 10 );
-	m_pBeam->PointEntInit( vecTmpEnd, entindex() );
-	m_pBeam->SetColor( 0, 214, 198 );
-	m_pBeam->SetScrollRate( 255 );
-	m_pBeam->SetBrightness( 64 );
+	CBeam* beam = CBeam::BeamCreate( g_pModelNameLaser, 10 );
+	beam->PointEntInit( vecTmpEnd, entindex() );
+	beam->SetColor( 0, 214, 198 );
+	beam->SetScrollRate( 255 );
+	beam->SetBrightness( 64 );
+	m_hBeam = beam;
 }
 
 
@@ -266,7 +267,7 @@ void CTripmineGrenade :: BeamBreakThink( void  )
 	// ALERT( at_console, "%f : %f\n", tr.flFraction, m_flBeamLength );
 
 	// respawn detect. 
-	if ( !m_pBeam )
+	if ( !m_hBeam )
 	{
 		MakeBeam( );
 		if ( tr.pHit )
