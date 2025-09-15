@@ -74,7 +74,7 @@ void CEagle::Precache()
 	AddEvent(WepEvt().Primary().Bullets(1, 0, gSkillData.sk_plr_357_bullet, spread, spread, 0, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().PrimaryAlt().Bullets(1, 0, gSkillData.sk_plr_357_bullet, spreadLaser, spreadLaser, 0, WC_FLASH_NORMAL, bulletf));
 
-	AddEvent(WepEvt().BulletFired().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, 0.2f, 94, 109, DISTANT_357, WC_AIVOL_NORMAL));
+	AddEvent(WepEvt().BulletFired().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_357, WC_AIVOL_NORMAL));
 	AddEvent(WepEvt().BulletFired().PunchSet(-4, 0));
 	AddEvent(WepEvt().BulletFired().HideLaser(400));
 

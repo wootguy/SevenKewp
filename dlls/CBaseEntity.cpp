@@ -940,47 +940,38 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 
 			if (iDamage)
 			{
-				pEntity->TraceAttack(pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? DMG_ALWAYSGIB : DMG_NEVERGIB));
-
 				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
+				pEntity->TraceAttack(pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? DMG_ALWAYSGIB : DMG_NEVERGIB));
 			}
 			else {
 				switch (iBulletType) {
 				default:
 				case BULLET_MONSTER_9MM:
-					pEntity->TraceAttack(pevAttacker, gSkillData.sk_9mm_bullet, vecDir, &tr, DMG_BULLET);
-
 					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
-
+					pEntity->TraceAttack(pevAttacker, gSkillData.sk_9mm_bullet, vecDir, &tr, DMG_BULLET);
 					break;
 
 				case BULLET_MONSTER_MP5:
-					pEntity->TraceAttack(pevAttacker, gSkillData.sk_9mmAR_bullet, vecDir, &tr, DMG_BULLET);
-
 					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
-
+					pEntity->TraceAttack(pevAttacker, gSkillData.sk_9mmAR_bullet, vecDir, &tr, DMG_BULLET);
 					break;
 
 				case BULLET_PLAYER_556:
-					pEntity->TraceAttack(pevAttacker, gSkillData.sk_556_bullet, vecDir, &tr, DMG_BULLET);
-
 					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
-
+					pEntity->TraceAttack(pevAttacker, gSkillData.sk_556_bullet, vecDir, &tr, DMG_BULLET);
 					break;
 
 				case BULLET_MONSTER_762:
-					pEntity->TraceAttack(pevAttacker, gSkillData.sk_762_bullet, vecDir, &tr, DMG_BULLET);
-
 					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
-
+					pEntity->TraceAttack(pevAttacker, gSkillData.sk_762_bullet, vecDir, &tr, DMG_BULLET);
 					break;
 
 				case BULLET_MONSTER_12MM:
-					pEntity->TraceAttack(pevAttacker, gSkillData.sk_12mm_bullet, vecDir, &tr, DMG_BULLET);
 					if (!tracer)
 					{
 						DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 					}
+					pEntity->TraceAttack(pevAttacker, gSkillData.sk_12mm_bullet, vecDir, &tr, DMG_BULLET);
 					break;
 
 				case BULLET_NONE: // FIX 
@@ -1118,10 +1109,11 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			}
 			*/
 
+			DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd, sevenkewpEvent ? edict() : NULL);
+
 			if (iDamage)
 			{
 				pEntity->TraceAttack(pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? 0 : DMG_NEVERGIB));
-				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd, sevenkewpEvent ? edict() : NULL);
 			}
 			else switch (iBulletType)
 			{

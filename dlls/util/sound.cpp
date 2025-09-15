@@ -1101,14 +1101,22 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr, Vector vecSrc, Vector vecEnd, int 
 		}
 	}
 
+	const char* snd = rgsz[RANDOM_LONG(0, cnt - 1)];
+	int pitch = 96 + RANDOM_LONG(0, 0xf);
+
 	if (bulletEmitter && !hitMonster) {
 		uint32_t messageTargets = 0xffffff & ~PLRBIT(bulletEmitter);
 
-		StartSound(emitter, CHAN_STATIC, rgsz[RANDOM_LONG(0, cnt - 1)],
-			fvol, fattn, SND_FL_PREDICTED, 96 + RANDOM_LONG(0, 0xf), emitter->v.origin, messageTargets);
+		StartSound(emitter, CHAN_STATIC, snd,
+			fvol, fattn, SND_FL_PREDICTED, pitch, emitter->v.origin, messageTargets);
 	}
 	else {
-		UTIL_EmitAmbientSound(emitter, ptr->vecEndPos, rgsz[RANDOM_LONG(0, cnt - 1)], fvol, fattn, 0, 96 + RANDOM_LONG(0, 0xf));
+		if (hitMonster) {
+			EMIT_SOUND_DYN(emitter, CHAN_BODY, snd, fvol, fattn, 0, pitch);
+		}
+		else {
+			UTIL_EmitAmbientSound(emitter, ptr->vecEndPos, snd, fvol, fattn, 0, pitch);
+		}
 	}
 	// play material hit sound
 	
