@@ -578,16 +578,18 @@ void CHud::ParseServerInfo() {
 		m_sevenkewpVersion = 0;
 	}
 
-	const char* serverHash = gEngfuncs.ServerInfo_ValueForKey("skmd5");
-	const char* myHash = UTIL_HashClientDataFiles();
+	if (IsSevenKewpServer()) {
+		const char* serverHash = gEngfuncs.ServerInfo_ValueForKey("skmd5");
+		const char* myHash = UTIL_HashClientDataFiles();
 
-	if (strcmp(serverHash, myHash)) {
-		PRINTF("Preparing SevenKewp data update (%s != %s)\n", serverHash, myHash);
-		UTIL_DeleteClientDataFiles();
-		m_sevenkewpDataUpdating = true;
-	}
-	else {
-		PRINTF("SevenKewp data is up-to-date (%s)\n", serverHash);
+		if (strcmp(serverHash, myHash)) {
+			PRINTF("Preparing SevenKewp data update (%s != %s)\n", serverHash, myHash);
+			UTIL_DeleteClientDataFiles();
+			m_sevenkewpDataUpdating = true;
+		}
+		else {
+			PRINTF("SevenKewp data is up-to-date (%s)\n", serverHash);
+		}
 	}
 }
 

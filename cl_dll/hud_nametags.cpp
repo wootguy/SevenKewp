@@ -109,17 +109,17 @@ int CHudNametags::Draw(float flTime)
 
         bool clientVisible = pClient->curstate.messagenum >= localPlayer->curstate.messagenum;
 
-		// Don't show an icon if the player is not in our PVS.
+        if (pClient->curstate.messagenum == 0 && info.x == 0 && info.y == 0 && info.z == 0)
+            continue; // hasn't connected yet
+
 		if (!clientVisible && !xray)
-			continue;
+			continue; // Don't show an icon if the player is not in our PVS.
 
-		// Don't show an icon for spectators
 		if (info.specMode && info.specMode != OBS_ROAMING)
-			continue;
+			continue; // Don't show an icon for spectators
 
-		// Don't show an icon for the local player unless we're in thirdperson mode.
 		if (pClient == localPlayer && !cam_thirdperson)
-			continue;
+			continue; // Don't show an icon for the local player unless we're in thirdperson mode.
 		
         // lerp between inaccurate positions for smooth movement
         float lerpt = (now - lastLerp) / lerpTime;
@@ -240,8 +240,16 @@ int CHudNametags::Draw(float flTime)
         memcpy(lastOri, targetOri, sizeof(lastOri));
 
         for (int i = 0; i < MAX_CLIENTS; i++) {
-            extra_player_info_t& info = g_PlayerExtraInfo[i + 1];
-            targetOri[i] = Vector(info.x, info.y, info.z);
+            cl_entity_s* pClient = gEngfuncs.GetEntityByIndex(i + 1);
+            bool clientVisible = pClient->curstate.messagenum >= localPlayer->curstate.messagenum;
+
+            if (clientVisible) {
+                targetOri[i] = pClient->origin;
+            }
+            else {
+                extra_player_info_t& info = g_PlayerExtraInfo[i + 1];
+                targetOri[i] = Vector(info.x, info.y, info.z);
+            }
         } 
     }
 	

@@ -167,6 +167,10 @@ ScorePanel::ScorePanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 		else if(g_ColumnInfo[i].m_pTitle)
 			m_HeaderLabels[i].setText(g_ColumnInfo[i].m_pTitle);
 
+		if (i == 2 && !gHUD.IsSevenKewpServer()) {
+			m_HeaderLabels[i].setText("");
+		}
+
 		int xwide = g_ColumnInfo[i].m_Width;
 		if (ScreenWidth >= 640)
 		{
@@ -300,16 +304,17 @@ void ScorePanel::Update()
 		m_TitleLabel.setText(sz);
 	}
 
-	if (gHUD.IsSevenKewpServer()) {
-		static char mapname[MAX_MAPNAME];
-		const char* mappath = gEngfuncs.pfnGetLevelName();
-		if (strlen(mappath) > 5) {
-			mappath = mappath + 5; // skip "maps/"
-		}
-		safe_sprintf(mapname, MAX_MAPNAME, "Current map: %s", mappath);
-		mapname[strlen(mapname) - 4] = 0; // remove ".bsp"
+	static char mapname[MAX_MAPNAME];
+	const char* mappath = gEngfuncs.pfnGetLevelName();
+	if (strlen(mappath) > 5) {
+		mappath = mappath + 5; // skip "maps/"
+	}
+	safe_sprintf(mapname, MAX_MAPNAME, "Current map: %s", mappath);
+	mapname[strlen(mapname) - 4] = 0; // remove ".bsp"
 
-		m_CurrentMapLabel.setText(mapname);
+	m_CurrentMapLabel.setText(mapname);
+
+	if (gHUD.IsSevenKewpServer()) {
 		m_NextMapLabel.setText("Next map: %s", gViewPort->m_szNextMap);
 
 		if (gViewPort->m_timeLeft >= 0) {
@@ -323,7 +328,10 @@ void ScorePanel::Update()
 		else {
 			m_TimeleftLabel.setText("Time left: Infinite");
 		}
-		
+	}
+	else {
+		m_NextMapLabel.setText("");
+		m_TimeleftLabel.setText("");
 	}
 
 	m_iRows = 0;
