@@ -908,6 +908,8 @@ void CBasePlayer::RemoveAllItems( BOOL removeSuit, BOOL removeItemsOnly)
 
 	if (!removeItemsOnly)
 		HideAllItems(removeSuit);
+
+	ApplyEffects();
 }
 
 /*

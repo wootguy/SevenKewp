@@ -146,6 +146,7 @@ StringMap g_itemNameRemap = {
 	{"ammo_egonclip", "ammo_gaussclip"},
 	{"ammo_mp5grenades", "ammo_ARgrenades"},
 	{"ammo_argrenades", "ammo_ARgrenades"},
+	{"ammo_762", "ammo_crossbow"},
 
 	// keyvalues that should be ignored
 	{"equipmode", "<keyvalue>"},

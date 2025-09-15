@@ -163,6 +163,10 @@ void COsprey :: Spawn( void )
 	float zofs = 134;
 
 	InitModel();
+
+	if (!pev->skin && FClassnameIs(pev, "monster_blkop_osprey"))
+		pev->skin = 2;
+
 	SetSize(Vector( -480, -480, -100 + zofs), Vector(480, 480, 64 + zofs));
 
 	Vector offset = Vector(0, 0, -zofs); // so what you see in the editor matches the game
@@ -220,7 +224,7 @@ void COsprey::Precache( void )
 	CBaseMonster::Precache();
 
 	bool isBlkOps = FClassnameIs(pev, "monster_blkop_osprey");
-	m_defaultModel = isBlkOps ? "models/blkop_osprey.mdl" : "models/osprey.mdl";
+	m_defaultModel = "models/osprey.mdl";
 	replenishMonster = isBlkOps ? "monster_male_assassin" : "monster_human_grunt";
 
 	UTIL_PrecacheOther(replenishMonster);
