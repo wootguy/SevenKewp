@@ -160,7 +160,9 @@ int CHudNametags::Draw(float flTime)
         //int m_iBeam = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/smoke.spr");
         //gEngfuncs.pEfxAPI->R_BeamPoints(headOri, v_origin, m_iBeam, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1);
 
-        const char* name = g_PlayerInfoList[i + 1].name;
+        bool showHpOnly = m_HUD_nametag_hp->value == 2;
+
+        const char* name = showHpOnly ? "" : g_PlayerInfoList[i + 1].name;
         int nameWidth, nameHeight;
         GetConsoleStringSize(name, &nameWidth, &nameHeight);
         
@@ -174,7 +176,8 @@ int CHudNametags::Draw(float flTime)
             hpWidth = 0;
         }
         else {
-            hpStr = hp ? UTIL_VarArgs(" %d%%", (int)hp) : " DEAD";
+            const char* pad = showHpOnly ? "" : " ";
+            hpStr = hp ? UTIL_VarArgs("%s%d%%", pad, (int)hp) : " DEAD";
             GetConsoleStringSize(hpStr, &hpWidth, &hpHeight);
         }
 
