@@ -246,17 +246,26 @@ void CShockRifle::BeamAttack(bool isSecondary) {
 
 	UTIL_MakeVectors(vecAnglesAim);
 
-	const auto vecSrc =
-		m_pPlayer->GetGunPosition() +
+	Vector vecHead = m_pPlayer->GetGunPosition();
+
+	Vector vecSrc = vecHead +
 		gpGlobals->v_forward * 16 +
 		gpGlobals->v_right * 9 +
 		gpGlobals->v_up * -7;
+
+	// adjust beam direction so that it lands in the center of the crosshair at the impact point
+	// otherwise it will be slightly low and to the right
+	TraceResult tr;
+	UTIL_TraceLine(vecHead, vecHead + gpGlobals->v_forward * 4096, dont_ignore_monsters, edict(), &tr);
+	Vector targetdir = (tr.vecEndPos - vecSrc).Normalize();
+	Vector beamAngles = UTIL_VecToAngles(targetdir);
+	beamAngles.x *= -1;
 
 	// Update auto-aim
 	//m_pPlayer->GetAutoaimVectorFromPoint(vecSrc, AUTOAIM_10DEGREES);
 	m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 
-	CShockBeam* pBeam = CShockBeam::CreateShockBeam(vecSrc, vecAnglesAim, m_pPlayer);
+	CShockBeam* pBeam = CShockBeam::CreateShockBeam(vecSrc, beamAngles, m_pPlayer);
 
 	UTIL_SetOrigin(pBeam->m_hBeam1->pev, pBeam->pev->origin);
 #endif

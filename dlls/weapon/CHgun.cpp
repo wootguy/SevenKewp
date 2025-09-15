@@ -162,10 +162,19 @@ void CHgun::PrimaryAttack()
 	}
 
 #ifndef CLIENT_DLL
-	UTIL_MakeVectors( m_pPlayer->pev->v_angle );
+	UTIL_MakeVectors( m_pPlayer->pev->v_angle);
 
-	CBaseEntity *pHornet = CBaseEntity::Create( "hornet", m_pPlayer->GetGunPosition( ) + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -12, m_pPlayer->pev->v_angle, true, m_pPlayer->edict() );
-	pHornet->pev->velocity = gpGlobals->v_forward * 300;
+	Vector vecHead = m_pPlayer->GetGunPosition();
+	Vector vecSrc = vecHead + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -12;
+
+	TraceResult tr;
+	UTIL_TraceLine(vecHead, vecHead + gpGlobals->v_forward * 4096, dont_ignore_monsters, edict(), &tr);
+	Vector targetdir = (tr.vecEndPos - vecSrc).Normalize();
+	Vector hornetAngles = UTIL_VecToAngles(targetdir);
+	hornetAngles.x *= -1;
+
+	CBaseEntity *pHornet = CBaseEntity::Create( "hornet", vecSrc, hornetAngles, true, m_pPlayer->edict() );
+	pHornet->pev->velocity = targetdir * 300;
 
 	m_flRechargeTime = gpGlobals->time + GetRechargeTime();
 #endif
@@ -223,10 +232,19 @@ void CHgun::SecondaryAttack( void )
 #ifndef CLIENT_DLL
 	CBaseEntity *pHornet;
 	Vector vecSrc;
+	Vector vecHead = m_pPlayer->GetGunPosition();
+	
+	UTIL_MakeVectors( m_pPlayer->pev->v_angle);
 
-	UTIL_MakeVectors( m_pPlayer->pev->v_angle );
+	Vector vecSpread = VECTOR_CONE_3DEGREES;
+	float x = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
+	float y = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
 
-	vecSrc = m_pPlayer->GetGunPosition( ) + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -12;
+	Vector vecDir = gpGlobals->v_forward +
+		x * vecSpread.x * gpGlobals->v_right +
+		y * vecSpread.y * gpGlobals->v_up;
+
+	vecSrc = vecHead + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -12;
 
 	m_iFirePhase++;
 	switch ( m_iFirePhase )
@@ -262,8 +280,16 @@ void CHgun::SecondaryAttack( void )
 		break;
 	}
 
-	pHornet = CBaseEntity::Create( "hornet", vecSrc, m_pPlayer->pev->v_angle, true, m_pPlayer->edict() );
-	pHornet->pev->velocity = gpGlobals->v_forward * 1200;
+	// adjust beam direction so that it lands in the center of the crosshair at the impact point
+	// otherwise it will be slightly low and to the right
+	TraceResult tr;
+	UTIL_TraceLine(vecHead, vecHead + vecDir * 4096, dont_ignore_monsters, edict(), &tr);
+	Vector targetdir = (tr.vecEndPos - vecSrc).Normalize();
+	Vector hornetAngles = UTIL_VecToAngles(targetdir);
+	hornetAngles.x *= -1;
+
+	pHornet = CBaseEntity::Create( "hornet", vecSrc, hornetAngles, true, m_pPlayer->edict() );
+	pHornet->pev->velocity = targetdir * 1200;
 	pHornet->pev->angles = UTIL_VecToAngles( pHornet->pev->velocity );
 
 	pHornet->SetThink( &CHornet::StartDart );

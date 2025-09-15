@@ -340,7 +340,7 @@ void CHornet :: TrackTarget ( void )
 
 	pev->velocity = ( vecFlightDir + vecDirToEnemy).Normalize();
 
-	if ( pev->owner && (pev->owner->v.flags & FL_MONSTER) )
+	//if ( pev->owner && (pev->owner->v.flags & FL_MONSTER) )
 	{
 		// random pattern only applies to hornets fired by monsters, not players. 
 

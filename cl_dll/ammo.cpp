@@ -1513,10 +1513,14 @@ void DrawCrossHair(float accuracyX, float accuracyY, int len, int thick, int bor
 }
 
 void CHudAmmo::DrawDynamicCrosshair() {
-	if (!m_pWeapon || m_hud_crosshair_mode->value != 1 || !gHUD.IsSevenKewpServer())
+	if (!m_pWeapon || m_hud_crosshair_mode->value <= 0 || !gHUD.IsSevenKewpServer())
 		return;
 
 	WEAPON* pw = m_pWeapon; // shorthand
+
+	if (!pw->hCrosshair && m_hud_crosshair_mode->value != 2) {
+		return;
+	}
 
 	if (pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR))
 		return;
