@@ -5,6 +5,7 @@
 #include "eng_wrappers.h"
 extern int g_runfuncs;
 extern int g_runningKickbackPred;
+extern int g_last_attack_mode;
 extern Vector g_vApplyVel;
 void UpdateZoomCrosshair(int id, bool zoom);
 void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning);
@@ -195,6 +196,7 @@ BOOL CWeaponCustom::Deploy()
 	g_irunninggausspred = false;
 	m_pPlayer->m_flNextAttack = 0.5;
 	m_flTimeWeaponIdle = 1.0;
+	g_last_attack_mode = 1;
 
 #else
 	const char* animSet = GetAnimSet();
@@ -212,10 +214,10 @@ BOOL CWeaponCustom::Deploy()
 
 	int deployTime = IsAkimbo() ? params.akimbo.akimboDeployTime : params.deployTime;
 	int deployAnimTime = IsAkimbo() ? params.akimbo.akimboDeployAnimTime : params.deployAnimTime;
+	if (!deployAnimTime)
+		deployAnimTime = deployTime ? deployTime : 1000; // default
 	if (!deployTime)
 		deployTime = 500; // default
-	if (!deployAnimTime)
-		deployAnimTime = 1000; // default
 
 	float nextAttack = UTIL_WeaponTimeBase() + deployTime * 0.001f;
 	float nextIdle = UTIL_WeaponTimeBase() + deployAnimTime * 0.001f;
@@ -912,6 +914,8 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		WRITE_SHORT(params.akimbo.akimboDeployAnimTime); sentBytes += 2;
 		WRITE_BYTE(params.akimbo.holsterAnim); sentBytes += 1;
 		WRITE_SHORT(params.akimbo.holsterTime); sentBytes += 2;
+		WRITE_SHORT(params.akimbo.accuracyX); sentBytes += 2;
+		WRITE_SHORT(params.akimbo.accuracyY); sentBytes += 2;
 	}
 
 	if (params.flags & FL_WC_WEP_HAS_LASER) {
@@ -946,6 +950,8 @@ void CWeaponCustom::SendPredictionData(edict_t* target) {
 		WRITE_SHORT(opts.cooldownFail); sentBytes += 2;
 		WRITE_SHORT(opts.chargeTime); sentBytes += 2;
 		WRITE_SHORT(opts.chargeCancelTime); sentBytes += 2;
+		WRITE_SHORT(opts.accuracyX); sentBytes += 2;
+		WRITE_SHORT(opts.accuracyY); sentBytes += 2;
 	}
 	MESSAGE_END();
 
@@ -1193,14 +1199,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	Vector spread(SPREAD_TO_FLOAT(evt.bullets.spreadX), SPREAD_TO_FLOAT(evt.bullets.spreadY), 0);
 
 	if (evt.bullets.flags & FL_WC_BULLETS_DYNAMIC_SPREAD) {
-		if ((m_pPlayer->pev->button & IN_DUCK) != 0)
-		{
-			spread = spread * 0.5f;
-		}
-		else if ((m_pPlayer->pev->button & (IN_MOVERIGHT | IN_MOVELEFT | IN_FORWARD | IN_BACK)) != 0)
-		{
-			spread = spread * 2.0f;
-		}
+		spread = spread * GetCurrentAccuracyMultiplier();
 	}
 
 	if (evt.bullets.flashSz) {
@@ -1931,12 +1930,89 @@ void CWeaponCustom::UpdateLaser() {
 #endif
 }
 
+bool CWeaponCustom::IsPrimaryAltActive() {
+	if (!(params.flags & FL_WC_WEP_HAS_ALT_PRIMARY)) {
+		return false;
+	}
+
+	if (WallTime() - m_lastLaserToggle > 0.1f) {
+		m_lastLaserState = IsLaserOn(); // debounce
+	}
+	
+	return m_lastLaserState;
+}
+
 CustomWeaponShootOpts& CWeaponCustom::GetShootOpts(int attackIdx) {
 	if (attackIdx == 0 && IsPrimaryAltActive()) {
 		return params.shootOpts[3];
 	}
 	
 	return params.shootOpts[attackIdx];
+}
+
+float CWeaponCustom::GetCurrentAccuracyMultiplier() {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 1.0f;
+	
+	float multiplier = 1.0f;
+
+	Vector flatVelocity = m_pPlayer->pev->velocity;
+	flatVelocity.z = 0;
+
+	bool isMoving = flatVelocity.Length() > 200;
+
+	if (!(m_pPlayer->pev->flags & FL_ONGROUND)) {
+		multiplier *= 3.0f;
+	}
+	else if (m_pPlayer->pev->flags & FL_DUCKING) {
+		multiplier *= 0.5f;
+	}
+	else if (isMoving) {
+		multiplier *= 2.0f;
+	}
+
+	return multiplier;
+}
+
+void CWeaponCustom::GetCurrentAccuracy(float& accuracyX, float& accuracyY, float& accuracyX2, float& accuracyY2) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+	
+	if (IsPrimaryAltActive()) {
+		accuracyX = params.shootOpts[3].accuracyX * 0.01f;
+		accuracyY = params.shootOpts[3].accuracyY * 0.01f;
+	}
+	else if (IsAkimbo()) {
+		accuracyX = params.akimbo.accuracyX * 0.01f;
+		accuracyY = params.akimbo.accuracyY * 0.01f;
+	}
+	else {
+		accuracyX = params.shootOpts[0].accuracyX * 0.01f;
+		accuracyY = params.shootOpts[0].accuracyY * 0.01f;
+	}
+
+	bool hasSecondary = params.flags & FL_WC_WEP_HAS_SECONDARY;
+	bool secondaryShoots = !(params.shootOpts[1].flags & FL_WC_SHOOT_NO_ATTACK);
+
+	if (hasSecondary && secondaryShoots) {
+		accuracyX2 = params.shootOpts[1].accuracyX * 0.01f;
+		accuracyY2 = params.shootOpts[1].accuracyY * 0.01f;
+	}
+	else {
+		accuracyX2 = accuracyX;
+		accuracyY2 = accuracyY;
+	}
+
+	if (params.flags & FL_WC_WEP_DYNAMIC_ACCURACY) {
+		float multiplier = GetCurrentAccuracyMultiplier();
+
+		accuracyX *= multiplier;
+		accuracyY *= multiplier;
+		accuracyX2 *= multiplier;
+		accuracyY2 *= multiplier;
+	}
 }
 
 int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {

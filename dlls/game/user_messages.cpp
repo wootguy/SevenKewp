@@ -22,6 +22,7 @@ int gmsgBattery = 0;
 int gmsgTrain = 0;
 int gmsgLogo = 0;
 int gmsgWeaponList = 0;
+int gmsgWeaponListX = 0;
 int gmsgAmmoX = 0;
 int gmsgAmmoXX = 0;
 int gmsgHudText = 0;
@@ -126,6 +127,7 @@ void LinkUserMessages(void)
 	gmsgSayText = REG_USER_MSG("SayText", -1);
 	gmsgTextMsg = REG_USER_MSG("TextMsg", -1);
 	gmsgWeaponList = REG_USER_MSG("WeaponList", -1);
+	gmsgWeaponListX = REG_USER_MSG("WeaponListX", -1);
 	gmsgResetHUD = REG_USER_MSG("ResetHUD", 1);		// called every respawn
 	gmsgInitHUD = REG_USER_MSG("InitHUD", 0);		// called every time a new player joins the server
 	gmsgShowGameTitle = REG_USER_MSG("GameTitle", 1);

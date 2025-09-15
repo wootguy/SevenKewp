@@ -2,6 +2,7 @@
 #include "CBasePlayerWeapon.h"
 #include "custom_weapon.h"
 #include "event_args.h"
+#include "shared_util.h"
 
 #define WC_SERVER_EVENT_QUEUE_SZ 32
 
@@ -42,6 +43,7 @@ public:
 	// for prediction code, don't spam events/toggles while waiting for the new server state
 	float m_lastZoomToggle;
 	float m_lastLaserToggle;
+	float m_lastLaserState;
 	float m_lastDeploy;
 	float m_lastChargeDown; // lazy fix for chargedown effects playing twice
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
@@ -127,8 +129,10 @@ public:
 	BOOL IsLaserOn() { return m_flReleaseThrow != 0; }
 	void SetLaser(bool enable);
 	void UpdateLaser();
-	bool IsPrimaryAltActive() { return (params.flags & FL_WC_WEP_HAS_ALT_PRIMARY) && IsLaserOn(); }
+	bool IsPrimaryAltActive();
 	CustomWeaponShootOpts& GetShootOpts(int attackIdx);
+	float GetCurrentAccuracyMultiplier();
+	void GetCurrentAccuracy(float& accuracyX, float& accuracyY, float& accuracyX2, float& accuracyY2);
 
 	int AddDuplicate(CBasePlayerItem* pOriginal) override;
 	inline bool IsExclusiveHold() { return params.flags & FL_WC_WEP_EXCLUSIVE_HOLD; }

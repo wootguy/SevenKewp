@@ -119,6 +119,7 @@ int CHgun::GetItemInfo(ItemInfo *p)
 	p->iFlags = ITEM_FLAG_NOAUTOSWITCHEMPTY | ITEM_FLAG_NOAUTORELOAD;
 	p->iWeight = HORNETGUN_WEIGHT;
 
+	p->fAccuracyDeg = 3;
 	return 1;
 }
 

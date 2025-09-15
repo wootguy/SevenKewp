@@ -384,5 +384,9 @@ int CShockRifle::GetItemInfo(ItemInfo* p)
 	p->iId = WEAPON_SHOCKRIFLE;
 	p->iWeight = SHOCKRIFLE_WEIGHT;
 	p->iFlags = ITEM_FLAG_NOAUTORELOAD | ITEM_FLAG_NOAUTOSWITCHEMPTY | ITEM_FLAG_SELECTONEMPTY;
+
+	p->fAccuracyDeg = 0;
+	p->fAccuracyDeg2 = 6;
+	p->iFlagsEx = WEP_FLAG_SECONDARY_ACCURACY;
 	return 1;
 }

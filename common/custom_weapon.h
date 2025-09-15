@@ -25,6 +25,7 @@
 #define FL_WC_WEP_EXCLUSIVE_HOLD	(1<<9)	// weapon must be dropped before switching to other weapons
 #define FL_WC_WEP_USE_ONLY			(1<<10)	// weapon is collectable with the use key, not by touching
 #define FL_WC_WEP_HAS_LASER			(1<<11)
+#define FL_WC_WEP_DYNAMIC_ACCURACY	(1<<12) // crosshair widens with movement and shrinks when crouched
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2		// don't run standard weapon attack logic (shoot animations, clicking)
@@ -662,6 +663,8 @@ struct CustomWeaponShootOpts {
 	uint16_t chargeTime;		// how long the attack button must be held before the attack begins (milliseconds)
 	uint16_t chargeCancelTime;	// minimum time before a charge can be cancelled (milliseconds)
 	uint16_t chargeMoveSpeedMult; // movement speed multiplier while charging (1-65535) (65535 = 100%) (0 = don't change)
+	uint16_t accuracyX;			// horizontal accuracy for crosshair (degrees * 100)
+	uint16_t accuracyY;			// vertical accuracy for crosshair (degrees * 100)
 };
 
 struct WeaponCustomReload {
@@ -685,6 +688,8 @@ struct WeaponCustomAkimbo {
 	uint16_t akimboDeployAnimTime;  // time before the weapon idles
 	uint8_t holsterAnim;		// for reloading a single weapon
 	uint16_t holsterTime;
+	uint16_t accuracyX;			// horizontal accuracy for crosshair (degrees * 100)
+	uint16_t accuracyY;			// vertical accuracy for crosshair (degrees * 100)
 };
 
 struct WeaponCustomLaser {

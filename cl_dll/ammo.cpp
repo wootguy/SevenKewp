@@ -30,12 +30,18 @@
 #include "vgui_TeamFortressViewport.h"
 #include "custom_weapon.h"
 #include "ModPlayerState.h"
+#include "shared_util.h"
 
 CustomWeaponParams* GetCustomWeaponParams(int id);
+void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY, float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy);
 void GetCurrentCustomWeaponState(int id, int& akimboClip);
 bool CanWeaponAkimbo(int id);
 bool IsExclusiveWeapon(int id);
 void InitCustomWeapon(int id);
+
+extern int g_last_attack_mode;
+extern float g_last_attack_time;
+extern vec3_t v_punchangle;
 
 // for aborting an action while holding an exclusive weapon
 bool ExclusiveWeaponAbort() {
@@ -283,6 +289,7 @@ HSPRITE ghsprBuckets;					// Sprite for top row of weapons menu
 DECLARE_MESSAGE(m_Ammo, CurWeapon );	// Current weapon and clip
 DECLARE_MESSAGE(m_Ammo, CurWeaponX );	// Current weapon and clip (large clip)
 DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
+DECLARE_MESSAGE(m_Ammo, WeaponListX);	// new weapon type (extra parameters)
 DECLARE_MESSAGE(m_Ammo, CustomWep);		// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, CustomWepEv);	// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, PmodelAnim);	// player model anim
@@ -329,6 +336,7 @@ int CHudAmmo::Init(void)
 	HOOK_MESSAGE(CurWeapon);
 	HOOK_MESSAGE(CurWeaponX);
 	HOOK_MESSAGE(WeaponList);
+	HOOK_MESSAGE(WeaponListX);
 	HOOK_MESSAGE(CustomWep);
 	HOOK_MESSAGE(CustomWepEv);
 	HOOK_MESSAGE(PmodelAnim);
@@ -359,6 +367,11 @@ int CHudAmmo::Init(void)
 
 	CVAR_CREATE( "hud_drawhistory_time", HISTORY_DRAW_TIME, 0 );
 	CVAR_CREATE( "hud_fastswitch", "0", FCVAR_ARCHIVE );		// controls whether or not weapons can be selected in one keypress
+	
+	m_hud_crosshair_mode = gEngfuncs.pfnRegisterVariable("hud_crosshair_mode", "1", FCVAR_ARCHIVE);
+	m_hud_crosshair_length = gEngfuncs.pfnRegisterVariable("hud_crosshair_length", "15", FCVAR_ARCHIVE);
+	m_hud_crosshair_width = gEngfuncs.pfnRegisterVariable("hud_crosshair_width", "-1", FCVAR_ARCHIVE);
+	m_hud_crosshair_border = gEngfuncs.pfnRegisterVariable("hud_crosshair_border", "1", FCVAR_ARCHIVE);
 
 	m_iFlags |= HUD_ACTIVE; //!!!
 
@@ -650,11 +663,9 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 	return 1;
 }
 
-// 
-//  CurWeapon: Update hud state with the current weapon and clip count. Ammo
-//  counts are updated with AmmoX. Server assures that the Weapon ammo type 
-//  numbers match a real ammo type.
-//
+bool CHudAmmo::IsWeaponZoomed() {
+	return gHUD.m_iFOV < 90;
+}
 
 void CHudAmmo::UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget) {
 	if (id < 1)
@@ -686,6 +697,11 @@ void UpdateZoomCrosshair(int id, bool zoom) {
 	gHUD.m_Ammo.UpdateZoomCrosshair(id, zoom, true);
 }
 
+// 
+//  CurWeapon: Update hud state with the current weapon and clip count. Ammo
+//  counts are updated with AmmoX. Server assures that the Weapon ammo type 
+//  numbers match a real ammo type.
+//
 int CHudAmmo::CurWeapon(int iState, int iId, int iClip) {
 	static wrect_t nullrc;
 	int fOnTarget = FALSE;
@@ -730,7 +746,7 @@ int CHudAmmo::CurWeapon(int iState, int iId, int iClip) {
 
 	m_pWeapon = pWeapon;
 
-	UpdateZoomCrosshair(iId, gHUD.m_iFOV < 90, fOnTarget);
+	UpdateZoomCrosshair(iId, IsWeaponZoomed(), fOnTarget);
 
 	m_fFade = 200.0f; //!!!
 	m_iFlags |= HUD_ACTIVE;
@@ -814,6 +830,46 @@ int CHudAmmo::MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf )
 	return 1;
 }
 
+int CHudAmmo::MsgFunc_WeaponListX(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	uint8_t id = READ_BYTE();
+	uint8_t flags = READ_BYTE();
+	float accuracy = READ_SHORT() * 0.01f;
+	float accuracy2 = READ_SHORT() * 0.01f;
+	float accuracyY = READ_SHORT() * 0.01f;
+	float accuracyY2 = READ_SHORT() * 0.01f;
+
+	if (id >= MAX_WEAPONS) {
+		PRINTF("WeaponListX: Invalid weapon ID %d\n", (int)id);
+		return 1;
+	}
+
+	WEAPON* pWeapon = gWR.GetWeapon(id);
+
+	if (!pWeapon)
+		return 1;
+
+	pWeapon->iFlagsEx = flags;
+	bool hasSecondaryAccuracy = pWeapon->iFlagsEx & WEP_FLAG_SECONDARY_ACCURACY;
+
+	pWeapon->accuracyX = accuracy;
+	pWeapon->accuracyX2 = hasSecondaryAccuracy ? accuracy2 : accuracy;
+	pWeapon->accuracyY = pWeapon->accuracyX;
+	pWeapon->accuracyY2 = pWeapon->accuracyX2;
+
+	if (flags & WEP_FLAG_VERTICAL_ACCURACY) {
+		pWeapon->accuracyY = accuracyY;
+
+		if (hasSecondaryAccuracy)
+			pWeapon->accuracyY2 = accuracyY2;
+	}
+
+	return 1;
+}
+
+
 // set up parameters for custom weapon prediction
 int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 {
@@ -871,6 +927,8 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		parms.akimbo.akimboDeployAnimTime = READ_SHORT();
 		parms.akimbo.holsterAnim = READ_BYTE();
 		parms.akimbo.holsterTime = READ_SHORT();
+		parms.akimbo.accuracyX = READ_SHORT();
+		parms.akimbo.accuracyY = READ_SHORT();
 	}
 
 	if (parms.flags & FL_WC_WEP_HAS_LASER) {
@@ -905,6 +963,8 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		opts.cooldownFail = READ_SHORT();
 		opts.chargeTime = READ_SHORT();
 		opts.chargeCancelTime = READ_SHORT();
+		opts.accuracyX = READ_SHORT();
+		opts.accuracyY = READ_SHORT();
 	}
 
 	return 1;
@@ -1263,6 +1323,8 @@ int CHudAmmo::Draw(float flTime)
 
 	WEAPON *pw = m_pWeapon; // shorthand
 
+	DrawDynamicCrosshair();
+
 	// SPR_Draw Ammo
 	if ((pw->iAmmoType < 0) && (pw->iAmmo2Type < 0))
 		return 0;
@@ -1366,7 +1428,174 @@ int CHudAmmo::Draw(float flTime)
 			SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo2);
 		}
 	}
+
 	return 1;
+}
+
+// converts an accuracy in degrees to a pixel gap for the crosshair
+int CrosshairGapPixels(float accuracyDeg, bool isVertical) {
+	int screenW = ScreenWidth;
+	int screenH = ScreenHeight;
+
+	float aspect = (float)screenW / (float)screenH;
+	float baseAspect = 4.0f / 3.0f; // GoldSrc aspect used in FOV calculation
+
+	// convert GoldSrc fov to real FOV
+	float fovXRad43 = gHUD.m_iFOV * (M_PI / 180.0f);
+	float fovXRad = 2.0f * atan(tan(fovXRad43 * 0.5f) * (aspect / baseAspect));
+	float fovYRad = 2.0f * atan(tan(fovXRad * 0.5f) / aspect);
+
+	// accuracy angle in radians
+	float accRad = accuracyDeg * 0.5f * (M_PI / 180.0f);
+	float spread = tan(accRad); // for VECTOR_CONE_* math
+
+	if (isVertical) {
+		return (screenW * 0.5f) * (tan(accRad) / tan(fovXRad * 0.5f));
+	}
+	else {
+		return (screenH * 0.5f) * (tan(accRad) / tan(fovYRad * 0.5f));
+	}
+}
+
+void DrawCrossHair(float accuracyX, float accuracyY, int len, int thick, int border) {
+	int r, g, b, a;
+
+	int centerX = ScreenWidth / 2;
+	int centerY = ScreenHeight / 2;
+
+	int gapX = 10;
+	int gapY = 10;
+	int hthick = thick / 2;
+
+	int minGap = thick + border * 4;
+
+	gapX = V_max(CrosshairGapPixels(accuracyX, false), minGap);
+	gapY = V_max(CrosshairGapPixels(accuracyY, true), minGap);
+
+	if (gapX == minGap && gapY == minGap) {
+		//len *= 0.75f;
+	}
+	a = 200;
+	
+
+	if (border > 0) {
+		int blen = len + border * 2;
+		int bthick = thick + border * 2;
+		int bhthick = bthick / 2;
+		r = g = b = 0;
+
+		// horizontal
+		gEngfuncs.pfnFillRGBABlend(centerX - (gapX + blen - border), centerY - bhthick, blen, bthick, r, g, b, a);
+		gEngfuncs.pfnFillRGBABlend(centerX + gapX - border, centerY - bhthick, blen, bthick, r, g, b, a);
+
+		// vertical
+		gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY - (gapY + blen - border), bthick, blen, r, g, b, a);
+		gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY + gapY - border, bthick, blen, r, g, b, a);
+
+		// center dot
+		gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY - bhthick, bthick, bthick, r, g, b, a);
+		gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY - bhthick, bthick, bthick, r, g, b, a);
+	}
+
+	UnpackRGB(r, g, b, RGB_YELLOWISH);
+
+	// horizontal
+	gEngfuncs.pfnFillRGBABlend(centerX - (gapX + len), centerY - hthick, len, thick, r, g, b, a);
+	gEngfuncs.pfnFillRGBABlend(centerX + gapX, centerY - hthick, len, thick, r, g, b, a);
+
+	// vertical
+	gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY - (gapY + len), thick, len, r, g, b, a);
+	gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY + gapY, thick, len, r, g, b, a);
+
+	// center dot
+	gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY - hthick, thick, thick, r, g, b, a);
+	gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY - hthick, thick, thick, r, g, b, a);
+}
+
+void CHudAmmo::DrawDynamicCrosshair() {
+	if (!m_pWeapon || m_hud_crosshair_mode->value != 1)
+		return;
+
+	WEAPON* pw = m_pWeapon; // shorthand
+
+	if (pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR))
+		return;
+
+	if (g_crosshair_active) {
+		static wrect_t nullrc;
+		SetCrosshair(0, nullrc, 0, 0, 0);
+	}
+	
+	float accuracyX = pw->accuracyX;
+	float accuracyY = pw->accuracyY;
+	float accuracyX2 = pw->accuracyX2;
+	float accuracyY2 = pw->accuracyY2;
+	bool dynamicAccuracy = pw->iFlagsEx & WEP_FLAG_DYNAMIC_ACCURACY;
+
+	GetCurrentCustomWeaponAccuracy(pw->iId, accuracyX, accuracyY, accuracyX2, accuracyY2, dynamicAccuracy);
+
+	float now = gEngfuncs.GetClientTime();
+	if (g_last_attack_mode == 2 && (now - g_last_attack_time) < 2.0f) {
+		accuracyX = accuracyX2;
+		accuracyY = accuracyY2;
+	}
+
+	// lerp between accuracy changes
+	{
+		static int lastWeaponId;
+		static float lastAccuracyX;
+		static float lastAccuracyY;
+		static float nextAccuracyX;
+		static float nextAccuracyY;
+		static float lerpStart;
+
+		if (lastWeaponId != pw->iId) {
+			lastWeaponId = pw->iId;
+			lastAccuracyX = accuracyX;
+			lastAccuracyY = accuracyY;
+			nextAccuracyX = accuracyX;
+			nextAccuracyY = accuracyY;
+			lerpStart = now;
+		}
+
+		if (accuracyX != nextAccuracyX || accuracyY != nextAccuracyY) {
+			lastAccuracyX = nextAccuracyX;
+			lastAccuracyY = nextAccuracyY;
+			nextAccuracyX = accuracyX;
+			nextAccuracyY = accuracyY;
+			lerpStart = now;
+		}
+
+		float t = V_min(0.1f, (now - lerpStart)) / 0.1f;
+		accuracyX = lastAccuracyX + (nextAccuracyX - lastAccuracyX) * t;
+		accuracyY = lastAccuracyY + (nextAccuracyY - lastAccuracyY) * t;
+		accuracyX2 = accuracyX;
+		accuracyY2 = accuracyY;
+	}
+	
+
+	float punch = V_max(fabs(v_punchangle[0]), fabs(v_punchangle[1]));
+	if (punch > 0) {
+		punch = powf(punch, 0.5f);
+		accuracyX += punch;
+		accuracyY += punch;
+		accuracyX2 += punch;
+		accuracyY2 += punch;
+	}
+
+	int len = clamp(m_hud_crosshair_length->value, 1, 1000);
+	int width = clamp(m_hud_crosshair_width->value, 1, 1000);
+	int border = clamp(m_hud_crosshair_border->value, 0, 1000);
+
+	if (m_hud_crosshair_width->value == -1) {
+		// auto size
+		width = 2;
+		if (ScreenHeight <= 768) {
+			width = 1;
+		}
+	}
+
+	DrawCrossHair(accuracyX, accuracyY, len, width, border);
 }
 
 

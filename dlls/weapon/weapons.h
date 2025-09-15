@@ -33,6 +33,11 @@ typedef struct
 	int		iId;
 	int		iFlags;
 	int		iWeight;// this value used to determine this weapon's importance in autoselection.
+	int		iFlagsEx; // WEP_FLAG_*
+	float	fAccuracyDeg; // degrees of accuracy when standing motionless
+	float	fAccuracyDeg2; // degrees of accuracy when standing motionless (secondary)
+	float	fAccuracyDegY; // vertical degrees of accuracy
+	float	fAccuracyDegY2; // vertical degrees of accuracy (secondary)
 } ItemInfo;
 
 typedef struct

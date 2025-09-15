@@ -18,6 +18,7 @@ EXPORT extern int gmsgBattery;
 EXPORT extern int gmsgTrain;
 EXPORT extern int gmsgLogo;
 EXPORT extern int gmsgWeaponList;
+EXPORT extern int gmsgWeaponListX; // more parameters
 EXPORT extern int gmsgAmmoX;
 EXPORT extern int gmsgAmmoXX; // Extra-Extra-Large ammo count <:)
 EXPORT extern int gmsgHudText;

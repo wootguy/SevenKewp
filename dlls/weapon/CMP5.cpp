@@ -115,6 +115,8 @@ int CMP5::GetItemInfo(ItemInfo *p)
 	p->iId = m_iId = WEAPON_MP5;
 	p->iWeight = MP5_WEIGHT;
 
+	p->fAccuracyDeg = 6;
+
 	return 1;
 }
 

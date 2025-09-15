@@ -49,6 +49,7 @@ int CPython::GetItemInfo(ItemInfo *p)
 	p->iId = m_iId = WEAPON_PYTHON;
 	p->iWeight = PYTHON_WEIGHT;
 
+	p->fAccuracyDeg = 1;
 	return 1;
 }
 

@@ -55,6 +55,8 @@ void CUzi::Precache()
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
 	primary.ammoCost = 1;
 	primary.cooldown = 70;
+	primary.accuracyX = 6 * 100;
+	primary.accuracyY = 6 * 100;
 
 	CustomWeaponShootOpts& tertiary = params.shootOpts[2];
 	tertiary.ammoCost = 0;
@@ -70,6 +72,8 @@ void CUzi::Precache()
 	params.akimbo.reload.time = 2360;
 	params.akimbo.akimboDeployAnim = UZI_AKIMBO_DEPLOY;
 	params.akimbo.akimboDeployTime = 500;
+	params.akimbo.accuracyX = 9 * 100;
+	params.akimbo.accuracyY = 9 * 100;
 
 	float spreadSingle = VECTOR_CONE_6DEGREES.x;
 	float spreadDual = VECTOR_CONE_9DEGREES.x;

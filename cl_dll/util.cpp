@@ -34,6 +34,8 @@
 vec3_t vec3_origin( 0, 0, 0 ); // linux complains this is doubly defined, yet windows requires it
 #endif
 
+bool g_crosshair_active;
+
 HSPRITE LoadSprite(const char *pszName)
 {
 	int iRes;

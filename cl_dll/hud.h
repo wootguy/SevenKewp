@@ -107,15 +107,19 @@ public:
 	int Init( void );
 	int VidInit( void );
 	int Draw(float flTime);
+	void DrawDynamicCrosshair();
 	void Think(void);
 	void Reset(void);
 	virtual const char* HudName() { return "CHudAmmo"; }
 	int DrawWList(float flTime);
 	void UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget);
+	bool IsWeaponZoomed();
+
 	int CurWeapon(int iState, int iId, int iClip);
 	int MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_CurWeaponX(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf);
+	int MsgFunc_WeaponListX(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_PmodelAnim(const char* pszName, int iSize, void* pbuf);
@@ -151,6 +155,10 @@ private:
 	int	m_HUD_bucket0;
 	int m_HUD_selection;
 
+	cvar_t* m_hud_crosshair_mode;
+	cvar_t* m_hud_crosshair_length;
+	cvar_t* m_hud_crosshair_width;
+	cvar_t* m_hud_crosshair_border;
 };
 
 //

@@ -94,6 +94,9 @@ int CGlock::GetItemInfo(ItemInfo *p)
 	p->iId = m_iId = WEAPON_GLOCK;
 	p->iWeight = GLOCK_WEIGHT;
 
+	p->fAccuracyDeg = 2.0f * atanf(0.01f) * (180.0f / M_PI);
+	p->fAccuracyDeg2 = 2.0f * atanf(0.1f) * (180.0f / M_PI);
+	p->iFlagsEx = WEP_FLAG_SECONDARY_ACCURACY;
 	return 1;
 }
 

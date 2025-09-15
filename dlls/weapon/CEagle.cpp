@@ -44,10 +44,14 @@ void CEagle::Precache()
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
 	primary.ammoCost = 1;
 	primary.cooldown = 220; // 500 = laser
+	primary.accuracyX = 4 * 100;
+	primary.accuracyY = 4 * 100;
 
 	CustomWeaponShootOpts& primary_alt = params.shootOpts[3];
 	primary_alt.ammoCost = 1;
 	primary_alt.cooldown = 500;
+	primary_alt.accuracyX = 1 * 100;
+	primary_alt.accuracyY = 1 * 100;
 
 	CustomWeaponShootOpts& secondary = params.shootOpts[1];
 	secondary.ammoCost = 0;

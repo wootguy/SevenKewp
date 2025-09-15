@@ -11,6 +11,11 @@
 // In case this ever changes
 #define M_PI			3.14159265358979323846
 
+#define WEP_FLAG_DYNAMIC_ACCURACY	1 // weapon accuracy changes when moving/crouching
+#define WEP_FLAG_SECONDARY_ACCURACY	2 // weapon has a separate accuracy value for secondary fire
+#define WEP_FLAG_VERTICAL_ACCURACY	4 // weapon has a separate accuracy value(s) for the vertical axis
+#define WEP_FLAG_USE_ZOOM_CROSSHAIR	8 // use the sprite-based crosshair while zoomed
+
 EXPORT extern const std::vector<std::string> g_emptyCurlHeaders;
 EXPORT extern const std::string g_emptyCurlPostData;
 

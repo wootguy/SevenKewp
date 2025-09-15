@@ -5122,6 +5122,17 @@ void CBasePlayer :: UpdateClientData( void )
 			WRITE_BYTE(i);							// byte		id (bit index into pev->weapons)
 			WRITE_BYTE(II->iFlags);					// byte		Flags
 			MESSAGE_END();
+
+			if (IsSevenKewpClient()) {
+				MESSAGE_BEGIN(MSG_ONE, gmsgWeaponListX, NULL, pev);
+				WRITE_BYTE(i);
+				WRITE_BYTE(II->iFlagsEx);
+				WRITE_SHORT(V_min(65535, II->fAccuracyDeg * 100));
+				WRITE_SHORT(V_min(65535, II->fAccuracyDeg2 * 100));
+				WRITE_SHORT(V_min(65535, II->fAccuracyDegY * 100));
+				WRITE_SHORT(V_min(65535, II->fAccuracyDegY2 * 100));
+				MESSAGE_END();
+			}
 		}
 	}
 
@@ -7169,6 +7180,17 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 			WRITE_BYTE(i);							// byte		id (bit index into pev->weapons)
 			WRITE_BYTE(II.iFlags);					// byte		Flags
 			MESSAGE_END();
+
+			if (IsSevenKewpClient()) {
+				MESSAGE_BEGIN(MSG_ONE, gmsgWeaponListX, NULL, pev);
+				WRITE_BYTE(i);
+				WRITE_BYTE(II.iFlagsEx);
+				WRITE_SHORT(V_min(65535, II.fAccuracyDeg * 100));
+				WRITE_SHORT(V_min(65535, II.fAccuracyDeg2 * 100));
+				WRITE_SHORT(V_min(65535, II.fAccuracyDegY * 100));
+				WRITE_SHORT(V_min(65535, II.fAccuracyDegY2 * 100));
+				MESSAGE_END();
+			}
 		}
 	}
 }

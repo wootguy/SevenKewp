@@ -96,6 +96,10 @@ CWeaponCustom* g_activeWeaponCustom = NULL;
 
 ModPlayerState g_modPlayerStates[32];
 
+// was the last attack a primary or secondary fire? (0 = primary, 1 = secondary)
+int g_last_attack_mode;
+float g_last_attack_time;
+
 CustomWeaponParams* GetCustomWeaponParams(int id) {
 	if (id >= 0 && id < MAX_WEAPONS)
 		return &g_customWeapon[id].params;
@@ -106,6 +110,18 @@ CustomWeaponParams* GetCustomWeaponParams(int id) {
 
 CustomWeaponParams* GetCurrentCustomWeaponParams() {
 	return g_activeWeaponCustom ? &g_activeWeaponCustom->params : NULL;
+}
+
+void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
+	float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy) {	
+	if (id >= 0 && id < MAX_WEAPONS) {
+		CWeaponCustom* custom = &g_customWeapon[id];
+
+		if (custom->m_hasPredictionData) {
+			custom->GetCurrentAccuracy(accuracyX, accuracyY, accuracyX2, accuracyY2);
+			dynamicAccuracy = custom->params.flags & FL_WC_WEP_DYNAMIC_ACCURACY;
+		}
+	}
 }
 
 void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, float** m_lastEventFrame) {
@@ -346,6 +362,7 @@ BOOL CBasePlayerWeapon :: DefaultDeploy(const char *szViewModel, const char *szW
 	g_irunninggausspred = false;
 	m_pPlayer->m_flNextAttack = 0.5;
 	m_flTimeWeaponIdle = 1.0;
+	g_last_attack_mode = 1;
 	return TRUE;
 }
 
@@ -945,6 +962,15 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	}
 	else {
 		player.m_pActiveItem = NULL;
+	}
+
+	if (cmd->buttons & IN_ATTACK2) {
+		g_last_attack_mode = 2;
+		g_last_attack_time = gEngfuncs.GetClientTime();
+	}
+	else if (cmd->buttons & IN_ATTACK) {
+		g_last_attack_mode = 1;
+		g_last_attack_time = gEngfuncs.GetClientTime();
 	}
 
 	// We are not predicting the current weapon, just bow out here.

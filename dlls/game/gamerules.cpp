@@ -84,6 +84,13 @@ BOOL CGameRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeap
 	if ( pPlayer->pev->deadflag != DEAD_NO )
 		return FALSE;
 
+	CBasePlayerItem* item = pPlayer->GetNamedPlayerItem(STRING(pWeapon->pev->classname));
+	CBasePlayerWeapon* wep = item ? item->GetWeaponPtr() : NULL;
+
+	// have a single handed version of the weapon now. Give them the dual version
+	if (wep && wep->IsAkimboWeapon() && !wep->CanAkimbo())
+		return TRUE;
+
 	if ( pWeapon->pszAmmo1() )
 	{
 		if ( !CanHaveAmmo( pPlayer, pWeapon->pszAmmo1(), pWeapon->iMaxAmmo1() ) )
@@ -97,17 +104,9 @@ BOOL CGameRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeap
 		}
 	}
 	else
-	{
-		
-		CBasePlayerItem* item = pPlayer->GetNamedPlayerItem(STRING(pWeapon->pev->classname));
-		CBasePlayerWeapon* wep = item ? item->GetWeaponPtr() : NULL;
-		
+	{		
 		if (item)
 		{
-			// have a single handed version of the weapon now. Give them the dual version
-			if (wep && wep->IsAkimboWeapon() && !wep->CanAkimbo())
-				return TRUE;
-
 			// weapon doesn't use ammo, don't take another if you already have it.
 			return FALSE;
 		}

@@ -76,7 +76,8 @@ float		v_cameraFocusAngle	= 35.0f;
 int			v_cameraMode = CAM_MODE_FOCUS;
 qboolean	v_resetCamera = 1;
 
-vec3_t ev_punchangle;
+vec3_t ev_punchangle; // client-side punch angle
+vec3_t v_punchangle; // combined client and server punch angle
 
 cvar_t	*scr_ofsx;
 cvar_t	*scr_ofsy;
@@ -693,6 +694,9 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	VectorAdd ( pparams->viewangles, (float *)&ev_punchangle, pparams->viewangles);
 
 	V_DropPunchAngle ( pparams->frametime, (float *)&ev_punchangle );
+
+	v_punchangle = ev_punchangle;
+	VectorAdd(v_punchangle, pparams->punchangle, v_punchangle);
 
 	// smooth out stair step ups
 #if 1

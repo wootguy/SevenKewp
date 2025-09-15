@@ -112,6 +112,12 @@ int CShotgun::GetItemInfo(ItemInfo *p)
 	p->iId = m_iId = WEAPON_SHOTGUN;
 	p->iWeight = SHOTGUN_WEIGHT;
 
+	p->fAccuracyDeg = 10;
+	p->fAccuracyDeg2 = 20;
+	p->fAccuracyDegY = 5;
+	p->fAccuracyDegY2 = 5;
+	p->iFlagsEx = WEP_FLAG_SECONDARY_ACCURACY | WEP_FLAG_VERTICAL_ACCURACY;
+
 	return 1;
 }
 

@@ -42,7 +42,7 @@ void CM249::Precache()
 	animExt = "saw";
 	wrongClientWeapon = "weapon_9mmAR";
 
-	params.flags = FL_WC_WEP_HAS_PRIMARY;
+	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_DYNAMIC_ACCURACY;
 	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = M249_DRAW;
 	params.maxClip = M249_MAX_CLIP;
@@ -53,6 +53,8 @@ void CM249::Precache()
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
 	primary.ammoCost = 1;
 	primary.cooldown = 67;
+	primary.accuracyX = 6 * 100;
+	primary.accuracyY = 6 * 100;
 
 	float spread = VECTOR_CONE_6DEGREES.x;
 	int bulletf = FL_WC_BULLETS_DYNAMIC_SPREAD;

@@ -38,9 +38,13 @@ void CSniperRifle::Precache()
 	params.idles[0] = { M40A1_SLOWIDLE, 100, 4348 };
 	//params.idles[1] = { M40A1_SLOWIDLE2, 20, 4348 }; // bolt is in the wrong position
 
+	float accuracyDegrees = 2.0f * atanf(0.001f) * (180.0f / M_PI);
+
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
 	primary.ammoCost = 1;
 	primary.cooldown = 2000;
+	primary.accuracyX = accuracyDegrees * 100;
+	primary.accuracyY = accuracyDegrees * 100;
 
 	CustomWeaponShootOpts& secondary = params.shootOpts[1];
 	secondary.ammoCost = 0;
@@ -88,6 +92,7 @@ int CSniperRifle::GetItemInfo(ItemInfo* p)
 	p->iPosition = 1;
 	p->iId = WEAPON_M40A1;
 	p->iWeight = M40A1_WEIGHT;
+	p->iFlagsEx = WEP_FLAG_USE_ZOOM_CROSSHAIR;
 	return true;
 }
 
