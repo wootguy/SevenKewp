@@ -84,3 +84,15 @@ EXPORT double TimeDifference(uint64_t start, uint64_t end);
 
 // returns 0 if the file doesn't exist
 EXPORT uint64_t getFileModifiedTime(const char* path);
+
+EXPORT std::string normalize_path(std::string s);
+
+// searches game directories in order (e.g. valve/path, valve_downloads/path)
+// returns an empty string if the file can't be found
+EXPORT std::string getGameFilePath(const char* path, bool matchCase = true);
+
+// relative to a content directory. Will search all suffixed directores (valve, valve_addon, valve_downloads)
+EXPORT uint8_t* UTIL_LoadFile(const char* fpath, int* size = NULL);
+
+// load file relative to the Half-Life/ folder
+EXPORT uint8_t* UTIL_LoadFileRoot(const char* fpath, int* size = NULL);

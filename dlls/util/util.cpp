@@ -2582,71 +2582,6 @@ bool fileExists(const char* path) {
 	return false;
 }
 
-std::string normalize_path(std::string s)
-{
-	if (s.size() == 0)
-		return s;
-
-	replace(s.begin(), s.end(), '\\', '/');
-
-	std::vector<std::string> parts = splitString(s, "/");
-	int depth = 0;
-	for (int i = 0; i < (int)parts.size(); i++)
-	{
-		depth++;
-		if (parts[i] == "..")
-		{
-			depth--;
-			if (depth == 0)
-			{
-				// can only .. up to game root folder, and not any further
-				parts.erase(parts.begin() + i);
-				i--;
-			}
-			else if (i > 0)
-			{
-				parts.erase(parts.begin() + i);
-				parts.erase(parts.begin() + (i - 1));
-				i -= 2;
-			}
-		}
-	}
-	s = "";
-	for (int i = 0; i < (int)parts.size(); i++)
-	{
-		if (i > 0) {
-			s += '/';
-		}
-		s += parts[i];
-	}
-
-	return s;
-}
-
-std::string getGameFilePath(const char* path) {
-	static char gameDir[MAX_PATH];
-	GET_GAME_DIR(gameDir);
-
-	std::string lowerPath = toLowerCase(path);
-
-	std::string searchPaths[] = {
-		normalize_path(gameDir + std::string("_addon/") + path),
-		normalize_path(gameDir + std::string("_addon/") + lowerPath),
-		normalize_path(gameDir + std::string("/") + path),
-		normalize_path(gameDir + std::string("/") + lowerPath),
-		normalize_path(gameDir + std::string("_downloads/") + path),
-		normalize_path(gameDir + std::string("_downloads/") + lowerPath),
-	};
-
-	for (int i = 0; i < (int)ARRAY_SZ(searchPaths); i++) {
-		if (fileExists(searchPaths[i].c_str())) {
-			return searchPaths[i];
-		}
-	}
-
-	return "";
-}
-
 std::string lastMapName;
 
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
@@ -3314,45 +3249,6 @@ uint32_t UTIL_ClientBitMask(int clientMod) {
 	}
 
 	return bits;
-}
-
-uint8_t* UTIL_LoadFile(const char* fpath, int* outSz) {
-	std::string gpath = getGameFilePath(fpath);
-
-	if (outSz)
-		*outSz = 0;
-
-	if (gpath.empty())
-		return NULL;
-
-	FILE* f = fopen(gpath.c_str(), "rb");
-	if (!f) {
-		return NULL;
-	}
-
-	fseek(f, 0, SEEK_END);
-	int sz = ftell(f);
-	fseek(f, 0, SEEK_SET);
-
-	if (sz < 0) {
-		fclose(f);
-		return NULL;
-	}
-
-	uint8_t* buffer = new uint8_t[sz];
-
-	if ((int)fread(buffer, 1, sz, f) != sz) {
-		delete[] buffer;
-		fclose(f);
-		return NULL;
-	}
-
-	fclose(f);
-
-	if (outSz)
-		*outSz = sz;
-
-	return buffer;
 }
 
 bool UTIL_MapReplacesModel(const char* fpath) {

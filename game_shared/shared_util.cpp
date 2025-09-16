@@ -78,25 +78,23 @@ char* strcat_safe(char* dest, const char* src, size_t size) {
 	return dest;
 }
 
-uint8_t* LoadFile(const char* fpath, int* len) {
-#ifdef CLIENT_DLL
-	return gEngfuncs.COM_LoadFile(fpath, 5, len);
-#else
-	return LOAD_FILE_FOR_ME(fpath, len);
-#endif
-}
-
-void FreeFile(uint8_t* buffer) {
-#ifdef CLIENT_DLL
-	gEngfuncs.COM_FreeFile(buffer);
-#else
-	FREE_FILE(buffer);
-#endif
-}
-
 uint8_t* UTIL_AppendFileData(const char* fpath, uint8_t* existingData, int& len) {
 	int appendLen;
-	uint8_t* appendData = LoadFile(fpath, &appendLen);
+
+#ifdef CLIENT_DLL
+	// only hash files in valve_downloads/ as that's the only place that can be downloaded to
+	uint8_t* appendData = UTIL_LoadFile(fpath, &appendLen);
+
+	const char* gamedir = gEngfuncs.pfnGetGameDirectory();
+	const char* expectedPath = UTIL_VarArgs("%s_downloads/%s", gamedir, fpath);
+	std::string loadedPath = getGameFilePath(fpath);
+	if (expectedPath != loadedPath) {
+		PRINTF("WARNING: This file may prevent data updates (consider deleting):\n    %s\n", loadedPath.c_str());
+	}
+#else
+	uint8_t* appendData = UTIL_LoadFile(fpath, &appendLen);
+#endif
+	
 	if (!appendData) {
 		//ALERT(at_console, "Hash file failed to load '%s'\n", fpath);
 		return existingData;
@@ -111,7 +109,7 @@ uint8_t* UTIL_AppendFileData(const char* fpath, uint8_t* existingData, int& len)
 
 	memcpy(newData + len, appendData, appendLen);
 
-	FreeFile(appendData);
+	delete[] appendData;
 
 	len += appendLen;
 	return newData;
@@ -134,10 +132,14 @@ const char* UTIL_HashClientDataFiles() {
 	}
 	
 	uint8_t digest[16];
-	MD5Context mdc;
-	MD5Init(&mdc);
-	MD5Update(&mdc, totalFileData, len);
-	MD5Final(digest, &mdc);
+	memset(digest, 0, sizeof(digest));
+
+	if (totalFileData) {
+		MD5Context mdc;
+		MD5Init(&mdc);
+		MD5Update(&mdc, totalFileData, len);
+		MD5Final(digest, &mdc);
+	}
 
 	return UTIL_VarArgs("%08X", *(uint32_t*)digest);
 }
@@ -152,19 +154,15 @@ void UTIL_DeleteClientDataFiles() {
 	strcpy_safe(downloadsDir, UTIL_VarArgs("%s_downloads/", gamedir), 256);
 
 	for (int i = 0; i < NUM_AUTO_UPDATE_FILES; i++) {
-		const char* path = FindGameFile(g_autoUpdateFiles[i]);
+		const char* path = UTIL_VarArgs("%s%s", downloadsDir, g_autoUpdateFiles[i]);
 		
-		if (!path)
-			continue;
-		if (strstr(path, downloadsDir) != path) {
-			// only delete files downloaded from servers.
-			// The client may be overriding files in valve_addon intentionally
-			PRINTF("File causing mismatch: %s\n", path);
+		PRINTF("Deleting file: %s\n", path);
+
+		if (!fileExists(path)) {
 			continue;
 		}
-		
+
 		remove(path);
-		PRINTF("Deleted file: %s\n", path);
 	}
 #endif
 }
@@ -440,4 +438,131 @@ uint64_t getFileModifiedTime(const char* path) {
 	}
 
 	return 0;
+}
+
+std::string normalize_path(std::string s)
+{
+	if (s.size() == 0)
+		return s;
+
+	replace(s.begin(), s.end(), '\\', '/');
+
+	std::vector<std::string> parts = splitString(s, "/");
+	int depth = 0;
+	for (int i = 0; i < (int)parts.size(); i++)
+	{
+		depth++;
+		if (parts[i] == "..")
+		{
+			depth--;
+			if (depth == 0)
+			{
+				// can only .. up to game root folder, and not any further
+				parts.erase(parts.begin() + i);
+				i--;
+			}
+			else if (i > 0)
+			{
+				parts.erase(parts.begin() + i);
+				parts.erase(parts.begin() + (i - 1));
+				i -= 2;
+			}
+		}
+	}
+	s = "";
+	for (int i = 0; i < (int)parts.size(); i++)
+	{
+		if (i > 0) {
+			s += '/';
+		}
+		s += parts[i];
+	}
+
+	return s;
+}
+
+std::string getGameFilePath(const char* path, bool matchCase) {
+#ifdef CLIENT_DLL
+	const char* gameDir = gEngfuncs.pfnGetGameDirectory();
+#else
+	static char gameDir[MAX_PATH];
+	GET_GAME_DIR(gameDir);
+#endif
+
+	std::string searchPaths[3] = {
+		gameDir + std::string("_addon/"),
+		gameDir + std::string("/"),
+		gameDir + std::string("_downloads/"),
+	};
+
+	std::string lowerPath = toLowerCase(path);
+
+	for (int i = 0; i < 3; i++) {
+		std::string searchLower = normalize_path(searchPaths[i] + lowerPath);
+
+		if (fileExists(searchLower.c_str())) {
+			return searchLower;
+		}
+
+		if (matchCase) {
+			std::string searchUpper = normalize_path(searchPaths[i] + path);
+
+			if (fileExists(searchUpper.c_str())) {
+				return searchUpper;
+			}
+		}
+	}
+
+	return "";
+}
+
+uint8_t* UTIL_LoadFile(const char* fpath, int* outSz) {
+	std::string gpath = getGameFilePath(fpath);
+
+	if (gpath.empty()) {
+		if (outSz)
+			*outSz = 0;
+
+		return NULL;
+	}
+
+	return UTIL_LoadFileRoot(gpath.c_str(), outSz);
+}
+
+
+uint8_t* UTIL_LoadFileRoot(const char* fpath, int* outSz) {
+	if (outSz)
+		*outSz = 0;
+
+	if (!fpath)
+		return NULL;
+
+	FILE* f = fopen(fpath, "rb");
+	if (!f) {
+		return NULL;
+	}
+
+	fseek(f, 0, SEEK_END);
+	int sz = ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	if (sz < 0) {
+		fclose(f);
+		return NULL;
+	}
+
+	uint8_t* buffer = new uint8_t[sz];
+
+	if ((int)fread(buffer, 1, sz, f) != sz) {
+		delete[] buffer;
+		fclose(f);
+		return NULL;
+	}
+
+	fclose(f);
+
+	if (outSz)
+		*outSz = sz;
+
+	return buffer;
 }

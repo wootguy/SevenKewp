@@ -840,12 +840,6 @@ EXPORT int clampi(int val, int min, int max);
 
 EXPORT bool fileExists(const char* path);
 
-EXPORT std::string normalize_path(std::string s);
-
-// searches game directories in order (e.g. valve/path, valve_downloads/path)
-// returns an empty string if the file can't be found
-EXPORT std::string getGameFilePath(const char* path);
-
 // loads a global model/sound replacement file. Returns a key that you can use with g_replacementFiles
 // format: "file_path" "replacement_file_path"
 EXPORT std::string loadReplacementFile(const char* path);
@@ -933,9 +927,6 @@ EXPORT float UTIL_RayBoxIntersect(Vector start, Vector rayDir, Vector mins, Vect
 
 // returns a bit mask representing all players that are using the specified client
 EXPORT uint32_t UTIL_ClientBitMask(int clientMod);
-
-// relative to the game directory. Will search all game directores (valve, valve_addon, valve_downloads)
-EXPORT uint8_t* UTIL_LoadFile(const char* fpath, int* size=NULL);
 
 // returns true if the map replaces the model (ignores standard mod replacements)
 EXPORT bool UTIL_MapReplacesModel(const char* fpath);
