@@ -433,7 +433,7 @@ CBaseEntity::FireBulletsPlayer
 Only produces random numbers to match the server ones.
 =====================
 */
-Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand, Vector* vecEndOut, bool sevenkewpEvent)
+Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand, Vector* vecEndOut, BULLET_PREDICTION predicted)
 {
 	float x = 0, y = 0, z = 0;
 

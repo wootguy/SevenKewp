@@ -171,8 +171,9 @@ void CSporeLauncher::PrimaryAttack()
 
 		UTIL_MakeVectors(vecAngles);
 
-		const Vector vecSrc =
-			m_pPlayer->GetGunPosition() +
+		Vector vecHead = m_pPlayer->GetGunPosition();
+
+		const Vector vecSrc = vecHead +
 			gpGlobals->v_forward * 16 +
 			gpGlobals->v_right * 8 +
 			gpGlobals->v_up * -8;
@@ -180,14 +181,15 @@ void CSporeLauncher::PrimaryAttack()
 		//vecAngles = vecAngles + m_pPlayer->GetAutoaimVectorFromPoint(vecSrc, AUTOAIM_10DEGREES);
 		vecAngles = vecAngles + m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 
-		CSpore* pSpore = CSpore::CreateSpore(
-			vecSrc, vecAngles,
-			m_pPlayer,
-			CSpore::SporeType::ROCKET, false, false);
+		// adjust beam direction so that it lands in the center of the crosshair at the impact point
+		// otherwise it will be slightly low and to the right
+		TraceResult tr;
+		UTIL_TraceLine(vecHead, vecHead + gpGlobals->v_forward * 4096, dont_ignore_monsters, edict(), &tr);
+		Vector targetdir = (tr.vecEndPos - vecSrc).Normalize();
+		Vector sporeAngles = UTIL_VecToAngles(targetdir);
+		sporeAngles.x *= -1;
 
-		UTIL_MakeVectors(vecAngles);
-
-		pSpore->pev->velocity = pSpore->pev->velocity + DotProduct(pSpore->pev->velocity, gpGlobals->v_forward) * gpGlobals->v_forward;
+		CSpore::CreateSpore(vecSrc, sporeAngles, m_pPlayer, CSpore::SporeType::ROCKET, false, false);
 #endif
 
 		int flags;
@@ -228,8 +230,9 @@ void CSporeLauncher::SecondaryAttack()
 
 		UTIL_MakeVectors(vecAngles);
 
-		const Vector vecSrc =
-			m_pPlayer->GetGunPosition() +
+		Vector vecHead = m_pPlayer->GetGunPosition();
+
+		const Vector vecSrc = vecHead +
 			gpGlobals->v_forward * 16 +
 			gpGlobals->v_right * 8 +
 			gpGlobals->v_up * -8;
@@ -237,14 +240,22 @@ void CSporeLauncher::SecondaryAttack()
 		//vecAngles = vecAngles + m_pPlayer->GetAutoaimVectorFromPoint(vecSrc, AUTOAIM_10DEGREES);
 		vecAngles = vecAngles + m_pPlayer->GetAutoaimVector(AUTOAIM_10DEGREES);
 
+		// adjust beam direction so that it lands in the center of the crosshair at the impact point
+		// otherwise it will be slightly low and to the right
+		TraceResult tr;
+		UTIL_TraceLine(vecHead, vecHead + gpGlobals->v_forward * 4096, dont_ignore_monsters, edict(), &tr);
+		Vector targetdir = (tr.vecEndPos - vecSrc).Normalize();
+		Vector sporeAngles = UTIL_VecToAngles(targetdir);
+		sporeAngles.x *= -1;
+
 		CSpore* pSpore = CSpore::CreateSpore(
-			vecSrc, vecAngles,
+			vecSrc, sporeAngles,
 			m_pPlayer,
 			CSpore::SporeType::GRENADE, false, false);
 
-		UTIL_MakeVectors(vecAngles);
+		UTIL_MakeVectors(sporeAngles);
 
-		pSpore->pev->velocity = m_pPlayer->pev->velocity + 800 * gpGlobals->v_forward;
+		pSpore->pev->velocity = m_pPlayer->pev->velocity + 800 * targetdir;
 #endif
 
 		int flags;

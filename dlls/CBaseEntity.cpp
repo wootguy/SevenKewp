@@ -1011,7 +1011,7 @@ EHANDLE g_debugCycler;
 
 Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDirShooting,
 	Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage,
-	entvars_t* pevAttacker, int shared_rand, Vector* vecEndOut, bool sevenkewpEvent)
+	entvars_t* pevAttacker, int shared_rand, Vector* vecEndOut, BULLET_PREDICTION prediction)
 {
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
@@ -1109,7 +1109,17 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			}
 			*/
 
-			DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd, sevenkewpEvent ? edict() : NULL);
+			if (prediction != BULLETPRED_EVENT) {
+				bool attackerPredictsDecals = prediction == BULLETPRED_EVENTLESS;
+				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd, attackerPredictsDecals ? edict() : NULL);
+			}
+			else {
+				// clients will simulate decals when they get the event message, but body impacts
+				// need to be confirmed and sent server-side
+				if (tr.pHit->v.flags & (FL_MONSTER | FL_CLIENT))
+					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType, tr.pHit);
+			}
+			
 
 			if (iDamage)
 			{

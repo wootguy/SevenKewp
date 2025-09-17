@@ -722,13 +722,10 @@ void CBaseDoor::Blocked(CBaseEntity* pOther)
 	}
 
 	if (m_flWait < 0 || !TouchActivates()) {
-		// prevent softlocks by doors that only open once getting blocked by something
-		if (pOther->IsMonster()) {
+		// prevent softlocks by doors that only open once getting blocked by something.
+		// Don't instakill breakables because that can also cause softlocks.
+		if (pOther->IsMonster() || pOther->IsBreakable()) {
 			pOther->TakeDamage(pev, pev, 1, DMG_CRUSH);
-			return;
-		}
-		if (pOther->IsBreakable()) {
-			pOther->BreakableDie(this);
 			return;
 		}
 	}

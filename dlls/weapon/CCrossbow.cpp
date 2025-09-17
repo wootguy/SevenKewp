@@ -379,6 +379,8 @@ void CCrossbow::FireSniperBolt()
 #ifndef CLIENT_DLL
 	if ( tr.pHit->v.takedamage )
 	{
+		if (tr.pHit->v.flags & (FL_MONSTER | FL_CLIENT))
+			TEXTURETYPE_PlaySound(&tr, vecSrc, tr.vecEndPos, BULLET_PLAYER_357, tr.pHit);
 		ClearMultiDamage( );
 		CBaseEntity::Instance(tr.pHit)->TraceAttack(m_pPlayer->pev,
 			GetDamage(gSkillData.sk_plr_xbow_sniper_bullet), vecDir, &tr, DMG_BULLET | DMG_NEVERGIB );

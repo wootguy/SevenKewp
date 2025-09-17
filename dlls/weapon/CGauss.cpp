@@ -495,7 +495,8 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 				tr.iHitgroup = 0;
 			}
 
-			DecalGunshot(&tr, BULLET_PLAYER_357, true, vecSrc, tr.vecEndPos, NULL);
+			if (tr.pHit->v.flags & (FL_MONSTER | FL_CLIENT))
+				TEXTURETYPE_PlaySound(&tr, vecSrc, tr.vecEndPos, BULLET_PLAYER_357, tr.pHit);
 			pEntity->TraceAttack( m_pPlayer->pev, flDamage, vecDir, &tr, DMG_BULLET );
 			ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
 		}

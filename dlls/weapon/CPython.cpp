@@ -200,7 +200,7 @@ void CPython::PrimaryAttack()
 
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir;
-	vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed );
+	vecDir = m_pPlayer->FireBulletsPlayer( 1, vecSrc, vecAiming, VECTOR_CONE_1DEGREES, 8192, BULLET_PLAYER_357, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed, 0, BULLETPRED_EVENT);
 	lagcomp_end();
 
 	PLAY_DISTANT_SOUND(m_pPlayer->edict(), DISTANT_357);

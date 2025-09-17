@@ -29,6 +29,12 @@ enum entindex_priority {
 	ENTIDX_PRIORITY_LOW,
 };
 
+enum BULLET_PREDICTION {
+	BULLETPRED_NONE,		// bullets are entirely server-sided (custom weapons without prediction)
+	BULLETPRED_EVENT,		// bullets are predicted by the attacker and simulated by other players using client-side event code (weapons with event-based prediction)
+	BULLETPRED_EVENTLESS,	// bullets are predicted by the attacker but not simulated by other clients (weapons with eventless prediction)
+};
+
 typedef void (CBaseEntity::* BASEPTR)(void);
 typedef void (CBaseEntity::* ENTITYFUNCPTR)(CBaseEntity* pOther);
 typedef void (CBaseEntity::* USEPTR)(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
@@ -316,10 +322,7 @@ public:
 	int			ShouldToggle(USE_TYPE useType, BOOL currentState);
 	void		FireBullets(ULONG	cShots, Vector  vecSrc, Vector	vecDirShooting, Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = NULL);
 
-	// 
-	// notPredicted = set to true if this call is triggered by a custom client event that HL clients
-	//                can't predict. Impact effects will be sent to all non-sevenkewp clients.
-	Vector		FireBulletsPlayer(ULONG	cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = NULL, int shared_rand = 0, Vector* vecEndOut = NULL, bool sevenkewpEvent=false);
+	Vector		FireBulletsPlayer(ULONG	cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t* pevAttacker = NULL, int shared_rand = 0, Vector* vecEndOut = NULL, BULLET_PREDICTION prediction=BULLETPRED_NONE);
 
 	virtual CBaseEntity* Respawn(void) { return NULL; }
 

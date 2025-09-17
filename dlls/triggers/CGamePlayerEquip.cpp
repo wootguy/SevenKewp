@@ -12,6 +12,7 @@
 #include "CGlock.h"
 #include "CRpg.h"
 #include "CMP5.h"
+#include "CUzi.h"
 #include "CTripmine.h"
 #include "CSatchel.h"
 #include "CHandGrenade.h"
@@ -140,6 +141,12 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 	else if (!strcmp(itemName, "ammo_9mmbox")) {
 		pPlayer->GiveAmmo(AMMO_CHAINBOX_GIVE * count, "9mm", gSkillData.sk_ammo_max_9mm);
 	}
+	else if (!strcmp(itemName, "ammo_uziclip")) {
+		pPlayer->GiveAmmo(AMMO_UZICLIP_GIVE * count, "9mm", gSkillData.sk_ammo_max_9mm);
+	}
+	else if (!strcmp(itemName, "ammo_762")) {
+		pPlayer->GiveAmmo(AMMO_762_GIVE * count, "762", gSkillData.sk_ammo_max_762);
+	}
 	else if (!strcmp(itemName, "ammo_ARgrenades")) {
 		pPlayer->GiveAmmo(AMMO_M203BOX_GIVE * count, "ARgrenades", gSkillData.sk_ammo_max_argrenades);
 	}
@@ -151,6 +158,9 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 	}
 	else if (!strcmp(itemName, "ammo_medkit")) {
 		pPlayer->GiveAmmo(AMMO_MEDKIT_GIVE * count, "health", gSkillData.sk_ammo_max_medkit);
+	}
+	else if (!strcmp(itemName, "ammo_spore") || !strcmp(itemName, "ammo_sporeclip")) {
+		pPlayer->GiveAmmo(AMMO_SPORE_GIVE * count, "spores", gSkillData.sk_ammo_max_spores);
 	}
 	else if (!strcmp(itemName, "ammo_556")) {
 		if (g_hlPlayersCanPickup556 || pPlayer->IsSevenKewpClient())

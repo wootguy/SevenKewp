@@ -116,8 +116,6 @@ BOOL CMultiSource::IsTriggered(CBaseEntity*)
 
 void CMultiSource::Register(void)
 {
-	CBaseEntity* pentTarget = NULL;
-
 	m_iTotal = 0;
 	memset(m_rgEntities, 0, MS_MAX_TARGETS * sizeof(EHANDLE));
 

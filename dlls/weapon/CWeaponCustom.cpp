@@ -1227,7 +1227,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
 		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
-		m_pPlayer->random_seed, &vecEnd, true);
+		m_pPlayer->random_seed, &vecEnd, BULLETPRED_EVENTLESS);
 	lagcomp_end();
 
 #ifdef CLIENT_DLL

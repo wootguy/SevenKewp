@@ -94,7 +94,12 @@ void CHornet :: Spawn( void )
 
 	m_flStartTrack = gpGlobals->time + 0.2f;
 
-	m_flFieldOfView = 0.9; // +- 25 degrees
+	if (pev->owner && (pev->owner->v.flags & FL_MONSTER)) {
+		m_flFieldOfView = VIEW_FIELD_ULTRA_NARROW; // +- 25 degrees
+	}
+	else {
+		m_flFieldOfView = VIEW_FIELD_NARROW;
+	}
 
 	if ( RANDOM_LONG ( 1, 5 ) <= 2 )
 	{
@@ -444,7 +449,17 @@ void CHornet::DieTouch ( CBaseEntity *pOther )
 	{// do the damage
 
 		EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pHitSounds), 1, ATTN_NORM);
-			
+		
+		if (pOther->IsMonster() && pOther->BloodColor() != DONT_BLEED) {
+			TraceResult tr;
+			Vector bodyTarg = pOther->BodyTarget(pev->origin);
+			UTIL_TraceLine(pev->origin, bodyTarg, dont_ignore_monsters, edict(), &tr);
+			Vector dir = (bodyTarg - pev->origin).Normalize();
+
+			Vector vecOrigin = tr.vecEndPos - dir * 4;
+			SpawnBlood(vecOrigin, pOther->BloodColor(), pev->dmg);
+		}
+		
 		pOther->TakeDamage( pev, VARS( pev->owner ), pev->dmg, DMG_BULLET );
 	}
 

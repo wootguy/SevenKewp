@@ -53,7 +53,7 @@ EXPORT void UTIL_BeamCylinder(Vector pos, float radius, int modelIdx, uint8_t st
 EXPORT void UTIL_BeamDisk(Vector pos, float radius, int modelIdx, uint8_t startFrame, uint8_t frameRate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed);
 
 EXPORT void EjectBrass(const Vector& vecOrigin, const Vector& vecVelocity, float rotation, int model, int soundtype, edict_t* target=NULL);
-// emitter = If set, impact effects will be sent to all HL clients except this player (otherwise all players)
+// emitter = If set, impact effects will be sent to all clients except this player (otherwise all players)
 EXPORT void DecalGunshot(TraceResult* pTrace, int iBulletType, bool playTextureSound = false, Vector vecSrc = g_vecZero, Vector vecEnd = g_vecZero, edict_t* emitter=NULL);
 EXPORT void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage);
 EXPORT int DamageDecal(CBaseEntity* pEntity, int bitsDamageType);
