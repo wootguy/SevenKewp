@@ -133,7 +133,7 @@ void CMultiSource::Register(void)
 
 		CBaseEntity* ent = CBaseEntity::Instance(&edicts[i].v);
 
-		if (ent && ent->HasTarget(pev->targetname)) {
+		if (ent && !ent->IsMonsterMaker() && ent->HasTarget(pev->targetname)) {
 			m_rgEntities[m_iTotal++] = ent;
 		}
 	}

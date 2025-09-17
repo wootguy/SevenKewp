@@ -25,6 +25,7 @@ public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
 	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 	virtual	BOOL IsNormalMonster(void) { return FALSE; }
+	virtual	BOOL IsMonsterMaker(void) { return TRUE; }
 	void Spawn(void);
 	void Precache(void);
 	void KeyValue(KeyValueData* pkvd);

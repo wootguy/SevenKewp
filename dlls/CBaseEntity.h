@@ -273,6 +273,7 @@ public:
 	virtual BOOL	IsButton() { return FALSE; }
 	virtual BOOL	IsTank() { return FALSE; }
 	virtual BOOL	IsWeaponCustom() { return FALSE; }
+	virtual	BOOL	IsMonsterMaker(void) { return FALSE; }
 	virtual const char* TeamID(void) { return ""; }
 	virtual const char* DisplayName();
 	virtual const char* GetDeathNoticeWeapon() { return STRING(pev->classname); };
