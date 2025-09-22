@@ -179,6 +179,12 @@ struct EXPORT RGBA {
 	(b) = _temp; \
 }
 
+// Prefixes the message with the "targetname (classname)" for ease of debugging
+// Only usable inside entity class methods.
+#define EALERT(target, format, ...) \
+	DEBUG_MSG(target, ("%s (%s): " + std::string(format)).c_str(), \
+		STRING(pev->targetname), STRING(pev->classname), ##__VA_ARGS__)
+
 struct custom_muzzle_flash_t {
 	string_t sprite;
 	uint8_t attachment;

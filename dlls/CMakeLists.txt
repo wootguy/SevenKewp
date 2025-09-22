@@ -210,7 +210,7 @@ set(TRIGGER_SRC
 set(TRIGGER_OBSOLETE_SRC
 	triggers/CRevertSaved.cpp
 	triggers/CTriggerEndSection.cpp
-	triggers/CTriggerSave.cpp
+	triggers/CTriggerAutoSave.cpp
 	triggers/CTriggerVolume.cpp
 )
 set(TRIGGER_POINT_SRC
@@ -247,6 +247,8 @@ set(TRIGGER_POINT_SRC
 	triggers/CTriggerSetCvar.cpp
 	triggers/CTriggerSetOrigin.cpp
 	triggers/CTriggerVote.cpp
+	triggers/CTriggerSave.cpp
+	triggers/CTriggerLoad.cpp
 )
 set(TRIGGER_BRUSHED_SRC
 	triggers/CChangeLevel.cpp
