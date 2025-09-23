@@ -116,7 +116,7 @@ class CDeadHGruntAlly : public CBaseDead
 public:
 	void Spawn(void);
 	int	Classify(void) { return	CBaseMonster::Classify(CLASS_PLAYER_ALLY); }
-	int GetPoseSequence() { return LookupSequence(m_szPoses[m_iPose]); }
+	int GetPoseSequence() { return LookupSequence(m_szPoses[clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)]); }
 
 	static const char* m_szPoses[7];
 };

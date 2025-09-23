@@ -1187,7 +1187,7 @@ void CDeadOtis:: Spawn( )
 	pev->sequence		= 0;
 	m_bloodColor		= BLOOD_COLOR_RED;
 
-	pev->sequence = LookupSequence( m_szPoses[m_iPose] );
+	pev->sequence = LookupSequence( m_szPoses[clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)] );
 	if (pev->sequence == -1)
 	{
 		ALERT ( at_console, "Dead otis with bad pose\n" );

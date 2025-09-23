@@ -96,7 +96,7 @@ class CDeadMassn : public CBaseDead
 public:
 	void Spawn(void);
 	int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
-	int GetPoseSequence() { return LookupSequence(m_szPoses[m_iPose]); }
+	int GetPoseSequence() { return LookupSequence(m_szPoses[clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)]); }
 
 	static const char* m_szPoses[3];
 };

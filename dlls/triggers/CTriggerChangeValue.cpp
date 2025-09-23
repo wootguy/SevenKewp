@@ -194,7 +194,7 @@ void CTriggerChangeValue::Spawn(void)
 		m_iszNewValue = 0;
 	}
 
-	if (pev->spawnflags & SF_TCVAL_START_ON) {
+	if ((pev->spawnflags & SF_TCVAL_START_ON) && (pev->spawnflags & SF_TCVAL_CONSTANT)) {
 		isActive = true;
 		SetThink(&CTriggerChangeValue::TimedThink);
 		pev->nextthink = gpGlobals->time + pev->dmg;

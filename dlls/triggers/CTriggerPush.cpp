@@ -97,7 +97,7 @@ void CTriggerPush::Touch(CBaseEntity* pOther)
 			pevToucher->basevelocity = vecPush;
 
 			pevToucher->flags |= FL_BASEVELOCITY;
-			//			ALERT( at_console, "Vel %f, base %f\n", pevToucher->velocity.z, pevToucher->basevelocity.z );
+			//ALERT( at_console, "Vel %f, base %f\n", pevToucher->velocity.Length(), pevToucher->basevelocity.Length());
 		}
 	}
 }
