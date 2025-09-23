@@ -1303,6 +1303,8 @@ int CHudAmmo::Draw(float flTime)
 	int a, x, y, r, g, b;
 	int AmmoWidth;
 
+	DrawDynamicCrosshair();
+
 	if (!(gHUD.m_iWeaponBits & (1ULL<<(WEAPON_SUIT)) ))
 		return 1;
 
@@ -1322,8 +1324,6 @@ int CHudAmmo::Draw(float flTime)
 		return 0;
 
 	WEAPON *pw = m_pWeapon; // shorthand
-
-	DrawDynamicCrosshair();
 
 	// SPR_Draw Ammo
 	if ((pw->iAmmoType < 0) && (pw->iAmmo2Type < 0))
@@ -1513,8 +1513,27 @@ void DrawCrossHair(float accuracyX, float accuracyY, int len, int thick, int bor
 }
 
 void CHudAmmo::DrawDynamicCrosshair() {
-	if (!m_pWeapon || m_hud_crosshair_mode->value <= 0 || !gHUD.IsSevenKewpServer())
+	if (m_hud_crosshair_mode->value <= 0 || !gHUD.IsSevenKewpServer())
 		return;
+
+	int len = clamp(m_hud_crosshair_length->value, 1, 1000);
+	int width = clamp(m_hud_crosshair_width->value, 1, 1000);
+	int border = clamp(m_hud_crosshair_border->value, 0, 1000);
+
+	if (m_hud_crosshair_width->value == -1) {
+		// auto size
+		width = 2;
+		if (ScreenHeight <= 768) {
+			width = 1;
+		}
+	}
+
+	if (!m_pWeapon) {
+		if (m_hud_crosshair_mode->value >= 2) {
+			DrawCrossHair(0, 0, len, width, border);
+		}
+		return;
+	}
 
 	WEAPON* pw = m_pWeapon; // shorthand
 
@@ -1585,18 +1604,6 @@ void CHudAmmo::DrawDynamicCrosshair() {
 		accuracyY += punch;
 		accuracyX2 += punch;
 		accuracyY2 += punch;
-	}
-
-	int len = clamp(m_hud_crosshair_length->value, 1, 1000);
-	int width = clamp(m_hud_crosshair_width->value, 1, 1000);
-	int border = clamp(m_hud_crosshair_border->value, 0, 1000);
-
-	if (m_hud_crosshair_width->value == -1) {
-		// auto size
-		width = 2;
-		if (ScreenHeight <= 768) {
-			width = 1;
-		}
 	}
 
 	DrawCrossHair(accuracyX, accuracyY, len, width, border);
