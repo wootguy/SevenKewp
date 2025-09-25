@@ -553,6 +553,20 @@ void ClientCommand(edict_t* pEntity)
 	{
 		Host_Say(pEntity, 1);
 	}
+	else if (FStrEq(pcmd, "gibme"))
+	{
+		if (pPlayer->IsAlive()) {
+			pev->health = 0;
+			pPlayer->Killed(pev, GIB_ALWAYS);
+
+			EHANDLE oldWeapon = pPlayer->m_pActiveItem;
+			pPlayer->m_pActiveItem = NULL; // don't show a weapon icon in the kill feed
+			g_pGameRules->DeathNotice(pPlayer, pev, pev);
+			pPlayer->m_pActiveItem = oldWeapon;
+
+			SpawnBlood(pPlayer->pev->origin, pPlayer->BloodColor(), 1000);
+		}
+	}
 	else
 	{
 		// tell the user they entered an unknown command
