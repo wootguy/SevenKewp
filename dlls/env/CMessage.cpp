@@ -5,6 +5,7 @@
 #include "decals.h"
 #include "CBreakable.h"
 #include "shake.h"
+#include "PluginManager.h"
 
 class CMessage : public CPointEntity
 {
@@ -86,7 +87,11 @@ void CMessage::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useTy
 {
 	CBaseEntity* pPlayer = NULL;
 
-	if (pev->spawnflags & SF_MESSAGE_ALL) {
+	bool allPlayers = pev->spawnflags & SF_MESSAGE_ALL;
+
+	CALL_HOOKS_VOID(pfnGameText, this, pActivator, STRING(pev->message), allPlayers, true);
+
+	if (allPlayers) {
 		UTIL_ShowMessageAll(STRING(pev->message));
 		UTIL_ClientPrintAll(print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", STRING(pev->message)));
 	}

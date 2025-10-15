@@ -3,33 +3,8 @@
 #include "util.h"
 #include "gamerules.h"
 #include "CRuleEntity.h"
-
-//
-// CGameText / game_text	-- NON-Localized HUD Message (use env_message to display a titles.txt message)
-//	Flag: All players					SF_ENVTEXT_ALLPLAYERS
-//
-#define SF_ENVTEXT_ALLPLAYERS			0x0001
-#define SF_NO_CONSOLE_ECHO				0x0002
-
-
-class CGameText : public CRulePointEntity
-{
-public:
-	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	void	KeyValue(KeyValueData* pkvd);
-
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	inline	BOOL	MessageToAll(void) { return (pev->spawnflags & SF_ENVTEXT_ALLPLAYERS); }
-	inline	void	MessageSet(const char* pMessage) { pev->message = ALLOC_STRING(pMessage); }
-	inline	const char* MessageGet(void) { return STRING(pev->message); }
-
-private:
-
-	hudtextparms_t	m_textParms;
-};
+#include "PluginManager.h"
+#include "CGameText.h"
 
 LINK_ENTITY_TO_CLASS(game_text, CGameText)
 
@@ -115,11 +90,15 @@ void CGameText::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 	if (!CanFireForActivator(pActivator))
 		return;
 
+	bool consoleEcho = !(pev->spawnflags & SF_NO_CONSOLE_ECHO);
+
+	CALL_HOOKS_VOID(pfnGameText, this, pActivator, MessageGet(), MessageToAll(), consoleEcho);
+
 	if (MessageToAll())
 	{
 		UTIL_HudMessageAll(m_textParms, MessageGet());
 
-		if (!(pev->spawnflags & SF_NO_CONSOLE_ECHO)) {
+		if (consoleEcho) {
 			UTIL_ClientPrintAll(print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", MessageGet()));
 		}
 	}
@@ -129,7 +108,7 @@ void CGameText::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 		{
 			UTIL_HudMessage(pActivator, m_textParms, MessageGet());
 
-			if (!(pev->spawnflags & SF_NO_CONSOLE_ECHO)) {
+			if (consoleEcho) {
 				UTIL_ClientPrint(pActivator, print_console, UTIL_VarArgs("HUD-MSG: \"%s\"\n", MessageGet()));
 			}
 		}

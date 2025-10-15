@@ -220,6 +220,10 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// A userinfo string is about to be sent from infoPlayer to msgPlayer.
 	// infoPlayer is NULL during client connection
 	HOOK_RETURN_DATA (*pfnUserInfo)(edict_t* msgPlayer, edict_t* infoPlayer, char* info);
+
+	// a game text message was triggered
+	// consoleEcho = text message is important enough to be sent to the client console
+	HOOK_RETURN_DATA (*pfnGameText)(CBaseEntity* textEnt, CBaseEntity* activator, const char* msg, bool allPlayers, bool consoleEcho);
 };
 
 // do not call directly, use RegisterPlugin instead
