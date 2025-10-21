@@ -281,18 +281,17 @@ skill_cvar_t skill_cvars[] = {
 void RegisterSkillCvars() {
 	for (int i = 0; i < (int)(sizeof(skill_cvars) / sizeof(skill_cvar_t)); i++) {
 		CVAR_REGISTER(&skill_cvars[i].cvar);
-		g_skillCvars.put(skill_cvars[i].cvar.name, &skill_cvars[i]);
+		std::string lowerCvar = toLowerCase(skill_cvars[i].cvar.name);
+		g_skillCvars.put(lowerCvar.c_str(), &skill_cvars[i]);
 	}
 }
 
 cvar_t* GetSkillCvar(const char* cvar) {
-	for (int i = 0; i < (int)(sizeof(skill_cvars) / sizeof(skill_cvar_t)); i++) {
-		if (FStrEq(cvar, skill_cvars[i].cvar.name)) {
-			return &skill_cvars[i].cvar;
-		}
-	}
+	std::string lowerCvar = toLowerCase(cvar);
 
-	return NULL;
+	skill_cvar_t** pcvar = g_skillCvars.get(lowerCvar.c_str());
+
+	return pcvar ? &(*pcvar)->cvar : NULL;
 }
 
 void RefreshSkillData(bool mapSkills) {

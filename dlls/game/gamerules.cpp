@@ -435,12 +435,12 @@ void execSkillCfg(const char* fname, bool isMapSkill) {
 			continue;
 		}
 
-		string name = trimSpaces(toLowerCase(parts[0]));
+		string name = trimSpaces(parts[0]);
 		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
-		skill_cvar_t** cvar = g_skillCvars.get(name.c_str());
+		cvar_t* cvar = GetSkillCvar(name.c_str());
 
 		if (cvar) {
-			float oldVal = (*cvar)->cvar.value;
+			float oldVal = cvar->value;
 			float newVal = atof(value.c_str());
 
 			if (oldVal == newVal) {
