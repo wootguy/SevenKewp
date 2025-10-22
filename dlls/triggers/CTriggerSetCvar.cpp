@@ -74,30 +74,33 @@ void CTriggerSetCVar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	}
 
 	if (!m_iszCVarToChange) {
-		ALERT(at_console, "%s (trigger_setcvar): no cvar selected\n", STRING(pev->targetname));
+		EALERT(at_console, "no cvar selected\n");
 		return;
 	}
 
 	const char* cvarname = STRING(m_iszCVarToChange);
 	cvar_t* skillCvar = GetSkillCvar(cvarname);
 
+	if (skillCvar && !mp_skill_allow.value) {
+		EALERT(at_logged, "'%s' change denied by mp_skill_allow\n", cvarname);
+		return;
+	}
+	
 	if (!skillCvar) {
 		if (unimpl_cvars.hasKey(cvarname)) {
-			ALERT(at_error, "%s (trigger_setcvar): unimplemented cvar '%s'\n",
-				STRING(pev->targetname), cvarname);
+			EALERT(at_error, "unimplemented cvar '%s'\n", cvarname);
 			return;
 		}
 
 		if (!valid_cvars.hasKey(cvarname)) {
-			ALERT(at_error, "%s (trigger_setcvar): invalid cvar '%s'\n",
-				STRING(pev->targetname), cvarname);
+			EALERT(at_error, "invalid cvar '%s'\n", cvarname);
 			return;
 		}
 	}
 
 	std::string cvarvalue = sanitize_cvar_value(pev->message ? STRING(pev->message) : "");
 
-	ALERT(at_logged, "trigger_setcvar: '%s' set to '%s'\n", cvarname, cvarvalue.c_str());
+	EALERT(at_logged, "'%s' set to '%s'\n", cvarname, cvarvalue.c_str());
 
 	if (skillCvar) {
 		// cvar must be set now so that skill data can be refreshed this same frame
