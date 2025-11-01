@@ -86,11 +86,12 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// called when a client disconnects from the server.
 	HOOK_RETURN_DATA (*pfnClientDisconnect)(CBasePlayer* pEntity);
 
-	// called when a player is fully connected to the server and is about to spawn
+	// called when a player is fully connected and spawned into the server
 	HOOK_RETURN_DATA (*pfnClientPutInServer)(CBasePlayer* pPlayer);
 
 	// called after a player has fully joined the server with an initialized HUD
 	// Players cannot receive chat messages before this.
+	// Players joining during the intermission screen may not call this before the level changes.
 	HOOK_RETURN_DATA(*pfnClientJoin)(CBasePlayer* pPlayer);
 
 	// called before a status bar update is sent to a player

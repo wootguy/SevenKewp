@@ -1787,7 +1787,7 @@ void ExtractCommandString( char *s, char *szCommand )
 }
 
 mapcycle_item_t* CHalfLifeMultiplay::GetMapCyleMap(const char* current_map) {
-	if (!mapcycle.items && !ReloadMapCycleFile((char*)CVAR_GET_STRING("mapcyclefile"), &mapcycle)) {
+	if (!mapcycle.items) {
 		return NULL;
 	}
 
@@ -1830,7 +1830,7 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 	char *mapcfile = (char*)CVAR_GET_STRING( "mapcyclefile" );
 	ASSERT( mapcfile != NULL );
 
-	bool shouldReloadMapCycle = lastMapCycleModifyTime == 0;
+	bool shouldReloadMapCycle = false;
 
 	// Has the map cycle filename changed?
 	if (stricmp(mapcfile, szPreviousMapCycleFile)) {
@@ -1838,15 +1838,13 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 		shouldReloadMapCycle = true;
 	}
 
-	if (!shouldReloadMapCycle) {
-		uint64_t modifyTime = getFileModifiedTime(getGameFilePath(mapcfile).c_str());
-		if (modifyTime && modifyTime != lastMapCycleModifyTime) {
-			if (lastMapCycleModifyTime) {
-				ALERT(at_console, "Map cycle '%s' modified. Reloading.\n", mapcfile);
-			}
-			lastMapCycleModifyTime = modifyTime;
-			shouldReloadMapCycle = true;
+	uint64_t modifyTime = getFileModifiedTime(getGameFilePath(mapcfile).c_str());
+	if (modifyTime && modifyTime != lastMapCycleModifyTime) {
+		if (lastMapCycleModifyTime) {
+			ALERT(at_console, "Map cycle '%s' modified. Reloading.\n", mapcfile);
 		}
+		lastMapCycleModifyTime = modifyTime;
+		shouldReloadMapCycle = true;
 	}
 	
 	if (shouldReloadMapCycle) {
