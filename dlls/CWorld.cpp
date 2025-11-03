@@ -149,13 +149,18 @@ void CWorld::Precache(void)
 
 	CVAR_SET_STRING("room_type", "0");// clear DSP
 
+	mapcycle_t oldCycle;
+	oldCycle.items = NULL;
+
 	// Set up game rules
 	if (g_pGameRules)
 	{
+		oldCycle = g_pGameRules->mapcycle;
 		delete g_pGameRules;
 	}
-
 	g_pGameRules = InstallGameRules();
+	g_pGameRules->mapcycle = oldCycle; // map cycle persists across level changes
+
 	g_pluginManager.UpdatePluginsFromList();
 	if (pluginautoupdate.value) {
 		g_pluginManager.UpdatePlugins();

@@ -83,7 +83,6 @@ CHalfLifeMultiplay :: CHalfLifeMultiplay()
 	m_sentTime60Message = false;
 	m_sentTime300Message = false;
 	m_sentTime600Message = false;
-	mapcycle.items = NULL;
 	
 	// 11/8/98
 	// Modified by YWB:  Server .cfg file is now a cvar, so that 
