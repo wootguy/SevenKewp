@@ -255,11 +255,15 @@ void CShockRifle::BeamAttack(bool isSecondary) {
 
 	// adjust beam direction so that it lands in the center of the crosshair at the impact point
 	// otherwise it will be slightly low and to the right
+	// UNDONE: This makes shooting through doors at near-parallel angles harder.
+	/*
 	TraceResult tr;
 	UTIL_TraceLine(vecHead, vecHead + gpGlobals->v_forward * 4096, dont_ignore_monsters, edict(), &tr);
 	Vector targetdir = (tr.vecEndPos - vecSrc).Normalize();
 	Vector beamAngles = UTIL_VecToAngles(targetdir);
 	beamAngles.x *= -1;
+	*/
+	Vector beamAngles = vecAnglesAim;
 
 	// Update auto-aim
 	//m_pPlayer->GetAutoaimVectorFromPoint(vecSrc, AUTOAIM_10DEGREES);

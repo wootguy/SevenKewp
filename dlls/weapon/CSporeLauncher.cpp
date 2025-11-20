@@ -183,11 +183,15 @@ void CSporeLauncher::PrimaryAttack()
 
 		// adjust beam direction so that it lands in the center of the crosshair at the impact point
 		// otherwise it will be slightly low and to the right
+		// UNDONE: This makes shooting through doors at near-parallel angles harder.
+		/*
 		TraceResult tr;
 		UTIL_TraceLine(vecHead, vecHead + gpGlobals->v_forward * 4096, dont_ignore_monsters, edict(), &tr);
 		Vector targetdir = (tr.vecEndPos - vecSrc).Normalize();
 		Vector sporeAngles = UTIL_VecToAngles(targetdir);
 		sporeAngles.x *= -1;
+		*/
+		Vector sporeAngles = m_pPlayer->pev->v_angle;
 
 		CSpore::CreateSpore(vecSrc, sporeAngles, m_pPlayer, CSpore::SporeType::ROCKET, false, false);
 #endif
@@ -242,11 +246,16 @@ void CSporeLauncher::SecondaryAttack()
 
 		// adjust beam direction so that it lands in the center of the crosshair at the impact point
 		// otherwise it will be slightly low and to the right
+		// UNDONE: This makes shooting through doors at near-parallel angles harder.
+		/*
 		TraceResult tr;
 		UTIL_TraceLine(vecHead, vecHead + gpGlobals->v_forward * 4096, dont_ignore_monsters, edict(), &tr);
 		Vector targetdir = (tr.vecEndPos - vecSrc).Normalize();
 		Vector sporeAngles = UTIL_VecToAngles(targetdir);
 		sporeAngles.x *= -1;
+		*/
+		Vector sporeAngles = m_pPlayer->pev->v_angle;
+		Vector targetdir = gpGlobals->v_forward;
 
 		CSpore* pSpore = CSpore::CreateSpore(
 			vecSrc, sporeAngles,

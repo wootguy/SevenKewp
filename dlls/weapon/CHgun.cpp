@@ -167,11 +167,18 @@ void CHgun::PrimaryAttack()
 	Vector vecHead = m_pPlayer->GetGunPosition();
 	Vector vecSrc = vecHead + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -12;
 
+	// adjust beam direction so that it lands in the center of the crosshair at the impact point
+	// otherwise it will be slightly low and to the right
+	// UNDONE: This makes shooting through doors at near-parallel angles harder.
+	/*
 	TraceResult tr;
 	UTIL_TraceLine(vecHead, vecHead + gpGlobals->v_forward * 4096, dont_ignore_monsters, edict(), &tr);
 	Vector targetdir = (tr.vecEndPos - vecSrc).Normalize();
 	Vector hornetAngles = UTIL_VecToAngles(targetdir);
 	hornetAngles.x *= -1;
+	*/
+	Vector hornetAngles = m_pPlayer->pev->v_angle;
+	Vector targetdir = gpGlobals->v_forward;
 
 	CBaseEntity *pHornet = CBaseEntity::Create( "hornet", vecSrc, hornetAngles, true, m_pPlayer->edict() );
 	pHornet->pev->velocity = targetdir * 300;
@@ -236,6 +243,7 @@ void CHgun::SecondaryAttack( void )
 	
 	UTIL_MakeVectors( m_pPlayer->pev->v_angle);
 
+	/*
 	Vector vecSpread = VECTOR_CONE_3DEGREES;
 	float x = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
 	float y = RANDOM_FLOAT(-0.5, 0.5) + RANDOM_FLOAT(-0.5, 0.5);
@@ -243,6 +251,7 @@ void CHgun::SecondaryAttack( void )
 	Vector vecDir = gpGlobals->v_forward +
 		x * vecSpread.x * gpGlobals->v_right +
 		y * vecSpread.y * gpGlobals->v_up;
+	*/
 
 	vecSrc = vecHead + gpGlobals->v_forward * 16 + gpGlobals->v_right * 8 + gpGlobals->v_up * -12;
 
@@ -282,11 +291,16 @@ void CHgun::SecondaryAttack( void )
 
 	// adjust beam direction so that it lands in the center of the crosshair at the impact point
 	// otherwise it will be slightly low and to the right
+	// UNDONE: This makes shooting through doors at near-parallel angles harder.
+	/*
 	TraceResult tr;
-	UTIL_TraceLine(vecHead, vecHead + vecDir * 4096, dont_ignore_monsters, edict(), &tr);
+	UTIL_TraceLine(vecHead, vecHead + vecDir  * 4096, dont_ignore_monsters, edict(), &tr);
 	Vector targetdir = (tr.vecEndPos - vecSrc).Normalize();
 	Vector hornetAngles = UTIL_VecToAngles(targetdir);
 	hornetAngles.x *= -1;
+	*/
+	Vector hornetAngles = m_pPlayer->pev->v_angle;
+	Vector targetdir = gpGlobals->v_forward;
 
 	pHornet = CBaseEntity::Create( "hornet", vecSrc, hornetAngles, true, m_pPlayer->edict() );
 	pHornet->pev->velocity = targetdir * 1200;
