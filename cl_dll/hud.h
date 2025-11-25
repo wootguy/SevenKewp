@@ -266,7 +266,7 @@ struct extra_player_info_t
 	short frags;
 	short deaths;
 	uint16_t playerclass;
-	short health;
+	uint32_t health;
 	int specMode; // which spectate mode the player is in
 	int specTarget; // which player is being spectated
 	bool dead; // UNUSED currently, spectator UI would like this
@@ -396,6 +396,18 @@ public:
 
 private:
 	cvar_t* ver_cvar;
+};
+
+class CHudDebug : public CHudBase
+{
+public:
+	int Init(void);
+	int VidInit(void) { return 1; }
+	int Draw(float flTime);
+	virtual const char* HudName() { return "CHudDebug"; }
+
+private:
+	cvar_t* m_HUD_debug;
 };
 
 class CHudNametags : public CHudBase
@@ -737,6 +749,7 @@ public:
 	CFog			m_Fog;
 	CHudClientUpdater	m_ClientUpdater;
 	CHudNametags	m_Nametags;
+	CHudDebug		m_Debug;
 
 	void Init( void );
 	void VidInit( void ); // called on server connection or video mode change

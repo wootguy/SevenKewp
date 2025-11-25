@@ -53,6 +53,7 @@ set(HUD_SRC
 	hud_spectator.cpp
 	hud_update.cpp
 	hud_nametags.cpp
+	hud_debug.cpp
 	menu.cpp
 	message.cpp
 	saytext.cpp

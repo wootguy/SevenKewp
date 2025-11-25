@@ -186,6 +186,16 @@ void CEgon::UseAmmo( int count )
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = 0;
 }
 
+// for debugging events on the client
+#ifdef CLIENT_DLL
+#include "../cl_dll/hud_iface.h"
+#define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
+extern int g_runfuncs;
+#else
+extern int g_runfuncs;
+#define PRINTF(msg, ...)
+#endif
+
 void CEgon::Attack( void )
 {
 	CBasePlayer* m_pPlayer = GetPlayer();
@@ -562,8 +572,10 @@ void CEgon::WeaponIdle( void )
 	if ( m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
-	if ( m_fireState != FIRE_OFF )
-		 EndAttack();
+	if (m_fireState != FIRE_OFF) {
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+		EndAttack();
+	}
 	
 	int iAnim;
 
@@ -600,7 +612,15 @@ void CEgon::EndAttack( void )
 	PLAYBACK_EVENT_FULL( FEV_GLOBAL | FEV_RELIABLE, m_pPlayer->edict(), m_usEgonStop, 0, (float *)&m_pPlayer->pev->origin, (float *)&m_pPlayer->pev->angles, 0.0, 0.0, bMakeNoise, 0, 0, 0 );
 
 	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 2.0;
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
+	
+	// TODO: this is getting m_flNextPrimaryAttack stuck postive on the client so beam isn't created
+	// sometimes. It's as if this function is constantly called, even though it only gets spammed a bit
+	// during deployment when switching from another weapon. The engine prediction code isn't visible 
+	// so idk why it keeps getting reset to a positive value when the server sends -0.001f after deploy
+	// is finished. To reproduce the bug, start a map that gives you the gauss and egon. Switch to the
+	// egon with 50 clumsy lag. Most of the time m_flNextPrimaryAttack will constantly reset to 0.5.
+	// This bug was fixed by only cooling down the weapon during idle, not during holster/deploy.
+	//m_flNextPrimaryAttack = m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + 0.5;
 
 	m_fireState = FIRE_OFF;
 

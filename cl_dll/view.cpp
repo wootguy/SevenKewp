@@ -103,6 +103,8 @@ cvar_t	v_ipitch_level		= {"v_ipitch_level", "0.3", 0, 0.3};
 
 float	v_idlescale;  // used by TFC for concussion grenade effect
 
+bool b_viewing_cam; // true if player's view is attached to another entity such as a camera
+
 //=============================================================================
 /*
 void V_NormalizeAngles( float *angles )
@@ -816,6 +818,8 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		ent->latched.prevangles[ 0 ] = pitch;
 	}
 
+	b_viewing_cam = false;
+
 	// override all previous settings if the viewent isn't the client
 	if ( pparams->viewentity > pparams->maxclients )
 	{
@@ -828,6 +832,8 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 
 			// Store off overridden viewangles
 			v_angles = pparams->viewangles;
+
+			b_viewing_cam = true;
 		}
 	}
 

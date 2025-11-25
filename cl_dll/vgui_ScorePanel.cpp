@@ -167,9 +167,10 @@ ScorePanel::ScorePanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 		else if(g_ColumnInfo[i].m_pTitle)
 			m_HeaderLabels[i].setText(g_ColumnInfo[i].m_pTitle);
 
-		if (i == 2 && !gHUD.IsSevenKewpServer()) {
-			m_HeaderLabels[i].setText("");
-		}
+		// TODO: update header depending on server (scorepanel is only created once)
+		//if (i == 2 && !gHUD.IsSevenKewpServer()) {
+		//	m_HeaderLabels[i].setText("");
+		//}
 
 		int xwide = g_ColumnInfo[i].m_Width;
 		if (ScreenWidth >= 640)

@@ -100,6 +100,12 @@ ModPlayerState g_modPlayerStates[32];
 int g_last_attack_mode;
 float g_last_attack_time;
 
+local_state_t g_prediction_debug_state;
+
+bool IsPredictionWeaponZoomed() {
+	return player.pev->fov != 0 && player.pev->fov < 90;
+}
+
 CustomWeaponParams* GetCustomWeaponParams(int id) {
 	if (id >= 0 && id < MAX_WEAPONS)
 		return &g_customWeapon[id].params;
@@ -436,6 +442,7 @@ Only produces random numbers to match the server ones.
 Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand, Vector* vecEndOut, BULLET_PREDICTION predicted)
 {
 	float x = 0, y = 0, z = 0;
+	Vector spread;
 
 	for ( ULONG iShot = 1; iShot <= cShots; iShot++ )
 	{
@@ -456,10 +463,13 @@ Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecD
 			y = UTIL_SharedRandomFloat( shared_rand + ( 2 + iShot ), -0.5, 0.5 ) + UTIL_SharedRandomFloat( shared_rand + ( 3 + iShot ), -0.5, 0.5 );
 			z = x * x + y * y;
 		}
-			
+		
+		spread = Vector(x * vecSpread.x, y * vecSpread.y, 0.0);
+
+
 	}
 
-    return Vector ( x * vecSpread.x, y * vecSpread.y, 0.0 );
+	return spread;
 }
 
 /*
@@ -853,6 +863,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	static int lasthealth;
 
 	memset( &nulldata, 0, sizeof( nulldata ) );
+	memcpy(&g_prediction_debug_state, to, sizeof(local_state_s));
 
 	HUD_InitClientWeapons();	
 

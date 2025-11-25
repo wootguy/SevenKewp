@@ -22,7 +22,7 @@ struct SoundMapping {
 	const char* path;
 };
 
-class CWeaponCustom : public CBasePlayerWeapon {
+class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:
 	CustomWeaponParams params;
 

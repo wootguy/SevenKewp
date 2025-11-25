@@ -403,6 +403,7 @@ void CHud :: Init( void )
 	m_Fog.Init();
 	m_ClientUpdater.Init();
 	m_Nametags.Init();
+	m_Debug.Init();
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
 
 	m_Menu.Init();

@@ -12,7 +12,7 @@ void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, f
 void WC_EV_EjectShell(WepEvt& evt, bool leftHand);
 void WC_EV_PunchAngle(WepEvt& evt, int seed);
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
-void WC_EV_Bullets(WepEvt& evt, float spreadX, float spreadY, bool showTracer, bool decal, bool texSound);
+void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTracer, bool decal, bool texSound);
 void EV_LaserOn(const char* dotSprite, float dotSz, const char* beamSprite, float beamWidth);
 void EV_LaserOff();
 #else
@@ -179,6 +179,7 @@ BOOL CWeaponCustom::Deploy()
 	m_lastChargeDown = 0;
 	m_fInReload = false;
 	m_bInAkimboReload = false;
+	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
 	int ret = TRUE;
 
 	m_pPlayer->SetThirdPersonWeaponAnim(0);
@@ -1241,7 +1242,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 #ifdef CLIENT_DLL
 	bool decal = !(evt.bullets.flags & FL_WC_BULLETS_NO_DECAL);
 	bool texSound = !(evt.bullets.flags & FL_WC_BULLETS_NO_SOUND);
-	WC_EV_Bullets(evt, vecDir.x, vecDir.y, showTracer, decal, texSound);
+	WC_EV_Bullets(evt, m_pPlayer->random_seed, spread, showTracer, decal, texSound);
 #else
 	if (showTracer) {
 		for (int i = 1; i < gpGlobals->time; i++) {

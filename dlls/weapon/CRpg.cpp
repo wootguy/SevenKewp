@@ -727,7 +727,8 @@ void CRpg::UpdateSpot( void )
 {
 #ifdef CLIENT_DLL
 	// sync with server after state is stable
-	if (gEngfuncs.GetClientTime() - m_lastLaserToggle > 0.5f) {
+	float now = gEngfuncs.GetClientTime();
+	if (now - m_lastLaserToggle > 0.5f || m_lastLaserToggle > now) {
 		m_fSpotActive = m_fireState;
 	}
 

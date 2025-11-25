@@ -38,6 +38,7 @@ void GetCurrentCustomWeaponState(int id, int& akimboClip);
 bool CanWeaponAkimbo(int id);
 bool IsExclusiveWeapon(int id);
 void InitCustomWeapon(int id);
+bool IsPredictionWeaponZoomed();
 
 extern int g_last_attack_mode;
 extern float g_last_attack_time;
@@ -664,7 +665,7 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 }
 
 bool CHudAmmo::IsWeaponZoomed() {
-	return gHUD.m_iFOV < 90;
+	return gHUD.m_iFOV < 90 || IsPredictionWeaponZoomed();
 }
 
 void CHudAmmo::UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget) {
@@ -1563,6 +1564,10 @@ void CHudAmmo::DrawDynamicCrosshair() {
 		accuracyY = accuracyY2;
 	}
 
+	if (g_last_attack_time > now) {
+		g_last_attack_time = 0; // level changed
+	}
+
 	// lerp between accuracy changes
 	{
 		static int lastWeaponId;
@@ -1587,6 +1592,10 @@ void CHudAmmo::DrawDynamicCrosshair() {
 			nextAccuracyX = accuracyX;
 			nextAccuracyY = accuracyY;
 			lerpStart = now;
+		}
+
+		if (lerpStart > now) {
+			lerpStart = now; // level changed
 		}
 
 		float t = V_min(0.1f, (now - lerpStart)) / 0.1f;

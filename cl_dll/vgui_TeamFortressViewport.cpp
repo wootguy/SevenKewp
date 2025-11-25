@@ -2123,7 +2123,7 @@ int TeamFortressViewport::MsgFunc_TagInfo(const char* pszName, int iSize, void* 
 {
 	BEGIN_READ(pbuf, iSize);
 	uint8_t cl = READ_BYTE();
-	uint8_t health = READ_BYTE();
+	uint32_t health = READ_LONG();
 	uint8_t observer = READ_BYTE();
 
 	if (cl > 0 && cl <= MAX_PLAYERS)

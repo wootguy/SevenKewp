@@ -1540,26 +1540,26 @@ void EV_EgonStop( event_args_t *args )
 			pBeam2->die = 0.0;
 			pBeam2 = NULL;
 		}
-	}
 
-	if (pFlare) // Vit_amiN: egon beam flare
-	{
-		pFlare->die = gEngfuncs.GetClientTime();
-
-		if (gEngfuncs.GetMaxClients() == 1 || !(pFlare->flags & FTENT_NOMODEL))
+		if (pFlare) // Vit_amiN: egon beam flare
 		{
-			if (pFlare->tentOffset.x != 0.0f)	// true for iFireMode == FIRE_WIDE
-			{
-				pFlare->callback = &EV_EgonFlareCallback;
-				pFlare->fadeSpeed = 2.0;			// fade out will take 0.5 sec
-				pFlare->tentOffset.x = 10.0;		// scaling speed per second
-				pFlare->tentOffset.y = 0.1;			// min time between two scales
-				pFlare->tentOffset.z = pFlare->die;	// the last callback run time
-				pFlare->flags = FTENT_FADEOUT | FTENT_CLIENTCUSTOM;
-			}
-		}
+			pFlare->die = gEngfuncs.GetClientTime();
 
-		pFlare = NULL;
+			if (gEngfuncs.GetMaxClients() == 1 || !(pFlare->flags & FTENT_NOMODEL))
+			{
+				if (pFlare->tentOffset.x != 0.0f)	// true for iFireMode == FIRE_WIDE
+				{
+					pFlare->callback = &EV_EgonFlareCallback;
+					pFlare->fadeSpeed = 2.0;			// fade out will take 0.5 sec
+					pFlare->tentOffset.x = 10.0;		// scaling speed per second
+					pFlare->tentOffset.y = 0.1;			// min time between two scales
+					pFlare->tentOffset.z = pFlare->die;	// the last callback run time
+					pFlare->flags = FTENT_FADEOUT | FTENT_CLIENTCUSTOM;
+				}
+			}
+
+			pFlare = NULL;
+		}
 	}
 }
 //======================
@@ -2003,8 +2003,17 @@ void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunsh
 }
 
 
-void WC_EV_Bullets(WepEvt& evt, float spreadX, float spreadY, bool showTracer, bool decal, bool texSound) {
-	WC_EV_FireBullets(spreadX, spreadY, showTracer, decal, texSound);
+void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTracer, bool decal, bool texSound) {
+	for (ULONG iShot = 1; iShot <= evt.bullets.count; iShot++)
+	{
+		//Use player's random seed.
+		// get circular gaussian spread
+		float x = UTIL_SharedRandomFloat(shared_rand + iShot, -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (1 + iShot), -0.5, 0.5);
+		float y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5, 0.5);
+		float z = x * x + y * y;
+
+		WC_EV_FireBullets(x * vecSpread.x, y * vecSpread.y, showTracer, decal, texSound);
+	}
 
 	if (evt.bullets.flashSz)
 		EV_MuzzleFlash();

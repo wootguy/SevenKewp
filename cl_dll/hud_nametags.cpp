@@ -14,6 +14,7 @@ extern Vector v_origin;
 extern Vector v_angles;
 extern vec3_t cam_ofs;
 extern int cam_thirdperson;
+extern bool b_viewing_cam;
 
 extern hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS + 1];	   // player info from the engine
 extern extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS + 1];
@@ -75,7 +76,7 @@ int CHudNametags::Draw(float flTime)
 
     Vector angles = v_angles;
     
-    if (cam_thirdperson) {
+    if (cam_thirdperson && !b_viewing_cam) {
         angles.x = cam_ofs.x;
         angles.y = cam_ofs.y;
         angles.z = 0; // tilt isn't applied in thirdperson
@@ -118,7 +119,7 @@ int CHudNametags::Draw(float flTime)
 		if (info.specMode && info.specMode != OBS_ROAMING)
 			continue; // Don't show an icon for spectators
 
-		if (pClient == localPlayer && !cam_thirdperson)
+		if (pClient == localPlayer && !cam_thirdperson && !b_viewing_cam)
 			continue; // Don't show an icon for the local player unless we're in thirdperson mode.
 		
         // lerp between inaccurate positions for smooth movement
@@ -177,7 +178,19 @@ int CHudNametags::Draw(float flTime)
         }
         else {
             const char* pad = showHpOnly ? "" : " ";
-            hpStr = hp ? UTIL_VarArgs("%s%d%%", pad, (int)hp) : " DEAD";
+            if (hp >= 1000*1000*10) {
+                hpStr = UTIL_VarArgs("%s%dm%%", pad, (hp + 1000*500) / (1000*1000));
+            }
+            else if (hp >= 1000*10) {
+                hpStr = UTIL_VarArgs("%s%dk%%", pad, (hp + 500) / 1000);
+            }
+            else if (hp > 0) {
+                hpStr = UTIL_VarArgs("%s%d%%", pad, hp);
+            }
+            else {
+                hpStr = " DEAD";
+            }
+            
             GetConsoleStringSize(hpStr, &hpWidth, &hpHeight);
         }
 

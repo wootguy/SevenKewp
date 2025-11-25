@@ -162,6 +162,6 @@ void LinkUserMessages(void)
 	gmsgToxicCloud = REG_USER_MSG("ToxicCloud", 4);
 	gmsgPmodelAnim = REG_USER_MSG("PmodelAnim", 2);
 	gmsgWeaponBits = REG_USER_MSG("WeaponBits", 8);
-	gmsgTagInfo = REG_USER_MSG("TagInfo", 3);
+	gmsgTagInfo = REG_USER_MSG("TagInfo", 6);
 	gmsgPlayerPos = REG_USER_MSG("PlayerPos", -1);
 }

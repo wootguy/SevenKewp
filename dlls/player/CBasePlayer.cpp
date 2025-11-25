@@ -6370,8 +6370,8 @@ void CBasePlayer::UpdateScore() {
 }
 
 void CBasePlayer::UpdateTag(CBasePlayer* dst) {
-	int hpPercent = IsAlive() ? ((pev->health / pev->max_health) * 100 + 0.5f) : 0;
-	uint8_t hp = V_max(0, hpPercent);
+	int hpPercent = IsAlive() ? ((pev->health / pev->max_health) * 100) : 0;
+	uint32_t hp = clampf(hpPercent, 0, INT32_MAX);
 	uint8_t observer = ((pev->iuser2-1) << 3) | (pev->iuser1 & 0x7);
 	bool statusChanged = hp != m_lastTagHp || observer != m_lastTagObserver;
 
@@ -6396,7 +6396,7 @@ void CBasePlayer::UpdateTag(CBasePlayer* dst) {
 
 		MESSAGE_BEGIN(MSG_ONE, gmsgTagInfo, 0, targetPlr->edict());
 		WRITE_BYTE(entindex());
-		WRITE_BYTE(hp);
+		WRITE_LONG(hp);
 		WRITE_BYTE(observer);
 		MESSAGE_END();
 	}	

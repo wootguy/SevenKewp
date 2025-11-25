@@ -1590,6 +1590,13 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 				continue;
 			}
 
+			if (com_token[0] == ':') {
+				continue; // keyvalue list separator
+			}
+			if (strstr(com_token, "=") != NULL) {
+				continue; // keyvalue (for use in plugins)
+			}
+
 			strncpy(szMap, com_token, MAX_MAP_NAME_LEN);
 			szMap[MAX_MAP_NAME_LEN - 1] = 0;
 
