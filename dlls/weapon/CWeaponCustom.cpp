@@ -179,6 +179,7 @@ BOOL CWeaponCustom::Deploy()
 	m_lastChargeDown = 0;
 	m_fInReload = false;
 	m_bInAkimboReload = false;
+	m_fInSpecialReload = 0;
 	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
 	int ret = TRUE;
 
@@ -261,16 +262,17 @@ void CWeaponCustom::Reload() {
 
 	if (m_fInReload)
 		return;
-	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 && m_fInSpecialReload != 2)
 		return;
 
 	bool canAkimboReload = IsAkimbo() && GetAkimboClip() < params.maxClip;
+	bool shotgunReload = params.flags & FL_WC_WEP_SHOTGUN_RELOAD;
 
 	if (m_flChargeStartPrimary || m_flChargeStartSecondary)
 		return;
 	if (m_iClip == -1)
 		return;
-	if (m_iClip >= params.maxClip && !canAkimboReload) {
+	if (m_iClip >= params.maxClip && !canAkimboReload && m_fInSpecialReload == 0) {
 		m_bWantAkimboReload = false;
 		return;
 	}
@@ -281,6 +283,14 @@ void CWeaponCustom::Reload() {
 
 	if (IsAkimbo()) {
 		reloadStage = &params.akimbo.reload;
+	}
+	else if (shotgunReload) {
+		if (m_fInSpecialReload == 2) {
+			reloadStage = &params.reloadStage[2];
+		}
+		else if (m_fInSpecialReload == 1) {
+			reloadStage = &params.reloadStage[1];
+		}
 	}
 	else if (m_iClip == 0 && params.reloadStage[1].time) {
 		// in normal reload mode, the second reload stage is for empty reloads
@@ -322,8 +332,18 @@ void CWeaponCustom::Reload() {
 
 	if (g_runfuncs) {
 		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
-		ProcessEvents(WC_TRIG_RELOAD, akimboArg);
-
+		
+		if (shotgunReload) {
+			if (m_fInSpecialReload == 1)
+				ProcessEvents(WC_TRIG_RELOAD, akimboArg);
+			else if (m_fInSpecialReload == 2) {
+				ProcessEvents(WC_TRIG_RELOAD_FINISH, akimboArg);
+			}
+		}
+		else {
+			ProcessEvents(WC_TRIG_RELOAD, akimboArg);
+		}
+		
 		if (m_iClip == 0) {
 			ProcessEvents(WC_TRIG_RELOAD_EMPTY, akimboArg);
 		}
@@ -422,7 +442,44 @@ void CWeaponCustom::ItemPostFrame() {
 
 	// reload prediction
 	if (reloadFinished) {
-		// complete the reload.
+
+		// special shotgun reloading
+		if (params.flags & FL_WC_WEP_SHOTGUN_RELOAD) {
+			bool wantAbort = (m_pPlayer->pev->button & IN_ATTACK) | (m_pPlayer->pev->button & IN_ATTACK2);
+
+			if (wantAbort && m_iClip > 0) {
+				m_fInSpecialReload = 0;
+				m_fInReload = FALSE;
+				return;
+			}
+
+			if (m_fInSpecialReload == 0) {
+				// finished raising gun, now start loading shells
+				m_fInSpecialReload = 1;
+				m_fInReload = FALSE;
+				Reload(); // start the next animation
+				return;
+			}
+			else if (m_fInSpecialReload == 1) {
+				// loading shells
+				if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 && m_iClip < params.maxClip) {
+					m_iClip++;
+					m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 1;
+					m_pPlayer->TabulateAmmo();
+				}
+
+				if (m_iClip >= params.maxClip || m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0) {
+					// play the finishing animation
+					m_fInSpecialReload = 2;
+				}
+				
+				m_fInReload = FALSE;
+				Reload();
+				return;
+			}
+		}
+
+		// complete a simple reload.
 		int& clip = m_bInAkimboReload ? m_chargeReady : m_iClip;
 		int j = V_min(params.maxClip - clip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 		clip += j;
@@ -430,6 +487,7 @@ void CWeaponCustom::ItemPostFrame() {
 		m_pPlayer->TabulateAmmo();
 		
 		m_fInReload = FALSE;
+		m_fInSpecialReload = 0;
 
 
 		if (IsAkimbo()) {

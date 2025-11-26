@@ -70,9 +70,10 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_SECONDARY_CHARGE,	// triggers when secondary fire begins charging
 	WC_TRIG_SECONDARY_STOP,		// triggers when secondary fire key is released
 	WC_TRIG_SECONDARY_FAIL,		// triggers when secondar fire fails (no ammo, underwater, ...)
-	WC_TRIG_RELOAD,				// triggers when a reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_RELOAD,				// triggers when a simple reload begins, or when a shotgun reloads a single shell. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_EMPTY,		// triggers when an empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_NOT_EMPTY,	// triggers when a non-empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_RELOAD_FINISH,		// triggers when a shotgun reload finishes
 	WC_TRIG_DEPLOY,				// Trigger arg : WeaponCustomEventTriggerShootArg
 	WC_TRIG_BULLET_FIRED,		// triggered when a bullet is fired
 	WC_TRIG_LASER_ON,			// triggered when the laser is enabled
@@ -382,6 +383,11 @@ struct WepEvt {
 
 	WepEvt ReloadNotEmpty() {
 		this->trigger = WC_TRIG_RELOAD_NOT_EMPTY;
+		return *this;
+	}
+
+	WepEvt ReloadFinish() {
+		this->trigger = WC_TRIG_RELOAD_FINISH;
 		return *this;
 	}
 
