@@ -364,9 +364,12 @@ int CHudAmmo::Init(void)
 	CVAR_CREATE( "hud_fastswitch", "0", FCVAR_ARCHIVE );		// controls whether or not weapons can be selected in one keypress
 	
 	m_hud_crosshair_mode = gEngfuncs.pfnRegisterVariable("hud_crosshair_mode", "1", FCVAR_ARCHIVE);
-	m_hud_crosshair_length = gEngfuncs.pfnRegisterVariable("hud_crosshair_length", "15", FCVAR_ARCHIVE);
+	m_hud_crosshair_length = gEngfuncs.pfnRegisterVariable("hud_crosshair_length", "-1", FCVAR_ARCHIVE);
 	m_hud_crosshair_width = gEngfuncs.pfnRegisterVariable("hud_crosshair_width", "-1", FCVAR_ARCHIVE);
 	m_hud_crosshair_border = gEngfuncs.pfnRegisterVariable("hud_crosshair_border", "1", FCVAR_ARCHIVE);
+	m_hud_crosshair_color = gEngfuncs.pfnRegisterVariable("hud_crosshair_color", "0", FCVAR_ARCHIVE);
+	m_hud_crosshair_tee = gEngfuncs.pfnRegisterVariable("hud_crosshair_tee", "0", FCVAR_ARCHIVE);
+	m_hud_crosshair_dot = gEngfuncs.pfnRegisterVariable("hud_crosshair_dot", "1", FCVAR_ARCHIVE);
 
 	m_iFlags |= HUD_ACTIVE; //!!!
 
@@ -1456,9 +1459,8 @@ int CrosshairGapPixels(float accuracyDeg, bool isVertical) {
 	}
 }
 
-void DrawCrossHair(float accuracyX, float accuracyY, int len, int thick, int border) {
-	int r, g, b, a;
-
+void DrawCrossHair(float accuracyX, float accuracyY, int len, int thick, int border,
+	int r, int g, int b, bool drawDot, bool drawTee) {
 	int centerX = ScreenWidth / 2;
 	int centerY = ScreenHeight / 2;
 
@@ -1468,47 +1470,57 @@ void DrawCrossHair(float accuracyX, float accuracyY, int len, int thick, int bor
 
 	int minGap = thick + border * 4;
 
+	if (!drawDot) {
+		minGap = thick + border * 2;
+	}
+
 	gapX = V_max(CrosshairGapPixels(accuracyX, false), minGap);
 	gapY = V_max(CrosshairGapPixels(accuracyY, true), minGap);
 
 	if (gapX == minGap && gapY == minGap) {
 		//len *= 0.75f;
 	}
-	a = 200;
+	int a = 200;
 	
 
 	if (border > 0) {
 		int blen = len + border * 2;
 		int bthick = thick + border * 2;
 		int bhthick = bthick / 2;
-		r = g = b = 0;
+		int rb = 0;
+		int gb = 0;
+		int bb = 0;
 
 		// horizontal
-		gEngfuncs.pfnFillRGBABlend(centerX - (gapX + blen - border), centerY - bhthick, blen, bthick, r, g, b, a);
-		gEngfuncs.pfnFillRGBABlend(centerX + gapX - border, centerY - bhthick, blen, bthick, r, g, b, a);
+		gEngfuncs.pfnFillRGBABlend(centerX - (gapX + blen - border), centerY - bhthick, blen, bthick, rb, gb, bb, a);
+		gEngfuncs.pfnFillRGBABlend(centerX + gapX - border, centerY - bhthick, blen, bthick, rb, gb, bb, a);
 
 		// vertical
-		gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY - (gapY + blen - border), bthick, blen, r, g, b, a);
-		gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY + gapY - border, bthick, blen, r, g, b, a);
+		if (!drawTee)
+			gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY - (gapY + blen - border), bthick, blen, rb, gb, bb, a);
+		gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY + gapY - border, bthick, blen, rb, gb, bb, a);
 
-		// center dot
-		gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY - bhthick, bthick, bthick, r, g, b, a);
-		gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY - bhthick, bthick, bthick, r, g, b, a);
+		if (drawDot) {
+			// center dot
+			gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY - bhthick, bthick, bthick, rb, gb, bb, a);
+			gEngfuncs.pfnFillRGBABlend(centerX - bhthick, centerY - bhthick, bthick, bthick, rb, gb, bb, a);
+		}
 	}
-
-	UnpackRGB(r, g, b, RGB_YELLOWISH);
 
 	// horizontal
 	gEngfuncs.pfnFillRGBABlend(centerX - (gapX + len), centerY - hthick, len, thick, r, g, b, a);
 	gEngfuncs.pfnFillRGBABlend(centerX + gapX, centerY - hthick, len, thick, r, g, b, a);
 
 	// vertical
-	gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY - (gapY + len), thick, len, r, g, b, a);
+	if (!drawTee)
+		gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY - (gapY + len), thick, len, r, g, b, a);
 	gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY + gapY, thick, len, r, g, b, a);
 
-	// center dot
-	gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY - hthick, thick, thick, r, g, b, a);
-	gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY - hthick, thick, thick, r, g, b, a);
+	if (drawDot) {
+		// center dot
+		gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY - hthick, thick, thick, r, g, b, a);
+		gEngfuncs.pfnFillRGBABlend(centerX - hthick, centerY - hthick, thick, thick, r, g, b, a);
+	}
 }
 
 void CHudAmmo::DrawDynamicCrosshair() {
@@ -1519,6 +1531,16 @@ void CHudAmmo::DrawDynamicCrosshair() {
 	int width = clamp(m_hud_crosshair_width->value, 1, 1000);
 	int border = clamp(m_hud_crosshair_border->value, 0, 1000);
 
+	if (m_hud_crosshair_length->value == -1) {
+		len = 8;
+		if (ScreenHeight > 1440) {
+			len = 15;
+		}
+		else if (ScreenHeight > 768) {
+			len = 12;
+		}
+	}
+
 	if (m_hud_crosshair_width->value == -1) {
 		// auto size
 		width = 2;
@@ -1527,9 +1549,51 @@ void CHudAmmo::DrawDynamicCrosshair() {
 		}
 	}
 
+	int r, g, b;
+	const char* rgb = m_hud_crosshair_color->string;
+	if (strlen(rgb) == 3) {
+		static const unsigned char hex_lut[256] = {
+			// 0x00 – 0x0F
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			// 0x10 – 0x1F
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			// 0x20 – 0x2F
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			// 0x30 – 0x3F   ('0'–'9')
+			0,1,2,3,4,5,6,7,8,9, 0,0,0,0,0,0,
+			// 0x40 – 0x4F   ('A'–'O')
+			0,10,11,12,13,14,15,0,0,0,0,0,0,0,0,0,
+			// 0x50 – 0x5F   ('P'–'_')
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			// 0x60 – 0x6F   ('`'–'o')
+			0,10,11,12,13,14,15,0,0,0,0,0,0,0,0,0,
+			// 0x70 – 0x7F   ('p'–DEL)
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			// 0x80 – 0xFF
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+		};
+
+		r = hex_lut[(uint8_t)rgb[0]] * 17;
+		g = hex_lut[(uint8_t)rgb[1]] * 17;
+		b = hex_lut[(uint8_t)rgb[2]] * 17;
+	}
+	else {
+		UnpackRGB(r, g, b, RGB_YELLOWISH);
+	}
+
+	bool drawDot = m_hud_crosshair_dot->value > 0;
+	bool drawTee = m_hud_crosshair_tee->value > 0;
+
 	if (!m_pWeapon) {
 		if (m_hud_crosshair_mode->value >= 2) {
-			DrawCrossHair(0, 0, len, width, border);
+			DrawCrossHair(0, 0, len, width, border, r, g, b, drawDot, drawTee);
 		}
 		return;
 	}
@@ -1613,7 +1677,7 @@ void CHudAmmo::DrawDynamicCrosshair() {
 		accuracyY2 += punch;
 	}
 
-	DrawCrossHair(accuracyX, accuracyY, len, width, border);
+	DrawCrossHair(accuracyX, accuracyY, len, width, border, r, g, b, drawDot, drawTee);
 }
 
 

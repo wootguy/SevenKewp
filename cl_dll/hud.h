@@ -159,6 +159,9 @@ private:
 	cvar_t* m_hud_crosshair_length;
 	cvar_t* m_hud_crosshair_width;
 	cvar_t* m_hud_crosshair_border;
+	cvar_t* m_hud_crosshair_color;
+	cvar_t* m_hud_crosshair_tee;
+	cvar_t* m_hud_crosshair_dot;
 };
 
 //
