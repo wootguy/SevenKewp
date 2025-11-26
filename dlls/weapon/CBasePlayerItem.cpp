@@ -105,14 +105,25 @@ void CBasePlayerItem::Materialize(void)
 
 	UTIL_SetOrigin(pev, pev->origin);// link into world.
 
-	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
-		SetTouch(&CBasePlayerItem::DefaultTouch);
-	else
-		SetTouch(&CBaseEntity::ItemBounceTouch);
+	CWeaponCustom* cwep = MyWeaponCustomPtr();
+	bool useOnlyWep = cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY);
 
-	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
+	if (useOnlyWep) {
+		SetTouch(NULL);
 		SetUse(&CBasePlayerItem::DefaultUse);
+	}
+	else {
+		// both of these enabled doesn't make sense
+		bool stupidFlags = (pev->spawnflags & SF_ITEM_USE_ONLY) && (pev->spawnflags & SF_ITEM_TOUCH_ONLY);
 
+		if (!(pev->spawnflags & SF_ITEM_USE_ONLY) || stupidFlags)
+			SetTouch(&CBasePlayerItem::DefaultTouch);
+		else
+			SetTouch(&CBaseEntity::ItemBounceTouch);
+
+		if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY) || stupidFlags)
+			SetUse(&CBasePlayerItem::DefaultUse);
+	}
 }
 
 //=========================================================

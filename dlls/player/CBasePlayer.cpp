@@ -795,6 +795,11 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	pWeaponBox->SetThink( &CWeaponBox::Kill );
 	pWeaponBox->pev->nextthink = gpGlobals->time + item_despawn_time.value;
 
+	CWeaponCustom* cwep = firstWep->MyWeaponCustomPtr();
+	if (cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY)) {
+		pWeaponBox->SetTouch(&CBaseEntity::ItemBounceTouch);
+	}
+
 // back these two lists up to their first elements
 	iPA = 0;
 	iPW = 0;
@@ -2161,6 +2166,7 @@ void CBasePlayer::PlayerUse ( void )
 	float flMaxDot = VIEW_FIELD_NARROW;
 	float flDot;
 	float bestDist = FLT_MAX;
+	bool foundGoodWeapon = false;
 
 	UTIL_MakeVectors(pev->v_angle);// so we know which way we are facing
 
@@ -2177,6 +2183,16 @@ void CBasePlayer::PlayerUse ( void )
 				pClosest = pObject;
 				break;
 			}
+
+			CWeaponCustom* cwep = pObject->MyWeaponCustomPtr();
+			CWeaponBox* bwep = pObject->MyWeaponBoxPtr();
+			if (cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY) || (bwep && bwep->IsUseOnlyWeapon())) {
+				pClosest = pObject;
+				foundGoodWeapon = true;
+			}
+
+			if (foundGoodWeapon)
+				continue; // only search for items directly looked at now
 
 			// !!!PERFORMANCE- should this check be done on a per case basis AFTER we've determined that
 			// this object is actually usable? This dot is being done for every object within PLAYER_SEARCH_RADIUS

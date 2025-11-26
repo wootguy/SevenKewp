@@ -6,6 +6,7 @@
 //=========================================================
 class CWeaponBox : public CBaseEntity
 {
+public:
 	void Precache( void );
 	void Spawn( void );
 	void DefaultTouch( CBaseEntity *pOther );
@@ -15,8 +16,9 @@ class CWeaponBox : public CBaseEntity
 	int  GiveAmmo( int iCount, const char *szName, int iMax, int *pIndex = NULL );
 	void SetObjectCollisionBox( void );
 	virtual int	ObjectCaps(void) { return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE; }
+	virtual CWeaponBox* MyWeaponBoxPtr(void) { return this; }
+	bool IsUseOnlyWeapon(); // true if this weaponbox contains a single use-only weapon
 
-public:
 	void EXPORT Kill ( void );
 	int		Save( CSave &save );
 	int		Restore( CRestore &restore );

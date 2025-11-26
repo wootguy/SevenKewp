@@ -353,3 +353,34 @@ void CWeaponBox::SetObjectCollisionBox(void)
 	pev->absmax = pev->origin + Vector(16, 16, 16);
 }
 
+bool CWeaponBox::IsUseOnlyWeapon() {
+	bool foundUseOnlyWeapon = false;
+
+	for (int i = 0; i < MAX_ITEM_TYPES; i++)
+	{
+		if (m_rghPlayerItems[i])
+		{
+			CBasePlayerItem* pItem = m_rghPlayerItems[i]->GetWeaponPtr();
+
+			// have at least one weapon in this slot
+			while (pItem)
+			{
+				CWeaponCustom* cwep = pItem ? pItem->MyWeaponCustomPtr() : NULL;
+
+				if (cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY)) {
+					if (foundUseOnlyWeapon)
+						return false;
+					foundUseOnlyWeapon = true;
+				}
+				else {
+					return false;
+				}
+
+				CBaseEntity* next = pItem->m_pNext.GetEntity();
+				pItem = next ? next->GetWeaponPtr() : NULL;
+			}
+		}
+	}
+
+	return foundUseOnlyWeapon;
+}

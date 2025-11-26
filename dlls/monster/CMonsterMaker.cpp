@@ -45,6 +45,9 @@ TYPEDESCRIPTION	CMonsterMaker::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CMonsterMaker, CBaseMonster )
 
+int CMonsterMaker::m_xenSpriteIdx = 0;
+int CMonsterMaker::m_xenBeamSpriteIdx = 0;
+
 void CMonsterMaker :: KeyValue( KeyValueData *pkvd )
 {
 	if ( FStrEq(pkvd->szKeyName, "monstercount") )
@@ -250,6 +253,7 @@ void CMonsterMaker :: Spawn( )
 		pev->spawnflags = SF_MONSTERMAKER_CYCLIC;
 		m_cNumMonsters = -1;
 		m_blockedSpawnMode = SPAWN_BLOCK_IGNORE;
+		m_isXenMaker = true;
 	}
 
 	if ((m_iszTriggerTarget || pev->target) && m_blockedSpawnMode == SPAWN_BLOCK_LEGACY) {
@@ -345,7 +349,9 @@ void CMonsterMaker::MakeMonster( void )
 	edict_t	*pent;
 	entvars_t		*pevCreate;
 
-	XenmakerEffect();
+	// xenmakers always play effects even if nothing spawns
+	if (m_isXenMaker)
+		XenmakerEffect();
 
 	if ( m_iMaxLiveChildren > 0 && m_cLiveChildren >= m_iMaxLiveChildren )
 	{// not allowed to make a new one yet. Too many live ones out right now.
@@ -392,6 +398,9 @@ void CMonsterMaker::MakeMonster( void )
 		ALERT ( at_console, UTIL_VarArgs("NULL Ent '%s' in MonsterMaker!\n", STRING(m_iszMonsterClassname)) );
 		return;
 	}
+
+	if (!m_isXenMaker)
+		XenmakerEffect();
 
 	pent->v.model = pev->model;
 	if (pev->health) {
@@ -518,9 +527,13 @@ void CMonsterMaker :: XenmakerEffect() {
 	if (m_xenmakerTemplate) {
 		// searching every spawn so that entity order doesn't matter during map init
 		CBaseEntity* ent = UTIL_FindEntityByTargetname(NULL, STRING(m_xenmakerTemplate));
-		if (ent && !strcmp(STRING(ent->pev->classname), "env_xenmaker")) {
+		if (ent && !strcmp(STRING(ent->pev->classname), "monstermaker")) {
 			xen = (CMonsterMaker*)ent->MyMonsterPointer();
 		}
+	}
+	
+	if (xen == this && !m_isXenMaker) {
+		return;
 	}
 
 	Vector position = pev->origin;
@@ -540,10 +553,10 @@ void CMonsterMaker :: XenmakerEffect() {
 
 	int createdBeams = 0;
 	TraceResult tr;
-	for (int i = 0; i < m_iBeamCount; i++) {
+	for (int i = 0; i < xen->m_iBeamCount; i++) {
 		// TODO: uniform distribution
 		Vector randomDir = Vector(RANDOM_FLOAT(-1, 1), RANDOM_FLOAT(-1, 1), RANDOM_FLOAT(-1, 1));
-		Vector randomPos = position + randomDir.Normalize() * m_flBeamRadius;
+		Vector randomPos = position + randomDir.Normalize() * xen->m_flBeamRadius;
 
 		TRACE_LINE(position, randomPos, ignore_monsters, NULL, &tr);
 		if (tr.flFraction < 1.0f) {

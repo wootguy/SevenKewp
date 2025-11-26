@@ -71,14 +71,16 @@ public:
 	float m_flStartSpriteFramerate;
 	float m_flStartSpriteScale;
 	int m_iStartSpriteAlpha;
-	int m_xenSpriteIdx;
-	int m_xenBeamSpriteIdx;
 	float m_nextXenSound;
 	int m_changeRenderMode;
+	bool m_isXenMaker;
 
 	string_t m_xenmakerTemplate; // grab xenmaker settings from another entity
 
 	string_t m_weaponModelV;
 	string_t m_weaponModelP;
 	string_t m_weaponModelW;
+
+	static int m_xenSpriteIdx;
+	static int m_xenBeamSpriteIdx;
 };

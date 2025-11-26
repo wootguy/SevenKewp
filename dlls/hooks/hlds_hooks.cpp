@@ -657,7 +657,10 @@ void PrecacheTextureSounds() {
 		PRECACHE_SOUND_ENT(NULL, "debris/glass3.wav");
 	}
 
-	if (g_textureStats.tex_water) {
+	bool anyWater = g_textureStats.tex_water ||
+		UTIL_FindEntityByClassname(NULL, "func_water") != NULL;
+
+	if (anyWater) {
 		PRECACHE_FOOTSTEP_SOUNDS(g_stepSoundsSlosh)
 		PRECACHE_FOOTSTEP_SOUNDS(g_swimSounds)
 

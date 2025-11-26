@@ -345,10 +345,16 @@ void CHgun::Reload( void )
 	if (!m_pPlayer)
 		return;
 
-	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= gSkillData.sk_ammo_max_hornets)
+#ifdef CLIENT_DLL
+	int maxHornets = 8;
+#else
+	int maxHornets = gSkillData.sk_ammo_max_hornets;
+#endif
+
+	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] >= maxHornets)
 		return;
 
-	while (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < gSkillData.sk_ammo_max_hornets && m_flRechargeTime < gpGlobals->time)
+	while (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] < maxHornets && m_flRechargeTime < gpGlobals->time)
 	{
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]++;
 		m_flRechargeTime += GetRechargeTime();
