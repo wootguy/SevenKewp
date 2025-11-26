@@ -78,7 +78,7 @@ char* strcat_safe(char* dest, const char* src, size_t size) {
 	return dest;
 }
 
-uint8_t* UTIL_AppendFileData(const char* fpath, uint8_t* existingData, int& len) {
+uint8_t* UTIL_AppendFileData(const char* fpath, uint8_t* existingData, int& len, bool& overrideDetected) {
 	int appendLen;
 
 #ifdef CLIENT_DLL
@@ -89,7 +89,8 @@ uint8_t* UTIL_AppendFileData(const char* fpath, uint8_t* existingData, int& len)
 	const char* expectedPath = UTIL_VarArgs("%s_downloads/%s", gamedir, fpath);
 	std::string loadedPath = getGameFilePath(fpath);
 	if (expectedPath != loadedPath) {
-		PRINTF("WARNING: This file may prevent data updates (consider deleting):\n    %s\n", loadedPath.c_str());
+		overrideDetected = true;
+		PRINTF("WARNING: This file prevents data updates (consider deleting):\n    %s\n", loadedPath.c_str());
 	}
 #else
 	uint8_t* appendData = UTIL_LoadFile(fpath, &appendLen);
@@ -121,14 +122,14 @@ const char* g_autoUpdateFiles[NUM_AUTO_UPDATE_FILES] = {
 	"commandmenu_sk.txt",
 };
 
-const char* UTIL_HashClientDataFiles() {
+const char* UTIL_HashClientDataFiles(bool& overrideDetected) {
 	// compute the hash result for client files which should be reacquired from the server if changed.
 	// The client must duplicate this hashing logic.
 	int len = 0;
 	uint8_t* totalFileData = NULL;
 
 	for (int i = 0; i < NUM_AUTO_UPDATE_FILES; i++) {
-		totalFileData = UTIL_AppendFileData(g_autoUpdateFiles[i], totalFileData, len);
+		totalFileData = UTIL_AppendFileData(g_autoUpdateFiles[i], totalFileData, len, overrideDetected);
 	}
 	
 	uint8_t digest[16];

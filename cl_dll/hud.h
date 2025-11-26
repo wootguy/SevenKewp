@@ -692,6 +692,7 @@ public:
 	int		m_iRes;
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
+	cvar_t	*m_pCvarHudScale;
 	cvar_t* default_fov;
 	int m_sevenkewpVersion;
 	bool m_sevenkewpDataUpdating;
@@ -706,6 +707,9 @@ public:
 
 	// for disabling features that could be used to cheat on vanilla servers
 	inline bool IsSevenKewpServer() { return m_sevenkewpVersion > 0; }
+	
+	// return desired HUD sprite scaling resolution key (320, 640, 1280, 2560)
+	int getDesiredSpriteRes();
 
 private:
 	// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.

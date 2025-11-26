@@ -26,7 +26,7 @@ EXPORT char* strcpy_safe(char* dest, const char* src, size_t size);
 EXPORT char* strcat_safe(char* dest, const char* src, size_t size);
 
 // hash client data files for auto-updates in bulk
-const char* UTIL_HashClientDataFiles();
+const char* UTIL_HashClientDataFiles(bool& overrideDetected);
 
 // called by the client only to delete sevenkewp files to prepare for an update
 void UTIL_DeleteClientDataFiles();

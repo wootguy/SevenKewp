@@ -38,20 +38,9 @@ bool g_crosshair_active;
 
 HSPRITE LoadSprite(const char *pszName)
 {
-	int iRes;
 	char sz[256]; 
 
-#if !defined( _TFC )
-	if (ScreenWidth > 2560 && ScreenHeight > 1600)
-		iRes = 2560;
-	else if (ScreenWidth >= 1280 && ScreenHeight > 720)
-		iRes = 1280;
-	else 
-#endif
-	if (ScreenWidth >= 640)
-		iRes = 640;
-	else
-		iRes = 320;
+	int iRes = gHUD.getDesiredSpriteRes();
 
 	sprintf(sz, pszName, iRes);
 

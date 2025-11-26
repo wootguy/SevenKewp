@@ -365,6 +365,7 @@ void CHud :: Init( void )
 	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
+	m_pCvarHudScale = CVAR_CREATE( "hud_scale", "-1", FCVAR_ARCHIVE );
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 
 	m_pSpriteList = NULL;
@@ -468,17 +469,7 @@ void CHud :: VidInit( void )
 	m_hsprLogo = 0;
 	m_hsprCursor = 0;
 
-#if !defined( _TFC )
-	if (ScreenWidth > 2560 && ScreenHeight > 1600)
-		m_iRes = 2560;
-	else if (ScreenWidth >= 1280 && ScreenHeight > 720)
-		m_iRes = 1280;
-	else
-#endif
-		if (ScreenWidth >= 640)
-			m_iRes = 640;
-		else
-			m_iRes = 320;
+	m_iRes = gHUD.getDesiredSpriteRes();
 
 	if (mouse_uncenter_phase == 3) // reset mouse uncentering logic for new server connection
 		mouse_uncenter_phase = 2;
@@ -580,10 +571,14 @@ void CHud::ParseServerInfo() {
 	}
 
 	if (IsSevenKewpServer()) {
+		bool overrideDetected = false;
 		const char* serverHash = gEngfuncs.ServerInfo_ValueForKey("skmd5");
-		const char* myHash = UTIL_HashClientDataFiles();
+		const char* myHash = UTIL_HashClientDataFiles(overrideDetected);
 
-		if (strcmp(serverHash, myHash)) {
+		if (overrideDetected) {
+			PRINTF("SevenKewp data update aborted. The HUD and command menu may be broken.\n");
+		}
+		else if (strcmp(serverHash, myHash)) {
 			PRINTF("Preparing SevenKewp data update (%s != %s)\n", serverHash, myHash);
 			UTIL_DeleteClientDataFiles();
 			m_sevenkewpDataUpdating = true;

@@ -97,25 +97,19 @@ int WeaponsResource :: HasAmmo( WEAPON *p )
 
 void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon )
 {
-	int i, iRes;
+	int i;
 
-#if !defined( _TFC )
-	if (ScreenWidth > 2560 && ScreenHeight > 1600)
-		iRes = 2560;
-	else if (ScreenWidth >= 1280 && ScreenHeight > 720)
-		iRes = 1280;
-	else
-#endif
-	if (ScreenWidth >= 640)
-		iRes = 640;
-	else
-		iRes = 320;
+	int iRes = gHUD.getDesiredSpriteRes();
 
 #ifdef VANILLA_HL
 	char sz[128];
 #else
 	char sz[144];
 #endif
+
+	if (gHUD.m_pCvarHudScale->value > 0) {
+		int nScale = clamp(gHUD.m_pCvarHudScale->value, 1, 4);
+	}
 
 	if ( !pWeapon )
 		return;
@@ -420,6 +414,10 @@ int CHudAmmo::VidInit(void)
 #endif
 	if (ScreenWidth >= 640)
 		nScale = 2;
+
+	if (gHUD.m_pCvarHudScale->value > 0) {
+		nScale = clamp(gHUD.m_pCvarHudScale->value, 1, 4);
+	}
 
 	giABWidth = 10 * nScale;
 	giABHeight = 2 * nScale;

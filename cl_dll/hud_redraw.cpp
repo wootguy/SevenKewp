@@ -344,4 +344,27 @@ int CHud::GetNumWidth( int iNumber, int iFlags )
 
 }	
 
+int CHud::getDesiredSpriteRes() {
+	int iRes = 320;
+
+	if (m_pCvarHudScale->value > 0) {
+		static int resScales[4] = {
+			320, 640, 1280, 2560
+		};
+
+		int nScale = clamp(m_pCvarHudScale->value, 1, 4);
+		iRes = resScales[nScale - 1];
+	}
+	else {
+		if (ScreenWidth > 2560 && ScreenHeight > 1600)
+			iRes = 2560;
+		//else if (ScreenWidth >= 1280 && ScreenHeight > 720) // Valve scaling
+		else if (ScreenWidth >= 1280 && ScreenHeight > 768)
+			iRes = 1280;
+		else if (ScreenWidth >= 640)
+			iRes = 640;
+	}
+
+	return iRes;
+}
 

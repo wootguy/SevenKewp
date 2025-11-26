@@ -746,7 +746,8 @@ void MarkWeaponSlotConflicts() {
 
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
-	std::string clientDataFilesHash = UTIL_HashClientDataFiles();
+	bool overrideDetected = false; // doesn't apply for the server
+	std::string clientDataFilesHash = UTIL_HashClientDataFiles(overrideDetected);
 	char* serverinfo = (char*)g_engfuncs.pfnGetInfoKeyBuffer(g_engfuncs.pfnPEntityOfEntIndex(0));
 	g_engfuncs.pfnSetKeyValue(serverinfo, "skv", UTIL_VarArgs("%d", SEVENKEWP_VERSION));
 	g_engfuncs.pfnSetKeyValue(serverinfo, "skmd5", clientDataFilesHash.c_str());
