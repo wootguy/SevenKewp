@@ -273,6 +273,19 @@ BOOL CHalfLifeMultiplay::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerI
 		// player doesn't have an active item!
 		return TRUE;
 	}
+	
+	if (pPlayer->m_iAutoWepSwitch == 0)
+	{
+		return FALSE;
+	}
+	else if (pPlayer->m_iAutoWepSwitch == 2)
+	{
+		if (pPlayer->m_afButtonLast & (IN_ATTACK | IN_ATTACK2))
+		{
+			return FALSE;
+		}
+	}
+	
 	CBasePlayerItem* item = (CBasePlayerItem*)pPlayer->m_pActiveItem.GetEntity();
 
 	if ( !item->CanHolster() )
@@ -1955,6 +1968,4 @@ int CHalfLifeMultiplay::GetTeamIndex(const char* pTeamName)
 
 void CHalfLifeMultiplay::ClientUserInfoChanged(CBasePlayer* pPlayer, char* infobuffer)
 {
-	// Set preferences
-	pPlayer->SetPrefsFromUserinfo(infobuffer);
 }

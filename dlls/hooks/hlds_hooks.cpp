@@ -491,6 +491,8 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 	}
 
 	plr->ChangePlayerModel(g_engfuncs.pfnInfoKeyValue(infobuffer, "model"), false);
+
+	plr->SetPrefsFromUserinfo(infobuffer);
 }
 
 int g_serveractive = 0;
