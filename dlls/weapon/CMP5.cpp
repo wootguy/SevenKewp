@@ -115,7 +115,7 @@ int CMP5::GetItemInfo(ItemInfo *p)
 	p->iId = m_iId = WEAPON_MP5;
 	p->iWeight = MP5_WEIGHT;
 
-	p->fAccuracyDeg = 6;
+	p->fAccuracyDeg = 5;
 
 	return 1;
 }
@@ -166,18 +166,18 @@ void CMP5::PrimaryAttack()
 
 #ifdef CLIENT_DLL
 	bool isMultiPlayer = bIsMultiplayer();
-	bool isSevenKewp = false;
+	bool isSevenKewp = true;
 #else
 	bool isMultiPlayer = g_pGameRules->IsMultiplayer();
-	bool isSevenKewp = false;
+	bool isSevenKewp = m_pPlayer->IsSevenKewpClient();
 #endif
 
 	if (isMultiPlayer)
 	{
 		if (isSevenKewp) {
 			// accuracy increase to give it an advantage over the uzi
-			// TODO: actually do this. Needs a client update.
-			vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, VECTOR_CONE_4DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed, 0, BULLETPRED_EVENT);
+			// the singleplayer spread (3) makes the game too easy with more than a couple players
+			vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, VECTOR_CONE_5DEGREES, 8192, BULLET_PLAYER_MP5, 2, 0, m_pPlayer->pev, m_pPlayer->random_seed, 0, BULLETPRED_EVENT);
 		}
 		else {
 			// optimized multiplayer. Widened to make it easier to hit a moving player

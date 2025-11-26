@@ -44,8 +44,8 @@ void CEagle::Precache()
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
 	primary.ammoCost = 1;
 	primary.cooldown = 220; // 500 = laser
-	primary.accuracyX = 4 * 100;
-	primary.accuracyY = 4 * 100;
+	primary.accuracyX = 6 * 100;
+	primary.accuracyY = 6 * 100;
 
 	CustomWeaponShootOpts& primary_alt = params.shootOpts[3];
 	primary_alt.ammoCost = 1;
@@ -67,7 +67,7 @@ void CEagle::Precache()
 	params.laser.idles[1] = { EAGLE_IDLE5, 10, 2030 };
 	params.laser.idles[2] = { EAGLE_IDLE4, 10, 2530 };
 
-	float spread = VECTOR_CONE_4DEGREES.x;
+	float spread = VECTOR_CONE_6DEGREES.x;
 	float spreadLaser = VECTOR_CONE_1DEGREES.x*0.5f;
 	int bulletf = FL_WC_BULLETS_DYNAMIC_SPREAD;
 

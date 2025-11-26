@@ -2043,7 +2043,7 @@ void CWeaponCustom::UpdateLaser() {
 				continue;
 			}
 
-			int beamWidth = 8;
+			int beamWidth = 3;
 
 			if (plr == m_pPlayer && plr->IsSevenKewpClient())
 				continue; // own laser is predicted
