@@ -71,6 +71,10 @@ public:
 	BOOL IsSevenKewpWeapon() { return TRUE; }
 	BOOL IsWeaponCustom() { return TRUE; }
 	BOOL IsAkimboWeapon() override { return params.flags & FL_WC_WEP_AKIMBO; }
+	virtual BOOL IsClientWeapon() { 
+		CBasePlayer* m_pPlayer = GetPlayer();
+		return m_pPlayer && m_pPlayer->IsSevenKewpClient();
+	}
 	CWeaponCustom* MyWeaponCustomPtr(void) { return this; }
 	int AddToPlayer(CBasePlayer* pPlayer) override;
 	const char* GetAnimSet();

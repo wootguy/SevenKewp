@@ -84,7 +84,7 @@ void CWeaponCustom::AddEvent(WepEvt evt) {
 
 int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 #ifndef CLIENT_DLL
-	if (!pPlayer->IsSevenKewpClient()) {
+	if (!pPlayer->IsSevenKewpClient() && wrongClientWeapon) {
 		if (pPlayer->HasNamedPlayerItem(wrongClientWeapon)) {
 			return 0;
 		}
@@ -108,7 +108,8 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 	if (params.flags & FL_WC_WEP_AKIMBO)
 		SetAkimboClip(m_iDefaultAmmo);
 
-	SendPredictionData(pPlayer->edict());
+	if (pPlayer->IsSevenKewpClient())
+		SendPredictionData(pPlayer->edict());
 #endif
 	
 	if (CBasePlayerWeapon::AddToPlayer(pPlayer)) {
@@ -1283,10 +1284,13 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
 	Vector vecEnd;
 
+	bool isPredicted = m_pPlayer->IsSevenKewpClient();
+	BULLET_PREDICTION predFlag = isPredicted ? BULLETPRED_EVENTLESS : BULLETPRED_NONE;
+
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
 		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
-		m_pPlayer->random_seed, &vecEnd, BULLETPRED_EVENTLESS);
+		m_pPlayer->random_seed, &vecEnd, predFlag);
 	lagcomp_end();
 
 #ifdef CLIENT_DLL
@@ -1310,7 +1314,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 				continue;
 			}
 
-			if (m_pPlayer != listener && m_pPlayer->InPAS(listener->edict())) {
+			if ((m_pPlayer != listener || !isPredicted) && m_pPlayer->InPAS(listener->edict())) {
 				UTIL_Tracer(vecSrc, vecEnd, MSG_ONE_UNRELIABLE, listener->edict());
 			}
 		}
@@ -1588,10 +1592,16 @@ void CWeaponCustom::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 
 	WC_EV_LocalSound(evt, idx, channel, pitch, volume, attn, panning);
 #else
-	uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
-
-	StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(idx), volume, attn,
-		SND_FL_PREDICTED, pitch, m_pPlayer->pev->origin, messageTargets);
+	
+	if (m_pPlayer->IsSevenKewpClient()) {
+		uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
+		StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(idx), volume, attn,
+			SND_FL_PREDICTED, pitch, m_pPlayer->pev->origin, messageTargets);
+	}
+	else {
+		StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(idx), volume, attn,
+			0, pitch, m_pPlayer->pev->origin, 0xffffffff);
+	}	
 
 	if (evt.playSound.distantSound) {
 		PLAY_DISTANT_SOUND(m_pPlayer->edict(), evt.playSound.distantSound);
@@ -1623,10 +1633,12 @@ void CWeaponCustom::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bo
 	Vector ShellVelocity = vel + right * fR + up * fU + forward * 25;
 	Vector ShellOrigin = ori + up* upScale + forward*forwardScale + right*rightScale;
 
+	bool predicted = m_pPlayer->IsSevenKewpClient();
+
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
-		if (!plr || plr == m_pPlayer)
+		if (!plr || (plr == m_pPlayer && predicted))
 			continue;
 
 		if (m_pPlayer->InPAS(plr->edict())) {
@@ -1647,26 +1659,24 @@ void CWeaponCustom::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
 #ifdef CLIENT_DLL
 	WC_EV_PunchAngle(evt, m_pPlayer->random_seed);
 #else
-	// predicted weapons don't set a punchangle server-side, but if these weapons are ever
-	// used by clients that don't have the prediction data, then uncomment this.
-	/*
-	float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.x);
-	float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.y);
-	float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.z);
+	if (!m_pPlayer->IsSevenKewpClient()) {
+		float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.x);
+		float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.y);
+		float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.z);
 
-	if (!(evt.punch.flags & FL_WC_PUNCH_NO_RETURN)) {
-		if (evt.punch.flags & FL_WC_PUNCH_SET) {
-			m_pPlayer->pev->punchangle = Vector(punchAngleX, punchAngleY, punchAngleZ);
-		}
-		else {
-			m_pPlayer->pev->punchangle = Vector(
-				UTIL_SharedRandomFloat(m_pPlayer->random_seed, -punchAngleX, punchAngleX),
-				UTIL_SharedRandomFloat(m_pPlayer->random_seed + 1, -punchAngleY, punchAngleY),
-				UTIL_SharedRandomFloat(m_pPlayer->random_seed + 2, -punchAngleZ, punchAngleZ)
-			);
+		if (!(evt.punch.flags & FL_WC_PUNCH_NO_RETURN)) {
+			if (evt.punch.flags & FL_WC_PUNCH_SET) {
+				m_pPlayer->pev->punchangle = Vector(punchAngleX, punchAngleY, punchAngleZ);
+			}
+			else {
+				m_pPlayer->pev->punchangle = Vector(
+					UTIL_SharedRandomFloat(m_pPlayer->random_seed, -punchAngleX, punchAngleX),
+					UTIL_SharedRandomFloat(m_pPlayer->random_seed + 1, -punchAngleY, punchAngleY),
+					UTIL_SharedRandomFloat(m_pPlayer->random_seed + 2, -punchAngleZ, punchAngleZ)
+				);
+			}
 		}
 	}
-	*/
 #endif
 }
 

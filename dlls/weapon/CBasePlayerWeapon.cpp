@@ -405,11 +405,19 @@ void CBasePlayerWeapon::SendWeaponAnimSpec(int iAnim) {
 	if (!m_pPlayer)
 		return;
 
+	bool isPredicted = m_pPlayer->IsSevenKewpClient();
+
 	// play animation for spectators
 	for (int i = 1; i < gpGlobals->maxClients; i++) {
 		CBasePlayer* spec = (CBasePlayer*)UTIL_PlayerByIndex(i);
 
-		if (spec && spec->pev->iuser1 == OBS_IN_EYE && spec->m_hObserverTarget.GetEntity() == m_pPlayer) {
+		if (!spec)
+			continue;
+
+		bool isObservingPlayer = spec->pev->iuser1 == OBS_IN_EYE && spec->m_hObserverTarget.GetEntity() == m_pPlayer;
+		bool isUnpredictedOwner = spec == m_pPlayer && !isPredicted;
+
+		if (isObservingPlayer || isUnpredictedOwner) {
 			MESSAGE_BEGIN(MSG_ONE, SVC_WEAPONANIM, NULL, spec->pev);
 			WRITE_BYTE(iAnim);						// sequence number
 			WRITE_BYTE(pev->body);					// weaponmodel bodygroup.
