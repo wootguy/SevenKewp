@@ -370,6 +370,35 @@ void CL_DLLEXPORT HUD_StudioEvent( const struct mstudioevent_s *event, const str
 	case 5004:		
 		gEngfuncs.pfnPlaySoundByNameAtLocation( (char *)event->options, 1.0, (float *)&entity->attachment[0] );
 		break;
+	case 5005: {
+		if (entity != gEngfuncs.GetViewModel()) {
+			break; // the server will handle muzzle flashes for everything but our view model
+		}
+
+		// custom muzzle flash
+		custom_muzzle_flash_t flash = loadCustomMuzzleFlash(event->options);
+
+		if (flash.sprite[0]) {
+			Vector origin, angles;
+
+			if (flash.attachment != (uint8_t)-1) {
+				origin = entity->attachment[clamp(flash.attachment, 0, 3)];
+				//origin = entity->attachment[1];
+			}
+			else if (flash.bone != (uint8_t)-1) {
+				// TODO: no api for bone position on the client?
+				//origin = origin + Vector(flash.x, flash.y, flash.z);
+			}
+			else {
+				origin = entity->origin + Vector(flash.x, flash.y, flash.z);
+			}
+
+			int alphatest = flash.rendermode == 4 ? 1 : 0;
+			gEngfuncs.pEfxAPI->R_Explosion(origin, flash.modelIdx, flash.scale * 0.02f, 50,
+				alphatest | 2 | 4 | 8);
+		}
+		break;
+	}
 	default:
 		break;
 	}

@@ -3100,7 +3100,7 @@ void CBaseMonster::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 		custom_muzzle_flash_t flash = loadCustomMuzzleFlash(pEvent->options);
 
-		if (flash.sprite) {
+		if (flash.sprite[0]) {
 			Vector origin, angles;
 
 			if (flash.attachment != (uint8_t)-1) {
@@ -3108,7 +3108,7 @@ void CBaseMonster::HandleAnimEvent(MonsterEvent_t* pEvent)
 			}
 			else if (flash.bone != (uint8_t)-1) {
 				GetBonePosition(flash.bone, origin, angles);
-				origin = origin + flash.offset;
+				origin = origin + Vector(flash.x, flash.y, flash.z);
 			}
 			else {
 				origin = pev->origin;
@@ -3124,7 +3124,7 @@ void CBaseMonster::HandleAnimEvent(MonsterEvent_t* pEvent)
 			*/
 
 			int alphatest = flash.rendermode == 4 ? 1 : 0;
-			UTIL_Explosion(origin, MODEL_INDEX(STRING(flash.sprite)), flash.scale * 0.2f, 50,
+			UTIL_Explosion(origin, MODEL_INDEX(flash.sprite), flash.scale * 0.2f, 50,
 				alphatest | 2 | 4 | 8);
 		}
 		break;

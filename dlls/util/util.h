@@ -185,18 +185,6 @@ struct EXPORT RGBA {
 	DEBUG_MSG(target, ("%s (%s): " + std::string(format)).c_str(), \
 		STRING(pev->targetname), STRING(pev->classname), ##__VA_ARGS__)
 
-struct custom_muzzle_flash_t {
-	string_t sprite;
-	uint8_t attachment;
-	uint8_t bone;
-	uint8_t scale;
-	uint8_t rendermode;
-	RGBA color;
-	Vector offset;
-};
-
-extern HashMap<custom_muzzle_flash_t> g_customMuzzleFlashes;
-
 extern std::unordered_map<std::string, StringMap> g_replacementFiles;
 
 struct MessageHistoryItem {
@@ -852,9 +840,6 @@ EXPORT std::string loadReplacementFile(const char* path);
 
 // load replacement file directly into a map. Returns true on success.
 EXPORT bool loadReplacementFile(const char* path, StringMap& replacements);
-
-// loads muzzle flash details from file on the first call, then returns cached results
-EXPORT custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path);
 
 //
 // BModelOrigin - calculates origin of a bmodel from absmin/size because all bmodel origins are 0 0 0

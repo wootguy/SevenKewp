@@ -19,6 +19,17 @@
 EXPORT extern const std::vector<std::string> g_emptyCurlHeaders;
 EXPORT extern const std::string g_emptyCurlPostData;
 
+struct custom_muzzle_flash_t {
+	char sprite[64];
+	uint8_t attachment;
+	uint8_t bone;
+	uint8_t scale;
+	uint8_t rendermode;
+	uint8_t r, g, b, a;
+	float x, y, z;
+	int modelIdx; // client only
+};
+
 // same as strncpy except it ensures the destination is null terminated, even if the buffer is too small
 EXPORT char* strcpy_safe(char* dest, const char* src, size_t size);
 
@@ -96,3 +107,8 @@ EXPORT uint8_t* UTIL_LoadFile(const char* fpath, int* size = NULL);
 
 // load file relative to the Half-Life/ folder
 EXPORT uint8_t* UTIL_LoadFileRoot(const char* fpath, int* size = NULL);
+
+// loads muzzle flash details from file on the first call, then returns cached results
+EXPORT custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path);
+
+EXPORT void UnloadCustomMuzzleFlashes();

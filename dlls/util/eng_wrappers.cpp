@@ -325,8 +325,10 @@ void PRECACHE_MODEL_SEQUENCE(const char* path, studiohdr_t* mdl, int sequence) {
 		}
 		if (evt->event == 5005) { // custom muzzleflash
 			custom_muzzle_flash_t flash = loadCustomMuzzleFlash(opt.c_str());
-			if (flash.sprite)
-				PRECACHE_MODEL_ENT(NULL, STRING(flash.sprite));
+			if (flash.sprite[0]) {
+				PRECACHE_MODEL_ENT(NULL, flash.sprite);
+				PRECACHE_GENERIC((std::string("events/") + opt).c_str());
+			}
 		}
 	}
 }

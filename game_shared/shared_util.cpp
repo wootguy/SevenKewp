@@ -5,6 +5,8 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 #include <chrono>
+#include <fstream>
+#include "HashMap.h"
 
 #ifdef ENABLE_CURL
 #include <curl/curl.h>
@@ -47,6 +49,8 @@ using namespace std::chrono;
 
 const std::vector<std::string> g_emptyCurlHeaders;
 const std::string g_emptyCurlPostData;
+
+HashMap<custom_muzzle_flash_t> g_customMuzzleFlashes;
 
 char* strcpy_safe(char* dest, const char* src, size_t size) {
 	if (size > 0) {
@@ -566,4 +570,104 @@ uint8_t* UTIL_LoadFileRoot(const char* fpath, int* outSz) {
 		*outSz = sz;
 
 	return buffer;
+}
+
+custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path) {
+	custom_muzzle_flash_t* cache = g_customMuzzleFlashes.get(path);
+	if (cache) {
+		return *cache;
+	}
+
+	custom_muzzle_flash_t flash;
+	memset(&flash, 0, sizeof(custom_muzzle_flash_t));
+
+	std::string fpath = getGameFilePath((std::string("events/") + path).c_str());
+	std::ifstream infile(fpath);
+
+	if (fpath.empty() || !infile.is_open()) {
+#ifdef CLIENT_DLL
+		PRINTF("Failed to load custom muzzle flash file: %s\n", path);
+#else
+		ALERT(at_console, "Failed to load custom muzzle flash file: %s\n", path);
+#endif
+
+		g_customMuzzleFlashes.put(path, flash); // don't lag the client on every shot
+		return flash;
+	}
+
+	int lineNum = 0;
+	std::string line;
+	while (std::getline(infile, line))
+	{
+		lineNum++;
+		std::string paths[2];
+
+		int comments = line.find("//");
+		if (comments != -1) {
+			line = line.substr(0, comments);
+		}
+
+		line = trimSpaces(line);
+		if (line.empty()) {
+			continue;
+		}
+
+		std::vector<std::string> parts = splitString(line, " \t");
+
+		if (parts.empty()) {
+			continue;
+		}
+
+		std::string name = trimSpaces(toLowerCase(parts[0]));
+		std::string value = parts.size() > 1 ? trimSpaces(parts[1]) : "";
+
+		if (name == "attachment") {
+			flash.attachment = atoi(value.c_str());
+		}
+		else if (name == "bone") {
+			flash.bone = atoi(value.c_str());
+		}
+		else if (name == "spritename") {
+			strcpy_safe(flash.sprite, value.c_str(), 64);
+
+#ifdef CLIENT_DLL
+			gEngfuncs.CL_LoadModel(flash.sprite, &flash.modelIdx);
+#endif
+		}
+		else if (name == "scale") {
+			flash.scale = atoi(value.c_str());
+		}
+		else if (name == "rendermode") {
+			flash.rendermode = atoi(value.c_str());
+		}
+		else if (name == "colorr") {
+			flash.r = atoi(value.c_str());
+		}
+		else if (name == "colorg") {
+			flash.g = atoi(value.c_str());
+		}
+		else if (name == "colorb") {
+			flash.b = atoi(value.c_str());
+		}
+		else if (name == "transparency") {
+			flash.a = atoi(value.c_str());
+		}
+		else if (name == "offset" && parts.size() >= 4) {
+			flash.x = atof(parts[1].c_str());
+			flash.y = atof(parts[2].c_str());
+			flash.z = atof(parts[3].c_str());
+		}
+	}
+
+#ifdef CLIENT_DLL
+	PRINTF("Loaded custom muzzle flash: %s\n", path);
+#endif
+
+	g_customMuzzleFlashes.put(path, flash);
+
+	return flash;
+}
+
+void UnloadCustomMuzzleFlashes() {
+	g_customMuzzleFlashes.clear();
 }

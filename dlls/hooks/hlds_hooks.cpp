@@ -858,7 +858,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	}
 	g_oldPlayerScores = g_playerScores;
 
-	g_customMuzzleFlashes.clear();
+	UnloadCustomMuzzleFlashes();
 
 	PrintEntindexStats();
 

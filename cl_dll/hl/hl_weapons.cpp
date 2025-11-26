@@ -209,6 +209,7 @@ void ResetCustomWeaponStates() {
 	}
 
 	memset(g_modPlayerStates, 0, sizeof(g_modPlayerStates));
+	UnloadCustomMuzzleFlashes();
 }
 
 /*
