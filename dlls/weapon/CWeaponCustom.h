@@ -22,6 +22,12 @@ struct SoundMapping {
 	const char* path;
 };
 
+enum PredictionDataSendMode {
+	WC_PRED_SEND_INIT,	// initialize prediction data for first pickup
+	WC_PRED_SEND_WEP,	// only send weapon prediction data
+	WC_PRED_SEND_EVT	// only send event prediction data
+};
+
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:
 	CustomWeaponParams params;
@@ -39,6 +45,7 @@ public:
 	const char* pmodelAkimbo; // thirdperson model used in akimbo mode
 	const char* wmodelAkimbo; // world model used in akimbo mode
 	const char* wrongClientWeapon; // weapon given to players who don't have the correct client to use this one
+	int ammoFreqs[3]; // ammo frequency counters for each attack
 
 	// for prediction code, don't spam events/toggles while waiting for the new server state
 	float m_lastZoomToggle;
@@ -71,6 +78,7 @@ public:
 	BOOL IsSevenKewpWeapon() { return TRUE; }
 	BOOL IsWeaponCustom() { return TRUE; }
 	BOOL IsAkimboWeapon() override { return params.flags & FL_WC_WEP_AKIMBO; }
+	int SecondaryAmmoIndex(void) { return m_iSecondaryAmmoType; }
 	virtual BOOL IsClientWeapon() { 
 		CBasePlayer* m_pPlayer = GetPlayer();
 		return m_pPlayer && m_pPlayer->IsSevenKewpClient();
@@ -101,7 +109,8 @@ public:
 	void HideLaser(bool hideNotUnhide);
 	void CancelZoom();
 	bool CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq);
-	void SendPredictionData(edict_t* target);
+	void SendPredictionData(edict_t* target, PredictionDataSendMode sendMode=WC_PRED_SEND_INIT);
+	inline bool HasPredictionData(edict_t* target) { return m_predDataSent[m_iId] & PLRBIT(target); }
 
 	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft=0);
 	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire);
@@ -111,6 +120,7 @@ public:
 	void PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
 	void PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_SetGravity(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
 	void PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
 	void PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer);

@@ -83,25 +83,7 @@ void CBasePlayerWeapon::GetAmmoDropInfo(bool isSecondary, const char*& ammoEntNa
 	ammoEntName = NULL;
 	dropAmount = 0;
 
-	if (isSecondary) {
-		const char* ammoName2 = pszAmmo2();
-
-		if (!ammoName2) {
-			return;
-		}
-
-		if (!strcmp(ammoName2, "ARgrenades")) {
-			ammoEntName = "ammo_ARgrenades";
-			dropAmount = 2;
-		}
-		else {
-			ALERT(at_console, "Weapon %s should implement GetAmmoDropInfo\n", STRING(pev->classname));
-		}
-
-		return;
-	}
-
-	const char* ammoName = pszAmmo1();
+	const char* ammoName = isSecondary ? pszAmmo2() : pszAmmo1();
 
 	if (!ammoName) {
 		return;
@@ -150,6 +132,10 @@ void CBasePlayerWeapon::GetAmmoDropInfo(bool isSecondary, const char*& ammoEntNa
 	else if (!strcmp(ammoName, "spores")) {
 		ammoEntName = "ammo_sporeclip";
 		dropAmount = 1;
+	}
+	else if (!strcmp(ammoName, "ARgrenades")) {
+		ammoEntName = "ammo_ARgrenades";
+		dropAmount = 2;
 	}
 	else if (!strcmp(ammoName, "Hornets") || !strcmp(ammoName, "shock")) {
 		// can't drop ammo for these weapons

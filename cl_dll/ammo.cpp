@@ -961,6 +961,8 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		CustomWeaponShootOpts& opts = parms.shootOpts[i];
 		opts.flags = READ_BYTE();
 		opts.ammoCost = READ_BYTE();
+		opts.ammoFreq = READ_BYTE();
+		opts.ammoPool = READ_BYTE();
 		opts.cooldown = READ_SHORT();
 		opts.cooldownFail = READ_SHORT();
 		opts.chargeTime = READ_SHORT();
@@ -1064,6 +1066,10 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 		}
 		case WC_EVT_KICKBACK:
 			evt.kickback.pushForce = READ_SHORT();
+			evt.kickback.back = READ_BYTE();
+			evt.kickback.right = READ_BYTE();
+			evt.kickback.up = READ_BYTE();
+			evt.kickback.globalUp = READ_BYTE();
 			break;
 		case WC_EVT_TOGGLE_ZOOM:
 			evt.zoomToggle.zoomFov = READ_BYTE();
@@ -1074,6 +1080,9 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 		case WC_EVT_COOLDOWN:
 			evt.cooldown.millis = READ_SHORT();
 			evt.cooldown.targets = READ_BYTE();
+			break;
+		case WC_EVT_SET_GRAVITY:
+			evt.setGravity.gravity = READ_SHORT();
 			break;
 		case WC_EVT_TOGGLE_AKIMBO:
 		case WC_EVT_TOGGLE_LASER:

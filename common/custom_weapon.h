@@ -98,6 +98,7 @@ enum WeaponCustomEventType {
 	WC_EVT_HIDE_LASER,		// temporarily hide the laser
 	WC_EVT_COOLDOWN,		// adjust cooldowns (by default every action is cooled down after an attack)
 	WC_EVT_TOGGLE_AKIMBO,	// toggle dual-wield mode
+	WC_EVT_SET_GRAVITY,		// change player gravity
 };
 
 // how loud the sound is for AI (reaction distance) (0 = silent)
@@ -152,6 +153,14 @@ enum WeaponCustomProjectileFollowMode
 	WC_PROJ_FOLLOW_NONE,
 	WC_PROJ_FOLLOW_CROSSHAIRS,
 	WC_PROJ_FOLLOW_ENEMIES,
+};
+
+enum WeaponCustomAmmoPool
+{
+	WC_AMMOPOOL_DEFAULT,			// automatically select ammo pool (primary = clip, secondary = secondary)
+	WC_AMMOPOOL_PRIMARY_CLIP,		// drain ammo from primary clip
+	WC_AMMOPOOL_PRIMARY_RESERVE,	// drain ammo from primary reserve
+	WC_AMMOPOOL_SECONDARY_RESERVE,	// drain ammo from secondary reserve
 };
 
 struct WepEvt {
@@ -222,7 +231,11 @@ struct WepEvt {
 		} bullets;
 
 		struct {
-			int16_t pushForce; // Push force applied to player in opposite direction of aim
+			int16_t pushForce;	// Push force applied to player in opposite direction of aim
+			int8_t back;		// force percentage applied to back direction (-100 - 100)
+			int8_t right;		// force percentage applied to right direction (-100 - 100)
+			int8_t up;			// force percentage applied to up direction (-100 - 100)
+			int8_t globalUp;	// force percentage applied to global up direction (view pitch ignored)
 		} kickback;
 
 		struct {
@@ -237,6 +250,10 @@ struct WepEvt {
 		struct {
 			uint16_t millis; // how long to wait before enabling the laser again
 		} laserHide;
+
+		struct {
+			int16_t gravity; // gravity percentage (1000 = 100%, 0 = default)
+		} setGravity;
 
 		// not networked to the client. No bit packing necessary
 		struct {
@@ -630,9 +647,13 @@ struct WepEvt {
 		return *this;
 	}
 
-	WepEvt Kickback(int16_t pushForce) {
+	WepEvt Kickback(int16_t pushForce, int8_t back=100, int8_t right=0, int8_t up=0, int8_t globalUp=0) {
 		evtType = WC_EVT_KICKBACK;
 		kickback.pushForce = pushForce;
+		kickback.back = clamp(back, -100, 100);
+		kickback.right = clamp(right, -100, 100);
+		kickback.up = clamp(up, -100, 100);
+		kickback.globalUp = clamp(globalUp, -100, 100);
 		return *this;
 	}
 
@@ -658,12 +679,20 @@ struct WepEvt {
 		evtType = WC_EVT_TOGGLE_AKIMBO;
 		return *this;
 	}
+
+	WepEvt SetGravity(float gravity) {
+		evtType = WC_EVT_SET_GRAVITY;
+		setGravity.gravity = clampf(gravity * 1000, -32727, 32767);
+		return *this;
+	}
 #endif
 };
 
 struct CustomWeaponShootOpts {
 	uint8_t flags;				// FL_WC_SHOOT_*
 	uint8_t ammoCost;			// ammo cost of each attack
+	uint8_t ammoFreq;			// skip decrementing ammo for this many attacks (for fractional ammo costs)
+	uint8_t ammoPool;			// which ammo pool to drain from (WeaponCustomAmmoPool)
 	uint16_t cooldown;			// time between attacks (milliseconds)
 	uint16_t cooldownFail;		// cooldown after a failed attack (out of ammo, underwater) (milliseconds)
 	uint16_t chargeTime;		// how long the attack button must be held before the attack begins (milliseconds)
