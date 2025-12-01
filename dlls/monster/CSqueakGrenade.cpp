@@ -145,6 +145,7 @@ void CSqueakGrenade :: Spawn( void )
 
 	pev->sequence = WSQUEAK_RUN;
 	ResetSequenceInfo( );
+	AddWaterPhysicsEnt(this, 1, 0);
 }
 
 void CSqueakGrenade::Precache( void )

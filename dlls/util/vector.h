@@ -17,6 +17,8 @@
 
 #include "Platform.h"
 
+typedef float vec_t;
+
 //=========================================================
 // 2DVector - used for many pathfinding and many other 
 // operations that are treated as planar rather than 3d.
@@ -109,5 +111,13 @@ inline Vector operator*(const Vector& a, const Vector& b)	{ return Vector(a.x*b.
 inline float DotProduct(const Vector& a, const Vector& b) { return(a.x*b.x+a.y*b.y+a.z*b.z); }
 inline Vector CrossProduct(const Vector& a, const Vector& b) { return Vector( a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x ); }
 
+#ifdef CLIENT_DLL
+
+#ifndef DID_VEC3_T_DEFINE
+#define DID_VEC3_T_DEFINE
+#define vec3_t Vector
+#endif
+
+#endif
 
 #endif

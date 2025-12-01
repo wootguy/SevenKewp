@@ -301,6 +301,12 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 	
 	lagcomp_begin(m_pPlayer);
 	UTIL_TraceLine( vecOrigSrc, vecDest, dont_ignore_monsters, pentIgnore, &tr );
+#ifndef CLIENT_DLL
+	if (gpGlobals->time - m_lastBubble > 0.05f) {
+		m_lastBubble = gpGlobals->time;
+		UTIL_BubbleTrail(vecOrigSrc, tr.vecEndPos, (tr.vecEndPos - vecOrigSrc).Length() / 64.0);
+	}
+#endif
 	lagcomp_end();
 
 	if (tr.fAllSolid)

@@ -11,3 +11,5 @@ extern EnginePv g_enginepv;
 
 // scan process memory to find engine data pointers
 void InitEnginePv();
+
+const char* GetSoundByIndex(int idx);

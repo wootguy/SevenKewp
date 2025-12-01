@@ -89,6 +89,8 @@ void CSatchelCharge :: Spawn( void )
 	int mergedIdle = LookupSequence("satchel_onback");
 	if (mergedIdle != -1)
 		pev->sequence = mergedIdle;
+
+	AddWaterPhysicsEnt(this, 1, 0);
 }
 
 

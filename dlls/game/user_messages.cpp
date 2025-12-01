@@ -59,6 +59,8 @@ int gmsgWeaponBits = 0;
 int gmsgTagInfo = 0;
 int gmsgPlayerPos = 0;
 int gmsgToxicCloud = 0;
+int gmsgSpriteAdv = 0;
+int gmsgWaterSplash = 0;
 
 std::vector<UserMessage> g_userMessages;
 
@@ -164,4 +166,6 @@ void LinkUserMessages(void)
 	gmsgWeaponBits = REG_USER_MSG("WeaponBits", 8);
 	gmsgTagInfo = REG_USER_MSG("TagInfo", 6);
 	gmsgPlayerPos = REG_USER_MSG("PlayerPos", -1);
+	gmsgSpriteAdv = REG_USER_MSG("SpriteAdv", -1);
+	gmsgWaterSplash = REG_USER_MSG("WaterSplash", -1);
 }

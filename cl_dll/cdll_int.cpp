@@ -24,7 +24,6 @@
 #undef INTERFACE_H
 #include "../public/interface_hlsdk.h"
 //#include "vgui_schememanager.h"
-#include "engine_pv.h"
 
 #include "pm_shared.h"
 
@@ -187,7 +186,6 @@ int CL_DLLEXPORT HUD_VidInit( void )
 
 	is_steam_legacy_engine = CVAR_GET_PTR("sv_allow_shaders") == NULL;
 	is_software_renderer = CVAR_GET_PTR("gl_fog") == NULL;
-	InitEnginePv();
 
 	g_connection_phase = 0;
 

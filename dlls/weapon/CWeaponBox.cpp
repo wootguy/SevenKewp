@@ -62,6 +62,8 @@ void CWeaponBox::Spawn(void)
 	SET_MODEL_MERGED(ENT(pev), "models/w_weaponbox.mdl", MERGE_MDL_W_WEAPONBOX);
 
 	SetTouch(&CWeaponBox::DefaultTouch);
+
+	AddWaterPhysicsEnt(this, 0.95f, 0);
 }
 
 //=========================================================

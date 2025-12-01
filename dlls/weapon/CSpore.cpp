@@ -117,6 +117,8 @@ void CSpore::Spawn()
 	m_fRegisteredSound = false;
 
 	m_flSoundDelay = gpGlobals->time;
+
+	AddWaterPhysicsEnt(this, 1, 0);
 }
 
 void CSpore::BounceSound()

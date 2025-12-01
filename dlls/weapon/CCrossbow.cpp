@@ -75,6 +75,7 @@ void CCrossbowBolt::Spawn( )
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	ParametricInterpolation(0.1f);
+	AddWaterPhysicsEnt(this, 1, 0);
 }
 
 
@@ -192,6 +193,12 @@ void CCrossbowBolt::ExplodeThink( void )
 
 	int spr = iContents != CONTENTS_WATER ? g_sModelIndexFireball : g_sModelIndexWExplosion;
 	UTIL_Explosion(pev->origin, spr, iScale, 15, TE_EXPLFLAG_NONE);
+
+#ifndef CLIENT_DLL
+	if (iContents == CONTENTS_WATER) {
+		UTIL_WaterSplash(pev->origin, false, true, 0.5f);
+	}
+#endif
 
 	PLAY_DISTANT_SOUND(edict(), DISTANT_556);
 
@@ -374,6 +381,9 @@ void CCrossbow::FireSniperBolt()
 
 	lagcomp_begin(m_pPlayer);
 	UTIL_TraceLine(vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr);
+#ifndef CLIENT_DLL
+	UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, 0.2f, 1);
+#endif
 	lagcomp_end();
 
 #ifndef CLIENT_DLL

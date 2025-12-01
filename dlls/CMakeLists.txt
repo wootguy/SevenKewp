@@ -477,7 +477,9 @@ set(UTIL_HDR
 	util/wav.h
 	util/HashMap.h
 	util/StringPool.h
+	util/water.h
 	../game_shared/mstream.h
+	../game_shared/shared_effects.h
 	../game_shared/shared_util.h
 	../game_shared/md5.h
 )
@@ -502,6 +504,7 @@ set(UTIL_SRC
 	util/wav.cpp
 	util/HashMap.cpp
 	util/StringPool.cpp
+	util/water.cpp
 	../game_shared/mstream.cpp
 	../game_shared/shared_util.cpp
 	../game_shared/md5.cpp

@@ -18,6 +18,7 @@ public:
 	virtual int	ObjectCaps(void) { return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE; }
 	virtual CWeaponBox* MyWeaponBoxPtr(void) { return this; }
 	bool IsUseOnlyWeapon(); // true if this weaponbox contains a single use-only weapon
+	virtual BOOL	IsItem() { return TRUE; }
 
 	void EXPORT Kill ( void );
 	int		Save( CSave &save );

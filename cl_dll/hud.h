@@ -782,7 +782,6 @@ public:
 
 	int  _cdecl MsgFunc_NextMap( const char *pszName, int iSize, void *pbuf );
 	int  _cdecl MsgFunc_TimeLeft( const char *pszName, int iSize, void *pbuf );
-	int  _cdecl MsgFunc_ToxicCloud( const char *pszName, int iSize, void *pbuf );
 
 	// Screen information
 	SCREENINFO	m_scrinfo;

@@ -72,7 +72,7 @@ EXPORT bool SET_MODEL_MERGED(edict_t* edict, const char* model, int mergeId); //
 EXPORT const char* GET_MODEL(const char* model); // return replacement model, if one exists, or the given model
 EXPORT int MODEL_INDEX(const char* model);
 EXPORT const char* INDEX_MODEL(int modelIdx);
-EXPORT int SOUND_INDEX(const char* model);
+EXPORT int SOUND_INDEX(const char* sound);
 EXPORT const char* INDEX_SOUND(int soundIdx);
 EXPORT studiohdr_t* GET_MODEL_PTR(edict_t* edict);
 EXPORT studiohdr_t* GET_MODEL_PTR(int modelIdx);

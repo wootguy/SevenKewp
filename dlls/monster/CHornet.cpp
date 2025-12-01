@@ -136,6 +136,7 @@ void CHornet :: Spawn( void )
 
 	pev->nextthink = gpGlobals->time;
 	ResetSequenceInfo( );
+	AddWaterPhysicsEnt(this, 1, 0);
 }
 
 

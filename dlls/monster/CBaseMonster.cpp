@@ -2242,6 +2242,8 @@ void CBaseMonster::MonsterInit(void)
 	SetTouch(&CBaseMonster::PushTouch);
 
 	UnstuckSpawnPosition();
+
+	AddWaterPhysicsEnt(this, 1, 0);
 }
 
 void CBaseMonster::UnstuckSpawnPosition() {
@@ -4621,6 +4623,8 @@ void CBaseMonster::Killed(entvars_t* pevAttacker, int iGib)
 	{
 		SetTouch(NULL);
 		BecomeDead();
+		m_waterFriction = 0.95f;
+		m_buoyancy = 0.2f;
 	}
 
 	// don't let the status bar glitch for players.with <0 health.

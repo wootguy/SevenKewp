@@ -554,7 +554,7 @@ void StartSound(edict_t* ent, int channel, const char* sample, float fvolume, fl
 			continue;
 		}
 
-		if ((fFlags & SND_FL_GLOBAL) || bent->InPAS(plent)) {
+		if ((fFlags & SND_FL_GLOBAL) || !ent || bent->InPAS(plent)) {
 			MESSAGE_BEGIN(sendMode, SVC_SOUND, NULL, plent);
 			WRITE_BYTES((uint8_t*)bitbuffer->getBuffer(), msgSz);
 			MESSAGE_END();

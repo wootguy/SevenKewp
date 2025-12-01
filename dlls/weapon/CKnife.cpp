@@ -168,6 +168,8 @@ int CKnife::Swing(int fFirst)
 
 	lagcomp_end();
 
+	m_pPlayer->WaterSplashTrace(vecSrc, 32, head_hull, 0.4f);
+
 	SolidifyNearbyCorpses(true);
 #endif
 

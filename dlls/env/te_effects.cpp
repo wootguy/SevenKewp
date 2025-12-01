@@ -2,6 +2,7 @@
 #include "util.h"
 #include "te_effects.h"
 #include "hlds_hooks.h"
+#include "shared_util.h"
 
 RGB GetTeColor(uint8_t color) {
 	// palette used by TE_* effects
@@ -458,7 +459,18 @@ void UTIL_Tracer(Vector start, Vector end, int msgMode, edict_t* targetEnt) {
 }
 
 void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate, uint8_t flags) {
-	if (UTIL_IsValidTempEntOrigin(origin)) {
+	if (!UTIL_IsValidTempEntOrigin(origin)) {
+		CBaseEntity* ent = CBaseEntity::Create("te_explosion", origin, g_vecZero, false);
+		ent->pev->scale = scale / 10.0f;
+		ent->pev->framerate = framerate;
+		ent->pev->spawnflags = flags;
+		DispatchSpawn(ent->edict());
+		SET_MODEL(ent->edict(), INDEX_MODEL(sprIndex));
+		return; // ent will handle the sound logic
+	}
+
+	if (flags & 4) {
+		// don't want sounds, no special logic needed
 		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, origin);
 		WRITE_BYTE(TE_EXPLOSION);
 		WRITE_COORD(origin.x);
@@ -469,14 +481,54 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 		WRITE_BYTE(framerate);
 		WRITE_BYTE(flags);
 		MESSAGE_END();
+		return;
 	}
-	else {
-		CBaseEntity* ent = CBaseEntity::Create("te_explosion", origin, g_vecZero, false);
-		ent->pev->scale = scale / 10.0f;
-		ent->pev->framerate = framerate;
-		ent->pev->spawnflags = flags;
-		DispatchSpawn(ent->edict());
-		SET_MODEL(ent->edict(), INDEX_MODEL(sprIndex));
+
+	bool expUnderwater = UTIL_PointInLiquid(origin) && UTIL_PointContents(origin + Vector(0,0,32)) != CONTENTS_EMPTY;
+
+	for (int i = 1; i < gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+		
+		if (!plr)
+			continue;
+
+		bool plrUnderwater = plr->pev->waterlevel >= 3;
+		bool shouldMuffle = false;
+
+		uint8_t eflags = flags;
+
+		if (expUnderwater != plrUnderwater) {
+			shouldMuffle = true;
+			eflags |= 4;
+		}
+		if (expUnderwater)
+			eflags |= 8;
+
+		Vector viewPos = plr->GetViewPosition();
+
+		if (!UTIL_TestPAS(origin, plr->edict())) {
+			continue;
+		}
+
+		// do the visual effects
+		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, plr->edict());
+		WRITE_BYTE(TE_EXPLOSION);
+		WRITE_COORD(origin.x);
+		WRITE_COORD(origin.y);
+		WRITE_COORD(origin.z);
+		WRITE_SHORT(sprIndex);
+		WRITE_BYTE(scale);
+		WRITE_BYTE(framerate);
+		WRITE_BYTE(eflags);
+		MESSAGE_END();
+
+		if (shouldMuffle) {
+			// play muffled sound
+			float attn = 0.5f;
+			int pitch = RANDOM_LONG(95, 106);
+			const char* sample = RANDOM_LONG(0, 1) ? "water/explode3.wav" : "water/explode5.wav";
+			StartSound((edict_t*)NULL, CHAN_STATIC, sample, 1.0f, attn, 0, pitch, origin, PLRBIT(plr->edict()));
+		}
 	}
 }
 
@@ -510,6 +562,38 @@ void UTIL_BeamCylinder(Vector pos, float radius, int modelIdx, uint8_t startFram
 	if (UTIL_IsValidTempEntOrigin(pos)) {
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 		WRITE_BYTE(TE_BEAMCYLINDER);
+		WRITE_COORD(pos.x);
+		WRITE_COORD(pos.y);
+		WRITE_COORD(pos.z);
+		WRITE_COORD(pos.x);
+		WRITE_COORD(pos.y);
+		WRITE_COORD(pos.z + radius); // reach damage radius over .2 seconds
+		WRITE_SHORT(modelIdx);
+		WRITE_BYTE(startFrame);
+		WRITE_BYTE(frameRate);
+		WRITE_BYTE(life);
+		WRITE_BYTE(width);
+		WRITE_BYTE(noise);
+		WRITE_BYTE(color.r);
+		WRITE_BYTE(color.g);
+		WRITE_BYTE(color.b);
+		WRITE_BYTE(color.a);
+		WRITE_BYTE(scrollSpeed);
+		MESSAGE_END();
+	}
+	else {
+		CTeBeamRing* ring = (CTeBeamRing*)CBaseEntity::Create("te_beamring", pos, g_vecZero, true);
+		int ringWidth = V_min(255, (int)width * 10); // beam rings are thinner than beam cylinders
+		ring->Expand(radius, modelIdx, startFrame, frameRate, life, ringWidth, noise, color, scrollSpeed,
+			MSG_PVS, pos, NULL);
+	}
+}
+
+void UTIL_BeamTorus(Vector pos, float radius, int modelIdx, uint8_t startFrame, uint8_t frameRate,
+	uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_BEAMTORUS);
 		WRITE_COORD(pos.x);
 		WRITE_COORD(pos.y);
 		WRITE_COORD(pos.z);
@@ -1004,6 +1088,57 @@ void UTIL_BubbleTrail(Vector from, Vector to, int count)
 	MESSAGE_END();
 }
 
+void UTIL_WaterSplashTrace(Vector from, Vector to, float scale, int playSound) {
+	Vector surfacePoint;
+
+	if (!UTIL_WaterTrace(from, to, surfacePoint)) {
+		return;
+	}
+
+	UTIL_WaterSplashMsg(surfacePoint + Vector(0, 0, 1), scale, playSound);
+}
+
+void UTIL_WaterSplash(Vector pos, bool bigSplash, bool playSound, float scale) {
+	if (!UTIL_PointInSplashable(pos))
+		return;
+
+	float maxDepth = bigSplash ? 300 : 128;
+	float flHeight = UTIL_WaterLevel(pos, pos.z, pos.z + maxDepth + 8);
+	int depth = flHeight - pos.z;
+
+	if (depth > maxDepth) {
+		return; // too deep
+	}
+
+	pos.z = flHeight;
+
+	if (bigSplash) {
+		CBaseEntity* wake = CBaseEntity::Create("splashwake", pos + Vector(0, 0, 1), g_vecZero, true, 0, {
+			{"iuser1", UTIL_VarArgs("%d", depth) }
+		});
+	}
+	else {
+		UTIL_WaterSplashMsg(pos + Vector(0, 0, 1), scale, playSound ? 1 : 0);
+	}
+}
+
+void UTIL_WaterSplashFootstep(int player_index) {
+	CBasePlayer* plr = UTIL_PlayerByIndex(player_index+1);
+	
+	if (!plr)
+		return;
+
+	Vector origin = plr->pev->origin;
+	origin.z -= 36; // can't footstep while crouching so no need to check that flag
+
+	Vector surface;
+	if (UTIL_WaterTrace(origin, origin + Vector(0, 0, 36), surface)) {
+		origin = surface + Vector(0, 0, 1);
+	}
+
+	UTIL_WaterSplashMsg(origin, 0.3f, 1, plr->edict());
+}
+
 void UTIL_DLight(Vector pos, uint8_t radius, RGB color, uint8_t time, uint8_t decay) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
@@ -1125,4 +1260,200 @@ void EjectBrass(const Vector& vecOrigin, const Vector& vecVelocity, float rotati
 	WRITE_BYTE(soundtype);
 	WRITE_BYTE(25);// 2.5 seconds
 	MESSAGE_END();
+}
+
+#include "debug.h"
+
+void UTIL_SpriteAdv(Vector pos, const SpriteAdvArgs& args, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
+	uint8_t moveFlags = 0;
+
+	if (args.velX) moveFlags |= FL_SPRITEADV_MOVE_VEL_X;
+	if (args.velY) moveFlags |= FL_SPRITEADV_MOVE_VEL_Y;
+	if (args.velZ) moveFlags |= FL_SPRITEADV_MOVE_VEL_Z;
+	if (args.accelX) moveFlags |= FL_SPRITEADV_MOVE_ACCEL_X;
+	if (args.accelY) moveFlags |= FL_SPRITEADV_MOVE_ACCEL_Y;
+	if (args.accelZ) moveFlags |= FL_SPRITEADV_MOVE_ACCEL_Z;
+	
+	uint8_t flags = 0;
+
+	if (args.maxLife) {
+		flags |= FL_SPRITEADV_LOOP;
+	}
+	if (args.endFrame || args.startFrame) {
+		flags |= FL_SPRITEADV_FRAME;
+	}
+	if (args.fadeMode) {
+		flags |= FL_SPRITEADV_FADE;
+	}
+	if (args.renderMode != kRenderTransAdd || args.sprMode != SPR_VP_PARALLEL) {
+		flags |= FL_SPRITEADV_MODE;
+	}
+	if (args.expandSpeed) {
+		flags |= FL_SPRITEADV_EXPAND;
+	}
+	if (args.r || args.g || args.b) {
+		flags |= FL_SPRITEADV_COLOR;
+	}
+	if (args.spinX || args.spinY || args.spinZ) {
+		flags |= FL_SPRITEADV_SPIN;
+	}
+	if (moveFlags) {
+		flags |= FL_SPRITEADV_MOVE;
+	}
+
+	MESSAGE_BEGIN(msgMode, gmsgSpriteAdv, msgOrigin, targetEnt);
+	WRITE_SHORT(pos.x);
+	WRITE_SHORT(pos.y);
+	WRITE_SHORT(pos.z);
+	WRITE_SHORT(args.modelIdx);
+	WRITE_BYTE(args.scale);
+	WRITE_BYTE(args.framerate);
+	WRITE_BYTE(args.renderamt);
+	WRITE_BYTE(flags);
+
+	if (flags & FL_SPRITEADV_LOOP) {
+		WRITE_BYTE(args.maxLife);
+	}
+	if (flags & FL_SPRITEADV_FRAME) {
+		WRITE_BYTE(args.startFrame);
+		WRITE_BYTE(args.endFrame);
+	}
+	if (flags & FL_SPRITEADV_FADE) {
+		WRITE_BYTE(args.fadeMode);
+		WRITE_BYTE(args.fadeTime);
+	}
+	if (flags & FL_SPRITEADV_MODE) {
+		uint8_t mode = ((args.renderMode & 0xf) << 4) | (args.sprMode & 0xf);
+		WRITE_BYTE(mode);
+
+		if (args.sprMode == SPR_ORIENTED || args.sprMode == SPR_VP_PARALLEL_ORIENTED) {
+			WRITE_ANGLE(args.rx);
+			WRITE_ANGLE(args.ry);
+			WRITE_ANGLE(args.rz);
+		}
+	}
+	if (flags & FL_SPRITEADV_EXPAND) {
+		WRITE_SHORT(args.expandSpeed);
+		WRITE_BYTE(args.expandMax);
+	}
+	if (flags & FL_SPRITEADV_COLOR) {
+		WRITE_BYTE(args.r);
+		WRITE_BYTE(args.g);
+		WRITE_BYTE(args.b);
+	}
+	if (flags & FL_SPRITEADV_SPIN) {
+		WRITE_BYTE(args.spinX);
+		WRITE_BYTE(args.spinY);
+		WRITE_BYTE(args.spinZ);
+	}
+	if (flags & FL_SPRITEADV_MOVE) {
+		WRITE_BYTE(moveFlags);
+
+		if (moveFlags & FL_SPRITEADV_MOVE_VEL_X) WRITE_SHORT(args.velX);
+		if (moveFlags & FL_SPRITEADV_MOVE_VEL_Y) WRITE_SHORT(args.velY);
+		if (moveFlags & FL_SPRITEADV_MOVE_VEL_Z) WRITE_SHORT(args.velZ);
+		if (moveFlags & FL_SPRITEADV_MOVE_ACCEL_X) WRITE_SHORT(args.accelX);
+		if (moveFlags & FL_SPRITEADV_MOVE_ACCEL_Y) WRITE_SHORT(args.accelY);
+		if (moveFlags & FL_SPRITEADV_MOVE_ACCEL_Z) WRITE_SHORT(args.accelZ);
+	}
+
+	MESSAGE_END();
+}
+
+void UTIL_WaterSplashMsg(Vector pos, float scale, int playSound, edict_t* skipEnt) {
+	float sz = scale * 34;
+	float ratio = sz * 0.1f;
+	float fps = 20 - ratio * 2;
+
+	const char* sample = RANDOM_SOUND_ARRAY(g_waterSplashSounds);
+	int pitch = 100;
+	float vol = ratio / 3.0f;
+
+	if (scale < 0.4f && playSound != 2) {
+		sample = g_stepSoundsSlosh[RANDOM_LONG(0, 1)];
+		vol = 1.0f;
+		// no pitch shift to prevent error spam on client
+	}
+	else {
+		if (scale < 0.4f) {
+			pitch += 15;
+			if (playSound != 3) vol *= 0.7f;
+		}
+		else if (scale < 0.5f) {
+			pitch += 10;
+			if (playSound != 3) vol *= 0.8f;
+		}
+		pitch += RANDOM_LONG(-10, 10);
+	}
+
+	// create a shittier version for players without the custom message
+	uint32_t hlPlayers = 0;
+	float offset = (16 * ratio) - 14; // TODO: get sprite height
+
+	bool validHlTempOri = UTIL_IsValidTempEntOrigin(pos);
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+		
+		if (!plr || plr->edict() == skipEnt || !UTIL_TestPVS(pos, plr->edict()))
+			continue;
+
+		if (plr->GetClientInfo().mod_version == CLIENT_MOD_SEVENKEWP) {
+			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgWaterSplash, NULL, plr->edict());
+			WRITE_SHORT(pos.x);
+			WRITE_SHORT(pos.y);
+			WRITE_SHORT(pos.z);
+			WRITE_SHORT(g_waterSplash2Spr);
+			WRITE_SHORT(g_waterSplashWakeSpr);
+			WRITE_SHORT(SOUND_INDEX(sample));
+			WRITE_BYTE(scale * 10);
+			WRITE_BYTE(fps);
+			WRITE_BYTE(playSound ? vol * 100 : 0);
+			WRITE_BYTE(pitch);
+			MESSAGE_END();
+			continue;
+		}
+
+		hlPlayers |= PLRBIT(plr->edict());
+
+		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, plr->edict());
+		WRITE_BYTE(TE_EXPLOSION);
+		WRITE_COORD(pos.x);
+		WRITE_COORD(pos.y);
+		WRITE_COORD(pos.z + offset);
+		WRITE_SHORT(g_waterSplash2Spr);
+		WRITE_BYTE(sz);
+		WRITE_BYTE(fps);
+		WRITE_BYTE(1 | 2 | 4 | 8);
+		MESSAGE_END();
+
+		if (!validHlTempOri)
+			continue; // too expensive to use the entity version of the splash wake
+
+		float radius = 80 * ratio;
+		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, plr->edict());
+		WRITE_BYTE(TE_BEAMDISK);
+		WRITE_COORD(pos.x);
+		WRITE_COORD(pos.y);
+		WRITE_COORD(pos.z);
+		WRITE_COORD(pos.x);
+		WRITE_COORD(pos.y);
+		WRITE_COORD(pos.z + radius); // reach damage radius over .2 seconds
+		WRITE_SHORT(g_waterSplashWake2Spr);
+		WRITE_BYTE(0);
+		WRITE_BYTE(128);
+		WRITE_BYTE(12);
+		WRITE_BYTE(0);
+		WRITE_BYTE(255);
+		WRITE_BYTE(255);
+		WRITE_BYTE(255);
+		WRITE_BYTE(255);
+		WRITE_BYTE(64);
+		WRITE_BYTE(0);
+		MESSAGE_END();
+	}
+
+	if (playSound && hlPlayers && validHlTempOri) {
+		StartSound(0, CHAN_STATIC, sample, vol, ATTN_NORM, SND_FL_GLOBAL, pitch, pos, hlPlayers);
+	}
 }

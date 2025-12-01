@@ -61,6 +61,7 @@ void CreatePlayerCorpse(CBasePlayer* plr)
 			mon->m_bloodColor = BLOOD_COLOR_RED;
 			mon->InitBoneControllers(); // init server version of the player model (disable renderfx to see why)
 			mon->CleanupLocalCorpses();
+			AddWaterPhysicsEnt(mon, plr->m_waterFriction, plr->m_buoyancy);
 		}
 	}
 }

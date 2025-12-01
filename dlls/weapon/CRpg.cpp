@@ -205,6 +205,7 @@ void CRpgRocket :: Spawn( void )
 	pev->nextthink = gpGlobals->time + 0.4;
 
 	pev->dmg = GetDamage(gSkillData.sk_plr_rpg);
+	AddWaterPhysicsEnt(this, 1, 0);
 }
 
 //=========================================================

@@ -26,10 +26,12 @@
 #include "hud_servers.h"
 #include "vgui_int.h"
 #include "vgui_TeamFortressViewport.h"
+#include "effects.h"
 
 #include "demo.h"
 #include "demo_api.h"
 #include "vgui_ScorePanel.h"
+#include "engine_pv.h"
 
 hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info from the engine
 extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player info sent directly to the client dll
@@ -121,11 +123,6 @@ int __MsgFunc_SetFOV(const char *pszName, int iSize, void *pbuf)
 int __MsgFunc_Concuss(const char *pszName, int iSize, void *pbuf)
 {
 	return gHUD.MsgFunc_Concuss( pszName, iSize, pbuf );
-}
-
-int __MsgFunc_ToxicCloud(const char* pszName, int iSize, void* pbuf)
-{
-	return gHUD.MsgFunc_ToxicCloud(pszName, iSize, pbuf);
 }
 
 int __MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf )
@@ -318,7 +315,6 @@ void CHud :: Init( void )
 	HOOK_MESSAGE( ViewMode );
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
-	HOOK_MESSAGE( ToxicCloud );
 
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
@@ -350,6 +346,8 @@ void CHud :: Init( void )
 
 	// VGUI Menus
 	HOOK_MESSAGE( VGUIMenu );
+
+	HookEffectMessages();
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
@@ -590,6 +588,7 @@ void CHud::ParseServerInfo() {
 }
 
 void CHud::WorldInit(void) {
+	InitEnginePv();
 	LoadHudSprites();
 
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially

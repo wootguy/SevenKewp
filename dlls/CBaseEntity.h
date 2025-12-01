@@ -195,6 +195,9 @@ public:
 	int m_lastBounceSoundChannel;
 	float m_lastBounceSound;
 
+	float m_waterFriction;
+	float m_buoyancy;
+
 	// fundamental callbacks
 	void (CBaseEntity ::* m_pfnThink)(void);
 	void (CBaseEntity ::* m_pfnTouch)(CBaseEntity* pOther);
@@ -280,6 +283,7 @@ public:
 	virtual BOOL	IsBeam(void) { return FALSE; };
 	virtual BOOL	IsButton() { return FALSE; }
 	virtual BOOL	IsTank() { return FALSE; }
+	virtual BOOL	IsItem() { return FALSE; }
 	virtual BOOL	IsWeaponCustom() { return FALSE; }
 	virtual	BOOL	IsMonsterMaker(void) { return FALSE; }
 	virtual const char* TeamID(void) { return ""; }

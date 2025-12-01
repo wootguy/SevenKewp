@@ -51,11 +51,21 @@ DLL_GLOBAL	short	g_sModelIndexBloodDrop;// holds the sprite index for the initia
 DLL_GLOBAL	short	g_sModelIndexBloodSpray;// holds the sprite index for splattered blood
 DLL_GLOBAL	short	g_sModelIndexShrapnelHit;// holds the sprite index for shrapnel impact sprite
 DLL_GLOBAL	short	g_sModelIndexShrapnel;// holds the model index for shrapnel gibs
+DLL_GLOBAL	short	g_waterSplashSpr;// holds the model index for water splashes
+DLL_GLOBAL	short	g_waterSplash2Spr;// holds the model index for water splashes
+DLL_GLOBAL	short	g_waterSplashWakeSpr;// holds the model index for water splash wakes (sevenkewp version)
+DLL_GLOBAL	short	g_waterSplashWake2Spr;// holds the model index for water splash wakes (hl version)
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
 
 MULTIDAMAGE gMultiDamage;
+
+const char* g_waterSplashSounds[3] = { // ordered for mp_soundvariety
+	"water/splash.wav",
+	"water/splash2.wav",
+	"water/splash3.wav"
+};
 
 #define TRACER_FREQ		4			// Tracers fire every fourth bullet
 

@@ -426,6 +426,8 @@ void ClientPutInServer( edict_t *pEntity )
 		activeCam->TogglePlayerView(pPlayer, true);
 	}
 
+	AddWaterPhysicsEnt(pPlayer, 1, 0);
+
 	CALL_HOOKS_VOID(pfnClientPutInServer, pPlayer);
 }
 
@@ -526,6 +528,7 @@ void ServerDeactivate( void )
 	}
 
 	EnvWeatherServerDeactivate();
+	UnloadWaterPhysicsEnts();
 
 	g_lastMapName = STRING(gpGlobals->mapname);
 
@@ -669,6 +672,17 @@ void PrecacheTextureSounds() {
 		PRECACHE_SOUND_ENT(NULL, "player/pl_wade2.wav");
 		PRECACHE_SOUND_ENT(NULL, "player/pl_wade3.wav");
 		PRECACHE_SOUND_ENT(NULL, "player/pl_wade4.wav");
+
+		PRECACHE_SOUND_ENT(NULL, "water/explode3.wav");
+		PRECACHE_SOUND_ENT(NULL, "water/explode5.wav");
+		PRECACHE_SOUND_ENT(NULL, WATER_SPLASH2_SND_PATH);
+
+		PRECACHE_SOUND_ARRAY_WORLD(g_waterSplashSounds);
+
+		g_waterSplashSpr = PRECACHE_MODEL_ENT(NULL, "sprites/splash.spr");
+		g_waterSplash2Spr = PRECACHE_MODEL_ENT(NULL, "sprites/splash2.spr");
+		g_waterSplashWakeSpr = PRECACHE_MODEL_ENT(NULL, "sprites/splashwake.spr");
+		g_waterSplashWake2Spr = PRECACHE_MODEL_ENT(NULL, "sprites/splashwakehl.spr");
 	}
 }
 
@@ -1061,6 +1075,8 @@ void StartFrame( void )
 	if (g_frameCount == 16) {
 		CALL_HOOKS_VOID(pfnMapStart);
 	}
+
+	DoEntWaterPhysics();
 
 	g_frameCount++;
 }

@@ -118,7 +118,6 @@ set(UTIL_HDR
 	cl_util.h
 	interpolation.h
 	engine_pv.h
-	util_vector.h
 	../common/parsemsg.h
 	../pm_shared/pm_debug.h
 	../pm_shared/pm_defs.h
@@ -127,6 +126,7 @@ set(UTIL_HDR
 	../pm_shared/pm_movevars.h
 	../pm_shared/pm_shared.h
 	../game_shared/shared_util.h
+	../game_shared/shared_effects.h
 	../game_shared/md5.h
 	../game_shared/mstream.h
 )
@@ -150,6 +150,7 @@ set(UTIL_SRC
 set(GAME_HDR
 	demo.h
 	ev_hldm.h
+	effects.h
 	view.h
 	../game_shared/voice_banmgr.h
 	../game_shared/voice_status.h
@@ -158,6 +159,7 @@ set(GAME_SRC
 	ev_hldm.cpp
 	demo.cpp
 	events.cpp
+	effects.cpp
 	view.cpp
 	voice_status.cpp
 	../game_shared/voice_banmgr.cpp

@@ -654,6 +654,9 @@ public:
 
 	bool HasSuit();
 
+	// make splashes from player actions (call MakeVectors before this)
+	void WaterSplashTrace(Vector vecSrc, float dist, int hull, float scale);
+
 	// for sven-style monster info
 	//void UpdateMonsterInfo();
 	//float m_lastMonsterInfoMsg;

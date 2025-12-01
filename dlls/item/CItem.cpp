@@ -44,6 +44,8 @@ void CItem::Spawn(void)
 		pev->sequence = LookupSequence(STRING(m_sequence_name));
 	}
 	ResetSequenceInfo();
+
+	AddWaterPhysicsEnt(this, 0.95f, 0);
 }
 
 void CItem::DropThink() {

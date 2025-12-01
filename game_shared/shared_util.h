@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <stdint.h>
+#include "vector.h"
+#include "../game_shared/shared_effects.h"
 
 // In case this ever changes
 #define M_PI			3.14159265358979323846
@@ -18,17 +20,6 @@
 
 EXPORT extern const std::vector<std::string> g_emptyCurlHeaders;
 EXPORT extern const std::string g_emptyCurlPostData;
-
-struct custom_muzzle_flash_t {
-	char sprite[64];
-	uint8_t attachment;
-	uint8_t bone;
-	uint8_t scale;
-	uint8_t rendermode;
-	uint8_t r, g, b, a;
-	float x, y, z;
-	int modelIdx; // client only
-};
 
 // same as strncpy except it ensures the destination is null terminated, even if the buffer is too small
 EXPORT char* strcpy_safe(char* dest, const char* src, size_t size);
@@ -112,3 +103,16 @@ EXPORT uint8_t* UTIL_LoadFileRoot(const char* fpath, int* size = NULL);
 EXPORT custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path);
 
 EXPORT void UnloadCustomMuzzleFlashes();
+
+EXPORT int UTIL_PointContents(const Vector& vec);
+
+EXPORT bool UTIL_PointInLiquid(const Vector& vec);
+
+EXPORT bool UTIL_PointInSplashable(const Vector& vec);
+
+// find the water intersection point, if one exists
+EXPORT bool UTIL_WaterTrace(Vector from, Vector to, Vector& isect);
+
+EXPORT float clampf(float val, float min, float max);
+
+EXPORT int clampi(int val, int min, int max);

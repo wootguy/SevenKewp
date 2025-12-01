@@ -137,6 +137,8 @@ void CGrappleTip::Spawn()
 
 	m_bIsStuck = false;
 	m_bMissed = false;
+
+	AddWaterPhysicsEnt(this, 1, 0);
 }
 
 void CGrappleTip::FlyThink()

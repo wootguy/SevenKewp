@@ -659,6 +659,12 @@ int SOUND_INDEX(const char* sound) {
 	std::string lowerPath = toLowerCase(sound);
 	sound = lowerPath.c_str();
 
+	const char* replacement = g_soundReplacements.get(sound);
+	if (replacement) {
+		lowerPath = toLowerCase(replacement);
+		sound = lowerPath.c_str();
+	}
+
 	int* precache = g_precachedSounds.get(lowerPath.c_str());
 	if (!precache) {
 		ALERT(at_error, "SOUND_INDEX not precached: %s\n", sound);
@@ -728,54 +734,64 @@ void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed
 			g_lastMsg.name[0] = 0;
 	}
 
+	g_lastMsg.sz = 0;
+
 	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ed);
 }
 
 void WRITE_BYTE(int iValue) {
 	CALL_HOOKS_VOID(pfnWriteByte, iValue);
 	add_msg_part(MFUNC_BYTE, iValue);
+	g_lastMsg.sz += 1;
 	g_engfuncs.pfnWriteByte(iValue);
 }
 
 void WRITE_CHAR(int iValue) {
 	CALL_HOOKS_VOID(pfnWriteChar, iValue);
 	add_msg_part(MFUNC_CHAR, iValue);
+	g_lastMsg.sz += 1;
 	g_engfuncs.pfnWriteChar(iValue);
 }
 
 void WRITE_SHORT(int iValue) {
 	CALL_HOOKS_VOID(pfnWriteShort, iValue);
 	add_msg_part(MFUNC_SHORT, iValue);
+	g_lastMsg.sz += 2;
 	g_engfuncs.pfnWriteShort(iValue);
 }
 
 void WRITE_LONG(int iValue) {
 	CALL_HOOKS_VOID(pfnWriteLong, iValue);
 	add_msg_part(MFUNC_LONG, iValue);
+	g_lastMsg.sz += 4;
 	g_engfuncs.pfnWriteLong(iValue);
 }
 
 void WRITE_ANGLE(float fValue) {
 	CALL_HOOKS_VOID(pfnWriteAngle, fValue);
 	add_msg_part(MFUNC_ANGLE, fValue);
+	g_lastMsg.sz += 2;
 	g_engfuncs.pfnWriteAngle(fValue);
 }
 
 void WRITE_COORD(float fValue) {
 	CALL_HOOKS_VOID(pfnWriteCoord, fValue);
 	add_msg_part(MFUNC_COORD, fValue);
+	g_lastMsg.sz += 2;
 	g_engfuncs.pfnWriteCoord(fValue);
 }
 
 void WRITE_STRING(const char* sValue) {
 	CALL_HOOKS_VOID(pfnWriteString, sValue);
 	add_msg_part(sValue);
+	g_lastMsg.sz += strlen(sValue);
 	g_engfuncs.pfnWriteString(sValue);
 }
 
 void WRITE_ENTITY(int iValue) {
 	CALL_HOOKS_VOID(pfnWriteEntity, iValue);
 	add_msg_part(MFUNC_ENTITY, iValue);
+	g_lastMsg.sz += 2;
 	g_engfuncs.pfnWriteEntity(iValue);
 }
 

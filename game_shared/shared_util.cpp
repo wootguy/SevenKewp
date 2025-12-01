@@ -671,3 +671,106 @@ custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path) {
 void UnloadCustomMuzzleFlashes() {
 	g_customMuzzleFlashes.clear();
 }
+
+int UTIL_PointContents(const Vector& vec)
+{
+#ifdef CLIENT_DLL
+	int contents;
+	gEngfuncs.PM_PointContents((float*)&vec, &contents);
+	return contents;
+#else
+	return POINT_CONTENTS(vec);
+#endif
+}
+
+bool UTIL_PointInLiquid(const Vector& vec)
+{
+	int contents = UTIL_PointContents(vec);
+
+	switch (contents) {
+	case CONTENTS_WATER:
+	case CONTENTS_SLIME:
+	case CONTENTS_LAVA:
+		return true;
+	}
+
+	return false;
+}
+
+bool UTIL_PointInSplashable(const Vector& vec)
+{
+	int contents = UTIL_PointContents(vec);
+
+	switch (contents) {
+	case CONTENTS_WATER:
+	case CONTENTS_SLIME:
+		return true;
+	}
+
+	return false;
+}
+
+bool UTIL_WaterTrace(Vector from, Vector to, Vector& isect) {
+	bool fromInLiquid = UTIL_PointInSplashable(from);
+	bool toInLiquid = UTIL_PointInSplashable(to);
+
+	// always point into the water
+	if (fromInLiquid) {
+		Vector temp = from;
+		from = to;
+		to = temp;
+	}
+
+	Vector dir = (to - from).Normalize();
+	float len = (to - from).Length();
+
+	if (fromInLiquid == toInLiquid) {
+		// try the mid point, in case it's a badly compiled map with a gap at the bottom of the water
+		len *= 0.5f;
+		to = from + dir * len;
+		toInLiquid = UTIL_PointInSplashable(to);
+		if (fromInLiquid == toInLiquid) {
+			return false;
+		}
+	}
+
+	Vector test;
+	float step = len / 2.0f;
+	float t = step;
+
+	while (step > 1) {
+		test = from + dir * t;
+		step /= 2.0f;
+
+		if (UTIL_PointInSplashable(test)) {
+			t -= step;
+		}
+		else {
+			t += step;
+		}
+	}
+
+	isect = test;
+
+	return true;
+}
+
+float clampf(float val, float min, float max) {
+	if (val < min) {
+		return min;
+	}
+	if (val > max) {
+		return max;
+	}
+	return val;
+}
+
+int clampi(int val, int min, int max) {
+	if (val < min) {
+		return min;
+	}
+	if (val > max) {
+		return max;
+	}
+	return val;
+}

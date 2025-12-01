@@ -168,6 +168,8 @@ int CCrowbar::Swing( int fFirst )
 		}
 	}
 
+	m_pPlayer->WaterSplashTrace(vecSrc, 32, head_hull, 0.4f);
+
 	lagcomp_end();
 
 	SolidifyNearbyCorpses(true);

@@ -43,6 +43,7 @@
 #include <thread>
 #include "HashMap.h"
 #include "version.h"
+#include "water.h"
 
 class CBasePlayer;
 
@@ -420,8 +421,6 @@ EXPORT void			UTIL_TraceHull			(const Vector &vecStart, const Vector &vecEnd, IG
 EXPORT TraceResult	UTIL_GetGlobalTrace		(void);
 EXPORT void			UTIL_TraceModel			(const Vector &vecStart, const Vector &vecEnd, int hullNumber, edict_t *pentModel, TraceResult *ptr);
 EXPORT Vector		UTIL_GetAimVector		(edict_t* pent, float flSpeed);
-EXPORT int			UTIL_PointContents		(const Vector &vec);
-EXPORT bool			UTIL_PointInLiquid(const Vector& vec);
 EXPORT bool			UTIL_PointInBox(const Vector& vec, Vector mins, Vector maxs);
 
 EXPORT int			UTIL_IsMasterTriggered	(string_t sMaster, CBaseEntity *pActivator);
@@ -747,6 +746,15 @@ EXPORT void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 		for (int i = 0; i < count; i++ ) \
 			PRECACHE_SOUND((char *) (a) [i]); \
 	}
+#define PRECACHE_SOUND_ARRAY_WORLD( a ) \
+	{ \
+		int count = ARRAYSIZE( (a) ); \
+		if (soundvariety.value > 0) { \
+			count = V_min(soundvariety.value, count); \
+		} \
+		for (int i = 0; i < count; i++ ) \
+			PRECACHE_SOUND_ENT(NULL, (char *) (a) [i]); \
+	}
 #define RANDOM_SOUND_ARRAY_IDX( array ) RANDOM_LONG(0,(soundvariety.value > 0 ? V_min(ARRAYSIZE( (array) ), soundvariety.value) : ARRAYSIZE( (array) ))-1)
 #endif
 
@@ -827,10 +835,6 @@ inline void WRITE_COORD_VECTOR(const Vector& vec)
 }
 
 EXPORT bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins2, const Vector& maxs2);
-
-EXPORT float clampf(float val, float min, float max);
-
-EXPORT int clampi(int val, int min, int max);
 
 EXPORT bool fileExists(const char* path);
 
@@ -921,3 +925,9 @@ EXPORT uint32_t UTIL_ClientBitMask(int clientMod);
 
 // returns true if the map replaces the model (ignores standard mod replacements)
 EXPORT bool UTIL_MapReplacesModel(const char* fpath);
+
+// returns true if entity is visible from a given position
+EXPORT bool UTIL_TestPVS(Vector viewPos, edict_t* target);
+
+// returns true if entity is audible from a given position
+EXPORT bool UTIL_TestPAS(Vector viewPos, edict_t* target);

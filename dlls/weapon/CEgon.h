@@ -48,6 +48,7 @@ public:
 	EHANDLE m_hBeam;
 	EHANDLE m_hNoise;
 	EHANDLE m_hSprite;
+	float m_lastBubble;
 
 	virtual int MergedModelBody() { return MERGE_MDL_W_EGON; }
 

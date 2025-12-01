@@ -158,6 +158,13 @@ EXPORT extern DLL_GLOBAL	short	g_sModelIndexBloodDrop;// holds the sprite index 
 EXPORT extern DLL_GLOBAL	short	g_sModelIndexBloodSpray;// holds the sprite index for blood spray (bigger)
 EXPORT extern DLL_GLOBAL	short	g_sModelIndexShrapnelHit;// holds the sprite index for shrapnel impact sprite
 EXPORT extern DLL_GLOBAL	short	g_sModelIndexShrapnel;// holds the model index for shrapnel gibs
+EXPORT extern DLL_GLOBAL	short	g_waterSplashSpr; // holds the model index for rain splashes
+EXPORT extern DLL_GLOBAL	short	g_waterSplash2Spr; // holds the model index for rain splashes
+EXPORT extern DLL_GLOBAL	short	g_waterSplashWakeSpr; // holds the model index for rain splashes
+EXPORT extern DLL_GLOBAL	short	g_waterSplashWake2Spr; // holds the model index for rain splashes
+
+extern const char* g_waterSplashSounds[3];
+#define WATER_SPLASH2_SND_PATH "water/waterblow.wav"
 
 EXPORT void ClearMultiDamage(void);
 EXPORT void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker );

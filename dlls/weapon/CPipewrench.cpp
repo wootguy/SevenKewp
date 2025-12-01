@@ -198,6 +198,8 @@ bool CPipewrench::Swing(const bool bFirst)
 		}
 	}
 
+	m_pPlayer->WaterSplashTrace(vecSrc, 32, head_hull, 0.4f);
+
 	SolidifyNearbyCorpses(true);
 #endif
 
@@ -442,6 +444,8 @@ void CPipewrench::BigSwing()
 			vecEnd = tr.vecEndPos; // This is the point on the actual surface (the hull could have hit space)
 		}
 	}
+
+	m_pPlayer->WaterSplashTrace(vecSrc, 32, head_hull, 0.6f);
 
 	SolidifyNearbyCorpses(true);
 #endif

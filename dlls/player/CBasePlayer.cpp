@@ -1012,6 +1012,9 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	}
 
 	DeathSound();
+
+	m_waterFriction = 0.95f;
+	m_buoyancy = 0.2f;
 	
 	pev->angles.x = 0;
 	pev->angles.z = 0;
@@ -2091,10 +2094,16 @@ void CBasePlayer::PlayerUse ( void )
 		pev->framerate = 1.0f;
 	}
 
+	Vector viewPos = pev->origin + pev->view_ofs;
+	UTIL_MakeVectors(pev->v_angle);// so we know which way we are facing
+
 	// Hit Use on a train?
 	if ( m_afButtonPressed & IN_USE )
 	{
 		SetAnimation(PLAYER_USE);
+
+		// funny splashes
+		WaterSplashTrace(viewPos, 48, point_hull, 0.4f);
 
 		if ( m_pTank != NULL )
 		{
@@ -2162,13 +2171,11 @@ void CBasePlayer::PlayerUse ( void )
 	CBaseEntity* pInside = NULL;
 	CBaseEntity* pLooking = NULL;
 	Vector		vecLOS;
-	Vector viewPos = pev->origin + pev->view_ofs;
 	float flMaxDot = VIEW_FIELD_NARROW;
 	float flDot;
 	float bestDist = FLT_MAX;
 	bool foundGoodWeapon = false;
-
-	UTIL_MakeVectors(pev->v_angle);// so we know which way we are facing
+	
 
 	TraceResult tr;
 	TRACE_LINE(viewPos, viewPos + gpGlobals->v_forward * PLAYER_SEARCH_RADIUS*2, dont_ignore_monsters, edict(), &tr);
@@ -3754,6 +3761,8 @@ void CBasePlayer::Spawn( void )
 	m_lastDropTime = 0;
 	m_lastDamageEnt = NULL;
 	m_lastDamageType = 0;
+	m_waterFriction = 1.0f;
+	m_buoyancy = 0.0f;
 	ResetEffects();
 	m_droppedDeathWeapons = false;
 	if (m_flashlightEnabled && flashlight.value >= 2) {
@@ -7559,4 +7568,16 @@ void CBasePlayer::SyncWeaponBits() {
 
 bool CBasePlayer::HasSuit() {
 	return m_weaponBits & (1ULL << WEAPON_SUIT);
+}
+
+void CBasePlayer::WaterSplashTrace(Vector vecSrc, float dist, int hull, float scale) {
+	TraceResult waterTrace;
+	Vector waterTraceBottom = gpGlobals->v_forward * dist;
+
+	if (hull != point_hull) {
+		waterTraceBottom = waterTraceBottom + gpGlobals->v_forward * 8 - gpGlobals->v_up * 8;
+	}
+
+	UTIL_TraceLine(vecSrc, vecSrc + waterTraceBottom, ignore_monsters, NULL, &waterTrace);
+	UTIL_WaterSplashTrace(vecSrc, waterTrace.vecEndPos, scale, 3);
 }

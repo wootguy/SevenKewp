@@ -80,6 +80,10 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	int spr = iContents != CONTENTS_WATER ? g_sModelIndexFireball : g_sModelIndexWExplosion;
 	UTIL_Explosion(m_effectOrigin, spr, (pev->dmg - 50) * .60, 15, TE_EXPLFLAG_NONE);
 
+	if (iContents == CONTENTS_WATER) {
+		UTIL_WaterSplash(pev->origin, true, true);
+	}
+
 	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
 	entvars_t *pevOwner;
 	if ( pev->owner )
@@ -403,6 +407,8 @@ void CGrenade:: Spawn( void )
 	else {
 		pev->classname = MAKE_STRING("grenade");
 	}
+
+	AddWaterPhysicsEnt(this, 1.0f, 0);
 }
 
 

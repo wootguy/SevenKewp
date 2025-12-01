@@ -41,6 +41,7 @@
 #include "CBaseDMStart.h"
 #include "CAmbientGeneric.h"
 #include "md5.h"
+#include "te_effects.h"
 
 #include <fstream>
 #include <sys/types.h>
@@ -1673,25 +1674,6 @@ BOOL UTIL_ShouldShowBlood( int color )
 	return FALSE;
 }
 
-int UTIL_PointContents(	const Vector &vec )
-{
-	return POINT_CONTENTS(vec);
-}
-
-bool UTIL_PointInLiquid(const Vector& vec)
-{
-	int contents = POINT_CONTENTS(vec);
-
-	switch (contents) {
-	case CONTENTS_WATER:
-	case CONTENTS_SLIME:
-	case CONTENTS_LAVA:
-		return true;
-	}
-
-	return false;
-}
-
 bool UTIL_PointInBox(const Vector& vec, Vector mins, Vector maxs) {
 	return (vec.x >= mins.x && vec.x <= maxs.x) &&
 		(vec.y >= mins.y && vec.y <= maxs.y) &&
@@ -2470,26 +2452,6 @@ bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins
 		(maxs1.z >= mins2.z && mins1.z <= maxs2.z);
 }
 
-float clampf(float val, float min, float max) {
-	if (val < min) {
-		return min;
-	}
-	if (val > max) {
-		return max;
-	}
-	return val;
-}
-
-int clampi(int val, int min, int max) {
-	if (val < min) {
-		return min;
-	}
-	if (val > max) {
-		return max;
-	}
-	return val;
-}
-
 bool fileExists(const char* path) {
 	FILE* file = fopen(path, "r");
 	if (file) {
@@ -3183,4 +3145,14 @@ bool UTIL_MapReplacesModel(const char* fpath) {
 	// only precache the model if the model is replaced with something
 	// the mod doesn't already replace it with.
 	return strcmp(mapReplacement, modReplacement);
+}
+
+bool UTIL_TestPVS(Vector viewPos, edict_t* target) {
+	unsigned char* pvs = ENGINE_SET_PVS((float*)&viewPos);
+	return ENGINE_CHECK_VISIBILITY(target, pvs);
+}
+
+bool UTIL_TestPAS(Vector viewPos, edict_t* target) {
+	unsigned char* pas = ENGINE_SET_PAS((float*)&viewPos);
+	return ENGINE_CHECK_VISIBILITY(target, pas);
 }

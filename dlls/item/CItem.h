@@ -32,6 +32,7 @@ public:
 	void Materialize(void);
 	virtual void ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual BOOL MyTouch(CBasePlayer* pPlayer) { return FALSE; };
+	virtual BOOL IsItem() { return TRUE; }
 	virtual BOOL ShouldRespawn();
 	virtual CBaseEntity* Respawn(void);
 	const char* GetModel();

@@ -573,6 +573,84 @@ void CTeBeamRing::ExpandThink() {
 	pev->nextthink = gpGlobals->time + 0.02f;
 }
 
+
+class CSplashWake : public CSprite
+{
+public:
+	int life;
+	float m_splashTime;
+
+	void Spawn(void) {
+		Precache();
+
+		pev->solid = SOLID_NOT;
+		pev->movetype = MOVETYPE_FLY; // no interp so that it appears faster
+		pev->rendermode = kRenderTransAlpha;
+
+		if (!pev->scale)
+			pev->scale = 1.0f;
+
+		pev->angles = Vector(90, 0, RANDOM_LONG(0, 359));
+		pev->avelocity.z = RANDOM_LONG(-5, 5) * 2;
+
+		SET_MODEL(edict(), INDEX_MODEL(g_waterSplashWakeSpr));
+
+		m_lastTime = gpGlobals->time;
+		m_maxFrame = (float)MODEL_FRAMES(pev->modelindex) - 1;
+
+		SetThink(&CSplashWake::Think);
+
+		pev->renderamt = 0;
+
+		m_splashTime = gpGlobals->time;
+
+		if (pev->iuser1) {
+			m_splashTime += 0.1f + pev->iuser1 * 0.001f;
+		}
+
+		pev->nextthink = gpGlobals->time + 0.02f;
+	}
+
+	void Precache(void) {
+	}
+
+	void Think() {
+		if (m_splashTime) {
+			if (gpGlobals->time > m_splashTime) {
+				m_splashTime = 0;
+
+				float sz = (pev->scale) * 10;
+				float ratio = pev->scale;
+				Vector offset = Vector(0, 0, (64 * ratio) - 16);
+				int fps = 20 - ratio * 2;
+				int pitch = 70 - ratio * 5;
+
+				UTIL_Explosion(pev->origin + offset, g_waterSplashSpr, pev->scale * 10, fps, 1 | 2 | 4 | 8);
+
+				EMIT_SOUND_DYN(edict(), CHAN_BODY, WATER_SPLASH2_SND_PATH, 1.0f, ATTN_NORM, 0, RANDOM_LONG(95, 105));
+				EMIT_SOUND_DYN(edict(), CHAN_ITEM, RANDOM_SOUND_ARRAY(g_waterSplashSounds), 1.0f, ATTN_NORM, 0, pitch);
+
+				pev->renderamt = 200;
+			}
+			else {
+				pev->renderamt += 10;
+			}
+		}
+
+		pev->scale += 0.01f;
+
+		if (life++ >= 40)
+			pev->renderamt -= 4;
+
+		if (pev->renderamt <= 0) {
+			UTIL_Remove(this);
+		}
+
+		m_lastTime = gpGlobals->time;
+		pev->nextthink = gpGlobals->time + 0.02f;
+	}
+};
+
 LINK_ENTITY_TO_CLASS(te_effect, CTempEffect)
 LINK_ENTITY_TO_CLASS(te_user_tracer, CTeUserTracer)
 LINK_ENTITY_TO_CLASS(te_bloodsprite, CTeBloodSprite)
@@ -584,3 +662,5 @@ LINK_ENTITY_TO_CLASS(te_sparks, CTeSparks)
 LINK_ENTITY_TO_CLASS(te_ricochet, CTeRicochet)
 LINK_ENTITY_TO_CLASS(te_beamring, CTeBeamRing)
 LINK_ENTITY_TO_CLASS(te_target, CTeTarget)
+
+LINK_ENTITY_TO_CLASS(splashwake, CSplashWake)

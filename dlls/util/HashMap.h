@@ -6,7 +6,9 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
-#include "shared_util.h"
+#include "Platform.h"
+
+EXPORT char* strcat_safe(char* dest, const char* src, size_t size);
 
 typedef uint32_t hmap_string_t; // offset into a hashmap's string pool
 

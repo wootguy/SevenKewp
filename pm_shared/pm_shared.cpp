@@ -29,13 +29,11 @@
 #include <string.h> // strcpy
 #include <stdlib.h> // atoi
 #include <ctype.h>  // isspace
-#include "shared_util.h"
 
 #include <string>
 #include <cstdint>
-#include "HashMap.h"
 
-extern StringMap g_soundReplacements;
+const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound);
 
 #ifdef CLIENT_DLL
 	// Spectator Mode
@@ -88,7 +86,11 @@ typedef struct hull_s
 void StartSound(int eidx, int channel, const char* sample, float volume, float attenuation,
 	int fFlags, int pitch, const float* origin, uint32_t messageTargets);
 
+void UTIL_WaterSplashFootstep(int player_index);
+
 inline uint32_t PLRBIT(int eidx) { return 1 << (eidx & 31); }
+
+char* strcpy_safe(char* dest, const char* src, size_t size);
 
 #ifdef CLIENT_DLL
 #define PLAY_MOVEMENT_SOUND(channel, sample, volume, attenuation, fFlags, pitch) \
@@ -471,6 +473,7 @@ void PM_PlayStepSound( int step, float fvol )
 		break;
 	case STEP_SLOSH:
 		stepSound = g_stepSoundsSlosh[irand];
+		UTIL_WaterSplashFootstep(pmove->player_index);
 		break;
 	case STEP_WADE:
 		// all wade sounds are always precached because the engine uses them too
@@ -498,7 +501,7 @@ void PM_PlayStepSound( int step, float fvol )
 		break;
 	}
 
-	const char* replacement = g_soundReplacements.get(stepSound);
+	const char* replacement = UTIL_GetReplacementSound(NULL, stepSound);
 	if (replacement) {
 		stepSound = replacement;
 	}
@@ -2625,7 +2628,7 @@ void PM_Jump (void)
 				break;
 			}
 
-			const char* replacement = g_soundReplacements.get(wadeSound);
+			const char* replacement = UTIL_GetReplacementSound(NULL, wadeSound);
 			if (replacement) {
 				wadeSound = replacement;
 			}
@@ -2804,7 +2807,7 @@ void PM_CheckFalling( void )
 			//case 1:
 
 			const char* fallSound = "player/pl_fallpain3.wav";
-			const char* replacement = g_soundReplacements.get(fallSound);
+			const char* replacement = UTIL_GetReplacementSound(NULL, fallSound);
 			if (replacement) {
 				fallSound = replacement;
 			}
@@ -2888,7 +2891,7 @@ void PM_PlayWaterSounds( void )
 			break;
 		}
 
-		const char* replacement = g_soundReplacements.get(wadeSound);
+		const char* replacement = UTIL_GetReplacementSound(NULL, wadeSound);
 		if (replacement) {
 			wadeSound = replacement;
 		}

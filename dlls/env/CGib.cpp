@@ -458,6 +458,8 @@ void CGib::Spawn(const char* szGibModel)
 
 	m_material = matNone;
 	m_cBloodDecals = 5;// how many blood decals this gib can place (1 per bounce until none remain). 
+
+	AddWaterPhysicsEnt(this, 0.95f, 0.2f);
 }
 
 void CGib::StartFadeOut()

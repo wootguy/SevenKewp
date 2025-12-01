@@ -891,6 +891,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 
 	ClearMultiDamage();
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
+	float splashSize = 0.2f;
 
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)
 	{
@@ -959,11 +960,13 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 				case BULLET_PLAYER_556:
 					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 					pEntity->TraceAttack(pevAttacker, gSkillData.sk_556_bullet, vecDir, &tr, DMG_BULLET);
+					splashSize = 0.3f;
 					break;
 
 				case BULLET_MONSTER_762:
 					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 					pEntity->TraceAttack(pevAttacker, gSkillData.sk_762_bullet, vecDir, &tr, DMG_BULLET);
+					splashSize = 0.4f;
 					break;
 
 				case BULLET_MONSTER_12MM:
@@ -972,6 +975,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 						DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd);
 					}
 					pEntity->TraceAttack(pevAttacker, gSkillData.sk_12mm_bullet, vecDir, &tr, DMG_BULLET);
+					splashSize = 0.3f;
 					break;
 
 				case BULLET_NONE: // FIX 
@@ -982,6 +986,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 					{
 						UTIL_DecalTrace(&tr, DECAL_GLASSBREAK1 + RANDOM_LONG(0, 2));
 					}
+					splashSize = 0.3f;
 
 					break;
 				}
@@ -989,6 +994,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 		}
 		// make bullet trails
 		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (flDistance * tr.flFraction) / 64.0);
+		UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, splashSize, iShot % 2 ? 2 : 0);
 	}
 	ApplyMultiDamage(pev, pevAttacker);
 }
@@ -1025,6 +1031,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
 
 	iDamage = GetDamage(iDamage);
+	float splashSize = 0.3f;
 
 	for (ULONG iShot = 1; iShot <= cShots; iShot++)
 	{
@@ -1124,6 +1131,13 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			if (iDamage)
 			{
 				pEntity->TraceAttack(pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? 0 : DMG_NEVERGIB));
+				
+				if (iDamage > 50) {
+					splashSize = 0.5f;
+				}
+				else if (iDamage > 8) {
+					splashSize = 0.4f;
+				}
 			}
 			else switch (iBulletType)
 			{
@@ -1139,10 +1153,12 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			case BULLET_PLAYER_BUCKSHOT:
 				// make distance based!
 				pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_buckshot), vecDir, &tr, DMG_BULLET);
+				splashSize = 0.4f;
 				break;
 
 			case BULLET_PLAYER_357:
 				pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_357_bullet), vecDir, &tr, DMG_BULLET);
+				splashSize = 0.4f;
 				break;
 
 			case BULLET_NONE: // FIX 
@@ -1153,12 +1169,14 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 				{
 					UTIL_DecalTrace(&tr, DECAL_GLASSBREAK1 + RANDOM_LONG(0, 2));
 				}
+				splashSize = 0.4f;
 
 				break;
 			}
 		}
 		// make bullet trails
 		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (flDistance * tr.flFraction) / 64.0);
+		UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, splashSize, iShot % 2 ? 2 : 0);
 	}
 	ApplyMultiDamage(pev, pevAttacker);
 

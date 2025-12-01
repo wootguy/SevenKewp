@@ -44,12 +44,12 @@ globalvars_t  *gpGlobals;
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 
-StringMap g_soundReplacements;
-
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch) { }
 void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char* msg) {}
 void AddPrecacheWeapon(std::string wepName) {}
 bool UTIL_MapReplacesModel(const char* path) { return false; }
+void AddWaterPhysicsEnt(CBaseEntity* ent, float waterFriction, float buoyancy) {}
+const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound) { return NULL; }
 
 // CBaseEntity Stubs
 int CBaseEntity :: TakeHealth( float flHealth, int bitsDamageType, float healthcap) { return 1; }

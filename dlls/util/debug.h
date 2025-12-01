@@ -41,6 +41,7 @@ struct msg_info {
 	float pOrigin[3];
 	int entIdx;
 	char name[32];
+	int sz; // always valid, even ithout mp_debugmsg
 
 	int numMsgParts;
 	msg_part parts[512];
@@ -51,7 +52,7 @@ struct msg_hist_item {
 	std::string msg;
 };
 
-extern msg_info g_lastMsg;
+extern msg_info g_lastMsg; // updated when mp_debugmsg is enabled
 extern int g_nextStrOffset;
 extern std::string g_debugLogName;
 extern std::string g_errorLogName;

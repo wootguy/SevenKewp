@@ -32,6 +32,7 @@ public:
 	virtual BOOL CanDeploy( void ) { return TRUE; };
 	virtual BOOL Deploy( )								// returns is deploy was successful
 		 { return TRUE; };
+	virtual BOOL	IsItem() { return TRUE; }
 
 	virtual BOOL CanHolster( void ) { return TRUE; };// can this weapon be put away right now?
 	virtual void Holster( int skiplocal = 0 );
