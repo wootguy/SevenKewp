@@ -6649,8 +6649,6 @@ void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarNam
 
 void CBasePlayer::QueryClientTypeFinished() {
 	if (IsSevenKewpClient()) {
-		CWeaponCustom::SendSoundMapping(this);
-
 		// activate fog
 		if (g_fog_enabled) {
 			CBaseEntity* ent = NULL;

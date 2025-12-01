@@ -151,16 +151,6 @@ public:
 	int AddDuplicate(CBasePlayerItem* pOriginal) override;
 	inline bool IsExclusiveHold() { return params.flags & FL_WC_WEP_EXCLUSIVE_HOLD; }
 
-	static int SendSoundMappingChunk(CBasePlayer* target, std::vector<SoundMapping>& chunk);
-	static void SendSoundMapping(CBasePlayer* target);
-
-	// same event used for all custom weapons
-	static char m_soundPaths[MAX_PRECACHE][256];
 	static int m_tracerCount[32];
 	static uint32_t m_predDataSent[MAX_WEAPONS]; // bitfields indicating which players received prediction data
-
-	// marks sound indexes that are used by custom weapons. Thes need to be sent to clients
-	// so that they know which sound path to use, given an index. The client has no API
-	// for playing a sound by index with a specific pitch.
-	static bool m_customWeaponSounds[MAX_PRECACHE_SOUND];
 };

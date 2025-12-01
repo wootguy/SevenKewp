@@ -289,7 +289,6 @@ DECLARE_MESSAGE(m_Ammo, CustomWep);		// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, CustomWepEv);	// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, PmodelAnim);	// player model anim
 DECLARE_MESSAGE(m_Ammo, WeaponBits);	// currently held weapons
-DECLARE_MESSAGE(m_Ammo, SoundIdx);		// sound index to file path mapping
 DECLARE_MESSAGE(m_Ammo, AmmoX);			// update known ammo type's count
 DECLARE_MESSAGE(m_Ammo, AmmoXX);		// update known ammo type's count (higher max count)
 DECLARE_MESSAGE(m_Ammo, AmmoPickup);	// flashes an ammo pickup record
@@ -336,7 +335,6 @@ int CHudAmmo::Init(void)
 	HOOK_MESSAGE(CustomWepEv);
 	HOOK_MESSAGE(PmodelAnim);
 	HOOK_MESSAGE(WeaponBits);
-	HOOK_MESSAGE(SoundIdx);
 	HOOK_MESSAGE(AmmoPickup);
 	HOOK_MESSAGE(WeapPickup);
 	HOOK_MESSAGE(ItemPickup);
@@ -1122,22 +1120,6 @@ int CHudAmmo::MsgFunc_WeaponBits(const char* pszName, int iSize, void* pbuf)
 
 	ModPlayerState& state = GetLocalPlayerState();
 	state.weaponBits = (high << 32) | low;
-
-	return 1;
-}
-
-void AddWeaponCustomSoundMapping(int idx, const char* path);
-
-int CHudAmmo::MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf) {
-	BEGIN_READ(pbuf, iSize);
-
-	int soundCount = READ_BYTE();
-
-	for (int i = 0; i < soundCount; i++) {
-		int idx = READ_SHORT();
-		const char* soundPath = READ_STRING();
-		AddWeaponCustomSoundMapping(idx, soundPath);
-	}
 
 	return 1;
 }

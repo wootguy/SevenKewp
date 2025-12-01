@@ -35,6 +35,7 @@
 #include "r_studioint.h"
 #include "com_model.h"
 #include "custom_weapon.h"
+#include "engine_pv.h"
 
 extern engine_studio_api_t IEngineStudio;
 
@@ -1846,11 +1847,10 @@ int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 )
 
 CustomWeaponParams* GetCustomWeaponParams(int id);
 extern int g_irunninggausspred;
-const char* GetWeaponCustomSound(int idx);
 int GetCustomWeaponBody(int id);
 
 void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning) {
-	const char* soundPath = GetWeaponCustomSound(sndIdx);
+	const char* soundPath = GetSoundByIndex(sndIdx);
 	cl_entity_t* player = GetLocalPlayer();
 	int entidx = player->index;
 	Vector origin = player->origin;

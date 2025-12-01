@@ -173,23 +173,9 @@ int GetCustomWeaponBody(int id) {
 	return 0;
 }
 
-void AddWeaponCustomSoundMapping(int idx, const char* path) {
-	if (idx >= 0 && idx < MAX_PRECACHE_SOUND) {
-		strcpy_safe(CWeaponCustom::m_soundPaths[idx], path, 256);
-	}
-}
-
 bool IsExclusiveWeapon(int id) {
 	CustomWeaponParams* params = GetCustomWeaponParams(id);
 	return params && (params->flags & FL_WC_WEP_EXCLUSIVE_HOLD);
-}
-
-const char* GetWeaponCustomSound(int idx) {
-	if (idx >= 0 && idx < MAX_PRECACHE_SOUND) {
-		return CWeaponCustom::m_soundPaths[idx];
-	}
-
-	return "";
 }
 
 void InitCustomWeapon(int id) {

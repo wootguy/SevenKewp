@@ -21,9 +21,7 @@ int g_runfuncs = 1;
 #include "game.h"
 #endif
 
-char CWeaponCustom::m_soundPaths[MAX_PRECACHE][256];
 int CWeaponCustom::m_tracerCount[32];
-bool CWeaponCustom::m_customWeaponSounds[MAX_PRECACHE_SOUND];
 uint32_t CWeaponCustom::m_predDataSent[MAX_WEAPONS];
 
 void CWeaponCustom::Spawn() {
@@ -42,22 +40,6 @@ void CWeaponCustom::Precache() {
 
 void CWeaponCustom::PrecacheEvents() {
 #ifndef CLIENT_DLL
-	for (int i = 0; i < params.numEvents; i++) {
-		WepEvt& evt = params.events[i];
-		if (evt.evtType == WC_EVT_PLAY_SOUND) {
-			if (evt.playSound.sound)
-				m_customWeaponSounds[evt.playSound.sound] = true;
-			for (int k = 0; k < evt.playSound.numAdditionalSounds; k++) {
-				if (evt.playSound.additionalSounds[k] && k < MAX_WC_RANDOM_SELECTION)
-					m_customWeaponSounds[evt.playSound.additionalSounds[k]] = true;
-			}
-		}
-		if (evt.evtType == WC_EVT_IDLE_SOUND) {
-			if (evt.idleSound.sound)
-				m_customWeaponSounds[evt.idleSound.sound] = true;
-		}
-	}
-
 	if (pmodelAkimbo)
 		PRECACHE_MODEL(pmodelAkimbo);
 	if (wmodelAkimbo) {
@@ -1166,58 +1148,6 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 		evBytes + mainBytes, STRING(pev->classname), mainBytes, evBytes);
 
 	m_predDataSent[m_iId] |= PLRBIT(target);
-#endif
-}
-
-int CWeaponCustom::SendSoundMappingChunk(CBasePlayer* target, std::vector<SoundMapping>& chunk) {
-	int sentBytes = 0;
-#ifndef CLIENT_DLL
-	MESSAGE_BEGIN(MSG_ONE, gmsgSoundIdx, NULL, target->pev);
-	WRITE_BYTE(chunk.size()); sentBytes += 1;
-	for (int k = 0; k < (int)chunk.size(); k++) {
-		WRITE_SHORT(chunk[k].idx); sentBytes += 2;
-		WRITE_STRING(chunk[k].path); sentBytes += strlen(chunk[k].path) + 1;
-	}
-	MESSAGE_END();
-#endif
-	return sentBytes;
-}
-
-void CWeaponCustom::SendSoundMapping(CBasePlayer* target) {
-	// send over the sound index mapping
-#ifndef CLIENT_DLL
-	std::vector<SoundMapping> chunk;
-	int soundListBytes = 0;
-	int chunkSz = 1;
-	int chunkCount = 0;
-	for (int i = 0; i < MAX_PRECACHE_SOUND; i++) {
-		if (!m_customWeaponSounds[i]) {
-			continue;
-		}
-		const char* path = INDEX_SOUND(i);
-		int addSz = strlen(path) + 2;
-
-		if (chunkSz + addSz > 186) {
-			// filled up a message buffer. Send it before continuing.
-			soundListBytes += SendSoundMappingChunk(target, chunk);
-			chunkSz = 1;
-			chunkCount++;
-			chunk.clear();
-		}
-		chunkSz += addSz;
-
-		SoundMapping mapping;
-		mapping.idx = i;
-		mapping.path = path;
-		chunk.push_back(mapping);
-	}
-
-	if (chunk.size()) {
-		soundListBytes += SendSoundMappingChunk(target, chunk);
-		chunkCount++;
-	}
-
-	ALERT(at_console, "Sent %d sound list bytes in %d chunks\n", soundListBytes, chunkCount);
 #endif
 }
 
