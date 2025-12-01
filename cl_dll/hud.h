@@ -50,10 +50,7 @@ typedef struct {
 } POSITION;
 
 #include "global_consts.h"
-
-typedef struct {
-	unsigned char r,g,b,a;
-} RGBA;
+#include "rgb.h"
 
 typedef struct cvar_s cvar_t;
 

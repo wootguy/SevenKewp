@@ -1052,7 +1052,7 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 		case WC_EVT_BULLETS: {
 			evt.bullets.count = READ_BYTE();
 			evt.bullets.burstDelay = READ_SHORT();
-			//evt.bullets.damage = READ_SHORT();
+			evt.bullets.damage = READ_SHORT();
 			evt.bullets.spreadX = READ_SHORT();
 			evt.bullets.spreadY = READ_SHORT();
 			evt.bullets.tracerFreq = READ_BYTE();

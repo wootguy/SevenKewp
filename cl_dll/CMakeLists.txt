@@ -128,6 +128,7 @@ set(UTIL_HDR
 	../pm_shared/pm_shared.h
 	../game_shared/shared_util.h
 	../game_shared/shared_effects.h
+	../game_shared/rgb.h
 	../game_shared/md5.h
 	../game_shared/mstream.h
 )

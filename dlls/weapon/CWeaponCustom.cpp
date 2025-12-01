@@ -1102,7 +1102,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 			case WC_EVT_BULLETS: {
 				WRITE_BYTE(evt.bullets.count); sentBytes += 1;
 				WRITE_SHORT(evt.bullets.burstDelay); sentBytes += 2;
-				//WRITE_SHORT(evt.bullets.damage); sentBytes += 2; // not needed for prediction
+				WRITE_SHORT(evt.bullets.damage); sentBytes += 2;
 				WRITE_SHORT(evt.bullets.spreadX); sentBytes += 2;
 				WRITE_SHORT(evt.bullets.spreadY); sentBytes += 2;
 				WRITE_BYTE(evt.bullets.tracerFreq); sentBytes += 1;

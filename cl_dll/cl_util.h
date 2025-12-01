@@ -53,6 +53,8 @@ extern bool g_crosshair_active; // true after calling SetCrosshair with a valid 
 
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 
+#define RANDOM_LONG(low, high) gEngfuncs.pfnRandomLong(low, high)
+
 inline float CVAR_GET_FLOAT( const char *x ) {	return gEngfuncs.pfnGetCvarFloat( (char*)x ); }
 inline struct cvar_s* CVAR_GET_PTR( const char *x ) { return gEngfuncs.pfnGetCvarPointer( (char*)x ); }
 inline void CVAR_SET_FLOAT( const char *x, float val ) { gEngfuncs.Cvar_SetValue( (char*)x, val ); }
@@ -100,6 +102,10 @@ inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int fl
 #define EngineClientCmd (*gEngfuncs.pfnClientCmd)
 #define EngineFilteredClientCmd (*gEngfuncs.pfnFilteredClientCmd)
 #define AngleVectors (*gEngfuncs.pfnAngleVectors)
+
+#define ARRAYSIZE(p) (sizeof(p)/sizeof(p[0]))
+#define RANDOM_SOUND_ARRAY_IDX( array ) RANDOM_LONG(0,(g_soundvariety > 0 ? V_min(ARRAYSIZE( (array) ), g_soundvariety) : ARRAYSIZE( (array) ))-1)
+#define RANDOM_SOUND_ARRAY( array ) (array) [ RANDOM_SOUND_ARRAY_IDX(array) ]
 
 inline void SetCrosshair(HSPRITE hspr, wrect_t rc, int r, int g, int b) {
 	gEngfuncs.pfnSetCrosshair(hspr, rc, r, g, b);

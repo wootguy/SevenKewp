@@ -994,7 +994,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 		}
 		// make bullet trails
 		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (flDistance * tr.flFraction) / 64.0);
-		UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, splashSize, iShot % 2 ? 2 : 0);
+		UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, splashSize, iShot % 2 ? 2 : 0, NULL);
 	}
 	ApplyMultiDamage(pev, pevAttacker);
 }
@@ -1176,7 +1176,9 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		}
 		// make bullet trails
 		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (flDistance * tr.flFraction) / 64.0);
-		UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, splashSize, iShot % 2 ? 2 : 0);
+		
+		edict_t* skipEnt = prediction == BULLETPRED_NONE ? NULL : ENT(pevAttacker);
+		UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, splashSize, iShot % 2 ? 2 : 0, skipEnt);
 	}
 	ApplyMultiDamage(pev, pevAttacker);
 

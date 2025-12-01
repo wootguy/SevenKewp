@@ -42,6 +42,7 @@
 #include "tri.h"
 #include "vgui_TeamFortressViewport.h"
 #include "../public/interface_hlsdk.h"
+#include "effects.h"
 
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
@@ -324,6 +325,8 @@ void CL_DLLEXPORT HUD_Frame( double time )
 			gHUD.m_is_map_loaded = false;
 		}
 	}
+
+	PredictBodySplash();
 }
 
 

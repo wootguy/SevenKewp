@@ -75,7 +75,7 @@ void CCrossbowBolt::Spawn( )
 	pev->nextthink = gpGlobals->time + 0.1;
 
 	ParametricInterpolation(0.1f);
-	AddWaterPhysicsEnt(this, 1, 0);
+	AddWaterPhysicsEnt(this, 1, 0, 0.3f);
 }
 
 
@@ -381,12 +381,11 @@ void CCrossbow::FireSniperBolt()
 
 	lagcomp_begin(m_pPlayer);
 	UTIL_TraceLine(vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr);
-#ifndef CLIENT_DLL
-	UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, 0.2f, 1);
-#endif
 	lagcomp_end();
 
 #ifndef CLIENT_DLL
+	UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, 0.3f, 1, m_pPlayer->edict());
+
 	if ( tr.pHit->v.takedamage )
 	{
 		if (tr.pHit->v.flags & (FL_MONSTER | FL_CLIENT))

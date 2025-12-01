@@ -197,6 +197,7 @@ public:
 
 	float m_waterFriction;
 	float m_buoyancy;
+	float m_splashSize;
 
 	// fundamental callbacks
 	void (CBaseEntity ::* m_pfnThink)(void);

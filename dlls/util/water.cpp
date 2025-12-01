@@ -1,7 +1,7 @@
 #include "extdll.h"
 #include "util.h"
 #include "water.h"
-#include "CBaseEntity.h"
+#include "CBasePlayer.h"
 #include "te_effects.h"
 
 struct WaterEntState {
@@ -16,10 +16,11 @@ void UnloadWaterPhysicsEnts() {
 	g_waterPhysicsEnts.clear();
 }
 
-void AddWaterPhysicsEnt(CBaseEntity* ent, float waterFriction, float buoyancy) {
+void AddWaterPhysicsEnt(CBaseEntity* ent, float waterFriction, float buoyancy, float splashSize) {
 	if (ent) {
 		ent->m_waterFriction = waterFriction;
 		ent->m_buoyancy = buoyancy;
+		ent->m_splashSize = splashSize;
 
 		for (int i = 0; i < g_waterPhysicsEnts.size(); i++) {
 			if (g_waterPhysicsEnts[i].h_ent.GetEntity() == ent) {
@@ -41,17 +42,6 @@ uint32_t pcg_hash(uint32_t x) {
 	x *= 0x846ca68b;
 	x ^= x >> 16;
 	return x;
-}
-
-bool isLiquidContents(int contents) {
-	switch (contents) {
-	case CONTENTS_WATER:
-	case CONTENTS_SLIME:
-	case CONTENTS_LAVA:
-		return true;
-	}
-
-	return false;
 }
 
 void DoEntWaterPhysics() {
@@ -83,7 +73,7 @@ void DoEntWaterPhysics() {
 			origin.z += thickness * 0.25f; // sink a bit into the water
 
 		int contents = UTIL_PointContents(origin);
-		bool inLiquid = isLiquidContents(contents);
+		bool inLiquid = UTIL_IsLiquidContents(contents);
 
 		CBaseMonster* mon = ent->MyMonsterPointer();
 
@@ -127,7 +117,7 @@ void DoEntWaterPhysics() {
 				ent->pev->gravity = 0;
 		}
 
-		bool wasInLiquid = isLiquidContents(state.oldContents);
+		bool wasInLiquid = UTIL_IsLiquidContents(state.oldContents);
 		bool solidTransition = state.oldContents == CONTENTS_SOLID || contents == CONTENTS_SOLID;
 		bool playerJumpingOut = ent->IsPlayer() && !inLiquid;
 
@@ -140,9 +130,19 @@ void DoEntWaterPhysics() {
 					scale = 0.3f;
 				}
 
+				if (ent->m_splashSize) {
+					scale = ent->m_splashSize;
+				}
+
 				Vector splashPos = inLiquid ? origin : state.oldPos;
 
-				UTIL_WaterSplash(splashPos, false, true, scale);
+				edict_t* skipEnt = NULL;
+				CBasePlayer* plr = ent->MyPlayerPointer();
+				if (plr && plr->IsSevenKewpClient()) {
+					skipEnt = plr->edict(); // client will predict this splash
+				}
+
+				UTIL_WaterSplash(splashPos, false, true, scale, skipEnt);
 			}
 		}
 

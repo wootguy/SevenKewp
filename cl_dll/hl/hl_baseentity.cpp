@@ -48,7 +48,7 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char* msg) {}
 void AddPrecacheWeapon(std::string wepName) {}
 bool UTIL_MapReplacesModel(const char* path) { return false; }
-void AddWaterPhysicsEnt(CBaseEntity* ent, float waterFriction, float buoyancy) {}
+void AddWaterPhysicsEnt(CBaseEntity* ent, float waterFriction, float buoyancy, float splashSz) {}
 const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound) { return NULL; }
 
 // CBaseEntity Stubs

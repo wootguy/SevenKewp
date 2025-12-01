@@ -8,7 +8,9 @@
 #include <vector>
 #include <stdint.h>
 #include "vector.h"
+#include "rgb.h"
 #include "../game_shared/shared_effects.h"
+#include "const.h"
 
 // In case this ever changes
 #define M_PI			3.14159265358979323846
@@ -110,6 +112,8 @@ EXPORT bool UTIL_PointInLiquid(const Vector& vec);
 
 EXPORT bool UTIL_PointInSplashable(const Vector& vec);
 
+EXPORT bool UTIL_IsLiquidContents(int contents);
+
 // find the water intersection point, if one exists
 EXPORT bool UTIL_WaterTrace(Vector from, Vector to, Vector& isect);
 
@@ -118,3 +122,14 @@ EXPORT float clampf(float val, float min, float max);
 EXPORT int clampi(int val, int min, int max);
 
 EXPORT char* UTIL_VarArgs(const char* format, ...);
+
+EXPORT void UTIL_WaterSplashParams(float scale, int playSound, float& ratio, float& sz, float& fps, float& vol, int& pitch, const char*& sample);
+
+EXPORT void te_debug_box(Vector mins, Vector maxs, uint8_t life=50, RGBA c = RGBA(255, 0, 0, 255), int msgType = MSG_BROADCAST, edict_t* dest = NULL);
+
+EXPORT void te_debug_beam(Vector start, Vector end, uint8_t life=50, RGBA c=RGBA(255,0,0,255), int msgType = MSG_BROADCAST, edict_t* dest = NULL);
+
+// create a splash if trace intersects water
+// playSound: 1 = slow moving object, 2 = bullet, 3 = obnoxious player
+// skipEnt: don't send message to this player (for predicted splashes - server only)
+EXPORT void	UTIL_WaterSplashTrace(Vector from, Vector to, float scale, int playSound, edict_t* skipEnt);

@@ -2,13 +2,12 @@
 #include "extdll.h"
 #include "util.h"
 #include "shared_effects.h"
+#include "rgb.h"
+#include "CBaseEntity.h"
 
 EXPORT extern DLL_GLOBAL short g_sModelIndexSmoke;
 
 EXPORT RGB GetTeColor(uint8_t color);
-
-EXPORT void te_debug_box(Vector mins, Vector maxs, uint8_t life, RGBA c, int msgType = MSG_BROADCAST, edict_t* dest = NULL);
-EXPORT void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType = MSG_BROADCAST, edict_t* dest = NULL);
 
 EXPORT void UTIL_PlayRicochetSound(edict_t* ent);
 
@@ -18,8 +17,7 @@ EXPORT void	UTIL_BloodStream(const Vector& origin, const Vector& direction, int 
 EXPORT void	UTIL_BloodDrips(const Vector& origin, const Vector& direction, int color, int amount);
 EXPORT void	UTIL_Bubbles(Vector mins, Vector maxs, int count);
 EXPORT void	UTIL_BubbleTrail(Vector from, Vector to, int count);
-EXPORT void	UTIL_WaterSplashTrace(Vector from, Vector to, float scale, int playSound); // create a splash if trace intersects water
-EXPORT void	UTIL_WaterSplash(Vector pos, bool bigSplash, bool playSound, float scale=1.0f); // create a water splash if close enough to the surface
+EXPORT void	UTIL_WaterSplash(Vector pos, bool bigSplash, bool playSound, float scale=1.0f, edict_t* skipEnt=NULL); // create a water splash if close enough to the surface
 EXPORT void	UTIL_WaterSplashFootstep(int player_index); // create a water splash effect for footsteps
 EXPORT void UTIL_BeamFollow(int entindex, int modelIdx, int life, int width, RGBA color, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);
 EXPORT void UTIL_Fizz(int eidx, int modelIdx, uint8_t density, int msgMode = MSG_BROADCAST, const float* msgOrigin = NULL, edict_t* targetEnt = NULL);

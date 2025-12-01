@@ -107,6 +107,8 @@ void CDisplacerBall::Spawn()
 	ParametricInterpolation(0.2f);
 
 	InitBeams();
+
+	AddWaterPhysicsEnt(this, 1, 0, 0.8f);
 }
 
 void CDisplacerBall::BallTouch(CBaseEntity* pOther)

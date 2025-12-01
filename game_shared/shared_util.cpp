@@ -15,10 +15,13 @@
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud.h"
 #include "../cl_dll/cl_util.h"
+#include "../common/event_api.h"
+#include "../cl_dll/effects.h"
 #define PRINTERR(fmt, ...) PRINTF(fmt, ##__VA_ARGS__) 
 #else
 #include "extdll.h"
 #include "util.h"
+#include "te_effects.h"
 #define PRINTERR(fmt, ...) ALERT(at_error, fmt, ##__VA_ARGS__) 
 #endif
 
@@ -51,6 +54,14 @@ const std::vector<std::string> g_emptyCurlHeaders;
 const std::string g_emptyCurlPostData;
 
 HashMap<custom_muzzle_flash_t> g_customMuzzleFlashes;
+
+extern const char* g_stepSoundsSlosh[4];
+
+const char* g_waterSplashSounds[3] = { // ordered for mp_soundvariety
+	"water/splash.wav",
+	"water/splash2.wav",
+	"water/splash3.wav"
+};
 
 char* strcpy_safe(char* dest, const char* src, size_t size) {
 	if (size > 0) {
@@ -675,9 +686,8 @@ void UnloadCustomMuzzleFlashes() {
 int UTIL_PointContents(const Vector& vec)
 {
 #ifdef CLIENT_DLL
-	int contents;
-	gEngfuncs.PM_PointContents((float*)&vec, &contents);
-	return contents;
+	int real_contents;
+	return gEngfuncs.PM_PointContents((float*)&vec, &real_contents);
 #else
 	return POINT_CONTENTS(vec);
 #endif
@@ -704,6 +714,17 @@ bool UTIL_PointInSplashable(const Vector& vec)
 	switch (contents) {
 	case CONTENTS_WATER:
 	case CONTENTS_SLIME:
+		return true;
+	}
+
+	return false;
+}
+
+bool UTIL_IsLiquidContents(int contents) {
+	switch (contents) {
+	case CONTENTS_WATER:
+	case CONTENTS_SLIME:
+	case CONTENTS_LAVA:
 		return true;
 	}
 
@@ -790,4 +811,101 @@ char* UTIL_VarArgs(const char* format, ...)
 	va_end(argptr);
 
 	return string;
+}
+
+EXPORT void UTIL_WaterSplashParams(float scale, int playSound, float& ratio, float& sz, float& fps, float& vol, int& pitch, const char*& sample) {
+	sz = scale * 34;
+	ratio = sz * 0.1f;
+	fps = 20 - ratio * 2;
+
+	sample = RANDOM_SOUND_ARRAY(g_waterSplashSounds);
+	pitch = 100;
+	vol = ratio / 3.0f;
+
+	if (scale < 0.4f && playSound != 2) {
+		sample = g_stepSoundsSlosh[RANDOM_LONG(0, 1)];
+		vol = 1.0f;
+		// no pitch shift to prevent error spam on client
+	}
+	else {
+		if (scale < 0.4f) {
+			pitch += 15;
+			if (playSound != 3) vol *= 0.7f;
+		}
+		else if (scale < 0.5f) {
+			pitch += 10;
+			if (playSound != 3) vol *= 0.8f;
+		}
+		pitch += RANDOM_LONG(-10, 10);
+	}
+
+	if (!playSound)
+		vol = 0;
+}
+
+void te_debug_box(Vector mins, Vector maxs, uint8_t life, RGBA c, int msgType, edict_t* dest) {
+	Vector corners[8];
+
+	// Generate all 8 corners of the box
+	corners[0] = Vector(mins.x, mins.y, mins.z);
+	corners[1] = Vector(maxs.x, mins.y, mins.z);
+	corners[2] = Vector(maxs.x, maxs.y, mins.z);
+	corners[3] = Vector(mins.x, maxs.y, mins.z);
+	corners[4] = Vector(mins.x, mins.y, maxs.z);
+	corners[5] = Vector(maxs.x, mins.y, maxs.z);
+	corners[6] = Vector(maxs.x, maxs.y, maxs.z);
+	corners[7] = Vector(mins.x, maxs.y, maxs.z);
+
+	// Bottom edges
+	te_debug_beam(corners[0], corners[1], life, c, msgType, dest);
+	te_debug_beam(corners[1], corners[2], life, c, msgType, dest);
+	te_debug_beam(corners[2], corners[3], life, c, msgType, dest);
+	te_debug_beam(corners[3], corners[0], life, c, msgType, dest);
+
+	// Top edges
+	te_debug_beam(corners[4], corners[5], life, c, msgType, dest);
+	te_debug_beam(corners[5], corners[6], life, c, msgType, dest);
+	te_debug_beam(corners[6], corners[7], life, c, msgType, dest);
+	te_debug_beam(corners[7], corners[4], life, c, msgType, dest);
+
+	// Vertical edges
+	te_debug_beam(corners[0], corners[4], life, c, msgType, dest);
+	te_debug_beam(corners[1], corners[5], life, c, msgType, dest);
+	te_debug_beam(corners[2], corners[6], life, c, msgType, dest);
+	te_debug_beam(corners[3], corners[7], life, c, msgType, dest);
+}
+
+void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, edict_t* dest)
+{
+#ifdef CLIENT_DLL
+	int m_iBeam = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/smoke.spr");
+	gEngfuncs.pEfxAPI->R_BeamPoints(start, end, m_iBeam, life * 0.1f, 1, 0, 1, 0, 0, 0,
+		c.r / 255.0f, c.g / 255.0f, c.b / 255.0f);
+#else
+	UTIL_BeamPoints(start, end, MODEL_INDEX("sprites/laserbeam.spr"), 0, 0, life, 16, 0,
+		c, 0, msgType, NULL, dest);
+#endif
+}
+
+void UTIL_WaterSplashTrace(Vector from, Vector to, float scale, int playSound, edict_t* skipEnt) {
+	Vector surfacePoint;
+
+	if (!UTIL_WaterTrace(from, to, surfacePoint)) {
+		return;
+	}
+
+#ifdef CLIENT_DLL
+	float fps, vol, ratio, sz;
+	int pitch;
+	const char* sample;
+	UTIL_WaterSplashParams(scale, playSound, ratio, sz, fps, vol, pitch, sample);
+	sample = RemapFile(sample);
+
+	int splashSprIdx = gEngfuncs.pEventAPI->EV_FindModelIndex(RemapFile("sprites/splash2.spr"));
+	int wakeSprIdx = gEngfuncs.pEventAPI->EV_FindModelIndex(RemapFile("sprites/splashwake.spr"));
+
+	EF_WaterSplash(surfacePoint, splashSprIdx, wakeSprIdx, sample, scale, fps, vol, pitch);
+#else
+	UTIL_WaterSplashMsg(surfacePoint + Vector(0, 0, 1), scale, playSound, skipEnt);
+#endif
 }

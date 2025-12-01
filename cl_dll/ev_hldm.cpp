@@ -36,6 +36,7 @@
 #include "com_model.h"
 #include "custom_weapon.h"
 #include "engine_pv.h"
+#include "effects.h"
 
 extern engine_studio_api_t IEngineStudio;
 
@@ -432,17 +433,16 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 		// do damage, paint decals
 		if ( tr.fraction != 1.0 )
 		{
+			float splashSize = 0.3f;
+
 			switch(iBulletType)
 			{
 			default:
-			case BULLET_PLAYER_9MM:		
-				
+			case BULLET_PLAYER_9MM:
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
-			
-					break;
-			case BULLET_PLAYER_MP5:		
-				
+				break;
+			case BULLET_PLAYER_MP5:
 				if ( !tracer )
 				{
 					EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
@@ -450,18 +450,17 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 				}
 				break;
 			case BULLET_PLAYER_BUCKSHOT:
-				
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
-			
+				splashSize = 0.4f;
 				break;
 			case BULLET_PLAYER_357:
-				
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
 				EV_HLDM_DecalGunshot( &tr, iBulletType );
-				
+				splashSize = 0.4f;
 				break;
-
 			}
+
+			UTIL_WaterSplashTrace(vecSrc, tr.endpos, splashSize, iShot % 2 ? 2 : 0, NULL);
 		}
 
 		gEngfuncs.pEventAPI->EV_PopPMStates();
@@ -987,6 +986,8 @@ void EV_FireGauss( event_args_t *args )
 			);
 		}
 
+		UTIL_WaterSplashTrace(vecSrc, tr.endpos, 0.3f, 2, NULL);
+
 		pEntity = gEngfuncs.pEventAPI->EV_GetPhysent( tr.ent );
 		if ( pEntity == NULL )
 			break;
@@ -1306,6 +1307,8 @@ void EV_FireCrossbow2( event_args_t *args )
 				bolt->callback = EV_BoltCallback; //So we can set the angles and origin back. (Stick the bolt to the wall)
 			}
 		}
+
+		UTIL_WaterSplashTrace(vecSrc, tr.endpos, 0.3f, 1, NULL);
 	}
 
 	gEngfuncs.pEventAPI->EV_PopPMStates();
@@ -1954,7 +1957,7 @@ void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx) {
 
 extern vec3_t ev_punchangle;
 
-void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunshotDecal, bool textureSound)
+void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunshotDecal, bool textureSound, int iShot, int iDamage)
 {
 	pmtrace_t tr;
 
@@ -2003,6 +2006,17 @@ void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunsh
 		}
 	}
 
+
+	float splashSize = 0.3f;
+	if (iDamage > 50) {
+		splashSize = 0.5f;
+	}
+	else if (iDamage > 8) {
+		splashSize = 0.4f;
+	}
+
+	UTIL_WaterSplashTrace(vecSrc, tr.endpos, splashSize, iShot % 2 ? 2 : 0, NULL);
+
 	//gEngfuncs.pEventAPI->EV_PopPMStates();
 }
 
@@ -2016,7 +2030,7 @@ void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTrac
 		float y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5, 0.5);
 		float z = x * x + y * y;
 
-		WC_EV_FireBullets(x * vecSpread.x, y * vecSpread.y, showTracer, decal, texSound);
+		WC_EV_FireBullets(x * vecSpread.x, y * vecSpread.y, showTracer, decal, texSound, iShot, evt.bullets.damage);
 	}
 
 	if (evt.bullets.flashSz)

@@ -83,3 +83,5 @@ enum SpriteAdvFadeMode {
 	SPRADV_FADE_IN,
 	SPRADV_FADE_BOTH,
 };
+
+extern const char* g_waterSplashSounds[3];

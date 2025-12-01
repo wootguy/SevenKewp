@@ -482,6 +482,7 @@ set(UTIL_HDR
 	../game_shared/mstream.h
 	../game_shared/shared_effects.h
 	../game_shared/shared_util.h
+	../game_shared/rgb.h
 	../game_shared/md5.h
 )
 set(UTIL_SRC

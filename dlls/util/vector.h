@@ -118,6 +118,10 @@ inline Vector CrossProduct(const Vector& a, const Vector& b) { return Vector( a.
 #define vec3_t Vector
 #endif
 
+#else
+
+typedef vec_t vec3_t[3];
+
 #endif
 
 #endif

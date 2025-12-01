@@ -146,6 +146,7 @@ const int g_prediction_files_sz = sizeof(g_prediction_files) / sizeof(g_predicti
 
 uint8_t g_predMsgData[190];
 int g_predMsgLen;
+int g_soundvariety;
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud.h"
@@ -162,6 +163,7 @@ int __MsgFunc_PredFiles(const char* pszName, int iSize, void* pbuf) {
 
 	BEGIN_READ(pbuf, iSize);
 
+	g_soundvariety = READ_BYTE();
 	int sz = READ_BYTE();
 
 	static uint8_t dat[256];

@@ -6652,6 +6652,7 @@ void CBasePlayer::QueryClientTypeFinished() {
 	if (IsSevenKewpClient()) {
 		// send prediction data
 		MESSAGE_BEGIN(MSG_ONE, gmsgPredFiles, NULL, pev);
+		WRITE_BYTE(soundvariety.value);
 		WRITE_BYTE(g_predMsgLen);
 		WRITE_BYTES(g_predMsgData, g_predMsgLen);
 		MESSAGE_END();
@@ -7584,5 +7585,5 @@ void CBasePlayer::WaterSplashTrace(Vector vecSrc, float dist, int hull, float sc
 	}
 
 	UTIL_TraceLine(vecSrc, vecSrc + waterTraceBottom, ignore_monsters, NULL, &waterTrace);
-	UTIL_WaterSplashTrace(vecSrc, waterTrace.vecEndPos, scale, 3);
+	UTIL_WaterSplashTrace(vecSrc, waterTrace.vecEndPos, scale, 3, NULL);
 }

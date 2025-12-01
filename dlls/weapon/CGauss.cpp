@@ -472,7 +472,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 		if (tr.fAllSolid)
 			break;
 
-		UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, 0.4f, 2);
+		UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, 0.4f, 2, m_pPlayer->edict());
 
 		CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
 

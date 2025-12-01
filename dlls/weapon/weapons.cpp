@@ -61,12 +61,6 @@ AmmoInfo CBasePlayerItem::AmmoInfoArray[MAX_AMMO_SLOTS];
 
 MULTIDAMAGE gMultiDamage;
 
-const char* g_waterSplashSounds[3] = { // ordered for mp_soundvariety
-	"water/splash.wav",
-	"water/splash2.wav",
-	"water/splash3.wav"
-};
-
 #define TRACER_FREQ		4			// Tracers fire every fourth bullet
 
 //=========================================================

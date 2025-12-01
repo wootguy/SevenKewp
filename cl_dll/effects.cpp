@@ -8,6 +8,7 @@
 #include "event_api.h"
 #include "engine_pv.h"
 #include <cfloat>
+#include "pm_defs.h"
 
 #define MAX_ADV_SPRITES 512
 
@@ -279,7 +280,7 @@ int __MsgFunc_SpriteAdv(const char* pszName, int iSize, void* pbuf) {
 	return 1;
 }
 
-void WaterSplash(Vector origin, int splashSprIdx, int wakeSprIdx, int soundIdx, float scale, int fps, float volume, int pitch) {
+void EF_WaterSplash(Vector origin, int splashSprIdx, int wakeSprIdx, const char* sample, float scale, int fps, float volume, int pitch) {
 	model_s* splashModel = gEngfuncs.hudGetModelByIndex(splashSprIdx);
 	model_s* wakeModel = gEngfuncs.hudGetModelByIndex(wakeSprIdx);
 	tempent_s* splashEnt = gEngfuncs.pEfxAPI->CL_TentEntAllocCustom(origin, splashModel, 1, SpriteAdvCallback);
@@ -317,7 +318,6 @@ void WaterSplash(Vector origin, int splashSprIdx, int wakeSprIdx, int soundIdx, 
 	LinkSpriteAdv(wakeEnt2, wakeAdv2);
 
 	if (volume > 0) {
-		const char* sample = GetSoundByIndex(soundIdx);
 		gEngfuncs.pEventAPI->EV_PlaySound(0, origin, CHAN_STATIC, sample, volume, ATTN_NORM, 0, pitch);
 	}
 }
@@ -338,12 +338,13 @@ int __MsgFunc_WaterSplash(const char* pszName, int iSize, void* pbuf) {
 	float volume = READ_BYTE() * 0.01f;
 	int pitch = READ_BYTE();
 	
-	WaterSplash(origin, splashSprIdx, wakeSprIdx, soundIdx, scale, fps, volume, pitch);
+	EF_WaterSplash(origin, splashSprIdx, wakeSprIdx, GetSoundByIndex(soundIdx), scale, fps, volume, pitch);
 
 	return 1;
 }
 
-extern vec3_t v_sim_org;
+extern vec3_t v_angles, v_sim_org, v_sim_vel;
+extern playermove_t* pmove;
 
 void UTIL_WaterSplashFootstep(int player_index) {
 	// can only predict local player so index is unused
@@ -356,12 +357,53 @@ void UTIL_WaterSplashFootstep(int player_index) {
 		origin = surface + Vector(0,0,1);
 	}
 
-	int splashSprIdx;
-	int wakeSprIdx;
-	gEngfuncs.CL_LoadModel(RemapFile("sprites/splash2.spr"), &splashSprIdx);
-	gEngfuncs.CL_LoadModel(RemapFile("sprites/splashwake.spr"), &wakeSprIdx);
+	int splashSprIdx = gEngfuncs.pEventAPI->EV_FindModelIndex(RemapFile("sprites/splash2.spr"));
+	int wakeSprIdx = gEngfuncs.pEventAPI->EV_FindModelIndex(RemapFile("sprites/splashwake.spr"));
 
-	WaterSplash(origin, splashSprIdx, wakeSprIdx, 0, scale, fps, 0, 0);
+	EF_WaterSplash(origin, splashSprIdx, wakeSprIdx, 0, scale, fps, 0, 0);
+}
+
+void PredictBodySplash() {
+	static int oldContents = CONTENTS_EMPTY;
+	static Vector oldPos;
+
+	if (!gHUD.m_is_map_loaded) {
+		oldContents = CONTENTS_EMPTY;
+		return;
+	}
+
+	Vector origin = v_sim_org;
+	origin.z -= (pmove->flags & FL_DUCKING) ? 18 : 36;
+
+	int contents = UTIL_PointContents(origin);
+	bool inLiquid = UTIL_IsLiquidContents(contents);
+
+	bool wasInLiquid = UTIL_IsLiquidContents(oldContents);
+	bool solidTransition = oldContents == CONTENTS_SOLID || contents == CONTENTS_SOLID;
+	bool playerJumpingOut = !inLiquid;
+	const float thickness = 32;
+
+	// water transiation
+	if (wasInLiquid != inLiquid && !solidTransition && !playerJumpingOut) {
+		if (fabs(v_sim_vel.Length()) > 100) {
+			Vector splashPos = inLiquid ? origin : oldPos;
+			float scale = 0.63f;
+
+			float fps, vol, ratio, sz;
+			int pitch;
+			const char* sample;
+			UTIL_WaterSplashParams(scale, 1, ratio, sz, fps, vol, pitch, sample);
+			sample = RemapFile(sample);
+
+			int splashSprIdx = gEngfuncs.pEventAPI->EV_FindModelIndex(RemapFile("sprites/splash2.spr"));
+			int wakeSprIdx = gEngfuncs.pEventAPI->EV_FindModelIndex(RemapFile("sprites/splashwake.spr"));
+			
+			EF_WaterSplash(splashPos, splashSprIdx, wakeSprIdx, sample, scale, fps, vol, pitch);
+		}
+	}
+
+	oldContents = contents;
+	oldPos = origin;
 }
 
 void HookEffectMessages() {

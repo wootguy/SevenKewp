@@ -74,44 +74,6 @@ void UTIL_PlayRicochetSound(edict_t* ent) {
 	EMIT_SOUND_DYN(ent, CHAN_WEAPON, RANDOM_SOUND_ARRAY(g_teRicochetSounds), 1.0f, ATTN_NORM, 0, 100);
 }
 
-void te_debug_box(Vector mins, Vector maxs, uint8_t life, RGBA c, int msgType, edict_t* dest) {
-	Vector corners[8];
-
-	// Generate all 8 corners of the box
-	corners[0] = Vector(mins.x, mins.y, mins.z);
-	corners[1] = Vector(maxs.x, mins.y, mins.z);
-	corners[2] = Vector(maxs.x, maxs.y, mins.z);
-	corners[3] = Vector(mins.x, maxs.y, mins.z);
-	corners[4] = Vector(mins.x, mins.y, maxs.z);
-	corners[5] = Vector(maxs.x, mins.y, maxs.z);
-	corners[6] = Vector(maxs.x, maxs.y, maxs.z);
-	corners[7] = Vector(mins.x, maxs.y, maxs.z);
-
-	// Bottom edges
-	te_debug_beam(corners[0], corners[1], life, c, msgType, dest);
-	te_debug_beam(corners[1], corners[2], life, c, msgType, dest);
-	te_debug_beam(corners[2], corners[3], life, c, msgType, dest);
-	te_debug_beam(corners[3], corners[0], life, c, msgType, dest);
-
-	// Top edges
-	te_debug_beam(corners[4], corners[5], life, c, msgType, dest);
-	te_debug_beam(corners[5], corners[6], life, c, msgType, dest);
-	te_debug_beam(corners[6], corners[7], life, c, msgType, dest);
-	te_debug_beam(corners[7], corners[4], life, c, msgType, dest);
-
-	// Vertical edges
-	te_debug_beam(corners[0], corners[4], life, c, msgType, dest);
-	te_debug_beam(corners[1], corners[5], life, c, msgType, dest);
-	te_debug_beam(corners[2], corners[6], life, c, msgType, dest);
-	te_debug_beam(corners[3], corners[7], life, c, msgType, dest);
-}
-
-void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, edict_t* dest)
-{
-	UTIL_BeamPoints(start, end, MODEL_INDEX("sprites/laserbeam.spr"), 0, 0, life, 16, 0,
-		c, 0, msgType, NULL, dest);
-}
-
 // This logic makes sure that a network message does not get sent to
 // a client that can't handle a high entity index, if one is given.
 // entindex is assumed to be the entity used for PVS/PAS tests, if using that message mode.
@@ -1088,17 +1050,7 @@ void UTIL_BubbleTrail(Vector from, Vector to, int count)
 	MESSAGE_END();
 }
 
-void UTIL_WaterSplashTrace(Vector from, Vector to, float scale, int playSound) {
-	Vector surfacePoint;
-
-	if (!UTIL_WaterTrace(from, to, surfacePoint)) {
-		return;
-	}
-
-	UTIL_WaterSplashMsg(surfacePoint + Vector(0, 0, 1), scale, playSound);
-}
-
-void UTIL_WaterSplash(Vector pos, bool bigSplash, bool playSound, float scale) {
+void UTIL_WaterSplash(Vector pos, bool bigSplash, bool playSound, float scale, edict_t* skipEnt) {
 	if (!UTIL_PointInSplashable(pos))
 		return;
 
@@ -1116,9 +1068,13 @@ void UTIL_WaterSplash(Vector pos, bool bigSplash, bool playSound, float scale) {
 		CBaseEntity* wake = CBaseEntity::Create("splashwake", pos + Vector(0, 0, 1), g_vecZero, true, 0, {
 			{"iuser1", UTIL_VarArgs("%d", depth) }
 		});
+
+		if (skipEnt) {
+			wake->m_hidePlayers |= PLRBIT(skipEnt); // TOOD: skip the sound too
+		}
 	}
 	else {
-		UTIL_WaterSplashMsg(pos + Vector(0, 0, 1), scale, playSound ? 1 : 0);
+		UTIL_WaterSplashMsg(pos + Vector(0, 0, 1), scale, playSound ? 1 : 0, skipEnt);
 	}
 }
 
@@ -1361,30 +1317,10 @@ void UTIL_SpriteAdv(Vector pos, const SpriteAdvArgs& args, int msgMode, const fl
 }
 
 void UTIL_WaterSplashMsg(Vector pos, float scale, int playSound, edict_t* skipEnt) {
-	float sz = scale * 34;
-	float ratio = sz * 0.1f;
-	float fps = 20 - ratio * 2;
-
-	const char* sample = RANDOM_SOUND_ARRAY(g_waterSplashSounds);
-	int pitch = 100;
-	float vol = ratio / 3.0f;
-
-	if (scale < 0.4f && playSound != 2) {
-		sample = g_stepSoundsSlosh[RANDOM_LONG(0, 1)];
-		vol = 1.0f;
-		// no pitch shift to prevent error spam on client
-	}
-	else {
-		if (scale < 0.4f) {
-			pitch += 15;
-			if (playSound != 3) vol *= 0.7f;
-		}
-		else if (scale < 0.5f) {
-			pitch += 10;
-			if (playSound != 3) vol *= 0.8f;
-		}
-		pitch += RANDOM_LONG(-10, 10);
-	}
+	float fps, vol, ratio, sz;
+	int pitch;
+	const char* sample;
+	UTIL_WaterSplashParams(scale, playSound, ratio, sz, fps, vol, pitch, sample);
 
 	// create a shittier version for players without the custom message
 	uint32_t hlPlayers = 0;

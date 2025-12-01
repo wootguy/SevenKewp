@@ -8,8 +8,11 @@
 
 extern local_state_t g_prediction_debug_state;
 
+extern vec3_t v_angles, v_sim_org, v_sim_vel;
+
 static int line_height = 0;
 static int var_width = 0;
+static int num_width = 0;
 
 int CHudDebug::Init(void)
 {
@@ -20,6 +23,7 @@ int CHudDebug::Init(void)
 	m_iFlags |= HUD_INTERMISSION | HUD_ACTIVE; // is always drawn during an intermission
 
 	GetConsoleStringSize("m_flNextSecondaryAttack  ", &var_width, &line_height);
+	GetConsoleStringSize("-32768  ", &num_width, &line_height);
 
 	return 1;
 }
@@ -34,12 +38,29 @@ int CHudDebug::Init(void)
 	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %d", wep.var), valColor); \
 	yOffset += line_height
 
+#define PRINT_VARD(var) \
+	DrawConsoleString(5, yOffset, #var, varColor); \
+	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %d", var), valColor); \
+	yOffset += line_height
+
+#define PRINT_VEC_VARF(vec) \
+	DrawConsoleString(5, yOffset, #vec, varColor); \
+	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %.2f %.2f %.2f", vec.x, vec.y, vec.z), valColor); \
+	yOffset += line_height
+
+#define PRINT_VEC_VARD(vec) \
+	DrawConsoleString(5, yOffset, #vec, varColor); \
+	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs("%d", (int)vec.x), valColor); \
+	DrawConsoleString(5+var_width+num_width, yOffset, UTIL_VarArgs("%d", (int)vec.y), valColor); \
+	DrawConsoleString(5+var_width+num_width*2, yOffset, UTIL_VarArgs("%d", (int)vec.z), valColor); \
+	yOffset += line_height
+
 int CHudDebug::Draw(float flTime)
 {
 	if (m_HUD_debug->value <= 0)
 		return 0;
 
-	int yOffset = line_height*4;
+	int yOffset = line_height*2;
 
 	local_state_t& state = g_prediction_debug_state;
 
@@ -78,5 +99,15 @@ int CHudDebug::Draw(float flTime)
 	PRINT_WEP_STATE_VARF(fuser3);
 	PRINT_WEP_STATE_VARF(fuser4);
 	
+	yOffset += line_height;
+	PRINT_VEC_VARD(v_sim_org);
+	PRINT_VEC_VARD(v_angles);
+	PRINT_VEC_VARD(v_sim_vel);
+
+	yOffset += line_height;
+	int real_contents;
+	int contents = gEngfuncs.PM_PointContents(v_sim_org, &real_contents);
+	PRINT_VARD(contents);
+
 	return 1;
 }
