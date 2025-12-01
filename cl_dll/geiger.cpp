@@ -170,7 +170,7 @@ int CHudGeiger::Draw (float flTime)
 				j += rand() & 1;
 
 			sprintf(sz, "player/geiger%d.wav", j + 1);
-			PlaySound(sz, flvol);
+			PlaySound(RemapFile(sz), flvol);
 			
 		}
 	}

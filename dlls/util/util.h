@@ -436,7 +436,6 @@ EXPORT float		UTIL_ApproachAngle( float target, float value, float speed );
 EXPORT float		UTIL_AngleDistance( float next, float cur );
 EXPORT bool			UTIL_IsValidTempEntOrigin( const Vector& v ); // true if the origin can be used with temporary entity effects TE_*
 
-EXPORT char			*UTIL_VarArgs( const char *format, ... );
 EXPORT void			UTIL_Remove( CBaseEntity *pEntity );
 EXPORT BOOL			UTIL_IsValidEntity( edict_t *pent );
 EXPORT BOOL			UTIL_TeamsMatch( const char *pTeamName1, const char *pTeamName2 );

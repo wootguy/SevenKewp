@@ -60,6 +60,7 @@ int gmsgPlayerPos = 0;
 int gmsgToxicCloud = 0;
 int gmsgSpriteAdv = 0;
 int gmsgWaterSplash = 0;
+int gmsgPredFiles = 0;
 
 std::vector<UserMessage> g_userMessages;
 
@@ -166,4 +167,5 @@ void LinkUserMessages(void)
 	gmsgPlayerPos = REG_USER_MSG("PlayerPos", -1);
 	gmsgSpriteAdv = REG_USER_MSG("SpriteAdv", -1);
 	gmsgWaterSplash = REG_USER_MSG("WaterSplash", -1);
+	gmsgPredFiles = REG_USER_MSG("PredFiles", -1);
 }

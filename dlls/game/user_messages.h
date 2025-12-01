@@ -56,6 +56,7 @@ EXPORT extern int gmsgPlayerPos; // tag positions for players outside of the PVS
 EXPORT extern int gmsgToxicCloud; // chumtoad attack
 EXPORT extern int gmsgSpriteAdv; // chumtoad attack
 EXPORT extern int gmsgWaterSplash; // chumtoad attack
+EXPORT extern int gmsgPredFiles; // prediction related file indexes
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 

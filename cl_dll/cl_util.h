@@ -32,6 +32,7 @@
 #include "com_model.h"
 #include "studio.h"
 #include "r_studioint.h"
+#include "prediction_files.h"
 
 extern bool g_crosshair_active; // true after calling SetCrosshair with a valid crosshair
 
@@ -239,9 +240,6 @@ HSPRITE LoadSprite(const char *pszName);
 
 // not relative to a game dir
 bool fileExists(const char* path);
-
-// returns a static buffer (don't nest calls or free the result)
-char* UTIL_VarArgs(const char* format, ...);
 
 // searches game directories in priority order
 // returns NULL if file is not found

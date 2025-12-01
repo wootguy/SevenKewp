@@ -54,6 +54,7 @@
 #include "bodyque.h"
 #include "CWeaponCustom.h"
 #include "CEnvWeather.h"
+#include "prediction_files.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -932,6 +933,8 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	}
 
 	LoadAdminList();
+
+	GeneratePredicionData();
 
 	uint64_t hookStartTime = getEpochMillis();
 	CALL_HOOKS_VOID(pfnServerActivate);

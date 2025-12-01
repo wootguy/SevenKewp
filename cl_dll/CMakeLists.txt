@@ -118,6 +118,7 @@ set(UTIL_HDR
 	cl_util.h
 	interpolation.h
 	engine_pv.h
+	../game_shared/prediction_files.h
 	../common/parsemsg.h
 	../pm_shared/pm_debug.h
 	../pm_shared/pm_defs.h
@@ -142,6 +143,7 @@ set(UTIL_SRC
 	../pm_shared/pm_shared.cpp
 	../public/interface.cpp
 	../game_shared/shared_util.cpp
+	../game_shared/prediction_files.cpp
 	../game_shared/md5.cpp
 	../game_shared/mstream.cpp
 	../game_shared/miniz.c

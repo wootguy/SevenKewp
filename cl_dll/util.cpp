@@ -24,6 +24,7 @@
 
 #include "hud.h"
 #include "cl_util.h"
+#include "shared_util.h"
 #include <string.h>
 
 #ifndef M_PI
@@ -56,19 +57,6 @@ bool fileExists(const char* path) {
 	}
 
 	return false;
-}
-
-char* UTIL_VarArgs(const char* format, ...) {
-	va_list		argptr;
-	static char	string[1024];
-
-	va_start(argptr, format);
-	vsnprintf(string, 1024, format, argptr);
-	va_end(argptr);
-
-	string[1023] = 0;
-
-	return string;
 }
 
 const char* FindGameFile(const char* path) {

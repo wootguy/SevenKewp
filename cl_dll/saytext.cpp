@@ -240,7 +240,7 @@ void CHudSayText :: SayTextPrint( const char *pszBuf, int iBufSize, int clientIn
 	EnsureTextFitsInOneLineAndWrapIfHaveTo( i );
 
 	m_iFlags |= HUD_ACTIVE;
-	PlaySound( "misc/talk.wav", 1 );
+	PlaySound(RemapFile("misc/talk.wav"), 1 );
 
 	UpdateChatPosition();
 }

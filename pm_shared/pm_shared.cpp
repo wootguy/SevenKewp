@@ -32,6 +32,7 @@
 
 #include <string>
 #include <cstdint>
+#include "prediction_files.h"
 
 const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound);
 
@@ -501,10 +502,14 @@ void PM_PlayStepSound( int step, float fvol )
 		break;
 	}
 
+#ifdef CLIENT_DLL
+	stepSound = RemapFile(stepSound);
+#else
 	const char* replacement = UTIL_GetReplacementSound(NULL, stepSound);
 	if (replacement) {
 		stepSound = replacement;
 	}
+#endif
 
 	PLAY_MOVEMENT_SOUND(CHAN_BODY, stepSound, fvol, ATTN_NORM, 0, PITCH_NORM);
 }	
@@ -2628,10 +2633,14 @@ void PM_Jump (void)
 				break;
 			}
 
+#ifdef CLIENT_DLL
+			wadeSound = RemapFile(wadeSound);
+#else
 			const char* replacement = UTIL_GetReplacementSound(NULL, wadeSound);
 			if (replacement) {
 				wadeSound = replacement;
 			}
+#endif
 
 			PLAY_MOVEMENT_SOUND(CHAN_BODY, wadeSound, 1, ATTN_NORM, 0, PITCH_NORM);
 		}
@@ -2807,10 +2816,15 @@ void PM_CheckFalling( void )
 			//case 1:
 
 			const char* fallSound = "player/pl_fallpain3.wav";
+			
+#ifdef CLIENT_DLL
+			fallSound = RemapFile(fallSound);
+#else
 			const char* replacement = UTIL_GetReplacementSound(NULL, fallSound);
 			if (replacement) {
 				fallSound = replacement;
 			}
+#endif
 				
 			PLAY_MOVEMENT_SOUND( CHAN_VOICE, fallSound, 1, ATTN_NORM, 0, PITCH_NORM );
 			//	break;
@@ -2891,10 +2905,14 @@ void PM_PlayWaterSounds( void )
 			break;
 		}
 
+#ifdef CLIENT_DLL
+		wadeSound = RemapFile(wadeSound);
+#else
 		const char* replacement = UTIL_GetReplacementSound(NULL, wadeSound);
 		if (replacement) {
 			wadeSound = replacement;
 		}
+#endif
 
 		PLAY_MOVEMENT_SOUND(CHAN_BODY, wadeSound, 1, ATTN_NORM, 0, PITCH_NORM);
 	}

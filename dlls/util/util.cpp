@@ -1615,21 +1615,7 @@ float UTIL_SplineFraction( float value, float scale )
 }
 
 
-char* UTIL_VarArgs( const char *format, ... )
-{
-	static std::mutex m; // only allow one thread at a time to access static buffers
-	std::lock_guard<std::mutex> lock(m);
 
-	va_list		argptr;
-	static char		string[1024];
-	
-	va_start (argptr, format);
-	vsnprintf (string, 1024, format, argptr);
-	va_end (argptr);
-
-	return string;	
-}
-	
 Vector UTIL_GetAimVector( edict_t *pent, float flSpeed )
 {
 	Vector tmp;

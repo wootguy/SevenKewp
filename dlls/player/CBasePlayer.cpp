@@ -60,6 +60,7 @@
 #include "bodyque.h"
 #include "CWeaponCustom.h"
 #include "CEnvWeather.h"
+#include "prediction_files.h"
 
 // #define DUCKFIX
 
@@ -6649,6 +6650,12 @@ void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarNam
 
 void CBasePlayer::QueryClientTypeFinished() {
 	if (IsSevenKewpClient()) {
+		// send prediction data
+		MESSAGE_BEGIN(MSG_ONE, gmsgPredFiles, NULL, pev);
+		WRITE_BYTE(g_predMsgLen);
+		WRITE_BYTES(g_predMsgData, g_predMsgLen);
+		MESSAGE_END();
+
 		// activate fog
 		if (g_fog_enabled) {
 			CBaseEntity* ent = NULL;

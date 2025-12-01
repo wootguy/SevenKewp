@@ -774,3 +774,20 @@ int clampi(int val, int min, int max) {
 	}
 	return val;
 }
+
+char* UTIL_VarArgs(const char* format, ...)
+{
+#ifndef CLIENT_DLL
+	static std::mutex m; // only allow one thread at a time to access static buffers
+	std::lock_guard<std::mutex> lock(m);
+#endif
+
+	va_list		argptr;
+	static char		string[1024];
+
+	va_start(argptr, format);
+	vsnprintf(string, 1024, format, argptr);
+	va_end(argptr);
+
+	return string;
+}

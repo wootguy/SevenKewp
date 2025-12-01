@@ -149,7 +149,7 @@ int __MsgFunc_ToxicCloud(const char* pszName, int iSize, void* pbuf) {
 
 	if (ent) {
 		int modelindex;
-		model_s* model = gEngfuncs.CL_LoadModel("sprites/hlcoop/puff1.spr", &modelindex);
+		model_s* model = gEngfuncs.CL_LoadModel(RemapFile("sprites/hlcoop/puff1.spr"), &modelindex);
 		
 		if (!model)
 			return 1;
@@ -322,9 +322,6 @@ void WaterSplash(Vector origin, int splashSprIdx, int wakeSprIdx, int soundIdx, 
 	}
 }
 
-// TODO: NOT this. Send a message for default indexes
-int g_splashSprIdx;
-int g_wakeSprIdx;
 
 int __MsgFunc_WaterSplash(const char* pszName, int iSize, void* pbuf) {
 	BEGIN_READ(pbuf, iSize);
@@ -333,15 +330,15 @@ int __MsgFunc_WaterSplash(const char* pszName, int iSize, void* pbuf) {
 	origin[0] = READ_SHORT();
 	origin[1] = READ_SHORT();
 	origin[2] = READ_SHORT();
-	g_splashSprIdx = READ_SHORT();
-	g_wakeSprIdx = READ_SHORT();
+	int splashSprIdx = READ_SHORT();
+	int wakeSprIdx = READ_SHORT();
 	int soundIdx = READ_SHORT();
 	float scale = READ_BYTE() * 0.1f;
 	int fps = READ_BYTE();
 	float volume = READ_BYTE() * 0.01f;
 	int pitch = READ_BYTE();
 	
-	WaterSplash(origin, g_splashSprIdx, g_wakeSprIdx, soundIdx, scale, fps, volume, pitch);
+	WaterSplash(origin, splashSprIdx, wakeSprIdx, soundIdx, scale, fps, volume, pitch);
 
 	return 1;
 }
@@ -359,7 +356,12 @@ void UTIL_WaterSplashFootstep(int player_index) {
 		origin = surface + Vector(0,0,1);
 	}
 
-	WaterSplash(origin, g_splashSprIdx, g_wakeSprIdx, 0, scale, fps, 0, 0);
+	int splashSprIdx;
+	int wakeSprIdx;
+	gEngfuncs.CL_LoadModel(RemapFile("sprites/splash2.spr"), &splashSprIdx);
+	gEngfuncs.CL_LoadModel(RemapFile("sprites/splashwake.spr"), &wakeSprIdx);
+
+	WaterSplash(origin, splashSprIdx, wakeSprIdx, 0, scale, fps, 0, 0);
 }
 
 void HookEffectMessages() {

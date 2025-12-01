@@ -116,3 +116,5 @@ EXPORT bool UTIL_WaterTrace(Vector from, Vector to, Vector& isect);
 EXPORT float clampf(float val, float min, float max);
 
 EXPORT int clampi(int val, int min, int max);
+
+EXPORT char* UTIL_VarArgs(const char* format, ...);

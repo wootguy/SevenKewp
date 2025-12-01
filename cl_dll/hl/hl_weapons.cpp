@@ -44,6 +44,7 @@
 #include "weapon/CTripmine.h"
 #include "weapon/CSqueak.h"
 #include "weapon/CWeaponCustom.h"
+#include "prediction_files.h"
 
 #include "studio.h"
 
@@ -369,7 +370,7 @@ BOOL CBasePlayerWeapon :: PlayEmptySound( void )
 {
 	if (m_iPlayEmptySound)
 	{
-		HUD_PlaySound( "weapons/357_cock1.wav", 0.8 );
+		HUD_PlaySound(RemapFile("weapons/357_cock1.wav"), 0.8 );
 		m_iPlayEmptySound = 0;
 		return 0;
 	}
