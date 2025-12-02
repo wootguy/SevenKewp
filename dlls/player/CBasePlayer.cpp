@@ -796,7 +796,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	pWeaponBox->SetThink( &CWeaponBox::Kill );
 	pWeaponBox->pev->nextthink = gpGlobals->time + item_despawn_time.value;
 
-	CWeaponCustom* cwep = firstWep->MyWeaponCustomPtr();
+	CWeaponCustom* cwep = firstWep ? firstWep->MyWeaponCustomPtr() : NULL;
 	if (cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY)) {
 		pWeaponBox->SetTouch(&CBaseEntity::ItemBounceTouch);
 	}

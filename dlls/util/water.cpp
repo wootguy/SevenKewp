@@ -78,19 +78,21 @@ void DoEntWaterPhysics() {
 		CBaseMonster* mon = ent->MyMonsterPointer();
 
 		if (inLiquid) {
-			int irnd = pcg_hash(ent->entindex());
-			float frnd = UTIL_SharedRandomFloat(irnd, 0, 2 * M_PI);
-			float t = (gpGlobals->time * 0.1f + frnd);
-			float t2 = (gpGlobals->time + frnd);
-			float currentX = sinf(t) * 0.01f;
-			float currentY = cosf(t) * 0.01f;
+			if (ent->m_buoyancy) {
+				int irnd = pcg_hash(ent->entindex());
+				float frnd = UTIL_SharedRandomFloat(irnd, 0, 2 * M_PI);
+				float t = (gpGlobals->time * 0.1f + frnd);
+				float t2 = (gpGlobals->time + frnd);
+				float currentX = sinf(t) * 0.01f;
+				float currentY = cosf(t) * 0.01f;
 
-			if (fabs(ent->pev->velocity.x + currentX) < 4.0f)
-				ent->pev->velocity.x += currentX;
-			if (fabs(ent->pev->velocity.y + currentY) < 4.0f)
-				ent->pev->velocity.y += currentY;
+				if (fabs(ent->pev->velocity.x + currentX) < 4.0f)
+					ent->pev->velocity.x += currentX;
+				if (fabs(ent->pev->velocity.y + currentY) < 4.0f)
+					ent->pev->velocity.y += currentY;
 
-			ent->pev->avelocity.y = 10.0f * (irnd % 2 ? 1 : -1);
+				ent->pev->avelocity.y = 10.0f * (irnd % 2 ? 1 : -1);
+			}
 
 			if (ent->IsPlayerCorpse()) {
 				ALERT(at_console, "");

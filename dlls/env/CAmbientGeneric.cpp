@@ -250,18 +250,18 @@ void CAmbientGeneric::RampThink(void)
 		float timeLeft = endTime - g_engfuncs.pfnTime();
 
 		if (m_forceLoop && m_fActive) {
-			if (!m_isLinear) {
-				// restart the sound when it stops
-				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
-					(vol * 0.01), m_flAttenuation, SND_CHANGE_PITCH, pitch);
-			}
-			else {
-				// force new volumes to be calculated and replay the sound
-				memset(m_lastLinearVolume, 0, sizeof(m_lastLinearVolume));
-			}
-
 			if (timeLeft <= 0) {
 				m_lastPlayTime = g_engfuncs.pfnTime();
+
+				if (!m_isLinear) {
+					// restart the sound when it stops
+					UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
+						(vol * 0.01), m_flAttenuation, SND_CHANGE_PITCH, pitch);
+				}
+				else {
+					// force new volumes to be calculated and replay the sound
+					memset(m_lastLinearVolume, 0, sizeof(m_lastLinearVolume));
+				}
 			}
 			
 			if (m_flAttenuation == 0) {

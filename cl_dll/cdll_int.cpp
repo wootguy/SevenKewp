@@ -313,7 +313,7 @@ void CL_DLLEXPORT HUD_Frame( double time )
 	else if (g_connection_phase == 1) {
 		cl_entity_t* world = gEngfuncs.GetEntityByIndex(0);
 
-		if (world && world->curstate.scale != 1337) {
+		if (world && world->model != NULL) {
 			gHUD.WorldInit();
 			g_connection_phase = 2;
 		}
