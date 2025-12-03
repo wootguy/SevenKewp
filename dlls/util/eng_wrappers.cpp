@@ -434,11 +434,6 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 		path = replacement;
 	}
 
-	// loading BSP here because ServerActivate is not soon enough and GameDLLInit is only called once
-	if (!g_bsp.loaded) {
-		LoadBsp();
-	}
-
 	if (lowerPath.find(" ") != std::string::npos) {
 		// files with spaces causes clients to hang at "Verifying resources"
 		// and the file doesn't download

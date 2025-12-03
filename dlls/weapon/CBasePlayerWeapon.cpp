@@ -67,6 +67,11 @@ void CBasePlayerWeapon::KeyValue(KeyValueData* pkvd)
 		m_customModelW = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "CustomSpriteDir"))
+	{
+		m_customSpriteDir = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBasePlayerItem::KeyValue(pkvd);
 }
@@ -78,6 +83,11 @@ void CBasePlayerWeapon::Precache() {
 		PRECACHE_MODEL(GetModelW());
 	if (GetModelP())
 		PRECACHE_MODEL(GetModelP());
+
+	if (m_customSpriteDir) {
+		const char* hudPath = UTIL_VarArgs("sprites/%s/%s.txt", STRING(m_customSpriteDir), STRING(pev->classname));
+		PRECACHE_HUD_FILES(hudPath);
+	}
 }
 
 void CBasePlayerWeapon::GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount) {
@@ -271,6 +281,11 @@ int CBasePlayerWeapon::AddToPlayer(CBasePlayer* pPlayer)
 
 
 	if (bResult && AddWeapon()) {
+		MESSAGE_BEGIN(MSG_ONE, gmsgCustomHud, NULL, pPlayer->pev);
+		WRITE_BYTE(m_iId);
+		WRITE_STRING(STRING(m_customSpriteDir));
+		MESSAGE_END();
+
 		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
 		WRITE_BYTE(m_iId);
 		MESSAGE_END();

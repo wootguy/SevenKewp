@@ -110,4 +110,5 @@ EXPORT void PLAYBACK_EVENT_FULL(int flags, const edict_t* pInvoker, unsigned sho
 EXPORT string_t ALLOC_STRING(const char*);
 EXPORT edict_t* FIND_ENTITY_BY_TARGETNAME(edict_t* entStart, const char* pszName);
 EXPORT bool Voice_GetClientListening(int receiver, int sender);
+EXPORT void LoadBsp();
 #endif

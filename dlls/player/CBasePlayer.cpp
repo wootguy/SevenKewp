@@ -61,6 +61,7 @@
 #include "CWeaponCustom.h"
 #include "CEnvWeather.h"
 #include "prediction_files.h"
+#include "CWorld.h"
 
 // #define DUCKFIX
 
@@ -6656,6 +6657,14 @@ void CBasePlayer::QueryClientTypeFinished() {
 		WRITE_BYTE(g_predMsgLen);
 		WRITE_BYTES(g_predMsgData, g_predMsgLen);
 		MESSAGE_END();
+
+		// custom materials file to load
+		CWorld* world = (CWorld*)CBaseEntity::Instance(ENT(0));
+		if (world->m_materialsFileNormalized) {
+			MESSAGE_BEGIN(MSG_ONE, gmsgMatsPath, NULL, pev);
+			WRITE_STRING(STRING(world->m_materialsFileNormalized));
+			MESSAGE_END();
+		}
 
 		// activate fog
 		if (g_fog_enabled) {

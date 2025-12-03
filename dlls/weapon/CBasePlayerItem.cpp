@@ -187,9 +187,16 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 			newCustom->SetAkimbo(thisCustom->IsAkimbo());
 		}
 
+		CBasePlayerWeapon* thisWep = GetWeaponPtr();
+		CBasePlayerWeapon* newWep = pNewWeapon->GetWeaponPtr();
+		if (thisWep && newWep) {
+			newWep->m_customSpriteDir = thisWep->m_customSpriteDir;
+		}
+
 		CBasePlayerItem* wep = (CBasePlayerItem*)pNewWeapon->GetWeaponPtr();
-		if (wep)
+		if (wep) {
 			wep->m_flCustomRespawnTime = m_flCustomRespawnTime;
+		}
 		
 		pNewWeapon->SetTouch(NULL);// no touch
 		pNewWeapon->SetThink(&CBasePlayerItem::AttemptToMaterialize);

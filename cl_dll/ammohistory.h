@@ -50,7 +50,7 @@ public:
 	void AddWeapon( WEAPON *wp ) 
 	{ 
 		rgWeapons[ wp->iId ] = *wp;	
-		LoadWeaponSprites( &rgWeapons[ wp->iId ] );
+		LoadWeaponSprites( &rgWeapons[ wp->iId ], NULL );
 	}
 
 	void PickupWeapon( WEAPON *wp )
@@ -74,7 +74,7 @@ public:
 
 	WEAPON* GetWeaponSlot( int slot, int pos ) { return rgSlots[slot][pos]; }
 
-	void LoadWeaponSprites( WEAPON* wp );
+	void LoadWeaponSprites( WEAPON* wp, const char* customDir );
 	void LoadAllWeaponSprites( void );
 	WEAPON* GetFirstPos( int iSlot );
 	void SelectSlot( int iSlot, int fAdvance, int iDirection );

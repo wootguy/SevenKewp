@@ -448,6 +448,34 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 
 	bool expUnderwater = UTIL_PointInLiquid(origin) && UTIL_PointContents(origin + Vector(0,0,32)) != CONTENTS_EMPTY;
 
+	static float lastCheck = FLT_MAX;
+	static bool replacedExplosionSounds = false;
+	static const char* expSounds[3] = {
+		"weapons/explode3.wav",
+		"weapons/explode4.wav",
+		"weapons/explode5.wav"
+	};
+	static const char* expSoundsNew[3] = {
+		"weapons/explode3.wav",
+		"weapons/explode4.wav",
+		"weapons/explode5.wav"
+	};
+
+	if (lastCheck > gpGlobals->time) {
+		lastCheck = gpGlobals->time; // level changed
+
+		for (int i = 0; i < 3; i++) {
+			const char* repl = UTIL_GetReplacementSound(NULL, expSounds[i]);
+			if (strcmp(repl, expSounds[i])) {
+				replacedExplosionSounds = true;
+				expSoundsNew[i] = repl;
+			}
+			else {
+				expSoundsNew[i] = expSounds[i];
+			}
+		}
+	}
+
 	for (int i = 1; i < gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 		
@@ -461,6 +489,9 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 
 		if (expUnderwater != plrUnderwater) {
 			shouldMuffle = true;
+			eflags |= 4;
+		}
+		else if (replacedExplosionSounds) {
 			eflags |= 4;
 		}
 		if (expUnderwater)
@@ -490,6 +521,13 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 			int pitch = RANDOM_LONG(95, 106);
 			const char* sample = RANDOM_LONG(0, 1) ? "water/explode3.wav" : "water/explode5.wav";
 			StartSound((edict_t*)NULL, CHAN_STATIC, sample, 1.0f, attn, 0, pitch, origin, PLRBIT(plr->edict()));
+		}
+		else if (replacedExplosionSounds) {
+			// play replacement sound
+			float attn = 0.3f;
+			int pitch = PITCH_NORM;
+			const char* sample = expSoundsNew[RANDOM_LONG(0, 2)];
+			StartSound((edict_t*)NULL, CHAN_STATIC, sample, 1.0f, attn, 0, PITCH_NORM, origin, PLRBIT(plr->edict()));
 		}
 	}
 }

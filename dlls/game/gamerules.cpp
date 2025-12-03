@@ -196,6 +196,7 @@ void execMapCfg() {
 		"globalmodellist",
 		"globalsoundlist",
 		"sentence_file",
+		"materials_file",
 		"mp_shitcode",
 		"map_plugin",
 		"nosuit",
@@ -328,7 +329,7 @@ void execMapCfg() {
 			}
 
 			// model/sound lists must be loaded now or else other entities might precache the wrong files
-			if (name == "globalmodellist" || name == "globalsoundlist" || name == "sentence_file") {
+			if (name == "globalmodellist" || name == "globalsoundlist" || name == "sentence_file" || name == "materials_file") {
 				KeyValueData dat;
 				dat.fHandled = false;
 				dat.szClassName = (char*)"worldspawn";

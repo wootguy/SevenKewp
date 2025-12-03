@@ -40,6 +40,7 @@ bool CanWeaponAkimbo(int id);
 bool IsExclusiveWeapon(int id);
 void InitCustomWeapon(int id);
 bool IsPredictionWeaponZoomed();
+int LoadCustomMaterials(const char* fpath);
 
 extern int g_last_attack_mode;
 extern float g_last_attack_time;
@@ -71,7 +72,7 @@ void WeaponsResource :: LoadAllWeaponSprites( void )
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		if ( rgWeapons[i].iId )
-			LoadWeaponSprites( &rgWeapons[i] );
+			LoadWeaponSprites( &rgWeapons[i], NULL );
 	}
 }
 
@@ -97,7 +98,7 @@ int WeaponsResource :: HasAmmo( WEAPON *p )
 }
 
 
-void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon )
+void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon, const char* customDir)
 {
 	int i;
 
@@ -125,7 +126,20 @@ void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon )
 	pWeapon->hAmmo = 0;
 	pWeapon->hAmmo2 = 0;
 
-	sprintf(sz, "sprites/%s.txt", pWeapon->szName);
+	if (customDir) {
+		const char* wepName = pWeapon->szName;
+		const char* last = strrchr(pWeapon->szName, '/');
+		if (last) {
+			wepName = last + 1; // strip folder path from non-default weapons (hlcoop/ hack)
+		}
+		snprintf(sz, sizeof(sz), "sprites/%s/%s.txt", customDir, wepName);
+		pWeapon->customHudLoaded = true;
+	}
+	else {
+		snprintf(sz, sizeof(sz), "sprites/%s.txt", pWeapon->szName);
+		pWeapon->customHudLoaded = false;
+	}
+
 	client_sprite_t *pList = SPR_GetList(sz, &i);
 
 	if (!pList)
@@ -289,8 +303,10 @@ DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
 DECLARE_MESSAGE(m_Ammo, WeaponListX);	// new weapon type (extra parameters)
 DECLARE_MESSAGE(m_Ammo, CustomWep);		// custom weapon parameters
 DECLARE_MESSAGE(m_Ammo, CustomWepEv);	// custom weapon parameters
+DECLARE_MESSAGE(m_Ammo, CustomHud);		// custom hud file for weapon
 DECLARE_MESSAGE(m_Ammo, PmodelAnim);	// player model anim
 DECLARE_MESSAGE(m_Ammo, WeaponBits);	// currently held weapons
+DECLARE_MESSAGE(m_Ammo, MatsPath);		// custom materials file
 DECLARE_MESSAGE(m_Ammo, AmmoX);			// update known ammo type's count
 DECLARE_MESSAGE(m_Ammo, AmmoXX);		// update known ammo type's count (higher max count)
 DECLARE_MESSAGE(m_Ammo, AmmoPickup);	// flashes an ammo pickup record
@@ -335,8 +351,10 @@ int CHudAmmo::Init(void)
 	HOOK_MESSAGE(WeaponListX);
 	HOOK_MESSAGE(CustomWep);
 	HOOK_MESSAGE(CustomWepEv);
+	HOOK_MESSAGE(CustomHud);
 	HOOK_MESSAGE(PmodelAnim);
 	HOOK_MESSAGE(WeaponBits);
+	HOOK_MESSAGE(MatsPath);
 	HOOK_MESSAGE(AmmoPickup);
 	HOOK_MESSAGE(WeapPickup);
 	HOOK_MESSAGE(ItemPickup);
@@ -1098,6 +1116,24 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 	return 1;
 }
 
+int CHudAmmo::MsgFunc_CustomHud(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	int weaponId = READ_BYTE();
+	const char* customDir = READ_STRING();
+
+	WEAPON* pWeapon = gWR.GetWeapon(weaponId);
+
+	if (pWeapon) {
+		if (customDir[0] || (pWeapon->customHudLoaded && !customDir[0]))
+			gWR.LoadWeaponSprites(pWeapon, customDir);
+	}
+	
+
+	return 1;
+}
+
 int CHudAmmo::MsgFunc_PmodelAnim(const char* pszName, int iSize, void* pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
@@ -1123,6 +1159,17 @@ int CHudAmmo::MsgFunc_WeaponBits(const char* pszName, int iSize, void* pbuf)
 
 	ModPlayerState& state = GetLocalPlayerState();
 	state.weaponBits = (high << 32) | low;
+
+	return 1;
+}
+
+int CHudAmmo::MsgFunc_MatsPath(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	const char* fpath = READ_STRING();
+	int loaded = LoadCustomMaterials(fpath);
+	PRINTF("Loaded %d custom materials from file\n%s\n", loaded, fpath);
 
 	return 1;
 }

@@ -649,7 +649,6 @@ EXPORT int SENTENCEG_GetIndex(const char *szrootname);
 EXPORT int SENTENCEG_Lookup(const char *sample, char *sentencenum, int bufsz);
 EXPORT int SENTENCEG_GroupCount(const char *groupName);
 
-EXPORT void TEXTURETYPE_Init();
 EXPORT char TEXTURETYPE_Find(char *name);
 
 // bulletEmitter = if set, message will be sent to all HL clients besides this player (otherwise all players)

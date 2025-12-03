@@ -314,27 +314,26 @@ void PM_SortTextures( void )
 	}
 }
 
-void PM_InitTextureTypes()
-{
+enum MaterialsInitState {
+	MATERIALS_NOT_INIT,     // materials not initialized
+	MATERIALS_INIT_DEFAULT, // initialized to default materials
+	MATERIALS_INIT_CUSTOM   // initialized to default + custom materials
+};
+
+MaterialsInitState g_bTextureTypeInit = MATERIALS_NOT_INIT;
+
+bool LoadMaterialsFile(const char* fpath) {
 	char buffer[512];
 	int i, j;
 	byte *pMemFile;
 	int fileSize, filePos;
-	static qboolean bTextureTypeInit = false;
 
-	if ( bTextureTypeInit )
-		return;
-
-	memset(&(grgszTextureName[0][0]), 0, CTEXTURESMAX * CBTEXTURENAMEMAX);
-	memset(grgchTextureType, 0, CTEXTURESMAX);
-
-	gcTextures = 0;
 	memset(buffer, 0, 512);
 
-	fileSize = pmove->COM_FileSize( "sound/materials.txt" );
-	pMemFile = pmove->COM_LoadFile( "sound/materials.txt", 5, NULL );
-	if ( !pMemFile )
-		return;
+	fileSize = pmove->COM_FileSize(fpath);
+	pMemFile = pmove->COM_LoadFile(fpath, 5, NULL);
+	if (!pMemFile)
+		return false;
 
 	filePos = 0;
 	// for each line in the file...
@@ -374,14 +373,45 @@ void PM_InitTextureTypes()
 		j = V_min (j, CBTEXTURENAMEMAX-1+i);
 		buffer[j] = 0;
 		strcpy_safe(&(grgszTextureName[gcTextures++][0]), &(buffer[i]), CBTEXTURENAMEMAX);
+
+		if (gcTextures >= CTEXTURESMAX) {
+			break;
+		}
 	}
 
 	// Must use engine to free since we are in a .dll
-	pmove->COM_FreeFile ( pMemFile );
+	pmove->COM_FreeFile(pMemFile);
+
+	return true;
+}
+
+int LoadCustomMaterials(const char* fpath) {
+	int before = gcTextures;
+
+	LoadMaterialsFile(fpath);
 
 	PM_SortTextures();
 
-	bTextureTypeInit = true;
+	g_bTextureTypeInit = MATERIALS_INIT_CUSTOM;
+
+	return gcTextures - before;
+}
+
+void PM_InitTextureTypes()
+{
+	if (g_bTextureTypeInit == MATERIALS_INIT_DEFAULT)
+		return;
+
+	memset(&(grgszTextureName[0][0]), 0, CTEXTURESMAX * CBTEXTURENAMEMAX);
+	memset(grgchTextureType, 0, CTEXTURESMAX);
+
+	gcTextures = 0;
+
+	LoadMaterialsFile("sound/materials.txt");
+
+	PM_SortTextures();
+
+	g_bTextureTypeInit = MATERIALS_INIT_DEFAULT;
 }
 
 char PM_FindTextureType( char *name )

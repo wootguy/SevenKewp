@@ -113,6 +113,8 @@ public:
 	string_t m_customModelV;
 	string_t m_customModelP;
 	string_t m_customModelW;
+	
+	string_t m_customSpriteDir; // override the default HUD config
 
 	const char* m_ammoModel;
 	const char* m_ammoModel2;

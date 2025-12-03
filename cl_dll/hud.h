@@ -119,8 +119,10 @@ public:
 	int MsgFunc_WeaponListX(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf);
+	int MsgFunc_CustomHud(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_PmodelAnim(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_WeaponBits(const char* pszName, int iSize, void* pbuf);
+	int MsgFunc_MatsPath(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_AmmoX(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_AmmoXX(const char *pszName, int iSize, void *pbuf);

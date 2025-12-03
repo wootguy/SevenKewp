@@ -35,6 +35,18 @@
 vec3_t vec3_origin( 0, 0, 0 ); // linux complains this is doubly defined, yet windows requires it
 #endif
 
+void printd(const char* format, ...) // use this to print inside pm_* code
+{
+	va_list		argptr;
+	static char		string[1024];
+
+	va_start(argptr, format);
+	vsnprintf(string, 1024, format, argptr);
+	va_end(argptr);
+
+	PRINTF(string);
+}
+
 bool g_crosshair_active;
 
 HSPRITE LoadSprite(const char *pszName)

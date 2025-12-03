@@ -34,6 +34,8 @@
 #include "vgui_ScorePanel.h"
 #include "engine_pv.h"
 
+void PM_InitTextureTypes();
+
 hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info from the engine
 extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player info sent directly to the client dll
 
@@ -592,6 +594,7 @@ void CHud::ParseServerInfo() {
 void CHud::WorldInit(void) {
 	InitEnginePv();
 	LoadHudSprites();
+	PM_InitTextureTypes();
 
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially
 	m_HUD_number_0 = GetSpriteIndex("number_0");

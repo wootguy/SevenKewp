@@ -22,6 +22,8 @@ extern uint64_t g_levelChangePluginTime;
 bool g_freeRoam;
 
 extern void W_Precache(void);
+void PM_InitTextureTypes();
+int LoadCustomMaterials(const char* fpath);
 
 // moved CWorld class definition to cbase.h
 //=======================
@@ -149,6 +151,8 @@ void CWorld::Precache(void)
 
 	CVAR_SET_STRING("room_type", "0");// clear DSP
 
+	g_footstepVariety = 2;
+
 	mapcycle_t oldCycle;
 	oldCycle.items = NULL;
 
@@ -190,8 +194,20 @@ void CWorld::Precache(void)
 
 	// init texture type array from materials.txt
 
-	TEXTURETYPE_Init();
+	PM_InitTextureTypes();
 
+	const char* matpath = UTIL_VarArgs("sound/%s/%s", STRING(gpGlobals->mapname), STRING(m_materialsFile));
+	std::string materials_abs_file = getGameFilePath(matpath, false);
+	if (!materials_abs_file.empty()) {
+		m_materialsFileNormalized = ALLOC_STRING(normalize_path(matpath).c_str());
+		PRECACHE_GENERIC(matpath);
+		int loaded = LoadCustomMaterials(matpath);
+		ALERT(at_console, "Loaded %d custom materials\n", loaded);
+	}
+
+	if (!g_bsp.loaded) {
+		LoadBsp();
+	}
 
 	// the area based ambient sounds MUST be the first precache_sounds
 
@@ -277,6 +293,19 @@ void CWorld::Precache(void)
 	PRECACHE_SOUND("weapons/distant/explode3.wav");
 	//PRECACHE_SOUND("weapons/distant/explode4.wav");
 	PRECACHE_SOUND("weapons/distant/explode5.wav");
+
+	static const char* expSounds[3] = {
+		"weapons/explode3.wav",
+		"weapons/explode4.wav",
+		"weapons/explode5.wav"
+	};
+
+	for (int i = 0; i < 3; i++) {
+		const char* repl = UTIL_GetReplacementSound(NULL, expSounds[i]);
+		if (strcmp(repl, expSounds[i])) {
+			PRECACHE_SOUND(repl);
+		}
+	}
 
 	// for sevenkewp clients
 	PRECACHE_GENERIC("sprites/" MOD_SPRITE_FOLDER "hud.txt");
@@ -464,6 +493,11 @@ void CWorld::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "sentence_file"))
 	{
 		m_sentenceFile = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "materials_file"))
+	{
+		m_materialsFile = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "freeroam"))
