@@ -102,7 +102,7 @@ void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon, const char* customDi
 {
 	int i;
 
-	int iRes = gHUD.getDesiredSpriteRes();
+	int iRes = gHUD.GetDesiredSpriteRes();
 
 #ifdef VANILLA_HL
 	char sz[128];
@@ -1381,8 +1381,10 @@ int CHudAmmo::Draw(float flTime)
 
 	if (m_fFade > 0)
 		m_fFade -= (gHUD.m_flTimeDelta * 20);
+	
+	unsigned long hudcolor = gHUD.GetHudColor();
 
-	UnpackRGB(r,g,b, RGB_YELLOWISH);
+	UnpackRGB(r,g,b, hudcolor);
 
 	ScaleColors(r, g, b, a );
 
@@ -1416,7 +1418,7 @@ int CHudAmmo::Draw(float flTime)
 
 			x += AmmoWidth/2;
 
-			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			UnpackRGB(r,g,b, hudcolor);
 
 			// draw the | bar
 			FillRGBA(x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a);
@@ -1649,42 +1651,8 @@ void CHudAmmo::DrawDynamicCrosshair() {
 	}
 
 	int r, g, b;
-	const char* rgb = m_hud_crosshair_color->string;
-	if (strlen(rgb) == 3) {
-		static const unsigned char hex_lut[256] = {
-			// 0x00 – 0x0F
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			// 0x10 – 0x1F
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			// 0x20 – 0x2F
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			// 0x30 – 0x3F   ('0'–'9')
-			0,1,2,3,4,5,6,7,8,9, 0,0,0,0,0,0,
-			// 0x40 – 0x4F   ('A'–'O')
-			0,10,11,12,13,14,15,0,0,0,0,0,0,0,0,0,
-			// 0x50 – 0x5F   ('P'–'_')
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			// 0x60 – 0x6F   ('`'–'o')
-			0,10,11,12,13,14,15,0,0,0,0,0,0,0,0,0,
-			// 0x70 – 0x7F   ('p'–DEL)
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			// 0x80 – 0xFF
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-		};
-
-		r = hex_lut[(uint8_t)rgb[0]] * 17;
-		g = hex_lut[(uint8_t)rgb[1]] * 17;
-		b = hex_lut[(uint8_t)rgb[2]] * 17;
-	}
-	else {
-		UnpackRGB(r, g, b, RGB_YELLOWISH);
+	if (!UTIL_ParseHexColor(m_hud_crosshair_color->string, r, g, b)) {
+		UnpackRGB(r, g, b, gHUD.GetHudColor());
 	}
 
 	bool drawDot = m_hud_crosshair_dot->value > 0;
@@ -1816,7 +1784,7 @@ int DrawBar(int x, int y, int width, int height, float f)
 		width -= w;
 	}
 
-	UnpackRGB(r, g, b, RGB_YELLOWISH);
+	UnpackRGB(r, g, b, gHUD.GetHudColor());
 
 	FillRGBA(x, y, width, height, r, g, b, 128);
 
@@ -1892,7 +1860,7 @@ int CHudAmmo::DrawWList(float flTime)
 	{
 		int iWidth;
 
-		UnpackRGB(r,g,b, RGB_YELLOWISH);
+		UnpackRGB(r,g,b, gHUD.GetHudColor());
 	
 		if ( iActiveSlot == i )
 			a = 255;
@@ -1951,7 +1919,7 @@ int CHudAmmo::DrawWList(float flTime)
 				wrect_t rcActive = akimbo ? p->rcAkimboActive : p->rcActive;
 				wrect_t rcInactive = akimbo ? p->rcAkimboInactive : p->rcInactive;
 
-				UnpackRGB( r,g,b, RGB_YELLOWISH );
+				UnpackRGB( r,g,b, gHUD.GetHudColor());
 			
 				// if active, then we must have ammo.
 
@@ -1993,7 +1961,7 @@ int CHudAmmo::DrawWList(float flTime)
 		{
 			// Draw Row of weapons.
 
-			UnpackRGB(r,g,b, RGB_YELLOWISH);
+			UnpackRGB(r,g,b, gHUD.GetHudColor());
 
 			for ( int iPos = 0; iPos < MAX_WEAPON_POSITIONS; iPos++ )
 			{
@@ -2004,7 +1972,7 @@ int CHudAmmo::DrawWList(float flTime)
 
 				if ( gWR.HasAmmo(p) )
 				{
-					UnpackRGB(r,g,b, RGB_YELLOWISH);
+					UnpackRGB(r,g,b, gHUD.GetHudColor());
 					a = 128;
 				}
 				else

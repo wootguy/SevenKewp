@@ -133,3 +133,7 @@ EXPORT void te_debug_beam(Vector start, Vector end, uint8_t life=50, RGBA c=RGBA
 // playSound: 1 = slow moving object, 2 = bullet, 3 = obnoxious player
 // skipEnt: don't send message to this player (for predicted splashes - server only)
 EXPORT void	UTIL_WaterSplashTrace(Vector from, Vector to, float scale, int playSound, edict_t* skipEnt);
+
+// parse a 3 digit hex color string into its components ("80F" -> purple)
+// return false if string is an invalid length
+EXPORT bool UTIL_ParseHexColor(const char* hex, int& r, int& g, int& b);

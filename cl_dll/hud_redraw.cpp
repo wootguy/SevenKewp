@@ -91,6 +91,14 @@ void CHud::Think(void)
 	}
 
 	Bench_CheckStart();
+
+	int r, g, b;
+	if (UTIL_ParseHexColor(m_hud_color->string, r, g, b)) {
+		m_cl_hud_color = (r << 16) | (g << 8) | b;
+	}
+	else {
+		m_cl_hud_color = 0;
+	}
 }
 
 // Redraw
@@ -343,28 +351,4 @@ int CHud::GetNumWidth( int iNumber, int iFlags )
 	return 3;
 
 }	
-
-int CHud::getDesiredSpriteRes() {
-	int iRes = 320;
-
-	if (m_pCvarHudScale->value > 0) {
-		static int resScales[4] = {
-			320, 640, 1280, 2560
-		};
-
-		int nScale = clamp(m_pCvarHudScale->value, 1, 4);
-		iRes = resScales[nScale - 1];
-	}
-	else {
-		if (ScreenWidth > 2560 && ScreenHeight > 1600)
-			iRes = 2560;
-		//else if (ScreenWidth >= 1280 && ScreenHeight > 720) // Valve scaling
-		else if (ScreenWidth >= 1280 && ScreenHeight > 768)
-			iRes = 1280;
-		else if (ScreenWidth >= 640)
-			iRes = 640;
-	}
-
-	return iRes;
-}
 

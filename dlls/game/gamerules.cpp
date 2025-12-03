@@ -207,6 +207,7 @@ void execMapCfg() {
 		"mp_default_medkit",
 		"mp_weaponhands",
 		"mp_hevsuit_voice",
+		"mp_hud_color",
 	};
 
 	static StringSet itemNames = {

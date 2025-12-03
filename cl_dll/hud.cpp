@@ -308,6 +308,19 @@ int __MsgFunc_AllowSpec(const char *pszName, int iSize, void *pbuf)
 	return 0;
 }
 
+int __MsgFunc_HudColor(const char* pszName, int iSize, void* pbuf)
+{
+	BEGIN_READ(pbuf, iSize);
+
+	uint32_t r = READ_BYTE();
+	uint32_t g = READ_BYTE();
+	uint32_t b = READ_BYTE();
+
+	gHUD.m_sv_hud_color = (r << 16) | (g << 8) | b;
+
+	return 1;
+}
+
 // This is called every time the DLL is loaded
 void CHud :: Init( void )
 {
@@ -347,6 +360,8 @@ void CHud :: Init( void )
 	HOOK_MESSAGE( SpecFade );
 	HOOK_MESSAGE( ResetFade );
 
+	HOOK_MESSAGE(HudColor);
+
 	// VGUI Menus
 	HOOK_MESSAGE( VGUIMenu );
 
@@ -368,6 +383,7 @@ void CHud :: Init( void )
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	m_pCvarHudScale = CVAR_CREATE( "hud_scale", "-1", FCVAR_ARCHIVE );
+	m_hud_color = CVAR_CREATE("hud_color", "0", FCVAR_ARCHIVE);
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 
 	m_pSpriteList = NULL;
@@ -470,8 +486,9 @@ void CHud :: VidInit( void )
 
 	m_hsprLogo = 0;
 	m_hsprCursor = 0;
+	m_sv_hud_color = 0;
 
-	m_iRes = gHUD.getDesiredSpriteRes();
+	m_iRes = gHUD.GetDesiredSpriteRes();
 
 	if (mouse_uncenter_phase == 3) // reset mouse uncentering logic for new server connection
 		mouse_uncenter_phase = 2;
@@ -795,4 +812,36 @@ float CHud::GetSensitivity( void )
 	return m_flMouseSensitivity;
 }
 
+int CHud::GetDesiredSpriteRes() {
+	int iRes = 320;
 
+	if (m_pCvarHudScale->value > 0) {
+		static int resScales[4] = {
+			320, 640, 1280, 2560
+		};
+
+		int nScale = clamp(m_pCvarHudScale->value, 1, 4);
+		iRes = resScales[nScale - 1];
+	}
+	else {
+		if (ScreenWidth > 2560 && ScreenHeight > 1600)
+			iRes = 2560;
+		//else if (ScreenWidth >= 1280 && ScreenHeight > 720) // Valve scaling
+		else if (ScreenWidth >= 1280 && ScreenHeight > 768)
+			iRes = 1280;
+		else if (ScreenWidth >= 640)
+			iRes = 640;
+	}
+
+	return iRes;
+}
+
+unsigned long CHud::GetHudColor() {
+	if (m_cl_hud_color)
+		return m_cl_hud_color;
+
+	if (m_sv_hud_color)
+		return m_sv_hud_color;
+
+	return RGB_YELLOWISH;
+}

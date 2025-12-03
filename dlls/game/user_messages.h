@@ -59,6 +59,7 @@ EXPORT extern int gmsgWaterSplash; // chumtoad attack
 EXPORT extern int gmsgPredFiles; // prediction related file indexes
 EXPORT extern int gmsgMatsPath; // path to a custom materials file
 EXPORT extern int gmsgCustomHud; // custom hud dir to load for a weapon
+EXPORT extern int gmsgHudColor; // Set default HUD color
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 

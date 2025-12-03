@@ -63,6 +63,7 @@ int gmsgWaterSplash = 0;
 int gmsgPredFiles = 0;
 int gmsgMatsPath = 0;
 int gmsgCustomHud = 0;
+int gmsgHudColor = 0;
 
 std::vector<UserMessage> g_userMessages;
 
@@ -172,4 +173,5 @@ void LinkUserMessages(void)
 	gmsgPredFiles = REG_USER_MSG("PredFiles", -1);
 	gmsgMatsPath = REG_USER_MSG("MatsPath", -1);
 	gmsgCustomHud = REG_USER_MSG("CustomHud", -1);
+	gmsgHudColor = REG_USER_MSG("HudColor", 3);
 }

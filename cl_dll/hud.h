@@ -695,10 +695,13 @@ public:
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
 	cvar_t	*m_pCvarHudScale;
+	cvar_t  *m_hud_color;
 	cvar_t* default_fov;
 	int m_sevenkewpVersion;
 	bool m_sevenkewpDataUpdating;
 	bool m_is_map_loaded;
+	unsigned int m_cl_hud_color; // hud color set by the client
+	unsigned int m_sv_hud_color; // hud color set by the server/map
 
 	int m_iFontHeight;
 	int DrawHudNumber(int x, int y, int iFlags, int iNumber, int r, int g, int b );
@@ -706,12 +709,13 @@ public:
 	int DrawHudStringReverse( int xpos, int ypos, int iMinX, char *szString, int r, int g, int b );
 	int DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b );
 	int GetNumWidth(int iNumber, int iFlags);
+	unsigned long GetHudColor();
 
 	// for disabling features that could be used to cheat on vanilla servers
 	inline bool IsSevenKewpServer() { return m_sevenkewpVersion > 0; }
 	
 	// return desired HUD sprite scaling resolution key (320, 640, 1280, 2560)
-	int getDesiredSpriteRes();
+	int GetDesiredSpriteRes();
 
 private:
 	// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.

@@ -53,7 +53,7 @@ HSPRITE LoadSprite(const char *pszName)
 {
 	char sz[256]; 
 
-	int iRes = gHUD.getDesiredSpriteRes();
+	int iRes = gHUD.GetDesiredSpriteRes();
 
 	sprintf(sz, pszName, iRes);
 

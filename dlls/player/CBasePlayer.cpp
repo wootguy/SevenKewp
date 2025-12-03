@@ -6666,6 +6666,15 @@ void CBasePlayer::QueryClientTypeFinished() {
 			MESSAGE_END();
 		}
 
+		int r, g, b;
+		if (UTIL_ParseHexColor(mp_hud_color.string, r, g, b)) {
+			MESSAGE_BEGIN(MSG_ONE, gmsgHudColor, NULL, pev);
+			WRITE_BYTE(r);
+			WRITE_BYTE(g);
+			WRITE_BYTE(b);
+			MESSAGE_END();
+		}
+
 		// activate fog
 		if (g_fog_enabled) {
 			CBaseEntity* ent = NULL;
