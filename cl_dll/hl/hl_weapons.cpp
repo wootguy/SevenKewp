@@ -540,7 +540,8 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		if (emptyClip && !(iFlags() & ITEM_FLAG_NOAUTORELOAD) && m_flNextPrimaryAttack < epsilon)
 		{
 			Reload();
-			return;
+			if (m_fInReload)
+				return;
 		}
 
 		WeaponIdle( );

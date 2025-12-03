@@ -34,6 +34,7 @@ This file contains "stubs" of class member implementations so that we can predic
 #include	"weapon/CBasePlayerItem.h"
 #include	"weapon/CBasePlayerWeapon.h"
 #include	"weapon/CGrenade.h"
+#include	"CWeaponCustom.h"
 #include	"env/effects.h"
 
 // Globals used by game logic
@@ -460,6 +461,10 @@ void CBaseToggle::PlaySentence(const char* pszSentence, float duration, float vo
 void CBaseToggle::PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity* pListener) {}
 void CBaseToggle::SentenceStop(void) {}
 void CBasePlayerWeapon::GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount) {}
+
+void CProjectileCustom::Spawn() {}
+void CProjectileCustom::Precache() {}
+int	CProjectileCustom::Classify(void) { return 0; }
 
 void lagcomp_begin(CBasePlayer* plr) {}
 void lagcomp_end() {}

@@ -22,9 +22,6 @@
 #include "gamerules.h"
 #include "weapon/CCrowbar.h"
 
-#define	CROWBAR_BODYHIT_VOLUME 128
-#define	CROWBAR_WALLHIT_VOLUME 512
-
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar )
 
 

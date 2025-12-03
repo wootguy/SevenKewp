@@ -76,10 +76,19 @@ R_StudioDrawModel
 */
 int R_StudioDrawModel( int flags )
 {
-	if (IEngineStudio.GetCurrentEntity() == gEngfuncs.GetViewModel() && IsViewModelAkimbo()) {
-		CustomWeaponParams* params = GetCurrentCustomWeaponParams();
-		g_StudioRenderer.StudioDrawModel(flags, false, NULL);
-		return g_StudioRenderer.StudioDrawModel(flags, true, params);
+	if (IEngineStudio.GetCurrentEntity() == gEngfuncs.GetViewModel()) {
+		bool isZoomed = gHUD.m_Ammo.IsWeaponZoomed();
+		WEAPON* pw = gHUD.m_Ammo.m_pWeapon;
+
+		if (pw && pw->hZoomedCrosshair && isZoomed && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR)) {
+			return 0; // don't draw weapon model when zooming through a scope
+		}
+
+		if (IsViewModelAkimbo()) {
+			CustomWeaponParams* params = GetCurrentCustomWeaponParams();
+			g_StudioRenderer.StudioDrawModel(flags, false, NULL);
+			return g_StudioRenderer.StudioDrawModel(flags, true, params);
+		}
 	}
 
 	return g_StudioRenderer.StudioDrawModel(flags, false, NULL);

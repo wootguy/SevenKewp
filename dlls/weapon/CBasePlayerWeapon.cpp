@@ -9,6 +9,7 @@
 #include "CBasePlayerWeapon.h"
 #include "user_messages.h"
 #include "pm_shared.h"
+#include "CWeaponCustom.h"
 
 TYPEDESCRIPTION	CBasePlayerWeapon::m_SaveData[] =
 {
@@ -225,7 +226,8 @@ void CBasePlayerWeapon::ItemPostFrame(void)
 			if (emptyClip && !(iFlags() & ITEM_FLAG_NOAUTORELOAD) && m_flNextPrimaryAttack < (UseDecrement() ? 0.0 : gpGlobals->time))
 			{
 				Reload();
-				return;
+				if (m_fInReload)
+					return;
 			}
 		}
 
@@ -366,7 +368,7 @@ void CBasePlayerWeapon::SendWeaponAnim(int iAnim, int skiplocal, int body)
 	if (!m_pPlayer)
 		return;
 
-	if (UseDecrement())
+	if (UseDecrement() && skiplocal != -1)
 		skiplocal = 1;
 	else
 		skiplocal = 0;
@@ -391,7 +393,8 @@ void CBasePlayerWeapon::SendWeaponAnimSpec(int iAnim) {
 	if (!m_pPlayer)
 		return;
 
-	bool isPredicted = m_pPlayer->IsSevenKewpClient();
+	CWeaponCustom* wc = MyWeaponCustomPtr();
+	bool isPredicted = wc && wc->IsPredicted();
 
 	// play animation for spectators
 	for (int i = 1; i < gpGlobals->maxClients; i++) {

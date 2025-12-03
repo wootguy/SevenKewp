@@ -1,5 +1,6 @@
 #pragma once
 #include "CBasePlayerWeapon.h"
+#include "CProjectileCustom.h"
 #include "custom_weapon.h"
 #include "event_args.h"
 #include "shared_util.h"
@@ -46,6 +47,7 @@ public:
 	const char* wmodelAkimbo; // world model used in akimbo mode
 	const char* wrongClientWeapon; // weapon given to players who don't have the correct client to use this one
 	int ammoFreqs[3]; // ammo frequency counters for each attack
+	int animCount; // counter for ordered weapon aimations
 
 	// for prediction code, don't spam events/toggles while waiting for the new server state
 	float m_lastZoomToggle;
@@ -98,19 +100,24 @@ public:
 	void PrimaryAttack(void) override;
 	void SecondaryAttack(void) override;
 	void TertiaryAttack(void) override;
+	virtual void PrimaryAttackCustom(void) {} // override this to add custom server-side logic to your weapon.
+	virtual void SecondaryAttackCustom(void) {} // override this to add custom server-side logic to your weapon
+	virtual void TertiaryAttackCustom(void) {} // override this to add custom server-side logic to your weapon
+	virtual void WeaponIdleCustom(void) {} // override this to add custom server-side logic after the weapon has idled
 	bool CommonAttack(int attackIdx, int* clip, bool leftHand, bool akimboFire); // true if attacked
 	void Cooldown(int attackIdx, int overrideMillis=-1);
 	bool Chargeup(int attackIdx, bool leftHand, bool akimboFire);
 	void FinishAttack(int attackIdx);
 	void FailAttack(int attackIdx, bool leftHand, bool akimboFire);
 	void KickbackPrediction();
-	void ToggleZoom(int zoomFov);
+	void ToggleZoom(int zoomFov, int zoomFov2);
 	void ToggleLaser();
 	void HideLaser(bool hideNotUnhide);
 	void CancelZoom();
 	bool CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq);
 	void SendPredictionData(edict_t* target, PredictionDataSendMode sendMode=WC_PRED_SEND_INIT);
 	inline bool HasPredictionData(edict_t* target) { return m_predDataSent[m_iId] & PLRBIT(target); }
+	bool IsPredicted();
 
 	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft=0);
 	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire);

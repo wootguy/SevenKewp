@@ -2,6 +2,7 @@
 #include "extdll.h"
 #include "util.h"
 #include "ammo.h"
+#include "CBaseEntity.h"
 
 class EXPORT CBasePlayerAmmo : public CBaseEntity
 {

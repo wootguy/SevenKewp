@@ -26,11 +26,16 @@
 #define FL_WC_WEP_USE_ONLY			(1<<10)	// weapon is collectable with the use key, not by touching
 #define FL_WC_WEP_HAS_LASER			(1<<11)
 #define FL_WC_WEP_DYNAMIC_ACCURACY	(1<<12) // crosshair widens with movement and shrinks when crouched
+#define FL_WC_WEP_ZOOM_SPR_STRETCH	(1<<13) // zoom crosshair stretches to fit the screen
+#define FL_WC_WEP_ZOOM_SPR_ASPECT	(1<<14) // zoom crosshair keeps its aspect ratio when stretched to fit the screen, and borders are filled black
+#define FL_WC_WEP_EMPTY_IDLES		(1<<15) // The last half of idles are for when the clip is empty
+#define FL_WC_WEP_NO_PREDICTION		(1<<16) // Disable client-side prediction entirely
 
 #define FL_WC_SHOOT_UNDERWATER 1
-#define FL_WC_SHOOT_NO_ATTACK 2		// don't run standard weapon attack logic (shoot animations, clicking)
-#define FL_WC_SHOOT_COOLDOWN_IDLE 4	// cooldown the idle animations even if not attacking
-#define FL_WC_SHOOT_NEED_AKIMBO 8	// don't allow attack if not holding the akimbo version of the weapon
+#define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
+#define FL_WC_SHOOT_COOLDOWN_IDLE 4		// cooldown the idle animations even if not attacking
+#define FL_WC_SHOOT_NEED_AKIMBO 8		// don't allow attack if not holding the akimbo version of the weapon
+#define FL_WC_SHOOT_NEED_FULL_COST 16	// don't allow attack if clip is less than ammo cost
 
 #define FL_WC_BULLETS_DYNAMIC_SPREAD 1	// spread widens while moving and tightens while crouching
 #define FL_WC_BULLETS_NO_DECAL 2		// don't show gunshot particles and decal at impact point
@@ -43,6 +48,7 @@
 
 #define FL_WC_ANIM_NO_RESET 1	// don't restart the animation if the desired anim is already playing
 #define FL_WC_ANIM_PMODEL 2		// animate the third-person weapon model, not the first-person one 
+#define FL_WC_ANIM_ORDERED 4	// play multiple animations in order, not randomly
 
 #define FL_WC_PUNCH_SET 1		// don't randomize angles, set to exactly what was given
 #define FL_WC_PUNCH_NO_RETURN 2	// view does not return to center after the punch
@@ -213,9 +219,9 @@ struct WepEvt {
 		} punch;
 
 		struct {
-			uint8_t flags : 2; // FL_WC_ANIM_*
+			uint8_t flags : 5; // FL_WC_ANIM_*
 			uint8_t akimbo : 3; // WeaponCustomAnimHand
-			uint8_t numAnim : 3;
+			uint8_t numAnim;
 			uint8_t anims[MAX_WC_RANDOM_SELECTION];
 		} anim;
 
@@ -240,6 +246,7 @@ struct WepEvt {
 
 		struct {
 			uint8_t zoomFov;
+			uint8_t zoomFov2; // 2nd level zoom FOV
 		} zoomToggle;
 
 		struct {
@@ -607,6 +614,11 @@ struct WepEvt {
 		return *this;
 	}
 
+	WepEvt ProjClass(string_t clazz) {
+		proj.entity_class = clazz;
+		return* this;
+	}
+
 	WepEvt ProjPhysics(float gravity, float elasticity=0.8f, float air_friction=0, float water_friction=0) {
 		proj.gravity = gravity;
 		proj.elasticity = elasticity;
@@ -618,6 +630,11 @@ struct WepEvt {
 	WepEvt ProjAvel(Vector avel) {
 		*(Vector*)proj.avel = avel;
 		proj.hasAvel = true;
+		return *this;
+	}
+
+	WepEvt ProjModel(uint16_t modelIdx) {
+		proj.model = modelIdx;
 		return *this;
 	}
 
@@ -657,9 +674,10 @@ struct WepEvt {
 		return *this;
 	}
 
-	WepEvt ToggleZoom(uint8_t zoomFov) {
+	WepEvt ToggleZoom(uint8_t zoomFov, uint8_t zoomFov2=0) {
 		evtType = WC_EVT_TOGGLE_ZOOM;
 		zoomToggle.zoomFov = zoomFov;
+		zoomToggle.zoomFov2 = zoomFov2;
 		return *this;
 	}
 
@@ -737,7 +755,7 @@ struct WeaponCustomLaser {
 };
 
 struct CustomWeaponParams {
-	uint16_t flags; // FL_WC_WEP_*
+	uint32_t flags; // FL_WC_WEP_*
 	uint16_t maxClip;
 	uint16_t vmodel;
 	uint8_t deployAnim;

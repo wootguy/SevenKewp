@@ -157,6 +157,9 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 			pev->avelocity.z = 0;
 			pev->angles.z = RANDOM_LONG(0,360);
 			pev->nextthink = gpGlobals->time + 10.0;
+
+			pev->starttime = 0;
+			pev->impacttime = 0;
 		}
 
 		if (UTIL_PointContents(pev->origin) != CONTENTS_WATER)

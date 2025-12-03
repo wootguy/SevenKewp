@@ -1,15 +1,18 @@
 #pragma once
 #include "CBasePlayerWeapon.h"
 
-class CCrowbar : public CBasePlayerWeapon
+#define	CROWBAR_BODYHIT_VOLUME 128
+#define	CROWBAR_WALLHIT_VOLUME 512
+
+class EXPORT CCrowbar : public CBasePlayerWeapon
 {
 public:
 	void Spawn( void );
 	void Precache( void );
 	void PrecacheEvents();
 	int iItemSlot( void ) { return 1; }
-	void EXPORT SwingAgain( void );
-	void EXPORT Smack( void );
+	void SwingAgain( void );
+	void Smack( void );
 	int GetItemInfo(ItemInfo *p);
 
 	void PrimaryAttack( void );

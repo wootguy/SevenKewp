@@ -31,6 +31,7 @@
 #include "custom_weapon.h"
 #include "ModPlayerState.h"
 #include "shared_util.h"
+#include "triangleapi.h"
 
 CustomWeaponParams* GetCustomWeaponParams(int id);
 void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY, float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy);
@@ -43,6 +44,7 @@ bool IsPredictionWeaponZoomed();
 extern int g_last_attack_mode;
 extern float g_last_attack_time;
 extern vec3_t v_punchangle;
+extern bool is_software_renderer;
 
 // for aborting an action while holding an exclusive weapon
 bool ExclusiveWeaponAbort() {
@@ -885,7 +887,7 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId);
 	memset(&parms, 0, sizeof(CustomWeaponParams));
 
-	parms.flags = READ_SHORT();
+	parms.flags = READ_LONG();
 	parms.maxClip = READ_SHORT();
 
 	parms.vmodel = READ_SHORT();
@@ -1041,9 +1043,9 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			break;
 		case WC_EVT_WEP_ANIM: {
 			uint8_t packedHeader = READ_BYTE();
-			evt.anim.flags = packedHeader >> 6;
-			evt.anim.akimbo = (packedHeader >> 3) & 0x7;
-			evt.anim.numAnim = packedHeader & 0x7;
+			evt.anim.flags = packedHeader >> 3;
+			evt.anim.akimbo = packedHeader & 0x7;
+			evt.anim.numAnim = READ_BYTE();
 			for (int k = 0; k < evt.anim.numAnim && k < MAX_WC_RANDOM_SELECTION; k++) {
 				evt.anim.anims[k] = READ_BYTE();
 			}
@@ -1071,6 +1073,7 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			break;
 		case WC_EVT_TOGGLE_ZOOM:
 			evt.zoomToggle.zoomFov = READ_BYTE();
+			evt.zoomToggle.zoomFov2 = READ_BYTE();
 			break;
 		case WC_EVT_HIDE_LASER:
 			evt.laserHide.millis = READ_SHORT();
@@ -1425,6 +1428,64 @@ int CHudAmmo::Draw(float flTime)
 	return 1;
 }
 
+void DrawStretchedZoomCrosshair(HSPRITE spr, wrect_t rect, bool aspectCorrection) {
+	int w = rect.right - rect.left;
+	int h = rect.bottom - rect.top;
+	int sw = ScreenWidth;
+	int sh = ScreenHeight;
+
+	int minX = 0;
+	int minY = 0;
+	int maxX = sw;
+	int maxY = sh;
+
+	if (aspectCorrection) {
+		if (sw - w < sh - h) {
+			float scale = sw / (float)w;
+			w *= scale;
+			h *= scale;
+
+			int border = (sh - h) / 2;
+			minY = border;
+			maxY = sh - border;
+
+			gEngfuncs.pfnFillRGBABlend(0, 0, sw, border, 0, 0, 0, 255);
+			gEngfuncs.pfnFillRGBABlend(0, sh - border, sw, border, 0, 0, 0, 255);
+		}
+		else {
+			float scale = sh / (float)h;
+			w *= scale;
+			h *= scale;
+
+			int border = (sw - w) / 2;
+			minX = border;
+			maxX = sw - border;
+
+			gEngfuncs.pfnFillRGBABlend(0, 0, border, sh, 0, 0, 0, 255);
+			gEngfuncs.pfnFillRGBABlend(sw - border, 0, border, sh, 0, 0, 0, 255);
+		}
+	}
+
+	gEngfuncs.pTriAPI->RenderMode(kRenderTransTexture);
+	gEngfuncs.pTriAPI->SpriteTexture((model_t*)gEngfuncs.GetSpritePointer(spr), 0);
+	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+
+	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 1.0f);
+	gEngfuncs.pTriAPI->Vertex3f(minX, minY, 0);
+
+	gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+	gEngfuncs.pTriAPI->Vertex3f(minX, maxY, 0);
+
+	gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
+	gEngfuncs.pTriAPI->Vertex3f(maxX, maxY, 0);
+
+	gEngfuncs.pTriAPI->TexCoord2f(1.0f, 1.0f);
+	gEngfuncs.pTriAPI->Vertex3f(maxX, minY, 0);
+
+	gEngfuncs.pTriAPI->End();
+	gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
+}
+
 // converts an accuracy in degrees to a pixel gap for the crosshair
 int CrosshairGapPixels(float accuracyDeg, bool isVertical) {
 	int screenW = ScreenWidth;
@@ -1595,12 +1656,23 @@ void CHudAmmo::DrawDynamicCrosshair() {
 		return;
 	}
 
-	if (pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR))
+	CustomWeaponParams* wcparams = GetCustomWeaponParams(pw->iId);
+	bool shouldDrawZoomCrosshair = pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR);
+	bool shouldStretchZoom = wcparams && (wcparams->flags & FL_WC_WEP_ZOOM_SPR_STRETCH);
+
+	if (shouldDrawZoomCrosshair && !shouldStretchZoom) {
 		return;
+	}
 
 	if (g_crosshair_active) {
 		static wrect_t nullrc;
 		SetCrosshair(0, nullrc, 0, 0, 0);
+	}
+
+	if (shouldDrawZoomCrosshair && shouldStretchZoom && !is_software_renderer) {
+		bool aspectCorrection = wcparams && wcparams->flags & FL_WC_WEP_ZOOM_SPR_ASPECT;
+		DrawStretchedZoomCrosshair(pw->hZoomedCrosshair, pw->rcZoomedCrosshair, aspectCorrection);
+		return;
 	}
 	
 	float accuracyX = pw->accuracyX;

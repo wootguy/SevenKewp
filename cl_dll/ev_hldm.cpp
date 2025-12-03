@@ -1862,6 +1862,11 @@ void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, f
 	int entidx = player->index;
 	Vector origin = player->origin;
 
+	if (!soundPath) {
+		PRINTF("Bad sound index %d\n", sndIdx);
+		return;
+	}
+
 	if (panning == 1) {
 		// playing sounds in stereo sounds kind of cool but this method of panning is bad
 		// and shifts ears as you turn around

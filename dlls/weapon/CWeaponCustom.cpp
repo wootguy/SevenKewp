@@ -1,4 +1,5 @@
 #include "CWeaponCustom.h"
+#include "hlds_hooks.h"
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud_iface.h"
@@ -114,7 +115,7 @@ const char* CWeaponCustom::GetAnimSet() {
 
 	if (IsAkimbo())
 		validAnimExt = animExtAkimbo;
-	else if (m_pPlayer->m_iFOV != 0)
+	else if (m_pPlayer->m_iFOV != 0 && animExtZoom)
 		validAnimExt = animExtZoom;
 
 	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE_COOP) {
@@ -163,6 +164,7 @@ BOOL CWeaponCustom::Deploy()
 	m_fInReload = false;
 	m_bInAkimboReload = false;
 	m_fInSpecialReload = 0;
+	animCount = 0;
 	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
 	int ret = TRUE;
 
@@ -391,19 +393,29 @@ void CWeaponCustom::WeaponIdle() {
 	}
 
 	WeaponCustomIdle* idles = params.idles;
+	int idleCount = 4;
+
 	if (IsAkimbo())
 		idles = params.akimbo.idles;
 	else if (IsLaserOn())
 		idles = params.laser.idles;
 
+	if (params.flags & FL_WC_WEP_EMPTY_IDLES) {
+		idleCount = 2;
+
+		if (m_iClip == 0) {
+			idles = idles + 2;
+		}
+	}
+
 	int idleSum = 0;
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < idleCount; i++) {
 		idleSum += idles[i].weight;
 	}
 
 	int idleRnd = (UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0.0, 1.0) + 0.005f) * idleSum;
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < idleCount; i++) {
 		WeaponCustomIdle& idle = idles[i];
 		idleRnd -= idle.weight;
 
@@ -414,6 +426,8 @@ void CWeaponCustom::WeaponIdle() {
 			break;
 		}
 	}
+
+	WeaponIdleCustom();
 }
 
 void CWeaponCustom::ItemPostFrame() {
@@ -631,6 +645,14 @@ void CWeaponCustom::SecondaryAttack() {
 	else if (params.flags & FL_WC_WEP_HAS_SECONDARY) {
 		static int nullclip;
 		int* clip2 = m_iSecondaryAmmoType >= 0 ? &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] : &nullclip;
+		
+		switch (opts.ammoPool) {
+		case WC_AMMOPOOL_PRIMARY_CLIP: clip2 = &m_iClip; break;
+		case WC_AMMOPOOL_PRIMARY_RESERVE: clip2 = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]; break;
+		case WC_AMMOPOOL_SECONDARY_RESERVE: clip2 = &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]; break;
+		default: break;
+		}
+		
 		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
 		if (CommonAttack(1, clip2, false, false)) {
@@ -686,15 +708,17 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 
 	m_bWantAkimboReload = false;
 
-	if (attackIdx == 1) {
-		clipLeft = m_iSecondaryAmmoType >= 0 ? m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] : 0;
-	}
-
 	if (!Chargeup(attackIdx, leftHand, akimboFire))
 		return false;
 
 	if (isNormalAttack) {
-		if (clipLeft <= 0) {
+		CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+		if (clipLeft < opts.ammoCost && opts.flags & FL_WC_SHOOT_NEED_FULL_COST) {
+			Reload();
+			return false;
+		}
+
+		if (clipLeft <= 0 && opts.ammoCost > 0) {
 			if (!m_fInReload) {
 				Cooldown(-1, 150);
 				PlayEmptySound();
@@ -739,6 +763,13 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	}
 
 	Cooldown(attackIdx);
+
+	switch (attackIdx) {
+	case 0: PrimaryAttackCustom(); break;
+	case 1: SecondaryAttackCustom(); break;
+	case 2: TertiaryAttackCustom(); break;
+	default: break;
+	}
 
 	return true;
 }
@@ -794,13 +825,13 @@ bool CWeaponCustom::Chargeup(int attackIdx, bool leftHand, bool akimboFire) {
 	float& chargeStart = attackIdx == 0 ? m_flChargeStartPrimary : m_flChargeStartSecondary;
 
 	if (!chargeStart) {
-		chargeStart = WallTime();
+		chargeStart = gpGlobals->time;
 		int e = (attackIdx == 0) ? WC_TRIG_PRIMARY_CHARGE : WC_TRIG_SECONDARY_CHARGE;
 		ProcessEvents(e, 0, leftHand, akimboFire);
 		m_pPlayer->ApplyEffects();
 	}
 
-	return WallTime() - chargeStart > opts.chargeTime * 0.001f;
+	return gpGlobals->time - chargeStart > opts.chargeTime * 0.001f;
 }
 
 void CWeaponCustom::FinishAttack(int attackIdx) {
@@ -865,17 +896,23 @@ void CWeaponCustom::KickbackPrediction() {
 #endif
 }
 
-void CWeaponCustom::ToggleZoom(int zoomFov) {
+void CWeaponCustom::ToggleZoom(int zoomFov, int zoomFov2) {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
 
+	int newFov = 0;
+
 	if (m_pPlayer->m_iFOV) {
-		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
+		if (m_pPlayer->m_iFOV == zoomFov && zoomFov2) {
+			newFov = zoomFov2;
+		}
 	}
 	else {
-		m_pPlayer->pev->fov = m_pPlayer->m_iFOV = zoomFov;
+		newFov = zoomFov;
 	}
+
+	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = newFov;
 
 #ifdef CLIENT_DLL
 	UpdateZoomCrosshair(m_iId, m_pPlayer->m_iFOV != 0);
@@ -918,7 +955,7 @@ void CWeaponCustom::CancelZoom() {
 		return;
 
 	if (m_pPlayer->m_iFOV) {
-		ToggleZoom(0);
+		ToggleZoom(0, 0);
 	}
 }
 
@@ -938,10 +975,21 @@ bool CWeaponCustom::CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector 
 	return false;
 }
 
+bool CWeaponCustom::IsPredicted() {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return false;
+
+	return !(params.flags & FL_WC_WEP_NO_PREDICTION) || !m_pPlayer->IsSevenKewpClient();
+}
 
 
 void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode sendMode) {
 #ifndef CLIENT_DLL
+	if (params.flags & FL_WC_WEP_NO_PREDICTION) {
+		return;
+	}
+
 	if (HasPredictionData(target) && sendMode == WC_PRED_SEND_INIT) {
 		//ALERT(at_console, "PLayer already has the prediction data\n");
 		return;
@@ -952,7 +1000,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 	if (sendMode == WC_PRED_SEND_INIT || sendMode == WC_PRED_SEND_INIT) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeapon, NULL, target);
 		WRITE_BYTE(m_iId); sentBytes += 1;
-		WRITE_SHORT(params.flags); sentBytes += 2;
+		WRITE_LONG(params.flags); sentBytes += 4;
 		WRITE_SHORT(params.maxClip); sentBytes += 2;
 
 		WRITE_SHORT(params.vmodel); sentBytes += 2;
@@ -1092,8 +1140,9 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 				WRITE_BYTE(evt.setBody.newBody); sentBytes += 1;
 				break;
 			case WC_EVT_WEP_ANIM: {
-				uint8_t packedAnimHeader = (evt.anim.flags << 6) | (evt.anim.akimbo << 3) | evt.anim.numAnim;
+				uint8_t packedAnimHeader = (evt.anim.flags << 3) | (evt.anim.akimbo);
 				WRITE_BYTE(packedAnimHeader); sentBytes += 1;
+				WRITE_BYTE(evt.anim.numAnim); sentBytes += 1;
 				for (int i = 0; i < evt.anim.numAnim; i++) {
 					WRITE_BYTE(evt.anim.anims[i]); sentBytes += 1;
 				}
@@ -1120,6 +1169,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 				break;
 			case WC_EVT_TOGGLE_ZOOM:
 				WRITE_BYTE(evt.zoomToggle.zoomFov); sentBytes += 1;
+				WRITE_BYTE(evt.zoomToggle.zoomFov2); sentBytes += 1;
 				break;
 			case WC_EVT_HIDE_LASER:
 				WRITE_SHORT(evt.laserHide.millis); sentBytes += 2;
@@ -1264,7 +1314,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
 	Vector vecEnd;
 
-	bool isPredicted = m_pPlayer->IsSevenKewpClient();
+	bool isPredicted = IsPredicted();
 	BULLET_PREDICTION predFlag = isPredicted ? BULLETPRED_EVENTLESS : BULLETPRED_NONE;
 
 	lagcomp_begin(m_pPlayer);
@@ -1351,13 +1401,28 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_BANANA Not implemented\n");
 		break;
 	case WC_PROJECTILE_BOLT:
-		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_BOLT Not implemented\n");
+		shootEnt = CCrossbowBolt::BoltCreate();
+		shootEnt->pev->origin = projectile_ori;
+		shootEnt->pev->angles = m_pPlayer->pev->v_angle;
+		shootEnt->pev->owner = m_pPlayer->edict();
+
+		if (m_pPlayer->pev->waterlevel == 3)
+		{
+			shootEnt->pev->velocity = vecDir * BOLT_WATER_VELOCITY;
+			shootEnt->pev->speed = BOLT_WATER_VELOCITY;
+		}
+		else
+		{
+			shootEnt->pev->velocity = vecDir * BOLT_AIR_VELOCITY;
+			shootEnt->pev->speed = BOLT_AIR_VELOCITY;
+		}
+		shootEnt->pev->avelocity.z = 10;
 		break;
 	case WC_PROJECTILE_HVR:
 		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_HVR Not implemented\n");
 		break;
 	case WC_PROJECTILE_SHOCK:
-		shootEnt = CShockBeam::CreateShockBeam(projectile_ori, projectile_dir_angles, m_pPlayer);
+		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_SHOCK Not implemented\n");
 		break;
 	case WC_PROJECTILE_HORNET:
 		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_HORNET Not implemented\n");
@@ -1402,9 +1467,15 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		*/
 		break;
 	}
-	case WC_PROJECTILE_CUSTOM:
-		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_CUSTOM Not implemented\n");
+	case WC_PROJECTILE_CUSTOM: {
+		shootEnt = CBaseEntity::Create(STRING(evt.proj.entity_class), projectile_ori, projectile_dir_angles, false);
+		shootEnt->pev->velocity = projectile_velocity;
+		shootEnt->pev->owner = m_pPlayer->edict();
+		edict_t* ed = shootEnt->edict();
+		DispatchSpawnGame(ed);
+		shootEnt = CBaseEntity::Instance(ed);
 		break;
+	}
 	case WC_PROJECTILE_OTHER:
 		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_OTHER Not implemented\n");
 		break;
@@ -1422,6 +1493,10 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 			//float dur = evt.proj.follow_time[1];
 			ALERT(at_error, "WeaponCustom: Projectile follow mode not implemented\n");
 			//g_Scheduler.SetTimeout("projectile_follow_aim", evt.proj.follow_time[0], h_plr, h_proj, @state.active_opts, dur);
+		}
+
+		if (evt.proj.model) {
+			SET_MODEL(shootEnt->edict(), INDEX_MODEL(evt.proj.model));
 		}
 
 		//EHANDLE mdlHandle = shootEnt->edict();
@@ -1497,6 +1572,10 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		// TODO: health set here
 		shootEnt->pev->friction = 1.0f - evt.proj.elasticity;
 		shootEnt->pev->gravity = evt.proj.gravity;
+
+		if (!shootEnt->pev->gravity && shootEnt->pev->movetype == MOVETYPE_BOUNCE) {
+			shootEnt->pev->gravity = FLT_MIN;
+		}
 
 		/*
 		if (shootEnt->pev->gravity == 0)
@@ -1588,7 +1667,7 @@ void CWeaponCustom::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 	WC_EV_LocalSound(evt, idx, channel, pitch, volume, attn, panning);
 #else
 	
-	if (m_pPlayer->IsSevenKewpClient()) {
+	if (IsPredicted()) {
 		uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
 		StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(idx), volume, attn,
 			SND_FL_PREDICTED, pitch, m_pPlayer->pev->origin, messageTargets);
@@ -1628,7 +1707,7 @@ void CWeaponCustom::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bo
 	Vector ShellVelocity = vel + right * fR + up * fU + forward * 25;
 	Vector ShellOrigin = ori + up* upScale + forward*forwardScale + right*rightScale;
 
-	bool predicted = m_pPlayer->IsSevenKewpClient();
+	bool predicted = IsPredicted();
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
@@ -1679,7 +1758,15 @@ void CWeaponCustom::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	if (!evt.anim.numAnim)
 		return;
 
-	int idx = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.anim.numAnim - 1);
+	int idx = 0;
+
+	if (evt.anim.flags & FL_WC_ANIM_ORDERED) {
+		idx = (animCount++ % evt.anim.numAnim);
+	}
+	else {
+		idx = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.anim.numAnim - 1);
+	}
+
 	int anim = evt.anim.anims[idx];
 
 	bool leftOnly = evt.anim.akimbo == WC_ANIM_LEFT_HAND || (evt.anim.akimbo == WC_ANIM_TRIG_HAND && leftHand);
@@ -1775,7 +1862,7 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire);
 		break;
 	case WC_EVT_TOGGLE_ZOOM:
-		ToggleZoom(evt.zoomToggle.zoomFov);
+		ToggleZoom(evt.zoomToggle.zoomFov, evt.zoomToggle.zoomFov2);
 		ProcessEvents(m_pPlayer->m_iFOV ? WC_TRIG_ZOOM_IN : WC_TRIG_ZOOM_OUT, 0);
 		break;
 	case WC_EVT_TOGGLE_LASER:
@@ -1975,7 +2062,7 @@ void CWeaponCustom::UpdateLaser() {
 
 			int beamWidth = 3;
 
-			if (plr == m_pPlayer && plr->IsSevenKewpClient())
+			if (plr == m_pPlayer && IsPredicted())
 				continue; // own laser is predicted
 
 			// is first-person and owner
