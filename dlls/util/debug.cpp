@@ -344,6 +344,10 @@ void clearNetworkMessageHistory() {
 	}
 }
 
+int LastMsgSize() {
+	return g_lastMsg.sz;
+}
+
 #ifdef DEBUG
 EXPORT edict_t* DBG_EntOfVars(const entvars_t* pev)
 {

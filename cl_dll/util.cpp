@@ -92,3 +92,51 @@ const char* FindGameFile(const char* path) {
 
 	return NULL;
 }
+
+Vector WorldToScreen(const Vector& P, const Vector& viewerOrigin, const Vector& viewerAngles, float fovXDeg) {
+	Vector forward, right, up;
+	AngleVectors(viewerAngles, forward, right, up);
+
+	Vector rel = P - viewerOrigin;
+
+	float x = DotProduct(rel, right);
+	float y = DotProduct(rel, up);
+	float z = DotProduct(rel, forward);
+
+	int screenW = ScreenWidth;
+	int screenH = ScreenHeight;
+	float aspect = (float)screenW / (float)screenH;
+
+	// convert to actual horizontal FOV for this aspect
+	float baseAspect = 4.0f / 3.0f;
+	float fovXRad43 = fovXDeg * (M_PI / 180.0f);
+	float fovXRad = 2.0f * atan(tan(fovXRad43 * 0.5f) * (aspect / baseAspect));
+	float fovYRad = 2.0f * atan(tan(fovXRad * 0.5f) / aspect);
+	float f = 1.0f / tan(fovYRad * 0.5f);
+
+	float ndcX = (x * f / aspect) / z;
+	float ndcY = (y * f) / z;
+
+	float screenX = (ndcX + 1.0f) * 0.5f * screenW;
+	float screenY = (1.0f - ndcY) * 0.5f * screenH;
+
+	return { screenX, screenY, z };
+}
+
+extern Vector v_origin;
+extern Vector v_angles;
+extern vec3_t cam_ofs;
+extern int cam_thirdperson;
+extern bool b_viewing_cam;
+
+Vector WorldToScreen(const Vector& P) {
+	Vector angles = v_angles;
+
+	if (cam_thirdperson && !b_viewing_cam) {
+		angles.x = cam_ofs.x;
+		angles.y = cam_ofs.y;
+		angles.z = 0; // tilt isn't applied in thirdperson
+	}
+
+	return WorldToScreen(P, v_origin, angles, gHUD.m_iFOV);
+}

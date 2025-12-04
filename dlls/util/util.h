@@ -429,6 +429,12 @@ EXPORT void			UTIL_ClientPrintAll(PRINT_TYPE print_type, const char *msg);
 EXPORT void			UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix=NULL,
 						bool teamMessage=false, edict_t* target=NULL, uint32_t mutes=0, int customColor=-1, const char* customName=NULL);
 
+// print a console font HUD message to the client
+EXPORT void UTIL_ClientHudConPrint(CBaseEntity* client, const hudconparms_t& params, const char* msg, bool reliable = true);
+
+// print a console font HUD message to all clients
+EXPORT void UTIL_ClientHudConPrintAll(const hudconparms_t& params, const char* msg, bool reliable = true);
+
 class CBasePlayerItem;
 class CBasePlayer;
 EXPORT BOOL UTIL_GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );

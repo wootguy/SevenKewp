@@ -11,8 +11,6 @@
 #include "pm_shared.h"
 
 extern Vector v_origin;
-extern Vector v_angles;
-extern vec3_t cam_ofs;
 extern int cam_thirdperson;
 extern bool b_viewing_cam;
 
@@ -34,36 +32,6 @@ int CHudNametags::Init(void)
 	return 1;
 }
 
-Vector WorldToScreen(const Vector& P, const Vector& CamPos, const Vector& anglesDeg, float fovXDeg) {
-    Vector forward, right, up;
-    AngleVectors(anglesDeg, forward, right, up);
-
-    Vector rel = P - CamPos;
-
-    float x = DotProduct(rel, right);
-    float y = DotProduct(rel, up);
-    float z = DotProduct(rel, forward);
-
-    int screenW = ScreenWidth;
-    int screenH = ScreenHeight;
-    float aspect = (float)screenW / (float)screenH;
-
-    // convert to actual horizontal FOV for this aspect
-    float baseAspect = 4.0f / 3.0f;
-    float fovXRad43 = fovXDeg * (M_PI / 180.0f);
-    float fovXRad = 2.0f * atan(tan(fovXRad43 * 0.5f) * (aspect / baseAspect));
-    float fovYRad = 2.0f * atan(tan(fovXRad * 0.5f) / aspect);
-    float f = 1.0f / tan(fovYRad * 0.5f);
-
-    float ndcX = (x * f / aspect) / z;
-    float ndcY = (y * f) / z;
-
-    float screenX = (ndcX + 1.0f) * 0.5f * screenW;
-    float screenY = (1.0f - ndcY) * 0.5f * screenH;
-
-    return { screenX, screenY, z };
-}
-
 int CHudNametags::Draw(float flTime)
 {
 	if (m_HUD_nametags->value <= 0)
@@ -73,16 +41,6 @@ int CHudNametags::Draw(float flTime)
         return 0; // no cheating in hldm
 
 	cl_entity_t* localPlayer = GetLocalPlayer();
-
-    Vector angles = v_angles;
-    
-    if (cam_thirdperson && !b_viewing_cam) {
-        angles.x = cam_ofs.x;
-        angles.y = cam_ofs.y;
-        angles.z = 0; // tilt isn't applied in thirdperson
-    }
-
-    float fov = gHUD.m_iFOV;
 
     static Vector targetOri[32];
     static Vector lastOri[32];
@@ -156,7 +114,7 @@ int CHudNametags::Draw(float flTime)
             }
         }
 
-        Vector screenOri = WorldToScreen(tagOri, v_origin, angles, fov);
+        Vector screenOri = WorldToScreen(tagOri);
 
         //int m_iBeam = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/smoke.spr");
         //gEngfuncs.pEfxAPI->R_BeamPoints(headOri, v_origin, m_iBeam, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1);

@@ -423,6 +423,7 @@ void CHud :: Init( void )
 	m_ClientUpdater.Init();
 	m_Nametags.Init();
 	m_Debug.Init();
+	m_HudConPrint.Init();
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
 
 	m_Menu.Init();
@@ -508,6 +509,7 @@ void CHud :: VidInit( void )
 
 	GetClientVoiceMgr()->VidInit();
 	m_Fog.VidInit();
+	m_HudConPrint.VidInit();
 }
 
 void CHud::LoadHudSprites(void) {

@@ -1427,6 +1427,71 @@ void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix
 	}
 }
 
+void UTIL_ClientHudConPrint(CBaseEntity* client, const hudconparms_t& params, const char* msg, bool reliable) {
+	uint8_t msgfl = 0;
+
+	if (params.xPercent || params.yPercent)
+		msgfl |= FL_HUDCON_MSG_PERCENT;
+	if (params.xEm || params.yEm)
+		msgfl |= FL_HUDCON_MSG_EM;
+	if (params.xPixels || params.yPixels)
+		msgfl |= FL_HUDCON_MSG_PIXELS;
+	if (params.attachEnt) {
+		msgfl |= FL_HUDCON_MSG_ENT;
+		if (params.xWorld || params.yWorld || params.zWorld)
+			msgfl |= FL_HUDCON_MSG_WORLD;
+	}
+	if (params.flags & FL_HUDCON_WORLD)
+		msgfl |= FL_HUDCON_MSG_WORLD;
+
+	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgHudConPrint, NULL, client->pev);
+	
+	WRITE_BYTE(msgfl);
+
+	if (msgfl & FL_HUDCON_MSG_PERCENT) {
+		WRITE_SHORT((uint16_t)clampf(params.xPercent * 65535.0f, 0, 65535));
+		WRITE_SHORT((uint16_t)clampf(params.yPercent * 65535.0f, 0, 65535));
+	}
+	if (msgfl & FL_HUDCON_MSG_EM) {
+		WRITE_SHORT((int16_t)clampf(params.xEm * 100, -32768, 32767));
+		WRITE_SHORT((int16_t)clampf(params.yEm * 100, -32768, 32767));
+	}
+	if (msgfl & FL_HUDCON_MSG_PIXELS) {
+		WRITE_SHORT(params.xPixels);
+		WRITE_SHORT(params.yPixels);
+	}
+	if (msgfl & FL_HUDCON_MSG_WORLD) {
+		WRITE_SHORT(params.xWorld);
+		WRITE_SHORT(params.yWorld);
+		WRITE_SHORT(params.zWorld);
+	}
+	if (msgfl & FL_HUDCON_MSG_ENT) {
+		WRITE_SHORT(params.attachEnt);
+	}
+
+	WRITE_BYTE(params.r);
+	WRITE_BYTE(params.g);
+	WRITE_BYTE(params.b);
+	WRITE_SHORT(params.holdTime);
+	WRITE_BYTE(params.id);
+
+	uint8_t packedFlags = (params.flags << 2) | params.alignment;
+	WRITE_BYTE(packedFlags);
+
+	WRITE_STRING(msg);
+
+	MESSAGE_END();
+}
+
+void UTIL_ClientHudConPrintAll(const hudconparms_t& params, const char* msg, bool reliable) {
+	for (int i = 1; i < gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+		if (plr)
+			UTIL_ClientHudConPrint(plr, params, msg, reliable);
+	}
+}
+
 char *UTIL_dtos1( int d )
 {
 	static char buf[8];

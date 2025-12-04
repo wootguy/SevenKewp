@@ -28,6 +28,35 @@ struct custom_muzzle_flash_t {
 #define FL_SPRITEADV_MOVE_ACCEL_Y 16 // effect has Y velocity parameter
 #define FL_SPRITEADV_MOVE_ACCEL_Z 32 // effect has Z velocity parameter
 
+#define FL_HUDCON_MSG_PERCENT 1			// message contains offset percentage parameters
+#define FL_HUDCON_MSG_PIXELS 2			// message contains offset pixel parameters
+#define FL_HUDCON_MSG_EM 4				// message contains offset em parameters
+#define FL_HUDCON_MSG_WORLD 8			// message contains world coordinates
+#define FL_HUDCON_MSG_ENT 16			// message contains an entity attachment
+
+#define FL_HUDCON_WORLD 1				// use world coordinates
+#define FL_HUDCON_XRAY 2				// show text even if origin is hidden behind a wall
+
+enum HudConAlignment {
+	HUDCON_ALIGN_LEFT,
+	HUDCON_ALIGN_RIGHT,
+	HUDCON_ALIGN_CENTER,
+};
+
+struct hudconparms_t
+{
+	float		xPercent, yPercent;		// offset in percentage of screen
+	float		xEm, yEm;				// offset in percentage of font size (width/height of the letter A)
+	int16_t		xPixels, yPixels;		// offset in exact pixels
+	int16_t		xWorld, yWorld, zWorld; // absolute position in the world, or offset from attachment ent
+	uint16_t	attachEnt;				// entity index to attach to (text will be invisible if the entity isn't in PVS)
+	uint8_t		r, g, b;				// font color (0,0,0 = use client default)
+	uint16_t	holdTime;				// milliseconds to display
+	uint8_t		id;						// IDs are used to update existing elements. 0 = untracked.
+	uint8_t		alignment : 2;			// HudConAlignment
+	uint8_t		flags : 6;				// FL_HUDCON_
+};
+
 struct SpriteAdvArgs {
 	int16_t x, y, z;
 	int16_t modelIdx;

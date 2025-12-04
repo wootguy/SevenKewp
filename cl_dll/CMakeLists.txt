@@ -45,6 +45,7 @@ set(HUD_SRC
 	geiger.cpp
 	health.cpp
 	hud.cpp
+	hud_conprint.cpp
 	hud_bench.cpp
 	hud_benchtrace.cpp
 	hud_msg.cpp

@@ -358,6 +358,17 @@ private:
 	struct cvar_s *	m_HUD_saytext_lines;
 };
 
+class CHudConPrint : public CHudBase
+{
+public:
+	int Init(void);
+	int VidInit(void);
+	int Draw(float flTime);
+	int MsgFunc_HudConPrint(const char* pszName, int iSize, void* pbuf);
+	virtual const char* HudName() { return "CHudConPrint"; }
+};
+
+
 class CHudClientStats : public CHudBase
 {
 public:
@@ -760,6 +771,7 @@ public:
 	CHudClientUpdater	m_ClientUpdater;
 	CHudNametags	m_Nametags;
 	CHudDebug		m_Debug;
+	CHudConPrint	m_HudConPrint;
 
 	void Init( void );
 	void VidInit( void ); // called on server connection or video mode change

@@ -81,5 +81,7 @@ void log_msg(msg_info& msg);
 EXPORT void writeNetworkMessageHistory(std::string reason);
 EXPORT void clearNetworkMessageHistory();
 
+EXPORT int LastMsgSize();
+
 // for debugging
 bool ModelIsValid(entvars_t* edict, studiohdr_t* header);
