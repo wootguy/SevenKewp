@@ -244,6 +244,8 @@ public:
 	int MsgFunc_StatusText( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_StatusValue( const char *pszName, int iSize, void *pbuf );
 
+	struct cvar_s* m_HUD_centerid;
+
 protected:
 	enum { 
 		MAX_STATUSTEXT_LENGTH = 128,
@@ -259,8 +261,6 @@ protected:
 
 	// an array of colors...one color for each line
 	float *m_pflNameColors[MAX_STATUSBAR_LINES];
-
-	struct cvar_s* m_HUD_centerid;
 };
 
 struct extra_player_info_t 
@@ -269,6 +269,8 @@ struct extra_player_info_t
 	short deaths;
 	uint16_t playerclass;
 	uint32_t health;
+	uint32_t max_health;
+	uint32_t armor;
 	int specMode; // which spectate mode the player is in
 	int specTarget; // which player is being spectated
 	bool dead; // UNUSED currently, spectator UI would like this
@@ -358,6 +360,7 @@ private:
 	struct cvar_s *	m_HUD_saytext_lines;
 };
 
+
 class CHudConPrint : public CHudBase
 {
 public:
@@ -366,6 +369,17 @@ public:
 	int Draw(float flTime);
 	int MsgFunc_HudConPrint(const char* pszName, int iSize, void* pbuf);
 	virtual const char* HudName() { return "CHudConPrint"; }
+};
+
+
+class CHudEntStatus : public CHudBase
+{
+public:
+	int Init(void);
+	int VidInit(void);
+	int Draw(float flTime);
+	int MsgFunc_StringIdx(const char* pszName, int iSize, void* pbuf);
+	virtual const char* HudName() { return "CHudEntStatus"; }
 };
 
 
@@ -431,8 +445,10 @@ public:
 	int Draw(float flTime);
 	virtual const char* HudName() { return "CHudNametags"; }
 
-private:
 	struct cvar_s* m_HUD_nametags;
+	struct cvar_s* m_HUD_nametag_info;
+
+private:
 	struct cvar_s* m_HUD_nametag_hp;
 };
 
@@ -772,6 +788,7 @@ public:
 	CHudNametags	m_Nametags;
 	CHudDebug		m_Debug;
 	CHudConPrint	m_HudConPrint;
+	CHudEntStatus	m_HudEntStatus;
 
 	void Init( void );
 	void VidInit( void ); // called on server connection or video mode change

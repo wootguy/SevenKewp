@@ -948,3 +948,39 @@ bool UTIL_ParseHexColor(const char* hex, int& r, int& g, int& b) {
 
 	return true;
 }
+
+// compress to a 16 bit "float" that can display all uint values
+// with suffixes to hide precision (2k instead of 2321)
+uint16_t UTIL_CompressUint(uint32_t v) {
+	uint16_t mantissa = 0;
+	uint16_t exponent = 0;
+
+	v = V_max(0, v);
+	
+	if (v >= 1000*1000*10) {
+		mantissa = v / (1000U*1000U);
+		exponent = 2;
+	}
+	else if (v >= 1000 * 10) {
+		mantissa = v / 1000U;
+		exponent = 1;
+	}
+	else {
+		mantissa = v;
+		exponent = 0;
+	}
+
+	return (exponent << 14) | mantissa;
+}
+
+uint32_t UTIL_DecompressUint(uint16_t v) {
+	uint32_t mantissa = v & 0x3FFF;
+	uint32_t exponent = (v >> 14);
+
+	switch (exponent) {
+	case 0: return mantissa;
+	case 1: return mantissa * 1000U;
+	case 2: return mantissa * 1000U * 1000U;
+	default: return mantissa * 1000U * 1000U * 1000U; // not possible but here anyway
+	}
+}

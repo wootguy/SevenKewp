@@ -58,6 +58,7 @@
 #include "shake.h"
 #include "screenfade.h"
 #include "mstream.h"
+#include "shared_util.h"
 
 extern int g_iVisibleMouse;
 class CCommandMenu;
@@ -2123,12 +2124,16 @@ int TeamFortressViewport::MsgFunc_TagInfo(const char* pszName, int iSize, void* 
 {
 	BEGIN_READ(pbuf, iSize);
 	uint8_t cl = READ_BYTE();
-	uint32_t health = READ_LONG();
+	uint32_t health = UTIL_DecompressUint(READ_SHORT());
+	uint32_t max_health = UTIL_DecompressUint(READ_SHORT());
+	uint32_t armor = UTIL_DecompressUint(READ_SHORT());
 	uint8_t observer = READ_BYTE();
 
 	if (cl > 0 && cl <= MAX_PLAYERS)
 	{
 		g_PlayerExtraInfo[cl].health = health;
+		g_PlayerExtraInfo[cl].max_health = max_health;
+		g_PlayerExtraInfo[cl].armor = armor;
 		g_PlayerExtraInfo[cl].specMode = observer & 0x7;
 		g_PlayerExtraInfo[cl].specTarget = observer >> 3;
 

@@ -14,6 +14,7 @@
 #include "CBasePlayer.h"
 #include "explode.h"
 #include "te_effects.h"
+#include "CBreakable.h"
 
 extern CGraph WorldGraph;
 extern DLL_GLOBAL Vector		g_vecAttackDir;
@@ -1975,6 +1976,34 @@ const char* CBaseEntity::DisplayName() {
 	}
 
 	return STRING(pev->classname);
+}
+
+const char* CBaseEntity::DisplayHint() {
+	const char* hint = "";
+
+	if (IsRepairable()) {
+		hint = "Repairable with wrench";
+	}
+	else if (IsBreakable()) {
+		if (m_breakFlags & FL_BREAK_EXPLOSIVES_ONLY) {
+			hint = "Explosive damage only";
+		}
+		else if (m_breakFlags & FL_BREAK_INSTANT) {
+			CBreakable* breakable = (CBreakable*)this;
+
+			// don't care if it's not much hp anyway
+			if (pev->health > 20) {
+				if (breakable->m_breakWeapon == BREAK_INSTANT_WRENCH) {
+					hint = "Wrench instant break";
+				}
+				else {
+					hint = "Crowbar instant break";
+				}
+			}
+		}
+	}
+
+	return hint;
 }
 
 bool CBaseEntity::IsDelaySpawned() {

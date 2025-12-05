@@ -3,6 +3,7 @@
 #include "saverestore.h"
 #include <stdint.h>
 #include <unordered_set>
+#include "string_deltas.h"
 
 class CBaseEntity;
 class CBaseMonster;
@@ -119,6 +120,14 @@ struct InventoryRules {
 
 #define BREAK_INSTANT_WRENCH 20
 
+// monster to monster relationship types
+#define R_AL	-2 // (ALLY) pals. Good alternative to R_NO when applicable.
+#define R_FR	-1// (FEAR)will run
+#define	R_NO	0// (NO RELATIONSHIP) disregard
+#define R_DL	1// (DISLIKE) will attack
+#define R_HT	2// (HATE)will attack this character instead of any visible DISLIKEd characters
+#define R_NM	3// (NEMESIS)  A monster Will ALWAYS attack its nemsis, no matter what
+
 enum Materials {
 	matGlass = 0,
 	matWood,
@@ -198,6 +207,10 @@ public:
 	float m_waterFriction;
 	float m_buoyancy;
 	float m_splashSize;
+
+	// saves cycles in addtofullpack
+	dstring_t m_cachedDisplayName;
+	dstring_t m_cachedDisplayHint;
 
 	// fundamental callbacks
 	void (CBaseEntity ::* m_pfnThink)(void);
@@ -285,10 +298,16 @@ public:
 	virtual BOOL	IsButton() { return FALSE; }
 	virtual BOOL	IsTank() { return FALSE; }
 	virtual BOOL	IsItem() { return FALSE; }
+	virtual BOOL	IsPushable() { return FALSE; }
 	virtual BOOL	IsWeaponCustom() { return FALSE; }
 	virtual	BOOL	IsMonsterMaker(void) { return FALSE; }
+	inline BOOL		IsRepairable() {
+		return (IsMachine() && IRelationship(CLASS_PLAYER, Classify()) == R_AL)
+			|| (IsBreakable() && (m_breakFlags & FL_BREAK_REPAIRABLE));
+	}
 	virtual const char* TeamID(void) { return ""; }
 	virtual const char* DisplayName();
+	virtual const char* DisplayHint(); // extra text to show in status bar
 	virtual const char* GetDeathNoticeWeapon() { return STRING(pev->classname); };
 
 

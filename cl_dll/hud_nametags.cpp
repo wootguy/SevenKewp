@@ -13,12 +13,13 @@
 extern Vector v_origin;
 extern int cam_thirdperson;
 extern bool b_viewing_cam;
+extern int g_plr_look_index;
 
 extern hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS + 1];	   // player info from the engine
 extern extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS + 1];
 
 float* GetClientColor(int clientIndex);
-
+const char* GetStatusString(uint32_t hp, uint32_t ap, bool invincible);
 
 int CHudNametags::Init(void)
 {
@@ -26,6 +27,7 @@ int CHudNametags::Init(void)
 
 	m_HUD_nametags = gEngfuncs.pfnRegisterVariable("cl_nametags", "1", FCVAR_ARCHIVE | FCVAR_USERINFO);
 	m_HUD_nametag_hp = gEngfuncs.pfnRegisterVariable("cl_nametags_hp", "1", FCVAR_ARCHIVE);
+	m_HUD_nametag_info = gEngfuncs.pfnRegisterVariable("cl_nametags_info", "0", FCVAR_ARCHIVE);
 
 	m_iFlags |= HUD_INTERMISSION | HUD_ACTIVE; // is always drawn during an intermission
 
@@ -126,7 +128,7 @@ int CHudNametags::Draw(float flTime)
         GetConsoleStringSize(name, &nameWidth, &nameHeight);
         
         const char* hpStr = "";
-        int hp = info.health;
+        int hp = (info.health / (float)info.max_health) * 100;
         int hpWidth = 0;
         int hpHeight = 0;
         
@@ -204,6 +206,16 @@ int CHudNametags::Draw(float flTime)
             RGB distColor(160, 160, 160);
             x = screenOri.x - distWidth * 0.5f;
             DrawConsoleString(x, y + nameHeight, dist, distColor);
+        }
+
+        // merge status hud details
+        if (m_HUD_nametag_info->value > 0 && g_plr_look_index == i + 1) {
+            int w, h;
+            const char* detailStr = GetStatusString(info.health, info.armor, false);
+            GetConsoleStringSize(detailStr, &w, &h);
+
+            x = screenOri.x - w * 0.5f;
+            DrawConsoleString(x, y - nameHeight, detailStr);
         }
 	}
 

@@ -40,6 +40,7 @@ public:
 	virtual int		Restore(CRestore& restore);
 	virtual BOOL IsAllowedToSpeak() { return TRUE; }
 	virtual BOOL IsButton() { return TRUE; }
+	virtual const char* DisplayHint();
 
 	enum BUTTON_CODE { BUTTON_NOTHING, BUTTON_ACTIVATE, BUTTON_RETURN };
 	BUTTON_CODE	ButtonResponseToTouch(void);

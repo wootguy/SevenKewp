@@ -137,3 +137,8 @@ EXPORT void	UTIL_WaterSplashTrace(Vector from, Vector to, float scale, int playS
 // parse a 3 digit hex color string into its components ("80F" -> purple)
 // return false if string is an invalid length
 EXPORT bool UTIL_ParseHexColor(const char* hex, int& r, int& g, int& b);
+
+// compress to a 16 bit "float" that can display all uint values
+// but with suffixes to hide precision (20k instead of 20321)
+uint16_t UTIL_CompressUint(uint32_t v);
+uint32_t UTIL_DecompressUint(uint16_t v);

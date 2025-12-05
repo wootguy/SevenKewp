@@ -55,6 +55,7 @@ set(HUD_SRC
 	hud_update.cpp
 	hud_nametags.cpp
 	hud_debug.cpp
+	hud_entstatus.cpp
 	menu.cpp
 	message.cpp
 	saytext.cpp
@@ -139,6 +140,7 @@ set(UTIL_SRC
 	engine_pv.cpp
 	util.cpp
 	../dlls/util/HashMap.cpp
+	../dlls/util/StringPool.cpp
 	../common/parsemsg.cpp
 	../pm_shared/pm_debug.cpp
 	../pm_shared/pm_math.cpp

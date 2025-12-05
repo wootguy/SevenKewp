@@ -55,6 +55,8 @@
 #include "CWeaponCustom.h"
 #include "CEnvWeather.h"
 #include "prediction_files.h"
+#include "string_deltas.h"
+#include "monsters.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -403,6 +405,8 @@ void ClientPutInServer( edict_t *pEntity )
 	MESSAGE_BEGIN(MSG_ONE, SVC_STUFFTEXT, NULL, pEntity);
 	WRITE_STRING("httpstop\n");
 	MESSAGE_END();
+
+	InitStringDeltasForPlayer(pPlayer);
 
 	pPlayer->m_initSoundTime = gpGlobals->time + 1.0f;
 
@@ -936,6 +940,8 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	GeneratePredicionData();
 
+	InitStringDeltas();
+
 	uint64_t hookStartTime = getEpochMillis();
 	CALL_HOOKS_VOID(pfnServerActivate);
 	g_levelChangePluginTime += getEpochMillis() - hookStartTime;
@@ -1066,6 +1072,8 @@ void StartFrame( void )
 	}
 
 	lagcomp_update();
+
+	BroadcastEntNames();
 
 	g_Scheduler.Think();
 
@@ -1264,6 +1272,7 @@ void SpectatorThink( edict_t *pEntity )
 int g_numEdictOverflows[32];
 int g_numPacketEntities[32];
 int g_newPacketEnts;
+bool g_sevenkewpPackUpdate;
 
 /*
 ================
@@ -1324,6 +1333,7 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 	g_numEdictOverflows[g_packClientIdx] = 0;
 	g_numPacketEntities[g_packClientIdx] = 0;
 	g_newPacketEnts = 0;
+	g_sevenkewpPackUpdate = plr->IsSevenKewpClient();
 }
 
 #include "entity_state.h"
@@ -1549,6 +1559,42 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		state->eflags |= EFLAG_FLESH_SOUND;
 	else
 		state->eflags &= ~EFLAG_FLESH_SOUND;
+
+	if (g_sevenkewpPackUpdate) {
+		// extra data needed for status text
+		bool isBreakable = baseent->IsBreakable() && !(baseent->m_breakFlags & FL_BREAK_TRIGGER_ONLY);
+		bool isButton = baseent->IsButton() && baseent->DisplayHint()[0];
+		bool isMon = baseent->IsNormalMonster() || baseent->IsPlayer() || baseent->IsMachine();
+
+		if (isMon || isBreakable || isButton || baseent->IsPushable()) {
+			int irel = plr->IRelationship(baseent);
+
+			uint32_t color = 0;
+
+			if (irel == R_AL) {
+				color = 0x9F9;
+			}
+			else if (irel == R_DL || irel == R_HT || irel == R_NM) {
+				color = 0xF44;
+			}
+
+			bool invincible = (ent->v.flags & FL_GODMODE) || (ent->v.takedamage == DAMAGE_NO);
+			
+			uint32_t packedStatusInfo =
+				((invincible ? 1U : 0U) << 31) |
+				(((uint32_t)baseent->m_cachedDisplayHint & 0x1FF) << 22)
+				| (((uint32_t)baseent->m_cachedDisplayName & 0x3FF) << 12)
+				| (color & 0xFFF);
+
+			state->health = UTIL_CompressUint(ent->v.health);
+			state->iuser3 = packedStatusInfo;
+
+			if (isMon && !baseent->IsAlive() || ent->v.health < 0)
+				state->health = 0; // don't show hp needed to gib
+
+			g_visibleEntNames[e] = true;
+		}
+	}
 
 	/*
 	if (baseent->IsBSPModel() && baseent->pev->solid != SOLID_NOT) {

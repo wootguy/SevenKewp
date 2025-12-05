@@ -340,7 +340,9 @@ public:
 
 	// updates for frequently updated details like HP
 	float m_lastTagUpdate;
-	uint8_t m_lastTagHp;
+	uint16_t m_lastTagHp;
+	uint16_t m_lastTagMaxHp;
+	uint16_t m_lastTagArmor;
 	uint8_t m_lastTagObserver;
 
 	virtual void Spawn( void );

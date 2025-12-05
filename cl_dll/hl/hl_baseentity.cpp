@@ -73,11 +73,13 @@ void CBaseEntity::SetClassify( int ) { }
 void CBaseEntity::Spawn() { }
 void CBaseEntity::Precache() { }
 const char* CBaseEntity::DisplayName() { return NULL; }
+const char* CBaseEntity::DisplayHint() { return NULL; }
 bool CBaseEntity::BreakableUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) { return false; }
 void CBaseEntity::BreakableDie(CBaseEntity* pActivator) { }
 void CBaseEntity::BreakableDamageSound() { }
 bool CBaseEntity::IsDelaySpawned() { return 0; }
 void CBaseEntity::ItemBounceTouch(CBaseEntity* pOther) {}
+int CBaseEntity::IRelationship(int, int) { return 0; }
 Vector CBaseEntity::GetLookDirection() { return g_vecZero; }
 Vector CBasePlayer::GetLookDirection() { return g_vecZero; }
 

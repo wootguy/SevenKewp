@@ -33,11 +33,13 @@ public:
 	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void	EXPORT StopSound(void);
 	void	EXPORT MoveThink(void);
+	virtual BOOL	IsPushable() { return TRUE; }
 	void    PostMove(bool clampSpeed); // clamps velocity and plays movement sounds
 	//	virtual void	SetActivator( CBaseEntity *pActivator ) { m_pPusher = pActivator; }
 	BOOL	IsBreakable() { return pev->spawnflags & SF_PUSH_BREAKABLE; }
 
 	const char* DisplayName();
+	const char* DisplayHint();
 
 	virtual int	ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_CONTINUOUS_USE | FCAP_ONOFF_USE; }
 	virtual int		Save(CSave& save);
@@ -433,7 +435,29 @@ const char* CPushable::DisplayName() {
 	if (m_displayName) {
 		return STRING(m_displayName);
 	}
-	return m_breakExplodeMag ? "Pushable Explosives" : "Pushable";
+	return "Pushable";
+}
+
+const char* CPushable::DisplayHint() {
+	if (m_breakExplodeMag) {
+		if (pev->spawnflags & SF_PUSH_LIFTABLE) {
+			return "Explosive. Press USE key to lift.";
+		}
+		else {
+			return "Explosive. Cannot lift.";
+		}
+	}
+	else {
+		if (pev->spawnflags & SF_PUSH_LIFTABLE) {
+			return "Press USE key to lift";
+		}
+		else {
+			return "Cannot lift";
+		}
+	}
+	
+
+	return "";
 }
 
 void CPushable::Lift() {

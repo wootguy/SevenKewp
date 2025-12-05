@@ -537,3 +537,19 @@ void CBaseButton::ButtonBackHome(void)
 	}
 }
 
+const char* CBaseButton::DisplayHint() {
+	bool damagable = pev->takedamage == DAMAGE_YES;
+	bool touchable = pev->spawnflags & SF_BUTTON_TOUCH_ONLY;
+	bool canTriggerNow = m_toggle_state == TS_AT_BOTTOM;
+	bool repeatableTrigger = !m_fStayPushed || (pev->spawnflags & SF_BUTTON_TOGGLE);
+
+	if ((canTriggerNow || repeatableTrigger) && (damagable || touchable)) {
+		if (damagable) {
+			return "Shootable";
+		}
+
+		return "Body touch only";
+	}
+
+	return "";
+}

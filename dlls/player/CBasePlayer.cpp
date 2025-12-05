@@ -2434,6 +2434,9 @@ void CBasePlayer::InitStatusBar()
 
 void CBasePlayer::UpdateStatusBar()
 {
+	if (IsSevenKewpClient())
+		return; // the custom client handles this
+
 	int newSBarState[ SBAR_END ];
 	char sbuf0[ SBAR_STRING_SIZE ];
 	char sbuf1[ SBAR_STRING_SIZE ];
@@ -2529,24 +2532,12 @@ void CBasePlayer::UpdateStatusBar()
 			lookingAtStatusEnt = true;
 		}
 		else if (pEntity->IsButton()) {
-			CBaseButton* but = (CBaseButton*)pEntity;
-			bool damagable = pEntity->pev->takedamage == DAMAGE_YES;
-			bool touchable = pEntity->pev->spawnflags & SF_BUTTON_TOUCH_ONLY;
-			bool canTriggerNow = but->m_toggle_state == TS_AT_BOTTOM;
-			bool repeatableTrigger = !but->m_fStayPushed || (but->pev->spawnflags & SF_BUTTON_TOGGLE);
+			const char* hint = pEntity->DisplayHint();
 
-			if ((canTriggerNow || repeatableTrigger) && (damagable || touchable)) {
+			if (hint[0]) {
 				name = replaceString(pEntity->DisplayName(), "\n", " ");
 
-				const char* hint = "";
-				if (damagable) {
-					hint = " (shootable)";
-				}
-				else if (touchable) {
-					hint = " (touch only)";
-				}
-
-				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s%s", name.c_str(), hint), SBAR_STRING_SIZE);
+				strcpy_safe(sbuf1, UTIL_VarArgs("1 %s (%s)", name.c_str(), hint), SBAR_STRING_SIZE);
 				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX(pEntity->edict());
 
 				lookingAtStatusEnt = true;
@@ -2568,11 +2559,13 @@ void CBasePlayer::UpdateStatusBar()
 			else if (pEntity->m_breakFlags & FL_BREAK_INSTANT) {
 				CBreakable* breakable = (CBreakable*)pEntity;
 
-				if (breakable->m_breakWeapon == BREAK_INSTANT_WRENCH) {
-					hint = " (use wrench)";
-				}
-				else {
-					hint = " (use crowbar)";
+				if (breakable->pev->health > 20) {
+					if (breakable->m_breakWeapon == BREAK_INSTANT_WRENCH) {
+						hint = " (wrench instant break)";
+					}
+					else {
+						hint = " (crowbar instant break)";
+					}
 				}
 			}
 
@@ -2601,9 +2594,17 @@ void CBasePlayer::UpdateStatusBar()
 
 			lookingAtStatusEnt = true;
 		}
-		else if (FClassnameIs(pEntity->pev, "func_pushable")) {
+		else if (pEntity->IsPushable()) {
 
-			name = replaceString(pEntity->DisplayName(), "\n", " ");
+			const char* dname = "Pushable";
+			if (pEntity->m_displayName) {
+				dname = STRING(pEntity->m_displayName);
+			}
+			else if (pEntity->m_breakExplodeMag) {
+				dname = "Pushable Explosives";
+			}
+
+			name = replaceString(dname, "\n", " ");
 
 			const char* hint = "";
 			if (pEntity->pev->spawnflags & SF_PUSH_LIFTABLE) {
@@ -6397,19 +6398,24 @@ void CBasePlayer::UpdateScore() {
 }
 
 void CBasePlayer::UpdateTag(CBasePlayer* dst) {
-	int hpPercent = IsAlive() ? ((pev->health / pev->max_health) * 100) : 0;
-	uint32_t hp = clampf(hpPercent, 0, INT32_MAX);
-	uint8_t observer = ((pev->iuser2-1) << 3) | (pev->iuser1 & 0x7);
-	bool statusChanged = hp != m_lastTagHp || observer != m_lastTagObserver;
+	if (!dst && g_engfuncs.pfnTime() - m_lastTagUpdate < 0.05f)
+		return;
 
-	if (!dst) {
-		if ((!statusChanged) || g_engfuncs.pfnTime() - m_lastTagUpdate < 0.05f) {
-			return;
-		}
+	uint16_t hp = UTIL_CompressUint(clampf(pev->health, 0, UINT_MAX));
+	uint16_t maxHp = UTIL_CompressUint(clampf(pev->max_health, 0, UINT_MAX));
+	uint16_t armor = UTIL_CompressUint(clampf(pev->armorvalue, 0, UINT_MAX));
+	uint8_t observer = ((pev->iuser2-1) << 3) | (pev->iuser1 & 0x7);
+	bool statusChanged = hp != m_lastTagHp || maxHp != m_lastTagMaxHp || armor != m_lastTagArmor
+		|| observer != m_lastTagObserver;
+
+	if (!dst && !statusChanged) {
+		return;
 	}
 
 	m_lastTagUpdate = g_engfuncs.pfnTime();
 	m_lastTagHp = hp;
+	m_lastTagMaxHp = maxHp;
+	m_lastTagArmor = armor;
 	m_lastTagObserver = observer;
 
 	for (int i = 1; i < gpGlobals->maxClients; i++) {
@@ -6423,7 +6429,9 @@ void CBasePlayer::UpdateTag(CBasePlayer* dst) {
 
 		MESSAGE_BEGIN(MSG_ONE, gmsgTagInfo, 0, targetPlr->edict());
 		WRITE_BYTE(entindex());
-		WRITE_LONG(hp);
+		WRITE_SHORT(hp);
+		WRITE_SHORT(maxHp);
+		WRITE_SHORT(armor);
 		WRITE_BYTE(observer);
 		MESSAGE_END();
 	}	

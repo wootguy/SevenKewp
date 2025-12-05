@@ -65,6 +65,7 @@ int gmsgMatsPath = 0;
 int gmsgCustomHud = 0;
 int gmsgHudColor = 0;
 int gmsgHudConPrint = 0;
+int gmsgStringIdx = 0;
 
 std::vector<UserMessage> g_userMessages;
 
@@ -167,7 +168,7 @@ void LinkUserMessages(void)
 	gmsgToxicCloud = REG_USER_MSG("ToxicCloud", 4);
 	gmsgPmodelAnim = REG_USER_MSG("PmodelAnim", 2);
 	gmsgWeaponBits = REG_USER_MSG("WeaponBits", 8);
-	gmsgTagInfo = REG_USER_MSG("TagInfo", 6);
+	gmsgTagInfo = REG_USER_MSG("TagInfo", 8);
 	gmsgPlayerPos = REG_USER_MSG("PlayerPos", -1);
 	gmsgSpriteAdv = REG_USER_MSG("SpriteAdv", -1);
 	gmsgWaterSplash = REG_USER_MSG("WaterSplash", -1);
@@ -176,4 +177,5 @@ void LinkUserMessages(void)
 	gmsgCustomHud = REG_USER_MSG("CustomHud", -1);
 	gmsgHudColor = REG_USER_MSG("HudColor", 3);
 	gmsgHudConPrint = REG_USER_MSG("HudConPrint", -1);
+	gmsgStringIdx = REG_USER_MSG("StringIdx", -1);
 }

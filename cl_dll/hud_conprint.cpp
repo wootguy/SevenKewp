@@ -19,8 +19,10 @@ struct HudConText {
 	float startTime;
 };
 
-#define MAX_HUD_CON_TEXTS 64
-HudConText g_hudConText[MAX_HUD_CON_TEXTS];
+#define USER_HUD_CON_TEXTS 64
+#define SYSTEM_CON_TEXTS 4
+#define TOTAL_HUD_CON_TEXTS (USER_HUD_CON_TEXTS + SYSTEM_CON_TEXTS)
+HudConText g_hudConText[TOTAL_HUD_CON_TEXTS];
 int g_hudConTextIdx = 0;
 
 int em_width;
@@ -28,17 +30,38 @@ int em_height;
 
 extern vec3_t v_origin;
 
-HudConText& allocHudConText(int id) {
+HudConText& AllocHudConText(int id, bool userRequest) {
 	int idx = id;
-	int half = MAX_HUD_CON_TEXTS / 2;
 
-	if (id == 0) {
-		idx = ((g_hudConTextIdx++) % half) + half;
+	if (userRequest) {
+		int half = USER_HUD_CON_TEXTS / 2;
+
+		if (id == 0) {
+			idx = ((g_hudConTextIdx++) % half) + half;
+		}
+		else {
+			idx = clampi(idx, 0, half);
+		}
 	}
 	else {
-		idx = clampi(idx, 0, half);
+		id = (id + USER_HUD_CON_TEXTS) % SYSTEM_CON_TEXTS;
 	}
 	
+	memset(&g_hudConText[idx], 0, sizeof(HudConText));
+	return g_hudConText[idx];
+}
+
+HudConText& GetHudConText(int id, bool userRequest) {
+	int idx = id;
+
+	if (userRequest) {
+		int half = USER_HUD_CON_TEXTS / 2;
+		idx = clampi(idx, 0, half);
+	}
+	else {
+		id = (id + USER_HUD_CON_TEXTS) % SYSTEM_CON_TEXTS;
+	}
+
 	memset(&g_hudConText[idx], 0, sizeof(HudConText));
 	return g_hudConText[idx];
 }
@@ -74,7 +97,7 @@ int CHudConPrint::Draw(float flTime)
 	int rDefault, gDefault, bDefault;
 	UnpackRGB(rDefault, gDefault, bDefault, gHUD.GetHudColor());
 
-	for (int i = 0; i < MAX_HUD_CON_TEXTS; i++) {
+	for (int i = 0; i < TOTAL_HUD_CON_TEXTS; i++) {
 		HudConText& txt = g_hudConText[i];
 
 		if (!txt.startTime)
@@ -220,7 +243,7 @@ int CHudConPrint::MsgFunc_HudConPrint(const char* pszName, int iSize, void* pbuf
 	params.alignment = packedFlags & 0x3;
 	params.flags = packedFlags >> 2;
 
-	HudConText& txt = allocHudConText(params.id);
+	HudConText& txt = AllocHudConText(params.id, true);
 	txt.params = params;
 	txt.startTime = gEngfuncs.GetClientTime();
 

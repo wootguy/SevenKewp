@@ -300,8 +300,7 @@ bool CPipewrench::Swing(const bool bFirst)
 				flDamage = gSkillData.sk_plr_pipewrench;
 			}
 
-			bool repairable = (m_pPlayer->IRelationship(pEntity) == R_AL && pEntity->IsMachine())
-				|| (pEntity->IsBreakable() && (pEntity->m_breakFlags & FL_BREAK_REPAIRABLE));
+			bool repairable = pEntity->IsRepairable();
 
 			if (repairable) {
 				flDamage *= -1;

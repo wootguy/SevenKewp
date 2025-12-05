@@ -172,9 +172,10 @@ void CHudSayText::UpdateChatPosition() {
 	int bottom = (ScreenHeight * 8) / 10.0f; // ideal chat position
 	int top = bottom - ChatHeight(false);
 
-	int padding = gHUD.m_iFontHeight * 2.0f;
-	int maxTop = ScreenHeight / 2 + padding * 2; // don't want chat covering the crosshair
-	int maxBottom = ScreenHeight - padding; // don't want it covering the health hud either
+	int paddingTop = gHUD.m_iFontHeight * 2.0f;
+	int paddingBot = gHUD.m_iFontHeight + line_height * 4; // make room for health and status text
+	int maxTop = ScreenHeight / 2 + paddingTop * 2; // don't want chat covering the crosshair
+	int maxBottom = ScreenHeight - paddingBot; // don't want it covering the health hud either
 
 	const int SPECTATOR_PANEL_HEIGHT = YRES_HD(64);
 	int maxBottomSpec = ScreenHeight - (SPECTATOR_PANEL_HEIGHT + 5);
