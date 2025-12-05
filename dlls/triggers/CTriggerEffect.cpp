@@ -133,8 +133,6 @@ void CTriggerEffect::KeyValue(KeyValueData* pkvd) {
 
 
 void CTriggerEffect::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {
-	h_activator = pActivator;
-	h_caller = pCaller;
 	std::vector<CBaseEntity*> targets = FindLogicEntities(STRING(pev->target));
 
 	for (CBaseEntity* ent : targets) {

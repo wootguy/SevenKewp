@@ -516,7 +516,7 @@ void CBaseButton::ButtonBackHome(void)
 			if (!FClassnameIs(pentTarget->pev, "multisource"))
 				continue;
 
-			pentTarget->Use(m_hActivator, this, USE_TOGGLE, 0);
+			FireTarget(pentTarget, m_hActivator, this, USE_TOGGLE, 0);
 		}
 	}
 

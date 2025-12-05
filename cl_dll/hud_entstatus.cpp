@@ -211,6 +211,8 @@ int CHudEntStatus::Draw(float flTime)
 			y = ScreenHeight - (gHUD.m_iFontHeight + em_height*4);
 		}
 
+		DrawConsoleString(0, 0, ""); // fix first console string being colored by HUD text
+
 		if (shouldCenter) {
 			GetConsoleStringSize(name, &w, &h);
 			x = centerX - (w / 2);

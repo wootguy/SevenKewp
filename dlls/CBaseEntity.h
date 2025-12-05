@@ -212,6 +212,9 @@ public:
 	dstring_t m_cachedDisplayName;
 	dstring_t m_cachedDisplayHint;
 
+	EHANDLE m_hActivator;
+	EHANDLE m_hCaller;
+
 	// fundamental callbacks
 	void (CBaseEntity ::* m_pfnThink)(void);
 	void (CBaseEntity ::* m_pfnTouch)(CBaseEntity* pOther);

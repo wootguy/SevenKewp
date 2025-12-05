@@ -455,11 +455,7 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 		"weapons/explode4.wav",
 		"weapons/explode5.wav"
 	};
-	static const char* expSoundsNew[3] = {
-		"weapons/explode3.wav",
-		"weapons/explode4.wav",
-		"weapons/explode5.wav"
-	};
+	static char expSoundsNew[3][128];
 
 	if (lastCheck > gpGlobals->time) {
 		lastCheck = gpGlobals->time; // level changed
@@ -468,10 +464,10 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 			const char* repl = UTIL_GetReplacementSound(NULL, expSounds[i]);
 			if (strcmp(repl, expSounds[i])) {
 				replacedExplosionSounds = true;
-				expSoundsNew[i] = repl;
+				strcpy_safe(expSoundsNew[i], repl, 128);
 			}
 			else {
-				expSoundsNew[i] = expSounds[i];
+				strcpy_safe(expSoundsNew[i], expSounds[i], 128);
 			}
 		}
 	}

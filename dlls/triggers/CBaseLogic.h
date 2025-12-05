@@ -45,7 +45,4 @@ public:
 	std::string FloatToString(float f, int flt2str_mode);
 
 	std::string VectorToString(Vector v, int flt2str_mode);
-
-	EHANDLE h_activator;
-	EHANDLE h_caller;
 };

@@ -186,11 +186,34 @@ void InitCustomWeapon(int id) {
 
 void ResetCustomWeaponStates() {
 	for (int i = 0; i < MAX_WEAPONS; i++) {
+		g_customWeapon[i].m_flChargeStartPrimary = 0;
+		g_customWeapon[i].m_flChargeStartSecondary = 0;
+		g_customWeapon[i].m_lastBeamUpdate = 0;
+		g_customWeapon[i].m_bInAkimboReload = 0;
+		g_customWeapon[i].m_bWantAkimboReload = 0;
+		g_customWeapon[i].m_hasLaserAttachment = 0;
 		g_customWeapon[i].m_lastZoomToggle = 0;
 		g_customWeapon[i].m_lastLaserToggle = 0;
 		g_customWeapon[i].m_lastDeploy = 0;
 		g_customWeapon[i].m_laserOnTime = 0;
 		g_customWeapon[i].m_hasPredictionData = false;
+		g_customWeapon[i].m_lastChargeDown = 0;
+		g_customWeapon[i].m_runningKickbackPred = 0;
+		g_customWeapon[i].m_kickbackPredVel = Vector(0,0,0);
+		g_customWeapon[i].m_primaryCalled = 0;
+		g_customWeapon[i].m_secondaryCalled = 0;
+		g_customWeapon[i].m_waitForNextRunfuncs = 0;
+		g_customWeapon[i].m_bulletFireCount = 0;
+		g_customWeapon[i].m_hasPredictionData = 0;
+		g_customWeapon[i].m_akimboAnim = 0;
+		g_customWeapon[i].m_akimboAnimTime = 0;
+		g_customWeapon[i].m_akimboLastEventFrame = 0;
+		g_customWeapon[i].m_lastCanAkimbo = 0;
+		g_customWeapon[i].m_lastCanAkimbo = 0;
+		g_customWeapon[i].ammoFreqs[0] = 0;
+		g_customWeapon[i].ammoFreqs[1] = 0;
+		g_customWeapon[i].ammoFreqs[2] = 0;
+		g_customWeapon[i].animCount = 0;
 		g_customWeapon[i].SetAkimbo(false);
 		g_customWeapon[i].SetLaser(false);
 	}

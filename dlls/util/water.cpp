@@ -75,6 +75,14 @@ void DoEntWaterPhysics() {
 		int contents = UTIL_PointContents(origin);
 		bool inLiquid = UTIL_IsLiquidContents(contents);
 
+		if (inLiquid) {
+			// don't float around in shallow puddles
+			if (!UTIL_PointInLiquid(origin - Vector(0, 0, 16)) && !UTIL_PointInLiquid(origin + Vector(0, 0, 16))) {
+				inLiquid = false;
+				contents = CONTENTS_EMPTY;
+			}
+		}
+
 		CBaseMonster* mon = ent->MyMonsterPointer();
 
 		if (inLiquid) {
@@ -125,7 +133,7 @@ void DoEntWaterPhysics() {
 
 		// water transiation
 		if (wasInLiquid != inLiquid && !solidTransition && !playerJumpingOut) {
-			if (fabs(ent->pev->velocity.Length()) > 100) {
+			if (fabs(ent->pev->velocity.Length()) > 100 && ent->pev->velocity.z < -50) {
 				float scale = V_max(0.3f, 0.3f * (thickness / 16.0f));
 
 				if (ent->IsItem()) {

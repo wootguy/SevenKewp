@@ -385,7 +385,7 @@ void PredictBodySplash() {
 
 	// water transiation
 	if (wasInLiquid != inLiquid && !solidTransition && !playerJumpingOut) {
-		if (fabs(v_sim_vel.Length()) > 100) {
+		if (fabs(v_sim_vel.Length()) > 100 && v_sim_vel.z < -50) {
 			Vector splashPos = inLiquid ? origin : oldPos;
 			float scale = 0.63f;
 

@@ -322,6 +322,8 @@ enum MaterialsInitState {
 
 MaterialsInitState g_bTextureTypeInit = MATERIALS_NOT_INIT;
 
+void printd(const char* format, ...);
+
 bool LoadMaterialsFile(const char* fpath) {
 	char buffer[512];
 	int i, j;
@@ -332,8 +334,12 @@ bool LoadMaterialsFile(const char* fpath) {
 
 	fileSize = pmove->COM_FileSize(fpath);
 	pMemFile = pmove->COM_LoadFile(fpath, 5, NULL);
-	if (!pMemFile)
+	if (!pMemFile) {
+#ifdef CLIENT_DLL
+		printd("Failed to load materials file:\n%s\n", fpath);
+#endif
 		return false;
+	}
 
 	filePos = 0;
 	// for each line in the file...

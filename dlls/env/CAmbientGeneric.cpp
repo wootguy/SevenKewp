@@ -493,7 +493,7 @@ void CAmbientGeneric::UpdateLinearVolume() {
 		return;
 
 	float endTime = m_lastPlayTime + (m_wavInfo.durationMillis / 1000.0f);
-	if (endTime - g_engfuncs.pfnTime() < 0.2f) {
+	if (m_lastPlayTime && endTime - g_engfuncs.pfnTime() < 0.2f && !m_fLooping) {
 		return; // don't update too close to the end or the sound will restart
 	}
 
@@ -733,7 +733,20 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 					UTIL_StopGlobalMp3();
 			}
 			else {
-				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
+				bool isPlaying = false;
+
+				if (m_isLinear && m_lastPlayTime) {
+					// linear sound won't start if stop sound comes at the same time
+					float endTime = m_lastPlayTime + (m_wavInfo.durationMillis / 1000.0f);
+					if (endTime > g_engfuncs.pfnTime()) {
+						isPlaying = true;
+					}
+				}
+				m_lastPlayTime = 0;
+
+				if (isPlaying) {
+					UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);
+				}
 			}
 		}
 			
@@ -747,9 +760,10 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 			g_lastMp3PlayerEnt = this;
 		}
 		else if (m_isLinear) {
+			memset(m_lastLinearVolume, 0, sizeof(m_lastLinearVolume));
 			UpdateLinearVolume();
-			
-			// Need to send the message twice for first playback for some reason
+
+			// in case SND_STOP was sent this frame too, this will start the sound again
 			memset(m_lastLinearVolume, 0, sizeof(m_lastLinearVolume));
 		}
 		else {

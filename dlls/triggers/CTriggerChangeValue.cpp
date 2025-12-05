@@ -234,8 +234,7 @@ int CTriggerChangeValue::OperateInteger(int sourceVal, int targetVal) {
 	case CVAL_OP_ARCTAN: return atanf(sourceVal * m_trigIn) * m_trigOut;
 	case CVAL_OP_ARCCOT: return atanf(1.0f / (sourceVal * m_trigIn)) * m_trigOut;
 	default:
-		ALERT(at_warning, "'%s' (%s): invalid operation %d on integer value\n",\
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_iOperation);
+		EALERT(at_warning, "invalid operation %d on integer value\n", m_iOperation);
 		return targetVal;
 	}
 }
@@ -271,8 +270,7 @@ float CTriggerChangeValue::OperateFloat(float sourceVal, float targetVal) {
 	case CVAL_OP_ARCTAN: return atanf(sourceVal * m_trigIn) * m_trigOut;
 	case CVAL_OP_ARCCOT: return atanf(1.0f / (sourceVal * m_trigIn)) * m_trigOut;
 	default:
-		ALERT(at_warning, "'%s' (%s): invalid operation %d on float value\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_iOperation);
+		EALERT(at_warning, "invalid operation %d on float value\n", m_iOperation);
 		return targetVal;
 	}
 }
@@ -313,8 +311,7 @@ const char* CTriggerChangeValue::Operate(CKeyValue& keyvalue) {
 	case KEY_TYPE_STRING:
 		return OperateString(m_sSrc, keyvalue.sVal ? STRING(keyvalue.sVal) : "");
 	default:
-		ALERT(at_warning, "'%s' (%s): operation on keyvalue %s not allowed\n", 
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), keyvalue.keyName);
+		EALERT(at_warning, "operation on keyvalue %s not allowed\n", keyvalue.keyName);
 		return "";
 	}
 }
@@ -337,8 +334,7 @@ const char* CTriggerChangeValue::OperateString(const char* sourceVal, const char
 	case CVAL_OP_APPEND:
 		return UTIL_VarArgs("%s%s%s", targetVal, sourceVal, spaces);
 	default:
-		ALERT(at_warning, "'%s' (%s): invalid operation %d on string value\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_iOperation);
+		EALERT(at_warning, "invalid operation %d on string value\n", m_iOperation);
 		return targetVal;
 	}
 }
@@ -360,8 +356,8 @@ void CTriggerChangeValue::HandleTarget(CBaseEntity* pent) {
 		dat.szValue = Operate(keyvalue);
 	}
 	else if (m_iOperation != CVAL_OP_REPLACE) {
-		ALERT(at_warning, "'%s' (%s): keyvalue '%s' in entity '%s' can only be replaced\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), dat.szKeyName, STRING(pent->pev->classname));
+		EALERT(at_warning, "keyvalue '%s' in entity '%s' can only be replaced\n",
+			 dat.szKeyName, STRING(pent->pev->classname));
 	}
 	
 	/*
@@ -642,10 +638,10 @@ void CTriggerChangeValue::ChangeValues() {
 	const char* target = STRING(pev->target);
 
 	if (!strcmp(target, "!activator")) {
-		HandleTarget(h_activator);
+		HandleTarget(m_hActivator);
 	}
 	else if (!strcmp(target, "!caller")) {
-		HandleTarget(h_caller);
+		HandleTarget(m_hCaller);
 	}
 	else {
 		CBaseEntity* ent = NULL;
@@ -666,9 +662,6 @@ void CTriggerChangeValue::ChangeValues() {
 
 void CTriggerChangeValue::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	h_activator = pActivator;
-	h_caller = pCaller;
-
 	ChangeValues();
 
 	if (pev->spawnflags & SF_TCVAL_CONSTANT) {

@@ -112,8 +112,7 @@ void CTriggerCreateEntity::Spawn(void)
 void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
 	if (!m_childClass) {
-		ALERT(at_console, "%s (%s): Spawn aborted. Missing child class.\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname));
+		EALERT(at_console, "Spawn aborted. Missing child class.\n");
 		return;
 	}
 
@@ -132,8 +131,8 @@ void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 
 		if (!pent) {
 			if (!strcmp(STRING(m_keys[i].key_name), "model")) {
-				ALERT(at_console, "%s (%s): Spawn aborted. Couldn't find entity '%s' to copy model from.\n",
-					pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), keyValue);
+				EALERT(at_console, "Spawn aborted. Couldn't find entity '%s' to copy model from.\n",
+					keyValue);
 				return;
 			}
 		}
@@ -155,22 +154,20 @@ void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 				keys.put(keyName, STRING(srcKey.sVal));
 				break;
 			default:
-				ALERT(at_console, "'%s' (%s): failed to copy keyvalue '%s' (invalid type)\n",
-					pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), srcKey.keyName);
+				EALERT(at_console, "failed to copy keyvalue '%s' (invalid type)\n", srcKey.keyName);
 				break;
 			}
 		}
 		else {
-			ALERT(at_console, "'%s' (%s): failed to copy keyvalue '%s' (mistyped or private)\n",
-				pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), srcKey.keyName);
+			EALERT(at_console, "failed to copy keyvalue '%s' (mistyped or private)\n", srcKey.keyName);
 		}
 	}
 
 	CBaseEntity* child = CBaseEntity::Create(STRING(m_childClass), pev->origin, pev->angles, true, NULL, keys);
 
 	if (m_triggerAfterSpawn) {
-		h_activator = pActivator;
-		h_caller = child;
+		m_hActivator = pActivator;
+		m_hCaller = child;
 
 		FireLogicTargets(STRING(m_triggerAfterSpawn), USE_TOGGLE, 0);
 	}

@@ -151,7 +151,7 @@ void CTriggerEntityIterator::Iterate() {
 
 		if (iterateAll) {
 			for (CBaseEntity* target : targets) {
-				target->Use(ent, this, (USE_TYPE)m_triggerstate, 0.0f);
+				FireTarget(target, ent, this, (USE_TYPE)m_triggerstate, 0.0f);
 			}
 		}
 		else {
@@ -170,7 +170,7 @@ void CTriggerEntityIterator::Iterate() {
 
 	if (finishedRun) {
 		if (m_trigger_after_run) {
-			FireTargets(STRING(m_trigger_after_run), h_activator, this, USE_TOGGLE, 0.0f);
+			FireTargets(STRING(m_trigger_after_run), m_hActivator, this, USE_TOGGLE, 0.0f);
 		}
 
 		if (m_run_mode == RUN_MODE_ONCE_MULTITHREADED_CHILD) {
@@ -200,8 +200,6 @@ void CTriggerEntityIterator::Iterate() {
 
 void CTriggerEntityIterator::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	h_activator = pActivator;
-
 	bool shouldToggleOff = (m_isRunning && useType != USE_ON) || useType == USE_OFF;
 	if (shouldToggleOff && m_run_mode != RUN_MODE_ONCE_MULTITHREADED_CHILD) {
 		m_isRunning = false;
@@ -211,7 +209,7 @@ void CTriggerEntityIterator::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, 
 	}
 
 	if (!pev->target) {
-		ALERT(at_console, "trigger_entity_iterator: no target specified\n");
+		EALERT(at_console, "no target specified\n");
 		return;
 	}
 
@@ -229,7 +227,7 @@ void CTriggerEntityIterator::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, 
 			child->m_delay_between_triggers = m_delay_between_triggers;
 			child->m_run_mode = RUN_MODE_ONCE_MULTITHREADED_CHILD;
 
-			child->Use(pActivator, pCaller, USE_ON, 0.0f);
+			FireTarget(child, m_hActivator, pCaller, USE_ON, 0.0f);
 		}
 	}
 	else {

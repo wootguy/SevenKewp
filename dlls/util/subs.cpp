@@ -53,6 +53,23 @@ void FireTargetsDelayed(const char* target, string_t killTarget, CBaseEntity* pA
 	}
 }
 
+void FireTarget(CBaseEntity* pTarget, CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {
+	if (!pTarget || (pTarget->pev->flags & FL_KILLME))
+		return; // Don't use dying ents
+	
+	const char* targetName = STRING(pTarget->pev->targetname);
+	bool isDebugTrigger = g_debug_target && !strcmp(STRING(g_debug_target), targetName);
+
+	ALERT(at_aiconsole, "Found: %s, firing (%s)\n", STRING(pTarget->pev->classname), targetName);
+	if (isDebugTrigger) {
+		ALERT(at_aiconsole, "Breakpoint here!\n"); // place a breakpoint here to debug specific triggers
+	}
+
+	pTarget->m_hActivator = pActivator;
+	pTarget->m_hCaller = pCaller;
+	pTarget->Use(pActivator, pCaller, useType, value);
+}
+
 void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value, float delay )
 {
 	CBaseEntity * pTarget = NULL;
@@ -67,22 +84,13 @@ void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *
 
 	ALERT( at_aiconsole, "Firing: (%s)\n", targetName );
 
-	bool isDebugTrigger = g_debug_target && !strcmp(STRING(g_debug_target), targetName);
-
 	for (;;)
 	{
 		pTarget = UTIL_FindEntityByTargetname(pTarget, targetName);
 		if (!pTarget)
 			break;
 
-		if ( pTarget && !(pTarget->pev->flags & FL_KILLME) )	// Don't use dying ents
-		{
-			ALERT( at_aiconsole, "Found: %s, firing (%s)\n", STRING(pTarget->pev->classname), targetName );
-			if (isDebugTrigger) {
-				ALERT(at_aiconsole, ""); // place a breakpoint here to debug specific triggers
-			}
-			pTarget->Use( pActivator, pCaller, useType, value );
-		}
+		FireTarget(pTarget, pActivator, pCaller, useType, value);
 	}
 }
 

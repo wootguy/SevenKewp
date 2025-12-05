@@ -2525,8 +2525,9 @@ void DispatchUse(edict_t* pentUsed, edict_t* pentOther)
 	CBaseEntity* pEntity = (CBaseEntity*)GET_PRIVATE(pentUsed);
 	CBaseEntity* pOther = (CBaseEntity*)GET_PRIVATE(pentOther);
 
-	if (pEntity && !(pEntity->pev->flags & FL_KILLME))
-		pEntity->Use(pOther, pOther, USE_TOGGLE, 0);
+	if (pEntity && !(pEntity->pev->flags & FL_KILLME)) {
+		FireTarget(pEntity, pOther, pOther, USE_TOGGLE, 0);
+	}
 }
 
 void DispatchThink(edict_t* pent)

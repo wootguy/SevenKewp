@@ -1,6 +1,6 @@
 #pragma once
 
-class CRuleEntity : public CBaseEntity
+class EXPORT CRuleEntity : public CBaseEntity
 {
 public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
@@ -22,7 +22,7 @@ private:
 // 
 // CRulePointEntity -- base class for all rule "point" entities (not brushes)
 //
-class CRulePointEntity : public CRuleEntity
+class EXPORT CRulePointEntity : public CRuleEntity
 {
 public:
 	void		Spawn(void);
@@ -32,7 +32,7 @@ public:
 // CRuleBrushEntity -- base class for all rule "brush" entities (not brushes)
 // Default behavior is to set up like a trigger, invisible, but keep the model for volume testing
 //
-class CRuleBrushEntity : public CRuleEntity
+class EXPORT CRuleBrushEntity : public CRuleEntity
 {
 public:
 	void		Spawn(void);

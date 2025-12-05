@@ -2279,7 +2279,7 @@ void CBasePlayer::PlayerUse ( void )
 			if ( caps & FCAP_CONTINUOUS_USE )
 				m_afPhysicsFlags |= PFLAG_USING;
 
-			pObject->Use( this, this, USE_SET, 1 );
+			FireTarget(pObject, this, this, USE_SET, 1);
 
 			return;
 		}

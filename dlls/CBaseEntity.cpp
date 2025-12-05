@@ -1992,7 +1992,7 @@ const char* CBaseEntity::DisplayHint() {
 			CBreakable* breakable = (CBreakable*)this;
 
 			// don't care if it's not much hp anyway
-			if (pev->health > 20) {
+			if (pev->health > 100) {
 				if (breakable->m_breakWeapon == BREAK_INSTANT_WRENCH) {
 					hint = "Wrench instant break";
 				}

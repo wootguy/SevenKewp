@@ -1169,7 +1169,7 @@ int CHudAmmo::MsgFunc_MatsPath(const char* pszName, int iSize, void* pbuf)
 
 	const char* fpath = READ_STRING();
 	int loaded = LoadCustomMaterials(fpath);
-	PRINTF("Loaded %d custom materials from file\n%s\n", loaded, fpath);
+	//PRINTF("Loaded %d custom materials from file\n%s\n", loaded, fpath);
 
 	return 1;
 }

@@ -30,9 +30,6 @@ void CTriggerChangeClass::KeyValue(KeyValueData* pkvd)
 
 void CTriggerChangeClass::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	h_activator = pActivator;
-	h_caller = pCaller;
-
 	if (!pev->target) {
 		return;
 	}

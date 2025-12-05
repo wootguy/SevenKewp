@@ -472,6 +472,7 @@ EXPORT float UTIL_DotPoints ( const Vector &vecSrc, const Vector &vecCheck, cons
 EXPORT void UTIL_StripToken( const char *pKey, char *pDest, int nLen);// for redundant keynames
 
 // Misc functions
+EXPORT extern void FireTarget(CBaseEntity* pTarget, CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value=0.0f);
 EXPORT extern void FireTargets(const char* targetName, CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value=0.0f, float delay=0.0f);
 void FireTargetsDelayed(const char* target, string_t killTarget, CBaseEntity* pActivator, USE_TYPE useType, float delay);
 EXPORT void SetMovedir(entvars_t* pev);

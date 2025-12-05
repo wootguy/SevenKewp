@@ -4,23 +4,21 @@
 
 CBaseEntity* CBaseLogic::FindLogicEntity(string_t targetname) {
 	if (!strcmp(STRING(targetname), "!activator")) {
-		if (!h_activator) {
-			ALERT(at_console, "'%s' (%s): Failed to find !activator. Using worldspawn instead.\n",
-				pev->targetname ? STRING(pev->targetname) : "");
+		if (!m_hActivator) {
+			EALERT(at_console, "Failed to find !activator. Using worldspawn instead.\n");
 			return CBaseEntity::Instance(ENT(0));
 		}
 
-		return h_activator;
+		return m_hActivator;
 	}
 
 	if (!strcmp(STRING(targetname), "!caller")) {
-		if (!h_caller) {
-			ALERT(at_console, "'%s' (%s): Failed to find !caller. Using worldspawn instead.\n",
-				pev->targetname ? STRING(pev->targetname) : "");
+		if (!m_hCaller) {
+			EALERT(at_console, "Failed to find !caller. Using worldspawn instead.\n");
 			return CBaseEntity::Instance(ENT(0));
 		}
 
-		return h_caller;
+		return m_hCaller;
 	}
 
 	return UTIL_FindEntityByTargetname(NULL, STRING(targetname));
@@ -33,13 +31,13 @@ std::vector<CBaseEntity*> CBaseLogic::FindLogicEntities(const char* targetName) 
 		return foundEnts;
 
 	if (!strcmp(targetName, "!activator")) {
-		if (h_activator) {
-			foundEnts.push_back(h_activator);
+		if (m_hActivator) {
+			foundEnts.push_back(m_hActivator);
 		}
 	}
 	else if (!strcmp(targetName, "!caller")) {
-		if (h_caller) {
-			foundEnts.push_back(h_activator);
+		if (m_hCaller) {
+			foundEnts.push_back(m_hCaller);
 		}
 	}
 	else {
@@ -62,21 +60,20 @@ void CBaseLogic::FireLogicTargets(const char* targetName, USE_TYPE useType, floa
 	ALERT(at_aiconsole, "Firing: (%s)\n", targetName);
 
 	if (!strcmp(targetName, "!activator")) {
-		if (h_activator) {
-			h_activator->Use(h_activator, this, useType, value);
+		if (m_hActivator) {
+			FireTarget(m_hActivator, m_hActivator, this, useType, value);
 		}
 	}
 	else if (!strcmp(targetName, "!caller")) {
-		if (h_caller) {
-			h_caller->Use(h_activator, this, useType, value);
+		if (m_hCaller) {
+			FireTarget(m_hCaller, m_hActivator, this, useType, value);
 		}
 	}
 	else {
 		CBaseEntity* ent = NULL;
 		while ((ent = UTIL_FindEntityByTargetname(ent, targetName))) {
-			if (ent && !(ent->pev->flags & FL_KILLME) && ent != this) {
-				ALERT(at_aiconsole, "Found: %s, firing (%s)\n", STRING(ent->pev->classname), targetName);
-				ent->Use(h_activator, h_caller, useType, value);
+			if (ent && ent != this) {
+				FireTarget(ent, m_hActivator, this, useType, value);
 			}
 		}
 	}

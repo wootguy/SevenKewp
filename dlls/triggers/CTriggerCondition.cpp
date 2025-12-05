@@ -137,9 +137,6 @@ void CTriggerCondition::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_T
 {
 	isActive = useType == USE_TOGGLE ? !isActive : useType == USE_ON;
 
-	h_activator = pActivator;
-	h_caller = pCaller;
-
 	m_checkedFirstResult = false;
 	m_lastResult = -1;
 
@@ -170,15 +167,13 @@ CKeyValue CTriggerCondition::LoadKey(string_t entName, string_t keyName, const c
 	CBaseEntity* pent = FindLogicEntity(entName);
 
 	if (!pent) {
-		ALERT(at_console, "'%s' (trigger_condition): %s ent %s not found\n",
-			pev->targetname ? STRING(pev->targetname) : "", errorDesc, STRING(entName));
+		EALERT(at_console, "%s ent %s not found\n", errorDesc, STRING(entName));
 		return key;
 	}
 
 	key = pent->GetKeyValue(STRING(keyName));
 	if (!key.keyType) {
-		ALERT(at_console, "'%s' (trigger_condition): %s ent key %s is invalid\n",
-			pev->targetname ? STRING(pev->targetname) : "", errorDesc, STRING(keyName));
+		EALERT(at_console, "%s ent key %s is invalid\n", errorDesc, STRING(keyName));
 	}
 
 	return key;
@@ -186,18 +181,15 @@ CKeyValue CTriggerCondition::LoadKey(string_t entName, string_t keyName, const c
 
 void CTriggerCondition::Evaluate() {
 	if (!pev->target || !m_monitoredKey) {
-		ALERT(at_console, "'%s' (trigger_condition): missing monitored entity/key\n",
-			pev->targetname ? STRING(pev->targetname) : "");
+		EALERT(at_console, "missing monitored entity/key\n");
 		return;
 	}
 	if (m_checkType < 0 || m_checkType >= COMPARE_TYPES) {
-		ALERT(at_console, "'%s' (trigger_condition): invalid check type %d\n",
-			pev->targetname ? STRING(pev->targetname) : "", m_checkType);
+		EALERT(at_console, "invalid check type %d\n", m_checkType);
 		return;
 	}
 	if (m_iCheckBehavior < 0 || m_iCheckBehavior >= CONSTANT_MODES) {
-		ALERT(at_console, "'%s' (trigger_condition): invalid constant mode behavior %d\n",
-			pev->targetname ? STRING(pev->targetname) : "", m_checkType);
+		EALERT(at_console, "invalid constant mode behavior %d\n", m_checkType);
 		return;
 	}
 
@@ -253,10 +245,10 @@ void CTriggerCondition::Evaluate() {
 	}
 
 	if (shouldFireResultTarget) {
-		EHANDLE h_oldActivator = h_activator;
+		EHANDLE h_oldActivator = m_hActivator;
 
 		if (!(pev->spawnflags & SF_TCOND_KEEP_ACTIVATOR)) {
-			h_activator = this;
+			m_hActivator = this;
 		}
 
 		if (result && pev->netname) {
@@ -270,7 +262,7 @@ void CTriggerCondition::Evaluate() {
 			FireLogicTargets(STRING(pev->message), USE_TOGGLE, 0.0f);
 		}
 
-		h_activator = h_oldActivator;
+		m_hActivator = h_oldActivator;
 	}
 
 	m_checkedFirstResult = true;
@@ -291,8 +283,7 @@ bool CTriggerCondition::Compare(const CKeyValue& monitorKey, const CKeyValue& co
 	case KEY_TYPE_STRING:
 		return CompareStrings(monitorKey, compareKey);
 	default:
-		ALERT(at_console, "'%s' (%s): cannot compare key %s (invalid type)\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), monitorKey.keyName);
+		EALERT(at_console, "cannot compare key %s (invalid type)\n", monitorKey.keyName);
 		return false;
 	}
 }
@@ -307,8 +298,8 @@ bool CTriggerCondition::CompareFloats(const CKeyValue& monitorKey, const CKeyVal
 	case COMPARE_GEQUAL: return monitorKey.fVal >= getValueAsFloat(compareKey);
 	case COMPARE_BITSET:
 	default:
-		ALERT(at_console, "'%s' (%s): invalid compare type %d used on float key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_checkType, monitorKey.keyName);
+		EALERT(at_console, "invalid compare type %d used on float key %s\n",
+			m_checkType, monitorKey.keyName);
 		return false;
 	}
 }
@@ -380,8 +371,7 @@ bool CTriggerCondition::CompareVectors(const CKeyValue& monitorKey, const CKeyVa
 	case COMPARE_GEQUAL: return monitorFloat >= compareFloat;
 	case COMPARE_BITSET:
 	default:
-		ALERT(at_console, "'%s' (%s): invalid compare type %d used on vector key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_checkType, monitorKey.keyName);
+		EALERT(at_console, "invalid compare type %d used on vector key %s\n", m_checkType, monitorKey.keyName);
 		return false;
 	}
 }
@@ -396,8 +386,8 @@ bool CTriggerCondition::CompareStrings(const CKeyValue& monitorKey, const CKeyVa
 	case COMPARE_GEQUAL:
 	case COMPARE_BITSET:
 	default:
-		ALERT(at_console, "'%s' (%s): invalid compare type %d used on string key %s\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), m_checkType, monitorKey.keyName);
+		EALERT(at_console, "invalid compare type %d used on string key %s\n",
+			m_checkType, monitorKey.keyName);
 		return false;
 	}
 }
@@ -426,8 +416,7 @@ float CTriggerCondition::getValueAsFloat(const CKeyValue& key) {
 		}
 	}
 	default:
-		ALERT(at_console, "'%s' (%s): cannot convert key %s to float (invalid type)\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), key.keyName);
+		EALERT(at_console, "cannot convert key %s to float (invalid type)\n", key.keyName);
 		return 0;
 	}
 }
@@ -452,8 +441,7 @@ int CTriggerCondition::getValueAsInt(const CKeyValue& key) {
 		}
 	}
 	default:
-		ALERT(at_console, "'%s' (%s): cannot convert key %s to int (invalid type)\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), key.keyName);
+		EALERT(at_console, "cannot convert key %s to int (invalid type)\n", key.keyName);
 		return 0;
 	}
 }
@@ -471,8 +459,7 @@ const char* CTriggerCondition::getValueAsString(const CKeyValue& key) {
 	case KEY_TYPE_STRING:
 		return STRING(key.sVal);
 	default:
-		ALERT(at_console, "'%s' (%s): cannot convert key %s to string (invalid type)\n",
-			pev->targetname ? STRING(pev->targetname) : "", STRING(pev->classname), key.keyName);
+		EALERT(at_console, "cannot convert key %s to string (invalid type)\n", key.keyName);
 		return "";
 	}
 }
