@@ -304,7 +304,7 @@ int CVoiceStatus::VidInit()
 		gEngfuncs.COM_FreeFile(pFile);
 	}
 
-	m_VoiceHeadModel = gEngfuncs.pfnSPR_Load("sprites/voiceicon.spr");
+	m_VoiceHeadModel = SPR_Load("sprites/voiceicon.spr");
 	return TRUE;
 }
 

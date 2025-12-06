@@ -6666,13 +6666,12 @@ void CBasePlayer::QueryClientTypeFinished() {
 		WRITE_BYTES(g_predMsgData, g_predMsgLen);
 		MESSAGE_END();
 
-		// custom materials file to load
+		// send replacement file paths (client HUD won't initialize without this)
 		CWorld* world = (CWorld*)CBaseEntity::Instance(ENT(0));
-		if (world->m_materialsFileNormalized) {
-			MESSAGE_BEGIN(MSG_ONE, gmsgMatsPath, NULL, pev);
-			WRITE_STRING(STRING(world->m_materialsFileNormalized));
-			MESSAGE_END();
-		}
+		MESSAGE_BEGIN(MSG_ONE, gmsgMatsPath, NULL, pev);
+		WRITE_STRING(STRING(world->m_materialsFile));
+		WRITE_STRING(STRING(world->m_hudFile));
+		MESSAGE_END();
 
 		int r, g, b;
 		if (UTIL_ParseHexColor(mp_hud_color.string, r, g, b)) {

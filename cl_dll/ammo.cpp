@@ -295,8 +295,6 @@ WEAPON* WeaponsResource :: GetNextActivePos( int iSlot, int iSlotPos )
 
 int giBucketHeight, giBucketWidth, giABHeight, giABWidth; // Ammo Bar width and height
 
-HSPRITE ghsprBuckets;					// Sprite for top row of weapons menu
-
 DECLARE_MESSAGE(m_Ammo, CurWeapon );	// Current weapon and clip
 DECLARE_MESSAGE(m_Ammo, CurWeaponX );	// Current weapon and clip (large clip)
 DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
@@ -415,7 +413,6 @@ int CHudAmmo::VidInit(void)
 	m_HUD_bucket0 = gHUD.GetSpriteIndex( "bucket1" );
 	m_HUD_selection = gHUD.GetSpriteIndex( "selection" );
 
-	ghsprBuckets = gHUD.GetSprite(m_HUD_bucket0);
 	giBucketWidth = gHUD.GetSpriteRect(m_HUD_bucket0).right - gHUD.GetSpriteRect(m_HUD_bucket0).left;
 	giBucketHeight = gHUD.GetSpriteRect(m_HUD_bucket0).bottom - gHUD.GetSpriteRect(m_HUD_bucket0).top;
 
@@ -684,7 +681,7 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 }
 
 bool CHudAmmo::IsWeaponZoomed() {
-	return gHUD.m_iFOV < 90 || IsPredictionWeaponZoomed();
+	return gHUD.m_iFOV < 90 || (gHUD.m_is_map_loaded && IsPredictionWeaponZoomed());
 }
 
 void CHudAmmo::UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget) {
@@ -1175,9 +1172,15 @@ int CHudAmmo::MsgFunc_MatsPath(const char* pszName, int iSize, void* pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
 
-	const char* fpath = READ_STRING();
-	int loaded = LoadCustomMaterials(fpath);
-	//PRINTF("Loaded %d custom materials from file\n%s\n", loaded, fpath);
+	const char* materialsFile = READ_STRING();
+	const char* hudFile = READ_STRING();
+	
+	if (materialsFile[0]) {
+		int loaded = LoadCustomMaterials(materialsFile);
+		//PRINTF("Loaded %d custom materials from file\n%s\n", loaded, fpath);
+	}
+
+	gHUD.ReplaceHudSprites(hudFile);
 
 	return 1;
 }
@@ -1355,6 +1358,15 @@ int CHudAmmo::Draw(float flTime)
 	int AmmoWidth;
 
 	DrawDynamicCrosshair();
+
+	// re-enable static crosshair without having to switch weapons
+	static int oldCvar = 0;
+	int newCvar = m_hud_crosshair_mode->value;
+	if (oldCvar != newCvar) {
+		if (!(gHUD.m_iHideHUDDisplay & (HIDEHUD_WEAPONS | HIDEHUD_ALL)) && m_pWeapon)
+			SetCrosshair(m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255);
+		oldCvar = newCvar;
+	}
 
 	if (!(gHUD.m_iWeaponBits & (1ULL<<(WEAPON_SUIT)) ))
 		return 1;

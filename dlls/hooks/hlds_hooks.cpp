@@ -57,6 +57,8 @@
 #include "prediction_files.h"
 #include "string_deltas.h"
 #include "monsters.h"
+#include "CWorld.h"
+#include "user_messages.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>

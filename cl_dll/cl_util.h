@@ -61,7 +61,14 @@ inline void CVAR_SET_FLOAT( const char *x, float val ) { gEngfuncs.Cvar_SetValue
 inline char* CVAR_GET_STRING( const char *x ) {	return gEngfuncs.pfnGetCvarString( (char*)x ); }
 inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int flags ) {	return gEngfuncs.pfnRegisterVariable( (char*)cv, (char*)val, flags ); }
 
-#define SPR_Load (*gEngfuncs.pfnSPR_Load)
+extern int g_loadedSprites;
+inline HSPRITE SPR_Load(const char* path) {
+	HSPRITE spr = gEngfuncs.pfnSPR_Load(path);
+	if (spr && spr > g_loadedSprites) {
+		g_loadedSprites = spr;
+	}
+	return spr;
+}
 #define SPR_Set (*gEngfuncs.pfnSPR_Set)
 #define SPR_Frames (*gEngfuncs.pfnSPR_Frames)
 #define SPR_GetList (*gEngfuncs.pfnSPR_GetList)

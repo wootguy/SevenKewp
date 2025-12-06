@@ -55,20 +55,24 @@ void CHudFlashlight::Reset(void)
 
 int CHudFlashlight::VidInit(void)
 {
-	int HUD_flash_empty = gHUD.GetSpriteIndex( "flash_empty" );
-	int HUD_flash_full = gHUD.GetSpriteIndex( "flash_full" );
-	int HUD_flash_beam = gHUD.GetSpriteIndex( "flash_beam" );
+	ReloadSprites();
+	return 1;
+};
+
+void CHudFlashlight::ReloadSprites(void) {
+	int HUD_flash_empty = gHUD.GetSpriteIndex("flash_empty");
+	int HUD_flash_full = gHUD.GetSpriteIndex("flash_full");
+	int HUD_flash_beam = gHUD.GetSpriteIndex("flash_beam");
 
 	m_hSprite1 = gHUD.GetSprite(HUD_flash_empty);
 	m_hSprite2 = gHUD.GetSprite(HUD_flash_full);
 	m_hBeam = gHUD.GetSprite(HUD_flash_beam);
+
 	m_prc1 = &gHUD.GetSpriteRect(HUD_flash_empty);
 	m_prc2 = &gHUD.GetSpriteRect(HUD_flash_full);
 	m_prcBeam = &gHUD.GetSpriteRect(HUD_flash_beam);
 	m_iWidth = m_prc2->right - m_prc2->left;
-
-	return 1;
-};
+}
 
 int CHudFlashlight:: MsgFunc_FlashBat(const char *pszName,  int iSize, void *pbuf )
 {

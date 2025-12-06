@@ -54,6 +54,10 @@ int CHudBattery::VidInit(void)
 	return 1;
 };
 
+void CHudBattery::ReloadSprites(void) {
+	m_hSprite1 = m_hSprite2 = 0;
+}
+
 int CHudBattery:: MsgFunc_Battery(const char *pszName,  int iSize, void *pbuf )
 {
 	m_iFlags |= HUD_ACTIVE;

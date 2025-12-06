@@ -668,7 +668,7 @@ try
 			char cText[32] = "";
 			char cBoundKey[32] = "";
 			char cCustom[32] = "";
-			static const int cCommandLength = 128;
+			static const int cCommandLength = 256;
 			char cCommand[cCommandLength] = "";
 			char szMap[MAX_MAPNAME] = "";
 			int	 iPlayerClass = 0;

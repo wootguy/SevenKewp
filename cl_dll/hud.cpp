@@ -443,6 +443,7 @@ CHud :: ~CHud()
 {
 	delete [] m_rghSprites;
 	delete [] m_rgrcRects;
+	delete [] m_rgrcRectsDefault;
 	delete [] m_rgszSpriteNames;
 
 	if ( m_pHudList )
@@ -494,7 +495,9 @@ void CHud :: VidInit( void )
 
 	if (mouse_uncenter_phase == 3) // reset mouse uncentering logic for new server connection
 		mouse_uncenter_phase = 2;
-	gHUD.m_is_map_loaded = false;
+
+	m_is_map_loaded = false;
+	m_hud_sprites_loaded = false;
 
 	// this is probably going to annoy someone but HL only binds up to slot 5 which breaks weapon selection and big menus.
 	EngineClientCmd("bind 1 slot1\n");
@@ -515,6 +518,16 @@ void CHud :: VidInit( void )
 }
 
 void CHud::LoadHudSprites(void) {
+	if (m_pSpriteList && m_pCvarHudScale->value != m_lastHudScale) {
+		m_pSpriteList = 0;
+		m_iSpriteCountAllRes = 0;
+
+		delete[] m_rghSprites;
+		delete[] m_rgrcRects;
+		delete[] m_rgrcRectsDefault;
+		delete[] m_rgszSpriteNames;
+	}
+	
 	// Only load this once
 	if (!m_pSpriteList)
 	{		
@@ -523,6 +536,8 @@ void CHud::LoadHudSprites(void) {
 
 		// we need to load the hud.txt, and all sprites within
 		m_pSpriteList = SPR_GetList(useHudPath, &m_iSpriteCountAllRes);
+
+		m_lastHudScale = m_pCvarHudScale->value;
 
 		if (m_pSpriteList)
 		{
@@ -540,7 +555,10 @@ void CHud::LoadHudSprites(void) {
 			// allocated memory for sprite handle arrays
  			m_rghSprites = new HSPRITE[m_iSpriteCount];
 			m_rgrcRects = new wrect_t[m_iSpriteCount];
+			m_rgrcRectsDefault = new wrect_t[m_iSpriteCount];
 			m_rgszSpriteNames = new char[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH];
+
+			memset(m_rghSprites, 0, m_iSpriteCount * sizeof(HSPRITE));
 
 			p = m_pSpriteList;
 			int index = 0;
@@ -550,8 +568,14 @@ void CHud::LoadHudSprites(void) {
 				{
 					char sz[256];
 					sprintf(sz, "sprites/%s.spr", p->szSprite);
-					m_rghSprites[index] = SPR_Load(sz);
+					
+					// only load the sprite in vanilla servers. Otherwise wait for replacement
+					// lists to be sent so we don't load more than needed
+					if (!IsSevenKewpServer())
+						m_rghSprites[index] = SPR_Load(sz);
+
 					m_rgrcRects[index] = p->rc;
+					m_rgrcRectsDefault[index] = p->rc;
 					strncpy( &m_rgszSpriteNames[index * MAX_SPRITE_NAME_LENGTH], p->szName, MAX_SPRITE_NAME_LENGTH );
 
 					index++;
@@ -573,13 +597,67 @@ void CHud::LoadHudSprites(void) {
 			{
 				char sz[256];
 				sprintf( sz, "sprites/%s.spr", p->szSprite );
-				m_rghSprites[index] = SPR_Load(sz);
+				if (!IsSevenKewpServer()) // wait for replacement lists on sevenkewp servers
+					m_rghSprites[index] = SPR_Load(sz);
+				m_rgrcRects[index] = m_rgrcRectsDefault[index];
 				index++;
 			}
 
 			p++;
 		}
 	}
+}
+
+void CHud::ReplaceHudSprites(const char* fpath) {
+	int numSprites = 0;
+	client_sprite_t* sprList = fpath[0] ? SPR_GetList(fpath, &numSprites) : NULL;
+
+	static bool replacedIndexes[256];
+	memset(replacedIndexes, 0, sizeof(replacedIndexes));
+
+	if (sprList) {
+		for (int i = 0; i < numSprites; i++) {
+			client_sprite_t* p = sprList + i;
+
+			if (p->iRes != m_iRes)
+				continue;
+
+			char sz[256];
+			sprintf(sz, "sprites/%s.spr", p->szSprite);
+
+			int existingIdx = GetSpriteIndex(p->szName);
+
+			if (existingIdx != -1) {
+				m_rghSprites[existingIdx] = SPR_Load(sz);
+				m_rgrcRects[existingIdx] = p->rc;
+				replacedIndexes[existingIdx] = true;
+			}
+		}
+	}
+
+	// load default sprites that weren't replaced
+	int index = 0;
+	for (int i = 0; i < m_iSpriteCountAllRes; i++)
+	{
+		client_sprite_t* p = m_pSpriteList + i;
+
+		if (p->iRes == m_iRes) {
+			if (!replacedIndexes[index]) {
+				char sz[256];
+				sprintf(sz, "sprites/%s.spr", p->szSprite);
+				m_rghSprites[index] = SPR_Load(sz);
+				m_rgrcRects[index] = m_rgrcRectsDefault[index];
+			}
+			index++;
+		}
+	}
+
+	m_Battery.ReloadSprites();
+	m_Flash.ReloadSprites();
+
+	m_hud_sprites_loaded = true;
+
+	PRINTF("Loaded sprites %d / 256\n", g_loadedSprites);
 }
 
 void CHud::ParseServerInfo() {

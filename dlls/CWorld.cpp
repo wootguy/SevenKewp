@@ -196,13 +196,17 @@ void CWorld::Precache(void)
 
 	PM_InitTextureTypes();
 
-	const char* matpath = UTIL_VarArgs("sound/%s/%s", STRING(gpGlobals->mapname), STRING(m_materialsFile));
-	std::string materials_abs_file = getGameFilePath(matpath, false);
-	if (!materials_abs_file.empty()) {
-		m_materialsFileNormalized = ALLOC_STRING(normalize_path(matpath).c_str());
-		PRECACHE_GENERIC(matpath);
-		int loaded = LoadCustomMaterials(matpath);
-		ALERT(at_console, "Loaded %d custom materials\n", loaded);
+	if (m_materialsFile) {
+		std::string materials_abs_file = getGameFilePath(STRING(m_materialsFile), false);
+		if (!materials_abs_file.empty()) {
+			PRECACHE_GENERIC(STRING(m_materialsFile));
+			int loaded = LoadCustomMaterials(materials_abs_file.c_str());
+			ALERT(at_console, "Loaded %d custom materials\n", loaded);
+		}
+	}
+
+	if (m_hudFile && !getGameFilePath(STRING(m_hudFile), false).empty()) {
+		PRECACHE_GENERIC(STRING(m_hudFile));
 	}
 
 	if (!g_bsp.loaded) {
@@ -497,7 +501,18 @@ void CWorld::KeyValue(KeyValueData* pkvd)
 	}
 	else if (FStrEq(pkvd->szKeyName, "materials_file"))
 	{
-		m_materialsFile = ALLOC_STRING(pkvd->szValue);
+		char temp[64];
+		const char* path = UTIL_VarArgs("sound/%s/%s", STRING(gpGlobals->mapname), pkvd->szValue);
+		strcpy_safe(temp, normalize_path(path).c_str(), sizeof(temp));
+		m_materialsFile = ALLOC_STRING(temp);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "hud_file"))
+	{
+		char temp[64];
+		const char* path = UTIL_VarArgs("sprites/%s", pkvd->szValue);
+		strcpy_safe(temp, normalize_path(path).c_str(), sizeof(temp));
+		m_hudFile = ALLOC_STRING(temp);
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "freeroam"))

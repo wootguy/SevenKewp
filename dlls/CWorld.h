@@ -21,7 +21,7 @@ public:
 	string_t m_globalSoundList;
 	string_t m_sentenceFile;
 	string_t m_materialsFile;
-	string_t m_materialsFileNormalized;
+	string_t m_hudFile;
 	string_t m_wadlist;
 	bool m_freeRoam;
 };

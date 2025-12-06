@@ -115,6 +115,9 @@ int CHud :: Redraw( float flTime, int intermission )
 	if ( m_flTimeDelta < 0 )
 		m_flTimeDelta = 0;
 
+	if (!m_hud_sprites_loaded)
+		return 0;
+
 	// Bring up the scoreboard during intermission
 	if (gViewPort)
 	{

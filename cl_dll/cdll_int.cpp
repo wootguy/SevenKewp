@@ -177,9 +177,11 @@ so the HUD can reinitialize itself.
 */
 
 int g_connection_phase;
+int g_loadedSprites = 0;
 
 int CL_DLLEXPORT HUD_VidInit( void )
 {
+	g_loadedSprites = 0;
 //	RecClHudVidInit();
 	gHUD.VidInit();
 

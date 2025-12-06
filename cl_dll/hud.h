@@ -460,6 +460,7 @@ class CHudBattery: public CHudBase
 public:
 	int Init( void );
 	int VidInit( void );
+	void ReloadSprites( void );
 	int Draw(float flTime);
 	int MsgFunc_Battery(const char *pszName,  int iSize, void *pbuf );
 	virtual const char* HudName() { return "CHudBattery"; }
@@ -484,6 +485,7 @@ class CHudFlashlight: public CHudBase
 public:
 	int Init( void );
 	int VidInit( void );
+	void ReloadSprites( void );
 	int Draw(float flTime);
 	void Reset( void );
 	int MsgFunc_Flashlight(const char *pszName,  int iSize, void *pbuf );
@@ -705,6 +707,7 @@ private:
 	int							m_iSpriteCountAllRes;
 	float						m_flMouseSensitivity;
 	int							m_iConcussionEffect; 
+	int							m_hud_sprites_loaded;
 
 public:
 
@@ -719,6 +722,7 @@ public:
 	int		m_iFOV;
 	int		m_Teamplay;
 	int		m_iRes;
+	int		m_lastHudScale;
 	cvar_t  *m_pCvarStealMouse;
 	cvar_t	*m_pCvarDraw;
 	cvar_t	*m_pCvarHudScale;
@@ -749,6 +753,7 @@ private:
 	// freed in ~CHud()
 	HSPRITE *m_rghSprites;	/*[HUD_SPRITE_COUNT]*/			// the sprites loaded from hud.txt
 	wrect_t *m_rgrcRects;	/*[HUD_SPRITE_COUNT]*/
+	wrect_t *m_rgrcRectsDefault;	/*[HUD_SPRITE_COUNT]*/
 	char *m_rgszSpriteNames; /*[HUD_SPRITE_COUNT][MAX_SPRITE_NAME_LENGTH]*/
 
 	
@@ -793,6 +798,7 @@ public:
 	void Init( void );
 	void VidInit( void ); // called on server connection or video mode change
 	void LoadHudSprites( void );
+	void ReplaceHudSprites(const char* fpath); // load a separate HUD file for replacing existing sprites
 	void ParseServerInfo( void ); // parse sevenkewp-specific server data
 	void WorldInit( void ); // called when world is laoded and we're about to spawn
 	void Think(void);
