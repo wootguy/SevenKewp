@@ -36,6 +36,7 @@
 #define FL_WC_SHOOT_COOLDOWN_IDLE 4		// cooldown the idle animations even if not attacking
 #define FL_WC_SHOOT_NEED_AKIMBO 8		// don't allow attack if not holding the akimbo version of the weapon
 #define FL_WC_SHOOT_NEED_FULL_COST 16	// don't allow attack if clip is less than ammo cost
+#define FL_WC_SHOOT_NO_AUTOFIRE 32		// one shot per click
 
 #define FL_WC_BULLETS_DYNAMIC_SPREAD 1	// spread widens while moving and tightens while crouching
 #define FL_WC_BULLETS_NO_DECAL 2		// don't show gunshot particles and decal at impact point
@@ -51,9 +52,10 @@
 #define FL_WC_ANIM_ORDERED 4	// play multiple animations in order, not randomly
 
 #define FL_WC_PUNCH_SET 1		// don't randomize angles, set to exactly what was given
-#define FL_WC_PUNCH_NO_RETURN 2	// view does not return to center after the punch
-#define FL_WC_PUNCH_DUCK 4		// apply punch angles only when ducked
-#define FL_WC_PUNCH_STAND 8		// apply punch angles only while standing
+#define FL_WC_PUNCH_ADD 2		// add to current punch angle
+#define FL_WC_PUNCH_NO_RETURN 4	// view does not return to center after the punch
+#define FL_WC_PUNCH_DUCK 8		// apply punch angles only when ducked
+#define FL_WC_PUNCH_STAND 16	// apply punch angles only while standing
 
 enum WeaponCustomEventTriggerShootArg {
 	WC_TRIG_SHOOT_ARG_ALWAYS,		// always fire the shoot event
@@ -105,6 +107,7 @@ enum WeaponCustomEventType {
 	WC_EVT_COOLDOWN,		// adjust cooldowns (by default every action is cooled down after an attack)
 	WC_EVT_TOGGLE_AKIMBO,	// toggle dual-wield mode
 	WC_EVT_SET_GRAVITY,		// change player gravity
+	WC_EVT_DLIGHT,			// dynamic light
 };
 
 // how loud the sound is for AI (reaction distance) (0 = silent)
@@ -212,7 +215,7 @@ struct WepEvt {
 		} ejectShell;
 
 		struct {
-			uint8_t flags;
+			uint8_t flags; //  FL_WC_PUNCH_
 			int16_t x; // 10.6 fixed point int
 			int16_t y;
 			int16_t z;
@@ -261,6 +264,13 @@ struct WepEvt {
 		struct {
 			int16_t gravity; // gravity percentage (1000 = 100%, 0 = default)
 		} setGravity;
+
+		struct {
+			uint8_t radius;
+			uint8_t r, g, b;
+			uint8_t life;
+			uint8_t decayRate;
+		} dlight;
 
 		// not networked to the client. No bit packing necessary
 		struct {
@@ -509,6 +519,15 @@ struct WepEvt {
 		return *this;
 	}
 
+	WepEvt PunchAdd(float x, float y, float z = 0) {
+		evtType = WC_EVT_PUNCH;
+		punch.flags = FL_WC_PUNCH_ADD;
+		punch.x = FLOAT_TO_FP_10_6(x);
+		punch.y = FLOAT_TO_FP_10_6(y);
+		punch.z = FLOAT_TO_FP_10_6(z);
+		return *this;
+	}
+
 	// prefer adding this AFTER a bullets event for prediction accuracy
 	WepEvt PunchRandom(float x, float y, float z=0) {
 		evtType = WC_EVT_PUNCH;
@@ -576,7 +595,7 @@ struct WepEvt {
 
 	// cost = unused
 	WepEvt Bullets(uint8_t count, uint16_t burstDelay, uint16_t damage, float spreadX, float spreadY,
-		uint8_t tracerFreq = 1, uint8_t flasSz=WC_FLASH_NORMAL, uint8_t flags=0) {
+		uint8_t tracerFreq = 1, uint8_t flashSz=WC_FLASH_NORMAL, uint8_t flags=0) {
 		evtType = WC_EVT_BULLETS;
 		bullets.count = count;
 		bullets.burstDelay = burstDelay;
@@ -584,6 +603,7 @@ struct WepEvt {
 		bullets.spreadX = FLOAT_TO_SPREAD(spreadX);
 		bullets.spreadY = FLOAT_TO_SPREAD(spreadY);
 		bullets.tracerFreq = tracerFreq;
+		bullets.flashSz = flashSz;
 		bullets.flags = flags;
 		return *this;
 	}
@@ -701,6 +721,17 @@ struct WepEvt {
 	WepEvt SetGravity(float gravity) {
 		evtType = WC_EVT_SET_GRAVITY;
 		setGravity.gravity = clampf(gravity * 1000, -32727, 32767);
+		return *this;
+	}
+
+	WepEvt DLight(uint8_t radius=20, RGB c=RGB(255,255,255), uint8_t life = 0.1f, uint8_t decayRate = 0) {
+		evtType = WC_EVT_DLIGHT;
+		dlight.radius = radius;
+		dlight.r = c.r;
+		dlight.g = c.g;
+		dlight.b = c.b;
+		dlight.life = life;
+		dlight.decayRate = decayRate;
 		return *this;
 	}
 #endif

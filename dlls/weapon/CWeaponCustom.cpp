@@ -16,6 +16,7 @@ void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
 void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTracer, bool decal, bool texSound);
 void EV_LaserOn(const char* dotSprite, float dotSz, const char* beamSprite, float beamWidth);
 void EV_LaserOff();
+void WC_EV_Dlight(WepEvt& evt);
 #else
 int g_runfuncs = 1;
 #define PRINTF(fmt, ...)
@@ -163,6 +164,7 @@ BOOL CWeaponCustom::Deploy()
 	m_lastChargeDown = 0;
 	m_fInReload = false;
 	m_bInAkimboReload = false;
+	m_waitForAttackRelease = false;
 	m_fInSpecialReload = 0;
 	animCount = 0;
 	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
@@ -349,6 +351,8 @@ void CWeaponCustom::WeaponIdle() {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
+
+	m_waitForAttackRelease = false;
 
 	if (m_lastCanAkimbo != (bool)CanAkimbo()) {
 		if (!g_runfuncs) {
@@ -702,6 +706,9 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	if (!m_pPlayer)
 		return false;
 
+	if (m_waitForAttackRelease)
+		return false;
+
 	bool isNormalAttack = !(opts.flags & FL_WC_SHOOT_NO_ATTACK);
 
 	int clipLeft = *clip;
@@ -712,7 +719,6 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 		return false;
 
 	if (isNormalAttack) {
-		CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 		if (clipLeft < opts.ammoCost && opts.flags & FL_WC_SHOOT_NEED_FULL_COST) {
 			Reload();
 			return false;
@@ -770,6 +776,9 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	case 2: TertiaryAttackCustom(); break;
 	default: break;
 	}
+
+	if (opts.flags & FL_WC_SHOOT_NO_AUTOFIRE)
+		m_waitForAttackRelease = true;
 
 	return true;
 }
@@ -995,23 +1004,21 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 		return;
 	}
 
-	int sentBytes = 0;
-
 	if (sendMode == WC_PRED_SEND_INIT || sendMode == WC_PRED_SEND_INIT) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeapon, NULL, target);
-		WRITE_BYTE(m_iId); sentBytes += 1;
-		WRITE_LONG(params.flags); sentBytes += 4;
-		WRITE_SHORT(params.maxClip); sentBytes += 2;
+		WRITE_BYTE(m_iId);
+		WRITE_LONG(params.flags);
+		WRITE_SHORT(params.maxClip);
 
-		WRITE_SHORT(params.vmodel); sentBytes += 2;
-		WRITE_BYTE(params.deployAnim); sentBytes += 1;
-		WRITE_SHORT(params.deployTime); sentBytes += 2;
-		WRITE_SHORT(params.deployAnimTime); sentBytes += 2;
+		WRITE_SHORT(params.vmodel);
+		WRITE_BYTE(params.deployAnim);
+		WRITE_SHORT(params.deployTime);
+		WRITE_SHORT(params.deployAnimTime);
 
 		for (int k = 0; k < 3; k++) {
 			WeaponCustomReload& reload = params.reloadStage[k];
-			WRITE_BYTE(reload.anim); sentBytes += 1;
-			WRITE_SHORT(reload.time); sentBytes += 2;
+			WRITE_BYTE(reload.anim);
+			WRITE_SHORT(reload.time);
 
 			if (k == 2 && !(params.flags & FL_WC_WEP_SHOTGUN_RELOAD))
 				break;
@@ -1019,39 +1026,39 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 
 		for (int k = 0; k < 4; k++) {
 			WeaponCustomIdle& idle = params.idles[k];
-			WRITE_BYTE(idle.anim); sentBytes += 1;
-			WRITE_BYTE(idle.weight); sentBytes += 1;
-			WRITE_SHORT(idle.time); sentBytes += 2;
+			WRITE_BYTE(idle.anim);
+			WRITE_BYTE(idle.weight);
+			WRITE_SHORT(idle.time);
 		}
 
 		if (params.flags & FL_WC_WEP_AKIMBO) {
 			for (int k = 0; k < 4; k++) {
 				WeaponCustomIdle& idle = params.akimbo.idles[k];
-				WRITE_BYTE(idle.anim); sentBytes += 1;
-				WRITE_BYTE(idle.weight); sentBytes += 1;
-				WRITE_SHORT(idle.time); sentBytes += 2;
+				WRITE_BYTE(idle.anim);
+				WRITE_BYTE(idle.weight);
+				WRITE_SHORT(idle.time);
 			}
 
-			WRITE_BYTE(params.akimbo.reload.anim); sentBytes += 1;
-			WRITE_SHORT(params.akimbo.reload.time); sentBytes += 2;
+			WRITE_BYTE(params.akimbo.reload.anim);
+			WRITE_SHORT(params.akimbo.reload.time);
 
-			WRITE_BYTE(params.akimbo.deployAnim); sentBytes += 1;
-			WRITE_SHORT(params.akimbo.deployTime); sentBytes += 2;
-			WRITE_BYTE(params.akimbo.akimboDeployAnim); sentBytes += 1;
-			WRITE_SHORT(params.akimbo.akimboDeployTime); sentBytes += 2;
-			WRITE_SHORT(params.akimbo.akimboDeployAnimTime); sentBytes += 2;
-			WRITE_BYTE(params.akimbo.holsterAnim); sentBytes += 1;
-			WRITE_SHORT(params.akimbo.holsterTime); sentBytes += 2;
-			WRITE_SHORT(params.akimbo.accuracyX); sentBytes += 2;
-			WRITE_SHORT(params.akimbo.accuracyY); sentBytes += 2;
+			WRITE_BYTE(params.akimbo.deployAnim);
+			WRITE_SHORT(params.akimbo.deployTime);
+			WRITE_BYTE(params.akimbo.akimboDeployAnim);
+			WRITE_SHORT(params.akimbo.akimboDeployTime);
+			WRITE_SHORT(params.akimbo.akimboDeployAnimTime);
+			WRITE_BYTE(params.akimbo.holsterAnim);
+			WRITE_SHORT(params.akimbo.holsterTime);
+			WRITE_SHORT(params.akimbo.accuracyX);
+			WRITE_SHORT(params.akimbo.accuracyY);
 		}
 
 		if (params.flags & FL_WC_WEP_HAS_LASER) {
 			for (int k = 0; k < 4; k++) {
 				WeaponCustomIdle& idle = params.laser.idles[k];
-				WRITE_BYTE(idle.anim); sentBytes += 1;
-				WRITE_BYTE(idle.weight); sentBytes += 1;
-				WRITE_SHORT(idle.time); sentBytes += 2;
+				WRITE_BYTE(idle.anim);
+				WRITE_BYTE(idle.weight);
+				WRITE_SHORT(idle.time);
 			}
 
 			WRITE_SHORT(params.laser.dotSprite);
@@ -1072,114 +1079,121 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 				continue;
 
 			CustomWeaponShootOpts& opts = params.shootOpts[k];
-			WRITE_BYTE(opts.flags); sentBytes += 1;
-			WRITE_BYTE(opts.ammoCost); sentBytes += 1;
-			WRITE_BYTE(opts.ammoFreq); sentBytes += 1;
-			WRITE_BYTE(opts.ammoPool); sentBytes += 1;
-			WRITE_SHORT(opts.cooldown); sentBytes += 2;
-			WRITE_SHORT(opts.cooldownFail); sentBytes += 2;
-			WRITE_SHORT(opts.chargeTime); sentBytes += 2;
-			WRITE_SHORT(opts.chargeCancelTime); sentBytes += 2;
-			WRITE_SHORT(opts.accuracyX); sentBytes += 2;
-			WRITE_SHORT(opts.accuracyY); sentBytes += 2;
+			WRITE_BYTE(opts.flags);
+			WRITE_BYTE(opts.ammoCost);
+			WRITE_BYTE(opts.ammoFreq);
+			WRITE_BYTE(opts.ammoPool);
+			WRITE_SHORT(opts.cooldown);
+			WRITE_SHORT(opts.cooldownFail);
+			WRITE_SHORT(opts.chargeTime);
+			WRITE_SHORT(opts.chargeCancelTime);
+			WRITE_SHORT(opts.accuracyX);
+			WRITE_SHORT(opts.accuracyY);
 		}
 		MESSAGE_END();
 	}
 
-	int mainBytes = sentBytes;
-	sentBytes = 0;
+	int mainBytes = LastMsgSize();
 
 	if (sendMode == WC_PRED_SEND_INIT || sendMode == WC_PRED_SEND_EVT) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
-		WRITE_BYTE(m_iId); sentBytes += 1;
-		WRITE_BYTE(params.numEvents); sentBytes += 1;
+		WRITE_BYTE(m_iId);
+		WRITE_BYTE(params.numEvents);
 
 		for (int k = 0; k < params.numEvents; k++) {
 			WepEvt& evt = params.events[k];
 			uint16_t packedHeader = (evt.hasDelay << 15) | (evt.triggerArg << 10) | (evt.trigger << 5) | evt.evtType;
-			WRITE_SHORT(packedHeader); sentBytes += 2;
+			WRITE_SHORT(packedHeader);
 			if (evt.hasDelay) {
-				WRITE_SHORT(evt.delay); sentBytes += 2;
+				WRITE_SHORT(evt.delay);
 			}
 
 			switch (evt.evtType) {
 			case WC_EVT_IDLE_SOUND: {
 				uint16_t packedFlags = (evt.idleSound.sound << 7) | evt.idleSound.volume;
-				WRITE_SHORT(packedFlags); sentBytes += 2;
+				WRITE_SHORT(packedFlags);
 				break;
 			}
 			case WC_EVT_PLAY_SOUND: {
 				uint16_t packedFlags = evt.playSound.sound << 5 | evt.playSound.channel << 2 | evt.playSound.aiVol;
-				WRITE_SHORT(packedFlags); sentBytes += 2;
-				WRITE_BYTE(evt.playSound.volume); sentBytes += 1;
-				WRITE_BYTE(evt.playSound.attn); sentBytes += 1;
-				WRITE_BYTE(evt.playSound.pitchMin); sentBytes += 1;
-				WRITE_BYTE(evt.playSound.pitchMax); sentBytes += 1;
+				WRITE_SHORT(packedFlags);
+				WRITE_BYTE(evt.playSound.volume);
+				WRITE_BYTE(evt.playSound.attn);
+				WRITE_BYTE(evt.playSound.pitchMin);
+				WRITE_BYTE(evt.playSound.pitchMax);
 
 				WRITE_BYTE(evt.playSound.numAdditionalSounds);
 				for (int i = 0; i < evt.playSound.numAdditionalSounds; i++) {
 					WRITE_SHORT(evt.playSound.additionalSounds[i]);
 				}
 
-				//WRITE_BYTE(evt.playSound.distantSound); sentBytes += 1; // not needed for prediction
+				//WRITE_BYTE(evt.playSound.distantSound); // not needed for prediction
 				break;
 			}
 			case WC_EVT_EJECT_SHELL:
-				WRITE_SHORT(evt.ejectShell.model); sentBytes += 2;
-				WRITE_SHORT(evt.ejectShell.offsetForward); sentBytes += 2;
-				WRITE_SHORT(evt.ejectShell.offsetUp); sentBytes += 2;
-				WRITE_SHORT(evt.ejectShell.offsetRight); sentBytes += 2;
+				WRITE_SHORT(evt.ejectShell.model);
+				WRITE_SHORT(evt.ejectShell.offsetForward);
+				WRITE_SHORT(evt.ejectShell.offsetUp);
+				WRITE_SHORT(evt.ejectShell.offsetRight);
 				break;
 			case WC_EVT_PUNCH:
-				WRITE_BYTE(evt.punch.flags); sentBytes += 1;
-				WRITE_SHORT(evt.punch.x); sentBytes += 2;
-				WRITE_SHORT(evt.punch.y); sentBytes += 2;
-				WRITE_SHORT(evt.punch.z); sentBytes += 2;
+				WRITE_BYTE(evt.punch.flags);
+				WRITE_SHORT(evt.punch.x);
+				WRITE_SHORT(evt.punch.y);
+				WRITE_SHORT(evt.punch.z);
 				break;
 			case WC_EVT_SET_BODY:
-				WRITE_BYTE(evt.setBody.newBody); sentBytes += 1;
+				WRITE_BYTE(evt.setBody.newBody);
 				break;
 			case WC_EVT_WEP_ANIM: {
 				uint8_t packedAnimHeader = (evt.anim.flags << 3) | (evt.anim.akimbo);
-				WRITE_BYTE(packedAnimHeader); sentBytes += 1;
-				WRITE_BYTE(evt.anim.numAnim); sentBytes += 1;
+				WRITE_BYTE(packedAnimHeader);
+				WRITE_BYTE(evt.anim.numAnim);
 				for (int i = 0; i < evt.anim.numAnim; i++) {
-					WRITE_BYTE(evt.anim.anims[i]); sentBytes += 1;
+					WRITE_BYTE(evt.anim.anims[i]);
 				}
 				break;
 			}
 			case WC_EVT_BULLETS: {
-				WRITE_BYTE(evt.bullets.count); sentBytes += 1;
-				WRITE_SHORT(evt.bullets.burstDelay); sentBytes += 2;
-				WRITE_SHORT(evt.bullets.damage); sentBytes += 2;
-				WRITE_SHORT(evt.bullets.spreadX); sentBytes += 2;
-				WRITE_SHORT(evt.bullets.spreadY); sentBytes += 2;
-				WRITE_BYTE(evt.bullets.tracerFreq); sentBytes += 1;
+				WRITE_BYTE(evt.bullets.count);
+				WRITE_SHORT(evt.bullets.burstDelay);
+				WRITE_SHORT(evt.bullets.damage);
+				WRITE_SHORT(evt.bullets.spreadX);
+				WRITE_SHORT(evt.bullets.spreadY);
+				WRITE_BYTE(evt.bullets.tracerFreq);
 
 				uint8_t packedFlags = (evt.bullets.flags << 4) | evt.bullets.flashSz;
-				WRITE_BYTE(packedFlags); sentBytes += 1;
+				WRITE_BYTE(packedFlags);
 			}
 							   break;
 			case WC_EVT_KICKBACK:
-				WRITE_SHORT(evt.kickback.pushForce); sentBytes += 2;
-				WRITE_BYTE(evt.kickback.back); sentBytes += 1;
-				WRITE_BYTE(evt.kickback.right); sentBytes += 1;
-				WRITE_BYTE(evt.kickback.up); sentBytes += 1;
-				WRITE_BYTE(evt.kickback.globalUp); sentBytes += 1;
+				WRITE_SHORT(evt.kickback.pushForce);
+				WRITE_BYTE(evt.kickback.back);
+				WRITE_BYTE(evt.kickback.right);
+				WRITE_BYTE(evt.kickback.up);
+				WRITE_BYTE(evt.kickback.globalUp);
 				break;
 			case WC_EVT_TOGGLE_ZOOM:
-				WRITE_BYTE(evt.zoomToggle.zoomFov); sentBytes += 1;
-				WRITE_BYTE(evt.zoomToggle.zoomFov2); sentBytes += 1;
+				WRITE_BYTE(evt.zoomToggle.zoomFov);
+				WRITE_BYTE(evt.zoomToggle.zoomFov2);
 				break;
 			case WC_EVT_HIDE_LASER:
-				WRITE_SHORT(evt.laserHide.millis); sentBytes += 2;
+				WRITE_SHORT(evt.laserHide.millis);
 				break;
 			case WC_EVT_COOLDOWN:
-				WRITE_SHORT(evt.cooldown.millis); sentBytes += 2;
-				WRITE_BYTE(evt.cooldown.targets); sentBytes += 1;
+				WRITE_SHORT(evt.cooldown.millis);
+				WRITE_BYTE(evt.cooldown.targets);
 				break;
 			case WC_EVT_SET_GRAVITY:
-				WRITE_SHORT(evt.setGravity.gravity); sentBytes += 2;
+				WRITE_SHORT(evt.setGravity.gravity);
+				break;
+			case WC_EVT_DLIGHT:
+				WRITE_BYTE(evt.dlight.r);
+				WRITE_BYTE(evt.dlight.g);
+				WRITE_BYTE(evt.dlight.b);
+				WRITE_BYTE(evt.dlight.radius);
+				WRITE_BYTE(evt.dlight.life);
+				WRITE_BYTE(evt.dlight.decayRate);
 				break;
 			case WC_EVT_TOGGLE_AKIMBO:
 			case WC_EVT_TOGGLE_LASER:
@@ -1193,7 +1207,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 		MESSAGE_END();
 	}
 
-	int evBytes = sentBytes;
+	int evBytes = LastMsgSize();
 	ALERT(at_console, "Sent %d prediction bytes for %s (%d + %d evt)\n",
 		evBytes + mainBytes, STRING(pev->classname), mainBytes, evBytes);
 
@@ -1739,7 +1753,10 @@ void CWeaponCustom::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.z);
 
 		if (!(evt.punch.flags & FL_WC_PUNCH_NO_RETURN)) {
-			if (evt.punch.flags & FL_WC_PUNCH_SET) {
+			if (evt.punch.flags & FL_WC_PUNCH_ADD) {
+				m_pPlayer->pev->punchangle = m_pPlayer->pev->punchangle + Vector(punchAngleX, punchAngleY, punchAngleZ);
+			}
+			else if (evt.punch.flags & FL_WC_PUNCH_SET) {
 				m_pPlayer->pev->punchangle = Vector(punchAngleX, punchAngleY, punchAngleZ);
 			}
 			else {
@@ -1828,6 +1845,32 @@ void CWeaponCustom::PlayEvent_HideLaser(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	}
 }
 
+void CWeaponCustom::PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer) {
+#ifdef CLIENT_DLL
+	WC_EV_Dlight(evt);
+#else
+	bool isPredicted = IsPredicted();
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+		if (!plr || (plr == m_pPlayer && isPredicted) || !m_pPlayer->InPVS(plr->edict()))
+			continue;
+
+		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, plr->edict());
+		WRITE_BYTE(TE_DLIGHT);
+		WRITE_COORD_VECTOR(plr->pev->origin);
+		WRITE_BYTE(evt.dlight.radius);
+		WRITE_BYTE(evt.dlight.r);
+		WRITE_BYTE(evt.dlight.g);
+		WRITE_BYTE(evt.dlight.b);
+		WRITE_BYTE(evt.dlight.life);
+		WRITE_BYTE(evt.dlight.decayRate);
+		MESSAGE_END();
+	}
+#endif
+}
+
 void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
@@ -1883,6 +1926,9 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 		break;
 	case WC_EVT_SET_GRAVITY:
 		PlayEvent_SetGravity(evt, m_pPlayer);
+		break;
+	case WC_EVT_DLIGHT:
+		PlayEvent_DLight(evt, m_pPlayer);
 		break;
 	default:
 		ALERT(at_error, "Unhandled weapon event type %d\n", evt.evtType);

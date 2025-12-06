@@ -207,7 +207,7 @@ void CAmbientGeneric::Precache(void)
 	{
 		if (m_isGlobalMp3) {
 			g_lastMp3PlayerEnt = this;
-			UTIL_PlayGlobalMp3(szSoundFile, m_fLooping);
+			UTIL_PlayGlobalMp3(UTIL_GetReplacementSound(NULL, szSoundFile), m_fLooping);
 		}
 		else {
 			// SND_SPAWNING sounds are sent to clients when they join
@@ -760,7 +760,7 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 		InitModulationParms();
 
 		if (m_isGlobalMp3) {
-			UTIL_PlayGlobalMp3(szSoundFile, m_fLooping);
+			UTIL_PlayGlobalMp3(UTIL_GetReplacementSound(NULL, szSoundFile), m_fLooping);
 			g_lastMp3PlayerEnt = this;
 		}
 		else if (m_isLinear) {

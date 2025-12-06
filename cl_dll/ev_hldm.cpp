@@ -1885,6 +1885,7 @@ void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, f
 extern vec3_t v_angles;
 extern vec3_t v_sim_org;
 extern vec3_t v_sim_vel;
+extern vec3_t ev_punchangle;
 
 void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 	cl_entity_t* player = GetLocalPlayer();
@@ -1943,7 +1944,12 @@ void WC_EV_PunchAngle(WepEvt& evt, int seed) {
 		gEngfuncs.SetViewAngles(angles);
 	}
 	else {
-		if (evt.punch.flags & FL_WC_PUNCH_SET) {
+		if (evt.punch.flags & FL_WC_PUNCH_ADD) {
+			ev_punchangle[0] += punchAngleX;
+			ev_punchangle[1] += punchAngleY;
+			ev_punchangle[2] += punchAngleZ;
+		}
+		else if (evt.punch.flags & FL_WC_PUNCH_SET) {
 			V_PunchAxis(0, punchAngleX);
 			V_PunchAxis(1, punchAngleY);
 			V_PunchAxis(2, punchAngleZ);
@@ -1958,6 +1964,17 @@ void WC_EV_PunchAngle(WepEvt& evt, int seed) {
 
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx) {
 	gEngfuncs.pEventAPI->EV_WeaponAnimation(animIdx, GetCustomWeaponBody(wepid));
+}
+
+void WC_EV_Dlight(WepEvt& evt) {
+	dlight_t* dl = gEngfuncs.pEfxAPI->CL_AllocDlight(0);
+	dl->origin = v_sim_org;
+	dl->radius = evt.dlight.radius * 10;
+	dl->color.r = evt.dlight.r;
+	dl->color.g = evt.dlight.g;
+	dl->color.b = evt.dlight.b;
+	dl->decay = evt.dlight.decayRate * 10;
+	dl->die = gEngfuncs.GetClientTime() + evt.dlight.life * 0.1f;
 }
 
 extern vec3_t ev_punchangle;

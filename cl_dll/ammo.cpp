@@ -1103,6 +1103,14 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 		case WC_EVT_SET_GRAVITY:
 			evt.setGravity.gravity = READ_SHORT();
 			break;
+		case WC_EVT_DLIGHT:
+			evt.dlight.r = READ_BYTE();
+			evt.dlight.g = READ_BYTE();
+			evt.dlight.b = READ_BYTE();
+			evt.dlight.radius = READ_BYTE();
+			evt.dlight.life = READ_BYTE();
+			evt.dlight.decayRate = READ_BYTE();
+			break;
 		case WC_EVT_TOGGLE_AKIMBO:
 		case WC_EVT_TOGGLE_LASER:
 		case WC_EVT_PROJECTILE:
