@@ -5775,7 +5775,7 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 				pWeaponBox->pev->avelocity = Vector(256, 256, 0);
 			}
 
-			pWeaponBox->PackWeapon( pWeapon );
+			pWeaponBox->PackWeapon( pWeapon ); // will also unlink the weapon from this player
 			pWeaponBox->pev->velocity = pev->velocity + gpGlobals->v_forward * 400;
 			
 			CBasePlayerWeapon* wep = pWeapon->GetWeaponPtr();

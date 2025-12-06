@@ -134,6 +134,7 @@ void PRECACHE_HUD_FILES(const char* hudConfigPath) {
 	std::ifstream infile(fpath);
 
 	if (fpath.empty() || !infile.is_open()) {
+		g_tryPrecacheGeneric.put(hudConfigPath);
 		ALERT(at_error, "Failed to load HUD config: %s\n", hudConfigPath);
 		return;
 	}

@@ -206,6 +206,8 @@ const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 
 int NextAutoWeaponId() {
 	for (int i = 1; i < MAX_WEAPONS; i++) {
+		if (i == WEAPON_SUIT)
+			continue;
 		if (!CBasePlayerItem::ItemInfoArray[i].iId) {
 			return i;
 		}
@@ -331,6 +333,10 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 cleanup:
 	REMOVE_ENTITY(pent);
 	return info;
+}
+
+void UTIL_RegisterEquipmentEntity(const char* szClassname) {
+	g_weaponClassnames.put(szClassname);
 }
 
 // called by worldspawn

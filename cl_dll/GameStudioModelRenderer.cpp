@@ -81,7 +81,8 @@ int R_StudioDrawModel( int flags )
 		WEAPON* pw = gHUD.m_Ammo.m_pWeapon;
 
 		if (pw && pw->hZoomedCrosshair && isZoomed && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR)) {
-			return 0; // don't draw weapon model when zooming through a scope
+			if (flags & STUDIO_RENDER)
+				return 0; // only handle events, don't render the model
 		}
 
 		if (IsViewModelAkimbo()) {

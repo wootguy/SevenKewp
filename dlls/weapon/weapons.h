@@ -180,6 +180,10 @@ EXPORT void GetCircularGaussianSpread(float& x, float& y);
 // Returns an ItemInfo with reassigned id and position.
 EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname);
 
+// register an entity for precaching and equipment via map CFG
+// Use this with ammo entities and weapons that couldn't be registered normally
+EXPORT void UTIL_RegisterEquipmentEntity(const char* szClassname);
+
 EXPORT void AddAmmoNameToAmmoRegistry(const char* szAmmoname, bool isSevenKewpGun);
 
 typedef struct 

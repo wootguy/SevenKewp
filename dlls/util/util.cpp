@@ -110,6 +110,9 @@ std::unordered_map<std::string, StringMap> g_replacementFiles;
 
 MessageHistoryItem g_hudMsgHistory[MAX_TEXT_CHANNELS*33];
 
+StringMap g_weaponRemapHL;
+StringMap g_classRemap;
+
 TYPEDESCRIPTION	gEntvarsDescription[] =
 {
 	DEFINE_ENTITY_FIELD(classname, FIELD_STRING),
@@ -2927,6 +2930,17 @@ const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound) {
 	}
 
 	return sound;
+}
+
+const char* UTIL_GetReplacementModel(const char* model) {
+	std::string lowerMdl = toLowerCase(model);
+
+	const char* globalReplacement = g_soundReplacements.get(lowerMdl.c_str());
+	if (globalReplacement) {
+		return globalReplacement;
+	}
+
+	return model;
 }
 
 // multiply a matrix with a vector (assumes w component of vector is 1.0f) 

@@ -567,6 +567,8 @@ void ServerDeactivate( void )
 	g_nomaptrans.clear();
 	g_unrecognizedCfgEquipment.clear();
 	g_replacementFiles.clear();
+	g_weaponRemapHL.clear();
+	g_classRemap.clear();
 	ClearPlayerModelCache();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";
@@ -794,6 +796,19 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	StringSet::iterator_t witer;
 	while (g_mapWeapons.iterate(witer)) {
 		UTIL_PrecacheOther(witer.key);
+	}
+
+	{
+		StringMap::iterator_t iter;
+		while (g_classRemap.iterate(iter)) {
+			UTIL_PrecacheOther(iter.value);
+		}
+	}
+	{
+		StringMap::iterator_t iter;
+		while (g_weaponRemapHL.iterate(iter)) {
+			UTIL_PrecacheOther(iter.value);
+		}
 	}
 	
 	PrecacheTextureSounds();

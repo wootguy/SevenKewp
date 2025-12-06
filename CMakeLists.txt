@@ -47,6 +47,12 @@ include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson/include/)
 
 project(sevenkewp)
 
+if (MSVC)
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;Asan" CACHE STRING "" FORCE)
+set(CMAKE_CXX_FLAGS_ASAN "${CMAKE_CXX_FLAGS_DEBUG} /fsanitize=address")
+set(CMAKE_SHARED_LINKER_FLAGS_ASAN "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DEBUG")
+endif()
+
 if (BUILD_SERVER)
 	add_subdirectory(dlls) # server project
 endif()

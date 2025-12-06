@@ -269,6 +269,20 @@ int CBasePlayerWeapon::AddDuplicate(CBasePlayerItem* pOriginal)
 
 int CBasePlayerWeapon::AddToPlayer(CBasePlayer* pPlayer)
 {
+	if (pPlayer->IsSevenKewpClient()) {
+		const char* remapClass = g_weaponRemapHL.get(STRING(pev->classname));
+
+		if (remapClass) {
+			if (pPlayer->HasNamedPlayerItem(remapClass)) {
+				return 0;
+			}
+
+			pPlayer->GiveNamedItem(remapClass);
+			CBasePlayerItem* wep = pPlayer->GetNamedPlayerItem(remapClass);
+			return 0;
+		}
+	}	
+
 	int bResult = CBasePlayerItem::AddToPlayer(pPlayer);
 
 	pPlayer->m_weaponBits |= (1ULL << m_iId);
@@ -799,12 +813,15 @@ const char* CBasePlayerWeapon::GetModelW() {
 	if (m_customModelW) {
 		return STRING(m_customModelW);
 	}
+	bool useMergedModel = MergedModelBody() != -1 && !UTIL_MapReplacesModel(m_defaultModelW);
 
-	return mp_mergemodels.value && MergedModelBody() != -1 ? MERGED_ITEMS_MODEL : m_defaultModelW;
+	return mp_mergemodels.value && useMergedModel ? MERGED_ITEMS_MODEL : m_defaultModelW;
 }
 
 void CBasePlayerWeapon::SetWeaponModelW() {
-	if (m_customModelW || MergedModelBody() == -1) {
+	bool useMergedModel = MergedModelBody() != -1 && !UTIL_MapReplacesModel(m_defaultModelW);
+
+	if (m_customModelW || !useMergedModel) {
 		SET_MODEL(ENT(pev), GetModelW());
 	}
 	else {

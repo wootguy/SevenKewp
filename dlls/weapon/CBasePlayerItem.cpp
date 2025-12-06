@@ -191,6 +191,12 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 		CBasePlayerWeapon* newWep = pNewWeapon->GetWeaponPtr();
 		if (thisWep && newWep) {
 			newWep->m_customSpriteDir = thisWep->m_customSpriteDir;
+			newWep->m_customModelP = thisWep->m_customModelP;
+			newWep->m_customModelV = thisWep->m_customModelV;
+			newWep->m_customModelW = thisWep->m_customModelW;
+			newWep->m_defaultModelP = thisWep->m_defaultModelP;
+			newWep->m_defaultModelV = thisWep->m_defaultModelV;
+			newWep->m_defaultModelW = thisWep->m_defaultModelW;
 		}
 
 		CBasePlayerItem* wep = (CBasePlayerItem*)pNewWeapon->GetWeaponPtr();

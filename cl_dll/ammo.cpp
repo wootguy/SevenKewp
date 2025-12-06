@@ -126,7 +126,7 @@ void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon, const char* customDi
 	pWeapon->hAmmo = 0;
 	pWeapon->hAmmo2 = 0;
 
-	if (customDir) {
+	if (customDir && customDir[0]) {
 		const char* wepName = pWeapon->szName;
 		const char* last = strrchr(pWeapon->szName, '/');
 		if (last) {

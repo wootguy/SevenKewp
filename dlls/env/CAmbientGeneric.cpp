@@ -733,16 +733,20 @@ void CAmbientGeneric::ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 					UTIL_StopGlobalMp3();
 			}
 			else {
-				bool isPlaying = false;
+				bool isPlaying = true;
 
-				if (m_isLinear && m_lastPlayTime) {
-					// linear sound won't start if stop sound comes at the same time
-					float endTime = m_lastPlayTime + (m_wavInfo.durationMillis / 1000.0f);
-					if (endTime > g_engfuncs.pfnTime()) {
-						isPlaying = true;
+				if (m_isLinear) {
+					isPlaying = false;
+
+					if (m_lastPlayTime) {
+						// linear sound won't start if stop sound comes at the same time
+						float endTime = m_lastPlayTime + (m_wavInfo.durationMillis / 1000.0f);
+						if (endTime > g_engfuncs.pfnTime()) {
+							isPlaying = true;
+						}
+						m_lastPlayTime = 0;
 					}
 				}
-				m_lastPlayTime = 0;
 
 				if (isPlaying) {
 					UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile, 0, 0, SND_STOP, 0);

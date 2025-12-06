@@ -5,6 +5,7 @@
 #include "decals.h"
 #include "gamerules.h"
 #include "CBasePlayerAmmo.h"
+#include "weapons.h"
 
 extern int gEvilImpulse101;
 
@@ -20,6 +21,8 @@ void CBasePlayerAmmo::Spawn(void)
 
 	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
 		SetUse(&CBasePlayerAmmo::DefaultUse);	
+
+	UTIL_RegisterEquipmentEntity(STRING(pev->classname));
 }
 
 void CBasePlayerAmmo::KeyValue(KeyValueData* pkvd)

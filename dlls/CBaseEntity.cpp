@@ -669,6 +669,10 @@ CBaseEntity* CBaseEntity::Create(const char* szName, const Vector& vecOrigin, co
 	edict_t* pent;
 	CBaseEntity* pEntity;
 
+	const char* remapClass = g_weaponRemapHL.get(szName);
+	if (remapClass)
+		szName = remapClass;
+
 	pent = CREATE_NAMED_ENTITY(ALLOC_STRING(szName)); // not using MAKE_STRING in case an unloaded plugin called this func
 	if (FNullEnt(pent))
 	{

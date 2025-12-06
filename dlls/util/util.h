@@ -53,6 +53,14 @@ extern StringSet g_weaponNames; // names given by weapons (may have a prefix: "h
 extern StringSet g_weaponClassnames; // valid weapon classnames
 extern uint64_t g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict
 
+// remaps a half-life weapon to a sevenkewp weapon
+// when a sevenkewp player picks up one of these hl weapons, they'll get the remapped weapon instead
+EXPORT extern StringMap g_weaponRemapHL;
+
+// remaps one class type to another class type
+// does not apply to entities created via map data
+EXPORT extern StringMap g_classRemap;
+
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 extern bool g_can_set_bsp_models; // false if bsp models aren't precached yet (skip SET_MODEL calls)
 extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
@@ -143,7 +151,7 @@ enum merged_item_bodies {
 
 // Use this instead of ALLOC_STRING on constant strings
 #define STRING(offset)		((const char *)(gpGlobals->pStringBase + (unsigned int)(offset)))
-#define MAKE_STRING(str)	((uint64)(str) - (uint64)(STRING(0)))
+#define MAKE_STRING(str)	((uint64)(str) - (uint64)(STRING(0))) // NEVER USE THIS IN PLUGINS
 
 // swap 2 values
 #define SWAP(a, b, T) { \
@@ -869,6 +877,9 @@ EXPORT void UTIL_ForceRetouch(edict_t* ent); // force entity to Touch() all trig
 
 // return global or per-monster sound replacement, or the same path if not replaced 
 EXPORT const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound);
+
+// return replacement model, or same model if not replaced
+EXPORT const char* UTIL_GetReplacementModel(const char* model);
 
 // move a player to an active spawnpoint, and optionally respawn them or restore health
 // moveLivingPlayers will skip living players if false
