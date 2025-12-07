@@ -2756,7 +2756,7 @@ void CBasePlayer::PreThink(void)
 	ItemPreFrame( );
 	WaterMove();
 
-	if ( g_pGameRules && g_pGameRules->FAllowFlashlight() )
+	if ( g_pGameRules && g_pGameRules->FAllowFlashlight() && m_hasFlashlight )
 		m_iHideHUD &= ~HIDEHUD_FLASHLIGHT;
 	else
 		m_iHideHUD |= HIDEHUD_FLASHLIGHT;
@@ -3855,6 +3855,7 @@ void CBasePlayer::Spawn( void )
 	m_fWeapon = FALSE;
 	m_pClientActiveItem = NULL;
 	m_iClientBattery = -1;
+	m_hasFlashlight = true;
 
 	// reset all ammo values to 0
 	for ( int i = 0; i < MAX_AMMO_SLOTS; i++ )
@@ -4264,7 +4265,7 @@ BOOL CBasePlayer :: FlashlightIsOn( void )
 
 void CBasePlayer :: FlashlightTurnOn( void )
 {
-	if ( !g_pGameRules->FAllowFlashlight() )
+	if ( !g_pGameRules->FAllowFlashlight() || !m_hasFlashlight)
 	{
 		return;
 	}

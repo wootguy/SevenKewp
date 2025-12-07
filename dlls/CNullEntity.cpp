@@ -9,6 +9,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS(info_null, CNullEntity)
+LINK_ENTITY_TO_CLASS(info_texlights, CNullEntity) // entity used during compilation only
 
 // Null Entity, remove on startup
 void CNullEntity::Spawn(void)

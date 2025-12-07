@@ -199,6 +199,7 @@ public:
 	float				m_flFlashLightTime;	// Time until next battery draw/Recharge
 	int					m_iFlashBattery;		// Flashlight Battery Draw
 	bool				m_flashlightEnabled;
+	bool				m_hasFlashlight;
 	float				m_lastNightvisionUpdate;
 	float				m_lastNightvisionFadeUpdate;
 	RGB					m_nightvisionColor;

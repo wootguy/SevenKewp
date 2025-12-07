@@ -208,7 +208,6 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_akimboAnimTime = 0;
 		g_customWeapon[i].m_akimboLastEventFrame = 0;
 		g_customWeapon[i].m_lastCanAkimbo = 0;
-		g_customWeapon[i].m_waitForAttackRelease = 0;
 		g_customWeapon[i].ammoFreqs[0] = 0;
 		g_customWeapon[i].ammoFreqs[1] = 0;
 		g_customWeapon[i].ammoFreqs[2] = 0;

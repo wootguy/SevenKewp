@@ -483,14 +483,18 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 		flEnd = 1.0;
 	}
 
+	// events are skipped if start/end are "perfectly" aligned.
+	// ending at 3.0f last call then starting at 3.0000001f next call will skip frame 3 events
+	const float evepsilon = 0.001f;
+
 	for (; index < pseqdesc->numevents; index++)
 	{
 		// Don't send client-side events to the server AI
 		if ( pevent[index].event >= EVENT_CLIENT && pevent[index].event != 5005)
 			continue;
 
-		if ( (pevent[index].frame >= flStart && pevent[index].frame < flEnd) || 
-			((pseqdesc->flags & STUDIO_LOOPING) && flEnd >= pseqdesc->numframes - 1 && pevent[index].frame < flEnd - pseqdesc->numframes + 1) )
+		if ( (pevent[index].frame + evepsilon >= flStart && pevent[index].frame < flEnd) ||
+			((pseqdesc->flags & STUDIO_LOOPING) && flEnd >= pseqdesc->numframes - 1 && pevent[index].frame < (int)flEnd - pseqdesc->numframes + 1) )
 		{
 			pMonsterEvent->event = pevent[index].event;
 			pMonsterEvent->options = pevent[index].options;

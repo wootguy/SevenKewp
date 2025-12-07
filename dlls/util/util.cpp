@@ -1431,6 +1431,10 @@ void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix
 }
 
 void UTIL_ClientHudConPrint(CBaseEntity* client, const hudconparms_t& params, const char* msg, bool reliable) {
+	CBasePlayer* plr = client->MyPlayerPointer();
+	if (!plr || !plr->IsSevenKewpClient())
+		return;
+	
 	uint8_t msgfl = 0;
 
 	if (params.xPercent || params.yPercent)
@@ -2446,7 +2450,7 @@ edict_t* CREATE_NAMED_ENTITY(string_t cname) {
 			initFunc(&ed->v);
 		}
 		else {
-			ALERT(at_console, "Invalid entity class '%s'\n", STRING(cname));
+			ALERT(at_warning, "Invalid entity class '%s'\n", STRING(cname));
 			return NULL;
 		}
 	}
@@ -2517,16 +2521,84 @@ bool fileExists(const char* path) {
 
 std::string lastMapName;
 
+#ifdef WIN32
+#include <windows.h>
+#include <iostream>
+
+WORD original;
+HANDLE hConsole;
+
+void SetConsoleColor(ALERT_TYPE target) {
+	if (!sv_colorcon.value)
+		return;
+
+	if (!hConsole) {
+		hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+		CONSOLE_SCREEN_BUFFER_INFO info;
+		GetConsoleScreenBufferInfo(hConsole, &info);
+		original = info.wAttributes;
+	}
+
+	switch (target) {
+	case at_error:
+		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+		break;
+	case at_warning:
+		SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+		break;
+	case at_notice:
+	case at_console:
+		if (g_plugin_print) {
+			SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+		}
+		else {
+			SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN);
+		}
+		break;
+	case at_aiconsole:
+		SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+		break;
+	case at_logged:
+		SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+		break;
+	default:
+		break;
+	}
+	
+}
+
+void ResetConsoleColor() {
+	if (!sv_colorcon.value)
+		return;
+	SetConsoleTextAttribute(hConsole, original);
+}
+
+#else
+void SetConsoleColor(ALERT_TYPE target) {
+	if (!sv_colorcon.value)
+		return;
+}
+
+void ResetConsoleColor() {
+	if (!sv_colorcon.value)
+		return;
+}
+#endif
+
+bool g_plugin_print;
+
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 	switch (target) {
 	case at_console:
 	case at_notice:
 		if (g_developer->value < 1) {
+			g_plugin_print = false;
 			return;
 		}
 		break;
 	case at_aiconsole:
 		if (g_developer->value < 2) {
+			g_plugin_print = false;
 			return;
 		}
 		break;
@@ -2546,14 +2618,19 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 
 	if (std::this_thread::get_id() != g_main_thread_id) {
 		g_thread_prints.enqueue({target, log_line}); // only the main thread can call engine functions
+		g_plugin_print = false;
 		return;
 	}
+
+	SetConsoleColor(target);
 
 #if defined(WIN32) && (_DEBUG)
 	OutputDebugString(log_line);
 #endif
 
 	g_engfuncs.pfnAlertMessage(target, "%s", log_line);
+
+	ResetConsoleColor();
 
 	if (target == at_error) {
 		if (gpGlobals->mapname && lastMapName != STRING(gpGlobals->mapname)) {
@@ -2568,6 +2645,8 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 		if (g_developer->value == 0)
 			g_engfuncs.pfnServerPrint(log_line);
 	}
+
+	g_plugin_print = false;
 }
 
 void handleThreadPrints() {
@@ -2575,6 +2654,7 @@ void handleThreadPrints() {
 
 	for (int failsafe = 0; failsafe < 128; failsafe++) {
 		if (g_thread_prints.dequeue(msg)) {
+			g_plugin_print = true; // so far only plugins use threads and this var isn't thread safe
 			ALERT(msg.atype, "%s", msg.msg.c_str());
 		}
 		else {
@@ -2725,7 +2805,7 @@ void LoadAdminList(bool forceUpdate) {
 		g_admins.put(line.c_str(), adminLevel);
 	}
 
-	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loaded %d admin(s) from file\n", g_admins.size()));
+	ALERT(at_console, UTIL_VarArgs("Loaded %d admin(s) from file\n", g_admins.size()));
 }
 
 int AdminLevel(CBasePlayer* plr) {

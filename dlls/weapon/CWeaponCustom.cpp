@@ -164,7 +164,6 @@ BOOL CWeaponCustom::Deploy()
 	m_lastChargeDown = 0;
 	m_fInReload = false;
 	m_bInAkimboReload = false;
-	m_waitForAttackRelease = false;
 	m_fInSpecialReload = 0;
 	animCount = 0;
 	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
@@ -351,8 +350,6 @@ void CWeaponCustom::WeaponIdle() {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
-
-	m_waitForAttackRelease = false;
 
 	if (m_lastCanAkimbo != (bool)CanAkimbo()) {
 		if (!g_runfuncs) {
@@ -706,8 +703,12 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	if (!m_pPlayer)
 		return false;
 
-	if (m_waitForAttackRelease)
-		return false;
+	if (opts.flags & FL_WC_SHOOT_NO_AUTOFIRE) {
+		if (attackIdx == 0 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK))
+			return false;
+		if (attackIdx == 1 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK2))
+			return false;
+	}
 
 	bool isNormalAttack = !(opts.flags & FL_WC_SHOOT_NO_ATTACK);
 
@@ -776,9 +777,6 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	case 2: TertiaryAttackCustom(); break;
 	default: break;
 	}
-
-	if (opts.flags & FL_WC_SHOOT_NO_AUTOFIRE)
-		m_waitForAttackRelease = true;
 
 	return true;
 }

@@ -96,7 +96,7 @@ bool PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
 }
 
 bool PluginManager::LoadPlugin(Plugin& plugin) {
-	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Loading plugin '%s'\n", plugin.fpath.c_str()));
+	ALERT(at_logged, UTIL_VarArgs("Loading plugin '%s'\n", plugin.fpath.c_str()));
 
 #ifdef _WIN32
 	plugin.h_module = LoadLibraryA(plugin.fpath.c_str());
@@ -871,6 +871,6 @@ extern "C" DLLEXPORT void custom(entvars_t * pev) {
 		initFunc(pev);
 	}
 	else {
-		ALERT(at_console, "Invalid entity class '%s'\n", STRING(pev->classname));
+		ALERT(at_warning, "Invalid entity class '%s'\n", STRING(pev->classname));
 	}
 }

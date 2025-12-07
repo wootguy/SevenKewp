@@ -148,21 +148,23 @@ void CAmbientGeneric::Spawn(void)
 	m_fLooping = (!FBitSet(pev->spawnflags, AMBIENT_SOUND_NOT_LOOPING) && !m_forceOnce) || m_forceLoop;
 	
 	m_isGlobalMp3 = toLowerCase(szSoundFile).find(".mp3") == strlen(szSoundFile) - 4;
+
+	const char* replacementSound = UTIL_GetReplacementSound(edict(), szSoundFile);
 	
-	if (toLowerCase(szSoundFile).find(".wav") == strlen(szSoundFile) - 4) {
-		m_wavInfo = getWaveFileInfo(szSoundFile);
+	if (toLowerCase(replacementSound).find(".wav") == strlen(replacementSound) - 4) {
+		m_wavInfo = getWaveFileInfo(replacementSound);
 		m_isWav = true;
 
 		if (m_forceLoop && !m_wavInfo.isLooped) {
 			// prefer using cue points because then the sound won't reset whenever the player
 			// enters the audible range. Also network usage will be reduced from server not needing
 			// to send loop/start messages every second.
-			ALERT(at_console, "ambient_generic forced loop mode on unlooped WAVE: %s\n", szSoundFile);
+			ALERT(at_console, "ambient_generic forced loop mode on unlooped WAVE: %s\n", replacementSound);
 		}
 		if (m_forceOnce && m_wavInfo.isLooped) {
 			// prefer removing cue points to prevent sound looping for a fraction of a second
 			// due to client/server lag
-			ALERT(at_console, "ambient_generic forced play-once mode on looped WAVE: %s\n", szSoundFile);
+			ALERT(at_console, "ambient_generic forced play-once mode on looped WAVE: %s\n", replacementSound);
 		}
 	}
 

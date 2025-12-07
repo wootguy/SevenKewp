@@ -62,7 +62,6 @@ public:
 	bool m_waitForNextRunfuncs; // don't attack until the next g_runfuncs call
 	int m_bulletFireCount; // for odd/even effects (m_iClip is unreliable)
 	bool m_hasPredictionData; // was the client sent a prediction message for this weapon?
-	bool m_waitForAttackRelease; // wait for attack button to release before attacking again
 
 	int m_akimboAnim;
 	float m_akimboAnimTime;

@@ -85,6 +85,7 @@ cvar_t	mp_perf ={"mp_perf", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_debug_tracers ={"mp_debug_tracers", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_sevenkewp_client_notice ={"mp_sevenkewp_client_notice", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_hud_color ={"mp_hud_color", "0", FCVAR_SERVER, 0, 0 };
+cvar_t	sv_colorcon ={"sv_colorcon", "1", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
@@ -459,6 +460,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_debug_tracers);
 	CVAR_REGISTER (&mp_sevenkewp_client_notice);
 	CVAR_REGISTER (&mp_hud_color);
+	CVAR_REGISTER (&sv_colorcon);
 
 	CVAR_REGISTER (&mp_chattime);
 
