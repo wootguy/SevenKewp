@@ -1,4 +1,6 @@
 #pragma once
+#include "extdll.h"
+#include "CBaseMonster.h"
 
 const float GARG_ATTACKDIST = 80.0;
 
@@ -30,12 +32,12 @@ const float GARG_ATTACKDIST = 80.0;
 
 extern int gStompSprite;
 
-void StreakSplash(const Vector& origin, const Vector& direction, int color, int count, int speed, int velocityRange);
-void SpawnExplosion(Vector center, float randomRange, float time, int magnitude);
+EXPORT void StreakSplash(const Vector& origin, const Vector& direction, int color, int count, int speed, int velocityRange);
+EXPORT void SpawnExplosion(Vector center, float randomRange, float time, int magnitude);
 
 
 // Spiral Effect
-class CSpiral : public CBaseEntity
+class EXPORT CSpiral : public CBaseEntity
 {
 public:
 	void Spawn(void);
@@ -45,7 +47,7 @@ public:
 };
 
 
-class CStomp : public CBaseEntity
+class EXPORT CStomp : public CBaseEntity
 {
 public:
 	void Spawn(void);
@@ -59,7 +61,7 @@ private:
 };
 
 
-class CSmoker : public CBaseEntity
+class EXPORT CSmoker : public CBaseEntity
 {
 public:
 	void Spawn(void);
@@ -67,7 +69,7 @@ public:
 };
 
 
-class CGargantua : public CBaseMonster
+class EXPORT CGargantua : public CBaseMonster
 {
 public:
 	virtual void Spawn(void);

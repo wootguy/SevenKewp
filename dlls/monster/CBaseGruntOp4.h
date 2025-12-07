@@ -5,7 +5,7 @@
 //#define	ALLY_GRUNT_SENTENCE_VOLUME	(float)0.35 // volume of grunt sentences
 #define	ALLY_GRUNT_SENTENCE_VOLUME	(float)1.0 // volume of grunt sentences
 
-class CBaseGruntOp4 : public CBaseGrunt {
+class EXPORT CBaseGruntOp4 : public CBaseGrunt {
 public:
 	void InitAiFlags(void);
 	int	Classify(void);

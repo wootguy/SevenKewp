@@ -2,32 +2,7 @@
 #include "util.h"
 #include "animation.h"
 #include "effects.h"
-#include "CActAnimating.h"
-
-#define SF_XEN_PLANT_LIGHT_IGNORE_PLAYER 64
-
-#define XEN_PLANT_GLOW_SPRITE		"sprites/flare3.spr"
-#define XEN_PLANT_HIDE_TIME			5
-
-class CXenPLight : public CActAnimating
-{
-public:
-	void		Spawn(void);
-	void		Precache(void);
-	void		Touch(CBaseEntity* pOther);
-	void		AnimateThink(void);
-	void		DropThink(void);
-
-	void		LightOn(void);
-	void		LightOff(void);
-
-	virtual int	Save(CSave& save);
-	virtual int	Restore(CRestore& restore);
-	static	TYPEDESCRIPTION m_SaveData[];
-
-private:
-	CSprite* m_pGlow;
-};
+#include "CXenPLight.h"
 
 LINK_ENTITY_TO_CLASS(xen_plantlight, CXenPLight)
 

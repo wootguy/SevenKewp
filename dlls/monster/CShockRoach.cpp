@@ -21,7 +21,7 @@
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"game.h"
-#include	"CBasePlayer.h"
+#include	"CShockRoach.h"
 
 //=========================================================
 // Monster's Anim Events Go Here
@@ -70,59 +70,6 @@ Schedule_t	slRCRangeAttack1Fast[] =
 	},
 };
 
-class COFShockRoach : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void RunTask ( Task_t *pTask );
-	void StartTask ( Task_t *pTask );
-	void SetYawSpeed ( void );
-	void EXPORT LeapTouch ( CBaseEntity *pOther );
-	Vector Center( void );
-	Vector BodyTarget( const Vector &posSrc );
-	void PainSound( void );
-	void DeathSound( void );
-	void IdleSound( void );
-	void AlertSound( void );
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
-	void PrescheduleThink( void );
-	int  Classify ( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );
-	BOOL CheckRangeAttack2 ( float flDot, float flDist );
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	void RifleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-
-	virtual float GetDamageAmount( void ) { return gSkillData.sk_shockroach_dmg_bite; }
-	virtual int GetVoicePitch( void ) { return 100; }
-	virtual float GetSoundVolue( void ) { return 1.0; }
-	Schedule_t* GetScheduleOfType ( int Type );
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
-
-	void MonsterThink() override;
-
-	virtual void Revive();
-
-	int Save( CSave &save ) override;
-	int Restore( CRestore &restore ) override;
-	static TYPEDESCRIPTION m_SaveData[];
-
-	float m_flBirthTime;
-	BOOL m_fRoachSolid;
-
-	CUSTOM_SCHEDULES;
-
-	static const char *pIdleSounds[];
-	static const char *pAlertSounds[];
-	static const char *pPainSounds[];
-	static const char *pAttackSounds[];
-	static const char *pDeathSounds[];
-	static const char *pBiteSounds[];
-};
 LINK_ENTITY_TO_CLASS( monster_shockroach, COFShockRoach )
 
 TYPEDESCRIPTION	COFShockRoach::m_SaveData[] =

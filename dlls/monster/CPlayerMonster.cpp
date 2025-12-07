@@ -12,24 +12,8 @@
 #include	"util.h"
 #include	"monsters.h"
 #include	"schedule.h"
+#include	"CPlayerMonster.h"
 
-// For holograms, make them not solid so the player can walk through them
-#define	SF_MONSTERPLAYER_NOTSOLID					4 
-
-//=========================================================
-// Monster's Anim Events Go Here
-//=========================================================
-
-class CPlayerMonster : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int  Classify ( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	int ISoundMask ( void );
-};
 LINK_ENTITY_TO_CLASS( monster_player, CPlayerMonster )
 
 //=========================================================

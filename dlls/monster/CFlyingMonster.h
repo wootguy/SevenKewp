@@ -17,7 +17,7 @@
 #ifndef FLYINGMONSTER_H
 #define FLYINGMONSTER_H
 
-class CFlyingMonster : public CBaseMonster
+class EXPORT CFlyingMonster : public CBaseMonster
 {
 public:
 	int 		CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );// check validity of a straight move through space

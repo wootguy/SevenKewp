@@ -5,22 +5,7 @@
 #include "monsters.h"
 #include "shake.h"
 #include "decals.h"
-
-//=========================================================
-// Dead HEV suit prop
-//=========================================================
-class CDeadHEV : public CBaseMonster
-{
-public:
-	void Spawn(void);
-	int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
-	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
-
-	void KeyValue(KeyValueData* pkvd);
-
-	int	m_iPose;// which sequence to display	-- temporary, don't need to save
-	static const char* m_szPoses[4];
-};
+#include "CDeadHEV.h"
 
 const char* CDeadHEV::m_szPoses[] = { "deadback", "deadsitting", "deadstomach", "deadtable" };
 

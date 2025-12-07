@@ -1,4 +1,6 @@
 #pragma once
+#include "CTalkSquadMonster.h"
+
 //=========================================================
 // monster-specific DEFINE's
 //=========================================================
@@ -138,7 +140,7 @@ extern Schedule_t	slMinigunSpindown[];
 
 extern int g_fGruntQuestion; // true if an idle grunt asked a question. Cleared when someone answers.
 
-class CBaseGrunt : public CTalkSquadMonster
+class EXPORT CBaseGrunt : public CTalkSquadMonster
 {
 public:
 	void BaseSpawn();
@@ -268,12 +270,12 @@ private:
 	static const char* pUziSounds[];
 };
 
-class CBaseRepel : public CBaseMonster {
+class EXPORT CBaseRepel : public CBaseMonster {
 public:
 	void Spawn(void);
 	void Precache(void);
 	void KeyValue(KeyValueData* pkvd);
-	void EXPORT RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual const char* GetMonsterType() { return "monster_human_grunt"; }
 	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 
@@ -284,7 +286,7 @@ public:
 	int m_iszUnUse;
 };
 
-class CBaseDead : public CBaseMonster {
+class EXPORT CBaseDead : public CBaseMonster {
 public:
 	void BaseSpawn(const char* model);
 	virtual int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }

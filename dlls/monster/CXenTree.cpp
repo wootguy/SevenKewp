@@ -2,17 +2,9 @@
 #include "util.h"
 #include "animation.h"
 #include "effects.h"
-#include "CActAnimating.h"
-#include "CBasePlayer.h"
+#include "CXenTree.h"
 
-#define TREE_AE_ATTACK		1
 
-class CXenTreeTrigger : public CBaseEntity
-{
-public:
-	void		Touch(CBaseEntity* pOther);
-	static CXenTreeTrigger* TriggerCreate(edict_t* pOwner, const Vector& position);
-};
 LINK_ENTITY_TO_CLASS(xen_ttrigger, CXenTreeTrigger)
 
 CXenTreeTrigger* CXenTreeTrigger::TriggerCreate(edict_t* pOwner, const Vector& position)
@@ -36,31 +28,6 @@ void CXenTreeTrigger::Touch(CBaseEntity* pOther)
 			pEntity->Touch(pOther);
 	}
 }
-
-class CXenTree : public CActAnimating
-{
-public:
-	void		Spawn(void);
-	void		Precache(void);
-	void		Touch(CBaseEntity* pOther);
-	void		AnimateThink(void);
-	void		DropThink(void);
-	int			TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) { Attack(); return 0; }
-	void		HandleAnimEvent(MonsterEvent_t* pEvent);
-	void		Attack(void);
-	int			Classify(void) { return CLASS_BARNACLE; }
-	const char* DisplayName() { return "Xen Tree"; }
-
-	virtual int	Save(CSave& save);
-	virtual int	Restore(CRestore& restore);
-	static	TYPEDESCRIPTION m_SaveData[];
-
-	static const char* pAttackHitSounds[];
-	static const char* pAttackMissSounds[];
-
-private:
-	CXenTreeTrigger* m_pTrigger;
-};
 
 LINK_ENTITY_TO_CLASS(xen_tree, CXenTree)
 

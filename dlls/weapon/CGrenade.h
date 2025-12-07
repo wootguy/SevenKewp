@@ -2,7 +2,7 @@
 #include "CBaseMonster.h"
 
 // Contact Grenade / Timed grenade / Satchel Charge
-class CGrenade : public CBaseMonster
+class EXPORT CGrenade : public CBaseMonster
 {
 public:
 	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
@@ -11,25 +11,25 @@ public:
 
 	typedef enum { SATCHEL_DETONATE = 0, SATCHEL_RELEASE } SATCHELCODE;
 
-	EXPORT static CGrenade *ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time, const char* model=NULL);
-	EXPORT static CGrenade *ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
-	EXPORT static CGrenade *ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
-	EXPORT static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
+	static CGrenade *ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time, const char* model=NULL);
+	static CGrenade *ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
+	static CGrenade *ShootSatchelCharge( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
+	static void UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code );
 
-	virtual void EXPORT Explode( Vector vecSrc, Vector vecAim );
-	virtual void EXPORT Explode( TraceResult *pTrace, int bitsDamageType );
-	void EXPORT Smoke( void );
+	virtual void Explode( Vector vecSrc, Vector vecAim );
+	virtual void Explode( TraceResult *pTrace, int bitsDamageType );
+	void Smoke( void );
 
-	void EXPORT BounceTouch( CBaseEntity *pOther );
-	void EXPORT SlideTouch( CBaseEntity *pOther );
-	void EXPORT ExplodeTouch( CBaseEntity *pOther );
-	void EXPORT DangerSoundThink( void );
-	void EXPORT PreDetonate( void );
-	void EXPORT Detonate( void );
-	void EXPORT DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	void EXPORT TumbleThink( void );
+	void BounceTouch( CBaseEntity *pOther );
+	void SlideTouch( CBaseEntity *pOther );
+	void ExplodeTouch( CBaseEntity *pOther );
+	void DangerSoundThink( void );
+	void PreDetonate( void );
+	void Detonate( void );
+	void DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+	void TumbleThink( void );
 
-	virtual EXPORT void BounceSound( void );
+	virtual void BounceSound( void );
 	virtual int	BloodColor( void ) { return DONT_BLEED; }
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 	virtual const char* DisplayName() { return "Grenade"; }

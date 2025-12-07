@@ -2,20 +2,9 @@
 #include "util.h"
 #include "animation.h"
 #include "effects.h"
-#include "CActAnimating.h"
-
-class CXenHair : public CActAnimating
-{
-public:
-	void		Spawn(void);
-	void		Precache(void);
-	void		AnimateThink(void);
-	void		DropThink(void);
-};
+#include "CXenHair.h"
 
 LINK_ENTITY_TO_CLASS(xen_hair, CXenHair)
-
-#define SF_HAIR_SYNC		0x0001
 
 void CXenHair::Spawn(void)
 {

@@ -20,20 +20,8 @@
 #include	"util.h"
 #include	"monsters.h"
 #include	"schedule.h"
+#include	"CRat.h"
 
-//=========================================================
-// Monster's Anim Events Go Here
-//=========================================================
-
-class CRat : public CBaseMonster
-{
-public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int  Classify ( void );
-	const char* DisplayName();
-};
 LINK_ENTITY_TO_CLASS( monster_rat, CRat )
 
 //=========================================================

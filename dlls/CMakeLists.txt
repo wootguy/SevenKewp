@@ -11,20 +11,78 @@ set(MISC_HDR
 )
 
 set(MONSTER_HDR
-	monster/activity.h
-	monster/activitymap.h
-	monster/bodyque.h
 	monster/CAGrunt.h
+	monster/CApache.h
+	monster/CBabyGarg.h
+	monster/CBabyVoltigore.h
+	monster/CBarnacle.h
+	monster/CBarney.h
 	monster/CBaseGrunt.h
 	monster/CBaseGruntOp4.h
 	monster/CBaseMonster.h
 	monster/CBaseTurret.h
+	monster/CBigMomma.h
+	monster/CBloater.h
+	monster/CBodyGuard.h
+	monster/CBullsquid.h
+	monster/CChumtoad.h
 	monster/CCineMonster.h
+	monster/CController.h
+	monster/CCycler.h
+	monster/CDeadHEV.h
+	monster/CFlockingFlyerFlock.h
 	monster/CFlyingMonster.h
+	monster/CFurniture.h
+	monster/CGMan.h
 	monster/CGargantua.h
+	monster/CGenericMonster.h
+	monster/CGonome.h
+	monster/CHAssassin.h
+	monster/CHGrunt.h
+	monster/CHGruntOp4.h
+	monster/CHGruntOp4Medic.h
+	monster/CHGruntOp4Torch.h
+	monster/CHWGrunt.h
+	monster/CHeadCrab.h
 	monster/CHornet.h
+	monster/CHoundeye.h
+	monster/CISlave.h
+	monster/CIchthyosaur.h
+	monster/CKingpin.h
+	monster/CLeech.h
+	monster/CMassn.h
+	monster/CMiniTurret.h
 	monster/CMonsterMaker.h
+	monster/CNihilanth.h
+	monster/COp4Mortar.h
+	monster/COsprey.h
+	monster/COtis.h
+	monster/CPitdrone.h
+	monster/CPlayerMonster.h
+	monster/CRat.h
+	monster/CRoach.h
+	monster/CRoboGrunt.h
+	monster/CScientist.h
+	monster/CScriptedSentence.h
+	monster/CSentry.h
+	monster/CShockRoach.h
+	monster/CShockTrooper.h
+	monster/CSqueakGrenade.h
+	monster/CStukabat.h
 	monster/CTalkSquadMonster.h
+	monster/CTentacle.h
+	monster/CTor.h
+	monster/CTurret.h
+	monster/CVoltigore.h
+	monster/CXenHair.h
+	monster/CXenPLight.h
+	monster/CXenSpore.h
+	monster/CXenTree.h
+	monster/CZombie.h
+	
+	monster/activity.h
+	monster/activitymap.h
+	monster/bodyque.h
 	monster/defaultai.h
 	monster/monsterevent.h
 	monster/monsters.h

@@ -3,26 +3,7 @@
 #include "monsters.h"
 #include "weapons.h"
 #include "effects.h"
-#include "CBaseTurret.h"
-
-//=========================================================
-// Sentry gun - smallest turret, placed near grunt entrenchments
-//=========================================================
-class CSentry : public CBaseTurret
-{
-public:
-	void Spawn();
-	void Precache(void);
-	const char* DisplayName();
-	// other functions
-	void Shoot(Vector& vecSrc, Vector& vecDirToEnemy);
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
-	void EXPORT SentryTouch(CBaseEntity* pOther);
-	void EXPORT SentryDeath(void);
-	void EXPORT DropInit(void);
-	void Deploy(void);
-
-};
+#include "CSentry.h"
 
 LINK_ENTITY_TO_CLASS(monster_sentry, CSentry)
 

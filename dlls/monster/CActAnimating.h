@@ -3,7 +3,7 @@
 
 #define SF_XEN_PLANT_DROP_TO_FLOOR 2
 
-class CActAnimating : public CBaseAnimating
+class EXPORT CActAnimating : public CBaseAnimating
 {
 public:
 	void			SetActivity(Activity act);
