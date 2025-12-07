@@ -425,6 +425,7 @@ void CHud :: Init( void )
 	m_Debug.Init();
 	m_HudConPrint.Init();
 	m_HudEntStatus.Init();
+	m_HudSprites.Init();
 	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
 
 	m_Menu.Init();
@@ -515,6 +516,7 @@ void CHud :: VidInit( void )
 	m_Fog.VidInit();
 	m_HudConPrint.VidInit();
 	m_HudEntStatus.VidInit();
+	m_HudSprites.VidInit();
 }
 
 void CHud::LoadHudSprites(void) {

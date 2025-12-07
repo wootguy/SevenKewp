@@ -11,7 +11,7 @@ struct custom_muzzle_flash_t {
 	int modelIdx; // client only
 };
 
-// SpriteAdv network message flags
+// SpriteAdv network message parser flags
 #define FL_SPRITEADV_LOOP 1 // loop the animation + effect has life parameter
 #define FL_SPRITEADV_FRAME 2 // effect has an start/end frame parameters
 #define FL_SPRITEADV_FADE 4 // effect has fade parameters
@@ -95,6 +95,56 @@ struct SpriteAdvArgs {
 	// Velocity
 	int16_t velX, velY, velZ;
 	int16_t accelX, accelY, accelZ;
+};
+
+// hud sprite network message parser flags
+#define HUD_SPR_MSG_REGION 1	// message has region params
+#define HUD_SPR_MSG_COLOR1 2	// message has a color1 param
+#define HUD_SPR_MSG_COLOR2 4	// message has a color2 param
+#define HUD_SPR_MSG_ANIM 8		// message has animation params
+#define HUD_SPR_MSG_FADE 16		// message has fade params
+#define HUD_SPR_MSG_FX 32		// message has effect params
+
+#define HUD_ELEM_ABSOLUTE_X 1		// X position in pixels.
+#define HUD_ELEM_ABSOLUTE_Y 2		// Y position in pixels.
+#define HUD_ELEM_SCR_CENTER_X 4		// X position relative to the center of the screen.
+#define HUD_ELEM_SCR_CENTER_Y 8		// Y position relative to the center of the screen.
+#define HUD_ELEM_NO_BORDER 16		// Ignore the client-side HUD border (hud_bordersize).
+#define HUD_ELEM_HIDDEN 32			// Create a hidden element.
+#define HUD_ELEM_EFFECT_ONCE 64		// Play the effect only once.
+#define HUD_ELEM_DEFAULT_ALPHA 128	// Use the default client-side HUD alpha (hud_defaultalpha).
+#define HUD_ELEM_DYNAMIC_ALPHA 256	// Use the default client-side HUD alpha and flash the element when updated.
+
+#define HUD_SPR_OPAQUE 512				// Draw opaque sprite.
+#define HUD_SPR_MASKED 1024				// Draw masked sprite.
+#define HUD_SPR_PLAY_ONCE 2048			// Play the animation only once.
+#define HUD_SPR_HIDE_WHEN_STOPPED 4096	// Hide the sprite when the animation stops.
+
+enum HudEffect {
+	HUD_EFFECT_NONE,		// No effect.
+	HUD_EFFECT_RAMP_UP,		// Linear ramp up from color1 to color2.
+	HUD_EFFECT_RAMP_DOWN,	// Linear ramp down from color2 to color1.
+	HUD_EFFECT_TRIANGLE,	// Linear ramp up and ramp down from color1 through color2 back to color1.
+	HUD_EFFECT_COSINE_UP,	// Cosine ramp up from color1 to color2.
+	HUD_EFFECT_COSINE_DOWN,	// Cosine ramp down from color2 to color1.
+	HUD_EFFECT_COSINE,		// Cosine ramp up and ramp down from color1 through color2 back to color1.
+	HUD_EFFECT_TOGGLE,		// Toggle between color1 and color2.
+	HUD_EFFECT_SINE_PULSE,	// Sine pulse from color1 through zero to color2.
+};
+
+struct hudspriteparams_t {
+	uint8_t channel;					// 0-16
+	uint16_t flags;						// HUD_ELEM_* and HUD_SPR_*
+	uint8_t left, top, width, height;	// region of the sprite to draw
+	float x, y;							// offset in screen percentage or pixels (depending on flags)
+	RGB color1, color2;
+	uint8_t frame;
+	uint8_t numframes;
+	uint8_t framerate;
+	float fadeinTime, fadeoutTime;
+	float holdtime; // 0 = infinite
+	float fxTime;
+	uint8_t effect;
 };
 
 enum sprite_modes

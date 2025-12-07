@@ -443,6 +443,12 @@ EXPORT void UTIL_ClientHudConPrint(CBaseEntity* client, const hudconparms_t& par
 // print a console font HUD message to all clients
 EXPORT void UTIL_ClientHudConPrintAll(const hudconparms_t& params, const char* msg, bool reliable = true);
 
+// Add a sprite to the player's HUD
+EXPORT void UTIL_HudCustomSprite(CBasePlayer* client, const hudspriteparams_t& params, const char* sprFile, bool reliable);
+
+// Toggle HUD sprite visibility
+EXPORT void UTIL_HudToggleElement(CBasePlayer* plr, uint8_t channel, bool visible);
+
 class CBasePlayerItem;
 class CBasePlayer;
 EXPORT BOOL UTIL_GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon );
@@ -858,10 +864,6 @@ EXPORT short FixedSigned16(float value, float scale);
 EXPORT unsigned short FixedUnsigned16(float value, float scale);
 
 EXPORT void KickPlayer(edict_t* ent, const char* reason="");
-
-// Normalizes any number to an arbitrary range 
-// by assuming the range wraps around when going below min or above max
-EXPORT float normalizeRangef(const float value, const float start, const float end);
 
 EXPORT void handleThreadPrints();
 

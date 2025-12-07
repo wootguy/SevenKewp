@@ -29,6 +29,10 @@ StringPool g_knownStringData;
 
 float* GetClientColor(int clientIndex);
 
+const char* GetDeltaString(dstring_t idx) {
+	return g_knownStringData.str(g_knownStrings[idx]);
+}
+
 int CHudEntStatus::Init(void)
 {
 	gHUD.AddHudElem(this);
@@ -253,6 +257,8 @@ int CHudEntStatus::MsgFunc_StringIdx(const char* pszName, int iSize, void* pbuf)
 
 	dstring_t ofs = g_knownStringData.alloc(str).offset;
 	g_knownStrings[idx] = ofs;
+
+	//PRINTD("Known string %d = %s\n", idx, str);
 
 	return 1;
 }

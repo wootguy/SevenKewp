@@ -984,3 +984,7 @@ uint32_t UTIL_DecompressUint(uint16_t v) {
 	default: return mantissa * 1000U * 1000U * 1000U; // not possible but here anyway
 	}
 }
+
+EXPORT float UTIL_Lerp(float start, float end, float t) {
+	return start + (end - start) * clampf(t, 0, 1);
+}

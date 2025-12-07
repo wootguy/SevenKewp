@@ -52,6 +52,7 @@ extern bool g_crosshair_active; // true after calling SetCrosshair with a valid 
 							}
 
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
+#define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 
 #define RANDOM_LONG(low, high) gEngfuncs.pfnRandomLong(low, high)
 

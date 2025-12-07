@@ -12,11 +12,14 @@ HashMap<dstring_t> g_knownStringLookup; // lookup an index in the cache by its s
 string_t g_knownStrings[MAX_KNOWN_ENT_NAMES]; // all strings that can be delta'd to clients
 dstring_t g_lastKnownStringIdx = 1; // first index will be a blank string_t
 
+std::vector<dstring_t> g_deltaStringQueue; // custom strings queued for sending to the client
+
 bool g_didOverflowError = false;
 
 void InitStringDeltas() {
 	g_lastKnownStringIdx = 1;
 	g_knownStringLookup.clear();
+	g_deltaStringQueue.clear();
 }
 
 void InitStringDeltasForPlayer(CBasePlayer* plr) {
@@ -50,6 +53,22 @@ dstring_t AddDeltaString(string_t newString) {
 
 	return newIdx;
 }
+
+dstring_t QueueDeltaString(string_t newString) {
+	int oldIdx = g_lastKnownStringIdx;
+	dstring_t ret = AddDeltaString(newString);
+
+	if (oldIdx != g_lastKnownStringIdx) {
+		if (g_deltaStringQueue.size() % 512 == 511) {
+			ALERT(at_warning, "%s custom delta strings\n", (int)(g_deltaStringQueue.size() + 1));
+		}
+
+		g_deltaStringQueue.push_back(ret);
+	}
+
+	return ret;
+}
+
 
 void BroadcastEntNames() {
 	static float lastUpdate = 0;
@@ -85,6 +104,11 @@ void BroadcastEntNames() {
 			ALERT(at_error, "Overflow hint string delta %d: %s\n", (int)ent->m_cachedDisplayHint, ent->DisplayHint());
 		else if (ent->m_cachedDisplayHint)
 			g_updateEntNames[knownCnt++] = ent->m_cachedDisplayHint;
+	}
+
+	// custom strings
+	for (int i = 0; i < g_deltaStringQueue.size(); i++) {
+		g_updateEntNames[knownCnt++] = g_deltaStringQueue[i];
 	}
 
 	// send updates

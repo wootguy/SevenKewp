@@ -56,6 +56,7 @@ set(HUD_SRC
 	hud_nametags.cpp
 	hud_debug.cpp
 	hud_entstatus.cpp
+	hud_sprites.cpp
 	menu.cpp
 	message.cpp
 	saytext.cpp

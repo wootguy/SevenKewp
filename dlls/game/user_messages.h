@@ -62,6 +62,8 @@ EXPORT extern int gmsgCustomHud; // custom hud dir to load for a weapon
 EXPORT extern int gmsgHudColor; // Set default HUD color
 EXPORT extern int gmsgHudConPrint; // Dispaly text using the console/chat font
 EXPORT extern int gmsgStringIdx; // send a string_t to the client so it can look it up by index
+EXPORT extern int gmsgHudSprite; // Display a sprite on the client HUD
+EXPORT extern int gmsgHudSprTogl; // Toggle HUD sprite visibility
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 

@@ -66,6 +66,8 @@ int gmsgCustomHud = 0;
 int gmsgHudColor = 0;
 int gmsgHudConPrint = 0;
 int gmsgStringIdx = 0;
+int gmsgHudSprite = 0;
+int gmsgHudSprTogl = 0;
 
 std::vector<UserMessage> g_userMessages;
 
@@ -178,4 +180,6 @@ void LinkUserMessages(void)
 	gmsgHudColor = REG_USER_MSG("HudColor", 3);
 	gmsgHudConPrint = REG_USER_MSG("HudConPrint", -1);
 	gmsgStringIdx = REG_USER_MSG("StringIdx", -1);
+	gmsgHudSprite = REG_USER_MSG("HudSprite", -1);
+	gmsgHudSprTogl = REG_USER_MSG("HudSprTogl", 1);
 }

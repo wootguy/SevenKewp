@@ -142,3 +142,6 @@ EXPORT bool UTIL_ParseHexColor(const char* hex, int& r, int& g, int& b);
 // but with suffixes to hide precision (20k instead of 20321)
 uint16_t UTIL_CompressUint(uint32_t v);
 uint32_t UTIL_DecompressUint(uint16_t v);
+
+// linear interpolation
+EXPORT float UTIL_Lerp(float start, float end, float t);

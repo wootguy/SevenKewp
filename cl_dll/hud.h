@@ -372,6 +372,18 @@ public:
 };
 
 
+class CHudSprites : public CHudBase
+{
+public:
+	int Init(void);
+	int VidInit(void);
+	int Draw(float flTime);
+	int MsgFunc_HudSprite(const char* pszName, int iSize, void* pbuf);
+	int MsgFunc_HudSprTogl(const char* pszName, int iSize, void* pbuf);
+	virtual const char* HudName() { return "CHudSprites"; }
+};
+
+
 class CHudEntStatus : public CHudBase
 {
 public:
@@ -794,6 +806,7 @@ public:
 	CHudDebug		m_Debug;
 	CHudConPrint	m_HudConPrint;
 	CHudEntStatus	m_HudEntStatus;
+	CHudSprites		m_HudSprites;
 
 	void Init( void );
 	void VidInit( void ); // called on server connection or video mode change
