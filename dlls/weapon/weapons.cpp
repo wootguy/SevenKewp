@@ -201,6 +201,7 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname, bool isSevenKewpGun)
 bool g_registeringCustomWeps = false;
 StringSet g_weaponNames;
 StringSet g_weaponClassnames;
+StringMap g_defaultSpriteDirs;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 
@@ -337,6 +338,10 @@ cleanup:
 
 void UTIL_RegisterEquipmentEntity(const char* szClassname) {
 	g_weaponClassnames.put(szClassname);
+}
+
+void UTIL_SetDefaultWeaponSpriteDir(const char* szClassname, const char* spriteDir) {
+	g_defaultSpriteDirs.put(szClassname, spriteDir);
 }
 
 // called by worldspawn

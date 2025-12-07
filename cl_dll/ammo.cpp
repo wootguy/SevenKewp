@@ -32,6 +32,7 @@
 #include "ModPlayerState.h"
 #include "shared_util.h"
 #include "triangleapi.h"
+#include "HashMap.h"
 
 CustomWeaponParams* GetCustomWeaponParams(int id);
 void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY, float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy);
@@ -61,6 +62,10 @@ WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
 WEAPON *gpLastSel;		// Last weapon menu selection 
 
+// maps a weapon classname to a custom sprite dir
+// done globally because messages reset and mix the weapon pointers too much
+StringMap g_weaponHudDirs;
+
 client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
 
 WeaponsResource gWR;
@@ -72,7 +77,7 @@ void WeaponsResource :: LoadAllWeaponSprites( void )
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		if ( rgWeapons[i].iId )
-			LoadWeaponSprites( &rgWeapons[i], NULL );
+			LoadWeaponSprites( &rgWeapons[i] );
 	}
 }
 
@@ -98,7 +103,7 @@ int WeaponsResource :: HasAmmo( WEAPON *p )
 }
 
 
-void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon, const char* customDir)
+void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon )
 {
 	int i;
 
@@ -126,6 +131,8 @@ void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon, const char* customDi
 	pWeapon->hAmmo = 0;
 	pWeapon->hAmmo2 = 0;
 
+	const char* customDir = g_weaponHudDirs.get(pWeapon->szName);
+
 	if (customDir && customDir[0]) {
 		const char* wepName = pWeapon->szName;
 		const char* last = strrchr(pWeapon->szName, '/');
@@ -133,11 +140,9 @@ void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon, const char* customDi
 			wepName = last + 1; // strip folder path from non-default weapons (hlcoop/ hack)
 		}
 		snprintf(sz, sizeof(sz), "sprites/%s/%s.txt", customDir, wepName);
-		pWeapon->customHudLoaded = true;
 	}
 	else {
 		snprintf(sz, sizeof(sz), "sprites/%s.txt", pWeapon->szName);
-		pWeapon->customHudLoaded = false;
 	}
 
 	client_sprite_t *pList = SPR_GetList(sz, &i);
@@ -441,6 +446,8 @@ int CHudAmmo::VidInit(void)
 	giABHeight = 2 * nScale;
 
 	ResetCustomWeaponStates();
+
+	g_weaponHudDirs.clear();
 
 	return 1;
 }
@@ -1131,8 +1138,8 @@ int CHudAmmo::MsgFunc_CustomHud(const char* pszName, int iSize, void* pbuf)
 	WEAPON* pWeapon = gWR.GetWeapon(weaponId);
 
 	if (pWeapon) {
-		if (customDir[0] || (pWeapon->customHudLoaded && !customDir[0]))
-			gWR.LoadWeaponSprites(pWeapon, customDir);
+		g_weaponHudDirs.put(pWeapon->szName, customDir);
+		gWR.LoadWeaponSprites(pWeapon);
 	}
 	
 

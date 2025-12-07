@@ -19,6 +19,7 @@
 
 class CBasePlayer;
 EXPORT extern int gmsgWeapPickup;
+extern StringMap g_defaultSpriteDirs;
 
 typedef struct
 {
@@ -183,6 +184,9 @@ EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname);
 // register an entity for precaching and equipment via map CFG
 // Use this with ammo entities and weapons that couldn't be registered normally
 EXPORT void UTIL_RegisterEquipmentEntity(const char* szClassname);
+
+// set a default sprite dir for a stock weapon
+EXPORT void UTIL_SetDefaultWeaponSpriteDir(const char* szClassname, const char* spriteDir);
 
 EXPORT void AddAmmoNameToAmmoRegistry(const char* szAmmoname, bool isSevenKewpGun);
 

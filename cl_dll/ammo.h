@@ -64,8 +64,6 @@ struct WEAPON
 	wrect_t rcZoomedCrosshair;
 	HSPRITE hZoomedAutoaim;
 	wrect_t rcZoomedAutoaim;
-
-	bool customHudLoaded;
 };
 
 typedef int AMMO;
