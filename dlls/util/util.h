@@ -444,7 +444,14 @@ EXPORT void UTIL_ClientHudConPrint(CBaseEntity* client, const hudconparms_t& par
 EXPORT void UTIL_ClientHudConPrintAll(const hudconparms_t& params, const char* msg, bool reliable = true);
 
 // Add a sprite to the player's HUD
-EXPORT void UTIL_HudCustomSprite(CBasePlayer* client, const hudspriteparams_t& params, const char* sprFile, bool reliable);
+// sprite = either an icon set to find in hud.txt, or a file path which excludes "sprites/" and ".spr"
+EXPORT void UTIL_HudCustomSprite(CBasePlayer* client, const HUDSpriteParams& params, const char* sprite, bool reliable=true);
+
+// Shows a custom numeric display to a given player or to all players if client is not specified.
+EXPORT void UTIL_HudNumDisplay(CBasePlayer* client, const HUDNumDisplayParams& params, bool reliable=true);
+
+// update number for existing HUD numeric display
+EXPORT void UTIL_HudUpdateNum(CBasePlayer* client, uint8_t channel, float newVal, bool reliable=true);
 
 // Toggle HUD sprite visibility
 EXPORT void UTIL_HudToggleElement(CBasePlayer* plr, uint8_t channel, bool visible);

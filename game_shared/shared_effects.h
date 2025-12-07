@@ -97,28 +97,51 @@ struct SpriteAdvArgs {
 	int16_t accelX, accelY, accelZ;
 };
 
-// hud sprite network message parser flags
+// hud element network message parser flags
+#define HUD_ELEM_MSG_COLOR1 2	// message has a color1 param
+#define HUD_ELEM_MSG_COLOR2 4	// message has a color2 param
+#define HUD_ELEM_MSG_FADE 16		// message has fade params
+#define HUD_ELEM_MSG_FX 32		// message has effect params
+
 #define HUD_SPR_MSG_REGION 1	// message has region params
-#define HUD_SPR_MSG_COLOR1 2	// message has a color1 param
-#define HUD_SPR_MSG_COLOR2 4	// message has a color2 param
-#define HUD_SPR_MSG_ANIM 8		// message has animation params
-#define HUD_SPR_MSG_FADE 16		// message has fade params
-#define HUD_SPR_MSG_FX 32		// message has effect params
+#define HUD_SPR_MSG_ANIM 2		// message has animation params
 
-#define HUD_ELEM_ABSOLUTE_X 1		// X position in pixels.
-#define HUD_ELEM_ABSOLUTE_Y 2		// Y position in pixels.
-#define HUD_ELEM_SCR_CENTER_X 4		// X position relative to the center of the screen.
-#define HUD_ELEM_SCR_CENTER_Y 8		// Y position relative to the center of the screen.
-#define HUD_ELEM_NO_BORDER 16		// Ignore the client-side HUD border (hud_bordersize).
-#define HUD_ELEM_HIDDEN 32			// Create a hidden element.
-#define HUD_ELEM_EFFECT_ONCE 64		// Play the effect only once.
-#define HUD_ELEM_DEFAULT_ALPHA 128	// Use the default client-side HUD alpha (hud_defaultalpha).
-#define HUD_ELEM_DYNAMIC_ALPHA 256	// Use the default client-side HUD alpha and flash the element when updated.
+// flags shared with all hud elements
+#define HUD_ELEM_ABSOLUTE_X		(1<<0)	// X position in pixels.
+#define HUD_ELEM_ABSOLUTE_Y		(1<<1)	// Y position in pixels.
+#define HUD_ELEM_SCR_CENTER_X	(1<<2)	// X position relative to the center of the screen.
+#define HUD_ELEM_SCR_CENTER_Y	(1<<3)	// Y position relative to the center of the screen.
+#define HUD_ELEM_NO_BORDER		(1<<4)	// Ignore the client-side HUD border (hud_bordersize).
+#define HUD_ELEM_HIDDEN			(1<<5)	// Create a hidden element.
+#define HUD_ELEM_EFFECT_ONCE	(1<<6)	// Play the effect only once. (TODO: not implemented/redundant?)
+#define HUD_ELEM_DEFAULT_ALPHA	(1<<7)	// Use the default client-side HUD alpha (hud_defaultalpha).
+#define HUD_ELEM_DYNAMIC_ALPHA	(1<<8)	// Use the default client-side HUD alpha and flash the element when updated.
+#define HUD_ELEM_IS_NUMERIC		(1<<9)	// Hud element is numeric, not a normal sprite
 
-#define HUD_SPR_OPAQUE 512				// Draw opaque sprite.
-#define HUD_SPR_MASKED 1024				// Draw masked sprite.
-#define HUD_SPR_PLAY_ONCE 2048			// Play the animation only once.
-#define HUD_SPR_HIDE_WHEN_STOPPED 4096	// Hide the sprite when the animation stops.
+// flags for hud sprites only
+#define HUD_SPR_OPAQUE				(1<<10)	// Draw opaque sprite.
+#define HUD_SPR_MASKED				(1<<11)	// Draw masked sprite.
+#define HUD_SPR_PLAY_ONCE			(1<<12)	// Play the animation only once.
+#define HUD_SPR_HIDE_WHEN_STOPPED	(1<<13)	// Hide the sprite when the animation stops.
+#define HUD_SPR_USE_CONFIG			(1<<14)	// Sprite name is a icon listed in hud.txt, not a file path (enables HL25 sprite scaling)
+
+// flags for numeric displays only
+#define HUD_NUM_RIGHT_ALIGN			(1<<10)	// Draw right aligned element.
+#define HUD_NUM_SEPARATOR			(1<<11)	// Draw separator.
+#define HUD_NUM_DONT_DRAW_ZERO		(1<<12)	// Hide the element if the value is zero.
+#define HUD_NUM_LEADING_ZEROS		(1<<13)	// Draw leading zeros.
+#define HUD_NUM_NEGATIVE_NUMBERS	(1<<14)	// Allow negative values. (TODO: not implemented)
+#define HUD_NUM_PLUS_SIGN			(1<<15)	// Draw sign for positive values. (TODO: not implemented)
+
+// flags for numeric displays only
+#define HUD_TIME_RIGHT_ALIGN		(1<<10)	// Draw right aligned element.
+#define HUD_TIME_HOURS				(1<<11)	// Draw hours.
+#define HUD_TIME_MINUTES			(1<<12)	// Draw minutes.
+#define HUD_TIME_SECONDS			(1<<13)	// Draw seconds.
+#define HUD_TIME_MILLISECONDS		(1<<14)	// Draw milliseconds.
+#define HUD_TIME_ZERO_HOURS			(1<<15)	// Draw hours even if the value is zero.
+#define HUD_TIME_FREEZE				(1<<16)	// Freeze the displayed value.
+#define HUD_TIME_COUNT_DOWN			(1<<17)	// Count down.
 
 enum HudEffect {
 	HUD_EFFECT_NONE,		// No effect.
@@ -132,19 +155,39 @@ enum HudEffect {
 	HUD_EFFECT_SINE_PULSE,	// Sine pulse from color1 through zero to color2.
 };
 
-struct hudspriteparams_t {
-	uint8_t channel;					// 0-16
-	uint16_t flags;						// HUD_ELEM_* and HUD_SPR_*
-	uint8_t left, top, width, height;	// region of the sprite to draw
-	float x, y;							// offset in screen percentage or pixels (depending on flags)
+// parameters common to all custom hud elements
+struct hudelementparams_t {
+	uint8_t channel;
+	uint32_t flags; // HUD_ELEM_*
+	float x, y;
 	RGB color1, color2;
+	float fadeinTime, fadeoutTime;
+	float holdTime;
+	float fxTime;
+	uint8_t effect;
+};
+
+struct hudspriteparams_t {
+	uint8_t left, top, width, height; // region of the sprite to draw, if not using a hud.txt icon
 	uint8_t frame;
 	uint8_t numframes;
 	uint8_t framerate;
-	float fadeinTime, fadeoutTime;
-	float holdtime; // 0 = infinite
-	float fxTime;
-	uint8_t effect;
+};
+
+struct hudnumparams_t {
+	float value;
+	uint8_t defdigits; // Default number of digits (numeric display only)
+	uint8_t maxdigits; // Maximum number of digits (numeric display only)
+};
+
+struct HUDSpriteParams {
+	hudelementparams_t hud;
+	hudspriteparams_t spr;
+};
+
+struct HUDNumDisplayParams {
+	hudelementparams_t hud; // can use HUD_NUM_* flags
+	hudnumparams_t num;
 };
 
 enum sprite_modes

@@ -1500,68 +1500,155 @@ void UTIL_ClientHudConPrintAll(const hudconparms_t& params, const char* msg, boo
 	}
 }
 
-void UTIL_HudCustomSprite(CBasePlayer* client, const hudspriteparams_t& params, const char* sprFile, bool reliable) {
-	CBasePlayer* plr = client->MyPlayerPointer();
-	if (!plr || !plr->IsSevenKewpClient())
-		return;
-
+void WriteHudElementParams(CBasePlayer* client, const hudelementparams_t& params, const char* sprite, bool numeric) {
 	uint8_t msgfl = 0;
 
-	if (params.left || params.top || params.width || params.height)
-		msgfl |= HUD_SPR_MSG_REGION;
+	uint32_t flags = params.flags;
+
+	if (numeric)
+		flags |= HUD_ELEM_IS_NUMERIC;
+	else
+		flags &= ~HUD_ELEM_IS_NUMERIC;
+
 	if (params.color1.r || params.color1.g || params.color1.b)
-		msgfl |= HUD_SPR_MSG_COLOR1;
+		msgfl |= HUD_ELEM_MSG_COLOR1;
 	if (params.color2.r || params.color2.g || params.color2.b)
-		msgfl |= HUD_SPR_MSG_COLOR2;
-	if (params.frame || params.framerate || params.numframes)
-		msgfl |= HUD_SPR_MSG_ANIM;
+		msgfl |= HUD_ELEM_MSG_COLOR2;
 	if (params.fadeinTime || params.fadeoutTime)
-		msgfl |= HUD_SPR_MSG_FADE;
+		msgfl |= HUD_ELEM_MSG_FADE;
 	if (params.fxTime || params.effect)
-		msgfl |= HUD_SPR_MSG_FX;
+		msgfl |= HUD_ELEM_MSG_FX;
+	
+	dstring_t dstring = QueueDeltaString(ALLOC_STRING(sprite));
 
-	dstring_t dstring = QueueDeltaString(ALLOC_STRING(sprFile));
-
-	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgHudSprite, NULL, client->pev);
-	WRITE_BYTE(msgfl);
 	WRITE_BYTE(params.channel);
-	WRITE_SHORT(params.flags);
-	WRITE_BYTE(clampi(params.holdtime * 10, 0, 255));
+	WRITE_BYTE(msgfl);
+	WRITE_SHORT(flags);
+	WRITE_BYTE(flags >> 16); // high byte
+	WRITE_BYTE(clampi(params.holdTime * 10, 0, 255));
 	WRITE_SHORT(clampf(params.x * 32767.0f, -32767.0f, 32767.0f));
 	WRITE_SHORT(clampf(params.y * 32767.0f, -32767.0f, 32767.0f));
 	WRITE_SHORT(dstring);
 
+	if (msgfl & HUD_ELEM_MSG_COLOR1) {
+		WRITE_BYTE(params.color1.r);
+		WRITE_BYTE(params.color1.g);
+		WRITE_BYTE(params.color1.b);
+	}
+	if (msgfl & HUD_ELEM_MSG_COLOR2) {
+		WRITE_BYTE(params.color2.r);
+		WRITE_BYTE(params.color2.g);
+		WRITE_BYTE(params.color2.b);
+	}
+	if (msgfl & HUD_ELEM_MSG_FADE) {
+		WRITE_BYTE(clampi(params.fadeinTime * 10, 0, 255));
+		WRITE_BYTE(clampi(params.fadeoutTime * 10, 0, 255));
+	}
+	if (msgfl & HUD_ELEM_MSG_FX) {
+		WRITE_BYTE(params.effect);
+		WRITE_BYTE(clampi(params.fxTime * 10, 0, 255));
+	}
+}
+
+void SendHudSpriteMessage(CBasePlayer* client, const HUDSpriteParams& hparams, const char* sprite, bool reliable) {
+	uint8_t msgfl = 0;
+
+	const hudspriteparams_t& params = hparams.spr;
+
+	if (params.left || params.top || params.width || params.height)
+		msgfl |= HUD_SPR_MSG_REGION;
+	if (params.frame || params.framerate || params.numframes)
+		msgfl |= HUD_SPR_MSG_ANIM;
+
+	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgHudSprite, NULL, client->pev);
+	WriteHudElementParams(client, hparams.hud, sprite, false);
+
+	WRITE_BYTE(msgfl);
+
+	if (msgfl & HUD_SPR_MSG_ANIM) {
+		WRITE_BYTE(params.frame);
+		WRITE_BYTE(params.framerate);
+		WRITE_BYTE(params.numframes);
+	}
 	if (msgfl & HUD_SPR_MSG_REGION) {
 		WRITE_BYTE(params.left);
 		WRITE_BYTE(params.top);
 		WRITE_BYTE(params.width);
 		WRITE_BYTE(params.height);
 	}
-	if (msgfl & HUD_SPR_MSG_COLOR1) {
-		WRITE_BYTE(params.color1.r);
-		WRITE_BYTE(params.color1.g);
-		WRITE_BYTE(params.color1.b);
-	}
-	if (msgfl & HUD_SPR_MSG_COLOR2) {
-		WRITE_BYTE(params.color2.r);
-		WRITE_BYTE(params.color2.g);
-		WRITE_BYTE(params.color2.b);
-	}
-	if (msgfl & HUD_SPR_MSG_ANIM) {
-		WRITE_BYTE(params.frame);
-		WRITE_BYTE(params.framerate);
-		WRITE_BYTE(params.numframes);
-	}
-	if (msgfl & HUD_SPR_MSG_FADE) {
-		WRITE_BYTE(clampi(params.fadeinTime * 10, 0, 255));
-		WRITE_BYTE(clampi(params.fadeoutTime * 10, 0, 255));
-	}
-	if (msgfl & HUD_SPR_MSG_FX) {
-		WRITE_BYTE(params.effect);
-		WRITE_BYTE(clampi(params.fxTime * 10, 0, 255));
-	}
 
 	MESSAGE_END();
+}
+
+void UTIL_HudCustomSprite(CBasePlayer* client, const HUDSpriteParams& params, const char* sprite, bool reliable) {
+	if (client && !client->IsSevenKewpClient())
+		return;
+
+	if (client) {
+		SendHudSpriteMessage(client, params, sprite, reliable);
+	}
+	else {
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (plr && plr->IsSevenKewpClient())
+				SendHudSpriteMessage(plr, params, sprite, reliable);
+		}
+	}
+}
+
+void SendHudNumericMessage(CBasePlayer* client, const HUDNumDisplayParams& hparams, const char* sprite, bool reliable) {
+	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgHudSprite, NULL, client->pev);
+	WriteHudElementParams(client, hparams.hud, sprite, true);
+
+	const hudnumparams_t& params = hparams.num;
+
+	WRITE_LONG(params.value);
+	WRITE_BYTE(params.defdigits);
+	WRITE_BYTE(params.maxdigits);
+
+	MESSAGE_END();
+}
+
+void SendUpdateNumMessage(CBasePlayer* client, uint8_t channel, float newVal, bool reliable) {
+	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgHudUpdNum, NULL, client->pev);
+	WRITE_BYTE(channel);
+	WRITE_LONG(newVal);
+	MESSAGE_END();
+}
+
+void UTIL_HudNumDisplay(CBasePlayer* client, const HUDNumDisplayParams& params, bool reliable) {
+	if (client && !client->IsSevenKewpClient())
+		return;
+
+	if (client) {
+		SendHudNumericMessage(client, params, "number_", reliable);
+	}
+	else {
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (plr && plr->IsSevenKewpClient())
+				SendHudNumericMessage(plr, params, "number_", reliable);
+		}
+	}
+}
+
+void UTIL_HudUpdateNum(CBasePlayer* client, uint8_t channel, float newVal, bool reliable) {
+	if (client && !client->IsSevenKewpClient())
+		return;
+
+	if (client) {
+		SendUpdateNumMessage(client, channel, newVal, reliable);
+	}
+	else {
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (plr && plr->IsSevenKewpClient())
+				SendUpdateNumMessage(plr, channel, newVal, reliable);
+		}
+	}
 }
 
 void UTIL_HudToggleElement(CBasePlayer* plr, uint8_t channel, bool visible) {

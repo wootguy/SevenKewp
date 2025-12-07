@@ -380,6 +380,7 @@ public:
 	int Draw(float flTime);
 	int MsgFunc_HudSprite(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_HudSprTogl(const char* pszName, int iSize, void* pbuf);
+	int MsgFunc_HudUpdNum(const char* pszName, int iSize, void* pbuf);
 	virtual const char* HudName() { return "CHudSprites"; }
 };
 

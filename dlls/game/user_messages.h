@@ -64,6 +64,7 @@ EXPORT extern int gmsgHudConPrint; // Dispaly text using the console/chat font
 EXPORT extern int gmsgStringIdx; // send a string_t to the client so it can look it up by index
 EXPORT extern int gmsgHudSprite; // Display a sprite on the client HUD
 EXPORT extern int gmsgHudSprTogl; // Toggle HUD sprite visibility
+EXPORT extern int gmsgHudUpdNum; // Update HUD numeric display value
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 

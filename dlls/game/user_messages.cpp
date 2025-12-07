@@ -68,6 +68,7 @@ int gmsgHudConPrint = 0;
 int gmsgStringIdx = 0;
 int gmsgHudSprite = 0;
 int gmsgHudSprTogl = 0;
+int gmsgHudUpdNum = 0;
 
 std::vector<UserMessage> g_userMessages;
 
@@ -182,4 +183,5 @@ void LinkUserMessages(void)
 	gmsgStringIdx = REG_USER_MSG("StringIdx", -1);
 	gmsgHudSprite = REG_USER_MSG("HudSprite", -1);
 	gmsgHudSprTogl = REG_USER_MSG("HudSprTogl", 1);
+	gmsgHudUpdNum = REG_USER_MSG("HudUpdNum", 5);
 }
