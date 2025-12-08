@@ -225,6 +225,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// a game text message was triggered
 	// consoleEcho = text message is important enough to be sent to the client console
 	HOOK_RETURN_DATA (*pfnGameText)(CBaseEntity* textEnt, CBaseEntity* activator, const char* msg, bool allPlayers, bool consoleEcho);
+	
+	// player is about to turn on/off their flashlight
+	HOOK_RETURN_DATA (*pfnPlayerFlashlightToggle)(CBasePlayer* plr, bool onNotOff);
 };
 
 // do not call directly, use RegisterPlugin instead

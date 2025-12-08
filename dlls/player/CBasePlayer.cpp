@@ -2003,7 +2003,7 @@ void CBasePlayer::StartObserver( Vector vecPosition, Vector vecViewAngle )
 	MESSAGE_END();
 
 	// Setup flags
-	m_iHideHUD = (HIDEHUD_HEALTH | HIDEHUD_WEAPONS);
+	m_iHideHUD = (HIDEHUD_HEALTH_AND_ARMOR | HIDEHUD_WEAPONS);
 	m_afPhysicsFlags |= PFLAG_OBSERVER;
 	pev->effects = EF_NODRAW;
 	pev->view_ofs = g_vecZero;
@@ -2763,14 +2763,14 @@ void CBasePlayer::PreThink(void)
 
 	if (HasSuit()) {
 		// set every frame for lossy connections that don't initialize on join properly
-		m_iHideHUD &= ~HIDEHUD_HEALTH;
+		m_iHideHUD &= ~HIDEHUD_HEALTH_AND_ARMOR;
 		m_fakeSuit = false;
 	}
 	else if (m_weaponBits) {
 		// Tell client they have a suit if they don't but DO have weapons.
 		// Otherwise they can't switch weapons
 		m_fakeSuit = true;
-		m_iHideHUD = HIDEHUD_FLASHLIGHT | HIDEHUD_HEALTH;
+		m_iHideHUD = HIDEHUD_FLASHLIGHT | HIDEHUD_HEALTH_AND_ARMOR;
 	}
 
 	// JOHN: checks if new client data (for HUD and view control) needs to be sent to the client
@@ -4270,6 +4270,12 @@ void CBasePlayer :: FlashlightTurnOn( void )
 		return;
 	}
 
+	if (mp_flashlight_charge.value == 0 && m_iFlashBattery <= 0) {
+		return;
+	}
+
+	CALL_HOOKS_VOID(pfnPlayerFlashlightToggle, this, true);
+
 	if (HasSuit())
 	{
 		m_flashlightEnabled = true;
@@ -4291,12 +4297,16 @@ void CBasePlayer :: FlashlightTurnOn( void )
 		WRITE_BYTE(m_iFlashBattery);
 		MESSAGE_END();
 
-		m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
+		if (mp_flashlight_drain.value) {
+			m_flFlashLightTime = (FLASH_DRAIN_TIME / mp_flashlight_drain.value) + gpGlobals->time - m_flFlashLightCarry;
+		}
 	}
 }
 
 void CBasePlayer :: FlashlightTurnOff( void )
 {
+	CALL_HOOKS_VOID(pfnPlayerFlashlightToggle, this, false);
+
 	m_flashlightEnabled = false;
 
 	if (flashlight.value == 1) {
@@ -4313,7 +4323,16 @@ void CBasePlayer :: FlashlightTurnOff( void )
 	WRITE_BYTE(m_iFlashBattery);
 	MESSAGE_END();
 
-	m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
+	// remember the time spent so it can be subtracted next time the flashlight turns on. This
+	// prevents infinite battery when quickly toggling once per second (or longer for low drain speeds)
+	if (mp_flashlight_drain.value) {
+		float drainDelay = (FLASH_DRAIN_TIME / mp_flashlight_drain.value);
+		m_flFlashLightCarry = drainDelay - (m_flFlashLightTime - gpGlobals->time);
+	}
+
+	if (mp_flashlight_charge.value) {
+		m_flFlashLightTime = (FLASH_CHARGE_TIME / mp_flashlight_charge.value) + gpGlobals->time;
+	}
 }
 
 /*
@@ -5074,24 +5093,25 @@ void CBasePlayer :: UpdateClientData( void )
 	{
 		if (FlashlightIsOn())
 		{
-			if (m_iFlashBattery)
+			if (m_iFlashBattery && mp_flashlight_drain.value != 0)
 			{
-				m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
+				m_flFlashLightTime = (FLASH_DRAIN_TIME / mp_flashlight_drain.value) + gpGlobals->time;
 				m_iFlashBattery--;
+				m_flFlashLightCarry = 0;
 
 				if (m_iFlashBattery < 8) {
 					SetSuitUpdate("!HEV_0P", FALSE, SUIT_NEXT_IN_1MIN);
 				}
-				
-				if (!m_iFlashBattery)
-					FlashlightTurnOff();
 			}
+			
+			if (!m_iFlashBattery)
+				FlashlightTurnOff();
 		}
-		else
+		else if (mp_flashlight_charge.value != 0)
 		{
 			if (m_iFlashBattery < 100)
 			{
-				m_flFlashLightTime = FLASH_CHARGE_TIME + gpGlobals->time;
+				m_flFlashLightTime = (FLASH_CHARGE_TIME / mp_flashlight_charge.value) + gpGlobals->time;
 				m_iFlashBattery++;
 			}
 			else
@@ -6663,6 +6683,7 @@ void CBasePlayer::QueryClientTypeFinished() {
 		// send prediction data
 		MESSAGE_BEGIN(MSG_ONE, gmsgPredFiles, NULL, pev);
 		WRITE_BYTE(soundvariety.value);
+		//WRITE_BYTE(mp_flashlight_size.value);
 		WRITE_BYTE(g_predMsgLen);
 		WRITE_BYTES(g_predMsgData, g_predMsgLen);
 		MESSAGE_END();
@@ -6674,6 +6695,7 @@ void CBasePlayer::QueryClientTypeFinished() {
 		WRITE_STRING(STRING(world->m_hudFile));
 		MESSAGE_END();
 
+		// default hud color
 		int r, g, b;
 		if (UTIL_ParseHexColor(mp_hud_color.string, r, g, b)) {
 			MESSAGE_BEGIN(MSG_ONE, gmsgHudColor, NULL, pev);

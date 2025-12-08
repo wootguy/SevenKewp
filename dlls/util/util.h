@@ -53,13 +53,10 @@ extern StringSet g_weaponNames; // names given by weapons (may have a prefix: "h
 extern StringSet g_weaponClassnames; // valid weapon classnames
 extern uint64_t g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict
 
-// remaps a half-life weapon to a sevenkewp weapon
-// when a sevenkewp player picks up one of these hl weapons, they'll get the remapped weapon instead
+// rmaps a half-life weapon to a sevenkewp weapon.
+// When a sevenkewp player picks up one of these hl weapons, they'll get the remapped weapon instead.
+// This also applies to weapons dropped by NPCs or created with CreateEntity()
 EXPORT extern StringMap g_weaponRemapHL;
-
-// remaps one class type to another class type
-// does not apply to entities created via map data
-EXPORT extern StringMap g_classRemap;
 
 extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
 extern bool g_can_set_bsp_models; // false if bsp models aren't precached yet (skip SET_MODEL calls)
@@ -223,13 +220,31 @@ typedef int BOOL;
 #define DECLARE_GLOBAL_METHOD(MethodName)  extern void DLLEXPORT MethodName( void )
 #define GLOBAL_METHOD(funcname)					void DLLEXPORT funcname(void)
 
+typedef void (*SpawnFunc)(entvars_t* pev);
+
+// used by plugins to remap entities to other existing ones
+EXPORT extern HashMap<SpawnFunc> g_entityRemap;
+
+#ifdef PLUGIN_NAME
 // This is the glue that hooks .MAP entity class names to our CPP classes
 // The _declspec forces them to be exported by name so we can do a lookup with GetProcAddress()
 // The function is used to intialize / allocate the object for the entity
 #define LINK_ENTITY_TO_CLASS(mapClassName,DLLClassName) \
 	extern "C" DLLEXPORT void mapClassName( entvars_t *pev ); \
 	void mapClassName( entvars_t *pev ) { GetClassPtr( (DLLClassName *)pev ); }
-
+#else
+// The non-plugin version allows remapping to classes defined in plugins.
+// Plugins can't also use this because it casues infinite loops.
+#define LINK_ENTITY_TO_CLASS(mapClassName,DLLClassName) \
+	extern "C" DLLEXPORT void mapClassName( entvars_t *pev ); \
+	void mapClassName( entvars_t *pev ) { \
+		SpawnFunc* remap = g_entityRemap.get(#mapClassName); \
+		if (remap) \
+			(*remap)(pev); \
+		else \
+			GetClassPtr( (DLLClassName *)pev ); \
+	}
+#endif
 
 //
 // Conversion among the three types of "entity", including identity-conversions.
@@ -301,6 +316,7 @@ inline BOOL FStringNull(int iString)			{ return iString == iStringNull; }
 // All monsters need this data
 #define		DONT_BLEED			-1
 #define		BLOOD_COLOR_RED		(BYTE)247
+#define		BLOOD_COLOR_DARK_RED (BYTE)224
 #define		BLOOD_COLOR_YELLOW	(BYTE)195
 #define		BLOOD_COLOR_GREEN	BLOOD_COLOR_YELLOW
 

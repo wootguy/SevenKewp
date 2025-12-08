@@ -98,6 +98,7 @@ class CHudHealth: public CHudBase
 public:
 	virtual int Init( void );
 	virtual int VidInit( void );
+	void ReloadSprites();
 	virtual int Draw(float fTime);
 	virtual void Reset( void );
 	int MsgFunc_Health(const char *pszName,  int iSize, void *pbuf);

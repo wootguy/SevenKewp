@@ -97,6 +97,10 @@ int CHudHealth::VidInit(void)
 	return 1;
 }
 
+void CHudHealth::ReloadSprites() {
+	m_hSprite = 0;
+}
+
 int CHudHealth:: MsgFunc_Health(const char *pszName,  int iSize, void *pbuf )
 {
 	// TODO: update local health data
@@ -173,11 +177,19 @@ int CHudHealth::Draw(float flTime)
 	int a = 0, x, y;
 	int HealthWidth;
 
-	if ( (gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH) || gEngfuncs.IsSpectateOnly() )
+	if ( (gHUD.m_iHideHUDDisplay & (HIDEHUD_HEALTH_AND_ARMOR | HIDEHUD_HEALTH)) || gEngfuncs.IsSpectateOnly() )
 		return 1;
 
-	if ( !m_hSprite )
-		m_hSprite = LoadSprite(PAIN_NAME);
+	if (!m_hSprite) {
+		int replaceIdx = gHUD.GetSpriteIndex("pain");
+		if (replaceIdx != -1) {
+			// pain indicators aren't defined in hud.txt but that's the file used for replacements
+			m_hSprite = gHUD.GetSprite(replaceIdx);
+		}
+		else {
+			m_hSprite = LoadSprite(PAIN_NAME);
+		}
+	}
 	
 	// Has health changed? Flash the health #
 	if (m_fFade)
@@ -226,7 +238,9 @@ int CHudHealth::Draw(float flTime)
 		int iHeight = gHUD.m_iFontHeight;
 		int iWidth = HealthWidth/10;
 
-		FillRGBA(x, y, iWidth, iHeight, r, g, b, 255);
+		// draw separator
+		if (!(gHUD.m_iHideHUDDisplay & HIDEHUD_ARMOR))
+			FillRGBA(x, y, iWidth, iHeight, r, g, b, 255);
 	}
 
 	DrawDamage(flTime);

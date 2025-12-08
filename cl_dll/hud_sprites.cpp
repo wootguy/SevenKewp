@@ -22,6 +22,7 @@ struct HudSprite {
 	hudnumparams_t num;
 	dstring_t sprName; // either a literal file path or a name to lookup in hud.txt
 	HSPRITE hspr; // for custom sprite
+	wrect_t hrect; // region loaded from hud.txt
 	HSPRITE hspr_num[10]; // for numeric displays
 	wrect_t hspr_rc[10]; // for numeric displays
 	float startTime;
@@ -89,16 +90,16 @@ bool loadHudElementSprites(HudSprite& spr) {
 			}
 
 			spr.hspr = gHUD.GetSprite(index);
-			wrect_t rc = gHUD.GetSpriteRect(index);
-			params.top = rc.top;
-			params.left = rc.left;
-			params.width = rc.right - rc.left;
-			params.height = rc.bottom - rc.top;
+			spr.hrect = gHUD.GetSpriteRect(index);
 		}
 		else {
 			// name is a file path
 			const char* loadPath = UTIL_VarArgs("sprites/%s.spr", sprPath);
 			spr.hspr = SPR_Load(loadPath);
+			spr.hrect.left = params.left;
+			spr.hrect.top = params.top;
+			spr.hrect.right = params.left + params.width;
+			spr.hrect.bottom = params.top + params.height;
 
 			if (!spr.hspr) {
 				PRINTD("Failed to load HUD sprite %s\n", loadPath);
@@ -201,22 +202,12 @@ void GetHudElementPosition(HudSprite& spr, int& x, int& y) {
 	int sw = ScreenWidth;
 	int sh = ScreenHeight;
 
-	x = hud.x * sw;
-	y = hud.y * sh;
+	float pixelScale = gHUD.GetHudPixelScale();
+
+	x = hud.x * sw + hud.xPixels * pixelScale;
+	y = hud.y * sh + hud.yPixels * pixelScale;
 	float alpha = 1.0f;
 
-	if (hud.flags & HUD_ELEM_ABSOLUTE_X) {
-		x = hud.x;
-	}
-	if (hud.flags & HUD_ELEM_ABSOLUTE_Y) {
-		y = hud.y;
-	}
-	if (hud.flags & HUD_ELEM_SCR_CENTER_X) {
-		x += sw / 2;
-	}
-	if (hud.flags & HUD_ELEM_SCR_CENTER_Y) {
-		y += sh / 2;
-	}
 	if (hud.flags & HUD_ELEM_NO_BORDER) {
 		//PRINTD("HUD_ELEM_NO_BORDER not implemented\n");
 	}
@@ -227,11 +218,19 @@ void DrawHudSprite(HudSprite& spr, int x, int y, int r, int g, int b) {
 	hudspriteparams_t& params = spr.spr;
 
 	// define region
-	wrect_t rect;
-	rect.left = params.left;
-	rect.top = params.top;
-	rect.right = params.left + params.width;
-	rect.bottom = params.top + params.height;
+	wrect_t rect = spr.hrect;
+
+	if (hud.flags & HUD_SPR_USE_CONFIG) {
+		// selecting a sub-region of the default region
+		if (params.left || params.top || params.width || params.height) {
+			float scale = gHUD.GetHudPixelScale();
+			rect.left += params.left * scale;
+			rect.top += params.top * scale;
+			rect.right = rect.left + params.width * scale;
+			rect.bottom = rect.top + params.height * scale;
+		}
+	}
+
 	wrect_t* rc = (rect.left || rect.top || rect.right || rect.bottom) ? &rect : NULL;
 
 	SPR_Set(spr.hspr, r, g, b);
@@ -286,7 +285,7 @@ void DrawNumericHud(HudSprite& spr, int x, int y, int r, int g, int b) {
 
 	while (*numStr && digitsLeft) {
 		char c = *numStr;
-		wrect_t& rect = spr.hspr_rc[0];
+		wrect_t rect = spr.hspr_rc[0];
 
 		if (c == '+' || c == '-') {
 			if (!(spr.hud.flags & HUD_NUM_NEGATIVE_NUMBERS)) {
@@ -299,11 +298,11 @@ void DrawNumericHud(HudSprite& spr, int x, int y, int r, int g, int b) {
 			rect = spr.hspr_rc[idx];
 			SPR_Set(spr.hspr_num[idx], r, g, b);
 			SPR_DrawAdditive(0, x, y, &rect);
-			digitsLeft--;
 		}
 
 		x += rect.right - rect.left;
-
+		
+		digitsLeft--;
 		numStr++;
 	}
 
@@ -361,10 +360,16 @@ HudSprite& ParseHudElementParams(int channel) {
 	params.flags = READ_SHORT();
 	params.flags |= ((uint32_t)READ_BYTE()) << 16;
 	params.holdTime = READ_BYTE() * 0.1f;
-	params.x = READ_SHORT() / 32767.0f;
-	params.y = READ_SHORT() / 32767.0f;
 	spr.sprName = READ_SHORT();
 	
+	if (msgfl & HUD_ELEM_MSG_SCREEN_POS) {
+		params.x = READ_SHORT() / 32767.0f;
+		params.y = READ_SHORT() / 32767.0f;
+	}
+	if (msgfl & HUD_ELEM_MSG_PIXEL_POS) {
+		params.xPixels = READ_SHORT();
+		params.yPixels = READ_SHORT();
+	}
 	if (msgfl & HUD_ELEM_MSG_COLOR1) {
 		params.color1.r = READ_BYTE();
 		params.color1.g = READ_BYTE();

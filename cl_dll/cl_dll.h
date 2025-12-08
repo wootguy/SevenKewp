@@ -36,6 +36,6 @@ typedef int (*pfnUserMsgHook)(const char *pszName, int iSize, void *pbuf);
 #include "vector.h"
 
 #include "../engine/cdll_int.h"
-#include "../dlls/cdll_dll.h"
+#include "../game_shared/cdll_dll.h"
 
 extern cl_enginefunc_t gEngfuncs;

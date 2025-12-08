@@ -299,10 +299,12 @@ int CBasePlayerWeapon::AddToPlayer(CBasePlayer* pPlayer)
 		const char* customSpriteDir = m_customSpriteDir ?
 			STRING(m_customSpriteDir) : g_defaultSpriteDirs.get(STRING(pev->classname));
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgCustomHud, NULL, pPlayer->pev);
-		WRITE_BYTE(m_iId);
-		WRITE_STRING(customSpriteDir ? customSpriteDir : "");
-		MESSAGE_END();
+		if (pPlayer->IsSevenKewpClient()) {
+			MESSAGE_BEGIN(MSG_ONE, gmsgCustomHud, NULL, pPlayer->pev);
+			WRITE_BYTE(m_iId);
+			WRITE_STRING(customSpriteDir ? customSpriteDir : "");
+			MESSAGE_END();
+		}
 
 		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
 		WRITE_BYTE(m_iId);

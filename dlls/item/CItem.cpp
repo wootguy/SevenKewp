@@ -9,15 +9,7 @@ void CItem::Spawn(void)
 	UTIL_SetOrigin(pev, pev->origin);
 	SetSize(Vector(-16, -16, 0), Vector(16, 16, 16));
 
-	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
-		SetTouch(&CItem::ItemTouch);
-	
-	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
-		SetUse(&CItem::ItemUse);
-
-	// both "Touch only" and "Use only" set so it can't be collected. Assume "Use only" is what they wanted.
-	if ((pev->spawnflags & (SF_ITEM_USE_ONLY|SF_ITEM_TOUCH_ONLY)) == (SF_ITEM_USE_ONLY | SF_ITEM_TOUCH_ONLY))
-		SetUse(&CItem::ItemUse);
+	SetupTouchAndUse();
 
 	if (!pev->movetype) {
 		pev->movetype = MOVETYPE_TOSS;
@@ -46,6 +38,18 @@ void CItem::Spawn(void)
 	ResetSequenceInfo();
 
 	AddWaterPhysicsEnt(this, 0.95f, 0);
+}
+
+void CItem::SetupTouchAndUse() {
+	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
+		SetTouch(&CItem::ItemTouch);
+
+	if (!(pev->spawnflags & SF_ITEM_TOUCH_ONLY))
+		SetUse(&CItem::ItemUse);
+
+	// both "Touch only" and "Use only" set so it can't be collected. Assume "Use only" is what they wanted.
+	if ((pev->spawnflags & (SF_ITEM_USE_ONLY | SF_ITEM_TOUCH_ONLY)) == (SF_ITEM_USE_ONLY | SF_ITEM_TOUCH_ONLY))
+		SetUse(&CItem::ItemUse);
 }
 
 void CItem::DropThink() {
@@ -190,7 +194,7 @@ void CItem::Materialize(void)
 		pev->effects |= EF_MUZZLEFLASH;
 	}
 
-	SetTouch(&CItem::ItemTouch);
+	SetupTouchAndUse();
 }
 
 const char* CItem::GetModel() {

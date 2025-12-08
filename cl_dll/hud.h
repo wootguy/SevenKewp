@@ -596,6 +596,7 @@ private:
 //
 //-----------------------------------------------------
 //
+#define MAX_HUD_SPRITES	256
 #define MAX_SPRITE_NAME_LENGTH	24
 
 class CHudStatusIcons: public CHudBase
@@ -760,6 +761,9 @@ public:
 	
 	// return desired HUD sprite scaling resolution key (320, 640, 1280, 2560)
 	int GetDesiredSpriteRes();
+
+	// return HUD pixel scaling factor, for resolution independent HUD positioning
+	float GetHudPixelScale();
 
 private:
 	// the memory for these arrays are allocated in the first call to CHud::VidInit(), when the hud.txt and associated sprites are loaded.

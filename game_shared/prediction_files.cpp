@@ -114,8 +114,12 @@ const char* g_prediction_files[] = {
 	"player/geiger5.wav",
 	"player/geiger6.wav",
 
-	// chat messages
+	// HUD sounds
 	"misc/talk.wav",
+	"common/wpn_select.wav",
+	"common/wpn_hudon.wav",
+	"common/wpn_moveselect.wav",
+	"common/wpn_hudoff.wav",
 
 	// weapon effects
 	"sprites/smoke.spr", 		// gauss beam
@@ -147,6 +151,7 @@ const int g_prediction_files_sz = sizeof(g_prediction_files) / sizeof(g_predicti
 uint8_t g_predMsgData[190];
 int g_predMsgLen;
 int g_soundvariety;
+int g_flashlight_size;
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud.h"

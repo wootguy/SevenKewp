@@ -112,7 +112,7 @@ std::unordered_map<std::string, StringMap> g_replacementFiles;
 MessageHistoryItem g_hudMsgHistory[MAX_TEXT_CHANNELS*33];
 
 StringMap g_weaponRemapHL;
-StringMap g_classRemap;
+HashMap<SpawnFunc> g_entityRemap;
 
 TYPEDESCRIPTION	gEntvarsDescription[] =
 {
@@ -1518,6 +1518,10 @@ void WriteHudElementParams(CBasePlayer* client, const hudelementparams_t& params
 		msgfl |= HUD_ELEM_MSG_FADE;
 	if (params.fxTime || params.effect)
 		msgfl |= HUD_ELEM_MSG_FX;
+	if (params.x || params.y)
+		msgfl |= HUD_ELEM_MSG_SCREEN_POS;
+	if (params.xPixels || params.yPixels)
+		msgfl |= HUD_ELEM_MSG_PIXEL_POS;
 	
 	dstring_t dstring = QueueDeltaString(ALLOC_STRING(sprite));
 
@@ -1526,10 +1530,16 @@ void WriteHudElementParams(CBasePlayer* client, const hudelementparams_t& params
 	WRITE_SHORT(flags);
 	WRITE_BYTE(flags >> 16); // high byte
 	WRITE_BYTE(clampi(params.holdTime * 10, 0, 255));
-	WRITE_SHORT(clampf(params.x * 32767.0f, -32767.0f, 32767.0f));
-	WRITE_SHORT(clampf(params.y * 32767.0f, -32767.0f, 32767.0f));
 	WRITE_SHORT(dstring);
 
+	if (msgfl & HUD_ELEM_MSG_SCREEN_POS) {
+		WRITE_SHORT(clampf(params.x * 32767.0f, -32767.0f, 32767.0f));
+		WRITE_SHORT(clampf(params.y * 32767.0f, -32767.0f, 32767.0f));
+	}
+	if (msgfl & HUD_ELEM_MSG_PIXEL_POS) {
+		WRITE_SHORT(params.xPixels);
+		WRITE_SHORT(params.yPixels);
+	}
 	if (msgfl & HUD_ELEM_MSG_COLOR1) {
 		WRITE_BYTE(params.color1.r);
 		WRITE_BYTE(params.color1.g);

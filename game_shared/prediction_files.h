@@ -2,7 +2,7 @@
 
 extern const char* g_prediction_files[];
 extern const int g_prediction_files_sz;
-extern int g_soundvariety; // used client-side to select random sounds
+extern int g_soundvariety;
 
 extern uint8_t g_predMsgData[190];
 extern int g_predMsgLen;

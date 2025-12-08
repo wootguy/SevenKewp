@@ -88,11 +88,19 @@ def process_definition_file(txt_path):
 
 		print(f"Saved {out_file}")
 
-def make_hud_spr(bmp, output_file):
-	width = bmp["width"]
-	height = bmp["height"]
-	palette = bmp["palette"]
-	pixels = bmp["pixels"]
+def make_hud_spr(bmps, output_file):
+	width = bmps[0]["width"]
+	height = bmps[0]["height"]
+	palette = bmps[0]["palette"]
+	
+	maxW = width
+	maxH = height
+	
+	for bmp in bmps:
+		if bmp["width"] > maxW:
+			maxW = bmp["width"]
+		if bmp["height"] > maxH:
+			maxH = bmp["height"]
 	
 	VP_PARALLEL_UPRIGHT = 0
 	FACING_UPRIGHT = 1
@@ -112,31 +120,32 @@ def make_hud_spr(bmp, output_file):
 		VP_PARALLEL,
 		SPR_ALPHATEST,
 		1.0,		# radius
-		width,
-		height,
-		1,			# frames
+		maxW,
+		maxH,
+		len(bmps),	# frames
 		1.0,		# beamLength
 		0,			# syncType
 		256			# paletteSz
 	)
 
-	fheader = struct.pack(
-		"<IiiII",
-		0,		 # group
-		0, 0,	 # x, y
-		width,
-		height
-	)
-
 	with open(output_file, "wb") as f:
 		f.write(header_struct)
 		f.write(palette)		# already raw bytes
-		f.write(fheader)
-		f.write(pixels)			# already raw bytes
+		
+		for bmp in bmps:
+			pixels = bmp["pixels"]
+			fheader = struct.pack(
+				"<IiiII",
+				0,		 # group
+				0, 0,	 # x, y
+				bmp["width"],
+				bmp["height"]
+			)
+			f.write(fheader)
+			f.write(pixels)			# already raw bytes
 
 def save_img_alphatest(canvas, out_name):
 	canvas = canvas.quantize(colors=256, method=2)
-	
 	
 	pal = canvas.getpalette()
 	dst = 255
@@ -164,7 +173,7 @@ def save_img_alphatest(canvas, out_name):
 		"palette": bytes(pal),
 		"pixels": canvas.tobytes(),
 	}
-	make_hud_spr(bmpdat, out_name + ".spr")
+	make_hud_spr([bmpdat], out_name + ".spr")
 	print("Wrote %s" % out_name + ".spr")
 
 def compile_weapon_hud():
@@ -619,6 +628,117 @@ def tab_align(tup, idx, maxtabs):
 	lst[idx] = str(lst[idx]) + tabs
 	return tuple(lst)
 
+def compile_custom_grid_hud(out_name):
+	hud_config = []
+	bucket_icons = [
+		'flash_on', 'flash_off',
+	]
+	
+	canvas = Image.new("RGB", (512, 512), "blue")
+
+	for idx, icon in enumerate(bucket_icons):
+		if not os.path.exists(icon + ".bmp"):
+			continue
+		
+		img = Image.open(icon + ".bmp")
+		w = img.width
+		h = img.height
+		w2 = int(w/2)
+		h2 = int(h/2)
+		
+		x = idx
+		y = 0
+		
+		hud_config += paste_hud_defs(canvas, icon, [
+			(icon, 2560, out_name, x*w*3,		y*h*3,		  w*3, h*3),
+			(icon, 1280, out_name, x*w*2,		y*h*2  + h*3, w*2, h*2),
+			(icon, 640,	 out_name, x*w	+ w*2*2, y*h   + h*3, w,   h),
+			(icon, 320,	 out_name, x*w2 + w*2*2, y*h2  + h*4, w2,  h2)
+		])
+	
+	maxW = 0
+	maxH = 0
+	for icon in hud_config:
+		right = icon[3] + icon[5]
+		bottom = icon[4] + icon[6]
+		if right > maxW:
+			maxW = right
+		if bottom > maxH:
+			maxH = bottom
+	
+	canvas = canvas.crop((0, 0, maxW, maxH))
+	print("HUD image size: %dx%d" % (maxW, maxH))
+	
+	save_img_alphatest(canvas, out_name)
+	
+	return hud_config
+
+def compile_pain_hud():
+	
+	frames = [
+		"640_pain_0", "640_pain_1", "640_pain_2", "640_pain_3"
+	]
+	scales = [1, 2, 3]
+	prefixes = ["320_", "1280_", "2560_"]
+
+	w = 128
+	h = 48
+	
+	for k, scale in enumerate(scales):
+		resampler = Image.Resampling.NEAREST if scale >= 1 else Image.Resampling.LANCZOS
+		
+		bmps = []
+		ref_img = None
+		
+		for idx, frame in enumerate(frames):
+			iw = w
+			ih = h
+			
+			if idx % 2 != 0:
+				iw = h
+				ih = w
+		
+			img = Image.open(frame + ".bmp")
+			img = img.convert("RGB").resize((iw*scale, ih*scale), resampler)
+			
+			# use the same palette for all images
+			if ref_img:
+				img = img.convert("RGB").quantize(palette=ref_img)
+			else:
+				img = img.quantize(colors=256, method=2).convert("P")
+				ref_img = img
+			
+			img.save(frame.replace("640_", prefixes[k]) + ".bmp")
+		
+			bmpdat = {
+				"width": img.width,
+				"height": img.height,
+				"palette": bytes(img.getpalette()),
+				"pixels": img.tobytes(),
+			}
+			bmps.append(bmpdat)			
+		
+		make_hud_spr(bmps, prefixes[k] + "pain.spr")
+	
+	hud_config = [[
+		("pain", 320, "320_pain", 0, 0, w, h),
+		("pain", 640, "640_pain", 0, 0, w, h),
+		("pain", 1280, "1280_pain", 0, 0, w*2, h*2),
+		("pain", 2560, "2560_pain", 0, 0, w*3, h*3)
+	]]
+	
+	with open("hud_pain.txt", "w") as f:
+		f.write("4\n")
+		
+		for icon_set in hud_config:
+			for icon in icon_set:
+				icon = tab_align(icon, 0, 5)
+				icon = tab_align(icon, 1, 3)
+				
+				f.write("%s%s%s %d	%d	%d	%d\n" % (icon[0], icon[1], "mod_folder/" + icon[2], icon[3], icon[4], icon[5], icon[6]))
+			f.write("\n")
+		print("Created HUD file: hud_pain.txt")
+
 def compile_system_hud():
 	bucket_img = Image.new("RGB", (512, 512), "blue")
 
@@ -649,6 +769,28 @@ def compile_system_hud():
 			f.write("\n")
 		print("Created HUD file: hud_system.txt")
 
+def compile_custom_hud(bmps):
+	bucket_img = Image.new("RGB", (512, 512), "blue")
+
+	hud_config = [
+		compile_custom_grid_hud("hud_custom")
+	]
+
+	total_spr = 0
+	for icon_set in hud_config:
+		total_spr += len(icon_set)
+
+	with open("hud.txt", "w") as f:
+		f.write("%d\n" % total_spr)
+		
+		for icon_set in hud_config:
+			for icon in icon_set:
+				icon = tab_align(icon, 0, 5)
+				icon = tab_align(icon, 1, 3)
+				
+				f.write("%s%s%s %d	%d	%d	%d\n" % (icon[0], icon[1], "mod_folder/" + icon[2], icon[3], icon[4], icon[5], icon[6]))
+			f.write("\n")
+		print("Created HUD file: hud_system.txt")
 
 compile_mode = len(sys.argv) > 1 and sys.argv[1]
 
@@ -683,3 +825,7 @@ if compile_mode == "weapon":
 	compile_weapon_hud()
 if compile_mode == "system":
 	compile_system_hud()
+if compile_mode == "pain":
+	compile_pain_hud()
+if compile_mode == "custom":
+	compile_custom_hud(sys.argv[2:])

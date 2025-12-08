@@ -570,8 +570,8 @@ void ServerDeactivate( void )
 	g_unrecognizedCfgEquipment.clear();
 	g_replacementFiles.clear();
 	g_weaponRemapHL.clear();
-	g_classRemap.clear();
 	g_defaultSpriteDirs.clear();
+	g_entityRemap.clear();
 	ClearPlayerModelCache();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";
@@ -801,12 +801,6 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		UTIL_PrecacheOther(witer.key);
 	}
 
-	{
-		StringMap::iterator_t iter;
-		while (g_classRemap.iterate(iter)) {
-			UTIL_PrecacheOther(iter.value);
-		}
-	}
 	{
 		StringMap::iterator_t iter;
 		while (g_weaponRemapHL.iterate(iter)) {
@@ -1160,6 +1154,18 @@ void ClientPrecache( void )
 	// client hud + use key sounds
 	PRECACHE_SOUND_ENT(NULL, "common/wpn_select.wav");
 	PRECACHE_SOUND_ENT(NULL, "common/wpn_denyselect.wav");
+
+	// precache these sounds only if they're replaced
+	const char* replaceable_hud_sounds[3] = {
+		"common/wpn_hudoff.wav",
+		"common/wpn_hudon.wav",
+		"common/wpn_moveselect.wav",
+	};
+	for (int i = 0; i < ARRAYSIZE(replaceable_hud_sounds); i++) {
+		if (UTIL_GetReplacementSound(NULL, replaceable_hud_sounds[i])) {
+			PRECACHE_SOUND_ENT(NULL, replaceable_hud_sounds[i]);
+		}
+	}
 
 	PRECACHE_SOUND_ENT(NULL, "player/bhit_helmet-1.wav");
 

@@ -5,8 +5,6 @@
 #include "CItem.h"
 #include "gamerules.h"
 
-#define MAX_NORMAL_BATTERY	100
-
 class CItemBattery : public CItem
 {
 	float m_healthcap;

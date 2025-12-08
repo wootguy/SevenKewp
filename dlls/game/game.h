@@ -89,6 +89,8 @@ EXPORT extern cvar_t	mp_debug_tracers; // compare your client predicted tracers 
 EXPORT extern cvar_t	mp_sevenkewp_client_notice; // tell players where to download the sevenkewp client so they can use all the weapons
 EXPORT extern cvar_t	mp_hud_color; // default HUD color for this map (3 digit hex string "FFF")
 EXPORT extern cvar_t	sv_colorcon; // colorize the server console
+EXPORT extern cvar_t	mp_flashlight_drain; // how fast the flashlight drains (1.0 = 100%, 0 = never)
+EXPORT extern cvar_t	mp_flashlight_charge; // how fast the flashlight charges (1.0 = 100%, 0 = never)
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

@@ -197,6 +197,7 @@ public:
 	float				m_flStopExtraSoundTime;
 	
 	float				m_flFlashLightTime;	// Time until next battery draw/Recharge
+	float				m_flFlashLightCarry; // How much time was left before a drain when the flashlight was turned off (prevents infinite flashlight)
 	int					m_iFlashBattery;		// Flashlight Battery Draw
 	bool				m_flashlightEnabled;
 	bool				m_hasFlashlight;

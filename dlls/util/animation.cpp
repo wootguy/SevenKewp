@@ -485,7 +485,8 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 
 	// events are skipped if start/end are "perfectly" aligned.
 	// ending at 3.0f last call then starting at 3.0000001f next call will skip frame 3 events
-	const float evepsilon = 0.001f;
+	// TODO: stopped working after leaving server running for an hour (aomdc wheelchair monster)
+	const float evepsilon = 0.01f;
 
 	for (; index < pseqdesc->numevents; index++)
 	{

@@ -555,10 +555,10 @@ void CHud::LoadHudSprites(void) {
 			}
 
 			// allocated memory for sprite handle arrays
- 			m_rghSprites = new HSPRITE[m_iSpriteCount];
-			m_rgrcRects = new wrect_t[m_iSpriteCount];
-			m_rgrcRectsDefault = new wrect_t[m_iSpriteCount];
-			m_rgszSpriteNames = new char[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH];
+ 			m_rghSprites = new HSPRITE[MAX_HUD_SPRITES];
+			m_rgrcRects = new wrect_t[MAX_HUD_SPRITES];
+			m_rgrcRectsDefault = new wrect_t[MAX_HUD_SPRITES];
+			m_rgszSpriteNames = new char[MAX_HUD_SPRITES * MAX_SPRITE_NAME_LENGTH];
 
 			memset(m_rghSprites, 0, m_iSpriteCount * sizeof(HSPRITE));
 
@@ -634,6 +634,19 @@ void CHud::ReplaceHudSprites(const char* fpath) {
 				m_rgrcRects[existingIdx] = p->rc;
 				replacedIndexes[existingIdx] = true;
 			}
+			else if (m_iSpriteCount < MAX_HUD_SPRITES) {
+				// new sprite defiend for this map
+				m_rghSprites[m_iSpriteCount] = SPR_Load(sz);
+				m_rgrcRects[m_iSpriteCount] = p->rc;
+				m_rgrcRectsDefault[m_iSpriteCount] = p->rc;
+				strncpy(&m_rgszSpriteNames[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH], p->szName, MAX_SPRITE_NAME_LENGTH);
+				m_iSpriteCount++;
+				PRINTF("Loaded custom HUD icon: %s\n", p->szName);
+			}
+			else {
+				PRINTF("Exceeded max HUD sprites!\n");
+				break;
+			}
 		}
 	}
 
@@ -656,6 +669,7 @@ void CHud::ReplaceHudSprites(const char* fpath) {
 
 	m_Battery.ReloadSprites();
 	m_Flash.ReloadSprites();
+	m_Health.ReloadSprites();
 
 	m_hud_sprites_loaded = true;
 
@@ -918,6 +932,16 @@ int CHud::GetDesiredSpriteRes() {
 	}
 
 	return iRes;
+}
+
+float CHud::GetHudPixelScale() {
+	switch (GetDesiredSpriteRes()) {
+	case 2560:	return 3;
+	case 1280:	return 2;
+	case 640:	return 1;
+	case 320:	return 0.5f;
+	default:	return 1;
+	}
 }
 
 unsigned long CHud::GetHudColor() {
