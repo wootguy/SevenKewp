@@ -6682,8 +6682,6 @@ void CBasePlayer::QueryClientTypeFinished() {
 	if (IsSevenKewpClient()) {
 		// send prediction file replacements
 		MESSAGE_BEGIN(MSG_ONE, gmsgPredFiles, NULL, pev);
-		WRITE_BYTE(soundvariety.value);
-		WRITE_BYTE(mp_flashlight_size.value);
 		WRITE_BYTE(g_predMsgLen);
 		WRITE_BYTES(g_predMsgData, g_predMsgLen);
 		MESSAGE_END();

@@ -29,6 +29,7 @@
 #include "game.h"
 #include "CBaseDMStart.h"
 #include "hlds_hooks.h"
+#include "CWorld.h"
 
 #include <sstream>
 #include <string>
@@ -153,7 +154,7 @@ void AddMapPluginEquipment() {
 	g_unrecognizedCfgEquipment.clear();
 }
 
-void execMapCfg() {
+void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 	// Map CFGs are low trust so only whitelisted commands are allowed.
 	// Server owners shouldn't have to check each map for things like "rcon_password HAHA_GOT_YOU"
 
@@ -198,6 +199,8 @@ void execMapCfg() {
 		"sentence_file",
 		"materials_file",
 		"hud_file",
+		"include_cfg",
+		"skill_file",
 		"mp_shitcode",
 		"map_plugin",
 		"nosuit",
@@ -273,28 +276,41 @@ void execMapCfg() {
 
 	memset(g_mapEquipment, 0, sizeof(EquipItem) * MAX_EQUIP);
 
-	string cfgPath = "maps/" + string(STRING(gpGlobals->mapname)) + ".cfg";
 	int length;
-	char* cfgFile = (char*)LOAD_FILE_FOR_ME(cfgPath.c_str(), &length);
+	char* cfgFile = (char*)LOAD_FILE_FOR_ME(cfgPath, &length);
 	
 	g_mapCfgExists = cfgFile;
 	g_noSuit = false;
 	g_noMedkit = false;
 
 	if (!cfgFile) {
-		// precache default equipment
-		AddPrecacheWeapon("weapon_crowbar");
-		AddPrecacheWeapon("weapon_9mmhandgun");
+		if (openedCfgs.size() == 0) {
+			// precache default equipment
+			AddPrecacheWeapon("weapon_crowbar");
+			AddPrecacheWeapon("weapon_9mmhandgun");
+		}
+		
 		return;
 	}
+
+	g_mapEquipIdx = 0;
+
+	static StringSet fileRefs = {
+		"globalmodellist",
+		"globalsoundlist",
+		"sentence_file",
+		"materials_file",
+		"hud_file",
+		"skill_file",
+		"include_cfg"
+	};
 
 	std::stringstream data_stream(cfgFile);
 	string line;
 
-	g_mapEquipIdx = 0;
+	openedCfgs.put(toLowerCase(normalize_path(cfgPath)).c_str());
 
-	while (std::getline(data_stream, line))
-	{
+	while (std::getline(data_stream, line)) {
 		vector<string> parts = splitString(line, " \t");
 
 		if (parts.empty()) {
@@ -303,6 +319,16 @@ void execMapCfg() {
 
 		string name = trimSpaces(toLowerCase(parts[0]));
 		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
+
+		if (name == "include_cfg") {
+			std::string safepath = toLowerCase(normalize_path("maps/" + value));
+			if (openedCfgs.hasKey(safepath.c_str())) {
+				ALERT(at_warning, "include_cfg loading loop: %s -> %s\n", cfgPath, value.c_str());
+			}
+			else {
+				execMapCfg(safepath.c_str(), openedCfgs);
+			}
+		}
 
 		if (name == "nosuit") {
 			g_noSuit = true;
@@ -334,8 +360,7 @@ void execMapCfg() {
 			}
 
 			// model/sound lists must be loaded now or else other entities might precache the wrong files
-			if (name == "globalmodellist" || name == "globalsoundlist" || name == "sentence_file"
-				|| name == "materials_file" || name == "hud_file") {
+			if (fileRefs.hasKey(name.c_str())) {
 				KeyValueData dat;
 				dat.fHandled = false;
 				dat.szClassName = (char*)"worldspawn";
@@ -480,13 +505,22 @@ void execCfgs() {
 	// meaning the order you call SERVER_COMMAND doesn't match the actual execution order. Commands
 	// are run one per frame, so you can't hackfix this by adding a delay to an important CFG either.	
 
+	StringSet openedCfgs;
+
 	execServerCfg();
 	execSkillCfg("skill.cfg", false);
 	RefreshSkillData(false);
-	execMapCfg();
+	execMapCfg(UTIL_VarArgs("maps/%s.cfg", STRING(gpGlobals->mapname)), openedCfgs);
 
 	if (mp_skill_allow.value != 0) {
-		execSkillCfg(UTIL_VarArgs("maps/%s_skl.cfg", STRING(gpGlobals->mapname)), true);
+		const char* cfgPath = UTIL_VarArgs("maps/%s_skl.cfg", STRING(gpGlobals->mapname));
+
+		CWorld* world = (CWorld*)CBaseEntity::Instance(ENT(0));
+		if (world->m_skill_file) {
+			cfgPath = STRING(world->m_skill_file);
+		}
+
+		execSkillCfg(cfgPath, true);
 	}
 	RefreshSkillData(true);
 

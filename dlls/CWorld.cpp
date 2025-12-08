@@ -515,6 +515,11 @@ void CWorld::KeyValue(KeyValueData* pkvd)
 		m_hudFile = ALLOC_STRING(temp);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "skill_file"))
+	{
+		m_skill_file = ALLOC_STRING(UTIL_VarArgs("maps/%s", pkvd->szValue));
+		pkvd->fHandled = TRUE;
+	}
 	else if (FStrEq(pkvd->szKeyName, "freeroam"))
 	{
 		m_freeRoam = atoi(pkvd->szValue) == 1;
