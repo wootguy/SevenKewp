@@ -17,9 +17,6 @@ DECLARE_MESSAGE(m_HudEntStatus, StringIdx);
 static int em_width;
 static int em_height;
 
-extern vec3_t v_origin;
-extern vec3_t v_angles;
-
 typedef uint16_t dstring_t;
 
 int g_plr_look_index; // player being looked at
@@ -124,7 +121,7 @@ int CHudEntStatus::Draw(float flTime)
 		return 1;
 
 	Vector forward, right, up;
-	AngleVectors(v_angles, forward, right, up);
+	AngleVectors(gPlayerSim.v_angles, forward, right, up);
 
 	cl_entity_t* localPlayer = GetLocalPlayer();
 
@@ -133,7 +130,7 @@ int CHudEntStatus::Draw(float flTime)
 	gEngfuncs.pEventAPI->EV_PushPMStates();
 	gEngfuncs.pEventAPI->EV_SetSolidPlayers(localPlayer->index - 1);
 	gEngfuncs.pEventAPI->EV_SetTraceHull(2);
-	gEngfuncs.pEventAPI->EV_PlayerTrace(v_origin, v_origin + forward*8192, 0, -1, &tr);
+	gEngfuncs.pEventAPI->EV_PlayerTrace(gPlayerSim.v_origin, gPlayerSim.v_origin + forward*8192, 0, -1, &tr);
 	physent_t* pPhys = gEngfuncs.pEventAPI->EV_GetPhysent(tr.ent);
 	cl_entity_t* pEnt = pPhys && pPhys->info ? gEngfuncs.GetEntityByIndex(pPhys->info) : NULL;
 	gEngfuncs.pEventAPI->EV_PopPMStates();

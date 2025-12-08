@@ -8,8 +8,6 @@
 
 extern local_state_t g_prediction_debug_state;
 
-extern vec3_t v_angles, v_sim_org, v_sim_vel;
-
 static int line_height = 0;
 static int var_width = 0;
 static int num_width = 0;
@@ -100,13 +98,13 @@ int CHudDebug::Draw(float flTime)
 	PRINT_WEP_STATE_VARF(fuser4);
 	
 	yOffset += line_height;
-	PRINT_VEC_VARD(v_sim_org);
-	PRINT_VEC_VARD(v_angles);
-	PRINT_VEC_VARD(v_sim_vel);
+	PRINT_VEC_VARD(gPlayerSim.v_sim_org);
+	PRINT_VEC_VARD(gPlayerSim.v_angles);
+	PRINT_VEC_VARD(gPlayerSim.v_sim_vel);
 
 	yOffset += line_height;
 	int real_contents;
-	int contents = gEngfuncs.PM_PointContents(v_sim_org, &real_contents);
+	int contents = gEngfuncs.PM_PointContents(gPlayerSim.v_sim_org, &real_contents);
 	PRINT_VARD(contents);
 
 	return 1;

@@ -38,4 +38,20 @@ typedef int (*pfnUserMsgHook)(const char *pszName, int iSize, void *pbuf);
 #include "../engine/cdll_int.h"
 #include "../game_shared/cdll_dll.h"
 
+struct playersim_t {
+	vec3_t v_origin;		// camera view origin
+	vec3_t v_sim_org;		// player position
+	vec3_t v_sim_vel;		// player velocity
+	vec3_t v_angles;		// player view angles
+	vec3_t v_cl_angles;
+	vec3_t v_lastAngles;
+	vec3_t ev_punchangle;	// client-side punch angle predicted in weapons code
+	vec3_t v_punchangle;	// final combined client and server punch angle
+	vec3_t cam_ofs;			// thirdperson camera pitch, yaw, dist
+	int cam_thirdperson;	// 1 = third person camera active
+	bool b_viewing_cam;		// true if player's view is attached to another entity such as a camera
+	float v_frametime;		// view simulation frametime
+};
+
 extern cl_enginefunc_t gEngfuncs;
+extern playersim_t gPlayerSim;

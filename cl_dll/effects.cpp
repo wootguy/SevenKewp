@@ -343,12 +343,11 @@ int __MsgFunc_WaterSplash(const char* pszName, int iSize, void* pbuf) {
 	return 1;
 }
 
-extern vec3_t v_angles, v_sim_org, v_sim_vel;
 extern playermove_t* pmove;
 
 void UTIL_WaterSplashFootstep(int player_index) {
 	// can only predict local player so index is unused
-	Vector origin = v_sim_org - Vector(0, 0, 36);
+	Vector origin = gPlayerSim.v_sim_org - Vector(0, 0, 36);
 	float scale = 0.3f;
 	int fps = 20;
 
@@ -372,7 +371,7 @@ void PredictBodySplash() {
 		return;
 	}
 
-	Vector origin = v_sim_org;
+	Vector origin = gPlayerSim.v_sim_org;
 	origin.z -= (pmove->flags & FL_DUCKING) ? 18 : 36;
 
 	int contents = UTIL_PointContents(origin);
@@ -385,7 +384,7 @@ void PredictBodySplash() {
 
 	// water transiation
 	if (wasInLiquid != inLiquid && !solidTransition && !playerJumpingOut) {
-		if (fabs(v_sim_vel.Length()) > 100 && v_sim_vel.z < -50) {
+		if (fabs(gPlayerSim.v_sim_vel.Length()) > 100 && gPlayerSim.v_sim_vel.z < -50) {
 			Vector splashPos = inLiquid ? origin : oldPos;
 			float scale = 0.63f;
 

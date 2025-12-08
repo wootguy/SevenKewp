@@ -10,9 +10,6 @@
 #include "pm_defs.h"
 #include "pm_shared.h"
 
-extern Vector v_origin;
-extern int cam_thirdperson;
-extern bool b_viewing_cam;
 extern int g_plr_look_index;
 
 extern hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS + 1];	   // player info from the engine
@@ -79,7 +76,7 @@ int CHudNametags::Draw(float flTime)
 		if (info.specMode && info.specMode != OBS_ROAMING)
 			continue; // Don't show an icon for spectators
 
-		if (pClient == localPlayer && !cam_thirdperson && !b_viewing_cam)
+		if (pClient == localPlayer && !gPlayerSim.cam_thirdperson && !gPlayerSim.b_viewing_cam)
 			continue; // Don't show an icon for the local player unless we're in thirdperson mode.
 		
         // lerp between inaccurate positions for smooth movement
@@ -104,7 +101,7 @@ int CHudNametags::Draw(float flTime)
             };
 
             for (int i = 0; i < 3; i++) {
-                gEngfuncs.pEventAPI->EV_PlayerTrace(v_origin, testOris[i], PM_STUDIO_IGNORE | PM_GLASS_IGNORE, -1, &tr);
+                gEngfuncs.pEventAPI->EV_PlayerTrace(gPlayerSim.v_origin, testOris[i], PM_STUDIO_IGNORE | PM_GLASS_IGNORE, -1, &tr);
                 if (tr.fraction >= 1.0f) {
                     canSeePlayer = true;
                     break;
@@ -119,7 +116,7 @@ int CHudNametags::Draw(float flTime)
         Vector screenOri = WorldToScreen(tagOri);
 
         //int m_iBeam = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/smoke.spr");
-        //gEngfuncs.pEfxAPI->R_BeamPoints(headOri, v_origin, m_iBeam, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1);
+        //gEngfuncs.pEfxAPI->R_BeamPoints(headOri, gPlayerSim.v_origin, m_iBeam, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1);
 
         bool showHpOnly = m_HUD_nametag_hp->value == 2;
 
@@ -198,7 +195,7 @@ int CHudNametags::Draw(float flTime)
 
         // show distance to invisible players
         if (!canSeePlayer) {
-            int meters = V_max(0, (v_origin - tagOri).Length() / 33);
+            int meters = V_max(0, (gPlayerSim.v_origin - tagOri).Length() / 33);
             const char* dist = UTIL_VarArgs("(%dm)", meters);
             int distWidth;
             GetConsoleStringSize(dist, &distWidth, &nameHeight);

@@ -69,15 +69,13 @@ extern cvar_t	*cl_vsmoothing;
 #define	CAM_MODE_RELAX		1
 #define CAM_MODE_FOCUS		2
 
-vec3_t		v_origin, v_angles, v_cl_angles, v_sim_org, v_sim_vel, v_lastAngles;
-float		v_frametime, v_lastDistance;	
+playersim_t gPlayerSim;
+
+float		v_lastDistance;	
 float		v_cameraRelaxAngle	= 5.0f;
 float		v_cameraFocusAngle	= 35.0f;
 int			v_cameraMode = CAM_MODE_FOCUS;
 qboolean	v_resetCamera = 1;
-
-vec3_t ev_punchangle; // client-side punch angle
-vec3_t v_punchangle; // combined client and server punch angle
 
 cvar_t	*scr_ofsx;
 cvar_t	*scr_ofsy;
@@ -102,8 +100,6 @@ cvar_t	v_iroll_level		= {"v_iroll_level", "0.1", 0, 0.1};
 cvar_t	v_ipitch_level		= {"v_ipitch_level", "0.3", 0, 0.3};
 
 float	v_idlescale;  // used by TFC for concussion grenade effect
-
-bool b_viewing_cam; // true if player's view is attached to another entity such as a camera
 
 //=============================================================================
 /*
@@ -461,9 +457,9 @@ void V_CalcIntermissionRefdef ( struct ref_params_s *pparams )
 
 	v_idlescale = old;
 
-	v_cl_angles = pparams->cl_viewangles;
-	v_origin = pparams->vieworg;
-	v_angles = pparams->viewangles;
+	gPlayerSim.v_cl_angles = pparams->cl_viewangles;
+	gPlayerSim.v_origin = pparams->vieworg;
+	gPlayerSim.v_angles = pparams->viewangles;
 }
 
 #define ORIGIN_BACKUP 64
@@ -503,8 +499,8 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 
 	V_DriftPitch ( pparams );
 
-	VectorCopy(pparams->simorg, v_sim_org);
-	VectorCopy(pparams->simvel, v_sim_vel);
+	VectorCopy(pparams->simorg, gPlayerSim.v_sim_org);
+	VectorCopy(pparams->simvel, gPlayerSim.v_sim_vel);
 
 	if ( gEngfuncs.IsSpectateOnly() )
 	{
@@ -620,7 +616,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		}
 	}
 	
-	// Treating cam_ofs[2] as the distance
+	// Treating gPlayerSim.cam_ofs[2] as the distance
 	if( CL_IsThirdPerson() )
 	{
 		vec3_t ofs;
@@ -693,12 +689,12 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	VectorAdd ( pparams->viewangles, pparams->punchangle, pparams->viewangles );
 
 	// Include client side punch, too
-	VectorAdd ( pparams->viewangles, (float *)&ev_punchangle, pparams->viewangles);
+	VectorAdd ( pparams->viewangles, (float *)&gPlayerSim.ev_punchangle, pparams->viewangles);
 
-	V_DropPunchAngle ( pparams->frametime, (float *)&ev_punchangle );
+	V_DropPunchAngle ( pparams->frametime, (float *)&gPlayerSim.ev_punchangle );
 
-	v_punchangle = ev_punchangle;
-	VectorAdd(v_punchangle, pparams->punchangle, v_punchangle);
+	gPlayerSim.v_punchangle = gPlayerSim.ev_punchangle;
+	VectorAdd(gPlayerSim.v_punchangle, pparams->punchangle, gPlayerSim.v_punchangle);
 
 	// smooth out stair step ups
 #if 1
@@ -793,10 +789,10 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		}
 	}
 
-	// Store off v_angles before munging for third person
-	v_angles = pparams->viewangles;
-	v_lastAngles = pparams->viewangles;
-//	v_cl_angles = pparams->cl_viewangles;	// keep old user mouse angles !
+	// Store off gPlayerSim.v_angles before munging for third person
+	gPlayerSim.v_angles = pparams->viewangles;
+	gPlayerSim.v_lastAngles = pparams->viewangles;
+//	gPlayerSim.v_cl_angles = pparams->cl_viewangles;	// keep old user mouse angles !
 	if ( CL_IsThirdPerson() )
 	{
 		VectorCopy( camAngles, pparams->viewangles);
@@ -818,7 +814,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		ent->latched.prevangles[ 0 ] = pitch;
 	}
 
-	b_viewing_cam = false;
+	gPlayerSim.b_viewing_cam = false;
 
 	// override all previous settings if the viewent isn't the client
 	if ( pparams->viewentity > pparams->maxclients )
@@ -831,9 +827,9 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 			VectorCopy( viewentity->angles, pparams->viewangles );
 
 			// Store off overridden viewangles
-			v_angles = pparams->viewangles;
+			gPlayerSim.v_angles = pparams->viewangles;
 
-			b_viewing_cam = true;
+			gPlayerSim.b_viewing_cam = true;
 		}
 	}
 
@@ -848,7 +844,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 
 	lasttime = pparams->time;
 
-	v_origin = pparams->vieworg;
+	gPlayerSim.v_origin = pparams->vieworg;
 }
 
 void V_SmoothInterpolateAngles( float * startAngle, float * endAngle, float * finalAngle, float degreesPerSec )
@@ -875,7 +871,7 @@ void V_SmoothInterpolateAngles( float * startAngle, float * endAngle, float * fi
 
 		if ( absd > 0.01f )
 		{
-			frac = degreesPerSec * v_frametime;
+			frac = degreesPerSec * gPlayerSim.v_frametime;
 
 			threshhold= degreesPerSec / 4;
 
@@ -978,7 +974,7 @@ void V_GetChaseOrigin( float * angles, float * origin, float distance, float * r
 
 	float distance = 168.0f;
 
-	v_lastDistance+= v_frametime * 96.0f;	// move unit per seconds back
+	v_lastDistance+= gPlayerSim.v_frametime * 96.0f;	// move unit per seconds back
 
 	if ( v_resetCamera )
 		v_lastDistance = 64.0f;
@@ -1007,11 +1003,11 @@ void V_GetChaseOrigin( float * angles, float * origin, float distance, float * r
 	}
 
 	// and smooth view
-	V_SmoothInterpolateAngles( v_lastAngles, newAngle, angle, 120.0f );
+	V_SmoothInterpolateAngles( gPlayerSim.v_lastAngles, newAngle, angle, 120.0f );
 			
 	V_GetChaseOrigin( angle, newOrigin, distance, origin );
 
-	VectorCopy(angle, v_lastAngles);
+	VectorCopy(angle, gPlayerSim.v_lastAngles);
 }*/
 
 void V_GetSingleTargetCam(cl_entity_t * ent1, float * angle, float * origin)
@@ -1034,7 +1030,7 @@ void V_GetSingleTargetCam(cl_entity_t * ent1, float * angle, float * origin)
 		distance*=1.5f;	
 
 	// let v_lastDistance float smoothly away
-	v_lastDistance+= v_frametime * 32.0f;	// move unit per seconds back
+	v_lastDistance+= gPlayerSim.v_frametime * 32.0f;	// move unit per seconds back
 
 	if ( distance > v_lastDistance )
 		distance = v_lastDistance;
@@ -1073,7 +1069,7 @@ void V_GetSingleTargetCam(cl_entity_t * ent1, float * angle, float * origin)
 	else
 		newAngle[1]-=22.5f;
 
-	V_SmoothInterpolateAngles( v_lastAngles, newAngle, angle, 120.0f );
+	V_SmoothInterpolateAngles( gPlayerSim.v_lastAngles, newAngle, angle, 120.0f );
 
 	// HACK, if player is dead don't clip against his dead body, can't check this
 	V_GetChaseOrigin( angle, newOrigin, distance, origin );
@@ -1122,7 +1118,7 @@ void V_GetDoubleTargetsCam(cl_entity_t	 * ent1, cl_entity_t * ent2,float * angle
 		distance*=2.0f;	
 	
 	// let v_lastDistance float smoothly away
-	v_lastDistance+= v_frametime * 32.0f;	// move unit per seconds back
+	v_lastDistance+= gPlayerSim.v_frametime * 32.0f;	// move unit per seconds back
 
 	if ( distance > v_lastDistance )
 		distance = v_lastDistance;
@@ -1148,12 +1144,12 @@ void V_GetDoubleTargetsCam(cl_entity_t	 * ent1, cl_entity_t * ent2,float * angle
 	else
 		newAngle[1]-=22.5f;
 
-	float d = MaxAngleBetweenAngles( v_lastAngles, newAngle );
+	float d = MaxAngleBetweenAngles( gPlayerSim.v_lastAngles, newAngle );
 
 	if ( ( d < v_cameraFocusAngle) && ( v_cameraMode == CAM_MODE_RELAX ) )
 	{
 		// difference is to small and we are in relax camera mode, keep viewangles
-		VectorCopy(v_lastAngles, newAngle );
+		VectorCopy(gPlayerSim.v_lastAngles, newAngle );
 	}
 	else if ( (d < v_cameraRelaxAngle) && (v_cameraMode == CAM_MODE_FOCUS) )
 	{
@@ -1173,7 +1169,7 @@ void V_GetDoubleTargetsCam(cl_entity_t	 * ent1, cl_entity_t * ent2,float * angle
 	}
 	else
 	{
-		V_SmoothInterpolateAngles( v_lastAngles, newAngle, angle, 180.0f );
+		V_SmoothInterpolateAngles( gPlayerSim.v_lastAngles, newAngle, angle, 180.0f );
 	}
 
 	V_GetChaseOrigin( newAngle, newOrigin, distance, origin );
@@ -1231,7 +1227,7 @@ void V_GetDirectedChasePosition(cl_entity_t	 * ent1, cl_entity_t * ent2,float * 
 			distance*=2.0f;	
 	
 		// let v_lastDistance float smoothly away
-		v_lastDistance+= v_frametime * 32.0f;	// move unit per seconds back
+		v_lastDistance+= gPlayerSim.v_frametime * 32.0f;	// move unit per seconds back
 
 		if ( distance > v_lastDistance )
 			distance = v_lastDistance;
@@ -1246,7 +1242,7 @@ void V_GetDirectedChasePosition(cl_entity_t	 * ent1, cl_entity_t * ent2,float * 
 		V_GetChaseOrigin( angle, newOrigin, distance, origin );
 	}
 
-	VectorCopy(angle, v_lastAngles);
+	VectorCopy(angle, gPlayerSim.v_lastAngles);
 }
 
 void V_GetChasePos(int target, float * cl_angles, float * origin, float * angles)
@@ -1486,12 +1482,12 @@ void V_CalcSpectatorRefdef ( struct ref_params_s * pparams )
 	pparams->onlyClientDraw = false;
 
 	// refresh position
-	VectorCopy ( pparams->simorg, v_sim_org );
+	VectorCopy ( pparams->simorg, gPlayerSim.v_sim_org );
 
 	// get old values
-	VectorCopy ( pparams->cl_viewangles, v_cl_angles );
-	VectorCopy ( pparams->viewangles, v_angles );
-	VectorCopy ( pparams->vieworg, v_origin );
+	VectorCopy ( pparams->cl_viewangles, gPlayerSim.v_cl_angles );
+	VectorCopy ( pparams->viewangles, gPlayerSim.v_angles );
+	VectorCopy ( pparams->vieworg, gPlayerSim.v_origin );
 
 	if (  ( g_iUser1 == OBS_IN_EYE || gHUD.m_Spectator.m_pip->value == INSET_IN_EYE ) && ent )
 	{
@@ -1563,7 +1559,7 @@ void V_CalcSpectatorRefdef ( struct ref_params_s * pparams )
 		}
 	}
 
-	v_frametime = pparams->frametime;
+	gPlayerSim.v_frametime = pparams->frametime;
 
 	if ( pparams->nextView == 0 )
 	{
@@ -1571,28 +1567,28 @@ void V_CalcSpectatorRefdef ( struct ref_params_s * pparams )
 
 		switch ( g_iUser1 )
 		{
-			case OBS_CHASE_LOCKED:	V_GetChasePos( g_iUser2, NULL, v_origin, v_angles );
+			case OBS_CHASE_LOCKED:	V_GetChasePos( g_iUser2, NULL, gPlayerSim.v_origin, gPlayerSim.v_angles );
 									break;
 
-			case OBS_CHASE_FREE:	V_GetChasePos( g_iUser2, v_cl_angles, v_origin, v_angles );
+			case OBS_CHASE_FREE:	V_GetChasePos( g_iUser2, gPlayerSim.v_cl_angles, gPlayerSim.v_origin, gPlayerSim.v_angles );
 									break;
 
-			case OBS_ROAMING	:	VectorCopy (v_cl_angles, v_angles);
-									VectorCopy (v_sim_org, v_origin);
+			case OBS_ROAMING	:	VectorCopy (gPlayerSim.v_cl_angles, gPlayerSim.v_angles);
+									VectorCopy (gPlayerSim.v_sim_org, gPlayerSim.v_origin);
 									
 									// override values if director is active
-									gHUD.m_Spectator.GetDirectorCamera(v_origin, v_angles);
+									gHUD.m_Spectator.GetDirectorCamera(gPlayerSim.v_origin, gPlayerSim.v_angles);
 									break;
 
 			case OBS_IN_EYE		:   V_CalcNormalRefdef ( pparams );
 									break;
 				
 			case OBS_MAP_FREE  :	pparams->onlyClientDraw = true;
-									V_GetMapFreePosition( v_cl_angles, v_origin, v_angles );
+									V_GetMapFreePosition( gPlayerSim.v_cl_angles, gPlayerSim.v_origin, gPlayerSim.v_angles );
 									break;
 
 			case OBS_MAP_CHASE  :	pparams->onlyClientDraw = true;
-									V_GetMapChasePosition( g_iUser2, v_cl_angles, v_origin, v_angles );
+									V_GetMapChasePosition( g_iUser2, gPlayerSim.v_cl_angles, gPlayerSim.v_origin, gPlayerSim.v_angles );
 									break;
 		}
 
@@ -1616,22 +1612,22 @@ void V_CalcSpectatorRefdef ( struct ref_params_s * pparams )
 		// override some settings in certain modes
 		switch ( (int)gHUD.m_Spectator.m_pip->value )
 		{
-			case INSET_CHASE_FREE : V_GetChasePos( g_iUser2, v_cl_angles, v_origin, v_angles );
+			case INSET_CHASE_FREE : V_GetChasePos( g_iUser2, gPlayerSim.v_cl_angles, gPlayerSim.v_origin, gPlayerSim.v_angles );
 									break;	
 
 			case INSET_IN_EYE	 :	V_CalcNormalRefdef ( pparams );
 									break;
 
 			case INSET_MAP_FREE  :	pparams->onlyClientDraw = true;
-									V_GetMapFreePosition( v_cl_angles, v_origin, v_angles );
+									V_GetMapFreePosition( gPlayerSim.v_cl_angles, gPlayerSim.v_origin, gPlayerSim.v_angles );
 									break;
 
 			case INSET_MAP_CHASE  :	pparams->onlyClientDraw = true;
 
 									if ( g_iUser1 == OBS_ROAMING )
-										V_GetMapChasePosition( 0, v_cl_angles, v_origin, v_angles );
+										V_GetMapChasePosition( 0, gPlayerSim.v_cl_angles, gPlayerSim.v_origin, gPlayerSim.v_angles );
 									else
-										V_GetMapChasePosition( g_iUser2, v_cl_angles, v_origin, v_angles );
+										V_GetMapChasePosition( g_iUser2, gPlayerSim.v_cl_angles, gPlayerSim.v_origin, gPlayerSim.v_angles );
 
 									break;
 		}
@@ -1640,9 +1636,9 @@ void V_CalcSpectatorRefdef ( struct ref_params_s * pparams )
 	}
 
 	// write back new values into pparams
-	VectorCopy ( v_cl_angles, pparams->cl_viewangles );
-	VectorCopy ( v_angles, pparams->viewangles )
-	VectorCopy ( v_origin, pparams->vieworg );
+	VectorCopy ( gPlayerSim.v_cl_angles, pparams->cl_viewangles );
+	VectorCopy ( gPlayerSim.v_angles, pparams->viewangles )
+	VectorCopy ( gPlayerSim.v_origin, pparams->vieworg );
 
 }
 
@@ -1696,10 +1692,10 @@ void V_DropPunchAngle ( float frametime, float *ev_punchangle )
 {
 	float	len;
 	
-	len = VectorNormalize ( ev_punchangle );
+	len = VectorNormalize ( gPlayerSim.ev_punchangle );
 	len -= (10.0 + len * 0.5) * frametime;
 	len = V_max( len, 0.0f );
-	VectorScale ( ev_punchangle, len, ev_punchangle );
+	VectorScale ( gPlayerSim.ev_punchangle, len, gPlayerSim.ev_punchangle );
 }
 
 /*
@@ -1711,7 +1707,7 @@ Client side punch effect
 */
 void V_PunchAxis( int axis, float punch )
 {
-	ev_punchangle[ axis ] = punch;
+	gPlayerSim.ev_punchangle[ axis ] = punch;
 }
 
 /*
@@ -1794,7 +1790,7 @@ void V_Move( int mx, int my )
 	dX = fx * in_fov / 2.0 ;
 	dY = fy * fov / 2.0;
 
-	newangles = v_angles;
+	newangles = gPlayerSim.v_angles;
 
 	newangles[ YAW ] -= dX;
 	newangles[ PITCH ] += dY;
@@ -1802,15 +1798,15 @@ void V_Move( int mx, int my )
 	// Now rotate v_forward around that point
 	AngleVectors ( newangles, forward, right, up );
 
-	farpoint = v_origin + 8192 * forward;
+	farpoint = gPlayerSim.v_origin + 8192 * forward;
 
 	// Trace
-	tr = *(gEngfuncs.PM_TraceLine( (float *)&v_origin, (float *)&farpoint, PM_TRACELINE_PHYSENTSONLY, 2 /*point sized hull*/, -1 ));
+	tr = *(gEngfuncs.PM_TraceLine( (float *)&gPlayerSim.v_origin, (float *)&farpoint, PM_TRACELINE_PHYSENTSONLY, 2 /*point sized hull*/, -1 ));
 
 	if ( tr.fraction != 1.0 && tr.ent != 0 )
 	{
 		hitent = PM_GetPhysEntInfo( tr.ent );
-		PM_ParticleLine( (float *)&v_origin, (float *)&tr.endpos, 5, 1.0, 0.0 );
+		PM_ParticleLine( (float *)&gPlayerSim.v_origin, (float *)&tr.endpos, 5, 1.0, 0.0 );
 	}
 	else
 	{

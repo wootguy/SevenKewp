@@ -123,20 +123,14 @@ Vector WorldToScreen(const Vector& P, const Vector& viewerOrigin, const Vector& 
 	return { screenX, screenY, z };
 }
 
-extern Vector v_origin;
-extern Vector v_angles;
-extern vec3_t cam_ofs;
-extern int cam_thirdperson;
-extern bool b_viewing_cam;
-
 Vector WorldToScreen(const Vector& P) {
-	Vector angles = v_angles;
+	Vector angles = gPlayerSim.v_angles;
 
-	if (cam_thirdperson && !b_viewing_cam) {
-		angles.x = cam_ofs.x;
-		angles.y = cam_ofs.y;
+	if (gPlayerSim.cam_thirdperson && !gPlayerSim.b_viewing_cam) {
+		angles.x = gPlayerSim.cam_ofs.x;
+		angles.y = gPlayerSim.cam_ofs.y;
 		angles.z = 0; // tilt isn't applied in thirdperson
 	}
 
-	return WorldToScreen(P, v_origin, angles, gHUD.m_iFOV);
+	return WorldToScreen(P, gPlayerSim.v_origin, angles, gHUD.m_iFOV);
 }

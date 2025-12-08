@@ -39,11 +39,6 @@ extern void V_ResetChaseCam();
 extern void V_GetChasePos(int target, float * cl_angles, float * origin, float * angles);
 extern float * GetClientColor( int clientIndex );
 
-extern vec3_t v_origin;		// last view origin
-extern vec3_t v_angles;		// last view angle
-extern vec3_t v_cl_angles;	// last client/mouse angle
-extern vec3_t v_sim_org;	// last sim origin
-
 #if 0 
 const char *GetSpectatorLabel ( int iMode )
 {
@@ -100,10 +95,10 @@ void SpectatorSpray(void)
 	if ( !gEngfuncs.IsSpectateOnly() )
 		return;
 
-	AngleVectors(v_angles,forward,NULL,NULL);
+	AngleVectors(gPlayerSim.v_angles,forward,NULL,NULL);
 	VectorScale(forward, 128, forward);
-	VectorAdd(forward, v_origin, forward);
-	pmtrace_t * trace = gEngfuncs.PM_TraceLine( v_origin, forward, PM_TRACELINE_PHYSENTSONLY, 2, -1 );
+	VectorAdd(forward, gPlayerSim.v_origin, forward);
+	pmtrace_t * trace = gEngfuncs.PM_TraceLine( gPlayerSim.v_origin, forward, PM_TRACELINE_PHYSENTSONLY, 2, -1 );
 	if ( trace->fraction != 1.0 )
 	{
 		sprintf(string, "drc_spray %.2f %.2f %.2f %i", 
@@ -627,7 +622,7 @@ int CHudSpectator::Draw(float flTime)
 	if ( (m_moveDelta != 0.0f) && (g_iUser1 != OBS_ROAMING) )
 	{
 		vec3_t	right;
-		AngleVectors(v_angles, NULL, right, NULL);
+		AngleVectors(gPlayerSim.v_angles, NULL, right, NULL);
 		VectorNormalize(right);
 		VectorScale(right, m_moveDelta, right );
 
@@ -788,7 +783,7 @@ void CHudSpectator::DirectorMessage( int iSize, void *pbuf )
 							f1 =  READ_FLOAT();
 							
 							// gEngfuncs.Con_Printf("DRC_CMD_FX_SOUND: %s %.2f\n", string, value );
-							gEngfuncs.pEventAPI->EV_PlaySound(0, v_origin, CHAN_BODY, string, f1, ATTN_NORM, 0, PITCH_NORM );
+							gEngfuncs.pEventAPI->EV_PlaySound(0, gPlayerSim.v_origin, CHAN_BODY, string, f1, ATTN_NORM, 0, PITCH_NORM );
 							
 							break;
 
@@ -1185,7 +1180,7 @@ void CHudSpectator::SetModes(int iNewMainMode, int iNewInsetMode)
 									g_iUser1 = OBS_ROAMING;
 									if ( g_iUser2 )
 									{
-										V_GetChasePos( g_iUser2, v_cl_angles, vJumpOrigin, vJumpAngles );
+										V_GetChasePos( g_iUser2, gPlayerSim.v_cl_angles, vJumpOrigin, vJumpAngles );
 										gEngfuncs.SetViewAngles( vJumpAngles );
 										iJumpSpectator = 1;
 									}
@@ -1450,7 +1445,7 @@ void CHudSpectator::DrawOverviewLayer()
 
 	xs = m_OverviewData.origin[0];
 	ys = m_OverviewData.origin[1];
-	z  = ( 90.0f - v_angles[0] ) / 90.0f;		
+	z  = ( 90.0f - gPlayerSim.v_angles[0] ) / 90.0f;		
 	z *= m_OverviewData.layersHeights[0]; // gOverviewData.z_min - 32;	
 
 	// i = r_overviewTexture + ( layer*OVERVIEW_X_TILES*OVERVIEW_Y_TILES );
@@ -1558,7 +1553,7 @@ void CHudSpectator::DrawOverviewEntities()
 	cl_entity_t *	ent;
 	float rmatrix[3][4];	// transformation matrix
 	
-	float			zScale = (90.0f - v_angles[0] ) / 90.0f;
+	float			zScale = (90.0f - gPlayerSim.v_angles[0] ) / 90.0f;
 	
 
 	z = m_OverviewData.layersHeights[0] * zScale;
@@ -1696,12 +1691,12 @@ void CHudSpectator::DrawOverviewEntities()
 	}
 	else if ( m_pip->value == INSET_CHASE_FREE  || g_iUser1 == OBS_CHASE_FREE )
 	{
-		V_GetChasePos( g_iUser2, v_cl_angles, origin, angles );
+		V_GetChasePos( g_iUser2, gPlayerSim.v_cl_angles, origin, angles );
 	}
 	else if ( g_iUser1 == OBS_ROAMING )
 	{
-		VectorCopy( v_sim_org, origin );
-		VectorCopy( v_cl_angles, angles );
+		VectorCopy( gPlayerSim.v_sim_org, origin );
+		VectorCopy( gPlayerSim.v_cl_angles, angles );
 	}
 	else
 		V_GetChasePos( g_iUser2, NULL, origin, angles );

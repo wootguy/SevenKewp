@@ -39,12 +39,6 @@ cvar_t	*cam_idealyaw;
 cvar_t	*cam_idealdist;
 cvar_t	*cam_contain;
 
-// pitch, yaw, dist
-vec3_t cam_ofs;
-
-
-// In third person
-int cam_thirdperson;
 int iMouseInUse=0;
 
 float g_camPressedTime;
@@ -68,7 +62,7 @@ void SDL_GetCursorPos( POINT *p )
 
 void CL_DLLEXPORT CAM_Think( void )
 {
-	if( !cam_thirdperson || !gHUD.m_is_map_loaded)
+	if( !gPlayerSim.cam_thirdperson || !gHUD.m_is_map_loaded)
 		return;
 
 	cl_entity_t* player = GetLocalPlayer();
@@ -180,9 +174,9 @@ void CL_DLLEXPORT CAM_Think( void )
 		idealDist *= trace->fraction;
 	}
 
-	cam_ofs[0] = viewangles.x;
-	cam_ofs[1] = viewangles.y;
-	cam_ofs[2] = idealDist;
+	gPlayerSim.cam_ofs[0] = viewangles.x;
+	gPlayerSim.cam_ofs[1] = viewangles.y;
+	gPlayerSim.cam_ofs[2] = idealDist;
 }
 
 void CAM_MouseWheeled(bool mouseWheelUpNotDown) {
@@ -203,7 +197,7 @@ void CAM_MouseWheeled(bool mouseWheelUpNotDown) {
 void CAM_CamButtonPress(void) {
 	g_camPressedTime = gEngfuncs.GetClientTime();
 
-	if (!cam_thirdperson) {
+	if (!gPlayerSim.cam_thirdperson) {
 		CAM_ToThirdPerson();
 		g_camPressedWhileInFirst = true;
 	}
@@ -234,22 +228,22 @@ void CAM_ToThirdPerson(void) {
 		return;
 	}
 
-	if (!cam_thirdperson) {
-		cam_thirdperson = 1;
+	if (!gPlayerSim.cam_thirdperson) {
+		gPlayerSim.cam_thirdperson = 1;
 
 		gEngfuncs.GetViewAngles((float*)viewangles);
 
-		cam_ofs[YAW] = viewangles[YAW];
-		cam_ofs[PITCH] = viewangles[PITCH];
-		cam_ofs[2] = CAM_MIN_DIST;
+		gPlayerSim.cam_ofs[YAW] = viewangles[YAW];
+		gPlayerSim.cam_ofs[PITCH] = viewangles[PITCH];
+		gPlayerSim.cam_ofs[2] = CAM_MIN_DIST;
 	}
 	else {
-		cam_thirdperson = 0;
+		gPlayerSim.cam_thirdperson = 0;
 	}
 }
 
 void CAM_ToFirstPerson(void) { 
-	cam_thirdperson = 0;
+	gPlayerSim.cam_thirdperson = 0;
 	g_camAdjustState = 0;
 	g_camPressAngles = Vector(0, 0, 0);
 }
@@ -270,11 +264,11 @@ void CAM_Init( void )
 int CL_DLLEXPORT CL_IsThirdPerson( void ) {
 //	RecClCL_IsThirdPerson();
 
-	return (cam_thirdperson ? 1 : 0) || (g_iUser1 && (g_iUser2 == GetLocalPlayer()->index) );
+	return (gPlayerSim.cam_thirdperson ? 1 : 0) || (g_iUser1 && (g_iUser2 == GetLocalPlayer()->index) );
 }
 
 void CL_DLLEXPORT CL_CameraOffset( float *ofs ) {
 //	RecClCL_GetCameraOffsets(ofs);
 
-	VectorCopy( cam_ofs, ofs );
+	VectorCopy( gPlayerSim.cam_ofs, ofs );
 }

@@ -45,7 +45,6 @@ int LoadCustomMaterials(const char* fpath);
 
 extern int g_last_attack_mode;
 extern float g_last_attack_time;
-extern vec3_t v_punchangle;
 extern bool is_software_renderer;
 
 // for aborting an action while holding an exclusive weapon
@@ -1773,7 +1772,7 @@ void CHudAmmo::DrawDynamicCrosshair() {
 	}
 	
 
-	float punch = V_max(fabs(v_punchangle[0]), fabs(v_punchangle[1]));
+	float punch = V_max(fabs(gPlayerSim.v_punchangle[0]), fabs(gPlayerSim.v_punchangle[1]));
 	if (punch > 0) {
 		punch = powf(punch, 0.5f);
 		accuracyX += punch;

@@ -1882,21 +1882,16 @@ void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, f
 	gEngfuncs.pEventAPI->EV_PlaySound(entidx, origin, chan, soundPath, vol, attn, 0, pitch);
 }
 
-extern vec3_t v_angles;
-extern vec3_t v_sim_org;
-extern vec3_t v_sim_vel;
-extern vec3_t ev_punchangle;
-
 void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 	cl_entity_t* player = GetLocalPlayer();
 	int entidx = player->index;
-	Vector angles = v_angles;
+	Vector angles = gPlayerSim.v_angles;
 	Vector forward, right, up;
  	AngleVectors(angles, forward, right, up);
 	
 	Vector view_ofs;
 	gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(view_ofs);
-	Vector origin = v_sim_org;
+	Vector origin = gPlayerSim.v_sim_org;
 
 	Vector ShellVelocity;
 	Vector ShellOrigin;
@@ -1912,7 +1907,7 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 		right = right * -1;
 	}
 
-	EV_GetDefaultShellInfo(&args, origin, v_sim_vel, ShellVelocity, ShellOrigin, forward, right, up,
+	EV_GetDefaultShellInfo(&args, origin, gPlayerSim.v_sim_vel, ShellVelocity, ShellOrigin, forward, right, up,
 		forwardScale, upScale, rightScale);
 
 	EV_EjectBrass(ShellOrigin, ShellVelocity, angles[YAW], evt.ejectShell.model, TE_BOUNCE_SHELL);
@@ -1945,9 +1940,9 @@ void WC_EV_PunchAngle(WepEvt& evt, int seed) {
 	}
 	else {
 		if (evt.punch.flags & FL_WC_PUNCH_ADD) {
-			ev_punchangle[0] += punchAngleX;
-			ev_punchangle[1] += punchAngleY;
-			ev_punchangle[2] += punchAngleZ;
+			gPlayerSim.ev_punchangle[0] += punchAngleX;
+			gPlayerSim.ev_punchangle[1] += punchAngleY;
+			gPlayerSim.ev_punchangle[2] += punchAngleZ;
 		}
 		else if (evt.punch.flags & FL_WC_PUNCH_SET) {
 			V_PunchAxis(0, punchAngleX);
@@ -1968,7 +1963,7 @@ void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx) {
 
 void WC_EV_Dlight(WepEvt& evt) {
 	dlight_t* dl = gEngfuncs.pEfxAPI->CL_AllocDlight(0);
-	dl->origin = v_sim_org;
+	dl->origin = gPlayerSim.v_sim_org;
 	dl->radius = evt.dlight.radius * 10;
 	dl->color.r = evt.dlight.r;
 	dl->color.g = evt.dlight.g;
@@ -1977,8 +1972,6 @@ void WC_EV_Dlight(WepEvt& evt) {
 	dl->die = gEngfuncs.GetClientTime() + evt.dlight.life * 0.1f;
 }
 
-extern vec3_t ev_punchangle;
-
 void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunshotDecal, bool textureSound, int iShot, int iDamage)
 {
 	pmtrace_t tr;
@@ -1986,13 +1979,13 @@ void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunsh
 	cl_entity_t* player = GetLocalPlayer();
 	int idx = player->index;
 
-	Vector origin = v_sim_org;
+	Vector origin = gPlayerSim.v_sim_org;
 	Vector view_ofs;
 	gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(view_ofs);
 
 	Vector vecSrc = origin + view_ofs;
 	Vector forward, right, up;
-	Vector angles = v_angles + ev_punchangle;
+	Vector angles = gPlayerSim.v_angles + gPlayerSim.ev_punchangle;
 	AngleVectors(angles, forward, right, up);
 
 	Vector vecDir = forward + spreadX * right + spreadY * up;

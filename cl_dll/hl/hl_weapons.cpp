@@ -51,6 +51,7 @@
 #include "../ModPlayerState.h"
 
 #include "../cl_dll/hud_iface.h"
+#include "../cl_dll/cl_dll.h"
 #include "eng_wrappers.h"
 #define PRINTF(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
 
@@ -1362,7 +1363,7 @@ void CL_DLLEXPORT HUD_PostRunCmd( struct local_state_s *from, struct local_state
 	if (g_irunninggausspred == 1)
 	{
 		Vector forward;
-		gEngfuncs.pfnAngleVectors( v_angles, forward, NULL, NULL );
+		gEngfuncs.pfnAngleVectors( gPlayerSim.v_angles, forward, NULL, NULL );
 		to->client.velocity = to->client.velocity - forward * g_flApplyVel; 
 		g_irunninggausspred = false;
 	}

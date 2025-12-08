@@ -74,8 +74,6 @@ const char *g_stage3[2] =
 };
 const char *g_stage4 = "  Composite Score:  %i";
 
-extern vec3_t v_origin;
-
 static int g_isPowerPlay = 0;
 static int g_currentstage = 0;
 static int g_renderedBenchmarkDot = 0;
@@ -1009,7 +1007,7 @@ void Bench_AddObjects( void )
 
 	if ( Bench_InStage( SECOND_STAGE ) )
 	{
-		HUD_CreateBenchObjects( v_origin );	
+		HUD_CreateBenchObjects( gPlayerSim.v_origin );	
 	}
 }
 
@@ -1032,7 +1030,7 @@ void Bench_SetViewAngles( int recalc_wander, float *viewangles, float frametime,
 
 	if ( Bench_InStage( SECOND_STAGE ) || Bench_InStage( THIRD_STAGE ) )
 	{
-		VectorSubtract( g_aimorg, v_origin, lookdir );
+		VectorSubtract( g_aimorg, gPlayerSim.v_origin, lookdir );
 		VectorNormalize( lookdir );
 		VectorAngles( (float *)&lookdir, viewangles );
 		

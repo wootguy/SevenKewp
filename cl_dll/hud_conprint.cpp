@@ -28,8 +28,6 @@ int g_hudConTextIdx = 0;
 int em_width;
 int em_height;
 
-extern vec3_t v_origin;
-
 HudConText& AllocHudConText(int id, bool userRequest) {
 	int idx = id;
 
@@ -134,7 +132,7 @@ int CHudConPrint::Draw(float flTime)
 			if (!(params.flags & FL_HUDCON_XRAY)) {
 				pmtrace_t tr;
 				gEngfuncs.pEventAPI->EV_SetTraceHull(2);
-				gEngfuncs.pEventAPI->EV_PlayerTrace(v_origin, worldPos, PM_STUDIO_IGNORE | PM_GLASS_IGNORE, -1, &tr);
+				gEngfuncs.pEventAPI->EV_PlayerTrace(gPlayerSim.v_origin, worldPos, PM_STUDIO_IGNORE | PM_GLASS_IGNORE, -1, &tr);
 
 				if (tr.fraction < 1.0f) {
 					continue;

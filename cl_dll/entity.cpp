@@ -20,8 +20,6 @@ extern IParticleMan *g_pParticleMan;
 
 void Game_AddObjects( void );
 
-extern vec3_t v_origin;
-
 int g_iAlive = 1;
 
 /*
@@ -287,9 +285,9 @@ void Beams( void )
 
 	lasttime = curtime;
 
-	end [ 0 ] = v_origin.x + 100;
-	end [ 1 ] = v_origin.y + 100;
-	end [ 2 ] = v_origin.z;
+	end [ 0 ] = gPlayerSim.v_origin.x + 100;
+	end [ 1 ] = gPlayerSim.v_origin.y + 100;
+	end [ 2 ] = gPlayerSim.v_origin.z;
 
 	BEAM *p1;
 	p1 = gEngfuncs.pEfxAPI->R_BeamEntPoint( -1, end, index,
