@@ -6680,13 +6680,15 @@ void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarNam
 
 void CBasePlayer::QueryClientTypeFinished() {
 	if (IsSevenKewpClient()) {
-		// send prediction data
+		// send prediction file replacements
 		MESSAGE_BEGIN(MSG_ONE, gmsgPredFiles, NULL, pev);
 		WRITE_BYTE(soundvariety.value);
-		//WRITE_BYTE(mp_flashlight_size.value);
+		WRITE_BYTE(mp_flashlight_size.value);
 		WRITE_BYTE(g_predMsgLen);
 		WRITE_BYTES(g_predMsgData, g_predMsgLen);
 		MESSAGE_END();
+
+		UTIL_SendPredictionCvars(this);
 
 		// send replacement file paths (client HUD won't initialize without this)
 		CWorld* world = (CWorld*)CBaseEntity::Instance(ENT(0));

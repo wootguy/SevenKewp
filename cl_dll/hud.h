@@ -505,6 +505,8 @@ public:
 	int MsgFunc_FlashBat(const char *pszName,  int iSize, void *pbuf );
 	virtual const char* HudName() { return "CHudFlashlight"; }
 	
+	int	  m_fOn;
+
 private:
 	HSPRITE m_hSprite1;
 	HSPRITE m_hSprite2;
@@ -514,7 +516,6 @@ private:
 	wrect_t *m_prcBeam;
 	float m_flBat;	
 	int	  m_iBat;	
-	int	  m_fOn;
 	float m_fFade;
 	int	  m_iWidth;		// width of the battery innards
 };

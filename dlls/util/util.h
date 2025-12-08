@@ -944,3 +944,9 @@ EXPORT bool UTIL_TestPVS(Vector viewPos, edict_t* target);
 
 // returns true if entity is audible from a given position
 EXPORT bool UTIL_TestPAS(Vector viewPos, edict_t* target);
+
+// send cvar values needed for client prediction (NULL target = all players)
+EXPORT void UTIL_SendPredictionCvars(CBasePlayer* target);
+
+// send prediction cvars if any have changed
+EXPORT void UTIL_SyncPredictionCvars();

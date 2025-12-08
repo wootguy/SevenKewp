@@ -88,6 +88,7 @@ cvar_t	mp_hud_color ={"mp_hud_color", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	sv_colorcon ={"sv_colorcon", "1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_flashlight_drain ={"mp_flashlight_drain", "1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_flashlight_charge ={"mp_flashlight_charge", "1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_flashlight_size ={"mp_flashlight_size", "8", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
@@ -465,6 +466,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&sv_colorcon);
 	CVAR_REGISTER (&mp_flashlight_drain);
 	CVAR_REGISTER (&mp_flashlight_charge);
+	CVAR_REGISTER (&mp_flashlight_size);
 
 	CVAR_REGISTER (&mp_chattime);
 

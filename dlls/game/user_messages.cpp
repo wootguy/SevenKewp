@@ -61,6 +61,7 @@ int gmsgToxicCloud = 0;
 int gmsgSpriteAdv = 0;
 int gmsgWaterSplash = 0;
 int gmsgPredFiles = 0;
+int gmsgPredCvars = 0;
 int gmsgMatsPath = 0;
 int gmsgCustomHud = 0;
 int gmsgHudColor = 0;
@@ -176,6 +177,7 @@ void LinkUserMessages(void)
 	gmsgSpriteAdv = REG_USER_MSG("SpriteAdv", -1);
 	gmsgWaterSplash = REG_USER_MSG("WaterSplash", -1);
 	gmsgPredFiles = REG_USER_MSG("PredFiles", -1);
+	gmsgPredCvars = REG_USER_MSG("PredCvars", 2);
 	gmsgMatsPath = REG_USER_MSG("MatsPath", -1);
 	gmsgCustomHud = REG_USER_MSG("CustomHud", -1);
 	gmsgHudColor = REG_USER_MSG("HudColor", 3);

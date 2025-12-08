@@ -1100,6 +1100,8 @@ void StartFrame( void )
 
 	DoEntWaterPhysics();
 
+	UTIL_SyncPredictionCvars();
+
 	g_frameCount++;
 }
 
@@ -1576,6 +1578,13 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			// clients invert their own player model angle for some reason
 			// TODO: fix this in a client mod
 			state->angles.x = ent->v.v_angle.x;
+
+			// client will create a custom flashlight effect if not using the default size. So, prevent
+			// the engine from rendering the default flashlight. This can't be done client-side because
+			// the engine handles this effect before the client calls HUD_ProcessPlayerState.
+			if (mp_flashlight_size.value != 8) {
+				state->effects &= ~EF_DIMLIGHT;
+			}
 		}
 	}
 

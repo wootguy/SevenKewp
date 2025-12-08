@@ -329,6 +329,7 @@ void CL_DLLEXPORT HUD_Frame( double time )
 	}
 
 	PredictBodySplash();
+	FlashlightEffect();
 }
 
 

@@ -167,8 +167,6 @@ int __MsgFunc_PredFiles(const char* pszName, int iSize, void* pbuf) {
 	g_predFileRemap.clear();
 
 	BEGIN_READ(pbuf, iSize);
-
-	g_soundvariety = READ_BYTE();
 	int sz = READ_BYTE();
 
 	static uint8_t dat[256];
@@ -211,8 +209,20 @@ int __MsgFunc_PredFiles(const char* pszName, int iSize, void* pbuf) {
 	return 1;
 }
 
+int __MsgFunc_PredCvars(const char* pszName, int iSize, void* pbuf) {
+	g_predFileRemap.clear();
+
+	BEGIN_READ(pbuf, iSize);
+
+	g_soundvariety = READ_BYTE();
+	g_flashlight_size = READ_BYTE();
+
+	return 1;
+}
+
 void HookPredictionMessages() {
 	HOOK_MESSAGE(PredFiles);
+	HOOK_MESSAGE(PredCvars);
 }
 
 const char* RemapFile(const char* path) {

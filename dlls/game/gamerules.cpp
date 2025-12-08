@@ -211,6 +211,7 @@ void execMapCfg() {
 		"mp_hud_color",
 		"mp_flashlight_drain",
 		"mp_flashlight_charge",
+		"mp_flashlight_size",
 	};
 
 	static StringSet itemNames = {

@@ -2,7 +2,10 @@
 
 extern const char* g_prediction_files[];
 extern const int g_prediction_files_sz;
+
+// prediction related cvars, used client-side
 extern int g_soundvariety;
+extern int g_flashlight_size;
 
 extern uint8_t g_predMsgData[190];
 extern int g_predMsgLen;

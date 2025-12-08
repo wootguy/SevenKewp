@@ -3472,3 +3472,30 @@ bool UTIL_TestPAS(Vector viewPos, edict_t* target) {
 	unsigned char* pas = ENGINE_SET_PAS((float*)&viewPos);
 	return ENGINE_CHECK_VISIBILITY(target, pas);
 }
+
+void UTIL_SendPredictionCvars(CBasePlayer* target) {
+	// prediction related cvars
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+		if (!plr || target && target != plr || !plr->IsSevenKewpClient())
+			continue;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgPredCvars, NULL, plr->pev);
+		WRITE_BYTE(soundvariety.value);
+		WRITE_BYTE(mp_flashlight_size.value);
+		MESSAGE_END();
+	}
+}
+
+void UTIL_SyncPredictionCvars() {
+	static float oldSoundVariety;
+	static float oldFlashlightSize;
+
+	if (oldSoundVariety != soundvariety.value || oldFlashlightSize != mp_flashlight_size.value) {
+		UTIL_SendPredictionCvars(NULL);
+	}
+
+	oldSoundVariety = soundvariety.value;
+	oldFlashlightSize = mp_flashlight_size.value;
+}

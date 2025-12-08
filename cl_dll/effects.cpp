@@ -405,6 +405,53 @@ void PredictBodySplash() {
 	oldPos = origin;
 }
 
+void FlashlightEffect() {
+	if (g_flashlight_size == 8 || !gHUD.m_is_map_loaded)
+		return; // let the engine handle the default size
+
+	static bool wasOn;
+	bool isOn = gHUD.m_Flash.m_fOn;
+
+	if (isOn) {
+		// override the default flashlight effect with a custom dlight
+		cl_entity_t* player = GetLocalPlayer();
+		int idx = player->index;
+		pmtrace_t tr;
+
+		Vector origin = gPlayerSim.v_sim_org;
+		Vector view_ofs;
+		gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(view_ofs);
+
+		Vector vecSrc = origin + view_ofs;
+		Vector forward, right, up;
+		Vector angles = gPlayerSim.v_angles + gPlayerSim.ev_punchangle;
+		AngleVectors(angles, forward, right, up);
+		Vector vecEnd = vecSrc + forward * 4096.0f;
+
+		gEngfuncs.pEventAPI->EV_SetUpPlayerPrediction(false, true);
+		gEngfuncs.pEventAPI->EV_PushPMStates();
+		gEngfuncs.pEventAPI->EV_SetSolidPlayers(idx - 1);
+		gEngfuncs.pEventAPI->EV_SetTraceHull(2);
+		gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_NORMAL, -1, &tr);
+		gEngfuncs.pEventAPI->EV_PopPMStates();
+
+		dlight_t* dl = gEngfuncs.pEfxAPI->CL_AllocDlight(1337);
+		dl->origin = tr.endpos;
+		dl->radius = g_flashlight_size * 10;
+		dl->color.r = 255;
+		dl->color.g = 255;
+		dl->color.b = 255;
+		dl->key = 1337;
+		dl->die = gEngfuncs.GetClientTime() + 0.5;
+	}
+	else if (wasOn) {
+		dlight_t* dl = gEngfuncs.pEfxAPI->CL_AllocDlight(1337);
+		dl->die = 0; // turn off the dlight now
+	}
+
+	wasOn = isOn;
+}
+
 void HookEffectMessages() {
 	HOOK_MESSAGE(ToxicCloud);
 	HOOK_MESSAGE(SpriteAdv);
