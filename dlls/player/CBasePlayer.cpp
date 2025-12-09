@@ -3804,8 +3804,13 @@ void CBasePlayer::Spawn( void )
 	m_flNextAttack	= UTIL_WeaponTimeBase();
 	StartSneaking();
 
-	m_iFlashBattery = clampi(mp_startflashlight.value, 0, 99);
 	m_flFlashLightTime = 1; // force first message
+	m_iFlashBattery = V_min(mp_startflashlight.value, 100) - 1;
+	if (mp_startflashlight.value < 0) {
+		// don't start with flashlight, but still set a default battery level
+		m_iFlashBattery = V_min(-(m_iFlashBattery + 1), 100) - 1;
+	}
+	
 
 // dont let uninitialized value here hurt the player
 	m_flFallVelocity = 0;
@@ -4253,7 +4258,7 @@ void CBasePlayer::GiveNamedItem( const char *pszName )
 		wep->DefaultTouch(this);
 	}
 	else if (ammo) {
-		ammo->AddAmmo(this);
+		ammo->DefaultUse(this, this, USE_TOGGLE, 0);
 	}
 	else if (item) {
 		item->ItemUse(this, this, USE_TOGGLE, 0);
@@ -6007,7 +6012,11 @@ CBasePlayerItem* CBasePlayer::GetNamedPlayerItem(const char* pszItemName) {
 	CBasePlayerItem* pItem;
 	int i;
 
-	pszItemName = CBasePlayerWeapon::GetClassFromInfoName(pszItemName);
+	if (!pszItemName)
+		ALERT(at_console, "");
+		
+	if (pszItemName)
+		pszItemName = CBasePlayerWeapon::GetClassFromInfoName(pszItemName);
 
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
@@ -6050,7 +6059,11 @@ BOOL CBasePlayer :: SwitchWeapon( CBasePlayerItem *pWeapon )
 
 	if (m_pActiveItem)
 	{
-		((CBasePlayerItem*)m_pActiveItem.GetEntity())->Holster();
+		CBasePlayerWeapon* wep = m_pActiveItem->GetWeaponPtr();
+		if (wep) {
+			wep->Holster();
+		}
+		
 	}
 
 	ResetAutoaim();
@@ -7311,11 +7324,16 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 	FixSharedWeaponSlotClipCount(true);
 }
 
-void CBasePlayer::FixSharedWeaponSlotClipCount(bool resetCurWeapon) {
+void CBasePlayer::FixSharedWeaponSlotClipCount(bool resetCurWeapon, int thisIdOnly) {
+	if (!m_fKnownItem)
+		return; // player will reset clips again once weapon list is sent
 
 	for (int i = 0; i < MAX_WEAPONS; i++) {
+		if (thisIdOnly >= 0 && thisIdOnly != i)
+			continue;
+		
 		uint64_t mask = g_weaponSlotMasks[i];
-		if (!mask)
+		if (!mask || count_bits_set(mask) <= 1)
 			continue;
 
 		// this slot has a conflict
@@ -7325,6 +7343,11 @@ void CBasePlayer::FixSharedWeaponSlotClipCount(bool resetCurWeapon) {
 
 		// weapon that we're resolving the conflict with
 		ItemInfo& II = CBasePlayerItem::ItemInfoArray[activeId];
+		if (!II.pszName)
+			continue; // not in this map
+		if (II.iMaxClip <= 0)
+			continue; // ok for this wp clip to be reset to 0 randomly, because it's always 0.
+
 		CBasePlayerItem* item = GetNamedPlayerItem(II.pszName);
 		CBasePlayerWeapon* resolveWep = item ? item->GetWeaponPtr() : NULL;
 
@@ -7333,13 +7356,12 @@ void CBasePlayer::FixSharedWeaponSlotClipCount(bool resetCurWeapon) {
 
 		// send active clip for all IDs that share this slot
 		for (int k = 0; k < MAX_WEAPONS; k++) {
+			if (i == k && thisIdOnly != -1)
+				continue; // caller will send this weapon clip later
+
 			uint64_t bit = (1ULL << k);
 			if (mask & bit) {
-				MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pev);
-				WRITE_BYTE(resolveWep->m_iClientWeaponState);
-				WRITE_BYTE(i);
-				WRITE_BYTE(resolveWep->m_iClip);
-				MESSAGE_END();
+				UTIL_UpdateWeaponState(this, resolveWep->m_iClientWeaponState, k, resolveWep->m_iClip);
 			}
 		}
 	}
@@ -7349,11 +7371,7 @@ void CBasePlayer::FixSharedWeaponSlotClipCount(bool resetCurWeapon) {
 	CBaseEntity* activeItem = m_pActiveItem.GetEntity();
 	CBasePlayerWeapon* wep = activeItem ? activeItem->GetWeaponPtr() : NULL;
 	if (resetCurWeapon && wep) {
-		MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pev);
-		WRITE_BYTE(wep->m_iClientWeaponState);
-		WRITE_BYTE(wep->m_iId);
-		WRITE_BYTE(wep->m_iClip);
-		MESSAGE_END();
+		UTIL_UpdateWeaponState(this, wep->m_iClientWeaponState, wep->m_iId, wep->m_iClip);
 	}
 }
 
@@ -7366,10 +7384,8 @@ int CBasePlayer::GetCurrentIdForConflictedSlot(int wepId) {
 
 	for (int i = 0; i < MAX_WEAPONS; i++) {
 		uint64_t bit = (1ULL << i);
-		if (mask & bit) {
-			if ((m_weaponBits & bit) && i != wepId) {
-				return i;
-			}
+		if ((mask & bit) && (m_weaponBits & bit)) {
+			return i;
 		}
 	}
 

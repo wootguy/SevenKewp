@@ -2055,6 +2055,17 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 						item->m_iId						= II.iId;
 						item->m_iClip					= gun->m_iClip;
 
+						uint64_t conflictMask = g_weaponSlotMasks[item->m_iId];
+						if (conflictMask != (1ULL << II.iId)) {
+							// this weapon shares a slot with others. Update the clip for all of
+							// those weapons so that the HUD doesn't render the wrong clip
+							for (int k = 0; k < MAX_WEAPONS; k++) {
+								if (conflictMask & (1ULL << k)) {
+									info[k].m_iClip = gun->m_iClip;
+								}
+							}
+						}
+
 						item->m_flTimeWeaponIdle		= V_max( gun->m_flTimeWeaponIdle, -0.001f );
 						item->m_flNextPrimaryAttack		= V_max( gun->m_flNextPrimaryAttack, -0.001f );
 						item->m_flNextSecondaryAttack	= V_max( gun->m_flNextSecondaryAttack, -0.001f );

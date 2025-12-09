@@ -320,7 +320,10 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 {
 	BOOL bSend = FALSE;
 	int state = 0;
-	if (pPlayer->m_pActiveItem.GetEntity() == this)
+	bool isCurrentWeapon = pPlayer->m_pActiveItem.GetEntity() == this;
+	bool isLastWeapon = pPlayer->m_pClientActiveItem.GetEntity() == this;
+
+	if (isCurrentWeapon)
 	{
 		if (pPlayer->m_fOnTarget)
 			state = WEAPON_IS_ONTARGET;
@@ -335,8 +338,7 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 	}
 
 	// This is the current or last weapon, so the state will need to be updated
-	if (this == pPlayer->m_pActiveItem.GetEntity() ||
-		this == pPlayer->m_pClientActiveItem.GetEntity())
+	if (isCurrentWeapon || isLastWeapon)
 	{
 		if (pPlayer->m_pActiveItem.GetEntity() != pPlayer->m_pClientActiveItem.GetEntity())
 		{
@@ -345,8 +347,7 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 	}
 
 	// If the ammo, state, or fov has changed, update the weapon
-	if (m_iClip != m_iClientClip ||
-		state != m_iClientWeaponState ||
+	if (m_iClip != m_iClientClip || state != m_iClientWeaponState || 
 		pPlayer->m_iFOV != pPlayer->m_iClientFOV)
 	{
 		bSend = TRUE;
@@ -354,29 +355,12 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 
 	if (bSend && pPlayer->m_clientCheckFinished)
 	{
-		pPlayer->FixSharedWeaponSlotClipCount(false);
+		// weapons sharing this slot must also have their clips updated because we don't know
+		// which weapon ID the vanilla client will use for drawing the hud
+		pPlayer->FixSharedWeaponSlotClipCount(false, m_iId);
 
-		if (m_iClip > 127 && pPlayer->IsSevenKewpClient()) {
-			uint16_t ammoVal = V_max(0, m_iClip);
-
-			// show the client that ammo is being spent, if exceeding max renderable ammo
-			if (m_iClip > 999) {
-				ammoVal = 990 + (m_iClip % 10);
-			}
-
-			MESSAGE_BEGIN(MSG_ONE, gmsgCurWeaponX, NULL, pPlayer->pev);
-			WRITE_BYTE(state);
-			WRITE_BYTE(m_iId);
-			WRITE_SHORT(ammoVal);
-			MESSAGE_END();
-		}
-		else {
-			MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pPlayer->pev);
-			WRITE_BYTE(state);
-			WRITE_BYTE(m_iId);
-			WRITE_BYTE(m_iClip);
-			MESSAGE_END();
-		}
+		if (!isCurrentWeapon)
+			UTIL_UpdateWeaponState(pPlayer, state, m_iId, m_iClip);
 
 		m_iClientClip = m_iClip;
 		m_iClientWeaponState = state;
@@ -394,6 +378,10 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 			pPlayer->DisplayName(), STRING(next->pev->classname));
 		m_pNext = NULL;
 	}
+
+	// must come last so that the correct weapon is displayed
+	if (bSend && isCurrentWeapon)
+		UTIL_UpdateWeaponState(pPlayer, state, m_iId, m_iClip);
 
 	return 1;
 }
@@ -892,10 +880,12 @@ void CBasePlayerWeapon::SolidifyNearbyCorpses(bool solidState) {
 }
 
 const char* CBasePlayerWeapon::GetClassFromInfoName(const char* name) {
-	// strip folder path from weapons that use the weapon hud folder hack
-	size_t dirEnd = std::string(name).rfind("/");
-	if (dirEnd != std::string::npos) {
-		return name + dirEnd + 1;
+	if (name) {
+		// strip folder path from weapons that use the weapon hud folder hack
+		size_t dirEnd = std::string(name).rfind("/");
+		if (dirEnd != std::string::npos) {
+			return name + dirEnd + 1;
+		}
 	}
 
 	return name;

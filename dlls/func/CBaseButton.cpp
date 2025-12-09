@@ -548,7 +548,7 @@ const char* CBaseButton::DisplayHint() {
 			return "Shootable";
 		}
 
-		return "Body touch only";
+		return "Walk into to activate";
 	}
 
 	return "";

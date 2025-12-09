@@ -41,7 +41,7 @@ enum
 
 #define		AGRUNT_MELEE_DIST	100
 
-class CAGrunt : public CTalkSquadMonster
+class EXPORT CAGrunt : public CTalkSquadMonster
 {
 public:
 	void Spawn(void);

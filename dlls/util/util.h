@@ -51,7 +51,7 @@ extern EXPORT globalvars_t				*gpGlobals;
 
 extern StringSet g_weaponNames; // names given by weapons (may have a prefix: "hlcoop/weapon_grapple")
 extern StringSet g_weaponClassnames; // valid weapon classnames
-extern uint64_t g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict
+extern uint64_t g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict. maps an ID to a bitfield representing all IDs that share the weapon slot
 
 // rmaps a half-life weapon to a sevenkewp weapon.
 // When a sevenkewp player picks up one of these hl weapons, they'll get the remapped weapon instead.
@@ -950,3 +950,6 @@ EXPORT void UTIL_SendPredictionCvars(CBasePlayer* target);
 
 // send prediction cvars if any have changed
 EXPORT void UTIL_SyncPredictionCvars();
+
+// tell the client which weapon they're using, how much clip it has, and its state
+EXPORT void UTIL_UpdateWeaponState(CBasePlayer* plr, int state, int wepId, int clip);

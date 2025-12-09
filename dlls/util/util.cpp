@@ -3499,3 +3499,27 @@ void UTIL_SyncPredictionCvars() {
 	oldSoundVariety = soundvariety.value;
 	oldFlashlightSize = mp_flashlight_size.value;
 }
+
+void UTIL_UpdateWeaponState(CBasePlayer* plr, int state, int wepId, int clip) {
+	if (clip > 127 && plr->IsSevenKewpClient()) {
+		uint16_t ammoVal = V_max(0, clip);
+
+		// show the client that ammo is being spent, if exceeding max renderable ammo
+		if (clip > 999) {
+			ammoVal = 990 + (clip % 10);
+		}
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgCurWeaponX, NULL, plr->pev);
+		WRITE_BYTE(state);
+		WRITE_BYTE(wepId);
+		WRITE_SHORT(ammoVal);
+		MESSAGE_END();
+	}
+	else {
+		MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, plr->pev);
+		WRITE_BYTE(state);
+		WRITE_BYTE(wepId);
+		WRITE_BYTE(clip);
+		MESSAGE_END();
+	}
+}
