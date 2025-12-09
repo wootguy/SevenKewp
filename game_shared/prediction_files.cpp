@@ -202,7 +202,7 @@ int __MsgFunc_PredFiles(const char* pszName, int iSize, void* pbuf) {
 			}
 
 			g_predFileRemap.put(g_prediction_files[i], replacement);
-			//PRINTF("%-24s -> %s\n", g_prediction_files[i], replacement);
+			//PRINTD("%-24s -> %s\n", g_prediction_files[i], replacement);
 		}
 	}
 
@@ -210,8 +210,6 @@ int __MsgFunc_PredFiles(const char* pszName, int iSize, void* pbuf) {
 }
 
 int __MsgFunc_PredCvars(const char* pszName, int iSize, void* pbuf) {
-	g_predFileRemap.clear();
-
 	BEGIN_READ(pbuf, iSize);
 
 	g_soundvariety = READ_BYTE();

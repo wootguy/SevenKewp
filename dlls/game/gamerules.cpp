@@ -192,6 +192,7 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"mp_bigmap",
 		"killnpc",
 		"mp_npckill",
+		"mp_startflashlight",
 		"startarmor",
 		"starthealth",
 		"globalmodellist",
@@ -320,6 +321,9 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		string name = trimSpaces(toLowerCase(parts[0]));
 		string value = sanitize_cvar_value(parts.size() > 1 ? trimSpaces(parts[1]) : "");
 
+		if (name.empty())
+			continue;
+
 		if (name == "include_cfg") {
 			std::string safepath = toLowerCase(normalize_path("maps/" + value));
 			if (openedCfgs.hasKey(safepath.c_str())) {
@@ -347,6 +351,19 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 
 		if (name == "nomaptrans") {
 			g_nomaptrans.put(value.c_str());
+			continue;
+		}
+		
+		if (name == "weapon_hud_file") {
+			int lastSlash = value.find_last_of("/");
+			if (lastSlash != -1) {
+				string folder = value.substr(0, lastSlash);
+				string cname = value.substr(lastSlash + 1);
+				ALERT(at_console, "Set default weapon HUD for '%s' to 'sprites/%s/%s.txt'\n",
+					cname.c_str(), folder.c_str(), cname.c_str());
+				UTIL_SetDefaultWeaponSpriteDir(cname.c_str(), folder.c_str());
+			}
+			
 			continue;
 		}
 

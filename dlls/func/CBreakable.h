@@ -2,6 +2,11 @@
 #define FUNC_BREAK_H
 #include "CBaseDelay.h"
 
+#define MAX_BREAKABLE_OBJECT_SPAWN_TYPES 256
+
+// remaps classnames spawned by func_breakable
+EXPORT extern string_t g_breakableSpawnRemap[MAX_BREAKABLE_OBJECT_SPAWN_TYPES];
+
 class CBreakable : public CBaseDelay
 {
 public:

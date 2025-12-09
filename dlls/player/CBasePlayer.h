@@ -620,6 +620,12 @@ public:
 	// tell the client which weapon belongs in a slot which multiple weapons can fill
 	void ResolveWeaponSlotConflict(int wepId);
 
+	// WeaponList msgs reset clip counts to 0. Those messages are used to resolve conflicts
+	// in slots that multiple weapons share. Call this to fix the clip counts and unselectable
+	// weapons in the HUD for the client.
+	// resetCurWeapon = true to tell the client which weapon they're holding now (or send your own curWeapon msg)
+	void FixSharedWeaponSlotClipCount(bool resetCurWeapon);
+
 	// if a weapon slot can be filled by multiple weapons, this returns the weapon ID
 	// that is currently held in that slot. If no weapon is filling the slot
 	// that queryWepId fills, then -1 is returned.

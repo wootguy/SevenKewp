@@ -354,6 +354,8 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 
 	if (bSend && pPlayer->m_clientCheckFinished)
 	{
+		pPlayer->FixSharedWeaponSlotClipCount(false);
+
 		if (m_iClip > 127 && pPlayer->IsSevenKewpClient()) {
 			uint16_t ammoVal = V_max(0, m_iClip);
 
@@ -887,4 +889,14 @@ void CBasePlayerWeapon::SolidifyNearbyCorpses(bool solidState) {
 			UTIL_SetOrigin(&ent->v, ent->v.origin); // reset abs bbox
 		}
 	}
+}
+
+const char* CBasePlayerWeapon::GetClassFromInfoName(const char* name) {
+	// strip folder path from weapons that use the weapon hud folder hack
+	size_t dirEnd = std::string(name).rfind("/");
+	if (dirEnd != std::string::npos) {
+		return name + dirEnd + 1;
+	}
+
+	return name;
 }

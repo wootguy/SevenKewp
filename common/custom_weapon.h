@@ -446,6 +446,8 @@ struct WepEvt {
 		return *this;
 	}
 
+	// play a weapon fidgeting sound (pumping, reloading, etc.)
+	// prefer using this instead of animation events so that other players can hear the sound
 	WepEvt IdleSound(int sound, float volume=1.0f) {
 		evtType = WC_EVT_IDLE_SOUND;
 		idleSound.sound = sound;

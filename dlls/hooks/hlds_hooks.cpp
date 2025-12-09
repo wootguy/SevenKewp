@@ -59,6 +59,7 @@
 #include "monsters.h"
 #include "CWorld.h"
 #include "user_messages.h"
+#include "CBreakable.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -588,6 +589,7 @@ void ServerDeactivate( void )
 	memset(g_indexModels, 0, sizeof(g_indexModels));
 	memset(g_indexSounds, 0, sizeof(g_indexSounds));
 	memset(g_hudMsgHistory, 0, sizeof(g_hudMsgHistory));
+	memset(g_breakableSpawnRemap, 0, sizeof(g_breakableSpawnRemap));
 	memset(CWeaponCustom::m_predDataSent, 0, sizeof(CWeaponCustom::m_predDataSent));
 
 	// in case the next map doesn't configure a sky or light_environment
@@ -1612,18 +1614,29 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			}
 
 			bool invincible = (ent->v.flags & FL_GODMODE) || (ent->v.takedamage == DAMAGE_NO);
-			
-			uint32_t packedStatusInfo =
-				((invincible ? 1U : 0U) << 31) |
-				(((uint32_t)baseent->m_cachedDisplayHint & 0x1FF) << 22)
-				| (((uint32_t)baseent->m_cachedDisplayName & 0x3FF) << 12)
-				| (color & 0xFFF);
+			uint32_t name = baseent->m_cachedDisplayName;
+			uint32_t hint = baseent->m_cachedDisplayHint;
+			uint16_t health = UTIL_CompressUint(ent->v.health);
 
-			state->health = UTIL_CompressUint(ent->v.health);
-			state->iuser3 = packedStatusInfo;
-
-			if (isMon && !baseent->IsAlive() || ent->v.health < 0)
+			if (isMon && !baseent->IsAlive() || ent->v.health < 0) {
 				state->health = 0; // don't show hp needed to gib
+				hint = 0;
+			}
+			if (baseent->IsPushable() && invincible) {
+				// these are usually invincible so don't bother showing that info
+				invincible = false;
+				health = 0;
+			}
+			if (isBreakable && invincible && baseent->pev->health <= 0) {
+				invincible = false; // don't show invincible while breakable is dying
+				health = 0;
+			}
+
+			uint32_t packedStatusInfo = ((invincible ? 1U : 0U) << 31) | ((hint & 0x1FF) << 22)
+				| ((name & 0x3FF) << 12) | (color & 0xFFF);
+
+			state->health = health;
+			state->iuser3 = packedStatusInfo;
 
 			g_visibleEntNames[e] = true;
 		}

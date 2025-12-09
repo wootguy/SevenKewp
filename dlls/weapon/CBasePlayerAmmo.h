@@ -12,6 +12,7 @@ public:
 	void DefaultTouch( CBaseEntity *pOther ); // default weapon touch
 	void DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual BOOL AddAmmo( CBaseEntity *pOther ) { return TRUE; };
+	virtual CBasePlayerAmmo* MyAmmoPtr(void) { return this; };
 	virtual int	ObjectCaps(void);
 
 	CBaseEntity* Respawn( void );

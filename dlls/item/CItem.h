@@ -33,6 +33,7 @@ public:
 	virtual void ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual BOOL MyTouch(CBasePlayer* pPlayer) { return FALSE; };
 	virtual BOOL IsItem() { return TRUE; }
+	virtual CItem* MyItemPointer(void) { return this; }
 	virtual BOOL ShouldRespawn();
 	virtual CBaseEntity* Respawn(void);
 	const char* GetModel();

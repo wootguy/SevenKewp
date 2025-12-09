@@ -56,6 +56,8 @@ const char* CBreakable::pSpawnObjects[] =
 	"item_antidote",	// 39
 };
 
+string_t g_breakableSpawnRemap[MAX_BREAKABLE_OBJECT_SPAWN_TYPES];
+
 void CBreakable::KeyValue(KeyValueData* pkvd)
 {
 	// UNDONE_WC: explicitly ignoring these fields, but they shouldn't be in the map file!
@@ -71,8 +73,15 @@ void CBreakable::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "spawnobject"))
 	{
 		int object = atoi(pkvd->szValue);
-		if (object > 0 && object < (int)ARRAYSIZE(pSpawnObjects))
-			m_iszSpawnObject = MAKE_STRING(pSpawnObjects[object]);
+		if (object > 0 && object < (int)ARRAYSIZE(pSpawnObjects)) {
+			if (g_breakableSpawnRemap[object]) {
+				m_iszSpawnObject = g_breakableSpawnRemap[object];
+			}
+			else {
+				m_iszSpawnObject = MAKE_STRING(pSpawnObjects[object]);
+			}
+		}
+
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "lip")) {

@@ -84,6 +84,9 @@ public:
 		return plr ? plr->GetDamageModifier() : 1.0f;
 	}
 
+	// get the class name from a weapon name like "hloop/weapon_eagle" (a hack used for custom huds)
+	static const char* GetClassFromInfoName(const char* name);
+
 	int m_iPlayEmptySound;
 	int m_fFireOnEmpty;		// True when the gun is empty and the player is still holding down the
 	// attack key(s)

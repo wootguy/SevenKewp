@@ -92,6 +92,7 @@ EXPORT extern cvar_t	sv_colorcon; // colorize the server console
 EXPORT extern cvar_t	mp_flashlight_drain; // how fast the flashlight drains (1.0 = 100%, 0 = never)
 EXPORT extern cvar_t	mp_flashlight_charge; // how fast the flashlight charges (1.0 = 100%, 0 = never
 EXPORT extern cvar_t	mp_flashlight_size; // size of the flashlight beam (1.0 = 100%)
+EXPORT extern cvar_t	mp_startflashlight; // 0-100 = give flashlight with this battery level, -1 = don't spawn with flashlight
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

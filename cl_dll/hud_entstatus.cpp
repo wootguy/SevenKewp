@@ -202,7 +202,6 @@ int CHudEntStatus::Draw(float flTime)
 		x = gHUD.m_iFontHeight;
 		y = ScreenHeight / 2;
 		int centerX = ScreenWidth / 2;
-		int yOffset = 0;
 		bool shouldCenter = gHUD.m_StatusBar.m_HUD_centerid->value;
 
 		if (shouldCenter) {
@@ -223,22 +222,25 @@ int CHudEntStatus::Draw(float flTime)
 		else
 			DrawConsoleString(x, y, name);
 
+		int yOffset = em_height;
+
 		if (info) {
 			if (shouldCenter) {
 				GetConsoleStringSize(info, &w, &h);
 				x = centerX - (w / 2);
 			}
 			
-			DrawConsoleString(x, y + em_height, info);
+			DrawConsoleString(x, y + yOffset, info);
+			yOffset += em_height;
+		}
 
-			if (hint) {
-				if (shouldCenter) {
-					GetConsoleStringSize(hint, &w, &h);
-					x = centerX - (w / 2);
-				}
-				
-				DrawConsoleString(x, y + em_height * 2, hint, RGB(200, 200, 200));
+		if (hint) {
+			if (shouldCenter) {
+				GetConsoleStringSize(hint, &w, &h);
+				x = centerX - (w / 2);
 			}
+
+			DrawConsoleString(x, y + yOffset, hint, RGB(200, 200, 200));
 		}
 	}
 

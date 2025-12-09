@@ -89,6 +89,7 @@ cvar_t	sv_colorcon ={"sv_colorcon", "1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_flashlight_drain ={"mp_flashlight_drain", "1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_flashlight_charge ={"mp_flashlight_charge", "1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_flashlight_size ={"mp_flashlight_size", "8", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_startflashlight = { "mp_startflashlight","100", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
@@ -432,6 +433,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_debugmsg);
 	CVAR_REGISTER (&mp_starthealth);
 	CVAR_REGISTER (&mp_startarmor);
+	CVAR_REGISTER (&mp_startflashlight);
 	CVAR_REGISTER (&mp_bulletsponges);
 	CVAR_REGISTER (&mp_bulletspongemax);
 	CVAR_REGISTER (&mp_maxmonsterrespawns);

@@ -44,6 +44,7 @@
 #include "game.h"
 #include "CWeaponBox.h"
 #include "CBasePlayerWeapon.h"
+#include "CBasePlayerAmmo.h"
 #include "CItem.h"
 #include "CTripmine.h"
 #include "skill.h"
@@ -3803,7 +3804,7 @@ void CBasePlayer::Spawn( void )
 	m_flNextAttack	= UTIL_WeaponTimeBase();
 	StartSneaking();
 
-	m_iFlashBattery = 99;
+	m_iFlashBattery = clampi(mp_startflashlight.value, 0, 99);
 	m_flFlashLightTime = 1; // force first message
 
 // dont let uninitialized value here hurt the player
@@ -3855,7 +3856,7 @@ void CBasePlayer::Spawn( void )
 	m_fWeapon = FALSE;
 	m_pClientActiveItem = NULL;
 	m_iClientBattery = -1;
-	m_hasFlashlight = true;
+	m_hasFlashlight = mp_startflashlight.value >= 0;
 
 	// reset all ammo values to 0
 	for ( int i = 0; i < MAX_AMMO_SLOTS; i++ )
@@ -4240,8 +4241,26 @@ void CBasePlayer::GiveNamedItem( const char *pszName )
 	VARS( pent )->origin = pev->origin;
 	pent->v.spawnflags |= SF_NORESPAWN;
 
-	DispatchSpawn( pent );
-	DispatchTouch( pent, ENT( pev ) );
+	DispatchSpawnGame( pent );
+	CBaseEntity* pEntity = CBaseEntity::Instance(pent); // may have been relocated by spawn code
+	
+	CBasePlayerWeapon* wep = pEntity->GetWeaponPtr();
+	CBasePlayerAmmo* ammo = pEntity->MyAmmoPtr();
+	CItem* item = pEntity->MyItemPointer();
+
+	// call add functions directly in case the item is use-only
+	if (wep) {
+		wep->DefaultTouch(this);
+	}
+	else if (ammo) {
+		ammo->AddAmmo(this);
+	}
+	else if (item) {
+		item->ItemUse(this, this, USE_TOGGLE, 0);
+	}
+	else {
+		pEntity->Touch(this);
+	}
 }
 
 CBaseEntity *FindEntityForward( CBaseEntity *pMe )
@@ -5181,8 +5200,21 @@ void CBasePlayer :: UpdateClientData( void )
 				WRITE_SHORT(V_min(65535, II->fAccuracyDegY * 100));
 				WRITE_SHORT(V_min(65535, II->fAccuracyDegY2 * 100));
 				MESSAGE_END();
+
+				// send custom sprite dir for weapons that player spawned with
+				// (this is sent on pickup too, but comes too early for new joiners)
+				const char* cname = CBasePlayerWeapon::GetClassFromInfoName(II->pszName);
+				const char* customSpriteDir = g_defaultSpriteDirs.get(cname);
+				if (customSpriteDir && GetNamedPlayerItem(cname)) {
+					MESSAGE_BEGIN(MSG_ONE, gmsgCustomHud, NULL, pev);
+					WRITE_BYTE(i);
+					WRITE_STRING(customSpriteDir ? customSpriteDir : "");
+					MESSAGE_END();
+				}
 			}
 		}
+	
+		FixSharedWeaponSlotClipCount(true);
 	}
 
 	SendAmmoUpdate();
@@ -5974,6 +6006,8 @@ BOOL CBasePlayer::HasPlayerItem( CBasePlayerItem *pCheckItem )
 CBasePlayerItem* CBasePlayer::GetNamedPlayerItem(const char* pszItemName) {
 	CBasePlayerItem* pItem;
 	int i;
+
+	pszItemName = CBasePlayerWeapon::GetClassFromInfoName(pszItemName);
 
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{
@@ -7236,6 +7270,7 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 
 	ItemInfo& II = CBasePlayerItem::ItemInfoArray[wepId];
 
+	// fix hud conflict on the client
 	for (int i = 0; i < MAX_WEAPONS; i++) {
 		uint64_t bit = (1ULL << i);
 		if (mask & bit) {
@@ -7271,6 +7306,54 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 				MESSAGE_END();
 			}
 		}
+	}
+
+	FixSharedWeaponSlotClipCount(true);
+}
+
+void CBasePlayer::FixSharedWeaponSlotClipCount(bool resetCurWeapon) {
+
+	for (int i = 0; i < MAX_WEAPONS; i++) {
+		uint64_t mask = g_weaponSlotMasks[i];
+		if (!mask)
+			continue;
+
+		// this slot has a conflict
+		int activeId = GetCurrentIdForConflictedSlot(i);
+		if (activeId == -1)
+			continue;
+
+		// weapon that we're resolving the conflict with
+		ItemInfo& II = CBasePlayerItem::ItemInfoArray[activeId];
+		CBasePlayerItem* item = GetNamedPlayerItem(II.pszName);
+		CBasePlayerWeapon* resolveWep = item ? item->GetWeaponPtr() : NULL;
+
+		if (!resolveWep)
+			continue;
+
+		// send active clip for all IDs that share this slot
+		for (int k = 0; k < MAX_WEAPONS; k++) {
+			uint64_t bit = (1ULL << k);
+			if (mask & bit) {
+				MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pev);
+				WRITE_BYTE(resolveWep->m_iClientWeaponState);
+				WRITE_BYTE(i);
+				WRITE_BYTE(resolveWep->m_iClip);
+				MESSAGE_END();
+			}
+		}
+	}
+	
+	// tell the client which weapon they're actually holding again, because the clip update message
+	// tells the client to switch to that weapon.
+	CBaseEntity* activeItem = m_pActiveItem.GetEntity();
+	CBasePlayerWeapon* wep = activeItem ? activeItem->GetWeaponPtr() : NULL;
+	if (resetCurWeapon && wep) {
+		MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, pev);
+		WRITE_BYTE(wep->m_iClientWeaponState);
+		WRITE_BYTE(wep->m_iId);
+		WRITE_BYTE(wep->m_iClip);
+		MESSAGE_END();
 	}
 }
 

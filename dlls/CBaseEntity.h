@@ -8,6 +8,8 @@
 class CBaseEntity;
 class CBaseMonster;
 class CBasePlayerWeapon;
+class CBasePlayerAmmo;
+class CItem;
 class CTalkSquadMonster;
 class CBaseDelay;
 class CBaseToggle;
@@ -257,6 +259,7 @@ public:
 	virtual CBaseMonster* MyMonsterPointer(void) { return NULL; }
 	virtual CBasePlayer* MyPlayerPointer(void) { return NULL; }
 	virtual CBasePlayerWeapon* GetWeaponPtr(void) { return NULL; };
+	virtual CBasePlayerAmmo* MyAmmoPtr(void) { return NULL; };
 	virtual CTalkSquadMonster* MyTalkSquadMonsterPointer(void) { return NULL; }
 	virtual CBaseToggle* MyTogglePointer(void) { return NULL; }
 	virtual CBaseDelay* MyDelayPointer(void) { return NULL; }
@@ -268,6 +271,7 @@ public:
 	virtual CEnvWeather* MyWeatherPointer(void) { return NULL; }
 	virtual CWeaponCustom* MyWeaponCustomPtr(void) { return NULL; }
 	virtual CWeaponBox* MyWeaponBoxPtr(void) { return NULL; }
+	virtual CItem* MyItemPointer(void) { return NULL; }
 	virtual	int		GetToggleState(void) { return TS_AT_TOP; }
 	virtual void	AddPoints(int score, BOOL bAllowNegativeScore) {}
 	virtual void	AddPointsToTeam(int score, BOOL bAllowNegativeScore) {}
