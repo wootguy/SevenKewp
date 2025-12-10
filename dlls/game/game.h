@@ -93,6 +93,10 @@ EXPORT extern cvar_t	mp_flashlight_drain; // how fast the flashlight drains (1.0
 EXPORT extern cvar_t	mp_flashlight_charge; // how fast the flashlight charges (1.0 = 100%, 0 = never
 EXPORT extern cvar_t	mp_flashlight_size; // size of the flashlight beam (1.0 = 100%)
 EXPORT extern cvar_t	mp_startflashlight; // 0-100 = give flashlight with this battery level, -1 = don't spawn with flashlight
+EXPORT extern cvar_t	mp_blood_scale; // scale applied to blood sprite effects
+EXPORT extern cvar_t	mp_blood_head; // 1 = headshots blood effects are always max size
+EXPORT extern cvar_t	mp_blood_color_human; // engine palette index for the blood effect
+EXPORT extern cvar_t	mp_blood_color_alien; // engine palette index for the blood effect
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

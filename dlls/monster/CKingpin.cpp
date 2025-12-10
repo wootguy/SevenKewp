@@ -260,7 +260,7 @@ void CKingpin::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_bloodColor = BloodColorAlien();
 	pev->view_ofs = Vector(0, 0, 0);// position of the eyes relative to monster's origin.
 	m_flFieldOfView = VIEW_FIELD_FULL;
 	m_MonsterState = MONSTERSTATE_NONE;

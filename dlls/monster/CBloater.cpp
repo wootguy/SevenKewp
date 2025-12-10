@@ -182,7 +182,7 @@ void CBloater :: Spawn()
 	pev->friction = 1.0f;
 
 	pev->spawnflags		|= FL_FLY;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= BloodColorAlien();
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;

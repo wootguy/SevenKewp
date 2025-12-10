@@ -23,7 +23,7 @@ class EXPORT CSqueakGrenade : public CGrenade
 	int IRelationship(CBaseEntity* pTarget);
 	void SuperBounceTouch( CBaseEntity *pOther );
 	void HuntThink( void );
-	int  BloodColor( void ) { return BLOOD_COLOR_YELLOW; }
+	int  BloodColor( void ) { return BloodColorAlien(); }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
 	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Snark"; }

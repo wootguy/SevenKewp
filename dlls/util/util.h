@@ -315,10 +315,9 @@ inline BOOL FStringNull(int iString)			{ return iString == iStringNull; }
 
 // All monsters need this data
 #define		DONT_BLEED			-1
-#define		BLOOD_COLOR_RED		(BYTE)247
-#define		BLOOD_COLOR_DARK_RED (BYTE)224
-#define		BLOOD_COLOR_YELLOW	(BYTE)195
-#define		BLOOD_COLOR_GREEN	BLOOD_COLOR_YELLOW
+
+inline uint8_t BloodColorHuman() { return mp_blood_color_human.value; }
+inline uint8_t BloodColorAlien() { return mp_blood_color_alien.value; }
 
 typedef enum 
 {
@@ -953,4 +952,5 @@ EXPORT void UTIL_SendPredictionCvars(CBasePlayer* target);
 EXPORT void UTIL_SyncPredictionCvars();
 
 // tell the client which weapon they're using, how much clip it has, and its state
+// state: 0 = not the current weapon, 1 = current, 2 = on target
 EXPORT void UTIL_UpdateWeaponState(CBasePlayer* plr, int state, int wepId, int clip);

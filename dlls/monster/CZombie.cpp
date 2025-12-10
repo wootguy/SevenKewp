@@ -288,7 +288,7 @@ void CZombie :: Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= BloodColorAlien();
 	pev->view_ofs		= VEC_VIEW;// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.0; // vanilla = 0.5
 	m_MonsterState		= MONSTERSTATE_NONE;

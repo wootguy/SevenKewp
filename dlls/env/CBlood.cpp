@@ -54,10 +54,10 @@ void CBlood::KeyValue(KeyValueData* pkvd)
 		switch (color)
 		{
 		case 1:
-			SetColor(BLOOD_COLOR_YELLOW);
+			SetColor(BloodColorAlien());
 			break;
 		default:
-			SetColor(BLOOD_COLOR_RED);
+			SetColor(BloodColorHuman());
 			break;
 		}
 
@@ -105,7 +105,7 @@ Vector CBlood::BloodPosition(CBaseEntity* pActivator)
 void CBlood::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
 	if (pev->spawnflags & SF_BLOOD_STREAM)
-		UTIL_BloodStream(BloodPosition(pActivator), Direction(), (Color() == BLOOD_COLOR_RED) ? 70 : Color(), BloodAmount());
+		UTIL_BloodStream(BloodPosition(pActivator), Direction(), (Color() == BloodColorHuman()) ? 70 : Color(), BloodAmount());
 	else
 		UTIL_BloodDrips(BloodPosition(pActivator), Direction(), Color(), BloodAmount());
 

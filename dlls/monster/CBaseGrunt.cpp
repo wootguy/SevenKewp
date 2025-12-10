@@ -1102,7 +1102,7 @@ void CBaseGrunt::BaseSpawn()
 {
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_RED;
+	m_bloodColor = BloodColorHuman();
 	pev->effects = 0;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;
@@ -2956,7 +2956,7 @@ void CBaseDead::BaseSpawn(const char* model)
 	pev->effects = 0;
 	pev->yaw_speed = 8;
 	pev->sequence = 0;
-	m_bloodColor = BLOOD_COLOR_RED;
+	m_bloodColor = BloodColorHuman();
 
 	pev->sequence = GetPoseSequence();
 

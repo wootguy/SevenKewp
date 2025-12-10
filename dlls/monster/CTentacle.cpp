@@ -113,7 +113,7 @@ void CTentacle :: Spawn( )
 	pev->takedamage		= DAMAGE_AIM;
 	pev->flags			|= FL_MONSTER;
 	
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= BloodColorAlien();
 
 	SetThink( &CTentacle::Start );
 	SetTouch( &CTentacle::HitTouch );

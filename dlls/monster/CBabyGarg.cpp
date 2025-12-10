@@ -83,7 +83,7 @@ void CBabyGarg::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_bloodColor = BloodColorAlien();
 	//pev->view_ofs		= Vector ( 0, 0, 96 );// taken from mdl file
 	m_flFieldOfView = -0.2;// width of forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;

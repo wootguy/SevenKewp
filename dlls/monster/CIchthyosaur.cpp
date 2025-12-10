@@ -407,7 +407,7 @@ void CIchthyosaur :: Spawn()
 	SetSize(Vector( -32, -32, -32 ), Vector( 32, 32, 32 ) );
 
 	pev->solid			= SOLID_BBOX;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= BloodColorAlien();
 	pev->view_ofs		= Vector ( 0, 0, 16 );
 	m_flFieldOfView		= VIEW_FIELD_WIDE;
 	m_MonsterState		= MONSTERSTATE_NONE;

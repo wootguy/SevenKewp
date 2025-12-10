@@ -58,7 +58,7 @@ void CreatePlayerCorpse(CBasePlayer* plr)
 		CBaseMonster* mon = pent->MyMonsterPointer();
 		if (mon) {
 			mon->m_killedTime = plr->m_killedTime;
-			mon->m_bloodColor = BLOOD_COLOR_RED;
+			mon->m_bloodColor = BloodColorHuman();
 			mon->InitBoneControllers(); // init server version of the player model (disable renderfx to see why)
 			mon->CleanupLocalCorpses();
 			AddWaterPhysicsEnt(mon, plr->m_waterFriction, plr->m_buoyancy);

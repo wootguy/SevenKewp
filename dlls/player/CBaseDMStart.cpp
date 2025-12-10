@@ -16,7 +16,6 @@ LINK_ENTITY_TO_CLASS(info_player_deathmatch, CBaseDMStart)
 LINK_ENTITY_TO_CLASS(info_player_start, CBaseDMStart)
 LINK_ENTITY_TO_CLASS(info_player_coop, CBaseDMStart)
 LINK_ENTITY_TO_CLASS(info_player_dm2, CBaseDMStart)
-LINK_ENTITY_TO_CLASS(info_landmark, CPointEntity)
 
 void CBaseDMStart::Spawn()
 {

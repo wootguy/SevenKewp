@@ -489,7 +489,7 @@ void CISlave :: Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= BloodColorAlien();
 	pev->effects		= 0;
 	pev->view_ofs		= Vector ( 0, 0, 64 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
@@ -858,7 +858,7 @@ void CDeadISlave::Spawn()
 
 	pev->effects = 0;
 	pev->sequence = 0;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_bloodColor = BloodColorAlien();
 
 	pev->sequence = LookupSequence(m_szPoses[clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)]);
 	if (pev->sequence == -1)

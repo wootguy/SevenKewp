@@ -100,7 +100,7 @@ CGib *CGibShooter::CreateGib( float lifeTime )
 	CGib* pGib = GetClassPtr((CGib*)NULL);
 	pGib->Spawn("models/hgibs.mdl");
 	pGib->m_lifeTime = lifeTime;
-	pGib->m_bloodColor = BLOOD_COLOR_RED;
+	pGib->m_bloodColor = BloodColorHuman();
 
 	if (pev->body <= 1)
 	{

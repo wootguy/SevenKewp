@@ -654,7 +654,7 @@ void UTIL_BloodStream(const Vector& origin, const Vector& direction, int color, 
 	if (!UTIL_ShouldShowBlood(color))
 		return;
 
-	if (g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED)
+	if (g_Language == LANGUAGE_GERMAN && color == BloodColorHuman())
 		color = 0;
 
 
@@ -679,7 +679,7 @@ void UTIL_BloodDrips(const Vector& origin, const Vector& direction, int color, i
 	if (color == DONT_BLEED || amount == 0)
 		return;
 
-	if (g_Language == LANGUAGE_GERMAN && color == BLOOD_COLOR_RED)
+	if (g_Language == LANGUAGE_GERMAN && color == BloodColorHuman())
 		color = 0;
 
 	if (g_pGameRules->IsMultiplayer())
@@ -688,8 +688,11 @@ void UTIL_BloodDrips(const Vector& origin, const Vector& direction, int color, i
 		amount *= 2;
 	}
 
-	if (amount > 255)
-		amount = 255;
+	amount *= mp_blood_scale.value;
+	int max = clampi(255 * mp_blood_scale.value, 0, 255);
+
+	if (amount > max)
+		amount = max;
 
 	int scale = V_min(V_max(3, amount / 10), 16);
 
@@ -722,7 +725,17 @@ void UTIL_BloodDecalTrace(TraceResult* pTrace, int bloodColor)
 {
 	if (UTIL_ShouldShowBlood(bloodColor))
 	{
-		if (bloodColor == BLOOD_COLOR_RED || bloodColor == BLOOD_COLOR_DARK_RED)
+		bool isRedBlood = false;
+		if ((bloodColor >= 64 && bloodColor <= 79)
+			|| (bloodColor >= 96 && bloodColor <= 105)
+			|| (bloodColor >= 128 && bloodColor <= 159)
+			|| (bloodColor >= 224 && bloodColor <= 234)
+			|| (bloodColor >= 247 && bloodColor <= 251)
+		) {
+			isRedBlood = true;
+		}
+
+		if (isRedBlood)
 			UTIL_DecalTrace(pTrace, DECAL_BLOOD1 + RANDOM_LONG(0, 5));
 		else
 			UTIL_DecalTrace(pTrace, DECAL_YBLOOD1 + RANDOM_LONG(0, 5));

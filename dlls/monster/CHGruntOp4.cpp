@@ -314,7 +314,7 @@ void CHGruntOp4::KeyValue( KeyValueData *pkvd )
 void CDeadHGruntAlly:: Spawn( void )
 {
 	CBaseDead::BaseSpawn("models/hgrunt_opfor.mdl");
-	m_bloodColor = BLOOD_COLOR_RED;
+	m_bloodColor = BloodColorHuman();
 
 	if( pev->weapons & HGruntAllyWeaponFlag::MP5 )
 	{

@@ -3800,7 +3800,7 @@ void CBasePlayer::Spawn( void )
 	m_iStepLeft = 0;
 	m_flFieldOfView		= 0.5;// some monsters use this to determine whether or not the player is looking at them.
 
-	m_bloodColor	= BLOOD_COLOR_RED;
+	m_bloodColor	= BloodColorHuman();
 	m_flNextAttack	= UTIL_WeaponTimeBase();
 	StartSneaking();
 
@@ -3999,7 +3999,7 @@ int CBasePlayer::Restore( CRestore &restore )
 	pev->fixangle = TRUE;           // turn this way immediately
 
 // Copied from spawn() for now
-	m_bloodColor	= BLOOD_COLOR_RED;
+	m_bloodColor	= BloodColorHuman();
 
     g_ulModelIndexPlayer = pev->modelindex;
 
@@ -5219,7 +5219,7 @@ void CBasePlayer :: UpdateClientData( void )
 			}
 		}
 	
-		FixSharedWeaponSlotClipCount(true);
+		FixSharedWeaponSlotClipCount();
 	}
 
 	SendAmmoUpdate();
@@ -6790,6 +6790,10 @@ void CBasePlayer::QueryClientTypeFinished() {
 
 	// recalculate HUD visibility
 	m_iClientHideHUD = -1;
+
+	// hide crosshair in case the player had one last map (m_pWeapon doesn't reset on the client)
+	if (!m_pActiveItem)
+		UTIL_UpdateWeaponState(this, 1, WEAPON_CROWBAR, -1);
 }
 
 client_info_t CBasePlayer::GetClientInfo() {
@@ -7321,10 +7325,10 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 		}
 	}
 
-	FixSharedWeaponSlotClipCount(true);
+	FixSharedWeaponSlotClipCount();
 }
 
-void CBasePlayer::FixSharedWeaponSlotClipCount(bool resetCurWeapon, int thisIdOnly) {
+void CBasePlayer::FixSharedWeaponSlotClipCount(int thisIdOnly) {
 	if (!m_fKnownItem)
 		return; // player will reset clips again once weapon list is sent
 
@@ -7361,17 +7365,9 @@ void CBasePlayer::FixSharedWeaponSlotClipCount(bool resetCurWeapon, int thisIdOn
 
 			uint64_t bit = (1ULL << k);
 			if (mask & bit) {
-				UTIL_UpdateWeaponState(this, resolveWep->m_iClientWeaponState, k, resolveWep->m_iClip);
+				UTIL_UpdateWeaponState(this, 0, k, resolveWep->m_iClip);
 			}
 		}
-	}
-	
-	// tell the client which weapon they're actually holding again, because the clip update message
-	// tells the client to switch to that weapon.
-	CBaseEntity* activeItem = m_pActiveItem.GetEntity();
-	CBasePlayerWeapon* wep = activeItem ? activeItem->GetWeaponPtr() : NULL;
-	if (resetCurWeapon && wep) {
-		UTIL_UpdateWeaponState(this, wep->m_iClientWeaponState, wep->m_iId, wep->m_iClip);
 	}
 }
 

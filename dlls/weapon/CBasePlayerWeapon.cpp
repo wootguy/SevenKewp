@@ -357,7 +357,7 @@ int CBasePlayerWeapon::UpdateClientData(CBasePlayer* pPlayer)
 	{
 		// weapons sharing this slot must also have their clips updated because we don't know
 		// which weapon ID the vanilla client will use for drawing the hud
-		pPlayer->FixSharedWeaponSlotClipCount(false, m_iId);
+		pPlayer->FixSharedWeaponSlotClipCount(m_iId);
 
 		if (!isCurrentWeapon)
 			UTIL_UpdateWeaponState(pPlayer, state, m_iId, m_iClip);

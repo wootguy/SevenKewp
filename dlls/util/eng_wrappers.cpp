@@ -204,6 +204,11 @@ int PRECACHE_GENERIC(const char* path) {
 
 	g_tryPrecacheGeneric.put(path);
 
+	if (getGameFilePath(path).empty()) {
+		ALERT(at_error, "PrecacheGeneric failed: %s\n", path);
+		return -1; // engine allows precaching files that don't exist
+	}
+
 	if (g_tryPrecacheGeneric.size() < MAX_PRECACHE) {
 		g_precachedGeneric.put(path);
 		return g_engfuncs.pfnPrecacheGeneric(STRING(ALLOC_STRING(path)));

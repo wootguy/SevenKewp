@@ -5029,10 +5029,14 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 		}
 		if (bitsDamageType & DMG_BLOOD) {
 			Vector bloodPos = ptr->vecEndPos + get_lagcomp_offset(entindex());
+			float bloodSize = flDamage;
 
-			// headshots should always show big blood, no matter how little damage was done.
-			// The idea is that blood size should be used primarly as an indicator that you hit the weak point.
-			float bloodSize = ptr->iHitgroup == HITGROUP_HEAD ? V_max(flDamage, 30) : flDamage;
+			if (mp_blood_scale.value) {
+				// headshots should always show big blood, no matter how little damage was done.
+				// The idea is that blood size should be used primarly as an indicator that you hit the weak point.
+				bloodSize = ptr->iHitgroup == HITGROUP_HEAD ? V_max(flDamage, 30) : flDamage;
+			}
+
 			SpawnBlood(bloodPos, BloodColor(), bloodSize);
 			TraceBleed(bloodSize, vecDir, ptr, bitsDamageType);
 		}
@@ -7532,6 +7536,8 @@ BOOL CBaseMonster::CanFollow(void)
 
 void CBaseMonster::FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	m_IdealMonsterState = MONSTERSTATE_ALERT; // frees the monster from an aiscripted sequence
+
 	// Don't allow use during a scripted_sentence
 	if (m_useTime > gpGlobals->time)
 		return;

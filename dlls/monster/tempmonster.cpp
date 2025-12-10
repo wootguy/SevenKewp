@@ -47,7 +47,7 @@ void CMyMonster :: Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_bloodColor = BloodColorAlien();
 	pev->health = 100;
 	pev->view_ofs = Vector ( 0, 0, 0 );
 	m_flFieldOfView = 0.0;

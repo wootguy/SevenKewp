@@ -90,6 +90,10 @@ cvar_t	mp_flashlight_drain ={"mp_flashlight_drain", "1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_flashlight_charge ={"mp_flashlight_charge", "1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_flashlight_size ={"mp_flashlight_size", "8", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_startflashlight = { "mp_startflashlight","100", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_blood_scale = { "mp_blood_scale","1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_blood_head = { "mp_blood_head","1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_blood_color_human = { "mp_blood_color_human","247", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_blood_color_alien = { "mp_blood_color_alien","195", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
@@ -469,6 +473,10 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_flashlight_drain);
 	CVAR_REGISTER (&mp_flashlight_charge);
 	CVAR_REGISTER (&mp_flashlight_size);
+	CVAR_REGISTER (&mp_blood_scale);
+	CVAR_REGISTER (&mp_blood_head);
+	CVAR_REGISTER (&mp_blood_color_human);
+	CVAR_REGISTER (&mp_blood_color_alien);
 
 	CVAR_REGISTER (&mp_chattime);
 

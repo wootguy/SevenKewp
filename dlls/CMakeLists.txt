@@ -281,6 +281,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CGameScore.cpp
 	triggers/CGameText.cpp
 	triggers/CGlobalLightControl.cpp
+	triggers/CInfoLandmark.cpp
 	triggers/CMultiManager.cpp
 	triggers/CMultiSource.cpp
 	triggers/CRenderFxManager.cpp

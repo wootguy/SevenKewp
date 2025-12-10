@@ -185,7 +185,7 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 			WRITE_COORD(handOrigin.z);
 			WRITE_SHORT(g_sModelIndexBloodSpray);
 			WRITE_SHORT(g_sModelIndexBloodDrop);
-			WRITE_BYTE(BLOOD_COLOR_RED);
+			WRITE_BYTE(BloodColorHuman());
 			WRITE_BYTE(4); // size
 		MESSAGE_END();
 
@@ -235,7 +235,7 @@ void CGonome::Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_YELLOW;
+	m_bloodColor		= BloodColorAlien();
 	pev->view_ofs		= Vector ( 0, 0, 0 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.0;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
@@ -467,7 +467,7 @@ void CGonomeSpit::Touch(CBaseEntity* pOther)
 		WRITE_COORD(pev->origin.z);
 		WRITE_SHORT(g_sModelIndexBloodSpray);
 		WRITE_SHORT(g_sModelIndexBloodDrop);
-		WRITE_BYTE(BLOOD_COLOR_RED);
+		WRITE_BYTE(BloodColorHuman());
 		WRITE_BYTE(10);	// size
 	MESSAGE_END();
 

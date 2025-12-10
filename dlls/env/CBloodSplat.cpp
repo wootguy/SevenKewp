@@ -24,7 +24,7 @@ void CBloodSplat::Spray(void)
 		UTIL_MakeVectors(pev->angles);
 		UTIL_TraceLine(pev->origin, pev->origin + gpGlobals->v_forward * 128, ignore_monsters, pev->owner, &tr);
 
-		UTIL_BloodDecalTrace(&tr, BLOOD_COLOR_RED);
+		UTIL_BloodDecalTrace(&tr, BloodColorHuman());
 	}
 	SetThink(&CBloodSplat::SUB_Remove);
 	pev->nextthink = gpGlobals->time + 0.1;

@@ -517,7 +517,7 @@ void COtis :: Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_RED;
+	m_bloodColor		= BloodColorHuman();
 	pev->view_ofs		= Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState		= MONSTERSTATE_NONE;
@@ -1066,7 +1066,7 @@ void CDeadOtis:: Spawn( )
 	pev->effects		= 0;
 	pev->yaw_speed		= 8;
 	pev->sequence		= 0;
-	m_bloodColor		= BLOOD_COLOR_RED;
+	m_bloodColor		= BloodColorHuman();
 
 	pev->sequence = LookupSequence( m_szPoses[clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)] );
 	if (pev->sequence == -1)

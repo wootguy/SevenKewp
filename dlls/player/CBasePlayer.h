@@ -623,9 +623,8 @@ public:
 	// WeaponList msgs reset clip counts to 0. Those messages are used to resolve conflicts
 	// in slots that multiple weapons share. Call this to fix the clip counts and unselectable
 	// weapons in the HUD for the client.
-	// resetCurWeapon = true to tell the client which weapon they're holding now (or send your own curWeapon msg)
 	// thisIdOnly = only fix clip count for the weapons that share this ID's slot
-	void FixSharedWeaponSlotClipCount(bool resetCurWeapon, int thisIdOnly=-1);
+	void FixSharedWeaponSlotClipCount(int thisIdOnly=-1);
 
 	// if a weapon slot can be filled by multiple weapons, this returns the weapon ID
 	// that is currently held in that slot. If no weapon is filling the slot

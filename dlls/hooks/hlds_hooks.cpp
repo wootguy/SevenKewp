@@ -1622,8 +1622,9 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 				state->health = 0; // don't show hp needed to gib
 				hint = 0;
 			}
-			if (baseent->IsPushable() && invincible) {
-				// these are usually invincible so don't bother showing that info
+			if (baseent->IsPushable() || (isMon && !baseent->IsAlive()) && invincible) {
+				// pushables are usually invincible so don't bother showing that info
+				// barnacles become invincible after death
 				invincible = false;
 				health = 0;
 			}

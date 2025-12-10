@@ -1901,7 +1901,7 @@ BOOL UTIL_ShouldShowBlood( int color )
 {
 	if ( color != DONT_BLEED )
 	{
-		if ( color == BLOOD_COLOR_RED )
+		if ( color == BloodColorHuman() )
 		{
 			if ( CVAR_GET_FLOAT("violence_hblood") != 0 )
 				return TRUE;

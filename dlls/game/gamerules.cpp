@@ -216,6 +216,10 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"mp_flashlight_drain",
 		"mp_flashlight_charge",
 		"mp_flashlight_size",
+		"mp_blood_scale",
+		"mp_blood_head",
+		"mp_blood_color_human",
+		"mp_blood_color_alien",
 	};
 
 	static StringSet itemNames = {
@@ -279,10 +283,13 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 
 	int length;
 	char* cfgFile = (char*)LOAD_FILE_FOR_ME(cfgPath, &length);
-	
-	g_mapCfgExists = cfgFile;
-	g_noSuit = false;
-	g_noMedkit = false;
+
+	// first cfg opened
+	if (openedCfgs.size() == 0) {
+		g_mapCfgExists = cfgFile;
+		g_noSuit = false;
+		g_noMedkit = false;
+	}
 
 	if (!cfgFile) {
 		if (openedCfgs.size() == 0) {
@@ -467,9 +474,6 @@ void execSkillCfg(const char* fname, bool isMapSkill) {
 	if (!cfgFile) {
 		return;
 	}
-
-	g_mapCfgExists = cfgFile;
-	g_noSuit = false;
 
 	std::stringstream data_stream(cfgFile);
 	string line;
