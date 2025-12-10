@@ -927,7 +927,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			}
 		}
 	}
-	if (g_tryPrecacheGeneric.size() > g_precachedGeneric.size()) {
+	if (g_tryPrecacheGeneric.size() >= MAX_PRECACHE_GENERIC) {
 		ALERT(at_error, "Generic precache overflow (%d / %d). The following resources were not precached:\n",
 			g_tryPrecacheGeneric.size(), MAX_PRECACHE_GENERIC);
 
@@ -2058,7 +2058,7 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 						uint64_t conflictMask = g_weaponSlotMasks[item->m_iId];
 						if (conflictMask != (1ULL << II.iId)) {
 							// this weapon shares a slot with others. Update the clip for all of
-							// those weapons so that the HUD doesn't render the wrong clip
+							// those weapons so that WeaponCustom prediction has the real clip
 							for (int k = 0; k < MAX_WEAPONS; k++) {
 								if (conflictMask & (1ULL << k)) {
 									info[k].m_iClip = gun->m_iClip;

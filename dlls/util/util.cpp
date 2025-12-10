@@ -1095,6 +1095,18 @@ void UTIL_ScreenShake( const Vector &center, float amplitude, float frequency, f
 	}
 }
 
+void UTIL_ScreenShake(CBasePlayer* plr, float amplitude, float frequency, float duration) {
+	ScreenShake	shake;
+	shake.amplitude = FixedUnsigned16(amplitude, 1 << 12);		// 4.12 fixed
+	shake.duration = FixedUnsigned16(duration, 1 << 12);		// 4.12 fixed
+	shake.frequency = FixedUnsigned16(frequency, 1 << 8);	// 8.8 fixed
+
+	MESSAGE_BEGIN(MSG_ONE, gmsgShake, NULL, plr->edict());
+	WRITE_SHORT(shake.amplitude);				// shake amount
+	WRITE_SHORT(shake.duration);				// shake lasts this long
+	WRITE_SHORT(shake.frequency);				// shake noise frequency
+	MESSAGE_END();
+}
 
 
 void UTIL_ScreenShakeAll( const Vector &center, float amplitude, float frequency, float duration )

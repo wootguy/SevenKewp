@@ -392,6 +392,7 @@ EXPORT void			UTIL_SetOrigin			( entvars_t* pev, const Vector &vecOrigin ); // N
 EXPORT void			UTIL_EmitAmbientSound	( edict_t *entity, const float* vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest=NULL);
 EXPORT void			UTIL_ParticleEffect		( const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount );
 EXPORT void			UTIL_ScreenShake		( const Vector &center, float amplitude, float frequency, float duration, float radius );
+EXPORT void			UTIL_ScreenShake		( CBasePlayer* plr, float amplitude, float frequency, float duration );
 EXPORT void			UTIL_ScreenShakeAll		( const Vector &center, float amplitude, float frequency, float duration );
 EXPORT void			UTIL_ShowMessage		( const char *pString, CBaseEntity *pPlayer );
 EXPORT void			UTIL_ShowMessageAll		( const char *pString );

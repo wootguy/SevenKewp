@@ -49,6 +49,10 @@ public:
 	int ammoFreqs[3]; // ammo frequency counters for each attack
 	int animCount; // counter for ordered weapon aimations
 
+	// server-side state
+	TraceResult m_meleeDecalPos;
+	float m_nextMeleeDecal;
+
 	// for prediction code, don't spam events/toggles while waiting for the new server state
 	float m_lastZoomToggle;
 	float m_lastLaserToggle;
@@ -107,8 +111,16 @@ public:
 	bool CommonAttack(int attackIdx, int* clip, bool leftHand, bool akimboFire); // true if attacked
 	void Cooldown(int attackIdx, int overrideMillis=-1);
 	bool Chargeup(int attackIdx, bool leftHand, bool akimboFire);
+	void Chargedown(int attackIdx);
 	void FinishAttack(int attackIdx);
 	void FailAttack(int attackIdx, bool leftHand, bool akimboFire);
+	void MeleeAttack(int attackIdx);
+	void PlayRandomSound(CBasePlayer* plr, uint16_t sounds[4]); // generic server side sound playback
+	virtual void MeleeMiss(CBasePlayer* plr) { } // called when a melee attack misses
+	virtual bool MeleeIsFlesh(CBaseEntity* target); // true if target should make a flesh sound (may be NULL)
+	virtual bool MeleeHit(CBasePlayer* plr, CBaseEntity* target) { return false; } // return true to override default melee hit logic
+	virtual void MeleeHitFlesh(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a flesh entity
+	virtual void MeleeHitWall(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a hard surface
 	void KickbackPrediction();
 	void ToggleZoom(int zoomFov, int zoomFov2);
 	void ToggleLaser();

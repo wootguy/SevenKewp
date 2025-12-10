@@ -27,6 +27,13 @@ int CWeaponCustom::m_tracerCount[32];
 uint32_t CWeaponCustom::m_predDataSent[MAX_WEAPONS];
 
 void CWeaponCustom::Spawn() {
+	if (m_iId <= 0) {
+		ALERT(at_error, "Custom weapon '%s' was not registered! Removing it from the world.\n",
+			STRING(pev->classname));
+		UTIL_Remove(this);
+		return;
+	}
+
 	Precache();
 	SetWeaponModelW();
 	FallInit();// get ready to fall down.
@@ -195,6 +202,9 @@ BOOL CWeaponCustom::Deploy()
 	m_hasLaserAttachment = mdl && mdl->numattachments > params.laser.attachment;
 
 	ret = DefaultDeploy(vmodel, GetModelP(), deployAnim, animSet, 1);
+	
+	if (!IsPredicted())
+		SendWeaponAnimSpec(deployAnim);
 #endif
 
 	if (IsAkimbo())
@@ -380,6 +390,10 @@ void CWeaponCustom::WeaponIdle() {
 	if (m_fInReload)
 		return;
 
+	if (m_flChargeStartPrimary || m_flChargeStartSecondary) {
+		return;
+	}
+
 	ResetEmptySound();
 
 	// Update auto-aim
@@ -435,6 +449,13 @@ void CWeaponCustom::ItemPostFrame() {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
+
+#ifndef CLIENT_DLL
+	if (m_nextMeleeDecal && m_nextMeleeDecal < gpGlobals->time) {
+		m_nextMeleeDecal = 0;
+		DecalGunshot(&m_meleeDecalPos, BULLET_PLAYER_CROWBAR);
+	}
+#endif
 
 	bool reloadFinished = m_fInReload && m_flNextPrimaryAttack <= 0;
 
@@ -602,6 +623,16 @@ void CWeaponCustom::SecondaryAttack() {
 		return;
 	}
 
+	if (!(params.flags & FL_WC_WEP_HAS_SECONDARY)) {
+		if (m_pPlayer->pev->button & IN_ATTACK) {
+			PrimaryAttack();
+		}
+		else {
+			WeaponIdle();
+		}
+		return;
+	}
+
 	if (m_waitForNextRunfuncs && !g_runfuncs)
 		return;
 
@@ -711,6 +742,7 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	}
 
 	bool isNormalAttack = !(opts.flags & FL_WC_SHOOT_NO_ATTACK);
+	bool isMelee = opts.flags & FL_WC_SHOOT_IS_MELEE;
 
 	int clipLeft = *clip;
 
@@ -720,7 +752,7 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 		return false;
 
 	if (isNormalAttack) {
-		if (clipLeft < opts.ammoCost && opts.flags & FL_WC_SHOOT_NEED_FULL_COST) {
+		if (clipLeft < opts.ammoCost && (opts.flags & FL_WC_SHOOT_NEED_FULL_COST)) {
 			Reload();
 			return false;
 		}
@@ -728,7 +760,8 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 		if (clipLeft <= 0 && opts.ammoCost > 0) {
 			if (!m_fInReload) {
 				Cooldown(-1, 150);
-				PlayEmptySound();
+				if (!isMelee)
+					PlayEmptySound();
 				FailAttack(attackIdx, leftHand, akimboFire);
 			}
 			return false;
@@ -736,7 +769,8 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 
 		if (m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD && !(opts.flags & FL_WC_SHOOT_UNDERWATER)) {
 			Cooldown(-1, 150);
-			PlayEmptySound();
+			if (!isMelee)
+				PlayEmptySound();
 			FailAttack(attackIdx, leftHand, akimboFire);
 			return false;
 		}
@@ -771,11 +805,20 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 
 	Cooldown(attackIdx);
 
+	if (isMelee) {
+		MeleeAttack(attackIdx);
+	}
+
 	switch (attackIdx) {
 	case 0: PrimaryAttackCustom(); break;
 	case 1: SecondaryAttackCustom(); break;
 	case 2: TertiaryAttackCustom(); break;
 	default: break;
+	}
+
+	if (opts.flags & FL_WC_SHOOT_CHARGEUP_ONCE) {
+		// force a cooldown after firing once
+		Chargedown(attackIdx);
 	}
 
 	return true;
@@ -841,6 +884,20 @@ bool CWeaponCustom::Chargeup(int attackIdx, bool leftHand, bool akimboFire) {
 	return gpGlobals->time - chargeStart > opts.chargeTime * 0.001f;
 }
 
+void CWeaponCustom::Chargedown(int attackIdx) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_STOP : WC_TRIG_SECONDARY_STOP;
+	m_flChargeStartPrimary = m_flChargeStartSecondary = 0;
+	m_waitForNextRunfuncs = true;
+	CancelDelayedEvents();
+	ProcessEvents(ievt, 0, false, false);
+	m_pPlayer->ApplyEffects();
+	m_lastChargeDown = gpGlobals->time;
+}
+
 void CWeaponCustom::FinishAttack(int attackIdx) {
 	if (params.flags & FL_WC_WEP_LINK_CHARGEUPS) {
 		attackIdx = 0;
@@ -856,19 +913,25 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 
 	bool attackCalled = attackIdx == 0 ? m_primaryCalled : m_secondaryCalled;
 	float& chargeVar = attackIdx == 0 ? m_flChargeStartPrimary : m_flChargeStartSecondary;
-	int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_STOP : WC_TRIG_SECONDARY_STOP;
 
 	if (!attackCalled && chargeVar) {
 		uint16_t cancelMillis = params.shootOpts[0].chargeCancelTime;
 		float cancelTime = chargeVar + cancelMillis * 0.001f;
 
-		if (!cancelMillis || WallTime() > cancelTime) {
-			chargeVar = 0;
-			m_waitForNextRunfuncs = true;
-			CancelDelayedEvents();
-			ProcessEvents(ievt, 0, false, false);
-			m_pPlayer->ApplyEffects();
-			m_lastChargeDown = gpGlobals->time;
+		if (!cancelMillis || gpGlobals->time > cancelTime) {
+			CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+
+			if (opts.flags & FL_WC_SHOOT_CHARGEUP_ONCE) {
+				// fire a single shot every chargeup, then cooldown
+				if (attackIdx == 0) {
+					PrimaryAttack();
+				}
+				else {
+					SecondaryAttack();
+				}
+			}
+
+			Chargedown(attackIdx);
 		}
 	}
 }
@@ -883,6 +946,119 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire) {
 
 	if (opts.cooldownFail)
 		Cooldown(attackIdx, opts.cooldownFail);
+}
+
+void CWeaponCustom::PlayRandomSound(CBasePlayer* plr, uint16_t sounds[4]) {
+#ifndef CLIENT_DLL
+	int soundCount = 4;
+
+	for (int i = 0; i < 4; i++) {
+		if (sounds[i] == 0) {
+			soundCount = i;
+			break;
+		}
+	}
+
+	if (soundCount == 0)
+		return;
+
+	const char* snd = INDEX_SOUND( sounds[RANDOM_LONG(0, soundCount - 1)] );
+	StartSound(plr->edict(), CHAN_WEAPON, snd, 1, ATTN_NORM, 0, 100, plr->pev->origin, 0xffffffff);
+#endif
+}
+
+void CWeaponCustom::MeleeAttack(int attackIdx) {
+#ifndef CLIENT_DLL
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+
+	TraceResult tr;
+
+	UTIL_MakeVectors(m_pPlayer->pev->v_angle);
+
+	Vector offset = opts.melee.attackOffset.x * gpGlobals->v_forward
+		+ opts.melee.attackOffset.y * gpGlobals->v_up
+		+ opts.melee.attackOffset.z * gpGlobals->v_right;
+
+	Vector vecSrc = m_pPlayer->GetGunPosition() + offset;
+	Vector vecEnd = vecSrc + gpGlobals->v_forward * opts.melee.range;
+
+	SolidifyNearbyCorpses(false);
+	lagcomp_begin(m_pPlayer);
+
+	UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(m_pPlayer->pev), &tr);
+
+	if (tr.flFraction >= 1.0) {
+		UTIL_TraceHull(vecSrc, vecEnd, dont_ignore_monsters, head_hull, ENT(m_pPlayer->pev), &tr);
+
+		if (tr.flFraction < 1.0) {
+			// Calculate the point of intersection of the line (or hull) and the object we hit
+			// This is and approximation of the "best" intersection
+			CBaseEntity* pHit = CBaseEntity::Instance(tr.pHit);
+			if (!pHit || pHit->IsBSPModel())
+				FindHullIntersection(vecSrc, tr, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX, m_pPlayer->edict());
+			vecEnd = tr.vecEndPos;	// This is the point on the actual surface (the hull could have hit space)
+		}
+	}
+
+	m_pPlayer->WaterSplashTrace(vecSrc, 32, head_hull, 0.4f);
+
+	lagcomp_end();
+	SolidifyNearbyCorpses(true);
+
+	if (tr.flFraction >= 1.0) {
+		MeleeMiss(m_pPlayer);
+		PlayRandomSound(m_pPlayer, opts.melee.missSounds);
+
+		if (opts.melee.missCooldown) {
+			Cooldown(attackIdx, opts.melee.missCooldown);
+		}
+	}
+	else {
+		CBaseEntity* pEntity = CBaseEntity::Instance(tr.pHit);
+
+		if (MeleeHit(m_pPlayer, pEntity)) {
+			return;
+		}
+
+		ClearMultiDamage();
+		pEntity->TraceAttack(m_pPlayer->pev, GetDamage(opts.melee.damage), gpGlobals->v_forward, &tr, opts.melee.damageBits);
+		ApplyMultiDamage(m_pPlayer->pev, m_pPlayer->pev);
+
+		// play thwack, smack, or dong sound
+		float flVol = 1.0;
+
+		if (MeleeIsFlesh(pEntity)) {
+			MeleeHitFlesh(m_pPlayer, pEntity);
+			PlayRandomSound(m_pPlayer, opts.melee.hitFleshSounds);
+
+			m_pPlayer->m_iWeaponVolume = CROWBAR_BODYHIT_VOLUME;
+			flVol = 0.1;
+		}
+		else {
+			MeleeHitWall(m_pPlayer, pEntity);
+			PlayRandomSound(m_pPlayer, opts.melee.hitWallSounds);
+			TEXTURETYPE_PlaySound(&tr, vecSrc, vecSrc + (vecEnd - vecSrc) * 2, BULLET_PLAYER_CROWBAR);
+			m_meleeDecalPos = tr; // delay the decal a bit
+			m_nextMeleeDecal = gpGlobals->time + opts.melee.decalDelay * 0.001f;
+		}
+
+		if (opts.melee.hitCooldown) {
+			Cooldown(attackIdx, opts.melee.hitCooldown);
+		}
+
+		m_pPlayer->m_iWeaponVolume = flVol * CROWBAR_WALLHIT_VOLUME;
+	}
+
+#endif
+}
+
+bool CWeaponCustom::MeleeIsFlesh(CBaseEntity* pEntity) {
+	return pEntity && !pEntity->IsMachine() && !pEntity->IsBSPModel() &&
+		(pEntity->Classify() != CLASS_NONE || pEntity->IsPlayerCorpse());
 }
 
 void CWeaponCustom::KickbackPrediction() {

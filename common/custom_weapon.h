@@ -37,6 +37,8 @@
 #define FL_WC_SHOOT_NEED_AKIMBO 8		// don't allow attack if not holding the akimbo version of the weapon
 #define FL_WC_SHOOT_NEED_FULL_COST 16	// don't allow attack if clip is less than ammo cost
 #define FL_WC_SHOOT_NO_AUTOFIRE 32		// one shot per click
+#define FL_WC_SHOOT_IS_MELEE 64			// use server-side crowbar attack logic
+#define FL_WC_SHOOT_CHARGEUP_ONCE 128	// fire one shot per chargeup, then cooldown after that shot
 
 #define FL_WC_BULLETS_DYNAMIC_SPREAD 1	// spread widens while moving and tightens while crouching
 #define FL_WC_BULLETS_NO_DECAL 2		// don't show gunshot particles and decal at impact point
@@ -739,6 +741,19 @@ struct WepEvt {
 #endif
 };
 
+struct MeleeOpts {
+	float damage;
+	int damageBits;
+	float range;
+	Vector attackOffset;	// in forward, up, right units
+	uint16_t missCooldown;	// cooldown millis for missing an attack
+	uint16_t hitCooldown;	// cooldown millis for hitting something
+	uint16_t decalDelay;	// how long to wait after hitting a wall to apply the decal
+	uint16_t hitWallSounds[4];
+	uint16_t hitFleshSounds[4];
+	uint16_t missSounds[4];
+};
+
 struct CustomWeaponShootOpts {
 	uint8_t flags;				// FL_WC_SHOOT_*
 	uint8_t ammoCost;			// ammo cost of each attack
@@ -751,6 +766,9 @@ struct CustomWeaponShootOpts {
 	uint16_t chargeMoveSpeedMult; // movement speed multiplier while charging (1-65535) (65535 = 100%) (0 = don't change)
 	uint16_t accuracyX;			// horizontal accuracy for crosshair (degrees * 100)
 	uint16_t accuracyY;			// vertical accuracy for crosshair (degrees * 100)
+
+	// server side settings (not networked)
+	MeleeOpts melee;
 };
 
 struct WeaponCustomReload {
