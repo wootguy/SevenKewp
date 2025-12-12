@@ -525,6 +525,10 @@ void ServerDeactivate( void )
 		return;
 	}
 
+	if (mp_keep_inventory.value) {
+		g_clearInventoriesNextMap = false;
+	}
+
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = (CBasePlayer*)UTIL_PlayerByIndex(i);
 		if (!plr) {
@@ -535,6 +539,10 @@ void ServerDeactivate( void )
 
 		UTIL_LogPlayerEvent(plr->edict(), "%d points, %d deaths\n", 
 			(int)plr->pev->frags, plr->m_iDeaths);
+
+		if (!g_clearInventoriesNextMap) {
+			plr->SaveInventory();
+		}
 	}
 
 	EnvWeatherServerDeactivate();

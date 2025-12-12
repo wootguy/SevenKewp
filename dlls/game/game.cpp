@@ -485,6 +485,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_blood_color_human);
 	CVAR_REGISTER (&mp_blood_color_alien);
 	CVAR_REGISTER (&mp_one_pickup_per_player);
+	CVAR_REGISTER (&mp_keep_inventory);
 
 	CVAR_REGISTER (&mp_chattime);
 

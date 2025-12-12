@@ -245,15 +245,6 @@ void CChangeLevel::ChangeLevelNow(CBaseEntity* pActivator)
 	*/
 
 	if (m_bKeepInventory) {
-		for (int i = 1; i <= gpGlobals->maxClients; i++) {
-			CBasePlayer* plr = (CBasePlayer*)UTIL_PlayerByIndex(i);
-			if (!plr) {
-				continue;
-			}
-
-			plr->SaveInventory();
-		}
-
 		g_clearInventoriesNextMap = false;
 	}
 

@@ -426,6 +426,7 @@ public:
 	void DropAmmo(bool secondary);
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
 	CBasePlayerItem* GetNamedPlayerItem(const char* pszItemName);
+	CBasePlayerItem* GetPlayerItemById(int id);
 	BOOL HasNamedPlayerItem( const char *pszItemName );
 	BOOL HasWeapons( void );// do I have ANY weapons?
 	void SelectPrevItem( int iItem );
@@ -615,7 +616,8 @@ public:
 	void SaveInventory();
 
 	// equip inventory from global state
-	void LoadInventory();
+	// returns false if no inventory is saved for this player
+	bool LoadInventory();
 
 	// tell the client which weapon belongs in a slot which multiple weapons can fill
 	void ResolveWeaponSlotConflict(int wepId);

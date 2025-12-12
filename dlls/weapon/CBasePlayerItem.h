@@ -83,7 +83,7 @@ public:
 	// bitfield flagging which players picked up this item in one-pickup-per-player mode
 	uint32_t m_pickupPlayers;
 
-	virtual int iItemSlot( void ) { return 0; }			// return 0 to MAX_ITEMS_SLOTS, used in hud
+	virtual int iItemSlot( void ) { return ItemInfoArray[m_iId].iSlot; }			// return 0 to MAX_ITEMS_SLOTS, used in hud
 
 	int			iItemPosition( void ) { return ItemInfoArray[ m_iId ].iPosition; }
 	const char	*pszAmmo1( void )	{ return ItemInfoArray[ m_iId ].pszAmmo1; }

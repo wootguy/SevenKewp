@@ -545,11 +545,28 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 
 	addDefault = !g_mapCfgExists;
 
-	for (int i = 0; i < MAX_EQUIP; i++) {
-		if (!g_mapEquipment[i].itemName) {
-			break;
+	bool hasSavedInv = pPlayer->LoadInventory();
+
+	if (mp_keep_inventory.value < 2 || !hasSavedInv) {
+		for (int i = 0; i < MAX_EQUIP; i++) {
+			if (!g_mapEquipment[i].itemName) {
+				break;
+			}
+			equipPlayerWithItem(pPlayer, STRING(g_mapEquipment[i].itemName), g_mapEquipment[i].count);
 		}
-		equipPlayerWithItem(pPlayer, STRING(g_mapEquipment[i].itemName), g_mapEquipment[i].count);
+
+		if (addDefault)
+		{
+			pPlayer->GiveNamedItem("weapon_crowbar");
+			pPlayer->GiveNamedItem("weapon_9mmhandgun");
+			pPlayer->GiveAmmo(68, "9mm", gSkillData.sk_ammo_max_9mm);// 4 full reloads
+		}
+
+		if (mp_default_medkit.value && !g_noMedkit) {
+			pPlayer->GiveNamedItem("weapon_medkit");
+		}
+
+		pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex("health")] = gSkillData.sk_plr_medkit_start_ammo;
 	}
 
 	while ( (pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" )) != 0)
@@ -557,21 +574,6 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 		pWeaponEntity->Touch( pPlayer );
 		addDefault = FALSE;
 	}
-
-	if ( addDefault )
-	{
-		pPlayer->GiveNamedItem( "weapon_crowbar" );
-		pPlayer->GiveNamedItem( "weapon_9mmhandgun" );
-		pPlayer->GiveAmmo( 68, "9mm", gSkillData.sk_ammo_max_9mm );// 4 full reloads
-	}
-
-	if (mp_default_medkit.value && !g_noMedkit) {
-		pPlayer->GiveNamedItem("weapon_medkit");
-	}
-
-	pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex("health")] = gSkillData.sk_plr_medkit_start_ammo;
-
-	pPlayer->LoadInventory();
 }
 
 //=========================================================

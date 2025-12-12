@@ -2731,8 +2731,6 @@ void CBasePlayer::PreThink(void)
 
 	if (m_initSoundTime && gpGlobals->time >= m_initSoundTime) {
 		m_initSoundTime = 0;
-		CBaseEntity* ent = NULL;
-
 		CAmbientGeneric::InitAllSoundsForNewJoiner(edict());
 	}
 
@@ -4677,39 +4675,55 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 //
 int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 {	
-	CBaseEntity* pInsertEnt = m_rgpPlayerItems[pItem->iItemSlot()].GetEntity();
-	CBasePlayerItem* pInsert = pInsertEnt ? pInsertEnt->GetWeaponPtr() : NULL;
+	const char* altName = "";
 
-	while (pInsert)
+	if (IsSevenKewpClient()) {
+		const char* remap = g_weaponRemapHL.get(STRING(pItem->pev->classname));
+		if (remap)
+			altName = remap;
+	}
+	else {
+		CWeaponCustom* cwep = pItem ? pItem->MyWeaponCustomPtr() : NULL;
+		if (cwep && cwep->wrongClientWeapon)
+			altName = cwep->wrongClientWeapon;
+	}
+
+	for (int i = 0; i < MAX_ITEM_TYPES; i++)
 	{
-		if (FClassnameIs( pInsert->pev, STRING( pItem->pev->classname) ))
-		{
-			if (pItem->AddDuplicate( pInsert ))
-			{
-				g_pGameRules->PlayerGotWeapon ( this, pItem );
-				pItem->m_pickupPlayers |= PLRBIT(edict());
-				pItem->CheckRespawn();
+		CBaseEntity* pInsertEnt = m_rgpPlayerItems[i].GetEntity();
+		CBasePlayerItem* pInsert = pInsertEnt ? pInsertEnt->GetWeaponPtr() : NULL;
 
-				// ugly hack to update clip w/o an update clip message
-				pInsert->UpdateItemInfo( );
-				if (m_pActiveItem) {
-					CBasePlayerWeapon* activeWep = m_pActiveItem.GetEntity()->GetWeaponPtr();
-					if (activeWep)
-						activeWep->UpdateItemInfo();
+		while (pInsert) {
+
+			if (FClassnameIs(pInsert->pev, STRING(pItem->pev->classname)) || FClassnameIs(pInsert->pev, altName))
+			{
+				if (pItem->AddDuplicate(pInsert))
+				{
+					g_pGameRules->PlayerGotWeapon(this, pItem);
+					pItem->m_pickupPlayers |= PLRBIT(edict());
+					pItem->CheckRespawn();
+
+					// ugly hack to update clip w/o an update clip message
+					pInsert->UpdateItemInfo();
+					if (m_pActiveItem) {
+						CBasePlayerWeapon* activeWep = m_pActiveItem.GetEntity()->GetWeaponPtr();
+						if (activeWep)
+							activeWep->UpdateItemInfo();
+					}
+
+					pItem->Kill();
 				}
+				else if (gEvilImpulse101)
+				{
+					// FIXME: remove anyway for deathmatch testing
+					pItem->Kill();
+				}
+				return FALSE;
+			}
 
-				pItem->Kill( );
-			}
-			else if (gEvilImpulse101)
-			{
-				// FIXME: remove anyway for deathmatch testing
-				pItem->Kill( );
-			}
-			return FALSE;
+			CBaseEntity* next = pInsert->m_pNext.GetEntity();
+			pInsert = next ? next->GetWeaponPtr() : NULL;
 		}
-
-		CBaseEntity* next = pInsert->m_pNext.GetEntity();
-		pInsert = next ? next->GetWeaponPtr() : NULL;
 	}
 
 
@@ -6006,9 +6020,6 @@ BOOL CBasePlayer::HasPlayerItem( CBasePlayerItem *pCheckItem )
 CBasePlayerItem* CBasePlayer::GetNamedPlayerItem(const char* pszItemName) {
 	CBasePlayerItem* pItem;
 	int i;
-
-	if (!pszItemName)
-		ALERT(at_console, "");
 		
 	if (pszItemName)
 		pszItemName = CBasePlayerWeapon::GetClassFromInfoName(pszItemName);
@@ -6023,6 +6034,24 @@ CBasePlayerItem* CBasePlayer::GetNamedPlayerItem(const char* pszItemName) {
 			{
 				return pItem;
 			}
+			pItem = (CBasePlayerItem*)pItem->m_pNext.GetEntity();
+		}
+	}
+
+	return NULL;
+}
+
+CBasePlayerItem* CBasePlayer::GetPlayerItemById(int id) {
+	for (int i = 0; i < MAX_ITEM_TYPES; i++) {
+		CBasePlayerItem* pItem = (CBasePlayerItem*)m_rgpPlayerItems[i].GetEntity();
+
+		while (pItem) {
+			CBasePlayerWeapon* wep = pItem->GetWeaponPtr();
+
+			if (wep && wep->m_iId == id) {
+				return pItem;
+			}
+
 			pItem = (CBasePlayerItem*)pItem->m_pNext.GetEntity();
 		}
 	}
@@ -7245,37 +7274,79 @@ void CBasePlayer::SaveInventory() {
 	for (int i = 0; i < MAX_ITEM_TYPES; i++) {
 		if (m_rgpPlayerItems[i]) {
 			CBaseEntity* ent = m_rgpPlayerItems[i].GetEntity();
-			CBasePlayerItem* pPlayerItem = ent ? ent->GetWeaponPtr() : NULL;
+			CBasePlayerWeapon* wep = ent ? ent->GetWeaponPtr() : NULL;
 
-			while (pPlayerItem) {
-				inv.weapons.put(STRING(pPlayerItem->pev->classname));
-				CBaseEntity* next = pPlayerItem->m_pNext.GetEntity();
-				pPlayerItem = next ? next->GetWeaponPtr() : NULL;
+			while (wep) {
+				inv.weapons.put(STRING(wep->pev->classname));
+				inv.weaponClips[wep->m_iId] = wep->m_iClip;
+				CBaseEntity* next = wep->m_pNext.GetEntity();
+				wep = next ? next->GetWeaponPtr() : NULL;
 			}
 		}
 	}
+
+	CBaseEntity* activeItem = m_pActiveItem.GetEntity();
+	CBasePlayerWeapon* activeWep = activeItem ? activeItem->GetWeaponPtr() : NULL;
+
+	inv.health = pev->health;
+	inv.armor = pev->armorvalue;
+	inv.hasLongjump = m_fLongJump;
+	inv.flashlightBattery = m_iFlashBattery;
+	inv.activeWeaponId = activeWep ? activeWep->m_iId : NULL;
 
 	memcpy(inv.m_rgAmmo, m_rgAmmo, MAX_AMMO_SLOTS * sizeof(int));
 	
 	g_playerInventory[GetSteamID64()] = inv;
 }
 
-void CBasePlayer::LoadInventory() {
+bool CBasePlayer::LoadInventory() {
 	auto previousInv = g_playerInventory.find(GetSteamID64());
 	if (previousInv != g_playerInventory.end()) {
 		player_inventory_t inv = previousInv->second;
+
+		if (mp_keep_inventory.value >= 2 && inv.health < 0) {
+			return false; // player was dead during level change. Give them the default loadout.
+		}
 		
 		StringSet::iterator_t iter;
 		while (inv.weapons.iterate(iter)) {
 			if (!HasNamedPlayerItem(iter.key)) {
-				GiveNamedItem(STRING(ALLOC_STRING(iter.key)));
+				const char* itemName = STRING(ALLOC_STRING(iter.key));
+				GiveNamedItem(itemName);
+				CBasePlayerItem* item = GetNamedPlayerItem(itemName);
+				CBasePlayerWeapon* wep = item ? item->GetWeaponPtr() : NULL;
+				if (wep) {
+					wep->m_iClip = inv.weaponClips[wep->m_iId];
+				}
 			}
 		}
 
 		for (int i = 0; i < MAX_AMMO_SLOTS; i++) {
 			m_rgAmmo[i] = V_max(m_rgAmmo[i], inv.m_rgAmmo[i]);
 		}
+
+		CBasePlayerItem* item = GetPlayerItemById(inv.activeWeaponId);
+		if (item)
+			SwitchWeapon(item);		
+
+		if (inv.hasLongjump) {
+			m_fLongJump = TRUE;
+			g_engfuncs.pfnSetPhysicsKeyValue(edict(), "slj", "1");
+		}
+
+		if (mp_keep_inventory.value >= 2) {
+			pev->health = inv.health;
+			pev->armorvalue = inv.armor;
+			m_iFlashBattery = inv.flashlightBattery;
+
+			// only load inventory once. Then use map inventory after death
+			g_playerInventory.erase(previousInv);
+		}
+
+		return true;
 	}
+
+	return false;
 }
 
 void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {

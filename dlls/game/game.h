@@ -98,7 +98,7 @@ EXPORT extern cvar_t	mp_blood_head; // 1 = headshots blood effects are always ma
 EXPORT extern cvar_t	mp_blood_color_human; // engine palette index for the blood effect
 EXPORT extern cvar_t	mp_blood_color_alien; // engine palette index for the blood effect
 EXPORT extern cvar_t	mp_one_pickup_per_player; // items don't respawn, but each player can pick the same item once. 0 = off, 1 = on
-EXPORT extern cvar_t	mp_keep_inventory; // 1 = players keep their previous map inventory on level change
+EXPORT extern cvar_t	mp_keep_inventory; // 1 = players add their previous map inventory to the next map's default loadout. 2 = players keep their inventory exactly as it was in the previous map. If they die and respawn, or join for the first time, they get the map default inventory.
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
@@ -219,7 +219,13 @@ EXPORT extern std::unordered_map<uint64_t, player_score_t> g_oldPlayerScores; //
 
 struct player_inventory_t {
 	StringSet weapons;
+	int weaponClips[MAX_WEAPONS];
 	int	m_rgAmmo[MAX_AMMO_SLOTS];
+	int activeWeaponId;
+	float health;
+	float armor;
+	int flashlightBattery;
+	bool hasLongjump;
 };
 
 // inventory to keep across map changes
