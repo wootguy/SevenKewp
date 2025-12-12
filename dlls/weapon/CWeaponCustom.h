@@ -110,11 +110,11 @@ public:
 	virtual void WeaponIdleCustom(void) {} // override this to add custom server-side logic after the weapon has idled
 	bool CommonAttack(int attackIdx, int* clip, bool leftHand, bool akimboFire); // true if attacked
 	void Cooldown(int attackIdx, int overrideMillis=-1);
-	bool Chargeup(int attackIdx, bool leftHand, bool akimboFire);
-	void Chargedown(int attackIdx);
+	virtual bool Chargeup(int attackIdx, bool leftHand, bool akimboFire);
+	virtual void Chargedown(int attackIdx);
 	void FinishAttack(int attackIdx);
 	void FailAttack(int attackIdx, bool leftHand, bool akimboFire);
-	void MeleeAttack(int attackIdx);
+	virtual void MeleeAttack(int attackIdx);
 	void PlayRandomSound(CBasePlayer* plr, uint16_t sounds[4]); // generic server side sound playback
 	virtual void MeleeMiss(CBasePlayer* plr) { } // called when a melee attack misses
 	virtual bool MeleeIsFlesh(CBaseEntity* target); // true if target should make a flesh sound (may be NULL)

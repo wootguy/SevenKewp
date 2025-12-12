@@ -159,9 +159,16 @@ enum merged_item_bodies {
 
 // Prefixes the message with the "targetname (classname): " for ease of debugging
 // Only usable inside entity class methods.
+#if defined(PLUGIN_BUILD) && defined(PLUGIN_NAME)
+#define EALERT(target, format, ...) \
+	g_plugin_print = true; \
+	DEBUG_MSG(target, ("%s (%s): " + std::string(format)).c_str(), \
+	STRING(pev->targetname), STRING(pev->classname), ##__VA_ARGS__)
+#else
 #define EALERT(target, format, ...) \
 	DEBUG_MSG(target, ("%s (%s): " + std::string(format)).c_str(), \
-		STRING(pev->targetname), STRING(pev->classname), ##__VA_ARGS__)
+	STRING(pev->targetname), STRING(pev->classname), ##__VA_ARGS__)
+#endif
 
 extern std::unordered_map<std::string, StringMap> g_replacementFiles;
 

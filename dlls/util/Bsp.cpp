@@ -86,7 +86,17 @@ bool Bsp::load_lumps(string fpath)
 
 	update_lump_pointers();
 
-	parseEntities();
+	parseEntities((char*)lumps[LUMP_ENTITIES], header.lump[LUMP_ENTITIES].nLength, ents);
+
+	StringSet unique_bsp_models;
+	for (int i = 0; i < ents.size(); i++) {
+		const char* model = ents[i].get("model");
+
+		if (model && model[0] == '*') {
+			unique_bsp_models.put(model);
+		}
+	}
+	entityBspModelCount = unique_bsp_models.size();
 
 	return valid;
 }
@@ -139,17 +149,16 @@ void Bsp::update_lump_pointers() {
 	if (visDataLength > MAX_MAP_VISDATA) ALERT(at_console, "Overflowed visdata !!!\n");
 }
 
-void Bsp::parseEntities() {
-	membuf sbuf((char*)lumps[LUMP_ENTITIES], header.lump[LUMP_ENTITIES].nLength);
+void Bsp::parseEntities(const char* data, int dataLen, std::vector<StringMap>& outputEnts) {
+	membuf sbuf((char*)data, dataLen);
 	istream in(&sbuf);
 
 	int lineNum = 0;
 	int lastBracket = -1;
 
-	StringSet unique_bsp_models;
 	StringMap ent;
 
-	ents.clear();
+	outputEnts.clear();
 
 	string line = "";
 	while (getline(in, line))
@@ -162,7 +171,7 @@ void Bsp::parseEntities() {
 		{
 			if (lastBracket == 0)
 			{
-				ALERT(at_console, "%s.bsp ent data (line %d): Unexpected '{'\n", path.c_str(), lineNum);
+				ALERT(at_console, "ent data (line %d): Unexpected '{'\n", lineNum);
 				continue;
 			}
 			lastBracket = 0;
@@ -170,7 +179,7 @@ void Bsp::parseEntities() {
 		else if (line[0] == '}')
 		{
 			if (lastBracket == 1)
-				ALERT(at_console, "%s.bsp ent data (line %d): Unexpected '}'\n", path.c_str(), lineNum);
+				ALERT(at_console, "ent data (line %d): Unexpected '}'\n", lineNum);
 			lastBracket = 1;
 
 			// you can end/start an ent on the same line, you know
@@ -178,7 +187,7 @@ void Bsp::parseEntities() {
 				lastBracket = 0;
 			}
 
-			ents.push_back(ent);
+			outputEnts.push_back(ent);
 			ent.clear();
 		}
 		else if (lastBracket == 0) // currently defining an entity
@@ -186,14 +195,8 @@ void Bsp::parseEntities() {
 			string key, value;
 			parse_keyvalue(line, key, value);
 			ent.put(key.c_str(), value.c_str());
-
-			if (key == "model" && value[0] == '*') {
-				unique_bsp_models.put(value.c_str());
-			}
 		}
 	}
-
-	entityBspModelCount = unique_bsp_models.size();
 }
 
 void Bsp::parse_keyvalue(const std::string& line, std::string& key, std::string& value) {

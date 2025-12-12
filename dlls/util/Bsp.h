@@ -64,10 +64,10 @@ public:
 	bool load_lumps(std::string fname);
 	void delete_lumps();
 
+	EXPORT static void parseEntities(const char* data, int dataLen, std::vector<StringMap>& outputEnts);
+
 private:
 	void update_lump_pointers();
 
-	void parseEntities();
-
-	void parse_keyvalue(const std::string& line, std::string& key, std::string& value);
+	static void parse_keyvalue(const std::string& line, std::string& key, std::string& value);
 };

@@ -138,13 +138,14 @@ struct globalentity_s
 	globalentity_t	*pNext;
 };
 
-class CGlobalState
+class EXPORT CGlobalState
 {
 public:
 					CGlobalState();
 	void			Reset( void );
 	void			ClearStates( void );
 	void			EntityAdd( string_t globalname, string_t mapName, GLOBALESTATE state );
+	void			GenericSetState( string_t globalname, GLOBALESTATE state ); // set a global state without it being attached to an entity
 	void			EntitySetState( string_t globalname, GLOBALESTATE state );
 	void			EntityUpdate( string_t globalname, string_t mapname );
 	const globalentity_t	*EntityFromTable( string_t globalname );
@@ -164,6 +165,6 @@ private:
 	int				m_listCount;
 };
 
-extern CGlobalState gGlobalState;
+EXPORT extern CGlobalState gGlobalState;
 
 #endif		//SAVERESTORE_H

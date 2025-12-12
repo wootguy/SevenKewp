@@ -70,12 +70,14 @@ public:
 	virtual int	GetEntindexPriority();
 	void KeyValue(KeyValueData* pkvd);
 	void Spawn(void);
+	void Activate();
 	void Precache(void);
 	void ToggleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void RampThink(void);
 	void UpdateLinearVolume();
 	void InitModulationParms(void);
 	void InitSoundForNewJoiner(edict_t* target);
+	static void InitAllSoundsForNewJoiner(edict_t* target);
 	void UpdateOnRemove(void);
 
 	virtual int		Save(CSave& save);

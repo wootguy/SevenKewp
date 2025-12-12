@@ -137,8 +137,11 @@ void CTriggerCamera::TogglePlayerViews(bool enabled) {
 		TogglePlayerView(plr, enabled);
 	}
 
-	if (m_iszTurnedOffTarget && !enabled) {
-		FireTargets(STRING(m_iszTurnedOffTarget), this, this, USE_TOGGLE);
+	if (!enabled) {
+		if (m_iszTurnedOffTarget)
+			FireTargets(STRING(m_iszTurnedOffTarget), this, this, USE_TOGGLE);
+		if (m_iszKillTarget)
+			SUB_KillTarget(STRING(m_iszKillTarget));
 	}
 }
 

@@ -352,6 +352,10 @@ void list_precached_models() {
 	}
 }
 
+void list_global_states() {
+	gGlobalState.DumpGlobals();
+}
+
 void test_command() {
 }
 
@@ -386,6 +390,7 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("freespace", freespace_command);
 	g_engfuncs.pfnAddServerCommand("sounds", list_precached_sounds);
 	g_engfuncs.pfnAddServerCommand("models", list_precached_models);
+	g_engfuncs.pfnAddServerCommand("globals", list_global_states);
 	
 	// Register cvars here:
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );

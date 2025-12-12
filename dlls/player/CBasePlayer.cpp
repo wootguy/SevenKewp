@@ -2733,18 +2733,7 @@ void CBasePlayer::PreThink(void)
 		m_initSoundTime = 0;
 		CBaseEntity* ent = NULL;
 
-		while ((ent = UTIL_FindEntityByClassname(ent, "ambient_generic"))) {
-			CAmbientGeneric* ambient = (CAmbientGeneric*)ent;
-			if (ambient)
-				ambient->InitSoundForNewJoiner(edict());
-		}
-
-		ent = NULL;
-		while ((ent = UTIL_FindEntityByClassname(ent, "ambient_music"))) {
-			CAmbientGeneric* ambient = (CAmbientGeneric*)ent;
-			if (ambient)
-				ambient->InitSoundForNewJoiner(edict());
-		}
+		CAmbientGeneric::InitAllSoundsForNewJoiner(edict());
 	}
 
 	UpdateShockEffect();

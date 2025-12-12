@@ -96,6 +96,7 @@ EXPORT std::string normalize_path(std::string s);
 EXPORT std::string getGameFilePath(const char* path, bool matchCase = true);
 
 // relative to a content directory. Will search all suffixed directores (valve, valve_addon, valve_downloads)
+// returns NULL if file couldn't be loaded
 EXPORT uint8_t* UTIL_LoadFile(const char* fpath, int* size = NULL);
 
 // load file relative to the Half-Life/ folder

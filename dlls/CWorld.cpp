@@ -404,6 +404,34 @@ void CWorld::Precache(void)
 		CVAR_SET_FLOAT("mp_defaultteam", 0);
 	}
 
+	const char* current_map = STRING(gpGlobals->mapname);
+	mapcycle_item_t* cycleMap = g_pGameRules->GetMapCyleMap(current_map);
+	mapcycle_item_t* lastCycleMap = g_pGameRules->GetMapCyleMap(g_lastMapName.c_str());
+
+	if (cycleMap) {
+		CVAR_SET_STRING("mp_nextmap", cycleMap->next->mapname);
+	}
+	else {
+		if (g_pGameRules->mapcycle.items) {
+			ALERT(at_console, "Map '%s' not in map cycle. Restarting map cycle.\n", current_map);
+			CVAR_SET_STRING("mp_nextmap", g_pGameRules->mapcycle.items->mapname);
+		}
+		else {
+			ALERT(at_console, "Map cycle empty. Clearning mp_nextmap.\n");
+			CVAR_SET_STRING("mp_nextmap", "");
+		}
+	}
+
+	bool newSeries = !cycleMap || !lastCycleMap || cycleMap->seriesNum != lastCycleMap->seriesNum;
+	if (newSeries && current_map != g_lastMapName) {
+		ALERT(at_console, "New map series started. Clearing player scores and global states\n");
+		// clear saved scores if switching to map that isn't part of the same series
+		g_playerScores.clear();
+
+		// also clear global states in case the previous map series comes up again
+		gGlobalState.ClearStates();
+	}
+
 	uint64_t hookStartTime = getEpochMillis();
 	CALL_HOOKS_VOID(pfnMapInit);
 	g_levelChangePluginTime += getEpochMillis() - hookStartTime;

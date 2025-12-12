@@ -28,6 +28,9 @@ void CInfoLandmark::Spawn() {
 void CInfoLandmark::CreateSpawnPoints() {
 	Vector vecStart = pev->origin;
 
+	SetThink(&CBaseEntity::SUB_Remove);
+	pev->nextthink = gpGlobals->time;
+
 	TraceResult tr;
 	UTIL_TraceLine(vecStart, vecStart - Vector(0, 0, 4096), ignore_monsters, NULL, &tr);
 

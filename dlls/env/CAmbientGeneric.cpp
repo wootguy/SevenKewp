@@ -225,6 +225,15 @@ void CAmbientGeneric::Precache(void)
 	}
 }
 
+void CAmbientGeneric::Activate() {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+		if (plr) {
+			InitSoundForNewJoiner(plr->edict());
+		}
+	}
+}
+
 int	CAmbientGeneric::GetEntindexPriority() {
 	char* szSoundFile = (char*)STRING(pev->message);
 	bool isGlobalMp3 = toLowerCase(szSoundFile).find(".mp3") == strlen(szSoundFile) - 4;
@@ -979,6 +988,22 @@ void CAmbientGeneric::InitSoundForNewJoiner(edict_t* target) {
 	if (shouldRestartLoopSound || shouldRestartOnceSound) {
 		UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
 			(vol * 0.01), m_flAttenuation, SND_CHANGE_VOL, pitch, target);
+	}
+}
+
+void CAmbientGeneric::InitAllSoundsForNewJoiner(edict_t* target) {
+	CBaseEntity* ent = NULL;
+	while ((ent = UTIL_FindEntityByClassname(ent, "ambient_generic"))) {
+		CAmbientGeneric* ambient = (CAmbientGeneric*)ent;
+		if (ambient)
+			ambient->InitSoundForNewJoiner(target);
+	}
+
+	ent = NULL;
+	while ((ent = UTIL_FindEntityByClassname(ent, "ambient_music"))) {
+		CAmbientGeneric* ambient = (CAmbientGeneric*)ent;
+		if (ambient)
+			ambient->InitSoundForNewJoiner(target);
 	}
 }
 

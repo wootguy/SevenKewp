@@ -70,6 +70,13 @@ void CGlobalState::EntityAdd(string_t globalname, string_t mapName, GLOBALESTATE
 	m_listCount++;
 }
 
+void CGlobalState::GenericSetState(string_t globalname, GLOBALESTATE state)
+{
+	if (gGlobalState.EntityInTable(globalname))
+		gGlobalState.EntitySetState(globalname, state);
+	else
+		gGlobalState.EntityAdd(globalname, gpGlobals->mapname, state);
+}
 
 void CGlobalState::EntitySetState(string_t globalname, GLOBALESTATE state)
 {

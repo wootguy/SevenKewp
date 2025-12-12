@@ -52,6 +52,7 @@ void AddPrecacheWeapon(std::string wepName) {}
 bool UTIL_MapReplacesModel(const char* path) { return false; }
 void AddWaterPhysicsEnt(CBaseEntity* ent, float waterFriction, float buoyancy, float splashSz) {}
 const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound) { return NULL; }
+globalentity_t* CGlobalState::Find(string_t globalname) { return NULL; };
 
 // CBaseEntity Stubs
 int CBaseEntity :: TakeHealth( float flHealth, int bitsDamageType, float healthcap) { return 1; }
