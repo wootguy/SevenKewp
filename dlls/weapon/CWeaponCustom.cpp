@@ -77,22 +77,22 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 #ifndef CLIENT_DLL
 	if (!pPlayer->IsSevenKewpClient() && wrongClientWeapon) {
 		if (pPlayer->HasNamedPlayerItem(wrongClientWeapon)) {
+
+			if (mp_sevenkewp_client_notice.value) {
+				std::string clientReq = UTIL_SevenKewpClientString(SEVENKEWP_VERSION);
+				UTIL_ClientPrint(pPlayer, print_chat, UTIL_VarArgs(
+					"The \"%s\" requires the \"%s\" client. Check your console for more info.\n",
+					DisplayName(), clientReq.c_str()));
+				pPlayer->SendSevenKewpClientNotice();
+			}
+			
 			return 0;
 		}
 
 		pPlayer->GiveNamedItem(wrongClientWeapon);
 		CBasePlayerItem* wep = pPlayer->GetNamedPlayerItem(wrongClientWeapon);
 
-		if (!wep || pPlayer->m_sentSevenKewpNotice || !mp_sevenkewp_client_notice.value)
-			return 0;
-
-		std::string clientReq = UTIL_SevenKewpClientString(SEVENKEWP_VERSION);
-		UTIL_ClientPrint(pPlayer, print_chat, UTIL_VarArgs(
-			"The \"%s\" requires the \"%s\" client. You were given the \"%s\" instead. Check your console for more info.\n",
-			DisplayName(), clientReq.c_str(), wep->DisplayName()));
-
-		pPlayer->SendSevenKewpClientNotice();
-
+		m_pickupPlayers |= PLRBIT(pPlayer->edict());
 		return 0;
 	}
 

@@ -138,10 +138,16 @@ void CItem::ItemTouch(CBaseEntity* pOther)
 		return;
 	}
 
+	if (mp_one_pickup_per_player.value && (m_pickupPlayers & PLRBIT(pOther->edict())) && OnePickupLimit()) {
+		return;
+	}
+
 	if (MyTouch(pPlayer))
 	{
 		SUB_UseTargets(pOther, USE_TOGGLE, 0);
 		SetTouch(NULL);
+
+		m_pickupPlayers |= PLRBIT(pOther->edict());
 
 		// player grabbed the item. 
 		g_pGameRules->PlayerGotItem(pPlayer, this);
@@ -168,6 +174,10 @@ void CItem::ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 			return;
 		}
 
+		if (pActivator->IsPlayer() && mp_one_pickup_per_player.value && (m_pickupPlayers & PLRBIT(pActivator->edict()))) {
+			UTIL_ClientPrint(pActivator, print_center, "Can't collect again until you respawn\n");
+		}
+
 		ItemTouch(pCaller);
 	}
 }
@@ -179,8 +189,15 @@ CBaseEntity* CItem::Respawn(void)
 
 	UTIL_SetOrigin(pev, g_pGameRules->VecItemRespawnSpot(this));// blip to whereever you should respawn.
 
-	SetThink(&CItem::Materialize);
-	pev->nextthink = g_pGameRules->FlItemRespawnTime(this);
+	if (mp_one_pickup_per_player.value && OnePickupLimit()) {
+		Materialize();
+	}
+	else {
+		SetThink(&CItem::Materialize);
+		pev->nextthink = g_pGameRules->FlItemRespawnTime(this);
+	}
+
+	
 	return this;
 }
 
@@ -189,9 +206,11 @@ void CItem::Materialize(void)
 	if (pev->effects & EF_NODRAW)
 	{
 		// changing from invisible state to visible.
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150);
+		if (!mp_one_pickup_per_player.value) {
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150);
+			pev->effects |= EF_MUZZLEFLASH;
+		}
 		pev->effects &= ~EF_NODRAW;
-		pev->effects |= EF_MUZZLEFLASH;
 	}
 
 	SetupTouchAndUse();
@@ -212,4 +231,13 @@ int	CItem::ObjectCaps(void) {
 	else {
 		return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
 	}
+}
+
+int CItem::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) {
+	if (mp_one_pickup_per_player.value && (m_pickupPlayers & PLRBIT(player->edict()))) {
+		state->rendermode = kRenderTransAlpha;
+		state->renderamt = 40;
+	}
+
+	return 1;
 }

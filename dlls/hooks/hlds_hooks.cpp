@@ -217,6 +217,8 @@ void ClientDisconnect( edict_t *pEntity )
 	CBasePlayer* plr = (CBasePlayer*)GET_PRIVATE(pEntity);
 	CALL_HOOKS_VOID(pfnClientDisconnect, plr);
 
+	CBasePlayerWeapon::ResetPickupLimits(plr);
+
 	if (mp_debugmsg.value) {
 		writeNetworkMessageHistory(std::string(STRING(pEntity->v.netname)) 
 			+ " dropped on map " + STRING(gpGlobals->mapname));

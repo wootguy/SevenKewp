@@ -18,6 +18,8 @@ class CItemBattery : public CItem
 		CItem::Spawn();
 	}
 
+	virtual BOOL OnePickupLimit() { return TRUE; }
+
 	void Precache(void)
 	{
 		if (FClassnameIs(pev, "item_armorvest")) {

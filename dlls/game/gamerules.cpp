@@ -85,6 +85,10 @@ BOOL CGameRules::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerItem *pWeap
 	if ( pPlayer->pev->deadflag != DEAD_NO )
 		return FALSE;
 
+	if (mp_one_pickup_per_player.value && (pWeapon->m_pickupPlayers & PLRBIT(pPlayer->edict()))) {
+		return FALSE;
+	}
+
 	CBasePlayerItem* item = pPlayer->GetNamedPlayerItem(STRING(pWeapon->pev->classname));
 	CBasePlayerWeapon* wep = item ? item->GetWeaponPtr() : NULL;
 

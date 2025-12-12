@@ -35,6 +35,7 @@ public:
 	virtual BOOL IsItem() { return TRUE; }
 	virtual CItem* MyItemPointer(void) { return this; }
 	virtual BOOL ShouldRespawn();
+	virtual BOOL OnePickupLimit() { return FALSE; } // should this item be limited in one-pickup-per-player mode?
 	virtual CBaseEntity* Respawn(void);
 	const char* GetModel();
 	void SetSize(Vector defaultMins, Vector defaultMaxs);
@@ -43,6 +44,7 @@ public:
 	virtual int	ObjectCaps(void);
 	void DropThink();
 	void SetupTouchAndUse();
+	int AddToFullPack(struct entity_state_s* state, CBasePlayer* player);
 
 	const char* m_defaultModel;
 	string_t m_sequence_name;
@@ -51,4 +53,5 @@ public:
 	Vector m_maxHullSize;
 
 	float m_flCustomRespawnTime;
+	uint32_t m_pickupPlayers; // bitfield flagging which players picked up this item in one-pickup-per-player mode
 };

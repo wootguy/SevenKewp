@@ -17,6 +17,8 @@ public:
 
 	CBaseEntity* Respawn( void );
 	void Materialize( void );
+	virtual int AddToFullPack(struct entity_state_s* state, CBasePlayer* player) override;
 
 	float m_flCustomRespawnTime;
+	uint32_t m_pickupPlayers; // bitfield flagging which players picked up this item in one-pickup-per-player mode
 };

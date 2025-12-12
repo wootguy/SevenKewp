@@ -55,6 +55,8 @@ public:
 	static ItemInfo ItemInfoArray[ MAX_WEAPONS ];
 	static AmmoInfo AmmoInfoArray[ MAX_AMMO_SLOTS ];
 
+	static void ResetPickupLimits(CBasePlayer* plr);
+
 #ifdef CLIENT_DLL
 	CBasePlayer* m_hPlayer;
 
@@ -75,8 +77,11 @@ public:
 	int		m_iId;												// WEAPON_???
 	float m_flCustomRespawnTime;
 
-	// lazy fix for ammo duping in dropped weapons
+	// fix for ammo duping in dropped weapons, and one-pickup mode test
 	bool m_isDroppedWeapon;
+
+	// bitfield flagging which players picked up this item in one-pickup-per-player mode
+	uint32_t m_pickupPlayers;
 
 	virtual int iItemSlot( void ) { return 0; }			// return 0 to MAX_ITEMS_SLOTS, used in hud
 

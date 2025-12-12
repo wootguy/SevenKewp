@@ -31,6 +31,7 @@ class CHealthKit : public CItem
 	void KeyValue(KeyValueData* pkvd);
 
 	BOOL MyTouch( CBasePlayer *pPlayer );
+	virtual BOOL OnePickupLimit() { return TRUE; }
 
 	float m_healthcap;
 

@@ -3762,7 +3762,7 @@ void CBasePlayer::Spawn( void )
 		UTIL_ScreenFade(this, g_vecZero, 0, 0, 0, 0, true); // remove nightvision fade
 	}
 	m_flashlightEnabled = false;
-	memset(m_nextItemPickups, 0, sizeof(float) * MAX_WEAPONS);
+	CBasePlayerWeapon::ResetPickupLimits(this);
 	memset(m_lastHurtTriggers, 0, sizeof(m_lastHurtTriggers));
 
 	if( pev->iuser1 != OBS_NONE )
@@ -4244,7 +4244,10 @@ void CBasePlayer::GiveNamedItem( const char *pszName )
 
 	// call add functions directly in case the item is use-only
 	if (wep) {
+		wep->m_isDroppedWeapon = true;
 		wep->DefaultTouch(this);
+		if (wep->pev->movetype != MOVETYPE_FOLLOW)
+			UTIL_Remove(wep); // wasn't collected
 	}
 	else if (ammo) {
 		ammo->DefaultUse(this, this, USE_TOGGLE, 0);
@@ -4684,6 +4687,7 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 			if (pItem->AddDuplicate( pInsert ))
 			{
 				g_pGameRules->PlayerGotWeapon ( this, pItem );
+				pItem->m_pickupPlayers |= PLRBIT(edict());
 				pItem->CheckRespawn();
 
 				// ugly hack to update clip w/o an update clip message
@@ -4711,6 +4715,8 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 
 	if (pItem->AddToPlayer( this ))
 	{
+		pItem->m_pickupPlayers |= PLRBIT(edict()); // add new flag to the respawning weapon
+		pItem->m_isDroppedWeapon = true;
 		g_pGameRules->PlayerGotWeapon ( this, pItem );
 		pItem->CheckRespawn();
 
@@ -6826,13 +6832,18 @@ void CBasePlayer::SendLegacyClientWarning() {
 
 void CBasePlayer::SendSevenKewpClientNotice() {
 	std::string clientReq = UTIL_SevenKewpClientString(SEVENKEWP_VERSION);
-	UTIL_ClientPrint(this, print_console, "\n-------------------------------------------------------------------------\n");
-	UTIL_ClientPrint(this, print_console, UTIL_VarArgs("This server requires the \"%s\" client to use certain weapons.\n", clientReq.c_str()));
-	UTIL_ClientPrint(this, print_console, "Download the latest SevenKewp client here:\n\n");
+	UTIL_ClientPrint(this, print_console, "\n-----------------------------------------------------------------\n");
+	UTIL_ClientPrint(this, print_console, UTIL_VarArgs("This server requires the \"%s\" client to use some\n", clientReq.c_str()));
+	UTIL_ClientPrint(this, print_console, "weapons. The reason for this is that custom hitscan weapons feel ");
+	UTIL_ClientPrint(this, print_console, "awful without client-side prediction. You were given a similar ");
+	UTIL_ClientPrint(this, print_console, "Half-Life weapon instead of the one you wanted.\n\n");
+	UTIL_ClientPrint(this, print_console, "If you don't know what weapon prediction is, type in \"cl_lw 0\" and ");
+	UTIL_ClientPrint(this, print_console, "try playing the game that way. It's not fun with the average ping.\n\n");
+	UTIL_ClientPrint(this, print_console, "Download the latest SevenKewp client here:\n");
 	UTIL_ClientPrint(this, print_console, "https://github.com/wootguy/SevenKewp/releases/latest\n\n");
 	UTIL_ClientPrint(this, print_console, "The server detected that you are using this client:\n");
 	UTIL_ClientPrint(this, print_console, STRING(m_clientModVersionString));
-	UTIL_ClientPrint(this, print_console, "\n-------------------------------------------------------------------------\n\n");
+	UTIL_ClientPrint(this, print_console, "\n-----------------------------------------------------------------\n\n");
 	m_sentSevenKewpNotice = true;
 }
 

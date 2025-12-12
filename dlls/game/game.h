@@ -97,6 +97,8 @@ EXPORT extern cvar_t	mp_blood_scale; // scale applied to blood sprite effects
 EXPORT extern cvar_t	mp_blood_head; // 1 = headshots blood effects are always max size
 EXPORT extern cvar_t	mp_blood_color_human; // engine palette index for the blood effect
 EXPORT extern cvar_t	mp_blood_color_alien; // engine palette index for the blood effect
+EXPORT extern cvar_t	mp_one_pickup_per_player; // items don't respawn, but each player can pick the same item once. 0 = off, 1 = on
+EXPORT extern cvar_t	mp_keep_inventory; // 1 = players keep their previous map inventory on level change
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

@@ -6,6 +6,7 @@
 #include "gamerules.h"
 #include "CBasePlayerAmmo.h"
 #include "weapons.h"
+#include "CBasePlayer.h"
 
 extern int gEvilImpulse101;
 
@@ -43,8 +44,13 @@ CBaseEntity* CBasePlayerAmmo::Respawn(void)
 
 	UTIL_SetOrigin(pev, g_pGameRules->VecAmmoRespawnSpot(this));// move to wherever I'm supposed to repawn.
 
-	SetThink(&CBasePlayerAmmo::Materialize);
-	pev->nextthink = g_pGameRules->FlAmmoRespawnTime(this);
+	if (mp_one_pickup_per_player.value) {
+		Materialize();
+	}
+	else {
+		SetThink(&CBasePlayerAmmo::Materialize);
+		pev->nextthink = g_pGameRules->FlAmmoRespawnTime(this);
+	}
 
 	return this;
 }
@@ -54,9 +60,11 @@ void CBasePlayerAmmo::Materialize(void)
 	if (pev->effects & EF_NODRAW)
 	{
 		// changing from invisible state to visible.
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150);
+		if (!mp_one_pickup_per_player.value) {
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150);
+			pev->effects |= EF_MUZZLEFLASH;
+		}
 		pev->effects &= ~EF_NODRAW;
-		pev->effects |= EF_MUZZLEFLASH;
 	}
 
 	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
@@ -77,8 +85,14 @@ void CBasePlayerAmmo::DefaultTouch(CBaseEntity* pOther)
 		return; // waiting to respawn
 	}
 
+	if (mp_one_pickup_per_player.value && (m_pickupPlayers & PLRBIT(pOther->edict()))) {
+		return;
+	}
+
 	if (AddAmmo(pOther))
 	{
+		m_pickupPlayers |= PLRBIT(pOther->edict());
+
 		if (g_pGameRules->AmmoShouldRespawn(this) == GR_AMMO_RESPAWN_YES)
 		{
 			Respawn();
@@ -107,6 +121,10 @@ void CBasePlayerAmmo::DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, 
 			return;
 		}
 
+		if (pActivator->IsPlayer() && mp_one_pickup_per_player.value && (m_pickupPlayers & PLRBIT(pActivator->edict()))) {
+			UTIL_ClientPrint(pActivator, print_center, "Can't collect again until you respawn\n");
+		}
+
 		DefaultTouch(pCaller);
 	}
 }
@@ -118,4 +136,13 @@ int	CBasePlayerAmmo::ObjectCaps(void) {
 	else {
 		return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
 	}
+}
+
+int CBasePlayerAmmo::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) {
+	if (mp_one_pickup_per_player.value && (m_pickupPlayers & PLRBIT(player->edict()))) {
+		state->rendermode = kRenderTransAlpha;
+		state->renderamt = 40;
+	}
+
+	return 1;
 }

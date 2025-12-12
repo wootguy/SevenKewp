@@ -8,6 +8,8 @@
 #include "gamerules.h"
 #include "CBasePlayerItem.h"
 #include "CWeaponCustom.h"
+#include "CBasePlayerAmmo.h"
+#include "CItem.h"
 
 extern int gEvilImpulse101;
 
@@ -96,9 +98,11 @@ void CBasePlayerItem::Materialize(void)
 	if (pev->effects & EF_NODRAW)
 	{
 		// changing from invisible state to visible.
-		EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150);
+		if (!mp_one_pickup_per_player.value) {
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM, 0, 150);
+			pev->effects |= EF_MUZZLEFLASH;
+		}
 		pev->effects &= ~EF_NODRAW;
-		pev->effects |= EF_MUZZLEFLASH;
 	}
 
 	pev->solid = SOLID_TRIGGER;
@@ -178,7 +182,7 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 		pNewWeapon->pev->renderfx = pev->renderfx;
 		pNewWeapon->pev->dmg = pev->dmg;
 		pNewWeapon->pev->movetype = pev->movetype;
-		pNewWeapon->pev->effects |= EF_NODRAW;// invisible for now
+		pNewWeapon->pev->effects |= EF_NODRAW;
 
 		CWeaponCustom* thisCustom = MyWeaponCustomPtr();
 		CWeaponCustom* newCustom = pNewWeapon->MyWeaponCustomPtr();
@@ -187,21 +191,10 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 			newCustom->SetAkimbo(thisCustom->IsAkimbo());
 		}
 
-		CBasePlayerWeapon* thisWep = GetWeaponPtr();
-		CBasePlayerWeapon* newWep = pNewWeapon->GetWeaponPtr();
-		if (thisWep && newWep) {
-			newWep->m_customSpriteDir = thisWep->m_customSpriteDir;
-			newWep->m_customModelP = thisWep->m_customModelP;
-			newWep->m_customModelV = thisWep->m_customModelV;
-			newWep->m_customModelW = thisWep->m_customModelW;
-			newWep->m_defaultModelP = thisWep->m_defaultModelP;
-			newWep->m_defaultModelV = thisWep->m_defaultModelV;
-			newWep->m_defaultModelW = thisWep->m_defaultModelW;
-		}
-
 		CBasePlayerItem* wep = (CBasePlayerItem*)pNewWeapon->GetWeaponPtr();
 		if (wep) {
 			wep->m_flCustomRespawnTime = m_flCustomRespawnTime;
+			wep->m_pickupPlayers = m_pickupPlayers;
 		}
 		
 		pNewWeapon->SetTouch(NULL);// no touch
@@ -212,6 +205,12 @@ CBaseEntity* CBasePlayerItem::Respawn(void)
 		// not a typo! We want to know when the weapon the player just picked up should respawn! This new entity we created is the replacement,
 		// but when it should respawn is based on conditions belonging to the weapon that was taken.
 		pNewWeapon->pev->nextthink = g_pGameRules->FlWeaponRespawnTime(this);
+
+		if (mp_one_pickup_per_player.value && wep) {
+			// respawn NOW
+			wep->pev->nextthink = 0;
+			wep->Materialize();
+		}
 	}
 	else
 	{
@@ -335,6 +334,10 @@ void CBasePlayerItem::DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, 
 			return;
 		}
 
+		if (pActivator->IsPlayer() && mp_one_pickup_per_player.value && (m_pickupPlayers & PLRBIT(pActivator->edict()))) {
+			UTIL_ClientPrint(pActivator, print_center, "Can't collect again until you respawn\n");
+		}
+
 		DefaultTouch(pCaller);
 	}
 }
@@ -345,5 +348,33 @@ int CBasePlayerItem::ObjectCaps() {
 	}
 	else {
 		return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE;
+	}
+}
+
+void CBasePlayerItem::ResetPickupLimits(CBasePlayer* plr) {
+	if (!g_serveractive)
+		return;
+
+	memset(plr->m_nextItemPickups, 0, sizeof(float) * MAX_WEAPONS);
+
+	CBaseEntity* ent = NULL;
+	while ((ent = UTIL_FindEntityByClassname(ent, "weapon_*"))) {
+		CBasePlayerItem* wep = ent->GetWeaponPtr();
+		if (wep)
+			wep->m_pickupPlayers &= ~PLRBIT(plr->edict());
+	}
+
+	ent = NULL;
+	while ((ent = UTIL_FindEntityByClassname(ent, "ammo_*"))) {
+		CBasePlayerAmmo* ammo = ent->MyAmmoPtr();
+		if (ammo)
+			ammo->m_pickupPlayers &= ~PLRBIT(plr->edict());
+	}
+
+	ent = NULL;
+	while ((ent = UTIL_FindEntityByClassname(ent, "item_*"))) {
+		CItem* item = ent->MyItemPointer();
+		if (item)
+			item->m_pickupPlayers &= ~PLRBIT(plr->edict());
 	}
 }

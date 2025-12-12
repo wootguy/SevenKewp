@@ -277,6 +277,7 @@ int CBasePlayerWeapon::AddToPlayer(CBasePlayer* pPlayer)
 				return 0;
 			}
 
+			m_pickupPlayers |= PLRBIT(pPlayer->edict());
 			pPlayer->GiveNamedItem(remapClass);
 			CBasePlayerItem* wep = pPlayer->GetNamedPlayerItem(remapClass);
 			return 0;
@@ -746,6 +747,10 @@ CBaseEntity* CBasePlayerWeapon::Respawn(void)
 		wep->m_customModelP = m_customModelP;
 		wep->m_customModelW = m_customModelW;
 		wep->pev->movetype = pev->movetype;
+		wep->m_customSpriteDir = m_customSpriteDir;
+		wep->m_defaultModelP = m_defaultModelP;
+		wep->m_defaultModelV = m_defaultModelV;
+		wep->m_defaultModelW = m_defaultModelW;
 		SET_MODEL(wep->edict(), GetModelW());
 	}
 
@@ -889,4 +894,13 @@ const char* CBasePlayerWeapon::GetClassFromInfoName(const char* name) {
 	}
 
 	return name;
+}
+
+int CBasePlayerWeapon::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) {
+	if (mp_one_pickup_per_player.value && (m_pickupPlayers & PLRBIT(player->edict()))) {
+		state->rendermode = kRenderTransAlpha;
+		state->renderamt = 40;
+	}
+
+	return 1;
 }

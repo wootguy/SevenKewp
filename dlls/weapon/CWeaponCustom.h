@@ -45,7 +45,7 @@ public:
 	const char* animExtAkimbo; // animation set used while in akimbo mode
 	const char* pmodelAkimbo; // thirdperson model used in akimbo mode
 	const char* wmodelAkimbo; // world model used in akimbo mode
-	const char* wrongClientWeapon; // weapon given to players who don't have the correct client to use this one
+	const char* wrongClientWeapon; // weapon given to players who don't have the correct client to use this one. Do not use aliases here.
 	int ammoFreqs[3]; // ammo frequency counters for each attack
 	int animCount; // counter for ordered weapon aimations
 

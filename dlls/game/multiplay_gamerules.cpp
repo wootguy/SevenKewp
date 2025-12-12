@@ -1147,6 +1147,9 @@ Vector CHalfLifeMultiplay :: VecWeaponRespawnSpot( CBasePlayerItem *pWeapon )
 //=========================================================
 int CHalfLifeMultiplay :: WeaponShouldRespawn( CBasePlayerItem *pWeapon )
 {
+	if (!pWeapon->m_isDroppedWeapon && mp_one_pickup_per_player.value)
+		return GR_WEAPON_RESPAWN_YES; // need to let other players get the pickup
+
 	if ( pWeapon->pev->spawnflags & SF_NORESPAWN )
 	{
 		return GR_WEAPON_RESPAWN_NO;
@@ -1163,8 +1166,11 @@ BOOL CHalfLifeMultiplay::CanHavePlayerItem( CBasePlayer *pPlayer, CBasePlayerIte
 {
 	if ( weaponstay.value > 0 )
 	{
-		if ( (pItem->iFlags() & ITEM_FLAG_LIMITINWORLD) || (pItem->pev->spawnflags & SF_NORESPAWN))
-			return CGameRules::CanHavePlayerItem( pPlayer, pItem );
+		if (mp_one_pickup_per_player.value ||
+			(pItem->iFlags() & ITEM_FLAG_LIMITINWORLD) || (pItem->pev->spawnflags & SF_NORESPAWN))
+		{
+			return CGameRules::CanHavePlayerItem(pPlayer, pItem);
+		}
 
 		CBasePlayerWeapon* wep = pItem ? pItem->GetWeaponPtr() : NULL;
 		bool isAkimboWeapon = wep && wep->IsAkimboWeapon();

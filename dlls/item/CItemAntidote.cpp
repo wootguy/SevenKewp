@@ -25,6 +25,7 @@ class CItemAntidote : public CItem
 		pPlayer->m_rgItems[ITEM_ANTIDOTE] += 1;
 		return TRUE;
 	}
+	virtual BOOL OnePickupLimit() { return TRUE; }
 };
 
 LINK_ENTITY_TO_CLASS(item_antidote, CItemAntidote)

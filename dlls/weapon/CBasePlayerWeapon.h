@@ -84,6 +84,8 @@ public:
 		return plr ? plr->GetDamageModifier() : 1.0f;
 	}
 
+	virtual int AddToFullPack(struct entity_state_s* state, CBasePlayer* player) override;
+
 	// get the class name from a weapon name like "hloop/weapon_eagle" (a hack used for custom huds)
 	static const char* GetClassFromInfoName(const char* name);
 
