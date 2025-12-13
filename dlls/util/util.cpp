@@ -2052,7 +2052,7 @@ Vector UTIL_ClampVectorToBox( const Vector &input, const Vector &clampSize )
 	else
 		sourceVector.z = 0;
 
-	return sourceVector.Normalize();
+	return sourceVector;
 }
 
 

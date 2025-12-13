@@ -1221,6 +1221,9 @@ void CHalfLifeMultiplay::PlayerGotItem( CBasePlayer *pPlayer, CItem *pItem )
 //=========================================================
 int CHalfLifeMultiplay::ItemShouldRespawn( CItem *pItem )
 {
+	if (!pItem->OnePickupLimit() && mp_one_pickup_per_player.value)
+		return GR_ITEM_RESPAWN_YES; // need to let other players get the pickup
+
 	if ( pItem->pev->spawnflags & SF_NORESPAWN )
 	{
 		return GR_ITEM_RESPAWN_NO;
@@ -1268,6 +1271,9 @@ BOOL CHalfLifeMultiplay::IsAllowedToSpawn( CBaseEntity *pEntity )
 //=========================================================
 int CHalfLifeMultiplay::AmmoShouldRespawn( CBasePlayerAmmo *pAmmo )
 {
+	if (mp_one_pickup_per_player.value)
+		return GR_AMMO_RESPAWN_YES; // need to let other players get the pickup
+
 	if ( pAmmo->pev->spawnflags & SF_NORESPAWN )
 	{
 		return GR_AMMO_RESPAWN_NO;

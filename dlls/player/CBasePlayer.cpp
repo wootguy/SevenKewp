@@ -2171,14 +2171,9 @@ void CBasePlayer::PlayerUse ( void )
 
 	CBaseEntity* pObject = NULL;
 	CBaseEntity* pClosest = NULL;
-	CBaseEntity* pInside = NULL;
 	CBaseEntity* pLooking = NULL;
-	Vector		vecLOS;
 	float flMaxDot = VIEW_FIELD_NARROW;
-	float flDot;
-	float bestDist = FLT_MAX;
-	bool foundGoodWeapon = false;
-	
+	float bestDist = FLT_MAX;	
 
 	TraceResult tr;
 	TRACE_LINE(viewPos, viewPos + gpGlobals->v_forward * PLAYER_SEARCH_RADIUS*2, dont_ignore_monsters, edict(), &tr);
@@ -2194,45 +2189,37 @@ void CBasePlayer::PlayerUse ( void )
 				break;
 			}
 
-			CWeaponCustom* cwep = pObject->MyWeaponCustomPtr();
-			CWeaponBox* bwep = pObject->MyWeaponBoxPtr();
-			if (cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY) || (bwep && bwep->IsUseOnlyWeapon())) {
-				pClosest = pObject;
-				foundGoodWeapon = true;
+			Vector vecLOS;
+
+			if (pObject->IsBSPModel()) {
+				// This essentially moves the origin of the target to the corner nearest the player
+				// to test to see if it's "hull" is in the view cone. This is required for using very
+				// tall buttons. Looking at the bottom of one doesn't pass the FOV test otherwise.
+				vecLOS = (VecBModelOrigin(pObject->pev) - viewPos);
+				vecLOS = UTIL_ClampVectorToBox(vecLOS, pObject->pev->size * 0.5);
+			}
+			else {
+				// for regular-sized box-shaped entities the center makes the most sense
+				// otherwise it's hard to pick out items in clusters
+				vecLOS = pObject->Center() - viewPos;
 			}
 
-			if (foundGoodWeapon)
-				continue; // only search for items directly looked at now
+			//te_debug_beam(viewPos, viewPos + vecLOS, 1, RGB(255, 0, 0));
 
-			// !!!PERFORMANCE- should this check be done on a per case basis AFTER we've determined that
-			// this object is actually usable? This dot is being done for every object within PLAYER_SEARCH_RADIUS
-			// when player hits the use key. How many objects can be in that area, anyway? (sjb)
-			vecLOS = (VecBModelOrigin(pObject->pev) - viewPos);
+			float flDot = DotProduct(vecLOS.Normalize(), gpGlobals->v_forward);
 
-			// This essentially moves the origin of the target to the corner nearest the player to test to see 
-			// if it's "hull" is in the view cone
-			vecLOS = UTIL_ClampVectorToBox(vecLOS, pObject->pev->size * 0.5);
-
-			flDot = DotProduct(vecLOS, gpGlobals->v_forward);
 			if (flDot > flMaxDot)
 			{// only if the item is in front of the user
 				pClosest = pObject;
 				flMaxDot = flDot;
-				//				ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
+				//ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
 			}
-
-			// player is INSIDE the usable entity. View direction may the opposite of expected
-			// (example: big momma has abs box much larger than its collision box)
-			float dist = (vecLOS - pObject->Center()).Length();
-			if (dist < bestDist && Intersects(pObject)) {
-				pInside = pObject;
-				bestDist = dist;
-			}
-
-			//			ALERT( at_console, "%s : %f\n", STRING( pObject->pev->classname ), flDot );
 		}
 	}
-	pObject = pClosest ? pClosest : pInside;
+	//if (pClosest)
+	//	te_debug_box(pClosest->pev->absmin, pClosest->pev->absmax, 1, RGB(0, 255, 0));
+
+	pObject = pClosest;
 
 	bool useExpiring = (mp_antiblock.value && GetUseTime() > MAX_USE_HOLD_TIME)
 					|| (!mp_antiblock.value && (m_afButtonPressed & IN_USE));
