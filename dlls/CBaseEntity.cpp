@@ -1182,7 +1182,9 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		// make bullet trails
 		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (flDistance * tr.flFraction) / 64.0);
 		
-		edict_t* skipEnt = prediction == BULLETPRED_NONE ? NULL : ENT(pevAttacker);
+		edict_t* skipEnt = NULL;
+		if (prediction != BULLETPRED_NONE && IsPlayer() && MyPlayerPointer()->IsSevenKewpClient())
+			skipEnt = ENT(pevAttacker);
 		UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, splashSize, iShot % 2 ? 2 : 0, skipEnt);
 	}
 	ApplyMultiDamage(pev, pevAttacker);
@@ -1267,6 +1269,8 @@ void CBaseEntity::UpdateOnRemove(void)
 		pOwner->DeathNotice(pev);
 		m_deathNoticeSent = true;
 	}
+
+	GetCustomKeyValues()->clear();
 
 	if (FBitSet(pev->flags, FL_GRAPHED))
 	{

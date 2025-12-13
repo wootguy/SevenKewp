@@ -4677,7 +4677,15 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
-	if (!IsAlive())
+	bool isSciptDead = !IsAlive() && m_IdealMonsterState != MONSTERSTATE_DEAD;
+
+	if (isSciptDead) {
+		bitsDamageType |= GIB_ALWAYS; // prevent monster triggering kill events over and over
+		EALERT(at_warning, "Entered scripted death state\n");
+	}
+
+	// monsterstate check here in case death was prevented via sequence
+	if (!IsAlive() && !isSciptDead)
 	{
 		return DeadTakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 	}

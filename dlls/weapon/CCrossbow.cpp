@@ -387,7 +387,8 @@ void CCrossbow::FireSniperBolt()
 	lagcomp_end();
 
 #ifndef CLIENT_DLL
-	UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, 0.3f, 1, m_pPlayer->edict());
+	edict_t* skipEnt = m_pPlayer->IsSevenKewpClient() ? m_pPlayer->edict() : NULL;
+	UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, 0.3f, 1, skipEnt);
 
 	if ( tr.pHit->v.takedamage )
 	{

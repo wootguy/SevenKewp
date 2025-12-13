@@ -3780,6 +3780,7 @@ void CBasePlayer::Spawn( void )
 
 	m_flFlashLightTime = 1; // force first message
 	m_iFlashBattery = V_min(mp_startflashlight.value, 100) - 1;
+	m_flFlashLightCarry = 0;
 	if (mp_startflashlight.value < 0) {
 		// don't start with flashlight, but still set a default battery level
 		m_iFlashBattery = V_min(-(m_iFlashBattery + 1), 100) - 1;
@@ -4232,16 +4233,19 @@ void CBasePlayer::GiveNamedItem( const char *pszName )
 		wep->m_isDroppedWeapon = true;
 		wep->DefaultTouch(this);
 		if (wep->pev->movetype != MOVETYPE_FOLLOW)
-			UTIL_Remove(wep); // wasn't collected
+			UTIL_Remove(pEntity); // wasn't collected
 	}
 	else if (ammo) {
 		ammo->DefaultUse(this, this, USE_TOGGLE, 0);
+		UTIL_Remove(pEntity);
 	}
 	else if (item) {
 		item->ItemUse(this, this, USE_TOGGLE, 0);
+		UTIL_Remove(pEntity);
 	}
 	else {
 		pEntity->Touch(this);
+		UTIL_Remove(pEntity);
 	}
 }
 
@@ -6846,8 +6850,16 @@ void CBasePlayer::SendLegacyClientWarning() {
 	UTIL_LogPlayerEvent(edict(), "was sent the steam_legacy client warning\n");
 }
 
-void CBasePlayer::SendSevenKewpClientNotice() {
+void CBasePlayer::SendSevenKewpClientNotice(const char* weaponName) {
+	if (!mp_sevenkewp_client_notice.value) {
+		return;
+	}
+
 	std::string clientReq = UTIL_SevenKewpClientString(SEVENKEWP_VERSION);
+	UTIL_ClientPrint(this, print_chat, UTIL_VarArgs(
+		"The \"%s\" requires the \"%s\" client. Check your console for more info.\n",
+		weaponName, clientReq.c_str()));
+
 	UTIL_ClientPrint(this, print_console, "\n-----------------------------------------------------------------\n");
 	UTIL_ClientPrint(this, print_console, UTIL_VarArgs("This server requires the \"%s\" client to use some\n", clientReq.c_str()));
 	UTIL_ClientPrint(this, print_console, "weapons. The reason for this is that custom hitscan weapons feel ");
@@ -7291,7 +7303,7 @@ bool CBasePlayer::LoadInventory() {
 	if (previousInv != g_playerInventory.end()) {
 		player_inventory_t inv = previousInv->second;
 
-		if (mp_keep_inventory.value >= 2 && inv.health < 0) {
+		if (mp_keep_inventory.value >= 2 && inv.health < 1) {
 			return false; // player was dead during level change. Give them the default loadout.
 		}
 		
@@ -7344,6 +7356,8 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 	}
 
 	ItemInfo& II = CBasePlayerItem::ItemInfoArray[wepId];
+	CBaseEntity* heldEnt = m_pActiveItem.GetEntity();
+	CBasePlayerWeapon* heldItem = heldEnt ? heldEnt->GetWeaponPtr() : NULL;
 
 	// fix hud conflict on the client
 	for (int i = 0; i < MAX_WEAPONS; i++) {
@@ -7355,6 +7369,19 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 				// weapon they want from that slot.
 				ItemInfo& dropInfo = CBasePlayerItem::ItemInfoArray[i];
 				DropPlayerItem(dropInfo.pszName);
+
+				// dropping the held weapon?
+				if (i == heldItem->m_iId) {
+					// switch to the weapon that resolved the conflict
+					int activeId = GetCurrentIdForConflictedSlot(i);
+					CBasePlayerItem* item = GetPlayerItemById(activeId);
+					if (item)
+						SwitchWeapon(item);
+				}
+				else {
+					// keep the held item active
+					SwitchWeapon(heldItem);
+				}
 			}
 
 			// redirect all item info to the weapon with the given ID

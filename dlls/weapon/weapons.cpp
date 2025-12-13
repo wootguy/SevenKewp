@@ -430,6 +430,10 @@ void W_Precache(void)
 	
 	PRECACHE_SOUND_ENT(NULL, "items/weapondrop1.wav");// weapon falls to the ground
 
+	StringMap::iterator_t iter;
+	while (g_defaultSpriteDirs.iterate(iter)) {
+		PRECACHE_HUD_FILES(UTIL_VarArgs("sprites/%s/%s.txt", iter.value, iter.key));
+	}
 }
 
 void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* mins, float* maxs, edict_t* pEntity)

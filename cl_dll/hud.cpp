@@ -589,6 +589,8 @@ void CHud::LoadHudSprites(void) {
 	}
 	else
 	{
+		memset(m_rghSprites, 0, m_iSpriteCount * sizeof(HSPRITE));
+
 		// we have already have loaded the sprite reference from hud.txt, but
 		// we need to make sure all the sprites have been loaded (we've gone through a transition, or loaded a save game)
 		client_sprite_t *p = m_pSpriteList;

@@ -381,6 +381,9 @@ bool LoadMaterialsFile(const char* fpath) {
 		strcpy_safe(&(grgszTextureName[gcTextures++][0]), &(buffer[i]), CBTEXTURENAMEMAX);
 
 		if (gcTextures >= CTEXTURESMAX) {
+#ifdef CLIENT_DLL
+			printd("Exceeded max materials (%d at %s\n)", gcTextures, buffer);
+#endif
 			break;
 		}
 	}

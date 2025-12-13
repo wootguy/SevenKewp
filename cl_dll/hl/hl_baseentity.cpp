@@ -371,7 +371,7 @@ void CBasePlayer::TabulateAmmo() { }
 CBasePlayerItem* CBasePlayer::GetNamedPlayerItem(const char* pszItemName) { return 0; }
 BOOL CBasePlayer::HasNamedPlayerItem(const char* pszItemName) { return FALSE; }
 void CBasePlayer::GiveNamedItem(const char* pszName) {}
-void CBasePlayer::SendSevenKewpClientNotice() {}
+void CBasePlayer::SendSevenKewpClientNotice(const char* weaponName) {}
 bool CBasePlayer::IsSevenKewpClient() { return false; }
 void CBasePlayer::SetThirdPersonWeaponAnim(int anim, float fps) { }
 void CBasePlayer::SetJumpPower(int power) {}

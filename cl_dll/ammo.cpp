@@ -97,8 +97,8 @@ int WeaponsResource :: HasAmmo( WEAPON *p )
 	if ( p->iMax1 == -1 )
 		return TRUE;
 
-	return (p->iAmmoType == -1) || p->iClip > 0 || CountAmmo(p->iAmmoType) 
-		|| CountAmmo(p->iAmmo2Type) || ( p->iFlags & WEAPON_FLAGS_SELECTONEMPTY );
+	return (p->iAmmoType == -1) || p->iClip > 0 || CountAmmo(p->iAmmoType)
+		|| CountAmmo(p->iAmmo2Type);// || (p->iFlags & WEAPON_FLAGS_SELECTONEMPTY);
 }
 
 
@@ -272,7 +272,7 @@ WEAPON *WeaponsResource :: GetFirstPos( int iSlot )
 
 	for (int i = 0; i < MAX_WEAPON_POSITIONS; i++)
 	{
-		if ( rgSlots[iSlot][i] && HasAmmo( rgSlots[iSlot][i] ) )
+		if ( rgSlots[iSlot][i] && (HasAmmo( rgSlots[iSlot][i] ) || (rgSlots[iSlot][i]->iFlags & WEAPON_FLAGS_SELECTONEMPTY)))
 		{
 			pret = rgSlots[iSlot][i];
 			break;
@@ -290,7 +290,7 @@ WEAPON* WeaponsResource :: GetNextActivePos( int iSlot, int iSlotPos )
 
 	WEAPON *p = gWR.rgSlots[ iSlot ][ iSlotPos+1 ];
 	
-	if ( !p || !gWR.HasAmmo(p) )
+	if ( !p || (!gWR.HasAmmo(p) && !(p->iFlags & WEAPON_FLAGS_SELECTONEMPTY)))
 		return GetNextActivePos( iSlot, iSlotPos + 1 );
 
 	return p;
@@ -1179,12 +1179,13 @@ int CHudAmmo::MsgFunc_MatsPath(const char* pszName, int iSize, void* pbuf)
 	BEGIN_READ(pbuf, iSize);
 
 	const char* materialsFile = READ_STRING();
-	const char* hudFile = READ_STRING();
 	
 	if (materialsFile[0]) {
 		int loaded = LoadCustomMaterials(materialsFile);
 		//PRINTF("Loaded %d custom materials from file\n%s\n", loaded, fpath);
 	}
+
+	const char* hudFile = READ_STRING();
 
 	gHUD.ReplaceHudSprites(hudFile);
 
@@ -1295,7 +1296,7 @@ void CHudAmmo::UserCmd_NextWeapon(void)
 			{
 				WEAPON *wsp = gWR.GetWeaponSlot( slot, pos );
 
-				if ( wsp && gWR.HasAmmo(wsp) )
+				if ( wsp && (gWR.HasAmmo(wsp) || (wsp->iFlags & WEAPON_FLAGS_SELECTONEMPTY)))
 				{
 					gpActiveSel = wsp;
 					return;
@@ -1336,7 +1337,7 @@ void CHudAmmo::UserCmd_PrevWeapon(void)
 			{
 				WEAPON *wsp = gWR.GetWeaponSlot( slot, pos );
 
-				if ( wsp && gWR.HasAmmo(wsp) )
+				if ( wsp && (gWR.HasAmmo(wsp) || (wsp->iFlags & WEAPON_FLAGS_SELECTONEMPTY)))
 				{
 					gpActiveSel = wsp;
 					return;
@@ -1651,12 +1652,33 @@ void DrawCrossHair(float accuracyX, float accuracyY, int len, int thick, int bor
 }
 
 void CHudAmmo::DrawDynamicCrosshair() {
-	if (m_hud_crosshair_mode->value <= 0 || !gHUD.IsSevenKewpServer())
+	WEAPON* pw = m_pWeapon; // shorthand
+
+	CustomWeaponParams* wcparams = GetCustomWeaponParams(pw->iId);
+	bool shouldDrawZoomCrosshair = pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR);
+	bool shouldStretchZoom = wcparams && (wcparams->flags & FL_WC_WEP_ZOOM_SPR_STRETCH);
+
+	if (shouldDrawZoomCrosshair && shouldStretchZoom && !is_software_renderer) {
+		static wrect_t nullrc;
+		SetCrosshair(0, nullrc, 0, 0, 0);
+
+		bool aspectCorrection = wcparams && wcparams->flags & FL_WC_WEP_ZOOM_SPR_ASPECT;
+		DrawStretchedZoomCrosshair(pw->hZoomedCrosshair, pw->rcZoomedCrosshair, aspectCorrection);
 		return;
+	}
+
+	if (m_hud_crosshair_mode->value <= 0 || !gHUD.IsSevenKewpServer())
+		return; // drawing sprite crosshair
+
+	if (shouldDrawZoomCrosshair) {
+		return; // draw the sprite version of the crosshair for zooming
+	}
 
 	int len = clamp(m_hud_crosshair_length->value, 1, 1000);
 	int width = clamp(m_hud_crosshair_width->value, 1, 1000);
 	int border = clamp(m_hud_crosshair_border->value, 0, 1000);
+	bool drawDot = m_hud_crosshair_dot->value > 0;
+	bool drawTee = m_hud_crosshair_tee->value > 0;
 
 	if (m_hud_crosshair_length->value == -1) {
 		len = 8;
@@ -1681,9 +1703,7 @@ void CHudAmmo::DrawDynamicCrosshair() {
 		UnpackRGB(r, g, b, gHUD.GetHudColor());
 	}
 
-	bool drawDot = m_hud_crosshair_dot->value > 0;
-	bool drawTee = m_hud_crosshair_tee->value > 0;
-
+	// crosshair for not holding anything
 	if (!m_pWeapon) {
 		if (m_hud_crosshair_mode->value >= 2) {
 			DrawCrossHair(0, 0, len, width, border, r, g, b, drawDot, drawTee);
@@ -1691,29 +1711,15 @@ void CHudAmmo::DrawDynamicCrosshair() {
 		return;
 	}
 
-	WEAPON* pw = m_pWeapon; // shorthand
-
+	// weapon doesn't have a crosshair
 	if (!pw->hCrosshair && m_hud_crosshair_mode->value != 2) {
 		return;
 	}
 
-	CustomWeaponParams* wcparams = GetCustomWeaponParams(pw->iId);
-	bool shouldDrawZoomCrosshair = pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR);
-	bool shouldStretchZoom = wcparams && (wcparams->flags & FL_WC_WEP_ZOOM_SPR_STRETCH);
-
-	if (shouldDrawZoomCrosshair && !shouldStretchZoom) {
-		return;
-	}
-
+	// disable sprite crosshair so it doesn't overlap the dynamic one
 	if (g_crosshair_active) {
 		static wrect_t nullrc;
 		SetCrosshair(0, nullrc, 0, 0, 0);
-	}
-
-	if (shouldDrawZoomCrosshair && shouldStretchZoom && !is_software_renderer) {
-		bool aspectCorrection = wcparams && wcparams->flags & FL_WC_WEP_ZOOM_SPR_ASPECT;
-		DrawStretchedZoomCrosshair(pw->hZoomedCrosshair, pw->rcZoomedCrosshair, aspectCorrection);
-		return;
 	}
 	
 	float accuracyX = pw->accuracyX;
@@ -1947,31 +1953,17 @@ int CHudAmmo::DrawWList(float flTime)
 
 				UnpackRGB( r,g,b, gHUD.GetHudColor());
 			
-				// if active, then we must have ammo.
-
-				if ( gpActiveSel == p )
-				{
-					SPR_Set(activeSpr, r, g, b );
-					SPR_DrawAdditive(0, x, y, &rcActive);
-
-					SPR_Set(gHUD.GetSprite(m_HUD_selection), r, g, b );
-					SPR_DrawAdditive(0, x, y, &gHUD.GetSpriteRect(m_HUD_selection));
-				}
+				// Draw Weapon if Red if no ammo
+				if ( gWR.HasAmmo(p) )
+					ScaleColors(r, g, b, 192);
 				else
 				{
-					// Draw Weapon if Red if no ammo
-
-					if ( gWR.HasAmmo(p) )
-						ScaleColors(r, g, b, 192);
-					else
-					{
-						UnpackRGB(r,g,b, RGB_REDISH);
-						ScaleColors(r, g, b, 128);
-					}
-
-					SPR_Set(inactiveSpr, r, g, b );
-					SPR_DrawAdditive( 0, x, y, &rcInactive);
+					UnpackRGB(r,g,b, RGB_REDISH);
+					ScaleColors(r, g, b, 128);
 				}
+
+				SPR_Set(inactiveSpr, r, g, b );
+				SPR_DrawAdditive( 0, x, y, &rcInactive);
 
 				// Draw Ammo Bar
 

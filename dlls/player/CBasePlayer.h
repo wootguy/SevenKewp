@@ -552,7 +552,7 @@ public:
 
 	void SendLegacyClientWarning();
 
-	void SendSevenKewpClientNotice();
+	void SendSevenKewpClientNotice(const char* weaponName);
 
 	const char* GetClientVersionString();
 

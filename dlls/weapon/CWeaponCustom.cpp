@@ -77,15 +77,7 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 #ifndef CLIENT_DLL
 	if (!pPlayer->IsSevenKewpClient() && wrongClientWeapon) {
 		if (pPlayer->HasNamedPlayerItem(wrongClientWeapon)) {
-
-			if (mp_sevenkewp_client_notice.value) {
-				std::string clientReq = UTIL_SevenKewpClientString(SEVENKEWP_VERSION);
-				UTIL_ClientPrint(pPlayer, print_chat, UTIL_VarArgs(
-					"The \"%s\" requires the \"%s\" client. Check your console for more info.\n",
-					DisplayName(), clientReq.c_str()));
-				pPlayer->SendSevenKewpClientNotice();
-			}
-			
+			pPlayer->SendSevenKewpClientNotice(DisplayName());
 			return 0;
 		}
 
@@ -303,6 +295,9 @@ void CWeaponCustom::Reload() {
 	float nextAttack = totalReloadTime * 0.001f;
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = m_flTimeWeaponIdle = nextAttack;
 
+	// allow shooting while doing the final pump after reloading, like with the HL shotty
+	if (m_fInSpecialReload == 2)
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = 0;
 
 	if (IsAkimbo()) {
 		m_bInAkimboReload = IsAkimbo() && GetAkimboClip() < m_iClip;
@@ -420,6 +415,11 @@ void CWeaponCustom::WeaponIdle() {
 
 		if (m_iClip == 0) {
 			idles = idles + 2;
+		}
+	}
+	else {
+		if (m_iClip == 0) {
+			return; // assume weapon should stay on the "fire last" animation
 		}
 	}
 
@@ -1163,7 +1163,7 @@ bool CWeaponCustom::IsPredicted() {
 	if (!m_pPlayer)
 		return false;
 
-	return !(params.flags & FL_WC_WEP_NO_PREDICTION) || !m_pPlayer->IsSevenKewpClient();
+	return !(params.flags & FL_WC_WEP_NO_PREDICTION) && m_pPlayer->IsSevenKewpClient();
 }
 
 
@@ -2393,6 +2393,11 @@ int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
 	CBasePlayer* pPlayer = pOriginal ? pOriginal->GetPlayer() : NULL;
 	if (!pPlayer)
 		return 0;
+
+	if (!pPlayer->IsSevenKewpClient() && wrongClientWeapon) {
+		pPlayer->SendSevenKewpClientNotice(DisplayName());
+		return 0;
+	}
 
 	CWeaponCustom* wep = pOriginal ? pOriginal->MyWeaponCustomPtr() : NULL;
 
