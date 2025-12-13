@@ -1951,19 +1951,32 @@ int CHudAmmo::DrawWList(float flTime)
 				wrect_t rcActive = akimbo ? p->rcAkimboActive : p->rcActive;
 				wrect_t rcInactive = akimbo ? p->rcAkimboInactive : p->rcInactive;
 
-				UnpackRGB( r,g,b, gHUD.GetHudColor());
-			
+				UnpackRGB(r, g, b, gHUD.GetHudColor());
+
 				// Draw Weapon if Red if no ammo
-				if ( gWR.HasAmmo(p) )
+				if (gWR.HasAmmo(p))
 					ScaleColors(r, g, b, 192);
 				else
 				{
-					UnpackRGB(r,g,b, RGB_REDISH);
+					UnpackRGB(r, g, b, RGB_REDISH);
 					ScaleColors(r, g, b, 128);
 				}
 
-				SPR_Set(inactiveSpr, r, g, b );
-				SPR_DrawAdditive( 0, x, y, &rcInactive);
+				// if active, then we must have ammo.
+
+				if (gpActiveSel == p)
+				{
+					SPR_Set(activeSpr, r, g, b);
+					SPR_DrawAdditive(0, x, y, &rcActive);
+
+					SPR_Set(gHUD.GetSprite(m_HUD_selection), r, g, b);
+					SPR_DrawAdditive(0, x, y, &gHUD.GetSpriteRect(m_HUD_selection));
+				}
+				else
+				{
+					SPR_Set(inactiveSpr, r, g, b);
+					SPR_DrawAdditive(0, x, y, &rcInactive);
+				}
 
 				// Draw Ammo Bar
 
