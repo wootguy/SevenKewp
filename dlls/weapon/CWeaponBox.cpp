@@ -61,7 +61,12 @@ void CWeaponBox::Spawn(void)
 
 	SET_MODEL_MERGED(ENT(pev), "models/w_weaponbox.mdl", MERGE_MDL_W_WEAPONBOX);
 
-	SetTouch(&CWeaponBox::DefaultTouch);
+	if (mp_use_only_pickups.value) {
+		SetTouch(&CWeaponBox::ItemBounceTouch);
+	}
+	else {
+		SetTouch(&CWeaponBox::DefaultTouch);
+	}
 
 	AddWaterPhysicsEnt(this, 0.95f, 0);
 }
@@ -356,6 +361,10 @@ void CWeaponBox::SetObjectCollisionBox(void)
 }
 
 bool CWeaponBox::IsUseOnlyWeapon() {
+	if (mp_use_only_pickups.value) {
+		return true;
+	}
+
 	bool foundUseOnlyWeapon = false;
 
 	for (int i = 0; i < MAX_ITEM_TYPES; i++)

@@ -96,6 +96,7 @@ cvar_t	mp_blood_color_human = { "mp_blood_color_human","247", FCVAR_SERVER, 0, 0
 cvar_t	mp_blood_color_alien = { "mp_blood_color_alien","195", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_one_pickup_per_player = { "mp_one_pickup_per_player","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_keep_inventory = { "mp_keep_inventory","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_use_only_pickups = { "mp_use_only_pickups","0", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
@@ -486,6 +487,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_blood_color_alien);
 	CVAR_REGISTER (&mp_one_pickup_per_player);
 	CVAR_REGISTER (&mp_keep_inventory);
+	CVAR_REGISTER (&mp_use_only_pickups);
 
 	CVAR_REGISTER (&mp_chattime);
 

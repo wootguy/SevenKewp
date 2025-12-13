@@ -51,6 +51,11 @@ void CBasePlayerItem::FallInit(void)
 	else if (pev->movetype == -1)
 		pev->movetype = MOVETYPE_NONE;
 	
+	if (mp_use_only_pickups.value) {
+		pev->spawnflags |= SF_ITEM_USE_ONLY;
+		pev->spawnflags &= ~SF_ITEM_TOUCH_ONLY;
+	}
+
 	Materialize();
 
 	pev->nextthink = gpGlobals->time + 0.1;

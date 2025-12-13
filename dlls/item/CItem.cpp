@@ -41,6 +41,11 @@ void CItem::Spawn(void)
 }
 
 void CItem::SetupTouchAndUse() {
+	if (mp_use_only_pickups.value) {
+		pev->spawnflags |= SF_ITEM_USE_ONLY;
+		pev->spawnflags &= ~SF_ITEM_TOUCH_ONLY;
+	}
+
 	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
 		SetTouch(&CItem::ItemTouch);
 

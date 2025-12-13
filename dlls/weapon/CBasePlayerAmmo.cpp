@@ -17,6 +17,11 @@ void CBasePlayerAmmo::Spawn(void)
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	UTIL_SetOrigin(pev, pev->origin);
 
+	if (mp_use_only_pickups.value) {
+		pev->spawnflags |= SF_ITEM_USE_ONLY;
+		pev->spawnflags &= ~SF_ITEM_TOUCH_ONLY;
+	}
+
 	if (!(pev->spawnflags & SF_ITEM_USE_ONLY))
 		SetTouch(&CBasePlayerAmmo::DefaultTouch);
 

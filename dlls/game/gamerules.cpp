@@ -226,6 +226,7 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"mp_blood_color_alien",
 		"mp_one_pickup_per_player",
 		"mp_keep_inventory",
+		"mp_use_only_pickups",
 	};
 
 	static StringSet itemNames = {
