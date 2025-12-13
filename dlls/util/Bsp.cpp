@@ -89,7 +89,7 @@ bool Bsp::load_lumps(string fpath)
 	parseEntities((char*)lumps[LUMP_ENTITIES], header.lump[LUMP_ENTITIES].nLength, ents);
 
 	StringSet unique_bsp_models;
-	for (int i = 0; i < ents.size(); i++) {
+	for (int i = 0; i < (int)ents.size(); i++) {
 		const char* model = ents[i].get("model");
 
 		if (model && model[0] == '*') {

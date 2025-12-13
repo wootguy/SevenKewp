@@ -279,7 +279,6 @@ int CBasePlayerWeapon::AddToPlayer(CBasePlayer* pPlayer)
 
 			m_pickupPlayers |= PLRBIT(pPlayer->edict());
 			pPlayer->GiveNamedItem(remapClass);
-			CBasePlayerItem* wep = pPlayer->GetNamedPlayerItem(remapClass);
 			return 0;
 		}
 	}	

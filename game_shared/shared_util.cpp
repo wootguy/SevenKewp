@@ -954,8 +954,6 @@ bool UTIL_ParseHexColor(const char* hex, int& r, int& g, int& b) {
 uint16_t UTIL_CompressUint(uint32_t v) {
 	uint16_t mantissa = 0;
 	uint16_t exponent = 0;
-
-	v = V_max(0, v);
 	
 	if (v >= 1000*1000*10) {
 		mantissa = v / (1000U*1000U);

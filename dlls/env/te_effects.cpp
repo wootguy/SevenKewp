@@ -493,8 +493,6 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 		if (expUnderwater)
 			eflags |= 8;
 
-		Vector viewPos = plr->GetViewPosition();
-
 		if (!UTIL_TestPAS(origin, plr->edict())) {
 			continue;
 		}
@@ -523,7 +521,7 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 			float attn = 0.3f;
 			int pitch = PITCH_NORM;
 			const char* sample = expSoundsNew[RANDOM_LONG(0, 2)];
-			StartSound((edict_t*)NULL, CHAN_STATIC, sample, 1.0f, attn, 0, PITCH_NORM, origin, PLRBIT(plr->edict()));
+			StartSound((edict_t*)NULL, CHAN_STATIC, sample, 1.0f, attn, 0, pitch, origin, PLRBIT(plr->edict()));
 		}
 	}
 }

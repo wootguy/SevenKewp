@@ -142,7 +142,7 @@ void CShockBeam::FlyThink()
 
 void CShockBeam::ExplodeThink()
 {
-	Explode();
+	ShockExplode();
 	
 	SetThink(&CShockBeam::SUB_Remove);
 	pev->nextthink = gpGlobals->time + 0.1f; // give time for sound
@@ -157,7 +157,7 @@ void CShockBeam::WaterExplodeThink()
 
 	UTIL_Explosion(pev->origin, m_waterExplodeSpr, 30, 50, 2 | 4 | 8);
 
-	Explode();
+	ShockExplode();
 
 	::RadiusDamage( pev->origin, pev, pOwner, GetDamage(100.0), 150.0, CLASS_NONE, DMG_ALWAYSGIB | DMG_BLAST );
 	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, QUIET_GUN_VOLUME, 0.1);
@@ -227,7 +227,7 @@ void CShockBeam::BallTouch( CBaseEntity* pOther )
 	}
 }
 
-void CShockBeam::Explode()
+void CShockBeam::ShockExplode()
 {
 	if( m_hSprite )
 	{

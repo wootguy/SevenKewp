@@ -33,8 +33,8 @@ struct HudSprite {
 	bool isNumeric;
 };
 
-#define MAX_HUD_SPRITES 16
-HudSprite g_hudSprites[MAX_HUD_SPRITES];
+#define MAX_HUD_CUSTOM_SPRITES 16
+HudSprite g_hudSprites[MAX_HUD_CUSTOM_SPRITES];
 
 const char* GetDeltaString(dstring_t idx);
 
@@ -318,7 +318,7 @@ int CHudSprites::Draw(float flTime)
 {
 	float now = gEngfuncs.GetClientTime();
 
-	for (int i = 0; i < MAX_HUD_SPRITES; i++) {
+	for (int i = 0; i < MAX_HUD_CUSTOM_SPRITES; i++) {
 		HudSprite& spr = g_hudSprites[i];
 
 		if (!spr.startTime || !spr.visible)
@@ -430,7 +430,7 @@ int CHudSprites::MsgFunc_HudSprite(const char* pszName, int iSize, void* pbuf)
 {
 	BEGIN_READ(pbuf, iSize);
 
-	int channel = clampi(READ_BYTE(), 0, MAX_HUD_SPRITES-1);
+	int channel = clampi(READ_BYTE(), 0, MAX_HUD_CUSTOM_SPRITES -1);
 
 	HudSprite& spr = ParseHudElementParams(channel);
 	

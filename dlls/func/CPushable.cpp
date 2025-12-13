@@ -447,17 +447,12 @@ const char* CPushable::DisplayHint() {
 			return "Explosive. Cannot lift.";
 		}
 	}
-	else {
-		if (pev->spawnflags & SF_PUSH_LIFTABLE) {
-			return "Press USE key to lift";
-		}
-		else {
-			return "Cannot lift";
-		}
-	}
-	
 
-	return "";
+	if (pev->spawnflags & SF_PUSH_LIFTABLE) {
+		return "Press USE key to lift";
+	}
+
+	return "Cannot lift";
 }
 
 void CPushable::Lift() {

@@ -107,7 +107,7 @@ void BroadcastEntNames() {
 	}
 
 	// custom strings
-	for (int i = 0; i < g_deltaStringQueue.size(); i++) {
+	for (int i = 0; i < (int)g_deltaStringQueue.size(); i++) {
 		g_updateEntNames[knownCnt++] = g_deltaStringQueue[i];
 	}
 

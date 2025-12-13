@@ -22,7 +22,7 @@ void AddWaterPhysicsEnt(CBaseEntity* ent, float waterFriction, float buoyancy, f
 		ent->m_buoyancy = buoyancy;
 		ent->m_splashSize = splashSize;
 
-		for (int i = 0; i < g_waterPhysicsEnts.size(); i++) {
+		for (int i = 0; i < (int)g_waterPhysicsEnts.size(); i++) {
 			if (g_waterPhysicsEnts[i].h_ent.GetEntity() == ent) {
 				return;
 			}
@@ -50,7 +50,7 @@ void DoEntWaterPhysics() {
 	if (gpGlobals->time - lastPhysics < 0.05f || lastPhysics > gpGlobals->time)
 		return;
 
-	for (int i = 0; i < g_waterPhysicsEnts.size(); i++) {
+	for (int i = 0; i < (int)g_waterPhysicsEnts.size(); i++) {
 		WaterEntState& state = g_waterPhysicsEnts[i];
 		CBaseEntity* ent = state.h_ent;
 
@@ -83,14 +83,11 @@ void DoEntWaterPhysics() {
 			}
 		}
 
-		CBaseMonster* mon = ent->MyMonsterPointer();
-
 		if (inLiquid) {
 			if (ent->m_buoyancy) {
 				int irnd = pcg_hash(ent->entindex());
 				float frnd = UTIL_SharedRandomFloat(irnd, 0, 2 * M_PI);
 				float t = (gpGlobals->time * 0.1f + frnd);
-				float t2 = (gpGlobals->time + frnd);
 				float currentX = sinf(t) * 0.01f;
 				float currentY = cosf(t) * 0.01f;
 

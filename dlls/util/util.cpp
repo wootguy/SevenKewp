@@ -3490,7 +3490,7 @@ void UTIL_SendPredictionCvars(CBasePlayer* target) {
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
-		if (!plr || target && target != plr || !plr->IsSevenKewpClient())
+		if (!plr || (target && target != plr) || !plr->IsSevenKewpClient())
 			continue;
 
 		MESSAGE_BEGIN(MSG_ONE, gmsgPredCvars, NULL, plr->pev);

@@ -26,7 +26,6 @@
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud_iface.h"
 #include "../common/event_api.h"
-#define PRINTF(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
 
 void EV_LaserOn(int dotSprite, float dotSz, int beamSprite, float beamWidth, int beamAttachment);
 void EV_LaserOff();

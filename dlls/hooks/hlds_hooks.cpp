@@ -1154,7 +1154,7 @@ void ClientPrecache( void )
 		"common/wpn_hudon.wav",
 		"common/wpn_moveselect.wav",
 	};
-	for (int i = 0; i < ARRAYSIZE(replaceable_hud_sounds); i++) {
+	for (int i = 0; i < (int)ARRAYSIZE(replaceable_hud_sounds); i++) {
 		if (UTIL_GetReplacementSound(NULL, replaceable_hud_sounds[i])) {
 			PRECACHE_SOUND_ENT(NULL, replaceable_hud_sounds[i]);
 		}
@@ -1607,11 +1607,11 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			uint32_t hint = baseent->m_cachedDisplayHint;
 			uint16_t health = UTIL_CompressUint(ent->v.health);
 
-			if (isMon && !baseent->IsAlive() || ent->v.health < 0) {
+			if ((isMon && !baseent->IsAlive()) || ent->v.health < 0) {
 				state->health = 0; // don't show hp needed to gib
 				hint = 0;
 			}
-			if (baseent->IsPushable() || (isMon && !baseent->IsAlive()) && invincible) {
+			if (baseent->IsPushable() || (isMon && !baseent->IsAlive() && invincible)) {
 				// pushables are usually invincible so don't bother showing that info
 				// barnacles become invincible after death
 				invincible = false;

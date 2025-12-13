@@ -52,7 +52,7 @@ public:
 #endif
 
 private:
-	void Explode();
+	void ShockExplode();
 
 public:
 	EHANDLE m_hBeam1;

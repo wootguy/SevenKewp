@@ -2173,7 +2173,6 @@ void CBasePlayer::PlayerUse ( void )
 	CBaseEntity* pClosest = NULL;
 	CBaseEntity* pLooking = NULL;
 	float flMaxDot = VIEW_FIELD_NARROW;
-	float bestDist = FLT_MAX;	
 
 	TraceResult tr;
 	TRACE_LINE(viewPos, viewPos + gpGlobals->v_forward * PLAYER_SEARCH_RADIUS*2, dont_ignore_monsters, edict(), &tr);

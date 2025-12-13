@@ -619,7 +619,6 @@ public:
 			if (gpGlobals->time > m_splashTime) {
 				m_splashTime = 0;
 
-				float sz = (pev->scale) * 10;
 				float ratio = pev->scale;
 				Vector offset = Vector(0, 0, (64 * ratio) - 16);
 				int fps = 20 - ratio * 2;

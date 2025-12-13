@@ -186,16 +186,6 @@ void CEgon::UseAmmo( int count )
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = 0;
 }
 
-// for debugging events on the client
-#ifdef CLIENT_DLL
-#include "../cl_dll/hud_iface.h"
-#define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
-extern int g_runfuncs;
-#else
-extern int g_runfuncs;
-#define PRINTF(msg, ...)
-#endif
-
 void CEgon::Attack( void )
 {
 	CBasePlayer* m_pPlayer = GetPlayer();

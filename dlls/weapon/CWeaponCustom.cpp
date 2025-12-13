@@ -82,8 +82,6 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 		}
 
 		pPlayer->GiveNamedItem(wrongClientWeapon);
-		CBasePlayerItem* wep = pPlayer->GetNamedPlayerItem(wrongClientWeapon);
-
 		m_pickupPlayers |= PLRBIT(pPlayer->edict());
 		return 0;
 	}

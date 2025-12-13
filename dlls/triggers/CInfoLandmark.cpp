@@ -76,8 +76,6 @@ void CInfoLandmark::CreateSpawnPoints() {
 		Vector dir = (pev->origin - bestLevelChange->Center());
 		dir.z = 0; // no vertical angles
 
-		Vector ori = bestLevelChange->Center();
-
 		angles = UTIL_VecToAngles(dir.Normalize());
 
 		// snap to 90 degree angles
