@@ -123,7 +123,7 @@ void CCycler :: Think( void )
 		pev->animtime = gpGlobals->time;
 		pev->framerate = 1.0;
 		m_fSequenceFinished = FALSE;
-		m_flLastEventCheck = gpGlobals->time;
+		m_flLastEventCheck = 0;
 		pev->frame = 0;
 		if (!m_animate)
 			pev->framerate = 0.0;	// FIX: don't reset framerate

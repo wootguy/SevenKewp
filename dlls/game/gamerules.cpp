@@ -133,6 +133,7 @@ StringSet timeCriticalCvars = {
 };
 
 std::vector<std::pair<std::string, std::string>> g_unrecognizedCfgEquipment;
+std::vector<std::pair<std::string, std::string>> g_pluginCvarValues;
 extern int g_mapEquipIdx;
 
 void AddMapEquipment(std::string name, std::string value) {
@@ -156,6 +157,13 @@ void AddMapPluginEquipment() {
 		}
 	}
 	g_unrecognizedCfgEquipment.clear();
+}
+
+void SetPluginCvars() {
+	for (auto pair : g_pluginCvarValues) {
+		CVAR_SET_STRING(pair.first.c_str(), pair.second.c_str());
+	}
+	g_pluginCvarValues.clear();
 }
 
 void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
@@ -424,6 +432,11 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 			AddMapEquipment(name, value);
 		}
 		else {
+			// set plugin cvars that include dots to prevent changing anything sensitive in the game/engine
+			if (name.find(".") != string::npos) {
+				g_pluginCvarValues.push_back({ name, value });
+			}
+
 			g_unrecognizedCfgEquipment.push_back({ name, value });
 		}
 	}

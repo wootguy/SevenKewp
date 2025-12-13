@@ -97,8 +97,8 @@ int WeaponsResource :: HasAmmo( WEAPON *p )
 	if ( p->iMax1 == -1 )
 		return TRUE;
 
-	return (p->iAmmoType == -1) || p->iClip > 0 || CountAmmo(p->iAmmoType) 
-		|| CountAmmo(p->iAmmo2Type) || ( p->iFlags & WEAPON_FLAGS_SELECTONEMPTY );
+	return (p->iAmmoType == -1) || p->iClip > 0 || CountAmmo(p->iAmmoType)
+		|| CountAmmo(p->iAmmo2Type);// || (p->iFlags & WEAPON_FLAGS_SELECTONEMPTY);
 }
 
 
@@ -272,7 +272,7 @@ WEAPON *WeaponsResource :: GetFirstPos( int iSlot )
 
 	for (int i = 0; i < MAX_WEAPON_POSITIONS; i++)
 	{
-		if ( rgSlots[iSlot][i] && HasAmmo( rgSlots[iSlot][i] ) )
+		if ( rgSlots[iSlot][i] && (HasAmmo( rgSlots[iSlot][i] ) || (rgSlots[iSlot][i]->iFlags & WEAPON_FLAGS_SELECTONEMPTY)))
 		{
 			pret = rgSlots[iSlot][i];
 			break;
@@ -290,7 +290,7 @@ WEAPON* WeaponsResource :: GetNextActivePos( int iSlot, int iSlotPos )
 
 	WEAPON *p = gWR.rgSlots[ iSlot ][ iSlotPos+1 ];
 	
-	if ( !p || !gWR.HasAmmo(p) )
+	if ( !p || (!gWR.HasAmmo(p) && !(p->iFlags & WEAPON_FLAGS_SELECTONEMPTY)))
 		return GetNextActivePos( iSlot, iSlotPos + 1 );
 
 	return p;
@@ -1295,7 +1295,7 @@ void CHudAmmo::UserCmd_NextWeapon(void)
 			{
 				WEAPON *wsp = gWR.GetWeaponSlot( slot, pos );
 
-				if ( wsp && gWR.HasAmmo(wsp) )
+				if ( wsp && (gWR.HasAmmo(wsp) || (wsp->iFlags & WEAPON_FLAGS_SELECTONEMPTY)))
 				{
 					gpActiveSel = wsp;
 					return;
@@ -1336,7 +1336,7 @@ void CHudAmmo::UserCmd_PrevWeapon(void)
 			{
 				WEAPON *wsp = gWR.GetWeaponSlot( slot, pos );
 
-				if ( wsp && gWR.HasAmmo(wsp) )
+				if ( wsp && (gWR.HasAmmo(wsp) || (wsp->iFlags & WEAPON_FLAGS_SELECTONEMPTY)))
 				{
 					gpActiveSel = wsp;
 					return;
@@ -1947,31 +1947,17 @@ int CHudAmmo::DrawWList(float flTime)
 
 				UnpackRGB( r,g,b, gHUD.GetHudColor());
 			
-				// if active, then we must have ammo.
-
-				if ( gpActiveSel == p )
-				{
-					SPR_Set(activeSpr, r, g, b );
-					SPR_DrawAdditive(0, x, y, &rcActive);
-
-					SPR_Set(gHUD.GetSprite(m_HUD_selection), r, g, b );
-					SPR_DrawAdditive(0, x, y, &gHUD.GetSpriteRect(m_HUD_selection));
-				}
+				// Draw Weapon if Red if no ammo
+				if ( gWR.HasAmmo(p) )
+					ScaleColors(r, g, b, 192);
 				else
 				{
-					// Draw Weapon if Red if no ammo
-
-					if ( gWR.HasAmmo(p) )
-						ScaleColors(r, g, b, 192);
-					else
-					{
-						UnpackRGB(r,g,b, RGB_REDISH);
-						ScaleColors(r, g, b, 128);
-					}
-
-					SPR_Set(inactiveSpr, r, g, b );
-					SPR_DrawAdditive( 0, x, y, &rcInactive);
+					UnpackRGB(r,g,b, RGB_REDISH);
+					ScaleColors(r, g, b, 128);
 				}
+
+				SPR_Set(inactiveSpr, r, g, b );
+				SPR_DrawAdditive( 0, x, y, &rcInactive);
 
 				// Draw Ammo Bar
 

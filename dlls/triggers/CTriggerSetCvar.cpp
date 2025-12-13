@@ -32,6 +32,7 @@ void CTriggerSetCVar::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYP
 	static StringSet valid_cvars = {
 		"mp_falldamage",
 		"mp_flashlight",
+		"mp_startflashlight",
 		"mp_forcerespawn",
 		"mp_fraglimit",
 		"mp_npckill",

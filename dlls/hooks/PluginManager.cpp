@@ -163,9 +163,11 @@ void PluginManager::UnloadPlugin(const Plugin& plugin) {
 	// invalidate all trigger_script callback pointers.
 	// Don't bother being smart about this. It's not expensive to find them again and
 	// mid-map plugin unloading should only happen during development
-	CBaseEntity* pScript = NULL;
-	while ((pScript = UTIL_FindEntityByClassname(pScript, "trigger_script")) != NULL) {
-		((CTriggerScript*)pScript)->m_callback = NULL;
+	if (g_serveractive) {
+		CBaseEntity* pScript = NULL;
+		while ((pScript = UTIL_FindEntityByClassname(pScript, "trigger_script")) != NULL) {
+			((CTriggerScript*)pScript)->m_callback = NULL;
+		}
 	}
 
 	if (!FreeLibrary((HMODULE)plugin.h_module)) {

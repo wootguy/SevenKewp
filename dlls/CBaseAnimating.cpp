@@ -117,7 +117,7 @@ void CBaseAnimating :: ResetSequenceInfo ( )
 	pev->animtime = gpGlobals->time;
 	pev->framerate = 1.0;
 	m_fSequenceFinished = FALSE;
-	m_flLastEventCheck = gpGlobals->time;
+	m_flLastEventCheck = 0;
 }
 
 
@@ -150,9 +150,12 @@ void CBaseAnimating :: DispatchAnimEvents ( float flInterval )
 	flInterval = 0.1;
 
 	// FIX: this still sometimes hits events twice
-	float flStart = pev->frame + (m_flLastEventCheck - pev->animtime) * m_flFrameRate * pev->framerate;
+	// TODO: different float maths were used for start/end, so that's probably why. The next
+	// "start" would not exactly match the previous "end". Test this for months, then get rid
+	// of the flInterval hack above.
+	float flStart = m_flLastEventCheck;
 	float flEnd = pev->frame + flInterval * m_flFrameRate * pev->framerate;
-	m_flLastEventCheck = pev->animtime + flInterval;
+	m_flLastEventCheck = flEnd;
 
 	m_fSequenceFinished = FALSE;
 	if (flEnd >= 256 || flEnd <= 0.0) 

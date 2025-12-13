@@ -1268,6 +1268,8 @@ void CBaseEntity::UpdateOnRemove(void)
 		m_deathNoticeSent = true;
 	}
 
+	GetCustomKeyValues()->clear();
+
 	if (FBitSet(pev->flags, FL_GRAPHED))
 	{
 		// this entity was a LinkEnt in the world node graph, so we must remove it from

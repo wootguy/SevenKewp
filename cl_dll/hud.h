@@ -778,7 +778,7 @@ private:
 public:
 	HSPRITE GetSprite( int index ) 
 	{
-		return (index < 0) ? 0 : m_rghSprites[index];
+		return (index < 0 || index >= m_iSpriteCount) ? 0 : m_rghSprites[index];
 	}
 
 	wrect_t& GetSpriteRect( int index )

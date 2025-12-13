@@ -4677,7 +4677,8 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
-	if (!IsAlive())
+	// monsterstate check here in case death was prevented via sequence
+	if (!IsAlive() && m_IdealMonsterState == MONSTERSTATE_DEAD)
 	{
 		return DeadTakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 	}

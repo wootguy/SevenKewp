@@ -75,6 +75,7 @@ void PM_Init(struct playermove_s* ppmove);
 char PM_FindTextureType(char* name);
 extern Vector VecBModelOrigin(entvars_t* pevBModel);
 extern void AddMapPluginEquipment();
+extern void SetPluginCvars();
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
 extern int g_teamplay;
@@ -799,6 +800,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	g_clearInventoriesNextMap = true; // set to false by trigger_changelevel
 
 	AddMapPluginEquipment();
+	SetPluginCvars();
 
 	int oldMapWepSz = g_mapWeapons.size();
 	for (auto item : g_playerInventory) {
@@ -1571,7 +1573,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			// client will create a custom flashlight effect if not using the default size. So, prevent
 			// the engine from rendering the default flashlight. This can't be done client-side because
 			// the engine handles this effect before the client calls HUD_ProcessPlayerState.
-			if (mp_flashlight_size.value != 8) {
+			if (mp_flashlight_size.value != 8 && g_sevenkewpPackUpdate) {
 				state->effects &= ~EF_DIMLIGHT;
 			}
 		}

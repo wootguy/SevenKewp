@@ -206,7 +206,7 @@ void CWorld::Precache(void)
 	}
 
 	if (m_hudFile && !getGameFilePath(STRING(m_hudFile), false).empty()) {
-		PRECACHE_GENERIC(STRING(m_hudFile));
+		PRECACHE_HUD_FILES(STRING(m_hudFile));
 	}
 
 	if (!g_bsp.loaded) {
