@@ -2031,7 +2031,7 @@ void CWeaponCustom::PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer) {
 
 		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, plr->edict());
 		WRITE_BYTE(TE_DLIGHT);
-		WRITE_COORD_VECTOR(plr->pev->origin);
+		WRITE_COORD_VECTOR(m_pPlayer->pev->origin);
 		WRITE_BYTE(evt.dlight.radius);
 		WRITE_BYTE(evt.dlight.r);
 		WRITE_BYTE(evt.dlight.g);

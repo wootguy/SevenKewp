@@ -4,6 +4,8 @@
 #include "hlds_hooks.h"
 #include "shared_util.h"
 
+bool g_checkExplSounds;
+
 RGB GetTeColor(uint8_t color) {
 	// palette used by TE_* effects
 	static uint32_t colors[] = {
@@ -448,7 +450,6 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 
 	bool expUnderwater = UTIL_PointInLiquid(origin) && UTIL_PointContents(origin + Vector(0,0,32)) != CONTENTS_EMPTY;
 
-	static float lastCheck = FLT_MAX;
 	static bool replacedExplosionSounds = false;
 	static const char* expSounds[3] = {
 		"weapons/explode3.wav",
@@ -457,8 +458,8 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 	};
 	static char expSoundsNew[3][128];
 
-	if (lastCheck > gpGlobals->time) {
-		lastCheck = gpGlobals->time; // level changed
+	if (g_checkExplSounds) {
+		g_checkExplSounds = false; // level changed
 
 		for (int i = 0; i < 3; i++) {
 			const char* repl = UTIL_GetReplacementSound(NULL, expSounds[i]);

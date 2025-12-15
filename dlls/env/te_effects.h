@@ -5,6 +5,8 @@
 #include "rgb.h"
 #include "CBaseEntity.h"
 
+EXPORT extern bool g_checkExplSounds; // set to true on level change for te_explosion to load new sounds
+
 EXPORT extern DLL_GLOBAL short g_sModelIndexSmoke;
 
 EXPORT RGB GetTeColor(uint8_t color);

@@ -18,6 +18,7 @@ extern CGraph WorldGraph;
 extern CSoundEnt* pSoundEnt;
 extern DLL_GLOBAL	int			gDisplayTitle;
 extern uint64_t g_levelChangePluginTime;
+extern bool g_checkExplSounds;
 
 bool g_freeRoam;
 
@@ -298,18 +299,10 @@ void CWorld::Precache(void)
 	//PRECACHE_SOUND("weapons/distant/explode4.wav");
 	PRECACHE_SOUND("weapons/distant/explode5.wav");
 
-	static const char* expSounds[3] = {
-		"weapons/explode3.wav",
-		"weapons/explode4.wav",
-		"weapons/explode5.wav"
-	};
-
-	for (int i = 0; i < 3; i++) {
-		const char* repl = UTIL_GetReplacementSound(NULL, expSounds[i]);
-		if (strcmp(repl, expSounds[i])) {
-			PRECACHE_SOUND(repl);
-		}
-	}
+	g_checkExplSounds = true;
+	PRECACHE_SOUND(UTIL_GetReplacementSound(NULL, "weapons/explode3.wav"));
+	PRECACHE_SOUND(UTIL_GetReplacementSound(NULL, "weapons/explode4.wav"));
+	PRECACHE_SOUND(UTIL_GetReplacementSound(NULL, "weapons/explode5.wav"));
 
 	// for sevenkewp clients
 	PRECACHE_GENERIC("sprites/" MOD_SPRITE_FOLDER "hud.txt");
