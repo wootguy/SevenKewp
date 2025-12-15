@@ -43,7 +43,7 @@ void CUzi::Precache()
 	wmodelAkimbo = "models/w_2uzis.mdl";
 	wrongClientWeapon = "weapon_9mmAR";
 
-	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_TERTIARY | FL_WC_WEP_AKIMBO;
+	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_SECONDARY | FL_WC_WEP_HAS_TERTIARY | FL_WC_WEP_AKIMBO;
 	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = UZI_DEPLOY;
 	params.deployTime = 1280;
@@ -57,6 +57,12 @@ void CUzi::Precache()
 	primary.cooldown = 70;
 	primary.accuracyX = 6 * 100;
 	primary.accuracyY = 6 * 100;
+
+	// HACK: remove this for the next client update. It changes crosshair in single mode
+	// fix the secondary fire in akimbo mode instead
+	CustomWeaponShootOpts& secondary = params.shootOpts[1];
+	secondary.accuracyX = 9 * 100;
+	secondary.accuracyY = 9 * 100;
 
 	CustomWeaponShootOpts& tertiary = params.shootOpts[2];
 	tertiary.ammoCost = 0;

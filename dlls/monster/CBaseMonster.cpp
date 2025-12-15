@@ -4677,7 +4677,7 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
-	bool isSciptDead = !IsAlive() && m_IdealMonsterState != MONSTERSTATE_DEAD;
+	bool isSciptDead = !IsAlive() && m_IdealMonsterState == MONSTERSTATE_SCRIPT;
 
 	if (isSciptDead) {
 		bitsDamageType |= GIB_ALWAYS; // prevent monster triggering kill events over and over
@@ -7544,7 +7544,8 @@ BOOL CBaseMonster::CanFollow(void)
 
 void CBaseMonster::FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
-	m_IdealMonsterState = MONSTERSTATE_ALERT; // frees the monster from an aiscripted sequence
+	if (m_IdealMonsterState == MONSTERSTATE_SCRIPT && m_scriptState == SCRIPT_WAIT)
+		m_IdealMonsterState = MONSTERSTATE_ALERT; // frees the monster from an aiscripted sequence
 
 	// Don't allow use during a scripted_sentence
 	if (m_useTime > gpGlobals->time)

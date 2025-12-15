@@ -416,7 +416,7 @@ void CWeaponCustom::WeaponIdle() {
 		}
 	}
 	else {
-		if (m_iClip == 0) {
+		if (m_iClip == 0 && params.maxClip) {
 			return; // assume weapon should stay on the "fire last" animation
 		}
 	}
