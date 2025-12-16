@@ -334,13 +334,22 @@ void CBasePlayerItem::AttachToPlayer(CBasePlayer* pPlayer)
 void CBasePlayerItem::DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
 	if (pCaller && pCaller->IsPlayer()) {
+		CBasePlayer* plr = pCaller->MyPlayerPointer();
 
 		if (!(pev->spawnflags & SF_ITEM_USE_WITHOUT_LOS) && !CanReach(pCaller)) {
 			return;
 		}
 
-		if (pActivator->IsPlayer() && mp_one_pickup_per_player.value && (m_pickupPlayers & PLRBIT(pActivator->edict()))) {
-			UTIL_ClientPrint(pActivator, print_center, "Can't collect again until you respawn\n");
+		if (mp_one_pickup_per_player.value && (m_pickupPlayers & PLRBIT(plr->edict()))) {
+			UTIL_ClientPrint(plr, print_center, "Can't collect again until you respawn\n");
+		}
+
+		CWeaponCustom* cwep = MyWeaponCustomPtr();
+		if (cwep && cwep->IsSevenKewpWeapon() && !plr->IsSevenKewpClient()) {
+			if (plr->HasNamedPlayerItem(cwep->wrongClientWeapon)) {
+				plr->SendSevenKewpClientNotice(DisplayName());
+				return;
+			}
 		}
 
 		DefaultTouch(pCaller);

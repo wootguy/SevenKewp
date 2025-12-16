@@ -6010,9 +6010,11 @@ BOOL CBasePlayer::HasPlayerItem( CBasePlayerItem *pCheckItem )
 CBasePlayerItem* CBasePlayer::GetNamedPlayerItem(const char* pszItemName) {
 	CBasePlayerItem* pItem;
 	int i;
-		
-	if (pszItemName)
-		pszItemName = CBasePlayerWeapon::GetClassFromInfoName(pszItemName);
+	
+	if (!pszItemName)
+		return NULL;
+
+	pszItemName = CBasePlayerWeapon::GetClassFromInfoName(pszItemName);
 
 	for (i = 0; i < MAX_ITEM_TYPES; i++)
 	{

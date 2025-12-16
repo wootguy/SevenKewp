@@ -77,7 +77,6 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 #ifndef CLIENT_DLL
 	if (!pPlayer->IsSevenKewpClient() && wrongClientWeapon) {
 		if (pPlayer->HasNamedPlayerItem(wrongClientWeapon)) {
-			pPlayer->SendSevenKewpClientNotice(DisplayName());
 			return 0;
 		}
 
@@ -2393,7 +2392,6 @@ int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
 		return 0;
 
 	if (!pPlayer->IsSevenKewpClient() && wrongClientWeapon) {
-		pPlayer->SendSevenKewpClientNotice(DisplayName());
 		return 0;
 	}
 

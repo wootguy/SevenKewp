@@ -78,7 +78,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 	int iContents = UTIL_PointContents ( pev->origin );
 	
 	int spr = iContents != CONTENTS_WATER ? g_sModelIndexFireball : g_sModelIndexWExplosion;
-	UTIL_Explosion(m_effectOrigin, spr, (pev->dmg - 50) * .60, 15, TE_EXPLFLAG_NONE);
+	UTIL_Explosion(m_effectOrigin, spr, V_max(10, (pev->dmg - 50) * .60), 15, TE_EXPLFLAG_NONE);
 
 	if (iContents == CONTENTS_WATER) {
 		UTIL_WaterSplash(pev->origin, true, true);
@@ -144,7 +144,7 @@ void CGrenade::Smoke( void )
 	}
 	else
 	{
-		UTIL_Smoke(m_effectOrigin, g_sModelIndexSmoke, (pev->dmg - 50) * 0.80, 12);
+		UTIL_Smoke(m_effectOrigin, g_sModelIndexSmoke, V_max(10, (pev->dmg - 50) * 0.80), 12);
 	}
 	UTIL_Remove( this );
 }

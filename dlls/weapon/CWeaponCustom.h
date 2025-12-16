@@ -81,7 +81,7 @@ public:
 	void PrecacheEvents() override;
 	void AddEvent(WepEvt evt);
 	BOOL UseDecrement(void) override { return TRUE; }
-	BOOL IsSevenKewpWeapon() { return TRUE; }
+	BOOL IsSevenKewpWeapon() { return !(params.flags & FL_WC_WEP_NO_PREDICTION); }
 	BOOL IsWeaponCustom() { return TRUE; }
 	BOOL IsAkimboWeapon() override { return params.flags & FL_WC_WEP_AKIMBO; }
 	int SecondaryAmmoIndex(void) { return m_iSecondaryAmmoType; }

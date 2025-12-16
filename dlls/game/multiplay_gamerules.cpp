@@ -547,6 +547,12 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 
 	bool hasSavedInv = pPlayer->LoadInventory();
 
+	while ((pWeaponEntity = UTIL_FindEntityByClassname(pWeaponEntity, "game_player_equip")) != 0)
+	{
+		pWeaponEntity->Touch(pPlayer);
+		addDefault = FALSE;
+	}
+
 	if (mp_keep_inventory.value < 2 || !hasSavedInv) {
 		for (int i = 0; i < MAX_EQUIP; i++) {
 			if (!g_mapEquipment[i].itemName) {
@@ -567,12 +573,6 @@ void CHalfLifeMultiplay :: PlayerSpawn( CBasePlayer *pPlayer )
 		}
 
 		pPlayer->m_rgAmmo[pPlayer->GetAmmoIndex("health")] = gSkillData.sk_plr_medkit_start_ammo;
-	}
-
-	while ( (pWeaponEntity = UTIL_FindEntityByClassname( pWeaponEntity, "game_player_equip" )) != 0)
-	{
-		pWeaponEntity->Touch( pPlayer );
-		addDefault = FALSE;
 	}
 }
 
