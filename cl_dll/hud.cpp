@@ -614,7 +614,7 @@ void CHud::LoadHudSprites(void) {
 
 void CHud::ReplaceHudSprites(const char* fpath) {
 	int numSprites = 0;
-	client_sprite_t* sprList = fpath[0] ? SPR_GetList(fpath, &numSprites) : NULL;
+	client_sprite_t* sprList = fpath && fpath[0] ? SPR_GetList(fpath, &numSprites) : NULL;
 
 	static bool replacedIndexes[256];
 	memset(replacedIndexes, 0, sizeof(replacedIndexes));
@@ -711,6 +711,11 @@ void CHud::ParseServerInfo() {
 void CHud::WorldInit(void) {
 	InitEnginePv();
 	LoadHudSprites();
+
+	if (!IsCompatibleSevenKewpServer()) {
+		ReplaceHudSprites(NULL); // a replacement path won't be coming. Finish loading HUD sprites now.
+	}
+
 	PM_InitTextureTypes();
 
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially
@@ -954,4 +959,9 @@ unsigned long CHud::GetHudColor() {
 		return m_sv_hud_color;
 
 	return RGB_YELLOWISH;
+}
+
+bool CHud::IsCompatibleSevenKewpServer() {
+	return m_sevenkewpVersion > 0
+		&& UTIL_AreSevenKewpVersionsCompatible(SEVENKEWP_VERSION, m_sevenkewpVersion);
 }

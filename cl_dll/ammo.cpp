@@ -1654,25 +1654,28 @@ void DrawCrossHair(float accuracyX, float accuracyY, int len, int thick, int bor
 void CHudAmmo::DrawDynamicCrosshair() {
 	WEAPON* pw = m_pWeapon; // shorthand
 
-	CustomWeaponParams* wcparams = GetCustomWeaponParams(pw->iId);
-	bool shouldDrawZoomCrosshair = pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR);
-	bool shouldStretchZoom = wcparams && (wcparams->flags & FL_WC_WEP_ZOOM_SPR_STRETCH);
 
-	if (shouldDrawZoomCrosshair && shouldStretchZoom && !is_software_renderer) {
-		static wrect_t nullrc;
-		SetCrosshair(0, nullrc, 0, 0, 0);
+	if (pw) {
+		CustomWeaponParams* wcparams = GetCustomWeaponParams(pw->iId);
+		bool shouldDrawZoomCrosshair = pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR);
+		bool shouldStretchZoom = wcparams && (wcparams->flags & FL_WC_WEP_ZOOM_SPR_STRETCH);
 
-		bool aspectCorrection = wcparams && wcparams->flags & FL_WC_WEP_ZOOM_SPR_ASPECT;
-		DrawStretchedZoomCrosshair(pw->hZoomedCrosshair, pw->rcZoomedCrosshair, aspectCorrection);
-		return;
+		if (shouldDrawZoomCrosshair && shouldStretchZoom && !is_software_renderer) {
+			static wrect_t nullrc;
+			SetCrosshair(0, nullrc, 0, 0, 0);
+
+			bool aspectCorrection = wcparams && wcparams->flags & FL_WC_WEP_ZOOM_SPR_ASPECT;
+			DrawStretchedZoomCrosshair(pw->hZoomedCrosshair, pw->rcZoomedCrosshair, aspectCorrection);
+			return;
+		}
+
+		if (shouldDrawZoomCrosshair) {
+			return; // draw the sprite version of the crosshair for zooming
+		}
 	}
 
-	if (m_hud_crosshair_mode->value <= 0 || !gHUD.IsSevenKewpServer())
+	if (m_hud_crosshair_mode->value <= 0 || !gHUD.IsCompatibleSevenKewpServer())
 		return; // drawing sprite crosshair
-
-	if (shouldDrawZoomCrosshair) {
-		return; // draw the sprite version of the crosshair for zooming
-	}
 
 	int len = clamp(m_hud_crosshair_length->value, 1, 1000);
 	int width = clamp(m_hud_crosshair_width->value, 1, 1000);

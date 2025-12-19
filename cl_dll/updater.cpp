@@ -506,6 +506,7 @@ void CHudClientUpdater::Think() {
 			else {
 				PRINTF("\nYour client is up-to-date.\n\n-------------------------\n");
 				gEngfuncs.pfnCenterPrint("Your client is up-to-date");
+				gHUD.m_ClientUpdater.m_updateDeclined = true; // don't show message if update "failed"
 				UpdateFinish();
 			}
 			return;

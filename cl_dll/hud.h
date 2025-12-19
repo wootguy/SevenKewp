@@ -759,6 +759,8 @@ public:
 
 	// for disabling features that could be used to cheat on vanilla servers
 	inline bool IsSevenKewpServer() { return m_sevenkewpVersion > 0; }
+
+	bool IsCompatibleSevenKewpServer();
 	
 	// return desired HUD sprite scaling resolution key (320, 640, 1280, 2560)
 	int GetDesiredSpriteRes();

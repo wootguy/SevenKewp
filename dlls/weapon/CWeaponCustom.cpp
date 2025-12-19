@@ -620,7 +620,7 @@ void CWeaponCustom::SecondaryAttack() {
 		return;
 	}
 
-	if (!(params.flags & FL_WC_WEP_HAS_SECONDARY)) {
+	if (!(params.flags & (FL_WC_WEP_HAS_SECONDARY | FL_WC_WEP_AKIMBO))) {
 		if (m_pPlayer->pev->button & IN_ATTACK) {
 			PrimaryAttack();
 		}

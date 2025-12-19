@@ -703,6 +703,9 @@ void EV_FireMP5( event_args_t *args )
 
 	shell = gEngfuncs.pEventAPI->EV_FindModelIndex (RemapFile("models/shell.mdl"));// brass shell
 	
+	if (idx == 0)
+		return;
+
 	if ( EV_IsLocal( idx ) )
 	{
 		// Add muzzle flash to current weapon model

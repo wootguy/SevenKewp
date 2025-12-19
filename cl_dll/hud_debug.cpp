@@ -1,6 +1,8 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
+#include "event_api.h"
+#include "pm_defs.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -55,7 +57,7 @@ int CHudDebug::Init(void)
 
 int CHudDebug::Draw(float flTime)
 {
-	if (m_HUD_debug->value <= 0)
+	if (m_HUD_debug->value <= 0 || !gHUD.IsSevenKewpServer())
 		return 0;
 
 	int yOffset = line_height*2;
@@ -106,6 +108,63 @@ int CHudDebug::Draw(float flTime)
 	int real_contents;
 	int contents = gEngfuncs.PM_PointContents(gPlayerSim.v_sim_org, &real_contents);
 	PRINT_VARD(contents);
+
+	if (m_HUD_debug->value >= 2) {
+		static int numPhysEnts = 0;
+		static int drawCount = 0;
+		static float lastDraw = 0;
+		if (gEngfuncs.GetClientTime() - lastDraw > 0.055f || lastDraw > gEngfuncs.GetClientTime()) {
+			lastDraw = gEngfuncs.GetClientTime();
+			numPhysEnts = 0;
+
+			const int maxBoxes = 15; // more than this many boxes per frame and boxes won't be drawn
+			int drawMin = (drawCount % 8) * maxBoxes;
+			int drawMax = (drawCount % 8) * maxBoxes + maxBoxes;
+
+			for (int i = 1; i < MAX_PHYSENTS; i++) {
+				physent_t* test = gEngfuncs.pEventAPI->EV_GetPhysent(i);
+				if (!test)
+					continue;
+
+				Vector min = test->mins + test->origin;
+				Vector max = test->maxs + test->origin;
+				Vector ori = test->origin + min + (max - min) * 0.5f;
+
+				if (numPhysEnts >= drawMin && numPhysEnts < drawMax) {
+					RGB color;
+
+					switch (test->solid) {
+					default:
+					case SOLID_NOT:
+						color = RGB(255, 0, 255); // should never happen?
+						break;
+					case SOLID_TRIGGER:
+						color = RGB(128, 0, 255);
+						break;
+					case SOLID_BBOX:
+						color = RGB(255, 128, 0);
+						break;
+					case SOLID_SLIDEBOX:
+						color = RGB(0, 255, 0);
+						break;
+					case SOLID_BSP:
+						color = RGB(255, 0, 0);
+						break;
+					}
+
+					te_debug_box(min, max, 0.5f, color);
+					//te_debug_beam(gPlayerSim.v_sim_org, ori, 1, RGB(255, 255, 0));
+				}
+
+				numPhysEnts++;
+			}
+
+			drawCount++;
+		}
+		yOffset += line_height;
+		PRINT_VARD(numPhysEnts);
+	}
+
 
 	return 1;
 }

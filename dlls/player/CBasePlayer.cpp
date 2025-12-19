@@ -6864,8 +6864,8 @@ void CBasePlayer::SendSevenKewpClientNotice(const char* weaponName) {
 	UTIL_ClientPrint(this, print_console, "\n-----------------------------------------------------------------\n");
 	UTIL_ClientPrint(this, print_console, UTIL_VarArgs("This server requires the \"%s\" client to use some\n", clientReq.c_str()));
 	UTIL_ClientPrint(this, print_console, "weapons. The reason for this is that custom hitscan weapons feel ");
-	UTIL_ClientPrint(this, print_console, "awful without client-side prediction. You were given a similar ");
-	UTIL_ClientPrint(this, print_console, "Half-Life weapon instead of the one you wanted.\n\n");
+	UTIL_ClientPrint(this, print_console, "awful without client-side prediction. You already have a similar");
+	UTIL_ClientPrint(this, print_console, "Half-Life weapon and cannot pick up the one you wanted.\n\n");
 	UTIL_ClientPrint(this, print_console, "If you don't know what weapon prediction is, type in \"cl_lw 0\" and ");
 	UTIL_ClientPrint(this, print_console, "try playing the game that way. It's not fun with the average ping.\n\n");
 	UTIL_ClientPrint(this, print_console, "Download the latest SevenKewp client here:\n");

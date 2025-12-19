@@ -843,7 +843,7 @@ EXPORT void UTIL_WaterSplashParams(float scale, int playSound, float& ratio, flo
 		vol = 0;
 }
 
-void te_debug_box(Vector mins, Vector maxs, uint8_t life, RGBA c, int msgType, edict_t* dest) {
+void te_debug_box(Vector mins, Vector maxs, float life, RGBA c, int msgType, edict_t* dest) {
 	Vector corners[8];
 
 	// Generate all 8 corners of the box
@@ -875,10 +875,10 @@ void te_debug_box(Vector mins, Vector maxs, uint8_t life, RGBA c, int msgType, e
 	te_debug_beam(corners[3], corners[7], life, c, msgType, dest);
 }
 
-void te_debug_beam(Vector start, Vector end, uint8_t life, RGBA c, int msgType, edict_t* dest)
+void te_debug_beam(Vector start, Vector end, float life, RGBA c, int msgType, edict_t* dest)
 {
 #ifdef CLIENT_DLL
-	int m_iBeam = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/smoke.spr");
+	int m_iBeam = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/laserbeam.spr");
 	gEngfuncs.pEfxAPI->R_BeamPoints(start, end, m_iBeam, life * 0.1f, 1, 0, 1, 0, 0, 0,
 		c.r / 255.0f, c.g / 255.0f, c.b / 255.0f);
 #else

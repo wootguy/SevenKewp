@@ -126,9 +126,9 @@ EXPORT char* UTIL_VarArgs(const char* format, ...);
 
 EXPORT void UTIL_WaterSplashParams(float scale, int playSound, float& ratio, float& sz, float& fps, float& vol, int& pitch, const char*& sample);
 
-EXPORT void te_debug_box(Vector mins, Vector maxs, uint8_t life=50, RGBA c = RGBA(255, 0, 0, 255), int msgType = MSG_BROADCAST, edict_t* dest = NULL);
+EXPORT void te_debug_box(Vector mins, Vector maxs, float life=50, RGBA c = RGBA(255, 0, 0, 255), int msgType = MSG_BROADCAST, edict_t* dest = NULL);
 
-EXPORT void te_debug_beam(Vector start, Vector end, uint8_t life=50, RGBA c=RGBA(255,0,0,255), int msgType = MSG_BROADCAST, edict_t* dest = NULL);
+EXPORT void te_debug_beam(Vector start, Vector end, float life=50, RGBA c=RGBA(255,0,0,255), int msgType = MSG_BROADCAST, edict_t* dest = NULL);
 
 // create a splash if trace intersects water
 // playSound: 1 = slow moving object, 2 = bullet, 3 = obnoxious player
