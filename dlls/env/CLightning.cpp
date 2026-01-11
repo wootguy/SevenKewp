@@ -154,6 +154,9 @@ void CLightning::Spawn(void)
 void CLightning::Precache(void)
 {
 	m_spriteTexture = PRECACHE_MODEL((char*)STRING(m_iszSpriteName));
+	if (pev->modelindex == g_notPrecachedModelIdx) {
+		pev->modelindex = g_sModelIndexLaser;
+	}
 	CBeam::Precache();
 }
 

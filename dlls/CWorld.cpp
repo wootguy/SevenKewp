@@ -274,7 +274,7 @@ void CWorld::Precache(void)
 	PRECACHE_SOUND("common/bodydrop3.wav");// dead bodies hitting the ground (animation events)
 	PRECACHE_SOUND("common/bodydrop4.wav");
 
-	PRECACHE_MODEL(NOT_PRECACHED_MODEL);
+	g_notPrecachedModelIdx = PRECACHE_MODEL(NOT_PRECACHED_MODEL);
 
 	if (mp_mergemodels.value) {
 		PRECACHE_MODEL(MERGED_ITEMS_MODEL);

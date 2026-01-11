@@ -149,6 +149,7 @@ typedef	enum
 
 EXPORT extern DLL_GLOBAL	short	g_sModelIndexLaser;// holds the index for the laser beam
 EXPORT extern DLL_GLOBAL	const char *g_pModelNameLaser;
+EXPORT extern DLL_GLOBAL	short g_notPrecachedModelIdx;
 
 EXPORT extern DLL_GLOBAL	short	g_sModelIndexLaserDot;// holds the index for the laser beam dot
 EXPORT extern DLL_GLOBAL	short	g_sModelIndexFireball;// holds the index for the fireball

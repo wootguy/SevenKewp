@@ -50,6 +50,9 @@ void CLaser::Spawn(void)
 void CLaser::Precache(void)
 {
 	pev->modelindex = PRECACHE_MODEL((char*)STRING(pev->model));
+	if (pev->modelindex == g_notPrecachedModelIdx) {
+		pev->modelindex = g_sModelIndexLaser;
+	}
 	if (m_iszSpriteName)
 		PRECACHE_MODEL((char*)STRING(m_iszSpriteName));
 }

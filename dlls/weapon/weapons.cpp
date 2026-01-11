@@ -41,6 +41,7 @@ extern int gEvilImpulse101;
 #define NOT_USED 255
 
 DLL_GLOBAL	short	g_sModelIndexLaser;// holds the index for the laser beam
+DLL_GLOBAL	short	g_notPrecachedModelIdx;// holds the index for the laser beam
 DLL_GLOBAL  const char *g_pModelNameLaser = "sprites/laserbeam.spr";
 DLL_GLOBAL	short	g_sModelIndexLaserDot;// holds the index for the laser beam dot
 DLL_GLOBAL	short	g_sModelIndexFireball;// holds the index for the fireball
