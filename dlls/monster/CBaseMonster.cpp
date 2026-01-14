@@ -7575,7 +7575,7 @@ void CBaseMonster::FollowerUse(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 				StartFollowing(pCaller);
 			}
 		}
-		else
+		else if (IsFollowing())
 		{
 			StopFollowing(TRUE);
 			StopFollowingSound();
