@@ -202,6 +202,7 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"mp_mergemodels",
 		"mp_skill_allow",
 		"mp_bigmap",
+		"mp_max_pvs_corpses",
 		"killnpc",
 		"mp_npckill",
 		"mp_startflashlight",
