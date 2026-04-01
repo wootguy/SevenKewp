@@ -26,7 +26,8 @@ struct SoundMapping {
 enum PredictionDataSendMode {
 	WC_PRED_SEND_INIT,	// initialize prediction data for first pickup
 	WC_PRED_SEND_WEP,	// only send weapon prediction data
-	WC_PRED_SEND_EVT	// only send event prediction data
+	WC_PRED_SEND_EVT,	// only send event prediction data
+	WC_PRED_SEND_BOTH	// send weapon and event data
 };
 
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {

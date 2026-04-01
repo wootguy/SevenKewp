@@ -710,6 +710,7 @@ struct WepEvt {
 		return *this;
 	}
 
+	// targets = combination of FL_WC_COOLDOWN_
 	WepEvt Cooldown(uint16_t millis, uint8_t targets) {
 		evtType = WC_EVT_COOLDOWN;
 		cooldown.millis = millis;

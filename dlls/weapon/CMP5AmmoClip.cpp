@@ -3,17 +3,15 @@
 
 class CMP5AmmoClip : public CBasePlayerAmmo
 {
-	void Spawn( void )
-	{ 
-		Precache( );
-		SET_MODEL_MERGED(ENT(pev), "models/w_9mmARclip.mdl", MERGE_MDL_W_9MMARCLIP);
-		CBasePlayerAmmo::Spawn( );
-	}
 	void Precache( void )
 	{
-		PRECACHE_REPLACEMENT_MODEL ("models/w_9mmARclip.mdl");
+		m_defaultModel = "models/w_9mmARclip.mdl";
+		CBasePlayerAmmo::Precache();
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
+
+	virtual int MergedModelBody() { return MERGE_MDL_W_9MMARCLIP; }
+
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
 		int bResult = (pOther->GiveAmmo( AMMO_MP5CLIP_GIVE, "9mm", gSkillData.sk_ammo_max_9mm) != -1);

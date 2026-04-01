@@ -723,14 +723,22 @@ def check_map_problems(all_ents, fix_problems):
 
 # map-specific edits
 def convert_ents(all_ents):
+	mdl_to_body = {}
+	for line in open('prop_bodies.txt', 'r').readlines():
+		line = line.strip()
+		if not line:
+			continue
+		parts = line.split("=")
+		if len(parts) != 2:
+			continue
+		mdl_to_body[parts[1]] = parts[0]
+	
 	for ent in all_ents:
-		for key in ['model', 'new_model']:
-			model = ent.get(key, '').lower()
-			
-			if model == 'models/snd/hgrunt_desert.mdl':
-				ent[key] = 'models/faraon/hgrunt_desert.mdl'
-			if model == 'models/sandstone/rpggruntf.mdl':
-				ent[key] = 'models/faraon/hgrunt_desert.mdl'
+		model = ent.get('model', '').lower()
+		
+		if model in mdl_to_body:
+			ent['model'] = 'models/lostmaze/props_v1.mdl'
+			ent['body'] = mdl_to_body[model]
 
 def get_all_skill_cvar_names(skill_path):	
 	all_names = set()
@@ -987,7 +995,7 @@ if fix_problems:
 				x = 256
 				y = 256
 				print("Resizing invalid sky texture: %s (%dx%d -> %dx%d)" % (sky, width, height, x, y))
-				image = image.resize((x, y), Image.ANTIALIAS)
+				image = image.resize((x, y), Image.Resampling.LANCZOS)
 				image.save(sky)
 
 print("\nSearching for incompatible entity settings...")

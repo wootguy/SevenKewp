@@ -6,18 +6,15 @@ extern bool g_hlPlayersCanPickup556;
 
 class CAmmo556 : public CBasePlayerAmmo
 {
-	void Spawn( void )
-	{ 
-		Precache( );
-		SET_MODEL_MERGED(ENT(pev), "models/w_saw_clip.mdl", MERGE_MDL_W_SAW_CLIP);
-		
-		CBasePlayerAmmo::Spawn( );
-	}
 	void Precache( void )
 	{
-		PRECACHE_REPLACEMENT_MODEL("models/w_saw_clip.mdl");
+		m_defaultModel = "models/w_saw_clip.mdl";
+		CBasePlayerAmmo::Precache();
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
+
+	virtual int MergedModelBody() { return MERGE_MDL_W_SAW_CLIP; }
+
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
 		int bResult;

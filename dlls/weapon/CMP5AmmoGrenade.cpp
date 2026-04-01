@@ -2,17 +2,15 @@
 
 class CMP5AmmoGrenade : public CBasePlayerAmmo
 {
-	void Spawn( void )
-	{ 
-		Precache( );
-		SET_MODEL_MERGED(ENT(pev), "models/w_ARgrenade.mdl", MERGE_MDL_W_ARGRENADE);
-		CBasePlayerAmmo::Spawn( );
-	}
 	void Precache( void )
 	{
-		PRECACHE_REPLACEMENT_MODEL ("models/w_ARgrenade.mdl");
+		m_defaultModel = "models/w_ARgrenade.mdl";
+		CBasePlayerAmmo::Precache();
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
+
+	virtual int MergedModelBody() { return MERGE_MDL_W_ARGRENADE; }
+
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
 		// nerf nade ammo spawned by spores

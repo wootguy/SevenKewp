@@ -3,17 +3,15 @@
 
 class CPythonAmmo : public CBasePlayerAmmo
 {
-	void Spawn( void )
-	{ 
-		Precache( );
-		SET_MODEL_MERGED(ENT(pev), "models/w_357ammobox.mdl", MERGE_MDL_W_357AMMOBOX);
-		CBasePlayerAmmo::Spawn( );
-	}
 	void Precache( void )
 	{
-		PRECACHE_REPLACEMENT_MODEL("models/w_357ammobox.mdl");
+		m_defaultModel = "models/w_357ammobox.mdl";
+		CBasePlayerAmmo::Precache();
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
+
+	virtual int MergedModelBody() { return MERGE_MDL_W_357AMMOBOX; }
+
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
 		if (pOther->GiveAmmo( AMMO_357BOX_GIVE, "357", gSkillData.sk_ammo_max_357 ) != -1)

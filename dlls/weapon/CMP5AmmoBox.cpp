@@ -2,17 +2,15 @@
 
 class CMP5AmmoBox : public CBasePlayerAmmo
 {
-	void Spawn( void )
-	{ 
-		Precache( );
-		SET_MODEL_MERGED(ENT(pev), "models/w_chainammo.mdl", MERGE_MDL_W_CHAINAMMO);
-		CBasePlayerAmmo::Spawn( );
-	}
 	void Precache( void )
 	{
-		PRECACHE_REPLACEMENT_MODEL ("models/w_chainammo.mdl");
+		m_defaultModel = "models/w_chainammo.mdl";
+		CBasePlayerAmmo::Precache();
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
+
+	virtual int MergedModelBody() { return MERGE_MDL_W_CHAINAMMO; }
+
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
 		int bResult = (pOther->GiveAmmo( AMMO_CHAINBOX_GIVE, "9mm", gSkillData.sk_ammo_max_9mm) != -1);

@@ -172,7 +172,6 @@ class CSporeClip : public CBasePlayerAmmo
 	void Spawn(void)
 	{
 		Precache();
-		SET_MODEL(ENT(pev), "models/spore.mdl");
 		CBasePlayerAmmo::Spawn();
 
 		// don't sink into the ground (model origin is at the center, not the bottom)
@@ -181,7 +180,7 @@ class CSporeClip : public CBasePlayerAmmo
 
 	void Precache(void)
 	{
-		PRECACHE_MODEL("models/spore.mdl");
+		m_defaultModel = "models/spore.mdl";
 		PRECACHE_SOUND("weapons/spore_ammo.wav");
 	}
 

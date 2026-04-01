@@ -12,10 +12,17 @@ extern int gEvilImpulse101;
 
 void CBasePlayerAmmo::Spawn(void)
 {
+	if (pev->model) {
+		m_customModel = pev->model;
+	}
+
+	Precache();
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 16));
 	UTIL_SetOrigin(pev, pev->origin);
+
+	SetAmmoModel();
 
 	if (mp_use_only_pickups.value) {
 		pev->spawnflags |= SF_ITEM_USE_ONLY;
@@ -29,6 +36,11 @@ void CBasePlayerAmmo::Spawn(void)
 		SetUse(&CBasePlayerAmmo::DefaultUse);	
 
 	UTIL_RegisterEquipmentEntity(STRING(pev->classname));
+}
+
+void CBasePlayerAmmo::Precache(void)
+{
+	PRECACHE_MODEL(GetModel());
 }
 
 void CBasePlayerAmmo::KeyValue(KeyValueData* pkvd)
@@ -150,4 +162,27 @@ int CBasePlayerAmmo::AddToFullPack(struct entity_state_s* state, CBasePlayer* pl
 	}
 
 	return 1;
+}
+
+const char* CBasePlayerAmmo::GetModel() {
+	if (m_customModel) {
+		return STRING(m_customModel);
+	}
+	bool useMergedModel = MergedModelBody() != -1 && !UTIL_MapReplacesModel(m_defaultModel);
+
+	if (mp_mergemodels.value && useMergedModel)
+		return MERGED_ITEMS_MODEL;
+
+	return m_defaultModel ? m_defaultModel : NOT_PRECACHED_MODEL;
+}
+
+void CBasePlayerAmmo::SetAmmoModel() {
+	bool useMergedModel = MergedModelBody() != -1 && !UTIL_MapReplacesModel(m_defaultModel);
+
+	if (m_customModel || !useMergedModel) {
+		SET_MODEL(ENT(pev), GetModel());
+	}
+	else {
+		SET_MODEL_MERGED(ENT(pev), GetModel(), MergedModelBody());
+	}
 }

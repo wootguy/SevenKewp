@@ -3,17 +3,15 @@
 
 class CUziClip : public CBasePlayerAmmo
 {
-	void Spawn( void )
-	{ 
-		Precache( );
-		SET_MODEL_MERGED(ENT(pev), "models/w_uzi_clip.mdl", MERGE_MDL_W_UZI_CLIP);
-		CBasePlayerAmmo::Spawn( );
-	}
 	void Precache( void )
 	{
-		PRECACHE_REPLACEMENT_MODEL ("models/w_uzi_clip.mdl");
+		m_defaultModel = "models/w_uzi_clip.mdl";
+		CBasePlayerAmmo::Precache();
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
+
+	virtual int MergedModelBody() { return MERGE_MDL_W_UZI_CLIP; }
+
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
 		int bResult = (pOther->GiveAmmo(AMMO_UZICLIP_GIVE, "9mm", gSkillData.sk_ammo_max_9mm) != -1);

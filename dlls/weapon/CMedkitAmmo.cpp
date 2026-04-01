@@ -2,19 +2,16 @@
 
 class CMedkitAmmo : public CBasePlayerAmmo
 {
-	void Spawn(void)
-	{
-		Precache();
-		//SET_MODEL_MERGED(ENT(pev), "models/w_pmedkit.mdl", MERGE_MDL_W_GAUSSAMMO);
-		SET_MODEL(ENT(pev), GET_MODEL("models/w_pmedkit.mdl"));
-		CBasePlayerAmmo::Spawn();
-	}
 	void Precache(void)
 	{
-		//PRECACHE_REPLACEMENT_MODEL("models/w_pmedkit.mdl");
+		m_defaultModel = "models/w_pmedkit.mdl";
+		CBasePlayerAmmo::Precache();
 		PRECACHE_MODEL("models/w_pmedkit.mdl");
 		PRECACHE_SOUND("items/9mmclip1.wav");
 	}
+
+	//virtual int MergedModelBody() { return MERGE_MDL_W_GAUSSAMMO; }
+
 	BOOL AddAmmo(CBaseEntity* pOther)
 	{
 		if (pOther->GiveAmmo(AMMO_MEDKIT_GIVE, "health", gSkillData.sk_ammo_max_medkit) != -1)

@@ -255,7 +255,7 @@ def compile_weapon_hud():
 		print("zoom.bmp does not exist. zoom entries will not be added to the HUD text file.")
 
 	# save the new image
-	save_img_alphatest(canvas, "hud_weapon.bmp")
+	save_img_alphatest(new_img, "hud_weapon")
 
 	print("Created HUD file: hud_output.bmp")
 

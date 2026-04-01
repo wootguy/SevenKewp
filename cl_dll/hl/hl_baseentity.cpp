@@ -432,6 +432,7 @@ const char* CBasePlayerWeapon::GetModelW() { return 0; }
 void CBasePlayerWeapon::SetWeaponModelW() { }
 int CBasePlayerWeapon::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) { return 0; }
 int CBasePlayerAmmo::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) { return 0; }
+void CBasePlayerAmmo::Precache() { }
 void CGrenade::SetGrenadeModel() { }
 void CSoundEnt::InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration ) {}
 void CSoundEnt::Precache() {}

@@ -17,6 +17,8 @@ void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTrac
 void EV_LaserOn(const char* dotSprite, float dotSz, const char* beamSprite, float beamWidth);
 void EV_LaserOff();
 void WC_EV_Dlight(WepEvt& evt);
+#define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
+#define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 #else
 int g_runfuncs = 1;
 #define PRINTF(fmt, ...)
@@ -27,6 +29,15 @@ int CWeaponCustom::m_tracerCount[32];
 uint32_t CWeaponCustom::m_predDataSent[MAX_WEAPONS];
 
 void CWeaponCustom::Spawn() {
+	Precache();
+
+	m_iDefaultAmmo = params.maxClip;
+
+	ItemInfo info;
+	info.iId = 0;
+	if (GetItemInfo(&info))
+		m_iId = info.iId;
+
 	if (m_iId <= 0) {
 		ALERT(at_error, "Custom weapon '%s' was not registered! Removing it from the world.\n",
 			STRING(pev->classname));
@@ -34,7 +45,6 @@ void CWeaponCustom::Spawn() {
 		return;
 	}
 
-	Precache();
 	SetWeaponModelW();
 	FallInit();// get ready to fall down.
 
@@ -161,6 +171,7 @@ BOOL CWeaponCustom::Deploy()
 	m_fInReload = false;
 	m_bInAkimboReload = false;
 	m_fInSpecialReload = 0;
+	m_bulletFireCount = (params.maxClip - m_iClip) % 2;
 	animCount = 0;
 	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
 	int ret = TRUE;
@@ -343,6 +354,8 @@ void CWeaponCustom::Reload() {
 			HideLaser(true);
 			m_laserOnTime = WallTime() + totalReloadTime * 0.001f;
 		}
+
+		m_bulletFireCount = 0;
 	}
 
 	m_pPlayer->m_flNextAttack = 0; // keep calling post frame for complex reloads
@@ -587,19 +600,22 @@ void CWeaponCustom::PrimaryAttack() {
 
 		if (CommonAttack(0, clip, IsAkimbo(), false)) {
 			int trig = IsPrimaryAltActive() ? WC_TRIG_PRIMARY_ALT : WC_TRIG_PRIMARY;
-			ProcessEvents(trig, akimboArg, IsAkimbo(), false, *clip);
 
-			if ((m_bulletFireCount++ % 2) == 0) {
-				ProcessEvents(WC_TRIG_PRIMARY_EVEN, akimboArg, IsAkimbo(), false, *clip);
-			}
-			else {
-				ProcessEvents(WC_TRIG_PRIMARY_ODD, akimboArg, IsAkimbo(), false, *clip);
-			}
+			if (g_runfuncs) {
+				ProcessEvents(trig, akimboArg, IsAkimbo(), false, *clip);
 
-			ProcessEvents(WC_TRIG_PRIMARY_CLIPSIZE, *clip, IsAkimbo(), false, *clip);
+				if ((m_bulletFireCount++ % 2) == 0) {
+					ProcessEvents(WC_TRIG_PRIMARY_EVEN, akimboArg, IsAkimbo(), false, *clip);
+				}
+				else {
+					ProcessEvents(WC_TRIG_PRIMARY_ODD, akimboArg, IsAkimbo(), false, *clip);
+				}
 
-			if (*clip != 0) {
-				ProcessEvents(WC_TRIG_PRIMARY_NOT_EMPTY, akimboArg, IsAkimbo(), false, *clip);
+				ProcessEvents(WC_TRIG_PRIMARY_CLIPSIZE, *clip, IsAkimbo(), false, *clip);
+
+				if (*clip != 0) {
+					ProcessEvents(WC_TRIG_PRIMARY_NOT_EMPTY, akimboArg, IsAkimbo(), false, *clip);
+				}
 			}
 
 			if (*clip < 0)
@@ -1175,7 +1191,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 		return;
 	}
 
-	if (sendMode == WC_PRED_SEND_INIT || sendMode == WC_PRED_SEND_INIT) {
+	if (sendMode != WC_PRED_SEND_EVT) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeapon, NULL, target);
 		WRITE_BYTE(m_iId);
 		WRITE_LONG(params.flags);
@@ -1266,7 +1282,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 
 	int mainBytes = LastMsgSize();
 
-	if (sendMode == WC_PRED_SEND_INIT || sendMode == WC_PRED_SEND_EVT) {
+	if (sendMode != WC_PRED_SEND_WEP) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
 		WRITE_BYTE(m_iId);
 		WRITE_BYTE(params.numEvents);
