@@ -427,6 +427,9 @@ void CMonsterMaker::MakeMonster( void )
 		mon->m_soundReplacementKey = m_soundReplacementKey;
 		mon->m_minHullSize = m_minHullSize;
 		mon->m_maxHullSize = m_maxHullSize;
+
+		if (m_bloodColor)
+			mon->m_bloodColor = m_bloodColor;
 	}
 
 	CBasePlayerWeapon* wep = ((CBaseEntity*)GET_PRIVATE(pent))->GetWeaponPtr();

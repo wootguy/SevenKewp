@@ -279,7 +279,7 @@ void CHGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 void CDeadHGrunt::Spawn(void)
 {
 	CBaseDead::BaseSpawn("models/hgrunt.mdl");
-	m_bloodColor = BloodColorHuman();
+	SetBloodColor(BloodColorHuman());
 
 	// map old bodies onto new bodies
 	switch (pev->body)

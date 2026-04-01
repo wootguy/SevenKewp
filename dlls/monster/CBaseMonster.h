@@ -482,6 +482,7 @@ public:
 
 	void SetSize(Vector defaultMins, Vector defaultMaxs);
 	void SetHealth();
+	void SetBloodColor(int defaultColor);
 	void InitModel();
 	void InitSkin(); // set friendly/enemy skin depending on player relation
 	virtual void Nerf(); // reduces monster health and/or spawn count according to cvars

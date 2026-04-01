@@ -188,7 +188,7 @@ void CMassn::KeyValue( KeyValueData* pkvd )
 void CDeadMassn::Spawn(void)
 {
 	CBaseDead::BaseSpawn("models/hgrunt.mdl");
-	m_bloodColor = BloodColorHuman();
+	SetBloodColor(BloodColorHuman());
 
 	// map old bodies onto new bodies
 	//TODO: verify these

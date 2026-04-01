@@ -3520,6 +3520,22 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 		m_freeroam = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "bloodcolor"))
+	{
+		switch (atoi(pkvd->szValue)) {
+		case -1:
+			m_bloodColor = DONT_BLEED;
+			break;
+		case 1:
+			m_bloodColor = BloodColorHuman();
+			break;
+		case 2:
+			m_bloodColor = BloodColorAlien();
+			break;
+		}
+
+		pkvd->fHandled = TRUE;
+	}
 	else
 	{
 		CBaseToggle::KeyValue(pkvd);
@@ -7705,6 +7721,10 @@ void CBaseMonster::SetHealth() {
 		pev->health = GetDefaultHealth(STRING(pev->classname), true);
 
 	pev->max_health = pev->health;
+}
+
+void CBaseMonster::SetBloodColor(int defaultColor) {
+	m_bloodColor = m_bloodColor ? m_bloodColor : defaultColor;
 }
 
 void CBaseMonster::InitModel() {
