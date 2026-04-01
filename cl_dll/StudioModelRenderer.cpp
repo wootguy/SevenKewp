@@ -41,6 +41,15 @@ int m_nPlayerGaitSequences[MAX_CLIENTS];
 // Global engine <-> studio model rendering code interface
 engine_studio_api_t IEngineStudio;
 
+float g_fullbright_dir[3] = { 0, 0, -1 };
+
+alight_t g_fullbright_alight = {
+	255, // ambient
+	255, // shade
+	Vector(1.0f, 1.0f, 1.0f), // color
+	g_fullbright_dir
+};
+
 void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, float** m_lastEventTime);
 
 /////////////////////
@@ -1154,6 +1163,30 @@ void CStudioModelRenderer::StudioPlayAkimboEvents() {
 	}
 }
 
+bool CStudioModelRenderer::IsFullBrightSubModel(mstudiomodel_t* m_pSubModel, int skin) {
+	byte* head = (byte*)m_pStudioHeader;
+
+	if (m_pStudioHeader->numtextures == 0)
+		return false; // external textures not supported
+
+	short* skins = (short*)(head + m_pStudioHeader->skinindex);
+	mstudiomesh_t* meshes = (mstudiomesh_t*)(head + m_pSubModel->meshindex);
+	mstudiotexture_t* textures = (mstudiotexture_t*)(head + m_pStudioHeader->textureindex);
+
+	skin = clamp(skin, 0, m_pStudioHeader->numskinfamilies - 1);
+
+	for (int k = 0; k < m_pSubModel->nummesh; k++) {		
+		short remappedSkin = skins[skin * m_pStudioHeader->numskinref + meshes[k].skinref];
+		clamp(remappedSkin, 0, m_pStudioHeader->numtextures - 1);
+
+		if (!(textures[remappedSkin].flags & STUDIO_NF_FULLBRIGHT)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 /*
 ====================
 StudioDrawModel
@@ -1162,7 +1195,8 @@ StudioDrawModel
 */
 int CStudioModelRenderer::StudioDrawModel( int flags, bool mirrored, CustomWeaponParams* wcParams)
 {
-	alight_t lighting;
+	memset(&m_currentLighting, 0, sizeof(alight_t));
+	m_currentLighting.plightvec = g_fullbright_dir;
 	vec3_t dir;
 
 	m_pCurrentEntity = IEngineStudio.GetCurrentEntity();
@@ -1256,13 +1290,13 @@ int CStudioModelRenderer::StudioDrawModel( int flags, bool mirrored, CustomWeapo
 
 	if (flags & STUDIO_RENDER)
 	{
-		lighting.plightvec = dir;
-		IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &lighting );
+		m_currentLighting.plightvec = dir;
+		IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &m_currentLighting);
 
-		IEngineStudio.StudioEntityLight( &lighting );
+		IEngineStudio.StudioEntityLight( &m_currentLighting);
 
 		// model and frame independant
-		IEngineStudio.StudioSetupLighting (&lighting);
+		IEngineStudio.StudioSetupLighting (&m_currentLighting);
 
 		// get remap colors
 #if defined( _TFC )
@@ -1531,7 +1565,8 @@ StudioDrawPlayer
 */
 int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 {
-	alight_t lighting;
+	memset(&m_currentLighting, 0, sizeof(alight_t));
+	m_currentLighting.plightvec = g_fullbright_dir;
 	vec3_t dir;
 
 	m_pCurrentEntity = IEngineStudio.GetCurrentEntity();
@@ -1654,13 +1689,13 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 			m_pCurrentEntity->curstate.body = 1; // force helmet
 		}
 
-		lighting.plightvec = dir;
-		IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &lighting );
+		m_currentLighting.plightvec = dir;
+		IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &m_currentLighting);
 
-		IEngineStudio.StudioEntityLight( &lighting );
+		IEngineStudio.StudioEntityLight( &m_currentLighting);
 
 		// model and frame independant
-		IEngineStudio.StudioSetupLighting (&lighting);
+		IEngineStudio.StudioSetupLighting (&m_currentLighting);
 
 		m_pPlayerInfo = IEngineStudio.PlayerInfo( m_nPlayerIndex );
 
@@ -1755,7 +1790,7 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 
 			StudioMergeBones( pweaponmodel );
 
-			IEngineStudio.StudioSetupLighting (&lighting);
+			IEngineStudio.StudioSetupLighting (&m_currentLighting);
 
 			StudioRenderModel(false);
 
@@ -1833,65 +1868,22 @@ void CStudioModelRenderer::StudioRenderModel(bool mirrored)
 
 /*
 ====================
-StudioRenderFinal_Software
+StudioRenderFinal
 
 ====================
 */
-void CStudioModelRenderer::StudioRenderFinal_Software(bool mirrored)
+void CStudioModelRenderer::StudioRenderFinal(bool mirrored)
 {
-	int i;
+	bool isHardware = IEngineStudio.IsHardware();
+	int rendermode = 0;
+
+	if (isHardware) {
+		rendermode = IEngineStudio.GetForceFaceFlags() ? kRenderTransAdd : m_pCurrentEntity->curstate.rendermode;
+	}
 
 	// Note, rendermode set here has effect in SW
-	IEngineStudio.SetupRenderer( 0 ); 
+	IEngineStudio.SetupRenderer(rendermode);
 
-	if (m_pCvarDrawEntities->value == 2)
-	{
-		IEngineStudio.StudioDrawBones( );
-	}
-	else if (m_pCvarDrawEntities->value == 3)
-	{
-		IEngineStudio.StudioDrawHulls( );
-	}
-	else
-	{
-		for (i=0 ; i < m_pStudioHeader->numbodyparts ; i++)
-		{
-			IEngineStudio.StudioSetupModel( i, (void **)&m_pBodyPart, (void **)&m_pSubModel );
-			if (mirrored)
-				glDisable(GL_CULL_FACE);
-			IEngineStudio.StudioDrawPoints( );
-		}
-	}
-
-	if (m_pCvarDrawEntities->value == 4)
-	{
-		gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );
-		IEngineStudio.StudioDrawHulls( );
-		gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
-	}
-
-	if (m_pCvarDrawEntities->value == 5)
-	{
-		IEngineStudio.StudioDrawAbsBBox( );
-	}
-	
-	IEngineStudio.RestoreRenderer();
-}
-
-/*
-====================
-StudioRenderFinal_Hardware
-
-====================
-*/
-void CStudioModelRenderer::StudioRenderFinal_Hardware(bool mirrored)
-{
-	int i;
-	int rendermode;
-
-	rendermode = IEngineStudio.GetForceFaceFlags() ? kRenderTransAdd : m_pCurrentEntity->curstate.rendermode;
-	IEngineStudio.SetupRenderer( rendermode );
-	
 	if (m_pCvarDrawEntities->value == 2)
 	{
 		IEngineStudio.StudioDrawBones();
@@ -1902,49 +1894,46 @@ void CStudioModelRenderer::StudioRenderFinal_Hardware(bool mirrored)
 	}
 	else
 	{
-		for (i=0 ; i < m_pStudioHeader->numbodyparts ; i++)
+		for (int i = 0; i < m_pStudioHeader->numbodyparts; i++)
 		{
-			IEngineStudio.StudioSetupModel( i, (void **)&m_pBodyPart, (void **)&m_pSubModel );
+			IEngineStudio.StudioSetupModel(i, (void**)&m_pBodyPart, (void**)&m_pSubModel);
 
-			if (m_fDoInterp)
-			{
+			if (m_fDoInterp) {
 				// interpolation messes up bounding boxes.
-				m_pCurrentEntity->trivial_accept = 0; 
+				m_pCurrentEntity->trivial_accept = 0;
 			}
 			if (mirrored)
 				glDisable(GL_CULL_FACE);
-			IEngineStudio.GL_SetRenderMode( rendermode );
-			IEngineStudio.StudioDrawPoints();
-			IEngineStudio.GL_StudioDrawShadow();
+
+			bool fullbright = IsFullBrightSubModel(*m_pSubModel, m_pCurrentEntity->curstate.skin);
+
+			if (fullbright) {
+				IEngineStudio.StudioSetupLighting(&g_fullbright_alight);
+			}
+
+			if (isHardware) {
+				IEngineStudio.GL_SetRenderMode(rendermode);
+				IEngineStudio.StudioDrawPoints();
+				IEngineStudio.GL_StudioDrawShadow();
+			}
+			else {
+				IEngineStudio.StudioDrawPoints();
+			}
+
+			if (fullbright) {
+				IEngineStudio.StudioSetupLighting(&m_currentLighting);
+			}
 		}
 	}
 
-	if ( m_pCvarDrawEntities->value == 4 )
+	if (m_pCvarDrawEntities->value == 4)
 	{
-		gEngfuncs.pTriAPI->RenderMode( kRenderTransAdd );
-		IEngineStudio.StudioDrawHulls( );
-		gEngfuncs.pTriAPI->RenderMode( kRenderNormal );
+		gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
+		IEngineStudio.StudioDrawHulls();
+		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
 	}
 
 	IEngineStudio.RestoreRenderer();
-}
-
-/*
-====================
-StudioRenderFinal
-
-====================
-*/
-void CStudioModelRenderer::StudioRenderFinal(bool mirrored)
-{
-	if ( IEngineStudio.IsHardware() )
-	{
-		StudioRenderFinal_Hardware(mirrored);
-	}
-	else
-	{
-		StudioRenderFinal_Software(mirrored);
-	}
 }
 
 

@@ -85,10 +85,6 @@ public:
 
 	// Finalize rendering
 	virtual void StudioRenderFinal (bool mirrored);
-	
-	// GL&D3D vs. Software renderer finishing functions
-	virtual void StudioRenderFinal_Software (bool mirrored);
-	virtual void StudioRenderFinal_Hardware ( bool mirrored );
 
 	// Player specific data
 	// Determine pitch and blending amounts for players
@@ -102,6 +98,9 @@ public:
 
 	// manually play akimbo animation events
 	virtual void StudioPlayAkimboEvents ();
+
+	// true if all meshes in this submodel use fullbright textures
+	virtual bool IsFullBrightSubModel(mstudiomodel_t* m_pSubModel, int skin);
 
 public:
 
@@ -146,8 +145,8 @@ public:
 	studiohdr_t		*m_pStudioHeader;
 	
 	// Pointers to current body part and submodel
-	mstudiobodyparts_t *m_pBodyPart; // https://github.com/ValveSoftware/halflife/issues/1655
-	mstudiomodel_t	*m_pSubModel;
+	mstudiobodyparts_t **m_pBodyPart;
+	mstudiomodel_t	**m_pSubModel;
 
 	// Palette substition for top and bottom of model
 	int				m_nTopColor;			
@@ -189,6 +188,8 @@ public:
 	// Concatenated bone and light transforms
 	float			(*m_pbonetransform) [ MAXSTUDIOBONES ][ 3 ][ 4 ];
 	float			(*m_plighttransform)[ MAXSTUDIOBONES ][ 3 ][ 4 ];
+
+	alight_t m_currentLighting;
 };
 
 #endif // STUDIOMODELRENDERER_H
