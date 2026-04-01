@@ -61,6 +61,9 @@ void CHWGrunt::Precache()
 {
 	m_voicePitch = 85 + RANDOM_LONG(0, 10);
 
+	int dropFlag = (pev->weapons & FL_DONT_DROP_WEAPONS);
+	pev->weapons &= ~FL_DONT_DROP_WEAPONS;
+
 	if (pev->weapons == 0 || pev->weapons == HWGRUNT_RANDOM_PISTOL) {
 		pev->weapons = RANDOM_LONG(1, 3);
 
@@ -72,7 +75,7 @@ void CHWGrunt::Precache()
 
 	m_iEquipment = MEQUIP_MINIGUN;
 
-	pev->weapons = 3;
+	pev->weapons = 3 | dropFlag;
 	/*
 	switch(pev->weapons) {
 	default:

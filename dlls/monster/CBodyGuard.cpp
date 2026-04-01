@@ -242,6 +242,8 @@ void CBodyGuard::Precache()
 {
 	TalkInit();
 
+	int dropFlag = pev->weapons & FL_DONT_DROP_WEAPONS;
+	pev->weapons &= ~FL_DONT_DROP_WEAPONS;
 	if (pev->weapons <= 0 || pev->weapons > 7) {
 		pev->weapons = RANDOM_LONG(1, 7);
 
@@ -289,6 +291,8 @@ void CBodyGuard::Precache()
 		m_cClipSize = 0;
 		break;
 	}
+
+	pev->weapons |= dropFlag;
 
 	CBaseGrunt::BasePrecache();
 

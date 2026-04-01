@@ -127,10 +127,10 @@ void CRoboGrunt::Spawn() {
 
 void CRoboGrunt::Precache()
 {
-	if (pev->weapons == 0)
+	if (!(pev->weapons & ~FL_DONT_DROP_WEAPONS))
 	{
 		// initialize to original values
-		pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
+		pev->weapons |= HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
 		// pev->weapons = HGRUNT_SHOTGUN;
 		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
 	}

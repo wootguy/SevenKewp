@@ -101,10 +101,10 @@ void CHGrunt::Precache()
 	else
 		m_voicePitch = 100;
 
-	if (pev->weapons == 0)
+	if ((pev->weapons & ~FL_DONT_DROP_WEAPONS) == 0)
 	{
 		// initialize to original values
-		pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
+		pev->weapons |= HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
 		// pev->weapons = HGRUNT_SHOTGUN;
 		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
 	}

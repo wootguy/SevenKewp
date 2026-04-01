@@ -199,7 +199,7 @@ void COFTorchAlly :: Precache()
 	m_fTorchHolstered = true;
 	m_fTorchActive = false;
 
-	if( !pev->weapons )
+	if( !(pev->weapons & ~FL_DONT_DROP_WEAPONS))
 	{
 		pev->weapons |= TorchAllyWeaponFlag::DesertEagle;
 	}

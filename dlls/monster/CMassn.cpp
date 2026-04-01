@@ -67,8 +67,8 @@ void CMassn :: Precache()
 		m_iAssassinHead = RANDOM_LONG(MAssassinHead::White, MAssassinHead::ThermalVision);
 	}
 
-	if (pev->weapons == 0) { // default equipment
-		pev->weapons = MAssassinWeaponFlag::MP5 | MAssassinWeaponFlag::HandGrenade;
+	if (!(pev->weapons & ~FL_DONT_DROP_WEAPONS)) { // default equipment
+		pev->weapons |= MAssassinWeaponFlag::MP5 | MAssassinWeaponFlag::HandGrenade;
 	}
 
 	m_weaponModel = MAssassinWeapon::None;

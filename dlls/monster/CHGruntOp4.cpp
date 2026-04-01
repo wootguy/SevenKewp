@@ -95,8 +95,8 @@ void CHGruntOp4 :: Precache()
 	pev->body = 0;
 	m_iGruntTorso = HGruntAllyTorso::Normal;
 
-	if (pev->weapons == 0) { // default equipment
-		pev->weapons = HGruntAllyWeaponFlag::MP5 | HGruntAllyWeaponFlag::HandGrenade;
+	if ((pev->weapons & ~FL_DONT_DROP_WEAPONS) == 0) { // default equipment
+		pev->weapons |= HGruntAllyWeaponFlag::MP5 | HGruntAllyWeaponFlag::HandGrenade;
 	}
 
 	if (pev->weapons & HGruntAllyWeaponFlag::MP5)

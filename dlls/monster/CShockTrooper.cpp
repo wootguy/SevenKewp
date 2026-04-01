@@ -184,7 +184,8 @@ void CShockTrooper::GibMonster()
 	Vector vecGunPos;
 	Vector vecGunAngles;
 
-	if (GetBodygroup(STrooperBodyGroup::Weapons) != STrooperWeapon::None && npc_dropweapons.value)
+	if (GetBodygroup(STrooperBodyGroup::Weapons) != STrooperWeapon::None
+		&& npc_dropweapons.value && !(pev->weapons & FL_DONT_DROP_WEAPONS))
 	{ // throw a gun if the grunt has one
 		GetAttachment(0, vecGunPos, vecGunAngles);
 
@@ -797,7 +798,8 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 	case STROOPER_AE_DROP_GUN:
 	{
-		if (GetBodygroup(STrooperBodyGroup::Weapons) != STrooperWeapon::None && npc_dropweapons.value)
+		if (GetBodygroup(STrooperBodyGroup::Weapons) != STrooperWeapon::None 
+			&& npc_dropweapons.value && !(pev->weapons & FL_DONT_DROP_WEAPONS))
 		{
 			Vector vecGunPos;
 			//Zero this out so we don't end up with garbage angles later on
@@ -919,7 +921,7 @@ void CShockTrooper::Spawn()
 
 	SetBodygroup(STrooperBodyGroup::Weapons, STrooperWeapon::Roach);
 
-	pev->weapons = HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
+	pev->weapons |= HGRUNT_9MMAR | HGRUNT_HANDGRENADE;
 
 	m_cClipSize = gSkillData.sk_shocktrooper_maxcharge;
 	m_cAmmoLoaded = m_cClipSize;

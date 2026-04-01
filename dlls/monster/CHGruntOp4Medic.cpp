@@ -135,7 +135,7 @@ void CHGruntOp4Medic :: Spawn()
 
 void CHGruntOp4Medic :: Precache()
 {
-	if (!pev->weapons)
+	if (!(pev->weapons & ~FL_DONT_DROP_WEAPONS))
 	{
 		pev->weapons |= MedicAllyWeaponFlag::Glock;
 	}

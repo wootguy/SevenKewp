@@ -38,6 +38,8 @@ struct HurtTime {
 
 #define MAX_MONSTER_HURT_TRIGGERS 16
 
+#define FL_DONT_DROP_WEAPONS 256	// weapons pev flag
+
 //
 // generic Monster
 //

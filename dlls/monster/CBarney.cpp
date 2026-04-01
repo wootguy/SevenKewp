@@ -571,7 +571,7 @@ void CBarney::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 
 void CBarney::Killed( entvars_t *pevAttacker, int iGib )
 {
-	if ( pev->body < BARNEY_BODY_GUNGONE && npc_dropweapons.value )
+	if ( pev->body < BARNEY_BODY_GUNGONE && npc_dropweapons.value && !(pev->weapons & FL_DONT_DROP_WEAPONS))
 	{// drop the gun!
 		Vector vecGunPos;
 		Vector vecGunAngles;

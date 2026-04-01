@@ -898,7 +898,7 @@ void CBaseGrunt::DropEquipmentToss(const char* cname, Vector vecGunPos, Vector v
 }
 
 bool CBaseGrunt::DropEquipment(int attachmentIdx, int equipMask, Vector velocity, Vector aVelocity) {
-	if (!npc_dropweapons.value) {
+	if (!npc_dropweapons.value || (pev->weapons & FL_DONT_DROP_WEAPONS)) {
 		return false;
 	}
 	

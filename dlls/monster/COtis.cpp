@@ -831,7 +831,8 @@ void COtis::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, 
 
 void COtis::Killed( entvars_t *pevAttacker, int iGib )
 {
-	if ( GetBodygroup( OtisBodyGroup::Weapons ) == OtisWeapon::DesertEagle && npc_dropweapons.value)
+	if ( GetBodygroup( OtisBodyGroup::Weapons ) == OtisWeapon::DesertEagle
+		&& npc_dropweapons.value && !(pev->weapons & FL_DONT_DROP_WEAPONS))
 	{// drop the gun!
 		Vector vecGunPos;
 		Vector vecGunAngles;

@@ -4048,6 +4048,10 @@ BOOL CBaseMonster::GetEnemy(void)
 //=========================================================
 CBaseEntity* CBaseMonster::DropItem(const char* pszItemName, const Vector& vecPos, const Vector& vecAng)
 {
+	if (!npc_dropweapons.value || (pev->weapons & FL_DONT_DROP_WEAPONS)) {
+		return NULL;
+	}
+
 	if (!pszItemName)
 	{
 		ALERT(at_console, "DropItem() - No item name!\n");
