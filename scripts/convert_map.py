@@ -131,7 +131,7 @@ def get_all_wavs(sounds_dir):
 	
 	return wav_files
 
-def convert_audio(file, out_format, samp_rate):
+def convert_audio(file, out_format, samp_rate, skip_convert):
 	global converted_files
 	
 	new_file = os.path.splitext(file)[0] + '.' + out_format
@@ -139,6 +139,9 @@ def convert_audio(file, out_format, samp_rate):
 	
 	if file.lower() in converted_files:
 		return converted_files[file.lower()]
+		
+	if skip_convert:
+		return new_file # already converted
 	
 	rename_new = False
 	if new_file.lower() == file.lower():
@@ -358,6 +361,106 @@ def wav_needs_conversion(soundPath, fix_problems):
 	
 	return (needs_convert, samprate)
 
+def handle_audio_keyvalue(ent, key, scversion, fix_problems):
+	any_problems = False
+	# lazy way to bulk replace music files in maps
+	should_music = [
+		"musics/4endsong45.wav",
+	]
+	
+	cname = ent.get('classname', '')
+	spawnflags = int(ent.get("spawnflags", 0))
+	is_global = (cname == 'ambient_generic' and (spawnflags & 1)) or cname == 'ambient_music'
+	is_music = 'ambient_music' in ent['classname']
+	soundFile = ent.get(key, '').lower()
+	
+	if soundFile in should_music:
+		is_music = True
+	
+	prefix = ''
+	if soundFile.startswith('+'):
+		prefix = '+'
+		soundFile = soundFile[1:]
+	
+	soundPath = os.path.join(maps_dir, '..', 'sound/' + soundFile)
+	ext = os.path.splitext(soundFile)[1][1:]
+	global_str = 'GLOBAL' if is_global else 'LOCAL'
+	
+	
+	if soundFile.startswith('!'):
+		return any_problems # sentence name, not a sound file
+	
+	if (cname == 'ambient_generic' and scversion >= 401 and scversion <= 449 and ent.get('playmode', 0) == 0 
+		and not soundFile.endswith('.wav') and (int(ent.get('spawnflags', 0)) & 32) == 0):
+		# in early versions of SC 4.x, special audio formats looped if playmode was set to default
+		# and if the cylic flagged was unchecked. In later versions, the default is to play once and
+		# playmode overrides the cyclic flag.
+		if not fix_problems:
+			err("Enable old ambient loop behavior: %s" % soundFile)
+			any_problems = True
+		else:
+			ent["playmode"] = "2"
+	
+	if ' ' in soundFile:
+		if not fix_problems:
+			err("Sound file contains spaces: %s" % soundFile)
+			any_problems = True
+		else:
+			newName = soundFile.replace(' ', '_')
+			ent[key] = prefix + newName
+			if os.path.exists('sound/' + soundFile) and not os.path.exists('sound/' + newName):
+				os.rename('sound/' + soundFile, 'sound/' + newName)
+			soundFile = newName
+	
+	if soundFile.lower() in converted_files:
+		ent[key] = prefix + converted_files[soundFile.lower()]
+		return any_problems
+	
+	skip_convert = False
+	if not os.path.exists(soundPath):
+		target_ext = '.mp3' if is_global or is_music else '.wav' 
+		target_file = os.path.splitext(soundPath)[0] + target_ext
+		skip_convert = True
+		
+		if os.path.exists(target_file):
+			print("\nConverted file already exists: %s" % target_file)
+		elif 'sound/' + soundFile.lower() not in default_files:
+			err("Missing file: %s\n" % ('sound/' + soundFile))
+			#any_problems = True
+			return any_problems
+	
+	if ext == 'wav' and not skip_convert:
+		needs_convert, samprate = wav_needs_conversion(soundPath, fix_problems)
+		
+		if is_music:
+			if not fix_problems:
+				err("WAV used in ambient_music: %s" % (soundFile))
+			else:
+				ent[key] = prefix + convert_audio(soundFile, 'mp3', samprate, skip_convert)
+			any_problems = True
+		if needs_convert:
+			if fix_problems:
+				ent[key] = prefix + convert_audio(soundFile, 'wav', samprate, skip_convert)
+			any_problems = True
+			
+	elif ext == 'mp3' and not is_global:
+		if not fix_problems:
+			err("Local MP3 audio: %s (%s)" % (soundFile, global_str))
+		else:
+			ent[key] = prefix + convert_audio(soundFile, 'wav', 22050, skip_convert)
+		any_problems = True
+	elif ext in nonstandard_audio_formats:
+		if not fix_problems:
+			err("Nonstandard format: %s (%s)" % (soundFile, global_str))
+		else:
+			if is_global:
+				ent[key] = prefix + convert_audio(soundFile, 'mp3', 22050, skip_convert)
+			else:
+				ent[key] = prefix + convert_audio(soundFile, 'wav', 22050, skip_convert)
+		any_problems = True
+		
+	return any_problems
+
 def check_map_problems(all_ents, fix_problems):
 	global default_files
 	global converted_files
@@ -401,11 +504,6 @@ def check_map_problems(all_ents, fix_problems):
 
 	for ent in all_ents:
 		cname = ent.get('classname', '')
-		
-		# lazy way to bulk replace music files in maps
-		should_music = [
-			#"bm_nightmare/boss_music2.wav",
-		]
 		
 		if cname in ['ambient_music', 'ambient_generic']:
 			soundFile = ent.get('message', '').lower()
@@ -455,90 +553,32 @@ def check_map_problems(all_ents, fix_problems):
 					ent["classname"] = "target_cdaudio"
 					ent["health"] = cdtrack
 	
-		if cname in ['ambient_music', 'ambient_generic', 'scripted_sentence']:
-			spawnflags = int(ent.get("spawnflags", 0))
-			is_global = (cname == 'ambient_generic' and (spawnflags & 1)) or cname == 'ambient_music'
-			is_music = 'ambient_music' in ent['classname']
-			soundFile = ent.get('sentence', '').lower() if cname == 'scripted_sentence' else ent.get('message', '').lower()
+		if cname == 'scripted_sentence':
+			any_problems |= handle_audio_keyvalue(ent, 'sentence', scversion, fix_problems)
+		elif cname in ['ambient_generic', 'ambient_music', 'func_rotating']:
+			any_problems |= handle_audio_keyvalue(ent, 'message', scversion, fix_problems)
+		elif cname in ['func_button', 'func_door', 'func_door_rotating', 'momentary_door', 'momentary_rot_button']:
+			any_problems |= handle_audio_keyvalue(ent, 'noise', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'noise1', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'noise2', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'locked_sound_override', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'unlocked_sound_override', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'locked_sentence_override', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'unlocked_sentence_override', scversion, fix_problems)
+		elif cname in ['func_train', 'func_plat', 'func_platrot', 'func_trackautochange', 'func_trackchange', 'func_tracktrain', 'env_spritetrain']:
+			any_problems |= handle_audio_keyvalue(ent, 'noise', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'noise1', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'noise2', scversion, fix_problems)
+		elif cname in ['func_tank', 'func_tanklaser', 'func_tankrocket', 'func_tankmortar']:
+			any_problems |= handle_audio_keyvalue(ent, 'rotatesound', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'noise1', scversion, fix_problems)
+		elif cname in ['func_recharge', 'func_healthcharger']:
+			any_problems |= handle_audio_keyvalue(ent, 'CustomDeniedSound', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'CustomStartSound', scversion, fix_problems)
+			any_problems |= handle_audio_keyvalue(ent, 'CustomLoopSound', scversion, fix_problems)
+		elif cname in ['env_message']:
+			any_problems |= handle_audio_keyvalue(ent, 'messagesound', scversion, fix_problems)
 			
-			if soundFile in should_music:
-				is_music = True
-			
-			prefix = ''
-			if soundFile.startswith('+'):
-				prefix = '+'
-				soundFile = soundFile[1:]
-			
-			soundPath = os.path.join(maps_dir, '..', 'sound/' + soundFile)
-			ext = os.path.splitext(soundFile)[1][1:]
-			global_str = 'GLOBAL' if is_global else 'LOCAL'
-			
-			
-			if soundFile.startswith('!'):
-				continue # sentence name, not a sound file
-			
-			if scversion >= 401 and scversion <= 449 and ent.get('playmode', 0) == 0 and not soundFile.endswith('.wav') and (int(ent.get('spawnflags', 0)) & 32) == 0:
-				# in early versions of SC 4.x, special audio formats looped if playmode was set to default
-				# and if the cylic flagged was unchecked. In later versions, the default is to play once and
-				# playmode overrides the cyclic flag.
-				if not fix_problems:
-					err("Enable old ambient loop behavior: %s" % soundFile)
-					any_problems = True
-				else:
-					ent["playmode"] = "2"
-			
-			if ' ' in soundFile:
-				if not fix_problems:
-					err("Sound file contains spaces: %s" % soundFile)
-					any_problems = True
-				else:
-					newName = soundFile.replace(' ', '_')
-					ent['message'] = prefix + newName
-					if os.path.exists('sound/' + soundFile) and not os.path.exists('sound/' + newName):
-						os.rename('sound/' + soundFile, 'sound/' + newName)
-					soundFile = newName
-			
-			if soundFile.lower() in converted_files:
-				ent['message'] = prefix + converted_files[soundFile.lower()]
-				continue
-			
-			if not os.path.exists(soundPath):
-				if 'sound/' + soundFile.lower() not in default_files:
-					err("Missing file: %s\n" % ('sound/' + soundFile))
-					#any_problems = True
-					pass
-				continue
-			
-			if ext == 'wav':
-				needs_convert, samprate = wav_needs_conversion(soundPath, fix_problems)
-				
-				if is_music:
-					if not fix_problems:
-						err("WAV used in ambient_music: %s" % (soundFile))
-					else:
-						ent['message'] = prefix + convert_audio(soundFile, 'mp3', samprate)
-					any_problems = True
-				if needs_convert:
-					if fix_problems:
-						ent['message'] = prefix + convert_audio(soundFile, 'wav', samprate)
-					any_problems = True
-					
-			elif ext == 'mp3' and not is_global:
-				if not fix_problems:
-					err("Local MP3 audio: %s (%s)" % (soundFile, global_str))
-				else:
-					ent['message'] = prefix + convert_audio(soundFile, 'wav', 22050)
-				any_problems = True
-			elif ext in nonstandard_audio_formats:
-				if not fix_problems:
-					err("Nonstandard format: %s (%s)" % (soundFile, global_str))
-				else:
-					if is_global:
-						ent['message'] = prefix + convert_audio(soundFile, 'mp3', 22050)
-					else:
-						ent['message'] = prefix + convert_audio(soundFile, 'wav', 22050)
-				any_problems = True
-				
 		if cname.startswith("weapon_"):
 			if '.mdl' in ent.get('iuser1', '').lower():
 				if not fix_problems:

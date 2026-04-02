@@ -91,6 +91,11 @@ public:
 	BYTE	m_bUnlockedSound;
 	BYTE	m_bUnlockedSentence;
 
+	string_t m_locked_sound_override;
+	string_t m_unlocked_sound_override;
+	string_t m_locked_sentence_override;
+	string_t m_unlocked_sentence_override;
+
 	ObeyTriggerMode m_iObeyTriggerMode;
 	bool m_fIgnoreTargetname;
 

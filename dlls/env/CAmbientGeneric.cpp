@@ -202,7 +202,7 @@ void CAmbientGeneric::Precache(void)
 	if (!startSilent)
 	{
 		// start the sound ASAP
-		if (m_fLooping)
+		if (m_fLooping || m_isGlobalMp3)
 			m_fActive = TRUE;
 	}
 	if (m_fActive)
@@ -261,15 +261,16 @@ void CAmbientGeneric::RampThink(void)
 		float timeLeft = endTime - g_engfuncs.pfnTime();
 
 		if (m_forceLoop && m_fActive) {
+			if (!m_isLinear) {
+				// restart the sound when it stops
+				UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
+					(vol * 0.01), m_flAttenuation, SND_CHANGE_PITCH, pitch);
+			}
+
 			if (timeLeft <= 0) {
 				m_lastPlayTime = g_engfuncs.pfnTime();
 
-				if (!m_isLinear) {
-					// restart the sound when it stops
-					UTIL_EmitAmbientSound(ENT(pev), pev->origin, szSoundFile,
-						(vol * 0.01), m_flAttenuation, SND_CHANGE_PITCH, pitch);
-				}
-				else {
+				if (m_isLinear) {
 					// force new volumes to be calculated and replay the sound
 					memset(m_lastLinearVolume, 0, sizeof(m_lastLinearVolume));
 				}

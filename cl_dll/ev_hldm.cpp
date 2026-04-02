@@ -157,7 +157,7 @@ float EV_HLDM_PlayTextureSound( int idx, pmtrace_t *ptr, float *vecSrc, float *v
 		// Now the server will replicate that state via an eflag.
 		cl_entity = gEngfuncs.GetEntityByIndex( entity );
 
-		if ( cl_entity && !!( cl_entity->curstate.eflags & EFLAG_FLESH_SOUND ) )
+		if ( cl_entity && (!!( cl_entity->curstate.eflags & EFLAG_FLESH_SOUND ) || cl_entity->player) )
 			chTextureType = CHAR_TEX_FLESH;
 	}
 	
@@ -257,7 +257,7 @@ char *EV_HLDM_DamageDecal( physent_t *pe )
 	return decalname;
 }
 
-void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
+void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName, bool playSound )
 {
 	int iRand;
 	physent_t *pe;
@@ -265,7 +265,7 @@ void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
 	gEngfuncs.pEfxAPI->R_BulletImpactParticles( pTrace->endpos );
 
 	iRand = gEngfuncs.pfnRandomLong(0,0x7FFF);
-	if ( iRand < (0x7fff/2) )// not every bullet makes a sound.
+	if (playSound && iRand < (0x7fff/2) )// not every bullet makes a sound.
 	{
 		const char* sample = "weapons/ric1.wav";
 		switch( iRand % 5)
@@ -294,7 +294,7 @@ void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName )
 	}
 }
 
-void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
+void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType, bool playSound)
 {
 	physent_t *pe;
 
@@ -313,7 +313,7 @@ void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType )
 		case BULLET_PLAYER_556:
 		default:
 			// smoke and decal
-			EV_HLDM_GunshotDecalTrace( pTrace, EV_HLDM_DamageDecal( pe ) );
+			EV_HLDM_GunshotDecalTrace( pTrace, EV_HLDM_DamageDecal( pe ), playSound );
 			break;
 		}
 	}
@@ -440,22 +440,22 @@ void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int 
 			default:
 			case BULLET_PLAYER_9MM:
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
+				EV_HLDM_DecalGunshot( &tr, iBulletType, true );
 				break;
 			case BULLET_PLAYER_MP5:
 				if ( !tracer )
 				{
 					EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-					EV_HLDM_DecalGunshot( &tr, iBulletType );
+					EV_HLDM_DecalGunshot( &tr, iBulletType, true);
 				}
 				break;
 			case BULLET_PLAYER_BUCKSHOT:
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
+				EV_HLDM_DecalGunshot( &tr, iBulletType, true);
 				splashSize = 0.4f;
 				break;
 			case BULLET_PLAYER_357:
 				EV_HLDM_PlayTextureSound( idx, &tr, vecSrc, vecEnd, iBulletType );
-				EV_HLDM_DecalGunshot( &tr, iBulletType );
+				EV_HLDM_DecalGunshot( &tr, iBulletType, true);
 				splashSize = 0.4f;
 				break;
 			}
@@ -1038,7 +1038,7 @@ void EV_FireGauss( event_args_t *args )
 			else
 			{
 				// tunnel
-				EV_HLDM_DecalGunshot( &tr, BULLET_MONSTER_12MM );
+				EV_HLDM_DecalGunshot( &tr, BULLET_MONSTER_12MM, true);
 
 				gEngfuncs.pEfxAPI->R_TempSprite( tr.endpos, vec3_origin, 1.0, m_iGlow, kRenderGlow, kRenderFxNoDissipation, flDamage / 255.0, 6.0, FTENT_FADEOUT );
 
@@ -1095,7 +1095,7 @@ void EV_FireGauss( event_args_t *args )
 	//////////////////////////////////// WHAT TO DO HERE
 							// CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
 
-							EV_HLDM_DecalGunshot( &beam_tr, BULLET_MONSTER_12MM );
+							EV_HLDM_DecalGunshot( &beam_tr, BULLET_MONSTER_12MM, true);
 							
 							gEngfuncs.pEfxAPI->R_TempSprite( beam_tr.endpos, vec3_origin, 0.1, m_iGlow, kRenderGlow, kRenderFxNoDissipation, flDamage / 255.0, 6.0, FTENT_FADEOUT );
 			
@@ -2017,7 +2017,7 @@ void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunsh
 	// do damage, paint decals
 	if (tr.fraction != 1.0) {
 		if (gunshotDecal) {
-			EV_HLDM_DecalGunshot(&tr, BULLET_PLAYER_9MM);
+			EV_HLDM_DecalGunshot(&tr, BULLET_PLAYER_9MM, textureSound);
 		}
 		if (textureSound) {
 			EV_HLDM_PlayTextureSound(idx, &tr, vecSrc, vecEnd, BULLET_PLAYER_9MM);
@@ -2048,7 +2048,8 @@ void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTrac
 		float y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5, 0.5);
 		float z = x * x + y * y;
 
-		WC_EV_FireBullets(x * vecSpread.x, y * vecSpread.y, showTracer, decal, texSound, iShot, evt.bullets.damage);
+		bool playTexSound = texSound && iShot < 6; // don't stack too many sounds
+		WC_EV_FireBullets(x * vecSpread.x, y * vecSpread.y, showTracer, decal, playTexSound, iShot, evt.bullets.damage);
 	}
 
 	if (evt.bullets.flashSz)

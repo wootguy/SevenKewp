@@ -1265,37 +1265,45 @@ void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, con
 		uint16_t y = FixedSigned16(textparms.y, 1 << 13);
 		float holdTime = textparms.holdTime;
 
-		if (textparms.effect != 2) {
-			int poffset = pEntity ? pEntity->entindex()*MAX_TEXT_CHANNELS : 0;
-			MessageHistoryItem& lastMessage = g_hudMsgHistory[poffset + chan];
-			float now = g_engfuncs.pfnTime();
+		int poffset = pEntity ? pEntity->entindex()*MAX_TEXT_CHANNELS : 0;
+		MessageHistoryItem& lastMessage = g_hudMsgHistory[poffset + chan];
+		float now = g_engfuncs.pfnTime();
 
-			if (lastMessage.endTime >= now) {
-				// A previous message using this channel hasn't ended yet. Sending a new message does
-				// not reset the fading effects. To prevent this message from fading out too quickly,
-				// the previous message's hold time must be extended.
-				float timePassed = now - lastMessage.startTime;
-				holdTime += timePassed;
-				if (timePassed >= 255.0f) {
-					ALERT(at_console, "HUD message hold time extended past 255 seconds. Text will flicker/fadeout unexpectedly.\n", holdTime);
-					lastMessage.startTime = 0;
-					lastMessage.endTime = 0;
-				}
-				else {
-					//ALERT(at_console, "HUD message hold time extended to %.1f to avoid early fadeout\n", holdTime);
-				}
+		if (lastMessage.endTime >= now) {
+			// A previous message using this channel hasn't ended yet. Sending a new message does
+			// not reset the fading effects. To prevent this message from fading out too quickly,
+			// the previous message's hold time must be extended. The client can update the hold
+			// time of the previous message but not restart the fade timer.
+			float timePassed = now - lastMessage.startTime;
+			holdTime += timePassed;
+			//ALERT(at_console, "Extend hold time by %f\n", timePassed);
+			if (timePassed >= 255.0f) {
+				ALERT(at_console, "HUD message hold time extended past 255 seconds. Text will flicker/fadeout unexpectedly.\n", holdTime);
+				lastMessage.startTime = 0;
+				lastMessage.endTime = 0;
 			}
 			else {
-				lastMessage.startTime = now;
+				//ALERT(at_console, "HUD message hold time extended to %.1f to avoid early fadeout\n", holdTime);
 			}
+		}
+		else {
+			lastMessage.startTime = now;
+		}
 
-			lastMessage.endTime = lastMessage.startTime + textparms.fadeinTime + holdTime + textparms.fadeoutTime;
+		float fadeInDur = textparms.fadeinTime;
+		if (textparms.effect == 2) {
+			// fade in time is per-character in scan mode
+			// This breaks the scan-in effect for extended messages, so probably best to change
+			// the message channel in the map.
+			fadeInDur = fadeInDur * strlen(pMessage);
+		}
 
-			if (!pEntity) {
-				// update history for all players on this channel
-				for (int i = 1; i < 33; i++) {
-					g_hudMsgHistory[i * MAX_TEXT_CHANNELS + chan] = lastMessage;
-				}
+		lastMessage.endTime = lastMessage.startTime + fadeInDur + holdTime + textparms.fadeoutTime;
+
+		if (!pEntity) {
+			// update history for all players on this channel
+			for (int i = 1; i < 33; i++) {
+				g_hudMsgHistory[i * MAX_TEXT_CHANNELS + chan] = lastMessage;
 			}
 		}
 
