@@ -1899,9 +1899,9 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 	Vector ShellVelocity;
 	Vector ShellOrigin;
 
-	float forwardScale = evt.ejectShell.offsetForward * 0.01f;
-	float upScale = evt.ejectShell.offsetUp * 0.01f;
-	float rightScale = evt.ejectShell.offsetRight * 0.01f;
+	float forwardScale = FP_10_6_TO_FLOAT(evt.ejectShell.offsetForward);
+	float upScale = FP_10_6_TO_FLOAT(evt.ejectShell.offsetUp);
+	float rightScale = FP_10_6_TO_FLOAT(evt.ejectShell.offsetRight);
 
 	static event_args_s args;
 	args.entindex = entidx;

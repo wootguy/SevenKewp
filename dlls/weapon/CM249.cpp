@@ -65,8 +65,8 @@ void CM249::Precache()
 	AddEvent(WepEvt().Primary().Bullets(1, 0, dmg, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().Kickback(35));
 	AddEvent(WepEvt().Primary().PunchRandom(2, 1));
-	AddEvent(WepEvt().PrimaryEven().EjectShell(m_iShell, 14, -12, 4));
-	AddEvent(WepEvt().PrimaryOdd().EjectShell(m_iLink, 14, -12, 4));
+	AddEvent(WepEvt().PrimaryEven().EjectShell(m_iShell, 9, -8, 2));
+	AddEvent(WepEvt().PrimaryOdd().EjectShell(m_iLink, 9, -8, 2));
 
 	AddEvent(WepEvt().PrimaryClip(0).SetBody(8));
 	AddEvent(WepEvt().PrimaryClip(1).SetBody(7));

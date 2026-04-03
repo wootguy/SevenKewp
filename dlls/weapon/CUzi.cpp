@@ -90,7 +90,7 @@ void CUzi::Precache()
 	AddEvent(WepEvt().Primary().NotAkimbo().Bullets(1, 0, gSkillData.sk_plr_9mm_bullet, spreadSingle, spreadSingle, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().AkimboOnly().Bullets(1, 0, gSkillData.sk_plr_9mm_bullet, spreadDual, spreadDual, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().PunchRandom(2, 0));
-	AddEvent(WepEvt().Primary().EjectShell(iShell, 28, -12, 16));
+	AddEvent(WepEvt().Primary().EjectShell(iShell, 18, -8, 10));
 
 	AddEvent(WepEvt().Reload().Delay(300).IdleSound(reloadSnd1));
 	AddEvent(WepEvt().Reload().NotAkimbo().Delay(800).IdleSound(akimboPullSnd2));
