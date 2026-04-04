@@ -88,6 +88,8 @@ void CBasePlayerWeapon::Precache() {
 		const char* hudPath = UTIL_VarArgs("sprites/%s/%s.txt", STRING(m_customSpriteDir), STRING(pev->classname));
 		PRECACHE_HUD_FILES(hudPath);
 	}
+
+	PRECACHE_SOUND("weapons/357_cock1.wav");
 }
 
 void CBasePlayerWeapon::GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount) {

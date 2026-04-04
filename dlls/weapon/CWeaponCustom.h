@@ -30,6 +30,12 @@ enum PredictionDataSendMode {
 	WC_PRED_SEND_BOTH	// send weapon and event data
 };
 
+// m_fireState flags
+#define FL_WC_STATE_PRIMARY_ALT	(1<<0)	// using alternate primary fire settings
+#define FL_WC_STATE_LASER		(1<<1)	// laser is enabled
+#define FL_WC_STATE_IS_AKIMBO	(1<<2)	// currently in akimbo mode
+#define FL_WC_STATE_CAN_AKIMBO	(1<<3)	// can enable akimbo mode
+
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:
 	CustomWeaponParams params;
@@ -57,7 +63,8 @@ public:
 	// for prediction code, don't spam events/toggles while waiting for the new server state
 	float m_lastZoomToggle;
 	float m_lastLaserToggle;
-	float m_lastLaserState;
+	bool m_lastAltState;
+	float m_lastAltToggle;
 	float m_lastDeploy;
 	float m_lastChargeDown; // lazy fix for chargedown effects playing twice
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
@@ -86,10 +93,6 @@ public:
 	BOOL IsWeaponCustom() { return TRUE; }
 	BOOL IsAkimboWeapon() override { return params.flags & FL_WC_WEP_AKIMBO; }
 	int SecondaryAmmoIndex(void) { return m_iSecondaryAmmoType; }
-	virtual BOOL IsClientWeapon() { 
-		CBasePlayer* m_pPlayer = GetPlayer();
-		return m_pPlayer && m_pPlayer->IsSevenKewpClient();
-	}
 	CWeaponCustom* MyWeaponCustomPtr(void) { return this; }
 	int AddToPlayer(CBasePlayer* pPlayer) override;
 	const char* GetAnimSet();
@@ -105,26 +108,38 @@ public:
 	void PrimaryAttack(void) override;
 	void SecondaryAttack(void) override;
 	void TertiaryAttack(void) override;
-	virtual void PrimaryAttackCustom(void) {} // override this to add custom server-side logic to your weapon.
-	virtual void SecondaryAttackCustom(void) {} // override this to add custom server-side logic to your weapon
-	virtual void TertiaryAttackCustom(void) {} // override this to add custom server-side logic to your weapon
-	virtual void WeaponIdleCustom(void) {} // override this to add custom server-side logic after the weapon has idled
 	bool CommonAttack(int attackIdx, int* clip, bool leftHand, bool akimboFire); // true if attacked
 	void Cooldown(int attackIdx, int overrideMillis=-1);
-	virtual bool Chargeup(int attackIdx, bool leftHand, bool akimboFire);
-	virtual void Chargedown(int attackIdx);
+	
 	void FinishAttack(int attackIdx);
 	void FailAttack(int attackIdx, bool leftHand, bool akimboFire);
-	virtual void MeleeAttack(int attackIdx);
 	void PlayRandomSound(CBasePlayer* plr, uint16_t sounds[4]); // generic server side sound playback
+
+	//
+	//  Override the methods below to add custom server-side logic to your weapon
+	//
+	virtual void CustomServerEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {}
+	virtual BOOL IsClientWeapon() {
+		CBasePlayer* m_pPlayer = GetPlayer();
+		return m_pPlayer && m_pPlayer->IsSevenKewpClient();
+	}
+	virtual void PrimaryAttackCustom(void) {} 
+	virtual void SecondaryAttackCustom(void) {}
+	virtual void TertiaryAttackCustom(void) {}
+	virtual void WeaponIdleCustom(void) {} // called after the weapon has idled
+	virtual bool Chargeup(int attackIdx, bool leftHand, bool akimboFire);
+	virtual void Chargedown(int attackIdx);
+	virtual void MeleeAttack(int attackIdx);
 	virtual void MeleeMiss(CBasePlayer* plr) { } // called when a melee attack misses
 	virtual bool MeleeIsFlesh(CBaseEntity* target); // true if target should make a flesh sound (may be NULL)
 	virtual bool MeleeHit(CBasePlayer* plr, CBaseEntity* target) { return false; } // return true to override default melee hit logic
 	virtual void MeleeHitFlesh(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a flesh entity
 	virtual void MeleeHitWall(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a hard surface
+	virtual void AttackTrace(CBasePlayer* plr, int attackIdx, Vector vecSrc, TraceResult& tr) {} // called after every attack trace
+
 	void KickbackPrediction();
 	void ToggleZoom(int zoomFov, int zoomFov2);
-	void ToggleLaser();
+	void ToggleLaser(bool enable);
 	void HideLaser(bool hideNotUnhide);
 	void CancelZoom();
 	bool CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq);
@@ -148,7 +163,7 @@ public:
 	void PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
 	void PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer);
-	void PlayEvent_ToggleAkimbo(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_ToggleState(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_HideLaser(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire);
@@ -157,15 +172,21 @@ public:
 	float WallTime();
 
 	// repurposing these weapon vars so I don't have to network something new to the client
-	BOOL CanAkimbo() { return m_flStartThrow != 0; }
-	inline void SetCanAkimbo(bool canAkimbo) { m_flStartThrow = canAkimbo ? 1 : 0; }
-	BOOL IsAkimbo() { return m_fireState != 0; }
+	BOOL CanAkimbo() { return (m_fireState & FL_WC_STATE_CAN_AKIMBO) != 0; }
+	inline void SetCanAkimbo(bool canAkimbo) { 
+		m_fireState = canAkimbo ? (m_fireState | FL_WC_STATE_CAN_AKIMBO) : (m_fireState & ~FL_WC_STATE_CAN_AKIMBO);
+	}
+	BOOL IsAkimbo() { return (m_fireState & FL_WC_STATE_IS_AKIMBO) != 0; }
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);
 
-	BOOL IsLaserOn() { return m_flReleaseThrow != 0; }
+	BOOL IsLaserOn() { return (m_fireState & FL_WC_STATE_LASER) != 0; }
 	void SetLaser(bool enable);
 	void UpdateLaser();
+	inline void SetPrimaryAlt(bool enable) {
+		m_fireState = enable ? (m_fireState | FL_WC_STATE_PRIMARY_ALT) : (m_fireState & ~FL_WC_STATE_PRIMARY_ALT);
+		m_lastAltToggle = WallTime();
+	}
 	bool IsPrimaryAltActive();
 	CustomWeaponShootOpts& GetShootOpts(int attackIdx);
 	float GetCurrentAccuracyMultiplier();

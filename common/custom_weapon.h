@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <EHandle.h>
 
 #define FLOAT_TO_FP_10_6(val) (clamp((int)(val * 64), INT16_MIN, INT16_MAX))
 #define FP_10_6_TO_FLOAT(val) (val / 64.0f)
@@ -110,13 +111,13 @@ enum WeaponCustomEventType {
 	WC_EVT_PROJECTILE,		// for slow-moving projectiles that aren't predicted on the client
 	WC_EVT_KICKBACK,
 	WC_EVT_MUZZLE_FLASH,
+	WC_EVT_TOGGLE_STATE,	// toggle some combination of weapon state bits
 	WC_EVT_TOGGLE_ZOOM,
-	WC_EVT_TOGGLE_LASER,
 	WC_EVT_HIDE_LASER,		// temporarily hide the laser
 	WC_EVT_COOLDOWN,		// adjust cooldowns (by default every action is cooled down after an attack)
-	WC_EVT_TOGGLE_AKIMBO,	// toggle dual-wield mode
 	WC_EVT_SET_GRAVITY,		// change player gravity
 	WC_EVT_DLIGHT,			// dynamic light
+	WC_EVT_SERVER,			// custom server-side logic.
 };
 
 // how loud the sound is for AI (reaction distance) (0 = silent)
@@ -181,6 +182,12 @@ enum WeaponCustomAmmoPool
 	WC_AMMOPOOL_SECONDARY_RESERVE,	// drain ammo from secondary reserve
 };
 
+enum WeaponCustomToggleStateMode {
+	WC_TOGGLE_STATE_OFF,
+	WC_TOGGLE_STATE_ON,
+	WC_TOGGLE_STATE_TOGGLE,
+};
+
 struct WepEvt {
 	uint16_t evtType : 5;
 	uint16_t trigger : 5;		// when to trigger the event
@@ -217,10 +224,18 @@ struct WepEvt {
 		} setBody;
 
 		struct {
-			uint16_t model;
-			int16_t offsetForward; // 10.6 fixed point int
-			int16_t offsetUp;
-			int16_t offsetRight;
+			uint16_t model : 12;
+			uint16_t sound : 2; // TE_BOUNCE_*
+			uint16_t hasVel : 1; // true if using a custom velocity
+			uint16_t hasRand : 1; // true if using a custom velocity randomization
+			int8_t offsetForward;
+			int8_t offsetUp;
+			int8_t offsetRight;
+			int8_t velForward;	// velocity relative to look direction
+			int8_t velUp;
+			int8_t velRight;
+			uint8_t dirRand;	// amount to randomize velocity direction
+			uint8_t speedRand;	// amount to randomize velocity speed
 		} ejectShell;
 
 		struct {
@@ -269,6 +284,11 @@ struct WepEvt {
 		struct {
 			uint16_t millis; // how long to wait before enabling the laser again
 		} laserHide;
+
+		struct {
+			uint16_t toggleMode : 2; // WeaponCustomToggleStateMode
+			uint16_t stateBits : 14;
+		} toggleState;
 
 		struct {
 			int16_t gravity; // gravity percentage (1000 = 100%, 0 = default)
@@ -323,12 +343,43 @@ struct WepEvt {
 			float trail_effect_freq;
 			float bounce_effect_delay;
 		} proj;
+
+		// user defined server event
+		// not networked to the client
+		struct {
+			uint8_t type;
+			int iuser1;
+			int iuser2;
+			int iuser3;
+			int iuser4;
+			float fuser1;
+			float fuser2;
+			float fuser3;
+			float fuser4;
+			float vuser1[3];
+			float vuser2[3];
+			float vuser3[3];
+			float vuser4[3];
+			string_t suser1;
+			string_t suser2;
+			string_t suser3;
+			string_t suser4;
+			RGBA cuser1;
+			RGBA cuser2;
+			RGBA cuser3;
+			RGBA cuser4;
+			EHANDLE euser1;
+			EHANDLE euser2;
+			EHANDLE euser3;
+			EHANDLE euser4;
+		} server;
 	};
 
-#ifndef CLIENT_DLL
 	WepEvt() {
 		memset(this, 0, sizeof(WepEvt));
 	}
+
+#ifndef CLIENT_DLL
 
 	WepEvt(int trigger, int delay=0, int triggerArg=0) {
 		memset(this, 0, sizeof(WepEvt));
@@ -538,12 +589,21 @@ struct WepEvt {
 		return *this;
 	}
 
-	WepEvt EjectShell(uint16_t model, float offsetForward, float offsetUp, float offsetRight) {
+	WepEvt EjectShell(uint16_t model, int sound, float offsetForward, float offsetUp, float offsetRight,
+		float velForward=0, float velUp=0, float velRight=0, float dirRand=0, float speedRand=0) {
 		evtType = WC_EVT_EJECT_SHELL;
 		ejectShell.model = model;
-		ejectShell.offsetForward = FLOAT_TO_FP_10_6(offsetForward);
-		ejectShell.offsetUp = FLOAT_TO_FP_10_6(offsetUp);
-		ejectShell.offsetRight = FLOAT_TO_FP_10_6(offsetRight);
+		ejectShell.sound = sound;
+		ejectShell.hasVel = velForward || velUp || velRight;
+		ejectShell.hasRand = dirRand || speedRand;
+		ejectShell.offsetForward = offsetForward;
+		ejectShell.offsetUp = offsetUp;
+		ejectShell.offsetRight = offsetRight;
+		ejectShell.velForward = velForward;
+		ejectShell.velUp = velUp;
+		ejectShell.velRight = velRight;
+		ejectShell.dirRand = dirRand;
+		ejectShell.speedRand = speedRand;
 		return *this;
 	}
 
@@ -732,15 +792,34 @@ struct WepEvt {
 		return *this;
 	}
 
+	// stateBits = combination of FL_WC_STATE_*
+	WepEvt EnableState(uint8_t stateBits) {
+		evtType = WC_EVT_TOGGLE_STATE;
+		toggleState.toggleMode = WC_TOGGLE_STATE_ON;
+		toggleState.stateBits = stateBits;
+		return *this;
+	}
+
+	// stateBits = combination of FL_WC_STATE_*
+	WepEvt DisableState(uint8_t stateBits) {
+		evtType = WC_EVT_TOGGLE_STATE;
+		toggleState.toggleMode = WC_TOGGLE_STATE_OFF;
+		toggleState.stateBits = stateBits;
+		return *this;
+	}
+
+	// stateBits = combination of FL_WC_STATE_*
+	WepEvt ToggleState(uint8_t stateBits) {
+		evtType = WC_EVT_TOGGLE_STATE;
+		toggleState.toggleMode = WC_TOGGLE_STATE_TOGGLE;
+		toggleState.stateBits = stateBits;
+		return *this;
+	}
+
 	WepEvt ToggleZoom(uint8_t zoomFov, uint8_t zoomFov2=0) {
 		evtType = WC_EVT_TOGGLE_ZOOM;
 		zoomToggle.zoomFov = zoomFov;
 		zoomToggle.zoomFov2 = zoomFov2;
-		return *this;
-	}
-
-	WepEvt ToggleLaser() {
-		evtType = WC_EVT_TOGGLE_LASER;
 		return *this;
 	}
 
@@ -749,11 +828,6 @@ struct WepEvt {
 		evtType = WC_EVT_COOLDOWN;
 		cooldown.millis = millis;
 		cooldown.targets = targets;
-		return *this;
-	}
-
-	WepEvt ToggleAkimbo() {
-		evtType = WC_EVT_TOGGLE_AKIMBO;
 		return *this;
 	}
 
@@ -771,6 +845,14 @@ struct WepEvt {
 		dlight.b = c.b;
 		dlight.life = life;
 		dlight.decayRate = decayRate;
+		return *this;
+	}
+
+	// type = user defined
+	// fill in WepEvt.server fields separately and create a CustomServerEvent() override
+	WepEvt CustomServerLogic(uint8_t type) {
+		evtType = WC_EVT_SERVER;
+		server.type = type;
 		return *this;
 	}
 #endif

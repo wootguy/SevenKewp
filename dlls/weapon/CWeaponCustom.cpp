@@ -1033,6 +1033,8 @@ void CWeaponCustom::MeleeAttack(int attackIdx) {
 		// play thwack, smack, or dong sound
 		float flVol = 1.0;
 
+		AttackTrace(m_pPlayer, attackIdx, vecSrc, tr);
+
 		if (MeleeIsFlesh(pEntity)) {
 			MeleeHitFlesh(m_pPlayer, pEntity);
 			PlayRandomSound(m_pPlayer, opts.melee.hitFleshSounds);
@@ -1108,8 +1110,8 @@ void CWeaponCustom::ToggleZoom(int zoomFov, int zoomFov2) {
 	m_lastZoomToggle = gpGlobals->time;
 }
 
-void CWeaponCustom::ToggleLaser() {
-	SetLaser(!IsLaserOn());
+void CWeaponCustom::ToggleLaser(bool enable) {
+	SetLaser(enable);
 	m_lastLaserToggle = WallTime();
 	
 #ifdef CLIENT_DLL
@@ -1306,12 +1308,24 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 				//WRITE_BYTE(evt.playSound.distantSound); // not needed for prediction
 				break;
 			}
-			case WC_EVT_EJECT_SHELL:
-				WRITE_SHORT(evt.ejectShell.model);
-				WRITE_SHORT(evt.ejectShell.offsetForward);
-				WRITE_SHORT(evt.ejectShell.offsetUp);
-				WRITE_SHORT(evt.ejectShell.offsetRight);
+			case WC_EVT_EJECT_SHELL: {
+				uint16_t packedFlags = (evt.ejectShell.model << 4) | (evt.ejectShell.sound << 2)
+					| (evt.ejectShell.hasVel << 1) | evt.ejectShell.hasRand;
+				WRITE_SHORT(packedFlags);
+				WRITE_BYTE(evt.ejectShell.offsetForward);
+				WRITE_BYTE(evt.ejectShell.offsetUp);
+				WRITE_BYTE(evt.ejectShell.offsetRight);
+				if (evt.ejectShell.hasVel) {
+					WRITE_BYTE(evt.ejectShell.velForward);
+					WRITE_BYTE(evt.ejectShell.velUp);
+					WRITE_BYTE(evt.ejectShell.velRight);
+				}
+				if (evt.ejectShell.hasRand) {
+					WRITE_BYTE(evt.ejectShell.dirRand);
+					WRITE_BYTE(evt.ejectShell.speedRand);
+				}
 				break;
+			}
 			case WC_EVT_PUNCH:
 				WRITE_BYTE(evt.punch.flags);
 				WRITE_SHORT(evt.punch.x);
@@ -1349,6 +1363,11 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 				WRITE_BYTE(evt.kickback.up);
 				WRITE_BYTE(evt.kickback.globalUp);
 				break;
+			case WC_EVT_TOGGLE_STATE: {
+				uint16_t packedFlags = (evt.toggleState.stateBits << 2) | evt.toggleState.toggleMode;
+				WRITE_SHORT(packedFlags);
+				break;
+			}
 			case WC_EVT_TOGGLE_ZOOM:
 				WRITE_BYTE(evt.zoomToggle.zoomFov);
 				WRITE_BYTE(evt.zoomToggle.zoomFov2);
@@ -1371,9 +1390,8 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 				WRITE_BYTE(evt.dlight.life);
 				WRITE_BYTE(evt.dlight.decayRate);
 				break;
-			case WC_EVT_TOGGLE_AKIMBO:
-			case WC_EVT_TOGGLE_LASER:
 			case WC_EVT_PROJECTILE:
+			case WC_EVT_SERVER:
 				break;
 			default:
 				ALERT(at_error, "Invalid custom weapon event type %d\n", evt.evtType);
@@ -1531,7 +1549,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
-	Vector vecEnd;
+	static TraceResult traces[256];
 
 	bool isPredicted = IsPredicted();
 	BULLET_PREDICTION predFlag = isPredicted ? BULLETPRED_EVENTLESS : BULLETPRED_NONE;
@@ -1539,7 +1557,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
 		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
-		m_pPlayer->random_seed, &vecEnd, predFlag);
+		m_pPlayer->random_seed, traces, predFlag);
 	lagcomp_end();
 
 #ifdef CLIENT_DLL
@@ -1555,6 +1573,33 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	bool texSound = !(evt.bullets.flags & FL_WC_BULLETS_NO_SOUND);
 	WC_EV_Bullets(evt, m_pPlayer->random_seed, spread, showTracer, decal, texSound);
 #else
+	int attackIdx = 0; // TODO: pass this info with the event?
+	switch (evt.trigger) {
+	default:
+	case WC_TRIG_PRIMARY:
+	case WC_TRIG_PRIMARY_CHARGE:
+	case WC_TRIG_PRIMARY_STOP:
+	case WC_TRIG_PRIMARY_FAIL:
+		attackIdx = 0;
+		break;
+	case WC_TRIG_SECONDARY:
+	case WC_TRIG_SECONDARY_CHARGE:
+	case WC_TRIG_SECONDARY_STOP:
+	case WC_TRIG_SECONDARY_FAIL:
+		attackIdx = 1;
+		break;
+	case WC_TRIG_TERTIARY:
+		attackIdx = 2;
+		break;
+	case WC_TRIG_PRIMARY_ALT:
+		attackIdx = 3;
+		break;
+	}
+
+	for (int i = 0; i < evt.bullets.count; i++) {
+		AttackTrace(m_pPlayer, attackIdx, vecSrc, traces[i]);
+	}
+
 	if (showTracer) {
 		for (int i = 1; i < gpGlobals->time; i++) {
 			CBasePlayer* listener = UTIL_PlayerByIndex(i);
@@ -1564,7 +1609,9 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 			}
 
 			if ((m_pPlayer != listener || !isPredicted) && m_pPlayer->InPAS(listener->edict())) {
-				UTIL_Tracer(vecSrc, vecEnd, MSG_ONE_UNRELIABLE, listener->edict());
+				for (int i = 0; i < evt.bullets.count; i++) {
+					UTIL_Tracer(vecSrc, traces[i].vecEndPos, MSG_ONE_UNRELIABLE, listener->edict());
+				}
 			}
 		}
 	}
@@ -1687,6 +1734,10 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		break;
 	}
 	case WC_PROJECTILE_CUSTOM: {
+		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_CUSTOM Not implemented\n");
+		break;
+	}
+	case WC_PROJECTILE_OTHER: {
 		shootEnt = CBaseEntity::Create(STRING(evt.proj.entity_class), projectile_ori, projectile_dir_angles, false);
 		shootEnt->pev->velocity = projectile_velocity;
 		shootEnt->pev->owner = m_pPlayer->edict();
@@ -1695,9 +1746,6 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		shootEnt = CBaseEntity::Instance(ed);
 		break;
 	}
-	case WC_PROJECTILE_OTHER:
-		ALERT(at_error, "WeaponCustom: WC_PROJECTILE_OTHER Not implemented\n");
-		break;
 	default:
 		ALERT(at_error, "WeaponCustom: Unknown projectile type %d\n", evt.proj.type);
 		break;
@@ -1926,6 +1974,28 @@ void CWeaponCustom::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bo
 	Vector ShellVelocity = vel + right * fR + up * fU + forward * 25;
 	Vector ShellOrigin = ori + up* upScale + forward*forwardScale + right*rightScale;
 
+	if (evt.ejectShell.hasVel) {
+		Vector newForward = evt.ejectShell.velForward * forward;
+		Vector newUp = evt.ejectShell.velUp * up;
+		Vector newRight = evt.ejectShell.velRight * right;
+		Vector svel = newForward + newUp + newRight;
+
+		float speedMult = 5;
+
+		if (evt.ejectShell.hasRand) {
+			Vector dir = svel.Normalize();
+			int r = evt.ejectShell.dirRand;
+			dir.x += RANDOM_FLOAT(-r, r) * 0.01f;
+			dir.y += RANDOM_FLOAT(-r, r) * 0.01f;
+			dir.z += RANDOM_FLOAT(-r, r) * 0.01f;
+			speedMult += RANDOM_FLOAT(0, evt.ejectShell.speedRand);
+			ShellVelocity = vel + dir * svel.Length() * speedMult;
+		}
+		else {
+			ShellVelocity = vel + svel * speedMult;
+		}
+	}
+
 	bool predicted = IsPredicted();
 
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
@@ -2032,14 +2102,28 @@ void CWeaponCustom::PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	}
 }
 
-void CWeaponCustom::PlayEvent_ToggleAkimbo(WepEvt& evt, CBasePlayer* m_pPlayer) {
-	SetAkimbo(!IsAkimbo());
+void CWeaponCustom::PlayEvent_ToggleState(WepEvt& evt, CBasePlayer* m_pPlayer) {
+	bool toggleOn = evt.toggleState.toggleMode == WC_TOGGLE_STATE_ON;
+	bool toggleFlip = evt.toggleState.toggleMode == WC_TOGGLE_STATE_TOGGLE;
 
-	if (IsAkimbo()) {
-		SendAkimboAnim(params.akimbo.deployAnim);
+	if (evt.toggleState.stateBits & FL_WC_STATE_IS_AKIMBO) {
+		SetAkimbo(toggleOn || (toggleFlip && !IsAkimbo()));
+
+		if (IsAkimbo()) {
+			SendAkimboAnim(params.akimbo.deployAnim);
+		}
+		else {
+			Deploy();
+		}
 	}
-	else {
-		Deploy();
+
+	if (evt.toggleState.stateBits & FL_WC_STATE_LASER) {
+		ToggleLaser(toggleOn || (toggleFlip && !IsLaserOn()));
+		ProcessEvents(IsLaserOn() ? WC_TRIG_LASER_ON : WC_TRIG_LASER_OFF, 0);
+	}
+
+	if (evt.toggleState.stateBits & FL_WC_STATE_PRIMARY_ALT) {
+		SetPrimaryAlt(toggleOn || (toggleFlip && !IsPrimaryAltActive()));
 	}
 }
 
@@ -2113,9 +2197,8 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 		ToggleZoom(evt.zoomToggle.zoomFov, evt.zoomToggle.zoomFov2);
 		ProcessEvents(m_pPlayer->m_iFOV ? WC_TRIG_ZOOM_IN : WC_TRIG_ZOOM_OUT, 0);
 		break;
-	case WC_EVT_TOGGLE_LASER:
-		ToggleLaser();
-		ProcessEvents(IsLaserOn() ? WC_TRIG_LASER_ON : WC_TRIG_LASER_OFF, 0);
+	case WC_EVT_TOGGLE_STATE:
+		PlayEvent_ToggleState(evt, m_pPlayer);
 		break;
 	case WC_EVT_HIDE_LASER:
 		PlayEvent_HideLaser(evt, m_pPlayer);
@@ -2126,14 +2209,14 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 	case WC_EVT_COOLDOWN:
 		PlayEvent_Cooldown(evt, m_pPlayer);
 		break;
-	case WC_EVT_TOGGLE_AKIMBO:
-		PlayEvent_ToggleAkimbo(evt, m_pPlayer);
-		break;
 	case WC_EVT_SET_GRAVITY:
 		PlayEvent_SetGravity(evt, m_pPlayer);
 		break;
 	case WC_EVT_DLIGHT:
 		PlayEvent_DLight(evt, m_pPlayer);
+		break;
+	case WC_EVT_SERVER:
+		CustomServerEvent(evt, m_pPlayer);
 		break;
 	default:
 		ALERT(at_error, "Unhandled weapon event type %d\n", evt.evtType);
@@ -2198,7 +2281,7 @@ float CWeaponCustom::WallTime() {
 }
 
 void CWeaponCustom::SetAkimbo(bool akimbo) {
-	m_fireState = akimbo ? 1 : 0;
+	m_fireState = akimbo ? (m_fireState | FL_WC_STATE_IS_AKIMBO) : (m_fireState & ~FL_WC_STATE_IS_AKIMBO);
 
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
@@ -2217,7 +2300,7 @@ void CWeaponCustom::SendAkimboAnim(int iAnim) {
 }
 
 void CWeaponCustom::SetLaser(bool enable) {
-	m_flReleaseThrow = enable ? 1 : 0;
+	m_fireState = enable ? (m_fireState | FL_WC_STATE_LASER) : (m_fireState & ~FL_WC_STATE_LASER);
 
 #ifdef CLIENT_DLL
 
@@ -2340,11 +2423,11 @@ bool CWeaponCustom::IsPrimaryAltActive() {
 		return false;
 	}
 
-	if (WallTime() - m_lastLaserToggle > 0.1f) {
-		m_lastLaserState = IsLaserOn(); // debounce
+	if (WallTime() - m_lastAltToggle > 0.1f) {
+		m_lastAltState = (m_fireState & FL_WC_STATE_PRIMARY_ALT); // debounce
 	}
 	
-	return m_lastLaserState;
+	return m_lastAltState;
 }
 
 CustomWeaponShootOpts& CWeaponCustom::GetShootOpts(int attackIdx) {

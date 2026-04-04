@@ -1047,12 +1047,26 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			}
 			break;
 		}
-		case WC_EVT_EJECT_SHELL:
-			evt.ejectShell.model = READ_SHORT();
-			evt.ejectShell.offsetForward = READ_SHORT();
-			evt.ejectShell.offsetUp = READ_SHORT();
-			evt.ejectShell.offsetRight = READ_SHORT();
+		case WC_EVT_EJECT_SHELL: {
+			uint16_t packedFlags = READ_SHORT();
+			evt.ejectShell.model = packedFlags >> 4;
+			evt.ejectShell.sound = (packedFlags >> 2) & 0x3;
+			evt.ejectShell.hasVel = (packedFlags >> 1) & 0x1;
+			evt.ejectShell.hasRand = packedFlags & 0x1;
+			evt.ejectShell.offsetForward = READ_BYTE();
+			evt.ejectShell.offsetUp = READ_BYTE();
+			evt.ejectShell.offsetRight = READ_BYTE();
+			if (evt.ejectShell.hasVel) {
+				evt.ejectShell.velForward = READ_BYTE();
+				evt.ejectShell.velUp = READ_BYTE();
+				evt.ejectShell.velRight = READ_BYTE();
+			}
+			if (evt.ejectShell.hasRand) {
+				evt.ejectShell.dirRand = READ_BYTE();
+				evt.ejectShell.speedRand = READ_BYTE();
+			}
 			break;
+		}
 		case WC_EVT_PUNCH:
 			evt.punch.flags = READ_BYTE();
 			evt.punch.x = READ_SHORT();
@@ -1092,6 +1106,12 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			evt.kickback.up = READ_BYTE();
 			evt.kickback.globalUp = READ_BYTE();
 			break;
+		case WC_EVT_TOGGLE_STATE: {
+			uint8_t packedFlags = READ_SHORT();
+			evt.toggleState.toggleMode = packedFlags & 0x3;
+			evt.toggleState.stateBits = packedFlags >> 2;
+			break;
+		}
 		case WC_EVT_TOGGLE_ZOOM:
 			evt.zoomToggle.zoomFov = READ_BYTE();
 			evt.zoomToggle.zoomFov2 = READ_BYTE();
@@ -1114,9 +1134,8 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			evt.dlight.life = READ_BYTE();
 			evt.dlight.decayRate = READ_BYTE();
 			break;
-		case WC_EVT_TOGGLE_AKIMBO:
-		case WC_EVT_TOGGLE_LASER:
 		case WC_EVT_PROJECTILE:
+		case WC_EVT_SERVER:
 			break;
 		default:
 			gEngfuncs.Con_Printf("Bad custom weapon event type read %d\n", (int)evt.evtType);

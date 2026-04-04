@@ -55,7 +55,7 @@ void CM16::Precache()
 	AddEvent(WepEvt().Primary().Bullets(3, 80, dmg, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().BulletFired().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556, WC_AIVOL_LOUD));
 	AddEvent(WepEvt().BulletFired().PunchRandom(1.5f, 0));
-	AddEvent(WepEvt().BulletFired().EjectShell(m_iShell, 12, -8, 9));
+	AddEvent(WepEvt().BulletFired().EjectShell(m_iShell, TE_BOUNCE_SHELL, 12, -8, 9));
 	AddEvent(WepEvt().BulletFired().WepAnim(M16_SHOOT_1).AddAnim(M16_SHOOT_2));
 
 	AddEvent(WepEvt().Secondary().WepAnim(M16_LAUNCH));

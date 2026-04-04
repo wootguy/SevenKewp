@@ -1899,9 +1899,9 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 	Vector ShellVelocity;
 	Vector ShellOrigin;
 
-	float forwardScale = FP_10_6_TO_FLOAT(evt.ejectShell.offsetForward);
-	float upScale = FP_10_6_TO_FLOAT(evt.ejectShell.offsetUp);
-	float rightScale = FP_10_6_TO_FLOAT(evt.ejectShell.offsetRight);
+	float forwardScale = evt.ejectShell.offsetForward;
+	float upScale = evt.ejectShell.offsetUp;
+	float rightScale = evt.ejectShell.offsetRight;
 
 	static event_args_s args;
 	args.entindex = entidx;
@@ -1910,10 +1910,32 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 		right = right * -1;
 	}
 
-	EV_GetDefaultShellInfo(&args, origin, gPlayerSim.v_sim_vel, ShellVelocity, ShellOrigin, forward, right, up,
-		forwardScale, upScale, rightScale);
+	EV_GetDefaultShellInfo(&args, origin, gPlayerSim.v_sim_vel, ShellVelocity, ShellOrigin,
+		forward, right, up, forwardScale, upScale, rightScale);
 
-	EV_EjectBrass(ShellOrigin, ShellVelocity, angles[YAW], evt.ejectShell.model, TE_BOUNCE_SHELL);
+	if (evt.ejectShell.hasVel) {
+		Vector newForward = evt.ejectShell.velForward * forward;
+		Vector newUp = evt.ejectShell.velUp * up;
+		Vector newRight = evt.ejectShell.velRight * right;
+		Vector vel = newForward + newUp + newRight;
+
+		float speedMult = 5;
+
+		if (evt.ejectShell.hasRand) {
+			Vector dir = vel.Normalize();
+			int r = evt.ejectShell.dirRand;
+			dir.x += gEngfuncs.pfnRandomFloat(-r, r) * 0.01f;
+			dir.y += gEngfuncs.pfnRandomFloat(-r, r) * 0.01f;
+			dir.z += gEngfuncs.pfnRandomFloat(-r, r) * 0.01f;
+			speedMult += gEngfuncs.pfnRandomFloat(0, evt.ejectShell.speedRand);
+			ShellVelocity = gPlayerSim.v_sim_vel + dir * vel.Length() * speedMult;
+		}
+		else {
+			ShellVelocity = gPlayerSim.v_sim_vel + vel * speedMult;
+		}
+	}
+
+	EV_EjectBrass(ShellOrigin, ShellVelocity, angles[YAW], evt.ejectShell.model, evt.ejectShell.sound);
 }
 
 float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);

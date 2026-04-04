@@ -1022,7 +1022,7 @@ EHANDLE g_debugCycler;
 
 Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDirShooting,
 	Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage,
-	entvars_t* pevAttacker, int shared_rand, Vector* vecEndOut, BULLET_PREDICTION prediction)
+	entvars_t* pevAttacker, int shared_rand, TraceResult* traces, BULLET_PREDICTION prediction)
 {
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
@@ -1055,8 +1055,8 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		vecEnd = vecSrc + vecDir * flDistance;
 		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev)/*pentIgnore*/, &tr);
 
-		if (vecEndOut) {
-			*vecEndOut = tr.vecEndPos;
+		if (traces) {
+			traces[iShot-1] = tr;
 		}
 
 		if (mp_debug_tracers.value > 0) {

@@ -90,7 +90,7 @@ void CUzi::Precache()
 	AddEvent(WepEvt().Primary().NotAkimbo().Bullets(1, 0, gSkillData.sk_plr_9mm_bullet, spreadSingle, spreadSingle, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().AkimboOnly().Bullets(1, 0, gSkillData.sk_plr_9mm_bullet, spreadDual, spreadDual, 2, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().Primary().PunchRandom(2, 0));
-	AddEvent(WepEvt().Primary().EjectShell(iShell, 18, -8, 10));
+	AddEvent(WepEvt().Primary().EjectShell(iShell, TE_BOUNCE_SHELL, 18, -8, 10));
 
 	AddEvent(WepEvt().Reload().Delay(300).IdleSound(reloadSnd1));
 	AddEvent(WepEvt().Reload().NotAkimbo().Delay(800).IdleSound(akimboPullSnd2));
@@ -109,11 +109,11 @@ void CUzi::Precache()
 	AddEvent(WepEvt().Tertiary().NotAkimbo().Delay(100).IdleSound(akimboPullSnd2));
 	AddEvent(WepEvt().Tertiary().NotAkimbo().Delay(400).IdleSound(akimboPullSnd1));
 	AddEvent(WepEvt().Tertiary().NotAkimbo().Delay(1000).IdleSound(deploySnd2));
-	AddEvent(WepEvt().Tertiary().NotAkimbo().Delay(1200).ToggleAkimbo());
+	AddEvent(WepEvt().Tertiary().NotAkimbo().Delay(1200).EnableState(FL_WC_STATE_IS_AKIMBO));
 
 	AddEvent(WepEvt().Tertiary().AkimboOnly().WepAnim(UZI_AKIMBO_HOLSTER, WC_ANIM_BOTH_HANDS));
 	AddEvent(WepEvt().Tertiary().AkimboOnly().IdleSound(deploySnd2));
-	AddEvent(WepEvt().Tertiary().AkimboOnly().Delay(500).ToggleAkimbo());
+	AddEvent(WepEvt().Tertiary().AkimboOnly().Delay(500).DisableState(FL_WC_STATE_IS_AKIMBO));
 
 	// client-side HUD sprites and config
 	PRECACHE_HUD_FILES("sprites/weapon_uzi.txt");

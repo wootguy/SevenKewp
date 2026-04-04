@@ -25,6 +25,8 @@ void CEagle::Precache()
 	int dotSpr = PRECACHE_MODEL("sprites/laserdot.spr");
 	int beamSpr = PRECACHE_MODEL("sprites/laserbeam.spr");
 
+	int shell = PRECACHE_MODEL("models/shell.mdl");
+
 	animExt = "python";
 	wrongClientWeapon = "weapon_357";
 
@@ -77,11 +79,12 @@ void CEagle::Precache()
 	AddEvent(WepEvt().BulletFired().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_357, WC_AIVOL_NORMAL));
 	AddEvent(WepEvt().BulletFired().PunchSet(-4, 0));
 	AddEvent(WepEvt().BulletFired().HideLaser(400));
+	AddEvent(WepEvt().BulletFired().EjectShell(shell, TE_BOUNCE_SHELL, 16, -8, 8));
 
 	AddEvent(WepEvt().PrimaryNotEmpty().WepAnim(EAGLE_SHOOT));
 	AddEvent(WepEvt().PrimaryEmpty().WepAnim(EAGLE_SHOOT_EMPTY));
 
-	AddEvent(WepEvt().Secondary().ToggleLaser());
+	AddEvent(WepEvt().Secondary().ToggleState(FL_WC_STATE_LASER | FL_WC_STATE_PRIMARY_ALT));
 
 	AddEvent(WepEvt().LaserOn().IdleSound(laserSnd1));
 	AddEvent(WepEvt().LaserOff().IdleSound(laserSnd2));
