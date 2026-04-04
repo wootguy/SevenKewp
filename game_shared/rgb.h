@@ -29,4 +29,5 @@ struct EXPORT RGBA {
 	RGBA(uint8_t rgfl[4]) { r = rgfl[0]; g = rgfl[1]; b = rgfl[2]; a = rgfl[3]; }
 
 	inline Vector ToVector() { return Vector(r, g, b); }
+	inline RGB rgb() { return RGB(r, g, b); }
 };

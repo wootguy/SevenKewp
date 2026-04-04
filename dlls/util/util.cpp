@@ -1988,6 +1988,47 @@ void UTIL_StringToVector( float *pVector, const char *pString )
 	}
 }
 
+Vector UTIL_ParseVector(const char* pString) {
+	Vector vec;
+	UTIL_StringToVector(vec, pString);
+	return vec;
+}
+
+RGBA UTIL_ParseRGBA(const char* pString)
+{
+	RGBA color;
+	uint8_t* pVector = (uint8_t*)&color;
+	char* pstr, * pfront, tempString[128];
+	int	j;
+
+	strcpy_safe(tempString, pString, 128);
+	tempString[sizeof(tempString) - 1] = '\0';
+	pstr = pfront = tempString;
+
+	for (j = 0; j < 4; j++)			// lifted from pr_edict.c
+	{
+		pVector[j] = atoi(pfront);
+
+		while (*pstr && *pstr != ' ')
+			pstr++;
+		if (!*pstr)
+			break;
+		pstr++;
+		pfront = pstr;
+	}
+	if (j < 2)
+	{
+		/*
+		ALERT( at_error, "Bad field in entity!! %s:%s == \"%s\"\n",
+			pkvd->szClassName, pkvd->szKeyName, pkvd->szValue );
+		*/
+		for (j = j + 1; j < 4; j++)
+			pVector[j] = 0;
+	}
+
+	return color;
+}
+
 bool UTIL_StringIsVector(const char* pString) {
 	int j;
 	const char *pstr = pString;
@@ -2630,19 +2671,29 @@ void UTIL_CleanupEntities(int removeCount) {
 }
 
 edict_t* CREATE_NAMED_ENTITY(string_t cname) {
-	edict_t* ed = g_engfuncs.pfnCreateNamedEntity(cname);
+	edict_t* ed = NULL;
+	
+	ENTITYINIT* remap = g_entityRemap.get(STRING(cname));
+	if (remap) {
+		ed = CREATE_ENTITY();
+		ed->v.classname = cname;
+		(*remap)(&ed->v);
+	}
+	else {
+		ed = g_engfuncs.pfnCreateNamedEntity(cname);
 
-	if (!ed) {
-		ENTITYINIT initFunc = g_pluginManager.GetCustomEntityInitFunc(STRING(cname));
+		if (!ed) {
+			ENTITYINIT initFunc = g_pluginManager.GetCustomEntityInitFunc(STRING(cname));
 
-		if (initFunc) {
-			ed = CREATE_ENTITY();
-			ed->v.classname = cname;
-			initFunc(&ed->v);
-		}
-		else {
-			ALERT(at_warning, "Invalid entity class '%s'\n", STRING(cname));
-			return NULL;
+			if (initFunc) {
+				ed = CREATE_ENTITY();
+				ed->v.classname = cname;
+				initFunc(&ed->v);
+			}
+			else {
+				ALERT(at_warning, "Invalid entity class '%s'\n", STRING(cname));
+				return NULL;
+			}
 		}
 	}
 

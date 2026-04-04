@@ -132,6 +132,8 @@ public:
 	inline bool HasPredictionData(edict_t* target) { return m_predDataSent[m_iId] & PLRBIT(target); }
 	bool IsPredicted();
 
+	void FireAmmoEvents(int ammoPool);
+
 	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft=0);
 	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire);
 	void PlayDelayedEvents();

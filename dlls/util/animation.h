@@ -52,6 +52,7 @@ EXPORT bool ActivityHasEvent(void* pmodel, int activity, int event);
 
 EXPORT int LookupSequence( void *pmodel, const char *label );
 EXPORT void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *pflGroundSpeed );
+EXPORT float GetSequenceDuration(studiohdr_t* pstudiohdr, int iseq); // animation time in seconds
 EXPORT int GetSequenceFlags( void *pmodel, entvars_t *pev );
 EXPORT int LookupAnimationEvents( void *pmodel, entvars_t *pev, float flStart, float flEnd );
 EXPORT float SetController( void *pmodel, entvars_t *pev, int iController, float flValue );

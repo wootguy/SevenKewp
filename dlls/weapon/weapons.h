@@ -177,7 +177,7 @@ EXPORT CBaseEntity* ShootMortar(edict_t* pentOwner, Vector vecStart, Vector vecV
 EXPORT void GetCircularGaussianSpread(float& x, float& y);
 
 // uses GetItemInfo to extract registration info.
-// Set iId and iPosition to -1 to have them be automatically assigned.
+// Set iId, iPosition, iMaxAmmo1, or iMaxAmmo2 to -1 to have them be automatically assigned.
 // That should be done to prevent conflicts between the game and unrelated plugins.
 // Returns an ItemInfo with reassigned id and position.
 EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname);
@@ -190,6 +190,8 @@ EXPORT void UTIL_RegisterEquipmentEntity(const char* szClassname);
 EXPORT void UTIL_SetDefaultWeaponSpriteDir(const char* szClassname, const char* spriteDir);
 
 EXPORT void AddAmmoNameToAmmoRegistry(const char* szAmmoname, bool isSevenKewpGun);
+
+EXPORT Vector UTIL_ConeFromDegrees(float degrees);
 
 typedef struct 
 {

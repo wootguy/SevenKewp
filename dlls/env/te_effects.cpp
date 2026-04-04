@@ -1040,11 +1040,11 @@ void UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType) {
 
 extern DLL_GLOBAL	short	g_sModelIndexBubbles;// holds the index for the bubbles model
 
-void UTIL_Bubbles(Vector mins, Vector maxs, int count)
+void UTIL_Bubbles(Vector mins, Vector maxs, int count, int height, int sprIdx, int speed)
 {
 	Vector mid = (mins + maxs) * 0.5;
 
-	float flHeight = UTIL_WaterLevel(mid, mid.z, mid.z + 1024);
+	float flHeight = height == 0 ? UTIL_WaterLevel(mid, mid.z, mid.z + 1024) : height;
 	flHeight = flHeight - mins.z;
 
 	MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, mid);
@@ -1056,9 +1056,9 @@ void UTIL_Bubbles(Vector mins, Vector maxs, int count)
 	WRITE_COORD(maxs.y);
 	WRITE_COORD(maxs.z);
 	WRITE_COORD(flHeight);			// height
-	WRITE_SHORT(g_sModelIndexBubbles);
+	WRITE_SHORT(sprIdx ? sprIdx : g_sModelIndexBubbles);
 	WRITE_BYTE(count); // count
-	WRITE_COORD(8); // speed
+	WRITE_COORD(speed); // speed
 	MESSAGE_END();
 }
 

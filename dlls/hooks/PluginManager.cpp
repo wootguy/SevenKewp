@@ -867,12 +867,17 @@ int RegisterPlugin_internal(HLCOOP_PLUGIN_HOOKS* hooks, int hooksSz, const char*
 
 // custom entity loader called by the engine during map load
 extern "C" DLLEXPORT void custom(entvars_t * pev) {
-	ENTITYINIT initFunc = g_pluginManager.GetCustomEntityInitFunc(STRING(pev->classname));
+	ENTITYINIT* remap = g_entityRemap.get(STRING(pev->classname));
+	if (remap) {
+		(*remap)(pev);
+		return;
+	}
 
+	ENTITYINIT initFunc = g_pluginManager.GetCustomEntityInitFunc(STRING(pev->classname));
 	if (initFunc) {
 		initFunc(pev);
+		return;
 	}
-	else {
-		ALERT(at_warning, "Invalid entity class '%s'\n", STRING(pev->classname));
-	}
+	
+	ALERT(at_warning, "Invalid entity class '%s'\n", STRING(pev->classname));
 }

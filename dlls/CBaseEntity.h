@@ -443,6 +443,7 @@ public:
 	edict_t* edict() { return ENT(pev); };
 	EOFFSET eoffset() { return OFFSET(pev); };
 	int	  entindex() { return ENTINDEX(edict()); };
+	virtual const char* desc() { return UTIL_VarArgs("%s (%s)\n", STRING(pev->targetname), STRING(pev->classname)); };
 
 	virtual Vector Center() { return (pev->absmax + pev->absmin) * 0.5; }; // center point of entity
 	virtual Vector EyePosition() { return pev->origin + pev->view_ofs; };			// position of eyes

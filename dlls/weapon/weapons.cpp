@@ -217,6 +217,61 @@ int NextAutoWeaponId() {
 	return -1;
 }
 
+int GetDefaultMaxAmmo(const char* ammoType) {
+	if (!strcmp(ammoType, "uranium")) {
+		return gSkillData.sk_ammo_max_uranium;
+	}
+	if (!strcmp(ammoType, "9mm")) {
+		return gSkillData.sk_ammo_max_9mm;
+	}
+	if (!strcmp(ammoType, "357")) {
+		return gSkillData.sk_ammo_max_357;
+	}
+	if (!strcmp(ammoType, "buckshot")) {
+		return gSkillData.sk_ammo_max_buckshot;
+	}
+	if (!strcmp(ammoType, "bolts")) {
+		return gSkillData.sk_ammo_max_bolts;
+	}
+	if (!strcmp(ammoType, "rockets")) {
+		return gSkillData.sk_ammo_max_rockets;
+	}
+	if (!strcmp(ammoType, "Hand Grenade")) {
+		return gSkillData.sk_ammo_max_grenades;
+	}
+	if (!strcmp(ammoType, "Satchel Charge")) {
+		return gSkillData.sk_ammo_max_satchels;
+	}
+	if (!strcmp(ammoType, "Trip Mine")) {
+		return gSkillData.sk_ammo_max_tripmines;
+	}
+	if (!strcmp(ammoType, "Snarks")) {
+		return gSkillData.sk_ammo_max_snarks;
+	}
+	if (!strcmp(ammoType, "Hornets")) {
+		return gSkillData.sk_ammo_max_hornets;
+	}
+	if (!strcmp(ammoType, "ARgrenades")) {
+		return gSkillData.sk_ammo_max_argrenades;
+	}
+	if (!strcmp(ammoType, "spores")) {
+		return gSkillData.sk_ammo_max_spores;
+	}
+	if (!strcmp(ammoType, "health")) {
+		return gSkillData.sk_ammo_max_medkit;
+	}
+	if (!strcmp(ammoType, "556")) {
+		return gSkillData.sk_ammo_max_556;
+	}
+	if (!strcmp(ammoType, "762")) {
+		return gSkillData.sk_ammo_max_762;
+	}
+
+	ALERT(at_warning, "Unknown max ammo for ammo type '%s'. Defaulting to 250.\n", ammoType);
+
+	return 250;
+}
+
 // Queues the weapon info for sending to clients
 ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 {
@@ -311,10 +366,22 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 
 	if (info.pszAmmo1 && *info.pszAmmo1) {
 		AddAmmoNameToAmmoRegistry(info.pszAmmo1, wep->IsSevenKewpWeapon());
+		if (info.iMaxAmmo1 < 0) {
+			info.iMaxAmmo1 = GetDefaultMaxAmmo(info.pszAmmo1);
+		}
+	}
+	else {
+		info.iMaxAmmo1 = -1;
 	}
 
 	if (info.pszAmmo2 && *info.pszAmmo2) {
 		AddAmmoNameToAmmoRegistry(info.pszAmmo2, wep->IsSevenKewpWeapon());
+		if (info.iMaxAmmo2 < 0) {
+			info.iMaxAmmo2 = GetDefaultMaxAmmo(info.pszAmmo2);
+		}
+	}
+	else {
+		info.iMaxAmmo2 = -1;
 	}
 
 	g_weaponNames.put(info.pszName);
@@ -479,4 +546,9 @@ void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* mins, fl
 			}
 		}
 	}
+}
+
+Vector UTIL_ConeFromDegrees(float degrees) {
+	float s = sinf((degrees * 0.5f) * (float)M_PI / 180.0f);
+	return Vector(s, s, s);
 }

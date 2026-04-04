@@ -65,21 +65,28 @@ enum WeaponCustomEventTriggerShootArg {
 	WC_TRIG_SHOOT_ARG_NOT_AKIMBO,	// only fire the event when not in akimbo mode
 };
 
+// special clip size conditions
+enum WeaponCustomEventTriggerClipSpArg {
+	WC_TRIG_CLIP_ARG_ODD,		// fire on odd clip sizes
+	WC_TRIG_CLIP_ARG_EVEN,		// fire on even clip sizes
+	WC_TRIG_CLIP_ARG_NOT_EMPTY,	// fire on non-zero clip sizes
+};
+
 enum WeaponCustomEventTriggers {
 	WC_TRIG_PRIMARY,			// trigger arg: WeaponCustomEventTriggerShootArg (does not trigger when alternate fire is active)
 	WC_TRIG_SECONDARY,			// trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_TERTIARY,
 	WC_TRIG_PRIMARY_ALT,		// triggers on alternate primary fire (laser/zoom)
 	WC_TRIG_PRIMARY_CLIPSIZE,	// trigger arg is the clip size to trigger on
-	WC_TRIG_PRIMARY_ODD,		// triggers on odd clip sizes after firing
-	WC_TRIG_PRIMARY_EVEN,		// triggers on even clip sizes after firing
-	WC_TRIG_PRIMARY_NOT_EMPTY,	// triggers on non-empty clip size after firing
+	WC_TRIG_PRIMARY_CLIP_SP,	// trigger arg: WeaponCustomEventTriggerClipSpArg
 	WC_TRIG_PRIMARY_CHARGE,		// triggers when primary fire begins charging
 	WC_TRIG_PRIMARY_STOP,		// triggers when primary fire key is released
 	WC_TRIG_PRIMARY_FAIL,		// triggers when primary fire fails (no ammo, underwater, ...)
+	WC_TRIG_SECONDARY_CLIPSIZE, // trigger arg is the clip size to trigger on
+	WC_TRIG_SECONDARY_CLIP_SP,	// trigger arg: WeaponCustomEventTriggerClipSpArg
 	WC_TRIG_SECONDARY_CHARGE,	// triggers when secondary fire begins charging
 	WC_TRIG_SECONDARY_STOP,		// triggers when secondary fire key is released
-	WC_TRIG_SECONDARY_FAIL,		// triggers when secondar fire fails (no ammo, underwater, ...)
+	WC_TRIG_SECONDARY_FAIL,		// triggers when secondary fire fails (no ammo, underwater, ...)
 	WC_TRIG_RELOAD,				// triggers when a simple reload begins, or when a shotgun reloads a single shell. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_EMPTY,		// triggers when an empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_NOT_EMPTY,	// triggers when a non-empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
@@ -357,12 +364,26 @@ struct WepEvt {
 	}
 
 	WepEvt PrimaryOdd() {
-		this->trigger = WC_TRIG_PRIMARY_ODD;
+		this->trigger = WC_TRIG_PRIMARY_CLIP_SP;
+		this->triggerArg = WC_TRIG_CLIP_ARG_ODD;
+		return *this;
+	}
+
+	WepEvt SecondaryOdd() {
+		this->trigger = WC_TRIG_SECONDARY_CLIP_SP;
+		this->triggerArg = WC_TRIG_CLIP_ARG_ODD;
 		return *this;
 	}
 
 	WepEvt PrimaryEven() {
-		this->trigger = WC_TRIG_PRIMARY_EVEN;
+		this->trigger = WC_TRIG_PRIMARY_CLIP_SP;
+		this->triggerArg = WC_TRIG_CLIP_ARG_EVEN;
+		return *this;
+	}
+
+	WepEvt SecondaryEven() {
+		this->trigger = WC_TRIG_SECONDARY_CLIP_SP;
+		this->triggerArg = WC_TRIG_CLIP_ARG_EVEN;
 		return *this;
 	}
 
@@ -372,8 +393,21 @@ struct WepEvt {
 		return *this;
 	}
 
+	WepEvt SecondaryEmpty() {
+		this->trigger = WC_TRIG_SECONDARY_CLIPSIZE;
+		this->triggerArg = 0;
+		return *this;
+	}
+
 	WepEvt PrimaryNotEmpty() {
-		this->trigger = WC_TRIG_PRIMARY_NOT_EMPTY;
+		this->trigger = WC_TRIG_PRIMARY_CLIP_SP;
+		this->triggerArg = WC_TRIG_CLIP_ARG_NOT_EMPTY;
+		return *this;
+	}
+
+	WepEvt SecondaryNotEmpty() {
+		this->trigger = WC_TRIG_SECONDARY_CLIP_SP;
+		this->triggerArg = WC_TRIG_CLIP_ARG_NOT_EMPTY;
 		return *this;
 	}
 

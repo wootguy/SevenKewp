@@ -165,13 +165,11 @@ BOOL CWeaponCustom::Deploy()
 
 	m_flChargeStartPrimary = 0;
 	m_flChargeStartSecondary = 0;
-	m_bulletFireCount = 0;
 	m_lastBeamUpdate = 0;
 	m_lastChargeDown = 0;
 	m_fInReload = false;
 	m_bInAkimboReload = false;
 	m_fInSpecialReload = 0;
-	m_bulletFireCount = (params.maxClip - m_iClip) % 2;
 	animCount = 0;
 	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
 	int ret = TRUE;
@@ -603,19 +601,7 @@ void CWeaponCustom::PrimaryAttack() {
 
 			if (g_runfuncs) {
 				ProcessEvents(trig, akimboArg, IsAkimbo(), false, *clip);
-
-				if ((m_bulletFireCount++ % 2) == 0) {
-					ProcessEvents(WC_TRIG_PRIMARY_EVEN, akimboArg, IsAkimbo(), false, *clip);
-				}
-				else {
-					ProcessEvents(WC_TRIG_PRIMARY_ODD, akimboArg, IsAkimbo(), false, *clip);
-				}
-
-				ProcessEvents(WC_TRIG_PRIMARY_CLIPSIZE, *clip, IsAkimbo(), false, *clip);
-
-				if (*clip != 0) {
-					ProcessEvents(WC_TRIG_PRIMARY_NOT_EMPTY, akimboArg, IsAkimbo(), false, *clip);
-				}
+				FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_PRIMARY_CLIP);
 			}
 
 			if (*clip < 0)
@@ -674,6 +660,7 @@ void CWeaponCustom::SecondaryAttack() {
 
 		if (CommonAttack(0, &m_iClip, false, fireBoth)) {
 			ProcessEvents(primaryTrig, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth, *clip);
+			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_PRIMARY_CLIP);
 
 			if (*clip < 0)
 				*clip = 0;
@@ -702,6 +689,7 @@ void CWeaponCustom::SecondaryAttack() {
 
 		if (CommonAttack(1, clip2, false, false)) {
 			ProcessEvents(WC_TRIG_SECONDARY, akimboArg, *clip2);
+			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_SECONDARY_RESERVE);
 		}
 	}
 
@@ -733,6 +721,7 @@ void CWeaponCustom::TertiaryAttack() {
 			int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
 			ProcessEvents(WC_TRIG_TERTIARY, akimboArg, false, false, *clip);
+			FireAmmoEvents(opts.ammoPool);
 
 			if (*clip < 0)
 				*clip = 0;
@@ -1403,6 +1392,24 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 }
 
 
+void CWeaponCustom::FireAmmoEvents(int ammoPool) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+	if (!g_runfuncs)
+		return;
+
+	switch (ammoPool) {
+	case WC_AMMOPOOL_PRIMARY_CLIP:
+		ProcessEvents(WC_TRIG_PRIMARY_CLIPSIZE, m_iClip, IsAkimbo(), false, m_iClip);
+		ProcessEvents(WC_TRIG_PRIMARY_CLIP_SP, m_bulletFireCount++, IsAkimbo(), false, m_iClip);
+		break;
+	case WC_AMMOPOOL_PRIMARY_RESERVE: break;
+	case WC_AMMOPOOL_SECONDARY_RESERVE: break;
+	default: break;
+	}
+}
+
 
 void CWeaponCustom::ProcessEvents(int trigger, int triggerArg, bool leftHand, bool akimboFire, int clipLeft) {
 #ifdef CLIENT_DLL
@@ -1426,9 +1433,6 @@ void CWeaponCustom::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 		case WC_TRIG_PRIMARY:
 		case WC_TRIG_SECONDARY:
 		case WC_TRIG_TERTIARY:
-		case WC_TRIG_PRIMARY_EVEN:
-		case WC_TRIG_PRIMARY_ODD:
-		case WC_TRIG_PRIMARY_NOT_EMPTY:
 		case WC_TRIG_RELOAD:
 		case WC_TRIG_RELOAD_EMPTY:
 		case WC_TRIG_RELOAD_NOT_EMPTY:
@@ -1437,6 +1441,20 @@ void CWeaponCustom::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 			break;
 		case WC_TRIG_PRIMARY_CLIPSIZE:
 			argMatch = triggerArg == evt.triggerArg;
+			break;
+		case WC_TRIG_PRIMARY_CLIP_SP:
+		case WC_TRIG_SECONDARY_CLIP_SP:
+			switch (evt.triggerArg) {
+			case WC_TRIG_CLIP_ARG_ODD:
+				argMatch = triggerArg % 2 != 0;
+				break;
+			case WC_TRIG_CLIP_ARG_EVEN:
+				argMatch = triggerArg % 2 == 0;
+				break;
+			case WC_TRIG_CLIP_ARG_NOT_EMPTY:
+				argMatch = clipLeft > 0;
+				break;
+			}
 			break;
 		default:
 			break;
