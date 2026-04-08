@@ -1165,6 +1165,176 @@ void UTIL_DLight(Vector pos, uint8_t radius, RGB color, uint8_t time, uint8_t de
 	}
 }
 
+void UTIL_SpriteTrail(Vector start, Vector end, int spriteIdx, int count, int life, int scale, int speed, int speedNoise) {
+	if (UTIL_IsValidTempEntOrigin(start) && UTIL_IsValidTempEntOrigin(end)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, start);
+		WRITE_BYTE(TE_SPRITETRAIL);
+		WRITE_COORD_VECTOR(start);
+		WRITE_COORD_VECTOR(end);
+		WRITE_SHORT(spriteIdx);
+		WRITE_BYTE(count);
+		WRITE_BYTE(life);
+		WRITE_BYTE(scale);
+		WRITE_BYTE(speed);
+		WRITE_BYTE(speedNoise);
+		MESSAGE_END();
+	}
+	else {
+		const char* mdl = INDEX_MODEL(spriteIdx);
+		int frameCount = MODEL_FRAMES(MODEL_INDEX(mdl));
+
+		count = V_min(8, count);
+		float randVel = speedNoise * 0.01f;
+		Vector delta = end - start;
+		Vector dir = delta.Normalize();
+
+		for (int i = 0; i < count; i++) {
+			CGib* pGib = GetClassPtr((CGib*)NULL);
+
+			float randSpeed = speed * 2.0f * RANDOM_FLOAT(0.8f, 1.2f);
+			Vector randPos = start + delta * RANDOM_FLOAT(0, 1);
+
+			pGib->Spawn(mdl);
+			pGib->m_cBloodDecals = 0;
+			pGib->m_lifeTime = gpGlobals->time + 0.5f;
+			pGib->m_slideFriction = 0.5f;
+			pGib->pev->friction = 0.5f;
+			pGib->pev->gravity = 0.5f;
+			pGib->pev->frame = RANDOM_LONG(0, frameCount);
+			pGib->pev->origin = randPos;
+			pGib->pev->velocity = (dir + Vector(RANDOM_FLOAT(-randVel, randVel), RANDOM_FLOAT(-randVel, randVel), RANDOM_FLOAT(0, randVel * 1.5f))) * randSpeed;
+			UTIL_SetSize(pGib->pev, Vector(0, 0, 0), Vector(0, 0, 0));
+			pGib->LimitVelocity();
+			pGib->pev->flags |= FL_NOCLIP_MONSTERS | FL_NOCLIP_PLAYERS | FL_NOCLIP_PUSHABLES | FL_NOCLIP_TRACES;
+			pGib->pev->solid = SOLID_NOT;
+			pGib->pev->movetype = MOVETYPE_FLY;
+
+			pGib->pev->renderamt = 255;
+			pGib->pev->rendermode = kRenderTransTexture;
+
+			pGib->SetThink(&CGib::SprayThink);
+			pGib->SetTouch(&CGib::SprayTouch);
+			pGib->pev->nextthink = gpGlobals->time;
+		}
+	}
+}
+
+void UTIL_Implosion(Vector pos, uint8_t radius, uint8_t count, uint8_t life) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_IMPLOSION);
+		WRITE_COORD_VECTOR(pos);
+		WRITE_BYTE(radius);
+		WRITE_BYTE(count);
+		WRITE_BYTE(life);
+		MESSAGE_END();
+	}
+	else {
+		ALERT(at_warning, "TE_IMPLOSION not implemented for big maps\n");
+	}
+}
+
+void UTIL_GlowSprite(const Vector& pos, int sprIndex, uint8_t life, uint8_t scale, uint8_t alpha) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_GLOWSPRITE);
+		WRITE_COORD_VECTOR(pos);
+		WRITE_SHORT(sprIndex);
+		WRITE_BYTE(life);
+		WRITE_BYTE(scale);
+		WRITE_BYTE(alpha);
+		MESSAGE_END();
+	}
+	else {
+		CSprite* spr = CSprite::SpriteCreate(INDEX_MODEL(sprIndex), pos, true);
+		spr->pev->spawnflags = SF_SPRITE_ONCE_AND_REMOVE;
+		spr->pev->rendermode = kRenderTransAdd;
+		spr->pev->renderamt = alpha;
+		spr->pev->scale = scale * 0.1f;
+		spr->TurnOn();
+		ALERT(at_warning, "TE_GLOWSPRITE not implemented for big maps\n");
+	}
+}
+
+void UTIL_QuakeTeleport(const Vector& pos) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_TELEPORT);
+		WRITE_COORD_VECTOR(pos);
+		MESSAGE_END();
+	}
+	else {
+		ALERT(at_warning, "TE_TELEPORT not implemented for big maps\n");
+	}
+}
+
+void UTIL_QuakeParticleBurst(const Vector& pos, uint8_t radius, uint8_t color, uint8_t life) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_PARTICLEBURST);
+		WRITE_COORD_VECTOR(pos);
+		WRITE_BYTE(radius);
+		WRITE_BYTE(color);
+		WRITE_BYTE(life);
+		MESSAGE_END();
+	}
+	else {
+		ALERT(at_warning, "TE_PARTICLEBURST not implemented for big maps\n");
+	}
+}
+
+void UTIL_QuakeLavaSplash(const Vector& pos) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_LAVASPLASH);
+		WRITE_COORD_VECTOR(pos);
+		MESSAGE_END();
+	}
+	else {
+		ALERT(at_warning, "TE_LAVASPLASH not implemented for big maps\n");
+	}
+}
+
+void UTIL_QuakeExplosion(const Vector& pos) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_TAREXPLOSION);
+		WRITE_COORD_VECTOR(pos);
+		MESSAGE_END();
+	}
+	else {
+		ALERT(at_warning, "TE_TAREXPLOSION not implemented for big maps\n");
+	}
+}
+
+void UTIL_QuakeExplosion2(const Vector& pos) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_EXPLOSION2);
+		WRITE_COORD_VECTOR(pos);
+		MESSAGE_END();
+	}
+	else {
+		ALERT(at_warning, "TE_EXPLOSION2 not implemented for big maps\n");
+	}
+}
+
+void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint16_t count, uint16_t speed, uint16_t speedNoise) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_STREAK_SPLASH);
+		WRITE_COORD_VECTOR(pos);
+		WRITE_COORD_VECTOR(pos);
+		WRITE_BYTE(color);
+		WRITE_SHORT(count);
+		WRITE_SHORT(speedNoise);
+		MESSAGE_END();
+	}
+	else {
+		ALERT(at_warning, "TE_STREAK_SPLASH not implemented for big maps\n");
+	}
+}
+
 void UTIL_TempSound(Vector pos, const char* sample, float volume, float attenuation, int flags, int pitch) {
 	CBaseEntity* ent = CBaseEntity::Create("te_target", pos, g_vecZero, true);
 

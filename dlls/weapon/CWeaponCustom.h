@@ -146,6 +146,7 @@ public:
 	void SendPredictionData(edict_t* target, PredictionDataSendMode sendMode=WC_PRED_SEND_INIT);
 	inline bool HasPredictionData(edict_t* target) { return m_predDataSent[m_iId] & PLRBIT(target); }
 	bool IsPredicted();
+	int GetAttackIdx(WepEvt& evt); // TODO: store this info in the event
 
 	void FireAmmoEvents(int ammoPool);
 

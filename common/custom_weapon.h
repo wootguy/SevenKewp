@@ -195,6 +195,8 @@ struct WepEvt {
 	uint16_t hasDelay : 1;
 	uint16_t delay : 16;		// milliseconds before firing the event
 
+	int attackIdx; // attack index which triggered this event (not transferred to clients)
+
 	// event arguments
 	union {
 		struct {
@@ -303,32 +305,37 @@ struct WepEvt {
 
 		// not networked to the client. No bit packing necessary
 		struct {
+			int flags; // FL_WC_PROJ_*
 			float spreadX;
 			float spreadY;
 			bool hasAvel;
 
 			uint8_t type;
-			int world_event; // WeaponCustomProjectileAction
-			int monster_event; // WeaponCustomProjectileAction
-			float speed;
+			WeaponCustomProjectileAction world_event;
+			WeaponCustomProjectileAction monster_event;
+			float speed;			// speed = initial speed of the projectile
 			float life;
-			float elasticity; // percentage of reflected velocity
-			float gravity; // percentage of normal gravity
+			float elasticity;		// percentage of reflected velocity
+			float gravity;			// percentage of normal gravity
 			float air_friction;
 			float water_friction;
-			float size;		  // hull size (all dimensions)
-			float dir[3];
-			string_t entity_class; // custom projectile entity
+			float size;				// hull size (all dimensions)
+			float dir[3];			// dir = Direction of the projectile, relative to the aim direction.
+									//       Coordinates are given as Right, Up, and Forward units.
+									//       Usually you want to set this to straight forward (0 0 1).
+			string_t entity_class;	// custom projectile entity
 			uint16_t model;
-			uint16_t move_snd;
+			string_t move_snd;
+			float damage;
+			int damageBits;
 
-			uint16_t sprite;
-			uint8_t sprite_color[4];
+			string_t sprite;
+			RGBA sprite_color;
 			float sprite_scale;
 
 			float angles[3];
 			float avel[3];
-			float offset[3];
+			float offset[3];	// offset = offset from view position given in: right, forward, up
 			float player_vel_inf[3];
 
 			uint8_t follow_mode;
@@ -336,12 +343,10 @@ struct WepEvt {
 			float follow_angle;
 			float follow_time[3];
 
-			uint16_t trail_spr;
+			string_t trail_spr;
 			int trail_life;
 			int trail_width;
-			uint8_t trail_color[4];
-			float trail_effect_freq;
-			float bounce_effect_delay;
+			RGBA trail_color;
 		} proj;
 
 		// user defined server event
@@ -711,48 +716,17 @@ struct WepEvt {
 		return *this;
 	}
 
-	// offset = offset from view position given in: right, forward, up
-	// speed = initial speed of the projectile
-	// dir = Direction of the projectile, relative to the aim direction.
-	//       Coordinates are given as Right, Up, and Forward units.
-	//       Usually you want to set this to straight forward (0 0 1).
-	WepEvt Projectile(WeaponCustomProjectile type, float speed = 800, float spreadX=0, float spreadY=0, Vector offset=Vector(0,16,0), Vector dir = Vector(0, 0, 1)) {
+	// Fill in WepEvt.proj separately to configure
+	WepEvt Projectile(WeaponCustomProjectile type) {
 		evtType = WC_EVT_PROJECTILE;
 		proj.type = type;
-		*(Vector*)proj.offset = offset;
-		proj.speed = speed;
-		proj.spreadX = spreadX;
-		proj.spreadY = spreadY;
-		*(Vector*)proj.dir = dir;
+		proj.speed = 400;
+		(Vector)proj.dir = Vector(0,0,1);
 		proj.world_event = WC_PROJ_ACT_IMPACT;
 		proj.monster_event = WC_PROJ_ACT_IMPACT;
 		proj.elasticity = 0.8f;
 		proj.size = 0.001f;
 		proj.dir[2] = 1.0f;
-		return *this;
-	}
-
-	WepEvt ProjClass(string_t clazz) {
-		proj.entity_class = clazz;
-		return* this;
-	}
-
-	WepEvt ProjPhysics(float gravity, float elasticity=0.8f, float air_friction=0, float water_friction=0) {
-		proj.gravity = gravity;
-		proj.elasticity = elasticity;
-		proj.air_friction = air_friction;
-		proj.water_friction = water_friction;
-		return *this;
-	}
-
-	WepEvt ProjAvel(Vector avel) {
-		*(Vector*)proj.avel = avel;
-		proj.hasAvel = true;
-		return *this;
-	}
-
-	WepEvt ProjModel(uint16_t modelIdx) {
-		proj.model = modelIdx;
 		return *this;
 	}
 
@@ -896,7 +870,7 @@ struct WeaponCustomReload {
 struct WeaponCustomIdle {
 	uint8_t anim;
 	uint8_t weight;	// chance of selection (prefer 0-100 with all idles adding up to 100)
-	uint16_t time;	// milliseconds before playing another idle animations
+	uint16_t time;	// milliseconds before playing another idle animation
 };
 
 struct WeaponCustomAkimbo {

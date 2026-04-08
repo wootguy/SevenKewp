@@ -645,11 +645,8 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 	}
 }
 
-void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
+void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType, Vector soundOri) {
 	CBaseEntity* baseEmitter = (CBaseEntity*)GET_PRIVATE(emitter);
-	if (!baseEmitter) {
-		return;
-	}
 
 	const char* sample = "";
 	float volume = 1.0f;
@@ -688,6 +685,13 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 		return;
 	}	
 	
+	soundOri = baseEmitter ? baseEmitter->pev->origin : soundOri;
+
+	unsigned char* pas = NULL;
+
+	if (!baseEmitter)
+		pas = ENGINE_SET_PAS((float*)&soundOri);
+
 	uint32_t pbits = 0;
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		edict_t* ent = INDEXENT(i);
@@ -698,9 +702,11 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 			continue;
 		}
 
+		bool inPas = baseEmitter ? baseEmitter->InPAS(ent) : ENGINE_CHECK_VISIBILITY(ent, pas);
+
 		// if listener is in the audible set and too close, don't play the sound.
 		// otherwise, the player may be close, but on the other side of a wall, so they should hear the sound
-		if (baseEmitter->InPAS(ent) && (ent->v.origin - emitter->v.origin).Length() < minRange) {
+		if (inPas && (ent->v.origin - soundOri).Length() < minRange) {
 			continue;
 		}
 
@@ -714,7 +720,7 @@ void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {
 		// randomize pitch per entity, so you get a better idea of how many players/npcs are shooting
 		int pitch = 95 + ((ENTINDEX(emitter) * 7) % 11);
 
-		StartSound((edict_t*)NULL, CHAN_STATIC, sample, volume, attn, SND_FL_GLOBAL, pitch, emitter->v.origin, pbits);
+		StartSound((edict_t*)NULL, CHAN_STATIC, sample, volume, attn, SND_FL_GLOBAL, pitch, soundOri, pbits);
 	}
 }
 

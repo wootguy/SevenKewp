@@ -20,6 +20,7 @@ class CLight;
 class CFuncTank;
 class CEnvWeather;
 class CWeaponCustom;
+class CProjectileCustom;
 class CWeaponBox;
 
 void* GET_PRIVATE(const edict_t* pent);
@@ -270,6 +271,7 @@ public:
 	virtual CLight* MyLightPointer(void) { return NULL; }
 	virtual CEnvWeather* MyWeatherPointer(void) { return NULL; }
 	virtual CWeaponCustom* MyWeaponCustomPtr(void) { return NULL; }
+	virtual CProjectileCustom* MyProjectileCustomPtr(void) { return NULL; }
 	virtual CWeaponBox* MyWeaponBoxPtr(void) { return NULL; }
 	virtual CItem* MyItemPointer(void) { return NULL; }
 	virtual	int		GetToggleState(void) { return TS_AT_TOP; }

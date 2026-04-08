@@ -63,9 +63,12 @@ void CM16::Precache()
 	AddEvent(WepEvt().Secondary()
 		.PlaySound(launchSnd1, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_556, WC_AIVOL_LOUD)
 		.AddSound(launchSnd2));
-	AddEvent(WepEvt().Secondary()
-		.Projectile(WC_PROJECTILE_ARGRENADE, 800)
-		.ProjPhysics(0.5f));
+
+	WepEvt projEvt = WepEvt().Secondary().Projectile(WC_PROJECTILE_ARGRENADE);
+	projEvt.proj.speed = 800;
+	projEvt.proj.gravity = 0.5f;
+
+	AddEvent(projEvt);
 
 	AddEvent(WepEvt().Reload().Delay(300).IdleSound(reloadSnd1));
 	AddEvent(WepEvt().Reload().Delay(1000).IdleSound(reloadSnd2));

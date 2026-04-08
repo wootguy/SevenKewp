@@ -745,7 +745,8 @@ inline void STOP_SOUND(edict_t *entity, int channel, const char *sample)
 }
 
 // conditionally plays a special distant sound clip for very loud sounds that should be heard everywhere
-EXPORT void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType);
+// soundOri is used if emitter is unknown, and is more expensive to use
+EXPORT void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType, Vector soundOri=g_vecZero);
 
 EXPORT void EMIT_SOUND_SUIT(edict_t *entity, const char *sample);
 EXPORT void EMIT_GROUPID_SUIT(edict_t *entity, int isentenceg);

@@ -470,12 +470,16 @@ void CBaseToggle::SentenceStop(void) {}
 void CBasePlayerWeapon::GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount) {}
 
 void CProjectileCustom::Spawn() {}
-void CProjectileCustom::Precache() {}
-int	CProjectileCustom::Classify(void) { return 0; }
+void CProjectileCustom::CustomMove() {}
+void CProjectileCustom::Touch(CBaseEntity* ent) {}
+void CProjectileCustom::CustomTouch(CBaseEntity* ent) {}
+void CProjectileCustom::Bounce(CBaseEntity* ent) {}
+void CProjectileCustom::Attach(CBaseEntity* ent) {}
+void CProjectileCustom::Impact(CBaseEntity* ent) {}
 
 void lagcomp_begin(CBasePlayer* plr) {}
 void lagcomp_end() {}
-void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType) {}
+void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType, Vector soundOri) {}
 
 CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity) { return 0; }
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {}

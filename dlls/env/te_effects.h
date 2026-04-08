@@ -49,6 +49,15 @@ EXPORT void	UTIL_Sprite(const Vector& position, int sprIndex, uint8_t scale, uin
 EXPORT void	UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector& velocity,
 							uint8_t noise, int modelIdx, uint8_t shards, uint8_t duration, uint8_t flags);
 EXPORT void UTIL_SpriteSpray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint8_t speed, uint8_t noise, bool test=false);
+EXPORT void UTIL_SpriteTrail(Vector start, Vector end, int spriteIdx, int count, int life, int scale, int speed, int speedNoise);
+EXPORT void UTIL_Implosion(Vector pos, uint8_t radius, uint8_t count, uint8_t life);
+EXPORT void UTIL_GlowSprite(const Vector& pos, int sprIndex, uint8_t life, uint8_t scale, uint8_t alpha);
+EXPORT void UTIL_QuakeTeleport(const Vector& pos);
+EXPORT void UTIL_QuakeLavaSplash(const Vector& pos);
+EXPORT void UTIL_QuakeExplosion(const Vector& pos);
+EXPORT void UTIL_QuakeExplosion2(const Vector& pos);
+EXPORT void UTIL_QuakeParticleBurst(const Vector& pos, uint8_t radius, uint8_t color, uint8_t life);
+EXPORT void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint16_t count, uint16_t speed, uint16_t speedNoise);
 EXPORT void	UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType);
 EXPORT void UTIL_Tracer(Vector start, Vector end, int msgMode = MSG_PAS, edict_t* targetEnt = NULL);
 EXPORT void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate, uint8_t flags);

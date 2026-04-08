@@ -91,6 +91,10 @@ public:
 		flLen = 1 / flLen;
 		return Vector(x * flLen, y * flLen, z * flLen);
 	}
+	inline Vector Normalize(float len) const
+	{
+		return Normalize() * len;
+	}
 
 	inline Vector2D Make2D ( void ) const
 	{
