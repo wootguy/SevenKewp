@@ -4,6 +4,8 @@
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud_iface.h"
 #include "eng_wrappers.h"
+#include "../common/pmtrace.h"
+#include "../pm_shared/pm_defs.h"
 extern int g_runfuncs;
 extern int g_runningKickbackPred;
 extern int g_last_attack_mode;
@@ -17,6 +19,9 @@ void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTrac
 void EV_LaserOn(const char* dotSprite, float dotSz, const char* beamSprite, float beamWidth);
 void EV_LaserOff();
 void WC_EV_Dlight(WepEvt& evt);
+Vector WC_GetGunPosition();
+Vector WC_GetAim(float spreadX, float spreadY);
+cl_entity_t* WC_GetPlayer();
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 #else
@@ -27,6 +32,15 @@ int g_runfuncs = 1;
 
 int CWeaponCustom::m_tracerCount[32];
 uint32_t CWeaponCustom::m_predDataSent[MAX_WEAPONS];
+TraceResult g_traces[256];
+
+bool WcBeam::isFree() {
+#ifdef CLIENT_DLL
+	return !pBeam || pBeam->die < gEngfuncs.GetClientTime();
+#else
+	return !h_beam;
+#endif
+}
 
 void CWeaponCustom::Spawn() {
 	Precache();
@@ -246,6 +260,7 @@ void CWeaponCustom::Holster(int skiplocal) {
 #ifdef CLIENT_DLL
 	EV_LaserOff();
 #endif
+	KillBeams();
 	m_lastDeploy = WallTime();
 }
 
@@ -387,6 +402,8 @@ void CWeaponCustom::WeaponIdle() {
 
 	m_primaryCalled = false;
 	m_secondaryCalled = false;
+	m_primaryFired = false;
+	m_secondaryFired = false;
 
 	m_lastCanAkimbo = CanAkimbo();
 
@@ -458,12 +475,11 @@ void CWeaponCustom::ItemPostFrame() {
 	if (!m_pPlayer)
 		return;
 
-#ifndef CLIENT_DLL
 	if (m_nextMeleeDecal && m_nextMeleeDecal < gpGlobals->time) {
 		m_nextMeleeDecal = 0;
 		DecalGunshot(&m_meleeDecalPos, BULLET_PLAYER_CROWBAR);
 	}
-#endif
+	UpdateBeams();
 
 	bool reloadFinished = m_fInReload && m_flNextPrimaryAttack <= 0;
 
@@ -574,8 +590,11 @@ void CWeaponCustom::PrimaryAttack() {
 		return;
 	}
 
+	bool isAttackStart = !m_primaryCalled;
+
 	m_waitForNextRunfuncs = false;
 	m_primaryCalled = true;
+	m_primaryFired = false;
 	CustomWeaponShootOpts& opts = params.shootOpts[0];
 
 	if ((opts.flags & FL_WC_SHOOT_NEED_AKIMBO) && !CanAkimbo())
@@ -597,9 +616,12 @@ void CWeaponCustom::PrimaryAttack() {
 		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
 		if (CommonAttack(0, clip, IsAkimbo(), false)) {
+			m_primaryFired = true;
 			int trig = IsPrimaryAltActive() ? WC_TRIG_PRIMARY_ALT : WC_TRIG_PRIMARY;
 
 			if (g_runfuncs) {
+				if (isAttackStart)
+					ProcessEvents(WC_TRIG_PRIMARY_START, 0);
 				ProcessEvents(trig, akimboArg, IsAkimbo(), false, *clip);
 				FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_PRIMARY_CLIP);
 			}
@@ -635,8 +657,11 @@ void CWeaponCustom::SecondaryAttack() {
 	if (m_waitForNextRunfuncs && !g_runfuncs)
 		return;
 
+	bool isAttackStart = !m_secondaryCalled;
+
 	m_waitForNextRunfuncs = false;
 	m_secondaryCalled = true;
+	m_secondaryFired = false;
 
 	CustomWeaponShootOpts& opts = params.shootOpts[1];
 
@@ -659,6 +684,10 @@ void CWeaponCustom::SecondaryAttack() {
 		}
 
 		if (CommonAttack(0, &m_iClip, false, fireBoth)) {
+			m_secondaryFired = true;
+
+			if (isAttackStart)
+				ProcessEvents(WC_TRIG_SECONDARY_START, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth, *clip);
 			ProcessEvents(primaryTrig, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth, *clip);
 			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_PRIMARY_CLIP);
 
@@ -668,6 +697,10 @@ void CWeaponCustom::SecondaryAttack() {
 		
 		m_pPlayer->random_seed++; // so bullets don't hit the same spot (seed only updates once per cmd)
 		if (fireBoth && CommonAttack(0, &m_chargeReady, true, fireBoth)) {
+			m_secondaryFired = true;
+
+			if (isAttackStart)
+				ProcessEvents(WC_TRIG_SECONDARY_START, WC_TRIG_SHOOT_ARG_AKIMBO, true, fireBoth, *clip);
 			ProcessEvents(primaryTrig, WC_TRIG_SHOOT_ARG_AKIMBO, true, fireBoth, *clip);
 
 			if (m_chargeReady < 0)
@@ -688,6 +721,10 @@ void CWeaponCustom::SecondaryAttack() {
 		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
 		if (CommonAttack(1, clip2, false, false)) {
+			m_secondaryFired = true;
+
+			if (isAttackStart)
+				ProcessEvents(WC_TRIG_SECONDARY_START, 0);
 			ProcessEvents(WC_TRIG_SECONDARY, akimboArg, *clip2);
 			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_SECONDARY_RESERVE);
 		}
@@ -755,7 +792,14 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 
 	if (isNormalAttack) {
 		if (clipLeft < opts.ammoCost && (opts.flags & FL_WC_SHOOT_NEED_FULL_COST)) {
-			Reload();
+			if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0)
+				Reload();
+			else {
+				Cooldown(-1, 150);
+				if (!isMelee)
+					PlayEmptySound();
+				FailAttack(attackIdx, leftHand, akimboFire);
+			}
 			return false;
 		}
 
@@ -914,8 +958,22 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 		return;
 
 	bool attackCalled = attackIdx == 0 ? m_primaryCalled : m_secondaryCalled;
-	float& chargeVar = attackIdx == 0 ? m_flChargeStartPrimary : m_flChargeStartSecondary;
+	bool attackFired = attackIdx == 0 ? m_primaryFired : m_secondaryFired;
 
+	// TODO: expensive to do every frame?
+	KillBeams(attackIdx);
+
+	// not a charging attack. Call the stop event.
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+	if (attackFired && !opts.chargeTime) {
+		int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_STOP : WC_TRIG_SECONDARY_STOP;
+		CancelDelayedEvents();
+		ProcessEvents(ievt, 0, false, false);
+		return;
+	}
+
+	float& chargeVar = attackIdx == 0 ? m_flChargeStartPrimary : m_flChargeStartSecondary;
+	
 	if (!attackCalled && chargeVar) {
 		uint16_t cancelMillis = params.shootOpts[0].chargeCancelTime;
 		float cancelTime = chargeVar + cancelMillis * 0.001f;
@@ -945,6 +1003,12 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire) {
 	int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_FAIL : WC_TRIG_SECONDARY_FAIL;
 
 	ProcessEvents(ievt, akimboArg, leftHand, false);
+
+	if (g_runfuncs && KillBeams(attackIdx)) {
+		int ievt2 = attackIdx == 0 ? WC_TRIG_PRIMARY_STOP : WC_TRIG_SECONDARY_STOP;
+		CancelDelayedEvents();
+		ProcessEvents(ievt2, akimboArg, leftHand, false);
+	}
 
 	if (opts.cooldownFail)
 		Cooldown(attackIdx, opts.cooldownFail);
@@ -1191,6 +1255,132 @@ int CWeaponCustom::GetAttackIdx(WepEvt& evt) {
 	}
 }
 
+WcBeam* CWeaponCustom::AllocBeam() {
+	for (int i = 0; i < MAX_WC_BEAMS; i++) {
+		if (m_beams[i].isFree()) {
+			memset(&m_beams[i], 0, sizeof(WcBeam));
+			return &m_beams[i];
+		}
+	}
+
+	ALERT(at_warning, "Exceeded max weapon custom beams (%d)\n", MAX_WC_BEAMS);
+	return NULL;
+}
+
+void CWeaponCustom::UpdateBeams() {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+#ifdef CLIENT_DLL
+	Vector vecSrc = WC_GetGunPosition();
+#else
+	Vector vecSrc = m_pPlayer->GetGunPosition();
+	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+#endif	
+
+	for (int i = 0; i < MAX_WC_BEAMS; i++) {
+		if (m_beams[i].isFree()) {
+			continue;
+		}
+		WcBeam& beam = m_beams[i];
+
+		if (beam.nextAttack && beam.nextAttack < WallTime()) {
+			BeamAttack(beam, m_pPlayer);
+		}
+
+#ifdef CLIENT_DLL
+		Vector vecDir = WC_GetAim(beam.spreadX, beam.spreadY);
+		Vector vecEnd = vecSrc + vecDir * beam.evt.beam.distance;
+
+		pmtrace_t tr;
+		gEngfuncs.pEventAPI->EV_SetTraceHull(2);
+		gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_NORMAL, -1, &tr);
+
+		beam.pBeam->target = tr.endpos;
+#else
+		Vector vecDir = vecAiming + beam.spreadX * gpGlobals->v_right + beam.spreadY * gpGlobals->v_up;
+		Vector vecEnd = vecSrc + vecDir * beam.evt.beam.distance;
+
+		TraceResult tr;
+		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
+
+		CBeam* pbeam = (CBeam*)beam.h_beam.GetEntity();
+		pbeam->SetStartPos(tr.vecEndPos);
+#endif
+	}
+}
+
+bool CWeaponCustom::KillBeams(int attackIdx) {
+	bool anyKilled = false;
+
+	for (int i = 0; i < MAX_WC_BEAMS; i++) {
+		if (m_beams[i].isFree())
+			continue;
+
+		if (attackIdx == -1 || (attackIdx == m_beams[i].attackIdx)) {
+#ifdef CLIENT_DLL
+			m_beams[i].pBeam->die = 0.0f;
+#else
+			UTIL_Remove(m_beams[i].h_beam);
+#endif
+			memset(&m_beams[i], 0, sizeof(WcBeam));
+			anyKilled = true;
+		}
+	}
+
+	return anyKilled;
+}
+
+Vector CWeaponCustom::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
+	Vector spread(SPREAD_TO_FLOAT(beam.evt.beam.spreadX), SPREAD_TO_FLOAT(beam.evt.beam.spreadY), 0);
+	Vector vecSrc = m_pPlayer->GetGunPosition();
+	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+
+	bool isPredicted = IsPredicted();
+	BULLET_PREDICTION predFlag = isPredicted ? BULLETPRED_EVENTLESS : BULLETPRED_NONE;
+
+	lagcomp_begin(m_pPlayer);
+	Vector vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, spread, beam.evt.beam.distance,
+		BULLET_BEAM, 0, beam.evt.beam.damage, m_pPlayer->pev, m_pPlayer->random_seed, g_traces, predFlag);
+	lagcomp_end();
+
+	beam.spreadX = vecDir.x;
+	beam.spreadY = vecDir.y;
+
+#ifdef CLIENT_DLL
+	vecSrc = WC_GetGunPosition();
+	Vector vecEnd = vecSrc + WC_GetAim(beam.spreadX, beam.spreadY) * beam.evt.beam.distance;
+	pmtrace_t tr;
+	gEngfuncs.pEventAPI->EV_SetTraceHull(2);
+	gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_NORMAL, -1, &tr);
+	Vector endPos = tr.endpos;
+#else
+	Vector endPos = g_traces[0].vecEndPos;
+#endif
+
+	int attackIdx = GetAttackIdx(beam.evt);
+	AttackTrace(m_pPlayer, attackIdx, vecSrc, g_traces[0]);
+
+	// make splashes if this isn't an infinite beam
+	if (beam.evt.beam.life != 0) {
+		float splashSize = 0.3f;
+		if (beam.evt.beam.damage > 50) {
+			splashSize = 0.5f;
+		}
+		else if (beam.evt.beam.damage > 8) {
+			splashSize = 0.4f;
+		}
+		//edict_t* skipEnt = m_pPlayer->IsSevenKewpClient() ? m_pPlayer->edict() : NULL;
+		edict_t* skipEnt = NULL;
+		UTIL_WaterSplashTrace(vecSrc, endPos, splashSize, 2, skipEnt);
+	}
+
+	beam.attackIdx = beam.evt.beam.life ? -1 : attackIdx;
+	beam.nextAttack = beam.evt.beam.freq ? WallTime() + beam.evt.beam.freq * 0.001f : 0;
+
+	return endPos;
+}
 
 void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode sendMode) {
 #ifndef CLIENT_DLL
@@ -1375,8 +1565,27 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 
 				uint8_t packedFlags = (evt.bullets.flags << 4) | evt.bullets.flashSz;
 				WRITE_BYTE(packedFlags);
+				break;
 			}
-							   break;
+			case WC_EVT_BEAM: {
+				uint16_t packedFlags = (evt.beam.sprite << 7) | (evt.beam.attachment << 4) | evt.beam.flags;
+				WRITE_SHORT(packedFlags);
+				WRITE_SHORT(evt.beam.life);
+				WRITE_SHORT(evt.beam.spreadX);
+				WRITE_SHORT(evt.beam.spreadY);
+				WRITE_SHORT(evt.beam.damage);
+				WRITE_SHORT(evt.beam.distance);
+				WRITE_SHORT(evt.beam.freq);
+				WRITE_BYTE(evt.beam.id);
+				WRITE_BYTE(evt.beam.width);
+				WRITE_BYTE(evt.beam.noise);
+				WRITE_BYTE(evt.beam.scrollRate);
+				WRITE_BYTE(evt.beam.color.r);
+				WRITE_BYTE(evt.beam.color.g);
+				WRITE_BYTE(evt.beam.color.b);
+				WRITE_BYTE(evt.beam.color.a);
+				break;
+			}
 			case WC_EVT_KICKBACK:
 				WRITE_SHORT(evt.kickback.pushForce);
 				WRITE_BYTE(evt.kickback.back);
@@ -1570,7 +1779,6 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
-	static TraceResult traces[256];
 
 	bool isPredicted = IsPredicted();
 	BULLET_PREDICTION predFlag = isPredicted ? BULLETPRED_EVENTLESS : BULLETPRED_NONE;
@@ -1578,7 +1786,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
 		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
-		m_pPlayer->random_seed, traces, predFlag);
+		m_pPlayer->random_seed, g_traces, predFlag);
 	lagcomp_end();
 
 #ifdef CLIENT_DLL
@@ -1597,7 +1805,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	int attackIdx = GetAttackIdx(evt);
 
 	for (int i = 0; i < evt.bullets.count; i++) {
-		AttackTrace(m_pPlayer, attackIdx, vecSrc, traces[i]);
+		AttackTrace(m_pPlayer, attackIdx, vecSrc, g_traces[i]);
 	}
 
 	if (showTracer) {
@@ -1610,7 +1818,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 			if ((m_pPlayer != listener || !isPredicted) && m_pPlayer->InPAS(listener->edict())) {
 				for (int i = 0; i < evt.bullets.count; i++) {
-					UTIL_Tracer(vecSrc, traces[i].vecEndPos, MSG_ONE_UNRELIABLE, listener->edict());
+					UTIL_Tracer(vecSrc, g_traces[i].vecEndPos, MSG_ONE_UNRELIABLE, listener->edict());
 				}
 			}
 		}
@@ -1619,6 +1827,91 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 	int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 	ProcessEvents(WC_TRIG_BULLET_FIRED, akimboArg, leftHand, akimboFire);
+}
+
+void CWeaponCustom::PlayEvent_Beam(WepEvt& evt, CBasePlayer* m_pPlayer) {
+	WcBeam* wcbeam;
+	if (evt.beam.id == 0)
+		wcbeam = AllocBeam();
+	else
+		wcbeam = &m_beams[V_min(MAX_WC_BEAMS - 1, evt.beam.id)];
+
+	if (!wcbeam)
+		return;
+
+	wcbeam->evt = evt;
+
+	bool newBeam = evt.beam.id == 0 || wcbeam->isFree();
+
+	Vector endPos;
+	if (newBeam) {
+		endPos = BeamAttack(*wcbeam, m_pPlayer);
+	}
+
+#ifdef CLIENT_DLL
+	float life = evt.beam.life ? evt.beam.life * 0.001f : 99999;
+
+	if (newBeam) {
+		// create new beam
+		cl_entity_t* player = WC_GetPlayer();
+		int idx = player->index;
+
+		float r = (evt.beam.color.r / 255.0f);
+		float g = (evt.beam.color.g / 255.0f);
+		float b = (evt.beam.color.b / 255.0f);
+		float a = (evt.beam.color.a / 255.0f);
+
+		BEAM* beam = gEngfuncs.pEfxAPI->R_BeamEntPoint(idx | (0x1000 * evt.beam.attachment),
+			endPos, evt.beam.sprite, life, evt.beam.width / 10.0f, evt.beam.noise / 100.0f, a, evt.beam.scrollRate,
+			0, 0, r, g, b);
+
+		if (evt.beam.flags & FL_WC_BEAM_SPIRAL) beam->flags |= BEAM_FSINE;
+		if (evt.beam.flags & FL_WC_BEAM_OPAQUE) beam->flags |= BEAM_FSOLID;
+		if (evt.beam.flags & FL_WC_BEAM_SHADEIN) beam->flags |= BEAM_FSHADEIN;
+		if (evt.beam.flags & FL_WC_BEAM_SHADEOUT) beam->flags |= BEAM_FSHADEOUT;
+		
+		wcbeam->pBeam = beam;
+		wcbeam->pBeam->die = gEngfuncs.GetClientTime() + life;
+		wcbeam->pBeam->target = endPos;
+	}
+	else {
+		wcbeam->pBeam->die = gEngfuncs.GetClientTime() + life;
+	}
+#else
+	if (newBeam) {
+		// create new beam
+		CBeam* beam = CBeam::BeamCreate(INDEX_MODEL(evt.beam.sprite), evt.beam.width);
+		beam->PointEntInit(endPos, m_pPlayer->entindex());
+		beam->SetEndAttachment(evt.beam.attachment);
+		beam->SetNoise(evt.beam.noise);
+		beam->SetColor(evt.beam.color.r, evt.beam.color.g, evt.beam.color.b);
+		beam->SetBrightness(evt.beam.color.a);
+		beam->SetScrollRate(evt.beam.scrollRate);
+
+		int flags = 0;
+		if (evt.beam.flags & FL_WC_BEAM_SPIRAL) flags |= BEAM_FSINE;
+		if (evt.beam.flags & FL_WC_BEAM_OPAQUE) flags |= BEAM_FSOLID;
+		if (evt.beam.flags & FL_WC_BEAM_SHADEIN) flags |= BEAM_FSHADEIN;
+		if (evt.beam.flags & FL_WC_BEAM_SHADEOUT) flags |= BEAM_FSHADEOUT;
+		beam->SetFlags(flags);
+
+		if (evt.beam.life)
+			beam->LiveForTime(evt.beam.life * 0.1f);
+		beam->m_hidePlayers = PLRBIT(m_pPlayer->edict());
+		wcbeam->h_beam = beam;
+	}
+	else {
+		// update existing beam
+		CBeam* beam = (CBeam*)wcbeam->h_beam.GetEntity();
+		
+		if (evt.beam.life)
+			beam->LiveForTime(evt.beam.life * 0.1f);
+		else {
+			beam->SetThink(NULL);
+			beam->pev->nextthink = 0;
+		}
+	}
+#endif
 }
 
 void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
@@ -2185,6 +2478,9 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 		break;
 	case WC_EVT_BULLETS:
 		PlayEvent_Bullets(evt, m_pPlayer, leftHand, akimboFire);
+		break;
+	case WC_EVT_BEAM:
+		PlayEvent_Beam(evt, m_pPlayer);
 		break;
 	case WC_EVT_PROJECTILE:
 		PlayEvent_Projectile(evt, m_pPlayer);

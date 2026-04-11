@@ -5,11 +5,17 @@
 #include "event_args.h"
 #include "shared_util.h"
 
+#ifdef CLIENT_DLL
+#include "beamdef.h"
+#endif
+
 #define WC_SERVER_EVENT_QUEUE_SZ 32
 
 // number of seconds to delay replaying of events while the prediction code waits for a new state
 // from the server
 #define MAX_PREDICTION_WAIT 0.1f
+
+#define MAX_WC_BEAMS 16
 
 struct WcDelayEvent {
 	int eventIdx;
@@ -28,6 +34,22 @@ enum PredictionDataSendMode {
 	WC_PRED_SEND_WEP,	// only send weapon prediction data
 	WC_PRED_SEND_EVT,	// only send event prediction data
 	WC_PRED_SEND_BOTH	// send weapon and event data
+};
+
+struct WcBeam {
+	int attackIdx; // set to -1 for non-constant beams, else used to kill the beam when a button is released
+	float spreadX;
+	float spreadY;
+	float nextAttack;
+	WepEvt evt;
+
+#ifdef CLIENT_DLL
+	BEAM* pBeam;
+#else
+	EHANDLE h_beam;
+#endif
+
+	bool isFree();
 };
 
 // m_fireState flags
@@ -59,6 +81,7 @@ public:
 	// server-side state
 	TraceResult m_meleeDecalPos;
 	float m_nextMeleeDecal;
+	WcBeam m_beams[MAX_WC_BEAMS];
 
 	// for prediction code, don't spam events/toggles while waiting for the new server state
 	float m_lastZoomToggle;
@@ -71,6 +94,8 @@ public:
 	Vector m_kickbackPredVel;
 	bool m_primaryCalled;
 	bool m_secondaryCalled;
+	bool m_primaryFired;
+	bool m_secondaryFired;
 	bool m_waitForNextRunfuncs; // don't attack until the next g_runfuncs call
 	int m_bulletFireCount; // for odd/even effects (m_iClip is unreliable)
 	bool m_hasPredictionData; // was the client sent a prediction message for this weapon?
@@ -147,6 +172,10 @@ public:
 	inline bool HasPredictionData(edict_t* target) { return m_predDataSent[m_iId] & PLRBIT(target); }
 	bool IsPredicted();
 	int GetAttackIdx(WepEvt& evt); // TODO: store this info in the event
+	WcBeam* AllocBeam();
+	void UpdateBeams();
+	bool KillBeams(int attackIdx=-1); // set attack idx to only kill constant beams attached to an attack button. True if any beams killed
+	Vector BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer);
 
 	void FireAmmoEvents(int ammoPool);
 
@@ -156,6 +185,7 @@ public:
 	void CancelDelayedEvents();
 
 	void PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
+	void PlayEvent_Beam(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_SetGravity(WepEvt& evt, CBasePlayer* m_pPlayer);

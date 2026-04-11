@@ -60,6 +60,11 @@
 #define FL_WC_PUNCH_DUCK 8		// apply punch angles only when ducked
 #define FL_WC_PUNCH_STAND 16	// apply punch angles only while standing
 
+#define FL_WC_BEAM_SPIRAL	1		// render the beam as a spiral (egon effect)
+#define FL_WC_BEAM_OPAQUE	2		// render the beam without transparency
+#define FL_WC_BEAM_SHADEIN	4		// fade the start of the beam
+#define FL_WC_BEAM_SHADEOUT	8		// fade the end of the beam
+
 enum WeaponCustomEventTriggerShootArg {
 	WC_TRIG_SHOOT_ARG_ALWAYS,		// always fire the shoot event
 	WC_TRIG_SHOOT_ARG_AKIMBO,		// only fire the event when in akimbo mode
@@ -81,11 +86,13 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_PRIMARY_CLIPSIZE,	// trigger arg is the clip size to trigger on
 	WC_TRIG_PRIMARY_CLIP_SP,	// trigger arg: WeaponCustomEventTriggerClipSpArg
 	WC_TRIG_PRIMARY_CHARGE,		// triggers when primary fire begins charging
+	WC_TRIG_PRIMARY_START,		// triggers when primary fire key is pressed
 	WC_TRIG_PRIMARY_STOP,		// triggers when primary fire key is released
 	WC_TRIG_PRIMARY_FAIL,		// triggers when primary fire fails (no ammo, underwater, ...)
 	WC_TRIG_SECONDARY_CLIPSIZE, // trigger arg is the clip size to trigger on
 	WC_TRIG_SECONDARY_CLIP_SP,	// trigger arg: WeaponCustomEventTriggerClipSpArg
 	WC_TRIG_SECONDARY_CHARGE,	// triggers when secondary fire begins charging
+	WC_TRIG_SECONDARY_START,	// triggers when secondary fire key is pressed
 	WC_TRIG_SECONDARY_STOP,		// triggers when secondary fire key is released
 	WC_TRIG_SECONDARY_FAIL,		// triggers when secondary fire fails (no ammo, underwater, ...)
 	WC_TRIG_RELOAD,				// triggers when a simple reload begins, or when a shotgun reloads a single shell. Trigger arg: WeaponCustomEventTriggerShootArg
@@ -108,6 +115,7 @@ enum WeaponCustomEventType {
 	WC_EVT_SET_BODY,
 	WC_EVT_WEP_ANIM,
 	WC_EVT_BULLETS,
+	WC_EVT_BEAM,
 	WC_EVT_PROJECTILE,		// for slow-moving projectiles that aren't predicted on the client
 	WC_EVT_KICKBACK,
 	WC_EVT_MUZZLE_FLASH,
@@ -264,6 +272,27 @@ struct WepEvt {
 			uint8_t flashSz : 4;	// WeaponCustomFlashSz
 			uint8_t flags : 4;		// FL_WC_BULLETS_*
 		} bullets;
+
+		struct {
+			uint16_t flags : 4; // FL_WC_BEAM_*
+			uint16_t attachment : 3; // only 0-4 are valid
+			uint16_t sprite : 9;
+
+			uint8_t id : 4;			// ID used to update the beam in future events, for constant beams. 0 = always create a new beam
+			uint8_t reserved : 4;
+			uint16_t life;			// how long to keep the beam active (millis). 0 = forever (egon)
+			uint16_t spreadX;		// accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
+			uint16_t spreadY;		// accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
+			uint16_t damage;		// damage per beam
+			uint16_t distance;		// max beam distance
+			uint16_t freq;			// how often to apply damage (millis). 0 = once per attack.
+
+			uint8_t width;
+			uint8_t noise;
+			uint8_t scrollRate;
+			
+			RGBA color;
+		} beam;
 
 		struct {
 			int16_t pushForce;	// Push force applied to player in opposite direction of aim
@@ -487,6 +516,16 @@ struct WepEvt {
 		return *this;
 	}
 
+	WepEvt PrimaryStart() {
+		this->trigger = WC_TRIG_PRIMARY_START;
+		return *this;
+	}
+
+	WepEvt SecondaryStart() {
+		this->trigger = WC_TRIG_SECONDARY_START;
+		return *this;
+	}
+
 	WepEvt PrimaryFail() {
 		this->trigger = WC_TRIG_PRIMARY_FAIL;
 		return *this;
@@ -696,7 +735,6 @@ struct WepEvt {
 		return *this;
 	}
 
-	// cost = unused
 	WepEvt Bullets(uint8_t count, uint16_t burstDelay, uint16_t damage, float spreadX, float spreadY,
 		uint8_t tracerFreq = 1, uint8_t flashSz=WC_FLASH_NORMAL, uint8_t flags=0) {
 		evtType = WC_EVT_BULLETS;
@@ -708,6 +746,43 @@ struct WepEvt {
 		bullets.tracerFreq = tracerFreq;
 		bullets.flashSz = flashSz;
 		bullets.flags = flags;
+		return *this;
+	}
+
+	// id = used to update this beam in future events. 0 = always create a new beam
+	// life = duration in millis. 0 = constant mode (egon)
+	// flags = FL_WC_BEAM_*
+	WepEvt Beam(uint8_t id, uint16_t life, uint16_t distance = 8192) {
+		evtType = WC_EVT_BEAM;
+		beam.id = id;
+		beam.life = life;
+		beam.distance = distance;
+		beam.color = RGBA(255, 255, 255, 255);
+		beam.width = 16;
+		beam.attachment = 1;
+		return *this;
+	}
+
+	// configure visual appearance of a Beam() event
+	WepEvt BeamStyle(uint16_t sprite, RGBA color=RGBA(255, 255, 255, 255), uint8_t width = 16,
+		uint8_t noise = 0, uint8_t scrollRate = 0, uint8_t attachment=1, uint8_t flags = 0) {
+		beam.sprite = sprite;
+		beam.color = color;
+		beam.width = width;
+		beam.noise = noise;
+		beam.scrollRate = scrollRate;
+		beam.attachment = attachment;
+		beam.flags = flags;
+		return *this;
+	}
+
+	// configure beam accuracy and damage of a Beam() event
+	WepEvt BeamDamage(uint16_t damage, float spreadX, float spreadY, uint16_t freq=0) {
+		evtType = WC_EVT_BEAM;
+		beam.damage = damage;
+		beam.spreadX = FLOAT_TO_SPREAD(spreadX);
+		beam.spreadY = FLOAT_TO_SPREAD(spreadY);
+		beam.freq = freq;
 		return *this;
 	}
 

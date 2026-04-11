@@ -2023,6 +2023,7 @@ void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunsh
 	gEngfuncs.pEventAPI->EV_PlayerTrace(vecSrc, vecEnd, PM_NORMAL, -1, &tr);
 
 	// TODO: tracers do not match the server when quickly moving the mouse or during rapid fire
+	// gEngfuncs.GetViewAngles() is more accurate for beams, so try using that here
 	/*
 	gEngfuncs.Con_Printf("Forward: %.4f %.4f %.4f\n", forward.x, forward.y, forward.z);
 	gEngfuncs.Con_Printf("VecDir: %.4f %.4f %.4f\n", vecDir.x, vecDir.y, vecDir.z);
@@ -2060,7 +2061,6 @@ void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunsh
 	//gEngfuncs.pEventAPI->EV_PopPMStates();
 }
 
-
 void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTracer, bool decal, bool texSound) {
 	for (ULONG iShot = 1; iShot <= evt.bullets.count; iShot++)
 	{
@@ -2078,3 +2078,19 @@ void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTrac
 		EV_MuzzleFlash();
 }
 
+cl_entity_t* WC_GetPlayer() {
+	return GetLocalPlayer();
+}
+
+Vector WC_GetGunPosition() {
+	Vector view_ofs;
+	gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(view_ofs);
+	return gPlayerSim.v_sim_org + view_ofs;
+}
+
+Vector WC_GetAim(float spreadX, float spreadY) {
+	Vector angles, forward, right, up;
+	gEngfuncs.GetViewAngles((float*)angles);
+	AngleVectors(angles, forward, right, up);
+	return forward + spreadX * right + spreadY * up;
+}

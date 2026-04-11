@@ -204,6 +204,8 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_kickbackPredVel = Vector(0,0,0);
 		g_customWeapon[i].m_primaryCalled = 0;
 		g_customWeapon[i].m_secondaryCalled = 0;
+		g_customWeapon[i].m_primaryFired = 0;
+		g_customWeapon[i].m_secondaryFired = 0;
 		g_customWeapon[i].m_waitForNextRunfuncs = 0;
 		g_customWeapon[i].m_bulletFireCount = 0;
 		g_customWeapon[i].m_akimboAnim = 0;
@@ -214,6 +216,7 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].ammoFreqs[1] = 0;
 		g_customWeapon[i].ammoFreqs[2] = 0;
 		g_customWeapon[i].animCount = 0;
+		memset(g_customWeapon[i].m_beams, 0, sizeof(WcBeam) * MAX_WC_BEAMS);
 		g_customWeapon[i].SetAkimbo(false);
 		g_customWeapon[i].SetLaser(false);
 	}

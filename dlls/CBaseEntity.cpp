@@ -1033,7 +1033,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		pevAttacker = pev;  // the default attacker is ourselves
 
 	ClearMultiDamage();
-	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
+	gMultiDamage.type = iBulletType == BULLET_BEAM ? DMG_ENERGYBEAM : (DMG_BULLET | DMG_NEVERGIB);
 
 	iDamage = GetDamage(iDamage);
 	float splashSize = 0.3f;
@@ -1181,11 +1181,14 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 		}
 		// make bullet trails
 		UTIL_BubbleTrail(vecSrc, tr.vecEndPos, (flDistance * tr.flFraction) / 64.0);
-		
-		edict_t* skipEnt = NULL;
-		if (prediction != BULLETPRED_NONE && IsPlayer() && MyPlayerPointer()->IsSevenKewpClient())
-			skipEnt = ENT(pevAttacker);
-		UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, splashSize, iShot % 2 ? 2 : 0, skipEnt);
+
+		if (iBulletType != BULLET_BEAM) {
+			edict_t* skipEnt = NULL;
+			if (prediction != BULLETPRED_NONE && IsPlayer() && MyPlayerPointer()->IsSevenKewpClient())
+				skipEnt = ENT(pevAttacker);
+
+			UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, splashSize, iShot % 2 ? 2 : 0, skipEnt);
+		}
 	}
 	ApplyMultiDamage(pev, pevAttacker);
 

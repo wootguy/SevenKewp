@@ -1099,6 +1099,28 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			evt.bullets.flashSz = packedFlags & 0xf;
 			break;
 		}
+		case WC_EVT_BEAM: {
+			uint16_t packedFlags = READ_SHORT();
+			evt.beam.flags = packedFlags & 0xF;
+			evt.beam.attachment = (packedFlags >> 4) & 0x7;
+			evt.beam.sprite = packedFlags >> 7;
+
+			evt.beam.life = READ_SHORT();
+			evt.beam.spreadX = READ_SHORT();
+			evt.beam.spreadY = READ_SHORT();
+			evt.beam.damage = READ_SHORT();
+			evt.beam.distance = READ_SHORT();
+			evt.beam.freq = READ_SHORT();
+			evt.beam.id = READ_BYTE();
+			evt.beam.width = READ_BYTE();
+			evt.beam.noise = READ_BYTE();
+			evt.beam.scrollRate = READ_BYTE();
+			evt.beam.color.r = READ_BYTE();
+			evt.beam.color.g = READ_BYTE();
+			evt.beam.color.b = READ_BYTE();
+			evt.beam.color.a = READ_BYTE();
+			break;
+		}
 		case WC_EVT_KICKBACK:
 			evt.kickback.pushForce = READ_SHORT();
 			evt.kickback.back = READ_BYTE();
