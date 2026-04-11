@@ -58,12 +58,13 @@ struct WcBeam {
 #define FL_WC_STATE_IS_AKIMBO	(1<<2)	// currently in akimbo mode
 #define FL_WC_STATE_CAN_AKIMBO	(1<<3)	// can enable akimbo mode
 
+// m_inAttack flags
+#define FL_WC_INATTACK_PRIMARY_CALLED 0
+
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:
 	CustomWeaponParams params;
 
-	float m_flChargeStartPrimary; // time weapon started charging for a primary attack (0 = not started)
-	float m_flChargeStartSecondary; // time weapon started charging for a secondary attack (0 = not started)
 	float m_lastBeamUpdate;
 	float m_laserOnTime; // turn laser on after this time
 	bool m_bInAkimboReload;
@@ -89,14 +90,13 @@ public:
 	bool m_lastAltState;
 	float m_lastAltToggle;
 	float m_lastDeploy;
-	float m_lastChargeDown; // lazy fix for chargedown effects playing twice
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
 	Vector m_kickbackPredVel;
+	uint32_t m_chargeStartCmdTime; // CMD time that begun a chargeup
 	bool m_primaryCalled;
 	bool m_secondaryCalled;
 	bool m_primaryFired;
 	bool m_secondaryFired;
-	bool m_waitForNextRunfuncs; // don't attack until the next g_runfuncs call
 	int m_bulletFireCount; // for odd/even effects (m_iClip is unreliable)
 	bool m_hasPredictionData; // was the client sent a prediction message for this weapon?
 
@@ -202,6 +202,12 @@ public:
 	float GetActiveMovespeedMult();
 	float WallTime();
 
+	// Time accumulated in user commands. Synced between the client and server for each user cmd.
+	// Prefer using this over the decrement timers like m_flNextIdleTime because those are buggy and
+	// end up skipping/duplicating events and breaking movement prediction. Not necessary for events
+	// triggered by buttons because button states don't accumulate error like float timers do.
+	uint32_t CmdTime();
+
 	// repurposing these weapon vars so I don't have to network something new to the client
 	BOOL CanAkimbo() { return (m_fireState & FL_WC_STATE_CAN_AKIMBO) != 0; }
 	inline void SetCanAkimbo(bool canAkimbo) { 
@@ -210,6 +216,8 @@ public:
 	BOOL IsAkimbo() { return (m_fireState & FL_WC_STATE_IS_AKIMBO) != 0; }
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);
+	inline int GetChargedState(int attackIdx) { return m_fInAttack; } // TODO: bits per attack type
+	inline void SetChargedState(int attackIdx, int newState) { m_fInAttack = newState; }
 
 	BOOL IsLaserOn() { return (m_fireState & FL_WC_STATE_LASER) != 0; }
 	void SetLaser(bool enable);

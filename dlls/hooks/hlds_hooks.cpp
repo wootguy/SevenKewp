@@ -2253,7 +2253,14 @@ void CmdStart( const edict_t *player, const struct usercmd_s *cmd, unsigned int 
 		UTIL_SetGroupTrace( pl->pev->groupinfo, GROUP_OP_AND );
 	}
 
+	if (random_seed - pl->random_seed >= 1) {
+		pl->m_cmdTime += cmd->msec;
+		if (random_seed - pl->random_seed > 1)
+			ALERT(at_console, "Lost user packet(s)\n");
+	}
+
 	pl->random_seed = random_seed;
+	pl->m_lastCmd = *cmd;
 }
 
 /*

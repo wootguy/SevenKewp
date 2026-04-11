@@ -187,8 +187,6 @@ void InitCustomWeapon(int id) {
 
 void ResetCustomWeaponStates() {
 	for (int i = 0; i < MAX_WEAPONS; i++) {
-		g_customWeapon[i].m_flChargeStartPrimary = 0;
-		g_customWeapon[i].m_flChargeStartSecondary = 0;
 		g_customWeapon[i].m_lastBeamUpdate = 0;
 		g_customWeapon[i].m_bInAkimboReload = 0;
 		g_customWeapon[i].m_bWantAkimboReload = 0;
@@ -199,14 +197,13 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_lastDeploy = 0;
 		g_customWeapon[i].m_laserOnTime = 0;
 		g_customWeapon[i].m_hasPredictionData = false;
-		g_customWeapon[i].m_lastChargeDown = 0;
+		g_customWeapon[i].m_chargeStartCmdTime = 0;
 		g_customWeapon[i].m_runningKickbackPred = 0;
 		g_customWeapon[i].m_kickbackPredVel = Vector(0,0,0);
 		g_customWeapon[i].m_primaryCalled = 0;
 		g_customWeapon[i].m_secondaryCalled = 0;
 		g_customWeapon[i].m_primaryFired = 0;
 		g_customWeapon[i].m_secondaryFired = 0;
-		g_customWeapon[i].m_waitForNextRunfuncs = 0;
 		g_customWeapon[i].m_bulletFireCount = 0;
 		g_customWeapon[i].m_akimboAnim = 0;
 		g_customWeapon[i].m_akimboAnimTime = 0;
@@ -1330,6 +1327,34 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	g_finalstate = NULL;
 }
 
+uint32_t g_cmd_id; // TODO: test what happens at overflow in pred code
+uint32_t g_latest_cmd_id; // ID of the most recent command
+
+#define CMD_TIMER_HIST_SZ 8192
+uint32_t g_cmd_timer_hist[CMD_TIMER_HIST_SZ]; // stores timer value at each cmd
+int g_cmd_timer_idx;
+uint32_t g_cmd_timer; // accumulates time from each new user command
+
+// get the global cmd timer value at the given cmd ID
+uint32_t GetTimeAtCmd(uint32_t cmdId) {
+	if (cmdId >= g_latest_cmd_id) {
+		return g_cmd_timer;
+	}
+
+	int dist = g_latest_cmd_id - cmdId;
+	if (dist >= CMD_TIMER_HIST_SZ) {
+		PRINTF("CMD timer history index %d > %d\n", dist, CMD_TIMER_HIST_SZ);
+		return 0;
+	}
+
+	int idx = g_cmd_timer_idx - dist;
+	if (idx < 0)
+		idx += CMD_TIMER_HIST_SZ;
+
+	return g_cmd_timer_hist[idx];
+}
+
+
 /*
 =====================
 HUD_PostRunCmd
@@ -1341,11 +1366,51 @@ runfuncs is 1 if this is the first time we've predicted this command.  If so, so
 be ignored
 =====================
 */
-void CL_DLLEXPORT HUD_PostRunCmd( struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed )
+void CL_DLLEXPORT HUD_PostRunCmd(struct local_state_s* from, struct local_state_s* to, struct usercmd_s* cmd, int runfuncs, double time, unsigned int random_seed)
 {
-//	RecClPostRunCmd(from, to, cmd, runfuncs, time, random_seed);
+	//	RecClPostRunCmd(from, to, cmd, runfuncs, time, random_seed);
 
 	g_runfuncs = runfuncs;
+	
+	if (g_runfuncs && random_seed > g_latest_cmd_id && cmd) {
+		g_cmd_timer += cmd->msec;
+
+		g_cmd_timer_idx = random_seed % CMD_TIMER_HIST_SZ;
+		g_cmd_timer_hist[g_cmd_timer_idx] = g_cmd_timer;
+	}
+
+	player.m_cmdTime = GetTimeAtCmd(random_seed);
+
+	// random seed increases by 1 for each new command, so this can function as cmd ID
+	g_cmd_id = random_seed;
+	g_latest_cmd_id = V_max(g_latest_cmd_id, random_seed);
+
+	
+	static int replaySeq;
+	static float lastTime;
+	if (time > lastTime)
+		replaySeq++;
+	else {
+		replaySeq = 0;
+	}
+	lastTime = time;
+
+	if (0) {
+		// Set fps_max to 20 for a readable console with this enabled.
+		// This helps debug and understand how predicted/replayed commands work.
+		// msec times don't flucuate but PostRunCmd time does. "to" data feeds into "from" for the next command.
+		bool buttonsPressed = cmd->buttons & (IN_ATTACK | IN_ATTACK2);
+		const float holdtime = 0.2f;
+		static float lastButtons;
+		if (gEngfuncs.GetClientTime() - lastButtons < holdtime || buttonsPressed) {
+			const char* sep = "------------------------------------------------------------\n";
+			int test = from->weapondata[WEAPON_MINIGUN].iuser2;
+			PRINTF("%s> CMD %-5d   MSEC %d   T %f   A %d%s\n", replaySeq == 0 ? sep : "", random_seed,
+				cmd->msec, (float)time, test, g_runfuncs ? "  RUNFUNC" : "");
+			if (buttonsPressed)
+				lastButtons = gEngfuncs.GetClientTime();
+		}
+	}
 
 #if defined( CLIENT_WEAPONS )
 	if ( cl_lw && cl_lw->value )

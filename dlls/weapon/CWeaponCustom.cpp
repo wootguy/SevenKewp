@@ -19,6 +19,7 @@ void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTrac
 void EV_LaserOn(const char* dotSprite, float dotSz, const char* beamSprite, float beamWidth);
 void EV_LaserOff();
 void WC_EV_Dlight(WepEvt& evt);
+uint32_t GetTimeAtCmd(uint32_t cmdId);
 Vector WC_GetGunPosition();
 Vector WC_GetAim(float spreadX, float spreadY);
 cl_entity_t* WC_GetPlayer();
@@ -177,10 +178,9 @@ BOOL CWeaponCustom::Deploy()
 	if (!m_pPlayer)
 		return FALSE;
 
-	m_flChargeStartPrimary = 0;
-	m_flChargeStartSecondary = 0;
+	m_chargeStartCmdTime = 0;
 	m_lastBeamUpdate = 0;
-	m_lastChargeDown = 0;
+	m_fInAttack = 0;
 	m_fInReload = false;
 	m_bInAkimboReload = false;
 	m_fInSpecialReload = 0;
@@ -277,7 +277,7 @@ void CWeaponCustom::Reload() {
 	bool canAkimboReload = IsAkimbo() && GetAkimboClip() < params.maxClip;
 	bool shotgunReload = params.flags & FL_WC_WEP_SHOTGUN_RELOAD;
 
-	if (m_flChargeStartPrimary || m_flChargeStartSecondary)
+	if (m_fInAttack)
 		return;
 	if (m_iClip == -1)
 		return;
@@ -392,14 +392,6 @@ void CWeaponCustom::WeaponIdle() {
 	FinishAttack(0);
 	FinishAttack(1);
 
-	if (m_waitForNextRunfuncs) {
-		if (!g_runfuncs) {
-			return;
-		}
-		m_waitForNextRunfuncs = false;
-		return;
-	}
-
 	m_primaryCalled = false;
 	m_secondaryCalled = false;
 	m_primaryFired = false;
@@ -410,7 +402,7 @@ void CWeaponCustom::WeaponIdle() {
 	if (m_fInReload)
 		return;
 
-	if (m_flChargeStartPrimary || m_flChargeStartSecondary) {
+	if (m_fInAttack) {
 		return;
 	}
 
@@ -586,13 +578,8 @@ void CWeaponCustom::PrimaryAttack() {
 	if (!m_pPlayer)
 		return;
 
-	if (m_waitForNextRunfuncs && !g_runfuncs) {
-		return;
-	}
-
 	bool isAttackStart = !m_primaryCalled;
 
-	m_waitForNextRunfuncs = false;
 	m_primaryCalled = true;
 	m_primaryFired = false;
 	CustomWeaponShootOpts& opts = params.shootOpts[0];
@@ -619,12 +606,10 @@ void CWeaponCustom::PrimaryAttack() {
 			m_primaryFired = true;
 			int trig = IsPrimaryAltActive() ? WC_TRIG_PRIMARY_ALT : WC_TRIG_PRIMARY;
 
-			if (g_runfuncs) {
-				if (isAttackStart)
-					ProcessEvents(WC_TRIG_PRIMARY_START, 0);
-				ProcessEvents(trig, akimboArg, IsAkimbo(), false, *clip);
-				FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_PRIMARY_CLIP);
-			}
+			if (isAttackStart)
+				ProcessEvents(WC_TRIG_PRIMARY_START, 0);
+			ProcessEvents(trig, akimboArg, IsAkimbo(), false, *clip);
+			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_PRIMARY_CLIP);
 
 			if (*clip < 0)
 				*clip = 0;
@@ -654,12 +639,8 @@ void CWeaponCustom::SecondaryAttack() {
 		return;
 	}
 
-	if (m_waitForNextRunfuncs && !g_runfuncs)
-		return;
-
 	bool isAttackStart = !m_secondaryCalled;
 
-	m_waitForNextRunfuncs = false;
 	m_secondaryCalled = true;
 	m_secondaryFired = false;
 
@@ -863,7 +844,7 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	}
 
 	if (opts.flags & FL_WC_SHOOT_CHARGEUP_ONCE) {
-		// force a cooldown after firing once
+		// don't stay charged up in once mode
 		Chargedown(attackIdx);
 	}
 
@@ -910,24 +891,33 @@ bool CWeaponCustom::Chargeup(int attackIdx, bool leftHand, bool akimboFire) {
 	if (!opts.chargeTime)
 		return true;
 
-	if (gpGlobals->time - m_lastChargeDown < 0.01f) {
-		return false;
-	}
-
 	if (params.flags & FL_WC_WEP_LINK_CHARGEUPS) {
 		attackIdx = 0;
 	}
 
-	float& chargeStart = attackIdx == 0 ? m_flChargeStartPrimary : m_flChargeStartSecondary;
-
-	if (!chargeStart) {
-		chargeStart = gpGlobals->time;
+	if (m_fInAttack == 0) {
+		m_chargeStartCmdTime = CmdTime();
+		m_fInAttack = attackIdx+1;
 		int e = (attackIdx == 0) ? WC_TRIG_PRIMARY_CHARGE : WC_TRIG_SECONDARY_CHARGE;
 		ProcessEvents(e, 0, leftHand, akimboFire);
 		m_pPlayer->ApplyEffects();
 	}
 
-	return gpGlobals->time - chargeStart > opts.chargeTime * 0.001f;
+	uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
+	bool isChargedUp = chargeMillis >= opts.chargeTime;
+
+	//PRINTF("CHARGING %d: %d%s\n", m_pPlayer->random_seed, chargeMillis, isChargedUp ? " (DONE)" : "");
+	//ALERT(at_console, "CHARGING %d: %d%s\n", m_pPlayer->random_seed, chargeMillis, isChargedUp ? " (DONE)" : "");
+
+	if (isChargedUp) {
+#ifdef CLIENT_DLL
+		PRINTF("Chargeup CMD %d\n", m_pPlayer->random_seed);
+#else
+		ALERT(at_console, "Chargeup CMD %d\n", m_pPlayer->random_seed);
+#endif
+	}
+
+	return isChargedUp;
 }
 
 void CWeaponCustom::Chargedown(int attackIdx) {
@@ -936,12 +926,19 @@ void CWeaponCustom::Chargedown(int attackIdx) {
 		return;
 
 	int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_STOP : WC_TRIG_SECONDARY_STOP;
-	m_flChargeStartPrimary = m_flChargeStartSecondary = 0;
-	m_waitForNextRunfuncs = true;
+
+	//PRINTF("Charging down... %d\n", g_runfuncs);
+
 	CancelDelayedEvents();
 	ProcessEvents(ievt, 0, false, false);
+
+	// prevent idling immediately after chargedown in case an animation needs to play
+	// otherwise the prediction code will idle before the server syncs the new idle delay
+	m_flTimeWeaponIdle = V_max(m_flTimeWeaponIdle, 0.5f);
+
+	m_fInAttack = 0;
+
 	m_pPlayer->ApplyEffects();
-	m_lastChargeDown = gpGlobals->time;
 }
 
 void CWeaponCustom::FinishAttack(int attackIdx) {
@@ -949,15 +946,10 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 		attackIdx = 0;
 	}
 
-	if (!g_runfuncs) {
-		return;
-	}
-
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
 
-	bool attackCalled = attackIdx == 0 ? m_primaryCalled : m_secondaryCalled;
 	bool attackFired = attackIdx == 0 ? m_primaryFired : m_secondaryFired;
 
 	// TODO: expensive to do every frame?
@@ -971,28 +963,32 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 		ProcessEvents(ievt, 0, false, false);
 		return;
 	}
-
-	float& chargeVar = attackIdx == 0 ? m_flChargeStartPrimary : m_flChargeStartSecondary;
 	
-	if (!attackCalled && chargeVar) {
-		uint16_t cancelMillis = params.shootOpts[0].chargeCancelTime;
-		float cancelTime = chargeVar + cancelMillis * 0.001f;
+	if (attackIdx != m_fInAttack-1) {
+		return;
+	}
 
-		if (!cancelMillis || gpGlobals->time > cancelTime) {
-			CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+	uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
+	uint32_t cancelMillis = params.shootOpts[attackIdx].chargeCancelTime;
+	bool isChargedEnough = chargeMillis >= cancelMillis;
 
-			if (opts.flags & FL_WC_SHOOT_CHARGEUP_ONCE) {
-				// fire a single shot every chargeup, then cooldown
-				if (attackIdx == 0) {
-					PrimaryAttack();
-				}
-				else {
-					SecondaryAttack();
-				}
+	if (!cancelMillis || isChargedEnough) {
+		CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+
+		if (opts.flags & FL_WC_SHOOT_CHARGEUP_ONCE) {
+			//m_skipNextChargeup = true;
+
+			// fire a single shot every chargeup, then cooldown
+			if (attackIdx == 0) {
+				PrimaryAttack();
 			}
-
-			Chargedown(attackIdx);
+			else {
+				SecondaryAttack();
+			}
 		}
+
+		//PRINTF("Finish attack chargedown %d\n", g_runfuncs);
+		Chargedown(attackIdx);
 	}
 }
 
@@ -1130,6 +1126,11 @@ bool CWeaponCustom::MeleeIsFlesh(CBaseEntity* pEntity) {
 }
 
 void CWeaponCustom::KickbackPrediction() {
+	if (m_fInAttack)
+		return; // prevent extra kickback from the prediction system re-running commands
+
+	// If prediction is broken and you see prediction sending you crazy far and snapping back
+	// then it means cooldowns aren't working and kickback is stacking on replayed commands.
 #ifdef CLIENT_DLL
 	if (m_runningKickbackPred) {
 		g_runningKickbackPred = 1;
@@ -1277,17 +1278,30 @@ void CWeaponCustom::UpdateBeams() {
 #else
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
-#endif	
+#endif
 
 	for (int i = 0; i < MAX_WC_BEAMS; i++) {
 		if (m_beams[i].isFree()) {
 			continue;
 		}
 		WcBeam& beam = m_beams[i];
+		bool isConstantBeam = beam.evt.beam.life == 0;
 
 		if (beam.nextAttack && beam.nextAttack < WallTime()) {
-			BeamAttack(beam, m_pPlayer);
+			Vector attackPos = BeamAttack(beam, m_pPlayer);
+
+			if (!isConstantBeam) {
+#ifdef CLIENT_DLL
+				beam.pBeam->target = attackPos;
+#else
+				CBeam* pbeam = (CBeam*)beam.h_beam.GetEntity();
+				pbeam->SetStartPos(attackPos);
+#endif
+			}
 		}
+
+		if (!isConstantBeam)
+			continue;
 
 #ifdef CLIENT_DLL
 		Vector vecDir = WC_GetAim(beam.spreadX, beam.spreadY);
@@ -1371,13 +1385,12 @@ Vector CWeaponCustom::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 		else if (beam.evt.beam.damage > 8) {
 			splashSize = 0.4f;
 		}
-		//edict_t* skipEnt = m_pPlayer->IsSevenKewpClient() ? m_pPlayer->edict() : NULL;
-		edict_t* skipEnt = NULL;
+		edict_t* skipEnt = m_pPlayer->IsSevenKewpClient() ? m_pPlayer->edict() : NULL;
 		UTIL_WaterSplashTrace(vecSrc, endPos, splashSize, 2, skipEnt);
 	}
 
 	beam.attackIdx = beam.evt.beam.life ? -1 : attackIdx;
-	beam.nextAttack = beam.evt.beam.freq ? WallTime() + beam.evt.beam.freq * 0.001f : 0;
+	beam.nextAttack = !beam.evt.beam.life ? WallTime() + beam.evt.beam.freq * 0.001f : 0;
 
 	return endPos;
 }
@@ -1896,7 +1909,7 @@ void CWeaponCustom::PlayEvent_Beam(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		beam->SetFlags(flags);
 
 		if (evt.beam.life)
-			beam->LiveForTime(evt.beam.life * 0.1f);
+			beam->LiveForTime(evt.beam.life * 0.001f);
 		beam->m_hidePlayers = PLRBIT(m_pPlayer->edict());
 		wcbeam->h_beam = beam;
 	}
@@ -2549,6 +2562,9 @@ void CWeaponCustom::PlayDelayedEvents() {
 }
 
 void CWeaponCustom::CancelDelayedEvents() {
+	if (!g_runfuncs)
+		return;
+
 	for (int i = 0; i < WC_SERVER_EVENT_QUEUE_SZ; i++) {
 		WcDelayEvent& qevt = eventQueue[i];
 		qevt.fireTime = 0;
@@ -2569,10 +2585,10 @@ float CWeaponCustom::GetActiveMovespeedMult() {
 	// can work. PM_Move() is constantly repeating a small section of time and maxspeed changes affect
 	// all steps of that time window instead of just after the point it changed.
 
-	if (m_flChargeStartPrimary) {
+	if (m_fInAttack == 1) {
 		return MOVESPEED_MULT_TO_FLOAT(params.shootOpts[0].chargeMoveSpeedMult);
 	}
-	if (m_flChargeStartSecondary) {
+	if (m_fInAttack == 2) {
 		return MOVESPEED_MULT_TO_FLOAT(params.shootOpts[1].chargeMoveSpeedMult);
 	}
 
@@ -2585,6 +2601,14 @@ float CWeaponCustom::WallTime() {
 #else
 	return g_engfuncs.pfnTime();
 #endif
+}
+
+uint32_t CWeaponCustom::CmdTime() {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
+	return m_pPlayer->m_cmdTime;
 }
 
 void CWeaponCustom::SetAkimbo(bool akimbo) {

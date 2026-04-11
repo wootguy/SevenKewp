@@ -19,6 +19,7 @@
 #include "pm_materials.h"
 #include "monster/CBaseMonster.h"
 #include "animation.h"
+#include "usercmd.h"
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
@@ -346,6 +347,9 @@ public:
 	uint16_t m_lastTagMaxHp;
 	uint16_t m_lastTagArmor;
 	uint8_t m_lastTagObserver;
+
+	usercmd_t m_lastCmd;
+	uint32_t m_cmdTime; // time accumulated from user commands, syncronized with the client
 
 	virtual void Spawn( void );
 
