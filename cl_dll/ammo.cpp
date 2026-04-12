@@ -986,10 +986,19 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		opts.ammoPool = READ_BYTE();
 		opts.cooldown = READ_SHORT();
 		opts.cooldownFail = READ_SHORT();
-		opts.chargeTime = READ_SHORT();
-		opts.chargeCancelTime = READ_SHORT();
 		opts.accuracyX = READ_SHORT();
 		opts.accuracyY = READ_SHORT();
+
+		uint8_t packedFlags = READ_BYTE();
+		opts.chargeMode = packedFlags >> 4;
+		opts.chargeAmmoMode = (packedFlags >> 2) & 0x3;
+		opts.overchargeMode = packedFlags & 0x3;
+		if (opts.chargeMode != WC_CHARGEUP_NONE) {
+			opts.chargeFlags = READ_BYTE();
+			opts.chargeTime = READ_SHORT();
+			opts.overchargeTime = READ_SHORT();
+			opts.chargeCancelTime = READ_SHORT();
+		}
 	}
 
 	return 1;
@@ -1033,9 +1042,10 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 		}
 		case WC_EVT_PLAY_SOUND: {
 			uint16_t packedFlags = READ_SHORT();
-			evt.playSound.sound = packedFlags >> 5;
-			evt.playSound.channel = (packedFlags >> 2) & 0x7;
-			evt.playSound.aiVol = (packedFlags >> 0) & 0x3;
+			evt.playSound.sound = packedFlags >> 7;
+			evt.playSound.channel = (packedFlags >> 4) & 0x7;
+			evt.playSound.aiVol = (packedFlags >> 2) & 0x3;
+			evt.playSound.flags = (packedFlags >> 0) & 0x3;
 			evt.playSound.volume = READ_BYTE();
 			evt.playSound.attn = READ_BYTE();
 			evt.playSound.pitchMin = READ_BYTE();

@@ -11,7 +11,7 @@ extern int g_runningKickbackPred;
 extern int g_last_attack_mode;
 extern Vector g_vApplyVel;
 void UpdateZoomCrosshair(int id, bool zoom);
-void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning);
+void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags);
 void WC_EV_EjectShell(WepEvt& evt, bool leftHand);
 void WC_EV_PunchAngle(WepEvt& evt, int seed);
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
@@ -39,7 +39,7 @@ bool WcBeam::isFree() {
 #ifdef CLIENT_DLL
 	return !pBeam || pBeam->die < gEngfuncs.GetClientTime();
 #else
-	return !h_beam;
+	return !h_beam.GetEntity();
 #endif
 }
 
@@ -180,12 +180,13 @@ BOOL CWeaponCustom::Deploy()
 
 	m_chargeStartCmdTime = 0;
 	m_lastBeamUpdate = 0;
-	m_fInAttack = 0;
 	m_fInReload = false;
 	m_bInAkimboReload = false;
 	m_fInSpecialReload = 0;
+	m_chargeSoundEvt = 0;
 	animCount = 0;
 	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
+	ClearChargedStates();
 	int ret = TRUE;
 
 	m_pPlayer->SetThirdPersonWeaponAnim(0);
@@ -277,7 +278,7 @@ void CWeaponCustom::Reload() {
 	bool canAkimboReload = IsAkimbo() && GetAkimboClip() < params.maxClip;
 	bool shotgunReload = params.flags & FL_WC_WEP_SHOTGUN_RELOAD;
 
-	if (m_fInAttack)
+	if (AreAnyAttacksCharging())
 		return;
 	if (m_iClip == -1)
 		return;
@@ -402,7 +403,7 @@ void CWeaponCustom::WeaponIdle() {
 	if (m_fInReload)
 		return;
 
-	if (m_fInAttack) {
+	if (AreAnyAttacksCharging()) {
 		return;
 	}
 
@@ -573,6 +574,44 @@ const char* CWeaponCustom::GetModelW() {
 	return CBasePlayerWeapon::GetModelW();
 }
 
+int* CWeaponCustom::GetAttackClip(int attackIdx) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return &m_iClip;
+
+	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+
+	static int nullclip;
+	int* clip = &nullclip;
+
+	if (attackIdx == 0) {
+		clip = IsAkimbo() ? &m_chargeReady : &m_iClip;
+
+		if (m_iClip == -1 && m_iPrimaryAmmoType != -1)
+			clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
+	}
+	if (attackIdx == 1) {
+		if (IsAkimbo()) {
+			clip = &m_iClip;
+
+			if (m_iClip == -1 && m_iPrimaryAmmoType != -1)
+				clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
+		}
+		else {
+			clip = m_iSecondaryAmmoType >= 0 ? &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] : &nullclip;
+		}
+	}
+
+	switch (opts.ammoPool) {
+	case WC_AMMOPOOL_PRIMARY_CLIP: clip = &m_iClip; break;
+	case WC_AMMOPOOL_PRIMARY_RESERVE: clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]; break;
+	case WC_AMMOPOOL_SECONDARY_RESERVE: clip = &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]; break;
+	default: break;
+	}
+
+	return clip;
+}
+
 void CWeaponCustom::PrimaryAttack() {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
@@ -588,18 +627,7 @@ void CWeaponCustom::PrimaryAttack() {
 		return;
 
 	if (params.flags & FL_WC_WEP_HAS_PRIMARY) {
-		int* clip = IsAkimbo() ? &m_chargeReady : &m_iClip;
-
-		if (m_iClip == -1 && m_iPrimaryAmmoType != -1)
-			clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
-
-		switch (opts.ammoPool) {
-			case WC_AMMOPOOL_PRIMARY_CLIP: clip = &m_iClip; break;
-			case WC_AMMOPOOL_PRIMARY_RESERVE: clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]; break;
-			case WC_AMMOPOOL_SECONDARY_RESERVE: clip = &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]; break;
-			default: break;
-		}
-
+		int* clip = GetAttackClip(0);
 		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
 		if (CommonAttack(0, clip, IsAkimbo(), false)) {
@@ -651,18 +679,8 @@ void CWeaponCustom::SecondaryAttack() {
 
 	if (IsAkimbo()) {
 		bool fireBoth = (m_pPlayer->pev->button & IN_ATTACK) && GetAkimboClip() >= params.shootOpts[0].ammoCost;
-		int* clip = &m_iClip;
+		int* clip = GetAttackClip(0);
 		int primaryTrig = IsPrimaryAltActive() ? WC_TRIG_PRIMARY_ALT : WC_TRIG_PRIMARY;
-
-		if (m_iClip == -1 && m_iPrimaryAmmoType != -1)
-			clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
-
-		switch (opts.ammoPool) {
-		case WC_AMMOPOOL_PRIMARY_CLIP: clip = &m_iClip; break;
-		case WC_AMMOPOOL_PRIMARY_RESERVE: clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]; break;
-		case WC_AMMOPOOL_SECONDARY_RESERVE: clip = &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]; break;
-		default: break;
-		}
 
 		if (CommonAttack(0, &m_iClip, false, fireBoth)) {
 			m_secondaryFired = true;
@@ -689,24 +707,15 @@ void CWeaponCustom::SecondaryAttack() {
 		}
 	}
 	else if (params.flags & FL_WC_WEP_HAS_SECONDARY) {
-		static int nullclip;
-		int* clip2 = m_iSecondaryAmmoType >= 0 ? &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] : &nullclip;
-		
-		switch (opts.ammoPool) {
-		case WC_AMMOPOOL_PRIMARY_CLIP: clip2 = &m_iClip; break;
-		case WC_AMMOPOOL_PRIMARY_RESERVE: clip2 = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]; break;
-		case WC_AMMOPOOL_SECONDARY_RESERVE: clip2 = &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]; break;
-		default: break;
-		}
-		
+		int* clip = GetAttackClip(1);
 		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
-		if (CommonAttack(1, clip2, false, false)) {
+		if (CommonAttack(1, clip, false, false)) {
 			m_secondaryFired = true;
 
 			if (isAttackStart)
 				ProcessEvents(WC_TRIG_SECONDARY_START, 0);
-			ProcessEvents(WC_TRIG_SECONDARY, akimboArg, *clip2);
+			ProcessEvents(WC_TRIG_SECONDARY, akimboArg, *clip);
 			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_SECONDARY_RESERVE);
 		}
 	}
@@ -725,15 +734,7 @@ void CWeaponCustom::TertiaryAttack() {
 		return;
 
 	if (params.flags & FL_WC_WEP_HAS_TERTIARY) {
-		int tclip = 0;
-		int* clip = &tclip;
-
-		switch (opts.ammoPool) {
-		case WC_AMMOPOOL_PRIMARY_CLIP: clip = &m_iClip; break;
-		case WC_AMMOPOOL_PRIMARY_RESERVE: clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]; break;
-		case WC_AMMOPOOL_SECONDARY_RESERVE: clip = &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]; break;
-		default: break;
-		}
+		int* clip = GetAttackClip(2);
 
 		if (CommonAttack(2, clip, false, false)) {
 			int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
@@ -768,46 +769,52 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 
 	m_bWantAkimboReload = false;
 
-	if (!Chargeup(attackIdx, leftHand, akimboFire))
+	if (isNormalAttack && m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD && !(opts.flags & FL_WC_SHOOT_UNDERWATER)) {
+		FailAttack(attackIdx, leftHand, akimboFire, true);
+		return false;
+	}
+
+	bool forceFireChargedShot = GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING;
+	bool ammoSpendsDuringCharge = opts.chargeTime > 0 && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD;
+	if (!forceFireChargedShot && ammoSpendsDuringCharge && clipLeft <= 0 && opts.ammoCost > 0) {
+		if (!m_fInReload) {
+			FailAttack(attackIdx, leftHand, akimboFire, true);
+		}
+		return false;
+	}
+
+	if (!Chargeup(attackIdx, clip, leftHand, akimboFire))
 		return false;
 
-	if (isNormalAttack) {
-		if (clipLeft < opts.ammoCost && (opts.flags & FL_WC_SHOOT_NEED_FULL_COST)) {
-			if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0)
+	if (isNormalAttack && !forceFireChargedShot) {
+		bool needFullCost = opts.flags & FL_WC_SHOOT_NEED_FULL_COST;
+		
+		if (clipLeft < opts.ammoCost && needFullCost && !ammoSpendsDuringCharge) {
+			if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 && m_iClip != -1)
 				Reload();
 			else {
-				Cooldown(-1, 150);
-				if (!isMelee)
-					PlayEmptySound();
-				FailAttack(attackIdx, leftHand, akimboFire);
+				FailAttack(attackIdx, leftHand, akimboFire, true);
 			}
 			return false;
 		}
 
 		if (clipLeft <= 0 && opts.ammoCost > 0) {
 			if (!m_fInReload) {
-				Cooldown(-1, 150);
-				if (!isMelee)
-					PlayEmptySound();
-				FailAttack(attackIdx, leftHand, akimboFire);
+				FailAttack(attackIdx, leftHand, akimboFire, true);
 			}
-			return false;
-		}
-
-		if (m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD && !(opts.flags & FL_WC_SHOOT_UNDERWATER)) {
-			Cooldown(-1, 150);
-			if (!isMelee)
-				PlayEmptySound();
-			FailAttack(attackIdx, leftHand, akimboFire);
 			return false;
 		}
 	}
 
-	if (ammoFreqs[attackIdx]++ >= opts.ammoFreq) {
-		ammoFreqs[attackIdx] = 0;
+	bool ammoSpentInChargeup = opts.chargeTime && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD;
 
-		// must be here for prediction. Cannot be modified in an event or filtered by g_runfuncs=1.
-		*clip -= opts.ammoCost;
+	if (!ammoSpentInChargeup) {
+		if (ammoFreqs[attackIdx]++ >= opts.ammoFreq) {
+			ammoFreqs[attackIdx] = 0;
+
+			// must be here for prediction. Cannot be modified in an event or filtered by g_runfuncs=1.
+			*clip -= opts.ammoCost;
+		}
 	}
 
 	int ammoIdx = attackIdx == 0 ? m_iPrimaryAmmoType : m_iSecondaryAmmoType;
@@ -843,7 +850,8 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	default: break;
 	}
 
-	if (opts.flags & FL_WC_SHOOT_CHARGEUP_ONCE) {
+	if (opts.chargeMode == WC_CHARGEUP_SINGLE || opts.chargeMode == WC_CHARGEUP_HOLD
+		|| opts.chargeMode == WC_CHARGEUP_SINGLE_HOLD) {
 		// don't stay charged up in once mode
 		Chargedown(attackIdx);
 	}
@@ -881,7 +889,27 @@ void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 		m_flTimeWeaponIdle = nextAttack + 1.0f;
 }
 
-bool CWeaponCustom::Chargeup(int attackIdx, bool leftHand, bool akimboFire) {
+float CWeaponCustom::GetChargeMult(WepEvt& evt, int flagMask) {
+	int attackIdx = GetAttackIdx(evt);
+	if (params.flags & FL_WC_WEP_LINK_CHARGEUPS) {
+		attackIdx = 0;
+	}
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+
+	if (!opts.chargeTime)
+		return 1.0f;
+
+	if (!(opts.chargeFlags & flagMask))
+		return 1.0f;
+
+	uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
+	return V_min(chargeMillis / (float)opts.chargeTime, 1.0f);
+}
+
+bool CWeaponCustom::Chargeup(int attackIdx, int* clip, bool leftHand, bool akimboFire) {
+	if (GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING)
+		return true;
+	
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 
 	CBasePlayer* m_pPlayer = GetPlayer();
@@ -895,29 +923,76 @@ bool CWeaponCustom::Chargeup(int attackIdx, bool leftHand, bool akimboFire) {
 		attackIdx = 0;
 	}
 
-	if (m_fInAttack == 0) {
+	if (GetChargedState(attackIdx) == WC_CHARGE_STATE_NONE) {
 		m_chargeStartCmdTime = CmdTime();
-		m_fInAttack = attackIdx+1;
+		m_chargeStartClip = *clip;
+		SetChargedState(attackIdx, WC_CHARGE_STATE_CHARGING);
 		int e = (attackIdx == 0) ? WC_TRIG_PRIMARY_CHARGE : WC_TRIG_SECONDARY_CHARGE;
 		ProcessEvents(e, 0, leftHand, akimboFire);
 		m_pPlayer->ApplyEffects();
 	}
 
 	uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
-	bool isChargedUp = chargeMillis >= opts.chargeTime;
+	float t = V_min(chargeMillis / (float)opts.chargeTime, 1.0f);
 
-	//PRINTF("CHARGING %d: %d%s\n", m_pPlayer->random_seed, chargeMillis, isChargedUp ? " (DONE)" : "");
-	//ALERT(at_console, "CHARGING %d: %d%s\n", m_pPlayer->random_seed, chargeMillis, isChargedUp ? " (DONE)" : "");
+	if (opts.ammoCost && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD) {
+		int cost = V_max(1, (t * opts.ammoCost) + 0.5f);
+		*clip = V_max(0, m_chargeStartClip - cost);
 
-	if (isChargedUp) {
+		if (*clip == 0) {
+			SetChargedState(attackIdx, WC_CHARGE_STATE_DISCHARGING);
+			return true;
+		}
+	}
+
+	if (m_chargeSoundEvt) {
+		WepEvt& evt = params.events[clamp(m_chargeSoundEvt, 0, MAX_WC_EVENTS-1)];
+		int channel = evt.playSound.channel;
+		int soundIdx = evt.playSound.sound;
+		
+		int pitchRange = evt.playSound.pitchMax - evt.playSound.pitchMin;
+		
+		int pitch = evt.playSound.pitchMin + pitchRange*t;
+
 #ifdef CLIENT_DLL
-		PRINTF("Chargeup CMD %d\n", m_pPlayer->random_seed);
+		WC_EV_LocalSound(evt, soundIdx, channel, pitch, 1, ATTN_NORM, 0, SND_CHANGE_PITCH);
 #else
-		ALERT(at_console, "Chargeup CMD %d\n", m_pPlayer->random_seed);
+		if (IsPredicted()) {
+			uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
+			StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(soundIdx), 1, ATTN_NORM,
+				SND_FL_PREDICTED | SND_CHANGE_PITCH, pitch, m_pPlayer->pev->origin, messageTargets);
+		}
+		else {
+			StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(soundIdx), 1, ATTN_NORM,
+				SND_CHANGE_PITCH, pitch, m_pPlayer->pev->origin, 0xffffffff);
+		}
 #endif
 	}
 
-	return isChargedUp;
+	if (opts.overchargeTime && chargeMillis >= opts.overchargeTime) {
+		if (opts.overchargeMode == WC_OVERCHARGE_CANCEL) {
+			FailAttack(attackIdx, leftHand, akimboFire, false);
+		}
+		
+		int chargeState = GetChargedState(attackIdx);
+		if (chargeState != WC_CHARGE_STATE_OVERCHARGED) {
+			int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
+			int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_OVERCHARGE : WC_TRIG_SECONDARY_OVERCHARGE;
+			ProcessEvents(ievt, akimboArg, leftHand, false);
+			SetChargedState(attackIdx, WC_CHARGE_STATE_OVERCHARGED);
+		}
+
+		if (opts.overchargeMode == WC_OVERCHARGE_CANCEL) {
+			SetChargedState(attackIdx, WC_CHARGE_STATE_NONE);
+			return false;
+		}
+	}
+
+	if (opts.chargeMode == WC_CHARGEUP_HOLD) {
+		return false; // wait for attack button to be released. Attack will start during idle.
+	}
+
+	return chargeMillis >= opts.chargeTime;
 }
 
 void CWeaponCustom::Chargedown(int attackIdx) {
@@ -929,14 +1004,15 @@ void CWeaponCustom::Chargedown(int attackIdx) {
 
 	//PRINTF("Charging down... %d\n", g_runfuncs);
 
-	CancelDelayedEvents();
+	CancelDelayedEvents(attackIdx == 0 ? WC_TRIG_PRIMARY_CHARGE : WC_TRIG_SECONDARY_CHARGE);
 	ProcessEvents(ievt, 0, false, false);
 
 	// prevent idling immediately after chargedown in case an animation needs to play
 	// otherwise the prediction code will idle before the server syncs the new idle delay
 	m_flTimeWeaponIdle = V_max(m_flTimeWeaponIdle, 0.5f);
 
-	m_fInAttack = 0;
+	SetChargedState(attackIdx, WC_CHARGE_STATE_NONE);
+	m_chargeSoundEvt = 0;
 
 	m_pPlayer->ApplyEffects();
 }
@@ -950,21 +1026,23 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 	if (!m_pPlayer)
 		return;
 
+	bool attackCalled = attackIdx == 0 ? m_primaryCalled : m_secondaryCalled;
 	bool attackFired = attackIdx == 0 ? m_primaryFired : m_secondaryFired;
 
-	// TODO: expensive to do every frame?
-	KillBeams(attackIdx);
+	if (m_primaryFired && g_runfuncs) {
+		KillBeams(attackIdx);
+	}
 
 	// not a charging attack. Call the stop event.
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 	if (attackFired && !opts.chargeTime) {
 		int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_STOP : WC_TRIG_SECONDARY_STOP;
-		CancelDelayedEvents();
+		CancelDelayedEvents(attackIdx == 0 ? WC_TRIG_PRIMARY_START : WC_TRIG_SECONDARY_START);
 		ProcessEvents(ievt, 0, false, false);
 		return;
 	}
 	
-	if (attackIdx != m_fInAttack-1) {
+	if (GetChargedState(attackIdx) == WC_CHARGE_STATE_NONE) {
 		return;
 	}
 
@@ -972,13 +1050,25 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 	uint32_t cancelMillis = params.shootOpts[attackIdx].chargeCancelTime;
 	bool isChargedEnough = chargeMillis >= cancelMillis;
 
+	if (cancelMillis) {
+		uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
+		float t = V_min(chargeMillis / (float)opts.chargeTime, 1.0f);
+
+		if (opts.ammoCost && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD) {
+			int cost = V_max(1, (t * opts.ammoCost) + 0.5f);
+			int* clip = GetAttackClip(attackIdx);
+			*clip = m_chargeStartClip - cost;
+		}
+	}
+
 	if (!cancelMillis || isChargedEnough) {
 		CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 
-		if (opts.flags & FL_WC_SHOOT_CHARGEUP_ONCE) {
-			//m_skipNextChargeup = true;
-
-			// fire a single shot every chargeup, then cooldown
+		if (opts.chargeMode == WC_CHARGEUP_SINGLE || opts.chargeMode == WC_CHARGEUP_SINGLE_HOLD
+			|| opts.chargeMode == WC_CHARGEUP_HOLD)
+		{
+			SetChargedState(attackIdx, WC_CHARGE_STATE_DISCHARGING);
+			// fire a single shot every chargeup
 			if (attackIdx == 0) {
 				PrimaryAttack();
 			}
@@ -987,27 +1077,61 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 			}
 		}
 
-		//PRINTF("Finish attack chargedown %d\n", g_runfuncs);
 		Chargedown(attackIdx);
 	}
 }
 
-void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire) {
+void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bool ammoClick) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+
+	if (ammoClick) {
+		Cooldown(-1, 150);
+		if (!(opts.flags & FL_WC_SHOOT_IS_MELEE))
+			PlayEmptySound();
+	}
 
 	int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 	int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_FAIL : WC_TRIG_SECONDARY_FAIL;
-
 	ProcessEvents(ievt, akimboArg, leftHand, false);
+	
+	CancelDelayedEvents(attackIdx == 0 ? WC_TRIG_PRIMARY_START : WC_TRIG_SECONDARY_START);
+	CancelDelayedEvents(attackIdx == 0 ? WC_TRIG_PRIMARY_CHARGE : WC_TRIG_SECONDARY_CHARGE);
 
-	if (g_runfuncs && KillBeams(attackIdx)) {
+	if (KillBeams(attackIdx)) {
 		int ievt2 = attackIdx == 0 ? WC_TRIG_PRIMARY_STOP : WC_TRIG_SECONDARY_STOP;
-		CancelDelayedEvents();
 		ProcessEvents(ievt2, akimboArg, leftHand, false);
+	}
+
+	if (m_chargeSoundEvt) {
+		WepEvt& evt = params.events[clamp(m_chargeSoundEvt, 0, MAX_WC_EVENTS - 1)];
+		int channel = evt.playSound.channel;
+		int soundIdx = evt.playSound.sound;
+
+#ifdef CLIENT_DLL
+		WC_EV_LocalSound(evt, soundIdx, channel, 100, 1, ATTN_NORM, 0, SND_STOP);
+#else
+		if (IsPredicted()) {
+			uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
+			StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(soundIdx), 1, ATTN_NORM,
+				SND_STOP, 100, m_pPlayer->pev->origin, messageTargets);
+		}
+		else {
+			StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(soundIdx), 1, ATTN_NORM,
+				SND_STOP, 100, m_pPlayer->pev->origin, 0xffffffff);
+		}
+#endif
 	}
 
 	if (opts.cooldownFail)
 		Cooldown(attackIdx, opts.cooldownFail);
+
+	if (opts.chargeTime) {
+		m_flTimeWeaponIdle = 0.2f;
+	}
 }
 
 void CWeaponCustom::PlayRandomSound(CBasePlayer* plr, uint16_t sounds[4]) {
@@ -1126,7 +1250,7 @@ bool CWeaponCustom::MeleeIsFlesh(CBaseEntity* pEntity) {
 }
 
 void CWeaponCustom::KickbackPrediction() {
-	if (m_fInAttack)
+	if (AreAnyAttacksCharging())
 		return; // prevent extra kickback from the prediction system re-running commands
 
 	// If prediction is broken and you see prediction sending you crazy far and snapping back
@@ -1320,7 +1444,8 @@ void CWeaponCustom::UpdateBeams() {
 		UTIL_TraceLine(vecSrc, vecEnd, dont_ignore_monsters, ENT(pev), &tr);
 
 		CBeam* pbeam = (CBeam*)beam.h_beam.GetEntity();
-		pbeam->SetStartPos(tr.vecEndPos);
+		if (pbeam)
+			pbeam->SetStartPos(tr.vecEndPos);
 #endif
 	}
 }
@@ -1354,9 +1479,11 @@ Vector CWeaponCustom::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 	bool isPredicted = IsPredicted();
 	BULLET_PREDICTION predFlag = isPredicted ? BULLETPRED_EVENTLESS : BULLETPRED_NONE;
 
+	float damage = beam.evt.beam.damage * GetChargeMult(beam.evt, FL_WC_CHARGE_DAMAGE);
+
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir = m_pPlayer->FireBulletsPlayer(1, vecSrc, vecAiming, spread, beam.evt.beam.distance,
-		BULLET_BEAM, 0, beam.evt.beam.damage, m_pPlayer->pev, m_pPlayer->random_seed, g_traces, predFlag);
+		BULLET_BEAM, 0, damage, m_pPlayer->pev, m_pPlayer->random_seed, g_traces, predFlag);
 	lagcomp_end();
 
 	beam.spreadX = vecDir.x;
@@ -1379,10 +1506,10 @@ Vector CWeaponCustom::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 	// make splashes if this isn't an infinite beam
 	if (beam.evt.beam.life != 0) {
 		float splashSize = 0.3f;
-		if (beam.evt.beam.damage > 50) {
+		if (damage > 50) {
 			splashSize = 0.5f;
 		}
-		else if (beam.evt.beam.damage > 8) {
+		else if (damage > 8) {
 			splashSize = 0.4f;
 		}
 		edict_t* skipEnt = m_pPlayer->IsSevenKewpClient() ? m_pPlayer->edict() : NULL;
@@ -1487,10 +1614,16 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 			WRITE_BYTE(opts.ammoPool);
 			WRITE_SHORT(opts.cooldown);
 			WRITE_SHORT(opts.cooldownFail);
-			WRITE_SHORT(opts.chargeTime);
-			WRITE_SHORT(opts.chargeCancelTime);
 			WRITE_SHORT(opts.accuracyX);
 			WRITE_SHORT(opts.accuracyY);
+
+			WRITE_BYTE((opts.chargeMode << 4) | (opts.chargeAmmoMode << 2) | opts.overchargeMode);
+			if (opts.chargeMode != WC_CHARGEUP_NONE) {
+				WRITE_BYTE(opts.chargeFlags);
+				WRITE_SHORT(opts.chargeTime);
+				WRITE_SHORT(opts.overchargeTime);
+				WRITE_SHORT(opts.chargeCancelTime);
+			}
 		}
 		MESSAGE_END();
 	}
@@ -1517,7 +1650,8 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 				break;
 			}
 			case WC_EVT_PLAY_SOUND: {
-				uint16_t packedFlags = evt.playSound.sound << 5 | evt.playSound.channel << 2 | evt.playSound.aiVol;
+				uint16_t packedFlags = evt.playSound.sound << 7 | evt.playSound.channel << 4
+					| (evt.playSound.aiVol << 2) | evt.playSound.flags;
 				WRITE_SHORT(packedFlags);
 				WRITE_BYTE(evt.playSound.volume);
 				WRITE_BYTE(evt.playSound.attn);
@@ -1796,6 +1930,8 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	bool isPredicted = IsPredicted();
 	BULLET_PREDICTION predFlag = isPredicted ? BULLETPRED_EVENTLESS : BULLETPRED_NONE;
 
+	float damage = evt.bullets.damage * GetChargeMult(evt, FL_WC_CHARGE_DAMAGE);
+
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
 		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
@@ -2051,7 +2187,7 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 			cproj->monster_event = (WeaponCustomProjectileAction)evt.proj.monster_event;
 			cproj->air_friction = evt.proj.air_friction;
 			cproj->water_friction = evt.proj.water_friction;
-			cproj->damage = evt.proj.damage;
+			cproj->damage = evt.proj.damage * GetChargeMult(evt, FL_WC_CHARGE_DAMAGE);
 			cproj->damageType = evt.proj.damageBits;
 			cproj->expire_time = gpGlobals->time + evt.proj.life;
 			cproj->pev->movetype = evt.proj.gravity != 0 ? MOVETYPE_BOUNCE : MOVETYPE_BOUNCEMISSILE;
@@ -2180,7 +2316,7 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 }
 
 void CWeaponCustom::PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer) {
-	float force = evt.kickback.pushForce;
+	float force = evt.kickback.pushForce * GetChargeMult(evt, FL_WC_CHARGE_KICKBACK);
 	float backForce = (evt.kickback.back / 100.0f) * force;
 	float rightForce = (evt.kickback.right / 100.0f) * force;
 	float upForce = (evt.kickback.up / 100.0f) * force;
@@ -2228,6 +2364,9 @@ void CWeaponCustom::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 		volume = evt.playSound.volume / 255.0f;
 		attn = evt.playSound.attn / 64.0f;
 
+		if (evt.playSound.flags & FL_WC_SOUND_CHARGE_PITCH)
+			pitch = evt.playSound.pitchMin;
+
 		switch (evt.playSound.aiVol) {
 		case WC_AIVOL_QUIET:
 			m_pPlayer->m_iWeaponVolume = QUIET_GUN_VOLUME;
@@ -2248,7 +2387,7 @@ void CWeaponCustom::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 	if (akimboFire)
 		panning = leftHand ? 1 : 2; // signal the event player to pan the audio
 
-	WC_EV_LocalSound(evt, idx, channel, pitch, volume, attn, panning);
+	WC_EV_LocalSound(evt, idx, channel, pitch, volume, attn, panning, 0);
 #else
 	
 	if (IsPredicted()) {
@@ -2512,6 +2651,9 @@ void CWeaponCustom::PlayEvent(int eventIdx, bool leftHand, bool akimboFire) {
 		break;
 	case WC_EVT_PLAY_SOUND:
 		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire);
+		if (evt.playSound.flags & FL_WC_SOUND_CHARGE_PITCH) {
+			m_chargeSoundEvt = eventIdx;
+		}
 		break;
 	case WC_EVT_TOGGLE_ZOOM:
 		ToggleZoom(evt.zoomToggle.zoomFov, evt.zoomToggle.zoomFov2);
@@ -2561,13 +2703,17 @@ void CWeaponCustom::PlayDelayedEvents() {
 	}
 }
 
-void CWeaponCustom::CancelDelayedEvents() {
+void CWeaponCustom::CancelDelayedEvents(int trigger) {
 	if (!g_runfuncs)
 		return;
 
 	for (int i = 0; i < WC_SERVER_EVENT_QUEUE_SZ; i++) {
-		WcDelayEvent& qevt = eventQueue[i];
-		qevt.fireTime = 0;
+		WcDelayEvent& qevt = eventQueue[i];	
+		WepEvt& evt = params.events[qevt.eventIdx];
+
+		if (evt.trigger == trigger) {
+			qevt.fireTime = 0;
+		}
 	}
 }
 
@@ -2585,10 +2731,10 @@ float CWeaponCustom::GetActiveMovespeedMult() {
 	// can work. PM_Move() is constantly repeating a small section of time and maxspeed changes affect
 	// all steps of that time window instead of just after the point it changed.
 
-	if (m_fInAttack == 1) {
+	if (GetChargedState(0) != WC_CHARGE_STATE_NONE) {
 		return MOVESPEED_MULT_TO_FLOAT(params.shootOpts[0].chargeMoveSpeedMult);
 	}
-	if (m_fInAttack == 2) {
+	if (GetChargedState(1) != WC_CHARGE_STATE_NONE) {
 		return MOVESPEED_MULT_TO_FLOAT(params.shootOpts[1].chargeMoveSpeedMult);
 	}
 

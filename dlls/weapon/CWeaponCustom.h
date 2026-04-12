@@ -36,6 +36,13 @@ enum PredictionDataSendMode {
 	WC_PRED_SEND_BOTH	// send weapon and event data
 };
 
+enum WcAttackState {
+	WC_CHARGE_STATE_NONE,
+	WC_CHARGE_STATE_CHARGING,
+	WC_CHARGE_STATE_DISCHARGING, // firing by force regardless of ammo and charge progress
+	WC_CHARGE_STATE_OVERCHARGED,
+};
+
 struct WcBeam {
 	int attackIdx; // set to -1 for non-constant beams, else used to kill the beam when a button is released
 	float spreadX;
@@ -93,12 +100,14 @@ public:
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
 	Vector m_kickbackPredVel;
 	uint32_t m_chargeStartCmdTime; // CMD time that begun a chargeup
+	int m_chargeStartClip; // ammo started with when chargeup began
 	bool m_primaryCalled;
 	bool m_secondaryCalled;
 	bool m_primaryFired;
 	bool m_secondaryFired;
 	int m_bulletFireCount; // for odd/even effects (m_iClip is unreliable)
 	bool m_hasPredictionData; // was the client sent a prediction message for this weapon?
+	int m_chargeSoundEvt; // event index to load charge sound details from
 
 	int m_akimboAnim;
 	float m_akimboAnimTime;
@@ -130,6 +139,7 @@ public:
 	const char* GetModelP() override;
 	const char* GetModelW() override;
 
+	int* GetAttackClip(int attackIdx);
 	void PrimaryAttack(void) override;
 	void SecondaryAttack(void) override;
 	void TertiaryAttack(void) override;
@@ -137,7 +147,7 @@ public:
 	void Cooldown(int attackIdx, int overrideMillis=-1);
 	
 	void FinishAttack(int attackIdx);
-	void FailAttack(int attackIdx, bool leftHand, bool akimboFire);
+	void FailAttack(int attackIdx, bool leftHand, bool akimboFire, bool ammoClick);
 	void PlayRandomSound(CBasePlayer* plr, uint16_t sounds[4]); // generic server side sound playback
 
 	//
@@ -152,7 +162,7 @@ public:
 	virtual void SecondaryAttackCustom(void) {}
 	virtual void TertiaryAttackCustom(void) {}
 	virtual void WeaponIdleCustom(void) {} // called after the weapon has idled
-	virtual bool Chargeup(int attackIdx, bool leftHand, bool akimboFire);
+	virtual bool Chargeup(int attackIdx, int* clip, bool leftHand, bool akimboFire);
 	virtual void Chargedown(int attackIdx);
 	virtual void MeleeAttack(int attackIdx);
 	virtual void MeleeMiss(CBasePlayer* plr) { } // called when a melee attack misses
@@ -162,6 +172,7 @@ public:
 	virtual void MeleeHitWall(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a hard surface
 	virtual void AttackTrace(CBasePlayer* plr, int attackIdx, Vector vecSrc, TraceResult& tr) {} // called after every attack trace
 
+	float GetChargeMult(WepEvt& evt, int flagMask);
 	void KickbackPrediction();
 	void ToggleZoom(int zoomFov, int zoomFov2);
 	void ToggleLaser(bool enable);
@@ -182,7 +193,7 @@ public:
 	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft=0);
 	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire);
 	void PlayDelayedEvents();
-	void CancelDelayedEvents();
+	void CancelDelayedEvents(int trigger);
 
 	void PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
 	void PlayEvent_Beam(WepEvt& evt, CBasePlayer* m_pPlayer);
@@ -216,8 +227,15 @@ public:
 	BOOL IsAkimbo() { return (m_fireState & FL_WC_STATE_IS_AKIMBO) != 0; }
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);
-	inline int GetChargedState(int attackIdx) { return m_fInAttack; } // TODO: bits per attack type
-	inline void SetChargedState(int attackIdx, int newState) { m_fInAttack = newState; }
+	inline WcAttackState GetChargedState(int attackIdx) { return (WcAttackState)((m_fInAttack >> (attackIdx*4)) & 0xf); }
+	inline void SetChargedState(int attackIdx, WcAttackState newState) {
+		int shift = attackIdx * 4;
+		int mask = 0xf << shift;
+		newState = (WcAttackState)((newState & 0xf) << shift);
+		m_fInAttack = (m_fInAttack & ~mask) | newState;
+	}
+	inline void ClearChargedStates() { m_fInAttack = 0; }
+	inline bool AreAnyAttacksCharging() { return m_fInAttack != 0; }
 
 	BOOL IsLaserOn() { return (m_fireState & FL_WC_STATE_LASER) != 0; }
 	void SetLaser(bool enable);

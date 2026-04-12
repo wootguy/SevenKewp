@@ -1859,7 +1859,7 @@ CustomWeaponParams* GetCustomWeaponParams(int id);
 extern int g_irunninggausspred;
 int GetCustomWeaponBody(int id);
 
-void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning) {
+void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags) {
 	const char* soundPath = GetSoundByIndex(sndIdx);
 	cl_entity_t* player = GetLocalPlayer();
 	int entidx = player->index;
@@ -1882,7 +1882,7 @@ void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, f
 		vol *= 0.8f;
 	}
 
-	gEngfuncs.pEventAPI->EV_PlaySound(entidx, origin, chan, soundPath, vol, attn, 0, pitch);
+	gEngfuncs.pEventAPI->EV_PlaySound(entidx, origin, chan, soundPath, vol, attn, flags, pitch);
 }
 
 void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {

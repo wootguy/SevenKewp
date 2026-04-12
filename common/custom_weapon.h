@@ -39,7 +39,6 @@
 #define FL_WC_SHOOT_NEED_FULL_COST 16	// don't allow attack if clip is less than ammo cost
 #define FL_WC_SHOOT_NO_AUTOFIRE 32		// one shot per click
 #define FL_WC_SHOOT_IS_MELEE 64			// use server-side crowbar attack logic
-#define FL_WC_SHOOT_CHARGEUP_ONCE 128	// fire one shot per chargeup, then cooldown after that shot
 
 #define FL_WC_BULLETS_DYNAMIC_SPREAD 1	// spread widens while moving and tightens while crouching
 #define FL_WC_BULLETS_NO_DECAL 2		// don't show gunshot particles and decal at impact point
@@ -65,6 +64,11 @@
 #define FL_WC_BEAM_SHADEIN	4		// fade the start of the beam
 #define FL_WC_BEAM_SHADEOUT	8		// fade the end of the beam
 
+#define FL_WC_SOUND_CHARGE_PITCH 1	// Sound pitch increases with chargeup progress
+
+#define FL_WC_CHARGE_DAMAGE		1		// attack charge progress scales damage events
+#define FL_WC_CHARGE_KICKBACK	2		// attack charge progress scales kickback events
+
 enum WeaponCustomEventTriggerShootArg {
 	WC_TRIG_SHOOT_ARG_ALWAYS,		// always fire the shoot event
 	WC_TRIG_SHOOT_ARG_AKIMBO,		// only fire the event when in akimbo mode
@@ -85,14 +89,16 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_PRIMARY_ALT,		// triggers on alternate primary fire (laser/zoom)
 	WC_TRIG_PRIMARY_CLIPSIZE,	// trigger arg is the clip size to trigger on
 	WC_TRIG_PRIMARY_CLIP_SP,	// trigger arg: WeaponCustomEventTriggerClipSpArg
-	WC_TRIG_PRIMARY_CHARGE,		// triggers when primary fire begins charging
-	WC_TRIG_PRIMARY_START,		// triggers when primary fire key is pressed
+	WC_TRIG_PRIMARY_CHARGE,		// triggers when primary fire begins charging. Delayed events are cancelled when charging stops or fails.
+	WC_TRIG_PRIMARY_OVERCHARGE,	// triggers when primary fire charges for too long and is cancelled.
+	WC_TRIG_PRIMARY_START,		// triggers when primary fire key is pressed. Delayed events are cancelled when a STOP event starts.
 	WC_TRIG_PRIMARY_STOP,		// triggers when primary fire key is released
 	WC_TRIG_PRIMARY_FAIL,		// triggers when primary fire fails (no ammo, underwater, ...)
 	WC_TRIG_SECONDARY_CLIPSIZE, // trigger arg is the clip size to trigger on
 	WC_TRIG_SECONDARY_CLIP_SP,	// trigger arg: WeaponCustomEventTriggerClipSpArg
-	WC_TRIG_SECONDARY_CHARGE,	// triggers when secondary fire begins charging
-	WC_TRIG_SECONDARY_START,	// triggers when secondary fire key is pressed
+	WC_TRIG_SECONDARY_CHARGE,	// triggers when secondary fire begins charging. Delayed events are cancelled when charging stops or fails.
+	WC_TRIG_SECONDARY_OVERCHARGE,// triggers when primary fire charges for too long and is cancelled.
+	WC_TRIG_SECONDARY_START,	// triggers when secondary fire key is pressed. Delayed events are cancelled when a STOP event starts.
 	WC_TRIG_SECONDARY_STOP,		// triggers when secondary fire key is released
 	WC_TRIG_SECONDARY_FAIL,		// triggers when secondary fire fails (no ammo, underwater, ...)
 	WC_TRIG_RELOAD,				// triggers when a simple reload begins, or when a shotgun reloads a single shell. Trigger arg: WeaponCustomEventTriggerShootArg
@@ -196,6 +202,24 @@ enum WeaponCustomToggleStateMode {
 	WC_TOGGLE_STATE_TOGGLE,
 };
 
+enum WeaponCustomChargeupMode {
+	WC_CHARGEUP_NONE,			// disable attack charging
+	WC_CHARGEUP_CONSTANT,		// fire constantly after chargeup finishes
+	WC_CHARGEUP_SINGLE,			// fire a single shot when charged up, then charge down
+	WC_CHARGEUP_SINGLE_HOLD,	// fire a single shot when charged up, then charge down, unless the attack key was released before the charge up finished.
+	WC_CHARGEUP_HOLD,			// fire a single shot when the player releases the attack button
+};
+
+enum WeaponCustomOverchargeMode {
+	WC_OVERCHARGE_CANCEL,		// cancel attack after overcharge
+	WC_OVERCHARGE_CONTINUE,		// continue charging after overcharge
+};
+
+enum WeaponCustomChargeAmmoMode {
+	WC_CHARGE_AMMO_ATTACK,		// spend ammo when the charge up is finished and the attack starts
+	WC_CHARGE_AMMO_LOAD,		// spend ammo as the charge up progresses, up to the full cost at 100% charge
+};
+
 struct WepEvt {
 	uint16_t evtType : 5;
 	uint16_t trigger : 5;		// when to trigger the event
@@ -216,7 +240,7 @@ struct WepEvt {
 			uint16_t sound : 9;
 			uint16_t channel : 3;
 			uint16_t aiVol : 2; // WeaponCustomAiVol
-			uint16_t reserved : 2;
+			uint16_t flags : 2; // FL_WC_SOUND_
 			uint8_t volume;
 			uint8_t attn;
 			uint8_t pitchMin;
@@ -506,6 +530,16 @@ struct WepEvt {
 		return *this;
 	}
 
+	WepEvt PrimaryOvercharge() {
+		this->trigger = WC_TRIG_PRIMARY_OVERCHARGE;
+		return *this;
+	}
+
+	WepEvt SecondaryOvercharge() {
+		this->trigger = WC_TRIG_SECONDARY_OVERCHARGE;
+		return *this;
+	}
+
 	WepEvt PrimaryStop() {
 		this->trigger = WC_TRIG_PRIMARY_STOP;
 		return *this;
@@ -598,7 +632,7 @@ struct WepEvt {
 	}
 
 	WepEvt PlaySound(int sound, uint8_t channel, float volume, float attn, int pitchMin, int pitchMax,
-		uint8_t distantSound, uint8_t aiVol) {
+		uint8_t distantSound, uint8_t aiVol, int flags) {
 		evtType = WC_EVT_PLAY_SOUND;
 		playSound.sound = sound;
 		playSound.channel = channel;
@@ -608,6 +642,7 @@ struct WepEvt {
 		playSound.pitchMin = pitchMin;
 		playSound.pitchMax = pitchMax;
 		playSound.distantSound = distantSound;
+		playSound.flags = flags;
 		return *this;
 	}
 
@@ -927,7 +962,12 @@ struct CustomWeaponShootOpts {
 	uint8_t ammoPool;			// which ammo pool to drain from (WeaponCustomAmmoPool)
 	uint16_t cooldown;			// time between attacks (milliseconds)
 	uint16_t cooldownFail;		// cooldown after a failed attack (out of ammo, underwater) (milliseconds)
+	uint8_t chargeMode : 3;		// WeaponCustomChargeupMode
+	uint8_t chargeAmmoMode : 2; // WeaponCustomChargeAmmoMode
+	uint8_t overchargeMode : 2;	// WeaponCustomOverchargeMode
+	uint8_t chargeFlags;		// FL_WC_CHARGE_*
 	uint16_t chargeTime;		// how long the attack button must be held before the attack begins (milliseconds)
+	uint16_t overchargeTime;	// how long an attack can be charged before triggering an overcharge event and cancelling the chargeup
 	uint16_t chargeCancelTime;	// minimum time before a charge can be cancelled (milliseconds)
 	uint16_t chargeMoveSpeedMult; // movement speed multiplier while charging (1-65535) (65535 = 100%) (0 = don't change)
 	uint16_t accuracyX;			// horizontal accuracy for crosshair (degrees * 100)

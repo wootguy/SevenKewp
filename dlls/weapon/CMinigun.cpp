@@ -62,7 +62,7 @@ void CMinigun::Precache()
 	AddEvent(WepEvt().Primary().WepAnim(MINIGUN_SPINFIRE));
 	AddEvent(WepEvt().Primary().Bullets(2, 25, dmg, spread, spread, 2, WC_FLASH_NORMAL, bulletf));
 	
-	AddEvent(WepEvt().BulletFired().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_9MM, WC_AIVOL_LOUD));
+	AddEvent(WepEvt().BulletFired().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, ATTN_NORM, 94, 109, DISTANT_9MM, WC_AIVOL_LOUD, 0));
 	AddEvent(WepEvt().BulletFired().RotateView(1.3f, 1.3f).StandOnly());
 	AddEvent(WepEvt().BulletFired().RotateView(1.0f, 1.0f).DuckOnly());
 	AddEvent(WepEvt().PrimaryEven().EjectShell(m_iLink, TE_BOUNCE_SHELL, 9, -8, 2));
