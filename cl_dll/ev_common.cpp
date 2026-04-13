@@ -57,9 +57,19 @@ EV_CreateTracer
 Creates a tracer effect
 =================
 */
-void EV_CreateTracer( float *start, float *end )
+void EV_CreateTracer( float *start, float *end, int color )
 {
-	gEngfuncs.pEfxAPI->R_TracerEffect( start, end );
+	if (color == 4) {
+		// default color, use original function
+		gEngfuncs.pEfxAPI->R_TracerEffect(start, end);
+	}
+	else {
+		float speed = 6000.0f; // tracerspeed default
+		float len = ((Vector)end - (Vector)start).Length();
+		Vector vel = ((Vector)end - (Vector)start).Normalize() * speed;
+		float life = len / speed;
+		gEngfuncs.pEfxAPI->R_UserTracerParticle(start, vel, life, color, 1.2, 0, NULL);
+	}
 }
 
 /*

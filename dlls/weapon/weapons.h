@@ -20,6 +20,7 @@
 class CBasePlayer;
 EXPORT extern int gmsgWeapPickup;
 extern StringMap g_defaultSpriteDirs;
+extern HashMap<int> g_customAmmoCapacities;
 
 typedef struct
 {
@@ -182,6 +183,9 @@ EXPORT void GetCircularGaussianSpread(float& x, float& y);
 // That should be done to prevent conflicts between the game and unrelated plugins.
 // Returns an ItemInfo with reassigned id and position.
 EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname);
+
+// call this for custom ammo types so custom weapons know what their capacity is.
+EXPORT void UTIL_RegisterAmmoCapacity(const char* ammoType, int capacity);
 
 // register an entity for precaching and equipment via map CFG
 // Use this with ammo entities and weapons that couldn't be registered normally

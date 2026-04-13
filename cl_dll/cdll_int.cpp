@@ -178,6 +178,8 @@ so the HUD can reinitialize itself.
 
 int g_connection_phase;
 int g_loadedSprites = 0;
+extern uint32_t g_latest_cmd_id;
+extern uint32_t g_cmd_timer;
 
 int CL_DLLEXPORT HUD_VidInit( void )
 {
@@ -191,6 +193,9 @@ int CL_DLLEXPORT HUD_VidInit( void )
 	is_software_renderer = CVAR_GET_PTR("gl_fog") == NULL;
 
 	g_connection_phase = 0;
+
+	g_latest_cmd_id = 0;
+	g_cmd_timer = 0;
 
 	return 1;
 }

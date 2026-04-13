@@ -181,6 +181,7 @@ public:
 	void Cooldown(int attackIdx, int overrideMillis=-1);
 	
 	void FinishAttack(int attackIdx);
+	void PlayEmptySound(int attackIdx);
 	void FailAttack(int attackIdx, bool leftHand, bool akimboFire, bool ammoClick);
 	void PlayRandomSound(CBasePlayer* plr, uint16_t sounds[4]); // generic server side sound playback
 

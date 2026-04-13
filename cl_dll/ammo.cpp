@@ -988,6 +988,7 @@ int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 		opts.cooldownFail = READ_SHORT();
 		opts.accuracyX = READ_SHORT();
 		opts.accuracyY = READ_SHORT();
+		opts.emptySound = READ_SHORT();
 
 		uint8_t packedFlags = READ_BYTE();
 		opts.chargeMode = packedFlags >> 4;
@@ -1102,7 +1103,10 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			evt.bullets.damage = READ_SHORT();
 			evt.bullets.spreadX = READ_SHORT();
 			evt.bullets.spreadY = READ_SHORT();
-			evt.bullets.tracerFreq = READ_BYTE();
+
+			uint8_t tracers = READ_BYTE();
+			evt.bullets.tracerFreq = tracers >> 4;
+			evt.bullets.tracerColor = tracers & 0xf;
 
 			uint8_t packedFlags = READ_BYTE();
 			evt.bullets.flags = packedFlags >> 4;

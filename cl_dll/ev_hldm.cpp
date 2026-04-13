@@ -1862,7 +1862,7 @@ CustomWeaponParams* GetCustomWeaponParams(int id);
 extern int g_irunninggausspred;
 int GetCustomWeaponBody(int id);
 
-void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags) {
+void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags) {
 	const char* soundPath = GetSoundByIndex(sndIdx);
 	cl_entity_t* player = GetLocalPlayer();
 	int entidx = player->index;
@@ -2000,7 +2000,7 @@ void WC_EV_Dlight(WepEvt& evt) {
 	dl->die = gEngfuncs.GetClientTime() + evt.dlight.life * 0.1f;
 }
 
-pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunshotDecal, bool textureSound, int iShot, int iDamage)
+pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int tracerColor, bool gunshotDecal, bool textureSound, int iShot, int iDamage)
 {
 	pmtrace_t tr;
 
@@ -2037,7 +2037,7 @@ pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool 
 	if (showTracer) {
 		Vector offset(0, 0, -4);
 		Vector vecTracerSrc = vecSrc + offset + right * 2 + forward * 16;
-		EV_CreateTracer(vecTracerSrc, tr.endpos);
+		EV_CreateTracer(vecTracerSrc, tr.endpos, tracerColor);
 	}
 
 	// do damage, paint decals

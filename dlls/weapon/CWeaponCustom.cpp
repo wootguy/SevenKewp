@@ -3,6 +3,7 @@
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud_iface.h"
+#include "../game_shared/prediction_files.h"
 #include "eng_wrappers.h"
 #include "../common/pmtrace.h"
 #include "../pm_shared/pm_defs.h"
@@ -11,11 +12,11 @@ extern int g_runningKickbackPred;
 extern int g_last_attack_mode;
 extern Vector g_vApplyVel;
 void UpdateZoomCrosshair(int id, bool zoom);
-void WC_EV_LocalSound(WepEvt& evt, int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags);
+void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags);
 void WC_EV_EjectShell(WepEvt& evt, bool leftHand);
 void WC_EV_PunchAngle(WepEvt& evt, int seed);
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
-pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunshotDecal, bool textureSound, int iShot, int iDamage);
+pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int tracerColor, bool gunshotDecal, bool textureSound, int iShot, int iDamage);
 void EV_LaserOff();
 void WC_EV_Dlight(WepEvt& evt);
 uint32_t GetTimeAtCmd(uint32_t cmdId);
@@ -25,6 +26,7 @@ void EV_MuzzleFlash(void);
 cl_entity_t* WC_GetPlayer();
 void EV_EgonFlareCallback(struct tempent_s* ent, float frametime, float currenttime);
 void EV_HLDM_GunshotDecalEffects(Vector pos, bool playSound);
+void HUD_PlaySound(const char* sound, float volume);
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 #else
@@ -844,7 +846,7 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 
 	bool forceFireChargedShot = GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING;
 	bool ammoSpendsDuringCharge = opts.chargeTime > 0 && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD;
-	if (!forceFireChargedShot && ammoSpendsDuringCharge && clipLeft <= 0 && opts.ammoCost > 0) {
+	if (!forceFireChargedShot && clipLeft <= 0 && opts.ammoCost > 0) {
 		if (!m_fInReload) {
 			FailAttack(attackIdx, leftHand, akimboFire, true);
 		}
@@ -1023,7 +1025,7 @@ bool CWeaponCustom::Chargeup(int attackIdx, int* clip, bool leftHand, bool akimb
 		int pitch = evt.playSound.pitchMin + pitchRange*t;
 
 #ifdef CLIENT_DLL
-		WC_EV_LocalSound(evt, soundIdx, channel, pitch, 1, ATTN_NORM, 0, SND_CHANGE_PITCH);
+		WC_EV_LocalSound(soundIdx, channel, pitch, 1, ATTN_NORM, 0, SND_CHANGE_PITCH);
 #else
 		if (IsPredicted()) {
 			uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
@@ -1149,6 +1151,37 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 	}
 }
 
+void CWeaponCustom::PlayEmptySound(int attackIdx)
+{
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+
+	if (m_iPlayEmptySound)
+	{
+#ifdef CLIENT_DLL
+		if (g_runfuncs) {
+			if (opts.emptySound) {
+				WC_EV_LocalSound(opts.emptySound, CHAN_STATIC, 100, 1.0f, ATTN_NORM, 0, 0);
+			}
+			else {
+				HUD_PlaySound(RemapFile("weapons/357_cock1.wav"), 0.8);
+			}
+		}
+#else
+		const char* emptySound = opts.emptySound ? INDEX_SOUND(opts.emptySound) : "weapons/357_cock1.wav";
+		// send sound to all players except the shooter, who is predicting the sound locally
+		edict_t* plr = m_pPlayer->edict();
+		uint32_t messageTargets = 0xffffffff & ~PLRBIT(plr);
+		StartSound(plr, CHAN_WEAPON, emptySound, 0.8f,
+			ATTN_NORM, SND_FL_PREDICTED, 100, m_pPlayer->pev->origin, messageTargets);
+#endif
+		m_iPlayEmptySound = 0;
+	}
+}
+
 void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bool ammoClick) {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
@@ -1159,7 +1192,7 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bo
 	if (ammoClick) {
 		Cooldown(-1, 150);
 		if (!(opts.flags & FL_WC_SHOOT_IS_MELEE))
-			PlayEmptySound();
+			PlayEmptySound(attackIdx);
 	}
 
 	int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
@@ -1180,7 +1213,7 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bo
 		int soundIdx = evt.playSound.sound;
 
 #ifdef CLIENT_DLL
-		WC_EV_LocalSound(evt, soundIdx, channel, 100, 1, ATTN_NORM, 0, SND_STOP);
+		WC_EV_LocalSound(soundIdx, channel, 100, 1, ATTN_NORM, 0, SND_STOP);
 #else
 		if (IsPredicted()) {
 			uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
@@ -1815,6 +1848,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 			WRITE_SHORT(opts.cooldownFail);
 			WRITE_SHORT(opts.accuracyX);
 			WRITE_SHORT(opts.accuracyY);
+			WRITE_SHORT(opts.emptySound);
 
 			WRITE_BYTE((opts.chargeMode << 4) | (opts.chargeAmmoMode << 2) | opts.overchargeMode);
 			if (opts.chargeMode != WC_CHARGEUP_NONE) {
@@ -1907,7 +1941,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 				WRITE_SHORT(evt.bullets.damage);
 				WRITE_SHORT(evt.bullets.spreadX);
 				WRITE_SHORT(evt.bullets.spreadY);
-				WRITE_BYTE(evt.bullets.tracerFreq);
+				WRITE_BYTE((evt.bullets.tracerFreq << 4) | evt.bullets.tracerColor);
 
 				uint8_t packedFlags = (evt.bullets.flags << 4) | evt.bullets.flashSz;
 				WRITE_BYTE(packedFlags);
@@ -2190,7 +2224,8 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 		float z = x * x + y * y;
 
 		bool playTexSound = texSound && iShot < 6; // don't stack too many sounds
-		pmtrace_t tr = WC_EV_FireBullets(x * spread.x, y * spread.y, showTracer, decal, playTexSound, iShot, evt.bullets.damage);
+		pmtrace_t tr = WC_EV_FireBullets(x * spread.x, y * spread.y, showTracer, evt.bullets.tracerColor,
+			decal, playTexSound, iShot, evt.bullets.damage);
 		
 		WcTrace evTrace = ConvertTrace(tr);
 		ProcessEvents(WC_TRIG_IMPACT, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
@@ -2215,8 +2250,8 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 			}
 
 			if ((m_pPlayer != listener || !isPredicted) && m_pPlayer->InPAS(listener->edict())) {
-				for (int i = 0; i < evt.bullets.count; i++) {
-					UTIL_Tracer(vecSrc, g_traces[i].vecEndPos, MSG_ONE_UNRELIABLE, listener->edict());
+				for (int k = 0; k < evt.bullets.count; k++) {
+					UTIL_Tracer(vecSrc, g_traces[k].vecEndPos, evt.bullets.tracerColor, MSG_ONE_UNRELIABLE, listener->edict());
 				}
 			}
 		}
@@ -2480,6 +2515,10 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 			cproj->flags = evt.proj.flags;
 			cproj->move_snd = evt.proj.move_snd;
 
+			if (!evt.proj.model) {
+				cproj->pev->rendermode = 1; // don't render the no-precache model
+			}
+
 			float size = evt.proj.size;
 			cproj->pev->mins = Vector(-size, -size, -size);
 			cproj->pev->maxs = Vector(size, size, size);
@@ -2673,7 +2712,7 @@ void CWeaponCustom::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 	if (akimboFire)
 		panning = leftHand ? 1 : 2; // signal the event player to pan the audio
 
-	WC_EV_LocalSound(evt, idx, channel, pitch, volume, attn, panning, 0);
+	WC_EV_LocalSound(idx, channel, pitch, volume, attn, panning, 0);
 #else
 	
 	if (IsPredicted()) {

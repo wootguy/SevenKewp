@@ -249,6 +249,21 @@ enum WeaponCustomBeamAnimation {
 	WC_BEAM_ANIM_EASE_IN_OUT,	// smooth transitions between beam styles
 };
 
+enum WeaponCustomTracerColor {
+	WC_TRACER_COLOR_WHITE,		// neon white
+	WC_TRACER_COLOR_RED,		// neon red
+	WC_TRACER_COLOR_GREEN,		// neon green
+	WC_TRACER_COLOR_BLUE,		// neon blue
+	WC_TRACER_COLOR_DEFAULT,	// colored by tracerred/tracergreen/tracerblue cvars
+	WC_TRACER_COLOR_YELLOW,		// similar to the orange values
+	WC_TRACER_COLOR_ORANGE2,	// slightly pinkish
+	WC_TRACER_COLOR_BLUE2,		// pale purple-ish blue
+	WC_TRACER_COLOR_ORANGE3,	// identical to orange2
+	WC_TRACER_COLOR_ORANGE4,	// slightly brighter
+	WC_TRACER_COLOR_TAN,		// similar to the orange values
+	WC_TRACER_COLOR_ORANGE,		// most saturated orange color
+};
+
 struct WepEvt {
 	uint16_t evtType : 5;
 	uint16_t trigger : 5;		// when to trigger the event
@@ -321,7 +336,8 @@ struct WepEvt {
 			uint16_t damage;		// damage per bullet
 			uint16_t spreadX;		// accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
 			uint16_t spreadY;		// accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
-			uint8_t tracerFreq;		// how often to display a tracer (0 = never, 1 = always, 2 = every other shot)
+			uint8_t tracerFreq : 4;	// how often to display a tracer (0 = never, 1 = always, 2 = every other shot)
+			uint8_t tracerColor : 4;// WeaponCustomTracerColor
 			uint8_t flashSz : 4;	// WeaponCustomFlashSz
 			uint8_t flags : 4;		// FL_WC_BULLETS_*
 		} bullets;
@@ -850,8 +866,14 @@ struct WepEvt {
 		bullets.spreadX = FLOAT_TO_SPREAD(spreadX);
 		bullets.spreadY = FLOAT_TO_SPREAD(spreadY);
 		bullets.tracerFreq = tracerFreq;
+		bullets.tracerColor = WC_TRACER_COLOR_DEFAULT;
 		bullets.flashSz = flashSz;
 		bullets.flags = flags;
+		return *this;
+	}
+
+	WepEvt BulletColor(uint8_t color) {
+		bullets.tracerColor = color;
 		return *this;
 	}
 
@@ -1089,6 +1111,7 @@ struct CustomWeaponShootOpts {
 	uint16_t chargeMoveSpeedMult; // movement speed multiplier while charging (1-65535) (65535 = 100%) (0 = don't change)
 	uint16_t accuracyX;			// horizontal accuracy for crosshair (degrees * 100)
 	uint16_t accuracyY;			// vertical accuracy for crosshair (degrees * 100)
+	uint16_t emptySound;		// custom empty click sound
 
 	// server side settings (not networked)
 	MeleeOpts melee;

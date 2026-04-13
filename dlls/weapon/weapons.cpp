@@ -205,6 +205,7 @@ StringSet g_weaponClassnames;
 StringMap g_defaultSpriteDirs;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
+HashMap<int> g_customAmmoCapacities;
 
 int NextAutoWeaponId() {
 	for (int i = 1; i < MAX_WEAPONS; i++) {
@@ -267,9 +268,17 @@ int GetDefaultMaxAmmo(const char* ammoType) {
 		return gSkillData.sk_ammo_max_762;
 	}
 
+	int* customCap = g_customAmmoCapacities.get(ammoType);
+	if (customCap)
+		return *customCap;
+
 	ALERT(at_warning, "Unknown max ammo for ammo type '%s'. Defaulting to 250.\n", ammoType);
 
 	return 250;
+}
+
+void UTIL_RegisterAmmoCapacity(const char* ammoType, int capacity) {
+	g_customAmmoCapacities.put(ammoType, capacity);
 }
 
 // Queues the weapon info for sending to clients

@@ -851,11 +851,21 @@ EXPORT void UTIL_CleanupEntities(int removeCount);
 // returns false if the entity index would overflow the client, and prints an error message in that case
 EXPORT bool UTIL_isSafeEntIndex(edict_t* plr, int idx, const char* action);
 
+// writes coordinates as 13.3 fixed point integers. Max range of +/-4096
 inline void WRITE_COORD_VECTOR(const Vector& vec)
 {
 	WRITE_COORD(vec.x);
 	WRITE_COORD(vec.y);
 	WRITE_COORD(vec.z);
+}
+
+// writes coordinates as whole integers. Max range of +/-32768.
+// Only for custom user messages which don't require fine positioning
+inline void WRITE_FAR_VECTOR(const Vector& vec)
+{
+	WRITE_SHORT(vec.x);
+	WRITE_SHORT(vec.y);
+	WRITE_SHORT(vec.z);
 }
 
 EXPORT bool boxesIntersect(const Vector& mins1, const Vector& maxs1, const Vector& mins2, const Vector& maxs2);

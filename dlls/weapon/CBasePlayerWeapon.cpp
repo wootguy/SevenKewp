@@ -192,7 +192,7 @@ void CBasePlayerWeapon::ItemPostFrame(void)
 
 		m_pPlayer->TabulateAmmo();
 		SecondaryAttack();
-		m_pPlayer->pev->button &= ~IN_ATTACK2;
+		//m_pPlayer->pev->button &= ~IN_ATTACK2; // TODO: Why is this here? It breaks pressed/release states
 	}
 	else if ((m_pPlayer->pev->button & IN_ATTACK) && CanAttack(m_flNextPrimaryAttack, gpGlobals->time, UseDecrement()))
 	{
@@ -208,7 +208,7 @@ void CBasePlayerWeapon::ItemPostFrame(void)
 	{
 		m_pPlayer->TabulateAmmo();
 		TertiaryAttack();
-		m_pPlayer->pev->button &= ~IN_ATTACK3;
+		//m_pPlayer->pev->button &= ~IN_ATTACK3;
 	}
 	else if (m_pPlayer->pev->button & IN_RELOAD && iMaxClip() != WEAPON_NOCLIP && !m_fInReload)
 	{

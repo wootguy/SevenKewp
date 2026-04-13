@@ -535,7 +535,7 @@ void CBasePlayerWeapon::ItemPostFrame( void )
 		}
 
 		SecondaryAttack();
-		m_pPlayer->pev->button &= ~IN_ATTACK2;
+		//m_pPlayer->pev->button &= ~IN_ATTACK2;
 	}
 	else if ((m_pPlayer->pev->button & IN_ATTACK) && (m_flNextPrimaryAttack < epsilon))
 	{

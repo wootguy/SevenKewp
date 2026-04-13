@@ -61,7 +61,7 @@ void EV_GetGunPosition( struct event_args_s *args, float *pos, float *origin );
 void EV_GetDefaultShellInfo( struct event_args_s *args, float *origin, float *velocity, float *ShellVelocity, float *ShellOrigin, float *forward, float *right, float *up, float forwardScale, float upScale, float rightScale );
 qboolean EV_IsLocal( int idx );
 qboolean EV_IsPlayer( int idx );
-void EV_CreateTracer( float *start, float *end );
+void EV_CreateTracer( float *start, float *end, int color=4 );
 
 struct cl_entity_s *GetEntity( int idx );
 struct cl_entity_s *GetViewEntity( void );

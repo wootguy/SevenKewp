@@ -9,6 +9,7 @@
 #include "engine_pv.h"
 #include <cfloat>
 #include "pm_defs.h"
+#include "eventscripts.h"
 
 #define MAX_ADV_SPRITES 512
 
@@ -322,6 +323,23 @@ void EF_WaterSplash(Vector origin, int splashSprIdx, int wakeSprIdx, const char*
 	}
 }
 
+int __MsgFunc_Tracer2(const char* pszName, int iSize, void* pbuf) {
+	BEGIN_READ(pbuf, iSize);
+
+	float start[3];
+	float end[3];
+	start[0] = READ_SHORT();
+	start[1] = READ_SHORT();
+	start[2] = READ_SHORT();
+	end[0] = READ_SHORT();
+	end[1] = READ_SHORT();
+	end[2] = READ_SHORT();
+	int color = READ_BYTE();
+
+	EV_CreateTracer(start, end, color);
+
+	return 1;
+}
 
 int __MsgFunc_WaterSplash(const char* pszName, int iSize, void* pbuf) {
 	BEGIN_READ(pbuf, iSize);
@@ -456,4 +474,5 @@ void HookEffectMessages() {
 	HOOK_MESSAGE(ToxicCloud);
 	HOOK_MESSAGE(SpriteAdv);
 	HOOK_MESSAGE(WaterSplash);
+	HOOK_MESSAGE(Tracer2);
 }

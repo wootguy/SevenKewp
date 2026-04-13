@@ -405,17 +405,46 @@ void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode, const fl
 	SAFE_MESSAGE_ENT_LOGIC(UTIL_Decal_msg, entindex, origin, decalIdx, msgMode, msgOrigin, targetEnt);
 }
 
-void UTIL_Tracer(Vector start, Vector end, int msgMode, edict_t* targetEnt) {
-	if (UTIL_IsValidTempEntOrigin(start) && UTIL_IsValidTempEntOrigin(end)) {
-		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, start, targetEnt);
-		WRITE_BYTE(TE_TRACER);
-		WRITE_COORD(start.x);
-		WRITE_COORD(start.y);
-		WRITE_COORD(start.z);
-		WRITE_COORD(end.x);
-		WRITE_COORD(end.y);
-		WRITE_COORD(end.z);
+void UTIL_Tracer(Vector start, Vector end, int color, int msgMode, edict_t* targetEnt) {
+	CBaseEntity* pent = CBaseEntity::Instance(targetEnt);
+	CBasePlayer* plr = pent ? pent->MyPlayerPointer() : NULL;
+	if (plr && plr->IsSevenKewpClient()) {
+		MESSAGE_BEGIN(msgMode, gmsgTracer2, start, targetEnt);
+		WRITE_FAR_VECTOR(start);
+		WRITE_FAR_VECTOR(end);
+		WRITE_BYTE(color);
 		MESSAGE_END();
+		return;
+	}
+	
+	if (UTIL_IsValidTempEntOrigin(start) && UTIL_IsValidTempEntOrigin(end)) {
+
+		if (color == 4 || true) {
+			// default tracer color. Use the simpler/more accurate message
+			MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, start, targetEnt);
+			WRITE_BYTE(TE_TRACER);
+			WRITE_COORD_VECTOR(start);
+			WRITE_COORD_VECTOR(end);
+			MESSAGE_END();
+		}
+		else {
+			// TE_USERTRACER doesn't work in Half-Life. Nothing appears no matter the settings.
+			/*
+			float speed = 6000.0f; // tracerspeed default
+			float len = (end - start).Length();
+			Vector vel = (end - start).Normalize() * speed;
+			int life = clamp(len / (speed*0.1f) + 1, 0, 255);
+
+			MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, start, targetEnt);
+			WRITE_BYTE(TE_USERTRACER);
+			WRITE_COORD_VECTOR(start);
+			WRITE_COORD_VECTOR(vel);
+			WRITE_BYTE(color);
+			WRITE_BYTE(life);
+			WRITE_BYTE(12);
+			MESSAGE_END();
+			*/
+		}
 	}
 	else {
 		CBaseEntity::Create("te_user_tracer", start, end, true);
@@ -1268,12 +1297,12 @@ void UTIL_QuakeTeleport(const Vector& pos) {
 	}
 }
 
-void UTIL_QuakeParticleBurst(const Vector& pos, uint8_t radius, uint8_t color, uint8_t life) {
+void UTIL_QuakeParticleBurst(const Vector& pos, uint16_t radius, uint8_t color, uint8_t life) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 		WRITE_BYTE(TE_PARTICLEBURST);
 		WRITE_COORD_VECTOR(pos);
-		WRITE_BYTE(radius);
+		WRITE_SHORT(radius);
 		WRITE_BYTE(color);
 		WRITE_BYTE(life);
 		MESSAGE_END();
@@ -1324,9 +1353,10 @@ void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
 		WRITE_BYTE(TE_STREAK_SPLASH);
 		WRITE_COORD_VECTOR(pos);
-		WRITE_COORD_VECTOR(pos);
-		WRITE_BYTE(color);
+		WRITE_COORD_VECTOR(dir);
+		WRITE_BYTE(clamp(color, 0, 11));
 		WRITE_SHORT(count);
+		WRITE_SHORT(speed);
 		WRITE_SHORT(speedNoise);
 		MESSAGE_END();
 	}
