@@ -257,18 +257,14 @@ char *EV_HLDM_DamageDecal( physent_t *pe )
 	return decalname;
 }
 
-void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName, bool playSound )
-{
-	int iRand;
-	physent_t *pe;
+void EV_HLDM_GunshotDecalEffects(Vector pos, bool playSound) {
+	gEngfuncs.pEfxAPI->R_BulletImpactParticles(pos);
 
-	gEngfuncs.pEfxAPI->R_BulletImpactParticles( pTrace->endpos );
-
-	iRand = gEngfuncs.pfnRandomLong(0,0x7FFF);
-	if (playSound && iRand < (0x7fff/2) )// not every bullet makes a sound.
+	int iRand = gEngfuncs.pfnRandomLong(0, 0x7FFF);
+	if (playSound && iRand < (0x7fff / 2))// not every bullet makes a sound.
 	{
 		const char* sample = "weapons/ric1.wav";
-		switch( iRand % 5)
+		switch (iRand % 5)
 		{
 		case 0:	sample = "weapons/ric1.wav"; break;
 		case 1:	sample = "weapons/ric2.wav"; break;
@@ -277,10 +273,17 @@ void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName, bool playSou
 		case 4:	sample = "weapons/ric5.wav"; break;
 		}
 
-		gEngfuncs.pEventAPI->EV_PlaySound(-1, pTrace->endpos, 0, RemapFile(sample), 1.0, ATTN_NORM, 0, PITCH_NORM);
+		gEngfuncs.pEventAPI->EV_PlaySound(-1, pos, 0, RemapFile(sample), 1.0, ATTN_NORM, 0, PITCH_NORM);
 	}
+}
+
+void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName, bool playSound )
+{
+	physent_t *pe;
 
 	pe = gEngfuncs.pEventAPI->EV_GetPhysent( pTrace->ent );
+
+	EV_HLDM_GunshotDecalEffects(pTrace->endpos, playSound);
 
 	// Only decal brush models such as the world etc.
 	if (  decalName && decalName[0] && pe && ( pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP ) )
@@ -1997,7 +2000,7 @@ void WC_EV_Dlight(WepEvt& evt) {
 	dl->die = gEngfuncs.GetClientTime() + evt.dlight.life * 0.1f;
 }
 
-void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunshotDecal, bool textureSound, int iShot, int iDamage)
+pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunshotDecal, bool textureSound, int iShot, int iDamage)
 {
 	pmtrace_t tr;
 
@@ -2059,23 +2062,8 @@ void WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, bool gunsh
 	UTIL_WaterSplashTrace(vecSrc, tr.endpos, splashSize, iShot % 2 ? 2 : 0, NULL);
 
 	//gEngfuncs.pEventAPI->EV_PopPMStates();
-}
 
-void WC_EV_Bullets(WepEvt& evt, int shared_rand, Vector vecSpread, bool showTracer, bool decal, bool texSound) {
-	for (ULONG iShot = 1; iShot <= evt.bullets.count; iShot++)
-	{
-		//Use player's random seed.
-		// get circular gaussian spread
-		float x = UTIL_SharedRandomFloat(shared_rand + iShot, -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (1 + iShot), -0.5, 0.5);
-		float y = UTIL_SharedRandomFloat(shared_rand + (2 + iShot), -0.5, 0.5) + UTIL_SharedRandomFloat(shared_rand + (3 + iShot), -0.5, 0.5);
-		float z = x * x + y * y;
-
-		bool playTexSound = texSound && iShot < 6; // don't stack too many sounds
-		WC_EV_FireBullets(x * vecSpread.x, y * vecSpread.y, showTracer, decal, playTexSound, iShot, evt.bullets.damage);
-	}
-
-	if (evt.bullets.flashSz)
-		EV_MuzzleFlash();
+	return tr;
 }
 
 cl_entity_t* WC_GetPlayer() {

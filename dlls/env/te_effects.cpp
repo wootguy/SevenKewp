@@ -1165,9 +1165,9 @@ void UTIL_DLight(Vector pos, uint8_t radius, RGB color, uint8_t time, uint8_t de
 	}
 }
 
-void UTIL_SpriteTrail(Vector start, Vector end, int spriteIdx, int count, int life, int scale, int speed, int speedNoise) {
+void UTIL_SpriteTrail(Vector start, Vector end, int spriteIdx, int count, int life, int scale, int speed, int speedNoise, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(start) && UTIL_IsValidTempEntOrigin(end)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, start);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, msgOrigin ? msgOrigin : (float*)start, targetEnt);
 		WRITE_BYTE(TE_SPRITETRAIL);
 		WRITE_COORD_VECTOR(start);
 		WRITE_COORD_VECTOR(end);

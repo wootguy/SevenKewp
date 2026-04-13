@@ -1121,7 +1121,11 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			evt.beam.damage = READ_SHORT();
 			evt.beam.distance = READ_SHORT();
 			evt.beam.freq = READ_SHORT();
-			evt.beam.id = READ_BYTE();
+
+			uint8_t packedByte = READ_BYTE();
+			evt.beam.id = packedByte >> 4;
+			evt.beam.altMode = (packedByte >> 1) & 0xf;
+			evt.beam.hasImpactSprite = packedByte & 1;
 			evt.beam.width = READ_BYTE();
 			evt.beam.noise = READ_BYTE();
 			evt.beam.scrollRate = READ_BYTE();
@@ -1129,6 +1133,28 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			evt.beam.color.g = READ_BYTE();
 			evt.beam.color.b = READ_BYTE();
 			evt.beam.color.a = READ_BYTE();
+
+			if (evt.beam.altMode != WC_BEAM_ANIM_DISABLED) {
+				evt.beam.altTime = READ_SHORT();
+				evt.beam.widthAlt = READ_BYTE();
+				evt.beam.noiseAlt = READ_BYTE();
+				evt.beam.scrollRateAlt = READ_BYTE();
+				evt.beam.colorAlt.r = READ_BYTE();
+				evt.beam.colorAlt.g = READ_BYTE();
+				evt.beam.colorAlt.b = READ_BYTE();
+				evt.beam.colorAlt.a = READ_BYTE();
+			}
+
+			if (evt.beam.hasImpactSprite) {
+				uint16_t packed = READ_SHORT();
+				evt.beam.impactSprite = packed >> 7;
+				evt.beam.impactSpriteFps = packed & 0x7F;
+				evt.beam.impactSpriteScale = READ_BYTE();
+				evt.beam.impactSpriteColor.r = READ_BYTE();
+				evt.beam.impactSpriteColor.g = READ_BYTE();
+				evt.beam.impactSpriteColor.b = READ_BYTE();
+				evt.beam.impactSpriteColor.a = READ_BYTE();
+			}
 			break;
 		}
 		case WC_EVT_KICKBACK:
@@ -1165,6 +1191,20 @@ int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)
 			evt.dlight.radius = READ_BYTE();
 			evt.dlight.life = READ_BYTE();
 			evt.dlight.decayRate = READ_BYTE();
+			break;
+		case WC_EVT_MUZZLEFLASH:
+			evt.muzzleFlash.brightness = READ_BYTE();
+			break;
+		case WC_EVT_SPRITETRAIL:
+			evt.spriteTrail.sprite = READ_SHORT();
+			evt.spriteTrail.count = READ_BYTE();
+			evt.spriteTrail.scale = READ_BYTE();
+			evt.spriteTrail.speed = READ_BYTE();
+			evt.spriteTrail.speedNoise = READ_BYTE();
+			break;
+		case WC_EVT_DECAL:
+			evt.decal.decalIdx = READ_BYTE();
+			evt.decal.isGunshot = READ_BYTE();
 			break;
 		case WC_EVT_PROJECTILE:
 		case WC_EVT_SERVER:

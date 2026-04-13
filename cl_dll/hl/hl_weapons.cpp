@@ -213,7 +213,10 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].ammoFreqs[1] = 0;
 		g_customWeapon[i].ammoFreqs[2] = 0;
 		g_customWeapon[i].animCount = 0;
+		g_customWeapon[i].m_chargeSoundEvt = 0;
+		g_customWeapon[i].m_chargeStartClip = 0;
 		memset(g_customWeapon[i].m_beams, 0, sizeof(WcBeam) * MAX_WC_BEAMS);
+		memset(&g_customWeapon[i].m_beamImpactSprite, 0, sizeof(WcSprite));
 		g_customWeapon[i].SetAkimbo(false);
 		g_customWeapon[i].SetLaser(false);
 	}

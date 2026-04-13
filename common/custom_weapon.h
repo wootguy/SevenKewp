@@ -82,6 +82,21 @@ enum WeaponCustomEventTriggerClipSpArg {
 	WC_TRIG_CLIP_ARG_NOT_EMPTY,	// fire on non-zero clip sizes
 };
 
+enum WeaponCustomEventTriggerImpactArg {
+	WC_TRIG_IMPACT_PRIMARY_ANY,
+	WC_TRIG_IMPACT_PRIMARY_WORLD,
+	WC_TRIG_IMPACT_PRIMARY_MONSTER,
+	WC_TRIG_IMPACT_SECONDARY_ANY,
+	WC_TRIG_IMPACT_SECONDARY_WORLD,
+	WC_TRIG_IMPACT_SECONDARY_MONSTER,
+	WC_TRIG_IMPACT_TERTIARY_ANY,
+	WC_TRIG_IMPACT_TERTIARY_WORLD,
+	WC_TRIG_IMPACT_TERTIARY_MONSTER,
+	WC_TRIG_IMPACT_PRIMARY_ALT_ANY,
+	WC_TRIG_IMPACT_PRIMARY_ALT_WORLD,
+	WC_TRIG_IMPACT_PRIMARY_ALT_MONSTER,
+};
+
 enum WeaponCustomEventTriggers {
 	WC_TRIG_PRIMARY,			// trigger arg: WeaponCustomEventTriggerShootArg (does not trigger when alternate fire is active)
 	WC_TRIG_SECONDARY,			// trigger arg: WeaponCustomEventTriggerShootArg
@@ -111,6 +126,7 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_LASER_OFF,			// triggered when the laser is disabled
 	WC_TRIG_ZOOM_IN,			// triggered when zooming in
 	WC_TRIG_ZOOM_OUT,			// triggered when zooming out
+	WC_TRIG_IMPACT,				// triggered when an attack trace impacts something. Trigger arg: WeaponCustomEventTriggerImpactArg
 };
 
 enum WeaponCustomEventType {
@@ -132,6 +148,11 @@ enum WeaponCustomEventType {
 	WC_EVT_SET_GRAVITY,		// change player gravity
 	WC_EVT_DLIGHT,			// dynamic light
 	WC_EVT_SERVER,			// custom server-side logic.
+	WC_EVT_MUZZLEFLASH,
+	
+	// impact events
+	WC_EVT_SPRITETRAIL,		// TE_SPRITETRAIL
+	WC_EVT_DECAL,			// TE_DECAL
 };
 
 // how loud the sound is for AI (reaction distance) (0 = silent)
@@ -220,6 +241,14 @@ enum WeaponCustomChargeAmmoMode {
 	WC_CHARGE_AMMO_LOAD,		// spend ammo as the charge up progresses, up to the full cost at 100% charge
 };
 
+enum WeaponCustomBeamAnimation {
+	WC_BEAM_ANIM_DISABLED,
+	WC_BEAM_ANIM_TOGGLE,		// toggle between beam styles
+	WC_BEAM_ANIM_LINEAR,		// linear ramp between beam style
+	WC_BEAM_ANIM_LINEAR_TOGGLE, // linear ramp to alt style, then instant revert to main style
+	WC_BEAM_ANIM_EASE_IN_OUT,	// smooth transitions between beam styles
+};
+
 struct WepEvt {
 	uint16_t evtType : 5;
 	uint16_t trigger : 5;		// when to trigger the event
@@ -303,7 +332,8 @@ struct WepEvt {
 			uint16_t sprite : 9;
 
 			uint8_t id : 4;			// ID used to update the beam in future events, for constant beams. 0 = always create a new beam
-			uint8_t reserved : 4;
+			uint8_t altMode : 3;	// WeaponCustomBeamAnimation
+			uint8_t hasImpactSprite : 1;
 			uint16_t life;			// how long to keep the beam active (millis). 0 = forever (egon)
 			uint16_t spreadX;		// accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
 			uint16_t spreadY;		// accuracy (0 = perfect, 1 = 180 degrees). 65535 = 1.0f
@@ -314,8 +344,18 @@ struct WepEvt {
 			uint8_t width;
 			uint8_t noise;
 			uint8_t scrollRate;
-			
 			RGBA color;
+
+			uint16_t altTime : 12; // time to transition between styles (millis)
+			uint8_t widthAlt;
+			uint8_t noiseAlt;
+			uint8_t scrollRateAlt;
+			RGBA colorAlt;
+
+			uint16_t impactSprite : 9;
+			uint16_t impactSpriteFps : 7; // 0 - 128
+			uint8_t impactSpriteScale; 
+			RGBA impactSpriteColor;
 		} beam;
 
 		struct {
@@ -355,6 +395,19 @@ struct WepEvt {
 			uint8_t life;
 			uint8_t decayRate;
 		} dlight;
+
+		struct {
+			uint16_t sprite;
+			uint8_t count;
+			uint8_t scale;
+			uint8_t speed;
+			uint8_t speedNoise;
+		} spriteTrail;
+
+		struct {
+			uint8_t decalIdx;
+			uint8_t isGunshot; // create gunshot particle effects
+		} decal;
 
 		// not networked to the client. No bit packing necessary
 		struct {
@@ -402,6 +455,10 @@ struct WepEvt {
 			RGBA trail_color;
 		} proj;
 
+		struct {
+			uint8_t brightness; // WeaponCustomFlashSz
+		} muzzleFlash;
+
 		// user defined server event
 		// not networked to the client
 		struct {
@@ -445,6 +502,10 @@ struct WepEvt {
 		this->triggerArg = triggerArg;
 		this->delay = delay;
 	}
+
+	//
+	// Event conditions
+	//
 
 	WepEvt Primary() {
 		this->trigger = WC_TRIG_PRIMARY;
@@ -610,6 +671,16 @@ struct WepEvt {
 		this->triggerArg = WC_TRIG_SHOOT_ARG_AKIMBO;
 		return *this;
 	}
+
+	WepEvt Impact(int type) {
+		this->trigger = WC_TRIG_IMPACT;
+		this->triggerArg = type;
+		return *this;
+	}
+
+	//
+	// Event actions
+	//
 
 	// play a weapon fidgeting sound (pumping, reloading, etc.)
 	// prefer using this instead of animation events so that other players can hear the sound
@@ -784,6 +855,14 @@ struct WepEvt {
 		return *this;
 	}
 
+	// Not necessary for bullet events which include a muzzleflash argument
+	// brightness = WeaponCustomFlashSz
+	WepEvt MuzzleFlash(uint8_t brightness) {
+		evtType = WC_EVT_MUZZLEFLASH;
+		muzzleFlash.brightness = brightness;
+		return *this;
+	}
+
 	// id = used to update this beam in future events. 0 = always create a new beam
 	// life = duration in millis. 0 = constant mode (egon)
 	// flags = FL_WC_BEAM_*
@@ -811,13 +890,34 @@ struct WepEvt {
 		return *this;
 	}
 
+	// configure style animation
+	// mode = WeaponCustomBeamAnimation
+	WepEvt BeamStyleAlt(int mode, uint16_t animTime, RGBA color = RGBA(255, 255, 255, 255),
+		uint8_t width = 16, uint8_t noise = 0, uint8_t scrollRate = 0) {
+		beam.altMode = mode;
+		beam.altTime = animTime;
+		beam.colorAlt = color;
+		beam.widthAlt = width;
+		beam.noiseAlt = noise;
+		beam.scrollRateAlt = scrollRate;
+		return *this;
+	}
+
 	// configure beam accuracy and damage of a Beam() event
 	WepEvt BeamDamage(uint16_t damage, float spreadX, float spreadY, uint16_t freq=0) {
-		evtType = WC_EVT_BEAM;
 		beam.damage = damage;
 		beam.spreadX = FLOAT_TO_SPREAD(spreadX);
 		beam.spreadY = FLOAT_TO_SPREAD(spreadY);
 		beam.freq = freq;
+		return *this;
+	}
+
+	WepEvt BeamImpactSprite(uint16_t sprite, uint8_t fps, uint8_t scale, RGBA color) {
+		beam.hasImpactSprite = 1;
+		beam.impactSprite = sprite;
+		beam.impactSpriteFps = V_min(127, fps);
+		beam.impactSpriteScale = scale;
+		beam.impactSpriteColor = color;
 		return *this;
 	}
 
@@ -929,6 +1029,23 @@ struct WepEvt {
 		dlight.b = c.b;
 		dlight.life = life;
 		dlight.decayRate = decayRate;
+		return *this;
+	}
+
+	WepEvt SpriteTrail(uint16_t sprite, uint8_t count, uint8_t scale, uint8_t speed, uint8_t speedNoise) {
+		evtType = WC_EVT_SPRITETRAIL;
+		spriteTrail.sprite = sprite;
+		spriteTrail.count = count;
+		spriteTrail.scale = scale;
+		spriteTrail.speed = speed;
+		spriteTrail.speedNoise = speedNoise;
+		return *this;
+	}
+
+	WepEvt Decal(uint8_t decalIdx, bool gunshotEffects) {
+		evtType = WC_EVT_DECAL;
+		decal.isGunshot = gunshotEffects;
+		decal.decalIdx = decalIdx;
 		return *this;
 	}
 

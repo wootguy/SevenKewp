@@ -1121,15 +1121,17 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			}
 			*/
 
-			if (prediction != BULLETPRED_EVENT) {
-				bool attackerPredictsDecals = prediction == BULLETPRED_EVENTLESS;
-				DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd, attackerPredictsDecals ? edict() : NULL);
-			}
-			else {
-				// clients will simulate decals when they get the event message, but body impacts
-				// need to be confirmed and sent server-side
-				if (tr.pHit->v.flags & (FL_MONSTER | FL_CLIENT))
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType, tr.pHit);
+			if (iBulletType != BULLET_BEAM) {
+				if (prediction != BULLETPRED_EVENT) {
+					bool attackerPredictsDecals = prediction == BULLETPRED_EVENTLESS;
+					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd, attackerPredictsDecals ? edict() : NULL);
+				}
+				else {
+					// clients will simulate decals when they get the event message, but body impacts
+					// need to be confirmed and sent server-side
+					if (tr.pHit->v.flags & (FL_MONSTER | FL_CLIENT))
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType, tr.pHit);
+				}
 			}
 			
 
@@ -1176,6 +1178,8 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 				}
 				splashSize = 0.4f;
 
+				break;
+			case BULLET_BEAM:
 				break;
 			}
 		}

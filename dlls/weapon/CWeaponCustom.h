@@ -7,6 +7,8 @@
 
 #ifdef CLIENT_DLL
 #include "beamdef.h"
+struct tempent_s;
+typedef struct tempent_s TEMPENTITY;
 #endif
 
 #define WC_SERVER_EVENT_QUEUE_SZ 32
@@ -17,11 +19,26 @@
 
 #define MAX_WC_BEAMS 16
 
+// Same as a TraceResult result except using entity indexes for delayed event safety
+struct WcTrace {
+	int		fAllSolid;			// if true, plane is not valid
+	int		fStartSolid;		// if true, the initial point was in a solid area
+	int		fInOpen;
+	int		fInWater;
+	float	flFraction;			// time completed, 1.0 = didn't hit anything
+	Vector	vecEndPos;			// final position
+	float	flPlaneDist;
+	Vector	vecPlaneNormal;		// surface normal at impact
+	int		pHit;				// entity the surface is on
+	int		iHitgroup;			// 0 == generic, non zero is specific body part
+};
+
 struct WcDelayEvent {
 	int eventIdx;
 	float fireTime;
 	bool leftHand;
 	bool akimboFire; // event was triggered by both hands at the same time
+	WcTrace tr;
 };
 
 struct SoundMapping {
@@ -48,6 +65,7 @@ struct WcBeam {
 	float spreadX;
 	float spreadY;
 	float nextAttack;
+	float creationTime;
 	WepEvt evt;
 
 #ifdef CLIENT_DLL
@@ -57,6 +75,21 @@ struct WcBeam {
 #endif
 
 	bool isFree();
+};
+
+struct WcSprite {
+	float creationTime;
+	float killTime;
+	int beamId; // will die when its parent beam does
+
+#ifdef CLIENT_DLL
+	TEMPENTITY* pSprite;
+#else
+	EHANDLE h_sprite;
+#endif
+
+	bool IsAlive();
+	void Kill();
 };
 
 // m_fireState flags
@@ -90,6 +123,7 @@ public:
 	TraceResult m_meleeDecalPos;
 	float m_nextMeleeDecal;
 	WcBeam m_beams[MAX_WC_BEAMS];
+	WcSprite m_beamImpactSprite;
 
 	// for prediction code, don't spam events/toggles while waiting for the new server state
 	float m_lastZoomToggle;
@@ -183,15 +217,17 @@ public:
 	inline bool HasPredictionData(edict_t* target) { return m_predDataSent[m_iId] & PLRBIT(target); }
 	bool IsPredicted();
 	int GetAttackIdx(WepEvt& evt); // TODO: store this info in the event
+	int GetImpactArg(int attackIdx, bool impactMonster, bool impactWorld);
 	WcBeam* AllocBeam();
 	void UpdateBeams();
 	bool KillBeams(int attackIdx=-1); // set attack idx to only kill constant beams attached to an attack button. True if any beams killed
 	Vector BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer);
+	void QuakeMuzzleFlash(CBasePlayer* plr);
 
 	void FireAmmoEvents(int ammoPool);
 
-	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft=0);
-	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire);
+	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft = 0, WcTrace* tr = NULL);
+	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire, WcTrace* tr);
 	void PlayDelayedEvents();
 	void CancelDelayedEvents(int trigger);
 
@@ -208,7 +244,10 @@ public:
 	void PlayEvent_ToggleState(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_HideLaser(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer);
-	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire);
+	void PlayEvent_MuzzleFlash(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_SpriteTrail(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_Decal(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTrace* tr);
 
 	float GetActiveMovespeedMult();
 	float WallTime();
