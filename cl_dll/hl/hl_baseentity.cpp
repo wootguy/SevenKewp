@@ -375,6 +375,8 @@ void CBasePlayer::SendSevenKewpClientNotice(const char* weaponName) {}
 bool CBasePlayer::IsSevenKewpClient() { return false; }
 void CBasePlayer::SetThirdPersonWeaponAnim(int anim, float fps) { }
 void CBasePlayer::SetJumpPower(int power) {}
+void CBasePlayer::ApplyEffects() {}
+bool CBasePlayer::UseSevenKewpGuns() { return false; }
 
 void ClearMultiDamage(void) { }
 void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker ) { }

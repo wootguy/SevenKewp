@@ -498,7 +498,7 @@ public:
 	int CountInventoryItems();
 
 	// applies cumulative effects from inventory, friction, and gravity triggers
-	void ApplyEffects();
+	virtual void ApplyEffects();
 
 	void ResetEffects();
 

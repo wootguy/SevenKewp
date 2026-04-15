@@ -379,6 +379,7 @@ void CHud :: Init( void )
 	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE );
 	CVAR_CREATE( "cl_autowepswitch", "1", FCVAR_USERINFO|FCVAR_ARCHIVE );
 	CVAR_CREATE( "hlcoop_version", versionString.c_str(), 0);
+	CVAR_CREATE( "cl_class", "0", FCVAR_USERINFO|FCVAR_ARCHIVE);
 	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );

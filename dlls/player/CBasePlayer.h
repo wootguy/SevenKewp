@@ -161,6 +161,11 @@ struct client_info_t {
 	int max_packet_entities;
 };
 
+enum PLAYER_CLASS {
+	PCLASS_DEFAULT, // give player the default weapons for their client
+	PCLASS_HL,		// give player vanilla HL weapons when possible
+};
+
 // debug flags
 #define DF_NODES 1 // display nearby nodes and connections
 
@@ -351,6 +356,10 @@ public:
 	usercmd_t m_lastCmd;
 	uint32_t m_cmdTime; // time accumulated from user commands, syncronized with the client
 
+	bool m_godmode; // godmode cheat enabled
+	bool m_noclip; // noclip cheat enabled
+	bool m_notarget; // no-target cheat enabled
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
@@ -504,6 +513,8 @@ public:
 	float m_flNextChatTime;
 	
 	int m_iAutoWepSwitch;
+	int m_iWantClassSelection;	// set whenever userinfo changes
+	int m_iClassSelection;		// synced to desired class on spawn
 
 	float m_lastScoreUpdate;
 	float m_lastTimeLeftUpdate;
@@ -561,6 +572,8 @@ public:
 	const char* GetClientVersionString();
 
 	bool IsSevenKewpClient();
+
+	bool UseSevenKewpGuns(); // true if the player wants sevenkewp guns and is using the client
 
 	// gets legacy steam id (e.g. STEAM_0:0:12345679)
 	const char* GetSteamID();
@@ -672,6 +685,8 @@ public:
 
 	// make splashes from player actions (call MakeVectors before this)
 	void WaterSplashTrace(Vector vecSrc, float dist, int hull, float scale);
+
+	void ApplyEffects();
 
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

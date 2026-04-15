@@ -3785,6 +3785,11 @@ void CBasePlayer::Spawn( void )
 		m_iFlashBattery = V_min(-(m_iFlashBattery + 1), 100) - 1;
 	}
 	
+	if (m_iWantClassSelection != m_iClassSelection) {
+		m_iClassSelection = m_iWantClassSelection;
+		UTIL_ClientPrint(this, print_chat, UTIL_VarArgs("SevenKewp weapons are now %s.\n",
+			m_iClassSelection == PCLASS_DEFAULT ? "ENALBED" : "DISABLED"));
+	}
 
 // dont let uninitialized value here hurt the player
 	m_flFallVelocity = 0;
@@ -4517,7 +4522,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		if (!m_fLongJump) {
 			GiveNamedItem("item_longjump");
 		}
-		if (IsSevenKewpClient()) {
+		if (UseSevenKewpGuns()) {
 			GiveNamedItem("weapon_m249");
 			GiveNamedItem("weapon_sniperrifle");
 			GiveNamedItem("weapon_uziakimbo");
@@ -4667,7 +4672,7 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 {	
 	const char* altName = "";
 
-	if (IsSevenKewpClient()) {
+	if (UseSevenKewpGuns()) {
 		const char* remap = g_weaponRemapHL.get(STRING(pItem->pev->classname));
 		if (remap)
 			altName = remap;
@@ -5332,17 +5337,30 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 
 void CBasePlayer::SetPrefsFromUserinfo(char* infobuffer)
 {
-	const char* pszKeyVal;
-
 	// Set autoswitch preference
-	pszKeyVal = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autowepswitch");
-	if (FStrEq(pszKeyVal, ""))
-	{
-		m_iAutoWepSwitch = 1;
-	}
-	else
-	{
-		m_iAutoWepSwitch = atoi(pszKeyVal);
+	const char* autoSwitchKey = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autowepswitch");
+	m_iAutoWepSwitch = FStrEq(autoSwitchKey, "") ? 1 : atoi(autoSwitchKey);
+
+	// weapon loadout
+	const char* classKey = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_class");
+	int newClass = FStrEq(classKey, "") ? 0 : atoi(classKey);
+
+	newClass = clamp(newClass, PCLASS_DEFAULT, PCLASS_HL);
+	if (newClass != m_iWantClassSelection) {
+		m_iWantClassSelection = newClass;
+
+		if (!m_clientCheckFinished) {
+			// first time the player spawned. Update preference now.
+			m_iClassSelection = m_iWantClassSelection;
+		}
+		else {
+			if (newClass == PCLASS_DEFAULT) {
+				UTIL_ClientPrint(this, print_chat, "SevenKewp weapons will be ENABLED next respawn.\n");
+			}
+			else {
+				UTIL_ClientPrint(this, print_chat, "SevenKewp weapons will be DISABLED next respawn.\n");
+			}
+		}
 	}
 }
 
@@ -6856,6 +6874,16 @@ void CBasePlayer::SendSevenKewpClientNotice(const char* weaponName) {
 		return;
 	}
 
+	m_sentSevenKewpNotice = true;
+
+	if (IsSevenKewpClient()) {
+		// player is using the client but disabled sevenkewp guns
+		UTIL_ClientPrint(this, print_chat, UTIL_VarArgs(
+			"The \"%s\" is a SevenKewp weapon. Set \"cl_class\" back to \"0\" to pick it up.\n",
+			weaponName));
+		return;
+	}
+
 	std::string clientReq = UTIL_SevenKewpClientString(SEVENKEWP_VERSION);
 	UTIL_ClientPrint(this, print_chat, UTIL_VarArgs(
 		"The \"%s\" requires the \"%s\" client. Check your console for more info.\n",
@@ -6873,7 +6901,6 @@ void CBasePlayer::SendSevenKewpClientNotice(const char* weaponName) {
 	UTIL_ClientPrint(this, print_console, "The server detected that you are using this client:\n");
 	UTIL_ClientPrint(this, print_console, STRING(m_clientModVersionString));
 	UTIL_ClientPrint(this, print_console, "\n-----------------------------------------------------------------\n\n");
-	m_sentSevenKewpNotice = true;
 }
 
 const char* CBasePlayer::GetClientVersionString() {
@@ -7752,6 +7779,10 @@ bool CBasePlayer::IsSevenKewpClient() {
 	return UTIL_AreSevenKewpVersionsCompatible(m_sevenkewpVersion, SEVENKEWP_VERSION);
 }
 
+bool CBasePlayer::UseSevenKewpGuns() {
+	return IsSevenKewpClient() && m_iClassSelection == PCLASS_DEFAULT;
+}
+
 void CBasePlayer::SetThirdPersonWeaponAnim(int sequence, float fps) {
 	for (int i = 1; i < gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
@@ -7815,4 +7846,15 @@ void CBasePlayer::WaterSplashTrace(Vector vecSrc, float dist, int hull, float sc
 
 	UTIL_TraceLine(vecSrc, vecSrc + waterTraceBottom, ignore_monsters, NULL, &waterTrace);
 	UTIL_WaterSplashTrace(vecSrc, waterTrace.vecEndPos, scale, 3, NULL);
+}
+
+void CBasePlayer::ApplyEffects() {
+	CBaseMonster::ApplyEffects();
+
+	if (m_godmode)
+		pev->flags |= FL_GODMODE;
+	if (m_noclip)
+		pev->movetype = MOVETYPE_NOCLIP;
+	if (m_notarget)
+		pev->flags |= FL_NOTARGET;
 }

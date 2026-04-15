@@ -345,7 +345,7 @@ void CBasePlayerItem::DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, 
 		}
 
 		CWeaponCustom* cwep = MyWeaponCustomPtr();
-		if (cwep && cwep->IsSevenKewpWeapon() && !plr->IsSevenKewpClient()) {
+		if (cwep && cwep->IsSevenKewpWeapon() && !plr->UseSevenKewpGuns()) {
 			if (plr->HasNamedPlayerItem(cwep->wrongClientWeapon)) {
 				plr->SendSevenKewpClientNotice(DisplayName());
 				return;

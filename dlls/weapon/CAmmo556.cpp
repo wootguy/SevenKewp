@@ -21,9 +21,9 @@ class CAmmo556 : public CBasePlayerAmmo
 
 		CBasePlayer* plr = pOther ? pOther->MyPlayerPointer() : NULL;
 
-		if (g_hlPlayersCanPickup556 || (plr && plr->IsSevenKewpClient())) {
+		if (g_hlPlayersCanPickup556 || (plr && plr->UseSevenKewpGuns())) {
 			int limit = gSkillData.sk_ammo_max_556;
-			if (!plr->IsSevenKewpClient())
+			if (!plr->UseSevenKewpGuns())
 				limit = V_min(limit, 200); // HL clients can't display ammo counts above 255
 
 			bResult = (pOther->GiveAmmo(AMMO_556_BOX_GIVE, "556", limit) != -1);

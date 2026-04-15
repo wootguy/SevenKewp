@@ -21,7 +21,7 @@ terms = [
 	( 'is null', ' == NULL '),
 	( '.IsBSPModel()', '->IsBSPModel()'),
 	('g_Engine.', 'gpGlobals->'),
-	('g_Utility.TraceLine', 'TRACE_LINE'),
+	('g_Utility.TraceLine', 'UTIL_TraceLine'),
 	('Math.MakeVectors', 'MAKE_VECTORS'),
 	('null;', 'NULL;'),
 	('null,', 'NULL,'),
@@ -95,6 +95,10 @@ terms = [
 	('g_EntityFuncs.FindEntityByClassname', 'UTIL_FindEntityByClassname'),
 	('CBaseEntity::CreateSprite', 'CSprite::SpriteCreate'),
 	('CBaseEntity::CreateBeam', 'CBeam::BeamCreate'),
+	('g_Utility.WaterLevel', 'UTIL_WaterLevel'),
+	('g_Utility.TraceHull', 'UTIL_TraceHull'),
+	('g_WeaponFuncs.ClearMultiDamage()', 'ClearMultiDamage()'),
+	('g_WeaponFuncs.ApplyMultiDamage()', 'ApplyMultiDamage()'),
 ]
 
 def convert_script(fpath):

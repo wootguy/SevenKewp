@@ -271,7 +271,7 @@ int CBasePlayerWeapon::AddDuplicate(CBasePlayerItem* pOriginal)
 
 int CBasePlayerWeapon::AddToPlayer(CBasePlayer* pPlayer)
 {
-	if (pPlayer->IsSevenKewpClient()) {
+	if (pPlayer->UseSevenKewpGuns()) {
 		const char* remapClass = g_weaponRemapHL.get(STRING(pev->classname));
 
 		if (remapClass) {

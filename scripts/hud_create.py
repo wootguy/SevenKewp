@@ -177,6 +177,8 @@ def save_img_alphatest(canvas, out_name):
 	print("Wrote %s" % out_name + ".spr")
 
 def compile_weapon_hud():
+	global hud_path
+	
 	if not os.path.exists("weapon.bmp"):
 		print("weapon.bmp does not exist. Cannot create a HUD file without the weapon icon.")
 		sys.exit()
@@ -254,45 +256,48 @@ def compile_weapon_hud():
 	else:
 		print("zoom.bmp does not exist. zoom entries will not be added to the HUD text file.")
 
-	# save the new image
-	save_img_alphatest(new_img, "hud_weapon")
+	wep_name = os.path.splitext(os.path.basename(hud_path))[0]
+	spr_path = os.path.dirname(hud_path).replace("\\", "/").replace("sprites/", "") + "/" + wep_name
+
+	# save the new image and sprite
+	save_img_alphatest(new_img, wep_name)
 
 	print("Created HUD file: hud_output.bmp")
 
-	with open("hud_output.txt", "w") as f:
+	with open(wep_name + ".txt", "w") as f:
 		spr_count = 8 + (4 * has_ammo) + (4 * has_ammo2) + (4 * has_autoaim) + (4 * has_crosshair) + (4 * has_zoom)
 		
 		f.write("%d\n" % spr_count)
-		if (has_ammo):		f.write("ammo			2560	hud_output	340 270 72	72\n")
-		if (has_ammo2):		f.write("ammo2			2560	hud_output	412 270 72	72\n")
-		if (has_autoaim):	f.write("autoaim			2560	hud_output	340 414 72	72\n")
-		if (has_crosshair): f.write("crosshair		2560	hud_output	340 342 72	72\n")
+		if (has_ammo):		f.write("ammo			2560	%s	340 270 72	72\n" % spr_path)
+		if (has_ammo2):		f.write("ammo2			2560	%s	412 270 72	72\n" % spr_path)
+		if (has_autoaim):	f.write("autoaim			2560	%s	340 414 72	72\n" % spr_path)
+		if (has_crosshair): f.write("crosshair		2560	%s	340 342 72	72\n" % spr_path)
 		if (has_zoom):		f.write("zoom			2560	scope		0	0	%d	%d\n" % (zoom_size, zoom_size))
-		f.write("weapon			2560	hud_output	0	0	510 135\n")
-		f.write("weapon_s		2560	hud_output	0	135 510 135\n")
-		if (has_ammo):		f.write("ammo			1280	hud_output	340 414 48	48\n")
-		if (has_ammo2):		f.write("ammo2			1280	hud_output	388 414 48	48\n")
-		if (has_autoaim):	f.write("autoaim			1280	hud_output	412 414 48	48\n")
-		if (has_crosshair): f.write("crosshair		1280	hud_output	340 462 48	48\n")
+		f.write("weapon			2560	%s	0	0	510 135\n" % spr_path)
+		f.write("weapon_s		2560	%s	0	135 510 135\n" % spr_path)
+		if (has_ammo):		f.write("ammo			1280	%s	340 414 48	48\n" % spr_path)
+		if (has_ammo2):		f.write("ammo2			1280	%s	388 414 48	48\n" % spr_path)
+		if (has_autoaim):	f.write("autoaim			1280	%s	412 414 48	48\n" % spr_path)
+		if (has_crosshair): f.write("crosshair		1280	%s	340 462 48	48\n" % spr_path)
 		if (has_zoom):		f.write("zoom			1280	scope		0	0	%d	%d\n" % (zoom_size, zoom_size))
-		f.write("weapon			1280	hud_output	0	270 340 90\n")
-		f.write("weapon_s		1280	hud_output	0	360 340 90\n")
-		if (has_ammo):		f.write("ammo			640		hud_output	484 270 24	24\n")
-		if (has_ammo2):		f.write("ammo2			640		hud_output	484 294 24	24\n")
-		if (has_autoaim):	f.write("autoaim			640		hud_output	460 414 24	24\n")
-		if (has_crosshair): f.write("crosshair		640		hud_output	484 318 24	24\n")
+		f.write("weapon			1280	%s	0	270 340 90\n" % spr_path)
+		f.write("weapon_s		1280	%s	0	360 340 90\n" % spr_path)
+		if (has_ammo):		f.write("ammo			640		%s	484 270 24	24\n" % spr_path)
+		if (has_ammo2):		f.write("ammo2			640		%s	484 294 24	24\n" % spr_path)
+		if (has_autoaim):	f.write("autoaim			640		%s	460 414 24	24\n" % spr_path)
+		if (has_crosshair): f.write("crosshair		640		%s	484 318 24	24\n" % spr_path)
 		if (has_zoom):		f.write("zoom			640		scope		0	0	%d	%d\n" % (zoom_size, zoom_size))
-		f.write("weapon			640		hud_output	0	450 170 45\n")
-		f.write("weapon_s		640		hud_output	170 450 170 45\n")
-		if (has_ammo):		f.write("ammo			320		hud_output	484 366 18	18\n")
-		if (has_ammo2):		f.write("ammo2			320		hud_output	484 384 18	18\n")
-		if (has_autoaim):	f.write("autoaim			320		hud_output	484 402 18	18\n")
-		if (has_crosshair): f.write("crosshair		320		hud_output	484 318 24	24\n")
+		f.write("weapon			640		%s	0	450 170 45\n" % spr_path)
+		f.write("weapon_s		640		%s	170 450 170 45\n" % spr_path)
+		if (has_ammo):		f.write("ammo			320		%s	484 366 18	18\n" % spr_path)
+		if (has_ammo2):		f.write("ammo2			320		%s	484 384 18	18\n" % spr_path)
+		if (has_autoaim):	f.write("autoaim			320		%s	484 402 18	18\n" % spr_path)
+		if (has_crosshair): f.write("crosshair		320		%s	484 318 24	24\n" % spr_path)
 		if (has_zoom):		f.write("zoom			320		scope		0	0	%d	%d\n" % (zoom_size, zoom_size))
-		f.write("weapon			320		hud_output	388 462 80	20\n")
-		f.write("weapon_s		320		hud_output	388 482 80	20\n")
+		f.write("weapon			320		%s	388 462 80	20\n" % spr_path)
+		f.write("weapon_s		320		%s	388 482 80	20\n" % spr_path)
 		
-		print("Created HUD file: hud_output.txt")
+		print("Created HUD file: %s" % wep_name + ".txt")
 
 
 def paste_hud_def(canvas, img, icon, res, spr, x, y, w, h):

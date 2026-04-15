@@ -225,24 +225,28 @@ bool CheatCommand(edict_t* pEntity) {
 	const char* pcmd = CMD_ARGV(0);
 
 	entvars_t* pev = &pEntity->v;
+	CBasePlayer* plr = CBaseEntity::Instance(pEntity)->MyPlayerPointer();
 
-	if (FStrEq(pcmd, "cl_noclip")) {
+	if (FStrEq(pcmd, "cl_noclip") || FStrEq(pcmd, "noclip")) {
 		ABORT_IF_CHEATS_DISABLED("No clip");
-		pev->movetype = pev->movetype == MOVETYPE_NOCLIP ? MOVETYPE_WALK : MOVETYPE_NOCLIP;
-		const char* newMode = pev->movetype == MOVETYPE_NOCLIP ? "ON" : "OFF";
-		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No clip is %s\n", newMode));
+		if (plr) {
+			plr->m_noclip = !plr->m_noclip;
+			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No clip is %s\n", plr->m_noclip ? "ON" : "OFF"));
+		}
 	}
-	else if (FStrEq(pcmd, "godmode")) {
+	else if (FStrEq(pcmd, "godmode") || FStrEq(pcmd, "god")) {
 		ABORT_IF_CHEATS_DISABLED("God mode");
-		pev->takedamage = pev->takedamage == DAMAGE_NO ? DAMAGE_YES : DAMAGE_NO;
-		const char* newMode = pev->takedamage == DAMAGE_NO ? "ON" : "OFF";
-		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("God mode is %s\n", newMode));
+		if (plr) {
+			plr->m_godmode = !plr->m_godmode;
+			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("God mode is %s\n", plr->m_godmode ? "ON" : "OFF"));
+		}
 	}
-	else if (FStrEq(pcmd, "cl_notarget")) {
+	else if (FStrEq(pcmd, "cl_notarget") || FStrEq(pcmd, "notarget")) {
 		ABORT_IF_CHEATS_DISABLED("No target");
-		pev->flags ^= FL_NOTARGET;
-		const char* newMode = pev->flags & FL_NOTARGET ? "ON" : "OFF";
-		CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No target is %s\n", newMode));
+		if (plr) {
+			plr->m_notarget = !plr->m_notarget;
+			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No target is %s\n", plr->m_notarget ? "ON" : "OFF"));
+		}
 	}
 	else if (FStrEq(pcmd, "revive")) {
 		ABORT_IF_CHEATS_DISABLED("Revive");

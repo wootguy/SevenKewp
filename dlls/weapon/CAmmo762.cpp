@@ -20,7 +20,7 @@ class CAmmo762 : public CBasePlayerAmmo
 
 		CBasePlayer* plr = pOther ? pOther->MyPlayerPointer() : NULL;
 
-		if (plr->IsSevenKewpClient()) {
+		if (plr->UseSevenKewpGuns()) {
 			bResult = (pOther->GiveAmmo(AMMO_762_GIVE, "762", gSkillData.sk_ammo_max_762) != -1);
 		}
 		else {

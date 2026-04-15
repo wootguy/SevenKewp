@@ -112,7 +112,7 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 		itemName = remap;
 	}
 
-	if (!pPlayer->IsSevenKewpClient()) {
+	if (!pPlayer->UseSevenKewpGuns()) {
 		const char* hlremap = g_itemNameRemapHL.get(itemName);
 		if (hlremap) {
 			itemName = hlremap;
@@ -163,7 +163,7 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 		pPlayer->GiveAmmo(AMMO_SPORE_GIVE * count, "spores", gSkillData.sk_ammo_max_spores);
 	}
 	else if (!strcmp(itemName, "ammo_556")) {
-		if (g_hlPlayersCanPickup556 || pPlayer->IsSevenKewpClient())
+		if (g_hlPlayersCanPickup556 || pPlayer->UseSevenKewpGuns())
 			pPlayer->GiveAmmo(AMMO_556_BOX_GIVE * count, "556", gSkillData.sk_ammo_max_556);
 		else
 			pPlayer->GiveAmmo(AMMO_CHAINBOX_GIVE * count, "9mm", gSkillData.sk_ammo_max_9mm);

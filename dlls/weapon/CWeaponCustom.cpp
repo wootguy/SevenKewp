@@ -170,7 +170,7 @@ void CWeaponCustom::AddEvent(WepEvt evt) {
 
 int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 #ifndef CLIENT_DLL
-	if (!pPlayer->IsSevenKewpClient() && wrongClientWeapon) {
+	if (!pPlayer->UseSevenKewpGuns() && wrongClientWeapon) {
 		if (pPlayer->HasNamedPlayerItem(wrongClientWeapon)) {
 			return 0;
 		}
@@ -3427,7 +3427,7 @@ int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
 	if (!pPlayer)
 		return 0;
 
-	if (!pPlayer->IsSevenKewpClient() && wrongClientWeapon) {
+	if (!pPlayer->UseSevenKewpGuns() && wrongClientWeapon) {
 		return 0;
 	}
 

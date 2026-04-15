@@ -1179,7 +1179,7 @@ for wav in all_wavs:
 	if needs_convert:
 		print()
 		file = wav[len('sound/'):]
-		convert_audio(file, 'wav', samprate)
+		convert_audio(file, 'wav', samprate, False)
 
 print()
 os.system('pause')
