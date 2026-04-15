@@ -70,9 +70,7 @@ int CMedkit::GetItemInfo(ItemInfo *p)
 {
 	p->pszName = MOD_SPRITE_FOLDER "weapon_medkit";
 	p->pszAmmo1 = "health";
-	p->iMaxAmmo1 = gSkillData.sk_ammo_max_medkit;
 	p->pszAmmo2 = NULL;
-	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 0;
 	p->iPosition = 2;

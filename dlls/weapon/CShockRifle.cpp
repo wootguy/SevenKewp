@@ -388,9 +388,7 @@ int CShockRifle::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_shockrifle";
 
 	p->pszAmmo1 = "shock";
-	p->iMaxAmmo1 = -1;
 	p->pszAmmo2 = NULL;
-	p->iMaxAmmo2 = -1;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 2; // should be 6 but that slot doesn't exist in vanilla HL
 	p->iPosition = 3;

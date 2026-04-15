@@ -443,7 +443,7 @@ void CBasePlayerWeapon::SendWeaponAnimSpec(int iAnim) {
 }
 
 
-BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, char* szName, int iMaxClip, int iMaxCarry)
+BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, char* szName, int iMaxClip)
 {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
@@ -454,21 +454,19 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, char* szName, int iMaxClip, i
 	if (iMaxClip < 1)
 	{
 		m_iClip = -1;
-		iIdAmmo = m_pPlayer->GiveAmmo(iCount, szName, iMaxCarry);
+		iIdAmmo = m_pPlayer->GiveAmmo(iCount, szName);
 	}
 	else if (m_iClip == 0)
 	{
 		int i;
 		i = V_min(m_iClip + iCount, iMaxClip) - m_iClip;
 		m_iClip += i;
-		iIdAmmo = m_pPlayer->GiveAmmo(iCount - i, szName, iMaxCarry);
+		iIdAmmo = m_pPlayer->GiveAmmo(iCount - i, szName);
 	}
 	else
 	{
-		iIdAmmo = m_pPlayer->GiveAmmo(iCount, szName, iMaxCarry);
+		iIdAmmo = m_pPlayer->GiveAmmo(iCount, szName);
 	}
-
-	// m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] = iMaxCarry; // hack for testing
 
 	if (iIdAmmo > 0)
 	{
@@ -485,17 +483,16 @@ BOOL CBasePlayerWeapon::AddPrimaryAmmo(int iCount, char* szName, int iMaxClip, i
 }
 
 
-BOOL CBasePlayerWeapon::AddSecondaryAmmo(int iCount, char* szName, int iMax)
+BOOL CBasePlayerWeapon::AddSecondaryAmmo(int iCount, char* szName)
 {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return 0;
 
 	int iIdAmmo;
+	int iMax = UTIL_GetMaxAmmo(szName);
 
-	iIdAmmo = m_pPlayer->GiveAmmo(iCount, szName, iMax);
-
-	//m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] = iMax; // hack for testing
+	iIdAmmo = m_pPlayer->GiveAmmo(iCount, szName);
 
 	if (iIdAmmo > 0)
 	{
@@ -519,7 +516,7 @@ BOOL CBasePlayerWeapon::IsUseable(void)
 
 	if (m_iClip <= 0)
 	{
-		if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] <= 0 && iMaxAmmo1() != -1)
+		if (m_pPlayer->m_rgAmmo[PrimaryAmmoIndex()] <= 0 && pszAmmo1() != NULL)
 		{
 			// clip is empty (or nonexistant) and the player has no more ammo of this type. 
 			return CanDeploy();
@@ -686,13 +683,13 @@ int CBasePlayerWeapon::ExtractAmmo(CBasePlayerWeapon* pWeapon)
 	{
 		// blindly call with m_iDefaultAmmo. It's either going to be a value or zero. If it is zero,
 		// we only get the ammo in the weapon's clip, which is what we want. 
-		iReturn = pWeapon->AddPrimaryAmmo(m_iDefaultAmmo, (char*)pszAmmo1(), iMaxClip(), iMaxAmmo1());
+		iReturn = pWeapon->AddPrimaryAmmo(m_iDefaultAmmo, (char*)pszAmmo1(), iMaxClip());
 		m_iDefaultAmmo = 0;
 	}
 
 	if (pszAmmo2() != NULL)
 	{
-		iReturn = pWeapon->AddSecondaryAmmo(0, (char*)pszAmmo2(), iMaxAmmo2());
+		iReturn = pWeapon->AddSecondaryAmmo(0, (char*)pszAmmo2());
 	}
 
 	return iReturn;
@@ -718,7 +715,7 @@ int CBasePlayerWeapon::ExtractClipAmmo(CBasePlayerWeapon* pWeapon)
 	if (!m_pPlayer)
 		return 0;
 
-	return m_pPlayer->GiveAmmo(iAmmo, pszAmmo1(), iMaxAmmo1()); // , &m_iPrimaryAmmoType
+	return m_pPlayer->GiveAmmo(iAmmo, pszAmmo1()); // , &m_iPrimaryAmmoType
 }
 
 //=========================================================

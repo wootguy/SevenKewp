@@ -74,9 +74,9 @@ int MaxAmmoCarry( int iszName )
 	for ( int i = 0;  i < MAX_WEAPONS; i++ )
 	{
 		if ( CBasePlayerItem::ItemInfoArray[i].pszAmmo1 && !strcmp( STRING(iszName), CBasePlayerItem::ItemInfoArray[i].pszAmmo1 ) )
-			return CBasePlayerItem::ItemInfoArray[i].iMaxAmmo1;
+			return UTIL_GetMaxAmmo(CBasePlayerItem::ItemInfoArray[i].pszAmmo1);
 		if ( CBasePlayerItem::ItemInfoArray[i].pszAmmo2 && !strcmp( STRING(iszName), CBasePlayerItem::ItemInfoArray[i].pszAmmo2 ) )
-			return CBasePlayerItem::ItemInfoArray[i].iMaxAmmo2;
+			return UTIL_GetMaxAmmo(CBasePlayerItem::ItemInfoArray[i].pszAmmo2);
 	}
 
 	ALERT( at_console, "MaxAmmoCarry() doesn't recognize '%s'!\n", STRING( iszName ) );
@@ -198,14 +198,13 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname, bool isSevenKewpGun)
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].iId = giAmmoIndex;   // yes, this info is redundant
 }
 
-
 bool g_registeringCustomWeps = false;
 StringSet g_weaponNames;
 StringSet g_weaponClassnames;
 StringMap g_defaultSpriteDirs;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
-HashMap<int> g_customAmmoCapacities;
+HashMap<int> g_ammoCapacities;
 
 int NextAutoWeaponId() {
 	for (int i = 1; i < MAX_WEAPONS; i++) {
@@ -218,67 +217,22 @@ int NextAutoWeaponId() {
 	return -1;
 }
 
-int GetDefaultMaxAmmo(const char* ammoType) {
-	if (!strcmp(ammoType, "uranium")) {
-		return gSkillData.sk_ammo_max_uranium;
-	}
-	if (!strcmp(ammoType, "9mm")) {
-		return gSkillData.sk_ammo_max_9mm;
-	}
-	if (!strcmp(ammoType, "357")) {
-		return gSkillData.sk_ammo_max_357;
-	}
-	if (!strcmp(ammoType, "buckshot")) {
-		return gSkillData.sk_ammo_max_buckshot;
-	}
-	if (!strcmp(ammoType, "bolts")) {
-		return gSkillData.sk_ammo_max_bolts;
-	}
-	if (!strcmp(ammoType, "rockets")) {
-		return gSkillData.sk_ammo_max_rockets;
-	}
-	if (!strcmp(ammoType, "Hand Grenade")) {
-		return gSkillData.sk_ammo_max_grenades;
-	}
-	if (!strcmp(ammoType, "Satchel Charge")) {
-		return gSkillData.sk_ammo_max_satchels;
-	}
-	if (!strcmp(ammoType, "Trip Mine")) {
-		return gSkillData.sk_ammo_max_tripmines;
-	}
-	if (!strcmp(ammoType, "Snarks")) {
-		return gSkillData.sk_ammo_max_snarks;
-	}
-	if (!strcmp(ammoType, "Hornets")) {
-		return gSkillData.sk_ammo_max_hornets;
-	}
-	if (!strcmp(ammoType, "ARgrenades")) {
-		return gSkillData.sk_ammo_max_argrenades;
-	}
-	if (!strcmp(ammoType, "spores")) {
-		return gSkillData.sk_ammo_max_spores;
-	}
-	if (!strcmp(ammoType, "health")) {
-		return gSkillData.sk_ammo_max_medkit;
-	}
-	if (!strcmp(ammoType, "556")) {
-		return gSkillData.sk_ammo_max_556;
-	}
-	if (!strcmp(ammoType, "762")) {
-		return gSkillData.sk_ammo_max_762;
-	}
+void UTIL_RegisterAmmoCapacity(const char* ammoType, int capacity) {
+	g_ammoCapacities.put(ammoType, capacity);
+}
 
-	int* customCap = g_customAmmoCapacities.get(ammoType);
-	if (customCap)
-		return *customCap;
+int UTIL_GetMaxAmmo(const char* ammoType) {
+	if (!ammoType)
+		return -1; // NULL = does not use ammo
+
+	int* max = g_ammoCapacities.get(ammoType);
+
+	if (max)
+		return *max;
 
 	ALERT(at_warning, "Unknown max ammo for ammo type '%s'. Defaulting to 250.\n", ammoType);
 
 	return 250;
-}
-
-void UTIL_RegisterAmmoCapacity(const char* ammoType, int capacity) {
-	g_customAmmoCapacities.put(ammoType, capacity);
 }
 
 // Queues the weapon info for sending to clients
@@ -362,11 +316,11 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 		ALERT(at_error, "Failed to register weapon '%s' (invalid ID %d)\n", szClassname, info.iId);
 		goto cleanup;
 	}
-	if (info.pszAmmo1 && info.iMaxAmmo1 == 0) {
+	if (info.pszAmmo1 && UTIL_GetMaxAmmo(info.pszAmmo1) == 0) {
 		ALERT(at_error, "Failed to register weapon '%s' (0 max primary ammo)\n", szClassname);
 		goto cleanup;
 	}
-	if (info.pszAmmo2 && info.iMaxAmmo2 == 0) {
+	if (info.pszAmmo2 && UTIL_GetMaxAmmo(info.pszAmmo2) == 0) {
 		ALERT(at_error, "Failed to register weapon '%s' (0 max secndary ammo)\n", szClassname);
 		goto cleanup;
 	}
@@ -375,22 +329,10 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 
 	if (info.pszAmmo1 && *info.pszAmmo1) {
 		AddAmmoNameToAmmoRegistry(info.pszAmmo1, wep->IsSevenKewpWeapon());
-		if (info.iMaxAmmo1 < 0) {
-			info.iMaxAmmo1 = GetDefaultMaxAmmo(info.pszAmmo1);
-		}
-	}
-	else {
-		info.iMaxAmmo1 = -1;
 	}
 
 	if (info.pszAmmo2 && *info.pszAmmo2) {
 		AddAmmoNameToAmmoRegistry(info.pszAmmo2, wep->IsSevenKewpWeapon());
-		if (info.iMaxAmmo2 < 0) {
-			info.iMaxAmmo2 = GetDefaultMaxAmmo(info.pszAmmo2);
-		}
-	}
-	else {
-		info.iMaxAmmo2 = -1;
 	}
 
 	g_weaponNames.put(info.pszName);
@@ -442,6 +384,23 @@ void W_Precache(void)
 	for (int i = 0; i < MAX_WEAPON_SLOTS; i++) {
 		memset(g_filledWeaponSlots[i], 0, MAX_WEAPON_POSITIONS * sizeof(const char*));
 	}
+
+	UTIL_RegisterAmmoCapacity("357", gSkillData.sk_ammo_max_357);
+	UTIL_RegisterAmmoCapacity("556", gSkillData.sk_ammo_max_556);
+	UTIL_RegisterAmmoCapacity("762", gSkillData.sk_ammo_max_762);
+	UTIL_RegisterAmmoCapacity("9mm", gSkillData.sk_ammo_max_9mm);
+	UTIL_RegisterAmmoCapacity("ARgrenades", gSkillData.sk_ammo_max_argrenades);
+	UTIL_RegisterAmmoCapacity("Hand Grenade", gSkillData.sk_ammo_max_grenades);
+	UTIL_RegisterAmmoCapacity("Hornets", gSkillData.sk_ammo_max_hornets);
+	UTIL_RegisterAmmoCapacity("Satchel Charge", gSkillData.sk_ammo_max_satchels);
+	UTIL_RegisterAmmoCapacity("Snarks", gSkillData.sk_ammo_max_snarks);
+	UTIL_RegisterAmmoCapacity("Trip Mine", gSkillData.sk_ammo_max_tripmines);
+	UTIL_RegisterAmmoCapacity("bolts", gSkillData.sk_ammo_max_bolts);
+	UTIL_RegisterAmmoCapacity("buckshot", gSkillData.sk_ammo_max_buckshot);
+	UTIL_RegisterAmmoCapacity("health", gSkillData.sk_ammo_max_medkit);
+	UTIL_RegisterAmmoCapacity("rockets", gSkillData.sk_ammo_max_rockets);
+	UTIL_RegisterAmmoCapacity("spores", gSkillData.sk_ammo_max_spores);
+	UTIL_RegisterAmmoCapacity("uranium", gSkillData.sk_ammo_max_uranium);
 
 	g_hlPlayersCanPickup556 = false;
 	g_registeringCustomWeps = false;

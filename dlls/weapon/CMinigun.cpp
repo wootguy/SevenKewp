@@ -99,7 +99,6 @@ int CMinigun::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_minigun";
 	p->pszAmmo1 = "556";
 	p->iMaxClip = WEAPON_NOCLIP;
-	p->iMaxAmmo1 = 600;
 	p->iSlot = 5;
 	p->iPosition = 2;
 	p->iId = WEAPON_MINIGUN;

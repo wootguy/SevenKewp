@@ -20,16 +20,14 @@
 class CBasePlayer;
 EXPORT extern int gmsgWeapPickup;
 extern StringMap g_defaultSpriteDirs;
-extern HashMap<int> g_customAmmoCapacities;
+extern HashMap<int> g_ammoCapacities;
 
 typedef struct
 {
 	int		iSlot;
 	int		iPosition;
 	const char* pszAmmo1;	// ammo 1 type
-	int		iMaxAmmo1;		// max ammo 1
 	const char* pszAmmo2;	// ammo 2 type
-	int		iMaxAmmo2;		// max ammo 2
 	const char* pszName;
 	int		iMaxClip;
 	int		iId;
@@ -195,6 +193,8 @@ EXPORT void UTIL_RegisterEquipmentEntity(const char* szClassname);
 EXPORT void UTIL_SetDefaultWeaponSpriteDir(const char* szClassname, const char* spriteDir);
 
 EXPORT void AddAmmoNameToAmmoRegistry(const char* szAmmoname, bool isSevenKewpGun);
+
+EXPORT int UTIL_GetMaxAmmo(const char* ammoName);
 
 EXPORT Vector UTIL_ConeFromDegrees(float degrees);
 

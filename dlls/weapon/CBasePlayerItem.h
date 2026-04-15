@@ -87,9 +87,9 @@ public:
 
 	int			iItemPosition( void ) { return ItemInfoArray[ m_iId ].iPosition; }
 	const char	*pszAmmo1( void )	{ return ItemInfoArray[ m_iId ].pszAmmo1; }
-	int			iMaxAmmo1( void )	{ return ItemInfoArray[ m_iId ].iMaxAmmo1; }
+	//int			iMaxAmmo1( void )	{ return UTIL_GetMaxAmmo(ItemInfoArray[ m_iId ].pszAmmo1); }
 	const char	*pszAmmo2( void )	{ return ItemInfoArray[ m_iId ].pszAmmo2; }
-	int			iMaxAmmo2( void )	{ return ItemInfoArray[ m_iId ].iMaxAmmo2; }
+	//int			iMaxAmmo2( void )	{ return UTIL_GetMaxAmmo(ItemInfoArray[ m_iId ].pszAmmo2); }
 	const char	*pszName( void )	{ return ItemInfoArray[ m_iId ].pszName; }
 	int			iMaxClip( void )	{ return ItemInfoArray[ m_iId ].iMaxClip; }
 	int			iWeight( void )		{ return ItemInfoArray[ m_iId ].iWeight; }

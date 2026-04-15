@@ -452,7 +452,7 @@ public:
 	void EnableControl(BOOL fControl);
 	void DisableWeapons(bool disable);
 
-	int  GiveAmmo( int iAmount, const char *szName, int iMax );
+	int  GiveAmmo( int iAmount, const char *szName );
 	void SendAmmoUpdate(void);
 
 	void WaterMove( void );

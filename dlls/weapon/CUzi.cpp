@@ -133,7 +133,6 @@ int CUzi::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_uzi";
 	p->pszAmmo1 = "9mm";
 	p->iMaxClip = UZI_MAX_CLIP;
-	p->iMaxAmmo1 = 200;
 	p->iSlot = 1;
 	p->iPosition = 6;
 	p->iId = WEAPON_UZI;

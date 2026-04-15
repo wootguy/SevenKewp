@@ -107,7 +107,6 @@ int CEagle::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_eagle";
 	p->pszAmmo1 = "357";
 	p->iMaxClip = EAGLE_MAX_CLIP;
-	p->iMaxAmmo1 = gSkillData.sk_ammo_max_357;
 	p->iSlot = 1;
 	p->iPosition = 5;
 	p->iId = WEAPON_EAGLE;

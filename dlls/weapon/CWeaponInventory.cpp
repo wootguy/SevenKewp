@@ -242,9 +242,7 @@ int CWeaponInventory::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_inventory";
 
 	p->pszAmmo1 = NULL;
-	p->iMaxAmmo1 = -1;
 	p->pszAmmo2 = NULL;
-	p->iMaxAmmo2 = -1;
 	p->iMaxClip = 1;
 	p->iSlot = 0;
 	p->iPosition = 4;

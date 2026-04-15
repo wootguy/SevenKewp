@@ -559,7 +559,6 @@ int CDisplacer::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_displacer";
 
 	p->pszAmmo1 = "uranium";
-	p->iMaxAmmo1 = gSkillData.sk_ammo_max_uranium;
 	p->iMaxClip = WEAPON_NOCLIP;
 	p->iSlot = 3;
 	p->iPosition = 4;

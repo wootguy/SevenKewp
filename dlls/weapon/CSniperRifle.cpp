@@ -87,7 +87,6 @@ int CSniperRifle::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_sniperrifle";
 	p->pszAmmo1 = "762";
 	p->iMaxClip = M40A1_MAX_CLIP;
-	p->iMaxAmmo1 = 20;
 	p->iSlot = 5;
 	p->iPosition = 1;
 	p->iId = WEAPON_M40A1;

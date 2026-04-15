@@ -92,9 +92,7 @@ int CM16::GetItemInfo(ItemInfo* p)
 	p->pszName = MOD_SPRITE_FOLDER "weapon_m16";
 	p->pszAmmo1 = "556";
 	p->iMaxClip = M16_MAX_CLIP;
-	p->iMaxAmmo1 = 600;
 	p->pszAmmo2 = "ARgrenades";
-	p->iMaxAmmo2 = gSkillData.sk_ammo_max_argrenades;
 	p->iSlot = 2;
 	p->iPosition = 4;
 	p->iId = WEAPON_M16;

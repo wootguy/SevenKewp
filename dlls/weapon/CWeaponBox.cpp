@@ -133,7 +133,7 @@ void CWeaponBox::DefaultTouch(CBaseEntity* pOther)
 		if (!FStringNull(m_rgiszAmmo[i]))
 		{
 			// there's some ammo of this type. 
-			pPlayer->GiveAmmo(m_rgAmmo[i], STRING(m_rgiszAmmo[i]), MaxAmmoCarry(m_rgiszAmmo[i]));
+			pPlayer->GiveAmmo(m_rgAmmo[i], STRING(m_rgiszAmmo[i]));
 
 			//ALERT ( at_console, "Gave %d rounds of %s\n", m_rgAmmo[i], STRING(m_rgiszAmmo[i]) );
 

@@ -584,7 +584,7 @@ void ServerDeactivate( void )
 	g_weaponRemapHL.clear();
 	g_defaultSpriteDirs.clear();
 	g_entityRemap.clear();
-	g_customAmmoCapacities.clear();
+	g_ammoCapacities.clear();
 	ClearPlayerModelCache();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";
