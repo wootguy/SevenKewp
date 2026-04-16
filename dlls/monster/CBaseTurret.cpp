@@ -287,7 +287,7 @@ void CBaseTurret::ActiveThink(void)
 	}
 
 	// if it's dead, look for something new
-	if (!m_hEnemy->IsAlive())
+	if (!m_hEnemy->IsAlive() || (m_hEnemy->pev->flags & FL_NOTARGET))
 	{
 		if (!m_flLastSight)
 		{

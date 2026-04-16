@@ -14,7 +14,7 @@ class CGlockAmmo : public CBasePlayerAmmo
 
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
-		if (pOther->GiveAmmo( AMMO_GLOCKCLIP_GIVE, "9mm", gSkillData.sk_ammo_max_9mm ) != -1)
+		if (pOther->GiveAmmo( AMMO_GLOCKCLIP_GIVE, "9mm" ) != -1)
 		{
 			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
 			return TRUE;

@@ -1276,6 +1276,14 @@ void CBaseGrunt :: StartTask ( Task_t *pTask )
 
 		// doing this because SetActivity is playing idle animations sometimes
 		pev->sequence = LookupActivity(ACT_THREAT_DISPLAY);
+		if (pev->sequence == -1) {
+			// fallback to idle animation if missing
+			pev->sequence = LookupActivity(ACT_IDLE);
+			if (pev->sequence == -1) {
+				pev->sequence = 0;
+			}
+		}
+
 		pev->frame = 0;
 		m_rpgAimTime = gpGlobals->time;
 		ResetSequenceInfo();

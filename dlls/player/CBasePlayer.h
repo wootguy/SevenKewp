@@ -360,6 +360,8 @@ public:
 	bool m_noclip; // noclip cheat enabled
 	bool m_notarget; // no-target cheat enabled
 
+	string_t m_playerModelOverride; // player model forced by the map
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
@@ -401,6 +403,11 @@ public:
 
 	// if fast, then only send essential user info because it will be reset shortly
 	void Rename(const char* newName, bool fast, edict_t* dst = NULL);
+
+	// replaces player model in user info
+	char* ReplaceModelUserInfo(char* userinfo, const char* newModel);
+
+	void SetMapPlayerModel(const char* newModel);
 
 	void SetPrefsFromUserinfo(char* infobuffer);
 	
@@ -515,6 +522,7 @@ public:
 	int m_iAutoWepSwitch;
 	int m_iWantClassSelection;	// set whenever userinfo changes
 	int m_iClassSelection;		// synced to desired class on spawn
+	bool m_allowMapPlayerModels; // true if player is ok with maps changing their player model
 
 	float m_lastScoreUpdate;
 	float m_lastTimeLeftUpdate;
@@ -665,7 +673,7 @@ public:
 	void SyncGaitAnimations(int animDesired, float gaitSpeed, float defaultSyncMultiplier);
 
 	// loads player model data and triggers plugin hooks. Conditionally broadcasts info to other players.
-	void ChangePlayerModel(const char* newModel, bool broadcast=true);
+	void PlayerModelChanged(const char* newModel, bool broadcast=true);
 
 	// send current userinfo to all players (name, model, etc.)
 	void BroadcastUserInfo();

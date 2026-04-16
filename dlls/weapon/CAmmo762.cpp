@@ -21,11 +21,11 @@ class CAmmo762 : public CBasePlayerAmmo
 		CBasePlayer* plr = pOther ? pOther->MyPlayerPointer() : NULL;
 
 		if (plr->UseSevenKewpGuns()) {
-			bResult = (pOther->GiveAmmo(AMMO_762_GIVE, "762", gSkillData.sk_ammo_max_762) != -1);
+			bResult = (pOther->GiveAmmo(AMMO_762_GIVE, "762") != -1);
 		}
 		else {
 			// HL players don't have snipers, use the xbow instead
-			bResult = (pOther->GiveAmmo(AMMO_CROSSBOWCLIP_GIVE, "bolts", gSkillData.sk_ammo_max_bolts) != -1);
+			bResult = (pOther->GiveAmmo(AMMO_CROSSBOWCLIP_GIVE, "bolts") != -1);
 		}
 
 		if (bResult)

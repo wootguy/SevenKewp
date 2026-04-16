@@ -45,6 +45,7 @@ void CM249::Precache()
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_DYNAMIC_ACCURACY;
 	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = M249_DRAW;
+	params.deployAnimTime = 1030;
 	params.maxClip = M249_MAX_CLIP;
 	params.reloadStage[0] = { M249_RELOAD_START, 1330 + 2470 };
 	params.idles[0] = { M249_SLOWIDLE, 95, 5000 };

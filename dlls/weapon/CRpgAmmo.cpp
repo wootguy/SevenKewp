@@ -13,7 +13,7 @@ class CRpgAmmo : public CBasePlayerAmmo
 
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{
-		if (pOther->GiveAmmo(AMMO_RPGCLIP_GIVE, "rockets", gSkillData.sk_ammo_max_rockets ) != -1)
+		if (pOther->GiveAmmo(AMMO_RPGCLIP_GIVE, "rockets" ) != -1)
 		{
 			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
 			return TRUE;

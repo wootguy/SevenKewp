@@ -52,6 +52,10 @@ void CTriggerChangeMaxAmmo::AdjustAmmo(int ammoIdx, int newMax, CBasePlayer* plr
 	if (pev->spawnflags & SF_MAXAMMO_REFILL_AMMO) {
 		plr->m_rgAmmo[ammoIdx] = V_max(newMax, plr->m_rgAmmo[ammoIdx]);
 	}
+
+	if (!plr->IsSevenKewpClient()) {
+		plr->m_rgAmmo[ammoIdx] = V_min(plr->m_rgAmmo[ammoIdx], 255); // HL clients can't display ammo counts above 255
+	}
 }
 
 void CTriggerChangeMaxAmmo::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)

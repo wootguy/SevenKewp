@@ -4269,7 +4269,7 @@ BOOL CBaseMonster::HasAlienGibs(void)
 
 BOOL CBaseMonster::IsMachine(void)
 {
-	return Classify() == CLASS_MACHINE;
+	return false;
 }
 
 void CBaseMonster::FadeMonster(void)

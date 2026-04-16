@@ -503,7 +503,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 			reason, g_engfuncs.pfnInfoKeyValue(infobuffer, "name"));
 	}
 
-	plr->ChangePlayerModel(g_engfuncs.pfnInfoKeyValue(infobuffer, "model"), false);
+	plr->PlayerModelChanged(g_engfuncs.pfnInfoKeyValue(infobuffer, "model"), false);
 
 	plr->SetPrefsFromUserinfo(infobuffer);
 }

@@ -14,7 +14,7 @@ class CUziClip : public CBasePlayerAmmo
 
 	BOOL AddAmmo( CBaseEntity *pOther ) 
 	{ 
-		int bResult = (pOther->GiveAmmo(AMMO_UZICLIP_GIVE, "9mm", gSkillData.sk_ammo_max_9mm) != -1);
+		int bResult = (pOther->GiveAmmo(AMMO_UZICLIP_GIVE, "9mm") != -1);
 		if (bResult)
 		{
 			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);

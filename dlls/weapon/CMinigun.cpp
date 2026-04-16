@@ -42,6 +42,7 @@ void CMinigun::Precache()
 	primary.ammoCost = 2;
 	primary.cooldown = 50;
 	primary.cooldownFail = 200;
+	primary.chargeMode = WC_CHARGEUP_CONSTANT;
 	primary.chargeTime = 800;
 	primary.chargeCancelTime = 800;
 	primary.chargeMoveSpeedMult = FLOAT_TO_MOVESPEED_MULT(0.4f);
@@ -50,6 +51,7 @@ void CMinigun::Precache()
 
 	CustomWeaponShootOpts& secondary = params.shootOpts[1];
 	secondary.cooldown = 200;
+	secondary.chargeMode = WC_CHARGEUP_CONSTANT;
 	secondary.chargeTime = 800;
 	secondary.chargeCancelTime = 800;
 	secondary.flags = FL_WC_SHOOT_NO_ATTACK;

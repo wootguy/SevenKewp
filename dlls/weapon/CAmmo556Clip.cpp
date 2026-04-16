@@ -23,15 +23,11 @@ class CAmmo556Clip : public CBasePlayerAmmo
 		CBasePlayer* plr = pOther ? pOther->MyPlayerPointer() : NULL;
 
 		if (g_hlPlayersCanPickup556 || (plr && plr->UseSevenKewpGuns())) {
-			int limit = gSkillData.sk_ammo_max_556;
-			if (!plr->UseSevenKewpGuns())
-				limit = V_min(limit, 200); // HL clients can't display ammo counts above 255
-
-			bResult = (pOther->GiveAmmo(AMMO_556_CLIP_GIVE, "556", limit) != -1);
+			bResult = (pOther->GiveAmmo(AMMO_556_CLIP_GIVE, "556") != -1);
 		}
 		else {
 			// HL players don't have any weapons that use 556 ammo in this map, give them 9mm instead
-			bResult = (pOther->GiveAmmo(AMMO_MP5CLIP_GIVE, "9mm", gSkillData.sk_ammo_max_9mm) != -1);
+			bResult = (pOther->GiveAmmo(AMMO_MP5CLIP_GIVE, "9mm") != -1);
 		}
 
 		if (bResult)

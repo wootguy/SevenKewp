@@ -14,7 +14,7 @@ class CMedkitAmmo : public CBasePlayerAmmo
 
 	BOOL AddAmmo(CBaseEntity* pOther)
 	{
-		if (pOther->GiveAmmo(AMMO_MEDKIT_GIVE, "health", gSkillData.sk_ammo_max_medkit) != -1)
+		if (pOther->GiveAmmo(AMMO_MEDKIT_GIVE, "health") != -1)
 		{
 			EMIT_SOUND(ENT(pev), CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
 			return TRUE;

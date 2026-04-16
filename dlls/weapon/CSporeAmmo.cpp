@@ -108,7 +108,7 @@ public:
 	BOOL AddAmmo(CBaseEntity* pOther)  override
 	{
 		//return pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores", gSkillData.sk_ammo_max_spores, "weapons/spore_ammo.wav");
-		return pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores", gSkillData.sk_ammo_max_spores);
+		return pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores");
 	}
 
 	void Idling()
@@ -186,7 +186,7 @@ class CSporeClip : public CBasePlayerAmmo
 
 	BOOL AddAmmo(CBaseEntity* pOther)
 	{
-		if (pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores", gSkillData.sk_ammo_max_spores) != -1)
+		if (pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores") != -1)
 		{
 			EMIT_SOUND(edict(), CHAN_ITEM, "weapons/spore_ammo.wav", VOL_NORM, ATTN_NORM);
 			return TRUE;

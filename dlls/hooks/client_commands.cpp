@@ -231,6 +231,9 @@ bool CheatCommand(edict_t* pEntity) {
 		ABORT_IF_CHEATS_DISABLED("No clip");
 		if (plr) {
 			plr->m_noclip = !plr->m_noclip;
+			if (!plr->m_noclip)
+				pev->movetype = MOVETYPE_WALK;
+			plr->ApplyEffects();
 			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No clip is %s\n", plr->m_noclip ? "ON" : "OFF"));
 		}
 	}
@@ -238,6 +241,9 @@ bool CheatCommand(edict_t* pEntity) {
 		ABORT_IF_CHEATS_DISABLED("God mode");
 		if (plr) {
 			plr->m_godmode = !plr->m_godmode;
+			if (!plr->m_godmode)
+				plr->pev->flags &= ~FL_GODMODE;
+			plr->ApplyEffects();
 			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("God mode is %s\n", plr->m_godmode ? "ON" : "OFF"));
 		}
 	}
@@ -245,6 +251,9 @@ bool CheatCommand(edict_t* pEntity) {
 		ABORT_IF_CHEATS_DISABLED("No target");
 		if (plr) {
 			plr->m_notarget = !plr->m_notarget;
+			if (!plr->m_godmode)
+				plr->pev->flags &= ~FL_NOTARGET;
+			plr->ApplyEffects();
 			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No target is %s\n", plr->m_notarget ? "ON" : "OFF"));
 		}
 	}

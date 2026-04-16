@@ -3794,6 +3794,11 @@ void CBasePlayer::Spawn( void )
 			m_iClassSelection == PCLASS_DEFAULT ? "ENALBED" : "DISABLED"));
 	}
 
+	if (m_playerModelOverride) {
+		m_playerModelOverride = 0;
+		BroadcastUserInfo();
+	}
+
 // dont let uninitialized value here hurt the player
 	m_flFallVelocity = 0;
 	m_deathMessageSent = false;
@@ -4823,6 +4828,11 @@ int CBasePlayer :: GiveAmmo( int iCount, const char *szName )
 		return -1;
 
 	int iMax = UTIL_GetMaxAmmo(szName);
+	
+	if (!IsSevenKewpClient()) {
+		iMax = V_min(iMax, 255); // HL clients can't display ammo counts above 255
+	}
+
 	int iAdd = V_min( iCount, iMax - m_rgAmmo[i] );
 	if ( iAdd < 1 )
 		return i;
@@ -5289,6 +5299,11 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 		strcat(userinfo, "\\bottomcolor\\");
 		strcat(userinfo, botcolor);
 
+		char* newInfo = userinfo;
+		if (m_playerModelOverride) {
+			newInfo = ReplaceModelUserInfo(userinfo, STRING(m_playerModelOverride));
+		}
+
 		if (dst) {
 			UTIL_SendUserInfo_hooked(dst, edict(), userinfo);
 		}
@@ -5298,7 +5313,7 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 				if (!msgPlr)
 					continue;
 
-				UTIL_SendUserInfo_hooked(msgPlr->edict(), edict(), userinfo);
+				UTIL_SendUserInfo_hooked(msgPlr->edict(), edict(), newInfo);
 			}
 		}
 
@@ -5325,8 +5340,13 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 	if (nameEnd)
 		strcpy(userinfo + offset, nameEnd);
 
+	char* newInfo = userinfo;
+	if (m_playerModelOverride) {
+		newInfo = ReplaceModelUserInfo(userinfo, STRING(m_playerModelOverride));
+	}
+
 	if (dst) {
-		UTIL_SendUserInfo_hooked(dst, edict(), userinfo);
+		UTIL_SendUserInfo_hooked(dst, edict(), newInfo);
 	}
 	else {
 		for (int i = 1; i < gpGlobals->maxClients; i++) {
@@ -5334,8 +5354,62 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 			if (!msgPlr)
 				continue;
 
-			UTIL_SendUserInfo_hooked(msgPlr->edict(), edict(), userinfo);
+			UTIL_SendUserInfo_hooked(msgPlr->edict(), edict(), newInfo);
 		}
+	}
+}
+
+char* CBasePlayer::ReplaceModelUserInfo(char* info, const char* newModel) {
+	static char userinfo[512];
+
+	char* modelStart = strstr(info, "\\model\\") + 7;
+	if (!modelStart) {
+		return info;
+	}
+
+	char* modelEnd = strstr(modelStart, "\\");
+
+	if (strlen(info) + strlen(newModel) >= 512 && modelStart) {
+		return info;
+	}
+
+	strncpy(userinfo, info, modelStart - info);
+	int offset = modelStart - info;
+
+	strcpy(userinfo + offset, newModel);
+	offset += strlen(newModel);
+
+	if (modelEnd)
+		strcpy(userinfo + offset, modelEnd);
+
+	return userinfo;
+}
+
+void CBasePlayer::SetMapPlayerModel(const char* newModel) {
+	char* info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
+
+	if (!m_allowMapPlayerModels) {
+		UTIL_ClientPrint(this, print_console,
+			UTIL_VarArgs("The map tried to change your player model to\n'%s'\nand was blocked by your cl_map_pmdls setting.\n", newModel));
+		return;
+	}
+
+	if (!info || info[0] == '\0') {
+		return;
+	}
+
+	m_playerModelOverride = ALLOC_STRING(newModel);
+
+	char* newInfo = ReplaceModelUserInfo(info, newModel);
+
+	PlayerModelChanged(newModel, false);
+
+	for (int i = 1; i < gpGlobals->maxClients; i++) {
+		CBasePlayer* msgPlr = UTIL_PlayerByIndex(i);
+		if (!msgPlr)
+			continue;
+
+		UTIL_SendUserInfo_hooked(msgPlr->edict(), edict(), newInfo);
 	}
 }
 
@@ -5344,6 +5418,9 @@ void CBasePlayer::SetPrefsFromUserinfo(char* infobuffer)
 	// Set autoswitch preference
 	const char* autoSwitchKey = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autowepswitch");
 	m_iAutoWepSwitch = FStrEq(autoSwitchKey, "") ? 1 : atoi(autoSwitchKey);
+
+	const char* allowPmodelKey = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_map_pmdls");
+	m_allowMapPlayerModels = FStrEq(allowPmodelKey, "") ? 1 : atoi(allowPmodelKey);
 
 	// weapon loadout
 	const char* classKey = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_class");
@@ -7597,7 +7674,7 @@ void CBasePlayer::SyncGaitAnimations(int animDesired, float gaitSpeed, float def
 	// Arm and leg movements are starting on the wrong frames.
 }
 
-void CBasePlayer::ChangePlayerModel(const char* newModel, bool broadcast) {
+void CBasePlayer::PlayerModelChanged(const char* newModel, bool broadcast) {
 	std::string oldModelStd = STRING(m_playerModelName);
 	std::string newModelStd = toLowerCase(newModel);
 
