@@ -205,6 +205,7 @@ StringMap g_defaultSpriteDirs;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 HashMap<int> g_ammoCapacities;
+HashMap<int> g_ammoCapacitiesInitial;
 
 int NextAutoWeaponId() {
 	for (int i = 1; i < MAX_WEAPONS; i++) {
@@ -219,6 +220,10 @@ int NextAutoWeaponId() {
 
 void UTIL_RegisterAmmoCapacity(const char* ammoType, int capacity) {
 	g_ammoCapacities.put(ammoType, capacity);
+
+	if (!g_ammoCapacitiesInitial.get(ammoType)) {
+		g_ammoCapacitiesInitial.put(ammoType, capacity);
+	}
 }
 
 int UTIL_GetMaxAmmo(const char* ammoType) {
@@ -226,6 +231,20 @@ int UTIL_GetMaxAmmo(const char* ammoType) {
 		return -1; // NULL = does not use ammo
 
 	int* max = g_ammoCapacities.get(ammoType);
+
+	if (max)
+		return *max;
+
+	ALERT(at_warning, "Unknown max ammo for ammo type '%s'. Defaulting to 250.\n", ammoType);
+
+	return 250;
+}
+
+int UTIL_GetMaxAmmoInitial(const char* ammoType) {
+	if (!ammoType)
+		return -1; // NULL = does not use ammo
+
+	int* max = g_ammoCapacitiesInitial.get(ammoType);
 
 	if (max)
 		return *max;
@@ -399,6 +418,7 @@ void W_Precache(void)
 	UTIL_RegisterAmmoCapacity("buckshot", gSkillData.sk_ammo_max_buckshot);
 	UTIL_RegisterAmmoCapacity("health", gSkillData.sk_ammo_max_medkit);
 	UTIL_RegisterAmmoCapacity("rockets", gSkillData.sk_ammo_max_rockets);
+	UTIL_RegisterAmmoCapacity("shock", 10);
 	UTIL_RegisterAmmoCapacity("spores", gSkillData.sk_ammo_max_spores);
 	UTIL_RegisterAmmoCapacity("uranium", gSkillData.sk_ammo_max_uranium);
 

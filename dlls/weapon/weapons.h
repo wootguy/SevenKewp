@@ -21,6 +21,7 @@ class CBasePlayer;
 EXPORT extern int gmsgWeapPickup;
 extern StringMap g_defaultSpriteDirs;
 extern HashMap<int> g_ammoCapacities;
+extern HashMap<int> g_ammoCapacitiesInitial; // first ammo capacity that was set
 
 typedef struct
 {
@@ -194,7 +195,11 @@ EXPORT void UTIL_SetDefaultWeaponSpriteDir(const char* szClassname, const char* 
 
 EXPORT void AddAmmoNameToAmmoRegistry(const char* szAmmoname, bool isSevenKewpGun);
 
+// get current max ammo capacity
 EXPORT int UTIL_GetMaxAmmo(const char* ammoName);
+
+// get first capacity value that was set this map
+EXPORT int UTIL_GetMaxAmmoInitial(const char* ammoName);
 
 EXPORT Vector UTIL_ConeFromDegrees(float degrees);
 
