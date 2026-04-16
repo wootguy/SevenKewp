@@ -9,6 +9,7 @@
 #include "nodes.h"
 #include "saverestore.h"
 #include "CCineMonster.h"
+#include "CPathWaypoint.h"
 #include "CTalkSquadMonster.h"
 #include "gamerules.h"
 #include "defaultai.h"
@@ -2392,6 +2393,12 @@ void CBaseMonster::StartMonster(void)
 		SetActivity(ACT_IDLE);
 		ChangeSchedule(GetScheduleOfType(SCHED_WAIT_TRIGGER));
 	}
+
+	if (m_pathWaypoint) {
+		CBaseEntity* waypoint = UTIL_FindEntityByTargetname(NULL, STRING(m_pathWaypoint));
+		if (waypoint)
+			waypoint->Use(this, this, USE_TOGGLE);
+	}
 }
 
 void CBaseMonster::TaskComplete() {
@@ -3534,6 +3541,11 @@ void CBaseMonster::KeyValue(KeyValueData* pkvd)
 			break;
 		}
 
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "path_name"))
+	{
+		m_pathWaypoint = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -4768,8 +4780,16 @@ int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, fl
 	// HACKHACK Don't kill monsters in a script.  Let them break their scripts first
 	if (m_MonsterState == MONSTERSTATE_SCRIPT)
 	{
-		SetConditions(bits_COND_LIGHT_DAMAGE);
-		return 0;
+		CPathWaypoint* path = m_hCine ? m_hCine->MyPathWaypointPointer() : NULL;
+		if (path) {
+			// path_waypoint can be interrupted by death
+			m_pathWaypointState = 0;
+			m_pathWaypointWaitForSeq = false;
+		}
+		else {
+			SetConditions(bits_COND_LIGHT_DAMAGE);
+			return 0;
+		}
 	}
 
 	if (pev->health < 1) // not 0 because players enter a semi-dead state when between 0 and 1
@@ -5391,6 +5411,9 @@ Schedule_t* CBaseMonster::m_scheduleList[] =
 	slWalkToScript,
 	slRunToScript,
 	slWaitScript,
+	slWalkToPathWaypoint,
+	slRunToPathWaypoint,
+	slWaitPathWaypoint,
 	slFaceScript,
 	slCower,
 	slTakeCoverFromOrigin,
@@ -5847,6 +5870,15 @@ void CBaseMonster::RunTask(Task_t* pTask)
 	}
 	case TASK_WAIT_FOR_MOVEMENT:
 	{
+		if (m_hCine) {
+			CCineMonster* cine = m_hCine->MyCinePointer();
+			if (cine && cine->m_flMoveToRadius > 0) {
+				if ((pev->origin - cine->pev->origin).Length() < cine->m_flMoveToRadius) {
+					MovementComplete();
+				}
+			}
+		}
+
 		if (MovementIsComplete())
 		{
 			TaskComplete();
@@ -5947,9 +5979,9 @@ void CBaseMonster::RunTask(Task_t* pTask)
 	}
 	case TASK_PLAY_SCRIPT:
 	{
-		if (m_fSequenceFinished && m_hCine)
+		if (m_hCine)
 		{
-			((CCineMonster*)m_hCine.GetEntity())->SequenceDone(this);
+			((CCineMonster*)m_hCine.GetEntity())->DoScript(this);
 		}
 		break;
 	}
@@ -7316,18 +7348,7 @@ Schedule_t* CBaseMonster::GetScheduleOfType(int Type)
 		//			else
 		//				ALERT( at_aiconsole, "Starting script %s for %s\n", STRING( m_pCine->m_iszPlay ), STRING(pev->classname) );
 
-		switch (((CCineMonster*)m_hCine.GetEntity())->m_fMoveTo)
-		{
-		case 0:
-		case 4:
-			return slWaitScript;
-		case 1:
-			return slWalkToScript;
-		case 2:
-			return slRunToScript;
-		case 5:
-			return slFaceScript;
-		}
+		return ((CCineMonster*)m_hCine.GetEntity())->GetScriptSchedule();
 		break;
 	}
 	case SCHED_IDLE_STAND:

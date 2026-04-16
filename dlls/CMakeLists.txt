@@ -389,8 +389,6 @@ set(ENTITY_HDR
 	CWorld.h
 	EHandle.h
 	monster/scriptevent.h
-	path/CPathCorner.h
-	path/CPathTrack.h
 	../engine/progs.h
 	../engine/progdefs.h
 	../engine/edict.h
@@ -407,8 +405,17 @@ set(ENTITY_SRC
 	CPointEntity.cpp
 	CWorld.cpp
 	EHandle.cpp
+)
+
+set(PATH_HDR
+	path/CPathCorner.h
+	path/CPathTrack.h
+	path/CPathWaypoint.h
+)
+set(PATH_SRC
 	path/CPathCorner.cpp
 	path/CPathTrack.cpp
+	path/CPathWaypoint.cpp
 )
 
 set(WEAPON_HDR

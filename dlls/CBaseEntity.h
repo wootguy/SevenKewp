@@ -22,6 +22,8 @@ class CEnvWeather;
 class CWeaponCustom;
 class CProjectileCustom;
 class CWeaponBox;
+class CCineMonster;
+class CPathWaypoint;
 
 void* GET_PRIVATE(const edict_t* pent);
 
@@ -274,6 +276,8 @@ public:
 	virtual CProjectileCustom* MyProjectileCustomPtr(void) { return NULL; }
 	virtual CWeaponBox* MyWeaponBoxPtr(void) { return NULL; }
 	virtual CItem* MyItemPointer(void) { return NULL; }
+	virtual CCineMonster* MyCinePointer(void) { return NULL; }
+	virtual CPathWaypoint* MyPathWaypointPointer(void) { return NULL; }
 	virtual	int		GetToggleState(void) { return TS_AT_TOP; }
 	virtual void	AddPoints(int score, BOOL bAllowNegativeScore) {}
 	virtual void	AddPointsToTeam(int score, BOOL bAllowNegativeScore) {}

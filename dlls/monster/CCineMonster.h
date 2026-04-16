@@ -54,6 +54,7 @@ public:
 	virtual void Touch( CBaseEntity *pOther );
 	virtual int	 ObjectCaps( void ) { return CBaseMonster :: ObjectCaps() & ~(FCAP_IMPULSE_USE | FCAP_ACROSS_TRANSITION); }
 	virtual void Activate( void );
+	virtual CCineMonster* MyCinePointer(void) { return this; }
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
@@ -70,22 +71,25 @@ public:
 
 	void ReleaseEntity( CBaseMonster *pEntity );
 	void CancelScript( void );
-	virtual BOOL StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
+	virtual BOOL StartSequence( CBaseMonster *pTarget, string_t iszSeq, BOOL completeOnEmpty );
 	virtual BOOL FCanOverrideState ( void );
 	virtual	BOOL IsNormalMonster(void) { return FALSE; }
-	void SequenceDone ( CBaseMonster *pMonster );
+	virtual void DoScript(CBaseMonster* pMonster);
+	virtual void SequenceDone ( CBaseMonster *pMonster );
 	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
+	virtual Schedule_t* GetScriptSchedule(); // get script for the monster to run when this script is activated
 	virtual BOOL CanInterrupt( void );
 	void	AllowInterrupt( BOOL fAllow );
 	int		IgnoreConditions( void );
 
-	int	m_iszIdle;		// string index for idle animation
-	int	m_iszPlay;		// string index for scripted animation
+	string_t	m_iszIdle;		// string index for idle animation
+	string_t	m_iszPlay;		// string index for scripted animation
 	int m_iszEntity;	// entity that is wanted for this script
 	int m_fMoveTo;
 	int m_iFinishSchedule;
 	float m_flRadius;		// range to search
 	float m_flRepeat;	// repeat rate
+	float m_flMoveToRadius;
 
 	int m_iDelay;
 	float m_startTime;
@@ -99,7 +103,7 @@ public:
 
 class CCineAI : public CCineMonster
 {
-	BOOL StartSequence( CBaseMonster *pTarget, int iszSeq, BOOL completeOnEmpty );
+	BOOL StartSequence( CBaseMonster *pTarget, string_t iszSeq, BOOL completeOnEmpty );
 	void PossessEntity( void );
 	BOOL FCanOverrideState ( void );
 	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );

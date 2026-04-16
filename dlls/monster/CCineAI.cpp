@@ -104,7 +104,7 @@ void CCineAI::PossessEntity(void)
 // lookup a sequence name and setup the target monster to play it
 // overridden for CCineAI because it's ok for them to not have an animation sequence
 // for the monster to play. For a regular Scripted Sequence, that situation is an error.
-BOOL CCineAI::StartSequence(CBaseMonster* pTarget, int iszSeq, BOOL completeOnEmpty)
+BOOL CCineAI::StartSequence(CBaseMonster* pTarget, string_t iszSeq, BOOL completeOnEmpty)
 {
 	if (iszSeq == 0 && completeOnEmpty)
 	{

@@ -873,6 +873,60 @@ Schedule_t slWaitScript[] =
 	},
 };
 
+Task_t tlPathWaypointWalk[] =
+{
+	{ TASK_WALK_TO_TARGET,		(float)TARGET_MOVE_SCRIPTED },
+	{ TASK_WAIT_FOR_MOVEMENT,	(float)0		},
+	{ TASK_PLAY_SCRIPT,			(float)0		},
+};
+
+Schedule_t slWalkToPathWaypoint[] =
+{
+	{
+		tlPathWaypointWalk,
+		ARRAYSIZE(tlPathWaypointWalk),
+		SCRIPT_BREAK_CONDITIONS,
+		0,
+		"WALK_TO_PATH_WAYPOINT"
+	},
+};
+
+
+Task_t tlPathWaypointRun[] =
+{
+	{ TASK_RUN_TO_TARGET,		(float)TARGET_MOVE_SCRIPTED },
+	{ TASK_WAIT_FOR_MOVEMENT,	(float)0		},
+	{ TASK_PLAY_SCRIPT,			(float)0		},
+};
+
+Schedule_t slRunToPathWaypoint[] =
+{
+	{
+		tlPathWaypointRun,
+		ARRAYSIZE(tlPathWaypointRun),
+		SCRIPT_BREAK_CONDITIONS,
+		0,
+		"RUN_TO_PATH_WAYPOINT"
+	},
+};
+
+Task_t tlPathWaypointWait[] =
+{
+	{ TASK_STOP_MOVING,			0				},
+	{ TASK_PLAY_SCRIPT,			(float)0		},
+};
+
+Schedule_t slWaitPathWaypoint[] =
+{
+	{
+		tlPathWaypointWait,
+		ARRAYSIZE(tlPathWaypointWait),
+		SCRIPT_BREAK_CONDITIONS,
+		0,
+		"WAIT_FOR_PATH_WAYPOINT"
+	},
+};
+
 Task_t tlScriptedFace[] = 
 {
 	{ TASK_STOP_MOVING,			0				},

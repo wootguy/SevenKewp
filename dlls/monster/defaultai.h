@@ -95,6 +95,10 @@ extern Schedule_t slWalkToScript[];
 extern Schedule_t slRunToScript[];
 extern Schedule_t slWaitScript[];
 
+extern Schedule_t slWalkToPathWaypoint[];
+extern Schedule_t slRunToPathWaypoint[];
+extern Schedule_t slWaitPathWaypoint[];
+
 // other
 extern Schedule_t slAmbush[];
 extern Schedule_t slActiveIdle[];

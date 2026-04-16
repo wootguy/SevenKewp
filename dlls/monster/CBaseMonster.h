@@ -147,6 +147,9 @@ public:
 // Scripted sequence Info
 	SCRIPTSTATE			m_scriptState;		// internal cinematic state
 	EHANDLE m_hCine;
+	string_t m_pathWaypoint;
+	int m_pathWaypointState;
+	bool m_pathWaypointWaitForSeq; // true if waiting for sequence to finish at a path_waypoint
 
 	float m_flLastYawTime; // Last time yaw change was computed
 

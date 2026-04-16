@@ -100,6 +100,14 @@ CustomSentence ParseSentence(StringPool& stringPool, std::string sentenceLine) {
 	std::string sentName = parts[0];
 	std::string folder = "vox";
 
+	CustomSentence sent;
+	memset(&sent, 0, sizeof(CustomSentence));
+	sent.name = stringPool.alloc(sentName.c_str());
+
+	if (parts.size() < 2) {
+		return sent;
+	}
+
 	int slashIdx = parts[1].find("/");
 	if (slashIdx != -1) {
 		folder = parts[1].substr(0, slashIdx);
@@ -119,10 +127,6 @@ CustomSentence ParseSentence(StringPool& stringPool, std::string sentenceLine) {
 			}
 		}
 	}
-
-	CustomSentence sent;
-	memset(&sent, 0, sizeof(CustomSentence));
-	sent.name = stringPool.alloc(sentName.c_str());
 
 	uint8_t globalTempo = 0;
 	uint8_t globalPitch = 100;

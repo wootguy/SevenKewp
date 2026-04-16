@@ -121,7 +121,7 @@ void PRECACHE_DETAIL_TEXTURES() {
 	file.close();
 }
 
-void PRECACHE_HUD_FILES(const char* hudConfigPath) {
+bool PRECACHE_HUD_FILES(const char* hudConfigPath) {
 	std::string lowerPath = toLowerCase(hudConfigPath);
 	hudConfigPath = lowerPath.c_str();
 
@@ -136,10 +136,12 @@ void PRECACHE_HUD_FILES(const char* hudConfigPath) {
 	if (fpath.empty() || !infile.is_open()) {
 		g_tryPrecacheGeneric.put(hudConfigPath);
 		ALERT(at_error, "Failed to load HUD config: %s\n", hudConfigPath);
-		return;
+		return false;
 	}
 
 	PRECACHE_GENERIC(hudConfigPath);
+
+	bool hasZoomSprite = false;
 
 	int lineNum = 0;
 	std::string line;
@@ -158,8 +160,14 @@ void PRECACHE_HUD_FILES(const char* hudConfigPath) {
 		if (parts.size() < 7)
 			continue;
 
+		if (parts[0] == "zoom") {
+			hasZoomSprite = true;
+		}
+
 		PRECACHE_GENERIC(("sprites/" + parts[2] + ".spr").c_str());
 	}
+
+	return hasZoomSprite;
 }
 
 int PRECACHE_GENERIC(const char* path) {

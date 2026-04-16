@@ -1,6 +1,7 @@
 #include "extdll.h"
 #include "util.h"
 #include "monsters.h"
+#include "defaultai.h"
 
 #ifndef ANIMATION_H
 #include "animation.h"
@@ -101,6 +102,11 @@ void CCineMonster::KeyValue(KeyValueData* pkvd)
 	else if (FStrEq(pkvd->szKeyName, "m_iFinishSchedule"))
 	{
 		m_iFinishSchedule = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "moveto_radius"))
+	{
+		m_flMoveToRadius = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -383,7 +389,7 @@ void CCineMonster::CineThink(void)
 
 
 // lookup a sequence name and setup the target monster to play it
-BOOL CCineMonster::StartSequence(CBaseMonster* pTarget, int iszSeq, BOOL completeOnEmpty)
+BOOL CCineMonster::StartSequence(CBaseMonster* pTarget, string_t iszSeq, BOOL completeOnEmpty)
 {
 	if (!iszSeq && completeOnEmpty)
 	{
@@ -414,6 +420,11 @@ BOOL CCineMonster::StartSequence(CBaseMonster* pTarget, int iszSeq, BOOL complet
 	return TRUE;
 }
 
+void CCineMonster::DoScript(CBaseMonster* pMonster) {
+	if (m_fSequenceFinished) {
+		SequenceDone(pMonster);
+	}
+}
 
 
 //=========================================================
@@ -459,6 +470,21 @@ void CCineMonster::FixScriptMonsterSchedule(CBaseMonster* pMonster)
 	pMonster->ClearSchedule();
 }
 
+Schedule_t* CCineMonster::GetScriptSchedule() {
+	switch (((CCineMonster*)m_hCine.GetEntity())->m_fMoveTo)
+	{
+	default:
+	case 0:
+	case 4:
+		return slWaitScript;
+	case 1:
+		return slWalkToScript;
+	case 2:
+		return slRunToScript;
+	case 5:
+		return slFaceScript;
+	}
+}
 
 void CCineMonster::AllowInterrupt(BOOL fAllow)
 {
