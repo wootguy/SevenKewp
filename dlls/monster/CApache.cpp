@@ -334,6 +334,11 @@ void CApache :: HuntThink( void )
 
 		if (flLength < 128)
 		{
+			// fire path_corner target
+			if (STRING(m_hGoalEnt->pev->message)) {
+				FireTargets(STRING(m_hGoalEnt->pev->message), this, this, USE_TOGGLE);
+			}
+
 			m_hGoalEnt = UTIL_FindEntityByTargetname( NULL, STRING(m_hGoalEnt->pev->target ) );
 			if (m_hGoalEnt)
 			{

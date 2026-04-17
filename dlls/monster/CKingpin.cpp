@@ -389,7 +389,7 @@ void CKingpin::HandleAnimEvent(MonsterEvent_t* pEvent)
 		CBaseEntity* pHurt = CheckTraceHullAttack(KINGPIN_MELEE_DISTANCE, damage, DMG_SLASH);
 
 		if (pHurt) {
-			if (pHurt->pev->flags & (FL_MONSTER | FL_CLIENT)) {
+			if (pHurt->CanKnockback()) {
 				pHurt->pev->punchangle.x = 5;
 				pHurt->pev->punchangle.z = isLeftSwing ? -18 : 18;
 				pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_right * (isLeftSwing ? -100 : 100);

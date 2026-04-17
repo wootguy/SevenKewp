@@ -152,7 +152,7 @@ void CGonome:: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 		if (pHurt)
 		{
-			if (pHurt->pev->flags & (FL_MONSTER | FL_CLIENT))
+			if (pHurt->CanKnockback())
 			{
 				if (isAttack2) {
 					pHurt->pev->punchangle.x = 18;

@@ -170,7 +170,7 @@ void CTor::HandleAnimEvent(MonsterEvent_t* pEvent)
 		if (pHurt)
 		{
 			m_failedMelees = 0;
-			if (pHurt->pev->flags & (FL_MONSTER | FL_CLIENT))
+			if (pHurt->CanKnockback())
 			{
 				if (isRightSwing) {
 					pHurt->pev->punchangle.x = 5;
@@ -277,7 +277,7 @@ void CTor::MonsterThink(void) {
 				if (phit) {
 					phit->TakeDamage(pev, pev, gSkillData.sk_tor_energybeam, DMG_ENERGYBEAM);
 
-					if (phit->IsMonster() && (phit->pev->movetype == MOVETYPE_STEP || phit->IsPlayer())) {
+					if (phit->CanKnockback()) {
 						phit->pev->velocity.z += (phit->pev->flags & FL_ONGROUND) ? 200 : 200;
 					}
 				}
@@ -537,7 +537,9 @@ void CTor::SlamAttack() {
 			Vector launchForce = Vector(0, 0, 1) * 1000 * launchPower;
 			Vector pushForce = pushDir * 1000 * pushPower;
 
-			pEntity->pev->velocity = pEntity->pev->velocity + launchForce + pushForce;
+			if (pEntity->CanKnockback())
+				pEntity->pev->velocity = pEntity->pev->velocity + launchForce + pushForce;
+
 			pEntity->TakeDamage(pev, pev, gSkillData.sk_tor_sonicblast * launchPower, DMG_SONIC);
 
 			if (pEntity->IsPlayer()) {

@@ -486,7 +486,7 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			// SOUND HERE!
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_bullsquid_dmg_bite, DMG_SLASH );
 			
-			if ( pHurt )
+			if (pHurt->CanKnockback())
 			{
 				//pHurt->pev->punchangle.z = -15;
 				//pHurt->pev->punchangle.x = -45;
@@ -499,7 +499,7 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case BSQUID_AE_TAILWHIP:
 		{
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_bullsquid_dmg_whip, DMG_CLUB | DMG_ALWAYSGIB );
-			if ( pHurt ) 
+			if (pHurt->CanKnockback())
 			{
 				pHurt->pev->punchangle.z = -20;
 				pHurt->pev->punchangle.x = 20;

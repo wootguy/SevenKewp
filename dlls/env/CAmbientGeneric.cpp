@@ -186,7 +186,7 @@ void CAmbientGeneric::Precache(void)
 	if (!FStringNull(pev->message) && strlen(szSoundFile) > 1)
 	{
 		if (m_isGlobalMp3)
-			PRECACHE_GENERIC((std::string("sound/") + szSoundFile).c_str());
+			PRECACHE_GENERIC(normalize_path(std::string("sound/") + szSoundFile).c_str());
 		else if (*szSoundFile != '!')
 			PRECACHE_SOUND(szSoundFile);
 	}

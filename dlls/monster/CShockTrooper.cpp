@@ -864,7 +864,7 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 		CBaseEntity* pHurt = Kick();
 
-		if (pHurt)
+		if (pHurt->CanKnockback())
 		{
 			// SOUND HERE!
 			UTIL_MakeVectors(pev->angles);

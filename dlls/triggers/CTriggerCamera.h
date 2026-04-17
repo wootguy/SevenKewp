@@ -8,6 +8,7 @@
 #define SF_CAMERA_ALL_PLAYERS 8 // force everyone to view, dead or alive
 #define SF_CAMERA_FORCE_VIEW 16 // activator is forced to view even if dead ("all players" also does this)
 #define SF_CAMERA_INSTANT_TURN 32 // if enabled, don't smoothly rotate to face target
+#define SF_CAMERA_INSTANT_MOVE 64 // if enabled, move like a func_train without any smoothing
 #define SF_CAMERA_PLAYER_INVULNERABLE 256 // disable viewer damage while camera is active
 
 class EXPORT CTriggerCamera : public CBaseDelay

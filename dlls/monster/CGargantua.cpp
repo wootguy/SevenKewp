@@ -773,7 +773,7 @@ void CGargantua::HandleAnimEvent(MonsterEvent_t *pEvent)
 			CBaseEntity *pHurt = GargantuaCheckTraceHullAttack( GARG_ATTACKDIST + 10.0, slashDamage, DMG_SLASH);
 			if (pHurt)
 			{
-				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
+				if ( pHurt->CanKnockback() )
 				{
 					pHurt->pev->punchangle.x = -30; // pitch
 					

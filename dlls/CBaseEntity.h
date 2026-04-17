@@ -318,6 +318,10 @@ public:
 		return (IsMachine() && IRelationship(CLASS_PLAYER, Classify()) == R_AL)
 			|| (IsBreakable() && (m_breakFlags & FL_BREAK_REPAIRABLE));
 	}
+	inline BOOL CanKnockback() {
+		// can this entity be pushed around by attacks?
+		return pev->movetype != MOVETYPE_PUSH && pev->movetype != MOVETYPE_NONE;
+	}
 	virtual const char* TeamID(void) { return ""; }
 	virtual const char* DisplayName();
 	virtual const char* DisplayHint(); // extra text to show in status bar

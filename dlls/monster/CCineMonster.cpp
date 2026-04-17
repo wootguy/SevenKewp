@@ -471,7 +471,7 @@ void CCineMonster::FixScriptMonsterSchedule(CBaseMonster* pMonster)
 }
 
 Schedule_t* CCineMonster::GetScriptSchedule() {
-	switch (((CCineMonster*)m_hCine.GetEntity())->m_fMoveTo)
+	switch (m_fMoveTo)
 	{
 	default:
 	case 0:

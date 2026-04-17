@@ -76,6 +76,13 @@ void CFuncTank::Spawn(void)
 	if (m_spread > (int)MAX_FIRING_SPREADS)
 		m_spread = 0;
 
+	if (m_zhltNoclip) {
+		// TODO: check the BSP model hulls to see if they were really removed.
+		// Setting non-solid is needed to prevent the turrent getting stuck on nearby monsters
+		// and not moving at all.
+		pev->solid = SOLID_NOT;
+	}
+
 	pev->oldorigin = pev->origin;
 }
 
@@ -274,6 +281,11 @@ void CFuncTank::KeyValue(KeyValueData* pkvd)
 		m_iRelation[CLASS_PLAYER] = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "zhlt_noclip"))
+	{
+		m_zhltNoclip = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseEntity::KeyValue(pkvd);
 }
@@ -410,6 +422,12 @@ void CFuncTank::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 		else
 			TankActivate();
 	}
+}
+
+void CFuncTank::TankActivate(void) {
+	pev->spawnflags |= SF_TANK_ACTIVE;
+	pev->nextthink = pev->ltime + 0.1;
+	m_fireLast = 0;
 }
 
 int CFuncTank::IRelationship(CBaseEntity* pTarget) {

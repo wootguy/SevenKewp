@@ -160,6 +160,60 @@ void Bsp::parseEntities(const char* data, int dataLen, std::vector<StringMap>& o
 
 	outputEnts.clear();
 
+	string current, key, value;
+	bool inString = false;
+	bool readingKey = true;
+	char c;
+	while (in.get(c)) {
+		if (inString) {
+			if (c == '"') {
+				inString = false;
+
+				if (readingKey) {
+					key = current;
+					readingKey = false;
+				}
+				else {
+					value = current;
+
+					if (!key.empty())
+						ent.put(key.c_str(), value.c_str());
+
+					key.clear();
+					value.clear();
+					readingKey = true;
+				}
+
+				current.clear();
+			}
+			else {
+				current += c; // keep everything, including newlines
+			}
+			continue;
+		}
+
+		// not inside string
+		if (c == '"') {
+			inString = true;
+			current.clear();
+		}
+		else if (c == '{') {
+			ent.clear();
+			readingKey = true;
+			key.clear();
+			value.clear();
+		}
+		else if (c == '}') {
+			if (ent.get("classname"))
+				outputEnts.push_back(ent);
+
+			ent.clear();
+		}
+		else {
+			// ignore everything else outside strings (whitespace, newlines, etc.)
+		}
+	}
+
 	string line = "";
 	while (getline(in, line))
 	{

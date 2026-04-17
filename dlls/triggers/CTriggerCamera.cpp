@@ -251,39 +251,36 @@ void CTriggerCamera::FollowTarget()
 		return;
 	}
 
-	if (m_hTarget == NULL) {
-		pev->nextthink = gpGlobals->time;
-		return;
-	}
+	if (m_hTarget != NULL) {
+		Vector vecGoal = UTIL_VecToAngles(m_hTarget->pev->origin - pev->origin);
+		vecGoal.x = -vecGoal.x;
 
-	Vector vecGoal = UTIL_VecToAngles(m_hTarget->pev->origin - pev->origin);
-	vecGoal.x = -vecGoal.x;
+		if (!(pev->spawnflags & SF_CAMERA_INSTANT_TURN)) {
+			if (pev->angles.y > 360)
+				pev->angles.y -= 360;
 
-	if (!(pev->spawnflags & SF_CAMERA_INSTANT_TURN)) {
-		if (pev->angles.y > 360)
-			pev->angles.y -= 360;
+			if (pev->angles.y < 0)
+				pev->angles.y += 360;
 
-		if (pev->angles.y < 0)
-			pev->angles.y += 360;
+			float dx = vecGoal.x - pev->angles.x;
+			float dy = vecGoal.y - pev->angles.y;
 
-		float dx = vecGoal.x - pev->angles.x;
-		float dy = vecGoal.y - pev->angles.y;
+			if (dx < -180)
+				dx += 360;
+			if (dx > 180)
+				dx = dx - 360;
 
-		if (dx < -180)
-			dx += 360;
-		if (dx > 180)
-			dx = dx - 360;
+			if (dy < -180)
+				dy += 360;
+			if (dy > 180)
+				dy = dy - 360;
 
-		if (dy < -180)
-			dy += 360;
-		if (dy > 180)
-			dy = dy - 360;
-
-		pev->avelocity.x = dx * m_turnspeed * gpGlobals->frametime;
-		pev->avelocity.y = dy * m_turnspeed * gpGlobals->frametime;
-	}
-	else {
-		pev->angles = vecGoal;
+			pev->avelocity.x = dx * m_turnspeed * gpGlobals->frametime;
+			pev->avelocity.y = dy * m_turnspeed * gpGlobals->frametime;
+		}
+		else {
+			pev->angles = vecGoal;
+		}
 	}
 
 	pev->nextthink = gpGlobals->time;
@@ -337,10 +334,17 @@ void CTriggerCamera::Move()
 		}
 	}
 
+	if (pev->spawnflags & SF_CAMERA_INSTANT_MOVE) {
+		pev->speed = m_targetSpeed;
+		pev->velocity = pev->movedir * pev->speed;
+		return;
+	}
+
 	if (m_flStopTime > gpGlobals->time)
 		pev->speed = UTIL_Approach(0, pev->speed, m_deceleration * gpGlobals->frametime);
 	else
 		pev->speed = UTIL_Approach(m_targetSpeed, pev->speed, m_acceleration * gpGlobals->frametime);
+	
 
 	float fraction = 2 * gpGlobals->frametime;
 

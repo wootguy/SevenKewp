@@ -367,7 +367,8 @@ void CIchthyosaur :: HandleAnimEvent( MonsterEvent_t *pEvent )
 					m_bOnAttack = TRUE;
 					pHurt->pev->punchangle.z = -18;
 					pHurt->pev->punchangle.x = 5;
-					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 300;
+					if (pHurt->CanKnockback())
+						pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 300;
 					if (pHurt->IsPlayer())
 					{
 						pHurt->pev->angles.x += RANDOM_FLOAT( -35, 35 );

@@ -22,7 +22,7 @@ void CPathWaypoint::KeyValue(KeyValueData* pkvd) {
 		m_useAngles = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
-	else if (FStrEq(pkvd->szKeyName, "triggeronarrival"))
+	else if (FStrEq(pkvd->szKeyName, "trigger_on_arrival"))
 	{
 		m_triggerOnArrival = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;

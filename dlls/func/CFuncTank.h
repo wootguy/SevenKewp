@@ -52,7 +52,7 @@ public:
 	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
 	inline BOOL IsActive(void) { return (pev->spawnflags & SF_TANK_ACTIVE) ? TRUE : FALSE; }
-	inline void TankActivate(void) { pev->spawnflags |= SF_TANK_ACTIVE; pev->nextthink = pev->ltime + 0.1; m_fireLast = 0; }
+	void TankActivate(void);
 	inline void TankDeactivate(void) { pev->spawnflags &= ~SF_TANK_ACTIVE; m_fireLast = 0; StopRotSound(); }
 	inline BOOL CanFire(void) { return (gpGlobals->time - m_lastSightTime) < m_persist; }
 	BOOL		InRange(float range);
@@ -123,4 +123,5 @@ protected:
 	int			m_iszMaster;	// Master entity (game_team_master or multisource)
 
 	int8_t		m_iRelation[16]; // manual relationship settings
+	bool m_zhltNoclip;
 };

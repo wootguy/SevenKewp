@@ -517,6 +517,13 @@ void CMonsterMaker :: ToggleUse ( CBaseEntity *pActivator, CBaseEntity *pCaller,
 		SetThink ( &CMonsterMaker::MakerThink );
 	}
 
+	if (m_cNumMonsters == 0)
+	{
+		// Disable this forever.  Don't kill it because it still gets death notices
+		SetThink(NULL);
+		SetUse(NULL);
+	}
+
 	pev->nextthink = gpGlobals->time;
 }
 

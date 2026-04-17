@@ -253,23 +253,28 @@ void CBigMomma :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			if ( pHurt )
 			{
 				pHurt->TakeDamage( pev, pev, gSkillData.sk_bigmomma_dmg_slash, DMG_CRUSH | DMG_SLASH );
-				pHurt->pev->punchangle.x = 15;
-				switch( pEvent->event )
-				{
+				
+				if (pHurt->CanKnockback()) {
+					pHurt->pev->punchangle.x = 15;
+
+					switch (pEvent->event)
+					{
 					case BIG_AE_MELEE_ATTACKBR:
-						pHurt->pev->velocity = pHurt->pev->velocity + (forward * 150) + Vector(0,0,250) - (right * 200);
-					break;
+						pHurt->pev->velocity = pHurt->pev->velocity + (forward * 150) + Vector(0, 0, 250) - (right * 200);
+						break;
 
 					case BIG_AE_MELEE_ATTACKBL:
-						pHurt->pev->velocity = pHurt->pev->velocity + (forward * 150) + Vector(0,0,250) + (right * 200);
-					break;
+						pHurt->pev->velocity = pHurt->pev->velocity + (forward * 150) + Vector(0, 0, 250) + (right * 200);
+						break;
 
 					case BIG_AE_MELEE_ATTACK1:
-						pHurt->pev->velocity = pHurt->pev->velocity + (forward * 220) + Vector(0,0,200);
-					break;
+						pHurt->pev->velocity = pHurt->pev->velocity + (forward * 220) + Vector(0, 0, 200);
+						break;
+					}
+					pHurt->pev->flags &= ~FL_ONGROUND;
 				}
 
-				pHurt->pev->flags &= ~FL_ONGROUND;
+				
 				EMIT_SOUND_DYN( edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackHitSounds), 1.0, ATTN_NORM, 0, 100 + RANDOM_LONG(-5,5) );
 			}
 		}

@@ -208,7 +208,7 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_zombie_dmg_one_slash, DMG_SLASH );
 			if ( pHurt )
 			{
-				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
+				if ( pHurt->CanKnockback())
 				{
 					pHurt->pev->punchangle.z = -18;
 					pHurt->pev->punchangle.x = 5;
@@ -232,7 +232,7 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_zombie_dmg_one_slash, DMG_SLASH );
 			if ( pHurt )
 			{
-				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
+				if ( pHurt->CanKnockback() )
 				{
 					pHurt->pev->punchangle.z = 18;
 					pHurt->pev->punchangle.x = 5;
@@ -254,7 +254,7 @@ void CZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_zombie_dmg_both_slash, DMG_SLASH );
 			if ( pHurt )
 			{
-				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
+				if ( pHurt->CanKnockback() )
 				{
 					pHurt->pev->punchangle.x = 5;
 					pHurt->pev->velocity = pHurt->pev->velocity + gpGlobals->v_forward * -100;

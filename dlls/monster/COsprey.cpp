@@ -430,6 +430,13 @@ void COsprey::FlyThink( void )
 
 	if (m_hGoalEnt && gpGlobals->time > m_startTime + m_dTime)
 	{
+		if (m_hGoalEnt) {
+			// fire path_corner target
+			if (STRING(m_hGoalEnt->pev->message)) {
+				FireTargets(STRING(m_hGoalEnt->pev->message), this, this, USE_TOGGLE);
+			}
+		}
+
 		if (m_hGoalEnt->pev->speed == 0)
 		{
 			SetThink( &COsprey::DeployThink );
