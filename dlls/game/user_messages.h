@@ -67,6 +67,8 @@ EXPORT extern int gmsgHudSprite; // Display a sprite on the client HUD
 EXPORT extern int gmsgHudSprTogl; // Toggle HUD sprite visibility
 EXPORT extern int gmsgHudUpdNum; // Update HUD numeric display value
 EXPORT extern int gmsgTracer2; // Tracer with increased range (+/-32k) and a customizable color
+EXPORT extern int gmsgBloodSprite2; // Blood sprite effect with increased range (+/-32k)
+EXPORT extern int gmsgTempFx; // Temporary entity effect with increased range (+/-32k)
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 

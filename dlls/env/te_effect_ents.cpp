@@ -479,6 +479,7 @@ public:
 		streaks->pev->framerate = RANDOM_LONG(25, 35);
 		streaks->pev->scale = RANDOM_FLOAT(0.8f, 1.2f);
 		streaks->pev->movetype = MOVETYPE_NONE; // appears faster without interp
+		streaks->m_hidePlayers = m_hidePlayers;
 	}
 
 	void Precache(void) {

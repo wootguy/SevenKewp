@@ -41,6 +41,7 @@ public:
 	bool IsFull(CBaseMonster* checker);
 
 	bool m_useAngles;	// turn to face waypoint angles on arrival
+	string_t m_alternateTarget;
 
 	string_t m_triggerOnArrival;
 	string_t m_triggerAfterArrivalAnim;

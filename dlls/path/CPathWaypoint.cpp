@@ -77,6 +77,11 @@ void CPathWaypoint::KeyValue(KeyValueData* pkvd) {
 		m_occupantLimit = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "alternate_target"))
+	{
+		m_alternateTarget = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	/*
 	else if (FStrEq(pkvd->szKeyName, "waituntilfull"))
 	{
@@ -125,6 +130,11 @@ void CPathWaypoint::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE 
 		m_hTargetEnt = pCaller;
 		CCineMonster::PossessEntity();
 		pTarget->ChangeSchedule(GetScriptSchedule());
+	}
+	else {
+		string_t temp = m_alternateTarget;
+		m_alternateTarget = pev->target;
+		pev->target = temp;
 	}
 }
 

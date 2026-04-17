@@ -11,6 +11,8 @@
 #include "pm_defs.h"
 #include "eventscripts.h"
 
+void EV_HLDM_GunshotDecalEffects(Vector pos, bool playSound);
+
 #define MAX_ADV_SPRITES 512
 
 // advanced sprite state for various effects
@@ -323,24 +325,6 @@ void EF_WaterSplash(Vector origin, int splashSprIdx, int wakeSprIdx, const char*
 	}
 }
 
-int __MsgFunc_Tracer2(const char* pszName, int iSize, void* pbuf) {
-	BEGIN_READ(pbuf, iSize);
-
-	float start[3];
-	float end[3];
-	start[0] = READ_SHORT();
-	start[1] = READ_SHORT();
-	start[2] = READ_SHORT();
-	end[0] = READ_SHORT();
-	end[1] = READ_SHORT();
-	end[2] = READ_SHORT();
-	int color = READ_BYTE();
-
-	EV_CreateTracer(start, end, color);
-
-	return 1;
-}
-
 int __MsgFunc_WaterSplash(const char* pszName, int iSize, void* pbuf) {
 	BEGIN_READ(pbuf, iSize);
 
@@ -470,9 +454,158 @@ void FlashlightEffect() {
 	wasOn = isOn;
 }
 
+int __MsgFunc_Tracer2(const char* pszName, int iSize, void* pbuf) {
+	BEGIN_READ(pbuf, iSize);
+
+	float start[3];
+	float end[3];
+	start[0] = READ_SHORT();
+	start[1] = READ_SHORT();
+	start[2] = READ_SHORT();
+	end[0] = READ_SHORT();
+	end[1] = READ_SHORT();
+	end[2] = READ_SHORT();
+	int color = READ_BYTE();
+
+	EV_CreateTracer(start, end, color);
+
+	return 1;
+}
+
+int __MsgFunc_BloodSpr2(const char* pszName, int iSize, void* pbuf) {
+	BEGIN_READ(pbuf, iSize);
+
+	float pos[3];
+	pos[0] = READ_SHORT();
+	pos[1] = READ_SHORT();
+	pos[2] = READ_SHORT();
+	short spraySpriteIdx = READ_SHORT();
+	short dripSpriteIdx = READ_SHORT();
+	int color = READ_BYTE();
+	int scale = READ_BYTE();
+
+	gEngfuncs.pEfxAPI->R_BloodSprite(pos, color, spraySpriteIdx, dripSpriteIdx, scale);
+
+	return 1;
+}
+
+int __MsgFunc_TempFx(const char* pszName, int iSize, void* pbuf) {
+	BEGIN_READ(pbuf, iSize);
+
+	float pos[3];
+	int type = READ_BYTE();
+
+	switch (type) {
+	case TE_DECAL:
+	case TE_GUNSHOTDECAL: {
+		pos[0] = READ_SHORT();
+		pos[1] = READ_SHORT();
+		pos[2] = READ_SHORT();
+		int decalIdx = READ_SHORT();
+		int entityIdx = READ_SHORT();
+
+		gEngfuncs.pEfxAPI->R_DecalShoot(gEngfuncs.pEfxAPI->Draw_DecalIndex(decalIdx), entityIdx, 0, pos, 0);
+
+		if (type == TE_GUNSHOTDECAL) {
+			EV_HLDM_GunshotDecalEffects(pos, true);
+		}
+		break;
+	}
+	case TE_SPARKS:
+		pos[0] = READ_SHORT();
+		pos[1] = READ_SHORT();
+		pos[2] = READ_SHORT();
+		gEngfuncs.pEfxAPI->R_SparkShower(pos);
+		break;
+	case TE_EXPLOSION: {
+		pos[0] = READ_SHORT();
+		pos[1] = READ_SHORT();
+		pos[2] = READ_SHORT();
+		int sprIndex = READ_SHORT();
+		int scale = READ_BYTE();
+		int framerate = READ_BYTE();
+		int eflags = READ_BYTE();
+		gEngfuncs.pEfxAPI->R_Explosion(pos, sprIndex, scale * 0.1f, framerate, eflags);
+		break;
+	}
+	case TE_SMOKE: {
+		pos[0] = READ_SHORT();
+		pos[1] = READ_SHORT();
+		pos[2] = READ_SHORT();
+		int sprIndex = READ_SHORT();
+		int scale = READ_BYTE();
+		int framerate = READ_BYTE();
+		TEMPENTITY* pTemp = gEngfuncs.pEfxAPI->R_DefaultSprite(pos, sprIndex, framerate);
+		gEngfuncs.pEfxAPI->R_Sprite_Smoke(pTemp, scale*0.1f);
+		break;
+	}
+	case TE_STREAK_SPLASH: {
+		float dir[3];
+		pos[0] = READ_SHORT();
+		pos[1] = READ_SHORT();
+		pos[2] = READ_SHORT();
+		dir[0] = READ_COORD();
+		dir[1] = READ_COORD();
+		dir[2] = READ_COORD();
+		int color = READ_BYTE();
+		int count = READ_SHORT();
+		int speed = READ_SHORT();
+		int speedNoise = READ_SHORT();
+		gEngfuncs.pEfxAPI->R_StreakSplash(pos, dir, color, count, speed, -speedNoise, speedNoise);
+		break;
+	}
+	case TE_BREAKMODEL: {
+		float size[3];
+		float dir[3];
+		pos[0] = READ_SHORT();
+		pos[1] = READ_SHORT();
+		pos[2] = READ_SHORT();
+		size[0] = READ_COORD();
+		size[1] = READ_COORD();
+		size[2] = READ_COORD();
+		dir[0] = READ_COORD();
+		dir[1] = READ_COORD();
+		dir[2] = READ_COORD();
+		int random = READ_BYTE();
+		int modelIdx = READ_SHORT();
+		int shards = READ_BYTE();
+		int duration = READ_BYTE();
+		int flags = READ_BYTE();
+		gEngfuncs.pEfxAPI->R_BreakModel(pos, size, dir, random*10, duration*0.1f, shards, modelIdx, flags);
+		break;
+	}
+	case TE_DLIGHT: {
+		pos[0] = READ_SHORT();
+		pos[1] = READ_SHORT();
+		pos[2] = READ_SHORT();
+		int radius = READ_BYTE();
+		int r = READ_BYTE();
+		int g = READ_BYTE();
+		int b = READ_BYTE();
+		int time = READ_BYTE();
+		int decay = READ_BYTE();
+		
+		dlight_t* dl = gEngfuncs.pEfxAPI->CL_AllocDlight(0);
+		VectorCopy(pos, dl->origin);
+		dl->radius = radius*10;
+		dl->decay = decay*10;
+		dl->color.r = r;
+		dl->color.g = g;
+		dl->color.b = b;
+		dl->die = gEngfuncs.GetClientTime() + time*0.1f;
+		break;
+	}
+	}
+	
+
+	return 1;
+}
+
 void HookEffectMessages() {
 	HOOK_MESSAGE(ToxicCloud);
 	HOOK_MESSAGE(SpriteAdv);
 	HOOK_MESSAGE(WaterSplash);
 	HOOK_MESSAGE(Tracer2);
+	HOOK_MESSAGE(BloodSpr2);
+	HOOK_MESSAGE(TempFx);
 }

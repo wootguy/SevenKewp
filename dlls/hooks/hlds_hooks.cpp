@@ -604,6 +604,7 @@ void ServerDeactivate( void )
 	memset(g_hudMsgHistory, 0, sizeof(g_hudMsgHistory));
 	memset(g_breakableSpawnRemap, 0, sizeof(g_breakableSpawnRemap));
 	memset(CWeaponCustom::m_predDataSent, 0, sizeof(CWeaponCustom::m_predDataSent));
+	memset(g_activeTempEnts, 0, sizeof(FakeTempEnt)*MAX_FAKE_TE);
 
 	// in case the next map doesn't configure a sky or light_environment
 	CVAR_SET_STRING("sv_skyname", "");
@@ -2257,8 +2258,6 @@ void CmdStart( const edict_t *player, const struct usercmd_s *cmd, unsigned int 
 
 	if (random_seed - pl->random_seed >= 1) {
 		pl->m_cmdTime += cmd->msec;
-		if (random_seed - pl->random_seed > 1)
-			ALERT(at_console, "Lost user packet(s)\n");
 	}
 
 	pl->random_seed = random_seed;

@@ -71,6 +71,8 @@ int gmsgHudSprite = 0;
 int gmsgHudSprTogl = 0;
 int gmsgHudUpdNum = 0;
 int gmsgTracer2 = 0;
+int gmsgBloodSprite2 = 0;
+int gmsgTempFx = 0;
 
 std::vector<UserMessage> g_userMessages;
 
@@ -188,4 +190,6 @@ void LinkUserMessages(void)
 	gmsgHudSprTogl = REG_USER_MSG("HudSprTogl", 1);
 	gmsgHudUpdNum = REG_USER_MSG("HudUpdNum", 5);
 	gmsgTracer2 = REG_USER_MSG("Tracer2", 13);
+	gmsgBloodSprite2 = REG_USER_MSG("BloodSpr2", 12);
+	gmsgTempFx = REG_USER_MSG("TempFx", -1);
 }

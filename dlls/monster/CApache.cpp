@@ -811,19 +811,9 @@ void CApache::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir
 		gibCount = 0;
 	}
 	else if (!isBlast && (hitWeakpoint || hitHard)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
-		WRITE_BYTE(TE_STREAK_SPLASH);
-		WRITE_COORD(pos.x);
-		WRITE_COORD(pos.y);
-		WRITE_COORD(pos.z);
-		WRITE_COORD(dir.x);
-		WRITE_COORD(dir.y);
-		WRITE_COORD(dir.z);
-		WRITE_BYTE(ptr->iHitgroup == 1 ? 0 : 5);
-		WRITE_SHORT(flDamage >= 40 ? 32 : 16);
-		WRITE_SHORT(768);
-		WRITE_SHORT(256);
-		MESSAGE_END();
+		int color = ptr->iHitgroup == 1 ? 0 : 5;
+		int count = flDamage >= 40 ? 32 : 16;
+		UTIL_StreakSplash(pos, dir, color, count, 768, 256);
 
 		Vector sprPos = pos + dir * 4;
 		if (hitWeakpoint) {

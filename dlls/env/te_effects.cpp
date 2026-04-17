@@ -6,6 +6,34 @@
 
 bool g_checkExplSounds;
 
+FakeTempEnt g_activeTempEnts[MAX_FAKE_TE];
+
+FakeTempEnt* AllocFakeTempEnt(const char* funcName, int priority) {
+	float oldestCreationTime = FLT_MAX;
+	int oldestIdx = 0;
+
+	for (int i = 0; i < MAX_FAKE_TE; i++) {
+		if (!g_activeTempEnts[i].h_ent) {
+			g_activeTempEnts[i].creationTime = gpGlobals->time;
+			return &g_activeTempEnts[i];
+		}
+		if (g_activeTempEnts[i].creationTime < oldestCreationTime) {
+			oldestCreationTime = g_activeTempEnts[i].creationTime;
+			oldestIdx = i;
+		}
+	}
+
+	if (priority == FAKETE_PRIO_HIGH) {
+		// no free slots, delete something to make room
+		UTIL_Remove(g_activeTempEnts[oldestIdx].h_ent);
+		g_activeTempEnts[oldestIdx].creationTime = gpGlobals->time;
+		return &g_activeTempEnts[oldestIdx];
+	}
+	
+	//ALERT(at_console, "FakeTempEnt overflow at '%s'\n", funcName);
+	return NULL;
+}
+
 RGB GetTeColor(uint8_t color) {
 	// palette used by TE_* effects
 	static uint32_t colors[] = {
@@ -218,6 +246,10 @@ void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx,
 		SAFE_MESSAGE_ENT_LOGIC(UTIL_BeamEntPoint_msg, entindex, attachment, point, modelIdx, frameStart, framerate, life, width, noise, color, speed, msgMode, msgOrigin, targetEnt);
 	}
 	else {
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
 		if (entindex < MAX_LEGACY_CLIENT_ENTS) {
 			CBeam* beam = CBeam::BeamCreate(INDEX_MODEL(modelIdx), width);
 			beam->PointEntInit(point, entindex);
@@ -229,6 +261,7 @@ void UTIL_BeamEntPoint(int entindex, int attachment, Vector point, int modelIdx,
 			beam->SetScrollRate(speed);
 			beam->LiveForTime(life * 0.1f);
 			// TODO: framerate
+			tent->h_ent = beam;
 		}
 		else {
 			// should probably do this anyway because beams attached to entities have caused crashes before
@@ -324,6 +357,10 @@ void UTIL_BeamPoints(Vector start, Vector end, int modelIdx, uint8_t frameStart,
 		MESSAGE_END();
 	}
 	else {
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
 		CBeam* beam = CBeam::BeamCreate(INDEX_MODEL(modelIdx), width);
 		beam->PointsInit(start, end);
 		beam->SetFrame(frameStart);
@@ -332,6 +369,7 @@ void UTIL_BeamPoints(Vector start, Vector end, int modelIdx, uint8_t frameStart,
 		beam->SetBrightness(color.a);
 		beam->SetScrollRate(speed);
 		beam->LiveForTime(life * 0.1f);
+		tent->h_ent = beam;
 		// TODO: framerate
 	}
 }
@@ -447,37 +485,40 @@ void UTIL_Tracer(Vector start, Vector end, int color, int msgMode, edict_t* targ
 		}
 	}
 	else {
-		CBaseEntity::Create("te_user_tracer", start, end, true);
+		uint32_t hidePlayers = 0;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (!plr)
+				continue;
+
+			if (plr->IsSevenKewpClient()) {
+				hidePlayers |= PLRBIT(plr->edict());
+
+				if (UTIL_TestPVS(start, plr->edict()) || UTIL_TestPVS(end, plr->edict())) {
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTracer2, 0, plr->edict());
+					WRITE_FAR_VECTOR(start);
+					WRITE_FAR_VECTOR(end);
+					WRITE_BYTE(color);
+					MESSAGE_END();
+				}
+			}
+		}
+
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
+		CBaseEntity* ent = CBaseEntity::Create("te_user_tracer", start, end, true);
+		ent->m_hidePlayers = hidePlayers;
+		tent->h_ent = ent;
 	}
 }
 
 void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate, uint8_t flags) {
-	if (!UTIL_IsValidTempEntOrigin(origin)) {
-		CBaseEntity* ent = CBaseEntity::Create("te_explosion", origin, g_vecZero, false);
-		ent->pev->scale = scale / 10.0f;
-		ent->pev->framerate = framerate;
-		ent->pev->spawnflags = flags;
-		DispatchSpawn(ent->edict());
-		SET_MODEL(ent->edict(), INDEX_MODEL(sprIndex));
-		return; // ent will handle the sound logic
-	}
-
-	if (flags & 4) {
-		// don't want sounds, no special logic needed
-		MESSAGE_BEGIN(MSG_PAS, SVC_TEMPENTITY, origin);
-		WRITE_BYTE(TE_EXPLOSION);
-		WRITE_COORD(origin.x);
-		WRITE_COORD(origin.y);
-		WRITE_COORD(origin.z);
-		WRITE_SHORT(sprIndex);
-		WRITE_BYTE(scale);
-		WRITE_BYTE(framerate);
-		WRITE_BYTE(flags);
-		MESSAGE_END();
-		return;
-	}
-
 	bool expUnderwater = UTIL_PointInLiquid(origin) && UTIL_PointContents(origin + Vector(0,0,32)) != CONTENTS_EMPTY;
+	bool isValidTempOri = UTIL_IsValidTempEntOrigin(origin);
+	bool wantSounds = flags & 4;
 
 	static bool replacedExplosionSounds = false;
 	static const char* expSounds[3] = {
@@ -502,57 +543,95 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 		}
 	}
 
+	uint32_t farHlPlayers = 0;
+
 	for (int i = 1; i < gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 		
 		if (!plr)
 			continue;
 
-		bool plrUnderwater = plr->pev->waterlevel >= 3;
-		bool shouldMuffle = false;
-
 		uint8_t eflags = flags;
 
-		if (expUnderwater != plrUnderwater) {
-			shouldMuffle = true;
-			eflags |= 4;
+		bool shouldMuffle = false;
+
+		if (wantSounds) {
+			bool plrUnderwater = plr->pev->waterlevel >= 3;
+
+			if (expUnderwater != plrUnderwater) {
+				shouldMuffle = true;
+				eflags |= 4;
+			}
+			else if (replacedExplosionSounds) {
+				eflags |= 4;
+			}
+			if (expUnderwater)
+				eflags |= 8;
 		}
-		else if (replacedExplosionSounds) {
-			eflags |= 4;
-		}
-		if (expUnderwater)
-			eflags |= 8;
 
 		if (!UTIL_TestPAS(origin, plr->edict())) {
 			continue;
 		}
 
 		// do the visual effects
-		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, plr->edict());
-		WRITE_BYTE(TE_EXPLOSION);
-		WRITE_COORD(origin.x);
-		WRITE_COORD(origin.y);
-		WRITE_COORD(origin.z);
-		WRITE_SHORT(sprIndex);
-		WRITE_BYTE(scale);
-		WRITE_BYTE(framerate);
-		WRITE_BYTE(eflags);
-		MESSAGE_END();
+		if (isValidTempOri) {
+			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, plr->edict());
+			WRITE_BYTE(TE_EXPLOSION);
+			WRITE_COORD_VECTOR(origin);
+			WRITE_SHORT(sprIndex);
+			WRITE_BYTE(scale);
+			WRITE_BYTE(framerate);
+			WRITE_BYTE(eflags);
+			MESSAGE_END();
+		}
+		else {
+			if (plr->IsSevenKewpClient()) {
+				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, NULL, plr->edict());
+				WRITE_BYTE(TE_EXPLOSION);
+				WRITE_FAR_VECTOR(origin);
+				WRITE_SHORT(sprIndex);
+				WRITE_BYTE(scale);
+				WRITE_BYTE(framerate);
+				WRITE_BYTE(eflags);
+				MESSAGE_END();
+			}
+			else {
+				farHlPlayers |= PLRBIT(plr->edict());
+			}
+		}
 
-		if (shouldMuffle) {
-			// play muffled sound
-			float attn = 0.5f;
-			int pitch = RANDOM_LONG(95, 106);
-			const char* sample = RANDOM_LONG(0, 1) ? "water/explode3.wav" : "water/explode5.wav";
-			StartSound((edict_t*)NULL, CHAN_STATIC, sample, 1.0f, attn, 0, pitch, origin, PLRBIT(plr->edict()));
+		if (wantSounds) {
+			if (shouldMuffle) {
+				// play muffled sound
+				float attn = 0.5f;
+				int pitch = RANDOM_LONG(95, 106);
+				const char* sample = RANDOM_LONG(0, 1) ? "water/explode3.wav" : "water/explode5.wav";
+				StartSound((edict_t*)NULL, CHAN_STATIC, sample, 1.0f, attn, 0, pitch, origin, PLRBIT(plr->edict()));
+			}
+			else if (replacedExplosionSounds) {
+				// play replacement sound
+				float attn = 0.3f;
+				int pitch = PITCH_NORM;
+				const char* sample = expSoundsNew[RANDOM_LONG(0, 2)];
+				StartSound((edict_t*)NULL, CHAN_STATIC, sample, 1.0f, attn, 0, pitch, origin, PLRBIT(plr->edict()));
+			}
 		}
-		else if (replacedExplosionSounds) {
-			// play replacement sound
-			float attn = 0.3f;
-			int pitch = PITCH_NORM;
-			const char* sample = expSoundsNew[RANDOM_LONG(0, 2)];
-			StartSound((edict_t*)NULL, CHAN_STATIC, sample, 1.0f, attn, 0, pitch, origin, PLRBIT(plr->edict()));
-		}
+	}
+
+	// create entity for HL players that can't read the sevenkewp message
+	if (farHlPlayers) {
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
+		CBaseEntity* ent = CBaseEntity::Create("te_explosion", origin, g_vecZero, false);
+		ent->pev->scale = scale / 10.0f;
+		ent->pev->framerate = framerate;
+		ent->pev->spawnflags = flags;
+		ent->m_hidePlayers = ~farHlPlayers;
+		tent->h_ent = ent;
+		DispatchSpawn(ent->edict());
+		SET_MODEL(ent->edict(), INDEX_MODEL(sprIndex));
 	}
 }
 
@@ -569,15 +648,43 @@ void UTIL_Smoke(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate) {
 		MESSAGE_END();
 	}
 	else {
+		uint32_t hidePlayers = 0;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (!plr)
+				continue;
+
+			if (plr->IsSevenKewpClient()) {
+				hidePlayers |= PLRBIT(plr->edict());
+
+				if (UTIL_TestPVS(origin, plr->edict())) {
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					WRITE_BYTE(TE_SMOKE);
+					WRITE_FAR_VECTOR(origin);
+					WRITE_SHORT(sprIndex);
+					WRITE_BYTE(scale);
+					WRITE_BYTE(framerate);
+					MESSAGE_END();
+				}
+			}
+		}
+
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
 		StringMap keys = {
 			{"model", INDEX_MODEL(sprIndex)}
 		};
 		CBaseEntity* ent = CBaseEntity::Create("te_smoke", origin, g_vecZero, false, NULL, keys);
 		ent->pev->scale = scale / 10.0f;
 		ent->pev->framerate = framerate;
+		ent->m_hidePlayers = hidePlayers;
 		int brightness = RANDOM_LONG(1, 32);
 		ent->pev->rendercolor = Vector(brightness, brightness, brightness);
 		DispatchSpawn(ent->edict());
+		tent->h_ent = ent;
 	}
 }
 
@@ -606,10 +713,15 @@ void UTIL_BeamCylinder(Vector pos, float radius, int modelIdx, uint8_t startFram
 		MESSAGE_END();
 	}
 	else {
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
 		CTeBeamRing* ring = (CTeBeamRing*)CBaseEntity::Create("te_beamring", pos, g_vecZero, true);
 		int ringWidth = V_min(255, (int)width * 10); // beam rings are thinner than beam cylinders
 		ring->Expand(radius, modelIdx, startFrame, frameRate, life, ringWidth, noise, color, scrollSpeed,
 			MSG_PVS, pos, NULL);
+		tent->h_ent = ring;
 	}
 }
 
@@ -638,10 +750,15 @@ void UTIL_BeamTorus(Vector pos, float radius, int modelIdx, uint8_t startFrame, 
 		MESSAGE_END();
 	}
 	else {
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
 		CTeBeamRing* ring = (CTeBeamRing*)CBaseEntity::Create("te_beamring", pos, g_vecZero, true);
 		int ringWidth = V_min(255, (int)width * 10); // beam rings are thinner than beam cylinders
 		ring->Expand(radius, modelIdx, startFrame, frameRate, life, ringWidth, noise, color, scrollSpeed,
 			MSG_PVS, pos, NULL);
+		tent->h_ent = ring;
 	}
 }
 
@@ -670,6 +787,10 @@ void UTIL_BeamDisk(Vector pos, float radius, int modelIdx, uint8_t startFrame, u
 		MESSAGE_END();
 	}
 	else {
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
 		ALERT(at_console, "TODO: Beamdisk\n");
 		CTeBeamRing* ring = (CTeBeamRing*)CBaseEntity::Create("te_beamring", pos, g_vecZero, true);
 		ring->Expand(radius, modelIdx, startFrame, frameRate, life, width, noise, color, scrollSpeed,
@@ -737,14 +858,48 @@ void UTIL_BloodDrips(const Vector& origin, const Vector& direction, int color, i
 		MESSAGE_END();
 	}
 	else {
+		uint32_t hidePlayers = 0;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (!plr)
+				continue;
+
+			if (plr->IsSevenKewpClient()) {
+				hidePlayers |= PLRBIT(plr->edict());
+
+				if (UTIL_TestPVS(origin, plr->edict())) {
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgBloodSprite2, origin, plr->edict());
+					WRITE_FAR_VECTOR(origin);
+					WRITE_SHORT(g_sModelIndexBloodSpray);
+					WRITE_SHORT(g_sModelIndexBloodDrop);
+					WRITE_BYTE(color);
+					WRITE_BYTE(scale);
+					MESSAGE_END();
+				}
+			}
+		}
+
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
 		CBaseEntity* ent = CBaseEntity::Create("te_bloodsprite", origin, g_vecZero, true);
 		ent->pev->scale = scale / 30.0f;
 		ent->pev->rendercolor = GetTeColor(color + RANDOM_LONG(0, 4)).ToVector();
+		ent->m_hidePlayers = hidePlayers;
+		tent->h_ent = ent;
 
 		for (int i = 0; i < 2; i++) {
+			tent = AllocFakeTempEnt("UTIL_BloodDrips particle", FAKETE_PRIO_LOW);
+			if (!tent)
+				return;
+
 			CBaseEntity* drip = CBaseEntity::Create("te_bloodsprite_drip", origin, g_vecZero, true);
 			drip->pev->rendercolor = GetTeColor(color + RANDOM_LONG(0, 4)).ToVector();
 			drip->pev->scale = V_max(scale / 30.0f, 0.2f);
+			drip->m_hidePlayers = hidePlayers;
+			tent->h_ent = drip;
 		}
 	}
 }
@@ -799,6 +954,31 @@ edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber, int msgMode, edic
 		entityIndex = 0;
 
 	if (!UTIL_IsValidTempEntOrigin(pTrace->vecEndPos)) {
+		uint32_t hidePlayers = 0;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (!plr)
+				continue;
+
+			if (plr->IsSevenKewpClient()) {
+				hidePlayers |= PLRBIT(plr->edict());
+
+				if (UTIL_isSafeEntIndex(plr->edict(), entityIndex, "gmsgDecal2")) {
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					WRITE_BYTE(TE_DECAL);
+					WRITE_FAR_VECTOR(pTrace->vecEndPos);
+					WRITE_SHORT(index);
+					WRITE_SHORT(entityIndex);
+					MESSAGE_END();
+				}
+			}
+		}
+
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return pTrace->pHit;
+
 		// TODO: attach to moving objects and match transparency
 		Vector ori = pTrace->vecEndPos + pTrace->vecPlaneNormal * 0.1f; // avoid z fighting
 		Vector angles = UTIL_VecToSpriteAngles(pTrace->vecPlaneNormal);
@@ -806,7 +986,9 @@ edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber, int msgMode, edic
 		decal->pev->skin = decalNumber;
 		decal->pev->iuser1 = pTrace->pHit ? ENTINDEX(pTrace->pHit) : 0;
 		decal->pev->v_angle = pTrace->vecPlaneNormal;
+		decal->m_hidePlayers = hidePlayers;
 		DispatchSpawn(decal->edict());
+		tent->h_ent = decal;
 		return decal->edict();
 	}
 
@@ -857,8 +1039,68 @@ edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber, edict_t* e
 	if (pTrace->flFraction == 1.0)
 		return pTrace->pHit;
 
+	int entityIndex = ENTINDEX(pTrace->pHit);
+
 	if (!UTIL_IsValidTempEntOrigin(pTrace->vecEndPos)) {
-		return UTIL_DecalTrace(pTrace, decalNumber);
+		uint32_t hidePlayers = 0;
+		uint32_t soundPlayers = 0;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (!plr)
+				continue;
+
+			if (UTIL_TestPAS(pTrace->vecEndPos, plr->edict())) {
+				soundPlayers |= PLRBIT(plr->edict());
+			}
+
+			if (plr->IsSevenKewpClient()) {
+				hidePlayers |= PLRBIT(plr->edict());
+
+				if (UTIL_isSafeEntIndex(plr->edict(), entityIndex, "gmsgDecal2") && plr->edict() != emitter) {
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					WRITE_BYTE(TE_GUNSHOTDECAL);
+					WRITE_FAR_VECTOR(pTrace->vecEndPos);
+					WRITE_SHORT(index);
+					WRITE_SHORT(entityIndex);
+					MESSAGE_END();
+				}
+			}
+		}
+
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return pTrace->pHit;
+
+		// TODO: attach to moving objects and match transparency
+		Vector ori = pTrace->vecEndPos + pTrace->vecPlaneNormal * 0.1f; // avoid z fighting
+		Vector angles = UTIL_VecToSpriteAngles(pTrace->vecPlaneNormal);
+		CBaseEntity* decal = CBaseEntity::Create("te_decal", ori, angles, false);
+		decal->pev->skin = decalNumber;
+		decal->pev->iuser1 = pTrace->pHit ? ENTINDEX(pTrace->pHit) : 0;
+		decal->pev->v_angle = pTrace->vecPlaneNormal;
+		decal->m_hidePlayers = hidePlayers;
+		DispatchSpawn(decal->edict());
+		tent->h_ent = decal;
+
+		int iRand = RANDOM_LONG(0, 0x7FFF);
+		if (iRand < (0x7fff / 2))// not every bullet makes a sound.
+		{
+			const char* sample = "weapons/ric1.wav";
+			switch (iRand % 5)
+			{
+			case 0:	sample = "weapons/ric1.wav"; break;
+			case 1:	sample = "weapons/ric2.wav"; break;
+			case 2:	sample = "weapons/ric3.wav"; break;
+			case 3:	sample = "weapons/ric4.wav"; break;
+			case 4:	sample = "weapons/ric5.wav"; break;
+			}
+
+			StartSound(decal->entindex(), CHAN_STATIC, sample, 1.0, ATTN_NORM, 0, PITCH_NORM,
+				decal->pev->origin, soundPlayers);
+		}
+
+		return decal->edict();
 	}
 
 	if (emitter) {
@@ -866,12 +1108,12 @@ edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber, edict_t* e
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (plr && plr->edict() != emitter) {
-				UTIL_GunshotDecal(ENTINDEX(pTrace->pHit), pTrace->vecEndPos, index, MSG_ONE_UNRELIABLE, pTrace->vecEndPos, plr->edict());
+				UTIL_GunshotDecal(entityIndex, pTrace->vecEndPos, index, MSG_ONE_UNRELIABLE, pTrace->vecEndPos, plr->edict());
 			}
 		}
 	}
 	else {
-		UTIL_GunshotDecal(ENTINDEX(pTrace->pHit), pTrace->vecEndPos, index, MSG_PAS, pTrace->vecEndPos);
+		UTIL_GunshotDecal(entityIndex, pTrace->vecEndPos, index, MSG_PAS, pTrace->vecEndPos);
 	}
 	return pTrace->pHit;
 }
@@ -888,7 +1130,33 @@ void UTIL_Sparks(const Vector& position)
 		MESSAGE_END();
 	}
 	else {
-		CBaseEntity::Create("te_sparks", position, g_vecZero, true);
+		uint32_t hidePlayers = 0;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (!plr)
+				continue;
+
+			if (plr->IsSevenKewpClient()) {
+				hidePlayers |= PLRBIT(plr->edict());
+
+				if (UTIL_TestPVS(position, plr->edict())) {
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					WRITE_BYTE(TE_SPARKS);
+					WRITE_FAR_VECTOR(position);
+					MESSAGE_END();
+				}
+			}
+		}
+
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
+		CBaseEntity* ent = CBaseEntity::Create("te_sparks", position, g_vecZero, false);
+		ent->m_hidePlayers = hidePlayers;
+		DispatchSpawn(ent->edict());
+		tent->h_ent = ent;
 	}
 }
 
@@ -905,7 +1173,11 @@ void UTIL_Ricochet(const Vector& position, float scale)
 		MESSAGE_END();
 	}
 	else {
-		CBaseEntity::Create("te_ricochet", position, g_vecZero, true);
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
+		tent->h_ent = CBaseEntity::Create("te_ricochet", position, g_vecZero, true);
 	}
 }
 
@@ -922,12 +1194,17 @@ void UTIL_Sprite(const Vector& position, int sprIndex, uint8_t scale, uint8_t op
 		MESSAGE_END();
 	}
 	else {
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
 		CSprite* spr = CSprite::SpriteCreate(INDEX_MODEL(sprIndex), position, true);
 		spr->pev->spawnflags = SF_SPRITE_ONCE_AND_REMOVE;
 		spr->pev->rendermode = kRenderTransAdd;
 		spr->pev->renderamt = opacity;
 		spr->pev->scale = scale * 0.1f;
 		spr->TurnOn();
+		tent->h_ent = spr;
 	}
 }
 
@@ -948,6 +1225,32 @@ void UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector& veloci
 		MESSAGE_END();
 	}
 	else {
+		uint32_t hidePlayers = 0;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (!plr)
+				continue;
+
+			if (plr->IsSevenKewpClient()) {
+				hidePlayers |= PLRBIT(plr->edict());
+
+				if (UTIL_TestPVS(pos, plr->edict())) {
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					WRITE_BYTE(TE_BREAKMODEL);
+					WRITE_FAR_VECTOR(pos);
+					WRITE_COORD_VECTOR(size);
+					WRITE_COORD_VECTOR(velocity);
+					WRITE_BYTE(noise);
+					WRITE_SHORT(modelIdx);
+					WRITE_BYTE(shards);
+					WRITE_BYTE(duration);
+					WRITE_BYTE(flags);
+					MESSAGE_END();
+				}
+			}
+		}
+
 		const char* mdl = INDEX_MODEL(modelIdx);
 		int bodyGroupCount = MODEL_FRAMES(MODEL_INDEX(mdl));
 
@@ -963,8 +1266,13 @@ void UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector& veloci
 		float randVel = noise * 10;
 
 		for (int i = 0; i < shards; i++) {
+			FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+			if (!tent)
+				return;
+
 			CGib* pGib = GetClassPtr((CGib*)NULL);
 
+			pGib->m_hidePlayers = hidePlayers;
 			pGib->Spawn(mdl);
 			pGib->m_cBloodDecals = 0;
 			pGib->m_slideFriction = 0.5f;
@@ -992,6 +1300,7 @@ void UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector& veloci
 			pGib->SetThink(&CGib::BreakThink);
 			pGib->pev->nextthink = gpGlobals->time;
 			pGib->m_lifeTime = fadeStart + RANDOM_FLOAT(0, 1);
+			tent->h_ent = pGib;
 		}
 	}
 }
@@ -1016,6 +1325,10 @@ void UTIL_SpriteSpray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint
 		float randVel = noise * 0.01f;
 		
 		for (int i = 0; i < count; i++) {
+			FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_LOW);
+			if (!tent)
+				return;
+
 			CGib* pGib = GetClassPtr((CGib*)NULL);
 
 			float randSpeed = speed * 2.0f * RANDOM_FLOAT(0.8f, 1.2f);
@@ -1041,6 +1354,7 @@ void UTIL_SpriteSpray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint
 			pGib->SetThink(&CGib::SprayThink);
 			pGib->SetTouch(&CGib::SprayTouch);
 			pGib->pev->nextthink = gpGlobals->time;
+			tent->h_ent = pGib;
 		}
 	}
 }
@@ -1183,14 +1497,46 @@ void UTIL_DLight(Vector pos, uint8_t radius, RGB color, uint8_t time, uint8_t de
 		WRITE_BYTE(decay);
 		MESSAGE_END();
 	}
-	else if (radius > 10) {
-		CBaseEntity* ent = CBaseEntity::Create("te_target", pos, g_vecZero, true);
-		ent->pev->effects = radius > 100 ? EF_BRIGHTLIGHT : EF_DIMLIGHT;
+	else {
+		uint32_t hidePlayers = 0;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
-		time -= decay * 0.5f;
+			if (!plr)
+				continue;
 
-		ent->SetThink(&CBaseEntity::SUB_Remove);
-		ent->pev->nextthink = gpGlobals->time + time * 0.1f;
+			if (plr->IsSevenKewpClient()) {
+				hidePlayers |= PLRBIT(plr->edict());
+
+				if (UTIL_TestPVS(pos, plr->edict())) {
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					WRITE_BYTE(TE_DLIGHT);
+					WRITE_FAR_VECTOR(pos);
+					WRITE_BYTE(radius);
+					WRITE_BYTE(color.r);
+					WRITE_BYTE(color.g);
+					WRITE_BYTE(color.b);
+					WRITE_BYTE(time);
+					WRITE_BYTE(decay);
+					MESSAGE_END();
+				}
+			}
+		}
+
+		if (radius > 10) {
+			FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+			if (!tent)
+				return;
+
+			CBaseEntity* ent = CBaseEntity::Create("te_target", pos, g_vecZero, true);
+			ent->pev->effects = radius > 100 ? EF_BRIGHTLIGHT : EF_DIMLIGHT;
+
+			time -= decay * 0.5f;
+
+			ent->SetThink(&CBaseEntity::SUB_Remove);
+			ent->pev->nextthink = gpGlobals->time + time * 0.1f;
+			tent->h_ent = ent;
+		}
 	}
 }
 
@@ -1218,6 +1564,10 @@ void UTIL_SpriteTrail(Vector start, Vector end, int spriteIdx, int count, int li
 		Vector dir = delta.Normalize();
 
 		for (int i = 0; i < count; i++) {
+			FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_LOW);
+			if (!tent)
+				return;
+
 			CGib* pGib = GetClassPtr((CGib*)NULL);
 
 			float randSpeed = speed * 2.0f * RANDOM_FLOAT(0.8f, 1.2f);
@@ -1244,6 +1594,7 @@ void UTIL_SpriteTrail(Vector start, Vector end, int spriteIdx, int count, int li
 			pGib->SetThink(&CGib::SprayThink);
 			pGib->SetTouch(&CGib::SprayTouch);
 			pGib->pev->nextthink = gpGlobals->time;
+			tent->h_ent = pGib;
 		}
 	}
 }
@@ -1275,12 +1626,17 @@ void UTIL_GlowSprite(const Vector& pos, int sprIndex, uint8_t life, uint8_t scal
 		MESSAGE_END();
 	}
 	else {
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
 		CSprite* spr = CSprite::SpriteCreate(INDEX_MODEL(sprIndex), pos, true);
 		spr->pev->spawnflags = SF_SPRITE_ONCE_AND_REMOVE;
 		spr->pev->rendermode = kRenderTransAdd;
 		spr->pev->renderamt = alpha;
 		spr->pev->scale = scale * 0.1f;
 		spr->TurnOn();
+		tent->h_ent = spr;
 		ALERT(at_warning, "TE_GLOWSPRITE not implemented for big maps\n");
 	}
 }
@@ -1361,12 +1717,48 @@ void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint
 		MESSAGE_END();
 	}
 	else {
-		ALERT(at_warning, "TE_STREAK_SPLASH not implemented for big maps\n");
+		uint32_t hidePlayers = 0;
+		for (int i = 1; i < gpGlobals->maxClients; i++) {
+			CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+			if (!plr)
+				continue;
+
+			if (plr->IsSevenKewpClient()) {
+				hidePlayers |= PLRBIT(plr->edict());
+
+				if (UTIL_TestPVS(pos, plr->edict())) {
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					WRITE_BYTE(TE_STREAK_SPLASH);
+					WRITE_FAR_VECTOR(pos);
+					WRITE_COORD_VECTOR(dir);
+					WRITE_BYTE(clamp(color, 0, 11));
+					WRITE_SHORT(count);
+					WRITE_SHORT(speed);
+					WRITE_SHORT(speedNoise);
+					MESSAGE_END();
+				}
+			}
+		}
+
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
+		CBaseEntity* ent = CBaseEntity::Create("te_sparks", pos, g_vecZero, false);
+		ent->m_hidePlayers = hidePlayers;
+		DispatchSpawn(ent->edict());
+		tent->h_ent = ent;
 	}
 }
 
 void UTIL_TempSound(Vector pos, const char* sample, float volume, float attenuation, int flags, int pitch) {
+	FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+	if (!tent)
+		return;
+	
 	CBaseEntity* ent = CBaseEntity::Create("te_target", pos, g_vecZero, true);
+	tent->h_ent = ent;
 
 	EMIT_SOUND_DYN(ent->edict(), CHAN_WEAPON, sample, volume, attenuation, flags, pitch);
 

@@ -5,9 +5,24 @@
 #include "rgb.h"
 #include "CBaseEntity.h"
 
+#define MAX_FAKE_TE 64 // maximum number of fake temporary entity effects
+
+struct EXPORT FakeTempEnt {
+	float creationTime;
+	EHANDLE h_ent;
+};
+
+enum FakeTempEntPriority {
+	FAKETE_PRIO_HIGH, // delete an existing effect to make room for this one
+	FAKETE_PRIO_LOW,  // don't spawn if too many effects are active
+};
+
 EXPORT extern bool g_checkExplSounds; // set to true on level change for te_explosion to load new sounds
 
+EXPORT extern FakeTempEnt g_activeTempEnts[MAX_FAKE_TE]; // number of fake temporary entity effects active. For limiting net usage.
 EXPORT extern DLL_GLOBAL short g_sModelIndexSmoke;
+
+EXPORT FakeTempEnt* AllocFakeTempEnt(const char* funcName, int priority);
 
 EXPORT RGB GetTeColor(uint8_t color);
 
