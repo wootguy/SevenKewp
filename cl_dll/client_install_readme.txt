@@ -31,4 +31,4 @@ Steam account.
 That said, I have observed players using the HLBugfixed and Adrenaline Gamer clients for one
 year on my secure server without them being VAC banned. According to my understanding of the
 VAC documentation, executables need to be manually reported as a cheat to Valve for its
-signature to be detected. I have not added cheats to this client. -w00tguy (2025/12/13)
+signature to be detected. I have not added cheats to this client. -w00tguy (2026/04/18)
