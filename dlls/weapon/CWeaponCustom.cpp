@@ -1749,7 +1749,7 @@ void CWeaponCustom::QuakeMuzzleFlash(CBasePlayer* plr) {
 #ifdef CLIENT_DLL
 	EV_MuzzleFlash();
 #else
-	plr->pev->effects = EF_MUZZLEFLASH;
+	plr->pev->effects |= EF_MUZZLEFLASH;
 #endif
 }
 
@@ -3435,7 +3435,9 @@ int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
 
 	if (wep && wep->IsAkimboWeapon() && !wep->CanAkimbo()) {
 		wep->SetCanAkimbo(true);
-		wep->SetAkimbo(true);
+
+		// wait for the player to stop shooting before deploying akimbo mode
+		//wep->SetAkimbo(true);
 
 		if (m_isDroppedWeapon) {
 			// prevent ammo duping in dropped weapons

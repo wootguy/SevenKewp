@@ -72,16 +72,12 @@ void CL_DLLEXPORT CAM_Think( void )
 	gEngfuncs.GetViewAngles((float*)viewangles);
 	gEngfuncs.pEventAPI->EV_LocalPlayerViewheight(view_ofs);
 
-	if (g_camPressedTime && now - g_camPressedTime > 0.2f)
+	if (g_camPressedTime)
 	{
 		//iMouseInUse = 1;
 		bool firstAdjust = g_camAdjustState == 0;
 		if (g_camAdjustState == 0) {
 			g_camAdjustState = 1;
-			gEngfuncs.GetViewAngles((float*)g_camPressViewAngles);
-		}
-		else {
-			gEngfuncs.SetViewAngles((float*)g_camPressViewAngles);
 		}
 
 		//get windows cursor position
@@ -153,7 +149,9 @@ void CL_DLLEXPORT CAM_Think( void )
 		g_camAdjustState = 0;
 
 		if (cam_snapback->value) {
-			g_camPressAngles = g_camPressAngles * 0.95f;
+			float decayPerSecond = 5.0f;
+			g_camPressAngles = g_camPressAngles * expf(-decayPerSecond * gPlayerSim.v_frametime);
+
 			if (g_camPressAngles.Length() < 0.1f) {
 				g_camPressAngles = Vector();
 			}
@@ -196,6 +194,7 @@ void CAM_MouseWheeled(bool mouseWheelUpNotDown) {
 
 void CAM_CamButtonPress(void) {
 	g_camPressedTime = gEngfuncs.GetClientTime();
+	gEngfuncs.GetViewAngles((float*)g_camPressViewAngles);
 
 	if (!gPlayerSim.cam_thirdperson) {
 		CAM_ToThirdPerson();
@@ -238,7 +237,7 @@ void CAM_ToThirdPerson(void) {
 		gPlayerSim.cam_ofs[2] = CAM_MIN_DIST;
 	}
 	else {
-		gPlayerSim.cam_thirdperson = 0;
+		CAM_ToFirstPerson();
 	}
 }
 

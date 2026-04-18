@@ -494,6 +494,8 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	static float oldz = 0;
 	static float lasttime;
 
+	gPlayerSim.v_frametime = pparams->frametime;
+
 	vec3_t camAngles, camForward, camRight, camUp;
 	cl_entity_t *pwater;
 
@@ -793,25 +795,9 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	gPlayerSim.v_angles = pparams->viewangles;
 	gPlayerSim.v_lastAngles = pparams->viewangles;
 //	gPlayerSim.v_cl_angles = pparams->cl_viewangles;	// keep old user mouse angles !
-	if ( CL_IsThirdPerson() )
+	if (CL_IsThirdPerson())
 	{
-		VectorCopy( camAngles, pparams->viewangles);
-		float pitch = camAngles[ 0 ];
-
-		// Normalize angles
-		if ( pitch > 180 ) 
-			pitch -= 360.0;
-		else if ( pitch < -180 )
-			pitch += 360;
-
-		// Player pitch is inverted
-		pitch /= -3.0;
-
-		// Slam local player's pitch value
-		ent->angles[ 0 ] = pitch;
-		ent->curstate.angles[ 0 ] = pitch;
-		ent->prevstate.angles[ 0 ] = pitch;
-		ent->latched.prevangles[ 0 ] = pitch;
+		VectorCopy(camAngles, pparams->viewangles);
 	}
 
 	gPlayerSim.b_viewing_cam = false;
@@ -1558,8 +1544,6 @@ void V_CalcSpectatorRefdef ( struct ref_params_s * pparams )
 			pparams->cl_viewangles[PITCH]*=-3.0f;	// see CL_ProcessEntityUpdate()
 		}
 	}
-
-	gPlayerSim.v_frametime = pparams->frametime;
 
 	if ( pparams->nextView == 0 )
 	{

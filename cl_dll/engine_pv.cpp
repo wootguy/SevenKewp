@@ -87,9 +87,7 @@ void InitEnginePv() {
 // hard to believe there's no engine API for this. Without it you would need to transfer
 // the entire sound list over again so the client can play by index. Adding string arguments
 // to the network messages that need custom sound playback would be even worse.
-const char* GetSoundByIndex(int idx) {
-	InitEnginePv();
-	
+const char* GetSoundByIndex(int idx) {	
 	if (!g_sound_precache) {
 		PRINTF("EnginePv sound list not initialized!\n");
 		return "";

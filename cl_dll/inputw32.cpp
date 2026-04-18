@@ -602,6 +602,8 @@ void IN_ScaleMouse( float *x, float *y )
 	}
 }
 
+extern float g_camPressedTime;
+
 /*
 ===========
 IN_MouseMove
@@ -721,7 +723,8 @@ void IN_MouseMove ( float frametime, usercmd_t *cmd)
 		}
 	}
 
-	gEngfuncs.SetViewAngles( (float *)viewangles );
+	if (g_camPressedTime == 0) // don't update player angles while adjusting camera
+		gEngfuncs.SetViewAngles( (float *)viewangles );
 
 /*
 //#define TRACE_TEST
