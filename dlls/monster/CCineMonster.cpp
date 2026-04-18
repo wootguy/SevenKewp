@@ -421,7 +421,7 @@ BOOL CCineMonster::StartSequence(CBaseMonster* pTarget, string_t iszSeq, BOOL co
 }
 
 void CCineMonster::DoScript(CBaseMonster* pMonster) {
-	if (m_fSequenceFinished) {
+	if (pMonster->m_fSequenceFinished) {
 		SequenceDone(pMonster);
 	}
 }

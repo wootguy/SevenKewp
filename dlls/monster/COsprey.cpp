@@ -503,7 +503,7 @@ void COsprey::Flight( )
 	}
 	else
 	{
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBaseEntity* pPlayer = (CBaseEntity*)UTIL_PlayerByIndex(i);
 
 			if (!pPlayer) {

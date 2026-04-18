@@ -525,6 +525,54 @@ int UTIL_EntitiesInBox( CBaseEntity **pList, int listMax, const Vector &mins, co
 	return count;
 }
 
+int UTIL_BrushEntitiesInBox(CBaseEntity** pList, int listMax, const Vector& mins, const Vector& maxs)
+{
+	edict_t* pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
+	int			count;
+
+	count = 0;
+
+	if (!pEdict)
+		return count;
+
+	for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
+	{
+		if (pEdict->free)	// Not in use
+			continue;
+
+		CBaseEntity* pEntity = CBaseEntity::Instance(pEdict);
+		if (!pEntity)
+			continue;
+
+		if (!strcmp("ft_hanoi", STRING(pEntity->pev->targetname))) {
+			ALERT(at_console, "");
+		}
+
+		if (!pEntity->IsBSPModel()) {
+			continue;
+		}
+
+		Vector edMin = pEdict->v.absmin;
+		Vector edMax = pEdict->v.absmax;
+
+		if (mins.x > edMax.x ||
+			mins.y > edMax.y ||
+			mins.z > edMax.z ||
+			maxs.x < edMin.x ||
+			maxs.y < edMin.y ||
+			maxs.z < edMin.z)
+			continue;
+
+		pList[count] = pEntity;
+		count++;
+
+		if (count >= listMax)
+			return count;
+	}
+
+	return count;
+}
+
 
 int UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &center, float radius )
 {
@@ -815,6 +863,20 @@ CBasePlayer* UTIL_PlayerBySteamId64(uint64_t id) {
 	}
 
 	return NULL;
+}
+
+int UTIL_CountPlayers() {
+	int count = 0;
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		edict_t* plr = INDEXENT(i);
+
+		if (plr && (plr->v.flags & (FL_CLIENT | FL_PROXY)) == FL_CLIENT && plr->v.netname && STRING(plr->v.netname)[0] != '\0') {
+			count++;
+		}
+	}
+
+	return count;
 }
 
 edict_t* UTIL_ClientsInPVS(edict_t* edict, int& playerCount) {
@@ -1429,7 +1491,7 @@ void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix
 		}
 	}
 	else {
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* reader = UTIL_PlayerByIndex(i);
 			if (!reader || (mutes & PLRBIT(reader->entindex())))
 				continue;
@@ -1512,7 +1574,7 @@ void UTIL_ClientHudConPrint(CBaseEntity* client, const hudconparms_t& params, co
 }
 
 void UTIL_ClientHudConPrintAll(const hudconparms_t& params, const char* msg, bool reliable) {
-	for (int i = 1; i < gpGlobals->maxClients; i++) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 		if (plr)
@@ -1618,7 +1680,7 @@ void UTIL_HudCustomSprite(CBasePlayer* client, const HUDSpriteParams& params, co
 		SendHudSpriteMessage(client, params, sprite, reliable);
 	}
 	else {
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (plr && plr->IsSevenKewpClient())
@@ -1655,7 +1717,7 @@ void UTIL_HudNumDisplay(CBasePlayer* client, const HUDNumDisplayParams& params, 
 		SendHudNumericMessage(client, params, "number_", reliable);
 	}
 	else {
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (plr && plr->IsSevenKewpClient())
@@ -1672,7 +1734,7 @@ void UTIL_HudUpdateNum(CBasePlayer* client, uint8_t channel, float newVal, bool 
 		SendUpdateNumMessage(client, channel, newVal, reliable);
 	}
 	else {
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (plr && plr->IsSevenKewpClient())

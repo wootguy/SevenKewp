@@ -791,7 +791,7 @@ void CRpg::UpdateSpot( void )
 			m_lastBeamUpdate = gpGlobals->time;
 
 			// show the beam to everyone except the player, unless they're in a third-person view
-			for (int i = 1; i < gpGlobals->maxClients; i++) {
+			for (int i = 1; i <= gpGlobals->maxClients; i++) {
 				CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 				if (!plr) {

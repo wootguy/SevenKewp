@@ -2063,8 +2063,8 @@ void CWeaponCustom::FireAmmoEvents(int ammoPool) {
 
 	switch (ammoPool) {
 	case WC_AMMOPOOL_PRIMARY_CLIP:
-		ProcessEvents(WC_TRIG_PRIMARY_CLIPSIZE, m_iClip, IsAkimbo(), false, m_iClip);
 		ProcessEvents(WC_TRIG_PRIMARY_CLIP_SP, m_bulletFireCount++, IsAkimbo(), false, m_iClip);
+		ProcessEvents(WC_TRIG_PRIMARY_CLIPSIZE, m_iClip, IsAkimbo(), false, m_iClip);
 		break;
 	case WC_AMMOPOOL_PRIMARY_RESERVE: break;
 	case WC_AMMOPOOL_SECONDARY_RESERVE: break;
@@ -2510,7 +2510,7 @@ void CWeaponCustom::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 			cproj->water_friction = evt.proj.water_friction;
 			cproj->damage = evt.proj.damage * GetChargeMult(evt, FL_WC_CHARGE_DAMAGE);
 			cproj->damageType = evt.proj.damageBits;
-			cproj->expire_time = gpGlobals->time + evt.proj.life;
+			cproj->expire_time = evt.proj.life ? gpGlobals->time + evt.proj.life : 0;
 			cproj->pev->movetype = evt.proj.gravity != 0 ? MOVETYPE_BOUNCE : MOVETYPE_BOUNCEMISSILE;
 			cproj->flags = evt.proj.flags;
 			cproj->move_snd = evt.proj.move_snd;
@@ -3306,7 +3306,7 @@ void CWeaponCustom::UpdateLaser() {
 		m_lastBeamUpdate = gpGlobals->time;
 
 		// show the beam to everyone except the player, unless they're in a third-person view
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (!plr) {

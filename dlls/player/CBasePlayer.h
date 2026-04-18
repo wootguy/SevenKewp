@@ -359,6 +359,7 @@ public:
 	bool m_godmode; // godmode cheat enabled
 	bool m_noclip; // noclip cheat enabled
 	bool m_notarget; // no-target cheat enabled
+	bool m_instakill; // instakill cheat enabled
 
 	string_t m_playerModelOverride; // player model forced by the map
 

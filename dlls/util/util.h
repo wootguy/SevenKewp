@@ -373,6 +373,7 @@ EXPORT extern CBasePlayer	*UTIL_PlayerByIndex( int playerIndex );
 EXPORT extern CBasePlayer	*UTIL_PlayerByUserId( int userid );
 EXPORT extern CBasePlayer	*UTIL_PlayerBySteamId(const char* id);
 EXPORT extern CBasePlayer	*UTIL_PlayerBySteamId64(uint64_t id);
+EXPORT extern int			 UTIL_CountPlayers();
 EXPORT extern CBasePlayer* UTIL_PlayerBySearchString(const char* search, CBasePlayer* ignorePlayer, bool& multipleMatches);
 
 #define UTIL_EntitiesInPVS(pent)			(*g_engfuncs.pfnEntitiesInPVS)(pent)
@@ -385,6 +386,7 @@ EXPORT bool			IsValidPlayer(edict_t* edict); // true if edict is a connected pla
 EXPORT int UTIL_MonstersInSphere( CBaseEntity **pList, int listMax, const Vector &center, float radius );
 EXPORT int UTIL_EntitiesInBox( CBaseEntity **pList, int listMax, const Vector &mins, const Vector &maxs,
 	int flagMask, bool ignoreDead, bool collisionOnly=false);
+EXPORT int UTIL_BrushEntitiesInBox(CBaseEntity** pList, int listMax, const Vector& mins, const Vector& maxs);
 
 inline void UTIL_MakeVectorsPrivate( const Vector &vecAngles, float *p_vForward, float *p_vRight, float *p_vUp )
 {

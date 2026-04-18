@@ -51,10 +51,12 @@ void CTriggerScript::callPlugin(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 		CBaseEntity* activator = (pev->spawnflags & TSCRIPT_SELF_ACTIVATOR) ? this : pActivator;
 		CBaseEntity* caller = (pev->spawnflags & TSCRIPT_SELF_CALLER) ? this : pCaller;
 
+		EALERT(at_aiconsole, "executing callback '%s'\n", STRING(m_iszScriptFunctionName));
+
 		m_callback(activator, caller, useType, value);
 	}
 	else {
-		ALERT(at_console, "%s (trigger_script): callback '%s' not found\n",
+		EALERT(at_console, "callback '%s' not found\n",
 			STRING(pev->targetname), STRING(m_iszScriptFunctionName));
 	}
 }

@@ -64,8 +64,8 @@ const char *CAGrunt::pAttackSounds[] =
 
 const char *CAGrunt::pDieSounds[] =
 {
-	"agrunt/ag_die1.wav",
 	"agrunt/ag_die4.wav",
+	"agrunt/ag_die1.wav",
 	"agrunt/ag_die5.wav",
 };
 

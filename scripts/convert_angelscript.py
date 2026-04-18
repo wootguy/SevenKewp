@@ -99,6 +99,8 @@ terms = [
 	('g_Utility.TraceHull', 'UTIL_TraceHull'),
 	('g_WeaponFuncs.ClearMultiDamage()', 'ClearMultiDamage()'),
 	('g_WeaponFuncs.ApplyMultiDamage()', 'ApplyMultiDamage()'),
+	('g_PlayerFuncs.HudMessageAll', 'UTIL_HudMessageAll'),
+	('g_EntityFuncs.EntitiesInBox', 'UTIL_EntitiesInBox'),
 ]
 
 def convert_script(fpath):

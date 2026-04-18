@@ -5308,7 +5308,7 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 			UTIL_SendUserInfo_hooked(dst, edict(), userinfo);
 		}
 		else {
-			for (int i = 1; i < gpGlobals->maxClients; i++) {
+			for (int i = 1; i <= gpGlobals->maxClients; i++) {
 				CBasePlayer* msgPlr = UTIL_PlayerByIndex(i);
 				if (!msgPlr)
 					continue;
@@ -5349,7 +5349,7 @@ void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {
 		UTIL_SendUserInfo_hooked(dst, edict(), newInfo);
 	}
 	else {
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* msgPlr = UTIL_PlayerByIndex(i);
 			if (!msgPlr)
 				continue;
@@ -5404,7 +5404,7 @@ void CBasePlayer::SetMapPlayerModel(const char* newModel) {
 
 	PlayerModelChanged(newModel, false);
 
-	for (int i = 1; i < gpGlobals->maxClients; i++) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* msgPlr = UTIL_PlayerByIndex(i);
 		if (!msgPlr)
 			continue;
@@ -6601,7 +6601,7 @@ void CBasePlayer::UpdateTag(CBasePlayer* dst) {
 	m_lastTagArmor = armor;
 	m_lastTagObserver = observer;
 
-	for (int i = 1; i < gpGlobals->maxClients; i++) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* targetPlr = UTIL_PlayerByIndex(i);
 
 		if (!targetPlr || !targetPlr->IsSevenKewpClient())
@@ -6640,7 +6640,7 @@ void CBasePlayer::UpdateTagPos() {
 
 	bool anyUpdates = false;
 
-	for (int i = 1; i < gpGlobals->maxClients; i++) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 		if (!plr || plr == this || plr->InPVS(edict())) {
@@ -6880,7 +6880,7 @@ void CBasePlayer::QueryClientTypeFinished() {
 		}
 
 		// get health of other players
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* otherPlr = UTIL_PlayerByIndex(i);
 
 			if (otherPlr)
@@ -7693,7 +7693,7 @@ void CBasePlayer::PlayerModelChanged(const char* newModel, bool broadcast) {
 void CBasePlayer::BroadcastUserInfo() {
 	char* info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
 
-	for (int i = 1; i < gpGlobals->maxClients; i++) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* msgPlr = UTIL_PlayerByIndex(i);
 		if (!msgPlr)
 			continue;
@@ -7865,7 +7865,7 @@ bool CBasePlayer::UseSevenKewpGuns() {
 }
 
 void CBasePlayer::SetThirdPersonWeaponAnim(int sequence, float fps) {
-	for (int i = 1; i < gpGlobals->maxClients; i++) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 		
 		if (!plr || !plr->IsSevenKewpClient())
@@ -7938,4 +7938,6 @@ void CBasePlayer::ApplyEffects() {
 		pev->movetype = MOVETYPE_NOCLIP;
 	if (m_notarget)
 		pev->flags |= FL_NOTARGET;
+	if (m_instakill)
+		m_damage_modifier = 1000000.0f;
 }

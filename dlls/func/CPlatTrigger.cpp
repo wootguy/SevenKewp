@@ -34,6 +34,12 @@ void CPlatTrigger::SpawnInsideTrigger(CFuncPlat* pPlatform)
 		vecTMin.y = (m_pPlatform->pev->mins.y + m_pPlatform->pev->maxs.y) / 2;
 		vecTMax.y = vecTMin.y + 1;
 	}
+
+	float minZ = V_min(vecTMin.z, vecTMax.z);
+	float maxZ = V_max(vecTMin.z, vecTMax.z);
+	vecTMin.z = minZ;
+	vecTMax.z = maxZ;
+
 	UTIL_SetSize(pev, vecTMin, vecTMax);
 }
 

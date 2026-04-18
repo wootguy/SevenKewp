@@ -257,6 +257,14 @@ bool CheatCommand(edict_t* pEntity) {
 			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("No target is %s\n", plr->m_notarget ? "ON" : "OFF"));
 		}
 	}
+	else if (FStrEq(pcmd, "instakill")) {
+		ABORT_IF_CHEATS_DISABLED("No target");
+		if (plr) {
+			plr->m_instakill = !plr->m_instakill;
+			plr->ApplyEffects();
+			CLIENT_PRINTF(pEntity, print_center, UTIL_VarArgs("Instakill mode is %s\n", plr->m_instakill ? "ON" : "OFF"));
+		}
+	}
 	else if (FStrEq(pcmd, "revive")) {
 		ABORT_IF_CHEATS_DISABLED("Revive");
 

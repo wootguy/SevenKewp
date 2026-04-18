@@ -303,6 +303,7 @@ public:
 	virtual	BOOL	IsNormalMonster(void) { return FALSE; } // is this what you'd expect to be a monster? (not a monstermaker/grenade/etc.)
 	virtual	BOOL	IsPlayer(void) { return FALSE; }
 	virtual	BOOL	IsPlayerCorpse(void) { return FALSE; }
+	virtual	BOOL	IsPlayerAlly(void) { return CBaseEntity::IRelationship(Classify(), CLASS_PLAYER) == R_AL; }
 	virtual BOOL	IsNetClient(void) { return FALSE; }
 	virtual BOOL	IsBreakable(void) { return (m_breakFlags & FL_BREAK_IS_BREAKABLE) != 0 && m_breakMaterial != matUnbreakableGlass; }
 	virtual BOOL	IsMachine(void) { return FALSE; };

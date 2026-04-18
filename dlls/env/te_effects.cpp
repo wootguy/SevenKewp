@@ -486,7 +486,7 @@ void UTIL_Tracer(Vector start, Vector end, int color, int msgMode, edict_t* targ
 	}
 	else {
 		uint32_t hidePlayers = 0;
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (!plr)
@@ -545,7 +545,7 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 
 	uint32_t farHlPlayers = 0;
 
-	for (int i = 1; i < gpGlobals->maxClients; i++) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 		
 		if (!plr)
@@ -649,7 +649,7 @@ void UTIL_Smoke(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate) {
 	}
 	else {
 		uint32_t hidePlayers = 0;
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (!plr)
@@ -859,7 +859,7 @@ void UTIL_BloodDrips(const Vector& origin, const Vector& direction, int color, i
 	}
 	else {
 		uint32_t hidePlayers = 0;
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (!plr)
@@ -955,7 +955,7 @@ edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber, int msgMode, edic
 
 	if (!UTIL_IsValidTempEntOrigin(pTrace->vecEndPos)) {
 		uint32_t hidePlayers = 0;
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (!plr)
@@ -1044,7 +1044,7 @@ edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber, edict_t* e
 	if (!UTIL_IsValidTempEntOrigin(pTrace->vecEndPos)) {
 		uint32_t hidePlayers = 0;
 		uint32_t soundPlayers = 0;
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (!plr)
@@ -1104,7 +1104,7 @@ edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber, edict_t* e
 	}
 
 	if (emitter) {
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (plr && plr->edict() != emitter) {
@@ -1131,7 +1131,7 @@ void UTIL_Sparks(const Vector& position)
 	}
 	else {
 		uint32_t hidePlayers = 0;
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (!plr)
@@ -1226,7 +1226,7 @@ void UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector& veloci
 	}
 	else {
 		uint32_t hidePlayers = 0;
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (!plr)
@@ -1499,7 +1499,7 @@ void UTIL_DLight(Vector pos, uint8_t radius, RGB color, uint8_t time, uint8_t de
 	}
 	else {
 		uint32_t hidePlayers = 0;
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (!plr)
@@ -1718,7 +1718,7 @@ void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint
 	}
 	else {
 		uint32_t hidePlayers = 0;
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			CBasePlayer* plr = UTIL_PlayerByIndex(i);
 
 			if (!plr)

@@ -62,7 +62,7 @@ void CFuncPlat::Precache()
 	CBasePlatTrain::Precache();
 	//PRECACHE_SOUND("plats/platmove1.wav");
 	//PRECACHE_SOUND("plats/platstop1.wav");
-	if (!IsTogglePlat())
+	if (!IsTogglePlat() && !pev->targetname)
 		PlatSpawnInsideTrigger(pev);		// the "start moving" trigger
 }
 

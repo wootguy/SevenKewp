@@ -424,7 +424,7 @@ void CBasePlayerWeapon::SendWeaponAnimSpec(int iAnim) {
 	bool isPredicted = wc && wc->IsPredicted();
 
 	// play animation for spectators
-	for (int i = 1; i < gpGlobals->maxClients; i++) {
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* spec = (CBasePlayer*)UTIL_PlayerByIndex(i);
 
 		if (!spec)

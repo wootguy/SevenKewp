@@ -181,7 +181,8 @@ CKeyValue CTriggerCondition::LoadKey(string_t entName, string_t keyName, const c
 
 void CTriggerCondition::Evaluate() {
 	if (!pev->target || !m_monitoredKey) {
-		EALERT(at_console, "missing monitored entity/key\n");
+		EALERT(at_console, "missing monitored entity/key. Removed entity.\n");
+		UTIL_Remove(this);
 		return;
 	}
 	if (m_checkType < 0 || m_checkType >= COMPARE_TYPES) {

@@ -82,7 +82,7 @@ void CTriggerChangeMaxAmmo::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 	int ammoIdx = CBasePlayer::GetAmmoIndex(ammoType);
 
 	if (pev->spawnflags & SF_MAXAMMO_ALL_PLAYERS) {
-		for (int i = 1; i < gpGlobals->maxClients; i++) {
+		for (int i = 1; i <= gpGlobals->maxClients; i++) {
 			AdjustAmmo(ammoIdx, newMax, UTIL_PlayerByIndex(i));
 		}
 	}

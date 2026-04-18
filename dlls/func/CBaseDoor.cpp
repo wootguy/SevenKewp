@@ -621,6 +621,7 @@ void CBaseDoor::DoorGoUp(void)
 	}
 
 	m_toggle_state = TS_GOING_UP;
+	FireStateTriggers();
 
 	SetMoveDone(&CBaseDoor::DoorHitTop);
 	if (FClassnameIs(pev, "func_door_rotating"))		// !!! BUGBUG Triggered doors don't work with this yet
@@ -649,8 +650,6 @@ void CBaseDoor::DoorGoUp(void)
 	}
 	else
 		LinearMove(m_vecPosition2, pev->speed);
-
-	FireStateTriggers();
 }
 
 
@@ -708,14 +707,13 @@ void CBaseDoor::DoorGoDown(void)
 	ASSERT(m_toggle_state == TS_AT_TOP);
 #endif // DOOR_ASSERT
 	m_toggle_state = TS_GOING_DOWN;
+	FireStateTriggers();
 
 	SetMoveDone(&CBaseDoor::DoorHitBottom);
 	if (FClassnameIs(pev, "func_door_rotating"))//rotating door
 		AngularMove(m_vecAngle1, pev->speed);
 	else
 		LinearMove(m_vecPosition1, pev->speed);
-
-	FireStateTriggers();
 }
 
 //
