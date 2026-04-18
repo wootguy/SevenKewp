@@ -490,7 +490,6 @@ BOOL CBasePlayerWeapon::AddSecondaryAmmo(int iCount, char* szName)
 		return 0;
 
 	int iIdAmmo;
-	int iMax = UTIL_GetMaxAmmo(szName);
 
 	iIdAmmo = m_pPlayer->GiveAmmo(iCount, szName);
 

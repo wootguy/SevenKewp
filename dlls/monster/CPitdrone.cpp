@@ -471,7 +471,7 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_pitdrone_dmg_bite, DMG_SLASH );
 			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 			
-			if (pHurt->CanKnockback())
+			if (pHurt && pHurt->CanKnockback())
 			{
 				//pHurt->pev->punchangle.z = -15;
 				//pHurt->pev->punchangle.x = -45;
@@ -486,7 +486,7 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_pitdrone_dmg_whip, DMG_CLUB | DMG_ALWAYSGIB );
 			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
 			
-			if (pHurt->CanKnockback())
+			if (pHurt && pHurt->CanKnockback())
 			{
 				pHurt->pev->punchangle.z = -20;
 				pHurt->pev->punchangle.x = 20;

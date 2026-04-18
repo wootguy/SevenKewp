@@ -707,7 +707,7 @@ void CWeaponCustom::PrimaryAttack() {
 			if (isAttackStart)
 				ProcessEvents(WC_TRIG_PRIMARY_START, 0);
 			ProcessEvents(trig, akimboArg, IsAkimbo(), false, *clip);
-			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_PRIMARY_CLIP);
+			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_PRIMARY_CLIP);
 
 			if (*clip < 0)
 				*clip = 0;
@@ -758,7 +758,7 @@ void CWeaponCustom::SecondaryAttack() {
 			if (isAttackStart)
 				ProcessEvents(WC_TRIG_SECONDARY_START, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth, *clip);
 			ProcessEvents(primaryTrig, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth, *clip);
-			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_PRIMARY_CLIP);
+			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_PRIMARY_CLIP);
 
 			if (*clip < 0)
 				*clip = 0;
@@ -786,7 +786,7 @@ void CWeaponCustom::SecondaryAttack() {
 			if (isAttackStart)
 				ProcessEvents(WC_TRIG_SECONDARY_START, 0);
 			ProcessEvents(WC_TRIG_SECONDARY, akimboArg, *clip);
-			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : WC_AMMOPOOL_SECONDARY_RESERVE);
+			FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_SECONDARY_RESERVE);
 		}
 	}
 
@@ -1096,7 +1096,7 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 	if (!m_pPlayer)
 		return;
 
-	bool attackCalled = attackIdx == 0 ? m_primaryCalled : m_secondaryCalled;
+	//bool attackCalled = attackIdx == 0 ? m_primaryCalled : m_secondaryCalled;
 	bool attackFired = attackIdx == 0 ? m_primaryFired : m_secondaryFired;
 
 	if (m_primaryFired && g_runfuncs) {
@@ -2196,7 +2196,7 @@ void CWeaponCustom::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
-		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, evt.bullets.damage, m_pPlayer->pev,
+		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, damage, m_pPlayer->pev,
 		m_pPlayer->random_seed, g_traces, predFlag);
 	lagcomp_end();
 
