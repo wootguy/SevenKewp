@@ -1154,6 +1154,7 @@ struct WeaponCustomLaser {
 struct CustomWeaponParams {
 	uint32_t flags; // FL_WC_WEP_*
 	uint16_t maxClip;
+	uint16_t defaultAmmo;
 	uint16_t vmodel;
 	uint8_t deployAnim;
 	uint16_t deployTime; // time before you can attack

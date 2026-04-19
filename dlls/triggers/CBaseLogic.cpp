@@ -2,27 +2,6 @@
 #include "util.h"
 #include "CBaseLogic.h"
 
-CBaseEntity* CBaseLogic::FindLogicEntity(string_t targetname) {
-	if (!strcmp(STRING(targetname), "!activator")) {
-		if (!m_hActivator) {
-			EALERT(at_console, "Failed to find !activator. Using worldspawn instead.\n");
-			return CBaseEntity::Instance(ENT(0));
-		}
-
-		return m_hActivator;
-	}
-
-	if (!strcmp(STRING(targetname), "!caller")) {
-		if (!m_hCaller) {
-			EALERT(at_console, "Failed to find !caller. Using worldspawn instead.\n");
-			return CBaseEntity::Instance(ENT(0));
-		}
-
-		return m_hCaller;
-	}
-
-	return UTIL_FindEntityByTargetname(NULL, STRING(targetname));
-}
 
 std::vector<CBaseEntity*> CBaseLogic::FindLogicEntities(const char* targetName) {
 	std::vector<CBaseEntity*> foundEnts;

@@ -534,6 +534,10 @@ public:
 
 	void ItemBounceTouch(CBaseEntity* pOther);
 
+	// finds the first entity with the given targetname, or worldspawn if one doesn't exist
+	// supports !activator and !caller
+	CBaseEntity* FindLogicEntity(CBaseEntity* start, string_t targetname);
+
 	static void MaterialSoundPrecache(Materials precacheMaterial);
 	static void MaterialSoundRandom(edict_t* pEdict, Materials soundMaterial, float volume);
 	static const char** MaterialSoundList(Materials precacheMaterial, int& soundCount);

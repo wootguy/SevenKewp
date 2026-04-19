@@ -381,7 +381,7 @@ void CTriggerChangeValue::LoadSourceValues() {
 	m_vSrc = g_vecZero;
 
 	if (isCopyValue) {
-		CBaseEntity* pent = FindLogicEntity(pev->netname);
+		CBaseEntity* pent = FindLogicEntity(NULL, pev->netname);
 		if (pent) {
 			CKeyValue srcKey = pent->GetKeyValue(STRING(m_iszSrcKeyName));
 			if (srcKey.keyType) {

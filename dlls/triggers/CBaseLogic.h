@@ -27,10 +27,6 @@ public:
 	// combination of SF_LOGIC_DONT_USE_* flags for vectors. Child flags are converted here
 	virtual int GetVectorDontUseFlags() { return 0; }
 
-	// finds the first entity with the given targetname, or worldspawn if one doesn't exist
-	// supports !activator and !caller
-	CBaseEntity* FindLogicEntity(string_t targetname);
-
 	// finds all entities with the given targetname, or just the !activator/!caller
 	std::vector<CBaseEntity*> FindLogicEntities(const char* targetName);
 

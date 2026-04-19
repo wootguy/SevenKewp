@@ -127,7 +127,7 @@ void CTriggerCreateEntity::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, US
 			continue;
 		}
 
-		CBaseEntity* pent = FindLogicEntity(MAKE_STRING(keyValue));
+		CBaseEntity* pent = FindLogicEntity(NULL, MAKE_STRING(keyValue));
 
 		if (!pent) {
 			if (!strcmp(STRING(m_keys[i].key_name), "model")) {

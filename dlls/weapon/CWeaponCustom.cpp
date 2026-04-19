@@ -116,7 +116,7 @@ bool WcSprite::IsAlive() {
 void CWeaponCustom::Spawn() {
 	Precache();
 
-	m_iDefaultAmmo = params.maxClip;
+	m_iDefaultAmmo = params.maxClip ? params.maxClip : params.defaultAmmo;
 
 	ItemInfo info;
 	info.iId = 0;

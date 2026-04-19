@@ -31,35 +31,33 @@ void CTriggerChangeModel::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE
 		return;
 	}
 
-	CBaseEntity* ent = UTIL_FindEntityByTargetname(NULL, STRING(pev->target));
-	
-	if (!ent)
-		return;
+	CBaseEntity* ent = NULL;
+	while (ent = FindLogicEntity(ent, pev->target)) {
+		CBasePlayer* plr = ent->MyPlayerPointer();
 
-	CBasePlayer* plr = ent->MyPlayerPointer();
+		if (plr) {
+			char temp[32];
+			const char* pmodel = STRING(pev->model);
+			if (strstr(pmodel, "models/player/") != pmodel)
+				return;
 
-	if (plr) {
-		char temp[32];
-		const char* pmodel = STRING(pev->model);
-		if (strstr(pmodel, "models/player/") != pmodel)
-			return;
+			pmodel += strlen("models/player/");
 
-		pmodel += strlen("models/player/");
+			memset(temp, 0, sizeof(temp));
+			strcpy_safe(temp, pmodel, 32);
 
-		memset(temp, 0, sizeof(temp));
-		strcpy_safe(temp, pmodel, 32);
-
-		for (int i = 0; i < 32; i++) {
-			if (temp[i] == '/') {
-				temp[i] = 0;
-				break;
+			for (int i = 0; i < 32; i++) {
+				if (temp[i] == '/') {
+					temp[i] = 0;
+					break;
+				}
 			}
-		}
 
-		plr->SetMapPlayerModel(temp);
-	}
-	else {
-		ent->pev->skin = pev->skin;
-		SET_MODEL(ent->edict(), STRING(pev->model));
+			plr->SetMapPlayerModel(temp);
+		}
+		else {
+			ent->pev->skin = pev->skin;
+			SET_MODEL(ent->edict(), STRING(pev->model));
+		}
 	}
 }

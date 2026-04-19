@@ -2062,3 +2062,29 @@ void CBaseEntity::ItemBounceTouch(CBaseEntity* pOther) {
 		pev->angles.z = 0;
 	}
 }
+
+CBaseEntity* CBaseEntity::FindLogicEntity(CBaseEntity* start, string_t targetname) {
+	if (!strcmp(STRING(targetname), "!activator")) {
+		if (start)
+			return NULL; // prevent infinite loops
+		if (!m_hActivator) {
+			EALERT(at_console, "Failed to find !activator. Using worldspawn instead.\n");
+			return CBaseEntity::Instance(ENT(0));
+		}
+
+		return m_hActivator;
+	}
+
+	if (!strcmp(STRING(targetname), "!caller")) {
+		if (start)
+			return NULL; // prevent infinite loops
+		if (!m_hCaller) {
+			EALERT(at_console, "Failed to find !caller. Using worldspawn instead.\n");
+			return CBaseEntity::Instance(ENT(0));
+		}
+
+		return m_hCaller;
+	}
+
+	return UTIL_FindEntityByTargetname(start, STRING(targetname));
+}

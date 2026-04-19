@@ -164,7 +164,7 @@ void CTriggerCondition::TimedThink() {
 CKeyValue CTriggerCondition::LoadKey(string_t entName, string_t keyName, const char* errorDesc) {
 	CKeyValue key = g_emptyKeyValue;
 
-	CBaseEntity* pent = FindLogicEntity(entName);
+	CBaseEntity* pent = FindLogicEntity(NULL, entName);
 
 	if (!pent) {
 		EALERT(at_console, "%s ent %s not found\n", errorDesc, STRING(entName));
