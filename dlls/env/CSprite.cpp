@@ -19,12 +19,15 @@ IMPLEMENT_SAVERESTORE(CSprite, CPointEntity)
 void CSprite::Spawn(void)
 {
 	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NOCLIP;
+	pev->movetype = MOVETYPE_NONE;
 	pev->effects = 0;
 	pev->frame = 0;
 
 	Precache();
 	SET_MODEL(ENT(pev), STRING(pev->model));
+
+	// prevents expensive sprite VIS tests sometimes (sv_vis_test_limit)
+	UTIL_SetSize(pev, g_vecZero, g_vecZero);
 
 	m_maxFrame = (float)MODEL_FRAMES(pev->modelindex) - 1;
 	if (pev->targetname && !(pev->spawnflags & SF_SPRITE_STARTON))
@@ -38,6 +41,12 @@ void CSprite::Spawn(void)
 		pev->angles.z = pev->angles.y;
 		pev->angles.y = 0;
 	}
+}
+
+int CSprite::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) {
+	// enable interpolation on the client without running movement code server side
+	state->movetype = MOVETYPE_NOCLIP;
+	return 1;
 }
 
 
@@ -80,7 +89,7 @@ CSprite* CSprite::SpriteCreate(const char* pSpriteName, const Vector& origin, BO
 	pSprite->SpriteInit(pSpriteName, origin);
 	pSprite->pev->classname = MAKE_STRING("env_sprite");
 	pSprite->pev->solid = SOLID_NOT;
-	pSprite->pev->movetype = MOVETYPE_NOCLIP;
+	pSprite->pev->movetype = MOVETYPE_NONE;
 	if (animate) {
 		pSprite->pev->framerate = 10;
 		pSprite->TurnOn();

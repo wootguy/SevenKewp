@@ -28,6 +28,7 @@ public:
 	void Animate(float frames);
 	void Expand(float scaleSpeed, float fadeSpeed);
 	void SpriteInit(const char* pSpriteName, const Vector& origin);
+	int AddToFullPack(struct entity_state_s* state, CBasePlayer* player) override;
 
 	inline void SetAttachment(edict_t* pEntity, int attachment)
 	{

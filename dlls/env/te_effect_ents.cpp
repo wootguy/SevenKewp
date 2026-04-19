@@ -426,7 +426,7 @@ public:
 			return;
 		}
 
-		pev->movetype = MOVETYPE_NOCLIP; // interpolate
+		pev->movetype = MOVETYPE_NONE; // interpolate
 
 		MAKE_VECTORS(h_parent->pev->angles);
 
@@ -446,6 +446,12 @@ public:
 		}
 
 		pev->nextthink = gpGlobals->time + 0.05f;
+	}
+
+	int AddToFullPack(struct entity_state_s* state, CBasePlayer* player) {
+		// enable interpolation on the client without running movement code server side
+		state->movetype = MOVETYPE_NOCLIP;
+		return 1;
 	}
 
 	void Precache(void) {

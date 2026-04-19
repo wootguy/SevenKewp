@@ -186,6 +186,7 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"sv_wateramp",
 		"sv_waterfriction",
 		"sv_ledgesize",
+		"sv_vis_test_limit",
 		"mp_decals",
 		"mp_falldamage",
 		"mp_flashlight",
