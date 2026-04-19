@@ -50,7 +50,7 @@ int weather_sound_t::GetAverageLoudness(int playerindex) {
 
 void CFogLayer::Spawn() {
 	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NOCLIP;
+	pev->movetype = MOVETYPE_NONE;
 	pev->rendermode = kRenderTransTexture;
 	pev->renderamt = 128;
 
@@ -61,7 +61,8 @@ void CFogLayer::Spawn() {
 	ResetSequenceInfo();
 	pev->framerate = FLT_MIN;
 
-	// render everywhere
+	// render everywhere. This makes the ent very expensive for VIS checks and movement code
+	// because all nodes are iterated because it intersects everything.
 	static Vector galaxySize = Vector(65536, 65536, 65536);
 	UTIL_SetSize(pev, galaxySize * -1, galaxySize);
 }
@@ -74,6 +75,8 @@ int CFogLayer::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) 
 	if (pev->movetype == MOVETYPE_FOLLOW) {
 		return 1;
 	}
+
+	state->movetype = MOVETYPE_NOCLIP; // enable interpolation on the client
 
 	if (pev->sequence > 10) {
 		state->origin = player->GetViewPosition() + Vector(0, 0, -FOG_OFFSET_Z);
@@ -448,7 +451,7 @@ void CEnvWeather::Spawn(void)
 	}
 
 	pev->solid = SOLID_NOT;
-	pev->movetype = MOVETYPE_NOCLIP;
+	pev->movetype = MOVETYPE_NONE;
 
 	// model is needed so AddToFullPack is called by rehlds
 	SET_MODEL(edict(), NOT_PRECACHED_MODEL);
