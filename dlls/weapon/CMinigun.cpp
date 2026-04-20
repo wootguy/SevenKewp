@@ -37,6 +37,7 @@ void CMinigun::Precache()
 	params.idles[2] = { MINIGUN_IDLE2, 5, 6200 };
 	params.moveSpeedMult = FLOAT_TO_MOVESPEED_MULT(0.6f);
 	params.jumpPower = 200;
+	params.defaultAmmo = MINIGUN_DEFAULT_GIVE;
 
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
 	primary.ammoCost = 2;
