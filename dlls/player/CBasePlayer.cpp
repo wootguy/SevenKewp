@@ -6635,8 +6635,8 @@ void CBasePlayer::UpdateTagPos() {
 		return;
 	}
 
-	static uint8_t tagData[32*8];
-	mstream dat((char*)tagData, 32 * 8);
+	static uint8_t tagData[34*8];
+	mstream dat((char*)tagData, 34 * 8);
 
 	bool anyUpdates = false;
 
@@ -6699,6 +6699,10 @@ void CBasePlayer::UpdateTagPos() {
 
 	dat.endBitWriting();
 	int sz = dat.tell();
+
+	if (dat.eom()) {
+		ALERT(at_error, "tag bit stream overflow\n");
+	}
 
 	if (!anyUpdates)
 		return;

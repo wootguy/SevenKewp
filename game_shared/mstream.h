@@ -49,6 +49,7 @@ public:
 	bool writeBit(bool value);
 
 	// write bitCount bits from value. Returns bits written
+	// the buffer must have at least 8 bytes more space than you need due to optimization
 	uint8_t writeBits(uint64_t value, uint8_t bitCount);
 
 	// write zeroes into the remaining bits at the current byte, then increment the position to the next byte

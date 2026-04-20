@@ -174,14 +174,28 @@ bool mstream::writeBit(bool value) {
 }
 
 uint8_t mstream::writeBits(uint64_t value, uint8_t bitCount) {
-	for (int i = 0; i < bitCount; i++) {
-		// TODO: write a byte if position and bitcount allow
+	if (bitCount >= 64-8) {
+		uint8_t written = 0;
+		written += writeBits(value & 0xffffffff, 32);
+		written += writeBits(value >> 32, bitCount - 32);
+		return written;
+	}
+	
+	if (pos + 8 > end) {
+		eomFlag = true;
+		return 0;
+	}
 
-		if (!writeBit(value & 1)) {
-			return i;
-		}
+	uint64_t mask = ((1ull << bitCount) - 1ull) << currentBit;
+	*(uint64_t*)pos = (*(uint64_t*)pos & ~mask) | ((value << currentBit) & mask);
 
-		value >>= 1;
+	uint8_t totalBits = currentBit + bitCount;
+	pos += totalBits >> 3;
+	currentBit = totalBits & 7;
+
+	if (currentBit == 0) {
+		currentBit = 8;
+		pos--;
 	}
 
 	return bitCount;

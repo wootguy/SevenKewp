@@ -105,4 +105,6 @@ EXPORT extern void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, floa
 EXPORT extern void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, int value);
 EXPORT extern void DispatchKeyValue(edict_t* pentKeyvalue, const char* key, Vector value);
 
+EXPORT extern uint32_t* g_edictVis; // cache-friendly tests to see which ents are visible to which players
+
 #endif		// CLIENT_H

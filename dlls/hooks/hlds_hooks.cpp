@@ -266,6 +266,7 @@ void ClientDisconnect( edict_t *pEntity )
 			ent->m_pasPlayers &= ~plrbit;
 			ent->m_netPlayers &= ~plrbit;
 			ent->m_hidePlayers &= ~plrbit;
+			g_edictVis[i] &= ~plrbit;
 		}
 	}
 
@@ -605,6 +606,7 @@ void ServerDeactivate( void )
 	memset(g_breakableSpawnRemap, 0, sizeof(g_breakableSpawnRemap));
 	memset(CWeaponCustom::m_predDataSent, 0, sizeof(CWeaponCustom::m_predDataSent));
 	memset(g_activeTempEnts, 0, sizeof(FakeTempEnt)*MAX_FAKE_TE);
+	memset(g_edictVis, 0, sizeof(uint32_t) * gpGlobals->maxEntities);
 
 	// in case the next map doesn't configure a sky or light_environment
 	CVAR_SET_STRING("sv_skyname", "");
@@ -790,6 +792,11 @@ void MarkWeaponSlotConflicts() {
 
 void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
+	if (!g_edictVis) {
+		g_edictVis = new uint32_t[gpGlobals->maxEntities];
+		memset(g_edictVis, 0, sizeof(uint32_t) * gpGlobals->maxEntities);
+	}
+
 	bool overrideDetected = false; // doesn't apply for the server
 	std::string clientDataFilesHash = UTIL_HashClientDataFiles(overrideDetected);
 	char* serverinfo = (char*)g_engfuncs.pfnGetInfoKeyBuffer(g_engfuncs.pfnPEntityOfEntIndex(0));
@@ -1293,6 +1300,7 @@ int g_numEdictOverflows[32];
 int g_numPacketEntities[32];
 int g_newPacketEnts;
 bool g_sevenkewpPackUpdate;
+uint32_t* g_edictVis;
 
 /*
 ================
@@ -1384,6 +1392,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	baseent->m_pvsPlayers &= ~plrbit;
 	baseent->m_pasPlayers &= ~plrbit;
 	baseent->m_netPlayers &= ~plrbit;
+	g_edictVis[e] &= ~plrbit;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
 	// Ignore ents without valid / visible models
@@ -1690,6 +1699,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	}
 
 	baseent->m_netPlayers |= plrbit;
+	g_edictVis[e] |= plrbit;
 	g_numPacketEntities[g_packClientIdx]++;
 
 	return 1;

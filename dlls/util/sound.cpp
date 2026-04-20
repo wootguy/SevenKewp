@@ -500,9 +500,9 @@ mstream* BuildStartSoundMessage(edict_t* ent, int channel, const char* sample, f
 	if (sound_num > 255)
 		field_mask |= SND_FL_LARGE_INDEX;
 
-	const int maxStartSoundMessageSz = 16;
+	const int maxStartSoundMessageSz = 32;
 	static uint8_t msgbuffer[maxStartSoundMessageSz];
-	static mstream bitbuffer((char*)msgbuffer, 16);
+	static mstream bitbuffer((char*)msgbuffer, 32);
 
 	memset(msgbuffer, 0, maxStartSoundMessageSz);
 	bitbuffer.seek(0);
