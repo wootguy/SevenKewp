@@ -61,10 +61,7 @@ void CFogLayer::Spawn() {
 	ResetSequenceInfo();
 	pev->framerate = FLT_MIN;
 
-	// render everywhere. This makes the ent very expensive for VIS checks and movement code
-	// because all nodes are iterated because it intersects everything.
-	static Vector galaxySize = Vector(65536, 65536, 65536);
-	UTIL_SetSize(pev, galaxySize * -1, galaxySize);
+	m_visibleEverywhere = true;
 }
 
 void CFogLayer::Precache() {
@@ -460,9 +457,8 @@ void CEnvWeather::Spawn(void)
 	// Move entity outside of this solar system so that the client plays sound effects centered.
 	// The direction the sound is coming from will be directly upward anywhere in the world.
 	// The logical solution of using aiment doesn't work (strafing shifts balance).
-	Vector galaxySize = Vector(FLT_MAX, FLT_MAX, FLT_MAX);
 	UTIL_SetOrigin(pev, Vector(0, 0, FLT_MAX));
-	UTIL_SetSize(pev, galaxySize * -1, galaxySize); // so that the client considers this entity visible
+	m_visibleEverywhere = true;
 
 	SetThink(&CEnvWeather::WeatherThink);
 	SetUse(NULL);

@@ -1383,6 +1383,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 {
 	int					i;
 
+	// TODO: using private data is expensive. Use global arrays to be more cache friendly.
 	CBaseEntity* baseent = (CBaseEntity*)GET_PRIVATE(ent);
 	if (!baseent)
 		return 0; // should never happen?
@@ -1415,11 +1416,11 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	if (!plr)
 		return 0; // should never happen?
 
-	if (ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPas)) {
+	if (baseent->m_visibleEverywhere || ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPas)) {
 		baseent->m_pasPlayers |= plrbit;
 	}
 
-	if (ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPvs)) {
+	if (baseent->m_visibleEverywhere || ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, plr->m_lastPvs)) {
 		baseent->m_pvsPlayers |= plrbit;
 	}
 	else if (ent != host && !forceVis) {

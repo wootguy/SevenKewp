@@ -190,6 +190,7 @@ public:
 	uint32_t m_netPlayers; // players this entity has been networked to (AddToFullPack returned 1)
 	uint32_t m_hidePlayers; // players this entity will be hidden from (force AddToFullPack to skip)
 	uint32_t m_forceVisPlayers; // players this entity will be sent to even if outside of their VIS range (must still have a visible model)
+	bool m_visibleEverywhere; // set to true to skip VIS tests for this entity
 
 	uint8_t m_breakFlags;
 	uint8_t m_breakMaterial;
