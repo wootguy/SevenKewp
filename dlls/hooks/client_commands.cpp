@@ -356,6 +356,9 @@ bool CheatCommand(edict_t* pEntity) {
 			std::vector<CBaseEntity*> targets;
 			CBaseEntity* pTarget = NULL;
 
+			while ((pTarget = UTIL_FindEntityByClassname(pTarget, target))) {
+				targets.push_back(pTarget);
+			}
 			while ((pTarget = UTIL_FindEntityByTargetname(pTarget, target))) {
 				targets.push_back(pTarget);
 			}
