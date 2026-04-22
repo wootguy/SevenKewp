@@ -363,6 +363,8 @@ public:
 
 	string_t m_playerModelOverride; // player model forced by the map
 
+	bool m_weaponStateHack; // set to true to fix weapon info sometimes not syncing to the client
+
 	virtual void Spawn( void );
 
 //	virtual void Think( void );

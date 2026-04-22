@@ -52,6 +52,7 @@ extern EXPORT globalvars_t				*gpGlobals;
 extern StringSet g_weaponNames; // names given by weapons (may have a prefix: "hlcoop/weapon_grapple")
 extern StringSet g_weaponClassnames; // valid weapon classnames
 extern uint64_t g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict. maps an ID to a bitfield representing all IDs that share the weapon slot
+extern uint64_t g_unusedWeaponIdMask; // marks weapon bits that are unused in the current map
 
 // rmaps a half-life weapon to a sevenkewp weapon.
 // When a sevenkewp player picks up one of these hl weapons, they'll get the remapped weapon instead.

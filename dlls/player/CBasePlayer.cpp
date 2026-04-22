@@ -5196,11 +5196,18 @@ void CBasePlayer :: UpdateClientData( void )
 				II = &CBasePlayerItem::ItemInfoArray[conflictId];
 			}
 
-			if ( !II->iId )
-				continue;
-
 			if (!IsSevenKewpClient() && II->iId >= 32)
 				continue; // crash on AG if sending too high of an ID
+
+			if (!II->iId) {
+				// clear out weapon info slots on the client if they are no longer used.
+				// TODO: The client is sometimes assigning custom weapons to multiple slots,
+				// which prevents them from showing up in the HUD when picked up because they
+				// get added and removed in the same frame. Weapon info is only reset on game start
+				// hence this hack to force a clear. The crowbar will be used to clear slots,
+				// and the weapon bits will duplicated for this weapon as well.
+				II = &CBasePlayerItem::ItemInfoArray[WEAPON_CROWBAR];
+			}
 
 			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
 			WRITE_STRING(II->pszName);			// string	weapon name
@@ -7887,6 +7894,17 @@ void CBasePlayer::SetJumpPower(int power) {
 }
 
 void CBasePlayer::SyncWeaponBits() {
+	// continuation of the hack that fill in empty weapon info slots on the client. This will
+	// tell the client that those weapon slots are filled/empty depending on if they have the
+	// weapon that these bits are duplicating. In this case, the crowbar. So the client won't
+	// call the opposite of Pickup or Drop when an empty slot is linked to this weapon.
+	if (m_weaponBits & (1ULL << WEAPON_CROWBAR)) {
+		m_weaponBits |= g_unusedWeaponIdMask;
+	}
+	else {
+		m_weaponBits &= ~g_unusedWeaponIdMask;
+	}
+
 	// weapons field sent to HL clients
 	pev->weapons = m_weaponBits & 0xffffffff;
 	

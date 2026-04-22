@@ -54,7 +54,7 @@ void DoEntWaterPhysics() {
 		WaterEntState& state = g_waterPhysicsEnts[i];
 		CBaseEntity* ent = state.h_ent;
 
-		if (!ent) {
+		if (!ent || (ent->IsMonster() || ent->IsPlayer()) && ent->IsAlive()) {
 			g_waterPhysicsEnts.erase(g_waterPhysicsEnts.begin() + i);
 			i--;
 			continue;

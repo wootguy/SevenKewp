@@ -756,14 +756,19 @@ int PrecacheBspModels(bool serverSideModels) {
 }
 
 uint64_t g_weaponSlotMasks[MAX_WEAPONS];
+uint64_t g_unusedWeaponIdMask; // marks weapon IDs that are unused in the current map
 
 void MarkWeaponSlotConflicts() {
+	g_unusedWeaponIdMask = 0;
+
 	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
 		ItemInfo& II = CBasePlayerItem::ItemInfoArray[i];
 
-		if (!II.iId)
+		if (!II.iId) {
+			g_unusedWeaponIdMask |= 1ULL << i;
 			continue;
+		}
 
 		uint64_t mask = 1ULL << II.iId;
 
@@ -1592,7 +1597,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 		}
 	}
 
-	if (baseent->Classify() != CLASS_NONE && baseent->Classify() != CLASS_MACHINE)
+	if (baseent->Classify() != CLASS_NONE && !baseent->IsMachine())
 		state->eflags |= EFLAG_FLESH_SOUND;
 	else
 		state->eflags &= ~EFLAG_FLESH_SOUND;
@@ -2058,6 +2063,15 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 					 	
 						item->m_iId						= II.iId;
 						item->m_iClip					= gun->m_iClip;
+
+						// the client sometimes misses a weapon state for their weapons,
+						// which causes them to do things like reloading right after deploying,
+						// despite having a full clip. Force a delta on the clip size to prevent that.
+						// TODO: Figure out how to reproduce and fi
+						if (pl->m_weaponStateHack) {
+							item->m_iClip = 123;
+							pl->m_weaponStateHack = 0;
+						}
 
 						uint64_t conflictMask = g_weaponSlotMasks[item->m_iId];
 						if (conflictMask != (1ULL << II.iId)) {
