@@ -765,7 +765,7 @@ void MarkWeaponSlotConflicts() {
 	{
 		ItemInfo& II = CBasePlayerItem::ItemInfoArray[i];
 
-		if (!II.iId) {
+		if (!II.iId && i != WEAPON_SUIT) {
 			g_unusedWeaponIdMask |= 1ULL << i;
 			continue;
 		}

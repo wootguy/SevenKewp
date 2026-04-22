@@ -5207,6 +5207,9 @@ void CBasePlayer :: UpdateClientData( void )
 				// hence this hack to force a clear. The crowbar will be used to clear slots,
 				// and the weapon bits will duplicated for this weapon as well.
 				II = &CBasePlayerItem::ItemInfoArray[WEAPON_CROWBAR];
+
+				if (m_clientModVersion == CLIENT_MOD_ADRENALINE)
+					continue; // crashes and I don't know why yet, the bug doesn't happen with vanilla weapons anyway
 			}
 
 			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
@@ -7901,11 +7904,13 @@ void CBasePlayer::SyncWeaponBits() {
 	// tell the client that those weapon slots are filled/empty depending on if they have the
 	// weapon that these bits are duplicating. In this case, the crowbar. So the client won't
 	// call the opposite of Pickup or Drop when an empty slot is linked to this weapon.
-	if (m_weaponBits & (1ULL << WEAPON_CROWBAR)) {
-		m_weaponBits |= g_unusedWeaponIdMask;
-	}
-	else {
-		m_weaponBits &= ~g_unusedWeaponIdMask;
+	if (m_clientModVersion != CLIENT_MOD_ADRENALINE) {
+		if (m_weaponBits & (1ULL << WEAPON_CROWBAR)) {
+			m_weaponBits |= g_unusedWeaponIdMask;
+		}
+		else {
+			m_weaponBits &= ~g_unusedWeaponIdMask;
+		}
 	}
 
 	// weapons field sent to HL clients
