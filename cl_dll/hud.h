@@ -748,6 +748,11 @@ public:
 	bool m_is_map_loaded;
 	unsigned int m_cl_hud_color; // hud color set by the client
 	unsigned int m_sv_hud_color; // hud color set by the server/map
+	int m_last_chat_input_frame; // last frame the engine asked for chat input position
+	int m_last_hud_draw_frame; // last frame the engine asked to draw the hud
+	int m_frameCount; // number of frames elapsed
+	bool m_fullyLoaded; // true when fully loaded into the game
+	bool m_windowFocused; // true if the game window is focused
 
 	int m_iFontHeight;
 	int DrawHudNumber(int x, int y, int iFlags, int iNumber, int r, int g, int b );

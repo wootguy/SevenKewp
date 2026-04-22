@@ -284,6 +284,8 @@ void UndoOrCaptureMouse() {
 	}
 
 	mouse_uncenter_phase = 3;
+
+	gHUD.m_fullyLoaded = true;
 }
 
 
@@ -346,7 +348,6 @@ IN_DeactivateMouse
 void CL_DLLEXPORT IN_DeactivateMouse (void)
 {
 	if (mouse_uncenter_phase == 1) {
-		g_sdl_window = SDL_GetMouseFocus();
 #ifdef WIN32
 		if (!g_window_hwnd) {
 			SDL_SysWMinfo wmInfo;

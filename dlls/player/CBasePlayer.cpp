@@ -5426,8 +5426,13 @@ void CBasePlayer::SetPrefsFromUserinfo(char* infobuffer)
 	const char* autoSwitchKey = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_autowepswitch");
 	m_iAutoWepSwitch = FStrEq(autoSwitchKey, "") ? 1 : atoi(autoSwitchKey);
 
+	// allow map player models
 	const char* allowPmodelKey = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_map_pmdls");
 	m_allowMapPlayerModels = FStrEq(allowPmodelKey, "") ? 1 : atoi(allowPmodelKey);
+
+	// nametags
+	const char* nametagsKey = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_nametags");
+	m_nametags = FStrEq(nametagsKey, "") ? 0 : atoi(nametagsKey);
 
 	// weapon loadout
 	const char* classKey = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_class");
@@ -6636,9 +6641,7 @@ void CBasePlayer::UpdateTagPos() {
 	}
 	m_lastTagPosUpdate = g_engfuncs.pfnTime();
 
-	char* info = g_engfuncs.pfnGetInfoKeyBuffer(edict());
-	char* nametags = g_engfuncs.pfnInfoKeyValue(info, "cl_nametags");
-	if (!nametags || atoi(nametags) < 2) {
+	if (!m_nametags) {
 		return;
 	}
 

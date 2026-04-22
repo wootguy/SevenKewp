@@ -44,6 +44,11 @@
 #include "../public/interface_hlsdk.h"
 #include "effects.h"
 
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_mouse.h>
+#include <SDL2/SDL_gamecontroller.h>
+#include <SDL2/SDL_syswm.h>
+
 cl_enginefunc_t gEngfuncs;
 CHud gHUD;
 TeamFortressViewport *gViewPort = NULL;
@@ -55,6 +60,12 @@ IParticleMan *g_pParticleMan = NULL;
 
 bool is_steam_legacy_engine;
 bool is_software_renderer;
+
+int g_connection_phase;
+int g_loadedSprites = 0;
+extern uint32_t g_latest_cmd_id;
+extern uint32_t g_cmd_timer;
+extern SDL_Window* g_sdl_window;
 
 void CL_LoadParticleMan( void );
 void CL_UnloadParticleMan( void );
@@ -161,6 +172,8 @@ int CL_DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 
 	ReconnectAfterUpdate();
 
+	g_sdl_window = SDL_GetWindowFromID(1);
+
 	// get tracker interface, if any
 	return 1;
 }
@@ -175,11 +188,6 @@ and whenever the vid_mode is changed
 so the HUD can reinitialize itself.
 ==========================
 */
-
-int g_connection_phase;
-int g_loadedSprites = 0;
-extern uint32_t g_latest_cmd_id;
-extern uint32_t g_cmd_timer;
 
 int CL_DLLEXPORT HUD_VidInit( void )
 {
@@ -233,7 +241,6 @@ int CL_DLLEXPORT HUD_Redraw( float time, int intermission )
 //	RecClHudRedraw(time, intermission);
 
 	gHUD.Redraw( time, intermission );
-
 	return 1;
 }
 
@@ -335,6 +342,10 @@ void CL_DLLEXPORT HUD_Frame( double time )
 
 	PredictBodySplash();
 	FlashlightEffect();
+
+	gHUD.m_windowFocused = g_sdl_window == SDL_GetMouseFocus();
+
+	gHUD.m_frameCount++;
 }
 
 

@@ -501,6 +501,7 @@ void CHud :: VidInit( void )
 
 	m_is_map_loaded = false;
 	m_hud_sprites_loaded = false;
+	m_fullyLoaded = false;
 
 	// this is probably going to annoy someone but HL only binds up to slot 5 which breaks weapon selection and big menus.
 	EngineClientCmd("bind 1 slot1\n");

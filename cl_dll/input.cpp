@@ -21,6 +21,7 @@ extern "C"
 #include <string.h>
 #include <ctype.h>
 #include "Exports.h"
+#include "player_status.h"
 
 #include "vgui_TeamFortressViewport.h"
 
@@ -769,6 +770,29 @@ void CL_DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int ac
 	}
 
 	Bench_SetViewAngles( 1, (float *)&cmd->viewangles, frametime, cmd );
+	
+	int status = 0;
+	if (!gHUD.m_fullyLoaded) {
+		status = PLAYER_STATUS_LOAD;
+	}
+	else if (gHUD.m_last_hud_draw_frame != gHUD.m_frameCount || !gHUD.m_windowFocused) {
+		status = PLAYER_STATUS_CONSOLE;
+	}
+	else if (gHUD.m_last_chat_input_frame == gHUD.m_frameCount) {
+		status = PLAYER_STATUS_CHAT;
+	}
+	else {
+		status = PLAYER_STATUS_NONE;
+	}
+
+	int flags = 0;
+	if (gPlayerSim.cam_thirdperson) {
+		flags = 1;
+	}
+
+	// repurposing unused fields
+	cmd->impact_index = (flags << 4) | status;
+	cmd->impact_position = gPlayerSim.cam_ofs;
 }
 
 /*

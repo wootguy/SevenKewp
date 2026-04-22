@@ -1,3 +1,5 @@
+#include "../common/event_args.h"
+
 typedef struct packet_entities_s
 {
 	int num_entities;

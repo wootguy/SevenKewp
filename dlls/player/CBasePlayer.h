@@ -526,6 +526,7 @@ public:
 	int m_iWantClassSelection;	// set whenever userinfo changes
 	int m_iClassSelection;		// synced to desired class on spawn
 	bool m_allowMapPlayerModels; // true if player is ok with maps changing their player model
+	int m_nametags;
 
 	float m_lastScoreUpdate;
 	float m_lastTimeLeftUpdate;

@@ -26,6 +26,7 @@ void CL_DLLEXPORT HUD_ChatInputPosition( int *x, int *y )
 {
 //	RecClChatInputPosition( x, y );
 	gHUD.m_SayText.SetChatInputPos(x, y);
+	gHUD.m_last_chat_input_frame = gHUD.m_frameCount;
 }
 
 //////////////////////////////////////////////////////////////////////
