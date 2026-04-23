@@ -429,14 +429,16 @@ void ClientCommand(edict_t* pEntity)
 		return;
 	}
 
-	pPlayer->m_lastUserInput = g_engfuncs.pfnTime();
-
 	CALL_HOOKS_VOID(pfnClientCommand, pPlayer);
 
 	TextMenuClientCommandHook(pPlayer);
 
 	const char* pcmd = CMD_ARGV(0);
 	const char* pstr;
+
+	if (strcmp("VModEnable", pcmd) && strcmp("specmode", pcmd) && strcmp("vban", pcmd) && pcmd[0] != '-') {
+		pPlayer->m_lastUserInput = g_engfuncs.pfnTime();
+	}
 
 	if (CheatCommand(pEntity)) {
 		return;

@@ -231,6 +231,7 @@ struct player_inventory_t {
 
 // inventory to keep across map changes
 EXPORT extern std::unordered_map<uint64_t, player_inventory_t> g_playerInventory;
+EXPORT extern std::unordered_map<uint64_t, float> g_playerIdleTimes; // Idle times carried over from the previous map
 EXPORT extern bool g_clearInventoriesNextMap; // true if player inventories should be cleared on the next map
 
 #endif		// GAME_H

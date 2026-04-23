@@ -428,6 +428,14 @@ void ClientPutInServer( edict_t *pEntity )
 	pPlayer->m_lastUserInput = g_engfuncs.pfnTime();
 	pPlayer->m_lastTimeLeftUpdate = 0;
 
+	// add in idle time from the previous map
+	uint64_t id64 = pPlayer->GetSteamID64();
+	auto prevIdle = g_playerIdleTimes.find(id64);
+	if (prevIdle != g_playerIdleTimes.end()) {
+		pPlayer->m_lastUserInput -= prevIdle->second;
+		g_playerIdleTimes.erase(id64);
+	}
+
 	pPlayer->m_nightvisionColor = RGB(0, 255, 0);
 
 	// Allocate a CBasePlayer for pev, and call spawn
@@ -545,6 +553,9 @@ void ServerDeactivate( void )
 		if (!g_clearInventoriesNextMap) {
 			plr->SaveInventory();
 		}
+
+		uint64_t id64 = plr->GetSteamID64();
+		g_playerIdleTimes[id64] = g_engfuncs.pfnTime() - plr->m_lastUserInput;
 	}
 
 	EnvWeatherServerDeactivate();

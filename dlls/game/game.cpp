@@ -142,6 +142,7 @@ StringSet g_mapWeapons;
 std::unordered_map<uint64_t, player_score_t> g_playerScores;
 std::unordered_map<uint64_t, player_score_t> g_oldPlayerScores;
 std::unordered_map<uint64_t, player_inventory_t> g_playerInventory;
+std::unordered_map<uint64_t, float> g_playerIdleTimes; // amount of idle time carried over from the previous map
 bool g_clearInventoriesNextMap = true;
 
 StringMap g_itemNameRemap = {

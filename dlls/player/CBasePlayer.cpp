@@ -7421,7 +7421,8 @@ void CBasePlayer::SaveInventory() {
 
 	memcpy(inv.m_rgAmmo, m_rgAmmo, MAX_AMMO_SLOTS * sizeof(int));
 	
-	g_playerInventory[GetSteamID64()] = inv;
+	uint64_t id64 = GetSteamID64();
+	g_playerInventory[id64] = inv;
 }
 
 bool CBasePlayer::LoadInventory() {
