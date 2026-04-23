@@ -228,6 +228,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 	
 	// player is about to turn on/off their flashlight
 	HOOK_RETURN_DATA (*pfnPlayerFlashlightToggle)(CBasePlayer* plr, bool onNotOff);
+
+	// player is about to have their view taken or given back by a trigger_camera.
+	HOOK_RETURN_DATA(*pfnCameraToggle)(CBasePlayer* plr, CBaseEntity* cam, bool onNotOff);
 };
 
 // do not call directly, use RegisterPlugin instead

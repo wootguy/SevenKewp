@@ -92,6 +92,8 @@ void CTriggerCamera::KeyValue(KeyValueData* pkvd)
 }
 
 void CTriggerCamera::TogglePlayerView(CBasePlayer* plr, bool enabled) {
+	CALL_HOOKS_VOID(pfnCameraToggle, plr, this, enabled);
+
 	if (pev->spawnflags & SF_CAMERA_PLAYER_TAKECONTROL) {
 		plr->EnableControl(enabled ? FALSE : TRUE);
 	}
@@ -125,7 +127,12 @@ void CTriggerCamera::TogglePlayerViews(bool enabled) {
 			TogglePlayerView(plr, enabled);
 		}
 
-		g_active_camera = enabled ? this : NULL;
+		if (enabled) {
+			g_active_camera = this;
+		}
+		else if (g_active_camera == this) {
+			g_active_camera = NULL;
+		}
 	}
 	else if (IsValidPlayer(m_hPlayer.GetEdict())) {
 		CBasePlayer* plr = (CBasePlayer*)m_hPlayer.GetEntity();
