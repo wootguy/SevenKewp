@@ -33,7 +33,7 @@ public:
 
 	EHANDLE m_hPlayer;
 	EHANDLE m_hTarget;
-	CBaseEntity* m_pentPath;
+	EHANDLE m_hPath;
 	int	  m_sPath;
 	float m_flWait;
 	float m_flReturnTime;

@@ -14,7 +14,7 @@ TYPEDESCRIPTION	CTriggerCamera::m_SaveData[] =
 {
 	DEFINE_FIELD(CTriggerCamera, m_hPlayer, FIELD_EHANDLE),
 	DEFINE_FIELD(CTriggerCamera, m_hTarget, FIELD_EHANDLE),
-	DEFINE_FIELD(CTriggerCamera, m_pentPath, FIELD_CLASSPTR),
+	DEFINE_FIELD(CTriggerCamera, m_hPath, FIELD_EHANDLE),
 	DEFINE_FIELD(CTriggerCamera, m_sPath, FIELD_STRING),
 	DEFINE_FIELD(CTriggerCamera, m_flWait, FIELD_FLOAT),
 	DEFINE_FIELD(CTriggerCamera, m_flReturnTime, FIELD_TIME),
@@ -196,20 +196,20 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 
 	if (m_sPath)
 	{
-		m_pentPath = UTIL_FindEntityByTargetname(NULL, STRING(m_sPath));
+		m_hPath = UTIL_FindEntityByTargetname(NULL, STRING(m_sPath));
 	}
 	else
 	{
-		m_pentPath = NULL;
+		m_hPath = NULL;
 	}
 
 	m_flStopTime = gpGlobals->time;
-	if (m_pentPath)
+	if (m_hPath)
 	{
-		if (m_pentPath->pev->speed != 0)
-			m_targetSpeed = m_pentPath->pev->speed;
+		if (m_hPath->pev->speed != 0)
+			m_targetSpeed = m_hPath->pev->speed;
 
-		m_flStopTime += m_pentPath->GetDelay();
+		m_flStopTime += m_hPath->GetDelay();
 	}
 
 	// copy over player information
@@ -291,7 +291,7 @@ void CTriggerCamera::FollowTarget()
 void CTriggerCamera::Move()
 {
 	// Not moving on a path, return
-	if (!m_pentPath) {
+	if (!m_hPath) {
 		if (!(FBitSet(pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL)))
 		{
 			pev->velocity = pev->velocity * 0.8;
@@ -308,29 +308,29 @@ void CTriggerCamera::Move()
 	if (m_moveDistance <= 0)
 	{
 		// Fire the passtarget if there is one
-		if (m_pentPath->pev->message)
+		if (m_hPath->pev->message)
 		{
-			FireTargets(STRING(m_pentPath->pev->message), this, this, USE_TOGGLE, 0);
-			if (FBitSet(m_pentPath->pev->spawnflags, SF_CORNER_FIREONCE))
-				m_pentPath->pev->message = 0;
+			FireTargets(STRING(m_hPath->pev->message), this, this, USE_TOGGLE, 0);
+			if (FBitSet(m_hPath->pev->spawnflags, SF_CORNER_FIREONCE))
+				m_hPath->pev->message = 0;
 		}
 		// Time to go to the next target
-		m_pentPath = m_pentPath->GetNextTarget();
+		m_hPath = m_hPath->GetNextTarget();
 
 		// Set up next corner
-		if (!m_pentPath)
+		if (!m_hPath)
 		{
 			pev->velocity = g_vecZero;
 		}
 		else
 		{
-			if (m_pentPath->pev->speed != 0)
-				m_targetSpeed = m_pentPath->pev->speed;
+			if (m_hPath->pev->speed != 0)
+				m_targetSpeed = m_hPath->pev->speed;
 
-			Vector delta = m_pentPath->pev->origin - pev->origin;
+			Vector delta = m_hPath->pev->origin - pev->origin;
 			m_moveDistance = delta.Length();
 			pev->movedir = delta.Normalize();
-			m_flStopTime = gpGlobals->time + m_pentPath->GetDelay();
+			m_flStopTime = gpGlobals->time + m_hPath->GetDelay();
 		}
 	}
 
