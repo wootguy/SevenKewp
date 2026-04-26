@@ -310,6 +310,24 @@ void update_plugins() {
 	}
 }
 
+void list_plugin_commands() {
+	if (CMD_ARGC() < 2) {
+		g_pluginManager.ListPluginCommands(NULL);
+	}
+	else {
+		g_pluginManager.ListPluginCommands(CMD_ARGV(1));
+	}
+}
+
+void list_plugin_cvars() {
+	if (CMD_ARGC() < 2) {
+		g_pluginManager.ListPluginCvars(NULL);
+	}
+	else {
+		g_pluginManager.ListPluginCvars(CMD_ARGV(1));
+	}
+}
+
 void freespace_command() {
 	std::string path = CMD_ARGC() > 1 ? CMD_ARGS() : "";
 
@@ -391,6 +409,8 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("reloadplugin", reload_plugin);
 	g_engfuncs.pfnAddServerCommand("updateplugin", update_plugin);
 	g_engfuncs.pfnAddServerCommand("updateplugins", update_plugins);
+	g_engfuncs.pfnAddServerCommand("listplugincmd", list_plugin_commands);
+	g_engfuncs.pfnAddServerCommand("listplugincvar", list_plugin_cvars);
 	g_engfuncs.pfnAddServerCommand("freespace", freespace_command);
 	g_engfuncs.pfnAddServerCommand("sounds", list_precached_sounds);
 	g_engfuncs.pfnAddServerCommand("models", list_precached_models);

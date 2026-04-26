@@ -703,6 +703,124 @@ bool PluginManager::ClientCommand(CBasePlayer* pPlayer) {
 	return ecmd->callback(pPlayer, args);
 }
 
+void PluginManager::ListPluginCommands(const char* pluginName) {
+	int cmdCount = 0;
+
+	if (pluginName) {
+		Plugin* plugin = FindPlugin(pluginName);
+
+		if (!plugin) {
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("Could not find plugin with name %s\n", pluginName));
+			return;
+		}
+
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("\nCommands for plugin %s\n"
+			"----------------------------------------------------------------------------\n"
+			"%-24s %-9s %s\n"
+			"----------------------------------------------------------------------------\n",
+			plugin->name, "Command", "Cooldown", "Flags"));
+
+		for (int k = 0; k < g_plugin_command_count; k++) {
+			ExternalCommand& cmd = g_plugin_commands[k];
+
+			if (cmd.pluginId == plugin->id) {
+				std::string sflags = "";
+				if (cmd.flags & FL_CMD_SERVER) sflags += "SV + ";
+				if (cmd.flags & FL_CMD_CLIENT_CONSOLE) sflags += "CL + ";
+				if (cmd.flags & FL_CMD_CLIENT_CHAT) sflags += "CHAT + ";
+				if (cmd.flags & FL_CMD_CASE) sflags += "CASE + ";
+				if (cmd.flags & FL_CMD_ADMIN) sflags += "ADMIN + ";
+				sflags = sflags.substr(0, sflags.size() - 3);
+
+				g_engfuncs.pfnServerPrint(UTIL_VarArgs("%-24s %-9.2f %s\n", cmd.name, cmd.cooldown, sflags.c_str()));
+				cmdCount++;
+			}
+		}
+	}
+	else {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("\nCommands for all plugins\n"
+			"----------------------------------------------------------------------------\n"
+			"%-24s %-24s %-9s %s\n"
+			"----------------------------------------------------------------------------\n",
+			"Plugin", "Command", "Cooldown", "Flags"));
+
+		for (int i = 0; i < (int)plugins.size(); i++) {
+			Plugin& plugin = plugins[i];
+
+			for (int k = 0; k < g_plugin_command_count; k++) {
+				ExternalCommand& cmd = g_plugin_commands[k];
+
+				if (cmd.pluginId == plugin.id) {
+					std::string sflags = "";
+					if (cmd.flags & FL_CMD_SERVER) sflags += "SV + ";
+					if (cmd.flags & FL_CMD_CLIENT_CONSOLE) sflags += "CL + ";
+					if (cmd.flags & FL_CMD_CLIENT_CHAT) sflags += "CHAT + ";
+					if (cmd.flags & FL_CMD_CASE) sflags += "CASE + ";
+					if (cmd.flags & FL_CMD_ADMIN) sflags += "ADMIN + ";
+					sflags = sflags.substr(0, sflags.size() - 3);
+
+					g_engfuncs.pfnServerPrint(UTIL_VarArgs("%-24s %-24s %-9.2f %s\n", plugin.name, cmd.name, cmd.cooldown, sflags.c_str()));
+					cmdCount++;
+				}
+			}
+		}
+	}
+	
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("\n-- %d commands\n", cmdCount));
+}
+
+void PluginManager::ListPluginCvars(const char* pluginName) {
+	int cmdCount = 0;
+
+	if (pluginName) {
+		Plugin* plugin = FindPlugin(pluginName);
+
+		if (!plugin) {
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("Could not find plugin with name %s\n", pluginName));
+			return;
+		}
+
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("\nCVars for plugin %s\n"
+			"----------------------------------------------------------------------------\n"
+			"%-32s %s\n"
+			"----------------------------------------------------------------------------\n",
+			plugin->name, "CVar", "Value"));
+
+		for (int k = 0; k < g_plugin_cvar_count; k++) {
+			ExternalCvar& cvar = g_plugin_cvars[k];
+
+			if (cvar.pluginId == plugin->id) {
+				g_engfuncs.pfnServerPrint(UTIL_VarArgs("%-24s \"%s\"\n",
+					cvar.cvar.name, CVAR_GET_STRING(cvar.cvar.name)));
+				cmdCount++;
+			}
+		}
+	}
+	else {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("\nCVars for all plugins\n"
+			"----------------------------------------------------------------------------\n"
+			"%-24s %-32s %s\n"
+			"----------------------------------------------------------------------------\n",
+			"Plugin", "CVar", "Value"));
+
+		for (int i = 0; i < (int)plugins.size(); i++) {
+			Plugin& plugin = plugins[i];
+
+			for (int k = 0; k < g_plugin_cvar_count; k++) {
+				ExternalCvar& cvar = g_plugin_cvars[k];
+
+				if (cvar.pluginId == plugin.id) {
+					g_engfuncs.pfnServerPrint(UTIL_VarArgs("%-24s %-32s \"%s\"\n", plugin.name,
+						cvar.cvar.name, CVAR_GET_STRING(cvar.cvar.name)));
+					cmdCount++;
+				}
+			}
+		}
+	}
+
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("\n-- %d cvars\n", cmdCount));
+}
+
 void RegisterPluginCommand(const char* cmd, plugin_cmd_callback callback, int flags, float cooldown) {
 	if (!g_initPlugin) {
 		ALERT(at_error, "Plugin commands can only be registered during initialization. Failed to register: %s\n", cmd);

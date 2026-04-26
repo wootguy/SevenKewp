@@ -77,6 +77,12 @@ public:
 	// returns true if command should be hidden from chat
 	bool ClientCommand(CBasePlayer* pPlayer);
 
+	// set pluginName to NULL for all plugin commands
+	void ListPluginCommands(const char* pluginName);
+
+	// set pluginName to NULL for all plugin cvars
+	void ListPluginCvars(const char* pluginName);
+
 	template<typename Func, typename... Args>
 	HOOK_RETURN_DATA CallHooks(Func hookFunction, Args&&... args) {
 		HOOK_RETURN_DATA totalRet = {0, 0};

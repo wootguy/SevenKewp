@@ -2765,6 +2765,7 @@ void CBasePlayer::PreThink(void)
 	// Observer Button Handling
 	if ( IsObserver() )
 	{
+		pev->solid = SOLID_NOT; // just in case
 		Observer_HandleButtons();
 		Observer_CheckTarget();
 		Observer_CheckProperties();
@@ -5839,6 +5840,9 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 		return;
 	}
 
+	if (IsObserver())
+		return;
+
 	if (gpGlobals->time - m_lastDropTime < 0.2f) {
 		return; // cooldown
 	}
@@ -6007,6 +6011,9 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 }
 
 void CBasePlayer::DropAmmo(bool secondary) {
+	if (IsObserver())
+		return;
+
 	if (!m_pActiveItem) {
 		return;
 	}
@@ -7971,4 +7978,8 @@ void CBasePlayer::ApplyEffects() {
 		pev->flags |= FL_NOTARGET;
 	if (m_instakill)
 		m_damage_modifier = 1000000.0f;
+
+	if (IsObserver()) {
+		pev->solid = SOLID_NOT;
+	}
 }
