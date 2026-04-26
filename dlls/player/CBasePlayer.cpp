@@ -7908,19 +7908,6 @@ void CBasePlayer::SetJumpPower(int power) {
 }
 
 void CBasePlayer::SyncWeaponBits() {
-	// continuation of the hack that fill in empty weapon info slots on the client. This will
-	// tell the client that those weapon slots are filled/empty depending on if they have the
-	// weapon that these bits are duplicating. In this case, the crowbar. So the client won't
-	// call the opposite of Pickup or Drop when an empty slot is linked to this weapon.
-	if (m_clientModVersion != CLIENT_MOD_ADRENALINE) {
-		if (m_weaponBits & (1ULL << WEAPON_CROWBAR)) {
-			m_weaponBits |= g_unusedWeaponIdMask;
-		}
-		else {
-			m_weaponBits &= ~g_unusedWeaponIdMask;
-		}
-	}
-
 	// weapons field sent to HL clients
 	pev->weapons = m_weaponBits & 0xffffffff;
 	
@@ -7931,6 +7918,19 @@ void CBasePlayer::SyncWeaponBits() {
 	// TODO: slot conflict logic from UpdateClientData
 
 	uint64_t sentValue = m_weaponBits;
+
+	// continuation of the hack that fill in empty weapon info slots on the client. This will
+	// tell the client that those weapon slots are filled/empty depending on if they have the
+	// weapon that these bits are duplicating. In this case, the crowbar. So the client won't
+	// call the opposite of Pickup or Drop when an empty slot is linked to this weapon.
+	if (m_clientModVersion != CLIENT_MOD_ADRENALINE) {
+		if (m_weaponBits & (1ULL << WEAPON_CROWBAR)) {
+			sentValue |= g_unusedWeaponIdMask;
+		}
+		else {
+			sentValue &= ~g_unusedWeaponIdMask;
+		}
+	}
 
 	for (int i = 0; i < MAX_WEAPONS; i++) {
 		if (m_weaponBits & (1ULL << i)) {
