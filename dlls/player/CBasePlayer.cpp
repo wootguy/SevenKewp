@@ -5214,7 +5214,7 @@ void CBasePlayer :: UpdateClientData( void )
 			}
 
 			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
-			WRITE_STRING(II->pszName);			// string	weapon name
+			WRITE_STRING(II->pszName ? II->pszName : "");			// string	weapon name
 			WRITE_BYTE(GetAmmoIndex(II->pszAmmo1));	// byte		Ammo Type
 			WRITE_BYTE(UTIL_GetMaxAmmo(II->pszAmmo1));				// byte     Max Ammo 1
 			WRITE_BYTE(GetAmmoIndex(II->pszAmmo2));	// byte		Ammo2 Type
@@ -5865,7 +5865,7 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 			ItemInfo info;
 			pWeapon->GetItemInfo(&info);
 
-			if ( pszItemName )
+			if ( pszItemName && info.pszName )
 			{
 				// try to match by classname or name. 
 				if ( !strcmp( pszItemName, STRING( pWeapon->pev->classname ) ) || !strcmp(pszItemName, info.pszName))
@@ -7520,7 +7520,7 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 
 			// redirect all item info to the weapon with the given ID
 			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
-			WRITE_STRING(II.pszName);			// string	weapon name
+			WRITE_STRING(II.pszName ? II.pszName : "");			// string	weapon name
 			WRITE_BYTE(GetAmmoIndex(II.pszAmmo1));	// byte		Ammo Type
 			WRITE_BYTE(UTIL_GetMaxAmmo(II.pszAmmo1));				// byte     Max Ammo 1
 			WRITE_BYTE(GetAmmoIndex(II.pszAmmo2));	// byte		Ammo2 Type
