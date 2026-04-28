@@ -181,6 +181,10 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 	if (m_state == 0)
 	{
 		m_flReturnTime = gpGlobals->time;
+		if (pev->spawnflags & SF_CAMERA_IGNORE_HOLD_TIME) {
+			TogglePlayerViews(false);
+			pev->avelocity = Vector(0, 0, 0);
+		}
 		return;
 	}
 
@@ -246,7 +250,7 @@ void CTriggerCamera::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE
 
 void CTriggerCamera::FollowTarget()
 {
-	if (m_flReturnTime < gpGlobals->time)
+	if (m_flReturnTime < gpGlobals->time && !(pev->spawnflags & SF_CAMERA_IGNORE_HOLD_TIME))
 	{
 		TogglePlayerViews(false);
 

@@ -10,6 +10,7 @@
 #define SF_CAMERA_INSTANT_TURN 32 // if enabled, don't smoothly rotate to face target
 #define SF_CAMERA_INSTANT_MOVE 64 // if enabled, move like a func_train without any smoothing
 #define SF_CAMERA_PLAYER_INVULNERABLE 256 // disable viewer damage while camera is active
+#define SF_CAMERA_IGNORE_HOLD_TIME 512 // infinite hold time
 
 class EXPORT CTriggerCamera : public CBaseDelay
 {
