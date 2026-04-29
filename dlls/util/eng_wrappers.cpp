@@ -199,10 +199,10 @@ int PRECACHE_GENERIC(const char* path) {
 		}
 	}
 
-	if (lowerPath.find(" ") != std::string::npos) {
-		// files with spaces causes clients to hang at "Verifying resources"
+	if (lowerPath.find_first_of(" ,") != std::string::npos) {
+		// files with spaces or commas cause clients to hang at "Verifying resources"
 		// and the file doesn't download
-		ALERT(at_error, "Precached file with spaces: '%s'\n", path);
+		ALERT(at_error, "Can't precache file path with spaces/commas: '%s'\n", path);
 		return -1;
 	}
 
@@ -232,10 +232,10 @@ int PRECACHE_SOUND_ENT(CBaseEntity* ent, const char* path) {
 
 	path = UTIL_GetReplacementSound(ent ? ent->edict() : NULL, path);
 
-	if (lowerPath.find(" ") != std::string::npos) {
-		// files with spaces causes clients to hang at "Verifying resources"
+	if (lowerPath.find_first_of(" ,") != std::string::npos) {
+		// files with spaces or commas cause clients to hang at "Verifying resources"
 		// and the file doesn't download
-		ALERT(at_error, "Precached sound with spaces: '%s'\n", path);
+		ALERT(at_error, "Can't precache sound path with spaces/commas: '%s'\n", path);
 		return g_engfuncs.pfnPrecacheSound(NOT_PRECACHED_SOUND);
 	}
 
@@ -448,11 +448,11 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 		path = replacement;
 	}
 
-	if (lowerPath.find(" ") != std::string::npos) {
-		// files with spaces causes clients to hang at "Verifying resources"
+	if (lowerPath.find_first_of(" ,") != std::string::npos) {
+		// files with spaces or commas cause clients to hang at "Verifying resources"
 		// and the file doesn't download
-		ALERT(at_error, "Precached model with spaces: '%s'\n", path);
-		return g_engfuncs.pfnPrecacheModel(getNotPrecachedModelPath());
+		ALERT(at_error, "Can't precache model path with spaces/commas: '%s'\n", path);
+		return g_engfuncs.pfnPrecacheSound(getNotPrecachedModelPath());
 	}
 
 	bool alreadyPrecached = g_precachedModels.hasKey(path);
