@@ -455,6 +455,7 @@ set(WEAPON_HDR
 	weapon/CEagle.h
 	weapon/CM16.h
 	weapon/CWeaponCustom.h
+	weapon/CWeaponEvents.h
 	weapon/CProjectileCustom.h
 	weapon/weapons.h
 )
@@ -498,6 +499,7 @@ set(WEAPON_SRC
 	weapon/CEagle.cpp
 	weapon/CM16.cpp
 	weapon/CWeaponCustom.cpp
+	weapon/CWeaponEvents.cpp
 	weapon/CProjectileCustom.cpp
 	weapon/combat.cpp
 )

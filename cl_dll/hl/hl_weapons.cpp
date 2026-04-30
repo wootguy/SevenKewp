@@ -126,7 +126,7 @@ void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
 		CWeaponCustom* custom = &g_customWeapon[id];
 
 		if (custom->m_hasPredictionData) {
-			custom->GetCurrentAccuracy(accuracyX, accuracyY, accuracyX2, accuracyY2);
+			custom->events.GetCurrentAccuracy(accuracyX, accuracyY, accuracyX2, accuracyY2);
 			dynamicAccuracy = custom->params.flags & FL_WC_WEP_DYNAMIC_ACCURACY;
 		}
 	}
@@ -204,7 +204,7 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_secondaryCalled = 0;
 		g_customWeapon[i].m_primaryFired = 0;
 		g_customWeapon[i].m_secondaryFired = 0;
-		g_customWeapon[i].m_bulletFireCount = 0;
+		g_customWeapon[i].events.m_bulletFireCount = 0;
 		g_customWeapon[i].m_akimboAnim = 0;
 		g_customWeapon[i].m_akimboAnimTime = 0;
 		g_customWeapon[i].m_akimboLastEventFrame = 0;
@@ -212,11 +212,11 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].ammoFreqs[0] = 0;
 		g_customWeapon[i].ammoFreqs[1] = 0;
 		g_customWeapon[i].ammoFreqs[2] = 0;
-		g_customWeapon[i].animCount = 0;
+		g_customWeapon[i].events.animCount = 0;
 		g_customWeapon[i].m_chargeSoundEvt = 0;
 		g_customWeapon[i].m_chargeStartClip = 0;
-		memset(g_customWeapon[i].m_beams, 0, sizeof(WcBeam) * MAX_WC_BEAMS);
-		memset(&g_customWeapon[i].m_beamImpactSprite, 0, sizeof(WcSprite));
+		memset(g_customWeapon[i].events.m_beams, 0, sizeof(WcBeam) * MAX_WC_BEAMS);
+		memset(&g_customWeapon[i].events.m_beamImpactSprite, 0, sizeof(WcSprite));
 		g_customWeapon[i].SetAkimbo(false);
 		g_customWeapon[i].SetLaser(false);
 	}

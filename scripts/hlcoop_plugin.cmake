@@ -51,6 +51,14 @@ function(hlcoop_setup_plugin OUTPUT_PATH)
 			VS_DEBUGGER_WORKING_DIRECTORY "${SERVER_WORK_DIR}"
 			VS_DEBUGGER_COMMAND_ARGUMENTS "${SERVER_ARGS}"
 		)
+		
+		set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+		
+		if(OUTPUT_PATH MATCHES "^plugins/maps/")
+			set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Map Plugins")
+		else()
+			set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER "Server Plugins")
+		endif()		
 	else()
 		set(PLUGIN_OUT_PATH "${CMAKE_BINARY_DIR}/output/${OUTPUT_PATH}")
 	endif()

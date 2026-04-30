@@ -19,6 +19,7 @@ set(SHARED_WEAPON_SRC
 	../dlls/weapon/CSqueak.cpp
 	../dlls/weapon/CTripmine.cpp
 	../dlls/weapon/CWeaponCustom.cpp
+	../dlls/weapon/CWeaponEvents.cpp
 )
 set(CLIENT_WEAPON_SRC
 	hl/hl_weapons.cpp
