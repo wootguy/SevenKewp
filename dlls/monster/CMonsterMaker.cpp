@@ -317,7 +317,8 @@ void CMonsterMaker :: Precache( void )
 	if (pev->weapons)
 		keys.put("weapons", UTIL_VarArgs("%d", pev->weapons));
 
-	UTIL_PrecacheOther( STRING( m_iszMonsterClassname ), keys );
+	if (m_iszMonsterClassname)
+		UTIL_PrecacheOther( STRING( m_iszMonsterClassname ), keys );
 
 	if (pev->model) {
 		PRECACHE_MODEL(STRING(pev->model));
@@ -391,7 +392,7 @@ void CMonsterMaker::MakeMonster( void )
 		}
 	}
 
-	pent = CREATE_NAMED_ENTITY( m_iszMonsterClassname );
+	pent = m_iszMonsterClassname ? CREATE_NAMED_ENTITY( m_iszMonsterClassname ) : NULL;
 
 	if ( FNullEnt( pent ) )
 	{
