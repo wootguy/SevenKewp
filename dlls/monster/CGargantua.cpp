@@ -1130,6 +1130,7 @@ void CStomp::Think(void)
 			if (pSprite)
 			{
 				UTIL_TraceLine(pev->origin, pev->origin - Vector(0, 0, 500), ignore_monsters, edict(), &tr);
+				pSprite->pev->movetype = MOVETYPE_NOCLIP;
 				pSprite->pev->origin = tr.vecEndPos;
 				pSprite->pev->velocity = Vector(RANDOM_FLOAT(-200, 200), RANDOM_FLOAT(-200, 200), 175);
 				// pSprite->AnimateAndDie( RANDOM_FLOAT( 8.0, 12.0 ) );

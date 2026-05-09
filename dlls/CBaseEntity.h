@@ -308,6 +308,7 @@ public:
 	virtual BOOL	IsNetClient(void) { return FALSE; }
 	virtual BOOL	IsBreakable(void) { return (m_breakFlags & FL_BREAK_IS_BREAKABLE) != 0 && m_breakMaterial != matUnbreakableGlass; }
 	virtual BOOL	IsMachine(void) { return FALSE; };
+	virtual BOOL	IsTurret(void) { return FALSE; };
 	virtual BOOL	IsWeather(void) { return FALSE; };
 	virtual BOOL	IsBeam(void) { return FALSE; };
 	virtual BOOL	IsButton() { return FALSE; }

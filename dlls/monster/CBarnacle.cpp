@@ -57,7 +57,7 @@ IMPLEMENT_SAVERESTORE( CBarnacle, CBaseMonster )
 //=========================================================
 int	CBarnacle :: Classify ( void )
 {
-	return	CBaseMonster::Classify(CLASS_ALIEN_MONSTER);
+	return	CBaseMonster::Classify(CLASS_BARNACLE);
 }
 
 const char* CBarnacle::DisplayName() {
@@ -114,6 +114,8 @@ void CBarnacle :: Spawn()
 	pev->nextthink = gpGlobals->time + 0.5;
 
 	UTIL_SetOrigin ( pev, pev->origin );
+
+	pev->flags |= FL_MONSTER;
 }
 
 int CBarnacle::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )

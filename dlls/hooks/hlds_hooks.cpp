@@ -1637,10 +1637,10 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			uint16_t health = UTIL_CompressUint(ent->v.health);
 
 			if ((isMon && !baseent->IsAlive()) || ent->v.health < 0) {
-				state->health = 0; // don't show hp needed to gib
+				health = 0; // don't show hp needed to gib
 				hint = 0;
 			}
-			if (baseent->IsPushable() || (isMon && !baseent->IsAlive() && invincible)) {
+			if ((baseent->IsPushable() && !baseent->IsBreakable()) || (isMon && !baseent->IsAlive() && invincible)) {
 				// pushables are usually invincible so don't bother showing that info
 				// barnacles become invincible after death
 				invincible = false;
@@ -1649,6 +1649,15 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			if (isBreakable && invincible && baseent->pev->health <= 0) {
 				invincible = false; // don't show invincible while breakable is dying
 				health = 0;
+			}
+			if (baseent->IsTurret() && !baseent->IsAlive()) {
+				CBaseAnimating* baseanim = baseent->MyAnimatingPointer();
+				if (baseanim ? baseanim->m_fSequenceFinished : true) {
+					// don't show turrets on HUD after they die
+					name = 0;
+					hint = 0;
+					health = 0;
+				}
 			}
 
 			uint32_t packedStatusInfo = ((invincible ? 1U : 0U) << 31) | ((hint & 0x1FF) << 22)

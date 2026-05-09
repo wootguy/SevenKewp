@@ -32,7 +32,8 @@ public:
 	virtual int	 TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 	virtual int	 Classify(void);
 	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
-	BOOL IsMachine() { return 1; } // ignore classification overrides
+	BOOL IsMachine() override { return 1; } // ignore classification overrides
+	BOOL IsTurret() override { return 1; }
 	BOOL IsNormalMonster(void) { return FALSE; }
 	void DeathSound();
 

@@ -54,7 +54,7 @@ void DoEntWaterPhysics() {
 		WaterEntState& state = g_waterPhysicsEnts[i];
 		CBaseEntity* ent = state.h_ent;
 
-		if (!ent || (ent->IsMonster() || ent->IsPlayer()) && ent->IsAlive()) {
+		if (!ent) {
 			g_waterPhysicsEnts.erase(g_waterPhysicsEnts.begin() + i);
 			i--;
 			continue;
@@ -99,10 +99,6 @@ void DoEntWaterPhysics() {
 				ent->pev->avelocity.y = 10.0f * (irnd % 2 ? 1 : -1);
 			}
 
-			if (ent->IsPlayerCorpse()) {
-				ALERT(at_console, "");
-			}
-
 			float waterLevel = UTIL_WaterLevel(origin, origin.z, origin.z + 16);
 			bool slowlyFloating = fabs(ent->pev->velocity.z) < 20.0f && ent->m_buoyancy > 0;
 			bool nearSurface = fabs(origin.z - waterLevel) < 4;
@@ -122,6 +118,13 @@ void DoEntWaterPhysics() {
 		else {
 			if (ent->m_buoyancy != 0)
 				ent->pev->gravity = 0;
+		}
+
+		// undo water physics changes on revive
+		if (ent->IsMonster() && ent->IsAlive()) {
+			ent->m_buoyancy = 0;
+			ent->m_waterFriction = 1.0f;
+			ent->pev->gravity = 0;
 		}
 
 		bool wasInLiquid = UTIL_IsLiquidContents(state.oldContents);

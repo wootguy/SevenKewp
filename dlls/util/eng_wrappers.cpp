@@ -635,12 +635,12 @@ const char* GET_MODEL(const char* model) {
 }
 
 int MODEL_INDEX(const char* model) {
-	std::string lowerPath = toLowerCase(model);
-	model = lowerPath.c_str();
-
 	if (!model || model[0] == '\0') {
 		return 0;
 	}
+
+	std::string lowerPath = toLowerCase(model);
+	model = lowerPath.c_str();
 
 	const char* replacement = g_modelReplacements.get(model);
 	if (replacement) {
@@ -665,6 +665,10 @@ const char* INDEX_MODEL(int modelIdx) {
 }
 
 int SOUND_INDEX(const char* sound) {
+	if (!sound || sound[0] == '\0') {
+		return 0;
+	}
+
 	std::string lowerPath = toLowerCase(sound);
 	sound = lowerPath.c_str();
 
@@ -873,6 +877,9 @@ void PLAYBACK_EVENT_FULL(int flags, const edict_t* pInvoker, unsigned short even
 }
 
 string_t ALLOC_STRING(const char* str) {
+	if (!str)
+		return 0;
+
 	string_t* existing = g_allocedStrings.get(str);
 
 	if (existing) {

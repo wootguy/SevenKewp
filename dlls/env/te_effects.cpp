@@ -518,7 +518,7 @@ void UTIL_Tracer(Vector start, Vector end, int color, int msgMode, edict_t* targ
 void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate, uint8_t flags) {
 	bool expUnderwater = UTIL_PointInLiquid(origin) && UTIL_PointContents(origin + Vector(0,0,32)) != CONTENTS_EMPTY;
 	bool isValidTempOri = UTIL_IsValidTempEntOrigin(origin);
-	bool wantSounds = flags & 4;
+	bool wantSounds = !(flags & 4);
 
 	static bool replacedExplosionSounds = false;
 	static const char* expSounds[3] = {
