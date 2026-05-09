@@ -101,6 +101,10 @@ terms = [
 	('g_WeaponFuncs.ApplyMultiDamage()', 'ApplyMultiDamage()'),
 	('g_PlayerFuncs.HudMessageAll', 'UTIL_HudMessageAll'),
 	('g_EntityFuncs.EntitiesInBox', 'UTIL_EntitiesInBox'),
+	('pev->SpawnFlagBitSet(', 'FBitSet(pev->spawnflags,'),
+	('g_FileSystem.OpenFile', 'UTIL_OpenFile'),
+	('OpenFile::READ', '"r"'),
+	('OpenFile::WRITE', '"w"'),
 ]
 
 def convert_script(fpath):

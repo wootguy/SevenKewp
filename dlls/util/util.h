@@ -977,3 +977,6 @@ EXPORT void UTIL_SyncPredictionCvars();
 // tell the client which weapon they're using, how much clip it has, and its state
 // state: 0 = not the current weapon, 1 = current, 2 = on target
 EXPORT void UTIL_UpdateWeaponState(CBasePlayer* plr, int state, int wepId, int clip);
+
+// open a file using a path relative to the game dir
+EXPORT FILE* UTIL_OpenFile(const char* path, const char* mode);

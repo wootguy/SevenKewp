@@ -3656,3 +3656,20 @@ void UTIL_UpdateWeaponState(CBasePlayer* plr, int state, int wepId, int clip) {
 		MESSAGE_END();
 	}
 }
+
+FILE* UTIL_OpenFile(const char* path, const char* mode) {
+	static char gpath[MAX_PATH];
+	GET_GAME_DIR(gpath);
+	strcat_safe(gpath, path, MAX_PATH);
+	FILE* f = fopen(gpath, mode);
+
+	if (!f) {
+		ALERT(at_error, "Failed to open '%s' in mode '%s' (code %d)\n", gpath, mode, errno);
+
+		char buf[512];
+		getcwd(buf, sizeof(buf));
+		ALERT(at_error, "cwd: %s\n", buf);
+	}
+
+	return f;
+}

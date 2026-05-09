@@ -32,7 +32,7 @@ void CTriggerChangeModel::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE
 	}
 
 	CBaseEntity* ent = NULL;
-	while (ent = FindLogicEntity(ent, pev->target)) {
+	while ((ent = FindLogicEntity(ent, pev->target)) != NULL) {
 		CBasePlayer* plr = ent->MyPlayerPointer();
 
 		if (plr) {

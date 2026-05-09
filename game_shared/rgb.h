@@ -30,4 +30,5 @@ struct EXPORT RGBA {
 
 	inline Vector ToVector() { return Vector(r, g, b); }
 	inline RGB rgb() { return RGB(r, g, b); }
+	inline bool isEmpty() { return r == 0 && g == 0 && b == 0 && a == 0; }
 };

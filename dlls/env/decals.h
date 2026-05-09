@@ -79,8 +79,11 @@ typedef struct
 	int			index;
 } DLL_DECALLIST;
 
-extern DLL_DECALLIST gDecals[];
+EXPORT extern DLL_DECALLIST gDecals[];
 
 void init_decals();
+
+// returns NULL if not found
+EXPORT extern const char* get_decal_name(int idx);
 
 #endif	// DECALS_H

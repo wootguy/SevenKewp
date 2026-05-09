@@ -161,18 +161,21 @@ def convert_audio(file, out_format, samp_rate, skip_convert):
 		try:
 			wav = wave.open('sound/' + file, 'rb')
 			
-			
 			if len(cue_points) == 1 and cue_points[0] > wav.getnframes()/2:
 				cue_points = [] # just remove them. The loop would not work anyway
 				print("Removing invalid cue point")
-			elif len(cue_points) == 2 and cue_points[0] > cue_points[1]:
+			elif len(cue_points) > 1 and cue_points[0] > cue_points[1]:
 				cue_points = [cue_points[1], cue_points[0]]
 				print("Swapping inverted cue points")
+			else:
+				print("cues are fine: %s" % cue_points)
 			
 			wav.close()
 		except Exception as e:
 			if 'unknown format' not in '%s' % e:
-				raise e			
+				raise e		
+			else:
+				print(e)
 	
 	ffmpeg_command = ''
 	if out_format == 'wav':
@@ -1161,7 +1164,7 @@ for gsr in gsr_files:
 				oldpath = parts[1].replace('"', '')
 				newpath = '"' + os.path.splitext(parts[1])[0].replace('"', '') + '.wav"'
 				
-				convert_audio(oldpath, 'wav', 22050)
+				convert_audio(oldpath, 'wav', 22050, False)
 				
 				line = '%s %s' % (parts[0], newpath)
 				new_lines.append(line)
