@@ -986,3 +986,34 @@ uint32_t UTIL_DecompressUint(uint16_t v) {
 EXPORT float UTIL_Lerp(float start, float end, float t) {
 	return start + (end - start) * clampf(t, 0, 1);
 }
+
+Vector UTIL_ConeFromDegrees(float degrees) {
+	float s = sinf((degrees * 0.5f) * (float)M_PI / 180.0f);
+	return Vector(s, s, s);
+}
+
+FILE* UTIL_OpenFile(const char* path, const char* mode) {
+	static char gpath[MAX_PATH];
+	gpath[0] = 0;
+
+#ifdef CLIENT_DLL
+	strcat_safe(gpath, gEngfuncs.pfnGetGameDirectory(), MAX_PATH);
+#else
+	GET_GAME_DIR(gpath);
+#endif
+	strcat_safe(gpath, path, MAX_PATH);
+	FILE* f = fopen(gpath, mode);
+
+	if (!f) {
+#ifdef CLIENT_DLL
+		PRINTF("Failed to open '%s' in mode '%s' (code %d)\n", gpath, mode, errno);
+#else
+		ALERT(at_error, "Failed to open '%s' in mode '%s' (code %d)\n", gpath, mode, errno);
+#endif
+
+		char buf[512];
+		getcwd(buf, sizeof(buf));
+	}
+
+	return f;
+}

@@ -146,3 +146,9 @@ uint32_t UTIL_DecompressUint(uint16_t v);
 
 // linear interpolation
 EXPORT float UTIL_Lerp(float start, float end, float t);
+
+// convert degrees of accuracy to an accuracy cone used with FireBullets
+EXPORT Vector UTIL_ConeFromDegrees(float degrees);
+
+// open a file using a path relative to the game dir (valve/)
+EXPORT FILE* UTIL_OpenFile(const char* path, const char* mode);

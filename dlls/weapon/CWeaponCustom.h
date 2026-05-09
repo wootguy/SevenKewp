@@ -15,13 +15,6 @@ struct SoundMapping {
 	const char* path;
 };
 
-enum PredictionDataSendMode {
-	WC_PRED_SEND_INIT,	// initialize prediction data for first pickup
-	WC_PRED_SEND_WEP,	// only send weapon prediction data
-	WC_PRED_SEND_EVT,	// only send event prediction data
-	WC_PRED_SEND_BOTH	// send weapon and event data
-};
-
 enum WcAttackState {
 	WC_CHARGE_STATE_NONE,
 	WC_CHARGE_STATE_CHARGING,
@@ -145,8 +138,6 @@ public:
 	void ToggleLaser(bool enable);
 	void HideLaser(bool hideNotUnhide);
 	void CancelZoom();
-	void SendPredictionData(edict_t* target, PredictionDataSendMode sendMode=WC_PRED_SEND_INIT);
-	inline bool HasPredictionData(edict_t* target) { return m_predDataSent[m_iId] & PLRBIT(target); }
 	bool IsPredicted();
 	int GetAttackIdx(WepEvt& evt); // TODO: store this info in the event
 
@@ -179,6 +170,4 @@ public:
 
 	int AddDuplicate(CBasePlayerItem* pOriginal) override;
 	inline bool IsExclusiveHold() { return params.flags & FL_WC_WEP_EXCLUSIVE_HOLD; }
-
-	static uint32_t m_predDataSent[MAX_WEAPONS]; // bitfields indicating which players received prediction data
 };

@@ -535,8 +535,3 @@ void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* mins, fl
 		}
 	}
 }
-
-Vector UTIL_ConeFromDegrees(float degrees) {
-	float s = sinf((degrees * 0.5f) * (float)M_PI / 180.0f);
-	return Vector(s, s, s);
-}

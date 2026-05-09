@@ -271,7 +271,7 @@ void ClientDisconnect( edict_t *pEntity )
 	}
 
 	for (int i = 0; i < MAX_WEAPONS; i++) {
-		CWeaponCustom::m_predDataSent[i] &= ~plrbit;
+		g_wcPredDataSent[i] &= ~plrbit;
 	}
 
 // since the edict doesn't get deleted, fix it so it doesn't interfere.
@@ -615,7 +615,7 @@ void ServerDeactivate( void )
 	memset(g_indexSounds, 0, sizeof(g_indexSounds));
 	memset(g_hudMsgHistory, 0, sizeof(g_hudMsgHistory));
 	memset(g_breakableSpawnRemap, 0, sizeof(g_breakableSpawnRemap));
-	memset(CWeaponCustom::m_predDataSent, 0, sizeof(CWeaponCustom::m_predDataSent));
+	memset(g_wcPredDataSent, 0, sizeof(g_wcPredDataSent));
 	memset(g_activeTempEnts, 0, sizeof(FakeTempEnt)*MAX_FAKE_TE);
 	memset(g_edictVis, 0, sizeof(uint32_t) * gpGlobals->maxEntities);
 

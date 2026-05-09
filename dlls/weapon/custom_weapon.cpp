@@ -2,6 +2,18 @@
 #include "CWeaponCustom.h"
 #include "StringPool.h"
 
+#ifdef CLIENT_DLL
+#define INDEX_SOUND(...) NULL
+#define SOUND_INDEX(...) 0
+#define INDEX_MODEL(...) NULL
+#define get_decal_name(...) NULL
+RGBA UTIL_ParseRGBA(const char* pString) { return RGBA(); }
+Vector UTIL_ParseVector(const char* pString) { return Vector(); }
+#include "parsemsg.h"
+void InitCustomWeapon(int id);
+CustomWeaponParams* GetCustomWeaponParams(int id);
+#endif
+
 using namespace std;
 
 enum WC_SUBSTRUCT_TYPE {
@@ -126,6 +138,8 @@ struct SettingsGroup {
 	offsetof(WeaponCustomLaser, struct_name), \
 	type \
 }
+
+uint32_t g_wcPredDataSent[MAX_WEAPONS];
 
 const char* g_wc_flag_names[32];
 const char* g_wc_shoot_flag_names[32];
@@ -879,7 +893,9 @@ void compare_params(CustomWeaponParams& a, CustomWeaponParams& b) {
 		WC_COMPARE_FIELD_IDX(shootOpts[i].melee.damage, "%d", i)
 		WC_COMPARE_FIELD_IDX(shootOpts[i].melee.damageBits, "%d", i)
 		WC_COMPARE_FIELD_IDX(shootOpts[i].melee.range, "%d", i)
-		WC_COMPARE_FIELD_IDX(shootOpts[i].melee.attackOffset, "%d", i)
+		WC_COMPARE_FIELD_IDX(shootOpts[i].melee.attackOffset.x, "%f", i)
+		WC_COMPARE_FIELD_IDX(shootOpts[i].melee.attackOffset.y, "%f", i)
+		WC_COMPARE_FIELD_IDX(shootOpts[i].melee.attackOffset.z, "%f", i)
 		WC_COMPARE_FIELD_IDX(shootOpts[i].melee.missCooldown, "%d", i)
 		WC_COMPARE_FIELD_IDX(shootOpts[i].melee.hitCooldown, "%d", i)
 		WC_COMPARE_FIELD_IDX(shootOpts[i].melee.decalDelay, "%d", i)
@@ -1920,6 +1936,639 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 	params.events[params.numEvents++] = evt;
 }
 
+void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, PredictionDataSendMode sendMode) {
+#ifndef CLIENT_DLL
+	CustomWeaponParams& params = wep->params;
+
+	if (params.flags & FL_WC_WEP_NO_PREDICTION) {
+		return;
+	}
+
+	if (UTIL_HasCustomWeaponPredictionData(target, wep) && sendMode == WC_PRED_SEND_INIT) {
+		//ALERT(at_console, "PLayer already has the prediction data\n");
+		return;
+	}
+
+	if (sendMode != WC_PRED_SEND_EVT) {
+		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeapon, NULL, target);
+		WRITE_BYTE(wep->m_iId);
+		WRITE_LONG(params.flags);
+		WRITE_SHORT(params.maxClip);
+
+		WRITE_SHORT(params.vmodel);
+		WRITE_BYTE(params.deployAnim);
+		WRITE_SHORT(params.deployTime);
+		WRITE_SHORT(params.deployAnimTime);
+
+		for (int k = 0; k < 3; k++) {
+			WeaponCustomReload& reload = params.reloadStage[k];
+			WRITE_BYTE(reload.anim);
+			WRITE_SHORT(reload.time);
+
+			if (k == 2 && !(params.flags & FL_WC_WEP_SHOTGUN_RELOAD))
+				break;
+		}
+
+		for (int k = 0; k < 4; k++) {
+			WeaponCustomIdle& idle = params.idles[k];
+			WRITE_BYTE(idle.anim);
+			WRITE_BYTE(idle.weight);
+			WRITE_SHORT(idle.time);
+		}
+
+		if (params.flags & FL_WC_WEP_AKIMBO) {
+			for (int k = 0; k < 4; k++) {
+				WeaponCustomIdle& idle = params.akimbo.idles[k];
+				WRITE_BYTE(idle.anim);
+				WRITE_BYTE(idle.weight);
+				WRITE_SHORT(idle.time);
+			}
+
+			WRITE_BYTE(params.akimbo.reload.anim);
+			WRITE_SHORT(params.akimbo.reload.time);
+
+			WRITE_BYTE(params.akimbo.deployAnim);
+			WRITE_SHORT(params.akimbo.deployTime);
+			WRITE_BYTE(params.akimbo.akimboDeployAnim);
+			WRITE_SHORT(params.akimbo.akimboDeployTime);
+			WRITE_SHORT(params.akimbo.akimboDeployAnimTime);
+			WRITE_BYTE(params.akimbo.holsterAnim);
+			WRITE_SHORT(params.akimbo.holsterTime);
+			WRITE_SHORT(params.akimbo.accuracyX);
+			WRITE_SHORT(params.akimbo.accuracyY);
+		}
+
+		if (params.flags & FL_WC_WEP_HAS_LASER) {
+			for (int k = 0; k < 4; k++) {
+				WeaponCustomIdle& idle = params.laser.idles[k];
+				WRITE_BYTE(idle.anim);
+				WRITE_BYTE(idle.weight);
+				WRITE_SHORT(idle.time);
+			}
+
+			WRITE_SHORT(params.laser.dotSprite);
+			WRITE_SHORT(params.laser.beamSprite);
+			WRITE_BYTE(params.laser.dotSz);
+			WRITE_BYTE(params.laser.beamWidth);
+			WRITE_BYTE(params.laser.attachment);
+		}
+
+		for (int k = 0; k < 4; k++) {
+			if (!(params.flags & FL_WC_WEP_HAS_PRIMARY) && k == 0)
+				continue;
+			if (!(params.flags & FL_WC_WEP_HAS_SECONDARY) && k == 1)
+				continue;
+			if (!(params.flags & FL_WC_WEP_HAS_TERTIARY) && k == 2)
+				continue;
+			if (!(params.flags & FL_WC_WEP_HAS_ALT_PRIMARY) && k == 3)
+				continue;
+
+			CustomWeaponShootOpts& opts = params.shootOpts[k];
+			WRITE_BYTE(opts.flags);
+			WRITE_BYTE(opts.ammoCost);
+			WRITE_BYTE(opts.ammoFreq);
+			WRITE_BYTE(opts.ammoPool);
+			WRITE_SHORT(opts.cooldown);
+			WRITE_SHORT(opts.cooldownFail);
+			WRITE_SHORT(opts.accuracyX);
+			WRITE_SHORT(opts.accuracyY);
+			WRITE_SHORT(opts.emptySound);
+
+			WRITE_BYTE(((opts.chargeMode & 0x3) << 4) | ((opts.chargeAmmoMode & 0x3) << 2) | (opts.overchargeMode & 0x7));
+			if (opts.chargeMode != WC_CHARGEUP_NONE) {
+				WRITE_BYTE(opts.chargeFlags);
+				WRITE_SHORT(opts.chargeTime);
+				WRITE_SHORT(opts.overchargeTime);
+				WRITE_SHORT(opts.chargeCancelTime);
+			}
+		}
+		MESSAGE_END();
+	}
+
+	int mainBytes = LastMsgSize();
+
+	if (sendMode != WC_PRED_SEND_WEP) {
+		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
+		WRITE_BYTE(wep->m_iId);
+		WRITE_BYTE(params.numEvents);
+
+		for (int k = 0; k < params.numEvents; k++) {
+			WepEvt& evt = params.events[k];
+			uint16_t packedHeader = (evt.hasDelay << 15) | (evt.triggerArg << 10) | (evt.trigger << 5) | evt.evtType;
+			WRITE_SHORT(packedHeader);
+			if (evt.hasDelay) {
+				WRITE_SHORT(evt.delay);
+			}
+
+			switch (evt.evtType) {
+			case WC_EVT_IDLE_SOUND: {
+				uint16_t packedFlags = (evt.idleSound.sound << 7) | evt.idleSound.volume;
+				WRITE_SHORT(packedFlags);
+				break;
+			}
+			case WC_EVT_PLAY_SOUND: {
+				uint16_t packedFlags = evt.playSound.sound << 7 | evt.playSound.channel << 4
+					| (evt.playSound.aiVol << 2) | evt.playSound.flags;
+				WRITE_SHORT(packedFlags);
+				WRITE_BYTE(evt.playSound.volume);
+				WRITE_BYTE(evt.playSound.attn);
+				WRITE_BYTE(evt.playSound.pitchMin);
+				WRITE_BYTE(evt.playSound.pitchMax);
+
+				WRITE_BYTE(evt.playSound.numAdditionalSounds);
+				for (int i = 0; i < evt.playSound.numAdditionalSounds; i++) {
+					WRITE_SHORT(evt.playSound.additionalSounds[i]);
+				}
+
+				//WRITE_BYTE(evt.playSound.distantSound); // not needed for prediction
+				break;
+			}
+			case WC_EVT_EJECT_SHELL: {
+				uint16_t packedFlags = (evt.ejectShell.model << 4) | (evt.ejectShell.sound << 2)
+					| (evt.ejectShell.hasVel << 1) | evt.ejectShell.hasRand;
+				WRITE_SHORT(packedFlags);
+				WRITE_BYTE(evt.ejectShell.offsetForward);
+				WRITE_BYTE(evt.ejectShell.offsetUp);
+				WRITE_BYTE(evt.ejectShell.offsetRight);
+				if (evt.ejectShell.hasVel) {
+					WRITE_BYTE(evt.ejectShell.velForward);
+					WRITE_BYTE(evt.ejectShell.velUp);
+					WRITE_BYTE(evt.ejectShell.velRight);
+				}
+				if (evt.ejectShell.hasRand) {
+					WRITE_BYTE(evt.ejectShell.dirRand);
+					WRITE_BYTE(evt.ejectShell.speedRand);
+				}
+				break;
+			}
+			case WC_EVT_PUNCH:
+				WRITE_BYTE(evt.punch.flags);
+				WRITE_SHORT(evt.punch.x);
+				WRITE_SHORT(evt.punch.y);
+				WRITE_SHORT(evt.punch.z);
+				break;
+			case WC_EVT_SET_BODY:
+				WRITE_BYTE(evt.setBody.newBody);
+				break;
+			case WC_EVT_WEP_ANIM: {
+				uint8_t packedAnimHeader = (evt.anim.flags << 3) | (evt.anim.akimbo);
+				WRITE_BYTE(packedAnimHeader);
+				WRITE_BYTE(evt.anim.numAnim);
+				for (int i = 0; i < evt.anim.numAnim; i++) {
+					WRITE_BYTE(evt.anim.anims[i]);
+				}
+				break;
+			}
+			case WC_EVT_BULLETS: {
+				WRITE_BYTE(evt.bullets.count);
+				WRITE_SHORT(evt.bullets.burstDelay);
+				WRITE_SHORT(evt.bullets.damage);
+				WRITE_SHORT(evt.bullets.spreadX);
+				WRITE_SHORT(evt.bullets.spreadY);
+				WRITE_BYTE((evt.bullets.tracerFreq << 4) | evt.bullets.tracerColor);
+
+				uint8_t packedFlags = (evt.bullets.flags << 4) | evt.bullets.flashSz;
+				WRITE_BYTE(packedFlags);
+				break;
+			}
+			case WC_EVT_BEAM: {
+				uint16_t packedFlags = (evt.beam.sprite << 7) | (evt.beam.attachment << 4) | evt.beam.flags;
+				WRITE_SHORT(packedFlags);
+				WRITE_SHORT(evt.beam.life);
+				WRITE_SHORT(evt.beam.spreadX);
+				WRITE_SHORT(evt.beam.spreadY);
+				WRITE_SHORT(evt.beam.damage);
+				WRITE_SHORT(evt.beam.distance);
+				WRITE_SHORT(evt.beam.freq);
+				WRITE_BYTE((evt.beam.id << 4) | (evt.beam.altMode << 1) | evt.beam.hasImpactSprite);
+				WRITE_BYTE(evt.beam.width);
+				WRITE_BYTE(evt.beam.noise);
+				WRITE_BYTE(evt.beam.scrollRate);
+				WRITE_BYTE(evt.beam.color.r);
+				WRITE_BYTE(evt.beam.color.g);
+				WRITE_BYTE(evt.beam.color.b);
+				WRITE_BYTE(evt.beam.color.a);
+
+				if (evt.beam.altMode != WC_BEAM_ANIM_DISABLED) {
+					WRITE_SHORT(evt.beam.altTime);
+					WRITE_BYTE(evt.beam.widthAlt);
+					WRITE_BYTE(evt.beam.noiseAlt);
+					WRITE_BYTE(evt.beam.scrollRateAlt);
+					WRITE_BYTE(evt.beam.colorAlt.r);
+					WRITE_BYTE(evt.beam.colorAlt.g);
+					WRITE_BYTE(evt.beam.colorAlt.b);
+					WRITE_BYTE(evt.beam.colorAlt.a);
+				}
+
+				if (evt.beam.hasImpactSprite) {
+					uint16_t packed = (evt.beam.impactSprite << 7) | evt.beam.impactSpriteFps;
+					WRITE_SHORT(packed);
+					WRITE_BYTE(evt.beam.impactSpriteScale);
+					WRITE_BYTE(evt.beam.impactSpriteColor.r);
+					WRITE_BYTE(evt.beam.impactSpriteColor.g);
+					WRITE_BYTE(evt.beam.impactSpriteColor.b);
+					WRITE_BYTE(evt.beam.impactSpriteColor.a);
+				}
+				break;
+			}
+			case WC_EVT_KICKBACK:
+				WRITE_SHORT(evt.kickback.pushForce);
+				WRITE_BYTE(evt.kickback.back);
+				WRITE_BYTE(evt.kickback.right);
+				WRITE_BYTE(evt.kickback.up);
+				WRITE_BYTE(evt.kickback.globalUp);
+				break;
+			case WC_EVT_TOGGLE_STATE: {
+				uint16_t packedFlags = (evt.toggleState.stateBits << 2) | evt.toggleState.toggleMode;
+				WRITE_SHORT(packedFlags);
+				break;
+			}
+			case WC_EVT_TOGGLE_ZOOM:
+				WRITE_BYTE(evt.zoomToggle.zoomFov);
+				WRITE_BYTE(evt.zoomToggle.zoomFov2);
+				break;
+			case WC_EVT_HIDE_LASER:
+				WRITE_SHORT(evt.laserHide.millis);
+				break;
+			case WC_EVT_COOLDOWN:
+				WRITE_SHORT(evt.cooldown.millis);
+				WRITE_BYTE(evt.cooldown.targets);
+				break;
+			case WC_EVT_SET_GRAVITY:
+				WRITE_SHORT(evt.setGravity.gravity);
+				break;
+			case WC_EVT_DLIGHT:
+				WRITE_BYTE(evt.dlight.r);
+				WRITE_BYTE(evt.dlight.g);
+				WRITE_BYTE(evt.dlight.b);
+				WRITE_BYTE(evt.dlight.radius);
+				WRITE_BYTE(evt.dlight.life);
+				WRITE_BYTE(evt.dlight.decayRate);
+				break;
+			case WC_EVT_MUZZLEFLASH:
+				WRITE_BYTE(evt.muzzleFlash.brightness);
+				break;
+			case WC_EVT_SPRITETRAIL:
+				WRITE_SHORT(evt.spriteTrail.sprite);
+				WRITE_BYTE(evt.spriteTrail.count);
+				WRITE_BYTE(evt.spriteTrail.scale);
+				WRITE_BYTE(evt.spriteTrail.speed);
+				WRITE_BYTE(evt.spriteTrail.speedNoise);
+				break;
+			case WC_EVT_DECAL:
+				WRITE_BYTE(evt.decal.decalIdx);
+				WRITE_BYTE(evt.decal.isGunshot);
+			case WC_EVT_PROJECTILE:
+			case WC_EVT_SERVER:
+				break;
+			default:
+				ALERT(at_error, "Invalid custom weapon event type %d\n", evt.evtType);
+				break;
+			}
+		}
+		MESSAGE_END();
+	}
+
+	int evBytes = LastMsgSize();
+	ALERT(at_console, "Sent %d prediction bytes for %s (%d + %d evt)\n",
+		evBytes + mainBytes, STRING(wep->pev->classname), mainBytes, evBytes);
+
+	g_wcPredDataSent[wep->m_iId] |= PLRBIT(target);
+#endif
+}
+
+int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pbuf) {
+#ifdef CLIENT_DLL
+	BEGIN_READ(pbuf, iSize);
+
+	int weaponId = READ_BYTE();
+
+	if (weaponId < 0 || weaponId >= MAX_WEAPONS)
+		return 0;
+
+
+	InitCustomWeapon(weaponId);
+	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId);
+	memset(&parms, 0, sizeof(CustomWeaponParams));
+
+	parms.flags = READ_LONG();
+	parms.maxClip = READ_SHORT();
+
+	parms.vmodel = READ_SHORT();
+	parms.deployAnim = READ_BYTE();
+	parms.deployTime = READ_SHORT();
+	parms.deployAnimTime = READ_SHORT();
+
+	for (int k = 0; k < 3; k++) {
+		WeaponCustomReload& reload = parms.reloadStage[k];
+		reload.anim = READ_BYTE();
+		reload.time = READ_SHORT();
+
+		if (k == 2 && !(parms.flags & FL_WC_WEP_SHOTGUN_RELOAD))
+			break;
+	}
+
+	for (int k = 0; k < 4; k++) {
+		WeaponCustomIdle& idle = parms.idles[k];
+		idle.anim = READ_BYTE();
+		idle.weight = READ_BYTE();
+		idle.time = READ_SHORT();
+	}
+
+	if (parms.flags & FL_WC_WEP_AKIMBO) {
+		for (int k = 0; k < 4; k++) {
+			WeaponCustomIdle& idle = parms.akimbo.idles[k];
+			idle.anim = READ_BYTE();
+			idle.weight = READ_BYTE();
+			idle.time = READ_SHORT();
+		}
+
+		parms.akimbo.reload.anim = READ_BYTE();
+		parms.akimbo.reload.time = READ_SHORT();
+
+		parms.akimbo.deployAnim = READ_BYTE();
+		parms.akimbo.deployTime = READ_SHORT();
+		parms.akimbo.akimboDeployAnim = READ_BYTE();
+		parms.akimbo.akimboDeployTime = READ_SHORT();
+		parms.akimbo.akimboDeployAnimTime = READ_SHORT();
+		parms.akimbo.holsterAnim = READ_BYTE();
+		parms.akimbo.holsterTime = READ_SHORT();
+		parms.akimbo.accuracyX = READ_SHORT();
+		parms.akimbo.accuracyY = READ_SHORT();
+	}
+
+	if (parms.flags & FL_WC_WEP_HAS_LASER) {
+		for (int k = 0; k < 4; k++) {
+			WeaponCustomIdle& idle = parms.laser.idles[k];
+			idle.anim = READ_BYTE();
+			idle.weight = READ_BYTE();
+			idle.time = READ_SHORT();
+		}
+
+		parms.laser.dotSprite = READ_SHORT();
+		parms.laser.beamSprite = READ_SHORT();
+		parms.laser.dotSz = READ_BYTE();
+		parms.laser.beamWidth = READ_BYTE();
+		parms.laser.attachment = READ_BYTE();
+	}
+
+	for (int i = 0; i < 4; i++) {
+		if (!(parms.flags & FL_WC_WEP_HAS_PRIMARY) && i == 0)
+			continue;
+		if (!(parms.flags & FL_WC_WEP_HAS_SECONDARY) && i == 1)
+			continue;
+		if (!(parms.flags & FL_WC_WEP_HAS_TERTIARY) && i == 2)
+			continue;
+		if (!(parms.flags & FL_WC_WEP_HAS_ALT_PRIMARY) && i == 3)
+			continue;
+
+		CustomWeaponShootOpts& opts = parms.shootOpts[i];
+		opts.flags = READ_BYTE();
+		opts.ammoCost = READ_BYTE();
+		opts.ammoFreq = READ_BYTE();
+		opts.ammoPool = READ_BYTE();
+		opts.cooldown = READ_SHORT();
+		opts.cooldownFail = READ_SHORT();
+		opts.accuracyX = READ_SHORT();
+		opts.accuracyY = READ_SHORT();
+		opts.emptySound = READ_SHORT();
+
+		uint8_t packedFlags = READ_BYTE();
+		opts.chargeMode = packedFlags >> 4;
+		opts.chargeAmmoMode = (packedFlags >> 2) & 0x3;
+		opts.overchargeMode = packedFlags & 0x3;
+		if (opts.chargeMode != WC_CHARGEUP_NONE) {
+			opts.chargeFlags = READ_BYTE();
+			opts.chargeTime = READ_SHORT();
+			opts.overchargeTime = READ_SHORT();
+			opts.chargeCancelTime = READ_SHORT();
+		}
+	}
+
+#endif
+	return 1;
+}
+
+int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, void* pbuf) {
+#ifdef CLIENT_DLL
+	BEGIN_READ(pbuf, iSize);
+
+	int weaponId = READ_BYTE();
+
+	if (weaponId < 0 || weaponId >= MAX_WEAPONS)
+		return 0;
+
+	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId);
+
+	parms.numEvents = READ_BYTE();
+	if (parms.numEvents >= MAX_WC_EVENTS) {
+		return 0;
+	}
+
+	for (int i = 0; i < parms.numEvents; i++) {
+		uint16_t packedHeader = READ_SHORT();
+		WepEvt& evt = parms.events[i];
+		memset(&evt, 0, sizeof(WepEvt));
+
+		evt.evtType = packedHeader & 0x1F;
+		evt.trigger = (packedHeader >> 5) & 0x1F;
+		evt.triggerArg = (packedHeader >> 10) & 0x1F;
+		evt.hasDelay = packedHeader >> 15;
+
+		if (evt.hasDelay)
+			evt.delay = READ_SHORT();
+
+		switch (evt.evtType) {
+		case WC_EVT_IDLE_SOUND: {
+			uint16_t packedFlags = READ_SHORT();
+			evt.idleSound.sound = packedFlags >> 7;
+			evt.idleSound.volume = packedFlags & 0x7F;
+			break;
+		}
+		case WC_EVT_PLAY_SOUND: {
+			uint16_t packedFlags = READ_SHORT();
+			evt.playSound.sound = packedFlags >> 7;
+			evt.playSound.channel = (packedFlags >> 4) & 0x7;
+			evt.playSound.aiVol = (packedFlags >> 2) & 0x3;
+			evt.playSound.flags = (packedFlags >> 0) & 0x3;
+			evt.playSound.volume = READ_BYTE();
+			evt.playSound.attn = READ_BYTE();
+			evt.playSound.pitchMin = READ_BYTE();
+			evt.playSound.pitchMax = READ_BYTE();
+
+			evt.playSound.numAdditionalSounds = READ_BYTE();
+			for (int k = 0; k < evt.playSound.numAdditionalSounds && k < MAX_WC_RANDOM_SELECTION; k++) {
+				evt.playSound.additionalSounds[k] = READ_SHORT();
+			}
+			break;
+		}
+		case WC_EVT_EJECT_SHELL: {
+			uint16_t packedFlags = READ_SHORT();
+			evt.ejectShell.model = packedFlags >> 4;
+			evt.ejectShell.sound = (packedFlags >> 2) & 0x3;
+			evt.ejectShell.hasVel = (packedFlags >> 1) & 0x1;
+			evt.ejectShell.hasRand = packedFlags & 0x1;
+			evt.ejectShell.offsetForward = READ_BYTE();
+			evt.ejectShell.offsetUp = READ_BYTE();
+			evt.ejectShell.offsetRight = READ_BYTE();
+			if (evt.ejectShell.hasVel) {
+				evt.ejectShell.velForward = READ_BYTE();
+				evt.ejectShell.velUp = READ_BYTE();
+				evt.ejectShell.velRight = READ_BYTE();
+			}
+			if (evt.ejectShell.hasRand) {
+				evt.ejectShell.dirRand = READ_BYTE();
+				evt.ejectShell.speedRand = READ_BYTE();
+			}
+			break;
+		}
+		case WC_EVT_PUNCH:
+			evt.punch.flags = READ_BYTE();
+			evt.punch.x = READ_SHORT();
+			evt.punch.y = READ_SHORT();
+			evt.punch.z = READ_SHORT();
+			break;
+		case WC_EVT_SET_BODY:
+			evt.setBody.newBody = READ_BYTE();
+			break;
+		case WC_EVT_WEP_ANIM: {
+			uint8_t packedHeader = READ_BYTE();
+			evt.anim.flags = packedHeader >> 3;
+			evt.anim.akimbo = packedHeader & 0x7;
+			evt.anim.numAnim = READ_BYTE();
+			for (int k = 0; k < evt.anim.numAnim && k < MAX_WC_RANDOM_SELECTION; k++) {
+				evt.anim.anims[k] = READ_BYTE();
+			}
+			break;
+		}
+		case WC_EVT_BULLETS: {
+			evt.bullets.count = READ_BYTE();
+			evt.bullets.burstDelay = READ_SHORT();
+			evt.bullets.damage = READ_SHORT();
+			evt.bullets.spreadX = READ_SHORT();
+			evt.bullets.spreadY = READ_SHORT();
+
+			uint8_t tracers = READ_BYTE();
+			evt.bullets.tracerFreq = tracers >> 4;
+			evt.bullets.tracerColor = tracers & 0xf;
+
+			uint8_t packedFlags = READ_BYTE();
+			evt.bullets.flags = packedFlags >> 4;
+			evt.bullets.flashSz = packedFlags & 0xf;
+			break;
+		}
+		case WC_EVT_BEAM: {
+			uint16_t packedFlags = READ_SHORT();
+			evt.beam.flags = packedFlags & 0xF;
+			evt.beam.attachment = (packedFlags >> 4) & 0x7;
+			evt.beam.sprite = packedFlags >> 7;
+
+			evt.beam.life = READ_SHORT();
+			evt.beam.spreadX = READ_SHORT();
+			evt.beam.spreadY = READ_SHORT();
+			evt.beam.damage = READ_SHORT();
+			evt.beam.distance = READ_SHORT();
+			evt.beam.freq = READ_SHORT();
+
+			uint8_t packedByte = READ_BYTE();
+			evt.beam.id = packedByte >> 4;
+			evt.beam.altMode = (packedByte >> 1) & 0xf;
+			evt.beam.hasImpactSprite = packedByte & 1;
+			evt.beam.width = READ_BYTE();
+			evt.beam.noise = READ_BYTE();
+			evt.beam.scrollRate = READ_BYTE();
+			evt.beam.color.r = READ_BYTE();
+			evt.beam.color.g = READ_BYTE();
+			evt.beam.color.b = READ_BYTE();
+			evt.beam.color.a = READ_BYTE();
+
+			if (evt.beam.altMode != WC_BEAM_ANIM_DISABLED) {
+				evt.beam.altTime = READ_SHORT();
+				evt.beam.widthAlt = READ_BYTE();
+				evt.beam.noiseAlt = READ_BYTE();
+				evt.beam.scrollRateAlt = READ_BYTE();
+				evt.beam.colorAlt.r = READ_BYTE();
+				evt.beam.colorAlt.g = READ_BYTE();
+				evt.beam.colorAlt.b = READ_BYTE();
+				evt.beam.colorAlt.a = READ_BYTE();
+			}
+
+			if (evt.beam.hasImpactSprite) {
+				uint16_t packed = READ_SHORT();
+				evt.beam.impactSprite = packed >> 7;
+				evt.beam.impactSpriteFps = packed & 0x7F;
+				evt.beam.impactSpriteScale = READ_BYTE();
+				evt.beam.impactSpriteColor.r = READ_BYTE();
+				evt.beam.impactSpriteColor.g = READ_BYTE();
+				evt.beam.impactSpriteColor.b = READ_BYTE();
+				evt.beam.impactSpriteColor.a = READ_BYTE();
+			}
+			break;
+		}
+		case WC_EVT_KICKBACK:
+			evt.kickback.pushForce = READ_SHORT();
+			evt.kickback.back = READ_BYTE();
+			evt.kickback.right = READ_BYTE();
+			evt.kickback.up = READ_BYTE();
+			evt.kickback.globalUp = READ_BYTE();
+			break;
+		case WC_EVT_TOGGLE_STATE: {
+			uint8_t packedFlags = READ_SHORT();
+			evt.toggleState.toggleMode = packedFlags & 0x3;
+			evt.toggleState.stateBits = packedFlags >> 2;
+			break;
+		}
+		case WC_EVT_TOGGLE_ZOOM:
+			evt.zoomToggle.zoomFov = READ_BYTE();
+			evt.zoomToggle.zoomFov2 = READ_BYTE();
+			break;
+		case WC_EVT_HIDE_LASER:
+			evt.laserHide.millis = READ_SHORT();
+			break;
+		case WC_EVT_COOLDOWN:
+			evt.cooldown.millis = READ_SHORT();
+			evt.cooldown.targets = READ_BYTE();
+			break;
+		case WC_EVT_SET_GRAVITY:
+			evt.setGravity.gravity = READ_SHORT();
+			break;
+		case WC_EVT_DLIGHT:
+			evt.dlight.r = READ_BYTE();
+			evt.dlight.g = READ_BYTE();
+			evt.dlight.b = READ_BYTE();
+			evt.dlight.radius = READ_BYTE();
+			evt.dlight.life = READ_BYTE();
+			evt.dlight.decayRate = READ_BYTE();
+			break;
+		case WC_EVT_MUZZLEFLASH:
+			evt.muzzleFlash.brightness = READ_BYTE();
+			break;
+		case WC_EVT_SPRITETRAIL:
+			evt.spriteTrail.sprite = READ_SHORT();
+			evt.spriteTrail.count = READ_BYTE();
+			evt.spriteTrail.scale = READ_BYTE();
+			evt.spriteTrail.speed = READ_BYTE();
+			evt.spriteTrail.speedNoise = READ_BYTE();
+			break;
+		case WC_EVT_DECAL:
+			evt.decal.decalIdx = READ_BYTE();
+			evt.decal.isGunshot = READ_BYTE();
+			break;
+		case WC_EVT_PROJECTILE:
+		case WC_EVT_SERVER:
+			break;
+		default:
+			gEngfuncs.Con_Printf("Bad custom weapon event type read %d\n", (int)evt.evtType);
+			break;
+		}
+	}
+#endif
+	return 1;
+}
+
+bool UTIL_HasCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep) {
+	return g_wcPredDataSent[wep->m_iId] & PLRBIT(target);
+}
 
 void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params) {
 	string fname = string("/weapons/") + path;

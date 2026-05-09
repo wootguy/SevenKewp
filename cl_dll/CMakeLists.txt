@@ -20,6 +20,7 @@ set(SHARED_WEAPON_SRC
 	../dlls/weapon/CTripmine.cpp
 	../dlls/weapon/CWeaponCustom.cpp
 	../dlls/weapon/CWeaponEvents.cpp
+	../dlls/weapon/custom_weapon.cpp
 )
 set(CLIENT_WEAPON_SRC
 	hl/hl_weapons.cpp

@@ -201,8 +201,6 @@ EXPORT int UTIL_GetMaxAmmo(const char* ammoName);
 // get first capacity value that was set this map
 EXPORT int UTIL_GetMaxAmmoInitial(const char* ammoName);
 
-EXPORT Vector UTIL_ConeFromDegrees(float degrees);
-
 typedef struct 
 {
 	CBaseEntity		*pEntity;
