@@ -498,6 +498,7 @@ set(WEAPON_SRC
 	weapon/CMinigun.cpp
 	weapon/CEagle.cpp
 	weapon/CM16.cpp
+	weapon/custom_weapon.cpp
 	weapon/CWeaponCustom.cpp
 	weapon/CWeaponEvents.cpp
 	weapon/CProjectileCustom.cpp

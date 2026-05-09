@@ -30,7 +30,6 @@ void CSniperRifle::Precache()
 	wrongClientWeapon = "weapon_crossbow";
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_SECONDARY | FL_WC_WEP_UNLINK_COOLDOWNS;
-	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = M40A1_DRAW;
 	params.maxClip = M40A1_MAX_CLIP;
 	params.reloadStage[0] = { M40A1_RELOAD3, 2353 };
@@ -52,7 +51,7 @@ void CSniperRifle::Precache()
 	secondary.flags = FL_WC_SHOOT_NO_ATTACK;
 
 	float spread = 0.001f;
-	int bulletf = FL_WC_BULLETS_DYNAMIC_SPREAD;
+	int bulletf = 0;
 
 	AddEvent(WepEvt().Primary().PlaySound(shootSnd, CHAN_WEAPON, 1.0f, 0.2f, 94, 109, DISTANT_NONE, WC_AIVOL_NORMAL, 0));
 	AddEvent(WepEvt().Primary().Bullets(1, 0, gSkillData.sk_plr_762_bullet, spread, spread, 0, WC_FLASH_NORMAL, bulletf));

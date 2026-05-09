@@ -2,14 +2,16 @@
 #include <stdint.h>
 #include <EHandle.h>
 
-#define FLOAT_TO_FP_10_6(val) (clamp((int)(val * 64), INT16_MIN, INT16_MAX))
+#define FLOAT_TO_FP_10_6(val) (clamp((int)((val) * 64), INT16_MIN, INT16_MAX))
 #define FP_10_6_TO_FLOAT(val) (val / 64.0f)
 
-#define FLOAT_TO_SPREAD(val) (clamp((int)(val * 65535), 0, UINT16_MAX))
+#define FLOAT_TO_SPREAD(val) (clamp((int)((val) * 65535), 0, UINT16_MAX))
 #define SPREAD_TO_FLOAT(val) (val / 65535.0f)
+#define DEGREES_FROM_CONE(cone_value) (2.0f * asinf(cone_value) * 180.0f / (float)M_PI)
+#define DEGREES_FROM_SPREAD(spread) (2.0f * asinf(SPREAD_TO_FLOAT(spread)) * 180.0f / (float)M_PI)
 
-#define FLOAT_TO_MOVESPEED_MULT(val) clamp((val * 65535.0f), 1, 65535)
-#define MOVESPEED_MULT_TO_FLOAT(val) (val ? val / 65535.0f : 1.0f)
+#define FLOAT_TO_MOVESPEED_MULT(val) clamp(((val) * 65535.0f), 1, 65535)
+#define MOVESPEED_MULT_TO_FLOAT(val) ((val) ? (val) / 65535.0f : 1.0f)
 
 #define MAX_WC_EVENTS 64
 #define MAX_WC_RANDOM_SELECTION 8
@@ -140,7 +142,7 @@ enum WeaponCustomEventType {
 	WC_EVT_BEAM,
 	WC_EVT_PROJECTILE,		// for slow-moving projectiles that aren't predicted on the client
 	WC_EVT_KICKBACK,
-	WC_EVT_MUZZLE_FLASH,
+	WC_EVT_UNUSED,			// TODO: remove this for next client update (duplicate
 	WC_EVT_TOGGLE_STATE,	// toggle some combination of weapon state bits
 	WC_EVT_TOGGLE_ZOOM,
 	WC_EVT_HIDE_LASER,		// temporarily hide the laser
@@ -508,6 +510,12 @@ struct WepEvt {
 
 	WepEvt() {
 		memset(this, 0, sizeof(WepEvt));
+	}
+
+	WepEvt clone() {
+		WepEvt dup;
+		memcpy(&dup, this, sizeof(WepEvt));
+		return dup;
 	}
 
 #ifndef CLIENT_DLL
@@ -953,12 +961,11 @@ struct WepEvt {
 		evtType = WC_EVT_PROJECTILE;
 		proj.type = type;
 		proj.speed = 400;
-		(Vector)proj.dir = Vector(0,0,1);
+		*(Vector*)proj.dir = Vector(0,0,1);
 		proj.world_event = WC_PROJ_ACT_IMPACT;
 		proj.monster_event = WC_PROJ_ACT_IMPACT;
 		proj.elasticity = 0.8f;
-		proj.size = 0.001f;
-		proj.dir[2] = 1.0f;
+		proj.size = 0.01f;
 		return *this;
 	}
 
@@ -1101,9 +1108,9 @@ struct CustomWeaponShootOpts {
 	uint8_t ammoPool;			// which ammo pool to drain from (WeaponCustomAmmoPool)
 	uint16_t cooldown;			// time between attacks (milliseconds)
 	uint16_t cooldownFail;		// cooldown after a failed attack (out of ammo, underwater) (milliseconds)
-	uint8_t chargeMode : 3;		// WeaponCustomChargeupMode
-	uint8_t chargeAmmoMode : 2; // WeaponCustomChargeAmmoMode
-	uint8_t overchargeMode : 2;	// WeaponCustomOverchargeMode
+	uint8_t chargeMode;			// WeaponCustomChargeupMode (2 bits)
+	uint8_t chargeAmmoMode;		// WeaponCustomChargeAmmoMode (2 bits)
+	uint8_t overchargeMode;		// WeaponCustomOverchargeMode (3 bits)
 	uint8_t chargeFlags;		// FL_WC_CHARGE_*
 	uint16_t chargeTime;		// how long the attack button must be held before the attack begins (milliseconds)
 	uint16_t overchargeTime;	// how long an attack can be charged before triggering an overcharge event and cancelling the chargeup
@@ -1172,7 +1179,29 @@ struct CustomWeaponParams {
 	CustomWeaponShootOpts shootOpts[4]; // primary, secondary, tertiary, and alt primary fire
 	WeaponCustomAkimbo akimbo;
 	WeaponCustomLaser laser;
-	
+
+	// data for file parsing (not networked)
+	uint16_t pmodel;
+	uint16_t wmodel;
+	uint16_t pmodelAkimbo;
+	uint16_t wmodelAkimbo;
+	string_t classname;
+	string_t wrongClientWeapon;
+	string_t animExt;
+	string_t animExtZoom;
+	string_t animExtAkimbo;
+
 	uint8_t numEvents;
 	WepEvt events[MAX_WC_EVENTS];
 };
+
+class CWeaponCustom;
+
+// call once when dll loaded
+void init_weapon_custom_config_parser();
+
+EXPORT bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params);
+
+EXPORT void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params);
+
+void UTIL_TestConfig(CWeaponCustom* wep); // validate that config file dumper is accurate

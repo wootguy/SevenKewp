@@ -17,6 +17,7 @@
 #include "PluginManager.h"
 #include "te_effects.h"
 #include "nodes.h"
+#include "CWeaponCustom.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
 extern int gmsgSayText;
@@ -591,6 +592,21 @@ void ClientCommand(edict_t* pEntity)
 			pPlayer->m_pActiveItem = oldWeapon;
 
 			SpawnBlood(pPlayer->pev->origin, pPlayer->BloodColor(), 1000);
+		}
+	}
+	else if (FStrEq(pcmd, "dumpwepcfg"))
+	{
+		if (AdminLevel(pPlayer) != ADMIN_NO) {
+			CWeaponCustom* wep = pPlayer->m_pActiveItem ? pPlayer->m_pActiveItem->MyWeaponCustomPtr() : NULL;
+			if (wep) {
+				UTIL_TestConfig(wep);
+			}
+			else {
+				UTIL_ClientPrint(pPlayer, print_chat, "Not holding a custom weapon.\n");
+			}
+		}
+		else {
+			UTIL_ClientPrint(pPlayer, print_chat, "Admins only.\n");
 		}
 	}
 	else

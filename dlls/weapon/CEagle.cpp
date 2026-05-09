@@ -32,7 +32,6 @@ void CEagle::Precache()
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_SECONDARY | FL_WC_WEP_UNLINK_COOLDOWNS
 		| FL_WC_WEP_HAS_LASER | FL_WC_WEP_HAS_ALT_PRIMARY;
-	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = EAGLE_DRAW;
 	params.deployAnimTime = 890;
 	params.maxClip = EAGLE_MAX_CLIP;
@@ -71,7 +70,7 @@ void CEagle::Precache()
 
 	float spread = VECTOR_CONE_6DEGREES.x;
 	float spreadLaser = VECTOR_CONE_1DEGREES.x*0.5f;
-	int bulletf = FL_WC_BULLETS_DYNAMIC_SPREAD;
+	int bulletf = 0;
 
 	AddEvent(WepEvt().Primary().Bullets(1, 0, gSkillData.sk_plr_357_bullet, spread, spread, 0, WC_FLASH_NORMAL, bulletf));
 	AddEvent(WepEvt().PrimaryAlt().Bullets(1, 0, gSkillData.sk_plr_357_bullet, spreadLaser, spreadLaser, 0, WC_FLASH_NORMAL, bulletf));

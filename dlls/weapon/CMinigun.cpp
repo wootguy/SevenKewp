@@ -30,7 +30,6 @@ void CMinigun::Precache()
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_SECONDARY | FL_WC_WEP_LINK_CHARGEUPS
 		| FL_WC_WEP_PRIMARY_PRIORITY | FL_WC_WEP_EXCLUSIVE_HOLD | FL_WC_WEP_USE_ONLY;
-	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = MINIGUN_DRAW;
 	params.idles[0] = { MINIGUN_GENTLEIDLE, 85, 6200 };
 	params.idles[1] = { MINIGUN_IDLE, 10, 6200 };

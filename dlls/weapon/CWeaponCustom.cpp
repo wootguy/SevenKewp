@@ -69,19 +69,36 @@ void CWeaponCustom::Precache() {
 
 void CWeaponCustom::PrecacheEvents() {
 	events.m_weapon = this;
-
+	
 #ifndef CLIENT_DLL
-	if (pmodelAkimbo)
+	if (m_defaultModelV)
+		params.vmodel = MODEL_INDEX(GetModelV());
+
+	if (m_defaultModelP)
+		params.pmodel = MODEL_INDEX(m_defaultModelP);
+	if (m_defaultModelW)
+		params.wmodel = MODEL_INDEX(m_defaultModelW);
+
+	params.classname = pev->classname;
+	params.animExt = ALLOC_STRING(animExt);
+	params.animExtZoom = ALLOC_STRING(animExtZoom);
+	params.animExtAkimbo = ALLOC_STRING(animExtAkimbo);
+
+	if (pmodelAkimbo) {
 		PRECACHE_MODEL(pmodelAkimbo);
+		params.pmodelAkimbo = MODEL_INDEX(pmodelAkimbo);
+	}
 	if (wmodelAkimbo) {
 		bool hasMergeBody = mp_mergemodels.value && MergedModelBodyAkimbo() != -1;
 		if (!hasMergeBody || UTIL_MapReplacesModel(wmodelAkimbo)) {
 			PRECACHE_MODEL(wmodelAkimbo);
+			params.wmodelAkimbo = MODEL_INDEX(wmodelAkimbo);
 		}
 	}
 
 	if (wrongClientWeapon) {
 		UTIL_PrecacheOther(wrongClientWeapon);
+		params.wrongClientWeapon = ALLOC_STRING(wrongClientWeapon);
 	}
 #endif
 }
@@ -1031,7 +1048,6 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 	bool isChargedEnough = chargeMillis >= cancelMillis;
 
 	if (cancelMillis) {
-		uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
 		float t = V_min(chargeMillis / (float)opts.chargeTime, 1.0f);
 
 		if (opts.ammoCost && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD) {
@@ -1042,8 +1058,6 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 	}
 
 	if (!cancelMillis || isChargedEnough) {
-		CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
-
 		if (opts.chargeMode == WC_CHARGEUP_SINGLE || opts.chargeMode == WC_CHARGEUP_SINGLE_HOLD
 			|| opts.chargeMode == WC_CHARGEUP_HOLD)
 		{
@@ -1473,7 +1487,7 @@ void CWeaponCustom::SendPredictionData(edict_t* target, PredictionDataSendMode s
 			WRITE_SHORT(opts.accuracyY);
 			WRITE_SHORT(opts.emptySound);
 
-			WRITE_BYTE((opts.chargeMode << 4) | (opts.chargeAmmoMode << 2) | opts.overchargeMode);
+			WRITE_BYTE(((opts.chargeMode & 0x3) << 4) | ((opts.chargeAmmoMode & 0x3) << 2) | (opts.overchargeMode & 0x7));
 			if (opts.chargeMode != WC_CHARGEUP_NONE) {
 				WRITE_BYTE(opts.chargeFlags);
 				WRITE_SHORT(opts.chargeTime);

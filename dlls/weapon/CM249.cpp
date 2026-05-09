@@ -43,7 +43,6 @@ void CM249::Precache()
 	wrongClientWeapon = "weapon_9mmAR";
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_DYNAMIC_ACCURACY;
-	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = M249_DRAW;
 	params.deployAnimTime = 1030;
 	params.maxClip = M249_MAX_CLIP;
@@ -86,11 +85,6 @@ void CM249::Precache()
 	// client-side HUD sprites and config
 	PRECACHE_HUD_FILES("sprites/weapon_m249.txt");
 	PrecacheEvents();
-}
-
-void CM249::PrecacheEvents()
-{
-	CWeaponCustom::PrecacheEvents();
 }
 
 int CM249::GetItemInfo(ItemInfo* p)

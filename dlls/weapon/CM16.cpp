@@ -31,7 +31,6 @@ void CM16::Precache()
 	wrongClientWeapon = "weapon_9mmAR";
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_SECONDARY;
-	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = M16_DRAW;
 	params.maxClip = M16_MAX_CLIP;
 	params.reloadStage[0] = { M16_RELOAD_M16, 3370 };

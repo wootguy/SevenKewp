@@ -22,6 +22,7 @@
 #include "PluginManager.h"
 #include "user_messages.h"
 #include "HashMap.h"
+#include "custom_weapon.h"
 
 cvar_t	displaysoundlist = {"displaysoundlist","0", 0, 0, 0};
 
@@ -517,6 +518,8 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_survival_restart);
 
 	RegisterSkillCvars();
+
+	init_weapon_custom_config_parser();
 
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 

@@ -44,7 +44,6 @@ void CUzi::Precache()
 	wrongClientWeapon = "weapon_9mmAR";
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_TERTIARY | FL_WC_WEP_AKIMBO;
-	params.vmodel = MODEL_INDEX(GetModelV());
 	params.deployAnim = UZI_DEPLOY;
 	params.deployTime = 1280;
 	params.maxClip = UZI_MAX_CLIP;
