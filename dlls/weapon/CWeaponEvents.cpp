@@ -181,7 +181,7 @@ void CWeaponEvents::QueueDelayedEvent(int eventIdx, float fireTime, bool leftHan
 }
 
 void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire) {
-	Vector spread(SPREAD_TO_FLOAT(evt.bullets.spreadX), SPREAD_TO_FLOAT(evt.bullets.spreadY), 0);
+	Vector spread(SPREAD_TO_FLOAT(evt.bullets.accuracy[0]), SPREAD_TO_FLOAT(evt.bullets.accuracy[1]), 0);
 
 	if (evt.bullets.flags & FL_WC_BULLETS_DYNAMIC_SPREAD) {
 		spread = spread * GetCurrentAccuracyMultiplier();
@@ -401,7 +401,7 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	Vector vForward = gpGlobals->v_forward;
 	Vector vRight = gpGlobals->v_right;
 	Vector vUp = gpGlobals->v_up;
-	Vector vecSpread(evt.proj.spreadX, evt.proj.spreadY, 0);
+	Vector vecSpread(SPREAD_TO_FLOAT(evt.proj.accuracy[0]), SPREAD_TO_FLOAT(evt.proj.accuracy[1]), 0);
 
 	Vector vecDir = vForward +
 		x * vecSpread.x * vRight +
@@ -424,7 +424,7 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	Vector ofs = vRight * offsetOpts.x + vForward * offsetOpts.y + vUp * offsetOpts.z;
 	Vector projectile_ori = m_pPlayer->GetGunPosition() + ofs;
 	Vector projectile_dir_angles = UTIL_VecToAngles(projectile_velocity.Normalize());
-	float grenadeTime = evt.proj.life != 0 ? evt.proj.life : 3.5f; // timed grenades only
+	float grenadeTime = evt.proj.life != 0 ? evt.proj.life / 1000.0f : 3.5f; // timed grenades only
 	//if (state.active_opts.windup_time > 0)
 	//	grenadeTime = Math.max(0, grenadeTime - (g_Engine.time - state.windupStart));
 
@@ -517,7 +517,7 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 			cproj->water_friction = evt.proj.water_friction;
 			cproj->damage = evt.proj.damage * GetChargeMult(evt, FL_WC_CHARGE_DAMAGE);
 			cproj->damageType = evt.proj.damageBits;
-			cproj->expire_time = evt.proj.life ? gpGlobals->time + evt.proj.life : 0;
+			cproj->expire_time = evt.proj.life ? gpGlobals->time + evt.proj.life / 1000.0f : 0;
 			cproj->pev->movetype = evt.proj.gravity != 0 ? MOVETYPE_BOUNCE : MOVETYPE_BOUNCEMISSILE;
 			cproj->flags = evt.proj.flags;
 			cproj->move_snd = evt.proj.move_snd;
@@ -684,10 +684,10 @@ void CWeaponEvents::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 
 	if (evt.evtType == WC_EVT_PLAY_SOUND) {
 		idx = evt.playSound.sound;
-		if (evt.playSound.numAdditionalSounds) {
-			int rnd = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.playSound.numAdditionalSounds);
+		if (evt.playSound.additionalSounds.arrSz) {
+			int rnd = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.playSound.additionalSounds.arrSz);
 			if (rnd > 0) {
-				idx = evt.playSound.additionalSounds[rnd - 1];
+				idx = evt.playSound.additionalSounds.arr[rnd - 1];
 			}
 		}
 
@@ -752,9 +752,9 @@ void CWeaponEvents::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bo
 	if (leftHand)
 		right = right * -1;
 
-	float forwardScale = evt.ejectShell.offsetForward * 0.01f;
-	float upScale = evt.ejectShell.offsetUp * 0.01f;
-	float rightScale = evt.ejectShell.offsetRight * 0.01f;
+	float forwardScale = evt.ejectShell.offset[0] * 0.01f;
+	float upScale = evt.ejectShell.offset[1] * 0.01f;
+	float rightScale = evt.ejectShell.offset[2] * 0.01f;
 
 	float fR = RANDOM_FLOAT(50, 70);
 	float fU = RANDOM_FLOAT(100, 150);
@@ -763,9 +763,9 @@ void CWeaponEvents::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bo
 	Vector ShellOrigin = ori + up * upScale + forward * forwardScale + right * rightScale;
 
 	if (evt.ejectShell.hasVel) {
-		Vector newForward = evt.ejectShell.velForward * forward;
-		Vector newUp = evt.ejectShell.velUp * up;
-		Vector newRight = evt.ejectShell.velRight * right;
+		Vector newForward = evt.ejectShell.vel[0] * forward;
+		Vector newUp = evt.ejectShell.vel[1] * up;
+		Vector newRight = evt.ejectShell.vel[2] * right;
 		Vector svel = newForward + newUp + newRight;
 
 		float speedMult = 5;
@@ -811,9 +811,9 @@ void CWeaponEvents::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	WC_EV_PunchAngle(evt, m_pPlayer->random_seed);
 #else
 	if (!m_pPlayer->IsSevenKewpClient()) {
-		float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.x);
-		float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.y);
-		float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.z);
+		float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.angles[0]);
+		float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.angles[1]);
+		float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.angles[2]);
 
 		if (!(evt.punch.flags & FL_WC_PUNCH_NO_RETURN)) {
 			if (evt.punch.flags & FL_WC_PUNCH_ADD) {
@@ -835,19 +835,19 @@ void CWeaponEvents::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
 }
 
 void CWeaponEvents::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand) {
-	if (!evt.anim.numAnim)
+	if (!evt.anim.anims.arrSz)
 		return;
 
 	int idx = 0;
 
 	if (evt.anim.flags & FL_WC_ANIM_ORDERED) {
-		idx = (animCount++ % evt.anim.numAnim);
+		idx = (animCount++ % evt.anim.anims.arrSz);
 	}
 	else {
-		idx = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.anim.numAnim - 1);
+		idx = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.anim.anims.arrSz - 1);
 	}
 
-	int anim = evt.anim.anims[idx];
+	int anim = evt.anim.anims.arr[idx];
 
 	bool leftOnly = evt.anim.akimbo == WC_ANIM_LEFT_HAND || (evt.anim.akimbo == WC_ANIM_TRIG_HAND && leftHand);
 	if (evt.anim.akimbo == WC_ANIM_BOTH_HANDS || leftOnly) {
@@ -938,9 +938,9 @@ void CWeaponEvents::PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		WRITE_BYTE(TE_DLIGHT);
 		WRITE_COORD_VECTOR(m_pPlayer->pev->origin);
 		WRITE_BYTE(evt.dlight.radius);
-		WRITE_BYTE(evt.dlight.r);
-		WRITE_BYTE(evt.dlight.g);
-		WRITE_BYTE(evt.dlight.b);
+		WRITE_BYTE(evt.dlight.color.r);
+		WRITE_BYTE(evt.dlight.color.g);
+		WRITE_BYTE(evt.dlight.color.b);
 		WRITE_BYTE(evt.dlight.life);
 		WRITE_BYTE(evt.dlight.decayRate);
 		MESSAGE_END();
@@ -1024,7 +1024,7 @@ void CWeaponEvents::PlayEvent_Decal(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace
 	}
 
 #ifdef CLIENT_DLL
-	if (evt.decal.isGunshot) {
+	if (evt.decal.flags & FL_WC_DECAL_PARTICLES) {
 		EV_HLDM_GunshotDecalEffects(pos, true);
 	}
 
@@ -1042,7 +1042,7 @@ void CWeaponEvents::PlayEvent_Decal(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace
 		}
 
 		if ((m_pPlayer != listener || !isPredicted)) {
-			if (evt.decal.isGunshot) {
+			if (evt.decal.flags & FL_WC_DECAL_PARTICLES) {
 				UTIL_GunshotDecal(ed ? ENTINDEX(ed) : 0, pos, evt.decal.decalIdx, MSG_ONE_UNRELIABLE,
 					NULL, listener->edict());
 			}
@@ -1200,24 +1200,24 @@ void CWeaponEvents::GetCurrentAccuracy(float& accuracyX, float& accuracyY, float
 	CustomWeaponParams& params = m_weapon->params;
 
 	if (m_weapon->IsPrimaryAltActive()) {
-		accuracyX = params.shootOpts[3].accuracyX * 0.01f;
-		accuracyY = params.shootOpts[3].accuracyY * 0.01f;
+		accuracyX = params.shootOpts[3].accuracy[0] * 0.01f;
+		accuracyY = params.shootOpts[3].accuracy[1] * 0.01f;
 	}
 	else if (m_weapon->IsAkimbo()) {
-		accuracyX = params.akimbo.accuracyX * 0.01f;
-		accuracyY = params.akimbo.accuracyY * 0.01f;
+		accuracyX = params.akimbo.accuracy[0] * 0.01f;
+		accuracyY = params.akimbo.accuracy[1] * 0.01f;
 	}
 	else {
-		accuracyX = params.shootOpts[0].accuracyX * 0.01f;
-		accuracyY = params.shootOpts[0].accuracyY * 0.01f;
+		accuracyX = params.shootOpts[0].accuracy[0] * 0.01f;
+		accuracyY = params.shootOpts[0].accuracy[1] * 0.01f;
 	}
 
 	bool hasSecondary = params.flags & FL_WC_WEP_HAS_SECONDARY;
 	bool secondaryShoots = !(params.shootOpts[1].flags & FL_WC_SHOOT_NO_ATTACK);
 
 	if (hasSecondary && secondaryShoots) {
-		accuracyX2 = params.shootOpts[1].accuracyX * 0.01f;
-		accuracyY2 = params.shootOpts[1].accuracyY * 0.01f;
+		accuracyX2 = params.shootOpts[1].accuracy[0] * 0.01f;
+		accuracyY2 = params.shootOpts[1].accuracy[1] * 0.01f;
 	}
 	else {
 		accuracyX2 = accuracyX;
@@ -1274,7 +1274,7 @@ float CWeaponEvents::GetChargeMult(WepEvt& evt, int flagMask) {
 }
 
 Vector CWeaponEvents::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
-	Vector spread(SPREAD_TO_FLOAT(beam.evt.beam.spreadX), SPREAD_TO_FLOAT(beam.evt.beam.spreadY), 0);
+	Vector spread(SPREAD_TO_FLOAT(beam.evt.beam.accuracy[0]), SPREAD_TO_FLOAT(beam.evt.beam.accuracy[1]), 0);
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
 

@@ -155,6 +155,7 @@ void CL_DLLEXPORT HUD_PlayerMove( struct playermove_s *ppmove, int server )
 }
 
 void ReconnectAfterUpdate();
+void init_weapon_custom_config_parser();
 
 int CL_DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 {
@@ -173,6 +174,8 @@ int CL_DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 	ReconnectAfterUpdate();
 
 	g_sdl_window = SDL_GetWindowFromID(1);
+
+	init_weapon_custom_config_parser();
 
 	// get tracker interface, if any
 	return 1;

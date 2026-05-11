@@ -53,8 +53,8 @@ void CM249::Precache()
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
 	primary.ammoCost = 1;
 	primary.cooldown = 67;
-	primary.accuracyX = 6 * 100;
-	primary.accuracyY = 6 * 100;
+	primary.accuracy[0] = 6 * 100;
+	primary.accuracy[1] = 6 * 100;
 
 	float spread = VECTOR_CONE_6DEGREES.x;
 	int bulletf = FL_WC_BULLETS_DYNAMIC_SPREAD;

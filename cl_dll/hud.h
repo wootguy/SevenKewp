@@ -446,7 +446,6 @@ public:
 	int Draw(float flTime);
 	virtual const char* HudName() { return "CHudDebug"; }
 
-private:
 	cvar_t* m_HUD_debug;
 };
 

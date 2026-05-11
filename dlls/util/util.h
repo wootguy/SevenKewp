@@ -434,6 +434,7 @@ EXPORT Vector		UTIL_RandomBloodVector( void );
 EXPORT BOOL			UTIL_ShouldShowBlood( int bloodColor );
 EXPORT void			UTIL_StringToVector( float *pVector, const char *pString );
 EXPORT Vector		UTIL_ParseVector(const char* pString);
+EXPORT RGB			UTIL_ParseRGB(const char* pString);
 EXPORT RGBA			UTIL_ParseRGBA(const char* pString);
 EXPORT bool			UTIL_StringIsVector( const char *pString );
 EXPORT const char*	UTIL_VectorToString(const Vector& v);

@@ -31,4 +31,7 @@ struct EXPORT RGBA {
 	inline Vector ToVector() { return Vector(r, g, b); }
 	inline RGB rgb() { return RGB(r, g, b); }
 	inline bool isEmpty() { return r == 0 && g == 0 && b == 0 && a == 0; }
+
+	inline int operator==(const RGBA& v) const { return r == v.r && g == v.g && b == v.b && a == v.a; }
+	inline int operator!=(const RGBA& v) const { return !(*this == v); }
 };

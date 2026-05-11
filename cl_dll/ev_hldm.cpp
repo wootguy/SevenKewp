@@ -1902,9 +1902,9 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 	Vector ShellVelocity;
 	Vector ShellOrigin;
 
-	float forwardScale = evt.ejectShell.offsetForward;
-	float upScale = evt.ejectShell.offsetUp;
-	float rightScale = evt.ejectShell.offsetRight;
+	float forwardScale = evt.ejectShell.offset[0];
+	float upScale = evt.ejectShell.offset[1];
+	float rightScale = evt.ejectShell.offset[2];
 
 	static event_args_s args;
 	args.entindex = entidx;
@@ -1917,9 +1917,9 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 		forward, right, up, forwardScale, upScale, rightScale);
 
 	if (evt.ejectShell.hasVel) {
-		Vector newForward = evt.ejectShell.velForward * forward;
-		Vector newUp = evt.ejectShell.velUp * up;
-		Vector newRight = evt.ejectShell.velRight * right;
+		Vector newForward = evt.ejectShell.vel[0] * forward;
+		Vector newUp = evt.ejectShell.vel[1] * up;
+		Vector newRight = evt.ejectShell.vel[2] * right;
 		Vector vel = newForward + newUp + newRight;
 
 		float speedMult = 5;
@@ -1945,9 +1945,9 @@ float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);
 int UTIL_SharedRandomLong(unsigned int seed, int low, int high);
 
 void WC_EV_PunchAngle(WepEvt& evt, int seed) {
-	float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.x);
-	float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.y);
-	float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.z);
+	float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.angles[0]);
+	float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.angles[1]);
+	float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.angles[2]);
 
 	if (evt.punch.flags & FL_WC_PUNCH_NO_RETURN) {
 		Vector angles;
@@ -1993,9 +1993,9 @@ void WC_EV_Dlight(WepEvt& evt) {
 	dlight_t* dl = gEngfuncs.pEfxAPI->CL_AllocDlight(0);
 	dl->origin = gPlayerSim.v_sim_org;
 	dl->radius = evt.dlight.radius * 10;
-	dl->color.r = evt.dlight.r;
-	dl->color.g = evt.dlight.g;
-	dl->color.b = evt.dlight.b;
+	dl->color.r = evt.dlight.color.r;
+	dl->color.g = evt.dlight.color.g;
+	dl->color.b = evt.dlight.color.b;
 	dl->decay = evt.dlight.decayRate * 10;
 	dl->die = gEngfuncs.GetClientTime() + evt.dlight.life * 0.1f;
 }

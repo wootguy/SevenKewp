@@ -40,8 +40,8 @@ void CM16::Precache()
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
 	primary.ammoCost = 3;
 	primary.cooldown = 500;
-	primary.accuracyX = 3 * 100;
-	primary.accuracyY = 3 * 100;
+	primary.accuracy[0] = 3 * 100;
+	primary.accuracy[1] = 3 * 100;
 
 	CustomWeaponShootOpts& secondary = params.shootOpts[1];
 	secondary.ammoCost = 1;

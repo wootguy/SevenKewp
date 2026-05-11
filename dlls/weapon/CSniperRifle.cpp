@@ -42,8 +42,8 @@ void CSniperRifle::Precache()
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
 	primary.ammoCost = 1;
 	primary.cooldown = 2000;
-	primary.accuracyX = accuracyDegrees * 100;
-	primary.accuracyY = accuracyDegrees * 100;
+	primary.accuracy[0] = accuracyDegrees * 100;
+	primary.accuracy[1] = accuracyDegrees * 100;
 
 	CustomWeaponShootOpts& secondary = params.shootOpts[1];
 	secondary.ammoCost = 0;

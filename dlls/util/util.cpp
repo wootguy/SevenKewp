@@ -2056,6 +2056,37 @@ Vector UTIL_ParseVector(const char* pString) {
 	return vec;
 }
 
+RGB UTIL_ParseRGB(const char* pString)
+{
+	RGB color;
+	uint8_t* pVector = (uint8_t*)&color;
+	char* pstr, * pfront, tempString[128];
+	int	j;
+
+	strcpy_safe(tempString, pString, 128);
+	tempString[sizeof(tempString) - 1] = '\0';
+	pstr = pfront = tempString;
+
+	for (j = 0; j < 3; j++)			// lifted from pr_edict.c
+	{
+		pVector[j] = atoi(pfront);
+
+		while (*pstr && *pstr != ' ')
+			pstr++;
+		if (!*pstr)
+			break;
+		pstr++;
+		pfront = pstr;
+	}
+	if (j < 2)
+	{
+		for (j = j + 1; j < 3; j++)
+			pVector[j] = 0;
+	}
+
+	return color;
+}
+
 RGBA UTIL_ParseRGBA(const char* pString)
 {
 	RGBA color;
@@ -2080,10 +2111,6 @@ RGBA UTIL_ParseRGBA(const char* pString)
 	}
 	if (j < 2)
 	{
-		/*
-		ALERT( at_error, "Bad field in entity!! %s:%s == \"%s\"\n",
-			pkvd->szClassName, pkvd->szKeyName, pkvd->szValue );
-		*/
 		for (j = j + 1; j < 4; j++)
 			pVector[j] = 0;
 	}

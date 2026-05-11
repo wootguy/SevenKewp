@@ -46,8 +46,8 @@ void CMinigun::Precache()
 	primary.chargeTime = 800;
 	primary.chargeCancelTime = 800;
 	primary.chargeMoveSpeedMult = FLOAT_TO_MOVESPEED_MULT(0.4f);
-	primary.accuracyX = 4 * 100;
-	primary.accuracyY = 4 * 100;
+	primary.accuracy[0] = 4 * 100;
+	primary.accuracy[1] = 4 * 100;
 
 	CustomWeaponShootOpts& secondary = params.shootOpts[1];
 	secondary.cooldown = 200;
