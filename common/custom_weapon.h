@@ -187,7 +187,9 @@ void init_weapon_custom_config_parser();
 
 EXPORT bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params);
 
-EXPORT void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params);
+// prettyPrint = if true, organizes configurations and event data into groups.
+//               This changes event ordering which could affect weapon behaviors.
+EXPORT void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params, bool prettyPrint);
 
 EXPORT void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, PredictionDataSendMode sendMode);
 

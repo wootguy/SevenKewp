@@ -80,6 +80,19 @@ enum WC_PARAM_TYPE {
 	WC_PARAM_STRING,
 };
 
+enum event_category {
+	WC_EVT_CATEGORY_PRIMARY,
+	WC_EVT_CATEGORY_PRIMARY_ALT,
+	WC_EVT_CATEGORY_SECONDARY,
+	WC_EVT_CATEGORY_TERTIARY,
+	WC_EVT_CATEGORY_RELOAD,
+	WC_EVT_CATEGORY_DEPLOY,
+	WC_EVT_CATEGORY_REACTION,
+	WC_EVT_CATEGORY_STATE_CHANGE,
+	WC_EVT_CATEGORY_UNKNOWN,
+	WC_EVT_CATEGORY_TOTAL,
+};
+
 #define FL_FIELD_NO_NETWORK 1	// field is not networked to clients
 #define FL_FIELD_NO_CFG 2		// field is calculated automatically and not saved to a config
 
@@ -115,6 +128,7 @@ const char* g_wc_evt_trigger_arg_primary_names[32];
 const char* g_wc_evt_trigger_clip_sp_names[32];
 const char* g_wc_evt_trigger_impact_names[32];
 const char* g_wc_evt_type_names[32];
+const char* g_wc_evt_category_names[32];
 
 HashMap<uint16_t> g_wc_name_to_trigger; // maps a group name to an event trigger + argument value
 HashMap<uint8_t> g_wc_name_to_action; // maps an action key value to its event number
@@ -668,34 +682,34 @@ void init_weapon_custom_config_parser() {
 	init_weapon_struct_fields();
 	init_event_fields();
 
-	g_wc_evt_trigger_names[WC_TRIG_PRIMARY] = "event.primary";
-	g_wc_evt_trigger_names[WC_TRIG_SECONDARY] = "event.secondary";
-	g_wc_evt_trigger_names[WC_TRIG_TERTIARY] = "event.tertiary";
-	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_ALT] = "event.primary_alt";
-	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_CLIPSIZE] = "event.primary_clip_is";
-	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_CLIP_SP] = "event.primary_clip_is";
-	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_CHARGE] = "event.primary_charge";
-	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_OVERCHARGE] = "event.primary_overcharge";
-	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_START] = "event.primary_start";
-	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_STOP] = "event.primary_stop";
-	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_FAIL] = "event.primary_fail";
-	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_CLIPSIZE] = "event.secondary_clip_is";
-	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_CLIP_SP] = "event.secondary_clip_is";
-	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_CHARGE] = "event.secondary_charge";
-	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_OVERCHARGE] = "event.secondary_overcharge";
-	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_START] = "event.secondary_start";
-	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_STOP] = "event.secondary_stop";
-	g_wc_evt_trigger_names[WC_TRIG_RELOAD] = "event.reload";
-	g_wc_evt_trigger_names[WC_TRIG_RELOAD_EMPTY] = "event.reload_empty";
-	g_wc_evt_trigger_names[WC_TRIG_RELOAD_NOT_EMPTY] = "event.reload_not_empty";
-	g_wc_evt_trigger_names[WC_TRIG_RELOAD_FINISH] = "event.reload_finish";
-	g_wc_evt_trigger_names[WC_TRIG_DEPLOY] = "event.deploy";
-	g_wc_evt_trigger_names[WC_TRIG_BULLET_FIRED] = "event.bullet_fired";
-	g_wc_evt_trigger_names[WC_TRIG_LASER_ON] = "event.laser_on";
-	g_wc_evt_trigger_names[WC_TRIG_LASER_OFF] = "event.laser_off";
-	g_wc_evt_trigger_names[WC_TRIG_ZOOM_IN] = "event.zoom_in";
-	g_wc_evt_trigger_names[WC_TRIG_ZOOM_OUT] = "event.zoom_out";
-	g_wc_evt_trigger_names[WC_TRIG_IMPACT] = "event.impact";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY] = "primary_attack";
+	g_wc_evt_trigger_names[WC_TRIG_SECONDARY] = "secondary_attack";
+	g_wc_evt_trigger_names[WC_TRIG_TERTIARY] = "tertiary_attack";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_ALT] = "primary_alt_attack";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_CLIPSIZE] = "primary_clip_is";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_CLIP_SP] = "primary_clip_is";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_CHARGE] = "primary_attack_charge";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_OVERCHARGE] = "primary_attack_overcharge";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_START] = "primary_attack_start";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_STOP] = "primary_attack_stop";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_FAIL] = "primary_attack_fail";
+	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_CLIPSIZE] = "secondary_clip_is";
+	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_CLIP_SP] = "secondary_clip_is";
+	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_CHARGE] = "secondary_attack_charge";
+	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_OVERCHARGE] = "secondary_attack_overcharge";
+	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_START] = "secondary_attack_start";
+	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_STOP] = "secondary_attack_stop";
+	g_wc_evt_trigger_names[WC_TRIG_RELOAD] = "reload";
+	g_wc_evt_trigger_names[WC_TRIG_RELOAD_EMPTY] = "reload_empty";
+	g_wc_evt_trigger_names[WC_TRIG_RELOAD_NOT_EMPTY] = "reload_not_empty";
+	g_wc_evt_trigger_names[WC_TRIG_RELOAD_FINISH] = "reload_finish";
+	g_wc_evt_trigger_names[WC_TRIG_DEPLOY] = "deploy";
+	g_wc_evt_trigger_names[WC_TRIG_BULLET_FIRED] = "bullet_fired";
+	g_wc_evt_trigger_names[WC_TRIG_LASER_ON] = "laser_on";
+	g_wc_evt_trigger_names[WC_TRIG_LASER_OFF] = "laser_off";
+	g_wc_evt_trigger_names[WC_TRIG_ZOOM_IN] = "zoom_in";
+	g_wc_evt_trigger_names[WC_TRIG_ZOOM_OUT] = "zoom_out";
+	g_wc_evt_trigger_names[WC_TRIG_IMPACT] = "impact";
 
 	g_wc_evt_trigger_arg_primary_names[WC_TRIG_SHOOT_ARG_ALWAYS] = "";
 	g_wc_evt_trigger_arg_primary_names[WC_TRIG_SHOOT_ARG_AKIMBO] = "_akimbo";
@@ -792,6 +806,16 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_type_names[WC_EVT_SERVER] = "user_defined";
 	g_wc_evt_type_names[WC_EVT_MUZZLEFLASH] = "muzzle_flash";
 
+	g_wc_evt_category_names[WC_EVT_CATEGORY_PRIMARY] = "Primary attack";
+	g_wc_evt_category_names[WC_EVT_CATEGORY_PRIMARY_ALT] = "Alternate primary attack";
+	g_wc_evt_category_names[WC_EVT_CATEGORY_SECONDARY] = "Secondary attack";
+	g_wc_evt_category_names[WC_EVT_CATEGORY_TERTIARY] = "Tertiary attack";
+	g_wc_evt_category_names[WC_EVT_CATEGORY_RELOAD] = "Reload";
+	g_wc_evt_category_names[WC_EVT_CATEGORY_DEPLOY] = "Deploy events";
+	g_wc_evt_category_names[WC_EVT_CATEGORY_REACTION] = "Reactionary events";
+	g_wc_evt_category_names[WC_EVT_CATEGORY_STATE_CHANGE] = "State change events";
+	g_wc_evt_category_names[WC_EVT_CATEGORY_UNKNOWN] = "Uncategorized events";
+
 	// impact events
 	g_wc_evt_type_names[WC_EVT_SPRITETRAIL] = "sprite_trail";
 	g_wc_evt_type_names[WC_EVT_DECAL] = "decal";
@@ -878,11 +902,11 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 	}
 	case WC_PARAM_UINT32_FLAGS:
 	case WC_PARAM_UINT8_FLAGS: {
-		vector<string> words = splitString(val, " ");
+		vector<string> words = splitString(val, "+");
 		uint32_t flags = 0;
 		for (int k = 0; k < words.size(); k++) {
 			for (int j = 0; j < field->valNamesSz; j++) {
-				if (field->valNames[j] && field->valNames[j] == words[k]) {
+				if (field->valNames[j] && field->valNames[j] == trimSpaces(words[k])) {
 					flags |= 1 << j;
 					break;
 				}
@@ -956,7 +980,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 }
 
 void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, wep_field_desc_t* field) {
-	if (ptype != WC_PARAM_UINT8_FLAGS && ptype != WC_PARAM_UINT32_FLAGS && ptype != WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2)
+	if (ptype != WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2)
 		fprintf(f, "%-24s= ", name);
 
 	switch (ptype) {
@@ -977,10 +1001,12 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, wep_field_
 		if (ptype == WC_PARAM_UINT32_FLAGS)			flags = *(uint32_t*)dat;
 		else if (ptype == WC_PARAM_UINT8_FLAGS)	flags = *(uint8_t*)dat;
 
-		fprintf(f, "%-24s=", name);
+		int count = 0;
 		for (int i = 0; i < field->valNamesSz; i++) {
 			if ((flags & (1 << i)) && field->valNames[i] && field->valNames[i][0]) {
-				fprintf(f, " %s", field->valNames[i]);
+				if (count++ != 0)
+					fprintf(f, " + ");
+				fprintf(f, "%s", field->valNames[i]);
 			}
 		}
 		fprintf(f, "\n");
@@ -1217,6 +1243,8 @@ vector<SettingsGroup> parse_settings_groups(const char* path) {
 	string group_name;
 	StringMap group_keys;
 
+	static const char* commentChars[] = { "//", ";", "#" };
+
 	int group_lineno = 0;
 	int lineno = 0;
 	char buffer[1024];
@@ -1224,9 +1252,11 @@ vector<SettingsGroup> parse_settings_groups(const char* path) {
 		string line = buffer;
 		lineno++;
 
-		int comment = line.find("//");
-		if (comment != -1) {
-			line = line.substr(0, comment);
+		for (int k = 0; k < ARRAY_SZ(commentChars); k++) {
+			int comment = line.find(commentChars[k]);
+			if (comment != -1) {
+				line = line.substr(0, comment);
+			}
 		}
 
 		line = trimSpaces(line);
@@ -1361,9 +1391,66 @@ void wc_read_wep_struct(const char* fname, SettingsGroup& group, void* dat, wep_
 	}
 }
 
-void wc_fwrite_events(FILE* f, CustomWeaponParams& params) {
+int wc_get_event_category(int evt) {	
+	switch (evt) {
+	default:
+		return WC_EVT_CATEGORY_UNKNOWN;
+
+	case WC_TRIG_TERTIARY:
+		return WC_EVT_CATEGORY_TERTIARY;
+
+	case WC_TRIG_PRIMARY_ALT:
+		return WC_EVT_CATEGORY_PRIMARY_ALT;
+
+	case WC_TRIG_PRIMARY:
+	case WC_TRIG_PRIMARY_CLIPSIZE:
+	case WC_TRIG_PRIMARY_CLIP_SP:
+	case WC_TRIG_PRIMARY_CHARGE:
+	case WC_TRIG_PRIMARY_OVERCHARGE:
+	case WC_TRIG_PRIMARY_START:
+	case WC_TRIG_PRIMARY_STOP:
+	case WC_TRIG_PRIMARY_FAIL:
+	
+		return WC_EVT_CATEGORY_PRIMARY;
+
+	case WC_TRIG_SECONDARY:
+	case WC_TRIG_SECONDARY_CLIPSIZE:
+	case WC_TRIG_SECONDARY_CLIP_SP:
+	case WC_TRIG_SECONDARY_CHARGE:
+	case WC_TRIG_SECONDARY_OVERCHARGE:
+	case WC_TRIG_SECONDARY_START:
+	case WC_TRIG_SECONDARY_STOP:
+	case WC_TRIG_SECONDARY_FAIL:
+		return WC_EVT_CATEGORY_SECONDARY;
+
+	case WC_TRIG_RELOAD:
+	case WC_TRIG_RELOAD_EMPTY:
+	case WC_TRIG_RELOAD_NOT_EMPTY:
+	case WC_TRIG_RELOAD_FINISH:
+		return WC_EVT_CATEGORY_RELOAD;
+
+	case WC_TRIG_DEPLOY:
+		return WC_EVT_CATEGORY_DEPLOY;
+
+	case WC_TRIG_LASER_ON:
+	case WC_TRIG_LASER_OFF:
+	case WC_TRIG_ZOOM_IN:
+	case WC_TRIG_ZOOM_OUT:
+		return WC_EVT_CATEGORY_STATE_CHANGE;
+
+	case WC_TRIG_BULLET_FIRED:
+	case WC_TRIG_IMPACT:
+		return WC_EVT_CATEGORY_REACTION;
+	}
+}
+
+void wc_fwrite_events(FILE* f, CustomWeaponParams& params, int category) {	
 	for (int i = 0; i < params.numEvents; i++) {
 		WepEvt& evt = params.events[i];
+
+		if (category != -1 && category != wc_get_event_category(evt.trigger)) {
+			continue;
+		}
 
 		uint16_t key = (evt.triggerArg << 5) | evt.trigger;
 		if (key > ARRAY_SZ(g_wc_trigger_to_name) || g_wc_trigger_to_name[key].pool == NULL) {
@@ -1371,8 +1458,7 @@ void wc_fwrite_events(FILE* f, CustomWeaponParams& params) {
 			continue;
 		}
 
-		fprintf(f, "\n[%s]\n", g_wc_trigger_to_name[key].str());
-		fprintf(f, "%-24s= %s\n", "action", g_wc_evt_type_names[evt.evtType]);
+		fprintf(f, "\n[event.%s.%s]\n", g_wc_trigger_to_name[key].str(), g_wc_evt_type_names[evt.evtType]);
 
 		if (evt.delay)
 			fprintf(f, "%-24s= %ums\n", "delay", (uint32_t)evt.delay);
@@ -1386,8 +1472,15 @@ void wc_fwrite_events(FILE* f, CustomWeaponParams& params) {
 }
 
 void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup& group) {
-	uint16_t* val = g_wc_name_to_trigger.get(group.name.c_str());
-	const char* action = group.keys.get("action");
+	vector<string> header_parts = splitString(group.name, ".");
+	if (header_parts.size() != 3) {
+		ALERT(at_error, "%s (line %d): Malformed event header '%s'.\n",
+			path, group.lineno, group.name.c_str());
+		return;
+	}
+
+	uint16_t* val = g_wc_name_to_trigger.get(header_parts[1].c_str());
+	const char* action = header_parts[2].c_str();
 	const char* delay = group.keys.get("delay");
 
 	if (!val) {
@@ -1504,7 +1597,7 @@ void wc_compare_params(CustomWeaponParams& a, CustomWeaponParams& b) {
 				e1.trigger, e2.trigger, e1.triggerArg, e2.triggerArg, i);
 		}
 		if (e1.delay != e2.delay || e1.hasDelay != e2.hasDelay) {
-			ALERT(at_error, "Mismatch event delat (%d %d) != (%d %d) (idx %d)\n",
+			ALERT(at_error, "Mismatch event delay (%d %d) != (%d %d) (idx %d)\n",
 				e1.delay, e2.delay, e1.hasDelay, e2.hasDelay, i);
 		}
 
@@ -1532,25 +1625,24 @@ void wc_read_shoot_opts(const char* path, SettingsGroup& group, CustomWeaponPara
 	}
 }
 
-void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params) {
+void write_section_header(FILE* f, const char* name) {
+	fprintf(f, "\n\n\n; --------------------------------\n; %s\n; --------------------------------\n", name);
+}
+
+void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prettyPrint) {
 	uint8_t* dat = (uint8_t*)&params;
 
 	fprintf(cfg, "[%s]\n", g_wc_desc_general.name);
 	wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_general);
 
-	const char* reloadNames[3] = { "reload", "reload_empty", "reload_pump" };
-	for (int k = 0; k < ARRAY_SZ(params.reloadStage); k++) {
-		const char* section = reloadNames[k];
+	if (params.flags & FL_WC_WEP_AKIMBO) {
+		fprintf(cfg, "\n[%s]\n", g_wc_desc_akimbo.name);
+		wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_akimbo);
+	}
 
-		if ((params.flags & FL_WC_WEP_SHOTGUN_RELOAD) && k == 1) {
-			section = "reload_shell";
-		}
-
-		if (params.reloadStage[k].time == 0)
-			continue;
-
-		fprintf(cfg, "\n[%s]\n", section);
-		wc_fwrite_wep_struct_fields(cfg, dat + sizeof(WeaponCustomReload) * k, g_wc_desc_reload);
+	if (params.flags & FL_WC_WEP_HAS_LASER) {
+		fprintf(cfg, "\n[%s]\n", g_wc_desc_laser.name);
+		wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_laser);
 	}
 
 	for (int k = 0; k < ARRAY_SZ(params.idles); k++) {
@@ -1562,12 +1654,6 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params) {
 	}
 
 	if (params.flags & FL_WC_WEP_AKIMBO) {
-		fprintf(cfg, "\n[%s]\n", g_wc_desc_akimbo.name);
-		wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_akimbo);
-
-		fprintf(cfg, "\n[%s]\n", g_wc_desc_akimbo_reload.name);
-		wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_akimbo_reload);
-
 		for (int k = 0; k < ARRAY_SZ(params.akimbo.idles); k++) {
 			if (params.akimbo.idles[k].time == 0)
 				continue;
@@ -1578,9 +1664,6 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params) {
 	}
 
 	if (params.flags & FL_WC_WEP_HAS_LASER) {
-		fprintf(cfg, "\n[%s]\n", g_wc_desc_laser.name);
-		wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_laser);
-
 		for (int k = 0; k < ARRAY_SZ(params.laser.idles); k++) {
 			if (params.laser.idles[k].time == 0)
 				continue;
@@ -1590,17 +1673,62 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params) {
 		}
 	}
 
+	static int attackOrder[4] = { 0, 3, 1, 2 };
 	static int optBits[4] = { FL_WC_WEP_HAS_PRIMARY, FL_WC_WEP_HAS_SECONDARY, FL_WC_WEP_HAS_TERTIARY, FL_WC_WEP_HAS_ALT_PRIMARY };
-	static const char* optNames[4] = { "primary", "secondary", "tertiary", "primary_alt" };
+	static const char* optNames[4] = { "primary_attack", "secondary_attack", "tertiary_attack", "primary_alt_attack" };
+	static int optEventCats[4] = { WC_EVT_CATEGORY_PRIMARY, WC_EVT_CATEGORY_SECONDARY, WC_EVT_CATEGORY_TERTIARY, WC_EVT_CATEGORY_PRIMARY_ALT };
 
 	for (int k = 0; k < ARRAY_SZ(params.shootOpts); k++) {
-		if (!(params.flags & optBits[k]))
+		int idx = attackOrder[k];
+
+		if (!(params.flags & optBits[idx]))
 			continue;
 
-		CustomWeaponShootOpts& opts = params.shootOpts[k];
+		CustomWeaponShootOpts& opts = params.shootOpts[idx];
 
-		fprintf(cfg, "\n[%s]\n", optNames[k]);
-		wc_fwrite_wep_struct_fields(cfg, dat + sizeof(CustomWeaponShootOpts) * k, g_wc_desc_shoot_opts);
+		if (prettyPrint)
+			write_section_header(cfg, g_wc_evt_category_names[optEventCats[idx]]);
+
+		fprintf(cfg, "\n[%s]\n", optNames[idx]);
+		wc_fwrite_wep_struct_fields(cfg, dat + sizeof(CustomWeaponShootOpts) * idx, g_wc_desc_shoot_opts);
+
+		if (prettyPrint)
+			wc_fwrite_events(cfg, params, optEventCats[idx]);
+	}
+
+	bool hasReload = false;
+	for (int k = 0; k < ARRAY_SZ(params.reloadStage); k++) {
+		if (params.reloadStage[k].time != 0) {
+			hasReload = true;
+			break;
+		}
+	}
+
+	if (hasReload) {
+		if (prettyPrint)
+			write_section_header(cfg, "Reload");
+		const char* reloadNames[3] = { "reload", "reload_empty", "reload_pump" };
+		for (int k = 0; k < ARRAY_SZ(params.reloadStage); k++) {
+			const char* section = reloadNames[k];
+
+			if ((params.flags & FL_WC_WEP_SHOTGUN_RELOAD) && k == 1) {
+				section = "reload_shell";
+			}
+
+			if (params.reloadStage[k].time == 0)
+				continue;
+
+			fprintf(cfg, "\n[%s]\n", section);
+			wc_fwrite_wep_struct_fields(cfg, dat + sizeof(WeaponCustomReload) * k, g_wc_desc_reload);
+		}
+
+		if (params.flags & FL_WC_WEP_AKIMBO) {
+			fprintf(cfg, "\n[%s]\n", g_wc_desc_akimbo_reload.name);
+			wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_akimbo_reload);
+		}
+
+		if (prettyPrint)
+			wc_fwrite_events(cfg, params, WC_EVT_CATEGORY_RELOAD);
 	}
 }
 
@@ -1646,19 +1774,19 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomIdle) * idleCount, g_wc_desc_idle);
 			idleCount++;
 		}
-		else if (group.name == "primary") {
+		else if (group.name == "primary_attack") {
 			params.flags |= FL_WC_WEP_HAS_PRIMARY;
 			wc_read_shoot_opts(path, group, params, 0);
 		}
-		else if (group.name == "secondary") {
+		else if (group.name == "secondary_attack") {
 			params.flags |= FL_WC_WEP_HAS_SECONDARY;
 			wc_read_shoot_opts(path, group, params, 1);
 		}
-		else if (group.name == "tertiary") {
+		else if (group.name == "tertiary_attack") {
 			params.flags |= FL_WC_WEP_HAS_TERTIARY;
 			wc_read_shoot_opts(path, group, params, 2);
 		}
-		else if (group.name == "primary_alt") {
+		else if (group.name == "primary_alt_attack") {
 			params.flags |= FL_WC_WEP_HAS_ALT_PRIMARY;
 			wc_read_shoot_opts(path, group, params, 3);
 		}
@@ -1701,7 +1829,7 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 	return true;
 }
 
-void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params) {
+void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params, bool prettyPrint) {
 	string fname = string("/weapons/") + path;
 
 	FILE* cfg = UTIL_OpenFile(fname.c_str(), "w");
@@ -1709,17 +1837,51 @@ void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params) {
 	if (!cfg)
 		return;
 
-	wc_fwrite_weapon_settings(cfg, params);
+	wc_fwrite_weapon_settings(cfg, params, prettyPrint);
 
-	fprintf(cfg, "\n\n\n//\n// Events\n//\n");
-	wc_fwrite_events(cfg, params);
+	if (prettyPrint) {
+		for (int k = 0; k < WC_EVT_CATEGORY_TOTAL; k++) {
+			bool alreadyWritten = true;
+			switch (k) {
+			case WC_EVT_CATEGORY_DEPLOY:
+			case WC_EVT_CATEGORY_REACTION:
+			case WC_EVT_CATEGORY_STATE_CHANGE:
+			case WC_EVT_CATEGORY_UNKNOWN:
+				alreadyWritten = false;
+				break;
+			}
+
+			if (alreadyWritten)
+				continue;
+
+			bool anyEvents = false;
+			for (int i = 0; i < params.numEvents; i++) {
+				WepEvt& evt = params.events[i];
+				if (k == wc_get_event_category(evt.trigger)) {
+					anyEvents = true;
+					break;
+				}
+			}
+
+			if (!anyEvents)
+				continue;
+
+			write_section_header(cfg, g_wc_evt_category_names[k]);
+			wc_fwrite_events(cfg, params, k);
+		}
+	}
+	else {
+		// write events in the exact order
+		write_section_header(cfg, "Events");
+		wc_fwrite_events(cfg, params, -1);
+	}
 
 	fclose(cfg);
 }
 
 void UTIL_TestConfig(CWeaponCustom* wep) {
 	CustomWeaponParams& wepParams = wep->params;
-	UTIL_DumpCustomWeaponConfig(UTIL_VarArgs("%s.txt", STRING(wep->pev->classname)), wepParams);
+	UTIL_DumpCustomWeaponConfig(UTIL_VarArgs("%s.txt", STRING(wep->pev->classname)), wepParams, false);
 
 	CustomWeaponParams cfgParams;
 	UTIL_ParseCustomWeaponConfig(UTIL_VarArgs("%s.txt", STRING(wep->pev->classname)), cfgParams);

@@ -98,6 +98,9 @@ void CWeaponCustom::PrecacheEvents() {
 		UTIL_PrecacheOther(wrongClientWeapon);
 		params.wrongClientWeapon = ALLOC_STRING(wrongClientWeapon);
 	}
+	if (!strcmp("weapon_uzi", STRING(pev->classname))) {
+		UTIL_TestConfig(this);
+	}
 #endif
 }
 
