@@ -7161,6 +7161,11 @@ void CBasePlayer::Revive() {
 	TabulateWeapons();
 	ApplyEffects();
 
+	// undo water physics
+	m_buoyancy = 0;
+	m_waterFriction = 1.0f;
+	pev->gravity = 0;
+
 	// unholster held weapon
 	CBasePlayerWeapon* wep = m_pActiveItem ? m_pActiveItem->GetWeaponPtr() : NULL;
 	if (wep) {

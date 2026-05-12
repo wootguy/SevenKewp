@@ -120,13 +120,6 @@ void DoEntWaterPhysics() {
 				ent->pev->gravity = 0;
 		}
 
-		// undo water physics changes on revive
-		if (ent->IsMonster() && ent->IsAlive()) {
-			ent->m_buoyancy = 0;
-			ent->m_waterFriction = 1.0f;
-			ent->pev->gravity = 0;
-		}
-
 		bool wasInLiquid = UTIL_IsLiquidContents(state.oldContents);
 		bool solidTransition = state.oldContents == CONTENTS_SOLID || contents == CONTENTS_SOLID;
 		bool playerJumpingOut = ent->IsPlayer() && !inLiquid;

@@ -8167,6 +8167,11 @@ void CBaseMonster::Revive() {
 	pev->renderfx = m_deathRenderFx;
 	pev->rendercolor = m_deathRenderColor;
 
+	// undo water physics
+	m_buoyancy = 0;
+	m_waterFriction = 1.0f;
+	pev->gravity = 0;
+
 	memset(m_lastHurtTriggers, 0, sizeof(m_lastHurtTriggers));
 }
 
