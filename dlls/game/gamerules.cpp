@@ -152,7 +152,7 @@ void AddMapEquipment(std::string name, std::string value) {
 
 void AddMapPluginEquipment() {
 	for (auto pair : g_unrecognizedCfgEquipment) {
-		if (g_weaponClassnames.hasKey(pair.first.c_str())) {
+		if (g_weaponClassIds.get(pair.first.c_str())) {
 			AddMapEquipment(pair.first, pair.second);
 		}
 	}

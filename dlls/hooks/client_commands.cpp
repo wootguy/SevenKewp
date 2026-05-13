@@ -599,7 +599,8 @@ void ClientCommand(edict_t* pEntity)
 		if (AdminLevel(pPlayer) != ADMIN_NO) {
 			CWeaponCustom* wep = pPlayer->m_pActiveItem ? pPlayer->m_pActiveItem->MyWeaponCustomPtr() : NULL;
 			if (wep) {
-				UTIL_TestConfig(wep);
+				const char* path = UTIL_VarArgs("dump/%s.txt", STRING(wep->pev->classname));
+				UTIL_DumpCustomWeaponConfig(path, wep->params, true);
 			}
 			else {
 				UTIL_ClientPrint(pPlayer, print_chat, "Not holding a custom weapon.\n");

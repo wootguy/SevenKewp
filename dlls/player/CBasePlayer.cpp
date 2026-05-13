@@ -4688,8 +4688,8 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 	}
 	else {
 		CWeaponCustom* cwep = pItem ? pItem->MyWeaponCustomPtr() : NULL;
-		if (cwep && cwep->wrongClientWeapon)
-			altName = cwep->wrongClientWeapon;
+		if (cwep && cwep->params.wrongClientWeapon)
+			altName = STRING(cwep->params.wrongClientWeapon);
 	}
 
 	for (int i = 0; i < MAX_ITEM_TYPES; i++)

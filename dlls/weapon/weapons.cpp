@@ -200,15 +200,18 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname, bool isSevenKewpGun)
 
 bool g_registeringCustomWeps = false;
 StringSet g_weaponNames;
-StringSet g_weaponClassnames;
+HashMap<int> g_weaponClassIds;
 StringMap g_defaultSpriteDirs;
+StringMap g_customWeaponConfigs;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 HashMap<int> g_ammoCapacities;
 HashMap<int> g_ammoCapacitiesInitial;
 
-int NextAutoWeaponId() {
-	for (int i = 1; i < MAX_WEAPONS; i++) {
+int NextAutoWeaponId(bool sevenKewpOnly) {
+	int startIdx = sevenKewpOnly ? WEAPON_SUIT+1 : 1;
+
+	for (int i = startIdx; i < MAX_WEAPONS; i++) {
 		if (i == WEAPON_SUIT)
 			continue;
 		if (!CBasePlayerItem::ItemInfoArray[i].iId) {
@@ -255,17 +258,32 @@ int UTIL_GetMaxAmmoInitial(const char* ammoType) {
 }
 
 // Queues the weapon info for sending to clients
-ItemInfo UTIL_RegisterWeapon( const char *szClassname )
+ItemInfo UTIL_RegisterWeapon( const char *szClassname, const char* configPath, bool sevenkewpOnly)
 {
 	edict_t	*pent;
 	ItemInfo info;
 	memset(&info, 0, sizeof(ItemInfo));
 	info.iId = -1;
 
-	if (g_weaponClassnames.size() >= MAX_WEAPONS) {
+	if (g_weaponClassIds.size() >= MAX_WEAPONS) {
 		ALERT(at_error, "Failed to register weapon %s. Too many weapons! (%d)\n",
 			szClassname, MAX_WEAPONS);
 		return info;
+	}
+
+	if (configPath) {
+		// load custom weapon details from file
+		CustomWeaponParams params;
+		if (!UTIL_ParseCustomWeaponConfig(configPath, params)) {
+			return info;
+		}
+
+		if (!szClassname) {
+			szClassname = STRING(params.classname);
+		}
+
+		g_entityRemap.put(szClassname, weapon_custom_ini);
+		g_customWeaponConfigs.put(szClassname, configPath);
 	}
 
 	pent = CREATE_NAMED_ENTITY( MAKE_STRING( szClassname ) );
@@ -301,8 +319,8 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 		goto cleanup;
 	}
 
-	if (info.iId < 0 || info.iId >= MAX_WEAPONS) {
-		info.iId = NextAutoWeaponId();
+	if (info.iId < 0 || info.iId >= MAX_WEAPONS || configPath) {
+		info.iId = NextAutoWeaponId(sevenkewpOnly);
 	}
 
 	if (info.iSlot < 0 || info.iSlot >= MAX_WEAPON_SLOTS) {
@@ -355,7 +373,7 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname )
 	}
 
 	g_weaponNames.put(info.pszName);
-	g_weaponClassnames.put(szClassname);
+	g_weaponClassIds.put(szClassname, info.iId);
 
 	if (g_registeringCustomWeps) {
 		PRECACHE_HUD_FILES(("sprites/" + std::string(info.pszName) + ".txt").c_str());
@@ -375,7 +393,8 @@ cleanup:
 }
 
 void UTIL_RegisterEquipmentEntity(const char* szClassname) {
-	g_weaponClassnames.put(szClassname);
+	if (!g_weaponClassIds.get(szClassname))
+		g_weaponClassIds.put(szClassname, -1);
 }
 
 void UTIL_SetDefaultWeaponSpriteDir(const char* szClassname, const char* spriteDir) {
@@ -450,7 +469,7 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_sniperrifle");
 	UTIL_RegisterWeapon("weapon_uzi");
 	UTIL_RegisterWeapon("weapon_minigun");
-	UTIL_RegisterWeapon("weapon_eagle");
+	UTIL_RegisterWeapon(NULL, "weapon_eagle.txt", true);
 	//UTIL_RegisterWeapon("weapon_m16");
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 

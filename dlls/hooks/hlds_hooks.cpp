@@ -588,7 +588,7 @@ void ServerDeactivate( void )
 	g_allocedStrings.clear();
 	g_mapWeapons.clear();
 	g_wavInfos.clear();
-	g_weaponClassnames.clear();
+	g_weaponClassIds.clear();
 	g_weaponNames.clear();
 	g_nomaptrans.clear();
 	g_unrecognizedCfgEquipment.clear();
@@ -598,6 +598,7 @@ void ServerDeactivate( void )
 	g_entityRemap.clear();
 	g_ammoCapacities.clear();
 	g_ammoCapacitiesInitial.clear();
+	g_customWeaponConfigs.clear();
 	ClearPlayerModelCache();
 	clearNetworkMessageHistory();
 	g_mp3Command = "";

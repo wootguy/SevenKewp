@@ -39,13 +39,13 @@ void CM249::Precache()
 	int reloadSnd1 = PRECACHE_SOUND("weapons/saw_reload.wav");
 	int reloadSnd2 = PRECACHE_SOUND("weapons/saw_reload2.wav");
 
-	animExt = "saw";
-	wrongClientWeapon = "weapon_9mmAR";
+	params.animExt = ALLOC_STRING("saw");
+	params.wrongClientWeapon = ALLOC_STRING("weapon_9mmAR");
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_DYNAMIC_ACCURACY;
 	params.deployAnim = M249_DRAW;
 	params.deployAnimTime = 1030;
-	params.maxClip = M249_MAX_CLIP;
+	params.ammoInfo[0].maxClip = M249_MAX_CLIP;
 	params.reloadStage[0] = { M249_RELOAD_START, 1330 + 2470 };
 	params.idles[0] = { M249_SLOWIDLE, 95, 5000 };
 	params.idles[1] = { M249_IDLE2, 5, 6160 };

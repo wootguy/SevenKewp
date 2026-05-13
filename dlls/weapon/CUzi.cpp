@@ -37,16 +37,16 @@ void CUzi::Precache()
 
 	int iShell = PRECACHE_MODEL("models/shell.mdl");
 
-	animExt = "onehanded";
-	animExtAkimbo = "uzis";
-	pmodelAkimbo = "models/p_2uzis.mdl";
-	wmodelAkimbo = "models/w_2uzis.mdl";
-	wrongClientWeapon = "weapon_9mmAR";
+	params.animExt = ALLOC_STRING("onehanded");
+	params.animExtAkimbo = ALLOC_STRING("uzis");
+	params.pmodelAkimbo = ALLOC_STRING("models/p_2uzis.mdl");
+	params.wmodelAkimbo = ALLOC_STRING("models/w_2uzis.mdl");
+	params.wrongClientWeapon = ALLOC_STRING("weapon_9mmAR");
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_TERTIARY | FL_WC_WEP_AKIMBO;
 	params.deployAnim = UZI_DEPLOY;
 	params.deployTime = 1280;
-	params.maxClip = UZI_MAX_CLIP;
+	params.ammoInfo[0].maxClip = UZI_MAX_CLIP;
 	params.reloadStage[0] = { UZI_RELOAD, 2600 };
 	params.idles[0] = { UZI_IDLE1, 90, 5000 };
 	params.idles[1] = { UZI_IDLE2, 10, 6730 };

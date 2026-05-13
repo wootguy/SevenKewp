@@ -25,8 +25,8 @@ void CMinigun::Precache()
 	int spindownSnd = PRECACHE_SOUND("hassault/hw_spindown.wav");
 	int spinSnd = PRECACHE_SOUND("hassault/hw_spin2.wav");
 
-	animExt = "saw";
-	wrongClientWeapon = "weapon_9mmAR";
+	params.animExt = ALLOC_STRING("saw");
+	params.wrongClientWeapon = ALLOC_STRING("weapon_9mmAR");
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_SECONDARY | FL_WC_WEP_LINK_CHARGEUPS
 		| FL_WC_WEP_PRIMARY_PRIORITY | FL_WC_WEP_EXCLUSIVE_HOLD | FL_WC_WEP_USE_ONLY;
@@ -36,7 +36,7 @@ void CMinigun::Precache()
 	params.idles[2] = { MINIGUN_IDLE2, 5, 6200 };
 	params.moveSpeedMult = FLOAT_TO_MOVESPEED_MULT(0.6f);
 	params.jumpPower = 200;
-	params.defaultAmmo = MINIGUN_DEFAULT_GIVE;
+	params.ammoInfo[0].defaultGive = MINIGUN_DEFAULT_GIVE;
 
 	CustomWeaponShootOpts& primary = params.shootOpts[0];
 	primary.ammoCost = 2;

@@ -40,12 +40,9 @@ public:
 	bool m_bInAkimboReload;
 	bool m_bWantAkimboReload; // want to keep reloading until both guns are full
 	bool m_hasLaserAttachment;
-	const char* animExt; // third person player animation set
-	const char* animExtZoom; // animation set used while zoomed
-	const char* animExtAkimbo; // animation set used while in akimbo mode
-	const char* pmodelAkimbo; // thirdperson model used in akimbo mode
-	const char* wmodelAkimbo; // world model used in akimbo mode
-	const char* wrongClientWeapon; // weapon given to players who don't have the correct client to use this one. Do not use aliases here.
+	const char* m_configPath;	// weapon config to load parameters from
+	string_t m_hudPath;
+	int m_mergedModelBody;
 	int ammoFreqs[3]; // ammo frequency counters for each attack
 
 	// server-side state
@@ -132,6 +129,11 @@ public:
 	virtual void MeleeHitFlesh(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a flesh entity
 	virtual void MeleeHitWall(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a hard surface
 	virtual void AttackTrace(CBasePlayer* plr, int attackIdx, Vector vecSrc, TraceResult& tr) {} // called after every attack trace
+	virtual void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
+	virtual const char* DisplayName() override { return STRING(params.displayName); }
+	virtual const char* GetDeathNoticeWeapon() { return STRING(params.killFeedIcon); }
+	virtual int MergedModelBody() { return m_mergedModelBody; }
+	virtual int GetItemInfo(ItemInfo* p);
 
 	void KickbackPrediction();
 	void ToggleZoom(int zoomFov, int zoomFov2);
@@ -171,3 +173,5 @@ public:
 	int AddDuplicate(CBasePlayerItem* pOriginal) override;
 	inline bool IsExclusiveHold() { return params.flags & FL_WC_WEP_EXCLUSIVE_HOLD; }
 };
+
+extern "C" EXPORT void weapon_custom_ini(entvars_t* pev);

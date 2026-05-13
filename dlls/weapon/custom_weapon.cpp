@@ -5,7 +5,8 @@
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud.h"
 #define INDEX_SOUND(...) NULL
-#define SOUND_INDEX(...) 0
+#define PRECACHE_SOUND_NULLENT(...) 0
+#define PRECACHE_MODEL_NULLENT(...) 0
 #define INDEX_MODEL(...) NULL
 #define get_decal_name(...) NULL
 RGB UTIL_ParseRGB(const char* pString) { return RGB(); }
@@ -96,6 +97,13 @@ enum event_category {
 #define FL_FIELD_NO_NETWORK 1	// field is not networked to clients
 #define FL_FIELD_NO_CFG 2		// field is calculated automatically and not saved to a config
 
+struct WeaponConfigCache {
+	CustomWeaponParams params;
+	uint64_t fileModifiedTime;
+};
+
+HashMap<WeaponConfigCache> g_customWeaponCache;
+
 struct SettingsGroup {
 	string name;
 	StringMap keys;
@@ -136,6 +144,7 @@ mod_string_t g_wc_trigger_to_name[32 * 32]; // 32 trigger/arg possibilities
 StringPool g_wc_trigger_string_pool;
 
 wep_struct_desc_t g_wc_desc_general;
+wep_struct_desc_t g_wc_desc_ammo;
 wep_struct_desc_t g_wc_desc_reload;
 wep_struct_desc_t g_wc_desc_idle;
 wep_struct_desc_t g_wc_desc_akimbo_reload;
@@ -184,20 +193,29 @@ void init_weapon_struct_fields() {
 		wep_flags[BitToIndex(FL_WC_WEP_ZOOM_SPR_ASPECT)] = "keep_zoom_sprite_aspect";
 		wep_flags[BitToIndex(FL_WC_WEP_EMPTY_IDLES)] = "empty_idles";
 		wep_flags[BitToIndex(FL_WC_WEP_NO_PREDICTION)] = "no_prediction";
+		wep_flags[BitToIndex(FL_WC_WEP_HIDE_SECONDARY_AMMO)] = "hide_secondary_ammo";
+		wep_flags[BitToIndex(FL_WC_WEP_FORCE_ZOOM_SPRITE)] = "force_zoom_sprite";
+		wep_flags[BitToIndex(FL_WC_WEP_HAND_MODELS)] = "has_hand_models";
 
 		WEP_STRUCT_DESC(g_wc_desc_general, "general",
 			WEP_FIELD("classname", "", classname, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("hl_client_classname", "", wrongClientWeapon, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
-
+			WEP_FIELD("kill_feed_icon", "", killFeedIcon, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("display_name", "", displayName, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FLAGS32("flags", "0", flags, 0, wep_flags),
-			WEP_FIELD("clip_size", "0", maxClip, 0, WC_PARAM_UINT16),
-			WEP_FIELD("v_model", NULL, vmodel, 0, WC_PARAM_MODEL_INDEX),
+			WEP_FIELD("clip_size", "0", maxClip, 0, WC_PARAM_UINT16), // TODO: Remove me
+			WEP_FIELD("vmodel", NULL, vmodel, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_CFG),
 			
-			WEP_FIELD("p_model", NULL, pmodel, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("p_model_akimbo", NULL, pmodelAkimbo, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("w_model", NULL, wmodel, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("w_model_akimbo", NULL, wmodelAkimbo, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_NETWORK),
-			
+			WEP_FIELD("v_model", NULL, defaultModelV, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("p_model", NULL, defaultModelP, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("p_model_akimbo", NULL, pmodelAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("w_model", NULL, defaultModelW, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("w_model_akimbo", NULL, wmodelAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("hud_folder", "", hudFolder, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("slot", "0", slot, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("slot_position", "-1", slotPosition, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("weight", "0", weight, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
+
 			WEP_FIELD("deploy_anim", "0", deployAnim, 0, WC_PARAM_UINT8_ANIM),
 			WEP_FIELD("deploy_time", "0", deployTime, 0, WC_PARAM_TIME),
 			WEP_FIELD("deploy_anim_time", "0", deployAnimTime, 0, WC_PARAM_TIME),
@@ -207,10 +225,16 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("thirdperson_anims_akimbo", "", animExtAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("move_speed", "0", moveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("jump_power", "0", jumpPower, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("default_ammo", "0", defaultAmmo, 0, WC_PARAM_UINT16, NULL, 0, FL_FIELD_NO_NETWORK),
-			
 		);
 	}
+	
+	WEP_STRUCT_DESC(g_wc_desc_ammo, "ammo_unnamed",
+		WEP_FIELD("type", "", ammoInfo[0].type, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+		WEP_FIELD("clip_size", "0", ammoInfo[0].maxClip, 0, WC_PARAM_UINT16),
+		WEP_FIELD("default_give", "0", ammoInfo[0].defaultGive, 0, WC_PARAM_UINT16, NULL, 0, FL_FIELD_NO_NETWORK),
+		WEP_FIELD("drop_entity", "", ammoInfo[0].dropEnt, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+		WEP_FIELD("drop_amount", "0", ammoInfo[0].dropAmt, 0, WC_PARAM_UINT32, NULL, 0, FL_FIELD_NO_NETWORK),
+	);
 
 	WEP_STRUCT_DESC(g_wc_desc_reload, "reload_unnamed",
 		WEP_FIELD("anim", "0", reloadStage[0].anim, 0, WC_PARAM_UINT8_ANIM),
@@ -896,7 +920,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 				break;
 			}
 
-			arr->arr[arr->arrSz++] = SOUND_INDEX(val);
+			arr->arr[arr->arrSz++] = PRECACHE_SOUND_NULLENT(val);
 		}
 		break;
 	}
@@ -930,8 +954,8 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 
 		break;
 	}
-	case WC_PARAM_SOUND_INDEX:	*(uint16_t*)dat = val ? SOUND_INDEX(val) : 0; break;
-	case WC_PARAM_MODEL_INDEX:	*(uint16_t*)dat = val ? MODEL_INDEX(val) : 0; break;
+	case WC_PARAM_SOUND_INDEX:	*(uint16_t*)dat = val ? PRECACHE_SOUND_NULLENT(val) : 0; break;
+	case WC_PARAM_MODEL_INDEX:	*(uint16_t*)dat = val ? PRECACHE_MODEL_NULLENT(val) : 0; break;
 	case WC_PARAM_DECAL_INDEX:	*(uint8_t*)dat = val ? DECAL_INDEX(val) : 0; break;
 	case WC_PARAM_TIME: {
 		string sval = val;
@@ -1231,11 +1255,9 @@ void wc_compare_struct_fields(wep_struct_desc_t& desc, void* struct1, void* stru
 }
 
 vector<SettingsGroup> parse_settings_groups(const char* path) {
-	string fname = string("/weapons/") + path;
-
 	vector<SettingsGroup> groups;
 
-	FILE* cfg = UTIL_OpenFile(fname.c_str(), "r");
+	FILE* cfg = fopen(path, "r");
 
 	if (!cfg)
 		return groups;
@@ -1635,6 +1657,16 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 	fprintf(cfg, "[%s]\n", g_wc_desc_general.name);
 	wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_general);
 
+	static const char* ammoNames[4] = { "primary_ammo", "secondary_ammo" };
+	for (int k = 0; k < ARRAY_SZ(params.ammoInfo); k++) {
+		if (!params.ammoInfo[k].type)
+			continue;
+
+		fprintf(cfg, "\n[%s]\n", ammoNames[k]);
+		wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_ammo);
+	}
+	
+
 	if (params.flags & FL_WC_WEP_AKIMBO) {
 		fprintf(cfg, "\n[%s]\n", g_wc_desc_akimbo.name);
 		wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_akimbo);
@@ -1733,6 +1765,25 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 }
 
 bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) {
+	string fpath = getGameFilePath((string("weapons/") + path).c_str(), false);
+	uint64_t lastModified = getFileModifiedTime(fpath.c_str());
+
+	WeaponConfigCache* cache = g_customWeaponCache.get(path);
+	if (cache) {
+		if (lastModified == cache->fileModifiedTime) {
+			params = cache->params;
+			return true;
+		}
+		else {
+			ALERT(at_logged, "Reloading modified weapon config: %s\n", path);
+			g_customWeaponCache.del(path);
+		}		
+	}
+
+	path = fpath.c_str();
+
+	ALERT(at_logged, "Parsing weapon config: %s\n", path);
+
 	vector<SettingsGroup> groups = parse_settings_groups(path);
 
 	memset(&params, 0, sizeof(CustomWeaponParams));
@@ -1749,6 +1800,12 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 	for (SettingsGroup& group : groups) {
 		if (group.name == "general") {
 			wc_read_wep_struct(path, group, &params, g_wc_desc_general);
+		}
+		else if (group.name == "primary_ammo") {
+			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomAmmoInfo) * 0, g_wc_desc_ammo);
+		}
+		else if (group.name == "secondary_ammo") {
+			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomAmmoInfo) * 1, g_wc_desc_ammo);
 		}
 		else if (group.name == "reload") {
 			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomReload) * 0, g_wc_desc_reload);
@@ -1826,6 +1883,11 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 		}
 	}
 
+	WeaponConfigCache newCache;
+	newCache.fileModifiedTime = lastModified;
+	newCache.params = params;
+	g_customWeaponCache.put(path, newCache);
+
 	return true;
 }
 
@@ -1881,10 +1943,10 @@ void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params, b
 
 void UTIL_TestConfig(CWeaponCustom* wep) {
 	CustomWeaponParams& wepParams = wep->params;
-	UTIL_DumpCustomWeaponConfig(UTIL_VarArgs("%s.txt", STRING(wep->pev->classname)), wepParams, false);
+	UTIL_DumpCustomWeaponConfig(UTIL_VarArgs("test/%s.txt", STRING(wep->pev->classname)), wepParams, false);
 
 	CustomWeaponParams cfgParams;
-	UTIL_ParseCustomWeaponConfig(UTIL_VarArgs("%s.txt", STRING(wep->pev->classname)), cfgParams);
+	UTIL_ParseCustomWeaponConfig(UTIL_VarArgs("test/%s.txt", STRING(wep->pev->classname)), cfgParams);
 
 	wc_compare_params(wepParams, cfgParams);
 }
@@ -2164,11 +2226,18 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 		return;
 	}
 
+	params.maxClip = params.ammoInfo[0].maxClip;
+
 	if (sendMode != WC_PRED_SEND_EVT) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeapon, NULL, target);
 		WRITE_BYTE(wep->m_iId);
 
 		wc_send_netmsg_struct(g_wc_desc_general, dat);
+
+		// TODO: For next client update
+		//for (int k = 0; k < 2; k++) {
+		//	wc_send_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
+		//}
 
 		for (int k = 0; k < 3; k++) {
 			wc_send_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload) * k);
@@ -2273,6 +2342,12 @@ int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pb
 	uint8_t* dat = (uint8_t*)&parms;
 
 	wc_read_netmsg_struct(g_wc_desc_general, dat);
+
+	// TODO: For next client update
+	//for (int k = 0; k < 2; k++) {
+	//	wc_read_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
+	//}
+	parms.ammoInfo[0].maxClip = parms.maxClip;
 
 	for (int k = 0; k < 3; k++) {
 		wc_read_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload)*k);

@@ -20,6 +20,7 @@
 class CBasePlayer;
 EXPORT extern int gmsgWeapPickup;
 extern StringMap g_defaultSpriteDirs;
+extern StringMap g_customWeaponConfigs; // maps a classname to its config file
 extern HashMap<int> g_ammoCapacities;
 extern HashMap<int> g_ammoCapacitiesInitial; // first ammo capacity that was set
 
@@ -181,7 +182,10 @@ EXPORT void GetCircularGaussianSpread(float& x, float& y);
 // Set iId, iPosition, iMaxAmmo1, or iMaxAmmo2 to -1 to have them be automatically assigned.
 // That should be done to prevent conflicts between the game and unrelated plugins.
 // Returns an ItemInfo with reassigned id and position.
-EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname);
+// szClassname = entity to register. Can be NULL if using a config file.
+// configPath = if set, map a classname to CWeaponCustom and load settings from the config
+// sevenkewpOnly = auto-assign an ID in the sevenkewp-only range to free up slots in the vanilla HL ID range
+EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname, const char* configPath=NULL, bool sevenkewpOnly=false);
 
 // call this for custom ammo types so custom weapons know what their capacity is.
 EXPORT void UTIL_RegisterAmmoCapacity(const char* ammoType, int capacity);

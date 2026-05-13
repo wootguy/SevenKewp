@@ -39,12 +39,15 @@ int g_runfuncs = 1;
 void CWeaponCustom::Spawn() {
 	Precache();
 
-	m_iDefaultAmmo = params.maxClip ? params.maxClip : params.defaultAmmo;
+	m_iDefaultAmmo = params.ammoInfo[0].maxClip ? params.ammoInfo[0].maxClip : params.ammoInfo[0].defaultGive;
 
 	ItemInfo info;
 	info.iId = 0;
 	if (GetItemInfo(&info))
 		m_iId = info.iId;
+
+	if (params.classname)
+		pev->classname = params.classname;
 
 	if (m_iId <= 0) {
 		ALERT(at_error, "Custom weapon '%s' was not registered! Removing it from the world.\n",
@@ -69,37 +72,75 @@ void CWeaponCustom::PrecacheEvents() {
 	events.m_weapon = this;
 	
 #ifndef CLIENT_DLL
-	if (m_defaultModelV)
-		params.vmodel = MODEL_INDEX(GetModelV());
+	m_configPath = g_customWeaponConfigs.get(STRING(pev->classname));
 
-	if (m_defaultModelP)
-		params.pmodel = MODEL_INDEX(m_defaultModelP);
-	if (m_defaultModelW)
-		params.wmodel = MODEL_INDEX(m_defaultModelW);
+	if (m_configPath) {
+		UTIL_ParseCustomWeaponConfig(m_configPath, params);
+		params.maxClip = params.ammoInfo[0].maxClip;
 
-	params.classname = pev->classname;
-	params.animExt = ALLOC_STRING(animExt);
-	params.animExtZoom = ALLOC_STRING(animExtZoom);
-	params.animExtAkimbo = ALLOC_STRING(animExtAkimbo);
+		if (m_iId <= 0) {
+			int* id = g_weaponClassIds.get(STRING(pev->classname));
+			m_iId = id ? *id : 0;
+		}
 
-	if (pmodelAkimbo) {
-		PRECACHE_MODEL(pmodelAkimbo);
-		params.pmodelAkimbo = MODEL_INDEX(pmodelAkimbo);
+		m_defaultModelV = STRING(params.defaultModelV);
+		m_defaultModelP = STRING(params.defaultModelP);
+		m_defaultModelW = STRING(params.defaultModelW);
+
+		int* mergedBody = g_merged_models.get(m_defaultModelW);
+		m_mergedModelBody = mergedBody ? *mergedBody : -1;
+
+		m_hasHandModels = params.flags & FL_WC_WEP_HAND_MODELS;
+		
+		CBasePlayerWeapon::Precache();
 	}
-	if (wmodelAkimbo) {
+	else {
+		m_mergedModelBody = -1;
+
+		if (m_defaultModelV)
+			params.vmodel = MODEL_INDEX(GetModelV());
+		if (m_defaultModelP)
+			params.defaultModelP = MODEL_INDEX(m_defaultModelP);
+		if (m_defaultModelW)
+			params.defaultModelW = MODEL_INDEX(m_defaultModelW);
+	}
+
+	params.maxClip = params.ammoInfo[0].maxClip;
+	params.classname = pev->classname;
+
+	if (params.pmodelAkimbo) {
+		PRECACHE_MODEL(STRING(params.pmodelAkimbo));
+	}
+	if (params.wmodelAkimbo) {
 		bool hasMergeBody = mp_mergemodels.value && MergedModelBodyAkimbo() != -1;
-		if (!hasMergeBody || UTIL_MapReplacesModel(wmodelAkimbo)) {
-			PRECACHE_MODEL(wmodelAkimbo);
-			params.wmodelAkimbo = MODEL_INDEX(wmodelAkimbo);
+		if (!hasMergeBody || UTIL_MapReplacesModel(STRING(params.wmodelAkimbo))) {
+			PRECACHE_MODEL(STRING(params.wmodelAkimbo));
 		}
 	}
 
-	if (wrongClientWeapon) {
-		UTIL_PrecacheOther(wrongClientWeapon);
-		params.wrongClientWeapon = ALLOC_STRING(wrongClientWeapon);
+	if (params.hudFolder) {
+		m_hudPath = ALLOC_STRING(UTIL_VarArgs("%s/%s", STRING(params.hudFolder), STRING(pev->classname)));
+		
+		// TODO: do this once
+		PRECACHE_HUD_FILES(UTIL_VarArgs("sprites/%s.txt", STRING(m_hudPath)));
 	}
-	if (!strcmp("weapon_uzi", STRING(pev->classname))) {
+	else {
+		m_hudPath = ALLOC_STRING(UTIL_VarArgs("%s", STRING(pev->classname)));
+	}
+
+	if (params.wrongClientWeapon) {
+		UTIL_PrecacheOther(STRING(params.wrongClientWeapon));
+	}
+	if (!strcmp("weapon_uzi", STRING(pev->classname)) || true) {
+		//params.displayName = ALLOC_STRING("Desert Eagle");
+		//params.killFeedIcon = ALLOC_STRING("weapon_357");
+		//params.ammoInfo[0].maxClip = 7;
+
 		UTIL_TestConfig(this);
+
+
+		const char* path = UTIL_VarArgs("dump/%s.txt", STRING(pev->classname));
+		UTIL_DumpCustomWeaponConfig(path, params, true);
 	}
 #endif
 }
@@ -115,12 +156,12 @@ void CWeaponCustom::AddEvent(WepEvt evt) {
 
 int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 #ifndef CLIENT_DLL
-	if (!pPlayer->UseSevenKewpGuns() && wrongClientWeapon) {
-		if (pPlayer->HasNamedPlayerItem(wrongClientWeapon)) {
+	if (!pPlayer->UseSevenKewpGuns() && params.wrongClientWeapon) {
+		if (pPlayer->HasNamedPlayerItem(STRING(params.wrongClientWeapon))) {
 			return 0;
 		}
 
-		pPlayer->GiveNamedItem(wrongClientWeapon);
+		pPlayer->GiveNamedItem(STRING(params.wrongClientWeapon));
 		m_pickupPlayers |= PLRBIT(pPlayer->edict());
 		return 0;
 	}
@@ -148,12 +189,12 @@ const char* CWeaponCustom::GetAnimSet() {
 		return NULL;
 
 #ifndef CLIENT_DLL
-	const char* validAnimExt = animExt;
+	const char* validAnimExt = STRING(params.animExt);
 
 	if (IsAkimbo())
-		validAnimExt = animExtAkimbo;
-	else if (m_pPlayer->m_iFOV != 0 && animExtZoom)
-		validAnimExt = animExtZoom;
+		validAnimExt = STRING(params.animExtAkimbo);
+	else if (m_pPlayer->m_iFOV != 0 && params.animExtZoom)
+		validAnimExt = STRING(params.animExtZoom);
 
 	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE_COOP) {
 		// half-life models are missing animations for some weapons, so fallback to valid HL anims
@@ -290,14 +331,14 @@ void CWeaponCustom::Reload() {
 	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 && m_fInSpecialReload != 2)
 		return;
 
-	bool canAkimboReload = IsAkimbo() && GetAkimboClip() < params.maxClip;
+	bool canAkimboReload = IsAkimbo() && GetAkimboClip() < params.ammoInfo[0].maxClip;
 	bool shotgunReload = params.flags & FL_WC_WEP_SHOTGUN_RELOAD;
 
 	if (AreAnyAttacksCharging())
 		return;
 	if (m_iClip == -1)
 		return;
-	if (m_iClip >= params.maxClip && !canAkimboReload && m_fInSpecialReload == 0) {
+	if (m_iClip >= params.ammoInfo[0].maxClip && !canAkimboReload && m_fInSpecialReload == 0) {
 		m_bWantAkimboReload = false;
 		return;
 	}
@@ -451,7 +492,7 @@ void CWeaponCustom::WeaponIdle() {
 		}
 	}
 	else {
-		if (m_iClip == 0 && params.maxClip) {
+		if (m_iClip == 0 && params.ammoInfo[0].maxClip) {
 			return; // assume weapon should stay on the "fire last" animation
 		}
 	}
@@ -513,13 +554,13 @@ void CWeaponCustom::ItemPostFrame() {
 			}
 			else if (m_fInSpecialReload == 1) {
 				// loading shells
-				if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 && m_iClip < params.maxClip) {
+				if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 && m_iClip < params.ammoInfo[0].maxClip) {
 					m_iClip++;
 					m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= 1;
 					m_pPlayer->TabulateAmmo();
 				}
 
-				if (m_iClip >= params.maxClip || m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0) {
+				if (m_iClip >= params.ammoInfo[0].maxClip || m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] == 0) {
 					// play the finishing animation
 					m_fInSpecialReload = 2;
 				}
@@ -532,7 +573,7 @@ void CWeaponCustom::ItemPostFrame() {
 
 		// complete a simple reload.
 		int& clip = m_bInAkimboReload ? m_chargeReady : m_iClip;
-		int j = V_min(params.maxClip - clip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
+		int j = V_min(params.ammoInfo[0].maxClip - clip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 		clip += j;
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
 		m_pPlayer->TabulateAmmo();
@@ -551,7 +592,7 @@ void CWeaponCustom::ItemPostFrame() {
 			}
 
 			bool attackInterrupt = m_pPlayer->pev->button & (IN_ATTACK | IN_ATTACK2);
-			bool canReloadOtherGun = m_iClip < params.maxClip || GetAkimboClip() < params.maxClip;
+			bool canReloadOtherGun = m_iClip < params.ammoInfo[0].maxClip || GetAkimboClip() < params.ammoInfo[0].maxClip;
 
 			// wait for the holstered gun to deploy before reloading it or idling
 			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.0f + params.akimbo.deployTime * 0.001f;
@@ -575,14 +616,14 @@ void CWeaponCustom::ItemPostFrame() {
 }
 
 const char* CWeaponCustom::GetModelP() {
-	return pmodelAkimbo && IsAkimbo() ? pmodelAkimbo : CBasePlayerWeapon::GetModelP();
+	return params.pmodelAkimbo && IsAkimbo() ? STRING(params.pmodelAkimbo) : CBasePlayerWeapon::GetModelP();
 }
 
 const char* CWeaponCustom::GetModelW() {
 #ifndef CLIENT_DLL
-	if (wmodelAkimbo && CanAkimbo()) {
+	if (params.wmodelAkimbo && CanAkimbo()) {
 		bool hasMergeBody = mp_mergemodels.value && MergedModelBodyAkimbo() != -1;
-		return hasMergeBody && !UTIL_MapReplacesModel(wmodelAkimbo) ? MERGED_ITEMS_MODEL : wmodelAkimbo;
+		return hasMergeBody && !UTIL_MapReplacesModel(STRING(params.wmodelAkimbo)) ? MERGED_ITEMS_MODEL : STRING(params.wmodelAkimbo);
 	}
 #endif
 
@@ -1593,7 +1634,7 @@ int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
 	if (!pPlayer)
 		return 0;
 
-	if (!pPlayer->UseSevenKewpGuns() && wrongClientWeapon) {
+	if (!pPlayer->UseSevenKewpGuns() && params.wrongClientWeapon) {
 		return 0;
 	}
 
@@ -1654,3 +1695,43 @@ void CWeaponCustom::SetPrimaryAlt(bool enable) {
 
 	m_lastAltToggle = WallTime();
 }
+
+void CWeaponCustom::GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount) {
+	if (secondary) {
+		if (params.ammoInfo[1].dropEnt) {
+			ammoEntName = STRING(params.ammoInfo[1].dropEnt);
+			dropAmount = params.ammoInfo[1].dropAmt;
+		}
+	}
+	else {
+		if (params.ammoInfo[0].dropEnt) {
+			ammoEntName = STRING(params.ammoInfo[0].dropEnt);
+			dropAmount = params.ammoInfo[0].dropAmt;
+		}
+	}
+}
+
+int CWeaponCustom::GetItemInfo(ItemInfo* p) {
+	bool hideAmmo2 = params.flags & FL_WC_WEP_HIDE_SECONDARY_AMMO;
+	int zoomFlag = (params.flags & FL_WC_WEP_FORCE_ZOOM_SPRITE) ? WEP_FLAG_USE_ZOOM_CROSSHAIR : 0;
+
+	p->iSlot = params.slot;
+	p->iPosition = params.slotPosition;
+	p->pszAmmo1 = params.ammoInfo[0].type ? STRING(params.ammoInfo[0].type) : NULL;
+	p->pszAmmo2 = !hideAmmo2 && params.ammoInfo[1].type ? STRING(params.ammoInfo[1].type) : NULL;
+	p->pszName = STRING(m_hudPath);
+	p->iMaxClip = params.ammoInfo[0].maxClip;
+	p->iId = m_iId;
+	p->iFlags = 0;
+	p->iWeight = params.weight;
+	p->iFlagsEx = zoomFlag;
+	p->fAccuracyDeg = 0;
+	p->fAccuracyDeg2 = 0;
+	p->fAccuracyDegY = 0;
+	p->fAccuracyDegY2 = 0;
+	p->iId = m_iId;
+
+	return 1;
+}
+
+LINK_ENTITY_TO_CLASS(weapon_custom_ini, CWeaponCustom)

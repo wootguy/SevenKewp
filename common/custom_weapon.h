@@ -11,23 +11,26 @@
 
 #define MAX_WC_EVENTS 64
 
-#define FL_WC_WEP_HAS_PRIMARY		(1<<0)
-#define FL_WC_WEP_HAS_SECONDARY		(1<<1)
-#define FL_WC_WEP_HAS_TERTIARY		(1<<2)
-#define FL_WC_WEP_HAS_ALT_PRIMARY	(1<<3)	// alternate primary fire toggled by laser or zooming
-#define FL_WC_WEP_SHOTGUN_RELOAD	(1<<4)	// start animation + load animation (repeated) + finish animation
-#define FL_WC_WEP_UNLINK_COOLDOWNS	(1<<5)	// primary and secondary attacks cooldown independently
-#define FL_WC_WEP_AKIMBO			(1<<6)	// weapon has an akimbo mode
-#define FL_WC_WEP_LINK_CHARGEUPS	(1<<7)	// primary and secondary chargeup state and events are shared (minigun behavior)
-#define FL_WC_WEP_PRIMARY_PRIORITY	(1<<8)	// primary fire has priority over secondary when both attack buttons are pressed
-#define FL_WC_WEP_EXCLUSIVE_HOLD	(1<<9)	// weapon must be dropped before switching to other weapons
-#define FL_WC_WEP_USE_ONLY			(1<<10)	// weapon is collectable with the use key, not by touching
-#define FL_WC_WEP_HAS_LASER			(1<<11)
-#define FL_WC_WEP_DYNAMIC_ACCURACY	(1<<12) // crosshair widens with movement and shrinks when crouched
-#define FL_WC_WEP_ZOOM_SPR_STRETCH	(1<<13) // zoom crosshair stretches to fit the screen
-#define FL_WC_WEP_ZOOM_SPR_ASPECT	(1<<14) // zoom crosshair keeps its aspect ratio when stretched to fit the screen, and borders are filled black
-#define FL_WC_WEP_EMPTY_IDLES		(1<<15) // The last half of idles are for when the clip is empty
-#define FL_WC_WEP_NO_PREDICTION		(1<<16) // Disable client-side prediction entirely
+#define FL_WC_WEP_HAS_PRIMARY			(1<<0)
+#define FL_WC_WEP_HAS_SECONDARY			(1<<1)
+#define FL_WC_WEP_HAS_TERTIARY			(1<<2)
+#define FL_WC_WEP_HAS_ALT_PRIMARY		(1<<3)	// alternate primary fire toggled by laser or zooming
+#define FL_WC_WEP_SHOTGUN_RELOAD		(1<<4)	// start animation + load animation (repeated) + finish animation
+#define FL_WC_WEP_UNLINK_COOLDOWNS		(1<<5)	// primary and secondary attacks cooldown independently
+#define FL_WC_WEP_AKIMBO				(1<<6)	// weapon has an akimbo mode
+#define FL_WC_WEP_LINK_CHARGEUPS		(1<<7)	// primary and secondary chargeup state and events are shared (minigun behavior)
+#define FL_WC_WEP_PRIMARY_PRIORITY		(1<<8)	// primary fire has priority over secondary when both attack buttons are pressed
+#define FL_WC_WEP_EXCLUSIVE_HOLD		(1<<9)	// weapon must be dropped before switching to other weapons
+#define FL_WC_WEP_USE_ONLY				(1<<10)	// weapon is collectable with the use key, not by touching
+#define FL_WC_WEP_HAS_LASER				(1<<11)
+#define FL_WC_WEP_DYNAMIC_ACCURACY		(1<<12) // crosshair widens with movement and shrinks when crouched
+#define FL_WC_WEP_ZOOM_SPR_STRETCH		(1<<13) // zoom crosshair stretches to fit the screen
+#define FL_WC_WEP_ZOOM_SPR_ASPECT		(1<<14) // zoom crosshair keeps its aspect ratio when stretched to fit the screen, and borders are filled black
+#define FL_WC_WEP_EMPTY_IDLES			(1<<15) // The last half of idles are for when the clip is empty
+#define FL_WC_WEP_NO_PREDICTION			(1<<16) // Disable client-side prediction entirely
+#define FL_WC_WEP_HIDE_SECONDARY_AMMO	(1<<17) // Hide secondary ammo on HUD
+#define FL_WC_WEP_FORCE_ZOOM_SPRITE		(1<<18) // Force use of zoom crosshair sprite even when using dynamic crosshairs
+#define FL_WC_WEP_HAND_MODELS			(1<<19) // Default model supports alternate hand models (op4/bshift)
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
@@ -134,10 +137,17 @@ struct WeaponCustomLaser {
 	uint8_t attachment;			// model attachment point for the beam effect (required for beam to display)
 };
 
+struct WeaponCustomAmmoInfo {
+	string_t type;			// ammo inventory name
+	uint16_t maxClip;		// 0 = no reloading
+	uint16_t defaultGive;	// ammo loaded given when picked up for the first time. 0 = use maxClip
+	string_t dropEnt;		// entity to spawn when dropping ammo
+	uint32_t dropAmt;		// amount of ammo to drop
+};
+
 struct CustomWeaponParams {
 	uint32_t flags; // FL_WC_WEP_*
-	uint16_t maxClip;
-	uint16_t defaultAmmo;
+	uint16_t maxClip; // TODO: Remove in next client update (redundant)
 	uint16_t vmodel;
 	uint8_t deployAnim;
 	uint16_t deployTime; // time before you can attack
@@ -157,15 +167,23 @@ struct CustomWeaponParams {
 	WeaponCustomLaser laser;
 
 	// data for file parsing (not networked)
-	uint16_t pmodel;
-	uint16_t wmodel;
-	uint16_t pmodelAkimbo;
-	uint16_t wmodelAkimbo;
+	WeaponCustomAmmoInfo ammoInfo[2];
+	string_t defaultModelV;
+	string_t defaultModelP;
+	string_t defaultModelW;
+	string_t pmodelAkimbo;		// thirdperson model used in akimbo mode
+	string_t wmodelAkimbo;		// world model used in akimbo mode
 	string_t classname;
-	string_t wrongClientWeapon;
-	string_t animExt;
-	string_t animExtZoom;
-	string_t animExtAkimbo;
+	string_t wrongClientWeapon;	// weapon given to players who don't have the correct client to use this one. Do not use aliases here.
+	string_t animExt;			// third person player animation set
+	string_t animExtZoom;		// animation set used while zoomed
+	string_t animExtAkimbo;		// animation set used while in akimbo mode
+	string_t hudFolder;			// path to the folder containing the HUD config
+	string_t displayName;		// name displayed in text messages describing this weapon
+	string_t killFeedIcon;		// icon displayed in the kill feed
+	int8_t slot;				// weapon selection bucket
+	int8_t slotPosition;		// position in weapon selection buucket (-1 = auto)
+	int32_t weight;				// importance for auto weapon selection
 
 	uint8_t numEvents;
 	WepEvt events[MAX_WC_EVENTS];

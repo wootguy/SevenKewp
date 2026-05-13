@@ -50,7 +50,7 @@ class CBasePlayer;
 extern EXPORT globalvars_t				*gpGlobals;
 
 extern StringSet g_weaponNames; // names given by weapons (may have a prefix: "hlcoop/weapon_grapple")
-extern StringSet g_weaponClassnames; // valid weapon classnames
+extern HashMap<int> g_weaponClassIds; // valid weapon classnames. Maps a class to an ID
 extern uint64_t g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict. maps an ID to a bitfield representing all IDs that share the weapon slot
 extern uint64_t g_unusedWeaponIdMask; // marks weapon bits that are unused in the current map
 
@@ -146,6 +146,9 @@ enum merged_item_bodies {
 	MERGE_MDL_W_PMEDKIT,
 	MERGE_MDL_CAMERA,
 };
+
+// maps a model path to its merged model body number
+EXPORT extern HashMap<int> g_merged_models;
 
 // Use this instead of ALLOC_STRING on constant strings
 #define STRING(offset)		((const char *)(gpGlobals->pStringBase + (unsigned int)(offset)))

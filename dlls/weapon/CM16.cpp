@@ -27,12 +27,12 @@ void CM16::Precache()
 	int reloadSnd2 = PRECACHE_SOUND("weapons/m16_magin_metallic.wav");
 	int reloadSnd3 = PRECACHE_SOUND("weapons/m16_charge.wav");
 
-	animExt = "mp5";
-	wrongClientWeapon = "weapon_9mmAR";
+	params.animExt = ALLOC_STRING("mp5");
+	params.wrongClientWeapon = ALLOC_STRING("weapon_9mmAR");
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_SECONDARY;
 	params.deployAnim = M16_DRAW;
-	params.maxClip = M16_MAX_CLIP;
+	params.ammoInfo[0].maxClip = M16_MAX_CLIP;
 	params.reloadStage[0] = { M16_RELOAD_M16, 3370 };
 	params.idles[0] = { M16_IDLE, 80, 3400 };
 	params.idles[1] = { M16_FIDGET, 20, 2870 };

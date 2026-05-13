@@ -452,7 +452,6 @@ set(WEAPON_HDR
 	weapon/CSniperRifle.h
 	weapon/CUzi.h
 	weapon/CMinigun.h
-	weapon/CEagle.h
 	weapon/CM16.h
 	weapon/CWeaponCustom.h
 	weapon/CWeaponEvents.h
@@ -496,7 +495,6 @@ set(WEAPON_SRC
 	weapon/CSniperRifle.cpp
 	weapon/CUzi.cpp
 	weapon/CMinigun.cpp
-	weapon/CEagle.cpp
 	weapon/CM16.cpp
 	weapon/custom_weapon.cpp
 	weapon/CWeaponCustom.cpp

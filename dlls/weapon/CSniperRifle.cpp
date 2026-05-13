@@ -25,13 +25,13 @@ void CSniperRifle::Precache()
 	int boltSnd1 = PRECACHE_SOUND("weapons/sniper_bolt1.wav");
 	int boltSnd2 = PRECACHE_SOUND("weapons/sniper_bolt2.wav");
 
-	animExt = "sniper";
-	animExtZoom = "sniperscope";
-	wrongClientWeapon = "weapon_crossbow";
+	params.animExt = ALLOC_STRING("sniper");
+	params.animExtZoom = ALLOC_STRING("sniperscope");
+	params.wrongClientWeapon = ALLOC_STRING("weapon_crossbow");
 
 	params.flags = FL_WC_WEP_HAS_PRIMARY | FL_WC_WEP_HAS_SECONDARY | FL_WC_WEP_UNLINK_COOLDOWNS;
 	params.deployAnim = M40A1_DRAW;
-	params.maxClip = M40A1_MAX_CLIP;
+	params.ammoInfo[0].maxClip = M40A1_MAX_CLIP;
 	params.reloadStage[0] = { M40A1_RELOAD3, 2353 };
 	params.reloadStage[1] = { M40A1_RELOAD1, 4102 };
 	params.idles[0] = { M40A1_SLOWIDLE, 100, 4348 };
