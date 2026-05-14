@@ -1,5 +1,5 @@
 #include "CBasePlayerAmmo.h"
-#include "CUzi.h"
+#include "ammo.h"
 
 class CUziClip : public CBasePlayerAmmo
 {

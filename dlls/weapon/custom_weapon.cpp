@@ -155,6 +155,8 @@ wep_struct_desc_t g_wc_desc_shoot_opts;
 wep_struct_desc_t g_wc_desc_laser;
 wep_struct_desc_t g_wc_desc_evt[WC_EVT_TOTAL];
 
+int wc_get_int(const char* val);
+float wc_get_float(const char* val);
 
 int BitToIndex(uint32_t mask) {
 	if (mask == 0) return -1; // or handle error
@@ -280,7 +282,25 @@ void init_weapon_struct_fields() {
 		flags[BitToIndex(FL_WC_SHOOT_NO_AUTOFIRE)] = "no_autofire";
 		//flags[BitToIndex(FL_WC_SHOOT_IS_MELEE)] = "is_melee";
 
-		// TODO: convert some of these to enums
+		static const char* chargeModes[32];
+		chargeModes[WC_CHARGEUP_NONE] = "none";
+		chargeModes[WC_CHARGEUP_CONSTANT] = "constant_fire";
+		chargeModes[WC_CHARGEUP_SINGLE] = "single_fire";
+		chargeModes[WC_CHARGEUP_SINGLE_HOLD] = "single_fire_cancellable";
+		chargeModes[WC_CHARGEUP_HOLD] = "single_fire_on_release";
+
+		static const char* overchargeModes[32];
+		overchargeModes[WC_OVERCHARGE_CANCEL] = "cancel";
+		overchargeModes[WC_OVERCHARGE_CONTINUE] = "continue";
+
+		static const char* chargeAmmoModes[32];
+		chargeAmmoModes[WC_CHARGE_AMMO_ATTACK] = "spend_on_attack";
+		chargeAmmoModes[WC_CHARGE_AMMO_LOAD] = "spend_during_chargeup";
+
+		static const char* chargeFlags[32];
+		chargeFlags[BitToIndex(FL_WC_CHARGE_DAMAGE)] = "scale_damage";
+		chargeFlags[BitToIndex(FL_WC_CHARGE_KICKBACK)] = "scale_kickback";
+		
 		WEP_STRUCT_DESC(g_wc_desc_shoot_opts, "unnamed_attack",
 			WEP_FLAGS("flags", "0", shootOpts[0].flags, 0, flags),
 			WEP_FIELD("ammo_cost", "0", shootOpts[0].ammoCost, 0, WC_PARAM_UINT8),
@@ -290,11 +310,11 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("cooldown_fail", "0", shootOpts[0].cooldownFail, 0, WC_PARAM_TIME),
 			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
 			WEP_FIELD("empty_sound", NULL, shootOpts[0].emptySound, 0, WC_PARAM_SOUND_INDEX),
-			WEP_FIELD("overcharge_mode", "0", shootOpts[0].overchargeMode, 2, WC_PARAM_UINT8),
-			WEP_FIELD("charge_ammo_mode", "0", shootOpts[0].chargeAmmoMode, 2, WC_PARAM_UINT8),
-			WEP_FIELD("charge_mode", "0", shootOpts[0].chargeMode, 4, WC_PARAM_UINT8),
+			WEP__ENUM("overcharge_mode", "0", shootOpts[0].overchargeMode, 2, overchargeModes),
+			WEP__ENUM("charge_ammo_mode", "0", shootOpts[0].chargeAmmoMode, 2, chargeAmmoModes),
+			WEP__ENUM("charge_mode", "0", shootOpts[0].chargeMode, 4, chargeModes),
 
-			WEP_FIELD("charge_flags", "0", shootOpts[0].chargeFlags, 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
+			WEP_FLAGS("charge_flags", "0", shootOpts[0].chargeFlags, 0, chargeFlags, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 			WEP_FIELD("charge_time", "0", shootOpts[0].chargeTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 			WEP_FIELD("overcharge_time", "0", shootOpts[0].overchargeTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 			WEP_FIELD("charge_cancel_time", "0", shootOpts[0].chargeCancelTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
@@ -861,17 +881,17 @@ void init_weapon_custom_config_parser() {
 void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const char* name, const char* val,
 	int ptype, wep_field_desc_t* field) {
 	switch (ptype) {
-	case WC_PARAM_UINT8:			*(uint8_t*)dat = atoi(val); break;
+	case WC_PARAM_UINT8:			*(uint8_t*)dat = wc_get_int(val); break;
 	case WC_PARAM_UINT8_PERCENT:	*(uint8_t*)dat = atof(val) * 255 + 0.5f; break;
 	case WC_PARAM_7BIT_PERCENT:		*(uint8_t*)dat = atof(val) * 127 + 0.5f; break;
 	case WC_PARAM_UINT8_FP_2_6:		*(uint8_t*)dat = atof(val) * 64; break;
 	case WC_PARAM_UINT8_ANIM:				*(uint8_t*)dat = atoi(val); break;
-	case WC_PARAM_UINT16:			*(uint16_t*)dat = atoi(val); break;
-	case WC_PARAM_UINT32:			*(uint32_t*)dat = atoi(val); break;
-	case WC_PARAM_INT8:				*(int8_t*)dat = atoi(val); break;
-	case WC_PARAM_INT16:			*(int16_t*)dat = atoi(val); break;
-	case WC_PARAM_INT32:			*(int32_t*)dat = atoi(val); break;
-	case WC_PARAM_FLOAT:			*(float*)dat = atof(val); break;
+	case WC_PARAM_UINT16:			*(uint16_t*)dat = wc_get_int(val); break;
+	case WC_PARAM_UINT32:			*(uint32_t*)dat = wc_get_int(val); break;
+	case WC_PARAM_INT8:				*(int8_t*)dat = wc_get_int(val); break;
+	case WC_PARAM_INT16:			*(int16_t*)dat = wc_get_int(val); break;
+	case WC_PARAM_INT32:			*(int32_t*)dat = wc_get_int(val); break;
+	case WC_PARAM_FLOAT:			*(float*)dat = wc_get_float(val); break;
 	case WC_PARAM_RGBA:				*(RGBA*)dat = UTIL_ParseRGBA(val); break;
 	case WC_PARAM_RGB:				*(RGB*)dat = UTIL_ParseRGB(val); break;
 	case WC_PARAM_VECTOR:			*(Vector*)dat = UTIL_ParseVector(val); break;
@@ -995,7 +1015,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 			((uint16_t*)dat)[1] = ((uint16_t*)dat)[0];
 		break;
 	}
-	case WC_PARAM_UINT16_PERCENT:	*(uint16_t*)dat = clamp(0, atof(val) * 65535, 65535); break;
+	case WC_PARAM_UINT16_PERCENT:	*(uint16_t*)dat = atof(val) ? FLOAT_TO_MOVESPEED_MULT(atof(val)) : 0; break;
 	case WC_PARAM_STRING:			*(string_t*)dat = ALLOC_STRING(val); break;
 	default:
 		ALERT(at_error, "%s (line %d): Unknown param type %d for key '%s' in group '%s'\n",
@@ -1102,7 +1122,7 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, wep_field_
 			fprintf(f, "%.2f %.2f\n", acc[0] / 100.0f, acc[1] / 100.0f);
 		break;
 	}
-	case WC_PARAM_UINT16_PERCENT:	fprintf(f, "%.3f\n", (*(uint16_t*)dat) / 655.35f); break;
+	case WC_PARAM_UINT16_PERCENT:	fprintf(f, "%.2f\n", MOVESPEED_MULT_TO_FLOAT(*(uint16_t*)dat)); break;
 	case WC_PARAM_STRING:			fprintf(f, "%s\n", STRING(*(string_t*)dat)); break;
 	default:
 		ALERT(at_error, "%s: Unknown param type %d\n", __func__, ptype);
@@ -1224,6 +1244,26 @@ std::string wc_get_field_str(wep_field_desc_t& field, uint8_t* dat) {
 //
 // General parsing utils
 //
+
+float wc_get_float(const char* val) {
+#ifndef CLIENT_DLL
+	skill_cvar_t** skillVal = g_skillCvars.get(val);
+	if (skillVal) {
+		return (*skillVal)->cvar.value;
+	}	
+#endif
+	return atof(val);
+}
+
+int wc_get_int(const char* val) {
+#ifndef CLIENT_DLL
+	skill_cvar_t** skillVal = g_skillCvars.get(val);
+	if (skillVal) {
+		return (*skillVal)->cvar.value;
+	}
+#endif
+	return atoi(val);
+}
 
 void wc_compare_struct_fields(wep_struct_desc_t& desc, void* struct1, void* struct2, int idx) {
 	for (int i = 0; i < desc.numFields; i++) {
@@ -1663,7 +1703,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 			continue;
 
 		fprintf(cfg, "\n[%s]\n", ammoNames[k]);
-		wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_ammo);
+		wc_fwrite_wep_struct_fields(cfg, dat + sizeof(WeaponCustomAmmoInfo) * k, g_wc_desc_ammo);
 	}
 	
 
@@ -1765,7 +1805,16 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 }
 
 bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) {
-	string fpath = getGameFilePath((string("weapons/") + path).c_str(), false);
+	string searchPath = string("weapons/") + path;
+	string fpath = getGameFilePath(searchPath.c_str(), false);
+
+	memset(&params, 0, sizeof(CustomWeaponParams));
+
+	if (!fileExists(fpath.c_str())) {
+		ALERT(at_error, "Weapon config not found: '%s'\n", searchPath.c_str());
+		return false;
+	}
+
 	uint64_t lastModified = getFileModifiedTime(fpath.c_str());
 
 	WeaponConfigCache* cache = g_customWeaponCache.get(path);
@@ -1785,8 +1834,6 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 	ALERT(at_logged, "Parsing weapon config: %s\n", path);
 
 	vector<SettingsGroup> groups = parse_settings_groups(path);
-
-	memset(&params, 0, sizeof(CustomWeaponParams));
 
 	if (!groups.size())
 		return false;
@@ -2291,6 +2338,18 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 
 		for (int k = 0; k < params.numEvents; k++) {
 			WepEvt& evt = params.events[k];
+
+			bool serverSideEvent = false;
+			switch (evt.evtType) {
+			case WC_EVT_PROJECTILE:
+			case WC_EVT_SERVER:
+				serverSideEvent = true;
+				break;
+			}
+
+			if (serverSideEvent)
+				continue;
+			
 			uint16_t packedHeader = (evt.hasDelay << 15) | (evt.triggerArg << 10) | (evt.trigger << 5) | evt.evtType;
 			WRITE_SHORT(packedHeader);
 			if (evt.hasDelay) {
@@ -2305,15 +2364,7 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 			ALERT(at_aiconsole, "Write event %s (%d header bytes)\n",
 				evtName, evt.hasDelay ? 4 : 2);
 
-			switch (evt.evtType) {
-			default:
-				wc_send_netmsg_struct(*desc, &evt);
-				break;
-			case WC_EVT_PROJECTILE:
-			case WC_EVT_SERVER:
-				// server-side events
-				break;
-			}
+			wc_send_netmsg_struct(*desc, &evt);
 		}
 		MESSAGE_END();
 	}

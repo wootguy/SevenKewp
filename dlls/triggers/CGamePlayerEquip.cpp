@@ -12,11 +12,11 @@
 #include "CGlock.h"
 #include "CRpg.h"
 #include "CMP5.h"
-#include "CUzi.h"
 #include "CTripmine.h"
 #include "CSatchel.h"
 #include "CHandGrenade.h"
 #include "CSqueak.h"
+#include "ammo.h"
 #include "skill.h"
 #include "user_messages.h"
 

@@ -448,11 +448,6 @@ set(WEAPON_HDR
 	weapon/CSporeLauncher.h
 	weapon/CWeaponInventory.h
 	weapon/CKnife.h
-	weapon/CM249.h
-	weapon/CSniperRifle.h
-	weapon/CUzi.h
-	weapon/CMinigun.h
-	weapon/CM16.h
 	weapon/CWeaponCustom.h
 	weapon/CWeaponEvents.h
 	weapon/CProjectileCustom.h
@@ -491,11 +486,6 @@ set(WEAPON_SRC
 	weapon/CGlock.cpp
 	weapon/CWeaponInventory.cpp
 	weapon/CKnife.cpp
-	weapon/CM249.cpp
-	weapon/CSniperRifle.cpp
-	weapon/CUzi.cpp
-	weapon/CMinigun.cpp
-	weapon/CM16.cpp
 	weapon/custom_weapon.cpp
 	weapon/CWeaponCustom.cpp
 	weapon/CWeaponEvents.cpp

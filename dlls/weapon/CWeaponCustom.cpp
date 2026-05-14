@@ -76,6 +76,19 @@ void CWeaponCustom::PrecacheEvents() {
 
 	if (m_configPath) {
 		UTIL_ParseCustomWeaponConfig(m_configPath, params);
+
+		if (strcmp(STRING(pev->classname), STRING(params.classname))) {
+			if (params.flags & FL_WC_WEP_AKIMBO) {
+				// enable akimbo mode and world model if an "akimbo" alias is used
+				if (strstr(STRING(pev->classname), "akimbo")) {
+					SetCanAkimbo(true);
+					SetAkimbo(true);
+				}
+			}
+
+			pev->classname = params.classname; // undo alias
+		}
+		
 		params.maxClip = params.ammoInfo[0].maxClip;
 
 		if (m_iId <= 0) {
@@ -97,15 +110,16 @@ void CWeaponCustom::PrecacheEvents() {
 	else {
 		m_mergedModelBody = -1;
 
-		if (m_defaultModelV)
+		if (m_defaultModelV) {
 			params.vmodel = MODEL_INDEX(GetModelV());
+			params.defaultModelV = ALLOC_STRING(m_defaultModelV);
+		}
 		if (m_defaultModelP)
-			params.defaultModelP = MODEL_INDEX(m_defaultModelP);
+			params.defaultModelP = ALLOC_STRING(m_defaultModelP);
 		if (m_defaultModelW)
-			params.defaultModelW = MODEL_INDEX(m_defaultModelW);
+			params.defaultModelW = ALLOC_STRING(m_defaultModelW);
 	}
 
-	params.maxClip = params.ammoInfo[0].maxClip;
 	params.classname = pev->classname;
 
 	if (params.pmodelAkimbo) {
@@ -131,10 +145,22 @@ void CWeaponCustom::PrecacheEvents() {
 	if (params.wrongClientWeapon) {
 		UTIL_PrecacheOther(STRING(params.wrongClientWeapon));
 	}
-	if (!strcmp("weapon_uzi", STRING(pev->classname)) || true) {
-		//params.displayName = ALLOC_STRING("Desert Eagle");
-		//params.killFeedIcon = ALLOC_STRING("weapon_357");
-		//params.ammoInfo[0].maxClip = 7;
+
+	/*
+	if (!strcmp("weapon_m16", STRING(pev->classname))) {
+		params.displayName = ALLOC_STRING("M16");
+		params.killFeedIcon = ALLOC_STRING("weapon_9mmAR");
+		params.hudFolder = ALLOC_STRING("hlcoop");
+		params.slot = 2;
+		params.slotPosition = 4;
+		params.weight = M16_WEIGHT;
+		params.flags |= FL_WC_WEP_HAND_MODELS;
+		params.ammoInfo[0].type = ALLOC_STRING("556");
+		params.ammoInfo[0].dropEnt = ALLOC_STRING("ammo_556clip");
+		params.ammoInfo[0].dropAmt = 30;
+		params.ammoInfo[1].type = ALLOC_STRING("ARgrenades");
+		params.ammoInfo[1].dropEnt = ALLOC_STRING("ammo_ARgrenades");
+		params.ammoInfo[1].dropAmt = 2;
 
 		UTIL_TestConfig(this);
 
@@ -142,6 +168,7 @@ void CWeaponCustom::PrecacheEvents() {
 		const char* path = UTIL_VarArgs("dump/%s.txt", STRING(pev->classname));
 		UTIL_DumpCustomWeaponConfig(path, params, true);
 	}
+	*/
 #endif
 }
 

@@ -29,7 +29,7 @@
 #define FL_WC_WEP_EMPTY_IDLES			(1<<15) // The last half of idles are for when the clip is empty
 #define FL_WC_WEP_NO_PREDICTION			(1<<16) // Disable client-side prediction entirely
 #define FL_WC_WEP_HIDE_SECONDARY_AMMO	(1<<17) // Hide secondary ammo on HUD
-#define FL_WC_WEP_FORCE_ZOOM_SPRITE		(1<<18) // Force use of zoom crosshair sprite even when using dynamic crosshairs
+#define FL_WC_WEP_FORCE_ZOOM_SPRITE		(1<<18) // Force use of zoom crosshair sprite when using dynamic crosshairs
 #define FL_WC_WEP_HAND_MODELS			(1<<19) // Default model supports alternate hand models (op4/bshift)
 
 #define FL_WC_SHOOT_UNDERWATER 1

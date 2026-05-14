@@ -1407,7 +1407,7 @@ void CL_DLLEXPORT HUD_PostRunCmd(struct local_state_s* from, struct local_state_
 		static float lastButtons;
 		if (gEngfuncs.GetClientTime() - lastButtons < holdtime || buttonsPressed) {
 			const char* sep = "------------------------------------------------------------\n";
-			int test = from->weapondata[WEAPON_MINIGUN].iuser2;
+			int test = from->weapondata[WEAPON_SUIT+1].iuser2;
 			PRINTF("%s> CMD %-5d   MSEC %d   T %f   A %d%s\n", replaySeq == 0 ? sep : "", random_seed,
 				cmd->msec, (float)time, test, g_runfuncs ? "  RUNFUNC" : "");
 			if (buttonsPressed)

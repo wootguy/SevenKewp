@@ -54,7 +54,7 @@ extern HashMap<int> g_weaponClassIds; // valid weapon classnames. Maps a class t
 extern uint64_t g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict. maps an ID to a bitfield representing all IDs that share the weapon slot
 extern uint64_t g_unusedWeaponIdMask; // marks weapon bits that are unused in the current map
 
-// rmaps a half-life weapon to a sevenkewp weapon.
+// remaps a half-life weapon to a sevenkewp weapon.
 // When a sevenkewp player picks up one of these hl weapons, they'll get the remapped weapon instead.
 // This also applies to weapons dropped by NPCs or created with CreateEntity()
 EXPORT extern StringMap g_weaponRemapHL;

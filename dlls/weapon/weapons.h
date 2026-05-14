@@ -78,12 +78,6 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 // leaving a gap here for custom weapons that vanilla HL players can pick up (HL max weapons = 32)
 
 #define WEAPON_SUIT				31	// ?????
-#define	WEAPON_M249				32
-#define	WEAPON_M40A1			33
-#define	WEAPON_UZI				34
-#define	WEAPON_MINIGUN			35
-#define	WEAPON_EAGLE			36
-#define	WEAPON_M16				37
 
 #define WEAPON_ALLWEAPONS		(~(1ULL<<WEAPON_SUIT))
 
@@ -101,13 +95,7 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define KNIFE_WEIGHT			0
 #define GLOCK_WEIGHT			10
 #define PYTHON_WEIGHT			15
-#define EAGLE_WEIGHT			15
 #define MP5_WEIGHT				15
-#define M16_WEIGHT				15
-#define M249_WEIGHT				20
-#define MINIGUN_WEIGHT			20
-#define M40A1_WEIGHT			20
-#define UZI_WEIGHT				15
 #define SHOTGUN_WEIGHT			15
 #define SHOCKRIFLE_WEIGHT		15
 #define CROSSBOW_WEIGHT			10
@@ -193,6 +181,9 @@ EXPORT void UTIL_RegisterAmmoCapacity(const char* ammoType, int capacity);
 // register an entity for precaching and equipment via map CFG
 // Use this with ammo entities and weapons that couldn't be registered normally
 EXPORT void UTIL_RegisterEquipmentEntity(const char* szClassname);
+
+// remap classnames to weapons that don't have a class implementation of their own
+EXPORT void UTIL_RegisterWeaponCustomAlias(const char* classname, const char* alias);
 
 // set a default sprite dir for a stock weapon
 EXPORT void UTIL_SetDefaultWeaponSpriteDir(const char* szClassname, const char* spriteDir);
