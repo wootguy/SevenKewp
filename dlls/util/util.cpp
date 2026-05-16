@@ -2961,11 +2961,39 @@ void ResetConsoleColor() {
 void SetConsoleColor(ALERT_TYPE target) {
 	if (!sv_colorcon.value)
 		return;
+
+	switch (target) {
+	case at_error:
+		printf("\033[31m");
+		break;
+	case at_warning:
+		printf("\033[33m");
+		break;
+	case at_notice:
+	case at_console:
+		if (g_plugin_print) {
+			printf("\033[35m");
+		}
+		else {
+			printf("\033[32m");
+		}
+		break;
+	case at_aiconsole:
+		printf("\033[94m");
+		break;
+	case at_logged:
+		printf("\033[36m");
+		break;
+	default:
+		break;
+	}
 }
 
 void ResetConsoleColor() {
 	if (!sv_colorcon.value)
 		return;
+
+	printf("\033[39m");
 }
 #endif
 
@@ -3014,6 +3042,17 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 
 	g_engfuncs.pfnAlertMessage(target, "%s", log_line);
 
+	if (g_developer->value == 0 && (target == at_error || target == at_warning)) {
+		if (target == at_error) {
+			g_engfuncs.pfnServerPrint("ERROR: ");
+			g_engfuncs.pfnServerPrint(log_line);
+		}
+		else if (target == at_warning) {
+			g_engfuncs.pfnServerPrint("WARNING: ");
+			g_engfuncs.pfnServerPrint(log_line);
+		}
+	}
+
 	ResetConsoleColor();
 
 	if (target == at_error) {
@@ -3025,9 +3064,6 @@ void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {
 		std::string line = log_line;
 		writeDebugLog(g_errorFile, g_errorLogName, "error", line.substr(0, line.size()-1));
 		g_errorFile.flush();
-
-		if (g_developer->value == 0)
-			g_engfuncs.pfnServerPrint(log_line);
 	}
 
 	g_plugin_print = false;
