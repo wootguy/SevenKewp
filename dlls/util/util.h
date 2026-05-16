@@ -981,3 +981,11 @@ EXPORT void UTIL_SyncPredictionCvars();
 // tell the client which weapon they're using, how much clip it has, and its state
 // state: 0 = not the current weapon, 1 = current, 2 = on target
 EXPORT void UTIL_UpdateWeaponState(CBasePlayer* plr, int state, int wepId, int clip);
+
+enum GetEntitySpawnFuncSearchMode {
+	SPAWNFUNC_SEARCH_ALL,
+	SPAWNFUNC_SEARCH_PLUGINS_ONLY,
+	SPAWNFUNC_SEARCH_MOD_ONLY,
+};
+
+EXPORT SpawnFunc UTIL_GetEntitySpawnFunc(const char* classname, GetEntitySpawnFuncSearchMode searchMode= SPAWNFUNC_SEARCH_ALL);

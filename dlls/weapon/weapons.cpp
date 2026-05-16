@@ -258,7 +258,7 @@ int UTIL_GetMaxAmmoInitial(const char* ammoType) {
 }
 
 // Queues the weapon info for sending to clients
-ItemInfo UTIL_RegisterWeapon( const char *szClassname, const char* configPath, bool sevenkewpOnly)
+ItemInfo UTIL_RegisterWeapon( const char *szClassname, const char* configPath)
 {
 	edict_t	*pent;
 	ItemInfo info;
@@ -271,6 +271,8 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname, const char* configPath, b
 		return info;
 	}
 
+	bool sevenkewpOnly = false;
+
 	if (configPath) {
 		// load custom weapon details from file
 		CustomWeaponParams params;
@@ -279,15 +281,18 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname, const char* configPath, b
 			return info;
 		}
 
+		sevenkewpOnly = (params.flags & (FL_WC_WEP_ALLOW_HL | FL_WC_WEP_NO_PREDICTION)) == 0;
+
 		if (!szClassname) {
 			szClassname = STRING(params.classname);
 			if (!szClassname[0]) {
 				ALERT(at_error, "Failed to register weapon using config '%s' (no classname configured)\n", configPath);
 				return info;
 			}
-		}
 
-		g_entityRemap.put(szClassname, weapon_custom_ini);
+			g_entityRemap.put(szClassname, weapon_custom_ini);
+		}
+		
 		g_customWeaponConfigs.put(szClassname, configPath);
 
 		if (params.flags & FL_WC_WEP_AKIMBO) {
@@ -412,7 +417,14 @@ void UTIL_RegisterWeaponCustomAlias(const char* classname, const char* alias) {
 	}
 	
 	g_customWeaponConfigs.put(alias, std::string(config).c_str());
-	g_entityRemap.put(alias, weapon_custom_ini);
+
+	edict_t* pent = CREATE_NAMED_ENTITY(MAKE_STRING(classname));
+	bool existingClass = !FNullEnt(pent);
+	REMOVE_ENTITY(pent);
+
+	// remap alias to the base custom weapon if a weapon-specific class doesn't exists
+	if (!existingClass)
+		g_entityRemap.put(alias, weapon_custom_ini);
 }
 
 void UTIL_RegisterEquipmentEntity(const char* szClassname) {
@@ -488,17 +500,25 @@ void W_Precache(void)
 	UTIL_RegisterWeapon("weapon_medkit");
 	UTIL_RegisterWeapon("weapon_inventory");
 	UTIL_RegisterWeapon("weapon_knife");
-	UTIL_RegisterWeapon(NULL, "weapon_m249.txt", true);
-	UTIL_RegisterWeapon(NULL, "weapon_sniperrifle.txt", true);
-	UTIL_RegisterWeapon(NULL, "weapon_uzi.txt", true);
-	UTIL_RegisterWeapon(NULL, "weapon_minigun.txt", true);
-	UTIL_RegisterWeapon(NULL, "weapon_eagle.txt", true);
-	UTIL_RegisterWeapon(NULL, "weapon_m16.txt", true);
+	UTIL_RegisterWeapon(NULL, "weapon_m249.txt");
+	UTIL_RegisterWeapon(NULL, "weapon_sniperrifle.txt");
+	UTIL_RegisterWeapon(NULL, "weapon_uzi.txt");
+	UTIL_RegisterWeapon(NULL, "weapon_minigun.txt");
+	UTIL_RegisterWeapon(NULL, "weapon_eagle.txt");
+	//UTIL_RegisterWeapon(NULL, "weapon_m16.txt");
 
 	// weapon aliases
 	UTIL_RegisterWeaponCustomAlias("weapon_uzi", "weapon_uziakimbo"); // for sven maps (default alias of "_akimbo" won't work)
 
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
+
+	for (auto item : g_mapCfgWeaponRegistrations) {
+		const char* cname = item.first.size() ? item.first.c_str() : NULL;
+		UTIL_RegisterWeapon(cname, item.second.c_str());
+	}
+	for (auto item : g_mapCfgCustomWeaponAliases) {
+		UTIL_RegisterWeaponCustomAlias(item.first.c_str(), item.second.c_str());
+	}
 
 	g_sModelIndexFireball = PRECACHE_MODEL_ENT(NULL, "sprites/zerogxplode.spr");// fireball
 	g_sModelIndexWExplosion = PRECACHE_MODEL_ENT(NULL, "sprites/WXplo1.spr");// underwater fireball

@@ -146,21 +146,27 @@ void CWeaponCustom::PrecacheEvents() {
 		UTIL_PrecacheOther(STRING(params.wrongClientWeapon));
 	}
 
+	for (int i = 0; i < 2; i++) {
+		if (params.ammoInfo[i].dropEnt)
+			UTIL_PrecacheOther(STRING(params.ammoInfo[i].dropEnt));
+	}
+
 	/*
-	if (!strcmp("weapon_m16", STRING(pev->classname))) {
-		params.displayName = ALLOC_STRING("M16");
-		params.killFeedIcon = ALLOC_STRING("weapon_9mmAR");
-		params.hudFolder = ALLOC_STRING("hlcoop");
-		params.slot = 2;
-		params.slotPosition = 4;
-		params.weight = M16_WEIGHT;
-		params.flags |= FL_WC_WEP_HAND_MODELS;
-		params.ammoInfo[0].type = ALLOC_STRING("556");
-		params.ammoInfo[0].dropEnt = ALLOC_STRING("ammo_556clip");
-		params.ammoInfo[0].dropAmt = 30;
-		params.ammoInfo[1].type = ALLOC_STRING("ARgrenades");
-		params.ammoInfo[1].dropEnt = ALLOC_STRING("ammo_ARgrenades");
-		params.ammoInfo[1].dropAmt = 2;
+	// for converting weapon classes to configs
+	if (!strcmp("weapon_as_jetpack", STRING(pev->classname))) {
+		params.displayName = ALLOC_STRING(DisplayName());
+		params.killFeedIcon = ALLOC_STRING(GetDeathNoticeWeapon());
+		params.hudFolder = ALLOC_STRING("poke646");
+		params.slot = 1;
+		params.slotPosition = -1;
+		params.weight = 5;
+		params.flags |= FL_WC_WEP_ALLOW_HL;
+		params.ammoInfo[0].type = ALLOC_STRING("9mm");
+		params.ammoInfo[0].dropEnt = ALLOC_STRING("ammo_uziclip");
+		params.ammoInfo[0].dropAmt = 32;
+		//params.ammoInfo[1].type = ALLOC_STRING("uranium");
+		//params.ammoInfo[1].dropEnt = ALLOC_STRING("ammo_gaussclip");
+		//params.ammoInfo[1].dropAmt = 20;
 
 		UTIL_TestConfig(this);
 

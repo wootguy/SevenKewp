@@ -173,7 +173,7 @@ EXPORT void GetCircularGaussianSpread(float& x, float& y);
 // szClassname = entity to register. Can be NULL if using a config file.
 // configPath = if set, map a classname to CWeaponCustom and load settings from the config
 // sevenkewpOnly = auto-assign an ID in the sevenkewp-only range to free up slots in the vanilla HL ID range
-EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname, const char* configPath=NULL, bool sevenkewpOnly=false);
+EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname, const char* configPath=NULL);
 
 // call this for custom ammo types so custom weapons know what their capacity is.
 EXPORT void UTIL_RegisterAmmoCapacity(const char* ammoType, int capacity);
@@ -182,7 +182,7 @@ EXPORT void UTIL_RegisterAmmoCapacity(const char* ammoType, int capacity);
 // Use this with ammo entities and weapons that couldn't be registered normally
 EXPORT void UTIL_RegisterEquipmentEntity(const char* szClassname);
 
-// remap classnames to weapons that don't have a class implementation of their own
+// add another classname that a custom weapon to be spawned with (e.g. weapon_glock = weapon_9mmhandgun)
 EXPORT void UTIL_RegisterWeaponCustomAlias(const char* classname, const char* alias);
 
 // set a default sprite dir for a stock weapon

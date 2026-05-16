@@ -31,6 +31,7 @@
 #define FL_WC_WEP_HIDE_SECONDARY_AMMO	(1<<17) // Hide secondary ammo on HUD
 #define FL_WC_WEP_FORCE_ZOOM_SPRITE		(1<<18) // Force use of zoom crosshair sprite when using dynamic crosshairs
 #define FL_WC_WEP_HAND_MODELS			(1<<19) // Default model supports alternate hand models (op4/bshift)
+#define FL_WC_WEP_ALLOW_HL				(1<<20) // Allow the weapon to be used by vanilla HL clients without prediction
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
@@ -70,9 +71,9 @@ enum WeaponCustomChargeAmmoMode {
 };
 
 struct MeleeOpts {
-	float damage;
+	int damage;
 	int damageBits;
-	float range;
+	int range;
 	Vector attackOffset;	// in forward, up, right units
 	uint16_t missCooldown;	// cooldown millis for missing an attack
 	uint16_t hitCooldown;	// cooldown millis for hitting something
@@ -202,6 +203,9 @@ extern uint32_t g_wcPredDataSent[MAX_WEAPONS]; // bitfields indicating which pla
 
 // call once when dll loaded
 void init_weapon_custom_config_parser();
+
+// call on map change
+void clear_weapon_custom_cache();
 
 EXPORT bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params);
 

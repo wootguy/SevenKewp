@@ -599,8 +599,11 @@ void ServerDeactivate( void )
 	g_ammoCapacities.clear();
 	g_ammoCapacitiesInitial.clear();
 	g_customWeaponConfigs.clear();
+	g_mapCfgWeaponRegistrations.clear();
+	g_mapCfgCustomWeaponAliases.clear();
 	ClearPlayerModelCache();
 	clearNetworkMessageHistory();
+	clear_weapon_custom_cache();
 	g_mp3Command = "";
 	g_monstersNerfed = false;
 	g_cfgsExecuted = false;

@@ -77,7 +77,6 @@ enum WC_PARAM_TYPE {
 	WC_PARAM_TIME,					// time value stored as uint16_t
 	WC_PARAM_ACCURACY_UINT16_2X,	// degrees of accuracy (0-1 = 0-180) scaled to uint16_t (X + Y)
 	WC_PARAM_ACCURACY_100_2X,		// degrees of accuracy (0-1 = 0-180) scaled to uint16_t (X + Y)
-	WC_PARAM_UINT8_ANIM,					// animation index (write even if 0)
 	WC_PARAM_STRING,
 };
 
@@ -94,8 +93,9 @@ enum event_category {
 	WC_EVT_CATEGORY_TOTAL,
 };
 
-#define FL_FIELD_NO_NETWORK 1	// field is not networked to clients
-#define FL_FIELD_NO_CFG 2		// field is calculated automatically and not saved to a config
+#define FL_FIELD_NO_NETWORK 1		// field is not networked to clients
+#define FL_FIELD_NO_CFG 2			// field is calculated automatically and not saved to a config
+#define FL_FIELD_ALWAYS_WRITE_CFG 4	// always write this field to the CFG, even if using the default value
 
 struct WeaponConfigCache {
 	CustomWeaponParams params;
@@ -103,6 +103,10 @@ struct WeaponConfigCache {
 };
 
 HashMap<WeaponConfigCache> g_customWeaponCache;
+
+void clear_weapon_custom_cache() {
+	g_customWeaponCache.clear();
+}
 
 struct SettingsGroup {
 	string name;
@@ -198,6 +202,7 @@ void init_weapon_struct_fields() {
 		wep_flags[BitToIndex(FL_WC_WEP_HIDE_SECONDARY_AMMO)] = "hide_secondary_ammo";
 		wep_flags[BitToIndex(FL_WC_WEP_FORCE_ZOOM_SPRITE)] = "force_zoom_sprite";
 		wep_flags[BitToIndex(FL_WC_WEP_HAND_MODELS)] = "has_hand_models";
+		wep_flags[BitToIndex(FL_WC_WEP_ALLOW_HL)] = "hl_client_can_use";
 
 		WEP_STRUCT_DESC(g_wc_desc_general, "general",
 			WEP_FIELD("classname", "", classname, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -214,11 +219,11 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("w_model", NULL, defaultModelW, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("w_model_akimbo", NULL, wmodelAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("hud_folder", "", hudFolder, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("slot", "0", slot, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("slot_position", "-1", slotPosition, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("slot", "0", slot, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK | FL_FIELD_ALWAYS_WRITE_CFG),
+			WEP_FIELD("slot_position", "-1", slotPosition, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK | FL_FIELD_ALWAYS_WRITE_CFG),
 			WEP_FIELD("weight", "0", weight, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
 
-			WEP_FIELD("deploy_anim", "0", deployAnim, 0, WC_PARAM_UINT8_ANIM),
+			WEP_FIELD("deploy_anim", "0", deployAnim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 			WEP_FIELD("deploy_time", "0", deployTime, 0, WC_PARAM_TIME),
 			WEP_FIELD("deploy_anim_time", "0", deployAnimTime, 0, WC_PARAM_TIME),
 
@@ -239,35 +244,29 @@ void init_weapon_struct_fields() {
 	);
 
 	WEP_STRUCT_DESC(g_wc_desc_reload, "reload_unnamed",
-		WEP_FIELD("anim", "0", reloadStage[0].anim, 0, WC_PARAM_UINT8_ANIM),
+		WEP_FIELD("anim", "0", reloadStage[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("time", "0", reloadStage[0].time, 0, WC_PARAM_TIME),
 	);
 
 	WEP_STRUCT_DESC(g_wc_desc_akimbo_reload, "reload_akimbo",
-		WEP_FIELD("anim", "0", akimbo.reload.anim, 0, WC_PARAM_UINT8_ANIM),
+		WEP_FIELD("anim", "0", akimbo.reload.anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("time", "0", akimbo.reload.time, 0, WC_PARAM_TIME),
 	);
 
 	WEP_STRUCT_DESC(g_wc_desc_idle, "idle",
-		WEP_FIELD("anim", "0", idles[0].anim, 0, WC_PARAM_UINT8_ANIM),
+		WEP_FIELD("anim", "0", idles[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("weight", "0", idles[0].weight, 0, WC_PARAM_UINT8),
 		WEP_FIELD("time", "0", idles[0].time, 0, WC_PARAM_TIME),
 	);
 
 	WEP_STRUCT_DESC(g_wc_desc_akimbo_idle, "idle_akimbo",
-		WEP_FIELD("anim", "0", akimbo.idles[0].anim, 0, WC_PARAM_UINT8_ANIM),
-		WEP_FIELD("weight", "0", akimbo.idles[0].weight, 0, WC_PARAM_UINT8),
-		WEP_FIELD("time", "0", akimbo.idles[0].time, 0, WC_PARAM_TIME),
-	);
-
-	WEP_STRUCT_DESC(g_wc_desc_akimbo_idle, "idle_akimbo",
-		WEP_FIELD("anim", "0", akimbo.idles[0].anim, 0, WC_PARAM_UINT8_ANIM),
+		WEP_FIELD("anim", "0", akimbo.idles[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("weight", "0", akimbo.idles[0].weight, 0, WC_PARAM_UINT8),
 		WEP_FIELD("time", "0", akimbo.idles[0].time, 0, WC_PARAM_TIME),
 	);
 
 	WEP_STRUCT_DESC(g_wc_desc_laser_idle, "idle_laser",
-		WEP_FIELD("anim", "0", laser.idles[0].anim, 0, WC_PARAM_UINT8_ANIM),
+		WEP_FIELD("anim", "0", laser.idles[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("weight", "0", laser.idles[0].weight, 0, WC_PARAM_UINT8),
 		WEP_FIELD("time", "0", laser.idles[0].time, 0, WC_PARAM_TIME),
 	);
@@ -300,6 +299,33 @@ void init_weapon_struct_fields() {
 		static const char* chargeFlags[32];
 		chargeFlags[BitToIndex(FL_WC_CHARGE_DAMAGE)] = "scale_damage";
 		chargeFlags[BitToIndex(FL_WC_CHARGE_KICKBACK)] = "scale_kickback";
+
+		static const char* dmgFlags[32];
+		dmgFlags[BitToIndex(DMG_CRUSH)] = "crush";
+		dmgFlags[BitToIndex(DMG_BULLET)] = "bullet";
+		dmgFlags[BitToIndex(DMG_SLASH)] = "slash";
+		dmgFlags[BitToIndex(DMG_BURN)] = "burn";
+		dmgFlags[BitToIndex(DMG_FREEZE)] = "freeze";
+		dmgFlags[BitToIndex(DMG_BLAST)] = "blast";
+		dmgFlags[BitToIndex(DMG_CLUB)] = "club";
+		dmgFlags[BitToIndex(DMG_SHOCK)] = "shock";
+		dmgFlags[BitToIndex(DMG_SONIC)] = "sonic";
+		dmgFlags[BitToIndex(DMG_ENERGYBEAM)] = "energybeam";
+		dmgFlags[BitToIndex(DMG_NEVERGIB)] = "nevergib";
+		dmgFlags[BitToIndex(DMG_ALWAYSGIB)] = "alwaysgib";
+		dmgFlags[BitToIndex(DMG_DROWN)] = "drown";
+		dmgFlags[BitToIndex(DMG_PARALYZE)] = "paralyze";
+		dmgFlags[BitToIndex(DMG_NERVEGAS)] = "nervegas";
+		dmgFlags[BitToIndex(DMG_POISON)] = "poison";
+		dmgFlags[BitToIndex(DMG_RADIATION)] = "radiation";
+		dmgFlags[BitToIndex(DMG_DROWNRECOVER)] = "drownrecover";
+		dmgFlags[BitToIndex(DMG_SLOWBURN)] = "slowburn";
+		dmgFlags[BitToIndex(DMG_SLOWFREEZE)] = "slowfreeze";
+		dmgFlags[BitToIndex(DMG_MORTAR)] = "mortar";
+		dmgFlags[BitToIndex(DMG_SNIPER)] = "sniper";
+		dmgFlags[BitToIndex(DMG_MEDKITHEAL)] = "medkitheal";
+		dmgFlags[BitToIndex(DMG_LAUNCH)] = "launch";
+		dmgFlags[BitToIndex(DMG_SHOCK_GLOW)] = "shock_glow";
 		
 		WEP_STRUCT_DESC(g_wc_desc_shoot_opts, "unnamed_attack",
 			WEP_FLAGS("flags", "0", shootOpts[0].flags, 0, flags),
@@ -320,9 +346,9 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("charge_cancel_time", "0", shootOpts[0].chargeCancelTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 			
 			WEP_FIELD("charge_move_speed", "0", shootOpts[0].chargeMoveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("melee_damage", "0", shootOpts[0].melee.damage, 0, WC_PARAM_FLOAT, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("melee_damage_type", "0", shootOpts[0].melee.damageBits, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("melee_range", "0", shootOpts[0].melee.range, 0, WC_PARAM_FLOAT, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("melee_damage", "0", shootOpts[0].melee.damage, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FLAGS32("melee_damage_type", "0", shootOpts[0].melee.damageBits, 0, dmgFlags, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("melee_range", "0", shootOpts[0].melee.range, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_attack_offset", "0", shootOpts[0].melee.attackOffset, 0, WC_PARAM_VECTOR, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_miss_cooldown", "0", shootOpts[0].melee.missCooldown, 0, WC_PARAM_TIME, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_hit_cooldown", "0", shootOpts[0].melee.hitCooldown, 0, WC_PARAM_TIME, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -343,12 +369,12 @@ void init_weapon_struct_fields() {
 	}
 
 	WEP_STRUCT_DESC(g_wc_desc_akimbo, "akimbo",
-		WEP_FIELD("deploy_anim", "0", akimbo.deployAnim, 0, WC_PARAM_UINT8_ANIM),
+		WEP_FIELD("deploy_anim", "0", akimbo.deployAnim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("deploy_time", "0", akimbo.deployTime, 0, WC_PARAM_TIME),
-		WEP_FIELD("akimbo_deploy_anim", "0", akimbo.akimboDeployAnim, 0, WC_PARAM_UINT8_ANIM),
+		WEP_FIELD("akimbo_deploy_anim", "0", akimbo.akimboDeployAnim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("akimbo_deploy_time", "0", akimbo.akimboDeployTime, 0, WC_PARAM_TIME),
 		WEP_FIELD("akimbo_deploy_anim_time", "0", akimbo.akimboDeployAnimTime, 0, WC_PARAM_TIME),
-		WEP_FIELD("holster_anim", "0", akimbo.holsterAnim, 0, WC_PARAM_UINT8_ANIM),
+		WEP_FIELD("holster_anim", "0", akimbo.holsterAnim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("holster_time", "0", akimbo.holsterTime, 0, WC_PARAM_TIME),
 		WEP_FIELD("accuracy", "0", akimbo.accuracy, 0, WC_PARAM_ACCURACY_100_2X),
 	);
@@ -885,7 +911,6 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 	case WC_PARAM_UINT8_PERCENT:	*(uint8_t*)dat = atof(val) * 255 + 0.5f; break;
 	case WC_PARAM_7BIT_PERCENT:		*(uint8_t*)dat = atof(val) * 127 + 0.5f; break;
 	case WC_PARAM_UINT8_FP_2_6:		*(uint8_t*)dat = atof(val) * 64; break;
-	case WC_PARAM_UINT8_ANIM:				*(uint8_t*)dat = atoi(val); break;
 	case WC_PARAM_UINT16:			*(uint16_t*)dat = wc_get_int(val); break;
 	case WC_PARAM_UINT32:			*(uint32_t*)dat = wc_get_int(val); break;
 	case WC_PARAM_INT8:				*(int8_t*)dat = wc_get_int(val); break;
@@ -1016,7 +1041,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		break;
 	}
 	case WC_PARAM_UINT16_PERCENT:	*(uint16_t*)dat = atof(val) ? FLOAT_TO_MOVESPEED_MULT(atof(val)) : 0; break;
-	case WC_PARAM_STRING:			*(string_t*)dat = ALLOC_STRING(val); break;
+	case WC_PARAM_STRING:			*(string_t*)dat = val && val[0] ? ALLOC_STRING(val) : 0; break;
 	default:
 		ALERT(at_error, "%s (line %d): Unknown param type %d for key '%s' in group '%s'\n",
 			fname, group.lineno, ptype, name, group.name.c_str());
@@ -1032,7 +1057,6 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, wep_field_
 	case WC_PARAM_UINT8_PERCENT:	fprintf(f, "%.2f\n", (*(uint8_t*)dat) / 255.0f); break;
 	case WC_PARAM_7BIT_PERCENT:	fprintf(f, "%.2f\n", (*(uint8_t*)dat) / 127.0f); break;
 	case WC_PARAM_UINT8_FP_2_6:	fprintf(f, "%.2f\n", ((*(uint8_t*)dat) / 64.0f) + (0.5f / 64.0f)); break;
-	case WC_PARAM_UINT8_ANIM:		fprintf(f, "%u\n", (uint32_t)(*(uint8_t*)dat)); break;
 	case WC_PARAM_UINT16:	fprintf(f, "%u\n", (uint32_t)(*(uint16_t*)dat)); break;
 	case WC_PARAM_UINT32:	fprintf(f, "%u\n", (uint32_t)(*(uint32_t*)dat)); break;
 	case WC_PARAM_INT8:		fprintf(f, "%d\n", (int32_t)(*(int8_t*)dat)); break;
@@ -1135,7 +1159,6 @@ int wc_get_field_bytes(wep_field_desc_t& field) {
 	case WC_PARAM_UINT8_PERCENT:
 	case WC_PARAM_7BIT_PERCENT:
 	case WC_PARAM_UINT8_FP_2_6:
-	case WC_PARAM_UINT8_ANIM:
 	case WC_PARAM_INT8:
 	case WC_PARAM_UINT8_FLAGS:
 	case WC_PARAM_UINT8_ENUM:
@@ -1179,7 +1202,6 @@ std::string wc_get_field_str(wep_field_desc_t& field, uint8_t* dat) {
 	case WC_PARAM_UINT8:
 	case WC_PARAM_UINT8_PERCENT:
 	case WC_PARAM_7BIT_PERCENT:
-	case WC_PARAM_UINT8_ANIM:
 	case WC_PARAM_INT8:
 	case WC_PARAM_UINT8_FLAGS:
 	case WC_PARAM_UINT8_ENUM:
@@ -1379,7 +1401,7 @@ wep_struct_desc_t* get_evt_desc(int idx) {
 }
 
 bool wc_check_default_dat(wep_field_desc_t& field, uint8_t* dat) {
-	if (field.type == WC_PARAM_UINT8_ANIM)
+	if (field.flags & FL_FIELD_ALWAYS_WRITE_CFG)
 		return false; // always written
 
 	static char defaultDat[128];
@@ -1805,6 +1827,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 }
 
 bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) {
+	const char* relPath = path;
 	string searchPath = string("weapons/") + path;
 	string fpath = getGameFilePath(searchPath.c_str(), false);
 
@@ -1817,21 +1840,21 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 
 	uint64_t lastModified = getFileModifiedTime(fpath.c_str());
 
-	WeaponConfigCache* cache = g_customWeaponCache.get(path);
+	WeaponConfigCache* cache = g_customWeaponCache.get(relPath);
 	if (cache) {
 		if (lastModified == cache->fileModifiedTime) {
 			params = cache->params;
 			return true;
 		}
 		else {
-			ALERT(at_logged, "Reloading modified weapon config: %s\n", path);
-			g_customWeaponCache.del(path);
+			ALERT(at_logged, "Reloading modified weapon config: %s\n", relPath);
+			g_customWeaponCache.del(relPath);
 		}		
 	}
 
 	path = fpath.c_str();
 
-	ALERT(at_logged, "Parsing weapon config: %s\n", path);
+	ALERT(at_console, "Parsing weapon config: %s\n", path);
 
 	vector<SettingsGroup> groups = parse_settings_groups(path);
 
@@ -1933,7 +1956,7 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 	WeaponConfigCache newCache;
 	newCache.fileModifiedTime = lastModified;
 	newCache.params = params;
-	g_customWeaponCache.put(path, newCache);
+	g_customWeaponCache.put(relPath, newCache);
 
 	return true;
 }
@@ -2259,6 +2282,16 @@ void wc_read_netmsg_struct(wep_struct_desc_t& desc, void* dat) {
 #endif
 }
 
+bool should_send_event(int evtId) {
+	switch (evtId) {
+	case WC_EVT_PROJECTILE:
+	case WC_EVT_SERVER:
+		return false;
+	}
+
+	return true;
+}
+
 void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, PredictionDataSendMode sendMode) {
 #ifndef CLIENT_DLL
 	CustomWeaponParams& params = wep->params;
@@ -2334,20 +2367,26 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 	if (sendMode != WC_PRED_SEND_WEP) {
 		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
 		WRITE_BYTE(wep->m_iId);
-		WRITE_BYTE(params.numEvents);
+
+		int sendEvents = 0;
+		for (int k = 0; k < params.numEvents; k++) {
+			WepEvt& evt = params.events[k];
+
+			wep_struct_desc_t* desc = get_evt_desc(evt.evtType);
+			if (desc && should_send_event(evt.evtType))
+				sendEvents++;
+		}
+
+		WRITE_BYTE(sendEvents);
 
 		for (int k = 0; k < params.numEvents; k++) {
 			WepEvt& evt = params.events[k];
 
-			bool serverSideEvent = false;
-			switch (evt.evtType) {
-			case WC_EVT_PROJECTILE:
-			case WC_EVT_SERVER:
-				serverSideEvent = true;
-				break;
-			}
+			if (!should_send_event(evt.evtType))
+				continue;
 
-			if (serverSideEvent)
+			wep_struct_desc_t* desc = get_evt_desc(evt.evtType);
+			if (!desc)
 				continue;
 			
 			uint16_t packedHeader = (evt.hasDelay << 15) | (evt.triggerArg << 10) | (evt.trigger << 5) | evt.evtType;
@@ -2355,10 +2394,6 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 			if (evt.hasDelay) {
 				WRITE_SHORT(evt.delay);
 			}
-
-			wep_struct_desc_t* desc = get_evt_desc(evt.evtType);
-			if (!desc)
-				continue;
 
 			const char* evtName = evt.evtType < WC_EVT_TOTAL ? g_wc_evt_type_names[evt.evtType] : "???";
 			ALERT(at_aiconsole, "Write event %s (%d header bytes)\n",

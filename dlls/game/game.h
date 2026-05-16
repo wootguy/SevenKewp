@@ -202,6 +202,12 @@ EXPORT extern StringSet g_nomaptrans; // trigger_changelevel disabled for these 
 // and map plugins aren't known until the cfg finishes parsing
 EXPORT extern std::vector<std::pair<std::string, std::string>> g_unrecognizedCfgEquipment;
 
+// custom weapons to be registered after the vanilla weapons are registered
+EXPORT extern std::vector<std::pair<std::string, std::string>> g_mapCfgWeaponRegistrations;
+
+// custom weapon aliases to be registered
+EXPORT extern std::vector<std::pair<std::string, std::string>> g_mapCfgCustomWeaponAliases;
+
 // mark a palyer weapon for precaching (alias names are ok)
 EXPORT void AddPrecacheWeapon(std::string wepName);
 

@@ -3735,3 +3735,77 @@ void UTIL_UpdateWeaponState(CBasePlayer* plr, int state, int wepId, int clip) {
 		MESSAGE_END();
 	}
 }
+
+#include "module_funcs.h"
+
+HMODULE GetCurrentModule() {
+#ifdef WIN32
+	HMODULE hModule = nullptr;
+
+	GetModuleHandleEx(
+		GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		(LPCTSTR)&GetCurrentModule,
+		&hModule
+	);
+	
+	return hModule;
+#else
+	Dl_info info{};
+
+	if (dladdr((void*)&GetCurrentModule, &info))
+	{
+		return info.dli_fbase;
+	}
+
+	return nullptr;
+#endif
+}
+
+SpawnFunc UTIL_GetEntitySpawnFunc(const char* classname, GetEntitySpawnFuncSearchMode searchMode) {
+	if (!classname || !classname[0])
+		return NULL;
+
+	// this is a mapper-facing util, and it's possible to use maliciously. Do some basic validation
+	// so nobody calls "WindowsDeleteSystem32" or whatever dangerous export I'm unaware of.
+	static StringSet valid_default_cnames = {
+		"aiscripted_sequence", "custom_precache", "gibshooter", "global_light_control",
+		"infodecal", "monstermaker", "multi_manager", "multisource",
+		"op4mortar", "speaker", "squadmaker", "target_cdaudio", "weaponbox",
+		"world_items", "light", "cycler"
+	};
+
+	static const char* valid_prefixes[] = {
+		"ambient_", "ammo_", "cycler_", "env_",
+		"game_", "info_", "item_", "light_",
+		"monster_", "path_", "player_", "scripted_",
+		"trigger_", "weapon_", "xen_"
+	};
+
+	bool isValidExport = valid_default_cnames.hasKey(classname);
+
+	for (int i = 0; !isValidExport && i < ARRAY_SZ(valid_prefixes); i++) {
+		if (strstr(classname, valid_prefixes[i]) == classname) {
+			isValidExport = true;
+		}
+	}
+
+	if (!isValidExport) {
+		ALERT(at_error, "Can't load DLL func for '%s'. Entity classes must use standard prefixes like \"weapon_\" or \"monster_\".\n", classname);
+		return NULL;
+	}
+
+	if (searchMode != SPAWNFUNC_SEARCH_MOD_ONLY) {
+		SpawnFunc initFunc = g_pluginManager.GetCustomEntityInitFunc(classname);
+		if (initFunc) {
+			return initFunc;
+		}
+	}
+
+	if (searchMode != SPAWNFUNC_SEARCH_PLUGINS_ONLY) {
+		HMODULE thisModule = GetCurrentModule();
+		return (SpawnFunc)GetProcAddress(thisModule, classname);
+	}
+
+	return NULL;
+}

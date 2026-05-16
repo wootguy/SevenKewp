@@ -133,6 +133,8 @@ StringSet timeCriticalCvars = {
 };
 
 std::vector<std::pair<std::string, std::string>> g_unrecognizedCfgEquipment;
+std::vector<std::pair<std::string, std::string>> g_mapCfgWeaponRegistrations;
+std::vector<std::pair<std::string, std::string>> g_mapCfgCustomWeaponAliases;
 std::vector<std::pair<std::string, std::string>> g_pluginCvarValues;
 extern int g_mapEquipIdx;
 
@@ -330,6 +332,8 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"include_cfg"
 	};
 
+	std::vector<std::pair<std::string, std::string>> mapCfgEntityRemap;
+
 	std::stringstream data_stream(cfgFile);
 	string line;
 
@@ -377,7 +381,41 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 			g_nomaptrans.put(value.c_str());
 			continue;
 		}
-		
+
+		if (name == "custom_weapon") {
+			string cname = parts.size() >= 3 ? sanitize_cvar_value(trimSpaces(parts[2])) : "";
+			string config = value + ".txt";
+			g_mapCfgWeaponRegistrations.push_back({cname, config});
+			continue;
+		}
+
+		if (name == "custom_weapon_alias") {
+			string alias = parts.size() >= 3 ? sanitize_cvar_value(trimSpaces(parts[2])) : "";
+			string cname = value;
+			g_mapCfgCustomWeaponAliases.push_back({ cname, alias });
+			continue;
+		}
+
+		if (name == "entity_remap") {
+			string newCname = parts.size() >= 3 ? sanitize_cvar_value(trimSpaces(parts[2])) : "";
+			string cname = value;
+			mapCfgEntityRemap.push_back({ cname, newCname });
+			continue;
+		}
+
+		if (name == "hl_weapon_remap") {
+			string skWeapon = parts.size() >= 3 ? sanitize_cvar_value(trimSpaces(parts[2])) : "";
+			string hlWeapon = value;
+			if (skWeapon.find("weapon_") == 0 && hlWeapon.find("weapon_") == 0) {
+				g_weaponRemapHL.put(hlWeapon.c_str(), skWeapon.c_str());
+			}
+			else {
+				ALERT(at_error, "hl_weapon_remap takes two \"weapon_\" classnames, not \"%s\" and \"%s\"\n", hlWeapon.c_str(), skWeapon.c_str());
+			}
+			
+			continue;
+		}
+
 		if (name == "weapon_hud_file") {
 			int lastSlash = value.find_last_of("/");
 			if (lastSlash != -1) {
@@ -448,6 +486,31 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 	if (mp_default_medkit.value && !g_noMedkit) {
 		AddPrecacheWeapon("weapon_medkit");
 	}
+
+	for (auto item : mapCfgEntityRemap) {
+		string oldCname = item.first;
+		string newCname = item.second.size() ? item.second : item.first;
+
+		SpawnFunc oldSpawnFuncMod = UTIL_GetEntitySpawnFunc(oldCname.c_str(), SPAWNFUNC_SEARCH_MOD_ONLY);
+		SpawnFunc oldSpawnFuncPlugin = UTIL_GetEntitySpawnFunc(oldCname.c_str(), SPAWNFUNC_SEARCH_PLUGINS_ONLY);
+
+		if (!oldSpawnFuncPlugin && !oldSpawnFuncMod) {
+			ALERT(at_warning, "entity_remap applied to nonexistant class '%s'\n", oldCname.c_str());
+		}
+
+		SpawnFunc spawnFunc = UTIL_GetEntitySpawnFunc(newCname.c_str());
+
+		if (oldSpawnFuncMod == oldSpawnFuncPlugin && oldSpawnFuncPlugin == spawnFunc) {
+			ALERT(at_warning, "entity_remap for class '%s' has no effect (no plugins override it)\n", newCname.c_str());
+		}
+		// continue despite warnings in case a class is registered later via newly loaded plugin
+
+		if (spawnFunc)
+			g_entityRemap.put(oldCname.c_str(), spawnFunc);
+		else
+			ALERT(at_error, "entity_remap failed for nonexistent class '%s'\n", newCname.c_str());
+	}
+	
 }
 
 void execServerCfg() {

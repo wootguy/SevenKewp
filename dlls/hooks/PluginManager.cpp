@@ -5,6 +5,7 @@
 #include "Scheduler.h"
 #include "CBasePlayer.h"
 #include "CTriggerScript.h"
+#include "module_funcs.h"
 
 PluginManager g_pluginManager;
 
@@ -48,22 +49,6 @@ TriggerScriptCallback g_plugin_ent_callbacks[MAX_PLUGIN_ENT_CALLBACKS];
 int g_plugin_ent_callback_count = 0;
 
 int g_plugin_id = 0;
-
-#ifdef _WIN32
-#include "windows.h"
-#define LOADLIB_FUNC_NAME ""
-#define PLUGIN_EXT ".dll"
-#define LibError() (std::string("error code ") + std::to_string(GetLastError()))
-#else
-#include <dlfcn.h>
-#define PLUGIN_EXT ".so"
-#define LOADLIB_FUNC_NAME "dlopen"
-#define GetProcAddress dlsym
-#define GetLastError dlerror
-#define FreeLibrary !dlclose
-#define HMODULE void*
-#define LibError() std::string(dlerror())
-#endif
 
 bool PluginManager::AddPlugin(const char* fpath, bool isMapPlugin) {
 	std::string gamePath = fpath;
