@@ -35,13 +35,18 @@ CustomWeaponParams* GetCustomWeaponParams(int id);
 	{ name, default_val, offsetof(WepEvt, struct_field), bits, WC_PARAM_UINT8_FLAGS, flags_arr, ARRAY_SZ(flags_arr), ##__VA_ARGS__}
 #define EVT_COND_BYTE(field) offsetof(WepEvt, field)
 
+#define AMMO_FIELD(name, default_val, struct_field, bits, field_type, ...) \
+	{ name, default_val, offsetof(CustomAmmoParams, struct_field), bits, field_type, ##__VA_ARGS__}
+#define AMMO__ENUM(name, default_val, struct_field, bits, enum_arr, ...) \
+	{ name, default_val, offsetof(CustomAmmoParams, struct_field), bits, WC_PARAM_UINT8_ENUM, enum_arr, ARRAY_SZ(enum_arr), ##__VA_ARGS__}
+
 #define EVT_DESC(id, cfgName, ...) do { \
-        static wep_field_desc_t fields[] = { __VA_ARGS__ }; \
+        static field_desc_t fields[] = { __VA_ARGS__ }; \
         g_wc_desc_evt[id] = { cfgName, fields, ARRAY_SZ(fields) }; \
     } while (0)
 
 #define WEP_STRUCT_DESC(var, cfgName, ...) do { \
-        static wep_field_desc_t fields[] = { __VA_ARGS__ }; \
+        static field_desc_t fields[] = { __VA_ARGS__ }; \
         var = { cfgName, fields, ARRAY_SZ(fields) }; \
     } while (0)
 
@@ -104,8 +109,16 @@ struct WeaponConfigCache {
 
 HashMap<WeaponConfigCache> g_customWeaponCache;
 
+struct AmmoConfigCache {
+	CustomAmmoParams params;
+	uint64_t fileModifiedTime;
+};
+
+HashMap<AmmoConfigCache> g_customAmmoCache;
+
 void clear_weapon_custom_cache() {
 	g_customWeaponCache.clear();
+	g_customAmmoCache.clear();
 }
 
 struct SettingsGroup {
@@ -114,7 +127,7 @@ struct SettingsGroup {
 	int lineno;
 };
 
-struct wep_field_desc_t {
+struct field_desc_t {
 	const char* name;			// name for config file
 	const char* defaultValue;	// initialized value
 	uint16_t offset;			// offset in event struct
@@ -127,9 +140,9 @@ struct wep_field_desc_t {
 	uint16_t conditionByteOfs;	// field is not networked if the given byte is 0 (given as offset in struct)
 };
 
-struct wep_struct_desc_t {
+struct struct_desc_t {
 	const char* name;			// for config file
-	wep_field_desc_t* fields;
+	field_desc_t* fields;
 	int numFields;
 };
 
@@ -147,17 +160,19 @@ HashMap<uint8_t> g_wc_name_to_action; // maps an action key value to its event n
 mod_string_t g_wc_trigger_to_name[32 * 32]; // 32 trigger/arg possibilities
 StringPool g_wc_trigger_string_pool;
 
-wep_struct_desc_t g_wc_desc_general;
-wep_struct_desc_t g_wc_desc_ammo;
-wep_struct_desc_t g_wc_desc_reload;
-wep_struct_desc_t g_wc_desc_idle;
-wep_struct_desc_t g_wc_desc_akimbo_reload;
-wep_struct_desc_t g_wc_desc_akimbo_idle;
-wep_struct_desc_t g_wc_desc_akimbo;
-wep_struct_desc_t g_wc_desc_laser_idle;
-wep_struct_desc_t g_wc_desc_shoot_opts;
-wep_struct_desc_t g_wc_desc_laser;
-wep_struct_desc_t g_wc_desc_evt[WC_EVT_TOTAL];
+struct_desc_t g_wc_desc_general;
+struct_desc_t g_wc_desc_ammo;
+struct_desc_t g_wc_desc_reload;
+struct_desc_t g_wc_desc_idle;
+struct_desc_t g_wc_desc_akimbo_reload;
+struct_desc_t g_wc_desc_akimbo_idle;
+struct_desc_t g_wc_desc_akimbo;
+struct_desc_t g_wc_desc_laser_idle;
+struct_desc_t g_wc_desc_shoot_opts;
+struct_desc_t g_wc_desc_laser;
+struct_desc_t g_wc_desc_evt[WC_EVT_TOTAL];
+
+struct_desc_t g_wc_desc_custom_ammo;
 
 int wc_get_int(const char* val);
 float wc_get_float(const char* val);
@@ -745,12 +760,25 @@ void init_event_fields() {
 	}
 }
 
+void init_custom_ammo_fields() {
+	WEP_STRUCT_DESC(g_wc_desc_custom_ammo, "general",
+		AMMO_FIELD("classname", "", classname, 0, WC_PARAM_STRING),
+		AMMO_FIELD("model", "", model, 0, WC_PARAM_STRING),
+		AMMO_FIELD("pickup_sound", "items/9mmclip1.wav", pickupSound, 0, WC_PARAM_STRING),
+		AMMO_FIELD("ammo_type", "", ammoType, 0, WC_PARAM_STRING),
+		AMMO_FIELD("ammo_type_hl", "", ammoTypeHl, 0, WC_PARAM_STRING),
+		AMMO_FIELD("ammo_given", 0, ammoGiven, 0, WC_PARAM_UINT16),
+		AMMO_FIELD("max_ammo", 0, maxAmmo, 0, WC_PARAM_UINT16),
+	);
+}
+
 void init_weapon_custom_config_parser() {
 	g_wc_name_to_trigger.clear();
 	g_wc_name_to_action.clear();
 
 	init_weapon_struct_fields();
 	init_event_fields();
+	init_custom_ammo_fields();
 
 	g_wc_evt_trigger_names[WC_TRIG_PRIMARY] = "primary_attack";
 	g_wc_evt_trigger_names[WC_TRIG_SECONDARY] = "secondary_attack";
@@ -905,7 +933,7 @@ void init_weapon_custom_config_parser() {
 //
 
 void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const char* name, const char* val,
-	int ptype, wep_field_desc_t* field) {
+	int ptype, field_desc_t* field) {
 	switch (ptype) {
 	case WC_PARAM_UINT8:			*(uint8_t*)dat = wc_get_int(val); break;
 	case WC_PARAM_UINT8_PERCENT:	*(uint8_t*)dat = atof(val) * 255 + 0.5f; break;
@@ -1048,7 +1076,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 	}
 }
 
-void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, wep_field_desc_t* field) {
+void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc_t* field) {
 	if (ptype != WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2)
 		fprintf(f, "%-24s= ", name);
 
@@ -1153,7 +1181,7 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, wep_field_
 	}
 }
 
-int wc_get_field_bytes(wep_field_desc_t& field) {
+int wc_get_field_bytes(field_desc_t& field) {
 	switch (field.type) {
 	case WC_PARAM_UINT8:
 	case WC_PARAM_UINT8_PERCENT:
@@ -1197,7 +1225,7 @@ int wc_get_field_bytes(wep_field_desc_t& field) {
 	}
 }
 
-std::string wc_get_field_str(wep_field_desc_t& field, uint8_t* dat) {
+std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 	switch (field.type) {
 	case WC_PARAM_UINT8:
 	case WC_PARAM_UINT8_PERCENT:
@@ -1287,9 +1315,9 @@ int wc_get_int(const char* val) {
 	return atoi(val);
 }
 
-void wc_compare_struct_fields(wep_struct_desc_t& desc, void* struct1, void* struct2, int idx) {
+void wc_compare_struct_fields(struct_desc_t& desc, void* struct1, void* struct2, int idx) {
 	for (int i = 0; i < desc.numFields; i++) {
-		wep_field_desc_t& field = desc.fields[i];
+		field_desc_t& field = desc.fields[i];
 		uint8_t* dat1 = ((uint8_t*)struct1) + field.offset;
 		uint8_t* dat2 = ((uint8_t*)struct2) + field.offset;
 
@@ -1384,13 +1412,13 @@ vector<SettingsGroup> parse_settings_groups(const char* path) {
 	return groups;
 }
 
-wep_struct_desc_t* get_evt_desc(int idx) {
+struct_desc_t* get_evt_desc(int idx) {
 	if (idx >= WC_EVT_TOTAL) {
 		ALERT(at_error, "Invalid event type %d\n", idx);
 		return NULL;
 	}
 
-	wep_struct_desc_t* desc = &g_wc_desc_evt[idx];
+	struct_desc_t* desc = &g_wc_desc_evt[idx];
 
 	if (!desc->name) {
 		ALERT(at_error, "unimplemented event writer for %d\n", idx);
@@ -1400,7 +1428,7 @@ wep_struct_desc_t* get_evt_desc(int idx) {
 	return desc;
 }
 
-bool wc_check_default_dat(wep_field_desc_t& field, uint8_t* dat) {
+bool wc_check_default_dat(field_desc_t& field, uint8_t* dat) {
 	if (field.flags & FL_FIELD_ALWAYS_WRITE_CFG)
 		return false; // always written
 
@@ -1418,9 +1446,9 @@ bool wc_check_default_dat(wep_field_desc_t& field, uint8_t* dat) {
 	return !memcmp(dat, defaultDat, bytes);
 }
 
-void wc_fwrite_wep_struct_fields(FILE* f, void* dat, wep_struct_desc_t& desc) {
+void wc_fwrite_struct_fields(FILE* f, void* dat, struct_desc_t& desc) {
 	for (int i = 0; i < desc.numFields; i++) {
-		wep_field_desc_t& field = desc.fields[i];
+		field_desc_t& field = desc.fields[i];
 		uint8_t* fieldDat = ((uint8_t*)dat) + field.offset;
 
 		if (field.flags & FL_FIELD_NO_CFG)
@@ -1451,9 +1479,9 @@ void wc_fwrite_wep_struct_fields(FILE* f, void* dat, wep_struct_desc_t& desc) {
 	}
 }
 
-void wc_read_wep_struct(const char* fname, SettingsGroup& group, void* dat, wep_struct_desc_t& desc) {
+void wc_read_struct(const char* fname, SettingsGroup& group, void* dat, struct_desc_t& desc) {
 	for (int i = 0; i < desc.numFields; i++) {
-		wep_field_desc_t& field = desc.fields[i];
+		field_desc_t& field = desc.fields[i];
 		uint8_t* fieldDat = ((uint8_t*)dat) + field.offset;
 
 		if (field.defaultValue)
@@ -1547,10 +1575,10 @@ void wc_fwrite_events(FILE* f, CustomWeaponParams& params, int category) {
 		if (evt.delay)
 			fprintf(f, "%-24s= %ums\n", "delay", (uint32_t)evt.delay);
 
-		wep_struct_desc_t* desc = get_evt_desc(evt.evtType);
+		struct_desc_t* desc = get_evt_desc(evt.evtType);
 
 		if (desc) {
-			wc_fwrite_wep_struct_fields(f, &evt, *desc);
+			wc_fwrite_struct_fields(f, &evt, *desc);
 		}
 	}
 }
@@ -1596,13 +1624,13 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 
 	StringMap& kv = group.keys;
 
-	wep_struct_desc_t* desc = get_evt_desc(evt.evtType);
+	struct_desc_t* desc = get_evt_desc(evt.evtType);
 
 	if (!desc) {
 		return;
 	}
 
-	wc_read_wep_struct(path, group, &evt, *desc);
+	wc_read_struct(path, group, &evt, *desc);
 
 	switch (evt.evtType) {
 	case WC_EVT_PLAY_SOUND: {
@@ -1691,7 +1719,7 @@ void wc_compare_params(CustomWeaponParams& a, CustomWeaponParams& b) {
 		if (memcmp(&e1, &e2, sizeof(WepEvt))) {
 			ALERT(at_error, "Mismatch data on event %d (%s)\n", i, g_wc_evt_type_names[e1.evtType]);
 
-			wep_struct_desc_t* desc = get_evt_desc(e1.evtType);
+			struct_desc_t* desc = get_evt_desc(e1.evtType);
 
 			if (desc)
 				wc_compare_struct_fields(*desc, &e1, &e2, i);
@@ -1701,7 +1729,7 @@ void wc_compare_params(CustomWeaponParams& a, CustomWeaponParams& b) {
 
 void wc_read_shoot_opts(const char* path, SettingsGroup& group, CustomWeaponParams& params, int idx) {
 	uint8_t* dat = ((uint8_t*)&params) + sizeof(CustomWeaponShootOpts) * idx;
-	wc_read_wep_struct(path, group, dat, g_wc_desc_shoot_opts);
+	wc_read_struct(path, group, dat, g_wc_desc_shoot_opts);
 
 	static MeleeOpts emptyMelee;
 	if (memcmp(&params.shootOpts[idx].melee, &emptyMelee, sizeof(MeleeOpts))) {
@@ -1717,7 +1745,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 	uint8_t* dat = (uint8_t*)&params;
 
 	fprintf(cfg, "[%s]\n", g_wc_desc_general.name);
-	wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_general);
+	wc_fwrite_struct_fields(cfg, &params, g_wc_desc_general);
 
 	static const char* ammoNames[4] = { "primary_ammo", "secondary_ammo" };
 	for (int k = 0; k < ARRAY_SZ(params.ammoInfo); k++) {
@@ -1725,18 +1753,18 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 			continue;
 
 		fprintf(cfg, "\n[%s]\n", ammoNames[k]);
-		wc_fwrite_wep_struct_fields(cfg, dat + sizeof(WeaponCustomAmmoInfo) * k, g_wc_desc_ammo);
+		wc_fwrite_struct_fields(cfg, dat + sizeof(WeaponCustomAmmoInfo) * k, g_wc_desc_ammo);
 	}
 	
 
 	if (params.flags & FL_WC_WEP_AKIMBO) {
 		fprintf(cfg, "\n[%s]\n", g_wc_desc_akimbo.name);
-		wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_akimbo);
+		wc_fwrite_struct_fields(cfg, &params, g_wc_desc_akimbo);
 	}
 
 	if (params.flags & FL_WC_WEP_HAS_LASER) {
 		fprintf(cfg, "\n[%s]\n", g_wc_desc_laser.name);
-		wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_laser);
+		wc_fwrite_struct_fields(cfg, &params, g_wc_desc_laser);
 	}
 
 	for (int k = 0; k < ARRAY_SZ(params.idles); k++) {
@@ -1744,7 +1772,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 			continue;
 
 		fprintf(cfg, "\n[%s]\n", g_wc_desc_idle.name);
-		wc_fwrite_wep_struct_fields(cfg, dat + sizeof(WeaponCustomIdle) * k, g_wc_desc_idle);
+		wc_fwrite_struct_fields(cfg, dat + sizeof(WeaponCustomIdle) * k, g_wc_desc_idle);
 	}
 
 	if (params.flags & FL_WC_WEP_AKIMBO) {
@@ -1753,7 +1781,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 				continue;
 
 			fprintf(cfg, "\n[%s]\n", g_wc_desc_akimbo_idle.name);
-			wc_fwrite_wep_struct_fields(cfg, dat + sizeof(WeaponCustomIdle) * k, g_wc_desc_akimbo_idle);
+			wc_fwrite_struct_fields(cfg, dat + sizeof(WeaponCustomIdle) * k, g_wc_desc_akimbo_idle);
 		}
 	}
 
@@ -1763,7 +1791,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 				continue;
 
 			fprintf(cfg, "\n[%s]\n", g_wc_desc_laser_idle.name);
-			wc_fwrite_wep_struct_fields(cfg, dat + sizeof(WeaponCustomIdle) * k, g_wc_desc_laser_idle);
+			wc_fwrite_struct_fields(cfg, dat + sizeof(WeaponCustomIdle) * k, g_wc_desc_laser_idle);
 		}
 	}
 
@@ -1784,7 +1812,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 			write_section_header(cfg, g_wc_evt_category_names[optEventCats[idx]]);
 
 		fprintf(cfg, "\n[%s]\n", optNames[idx]);
-		wc_fwrite_wep_struct_fields(cfg, dat + sizeof(CustomWeaponShootOpts) * idx, g_wc_desc_shoot_opts);
+		wc_fwrite_struct_fields(cfg, dat + sizeof(CustomWeaponShootOpts) * idx, g_wc_desc_shoot_opts);
 
 		if (prettyPrint)
 			wc_fwrite_events(cfg, params, optEventCats[idx]);
@@ -1813,12 +1841,12 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 				continue;
 
 			fprintf(cfg, "\n[%s]\n", section);
-			wc_fwrite_wep_struct_fields(cfg, dat + sizeof(WeaponCustomReload) * k, g_wc_desc_reload);
+			wc_fwrite_struct_fields(cfg, dat + sizeof(WeaponCustomReload) * k, g_wc_desc_reload);
 		}
 
 		if (params.flags & FL_WC_WEP_AKIMBO) {
 			fprintf(cfg, "\n[%s]\n", g_wc_desc_akimbo_reload.name);
-			wc_fwrite_wep_struct_fields(cfg, &params, g_wc_desc_akimbo_reload);
+			wc_fwrite_struct_fields(cfg, &params, g_wc_desc_akimbo_reload);
 		}
 
 		if (prettyPrint)
@@ -1869,27 +1897,27 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 
 	for (SettingsGroup& group : groups) {
 		if (group.name == "general") {
-			wc_read_wep_struct(path, group, &params, g_wc_desc_general);
+			wc_read_struct(path, group, &params, g_wc_desc_general);
 		}
 		else if (group.name == "primary_ammo") {
-			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomAmmoInfo) * 0, g_wc_desc_ammo);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomAmmoInfo) * 0, g_wc_desc_ammo);
 		}
 		else if (group.name == "secondary_ammo") {
-			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomAmmoInfo) * 1, g_wc_desc_ammo);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomAmmoInfo) * 1, g_wc_desc_ammo);
 		}
 		else if (group.name == "reload") {
-			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomReload) * 0, g_wc_desc_reload);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 0, g_wc_desc_reload);
 		}
 		else if (group.name == "reload_empty") {
-			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomReload) * 1, g_wc_desc_reload);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 1, g_wc_desc_reload);
 		}
 		else if (group.name == "reload_shell") {
 			params.flags |= FL_WC_WEP_SHOTGUN_RELOAD;
-			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomReload) * 1, g_wc_desc_reload);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 1, g_wc_desc_reload);
 		}
 		else if (group.name == "reload_pump") {
 			params.flags |= FL_WC_WEP_SHOTGUN_RELOAD;
-			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomReload) * 2, g_wc_desc_reload);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 2, g_wc_desc_reload);
 		}
 		else if (group.name == "idle") {
 			int maxIdles = ARRAY_SZ(params.idles);
@@ -1898,7 +1926,7 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 					path, group.lineno, maxIdles);
 				continue;
 			}
-			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomIdle) * idleCount, g_wc_desc_idle);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomIdle) * idleCount, g_wc_desc_idle);
 			idleCount++;
 		}
 		else if (group.name == "primary_attack") {
@@ -1919,7 +1947,7 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 		}
 		else if (group.name == "akimbo") {
 			params.flags |= FL_WC_WEP_AKIMBO;
-			wc_read_wep_struct(path, group, &params, g_wc_desc_akimbo);
+			wc_read_struct(path, group, &params, g_wc_desc_akimbo);
 		}
 		else if (group.name == "idle_akimbo") {
 			int maxIdles = ARRAY_SZ(params.akimbo.idles);
@@ -1928,15 +1956,15 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 					path, group.lineno, maxIdles);
 				continue;
 			}
-			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomIdle) * akimboIdleCount, g_wc_desc_akimbo_idle);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomIdle) * akimboIdleCount, g_wc_desc_akimbo_idle);
 			akimboIdleCount++;
 		}
 		else if (group.name == "reload_akimbo") {
-			wc_read_wep_struct(path, group, &params, g_wc_desc_akimbo_reload);
+			wc_read_struct(path, group, &params, g_wc_desc_akimbo_reload);
 		}
 		else if (group.name == "laser") {
 			params.flags |= FL_WC_WEP_HAS_LASER;
-			wc_read_wep_struct(path, group, &params, g_wc_desc_laser);
+			wc_read_struct(path, group, &params, g_wc_desc_laser);
 		}
 		else if (group.name == "idle_laser") {
 			int maxIdles = ARRAY_SZ(params.laser.idles);
@@ -1945,7 +1973,7 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 					path, group.lineno, maxIdles);
 				continue;
 			}
-			wc_read_wep_struct(path, group, dat + sizeof(WeaponCustomIdle) * laserIdleCount, g_wc_desc_laser_idle);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomIdle) * laserIdleCount, g_wc_desc_laser_idle);
 			laserIdleCount++;
 		}
 		else if (group.name.find("event.") == 0) {
@@ -1957,6 +1985,57 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 	newCache.fileModifiedTime = lastModified;
 	newCache.params = params;
 	g_customWeaponCache.put(relPath, newCache);
+
+	return true;
+}
+
+bool UTIL_ParseCustomAmmoConfig(const char* path, CustomAmmoParams& params) {
+	const char* relPath = path;
+	string searchPath = string("weapons/") + path;
+	string fpath = getGameFilePath(searchPath.c_str(), false);
+
+	memset(&params, 0, sizeof(CustomAmmoParams));
+
+	if (!fileExists(fpath.c_str())) {
+		ALERT(at_error, "Ammo config not found: '%s'\n", searchPath.c_str());
+		return false;
+	}
+
+	uint64_t lastModified = getFileModifiedTime(fpath.c_str());
+
+	AmmoConfigCache* cache = g_customAmmoCache.get(relPath);
+	if (cache) {
+		if (lastModified == cache->fileModifiedTime) {
+			params = cache->params;
+			return true;
+		}
+		else {
+			ALERT(at_logged, "Reloading modified ammo config: %s\n", relPath);
+			g_customWeaponCache.del(relPath);
+		}
+	}
+
+	path = fpath.c_str();
+
+	ALERT(at_console, "Parsing ammo config: %s\n", path);
+
+	vector<SettingsGroup> groups = parse_settings_groups(path);
+
+	if (!groups.size())
+		return false;
+
+	uint8_t* dat = (uint8_t*)&params;
+
+	for (SettingsGroup& group : groups) {
+		if (group.name == "general") {
+			wc_read_struct(path, group, &params, g_wc_desc_custom_ammo);
+		}
+	}
+
+	AmmoConfigCache newCache;
+	newCache.fileModifiedTime = lastModified;
+	newCache.params = params;
+	g_customAmmoCache.put(relPath, newCache);
 
 	return true;
 }
@@ -2038,7 +2117,7 @@ uint32_t wc_get_bits(void* dat, int bits) {
 	return *((uint8_t*)dat) & mask;
 }
 
-int wc_send_netmsg_struct(wep_struct_desc_t& desc, void* dat) {
+int wc_send_netmsg_struct(struct_desc_t& desc, void* dat) {
 	int byteCount = 0;
 
 #ifndef CLIENT_DLL
@@ -2047,7 +2126,7 @@ int wc_send_netmsg_struct(wep_struct_desc_t& desc, void* dat) {
 	ALERT(at_aiconsole, "Send net struct '%s' (%d fields)\n", desc.name, desc.numFields);
 
 	for (int i = 0; i < desc.numFields; i++) {
-		wep_field_desc_t& field = desc.fields[i];
+		field_desc_t& field = desc.fields[i];
 		uint8_t* fieldDat = ((uint8_t*)dat) + field.offset;
 
 		if (field.flags & FL_FIELD_NO_NETWORK) {
@@ -2150,7 +2229,7 @@ void READ_BYTES(uint8_t* bytes, int count) {
 #endif
 }
 
-void wc_read_netmsg_struct(wep_struct_desc_t& desc, void* dat) {
+void wc_read_netmsg_struct(struct_desc_t& desc, void* dat) {
 #ifdef CLIENT_DLL
 	int packedBitCount = 0;
 	int bitPackFieldStartIdx = -1;
@@ -2159,7 +2238,7 @@ void wc_read_netmsg_struct(wep_struct_desc_t& desc, void* dat) {
 	if (verbose) PRINTD("\nParse net struct '%s' (%d fields)\n", desc.name, desc.numFields);
 
 	for (int i = 0; i < desc.numFields; i++) {
-		wep_field_desc_t& field = desc.fields[i];
+		field_desc_t& field = desc.fields[i];
 		uint8_t* fieldDat = ((uint8_t*)dat) + field.offset;
 
 		if (field.flags & FL_FIELD_NO_NETWORK) {
@@ -2211,7 +2290,7 @@ void wc_read_netmsg_struct(wep_struct_desc_t& desc, void* dat) {
 				}
 
 				for (int k = bitPackFieldStartIdx; k <= i; k++) {
-					wep_field_desc_t& packedField = desc.fields[k];
+					field_desc_t& packedField = desc.fields[k];
 					uint8_t* packedFieldDat = ((uint8_t*)dat) + packedField.offset;
 
 					// read bit packed data out of the buffer
@@ -2372,7 +2451,7 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 		for (int k = 0; k < params.numEvents; k++) {
 			WepEvt& evt = params.events[k];
 
-			wep_struct_desc_t* desc = get_evt_desc(evt.evtType);
+			struct_desc_t* desc = get_evt_desc(evt.evtType);
 			if (desc && should_send_event(evt.evtType))
 				sendEvents++;
 		}
@@ -2385,7 +2464,7 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 			if (!should_send_event(evt.evtType))
 				continue;
 
-			wep_struct_desc_t* desc = get_evt_desc(evt.evtType);
+			struct_desc_t* desc = get_evt_desc(evt.evtType);
 			if (!desc)
 				continue;
 			
@@ -2509,7 +2588,7 @@ int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, voi
 		if (evt.hasDelay)
 			evt.delay = READ_SHORT();
 
-		wep_struct_desc_t* desc = get_evt_desc(evt.evtType);
+		struct_desc_t* desc = get_evt_desc(evt.evtType);
 		if (!desc) {
 			PRINTF("Bad custom weapon event type %d\n", (int)evt.evtType);
 			continue;

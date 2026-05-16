@@ -30,6 +30,8 @@
 #include "CBaseDMStart.h"
 #include "hlds_hooks.h"
 #include "CWorld.h"
+#include "custom_weapon.h"
+#include "CAmmoCustom.h"
 
 #include <sstream>
 #include <string>
@@ -135,6 +137,7 @@ StringSet timeCriticalCvars = {
 std::vector<std::pair<std::string, std::string>> g_unrecognizedCfgEquipment;
 std::vector<std::pair<std::string, std::string>> g_mapCfgWeaponRegistrations;
 std::vector<std::pair<std::string, std::string>> g_mapCfgCustomWeaponAliases;
+std::vector<std::pair<std::string, std::string>> g_mapCfgCustomAmmoAliases;
 std::vector<std::pair<std::string, std::string>> g_pluginCvarValues;
 extern int g_mapEquipIdx;
 
@@ -389,10 +392,49 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 			continue;
 		}
 
+		if (name == "custom_ammo") {
+			string config = value + ".txt";
+
+			CustomAmmoParams params;
+			if (!UTIL_ParseCustomAmmoConfig(config.c_str(), params)) {
+				continue;
+			}
+
+			if (!params.classname) {
+				ALERT(at_error, "custom_ammo config missing classname key: %s\n", config.c_str());
+				continue;
+			}
+			if (!params.ammoType) {
+				ALERT(at_error, "custom_ammo config missing ammo_type key: %s\n", config.c_str());
+				continue;
+			}
+			if (!params.model) {
+				ALERT(at_error, "custom_ammo config missing model key: %s\n", config.c_str());
+				continue;
+			}
+
+			const char* cname = STRING(params.classname);
+			g_customAmmoConfigs.put(cname, config.c_str());
+			g_entityRemap.put(cname, ammo_custom_ini);
+			UTIL_RegisterEquipmentEntity(cname);
+
+			if (params.ammoType && params.maxAmmo) {
+				UTIL_RegisterAmmoCapacity(STRING(params.ammoType), params.maxAmmo);
+			}
+			continue;
+		}
+
 		if (name == "custom_weapon_alias") {
 			string alias = parts.size() >= 3 ? sanitize_cvar_value(trimSpaces(parts[2])) : "";
 			string cname = value;
 			g_mapCfgCustomWeaponAliases.push_back({ cname, alias });
+			continue;
+		}
+
+		if (name == "custom_ammo_alias") {
+			string alias = parts.size() >= 3 ? sanitize_cvar_value(trimSpaces(parts[2])) : "";
+			string cname = value;
+			g_mapCfgCustomAmmoAliases.push_back({ cname, alias });
 			continue;
 		}
 

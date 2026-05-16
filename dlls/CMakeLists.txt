@@ -449,6 +449,7 @@ set(WEAPON_HDR
 	weapon/CWeaponInventory.h
 	weapon/CKnife.h
 	weapon/CWeaponCustom.h
+	weapon/CAmmoCustom.h
 	weapon/CWeaponEvents.h
 	weapon/CProjectileCustom.h
 	weapon/weapons.h
@@ -488,6 +489,7 @@ set(WEAPON_SRC
 	weapon/CKnife.cpp
 	weapon/custom_weapon.cpp
 	weapon/CWeaponCustom.cpp
+	weapon/CAmmoCustom.cpp
 	weapon/CWeaponEvents.cpp
 	weapon/CProjectileCustom.cpp
 	weapon/combat.cpp

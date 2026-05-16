@@ -599,8 +599,10 @@ void ServerDeactivate( void )
 	g_ammoCapacities.clear();
 	g_ammoCapacitiesInitial.clear();
 	g_customWeaponConfigs.clear();
+	g_customAmmoConfigs.clear();
 	g_mapCfgWeaponRegistrations.clear();
 	g_mapCfgCustomWeaponAliases.clear();
+	g_mapCfgCustomAmmoAliases.clear();
 	ClearPlayerModelCache();
 	clearNetworkMessageHistory();
 	clear_weapon_custom_cache();

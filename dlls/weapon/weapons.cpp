@@ -33,6 +33,7 @@
 #include "explode.h"
 #include "CFuncTank.h"
 #include "CWeaponCustom.h"
+#include "CAmmoCustom.h"
 
 extern CGraph	WorldGraph;
 extern int gEvilImpulse101;
@@ -203,6 +204,7 @@ StringSet g_weaponNames;
 HashMap<int> g_weaponClassIds;
 StringMap g_defaultSpriteDirs;
 StringMap g_customWeaponConfigs;
+StringMap g_customAmmoConfigs;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 HashMap<int> g_ammoCapacities;
@@ -400,7 +402,7 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname, const char* configPath)
 			szClassname, info.iId, info.iSlot, info.iPosition, conflict.c_str());
 	}
 
-	g_filledWeaponSlots[info.iSlot][info.iPosition] = szClassname;
+	g_filledWeaponSlots[info.iSlot][info.iPosition] = STRING(ALLOC_STRING(szClassname));
 
 cleanup:
 	REMOVE_ENTITY(pent);
@@ -418,13 +420,24 @@ void UTIL_RegisterWeaponCustomAlias(const char* classname, const char* alias) {
 	
 	g_customWeaponConfigs.put(alias, std::string(config).c_str());
 
-	edict_t* pent = CREATE_NAMED_ENTITY(MAKE_STRING(classname));
-	bool existingClass = !FNullEnt(pent);
-	REMOVE_ENTITY(pent);
-
-	// remap alias to the base custom weapon if a weapon-specific class doesn't exists
-	if (!existingClass)
+	// remap alias to the base custom weapon if a weapon-specific class doesn't exist
+	if (!UTIL_GetEntitySpawnFunc(alias))
 		g_entityRemap.put(alias, weapon_custom_ini);
+}
+
+void UTIL_RegisterAmmoCustomAlias(const char* classname, const char* alias) {
+	const char* config = g_customAmmoConfigs.get(classname);
+
+	if (!config) {
+		ALERT(at_error, "Can't register alias '%s' for unregistered/non-config weapon '%s'\n", alias, classname);
+		return;
+	}
+
+	g_customAmmoConfigs.put(alias, std::string(config).c_str());
+
+	// remap alias to the base custom ammo if a ammo-specific class doesn't exist
+	if (!UTIL_GetEntitySpawnFunc(alias))
+		g_entityRemap.put(alias, ammo_custom_ini);
 }
 
 void UTIL_RegisterEquipmentEntity(const char* szClassname) {
@@ -518,6 +531,9 @@ void W_Precache(void)
 	}
 	for (auto item : g_mapCfgCustomWeaponAliases) {
 		UTIL_RegisterWeaponCustomAlias(item.first.c_str(), item.second.c_str());
+	}
+	for (auto item : g_mapCfgCustomAmmoAliases) {
+		UTIL_RegisterAmmoCustomAlias(item.first.c_str(), item.second.c_str());
 	}
 
 	g_sModelIndexFireball = PRECACHE_MODEL_ENT(NULL, "sprites/zerogxplode.spr");// fireball

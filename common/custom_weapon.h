@@ -190,6 +190,16 @@ struct CustomWeaponParams {
 	WepEvt events[MAX_WC_EVENTS];
 };
 
+struct CustomAmmoParams {
+	string_t classname;
+	string_t ammoType;			// what type of ammo this is (default name or a custom one)
+	string_t ammoTypeHl;		// ammo type given to HL clients
+	string_t model;
+	string_t pickupSound;
+	uint16_t ammoGiven;
+	uint16_t maxAmmo; // for custom ammo types
+};
+
 class CWeaponCustom;
 
 enum PredictionDataSendMode {
@@ -208,6 +218,8 @@ void init_weapon_custom_config_parser();
 void clear_weapon_custom_cache();
 
 EXPORT bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params);
+
+EXPORT bool UTIL_ParseCustomAmmoConfig(const char* path, CustomAmmoParams& params);
 
 // prettyPrint = if true, organizes configurations and event data into groups.
 //               This changes event ordering which could affect weapon behaviors.

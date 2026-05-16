@@ -21,6 +21,7 @@ class CBasePlayer;
 EXPORT extern int gmsgWeapPickup;
 extern StringMap g_defaultSpriteDirs;
 extern StringMap g_customWeaponConfigs; // maps a classname to its config file
+extern StringMap g_customAmmoConfigs; // maps a classname to its config file
 extern HashMap<int> g_ammoCapacities;
 extern HashMap<int> g_ammoCapacitiesInitial; // first ammo capacity that was set
 
@@ -184,6 +185,9 @@ EXPORT void UTIL_RegisterEquipmentEntity(const char* szClassname);
 
 // add another classname that a custom weapon to be spawned with (e.g. weapon_glock = weapon_9mmhandgun)
 EXPORT void UTIL_RegisterWeaponCustomAlias(const char* classname, const char* alias);
+
+// add another classname that a custom weapon to be spawned with (e.g. weapon_glock = weapon_9mmhandgun)
+EXPORT void UTIL_RegisterAmmoCustomAlias(const char* classname, const char* alias);
 
 // set a default sprite dir for a stock weapon
 EXPORT void UTIL_SetDefaultWeaponSpriteDir(const char* szClassname, const char* spriteDir);

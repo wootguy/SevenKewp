@@ -208,6 +208,9 @@ EXPORT extern std::vector<std::pair<std::string, std::string>> g_mapCfgWeaponReg
 // custom weapon aliases to be registered
 EXPORT extern std::vector<std::pair<std::string, std::string>> g_mapCfgCustomWeaponAliases;
 
+// custom ammo aliases to be registered
+EXPORT extern std::vector<std::pair<std::string, std::string>> g_mapCfgCustomAmmoAliases;
+
 // mark a palyer weapon for precaching (alias names are ok)
 EXPORT void AddPrecacheWeapon(std::string wepName);
 
