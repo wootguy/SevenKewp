@@ -449,7 +449,6 @@ set(WEAPON_HDR
 	weapon/CWeaponInventory.h
 	weapon/CKnife.h
 	weapon/CWeaponCustom.h
-	weapon/CAmmoCustom.h
 	weapon/CWeaponEvents.h
 	weapon/CProjectileCustom.h
 	weapon/weapons.h
@@ -489,31 +488,18 @@ set(WEAPON_SRC
 	weapon/CKnife.cpp
 	weapon/custom_weapon.cpp
 	weapon/CWeaponCustom.cpp
-	weapon/CAmmoCustom.cpp
 	weapon/CWeaponEvents.cpp
 	weapon/CProjectileCustom.cpp
 	weapon/combat.cpp
 )
 set(AMMO_HDR
 	weapon/CBasePlayerAmmo.h
+	weapon/CAmmoCustom.h
 	weapon/ammo.h
 )
 set(AMMO_SRC
 	weapon/CBasePlayerAmmo.cpp
-	weapon/CAmmo556.cpp
-	weapon/CAmmo556Clip.cpp
-	weapon/CAmmo762.cpp
-	weapon/CCrossbowAmmo.cpp
-	weapon/CGaussAmmo.cpp
-	weapon/CGlockAmmo.cpp
-	weapon/CMedkitAmmo.cpp
-	weapon/CMP5AmmoBox.cpp
-	weapon/CMP5AmmoClip.cpp
-	weapon/CMP5AmmoGrenade.cpp
-	weapon/CUziClip.cpp
-	weapon/CPythonAmmo.cpp
-	weapon/CRpgAmmo.cpp
-	weapon/CShotgunAmmo.cpp
+	weapon/CAmmoCustom.cpp
 	weapon/CSporeAmmo.cpp
 )
 

@@ -19,6 +19,7 @@
 #include "ammo.h"
 #include "skill.h"
 #include "user_messages.h"
+#include "CAmmoCustom.h"
 
 LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip)
 
@@ -123,52 +124,7 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 		return;
 	}
 
-	if (!strcmp(itemName, "ammo_357")) {
-		pPlayer->GiveAmmo(AMMO_357BOX_GIVE * count, "357");
-	}
-	else if (!strcmp(itemName, "ammo_crossbow")) {
-		pPlayer->GiveAmmo(AMMO_CROSSBOWCLIP_GIVE * count, "bolts");
-	}
-	else if (!strcmp(itemName, "ammo_gaussclip")) {
-		pPlayer->GiveAmmo(AMMO_URANIUMBOX_GIVE * count, "uranium");
-	}
-	else if (!strcmp(itemName, "ammo_9mmclip")) {
-		pPlayer->GiveAmmo(AMMO_GLOCKCLIP_GIVE * count, "9mm");
-	}
-	else if (!strcmp(itemName, "ammo_9mmAR")) {
-		pPlayer->GiveAmmo(AMMO_MP5CLIP_GIVE * count, "9mm");
-	}
-	else if (!strcmp(itemName, "ammo_9mmbox")) {
-		pPlayer->GiveAmmo(AMMO_CHAINBOX_GIVE * count, "9mm");
-	}
-	else if (!strcmp(itemName, "ammo_uziclip")) {
-		pPlayer->GiveAmmo(AMMO_UZICLIP_GIVE * count, "9mm");
-	}
-	else if (!strcmp(itemName, "ammo_762")) {
-		pPlayer->GiveAmmo(AMMO_762_GIVE * count, "762");
-	}
-	else if (!strcmp(itemName, "ammo_ARgrenades")) {
-		pPlayer->GiveAmmo(AMMO_M203BOX_GIVE * count, "ARgrenades");
-	}
-	else if (!strcmp(itemName, "ammo_rpgclip")) {
-		pPlayer->GiveAmmo(AMMO_RPGCLIP_GIVE * count, "rockets");
-	}
-	else if (!strcmp(itemName, "ammo_buckshot")) {
-		pPlayer->GiveAmmo(AMMO_BUCKSHOTBOX_GIVE * count, "buckshot");
-	}
-	else if (!strcmp(itemName, "ammo_medkit")) {
-		pPlayer->GiveAmmo(AMMO_MEDKIT_GIVE * count, "health");
-	}
-	else if (!strcmp(itemName, "ammo_spore") || !strcmp(itemName, "ammo_sporeclip")) {
-		pPlayer->GiveAmmo(AMMO_SPORE_GIVE * count, "spores");
-	}
-	else if (!strcmp(itemName, "ammo_556")) {
-		if (g_hlPlayersCanPickup556 || pPlayer->UseSevenKewpGuns())
-			pPlayer->GiveAmmo(AMMO_556_BOX_GIVE * count, "556");
-		else
-			pPlayer->GiveAmmo(AMMO_CHAINBOX_GIVE * count, "9mm");
-	}
-	else if (!strcmp(itemName, "weapon_tripmine")) {
+	if (!strcmp(itemName, "weapon_tripmine")) {
 		int giveAmount = count;
 		if (!pPlayer->HasNamedPlayerItem(itemName)) {
 			pPlayer->GiveNamedItem(itemName);
@@ -203,6 +159,14 @@ void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) 
 		}
 		if (giveAmount > 0)
 			pPlayer->GiveAmmo(HANDGRENADE_DEFAULT_GIVE * giveAmount, "Hand Grenade");
+	}
+	else if (g_customAmmoConfigs.get(itemName)) {
+		CustomAmmoParams params;
+		UTIL_ParseCustomAmmoConfig(g_customAmmoConfigs.get(itemName), params);
+
+		string_t ammoType = CAmmoCustom::GetAmmoTypeForPlayer(params, pPlayer);
+
+		pPlayer->GiveAmmo(params.ammoGiven * count, STRING(ammoType));
 	}
 	else if (!strcmp(itemName, "item_longjump")) {
 		pPlayer->m_fLongJump = TRUE;

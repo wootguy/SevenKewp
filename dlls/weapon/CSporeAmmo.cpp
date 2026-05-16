@@ -108,7 +108,7 @@ public:
 	BOOL AddAmmo(CBaseEntity* pOther)  override
 	{
 		//return pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores", gSkillData.sk_ammo_max_spores, "weapons/spore_ammo.wav");
-		return pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores");
+		return pOther->GiveAmmo(1, "spores");
 	}
 
 	void Idling()
@@ -167,33 +167,4 @@ public:
 	}
 };
 
-class CSporeClip : public CBasePlayerAmmo
-{
-	void Spawn(void)
-	{
-		Precache();
-		CBasePlayerAmmo::Spawn();
-
-		// don't sink into the ground (model origin is at the center, not the bottom)
-		UTIL_SetSize(pev, Vector(-16, -16, -2), Vector(16, 16, 16));
-	}
-
-	void Precache(void)
-	{
-		m_defaultModel = "models/spore.mdl";
-		PRECACHE_SOUND("weapons/spore_ammo.wav");
-	}
-
-	BOOL AddAmmo(CBaseEntity* pOther)
-	{
-		if (pOther->GiveAmmo(AMMO_SPORE_GIVE, "spores") != -1)
-		{
-			EMIT_SOUND(edict(), CHAN_ITEM, "weapons/spore_ammo.wav", VOL_NORM, ATTN_NORM);
-			return TRUE;
-		}
-		return FALSE;
-	}
-};
-
 LINK_ENTITY_TO_CLASS(ammo_spore, CSporeAmmo)
-LINK_ENTITY_TO_CLASS(ammo_sporeclip, CSporeClip)

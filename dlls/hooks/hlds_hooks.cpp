@@ -603,6 +603,7 @@ void ServerDeactivate( void )
 	g_mapCfgWeaponRegistrations.clear();
 	g_mapCfgCustomWeaponAliases.clear();
 	g_mapCfgCustomAmmoAliases.clear();
+	g_registeredHlWeaponAmmo.clear();
 	ClearPlayerModelCache();
 	clearNetworkMessageHistory();
 	clear_weapon_custom_cache();

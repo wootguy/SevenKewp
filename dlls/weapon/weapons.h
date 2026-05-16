@@ -22,6 +22,7 @@ EXPORT extern int gmsgWeapPickup;
 extern StringMap g_defaultSpriteDirs;
 extern StringMap g_customWeaponConfigs; // maps a classname to its config file
 extern StringMap g_customAmmoConfigs; // maps a classname to its config file
+extern StringSet g_registeredHlWeaponAmmo; // ammo types that are used by currently registered weapons that HL players can pick up
 extern HashMap<int> g_ammoCapacities;
 extern HashMap<int> g_ammoCapacitiesInitial; // first ammo capacity that was set
 
@@ -175,6 +176,8 @@ EXPORT void GetCircularGaussianSpread(float& x, float& y);
 // configPath = if set, map a classname to CWeaponCustom and load settings from the config
 // sevenkewpOnly = auto-assign an ID in the sevenkewp-only range to free up slots in the vanilla HL ID range
 EXPORT ItemInfo UTIL_RegisterWeapon(const char* szClassname, const char* configPath=NULL);
+
+EXPORT void UTIL_RegisterAmmo(const char* configPath);
 
 // call this for custom ammo types so custom weapons know what their capacity is.
 EXPORT void UTIL_RegisterAmmoCapacity(const char* ammoType, int capacity);

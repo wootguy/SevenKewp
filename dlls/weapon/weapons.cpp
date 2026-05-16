@@ -168,11 +168,14 @@ void GetCircularGaussianSpread(float& x, float& y) {
 }
 
 int giAmmoIndex = 0;
-bool g_hlPlayersCanPickup556 = false; // so 556 ammo can be replaced with 9mm if there are no 556 weapons
 
 // Precaches the ammo and queues the ammo info for sending to clients
 void AddAmmoNameToAmmoRegistry( const char *szAmmoname, bool isSevenKewpGun)
 {
+	// allow HL players to pick up this ammo type if they have a weapon that uses it
+	if (!isSevenKewpGun)
+		g_registeredHlWeaponAmmo.put(szAmmoname);
+
 	// make sure it's not already in the registry
 	for ( int i = 0; i < MAX_AMMO_SLOTS; i++ )
 	{
@@ -189,12 +192,6 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname, bool isSevenKewpGun)
 	if ( giAmmoIndex >= MAX_AMMO_SLOTS )
 		giAmmoIndex = 0;
 
-	if (!strcmp(szAmmoname, "556")) {
-		// allow HL players to pick up this ammo type if they have a weapon that uses it
-		if (!isSevenKewpGun)
-			g_hlPlayersCanPickup556 = true;
-	}
-
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].pszName = szAmmoname;
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].iId = giAmmoIndex;   // yes, this info is redundant
 }
@@ -205,6 +202,7 @@ HashMap<int> g_weaponClassIds;
 StringMap g_defaultSpriteDirs;
 StringMap g_customWeaponConfigs;
 StringMap g_customAmmoConfigs;
+StringSet g_registeredHlWeaponAmmo;
 
 const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 HashMap<int> g_ammoCapacities;
@@ -409,6 +407,44 @@ cleanup:
 	return info;
 }
 
+void UTIL_RegisterAmmo(const char* configPath) {
+	CustomAmmoParams params;
+	if (!UTIL_ParseCustomAmmoConfig(configPath, params)) {
+		return;
+	}
+
+	if (!params.classname) {
+		ALERT(at_error, "custom_ammo config missing classname key: %s\n", configPath);
+		return;
+	}
+	if (!params.ammoType) {
+		ALERT(at_error, "custom_ammo config missing ammo_type key: %s\n", configPath);
+		return;
+	}
+	if (!params.model) {
+		ALERT(at_error, "custom_ammo config missing model key: %s\n", configPath);
+		return;
+	}
+
+	const char* cname = STRING(params.classname);
+	g_customAmmoConfigs.put(cname, configPath);
+	g_entityRemap.put(cname, ammo_custom_ini);
+	UTIL_RegisterEquipmentEntity(cname);
+
+	if (params.ammoType && params.maxAmmo) {
+		UTIL_RegisterAmmoCapacity(STRING(params.ammoType), params.maxAmmo);
+	}
+
+	if (params.ammoTypeHl) {
+		ALERT(at_console, "Registered custom ammo entity '%s' for type '%s' ('%s' HL)\n",
+			cname, STRING(params.ammoType), STRING(params.ammoTypeHl));
+	}
+	else {
+		ALERT(at_console, "Registered custom ammo entity '%s' for type '%s'\n",
+			cname, STRING(params.ammoType));
+	}
+}
+
 // remap classnames to weapons that don't have a class implementation of their own
 void UTIL_RegisterWeaponCustomAlias(const char* classname, const char* alias) {
 	const char* config = g_customWeaponConfigs.get(classname);
@@ -489,7 +525,32 @@ void W_Precache(void)
 	UTIL_RegisterAmmoCapacity("spores", gSkillData.sk_ammo_max_spores);
 	UTIL_RegisterAmmoCapacity("uranium", gSkillData.sk_ammo_max_uranium);
 
-	g_hlPlayersCanPickup556 = false;
+	UTIL_RegisterAmmo("ammo_9mmar.txt");
+	UTIL_RegisterAmmo("ammo_9mmbox.txt");
+	UTIL_RegisterAmmo("ammo_9mmclip.txt");
+	UTIL_RegisterAmmo("ammo_357.txt");
+	UTIL_RegisterAmmo("ammo_556.txt");
+	UTIL_RegisterAmmo("ammo_762.txt");
+	UTIL_RegisterAmmo("ammo_argrenades.txt");
+	UTIL_RegisterAmmo("ammo_buckshot.txt");
+	UTIL_RegisterAmmo("ammo_crossbow.txt");
+	UTIL_RegisterAmmo("ammo_gaussclip.txt");
+	UTIL_RegisterAmmo("ammo_medkit.txt");
+	UTIL_RegisterAmmo("ammo_rpgclip.txt");
+	UTIL_RegisterAmmo("ammo_sporeclip.txt");
+	UTIL_RegisterAmmo("ammo_uziclip.txt");
+	//UTIL_RegisterAmmo("ammo_556clip.txt");
+
+	UTIL_RegisterAmmoCustomAlias("ammo_9mmclip", "ammo_glockclip");
+	UTIL_RegisterAmmoCustomAlias("ammo_9mmclip", "ammo_9mm");
+	UTIL_RegisterAmmoCustomAlias("ammo_ARgrenades", "ammo_mp5grenades");
+	UTIL_RegisterAmmoCustomAlias("ammo_ARgrenades", "ammo_argrenades");
+	UTIL_RegisterAmmoCustomAlias("ammo_9mmAR", "ammo_9mmar");
+	UTIL_RegisterAmmoCustomAlias("ammo_9mmAR", "ammo_mp5clip");
+	UTIL_RegisterAmmoCustomAlias("ammo_9mmAR", "ammo_556clip");
+	UTIL_RegisterAmmoCustomAlias("ammo_gaussclip", "ammo_egonclip");
+	UTIL_RegisterAmmoCustomAlias("ammo_sporeclip", "ammo_spore");
+
 	g_registeringCustomWeps = false;
 	UTIL_RegisterWeapon("weapon_shotgun");
 	UTIL_RegisterWeapon("weapon_crowbar");

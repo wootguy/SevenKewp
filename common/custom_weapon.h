@@ -198,6 +198,8 @@ struct CustomAmmoParams {
 	string_t pickupSound;
 	uint16_t ammoGiven;
 	uint16_t maxAmmo; // for custom ammo types
+	float hullSizeMin[3];
+	float hullSizeMax[3];
 };
 
 class CWeaponCustom;

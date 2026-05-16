@@ -394,33 +394,7 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 
 		if (name == "custom_ammo") {
 			string config = value + ".txt";
-
-			CustomAmmoParams params;
-			if (!UTIL_ParseCustomAmmoConfig(config.c_str(), params)) {
-				continue;
-			}
-
-			if (!params.classname) {
-				ALERT(at_error, "custom_ammo config missing classname key: %s\n", config.c_str());
-				continue;
-			}
-			if (!params.ammoType) {
-				ALERT(at_error, "custom_ammo config missing ammo_type key: %s\n", config.c_str());
-				continue;
-			}
-			if (!params.model) {
-				ALERT(at_error, "custom_ammo config missing model key: %s\n", config.c_str());
-				continue;
-			}
-
-			const char* cname = STRING(params.classname);
-			g_customAmmoConfigs.put(cname, config.c_str());
-			g_entityRemap.put(cname, ammo_custom_ini);
-			UTIL_RegisterEquipmentEntity(cname);
-
-			if (params.ammoType && params.maxAmmo) {
-				UTIL_RegisterAmmoCapacity(STRING(params.ammoType), params.maxAmmo);
-			}
+			UTIL_RegisterAmmo(config.c_str());
 			continue;
 		}
 

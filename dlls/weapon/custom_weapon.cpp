@@ -764,6 +764,8 @@ void init_custom_ammo_fields() {
 	WEP_STRUCT_DESC(g_wc_desc_custom_ammo, "general",
 		AMMO_FIELD("classname", "", classname, 0, WC_PARAM_STRING),
 		AMMO_FIELD("model", "", model, 0, WC_PARAM_STRING),
+		AMMO_FIELD("hull_min", "0 0 0", hullSizeMin, 0, WC_PARAM_VECTOR),
+		AMMO_FIELD("hull_max", "0 0 0", hullSizeMax, 0, WC_PARAM_VECTOR),
 		AMMO_FIELD("pickup_sound", "items/9mmclip1.wav", pickupSound, 0, WC_PARAM_STRING),
 		AMMO_FIELD("ammo_type", "", ammoType, 0, WC_PARAM_STRING),
 		AMMO_FIELD("ammo_type_hl", "", ammoTypeHl, 0, WC_PARAM_STRING),
