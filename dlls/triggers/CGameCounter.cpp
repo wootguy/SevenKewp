@@ -84,6 +84,9 @@ void CGameCounter::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE u
 	case USE_SET:
 		SetCountValue((int)value);
 		break;
+
+	default:
+		break;
 	}
 
 	if (HitLimit())

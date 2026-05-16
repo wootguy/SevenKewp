@@ -998,9 +998,7 @@ void CNihilanth::CommandUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 			m_irritation = 1;
 		}
 		break;
-	case USE_SET:
-		break;
-	case USE_TOGGLE:
+	default:
 		break;
 	}
 }

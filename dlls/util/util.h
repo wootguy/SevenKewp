@@ -804,7 +804,7 @@ EXPORT void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 #define RANDOM_SOUND_ARRAY( array ) (array) [ RANDOM_SOUND_ARRAY_IDX(array) ]
 
 // randomize sounds in array, so that the same sounds aren't played on every map when mp_soundvariety is low
-#define ARRAY_SZ(array) (sizeof(array) / sizeof(array[0]))
+#define ARRAY_SZ(array) (int)(sizeof(array) / sizeof(array[0]))
 #define SHUFFLE_SOUND_ARRAY(array) UTIL_ShuffleSoundArray(array, ARRAY_SZ(array));
 EXPORT void UTIL_ShuffleSoundArray(const char** arr, size_t n);
 

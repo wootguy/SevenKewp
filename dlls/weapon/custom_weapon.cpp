@@ -189,6 +189,11 @@ int BitToIndex(uint32_t mask) {
 #endif
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+
 //
 // Field definitions for all custom weapon structures
 // Update this whenever fields/events/enums/flags are changed
@@ -928,6 +933,9 @@ void init_weapon_custom_config_parser() {
 	}
 }
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 //
 // Functions for reading/writing each type of field
@@ -971,7 +979,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		vector<string> parts = splitString(val, " ");
 		memset(arr->arr, 0, sizeof(arr->arr));
 		arr->arrSz = 0;
-		for (int i = 0; i < parts.size(); i++) {
+		for (int i = 0; i < (int)parts.size(); i++) {
 			if (parts[i].empty())
 				continue;
 
@@ -1003,7 +1011,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 	case WC_PARAM_UINT8_FLAGS: {
 		vector<string> words = splitString(val, "+");
 		uint32_t flags = 0;
-		for (int k = 0; k < words.size(); k++) {
+		for (int k = 0; k < (int)words.size(); k++) {
 			for (int j = 0; j < field->valNamesSz; j++) {
 				if (field->valNames[j] && field->valNames[j] == trimSpaces(words[k])) {
 					flags |= 1 << j;
@@ -1406,7 +1414,7 @@ vector<SettingsGroup> parse_settings_groups(const char* path) {
 	}
 
 	if (group_name.size()) {
-		groups.push_back({ group_name, group_keys });
+		groups.push_back({ group_name, group_keys, group_lineno });
 	}
 
 	fclose(cfg);
@@ -1624,8 +1632,6 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 	evt.delay = delay ? atoi(delay) : 0;
 	evt.hasDelay = evt.delay != 0;
 
-	StringMap& kv = group.keys;
-
 	struct_desc_t* desc = get_evt_desc(evt.evtType);
 
 	if (!desc) {
@@ -1807,8 +1813,6 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 
 		if (!(params.flags & optBits[idx]))
 			continue;
-
-		CustomWeaponShootOpts& opts = params.shootOpts[idx];
 
 		if (prettyPrint)
 			write_section_header(cfg, g_wc_evt_category_names[optEventCats[idx]]);
@@ -2025,8 +2029,6 @@ bool UTIL_ParseCustomAmmoConfig(const char* path, CustomAmmoParams& params) {
 
 	if (!groups.size())
 		return false;
-
-	uint8_t* dat = (uint8_t*)&params;
 
 	for (SettingsGroup& group : groups) {
 		if (group.name == "general") {
