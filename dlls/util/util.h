@@ -250,8 +250,14 @@ EXPORT extern HashMap<SpawnFunc> g_entityRemap;
 	extern "C" DLLEXPORT void mapClassName( entvars_t *pev ); \
 	void mapClassName( entvars_t *pev ) { \
 		SpawnFunc* remap = g_entityRemap.get(#mapClassName); \
-		if (remap) \
+		if (remap) { \
+			if (*remap == &mapClassName) { \
+				ALERT(at_error, "Invalid entity remap for entity '%s' refers to itself\n", #mapClassName); \
+				GetClassPtr( (DLLClassName *)pev ); \
+				return; \
+			} \
 			(*remap)(pev); \
+		} \
 		else \
 			GetClassPtr( (DLLClassName *)pev ); \
 	}
