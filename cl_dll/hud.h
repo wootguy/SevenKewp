@@ -741,6 +741,7 @@ public:
 	cvar_t	*m_pCvarDraw;
 	cvar_t	*m_pCvarHudScale;
 	cvar_t  *m_hud_color;
+	cvar_t  *m_hud_allow_sv_hud_color;
 	cvar_t* default_fov;
 	int m_sevenkewpVersion;
 	bool m_sevenkewpDataUpdating;

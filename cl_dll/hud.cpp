@@ -386,6 +386,7 @@ void CHud :: Init( void )
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
 	m_pCvarHudScale = CVAR_CREATE( "hud_scale", "-1", FCVAR_ARCHIVE );
 	m_hud_color = CVAR_CREATE("hud_color", "0", FCVAR_ARCHIVE);
+	m_hud_allow_sv_hud_color = CVAR_CREATE("cl_allow_sv_hud_color", "1", FCVAR_ARCHIVE);
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
 
 	m_pSpriteList = NULL;
@@ -955,11 +956,11 @@ float CHud::GetHudPixelScale() {
 }
 
 unsigned long CHud::GetHudColor() {
+	if (m_sv_hud_color && m_hud_allow_sv_hud_color->value)
+		return m_sv_hud_color;
+
 	if (m_cl_hud_color)
 		return m_cl_hud_color;
-
-	if (m_sv_hud_color)
-		return m_sv_hud_color;
 
 	return RGB_YELLOWISH;
 }
