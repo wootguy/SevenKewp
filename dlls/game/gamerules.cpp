@@ -415,7 +415,12 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		if (name == "entity_remap") {
 			string newCname = parts.size() >= 3 ? sanitize_cvar_value(trimSpaces(parts[2])) : "";
 			string cname = value;
-			mapCfgEntityRemap.push_back({ cname, newCname });
+			if (newCname.empty() || newCname == cname) {
+				ALERT(at_error, "entity_remap requires two unique classnames\n");
+			}
+			else {
+				mapCfgEntityRemap.push_back({ cname, newCname });
+			}
 			continue;
 		}
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef _WIN32
 #include "windows.h"
 #define LOADLIB_FUNC_NAME ""
@@ -13,3 +15,6 @@
 #define HMODULE void*
 #define LibError() std::string(dlerror())
 #endif
+
+// get handle to the server DLL
+extern "C" DLLEXPORT HMODULE GetServerModule();

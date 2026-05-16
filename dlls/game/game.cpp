@@ -23,6 +23,7 @@
 #include "user_messages.h"
 #include "HashMap.h"
 #include "custom_weapon.h"
+#include "module_funcs.h"
 
 cvar_t	displaysoundlist = {"displaysoundlist","0", 0, 0, 0};
 
@@ -394,6 +395,37 @@ void PrintEdictStatsCmd2() {
 	PrintEntindexStats(true);
 }
 
+void FindSpawnFunc() {
+	if (CMD_ARGC() < 2) {
+		g_engfuncs.pfnServerPrint("Usage: spawnfunc <classname>\n");
+		return;
+	}
+
+	const char* clazz = CMD_ARGV(1);
+	bool foundAny = false;
+
+	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Entity init functions for classname '%s'\n", clazz));
+
+	HMODULE thisModule = GetServerModule();
+	if (GetProcAddress(thisModule, clazz)) {
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("    server module\n"));
+		foundAny = true;
+	}
+
+	for (const Plugin& plugin : g_pluginManager.plugins) {
+		ENTITYINIT initFunc = (ENTITYINIT)GetProcAddress((HMODULE)plugin.h_module, clazz);
+		if (initFunc) {
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("    %s\n", plugin.fpath.c_str()));
+			foundAny = true;
+		}
+		
+	}
+
+	if (!foundAny) {
+		g_engfuncs.pfnServerPrint("    <no exports found>\n");
+	}
+}
+
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit( void )
@@ -416,6 +448,7 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("sounds", list_precached_sounds);
 	g_engfuncs.pfnAddServerCommand("models", list_precached_models);
 	g_engfuncs.pfnAddServerCommand("globals", list_global_states);
+	g_engfuncs.pfnAddServerCommand("spawnfunc", FindSpawnFunc);
 	
 	// Register cvars here:
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );

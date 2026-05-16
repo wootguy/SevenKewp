@@ -3773,7 +3773,7 @@ void UTIL_UpdateWeaponState(CBasePlayer* plr, int state, int wepId, int clip) {
 	}
 }
 
-extern "C" DLLEXPORT HMODULE GetCurrentModule() {
+HMODULE GetServerModule() {
 	static HMODULE thisModule = NULL;
 
 	if (thisModule)
@@ -3783,13 +3783,13 @@ extern "C" DLLEXPORT HMODULE GetCurrentModule() {
 	GetModuleHandleEx(
 		GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
 		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-		(LPCTSTR)&GetCurrentModule,
+		(LPCTSTR)&GetServerModule,
 		&thisModule
 	);
 #else
 	Dl_info info{};
 
-	if (!dladdr((void*)&GetCurrentModule, &info))
+	if (!dladdr((void*)&GetServerModule, &info))
 		return nullptr;
 
 	thisModule = dlopen(info.dli_fname, RTLD_NOW | RTLD_NOLOAD);
@@ -3839,7 +3839,7 @@ SpawnFunc UTIL_GetEntitySpawnFunc(const char* classname, GetEntitySpawnFuncSearc
 	}
 
 	if (searchMode != SPAWNFUNC_SEARCH_PLUGINS_ONLY) {
-		HMODULE thisModule = GetCurrentModule();
+		HMODULE thisModule = GetServerModule();
 		return (SpawnFunc)GetProcAddress(thisModule, classname);
 	}
 

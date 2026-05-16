@@ -252,7 +252,7 @@ EXPORT extern HashMap<SpawnFunc> g_entityRemap;
 		SpawnFunc* remap = g_entityRemap.get(#mapClassName); \
 		if (remap) { \
 			if (*remap == &mapClassName) { \
-				ALERT(at_error, "Invalid entity remap for entity '%s' refers to itself\n", #mapClassName); \
+				ALERT(at_error, "Invalid entity remap for class '%s' refers to itself\n", #mapClassName); \
 				GetClassPtr( (DLLClassName *)pev ); \
 				return; \
 			} \
