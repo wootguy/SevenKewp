@@ -43,6 +43,7 @@
 #include "md5.h"
 #include "te_effects.h"
 #include "string_deltas.h"
+#include "module_funcs.h"
 
 #include <fstream>
 #include <sys/types.h>
@@ -3736,30 +3737,29 @@ void UTIL_UpdateWeaponState(CBasePlayer* plr, int state, int wepId, int clip) {
 	}
 }
 
-#include "module_funcs.h"
+extern "C" DLLEXPORT HMODULE GetCurrentModule() {
+	static HMODULE thisModule = NULL;
 
-HMODULE GetCurrentModule() {
+	if (thisModule)
+		return thisModule;
+
 #ifdef WIN32
-	HMODULE hModule = nullptr;
-
 	GetModuleHandleEx(
 		GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
 		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
 		(LPCTSTR)&GetCurrentModule,
-		&hModule
+		&thisModule
 	);
-	
-	return hModule;
 #else
 	Dl_info info{};
 
-	if (dladdr((void*)&GetCurrentModule, &info))
-	{
-		return info.dli_fbase;
-	}
+	if (!dladdr((void*)&GetCurrentModule, &info))
+		return nullptr;
 
-	return nullptr;
+	thisModule = dlopen(info.dli_fname, RTLD_NOW | RTLD_NOLOAD);
 #endif
+
+	return thisModule;
 }
 
 SpawnFunc UTIL_GetEntitySpawnFunc(const char* classname, GetEntitySpawnFuncSearchMode searchMode) {
