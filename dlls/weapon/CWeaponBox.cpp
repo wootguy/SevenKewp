@@ -25,7 +25,8 @@ IMPLEMENT_SAVERESTORE(CWeaponBox, CBaseEntity)
 //=========================================================
 void CWeaponBox::Precache(void)
 {
-	PRECACHE_REPLACEMENT_MODEL("models/w_weaponbox.mdl");
+	if (!m_noDefaultModel)
+		PRECACHE_REPLACEMENT_MODEL("models/w_weaponbox.mdl");
 }
 
 //=========================================================
@@ -59,7 +60,8 @@ void CWeaponBox::Spawn(void)
 
 	UTIL_SetSize(pev, g_vecZero, g_vecZero);
 
-	SET_MODEL_MERGED(ENT(pev), "models/w_weaponbox.mdl", MERGE_MDL_W_WEAPONBOX);
+	if (!m_noDefaultModel)
+		SET_MODEL_MERGED(ENT(pev), "models/w_weaponbox.mdl", MERGE_MDL_W_WEAPONBOX);
 
 	if (mp_use_only_pickups.value) {
 		SetTouch(&CWeaponBox::ItemBounceTouch);

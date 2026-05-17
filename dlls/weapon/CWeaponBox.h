@@ -36,4 +36,5 @@ public:
 
 	int m_cAmmoTypes;// how many ammo types packed into this box (if packed by a level designer)
 	float m_spawnTime;
+	bool m_noDefaultModel; // don't precache and use the default weaponbox model (error spam suppression)
 };

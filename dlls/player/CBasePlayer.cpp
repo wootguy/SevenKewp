@@ -790,8 +790,10 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	}
 
 // create a box to pack the stuff into.
-	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin, pev->angles, true, edict() );
-
+	CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin, pev->angles, false, edict() );
+	pWeaponBox->m_noDefaultModel = true;
+	pWeaponBox = (CWeaponBox*)DispatchSpawn(pWeaponBox);
+	
 	pWeaponBox->pev->angles.x = 0;// don't let weaponbox tilt.
 	pWeaponBox->pev->angles.z = 0;
 
@@ -5940,7 +5942,10 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 				return;
 			}
 
-			CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, true, edict() );
+			CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, false, edict() );
+			pWeaponBox->m_noDefaultModel = true;
+			pWeaponBox = (CWeaponBox*)DispatchSpawn(pWeaponBox);
+
 			pWeaponBox->pev->angles.x = 0;
 			pWeaponBox->pev->angles.z = 0;
 			pWeaponBox->pev->avelocity = Vector(0, 256, 256);
@@ -6062,7 +6067,10 @@ void CBasePlayer::DropAmmo(bool secondary) {
 	body = ammoEnt->pev->body;
 	sequence = ammoEnt->pev->sequence;
 
-	CWeaponBox* pWeaponBox = (CWeaponBox*)CBaseEntity::Create("weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, true, edict());
+	CWeaponBox* pWeaponBox = (CWeaponBox*)CBaseEntity::Create("weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, false, edict());
+	pWeaponBox->m_noDefaultModel = true;
+	pWeaponBox = (CWeaponBox*)DispatchSpawn(pWeaponBox);
+	
 	pWeaponBox->pev->angles.x = 0;
 	pWeaponBox->pev->angles.z = 0;
 	pWeaponBox->pev->avelocity = Vector(0, 256, 256);

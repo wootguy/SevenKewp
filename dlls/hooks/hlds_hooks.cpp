@@ -2562,6 +2562,12 @@ int DispatchSpawnGame(edict_t*& pent)
 	return 0; // unused
 }
 
+CBaseEntity* DispatchSpawn(CBaseEntity* pent) {
+	edict_t* ed = pent->edict();
+	DispatchSpawnGame(ed);
+	return CBaseEntity::Instance(ed);
+}
+
 
 void DispatchKeyValue(edict_t* pentKeyvalue, KeyValueData* pkvd)
 {
