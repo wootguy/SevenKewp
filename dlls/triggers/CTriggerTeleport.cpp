@@ -61,12 +61,17 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 {
 	entvars_t* pevToucher = pOther->pev;
 
-	// Only teleport monsters or clients
-	if (!FBitSet(pev->spawnflags, SF_TRIGGER_EVERYTHING_ELSE) && !FBitSet(pevToucher->flags, FL_CLIENT | FL_MONSTER))
-		return;
-
 	if (!UTIL_IsMasterTriggered(m_sMaster, pOther))
 		return;
+
+
+	if (!(pev->spawnflags & SF_TRIGGER_PUSHABLES))
+	{// no pushables allowed
+		if (pOther->IsPushable())
+		{
+			return;
+		}
+	}
 
 	if (!(pev->spawnflags & SF_TRIGGER_ALLOWMONSTERS))
 	{// no monsters allowed!
@@ -83,6 +88,12 @@ void CTriggerTeleport::TeleportTouch(CBaseEntity* pOther)
 			return;
 		}
 	}
+
+	// exclude anything there isn't a flag for
+	if (!FBitSet(pev->spawnflags, SF_TRIGGER_EVERYTHING_ELSE)) {
+		if (!FBitSet(pevToucher->flags, FL_CLIENT | FL_MONSTER) && !pOther->IsPushable())
+			return;
+	} 
 
 	if (!RunInventoryRules(pOther)) {
 		return;
