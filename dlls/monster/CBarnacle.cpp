@@ -413,7 +413,8 @@ CBaseEntity *CBarnacle :: TongueTouchEnt ( float *pflLength )
 				continue;
 
 			// only clients and monsters
-			if ( pList[i] != this && IRelationship( pList[i] ) > R_NO && pList[ i ]->pev->deadflag == DEAD_NO )	// this ent is one of our enemies. Barnacle tries to eat it.
+			bool isEnemy = CBaseEntity::IRelationship(CLASS_ALIEN_MONSTER, pList[i]->Classify()) > R_NO;
+			if ( pList[i] != this && isEnemy && pList[ i ]->pev->deadflag == DEAD_NO )	// this ent is one of our enemies. Barnacle tries to eat it.
 			{
 				return pList[i];
 			}

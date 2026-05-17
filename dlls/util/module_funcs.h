@@ -12,7 +12,7 @@
 #define GetProcAddress dlsym
 #define GetLastError dlerror
 #define FreeLibrary !dlclose
-#define HMODULE void*
+#define HMODULE void *
 #define LibError() std::string(dlerror())
 #endif
 
