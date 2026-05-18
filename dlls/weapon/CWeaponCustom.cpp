@@ -1748,6 +1748,20 @@ int CWeaponCustom::GetItemInfo(ItemInfo* p) {
 	bool hideAmmo2 = params.flags & FL_WC_WEP_HIDE_SECONDARY_AMMO;
 	int zoomFlag = (params.flags & FL_WC_WEP_FORCE_ZOOM_SPRITE) ? WEP_FLAG_USE_ZOOM_CROSSHAIR : 0;
 
+	int flags = 0;
+	if (params.flags & FL_WC_WEP_NO_AUTOSWITCHEMPTY) {
+		flags |= ITEM_FLAG_NOAUTOSWITCHEMPTY;
+	}
+	if (params.flags & FL_WC_WEP_NO_AUTORELOAD) {
+		flags |= ITEM_FLAG_NOAUTORELOAD;
+	}
+	if (params.flags & FL_WC_WEP_SELECTONEMPTY) {
+		flags |= ITEM_FLAG_SELECTONEMPTY;
+	}
+	if (params.flags & FL_WC_WEP_EXHAUSITBLE) {
+		flags |= ITEM_FLAG_EXHAUSTIBLE;
+	}
+
 	p->iSlot = params.slot;
 	p->iPosition = params.slotPosition;
 	p->pszAmmo1 = params.ammoInfo[0].type ? STRING(params.ammoInfo[0].type) : NULL;
@@ -1755,7 +1769,7 @@ int CWeaponCustom::GetItemInfo(ItemInfo* p) {
 	p->pszName = STRING(m_hudPath);
 	p->iMaxClip = params.ammoInfo[0].maxClip;
 	p->iId = m_iId;
-	p->iFlags = 0;
+	p->iFlags = flags;
 	p->iWeight = params.weight;
 	p->iFlagsEx = zoomFlag;
 	p->fAccuracyDeg = 0;

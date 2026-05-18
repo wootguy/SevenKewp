@@ -223,6 +223,10 @@ void init_weapon_struct_fields() {
 		wep_flags[BitToIndex(FL_WC_WEP_FORCE_ZOOM_SPRITE)] = "force_zoom_sprite";
 		wep_flags[BitToIndex(FL_WC_WEP_HAND_MODELS)] = "has_hand_models";
 		wep_flags[BitToIndex(FL_WC_WEP_ALLOW_HL)] = "hl_client_can_use";
+		wep_flags[BitToIndex(FL_WC_WEP_NO_AUTOSWITCHEMPTY)] = "no_autoswitch_empty";
+		wep_flags[BitToIndex(FL_WC_WEP_NO_AUTORELOAD)] = "no_autoreload";
+		wep_flags[BitToIndex(FL_WC_WEP_SELECTONEMPTY)] = "select_on_empty";
+		wep_flags[BitToIndex(FL_WC_WEP_EXHAUSITBLE)] = "exhaustible";
 
 		WEP_STRUCT_DESC(g_wc_desc_general, "general",
 			WEP_FIELD("classname", "", classname, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),

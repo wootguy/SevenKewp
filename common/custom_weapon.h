@@ -32,6 +32,10 @@
 #define FL_WC_WEP_FORCE_ZOOM_SPRITE		(1<<18) // Force use of zoom crosshair sprite when using dynamic crosshairs
 #define FL_WC_WEP_HAND_MODELS			(1<<19) // Default model supports alternate hand models (op4/bshift)
 #define FL_WC_WEP_ALLOW_HL				(1<<20) // Allow the weapon to be used by vanilla HL clients without prediction
+#define FL_WC_WEP_NO_AUTOSWITCHEMPTY	(1<<21) // Don't switch from the weapon when out of ammo
+#define FL_WC_WEP_NO_AUTORELOAD			(1<<22) // Don't reload the weapon automaticall
+#define FL_WC_WEP_SELECTONEMPTY			(1<<23) // allow selecting the weapon when empty
+#define FL_WC_WEP_EXHAUSITBLE			(1<<24) // weapon lost when out of ammo
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
