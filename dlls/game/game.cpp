@@ -99,6 +99,7 @@ cvar_t	mp_blood_color_alien = { "mp_blood_color_alien","195", FCVAR_SERVER, 0, 0
 cvar_t	mp_one_pickup_per_player = { "mp_one_pickup_per_player","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_keep_inventory = { "mp_keep_inventory","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_use_only_pickups = { "mp_use_only_pickups","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_barnacle_paralyze = { "mp_barnacle_paralyze","1", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
@@ -381,6 +382,20 @@ void list_global_states() {
 }
 
 void test_command() {
+	CBaseEntity* ent = UTIL_FindEntityByTargetname(NULL, "gnome");
+	CBaseMonster* mon = ent ? ent->MyMonsterPointer() : NULL;
+	if (mon) {
+		int iseq = atoi(CMD_ARGV(1));
+		float speed = atof(CMD_ARGV(2));
+		int start = atoi(CMD_ARGV(3));
+		int end = atoi(CMD_ARGV(4));
+		bool pingpong = atoi(CMD_ARGV(5)) != 0;
+		ALERT(at_logged, "PlayAnimation(%d, %.2f, %d, %d, %s)\n", iseq, speed, start, end, pingpong ? "true" : "false");
+		mon->PlayAnimation(iseq, speed, start, end, pingpong);
+	}
+	else {
+		ALERT(at_error, "Not found\n");
+	}
 }
 
 void cfg_exec_finished() {
@@ -543,6 +558,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_one_pickup_per_player);
 	CVAR_REGISTER (&mp_keep_inventory);
 	CVAR_REGISTER (&mp_use_only_pickups);
+	CVAR_REGISTER (&mp_barnacle_paralyze);
 
 	CVAR_REGISTER (&mp_chattime);
 

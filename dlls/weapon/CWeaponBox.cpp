@@ -8,6 +8,7 @@
 #include "gamerules.h"
 #include "CWeaponBox.h"
 #include "CBasePlayerItem.h"
+#include "CGib.h"
 
 LINK_ENTITY_TO_CLASS(weaponbox, CWeaponBox)
 
@@ -196,7 +197,6 @@ void CWeaponBox::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE use
 BOOL CWeaponBox::PackWeapon(CBasePlayerItem* pWeapon)
 {
 	CBasePlayer* plr = (CBasePlayer*)pWeapon->m_hPlayer.GetEntity();
-
 	// is one of these weapons already packed in this box?
 	if (HasWeapon(pWeapon))
 	{
@@ -211,6 +211,7 @@ BOOL CWeaponBox::PackWeapon(CBasePlayerItem* pWeapon)
 			return FALSE;
 		}
 	}
+	m_barnacleWeapon = pWeapon->pev->classname;
 
 	int iWeaponSlot = pWeapon->iItemSlot();
 
@@ -256,6 +257,9 @@ BOOL CWeaponBox::PackAmmo(int iszName, int iCount)
 		ALERT(at_console, "NULL String in PackAmmo!\n");
 		return FALSE;
 	}
+
+	if (!m_barnacleWeapon)
+		m_barnacleWeapon = iszName;
 
 	iMaxCarry = MaxAmmoCarry(iszName);
 
@@ -396,4 +400,103 @@ bool CWeaponBox::IsUseOnlyWeapon() {
 	}
 
 	return foundUseOnlyWeapon;
+}
+
+BOOL CWeaponBox::BarnacleVictimCaught(void) {
+	pev->avelocity = g_vecZero;
+	static Vector defaultAngles = Vector(90, 0, 0);
+	static Vector defaultOffset = Vector(-6, -16, 0);
+	static float defaultTongueHeight = 16;
+
+	struct BarnacleSettings {
+		Vector angles;
+		Vector offset;
+		float viewOfsZ;
+	};
+
+	static HashMap<BarnacleSettings> barnacle_settings = {
+		{"weapon_hornetgun", {defaultAngles, Vector(-16, -8, 0), defaultTongueHeight}},
+		{"weapon_crowbar", {Vector(-90, 0, 0), defaultOffset, defaultTongueHeight}},
+		{"weapon_grapple", {defaultAngles, Vector(-16, -24, 0), defaultTongueHeight}},
+		{"weapon_9mmAR", {Vector(0, 0, 90), defaultOffset, defaultTongueHeight}},
+		{"weapon_rpg", {Vector(-90, 0, 0), Vector(4, -12, 0), defaultTongueHeight}},
+		{"weapon_gauss", {defaultAngles, Vector(-12, -16, 0), defaultTongueHeight}},
+		{"weapon_egon", {Vector(0, 0, 0), Vector(-2, 8, 0), defaultTongueHeight}},
+		{"weapon_displacer", {Vector(-80, 0, 20), Vector(2, -4, 0), defaultTongueHeight}},
+		{"weapon_handgrenade", {Vector(0, 0, 0), Vector(-6, -12, 0), defaultTongueHeight}},
+		{"weapon_satchel", {Vector(0, 0, 0), Vector(-6, -16, 0), 24}},
+		{"weapon_tripmine", {Vector(0, 0, 90), Vector(-10, -12, 0), defaultTongueHeight}},
+		{"weapon_snark", {Vector(0, 0, 0), Vector(-6, -8, 0), 24}},
+		{"weapon_sporelauncher", {Vector(-90, 0, 0), Vector(0, -12, 0), defaultTongueHeight}},
+		{"weapon_m249", {Vector(-100, 0, 0), Vector(4, -12, 0), defaultTongueHeight}},
+		{"weapon_sniperrifle", {Vector(90, 0, 0), Vector(-8, -16, 0), 40}},
+		{"rockets", {Vector(-180, 0, 0), Vector(-6, -16, 0), 8}},
+		{"uranium", {Vector(-180, 0, 0), Vector(-6, -16, 0), defaultTongueHeight}},
+		{"556", {Vector(0, 0, 0), Vector(-6, 0, 0), defaultTongueHeight}},
+		{"weapon_minigun", {Vector(0, 0, 90), Vector(-1, 0, 0), defaultTongueHeight}},
+	};
+
+	BarnacleSettings* settings = barnacle_settings.get(STRING(m_barnacleWeapon));
+	Vector angles = defaultAngles;
+
+	if (settings) {
+		m_barnacleOffset = settings->offset;
+		angles = settings->angles;
+		pev->view_ofs.z = settings->viewOfsZ;
+	}
+	else {
+		m_barnacleOffset = defaultOffset;
+		pev->view_ofs.z = defaultTongueHeight;
+	}
+
+	pev->angles.x = angles.x;
+	pev->angles.z = angles.z;
+
+	return TRUE;
+}
+
+void CWeaponBox::BarnacleVictimReleased(void) {
+	const char* cname = STRING(m_barnacleWeapon);
+	if (!strcmp(cname, "weapon_grapple")) {
+		pev->origin.z -= 16;
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM);
+		UTIL_BloodDrips(pev->origin, g_vecZero, BloodColorHuman(), 50);
+		CGib::SpawnMonsterGibs(pev, 3, 1);
+		UTIL_Remove(this);
+	}
+	if (!strcmp(cname, "weapon_hornetgun") || !strcmp(cname, "weapon_sporelauncher")) {
+		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM);
+		UTIL_BloodDrips(pev->origin, g_vecZero, BloodColorAlien(), 50);
+		CGib::SpawnMonsterGibs(pev, 3, 0);
+		UTIL_Remove(this);
+	}
+	if (!strcmp(cname, "weapon_snark")) {
+		EMIT_SOUND(edict(), CHAN_BODY, "debris/bustflesh1.wav", 1.0f, 1.0);
+		UTIL_BloodDrips(pev->origin, g_vecZero, BloodColorAlien(), 50);
+
+		Vector angles = Vector(0, RANDOM_FLOAT(-180, 180), 0);
+
+		// a couple snarks are lost after eating
+		for (int i = 0; i < 3; i++) {
+			angles.y += 120;
+			UTIL_MakeVectors(angles);
+			Vector ori = pev->origin + gpGlobals->v_forward * 8;
+			CBaseEntity* pSqueak = CBaseEntity::Create("monster_snark", ori, angles, true, NULL);
+			pSqueak->pev->velocity = gpGlobals->v_forward * 50;
+		}
+
+		UTIL_Remove(this);
+	}
+	if (!strcmp(cname, "weapon_handgrenade")) {
+		// barnacle pulled the pin!
+		CBaseEntity* livenade = CBaseEntity::Create("monster_handgrenade", pev->origin, Vector(0, pev->angles.y, 0), true, NULL);
+		livenade->pev->velocity = pev->velocity;
+		UTIL_Remove(this);
+	}
+
+	pev->flags &= ~FL_ONGROUND;
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = 0;
+	pev->angles = Vector(0, pev->angles.y, 0);
+	pev->avelocity = Vector(0, 256, 256);
 }

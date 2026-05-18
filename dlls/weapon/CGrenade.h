@@ -34,11 +34,15 @@ public:
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 	virtual const char* DisplayName() { return "Grenade"; }
 	virtual const char* GetDeathNoticeWeapon() { return "monster_grenade"; }
+	virtual	BOOL IsBarnacleFood(void) { return TRUE; }
+	virtual BOOL BarnacleVictimCaught(void) override;
+	virtual void BarnacleVictimReleased(void) override;
 
 	const char* GetModel();
 	void SetGrenadeModel();
 	virtual int MergedModelBody() { return -1; }
 	virtual	BOOL IsNormalMonster(void) { return FALSE; }
+	virtual	BOOL IsGrenade(void) { return TRUE; }
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 	Vector m_effectOrigin; // where to play the explosion effects (offset from real origin so sprites look nice)

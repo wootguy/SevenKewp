@@ -20,8 +20,10 @@ public:
 	const char* DisplayName();
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	Schedule_t* GetScheduleOfType(int Type);
+	void StartTask(Task_t* pTask);
 	int IgnoreConditions(void);
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	void PainSound(void);
 	void AlertSound(void);

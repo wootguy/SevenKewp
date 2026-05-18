@@ -57,6 +57,7 @@ public:
 	Activity GetStoppedActivity( void );
 	int ISoundMask( void );
 	void DeclineFollowing( void );
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	float	CoverRadius( void ) { return 1200; }		// Need more room for cover because scientists want to get far away!
 	BOOL	DisregardEnemy( CBaseEntity *pEnemy ) { return !pEnemy->IsAlive() || (gpGlobals->time - m_fearTime) > 15; }

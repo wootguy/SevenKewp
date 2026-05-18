@@ -76,6 +76,7 @@ public:
 	void PrescheduleThink() override;
 	void GibMonster() override;
 	void SpeakSentence();
+	//virtual BOOL IsBarnacleFood(void) override { return TRUE; } // looks bad, too much clipping, too big
 
 	void SetObjectCollisionBox(void)
 	{

@@ -323,6 +323,7 @@ public:
 		Task_t *GetTask ( void );
 		virtual MONSTERSTATE GetIdealState ( void );
 		virtual void SetActivity ( Activity NewActivity );
+		virtual void PlayAnimation ( int iSeq, float fps=0, float startFrame=0, float endFrame=0, bool pingPong=false);
 		void SetSequenceByName ( const char *szSequence );
 		void SetState ( MONSTERSTATE State );
 		virtual void ReportAIState( void );

@@ -455,7 +455,26 @@ void CISlave :: StartTask ( Task_t *pTask )
 {
 	ClearBeams( );
 
-	CTalkSquadMonster:: StartTask ( pTask );
+	switch (pTask->iTask)
+	{
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(22, 0.50, 2, 5, false);
+		}
+		else if (pTask->flData == ACT_BARNACLE_PULL || pTask->flData == ACT_BARNACLE_CHEW) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(29, 0.25, 11, 14, true);
+		}
+		else {
+			CTalkSquadMonster::StartTask(pTask);
+		}
+		break;
+	default: {
+		CTalkSquadMonster::StartTask(pTask);
+	}
+	}
 }
 
 void CISlave::RunTask(Task_t* pTask)
@@ -495,6 +514,7 @@ void CISlave :: Spawn()
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // NOTE: we need a wide field of view so npc will notice player and say hello
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_RANGE_ATTACK2 | bits_CAP_DOORS_GROUP;
+	m_barnacleOffset	= Vector(-6, 24, 0);
 
 	m_voicePitch		= RANDOM_LONG( 85, 110 );
 
@@ -543,8 +563,10 @@ int CISlave :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	if (IsImmune(pevAttacker, flDamage))
 		return 0;
 
+	CBaseEntity* attacker = Instance(pevAttacker);
+
 	// don't slash one of your own
-	if ((bitsDamageType & DMG_SLASH) && pevAttacker && IRelationship( Instance(pevAttacker) ) < R_DL)
+	if ((bitsDamageType & DMG_SLASH) && pevAttacker && IRelationship(attacker) < R_DL && attacker->Classify() != CLASS_BARNACLE)
 		return 0;
 
 	m_afMemory |= bits_MEMORY_PROVOKED;

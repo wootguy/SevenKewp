@@ -131,6 +131,29 @@ Schedule_t* CBabyVoltigore::GetScheduleOfType(int Type) {
 	return CBaseMonster::GetScheduleOfType(Type);
 }
 
+void CBabyVoltigore::StartTask(Task_t* pTask)
+{
+	switch (pTask->iTask)
+	{
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_PULL ||
+			pTask->flData == ACT_BARNACLE_CHEW) {
+			m_IdealActivity = ACT_IDLE;
+		}
+		else if (pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_IdealActivity = ACT_SMALL_FLINCH;
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
+		}
+		break;
+	default: {
+		CBaseMonster::StartTask(pTask);
+	}
+	}
+}
+
 void CBabyVoltigore::Spawn()
 {
 	Precache();
@@ -141,7 +164,6 @@ void CBabyVoltigore::Spawn()
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
 	SetBloodColor(BloodColorAlien());
-	pev->view_ofs = Vector(0, 0, 0);// position of the eyes relative to monster's origin.
 	m_flFieldOfView = 0.0;
 	m_MonsterState = MONSTERSTATE_NONE;
 

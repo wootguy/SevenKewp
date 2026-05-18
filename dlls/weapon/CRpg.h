@@ -91,6 +91,7 @@ public:
 	void EXPORT RocketTouch( CBaseEntity *pOther );
 	virtual void Explode(TraceResult* pTrace, int bitsDamageType);
 	virtual const char* GetDeathNoticeWeapon() { return "rpg_rocket"; };
+	virtual	BOOL IsBarnacleFood(void) { return FALSE; }
 
 	static CRpgRocket *CreateRpgRocket( Vector vecOrigin, Vector vecAngles, CBaseEntity *pOwner, CRpg *pLauncher );
 

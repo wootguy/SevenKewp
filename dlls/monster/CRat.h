@@ -32,4 +32,8 @@ public:
 	void SetYawSpeed( void );
 	int  Classify ( void );
 	const char* DisplayName();
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
+	void StartTask(Task_t* pTask);
+	void BarnacleVictimBitten(entvars_t* pevBarnacle);
+	BOOL BarnacleVictimCaught(void);
 };

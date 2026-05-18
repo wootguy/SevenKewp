@@ -60,13 +60,35 @@ float CBaseAnimating :: StudioFrameAdvance ( float flInterval )
 	pev->frame += flInterval * m_flFrameRate * pev->framerate;
 	pev->animtime = gpGlobals->time;
 
-	if (pev->frame < 0.0 || pev->frame >= 256.0) 
+	if (pev->frame < 0.0 || pev->frame >= 256.0)
 	{
 		if (m_fSequenceLoops)
 			pev->frame -= (int)(pev->frame / 256.0) * 256.0;
 		else
 			pev->frame = (pev->frame < 0.0) ? 0 : 255;
 		m_fSequenceFinished = TRUE;	// just in case it wasn't caught in GetEvents
+	}
+
+	if (m_pingPongAnim) {
+		// not sure why this is needed to prevent jitter at stop/end frames
+		float smooth = flInterval * m_flFrameRate * pev->framerate;
+
+		if (pev->frame >= m_endFrame && pev->framerate > 0) {
+			pev->frame = m_endFrame + smooth;
+			pev->framerate = -fabs(pev->framerate);
+		}
+		if (pev->frame <= m_startFrame && pev->framerate < 0) {
+			pev->frame = m_startFrame + smooth;
+			pev->framerate = fabs(pev->framerate);
+
+			if (!m_fSequenceLoops)
+				m_fSequenceFinished = TRUE;
+		}
+	}
+	else if (m_endFrame && pev->frame >= m_endFrame) {
+		pev->frame = m_endFrame;
+		pev->framerate = FLT_MIN;
+		m_fSequenceFinished = TRUE;
 	}
 
 	return flInterval;
@@ -118,6 +140,9 @@ void CBaseAnimating :: ResetSequenceInfo ( )
 	pev->framerate = 1.0;
 	m_fSequenceFinished = FALSE;
 	m_flLastEventCheck = 0;
+	m_endFrame = 0;
+	m_startFrame = 0;
+	m_pingPongAnim = false;
 }
 
 
@@ -159,6 +184,8 @@ void CBaseAnimating :: DispatchAnimEvents ( float flInterval )
 
 	m_fSequenceFinished = FALSE;
 	if (flEnd >= 256 || flEnd <= 0.0) 
+		m_fSequenceFinished = TRUE;
+	if (m_endFrame && !m_pingPongAnim && pev->frame >= m_endFrame)
 		m_fSequenceFinished = TRUE;
 
 	int index = 0;
@@ -340,5 +367,9 @@ void CBaseAnimating :: SetSequenceBox( void )
 bool CBaseAnimating::ActivityHasEvent(int activity, int event)
 {
 	return ::ActivityHasEvent(GET_MODEL_PTR(ENT(pev)), activity, event);
+}
+
+float CBaseAnimating::GetSequenceFrameOffset(int iseq, float frame) {
+	return ::GetSequenceFrameOffset(GET_MODEL_PTR(ENT(pev)), iseq, frame);
 }
 

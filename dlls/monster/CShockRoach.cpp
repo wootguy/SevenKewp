@@ -402,6 +402,18 @@ void COFShockRoach :: StartTask ( Task_t *pTask )
 			SetTouch ( &COFShockRoach::LeapTouch );
 			break;
 		}
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_IdealActivity = ACT_SMALL_FLINCH;
+		}
+		else if (pTask->flData == ACT_BARNACLE_PULL || pTask->flData == ACT_BARNACLE_CHEW) {
+			m_IdealActivity = ACT_IDLE;
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
+		}
+		break;
 	default:
 		{
 			CBaseMonster :: StartTask( pTask );
@@ -448,8 +460,13 @@ int COFShockRoach :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker
 	if( gpGlobals->time - m_flBirthTime < 2 )
 		flDamage = 0;
 
+	CBaseEntity* attacker = Instance(pevAttacker);
+	if (attacker->Classify() != CLASS_BARNACLE) {
+		bitsDamageType = (bitsDamageType & ~DMG_ALWAYSGIB) | DMG_NEVERGIB;
+	}
+
 	//Never gib the roach
-	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, ( bitsDamageType & ~DMG_ALWAYSGIB ) | DMG_NEVERGIB );
+	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
 void COFShockRoach::RifleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) {
@@ -528,7 +545,7 @@ void COFShockRoach::MonsterThink()
 {
 	const auto lifeTime = gpGlobals->time - m_flBirthTime;
 
-	if( lifeTime >= 0.2 )
+	if( lifeTime >= 0.2 && m_IdealMonsterState != MONSTERSTATE_PRONE )
 	{
 		pev->movetype = MOVETYPE_STEP;
 	}
@@ -539,7 +556,7 @@ void COFShockRoach::MonsterThink()
 		m_fRoachSolid = true;
 	}
 
-	if( lifeTime >= gSkillData.sk_shockroach_lifespan )
+	if( lifeTime >= gSkillData.sk_shockroach_lifespan && m_IdealMonsterState != MONSTERSTATE_PRONE)
 		TakeDamage( pev, pev, pev->health, DMG_NEVERGIB );
 
 	CBaseMonster::MonsterThink();

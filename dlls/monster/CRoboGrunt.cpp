@@ -411,3 +411,7 @@ void CRoboGrunt::HandleAnimEvent(MonsterEvent_t* pEvent)
 		break;
 	}
 }
+
+void CRoboGrunt::BarnacleVictimBitten(entvars_t* pevBarnacle) {
+	StartSound(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(g_sparkSounds), 1.0f, ATTN_NORM, 0, RANDOM_LONG(90, 110), pev->origin, 0xffffffff);
+}

@@ -53,6 +53,7 @@ public:
 	void StopFollowingSound();
 	void CantFollowSound();
 
+	void StartTask(Task_t* pTask);
 	void RunTask(Task_t* pTask);
 
 	static const char *pAttackSounds[];
@@ -68,5 +69,6 @@ public:
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 };
 

@@ -188,6 +188,8 @@ void CBloater :: Spawn()
 	m_MonsterState		= MONSTERSTATE_NONE;
 
 	MonsterInit();
+
+	pev->view_ofs.z = 40;
 }
 
 //=========================================================

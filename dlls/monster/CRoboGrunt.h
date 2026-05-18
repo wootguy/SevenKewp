@@ -41,6 +41,7 @@ public:
 	void PlaySentenceSound(int sentenceType);
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	const char* GetDeathNoticeWeapon();
+	void BarnacleVictimBitten(entvars_t* pevBarnacle);
 
 	float m_explodeTime;
 	int m_iHeadshotSpr;

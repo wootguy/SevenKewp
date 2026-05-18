@@ -364,3 +364,16 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 
 	m_flNextBounceSoundTime = gpGlobals->time + 0.5;// half second.
 }
+
+void CSqueakGrenade::BarnacleVictimBitten(entvars_t* pevBarnacle) {
+	TakeDamage(pevBarnacle, pevBarnacle, pev->health, DMG_SLASH | DMG_ALWAYSGIB);
+	
+	// barnacle origin is too far from bite location, so apply damage manually
+	CBaseEntity* barnacle = Instance(pevBarnacle);
+	barnacle->TakeDamage(pev, pev, pev->dmg, DMG_BLAST);
+}
+
+BOOL CSqueakGrenade::BarnacleVictimCaught() {
+	pev->view_ofs.z = 16;
+	return CBaseMonster::BarnacleVictimCaught();
+}

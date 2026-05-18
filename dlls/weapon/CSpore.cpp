@@ -189,8 +189,14 @@ void CSpore::FlyThink()
 
 	pev->nextthink = gpGlobals->time + 0.03;
 
-	if (pev->movetype == MOVETYPE_FLY)
+	if (pev->movetype == MOVETYPE_FLY && m_IdealMonsterState != MONSTERSTATE_PRONE)
 		ParametricInterpolation(0.03f);
+	else {
+		pev->startpos = g_vecZero;
+		pev->endpos = g_vecZero;
+		pev->starttime = 0;
+		pev->impacttime = 0;
+	}
 }
 
 void CSpore::GibThink()

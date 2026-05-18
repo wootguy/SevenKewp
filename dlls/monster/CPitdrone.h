@@ -132,6 +132,7 @@ public:
 	int IRelationship ( CBaseEntity *pTarget );
 	int IgnoreConditions ( void );
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	void CheckAmmo() override;
 	void Killed(entvars_t* pevAttacker, int iGib) override;

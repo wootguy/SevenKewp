@@ -29,6 +29,10 @@ class EXPORT CSqueakGrenade : public CGrenade
 	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Snark"; }
 	virtual const char* GetDeathNoticeWeapon() { return "snark"; };
 
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
+	void BarnacleVictimBitten(entvars_t* pevBarnacle) override;
+	BOOL BarnacleVictimCaught() override;
+
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
 	

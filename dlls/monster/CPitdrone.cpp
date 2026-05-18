@@ -1106,6 +1106,20 @@ void CPitdrone :: StartTask ( Task_t *pTask )
 			}
 			break;
 		}
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(13, 1.0f, 8, 20, false);
+		}
+		else if (pTask->flData == ACT_BARNACLE_PULL || pTask->flData == ACT_BARNACLE_CHEW) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(13, 0.25f, 20, 35, true);
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
+		}
+		break;
 	default:
 		{
 			CBaseMonster :: StartTask ( pTask );

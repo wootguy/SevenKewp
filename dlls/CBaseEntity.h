@@ -218,6 +218,8 @@ public:
 	dstring_t m_cachedDisplayName;
 	dstring_t m_cachedDisplayHint;
 
+	Vector m_barnacleOffset; // x = horizontal distance from tongue, y = vertical distance
+
 	EHANDLE m_hActivator;
 	EHANDLE m_hCaller;
 
@@ -317,6 +319,8 @@ public:
 	virtual BOOL	IsPushable() { return FALSE; }
 	virtual BOOL	IsWeaponCustom() { return FALSE; }
 	virtual	BOOL	IsMonsterMaker(void) { return FALSE; }
+	virtual	BOOL	IsBarnacleFood(void) { return FALSE; }
+	virtual	BOOL	IsGrenade(void) { return FALSE; }
 	inline BOOL		IsRepairable() {
 		return (IsMachine() && IRelationship(CLASS_PLAYER, Classify()) == R_AL)
 			|| (IsBreakable() && (m_breakFlags & FL_BREAK_REPAIRABLE));
@@ -456,6 +460,8 @@ public:
 	static CBaseEntity* Create(const char* szName, const Vector& vecOrigin, const Vector& vecAngles, bool spawn=true, edict_t* pentOwner = NULL, const StringMap& keys = g_emptyStringMap);
 
 	virtual BOOL BarnacleVictimCaught(void) { return FALSE; };
+	virtual void BarnacleVictimBitten(entvars_t* pevBarnacle) {}
+	virtual void BarnacleVictimReleased(void) {}
 	edict_t* edict() { return ENT(pev); };
 	EOFFSET eoffset() { return OFFSET(pev); };
 	int	  entindex() { return ENTINDEX(edict()); };
@@ -544,7 +550,7 @@ public:
 	static void MaterialSoundRandom(edict_t* pEdict, Materials soundMaterial, float volume);
 	static const char** MaterialSoundList(Materials precacheMaterial, int& soundCount);
 
-private:
+protected:
 	static const char* pSoundsWood[];
 	static const char* pSoundsFlesh[];
 	static const char* pSoundsGlass[];

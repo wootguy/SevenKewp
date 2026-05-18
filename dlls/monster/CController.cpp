@@ -296,9 +296,9 @@ void CController :: Spawn()
 	pev->movetype		= MOVETYPE_FLY;
 	pev->flags			|= FL_FLY;
 	SetBloodColor(BloodColorAlien());
-	pev->view_ofs		= Vector( 0, 0, -2 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_FULL;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
+	m_barnacleOffset	= Vector(1, 0, 0);
 
 	MonsterInit();
 }
@@ -660,6 +660,19 @@ void CController :: RunTask ( Task_t *pTask )
 					ResetSequenceInfo( );
 				}
 			}
+		}
+		break;
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_PULL ||
+			pTask->flData == ACT_BARNACLE_CHEW) {
+			m_IdealActivity = ACT_IDLE;
+		}
+		else if (pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_IdealActivity = ACT_SMALL_FLINCH;
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
 		}
 		break;
 	default: 

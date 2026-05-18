@@ -19,6 +19,9 @@ public:
 	virtual CWeaponBox* MyWeaponBoxPtr(void) { return this; }
 	bool IsUseOnlyWeapon(); // true if this weaponbox contains a single use-only weapon
 	virtual BOOL	IsItem() { return TRUE; }
+	virtual	BOOL IsBarnacleFood(void) { return TRUE; }
+	virtual BOOL BarnacleVictimCaught(void) override;
+	virtual void BarnacleVictimReleased(void) override;
 
 	void EXPORT Kill ( void );
 	int		Save( CSave &save );
@@ -37,4 +40,5 @@ public:
 	int m_cAmmoTypes;// how many ammo types packed into this box (if packed by a level designer)
 	float m_spawnTime;
 	bool m_noDefaultModel; // don't precache and use the default weaponbox model (error spam suppression)
+	string_t m_barnacleWeapon; // weapon settings to use for barnacle
 };

@@ -58,6 +58,7 @@ public:
 	virtual float GetSoundVolue( void ) { return 1.0; }
 	Schedule_t* GetScheduleOfType ( int Type );
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	void MonsterThink() override;
 

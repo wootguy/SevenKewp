@@ -39,8 +39,10 @@ public:
 	int LookupActivity(int activity);
 	void Killed(entvars_t* pevAttacker, int iGib);
 	Schedule_t* GetScheduleOfType(int Type);
+	void StartTask(Task_t* pTask);
 	void MonsterThink(void);
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	void SetObjectCollisionBox(void)
 	{

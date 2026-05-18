@@ -99,6 +99,7 @@ public:
 	void KeyValue( KeyValueData* pkvd ) override;
 
 	const char* GetDeathNoticeWeapon() { return "weapon_357"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	void ShuffleSoundArrays();
 	void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation);

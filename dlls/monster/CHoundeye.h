@@ -82,6 +82,7 @@ public:
 	Schedule_t *GetSchedule( void );
 	const char* GetTaskName(int taskIdx);
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	int	Save( CSave &save ); 
 	int Restore( CRestore &restore );

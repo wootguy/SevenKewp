@@ -629,3 +629,13 @@ void CLeech::Killed(entvars_t *pevAttacker, int iGib)
 }
 
 
+void CLeech::BarnacleVictimBitten(entvars_t* pevBarnacle) {
+	UTIL_BloodDrips(pev->origin, g_vecZero, BloodColorAlien(), 20);
+	UTIL_Remove(this);
+}
+
+BOOL CLeech::BarnacleVictimCaught(void)
+{
+	pev->view_ofs.z = 14;
+	return CBaseMonster::BarnacleVictimCaught();
+}

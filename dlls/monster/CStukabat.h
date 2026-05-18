@@ -60,6 +60,7 @@ public:
 	static const char *pFlapSounds[];
 
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	Vector m_retreatPos; // position flying to to prepare for a dive attack
 	Vector m_velocity;

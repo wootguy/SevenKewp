@@ -35,6 +35,7 @@ public:
 	int ExtractBbox(int sequence, float* mins, float* maxs);
 	void SetSequenceBox(void);
 	bool ActivityHasEvent(int activity, int event);
+	float GetSequenceFrameOffset(int iseq, float frame);
 
 	// animation needs
 	float				m_flFrameRate;		// computed FPS for current sequence
@@ -42,4 +43,8 @@ public:
 	float				m_flLastEventCheck;	// last time the event list was checked
 	BOOL				m_fSequenceFinished;// flag set when StudioAdvanceFrame moves across a frame boundry
 	BOOL				m_fSequenceLoops;	// true if the sequence loops
+
+	bool				m_pingPongAnim;	// if set, bounce back and forth between start/end frames
+	float				m_startFrame;	// for ping pong animations
+	float				m_endFrame;		// for ping pong animations, or pausing it not ping ponging
 };

@@ -90,3 +90,40 @@ void CRat :: Precache()
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
+
+void CRat::StartTask(Task_t* pTask)
+{
+	switch (pTask->iTask)
+	{
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(7, 2, 0, 10, false);
+		}
+		else if (pTask->flData == ACT_BARNACLE_PULL || pTask->flData == ACT_BARNACLE_CHEW) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(7, 1, 10, 10, true);
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
+		}
+		break;
+	default:
+	{
+		CBaseMonster::StartTask(pTask);
+		break;
+	}
+	}
+}
+
+void CRat::BarnacleVictimBitten(entvars_t* pevBarnacle) {
+	UTIL_BloodDrips(pev->origin, g_vecZero, BloodColor(), 50);
+	UTIL_Remove(this);
+}
+
+BOOL CRat::BarnacleVictimCaught(void)
+{
+	pev->view_ofs.z = 20;
+	return CBaseMonster::BarnacleVictimCaught();
+}

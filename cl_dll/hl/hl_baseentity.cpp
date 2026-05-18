@@ -297,6 +297,7 @@ float CBaseMonster::GetDamageModifier() { return 0; }
 BOOL CBaseMonster::NoFriendlyFire() { return 0; }
 void CBaseMonster::SetClassification(int newclass) { }
 void CBaseMonster::ApplyEffects() { }
+void CBaseMonster::PlayAnimation(int iSeq, float fps, float startFrame, float endFrame, bool pingPong) { }
 
 int TrainSpeed(int iSpeed, int iMax) { 	return 0; }
 void CBasePlayer :: DeathSound( void ) { }
@@ -436,6 +437,8 @@ int CBasePlayerWeapon::AddToFullPack(struct entity_state_s* state, CBasePlayer* 
 int CBasePlayerAmmo::AddToFullPack(struct entity_state_s* state, CBasePlayer* player) { return 0; }
 void CBasePlayerAmmo::Precache() { }
 void CGrenade::SetGrenadeModel() { }
+BOOL CGrenade::BarnacleVictimCaught(void) { return 0; }
+void CGrenade::BarnacleVictimReleased(void) {}
 void CSoundEnt::InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration ) {}
 void CSoundEnt::Precache() {}
 void CSoundEnt::Spawn() {}

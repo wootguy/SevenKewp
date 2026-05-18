@@ -70,6 +70,9 @@ void CSqueak::Precache( void )
 	PRECACHE_SOUND_ARRAY(pHuntSounds);
 	UTIL_PrecacheOther("monster_snark");
 
+	// for barnacles breaking weapon
+	PRECACHE_SOUND("debris/bustflesh1.wav");
+
 	PrecacheEvents();
 }
 

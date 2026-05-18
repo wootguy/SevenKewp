@@ -48,6 +48,7 @@ public:
 	void HandleAnimEvent(MonsterEvent_t* pEvent);
 	Schedule_t* GetSchedule(void);
 	Schedule_t* GetScheduleOfType(int Type);
+	void StartTask(Task_t* pTask);
 
 	void MonsterThink(void);
 	BOOL CheckRangeAttack1(float flDot, float flDist);
@@ -58,6 +59,7 @@ public:
 	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
 	void DeathNotice(entvars_t* pevChild);
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	void SetObjectCollisionBox(void)
 	{

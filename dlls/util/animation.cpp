@@ -445,6 +445,12 @@ float GetSequenceDuration(studiohdr_t* pstudiohdr, int iseq) {
 	return (pseqdesc->numframes - 1) / pseqdesc->fps;
 }
 
+float GetSequenceFrameOffset(studiohdr_t* pstudiohdr, int iseq, float frame) {
+	iseq = clamp(iseq, 0, pstudiohdr->numseq);
+	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + iseq;
+	return (frame / (float)pseqdesc->numframes) * 255;
+}
+
 int GetSequenceFlags( void *pmodel, entvars_t *pev )
 {
 	studiohdr_t *pstudiohdr;

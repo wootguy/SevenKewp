@@ -471,3 +471,15 @@ void CHornet::DieTouch ( CBaseEntity *pOther )
 	pev->nextthink = gpGlobals->time + 1;// stick around long enough for the sound to finish!
 }
 
+void CHornet::BarnacleVictimBitten(entvars_t* pevBarnacle) {
+	UTIL_BloodDrips(pev->origin, g_vecZero, BloodColorAlien(), 20);
+	UTIL_Remove(this);
+}
+
+BOOL CHornet::BarnacleVictimCaught(void)
+{
+	UTIL_KillBeam(entindex());
+	SetThink(&CHornet::DartThink);
+	pev->view_ofs.z = 14;
+	return CBaseMonster::BarnacleVictimCaught();
+}

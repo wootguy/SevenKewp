@@ -55,6 +55,9 @@ public:
 	void EXPORT DieTouch ( CBaseEntity *pOther );
 	
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
+	void BarnacleVictimBitten(entvars_t* pevBarnacle);
+	BOOL BarnacleVictimCaught(void) override;
 
 	float			m_flStopAttack;
 	float			m_flStartTrack;

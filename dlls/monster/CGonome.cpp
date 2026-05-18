@@ -324,6 +324,30 @@ Schedule_t* CGonome::GetScheduleOfType(int Type) {
 	return CBaseMonster::GetScheduleOfType(Type);
 }
 
+void CGonome::StartTask(Task_t* pTask)
+{
+	switch (pTask->iTask)
+	{
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(13, 0.50, 20, 24, false);
+		}
+		else if (pTask->flData == ACT_BARNACLE_PULL || pTask->flData == ACT_BARNACLE_CHEW) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(13, 0.10, 25, 28, true);
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
+		}
+		break;
+	default: {
+		CBaseMonster::StartTask(pTask);
+	}
+	}
+}
+
 void CGonome::MonsterThink(void) {
 	if (m_nextBloodSound && m_nextBloodSound <= gpGlobals->time) {
 		m_nextBloodSound = 0;

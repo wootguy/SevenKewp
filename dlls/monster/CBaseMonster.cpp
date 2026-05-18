@@ -22,6 +22,7 @@
 #include "te_effects.h"
 #include "CGib.h"
 #include "CWeaponCustom.h"
+#include "animation.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -183,10 +184,12 @@ void CBaseMonster::BarnacleVictimBitten(entvars_t* pevBarnacle)
 //=========================================================
 void CBaseMonster::BarnacleVictimReleased(void)
 {
-	m_IdealMonsterState = MONSTERSTATE_IDLE;
+	if (m_IdealMonsterState != MONSTERSTATE_DEAD)
+		m_IdealMonsterState = MONSTERSTATE_IDLE;
 
 	pev->velocity = g_vecZero;
 	pev->movetype = MOVETYPE_STEP;
+	pev->gravity = 0;
 }
 
 //=========================================================
@@ -903,7 +906,12 @@ BOOL CBaseMonster::BarnacleVictimCaught(void)
 		pev->flags -= FL_ONGROUND;
 	}
 
-	m_IdealMonsterState = MONSTERSTATE_PRONE;
+	pev->movetype = MOVETYPE_NOCLIP; // interpolate movement
+
+	ClearSchedule();
+	SetState(MONSTERSTATE_PRONE);
+	ChangeSchedule(GetScheduleOfType(MONSTERSTATE_PRONE));
+
 	return TRUE;
 }
 
@@ -1268,6 +1276,20 @@ void CBaseMonster::SetActivity(Activity NewActivity)
 	m_IdealActivity = m_Activity;
 
 
+}
+
+void CBaseMonster::PlayAnimation(int iSeq, float fps, float startFrame, float endFrame, bool pingPong) {
+	pev->sequence = iSeq;
+	pev->frame = startFrame;
+
+	ResetSequenceInfo();
+
+	m_startFrame = startFrame ? GetSequenceFrameOffset(iSeq, startFrame) : 0;
+	m_endFrame = endFrame ? GetSequenceFrameOffset(iSeq, endFrame) : 0;
+	m_fSequenceLoops = pingPong ? true : m_fSequenceLoops;
+	m_pingPongAnim = pingPong;
+	pev->frame = m_startFrame;
+	pev->framerate = fps;
 }
 
 //=========================================================

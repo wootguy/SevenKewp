@@ -58,6 +58,7 @@ public:
 	void BeamGlow( void );
 
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	int m_iBravery;
 

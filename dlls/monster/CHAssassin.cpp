@@ -233,6 +233,7 @@ void CHAssassin :: Spawn()
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_MELEE_ATTACK1 | bits_CAP_DOORS_GROUP;
 	pev->friction		= 1;
+	m_barnacleOffset = Vector(-4, -12, 0);
 
 	m_HackedGunPos		= Vector( 0, 24, 48 );
 
@@ -715,6 +716,20 @@ void CHAssassin :: StartTask ( Task_t *pTask )
 		}
 		break;
 	case TASK_ASSASSIN_FALL_TO_GROUND:
+		break;
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(13, FLT_MIN, 10, 10, false);
+		}
+		else if (pTask->flData == ACT_BARNACLE_PULL || pTask->flData == ACT_BARNACLE_CHEW) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(16, 0.1f, 0.5f, 1.0f, true);
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
+		}
 		break;
 	default:
 		CBaseMonster :: StartTask ( pTask );

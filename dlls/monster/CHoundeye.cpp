@@ -623,6 +623,21 @@ void CHoundeye :: StartTask ( Task_t *pTask )
 			m_IdealActivity = ACT_GUARD;
 			break;
 		}
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(2, 2, 25, 38, false);
+		}
+		else if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_PULL || pTask->flData == ACT_BARNACLE_CHEW) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(29, 0.5, 0, 0, false);
+			pev->view_ofs.z = 40;
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
+		}
+		break;
 	default: 
 		{
 			CTalkSquadMonster :: StartTask(pTask);

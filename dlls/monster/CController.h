@@ -70,6 +70,7 @@ public:
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	EHANDLE m_hBall[2];	// hand balls
 	int m_iBall[2];			// how bright it should be

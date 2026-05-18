@@ -68,6 +68,7 @@ public:
 	void StopFollowingSound();
 	void CantFollowSound();
 	const char* GetDeathNoticeWeapon() { return "weapon_9mmhandgun"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 	CUSTOM_SCHEDULES;
 
 	int	Save( CSave &save ); 

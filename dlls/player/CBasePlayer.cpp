@@ -2911,11 +2911,6 @@ void CBasePlayer::PreThink(void)
 
 	// Clear out ladder pointer
 	m_hEnemy = NULL;
-
-	if ( m_afPhysicsFlags & PFLAG_ONBARNACLE )
-	{
-		pev->velocity = g_vecZero;
-	}
 }
 
 /* Time based Damage works as follows: 
@@ -3699,6 +3694,17 @@ pt_end:
 	if (m_friction_modifier != 1.0f && (gpGlobals->time - m_last_friction_trigger_touch > 0.2f)) {
 		m_friction_modifier = 1.0f;
 		ApplyEffects();
+	}
+
+	if (m_afPhysicsFlags & PFLAG_ONBARNACLE)
+	{
+		pev->movetype = MOVETYPE_FLY;
+		pev->gravity = FLT_MIN;
+		pev->maxspeed = 0.1f;
+		if ((pev->flags & FL_ONGROUND) && !m_isBarnacleFood) {
+			pev->flags &= ~FL_ONGROUND;
+			pev->origin.z += 2.0f;
+		}
 	}
 
 	// Track button info so we can detect 'pressed' and 'released' buttons next frame
@@ -5472,6 +5478,11 @@ BOOL CBasePlayer ::BarnacleVictimCaught( void )
 	m_afPhysicsFlags |= PFLAG_ONBARNACLE;
 	m_isBarnacleFood = false;
 	SetAnimation(PLAYER_BARNACLE_HIT);
+	pev->movetype = MOVETYPE_NOCLIP;
+	
+	if (mp_barnacle_paralyze.value)
+		DisableWeapons(true);
+
 	return TRUE;
 }
 
@@ -5485,6 +5496,7 @@ void CBasePlayer :: BarnacleVictimBitten ( entvars_t *pevBarnacle )
 	m_isBarnacleFood = true;
 	TakeDamage ( pevBarnacle, pevBarnacle, gSkillData.sk_barnacle_dmg_bite, DMG_SLASH | DMG_ALWAYSGIB );
 	SetAnimation(PLAYER_BARNACLE_CRUNCH);
+	pev->view_ofs = VEC_VIEW + Vector(0,0,8); // align head inside the barnacle
 }
 
 //=========================================================
@@ -5495,10 +5507,9 @@ void CBasePlayer :: BarnacleVictimReleased ( void )
 {
 	m_isBarnacleFood = false;
 	m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
-	
-	if (pev->movetype == MOVETYPE_FLY) {
-		pev->movetype = MOVETYPE_WALK; // needed when released inside a wall
-	}
+	pev->movetype = MOVETYPE_WALK;
+	pev->view_ofs = VEC_VIEW;
+	ApplyEffects(); // reset movetype, movespeed, gravity`
 }
 
 //=========================================================
@@ -5539,6 +5550,7 @@ void CBasePlayer::DisableWeapons(bool disable) {
 		else if (m_pActiveItem) {
 			CBasePlayerWeapon* wep = m_pActiveItem.GetEntity()->GetWeaponPtr();
 			wep->Holster();
+			pev->viewmodel = 0;
 			m_pLastItem = m_pActiveItem;
 			m_pActiveItem = NULL;
 		}

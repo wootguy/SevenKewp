@@ -25,6 +25,8 @@ public:
 	void IdleSound( void );
 	void AttackSnd( void );
 
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
+
 	// No range attacks
 	BOOL CheckRangeAttack1 ( float flDot, float flDist ) { return FALSE; }
 	BOOL CheckRangeAttack2 ( float flDot, float flDist ) { return FALSE; }

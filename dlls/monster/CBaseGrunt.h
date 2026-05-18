@@ -183,6 +183,7 @@ public:
 	virtual const char* GetDeathNoticeWeapon(); // for player death notice icons
 	void SpeakSentence(void);
 	virtual void PlaySentenceSound(int sentenceType) {}
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	int	Save(CSave& save);
 	int Restore(CRestore& restore);

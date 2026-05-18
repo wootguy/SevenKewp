@@ -20,6 +20,7 @@ public:
 	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 	void Spawn( void );
 	void Precache( void );
+	void Touch(CBaseEntity* pOther);
 	CBaseEntity *TongueTouchEnt ( float *pflLength );
 	int  Classify ( void );
 	const char* DisplayName();
@@ -39,6 +40,8 @@ public:
 	BOOL  m_fTongueExtended;
 	BOOL  m_fLiftingPrey;
 	float m_flTongueAdj;
+	float m_nextBite;
+	bool m_touchedEnemy; // true if pulled entity touches the barnacle bbox
 
 private:
 	static const char* pChewSounds[];

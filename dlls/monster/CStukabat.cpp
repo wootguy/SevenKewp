@@ -248,6 +248,7 @@ void CStukabat::Spawn()
 	pev->view_ofs		= Vector( 0, 0, -2 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_WIDE;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
+	m_barnacleOffset	= Vector(-16, -16, 0);
 
 	MonsterInit();
 }
@@ -389,6 +390,20 @@ void CStukabat::StartTask ( Task_t *pTask )
 		}
 		break;
 	}
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(2, 1.0f, 0, 8, false);
+		}
+		else if (pTask->flData == ACT_BARNACLE_PULL || pTask->flData == ACT_BARNACLE_CHEW) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(4, 0.5f, 0, 0, false);
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
+		}
+		break;
 	default:
 		CBaseMonster :: StartTask ( pTask );
 		break;

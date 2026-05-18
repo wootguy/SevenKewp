@@ -63,7 +63,7 @@ public:
 
 	virtual int MergedModelBody() { return MERGE_MDL_SPORE; }
 
-private:
+public:
 	int m_iBlow;
 	int m_iBlowSmall;
 

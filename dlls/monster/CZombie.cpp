@@ -174,6 +174,35 @@ void CZombie::CantFollowSound() {
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAlertSounds), 1, ATTN_NORM);
 }
 
+void CZombie::StartTask(Task_t* pTask)
+{
+	switch (pTask->iTask)
+	{
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(15, 0.2f, 0, 3, false);
+		}
+		else if (pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(15, 1, 2, 10, false);
+		}
+		else if (pTask->flData == ACT_BARNACLE_PULL || pTask->flData == ACT_BARNACLE_CHEW) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(15, 0.25f, 5, 9, true);
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
+		}
+		break;
+	default:
+	{
+		CBaseMonster::StartTask(pTask);
+	}
+	}
+}
+
 void CZombie::RunTask(Task_t* pTask)
 {
 	switch (pTask->iTask)
@@ -293,6 +322,7 @@ void CZombie :: Spawn()
 	m_flFieldOfView		= 0.0; // vanilla = 0.5
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_DOORS_GROUP;
+	m_barnacleOffset	= Vector(-4, 8, 0);
 
 	MonsterInit();
 }

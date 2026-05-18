@@ -235,6 +235,31 @@ Schedule_t* CTor::GetScheduleOfType(int Type) {
 	return CBaseMonster::GetScheduleOfType(Type);
 }
 
+void CTor::StartTask(Task_t* pTask)
+{
+	switch (pTask->iTask)
+	{
+	case TASK_SET_ACTIVITY:
+	case TASK_PLAY_SEQUENCE:
+		if (pTask->flData == ACT_BARNACLE_HIT || pTask->flData == ACT_BARNACLE_CHOMP) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(7, 1, 39, 55, false);
+		}
+		else if (pTask->flData == ACT_BARNACLE_PULL || pTask->flData == ACT_BARNACLE_CHEW) {
+			m_Activity = m_IdealActivity = (Activity)pTask->flData;
+			PlayAnimation(7, 0.2f, 50, 55, true);
+		}
+		else {
+			CBaseMonster::StartTask(pTask);
+		}
+		break;
+	default:
+	{
+		CBaseMonster::StartTask(pTask);
+	}
+	}
+}
+
 void CTor::MonsterThink(void) {
 	if (nextBeamBurst && nextBeamBurst < gpGlobals->time) {
 		pev->framerate = 0.001f;
@@ -430,6 +455,7 @@ void CTor::Spawn()
 	m_flFieldOfView = 0.0;
 	m_MonsterState = MONSTERSTATE_NONE;
 	nextShoot = nextBeamBurst = nextBeam = shotsFired = burstShotsFired = 0;
+	m_barnacleOffset = Vector(-6, 10, 0);
 
 	summon_cname = ALLOC_STRING(SUMMON_CLASSNAME);
 	numChildren = 0;

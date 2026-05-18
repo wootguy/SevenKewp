@@ -69,6 +69,9 @@ public:
 	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Leech"; }
 	int IRelationship( CBaseEntity *pTarget );
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
+	void BarnacleVictimBitten(entvars_t* pevBarnacle) override;
+	BOOL BarnacleVictimCaught(void) override;
 
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );

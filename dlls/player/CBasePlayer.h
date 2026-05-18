@@ -192,6 +192,7 @@ public:
 	BOOL	IsFirstPerson() { return !m_hViewEntity || m_hViewEntity.GetEdict() == edict(); }
 	BOOL	IsBot() { return pev->flags & FL_FAKECLIENT; }
 	virtual	BOOL IsNormalMonster(void) { return FALSE; }
+	virtual	BOOL IsBarnacleFood(void) { return TRUE; }
 
 	int					random_seed;    // See that is shared between client & server for shared weapons code
 

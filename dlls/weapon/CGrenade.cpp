@@ -27,6 +27,7 @@
 #include "decals.h"
 #include "weapon/CGrenade.h"
 #include "te_effects.h"
+#include "CSpore.h"
 
 //===================grenade
 
@@ -357,6 +358,11 @@ void CGrenade :: TumbleThink( void )
 	{
 		SetThink( &CGrenade::Detonate );
 	}
+
+	if (m_IdealMonsterState == MONSTERSTATE_PRONE) {
+		return;
+	}
+
 	if (pev->waterlevel != 0)
 	{
 		pev->velocity = pev->velocity * 0.5;
@@ -539,6 +545,63 @@ void CGrenade :: UseSatchelCharges( entvars_t *pevOwner, SATCHELCODE code )
 				pEnt->pev->owner = NULL;
 		}
 		pEnt = UTIL_FindEntityByClassname(pEnt, "grenade" );
+	}
+}
+
+BOOL CGrenade::BarnacleVictimCaught(void) {
+	m_IdealMonsterState = MONSTERSTATE_PRONE;
+	pev->movetype = MOVETYPE_NOCLIP;
+	pev->velocity = g_vecZero;
+	pev->avelocity = g_vecZero;
+	pev->angles.x = -90;
+	pev->angles.y = 0;
+	pev->angles.z = 0;
+	m_barnacleOffset = Vector(6, -8, 0);
+	pev->view_ofs.z = 16;
+	pev->framerate = 0;
+	pev->frame = 0;
+
+	const char* cname = STRING(pev->classname);
+	if (!strcmp(cname, "grenade")) {
+		pev->angles.x = -90;
+		m_barnacleOffset = Vector(-6, -8, 0);
+	}
+	else if (!strcmp(cname, "monster_satchel")) {
+		pev->angles.x = 90;
+		m_barnacleOffset = Vector(-6, -8, 0);
+	}
+	else if (!strcmp(cname, "monster_tripmine")) {
+		pev->angles.x = 90;
+		m_barnacleOffset = Vector(-6, -8, 0);
+	}
+	else if (!strcmp(cname, "spore")) {
+		pev->angles.x = 0;
+		m_barnacleOffset = Vector(-6, -8, 0);
+		CSpore* spore = (CSpore*)this;
+		spore->m_SporeType = CSpore::SporeType::GRENADE;
+
+		// disable parametric interpolation
+		pev->startpos = g_vecZero;
+		pev->endpos = g_vecZero;
+		pev->starttime = 0;
+		pev->impacttime = 0;
+	}
+
+	return TRUE;
+}
+
+void CGrenade::BarnacleVictimReleased(void) {
+	m_IdealMonsterState = MONSTERSTATE_NONE;
+	pev->flags &= ~FL_ONGROUND;
+	pev->movetype = MOVETYPE_BOUNCE;
+	pev->gravity = 0;
+	pev->angles = Vector(0, pev->angles.y, 0);
+	pev->avelocity = Vector(0, 256, 256);
+
+	const char* cname = STRING(pev->classname);
+	if (!strcmp(cname, "grenade")) {
+		pev->angles = UTIL_VecToAngles(pev->velocity);
+		pev->avelocity = Vector(RANDOM_FLOAT(-100, -500), 0, 0);
 	}
 }
 
