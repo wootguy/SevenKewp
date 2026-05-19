@@ -3701,6 +3701,7 @@ pt_end:
 		pev->movetype = MOVETYPE_FLY;
 		pev->gravity = FLT_MIN;
 		pev->maxspeed = 0.1f;
+		pev->iuser3 = 1; // prevent ducking
 		if ((pev->flags & FL_ONGROUND) && !m_isBarnacleFood) {
 			pev->flags &= ~FL_ONGROUND;
 			pev->origin.z += 2.0f;
@@ -3744,6 +3745,7 @@ void CBasePlayer::Spawn( void )
 	pev->renderamt = 0;
 	pev->renderfx = 0;
 	pev->rendercolor = Vector(0,0,0);
+	pev->iuser3 = 0;
 	m_lastDropTime = 0;
 	m_lastDamageEnt = NULL;
 	m_lastDamageType = 0;
@@ -5509,6 +5511,7 @@ void CBasePlayer :: BarnacleVictimReleased ( void )
 	m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
 	pev->movetype = MOVETYPE_WALK;
 	pev->view_ofs = VEC_VIEW;
+	pev->iuser3 = 0; // allow ducking
 	ApplyEffects(); // reset movetype, movespeed, gravity`
 }
 

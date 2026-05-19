@@ -74,6 +74,8 @@ enum WeaponCustomChargeAmmoMode {
 	WC_CHARGE_AMMO_LOAD,		// spend ammo as the charge up progresses, up to the full cost at 100% charge
 };
 
+#pragma pack(push,1)
+
 struct MeleeOpts {
 	int damage;
 	int damageBits;
@@ -205,6 +207,8 @@ struct CustomAmmoParams {
 	float hullSizeMin[3];
 	float hullSizeMax[3];
 };
+
+#pragma pack(pop)
 
 class CWeaponCustom;
 

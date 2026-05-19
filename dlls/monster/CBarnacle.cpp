@@ -185,20 +185,20 @@ void CBarnacle :: BarnacleThink ( void )
 			//vecNewEnemyOrigin.z += gSkillData.sk_barnacle_pullspeed;
 
 			m_flAltitude = (pev->origin.z - m_hEnemy->EyePosition().z);
-			vecNewEnemyOrigin.z = m_hEnemy->pev->origin.z;			
 
 			float distLeft = fabs(pev->origin.z - (vecNewEnemyOrigin.z + m_hEnemy->pev->view_ofs.z + ofs.y - 8));
 
 			// interpolate movement
-			if (m_hEnemy->IsPlayer()) {
-				m_hEnemy->pev->movetype = MOVETYPE_FLY;
-			}
-			else {
+			if (!m_hEnemy->IsPlayer()) {
 				m_hEnemy->pev->movetype = MOVETYPE_BOUNCE;
 				m_hEnemy->pev->gravity = FLT_MIN;
 			}
 				
 			m_hEnemy->pev->velocity = Vector(0, 0, gSkillData.sk_barnacle_pullspeed * 10);
+			if (m_hEnemy->pev->waterlevel >= WATERLEVEL_WAIST) {
+				// PM_WaterMove() won't add velocity unless the player is trying to move with a high enough maxspeed
+				m_hEnemy->pev->origin.z += gSkillData.sk_barnacle_pullspeed;
+			}
 
 			if (distLeft < BARNACLE_BODY_HEIGHT || m_touchedEnemy)
 			{
@@ -216,6 +216,7 @@ void CBarnacle :: BarnacleThink ( void )
 				SetActivity ( ACT_EAT );
 			}
 
+			vecNewEnemyOrigin.z = m_hEnemy->pev->origin.z;
 			UTIL_SetOrigin ( m_hEnemy->pev, vecNewEnemyOrigin );
 		}
 		else

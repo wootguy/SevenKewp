@@ -297,9 +297,9 @@ int CBasePlayerWeapon::AddToPlayer(CBasePlayer* pPlayer)
 
 
 	if (bResult && AddWeapon()) {
-
+		std::string lowerCname = toLowerCase(STRING(pev->classname));
 		const char* customSpriteDir = m_customSpriteDir ?
-			STRING(m_customSpriteDir) : g_defaultSpriteDirs.get(STRING(pev->classname));
+			STRING(m_customSpriteDir) : g_defaultSpriteDirs.get(lowerCname.c_str());
 
 		if (pPlayer->IsSevenKewpClient()) {
 			MESSAGE_BEGIN(MSG_ONE, gmsgCustomHud, NULL, pPlayer->pev);

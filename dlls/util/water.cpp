@@ -61,6 +61,10 @@ void DoEntWaterPhysics() {
 		}
 
 		Vector origin = ent->pev->origin;
+		if (ent->IsBSPModel()) {
+			origin = ent->Center();
+			origin.z = ent->pev->absmin.z;
+		}
 
 		if (ent->IsPlayerCorpse() || ent->IsPlayer()) {
 			origin.z -= (ent->pev->flags & FL_DUCKING) ? 18 : 36;

@@ -235,8 +235,12 @@ int UTIL_GetMaxAmmo(const char* ammoType) {
 
 	int* max = g_ammoCapacities.get(ammoType);
 
-	if (max)
-		return *max;
+	if (max) {
+		if (*max)
+			return *max;
+		return -1; // can't send 0 ammo or else clients don't accept the weapon registration
+	}
+		
 
 	ALERT(at_warning, "Unknown max ammo for ammo type '%s'. Defaulting to 250.\n", ammoType);
 
@@ -436,11 +440,11 @@ void UTIL_RegisterAmmo(const char* configPath) {
 	}
 
 	if (params.ammoTypeHl) {
-		ALERT(at_console, "Registered custom ammo entity '%s' for type '%s' ('%s' HL)\n",
+		ALERT(at_aiconsole, "Registered custom ammo entity '%s' for type '%s' ('%s' HL)\n",
 			cname, STRING(params.ammoType), STRING(params.ammoTypeHl));
 	}
 	else {
-		ALERT(at_console, "Registered custom ammo entity '%s' for type '%s'\n",
+		ALERT(at_aiconsole, "Registered custom ammo entity '%s' for type '%s'\n",
 			cname, STRING(params.ammoType));
 	}
 }
@@ -483,6 +487,7 @@ void UTIL_RegisterEquipmentEntity(const char* szClassname) {
 
 void UTIL_SetDefaultWeaponSpriteDir(const char* szClassname, const char* spriteDir) {
 	g_defaultSpriteDirs.put(szClassname, spriteDir);
+	g_defaultSpriteDirs.put(toLowerCase(szClassname).c_str(), spriteDir);
 }
 
 // called by worldspawn

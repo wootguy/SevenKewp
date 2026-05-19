@@ -442,6 +442,10 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 			if (lastSlash != -1) {
 				string folder = value.substr(0, lastSlash);
 				string cname = value.substr(lastSlash + 1);
+				int dot = cname.find_last_of(".");
+				if (dot != -1)
+					cname = cname.substr(0, dot);
+
 				ALERT(at_console, "Set default weapon HUD for '%s' to 'sprites/%s/%s.txt'\n",
 					cname.c_str(), folder.c_str(), cname.c_str());
 				UTIL_SetDefaultWeaponSpriteDir(cname.c_str(), folder.c_str());

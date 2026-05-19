@@ -2212,11 +2212,13 @@ void UpdateClientData ( const edict_t *ent, int sendweapons, struct clientdata_s
 		// don't use spec vars from chased player
 		cd->iuser1			= pevOrg->iuser1;
 		cd->iuser2			= pevOrg->iuser2;
+		cd->iuser3			= pevOrg->iuser3;
 	}
 	else
 	{
 		cd->iuser1			= pev->iuser1;
 		cd->iuser2			= pev->iuser2;
+		cd->iuser3			= pev->iuser3;
 	}
 
 	
