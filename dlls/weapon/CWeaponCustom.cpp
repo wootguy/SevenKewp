@@ -66,6 +66,29 @@ void CWeaponCustom::Spawn() {
 
 void CWeaponCustom::Precache() {
 	PrecacheEvents();
+
+#ifndef CLIENT_DLL
+	CBasePlayerWeapon::Precache();
+
+	if (params.pmodelAkimbo) {
+		PRECACHE_MODEL(STRING(params.pmodelAkimbo));
+	}
+	if (params.wmodelAkimbo) {
+		bool hasMergeBody = mp_mergemodels.value && MergedModelBodyAkimbo() != -1;
+		if (!hasMergeBody || UTIL_MapReplacesModel(STRING(params.wmodelAkimbo))) {
+			PRECACHE_MODEL(STRING(params.wmodelAkimbo));
+		}
+	}
+
+	if (params.wrongClientWeapon) {
+		UTIL_PrecacheOther(STRING(params.wrongClientWeapon));
+	}
+
+	for (int i = 0; i < 2; i++) {
+		if (params.ammoInfo[i].dropEnt)
+			UTIL_PrecacheOther(STRING(params.ammoInfo[i].dropEnt));
+	}
+#endif
 }
 
 void CWeaponCustom::PrecacheEvents() {
@@ -104,8 +127,6 @@ void CWeaponCustom::PrecacheEvents() {
 		m_mergedModelBody = mergedBody ? *mergedBody : -1;
 
 		m_hasHandModels = params.flags & FL_WC_WEP_HAND_MODELS;
-		
-		CBasePlayerWeapon::Precache();
 	}
 	else {
 		m_mergedModelBody = -1;
@@ -122,16 +143,6 @@ void CWeaponCustom::PrecacheEvents() {
 
 	params.classname = pev->classname;
 
-	if (params.pmodelAkimbo) {
-		PRECACHE_MODEL(STRING(params.pmodelAkimbo));
-	}
-	if (params.wmodelAkimbo) {
-		bool hasMergeBody = mp_mergemodels.value && MergedModelBodyAkimbo() != -1;
-		if (!hasMergeBody || UTIL_MapReplacesModel(STRING(params.wmodelAkimbo))) {
-			PRECACHE_MODEL(STRING(params.wmodelAkimbo));
-		}
-	}
-
 	if (params.hudFolder) {
 		m_hudPath = ALLOC_STRING(UTIL_VarArgs("%s/%s", STRING(params.hudFolder), STRING(pev->classname)));
 		
@@ -140,15 +151,6 @@ void CWeaponCustom::PrecacheEvents() {
 	}
 	else {
 		m_hudPath = ALLOC_STRING(UTIL_VarArgs("%s", STRING(pev->classname)));
-	}
-
-	if (params.wrongClientWeapon) {
-		UTIL_PrecacheOther(STRING(params.wrongClientWeapon));
-	}
-
-	for (int i = 0; i < 2; i++) {
-		if (params.ammoInfo[i].dropEnt)
-			UTIL_PrecacheOther(STRING(params.ammoInfo[i].dropEnt));
 	}
 
 	/*

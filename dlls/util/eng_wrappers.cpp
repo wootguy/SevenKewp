@@ -877,7 +877,7 @@ void PLAYBACK_EVENT_FULL(int flags, const edict_t* pInvoker, unsigned short even
 }
 
 string_t ALLOC_STRING(const char* str) {
-	if (!str)
+	if (!str || !str[0])
 		return 0;
 
 	string_t* existing = g_allocedStrings.get(str);
