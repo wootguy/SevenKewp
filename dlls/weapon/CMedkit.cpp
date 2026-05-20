@@ -36,6 +36,7 @@ enum medkit_e {
 
 #define MEDKIT_VOLUME 128
 #define MEDKIT_REVIVE_RADIUS 64
+#define MEDKIT_REVIVE_TIME 2.0f
 
 void CMedkit::Spawn( )
 {
@@ -63,6 +64,8 @@ void CMedkit::Precache( void )
 	PRECACHE_SOUND("items/suitchargeok1.wav");
 	PRECACHE_SOUND("weapons/electro4.wav");
 
+	m_reviveSpriteIdx = PRECACHE_MODEL("sprites/saveme.spr");
+
 	PRECACHE_HUD_FILES("sprites/weapon_medkit.txt");
 }
 
@@ -89,6 +92,8 @@ BOOL CMedkit::Deploy( )
 		return TRUE;
 	}
 
+	h_reviveTarget = NULL;
+
 	return FALSE;
 }
 
@@ -100,6 +105,7 @@ void CMedkit::Holster( int skiplocal /* = 0 */ )
 
 	m_pPlayer->m_flNextAttack = UTIL_WeaponTimeBase() + 0.5;
 	SendWeaponAnim( MEDKIT_HOLSTER );
+	CancelRevive();
 }
 
 void CMedkit::WeaponIdle()
@@ -109,12 +115,7 @@ void CMedkit::WeaponIdle()
 		return;
 
 	RechargeAmmo();
-
-	if (m_reviveChargedTime) {
-		m_reviveChargedTime = 0;
-		m_flNextSecondaryAttack = GetNextAttackDelay(0.5f);
-		EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "items/medshotno1.wav", 1, ATTN_NORM);
-	}
+	CancelRevive();
 
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
@@ -134,6 +135,37 @@ void CMedkit::WeaponIdle()
 	}
 
 	SendWeaponAnim(iAnim);
+}
+
+void CMedkit::ItemPostFrame(void) {
+	CBasePlayerWeapon::ItemPostFrame();
+
+	if (m_nextSpriteHint > gpGlobals->time)
+		return;
+
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	m_nextSpriteHint = gpGlobals->time + 0.2f;
+
+	edict_t* ed = m_pPlayer->edict();
+	CBaseEntity* corpse = NULL;
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+
+		if (!plr || plr == m_pPlayer || plr->IsAlive() || (plr->pev->effects & EF_NODRAW))
+			continue;
+
+		Vector pos = plr->pev->origin + Vector(0, 0, -8);
+		const int flags = 1 | 2 | 4 | 8;
+		const int scale = 8;
+		const int fps = 10;
+
+		if (UTIL_TestPVS(pos, ed)) {
+			UTIL_ExplosionMsg(pos, m_reviveSpriteIdx, scale, fps, flags, MSG_ONE_UNRELIABLE, ed);
+		}
+	}
 }
 
 void CMedkit::PrimaryAttack()
@@ -219,23 +251,33 @@ void CMedkit::SecondaryAttack()
 		return;
 	}
 
+	CBaseEntity* bestPlayerCorpse = NULL;
 	CBaseMonster* bestTarget = NULL;
 	float bestDist = FLT_MAX;
+	float bestPlayerCorpseDist = FLT_MAX;
 
 	CBaseEntity* ent = NULL;
 	while ((ent = UTIL_FindEntityInSphere(ent, m_pPlayer->pev->origin, MEDKIT_REVIVE_RADIUS)) != 0) {
 		CBaseMonster* mon = ent ? ent->MyMonsterPointer() : NULL;
 		
-		if (!mon || mon->IsAlive() || (!mon->IsNormalMonster() && !mon->IsPlayer()) || mon->IsMachine()) {
+		if (!mon || mon->IsAlive() || (!mon->IsNormalMonster() && !mon->IsPlayer() && !mon->IsPlayerCorpse()) || mon->IsMachine()) {
 			continue;
 		}
 
-		if (mon->IsPlayer() && mon->pev->iuser1) {
-			continue; // don't revive spectators
+		if (mon->IsPlayer() && (mon->pev->iuser1 || (mon->pev->effects & EF_NODRAW))) {
+			continue; // don't revive spectators nor gibs
 		}
 
 		float dist = (mon->pev->origin - m_pPlayer->pev->origin).Length();
 		
+		if (mon->IsPlayerCorpse()) {
+			if (dist < bestPlayerCorpseDist) {
+				bestPlayerCorpseDist = dist;
+				bestPlayerCorpse = mon;
+			}
+			continue;
+		}
+
 		if (bestTarget == NULL) {
 			bestDist = dist;
 			bestTarget = mon;
@@ -255,7 +297,15 @@ void CMedkit::SecondaryAttack()
 	if (!bestTarget) {
 		EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "items/medshotno1.wav", 1, ATTN_NORM);
 		m_flNextSecondaryAttack = GetNextAttackDelay(0.5f);
-		m_reviveChargedTime = 0;
+		CancelRevive();
+
+		if (bestPlayerCorpse) {
+			CBasePlayer* owner = UTIL_PlayerByIndex(bestPlayerCorpse->pev->renderamt);
+			const char* name = owner ? owner->DisplayName() : "\\disconnected\\";
+			UTIL_ClientPrint(m_pPlayer, print_center,
+				UTIL_VarArgs("The spirit of\n%s\nhas left this body\n", name));
+		}
+
 		return;
 	}
 
@@ -264,14 +314,61 @@ void CMedkit::SecondaryAttack()
 		bestTarget->pev->nextthink = gpGlobals->time + 2.0f;
 	}
 
+	h_reviveTarget = bestTarget;
+
+	CBasePlayer* bestPlr = bestTarget->MyPlayerPointer();
+	if (bestPlr && !bestPlr->m_reviveAttempted) {
+		// extend the respawn time so the player has time to react to the revive noise
+		// while still giving them to reject the revive
+		bestPlr->m_reviveAttempted = true;
+		bestPlr->m_tempRespawnDelay = MEDKIT_REVIVE_TIME / 2;
+
+		float deadTime = gpGlobals->time - bestPlr->m_killedTime;
+		float respawnDelay = mp_respawndelay.value + bestPlr->m_extraRespawnDelay + bestPlr->m_tempRespawnDelay;
+		if (deadTime > respawnDelay) {
+			// prevent the player respawning instantly if they've already waited out the timer
+			bestPlr->m_killedTime = gpGlobals->time - (respawnDelay - bestPlr->m_tempRespawnDelay);
+		}
+	}
+
 	if (!m_reviveChargedTime) {
 		SendWeaponAnim(MEDKIT_LONGUSE);
-		m_reviveChargedTime = gpGlobals->time + 2.0f;
+		m_reviveChargedTime = gpGlobals->time + MEDKIT_REVIVE_TIME;
 		EMIT_SOUND(m_pPlayer->edict(), CHAN_WEAPON, "items/suitchargeok1.wav", 1, ATTN_NORM);
 		return;
 	}
 
+	if (m_nextMessageTime < gpGlobals->time) {
+		m_nextMessageTime = gpGlobals->time + 0.05f;
+		std::string progress = "[";
+		const int barCount = 37;
+		float timeLeft = m_reviveChargedTime - gpGlobals->time;
+		float t = 1.0f - (timeLeft / MEDKIT_REVIVE_TIME);
+		int idx = t * barCount;
+		for (int i = 0; i < barCount; i++) {
+			if (i > idx) {
+				progress += " ";
+			}
+			else {
+				progress += "|";
+			}
+		}
+		progress += "]";
+		UTIL_ClientPrint(m_pPlayer, print_center, UTIL_VarArgs("Reviving %s\n%s\n",
+			bestTarget->DisplayName(), progress.c_str()));
+
+		CBasePlayer* plr = bestTarget->MyPlayerPointer();
+		if (plr) {
+			UTIL_ClientPrint(bestTarget, print_center, UTIL_VarArgs("%s is reviving you\n%s\n",
+				m_pPlayer->DisplayName(), progress.c_str()));
+			plr->m_lastSpawnMessage = gpGlobals->time; // don't also show the respawn timer message
+		}	
+	}
+
 	if (m_reviveChargedTime < gpGlobals->time) {
+		UTIL_ClientPrint(m_pPlayer, print_center, "");
+		UTIL_ClientPrint(bestTarget, print_center, "");
+
 		m_reviveChargedTime = 0;
 		m_pPlayer->SetAnimation(PLAYER_ATTACK1);
 		SendWeaponAnim(MEDKIT_SHORTUSE);
@@ -290,6 +387,44 @@ void CMedkit::SecondaryAttack()
 
 		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= gSkillData.sk_plr_medkit_revive_cost;
 	}
+}
+
+void CMedkit::CancelRevive() {
+	if (!m_reviveChargedTime) {
+		h_reviveTarget = NULL;
+		return;
+	}
+
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
+	UTIL_ClientPrint(m_pPlayer, print_center, "Revive cancelled\n");
+
+	if (h_reviveTarget) {
+		CBaseEntity* reviveTarget = h_reviveTarget.GetEntity();
+		CBasePlayer* revivePlr = reviveTarget ? reviveTarget->MyPlayerPointer() : NULL;
+
+		if (revivePlr) {
+			if (revivePlr->IsAlive()) {
+				// respawned normally
+				UTIL_ClientPrint(h_reviveTarget.GetEntity(), print_center, "");
+			}
+			else {
+				UTIL_ClientPrint(h_reviveTarget.GetEntity(), print_center,
+					UTIL_VarArgs("%s stopped reviving you", m_pPlayer->DisplayName()));
+			}
+
+			// so you can't hit-and-run players you don't like with an increased delay
+			revivePlr->m_tempRespawnDelay = 0;
+		}
+
+		h_reviveTarget = NULL;
+	}
+
+	m_reviveChargedTime = 0;
+	m_flNextSecondaryAttack = GetNextAttackDelay(0.5f);
+	EMIT_SOUND(m_pPlayer->edict(), CHAN_ITEM, "items/medshotno1.wav", 1, ATTN_NORM);
 }
 
 bool CMedkit::CanHealTarget(CBaseEntity* ent) {

@@ -14,6 +14,7 @@ public:
 	BOOL Deploy( void );
 	void Holster( int skiplocal = 0 );
 	void WeaponIdle();
+	virtual void ItemPostFrame(void) override;
 	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
 	virtual int AddToPlayer(CBasePlayer* pPlayer);
 
@@ -25,8 +26,14 @@ public:
 
 	void RechargeAmmo();
 
+	void CancelRevive();
+
 	float m_reviveChargedTime; // time when target will be revive charge will complete
 	float m_rechargeTime; // time until regenerating ammo
+	float m_nextMessageTime; // next time a status message can be sent
+	float m_nextSpriteHint;
+	EHANDLE h_reviveTarget;
+	int m_reviveSpriteIdx;
 
 	virtual BOOL UseDecrement( void )
 	{ 

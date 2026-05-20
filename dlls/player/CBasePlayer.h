@@ -549,6 +549,8 @@ public:
 	bool m_allowFriendlyFire; // true if this player allows incoming friendly fire
 
 	float m_extraRespawnDelay; // set to non-zero to increase respawn delay (sums with map default)
+	float m_tempRespawnDelay; // set to non-zero to increase respawn delay (resets on spawn)
+	bool m_reviveAttempted; // someone attempted to revive this player while dead
 
 	float m_initSoundTime;
 	

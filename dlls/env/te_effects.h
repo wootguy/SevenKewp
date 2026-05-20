@@ -76,6 +76,7 @@ EXPORT void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t colo
 EXPORT void	UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType);
 EXPORT void UTIL_Tracer(Vector start, Vector end, int color=4, int msgMode = MSG_PAS, edict_t* targetEnt = NULL);
 EXPORT void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate, uint8_t flags);
+EXPORT void UTIL_ExplosionMsg(const Vector& pos, int sprIndex, uint8_t scale, uint8_t framerate, uint8_t flags, int msgMode=MSG_PVS, edict_t* targetEnt=NULL);
 EXPORT void UTIL_Smoke(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate);
 EXPORT void UTIL_BeamCylinder(Vector pos, float radius, int modelIdx, uint8_t startFrame, uint8_t frameRate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed);
 EXPORT void UTIL_BeamTorus(Vector pos, float radius, int modelIdx, uint8_t startFrame, uint8_t frameRate, uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed);

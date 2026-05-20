@@ -1797,7 +1797,7 @@ void CBasePlayer::PlayerDeathThink(void)
 	}
 
 	float deadTime = gpGlobals->time - m_killedTime;
-	float respawnDelay = mp_respawndelay.value + m_extraRespawnDelay;
+	float respawnDelay = mp_respawndelay.value + m_extraRespawnDelay + m_tempRespawnDelay;
 
 	if (deadTime > 1.0f && deadTime < respawnDelay + 2.0f) {
 		if (gpGlobals->time - m_lastSpawnMessage > 0.2f) {
@@ -1894,9 +1894,11 @@ void CBasePlayer::PlayerDeathThink(void)
 	if ( pev->iuser1 )	// player is in spectator mode
 		return;	
 	
+	bool respawnTimerFinished = deadTime >= respawnDelay;
+
 // wait for any button down,  or mp_forcerespawn is set and the respawn time is up
 	if (!fAnyButtonDown 
-		&& !( g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && (gpGlobals->time > (m_fDeadTime + 5))) )
+		&& !( g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && respawnTimerFinished) )
 		return;
 
 	pev->button = 0;
@@ -3754,6 +3756,8 @@ void CBasePlayer::Spawn( void )
 	m_noclip = false;
 	m_godmode = false;
 	m_notarget = false;
+	m_reviveAttempted = false;
+	m_tempRespawnDelay = 0;
 	ResetEffects();
 	m_droppedDeathWeapons = false;
 	if (m_flashlightEnabled && flashlight.value >= 2) {
@@ -4549,6 +4553,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			GiveNamedItem("ammo_556");
 			GiveNamedItem("ammo_762");
 		}
+		GiveAmmo(100, "health");
 		gEvilImpulse101 = FALSE;
 		break;
 
@@ -7166,6 +7171,8 @@ void CBasePlayer::Revive() {
 	m_flFlashLightTime = 1; // force first message
 	m_deathMessageSent = false;
 	m_droppedDeathWeapons = false;
+	m_reviveAttempted = false;
+	m_tempRespawnDelay = 0;
 
 	m_pLastItem = NULL;
 	m_fInitHUD = TRUE;

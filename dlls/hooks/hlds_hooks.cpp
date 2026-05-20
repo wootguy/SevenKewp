@@ -307,7 +307,7 @@ void respawn(entvars_t* pev, BOOL fCopyCorpse)
 	}
 
 	float deadTime = gpGlobals->time - plr->m_killedTime;
-	if (deadTime < mp_respawndelay.value + plr->m_extraRespawnDelay) {
+	if (deadTime < mp_respawndelay.value + plr->m_extraRespawnDelay + plr->m_tempRespawnDelay) {
 		return;
 	}
 

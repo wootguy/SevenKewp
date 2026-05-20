@@ -1208,6 +1208,34 @@ void UTIL_Sprite(const Vector& position, int sprIndex, uint8_t scale, uint8_t op
 	}
 }
 
+void UTIL_ExplosionMsg(const Vector& pos, int sprIndex, uint8_t scale, uint8_t framerate, uint8_t flags, int msgMode, edict_t* targetEnt) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
+		WRITE_BYTE(TE_EXPLOSION);
+		WRITE_COORD(pos.x);
+		WRITE_COORD(pos.y);
+		WRITE_COORD(pos.z);
+		WRITE_SHORT(sprIndex);
+		WRITE_BYTE(scale);
+		WRITE_BYTE(framerate);
+		WRITE_BYTE(flags);
+		MESSAGE_END();
+	}
+	else {
+		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
+		if (!tent)
+			return;
+
+		CBaseEntity* ent = CBaseEntity::Create("te_explosion", pos, g_vecZero, false);
+		ent->pev->scale = scale / 10.0f;
+		ent->pev->framerate = framerate;
+		ent->pev->spawnflags = flags;
+		tent->h_ent = ent;
+		DispatchSpawn(ent->edict());
+		SET_MODEL(ent->edict(), INDEX_MODEL(sprIndex));
+	}
+}
+
 
 void UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector& velocity, uint8_t noise,
 	int modelIdx, uint8_t shards, uint8_t duration, uint8_t flags) {
