@@ -144,7 +144,7 @@ void CBabyGarg::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDi
 	CBaseMonster::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 }
 
-int CBabyGarg::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) {
+int CBabyGarg::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) {	
 	return CBaseMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 }
 
@@ -152,7 +152,14 @@ void CBabyGarg::Killed(entvars_t* pevAttacker, int iGib)
 {
 	if (pev->deadflag != DEAD_DEAD)
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pDeathSounds), 1.0, ATTN_GARG, 0, 250);
-	CGargantua::Killed(pevAttacker, iGib);
+	
+	FlameDestroy();
+	EyeOff();
+	UTIL_Remove(m_hEyeGlow);
+	m_hEyeGlow = NULL;
+	SetBoneController(0, 0);
+	SetBoneController(1, 0);
+	CBaseMonster::Killed(pevAttacker, iGib);
 }
 
 void CBabyGarg::PainSound() {

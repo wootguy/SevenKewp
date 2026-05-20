@@ -382,8 +382,28 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 
 			if ( g_pGameRules->IsMultiplayer() )
 			{
+				const float radius = 128;
+
 				// radius damage a little more potent in multiplayer.
-				::RadiusDamage( tr.vecEndPos, pev, m_pPlayer->pev, GetDamage(gSkillData.sk_plr_egon_wide) / 4, 128, CLASS_NONE, DMG_ENERGYBEAM | DMG_ALWAYSGIB);
+				::RadiusDamage( tr.vecEndPos, pev, m_pPlayer->pev,
+					GetDamage(gSkillData.sk_plr_egon_wide) / 4, radius, CLASS_NONE,
+					DMG_ENERGYBEAM | DMG_ALWAYSGIB);
+
+				CBaseEntity* ent = NULL;
+				while ((ent = UTIL_FindEntityInSphere(ent, tr.vecEndPos, radius)) != NULL) {
+					if ((ent->pev->flags & FL_MONSTER) && !ent->IsAlive() && !(ent->pev->effects & EF_NODRAW)) {
+						// gib nearby corpses
+						Vector ori = ent->Center();
+						ori.z = ent->pev->absmin.z + 8;
+						Vector dir = ori - tr.vecEndPos;
+						float distScale = 1.0f - ((ori - tr.vecEndPos).Length() / radius);
+						TraceResult tr;
+						UTIL_TraceLine(tr.vecEndPos, ori, ignore_monsters, NULL, &tr);
+						ClearMultiDamage();
+						ent->TraceAttack(m_pPlayer->pev, 80*distScale, dir, &tr, DMG_CLUB | DMG_ALWAYSGIB);
+						ApplyMultiDamage(pev, m_pPlayer->pev);
+					}
+				}
 			}
 
 			if ( !m_pPlayer->IsAlive() )

@@ -690,6 +690,7 @@ void CGargantua::DeathEffect( void )
 
 void CGargantua::Killed( entvars_t *pevAttacker, int iGib )
 {
+	FlameDestroy();
 	EyeOff();
 	UTIL_Remove( m_hEyeGlow );
 	m_hEyeGlow = NULL;

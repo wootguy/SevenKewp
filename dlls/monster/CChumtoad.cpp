@@ -242,3 +242,16 @@ void CChumtoad::StopFollowingSound() {
 void CChumtoad::CantFollowSound() {
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, UNFOLLOW_SOUND, 1, ATTN_NORM);
 }
+
+int CChumtoad::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
+{
+	if (flDamage >= 80)
+		bitsDamageType |= DMG_ALWAYSGIB;
+	if (!IsAlive() && (bitsDamageType & DMG_BULLET)) {
+		// enough bullets gibs the monster
+		bitsDamageType |= DMG_CLUB;
+		flDamage *= 3;
+	}
+
+	return CBaseMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
+}

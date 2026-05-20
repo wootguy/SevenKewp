@@ -42,6 +42,8 @@ public:
 	void StopFollowingSound();
 	void CantFollowSound();
 
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+
 	CUSTOM_SCHEDULES;
 
 	float nextCloudEmit;

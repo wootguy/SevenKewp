@@ -420,6 +420,7 @@ public:
 	Activity GetSmallFlinchActivity( void );
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 	virtual void GibMonster( void );
+	virtual void MakeGibs( void );
 	BOOL		 ShouldGibMonster( int iGib );
 	void		 CallGibMonster( void );
 	virtual BOOL	HasHumanGibs( void );

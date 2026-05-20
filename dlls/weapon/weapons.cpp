@@ -588,6 +588,7 @@ void W_Precache(void)
 
 	// weapon aliases
 	UTIL_RegisterWeaponCustomAlias("weapon_uzi", "weapon_uziakimbo"); // for sven maps (default alias of "_akimbo" won't work)
+	UTIL_RegisterWeaponCustomAlias("weapon_m249", "weapon_saw");
 
 	g_registeringCustomWeps = true; // anything registered from this point on must be from a plugin
 

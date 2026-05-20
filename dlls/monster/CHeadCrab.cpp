@@ -422,6 +422,14 @@ int CHeadCrab :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	if ( bitsDamageType & DMG_ACID )
 		flDamage = 0;
 
+	if (flDamage >= 80)
+		bitsDamageType |= DMG_ALWAYSGIB;
+	if (!IsAlive() && (bitsDamageType & DMG_BULLET)) {
+		// enough bullets gibs the monster
+		bitsDamageType |= DMG_CLUB;
+		flDamage *= 3;
+	}
+		
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
@@ -505,7 +513,9 @@ void CBabyCrab :: Spawn( void )
 	InitModel();
 	pev->rendermode = kRenderTransTexture;
 	pev->renderamt = 192;
-	SetSize(Vector(-12, -12, 0), Vector(12, 12, 24));
+	SetSize(Vector(-12, -12, 0), Vector(12, 12, 18));
+
+	SetTouch(&CBabyCrab::SquishTouch);
 }
 
 void CBabyCrab :: Precache( void )
@@ -514,6 +524,8 @@ void CBabyCrab :: Precache( void )
 
 	m_defaultModel = "models/baby_headcrab.mdl";
 	PRECACHE_MODEL(GetModel());
+
+	PRECACHE_SOUND("roach/rch_smash.wav");
 }
 
 int	CBabyCrab::Classify(void)
@@ -564,4 +576,69 @@ Schedule_t* CBabyCrab :: GetScheduleOfType ( int Type )
 	}
 
 	return CHeadCrab::GetScheduleOfType( Type );
+}
+
+void CBabyCrab::MakeGibs(void) {
+	EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "roach/rch_smash.wav", 1, ATTN_NORM, 0, RANDOM_LONG(90, 110));
+	UTIL_BloodDrips(pev->origin, g_vecZero, BloodColor(), 40);
+}
+
+void CBabyCrab::LeapTouch(CBaseEntity* pOther) {
+	CHeadCrab::LeapTouch(pOther);
+	SetTouch(&CBabyCrab::SquishTouch);
+}
+
+void CBabyCrab::StartTask(Task_t* pTask)
+{
+	CHeadCrab::StartTask(pTask);
+
+	switch (pTask->iTask)
+	{
+	case TASK_RANGE_ATTACK1:
+		SetTouch(&CBabyCrab::LeapTouch);
+		break;
+	}
+}
+
+void CBabyCrab::RunTask(Task_t* pTask)
+{
+	CHeadCrab::RunTask(pTask);
+
+	switch (pTask->iTask)
+	{
+	case TASK_RANGE_ATTACK1:
+	case TASK_RANGE_ATTACK2:
+	{
+		if (m_fSequenceFinished) {
+			SetTouch(&CBabyCrab::SquishTouch);
+		}
+		break;
+	}
+	}
+}
+
+void CBabyCrab::SquishTouch(CBaseEntity* pOther) {
+	float height = pOther->pev->absmax.z - pOther->pev->absmin.z;
+	if (height > 32 && pOther->pev->absmin.z > pev->absmax.z - 4 && IsAlive()) {
+		Killed(pOther->pev, DMG_NEVERGIB);
+		MakeGibs();
+		PlayAnimation(7, 0, 50);
+	}
+}
+
+int CBabyCrab::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
+{
+	// Don't take any acid damage -- BigMomma's mortar is acid
+	if (bitsDamageType & DMG_ACID)
+		flDamage = 0;
+
+	if (flDamage >= 20)
+		bitsDamageType |= DMG_ALWAYSGIB;
+	if (!IsAlive() && (bitsDamageType & DMG_BULLET)) {
+		// enough bullets gibs the monster
+		bitsDamageType |= DMG_CLUB;
+		flDamage *= 3;
+	}
+
+	return CBaseMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);
 }

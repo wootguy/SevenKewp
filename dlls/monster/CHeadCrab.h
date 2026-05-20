@@ -67,4 +67,10 @@ public:
 	Schedule_t* GetScheduleOfType ( int Type );
 	virtual int GetVoicePitch( void ) { return PITCH_NORM + RANDOM_LONG(40,50); }
 	virtual float GetSoundVolue( void ) { return 0.8; }
+	void MakeGibs(void);
+	void StartTask(Task_t* pTask);
+	void RunTask(Task_t* pTask);
+	void LeapTouch(CBaseEntity* pOther);
+	void SquishTouch(CBaseEntity* pOther);
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
 };

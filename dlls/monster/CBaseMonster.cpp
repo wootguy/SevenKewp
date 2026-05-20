@@ -4330,9 +4330,32 @@ void CBaseMonster::GibMonster(void)
 		Killed(pev, GIB_NEVER);
 	}
 
+	MakeGibs();
+
+	if (!IsPlayer())
+	{
+		// don't remove players!
+		SetThink(&CBaseMonster::SUB_Remove);
+		pev->nextthink = gpGlobals->time;
+
+		// if the entity is outside the valid range for sound origins, then it needs
+		// to be networked at least until the sound starts playing or else clients won't hear it.
+		if (!UTIL_IsValidTempEntOrigin(pev->origin)) {
+			pev->flags &= ~FL_MONSTER; // prevent the crowbar thinking this is a valid target
+			pev->renderamt = 0;
+			pev->rendermode = kRenderTransTexture;
+			pev->nextthink = gpGlobals->time + 0.1f;
+		}
+	}
+	else {
+		pev->effects |= EF_NODRAW;
+	}
+}
+
+void CBaseMonster::MakeGibs(void) {
 	if (!IsMachine())
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "common/bodysplat.wav", 1, ATTN_NORM);
-	
+
 	if (IsMachine())
 	{
 		Vector position = pev->origin;
@@ -4358,25 +4381,6 @@ void CBaseMonster::GibMonster(void)
 			CGib::SpawnHeadGib(pev);
 			CGib::SpawnMonsterGibs(pev, 4, 1);	// throw some human gibs.
 		}
-	}
-
-	if (!IsPlayer())
-	{
-		// don't remove players!
-		SetThink(&CBaseMonster::SUB_Remove);
-		pev->nextthink = gpGlobals->time;
-
-		// if the entity is outside the valid range for sound origins, then it needs
-		// to be networked at least until the sound starts playing or else clients won't hear it.
-		if (!UTIL_IsValidTempEntOrigin(pev->origin)) {
-			pev->flags &= ~FL_MONSTER; // prevent the crowbar thinking this is a valid target
-			pev->renderamt = 0;
-			pev->rendermode = kRenderTransTexture;
-			pev->nextthink = gpGlobals->time + 0.1f;
-		}
-	}
-	else {
-		pev->effects |= EF_NODRAW;
 	}
 }
 
@@ -5063,7 +5067,7 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 	{
 		m_LastHitGroup = ptr->iHitgroup;
 
-		if (!(bitsDamageType & DMG_BLAST)) {
+		if (!(bitsDamageType & DMG_BLAST) && IsAlive()) {
 			switch (ptr->iHitgroup)
 			{
 			case HITGROUP_GENERIC:
@@ -5091,7 +5095,9 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 		}
 		else {
 			// blast damage shouldn't hit a single point like bullets.
-			// consider it to always be a body/generic shot
+			// consider it to always be a body/generic shot.
+			// Also don't scale up/down damage for hit groups so monsters that gib
+			// from bullets gib consistently
 		}
 
 		if (IsMachine() && flDamage > 0) {
