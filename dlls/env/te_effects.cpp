@@ -3,6 +3,7 @@
 #include "te_effects.h"
 #include "hlds_hooks.h"
 #include "shared_util.h"
+#include "CBaseTurret.h"
 
 bool g_checkExplSounds;
 
@@ -2058,4 +2059,55 @@ void UTIL_WaterSplashMsg(Vector pos, float scale, int playSound, edict_t* skipEn
 	if (playSound && hlPlayers && validHlTempOri) {
 		StartSound(0, CHAN_STATIC, sample, vol, ATTN_NORM, SND_FL_GLOBAL, pitch, pos, hlPlayers);
 	}
+}
+
+void UTIL_ShockDamageEffect(CBaseEntity* ent, float damage) {
+	int beamSprIdx = MODEL_INDEX("sprites/lgtning.spr");
+
+	const RGB color = RGB(0, 253, 253);
+
+	float radius = 256;
+	int beamCount = 3;
+
+	CBaseTurret* turret = (CBaseTurret*)ent;
+	Vector ori = ent->pev->origin;
+	float height = ent->pev->absmax.z - ent->pev->absmin.z;
+	int heightMult = ent->IsTurret() && turret->m_iOrientation ? -1 : 1;
+
+	for (int i = 0; i < beamCount; i++) {
+		float z = 2.0f * RANDOM_FLOAT(0, 1) - 1.0f;
+		float theta = 2.0f * (float)M_PI * RANDOM_FLOAT(0, 1);
+		float r = sqrtf(1.0f - z * z);
+
+		float h = height * 0.2f + RANDOM_FLOAT(0, 0.6f) * height;;
+		ori.z = ent->pev->origin.z + h * heightMult;
+
+		Vector p(
+			radius * r * cosf(theta),
+			radius * r * sinf(theta),
+			radius * z
+		);
+
+		int life = 4 + i;
+		const int noise = 80;
+		const int width = 8;
+
+		TraceResult tr;
+		UTIL_TraceLine(ori, ori + p, ignore_monsters, NULL, &tr);
+
+		UTIL_BeamPoints(ori, tr.vecEndPos, beamSprIdx, 0, 10, life, width, noise, color, 10,
+			MSG_PVS, ent->pev->origin);
+		UTIL_DLight(ori, 12, color, 6, 8);
+	}
+
+	static const char* zapSounds[] = {
+		"debris/zap8.wav",
+		"debris/zap4.wav",
+	};
+
+	StartSound(ent->edict(), CHAN_STATIC, RANDOM_SOUND_ARRAY(zapSounds), 1.0f, ATTN_NORM, 0,
+		RANDOM_LONG(180, 250), ori, 0xffffffff);
+
+	StartSound(ent->edict(), CHAN_STATIC, RANDOM_SOUND_ARRAY(g_sparkSounds), 1.0f, ATTN_NORM, 0,
+		RANDOM_LONG(80, 120), ori, 0xffffffff);
 }

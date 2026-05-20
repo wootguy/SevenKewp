@@ -5095,7 +5095,12 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 		}
 
 		if (IsMachine() && flDamage > 0) {
-			UTIL_Shrapnel(ptr->vecEndPos, ptr->vecPlaneNormal, flDamage, bitsDamageType);
+			if (bitsDamageType & DMG_SHOCK) {
+				UTIL_ShockDamageEffect(this, flDamage);
+			}
+			else {
+				UTIL_Shrapnel(ptr->vecEndPos, ptr->vecPlaneNormal, flDamage, bitsDamageType);
+			}
 		}
 		if (bitsDamageType & DMG_BLOOD) {
 			Vector bloodPos = ptr->vecEndPos + get_lagcomp_offset(entindex());

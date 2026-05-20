@@ -281,14 +281,28 @@ void CRoboGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 		if (pev->deadflag != DEAD_DEAD) {
 			if ((bitsDamageType & DMG_ENERGYBEAM))
 				flDamage *= 2;
-			if ((bitsDamageType & DMG_SHOCK))
+			if ((bitsDamageType & DMG_SHOCK)) {
 				flDamage *= 4;
+
+				const int flinchActs[] = {
+					ACT_SMALL_FLINCH, ACT_FLINCH_LEFTLEG, ACT_FLINCH_RIGHTLEG,
+					ACT_FLINCH_LEFTARM, ACT_FLINCH_RIGHTARM,
+				};
+				int act = flinchActs[RANDOM_LONG(0, ARRAY_SZ(flinchActs))];
+
+				if (m_IdealMonsterState != MONSTERSTATE_SCRIPT) {
+					ChangeSchedule(GetScheduleOfType(SCHED_SMALL_FLINCH));
+					m_IdealActivity = m_Activity = (Activity)act;
+					pev->angles.y += (RANDOM_LONG(0, 1) ? 30 : -30) * RANDOM_LONG(1, 2);
+					pev->ideal_yaw = pev->angles.y;
+				}
+			}
 		}
-		else if (RANDOM_LONG(0, 4) == 0) { // 25% chance damage triggers explosion on death
+		else if (RANDOM_LONG(0, 2) == 0) { // 50% chance damage triggers explosion on death
 			GibMonster();
 		}
 
-		if (ptr->iHitgroup == HITGROUP_HEAD) {
+		if (ptr->iHitgroup == HITGROUP_HEAD && !(bitsDamageType & DMG_SHOCK)) {
 			StartSound(edict(), CHAN_BODY, RANDOM_SOUND_ARRAY(g_sparkSounds), 1.0f, ATTN_NORM, 0, RANDOM_LONG(90, 110), pev->origin, 0xffffffff);
 
 			Vector sprPos = ptr->vecEndPos - Vector(0, 0, 10);

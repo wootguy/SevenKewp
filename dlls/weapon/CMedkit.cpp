@@ -150,7 +150,6 @@ void CMedkit::ItemPostFrame(void) {
 	m_nextSpriteHint = gpGlobals->time + 0.2f;
 
 	edict_t* ed = m_pPlayer->edict();
-	CBaseEntity* corpse = NULL;
 	for (int i = 1; i <= gpGlobals->maxClients; i++) {
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
 

@@ -60,6 +60,8 @@ void CShockRifle::Precache()
 	PRECACHE_SOUND("weapons/shock_draw.wav");
 	PRECACHE_SOUND("weapons/shock_recharge.wav");
 	PRECACHE_SOUND("weapons/shock_discharge.wav");
+	PRECACHE_SOUND("debris/zap8.wav");
+	PRECACHE_SOUND("debris/zap4.wav");
 	m_waterExplodeSpr = PRECACHE_MODEL("sprites/xspark2.spr");
 
 	//m_usShockRifle = PRECACHE_EVENT(1, "events/shock.sc");

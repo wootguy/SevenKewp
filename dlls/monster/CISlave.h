@@ -12,7 +12,7 @@
 #define		ISLAVE_AE_ZAP_SHOOT		( 4 )
 #define		ISLAVE_AE_ZAP_DONE		( 5 )
 
-#define		ISLAVE_MAX_BEAMS	8
+#define		ISLAVE_MAX_BEAMS	10
 
 class EXPORT CISlave : public CTalkSquadMonster
 {
@@ -54,7 +54,7 @@ public:
 	void ClearBeams( );
 	void ArmBeam( int side );
 	void WackBeam( int side, CBaseEntity *pEntity );
-	void ZapBeam( int side );
+	void ZapBeam( int side, bool randomDir = false );
 	void BeamGlow( void );
 
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
@@ -68,6 +68,7 @@ public:
 	float m_flNextAttack;
 
 	int	m_voicePitch;
+	int m_shockReactState;
 
 	EHANDLE m_hDead;
 	Vector m_beamColor;

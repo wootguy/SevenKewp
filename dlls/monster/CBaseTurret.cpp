@@ -736,6 +736,9 @@ void CBaseTurret::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vec
 		m_vecGoalAngles.y = RANDOM_FLOAT(0, 360);
 		m_vecGoalAngles.x = RANDOM_FLOAT(0, 90) - 90 * m_iOrientation;
 		m_fBeserk = 2;
+
+		if (m_iOn)
+			UTIL_ShockDamageEffect(this, flDamage);
 	}
 	else if (ptr->iHitgroup == 10)
 	{

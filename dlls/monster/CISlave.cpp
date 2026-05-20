@@ -453,7 +453,10 @@ BOOL CISlave :: CheckRangeAttack2 ( float flDot, float flDist )
 //=========================================================
 void CISlave :: StartTask ( Task_t *pTask )
 {
-	ClearBeams( );
+	if (!m_shockReactState)
+		ClearBeams( );
+
+	m_shockReactState = V_max(0, m_shockReactState - 1);
 
 	switch (pTask->iTask)
 	{
@@ -576,8 +579,16 @@ int CISlave :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 
 void CISlave::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
-	if (bitsDamageType & DMG_SHOCK)
+	if (bitsDamageType & DMG_SHOCK) {
+		if (!m_shockReactState) {
+			m_shockReactState = 5;
+			ChangeSchedule(GetScheduleOfType(SCHED_SMALL_FLINCH));
+			ZapBeam(-1, true);
+			ZapBeam(1, true);
+			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "hassault/hw_shoot1.wav", 1, ATTN_NORM, 0, RANDOM_LONG(130, 160));
+		}
 		return;
+	}
 
 	CTalkSquadMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
 }
@@ -799,7 +810,7 @@ void CISlave :: WackBeam( int side, CBaseEntity *pEntity )
 //=========================================================
 // ZapBeam - heavy damage directly forward
 //=========================================================
-void CISlave :: ZapBeam( int side )
+void CISlave :: ZapBeam( int side, bool randomDir)
 {
 	Vector vecSrc, vecAim;
 	TraceResult tr;
@@ -812,6 +823,14 @@ void CISlave :: ZapBeam( int side )
 	vecAim = ShootAtEnemy( vecSrc );
 	float deflection = 0.01;
 	vecAim = vecAim + side * gpGlobals->v_right * RANDOM_FLOAT( 0, deflection ) + gpGlobals->v_up * RANDOM_FLOAT( -deflection, deflection );
+	
+	if (randomDir) {
+		UTIL_MakeVectors(pev->angles);
+		vecAim = gpGlobals->v_forward;
+		deflection = 0.1f;
+		vecAim = vecAim + side * gpGlobals->v_right * RANDOM_FLOAT(-deflection, deflection) + gpGlobals->v_up * RANDOM_FLOAT(-deflection, deflection);
+	}
+	
 	UTIL_TraceLine ( vecSrc, vecSrc + vecAim * 1024, dont_ignore_monsters, ENT( pev ), &tr);
 
 	CBeam* beam = CBeam::BeamCreate( "sprites/lgtning.spr", 50 );

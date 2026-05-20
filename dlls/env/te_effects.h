@@ -98,6 +98,9 @@ EXPORT void UTIL_SpriteAdv(Vector pos, const SpriteAdvArgs& args, int msgMode=MS
 // skipEnt: don't send message to this player (for predicted splashes)
 EXPORT void UTIL_WaterSplashMsg(Vector pos, float scale, int playSound, edict_t* skipEnt=NULL);
 
+// entity vulnerable to shock damage creates lightning bolts and sparks
+EXPORT void UTIL_ShockDamageEffect(CBaseEntity* ent, float damage);
+
 class CTeBeamRing : public CBaseEntity
 {
 public:
