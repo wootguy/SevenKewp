@@ -580,7 +580,7 @@ int CISlave :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 void CISlave::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType)
 {
 	if (bitsDamageType & DMG_SHOCK) {
-		if (!m_shockReactState) {
+		if (!m_shockReactState && IsAlive()) {
 			m_shockReactState = 5;
 			ChangeSchedule(GetScheduleOfType(SCHED_SMALL_FLINCH));
 			ZapBeam(-1, true);
