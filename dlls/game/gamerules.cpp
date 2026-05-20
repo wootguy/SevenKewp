@@ -196,7 +196,7 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"mp_falldamage",
 		"mp_flashlight",
 		"mp_footsteps",
-		"mp_forcerespawn",
+		//"mp_forcerespawn", // nobody likes this and no mappers needs this. trigger_respawn is enough.
 		"mp_fraglimit",
 		"mp_timelimit",
 		"mp_weaponstay",
