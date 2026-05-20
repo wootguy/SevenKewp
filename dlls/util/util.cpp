@@ -2814,6 +2814,11 @@ void UTIL_CleanupEntities(int removeCount) {
 
 edict_t* CREATE_NAMED_ENTITY(string_t cname) {
 	edict_t* ed = NULL;
+
+	if (!cname) {
+		ALERT(at_error, "Tried to spawn an entity with no classname\n");
+		return NULL;
+	}
 	
 	ENTITYINIT* remap = g_entityRemap.get(STRING(cname));
 	if (remap) {
