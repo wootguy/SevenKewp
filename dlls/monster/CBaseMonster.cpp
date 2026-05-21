@@ -5102,7 +5102,8 @@ void CBaseMonster::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector ve
 
 		if (IsMachine() && flDamage > 0) {
 			if (bitsDamageType & DMG_SHOCK) {
-				UTIL_ShockDamageEffect(this, flDamage);
+				if (IsAlive())
+					UTIL_ShockDamageEffect(this, flDamage);
 			}
 			else {
 				UTIL_Shrapnel(ptr->vecEndPos, ptr->vecPlaneNormal, flDamage, bitsDamageType);

@@ -569,7 +569,7 @@ int CISlave :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, floa
 	CBaseEntity* attacker = Instance(pevAttacker);
 
 	// don't slash one of your own
-	if ((bitsDamageType & DMG_SLASH) && pevAttacker && IRelationship(attacker) < R_DL && attacker->Classify() != CLASS_BARNACLE)
+	if ((bitsDamageType & DMG_SLASH) && attacker && IRelationship(attacker) < R_DL && attacker->Classify() != CLASS_BARNACLE)
 		return 0;
 
 	m_afMemory |= bits_MEMORY_PROVOKED;

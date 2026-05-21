@@ -427,7 +427,6 @@ int CHeadCrab :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	if (!IsAlive() && (bitsDamageType & DMG_BULLET)) {
 		// enough bullets gibs the monster
 		bitsDamageType |= DMG_CLUB;
-		flDamage *= 3;
 	}
 		
 	return CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
@@ -637,7 +636,6 @@ int CBabyCrab::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float
 	if (!IsAlive() && (bitsDamageType & DMG_BULLET)) {
 		// enough bullets gibs the monster
 		bitsDamageType |= DMG_CLUB;
-		flDamage *= 3;
 	}
 
 	return CBaseMonster::TakeDamage(pevInflictor, pevAttacker, flDamage, bitsDamageType);

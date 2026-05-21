@@ -461,7 +461,7 @@ int COFShockRoach :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker
 		flDamage = 0;
 
 	CBaseEntity* attacker = Instance(pevAttacker);
-	if (attacker->Classify() != CLASS_BARNACLE) {
+	if (attacker && attacker->Classify() != CLASS_BARNACLE) {
 		bitsDamageType = (bitsDamageType & ~DMG_ALWAYSGIB) | DMG_NEVERGIB;
 	}
 

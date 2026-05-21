@@ -284,15 +284,8 @@ void CRoboGrunt::TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecD
 			if ((bitsDamageType & DMG_SHOCK)) {
 				flDamage *= 4;
 
-				const int flinchActs[] = {
-					ACT_SMALL_FLINCH, ACT_FLINCH_LEFTLEG, ACT_FLINCH_RIGHTLEG,
-					ACT_FLINCH_LEFTARM, ACT_FLINCH_RIGHTARM,
-				};
-				int act = flinchActs[RANDOM_LONG(0, ARRAY_SZ(flinchActs))];
-
-				if (m_IdealMonsterState != MONSTERSTATE_SCRIPT) {
+				if (m_IdealMonsterState != MONSTERSTATE_SCRIPT && IsAlive()) {
 					ChangeSchedule(GetScheduleOfType(SCHED_SMALL_FLINCH));
-					m_IdealActivity = m_Activity = (Activity)act;
 					pev->angles.y += (RANDOM_LONG(0, 1) ? 30 : -30) * RANDOM_LONG(1, 2);
 					pev->ideal_yaw = pev->angles.y;
 				}
