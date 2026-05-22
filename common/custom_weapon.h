@@ -221,6 +221,9 @@ enum PredictionDataSendMode {
 
 extern uint32_t g_wcPredDataSent[MAX_WEAPONS]; // bitfields indicating which players received prediction data
 
+// if true, polls weapon config files for updates and automatically reloads weapons
+EXPORT extern bool g_autoConfigReload;
+
 // call once when dll loaded
 void init_weapon_custom_config_parser();
 
@@ -238,6 +241,11 @@ EXPORT void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& pa
 EXPORT void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, PredictionDataSendMode sendMode);
 
 EXPORT bool UTIL_HasCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep);
+
+// checks weapon configs for modifications and applies new weapon settings
+EXPORT void UTIL_ReloadWeaponConfigs();
+
+EXPORT void UTIL_AutoReloadWeaponConfigs(bool enabled);
 
 // client utils
 int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pbuf);

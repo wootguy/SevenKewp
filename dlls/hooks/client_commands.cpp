@@ -610,6 +610,24 @@ void ClientCommand(edict_t* pEntity)
 			UTIL_ClientPrint(pPlayer, print_chat, "Admins only.\n");
 		}
 	}
+	else if (FStrEq(pcmd, "reloadweps"))
+	{
+		if (AdminLevel(pPlayer) != ADMIN_NO) {
+			UTIL_ReloadWeaponConfigs();
+		}
+		else {
+			UTIL_ClientPrint(pPlayer, print_chat, "Admins only.\n");
+		}
+	}
+	else if (FStrEq(pcmd, "autoreloadweps"))
+	{
+		if (AdminLevel(pPlayer) != ADMIN_NO) {
+			UTIL_AutoReloadWeaponConfigs(!g_autoConfigReload);
+		}
+		else {
+			UTIL_ClientPrint(pPlayer, print_chat, "Admins only.\n");
+		}
+	}
 	else
 	{
 		// tell the user they entered an unknown command

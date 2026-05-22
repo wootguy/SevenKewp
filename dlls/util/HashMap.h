@@ -114,6 +114,7 @@ public:
 		const char* value;
 
 		iterator_t() : offset(0) {}
+		void reset() { offset = 0; key = value = NULL; }
 	};
 
 	EXPORT bool iterate(iterator_t& iter) const;
@@ -142,6 +143,7 @@ public:
 		const char* key;
 
 		iterator_t() : offset(0) {}
+		void reset() { offset = 0; key = NULL; }
 	};
 
 	// return each entry in the map. pass 0 for first iteration. Returns false at the end of iteration
@@ -182,6 +184,7 @@ public:
 		T* value;
 
 		iterator_t() : offset(0) {}
+		void reset() { offset = 0; key = NULL; value = NULL; }
 	};
 
 	bool iterate(iterator_t& iter) const {

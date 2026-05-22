@@ -5200,70 +5200,7 @@ void CBasePlayer :: UpdateClientData( void )
 	{
 		m_fKnownItem = TRUE;
 		
-		// Send ALL the weapon info now
-		for (int i = 0; i < MAX_WEAPONS; i++)
-		{
-			ItemInfo* II = &CBasePlayerItem::ItemInfoArray[i];
-
-			int conflictId = GetCurrentIdForConflictedSlot(i);
-			if (conflictId != -1 && conflictId != i) {
-				// all weapon infos that share a slot must point to currently held weapon in the shared slot
-				// or else the client won't render the menu correctly
-				II = &CBasePlayerItem::ItemInfoArray[conflictId];
-			}
-
-			if (!IsSevenKewpClient() && II->iId >= 32)
-				continue; // crash on AG if sending too high of an ID
-
-			if (!II->iId) {
-				// clear out weapon info slots on the client if they are no longer used.
-				// TODO: The client is sometimes assigning custom weapons to multiple slots,
-				// which prevents them from showing up in the HUD when picked up because they
-				// get added and removed in the same frame. Weapon info is only reset on game start
-				// hence this hack to force a clear. The crowbar will be used to clear slots,
-				// and the weapon bits will duplicated for this weapon as well.
-				II = &CBasePlayerItem::ItemInfoArray[WEAPON_CROWBAR];
-
-				if (m_clientModVersion == CLIENT_MOD_ADRENALINE)
-					continue; // crashes and I don't know why yet, the bug doesn't happen with vanilla weapons anyway
-			}
-
-			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
-			WRITE_STRING(II->pszName ? II->pszName : "");			// string	weapon name
-			WRITE_BYTE(GetAmmoIndex(II->pszAmmo1));	// byte		Ammo Type
-			WRITE_BYTE(UTIL_GetMaxAmmo(II->pszAmmo1));				// byte     Max Ammo 1
-			WRITE_BYTE(GetAmmoIndex(II->pszAmmo2));	// byte		Ammo2 Type
-			WRITE_BYTE(UTIL_GetMaxAmmo(II->pszAmmo2));				// byte     Max Ammo 2
-			WRITE_BYTE(II->iSlot);					// byte		bucket
-			WRITE_BYTE(II->iPosition);				// byte		bucket pos
-			WRITE_BYTE(i);							// byte		id (bit index into pev->weapons)
-			WRITE_BYTE(II->iFlags);					// byte		Flags
-			MESSAGE_END();
-
-			if (IsSevenKewpClient()) {
-				MESSAGE_BEGIN(MSG_ONE, gmsgWeaponListX, NULL, pev);
-				WRITE_BYTE(i);
-				WRITE_BYTE(II->iFlagsEx);
-				WRITE_SHORT(V_min(65535, II->fAccuracyDeg * 100));
-				WRITE_SHORT(V_min(65535, II->fAccuracyDeg2 * 100));
-				WRITE_SHORT(V_min(65535, II->fAccuracyDegY * 100));
-				WRITE_SHORT(V_min(65535, II->fAccuracyDegY2 * 100));
-				MESSAGE_END();
-
-				// send custom sprite dir for weapons that player spawned with
-				// (this is sent on pickup too, but comes too early for new joiners)
-				const char* cname = CBasePlayerWeapon::GetClassFromInfoName(II->pszName);
-				const char* customSpriteDir = g_defaultSpriteDirs.get(cname);
-				if (customSpriteDir && GetNamedPlayerItem(cname)) {
-					MESSAGE_BEGIN(MSG_ONE, gmsgCustomHud, NULL, pev);
-					WRITE_BYTE(i);
-					WRITE_STRING(customSpriteDir ? customSpriteDir : "");
-					MESSAGE_END();
-				}
-			}
-		}
-	
-		FixSharedWeaponSlotClipCount();
+		SendWeaponList();
 	}
 
 	SendAmmoUpdate();
@@ -5289,6 +5226,92 @@ void CBasePlayer :: UpdateClientData( void )
 		lagcomp_end();
 		m_flNextSBarUpdateTime = gpGlobals->time + 0.1f;
 	}
+}
+
+void CBasePlayer::SendWeaponList() {
+	// Send ALL the weapon info now
+	for (int i = 0; i < MAX_WEAPONS; i++)
+	{
+		ItemInfo* II = &CBasePlayerItem::ItemInfoArray[i];
+
+		int conflictId = GetCurrentIdForConflictedSlot(i);
+		if (conflictId != -1 && conflictId != i) {
+			// all weapon infos that share a slot must point to currently held weapon in the shared slot
+			// or else the client won't render the menu correctly
+			II = &CBasePlayerItem::ItemInfoArray[conflictId];
+		}
+
+		if (!IsSevenKewpClient() && II->iId >= 32)
+			continue; // crash on AG if sending too high of an ID
+
+		if (!II->iId) {
+			// clear out weapon info slots on the client if they are no longer used.
+			// TODO: The client is sometimes assigning custom weapons to multiple slots,
+			// which prevents them from showing up in the HUD when picked up because they
+			// get added and removed in the same frame. Weapon info is only reset on game start
+			// hence this hack to force a clear. The crowbar will be used to clear slots,
+			// and the weapon bits will duplicated for this weapon as well.
+			II = &CBasePlayerItem::ItemInfoArray[WEAPON_CROWBAR];
+
+			if (m_clientModVersion == CLIENT_MOD_ADRENALINE)
+				continue; // crashes and I don't know why yet, the bug doesn't happen with vanilla weapons anyway
+		}
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
+		WRITE_STRING(II->pszName ? II->pszName : "");			// string	weapon name
+		WRITE_BYTE(GetAmmoIndex(II->pszAmmo1));	// byte		Ammo Type
+		WRITE_BYTE(UTIL_GetMaxAmmo(II->pszAmmo1));				// byte     Max Ammo 1
+		WRITE_BYTE(GetAmmoIndex(II->pszAmmo2));	// byte		Ammo2 Type
+		WRITE_BYTE(UTIL_GetMaxAmmo(II->pszAmmo2));				// byte     Max Ammo 2
+		WRITE_BYTE(II->iSlot);					// byte		bucket
+		WRITE_BYTE(II->iPosition);				// byte		bucket pos
+		WRITE_BYTE(i);							// byte		id (bit index into pev->weapons)
+		WRITE_BYTE(II->iFlags);					// byte		Flags
+		MESSAGE_END();
+
+		if (IsSevenKewpClient()) {
+			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponListX, NULL, pev);
+			WRITE_BYTE(i);
+			WRITE_BYTE(II->iFlagsEx);
+			WRITE_SHORT(V_min(65535, II->fAccuracyDeg * 100));
+			WRITE_SHORT(V_min(65535, II->fAccuracyDeg2 * 100));
+			WRITE_SHORT(V_min(65535, II->fAccuracyDegY * 100));
+			WRITE_SHORT(V_min(65535, II->fAccuracyDegY2 * 100));
+			MESSAGE_END();
+
+			// send custom sprite dir for weapons that player spawned with
+			// (this is sent on pickup too, but comes too early for new joiners)
+			const char* cname = CBasePlayerWeapon::GetClassFromInfoName(II->pszName);
+			const char* customSpriteDir = g_defaultSpriteDirs.get(cname);
+			if (customSpriteDir && GetNamedPlayerItem(cname)) {
+				MESSAGE_BEGIN(MSG_ONE, gmsgCustomHud, NULL, pev);
+				WRITE_BYTE(i);
+				WRITE_STRING(customSpriteDir ? customSpriteDir : "");
+				MESSAGE_END();
+			}
+		}
+	}
+
+	FixSharedWeaponSlotClipCount();
+}
+
+void CBasePlayer::ReloadHUD() {
+	MESSAGE_BEGIN(MSG_ONE, gmsgResetHUD, NULL, pev);
+	WRITE_BYTE(0);
+	MESSAGE_END();
+	UpdateTeamInfo();
+
+	MESSAGE_BEGIN(MSG_ONE, gmsgInitHUD, NULL, pev);
+	MESSAGE_END();
+	g_pGameRules->InitHUD(this);
+
+	SendWeaponList();
+	
+	m_iClientHideHUD = 0;
+	m_iHideHUD = 0;
+	m_iClientHealth = 0;
+	m_iClientBattery = 0;
+	m_bitsHUDDamage = 0;
 }
 
 void CBasePlayer::Rename(const char* newName, bool fast, edict_t* dst) {

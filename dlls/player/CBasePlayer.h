@@ -405,6 +405,10 @@ public:
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
 	virtual void UpdateClientData( void );
 
+	void SendWeaponList();
+
+	void ReloadHUD();
+
 	// if fast, then only send essential user info because it will be reset shortly
 	void Rename(const char* newName, bool fast, edict_t* dst = NULL);
 

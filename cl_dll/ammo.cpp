@@ -378,6 +378,7 @@ int CHudAmmo::Init(void)
 	HOOK_COMMAND("invprev", PrevWeapon);
 
 	Reset();
+	ResetCustomWeaponStates();
 
 	CVAR_CREATE( "hud_drawhistory_time", HISTORY_DRAW_TIME, 0 );
 	CVAR_CREATE( "hud_fastswitch", "0", FCVAR_ARCHIVE );		// controls whether or not weapons can be selected in one keypress

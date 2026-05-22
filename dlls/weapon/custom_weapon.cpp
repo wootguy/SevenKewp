@@ -1,6 +1,7 @@
 #include "custom_weapon.h"
 #include "CWeaponCustom.h"
 #include "StringPool.h"
+#include "Scheduler.h"
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud.h"
@@ -147,6 +148,8 @@ struct struct_desc_t {
 };
 
 uint32_t g_wcPredDataSent[MAX_WEAPONS];
+
+bool g_autoConfigReload = false;
 
 const char* g_wc_evt_trigger_names[32];
 const char* g_wc_evt_trigger_arg_primary_names[32];
@@ -1999,6 +2002,22 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 	return true;
 }
 
+bool UTIL_IsWeaponConfigUpdated(const char* path) {
+	const char* relPath = path;
+	string searchPath = string("weapons/") + path;
+	string fpath = getGameFilePath(searchPath.c_str(), false);
+
+	if (!fileExists(fpath.c_str())) {
+		ALERT(at_error, "Weapon config not found: '%s'\n", searchPath.c_str());
+		return false;
+	}
+
+	uint64_t lastModified = getFileModifiedTime(fpath.c_str());
+
+	WeaponConfigCache* cache = g_customWeaponCache.get(relPath);
+	return cache && lastModified != cache->fileModifiedTime;
+}
+
 bool UTIL_ParseCustomAmmoConfig(const char* path, CustomAmmoParams& params) {
 	const char* relPath = path;
 	string searchPath = string("weapons/") + path;
@@ -2610,4 +2629,139 @@ int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, voi
 
 bool UTIL_HasCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep) {
 	return g_wcPredDataSent[wep->m_iId] & PLRBIT(target);
+}
+
+void GivePlayerItemDelayed(EHANDLE h_plr, const char* cname) {
+	CBasePlayer* plr = h_plr ? h_plr->MyPlayerPointer() : NULL;
+	if (!plr)
+		return;
+
+	plr->GiveNamedItem(cname);
+}
+
+void SelectPlayerItemDelayed(EHANDLE h_plr, const char* cname) {
+	CBasePlayer* plr = h_plr ? h_plr->MyPlayerPointer() : NULL;
+	if (!plr)
+		return;
+
+	plr->SelectItem(cname);
+}
+
+void AutoReloadConfigs() {
+#ifndef CLIENT_DLL
+	StringMap reloadConfigs;
+	StringMap::iterator_t iter;
+	while (g_customWeaponConfigs.iterate(iter)) {
+		int* id = g_weaponClassIds.get(iter.key);
+
+		if (id) {
+			if (UTIL_IsWeaponConfigUpdated(iter.value)) {
+				UTIL_ReloadWeaponConfigs();
+				return;
+			}
+		}
+	}
+#endif
+}
+
+void UTIL_ReloadWeaponConfigs() {
+#ifndef CLIENT_DLL
+	StringMap reloadConfigs;
+	StringMap::iterator_t iter;
+	while (g_customWeaponConfigs.iterate(iter)) {
+		int* id = g_weaponClassIds.get(iter.key);
+
+		if (id) {
+			reloadConfigs.put(iter.key, iter.value);
+			g_weaponClassIds.del(iter.key);
+			g_weaponNames.del(iter.key);
+
+			for (int i = 0; i < MAX_WEAPONS; i++) {
+				ItemInfo& info = CBasePlayerItem::ItemInfoArray[i];
+				if (*id == info.iId) {
+					memset(&info, 0, sizeof(ItemInfo));
+				}
+			}
+		}
+	}
+
+	iter.reset();
+	while (reloadConfigs.iterate(iter)) {
+		bool firstFound = true;
+		ALERT(at_console, "Reload weapon %s\n", iter.key);
+
+		CBaseEntity* ent = NULL;
+		while ((ent = UTIL_FindEntityByClassname(ent, iter.key)) != NULL) {
+			CWeaponCustom* wep = ent->MyWeaponCustomPtr();
+			if (!wep)
+				continue;
+
+			if (firstFound) {
+				firstFound = false;
+				ItemInfo info;
+				wep->GetItemInfo(&info);
+				g_filledWeaponSlots[info.iSlot][info.iPosition] = NULL;
+				UTIL_RegisterWeapon(iter.key, iter.value);
+			}
+
+			wep->PrecacheEvents();
+		}
+	}
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+		if (!plr)
+			continue;
+
+		EHANDLE h_plr = EHANDLE(plr->edict());
+
+		int givenItems = 0;
+		CBaseEntity* pPendingItem = NULL;
+		for (int k = 0; k < MAX_ITEM_TYPES; k++) {
+			CBaseEntity* ent = plr->m_rgpPlayerItems[k].GetEntity();
+			while (ent) {
+				CBasePlayerItem* item = ent ? ent->GetWeaponPtr() : NULL;
+				pPendingItem = item ? item->m_pNext.GetEntity() : NULL;
+				if (item)
+					g_Scheduler.SetTimeout(GivePlayerItemDelayed, 0.1f, h_plr, STRING(item->pev->classname));
+				ent = pPendingItem;
+			}
+		}
+
+		const char* activeItem = plr->m_pActiveItem ? STRING(plr->m_pActiveItem->pev->classname) : NULL;
+		if (activeItem)
+			g_Scheduler.SetTimeout(SelectPlayerItemDelayed, 0.2f, h_plr, activeItem);
+
+		int	oldRgAmmo[MAX_AMMO_SLOTS];
+
+		memcpy(oldRgAmmo, plr->m_rgAmmo, sizeof(plr->m_rgAmmo));
+
+		plr->ReloadHUD();
+		plr->RemoveAllItems(false);
+
+		memcpy(plr->m_rgAmmo, oldRgAmmo, sizeof(plr->m_rgAmmo));
+	}
+
+	memset(g_wcPredDataSent, 0, sizeof(g_wcPredDataSent));
+#endif
+}
+
+void UTIL_AutoReloadWeaponConfigs(bool enabled) {
+#ifndef CLIENT_DLL
+	if (g_autoConfigReload == enabled)
+		return;
+
+	g_autoConfigReload = enabled;
+	UTIL_ClientPrintAll(print_chat, UTIL_VarArgs("Automatic weapon config reloading is %s\n",
+		g_autoConfigReload ? "ENABLED" : "DISABLED"));
+
+	static ScheduledFunction func;
+
+	if (g_autoConfigReload) {
+		func = g_Scheduler.SetInterval(AutoReloadConfigs, 0.5f, -1);
+	}
+	else {
+		g_Scheduler.RemoveTimer(func);
+	}
+#endif
 }
