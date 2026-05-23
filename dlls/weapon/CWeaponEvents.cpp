@@ -633,7 +633,7 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		// TODO: health set here
 		shootEnt->pev->friction = 1.0f - evt.proj.elasticity;
 		shootEnt->pev->gravity = evt.proj.gravity;
-		shootEnt->pev->angles = shootEnt->pev->angles + (Vector)evt.proj.angles;
+		shootEnt->pev->angles = shootEnt->pev->angles + *(Vector*)evt.proj.angles;
 
 		if (!shootEnt->pev->gravity && shootEnt->pev->movetype == MOVETYPE_BOUNCE) {
 			shootEnt->pev->gravity = FLT_MIN;

@@ -157,6 +157,7 @@ const char* g_wc_evt_trigger_clip_sp_names[32];
 const char* g_wc_evt_trigger_impact_names[32];
 const char* g_wc_evt_type_names[32];
 const char* g_wc_evt_category_names[32];
+static const char* g_wc_dmgFlags[32];
 
 HashMap<uint16_t> g_wc_name_to_trigger; // maps a group name to an event trigger + argument value
 HashMap<uint8_t> g_wc_name_to_action; // maps an action key value to its event number
@@ -308,6 +309,12 @@ void init_weapon_struct_fields() {
 		flags[BitToIndex(FL_WC_SHOOT_NO_AUTOFIRE)] = "no_autofire";
 		//flags[BitToIndex(FL_WC_SHOOT_IS_MELEE)] = "is_melee";
 
+		static const char* ammoPools[32];
+		ammoPools[WC_AMMOPOOL_DEFAULT] = "default";
+		ammoPools[WC_AMMOPOOL_PRIMARY_CLIP] = "primary_clip";
+		ammoPools[WC_AMMOPOOL_PRIMARY_RESERVE] = "primary_reserve";
+		ammoPools[WC_AMMOPOOL_SECONDARY_RESERVE] = "secondary_reserve";
+
 		static const char* chargeModes[32];
 		chargeModes[WC_CHARGEUP_NONE] = "none";
 		chargeModes[WC_CHARGEUP_CONSTANT] = "constant_fire";
@@ -326,39 +333,12 @@ void init_weapon_struct_fields() {
 		static const char* chargeFlags[32];
 		chargeFlags[BitToIndex(FL_WC_CHARGE_DAMAGE)] = "scale_damage";
 		chargeFlags[BitToIndex(FL_WC_CHARGE_KICKBACK)] = "scale_kickback";
-
-		static const char* dmgFlags[32];
-		dmgFlags[BitToIndex(DMG_CRUSH)] = "crush";
-		dmgFlags[BitToIndex(DMG_BULLET)] = "bullet";
-		dmgFlags[BitToIndex(DMG_SLASH)] = "slash";
-		dmgFlags[BitToIndex(DMG_BURN)] = "burn";
-		dmgFlags[BitToIndex(DMG_FREEZE)] = "freeze";
-		dmgFlags[BitToIndex(DMG_BLAST)] = "blast";
-		dmgFlags[BitToIndex(DMG_CLUB)] = "club";
-		dmgFlags[BitToIndex(DMG_SHOCK)] = "shock";
-		dmgFlags[BitToIndex(DMG_SONIC)] = "sonic";
-		dmgFlags[BitToIndex(DMG_ENERGYBEAM)] = "energybeam";
-		dmgFlags[BitToIndex(DMG_NEVERGIB)] = "nevergib";
-		dmgFlags[BitToIndex(DMG_ALWAYSGIB)] = "alwaysgib";
-		dmgFlags[BitToIndex(DMG_DROWN)] = "drown";
-		dmgFlags[BitToIndex(DMG_PARALYZE)] = "paralyze";
-		dmgFlags[BitToIndex(DMG_NERVEGAS)] = "nervegas";
-		dmgFlags[BitToIndex(DMG_POISON)] = "poison";
-		dmgFlags[BitToIndex(DMG_RADIATION)] = "radiation";
-		dmgFlags[BitToIndex(DMG_DROWNRECOVER)] = "drownrecover";
-		dmgFlags[BitToIndex(DMG_SLOWBURN)] = "slowburn";
-		dmgFlags[BitToIndex(DMG_SLOWFREEZE)] = "slowfreeze";
-		dmgFlags[BitToIndex(DMG_MORTAR)] = "mortar";
-		dmgFlags[BitToIndex(DMG_SNIPER)] = "sniper";
-		dmgFlags[BitToIndex(DMG_MEDKITHEAL)] = "medkitheal";
-		dmgFlags[BitToIndex(DMG_LAUNCH)] = "launch";
-		dmgFlags[BitToIndex(DMG_SHOCK_GLOW)] = "shock_glow";
 		
 		WEP_STRUCT_DESC(g_wc_desc_shoot_opts, "unnamed_attack",
 			WEP_FLAGS("flags", "0", shootOpts[0].flags, 0, flags),
 			WEP_FIELD("ammo_cost", "0", shootOpts[0].ammoCost, 0, WC_PARAM_UINT8),
 			WEP_FIELD("ammo_freq", "0", shootOpts[0].ammoFreq, 0, WC_PARAM_UINT8),
-			WEP_FIELD("ammo_pool", "0", shootOpts[0].ammoPool, 0, WC_PARAM_UINT8),
+			WEP__ENUM("ammo_pool", "0", shootOpts[0].ammoPool, 0, ammoPools),
 			WEP_FIELD("cooldown", "0", shootOpts[0].cooldown, 0, WC_PARAM_TIME),
 			WEP_FIELD("cooldown_fail", "0", shootOpts[0].cooldownFail, 0, WC_PARAM_TIME),
 			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
@@ -374,9 +354,9 @@ void init_weapon_struct_fields() {
 			
 			WEP_FIELD("charge_move_speed", "0", shootOpts[0].chargeMoveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_damage", "0", shootOpts[0].melee.damage, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FLAGS32("melee_damage_type", "0", shootOpts[0].melee.damageBits, 0, dmgFlags, FL_FIELD_NO_NETWORK),
+			WEP_FLAGS32("melee_damage_type", "0", shootOpts[0].melee.damageBits, 0, g_wc_dmgFlags, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_range", "0", shootOpts[0].melee.range, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("melee_attack_offset", "0", shootOpts[0].melee.attackOffset, 0, WC_PARAM_VECTOR, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("melee_attack_offset", "0 0 0", shootOpts[0].melee.attackOffset, 0, WC_PARAM_VECTOR, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_miss_cooldown", "0", shootOpts[0].melee.missCooldown, 0, WC_PARAM_TIME, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_hit_cooldown", "0", shootOpts[0].melee.hitCooldown, 0, WC_PARAM_TIME, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_decal_delay", "0", shootOpts[0].melee.decalDelay, 0, WC_PARAM_TIME, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -475,10 +455,10 @@ void init_event_fields() {
 		EVT_DESC(WC_EVT_EJECT_SHELL, "eject_shell",
 			EVT_FIELD("has_rand", "0", ejectShell.hasRand, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT_FIELD("has_vel", "0", ejectShell.hasVel, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
-			EVT__ENUM("sound", "0", ejectShell.sound, 2, shell_sound_names),
+			EVT__ENUM("sound", "shell", ejectShell.sound, 2, shell_sound_names),
 			EVT_FIELD("model", NULL, ejectShell.model, 12, WC_PARAM_MODEL_INDEX),
 			EVT_FIELD("offset", "0 0 0", ejectShell.offset, 0, WC_PARAM_VECTOR_INT8),
-			EVT_FIELD("vel", "0 0 0", ejectShell.vel, 0, WC_PARAM_VECTOR_INT8, NULL, 0, 0, EVT_COND_BYTE(ejectShell.hasVel)),
+			EVT_FIELD("velocity", "0 0 0", ejectShell.vel, 0, WC_PARAM_VECTOR_INT8, NULL, 0, 0, EVT_COND_BYTE(ejectShell.hasVel)),
 			EVT_FIELD("direction_randomness", "0", ejectShell.dirRand, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(ejectShell.hasRand)),
 			EVT_FIELD("speed_randomness", "0", ejectShell.speedRand, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(ejectShell.hasRand)),
 		);
@@ -641,11 +621,11 @@ void init_event_fields() {
 			EVT_FIELD("air_friction", "0", proj.air_friction, 0, WC_PARAM_FLOAT),
 			EVT_FIELD("water_friction", "0", proj.water_friction, 0, WC_PARAM_FLOAT),
 			EVT_FIELD("hull_size", "0", proj.size, 0, WC_PARAM_FLOAT),
-			EVT_FIELD("direction", "0 0 0", proj.dir, 0, WC_PARAM_VECTOR),
+			EVT_FIELD("direction", "0 0 1", proj.dir, 0, WC_PARAM_VECTOR),
 			EVT_FIELD("model", NULL, proj.model, 0, WC_PARAM_MODEL_INDEX),
-			EVT_FIELD("move_snd", "", proj.move_snd, 0, WC_PARAM_STRING),
+			EVT_FIELD("move_sound", "", proj.move_snd, 0, WC_PARAM_STRING),
 			EVT_FIELD("damage", "0", proj.damage, 0, WC_PARAM_UINT16),
-			EVT_FIELD("damageBits", "0", proj.damageBits, 0, WC_PARAM_UINT32),
+			EVT_FLAGS("damage_type", "0", proj.damageBits, 0, g_wc_dmgFlags),
 			EVT_FIELD("sprite", "", proj.sprite, 0, WC_PARAM_STRING),
 			EVT_FIELD("sprite_color", "0 0 0 0", proj.sprite_color, 0, WC_PARAM_RGBA),
 			EVT_FIELD("angles", "0 0 0", proj.angles, 0, WC_PARAM_VECTOR),
@@ -789,6 +769,32 @@ void init_custom_ammo_fields() {
 void init_weapon_custom_config_parser() {
 	g_wc_name_to_trigger.clear();
 	g_wc_name_to_action.clear();
+
+	g_wc_dmgFlags[BitToIndex(DMG_CRUSH)] = "crush";
+	g_wc_dmgFlags[BitToIndex(DMG_BULLET)] = "bullet";
+	g_wc_dmgFlags[BitToIndex(DMG_SLASH)] = "slash";
+	g_wc_dmgFlags[BitToIndex(DMG_BURN)] = "burn";
+	g_wc_dmgFlags[BitToIndex(DMG_FREEZE)] = "freeze";
+	g_wc_dmgFlags[BitToIndex(DMG_BLAST)] = "blast";
+	g_wc_dmgFlags[BitToIndex(DMG_CLUB)] = "club";
+	g_wc_dmgFlags[BitToIndex(DMG_SHOCK)] = "shock";
+	g_wc_dmgFlags[BitToIndex(DMG_SONIC)] = "sonic";
+	g_wc_dmgFlags[BitToIndex(DMG_ENERGYBEAM)] = "energybeam";
+	g_wc_dmgFlags[BitToIndex(DMG_NEVERGIB)] = "nevergib";
+	g_wc_dmgFlags[BitToIndex(DMG_ALWAYSGIB)] = "alwaysgib";
+	g_wc_dmgFlags[BitToIndex(DMG_DROWN)] = "drown";
+	g_wc_dmgFlags[BitToIndex(DMG_PARALYZE)] = "paralyze";
+	g_wc_dmgFlags[BitToIndex(DMG_NERVEGAS)] = "nervegas";
+	g_wc_dmgFlags[BitToIndex(DMG_POISON)] = "poison";
+	g_wc_dmgFlags[BitToIndex(DMG_RADIATION)] = "radiation";
+	g_wc_dmgFlags[BitToIndex(DMG_DROWNRECOVER)] = "drownrecover";
+	g_wc_dmgFlags[BitToIndex(DMG_SLOWBURN)] = "slowburn";
+	g_wc_dmgFlags[BitToIndex(DMG_SLOWFREEZE)] = "slowfreeze";
+	g_wc_dmgFlags[BitToIndex(DMG_MORTAR)] = "mortar";
+	g_wc_dmgFlags[BitToIndex(DMG_SNIPER)] = "sniper";
+	g_wc_dmgFlags[BitToIndex(DMG_MEDKITHEAL)] = "medkitheal";
+	g_wc_dmgFlags[BitToIndex(DMG_LAUNCH)] = "launch";
+	g_wc_dmgFlags[BitToIndex(DMG_SHOCK_GLOW)] = "shock_glow";
 
 	init_weapon_struct_fields();
 	init_event_fields();
@@ -1019,11 +1025,20 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		vector<string> words = splitString(val, "+");
 		uint32_t flags = 0;
 		for (int k = 0; k < (int)words.size(); k++) {
+			bool foundName = false;
+			words[k] = trimSpaces(words[k]);
+
 			for (int j = 0; j < field->valNamesSz; j++) {
-				if (field->valNames[j] && field->valNames[j] == trimSpaces(words[k])) {
+				if (field->valNames[j] && field->valNames[j] == words[k]) {
 					flags |= 1 << j;
+					foundName = true;
 					break;
 				}
+			}
+
+			if (!foundName && words[k] != "0") {
+				ALERT(at_error, "%s (line %d): Unknown value '%s' for '%s' in group '%s'.\n",
+					fname, group.lineno, words[k].c_str(), name, group.name.c_str());
 			}
 		}
 
@@ -1035,11 +1050,19 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 	case WC_PARAM_UINT8_ENUM: {
 		*(uint8_t*)dat = 0;
 
+		bool foundName = false;
+
 		for (int i = 0; i < field->valNamesSz; i++) {
 			if (field->valNames[i] && !strcmp(val, field->valNames[i])) {
 				*(uint8_t*)dat = i;
+				foundName = true;
 				break;
 			}
+		}
+
+		if (!foundName && strcmp(val, "0")) {
+			ALERT(at_error, "%s (line %d): Unknown value '%s' for '%s' in group '%s'.\n",
+				fname, group.lineno, val, name, group.name.c_str());
 		}
 
 		break;

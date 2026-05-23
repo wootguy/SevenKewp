@@ -21,7 +21,7 @@
 #define FL_WC_WEP_LINK_CHARGEUPS		(1<<7)	// primary and secondary chargeup state and events are shared (minigun behavior)
 #define FL_WC_WEP_PRIMARY_PRIORITY		(1<<8)	// primary fire has priority over secondary when both attack buttons are pressed
 #define FL_WC_WEP_EXCLUSIVE_HOLD		(1<<9)	// weapon must be dropped before switching to other weapons
-#define FL_WC_WEP_USE_ONLY				(1<<10)	// weapon is collectable with the use key, not by touching
+#define FL_WC_WEP_USE_ONLY				(1<<10)	// weapon is collected with the use key, not by touching
 #define FL_WC_WEP_HAS_LASER				(1<<11)
 #define FL_WC_WEP_DYNAMIC_ACCURACY		(1<<12) // crosshair widens with movement and shrinks when crouched
 #define FL_WC_WEP_ZOOM_SPR_STRETCH		(1<<13) // zoom crosshair stretches to fit the screen
@@ -32,10 +32,10 @@
 #define FL_WC_WEP_FORCE_ZOOM_SPRITE		(1<<18) // Force use of zoom crosshair sprite when using dynamic crosshairs
 #define FL_WC_WEP_HAND_MODELS			(1<<19) // Default model supports alternate hand models (op4/bshift)
 #define FL_WC_WEP_ALLOW_HL				(1<<20) // Allow the weapon to be used by vanilla HL clients without prediction
-#define FL_WC_WEP_NO_AUTOSWITCHEMPTY	(1<<21) // Don't switch from the weapon when out of ammo
-#define FL_WC_WEP_NO_AUTORELOAD			(1<<22) // Don't reload the weapon automaticall
+#define FL_WC_WEP_NO_AUTOSWITCHEMPTY	(1<<21) // Don't switch to another weapon when out of ammo
+#define FL_WC_WEP_NO_AUTORELOAD			(1<<22) // Don't reload the weapon automatically
 #define FL_WC_WEP_SELECTONEMPTY			(1<<23) // allow selecting the weapon when empty
-#define FL_WC_WEP_EXHAUSITBLE			(1<<24) // weapon lost when out of ammo
+#define FL_WC_WEP_EXHAUSITBLE			(1<<24) // Remove the weapon when out of ammo
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
