@@ -811,35 +811,51 @@ void CWeaponEvents::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	if (!ducking && (evt.recoil.flags & FL_WC_PUNCH_DUCK))
 		return;
 
-#ifdef CLIENT_DLL
-	WC_EV_PunchAngle(evt, m_pPlayer->random_seed);
-#else
-	if (!m_pPlayer->IsSevenKewpClient()) {
-		float punchAngleX = FP_10_6_TO_FLOAT(evt.recoil.angles[0]);
-		float punchAngleY = FP_10_6_TO_FLOAT(evt.recoil.angles[1]);
-		float punchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.angles[2]);
+	float t = 0;
+	if (evt.recoil.maxAngleTime) {
+		int attackTime = m_weapon->CmdTime() - m_weapon->m_attackStartCmdTime;
+		if (attackTime)
+			t = V_min(1.0f, attackTime / (float)evt.recoil.maxAngleTime);
+	}
 
-		if (!(evt.recoil.flags & FL_WC_PUNCH_NO_RETURN)) {
-			if (evt.recoil.flags & FL_WC_PUNCH_ADD) {
-				m_pPlayer->pev->punchangle = m_pPlayer->pev->punchangle + Vector(punchAngleX, punchAngleY, punchAngleZ);
-			}
-			else if (evt.recoil.flags & FL_WC_PUNCH_ADD_RAND) {
-				m_pPlayer->pev->punchangle = m_pPlayer->pev->punchangle + Vector(
-					UTIL_SharedRandomFloat(m_pPlayer->random_seed, -punchAngleX, punchAngleX),
-					UTIL_SharedRandomFloat(m_pPlayer->random_seed + 1, -punchAngleY, punchAngleY),
-					UTIL_SharedRandomFloat(m_pPlayer->random_seed + 2, -punchAngleZ, punchAngleZ)
-				);
-			}
-			else if (evt.recoil.flags & FL_WC_PUNCH_SET) {
-				m_pPlayer->pev->punchangle = Vector(punchAngleX, punchAngleY, punchAngleZ);
-			}
-			else {
-				m_pPlayer->pev->punchangle = Vector(
-					UTIL_SharedRandomFloat(m_pPlayer->random_seed, -punchAngleX, punchAngleX),
-					UTIL_SharedRandomFloat(m_pPlayer->random_seed + 1, -punchAngleY, punchAngleY),
-					UTIL_SharedRandomFloat(m_pPlayer->random_seed + 2, -punchAngleZ, punchAngleZ)
-				);
-			}
+#ifdef CLIENT_DLL
+	WC_EV_PunchAngle(evt, m_pPlayer->random_seed, t);
+#else
+	float punchAngleX = FP_10_6_TO_FLOAT(evt.recoil.angles[0]);
+	float punchAngleY = FP_10_6_TO_FLOAT(evt.recoil.angles[1]);
+	float punchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.angles[2]);
+
+	// lerp recoil to maxAngles until max angle time
+	if (evt.recoil.maxAngleTime) {
+		float maxPunchAngleX = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[0]);
+		float maxPunchAngleY = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[1]);
+		float maxPunchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[2]);
+
+		punchAngleX = punchAngleX + (maxPunchAngleX - punchAngleX) * t;
+		punchAngleY = punchAngleY + (maxPunchAngleY - punchAngleY) * t;
+		punchAngleZ = punchAngleZ + (maxPunchAngleZ - punchAngleZ) * t;
+	}
+
+	if (!(evt.recoil.flags & FL_WC_PUNCH_NO_RETURN)) {
+		if (evt.recoil.flags & FL_WC_PUNCH_ADD) {
+			m_pPlayer->pev->punchangle = m_pPlayer->pev->punchangle + Vector(punchAngleX, punchAngleY, punchAngleZ);
+		}
+		else if (evt.recoil.flags & FL_WC_PUNCH_ADD_RAND) {
+			m_pPlayer->pev->punchangle = m_pPlayer->pev->punchangle + Vector(
+				UTIL_SharedRandomFloat(m_pPlayer->random_seed, -punchAngleX, punchAngleX),
+				UTIL_SharedRandomFloat(m_pPlayer->random_seed + 1, -punchAngleY, punchAngleY),
+				UTIL_SharedRandomFloat(m_pPlayer->random_seed + 2, -punchAngleZ, punchAngleZ)
+			);
+		}
+		else if (evt.recoil.flags & FL_WC_PUNCH_SET) {
+			m_pPlayer->pev->punchangle = Vector(punchAngleX, punchAngleY, punchAngleZ);
+		}
+		else {
+			m_pPlayer->pev->punchangle = Vector(
+				UTIL_SharedRandomFloat(m_pPlayer->random_seed, -punchAngleX, punchAngleX),
+				UTIL_SharedRandomFloat(m_pPlayer->random_seed + 1, -punchAngleY, punchAngleY),
+				UTIL_SharedRandomFloat(m_pPlayer->random_seed + 2, -punchAngleZ, punchAngleZ)
+			);
 		}
 	}
 #endif
@@ -1076,9 +1092,9 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 	WepEvt& evt = m_weapon->params.events[eventIdx];
 
 #ifdef CLIENT_DLL
-	PRINTD("Play Event %s\n", describe_event(evt));
+	//PRINTD("Play Event %s\n", describe_event(evt));
 #else
-	ALERT(at_console, "Play Event %s\n", describe_event(evt));
+	ALERT(at_aiconsole, "Play Event %s\n", describe_event(evt));
 #endif
 
 	switch (evt.evtType) {

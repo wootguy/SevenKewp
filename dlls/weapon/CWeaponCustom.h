@@ -59,6 +59,7 @@ public:
 	Vector m_kickbackPredVel;
 	uint32_t m_chargeStartCmdTime; // CMD time that begun a chargeup
 	uint32_t m_chargeStopCmdTime; // CMD time that a discharge began
+	uint32_t m_attackStartCmdTime; // CMD time that an attack began
 	float m_lastCharge; // last charge progress calculated for chargeup/chargedown
 	int m_chargeStartClip; // ammo started with when chargeup began
 	bool m_primaryCalled;

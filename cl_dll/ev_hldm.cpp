@@ -1944,10 +1944,20 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);
 int UTIL_SharedRandomLong(unsigned int seed, int low, int high);
 
-void WC_EV_PunchAngle(WepEvt& evt, int seed) {
+void WC_EV_PunchAngle(WepEvt& evt, int seed, float attackTime) {
 	float punchAngleX = FP_10_6_TO_FLOAT(evt.recoil.angles[0]);
 	float punchAngleY = FP_10_6_TO_FLOAT(evt.recoil.angles[1]);
 	float punchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.angles[2]);
+
+	if (evt.recoil.maxAngleTime) {
+		float maxPunchAngleX = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[0]);
+		float maxPunchAngleY = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[1]);
+		float maxPunchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[2]);
+
+		punchAngleX = punchAngleX + (maxPunchAngleX - punchAngleX) * attackTime;
+		punchAngleY = punchAngleY + (maxPunchAngleY - punchAngleY) * attackTime;
+		punchAngleZ = punchAngleZ + (maxPunchAngleZ - punchAngleZ) * attackTime;
+	}
 
 	if (evt.recoil.flags & FL_WC_PUNCH_NO_RETURN) {
 		Vector angles;

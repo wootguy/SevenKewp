@@ -478,8 +478,11 @@ void init_event_fields() {
 		flags[BitToIndex(FL_WC_PUNCH_STAND)] = "only_when_standing";
 
 		EVT_DESC(WC_EVT_PUNCH, "recoil",
-			EVT_FLAGS("flags", "0", recoil.flags, 8, flags),
+			EVT_FLAGS("flags", "0", recoil.flags, 7, flags),
+			EVT_FIELD("has_max_angles", "0", recoil.hasMaxAngles, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT_FIELD("angles", "0 0 0", recoil.angles, 0, WC_PARAM_VECTOR_FP_10_6),
+			EVT_FIELD("max_angles_time", "0 0 0", recoil.maxAngleTime, 0, WC_PARAM_TIME),
+			EVT_FIELD("max_angles", "0 0 0", recoil.maxAngles, 0, WC_PARAM_VECTOR_FP_10_6, NULL, 0, 0, EVT_COND_BYTE(recoil.hasMaxAngles)),
 		);
 	}
 
@@ -1731,6 +1734,9 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 		break;
 	case WC_EVT_BEAM: {
 		evt.beam.hasImpactSprite = evt.beam.impactSprite != 0;
+		break;
+	case WC_EVT_PUNCH:
+		evt.recoil.hasMaxAngles = evt.recoil.maxAngleTime != 0;
 		break;
 	}
 	}

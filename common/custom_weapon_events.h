@@ -268,8 +268,12 @@ struct WepEvt {
 		} ejectShell;
 
 		struct {
-			uint8_t flags; //  FL_WC_PUNCH_
-			int16_t angles[3]; // 10.6 fixed point int
+			uint8_t flags;			// 7 bits - FL_WC_PUNCH_
+			uint8_t hasMaxAngles;	// 1 bit
+			int16_t angles[3];		// 10.6 fixed point int
+			
+			uint16_t maxAngleTime;	// time to reach maxAngles amount of recoil for a sustained attack
+			int16_t maxAngles[3];	// 10.6 fixed point int. Not used if maxAngleTime=0
 		} recoil;
 
 		struct {

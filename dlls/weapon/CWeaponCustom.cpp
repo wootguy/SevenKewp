@@ -14,7 +14,7 @@ extern Vector g_vApplyVel;
 void UpdateZoomCrosshair(int id, bool zoom);
 void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags);
 void WC_EV_EjectShell(WepEvt& evt, bool leftHand);
-void WC_EV_PunchAngle(WepEvt& evt, int seed);
+void WC_EV_PunchAngle(WepEvt& evt, int seed, float attackTime);
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
 pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int tracerColor, bool gunshotDecal, bool textureSound, int iShot, int iDamage);
 void EV_LaserOff();
@@ -727,8 +727,10 @@ void CWeaponCustom::PrimaryAttack() {
 			m_primaryFired = true;
 			int trig = IsPrimaryAltActive() ? WC_TRIG_PRIMARY_ALT : WC_TRIG_PRIMARY;
 
-			if (isAttackStart)
+			if (isAttackStart) {
 				events.ProcessEvents(WC_TRIG_PRIMARY_START, 0);
+				m_attackStartCmdTime = CmdTime();
+			}
 			events.ProcessEvents(trig, akimboArg, IsAkimbo(), false, *clip);
 			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_PRIMARY_CLIP);
 
@@ -778,8 +780,10 @@ void CWeaponCustom::SecondaryAttack() {
 		if (CommonAttack(0, &m_iClip, false, fireBoth)) {
 			m_secondaryFired = true;
 
-			if (isAttackStart)
+			if (isAttackStart) {
 				events.ProcessEvents(WC_TRIG_SECONDARY_START, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth, *clip);
+				m_attackStartCmdTime = CmdTime();
+			}
 			events.ProcessEvents(primaryTrig, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth, *clip);
 			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_PRIMARY_CLIP);
 
