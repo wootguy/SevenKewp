@@ -1945,15 +1945,15 @@ float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);
 int UTIL_SharedRandomLong(unsigned int seed, int low, int high);
 
 void WC_EV_PunchAngle(WepEvt& evt, int seed) {
-	float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.angles[0]);
-	float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.angles[1]);
-	float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.angles[2]);
+	float punchAngleX = FP_10_6_TO_FLOAT(evt.recoil.angles[0]);
+	float punchAngleY = FP_10_6_TO_FLOAT(evt.recoil.angles[1]);
+	float punchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.angles[2]);
 
-	if (evt.punch.flags & FL_WC_PUNCH_NO_RETURN) {
+	if (evt.recoil.flags & FL_WC_PUNCH_NO_RETURN) {
 		Vector angles;
 		gEngfuncs.GetViewAngles(angles);
 
-		if (evt.punch.flags & FL_WC_PUNCH_SET) {
+		if (evt.recoil.flags & FL_WC_PUNCH_SET) {
 			angles = angles + Vector(punchAngleX, punchAngleY, punchAngleZ);
 		}
 		else {
@@ -1967,15 +1967,20 @@ void WC_EV_PunchAngle(WepEvt& evt, int seed) {
 		gEngfuncs.SetViewAngles(angles);
 	}
 	else {
-		if (evt.punch.flags & FL_WC_PUNCH_ADD) {
+		if (evt.recoil.flags & FL_WC_PUNCH_ADD) {
 			gPlayerSim.ev_punchangle[0] += punchAngleX;
 			gPlayerSim.ev_punchangle[1] += punchAngleY;
 			gPlayerSim.ev_punchangle[2] += punchAngleZ;
 		}
-		else if (evt.punch.flags & FL_WC_PUNCH_SET) {
+		else if (evt.recoil.flags & FL_WC_PUNCH_SET) {
 			V_PunchAxis(0, punchAngleX);
 			V_PunchAxis(1, punchAngleY);
 			V_PunchAxis(2, punchAngleZ);
+		}
+		else if (evt.recoil.flags & FL_WC_PUNCH_ADD_RAND) {
+			gPlayerSim.ev_punchangle[0] += UTIL_SharedRandomFloat(seed, -punchAngleX, punchAngleX);
+			gPlayerSim.ev_punchangle[1] += UTIL_SharedRandomFloat(seed + 1, -punchAngleY, punchAngleY);
+			gPlayerSim.ev_punchangle[2] += UTIL_SharedRandomFloat(seed + 2, -punchAngleZ, punchAngleZ);
 		}
 		else {
 			V_PunchAxis(0, UTIL_SharedRandomFloat(seed, -punchAngleX, punchAngleX));

@@ -270,6 +270,8 @@ BOOL CWeaponCustom::Deploy()
 		return FALSE;
 
 	m_chargeStartCmdTime = 0;
+	m_chargeStopCmdTime = 0;
+	m_lastCharge = 0;
 	m_lastBeamUpdate = 0;
 	m_fInReload = false;
 	m_bInAkimboReload = false;
@@ -865,7 +867,8 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 		return false;
 	}
 
-	bool forceFireChargedShot = GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING;
+	bool forceFireChargedShot = GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING
+		&& opts.chargeMode != WC_CHARGEUP_CONSTANT;
 	bool ammoSpendsDuringCharge = opts.chargeTime > 0 && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD;
 	if (!forceFireChargedShot && clipLeft <= 0 && opts.ammoCost > 0) {
 		if (!m_fInReload) {
@@ -954,6 +957,16 @@ void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 
 	int millis = overrideMillis != -1 ? overrideMillis : opts.cooldown;
+
+	if (opts.dischargedCooldown) {
+		uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
+		float t = V_min(chargeMillis / (float)opts.chargeTime, 1.0f);
+
+		int startCooldown = opts.dischargedCooldown;
+		int endCooldown = opts.cooldown;
+		millis = startCooldown + (endCooldown - startCooldown) * t;
+	}
+
 	float nextAttack = UTIL_WeaponTimeBase() + millis * 0.001f;
 	
 	if (attackIdx != -1) {
@@ -980,56 +993,28 @@ void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 		m_flTimeWeaponIdle = nextAttack + 1.0f;
 }
 
-bool CWeaponCustom::Chargeup(int attackIdx, int* clip, bool leftHand, bool akimboFire) {
-	if (GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING)
-		return true;
-	
-	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+float CWeaponCustom::GetChargeProgress(float chargeTime) {
+	uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
+	return V_min(chargeMillis / chargeTime, 1.0f);
+}
 
+void CWeaponCustom::PlayChargeSound(float t) {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
-		return false;
-
-	if (!opts.chargeTime)
-		return true;
-
-	if (params.flags & FL_WC_WEP_LINK_CHARGEUPS) {
-		attackIdx = 0;
-	}
-
-	if (GetChargedState(attackIdx) == WC_CHARGE_STATE_NONE) {
-		m_chargeStartCmdTime = CmdTime();
-		m_chargeStartClip = *clip;
-		SetChargedState(attackIdx, WC_CHARGE_STATE_CHARGING);
-		int e = (attackIdx == 0) ? WC_TRIG_PRIMARY_CHARGE : WC_TRIG_SECONDARY_CHARGE;
-		events.ProcessEvents(e, 0, leftHand, akimboFire);
-		m_pPlayer->ApplyEffects();
-	}
-
-	uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
-	float t = V_min(chargeMillis / (float)opts.chargeTime, 1.0f);
-
-	if (opts.ammoCost && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD) {
-		int cost = V_max(1, (t * opts.ammoCost) + 0.5f);
-		*clip = V_max(0, m_chargeStartClip - cost);
-
-		if (*clip == 0) {
-			SetChargedState(attackIdx, WC_CHARGE_STATE_DISCHARGING);
-			return true;
-		}
-	}
+		return;
 
 	if (m_chargeSoundEvt) {
-		WepEvt& evt = params.events[clamp(m_chargeSoundEvt, 0, MAX_WC_EVENTS-1)];
+		WepEvt& evt = params.events[clamp(m_chargeSoundEvt, 0, MAX_WC_EVENTS - 1)];
 		int channel = evt.playSound.channel;
 		int soundIdx = evt.playSound.sound;
-		
+
 		int pitchRange = evt.playSound.pitchMax - evt.playSound.pitchMin;
-		
-		int pitch = evt.playSound.pitchMin + pitchRange*t;
+
+		int pitch = evt.playSound.pitchMin + pitchRange * t;
 
 #ifdef CLIENT_DLL
-		WC_EV_LocalSound(soundIdx, channel, pitch, 1, ATTN_NORM, 0, SND_CHANGE_PITCH);
+		if (g_runfuncs)
+			WC_EV_LocalSound(soundIdx, channel, pitch, 1, ATTN_NORM, 0, SND_CHANGE_PITCH);
 #else
 		if (IsPredicted()) {
 			uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
@@ -1042,6 +1027,67 @@ bool CWeaponCustom::Chargeup(int attackIdx, int* clip, bool leftHand, bool akimb
 		}
 #endif
 	}
+}
+
+bool CWeaponCustom::Chargeup(int attackIdx, int* clip, bool leftHand, bool akimboFire) {
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+	
+	if (GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING && opts.chargeMode != WC_CHARGEUP_CONSTANT)
+		return true;
+
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return false;
+
+	if (!opts.chargeTime)
+		return true;
+
+	if (params.flags & FL_WC_WEP_LINK_CHARGEUPS) {
+		attackIdx = 0;
+	}
+
+	if (GetChargedState(attackIdx) == WC_CHARGE_STATE_NONE || GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING) {
+		// resume charging if not finished charging down
+		int skipChargeUpTime = 0;
+		if (opts.chargeDownTime) {
+			int chargeDownTime = CmdTime() - m_chargeStopCmdTime;
+			skipChargeUpTime = V_max(0, opts.chargeDownTime - chargeDownTime);
+			skipChargeUpTime *= opts.chargeTime / (float)opts.chargeDownTime;
+		}
+
+		m_chargeStartCmdTime = CmdTime() - skipChargeUpTime;
+		m_chargeStartClip = *clip;
+		m_lastCharge = GetChargeProgress(opts.chargeTime) - 0.001f;
+		SetChargedState(attackIdx, WC_CHARGE_STATE_CHARGING);
+		int e = (attackIdx == 0) ? WC_TRIG_PRIMARY_CHARGE : WC_TRIG_SECONDARY_CHARGE;
+		events.ProcessEvents(e, 0, leftHand, akimboFire);
+		m_pPlayer->ApplyEffects();
+	}
+
+	uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
+	float t = GetChargeProgress(opts.chargeTime);
+
+	for (int i = 0; i <= 10; i++) {
+		float p = i * 0.1f;
+		if (t >= p && m_lastCharge < p) {
+			int trig = attackIdx == 0 ? WC_TRIG_PRIMARY_CHARGE : WC_TRIG_SECONDARY_CHARGE;
+			events.ProcessEvents(trig, i+1, leftHand, false);
+		}
+	}
+
+	m_lastCharge = t;
+
+	if (opts.ammoCost && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD) {
+		int cost = V_max(1, (t * opts.ammoCost) + 0.5f);
+		*clip = V_max(0, m_chargeStartClip - cost);
+
+		if (*clip == 0) {
+			SetChargedState(attackIdx, WC_CHARGE_STATE_DISCHARGING);
+			return true;
+		}
+	}
+
+	PlayChargeSound(t);
 
 	if (opts.overchargeTime && chargeMillis >= opts.overchargeTime) {
 		if (opts.overchargeMode == WC_OVERCHARGE_CANCEL) {
@@ -1066,7 +1112,10 @@ bool CWeaponCustom::Chargeup(int attackIdx, int* clip, bool leftHand, bool akimb
 		return false; // wait for attack button to be released. Attack will start during idle.
 	}
 
-	return chargeMillis >= opts.chargeTime;
+	bool minigunModeChargedEnough = opts.minChargeShootTime
+		&& chargeMillis >= opts.minChargeShootTime;
+
+	return chargeMillis >= opts.chargeTime || minigunModeChargedEnough;
 }
 
 void CWeaponCustom::Chargedown(int attackIdx) {
@@ -1085,8 +1134,22 @@ void CWeaponCustom::Chargedown(int attackIdx) {
 	// otherwise the prediction code will idle before the server syncs the new idle delay
 	m_flTimeWeaponIdle = V_max(m_flTimeWeaponIdle, 0.5f);
 
-	SetChargedState(attackIdx, WC_CHARGE_STATE_NONE);
-	m_chargeSoundEvt = 0;
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+	if (opts.chargeDownTime) {
+		int chargeMillis = CmdTime() - m_chargeStartCmdTime;
+		int skipChargeDownTime = V_max(0, opts.chargeTime - chargeMillis);
+		if (opts.chargeTime) {
+			skipChargeDownTime *= opts.chargeDownTime / (float)opts.chargeTime;
+		}
+		m_chargeStopCmdTime = CmdTime() - skipChargeDownTime;
+		int chargeDownTime = CmdTime() - m_chargeStopCmdTime;
+		m_lastCharge = (1.0f - V_min(chargeDownTime / (float)opts.chargeDownTime, 1.0f)) + 0.001f;
+
+		SetChargedState(attackIdx, WC_CHARGE_STATE_DISCHARGING);
+	}
+	else {
+		SetChargedState(attackIdx, WC_CHARGE_STATE_NONE);
+	}
 
 	m_pPlayer->ApplyEffects();
 }
@@ -1107,8 +1170,34 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 		events.KillBeams(attackIdx);
 	}
 
-	// not a charging attack. Call the stop event.
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+
+	if (attackIdx == 0) {
+		if (opts.chargeDownTime && GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING) {
+			int chargeDownTime = CmdTime() - m_chargeStopCmdTime;
+			float t = 1.0f - V_min(chargeDownTime / (float)opts.chargeDownTime, 1.0f);
+
+			// spin down the charge
+			if (chargeDownTime < opts.chargeDownTime) {
+				PlayChargeSound(t);
+			}
+			else {
+				SetChargedState(attackIdx, WC_CHARGE_STATE_NONE);
+			}
+
+			for (int i = 0; i <= 10; i++) {
+				float p = i * 0.1f;
+				if (t <= p && m_lastCharge > p) {
+					int trig = attackIdx == 0 ? WC_TRIG_PRIMARY_CHARGE : WC_TRIG_SECONDARY_CHARGE;
+					events.ProcessEvents(trig, i + 12, false, false);
+				}
+			}
+
+			m_lastCharge = t;
+		}
+	}
+
+	// not a charging attack. Call the stop event.
 	if (attackFired && !opts.chargeTime) {
 		int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_STOP : WC_TRIG_SECONDARY_STOP;
 		events.CancelDelayedEvents(attackIdx == 0 ? WC_TRIG_PRIMARY_START : WC_TRIG_SECONDARY_START);
@@ -1116,7 +1205,8 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 		return;
 	}
 	
-	if (GetChargedState(attackIdx) == WC_CHARGE_STATE_NONE) {
+	if (GetChargedState(attackIdx) == WC_CHARGE_STATE_NONE
+		|| GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING) {
 		return;
 	}
 

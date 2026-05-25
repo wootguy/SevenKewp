@@ -58,7 +58,7 @@ enum WeaponCustomAmmoPool
 
 enum WeaponCustomChargeupMode {
 	WC_CHARGEUP_NONE,			// disable attack charging
-	WC_CHARGEUP_CONSTANT,		// fire constantly after chargeup finishes
+	WC_CHARGEUP_CONSTANT,		// fire constantly, optionally while charging up
 	WC_CHARGEUP_SINGLE,			// fire a single shot when charged up, then charge down
 	WC_CHARGEUP_SINGLE_HOLD,	// fire a single shot when charged up, then charge down, unless the attack key was released before the charge up finished.
 	WC_CHARGEUP_HOLD,			// fire a single shot when the player releases the attack button
@@ -101,7 +101,10 @@ struct CustomWeaponShootOpts {
 	uint8_t overchargeMode;		// WeaponCustomOverchargeMode (2 bits)
 	uint8_t chargeFlags;		// FL_WC_CHARGE_*
 	uint16_t chargeTime;		// how long the attack button must be held before the attack begins (milliseconds)
+	uint16_t chargeDownTime;	// how long before the charge returns to 0 after releasing the attack button
+	uint16_t minChargeShootTime;// minimum charge time needed before shooting in constant mode
 	uint16_t overchargeTime;	// how long an attack can be charged before triggering an overcharge event and cancelling the chargeup
+	uint16_t dischargedCooldown;// cooldown when beginning a charge, increasing to 'cooldown' at full charge
 	uint16_t chargeCancelTime;	// minimum time before a charge can be cancelled (milliseconds)
 	uint16_t chargeMoveSpeedMult; // movement speed multiplier while charging (1-65535) (65535 = 100%) (0 = don't change)
 	uint16_t accuracy[2];		// horizontal+vertical accuracy for crosshair (degrees * 100)
@@ -223,6 +226,8 @@ extern uint32_t g_wcPredDataSent[MAX_WEAPONS]; // bitfields indicating which pla
 
 // if true, polls weapon config files for updates and automatically reloads weapons
 EXPORT extern bool g_autoConfigReload;
+
+const char* describe_event(WepEvt& evt);
 
 // call once when dll loaded
 void init_weapon_custom_config_parser();

@@ -23,9 +23,10 @@
 
 #define FL_WC_PUNCH_SET 1		// don't randomize angles, set to exactly what was given
 #define FL_WC_PUNCH_ADD 2		// add to current punch angle
-#define FL_WC_PUNCH_NO_RETURN 4	// view does not return to center after the punch
-#define FL_WC_PUNCH_DUCK 8		// apply punch angles only when ducked
-#define FL_WC_PUNCH_STAND 16	// apply punch angles only while standing
+#define FL_WC_PUNCH_ADD_RAND 4	// add to current punch angle, using a random angle between +/-each angle
+#define FL_WC_PUNCH_NO_RETURN 8	// view does not return to center after the punch
+#define FL_WC_PUNCH_DUCK 16		// apply punch angles only when ducked
+#define FL_WC_PUNCH_STAND 32	// apply punch angles only while standing
 
 #define FL_WC_BEAM_SPIRAL	1		// render the beam as a spiral (egon effect)
 #define FL_WC_BEAM_OPAQUE	2		// render the beam without transparency
@@ -269,7 +270,7 @@ struct WepEvt {
 		struct {
 			uint8_t flags; //  FL_WC_PUNCH_
 			int16_t angles[3]; // 10.6 fixed point int
-		} punch;
+		} recoil;
 
 		struct {
 			uint8_t flags; // 5 bits - FL_WC_ANIM_*
@@ -726,45 +727,45 @@ struct WepEvt {
 	// prefer adding this AFTER a bullets event for prediction accuracy
 	WepEvt PunchSet(float x, float y, float z = 0) {
 		evtType = WC_EVT_PUNCH;
-		punch.flags = FL_WC_PUNCH_SET;
-		punch.angles[0] = FLOAT_TO_FP_10_6(x);
-		punch.angles[1] = FLOAT_TO_FP_10_6(y);
-		punch.angles[2] = FLOAT_TO_FP_10_6(z);
+		recoil.flags = FL_WC_PUNCH_SET;
+		recoil.angles[0] = FLOAT_TO_FP_10_6(x);
+		recoil.angles[1] = FLOAT_TO_FP_10_6(y);
+		recoil.angles[2] = FLOAT_TO_FP_10_6(z);
 		return *this;
 	}
 
 	WepEvt PunchAdd(float x, float y, float z = 0) {
 		evtType = WC_EVT_PUNCH;
-		punch.flags = FL_WC_PUNCH_ADD;
-		punch.angles[0] = FLOAT_TO_FP_10_6(x);
-		punch.angles[1] = FLOAT_TO_FP_10_6(y);
-		punch.angles[2] = FLOAT_TO_FP_10_6(z);
+		recoil.flags = FL_WC_PUNCH_ADD;
+		recoil.angles[0] = FLOAT_TO_FP_10_6(x);
+		recoil.angles[1] = FLOAT_TO_FP_10_6(y);
+		recoil.angles[2] = FLOAT_TO_FP_10_6(z);
 		return *this;
 	}
 
 	// prefer adding this AFTER a bullets event for prediction accuracy
 	WepEvt PunchRandom(float x, float y, float z = 0) {
 		evtType = WC_EVT_PUNCH;
-		punch.angles[0] = FLOAT_TO_FP_10_6(x);
-		punch.angles[1] = FLOAT_TO_FP_10_6(y);
-		punch.angles[2] = FLOAT_TO_FP_10_6(z);
+		recoil.angles[0] = FLOAT_TO_FP_10_6(x);
+		recoil.angles[1] = FLOAT_TO_FP_10_6(y);
+		recoil.angles[2] = FLOAT_TO_FP_10_6(z);
 		return *this;
 	}
 
 	// prefer adding this AFTER a bullets event for prediction accuracy
 	WepEvt RotateView(float x, float y, float z = 0) {
 		evtType = WC_EVT_PUNCH;
-		punch.flags |= FL_WC_PUNCH_NO_RETURN;
-		punch.angles[0] = FLOAT_TO_FP_10_6(x);
-		punch.angles[1] = FLOAT_TO_FP_10_6(y);
-		punch.angles[2] = FLOAT_TO_FP_10_6(z);
+		recoil.flags |= FL_WC_PUNCH_NO_RETURN;
+		recoil.angles[0] = FLOAT_TO_FP_10_6(x);
+		recoil.angles[1] = FLOAT_TO_FP_10_6(y);
+		recoil.angles[2] = FLOAT_TO_FP_10_6(z);
 		return *this;
 	}
 
 	WepEvt DuckOnly() {
 		if (evtType == WC_EVT_PUNCH) {
-			punch.flags |= FL_WC_PUNCH_DUCK;
-			punch.flags &= ~FL_WC_PUNCH_STAND;
+			recoil.flags |= FL_WC_PUNCH_DUCK;
+			recoil.flags &= ~FL_WC_PUNCH_STAND;
 		}
 		else {
 			ALERT(at_error, "DuckOnly can be called on Punch events only\n");
@@ -774,8 +775,8 @@ struct WepEvt {
 
 	WepEvt StandOnly() {
 		if (evtType == WC_EVT_PUNCH) {
-			punch.flags |= FL_WC_PUNCH_STAND;
-			punch.flags &= ~FL_WC_PUNCH_DUCK;
+			recoil.flags |= FL_WC_PUNCH_STAND;
+			recoil.flags &= ~FL_WC_PUNCH_DUCK;
 		}
 		else {
 			ALERT(at_error, "StandOnly can be called on Punch events only\n");

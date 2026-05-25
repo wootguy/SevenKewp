@@ -18,7 +18,7 @@ struct SoundMapping {
 enum WcAttackState {
 	WC_CHARGE_STATE_NONE,
 	WC_CHARGE_STATE_CHARGING,
-	WC_CHARGE_STATE_DISCHARGING, // firing by force regardless of ammo and charge progress
+	WC_CHARGE_STATE_DISCHARGING, // firing by force regardless of ammo and charge progress, or charging down in constant mode
 	WC_CHARGE_STATE_OVERCHARGED,
 };
 
@@ -58,6 +58,8 @@ public:
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
 	Vector m_kickbackPredVel;
 	uint32_t m_chargeStartCmdTime; // CMD time that begun a chargeup
+	uint32_t m_chargeStopCmdTime; // CMD time that a discharge began
+	float m_lastCharge; // last charge progress calculated for chargeup/chargedown
 	int m_chargeStartClip; // ammo started with when chargeup began
 	bool m_primaryCalled;
 	bool m_secondaryCalled;
@@ -107,6 +109,8 @@ public:
 	void PlayEmptySound(int attackIdx);
 	void FailAttack(int attackIdx, bool leftHand, bool akimboFire, bool ammoClick);
 	void PlayRandomSound(CBasePlayer* plr, uint16_t sounds[4]); // generic server side sound playback
+	float GetChargeProgress(float chargeTime);
+	void PlayChargeSound(float t);
 
 	//
 	//  Override the methods below to add custom server-side logic to your weapon

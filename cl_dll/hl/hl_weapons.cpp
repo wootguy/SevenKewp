@@ -198,6 +198,8 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_laserOnTime = 0;
 		g_customWeapon[i].m_hasPredictionData = false;
 		g_customWeapon[i].m_chargeStartCmdTime = 0;
+		g_customWeapon[i].m_chargeStopCmdTime = 0;
+		g_customWeapon[i].m_lastCharge = 0;
 		g_customWeapon[i].m_runningKickbackPred = 0;
 		g_customWeapon[i].m_kickbackPredVel = Vector(0,0,0);
 		g_customWeapon[i].m_primaryCalled = 0;

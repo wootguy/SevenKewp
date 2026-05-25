@@ -155,6 +155,7 @@ const char* g_wc_evt_trigger_names[32];
 const char* g_wc_evt_trigger_arg_primary_names[32];
 const char* g_wc_evt_trigger_clip_sp_names[32];
 const char* g_wc_evt_trigger_impact_names[32];
+const char* g_wc_evt_charge_names[32];
 const char* g_wc_evt_type_names[32];
 const char* g_wc_evt_category_names[32];
 static const char* g_wc_dmgFlags[32];
@@ -349,8 +350,11 @@ void init_weapon_struct_fields() {
 
 			WEP_FLAGS("charge_flags", "0", shootOpts[0].chargeFlags, 0, chargeFlags, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 			WEP_FIELD("charge_time", "0", shootOpts[0].chargeTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
+			WEP_FIELD("charge_down_time", "0", shootOpts[0].chargeDownTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
+			WEP_FIELD("charge_shoot_time", "0", shootOpts[0].minChargeShootTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 			WEP_FIELD("overcharge_time", "0", shootOpts[0].overchargeTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 			WEP_FIELD("charge_cancel_time", "0", shootOpts[0].chargeCancelTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
+			WEP_FIELD("discharged_cooldown", "0", shootOpts[0].dischargedCooldown, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 			
 			WEP_FIELD("charge_move_speed", "0", shootOpts[0].chargeMoveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_damage", "0", shootOpts[0].melee.damage, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -468,13 +472,14 @@ void init_event_fields() {
 		static const char* flags[8];
 		flags[BitToIndex(FL_WC_PUNCH_SET)] = "set_angles";
 		flags[BitToIndex(FL_WC_PUNCH_ADD)] = "add_angles";
+		flags[BitToIndex(FL_WC_PUNCH_ADD_RAND)] = "add_angles_rand";
 		flags[BitToIndex(FL_WC_PUNCH_NO_RETURN)] = "no_recovery";
 		flags[BitToIndex(FL_WC_PUNCH_DUCK)] = "only_when_ducking";
 		flags[BitToIndex(FL_WC_PUNCH_STAND)] = "only_when_standing";
 
 		EVT_DESC(WC_EVT_PUNCH, "recoil",
-			EVT_FLAGS("flags", "0", punch.flags, 8, flags),
-			EVT_FIELD("angles", "0 0 0", punch.angles, 0, WC_PARAM_VECTOR_FP_10_6),
+			EVT_FLAGS("flags", "0", recoil.flags, 8, flags),
+			EVT_FIELD("angles", "0 0 0", recoil.angles, 0, WC_PARAM_VECTOR_FP_10_6),
 		);
 	}
 
@@ -892,10 +897,30 @@ void init_weapon_custom_config_parser() {
 			break;
 		case WC_TRIG_IMPACT:
 			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_impact_names); k++) {
-				const char* key = UTIL_VarArgs("%s_%s", tname, g_wc_evt_trigger_impact_names[k]);
+				const char* key = UTIL_VarArgs("%s_%s%%", tname, g_wc_evt_trigger_impact_names[k]);
 				uint16_t val = (k << 5) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
+			}
+			break;
+		case WC_TRIG_PRIMARY_CHARGE:
+		case WC_TRIG_SECONDARY_CHARGE:
+			g_wc_name_to_trigger.put(tname, i);
+			g_wc_trigger_to_name[i] = g_wc_trigger_string_pool.alloc(tname);
+
+			for (int k = 0; k <= 10; k++) {
+				{
+					const char* key = UTIL_VarArgs("%s_above_%d", tname, k * 10);
+					uint16_t val = ((k+1) << 5) | i;
+					g_wc_name_to_trigger.put(key, val);
+					g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
+				}
+				{
+					const char* key = UTIL_VarArgs("%s_below_%d", tname, k * 10);
+					uint16_t val = ((k+12) << 5) | i;
+					g_wc_name_to_trigger.put(key, val);
+					g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
+				}
 			}
 			break;
 		default:
@@ -1353,6 +1378,19 @@ int wc_get_int(const char* val) {
 	}
 #endif
 	return atoi(val);
+}
+
+const char* describe_event(WepEvt& evt) {
+	static char temp[256];
+	temp[0] = 0;
+
+	const char* trig = g_wc_trigger_to_name[(evt.triggerArg << 5) | evt.trigger].str();
+
+	strcat_safe(temp, trig, sizeof(temp));
+	strcat_safe(temp, " -> ", sizeof(temp));
+	strcat_safe(temp, g_wc_evt_type_names[evt.evtType], sizeof(temp));
+
+	return temp;
 }
 
 void wc_compare_struct_fields(struct_desc_t& desc, void* struct1, void* struct2, int idx) {
@@ -2702,6 +2740,7 @@ void UTIL_ReloadWeaponConfigs() {
 			for (int i = 0; i < MAX_WEAPONS; i++) {
 				ItemInfo& info = CBasePlayerItem::ItemInfoArray[i];
 				if (*id == info.iId) {
+					g_filledWeaponSlots[info.iSlot][info.iPosition] = NULL;
 					memset(&info, 0, sizeof(ItemInfo));
 				}
 			}

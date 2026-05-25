@@ -109,6 +109,8 @@ void CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 			break;
 		case WC_TRIG_PRIMARY_CLIPSIZE:
 		case WC_TRIG_IMPACT:
+		case WC_TRIG_PRIMARY_CHARGE:
+		case WC_TRIG_SECONDARY_CHARGE:
 			argMatch = triggerArg == evt.triggerArg;
 			break;
 		case WC_TRIG_PRIMARY_CLIP_SP:
@@ -201,8 +203,10 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 	float damage = evt.bullets.damage * GetChargeMult(evt, FL_WC_CHARGE_DAMAGE);
 
+	int count = evt.bullets.burstDelay ? 1 : evt.bullets.count;
+
 	lagcomp_begin(m_pPlayer);
-	Vector vecDir = m_pPlayer->FireBulletsPlayer(evt.bullets.count, vecSrc, vecAiming, spread, 8192,
+	Vector vecDir = m_pPlayer->FireBulletsPlayer(count, vecSrc, vecAiming, spread, 8192,
 		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, damage, m_pPlayer->pev,
 		m_pPlayer->random_seed, g_traces, predFlag);
 	lagcomp_end();
@@ -221,7 +225,7 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	bool decal = !(evt.bullets.flags & FL_WC_BULLETS_NO_DECAL);
 	bool texSound = !(evt.bullets.flags & FL_WC_BULLETS_NO_SOUND);
 
-	for (ULONG iShot = 1; iShot <= evt.bullets.count; iShot++)
+	for (ULONG iShot = 1; iShot <= count; iShot++)
 	{
 		//Use player's random seed.
 		// get circular gaussian spread
@@ -242,7 +246,7 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 		EV_MuzzleFlash();
 #else
 
-	for (int i = 0; i < evt.bullets.count; i++) {
+	for (int i = 0; i < count; i++) {
 		WcTrace evTrace = ConvertTrace(g_traces[i]);
 		ProcessEvents(WC_TRIG_IMPACT, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
 		m_weapon->AttackTrace(m_pPlayer, attackIdx, vecSrc, g_traces[i]);
@@ -257,7 +261,7 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 			}
 
 			if ((m_pPlayer != listener || !isPredicted) && m_pPlayer->InPAS(listener->edict())) {
-				for (int k = 0; k < evt.bullets.count; k++) {
+				for (int k = 0; k < count; k++) {
 					UTIL_Tracer(vecSrc, g_traces[k].vecEndPos, evt.bullets.tracerColor, MSG_ONE_UNRELIABLE, listener->edict());
 				}
 			}
@@ -802,24 +806,31 @@ void CWeaponEvents::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bo
 void CWeaponEvents::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	bool ducking = m_pPlayer->pev->flags & FL_DUCKING;
 
-	if (ducking && (evt.punch.flags & FL_WC_PUNCH_STAND))
+	if (ducking && (evt.recoil.flags & FL_WC_PUNCH_STAND))
 		return;
-	if (!ducking && (evt.punch.flags & FL_WC_PUNCH_DUCK))
+	if (!ducking && (evt.recoil.flags & FL_WC_PUNCH_DUCK))
 		return;
 
 #ifdef CLIENT_DLL
 	WC_EV_PunchAngle(evt, m_pPlayer->random_seed);
 #else
 	if (!m_pPlayer->IsSevenKewpClient()) {
-		float punchAngleX = FP_10_6_TO_FLOAT(evt.punch.angles[0]);
-		float punchAngleY = FP_10_6_TO_FLOAT(evt.punch.angles[1]);
-		float punchAngleZ = FP_10_6_TO_FLOAT(evt.punch.angles[2]);
+		float punchAngleX = FP_10_6_TO_FLOAT(evt.recoil.angles[0]);
+		float punchAngleY = FP_10_6_TO_FLOAT(evt.recoil.angles[1]);
+		float punchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.angles[2]);
 
-		if (!(evt.punch.flags & FL_WC_PUNCH_NO_RETURN)) {
-			if (evt.punch.flags & FL_WC_PUNCH_ADD) {
+		if (!(evt.recoil.flags & FL_WC_PUNCH_NO_RETURN)) {
+			if (evt.recoil.flags & FL_WC_PUNCH_ADD) {
 				m_pPlayer->pev->punchangle = m_pPlayer->pev->punchangle + Vector(punchAngleX, punchAngleY, punchAngleZ);
 			}
-			else if (evt.punch.flags & FL_WC_PUNCH_SET) {
+			else if (evt.recoil.flags & FL_WC_PUNCH_ADD_RAND) {
+				m_pPlayer->pev->punchangle = m_pPlayer->pev->punchangle + Vector(
+					UTIL_SharedRandomFloat(m_pPlayer->random_seed, -punchAngleX, punchAngleX),
+					UTIL_SharedRandomFloat(m_pPlayer->random_seed + 1, -punchAngleY, punchAngleY),
+					UTIL_SharedRandomFloat(m_pPlayer->random_seed + 2, -punchAngleZ, punchAngleZ)
+				);
+			}
+			else if (evt.recoil.flags & FL_WC_PUNCH_SET) {
 				m_pPlayer->pev->punchangle = Vector(punchAngleX, punchAngleY, punchAngleZ);
 			}
 			else {
@@ -1063,6 +1074,12 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 
 	Vector vecDir;
 	WepEvt& evt = m_weapon->params.events[eventIdx];
+
+#ifdef CLIENT_DLL
+	PRINTD("Play Event %s\n", describe_event(evt));
+#else
+	ALERT(at_console, "Play Event %s\n", describe_event(evt));
+#endif
 
 	switch (evt.evtType) {
 	case WC_EVT_SET_BODY:
