@@ -152,7 +152,7 @@ def save_img_alphatest(canvas, out_name):
 	src = 255
 	for i in range(256):
 		r, g, b = pal[i*3:i*3+3]
-		if (r, g, b) == (0, 0, 255):
+		if (r, g, b) == (0, 0, 255) or (r, g, b) == (0, 0, 254):
 			src = i
 			break
 			
@@ -244,7 +244,6 @@ def compile_weapon_hud():
 		new_img.paste(autoaim.resize((int(24 * 3), int(24 * 3)), Image.NEAREST), (412, 342))
 		new_img.paste(autoaim.resize((int(24 * 2), int(24 * 2)), Image.NEAREST), (436, 414))
 		new_img.paste(autoaim, (484, 342))
-		new_img.paste(autoaim.convert("RGB").resize((18,18), Image.LANCZOS), (484, 402))
 		has_autoaim = True
 	else:
 		print("autoaim.bmp does not exist. Autoaim crosshairs will not be added to the HUD.")

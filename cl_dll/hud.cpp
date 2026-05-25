@@ -685,12 +685,20 @@ void CHud::ReplaceHudSprites(const char* fpath) {
 void CHud::ParseServerInfo() {
 	const char* sevenkewpVersion = gEngfuncs.ServerInfo_ValueForKey("skv");
 	m_sevenkewpVersion = atoi(sevenkewpVersion);
-	if (sevenkewpVersion[0] && m_sevenkewpVersion > 0) {
-		gEngfuncs.Con_Printf("SevenKewp server version %s\n", UTIL_SevenKewpClientString(m_sevenkewpVersion, false));
+
+	bool isSingleplayer = gEngfuncs.GetMaxClients() == 1;
+
+	if (!isSingleplayer) {
+		if (sevenkewpVersion[0] && m_sevenkewpVersion > 0) {
+			gEngfuncs.Con_Printf("SevenKewp server version %s\n", UTIL_SevenKewpClientString(m_sevenkewpVersion, false));
+		}
+		else {
+			gEngfuncs.Con_Printf("This is not a SevenKewp server. Some client features will be disabled.\n");
+			m_sevenkewpVersion = 0;
+		}
 	}
 	else {
-		gEngfuncs.Con_Printf("This is not a SevenKewp server. Some client features will be disabled.\n");
-		m_sevenkewpVersion = 0;
+		m_sevenkewpVersion = CVAR_GET_FLOAT("hlcoop_version");
 	}
 
 	if (IsSevenKewpServer()) {

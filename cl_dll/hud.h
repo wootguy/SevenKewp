@@ -763,7 +763,7 @@ public:
 	unsigned long GetHudColor();
 
 	// for disabling features that could be used to cheat on vanilla servers
-	inline bool IsSevenKewpServer() { return m_sevenkewpVersion > 0; }
+	inline bool IsSevenKewpServer() { return m_sevenkewpVersion > 0 || gEngfuncs.GetMaxClients() == 1; }
 
 	bool IsCompatibleSevenKewpServer();
 	
