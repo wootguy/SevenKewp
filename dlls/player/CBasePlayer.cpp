@@ -2049,7 +2049,7 @@ void CBasePlayer::LeaveObserver(bool respawn)
 	ClearBits( m_afPhysicsFlags, PFLAG_OBSERVER );
 	pev->iuser1 = OBS_NONE;
 	pev->iuser2 = 0;
-	pev->iuser3 = 0;
+	pev->iuser3 = mp_quakemap.value ? 1 : 0;
 	m_isObserver = false;
 	m_lastObserverSwitch = gpGlobals->time;
 	m_iHideHUD = 0;
@@ -3747,7 +3747,7 @@ void CBasePlayer::Spawn( void )
 	pev->renderamt = 0;
 	pev->renderfx = 0;
 	pev->rendercolor = Vector(0,0,0);
-	pev->iuser3 = 0;
+	pev->iuser3 = mp_quakemap.value ? 1 : 0;
 	m_lastDropTime = 0;
 	m_lastDamageEnt = NULL;
 	m_lastDamageType = 0;
@@ -3842,7 +3842,7 @@ void CBasePlayer::Spawn( void )
     g_ulModelIndexPlayer = pev->modelindex;
 	pev->sequence		= LookupActivity( ACT_IDLE );
 
-	if ( FBitSet(pev->flags, FL_DUCKING) ) 
+	if (FBitSet(pev->flags, FL_DUCKING))
 		UTIL_SetSize(pev, VEC_DUCK_HULL_MIN, VEC_DUCK_HULL_MAX);
 	else
 		UTIL_SetSize(pev, VEC_HULL_MIN, VEC_HULL_MAX);
@@ -5539,7 +5539,7 @@ void CBasePlayer :: BarnacleVictimReleased ( void )
 	m_afPhysicsFlags &= ~PFLAG_ONBARNACLE;
 	pev->movetype = MOVETYPE_WALK;
 	pev->view_ofs = VEC_VIEW;
-	pev->iuser3 = 0; // allow ducking
+	pev->iuser3 = mp_quakemap.value ? 1 : 0; // allow ducking
 	ApplyEffects(); // reset movetype, movespeed, gravity`
 }
 

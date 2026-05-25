@@ -80,6 +80,7 @@ cvar_t	mp_min_score_mult ={"mp_min_score_mult", "20", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_hevsuit_voice ={"mp_hevsuit_voice", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	npc_dropweapons ={"npc_dropweapons", "1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_bigmap ={"mp_bigmap", "0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_quakemap ={"mp_quakemap", "0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_max_pvs_corpses ={"mp_max_pvs_corpses", "32", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_weaponhands ={"mp_weaponhands", "", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_chat_interval ={"mp_chat_interval", "1.0", FCVAR_SERVER, 0, 0 };
@@ -540,6 +541,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_hevsuit_voice);
 	CVAR_REGISTER (&npc_dropweapons);
 	CVAR_REGISTER (&mp_bigmap);
+	CVAR_REGISTER (&mp_quakemap);
 	CVAR_REGISTER (&mp_max_pvs_corpses);
 	CVAR_REGISTER (&mp_weaponhands);
 	CVAR_REGISTER (&mp_chat_interval);

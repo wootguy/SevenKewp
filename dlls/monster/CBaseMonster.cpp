@@ -2264,6 +2264,20 @@ void CBaseMonster::MonsterInit(void)
 	SetUse(&CBaseMonster::FollowerUse);
 	SetTouch(&CBaseMonster::PushTouch);
 
+	if (mp_quakemap.value) {
+		int hull = WorldGraph.HullIndex(this);
+
+		if (hull == NODE_HUMAN_HULL) {
+			pev->mins.z -= 12;
+		}
+		else if (hull == NODE_SMALL_HULL) {
+			pev->mins.z += 6;
+		}
+		else if (hull == NODE_LARGE_HULL) {
+			pev->mins.z -= 8;
+		}
+	}
+
 	UnstuckSpawnPosition();
 
 	AddWaterPhysicsEnt(this, 1, 0);

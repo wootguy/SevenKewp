@@ -53,6 +53,12 @@ void CreatePlayerCorpse(CBasePlayer* plr)
 	// entirely, for some reason...
 	UTIL_SetSize(pevHead, Vector(-8, -8, -36), Vector(8, 8, 36));
 
+	if (mp_quakemap.value) {
+		UTIL_SetSize(pevHead, Vector(-8, -8, -47), Vector(8, 8, 36));
+		if (plr->pev->flags & FL_ONGROUND)
+			UTIL_SetOrigin(pevHead, pev->origin + Vector(0,0,11));
+	}
+
 	CBaseEntity* pent = CBaseEntity::Instance(ENT(pevHead));
 	if (pent) {
 		CBaseMonster* mon = pent->MyMonsterPointer();
