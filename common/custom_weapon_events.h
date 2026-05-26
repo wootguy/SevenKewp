@@ -395,7 +395,14 @@ struct WepEvt {
 			//       Coordinates are given as Right, Up, and Forward units.
 			//       Usually you want to set this to straight forward (0 0 1).
 			string_t entity_class;	// custom projectile entity
+			
 			uint16_t model;
+			uint8_t renderMode;
+			uint8_t renderAmt;
+			uint8_t renderFx;
+			float scale; // sprites only
+			float framerate;
+
 			string_t move_snd;
 			uint16_t damage;
 			uint32_t damageBits;
@@ -414,7 +421,7 @@ struct WepEvt {
 			float follow_angle;
 			float follow_time[3];
 
-			string_t trail_spr;
+			uint16_t trail_spr;
 			uint16_t trail_life;
 			uint8_t trail_width;
 			RGBA trail_color;

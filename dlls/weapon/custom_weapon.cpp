@@ -615,6 +615,36 @@ void init_event_fields() {
 		proj_action_names[WC_PROJ_ACT_BOUNCE] = "bounce";
 		proj_action_names[WC_PROJ_ACT_ATTACH] = "attach";
 
+		static const char* render_modes[32];
+		render_modes[kRenderNormal] = "normal";
+		render_modes[kRenderTransColor] = "color";
+		render_modes[kRenderTransTexture] = "texture";
+		render_modes[kRenderGlow] = "glow";
+		render_modes[kRenderTransAlpha] = "alpha";
+		render_modes[kRenderTransAdd] = "additive";
+
+		static const char* render_fx[32];
+		render_fx[kRenderFxNone] = "none";
+		render_fx[kRenderFxPulseSlow] = "pulse_slow";
+		render_fx[kRenderFxPulseFast] = "pulse_fast";
+		render_fx[kRenderFxPulseSlowWide] = "pulse_slow_wide";
+		render_fx[kRenderFxPulseFastWide] = "pulse_fast_wide";
+		render_fx[kRenderFxFadeSlow] = "fade_slow";
+		render_fx[kRenderFxFadeFast] = "fade_fast";
+		render_fx[kRenderFxSolidSlow] = "strobe_slow";
+		render_fx[kRenderFxStrobeFast] = "strobe_fast";
+		render_fx[kRenderFxStrobeFaster] = "strobe_faster";
+		render_fx[kRenderFxFlickerSlow] = "flicker_slow";
+		render_fx[kRenderFxFlickerFast] = "flicker_fast";
+		render_fx[kRenderFxNoDissipation] = "no_dissipation";
+		render_fx[kRenderFxDistort] = "distort";
+		render_fx[kRenderFxHologram] = "hologram";
+		render_fx[kRenderFxDeadPlayer] = "dead_player";
+		render_fx[kRenderFxExplode] = "explode";
+		render_fx[kRenderFxGlowShell] = "glow_shell";
+		render_fx[kRenderFxClampMinScale] = "clamp_min_scale";
+		render_fx[kRenderFxLightMultiplier] = "light_multiplier";
+
 		EVT_DESC(WC_EVT_PROJECTILE, "projectile",
 			EVT__ENUM("type", "0", proj.type, 0, proj_type_names),
 			EVT_FIELD("entity_class", "", proj.entity_class, 0, WC_PARAM_STRING),
@@ -631,6 +661,11 @@ void init_event_fields() {
 			EVT_FIELD("hull_size", "0", proj.size, 0, WC_PARAM_FLOAT),
 			EVT_FIELD("direction", "0 0 1", proj.dir, 0, WC_PARAM_VECTOR),
 			EVT_FIELD("model", NULL, proj.model, 0, WC_PARAM_MODEL_INDEX),
+			EVT__ENUM("rendermode", "normal", proj.renderMode, 0, render_modes),
+			EVT_FIELD("renderamt", "0", proj.renderAmt, 0, WC_PARAM_UINT8),
+			EVT__ENUM("renderfx", "none", proj.renderFx, 0, render_fx),
+			EVT_FIELD("scale", "0", proj.scale, 0, WC_PARAM_FLOAT),
+			EVT_FIELD("framerate", "0", proj.framerate, 0, WC_PARAM_FLOAT),
 			EVT_FIELD("move_sound", "", proj.move_snd, 0, WC_PARAM_STRING),
 			EVT_FIELD("damage", "0", proj.damage, 0, WC_PARAM_UINT16),
 			EVT_FLAGS("damage_type", "0", proj.damageBits, 0, g_wc_dmgFlags),
@@ -643,7 +678,7 @@ void init_event_fields() {
 			EVT_FIELD("follow_mode", "0", proj.follow_mode, 0, WC_PARAM_UINT8),
 			EVT_FIELD("follow_radius", "0", proj.follow_radius, 0, WC_PARAM_FLOAT),
 			EVT_FIELD("follow_time", "0 0 0", proj.follow_time, 0, WC_PARAM_VECTOR),
-			EVT_FIELD("trail_sprite", "", proj.trail_spr, 0, WC_PARAM_STRING),
+			EVT_FIELD("trail_sprite", NULL, proj.trail_spr, 0, WC_PARAM_MODEL_INDEX),
 			EVT_FIELD("trail_life", "0", proj.trail_life, 0, WC_PARAM_TIME),
 			EVT_FIELD("trail_width", "0", proj.trail_width, 0, WC_PARAM_UINT8),
 			EVT_FIELD("trail_color", "0 0 0 0", proj.trail_color, 0, WC_PARAM_RGBA),

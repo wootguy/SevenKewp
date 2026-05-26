@@ -1388,6 +1388,61 @@ void UTIL_SpriteSpray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint
 	}
 }
 
+void UTIL_Spray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint8_t speed, uint8_t noise, int renderMode) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_SPRAY);
+		WRITE_COORD_VECTOR(pos);
+		WRITE_COORD_VECTOR(dir);
+		WRITE_SHORT(spriteIdx);
+		WRITE_BYTE(count);
+		WRITE_BYTE(speed);
+		WRITE_BYTE(noise);
+		WRITE_BYTE(renderMode);
+		MESSAGE_END();
+	}
+	else if (count) {
+		const char* mdl = INDEX_MODEL(spriteIdx);
+		int frameCount = MODEL_FRAMES(MODEL_INDEX(mdl));
+
+		count = V_min(8, count);
+		float randVel = noise * 0.01f;
+
+		for (int i = 0; i < count; i++) {
+			FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_LOW);
+			if (!tent)
+				return;
+
+			CGib* pGib = GetClassPtr((CGib*)NULL);
+
+			float randSpeed = speed * 2.0f * RANDOM_FLOAT(0.8f, 1.2f);
+
+			pGib->Spawn(mdl);
+			pGib->m_cBloodDecals = 0;
+			pGib->m_lifeTime = gpGlobals->time + 0.5f;
+			pGib->m_slideFriction = 0.5f;
+			pGib->pev->friction = 0.5f;
+			pGib->pev->gravity = 0.5f;
+			pGib->pev->frame = RANDOM_LONG(0, frameCount);
+			pGib->pev->origin = pos;
+			pGib->pev->velocity = (dir + Vector(RANDOM_FLOAT(-randVel, randVel), RANDOM_FLOAT(-randVel, randVel), RANDOM_FLOAT(0, randVel * 1.5f))) * randSpeed;
+			UTIL_SetSize(pGib->pev, Vector(0, 0, 0), Vector(0, 0, 0));
+			pGib->LimitVelocity();
+			pGib->pev->flags |= FL_NOCLIP_MONSTERS | FL_NOCLIP_PLAYERS | FL_NOCLIP_PUSHABLES | FL_NOCLIP_TRACES;
+			pGib->pev->solid = SOLID_NOT;
+			pGib->pev->movetype = MOVETYPE_FLY;
+
+			pGib->pev->renderamt = 255;
+			pGib->pev->rendermode = kRenderTransTexture;
+
+			pGib->SetThink(&CGib::SprayThink);
+			pGib->SetTouch(&CGib::SprayTouch);
+			pGib->pev->nextthink = gpGlobals->time;
+			tent->h_ent = pGib;
+		}
+	}
+}
+
 void UTIL_Shrapnel(Vector pos, Vector dir, float flDamage, int bitsDamageType) {
 	Vector sprPos = pos - Vector(0, 0, 10);
 	bool isBlast = bitsDamageType & DMG_BLAST;
@@ -2075,18 +2130,10 @@ void UTIL_ShockDamageEffect(CBaseEntity* ent, float damage) {
 	int heightMult = ent->IsTurret() && turret->m_iOrientation ? -1 : 1;
 
 	for (int i = 0; i < beamCount; i++) {
-		float z = 2.0f * RANDOM_FLOAT(0, 1) - 1.0f;
-		float theta = 2.0f * (float)M_PI * RANDOM_FLOAT(0, 1);
-		float r = sqrtf(1.0f - z * z);
-
-		float h = height * 0.2f + RANDOM_FLOAT(0, 0.6f) * height;;
+		float h = height * 0.2f + RANDOM_FLOAT(0, 0.6f) * height;
 		ori.z = ent->pev->origin.z + h * heightMult;
 
-		Vector p(
-			radius * r * cosf(theta),
-			radius * r * sinf(theta),
-			radius * z
-		);
+		Vector p = UTIL_RandomPointOnSphere() * radius;
 
 		int life = 4 + i;
 		const int noise = 80;

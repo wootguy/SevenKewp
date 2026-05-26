@@ -1,5 +1,6 @@
 #pragma once
 #include "custom_weapon.h"
+#include "CBaseAnimating.h"
 
 #define FL_WC_PROJ_NO_BUBBLES		1
 #define FL_WC_PROJ_NO_ORIENT		2 // don't orient projectile to movement direction
@@ -30,8 +31,11 @@ public:
 	bool move_snd_playing;
 	float nextBubbleTime;
 	float bubbleDelay;
+	int m_maxFrame;
 
 	void Spawn();
+
+	void Precache();
 
 	void MoveThink();
 

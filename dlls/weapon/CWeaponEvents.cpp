@@ -530,10 +530,6 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 				cproj->pev->rendermode = 1; // don't render the no-precache model
 			}
 
-			float size = evt.proj.size;
-			cproj->pev->mins = Vector(-size, -size, -size);
-			cproj->pev->maxs = Vector(size, size, size);
-
 			cproj->Configure(m_pPlayer, m_weapon, evt);
 		}
 
@@ -574,6 +570,20 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 			SET_MODEL(shootEnt->edict(), INDEX_MODEL(evt.proj.model));
 		}
 
+		float size = evt.proj.size;
+		UTIL_SetSize(shootEnt->pev, Vector(-size, -size, -size), Vector(size, size, size));
+
+		if (evt.proj.renderMode)
+			shootEnt->pev->rendermode = evt.proj.renderMode;
+		if (evt.proj.renderAmt)
+			shootEnt->pev->renderamt = evt.proj.renderAmt;
+		if (evt.proj.renderFx)
+			shootEnt->pev->renderfx = evt.proj.renderFx;
+		if (evt.proj.scale)
+			shootEnt->pev->scale = evt.proj.scale;
+		if (evt.proj.framerate)
+			shootEnt->pev->framerate = evt.proj.framerate;
+
 		//EHANDLE mdlHandle = shootEnt->edict();
 		EHANDLE sprHandle;
 
@@ -602,12 +612,11 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 			else {
 				ALERT(at_error, "Projectile sprite not implemented for non-custom projectiles\n");
 			}
-
 		}
 
 		// attach a trail
 		if (evt.proj.trail_spr) {
-			UTIL_BeamFollow(shootEnt->entindex(), MODEL_INDEX(STRING(evt.proj.trail_spr)), evt.proj.trail_life,
+			UTIL_BeamFollow(shootEnt->entindex(), evt.proj.trail_spr, evt.proj.trail_life / 100,
 				evt.proj.trail_width, evt.proj.trail_color);
 		}
 

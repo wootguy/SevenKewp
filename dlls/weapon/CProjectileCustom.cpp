@@ -8,6 +8,8 @@
 #include "weapons.h"
 
 void CProjectileCustom::Spawn() {
+	Precache();
+
 	bubbleDelay = 0.07f;
 	thinkDelay = 0.05f;
 	
@@ -23,6 +25,13 @@ void CProjectileCustom::Spawn() {
 	pev->nextthink = gpGlobals->time + thinkDelay;
 
 	PlayMoveSound();
+}
+
+void CProjectileCustom::Precache() {
+	if (pev->model)
+		PRECACHE_MODEL(STRING(pev->model));
+	if (move_snd)
+		PRECACHE_SOUND(STRING(move_snd));
 }
 
 void CProjectileCustom::PlayMoveSound() {
@@ -45,6 +54,21 @@ void CProjectileCustom::MoveThink() {
 		Die();
 		Remove();
 		return;
+	}
+
+	if (pev->framerate && m_maxFrame >= 0) {
+		if (m_maxFrame == 0) {
+			m_maxFrame = (float)MODEL_FRAMES(pev->modelindex) - 1;
+			if (m_maxFrame == 0) {
+				m_maxFrame = -1;
+			}
+		}
+		else {
+			pev->frame += pev->framerate * thinkDelay;
+			if (pev->frame > m_maxFrame && m_maxFrame > 0) {
+				pev->frame = fmod(pev->frame, m_maxFrame);
+			}
+		}
 	}
 
 	CustomMove();

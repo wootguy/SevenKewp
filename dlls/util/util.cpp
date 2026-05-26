@@ -3850,3 +3850,11 @@ SpawnFunc UTIL_GetEntitySpawnFunc(const char* classname, GetEntitySpawnFuncSearc
 
 	return NULL;
 }
+
+Vector UTIL_RandomPointOnSphere() {
+	float z = 2.0f * RANDOM_FLOAT(0, 1) - 1.0f;
+	float theta = 2.0f * (float)M_PI * RANDOM_FLOAT(0, 1);
+	float r = sqrtf(1.0f - z * z);
+
+	return Vector(r * cosf(theta), r * sinf(theta), z);
+}

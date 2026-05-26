@@ -84,6 +84,13 @@ void CWeaponCustom::Precache() {
 		UTIL_PrecacheOther(STRING(params.wrongClientWeapon));
 	}
 
+	for (int i = 0; i < params.numEvents; i++) {
+		WepEvt& evt = params.events[i];
+		if (evt.evtType == WC_EVT_PROJECTILE && evt.proj.entity_class) {
+			UTIL_PrecacheOther(STRING(evt.proj.entity_class));
+		}
+	}
+
 	for (int i = 0; i < 2; i++) {
 		if (params.ammoInfo[i].dropEnt)
 			UTIL_PrecacheOther(STRING(params.ammoInfo[i].dropEnt));
@@ -871,9 +878,21 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 		return false;
 	}
 
+	bool needFullCost = opts.flags & FL_WC_SHOOT_NEED_FULL_COST;
+	bool ammoSpendsDuringCharge = opts.chargeTime > 0 && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD;
+
+	if (clipLeft < opts.ammoCost && needFullCost && !ammoSpendsDuringCharge) {
+		if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 && m_iClip != -1)
+			Reload();
+		else {
+			FailAttack(attackIdx, leftHand, akimboFire, true);
+		}
+		return false;
+	}
+
 	bool forceFireChargedShot = GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING
 		&& opts.chargeMode != WC_CHARGEUP_CONSTANT;
-	bool ammoSpendsDuringCharge = opts.chargeTime > 0 && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD;
+	
 	if (!forceFireChargedShot && clipLeft <= 0 && opts.ammoCost > 0) {
 		if (!m_fInReload) {
 			FailAttack(attackIdx, leftHand, akimboFire, true);
@@ -885,17 +904,6 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 		return false;
 
 	if (isNormalAttack && !forceFireChargedShot) {
-		bool needFullCost = opts.flags & FL_WC_SHOOT_NEED_FULL_COST;
-		
-		if (clipLeft < opts.ammoCost && needFullCost && !ammoSpendsDuringCharge) {
-			if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 && m_iClip != -1)
-				Reload();
-			else {
-				FailAttack(attackIdx, leftHand, akimboFire, true);
-			}
-			return false;
-		}
-
 		if (clipLeft <= 0 && opts.ammoCost > 0) {
 			if (!m_fInReload) {
 				FailAttack(attackIdx, leftHand, akimboFire, true);

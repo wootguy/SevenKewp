@@ -476,6 +476,7 @@ void CBaseToggle::SentenceStop(void) {}
 void CBasePlayerWeapon::GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount) {}
 
 void CProjectileCustom::Spawn() {}
+void CProjectileCustom::Precache() {}
 void CProjectileCustom::CustomMove() {}
 void CProjectileCustom::Touch(CBaseEntity* ent) {}
 void CProjectileCustom::CustomTouch(CBaseEntity* ent) {}
