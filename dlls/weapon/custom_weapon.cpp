@@ -179,6 +179,8 @@ struct_desc_t g_wc_desc_evt[WC_EVT_TOTAL];
 
 struct_desc_t g_wc_desc_custom_ammo;
 
+int g_evt_data_chunk_size = 16; // no more than 16 to fit in a header byte
+
 int wc_get_int(const char* val);
 float wc_get_float(const char* val);
 
@@ -2572,47 +2574,58 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 
 	int mainBytes = LastMsgSize();
 
+	int evBytes = 0;
+
 	if (sendMode != WC_PRED_SEND_WEP) {
-		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
-		WRITE_BYTE(wep->m_iId);
+		int chunks = ceilf(params.numEvents / (float)g_evt_data_chunk_size);
 
-		int sendEvents = 0;
-		for (int k = 0; k < params.numEvents; k++) {
-			WepEvt& evt = params.events[k];
+		for (int c = 0; c < chunks; c++) {
+			int evtOffset = c * g_evt_data_chunk_size;
+			if (evtOffset >= params.numEvents)
+				break;
 
-			struct_desc_t* desc = get_evt_desc(evt.evtType);
-			if (desc && should_send_event(evt.evtType))
-				sendEvents++;
-		}
+			MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
+			WRITE_BYTE(wep->m_iId);
 
-		WRITE_BYTE(sendEvents);
+			int sendEvents = 0;
+			for (int k = evtOffset; k < params.numEvents && k - evtOffset < g_evt_data_chunk_size; k++) {
+				WepEvt& evt = params.events[k];
 
-		for (int k = 0; k < params.numEvents; k++) {
-			WepEvt& evt = params.events[k];
-
-			if (!should_send_event(evt.evtType))
-				continue;
-
-			struct_desc_t* desc = get_evt_desc(evt.evtType);
-			if (!desc)
-				continue;
-			
-			uint16_t packedHeader = (evt.hasDelay << 15) | (evt.triggerArg << 10) | (evt.trigger << 5) | evt.evtType;
-			WRITE_SHORT(packedHeader);
-			if (evt.hasDelay) {
-				WRITE_SHORT(evt.delay);
+				struct_desc_t* desc = get_evt_desc(evt.evtType);
+				if (desc && should_send_event(evt.evtType))
+					sendEvents++;
 			}
 
-			const char* evtName = evt.evtType < WC_EVT_TOTAL ? g_wc_evt_type_names[evt.evtType] : "???";
-			ALERT(at_aiconsole, "Write event %s (%d header bytes)\n",
-				evtName, evt.hasDelay ? 4 : 2);
+			WRITE_BYTE((c << 4) | (sendEvents-1));			
 
-			wc_send_netmsg_struct(*desc, &evt);
+			for (int k = evtOffset; k < params.numEvents && k - evtOffset < g_evt_data_chunk_size; k++) {
+				WepEvt& evt = params.events[k];
+
+				if (!should_send_event(evt.evtType))
+					continue;
+
+				struct_desc_t* desc = get_evt_desc(evt.evtType);
+				if (!desc)
+					continue;
+
+				uint16_t packedHeader = (evt.hasDelay << 15) | (evt.triggerArg << 10) | (evt.trigger << 5) | evt.evtType;
+				WRITE_SHORT(packedHeader);
+				if (evt.hasDelay) {
+					WRITE_SHORT(evt.delay);
+				}
+
+				const char* evtName = evt.evtType < WC_EVT_TOTAL ? g_wc_evt_type_names[evt.evtType] : "???";
+				ALERT(at_aiconsole, "Write event %s (%d header bytes)\n",
+					evtName, evt.hasDelay ? 4 : 2);
+
+				wc_send_netmsg_struct(*desc, &evt);
+			}
+			MESSAGE_END();
+
+			evBytes += LastMsgSize();
 		}
-		MESSAGE_END();
 	}
 
-	int evBytes = LastMsgSize();
 	ALERT(at_console, "Sent %d prediction bytes for %s (%d + %d evt)\n",
 		evBytes + mainBytes, STRING(wep->pev->classname), mainBytes, evBytes);
 
@@ -2699,12 +2712,15 @@ int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, voi
 
 	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId);
 
-	parms.numEvents = READ_BYTE();
+	uint8_t packetHeader = READ_BYTE();
+	int evtIdxOffset = (packetHeader >> 4) * g_evt_data_chunk_size;
+	int packetEvents = (packetHeader & 0xf) + 1;
+	parms.numEvents = V_max(parms.numEvents, evtIdxOffset + packetEvents);
 	if (parms.numEvents >= MAX_WC_EVENTS) {
 		return 0;
 	}
 
-	for (int i = 0; i < parms.numEvents; i++) {
+	for (int i = evtIdxOffset; i < parms.numEvents && i < evtIdxOffset + g_evt_data_chunk_size; i++) {
 		uint16_t packedHeader = READ_SHORT();
 		WepEvt& evt = parms.events[i];
 		memset(&evt, 0, sizeof(WepEvt));
