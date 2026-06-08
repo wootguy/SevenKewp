@@ -9,6 +9,9 @@ struct tempent_s;
 typedef struct tempent_s TEMPENTITY;
 #endif
 
+// max number of ricochet beams a beam can create
+#define WC_MAX_BEAM_RICO 16
+
 // Same as a TraceResult result except using entity indexes for delayed event safety
 struct WcTrace {
 	int		fAllSolid;			// if true, plane is not valid
@@ -16,11 +19,17 @@ struct WcTrace {
 	int		fInOpen;
 	int		fInWater;
 	float	flFraction;			// time completed, 1.0 = didn't hit anything
+	Vector  vecStartPos;		// starting point of the trace
 	Vector	vecEndPos;			// final position
 	float	flPlaneDist;
 	Vector	vecPlaneNormal;		// surface normal at impact
 	int		pHit;				// entity the surface is on
 	int		iHitgroup;			// 0 == generic, non zero is specific body part
+};
+
+struct WcBeamTrace {
+	int numTraces;
+	WcTrace trace[WC_MAX_BEAM_RICO];
 };
 
 struct WcDelayEvent {
@@ -37,12 +46,14 @@ struct WcBeam {
 	float spreadY;
 	float nextAttack;
 	float creationTime;
+	int finalRico; // index of the final ricochet beam
+	Vector finalImpact; // ricochet impact position
 	WepEvt evt;
 
 #ifdef CLIENT_DLL
-	BEAM* pBeam;
+	BEAM* pBeam[WC_MAX_BEAM_RICO];
 #else
-	EHANDLE h_beam;
+	EHANDLE h_beam[WC_MAX_BEAM_RICO];
 #endif
 
 	bool isFree();
@@ -67,9 +78,9 @@ struct WcSprite {
 #define MAX_WC_BEAMS 16
 
 #ifdef CLIENT_DLL
-WcTrace ConvertTrace(pmtrace_t tr);
+WcTrace ConvertTrace(pmtrace_t tr, Vector startPos);
 #else
-WcTrace ConvertTrace(TraceResult tr);
+WcTrace ConvertTrace(TraceResult tr, Vector startPos);
 #endif
 
 class CWeaponCustom;
@@ -116,7 +127,7 @@ public:
 	void GetCurrentAccuracy(float& accuracyX, float& accuracyY, float& accuracyX2, float& accuracyY2);
 	int GetImpactArg(int attackIdx, bool impactMonster, bool impactWorld);
 	float GetChargeMult(WepEvt& evt, int flagMask);
-	Vector BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer);
+	WcBeamTrace BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer);
 	void FireAmmoEvents(int ammoPool);
 	WcBeam* AllocBeam();
 	void UpdateBeams();

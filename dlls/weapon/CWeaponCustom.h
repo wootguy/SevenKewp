@@ -133,7 +133,7 @@ public:
 	virtual bool MeleeHit(CBasePlayer* plr, CBaseEntity* target) { return false; } // return true to override default melee hit logic
 	virtual void MeleeHitFlesh(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a flesh entity
 	virtual void MeleeHitWall(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a hard surface
-	virtual void AttackTrace(CBasePlayer* plr, int attackIdx, Vector vecSrc, TraceResult& tr) {} // called after every attack trace
+	virtual void AttackTrace(CBasePlayer* plr, int attackIdx, Vector vecSrc, TraceResult& tr, bool isRicochet) {} // called after every attack trace
 	virtual void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
 	virtual const char* DisplayName() override { return STRING(params.displayName); }
 	virtual const char* GetDeathNoticeWeapon() { return STRING(params.killFeedIcon); }

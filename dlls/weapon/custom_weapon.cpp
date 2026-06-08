@@ -82,6 +82,7 @@ enum WC_PARAM_TYPE {
 	WC_PARAM_DECAL_INDEX,			// texture name stored as a decal index
 	WC_PARAM_TIME,					// time value stored as uint16_t
 	WC_PARAM_ACCURACY_UINT16_2X,	// degrees of accuracy (0-1 = 0-180) scaled to uint16_t (X + Y)
+	WC_PARAM_ACCURACY_UINT16,		// just X or Y
 	WC_PARAM_ACCURACY_100_2X,		// degrees of accuracy (0-1 = 0-180) scaled to uint16_t (X + Y)
 	WC_PARAM_STRING,
 };
@@ -558,9 +559,13 @@ void init_event_fields() {
 		anim_names[WC_BEAM_ANIM_EASE_IN_OUT] = "ease_in_out";
 
 		EVT_DESC(WC_EVT_BEAM, "beam",
-			EVT_FLAGS("flags", "0", beam.flags, 4, flags),
+			EVT_FLAGS("flags", "0", beam.flags, 0, flags),
 			EVT_FIELD("attachment", "0", beam.attachment, 3, WC_PARAM_UINT8),
-			EVT_FIELD("sprite", NULL, beam.sprite, 9, WC_PARAM_MODEL_INDEX),
+			EVT_FIELD("has_rico_beams", "0", beam.hasRicoBeams, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("sprite", NULL, beam.sprite, 12, WC_PARAM_MODEL_INDEX),
+
+			EVT_FIELD("richochet_limit", "0", beam.ricoBeams, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(beam.hasRicoBeams)),
+			EVT_FIELD("richochet_angle", "0", beam.ricoAngle, 0, WC_PARAM_ACCURACY_UINT16, NULL, 0, 0, EVT_COND_BYTE(beam.hasRicoBeams)),
 
 			EVT_FIELD("life", "0", beam.life, 0, WC_PARAM_TIME),
 			EVT_FIELD("accuracy", "0", beam.accuracy, 0, WC_PARAM_ACCURACY_UINT16_2X),
@@ -873,6 +878,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_names[WC_TRIG_ZOOM_IN] = "zoom_in";
 	g_wc_evt_trigger_names[WC_TRIG_ZOOM_OUT] = "zoom_out";
 	g_wc_evt_trigger_names[WC_TRIG_IMPACT] = "impact";
+	g_wc_evt_trigger_names[WC_TRIG_RICOCHET] = "ricochet";
 
 	g_wc_evt_trigger_arg_primary_names[WC_TRIG_SHOOT_ARG_ALWAYS] = "";
 	g_wc_evt_trigger_arg_primary_names[WC_TRIG_SHOOT_ARG_AKIMBO] = "_akimbo";
@@ -936,6 +942,7 @@ void init_weapon_custom_config_parser() {
 			}
 			break;
 		case WC_TRIG_IMPACT:
+		case WC_TRIG_RICOCHET:
 			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_impact_names); k++) {
 				const char* key = UTIL_VarArgs("%s_%s%%", tname, g_wc_evt_trigger_impact_names[k]);
 				uint16_t val = (k << 5) | i;
@@ -1151,6 +1158,10 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		}
 		break;
 	}
+	case WC_PARAM_ACCURACY_UINT16: {
+		((uint16_t*)dat)[1] = FLOAT_TO_SPREAD(UTIL_ConeFromDegrees(atof(val)).x);
+		break;
+	}
 	case WC_PARAM_ACCURACY_UINT16_2X: {
 		vector<string> parts = splitString(val, " ");
 		if (parts.size() > 0)
@@ -1263,6 +1274,7 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 	case WC_PARAM_MODEL_INDEX:		fprintf(f, "%s\n", INDEX_MODEL(*(uint16_t*)dat)); break;
 	case WC_PARAM_DECAL_INDEX:		fprintf(f, "%s\n", get_decal_name(*(uint8_t*)dat)); break;
 	case WC_PARAM_TIME:				fprintf(f, "%ums\n", (uint32_t)(*(uint16_t*)dat)); break;
+	case WC_PARAM_ACCURACY_UINT16:	fprintf(f, "%.2f\n", DEGREES_FROM_SPREAD(*(uint16_t*)dat)); break;
 	case WC_PARAM_ACCURACY_UINT16_2X: {
 		uint16_t* acc = (uint16_t*)dat;
 		if (acc[0] == acc[1])
@@ -1303,6 +1315,7 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_MODEL_INDEX:
 	case WC_PARAM_TIME:
 	case WC_PARAM_UINT16_PERCENT:
+	case WC_PARAM_ACCURACY_UINT16:
 	case WC_PARAM_STRING:
 		return 2;
 	case WC_PARAM_VECTOR_INT8:
@@ -1346,6 +1359,7 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 	case WC_PARAM_INT16:
 	case WC_PARAM_SOUND_INDEX:
 	case WC_PARAM_MODEL_INDEX:
+	case WC_PARAM_ACCURACY_UINT16:
 	case WC_PARAM_TIME:
 	case WC_PARAM_UINT16_PERCENT:
 		return UTIL_VarArgs("%d", (int)(*(uint16_t*)dat));
@@ -1771,6 +1785,7 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 		break;
 	case WC_EVT_BEAM: {
 		evt.beam.hasImpactSprite = evt.beam.impactSprite != 0;
+		evt.beam.hasRicoBeams = evt.beam.ricoBeams != 0;
 		break;
 	case WC_EVT_PUNCH:
 		evt.recoil.hasMaxAngles = evt.recoil.maxAngleTime != 0;

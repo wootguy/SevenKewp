@@ -1422,7 +1422,7 @@ void CWeaponCustom::MeleeAttack(int attackIdx) {
 		float flVol = 1.0;
 
 		events.ProcessEvents(WC_TRIG_IMPACT, events.GetImpactArg(attackIdx, true, true));
-		AttackTrace(m_pPlayer, attackIdx, vecSrc, tr);
+		AttackTrace(m_pPlayer, attackIdx, vecSrc, tr, true);
 
 		if (MeleeIsFlesh(pEntity)) {
 			MeleeHitFlesh(m_pPlayer, pEntity);

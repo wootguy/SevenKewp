@@ -95,6 +95,7 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_ZOOM_IN,			// triggered when zooming in
 	WC_TRIG_ZOOM_OUT,			// triggered when zooming out
 	WC_TRIG_IMPACT,				// triggered when an attack trace impacts something. Trigger arg: WeaponCustomEventTriggerImpactArg
+	WC_TRIG_RICOCHET,			// triggered when an attack trace ricochets off something. Trigger arg: WeaponCustomEventTriggerImpactArg
 };
 
 enum WeaponCustomEventType {
@@ -294,9 +295,13 @@ struct WepEvt {
 		} bullets;
 
 		struct {
-			uint8_t flags;			// 4 bits. FL_WC_BEAM_*
+			uint8_t flags;			// FL_WC_BEAM_*
 			uint8_t attachment;		// 3 bits. only 0-4 are valid
+			uint8_t hasRicoBeams;	// 1 bit.
 			uint16_t sprite;		// 9 bits
+
+			uint8_t ricoBeams;		// max number of ricochet beams
+			uint16_t ricoAngle;		// 0 = perfect, 1 = 180 degrees. 65535 = 1.0f
 
 			uint8_t id;				// 4 bits. ID used to update the beam in future events, for constant beams. 0 = always create a new beam
 			uint8_t altMode;		// 3 bits. WeaponCustomBeamAnimation
@@ -652,6 +657,12 @@ struct WepEvt {
 
 	WepEvt Impact(int type) {
 		this->trigger = WC_TRIG_IMPACT;
+		this->triggerArg = type;
+		return *this;
+	}
+
+	WepEvt Ricochet(int type) {
+		this->trigger = WC_TRIG_RICOCHET;
 		this->triggerArg = type;
 		return *this;
 	}
