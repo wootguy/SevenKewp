@@ -180,7 +180,7 @@ struct_desc_t g_wc_desc_evt[WC_EVT_TOTAL];
 
 struct_desc_t g_wc_desc_custom_ammo;
 
-int g_evt_data_chunk_size = 16; // no more than 16 to fit in a header byte
+int g_evt_data_chunk_size = 8; // no more than 16 to fit in a header byte
 
 int wc_get_int(const char* val);
 float wc_get_float(const char* val);

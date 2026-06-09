@@ -32,6 +32,7 @@
 #define FL_WC_BEAM_OPAQUE	2		// render the beam without transparency
 #define FL_WC_BEAM_SHADEIN	4		// fade the start of the beam
 #define FL_WC_BEAM_SHADEOUT	8		// fade the end of the beam
+#define FL_WC_BEAM_NO_EVTS	16		// don't trigger impact events or call attack trace logic
 
 #define FL_WC_SOUND_CHARGE_PITCH 1	// Sound pitch increases with chargeup progress
 
@@ -295,7 +296,7 @@ struct WepEvt {
 		} bullets;
 
 		struct {
-			uint8_t flags;			// FL_WC_BEAM_*
+			uint8_t flags;			// 8 bits. FL_WC_BEAM_*
 			uint8_t attachment;		// 3 bits. only 0-4 are valid
 			uint8_t hasRicoBeams;	// 1 bit.
 			uint16_t sprite;		// 9 bits

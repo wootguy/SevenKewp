@@ -340,6 +340,11 @@ void CWeaponEvents::PlayEvent_Beam(WepEvt& evt, CBasePlayer* m_pPlayer) {
 				evt.beam.sprite, life, evt.beam.width / 10.0f,
 				evt.beam.noise / 100.0f, a, evt.beam.scrollRate, 0, 0, r, g, b);
 			
+			if (!rico) {
+				PRINTD("Failed to create weapon beam ricochet!\n");
+				break;
+			}
+
 			rico->flags |= beamFlags;
 
 			wcbeam->pBeam[i] = rico;
@@ -1059,8 +1064,8 @@ void CWeaponEvents::PlayEvent_SpriteTrail(WepEvt& evt, CBasePlayer* m_pPlayer, W
 
 #ifdef CLIENT_DLL
 	gEngfuncs.pEfxAPI->R_Sprite_Trail(TE_SPRITETRAIL, start, end, evt.spriteTrail.sprite,
-		evt.spriteTrail.count, 0.0, evt.spriteTrail.scale / 10.0f, evt.spriteTrail.speedNoise * 20,
-		255, evt.spriteTrail.speed * 5);
+		evt.spriteTrail.count, 0.0, evt.spriteTrail.scale / 10.0f, evt.spriteTrail.speedNoise * 10,
+		255, evt.spriteTrail.speed * 10);
 #else
 	bool isPredicted = m_weapon->IsPredicted();
 
@@ -1364,6 +1369,7 @@ WcBeamTrace CWeaponEvents::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 	int attackIdx = m_weapon->GetAttackIdx(beam.evt);
 	float damage = beam.evt.beam.damage * GetChargeMult(beam.evt, FL_WC_CHARGE_DAMAGE);
 	float maxRicoAngle = DEGREES_FROM_SPREAD(beam.evt.beam.ricoAngle);
+	bool triggerEvents = !(beam.evt.beam.flags & FL_WC_BEAM_NO_EVTS);
 
 #ifdef CLIENT_DLL
 	vecSrc = WC_GetGunPosition();
@@ -1371,6 +1377,8 @@ WcBeamTrace CWeaponEvents::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 #else
 	Vector vecEnd = g_traces[0].vecEndPos;
 #endif
+
+	ClearMultiDamage();
 
 	lagcomp_begin(m_pPlayer);
 
@@ -1430,26 +1438,32 @@ WcBeamTrace CWeaponEvents::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 				pHit->TraceAttack(m_pPlayer->pev, damage, vecDir, &g_traces[0], DMG_BULLET | ((damage > 16) ? 0 : DMG_NEVERGIB));
 			}
 #endif
-			if (isImpact) {
-				ProcessEvents(WC_TRIG_IMPACT, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
+			if (triggerEvents) {
+				if (isImpact) {
+					ProcessEvents(WC_TRIG_IMPACT, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
+				}
+				m_weapon->AttackTrace(m_pPlayer, attackIdx, vecSrc, g_traces[0], false);
 			}
-			m_weapon->AttackTrace(m_pPlayer, attackIdx, vecSrc, g_traces[0], false);
 			break;
 		}
-
-		if (isImpact) {
-			ProcessEvents(WC_TRIG_RICOCHET, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
+		else if (triggerEvents) {
+			if (isImpact) {
+				ProcessEvents(WC_TRIG_RICOCHET, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
+			}
+			m_weapon->AttackTrace(m_pPlayer, attackIdx, vecSrc, g_traces[0], true);
 		}
-		m_weapon->AttackTrace(m_pPlayer, attackIdx, vecSrc, g_traces[0], true);
 		
 		vecSrc = vecEnd;
 		vecEnd = vecSrc + ricoDir * beam.evt.beam.distance;
 	}
 
 	lagcomp_end();
+	ApplyMultiDamage(m_weapon->pev, m_pPlayer->pev);
 
 	beam.attackIdx = beam.evt.beam.life ? -1 : attackIdx;
-	beam.nextAttack = !beam.evt.beam.life ? m_weapon->WallTime() + beam.evt.beam.freq * 0.001f : 0;
+
+	if (g_runfuncs)
+		beam.nextAttack = !beam.evt.beam.life ? m_weapon->WallTime() + beam.evt.beam.freq * 0.001f : 0;
 
 	return beamTrace;
 }
@@ -1517,12 +1531,10 @@ void CWeaponEvents::UpdateBeams() {
 		}
 
 		if (beam.evt.beam.altMode != WC_BEAM_ANIM_DISABLED && beam.evt.beam.altTime) {
-			float dur = beam.evt.beam.altTime * 0.001f;
-			float p = normalizeRangef(gpGlobals->time - beam.creationTime, 0, dur) / dur; // progress
-			float q = 1.0f - p; // progress left
-
-			int t = p * 10000; // convert to int for modulo op later
-			int freq = dur * 10000;  // time to alternate (half a cycle)
+			int t = (gpGlobals->time - beam.creationTime) * 10000; // convert to int for modulo op later
+			int freq = (int)beam.evt.beam.altTime * 10;  // time to alternate (half a cycle)
+			float p = (t % freq) / (float)freq;    // progress
+			float q = 1.0f - p; 					    // progress left
 
 			switch (beam.evt.beam.altMode)
 			{

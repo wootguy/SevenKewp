@@ -882,10 +882,11 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	bool ammoSpendsDuringCharge = opts.chargeTime > 0 && opts.chargeAmmoMode == WC_CHARGE_AMMO_LOAD;
 
 	if (clipLeft < opts.ammoCost && needFullCost && !ammoSpendsDuringCharge) {
-		if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 && m_iClip != -1)
+		FailAttack(attackIdx, leftHand, akimboFire, true);
+
+		if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 && m_iClip != -1) {
+			m_flNextPrimaryAttack = 0; // force the reload
 			Reload();
-		else {
-			FailAttack(attackIdx, leftHand, akimboFire, true);
 		}
 		return false;
 	}
@@ -1178,7 +1179,7 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 	//bool attackCalled = attackIdx == 0 ? m_primaryCalled : m_secondaryCalled;
 	bool attackFired = attackIdx == 0 ? m_primaryFired : m_secondaryFired;
 
-	if (m_primaryFired && g_runfuncs) {
+	if (attackFired && g_runfuncs) {
 		events.KillBeams(attackIdx);
 	}
 
