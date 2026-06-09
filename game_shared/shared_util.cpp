@@ -64,6 +64,10 @@ const char* g_waterSplashSounds[3] = { // ordered for mp_soundvariety
 };
 
 char* strcpy_safe(char* dest, const char* src, size_t size) {
+	if (!src) {
+		dest[0] = '\0';
+		return dest;
+	}
 	if (size > 0) {
 		size_t i;
 		for (i = 0; i < size - 1 && src[i]; i++) {
@@ -75,6 +79,10 @@ char* strcpy_safe(char* dest, const char* src, size_t size) {
 }
 
 char* strcat_safe(char* dest, const char* src, size_t size) {
+	if (!src) {
+		return dest;
+	}
+
 	size_t dstLen = strlen(dest);
 	char* writeDst = dest + dstLen;
 	

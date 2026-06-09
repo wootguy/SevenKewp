@@ -170,9 +170,11 @@ void CWeaponEvents::QueueDelayedEvent(int eventIdx, float fireTime, bool leftHan
 
 			if (tr) {
 				qevt.tr = *tr;
+				qevt.hasTrace = true;
 			}
 			else {
 				memset(&qevt.tr, 0, sizeof(WcTrace));
+				qevt.hasTrace = false;
 			}
 			//CLALERT("Queue event %d\n", eventIdx);
 			return;
@@ -729,7 +731,7 @@ void CWeaponEvents::PlayEvent_SetGravity(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	m_pPlayer->pev->gravity = evt.setGravity.gravity / 1000.0f;
 }
 
-void CWeaponEvents::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire) {
+void CWeaponEvents::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire, WcTrace* tr) {
 	int channel = CHAN_STATIC;
 	int pitch = 100;
 	float volume = evt.idleSound.volume / 127.0f;
@@ -773,21 +775,25 @@ void CWeaponEvents::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 	if (akimboFire)
 		panning = leftHand ? 1 : 2; // signal the event player to pan the audio
 
-	WC_EV_LocalSound(idx, channel, pitch, volume, attn, panning, 0);
+	Vector* origin = tr ? &tr->vecEndPos : NULL;
+	WC_EV_LocalSound(idx, channel, pitch, volume, attn, panning, 0, origin);
 #else
+	edict_t* soundEnt = tr ? ENT(0) : m_pPlayer->edict();
+	Vector origin = tr ? tr->vecEndPos : m_pPlayer->pev->origin;
+	int chan = tr ? CHAN_STATIC : channel;
 
 	if (m_weapon->IsPredicted()) {
 		uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
-		StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(idx), volume, attn,
-			SND_FL_PREDICTED, pitch, m_pPlayer->pev->origin, messageTargets);
+		StartSound(soundEnt, chan, INDEX_SOUND(idx), volume, attn,
+			SND_FL_PREDICTED, pitch, origin, messageTargets);
 	}
 	else {
-		StartSound(m_pPlayer->edict(), channel, INDEX_SOUND(idx), volume, attn,
-			0, pitch, m_pPlayer->pev->origin, 0xffffffff);
+		StartSound(soundEnt, chan, INDEX_SOUND(idx), volume, attn,
+			0, pitch, origin, 0xffffffff);
 	}
 
 	if (evt.playSound.distantSound) {
-		PLAY_DISTANT_SOUND(m_pPlayer->edict(), evt.playSound.distantSound);
+		PLAY_DISTANT_SOUND(tr ? NULL : m_pPlayer->edict(), evt.playSound.distantSound, origin);
 	}
 #endif
 }
@@ -999,9 +1005,11 @@ void CWeaponEvents::PlayEvent_HideLaser(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	}
 }
 
-void CWeaponEvents::PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer) {
+void CWeaponEvents::PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+
 #ifdef CLIENT_DLL
-	WC_EV_Dlight(evt);
+	WC_EV_Dlight(evt, pos);
 #else
 	bool isPredicted = m_weapon->IsPredicted();
 
@@ -1013,7 +1021,7 @@ void CWeaponEvents::PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer) {
 
 		MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, SVC_TEMPENTITY, NULL, plr->edict());
 		WRITE_BYTE(TE_DLIGHT);
-		WRITE_COORD_VECTOR(m_pPlayer->pev->origin);
+		WRITE_COORD_VECTOR(pos);
 		WRITE_BYTE(evt.dlight.radius);
 		WRITE_BYTE(evt.dlight.color.r);
 		WRITE_BYTE(evt.dlight.color.g);
@@ -1046,21 +1054,8 @@ void CWeaponEvents::PlayEvent_MuzzleFlash(WepEvt& evt, CBasePlayer* m_pPlayer) {
 
 void CWeaponEvents::PlayEvent_SpriteTrail(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
 
-	Vector start, end;
-
-	if (tr) {
-		start = tr->vecEndPos;
-		end = start + tr->vecPlaneNormal;
-	}
-	else {
-#ifdef CLIENT_DLL
-		start = WC_GetGunPosition();
-		end = start + WC_GetAim(0, 0);
-#else
-		start = m_pPlayer->GetGunPosition();
-		end = start + m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
-#endif		
-	}
+	Vector start = GetEventPos(evt, m_pPlayer, tr);
+	Vector end = start + GetEventDir(evt, m_pPlayer, tr);
 
 #ifdef CLIENT_DLL
 	gEngfuncs.pEfxAPI->R_Sprite_Trail(TE_SPRITETRAIL, start, end, evt.spriteTrail.sprite,
@@ -1087,18 +1082,7 @@ void CWeaponEvents::PlayEvent_SpriteTrail(WepEvt& evt, CBasePlayer* m_pPlayer, W
 }
 
 void CWeaponEvents::PlayEvent_Decal(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
-	Vector pos;
-
-	if (tr) {
-		pos = tr->vecEndPos;
-	}
-	else {
-#ifdef CLIENT_DLL
-		pos = WC_GetGunPosition();
-#else
-		pos = m_pPlayer->GetGunPosition();
-#endif		
-	}
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
 
 #ifdef CLIENT_DLL
 	if (evt.decal.flags & FL_WC_DECAL_PARTICLES) {
@@ -1130,6 +1114,316 @@ void CWeaponEvents::PlayEvent_Decal(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace
 		}
 	}
 
+#endif
+}
+
+void CWeaponEvents::PlayEvent_RadiusDamage(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+#ifndef CLIENT_DLL
+	Vector pos = tr ? tr->vecEndPos : m_pPlayer->GetGunPosition();
+	Vector offsetPos = GetEventPos(evt, m_pPlayer, tr);
+
+	if (offsetPos != pos) {
+		TraceResult tr;
+		UTIL_TraceLine(offsetPos, pos, ignore_monsters, NULL, &tr);
+		if (!tr.fStartSolid && tr.flFraction >= 0.99f)
+			pos = offsetPos; // only offset if position doesn't clip thru a wall
+	}
+
+	RadiusDamage(pos, m_weapon->pev, m_pPlayer->pev, evt.radiusDamage.damage,
+		evt.radiusDamage.radius, CLASS_NONE, evt.radiusDamage.damageBits);
+#endif
+}
+
+void CWeaponEvents::PlayEvent_TeExplosion(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+	int flags = evt.te_explosion.flags & 0xf;
+
+#ifdef CLIENT_DLL
+	gEngfuncs.pEfxAPI->R_Explosion(pos, evt.te_explosion.sprite, evt.te_explosion.scale,
+		evt.te_explosion.fps, flags);
+#else
+	bool isPredicted = m_weapon->IsPredicted();
+
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener && (m_pPlayer != listener || !isPredicted)) {
+			UTIL_ExplosionMsg(pos, evt.te_explosion.sprite, evt.te_explosion.scale,
+				evt.te_explosion.fps, flags, MSG_ONE_UNRELIABLE, listener->edict());
+		}
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_GlowSprite(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+
+#ifdef CLIENT_DLL
+	gEngfuncs.pEfxAPI->R_TempSprite(pos, g_vecZero, evt.glow_sprite.scale*0.1f, evt.glow_sprite.sprite,
+		kRenderGlow, kRenderFxNoDissipation, evt.glow_sprite.alpha / 255.0f,
+		evt.glow_sprite.life*0.1f, FTENT_FADEOUT);
+#else
+	bool isPredicted = m_weapon->IsPredicted();
+
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener && (m_pPlayer != listener || !isPredicted)) {
+			UTIL_GlowSprite(pos, evt.glow_sprite.sprite, evt.glow_sprite.life,
+				evt.glow_sprite.scale, evt.glow_sprite.alpha, MSG_ONE_UNRELIABLE, listener->edict());
+		}
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_Sparks(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+
+#ifdef CLIENT_DLL
+	gEngfuncs.pEfxAPI->R_SparkShower(pos);
+#else
+	bool isPredicted = m_weapon->IsPredicted();
+
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener && (m_pPlayer != listener || !isPredicted)) {
+			UTIL_Sparks(pos, MSG_ONE_UNRELIABLE, listener->edict());
+		}
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_ArmorRicochet(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+
+#ifdef CLIENT_DLL
+	int sprIdx = gEngfuncs.pEventAPI->EV_FindModelIndex(RemapFile("sprites/rico1.spr"));
+	model_s* spr = gEngfuncs.hudGetModelByIndex(sprIdx);
+	if (spr)
+		gEngfuncs.pEfxAPI->R_RicochetSprite(pos, spr, 0.1f, evt.armor_ricochet.scale * 0.1f);
+	gEngfuncs.pEfxAPI->R_RicochetSound(pos);
+#else
+	bool isPredicted = m_weapon->IsPredicted();
+
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener && (m_pPlayer != listener || !isPredicted)) {
+			UTIL_Ricochet(pos, evt.armor_ricochet.scale, MSG_ONE_UNRELIABLE, listener->edict());
+		}
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_QuakeEffect(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+
+#ifdef CLIENT_DLL
+	switch (evt.quake_effect.type) {
+	case WC_QUAKE_EFFECT_GUNSHOT:
+		gEngfuncs.pEfxAPI->R_RunParticleEffect(pos, g_vecZero, 0, 20);
+		gEngfuncs.pEfxAPI->R_RicochetSound(pos);
+		break;
+	case WC_QUAKE_EFFECT_EXPLOSION:
+		gEngfuncs.pEfxAPI->R_BlobExplosion(pos);
+		gEngfuncs.pEventAPI->EV_PlaySound(0, pos, CHAN_STATIC, RemapFile("weapons/explode3.wav"), 1.0f, 1.0f, 0, 100);
+		break;
+	case WC_QUAKE_EFFECT_EXPLOSION2:
+		gEngfuncs.pEfxAPI->R_ParticleExplosion2(pos, 0, 127);
+		gEngfuncs.pEventAPI->EV_PlaySound(0, pos, CHAN_STATIC, RemapFile("weapons/explode3.wav"), 1.0f, 1.0f, 0, 100);
+		break;
+	case WC_QUAKE_EFFECT_LAVASPLASH:
+		gEngfuncs.pEfxAPI->R_LavaSplash(pos);
+		break;
+	case WC_QUAKE_EFFECT_TELEPORT:
+		gEngfuncs.pEfxAPI->R_TeleportSplash(pos);
+		break;
+	case WC_QUAKE_EFFECT_PARTICLE_BURST:
+		gEngfuncs.pEfxAPI->R_ParticleBurst(pos, evt.quake_effect.radius, evt.quake_effect.color,
+			evt.quake_effect.life * 0.1f);
+		break;
+	}
+#else
+	bool isPredicted = m_weapon->IsPredicted();
+
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener && (m_pPlayer != listener || !isPredicted)) {
+			switch (evt.quake_effect.type) {
+			case WC_QUAKE_EFFECT_GUNSHOT:
+				UTIL_QuakeGunshot(pos, MSG_ONE_UNRELIABLE, listener->edict());
+				break;
+			case WC_QUAKE_EFFECT_EXPLOSION:
+				UTIL_QuakeExplosion(pos, MSG_ONE_UNRELIABLE, listener->edict());
+				break;
+			case WC_QUAKE_EFFECT_EXPLOSION2:
+				UTIL_QuakeExplosion2(pos, MSG_ONE_UNRELIABLE, listener->edict());
+				break;
+			case WC_QUAKE_EFFECT_LAVASPLASH:
+				UTIL_QuakeLavaSplash(pos, MSG_ONE_UNRELIABLE, listener->edict());
+				break;
+			case WC_QUAKE_EFFECT_TELEPORT:
+				UTIL_QuakeTeleport(pos, MSG_ONE_UNRELIABLE, listener->edict());
+				break;
+			case WC_QUAKE_EFFECT_PARTICLE_BURST:
+				UTIL_QuakeParticleBurst(pos, evt.quake_effect.radius, evt.quake_effect.color,
+					evt.quake_effect.life, MSG_ONE_UNRELIABLE, listener->edict());
+				break;
+			}
+		}
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_Implosion(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+
+#ifdef CLIENT_DLL
+	gEngfuncs.pEfxAPI->R_Implosion(pos, evt.implosion.radius, evt.implosion.tracers,
+		evt.implosion.life*0.1f);
+#else
+	bool isPredicted = m_weapon->IsPredicted();
+
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener && (m_pPlayer != listener || !isPredicted)) {
+			UTIL_Implosion(pos, evt.implosion.radius, evt.implosion.tracers, evt.implosion.life,
+				MSG_ONE_UNRELIABLE, listener->edict());
+		}
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_SpriteSpray(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+	Vector dir = GetEventDir(evt, m_pPlayer, tr);
+
+#ifdef CLIENT_DLL
+	gEngfuncs.pEfxAPI->R_Sprite_Spray(pos, dir, evt.sprite_spray.sprite, evt.sprite_spray.count,
+		evt.sprite_spray.speed, evt.sprite_spray.randomness);
+#else
+	bool isPredicted = m_weapon->IsPredicted();
+
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener && (m_pPlayer != listener || !isPredicted)) {
+			UTIL_SpriteSpray(pos, dir, evt.sprite_spray.sprite, evt.sprite_spray.count,
+				evt.sprite_spray.speed, evt.sprite_spray.randomness,
+				MSG_ONE_UNRELIABLE, listener->edict());
+		}
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_StreakSplash(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+	Vector dir = GetEventDir(evt, m_pPlayer, tr);
+
+#ifdef CLIENT_DLL
+	gEngfuncs.pEfxAPI->R_StreakSplash(pos, dir, clamp(evt.streak_splash.color, 0, 11),
+		evt.streak_splash.count, evt.streak_splash.speed, -evt.streak_splash.randomness,
+		evt.streak_splash.randomness);
+#else
+	bool isPredicted = m_weapon->IsPredicted();
+
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener && (m_pPlayer != listener || !isPredicted)) {
+			UTIL_StreakSplash(pos, dir, evt.streak_splash.color, evt.streak_splash.count,
+				evt.streak_splash.speed, evt.streak_splash.randomness,
+				MSG_ONE_UNRELIABLE, listener->edict());
+		}
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+#ifndef CLIENT_DLL
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+	uint16_t duration = FLOAT_TO_FP_4_12(evt.shake.duration * 0.001f);
+
+	if (!tr) {
+		if ((m_pPlayer->pev->origin - pos).Length() < evt.shake.radius) {
+			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgShake, NULL, m_pPlayer->edict());
+			WRITE_SHORT(evt.shake.amplitude);	// shake amount
+			WRITE_SHORT(duration);				// shake lasts this long
+			WRITE_SHORT(evt.shake.frequency);	// shake noise frequency
+			MESSAGE_END();
+		}
+		return; // shake events triggered at the weapon origin shouldn't shake other players
+	}
+
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener) {
+			if (evt.shake.radius == 0 || (listener->pev->origin - pos).Length() < evt.shake.radius) {
+				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgShake, NULL, listener->edict());
+				WRITE_SHORT(evt.shake.amplitude);	// shake amount
+				WRITE_SHORT(duration);				// shake lasts this long
+				WRITE_SHORT(evt.shake.frequency);	// shake noise frequency
+				MESSAGE_END();
+			}
+		}
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_BeamCircle(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	Vector pos = GetEventPos(evt, m_pPlayer, tr);
+
+	float radius = evt.beam_circle.radius;
+	int sprite = evt.beam_circle.sprite;
+	int frame = evt.beam_circle.frame;
+	int life = V_max(1, evt.beam_circle.life);
+	int width = evt.beam_circle.height;
+	int noise = evt.beam_circle.noise;
+	RGBA color = evt.beam_circle.color;
+
+#ifdef CLIENT_DLL
+	int btype = TE_BEAMCYLINDER;
+
+	switch (evt.beam_circle.beamType) {
+	case WC_BEAM_CIRCLE_TYPE_CYLINDER:
+		btype = TE_BEAMCYLINDER;
+		break;
+	case WC_BEAM_CIRCLE_TYPE_TORUS:
+		btype = TE_BEAMTORUS;
+		break;
+	case WC_BEAM_CIRCLE_TYPE_DISK:
+		btype = TE_BEAMDISK;
+		break;
+	}
+	
+	Vector endPos = pos + Vector(0, 0, evt.beam_circle.radius);
+
+	gEngfuncs.pEfxAPI->R_BeamCirclePoints(btype, pos, endPos, sprite, life * 0.1f, width, noise * 0.01f,
+		color.a / 255.0f, 0, frame, 0, color.r / 255.0f, color.g / 255.0f, color.b / 255.0f);
+#else
+	bool isPredicted = m_weapon->IsPredicted();
+
+	for (int i = 1; i < gpGlobals->time; i++) {
+		CBasePlayer* listener = UTIL_PlayerByIndex(i);
+
+		if (listener && (m_pPlayer != listener || !isPredicted)) {
+			switch (evt.beam_circle.beamType) {
+			case WC_BEAM_CIRCLE_TYPE_CYLINDER:
+				UTIL_BeamCylinder(pos, radius, sprite, frame, 0, life, width, noise, color, 0, MSG_ONE_UNRELIABLE, listener->edict());
+				break;
+			case WC_BEAM_CIRCLE_TYPE_TORUS:
+				UTIL_BeamTorus(pos, radius, sprite, frame, 0, life, width, noise, color, 0, MSG_ONE_UNRELIABLE, listener->edict());
+				break;
+			case WC_BEAM_CIRCLE_TYPE_DISK:
+				UTIL_BeamDisk(pos, radius, sprite, frame, 0, life, width, noise, color, 0, MSG_ONE_UNRELIABLE, listener->edict());
+				break;
+			}
+		}
+	}
 #endif
 }
 
@@ -1170,10 +1464,10 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 		PlayEvent_PunchAngle(evt, m_pPlayer);
 		break;
 	case WC_EVT_IDLE_SOUND:
-		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire);
+		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire, tr);
 		break;
 	case WC_EVT_PLAY_SOUND:
-		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire);
+		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire, tr);
 		if (evt.playSound.flags & FL_WC_SOUND_CHARGE_PITCH) {
 			m_weapon->m_chargeSoundEvt = eventIdx;
 		}
@@ -1198,7 +1492,7 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 		PlayEvent_SetGravity(evt, m_pPlayer);
 		break;
 	case WC_EVT_DLIGHT:
-		PlayEvent_DLight(evt, m_pPlayer);
+		PlayEvent_DLight(evt, m_pPlayer, tr);
 		break;
 	case WC_EVT_MUZZLEFLASH:
 		PlayEvent_MuzzleFlash(evt, m_pPlayer);
@@ -1208,6 +1502,39 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 		break;
 	case WC_EVT_DECAL:
 		PlayEvent_Decal(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_RADIUS_DAMAGE:
+		PlayEvent_RadiusDamage(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_EXPLOSION:
+		PlayEvent_TeExplosion(evt, m_pPlayer, tr);
+		break;		
+	case WC_EVT_GLOW_SPRITE:
+		PlayEvent_GlowSprite(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_BEAM_CIRCLE:
+		PlayEvent_BeamCircle(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_SPARKS:
+		PlayEvent_Sparks(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_ARMOR_RICOCHET:
+		PlayEvent_ArmorRicochet(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_QUAKE_EFFECT:
+		PlayEvent_QuakeEffect(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_IMPLOSION:
+		PlayEvent_Implosion(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_SPRITE_SPRAY:
+		PlayEvent_SpriteSpray(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_STREAK_SPLASH:
+		PlayEvent_StreakSplash(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_SHAKE:
+		PlayEvent_Shake(evt, m_pPlayer, tr);
 		break;
 	case WC_EVT_SERVER:
 		m_weapon->CustomServerEvent(evt, m_pPlayer);
@@ -1230,7 +1557,7 @@ void CWeaponEvents::PlayDelayedEvents() {
 		if (!qevt.fireTime || qevt.fireTime > m_weapon->WallTime())
 			continue;
 
-		PlayEvent(qevt.eventIdx, qevt.leftHand, qevt.akimboFire, &qevt.tr);
+		PlayEvent(qevt.eventIdx, qevt.leftHand, qevt.akimboFire, qevt.hasTrace ? &qevt.tr : NULL);
 		qevt.fireTime = 0; // free the slot
 	}
 }
@@ -1371,13 +1698,6 @@ WcBeamTrace CWeaponEvents::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 	float maxRicoAngle = DEGREES_FROM_SPREAD(beam.evt.beam.ricoAngle);
 	bool triggerEvents = !(beam.evt.beam.flags & FL_WC_BEAM_NO_EVTS);
 
-#ifdef CLIENT_DLL
-	vecSrc = WC_GetGunPosition();
-	Vector vecEnd = vecSrc + WC_GetAim(beam.spreadX, beam.spreadY) * beam.evt.beam.distance;
-#else
-	Vector vecEnd = g_traces[0].vecEndPos;
-#endif
-
 	ClearMultiDamage();
 
 	lagcomp_begin(m_pPlayer);
@@ -1386,6 +1706,13 @@ WcBeamTrace CWeaponEvents::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 		BULLET_BEAM, 0, 0, m_pPlayer->pev, m_pPlayer->random_seed, g_traces, predFlag);
 	beam.spreadX = vecDir.x;
 	beam.spreadY = vecDir.y;
+
+#ifdef CLIENT_DLL
+	vecSrc = m_pPlayer->GetGunPosition();
+	Vector vecEnd = vecSrc + WC_GetAim(beam.spreadX, beam.spreadY) * beam.evt.beam.distance;
+#else
+	Vector vecEnd = g_traces[0].vecEndPos;
+#endif
 
 	for (int i = 0; i < beam.evt.beam.ricoBeams + 1 && i < WC_MAX_BEAM_RICO; i++) {
 #ifdef CLIENT_DLL
@@ -1503,12 +1830,8 @@ void CWeaponEvents::UpdateBeams() {
 	if (!m_pPlayer)
 		return;
 
-#ifdef CLIENT_DLL
-	Vector vecSrc = WC_GetGunPosition();
-#else
 	Vector vecSrc = m_pPlayer->GetGunPosition();
 	Vector vecAiming = m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
-#endif
 
 	for (int i = 0; i < MAX_WC_BEAMS; i++) {
 		if (m_beams[i].isFree()) {
@@ -1701,4 +2024,16 @@ void CWeaponEvents::QuakeMuzzleFlash(CBasePlayer* plr) {
 #else
 	plr->pev->effects |= EF_MUZZLEFLASH;
 #endif
+}
+
+Vector CWeaponEvents::GetEventDir(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	return tr ? tr->vecPlaneNormal : m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
+}
+
+Vector CWeaponEvents::GetEventPos(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	if (tr) {
+		return tr->vecEndPos + tr->vecPlaneNormal * evt.offset;
+	}
+	
+	return m_pPlayer->GetGunPosition() + m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES) * evt.offset;
 }

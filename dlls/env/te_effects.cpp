@@ -690,9 +690,9 @@ void UTIL_Smoke(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate) {
 }
 
 void UTIL_BeamCylinder(Vector pos, float radius, int modelIdx, uint8_t startFrame, uint8_t frameRate,
-	uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed) {
+	uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_BEAMCYLINDER);
 		WRITE_COORD(pos.x);
 		WRITE_COORD(pos.y);
@@ -714,6 +714,9 @@ void UTIL_BeamCylinder(Vector pos, float radius, int modelIdx, uint8_t startFram
 		MESSAGE_END();
 	}
 	else {
+		if (targetEnt)
+			return; // don't create ents for individual players
+
 		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
 		if (!tent)
 			return;
@@ -721,15 +724,15 @@ void UTIL_BeamCylinder(Vector pos, float radius, int modelIdx, uint8_t startFram
 		CTeBeamRing* ring = (CTeBeamRing*)CBaseEntity::Create("te_beamring", pos, g_vecZero, true);
 		int ringWidth = V_min(255, (int)width * 10); // beam rings are thinner than beam cylinders
 		ring->Expand(radius, modelIdx, startFrame, frameRate, life, ringWidth, noise, color, scrollSpeed,
-			MSG_PVS, pos, NULL);
+			msgMode, pos, targetEnt);
 		tent->h_ent = ring;
 	}
 }
 
 void UTIL_BeamTorus(Vector pos, float radius, int modelIdx, uint8_t startFrame, uint8_t frameRate,
-	uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed) {
+	uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_BEAMTORUS);
 		WRITE_COORD(pos.x);
 		WRITE_COORD(pos.y);
@@ -751,6 +754,9 @@ void UTIL_BeamTorus(Vector pos, float radius, int modelIdx, uint8_t startFrame, 
 		MESSAGE_END();
 	}
 	else {
+		if (targetEnt)
+			return; // don't create ents for individual players
+
 		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
 		if (!tent)
 			return;
@@ -758,15 +764,15 @@ void UTIL_BeamTorus(Vector pos, float radius, int modelIdx, uint8_t startFrame, 
 		CTeBeamRing* ring = (CTeBeamRing*)CBaseEntity::Create("te_beamring", pos, g_vecZero, true);
 		int ringWidth = V_min(255, (int)width * 10); // beam rings are thinner than beam cylinders
 		ring->Expand(radius, modelIdx, startFrame, frameRate, life, ringWidth, noise, color, scrollSpeed,
-			MSG_PVS, pos, NULL);
+			msgMode, pos, targetEnt);
 		tent->h_ent = ring;
 	}
 }
 
 void UTIL_BeamDisk(Vector pos, float radius, int modelIdx, uint8_t startFrame, uint8_t frameRate,
-	uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed) {
+	uint8_t life, uint8_t width, uint8_t noise, RGBA color, uint8_t scrollSpeed, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_BEAMDISK);
 		WRITE_COORD(pos.x);
 		WRITE_COORD(pos.y);
@@ -788,6 +794,9 @@ void UTIL_BeamDisk(Vector pos, float radius, int modelIdx, uint8_t startFrame, u
 		MESSAGE_END();
 	}
 	else {
+		if (targetEnt)
+			return; // don't create ents for individual players
+
 		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
 		if (!tent)
 			return;
@@ -795,7 +804,7 @@ void UTIL_BeamDisk(Vector pos, float radius, int modelIdx, uint8_t startFrame, u
 		ALERT(at_console, "TODO: Beamdisk\n");
 		CTeBeamRing* ring = (CTeBeamRing*)CBaseEntity::Create("te_beamring", pos, g_vecZero, true);
 		ring->Expand(radius, modelIdx, startFrame, frameRate, life, width, noise, color, scrollSpeed,
-			MSG_PVS, pos, NULL);
+			msgMode, pos, targetEnt);
 	}
 }
 
@@ -1120,10 +1129,10 @@ edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber, edict_t* e
 }
 
 
-void UTIL_Sparks(const Vector& position)
+void UTIL_Sparks(const Vector& position, int msgMode, edict_t* targetEnt)
 {
 	if (UTIL_IsValidTempEntOrigin(position)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, position);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, position, targetEnt);
 		WRITE_BYTE(TE_SPARKS);
 		WRITE_COORD(position.x);
 		WRITE_COORD(position.y);
@@ -1138,7 +1147,7 @@ void UTIL_Sparks(const Vector& position)
 			if (!plr)
 				continue;
 
-			if (plr->IsSevenKewpClient()) {
+			if (plr->IsSevenKewpClient() && (!targetEnt || targetEnt == plr->edict())) {
 				hidePlayers |= PLRBIT(plr->edict());
 
 				if (UTIL_TestPVS(position, plr->edict())) {
@@ -1149,6 +1158,9 @@ void UTIL_Sparks(const Vector& position)
 				}
 			}
 		}
+
+		if (targetEnt)
+			return; // don't create ents for individual players
 
 		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
 		if (!tent)
@@ -1162,10 +1174,10 @@ void UTIL_Sparks(const Vector& position)
 }
 
 
-void UTIL_Ricochet(const Vector& position, float scale)
+void UTIL_Ricochet(const Vector& position, float scale, int msgMode, edict_t* targetEnt)
 {
 	if (UTIL_IsValidTempEntOrigin(position)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, position);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, position, targetEnt);
 		WRITE_BYTE(TE_ARMOR_RICOCHET);
 		WRITE_COORD(position.x);
 		WRITE_COORD(position.y);
@@ -1174,6 +1186,9 @@ void UTIL_Ricochet(const Vector& position, float scale)
 		MESSAGE_END();
 	}
 	else {
+		if (targetEnt)
+			return; // don't create ents for individual players
+
 		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
 		if (!tent)
 			return;
@@ -1223,6 +1238,9 @@ void UTIL_ExplosionMsg(const Vector& pos, int sprIndex, uint8_t scale, uint8_t f
 		MESSAGE_END();
 	}
 	else {
+		if (targetEnt)
+			return; // don't create ents for individual players
+
 		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
 		if (!tent)
 			return;
@@ -1334,9 +1352,9 @@ void UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector& veloci
 	}
 }
 
-void UTIL_SpriteSpray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint8_t speed, uint8_t noise, bool test) {
-	if (UTIL_IsValidTempEntOrigin(pos) && !test) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+void UTIL_SpriteSpray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint8_t speed, uint8_t noise, int msgMode, edict_t* targetEnt) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_SPRITE_SPRAY);
 		WRITE_COORD_VECTOR(pos);
 		WRITE_COORD_VECTOR(dir);
@@ -1347,6 +1365,9 @@ void UTIL_SpriteSpray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint
 		MESSAGE_END();
 	}
 	else if (count) {
+		if (targetEnt)
+			return; // don't create ents for individual players
+
 		const char* mdl = INDEX_MODEL(spriteIdx);
 		int frameCount = MODEL_FRAMES(MODEL_INDEX(mdl));
 
@@ -1639,6 +1660,9 @@ void UTIL_SpriteTrail(Vector start, Vector end, int spriteIdx, int count, int li
 		MESSAGE_END();
 	}
 	else {
+		if (targetEnt)
+			return; // don't create ents for individual players
+
 		const char* mdl = INDEX_MODEL(spriteIdx);
 		int frameCount = MODEL_FRAMES(MODEL_INDEX(mdl));
 
@@ -1683,9 +1707,9 @@ void UTIL_SpriteTrail(Vector start, Vector end, int spriteIdx, int count, int li
 	}
 }
 
-void UTIL_Implosion(Vector pos, uint8_t radius, uint8_t count, uint8_t life) {
+void UTIL_Implosion(Vector pos, uint8_t radius, uint8_t count, uint8_t life, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_IMPLOSION);
 		WRITE_COORD_VECTOR(pos);
 		WRITE_BYTE(radius);
@@ -1698,9 +1722,9 @@ void UTIL_Implosion(Vector pos, uint8_t radius, uint8_t count, uint8_t life) {
 	}
 }
 
-void UTIL_GlowSprite(const Vector& pos, int sprIndex, uint8_t life, uint8_t scale, uint8_t alpha) {
+void UTIL_GlowSprite(const Vector& pos, int sprIndex, uint8_t life, uint8_t scale, uint8_t alpha, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_GLOWSPRITE);
 		WRITE_COORD_VECTOR(pos);
 		WRITE_SHORT(sprIndex);
@@ -1710,6 +1734,9 @@ void UTIL_GlowSprite(const Vector& pos, int sprIndex, uint8_t life, uint8_t scal
 		MESSAGE_END();
 	}
 	else {
+		if (targetEnt)
+			return; // don't create ents for individual players
+
 		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
 		if (!tent)
 			return;
@@ -1725,9 +1752,21 @@ void UTIL_GlowSprite(const Vector& pos, int sprIndex, uint8_t life, uint8_t scal
 	}
 }
 
-void UTIL_QuakeTeleport(const Vector& pos) {
+void UTIL_QuakeGunshot(const Vector& pos, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		WRITE_BYTE(TE_GUNSHOT);
+		WRITE_COORD_VECTOR(pos);
+		MESSAGE_END();
+	}
+	else {
+		ALERT(at_warning, "TE_GUNSHOT not implemented for big maps\n");
+	}
+}
+
+void UTIL_QuakeTeleport(const Vector& pos, int msgMode, edict_t* targetEnt) {
+	if (UTIL_IsValidTempEntOrigin(pos)) {
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_TELEPORT);
 		WRITE_COORD_VECTOR(pos);
 		MESSAGE_END();
@@ -1737,9 +1776,9 @@ void UTIL_QuakeTeleport(const Vector& pos) {
 	}
 }
 
-void UTIL_QuakeParticleBurst(const Vector& pos, uint16_t radius, uint8_t color, uint8_t life) {
+void UTIL_QuakeParticleBurst(const Vector& pos, uint16_t radius, uint8_t color, uint8_t life, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_PARTICLEBURST);
 		WRITE_COORD_VECTOR(pos);
 		WRITE_SHORT(radius);
@@ -1752,9 +1791,9 @@ void UTIL_QuakeParticleBurst(const Vector& pos, uint16_t radius, uint8_t color, 
 	}
 }
 
-void UTIL_QuakeLavaSplash(const Vector& pos) {
+void UTIL_QuakeLavaSplash(const Vector& pos, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_LAVASPLASH);
 		WRITE_COORD_VECTOR(pos);
 		MESSAGE_END();
@@ -1764,9 +1803,9 @@ void UTIL_QuakeLavaSplash(const Vector& pos) {
 	}
 }
 
-void UTIL_QuakeExplosion(const Vector& pos) {
+void UTIL_QuakeExplosion(const Vector& pos, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_TAREXPLOSION);
 		WRITE_COORD_VECTOR(pos);
 		MESSAGE_END();
@@ -1776,11 +1815,13 @@ void UTIL_QuakeExplosion(const Vector& pos) {
 	}
 }
 
-void UTIL_QuakeExplosion2(const Vector& pos) {
+void UTIL_QuakeExplosion2(const Vector& pos, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_EXPLOSION2);
 		WRITE_COORD_VECTOR(pos);
+		WRITE_BYTE(0);		// "start color" - has no effect
+		WRITE_BYTE(127);	// "number of colors" - has no effect
 		MESSAGE_END();
 	}
 	else {
@@ -1788,9 +1829,9 @@ void UTIL_QuakeExplosion2(const Vector& pos) {
 	}
 }
 
-void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint16_t count, uint16_t speed, uint16_t speedNoise) {
+void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint16_t count, uint16_t speed, uint16_t speedNoise, int msgMode, edict_t* targetEnt) {
 	if (UTIL_IsValidTempEntOrigin(pos)) {
-		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, pos);
+		MESSAGE_BEGIN(msgMode, SVC_TEMPENTITY, pos, targetEnt);
 		WRITE_BYTE(TE_STREAK_SPLASH);
 		WRITE_COORD_VECTOR(pos);
 		WRITE_COORD_VECTOR(dir);
@@ -1824,6 +1865,9 @@ void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint
 				}
 			}
 		}
+
+		if (targetEnt)
+			return; // don't create ents for individual players
 
 		FakeTempEnt* tent = AllocFakeTempEnt(__func__, FAKETE_PRIO_HIGH);
 		if (!tent)

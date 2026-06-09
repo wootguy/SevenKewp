@@ -1862,11 +1862,21 @@ CustomWeaponParams* GetCustomWeaponParams(int id);
 extern int g_irunninggausspred;
 int GetCustomWeaponBody(int id);
 
-void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags) {
+void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags, Vector* sndOri) {
 	const char* soundPath = GetSoundByIndex(sndIdx);
-	cl_entity_t* player = GetLocalPlayer();
-	int entidx = player->index;
-	Vector origin = player->origin;
+	int entidx = 0;
+	Vector origin;
+
+	if (sndOri) {
+		entidx = 0;
+		origin = *sndOri;
+		chan = CHAN_STATIC;
+	}
+	else {
+		cl_entity_t* player = GetLocalPlayer();
+		entidx = player->index;
+		origin = player->origin;
+	}
 
 	if (!soundPath) {
 		PRINTF("Bad sound index %d\n", sndIdx);
@@ -2004,9 +2014,9 @@ void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx) {
 	gEngfuncs.pEventAPI->EV_WeaponAnimation(animIdx, GetCustomWeaponBody(wepid));
 }
 
-void WC_EV_Dlight(WepEvt& evt) {
+void WC_EV_Dlight(WepEvt& evt, Vector pos) {
 	dlight_t* dl = gEngfuncs.pEfxAPI->CL_AllocDlight(0);
-	dl->origin = gPlayerSim.v_sim_org;
+	dl->origin = pos;
 	dl->radius = evt.dlight.radius * 10;
 	dl->color.r = evt.dlight.color.r;
 	dl->color.g = evt.dlight.color.g;

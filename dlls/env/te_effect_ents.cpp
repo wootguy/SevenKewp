@@ -88,8 +88,8 @@ public:
 		Vector dir = Vector(2, 0, 0);
 		uint8_t speed = 100;
 		uint8_t noise = 0;
-		UTIL_SpriteSpray(pev->origin, dir, MODEL_INDEX("sprites/mommaspout.spr"), 1, speed, noise, false);
-		UTIL_SpriteSpray(pev->origin + Vector(0, 32, 0), dir, MODEL_INDEX("sprites/mommaspout.spr"), 1, speed, noise, true);
+		//UTIL_SpriteSpray(pev->origin, dir, MODEL_INDEX("sprites/mommaspout.spr"), 1, speed, noise, false);
+		//UTIL_SpriteSpray(pev->origin + Vector(0, 32, 0), dir, MODEL_INDEX("sprites/mommaspout.spr"), 1, speed, noise, true);
 
 		pev->nextthink = gpGlobals->time + 1.0f;
 	}

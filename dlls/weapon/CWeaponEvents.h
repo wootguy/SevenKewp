@@ -37,6 +37,7 @@ struct WcDelayEvent {
 	float fireTime;
 	bool leftHand;
 	bool akimboFire; // event was triggered by both hands at the same time
+	bool hasTrace;
 	WcTrace tr;
 };
 
@@ -110,17 +111,28 @@ public:
 	void PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Kickback(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_SetGravity(WepEvt& evt, CBasePlayer* m_pPlayer);
-	void PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire);
+	void PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire, WcTrace* tr);
 	void PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
 	void PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
 	void PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_ToggleState(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_HideLaser(WepEvt& evt, CBasePlayer* m_pPlayer);
-	void PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_MuzzleFlash(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_SpriteTrail(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_Decal(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_RadiusDamage(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_TeExplosion(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_GlowSprite(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_Sparks(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_ArmorRicochet(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_QuakeEffect(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_Implosion(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_SpriteSpray(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_StreakSplash(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_BeamCircle(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTrace* tr);
 
 	float GetCurrentAccuracyMultiplier();
@@ -134,4 +146,6 @@ public:
 	bool KillBeams(int attackIdx=-1); // set attack idx to only kill constant beams attached to an attack button. True if any beams killed
 	bool CheckTracer(int idx, Vector& vecSrc, Vector forward, Vector right, int iTracerFreq);
 	void QuakeMuzzleFlash(CBasePlayer* plr);
+	Vector GetEventDir(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	Vector GetEventPos(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 };

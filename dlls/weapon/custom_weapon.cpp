@@ -42,6 +42,7 @@ CustomWeaponParams* GetCustomWeaponParams(int id);
 	{ name, default_val, offsetof(CustomAmmoParams, struct_field), bits, WC_PARAM_UINT8_ENUM, enum_arr, ARRAY_SZ(enum_arr), ##__VA_ARGS__}
 
 #define EVT_DESC(id, cfgName, ...) do { \
+		g_wc_evt_type_names[id] = cfgName; \
         static field_desc_t fields[] = { __VA_ARGS__ }; \
         g_wc_desc_evt[id] = { cfgName, fields, ARRAY_SZ(fields) }; \
     } while (0)
@@ -64,6 +65,8 @@ enum WC_PARAM_TYPE {
 	WC_PARAM_UINT8_ENUM,	// enum value stored in an 8-bit int
 	WC_PARAM_UINT8_ARRAY_8,	// array of up to 8 uint8_t
 	WC_PARAM_UINT16,
+	WC_PARAM_UINT16_FP_4_12,
+	WC_PARAM_UINT16_FP_8_8,
 	WC_PARAM_UINT16_PERCENT, // percentage stored as a uint16_t
 	WC_PARAM_UINT32,
 	WC_PARAM_UINT32_FLAGS,
@@ -409,10 +412,11 @@ void init_event_fields() {
 	flash_size_names[WC_FLASH_NORMAL] = "normal";
 	flash_size_names[WC_FLASH_BRIGHT] = "bright";
 
-	EVT_DESC(WC_EVT_IDLE_SOUND, "idle_sound", // written to config as "sound"
+	EVT_DESC(WC_EVT_IDLE_SOUND, "idle_sound",
 		EVT_FIELD("volume", "1.0", idleSound.volume, 7, WC_PARAM_7BIT_PERCENT),
 		EVT_FIELD("sound", NULL, idleSound.sound, 9, WC_PARAM_SOUND_INDEX),
 	);
+	g_wc_evt_type_names[WC_EVT_IDLE_SOUND] = "sound"; // written to config as "sound"
 
 	{
 		static const char* distant_sound_names[8];
@@ -489,7 +493,7 @@ void init_event_fields() {
 		);
 	}
 
-	EVT_DESC(WC_EVT_SET_BODY, "new_body",
+	EVT_DESC(WC_EVT_SET_BODY, "set_weapon_body",
 		EVT_FIELD("new_body", "0", setBody.newBody, 0, WC_PARAM_UINT8),
 	);
 
@@ -723,6 +727,10 @@ void init_event_fields() {
 		EVT_FIELD("zoom_fov2", "0", zoomToggle.zoomFov2, 0, WC_PARAM_UINT8),
 	);
 
+	EVT_DESC(WC_EVT_HIDE_LASER, "hide_laser",
+		EVT_FIELD("time", "0", laserHide.millis, 0, WC_PARAM_TIME),
+	);
+
 	{
 		static const char* targets[32];
 		targets[BitToIndex(FL_WC_COOLDOWN_PRIMARY)] = "primary";
@@ -779,10 +787,6 @@ void init_event_fields() {
 		EVT__ENUM("flash_size", "0", muzzleFlash.brightness, 0, flash_size_names),
 	);
 
-	EVT_DESC(WC_EVT_HIDE_LASER, "hide_laser",
-		EVT_FIELD("time", "0", laserHide.millis, 0, WC_PARAM_TIME),
-	);
-
 	EVT_DESC(WC_EVT_SPRITETRAIL, "sprite_trail",
 		EVT_FIELD("sprite", NULL, spriteTrail.sprite, 0, WC_PARAM_MODEL_INDEX),
 		EVT_FIELD("count", "0", spriteTrail.count, 0, WC_PARAM_UINT8),
@@ -800,6 +804,108 @@ void init_event_fields() {
 			EVT_FLAGS("flags", "0", decal.flags, 0, flags),
 		);
 	}
+
+	EVT_DESC(WC_EVT_RADIUS_DAMAGE, "radius_damage",
+		EVT_FIELD("radius", "0", radiusDamage.radius, 0, WC_PARAM_UINT16),
+		EVT_FIELD("damage", "0", radiusDamage.damage, 0, WC_PARAM_UINT16),
+		EVT_FLAGS("damage_type", "0", radiusDamage.damageBits, 0, g_wc_dmgFlags),
+	);
+
+	{
+		static const char* teExpFlags[32];
+		teExpFlags[BitToIndex(FL_WC_TE_EXPLOSION_OPAQUE)] = "opaque";
+		teExpFlags[BitToIndex(FL_WC_TE_EXPLOSION_NO_DLIGHT)] = "no_dlight";
+		teExpFlags[BitToIndex(FL_WC_TE_EXPLOSION_NO_SOUND)] = "no_sound";
+		teExpFlags[BitToIndex(FL_WC_TE_EXPLOSION_NO_PARTICLES)] = "no_particles";
+
+		EVT_DESC(WC_EVT_EXPLOSION, "te_explosion",
+			EVT_FIELD("sprite", NULL, te_explosion.sprite, 9, WC_PARAM_MODEL_INDEX),
+			EVT_FLAGS("flags", "0", te_explosion.flags, 7, teExpFlags),
+			EVT_FIELD("scale", "0", te_explosion.scale, 0, WC_PARAM_UINT8),
+			EVT_FIELD("fps", "0", te_explosion.fps, 0, WC_PARAM_UINT8),
+		);
+	}
+
+	{
+		static const char* circleTypes[32];
+		circleTypes[WC_BEAM_CIRCLE_TYPE_CYLINDER] = "cylinder";
+		circleTypes[WC_BEAM_CIRCLE_TYPE_TORUS] = "torus";
+		circleTypes[WC_BEAM_CIRCLE_TYPE_DISK] = "disk";
+
+		EVT_DESC(WC_EVT_BEAM_CIRCLE, "beam_circle",
+			EVT_FIELD("sprite", NULL, beam_circle.sprite, 9, WC_PARAM_MODEL_INDEX),
+			EVT__ENUM("type", "cylinder", beam_circle.beamType, 4, circleTypes),
+			EVT_FIELD("has_frame", "0", beam_circle.hasFrame, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("has_height", "0", beam_circle.hasHeight, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("has_noise", "0", beam_circle.hasNoise, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("radius", "0", beam_circle.radius, 0, WC_PARAM_INT16),
+			EVT_FIELD("life", "0", beam_circle.life, 0, WC_PARAM_UINT8),
+			EVT_FIELD("color", "0 0 0 0", beam_circle.color, 0, WC_PARAM_RGBA),
+			EVT_FIELD("frame", "0", beam_circle.frame, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(beam_circle.hasFrame)),
+			EVT_FIELD("height", "0", beam_circle.height, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(beam_circle.hasHeight)),
+			EVT_FIELD("noise", "0", beam_circle.noise, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(beam_circle.hasNoise)),
+		);
+	}
+
+	EVT_DESC(WC_EVT_GLOW_SPRITE, "glow_sprite",
+		EVT_FIELD("sprite", NULL, glow_sprite.sprite, 0, WC_PARAM_MODEL_INDEX),
+		EVT_FIELD("life", "0", glow_sprite.life, 0, WC_PARAM_UINT8),
+		EVT_FIELD("scale", "0", glow_sprite.scale, 0, WC_PARAM_UINT8),
+		EVT_FIELD("alpha", "0", glow_sprite.alpha, 0, WC_PARAM_UINT8),
+	);
+
+	EVT_DESC(WC_EVT_SPARKS, "sparks",
+		EVT_FIELD("dummy", "0", sparks.dummy, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG | FL_FIELD_NO_NETWORK),
+	);
+
+	EVT_DESC(WC_EVT_ARMOR_RICOCHET, "armor_ricochet",
+		EVT_FIELD("scale", "0", armor_ricochet.scale, 0, WC_PARAM_UINT8),
+	);
+
+	{
+		static const char* quakeEffects[32];
+		quakeEffects[WC_QUAKE_EFFECT_GUNSHOT] = "gunshot";
+		quakeEffects[WC_QUAKE_EFFECT_EXPLOSION] = "explosion";
+		quakeEffects[WC_QUAKE_EFFECT_EXPLOSION2] = "explosion2";
+		quakeEffects[WC_QUAKE_EFFECT_LAVASPLASH] = "lavasplash";
+		quakeEffects[WC_QUAKE_EFFECT_TELEPORT] = "teleport";
+		quakeEffects[WC_QUAKE_EFFECT_PARTICLE_BURST] = "particle_burst";
+
+		EVT_DESC(WC_EVT_QUAKE_EFFECT, "quake_effect",
+			EVT__ENUM("type", "gunshot", quake_effect.type, 7, quakeEffects),
+			EVT_FIELD("is_particle_burst", "0", quake_effect.isParticleBurst, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("radius", "0", quake_effect.radius, 0, WC_PARAM_UINT16, NULL, 0, 0, EVT_COND_BYTE(quake_effect.isParticleBurst)),
+			EVT_FIELD("color", "0", quake_effect.color, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(quake_effect.isParticleBurst)),
+			EVT_FIELD("life", "0", quake_effect.life, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(quake_effect.isParticleBurst)),
+		);
+	}
+
+	EVT_DESC(WC_EVT_IMPLOSION, "implosion",
+		EVT_FIELD("tracers", "0", implosion.tracers, 0, WC_PARAM_UINT8),
+		EVT_FIELD("radius", "0", implosion.radius, 0, WC_PARAM_UINT8),
+		EVT_FIELD("life", "0", implosion.life, 0, WC_PARAM_UINT8),
+	);
+
+	EVT_DESC(WC_EVT_SPRITE_SPRAY, "sprite_spray",
+		EVT_FIELD("sprite", NULL, glow_sprite.sprite, 0, WC_PARAM_MODEL_INDEX),
+		EVT_FIELD("count", "0", sprite_spray.count, 0, WC_PARAM_UINT8),
+		EVT_FIELD("speed", "0", sprite_spray.speed, 0, WC_PARAM_UINT8),
+		EVT_FIELD("randomness", "0", sprite_spray.randomness, 0, WC_PARAM_UINT8),
+	);
+
+	EVT_DESC(WC_EVT_STREAK_SPLASH, "streak_splash",
+		EVT_FIELD("count", "0", streak_splash.count, 0, WC_PARAM_UINT8),
+		EVT_FIELD("color", "0", streak_splash.color, 0, WC_PARAM_UINT8),
+		EVT_FIELD("speed", "0", streak_splash.speed, 0, WC_PARAM_UINT16),
+		EVT_FIELD("randomness", "0", streak_splash.randomness, 0, WC_PARAM_UINT16),
+	);
+
+	EVT_DESC(WC_EVT_SHAKE, "shake",
+		EVT_FIELD("radius", "0", shake.radius, 0, WC_PARAM_UINT16),
+		EVT_FIELD("amplitude", "0", shake.amplitude, 0, WC_PARAM_UINT16_FP_4_12),
+		EVT_FIELD("duration", "0", shake.duration, 0, WC_PARAM_TIME),
+		EVT_FIELD("frequency", "0", shake.amplitude, 0, WC_PARAM_UINT16_FP_8_8),
+	);
 }
 
 void init_custom_ammo_fields() {
@@ -977,25 +1083,6 @@ void init_weapon_custom_config_parser() {
 		}
 	}
 
-	g_wc_evt_type_names[WC_EVT_IDLE_SOUND] = "sound";
-	g_wc_evt_type_names[WC_EVT_PLAY_SOUND] = "sound";
-	g_wc_evt_type_names[WC_EVT_EJECT_SHELL] = "eject_shell";
-	g_wc_evt_type_names[WC_EVT_PUNCH] = "recoil";
-	g_wc_evt_type_names[WC_EVT_SET_BODY] = "set_weapon_body";
-	g_wc_evt_type_names[WC_EVT_WEP_ANIM] = "weapon_anim";
-	g_wc_evt_type_names[WC_EVT_BULLETS] = "bullets";
-	g_wc_evt_type_names[WC_EVT_BEAM] = "beam";
-	g_wc_evt_type_names[WC_EVT_PROJECTILE] = "projectile";
-	g_wc_evt_type_names[WC_EVT_KICKBACK] = "kickback";
-	g_wc_evt_type_names[WC_EVT_TOGGLE_STATE] = "toggle_state";
-	g_wc_evt_type_names[WC_EVT_TOGGLE_ZOOM] = "toggle_zoom";
-	g_wc_evt_type_names[WC_EVT_HIDE_LASER] = "hide_laser";
-	g_wc_evt_type_names[WC_EVT_COOLDOWN] = "cooldown";
-	g_wc_evt_type_names[WC_EVT_SET_GRAVITY] = "set_gravity";
-	g_wc_evt_type_names[WC_EVT_DLIGHT] = "dynamic_light";
-	g_wc_evt_type_names[WC_EVT_SERVER] = "user_defined";
-	g_wc_evt_type_names[WC_EVT_MUZZLEFLASH] = "muzzle_flash";
-
 	g_wc_evt_category_names[WC_EVT_CATEGORY_PRIMARY] = "Primary attack";
 	g_wc_evt_category_names[WC_EVT_CATEGORY_PRIMARY_ALT] = "Alternate primary attack";
 	g_wc_evt_category_names[WC_EVT_CATEGORY_SECONDARY] = "Secondary attack";
@@ -1004,11 +1091,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_category_names[WC_EVT_CATEGORY_DEPLOY] = "Deploy events";
 	g_wc_evt_category_names[WC_EVT_CATEGORY_REACTION] = "Reactionary events";
 	g_wc_evt_category_names[WC_EVT_CATEGORY_STATE_CHANGE] = "State change events";
-	g_wc_evt_category_names[WC_EVT_CATEGORY_UNKNOWN] = "Uncategorized events";
-
-	// impact events
-	g_wc_evt_type_names[WC_EVT_SPRITETRAIL] = "sprite_trail";
-	g_wc_evt_type_names[WC_EVT_DECAL] = "decal";
+	g_wc_evt_category_names[WC_EVT_CATEGORY_UNKNOWN] = "Uncategorized events";	
 
 	for (int i = 0; i < ARRAY_SZ(g_wc_evt_type_names); i++) {
 		if (!g_wc_evt_type_names[i])
@@ -1059,6 +1142,8 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		cur[2] = FLOAT_TO_FP_10_6(v.z);
 		break;
 	}
+	case WC_PARAM_UINT16_FP_4_12: *(uint16_t*)dat = FLOAT_TO_FP_4_12(atof(val)); break;
+	case WC_PARAM_UINT16_FP_8_8: *(uint16_t*)dat = FLOAT_TO_FP_8_8(atof(val)); break;
 	case WC_PARAM_UINT8_ARRAY_8: {
 		WepEvtArr8* arr = (WepEvtArr8*)dat;
 		vector<string> parts = splitString(val, " ");
@@ -1252,6 +1337,14 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 		fprintf(f, "%.2f %.2f %.2f\n", FP_10_6_TO_FLOAT(v[0]), FP_10_6_TO_FLOAT(v[1]), FP_10_6_TO_FLOAT(v[2]));
 		break;
 	}
+	case WC_PARAM_UINT16_FP_4_12: {
+		fprintf(f, "%.4f\n", FP_4_12_TO_FLOAT(*(int16_t*)dat));
+		break;
+	}
+	case WC_PARAM_UINT16_FP_8_8: {
+		fprintf(f, "%.3f\n", FP_8_8_TO_FLOAT(*(int16_t*)dat));
+		break;
+	}					
 	case WC_PARAM_UINT8_ARRAY_8: {
 		WepEvtArr8* arr = (WepEvtArr8*)dat;
 		for (int i = 0; i < MAX_WC_RANDOM_SELECTION && i < arr->arrSz; i++) {
@@ -1317,6 +1410,8 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_UINT16_PERCENT:
 	case WC_PARAM_ACCURACY_UINT16:
 	case WC_PARAM_STRING:
+	case WC_PARAM_UINT16_FP_4_12:
+	case WC_PARAM_UINT16_FP_8_8:
 		return 2;
 	case WC_PARAM_VECTOR_INT8:
 	case WC_PARAM_RGB:
@@ -1362,6 +1457,8 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 	case WC_PARAM_ACCURACY_UINT16:
 	case WC_PARAM_TIME:
 	case WC_PARAM_UINT16_PERCENT:
+	case WC_PARAM_UINT16_FP_4_12:
+	case WC_PARAM_UINT16_FP_8_8:
 		return UTIL_VarArgs("%d", (int)(*(uint16_t*)dat));
 	case WC_PARAM_VECTOR_INT8:
 		return UTIL_VarArgs("(%d %d %d)", (int)((int8_t*)dat)[0], (int)((int8_t*)dat)[1], (int)((int8_t*)dat)[2]);
@@ -1706,6 +1803,8 @@ void wc_fwrite_events(FILE* f, CustomWeaponParams& params, int category) {
 
 		if (evt.delay)
 			fprintf(f, "%-24s= %ums\n", "delay", (uint32_t)evt.delay);
+		if (evt.offset)
+			fprintf(f, "%-24s= %d\n", "offset", (int32_t)evt.offset);
 
 		struct_desc_t* desc = get_evt_desc(evt.evtType);
 
@@ -1726,6 +1825,7 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 	uint16_t* val = g_wc_name_to_trigger.get(header_parts[1].c_str());
 	const char* action = header_parts[2].c_str();
 	const char* delay = group.keys.get("delay");
+	const char* offset = group.keys.get("offset");
 
 	if (!val) {
 		ALERT(at_error, "%s (line %d): Invalid event type '%s'.\n",
@@ -1752,7 +1852,9 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 	evt.trigger = *val & 0x1f;
 	evt.triggerArg = *val >> 5;
 	evt.delay = delay ? atoi(delay) : 0;
+	evt.offset = offset ? atoi(offset) : 0;
 	evt.hasDelay = evt.delay != 0;
+	evt.hasOffset = evt.offset != 0;
 
 	struct_desc_t* desc = get_evt_desc(evt.evtType);
 
@@ -1789,6 +1891,14 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 		break;
 	case WC_EVT_PUNCH:
 		evt.recoil.hasMaxAngles = evt.recoil.maxAngleTime != 0;
+		break;
+	case WC_EVT_BEAM_CIRCLE:
+		evt.beam_circle.hasFrame = evt.beam_circle.frame != 0;
+		evt.beam_circle.hasHeight = evt.beam_circle.height != 0;
+		evt.beam_circle.hasNoise = evt.beam_circle.noise != 0;
+		break;
+	case WC_EVT_QUAKE_EFFECT:
+		evt.quake_effect.isParticleBurst = evt.quake_effect.type == WC_QUAKE_EFFECT_PARTICLE_BURST;
 		break;
 	}
 	}
@@ -2510,6 +2620,8 @@ void wc_read_netmsg_struct(struct_desc_t& desc, void* dat) {
 bool should_send_event(int evtId) {
 	switch (evtId) {
 	case WC_EVT_PROJECTILE:
+	case WC_EVT_RADIUS_DAMAGE:
+	case WC_EVT_SHAKE:
 	case WC_EVT_SERVER:
 		return false;
 	}
@@ -2602,7 +2714,7 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 			MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
 			WRITE_BYTE(wep->m_iId);
 
-			int sendEvents = 0;
+			int sendEvents = 0; // TODO: skipping events will complicate live updates due to mismatched indexes
 			for (int k = evtOffset; k < params.numEvents && k - evtOffset < g_evt_data_chunk_size; k++) {
 				WepEvt& evt = params.events[k];
 
@@ -2623,10 +2735,13 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 				if (!desc)
 					continue;
 
-				uint16_t packedHeader = (evt.hasDelay << 15) | (evt.triggerArg << 10) | (evt.trigger << 5) | evt.evtType;
+				uint16_t packedHeader = (evt.hasOffset << 15) | (evt.hasDelay << 14) | (evt.triggerArg << 10) | (evt.trigger << 5) | evt.evtType;
 				WRITE_SHORT(packedHeader);
 				if (evt.hasDelay) {
 					WRITE_SHORT(evt.delay);
+				}
+				if (evt.hasOffset) {
+					WRITE_SHORT(evt.offset);
 				}
 
 				const char* evtName = evt.evtType < WC_EVT_TOTAL ? g_wc_evt_type_names[evt.evtType] : "???";
@@ -2742,11 +2857,14 @@ int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, voi
 
 		evt.evtType = packedHeader & 0x1F;
 		evt.trigger = (packedHeader >> 5) & 0x1F;
-		evt.triggerArg = (packedHeader >> 10) & 0x1F;
-		evt.hasDelay = packedHeader >> 15;
+		evt.triggerArg = (packedHeader >> 10) & 0xF;
+		evt.hasDelay = packedHeader >> 14;
+		evt.hasOffset = packedHeader >> 15;
 
 		if (evt.hasDelay)
 			evt.delay = READ_SHORT();
+		if (evt.hasOffset)
+			evt.offset = READ_SHORT();
 
 		struct_desc_t* desc = get_evt_desc(evt.evtType);
 		if (!desc) {

@@ -46,6 +46,17 @@ HashMap<SpawnFunc> g_entityRemap;
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 
+Vector WC_GetGunPosition();
+Vector WC_GetAim(float spreadX, float spreadY);
+
+Vector CBasePlayer::GetGunPosition(void) {
+	return WC_GetGunPosition();
+}
+
+Vector CBasePlayer::GetAutoaimVector(float flDelta) {
+	return WC_GetAim(0, 0);
+}
+
 void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch) { }
 void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char* msg) {}
 void AddPrecacheWeapon(std::string wepName) {}
@@ -351,7 +362,6 @@ void CBasePlayer :: BarnacleVictimBitten ( entvars_t *pevBarnacle ) { }
 void CBasePlayer :: BarnacleVictimReleased ( void ) { }
 int CBasePlayer :: Illumination( void ) { return 0; }
 void CBasePlayer :: EnableControl(BOOL fControl) { }
-Vector CBasePlayer :: GetAutoaimVector( float flDelta ) { return g_vecZero; }
 Vector CBasePlayer :: AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  ) { return g_vecZero; }
 void CBasePlayer :: ResetAutoaim( ) { }
 void CBasePlayer :: ResetSequenceInfo( ) { }
@@ -360,7 +370,6 @@ int CBasePlayer :: GetCustomDecalFrames( void ) { return -1; }
 void CBasePlayer::DropPlayerItem ( const char *pszItemName ) { }
 BOOL CBasePlayer::HasPlayerItem( CBasePlayerItem *pCheckItem ) { return FALSE; }
 BOOL CBasePlayer :: SwitchWeapon( CBasePlayerItem *pWeapon )  { return FALSE; }
-Vector CBasePlayer :: GetGunPosition( void ) { return g_vecZero; }
 const char *CBasePlayer::TeamID( void ) { return ""; }
 int CBasePlayer :: GiveAmmo( int iCount, const char *szName ) { return 0; }
 void CBasePlayer::AddPoints( int score, BOOL bAllowNegativeScore ) { } 

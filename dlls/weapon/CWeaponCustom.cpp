@@ -12,15 +12,14 @@ extern int g_runningKickbackPred;
 extern int g_last_attack_mode;
 extern Vector g_vApplyVel;
 void UpdateZoomCrosshair(int id, bool zoom);
-void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags);
+void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags, Vector* origin);
 void WC_EV_EjectShell(WepEvt& evt, bool leftHand);
 void WC_EV_PunchAngle(WepEvt& evt, int seed, float attackTime);
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
 pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int tracerColor, bool gunshotDecal, bool textureSound, int iShot, int iDamage);
 void EV_LaserOff();
-void WC_EV_Dlight(WepEvt& evt);
+void WC_EV_Dlight(WepEvt& evt, Vector pos);
 uint32_t GetTimeAtCmd(uint32_t cmdId);
-Vector WC_GetGunPosition();
 Vector WC_GetAim(float spreadX, float spreadY);
 void EV_MuzzleFlash(void);
 cl_entity_t* WC_GetPlayer();
@@ -1027,7 +1026,7 @@ void CWeaponCustom::PlayChargeSound(float t) {
 
 #ifdef CLIENT_DLL
 		if (g_runfuncs)
-			WC_EV_LocalSound(soundIdx, channel, pitch, 1, ATTN_NORM, 0, SND_CHANGE_PITCH);
+			WC_EV_LocalSound(soundIdx, channel, pitch, 1, ATTN_NORM, 0, SND_CHANGE_PITCH, NULL);
 #else
 		if (IsPredicted()) {
 			uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
@@ -1268,7 +1267,7 @@ void CWeaponCustom::PlayEmptySound(int attackIdx)
 #ifdef CLIENT_DLL
 		if (g_runfuncs) {
 			if (opts.emptySound) {
-				WC_EV_LocalSound(opts.emptySound, CHAN_STATIC, 100, 1.0f, ATTN_NORM, 0, 0);
+				WC_EV_LocalSound(opts.emptySound, CHAN_STATIC, 100, 1.0f, ATTN_NORM, 0, 0, NULL);
 			}
 			else {
 				HUD_PlaySound(RemapFile("weapons/357_cock1.wav"), 0.8);
@@ -1317,7 +1316,7 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bo
 		int soundIdx = evt.playSound.sound;
 
 #ifdef CLIENT_DLL
-		WC_EV_LocalSound(soundIdx, channel, 100, 1, ATTN_NORM, 0, SND_STOP);
+		WC_EV_LocalSound(soundIdx, channel, 100, 1, ATTN_NORM, 0, SND_STOP, NULL);
 #else
 		if (IsPredicted()) {
 			uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());

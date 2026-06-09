@@ -3,6 +3,12 @@
 #define FLOAT_TO_FP_10_6(val) (clamp((int)((val) * 64), INT16_MIN, INT16_MAX))
 #define FP_10_6_TO_FLOAT(val) (val / 64.0f)
 
+#define FLOAT_TO_FP_4_12(val) (clamp((int)((val) * 4096), INT16_MIN, INT16_MAX))
+#define FP_4_12_TO_FLOAT(val) (val / 4096.0f)
+
+#define FLOAT_TO_FP_8_8(val) (clamp((int)((val) * 256), INT16_MIN, INT16_MAX))
+#define FP_8_8_TO_FLOAT(val) (val / 256.0f)
+
 #define FLOAT_TO_SPREAD(val) (clamp((int)((val) * 65535), 0, UINT16_MAX))
 #define SPREAD_TO_FLOAT(val) (val / 65535.0f)
 
@@ -37,6 +43,11 @@
 #define FL_WC_SOUND_CHARGE_PITCH 1	// Sound pitch increases with chargeup progress
 
 #define FL_WC_DECAL_PARTICLES	1	// create gunshot particles
+
+#define FL_WC_TE_EXPLOSION_OPAQUE		1	// Sprite will be drawn opaque, else additive
+#define FL_WC_TE_EXPLOSION_NO_DLIGHT	2	// Don't render the dynamic light
+#define FL_WC_TE_EXPLOSION_NO_SOUND		4	// Don't play the default explosion sound
+#define FL_WC_TE_EXPLOSION_NO_PARTICLES	8	// Don't draw particles
 
 enum WeaponCustomEventTriggerShootArg {
 	WC_TRIG_SHOOT_ARG_ALWAYS,		// always fire the shoot event
@@ -123,6 +134,17 @@ enum WeaponCustomEventType {
 	// impact events
 	WC_EVT_SPRITETRAIL,		// TE_SPRITETRAIL
 	WC_EVT_DECAL,			// TE_DECAL
+	WC_EVT_RADIUS_DAMAGE,	// server-side damage logic
+	WC_EVT_EXPLOSION,		// TE_EXPLOSION
+	WC_EVT_BEAM_CIRCLE,		// TE_BEAMCYLINDER / TE_BEAMTORUS / TE_BEAMDISK
+	WC_EVT_GLOW_SPRITE,		// TE_GLOWSPRITE
+	WC_EVT_SPARKS,			// TE_SPARKS
+	WC_EVT_ARMOR_RICOCHET,	// TE_ARMOR_RICOCHET
+	WC_EVT_QUAKE_EFFECT,	// TE_GUNSHOT / TE_TAREXPLOSION / TE_EXPLOSION2 / TE_LAVASPLASH / TE_TELEPORT / TE_PARTICLE_BURST
+	WC_EVT_IMPLOSION,		// TE_IMPLOSION
+	WC_EVT_SPRITE_SPRAY,	// TE_SPRITE_SPRAY
+	WC_EVT_STREAK_SPLASH,	// TE_STREAK_SPLASH
+	WC_EVT_SHAKE,			// screen shake (not predicted)
 
 	WC_EVT_TOTAL,
 };
@@ -210,6 +232,21 @@ enum WeaponCustomTracerColor {
 	WC_TRACER_COLOR_ORANGE,		// most saturated orange color
 };
 
+enum WeaponCustomBeamCircleType {
+	WC_BEAM_CIRCLE_TYPE_CYLINDER,	// TE_BEAMCYLINDER
+	WC_BEAM_CIRCLE_TYPE_TORUS,		// TE_BEAMTORUS
+	WC_BEAM_CIRCLE_TYPE_DISK,		// TE_BEAMDISK
+};
+
+enum WeaponCustomQuakeEffectType {
+	WC_QUAKE_EFFECT_GUNSHOT,
+	WC_QUAKE_EFFECT_EXPLOSION,
+	WC_QUAKE_EFFECT_EXPLOSION2,
+	WC_QUAKE_EFFECT_LAVASPLASH,
+	WC_QUAKE_EFFECT_TELEPORT,
+	WC_QUAKE_EFFECT_PARTICLE_BURST,
+};
+
 #pragma pack(push,1)
 
 struct WepEvtArr8 {
@@ -225,9 +262,11 @@ struct WepEvtArr16 {
 struct WepEvt {
 	uint16_t evtType : 5;
 	uint16_t trigger : 5;		// when to trigger the event
-	uint16_t triggerArg : 5;	// additional args for event triggering
+	uint16_t triggerArg : 4;	// additional args for event triggering
 	uint16_t hasDelay : 1;
-	uint16_t delay : 16;		// milliseconds before firing the event
+	uint16_t hasOffset : 1;		// for impact events
+	uint16_t delay;				// milliseconds before firing the event
+	int16_t offset;				// offset from impact position
 
 	int attackIdx; // attack index which triggered this event (not transferred to clients) (TODO: move to runtime class data)
 
@@ -381,7 +420,92 @@ struct WepEvt {
 			uint8_t flags;		// FL_WC_DECAL_*
 		} decal;
 
-		// not networked to the client. No bit packing necessary
+		struct {
+			uint8_t brightness; // WeaponCustomFlashSz
+		} muzzleFlash;
+
+		struct {
+			uint16_t sprite;	// 9 bits
+			uint16_t flags;		// 7 bits - FL_WC_EXPSPRITE_*
+			uint8_t scale;
+			uint8_t fps;
+		} te_explosion;
+
+		struct {
+			uint16_t sprite;
+			uint8_t life;
+			uint8_t scale;
+			uint8_t alpha;
+		} glow_sprite;
+
+		struct {
+			uint8_t dummy; // all events must have at least 1 arg
+		} sparks;
+
+		struct {
+			uint8_t type;				// 7 bits - WeaponCustomQuakeEffectType
+			uint8_t isParticleBurst;	// 1 bit - it true, other args are sent
+			uint16_t radius;
+			uint8_t color;
+			uint8_t life;
+		} quake_effect;
+
+		struct {
+			uint8_t scale;
+		} armor_ricochet;
+
+		struct {
+			uint8_t tracers;
+			uint8_t radius;
+			uint8_t life;
+		} implosion;
+
+		struct {
+			uint16_t sprite;
+			uint8_t count;
+			uint8_t speed;
+			uint8_t randomness;
+		} sprite_spray;
+
+		struct {
+			uint8_t count;
+			uint8_t color;
+			uint16_t speed;
+			uint16_t randomness;
+		} streak_splash;
+
+		struct {
+			uint16_t radius;
+			uint16_t amplitude;
+			uint16_t duration;
+			uint16_t frequency;
+		} shake;
+
+		struct {
+			uint16_t sprite;	// 9 bits
+			uint16_t beamType;	// 4 bits - WeaponCustomBeamCircleType
+			uint16_t hasFrame;	// 1 bit - true if a start frame is set
+			uint16_t hasHeight;	// 1 bit - true if a height is set (cylinder and torus)
+			uint16_t hasNoise;	// 1 bit - true if a noise is set (cylinder)
+			int16_t radius;		// max radius
+			uint8_t life;		// display time
+			RGBA color;			// beam color
+
+			uint8_t frame;		// sprite frame
+			uint8_t height;		// height for cylinder/torus types
+			uint8_t noise;		// distortion for cylinder type
+		} beam_circle;
+
+		//
+		// Server-side events
+		//
+
+		struct {
+			uint16_t radius;
+			uint16_t damage;
+			uint32_t damageBits;
+		} radiusDamage;
+
 		struct {
 			int flags; // FL_WC_PROJ_*
 			uint16_t accuracy[2]; // X/Y accuracy. 0 = perfect, 1 = 180 degrees. 65535 = 1.0f
@@ -432,10 +556,6 @@ struct WepEvt {
 			uint8_t trail_width;
 			RGBA trail_color;
 		} proj;
-
-		struct {
-			uint8_t brightness; // WeaponCustomFlashSz
-		} muzzleFlash;
 
 		// user defined server event
 		// not networked to the client
