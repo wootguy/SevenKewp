@@ -8,7 +8,7 @@ This repo was forked from an early version of [halflife-updated](https://github.
 # Client Download
 [SevenKewp Client Download](https://github.com/wootguy/SevenKewp/releases/latest)
 
-If you're a player, you don't need to install this. Vanilla Half-Life clients are able to play on SevenKewp servers with a few limitations. You can see what's been added to the SevenKewp client in the [Client Features](https://github.com/wootguy/SevenKewp/wiki/Client-Features) wiki. 
+If you're a player, you don't need to install this. Vanilla Half-Life clients are able to play on SevenKewp servers with a few limitations. You can see what's been added to the SevenKewp client in the [Client Features](https://github.com/wootguy/SevenKewp/wiki/Client-Features) wiki. The client is not compatible with the `steam_legacy` beta branch.
 
 ### WARNING: USE CUSTOM CLIENTS AT YOUR OWN RISK
 
