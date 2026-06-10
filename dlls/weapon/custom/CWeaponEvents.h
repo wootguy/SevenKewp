@@ -1,5 +1,5 @@
 #pragma once
-#include "custom_weapon.h"
+#include "wc_params.h"
 #include "Platform.h"
 
 #ifdef CLIENT_DLL

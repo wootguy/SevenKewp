@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <EHandle.h>
-#include "custom_weapon_events.h"
+#include "wc_events.h"
 
 #define DEGREES_FROM_CONE(cone_value) (2.0f * asinf(cone_value) * 180.0f / (float)M_PI)
 #define DEGREES_FROM_SPREAD(spread) (2.0f * asinf(SPREAD_TO_FLOAT(spread)) * 180.0f / (float)M_PI)

@@ -1,7 +1,7 @@
 #pragma once
 #include "CAmmoCustom.h"
 #include "weapons.h"
-#include "custom_weapon_config.h"
+#include "wc_config.h"
 
 void CAmmoCustom::Spawn(void) {
 	CBasePlayerAmmo::Spawn();

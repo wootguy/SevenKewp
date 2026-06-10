@@ -9,6 +9,8 @@
 #include "CWeaponBox.h"
 #include "CBasePlayerItem.h"
 #include "CGib.h"
+#include "te_effects.h"
+#include "CWeaponCustom.h"
 
 LINK_ENTITY_TO_CLASS(weaponbox, CWeaponBox)
 

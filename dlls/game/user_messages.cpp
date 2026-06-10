@@ -3,7 +3,7 @@
 #include "shake.h"
 #include "user_messages.h"
 #include "PluginManager.h"
-#include "custom_weapon.h"
+#include "wc_params.h"
 
 int giPrecacheGrunt = 0;
 int gmsgShake = 0;

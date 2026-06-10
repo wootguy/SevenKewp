@@ -1,7 +1,7 @@
 #pragma once
 #include "StringPool.h"
 #include "HashMap.h"
-#include "custom_weapon.h"
+#include "wc_params.h"
 
 enum WC_PARAM_TYPE {
 	WC_PARAM_UINT8,

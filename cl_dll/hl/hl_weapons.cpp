@@ -43,7 +43,7 @@
 #include "weapon/CSatchel.h"
 #include "weapon/CTripmine.h"
 #include "weapon/CSqueak.h"
-#include "weapon/CWeaponCustom.h"
+#include "weapon/custom/CWeaponCustom.h"
 #include "prediction_files.h"
 #include "../cl_dll/ammo.h"
 

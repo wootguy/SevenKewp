@@ -30,7 +30,7 @@
 #include "CBaseDMStart.h"
 #include "hlds_hooks.h"
 #include "CWorld.h"
-#include "custom_weapon.h"
+#include "wc_params.h"
 #include "CAmmoCustom.h"
 
 #include <sstream>

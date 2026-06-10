@@ -28,8 +28,8 @@
 
 #include "ammohistory.h"
 #include "vgui_TeamFortressViewport.h"
-#include "custom_weapon.h"
-#include "custom_weapon_net.h"
+#include "wc_params.h"
+#include "wc_net.h"
 #include "ModPlayerState.h"
 #include "shared_util.h"
 #include "triangleapi.h"

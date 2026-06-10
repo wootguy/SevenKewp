@@ -419,13 +419,26 @@ set(PATH_SRC
 )
 
 set(WEAPON_HDR
+	weapon/CBasePlayerItem.h
+	weapon/CBasePlayerWeapon.h
+	weapon/CWeaponBox.h
+	weapon/CWeaponInventory.h
+	weapon/CKnife.h
+	weapon/weapons.h
+)
+set(WEAPON_SRC
+	weapon/CBasePlayerItem.cpp
+	weapon/CBasePlayerWeapon.cpp
+	weapon/CWeaponBox.cpp
+	weapon/CWeaponInventory.cpp
+	weapon/weapons.cpp
+	weapon/combat.cpp
+)
+set(DEFAULT_WEAPON_HDR
 	weapon/CShockBeam.h
 	weapon/CGrapple.h
 	weapon/CGrappleTip.h
 	weapon/CSpore.h
-	weapon/CBasePlayerItem.h
-	weapon/CBasePlayerWeapon.h
-	weapon/CWeaponBox.h
 	weapon/CGlock.h
 	weapon/CCrowbar.h
 	weapon/CPython.h
@@ -446,13 +459,9 @@ set(WEAPON_HDR
 	weapon/CPipewrench.h
 	weapon/CShockRifle.h
 	weapon/CSporeLauncher.h
-	weapon/CWeaponInventory.h
 	weapon/CKnife.h
-	weapon/weapons.h
 )
-set(WEAPON_SRC
-	weapon/CBasePlayerItem.cpp
-	weapon/CBasePlayerWeapon.cpp
+set(DEFAULT_WEAPON_SRC
 	weapon/CCrossbow.cpp
 	weapon/CCrowbar.cpp
 	weapon/CEgon.cpp
@@ -473,34 +482,30 @@ set(WEAPON_SRC
 	weapon/CSpore.cpp
 	weapon/CSqueak.cpp
 	weapon/CTripmine.cpp
-	weapon/CWeaponBox.cpp
 	weapon/CDisplacer.cpp
 	weapon/CDisplacerBall.cpp
 	weapon/CPipewrench.cpp
 	weapon/CShockRifle.cpp
 	weapon/CSporeLauncher.cpp
-	weapon/weapons.cpp
 	weapon/CGlock.cpp
-	weapon/CWeaponInventory.cpp
 	weapon/CKnife.cpp
-	weapon/combat.cpp
 )
 set(WEAPON_CUSTOM_HDR
-	../common/custom_weapon.h
-	../common/custom_weapon_net.h
-	../common/custom_weapon_schema.h
-	weapon/custom_weapon_config.h
-	weapon/CWeaponCustom.h
-	weapon/CWeaponEvents.h
-	weapon/CProjectileCustom.h
+	../common/wc_params.h
+	../common/wc_net.h
+	../common/wc_schema.h
+	weapon/custom/wc_config.h
+	weapon/custom/CWeaponCustom.h
+	weapon/custom/CWeaponEvents.h
+	weapon/custom/CProjectileCustom.h
 )
 set(WEAPON_CUSTOM_SRC
-	weapon/custom_weapon_net.cpp
-	weapon/custom_weapon_schema.cpp
-	weapon/custom_weapon_config.cpp
-	weapon/CWeaponCustom.cpp
-	weapon/CWeaponEvents.cpp
-	weapon/CProjectileCustom.cpp
+	weapon/custom/wc_net.cpp
+	weapon/custom/wc_schema.cpp
+	weapon/custom/wc_config.cpp
+	weapon/custom/CWeaponCustom.cpp
+	weapon/custom/CWeaponEvents.cpp
+	weapon/custom/CProjectileCustom.cpp
 )
 set(AMMO_HDR
 	weapon/CBasePlayerAmmo.h
@@ -659,6 +664,7 @@ set(ENT_SRC
 	${ALL_TRIGGER_BRUSH_SRC}
 	${ALL_TRIGGER_MISC_SRC}
 	${WEAPON_SRC}
+	${DEFAULT_WEAPON_SRC}
 	${WEAPON_CUSTOM_SRC}
 	${AMMO_SRC}
 	${ENV_SRC}
@@ -675,6 +681,7 @@ set(ENT_HDR
 	${PATH_HDR}
 	${TRIGGER_HDR}
 	${WEAPON_HDR}
+	${DEFAULT_WEAPON_HDR}
 	${WEAPON_CUSTOM_HDR}
 	${AMMO_HDR}
 )
@@ -712,8 +719,9 @@ write_ent_source_file("${MONSTER_ALIEN_SRC}" monsters_aliens.cpp)
 write_ent_source_file("${MONSTER_HUMAN_SRC}" monsters_humans.cpp)
 write_ent_source_file("${MONSTER_MACHINE_SRC}" monsters_machines.cpp)
 write_ent_source_file("${MONSTER_MISC_SRC}" monsters_misc.cpp)
-write_ent_source_file("${WEAPON_SRC}" all_weapons.cpp)
+write_ent_source_file("${DEFAULT_WEAPON_SRC}" default_weapons.cpp)
 write_ent_source_file("${WEAPON_CUSTOM_SRC}" custom_weapons.cpp)
+write_ent_source_file("${WEAPON_SRC}" misc_weapons.cpp)
 write_ent_source_file("${AMMO_SRC}" all_ammo.cpp)
 write_ent_source_file("${ALL_TRIGGER_POINT_SRC}" triggers_point.cpp)
 write_ent_source_file("${ALL_TRIGGER_BRUSH_SRC}" triggers_brush.cpp)
@@ -729,8 +737,9 @@ set(GENERATED_SRCS
 	${CMAKE_CURRENT_BINARY_DIR}/monsters_humans.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/monsters_machines.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/monsters_misc.cpp
-	${CMAKE_CURRENT_BINARY_DIR}/all_weapons.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/default_weapons.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/custom_weapons.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/misc_weapons.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/all_ammo.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/triggers_point.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/triggers_brush.cpp
@@ -813,8 +822,9 @@ elseif(MSVC)
 	source_group("Header Files\\Entities\\player" FILES ${PLAYER_HDR})
 	source_group("Header Files\\Entities\\trigger" FILES ${TRIGGER_HDR})
 	source_group("Header Files\\Entities\\weapon" FILES ${WEAPON_HDR})
-	source_group("Header Files\\Entities\\weapon\\custom" FILES ${WEAPON_CUSTOM_HDR})
 	source_group("Header Files\\Entities\\weapon\\ammo" FILES ${AMMO_HDR})
+	source_group("Header Files\\Entities\\weapon\\custom" FILES ${WEAPON_CUSTOM_HDR})
+	source_group("Header Files\\Entities\\weapon\\default" FILES ${DEFAULT_WEAPON_HDR})
 	source_group("Header Files\\Game" FILES ${GAME_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})
 	source_group("Header Files\\Network" FILES ${NET_HDR})
@@ -837,8 +847,9 @@ elseif(MSVC)
 	source_group("Source Files\\Entities\\trigger\\brush" FILES ${TRIGGER_BRUSHED_SRC})
 	source_group("Source Files\\Entities\\trigger\\obsolete" FILES ${TRIGGER_OBSOLETE_SRC})
 	source_group("Source Files\\Entities\\weapon" FILES ${WEAPON_SRC})
-	source_group("Source Files\\Entities\\weapon\\custom" FILES ${WEAPON_CUSTOM_SRC})
 	source_group("Source Files\\Entities\\weapon\\ammo" FILES ${AMMO_SRC})
+	source_group("Source Files\\Entities\\weapon\\custom" FILES ${WEAPON_CUSTOM_SRC})
+	source_group("Source Files\\Entities\\weapon\\default" FILES ${DEFAULT_WEAPON_SRC})
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})
 	source_group("Source Files\\Network" FILES ${NET_SRC})
 	source_group("Source Files\\Game" FILES ${GAME_SRC})

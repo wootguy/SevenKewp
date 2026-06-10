@@ -1,6 +1,6 @@
 #pragma once
 #include "CBasePlayerAmmo.h"
-#include "custom_weapon.h"
+#include "wc_params.h"
 
 class EXPORT CAmmoCustom : public CBasePlayerAmmo {
 public:

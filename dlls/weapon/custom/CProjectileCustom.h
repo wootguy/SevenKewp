@@ -1,5 +1,5 @@
 #pragma once
-#include "custom_weapon.h"
+#include "wc_params.h"
 #include "CBaseAnimating.h"
 
 #define FL_WC_PROJ_NO_BUBBLES		1

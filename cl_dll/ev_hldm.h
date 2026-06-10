@@ -7,7 +7,7 @@
 
 #if !defined ( EV_HLDMH )
 #define EV_HLDMH
-#include "custom_weapon_events.h"
+#include "wc_events.h"
 #include "../common/bullet.h"
 
 enum glock_e {

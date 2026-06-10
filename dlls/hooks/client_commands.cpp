@@ -18,7 +18,7 @@
 #include "te_effects.h"
 #include "nodes.h"
 #include "CWeaponCustom.h"
-#include "custom_weapon_config.h"
+#include "wc_config.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
 extern int gmsgSayText;

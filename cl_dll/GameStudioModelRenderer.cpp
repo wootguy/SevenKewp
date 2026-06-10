@@ -28,7 +28,7 @@
 #include "GameStudioModelRenderer.h"
 #include "Exports.h"
 
-#include "custom_weapon.h"
+#include "wc_params.h"
 
 //
 // Override the StudioModelRender virtual member functions here to implement custom bone

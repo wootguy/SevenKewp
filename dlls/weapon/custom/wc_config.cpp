@@ -1,6 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "custom_weapon_config.h"
+#include "wc_config.h"
 #include "skill.h"
 #include "decals.h"
 #include "Scheduler.h"

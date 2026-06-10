@@ -22,7 +22,7 @@
 #include "PluginManager.h"
 #include "user_messages.h"
 #include "HashMap.h"
-#include "custom_weapon_schema.h"
+#include "wc_schema.h"
 #include "module_funcs.h"
 
 cvar_t	displaysoundlist = {"displaysoundlist","0", 0, 0, 0};

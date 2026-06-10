@@ -23,6 +23,7 @@
 #include "gamerules.h"
 #include "weapon/CCrossbow.h"
 #include "te_effects.h"
+#include "CSoundEnt.h"
 
 #ifndef CLIENT_DLL
 

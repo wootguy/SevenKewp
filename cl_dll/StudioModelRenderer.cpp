@@ -23,7 +23,7 @@
 #include "GameStudioModelRenderer.h"
 
 #include <GL/gl.h>
-#include "custom_weapon.h"
+#include "wc_params.h"
 #include "ModPlayerState.h"
 
 extern cvar_t *tfc_newmodels;

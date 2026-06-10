@@ -34,7 +34,7 @@
 
 #include "r_studioint.h"
 #include "com_model.h"
-#include "custom_weapon.h"
+#include "wc_params.h"
 #include "engine_pv.h"
 #include "effects.h"
 
