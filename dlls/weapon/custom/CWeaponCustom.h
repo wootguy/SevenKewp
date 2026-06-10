@@ -25,11 +25,12 @@ enum WcAttackState {
 	WC_CHARGE_STATE_OVERCHARGED,
 };
 
-// m_fireState flags
-#define FL_WC_STATE_PRIMARY_ALT	(1<<0)	// using alternate primary fire settings
-#define FL_WC_STATE_LASER		(1<<1)	// laser is enabled
-#define FL_WC_STATE_IS_AKIMBO	(1<<2)	// currently in akimbo mode
-#define FL_WC_STATE_CAN_AKIMBO	(1<<3)	// can enable akimbo mode
+// m_fireState flags (32 bits)
+#define FL_WC_STATE_PRIMARY_ALT		(1<<0)	// using alternate primary fire settings
+#define FL_WC_STATE_LASER			(1<<1)	// laser is enabled
+#define FL_WC_STATE_IS_AKIMBO		(1<<2)	// currently in akimbo mode
+#define FL_WC_STATE_CAN_AKIMBO		(1<<3)	// can enable akimbo mode
+#define FL_WC_STATE_FIRST_DEPLOYED	(1<<4)	// weapon was deployed for the first time
 
 // m_inAttack flags
 #define FL_WC_INATTACK_PRIMARY_CALLED 0
@@ -166,6 +167,9 @@ public:
 	BOOL CanAkimbo() { return (m_fireState & FL_WC_STATE_CAN_AKIMBO) != 0; }
 	void SetCanAkimbo(bool canAkimbo);
 	BOOL IsAkimbo() { return (m_fireState & FL_WC_STATE_IS_AKIMBO) != 0; }
+	void EnableState(int stateBits) { m_fireState |= stateBits; }
+	void DisableState(int stateBits) { m_fireState &= ~stateBits; }
+	bool IsStateEnabled(int stateBits) { return m_fireState & stateBits; }
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);
 	WcAttackState GetChargedState(int attackIdx);

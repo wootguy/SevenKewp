@@ -585,7 +585,6 @@ BOOL CBasePlayerWeapon::DefaultDeploy(const char* szViewModel, const char* szWea
 	
 	m_pPlayer->ApplyEffects();
 	m_pPlayer->SetJumpPower(0);
-	m_pPlayer->m_weaponStateHack = true;
 
 	return TRUE;
 }

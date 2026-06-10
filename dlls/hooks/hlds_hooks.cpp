@@ -2101,15 +2101,6 @@ int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
 						item->m_iId						= II.iId;
 						item->m_iClip					= gun->m_iClip;
 
-						// the client sometimes misses a weapon state for their weapons,
-						// which causes them to do things like reloading right after deploying,
-						// despite having a full clip. Force a delta on the clip size to prevent that.
-						// TODO: Figure out how to reproduce and fi
-						if (pl->m_weaponStateHack) {
-							item->m_iClip = 123;
-							pl->m_weaponStateHack = 0;
-						}
-
 						uint64_t conflictMask = g_weaponSlotMasks[item->m_iId];
 						if (conflictMask != (1ULL << II.iId)) {
 							// this weapon shares a slot with others. Update the clip for all of

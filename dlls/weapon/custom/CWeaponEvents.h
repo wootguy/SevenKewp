@@ -101,7 +101,8 @@ public:
 
 	CWeaponEvents() {}
 
-	void ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft = 0, WcTrace* tr = NULL);
+	// returs true if any events were fired
+	bool ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft = 0, WcTrace* tr = NULL);
 	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire, WcTrace* tr);
 	void PlayDelayedEvents();
 	void CancelDelayedEvents(int trigger);

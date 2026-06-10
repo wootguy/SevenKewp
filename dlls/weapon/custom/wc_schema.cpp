@@ -56,6 +56,7 @@ const char* g_wc_evt_trigger_arg_primary_names[32];
 const char* g_wc_evt_trigger_clip_sp_names[32];
 const char* g_wc_evt_trigger_impact_names[32];
 const char* g_wc_evt_trigger_arg_idle_names[32];
+const char* g_wc_evt_trigger_arg_deploy_names[32];
 const char* g_wc_evt_charge_names[32];
 const char* g_wc_evt_category_names[32];
 static const char* g_wc_dmgFlags[32];
@@ -768,7 +769,7 @@ void init_custom_ammo_fields() {
 		AMMO_FIELD("ammo_type_hl", "", ammoTypeHl, 0, WC_PARAM_STRING),
 		AMMO_FIELD("ammo_given", "0", ammoGiven, 0, WC_PARAM_UINT16),
 		AMMO_FIELD("max_ammo", "0", maxAmmo, 0, WC_PARAM_UINT16),
-		);
+	);
 }
 
 void init_weapon_custom_config_parser() {
@@ -862,6 +863,12 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_LASER] = "_laser";
 	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_AKIMBO] = "_akimbo";
 
+	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_DEFAULT] = "";
+	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_LASER] = "_laser";
+	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_AKIMBO] = "_akimbo";
+	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_EMPTY] = "_empty";
+	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_FIRST] = "_first";
+
 	for (int i = 0; i < ARRAY_SZ(g_wc_evt_trigger_names); i++) {
 		if (!g_wc_evt_trigger_names[i])
 			continue;
@@ -875,8 +882,7 @@ void init_weapon_custom_config_parser() {
 		case WC_TRIG_RELOAD:
 		case WC_TRIG_RELOAD_EMPTY:
 		case WC_TRIG_RELOAD_NOT_EMPTY:
-		case WC_TRIG_RELOAD_FINISH:
-		case WC_TRIG_DEPLOY: {
+		case WC_TRIG_RELOAD_FINISH: {
 			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_arg_primary_names); k++) {
 				const char* key = UTIL_VarArgs("%s%s", tname, g_wc_evt_trigger_arg_primary_names[k]);
 				uint16_t val = (k << EVT_TYPE_BITS) | i;
@@ -885,17 +891,25 @@ void init_weapon_custom_config_parser() {
 			}
 			break;
 		}
-		case WC_TRIG_PRIMARY_CLIPSIZE:
-			for (int k = 0; k < 32; k++) {
-				const char* key = UTIL_VarArgs("%s_%u", tname, k);
+		case WC_TRIG_IDLE:
+			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_arg_idle_names); k++) {
+				const char* key = UTIL_VarArgs("%s%s", tname, g_wc_evt_trigger_arg_idle_names[k]);
 				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
 			}
 			break;
-		case WC_TRIG_IDLE:
-			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_arg_idle_names); k++) {
-				const char* key = UTIL_VarArgs("%s%s", tname, g_wc_evt_trigger_arg_idle_names[k]);
+		case WC_TRIG_DEPLOY:
+			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_arg_deploy_names); k++) {
+				const char* key = UTIL_VarArgs("%s%s", tname, g_wc_evt_trigger_arg_deploy_names[k]);
+				uint16_t val = (k << EVT_TYPE_BITS) | i;
+				g_wc_name_to_trigger.put(key, val);
+				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
+			}
+			break;
+		case WC_TRIG_PRIMARY_CLIPSIZE:
+			for (int k = 0; k < 32; k++) {
+				const char* key = UTIL_VarArgs("%s_%u", tname, k);
 				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);

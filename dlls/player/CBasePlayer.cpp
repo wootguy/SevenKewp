@@ -5967,6 +5967,10 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 				pWeapon = cOneWep;
 			}
 			else {
+				if (cwep) {
+					cwep->DisableState(FL_WC_STATE_FIRST_DEPLOYED);
+				}
+
 				m_weaponBits &= ~(1ULL << pWeapon->m_iId);// take item off hud
 				g_pGameRules->GetNextBestWeapon(this, pWeapon);
 			}

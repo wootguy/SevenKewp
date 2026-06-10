@@ -78,10 +78,18 @@ enum WeaponCustomEventTriggerImpactArg {
 };
 
 enum WeaponCustomEventIdleArg {
-	WC_TRIG_IDLE_ARG_DEFAULT,	// fire when not other special conditions are active
+	WC_TRIG_IDLE_ARG_DEFAULT,	// fire when other special conditions are not active
 	WC_TRIG_IDLE_ARG_EMPTY,		// fire when the clip is empty
 	WC_TRIG_IDLE_ARG_LASER,		// fire when the laser is active
 	WC_TRIG_IDLE_ARG_AKIMBO,	// fire when akimbo mode is active
+};
+
+enum WeaponCustomEventDeployArg {
+	WC_TRIG_DEPLOY_ARG_DEFAULT,		// fire when other special conditions are not active
+	WC_TRIG_DEPLOY_ARG_EMPTY,		// fire when the clip is empty
+	WC_TRIG_DEPLOY_ARG_LASER,		// fire when the laser is active
+	WC_TRIG_DEPLOY_ARG_AKIMBO,		// fire when in akimbo mode
+	WC_TRIG_DEPLOY_ARG_FIRST,		// fire when deployed for the first time
 };
 
 enum WeaponCustomEventTriggers {
@@ -107,7 +115,7 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_RELOAD_EMPTY,		// triggers when an empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_NOT_EMPTY,	// triggers when a non-empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_FINISH,		// triggers when a shotgun reload finishes
-	WC_TRIG_DEPLOY,				// Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_DEPLOY,				// Trigger arg: WeaponCustomEventDeployArg
 	WC_TRIG_IDLE,				// Trigger arg: WeaponCustomEventIdleArg
 	WC_TRIG_BULLET_FIRED,		// triggered when a bullet is fired
 	WC_TRIG_LASER_ON,			// triggered when the laser is enabled

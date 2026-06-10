@@ -107,15 +107,17 @@ bool WcSprite::IsAlive() {
 
 
 
-void CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bool akimboFire, int clipLeft, WcTrace* tr) {
+bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bool akimboFire, int clipLeft, WcTrace* tr) {
 #ifdef CLIENT_DLL
 	if (!g_runfuncs)
-		return;
+		return false;
 #endif
 
 	CBasePlayer* m_pPlayer = m_weapon->GetPlayer();
 	if (!m_pPlayer)
-		return;
+		return false;
+
+	bool anyTriggered = false;
 
 	for (int i = 0; i < m_weapon->params.numEvents; i++) {
 		WepEvt& evt = m_weapon->params.events[i];
@@ -132,7 +134,6 @@ void CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 		case WC_TRIG_RELOAD:
 		case WC_TRIG_RELOAD_EMPTY:
 		case WC_TRIG_RELOAD_NOT_EMPTY:
-		case WC_TRIG_DEPLOY:
 			argMatch = evt.triggerArg == WC_TRIG_SHOOT_ARG_ALWAYS || triggerArg == evt.triggerArg;
 			break;
 		case WC_TRIG_PRIMARY_CLIPSIZE:
@@ -141,6 +142,7 @@ void CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 		case WC_TRIG_PRIMARY_CHARGE:
 		case WC_TRIG_SECONDARY_CHARGE:
 		case WC_TRIG_IDLE:
+		case WC_TRIG_DEPLOY:
 			argMatch = triggerArg == evt.triggerArg;
 			break;
 		case WC_TRIG_PRIMARY_CLIP_SP:
@@ -164,6 +166,8 @@ void CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 		if (!argMatch)
 			continue;
 
+		anyTriggered = true;
+
 		if (evt.delay == 0) {
 			PlayEvent(i, leftHand, akimboFire, tr);
 
@@ -182,6 +186,8 @@ void CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 			QueueDelayedEvent(i, m_weapon->WallTime() + evt.delay * 0.001f, leftHand, akimboFire, tr);
 		}
 	}
+
+	return anyTriggered;
 }
 
 void CWeaponEvents::QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire, WcTrace* tr) {
@@ -998,15 +1004,10 @@ void CWeaponEvents::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 		m_weapon->m_idleTime = nextAction;
 	}
 
+	// never allow animations to be interrupted by idles
 	studiohdr_t* hdr = m_weapon->GetViewModelHeader();
-	if (hdr) {
-		// TODO: why is 0.05f needed? the single uzi deploy is jerky without out.
-		// if you modify this func, make sure the barnacled animations for every monster also look good.
-		//float animTime = GetSequenceDuration(hdr, anim) + 0.05f;
-		
+	if (hdr) {		
 		float animTime = GetSequenceDuration(hdr, anim);
-
-		// never allow animations to be interrupted by idles
 		m_weapon->m_idleTime = evt.anim.cooldown ? V_max(m_weapon->m_idleTime, animTime) : animTime;
 	}
 

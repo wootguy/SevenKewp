@@ -310,9 +310,20 @@ BOOL CWeaponCustom::Deploy()
 
 	m_pPlayer->m_flNextAttack = 0; // allow thinking during deployment
 
-	if (WallTime() - m_lastDeploy > MAX_PREDICTION_WAIT) {
-		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
-		events.ProcessEvents(WC_TRIG_DEPLOY, akimboArg);
+	if (g_runfuncs && WallTime() - m_lastDeploy > MAX_PREDICTION_WAIT) {
+		bool isFirstDeploy = !IsStateEnabled(FL_WC_STATE_FIRST_DEPLOYED);
+
+		bool handled =
+			(IsAkimbo() && events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_AKIMBO)) ||
+			(m_iClip == 0 && events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_EMPTY)) ||
+			(isFirstDeploy && events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_FIRST)) ||
+			(IsLaserOn() && events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_LASER));
+
+		if (!handled) {
+			events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_DEFAULT);
+		}
+
+		EnableState(FL_WC_STATE_FIRST_DEPLOYED);
 	}
 
 	// extra idle time added because high ping players are interrupted otherwise
@@ -492,16 +503,12 @@ void CWeaponCustom::WeaponIdle() {
 		return;
 	}
 
-	if (IsAkimbo()) {
-		events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_AKIMBO);
-	}
-	else if (IsLaserOn()) {
-		events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_LASER);
-	}
-	else if (m_iClip == 0 && (params.flags & FL_WC_WEP_EMPTY_IDLES)) {
-		events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_EMPTY);
-	}
-	else {
+	bool handled =
+		(IsAkimbo() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_AKIMBO)) ||
+		(m_iClip == 0 && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_EMPTY)) ||
+		(IsLaserOn() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_LASER));
+
+	if (!handled) {
 		events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_DEFAULT);
 	}
 
