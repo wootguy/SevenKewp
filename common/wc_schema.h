@@ -44,6 +44,7 @@ enum event_category {
 	WC_EVT_CATEGORY_TERTIARY,
 	WC_EVT_CATEGORY_RELOAD,
 	WC_EVT_CATEGORY_DEPLOY,
+	WC_EVT_CATEGORY_IDLE,
 	WC_EVT_CATEGORY_REACTION,
 	WC_EVT_CATEGORY_STATE_CHANGE,
 	WC_EVT_CATEGORY_UNKNOWN,
@@ -76,11 +77,8 @@ struct struct_desc_t {
 extern struct_desc_t g_wc_desc_general;
 extern struct_desc_t g_wc_desc_ammo;
 extern struct_desc_t g_wc_desc_reload;
-extern struct_desc_t g_wc_desc_idle;
 extern struct_desc_t g_wc_desc_akimbo_reload;
-extern struct_desc_t g_wc_desc_akimbo_idle;
 extern struct_desc_t g_wc_desc_akimbo;
-extern struct_desc_t g_wc_desc_laser_idle;
 extern struct_desc_t g_wc_desc_shoot_opts;
 extern struct_desc_t g_wc_desc_laser;
 extern struct_desc_t g_wc_desc_evt[WC_EVT_TOTAL];

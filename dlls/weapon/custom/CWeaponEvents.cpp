@@ -140,6 +140,7 @@ void CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 		case WC_TRIG_RICOCHET:
 		case WC_TRIG_PRIMARY_CHARGE:
 		case WC_TRIG_SECONDARY_CHARGE:
+		case WC_TRIG_IDLE:
 			argMatch = triggerArg == evt.triggerArg;
 			break;
 		case WC_TRIG_PRIMARY_CLIP_SP:
@@ -953,7 +954,26 @@ void CWeaponEvents::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 		idx = (animCount++ % evt.anim.anims.arrSz);
 	}
 	else {
-		idx = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.anim.anims.arrSz - 1);
+		if (evt.anim.hasWeights) {
+			int weightSum = 0;
+			for (int i = 0; i < evt.anim.weights.arrSz; i++) {
+				weightSum += evt.anim.weights.arr[i];
+			}
+
+			int idleRnd = (UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0.0, 1.0) + 0.005f) * weightSum;
+
+			for (int i = 0; i < evt.anim.anims.arrSz; i++) {
+				idleRnd -= evt.anim.weights.arr[i];
+
+				if (idleRnd <= 0) {
+					idx = i;
+					break;
+				}
+			}
+		}
+		else {
+			idx = UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, evt.anim.anims.arrSz - 1);
+		}
 	}
 
 	int anim = evt.anim.anims.arr[idx];
@@ -975,15 +995,23 @@ void CWeaponEvents::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 		m_weapon->m_flNextPrimaryAttack = nextAction;
 		m_weapon->m_flNextSecondaryAttack = nextAction;
 		m_weapon->m_flNextTertiaryAttack = nextAction;
-		m_weapon->m_flTimeWeaponIdle = nextAction;
-
-		studiohdr_t* hdr = m_weapon->GetViewModelHeader();
-		if (hdr) {
-			// TODO: why is 0.05f needed? the single uzi deploy is jerky without out.
-			// if you modify this func, make sure the barnacled animations for every monster also look good.
-			m_weapon->m_flTimeWeaponIdle = GetSequenceDuration(hdr, anim) + 0.05f;
-		}
+		m_weapon->m_idleTime = nextAction;
 	}
+
+	studiohdr_t* hdr = m_weapon->GetViewModelHeader();
+	if (hdr) {
+		// TODO: why is 0.05f needed? the single uzi deploy is jerky without out.
+		// if you modify this func, make sure the barnacled animations for every monster also look good.
+		//float animTime = GetSequenceDuration(hdr, anim) + 0.05f;
+		
+		float animTime = GetSequenceDuration(hdr, anim);
+
+		// never allow animations to be interrupted by idles
+		m_weapon->m_idleTime = evt.anim.cooldown ? V_max(m_weapon->m_idleTime, animTime) : animTime;
+	}
+
+	// don't spam idle events for weapons with idles that are a single frame of no movement
+	m_weapon->m_idleTime = V_max(m_weapon->m_idleTime, 0.2f);
 
 #ifdef CLIENT_DLL
 	cl_entity_t* vmodel = gEngfuncs.GetViewModel();

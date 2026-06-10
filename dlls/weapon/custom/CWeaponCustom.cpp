@@ -104,8 +104,6 @@ void CWeaponCustom::PrecacheEvents() {
 
 			pev->classname = params.classname; // undo alias
 		}
-		
-		params.maxClip = params.ammoInfo[0].maxClip;
 
 		if (m_iId <= 0) {
 			int* id = g_weaponClassIds.get(STRING(pev->classname));
@@ -305,7 +303,6 @@ BOOL CWeaponCustom::Deploy()
 
 	// default cooldown
 	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
-	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 	
 	if (IsLaserOn()) {
 		m_laserOnTime = WallTime() + m_flTimeWeaponIdle;
@@ -317,6 +314,9 @@ BOOL CWeaponCustom::Deploy()
 		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 		events.ProcessEvents(WC_TRIG_DEPLOY, akimboArg);
 	}
+
+	// extra idle time added because high ping players are interrupted otherwise
+	m_flTimeWeaponIdle = m_idleTime + 0.4f;
 
 	m_lastDeploy = WallTime();
 
@@ -492,45 +492,20 @@ void CWeaponCustom::WeaponIdle() {
 		return;
 	}
 
-	WeaponCustomIdle* idles = params.idles;
-	int idleCount = 4;
-
-	if (IsAkimbo())
-		idles = params.akimbo.idles;
-	else if (IsLaserOn())
-		idles = params.laser.idles;
-
-	if (params.flags & FL_WC_WEP_EMPTY_IDLES) {
-		idleCount = 2;
-
-		if (m_iClip == 0) {
-			idles = idles + 2;
-		}
+	if (IsAkimbo()) {
+		events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_AKIMBO);
+	}
+	else if (IsLaserOn()) {
+		events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_LASER);
+	}
+	else if (m_iClip == 0 && (params.flags & FL_WC_WEP_EMPTY_IDLES)) {
+		events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_EMPTY);
 	}
 	else {
-		if (m_iClip == 0 && params.ammoInfo[0].maxClip) {
-			return; // assume weapon should stay on the "fire last" animation
-		}
+		events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_DEFAULT);
 	}
 
-	int idleSum = 0;
-	for (int i = 0; i < idleCount; i++) {
-		idleSum += idles[i].weight;
-	}
-
-	int idleRnd = (UTIL_SharedRandomFloat(m_pPlayer->random_seed, 0.0, 1.0) + 0.005f) * idleSum;
-
-	for (int i = 0; i < idleCount; i++) {
-		WeaponCustomIdle& idle = idles[i];
-		idleRnd -= idle.weight;
-
-		if (idleRnd <= 0) {
-			m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + idle.time * 0.001f;
-			SendWeaponAnim(idle.anim, 1, pev->body);
-			SendWeaponAnimSpec(idle.anim);
-			break;
-		}
-	}
+	m_flTimeWeaponIdle = m_idleTime;
 
 	WeaponIdleCustom();
 }

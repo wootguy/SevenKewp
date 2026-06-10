@@ -72,6 +72,7 @@ public:
 	bool m_hasPredictionData; // was the client sent a prediction message for this weapon?
 	int m_chargeSoundEvt; // event index to load charge sound details from
 	int m_lastAnim;			// last animation set by an event
+	float m_idleTime;		// idle time for the last played event
 
 	int m_akimboAnim;
 	float m_akimboAnimTime;

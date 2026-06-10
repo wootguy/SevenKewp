@@ -119,14 +119,7 @@ struct WeaponCustomReload {
 	uint16_t time; // milliseconds
 };
 
-struct WeaponCustomIdle {
-	uint8_t anim;
-	uint8_t weight;	// chance of selection (prefer 0-100 with all idles adding up to 100)
-	uint16_t time;	// milliseconds before playing another idle animation
-};
-
 struct WeaponCustomAkimbo {
-	WeaponCustomIdle idles[4];
 	WeaponCustomReload reload;
 	uint8_t deployAnim;			// deploy anim for a single weapon (used for reloading and toggling akimbo mode)
 	uint16_t deployTime;
@@ -136,7 +129,6 @@ struct WeaponCustomAkimbo {
 };
 
 struct WeaponCustomLaser {
-	WeaponCustomIdle idles[4];	// alternate set of idle animations that don't twist the laser
 	uint16_t dotSprite;			// sprite used for the end point of the laser
 	uint16_t beamSprite;		// sprite used for the beam of the laser
 	uint8_t dotSz;				// dot sprite scale*10
@@ -154,7 +146,6 @@ struct WeaponCustomAmmoInfo {
 
 struct CustomWeaponParams {
 	uint32_t flags; // FL_WC_WEP_*
-	uint16_t maxClip; // TODO: Remove in next client update (redundant)
 	uint16_t vmodel;
 	uint16_t moveSpeedMult; // move speed multiplier (1-65535) (65535 = 100%) (0 = don't change)
 	int jumpPower;			// -1 = disabled, 0 = default velocity (800), 1+ = custom velocity
@@ -165,7 +156,6 @@ struct CustomWeaponParams {
 	// 2 = shotgun reload finish animation (cocking)
 	WeaponCustomReload reloadStage[3];
 
-	WeaponCustomIdle idles[4]; // randomly selected idle animations
 	CustomWeaponShootOpts shootOpts[4]; // primary, secondary, tertiary, and alt primary fire
 	WeaponCustomAkimbo akimbo;
 	WeaponCustomLaser laser;

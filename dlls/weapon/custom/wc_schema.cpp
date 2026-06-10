@@ -43,11 +43,8 @@
 struct_desc_t g_wc_desc_general;
 struct_desc_t g_wc_desc_ammo;
 struct_desc_t g_wc_desc_reload;
-struct_desc_t g_wc_desc_idle;
 struct_desc_t g_wc_desc_akimbo_reload;
-struct_desc_t g_wc_desc_akimbo_idle;
 struct_desc_t g_wc_desc_akimbo;
-struct_desc_t g_wc_desc_laser_idle;
 struct_desc_t g_wc_desc_shoot_opts;
 struct_desc_t g_wc_desc_laser;
 struct_desc_t g_wc_desc_evt[WC_EVT_TOTAL];
@@ -58,6 +55,7 @@ const char* g_wc_evt_trigger_names[128];
 const char* g_wc_evt_trigger_arg_primary_names[32];
 const char* g_wc_evt_trigger_clip_sp_names[32];
 const char* g_wc_evt_trigger_impact_names[32];
+const char* g_wc_evt_trigger_arg_idle_names[32];
 const char* g_wc_evt_charge_names[32];
 const char* g_wc_evt_category_names[32];
 static const char* g_wc_dmgFlags[32];
@@ -118,7 +116,6 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("kill_feed_icon", "", killFeedIcon, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("display_name", "", displayName, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FLAGS32("flags", "0", flags, 0, wep_flags),
-			WEP_FIELD("clip_size", "0", maxClip, 0, WC_PARAM_UINT16), // TODO: Remove me
 			WEP_FIELD("vmodel", NULL, vmodel, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_CFG),
 
 			WEP_FIELD("v_model", NULL, defaultModelV, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -155,24 +152,6 @@ void init_weapon_struct_fields() {
 	WEP_STRUCT_DESC(g_wc_desc_akimbo_reload, "reload_akimbo",
 		WEP_FIELD("anim", "0", akimbo.reload.anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("time", "0", akimbo.reload.time, 0, WC_PARAM_TIME),
-	);
-
-	WEP_STRUCT_DESC(g_wc_desc_idle, "idle",
-		WEP_FIELD("anim", "0", idles[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-		WEP_FIELD("weight", "0", idles[0].weight, 0, WC_PARAM_UINT8),
-		WEP_FIELD("time", "0", idles[0].time, 0, WC_PARAM_TIME),
-	);
-
-	WEP_STRUCT_DESC(g_wc_desc_akimbo_idle, "idle_akimbo",
-		WEP_FIELD("anim", "0", akimbo.idles[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-		WEP_FIELD("weight", "0", akimbo.idles[0].weight, 0, WC_PARAM_UINT8),
-		WEP_FIELD("time", "0", akimbo.idles[0].time, 0, WC_PARAM_TIME),
-	);
-
-	WEP_STRUCT_DESC(g_wc_desc_laser_idle, "idle_laser",
-		WEP_FIELD("anim", "0", laser.idles[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-		WEP_FIELD("weight", "0", laser.idles[0].weight, 0, WC_PARAM_UINT8),
-		WEP_FIELD("time", "0", laser.idles[0].time, 0, WC_PARAM_TIME),
 	);
 
 	{
@@ -376,10 +355,12 @@ void init_event_fields() {
 		hand_names[WC_ANIM_TRIG_HAND] = "trigger";
 
 		EVT_DESC(WC_EVT_WEP_ANIM, "weapon_anim",
-			EVT_FLAGS("flags", "0", anim.flags, 4, flags),
+			EVT_FLAGS("flags", "0", anim.flags, 3, flags),
 			EVT_FIELD("has_cooldown", "0", anim.hasCooldown, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("has_weights", "0", anim.hasWeights, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT__ENUM("hand", "both", anim.akimbo, 3, hand_names),
 			EVT_FIELD("anims", "0", anim.anims, 0, WC_PARAM_UINT8_ARRAY_8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
+			EVT_FIELD("weights", "0", anim.weights, 0, WC_PARAM_UINT8_ARRAY_8, NULL, 0, 0, EVT_COND_BYTE(anim.hasWeights)),
 			EVT_FIELD("cooldown", "0", anim.cooldown, 0, WC_PARAM_TIME, NULL, 0, 0, EVT_COND_BYTE(anim.hasCooldown)),
 		);
 	}
@@ -846,6 +827,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_names[WC_TRIG_RELOAD_NOT_EMPTY] = "reload_not_empty";
 	g_wc_evt_trigger_names[WC_TRIG_RELOAD_FINISH] = "reload_finish";
 	g_wc_evt_trigger_names[WC_TRIG_DEPLOY] = "deploy";
+	g_wc_evt_trigger_names[WC_TRIG_IDLE] = "idle";
 	g_wc_evt_trigger_names[WC_TRIG_BULLET_FIRED] = "bullet_fired";
 	g_wc_evt_trigger_names[WC_TRIG_LASER_ON] = "laser_on";
 	g_wc_evt_trigger_names[WC_TRIG_LASER_OFF] = "laser_off";
@@ -875,6 +857,11 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_impact_names[WC_TRIG_IMPACT_PRIMARY_ALT_WORLD] = "primary_alt_world";
 	g_wc_evt_trigger_impact_names[WC_TRIG_IMPACT_PRIMARY_ALT_MONSTER] = "primary_alt_monster";
 
+	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_DEFAULT] = "";
+	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_EMPTY] = "_empty";
+	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_LASER] = "_laser";
+	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_AKIMBO] = "_akimbo";
+
 	for (int i = 0; i < ARRAY_SZ(g_wc_evt_trigger_names); i++) {
 		if (!g_wc_evt_trigger_names[i])
 			continue;
@@ -901,6 +888,14 @@ void init_weapon_custom_config_parser() {
 		case WC_TRIG_PRIMARY_CLIPSIZE:
 			for (int k = 0; k < 32; k++) {
 				const char* key = UTIL_VarArgs("%s_%u", tname, k);
+				uint16_t val = (k << EVT_TYPE_BITS) | i;
+				g_wc_name_to_trigger.put(key, val);
+				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
+			}
+			break;
+		case WC_TRIG_IDLE:
+			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_arg_idle_names); k++) {
+				const char* key = UTIL_VarArgs("%s%s", tname, g_wc_evt_trigger_arg_idle_names[k]);
 				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
@@ -957,6 +952,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_category_names[WC_EVT_CATEGORY_TERTIARY] = "Tertiary attack";
 	g_wc_evt_category_names[WC_EVT_CATEGORY_RELOAD] = "Reload";
 	g_wc_evt_category_names[WC_EVT_CATEGORY_DEPLOY] = "Deploy events";
+	g_wc_evt_category_names[WC_EVT_CATEGORY_IDLE] = "Idle events";
 	g_wc_evt_category_names[WC_EVT_CATEGORY_REACTION] = "Reactionary events";
 	g_wc_evt_category_names[WC_EVT_CATEGORY_STATE_CHANGE] = "State change events";
 	g_wc_evt_category_names[WC_EVT_CATEGORY_UNKNOWN] = "Uncategorized events";
@@ -1155,6 +1151,7 @@ void wc_post_parse_event(WepEvt& evt) {
 	}
 	case WC_EVT_WEP_ANIM:
 		evt.anim.hasCooldown = evt.anim.cooldown != 0;
+		evt.anim.hasWeights = evt.anim.weights.arrSz != 0;
 		break;
 	case WC_EVT_EJECT_SHELL:
 		evt.ejectShell.hasVel = evt.ejectShell.vel[0] || evt.ejectShell.vel[1] || evt.ejectShell.vel[2];
@@ -1197,7 +1194,6 @@ int wc_get_event_category(int evt) {
 	case WC_TRIG_PRIMARY_START:
 	case WC_TRIG_PRIMARY_STOP:
 	case WC_TRIG_PRIMARY_FAIL:
-
 		return WC_EVT_CATEGORY_PRIMARY;
 
 	case WC_TRIG_SECONDARY:
@@ -1218,6 +1214,9 @@ int wc_get_event_category(int evt) {
 
 	case WC_TRIG_DEPLOY:
 		return WC_EVT_CATEGORY_DEPLOY;
+
+	case WC_TRIG_IDLE:
+		return WC_EVT_CATEGORY_IDLE;
 
 	case WC_TRIG_LASER_ON:
 	case WC_TRIG_LASER_OFF:

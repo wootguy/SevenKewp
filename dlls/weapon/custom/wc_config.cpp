@@ -648,34 +648,6 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 		wc_fwrite_struct_fields(cfg, &params, g_wc_desc_laser);
 	}
 
-	for (int k = 0; k < ARRAY_SZ(params.idles); k++) {
-		if (params.idles[k].time == 0)
-			continue;
-
-		fprintf(cfg, "\n[%s]\n", g_wc_desc_idle.name);
-		wc_fwrite_struct_fields(cfg, dat + sizeof(WeaponCustomIdle) * k, g_wc_desc_idle);
-	}
-
-	if (params.flags & FL_WC_WEP_AKIMBO) {
-		for (int k = 0; k < ARRAY_SZ(params.akimbo.idles); k++) {
-			if (params.akimbo.idles[k].time == 0)
-				continue;
-
-			fprintf(cfg, "\n[%s]\n", g_wc_desc_akimbo_idle.name);
-			wc_fwrite_struct_fields(cfg, dat + sizeof(WeaponCustomIdle) * k, g_wc_desc_akimbo_idle);
-		}
-	}
-
-	if (params.flags & FL_WC_WEP_HAS_LASER) {
-		for (int k = 0; k < ARRAY_SZ(params.laser.idles); k++) {
-			if (params.laser.idles[k].time == 0)
-				continue;
-
-			fprintf(cfg, "\n[%s]\n", g_wc_desc_laser_idle.name);
-			wc_fwrite_struct_fields(cfg, dat + sizeof(WeaponCustomIdle) * k, g_wc_desc_laser_idle);
-		}
-	}
-
 	static int attackOrder[4] = { 0, 3, 1, 2 };
 	static int optBits[4] = { FL_WC_WEP_HAS_PRIMARY, FL_WC_WEP_HAS_SECONDARY, FL_WC_WEP_HAS_TERTIARY, FL_WC_WEP_HAS_ALT_PRIMARY };
 	static const char* optNames[4] = { "primary_attack", "secondary_attack", "tertiary_attack", "primary_alt_attack" };
@@ -768,10 +740,6 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 	if (!groups.size())
 		return false;
 
-	int idleCount = 0;
-	int akimboIdleCount = 0;
-	int laserIdleCount = 0;
-
 	uint8_t* dat = (uint8_t*)&params;
 
 	for (SettingsGroup& group : groups) {
@@ -798,16 +766,6 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 			params.flags |= FL_WC_WEP_SHOTGUN_RELOAD;
 			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 2, g_wc_desc_reload);
 		}
-		else if (group.name == "idle") {
-			int maxIdles = ARRAY_SZ(params.idles);
-			if (idleCount >= maxIdles) {
-				ALERT(at_error, "%s (line %d): Too many [idle] sections (max is %d).\n",
-					path, group.lineno, maxIdles);
-				continue;
-			}
-			wc_read_struct(path, group, dat + sizeof(WeaponCustomIdle) * idleCount, g_wc_desc_idle);
-			idleCount++;
-		}
 		else if (group.name == "primary_attack") {
 			params.flags |= FL_WC_WEP_HAS_PRIMARY;
 			wc_read_shoot_opts(path, group, params, 0);
@@ -828,32 +786,12 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 			params.flags |= FL_WC_WEP_AKIMBO;
 			wc_read_struct(path, group, &params, g_wc_desc_akimbo);
 		}
-		else if (group.name == "idle_akimbo") {
-			int maxIdles = ARRAY_SZ(params.akimbo.idles);
-			if (akimboIdleCount >= maxIdles) {
-				ALERT(at_error, "%s (line %d): Too many [idle_akimbo] sections (max is %d).\n",
-					path, group.lineno, maxIdles);
-				continue;
-			}
-			wc_read_struct(path, group, dat + sizeof(WeaponCustomIdle) * akimboIdleCount, g_wc_desc_akimbo_idle);
-			akimboIdleCount++;
-		}
 		else if (group.name == "reload_akimbo") {
 			wc_read_struct(path, group, &params, g_wc_desc_akimbo_reload);
 		}
 		else if (group.name == "laser") {
 			params.flags |= FL_WC_WEP_HAS_LASER;
 			wc_read_struct(path, group, &params, g_wc_desc_laser);
-		}
-		else if (group.name == "idle_laser") {
-			int maxIdles = ARRAY_SZ(params.laser.idles);
-			if (laserIdleCount >= maxIdles) {
-				ALERT(at_error, "%s (line %d): Too many [idle_laser] sections (max is %d).\n",
-					path, group.lineno, maxIdles);
-				continue;
-			}
-			wc_read_struct(path, group, dat + sizeof(WeaponCustomIdle) * laserIdleCount, g_wc_desc_laser_idle);
-			laserIdleCount++;
 		}
 		else if (group.name.find("event.") == 0) {
 			wc_parse_event(path, params, group);
@@ -949,6 +887,7 @@ void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params, b
 			bool alreadyWritten = true;
 			switch (k) {
 			case WC_EVT_CATEGORY_DEPLOY:
+			case WC_EVT_CATEGORY_IDLE:
 			case WC_EVT_CATEGORY_REACTION:
 			case WC_EVT_CATEGORY_STATE_CHANGE:
 			case WC_EVT_CATEGORY_UNKNOWN:
@@ -1184,23 +1123,8 @@ void wc_compare_params(CustomWeaponParams& a, CustomWeaponParams& b) {
 		wc_compare_struct_fields(g_wc_desc_reload, dat1 + offset, dat2 + offset, i);
 	}
 
-	for (int i = 0; i < ARRAY_SZ(a.idles); i++) {
-		int offset = sizeof(WeaponCustomIdle) * i;
-		wc_compare_struct_fields(g_wc_desc_idle, dat1 + offset, dat2 + offset, i);
-	}
-
 	for (int i = 0; i < ARRAY_SZ(a.shootOpts); i++) {
 		wc_compare_struct_fields(g_wc_desc_shoot_opts, &a, &b, i);
-	}
-
-	for (int i = 0; i < ARRAY_SZ(a.akimbo.idles); i++) {
-		int offset = sizeof(WeaponCustomIdle) * i;
-		wc_compare_struct_fields(g_wc_desc_akimbo_idle, dat1 + offset, dat2 + offset, i);
-	}
-
-	for (int i = 0; i < ARRAY_SZ(a.laser.idles); i++) {
-		int offset = sizeof(WeaponCustomIdle) * i;
-		wc_compare_struct_fields(g_wc_desc_laser_idle, dat1 + offset, dat2 + offset, i);
 	}
 
 	if (a.numEvents != b.numEvents)
@@ -1440,8 +1364,10 @@ void MigrateWeaponsBegin() {
 void MigratePreDump(CustomWeaponParams& params) {
 
 	if (false) {
+		/*
 		WepEvt& evt = params.events[params.numEvents++];
-		evt = WepEvt(WC_TRIG_DEPLOY, 0, WC_EVT_WEP_ANIM);
+		evt = WepEvt(WC_TRIG_IDLE, arg, WC_EVT_WEP_ANIM);
+		*/
 	}
 }
 

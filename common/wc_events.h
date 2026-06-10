@@ -77,6 +77,13 @@ enum WeaponCustomEventTriggerImpactArg {
 	WC_TRIG_IMPACT_PRIMARY_ALT_MONSTER,
 };
 
+enum WeaponCustomEventIdleArg {
+	WC_TRIG_IDLE_ARG_DEFAULT,	// fire when not other special conditions are active
+	WC_TRIG_IDLE_ARG_EMPTY,		// fire when the clip is empty
+	WC_TRIG_IDLE_ARG_LASER,		// fire when the laser is active
+	WC_TRIG_IDLE_ARG_AKIMBO,	// fire when akimbo mode is active
+};
+
 enum WeaponCustomEventTriggers {
 	WC_TRIG_PRIMARY,			// trigger arg: WeaponCustomEventTriggerShootArg (does not trigger when alternate fire is active)
 	WC_TRIG_SECONDARY,			// trigger arg: WeaponCustomEventTriggerShootArg
@@ -100,7 +107,8 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_RELOAD_EMPTY,		// triggers when an empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_NOT_EMPTY,	// triggers when a non-empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_FINISH,		// triggers when a shotgun reload finishes
-	WC_TRIG_DEPLOY,				// Trigger arg : WeaponCustomEventTriggerShootArg
+	WC_TRIG_DEPLOY,				// Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_IDLE,				// Trigger arg: WeaponCustomEventIdleArg
 	WC_TRIG_BULLET_FIRED,		// triggered when a bullet is fired
 	WC_TRIG_LASER_ON,			// triggered when the laser is enabled
 	WC_TRIG_LASER_OFF,			// triggered when the laser is disabled
@@ -121,7 +129,6 @@ enum WeaponCustomEventType {
 	WC_EVT_BEAM,
 	WC_EVT_PROJECTILE,		// for slow-moving projectiles that aren't predicted on the client
 	WC_EVT_KICKBACK,
-	WC_EVT_UNUSED,			// TODO: remove this for next client update (duplicate
 	WC_EVT_TOGGLE_STATE,	// toggle some combination of weapon state bits
 	WC_EVT_TOGGLE_ZOOM,
 	WC_EVT_HIDE_LASER,		// temporarily hide the laser
@@ -337,12 +344,14 @@ struct WepEvt {
 		} recoil;
 
 		struct {
-			uint8_t flags;			// 4 bits - FL_WC_ANIM_*
+			uint8_t flags;			// 3 bits - FL_WC_ANIM_*
 			uint8_t hasCooldown;	// 1 bit - if set, cooldown attacks and idle animations
+			uint8_t hasWeights;		// 1 bit - if set, use weights to influence random selection
 			uint8_t akimbo;			// 3 bits - WeaponCustomAnimHand
 			WepEvtArr8 anims;
 
 			uint16_t cooldown;		// block attacks for this long.
+			WepEvtArr8 weights;		// weights for each anim, for random selection
 		} anim;
 
 		struct {

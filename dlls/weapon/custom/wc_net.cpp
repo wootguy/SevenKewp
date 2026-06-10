@@ -298,10 +298,9 @@ void SendWeaponData(edict_t* target, CWeaponCustom* wep) {
 
 	wc_send_netmsg_struct(g_wc_desc_general, dat);
 
-	// TODO: For next client update
-	//for (int k = 0; k < 2; k++) {
-	//	wc_send_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
-	//}
+	for (int k = 0; k < 2; k++) {
+		wc_send_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
+	}
 
 	for (int k = 0; k < 3; k++) {
 		wc_send_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload) * k);
@@ -310,24 +309,12 @@ void SendWeaponData(edict_t* target, CWeaponCustom* wep) {
 			break;
 	}
 
-	for (int k = 0; k < 4; k++) {
-		wc_send_netmsg_struct(g_wc_desc_idle, dat + sizeof(WeaponCustomIdle) * k);
-	}
-
 	if (params.flags & FL_WC_WEP_AKIMBO) {
-		for (int k = 0; k < 4; k++) {
-			wc_send_netmsg_struct(g_wc_desc_akimbo_idle, dat + sizeof(WeaponCustomIdle) * k);
-		}
-
 		wc_send_netmsg_struct(g_wc_desc_akimbo_reload, dat);
 		wc_send_netmsg_struct(g_wc_desc_akimbo, dat);
 	}
 
 	if (params.flags & FL_WC_WEP_HAS_LASER) {
-		for (int k = 0; k < 4; k++) {
-			wc_send_netmsg_struct(g_wc_desc_laser_idle, dat + sizeof(WeaponCustomIdle) * k);
-		}
-
 		wc_send_netmsg_struct(g_wc_desc_laser, dat);
 	}
 
@@ -432,8 +419,6 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 		return;
 	}
 
-	params.maxClip = params.ammoInfo[0].maxClip;
-
 	if (sendMode != WC_PRED_SEND_EVT) {
 		SendWeaponData(target, wep);
 	}
@@ -474,11 +459,9 @@ int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pb
 
 	wc_read_netmsg_struct(g_wc_desc_general, dat);
 
-	// TODO: For next client update
-	//for (int k = 0; k < 2; k++) {
-	//	wc_read_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
-	//}
-	parms.ammoInfo[0].maxClip = parms.maxClip;
+	for (int k = 0; k < 2; k++) {
+		wc_read_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
+	}
 
 	for (int k = 0; k < 3; k++) {
 		wc_read_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload)*k);
@@ -487,24 +470,12 @@ int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pb
 			break;
 	}
 
-	for (int k = 0; k < 4; k++) {
-		wc_read_netmsg_struct(g_wc_desc_idle, dat + sizeof(WeaponCustomIdle) * k);
-	}
-
 	if (parms.flags & FL_WC_WEP_AKIMBO) {
-		for (int k = 0; k < 4; k++) {
-			wc_read_netmsg_struct(g_wc_desc_akimbo_idle, dat + sizeof(WeaponCustomIdle) * k);
-		}
-
 		wc_read_netmsg_struct(g_wc_desc_akimbo_reload, dat);
 		wc_read_netmsg_struct(g_wc_desc_akimbo, dat);
 	}
 
 	if (parms.flags & FL_WC_WEP_HAS_LASER) {
-		for (int k = 0; k < 4; k++) {
-			wc_read_netmsg_struct(g_wc_desc_laser_idle, dat + sizeof(WeaponCustomIdle) * k);
-		}
-
 		wc_read_netmsg_struct(g_wc_desc_laser, dat);
 	}
 
