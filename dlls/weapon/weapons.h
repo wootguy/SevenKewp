@@ -16,15 +16,10 @@
 #define WEAPONS_H
 
 #include "ammo.h"
+#include "../common/bullet.h"
 
 class CBasePlayer;
 EXPORT extern int gmsgWeapPickup;
-extern StringMap g_defaultSpriteDirs;
-extern StringMap g_customWeaponConfigs; // maps a classname to its config file
-extern StringMap g_customAmmoConfigs; // maps a classname to its config file
-extern StringSet g_registeredHlWeaponAmmo; // ammo types that are used by currently registered weapons that HL players can pick up
-extern HashMap<int> g_ammoCapacities;
-extern HashMap<int> g_ammoCapacitiesInitial; // first ammo capacity that was set
 
 typedef struct
 {
@@ -112,24 +107,6 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define SATCHEL_WEIGHT			-10
 #define TRIPMINE_WEIGHT			-10
 
-// bullet types
-typedef	enum
-{
-	BULLET_NONE = 0,
-	BULLET_PLAYER_9MM, // glock
-	BULLET_PLAYER_MP5, // mp5
-	BULLET_PLAYER_357, // python
-	BULLET_PLAYER_BUCKSHOT, // shotgun
-	BULLET_PLAYER_CROWBAR, // crowbar swipe
-
-	BULLET_MONSTER_9MM,
-	BULLET_MONSTER_MP5,
-	BULLET_MONSTER_12MM,
-	BULLET_MONSTER_762,
-	BULLET_PLAYER_556,
-	BULLET_BEAM,		// different impact fx
-} Bullet;
-
 #define ITEM_FLAG_SELECTONEMPTY		1
 #define ITEM_FLAG_NOAUTORELOAD		2
 #define ITEM_FLAG_NOAUTOSWITCHEMPTY	4
@@ -159,6 +136,14 @@ EXPORT extern DLL_GLOBAL	short	g_waterSplashWake2Spr; // holds the model index f
 
 extern const char* g_waterSplashSounds[3];
 #define WATER_SPLASH2_SND_PATH "water/waterblow.wav"
+
+extern StringMap g_defaultSpriteDirs;
+extern StringMap g_customWeaponConfigs; // maps a classname to its config file
+extern StringMap g_customAmmoConfigs; // maps a classname to its config file
+extern StringSet g_registeredHlWeaponAmmo; // ammo types that are used by currently registered weapons that HL players can pick up
+extern HashMap<int> g_ammoCapacities;
+extern HashMap<int> g_ammoCapacitiesInitial; // first ammo capacity that was set
+extern const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
 
 EXPORT void ClearMultiDamage(void);
 EXPORT void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker );

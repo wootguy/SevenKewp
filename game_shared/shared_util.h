@@ -152,3 +152,6 @@ EXPORT Vector UTIL_ConeFromDegrees(float degrees);
 
 // open a file using a path relative to the game dir (valve/)
 EXPORT FILE* UTIL_OpenFile(const char* path, const char* mode);
+
+// get set bit position in mask
+EXPORT int BitIndex(uint32_t mask);

@@ -18,9 +18,12 @@ set(SHARED_WEAPON_SRC
 	../dlls/weapon/CShotgun.cpp
 	../dlls/weapon/CSqueak.cpp
 	../dlls/weapon/CTripmine.cpp
+)
+set(CUSTOM_WEAPON_SRC
 	../dlls/weapon/CWeaponCustom.cpp
 	../dlls/weapon/CWeaponEvents.cpp
-	../dlls/weapon/custom_weapon.cpp
+	../dlls/weapon/custom_weapon_net.cpp
+	../dlls/weapon/custom_weapon_schema.cpp
 )
 set(CLIENT_WEAPON_SRC
 	hl/hl_weapons.cpp
@@ -229,7 +232,7 @@ set_source_files_properties(${SHARED_WEAPON_SRC} PROPERTIES HEADER_FILE_ONLY TRU
 
 set(ALL_SRC	
 	${MISC_HDR}
-	${SHARED_WEAPON_SRC} ${CLIENT_WEAPON_SRC} ${WEAPON_HDR}
+	${SHARED_WEAPON_SRC} ${CLIENT_WEAPON_SRC} ${CUSTOM_WEAPON_SRC} ${WEAPON_HDR}
 	${HUD_SRC} ${HUD_HDR}
 	${VGUI_SRC} ${VGUI_HDR}
 	${INPUT_SRC} ${INPUT_HDR}
@@ -334,6 +337,7 @@ elseif(MSVC)
 	
 	source_group("Source Files\\Entities" FILES ${ENTITY_SRC})	
 	source_group("Source Files\\Weapons\\Shared" FILES ${SHARED_WEAPON_SRC} ${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp)	
+	source_group("Source Files\\Weapons\\Custom" FILES ${CUSTOM_WEAPON_SRC})	
 	source_group("Source Files\\Weapons" FILES ${CLIENT_WEAPON_SRC})	
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})	
 	source_group("Source Files\\Game" FILES ${GAME_SRC})	

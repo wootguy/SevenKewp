@@ -60,6 +60,7 @@
 #include "CWorld.h"
 #include "user_messages.h"
 #include "CBreakable.h"
+#include "custom_weapon_config.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>

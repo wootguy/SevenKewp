@@ -20,6 +20,7 @@
 #include "skill.h"
 #include "user_messages.h"
 #include "CAmmoCustom.h"
+#include "CWeaponCustom.h"
 
 LINK_ENTITY_TO_CLASS(game_player_equip, CGamePlayerEquip)
 

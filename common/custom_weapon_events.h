@@ -588,10 +588,10 @@ struct WepEvt {
 			RGBA cuser2;
 			RGBA cuser3;
 			RGBA cuser4;
-			EHANDLE euser1;
-			EHANDLE euser2;
-			EHANDLE euser3;
-			EHANDLE euser4;
+			int euser1;
+			int euser2;
+			int euser3;
+			int euser4;
 		} server;
 	};
 

@@ -1,37 +1,21 @@
+#include "extdll.h"
+#include "util.h"
 #include "CWeaponCustom.h"
 #include "hlds_hooks.h"
+#include "te_effects.h"
+#include "CCrowbar.h"
+#include "CRpg.h"
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud_iface.h"
+#include "../cl_dll/ev_hldm.h"
+#include "../cl_dll/com_weapons.h"
 #include "../game_shared/prediction_files.h"
-#include "eng_wrappers.h"
-#include "../common/pmtrace.h"
-#include "../pm_shared/pm_defs.h"
-extern int g_runfuncs;
-extern int g_runningKickbackPred;
-extern int g_last_attack_mode;
-extern Vector g_vApplyVel;
-void UpdateZoomCrosshair(int id, bool zoom);
-void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags, Vector* origin);
-void WC_EV_EjectShell(WepEvt& evt, bool leftHand);
-void WC_EV_PunchAngle(WepEvt& evt, int seed, float attackTime);
-void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
-pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int tracerColor, bool gunshotDecal, bool textureSound, int iShot, int iDamage);
-void EV_LaserOff();
-void WC_EV_Dlight(WepEvt& evt, Vector pos);
-uint32_t GetTimeAtCmd(uint32_t cmdId);
-Vector WC_GetAim(float spreadX, float spreadY);
-void EV_MuzzleFlash(void);
-cl_entity_t* WC_GetPlayer();
-void EV_EgonFlareCallback(struct tempent_s* ent, float frametime, float currenttime);
-void EV_HLDM_GunshotDecalEffects(Vector pos, bool playSound);
-void HUD_PlaySound(const char* sound, float volume);
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 #else
 int g_runfuncs = 1;
 #define PRINTF(fmt, ...)
-#include "game.h"
 #endif
 
 

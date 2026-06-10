@@ -65,6 +65,18 @@ MULTIDAMAGE gMultiDamage;
 
 #define TRACER_FREQ		4			// Tracers fire every fourth bullet
 
+bool g_registeringCustomWeps = false;
+StringSet g_weaponNames;
+HashMap<int> g_weaponClassIds;
+StringMap g_defaultSpriteDirs;
+StringMap g_customWeaponConfigs;
+StringMap g_customAmmoConfigs;
+StringSet g_registeredHlWeaponAmmo;
+
+const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
+HashMap<int> g_ammoCapacities;
+HashMap<int> g_ammoCapacitiesInitial;
+
 //=========================================================
 // MaxAmmoCarry - pass in a name and this function will tell
 // you the maximum amount of that type of ammunition that a 
@@ -195,18 +207,6 @@ void AddAmmoNameToAmmoRegistry( const char *szAmmoname, bool isSevenKewpGun)
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].pszName = szAmmoname;
 	CBasePlayerItem::AmmoInfoArray[giAmmoIndex].iId = giAmmoIndex;   // yes, this info is redundant
 }
-
-bool g_registeringCustomWeps = false;
-StringSet g_weaponNames;
-HashMap<int> g_weaponClassIds;
-StringMap g_defaultSpriteDirs;
-StringMap g_customWeaponConfigs;
-StringMap g_customAmmoConfigs;
-StringSet g_registeredHlWeaponAmmo;
-
-const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
-HashMap<int> g_ammoCapacities;
-HashMap<int> g_ammoCapacitiesInitial;
 
 int NextAutoWeaponId(bool sevenKewpOnly) {
 	int startIdx = sevenKewpOnly ? WEAPON_SUIT+1 : 1;

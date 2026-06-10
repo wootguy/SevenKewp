@@ -1,4 +1,29 @@
+#include "extdll.h"
+#include "util.h"
+#include "CSprite.h"
+#include "CBeam.h"
+#include "CCrossbow.h"
+#include "CDisplacerBall.h"
+#include "customentity.h"
 #include "CWeaponCustom.h"
+#include "user_messages.h"
+
+#ifdef CLIENT_DLL
+#include "../cl_dll/hud_iface.h"
+#include "../game_shared/prediction_files.h"
+#include "../common/pmtrace.h"
+#include "../common/event_api.h"
+#include "../pm_shared/pm_defs.h"
+#include "../cl_dll/ev_hldm.h"
+#include "../cl_dll/com_weapons.h"
+#include "../cl_dll/eventscripts.h"
+bool VerboseDebugEnabled();
+#define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
+#define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
+#else
+#define PRINTD(fmt, ...)
+#define PRINTF(fmt, ...)
+#endif
 
 int CWeaponEvents::m_tracerCount[32];
 TraceResult g_traces[256];
@@ -6,8 +31,6 @@ TraceResult g_traces[256];
 
 // convert a client-side trace struct to the server-side kind
 #ifdef CLIENT_DLL
-bool VerboseDebugEnabled();
-
 WcTrace ConvertTrace(pmtrace_t tr, Vector startPos) {
 	WcTrace out;
 

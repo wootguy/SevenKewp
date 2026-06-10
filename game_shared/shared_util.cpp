@@ -1018,10 +1018,19 @@ FILE* UTIL_OpenFile(const char* path, const char* mode) {
 #else
 		ALERT(at_error, "Failed to open '%s' in mode '%s' (code %d)\n", gpath, mode, errno);
 #endif
-
-		char buf[512];
-		getcwd(buf, sizeof(buf));
 	}
 
 	return f;
+}
+
+int BitIndex(uint32_t mask) {
+	if (mask == 0) return -1; // or handle error
+
+#if defined(_MSC_VER)
+	unsigned long index;
+	_BitScanForward(&index, mask);
+	return (int)index;
+#else
+	return __builtin_ctz(mask);
+#endif
 }

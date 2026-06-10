@@ -85,9 +85,9 @@ public:
 		ring->Expand(radius, MODEL_INDEX("sprites/white.spr"), 0, 0, 8, w, 0, RGBA(255, 0, 0, 128), 0, MSG_PVS, pev->origin, NULL);
 		*/
 
-		Vector dir = Vector(2, 0, 0);
-		uint8_t speed = 100;
-		uint8_t noise = 0;
+		//Vector dir = Vector(2, 0, 0);
+		//uint8_t speed = 100;
+		//uint8_t noise = 0;
 		//UTIL_SpriteSpray(pev->origin, dir, MODEL_INDEX("sprites/mommaspout.spr"), 1, speed, noise, false);
 		//UTIL_SpriteSpray(pev->origin + Vector(0, 32, 0), dir, MODEL_INDEX("sprites/mommaspout.spr"), 1, speed, noise, true);
 

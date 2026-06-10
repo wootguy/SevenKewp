@@ -4,6 +4,29 @@
 #define CROSSBOW_MAX_CLIP		5
 #define CROSSBOW_DEFAULT_GIVE	5
 
+#define BOLT_AIR_VELOCITY	2000
+#define BOLT_WATER_VELOCITY	1000
+
+// UNDONE: Save/restore this?  Don't forget to set classname and LINK_ENTITY_TO_CLASS()
+// 
+// OVERLOADS SOME ENTVARS:
+//
+// speed - the ideal magnitude of my velocity
+class CCrossbowBolt : public CBaseEntity
+{
+	void Spawn(void);
+	void Precache(void);
+	int  Classify(void);
+	void EXPORT BubbleThink(void);
+	void EXPORT BoltTouch(CBaseEntity* pOther);
+	void EXPORT ExplodeThink(void);
+
+	//int m_iTrail;
+
+public:
+	static CCrossbowBolt* BoltCreate(void);
+};
+
 class CCrossbow : public CBasePlayerWeapon
 {
 public:

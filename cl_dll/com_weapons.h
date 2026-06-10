@@ -33,11 +33,20 @@ unsigned short	stub_PrecacheEvent( int type, const char *s );
 const char		*stub_NameForFunction	( uint32 function );
 void			stub_SetModel			( struct edict_s *e, const char *m );
 
+// toggle zoom crosshair for the given weapon
+void UpdateZoomCrosshair(int weapon_id, bool zoom);
+
+// get the global cmd timer value at the given cmd ID
+uint32_t GetTimeAtCmd(uint32_t cmdId);
 
 extern cvar_t *cl_lw;
 
 extern int g_runfuncs;
 extern float g_lastFOV;
 extern struct local_state_s *g_finalstate;
+extern int g_runningKickbackPred;
+extern int g_last_attack_mode;
+extern int g_irunninggausspred;
+extern Vector g_vApplyVel;
 
 #endif
