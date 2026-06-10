@@ -39,6 +39,24 @@ void UpdateZoomCrosshair(int weapon_id, bool zoom);
 // get the global cmd timer value at the given cmd ID
 uint32_t GetTimeAtCmd(uint32_t cmdId);
 
+struct CustomWeaponParams;
+struct WEAPON;
+
+bool IsPredictionWeaponZoomed();
+CustomWeaponParams* GetCustomWeaponParams(int id);
+CustomWeaponParams* GetCurrentCustomWeaponParams();
+void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
+	float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy);
+void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, float** m_lastEventFrame);
+bool CanWeaponAkimbo(int id);
+void GetCurrentCustomWeaponState(int id, int& akimboClip);
+bool IsViewModelAkimbo();
+int GetCustomWeaponBody(int id);
+bool IsExclusiveWeapon(int id);
+void InitCustomWeapon(int id);
+void ResetCustomWeaponStates();
+void SetItemInfo(WEAPON* wep);
+
 extern cvar_t *cl_lw;
 
 extern int g_runfuncs;

@@ -288,6 +288,136 @@ void wc_read_netmsg_struct(struct_desc_t& desc, void* dat, bool isEvent=false) {
 #endif
 }
 
+void SendWeaponData(edict_t* target, CWeaponCustom* wep) {
+#ifndef CLIENT_DLL
+	CustomWeaponParams& params = wep->params;
+	uint8_t* dat = (uint8_t*)&params;
+
+	MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeapon, NULL, target);
+	WRITE_BYTE(wep->m_iId);
+
+	wc_send_netmsg_struct(g_wc_desc_general, dat);
+
+	// TODO: For next client update
+	//for (int k = 0; k < 2; k++) {
+	//	wc_send_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
+	//}
+
+	for (int k = 0; k < 3; k++) {
+		wc_send_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload) * k);
+
+		if (k == 2 && !(params.flags & FL_WC_WEP_SHOTGUN_RELOAD))
+			break;
+	}
+
+	for (int k = 0; k < 4; k++) {
+		wc_send_netmsg_struct(g_wc_desc_idle, dat + sizeof(WeaponCustomIdle) * k);
+	}
+
+	if (params.flags & FL_WC_WEP_AKIMBO) {
+		for (int k = 0; k < 4; k++) {
+			wc_send_netmsg_struct(g_wc_desc_akimbo_idle, dat + sizeof(WeaponCustomIdle) * k);
+		}
+
+		wc_send_netmsg_struct(g_wc_desc_akimbo_reload, dat);
+		wc_send_netmsg_struct(g_wc_desc_akimbo, dat);
+	}
+
+	if (params.flags & FL_WC_WEP_HAS_LASER) {
+		for (int k = 0; k < 4; k++) {
+			wc_send_netmsg_struct(g_wc_desc_laser_idle, dat + sizeof(WeaponCustomIdle) * k);
+		}
+
+		wc_send_netmsg_struct(g_wc_desc_laser, dat);
+	}
+
+	for (int k = 0; k < 4; k++) {
+		if (!(params.flags & FL_WC_WEP_HAS_PRIMARY) && k == 0)
+			continue;
+		if (!(params.flags & FL_WC_WEP_HAS_SECONDARY) && k == 1)
+			continue;
+		if (!(params.flags & FL_WC_WEP_HAS_TERTIARY) && k == 2)
+			continue;
+		if (!(params.flags & FL_WC_WEP_HAS_ALT_PRIMARY) && k == 3)
+			continue;
+
+		wc_send_netmsg_struct(g_wc_desc_shoot_opts, dat + sizeof(CustomWeaponShootOpts) * k);
+	}
+	MESSAGE_END();
+#endif
+}
+
+int SendEventData(edict_t* target, CWeaponCustom* wep) {
+	int evBytes = 0;
+
+#ifndef CLIENT_DLL
+	CustomWeaponParams& params = wep->params;
+	uint8_t* dat = (uint8_t*)&params;
+
+	int chunks = ceilf(params.numEvents / (float)g_evt_data_chunk_size);
+
+	for (int c = 0; c < chunks; c++) {
+		int evtOffset = c * g_evt_data_chunk_size;
+		if (evtOffset >= params.numEvents)
+			break;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
+		WRITE_BYTE(wep->m_iId);
+
+		int sendEvents = 0; // TODO: skipping events will complicate live updates due to mismatched indexes
+		for (int k = evtOffset; k < params.numEvents && k - evtOffset < g_evt_data_chunk_size; k++) {
+			WepEvt& evt = params.events[k];
+
+			struct_desc_t* desc = get_evt_desc(evt.evtType);
+			if (desc && !is_server_side_event(evt.evtType))
+				sendEvents++;
+		}
+
+		WRITE_BYTE((c << 4) | (sendEvents - 1));
+
+		for (int k = evtOffset; k < params.numEvents && k - evtOffset < g_evt_data_chunk_size; k++) {
+			WepEvt& evt = params.events[k];
+
+			if (is_server_side_event(evt.evtType))
+				continue;
+
+			struct_desc_t* desc = get_evt_desc(evt.evtType);
+			if (!desc)
+				continue;
+
+			int headerSz = 2;
+			uint16_t condFlags = (evt.hasOffset << 2) | (evt.hasDelay << 1) | evt.hasTrigArg;
+			uint16_t packedHeader = (condFlags << (EVT_TYPE_BITS + EVT_TRIGGER_BITS)) | (evt.trigger << EVT_TYPE_BITS) | evt.evtType;
+
+			WRITE_SHORT(packedHeader);
+			if (evt.hasTrigArg) {
+				WRITE_BYTE(evt.triggerArg);
+				headerSz += 1;
+			}
+			if (evt.hasDelay) {
+				WRITE_SHORT(evt.delay);
+				headerSz += 2;
+			}
+			if (evt.hasOffset) {
+				WRITE_SHORT(evt.offset);
+				headerSz += 2;
+			}
+
+			ALERT(at_aiconsole, "Write event %s (%d header bytes)\n",
+				describe_event(evt), headerSz);
+
+			wc_send_netmsg_struct(*desc, &evt);
+		}
+		MESSAGE_END();
+
+		evBytes += LastMsgSize();
+	}
+
+#endif
+
+	return evBytes;
+}
+
 void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, PredictionDataSendMode sendMode) {
 #ifndef CLIENT_DLL
 	CustomWeaponParams& params = wep->params;
@@ -305,57 +435,7 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 	params.maxClip = params.ammoInfo[0].maxClip;
 
 	if (sendMode != WC_PRED_SEND_EVT) {
-		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeapon, NULL, target);
-		WRITE_BYTE(wep->m_iId);
-
-		wc_send_netmsg_struct(g_wc_desc_general, dat);
-
-		// TODO: For next client update
-		//for (int k = 0; k < 2; k++) {
-		//	wc_send_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
-		//}
-
-		for (int k = 0; k < 3; k++) {
-			wc_send_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload) * k);
-
-			if (k == 2 && !(params.flags & FL_WC_WEP_SHOTGUN_RELOAD))
-				break;
-		}
-
-		for (int k = 0; k < 4; k++) {
-			wc_send_netmsg_struct(g_wc_desc_idle, dat + sizeof(WeaponCustomIdle) * k);
-		}
-
-		if (params.flags & FL_WC_WEP_AKIMBO) {
-			for (int k = 0; k < 4; k++) {
-				wc_send_netmsg_struct(g_wc_desc_akimbo_idle, dat + sizeof(WeaponCustomIdle) * k);
-			}
-
-			wc_send_netmsg_struct(g_wc_desc_akimbo_reload, dat);
-			wc_send_netmsg_struct(g_wc_desc_akimbo, dat);
-		}
-
-		if (params.flags & FL_WC_WEP_HAS_LASER) {
-			for (int k = 0; k < 4; k++) {
-				wc_send_netmsg_struct(g_wc_desc_laser_idle, dat + sizeof(WeaponCustomIdle) * k);
-			}
-
-			wc_send_netmsg_struct(g_wc_desc_laser, dat);
-		}
-
-		for (int k = 0; k < 4; k++) {
-			if (!(params.flags & FL_WC_WEP_HAS_PRIMARY) && k == 0)
-				continue;
-			if (!(params.flags & FL_WC_WEP_HAS_SECONDARY) && k == 1)
-				continue;
-			if (!(params.flags & FL_WC_WEP_HAS_TERTIARY) && k == 2)
-				continue;
-			if (!(params.flags & FL_WC_WEP_HAS_ALT_PRIMARY) && k == 3)
-				continue;
-
-			wc_send_netmsg_struct(g_wc_desc_shoot_opts, dat + sizeof(CustomWeaponShootOpts) * k);
-		}
-		MESSAGE_END();
+		SendWeaponData(target, wep);
 	}
 
 	int mainBytes = LastMsgSize();
@@ -363,64 +443,7 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 	int evBytes = 0;
 
 	if (sendMode != WC_PRED_SEND_WEP) {
-		int chunks = ceilf(params.numEvents / (float)g_evt_data_chunk_size);
-
-		for (int c = 0; c < chunks; c++) {
-			int evtOffset = c * g_evt_data_chunk_size;
-			if (evtOffset >= params.numEvents)
-				break;
-
-			MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
-			WRITE_BYTE(wep->m_iId);
-
-			int sendEvents = 0; // TODO: skipping events will complicate live updates due to mismatched indexes
-			for (int k = evtOffset; k < params.numEvents && k - evtOffset < g_evt_data_chunk_size; k++) {
-				WepEvt& evt = params.events[k];
-
-				struct_desc_t* desc = get_evt_desc(evt.evtType);
-				if (desc && !is_server_side_event(evt.evtType))
-					sendEvents++;
-			}
-
-			WRITE_BYTE((c << 4) | (sendEvents-1));			
-
-			for (int k = evtOffset; k < params.numEvents && k - evtOffset < g_evt_data_chunk_size; k++) {
-				WepEvt& evt = params.events[k];
-
-				if (is_server_side_event(evt.evtType))
-					continue;
-
-				struct_desc_t* desc = get_evt_desc(evt.evtType);
-				if (!desc)
-					continue;
-
-				int headerSz = 2;
-				uint16_t condFlags = (evt.hasOffset << 2) | (evt.hasDelay << 1) | evt.hasTrigArg;
-				uint16_t packedHeader = (condFlags << (EVT_TYPE_BITS + EVT_TRIGGER_BITS)) | (evt.trigger << EVT_TYPE_BITS) | evt.evtType;
-
-				WRITE_SHORT(packedHeader);
-				if (evt.hasTrigArg) {
-					WRITE_BYTE(evt.triggerArg);
-					headerSz += 1;
-				}
-				if (evt.hasDelay) {
-					WRITE_SHORT(evt.delay);
-					headerSz += 2;
-				}
-				if (evt.hasOffset) {
-					WRITE_SHORT(evt.offset);
-					headerSz += 2;
-				}
-
-				ALERT(at_aiconsole, "Write event %s (%d header bytes)\n",
-					describe_event(evt), headerSz);
-
-				wc_send_netmsg_struct(*desc, &evt);
-			}
-			MESSAGE_END();
-
-			evBytes += LastMsgSize();
-		}
+		evBytes += SendEventData(target, wep);
 	}
 
 	ALERT(at_console, "Sent %d prediction bytes for %s (%d + %d evt)\n",
@@ -428,6 +451,10 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 
 	g_wcPredDataSent[wep->m_iId] |= PLRBIT(target);
 #endif
+}
+
+bool UTIL_HasCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep) {
+	return g_wcPredDataSent[wep->m_iId] & PLRBIT(target);
 }
 
 int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pbuf) {
@@ -552,8 +579,4 @@ int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, voi
 	}
 #endif
 	return 1;
-}
-
-bool UTIL_HasCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep) {
-	return g_wcPredDataSent[wep->m_iId] & PLRBIT(target);
 }

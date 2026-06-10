@@ -74,7 +74,6 @@ struct struct_desc_t {
 };
 
 extern struct_desc_t g_wc_desc_general;
-extern struct_desc_t g_wc_desc_deploy;
 extern struct_desc_t g_wc_desc_ammo;
 extern struct_desc_t g_wc_desc_reload;
 extern struct_desc_t g_wc_desc_idle;

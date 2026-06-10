@@ -71,6 +71,7 @@ public:
 	bool m_secondaryFired;
 	bool m_hasPredictionData; // was the client sent a prediction message for this weapon?
 	int m_chargeSoundEvt; // event index to load charge sound details from
+	int m_lastAnim;			// last animation set by an event
 
 	int m_akimboAnim;
 	float m_akimboAnimTime;
@@ -150,7 +151,7 @@ public:
 	void CancelZoom();
 	bool IsPredicted();
 	int GetAttackIdx(WepEvt& evt); // TODO: store this info in the event
-
+	studiohdr_t* GetViewModelHeader();
 	float GetActiveMovespeedMult();
 	float WallTime();
 

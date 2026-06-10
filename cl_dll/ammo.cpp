@@ -34,15 +34,9 @@
 #include "shared_util.h"
 #include "triangleapi.h"
 #include "HashMap.h"
+#include "com_weapons.h"
 
-CustomWeaponParams* GetCustomWeaponParams(int id);
-void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY, float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy);
-void GetCurrentCustomWeaponState(int id, int& akimboClip);
-bool CanWeaponAkimbo(int id);
-bool IsExclusiveWeapon(int id);
-bool IsPredictionWeaponZoomed();
 int LoadCustomMaterials(const char* fpath);
-void SetItemInfo(WEAPON& wep);
 
 extern int g_last_attack_mode;
 extern float g_last_attack_time;
@@ -852,7 +846,7 @@ int CHudAmmo::MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf )
 
 	gWR.AddWeapon( &Weapon );
 
-	SetItemInfo(Weapon);
+	SetItemInfo(&Weapon);
 
 	return 1;
 }

@@ -492,6 +492,7 @@ set(DEFAULT_WEAPON_SRC
 )
 set(WEAPON_CUSTOM_HDR
 	../common/wc_params.h
+	../common/wc_events.h
 	../common/wc_net.h
 	../common/wc_schema.h
 	weapon/custom/wc_config.h

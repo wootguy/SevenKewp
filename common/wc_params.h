@@ -130,9 +130,6 @@ struct WeaponCustomAkimbo {
 	WeaponCustomReload reload;
 	uint8_t deployAnim;			// deploy anim for a single weapon (used for reloading and toggling akimbo mode)
 	uint16_t deployTime;
-	uint8_t akimboDeployAnim;	// deploy anim when selecting the weapon
-	uint16_t akimboDeployTime;  // time before you can attack
-	uint16_t akimboDeployAnimTime;  // time before the weapon idles
 	uint8_t holsterAnim;		// for reloading a single weapon
 	uint16_t holsterTime;
 	uint16_t accuracy[2];		// horizontal+vertical accuracy for crosshair (degrees * 100)
@@ -155,23 +152,12 @@ struct WeaponCustomAmmoInfo {
 	uint32_t dropAmt;		// amount of ammo to drop
 };
 
-struct WeaponCustomDeploy {
-	uint8_t anim;
-	uint16_t time;		// time to wait before shooting is allowed
-	uint16_t animTime;	// time to wait before playing idle animations
-};
-
 struct CustomWeaponParams {
 	uint32_t flags; // FL_WC_WEP_*
 	uint16_t maxClip; // TODO: Remove in next client update (redundant)
 	uint16_t vmodel;
 	uint16_t moveSpeedMult; // move speed multiplier (1-65535) (65535 = 100%) (0 = don't change)
 	int jumpPower;			// -1 = disabled, 0 = default velocity (800), 1+ = custom velocity
-
-	// 0 = normal deploy
-	// 1 = empty deploy
-	// 2 = first deploy
-	WeaponCustomDeploy deploy[3];
 
 	// stage 0 and 1 usage depends on weapon flags:
 	// 0 = simple reload animation OR starting animation for shotgun reload mode

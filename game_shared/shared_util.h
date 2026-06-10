@@ -11,6 +11,7 @@
 #include "rgb.h"
 #include "../game_shared/shared_effects.h"
 #include "const.h"
+#include "studio.h"
 
 // In case this ever changes
 #define M_PI			3.14159265358979323846
@@ -155,3 +156,5 @@ EXPORT FILE* UTIL_OpenFile(const char* path, const char* mode);
 
 // get set bit position in mask
 EXPORT int BitIndex(uint32_t mask);
+
+EXPORT float GetSequenceDuration(studiohdr_t* pstudiohdr, int iseq); // animation time in seconds

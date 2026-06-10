@@ -229,12 +229,12 @@ void ResetCustomWeaponStates() {
 	UnloadCustomMuzzleFlashes();
 }
 
-void SetItemInfo(WEAPON& wep) {
-	if (wep.iId < 0 && wep.iId >= MAX_WEAPONS)
+void SetItemInfo(WEAPON* wep) {
+	if (!wep || wep->iId < 0 || wep->iId >= MAX_WEAPONS)
 		return;
 	
-	ItemInfo& info = CBasePlayerItem::ItemInfoArray[wep.iId];
-	info.iFlags = wep.iFlags;
+	ItemInfo& info = CBasePlayerItem::ItemInfoArray[wep->iId];
+	info.iFlags = wep->iFlags;
 }
 
 /*

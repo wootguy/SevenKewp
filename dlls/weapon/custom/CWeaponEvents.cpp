@@ -969,6 +969,21 @@ void CWeaponEvents::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 		m_pPlayer->SetThirdPersonWeaponAnim(anim);
 		return;
 	}
+	
+	if (evt.anim.cooldown) {
+		float nextAction = UTIL_WeaponTimeBase() + evt.anim.cooldown * 0.001f;
+		m_weapon->m_flNextPrimaryAttack = nextAction;
+		m_weapon->m_flNextSecondaryAttack = nextAction;
+		m_weapon->m_flNextTertiaryAttack = nextAction;
+		m_weapon->m_flTimeWeaponIdle = nextAction;
+
+		studiohdr_t* hdr = m_weapon->GetViewModelHeader();
+		if (hdr) {
+			// TODO: why is 0.05f needed? the single uzi deploy is jerky without out.
+			// if you modify this func, make sure the barnacled animations for every monster also look good.
+			m_weapon->m_flTimeWeaponIdle = GetSequenceDuration(hdr, anim) + 0.05f;
+		}
+	}
 
 #ifdef CLIENT_DLL
 	cl_entity_t* vmodel = gEngfuncs.GetViewModel();
@@ -981,6 +996,8 @@ void CWeaponEvents::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 #else
 	m_weapon->SendWeaponAnimSpec(anim);
 #endif
+
+	m_weapon->m_lastAnim = anim;
 }
 
 void CWeaponEvents::PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer) {

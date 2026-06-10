@@ -252,11 +252,23 @@ enum WeaponCustomQuakeEffectType {
 struct WepEvtArr8 {
 	uint8_t arrSz;
 	uint8_t arr[MAX_WC_RANDOM_SELECTION];
+
+	void add(uint8_t val) {
+		if (arrSz < MAX_WC_RANDOM_SELECTION) {
+			arr[arrSz++] = val;
+		}
+	}
 };
 
 struct WepEvtArr16 {
 	uint8_t arrSz;
 	uint16_t arr[MAX_WC_RANDOM_SELECTION];
+
+	void add(uint16_t val) {
+		if (arrSz < MAX_WC_RANDOM_SELECTION) {
+			arr[arrSz++] = val;
+		}
+	}
 };
 
 #define EVT_TYPE_BITS 6
@@ -325,9 +337,12 @@ struct WepEvt {
 		} recoil;
 
 		struct {
-			uint8_t flags; // 5 bits - FL_WC_ANIM_*
-			uint8_t akimbo; // 3 bits - WeaponCustomAnimHand
+			uint8_t flags;			// 4 bits - FL_WC_ANIM_*
+			uint8_t hasCooldown;	// 1 bit - if set, cooldown attacks and idle animations
+			uint8_t akimbo;			// 3 bits - WeaponCustomAnimHand
 			WepEvtArr8 anims;
+
+			uint16_t cooldown;		// block attacks for this long.
 		} anim;
 
 		struct {

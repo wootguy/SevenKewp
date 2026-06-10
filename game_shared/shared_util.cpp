@@ -1034,3 +1034,9 @@ int BitIndex(uint32_t mask) {
 	return __builtin_ctz(mask);
 #endif
 }
+
+float GetSequenceDuration(studiohdr_t* pstudiohdr, int iseq) {
+	iseq = clamp(iseq, 0, pstudiohdr->numseq);
+	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + iseq;
+	return (pseqdesc->numframes - 1) / pseqdesc->fps;
+}

@@ -41,7 +41,6 @@
     } while (0)
 
 struct_desc_t g_wc_desc_general;
-struct_desc_t g_wc_desc_deploy;
 struct_desc_t g_wc_desc_ammo;
 struct_desc_t g_wc_desc_reload;
 struct_desc_t g_wc_desc_idle;
@@ -132,10 +131,6 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("slot_position", "-1", slotPosition, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK | FL_FIELD_ALWAYS_WRITE_CFG),
 			WEP_FIELD("weight", "0", weight, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
 
-			WEP_FIELD("deploy_anim", "0", deploy[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-			WEP_FIELD("deploy_time", "0", deploy[0].time, 0, WC_PARAM_TIME),
-			WEP_FIELD("deploy_anim_time", "0", deploy[0].animTime, 0, WC_PARAM_TIME),
-
 			WEP_FIELD("thirdperson_anims", "", animExt, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("thirdperson_anims_zoom", "", animExtZoom, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("thirdperson_anims_akimbo", "", animExtAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -143,12 +138,6 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("jump_power", "0", jumpPower, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
 		);
 	}
-
-	WEP_STRUCT_DESC(g_wc_desc_deploy, "deploy_unnamed",
-		WEP_FIELD("anim", "", deploy[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-		WEP_FIELD("time", "", deploy[0].time, 0, WC_PARAM_TIME),
-		WEP_FIELD("anim_time", "", deploy[0].animTime, 0, WC_PARAM_TIME),
-	);
 
 	WEP_STRUCT_DESC(g_wc_desc_ammo, "ammo_unnamed",
 		WEP_FIELD("type", "", ammoInfo[0].type, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -268,9 +257,6 @@ void init_weapon_struct_fields() {
 	WEP_STRUCT_DESC(g_wc_desc_akimbo, "akimbo",
 		WEP_FIELD("deploy_anim", "0", akimbo.deployAnim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("deploy_time", "0", akimbo.deployTime, 0, WC_PARAM_TIME),
-		WEP_FIELD("akimbo_deploy_anim", "0", akimbo.akimboDeployAnim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-		WEP_FIELD("akimbo_deploy_time", "0", akimbo.akimboDeployTime, 0, WC_PARAM_TIME),
-		WEP_FIELD("akimbo_deploy_anim_time", "0", akimbo.akimboDeployAnimTime, 0, WC_PARAM_TIME),
 		WEP_FIELD("holster_anim", "0", akimbo.holsterAnim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("holster_time", "0", akimbo.holsterTime, 0, WC_PARAM_TIME),
 		WEP_FIELD("accuracy", "0", akimbo.accuracy, 0, WC_PARAM_ACCURACY_100_2X),
@@ -390,9 +376,11 @@ void init_event_fields() {
 		hand_names[WC_ANIM_TRIG_HAND] = "trigger";
 
 		EVT_DESC(WC_EVT_WEP_ANIM, "weapon_anim",
+			EVT_FLAGS("flags", "0", anim.flags, 4, flags),
+			EVT_FIELD("has_cooldown", "0", anim.hasCooldown, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT__ENUM("hand", "both", anim.akimbo, 3, hand_names),
-			EVT_FLAGS("flags", "0", anim.flags, 5, flags),
 			EVT_FIELD("anims", "0", anim.anims, 0, WC_PARAM_UINT8_ARRAY_8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
+			EVT_FIELD("cooldown", "0", anim.cooldown, 0, WC_PARAM_TIME, NULL, 0, 0, EVT_COND_BYTE(anim.hasCooldown)),
 		);
 	}
 
@@ -1165,11 +1153,14 @@ void wc_post_parse_event(WepEvt& evt) {
 
 		break;
 	}
+	case WC_EVT_WEP_ANIM:
+		evt.anim.hasCooldown = evt.anim.cooldown != 0;
+		break;
 	case WC_EVT_EJECT_SHELL:
 		evt.ejectShell.hasVel = evt.ejectShell.vel[0] || evt.ejectShell.vel[1] || evt.ejectShell.vel[2];
 		evt.ejectShell.hasRand = evt.ejectShell.dirRand || evt.ejectShell.speedRand;
 		break;
-	case WC_EVT_BEAM: {
+	case WC_EVT_BEAM:
 		evt.beam.hasImpactSprite = evt.beam.impactSprite != 0;
 		evt.beam.hasRicoBeams = evt.beam.ricoBeams != 0;
 		break;
@@ -1184,7 +1175,6 @@ void wc_post_parse_event(WepEvt& evt) {
 	case WC_EVT_QUAKE_EFFECT:
 		evt.quake_effect.isParticleBurst = evt.quake_effect.type == WC_QUAKE_EFFECT_PARTICLE_BURST;
 		break;
-	}
 	}
 }
 

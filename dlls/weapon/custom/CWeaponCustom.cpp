@@ -10,6 +10,7 @@
 #include "../cl_dll/hud_iface.h"
 #include "../cl_dll/ev_hldm.h"
 #include "../cl_dll/com_weapons.h"
+#include "../common/com_model.h"
 #include "../game_shared/prediction_files.h"
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
@@ -78,6 +79,8 @@ void CWeaponCustom::Precache() {
 		if (params.ammoInfo[i].dropEnt)
 			UTIL_PrecacheOther(STRING(params.ammoInfo[i].dropEnt));
 	}
+
+	params.vmodel = MODEL_INDEX(GetModelV());
 #endif
 }
 
@@ -122,7 +125,6 @@ void CWeaponCustom::PrecacheEvents() {
 		m_mergedModelBody = -1;
 
 		if (m_defaultModelV) {
-			params.vmodel = MODEL_INDEX(GetModelV());
 			params.defaultModelV = ALLOC_STRING(m_defaultModelV);
 		}
 		if (m_defaultModelP)
@@ -274,15 +276,16 @@ BOOL CWeaponCustom::Deploy()
 
 	m_pPlayer->SetThirdPersonWeaponAnim(0);
 
-	int deployAnim = IsAkimbo() ? params.akimbo.akimboDeployAnim : params.deploy[0].anim;
-
 #ifdef CLIENT_DLL
 	if (!CanDeploy())
 		return FALSE;
 
 	m_pPlayer->pev->viewmodel = params.vmodel;
 
-	SendWeaponAnim(deployAnim, 1, pev->body);
+	// prediction code will be trying to deploy the previous weapon because the server state hasn't
+	// synced to the client yet. That causes the other weapon's deploy logic to run immediately
+	// after this weapon deploys. Spam this weapon's deploy animation so that the correct anim plays.
+	SendWeaponAnim(m_lastAnim, 1, pev->body);
 
 	g_irunninggausspred = false;
 	m_pPlayer->m_flNextAttack = 0.5;
@@ -297,26 +300,12 @@ BOOL CWeaponCustom::Deploy()
 	studiohdr_t* mdl = GET_MODEL_PTR(PRECACHE_MODEL(vmodel));
 	m_hasLaserAttachment = mdl && mdl->numattachments > params.laser.attachment;
 
-	ret = DefaultDeploy(vmodel, GetModelP(), deployAnim, animSet, 1);
-	
-	if (!IsPredicted())
-		SendWeaponAnimSpec(deployAnim);
+	ret = DefaultDeploy(vmodel, GetModelP(), 0, animSet, 1);
 #endif
 
-	if (IsAkimbo())
-		SendAkimboAnim(deployAnim);
-
-	int deployTime = IsAkimbo() ? params.akimbo.akimboDeployTime : params.deploy[0].time;
-	int deployAnimTime = IsAkimbo() ? params.akimbo.akimboDeployAnimTime : params.deploy[0].animTime;
-	if (!deployAnimTime)
-		deployAnimTime = deployTime ? deployTime : 1000; // default
-	if (!deployTime)
-		deployTime = 500; // default
-
-	float nextAttack = UTIL_WeaponTimeBase() + deployTime * 0.001f;
-	float nextIdle = UTIL_WeaponTimeBase() + deployAnimTime * 0.001f;
-	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = nextAttack;
-	m_flTimeWeaponIdle = nextIdle;
+	// default cooldown
+	m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + 0.5f;
+	m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + 0.5f;
 	
 	if (IsLaserOn()) {
 		m_laserOnTime = WallTime() + m_flTimeWeaponIdle;
@@ -1867,6 +1856,15 @@ int CWeaponCustom::GetItemInfo(ItemInfo* p) {
 	p->iId = m_iId;
 
 	return 1;
+}
+
+studiohdr_t* CWeaponCustom::GetViewModelHeader() {
+#ifdef CLIENT_DLL
+	model_s* mdl = gEngfuncs.hudGetModelByIndex(params.vmodel);
+	return (studiohdr_t*)(mdl ? mdl->cache.data : NULL);
+#else
+	return GET_MODEL_PTR(MODEL_INDEX(GetModelV()));
+#endif
 }
 
 LINK_ENTITY_TO_CLASS(weapon_custom_ini, CWeaponCustom)

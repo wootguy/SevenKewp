@@ -1436,6 +1436,15 @@ void MigrateWeaponsBegin() {
 #endif
 }
 
+// make any adjustments to the data before dumping the config
+void MigratePreDump(CustomWeaponParams& params) {
+
+	if (false) {
+		WepEvt& evt = params.events[params.numEvents++];
+		evt = WepEvt(WC_TRIG_DEPLOY, 0, WC_EVT_WEP_ANIM);
+	}
+}
+
 void MigrateWeaponsEnd() {
 	std::vector<std::string> files, folders;
 	UTIL_FindFilesRecursive("valve/weapons/_migrate/raw", files, folders);
@@ -1494,6 +1503,7 @@ void MigrateWeaponsEnd() {
 			uint8_t* dat = UTIL_LoadFileRoot(file.c_str(), &sz);
 			if (dat) {
 				if (sizeof(CustomWeaponParams) == sz) {
+					MigratePreDump(*(CustomWeaponParams*)dat);
 					UTIL_DumpCustomWeaponConfig(dst.c_str(), *(CustomWeaponParams*)dat, true);
 				}
 				else {
@@ -1503,6 +1513,8 @@ void MigrateWeaponsEnd() {
 			else {
 				ALERT(at_error, "Failed to load dat file: %s\n", file.c_str());
 			}
+
+			delete[] dat;
 		}
 		else {
 			int sz;
@@ -1518,6 +1530,8 @@ void MigrateWeaponsEnd() {
 			else {
 				ALERT(at_error, "Failed to load dat file: %s\n", file.c_str());
 			}
+
+			delete[] dat;
 		}
 	}
 
