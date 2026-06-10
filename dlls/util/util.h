@@ -913,7 +913,13 @@ EXPORT void LoadAdminList(bool forceUpdate=false); // call on each map change, s
 // returns ADMIN_YES for admins, ADMIN_NO for normal players, ADMIN_OWNER for NULL or listen server host
 EXPORT int AdminLevel(CBasePlayer* player);
 
-EXPORT std::vector<std::string> getDirFiles(std::string path, std::string extension, std::string startswith, bool onlyOne);
+// find files by extension in a directory. Not recursive.
+EXPORT std::vector<std::string> getDirFiles(std::string path, std::string extension, std::string startswith="", bool onlyOne=false);
+
+// recursively find all files and folders in a directory
+EXPORT void UTIL_FindFilesRecursive(std::string path, std::vector<std::string>& files, std::vector<std::string>& folders);
+
+EXPORT bool UTIL_DeleteFolderRecursive(std::string path);
 
 EXPORT short FixedSigned16(float value, float scale);
 
@@ -923,9 +929,9 @@ EXPORT void KickPlayer(edict_t* ent, const char* reason="");
 
 EXPORT void handleThreadPrints();
 
-EXPORT bool createFolder(const std::string& path);
+EXPORT bool UTIL_CreateFolder(const std::string& path);
 
-EXPORT bool folderExists(const std::string& path);
+EXPORT bool UTIL_FolderExists(const std::string& path);
 
 EXPORT uint64_t getFreeSpace(const std::string& path);
 

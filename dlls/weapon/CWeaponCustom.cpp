@@ -290,7 +290,7 @@ BOOL CWeaponCustom::Deploy()
 
 	m_pPlayer->SetThirdPersonWeaponAnim(0);
 
-	int deployAnim = IsAkimbo() ? params.akimbo.akimboDeployAnim : params.deployAnim;
+	int deployAnim = IsAkimbo() ? params.akimbo.akimboDeployAnim : params.deploy[0].anim;
 
 #ifdef CLIENT_DLL
 	if (!CanDeploy())
@@ -322,8 +322,8 @@ BOOL CWeaponCustom::Deploy()
 	if (IsAkimbo())
 		SendAkimboAnim(deployAnim);
 
-	int deployTime = IsAkimbo() ? params.akimbo.akimboDeployTime : params.deployTime;
-	int deployAnimTime = IsAkimbo() ? params.akimbo.akimboDeployAnimTime : params.deployAnimTime;
+	int deployTime = IsAkimbo() ? params.akimbo.akimboDeployTime : params.deploy[0].time;
+	int deployAnimTime = IsAkimbo() ? params.akimbo.akimboDeployAnimTime : params.deploy[0].animTime;
 	if (!deployAnimTime)
 		deployAnimTime = deployTime ? deployTime : 1000; // default
 	if (!deployTime)

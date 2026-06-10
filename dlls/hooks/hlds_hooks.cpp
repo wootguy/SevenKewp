@@ -91,6 +91,8 @@ extern int g_fog_start_dist;
 extern int g_fog_end_dist;
 void EnvWeatherServerDeactivate();
 
+extern int g_migrate_weapons;
+
 DLL_FUNCTIONS dllFuncs = {
 	GameDLLInit,				//pfnGameInit
 	DispatchSpawn,				//pfnSpawn
@@ -855,6 +857,13 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		}
 	}
 	
+	if (g_migrate_weapons) {
+		g_engfuncs.pfnServerPrint("\n//\n// Begin weapon migration\n//\n\n");
+		UTIL_MigrateWeaponConfigs(g_migrate_weapons);
+		g_engfuncs.pfnServerPrint("\n//\n// End weapon migration\n//\n\n");
+		g_migrate_weapons = 0;
+	}
+
 	PrecacheTextureSounds();
 
 	g_can_set_bsp_models = true;

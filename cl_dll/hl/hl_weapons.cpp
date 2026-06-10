@@ -45,6 +45,7 @@
 #include "weapon/CSqueak.h"
 #include "weapon/CWeaponCustom.h"
 #include "prediction_files.h"
+#include "../cl_dll/ammo.h"
 
 #include "studio.h"
 
@@ -223,8 +224,17 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].SetLaser(false);
 	}
 
+	memset(CBasePlayerItem::ItemInfoArray, 0, sizeof(CBasePlayerItem::ItemInfoArray));
 	memset(g_modPlayerStates, 0, sizeof(g_modPlayerStates));
 	UnloadCustomMuzzleFlashes();
+}
+
+void SetItemInfo(WEAPON& wep) {
+	if (wep.iId < 0 && wep.iId >= MAX_WEAPONS)
+		return;
+	
+	ItemInfo& info = CBasePlayerItem::ItemInfoArray[wep.iId];
+	info.iFlags = wep.iFlags;
 }
 
 /*

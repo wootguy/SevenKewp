@@ -41,6 +41,7 @@ bool CanWeaponAkimbo(int id);
 bool IsExclusiveWeapon(int id);
 bool IsPredictionWeaponZoomed();
 int LoadCustomMaterials(const char* fpath);
+void SetItemInfo(WEAPON& wep);
 
 extern int g_last_attack_mode;
 extern float g_last_attack_time;
@@ -849,6 +850,8 @@ int CHudAmmo::MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf )
 		return 0;
 
 	gWR.AddWeapon( &Weapon );
+
+	SetItemInfo(Weapon);
 
 	return 1;
 }

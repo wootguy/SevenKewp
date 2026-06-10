@@ -302,7 +302,7 @@ struct WepEvt {
 			uint16_t sound;		// 2 bits - TE_BOUNCE_*
 			uint16_t hasVel;	// 1 bit - true if using a custom velocity
 			uint16_t hasRand;	// 1 bit - true if using a custom velocity randomization
-			int8_t offset[3];	// x, y, z = forward, up, right
+			int8_t position[3];	// x, y, z = forward, up, right
 			int8_t vel[3];		// x, y, z = forward, up, right
 			uint8_t dirRand;	// amount to randomize velocity direction
 			uint8_t speedRand;	// amount to randomize velocity speed
@@ -543,7 +543,7 @@ struct WepEvt {
 
 			float angles[3];
 			float avel[3];
-			float offset[3];	// offset = offset from view position given in: right, forward, up
+			float position[3];			// offset from view position given in: right, forward, up
 			float player_vel_inf[3];
 
 			uint8_t follow_mode;

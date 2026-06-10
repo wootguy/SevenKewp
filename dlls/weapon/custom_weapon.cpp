@@ -16,6 +16,8 @@ Vector UTIL_ParseVector(const char* pString) { return Vector(); }
 #include "parsemsg.h"
 void InitCustomWeapon(int id);
 CustomWeaponParams* GetCustomWeaponParams(int id);
+#else
+#include <fstream>
 #endif
 
 #define WEP_FIELD(name, default_val, struct_field, bits, field_type, ...) \
@@ -155,6 +157,13 @@ uint32_t g_wcPredDataSent[MAX_WEAPONS];
 
 bool g_autoConfigReload = false;
 
+unordered_map<string_t, string> g_migrateSoundMap;
+unordered_map<string_t, string> g_migrateModelMap;
+unordered_map<string_t, string> g_migrateStringMap;
+unordered_map<string_t, string> g_migrateCvarMap;
+bool g_migrationDumpMode = false; // if true, use the mappings when writing sounds/models/strings
+bool g_dumpingAmmoConfig = false; // adjusts config padding if true
+
 const char* g_wc_evt_trigger_names[32];
 const char* g_wc_evt_trigger_arg_primary_names[32];
 const char* g_wc_evt_trigger_clip_sp_names[32];
@@ -170,6 +179,7 @@ mod_string_t g_wc_trigger_to_name[32 * 32]; // 32 trigger/arg possibilities
 StringPool g_wc_trigger_string_pool;
 
 struct_desc_t g_wc_desc_general;
+struct_desc_t g_wc_desc_deploy;
 struct_desc_t g_wc_desc_ammo;
 struct_desc_t g_wc_desc_reload;
 struct_desc_t g_wc_desc_idle;
@@ -258,9 +268,9 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("slot_position", "-1", slotPosition, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK | FL_FIELD_ALWAYS_WRITE_CFG),
 			WEP_FIELD("weight", "0", weight, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
 
-			WEP_FIELD("deploy_anim", "0", deployAnim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-			WEP_FIELD("deploy_time", "0", deployTime, 0, WC_PARAM_TIME),
-			WEP_FIELD("deploy_anim_time", "0", deployAnimTime, 0, WC_PARAM_TIME),
+			WEP_FIELD("deploy_anim", "0", deploy[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
+			WEP_FIELD("deploy_time", "0", deploy[0].time, 0, WC_PARAM_TIME),
+			WEP_FIELD("deploy_anim_time", "0", deploy[0].animTime, 0, WC_PARAM_TIME),
 
 			WEP_FIELD("thirdperson_anims", "", animExt, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("thirdperson_anims_zoom", "", animExtZoom, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -270,6 +280,12 @@ void init_weapon_struct_fields() {
 		);
 	}
 	
+	WEP_STRUCT_DESC(g_wc_desc_deploy, "deploy_unnamed",
+		WEP_FIELD("anim", "", deploy[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
+		WEP_FIELD("time", "", deploy[0].time, 0, WC_PARAM_TIME),
+		WEP_FIELD("anim_time", "", deploy[0].animTime, 0, WC_PARAM_TIME),
+	);
+
 	WEP_STRUCT_DESC(g_wc_desc_ammo, "ammo_unnamed",
 		WEP_FIELD("type", "", ammoInfo[0].type, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 		WEP_FIELD("clip_size", "0", ammoInfo[0].maxClip, 0, WC_PARAM_UINT16),
@@ -468,7 +484,7 @@ void init_event_fields() {
 			EVT_FIELD("has_vel", "0", ejectShell.hasVel, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT__ENUM("sound", "shell", ejectShell.sound, 2, shell_sound_names),
 			EVT_FIELD("model", NULL, ejectShell.model, 12, WC_PARAM_MODEL_INDEX),
-			EVT_FIELD("offset", "0 0 0", ejectShell.offset, 0, WC_PARAM_VECTOR_INT8),
+			EVT_FIELD("position", "0 0 0", ejectShell.position, 0, WC_PARAM_VECTOR_INT8),
 			EVT_FIELD("velocity", "0 0 0", ejectShell.vel, 0, WC_PARAM_VECTOR_INT8, NULL, 0, 0, EVT_COND_BYTE(ejectShell.hasVel)),
 			EVT_FIELD("direction_randomness", "0", ejectShell.dirRand, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(ejectShell.hasRand)),
 			EVT_FIELD("speed_randomness", "0", ejectShell.speedRand, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(ejectShell.hasRand)),
@@ -512,7 +528,7 @@ void init_event_fields() {
 		EVT_DESC(WC_EVT_WEP_ANIM, "weapon_anim",
 			EVT__ENUM("hand", "both", anim.akimbo, 3, hand_names),
 			EVT_FLAGS("flags", "0", anim.flags, 5, flags),
-			EVT_FIELD("anims", "0", anim.anims, 0, WC_PARAM_UINT8_ARRAY_8),
+			EVT_FIELD("anims", "0", anim.anims, 0, WC_PARAM_UINT8_ARRAY_8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		);
 	}
 
@@ -684,7 +700,7 @@ void init_event_fields() {
 			EVT_FIELD("sprite_color", "0 0 0 0", proj.sprite_color, 0, WC_PARAM_RGBA),
 			EVT_FIELD("angles", "0 0 0", proj.angles, 0, WC_PARAM_VECTOR),
 			EVT_FIELD("angular_velocity", "0 0 0", proj.avel, 0, WC_PARAM_VECTOR),
-			EVT_FIELD("offset", "0 0 0", proj.offset, 0, WC_PARAM_VECTOR),
+			EVT_FIELD("position", "0 0 0", proj.position, 0, WC_PARAM_VECTOR),
 			EVT_FIELD("player_vel_inf", "0 0 0", proj.player_vel_inf, 0, WC_PARAM_VECTOR),
 			EVT_FIELD("follow_mode", "0", proj.follow_mode, 0, WC_PARAM_UINT8),
 			EVT_FIELD("follow_radius", "0", proj.follow_radius, 0, WC_PARAM_FLOAT),
@@ -917,8 +933,8 @@ void init_custom_ammo_fields() {
 		AMMO_FIELD("pickup_sound", "items/9mmclip1.wav", pickupSound, 0, WC_PARAM_STRING),
 		AMMO_FIELD("ammo_type", "", ammoType, 0, WC_PARAM_STRING),
 		AMMO_FIELD("ammo_type_hl", "", ammoTypeHl, 0, WC_PARAM_STRING),
-		AMMO_FIELD("ammo_given", 0, ammoGiven, 0, WC_PARAM_UINT16),
-		AMMO_FIELD("max_ammo", 0, maxAmmo, 0, WC_PARAM_UINT16),
+		AMMO_FIELD("ammo_given", "0", ammoGiven, 0, WC_PARAM_UINT16),
+		AMMO_FIELD("max_ammo", "0", maxAmmo, 0, WC_PARAM_UINT16),
 	);
 }
 
@@ -1279,14 +1295,23 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 
 void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc_t* field) {
 	if (ptype != WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2)
-		fprintf(f, "%-24s= ", name);
+		fprintf(f, g_dumpingAmmoConfig ? "%-13s= " : "%-24s= ", name);
 
 	switch (ptype) {
 	case WC_PARAM_UINT8:	fprintf(f, "%u\n", (uint32_t)(*(uint8_t*)dat)); break;
 	case WC_PARAM_UINT8_PERCENT:	fprintf(f, "%.2f\n", (*(uint8_t*)dat) / 255.0f); break;
 	case WC_PARAM_7BIT_PERCENT:	fprintf(f, "%.2f\n", (*(uint8_t*)dat) / 127.0f); break;
 	case WC_PARAM_UINT8_FP_2_6:	fprintf(f, "%.2f\n", ((*(uint8_t*)dat) / 64.0f) + (0.5f / 64.0f)); break;
-	case WC_PARAM_UINT16:	fprintf(f, "%u\n", (uint32_t)(*(uint16_t*)dat)); break;
+	case WC_PARAM_UINT16: {
+		uint16_t val = *(uint16_t*)dat;
+		if (g_migrationDumpMode && g_migrateCvarMap.find(val) != g_migrateCvarMap.end()) {
+			fprintf(f, "%s\n", g_migrateCvarMap[val].c_str());
+		}
+		else {
+			fprintf(f, "%u\n", (uint32_t)val);
+		}
+		break;
+	}
 	case WC_PARAM_UINT32:	fprintf(f, "%u\n", (uint32_t)(*(uint32_t*)dat)); break;
 	case WC_PARAM_INT8:		fprintf(f, "%d\n", (int32_t)(*(int8_t*)dat)); break;
 	case WC_PARAM_INT16:	fprintf(f, "%d\n", (int32_t)(*(int16_t*)dat)); break;
@@ -1359,12 +1384,31 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 		WepEvtArr16* arr = (WepEvtArr16*)dat;
 		for (int i = 0; i < MAX_WC_RANDOM_SELECTION && i < arr->arrSz; i++) {
 			string keyName = name + to_string(i + 2);
-			fprintf(f, "%-24s= %s\n", keyName.c_str(), INDEX_SOUND(arr->arr[i]));
+			const char* fmt = g_dumpingAmmoConfig ? "%-13s= %s\n" : "%-24s= %s\n";
+
+			if (g_migrationDumpMode)
+				fprintf(f, fmt, keyName.c_str(), g_migrateSoundMap[arr->arr[i]].c_str());
+			else
+				fprintf(f, fmt, keyName.c_str(), INDEX_SOUND(arr->arr[i]));
 		}
 		break;
 	}
-	case WC_PARAM_SOUND_INDEX:		fprintf(f, "%s\n", INDEX_SOUND(*(uint16_t*)dat)); break;
-	case WC_PARAM_MODEL_INDEX:		fprintf(f, "%s\n", INDEX_MODEL(*(uint16_t*)dat)); break;
+	case WC_PARAM_SOUND_INDEX:
+		if (g_migrationDumpMode) {
+			fprintf(f, "%s\n", g_migrateSoundMap[*(uint16_t*)dat].c_str());
+		}
+		else {
+			fprintf(f, "%s\n", INDEX_SOUND(*(uint16_t*)dat));
+		}
+		break;
+	case WC_PARAM_MODEL_INDEX:
+		if (g_migrationDumpMode) {
+			fprintf(f, "%s\n", g_migrateModelMap[*(uint16_t*)dat].c_str());
+		}
+		else {
+			fprintf(f, "%s\n", INDEX_MODEL(*(uint16_t*)dat));
+		}
+		break;
 	case WC_PARAM_DECAL_INDEX:		fprintf(f, "%s\n", get_decal_name(*(uint8_t*)dat)); break;
 	case WC_PARAM_TIME:				fprintf(f, "%ums\n", (uint32_t)(*(uint16_t*)dat)); break;
 	case WC_PARAM_ACCURACY_UINT16:	fprintf(f, "%.2f\n", DEGREES_FROM_SPREAD(*(uint16_t*)dat)); break;
@@ -1385,7 +1429,14 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 		break;
 	}
 	case WC_PARAM_UINT16_PERCENT:	fprintf(f, "%.2f\n", MOVESPEED_MULT_TO_FLOAT(*(uint16_t*)dat)); break;
-	case WC_PARAM_STRING:			fprintf(f, "%s\n", STRING(*(string_t*)dat)); break;
+	case WC_PARAM_STRING:
+		if (g_migrationDumpMode) {
+			fprintf(f, "%s\n", g_migrateStringMap[*(string_t*)dat].c_str());
+		}
+		else {
+			fprintf(f, "%s\n", STRING(*(string_t*)dat));
+		}
+		break;
 	default:
 		ALERT(at_error, "%s: Unknown param type %d\n", __func__, ptype);
 	}
@@ -1409,7 +1460,6 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_TIME:
 	case WC_PARAM_UINT16_PERCENT:
 	case WC_PARAM_ACCURACY_UINT16:
-	case WC_PARAM_STRING:
 	case WC_PARAM_UINT16_FP_4_12:
 	case WC_PARAM_UINT16_FP_8_8:
 		return 2;
@@ -1423,6 +1473,7 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_RGBA:
 	case WC_PARAM_ACCURACY_UINT16_2X:
 	case WC_PARAM_ACCURACY_100_2X:
+	case WC_PARAM_STRING:
 		return 4;
 	case WC_PARAM_VECTOR_FP_10_6:
 		return 6;
@@ -1668,8 +1719,17 @@ bool wc_check_default_dat(field_desc_t& field, uint8_t* dat) {
 
 	wc_read_field("null", dummyGroup, defaultDat, field.name, field.defaultValue, field.type, &field);
 
-	if (field.type == WC_PARAM_STRING)
-		return !strcmp(STRING(*(string_t*)dat), STRING(*(string_t*)defaultDat));
+	if (field.type == WC_PARAM_STRING) {
+		if (g_migrationDumpMode) {
+			string_t ogDat = *(string_t*)dat;
+			string remappedString = g_migrateStringMap[ogDat];
+
+			return !strcmp(remappedString.c_str(), STRING(*(string_t*)defaultDat));
+		}
+		else {
+			return !strcmp(STRING(*(string_t*)dat), STRING(*(string_t*)defaultDat));
+		}
+	}
 
 	int bytes = wc_get_field_bytes(field);
 	return !memcmp(dat, defaultDat, bytes);
@@ -2297,6 +2357,7 @@ bool UTIL_ParseCustomAmmoConfig(const char* path, CustomAmmoParams& params) {
 }
 
 void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params, bool prettyPrint) {
+	g_dumpingAmmoConfig = false;
 	string fname = string("/weapons/") + path;
 
 	FILE* cfg = UTIL_OpenFile(fname.c_str(), "w");
@@ -2344,6 +2405,25 @@ void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& params, b
 	}
 
 	fclose(cfg);
+
+	ALERT(at_console, "Wrote weapon config: %s\n", fname.c_str());
+}
+
+void UTIL_DumpCustomAmmoConfig(const char* path, CustomAmmoParams& params, bool prettyPrint) {
+	g_dumpingAmmoConfig = true;
+	string fname = string("/weapons/") + path;
+
+	FILE* cfg = UTIL_OpenFile(fname.c_str(), "w");
+
+	if (!cfg)
+		return;
+
+	fprintf(cfg, "[%s]\n", g_wc_desc_custom_ammo.name);
+	wc_fwrite_struct_fields(cfg, &params, g_wc_desc_custom_ammo);
+
+	fclose(cfg);
+
+	ALERT(at_console, "Wrote ammo config: %s\n", fname.c_str());
 }
 
 void UTIL_TestConfig(CWeaponCustom* wep) {
@@ -3017,3 +3097,297 @@ void UTIL_AutoReloadWeaponConfigs(bool enabled) {
 	}
 #endif
 }
+
+
+//
+// Config migration
+// 
+
+#ifndef CLIENT_DLL
+string migratePath = "valve/weapons/_migrate/raw";
+
+unordered_map<string_t, string> readIndexMap(string fpath, StringMap remap) {
+	std::ifstream infile(fpath);
+
+	unordered_map<string_t, string> table;
+
+	if (fpath.empty() || !infile.is_open()) {
+		ALERT(at_error, "Failed to load index map file: %s\n", fpath.c_str());
+		return table;
+	}
+
+	StringMap reverseMap;
+	StringMap::iterator_t iter;
+	while (remap.iterate(iter)) {
+		reverseMap.put(iter.value, iter.key);
+	}
+
+	int lineNum = 0;
+	std::string line;
+	while (std::getline(infile, line)) {
+		vector<string> parts = splitString(line, "=");
+		if (parts.size() == 2) {
+			if (parts[1] == "sprites/hlcoop/laserdot.spr")
+				ALERT(at_console, "");
+
+			string_t idx = (unsigned int)strtoul(parts[0].c_str(), nullptr, 10);
+			const char* unreplace = reverseMap.get(parts[1].c_str());
+			table[idx] = unreplace ? unreplace : parts[1].c_str();			
+		}
+	}
+
+	return table;
+}
+
+void MigrateWeaponsBegin() {
+#ifndef CLIENT_DLL
+	std::vector<std::string> files, folders;
+	UTIL_FindFilesRecursive("valve/weapons", files, folders);
+
+	clear_weapon_custom_cache();
+
+	if (UTIL_FolderExists(migratePath)) {
+		if (!UTIL_DeleteFolderRecursive(migratePath)) {
+			ALERT(at_error, "Failed to delete migration folder: %s\n", migratePath.c_str());
+			return;
+		}
+	}
+
+	if (!UTIL_CreateFolder(migratePath)) {
+		ALERT(at_error, "Failed to create migration folder: %s\n", migratePath.c_str());
+		return;
+	}
+
+	// set unique values in cvars so they can be looked up when dumping later
+	string cvarsListPath = migratePath + "/_cvars.txt";
+	FILE* cvarList = fopen(cvarsListPath.c_str(), "w");
+	if (cvarList) {
+		int uniqueValue = 34500;
+		HashMap<skill_cvar_t*>::iterator_t iter;
+		while (g_skillCvars.iterate(iter)) {
+			CVAR_SET_FLOAT((*iter.value)->cvar.name, uniqueValue);
+			(*iter.value)->cvar.value = uniqueValue;
+			fprintf(cvarList, "%d=%s\n", uniqueValue, (*iter.value)->cvar.name);
+			uniqueValue++;
+		}
+		fclose(cvarList);
+	}
+	else {
+		ALERT(at_error, "Failed to open cvar list file: %s\n", cvarsListPath.c_str());
+	}	
+
+	for (std::string file : files) {
+		string src = replaceString(file, "valve/weapons/", "");
+
+		int lastSlash = src.find_last_of("/");
+		string fname = lastSlash != -1 ? src.substr(lastSlash + 1) : src;
+
+		bool isWeaponConfig = fname.find("weapon_") == 0;
+		bool isAmmoConfig = fname.find("ammo_") == 0;
+
+		if (!(isWeaponConfig || isAmmoConfig)) {
+			continue;
+		}
+		if (fname.find(".txt") != fname.size() - 4) {
+			continue;
+		}
+		if (file.find("valve/weapons/dump/") == 0
+			|| file.find("valve/weapons/test/") == 0
+			|| file.find("valve/weapons/_migrate/") == 0) {
+			continue;
+		}
+
+		string dst = migratePath + "/" + replaceString(src, ".txt", ".dat");
+
+		string folderPath = lastSlash != -1 ? src.substr(0, lastSlash) : "";
+		folderPath = migratePath + "/" + folderPath;
+
+		if (folderPath.size() && !UTIL_FolderExists(folderPath)) {
+			if (!UTIL_CreateFolder(folderPath)) {
+				ALERT(at_error, "Failed to create migration folder: %s\n", folderPath.c_str());
+				continue;
+			}
+		}
+
+		if (isWeaponConfig) {
+			CustomWeaponParams params;
+			if (UTIL_ParseCustomWeaponConfig(src.c_str(), params)) {
+				FILE* dat = fopen(dst.c_str(), "wb");
+
+				if (dat) {
+					fwrite(&params, sizeof(CustomWeaponParams), 1, dat);
+					fclose(dat);
+					//ALERT(at_console, "Wrote %s\n", dst.c_str());
+				}
+				else {
+					ALERT(at_error, "Failed to write weapon dat file: %s\n", dst.c_str());
+				}
+			}
+			else {
+				ALERT(at_error, "Failed to convert weapon config: %s\n", src.c_str());
+			}
+		}
+		else {
+			CustomAmmoParams params;
+			if (UTIL_ParseCustomAmmoConfig(src.c_str(), params)) {
+				FILE* dat = fopen(dst.c_str(), "wb");
+
+				if (dat) {
+					fwrite(&params, sizeof(CustomAmmoParams), 1, dat);
+					fclose(dat);
+					//ALERT(at_console, "Wrote %s\n", dst.c_str());
+				}
+				else {
+					ALERT(at_error, "Failed to write ammo dat file: %s\n", dst.c_str());
+				}
+			}
+			else {
+				ALERT(at_error, "Failed to convert ammo config: %s\n", src.c_str());
+			}
+		}
+	}
+
+	string soundListPath = migratePath + "/_sounds.txt";
+	FILE* soundList = fopen(soundListPath.c_str(), "w");
+	if (soundList) {
+		for (int i = 0; i < MAX_PRECACHE; i++) {
+			if (g_indexSounds[i]) {
+				fprintf(soundList, "%d=%s\n", i, STRING(g_indexSounds[i]));
+			}
+		}
+		fclose(soundList);
+	}
+	else {
+		ALERT(at_error, "Failed to open sound list file: %s\n", soundListPath.c_str());
+	}
+
+	string modelListPath = migratePath + "/_models.txt";
+	FILE* modelList = fopen(modelListPath.c_str(), "w");
+	if (modelList) {
+		for (int i = 0; i < MAX_PRECACHE; i++) {
+			if (g_indexModels[i]) {
+				fprintf(modelList, "%d=%s\n", i, STRING(g_indexModels[i]));
+			}
+		}
+		fclose(modelList);
+	}
+	else {
+		ALERT(at_error, "Failed to open model list file: %s\n", modelListPath.c_str());
+	}
+
+	string stringsListPath = migratePath + "/_strings.txt";
+	FILE* stringList = fopen(stringsListPath.c_str(), "w");
+	if (stringList) {
+		HashMap<string_t>::iterator_t iter;
+		while (g_allocedStrings.iterate(iter)) {
+			fprintf(stringList, "%u=%s\n", *iter.value, iter.key);
+		}
+		fclose(stringList);
+	}
+	else {
+		ALERT(at_error, "Failed to open model list file: %s\n", stringsListPath.c_str());
+	}
+#endif
+}
+
+void MigrateWeaponsEnd() {
+	std::vector<std::string> files, folders;
+	UTIL_FindFilesRecursive("valve/weapons/_migrate/raw", files, folders);
+
+	string cfgPath = "valve/weapons/_migrate/cfg";
+
+	if (UTIL_FolderExists(cfgPath)) {
+		if (!UTIL_DeleteFolderRecursive(cfgPath)) {
+			ALERT(at_error, "Failed to delete migration folder: %s\n", cfgPath.c_str());
+			return;
+		}
+	}
+
+	if (!UTIL_CreateFolder(cfgPath)) {
+		ALERT(at_error, "Failed to create migration folder: %s\n", cfgPath.c_str());
+		return;
+	}
+
+	g_migrateSoundMap = readIndexMap(migratePath + "/_sounds.txt", g_soundReplacementsMod);
+	g_migrateModelMap = readIndexMap(migratePath + "/_models.txt", g_modelReplacementsMod);
+	g_migrateStringMap = readIndexMap(migratePath + "/_strings.txt", StringMap());
+	g_migrateCvarMap = readIndexMap(migratePath + "/_cvars.txt", StringMap());
+	g_migrateStringMap[0] = "";
+	g_migrationDumpMode = true;
+
+	for (std::string file : files) {
+		string src = replaceString(file, "valve/weapons/_migrate/raw/", "");
+
+		int lastSlash = src.find_last_of("/");
+		string fname = lastSlash != -1 ? src.substr(lastSlash + 1) : src;
+
+		bool isWeaponConfig = fname.find("weapon_") == 0;
+		bool isAmmoConfig = fname.find("ammo_") == 0;
+
+		if (!(isWeaponConfig || isAmmoConfig)) {
+			continue;
+		}
+		if (fname.find(".dat") != fname.size() - 4) {
+			continue;
+		}
+
+		string dst = "_migrate/cfg/" + replaceString(src, ".dat", ".txt");
+
+		string folderPath = lastSlash != -1 ? src.substr(0, lastSlash) : "";
+		folderPath = cfgPath + "/" + folderPath;
+
+		if (folderPath.size() && !UTIL_FolderExists(folderPath)) {
+			if (!UTIL_CreateFolder(folderPath)) {
+				ALERT(at_error, "Failed to create migration folder: %s\n", folderPath.c_str());
+				continue;
+			}
+		}
+
+		if (isWeaponConfig) {
+			int sz;
+			uint8_t* dat = UTIL_LoadFileRoot(file.c_str(), &sz);
+			if (dat) {
+				if (sizeof(CustomWeaponParams) == sz) {
+					UTIL_DumpCustomWeaponConfig(dst.c_str(), *(CustomWeaponParams*)dat, true);
+				}
+				else {
+					ALERT(at_error, "Invalid dat size (%d != %d) for file: %s\n", sz, sizeof(CustomWeaponParams), file.c_str());
+				}
+			}
+			else {
+				ALERT(at_error, "Failed to load dat file: %s\n", file.c_str());
+			}
+		}
+		else {
+			int sz;
+			uint8_t* dat = UTIL_LoadFileRoot(file.c_str(), &sz);
+			if (dat) {
+				if (sizeof(CustomAmmoParams) == sz) {
+					UTIL_DumpCustomAmmoConfig(dst.c_str(), *(CustomAmmoParams*)dat, true);
+				}
+				else {
+					ALERT(at_error, "Invalid dat size (%d != %d) for file: %s\n", sz, sizeof(CustomAmmoParams), file.c_str());
+				}
+			}
+			else {
+				ALERT(at_error, "Failed to load dat file: %s\n", file.c_str());
+			}
+		}
+	}
+
+	g_migrationDumpMode = false;
+}
+
+void UTIL_MigrateWeaponConfigs(int migrateMode) {
+	if (migrateMode == 1) {
+		MigrateWeaponsBegin();
+	}
+	else if (migrateMode == 2){
+		MigrateWeaponsEnd();
+	}
+	else if (migrateMode == 3) {
+		MigrateWeaponsBegin();
+		MigrateWeaponsEnd();
+	}
+}
+#endif

@@ -467,7 +467,7 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		dir.y * evt.proj.speed * Vector(0, 0, 1) +
 		dir.z * evt.proj.speed * vecDir;
 
-	Vector offsetOpts = evt.proj.offset;
+	Vector offsetOpts = evt.proj.position;
 	Vector ofs = vRight * offsetOpts.x + vForward * offsetOpts.y + vUp * offsetOpts.z;
 	Vector projectile_ori = m_pPlayer->GetGunPosition() + ofs;
 	Vector projectile_dir_angles = UTIL_VecToAngles(projectile_velocity.Normalize());
@@ -812,9 +812,9 @@ void CWeaponEvents::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bo
 	if (leftHand)
 		right = right * -1;
 
-	float forwardScale = evt.ejectShell.offset[0] * 0.01f;
-	float upScale = evt.ejectShell.offset[1] * 0.01f;
-	float rightScale = evt.ejectShell.offset[2] * 0.01f;
+	float forwardScale = evt.ejectShell.position[0] * 0.01f;
+	float upScale = evt.ejectShell.position[1] * 0.01f;
+	float rightScale = evt.ejectShell.position[2] * 0.01f;
 
 	float fR = RANDOM_FLOAT(50, 70);
 	float fU = RANDOM_FLOAT(100, 150);

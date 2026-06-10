@@ -1912,9 +1912,9 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 	Vector ShellVelocity;
 	Vector ShellOrigin;
 
-	float forwardScale = evt.ejectShell.offset[0];
-	float upScale = evt.ejectShell.offset[1];
-	float rightScale = evt.ejectShell.offset[2];
+	float forwardScale = evt.ejectShell.position[0];
+	float upScale = evt.ejectShell.position[1];
+	float rightScale = evt.ejectShell.position[2];
 
 	static event_args_s args;
 	args.entindex = entidx;

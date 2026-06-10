@@ -149,6 +149,8 @@ std::unordered_map<uint64_t, player_inventory_t> g_playerInventory;
 std::unordered_map<uint64_t, float> g_playerIdleTimes; // amount of idle time carried over from the previous map
 bool g_clearInventoriesNextMap = true;
 
+int g_migrate_weapons;
+
 StringMap g_itemNameRemap = {
 	{"weapon_9mmar", "weapon_9mmAR"},
 	{"weapon_mp5", "weapon_9mmAR"},
@@ -442,6 +444,35 @@ void FindSpawnFunc() {
 	}
 }
 
+void MigrateCustomWeapons() {
+	if (CMD_ARGC() < 2) {
+		g_engfuncs.pfnServerPrint("Usage: mirateweps [begin|end]\n");
+		g_engfuncs.pfnServerPrint("begin = Convert configs to .dat files (raw struct data).\n");
+		g_engfuncs.pfnServerPrint("        Used after updating structs and before updating config format.\n");
+		g_engfuncs.pfnServerPrint("end   = Convert .dat files back to configs.\n");
+		g_engfuncs.pfnServerPrint("        Used after updating config format and recompiling.\n");
+		g_engfuncs.pfnServerPrint("fast  = Rewrite weapon configs.\n");
+		g_engfuncs.pfnServerPrint("        Used when no struct changes are needed.\n");
+		return;
+	}
+
+	if (!strcmp(CMD_ARGV(1), "start") || !strcmp(CMD_ARGV(1), "begin")) {
+		g_migrate_weapons = 1;
+		g_engfuncs.pfnServerCommand("changelevel empty\n");
+	}
+	else if (!strcmp(CMD_ARGV(1), "end")) {
+		g_migrate_weapons = 2;
+		g_engfuncs.pfnServerCommand("changelevel empty\n");
+	}
+	else if (!strcmp(CMD_ARGV(1), "fast")) {
+		g_migrate_weapons = 3;
+		g_engfuncs.pfnServerCommand("changelevel empty\n");
+	}
+	else {
+		g_engfuncs.pfnServerPrint("Invalid migrate parameter.\n");
+	}
+}
+
 // Register your console variables here
 // This gets called one time when the game is initialied
 void GameDLLInit( void )
@@ -465,6 +496,7 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("models", list_precached_models);
 	g_engfuncs.pfnAddServerCommand("globals", list_global_states);
 	g_engfuncs.pfnAddServerCommand("spawnfunc", FindSpawnFunc);
+	g_engfuncs.pfnAddServerCommand("migrateweps", MigrateCustomWeapons);
 	
 	// Register cvars here:
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );

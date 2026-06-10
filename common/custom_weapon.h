@@ -155,15 +155,23 @@ struct WeaponCustomAmmoInfo {
 	uint32_t dropAmt;		// amount of ammo to drop
 };
 
+struct WeaponCustomDeploy {
+	uint8_t anim;
+	uint16_t time;		// time to wait before shooting is allowed
+	uint16_t animTime;	// time to wait before playing idle animations
+};
+
 struct CustomWeaponParams {
 	uint32_t flags; // FL_WC_WEP_*
 	uint16_t maxClip; // TODO: Remove in next client update (redundant)
 	uint16_t vmodel;
-	uint8_t deployAnim;
-	uint16_t deployTime; // time before you can attack
-	uint16_t deployAnimTime; // time before the weapon idles (length of the deployment animation)
 	uint16_t moveSpeedMult; // move speed multiplier (1-65535) (65535 = 100%) (0 = don't change)
 	int jumpPower;			// -1 = disabled, 0 = default velocity (800), 1+ = custom velocity
+
+	// 0 = normal deploy
+	// 1 = empty deploy
+	// 2 = first deploy
+	WeaponCustomDeploy deploy[3];
 
 	// stage 0 and 1 usage depends on weapon flags:
 	// 0 = simple reload animation OR starting animation for shotgun reload mode
@@ -251,6 +259,13 @@ EXPORT bool UTIL_HasCustomWeaponPredictionData(edict_t* target, CWeaponCustom* w
 EXPORT void UTIL_ReloadWeaponConfigs();
 
 EXPORT void UTIL_AutoReloadWeaponConfigs(bool enabled);
+
+// migrates weapon configs to a new format
+// migrateMode:
+// 0 = convert .txt to .dat struct data
+// 1 = convert .dat back to .txt
+// 2 = rewrite .txt using new schema. Used when no struct changes are needed.
+EXPORT void UTIL_MigrateWeaponConfigs(int migrateMode);
 
 // client utils
 int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pbuf);

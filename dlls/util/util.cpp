@@ -3261,6 +3261,15 @@ void winPath(std::string& path) {
 	}
 }
 
+std::string unwinPath(std::string path) {
+	for (int i = 0, size = path.size(); i < size; i++) {
+		if (path[i] == '\\')
+			path[i] = '/';
+	}
+
+	return path;
+}
+
 std::vector<std::string> getDirFiles(std::string path, std::string extension, std::string startswith, bool onlyOne)
 {
 	std::vector<std::string> results;
@@ -3333,6 +3342,104 @@ std::vector<std::string> getDirFiles(std::string path, std::string extension, st
 	return results;
 }
 
+void UTIL_FindFilesRecursive(std::string path, std::vector<std::string>& files, std::vector<std::string>& folders)
+{
+#if defined(WIN32) || defined(_WIN32)
+	WIN32_FIND_DATAA fd;
+	HANDLE hFind = FindFirstFileA((path + "\\*").c_str(), &fd);
+	winPath(path);
+
+	if (hFind == INVALID_HANDLE_VALUE)
+		return;
+
+	do
+	{
+		std::string name = fd.cFileName;
+
+		if (name == "." || name == "..")
+			continue;
+
+		std::string fullPath = path + "\\" + name;
+
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			folders.push_back(unwinPath(fullPath));
+			UTIL_FindFilesRecursive(fullPath, files, folders);
+		}
+		else
+		{
+			files.push_back(unwinPath(fullPath));
+		}
+
+	} while (FindNextFileA(hFind, &fd));
+
+	FindClose(hFind);
+#else
+	DIR* dir = opendir(path.c_str());
+	if (!dir)
+		return;
+
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != nullptr)
+	{
+		std::string name = entry->d_name;
+
+		if (name == "." || name == "..")
+			continue;
+
+		std::string fullPath = path + "/" + name;
+
+		struct stat st;
+		if (stat(fullPath.c_str(), &st) != 0)
+			continue;
+
+		if (S_ISDIR(st.st_mode))
+		{
+			folders.push_back(fullPath);
+			UTIL_FindFilesRecursive(fullPath, files, folders);
+		}
+		else if (S_ISREG(st.st_mode))
+		{
+			files.push_back(fullPath);
+		}
+	}
+
+	closedir(dir);
+#endif
+}
+
+bool UTIL_DeleteFolderRecursive(std::string path) {
+	std::vector<std::string> files, folders;
+	UTIL_FindFilesRecursive(path, files, folders);
+
+	bool err = false;
+
+	for (std::string file : files) {
+		if (remove(file.c_str())) {
+			ALERT(at_error, "Failed to delete file %s (error %d)\n", file.c_str(), errno);
+			err = true;
+		}
+	}
+
+	std::sort(folders.begin(), folders.end(), [](const std::string& a, const std::string& b) {
+		return std::count(a.begin(), a.end(), '/') > std::count(b.begin(), b.end(), '/');
+	});
+
+	for (std::string folder : folders) {
+		if (rmdir(folder.c_str())) {
+			ALERT(at_error, "Failed to delete folder %s (error %d)\n", folder.c_str(), errno);
+			err = true;
+		}
+	}
+
+	if (rmdir(path.c_str())) {
+		ALERT(at_error, "Failed to delete folder %s (error %d)\n", path.c_str(), errno);
+		err = true;
+	}
+
+	return !err;
+}
+
 void KickPlayer(edict_t* ent, const char* reason) {
 	if (!ent || (ent->v.flags & FL_CLIENT) == 0) {
 		return;
@@ -3342,7 +3449,7 @@ void KickPlayer(edict_t* ent, const char* reason) {
 	g_engfuncs.pfnServerExecute();
 }
 
-bool createFolder(const std::string& path) {
+bool UTIL_CreateFolder(const std::string& path) {
 	if (mkdir(path.c_str(), 0777) == 0) {
 		return true;
 	}
@@ -3350,7 +3457,7 @@ bool createFolder(const std::string& path) {
 	return false;
 }
 
-bool folderExists(const std::string& path) {
+bool UTIL_FolderExists(const std::string& path) {
 	struct stat info;
 
 	if (stat(path.c_str(), &info) != 0) {
@@ -3359,7 +3466,6 @@ bool folderExists(const std::string& path) {
 
 	return (info.st_mode & S_IFDIR) != 0;
 }
-
 
 uint64_t getFreeSpace(const std::string& path) {
 #if defined(_WIN32)
