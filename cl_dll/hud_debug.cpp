@@ -14,6 +14,10 @@ static int line_height = 0;
 static int var_width = 0;
 static int num_width = 0;
 
+bool VerboseDebugEnabled() {
+	return gHUD.m_Debug.m_HUD_debug->value >= 2;
+}
+
 int CHudDebug::Init(void)
 {
 	gHUD.AddHudElem(this);

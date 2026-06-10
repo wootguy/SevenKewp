@@ -164,18 +164,18 @@ unordered_map<string_t, string> g_migrateCvarMap;
 bool g_migrationDumpMode = false; // if true, use the mappings when writing sounds/models/strings
 bool g_dumpingAmmoConfig = false; // adjusts config padding if true
 
-const char* g_wc_evt_trigger_names[32];
+const char* g_wc_evt_trigger_names[128];
 const char* g_wc_evt_trigger_arg_primary_names[32];
 const char* g_wc_evt_trigger_clip_sp_names[32];
 const char* g_wc_evt_trigger_impact_names[32];
 const char* g_wc_evt_charge_names[32];
-const char* g_wc_evt_type_names[32];
+const char* g_wc_evt_type_names[128];
 const char* g_wc_evt_category_names[32];
 static const char* g_wc_dmgFlags[32];
 
 HashMap<uint16_t> g_wc_name_to_trigger; // maps a group name to an event trigger + argument value
 HashMap<uint8_t> g_wc_name_to_action; // maps an action key value to its event number
-mod_string_t g_wc_trigger_to_name[32 * 32]; // 32 trigger/arg possibilities
+mod_string_t g_wc_trigger_to_name[64 * 256]; // 64 trigger and 256 arg possibilities
 StringPool g_wc_trigger_string_pool;
 
 struct_desc_t g_wc_desc_general;
@@ -1040,7 +1040,7 @@ void init_weapon_custom_config_parser() {
 		case WC_TRIG_DEPLOY: {
 			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_arg_primary_names); k++) {
 				const char* key = UTIL_VarArgs("%s%s", tname, g_wc_evt_trigger_arg_primary_names[k]);
-				uint16_t val = (k << 5) | i;
+				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
 			}
@@ -1049,7 +1049,7 @@ void init_weapon_custom_config_parser() {
 		case WC_TRIG_PRIMARY_CLIPSIZE:
 			for (int k = 0; k < 32; k++) {
 				const char* key = UTIL_VarArgs("%s_%u", tname, k);
-				uint16_t val = (k << 5) | i;
+				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
 			}
@@ -1058,7 +1058,7 @@ void init_weapon_custom_config_parser() {
 		case WC_TRIG_SECONDARY_CLIP_SP:
 			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_clip_sp_names); k++) {
 				const char* key = UTIL_VarArgs("%s_%s", tname, g_wc_evt_trigger_clip_sp_names[k]);
-				uint16_t val = (k << 5) | i;
+				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
 			}
@@ -1067,7 +1067,7 @@ void init_weapon_custom_config_parser() {
 		case WC_TRIG_RICOCHET:
 			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_impact_names); k++) {
 				const char* key = UTIL_VarArgs("%s_%s%%", tname, g_wc_evt_trigger_impact_names[k]);
-				uint16_t val = (k << 5) | i;
+				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
 			}
@@ -1080,13 +1080,13 @@ void init_weapon_custom_config_parser() {
 			for (int k = 0; k <= 10; k++) {
 				{
 					const char* key = UTIL_VarArgs("%s_above_%d", tname, k * 10);
-					uint16_t val = ((k+1) << 5) | i;
+					uint16_t val = ((k+1) << EVT_TYPE_BITS) | i;
 					g_wc_name_to_trigger.put(key, val);
 					g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
 				}
 				{
 					const char* key = UTIL_VarArgs("%s_below_%d", tname, k * 10);
-					uint16_t val = ((k+12) << 5) | i;
+					uint16_t val = ((k+12) << EVT_TYPE_BITS) | i;
 					g_wc_name_to_trigger.put(key, val);
 					g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
 				}
@@ -1586,7 +1586,7 @@ const char* describe_event(WepEvt& evt) {
 	static char temp[256];
 	temp[0] = 0;
 
-	const char* trig = g_wc_trigger_to_name[(evt.triggerArg << 5) | evt.trigger].str();
+	const char* trig = g_wc_trigger_to_name[(evt.triggerArg << EVT_TYPE_BITS) | evt.trigger].str();
 
 	strcat_safe(temp, trig, sizeof(temp));
 	strcat_safe(temp, " -> ", sizeof(temp));
@@ -1853,7 +1853,7 @@ void wc_fwrite_events(FILE* f, CustomWeaponParams& params, int category) {
 			continue;
 		}
 
-		uint16_t key = (evt.triggerArg << 5) | evt.trigger;
+		uint16_t key = (evt.triggerArg << EVT_TRIGGER_BITS) | evt.trigger;
 		if (key > ARRAY_SZ(g_wc_trigger_to_name) || g_wc_trigger_to_name[key].pool == NULL) {
 			ALERT(at_error, "Invalid trigger key value %d\n", key);
 			continue;
@@ -1909,10 +1909,11 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 	memset(&evt, 0, sizeof(WepEvt));
 
 	evt.evtType = *actionId;
-	evt.trigger = *val & 0x1f;
-	evt.triggerArg = *val >> 5;
+	evt.trigger = *val & ((1 << EVT_TYPE_BITS) - 1);
+	evt.triggerArg = *val >> EVT_TYPE_BITS;
 	evt.delay = delay ? atoi(delay) : 0;
 	evt.offset = offset ? atoi(offset) : 0;
+	evt.hasTrigArg = evt.triggerArg != 0;
 	evt.hasDelay = evt.delay != 0;
 	evt.hasOffset = evt.offset != 0;
 
@@ -2565,13 +2566,20 @@ void READ_BYTES(uint8_t* bytes, int count) {
 #endif
 }
 
-void wc_read_netmsg_struct(struct_desc_t& desc, void* dat) {
+void wc_read_netmsg_struct(struct_desc_t& desc, void* dat, bool isEvent=false) {
 #ifdef CLIENT_DLL
 	int packedBitCount = 0;
 	int bitPackFieldStartIdx = -1;
 	int byteCount = 0;
 	bool verbose = gHUD.m_Debug.m_HUD_debug->value;
-	if (verbose) PRINTD("\nParse net struct '%s' (%d fields)\n", desc.name, desc.numFields);
+	if (verbose) {
+		if (isEvent) {
+			PRINTD("\nParse event %s (%d fields)\n", describe_event(*(WepEvt*)dat), desc.numFields);
+		}
+		else {
+			PRINTD("\nParse net struct '%s' (%d fields)\n", desc.name, desc.numFields);
+		}
+	}
 
 	for (int i = 0; i < desc.numFields; i++) {
 		field_desc_t& field = desc.fields[i];
@@ -2815,18 +2823,26 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 				if (!desc)
 					continue;
 
-				uint16_t packedHeader = (evt.hasOffset << 15) | (evt.hasDelay << 14) | (evt.triggerArg << 10) | (evt.trigger << 5) | evt.evtType;
+				int headerSz = 2;
+				uint16_t condFlags = (evt.hasOffset << 2) | (evt.hasDelay << 1) | evt.hasTrigArg;
+				uint16_t packedHeader = (condFlags << (EVT_TYPE_BITS + EVT_TRIGGER_BITS)) | (evt.trigger << EVT_TYPE_BITS) | evt.evtType;
+
 				WRITE_SHORT(packedHeader);
+				if (evt.hasTrigArg) {
+					WRITE_BYTE(evt.triggerArg);
+					headerSz += 1;
+				}
 				if (evt.hasDelay) {
 					WRITE_SHORT(evt.delay);
+					headerSz += 2;
 				}
 				if (evt.hasOffset) {
 					WRITE_SHORT(evt.offset);
+					headerSz += 2;
 				}
 
-				const char* evtName = evt.evtType < WC_EVT_TOTAL ? g_wc_evt_type_names[evt.evtType] : "???";
 				ALERT(at_aiconsole, "Write event %s (%d header bytes)\n",
-					evtName, evt.hasDelay ? 4 : 2);
+					describe_event(evt), headerSz);
 
 				wc_send_netmsg_struct(*desc, &evt);
 			}
@@ -2935,16 +2951,25 @@ int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, voi
 		WepEvt& evt = parms.events[i];
 		memset(&evt, 0, sizeof(WepEvt));
 
-		evt.evtType = packedHeader & 0x1F;
-		evt.trigger = (packedHeader >> 5) & 0x1F;
-		evt.triggerArg = (packedHeader >> 10) & 0xF;
-		evt.hasDelay = packedHeader >> 14;
-		evt.hasOffset = packedHeader >> 15;
+		int headerSz = 2;
+		evt.evtType = packedHeader & ((1 << EVT_TYPE_BITS) - 1);
+		evt.trigger = (packedHeader >> EVT_TYPE_BITS) & ((1 << EVT_TRIGGER_BITS) - 1);
+		evt.hasTrigArg = (packedHeader >> 12) & 1;
+		evt.hasDelay = (packedHeader >> 13) & 1;
+		evt.hasOffset = (packedHeader >> 14) & 1;
 
-		if (evt.hasDelay)
+		if (evt.hasTrigArg) {
+			evt.triggerArg = READ_BYTE();
+			headerSz += 1;
+		}
+		if (evt.hasDelay) {
 			evt.delay = READ_SHORT();
-		if (evt.hasOffset)
+			headerSz += 2;
+		}
+		if (evt.hasOffset) {
 			evt.offset = READ_SHORT();
+			headerSz += 2;
+		}
 
 		struct_desc_t* desc = get_evt_desc(evt.evtType);
 		if (!desc) {
@@ -2952,7 +2977,7 @@ int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, voi
 			continue;
 		}
 
-		wc_read_netmsg_struct(*desc, &evt);
+		wc_read_netmsg_struct(*desc, &evt, true);
 	}
 #endif
 	return 1;

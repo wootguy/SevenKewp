@@ -259,18 +259,25 @@ struct WepEvtArr16 {
 	uint16_t arr[MAX_WC_RANDOM_SELECTION];
 };
 
+#define EVT_TYPE_BITS 6
+#define EVT_TRIGGER_BITS 6
+
 struct WepEvt {
-	uint16_t evtType : 5;
-	uint16_t trigger : 5;		// when to trigger the event
-	uint16_t triggerArg : 4;	// additional args for event triggering
+	uint16_t evtType : EVT_TYPE_BITS;		// which union struct to use
+	uint16_t trigger : EVT_TRIGGER_BITS;	// when to trigger the event
+	uint16_t hasTrigArg : 1;
 	uint16_t hasDelay : 1;
 	uint16_t hasOffset : 1;		// for impact events
+	uint16_t dummy : 1;			// reserved for later
+
+	// conditionally sent args
+	uint8_t triggerArg;			// additional args for event triggering
 	uint16_t delay;				// milliseconds before firing the event
 	int16_t offset;				// offset from impact position
 
 	int attackIdx; // attack index which triggered this event (not transferred to clients) (TODO: move to runtime class data)
 
-	// event arguments
+	// event arguments selected by evtType
 	union {
 		struct {
 			uint16_t sound;		// 9 bits
@@ -597,6 +604,7 @@ struct WepEvt {
 		this->trigger = trigger;
 		this->triggerArg = triggerArg;
 		this->delay = delay;
+		this->hasTrigArg = triggerArg != 0;
 		this->hasDelay = delay != 0;
 		this->evtType = evtType;
 	}

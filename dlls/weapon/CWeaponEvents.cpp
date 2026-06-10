@@ -3,8 +3,11 @@
 int CWeaponEvents::m_tracerCount[32];
 TraceResult g_traces[256];
 
+
 // convert a client-side trace struct to the server-side kind
 #ifdef CLIENT_DLL
+bool VerboseDebugEnabled();
+
 WcTrace ConvertTrace(pmtrace_t tr, Vector startPos) {
 	WcTrace out;
 
@@ -1436,7 +1439,8 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 	WepEvt& evt = m_weapon->params.events[eventIdx];
 
 #ifdef CLIENT_DLL
-	//PRINTD("Play Event %s\n", describe_event(evt));
+	if (VerboseDebugEnabled())
+		PRINTD("Play Event %s\n", describe_event(evt));
 #else
 	ALERT(at_aiconsole, "Play Event %s\n", describe_event(evt));
 #endif
