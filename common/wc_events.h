@@ -1,12 +1,18 @@
 #pragma once
 
-#define FLOAT_TO_FP_10_6(val) (clamp((int)((val) * 64), INT16_MIN, INT16_MAX))
-#define FP_10_6_TO_FLOAT(val) (val / 64.0f)
+#define FLOAT_TO_SFP_10_6(val) (clamp((int)((val) * 64), INT16_MIN, INT16_MAX))
+#define SFP_10_6_TO_FLOAT(val) (val / 64.0f)
 
-#define FLOAT_TO_FP_4_12(val) (clamp((int)((val) * 4096), INT16_MIN, INT16_MAX))
+#define FLOAT_TO_SFP_9_7(val) (clamp((int)((val) * 128), INT16_MIN, INT16_MAX))
+#define SFP_9_7_TO_FLOAT(val) (val / 128.0f)
+
+#define FLOAT_TO_SFP_6_10(val) (clamp((int)((val) * 1024), INT16_MIN, INT16_MAX))
+#define SFP_6_10_TO_FLOAT(val) (val / 1024.0f)
+
+#define FLOAT_TO_FP_4_12(val) (clamp((int)((val) * 4096), 0, UINT16_MAX))
 #define FP_4_12_TO_FLOAT(val) (val / 4096.0f)
 
-#define FLOAT_TO_FP_8_8(val) (clamp((int)((val) * 256), INT16_MIN, INT16_MAX))
+#define FLOAT_TO_FP_8_8(val) (clamp((int)((val) * 256), 0, UINT16_MAX))
 #define FP_8_8_TO_FLOAT(val) (val / 256.0f)
 
 #define FLOAT_TO_SPREAD(val) (clamp((int)((val) * 65535), 0, UINT16_MAX))
@@ -27,12 +33,8 @@
 #define FL_WC_ANIM_PMODEL 2		// animate the third-person weapon model, not the first-person one 
 #define FL_WC_ANIM_ORDERED 4	// play multiple animations in order, not randomly
 
-#define FL_WC_PUNCH_SET 1		// don't randomize angles, set to exactly what was given
-#define FL_WC_PUNCH_ADD 2		// add to current punch angle
-#define FL_WC_PUNCH_ADD_RAND 4	// add to current punch angle, using a random angle between +/-each angle
-#define FL_WC_PUNCH_NO_RETURN 8	// view does not return to center after the punch
-#define FL_WC_PUNCH_DUCK 16		// apply punch angles only when ducked
-#define FL_WC_PUNCH_STAND 32	// apply punch angles only while standing
+#define FL_WC_RECOIL_DUCK 1		// apply punch angles only when ducked
+#define FL_WC_RECOIL_STAND 2	// apply punch angles only while standing
 
 #define FL_WC_BEAM_SPIRAL	1		// render the beam as a spiral (egon effect)
 #define FL_WC_BEAM_OPAQUE	2		// render the beam without transparency
@@ -130,7 +132,8 @@ enum WeaponCustomEventType {
 	WC_EVT_IDLE_SOUND,		// simple sound playback for reloads
 	WC_EVT_PLAY_SOUND,		// advanced sound playback
 	WC_EVT_EJECT_SHELL,
-	WC_EVT_PUNCH,			// set punch angles to the given values
+	WC_EVT_RECOIL,			// recoil with logic shared for all angles
+	WC_EVT_RECOIL_ADV,		// recoil with unique logic per angle
 	WC_EVT_SET_BODY,
 	WC_EVT_WEP_ANIM,
 	WC_EVT_BULLETS,
@@ -262,6 +265,21 @@ enum WeaponCustomQuakeEffectType {
 	WC_QUAKE_EFFECT_PARTICLE_BURST,
 };
 
+enum WeaponCustomRecoilAngleMode {
+	WC_RECOIL_ANGLES_COPY,					// use angles as given
+	WC_RECOIL_ANGLES_RANDOM,				// randomize angles between +/- of each value (e.g. 2 = range of [-2,2])
+	WC_RECOIL_ANGLES_RANDOM_SIMPLE,			// ramdonly select +/- of each value (e.g. 2 = -2 or 2)
+	WC_RECOIL_ANGLES_RANDOM_RANGE,			// randomize between the min and max angles
+	WC_RECOIL_ANGLES_RANDOM_RANGE_SIMPLE,	// randomly select a min or max angle
+	WC_RECOIL_ANGLES_LINEAR_RAMP,			// interpolate angles from the min to max values. Randomize using the interpolated values.
+};
+
+enum WeaponCustomRecoilApplyMode {
+	WC_RECOIL_APPLY_PUNCH_SET,	// set punch angle
+	WC_RECOIL_APPLY_PUNCH_ADD,	// add to punch angle
+	WC_RECOIL_APPLY_ROTATE,		// rotate the player's view
+};
+
 #pragma pack(push,1)
 
 struct WepEvtArr8 {
@@ -343,13 +361,26 @@ struct WepEvt {
 		} ejectShell;
 
 		struct {
-			uint8_t flags;			// 7 bits - FL_WC_PUNCH_
+			uint8_t angleOp;		// 3 bits - WeaponCustomRecoilAngleMode
+			uint8_t viewOp;			// 2 bits - WeaponCustomRecoilApplyMode
+			uint8_t flags;			// 2 bits - FL_WC_PUNCH_
 			uint8_t hasMaxAngles;	// 1 bit
-			int16_t angles[3];		// 10.6 fixed point int
+			int16_t angles[3];		// 9.7 fixed point int
 			
 			uint16_t maxAngleTime;	// time to reach maxAngles amount of recoil for a sustained attack
-			int16_t maxAngles[3];	// 10.6 fixed point int. Not used if maxAngleTime=0
+			int16_t maxAngles[3];	// 9.7 fixed point int. Not used if maxAngleTime=0
 		} recoil;
+
+		struct {
+			uint8_t angleOp[3];
+			uint8_t viewOp[3];
+
+			uint8_t flags;			// FL_WC_PUNCH_
+			uint8_t ops[3];			// bitpacked: WeaponCustomRecoilAngleMode + WeaponCustomRecoilApplyMode
+			int16_t min[3];			// 9.7 fixed point int
+			int16_t max[3];			// 9.7 fixed point int
+			uint16_t maxAngleTime;	// time to reach maxAngles amount of recoil for a sustained attack
+		} recoilAdv;
 
 		struct {
 			uint8_t flags;			// 3 bits - FL_WC_ANIM_*
@@ -514,13 +545,6 @@ struct WepEvt {
 		} streak_splash;
 
 		struct {
-			uint16_t radius;
-			uint16_t amplitude;
-			uint16_t duration;
-			uint16_t frequency;
-		} shake;
-
-		struct {
 			uint16_t sprite;	// 9 bits
 			uint16_t beamType;	// 4 bits - WeaponCustomBeamCircleType
 			uint16_t hasFrame;	// 1 bit - true if a start frame is set
@@ -538,6 +562,13 @@ struct WepEvt {
 		//
 		// Server-side events
 		//
+
+		struct {
+			uint16_t radius;
+			uint16_t amplitude;
+			uint16_t duration;
+			uint16_t frequency;
+		} shake;
 
 		struct {
 			uint16_t radius;

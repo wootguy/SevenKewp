@@ -339,7 +339,6 @@ int SendEventData(edict_t* target, CWeaponCustom* wep) {
 
 #ifndef CLIENT_DLL
 	CustomWeaponParams& params = wep->params;
-	uint8_t* dat = (uint8_t*)&params;
 
 	int chunks = ceilf(params.numEvents / (float)g_evt_data_chunk_size);
 
@@ -408,7 +407,6 @@ int SendEventData(edict_t* target, CWeaponCustom* wep) {
 void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, PredictionDataSendMode sendMode) {
 #ifndef CLIENT_DLL
 	CustomWeaponParams& params = wep->params;
-	uint8_t* dat = (uint8_t*)&params;
 
 	if (params.flags & FL_WC_WEP_NO_PREDICTION) {
 		return;

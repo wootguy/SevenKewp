@@ -55,12 +55,28 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		cur[2] = v.z;
 		break;
 	}
-	case WC_PARAM_VECTOR_FP_10_6: {
+	case WC_PARAM_VECTOR_SFP_10_6: {
 		Vector v = UTIL_ParseVector(val);
 		int16_t* cur = (int16_t*)dat;
-		cur[0] = FLOAT_TO_FP_10_6(v.x);
-		cur[1] = FLOAT_TO_FP_10_6(v.y);
-		cur[2] = FLOAT_TO_FP_10_6(v.z);
+		cur[0] = FLOAT_TO_SFP_10_6(v.x);
+		cur[1] = FLOAT_TO_SFP_10_6(v.y);
+		cur[2] = FLOAT_TO_SFP_10_6(v.z);
+		break;
+	}
+	case WC_PARAM_VECTOR_SFP_9_7: {
+		Vector v = UTIL_ParseVector(val);
+		int16_t* cur = (int16_t*)dat;
+		cur[0] = FLOAT_TO_SFP_9_7(v.x);
+		cur[1] = FLOAT_TO_SFP_9_7(v.y);
+		cur[2] = FLOAT_TO_SFP_9_7(v.z);
+		break;
+	}
+	case WC_PARAM_VECTOR_SFP_6_10: {
+		Vector v = UTIL_ParseVector(val);
+		int16_t* cur = (int16_t*)dat;
+		cur[0] = FLOAT_TO_SFP_6_10(v.x);
+		cur[1] = FLOAT_TO_SFP_6_10(v.y);
+		cur[2] = FLOAT_TO_SFP_6_10(v.z);
 		break;
 	}
 	case WC_PARAM_UINT16_FP_4_12: *(uint16_t*)dat = FLOAT_TO_FP_4_12(atof(val)); break;
@@ -262,9 +278,19 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 		fprintf(f, "%d %d %d\n", (int)v[0], (int)v[1], (int)v[2]);
 		break;
 	}
-	case WC_PARAM_VECTOR_FP_10_6: {
+	case WC_PARAM_VECTOR_SFP_10_6: {
 		int16_t* v = (int16_t*)dat;
-		fprintf(f, "%.2f %.2f %.2f\n", FP_10_6_TO_FLOAT(v[0]), FP_10_6_TO_FLOAT(v[1]), FP_10_6_TO_FLOAT(v[2]));
+		fprintf(f, "%.2f %.2f %.2f\n", SFP_10_6_TO_FLOAT(v[0]), SFP_10_6_TO_FLOAT(v[1]), SFP_10_6_TO_FLOAT(v[2]));
+		break;
+	}
+	case WC_PARAM_VECTOR_SFP_9_7: {
+		int16_t* v = (int16_t*)dat;
+		fprintf(f, "%.2f %.2f %.2f\n", SFP_9_7_TO_FLOAT(v[0]), SFP_9_7_TO_FLOAT(v[1]), SFP_9_7_TO_FLOAT(v[2]));
+		break;
+	}
+	case WC_PARAM_VECTOR_SFP_6_10: {
+		int16_t* v = (int16_t*)dat;
+		fprintf(f, "%.3f %.3f %.3f\n", SFP_6_10_TO_FLOAT(v[0]), SFP_6_10_TO_FLOAT(v[1]), SFP_6_10_TO_FLOAT(v[2]));
 		break;
 	}
 	case WC_PARAM_UINT16_FP_4_12: {

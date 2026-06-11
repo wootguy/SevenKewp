@@ -114,7 +114,9 @@ public:
 	void PlayEvent_SetGravity(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand, bool akimboFire, WcTrace* tr);
 	void PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
-	void PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_Recoil(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_RecoilAdv(WepEvt& evt, CBasePlayer* m_pPlayer);
+	void PlayEvent_RecoilShared(CBasePlayer* m_pPlayer, int flags, int maxAngleTime, Vector min, Vector max, int angleOps[3], int viewOps[3]);
 	void PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
 	void PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_ToggleState(WepEvt& evt, CBasePlayer* m_pPlayer);

@@ -892,59 +892,102 @@ void CWeaponEvents::PlayEvent_EjectShell(WepEvt& evt, CBasePlayer* m_pPlayer, bo
 #endif
 }
 
-void CWeaponEvents::PlayEvent_PunchAngle(WepEvt& evt, CBasePlayer* m_pPlayer) {
+void CWeaponEvents::PlayEvent_Recoil(WepEvt& evt, CBasePlayer* m_pPlayer) {
+	Vector min(
+		SFP_9_7_TO_FLOAT(evt.recoil.angles[0]),
+		SFP_9_7_TO_FLOAT(evt.recoil.angles[1]),
+		SFP_9_7_TO_FLOAT(evt.recoil.angles[2])
+	);
+	Vector max(
+		SFP_9_7_TO_FLOAT(evt.recoil.maxAngles[0]),
+		SFP_9_7_TO_FLOAT(evt.recoil.maxAngles[1]),
+		SFP_9_7_TO_FLOAT(evt.recoil.maxAngles[2])
+	);
+
+	int angleOps[3] = { evt.recoil.angleOp, evt.recoil.angleOp, evt.recoil.angleOp };
+	int viewOps[3] = { evt.recoil.viewOp, evt.recoil.viewOp, evt.recoil.viewOp };
+	PlayEvent_RecoilShared(m_pPlayer, evt.recoil.flags, evt.recoil.maxAngleTime, min, max, angleOps, viewOps);
+}
+
+void CWeaponEvents::PlayEvent_RecoilAdv(WepEvt& evt, CBasePlayer* m_pPlayer) {
+	Vector min(
+		SFP_9_7_TO_FLOAT(evt.recoilAdv.min[0]),
+		SFP_9_7_TO_FLOAT(evt.recoilAdv.min[1]),
+		SFP_9_7_TO_FLOAT(evt.recoilAdv.min[2])
+	);
+	Vector max(
+		SFP_9_7_TO_FLOAT(evt.recoilAdv.max[0]),
+		SFP_9_7_TO_FLOAT(evt.recoilAdv.max[1]),
+		SFP_9_7_TO_FLOAT(evt.recoilAdv.max[2])
+	);
+
+	int angleOps[3];
+	int viewOps[3];
+	for (int i = 0; i < 3; i++) {
+		angleOps[i] = (evt.recoilAdv.ops[i] >> 4) & 0xf;
+		viewOps[i] = evt.recoilAdv.ops[i] & 0xf;
+	}
+
+	PlayEvent_RecoilShared(m_pPlayer, evt.recoilAdv.flags, evt.recoilAdv.maxAngleTime, min, max, angleOps, viewOps);
+}
+
+void CWeaponEvents::PlayEvent_RecoilShared(CBasePlayer* m_pPlayer, int flags, int maxAngleTime,
+	Vector min, Vector max, int angleOps[3], int viewOps[3]) {
 	bool ducking = m_pPlayer->pev->flags & FL_DUCKING;
 
-	if (ducking && (evt.recoil.flags & FL_WC_PUNCH_STAND))
+	if (ducking && (flags & FL_WC_RECOIL_STAND))
 		return;
-	if (!ducking && (evt.recoil.flags & FL_WC_PUNCH_DUCK))
+	if (!ducking && (flags & FL_WC_RECOIL_DUCK))
 		return;
 
 	float t = 0;
-	if (evt.recoil.maxAngleTime) {
+	if (maxAngleTime) {
 		int attackTime = m_weapon->CmdTime() - m_weapon->m_attackStartCmdTime;
 		if (attackTime)
-			t = V_min(1.0f, attackTime / (float)evt.recoil.maxAngleTime);
+			t = V_min(1.0f, attackTime / (float)maxAngleTime);
+	}
+
+	Vector punchLerp = min + (max - min) * t;
+
+	Vector recoil;
+
+	for (int i = 0; i < 3; i++) {
+		switch (angleOps[i]) {
+		case WC_RECOIL_ANGLES_COPY:
+			recoil[i] = min[i];
+			break;
+		case WC_RECOIL_ANGLES_RANDOM:
+			recoil[i] = UTIL_SharedRandomFloat(m_pPlayer->random_seed + i, -min[i], min[i]);
+			break;
+		case WC_RECOIL_ANGLES_RANDOM_SIMPLE:
+			recoil[i] = UTIL_SharedRandomLong(m_pPlayer->random_seed + i, 0, 1) ? -min[i] : min[i];
+			break;
+		case WC_RECOIL_ANGLES_RANDOM_RANGE:
+			recoil[i] = UTIL_SharedRandomFloat(m_pPlayer->random_seed + i, min[i], max[i]);
+			break;
+		case WC_RECOIL_ANGLES_RANDOM_RANGE_SIMPLE:
+			recoil[i] = UTIL_SharedRandomLong(m_pPlayer->random_seed + i, 0, 1) ? min[i] : max[i];
+			break;
+		case WC_RECOIL_ANGLES_LINEAR_RAMP: {
+			recoil[i] = UTIL_SharedRandomFloat(m_pPlayer->random_seed + i, -punchLerp[i], punchLerp[i]);
+			break;
+		}
+		}
 	}
 
 #ifdef CLIENT_DLL
-	WC_EV_PunchAngle(evt, m_pPlayer->random_seed, t);
+	WC_EV_Recoil(recoil, viewOps);
 #else
-	float punchAngleX = FP_10_6_TO_FLOAT(evt.recoil.angles[0]);
-	float punchAngleY = FP_10_6_TO_FLOAT(evt.recoil.angles[1]);
-	float punchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.angles[2]);
-
-	// lerp recoil to maxAngles until max angle time
-	if (evt.recoil.maxAngleTime) {
-		float maxPunchAngleX = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[0]);
-		float maxPunchAngleY = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[1]);
-		float maxPunchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[2]);
-
-		punchAngleX = punchAngleX + (maxPunchAngleX - punchAngleX) * t;
-		punchAngleY = punchAngleY + (maxPunchAngleY - punchAngleY) * t;
-		punchAngleZ = punchAngleZ + (maxPunchAngleZ - punchAngleZ) * t;
-	}
-
-	if (!(evt.recoil.flags & FL_WC_PUNCH_NO_RETURN)) {
-		if (evt.recoil.flags & FL_WC_PUNCH_ADD) {
-			m_pPlayer->pev->punchangle = m_pPlayer->pev->punchangle + Vector(punchAngleX, punchAngleY, punchAngleZ);
-		}
-		else if (evt.recoil.flags & FL_WC_PUNCH_ADD_RAND) {
-			m_pPlayer->pev->punchangle = m_pPlayer->pev->punchangle + Vector(
-				UTIL_SharedRandomFloat(m_pPlayer->random_seed, -punchAngleX, punchAngleX),
-				UTIL_SharedRandomFloat(m_pPlayer->random_seed + 1, -punchAngleY, punchAngleY),
-				UTIL_SharedRandomFloat(m_pPlayer->random_seed + 2, -punchAngleZ, punchAngleZ)
-			);
-		}
-		else if (evt.recoil.flags & FL_WC_PUNCH_SET) {
-			m_pPlayer->pev->punchangle = Vector(punchAngleX, punchAngleY, punchAngleZ);
-		}
-		else {
-			m_pPlayer->pev->punchangle = Vector(
-				UTIL_SharedRandomFloat(m_pPlayer->random_seed, -punchAngleX, punchAngleX),
-				UTIL_SharedRandomFloat(m_pPlayer->random_seed + 1, -punchAngleY, punchAngleY),
-				UTIL_SharedRandomFloat(m_pPlayer->random_seed + 2, -punchAngleZ, punchAngleZ)
-			);
+	for (int i = 0; i < 3; i++) {
+		switch (viewOps[i]) {
+		case WC_RECOIL_APPLY_PUNCH_SET:
+			m_pPlayer->pev->punchangle[i] = recoil[i];
+			break;
+		case WC_RECOIL_APPLY_PUNCH_ADD:
+			m_pPlayer->pev->punchangle[i] = m_pPlayer->pev->punchangle[i] + recoil[i];
+			break;
+		case WC_RECOIL_APPLY_ROTATE:
+			break; // TODO: do something server-side so cheating is harder
 		}
 	}
 #endif
@@ -1533,8 +1576,11 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 	case WC_EVT_EJECT_SHELL:
 		PlayEvent_EjectShell(evt, m_pPlayer, leftHand);
 		break;
-	case WC_EVT_PUNCH:
-		PlayEvent_PunchAngle(evt, m_pPlayer);
+	case WC_EVT_RECOIL:
+		PlayEvent_Recoil(evt, m_pPlayer);
+		break;
+	case WC_EVT_RECOIL_ADV:
+		PlayEvent_RecoilAdv(evt, m_pPlayer);
 		break;
 	case WC_EVT_IDLE_SOUND:
 		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire, tr);

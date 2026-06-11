@@ -1954,60 +1954,29 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);
 int UTIL_SharedRandomLong(unsigned int seed, int low, int high);
 
-void WC_EV_PunchAngle(WepEvt& evt, int seed, float attackTime) {
-	float punchAngleX = FP_10_6_TO_FLOAT(evt.recoil.angles[0]);
-	float punchAngleY = FP_10_6_TO_FLOAT(evt.recoil.angles[1]);
-	float punchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.angles[2]);
+void WC_EV_Recoil(Vector recoil, int ops[3]) {
+	Vector viewAngles;
+	gEngfuncs.GetViewAngles(viewAngles);
 
-	if (evt.recoil.maxAngleTime) {
-		float maxPunchAngleX = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[0]);
-		float maxPunchAngleY = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[1]);
-		float maxPunchAngleZ = FP_10_6_TO_FLOAT(evt.recoil.maxAngles[2]);
+	bool shouldSetView = false;
 
-		punchAngleX = punchAngleX + (maxPunchAngleX - punchAngleX) * attackTime;
-		punchAngleY = punchAngleY + (maxPunchAngleY - punchAngleY) * attackTime;
-		punchAngleZ = punchAngleZ + (maxPunchAngleZ - punchAngleZ) * attackTime;
-	}
-
-	if (evt.recoil.flags & FL_WC_PUNCH_NO_RETURN) {
-		Vector angles;
-		gEngfuncs.GetViewAngles(angles);
-
-		if (evt.recoil.flags & FL_WC_PUNCH_SET) {
-			angles = angles + Vector(punchAngleX, punchAngleY, punchAngleZ);
-		}
-		else {
-			angles = angles + Vector(
-				UTIL_SharedRandomFloat(seed, -punchAngleX, punchAngleX),
-				UTIL_SharedRandomFloat(seed + 1, -punchAngleY, punchAngleY),
-				UTIL_SharedRandomFloat(seed + 2, -punchAngleZ, punchAngleZ)
-			);
-		}
-
-		gEngfuncs.SetViewAngles(angles);
-	}
-	else {
-		if (evt.recoil.flags & FL_WC_PUNCH_ADD) {
-			gPlayerSim.ev_punchangle[0] += punchAngleX;
-			gPlayerSim.ev_punchangle[1] += punchAngleY;
-			gPlayerSim.ev_punchangle[2] += punchAngleZ;
-		}
-		else if (evt.recoil.flags & FL_WC_PUNCH_SET) {
-			V_PunchAxis(0, punchAngleX);
-			V_PunchAxis(1, punchAngleY);
-			V_PunchAxis(2, punchAngleZ);
-		}
-		else if (evt.recoil.flags & FL_WC_PUNCH_ADD_RAND) {
-			gPlayerSim.ev_punchangle[0] += UTIL_SharedRandomFloat(seed, -punchAngleX, punchAngleX);
-			gPlayerSim.ev_punchangle[1] += UTIL_SharedRandomFloat(seed + 1, -punchAngleY, punchAngleY);
-			gPlayerSim.ev_punchangle[2] += UTIL_SharedRandomFloat(seed + 2, -punchAngleZ, punchAngleZ);
-		}
-		else {
-			V_PunchAxis(0, UTIL_SharedRandomFloat(seed, -punchAngleX, punchAngleX));
-			V_PunchAxis(1, UTIL_SharedRandomFloat(seed + 1, -punchAngleY, punchAngleY));
-			V_PunchAxis(2, UTIL_SharedRandomFloat(seed + 2, -punchAngleZ, punchAngleZ));
+	for (int i = 0; i < 3; i++) {
+		switch (ops[i]) {
+		case WC_RECOIL_APPLY_PUNCH_SET:
+			V_PunchAxis(i, recoil[i]);
+			break;
+		case WC_RECOIL_APPLY_PUNCH_ADD:
+			gPlayerSim.ev_punchangle[i] += recoil[i];
+			break;
+		case WC_RECOIL_APPLY_ROTATE:
+			viewAngles[i] += recoil[i];
+			shouldSetView = true;
+			break;
 		}
 	}
+	
+	if (shouldSetView)
+		gEngfuncs.SetViewAngles(viewAngles);
 }
 
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx) {

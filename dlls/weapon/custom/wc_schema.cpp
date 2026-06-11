@@ -333,20 +333,48 @@ void init_event_fields() {
 	}
 
 	{
-		static const char* flags[8];
-		flags[BitIndex(FL_WC_PUNCH_SET)] = "set_angles";
-		flags[BitIndex(FL_WC_PUNCH_ADD)] = "add_angles";
-		flags[BitIndex(FL_WC_PUNCH_ADD_RAND)] = "add_angles_rand";
-		flags[BitIndex(FL_WC_PUNCH_NO_RETURN)] = "no_recovery";
-		flags[BitIndex(FL_WC_PUNCH_DUCK)] = "only_when_ducking";
-		flags[BitIndex(FL_WC_PUNCH_STAND)] = "only_when_standing";
+		static const char* angleOps[8];
+		angleOps[WC_RECOIL_ANGLES_COPY] = "copy";
+		angleOps[WC_RECOIL_ANGLES_RANDOM] = "random";
+		angleOps[WC_RECOIL_ANGLES_RANDOM_SIMPLE] = "random_simple";
+		angleOps[WC_RECOIL_ANGLES_RANDOM_RANGE] = "random_range";
+		angleOps[WC_RECOIL_ANGLES_RANDOM_RANGE_SIMPLE] = "random_range_simple";
+		angleOps[WC_RECOIL_ANGLES_LINEAR_RAMP] = "random_linear_ramp";
 
-		EVT_DESC(WC_EVT_PUNCH, "recoil",
-			EVT_FLAGS("flags", "0", recoil.flags, 7, flags),
+		static const char* viewOps[8];
+		viewOps[WC_RECOIL_APPLY_PUNCH_SET] = "punch";
+		viewOps[WC_RECOIL_APPLY_PUNCH_ADD] = "punch_stack";
+		viewOps[WC_RECOIL_APPLY_ROTATE] = "rotate";
+
+		static const char* flags[8];
+		flags[BitIndex(FL_WC_RECOIL_DUCK)] = "only_when_ducking";
+		flags[BitIndex(FL_WC_RECOIL_STAND)] = "only_when_standing";
+
+		EVT_DESC(WC_EVT_RECOIL, "recoil",
+			EVT__ENUM("angle_mode", "copy", recoil.angleOp, 3, angleOps),
+			EVT__ENUM("view_mode", "punch", recoil.viewOp, 2, viewOps),
+			EVT_FLAGS("flags", "0", recoil.flags, 2, flags),
 			EVT_FIELD("has_max_angles", "0", recoil.hasMaxAngles, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
-			EVT_FIELD("angles", "0 0 0", recoil.angles, 0, WC_PARAM_VECTOR_FP_10_6),
-			EVT_FIELD("max_angles_time", "0 0 0", recoil.maxAngleTime, 0, WC_PARAM_TIME),
-			EVT_FIELD("max_angles", "0 0 0", recoil.maxAngles, 0, WC_PARAM_VECTOR_FP_10_6, NULL, 0, 0, EVT_COND_BYTE(recoil.hasMaxAngles)),
+			EVT_FIELD("angles", "0 0 0", recoil.angles, 0, WC_PARAM_VECTOR_SFP_9_7),
+			EVT_FIELD("max_angles_time", "0", recoil.maxAngleTime, 0, WC_PARAM_TIME),
+			EVT_FIELD("max_angles", "0 0 0", recoil.maxAngles, 0, WC_PARAM_VECTOR_SFP_9_7, NULL, 0, 0, EVT_COND_BYTE(recoil.hasMaxAngles)),
+		);
+
+		EVT_DESC(WC_EVT_RECOIL_ADV, "recoil_advanced",
+			EVT__ENUM("angle_mode_x", "copy", recoilAdv.angleOp[0], 0, angleOps, FL_FIELD_NO_NETWORK),
+			EVT__ENUM("angle_mode_y", "copy", recoilAdv.angleOp[1], 0, angleOps, FL_FIELD_NO_NETWORK),
+			EVT__ENUM("angle_mode_z", "copy", recoilAdv.angleOp[2], 0, angleOps, FL_FIELD_NO_NETWORK),
+			EVT__ENUM("view_mode_x", "punch", recoilAdv.viewOp[0], 0, viewOps, FL_FIELD_NO_NETWORK),
+			EVT__ENUM("view_mode_y", "punch", recoilAdv.viewOp[1], 0, viewOps, FL_FIELD_NO_NETWORK),
+			EVT__ENUM("view_mode_z", "punch", recoilAdv.viewOp[2], 0, viewOps, FL_FIELD_NO_NETWORK),
+			
+			EVT_FIELD("bitpacked_x", "0", recoilAdv.ops[0], 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("bitpacked_y", "0", recoilAdv.ops[1], 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("bitpacked_z", "0", recoilAdv.ops[2], 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FLAGS("flags", "0", recoilAdv.flags, 0, flags),
+			EVT_FIELD("min", "0 0 0", recoilAdv.min, 0, WC_PARAM_VECTOR_SFP_9_7),
+			EVT_FIELD("max", "0 0 0", recoilAdv.max, 0, WC_PARAM_VECTOR_SFP_9_7),
+			EVT_FIELD("max_angles_time", "0", recoilAdv.maxAngleTime, 0, WC_PARAM_TIME),
 		);
 	}
 
@@ -1059,7 +1087,9 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_ACCURACY_100_2X:
 	case WC_PARAM_STRING:
 		return 4;
-	case WC_PARAM_VECTOR_FP_10_6:
+	case WC_PARAM_VECTOR_SFP_10_6:
+	case WC_PARAM_VECTOR_SFP_6_10:
+	case WC_PARAM_VECTOR_SFP_9_7:
 		return 6;
 	case WC_PARAM_UINT8_ARRAY_8:
 		return 9;
@@ -1084,7 +1114,7 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 	case WC_PARAM_DECAL_INDEX:
 		return UTIL_VarArgs("%d", (int)(*dat));
 	case WC_PARAM_UINT8_FP_2_6:
-		return UTIL_VarArgs("%.2f", FP_10_6_TO_FLOAT(*dat));
+		return UTIL_VarArgs("%.2f", SFP_10_6_TO_FLOAT(*dat));
 	case WC_PARAM_UINT16:
 	case WC_PARAM_INT16:
 	case WC_PARAM_SOUND_INDEX:
@@ -1111,11 +1141,21 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 	case WC_PARAM_ACCURACY_UINT16_2X:
 	case WC_PARAM_ACCURACY_100_2X:
 		return UTIL_VarArgs("(%d %d)", (int)((uint16_t*)dat)[0], (int)((uint16_t*)dat)[1]);
-	case WC_PARAM_VECTOR_FP_10_6: {
+	case WC_PARAM_VECTOR_SFP_6_10: {
+		int16_t* v = (int16_t*)dat;
+		return UTIL_VarArgs("(%.3f %.3f %.3f)",
+			SFP_10_6_TO_FLOAT(v[0]), SFP_10_6_TO_FLOAT(v[1]), SFP_10_6_TO_FLOAT(v[2]));
+	}
+	case WC_PARAM_VECTOR_SFP_10_6: {
 		int16_t* v = (int16_t*)dat;
 		return UTIL_VarArgs("(%.2f %.2f %.2f)",
-			FP_10_6_TO_FLOAT(v[0]), FP_10_6_TO_FLOAT(v[1]), FP_10_6_TO_FLOAT(v[2]));
+			SFP_6_10_TO_FLOAT(v[0]), SFP_6_10_TO_FLOAT(v[1]), SFP_6_10_TO_FLOAT(v[2]));
 	}
+	case WC_PARAM_VECTOR_SFP_9_7: {
+		int16_t* v = (int16_t*)dat;
+		return UTIL_VarArgs("(%.2f %.2f %.2f)",
+			SFP_9_7_TO_FLOAT(v[0]), SFP_9_7_TO_FLOAT(v[1]), SFP_9_7_TO_FLOAT(v[2]));
+	}						 
 	case WC_PARAM_VECTOR: {
 		float* v1 = (float*)dat;
 		return UTIL_VarArgs("(%f %f %f)", v1[0], v1[1], v1[2]);
@@ -1186,9 +1226,15 @@ void wc_post_parse_event(WepEvt& evt) {
 		evt.beam.hasImpactSprite = evt.beam.impactSprite != 0;
 		evt.beam.hasRicoBeams = evt.beam.ricoBeams != 0;
 		break;
-	case WC_EVT_PUNCH:
-		evt.recoil.hasMaxAngles = evt.recoil.maxAngleTime != 0;
+	case WC_EVT_RECOIL:
+		evt.recoil.hasMaxAngles = evt.recoil.maxAngleTime != 0
+			|| evt.recoil.maxAngles[0] || evt.recoil.maxAngles[1] || evt.recoil.maxAngles[2];
 		break;
+	case WC_EVT_RECOIL_ADV: {
+		for (int i = 0; i < 3; i++)
+			evt.recoilAdv.ops[i] = ((evt.recoilAdv.angleOp[i] & 0xf) << 4) | (evt.recoilAdv.viewOp[i] & 0xf);
+		break;
+	}
 	case WC_EVT_BEAM_CIRCLE:
 		evt.beam_circle.hasFrame = evt.beam_circle.frame != 0;
 		evt.beam_circle.hasHeight = evt.beam_circle.height != 0;

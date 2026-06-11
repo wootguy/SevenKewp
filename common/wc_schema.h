@@ -12,20 +12,23 @@ enum WC_PARAM_TYPE {
 	WC_PARAM_UINT8_ENUM,	// enum value stored in an 8-bit int
 	WC_PARAM_UINT8_ARRAY_8,	// array of up to 8 uint8_t
 	WC_PARAM_UINT16,
-	WC_PARAM_UINT16_FP_4_12,
-	WC_PARAM_UINT16_FP_8_8,
+	WC_PARAM_UINT16_FP_4_12,// unsigned 4.12 fixed point (accurate to 0.0003)
+	WC_PARAM_UINT16_FP_8_8,	// unsigned 8.8 fixed point (accurate to 0.005)
 	WC_PARAM_UINT16_PERCENT, // percentage stored as a uint16_t
 	WC_PARAM_UINT32,
 	WC_PARAM_UINT32_FLAGS,
 	WC_PARAM_INT8,
 	WC_PARAM_INT16,
+	WC_PARAM_INT16_FP_6_10,	// signed 6.10 fixed point
 	WC_PARAM_INT32,
 	WC_PARAM_RGB,
 	WC_PARAM_RGBA,
 	WC_PARAM_FLOAT,
 	WC_PARAM_VECTOR,
 	WC_PARAM_VECTOR_INT8,			// vector as an array of int8_t. No decimals.
-	WC_PARAM_VECTOR_FP_10_6,		// vector as an array of 10.6 fixed point ints.
+	WC_PARAM_VECTOR_SFP_10_6,		// vector as an array of signed 10.6 fixed point ints. (+/-512 accurate to 0.02)
+	WC_PARAM_VECTOR_SFP_9_7,		// vector as an array of signed 9.7 fixed point ints. (+/-256 accurate to 0.01)
+	WC_PARAM_VECTOR_SFP_6_10,		// vector as an array of signed 6.10 fixed point ints. (+/-32 accurate to 0.001)
 	WC_PARAM_SOUND_INDEX,			// sound file path stored as an index
 	WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2,// array of up to 8 sound indexes, one sound per config line, with key naming starting at index 2
 	WC_PARAM_MODEL_INDEX,			// model file path stored as an index

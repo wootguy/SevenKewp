@@ -86,7 +86,7 @@ void EV_LaserOff();
 // custom weapon events
 void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags, Vector* sndOri);
 void WC_EV_EjectShell(WepEvt& evt, bool leftHand);
-void WC_EV_PunchAngle(WepEvt& evt, int seed, float attackTime);
+void WC_EV_Recoil(Vector recoil, int ops[3]);
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
 void WC_EV_Dlight(WepEvt& evt, Vector pos);
 pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int tracerColor, bool gunshotDecal, bool textureSound, int iShot, int iDamage);
