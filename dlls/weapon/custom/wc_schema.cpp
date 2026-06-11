@@ -196,6 +196,7 @@ void init_weapon_struct_fields() {
 			WEP__ENUM("ammo_pool", "0", shootOpts[0].ammoPool, 0, ammoPools),
 			WEP_FIELD("cooldown", "0", shootOpts[0].cooldown, 0, WC_PARAM_TIME),
 			WEP_FIELD("cooldown_fail", "0", shootOpts[0].cooldownFail, 0, WC_PARAM_TIME),
+			WEP_FIELD("cooldown_water", "0", shootOpts[0].cooldownWater, 0, WC_PARAM_TIME),
 			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
 			WEP_FIELD("empty_sound", NULL, shootOpts[0].emptySound, 0, WC_PARAM_SOUND_INDEX),
 

@@ -822,12 +822,13 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 
 	bool isNormalAttack = !(opts.flags & FL_WC_SHOOT_NO_ATTACK);
 	bool isMelee = opts.flags & FL_WC_SHOOT_IS_MELEE;
+	bool inWater = m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD;
 
 	int clipLeft = *clip;
 
 	m_bWantAkimboReload = false;
 
-	if (isNormalAttack && m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD && !(opts.flags & FL_WC_SHOOT_UNDERWATER)) {
+	if (isNormalAttack && inWater && !(opts.flags & FL_WC_SHOOT_UNDERWATER)) {
 		FailAttack(attackIdx, leftHand, akimboFire, true);
 		return false;
 	}
@@ -923,7 +924,17 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 
-	int millis = overrideMillis != -1 ? overrideMillis : opts.cooldown;
+	int millis = opts.cooldown;
+
+	if (opts.cooldownWater) {
+		CBasePlayer* m_pPlayer = GetPlayer();
+		if (m_pPlayer && m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD) {
+			millis = opts.cooldownWater;
+		}
+	}
+
+	if (overrideMillis != -1)
+		millis = overrideMillis;
 
 	if (opts.dischargedCooldown) {
 		uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;

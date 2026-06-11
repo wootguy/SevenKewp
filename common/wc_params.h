@@ -110,6 +110,7 @@ struct CustomWeaponShootOpts {
 	uint8_t ammoPool;			// which ammo pool to drain from (WeaponCustomAmmoPool)
 	uint16_t cooldown;			// time between attacks (milliseconds)
 	uint16_t cooldownFail;		// cooldown after a failed attack (out of ammo, underwater) (milliseconds)
+	uint16_t cooldownWater;		// cooldown while in water (0 = use default cooldown)
 	
 	uint8_t chargeMode;			// 4 bits - WeaponCustomChargeupMode
 	uint8_t chargeAmmoMode;		// 2 bits - WeaponCustomChargeAmmoMode
