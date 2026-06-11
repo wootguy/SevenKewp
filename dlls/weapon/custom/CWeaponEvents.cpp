@@ -1114,7 +1114,7 @@ void CWeaponEvents::PlayEvent_ToggleState(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	}
 
 	if (evt.toggleState.stateBits & FL_WC_STATE_PRIMARY_ALT) {
-		m_weapon->SetPrimaryAlt(toggleOn || (toggleFlip && !m_weapon->IsPrimaryAltActive()));
+		m_weapon->SetState(FL_WC_STATE_PRIMARY_ALT, toggleOn || (toggleFlip && !m_weapon->IsPrimaryAltActive()));
 	}
 }
 

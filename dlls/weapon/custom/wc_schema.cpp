@@ -60,8 +60,11 @@ const char* g_wc_evt_trigger_arg_deploy_names[32];
 const char* g_wc_evt_charge_names[32];
 const char* g_wc_evt_category_names[32];
 static const char* g_wc_dmgFlags[32];
+static const char* g_toggle_mode_names[32];
+static const char* g_toggle_state_names[32];
 
 const char* g_wc_evt_type_names[128];
+
 mod_string_t g_wc_trigger_to_name[WC_MAX_TRIGGER_VALUES];
 
 HashMap<uint16_t> g_wc_name_to_trigger; // maps a group name to an event trigger + argument value
@@ -200,6 +203,10 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("cooldown_water", "0", shootOpts[0].cooldownWater, 0, WC_PARAM_TIME),
 			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
 			WEP_FIELD("empty_sound", NULL, shootOpts[0].emptySound, 0, WC_PARAM_SOUND_INDEX),
+			WEP__ENUM("toggle_mode", "toggle", shootOpts[0].toggleStateMode, 0, g_toggle_mode_names),
+			WEP_FLAGS("toggled_states", "0", shootOpts[0].toggleStateBits, 0, g_toggle_state_names),
+			WEP_FIELD("zoom_fov", "0", shootOpts[0].zoomFov[0], 0, WC_PARAM_UINT8),
+			WEP_FIELD("zoom_fov2", "0", shootOpts[0].zoomFov[1], 0, WC_PARAM_UINT8),
 
 			WEP__ENUM("charge_mode", "0", shootOpts[0].chargeMode, 4, chargeModes),
 			WEP__ENUM("charge_ammo_mode", "0", shootOpts[0].chargeAmmoMode, 2, chargeAmmoModes),
@@ -595,20 +602,9 @@ void init_event_fields() {
 	);
 
 	{
-		static const char* mode_names[32];
-		mode_names[WC_TOGGLE_STATE_OFF] = "off";
-		mode_names[WC_TOGGLE_STATE_ON] = "on";
-		mode_names[WC_TOGGLE_STATE_TOGGLE] = "toggle";
-
-		static const char* state_names[32];
-		state_names[BitIndex(FL_WC_STATE_PRIMARY_ALT)] = "primary_alt";
-		state_names[BitIndex(FL_WC_STATE_LASER)] = "laser";
-		state_names[BitIndex(FL_WC_STATE_IS_AKIMBO)] = "akimbo";
-		state_names[BitIndex(FL_WC_STATE_CAN_AKIMBO)] = "can_akimbo";
-
 		EVT_DESC(WC_EVT_TOGGLE_STATE, "toggle_state",
-			EVT__ENUM("toggle_mode", "toggle", toggleState.toggleMode, 2, mode_names),
-			EVT_FLAGS("toggled_states", "0", toggleState.stateBits, 14, state_names),
+			EVT__ENUM("toggle_mode", "toggle", toggleState.toggleMode, 2, g_toggle_mode_names),
+			EVT_FLAGS("toggled_states", "0", toggleState.stateBits, 14, g_toggle_state_names),
 		);
 	}
 
@@ -841,6 +837,16 @@ void init_weapon_custom_config_parser() {
 	g_wc_dmgFlags[BitIndex(DMG_MEDKITHEAL)] = "medkitheal";
 	g_wc_dmgFlags[BitIndex(DMG_LAUNCH)] = "launch";
 	g_wc_dmgFlags[BitIndex(DMG_SHOCK_GLOW)] = "shock_glow";
+
+	g_toggle_mode_names[WC_TOGGLE_STATE_OFF] = "off";
+	g_toggle_mode_names[WC_TOGGLE_STATE_ON] = "on";
+	g_toggle_mode_names[WC_TOGGLE_STATE_TOGGLE] = "toggle";
+
+	g_toggle_state_names[BitIndex(FL_WC_STATE_PRIMARY_ALT)] = "primary_alt";
+	g_toggle_state_names[BitIndex(FL_WC_STATE_LASER)] = "laser";
+	g_toggle_state_names[BitIndex(FL_WC_STATE_IS_AKIMBO)] = "akimbo";
+	g_toggle_state_names[BitIndex(FL_WC_STATE_CAN_AKIMBO)] = "can_akimbo";
+	g_toggle_state_names[BitIndex(FL_WC_STATE_ZOOM)] = "zoom";
 
 	init_weapon_struct_fields();
 	init_event_fields();

@@ -112,7 +112,8 @@ struct CustomWeaponShootOpts {
 	uint16_t cooldown;			// time between attacks (milliseconds)
 	uint16_t cooldownFail;		// cooldown after a failed attack (out of ammo, underwater) (milliseconds)
 	uint16_t cooldownWater;		// cooldown while in water (0 = use default cooldown)
-	
+	uint16_t emptySound;		// custom empty click sound
+
 	uint8_t chargeMode;			// 4 bits - WeaponCustomChargeupMode
 	uint8_t chargeAmmoMode;		// 2 bits - WeaponCustomChargeAmmoMode
 	uint8_t overchargeMode;		// 2 bits - WeaponCustomOverchargeMode
@@ -127,7 +128,10 @@ struct CustomWeaponShootOpts {
 	
 	uint16_t accuracy[2];		// horizontal+vertical accuracy for crosshair (degrees * 100)
 	uint16_t accuracyMult[WC_ACCURACY_MULT_TYPES]; // accuracy multipliers for player movement (4.12 fixed point)
-	uint16_t emptySound;		// custom empty click sound
+
+	uint8_t toggleStateMode;	// WeaponCustomToggleStateMode
+	uint16_t toggleStateBits;	// FL_WC_STATE_*
+	uint8_t zoomFov[2];			// if toggling zoom state, use these FOV values for cycling
 
 	// server side settings (not networked)
 	MeleeOpts melee;

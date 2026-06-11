@@ -198,7 +198,6 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_hasLaserAttachment = 0;
 		g_customWeapon[i].m_lastZoomToggle = 0;
 		g_customWeapon[i].m_lastLaserToggle = 0;
-		g_customWeapon[i].m_lastAltToggle = 0;
 		g_customWeapon[i].m_lastDeploy = 0;
 		g_customWeapon[i].m_laserOnTime = 0;
 		g_customWeapon[i].m_hasPredictionData = false;
@@ -1354,6 +1353,7 @@ uint32_t g_latest_cmd_id; // ID of the most recent command
 uint32_t g_cmd_timer_hist[CMD_TIMER_HIST_SZ]; // stores timer value at each cmd
 int g_cmd_timer_idx;
 uint32_t g_cmd_timer; // accumulates time from each new user command
+bool g_cmd_debug_mode = false;
 
 // get the global cmd timer value at the given cmd ID
 uint32_t GetTimeAtCmd(uint32_t cmdId) {
@@ -1422,11 +1422,17 @@ void CL_DLLEXPORT HUD_PostRunCmd(struct local_state_s* from, struct local_state_
 		bool buttonsPressed = cmd->buttons & (IN_ATTACK | IN_ATTACK2);
 		const float holdtime = 0.2f;
 		static float lastButtons;
-		if (gEngfuncs.GetClientTime() - lastButtons < holdtime || buttonsPressed) {
+		g_cmd_debug_mode = gEngfuncs.GetClientTime() - lastButtons < holdtime || buttonsPressed;
+		if (g_cmd_debug_mode) {
 			const char* sep = "------------------------------------------------------------\n";
-			int test = from->weapondata[WEAPON_SUIT+1].iuser2;
-			PRINTF("%s> CMD %-5d   MSEC %d   T %f   A %d%s\n", replaySeq == 0 ? sep : "", random_seed,
-				cmd->msec, (float)time, test, g_runfuncs ? "  RUNFUNC" : "");
+			int test = from->weapondata[37].iuser3;
+			PRINTF("%s> CMD %-5d   MSEC %d   T %f   V %d%s\n",
+				replaySeq == 0 ? sep : "",
+				random_seed,
+				cmd->msec,
+				(float)time,
+				test,
+				g_runfuncs ? "  RUNFUNC" : "");
 			if (buttonsPressed)
 				lastButtons = gEngfuncs.GetClientTime();
 		}

@@ -12,11 +12,13 @@
 #include "../cl_dll/com_weapons.h"
 #include "../common/com_model.h"
 #include "../game_shared/prediction_files.h"
+extern bool g_cmd_debug_mode;
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 #else
 int g_runfuncs = 1;
 #define PRINTF(fmt, ...)
+#define PRINTD(fmt, ...)
 #endif
 
 
@@ -311,7 +313,7 @@ BOOL CWeaponCustom::Deploy()
 	m_pPlayer->m_flNextAttack = 0; // allow thinking during deployment
 
 	if (g_runfuncs && WallTime() - m_lastDeploy > MAX_PREDICTION_WAIT) {
-		bool isFirstDeploy = !IsStateEnabled(FL_WC_STATE_FIRST_DEPLOYED);
+		bool isFirstDeploy = !GetState(FL_WC_STATE_FIRST_DEPLOYED);
 
 		bool handled =
 			(IsAkimbo() && events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_AKIMBO)) ||
@@ -323,7 +325,7 @@ BOOL CWeaponCustom::Deploy()
 			events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_DEFAULT);
 		}
 
-		EnableState(FL_WC_STATE_FIRST_DEPLOYED);
+		SetState(FL_WC_STATE_FIRST_DEPLOYED, true);
 	}
 
 	// extra idle time added because high ping players are interrupted otherwise
@@ -374,7 +376,7 @@ void CWeaponCustom::Reload() {
 
 	// exit iron sights before reloading
 	if (IsIronSights()) {
-		EnableState(FL_WC_STATE_WANT_RELOAD);
+		SetState(FL_WC_STATE_WANT_RELOAD, true);
 
 		int* clip = GetAttackClip(1);
 		if (CommonAttack(1, clip, false, false)) { // TODO: configure this
@@ -506,8 +508,8 @@ void CWeaponCustom::WeaponIdle() {
 	// Update auto-aim
 	m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
 
-	if (IsStateEnabled(FL_WC_STATE_WANT_RELOAD) && m_flNextPrimaryAttack <= 0) {
-		DisableState(FL_WC_STATE_WANT_RELOAD);
+	if (GetState(FL_WC_STATE_WANT_RELOAD) && m_flNextPrimaryAttack <= 0) {
+		SetState(FL_WC_STATE_WANT_RELOAD, false);
 		Reload();
 		return;
 	}
@@ -915,6 +917,30 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 
 		if (clipLeft <= 0 && ammoIdx >= 0 && m_pPlayer->m_rgAmmo[ammoIdx] <= 0) {
 			m_pPlayer->SetSuitUpdate("!HEV_AMO0", SUIT_REPEAT_OK, 0);
+		}
+	}
+
+	if (opts.toggleStateBits) {
+		switch (opts.toggleStateMode) {
+		case WC_TOGGLE_STATE_OFF:
+			SetState(opts.toggleStateBits, false);
+			break;
+		case WC_TOGGLE_STATE_ON:
+			SetState(opts.toggleStateBits, true);
+			break;
+		case WC_TOGGLE_STATE_TOGGLE: {
+			for (int i = 0; i < 32; i++) {
+				uint32_t bit = 1 << i;
+				if (opts.toggleStateBits & bit) {
+					SetState(bit, !GetState(bit));
+				}
+			}
+			break;
+		}
+		}
+
+		if (opts.toggleStateBits & FL_WC_STATE_ZOOM) {
+			events.ProcessEvents(GetState(FL_WC_STATE_ZOOM) ? WC_TRIG_ZOOM_IN : WC_TRIG_ZOOM_OUT, 0);
 		}
 	}
 
@@ -1486,6 +1512,8 @@ void CWeaponCustom::ToggleZoom(int zoomFov, int zoomFov2) {
 	UpdateAnimSet();
 #endif
 
+	SetState(FL_WC_STATE_ZOOM, newFov != 0);
+
 	m_lastZoomToggle = gpGlobals->time;
 }
 
@@ -1613,7 +1641,7 @@ void CWeaponCustom::SendAkimboAnim(int iAnim) {
 }
 
 void CWeaponCustom::SetLaser(bool enable) {
-	m_fireState = enable ? (m_fireState | FL_WC_STATE_LASER) : (m_fireState & ~FL_WC_STATE_LASER);
+	SetState(FL_WC_STATE_LASER, enable);
 
 #ifdef CLIENT_DLL
 
@@ -1629,11 +1657,7 @@ void CWeaponCustom::SetLaser(bool enable) {
 }
 
 bool CWeaponCustom::IsZoomed() {
-	CBasePlayer* m_pPlayer = GetPlayer();
-	if (!m_pPlayer)
-		return false;
-
-	return m_pPlayer->m_iFOV != 0;
+	return GetState(FL_WC_STATE_ZOOM);
 }
 
 void CWeaponCustom::UpdateLaser() {
@@ -1743,12 +1767,8 @@ bool CWeaponCustom::IsPrimaryAltActive() {
 	if (!(params.flags & FL_WC_WEP_HAS_ALT_PRIMARY)) {
 		return false;
 	}
-
-	if (WallTime() - m_lastAltToggle > 0.1f) {
-		m_lastAltState = (m_fireState & FL_WC_STATE_PRIMARY_ALT); // debounce
-	}
 	
-	return m_lastAltState;
+	return GetState(FL_WC_STATE_PRIMARY_ALT);
 }
 
 CustomWeaponShootOpts& CWeaponCustom::GetShootOpts(int attackIdx) {
@@ -1815,17 +1835,6 @@ void CWeaponCustom::SetChargedState(int attackIdx, WcAttackState newState) {
 	m_fInAttack = (m_fInAttack & ~mask) | newState;
 }
 
-void CWeaponCustom::SetPrimaryAlt(bool enable) {
-	if (enable) {
-		m_fireState = m_fireState | FL_WC_STATE_PRIMARY_ALT;
-	}
-	else {
-		m_fireState = m_fireState & ~FL_WC_STATE_PRIMARY_ALT;
-	}
-
-	m_lastAltToggle = WallTime();
-}
-
 void CWeaponCustom::GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount) {
 	if (secondary) {
 		if (params.ammoInfo[1].dropEnt) {
@@ -1886,6 +1895,17 @@ studiohdr_t* CWeaponCustom::GetViewModelHeader() {
 #else
 	return GET_MODEL_PTR(MODEL_INDEX(GetModelV()));
 #endif
+}
+
+void CWeaponCustom::SetState(int stateBits, bool state) {
+	if (state)
+		m_fireState |= stateBits;
+	else
+		m_fireState &= ~stateBits;
+}
+
+bool CWeaponCustom::GetState(int stateBits) {
+	return m_fireState & stateBits;
 }
 
 LINK_ENTITY_TO_CLASS(weapon_custom_ini, CWeaponCustom)

@@ -58,8 +58,6 @@ public:
 	// shared state
 	float m_lastZoomToggle; // for prediction code, don't spam events/toggles while waiting for the new server state
 	float m_lastLaserToggle;
-	bool m_lastAltState;
-	float m_lastAltToggle;
 	float m_lastDeploy;
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
 	Vector m_kickbackPredVel;
@@ -169,10 +167,9 @@ public:
 	BOOL CanAkimbo() { return (m_fireState & FL_WC_STATE_CAN_AKIMBO) != 0; }
 	void SetCanAkimbo(bool canAkimbo);
 	BOOL IsAkimbo() { return (m_fireState & FL_WC_STATE_IS_AKIMBO) != 0; }
-	bool IsIronSights() { return IsZoomed() && (params.flags & FL_WC_WEP_IRON_SIGHTS_ZOOM); }
-	void EnableState(int stateBits) { m_fireState |= stateBits; }
-	void DisableState(int stateBits) { m_fireState &= ~stateBits; }
-	bool IsStateEnabled(int stateBits) { return m_fireState & stateBits; }
+	bool IsIronSights() { return GetState(FL_WC_STATE_ZOOM) && (params.flags & FL_WC_WEP_IRON_SIGHTS_ZOOM); }
+	void SetState(int stateBits, bool state);
+	bool GetState(int stateBits);
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);
 	WcAttackState GetChargedState(int attackIdx);
@@ -180,11 +177,10 @@ public:
 	inline void ClearChargedStates() { m_fInAttack = 0; }
 	inline bool AreAnyAttacksCharging() { return m_fInAttack != 0; }
 
-	BOOL IsLaserOn() { return (m_fireState & FL_WC_STATE_LASER) != 0; }
+	BOOL IsLaserOn() { return GetState(FL_WC_STATE_LASER); }
 	bool IsZoomed();
 	void SetLaser(bool enable);
 	void UpdateLaser();
-	void SetPrimaryAlt(bool enable);
 	bool IsPrimaryAltActive();
 	CustomWeaponShootOpts& GetShootOpts(int attackIdx);
 
