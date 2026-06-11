@@ -96,6 +96,14 @@ enum WeaponCustomEventDeployArg {
 	WC_TRIG_DEPLOY_ARG_FIRST,		// fire when deployed for the first time
 };
 
+enum WeaponCustomEventZoomArg {
+	WC_TRIG_ZOOM_ARG_OUT,		// trigger at zoom level 0
+	WC_TRIG_ZOOM_ARG_IN,		// trigger at zoom level 1
+	WC_TRIG_ZOOM_ARG_IN2,		// trigger at zoom level 2
+	WC_TRIG_ZOOM_ARG_IN3,		// trigger at zoom level 3
+	WC_TRIG_ZOOM_ARG_CHANGED,	// trigger at any zoom level
+};
+
 enum WeaponCustomEventTriggers {
 	WC_TRIG_PRIMARY,			// trigger arg: WeaponCustomEventTriggerShootArg (does not trigger when alternate fire is active)
 	WC_TRIG_SECONDARY,			// trigger arg: WeaponCustomEventTriggerShootArg
@@ -126,8 +134,7 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_BULLET_FIRED,		// triggered when a bullet is fired
 	WC_TRIG_LASER_ON,			// triggered when the laser is enabled
 	WC_TRIG_LASER_OFF,			// triggered when the laser is disabled
-	WC_TRIG_ZOOM_IN,			// triggered when zooming in
-	WC_TRIG_ZOOM_OUT,			// triggered when zooming out
+	WC_TRIG_ZOOM,				// trigger arg: zoom level (0-3)		
 	WC_TRIG_IMPACT,				// triggered when an attack trace impacts something. Trigger arg: WeaponCustomEventTriggerImpactArg
 	WC_TRIG_RICOCHET,			// triggered when an attack trace ricochets off something. Trigger arg: WeaponCustomEventTriggerImpactArg
 };
@@ -145,7 +152,6 @@ enum WeaponCustomEventType {
 	WC_EVT_PROJECTILE,		// for slow-moving projectiles that aren't predicted on the client
 	WC_EVT_KICKBACK,
 	WC_EVT_TOGGLE_STATE,	// toggle some combination of weapon state bits
-	WC_EVT_TOGGLE_ZOOM,
 	WC_EVT_HIDE_LASER,		// temporarily hide the laser
 	WC_EVT_COOLDOWN,		// adjust cooldowns (by default every action is cooled down after an attack)
 	WC_EVT_SET_GRAVITY,		// change player gravity
@@ -450,11 +456,6 @@ struct WepEvt {
 			int8_t up;			// force percentage applied to up direction (-100 - 100)
 			int8_t globalUp;	// force percentage applied to global up direction (view pitch ignored)
 		} kickback;
-
-		struct {
-			uint8_t zoomFov;
-			uint8_t zoomFov2; // 2nd level zoom FOV
-		} zoomToggle;
 
 		struct {
 			uint16_t millis;

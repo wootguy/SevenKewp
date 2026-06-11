@@ -104,6 +104,8 @@ struct MeleeOpts {
 	uint16_t missSounds[4];
 };
 
+// Configure predicted control logic here, not in events. If an effect changes which code paths
+// are executed (alters predicted state variables like m_flNextAttack), then the effect belongs here.
 struct CustomWeaponShootOpts {
 	uint8_t flags;				// FL_WC_SHOOT_*
 	uint8_t ammoCost;			// ammo cost of each attack
@@ -129,9 +131,10 @@ struct CustomWeaponShootOpts {
 	uint16_t accuracy[2];		// horizontal+vertical accuracy for crosshair (degrees * 100)
 	uint16_t accuracyMult[WC_ACCURACY_MULT_TYPES]; // accuracy multipliers for player movement (4.12 fixed point)
 
-	uint8_t toggleStateMode;	// WeaponCustomToggleStateMode
+	uint8_t toggleStateMode;	// 6 bits - WeaponCustomToggleStateMode
+	uint8_t zoomLevels;			// 2 bits - maximum levels of zoom
+	uint8_t zoomFov[3];			// zoom fov for each level
 	uint16_t toggleStateBits;	// FL_WC_STATE_*
-	uint8_t zoomFov[2];			// if toggling zoom state, use these FOV values for cycling
 
 	// server side settings (not networked)
 	MeleeOpts melee;

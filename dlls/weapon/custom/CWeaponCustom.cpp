@@ -341,7 +341,7 @@ BOOL CWeaponCustom::Deploy()
 
 void CWeaponCustom::Holster(int skiplocal) {
 	CBasePlayerWeapon::Holster();
-	CancelZoom();
+	CycleZoom(0, true);
 	UTIL_Remove(m_hLaserSpot);
 #ifdef CLIENT_DLL
 	EV_LaserOff();
@@ -403,7 +403,7 @@ void CWeaponCustom::Reload() {
 		reloadStage = &params.reloadStage[1];
 	}
 
-	CancelZoom();
+	CycleZoom(0, true);
 
 	//CLALERT("Start Reload %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 
@@ -524,7 +524,7 @@ void CWeaponCustom::WeaponIdle() {
 
 	bool handled =
 		(IsAkimbo() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_AKIMBO)) ||
-		(IsZoomed() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_ZOOM)) ||
+		(GetZoom() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_ZOOM)) ||
 		(m_iClip == 0 && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_EMPTY)) ||
 		(IsLaserOn() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_LASER));
 
@@ -921,26 +921,29 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	}
 
 	if (opts.toggleStateBits) {
+		uint32_t toggleBits = opts.toggleStateBits;
+
+		if (toggleBits & FL_WC_STATE_ZOOM) {
+			int zoomLevel = CycleZoom(opts.zoomLevels);
+			toggleBits &= ~FL_WC_STATE_ZOOM;
+		}
+
 		switch (opts.toggleStateMode) {
 		case WC_TOGGLE_STATE_OFF:
-			SetState(opts.toggleStateBits, false);
+			SetState(toggleBits, false);
 			break;
 		case WC_TOGGLE_STATE_ON:
-			SetState(opts.toggleStateBits, true);
+			SetState(toggleBits, true);
 			break;
 		case WC_TOGGLE_STATE_TOGGLE: {
 			for (int i = 0; i < 32; i++) {
 				uint32_t bit = 1 << i;
-				if (opts.toggleStateBits & bit) {
+				if (toggleBits & bit) {
 					SetState(bit, !GetState(bit));
 				}
 			}
 			break;
 		}
-		}
-
-		if (opts.toggleStateBits & FL_WC_STATE_ZOOM) {
-			events.ProcessEvents(GetState(FL_WC_STATE_ZOOM) ? WC_TRIG_ZOOM_IN : WC_TRIG_ZOOM_OUT, 0);
 		}
 	}
 
@@ -1488,35 +1491,6 @@ void CWeaponCustom::KickbackPrediction() {
 #endif
 }
 
-void CWeaponCustom::ToggleZoom(int zoomFov, int zoomFov2) {
-	CBasePlayer* m_pPlayer = GetPlayer();
-	if (!m_pPlayer)
-		return;
-
-	int newFov = 0;
-
-	if (m_pPlayer->m_iFOV) {
-		if (m_pPlayer->m_iFOV == zoomFov && zoomFov2) {
-			newFov = zoomFov2;
-		}
-	}
-	else {
-		newFov = zoomFov;
-	}
-
-	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = newFov;
-
-#ifdef CLIENT_DLL
-	UpdateZoomCrosshair(m_iId, m_pPlayer->m_iFOV != 0);
-#else
-	UpdateAnimSet();
-#endif
-
-	SetState(FL_WC_STATE_ZOOM, newFov != 0);
-
-	m_lastZoomToggle = gpGlobals->time;
-}
-
 void CWeaponCustom::ToggleLaser(bool enable) {
 	SetLaser(enable);
 	m_lastLaserToggle = WallTime();
@@ -1541,16 +1515,6 @@ void CWeaponCustom::HideLaser(bool hideNotUnhide) {
 			params.laser.attachment);
 	}
 #endif
-}
-
-void CWeaponCustom::CancelZoom() {
-	CBasePlayer* m_pPlayer = GetPlayer();
-	if (!m_pPlayer)
-		return;
-
-	if (m_pPlayer->m_iFOV) {
-		ToggleZoom(0, 0);
-	}
 }
 
 bool CWeaponCustom::IsPredicted() {
@@ -1656,8 +1620,36 @@ void CWeaponCustom::SetLaser(bool enable) {
 #endif
 }
 
-bool CWeaponCustom::IsZoomed() {
-	return GetState(FL_WC_STATE_ZOOM);
+int CWeaponCustom::GetZoom() {
+	uint8_t zoom_lo = GetState(FL_WC_STATE_ZOOM) ? 1 : 0;
+	uint8_t zoom_hi = GetState(FL_WC_STATE_ZOOM_FURTHER) ? 1 : 0;
+	return (zoom_hi << 1) | zoom_lo;
+}
+
+int CWeaponCustom::CycleZoom(int attackIdx, bool forceCancelZoom) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return 0;
+
+	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+
+	int zoomLevel = forceCancelZoom ? 0 : (GetZoom() + 1) % (opts.zoomLevels + 1);
+	SetState(FL_WC_STATE_ZOOM, zoomLevel & 1);
+	SetState(FL_WC_STATE_ZOOM_FURTHER, zoomLevel & 2);
+
+	int zoomFov = zoomLevel ? opts.zoomFov[zoomLevel - 1] : 0;
+	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = zoomFov;
+
+#ifdef CLIENT_DLL
+	UpdateZoomCrosshair(m_iId, m_pPlayer->m_iFOV != 0);
+#else
+	UpdateAnimSet();
+#endif
+
+	events.ProcessEvents(WC_TRIG_ZOOM, zoomLevel);
+	events.ProcessEvents(WC_TRIG_ZOOM, WC_TRIG_ZOOM_ARG_CHANGED);
+
+	return zoomLevel;
 }
 
 void CWeaponCustom::UpdateLaser() {

@@ -196,7 +196,6 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_bInAkimboReload = 0;
 		g_customWeapon[i].m_bWantAkimboReload = 0;
 		g_customWeapon[i].m_hasLaserAttachment = 0;
-		g_customWeapon[i].m_lastZoomToggle = 0;
 		g_customWeapon[i].m_lastLaserToggle = 0;
 		g_customWeapon[i].m_lastDeploy = 0;
 		g_customWeapon[i].m_laserOnTime = 0;
@@ -1080,20 +1079,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	player.pev->deadflag = from->client.deadflag;
 	player.pev->waterlevel = from->client.waterlevel;
 	player.pev->maxspeed    = from->client.maxspeed;
-	
-
-	if (wc) {
-		// client only sets zoom state once per click, so don't let the server and client states
-		// fight each other until the state is likely synced
-		if (gpGlobals->time - wc->m_lastZoomToggle > 0.5f) {
-			player.pev->fov = from->client.fov;
-		}
-	}
-	else {
-		player.pev->fov = from->client.fov;
-	}
-
-	
+	player.pev->fov = from->client.fov;	
 	
 	player.pev->weaponanim = from->client.weaponanim;
 	player.pev->viewmodel = from->client.viewmodel;

@@ -29,10 +29,11 @@ enum WcAttackState {
 #define FL_WC_STATE_PRIMARY_ALT		(1<<0)	// using alternate primary fire settings
 #define FL_WC_STATE_LASER			(1<<1)	// laser is enabled
 #define FL_WC_STATE_ZOOM			(1<<2)	// weapon is zoomed in
-#define FL_WC_STATE_IS_AKIMBO		(1<<3)	// currently in akimbo mode
-#define FL_WC_STATE_CAN_AKIMBO		(1<<4)	// can enable akimbo mode
-#define FL_WC_STATE_FIRST_DEPLOYED	(1<<5)	// weapon was deployed for the first time
-#define FL_WC_STATE_WANT_RELOAD		(1<<6)	// weapon should reload at the next idle
+#define FL_WC_STATE_ZOOM_FURTHER	(1<<3)	// zoomed in even further (level 3 if both zoom flags set, else level 2)
+#define FL_WC_STATE_IS_AKIMBO		(1<<4)	// currently in akimbo mode
+#define FL_WC_STATE_CAN_AKIMBO		(1<<5)	// can enable akimbo mode
+#define FL_WC_STATE_FIRST_DEPLOYED	(1<<6)	// weapon was deployed for the first time
+#define FL_WC_STATE_WANT_RELOAD		(1<<7)	// weapon should reload at the next idle
 
 // m_inAttack flags
 #define FL_WC_INATTACK_PRIMARY_CALLED 0
@@ -56,7 +57,6 @@ public:
 	float m_nextMeleeDecal;
 
 	// shared state
-	float m_lastZoomToggle; // for prediction code, don't spam events/toggles while waiting for the new server state
 	float m_lastLaserToggle;
 	float m_lastDeploy;
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
@@ -147,10 +147,8 @@ public:
 	virtual int GetItemInfo(ItemInfo* p);
 
 	void KickbackPrediction();
-	void ToggleZoom(int zoomFov, int zoomFov2);
 	void ToggleLaser(bool enable);
 	void HideLaser(bool hideNotUnhide);
-	void CancelZoom();
 	bool IsPredicted();
 	int GetAttackIdx(WepEvt& evt); // TODO: store this info in the event
 	studiohdr_t* GetViewModelHeader();
@@ -164,10 +162,10 @@ public:
 	uint32_t CmdTime();
 
 	// repurposing these weapon vars so I don't have to network something new to the client
-	BOOL CanAkimbo() { return (m_fireState & FL_WC_STATE_CAN_AKIMBO) != 0; }
+	BOOL CanAkimbo() { return GetState(FL_WC_STATE_CAN_AKIMBO); }
 	void SetCanAkimbo(bool canAkimbo);
-	BOOL IsAkimbo() { return (m_fireState & FL_WC_STATE_IS_AKIMBO) != 0; }
-	bool IsIronSights() { return GetState(FL_WC_STATE_ZOOM) && (params.flags & FL_WC_WEP_IRON_SIGHTS_ZOOM); }
+	BOOL IsAkimbo() { return GetState(FL_WC_STATE_IS_AKIMBO); }
+	bool IsIronSights() { return GetZoom() != 0 && (params.flags & FL_WC_WEP_IRON_SIGHTS_ZOOM); }
 	void SetState(int stateBits, bool state);
 	bool GetState(int stateBits);
 	void SetAkimbo(bool akimbo);
@@ -178,7 +176,8 @@ public:
 	inline bool AreAnyAttacksCharging() { return m_fInAttack != 0; }
 
 	BOOL IsLaserOn() { return GetState(FL_WC_STATE_LASER); }
-	bool IsZoomed();
+	int GetZoom(); // returns current zoom level
+	int CycleZoom(int attackIdx, bool forceCancelZoom=false);
 	void SetLaser(bool enable);
 	void UpdateLaser();
 	bool IsPrimaryAltActive();

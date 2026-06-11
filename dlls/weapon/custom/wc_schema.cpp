@@ -203,10 +203,12 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("cooldown_water", "0", shootOpts[0].cooldownWater, 0, WC_PARAM_TIME),
 			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
 			WEP_FIELD("empty_sound", NULL, shootOpts[0].emptySound, 0, WC_PARAM_SOUND_INDEX),
-			WEP__ENUM("toggle_mode", "toggle", shootOpts[0].toggleStateMode, 0, g_toggle_mode_names),
-			WEP_FLAGS("toggled_states", "0", shootOpts[0].toggleStateBits, 0, g_toggle_state_names),
+			WEP__ENUM("toggle_mode", "toggle", shootOpts[0].toggleStateMode, 6, g_toggle_mode_names),
+			WEP_FIELD("zoom_levels", "0", shootOpts[0].zoomLevels, 2, WC_PARAM_UINT8),
 			WEP_FIELD("zoom_fov", "0", shootOpts[0].zoomFov[0], 0, WC_PARAM_UINT8),
 			WEP_FIELD("zoom_fov2", "0", shootOpts[0].zoomFov[1], 0, WC_PARAM_UINT8),
+			WEP_FIELD("zoom_fov3", "0", shootOpts[0].zoomFov[2], 0, WC_PARAM_UINT8),
+			WEP_FLAGS("toggled_states", "0", shootOpts[0].toggleStateBits, 0, g_toggle_state_names),
 
 			WEP__ENUM("charge_mode", "0", shootOpts[0].chargeMode, 4, chargeModes),
 			WEP__ENUM("charge_ammo_mode", "0", shootOpts[0].chargeAmmoMode, 2, chargeAmmoModes),
@@ -608,11 +610,6 @@ void init_event_fields() {
 		);
 	}
 
-	EVT_DESC(WC_EVT_TOGGLE_ZOOM, "toggle_zoom",
-		EVT_FIELD("zoom_fov", "0", zoomToggle.zoomFov, 0, WC_PARAM_UINT8),
-		EVT_FIELD("zoom_fov2", "0", zoomToggle.zoomFov2, 0, WC_PARAM_UINT8),
-	);
-
 	EVT_DESC(WC_EVT_HIDE_LASER, "hide_laser",
 		EVT_FIELD("time", "0", laserHide.millis, 0, WC_PARAM_TIME),
 	);
@@ -880,8 +877,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_names[WC_TRIG_BULLET_FIRED] = "bullet_fired";
 	g_wc_evt_trigger_names[WC_TRIG_LASER_ON] = "laser_on";
 	g_wc_evt_trigger_names[WC_TRIG_LASER_OFF] = "laser_off";
-	g_wc_evt_trigger_names[WC_TRIG_ZOOM_IN] = "zoom_in";
-	g_wc_evt_trigger_names[WC_TRIG_ZOOM_OUT] = "zoom_out";
+	g_wc_evt_trigger_names[WC_TRIG_ZOOM] = "zoom";
 	g_wc_evt_trigger_names[WC_TRIG_IMPACT] = "impact";
 	g_wc_evt_trigger_names[WC_TRIG_RICOCHET] = "ricochet";
 
@@ -919,6 +915,13 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_EMPTY] = "_empty";
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_FIRST] = "_first";
 
+	static const char* trigger_arg_zoom_names[8];
+	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_OUT] = "_out";
+	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN] = "_in";
+	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN2] = "_in2";
+	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN3] = "_in3";
+	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_CHANGED] = "";
+
 	for (int i = 0; i < ARRAY_SZ(g_wc_evt_trigger_names); i++) {
 		if (!g_wc_evt_trigger_names[i])
 			continue;
@@ -952,6 +955,14 @@ void init_weapon_custom_config_parser() {
 		case WC_TRIG_DEPLOY:
 			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_arg_deploy_names); k++) {
 				const char* key = UTIL_VarArgs("%s%s", tname, g_wc_evt_trigger_arg_deploy_names[k]);
+				uint16_t val = (k << EVT_TYPE_BITS) | i;
+				g_wc_name_to_trigger.put(key, val);
+				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
+			}
+			break;
+		case WC_TRIG_ZOOM:
+			for (int k = 0; k < ARRAY_SZ(trigger_arg_zoom_names); k++) {
+				const char* key = UTIL_VarArgs("%s%s", tname, trigger_arg_zoom_names[k]);
 				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
@@ -1306,8 +1317,7 @@ int wc_get_event_category(int evt) {
 
 	case WC_TRIG_LASER_ON:
 	case WC_TRIG_LASER_OFF:
-	case WC_TRIG_ZOOM_IN:
-	case WC_TRIG_ZOOM_OUT:
+	case WC_TRIG_ZOOM:
 		return WC_EVT_CATEGORY_STATE_CHANGE;
 
 	case WC_TRIG_BULLET_FIRED:

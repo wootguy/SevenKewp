@@ -144,6 +144,7 @@ bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 		case WC_TRIG_SECONDARY_CHARGE:
 		case WC_TRIG_IDLE:
 		case WC_TRIG_DEPLOY:
+		case WC_TRIG_ZOOM:
 			argMatch = triggerArg == evt.triggerArg;
 			break;
 		case WC_TRIG_PRIMARY_CLIP_SP:
@@ -1596,10 +1597,6 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 			m_weapon->m_chargeSoundEvt = eventIdx;
 		}
 		break;
-	case WC_EVT_TOGGLE_ZOOM:
-		m_weapon->ToggleZoom(evt.zoomToggle.zoomFov, evt.zoomToggle.zoomFov2);
-		ProcessEvents(m_pPlayer->m_iFOV ? WC_TRIG_ZOOM_IN : WC_TRIG_ZOOM_OUT, 0);
-		break;
 	case WC_EVT_TOGGLE_STATE:
 		PlayEvent_ToggleState(evt, m_pPlayer);
 		break;
@@ -1750,7 +1747,7 @@ float CWeaponEvents::GetCurrentAccuracyMultiplier(int attackIdx) {
 		}
 	}
 
-	if (m_weapon->IsZoomed()) {
+	if (m_weapon->GetZoom()) {
 		multiplier *= FP_4_12_TO_FLOAT(opts.accuracyMult[WC_ACCURACY_MULT_ZOOM]);
 	}
 
