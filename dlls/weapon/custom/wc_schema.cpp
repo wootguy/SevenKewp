@@ -100,7 +100,6 @@ void init_weapon_struct_fields() {
 		wep_flags[BitIndex(FL_WC_WEP_DYNAMIC_ACCURACY)] = "dynamic_accuracy";
 		wep_flags[BitIndex(FL_WC_WEP_ZOOM_SPR_STRETCH)] = "strech_zoom_sprite";
 		wep_flags[BitIndex(FL_WC_WEP_ZOOM_SPR_ASPECT)] = "keep_zoom_sprite_aspect";
-		wep_flags[BitIndex(FL_WC_WEP_EMPTY_IDLES)] = "empty_idles";
 		wep_flags[BitIndex(FL_WC_WEP_NO_PREDICTION)] = "no_prediction";
 		wep_flags[BitIndex(FL_WC_WEP_HIDE_SECONDARY_AMMO)] = "hide_secondary_ammo";
 		wep_flags[BitIndex(FL_WC_WEP_FORCE_ZOOM_SPRITE)] = "force_zoom_sprite";
@@ -199,9 +198,10 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("cooldown_fail", "0", shootOpts[0].cooldownFail, 0, WC_PARAM_TIME),
 			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
 			WEP_FIELD("empty_sound", NULL, shootOpts[0].emptySound, 0, WC_PARAM_SOUND_INDEX),
-			WEP__ENUM("overcharge_mode", "0", shootOpts[0].overchargeMode, 2, overchargeModes),
-			WEP__ENUM("charge_ammo_mode", "0", shootOpts[0].chargeAmmoMode, 2, chargeAmmoModes),
+
 			WEP__ENUM("charge_mode", "0", shootOpts[0].chargeMode, 4, chargeModes),
+			WEP__ENUM("charge_ammo_mode", "0", shootOpts[0].chargeAmmoMode, 2, chargeAmmoModes),
+			WEP__ENUM("overcharge_mode", "0", shootOpts[0].overchargeMode, 2, overchargeModes),
 
 			WEP_FLAGS("charge_flags", "0", shootOpts[0].chargeFlags, 0, chargeFlags, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 			WEP_FIELD("charge_time", "0", shootOpts[0].chargeTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
@@ -212,6 +212,16 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("discharged_cooldown", "0", shootOpts[0].dischargedCooldown, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 
 			WEP_FIELD("charge_move_speed", "0", shootOpts[0].chargeMoveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
+			
+			WEP_FIELD("accuracy_mult_fly", "3.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_FLY], 0, WC_PARAM_UINT16_FP_4_12),
+			WEP_FIELD("accuracy_mult_swim", "3.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_SWIM], 0, WC_PARAM_UINT16_FP_4_12),
+			WEP_FIELD("accuracy_mult_float", "2.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_FLOAT], 0, WC_PARAM_UINT16_FP_4_12),
+			WEP_FIELD("accuracy_mult_run", "2.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_RUN], 0, WC_PARAM_UINT16_FP_4_12),
+			WEP_FIELD("accuracy_mult_walk", "1.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_WALK], 0, WC_PARAM_UINT16_FP_4_12),
+			WEP_FIELD("accuracy_mult_crawl", "0.5", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_CRAWL], 0, WC_PARAM_UINT16_FP_4_12),
+			WEP_FIELD("accuracy_mult_duck", "0.5", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_DUCK], 0, WC_PARAM_UINT16_FP_4_12),
+			WEP_FIELD("accuracy_mult_zoom", "1.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_ZOOM], 0, WC_PARAM_UINT16_FP_4_12),
+
 			WEP_FIELD("melee_damage", "0", shootOpts[0].melee.damage, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FLAGS32("melee_damage_type", "0", shootOpts[0].melee.damageBits, 0, g_wc_dmgFlags, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_range", "0", shootOpts[0].melee.range, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),

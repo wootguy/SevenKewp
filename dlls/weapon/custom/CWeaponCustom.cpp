@@ -1598,6 +1598,14 @@ void CWeaponCustom::SetLaser(bool enable) {
 #endif
 }
 
+bool CWeaponCustom::IsZoomed() {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return false;
+
+	return m_pPlayer->m_iFOV != 0;
+}
+
 void CWeaponCustom::UpdateLaser() {
 	if (m_laserOnTime && m_laserOnTime < WallTime()) {
 		m_laserOnTime = 0;

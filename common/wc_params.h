@@ -26,16 +26,15 @@
 #define FL_WC_WEP_DYNAMIC_ACCURACY		(1<<12) // crosshair widens with movement and shrinks when crouched
 #define FL_WC_WEP_ZOOM_SPR_STRETCH		(1<<13) // zoom crosshair stretches to fit the screen
 #define FL_WC_WEP_ZOOM_SPR_ASPECT		(1<<14) // zoom crosshair keeps its aspect ratio when stretched to fit the screen, and borders are filled black
-#define FL_WC_WEP_EMPTY_IDLES			(1<<15) // The last half of idles are for when the clip is empty
-#define FL_WC_WEP_NO_PREDICTION			(1<<16) // Disable client-side prediction entirely
-#define FL_WC_WEP_HIDE_SECONDARY_AMMO	(1<<17) // Hide secondary ammo on HUD
-#define FL_WC_WEP_FORCE_ZOOM_SPRITE		(1<<18) // Force use of zoom crosshair sprite when using dynamic crosshairs
-#define FL_WC_WEP_HAND_MODELS			(1<<19) // Default model supports alternate hand models (op4/bshift)
-#define FL_WC_WEP_ALLOW_HL				(1<<20) // Allow the weapon to be used by vanilla HL clients without prediction
-#define FL_WC_WEP_NO_AUTOSWITCHEMPTY	(1<<21) // Don't switch to another weapon when out of ammo
-#define FL_WC_WEP_NO_AUTORELOAD			(1<<22) // Don't reload the weapon automatically
-#define FL_WC_WEP_SELECTONEMPTY			(1<<23) // allow selecting the weapon when empty
-#define FL_WC_WEP_EXHAUSITBLE			(1<<24) // Remove the weapon when out of ammo
+#define FL_WC_WEP_NO_PREDICTION			(1<<15) // Disable client-side prediction entirely
+#define FL_WC_WEP_HIDE_SECONDARY_AMMO	(1<<16) // Hide secondary ammo on HUD
+#define FL_WC_WEP_FORCE_ZOOM_SPRITE		(1<<17) // Force use of zoom crosshair sprite when using dynamic crosshairs
+#define FL_WC_WEP_HAND_MODELS			(1<<18) // Default model supports alternate hand models (op4/bshift)
+#define FL_WC_WEP_ALLOW_HL				(1<<19) // Allow the weapon to be used by vanilla HL clients without prediction
+#define FL_WC_WEP_NO_AUTOSWITCHEMPTY	(1<<20) // Don't switch to another weapon when out of ammo
+#define FL_WC_WEP_NO_AUTORELOAD			(1<<21) // Don't reload the weapon automatically
+#define FL_WC_WEP_SELECTONEMPTY			(1<<22) // allow selecting the weapon when empty
+#define FL_WC_WEP_EXHAUSITBLE			(1<<23) // Remove the weapon when out of ammo
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
@@ -74,6 +73,21 @@ enum WeaponCustomChargeAmmoMode {
 	WC_CHARGE_AMMO_LOAD,		// spend ammo as the charge up progresses, up to the full cost at 100% charge
 };
 
+enum WeaponAccuracyMultType {
+	// movement mulitpliers (only 1 can be active)
+	WC_ACCURACY_MULT_DUCK,	// accuracy multiplier for ducking
+	WC_ACCURACY_MULT_CRAWL,	// accuracy multiplier for crawling
+	WC_ACCURACY_MULT_WALK,	// accuracy multiplier for walking
+	WC_ACCURACY_MULT_RUN,	// accuracy multiplier for running
+	WC_ACCURACY_MULT_FLY,	// accuracy multiplier for jumping
+	WC_ACCURACY_MULT_FLOAT,	// accuracy multiplier for treading water
+	WC_ACCURACY_MULT_SWIM,	// accuracy multiplier for swimming
+
+	// the following types are applied in addition to a movement multiplier
+	WC_ACCURACY_MULT_ZOOM,	// accuracy multiplier while zoomed
+	WC_ACCURACY_MULT_TYPES,
+};
+
 #pragma pack(push,1)
 
 struct MeleeOpts {
@@ -96,9 +110,10 @@ struct CustomWeaponShootOpts {
 	uint8_t ammoPool;			// which ammo pool to drain from (WeaponCustomAmmoPool)
 	uint16_t cooldown;			// time between attacks (milliseconds)
 	uint16_t cooldownFail;		// cooldown after a failed attack (out of ammo, underwater) (milliseconds)
-	uint8_t chargeMode;			// WeaponCustomChargeupMode (4 bits)
-	uint8_t chargeAmmoMode;		// WeaponCustomChargeAmmoMode (2 bits)
-	uint8_t overchargeMode;		// WeaponCustomOverchargeMode (2 bits)
+	
+	uint8_t chargeMode;			// 4 bits - WeaponCustomChargeupMode
+	uint8_t chargeAmmoMode;		// 2 bits - WeaponCustomChargeAmmoMode
+	uint8_t overchargeMode;		// 2 bits - WeaponCustomOverchargeMode
 	uint8_t chargeFlags;		// FL_WC_CHARGE_*
 	uint16_t chargeTime;		// how long the attack button must be held before the attack begins (milliseconds)
 	uint16_t chargeDownTime;	// how long before the charge returns to 0 after releasing the attack button
@@ -107,7 +122,9 @@ struct CustomWeaponShootOpts {
 	uint16_t dischargedCooldown;// cooldown when beginning a charge, increasing to 'cooldown' at full charge
 	uint16_t chargeCancelTime;	// minimum time before a charge can be cancelled (milliseconds)
 	uint16_t chargeMoveSpeedMult; // movement speed multiplier while charging (1-65535) (65535 = 100%) (0 = don't change)
+	
 	uint16_t accuracy[2];		// horizontal+vertical accuracy for crosshair (degrees * 100)
+	uint16_t accuracyMult[WC_ACCURACY_MULT_TYPES]; // accuracy multipliers for player movement (4.12 fixed point)
 	uint16_t emptySound;		// custom empty click sound
 
 	// server side settings (not networked)

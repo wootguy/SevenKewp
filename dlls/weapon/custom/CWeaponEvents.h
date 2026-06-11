@@ -136,7 +136,7 @@ public:
 	void PlayEvent_BeamCircle(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTrace* tr);
 
-	float GetCurrentAccuracyMultiplier();
+	float GetCurrentAccuracyMultiplier(int attackIdx);
 	void GetCurrentAccuracy(float& accuracyX, float& accuracyY, float& accuracyX2, float& accuracyY2);
 	int GetImpactArg(int attackIdx, bool impactMonster, bool impactWorld);
 	float GetChargeMult(WepEvt& evt, int flagMask);

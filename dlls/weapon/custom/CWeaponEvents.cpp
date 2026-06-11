@@ -224,7 +224,7 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	Vector spread(SPREAD_TO_FLOAT(evt.bullets.accuracy[0]), SPREAD_TO_FLOAT(evt.bullets.accuracy[1]), 0);
 
 	if (evt.bullets.flags & FL_WC_BULLETS_DYNAMIC_SPREAD) {
-		spread = spread * GetCurrentAccuracyMultiplier();
+		spread = spread * GetCurrentAccuracyMultiplier(evt.attackIdx);
 	}
 
 	if (evt.bullets.flashSz) {
@@ -1650,26 +1650,57 @@ void CWeaponEvents::CancelDelayedEvents(int trigger) {
 }
 
 
-float CWeaponEvents::GetCurrentAccuracyMultiplier() {
+float CWeaponEvents::GetCurrentAccuracyMultiplier(int attackIdx) {
 	CBasePlayer* m_pPlayer = m_weapon->GetPlayer();
 	if (!m_pPlayer)
 		return 1.0f;
+
+	if (attackIdx == 1 && !(m_weapon->params.flags & FL_WC_WEP_HAS_SECONDARY)) {
+		attackIdx = 0;
+	}
+
+	CustomWeaponShootOpts& opts = m_weapon->params.shootOpts[attackIdx];
 
 	float multiplier = 1.0f;
 
 	Vector flatVelocity = m_pPlayer->pev->velocity;
 	flatVelocity.z = 0;
 
-	bool isMoving = flatVelocity.Length() > 200;
+	bool isRunning = flatVelocity.Length() > 200;
+	bool isMoving = flatVelocity.Length() > 20;
 
-	if (!(m_pPlayer->pev->flags & FL_ONGROUND)) {
-		multiplier *= 3.0f;
+	if (m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD) {
+		bool isSwimming = m_pPlayer->pev->velocity.Length() > 50;
+
+		if (isSwimming) {
+			multiplier *= FP_4_12_TO_FLOAT(opts.accuracyMult[WC_ACCURACY_MULT_SWIM]);
+		}
+		else {
+			multiplier *= FP_4_12_TO_FLOAT(opts.accuracyMult[WC_ACCURACY_MULT_FLOAT]);
+		}
+	}
+	else if (!(m_pPlayer->pev->flags & FL_ONGROUND)) {
+		multiplier *= FP_4_12_TO_FLOAT(opts.accuracyMult[WC_ACCURACY_MULT_FLY]);
 	}
 	else if (m_pPlayer->pev->flags & FL_DUCKING) {
-		multiplier *= 0.5f;
+		if (isMoving) {
+			multiplier *= FP_4_12_TO_FLOAT(opts.accuracyMult[WC_ACCURACY_MULT_CRAWL]);
+		}
+		else {
+			multiplier *= FP_4_12_TO_FLOAT(opts.accuracyMult[WC_ACCURACY_MULT_DUCK]);
+		}
 	}
-	else if (isMoving) {
-		multiplier *= 2.0f;
+	else {
+		if (isRunning) {
+			multiplier *= FP_4_12_TO_FLOAT(opts.accuracyMult[WC_ACCURACY_MULT_RUN]);
+		}
+		else if (isMoving) {
+			multiplier *= FP_4_12_TO_FLOAT(opts.accuracyMult[WC_ACCURACY_MULT_WALK]);
+		}
+	}
+
+	if (m_weapon->IsZoomed()) {
+		multiplier *= FP_4_12_TO_FLOAT(opts.accuracyMult[WC_ACCURACY_MULT_ZOOM]);
 	}
 
 	return multiplier;
@@ -1708,12 +1739,13 @@ void CWeaponEvents::GetCurrentAccuracy(float& accuracyX, float& accuracyY, float
 	}
 
 	if (params.flags & FL_WC_WEP_DYNAMIC_ACCURACY) {
-		float multiplier = GetCurrentAccuracyMultiplier();
+		float multiplierPrimary = GetCurrentAccuracyMultiplier(0);
+		float multiplierSecondary = GetCurrentAccuracyMultiplier(1);
 
-		accuracyX *= multiplier;
-		accuracyY *= multiplier;
-		accuracyX2 *= multiplier;
-		accuracyY2 *= multiplier;
+		accuracyX *= multiplierPrimary;
+		accuracyY *= multiplierPrimary;
+		accuracyX2 *= multiplierSecondary;
+		accuracyY2 *= multiplierSecondary;
 	}
 }
 

@@ -178,6 +178,7 @@ public:
 	inline bool AreAnyAttacksCharging() { return m_fInAttack != 0; }
 
 	BOOL IsLaserOn() { return (m_fireState & FL_WC_STATE_LASER) != 0; }
+	bool IsZoomed();
 	void SetLaser(bool enable);
 	void UpdateLaser();
 	void SetPrimaryAlt(bool enable);
