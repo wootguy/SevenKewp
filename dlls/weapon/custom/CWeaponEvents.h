@@ -143,7 +143,7 @@ public:
 	int GetImpactArg(int attackIdx, bool impactMonster, bool impactWorld);
 	float GetChargeMult(WepEvt& evt, int flagMask);
 	WcBeamTrace BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer);
-	void FireAmmoEvents(int ammoPool);
+	void FireAmmoEvents(int ammoPool, int attackIdx);
 	WcBeam* AllocBeam();
 	void UpdateBeams();
 	bool KillBeams(int attackIdx=-1); // set attack idx to only kill constant beams attached to an attack button. True if any beams killed

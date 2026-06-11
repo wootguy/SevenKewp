@@ -137,6 +137,7 @@ bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 			argMatch = evt.triggerArg == WC_TRIG_SHOOT_ARG_ALWAYS || triggerArg == evt.triggerArg;
 			break;
 		case WC_TRIG_PRIMARY_CLIPSIZE:
+		case WC_TRIG_PRIMARY_ALT_CLIPSIZE:
 		case WC_TRIG_IMPACT:
 		case WC_TRIG_RICOCHET:
 		case WC_TRIG_PRIMARY_CHARGE:
@@ -146,6 +147,7 @@ bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 			argMatch = triggerArg == evt.triggerArg;
 			break;
 		case WC_TRIG_PRIMARY_CLIP_SP:
+		case WC_TRIG_PRIMARY_ALT_CLIP_SP:
 		case WC_TRIG_SECONDARY_CLIP_SP:
 			switch (evt.triggerArg) {
 			case WC_TRIG_CLIP_ARG_ODD:
@@ -153,6 +155,9 @@ bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 				break;
 			case WC_TRIG_CLIP_ARG_EVEN:
 				argMatch = triggerArg % 2 == 0;
+				break;
+			case WC_TRIG_CLIP_ARG_EMPTY:
+				argMatch = clipLeft == 0;
 				break;
 			case WC_TRIG_CLIP_ARG_NOT_EMPTY:
 				argMatch = clipLeft > 0;
@@ -1946,7 +1951,7 @@ WcBeamTrace CWeaponEvents::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 	return beamTrace;
 }
 
-void CWeaponEvents::FireAmmoEvents(int ammoPool) {
+void CWeaponEvents::FireAmmoEvents(int ammoPool, int attackIdx) {
 	CBasePlayer* m_pPlayer = m_weapon->GetPlayer();
 	if (!m_pPlayer)
 		return;
@@ -1955,8 +1960,14 @@ void CWeaponEvents::FireAmmoEvents(int ammoPool) {
 
 	switch (ammoPool) {
 	case WC_AMMOPOOL_PRIMARY_CLIP:
-		ProcessEvents(WC_TRIG_PRIMARY_CLIP_SP, m_bulletFireCount++, m_weapon->IsAkimbo(), false, m_weapon->m_iClip);
-		ProcessEvents(WC_TRIG_PRIMARY_CLIPSIZE, m_weapon->m_iClip, m_weapon->IsAkimbo(), false, m_weapon->m_iClip);
+		if (attackIdx == 3) {
+			ProcessEvents(WC_TRIG_PRIMARY_ALT_CLIP_SP, m_bulletFireCount++, m_weapon->IsAkimbo(), false, m_weapon->m_iClip);
+			ProcessEvents(WC_TRIG_PRIMARY_ALT_CLIPSIZE, m_weapon->m_iClip, m_weapon->IsAkimbo(), false, m_weapon->m_iClip);
+		}
+		else {
+			ProcessEvents(WC_TRIG_PRIMARY_CLIP_SP, m_bulletFireCount++, m_weapon->IsAkimbo(), false, m_weapon->m_iClip);
+			ProcessEvents(WC_TRIG_PRIMARY_CLIPSIZE, m_weapon->m_iClip, m_weapon->IsAkimbo(), false, m_weapon->m_iClip);
+		}
 		break;
 	case WC_AMMOPOOL_PRIMARY_RESERVE: break;
 	case WC_AMMOPOOL_SECONDARY_RESERVE: break;

@@ -59,9 +59,10 @@ enum WeaponCustomEventTriggerShootArg {
 
 // special clip size conditions
 enum WeaponCustomEventTriggerClipSpArg {
-	WC_TRIG_CLIP_ARG_ODD,		// fire on odd clip sizes
-	WC_TRIG_CLIP_ARG_EVEN,		// fire on even clip sizes
-	WC_TRIG_CLIP_ARG_NOT_EMPTY,	// fire on non-zero clip sizes
+	WC_TRIG_CLIP_ARG_ODD,			// fire on odd clip sizes
+	WC_TRIG_CLIP_ARG_EVEN,			// fire on even clip sizes
+	WC_TRIG_CLIP_ARG_EMPTY,			// fire when the clip is empty
+	WC_TRIG_CLIP_ARG_NOT_EMPTY,		// fire on non-zero clip sizes
 };
 
 enum WeaponCustomEventTriggerImpactArg {
@@ -84,6 +85,7 @@ enum WeaponCustomEventIdleArg {
 	WC_TRIG_IDLE_ARG_EMPTY,		// fire when the clip is empty
 	WC_TRIG_IDLE_ARG_LASER,		// fire when the laser is active
 	WC_TRIG_IDLE_ARG_AKIMBO,	// fire when akimbo mode is active
+	WC_TRIG_IDLE_ARG_ZOOM,		// fire when the weapon is zoomed
 };
 
 enum WeaponCustomEventDeployArg {
@@ -101,6 +103,8 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_PRIMARY_ALT,		// triggers on alternate primary fire (laser/zoom)
 	WC_TRIG_PRIMARY_CLIPSIZE,	// trigger arg is the clip size to trigger on
 	WC_TRIG_PRIMARY_CLIP_SP,	// trigger arg: WeaponCustomEventTriggerClipSpArg
+	WC_TRIG_PRIMARY_ALT_CLIPSIZE,// trigger arg: WeaponCustomEventTriggerClipSpArg
+	WC_TRIG_PRIMARY_ALT_CLIP_SP,// trigger arg: WeaponCustomEventTriggerClipSpArg
 	WC_TRIG_PRIMARY_CHARGE,		// triggers when primary fire begins charging. Delayed events are cancelled when charging stops or fails.
 	WC_TRIG_PRIMARY_OVERCHARGE,	// triggers when primary fire charges for too long and is cancelled.
 	WC_TRIG_PRIMARY_START,		// triggers when primary fire key is pressed. Delayed events are cancelled when a STOP event starts.

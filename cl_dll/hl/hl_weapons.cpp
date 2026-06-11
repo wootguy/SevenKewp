@@ -168,6 +168,10 @@ bool IsViewModelAkimbo() {
 	return g_activeWeaponCustom && g_activeWeaponCustom->IsAkimbo();
 }
 
+bool IsWeaponIronSightsActive() {
+	return g_activeWeaponCustom && g_activeWeaponCustom->IsIronSights();
+}
+
 int GetCustomWeaponBody(int id) {
 	if (id >= 0 && id < MAX_WEAPONS)
 		return g_customWeapon[id].pev->body;

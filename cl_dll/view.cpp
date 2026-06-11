@@ -20,6 +20,7 @@
 #include "shake.h"
 #include "hltv.h"
 #include "Exports.h"
+#include "com_weapons.h"
 
 
 #ifndef M_PI
@@ -658,15 +659,17 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	}
 	view->origin[2] += bob;
 
-	// throw in a little tilt.
-	view->angles[YAW]   -= bob * 0.5;
-	view->angles[ROLL]  -= bob * 1;
-	view->angles[PITCH] -= bob * 0.3;
+	if (!IsWeaponIronSightsActive()) {
+		// throw in a little tilt.
+		view->angles[YAW] -= bob * 0.5;
+		view->angles[ROLL] -= bob * 1;
+		view->angles[PITCH] -= bob * 0.3;
 
-	// pushing the view origin down off of the same X/Z plane as the ent's origin will give the
-	// gun a very nice 'shifting' effect when the player looks up/down. If there is a problem
-	// with view model distortion, this may be a cause. (SJB). 
-	view->origin[2] -= 1;
+		// pushing the view origin down off of the same X/Z plane as the ent's origin will give the
+		// gun a very nice 'shifting' effect when the player looks up/down. If there is a problem
+		// with view model distortion, this may be a cause. (SJB). 
+		view->origin[2] -= 1;
+	}
 
 	// fudge position around to keep amount of weapon visible
 	// roughly equal with different FOV

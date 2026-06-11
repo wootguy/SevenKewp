@@ -51,6 +51,7 @@ void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, flo
 bool CanWeaponAkimbo(int id);
 void GetCurrentCustomWeaponState(int id, int& akimboClip);
 bool IsViewModelAkimbo();
+bool IsWeaponIronSightsActive();
 int GetCustomWeaponBody(int id);
 bool IsExclusiveWeapon(int id);
 void InitCustomWeapon(int id);

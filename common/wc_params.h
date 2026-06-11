@@ -35,6 +35,7 @@
 #define FL_WC_WEP_NO_AUTORELOAD			(1<<21) // Don't reload the weapon automatically
 #define FL_WC_WEP_SELECTONEMPTY			(1<<22) // allow selecting the weapon when empty
 #define FL_WC_WEP_EXHAUSITBLE			(1<<23) // Remove the weapon when out of ammo
+#define FL_WC_WEP_IRON_SIGHTS_ZOOM		(1<<24) // zooming uses iron sights
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)

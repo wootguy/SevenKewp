@@ -109,6 +109,7 @@ void init_weapon_struct_fields() {
 		wep_flags[BitIndex(FL_WC_WEP_NO_AUTORELOAD)] = "no_autoreload";
 		wep_flags[BitIndex(FL_WC_WEP_SELECTONEMPTY)] = "select_on_empty";
 		wep_flags[BitIndex(FL_WC_WEP_EXHAUSITBLE)] = "exhaustible";
+		wep_flags[BitIndex(FL_WC_WEP_IRON_SIGHTS_ZOOM)] = "iron_sights";
 
 		WEP_STRUCT_DESC(g_wc_desc_general, "general",
 			WEP_FIELD("classname", "", classname, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -851,6 +852,8 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_ALT] = "primary_alt_attack";
 	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_CLIPSIZE] = "primary_clip_is";
 	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_CLIP_SP] = "primary_clip_is";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_ALT_CLIPSIZE] = "primary_alt_clip_is";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_ALT_CLIP_SP] = "primary_alt_clip_is";
 	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_CHARGE] = "primary_attack_charge";
 	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_OVERCHARGE] = "primary_attack_overcharge";
 	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_START] = "primary_attack_start";
@@ -882,6 +885,7 @@ void init_weapon_custom_config_parser() {
 
 	g_wc_evt_trigger_clip_sp_names[WC_TRIG_CLIP_ARG_ODD] = "odd";
 	g_wc_evt_trigger_clip_sp_names[WC_TRIG_CLIP_ARG_EVEN] = "even";
+	g_wc_evt_trigger_clip_sp_names[WC_TRIG_CLIP_ARG_EMPTY] = "empty";
 	g_wc_evt_trigger_clip_sp_names[WC_TRIG_CLIP_ARG_NOT_EMPTY] = "not_empty";
 
 	g_wc_evt_trigger_impact_names[WC_TRIG_IMPACT_PRIMARY_ANY] = "primary_any";
@@ -901,6 +905,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_EMPTY] = "_empty";
 	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_LASER] = "_laser";
 	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_AKIMBO] = "_akimbo";
+	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_ZOOM] = "_zoom";
 
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_DEFAULT] = "";
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_LASER] = "_laser";
@@ -947,6 +952,7 @@ void init_weapon_custom_config_parser() {
 			}
 			break;
 		case WC_TRIG_PRIMARY_CLIPSIZE:
+		case WC_TRIG_PRIMARY_ALT_CLIPSIZE:
 			for (int k = 0; k < 32; k++) {
 				const char* key = UTIL_VarArgs("%s_%u", tname, k);
 				uint16_t val = (k << EVT_TYPE_BITS) | i;
@@ -955,6 +961,7 @@ void init_weapon_custom_config_parser() {
 			}
 			break;
 		case WC_TRIG_PRIMARY_CLIP_SP:
+		case WC_TRIG_PRIMARY_ALT_CLIP_SP:
 		case WC_TRIG_SECONDARY_CLIP_SP:
 			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_clip_sp_names); k++) {
 				const char* key = UTIL_VarArgs("%s_%s", tname, g_wc_evt_trigger_clip_sp_names[k]);
@@ -1255,6 +1262,8 @@ int wc_get_event_category(int evt) {
 		return WC_EVT_CATEGORY_TERTIARY;
 
 	case WC_TRIG_PRIMARY_ALT:
+	case WC_TRIG_PRIMARY_ALT_CLIP_SP:
+	case WC_TRIG_PRIMARY_ALT_CLIPSIZE:
 		return WC_EVT_CATEGORY_PRIMARY_ALT;
 
 	case WC_TRIG_PRIMARY:

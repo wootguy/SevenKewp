@@ -372,6 +372,17 @@ void CWeaponCustom::Reload() {
 	if (m_flNextPrimaryAttack > 0)
 		return;
 
+	// exit iron sights before reloading
+	if (IsIronSights()) {
+		EnableState(FL_WC_STATE_WANT_RELOAD);
+
+		int* clip = GetAttackClip(1);
+		if (CommonAttack(1, clip, false, false)) { // TODO: configure this
+			events.ProcessEvents(WC_TRIG_SECONDARY, 0, *clip);
+		}
+		return;
+	}
+
 	WeaponCustomReload* reloadStage = &params.reloadStage[0];
 
 	if (IsAkimbo()) {
@@ -495,6 +506,12 @@ void CWeaponCustom::WeaponIdle() {
 	// Update auto-aim
 	m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES);
 
+	if (IsStateEnabled(FL_WC_STATE_WANT_RELOAD) && m_flNextPrimaryAttack <= 0) {
+		DisableState(FL_WC_STATE_WANT_RELOAD);
+		Reload();
+		return;
+	}
+
 	if (m_flTimeWeaponIdle > UTIL_WeaponTimeBase())
 		return;
 
@@ -505,6 +522,7 @@ void CWeaponCustom::WeaponIdle() {
 
 	bool handled =
 		(IsAkimbo() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_AKIMBO)) ||
+		(IsZoomed() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_ZOOM)) ||
 		(m_iClip == 0 && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_EMPTY)) ||
 		(IsLaserOn() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_LASER));
 
@@ -687,13 +705,14 @@ void CWeaponCustom::PrimaryAttack() {
 		if (CommonAttack(0, clip, IsAkimbo(), false)) {
 			m_primaryFired = true;
 			int trig = IsPrimaryAltActive() ? WC_TRIG_PRIMARY_ALT : WC_TRIG_PRIMARY;
+			int attackIdx = IsPrimaryAltActive() ? 3 : 0;
 
 			if (isAttackStart) {
 				events.ProcessEvents(WC_TRIG_PRIMARY_START, 0);
 				m_attackStartCmdTime = CmdTime();
 			}
 			events.ProcessEvents(trig, akimboArg, IsAkimbo(), false, *clip);
-			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_PRIMARY_CLIP);
+			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_PRIMARY_CLIP, attackIdx);
 
 			if (*clip < 0)
 				*clip = 0;
@@ -746,7 +765,7 @@ void CWeaponCustom::SecondaryAttack() {
 				m_attackStartCmdTime = CmdTime();
 			}
 			events.ProcessEvents(primaryTrig, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth, *clip);
-			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_PRIMARY_CLIP);
+			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_PRIMARY_CLIP, 0);
 
 			if (*clip < 0)
 				*clip = 0;
@@ -774,7 +793,7 @@ void CWeaponCustom::SecondaryAttack() {
 			if (isAttackStart)
 				events.ProcessEvents(WC_TRIG_SECONDARY_START, 0);
 			events.ProcessEvents(WC_TRIG_SECONDARY, akimboArg, *clip);
-			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_SECONDARY_RESERVE);
+			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_SECONDARY_RESERVE, 1);
 		}
 	}
 
@@ -798,7 +817,7 @@ void CWeaponCustom::TertiaryAttack() {
 			int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
 			events.ProcessEvents(WC_TRIG_TERTIARY, akimboArg, false, false, *clip);
-			events.FireAmmoEvents(opts.ammoPool);
+			events.FireAmmoEvents(opts.ammoPool, 2);
 
 			if (*clip < 0)
 				*clip = 0;
@@ -1825,6 +1844,7 @@ void CWeaponCustom::GetAmmoDropInfo(bool secondary, const char*& ammoEntName, in
 int CWeaponCustom::GetItemInfo(ItemInfo* p) {
 	bool hideAmmo2 = params.flags & FL_WC_WEP_HIDE_SECONDARY_AMMO;
 	int zoomFlag = (params.flags & FL_WC_WEP_FORCE_ZOOM_SPRITE) ? WEP_FLAG_USE_ZOOM_CROSSHAIR : 0;
+	zoomFlag |= (params.flags & FL_WC_WEP_IRON_SIGHTS_ZOOM) ? WEP_FLAG_NO_ZOOM_CROSSHAIR : 0;
 
 	int flags = 0;
 	if (params.flags & FL_WC_WEP_NO_AUTOSWITCHEMPTY) {

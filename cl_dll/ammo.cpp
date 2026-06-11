@@ -1434,6 +1434,16 @@ void CHudAmmo::DrawDynamicCrosshair() {
 		CustomWeaponParams* wcparams = GetCustomWeaponParams(pw->iId);
 		bool shouldDrawZoomCrosshair = pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR);
 		bool shouldStretchZoom = wcparams && (wcparams->flags & FL_WC_WEP_ZOOM_SPR_STRETCH);
+		bool useIronSights = IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_NO_ZOOM_CROSSHAIR);
+
+		if (useIronSights) {
+			if (g_crosshair_active) {
+				static wrect_t nullrc;
+				SetCrosshair(0, nullrc, 0, 0, 0);
+			}
+
+			return;
+		}
 
 		if (shouldDrawZoomCrosshair && shouldStretchZoom && !is_software_renderer) {
 			static wrect_t nullrc;
