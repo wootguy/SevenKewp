@@ -25,7 +25,7 @@ enum WcAttackState {
 	WC_CHARGE_STATE_OVERCHARGED,
 };
 
-// m_fireState flags (32 bits)
+// m_fireState flags (16 bits)
 #define FL_WC_STATE_PRIMARY_ALT		(1<<0)	// using alternate primary fire settings
 #define FL_WC_STATE_LASER			(1<<1)	// laser is enabled
 #define FL_WC_STATE_ZOOM			(1<<2)	// weapon is zoomed in
@@ -34,9 +34,6 @@ enum WcAttackState {
 #define FL_WC_STATE_CAN_AKIMBO		(1<<5)	// can enable akimbo mode
 #define FL_WC_STATE_FIRST_DEPLOYED	(1<<6)	// weapon was deployed for the first time
 #define FL_WC_STATE_WANT_RELOAD		(1<<7)	// weapon should reload at the next idle
-
-// m_inAttack flags
-#define FL_WC_INATTACK_PRIMARY_CALLED 0
 
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:
@@ -57,13 +54,13 @@ public:
 	float m_nextMeleeDecal;
 
 	// shared state
-	float m_lastLaserToggle;
 	float m_lastDeploy;
 	int m_runningKickbackPred; // 1 = first frame of prediction, 2 = stop after next runfuncs
 	Vector m_kickbackPredVel;
 	uint32_t m_chargeStartCmdTime; // CMD time that begun a chargeup
 	uint32_t m_chargeStopCmdTime; // CMD time that a discharge began
 	uint32_t m_attackStartCmdTime; // CMD time that an attack began
+	uint32_t m_stateChangeCmdTime; // CMD time that a state change was queued
 	float m_lastCharge; // last charge progress calculated for chargeup/chargedown
 	int m_chargeStartClip; // ammo started with when chargeup began
 	bool m_primaryCalled;
@@ -161,12 +158,23 @@ public:
 	// triggered by buttons because button states don't accumulate error like float timers do.
 	uint32_t CmdTime();
 
-	// repurposing these weapon vars so I don't have to network something new to the client
+	// repurposing these weapon vars so I don't have to network something new to the client:
+	// m_fireState bit packing (high to low):
+	//		2 bits - attack index (+1) to do a delayed state change for
+	//		16 bits - current state flags (FL_WC_STATE_*)
+	// m_fInAttack bit packing:
+	//		4 bits - primary alt charge state (WcAttackState)
+	//		4 bits - tertiary charge state
+	//		4 bits - secondary charge state
+	//		4 bits - primary charge state
 	BOOL CanAkimbo() { return GetState(FL_WC_STATE_CAN_AKIMBO); }
 	void SetCanAkimbo(bool canAkimbo);
 	BOOL IsAkimbo() { return GetState(FL_WC_STATE_IS_AKIMBO); }
 	bool IsIronSights() { return GetZoom() != 0 && (params.flags & FL_WC_WEP_IRON_SIGHTS_ZOOM); }
-	void SetState(int stateBits, bool state);
+	void QueueStateToggles(int attackIdx);
+	void PlayDelayedStateToggles();
+	void DoStateToggles(int attackIdx);
+	void SetState(uint16_t stateBits, bool state);
 	bool GetState(int stateBits);
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);

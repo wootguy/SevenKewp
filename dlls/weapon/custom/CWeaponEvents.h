@@ -119,7 +119,6 @@ public:
 	void PlayEvent_RecoilShared(CBasePlayer* m_pPlayer, int flags, int maxAngleTime, Vector min, Vector max, int angleOps[3], int viewOps[3]);
 	void PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
 	void PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer);
-	void PlayEvent_ToggleState(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_HideLaser(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_DLight(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_MuzzleFlash(WepEvt& evt, CBasePlayer* m_pPlayer);

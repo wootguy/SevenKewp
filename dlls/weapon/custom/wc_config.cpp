@@ -1390,10 +1390,9 @@ void MigrateWeaponsBegin() {
 void MigratePreDump(CustomWeaponParams& params) {
 
 	if (false) {
-		/*
-		WepEvt& evt = params.events[params.numEvents++];
-		evt = WepEvt(WC_TRIG_IDLE, arg, WC_EVT_WEP_ANIM);
-		*/
+		for (int i = 0; i < params.numEvents; i++) {
+			WepEvt& evt = params.events[i];
+		}
 	}
 }
 

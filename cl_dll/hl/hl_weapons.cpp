@@ -196,7 +196,6 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_bInAkimboReload = 0;
 		g_customWeapon[i].m_bWantAkimboReload = 0;
 		g_customWeapon[i].m_hasLaserAttachment = 0;
-		g_customWeapon[i].m_lastLaserToggle = 0;
 		g_customWeapon[i].m_lastDeploy = 0;
 		g_customWeapon[i].m_laserOnTime = 0;
 		g_customWeapon[i].m_hasPredictionData = false;

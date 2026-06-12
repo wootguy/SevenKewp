@@ -89,6 +89,12 @@ enum WeaponAccuracyMultType {
 	WC_ACCURACY_MULT_TYPES,
 };
 
+enum WeaponCustomToggleStateMode {
+	WC_TOGGLE_STATE_OFF,
+	WC_TOGGLE_STATE_ON,
+	WC_TOGGLE_STATE_TOGGLE,
+};
+
 #pragma pack(push,1)
 
 struct MeleeOpts {
@@ -132,9 +138,11 @@ struct CustomWeaponShootOpts {
 	uint16_t accuracyMult[WC_ACCURACY_MULT_TYPES]; // accuracy multipliers for player movement (4.12 fixed point)
 
 	uint8_t toggleStateMode;	// 6 bits - WeaponCustomToggleStateMode
+	uint16_t toggleStateBits;	// FL_WC_STATE_*
+	uint16_t toggleOnDelay;		// time before toggling states on
+	uint16_t toggleOffDelay;	// time before toggling states off
 	uint8_t zoomLevels;			// 2 bits - maximum levels of zoom
 	uint8_t zoomFov[3];			// zoom fov for each level
-	uint16_t toggleStateBits;	// FL_WC_STATE_*
 
 	// server side settings (not networked)
 	MeleeOpts melee;

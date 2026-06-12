@@ -151,7 +151,6 @@ enum WeaponCustomEventType {
 	WC_EVT_BEAM,
 	WC_EVT_PROJECTILE,		// for slow-moving projectiles that aren't predicted on the client
 	WC_EVT_KICKBACK,
-	WC_EVT_TOGGLE_STATE,	// toggle some combination of weapon state bits
 	WC_EVT_HIDE_LASER,		// temporarily hide the laser
 	WC_EVT_COOLDOWN,		// adjust cooldowns (by default every action is cooled down after an attack)
 	WC_EVT_SET_GRAVITY,		// change player gravity
@@ -229,12 +228,6 @@ enum WeaponCustomProjectileFollowMode
 	WC_PROJ_FOLLOW_NONE,
 	WC_PROJ_FOLLOW_CROSSHAIRS,
 	WC_PROJ_FOLLOW_ENEMIES,
-};
-
-enum WeaponCustomToggleStateMode {
-	WC_TOGGLE_STATE_OFF,
-	WC_TOGGLE_STATE_ON,
-	WC_TOGGLE_STATE_TOGGLE,
 };
 
 enum WeaponCustomBeamAnimation {
@@ -465,11 +458,6 @@ struct WepEvt {
 		struct {
 			uint16_t millis; // how long to wait before enabling the laser again
 		} laserHide;
-
-		struct {
-			uint16_t toggleMode;	// 2 bits - WeaponCustomToggleStateMode
-			uint16_t stateBits;		// 14 bits - combination of FL_WC_STATE_*
-		} toggleState;
 
 		struct {
 			int16_t gravity; // gravity percentage (1000 = 100%, 0 = default)

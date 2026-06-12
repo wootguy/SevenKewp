@@ -1094,31 +1094,6 @@ void CWeaponEvents::PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	}
 }
 
-void CWeaponEvents::PlayEvent_ToggleState(WepEvt& evt, CBasePlayer* m_pPlayer) {
-	bool toggleOn = evt.toggleState.toggleMode == WC_TOGGLE_STATE_ON;
-	bool toggleFlip = evt.toggleState.toggleMode == WC_TOGGLE_STATE_TOGGLE;
-
-	if (evt.toggleState.stateBits & FL_WC_STATE_IS_AKIMBO) {
-		m_weapon->SetAkimbo(toggleOn || (toggleFlip && !m_weapon->IsAkimbo()));
-
-		if (m_weapon->IsAkimbo()) {
-			m_weapon->SendAkimboAnim(m_weapon->params.akimbo.deployAnim);
-		}
-		else {
-			m_weapon->Deploy();
-		}
-	}
-
-	if (evt.toggleState.stateBits & FL_WC_STATE_LASER) {
-		m_weapon->ToggleLaser(toggleOn || (toggleFlip && !m_weapon->IsLaserOn()));
-		ProcessEvents(m_weapon->IsLaserOn() ? WC_TRIG_LASER_ON : WC_TRIG_LASER_OFF, 0);
-	}
-
-	if (evt.toggleState.stateBits & FL_WC_STATE_PRIMARY_ALT) {
-		m_weapon->SetState(FL_WC_STATE_PRIMARY_ALT, toggleOn || (toggleFlip && !m_weapon->IsPrimaryAltActive()));
-	}
-}
-
 void CWeaponEvents::PlayEvent_HideLaser(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	if (m_weapon->IsLaserOn()) {
 		m_weapon->HideLaser(true);
@@ -1596,9 +1571,6 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 		if (evt.playSound.flags & FL_WC_SOUND_CHARGE_PITCH) {
 			m_weapon->m_chargeSoundEvt = eventIdx;
 		}
-		break;
-	case WC_EVT_TOGGLE_STATE:
-		PlayEvent_ToggleState(evt, m_pPlayer);
 		break;
 	case WC_EVT_HIDE_LASER:
 		PlayEvent_HideLaser(evt, m_pPlayer);

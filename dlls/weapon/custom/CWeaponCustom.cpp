@@ -328,6 +328,11 @@ BOOL CWeaponCustom::Deploy()
 		SetState(FL_WC_STATE_FIRST_DEPLOYED, true);
 	}
 
+	if (params.flags & FL_WC_WEP_IRON_SIGHTS_ZOOM) {
+		// never deploy with iron sights mode active
+		SetState(FL_WC_STATE_PRIMARY_ALT, false);
+	}
+
 	// extra idle time added because high ping players are interrupted otherwise
 	m_flTimeWeaponIdle = m_idleTime + 0.4f;
 
@@ -381,6 +386,7 @@ void CWeaponCustom::Reload() {
 		int* clip = GetAttackClip(1);
 		if (CommonAttack(1, clip, false, false)) { // TODO: configure this
 			events.ProcessEvents(WC_TRIG_SECONDARY, 0, *clip);
+			QueueStateToggles(1);
 		}
 		return;
 	}
@@ -547,6 +553,8 @@ void CWeaponCustom::ItemPostFrame() {
 		DecalGunshot(&m_meleeDecalPos, BULLET_PLAYER_CROWBAR);
 	}
 	events.UpdateBeams();
+
+	PlayDelayedStateToggles();
 
 	bool reloadFinished = m_fInReload && m_flNextPrimaryAttack <= 0;
 
@@ -718,6 +726,8 @@ void CWeaponCustom::PrimaryAttack() {
 
 			if (*clip < 0)
 				*clip = 0;
+
+			QueueStateToggles(0);
 		}
 	}
 
@@ -796,6 +806,8 @@ void CWeaponCustom::SecondaryAttack() {
 				events.ProcessEvents(WC_TRIG_SECONDARY_START, 0);
 			events.ProcessEvents(WC_TRIG_SECONDARY, akimboArg, *clip);
 			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_SECONDARY_RESERVE, 1);
+		
+			QueueStateToggles(1);
 		}
 	}
 
@@ -823,6 +835,8 @@ void CWeaponCustom::TertiaryAttack() {
 
 			if (*clip < 0)
 				*clip = 0;
+
+			QueueStateToggles(2);
 		}
 	}
 }
@@ -917,33 +931,6 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 
 		if (clipLeft <= 0 && ammoIdx >= 0 && m_pPlayer->m_rgAmmo[ammoIdx] <= 0) {
 			m_pPlayer->SetSuitUpdate("!HEV_AMO0", SUIT_REPEAT_OK, 0);
-		}
-	}
-
-	if (opts.toggleStateBits) {
-		uint32_t toggleBits = opts.toggleStateBits;
-
-		if (toggleBits & FL_WC_STATE_ZOOM) {
-			int zoomLevel = CycleZoom(opts.zoomLevels);
-			toggleBits &= ~FL_WC_STATE_ZOOM;
-		}
-
-		switch (opts.toggleStateMode) {
-		case WC_TOGGLE_STATE_OFF:
-			SetState(toggleBits, false);
-			break;
-		case WC_TOGGLE_STATE_ON:
-			SetState(toggleBits, true);
-			break;
-		case WC_TOGGLE_STATE_TOGGLE: {
-			for (int i = 0; i < 32; i++) {
-				uint32_t bit = 1 << i;
-				if (toggleBits & bit) {
-					SetState(bit, !GetState(bit));
-				}
-			}
-			break;
-		}
 		}
 	}
 
@@ -1493,7 +1480,6 @@ void CWeaponCustom::KickbackPrediction() {
 
 void CWeaponCustom::ToggleLaser(bool enable) {
 	SetLaser(enable);
-	m_lastLaserToggle = WallTime();
 	
 #ifdef CLIENT_DLL
 	if (!IsLaserOn()) {
@@ -1586,7 +1572,7 @@ uint32_t CWeaponCustom::CmdTime() {
 }
 
 void CWeaponCustom::SetAkimbo(bool akimbo) {
-	m_fireState = akimbo ? (m_fireState | FL_WC_STATE_IS_AKIMBO) : (m_fireState & ~FL_WC_STATE_IS_AKIMBO);
+	SetState(FL_WC_STATE_IS_AKIMBO, akimbo);
 
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
@@ -1657,12 +1643,10 @@ void CWeaponCustom::UpdateLaser() {
 		m_laserOnTime = 0;
 	}
 #ifdef CLIENT_DLL
-	if (WallTime() - m_lastLaserToggle > 0.5f) {
-		if (IsLaserOn())
-			HideLaser(m_laserOnTime > 0);
-		else
-			HideLaser(true);
-	}
+	if (IsLaserOn())
+		HideLaser(m_laserOnTime > 0);
+	else
+		HideLaser(true);
 #endif
 
 #ifndef CLIENT_DLL
@@ -1808,12 +1792,7 @@ int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
 }
 
 void CWeaponCustom::SetCanAkimbo(bool canAkimbo) {
-	if (canAkimbo) {
-		m_fireState = m_fireState | FL_WC_STATE_CAN_AKIMBO;
-	}
-	else {
-		m_fireState = m_fireState & ~FL_WC_STATE_CAN_AKIMBO;
-	}
+	SetState(FL_WC_STATE_CAN_AKIMBO, canAkimbo);
 }
 
 WcAttackState CWeaponCustom::GetChargedState(int attackIdx) {
@@ -1889,7 +1868,94 @@ studiohdr_t* CWeaponCustom::GetViewModelHeader() {
 #endif
 }
 
-void CWeaponCustom::SetState(int stateBits, bool state) {
+void CWeaponCustom::QueueStateToggles(int attackIdx) {
+	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+	if (!opts.toggleStateBits)
+		return;
+
+	uint32_t packed = (attackIdx+1) & 0x3;
+	m_fireState = (packed << 16) | ((uint32_t)m_fireState & 0xffff);
+
+	if (g_runfuncs) {
+		m_stateChangeCmdTime = CmdTime();
+	}
+}
+
+void CWeaponCustom::PlayDelayedStateToggles() {
+	int delayIdx = m_fireState >> 16;
+	if (!delayIdx)
+		return; // no states queued for toggling
+	
+	int attackIdx = delayIdx - 1;
+	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+	if (!opts.toggleStateBits)
+		return;
+
+	bool togglingOn = false;
+	switch (opts.toggleStateMode) {
+	case WC_TOGGLE_STATE_OFF:
+		togglingOn = false;
+		break;
+	case WC_TOGGLE_STATE_ON:
+		togglingOn = true;
+		break;
+	case WC_TOGGLE_STATE_TOGGLE:
+		togglingOn = !(m_fireState & opts.toggleStateBits);
+		break;
+	}
+
+	int delay = togglingOn ? opts.toggleOnDelay : opts.toggleOffDelay;
+	uint32_t toggleTime = m_stateChangeCmdTime + delay;
+
+	if (CmdTime() - m_stateChangeCmdTime >= delay) {
+		DoStateToggles(attackIdx);
+		m_fireState &= 0xffff; // clear queue
+	}
+}
+
+void CWeaponCustom::DoStateToggles(int attackIdx) {
+	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+	if (!opts.toggleStateBits)
+		return;
+
+	uint32_t toggleBits = opts.toggleStateBits;
+
+	if (toggleBits & FL_WC_STATE_ZOOM) {
+		int zoomLevel = CycleZoom(opts.zoomLevels);
+		toggleBits &= ~FL_WC_STATE_ZOOM;
+	}
+
+	switch (opts.toggleStateMode) {
+	case WC_TOGGLE_STATE_OFF:
+		SetState(toggleBits, false);
+		break;
+	case WC_TOGGLE_STATE_ON:
+		SetState(toggleBits, true);
+		break;
+	case WC_TOGGLE_STATE_TOGGLE: {
+		SetState(toggleBits, !GetState(toggleBits));
+		break;
+	}
+	}
+
+	if (toggleBits & FL_WC_STATE_IS_AKIMBO) {
+		SetAkimbo(GetState(FL_WC_STATE_IS_AKIMBO));
+
+		if (GetState(FL_WC_STATE_IS_AKIMBO)) {
+			SendAkimboAnim(params.akimbo.deployAnim);
+		}
+		else {
+			Deploy();
+		}
+	}
+
+	if (toggleBits & FL_WC_STATE_LASER) {
+		ToggleLaser(GetState(FL_WC_STATE_LASER));
+		events.ProcessEvents(GetState(FL_WC_STATE_LASER) ? WC_TRIG_LASER_ON : WC_TRIG_LASER_OFF, 0);
+	}
+}
+
+void CWeaponCustom::SetState(uint16_t stateBits, bool state) {
 	if (state)
 		m_fireState |= stateBits;
 	else

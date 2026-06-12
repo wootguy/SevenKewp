@@ -203,12 +203,14 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("cooldown_water", "0", shootOpts[0].cooldownWater, 0, WC_PARAM_TIME),
 			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
 			WEP_FIELD("empty_sound", NULL, shootOpts[0].emptySound, 0, WC_PARAM_SOUND_INDEX),
+			WEP_FIELD("toggle_on_delay", "0", shootOpts[0].toggleOnDelay, 0, WC_PARAM_TIME),
+			WEP_FIELD("toggle_off_delay", "0", shootOpts[0].toggleOffDelay, 0, WC_PARAM_TIME),
+			WEP_FLAGS("toggled_states", "0", shootOpts[0].toggleStateBits, 0, g_toggle_state_names),
 			WEP__ENUM("toggle_mode", "toggle", shootOpts[0].toggleStateMode, 6, g_toggle_mode_names),
 			WEP_FIELD("zoom_levels", "0", shootOpts[0].zoomLevels, 2, WC_PARAM_UINT8),
 			WEP_FIELD("zoom_fov", "0", shootOpts[0].zoomFov[0], 0, WC_PARAM_UINT8),
 			WEP_FIELD("zoom_fov2", "0", shootOpts[0].zoomFov[1], 0, WC_PARAM_UINT8),
 			WEP_FIELD("zoom_fov3", "0", shootOpts[0].zoomFov[2], 0, WC_PARAM_UINT8),
-			WEP_FLAGS("toggled_states", "0", shootOpts[0].toggleStateBits, 0, g_toggle_state_names),
 
 			WEP__ENUM("charge_mode", "0", shootOpts[0].chargeMode, 4, chargeModes),
 			WEP__ENUM("charge_ammo_mode", "0", shootOpts[0].chargeAmmoMode, 2, chargeAmmoModes),
@@ -602,13 +604,6 @@ void init_event_fields() {
 		EVT_FIELD("percent_up", "0", kickback.up, 0, WC_PARAM_INT8),
 		EVT_FIELD("percent_global_up", "0", kickback.globalUp, 0, WC_PARAM_INT8),
 	);
-
-	{
-		EVT_DESC(WC_EVT_TOGGLE_STATE, "toggle_state",
-			EVT__ENUM("toggle_mode", "toggle", toggleState.toggleMode, 2, g_toggle_mode_names),
-			EVT_FLAGS("toggled_states", "0", toggleState.stateBits, 14, g_toggle_state_names),
-		);
-	}
 
 	EVT_DESC(WC_EVT_HIDE_LASER, "hide_laser",
 		EVT_FIELD("time", "0", laserHide.millis, 0, WC_PARAM_TIME),
