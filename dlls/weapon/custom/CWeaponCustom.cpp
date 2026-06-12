@@ -225,13 +225,13 @@ const char* CWeaponCustom::GetAnimSet() {
 
 	if (m_pPlayer->m_playerModelAnimSet != PMODEL_ANIMS_HALF_LIFE_COOP) {
 		// half-life models are missing animations for some weapons, so fallback to valid HL anims
-		if (!strcmp(validAnimExt, "saw")) {
+		if (!strcmp(validAnimExt, "saw") || !strcmp(validAnimExt, "m16") || !strcmp(validAnimExt, "minigun")) {
 			validAnimExt = "mp5";
 		}
 		else if (!strcmp(validAnimExt, "sniper")) {
 			validAnimExt = "shotgun";
 		}
-		else if (!strcmp(validAnimExt, "sniperscope")) {
+		else if (!strcmp(validAnimExt, "sniperscope") || !strcmp(validAnimExt, "bowscope")) {
 			validAnimExt = "onehanded";
 		}
 		else if (!strcmp(validAnimExt, "uzis")) {
@@ -849,7 +849,9 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	if (!m_pPlayer)
 		return false;
 
-	if (opts.flags & FL_WC_SHOOT_NO_AUTOFIRE) {
+	int clipLeft = *clip;
+
+	if ((opts.flags & FL_WC_SHOOT_NO_AUTOFIRE) || GetState(FL_WC_STATE_SEMI_AUTO) || clipLeft < opts.ammoCost) {
 		if (attackIdx == 0 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK))
 			return false;
 		if (attackIdx == 1 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK2))
@@ -859,8 +861,6 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	bool isNormalAttack = !(opts.flags & FL_WC_SHOOT_NO_ATTACK);
 	bool isMelee = opts.flags & FL_WC_SHOOT_IS_MELEE;
 	bool inWater = m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD;
-
-	int clipLeft = *clip;
 
 	m_bWantAkimboReload = false;
 
@@ -962,10 +962,10 @@ void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 
 	int millis = opts.cooldown;
 
-	if (opts.cooldownWater) {
+	if (opts.cooldownOverride[WC_COOLDOWN_WATER]) {
 		CBasePlayer* m_pPlayer = GetPlayer();
 		if (m_pPlayer && m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD) {
-			millis = opts.cooldownWater;
+			millis = opts.cooldownOverride[WC_COOLDOWN_WATER];
 		}
 	}
 
@@ -1007,17 +1007,17 @@ void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 
 		// default override cooldowns
 		if (overrideMillis == -1) {
-			if (opts.cooldownPrimary) {
-				m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + opts.cooldownPrimary * 0.001f;
+			if (opts.cooldownOverride[WC_COOLDOWN_PRIMARY]) {
+				m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + opts.cooldownOverride[WC_COOLDOWN_PRIMARY] * 0.001f;
 			}
-			if (opts.cooldownSecondary) {
-				m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + opts.cooldownSecondary * 0.001f;
+			if (opts.cooldownOverride[WC_COOLDOWN_SECONDARY]) {
+				m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + opts.cooldownOverride[WC_COOLDOWN_SECONDARY] * 0.001f;
 			}
-			if (opts.cooldownPrimary) {
-				m_flNextTertiaryAttack = UTIL_WeaponTimeBase() + opts.cooldownPrimary * 0.001f;
+			if (opts.cooldownOverride[WC_COOLDOWN_TERTIARY]) {
+				m_flNextTertiaryAttack = UTIL_WeaponTimeBase() + opts.cooldownOverride[WC_COOLDOWN_TERTIARY] * 0.001f;
 			}
-			if (opts.cooldownIdle) {
-				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + opts.cooldownIdle * 0.001f;
+			if (opts.cooldownOverride[WC_COOLDOWN_IDLE]) {
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + opts.cooldownOverride[WC_COOLDOWN_IDLE] * 0.001f;
 			}
 		}
 	}
@@ -1317,7 +1317,10 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bo
 	}
 
 	int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
-	int ievt = attackIdx == 0 ? WC_TRIG_PRIMARY_FAIL : WC_TRIG_SECONDARY_FAIL;
+
+	int ievt = WC_TRIG_SECONDARY;
+	if (attackIdx == 0)
+		ievt = IsPrimaryAltActive() ? WC_TRIG_PRIMARY_ALT_FAIL : WC_TRIG_PRIMARY_FAIL;
 	events.ProcessEvents(ievt, akimboArg, leftHand, false);
 	
 	events.CancelDelayedEvents(attackIdx == 0 ? WC_TRIG_PRIMARY_START : WC_TRIG_SECONDARY_START);
@@ -1348,8 +1351,8 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bo
 #endif
 	}
 
-	if (opts.cooldownFail)
-		Cooldown(attackIdx, opts.cooldownFail);
+	if (opts.cooldownOverride[WC_COOLDOWN_FAIL])
+		Cooldown(attackIdx, opts.cooldownOverride[WC_COOLDOWN_FAIL]);
 
 	if (opts.chargeTime) {
 		m_flTimeWeaponIdle = 0.2f;
@@ -1535,6 +1538,7 @@ int CWeaponCustom::GetAttackIdx(WepEvt& evt) {
 	case WC_TRIG_PRIMARY_CHARGE:
 	case WC_TRIG_PRIMARY_STOP:
 	case WC_TRIG_PRIMARY_FAIL:
+	case WC_TRIG_PRIMARY_ALT_FAIL:
 		return 0;
 	case WC_TRIG_SECONDARY:
 	case WC_TRIG_SECONDARY_CHARGE:
@@ -1653,11 +1657,12 @@ int CWeaponCustom::CycleZoom(int attackIdx, bool forceCancelZoom) {
 #endif
 
 	// use non-empty events if there are no empty events defined
-	if (m_iClip != 0 || !events.ProcessEvents(WC_TRIG_ZOOM, zoomLevel + WC_TRIG_ZOOM_ARG_OUT_EMPTY)) {
-		events.ProcessEvents(WC_TRIG_ZOOM, zoomLevel);
+	if (m_iClip != 0 || !events.ProcessEvents(WC_TRIG_STATE, WC_TRIG_ARG_STATE_ZOOM_OUT_EMPTY + zoomLevel)) {
+		events.ProcessEvents(WC_TRIG_STATE, WC_TRIG_ARG_STATE_ZOOM_OUT + zoomLevel);
 	}
-
-	events.ProcessEvents(WC_TRIG_ZOOM, WC_TRIG_ZOOM_ARG_CHANGED);
+	if (m_iClip != 0 || !events.ProcessEvents(WC_TRIG_STATE, WC_TRIG_ARG_STATE_ZOOM_EMPTY)) {
+		events.ProcessEvents(WC_TRIG_STATE, WC_TRIG_ARG_STATE_ZOOM);
+	}
 
 	if (params.zoomMoveSpeedMult) {
 		m_pPlayer->ApplyEffects();
@@ -1948,6 +1953,8 @@ void CWeaponCustom::DoStateToggles(int attackIdx) {
 
 	uint32_t toggleBits = opts.toggleStateBits;
 
+	int trig = GetZoom() ? WC_TRIG_STATE_ZOOMED : WC_TRIG_STATE;
+
 	if (toggleBits & FL_WC_STATE_ZOOM) {
 		int zoomLevel = CycleZoom(opts.zoomLevels);
 		toggleBits &= ~FL_WC_STATE_ZOOM;
@@ -1979,7 +1986,16 @@ void CWeaponCustom::DoStateToggles(int attackIdx) {
 
 	if (toggleBits & FL_WC_STATE_LASER) {
 		ToggleLaser(GetState(FL_WC_STATE_LASER));
-		events.ProcessEvents(GetState(FL_WC_STATE_LASER) ? WC_TRIG_LASER_ON : WC_TRIG_LASER_OFF, 0);
+		int arg = GetState(FL_WC_STATE_LASER) ? WC_TRIG_ARG_STATE_LASER_ON : WC_TRIG_ARG_STATE_LASER_OFF;
+		events.ProcessEvents(trig, arg, 0);
+		events.ProcessEvents(trig, WC_TRIG_ARG_STATE_LASER, 0);
+	}
+
+	if (toggleBits & FL_WC_STATE_SEMI_AUTO) {
+		int arg = GetState(FL_WC_STATE_SEMI_AUTO) ? WC_TRIG_ARG_STATE_SEMI_AUTO_ON : WC_TRIG_ARG_STATE_SEMI_AUTO_OFF;
+		events.ProcessEvents(trig, arg, 0);
+		events.ProcessEvents(trig, WC_TRIG_ARG_STATE_SEMI_AUTO, 0);
+		// TODO: prevent infinite loop if triggering a similar state change
 	}
 }
 

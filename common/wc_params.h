@@ -95,13 +95,23 @@ enum WeaponCustomToggleStateMode {
 	WC_TOGGLE_STATE_TOGGLE,
 };
 
+enum WeaponCustomHasCooldownIndex {
+	WC_COOLDOWN_PRIMARY,	// override cooldown for primary fire
+	WC_COOLDOWN_SECONDARY,	// override cooldown for secondary fire
+	WC_COOLDOWN_TERTIARY,	// override cooldown for tertiary fire
+	WC_COOLDOWN_IDLE,		// override cooldown for idle
+	WC_COOLDOWN_FAIL,		// cooldown after a failed attack (out of ammo, underwater)
+	WC_COOLDOWN_WATER,		// cooldown while in water (0 = use default cooldown)
+	WC_COOLDOWN_TYPES,
+};
+
 #pragma pack(push,1)
 
 struct MeleeOpts {
 	int damage;
 	int damageBits;
 	int range;
-	Vector attackOffset;	// in forward, up, right units
+	Vector attackOffset;	// in forward, up, right unitsd
 	uint16_t missCooldown;	// cooldown millis for missing an attack
 	uint16_t hitCooldown;	// cooldown millis for hitting something
 	uint16_t decalDelay;	// how long to wait after hitting a wall to apply the decal
@@ -117,14 +127,12 @@ struct CustomWeaponShootOpts {
 	uint8_t ammoCost;			// ammo cost of each attack
 	uint8_t ammoFreq;			// skip decrementing ammo for this many attacks (for fractional ammo costs)
 	uint8_t ammoPool;			// which ammo pool to drain from (WeaponCustomAmmoPool)
-	uint16_t cooldown;			// time between attacks (milliseconds)
-	uint16_t cooldownFail;		// cooldown after a failed attack (out of ammo, underwater) (milliseconds)
-	uint16_t cooldownWater;		// cooldown while in water (0 = use default cooldown)
-	uint16_t cooldownPrimary;	// override cooldown for primary fire
-	uint16_t cooldownSecondary;	// override cooldown for primary fire
-	uint16_t cooldownTertiary;	// override cooldown for primary fire
-	uint16_t cooldownIdle;		// override cooldown for idle
 	uint16_t emptySound;		// custom empty click sound
+	uint16_t cooldown;			// time between attacks (milliseconds)
+	uint16_t accuracy[2];		// horizontal+vertical accuracy for crosshair (degrees * 100)
+
+	uint8_t hasCooldownOverride[WC_COOLDOWN_TYPES];		// 1 bit conditions for networking
+	uint16_t cooldownOverride[WC_COOLDOWN_TYPES];	// cooldown overrides for various actions
 
 	uint8_t chargeMode;			// 4 bits - WeaponCustomChargeupMode
 	uint8_t chargeAmmoMode;		// 2 bits - WeaponCustomChargeAmmoMode
@@ -138,11 +146,14 @@ struct CustomWeaponShootOpts {
 	uint16_t chargeCancelTime;	// minimum time before a charge can be cancelled (milliseconds)
 	uint16_t chargeMoveSpeedMult; // movement speed multiplier while charging (1-65535) (65535 = 100%) (0 = don't change)
 	
-	uint16_t accuracy[2];		// horizontal+vertical accuracy for crosshair (degrees * 100)
-	uint16_t accuracyMult[WC_ACCURACY_MULT_TYPES]; // accuracy multipliers for player movement (4.12 fixed point)
+	uint8_t hasAccMult[WC_ACCURACY_MULT_TYPES];		// 1 bit conditions for networking
+	uint16_t accuracyMult[WC_ACCURACY_MULT_TYPES];	// accuracy multipliers for player movement (4.12 fixed point)
 
-	uint8_t toggleStateMode;	// 6 bits - WeaponCustomToggleStateMode
+	uint8_t hasToggleInfo;		// 1 bit condition for networking
+	uint8_t hasZoomInfo;		// 1 bit condition for networking
+
 	uint16_t toggleStateBits;	// FL_WC_STATE_*
+	uint8_t toggleStateMode;	// WeaponCustomToggleStateMode
 	uint16_t toggleOnDelay;		// time before toggling states on
 	uint16_t toggleOffDelay;	// time before toggling states off
 	uint8_t zoomLevels;			// 2 bits - maximum levels of zoom
@@ -227,6 +238,7 @@ struct CustomAmmoParams {
 	string_t ammoType;			// what type of ammo this is (default name or a custom one)
 	string_t ammoTypeHl;		// ammo type given to HL clients
 	string_t model;
+	uint16_t modelBody;			// body group to use in model
 	string_t pickupSound;
 	uint16_t ammoGiven;
 	uint16_t maxAmmo; // for custom ammo types

@@ -231,8 +231,8 @@ void wc_read_netmsg_struct(struct_desc_t& desc, void* dat, bool isEvent=false) {
 						*(uint8_t*)packedFieldDat = (uint8_t)val;
 
 					if (verbose) {
-						string fieldStr = wc_get_field_str(field, fieldDat);
-						PRINTD("    %-20s = %-24s (%d bits)\n", field.name, fieldStr.c_str(), field.bits);
+						string fieldStr = wc_get_field_str(packedField, packedFieldDat);
+						PRINTD("    %-20s = %-24s (%d bits)\n", packedField.name, fieldStr.c_str(), packedField.bits);
 					}
 
 					packedFields >>= packedField.bits;

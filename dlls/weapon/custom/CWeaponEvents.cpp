@@ -144,7 +144,8 @@ bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 		case WC_TRIG_SECONDARY_CHARGE:
 		case WC_TRIG_IDLE:
 		case WC_TRIG_DEPLOY:
-		case WC_TRIG_ZOOM:
+		case WC_TRIG_STATE:
+		case WC_TRIG_STATE_ZOOMED:
 		case WC_TRIG_BULLET_FIRED:
 			argMatch = triggerArg == evt.triggerArg;
 			break;
@@ -246,16 +247,24 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	bool isPredicted = m_weapon->IsPredicted();
 	BULLET_PREDICTION predFlag = isPredicted ? BULLETPRED_EVENTLESS : BULLETPRED_NONE;
 
+	bool inWater = m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD;
+
 	int baseDamage = evt.bullets.damage;
-	if (evt.bullets.damageWater && m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD) {
+	if (evt.bullets.damageWater && inWater) {
 		baseDamage = evt.bullets.damageWater;
 	}
 	float damage = baseDamage * GetChargeMult(evt, FL_WC_CHARGE_DAMAGE);
 
 	int count = evt.bullets.burstDelay ? 1 : evt.bullets.count;
 
+	int maxRange = 8192;
+	if (evt.bullets.maxRangeWater && inWater)
+		maxRange = evt.bullets.maxRangeWater;
+	else if (evt.bullets.maxRange)
+		maxRange = evt.bullets.maxRange;
+
 	lagcomp_begin(m_pPlayer);
-	Vector vecDir = m_pPlayer->FireBulletsPlayer(count, vecSrc, vecAiming, spread, 8192,
+	Vector vecDir = m_pPlayer->FireBulletsPlayer(count, vecSrc, vecAiming, spread, maxRange,
 		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, damage, m_pPlayer->pev,
 		m_pPlayer->random_seed, g_traces, predFlag);
 	lagcomp_end();
@@ -285,7 +294,7 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 		bool playTexSound = texSound && iShot < 6; // don't stack too many sounds
 		pmtrace_t tr = WC_EV_FireBullets(x * spread.x, y * spread.y, showTracer, evt.bullets.tracerColor,
-			decal, playTexSound, iShot, evt.bullets.damage);
+			decal, playTexSound, iShot, evt.bullets.damage, maxRange);
 
 		WcTrace evTrace = ConvertTrace(tr, vecSrc);
 		ProcessEvents(WC_TRIG_IMPACT, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
@@ -1687,8 +1696,12 @@ float CWeaponEvents::GetCurrentAccuracyMultiplier(int attackIdx) {
 	if (!m_pPlayer)
 		return 1.0f;
 
-	if (attackIdx == 1 && !(m_weapon->params.flags & FL_WC_WEP_HAS_SECONDARY)) {
-		attackIdx = 0;
+
+	if (attackIdx == 1) {
+		bool hasSecondary = !(m_weapon->params.flags & FL_WC_WEP_HAS_SECONDARY);
+		bool notAnAttack = m_weapon->params.shootOpts[1].flags & FL_WC_SHOOT_NO_ATTACK;
+		if (!hasSecondary || !notAnAttack)
+			attackIdx = 0;
 	}
 
 	CustomWeaponShootOpts& opts = m_weapon->params.shootOpts[attackIdx];

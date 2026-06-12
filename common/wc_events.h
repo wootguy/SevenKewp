@@ -97,24 +97,37 @@ enum WeaponCustomEventDeployArg {
 	WC_TRIG_DEPLOY_ARG_FIRST,		// fire when deployed for the first time
 };
 
-enum WeaponCustomEventZoomArg {
-	WC_TRIG_ZOOM_ARG_OUT,		// trigger at zoom level 0
-	WC_TRIG_ZOOM_ARG_IN,		// trigger at zoom level 1
-	WC_TRIG_ZOOM_ARG_IN2,		// trigger at zoom level 2
-	WC_TRIG_ZOOM_ARG_IN3,		// trigger at zoom level 3
-	WC_TRIG_ZOOM_ARG_OUT_EMPTY,	// trigger at zoom level 0 if the clip is empty
-	WC_TRIG_ZOOM_ARG_IN_EMPTY,	// trigger at zoom level 1 if the clip is empty
-	WC_TRIG_ZOOM_ARG_IN2_EMPTY,	// trigger at zoom level 2 if the clip is empty
-	WC_TRIG_ZOOM_ARG_IN3_EMPTY,	// trigger at zoom level 3 if the clip is empty
-	WC_TRIG_ZOOM_ARG_CHANGED,	// trigger at any zoom level
-};
-
 enum WeaponCustomEventBulletFiredArg {
 	WC_TRIG_ARG_BULLET_FIRED_DEFAULT,		// fire if no other event conditions pass
 	WC_TRIG_ARG_BULLET_FIRED_ZOOMED,		// fire if zoomed in
 	WC_TRIG_ARG_BULLET_FIRED_LASER,			// fire if laser enabled
 	WC_TRIG_ARG_BULLET_FIRED_LEFT_HAND,		// fire for left hand in akimbo mode
 	WC_TRIG_ARG_BULLET_FIRED_RIGHT_HAND,	// fire for left hand in akimbo mode
+};
+
+enum WeaponCustomEventStateChangedArg {
+	WC_TRIG_ARG_STATE_ZOOM,				// trigger at any zoom level
+	WC_TRIG_ARG_STATE_ZOOM_OUT,			// trigger at zoom level 0
+	WC_TRIG_ARG_STATE_ZOOM_IN,			// trigger at zoom level 1
+	WC_TRIG_ARG_STATE_ZOOM_IN2,			// trigger at zoom level 2
+	WC_TRIG_ARG_STATE_ZOOM_IN3,			// trigger at zoom level 3
+	WC_TRIG_ARG_STATE_ZOOM_EMPTY,		// trigger at any zoom level if the clip is empty
+	WC_TRIG_ARG_STATE_ZOOM_OUT_EMPTY,	// trigger at zoom level 0 if the clip is empty
+	WC_TRIG_ARG_STATE_ZOOM_IN_EMPTY,	// trigger at zoom level 1 if the clip is empty
+	WC_TRIG_ARG_STATE_ZOOM_IN2_EMPTY,	// trigger at zoom level 2 if the clip is empty
+	WC_TRIG_ARG_STATE_ZOOM_IN3_EMPTY,	// trigger at zoom level 3 if the clip is empty
+	WC_TRIG_ARG_STATE_PRIMARY_ALT,		// fire when primary alt is toggled
+	WC_TRIG_ARG_STATE_PRIMARY_ALT_OFF,	// fire when primary alt is disabled
+	WC_TRIG_ARG_STATE_PRIMARY_ALT_ON,	// fire when primary alt is enabled
+	WC_TRIG_ARG_STATE_LASER,			// fire when laser is toggled
+	WC_TRIG_ARG_STATE_LASER_OFF,		// fire when laser is disabled
+	WC_TRIG_ARG_STATE_LASER_ON,			// fire when laser is enabled
+	WC_TRIG_ARG_STATE_AKIMBO,			// fire when akimbo is toggled
+	WC_TRIG_ARG_STATE_AKIMBO_OFF,		// fire when akimbo is disabled
+	WC_TRIG_ARG_STATE_AKIMBO_ON,		// fire when akimbo is enabled
+	WC_TRIG_ARG_STATE_SEMI_AUTO,		// fire when semi-auto mode is toggled
+	WC_TRIG_ARG_STATE_SEMI_AUTO_OFF,	// fire when semi-auto mode is disabled
+	WC_TRIG_ARG_STATE_SEMI_AUTO_ON,		// fire when semi-auto mode is enabled
 };
 
 enum WeaponCustomEventTriggers {
@@ -131,6 +144,7 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_PRIMARY_START,		// triggers when primary fire key is pressed. Delayed events are cancelled when a STOP event starts.
 	WC_TRIG_PRIMARY_STOP,		// triggers when primary fire key is released
 	WC_TRIG_PRIMARY_FAIL,		// triggers when primary fire fails (no ammo, underwater, ...)
+	WC_TRIG_PRIMARY_ALT_FAIL,	// triggers when primary fire fails (no ammo, underwater, ...)
 	WC_TRIG_SECONDARY_CLIPSIZE, // trigger arg is the clip size to trigger on
 	WC_TRIG_SECONDARY_CLIP_SP,	// trigger arg: WeaponCustomEventTriggerClipSpArg
 	WC_TRIG_SECONDARY_CHARGE,	// triggers when secondary fire begins charging. Delayed events are cancelled when charging stops or fails.
@@ -145,9 +159,8 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_DEPLOY,				// Trigger arg: WeaponCustomEventDeployArg
 	WC_TRIG_IDLE,				// Trigger arg: WeaponCustomEventIdleArg
 	WC_TRIG_BULLET_FIRED,		// triggered when a bullet is fired. Trigger arg: WeaponCustomEventBulletFiredArg
-	WC_TRIG_LASER_ON,			// triggered when the laser is enabled
-	WC_TRIG_LASER_OFF,			// triggered when the laser is disabled
-	WC_TRIG_ZOOM,				// trigger arg: zoom level (0-3)		
+	WC_TRIG_STATE,				// triggered for state change. Trigger arg: WeaponCustomEventStateChangedArg
+	WC_TRIG_STATE_ZOOMED,		// triggered for state change while zoomed. Trigger arg: WeaponCustomEventStateChangedArg
 	WC_TRIG_IMPACT,				// triggered when an attack trace impacts something. Trigger arg: WeaponCustomEventTriggerImpactArg
 	WC_TRIG_RICOCHET,			// triggered when an attack trace ricochets off something. Trigger arg: WeaponCustomEventTriggerImpactArg
 };
@@ -411,14 +424,22 @@ struct WepEvt {
 
 		struct {
 			uint8_t count;			// how many bullets are shot at once
-			uint16_t burstDelay;	// milliseconds betwen shots, for burst fire
 			uint16_t damage;		// damage per bullet
-			uint16_t damageWater;	// damage per bullet when fired underwater
 			uint16_t accuracy[2];	// X/Y accuracy. 0 = perfect, 1 = 180 degrees. 65535 = 1.0f
 			uint8_t tracerFreq;		// 4 bits. how often to display a tracer (0 = never, 1 = always, 2 = every other shot)
 			uint8_t tracerColor;	// 4 bits. WeaponCustomTracerColor
 			uint8_t flashSz;		// 4 bits. WeaponCustomFlashSz
 			uint8_t flags;			// 4 bits. FL_WC_BULLETS_*
+
+			uint8_t hasRange;	// 1 bit
+			uint8_t hasWaterDamage;	// 1 bit
+			uint8_t hasWaterRange;	// 1 bit
+			uint8_t hasBurstDelay;	// 1 bit
+			uint16_t maxRange;		// max range in air
+			uint16_t damageWater;	// damage per bullet when fired underwater
+			uint16_t maxRangeWater;	// damage per bullet when fired underwater
+			uint16_t burstDelay;	// milliseconds betwen shots, for burst fire
+
 		} bullets;
 
 		struct {

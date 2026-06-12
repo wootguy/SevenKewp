@@ -12,6 +12,8 @@
 	{ name, default_val, offsetof(CustomWeaponParams, struct_field), bits, WC_PARAM_UINT8_ENUM, enum_arr, ARRAY_SZ(enum_arr), ##__VA_ARGS__}
 #define WEP_FLAGS(name, default_val, struct_field, bits, flags_arr, ...) \
 	{ name, default_val, offsetof(CustomWeaponParams, struct_field), bits, WC_PARAM_UINT8_FLAGS, flags_arr, ARRAY_SZ(flags_arr), ##__VA_ARGS__}
+#define WEP_FLAGS16(name, default_val, struct_field, bits, flags_arr, ...) \
+	{ name, default_val, offsetof(CustomWeaponParams, struct_field), bits, WC_PARAM_UINT16_FLAGS, flags_arr, ARRAY_SZ(flags_arr), ##__VA_ARGS__}
 #define WEP_FLAGS32(name, default_val, struct_field, bits, flags_arr, ...) \
 	{ name, default_val, offsetof(CustomWeaponParams, struct_field), bits, WC_PARAM_UINT32_FLAGS, flags_arr, ARRAY_SZ(flags_arr), ##__VA_ARGS__}
 #define WEP_COND_BYTE(field) offsetof(CustomWeaponParams, field)
@@ -70,10 +72,6 @@ mod_string_t g_wc_trigger_to_name[WC_MAX_TRIGGER_VALUES];
 HashMap<uint16_t> g_wc_name_to_trigger; // maps a group name to an event trigger + argument value
 HashMap<uint8_t> g_wc_name_to_action; // maps an action key value to its event number
 StringPool g_wc_trigger_string_pool;
-
-#ifdef CLIENT_DLL
-#include "../cl_dll/hud.h"
-#endif
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
@@ -200,23 +198,39 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("ammo_freq", "0", shootOpts[0].ammoFreq, 0, WC_PARAM_UINT8),
 			WEP__ENUM("ammo_pool", "0", shootOpts[0].ammoPool, 0, ammoPools),
 			WEP_FIELD("cooldown", "0", shootOpts[0].cooldown, 0, WC_PARAM_TIME),
-			WEP_FIELD("cooldown_fail", "0", shootOpts[0].cooldownFail, 0, WC_PARAM_TIME),
-			WEP_FIELD("cooldown_water", "0", shootOpts[0].cooldownWater, 0, WC_PARAM_TIME),
-			WEP_FIELD("cooldown_primary", "0", shootOpts[0].cooldownPrimary, 0, WC_PARAM_TIME),
-			WEP_FIELD("cooldown_secondary", "0", shootOpts[0].cooldownSecondary, 0, WC_PARAM_TIME),
-			WEP_FIELD("cooldown_tertiary", "0", shootOpts[0].cooldownTertiary, 0, WC_PARAM_TIME),
-			WEP_FIELD("cooldown_idle", "0", shootOpts[0].cooldownIdle, 0, WC_PARAM_TIME),
-
-			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
 			WEP_FIELD("empty_sound", NULL, shootOpts[0].emptySound, 0, WC_PARAM_SOUND_INDEX),
-			WEP_FIELD("toggle_on_delay", "0", shootOpts[0].toggleOnDelay, 0, WC_PARAM_TIME),
-			WEP_FIELD("toggle_off_delay", "0", shootOpts[0].toggleOffDelay, 0, WC_PARAM_TIME),
-			WEP_FLAGS("toggled_states", "0", shootOpts[0].toggleStateBits, 0, g_toggle_state_names),
-			WEP__ENUM("toggle_mode", "toggle", shootOpts[0].toggleStateMode, 6, g_toggle_mode_names),
-			WEP_FIELD("zoom_levels", "0", shootOpts[0].zoomLevels, 2, WC_PARAM_UINT8),
-			WEP_FIELD("zoom_fov", "0", shootOpts[0].zoomFov[0], 0, WC_PARAM_UINT8),
-			WEP_FIELD("zoom_fov2", "0", shootOpts[0].zoomFov[1], 0, WC_PARAM_UINT8),
-			WEP_FIELD("zoom_fov3", "0", shootOpts[0].zoomFov[2], 0, WC_PARAM_UINT8),
+			
+			WEP_FIELD("hascd0", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_PRIMARY], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hascd1", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_SECONDARY], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hascd2", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_TERTIARY], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hascd3", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_IDLE], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hascd4", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_FAIL], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hascd5", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_WATER], 3, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("cooldown_primary", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_PRIMARY], 0, WC_PARAM_TIME,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_PRIMARY])),
+			WEP_FIELD("cooldown_secondary", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_SECONDARY], 0, WC_PARAM_TIME,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_SECONDARY])),
+			WEP_FIELD("cooldown_tertiary", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_TERTIARY], 0, WC_PARAM_TIME,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_TERTIARY])),
+			WEP_FIELD("cooldown_idle", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_IDLE], 0, WC_PARAM_TIME,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_IDLE])),
+			WEP_FIELD("cooldown_fail", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_FAIL], 0, WC_PARAM_TIME,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_FAIL])),
+			WEP_FIELD("cooldown_water", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_WATER], 0, WC_PARAM_TIME,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_WATER])),
+			
+			WEP_FIELD("has_toggle", "0", shootOpts[0].hasToggleInfo, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("has_zoom", "0", shootOpts[0].hasZoomInfo, 7, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+
+			WEP_FIELD("toggle_on_delay", "0", shootOpts[0].toggleOnDelay, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasToggleInfo)),
+			WEP_FIELD("toggle_off_delay", "0", shootOpts[0].toggleOffDelay, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasToggleInfo)),
+			WEP_FLAGS16("toggled_states", "0", shootOpts[0].toggleStateBits, 0, g_toggle_state_names, 0, WEP_COND_BYTE(shootOpts[0].hasToggleInfo)),
+			WEP__ENUM("toggle_mode", "toggle", shootOpts[0].toggleStateMode, 0, g_toggle_mode_names, 0, WEP_COND_BYTE(shootOpts[0].hasToggleInfo)),
+			
+			WEP_FIELD("zoom_levels", "0", shootOpts[0].zoomLevels, 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasZoomInfo)),
+			WEP_FIELD("zoom_fov", "0", shootOpts[0].zoomFov[0], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasZoomInfo)),
+			WEP_FIELD("zoom_fov2", "0", shootOpts[0].zoomFov[1], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasZoomInfo)),
+			WEP_FIELD("zoom_fov3", "0", shootOpts[0].zoomFov[2], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasZoomInfo)),
 
 			WEP__ENUM("charge_mode", "0", shootOpts[0].chargeMode, 4, chargeModes),
 			WEP__ENUM("charge_ammo_mode", "0", shootOpts[0].chargeAmmoMode, 2, chargeAmmoModes),
@@ -232,14 +246,32 @@ void init_weapon_struct_fields() {
 
 			WEP_FIELD("charge_move_speed", "0", shootOpts[0].chargeMoveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
 			
-			WEP_FIELD("accuracy_mult_fly", "3.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_FLY], 0, WC_PARAM_UINT16_FP_4_12),
-			WEP_FIELD("accuracy_mult_swim", "3.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_SWIM], 0, WC_PARAM_UINT16_FP_4_12),
-			WEP_FIELD("accuracy_mult_float", "2.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_FLOAT], 0, WC_PARAM_UINT16_FP_4_12),
-			WEP_FIELD("accuracy_mult_run", "2.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_RUN], 0, WC_PARAM_UINT16_FP_4_12),
-			WEP_FIELD("accuracy_mult_walk", "1.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_WALK], 0, WC_PARAM_UINT16_FP_4_12),
-			WEP_FIELD("accuracy_mult_crawl", "0.5", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_CRAWL], 0, WC_PARAM_UINT16_FP_4_12),
-			WEP_FIELD("accuracy_mult_duck", "0.5", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_DUCK], 0, WC_PARAM_UINT16_FP_4_12),
-			WEP_FIELD("accuracy_mult_zoom", "1.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_ZOOM], 0, WC_PARAM_UINT16_FP_4_12),
+			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
+
+			WEP_FIELD("hasac0", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_FLY], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hasac1", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_SWIM], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hasac2", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_FLOAT], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hasac3", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_RUN], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hasac4", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_WALK], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hasac5", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_CRAWL], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hasac6", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_DUCK], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hasac7", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_ZOOM], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("accuracy_mult_fly", "3.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_FLY], 0, WC_PARAM_UINT16_FP_4_12,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_FLY])),
+			WEP_FIELD("accuracy_mult_swim", "3.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_SWIM], 0, WC_PARAM_UINT16_FP_4_12,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_SWIM])),
+			WEP_FIELD("accuracy_mult_float", "2.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_FLOAT], 0, WC_PARAM_UINT16_FP_4_12,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_FLOAT])),
+			WEP_FIELD("accuracy_mult_run", "2.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_RUN], 0, WC_PARAM_UINT16_FP_4_12,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_RUN])),
+			WEP_FIELD("accuracy_mult_walk", "1.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_WALK], 0, WC_PARAM_UINT16_FP_4_12,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_WALK])),
+			WEP_FIELD("accuracy_mult_crawl", "0.5", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_CRAWL], 0, WC_PARAM_UINT16_FP_4_12,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_CRAWL])),
+			WEP_FIELD("accuracy_mult_duck", "0.5", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_DUCK], 0, WC_PARAM_UINT16_FP_4_12,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_DUCK])),
+			WEP_FIELD("accuracy_mult_zoom", "1.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_ZOOM], 0, WC_PARAM_UINT16_FP_4_12,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_ZOOM])),
 
 			WEP_FIELD("melee_damage", "0", shootOpts[0].melee.damage, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FLAGS32("melee_damage_type", "0", shootOpts[0].melee.damageBits, 0, g_wc_dmgFlags, FL_FIELD_NO_NETWORK),
@@ -445,14 +477,23 @@ void init_event_fields() {
 
 		EVT_DESC(WC_EVT_BULLETS, "bullets",
 			EVT_FIELD("count", "0", bullets.count, 0, WC_PARAM_UINT8),
-			EVT_FIELD("burst_delay", "0", bullets.burstDelay, 0, WC_PARAM_TIME),
-			EVT_FIELD("damage", "0", bullets.damage, 0, WC_PARAM_UINT16),
-			EVT_FIELD("damage_water", "0", bullets.damageWater, 0, WC_PARAM_UINT16),
 			EVT_FIELD("accuracy", "0", bullets.accuracy, 0, WC_PARAM_ACCURACY_UINT16_2X),
+
+			EVT_FIELD("has_range", "0", bullets.hasRange, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("has_water_damage", "0", bullets.hasWaterDamage, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("has_water_range", "0", bullets.hasWaterRange, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("has_burst_delay", "0", bullets.hasBurstDelay, 5, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			
+			EVT_FIELD("damage", "0", bullets.damage, 0, WC_PARAM_UINT16),
+			EVT_FIELD("damage_water", "0", bullets.damageWater, 0, WC_PARAM_UINT16, NULL, 0, 0, EVT_COND_BYTE(bullets.hasWaterDamage)),
+			EVT_FIELD("max_range", "0", bullets.maxRange, 0, WC_PARAM_UINT16, NULL, 0, 0, EVT_COND_BYTE(bullets.hasRange)),
+			EVT_FIELD("max_range_water", "0", bullets.maxRangeWater, 0, WC_PARAM_UINT16, NULL, 0, 0, EVT_COND_BYTE(bullets.hasWaterDamage)),
+			EVT_FIELD("burst_delay", "0", bullets.burstDelay, 0, WC_PARAM_TIME, NULL, 0, 0, EVT_COND_BYTE(bullets.hasBurstDelay)),
+		
+			EVT_FLAGS("flags", "0", bullets.flags, 4, flags),
+			EVT__ENUM("flash_size", "normal", bullets.flashSz, 4, flash_size_names),
 			EVT__ENUM("tracer_color", "default", bullets.tracerColor, 4, bullet_color_names),
 			EVT_FIELD("tracer_frequency", "0", bullets.tracerFreq, 4, WC_PARAM_UINT8),
-			EVT__ENUM("flash_size", "normal", bullets.flashSz, 4, flash_size_names),
-			EVT_FLAGS("flags", "0", bullets.flags, 4, flags),
 		);
 	}
 
@@ -797,6 +838,7 @@ void init_custom_ammo_fields() {
 	WEP_STRUCT_DESC(g_wc_desc_custom_ammo, "general",
 		AMMO_FIELD("classname", "", classname, 0, WC_PARAM_STRING),
 		AMMO_FIELD("model", "", model, 0, WC_PARAM_STRING),
+		AMMO_FIELD("model_body", "0", modelBody, 0, WC_PARAM_UINT16),
 		AMMO_FIELD("hull_min", "0 0 0", hullSizeMin, 0, WC_PARAM_VECTOR),
 		AMMO_FIELD("hull_max", "0 0 0", hullSizeMax, 0, WC_PARAM_VECTOR),
 		AMMO_FIELD("pickup_sound", "items/9mmclip1.wav", pickupSound, 0, WC_PARAM_STRING),
@@ -846,6 +888,7 @@ void init_weapon_custom_config_parser() {
 	g_toggle_state_names[BitIndex(FL_WC_STATE_IS_AKIMBO)] = "akimbo";
 	g_toggle_state_names[BitIndex(FL_WC_STATE_CAN_AKIMBO)] = "can_akimbo";
 	g_toggle_state_names[BitIndex(FL_WC_STATE_ZOOM)] = "zoom";
+	g_toggle_state_names[BitIndex(FL_WC_STATE_SEMI_AUTO)] = "semi_auto";
 
 	init_weapon_struct_fields();
 	init_event_fields();
@@ -864,6 +907,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_START] = "primary_attack_start";
 	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_STOP] = "primary_attack_stop";
 	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_FAIL] = "primary_attack_fail";
+	g_wc_evt_trigger_names[WC_TRIG_PRIMARY_ALT_FAIL] = "primary_alt_attack_fail";
 	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_CLIPSIZE] = "secondary_clip_is";
 	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_CLIP_SP] = "secondary_clip_is";
 	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_CHARGE] = "secondary_attack_charge";
@@ -877,9 +921,8 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_names[WC_TRIG_DEPLOY] = "deploy";
 	g_wc_evt_trigger_names[WC_TRIG_IDLE] = "idle";
 	g_wc_evt_trigger_names[WC_TRIG_BULLET_FIRED] = "bullet_fired";
-	g_wc_evt_trigger_names[WC_TRIG_LASER_ON] = "laser_on";
-	g_wc_evt_trigger_names[WC_TRIG_LASER_OFF] = "laser_off";
-	g_wc_evt_trigger_names[WC_TRIG_ZOOM] = "zoom";
+	g_wc_evt_trigger_names[WC_TRIG_STATE] = "";
+	g_wc_evt_trigger_names[WC_TRIG_STATE_ZOOMED] = "zoomed";
 	g_wc_evt_trigger_names[WC_TRIG_IMPACT] = "impact";
 	g_wc_evt_trigger_names[WC_TRIG_RICOCHET] = "ricochet";
 
@@ -918,16 +961,29 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_EMPTY] = "_empty";
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_FIRST] = "_first";
 
-	static const char* trigger_arg_zoom_names[16];
-	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_OUT] = "_out";
-	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN] = "_in";
-	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN2] = "_in2";
-	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN3] = "_in3";
-	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_OUT_EMPTY] = "_out_empty";
-	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN_EMPTY] = "_in_empty";
-	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN2_EMPTY] = "_in2_empty";
-	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN3_EMPTY] = "_in3_empty";
-	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_CHANGED] = "";
+	static const char* trigger_arg_state_names[32];
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM_OUT] = "zoom_out";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM_IN] = "zoom_in";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM_IN2] = "zoom_in2";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM_IN3] = "zoom_in3";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM_OUT_EMPTY] = "zoom_out_empty";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM_IN_EMPTY] = "zoom_in_empty";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM_IN2_EMPTY] = "zoom_in2_empty";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM_IN3_EMPTY] = "zoom_in3_empty";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM] = "zoom_mode";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM_EMPTY] = "zoom_mode_empty";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_PRIMARY_ALT] = "primary_alt_mode";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_PRIMARY_ALT_OFF] = "primary_alt_off";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_PRIMARY_ALT_ON] = "primary_alt_on";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_LASER] = "laser_mode";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_LASER_OFF] = "laser_off";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_LASER_ON] = "laser_on";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_AKIMBO] = "akimbo_mode";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_AKIMBO_OFF] = "akimbo_off";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_AKIMBO_ON] = "akimbo_on";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_SEMI_AUTO] = "semi_auto_mode";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_SEMI_AUTO_OFF] = "semi_auto_off";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_SEMI_AUTO_ON] = "semi_auto_on";
 
 	static const char* trigger_arg_bullet_fired_names[16];
 	trigger_arg_bullet_fired_names[WC_TRIG_ARG_BULLET_FIRED_DEFAULT] = "";
@@ -974,9 +1030,17 @@ void init_weapon_custom_config_parser() {
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
 			}
 			break;
-		case WC_TRIG_ZOOM:
-			for (int k = 0; k < ARRAY_SZ(trigger_arg_zoom_names); k++) {
-				const char* key = UTIL_VarArgs("%s%s", tname, trigger_arg_zoom_names[k]);
+		case WC_TRIG_STATE:
+			for (int k = 0; k < ARRAY_SZ(trigger_arg_state_names); k++) {
+				const char* key = UTIL_VarArgs("%s", trigger_arg_state_names[k]);
+				uint16_t val = (k << EVT_TYPE_BITS) | i;
+				g_wc_name_to_trigger.put(key, val);
+				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
+			}
+			break;
+		case WC_TRIG_STATE_ZOOMED:
+			for (int k = 0; k < ARRAY_SZ(trigger_arg_state_names); k++) {
+				const char* key = UTIL_VarArgs("%s_%s", tname, trigger_arg_state_names[k]);
 				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
@@ -1112,6 +1176,7 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_DECAL_INDEX:
 		return 1;
 	case WC_PARAM_UINT16:
+	case WC_PARAM_UINT16_FLAGS:
 	case WC_PARAM_INT16:
 	case WC_PARAM_SOUND_INDEX:
 	case WC_PARAM_MODEL_INDEX:
@@ -1162,6 +1227,7 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 	case WC_PARAM_UINT8_FP_2_6:
 		return UTIL_VarArgs("%.2f", SFP_10_6_TO_FLOAT(*dat));
 	case WC_PARAM_UINT16:
+	case WC_PARAM_UINT16_FLAGS:
 	case WC_PARAM_INT16:
 	case WC_PARAM_SOUND_INDEX:
 	case WC_PARAM_MODEL_INDEX:
@@ -1242,56 +1308,6 @@ bool is_server_side_event(int evtId) {
 	return false;
 }
 
-void wc_post_parse_event(WepEvt& evt) {
-	switch (evt.evtType) {
-	case WC_EVT_PLAY_SOUND: {
-		// use smaller event if most params are default
-		if (evt.playSound.channel == CHAN_STATIC && evt.playSound.aiVol == 0 && evt.playSound.distantSound == 0
-			&& evt.playSound.attn == ATTN_IDLE * 64 && evt.playSound.pitchMin == 100 && evt.playSound.pitchMax == 100
-			&& evt.playSound.flags == 0 && evt.playSound.additionalSounds.arrSz == 0)
-		{
-			uint16_t soundIdx = evt.playSound.sound;
-			uint8_t newVol = evt.playSound.volume / 2;
-			memset(&evt.playSound, 0, sizeof(evt.playSound));
-			evt.idleSound.sound = soundIdx;
-			evt.idleSound.volume = newVol;
-			evt.evtType = WC_EVT_IDLE_SOUND;
-		}
-
-		break;
-	}
-	case WC_EVT_WEP_ANIM:
-		evt.anim.hasCooldown = evt.anim.cooldown != 0;
-		evt.anim.hasWeights = evt.anim.weights.arrSz != 0;
-		break;
-	case WC_EVT_EJECT_SHELL:
-		evt.ejectShell.hasVel = evt.ejectShell.vel[0] || evt.ejectShell.vel[1] || evt.ejectShell.vel[2];
-		evt.ejectShell.hasRand = evt.ejectShell.dirRand || evt.ejectShell.speedRand;
-		break;
-	case WC_EVT_BEAM:
-		evt.beam.hasImpactSprite = evt.beam.impactSprite != 0;
-		evt.beam.hasRicoBeams = evt.beam.ricoBeams != 0;
-		break;
-	case WC_EVT_RECOIL:
-		evt.recoil.hasMaxAngles = evt.recoil.maxAngleTime != 0
-			|| evt.recoil.maxAngles[0] || evt.recoil.maxAngles[1] || evt.recoil.maxAngles[2];
-		break;
-	case WC_EVT_RECOIL_ADV: {
-		for (int i = 0; i < 3; i++)
-			evt.recoilAdv.ops[i] = ((evt.recoilAdv.angleOp[i] & 0xf) << 4) | (evt.recoilAdv.viewOp[i] & 0xf);
-		break;
-	}
-	case WC_EVT_BEAM_CIRCLE:
-		evt.beam_circle.hasFrame = evt.beam_circle.frame != 0;
-		evt.beam_circle.hasHeight = evt.beam_circle.height != 0;
-		evt.beam_circle.hasNoise = evt.beam_circle.noise != 0;
-		break;
-	case WC_EVT_QUAKE_EFFECT:
-		evt.quake_effect.isParticleBurst = evt.quake_effect.type == WC_QUAKE_EFFECT_PARTICLE_BURST;
-		break;
-	}
-}
-
 int wc_get_event_category(int evt) {
 	switch (evt) {
 	default:
@@ -1303,6 +1319,7 @@ int wc_get_event_category(int evt) {
 	case WC_TRIG_PRIMARY_ALT:
 	case WC_TRIG_PRIMARY_ALT_CLIP_SP:
 	case WC_TRIG_PRIMARY_ALT_CLIPSIZE:
+	case WC_TRIG_PRIMARY_ALT_FAIL:
 		return WC_EVT_CATEGORY_PRIMARY_ALT;
 
 	case WC_TRIG_PRIMARY:
@@ -1337,14 +1354,94 @@ int wc_get_event_category(int evt) {
 	case WC_TRIG_IDLE:
 		return WC_EVT_CATEGORY_IDLE;
 
-	case WC_TRIG_LASER_ON:
-	case WC_TRIG_LASER_OFF:
-	case WC_TRIG_ZOOM:
+	case WC_TRIG_STATE:
+	case WC_TRIG_STATE_ZOOMED:
 		return WC_EVT_CATEGORY_STATE_CHANGE;
 
 	case WC_TRIG_BULLET_FIRED:
 	case WC_TRIG_IMPACT:
 	case WC_TRIG_RICOCHET:
 		return WC_EVT_CATEGORY_REACTION;
+	}
+}
+
+
+// post processing funcs
+
+void wc_post_parse_struct(void* dat, struct_desc_t& desc) {
+	if (!strcmp(desc.name, "unnamed_attack")) {
+		int offset = offsetof(CustomWeaponParams, shootOpts[0]);
+		CustomWeaponShootOpts& opts = *(CustomWeaponShootOpts*)((char*)dat + offset);
+
+		for (int i = 0; i < WC_COOLDOWN_TYPES; i++) {
+			opts.hasCooldownOverride[i] = opts.cooldownOverride[i] != 0;
+		}
+
+		for (int i = 0; i < WC_ACCURACY_MULT_TYPES; i++) {
+			opts.hasAccMult[i] = opts.accuracyMult[i] != 0;
+		}
+
+		if (opts.zoomLevels != 0) {
+			ALERT(at_console, "");
+		}
+
+		opts.hasToggleInfo = opts.toggleStateBits != 0;
+		opts.hasZoomInfo = opts.zoomLevels != 0;
+	}
+}
+
+void wc_post_parse_event(WepEvt& evt) {
+	switch (evt.evtType) {
+	case WC_EVT_PLAY_SOUND: {
+		// use smaller event if most params are default
+		if (evt.playSound.channel == CHAN_STATIC && evt.playSound.aiVol == 0 && evt.playSound.distantSound == 0
+			&& evt.playSound.attn == ATTN_IDLE * 64 && evt.playSound.pitchMin == 100 && evt.playSound.pitchMax == 100
+			&& evt.playSound.flags == 0 && evt.playSound.additionalSounds.arrSz == 0)
+		{
+			uint16_t soundIdx = evt.playSound.sound;
+			uint8_t newVol = evt.playSound.volume / 2;
+			memset(&evt.playSound, 0, sizeof(evt.playSound));
+			evt.idleSound.sound = soundIdx;
+			evt.idleSound.volume = newVol;
+			evt.evtType = WC_EVT_IDLE_SOUND;
+		}
+
+		break;
+	}
+	case WC_EVT_WEP_ANIM:
+		evt.anim.hasCooldown = evt.anim.cooldown != 0;
+		evt.anim.hasWeights = evt.anim.weights.arrSz != 0;
+		break;
+	case WC_EVT_EJECT_SHELL:
+		evt.ejectShell.hasVel = evt.ejectShell.vel[0] || evt.ejectShell.vel[1] || evt.ejectShell.vel[2];
+		evt.ejectShell.hasRand = evt.ejectShell.dirRand || evt.ejectShell.speedRand;
+		break;
+	case WC_EVT_BULLETS:
+		evt.bullets.hasBurstDelay = evt.bullets.burstDelay != 0;
+		evt.bullets.hasRange = evt.bullets.maxRange != 0;
+		evt.bullets.hasWaterDamage = evt.bullets.damageWater != 0;
+		evt.bullets.hasWaterRange = evt.bullets.maxRangeWater != 0;
+		break;
+	case WC_EVT_BEAM:
+		evt.beam.hasImpactSprite = evt.beam.impactSprite != 0;
+		evt.beam.hasRicoBeams = evt.beam.ricoBeams != 0;
+		break;
+	case WC_EVT_RECOIL:
+		evt.recoil.hasMaxAngles = evt.recoil.maxAngleTime != 0
+			|| evt.recoil.maxAngles[0] || evt.recoil.maxAngles[1] || evt.recoil.maxAngles[2];
+		break;
+	case WC_EVT_RECOIL_ADV: {
+		for (int i = 0; i < 3; i++)
+			evt.recoilAdv.ops[i] = ((evt.recoilAdv.angleOp[i] & 0xf) << 4) | (evt.recoilAdv.viewOp[i] & 0xf);
+		break;
+	}
+	case WC_EVT_BEAM_CIRCLE:
+		evt.beam_circle.hasFrame = evt.beam_circle.frame != 0;
+		evt.beam_circle.hasHeight = evt.beam_circle.height != 0;
+		evt.beam_circle.hasNoise = evt.beam_circle.noise != 0;
+		break;
+	case WC_EVT_QUAKE_EFFECT:
+		evt.quake_effect.isParticleBurst = evt.quake_effect.type == WC_QUAKE_EFFECT_PARTICLE_BURST;
+		break;
 	}
 }

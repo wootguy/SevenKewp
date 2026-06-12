@@ -115,6 +115,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		break;
 	}
 	case WC_PARAM_UINT32_FLAGS:
+	case WC_PARAM_UINT16_FLAGS:
 	case WC_PARAM_UINT8_FLAGS: {
 		vector<string> words = splitString(val, "+");
 		uint32_t flags = 0;
@@ -137,6 +138,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		}
 
 		if (ptype == WC_PARAM_UINT32_FLAGS)		*(uint32_t*)dat = flags;
+		else if (ptype == WC_PARAM_UINT16_FLAGS)*(uint16_t*)dat = flags;
 		else if (ptype == WC_PARAM_UINT8_FLAGS)	*(uint8_t*)dat = flags;
 
 		break;
@@ -239,10 +241,12 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 	case WC_PARAM_INT32:	fprintf(f, "%d\n", (int32_t)(*(int32_t*)dat)); break;
 	case WC_PARAM_FLOAT:	fprintf(f, "%.2f\n", *(float*)dat); break;
 	case WC_PARAM_UINT32_FLAGS:
+	case WC_PARAM_UINT16_FLAGS:
 	case WC_PARAM_UINT8_FLAGS: {
 		uint32_t flags = 0;
 		if (ptype == WC_PARAM_UINT32_FLAGS)			flags = *(uint32_t*)dat;
-		else if (ptype == WC_PARAM_UINT8_FLAGS)	flags = *(uint8_t*)dat;
+		else if (ptype == WC_PARAM_UINT16_FLAGS)	flags = *(uint16_t*)dat;
+		else if (ptype == WC_PARAM_UINT8_FLAGS)		flags = *(uint8_t*)dat;
 
 		int count = 0;
 		for (int i = 0; i < field->valNamesSz; i++) {
@@ -504,11 +508,12 @@ void wc_fwrite_struct_fields(FILE* f, void* dat, struct_desc_t& desc) {
 		if (wc_check_default_dat(field, fieldDat))
 			continue;
 
-		if (field.type == WC_PARAM_UINT8_FLAGS || field.type == WC_PARAM_UINT32_FLAGS) {
+		if (field.type == WC_PARAM_UINT8_FLAGS || field.type == WC_PARAM_UINT16_FLAGS || field.type == WC_PARAM_UINT32_FLAGS) {
 			bool anyFlagsToWrite = false;
 			uint32_t flags = 0;
 
 			if (field.type == WC_PARAM_UINT32_FLAGS)		flags = *(uint32_t*)fieldDat;
+			else if (field.type == WC_PARAM_UINT16_FLAGS)	flags = *(uint16_t*)fieldDat;
 			else if (field.type == WC_PARAM_UINT8_FLAGS)	flags = *fieldDat;
 
 			for (int i = 0; i < field.valNamesSz; i++) {
@@ -527,6 +532,7 @@ void wc_fwrite_struct_fields(FILE* f, void* dat, struct_desc_t& desc) {
 }
 
 void wc_read_struct(const char* fname, SettingsGroup& group, void* dat, struct_desc_t& desc) {
+
 	for (int i = 0; i < desc.numFields; i++) {
 		field_desc_t& field = desc.fields[i];
 		uint8_t* fieldDat = ((uint8_t*)dat) + field.offset;
@@ -548,6 +554,8 @@ void wc_read_struct(const char* fname, SettingsGroup& group, void* dat, struct_d
 				wc_read_field(fname, group, fieldDat, field.name, val, field.type, &field);
 		}
 	}
+
+	wc_post_parse_struct(dat, desc);
 }
 
 void wc_fwrite_events(FILE* f, CustomWeaponParams& params, int category) {
@@ -594,7 +602,7 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 
 	if (!val) {
 		ALERT(at_error, "%s (line %d): Invalid event trigger '%s'.\n",
-			path, group.lineno, group.name.c_str());
+			path, group.lineno, header_parts[1].c_str());
 		return;
 	}
 	if (!action) {

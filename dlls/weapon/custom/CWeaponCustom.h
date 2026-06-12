@@ -34,6 +34,7 @@ enum WcAttackState {
 #define FL_WC_STATE_CAN_AKIMBO		(1<<5)	// can enable akimbo mode
 #define FL_WC_STATE_FIRST_DEPLOYED	(1<<6)	// weapon was deployed for the first time
 #define FL_WC_STATE_WANT_RELOAD		(1<<7)	// weapon should reload at the next idle
+#define FL_WC_STATE_SEMI_AUTO		(1<<8)	// disable auto-fire for primary/secondary attack
 
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:

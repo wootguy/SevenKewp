@@ -10,6 +10,10 @@ void CAmmoCustom::Spawn(void) {
 	Vector maxs = *(Vector*)params.hullSizeMax;
 	if (mins != g_vecZero || maxs != g_vecZero)
 		UTIL_SetSize(pev, mins, maxs);
+
+	if (params.modelBody) {
+		pev->body = params.modelBody;
+	}
 }
 
 void CAmmoCustom::Precache(void) {

@@ -1963,7 +1963,7 @@ void WC_EV_Recoil(Vector recoil, int ops[3]) {
 	for (int i = 0; i < 3; i++) {
 		switch (ops[i]) {
 		case WC_RECOIL_APPLY_PUNCH_SET:
-			V_PunchAxis(i, recoil[i]);
+			gPlayerSim.ev_punchangle[i] = recoil[i];
 			break;
 		case WC_RECOIL_APPLY_PUNCH_ADD:
 			gPlayerSim.ev_punchangle[i] += recoil[i];
@@ -1994,7 +1994,8 @@ void WC_EV_Dlight(WepEvt& evt, Vector pos) {
 	dl->die = gEngfuncs.GetClientTime() + evt.dlight.life * 0.1f;
 }
 
-pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int tracerColor, bool gunshotDecal, bool textureSound, int iShot, int iDamage)
+pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int tracerColor,
+	bool gunshotDecal, bool textureSound, int iShot, int iDamage, float maxRange)
 {
 	pmtrace_t tr;
 
@@ -2011,7 +2012,7 @@ pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int t
 	AngleVectors(angles, forward, right, up);
 
 	Vector vecDir = forward + spreadX * right + spreadY * up;
-	Vector vecEnd = vecSrc + vecDir * 8192.0f;
+	Vector vecEnd = vecSrc + vecDir * maxRange;
 
 	//gEngfuncs.pEventAPI->EV_SetUpPlayerPrediction(false, true);
 	//gEngfuncs.pEventAPI->EV_PushPMStates();

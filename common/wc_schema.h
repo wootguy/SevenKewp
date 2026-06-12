@@ -12,6 +12,7 @@ enum WC_PARAM_TYPE {
 	WC_PARAM_UINT8_ENUM,	// enum value stored in an 8-bit int
 	WC_PARAM_UINT8_ARRAY_8,	// array of up to 8 uint8_t
 	WC_PARAM_UINT16,
+	WC_PARAM_UINT16_FLAGS,
 	WC_PARAM_UINT16_FP_4_12,// unsigned 4.12 fixed point (accurate to 0.0003)
 	WC_PARAM_UINT16_FP_8_8,	// unsigned 8.8 fixed point (accurate to 0.005)
 	WC_PARAM_UINT16_PERCENT, // percentage stored as a uint16_t
@@ -113,4 +114,5 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat);
 
 EXPORT bool is_server_side_event(int evtId);
 void wc_post_parse_event(WepEvt& evt);
+void wc_post_parse_struct(void* dat, struct_desc_t& desc);
 int wc_get_event_category(int evt);

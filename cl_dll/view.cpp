@@ -537,9 +537,11 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	// FIXME, we send origin at 1/128 now, change this?
 	// the server protocol only specifies to 1/16 pixel, so add 1/32 in each axis
 	
-	pparams->vieworg[0] += 1.0/32;
-	pparams->vieworg[1] += 1.0/32;
-	pparams->vieworg[2] += 1.0/32;
+	if (!IsWeaponIronSightsActive()) {
+		pparams->vieworg[0] += 1.0 / 32;
+		pparams->vieworg[1] += 1.0 / 32;
+		pparams->vieworg[2] += 1.0 / 32;
+	}
 
 	// Check for problems around water, move the viewer artificially if necessary 
 	// -- this prevents drawing errors in GL due to waves
@@ -669,26 +671,28 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		// gun a very nice 'shifting' effect when the player looks up/down. If there is a problem
 		// with view model distortion, this may be a cause. (SJB). 
 		view->origin[2] -= 1;
+
+		// fudge position around to keep amount of weapon visible
+		// roughly equal with different FOV
+		if (pparams->viewsize == 110)
+		{
+			view->origin[2] += 1;
+		}
+		else if (pparams->viewsize == 100)
+		{
+			view->origin[2] += 2;
+		}
+		else if (pparams->viewsize == 90)
+		{
+			view->origin[2] += 1;
+		}
+		else if (pparams->viewsize == 80)
+		{
+			view->origin[2] += 0.5;
+		}
 	}
 
-	// fudge position around to keep amount of weapon visible
-	// roughly equal with different FOV
-	if (pparams->viewsize == 110)
-	{
-		view->origin[2] += 1;
-	}
-	else if (pparams->viewsize == 100)
-	{
-		view->origin[2] += 2;
-	}
-	else if (pparams->viewsize == 90)
-	{
-		view->origin[2] += 1;
-	}
-	else if (pparams->viewsize == 80)
-	{
-		view->origin[2] += 0.5;
-	}
+	
 
 	// Add in the punchangle, if any
 	VectorAdd ( pparams->viewangles, pparams->punchangle, pparams->viewangles );
