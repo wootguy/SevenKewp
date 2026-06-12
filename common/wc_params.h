@@ -120,6 +120,10 @@ struct CustomWeaponShootOpts {
 	uint16_t cooldown;			// time between attacks (milliseconds)
 	uint16_t cooldownFail;		// cooldown after a failed attack (out of ammo, underwater) (milliseconds)
 	uint16_t cooldownWater;		// cooldown while in water (0 = use default cooldown)
+	uint16_t cooldownPrimary;	// override cooldown for primary fire
+	uint16_t cooldownSecondary;	// override cooldown for primary fire
+	uint16_t cooldownTertiary;	// override cooldown for primary fire
+	uint16_t cooldownIdle;		// override cooldown for idle
 	uint16_t emptySound;		// custom empty click sound
 
 	uint8_t chargeMode;			// 4 bits - WeaponCustomChargeupMode
@@ -181,7 +185,8 @@ struct WeaponCustomAmmoInfo {
 struct CustomWeaponParams {
 	uint32_t flags; // FL_WC_WEP_*
 	uint16_t vmodel;
-	uint16_t moveSpeedMult; // move speed multiplier (1-65535) (65535 = 100%) (0 = don't change)
+	uint16_t moveSpeedMult;		// move speed multiplier (1-65535) (65535 = 100%) (0 = don't change)
+	uint16_t zoomMoveSpeedMult; // movement speed multiplier while zoomed (1-65535) (65535 = 100%) (0 = don't change)
 	int jumpPower;			// -1 = disabled, 0 = default velocity (800), 1+ = custom velocity
 
 	// stage 0 and 1 usage depends on weapon flags:

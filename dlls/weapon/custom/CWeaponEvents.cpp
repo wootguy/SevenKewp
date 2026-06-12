@@ -145,6 +145,7 @@ bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 		case WC_TRIG_IDLE:
 		case WC_TRIG_DEPLOY:
 		case WC_TRIG_ZOOM:
+		case WC_TRIG_BULLET_FIRED:
 			argMatch = triggerArg == evt.triggerArg;
 			break;
 		case WC_TRIG_PRIMARY_CLIP_SP:
@@ -245,7 +246,11 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	bool isPredicted = m_weapon->IsPredicted();
 	BULLET_PREDICTION predFlag = isPredicted ? BULLETPRED_EVENTLESS : BULLETPRED_NONE;
 
-	float damage = evt.bullets.damage * GetChargeMult(evt, FL_WC_CHARGE_DAMAGE);
+	int baseDamage = evt.bullets.damage;
+	if (evt.bullets.damageWater && m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD) {
+		baseDamage = evt.bullets.damageWater;
+	}
+	float damage = baseDamage * GetChargeMult(evt, FL_WC_CHARGE_DAMAGE);
 
 	int count = evt.bullets.burstDelay ? 1 : evt.bullets.count;
 
@@ -313,8 +318,15 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	}
 #endif
 
-	int akimboArg = m_weapon->IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
-	ProcessEvents(WC_TRIG_BULLET_FIRED, akimboArg, leftHand, akimboFire);
+	bool handled =
+		(m_weapon->IsAkimbo() && !akimboFire && leftHand && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_LEFT_HAND)) ||
+		(m_weapon->IsAkimbo() && !akimboFire && !leftHand && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_RIGHT_HAND)) ||
+		(m_weapon->IsLaserOn() && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_DEPLOY_ARG_LASER)) ||
+		(m_weapon->GetZoom() && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_ZOOMED));
+
+	if (!handled) {
+		ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_DEFAULT);
+	}
 }
 
 void CWeaponEvents::PlayEvent_Beam(WepEvt& evt, CBasePlayer* m_pPlayer) {

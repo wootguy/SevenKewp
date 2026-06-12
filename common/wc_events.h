@@ -86,6 +86,7 @@ enum WeaponCustomEventIdleArg {
 	WC_TRIG_IDLE_ARG_LASER,		// fire when the laser is active
 	WC_TRIG_IDLE_ARG_AKIMBO,	// fire when akimbo mode is active
 	WC_TRIG_IDLE_ARG_ZOOM,		// fire when the weapon is zoomed
+	WC_TRIG_IDLE_ARG_ZOOM_EMPTY,// fire when the weapon is zoomed and empty
 };
 
 enum WeaponCustomEventDeployArg {
@@ -101,7 +102,19 @@ enum WeaponCustomEventZoomArg {
 	WC_TRIG_ZOOM_ARG_IN,		// trigger at zoom level 1
 	WC_TRIG_ZOOM_ARG_IN2,		// trigger at zoom level 2
 	WC_TRIG_ZOOM_ARG_IN3,		// trigger at zoom level 3
+	WC_TRIG_ZOOM_ARG_OUT_EMPTY,	// trigger at zoom level 0 if the clip is empty
+	WC_TRIG_ZOOM_ARG_IN_EMPTY,	// trigger at zoom level 1 if the clip is empty
+	WC_TRIG_ZOOM_ARG_IN2_EMPTY,	// trigger at zoom level 2 if the clip is empty
+	WC_TRIG_ZOOM_ARG_IN3_EMPTY,	// trigger at zoom level 3 if the clip is empty
 	WC_TRIG_ZOOM_ARG_CHANGED,	// trigger at any zoom level
+};
+
+enum WeaponCustomEventBulletFiredArg {
+	WC_TRIG_ARG_BULLET_FIRED_DEFAULT,		// fire if no other event conditions pass
+	WC_TRIG_ARG_BULLET_FIRED_ZOOMED,		// fire if zoomed in
+	WC_TRIG_ARG_BULLET_FIRED_LASER,			// fire if laser enabled
+	WC_TRIG_ARG_BULLET_FIRED_LEFT_HAND,		// fire for left hand in akimbo mode
+	WC_TRIG_ARG_BULLET_FIRED_RIGHT_HAND,	// fire for left hand in akimbo mode
 };
 
 enum WeaponCustomEventTriggers {
@@ -131,7 +144,7 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_RELOAD_FINISH,		// triggers when a shotgun reload finishes
 	WC_TRIG_DEPLOY,				// Trigger arg: WeaponCustomEventDeployArg
 	WC_TRIG_IDLE,				// Trigger arg: WeaponCustomEventIdleArg
-	WC_TRIG_BULLET_FIRED,		// triggered when a bullet is fired
+	WC_TRIG_BULLET_FIRED,		// triggered when a bullet is fired. Trigger arg: WeaponCustomEventBulletFiredArg
 	WC_TRIG_LASER_ON,			// triggered when the laser is enabled
 	WC_TRIG_LASER_OFF,			// triggered when the laser is disabled
 	WC_TRIG_ZOOM,				// trigger arg: zoom level (0-3)		
@@ -400,6 +413,7 @@ struct WepEvt {
 			uint8_t count;			// how many bullets are shot at once
 			uint16_t burstDelay;	// milliseconds betwen shots, for burst fire
 			uint16_t damage;		// damage per bullet
+			uint16_t damageWater;	// damage per bullet when fired underwater
 			uint16_t accuracy[2];	// X/Y accuracy. 0 = perfect, 1 = 180 degrees. 65535 = 1.0f
 			uint8_t tracerFreq;		// 4 bits. how often to display a tracer (0 = never, 1 = always, 2 = every other shot)
 			uint8_t tracerColor;	// 4 bits. WeaponCustomTracerColor

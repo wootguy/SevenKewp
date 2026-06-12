@@ -530,8 +530,9 @@ void CWeaponCustom::WeaponIdle() {
 
 	bool handled =
 		(IsAkimbo() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_AKIMBO)) ||
+		(GetZoom() && !m_iClip && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_ZOOM_EMPTY)) ||
 		(GetZoom() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_ZOOM)) ||
-		(m_iClip == 0 && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_EMPTY)) ||
+		(!m_iClip && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_EMPTY)) ||
 		(IsLaserOn() && events.ProcessEvents(WC_TRIG_IDLE, WC_TRIG_IDLE_ARG_LASER));
 
 	if (!handled) {
@@ -982,6 +983,12 @@ void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 
 	float nextAttack = UTIL_WeaponTimeBase() + millis * 0.001f;
 	
+	bool noAttack = (opts.flags & FL_WC_SHOOT_NO_ATTACK);
+	bool alwaysIdleCooldown = opts.flags & FL_WC_SHOOT_COOLDOWN_IDLE;
+
+	if (alwaysIdleCooldown || !noAttack)
+		m_flTimeWeaponIdle = nextAttack + 1.0f;
+
 	if (attackIdx != -1) {
 		if (params.flags & FL_WC_WEP_UNLINK_COOLDOWNS) {
 			if (attackIdx == 0) {
@@ -997,13 +1004,23 @@ void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
 		else {
 			m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = nextAttack;
 		}
-	}
 
-	bool noAttack = (opts.flags & FL_WC_SHOOT_NO_ATTACK);
-	bool alwaysIdleCooldown = opts.flags & FL_WC_SHOOT_COOLDOWN_IDLE;
-		
-	if (alwaysIdleCooldown || !noAttack)
-		m_flTimeWeaponIdle = nextAttack + 1.0f;
+		// default override cooldowns
+		if (overrideMillis == -1) {
+			if (opts.cooldownPrimary) {
+				m_flNextPrimaryAttack = UTIL_WeaponTimeBase() + opts.cooldownPrimary * 0.001f;
+			}
+			if (opts.cooldownSecondary) {
+				m_flNextSecondaryAttack = UTIL_WeaponTimeBase() + opts.cooldownSecondary * 0.001f;
+			}
+			if (opts.cooldownPrimary) {
+				m_flNextTertiaryAttack = UTIL_WeaponTimeBase() + opts.cooldownPrimary * 0.001f;
+			}
+			if (opts.cooldownIdle) {
+				m_flTimeWeaponIdle = UTIL_WeaponTimeBase() + opts.cooldownIdle * 0.001f;
+			}
+		}
+	}
 }
 
 float CWeaponCustom::GetChargeProgress(float chargeTime) {
@@ -1551,6 +1568,9 @@ float CWeaponCustom::GetActiveMovespeedMult() {
 	if (GetChargedState(1) != WC_CHARGE_STATE_NONE) {
 		return MOVESPEED_MULT_TO_FLOAT(params.shootOpts[1].chargeMoveSpeedMult);
 	}
+	if (GetZoom()) {
+		return MOVESPEED_MULT_TO_FLOAT(params.zoomMoveSpeedMult);
+	}
 
 	return 1.0f;
 }
@@ -1632,8 +1652,16 @@ int CWeaponCustom::CycleZoom(int attackIdx, bool forceCancelZoom) {
 	UpdateAnimSet();
 #endif
 
-	events.ProcessEvents(WC_TRIG_ZOOM, zoomLevel);
+	// use non-empty events if there are no empty events defined
+	if (m_iClip != 0 || !events.ProcessEvents(WC_TRIG_ZOOM, zoomLevel + WC_TRIG_ZOOM_ARG_OUT_EMPTY)) {
+		events.ProcessEvents(WC_TRIG_ZOOM, zoomLevel);
+	}
+
 	events.ProcessEvents(WC_TRIG_ZOOM, WC_TRIG_ZOOM_ARG_CHANGED);
+
+	if (params.zoomMoveSpeedMult) {
+		m_pPlayer->ApplyEffects();
+	}
 
 	return zoomLevel;
 }

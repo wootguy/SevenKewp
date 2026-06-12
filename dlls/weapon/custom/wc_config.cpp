@@ -593,7 +593,7 @@ void wc_parse_event(const char* path, CustomWeaponParams& params, SettingsGroup&
 	const char* offset = group.keys.get("offset");
 
 	if (!val) {
-		ALERT(at_error, "%s (line %d): Invalid event type '%s'.\n",
+		ALERT(at_error, "%s (line %d): Invalid event trigger '%s'.\n",
 			path, group.lineno, group.name.c_str());
 		return;
 	}

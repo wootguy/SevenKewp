@@ -136,6 +136,7 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("thirdperson_anims_zoom", "", animExtZoom, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("thirdperson_anims_akimbo", "", animExtAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("move_speed", "0", moveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("zoom_move_speed", "0", zoomMoveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("jump_power", "0", jumpPower, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
 		);
 	}
@@ -201,6 +202,11 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("cooldown", "0", shootOpts[0].cooldown, 0, WC_PARAM_TIME),
 			WEP_FIELD("cooldown_fail", "0", shootOpts[0].cooldownFail, 0, WC_PARAM_TIME),
 			WEP_FIELD("cooldown_water", "0", shootOpts[0].cooldownWater, 0, WC_PARAM_TIME),
+			WEP_FIELD("cooldown_primary", "0", shootOpts[0].cooldownPrimary, 0, WC_PARAM_TIME),
+			WEP_FIELD("cooldown_secondary", "0", shootOpts[0].cooldownSecondary, 0, WC_PARAM_TIME),
+			WEP_FIELD("cooldown_tertiary", "0", shootOpts[0].cooldownTertiary, 0, WC_PARAM_TIME),
+			WEP_FIELD("cooldown_idle", "0", shootOpts[0].cooldownIdle, 0, WC_PARAM_TIME),
+
 			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
 			WEP_FIELD("empty_sound", NULL, shootOpts[0].emptySound, 0, WC_PARAM_SOUND_INDEX),
 			WEP_FIELD("toggle_on_delay", "0", shootOpts[0].toggleOnDelay, 0, WC_PARAM_TIME),
@@ -441,6 +447,7 @@ void init_event_fields() {
 			EVT_FIELD("count", "0", bullets.count, 0, WC_PARAM_UINT8),
 			EVT_FIELD("burst_delay", "0", bullets.burstDelay, 0, WC_PARAM_TIME),
 			EVT_FIELD("damage", "0", bullets.damage, 0, WC_PARAM_UINT16),
+			EVT_FIELD("damage_water", "0", bullets.damageWater, 0, WC_PARAM_UINT16),
 			EVT_FIELD("accuracy", "0", bullets.accuracy, 0, WC_PARAM_ACCURACY_UINT16_2X),
 			EVT__ENUM("tracer_color", "default", bullets.tracerColor, 4, bullet_color_names),
 			EVT_FIELD("tracer_frequency", "0", bullets.tracerFreq, 4, WC_PARAM_UINT8),
@@ -903,6 +910,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_LASER] = "_laser";
 	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_AKIMBO] = "_akimbo";
 	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_ZOOM] = "_zoom";
+	g_wc_evt_trigger_arg_idle_names[WC_TRIG_IDLE_ARG_ZOOM_EMPTY] = "_zoom_empty";
 
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_DEFAULT] = "";
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_LASER] = "_laser";
@@ -910,12 +918,23 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_EMPTY] = "_empty";
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_FIRST] = "_first";
 
-	static const char* trigger_arg_zoom_names[8];
+	static const char* trigger_arg_zoom_names[16];
 	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_OUT] = "_out";
 	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN] = "_in";
 	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN2] = "_in2";
 	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN3] = "_in3";
+	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_OUT_EMPTY] = "_out_empty";
+	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN_EMPTY] = "_in_empty";
+	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN2_EMPTY] = "_in2_empty";
+	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_IN3_EMPTY] = "_in3_empty";
 	trigger_arg_zoom_names[WC_TRIG_ZOOM_ARG_CHANGED] = "";
+
+	static const char* trigger_arg_bullet_fired_names[16];
+	trigger_arg_bullet_fired_names[WC_TRIG_ARG_BULLET_FIRED_DEFAULT] = "";
+	trigger_arg_bullet_fired_names[WC_TRIG_ARG_BULLET_FIRED_ZOOMED] = "_zoomed";
+	trigger_arg_bullet_fired_names[WC_TRIG_ARG_BULLET_FIRED_LASER] = "_laser";
+	trigger_arg_bullet_fired_names[WC_TRIG_ARG_BULLET_FIRED_LEFT_HAND] = "_left_hand";
+	trigger_arg_bullet_fired_names[WC_TRIG_ARG_BULLET_FIRED_RIGHT_HAND] = "_right_hand";
 
 	for (int i = 0; i < ARRAY_SZ(g_wc_evt_trigger_names); i++) {
 		if (!g_wc_evt_trigger_names[i])
@@ -958,6 +977,14 @@ void init_weapon_custom_config_parser() {
 		case WC_TRIG_ZOOM:
 			for (int k = 0; k < ARRAY_SZ(trigger_arg_zoom_names); k++) {
 				const char* key = UTIL_VarArgs("%s%s", tname, trigger_arg_zoom_names[k]);
+				uint16_t val = (k << EVT_TYPE_BITS) | i;
+				g_wc_name_to_trigger.put(key, val);
+				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
+			}
+			break;
+		case WC_TRIG_BULLET_FIRED:
+			for (int k = 0; k < ARRAY_SZ(trigger_arg_bullet_fired_names); k++) {
+				const char* key = UTIL_VarArgs("%s%s", tname, trigger_arg_bullet_fired_names[k]);
 				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
