@@ -54,6 +54,7 @@ bool CanWeaponAkimbo(int id);
 void GetCurrentCustomWeaponState(int id, int& akimboClip);
 bool IsViewModelAkimbo();
 bool IsWeaponIronSightsActive();
+int GetCustomWeaponStateIconIdx(); // -1 for no icon
 int GetCustomWeaponBody(int id);
 bool IsExclusiveWeapon(int id);
 void InitCustomWeapon(int id);

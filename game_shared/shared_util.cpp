@@ -63,6 +63,19 @@ const char* g_waterSplashSounds[3] = { // ordered for mp_soundvariety
 	"water/splash3.wav"
 };
 
+StringSet g_default_weapon_hud_icon_names = {
+	"crosshair",
+	"autoaim",
+	"zoom",
+	"zoom_autoaim",
+	"weapon",
+	"weapon_s",
+	"akimbo",
+	"akimbo_s",
+	"ammo",
+	"ammo2",
+};
+
 char* strcpy_safe(char* dest, const char* src, size_t size) {
 	if (!src) {
 		dest[0] = '\0';

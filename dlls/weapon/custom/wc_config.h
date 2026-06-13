@@ -17,6 +17,13 @@ struct SettingsGroup {
 	int lineno;
 };
 
+struct HudIconDef {
+	std::string name;
+	std::string sprite;
+	uint16_t resolution;
+	uint16_t x, y, w, h;
+};
+
 EXPORT extern HashMap<WeaponConfigCache> g_customWeaponCache;
 EXPORT extern HashMap<AmmoConfigCache> g_customAmmoCache;
 
@@ -38,6 +45,8 @@ EXPORT void UTIL_DumpCustomWeaponConfig(const char* path, CustomWeaponParams& pa
 EXPORT void UTIL_ReloadWeaponConfigs();
 
 EXPORT void UTIL_AutoReloadWeaponConfigs(bool enabled);
+
+EXPORT std::vector<HudIconDef> UTIL_ParseWeaponHudConfig(const char* path);
 
 // migrates weapon configs to a new format
 // migrateMode:

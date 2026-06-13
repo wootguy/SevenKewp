@@ -258,6 +258,31 @@ void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon )
 	else
 		pWeapon->hAmmo2 = 0;
 
+	// add any unknown icon names too so they can be used by custom weapons
+	pWeapon->numCustomIcons = 0;
+	if (pList) {
+		int count = i;
+		client_sprite_t* p = pList;
+
+		while (i--)
+		{
+			if ((p->iRes == iRes) && !g_default_weapon_hud_icon_names.hasKey(p->szName)) {
+				if (pWeapon->numCustomIcons < MAX_CUSTOM_HUD_ICONS) {
+					sprintf(sz, "sprites/%s.spr", p->szSprite);
+					pWeapon->customIcons[pWeapon->numCustomIcons].hSprite = SPR_Load(sz);
+					pWeapon->customIcons[pWeapon->numCustomIcons].rect = p->rc;
+					pWeapon->numCustomIcons++;
+				}
+				else {
+					PRINTF("Not loading icon '%s' for weapon '%s' (max of %d custom icons)\n",
+						p->szName, pWeapon->szName, MAX_CUSTOM_HUD_ICONS);
+				}
+			}
+			p++;
+		}
+	}
+
+	gHR.iHistoryOffset = (32 + (gHR.iHistoryGap * 2));
 }
 
 // Returns the first weapon for a given slot.
@@ -1246,6 +1271,8 @@ int CHudAmmo::Draw(float flTime)
 		SPR_DrawAdditive(0, x, y - iOffset, &m_pWeapon->rcAmmo);
 	}
 
+	bool hasSecondaryRow = false;
+
 	// Does weapon have seconday ammo?
 	if (akimboClip >= 0) {
 		int iIconWidth = m_pWeapon->rcAmmo2.right - m_pWeapon->rcAmmo2.left;
@@ -1265,6 +1292,8 @@ int CHudAmmo::Draw(float flTime)
 		// Do we have secondary ammo?
 		if ((pw->iAmmo2Type != 0) && (gWR.CountAmmo(pw->iAmmo2Type) > 0))
 		{
+			hasSecondaryRow = true;
+
 			y -= gHUD.m_iFontHeight + gHUD.m_iFontHeight/4;
 			x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
 			x = gHUD.DrawHudNumber(x, y, iFlags|DHN_3DIGITS, gWR.CountAmmo(pw->iAmmo2Type), r, g, b);
@@ -1276,8 +1305,29 @@ int CHudAmmo::Draw(float flTime)
 		}
 	}
 
+	gHR.iHistoryOffset = (32 + (gHR.iHistoryGap * 2));
+	
+	// Weapon state sprite shown above ammo info
+	int stateIconIdx = GetCustomWeaponStateIconIdx();
+	if (stateIconIdx >= 0 && stateIconIdx < pw->numCustomIcons) {
+		CustomHudIcon& icon = pw->customIcons[stateIconIdx];
+		SPR_Set(icon.hSprite, r, g, b);
+
+		int iIconHeight = icon.rect.bottom - icon.rect.top;
+		int iIconWidth = icon.rect.right - icon.rect.left;
+		int iOffset = iIconHeight / 8;
+		x = ScreenWidth - AmmoWidth - iIconWidth;
+		y -= gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4;
+
+		gHR.iHistoryOffset += iIconHeight;
+
+		SPR_DrawAdditive(0, x, y - iOffset, &icon.rect);
+	}
+
 	return 1;
 }
+
+#include "event_api.h"
 
 void DrawStretchedZoomCrosshair(HSPRITE spr, wrect_t rect, bool aspectCorrection) {
 	int w = rect.right - rect.left;
@@ -1434,7 +1484,7 @@ void CHudAmmo::DrawDynamicCrosshair() {
 		CustomWeaponParams* wcparams = GetCustomWeaponParams(pw->iId);
 		bool shouldDrawZoomCrosshair = pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR);
 		bool shouldStretchZoom = wcparams && (wcparams->flags & FL_WC_WEP_ZOOM_SPR_STRETCH);
-		bool useIronSights = IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_NO_ZOOM_CROSSHAIR);
+		bool useIronSights = (gHUD.m_is_map_loaded && IsPredictionWeaponZoomed()) && (pw->iFlagsEx & WEP_FLAG_NO_ZOOM_CROSSHAIR);
 
 		if (useIronSights) {
 			if (g_crosshair_active) {

@@ -49,6 +49,7 @@ struct_desc_t g_wc_desc_akimbo_reload;
 struct_desc_t g_wc_desc_akimbo;
 struct_desc_t g_wc_desc_shoot_opts;
 struct_desc_t g_wc_desc_laser;
+struct_desc_t g_wc_desc_state_sprite;
 struct_desc_t g_wc_desc_evt[WC_EVT_TOTAL];
 
 struct_desc_t g_wc_desc_custom_ammo;
@@ -309,6 +310,16 @@ void init_weapon_struct_fields() {
 		WEP_FIELD("dot_size", "0", laser.dotSz, 0, WC_PARAM_UINT8),
 		WEP_FIELD("beam_width", "0", laser.beamWidth, 0, WC_PARAM_UINT8),
 		WEP_FIELD("attachment", "0", laser.attachment, 0, WC_PARAM_UINT8),
+	);
+
+	WEP_STRUCT_DESC(g_wc_desc_state_sprite, "weapon_state_icon",
+		WEP_FIELD("default_icon", "0", stateIcon.defaultIcon, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+		WEP_FIELD("semi_auto_icon", "0", stateIcon.semiAutoIcon, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+		WEP_FIELD("primary_alt_icon", "0", stateIcon.primaryAltIcon, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+
+		WEP_FIELD("default_icon_idx", "0", stateIcon.defaultIconIdx, 4, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+		WEP_FIELD("semi_auto_icon_idx", "0", stateIcon.semiAutoIconIdx, 4, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+		WEP_FIELD("primary_alt_icon_idx", "0", stateIcon.primaryAltIconIdx, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 	);
 }
 
@@ -1185,6 +1196,7 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_ACCURACY_UINT16:
 	case WC_PARAM_UINT16_FP_4_12:
 	case WC_PARAM_UINT16_FP_8_8:
+	case WC_PARAM_STRING_DELTA:
 		return 2;
 	case WC_PARAM_VECTOR_INT8:
 	case WC_PARAM_RGB:
@@ -1288,6 +1300,8 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 	}
 	case WC_PARAM_STRING:
 		return UTIL_VarArgs("'%s'", STRING(*(string_t*)dat));
+	case WC_PARAM_STRING_DELTA:
+		return UTIL_VarArgs("'%s'", GetDeltaString(*(dstring_t*)dat));
 	default:
 		return "???";
 	}
@@ -1379,10 +1393,6 @@ void wc_post_parse_struct(void* dat, struct_desc_t& desc) {
 
 		for (int i = 0; i < WC_ACCURACY_MULT_TYPES; i++) {
 			opts.hasAccMult[i] = opts.accuracyMult[i] != 0;
-		}
-
-		if (opts.zoomLevels != 0) {
-			ALERT(at_console, "");
 		}
 
 		opts.hasToggleInfo = opts.toggleStateBits != 0;

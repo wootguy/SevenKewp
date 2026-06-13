@@ -8,11 +8,7 @@
 
 HashMap<WeaponConfigCache> g_customWeaponCache;
 HashMap<AmmoConfigCache> g_customAmmoCache;
-
-void clear_weapon_custom_cache() {
-	g_customWeaponCache.clear();
-	g_customAmmoCache.clear();
-}
+unordered_map<string, vector<HudIconDef>> g_weaponHudConfigCache;
 
 bool g_autoConfigReload = false;
 
@@ -22,6 +18,17 @@ unordered_map<string_t, string> g_migrateStringMap;
 unordered_map<string_t, string> g_migrateCvarMap;
 bool g_migrationDumpMode = false; // if true, use the mappings when writing sounds/models/strings
 bool g_dumpingAmmoConfig = false; // adjusts config padding if true
+
+void clear_weapon_custom_cache() {
+	g_customWeaponCache.clear();
+	g_customAmmoCache.clear();
+	g_weaponHudConfigCache.clear();
+
+	g_migrateSoundMap.clear();
+	g_migrateModelMap.clear();
+	g_migrateStringMap.clear();
+	g_migrateCvarMap.clear();
+}
 
 //
 // Functions for reading/writing each type of field
@@ -166,6 +173,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 	case WC_PARAM_SOUND_INDEX:	*(uint16_t*)dat = val ? PRECACHE_SOUND_NULLENT(val) : 0; break;
 	case WC_PARAM_MODEL_INDEX:	*(uint16_t*)dat = val ? PRECACHE_MODEL_NULLENT(val) : 0; break;
 	case WC_PARAM_DECAL_INDEX:	*(uint8_t*)dat = val ? DECAL_INDEX(val) : 0; break;
+	case WC_PARAM_STRING_DELTA:	*(dstring_t*)dat = val ? QueueDeltaString(ALLOC_STRING(val)) : 0; break;
 	case WC_PARAM_TIME: {
 		string sval = val;
 		int msSuffix = sval.find("ms");
@@ -345,6 +353,7 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 		}
 		break;
 	case WC_PARAM_DECAL_INDEX:		fprintf(f, "%s\n", get_decal_name(*(uint8_t*)dat)); break;
+	case WC_PARAM_STRING_DELTA:		fprintf(f, "%s\n", GetDeltaString(*(dstring_t*)dat)); break;
 	case WC_PARAM_TIME:				fprintf(f, "%ums\n", (uint32_t)(*(uint16_t*)dat)); break;
 	case WC_PARAM_ACCURACY_UINT16:	fprintf(f, "%.2f\n", DEGREES_FROM_SPREAD(*(uint16_t*)dat)); break;
 	case WC_PARAM_ACCURACY_UINT16_2X: {
@@ -682,6 +691,11 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 		wc_fwrite_struct_fields(cfg, &params, g_wc_desc_laser);
 	}
 
+	if (params.flags & FL_WC_WEP_HAS_STATE_SPRITE) {
+		fprintf(cfg, "\n[%s]\n", g_wc_desc_state_sprite.name);
+		wc_fwrite_struct_fields(cfg, &params, g_wc_desc_state_sprite);
+	}
+
 	static int attackOrder[4] = { 0, 3, 1, 2 };
 	static int optBits[4] = { FL_WC_WEP_HAS_PRIMARY, FL_WC_WEP_HAS_SECONDARY, FL_WC_WEP_HAS_TERTIARY, FL_WC_WEP_HAS_ALT_PRIMARY };
 	static const char* optNames[4] = { "primary_attack", "secondary_attack", "tertiary_attack", "primary_alt_attack" };
@@ -827,8 +841,44 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 			params.flags |= FL_WC_WEP_HAS_LASER;
 			wc_read_struct(path, group, &params, g_wc_desc_laser);
 		}
+		else if (group.name == "weapon_state_icon") {
+			params.flags |= FL_WC_WEP_HAS_STATE_SPRITE;
+			wc_read_struct(path, group, &params, g_wc_desc_state_sprite);
+		}
 		else if (group.name.find("event.") == 0) {
 			wc_parse_event(path, params, group);
+		}
+	}
+
+	if (params.flags & FL_WC_WEP_HAS_STATE_SPRITE) {
+		WeaponCustomStateIcon& icon = params.stateIcon;
+		const char* hud_path = UTIL_VarArgs("sprites/%s/%s.txt",
+			STRING(params.hudFolder), STRING(params.classname));
+		vector<HudIconDef> defs = UTIL_ParseWeaponHudConfig(hud_path);
+
+		int customIdx = -1;
+		StringSet uniqueNames;
+
+		for (HudIconDef& def : defs) {
+			const char* defName = def.name.c_str();
+			bool isCustom = !g_default_weapon_hud_icon_names.hasKey(defName);
+
+			if (isCustom) {
+				if (!uniqueNames.hasKey(defName)) {
+					uniqueNames.put(defName);
+					customIdx++;
+				}
+
+				if (icon.defaultIcon && !strcmp(defName, STRING(icon.defaultIcon))) {
+					icon.defaultIconIdx = customIdx;
+				}
+				if (icon.primaryAltIcon && !strcmp(defName, STRING(icon.primaryAltIcon))) {
+					icon.primaryAltIconIdx = customIdx;
+				}
+				if (icon.semiAutoIcon && !strcmp(defName, STRING(icon.semiAutoIcon))) {
+					icon.semiAutoIconIdx = customIdx;
+				}
+			}
 		}
 	}
 
@@ -976,6 +1026,53 @@ void UTIL_DumpCustomAmmoConfig(const char* path, CustomAmmoParams& params, bool 
 	ALERT(at_console, "Wrote ammo config: %s\n", fname.c_str());
 }
 
+std::vector<HudIconDef> UTIL_ParseWeaponHudConfig(const char* path) {
+	std::string fpath = getGameFilePath(path);
+	std::ifstream infile(fpath);
+
+	vector<HudIconDef> defs;
+
+	if (fpath.empty() || !infile.is_open()) {
+		ALERT(at_error, "Failed to load weapon hud config: %s\n", path);
+		return defs;
+	}
+
+	auto cache = g_weaponHudConfigCache.find(fpath);
+	if (cache != g_weaponHudConfigCache.end()) {
+		ALERT(at_console, "Use cached hud config\n");
+		return cache->second;
+	}
+
+	int lineNum = 0;
+	std::string line;
+	while (std::getline(infile, line))
+	{
+		lineNum++;
+		vector<string> parts = splitString(line, " \t");
+		if (parts.size() <= 1) { // empty line or the number of sprites
+			continue;
+		}
+		if (parts.size() < 7) {
+			ALERT(at_error, "Malformed HUD icon definition at %s (line %d)\n", fpath.c_str(), lineNum);
+			continue;
+		}
+
+		HudIconDef def;
+		def.name = parts[0];
+		def.sprite = parts[1];
+		def.resolution = atoi(parts[2].c_str());
+		def.x = atoi(parts[3].c_str());
+		def.y = atoi(parts[4].c_str());
+		def.w = atoi(parts[5].c_str());
+		def.h = atoi(parts[6].c_str());
+
+		defs.push_back(def);
+	}
+
+	g_weaponHudConfigCache[fpath] = defs;
+
+	return defs;
+}
 
 // 
 // Config live reloading
@@ -1151,6 +1248,7 @@ void wc_compare_params(CustomWeaponParams& a, CustomWeaponParams& b) {
 	wc_compare_struct_fields(g_wc_desc_general, &a, &b, 0);
 	wc_compare_struct_fields(g_wc_desc_akimbo, dat1, dat2, 0);
 	wc_compare_struct_fields(g_wc_desc_laser, dat1, dat2, 0);
+	wc_compare_struct_fields(g_wc_desc_state_sprite, dat1, dat2, 0);
 
 	for (int i = 0; i < ARRAY_SZ(a.reloadStage); i++) {
 		int offset = sizeof(WeaponCustomReload) * i;

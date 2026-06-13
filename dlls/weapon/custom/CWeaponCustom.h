@@ -72,6 +72,7 @@ public:
 	int m_chargeSoundEvt; // event index to load charge sound details from
 	int m_lastAnim;			// last animation set by an event
 	float m_idleTime;		// idle time for the last played event
+	int m_stateIconIdx;
 
 	int m_akimboAnim;
 	float m_akimboAnimTime;
@@ -116,6 +117,7 @@ public:
 	void PlayRandomSound(CBasePlayer* plr, uint16_t sounds[4]); // generic server side sound playback
 	float GetChargeProgress(float chargeTime);
 	void PlayChargeSound(float t);
+	void UpdateStateHudSprite();
 
 	//
 	//  Override the methods below to add custom server-side logic to your weapon

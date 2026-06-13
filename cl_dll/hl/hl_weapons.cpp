@@ -172,6 +172,13 @@ bool IsWeaponIronSightsActive() {
 	return g_activeWeaponCustom && g_activeWeaponCustom->IsIronSights();
 }
 
+int GetCustomWeaponStateIconIdx() {
+	if (g_activeWeaponCustom && (g_activeWeaponCustom->params.flags & FL_WC_WEP_HAS_STATE_SPRITE)) {
+		return g_activeWeaponCustom->m_stateIconIdx;
+	}
+	return -1;
+}
+
 int GetCustomWeaponBody(int id) {
 	if (id >= 0 && id < MAX_WEAPONS)
 		return g_customWeapon[id].pev->body;
@@ -201,6 +208,7 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_hasPredictionData = false;
 		g_customWeapon[i].m_chargeStartCmdTime = 0;
 		g_customWeapon[i].m_chargeStopCmdTime = 0;
+		g_customWeapon[i].m_stateChangeCmdTime = 0;
 		g_customWeapon[i].m_lastCharge = 0;
 		g_customWeapon[i].m_idleTime = 0;
 		g_customWeapon[i].m_runningKickbackPred = 0;
@@ -220,6 +228,7 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].events.animCount = 0;
 		g_customWeapon[i].m_chargeSoundEvt = 0;
 		g_customWeapon[i].m_chargeStartClip = 0;
+		g_customWeapon[i].m_stateIconIdx = 0;
 		memset(g_customWeapon[i].events.m_beams, 0, sizeof(WcBeam) * MAX_WC_BEAMS);
 		memset(&g_customWeapon[i].events.m_beamImpactSprite, 0, sizeof(WcSprite));
 		g_customWeapon[i].SetAkimbo(false);

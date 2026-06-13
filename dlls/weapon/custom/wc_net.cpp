@@ -318,6 +318,10 @@ void SendWeaponData(edict_t* target, CWeaponCustom* wep) {
 		wc_send_netmsg_struct(g_wc_desc_laser, dat);
 	}
 
+	if (params.flags & FL_WC_WEP_HAS_STATE_SPRITE) {
+		wc_send_netmsg_struct(g_wc_desc_state_sprite, dat);
+	}
+
 	for (int k = 0; k < 4; k++) {
 		if (!(params.flags & FL_WC_WEP_HAS_PRIMARY) && k == 0)
 			continue;
@@ -475,6 +479,10 @@ int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pb
 
 	if (parms.flags & FL_WC_WEP_HAS_LASER) {
 		wc_read_netmsg_struct(g_wc_desc_laser, dat);
+	}
+
+	if (parms.flags & FL_WC_WEP_HAS_STATE_SPRITE) {
+		wc_read_netmsg_struct(g_wc_desc_state_sprite, dat);
 	}
 
 	for (int i = 0; i < 4; i++) {

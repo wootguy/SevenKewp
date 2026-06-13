@@ -129,6 +129,7 @@ public:
 	}
 
 	int iHistoryGap;
+	int iHistoryOffset;
 	int iCurrentHistorySlot;
 
 	void AddToHistory( int iType, int iId, int iCount = 0 );

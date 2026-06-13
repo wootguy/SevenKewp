@@ -69,6 +69,10 @@ dstring_t QueueDeltaString(string_t newString) {
 	return ret;
 }
 
+const char* GetDeltaString(dstring_t str) {
+	return STRING(g_knownStrings[str]);
+}
+
 
 void BroadcastEntNames() {
 	static float lastUpdate = 0;

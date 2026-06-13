@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <EHandle.h>
 #include "wc_events.h"
+#include "string_deltas.h"
 
 #define DEGREES_FROM_CONE(cone_value) (2.0f * asinf(cone_value) * 180.0f / (float)M_PI)
 #define DEGREES_FROM_SPREAD(spread) (2.0f * asinf(SPREAD_TO_FLOAT(spread)) * 180.0f / (float)M_PI)
@@ -36,6 +37,7 @@
 #define FL_WC_WEP_SELECTONEMPTY			(1<<22) // allow selecting the weapon when empty
 #define FL_WC_WEP_EXHAUSITBLE			(1<<23) // Remove the weapon when out of ammo
 #define FL_WC_WEP_IRON_SIGHTS_ZOOM		(1<<24) // zooming uses iron sights
+#define FL_WC_WEP_HAS_STATE_SPRITE		(1<<25) // weapon has a HUD sprite indicating weapon state
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
@@ -193,6 +195,36 @@ struct WeaponCustomAmmoInfo {
 	uint32_t dropAmt;		// amount of ammo to drop
 };
 
+// Icon indicating weapon state, shown above ammo (HL25 sprites in the hud .txt file)
+struct WeaponCustomStateIcon {
+	// server-side names for looking up sprite indexes
+	string_t defaultIcon;		// icon to display by default
+	string_t semiAutoIcon;		// icon to display for semi auto mode
+	string_t primaryAltIcon;	// icon to display for alternate fire
+
+	// 4bit indexes to select into the weapon's custom icon list
+	uint8_t defaultIconIdx;
+	uint8_t semiAutoIconIdx;
+	uint8_t primaryAltIconIdx;
+};
+
+// an idea for transferring hud icons as network messages instead of as a .txt file. Not used yet.
+struct HudIconItem {
+	// delta strings which will be queued first during map load so 256 indexes is enough.
+	// Also only need to write these once per group. Can send 32 lines in <180 bytes that way.
+	// Still kind of a lot if you spawned with 30+ custom weapons.
+	uint8_t name;
+	uint8_t spritePath;
+
+	uint8_t x;
+	uint8_t y;
+	uint8_t w;
+	uint8_t h;
+
+	uint8_t hi_coords : 4;
+	uint8_t resolution : 4;
+};
+
 struct CustomWeaponParams {
 	uint32_t flags; // FL_WC_WEP_*
 	uint16_t vmodel;
@@ -209,6 +241,7 @@ struct CustomWeaponParams {
 	CustomWeaponShootOpts shootOpts[4]; // primary, secondary, tertiary, and alt primary fire
 	WeaponCustomAkimbo akimbo;
 	WeaponCustomLaser laser;
+	WeaponCustomStateIcon stateIcon;
 
 	// data for file parsing (not networked)
 	WeaponCustomAmmoInfo ammoInfo[2];
@@ -224,7 +257,7 @@ struct CustomWeaponParams {
 	string_t animExtAkimbo;		// animation set used while in akimbo mode
 	string_t hudFolder;			// path to the folder containing the HUD config
 	string_t displayName;		// name displayed in text messages describing this weapon
-	string_t killFeedIcon;		// icon displayed in the kill feed
+	string_t killFeedIcon;		// icon displayed in the kill feed (classname of a stock weapon)
 	int8_t slot;				// weapon selection bucket
 	int8_t slotPosition;		// position in weapon selection buucket (-1 = auto)
 	int32_t weight;				// importance for auto weapon selection

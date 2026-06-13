@@ -134,3 +134,11 @@ Vector WorldToScreen(const Vector& P) {
 
 	return WorldToScreen(P, gPlayerSim.v_origin, angles, gHUD.m_iFOV);
 }
+
+HSPRITE SPR_Load(const char* path) {
+	HSPRITE spr = gEngfuncs.pfnSPR_Load(path);
+	if (spr && spr > g_loadedSprites) {
+		g_loadedSprites = spr;
+	}
+	return spr;
+}

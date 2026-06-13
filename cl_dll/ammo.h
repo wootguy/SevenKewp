@@ -23,6 +23,13 @@
 
 #define WEAPON_IS_ONTARGET 0x40
 
+#define MAX_CUSTOM_HUD_ICONS 16
+
+struct CustomHudIcon {
+	HSPRITE hSprite;
+	wrect_t rect;
+};
+
 struct WEAPON
 {
 	char	szName[MAX_WEAPON_NAME];
@@ -64,6 +71,9 @@ struct WEAPON
 	wrect_t rcZoomedCrosshair;
 	HSPRITE hZoomedAutoaim;
 	wrect_t rcZoomedAutoaim;
+
+	CustomHudIcon customIcons[MAX_CUSTOM_HUD_ICONS];
+	int numCustomIcons;
 };
 
 typedef int AMMO;

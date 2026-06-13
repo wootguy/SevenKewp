@@ -15,4 +15,6 @@ void InitStringDeltas();
 
 // queue a string delta that will eventually be synced to the client.
 // return an existing index if the string was already queued, else the new index
-dstring_t QueueDeltaString(string_t newString);
+EXPORT dstring_t QueueDeltaString(string_t newString);
+
+EXPORT const char* GetDeltaString(dstring_t str);

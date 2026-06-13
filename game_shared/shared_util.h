@@ -12,6 +12,7 @@
 #include "../game_shared/shared_effects.h"
 #include "const.h"
 #include "studio.h"
+#include "HashMap.h"
 
 // In case this ever changes
 #define M_PI			3.14159265358979323846
@@ -24,6 +25,7 @@
 
 EXPORT extern const std::vector<std::string> g_emptyCurlHeaders;
 EXPORT extern const std::string g_emptyCurlPostData;
+EXPORT extern StringSet g_default_weapon_hud_icon_names; // ammo, weapon, weapon_s, ...
 
 // same as strncpy except it ensures the destination is null terminated, even if the buffer is too small
 EXPORT char* strcpy_safe(char* dest, const char* src, size_t size);

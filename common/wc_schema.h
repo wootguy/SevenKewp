@@ -34,6 +34,7 @@ enum WC_PARAM_TYPE {
 	WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2,// array of up to 8 sound indexes, one sound per config line, with key naming starting at index 2
 	WC_PARAM_MODEL_INDEX,			// model file path stored as an index
 	WC_PARAM_DECAL_INDEX,			// texture name stored as a decal index
+	WC_PARAM_STRING_DELTA,			// string stored as a delta index for the string delta networking system
 	WC_PARAM_TIME,					// time value stored as uint16_t
 	WC_PARAM_ACCURACY_UINT16_2X,	// degrees of accuracy (0-1 = 0-180) scaled to uint16_t (X + Y)
 	WC_PARAM_ACCURACY_UINT16,		// just X or Y
@@ -85,6 +86,7 @@ extern struct_desc_t g_wc_desc_akimbo_reload;
 extern struct_desc_t g_wc_desc_akimbo;
 extern struct_desc_t g_wc_desc_shoot_opts;
 extern struct_desc_t g_wc_desc_laser;
+extern struct_desc_t g_wc_desc_state_sprite;
 extern struct_desc_t g_wc_desc_evt[WC_EVT_TOTAL];
 
 extern struct_desc_t g_wc_desc_custom_ammo;

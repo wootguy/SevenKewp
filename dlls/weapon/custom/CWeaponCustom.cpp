@@ -13,6 +13,7 @@
 #include "../common/com_model.h"
 #include "../game_shared/prediction_files.h"
 extern bool g_cmd_debug_mode;
+HSPRITE SPR_Load(const char* path);
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 #else
@@ -556,6 +557,7 @@ void CWeaponCustom::ItemPostFrame() {
 	events.UpdateBeams();
 
 	PlayDelayedStateToggles();
+	UpdateStateHudSprite();
 
 	bool reloadFinished = m_fInReload && m_flNextPrimaryAttack <= 0;
 
@@ -852,9 +854,12 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	int clipLeft = *clip;
 
 	if ((opts.flags & FL_WC_SHOOT_NO_AUTOFIRE) || GetState(FL_WC_STATE_SEMI_AUTO) || clipLeft < opts.ammoCost) {
-		if (attackIdx == 0 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK))
+		if (GetState(FL_WC_STATE_WANT_RELOAD)) {
+			// exiting iron-sights for a reload. Allow the "attack"
+		}
+		else if (attackIdx == 0 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK))
 			return false;
-		if (attackIdx == 1 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK2))
+		else if (attackIdx == 1 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK2))
 			return false;
 	}
 
@@ -2008,6 +2013,21 @@ void CWeaponCustom::SetState(uint16_t stateBits, bool state) {
 
 bool CWeaponCustom::GetState(int stateBits) {
 	return m_fireState & stateBits;
+}
+
+void CWeaponCustom::UpdateStateHudSprite() {
+	if (!(params.flags & FL_WC_WEP_HAS_STATE_SPRITE))
+		return;
+
+	if (GetState(FL_WC_STATE_SEMI_AUTO)) {
+		m_stateIconIdx = params.stateIcon.semiAutoIconIdx;
+	}
+	else if (GetState(FL_WC_STATE_PRIMARY_ALT)) {
+		m_stateIconIdx = params.stateIcon.primaryAltIconIdx;
+	}
+	else {
+		m_stateIconIdx = params.stateIcon.defaultIconIdx;
+	}	
 }
 
 LINK_ENTITY_TO_CLASS(weapon_custom_ini, CWeaponCustom)

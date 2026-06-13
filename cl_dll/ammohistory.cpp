@@ -29,7 +29,6 @@
 HistoryResource gHR;
 
 #define AMMO_PICKUP_GAP (gHR.iHistoryGap+5)
-#define AMMO_PICKUP_PICK_HEIGHT		(32 + (gHR.iHistoryGap * 2))
 #define AMMO_PICKUP_HEIGHT_MAX		(ScreenHeight - 100)
 
 #define MAX_ITEM_NAME	32
@@ -50,7 +49,7 @@ void HistoryResource :: AddToHistory( int iType, int iId, int iCount )
 	if ( iType == HISTSLOT_AMMO && !iCount )
 		return;  // no amount, so don't add
 
-	if ( (((AMMO_PICKUP_GAP * iCurrentHistorySlot) + AMMO_PICKUP_PICK_HEIGHT) > AMMO_PICKUP_HEIGHT_MAX) || (iCurrentHistorySlot >= MAX_HISTORY) )
+	if ( (((AMMO_PICKUP_GAP * iCurrentHistorySlot) + gHR.iHistoryOffset) > AMMO_PICKUP_HEIGHT_MAX) || (iCurrentHistorySlot >= MAX_HISTORY) )
 	{	// the pic would have to be drawn too high
 		// so start from the bottom
 		iCurrentHistorySlot = 0;
@@ -70,7 +69,7 @@ void HistoryResource :: AddToHistory( int iType, const char *szName, int iCount 
 	if ( iType != HISTSLOT_ITEM )
 		return;
 
-	if ( (((AMMO_PICKUP_GAP * iCurrentHistorySlot) + AMMO_PICKUP_PICK_HEIGHT) > AMMO_PICKUP_HEIGHT_MAX) || (iCurrentHistorySlot >= MAX_HISTORY) )
+	if ( (((AMMO_PICKUP_GAP * iCurrentHistorySlot) + gHR.iHistoryOffset) > AMMO_PICKUP_HEIGHT_MAX) || (iCurrentHistorySlot >= MAX_HISTORY) )
 	{	// the pic would have to be drawn too high
 		// so start from the bottom
 		iCurrentHistorySlot = 0;
@@ -131,7 +130,7 @@ int HistoryResource :: DrawAmmoHistory( float flTime )
 				ScaleColors(r, g, b, V_min(scale, 255) );
 
 				// Draw the pic
-				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
+				int ypos = ScreenHeight - (gHR.iHistoryOffset + (AMMO_PICKUP_GAP * i));
 				int xpos = ScreenWidth - (rcPic.right - rcPic.left) - 4;
 				if ( spr && *spr )    // weapon isn't loaded yet so just don't draw the pic
 				{ // the dll has to make sure it has sent info the weapons you need
@@ -162,7 +161,7 @@ int HistoryResource :: DrawAmmoHistory( float flTime )
 				HSPRITE inactiveSpr = akimbo ? weap->hAkimboInactive : weap->hInactive;
 				wrect_t rcInactive = akimbo ? weap->rcAkimboInactive : weap->rcInactive;
 
-				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
+				int ypos = ScreenHeight - (gHR.iHistoryOffset + (AMMO_PICKUP_GAP * i));
 				int xpos = ScreenWidth - (rcInactive.right - rcInactive.left);
 				SPR_Set(inactiveSpr, r, g, b );
 				SPR_DrawAdditive( 0, xpos, ypos, &rcInactive);
@@ -180,7 +179,7 @@ int HistoryResource :: DrawAmmoHistory( float flTime )
 				float scale = (rgAmmoHistory[i].DisplayTime - flTime) * 80;
 				ScaleColors(r, g, b, V_min(scale, 255) );
 
-				int ypos = ScreenHeight - (AMMO_PICKUP_PICK_HEIGHT + (AMMO_PICKUP_GAP * i));
+				int ypos = ScreenHeight - (gHR.iHistoryOffset + (AMMO_PICKUP_GAP * i));
 				int xpos = ScreenWidth - (rect.right - rect.left) - 10;
 
 				SPR_Set( gHUD.GetSprite( rgAmmoHistory[i].iId ), r, g, b );
