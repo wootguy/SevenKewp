@@ -159,9 +159,21 @@ bool CanWeaponAkimbo(int id) {
 	return false;
 }
 
-void GetCurrentCustomWeaponState(int id, int& akimboClip) {
-	if (id >= 0 && id < MAX_WEAPONS)
+bool GetPredictedAmmoCount(int id, int& clip, int& primaryAmmo, int& secondaryAmmo, int& akimboClip) {
+	CBasePlayerWeapon* pWeapon = GetPredictedWeapon(id);
+	if (pWeapon) {
+		CWeaponCustom* wc = pWeapon->MyWeaponCustomPtr();
+		if (wc && !wc->m_hasPredictionData)
+			return false;
+
+		clip = pWeapon->m_iClip;
+		primaryAmmo = pWeapon->m_iPrimaryAmmoType >= 0 ? player.m_rgAmmo[pWeapon->m_iPrimaryAmmoType] : 0;
+		secondaryAmmo = pWeapon->m_iSecondaryAmmoType >= 0 ? player.m_rgAmmo[pWeapon->m_iSecondaryAmmoType] : 0;
 		akimboClip = g_customWeapon[id].GetAkimboClip();
+		return true;
+	}
+
+	return false;
 }
 
 bool IsViewModelAkimbo() {
@@ -884,6 +896,34 @@ void HUD_SetLastOrg( void )
 	}
 }
 
+CBasePlayerWeapon* GetPredictedWeapon(int id) {
+	// Fill in data based on selected weapon
+	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
+	switch (id)
+	{
+	case WEAPON_CROWBAR: return &g_Crowbar;
+	case WEAPON_GLOCK: return &g_Glock;
+	case WEAPON_PYTHON: return &g_Python;
+	case WEAPON_MP5: return &g_Mp5;
+	case WEAPON_CROSSBOW: return &g_Crossbow;
+	case WEAPON_SHOTGUN: return &g_Shotgun;
+	case WEAPON_RPG: return &g_Rpg;
+	case WEAPON_GAUSS: return &g_Gauss;
+	case WEAPON_EGON: return &g_Egon;
+	case WEAPON_HORNETGUN: return &g_HGun;
+	case WEAPON_HANDGRENADE: return &g_HandGren;
+	case WEAPON_SATCHEL: return &g_Satchel;
+	case WEAPON_TRIPMINE: return &g_Tripmine;
+	case WEAPON_SNARK: return &g_Snark;
+	default:
+		if (id >= 0 && id < MAX_WEAPONS)
+			return &g_customWeapon[id];
+		break;
+	}
+
+	return NULL;
+}
+
 /*
 =====================
 HUD_WeaponsPostThink
@@ -910,71 +950,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	g_activeWeaponCustom = NULL;
 
-	// Fill in data based on selected weapon
-	// FIXME, make this a method in each weapon?  where you pass in an entity_state_t *?
-	switch ( from->client.m_iId )
-	{
-		case WEAPON_CROWBAR:
-			pWeapon = &g_Crowbar;
-			break;
-		
-		case WEAPON_GLOCK:
-			pWeapon = &g_Glock;
-			break;
-		
-		case WEAPON_PYTHON:
-			pWeapon = &g_Python;
-			break;
-			
-		case WEAPON_MP5:
-			pWeapon = &g_Mp5;
-			break;
-
-		case WEAPON_CROSSBOW:
-			pWeapon = &g_Crossbow;
-			break;
-
-		case WEAPON_SHOTGUN:
-			pWeapon = &g_Shotgun;
-			break;
-
-		case WEAPON_RPG:
-			pWeapon = &g_Rpg;
-			break;
-
-		case WEAPON_GAUSS:
-			pWeapon = &g_Gauss;
-			break;
-
-		case WEAPON_EGON:
-			pWeapon = &g_Egon;
-			break;
-
-		case WEAPON_HORNETGUN:
-			pWeapon = &g_HGun;
-			break;
-
-		case WEAPON_HANDGRENADE:
-			pWeapon = &g_HandGren;
-			break;
-
-		case WEAPON_SATCHEL:
-			pWeapon = &g_Satchel;
-			break;
-
-		case WEAPON_TRIPMINE:
-			pWeapon = &g_Tripmine;
-			break;
-
-		case WEAPON_SNARK:
-			pWeapon = &g_Snark;
-			break;
-
-		default:
-			if (from->client.m_iId >= 0 && from->client.m_iId < MAX_WEAPONS)
-				pWeapon = &g_customWeapon[from->client.m_iId];
-			break;
-	}
+	pWeapon = GetPredictedWeapon(from->client.m_iId);
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it
 	//  for setting up events on the client

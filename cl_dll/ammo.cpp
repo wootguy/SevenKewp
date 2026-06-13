@@ -792,7 +792,6 @@ int CHudAmmo::CurWeapon(int iState, int iId, int iClip) {
 
 	UpdateZoomCrosshair(iId, IsWeaponZoomed(), fOnTarget);
 
-	m_fFade = 200.0f; //!!!
 	m_iFlags |= HUD_ACTIVE;
 	
 	return 1;
@@ -1204,10 +1203,34 @@ int CHudAmmo::Draw(float flTime)
 
 	AmmoWidth = gHUD.GetSpriteRect(gHUD.m_HUD_number_0).right - gHUD.GetSpriteRect(gHUD.m_HUD_number_0).left;
 
-	a = (int) V_max( MIN_ALPHA, m_fFade );
+	a = (int)V_max(MIN_ALPHA, m_fFade);
 
-	if (m_fFade > 0)
+	int iClip = 0;
+	int primaryAmmo = 0;
+	int secondaryAmmo = 0;
+	int iAkimboClip = 0;
+	int stateIconIdx = GetCustomWeaponStateIconIdx();
+	if (!GetPredictedAmmoCount(pw->iId, iClip, primaryAmmo, secondaryAmmo, iAkimboClip)) {
+		iClip = pw->iClip;
+		primaryAmmo = gWR.CountAmmo(pw->iAmmoType);
+		secondaryAmmo = gWR.CountAmmo(pw->iAmmo2Type);
+		iAkimboClip = -1;
+	}
+
+	// brighten up the hud when ammo info changes
+	static int lastClip, lastPrimaryAmmo, lastSecondaryAmmo, lastAkimboClip, lastStateIcon;
+	if (iClip != lastClip || primaryAmmo != lastPrimaryAmmo || secondaryAmmo != lastSecondaryAmmo
+		|| iAkimboClip != lastAkimboClip || lastStateIcon != stateIconIdx) {
+		m_fFade = 200.0f;
+		lastClip = iClip;
+		lastPrimaryAmmo = primaryAmmo;
+		lastSecondaryAmmo = secondaryAmmo;
+		lastAkimboClip = iAkimboClip;
+		lastStateIcon = stateIconIdx;
+	}
+	else if (m_fFade > 0) {
 		m_fFade -= (gHUD.m_flTimeDelta * 20);
+	}
 	
 	unsigned long hudcolor = gHUD.GetHudColor();
 
@@ -1218,15 +1241,12 @@ int CHudAmmo::Draw(float flTime)
 	y = ScreenHeight - gHUD.m_iFontHeight - gHUD.m_iFontHeight/2;
 	y += (int)(gHUD.m_iFontHeight * 0.2f);
 
-	int akimboClip = 0;
-	GetCurrentCustomWeaponState(pw->iId, akimboClip);
-
 	// Does weapon have any ammo at all?
 	if (m_pWeapon->iAmmoType > 0)
 	{
 		int iIconWidth = m_pWeapon->rcAmmo.right - m_pWeapon->rcAmmo.left;
 		
-		int clip = akimboClip >= 0 ? akimboClip : pw->iClip;
+		int clip = iAkimboClip >= 0 ? iAkimboClip : iClip;
 
 		if (clip >= 0)
 		{
@@ -1254,7 +1274,7 @@ int CHudAmmo::Draw(float flTime)
 
 			// GL Seems to need this
 			ScaleColors(r, g, b, a );
-			x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, gWR.CountAmmo(pw->iAmmoType), r, g, b);		
+			x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, primaryAmmo, r, g, b);
 
 
 		}
@@ -1262,7 +1282,7 @@ int CHudAmmo::Draw(float flTime)
 		{
 			// SPR_Draw a bullets only line
 			x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
-			x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, gWR.CountAmmo(pw->iAmmoType), r, g, b);
+			x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, primaryAmmo, r, g, b);
 		}
 
 		// Draw the ammo Icon
@@ -1274,11 +1294,11 @@ int CHudAmmo::Draw(float flTime)
 	bool hasSecondaryRow = false;
 
 	// Does weapon have seconday ammo?
-	if (akimboClip >= 0) {
+	if (iAkimboClip >= 0) {
 		int iIconWidth = m_pWeapon->rcAmmo2.right - m_pWeapon->rcAmmo2.left;
 		y -= gHUD.m_iFontHeight + gHUD.m_iFontHeight / 4;
 		x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
-		x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, pw->iClip, r, g, b);
+		x = gHUD.DrawHudNumber(x, y, iFlags | DHN_3DIGITS, iClip, r, g, b);
 
 		// Draw the ammo Icon
 		SPR_Set(m_pWeapon->hAmmo, r, g, b);
@@ -1290,13 +1310,13 @@ int CHudAmmo::Draw(float flTime)
 		int iIconWidth = m_pWeapon->rcAmmo2.right - m_pWeapon->rcAmmo2.left;
 
 		// Do we have secondary ammo?
-		if ((pw->iAmmo2Type != 0) && (gWR.CountAmmo(pw->iAmmo2Type) > 0))
+		if ((pw->iAmmo2Type != 0) && (secondaryAmmo > 0))
 		{
 			hasSecondaryRow = true;
 
 			y -= gHUD.m_iFontHeight + gHUD.m_iFontHeight/4;
 			x = ScreenWidth - 4 * AmmoWidth - iIconWidth;
-			x = gHUD.DrawHudNumber(x, y, iFlags|DHN_3DIGITS, gWR.CountAmmo(pw->iAmmo2Type), r, g, b);
+			x = gHUD.DrawHudNumber(x, y, iFlags|DHN_3DIGITS, secondaryAmmo, r, g, b);
 
 			// Draw the ammo Icon
 			SPR_Set(m_pWeapon->hAmmo2, r, g, b);
@@ -1308,7 +1328,6 @@ int CHudAmmo::Draw(float flTime)
 	gHR.iHistoryOffset = (32 + (gHR.iHistoryGap * 2));
 	
 	// Weapon state sprite shown above ammo info
-	int stateIconIdx = GetCustomWeaponStateIconIdx();
 	if (stateIconIdx >= 0 && stateIconIdx < pw->numCustomIcons) {
 		CustomHudIcon& icon = pw->customIcons[stateIconIdx];
 		SPR_Set(icon.hSprite, r, g, b);

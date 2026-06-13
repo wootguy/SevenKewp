@@ -43,6 +43,7 @@ uint32_t GetTimeAtCmd(uint32_t cmdId);
 
 struct CustomWeaponParams;
 struct WEAPON;
+class CBasePlayerWeapon;
 
 bool IsPredictionWeaponZoomed();
 CustomWeaponParams* GetCustomWeaponParams(int id);
@@ -51,7 +52,8 @@ void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
 	float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy);
 void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, float** m_lastEventFrame);
 bool CanWeaponAkimbo(int id);
-void GetCurrentCustomWeaponState(int id, int& akimboClip);
+bool GetPredictedAmmoCount(int id, int& clip, int& priamaryAmmo, int& secondaryAmmo, int& akimboClip); // false if weapon isn't predicted
+CBasePlayerWeapon* GetPredictedWeapon(int id);
 bool IsViewModelAkimbo();
 bool IsWeaponIronSightsActive();
 int GetCustomWeaponStateIconIdx(); // -1 for no icon

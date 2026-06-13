@@ -180,9 +180,9 @@ void CHgun::PrimaryAttack()
 
 	CBaseEntity *pHornet = CBaseEntity::Create( "hornet", vecSrc, hornetAngles, true, m_pPlayer->edict() );
 	pHornet->pev->velocity = targetdir * 300;
+#endif
 
 	m_flRechargeTime = gpGlobals->time + GetRechargeTime();
-#endif
 	
 	m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 	
@@ -305,9 +305,9 @@ void CHgun::SecondaryAttack( void )
 	pHornet->pev->angles = UTIL_VecToAngles( pHornet->pev->velocity );
 
 	pHornet->SetThink( &CHornet::StartDart );
+#endif
 
 	m_flRechargeTime = gpGlobals->time + GetRechargeTime();
-#endif
 
 	int flags;
 #if defined( CLIENT_WEAPONS )
