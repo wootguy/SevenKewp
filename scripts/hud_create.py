@@ -632,43 +632,57 @@ def tab_align(tup, idx, maxtabs):
 	lst[idx] = str(lst[idx]) + tabs
 	return tuple(lst)
 
-def compile_custom_grid_hud(out_name):
+def compile_custom_grid_hud(out_name, folder, bucket_icons):
 	hud_config = []
-	bucket_icons = [
-		'flash_on', 'flash_off',
-	]
 	
 	canvas = Image.new("RGB", (512, 512), "blue")
 
+	maxW = 0
+	maxH = 0
+	
+	x = 0
+	y = 0
+
 	for idx, icon in enumerate(bucket_icons):
-		if not os.path.exists(icon + ".bmp"):
+		bmp_path = os.path.join(folder, icon + ".bmp")
+		if not os.path.exists(bmp_path):
 			continue
 		
-		img = Image.open(icon + ".bmp")
+		img = Image.open(bmp_path)
 		w = img.width
 		h = img.height
 		w2 = int(w/2)
 		h2 = int(h/2)
 		
-		x = idx
-		y = 0
+		defW = w*3
+		defH = h*5
 		
-		hud_config += paste_hud_defs(canvas, icon, [
-			(icon, 2560, out_name, x*w*3,		y*h*3,		  w*3, h*3),
-			(icon, 1280, out_name, x*w*2,		y*h*2  + h*3, w*2, h*2),
-			(icon, 640,	 out_name, x*w	+ w*2*2, y*h   + h*3, w,   h),
-			(icon, 320,	 out_name, x*w2 + w*2*2, y*h2  + h*4, w2,  h2)
-		])
+		if x + defW > 512:
+			x = 0
+			if y + defH > maxH:
+				y += defH
+			else:
+				y = maxH
+		
+		hud_defs = [
+			(icon, 2560, out_name, x,		y,		   w*3, h*3),
+			(icon, 1280, out_name, x,		y  + h*3, w*2, h*2),
+			(icon, 640,	 out_name, x + w*2, y + h*3, w,   h),
+			(icon, 320,	 out_name, x + w*2, y + h*4, w2,  h2)
+		]
+		
+		hud_config += paste_hud_defs(canvas, os.path.join(folder, icon), hud_defs)
+		
+		x += defW
 	
-	maxW = 0
-	maxH = 0
-	for icon in hud_config:
-		right = icon[3] + icon[5]
-		bottom = icon[4] + icon[6]
-		if right > maxW:
-			maxW = right
-		if bottom > maxH:
-			maxH = bottom
+		for val in hud_config:
+			right = val[3] + val[5]
+			bottom = val[4] + val[6]
+			if right > maxW:
+				maxW = right
+			if bottom > maxH:
+				maxH = bottom
+				
 	
 	canvas = canvas.crop((0, 0, maxW, maxH))
 	print("HUD image size: %dx%d" % (maxW, maxH))
@@ -773,28 +787,41 @@ def compile_system_hud():
 			f.write("\n")
 		print("Created HUD file: hud_system.txt")
 
-def compile_custom_hud(bmps):
+def compile_custom_hud(bmp_folder):	
+	icons = []
+	for path in os.listdir(bmp_folder):
+		if path.endswith(".bmp"):
+			icons.append(os.path.basename(os.path.splitext(path)[0]))
+			print("Using: %s" % path)
+			
+	if len(icons) == 0:
+		print("No BMP files found in path: %s" % bmp_folder)
+		return
+	
 	bucket_img = Image.new("RGB", (512, 512), "blue")
+	
+	hud_name = os.path.basename(bmp_folder)
 
 	hud_config = [
-		compile_custom_grid_hud("hud_custom")
+		compile_custom_grid_hud(hud_name, bmp_folder, icons)
 	]
 
 	total_spr = 0
 	for icon_set in hud_config:
 		total_spr += len(icon_set)
 
-	with open("hud.txt", "w") as f:
+	with open("hud_%s.txt" % hud_name, "w") as f:
 		f.write("%d\n" % total_spr)
 		
 		for icon_set in hud_config:
 			for icon in icon_set:
 				icon = tab_align(icon, 0, 5)
 				icon = tab_align(icon, 1, 3)
+				spr_path = os.path.dirname(bmp_folder).replace("\\", "/").replace("sprites/", "") + "/" + icon[2]
 				
-				f.write("%s%s%s %d	%d	%d	%d\n" % (icon[0], icon[1], "mod_folder/" + icon[2], icon[3], icon[4], icon[5], icon[6]))
+				f.write("%s%s%s %d	%d	%d	%d\n" % (icon[0], icon[1], spr_path, icon[3], icon[4], icon[5], icon[6]))
 			f.write("\n")
-		print("Created HUD file: hud_system.txt")
+		print("Created HUD file: hud_%s.txt" % hud_name)
 
 compile_mode = len(sys.argv) > 1 and sys.argv[1]
 
@@ -821,7 +848,7 @@ if len(sys.argv) < 1 or (not compile_mode):
 	print(" number_[0-9].bmp = uhhh (24x24)")
 	sys.exit(1)
 
-if len(sys.argv) > 2 and sys.argv[2]:
+if len(sys.argv) > 2 and sys.argv[2] and compile_mode != 'custom':
 	hud_path = sys.argv[2]
 	process_definition_file(hud_path)
 
@@ -832,4 +859,4 @@ if compile_mode == "system":
 if compile_mode == "pain":
 	compile_pain_hud()
 if compile_mode == "custom":
-	compile_custom_hud(sys.argv[2:])
+	compile_custom_hud(sys.argv[2])
