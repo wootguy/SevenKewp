@@ -201,6 +201,8 @@ void CMP5::PrimaryAttack()
 
 	PLAY_DISTANT_SOUND(m_pPlayer->edict(), DISTANT_9MM);
 
+	m_pPlayer->m_weaponRecoil = Vector(UTIL_SharedRandomFloat(m_pPlayer->random_seed, -2, 2), 0, 0);
+
 	if (!m_iClip && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0)
 		// HEV suit - indicate out of ammo condition
 		m_pPlayer->SetSuitUpdate("!HEV_AMO0", FALSE, 0);

@@ -315,6 +315,7 @@ public:
 
 	bool m_headshot; // last TakeDamage was a headshot
 	Vector m_headshotDir; // direction of headshot
+	Vector m_weaponRecoil; // additional punch angle from weapon events
 
 	float m_lastInteractMessage; // last time an interaction message was sent to this player
 	bool m_droppedDeathWeapons;

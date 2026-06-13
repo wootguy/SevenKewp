@@ -3525,6 +3525,7 @@ void CBasePlayer::PostThink()
 	ImpulseCommands();
 
 // do weapon stuff
+	PM_DropPunchAngle(m_weaponRecoil);
 	ItemPostFrame( );
 
 // check to see if player landed hard enough to make a sound
@@ -5684,7 +5685,7 @@ Vector CBasePlayer :: GetAutoaimVector( float flDelta )
 }
 
 Vector CBasePlayer::GetLookDirection() {
-	MAKE_VECTORS(pev->v_angle + pev->punchangle);
+	MAKE_VECTORS(pev->v_angle + pev->punchangle + m_weaponRecoil);
 	return gpGlobals->v_forward;
 }
 

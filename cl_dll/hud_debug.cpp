@@ -106,6 +106,8 @@ int CHudDebug::Draw(float flTime)
 	yOffset += line_height;
 	PRINT_VEC_VARD(gPlayerSim.v_sim_org);
 	PRINT_VEC_VARD(gPlayerSim.v_angles);
+	PRINT_VEC_VARD(gPlayerSim.ev_punchangle);
+	PRINT_VEC_VARD(gPlayerSim.v_punchangle);
 	PRINT_VEC_VARD(gPlayerSim.v_sim_vel);
 
 	yOffset += line_height;

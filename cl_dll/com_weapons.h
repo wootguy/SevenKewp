@@ -16,6 +16,8 @@
 #include "hud_iface.h"
 #include "Exports.h"
 
+extern uint32_t g_cmd_id; // id of the currently executed command. Doubles as a random seed for the shared rand funcs.
+
 void			COM_Log( const char *pszFile, const char *fmt, ...);
 int				CL_IsDead( void );
 

@@ -1005,13 +1005,19 @@ void CWeaponEvents::PlayEvent_RecoilShared(CBasePlayer* m_pPlayer, int flags, in
 #ifdef CLIENT_DLL
 	WC_EV_Recoil(recoil, viewOps);
 #else
+	bool predicted = m_weapon->IsPredicted();
+
 	for (int i = 0; i < 3; i++) {
 		switch (viewOps[i]) {
 		case WC_RECOIL_APPLY_PUNCH_SET:
-			m_pPlayer->pev->punchangle[i] = recoil[i];
+			if (!predicted)
+				m_pPlayer->pev->punchangle[i] = recoil[i];
+			m_pPlayer->m_weaponRecoil[i] = recoil[i];
 			break;
 		case WC_RECOIL_APPLY_PUNCH_ADD:
-			m_pPlayer->pev->punchangle[i] = m_pPlayer->pev->punchangle[i] + recoil[i];
+			if (!predicted)
+				m_pPlayer->pev->punchangle[i] = m_pPlayer->pev->punchangle[i] + recoil[i];
+			m_pPlayer->m_weaponRecoil[i] = recoil[i];
 			break;
 		case WC_RECOIL_APPLY_ROTATE:
 			break; // TODO: do something server-side so cheating is harder

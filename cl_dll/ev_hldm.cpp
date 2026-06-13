@@ -44,6 +44,7 @@ static int tracerCount[ 32 ];
 
 #include "pm_shared.h"
 #include "studio.h"
+#include "com_weapons.h"
 
 void V_PunchAxis( int axis, float punch );
 void VectorAngles( const float *forward, float *angles );
@@ -715,7 +716,7 @@ void EV_FireMP5( event_args_t *args )
 		EV_MuzzleFlash();
 		gEngfuncs.pEventAPI->EV_WeaponAnimation( MP5_FIRE1 + gEngfuncs.pfnRandomLong(0,2), 2 );
 
-		V_PunchAxis( 0, gEngfuncs.pfnRandomFloat( -2, 2 ) );
+		V_PunchAxis( 0, UTIL_SharedRandomFloat(g_cmd_id, -2, 2) );
 	}
 
 	EV_GetDefaultShellInfo( args, origin, velocity, ShellVelocity, ShellOrigin, forward, right, up, 20, -12, 4 );
@@ -1950,9 +1951,6 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 
 	EV_EjectBrass(ShellOrigin, ShellVelocity, angles[YAW], evt.ejectShell.model, evt.ejectShell.sound);
 }
-
-float UTIL_SharedRandomFloat(unsigned int seed, float low, float high);
-int UTIL_SharedRandomLong(unsigned int seed, int low, int high);
 
 void WC_EV_Recoil(Vector recoil, int ops[3]) {
 	Vector viewAngles;

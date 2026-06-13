@@ -2998,7 +2998,7 @@ PM_DropPunchAngle
 
 =============
 */
-void PM_DropPunchAngle ( vec3_t punchangle )
+extern "C" void PM_DropPunchAngle(float* punchangle)
 {
 	float	len;
 	
