@@ -1137,7 +1137,8 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 
 			if (iDamage)
 			{
-				pEntity->TraceAttack(pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? 0 : DMG_NEVERGIB));
+				if (pEntity)
+					pEntity->TraceAttack(pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? 0 : DMG_NEVERGIB));
 				
 				if (iDamage > 50) {
 					splashSize = 0.5f;
@@ -1150,26 +1151,31 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			{
 			default:
 			case BULLET_PLAYER_9MM:
-				pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_9mm_bullet), vecDir, &tr, DMG_BULLET);
+				if (pEntity)
+					pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_9mm_bullet), vecDir, &tr, DMG_BULLET);
 				break;
 
 			case BULLET_PLAYER_MP5:
-				pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_9mmAR_bullet), vecDir, &tr, DMG_BULLET);
+				if (pEntity)
+					pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_9mmAR_bullet), vecDir, &tr, DMG_BULLET);
 				break;
 
 			case BULLET_PLAYER_BUCKSHOT:
 				// make distance based!
-				pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_buckshot), vecDir, &tr, DMG_BULLET);
+				if (pEntity)
+					pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_buckshot), vecDir, &tr, DMG_BULLET);
 				splashSize = 0.4f;
 				break;
 
 			case BULLET_PLAYER_357:
-				pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_357_bullet), vecDir, &tr, DMG_BULLET);
+				if (pEntity)
+					pEntity->TraceAttack(pevAttacker, GetDamage(gSkillData.sk_plr_357_bullet), vecDir, &tr, DMG_BULLET);
 				splashSize = 0.4f;
 				break;
 
 			case BULLET_NONE: // FIX 
-				pEntity->TraceAttack(pevAttacker, GetDamage(50), vecDir, &tr, DMG_CLUB);
+				if (pEntity)
+					pEntity->TraceAttack(pevAttacker, GetDamage(50), vecDir, &tr, DMG_CLUB);
 				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
 				// only decal glass
 				if (!FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)

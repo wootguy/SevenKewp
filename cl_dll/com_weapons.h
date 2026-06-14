@@ -57,6 +57,7 @@ CBasePlayerWeapon* GetPredictedWeapon(int id);
 bool IsViewModelAkimbo();
 bool IsWeaponIronSightsActive();
 int GetCustomWeaponStateIconIdx(); // -1 for no icon
+const char* GetCustomWeaponStateString();
 int GetCustomWeaponBody(int id);
 bool IsExclusiveWeapon(int id);
 void InitCustomWeapon(int id);

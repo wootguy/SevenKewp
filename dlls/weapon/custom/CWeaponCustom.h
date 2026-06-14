@@ -38,6 +38,7 @@ enum WcAttackState {
 #define FL_WC_STATE_ABORT_RELOAD		(1<<9)	// aborting a shotgun reload
 #define FL_WC_STATE_RELOAD_CLIP_DONE	(1<<10)	// loaded ammo into the clip, but the reload stage isn't finished yet
 #define FL_WC_STATE_SEMI_AUTO			(1<<11)	// disable auto-fire for primary/secondary attack
+#define FL_WC_STATE_CHAMBER_NEEDED		(1<<12)	// remember that a bullet must be chambered on the next deployment if the current action is aborted
 
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:
@@ -159,6 +160,7 @@ public:
 	int GetAttackIdx(WepEvt& evt); // TODO: store this info in the event
 	studiohdr_t* GetViewModelHeader();
 	float GetActiveMovespeedMult();
+	std::string GetStateString();
 	float WallTime();
 
 	// Time accumulated in user commands. Synced between the client and server for each user cmd.

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <malloc.h> // _alloca
+#include "com_weapons.h"
 
 extern local_state_t g_prediction_debug_state;
 
@@ -47,6 +48,11 @@ int CHudDebug::Init(void)
 	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %d", var), valColor); \
 	yOffset += line_height
 
+#define PRINT_VARSTR(var) \
+	DrawConsoleString(5, yOffset, #var, varColor); \
+	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %s", var), valColor); \
+	yOffset += line_height
+
 #define PRINT_VEC_VARF(vec) \
 	DrawConsoleString(5, yOffset, #vec, varColor); \
 	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %.2f %.2f %.2f", vec.x, vec.y, vec.z), valColor); \
@@ -76,6 +82,9 @@ int CHudDebug::Draw(float flTime)
 	RGB valColor(0, 255, 0);
 	RGB varColor(255, 255, 255);
 
+	CustomWeaponParams* params = GetCustomWeaponParams(state.client.m_iId);
+	const char* WcState = GetCustomWeaponStateString();
+
 	PRINT_WEP_STATE_VARD(m_iId);
 	PRINT_WEP_STATE_VARD(m_iClip);
 	yOffset += line_height;
@@ -93,6 +102,7 @@ int CHudDebug::Draw(float flTime)
 	PRINT_WEP_STATE_VARF(m_fNextAimBonus);
 	PRINT_WEP_STATE_VARD(m_fInZoom);
 	PRINT_WEP_STATE_VARD(m_iWeaponState);
+	PRINT_VARSTR(WcState);
 	yOffset += line_height;
 	PRINT_WEP_STATE_VARD(iuser1);
 	PRINT_WEP_STATE_VARD(iuser2);

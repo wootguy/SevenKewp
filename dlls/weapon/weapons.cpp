@@ -269,7 +269,7 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname, const char* configPath)
 	memset(&info, 0, sizeof(ItemInfo));
 	info.iId = -1;
 
-	if (g_weaponClassIds.size() >= MAX_WEAPONS) {
+	if (NextAutoWeaponId(true) == -1) {
 		ALERT(at_error, "Failed to register weapon %s. Too many weapons! (%d)\n",
 			szClassname, MAX_WEAPONS);
 		return info;

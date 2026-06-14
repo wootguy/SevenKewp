@@ -1683,14 +1683,14 @@ void CWeaponEvents::PlayDelayedEvents() {
 }
 
 void CWeaponEvents::CancelDelayedEvents(int trigger) {
-	if (!g_runfuncs)
+	if (!g_runfuncs && trigger != -1)
 		return;
 
 	for (int i = 0; i < WC_SERVER_EVENT_QUEUE_SZ; i++) {
 		WcDelayEvent& qevt = eventQueue[i];
 		WepEvt& evt = m_weapon->params.events[qevt.eventIdx];
 
-		if (evt.trigger == trigger) {
+		if (evt.trigger == trigger || trigger == -1) {
 			qevt.fireTime = 0;
 		}
 	}

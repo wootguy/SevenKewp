@@ -95,6 +95,7 @@ enum WeaponCustomEventDeployArg {
 	WC_TRIG_DEPLOY_ARG_LASER,		// fire when the laser is active
 	WC_TRIG_DEPLOY_ARG_AKIMBO,		// fire when in akimbo mode
 	WC_TRIG_DEPLOY_ARG_FIRST,		// fire when deployed for the first time
+	WC_TRIG_DEPLOY_ARG_CHAMBER,		// fire when deployed after aborting an action that requires chambering to complete
 };
 
 enum WeaponCustomEventBulletFiredArg {

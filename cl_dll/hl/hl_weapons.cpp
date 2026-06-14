@@ -192,6 +192,17 @@ int GetCustomWeaponStateIconIdx() {
 	return -1;
 }
 
+const char* GetCustomWeaponStateString() {
+	static std::string stateStr;
+
+	if (g_activeWeaponCustom) {
+		stateStr = g_activeWeaponCustom->GetStateString();
+		return stateStr.c_str();
+	}
+
+	return "";
+}
+
 int GetCustomWeaponBody(int id) {
 	if (id >= 0 && id < MAX_WEAPONS)
 		return g_customWeapon[id].pev->body;

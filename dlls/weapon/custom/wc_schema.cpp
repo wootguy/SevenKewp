@@ -148,11 +148,17 @@ void init_weapon_struct_fields() {
 		WEP_FIELD("drop_amount", "0", ammoInfo[0].dropAmt, 0, WC_PARAM_UINT32, NULL, 0, FL_FIELD_NO_NETWORK),
 	);
 
-	WEP_STRUCT_DESC(g_wc_desc_reload, "reload_unnamed",
-		WEP_FIELD("anim", "0", reloadStage[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-		WEP_FIELD("time", "0", reloadStage[0].time, 0, WC_PARAM_TIME),
-		WEP_FIELD("load_time", "0", reloadStage[0].loadTime, 0, WC_PARAM_TIME),
-	);
+	{
+		static const char* flags[32];
+		flags[BitIndex(FL_WC_RELOAD_CHAMBERED)] = "chambered";
+
+		WEP_STRUCT_DESC(g_wc_desc_reload, "reload_unnamed",
+			WEP_FIELD("anim", "0", reloadStage[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
+			WEP_FIELD("time", "0", reloadStage[0].time, 0, WC_PARAM_TIME),
+			WEP_FLAGS("flags", "0", reloadStage[0].flags, 0, flags),
+			WEP_FIELD("load_time", "0", reloadStage[0].loadTime, 0, WC_PARAM_TIME),
+		);
+	}
 
 	{
 		static const char* flags[32];
@@ -162,6 +168,7 @@ void init_weapon_struct_fields() {
 		flags[BitIndex(FL_WC_SHOOT_NEED_AKIMBO)] = "akimbo_only";
 		flags[BitIndex(FL_WC_SHOOT_NEED_FULL_COST)] = "need_full_cost";
 		flags[BitIndex(FL_WC_SHOOT_NO_AUTOFIRE)] = "no_autofire";
+		flags[BitIndex(FL_WC_SHOOT_CHAMBERED)] = "chambered";
 		//flags[BitIndex(FL_WC_SHOOT_IS_MELEE)] = "is_melee";
 
 		static const char* ammoPools[32];
@@ -970,6 +977,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_AKIMBO] = "_akimbo";
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_EMPTY] = "_empty";
 	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_FIRST] = "_first";
+	g_wc_evt_trigger_arg_deploy_names[WC_TRIG_DEPLOY_ARG_CHAMBER] = "_chamber";
 
 	static const char* trigger_arg_state_names[32];
 	trigger_arg_state_names[WC_TRIG_ARG_STATE_ZOOM_OUT] = "zoom_out";

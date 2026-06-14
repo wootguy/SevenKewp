@@ -318,6 +318,7 @@ BOOL CWeaponCustom::Deploy()
 
 		bool handled =
 			(IsAkimbo() && events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_AKIMBO)) ||
+			(GetState(FL_WC_STATE_CHAMBER_NEEDED) && events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_CHAMBER)) ||
 			(m_iClip == 0 && events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_EMPTY)) ||
 			(isFirstDeploy && events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_FIRST)) ||
 			(IsLaserOn() && events.ProcessEvents(WC_TRIG_DEPLOY, WC_TRIG_DEPLOY_ARG_LASER));
@@ -355,7 +356,12 @@ void CWeaponCustom::Holster(int skiplocal) {
 	EV_LaserOff();
 #endif
 	events.KillBeams();
+	if (WallTime() - m_lastDeploy > 0.5f) {
+		events.CancelDelayedEvents(-1);
+	}
 	m_lastDeploy = WallTime();
+	m_fInReload = TRUE;
+	m_fInSpecialReload = 0;
 }
 
 bool CWeaponCustom::CanReload(int attackIdx) {
@@ -478,8 +484,12 @@ void CWeaponCustom::Reload() {
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = m_flTimeWeaponIdle = nextAttack;
 
 	// allow shooting while doing the final pump after reloading, like with the HL shotty
-	if (m_fInSpecialReload == WC_RELOAD_STAGE_PUMP)
+	if (m_fInSpecialReload == WC_RELOAD_STAGE_PUMP && !(params.flags & FL_WC_WEP_SHOTGUN_SMOOTH_CANCEL))
 		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = 0;
+
+	if (reloadStage->flags & FL_WC_RELOAD_CHAMBERED) {
+		SetState(FL_WC_STATE_CHAMBER_NEEDED, true);
+	}
 
 	if (IsAkimbo()) {
 		m_bInAkimboReload = IsAkimbo() && GetAkimboClip() < m_iClip;
@@ -634,6 +644,10 @@ void CWeaponCustom::ItemPostFrame() {
 	PlayDelayedStateToggles();
 	UpdateStateHudSprite();
 
+	if (m_pPlayer->m_flNextAttack <= 0 && m_flNextPrimaryAttack <= 0 && m_flNextSecondaryAttack <= 0 && m_flNextTertiaryAttack <= 0) {
+		SetState(FL_WC_STATE_CHAMBER_NEEDED, false);
+	}
+
 	bool reloadFinished = m_fInReload && m_flNextPrimaryAttack <= 0;
 	
 	WeaponCustomReload& reloadStage = params.reloadStage[m_fInSpecialReload];
@@ -780,7 +794,7 @@ int* CWeaponCustom::GetAttackClip(int attackIdx) {
 				clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
 		}
 		else {
-			if (m_iClip2 >= 0)
+			if (params.ammoInfo[1].maxClip > 0 && m_iClip2 >= 0)
 				clip = &m_iClip2;
 			else if (m_iSecondaryAmmoType != -1)
 				clip = &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType];
@@ -960,7 +974,7 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 		}
 		else if (attackIdx == 0 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK))
 			return false;
-		else if (attackIdx == 1 && CanReload(1)) {
+		else if (attackIdx == 1 && m_iClip2 == 0 && CanReload(1)) {
 			SetState(FL_WC_STATE_SECONDARY_RELOAD, true);
 			Reload();
 			return false;
@@ -1055,6 +1069,8 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 		if (clipLeft <= 0 && ammoIdx >= 0 && m_pPlayer->m_rgAmmo[ammoIdx] <= 0) {
 			m_pPlayer->SetSuitUpdate("!HEV_AMO0", SUIT_REPEAT_OK, 0);
 		}
+
+		SetState(FL_WC_STATE_CHAMBER_NEEDED, (opts.flags& FL_WC_SHOOT_CHAMBERED) != 0);
 	}
 
 	Cooldown(attackIdx);
@@ -1699,6 +1715,29 @@ float CWeaponCustom::GetActiveMovespeedMult() {
 	}
 
 	return 1.0f;
+}
+
+std::string CWeaponCustom::GetStateString() {
+	std::string state;
+
+	if (GetState(FL_WC_STATE_PRIMARY_ALT)) state += "Primary Alt + ";
+	if (GetState(FL_WC_STATE_LASER)) state += "Laser + ";
+	if (GetState(FL_WC_STATE_ZOOM)) state += "Zoom + ";
+	if (GetState(FL_WC_STATE_ZOOM_FURTHER)) state += "Zoom Further + ";
+	if (GetState(FL_WC_STATE_IS_AKIMBO)) state += "IS Akimbo + ";
+	if (GetState(FL_WC_STATE_CAN_AKIMBO)) state += "CAN Akimbo + ";
+	if (GetState(FL_WC_STATE_FIRST_DEPLOYED)) state += "First Deployed + ";
+	if (GetState(FL_WC_STATE_SECONDARY_RELOAD)) state += "Secondary Reload + ";
+	if (GetState(FL_WC_STATE_WANT_RELOAD)) state += "Want Reload + ";
+	if (GetState(FL_WC_STATE_ABORT_RELOAD)) state += "Abort Reload + ";
+	if (GetState(FL_WC_STATE_RELOAD_CLIP_DONE)) state += "Reload Clip Done + ";
+	if (GetState(FL_WC_STATE_SEMI_AUTO)) state += "Semi Auto + ";
+	if (GetState(FL_WC_STATE_CHAMBER_NEEDED)) state += "Chamber Needed + ";
+
+	if (state.size())
+		state = state.substr(0, state.size() - 3);
+
+	return state;
 }
 
 float CWeaponCustom::WallTime() {
