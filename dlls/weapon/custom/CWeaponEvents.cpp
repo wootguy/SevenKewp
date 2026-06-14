@@ -1969,6 +1969,10 @@ void CWeaponEvents::FireAmmoEvents(int ammoPool, int attackIdx) {
 			ProcessEvents(WC_TRIG_PRIMARY_CLIPSIZE, m_weapon->m_iClip, m_weapon->IsAkimbo(), false, m_weapon->m_iClip);
 		}
 		break;
+	case WC_AMMOPOOL_SECONDARY_CLIP:
+		ProcessEvents(WC_TRIG_SECONDARY_CLIP_SP, m_bulletFireCount2++, m_weapon->IsAkimbo(), false, m_weapon->m_iClip2);
+		ProcessEvents(WC_TRIG_SECONDARY_CLIPSIZE, m_weapon->m_iClip2, m_weapon->IsAkimbo(), false, m_weapon->m_iClip2);
+		break;
 	case WC_AMMOPOOL_PRIMARY_RESERVE: break;
 	case WC_AMMOPOOL_SECONDARY_RESERVE: break;
 	default: break;

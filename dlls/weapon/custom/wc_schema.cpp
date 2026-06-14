@@ -172,6 +172,7 @@ void init_weapon_struct_fields() {
 		ammoPools[WC_AMMOPOOL_DEFAULT] = "default";
 		ammoPools[WC_AMMOPOOL_PRIMARY_CLIP] = "primary_clip";
 		ammoPools[WC_AMMOPOOL_PRIMARY_RESERVE] = "primary_reserve";
+		ammoPools[WC_AMMOPOOL_SECONDARY_CLIP] = "secondary_clip";
 		ammoPools[WC_AMMOPOOL_SECONDARY_RESERVE] = "secondary_reserve";
 
 		static const char* chargeModes[32];
@@ -929,6 +930,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_names[WC_TRIG_RELOAD_EMPTY] = "reload_empty";
 	g_wc_evt_trigger_names[WC_TRIG_RELOAD_NOT_EMPTY] = "reload_not_empty";
 	g_wc_evt_trigger_names[WC_TRIG_RELOAD_FINISH] = "reload_finish";
+	g_wc_evt_trigger_names[WC_TRIG_RELOAD_SECONDARY] = "reload_secondary";
 	g_wc_evt_trigger_names[WC_TRIG_DEPLOY] = "deploy";
 	g_wc_evt_trigger_names[WC_TRIG_IDLE] = "idle";
 	g_wc_evt_trigger_names[WC_TRIG_BULLET_FIRED] = "bullet_fired";
@@ -1011,8 +1013,8 @@ void init_weapon_custom_config_parser() {
 
 		switch (i) {
 		case WC_TRIG_PRIMARY:
-		case WC_TRIG_SECONDARY:
 		case WC_TRIG_TERTIARY:
+		case WC_TRIG_RELOAD_SECONDARY:
 		case WC_TRIG_RELOAD:
 		case WC_TRIG_RELOAD_EMPTY:
 		case WC_TRIG_RELOAD_NOT_EMPTY:
@@ -1360,6 +1362,7 @@ int wc_get_event_category(int evt) {
 	case WC_TRIG_RELOAD_EMPTY:
 	case WC_TRIG_RELOAD_NOT_EMPTY:
 	case WC_TRIG_RELOAD_FINISH:
+	case WC_TRIG_RELOAD_SECONDARY:
 		return WC_EVT_CATEGORY_RELOAD;
 
 	case WC_TRIG_DEPLOY:

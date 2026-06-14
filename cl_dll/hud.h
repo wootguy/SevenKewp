@@ -41,6 +41,7 @@
 #define DHN_DRAWZERO 1
 #define DHN_2DIGITS  2
 #define DHN_3DIGITS  4
+#define DHN_4DIGITS  8
 #define MIN_ALPHA	 100	
 
 #define		HUDELEM_ACTIVE	1
@@ -104,6 +105,7 @@ public:
 	int Init( void );
 	int VidInit( void );
 	int Draw(float flTime);
+	void DrawAmmoInfo(int& x, int& y, int iClip, int iAmmo, HSPRITE hAmmo, wrect_t rcAmmo, int minDigits);
 	void DrawDynamicCrosshair();
 	void Think(void);
 	void Reset(void);

@@ -42,6 +42,7 @@ struct WEAPON
 	int		iFlags;
 	int		iId;
 	int		iClip;
+	int		iMaxClip2;
 
 	int		iCount;		// # of itesm in plist
 

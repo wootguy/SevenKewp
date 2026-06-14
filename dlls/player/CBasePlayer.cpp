@@ -5261,9 +5261,9 @@ void CBasePlayer::SendWeaponList() {
 		MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
 		WRITE_STRING(II->pszName ? II->pszName : "");			// string	weapon name
 		WRITE_BYTE(GetAmmoIndex(II->pszAmmo1));	// byte		Ammo Type
-		WRITE_BYTE(UTIL_GetMaxAmmo(II->pszAmmo1));				// byte     Max Ammo 1
+		WRITE_BYTE(V_min(255, UTIL_GetMaxAmmo(II->pszAmmo1)));				// byte     Max Ammo 1
 		WRITE_BYTE(GetAmmoIndex(II->pszAmmo2));	// byte		Ammo2 Type
-		WRITE_BYTE(UTIL_GetMaxAmmo(II->pszAmmo2));				// byte     Max Ammo 2
+		WRITE_BYTE(V_min(255, UTIL_GetMaxAmmo(II->pszAmmo2)));				// byte     Max Ammo 2
 		WRITE_BYTE(II->iSlot);					// byte		bucket
 		WRITE_BYTE(II->iPosition);				// byte		bucket pos
 		WRITE_BYTE(i);							// byte		id (bit index into pev->weapons)
@@ -5273,6 +5273,9 @@ void CBasePlayer::SendWeaponList() {
 		if (IsSevenKewpClient()) {
 			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponListX, NULL, pev);
 			WRITE_BYTE(i);
+			WRITE_SHORT(UTIL_GetMaxAmmo(II->pszAmmo1));
+			WRITE_SHORT(UTIL_GetMaxAmmo(II->pszAmmo2));
+			WRITE_SHORT(II->iMaxClip2);
 			WRITE_BYTE(II->iFlagsEx);
 			WRITE_SHORT(V_min(65535, II->fAccuracyDeg * 100));
 			WRITE_SHORT(V_min(65535, II->fAccuracyDeg2 * 100));
@@ -7585,9 +7588,9 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 			MESSAGE_BEGIN(MSG_ONE, gmsgWeaponList, NULL, pev);
 			WRITE_STRING(II.pszName ? II.pszName : "");			// string	weapon name
 			WRITE_BYTE(GetAmmoIndex(II.pszAmmo1));	// byte		Ammo Type
-			WRITE_BYTE(UTIL_GetMaxAmmo(II.pszAmmo1));				// byte     Max Ammo 1
+			WRITE_BYTE(V_min(255, UTIL_GetMaxAmmo(II.pszAmmo1)));				// byte     Max Ammo 1
 			WRITE_BYTE(GetAmmoIndex(II.pszAmmo2));	// byte		Ammo2 Type
-			WRITE_BYTE(UTIL_GetMaxAmmo(II.pszAmmo2));				// byte     Max Ammo 2
+			WRITE_BYTE(V_min(255, UTIL_GetMaxAmmo(II.pszAmmo2)));				// byte     Max Ammo 2
 			WRITE_BYTE(II.iSlot);					// byte		bucket
 			WRITE_BYTE(II.iPosition);				// byte		bucket pos
 			WRITE_BYTE(i);							// byte		id (bit index into pev->weapons)
@@ -7597,6 +7600,9 @@ void CBasePlayer::ResolveWeaponSlotConflict(int wepId) {
 			if (IsSevenKewpClient()) {
 				MESSAGE_BEGIN(MSG_ONE, gmsgWeaponListX, NULL, pev);
 				WRITE_BYTE(i);
+				WRITE_SHORT(UTIL_GetMaxAmmo(II.pszAmmo1));
+				WRITE_SHORT(UTIL_GetMaxAmmo(II.pszAmmo2));
+				WRITE_SHORT(II.iMaxClip2);
 				WRITE_BYTE(II.iFlagsEx);
 				WRITE_SHORT(V_min(65535, II.fAccuracyDeg * 100));
 				WRITE_SHORT(V_min(65535, II.fAccuracyDeg2 * 100));

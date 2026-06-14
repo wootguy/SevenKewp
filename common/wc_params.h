@@ -55,6 +55,7 @@ enum WeaponCustomAmmoPool
 	WC_AMMOPOOL_DEFAULT,			// automatically select ammo pool (primary = clip, secondary = secondary)
 	WC_AMMOPOOL_PRIMARY_CLIP,		// drain ammo from primary clip
 	WC_AMMOPOOL_PRIMARY_RESERVE,	// drain ammo from primary reserve
+	WC_AMMOPOOL_SECONDARY_CLIP,		// drain ammo from secondary clip
 	WC_AMMOPOOL_SECONDARY_RESERVE,	// drain ammo from secondary reserve
 };
 
@@ -236,7 +237,8 @@ struct CustomWeaponParams {
 	// 0 = simple reload animation OR starting animation for shotgun reload mode
 	// 1 = simple reload animation (empty clip) OR shotgun reload middle animation (shell insertion)
 	// 2 = shotgun reload finish animation (cocking)
-	WeaponCustomReload reloadStage[3];
+	// 3 = simple secondary reload
+	WeaponCustomReload reloadStage[4];
 
 	CustomWeaponShootOpts shootOpts[4]; // primary, secondary, tertiary, and alt primary fire
 	WeaponCustomAkimbo akimbo;

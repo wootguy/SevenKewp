@@ -26,15 +26,16 @@ enum WcAttackState {
 };
 
 // m_fireState flags (16 bits)
-#define FL_WC_STATE_PRIMARY_ALT		(1<<0)	// using alternate primary fire settings
-#define FL_WC_STATE_LASER			(1<<1)	// laser is enabled
-#define FL_WC_STATE_ZOOM			(1<<2)	// weapon is zoomed in
-#define FL_WC_STATE_ZOOM_FURTHER	(1<<3)	// zoomed in even further (level 3 if both zoom flags set, else level 2)
-#define FL_WC_STATE_IS_AKIMBO		(1<<4)	// currently in akimbo mode
-#define FL_WC_STATE_CAN_AKIMBO		(1<<5)	// can enable akimbo mode
-#define FL_WC_STATE_FIRST_DEPLOYED	(1<<6)	// weapon was deployed for the first time
-#define FL_WC_STATE_WANT_RELOAD		(1<<7)	// weapon should reload at the next idle
-#define FL_WC_STATE_SEMI_AUTO		(1<<8)	// disable auto-fire for primary/secondary attack
+#define FL_WC_STATE_PRIMARY_ALT			(1<<0)	// using alternate primary fire settings
+#define FL_WC_STATE_LASER				(1<<1)	// laser is enabled
+#define FL_WC_STATE_ZOOM				(1<<2)	// weapon is zoomed in
+#define FL_WC_STATE_ZOOM_FURTHER		(1<<3)	// zoomed in even further (level 3 if both zoom flags set, else level 2)
+#define FL_WC_STATE_IS_AKIMBO			(1<<4)	// currently in akimbo mode
+#define FL_WC_STATE_CAN_AKIMBO			(1<<5)	// can enable akimbo mode
+#define FL_WC_STATE_FIRST_DEPLOYED		(1<<6)	// weapon was deployed for the first time
+#define FL_WC_STATE_SECONDARY_RELOAD	(1<<7)	// secondary clip is reloading
+#define FL_WC_STATE_WANT_RELOAD			(1<<8)	// weapon should reload at the next idle
+#define FL_WC_STATE_SEMI_AUTO			(1<<9)	// disable auto-fire for primary/secondary attack
 
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:
@@ -98,6 +99,7 @@ public:
 	void UpdateAnimSet();
 	BOOL Deploy() override;
 	void Holster(int skiplocal) override;
+	bool CanReload(int attackIdx);
 	void Reload() override;
 	void WeaponIdle() override;
 	void ItemPostFrame() override;

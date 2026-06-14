@@ -96,6 +96,7 @@ public:
 
 	int animCount; // counter for ordered weapon aimations
 	int m_bulletFireCount; // for odd/even effects (m_iClip is unreliable)
+	int m_bulletFireCount2; // for odd/even effects
 
 	static int m_tracerCount[32];
 

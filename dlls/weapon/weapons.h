@@ -29,10 +29,13 @@ typedef struct
 	const char* pszAmmo2;	// ammo 2 type
 	const char* pszName;
 	int		iMaxClip;
+	int		iMaxClip2;
 	int		iId;
 	int		iFlags;
 	int		iWeight;// this value used to determine this weapon's importance in autoselection.
 	int		iFlagsEx; // WEP_FLAG_*
+
+	// Dynamic crosshair values for vanilla and server-side weapons only. CWeaponCustom has its own system.
 	float	fAccuracyDeg; // degrees of accuracy when standing motionless
 	float	fAccuracyDeg2; // degrees of accuracy when standing motionless (secondary)
 	float	fAccuracyDegY; // vertical degrees of accuracy

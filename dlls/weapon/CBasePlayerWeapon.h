@@ -101,7 +101,8 @@ public:
 	float	m_flTimeWeaponIdle;									// soonest time ItemPostFrame will call WeaponIdle
 	int		m_iPrimaryAmmoType;									// "primary" ammo index into players m_rgAmmo[]
 	int		m_iSecondaryAmmoType;								// "secondary" ammo index into players m_rgAmmo[]
-	int		m_iClip;											// number of shots left in the primary weapon clip, -1 it not used
+	int		m_iClip;											// number of shots left in the primary weapon clip, -1 = it's not used
+	int		m_iClip2;											// number of shots left in the secondary weapon clip, -1 = it's not used
 	int		m_iClientClip;										// the last version of m_iClip sent to hud dll
 	int		m_iClientWeaponState;								// the last version of the weapon state sent to hud dll (is current weapon, is on target)
 	int		m_fInReload;										// Are we in the middle of a reload;

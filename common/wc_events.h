@@ -156,6 +156,7 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_RELOAD_EMPTY,		// triggers when an empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_NOT_EMPTY,	// triggers when a non-empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_FINISH,		// triggers when a shotgun reload finishes
+	WC_TRIG_RELOAD_SECONDARY,	// triggers when a simple secondary reload begins
 	WC_TRIG_DEPLOY,				// Trigger arg: WeaponCustomEventDeployArg
 	WC_TRIG_IDLE,				// Trigger arg: WeaponCustomEventIdleArg
 	WC_TRIG_BULLET_FIRED,		// triggered when a bullet is fired. Trigger arg: WeaponCustomEventBulletFiredArg

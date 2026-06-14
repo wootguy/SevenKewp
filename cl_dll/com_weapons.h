@@ -52,7 +52,7 @@ void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
 	float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy);
 void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, float** m_lastEventFrame);
 bool CanWeaponAkimbo(int id);
-bool GetPredictedAmmoCount(int id, int& clip, int& priamaryAmmo, int& secondaryAmmo, int& akimboClip); // false if weapon isn't predicted
+bool GetPredictedAmmoCount(int id, int& clip, int& clip2, int& priamaryAmmo, int& secondaryAmmo, int& akimboClip); // false if weapon isn't predicted
 CBasePlayerWeapon* GetPredictedWeapon(int id);
 bool IsViewModelAkimbo();
 bool IsWeaponIronSightsActive();

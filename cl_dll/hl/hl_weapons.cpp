@@ -159,7 +159,7 @@ bool CanWeaponAkimbo(int id) {
 	return false;
 }
 
-bool GetPredictedAmmoCount(int id, int& clip, int& primaryAmmo, int& secondaryAmmo, int& akimboClip) {
+bool GetPredictedAmmoCount(int id, int& clip, int& clip2, int& primaryAmmo, int& secondaryAmmo, int& akimboClip) {
 	CBasePlayerWeapon* pWeapon = GetPredictedWeapon(id);
 	if (pWeapon) {
 		CWeaponCustom* wc = pWeapon->MyWeaponCustomPtr();
@@ -167,6 +167,7 @@ bool GetPredictedAmmoCount(int id, int& clip, int& primaryAmmo, int& secondaryAm
 			return false;
 
 		clip = pWeapon->m_iClip;
+		clip2 = pWeapon->m_iClip2;
 		primaryAmmo = pWeapon->m_iPrimaryAmmoType >= 0 ? player.m_rgAmmo[pWeapon->m_iPrimaryAmmoType] : 0;
 		secondaryAmmo = pWeapon->m_iSecondaryAmmoType >= 0 ? player.m_rgAmmo[pWeapon->m_iSecondaryAmmoType] : 0;
 		akimboClip = g_customWeapon[id].GetAkimboClip();
@@ -230,6 +231,7 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_primaryFired = 0;
 		g_customWeapon[i].m_secondaryFired = 0;
 		g_customWeapon[i].events.m_bulletFireCount = 0;
+		g_customWeapon[i].events.m_bulletFireCount2 = 0;
 		g_customWeapon[i].m_akimboAnim = 0;
 		g_customWeapon[i].m_akimboAnimTime = 0;
 		g_customWeapon[i].m_akimboLastEventFrame = 0;

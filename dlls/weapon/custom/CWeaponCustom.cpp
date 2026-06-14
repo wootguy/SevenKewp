@@ -333,6 +333,7 @@ BOOL CWeaponCustom::Deploy()
 		// never deploy with iron sights mode active
 		SetState(FL_WC_STATE_PRIMARY_ALT, false);
 	}
+	SetState(FL_WC_STATE_SECONDARY_RELOAD, false);
 
 	// extra idle time added because high ping players are interrupted otherwise
 	m_flTimeWeaponIdle = m_idleTime + 0.4f;
@@ -356,29 +357,54 @@ void CWeaponCustom::Holster(int skiplocal) {
 	m_lastDeploy = WallTime();
 }
 
+bool CWeaponCustom::CanReload(int attackIdx) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return false;
+
+	if (m_fInReload)
+		return false;
+
+	bool canAkimboReload = IsAkimbo() && GetAkimboClip() < params.ammoInfo[0].maxClip;
+
+	if (AreAnyAttacksCharging())
+		return false;
+
+	if (m_flNextPrimaryAttack > 0)
+		return false;
+
+	if (attackIdx == 1 && !IsAkimbo()) {
+		if (m_iClip2 == -1)
+			return false;
+		if (m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] <= 0)
+			return false;
+		if (m_iClip2 >= params.ammoInfo[1].maxClip)
+			return false;
+	}
+	else {
+		if (m_iClip >= params.ammoInfo[0].maxClip && !canAkimboReload && m_fInSpecialReload == 0) {
+			m_bWantAkimboReload = false;
+			return false;
+		}
+		if (m_iClip == -1)
+			return false;
+		if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 && m_fInSpecialReload != 2)
+			return false;
+	}
+
+	return true;
+}
+
 void CWeaponCustom::Reload() {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
 
-	if (m_fInReload)
-		return;
-	if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] <= 0 && m_fInSpecialReload != 2)
-		return;
-
-	bool canAkimboReload = IsAkimbo() && GetAkimboClip() < params.ammoInfo[0].maxClip;
-	bool shotgunReload = params.flags & FL_WC_WEP_SHOTGUN_RELOAD;
-
-	if (AreAnyAttacksCharging())
-		return;
-	if (m_iClip == -1)
-		return;
-	if (m_iClip >= params.ammoInfo[0].maxClip && !canAkimboReload && m_fInSpecialReload == 0) {
-		m_bWantAkimboReload = false;
+	if (!CanReload(GetState(FL_WC_STATE_SECONDARY_RELOAD) ? 1 : 0)) {
 		return;
 	}
-	if (m_flNextPrimaryAttack > 0)
-		return;
+
+	bool shotgunReload = params.flags & FL_WC_WEP_SHOTGUN_RELOAD;
 
 	// exit iron sights before reloading
 	if (IsIronSights()) {
@@ -394,7 +420,10 @@ void CWeaponCustom::Reload() {
 
 	WeaponCustomReload* reloadStage = &params.reloadStage[0];
 
-	if (IsAkimbo()) {
+	if (GetState(FL_WC_STATE_SECONDARY_RELOAD)) {
+		reloadStage = &params.reloadStage[3];
+	}
+	else if (IsAkimbo()) {
 		reloadStage = &params.akimbo.reload;
 	}
 	else if (shotgunReload) {
@@ -447,32 +476,39 @@ void CWeaponCustom::Reload() {
 	}
 
 	if (g_runfuncs) {
-		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
-		
-		if (shotgunReload) {
-			if (m_fInSpecialReload == 1)
-				events.ProcessEvents(WC_TRIG_RELOAD, akimboArg);
-			else if (m_fInSpecialReload == 2) {
-				events.ProcessEvents(WC_TRIG_RELOAD_FINISH, akimboArg);
+		if (GetState(FL_WC_STATE_SECONDARY_RELOAD)) {
+			events.ProcessEvents(WC_TRIG_RELOAD_SECONDARY, 0);
+
+			events.m_bulletFireCount2 = 0;
+		}
+		else {
+			int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
+
+			if (shotgunReload) {
+				if (m_fInSpecialReload == 1)
+					events.ProcessEvents(WC_TRIG_RELOAD, akimboArg);
+				else if (m_fInSpecialReload == 2) {
+					events.ProcessEvents(WC_TRIG_RELOAD_FINISH, akimboArg);
+				}
 			}
-		}
-		else {
-			events.ProcessEvents(WC_TRIG_RELOAD, akimboArg);
-		}
-		
-		if (m_iClip == 0) {
-			events.ProcessEvents(WC_TRIG_RELOAD_EMPTY, akimboArg);
-		}
-		else {
-			events.ProcessEvents(WC_TRIG_RELOAD_NOT_EMPTY, akimboArg);
+			else {
+				events.ProcessEvents(WC_TRIG_RELOAD, akimboArg);
+			}
+
+			if (m_iClip == 0) {
+				events.ProcessEvents(WC_TRIG_RELOAD_EMPTY, akimboArg);
+			}
+			else {
+				events.ProcessEvents(WC_TRIG_RELOAD_NOT_EMPTY, akimboArg);
+			}
+
+			events.m_bulletFireCount = 0;
 		}
 
 		if (IsLaserOn()) {
 			HideLaser(true);
 			m_laserOnTime = WallTime() + totalReloadTime * 0.001f;
 		}
-
-		events.m_bulletFireCount = 0;
 	}
 
 	m_pPlayer->m_flNextAttack = 0; // keep calling post frame for complex reloads
@@ -601,14 +637,23 @@ void CWeaponCustom::ItemPostFrame() {
 		}
 
 		// complete a simple reload.
-		int& clip = m_bInAkimboReload ? m_chargeReady : m_iClip;
-		int j = V_min(params.ammoInfo[0].maxClip - clip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
-		clip += j;
-		m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
+		if (GetState(FL_WC_STATE_SECONDARY_RELOAD)) {
+			int& clip = m_iClip2;
+			int j = V_min(params.ammoInfo[1].maxClip - clip, m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]);
+			clip += j;
+			m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] -= j;
+		}
+		else {
+			int& clip = m_bInAkimboReload ? m_chargeReady : m_iClip;
+			int j = V_min(params.ammoInfo[0].maxClip - clip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
+			clip += j;
+			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] -= j;
+		}
 		m_pPlayer->TabulateAmmo();
 		
 		m_fInReload = FALSE;
 		m_fInSpecialReload = 0;
+		SetState(FL_WC_STATE_SECONDARY_RELOAD, false);
 
 
 		if (IsAkimbo()) {
@@ -677,19 +722,23 @@ int* CWeaponCustom::GetAttackClip(int attackIdx) {
 	}
 	if (attackIdx == 1) {
 		if (IsAkimbo()) {
-			clip = &m_iClip;
-
-			if (m_iClip == -1 && m_iPrimaryAmmoType != -1)
+			if (m_iClip >= 0)
+				clip = &m_iClip;
+			else if (m_iPrimaryAmmoType != -1)
 				clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType];
 		}
 		else {
-			clip = m_iSecondaryAmmoType >= 0 ? &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] : &nullclip;
+			if (m_iClip2 >= 0)
+				clip = &m_iClip2;
+			else if (m_iSecondaryAmmoType != -1)
+				clip = &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType];
 		}
 	}
 
 	switch (opts.ammoPool) {
 	case WC_AMMOPOOL_PRIMARY_CLIP: clip = &m_iClip; break;
 	case WC_AMMOPOOL_PRIMARY_RESERVE: clip = &m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]; break;
+	case WC_AMMOPOOL_SECONDARY_CLIP: clip = &m_iClip2; break;
 	case WC_AMMOPOOL_SECONDARY_RESERVE: clip = &m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType]; break;
 	default: break;
 	}
@@ -808,7 +857,7 @@ void CWeaponCustom::SecondaryAttack() {
 			if (isAttackStart)
 				events.ProcessEvents(WC_TRIG_SECONDARY_START, 0);
 			events.ProcessEvents(WC_TRIG_SECONDARY, akimboArg, *clip);
-			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_SECONDARY_RESERVE, 1);
+			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_SECONDARY_CLIP, 1);
 		
 			QueueStateToggles(1);
 		}
@@ -859,6 +908,11 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 		}
 		else if (attackIdx == 0 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK))
 			return false;
+		else if (attackIdx == 1 && CanReload(1)) {
+			SetState(FL_WC_STATE_SECONDARY_RELOAD, true);
+			Reload();
+			return false;
+		}
 		else if (attackIdx == 1 && !(m_pPlayer->m_afButtonPressed & IN_ATTACK2))
 			return false;
 	}
@@ -880,8 +934,13 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	if (clipLeft < opts.ammoCost && needFullCost && !ammoSpendsDuringCharge) {
 		FailAttack(attackIdx, leftHand, akimboFire, true);
 
-		if (m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 && m_iClip != -1) {
+		if (attackIdx == 0 && m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType] > 0 && m_iClip != -1) {
 			m_flNextPrimaryAttack = 0; // force the reload
+			SetState(FL_WC_STATE_SECONDARY_RELOAD, false);
+			Reload();
+		}
+		if (attackIdx == 1 && CanReload(1)) {
+			SetState(FL_WC_STATE_SECONDARY_RELOAD, true);
 			Reload();
 		}
 		return false;
@@ -892,7 +951,13 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 	
 	if (!forceFireChargedShot && clipLeft <= 0 && opts.ammoCost > 0) {
 		if (!m_fInReload) {
-			FailAttack(attackIdx, leftHand, akimboFire, true);
+			if (attackIdx == 1 && CanReload(1)) {
+				SetState(FL_WC_STATE_SECONDARY_RELOAD, true);
+				Reload();
+			}
+			else {
+				FailAttack(attackIdx, leftHand, akimboFire, true);
+			}
 		}
 		return false;
 	}
@@ -1323,7 +1388,7 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bo
 
 	int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
-	int ievt = WC_TRIG_SECONDARY;
+	int ievt = WC_TRIG_SECONDARY_FAIL;
 	if (attackIdx == 0)
 		ievt = IsPrimaryAltActive() ? WC_TRIG_PRIMARY_ALT_FAIL : WC_TRIG_PRIMARY_FAIL;
 	events.ProcessEvents(ievt, akimboArg, leftHand, false);
@@ -1884,6 +1949,7 @@ int CWeaponCustom::GetItemInfo(ItemInfo* p) {
 	p->pszAmmo2 = !hideAmmo2 && params.ammoInfo[1].type ? STRING(params.ammoInfo[1].type) : NULL;
 	p->pszName = STRING(m_hudPath);
 	p->iMaxClip = params.ammoInfo[0].maxClip;
+	p->iMaxClip2 = params.ammoInfo[1].maxClip;
 	p->iId = m_iId;
 	p->iFlags = flags;
 	p->iWeight = params.weight;

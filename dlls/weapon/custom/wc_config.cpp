@@ -728,7 +728,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 	if (hasReload) {
 		if (prettyPrint)
 			write_section_header(cfg, "Reload");
-		const char* reloadNames[3] = { "reload", "reload_empty", "reload_pump" };
+		const char* reloadNames[4] = { "reload", "reload_empty", "reload_pump", "reload_secondary"};
 		for (int k = 0; k < ARRAY_SZ(params.reloadStage); k++) {
 			const char* section = reloadNames[k];
 
@@ -813,6 +813,9 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 		else if (group.name == "reload_pump") {
 			params.flags |= FL_WC_WEP_SHOTGUN_RELOAD;
 			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 2, g_wc_desc_reload);
+		}
+		else if (group.name == "reload_secondary") {
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 3, g_wc_desc_reload);
 		}
 		else if (group.name == "primary_attack") {
 			params.flags |= FL_WC_WEP_HAS_PRIMARY;

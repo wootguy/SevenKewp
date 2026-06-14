@@ -302,11 +302,13 @@ void SendWeaponData(edict_t* target, CWeaponCustom* wep) {
 		wc_send_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
 	}
 
-	for (int k = 0; k < 3; k++) {
-		wc_send_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload) * k);
-
+	for (int k = 0; k < 4; k++) {
 		if (k == 2 && !(params.flags & FL_WC_WEP_SHOTGUN_RELOAD))
-			break;
+			continue;
+		if (k == 3 && params.ammoInfo[1].maxClip == 0)
+			continue;
+
+		wc_send_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload) * k);
 	}
 
 	if (params.flags & FL_WC_WEP_AKIMBO) {
@@ -465,11 +467,13 @@ int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pb
 		wc_read_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
 	}
 
-	for (int k = 0; k < 3; k++) {
-		wc_read_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload)*k);
-
+	for (int k = 0; k < 4; k++) {
 		if (k == 2 && !(parms.flags & FL_WC_WEP_SHOTGUN_RELOAD))
-			break;
+			continue;
+		if (k == 3 && parms.ammoInfo[1].maxClip == 0)
+			continue;
+
+		wc_read_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload)*k);
 	}
 
 	if (parms.flags & FL_WC_WEP_AKIMBO) {
