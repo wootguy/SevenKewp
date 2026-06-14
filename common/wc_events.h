@@ -152,7 +152,8 @@ enum WeaponCustomEventTriggers {
 	WC_TRIG_SECONDARY_START,	// triggers when secondary fire key is pressed. Delayed events are cancelled when a STOP event starts.
 	WC_TRIG_SECONDARY_STOP,		// triggers when secondary fire key is released
 	WC_TRIG_SECONDARY_FAIL,		// triggers when secondary fire fails (no ammo, underwater, ...)
-	WC_TRIG_RELOAD,				// triggers when a simple reload begins, or when a shotgun reloads a single shell. Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_RELOAD,				// triggers when a simple or shotgun reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
+	WC_TRIG_RELOAD_SHELL,		// triggers when a shotgun reloads a single shell. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_EMPTY,		// triggers when an empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_NOT_EMPTY,	// triggers when a non-empty clip reload begins. Trigger arg: WeaponCustomEventTriggerShootArg
 	WC_TRIG_RELOAD_FINISH,		// triggers when a shotgun reload finishes

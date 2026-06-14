@@ -35,7 +35,9 @@ enum WcAttackState {
 #define FL_WC_STATE_FIRST_DEPLOYED		(1<<6)	// weapon was deployed for the first time
 #define FL_WC_STATE_SECONDARY_RELOAD	(1<<7)	// secondary clip is reloading
 #define FL_WC_STATE_WANT_RELOAD			(1<<8)	// weapon should reload at the next idle
-#define FL_WC_STATE_SEMI_AUTO			(1<<9)	// disable auto-fire for primary/secondary attack
+#define FL_WC_STATE_ABORT_RELOAD		(1<<9)	// aborting a shotgun reload
+#define FL_WC_STATE_RELOAD_CLIP_DONE	(1<<10)	// loaded ammo into the clip, but the reload stage isn't finished yet
+#define FL_WC_STATE_SEMI_AUTO			(1<<11)	// disable auto-fire for primary/secondary attack
 
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:
@@ -63,6 +65,7 @@ public:
 	uint32_t m_chargeStopCmdTime; // CMD time that a discharge began
 	uint32_t m_attackStartCmdTime; // CMD time that an attack began
 	uint32_t m_stateChangeCmdTime; // CMD time that a state change was queued
+	uint32_t m_reloadStageCmdTime[WC_RELOAD_STAGES]; // CMD time that a reload stage began
 	float m_lastCharge; // last charge progress calculated for chargeup/chargedown
 	int m_chargeStartClip; // ammo started with when chargeup began
 	bool m_primaryCalled;
@@ -100,6 +103,7 @@ public:
 	BOOL Deploy() override;
 	void Holster(int skiplocal) override;
 	bool CanReload(int attackIdx);
+	void LoadClip(int maxAmount, bool secondary); // load ammo from reserve into clip
 	void Reload() override;
 	void WeaponIdle() override;
 	void ItemPostFrame() override;
@@ -179,7 +183,7 @@ public:
 	void QueueStateToggles(int attackIdx);
 	void PlayDelayedStateToggles();
 	void DoStateToggles(int attackIdx);
-	void SetState(uint16_t stateBits, bool state);
+	void SetState(uint16_t stateBits, bool state); // set flags that are safe to use in predicted logic
 	bool GetState(int stateBits);
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);

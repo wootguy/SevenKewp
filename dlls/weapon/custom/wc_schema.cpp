@@ -45,7 +45,6 @@
 struct_desc_t g_wc_desc_general;
 struct_desc_t g_wc_desc_ammo;
 struct_desc_t g_wc_desc_reload;
-struct_desc_t g_wc_desc_akimbo_reload;
 struct_desc_t g_wc_desc_akimbo;
 struct_desc_t g_wc_desc_shoot_opts;
 struct_desc_t g_wc_desc_laser;
@@ -112,6 +111,7 @@ void init_weapon_struct_fields() {
 		wep_flags[BitIndex(FL_WC_WEP_SELECTONEMPTY)] = "select_on_empty";
 		wep_flags[BitIndex(FL_WC_WEP_EXHAUSITBLE)] = "exhaustible";
 		wep_flags[BitIndex(FL_WC_WEP_IRON_SIGHTS_ZOOM)] = "iron_sights";
+		wep_flags[BitIndex(FL_WC_WEP_SHOTGUN_SMOOTH_CANCEL)] = "smooth_shotgun_interrupt";
 
 		WEP_STRUCT_DESC(g_wc_desc_general, "general",
 			WEP_FIELD("classname", "", classname, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -151,11 +151,7 @@ void init_weapon_struct_fields() {
 	WEP_STRUCT_DESC(g_wc_desc_reload, "reload_unnamed",
 		WEP_FIELD("anim", "0", reloadStage[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("time", "0", reloadStage[0].time, 0, WC_PARAM_TIME),
-	);
-
-	WEP_STRUCT_DESC(g_wc_desc_akimbo_reload, "reload_akimbo",
-		WEP_FIELD("anim", "0", akimbo.reload.anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-		WEP_FIELD("time", "0", akimbo.reload.time, 0, WC_PARAM_TIME),
+		WEP_FIELD("load_time", "0", reloadStage[0].loadTime, 0, WC_PARAM_TIME),
 	);
 
 	{
@@ -928,6 +924,7 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_names[WC_TRIG_SECONDARY_STOP] = "secondary_attack_stop";
 	g_wc_evt_trigger_names[WC_TRIG_RELOAD] = "reload";
 	g_wc_evt_trigger_names[WC_TRIG_RELOAD_EMPTY] = "reload_empty";
+	g_wc_evt_trigger_names[WC_TRIG_RELOAD_SHELL] = "reload_shell";
 	g_wc_evt_trigger_names[WC_TRIG_RELOAD_NOT_EMPTY] = "reload_not_empty";
 	g_wc_evt_trigger_names[WC_TRIG_RELOAD_FINISH] = "reload_finish";
 	g_wc_evt_trigger_names[WC_TRIG_RELOAD_SECONDARY] = "reload_secondary";
@@ -1017,6 +1014,7 @@ void init_weapon_custom_config_parser() {
 		case WC_TRIG_RELOAD_SECONDARY:
 		case WC_TRIG_RELOAD:
 		case WC_TRIG_RELOAD_EMPTY:
+		case WC_TRIG_RELOAD_SHELL:
 		case WC_TRIG_RELOAD_NOT_EMPTY:
 		case WC_TRIG_RELOAD_FINISH: {
 			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_arg_primary_names); k++) {
@@ -1168,6 +1166,13 @@ const char* describe_event(WepEvt& evt) {
 	const char* trig = g_wc_trigger_to_name[(evt.triggerArg << EVT_TYPE_BITS) | evt.trigger].str();
 
 	strcat_safe(temp, trig, sizeof(temp));
+
+	if (evt.delay) {
+		static char delay[32];
+		snprintf(delay, sizeof(delay), " (+%dms)", evt.delay);
+		strcat_safe(temp, delay, sizeof(temp));
+	}
+
 	strcat_safe(temp, " -> ", sizeof(temp));
 	strcat_safe(temp, g_wc_evt_type_names[evt.evtType], sizeof(temp));
 
@@ -1360,6 +1365,7 @@ int wc_get_event_category(int evt) {
 
 	case WC_TRIG_RELOAD:
 	case WC_TRIG_RELOAD_EMPTY:
+	case WC_TRIG_RELOAD_SHELL:
 	case WC_TRIG_RELOAD_NOT_EMPTY:
 	case WC_TRIG_RELOAD_FINISH:
 	case WC_TRIG_RELOAD_SECONDARY:

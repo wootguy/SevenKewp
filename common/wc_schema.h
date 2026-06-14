@@ -82,7 +82,6 @@ struct struct_desc_t {
 extern struct_desc_t g_wc_desc_general;
 extern struct_desc_t g_wc_desc_ammo;
 extern struct_desc_t g_wc_desc_reload;
-extern struct_desc_t g_wc_desc_akimbo_reload;
 extern struct_desc_t g_wc_desc_akimbo;
 extern struct_desc_t g_wc_desc_shoot_opts;
 extern struct_desc_t g_wc_desc_laser;

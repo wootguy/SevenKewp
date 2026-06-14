@@ -243,6 +243,7 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_chargeSoundEvt = 0;
 		g_customWeapon[i].m_chargeStartClip = 0;
 		g_customWeapon[i].m_stateIconIdx = 0;
+		memset(g_customWeapon[i].m_reloadStageCmdTime, 0, sizeof(uint32_t) * WC_RELOAD_STAGES);
 		memset(g_customWeapon[i].events.m_beams, 0, sizeof(WcBeam) * MAX_WC_BEAMS);
 		memset(&g_customWeapon[i].events.m_beamImpactSprite, 0, sizeof(WcSprite));
 		g_customWeapon[i].SetAkimbo(false);

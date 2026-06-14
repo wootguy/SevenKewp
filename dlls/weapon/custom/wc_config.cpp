@@ -860,7 +860,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 	}
 
 	bool hasReload = false;
-	for (int k = 0; k < ARRAY_SZ(params.reloadStage); k++) {
+	for (int k = 0; k < WC_RELOAD_STAGES; k++) {
 		if (params.reloadStage[k].time != 0) {
 			hasReload = true;
 			break;
@@ -870,24 +870,18 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 	if (hasReload) {
 		if (prettyPrint)
 			write_section_header(cfg, "Reload");
-		const char* reloadNames[4] = { "reload", "reload_empty", "reload_pump", "reload_secondary"};
-		for (int k = 0; k < ARRAY_SZ(params.reloadStage); k++) {
+		
+		const char* reloadNames[WC_RELOAD_STAGES] = { 
+			"reload", "reload_empty", "reload_shell", "reload_pump", "reload_secondary", "reload_akimbo"
+		};
+		for (int k = 0; k < WC_RELOAD_STAGES; k++) {
 			const char* section = reloadNames[k];
-
-			if ((params.flags & FL_WC_WEP_SHOTGUN_RELOAD) && k == 1) {
-				section = "reload_shell";
-			}
 
 			if (params.reloadStage[k].time == 0)
 				continue;
 
 			fprintf(cfg, "\n[%s]\n", section);
 			wc_fwrite_struct_fields(cfg, dat + sizeof(WeaponCustomReload) * k, g_wc_desc_reload);
-		}
-
-		if (params.flags & FL_WC_WEP_AKIMBO) {
-			fprintf(cfg, "\n[%s]\n", g_wc_desc_akimbo_reload.name);
-			wc_fwrite_struct_fields(cfg, &params, g_wc_desc_akimbo_reload);
 		}
 
 		if (prettyPrint)
@@ -943,21 +937,24 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 			wc_read_struct(path, group, dat + sizeof(WeaponCustomAmmoInfo) * 1, g_wc_desc_ammo);
 		}
 		else if (group.name == "reload") {
-			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 0, g_wc_desc_reload);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * WC_RELOAD_STAGE_START, g_wc_desc_reload);
 		}
 		else if (group.name == "reload_empty") {
-			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 1, g_wc_desc_reload);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * WC_RELOAD_STAGE_START_EMPTY, g_wc_desc_reload);
 		}
 		else if (group.name == "reload_shell") {
 			params.flags |= FL_WC_WEP_SHOTGUN_RELOAD;
-			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 1, g_wc_desc_reload);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * WC_RELOAD_STAGE_SHELL, g_wc_desc_reload);
 		}
 		else if (group.name == "reload_pump") {
 			params.flags |= FL_WC_WEP_SHOTGUN_RELOAD;
-			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 2, g_wc_desc_reload);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * WC_RELOAD_STAGE_PUMP, g_wc_desc_reload);
 		}
 		else if (group.name == "reload_secondary") {
-			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * 3, g_wc_desc_reload);
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * WC_RELOAD_STAGE_SECONDARY, g_wc_desc_reload);
+		}
+		else if (group.name == "reload_akimbo") {
+			wc_read_struct(path, group, dat + sizeof(WeaponCustomReload) * WC_RELOAD_STAGE_AKIMBO, g_wc_desc_reload);
 		}
 		else if (group.name == "primary_attack") {
 			params.flags |= FL_WC_WEP_HAS_PRIMARY;
@@ -978,9 +975,6 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 		else if (group.name == "akimbo") {
 			params.flags |= FL_WC_WEP_AKIMBO;
 			wc_read_struct(path, group, &params, g_wc_desc_akimbo);
-		}
-		else if (group.name == "reload_akimbo") {
-			wc_read_struct(path, group, &params, g_wc_desc_akimbo_reload);
 		}
 		else if (group.name == "laser") {
 			params.flags |= FL_WC_WEP_HAS_LASER;
@@ -1395,7 +1389,7 @@ void wc_compare_params(CustomWeaponParams& a, CustomWeaponParams& b) {
 	wc_compare_struct_fields(g_wc_desc_laser, dat1, dat2, 0);
 	wc_compare_struct_fields(g_wc_desc_state_sprite, dat1, dat2, 0);
 
-	for (int i = 0; i < ARRAY_SZ(a.reloadStage); i++) {
+	for (int i = 0; i < WC_RELOAD_STAGES; i++) {
 		int offset = sizeof(WeaponCustomReload) * i;
 		wc_compare_struct_fields(g_wc_desc_reload, dat1 + offset, dat2 + offset, i);
 	}

@@ -17,27 +17,28 @@
 #define FL_WC_WEP_HAS_TERTIARY			(1<<2)
 #define FL_WC_WEP_HAS_ALT_PRIMARY		(1<<3)	// alternate primary fire toggled by laser or zooming
 #define FL_WC_WEP_SHOTGUN_RELOAD		(1<<4)	// start animation + load animation (repeated) + finish animation
-#define FL_WC_WEP_UNLINK_COOLDOWNS		(1<<5)	// primary and secondary attacks cooldown independently
-#define FL_WC_WEP_AKIMBO				(1<<6)	// weapon has an akimbo mode
-#define FL_WC_WEP_LINK_CHARGEUPS		(1<<7)	// primary and secondary chargeup state and events are shared (minigun behavior)
-#define FL_WC_WEP_PRIMARY_PRIORITY		(1<<8)	// primary fire has priority over secondary when both attack buttons are pressed
-#define FL_WC_WEP_EXCLUSIVE_HOLD		(1<<9)	// weapon must be dropped before switching to other weapons
-#define FL_WC_WEP_USE_ONLY				(1<<10)	// weapon is collected with the use key, not by touching
-#define FL_WC_WEP_HAS_LASER				(1<<11)
-#define FL_WC_WEP_DYNAMIC_ACCURACY		(1<<12) // crosshair widens with movement and shrinks when crouched
-#define FL_WC_WEP_ZOOM_SPR_STRETCH		(1<<13) // zoom crosshair stretches to fit the screen
-#define FL_WC_WEP_ZOOM_SPR_ASPECT		(1<<14) // zoom crosshair keeps its aspect ratio when stretched to fit the screen, and borders are filled black
-#define FL_WC_WEP_NO_PREDICTION			(1<<15) // Disable client-side prediction entirely
-#define FL_WC_WEP_HIDE_SECONDARY_AMMO	(1<<16) // Hide secondary ammo on HUD
-#define FL_WC_WEP_FORCE_ZOOM_SPRITE		(1<<17) // Force use of zoom crosshair sprite when using dynamic crosshairs
-#define FL_WC_WEP_HAND_MODELS			(1<<18) // Default model supports alternate hand models (op4/bshift)
-#define FL_WC_WEP_ALLOW_HL				(1<<19) // Allow the weapon to be used by vanilla HL clients without prediction
-#define FL_WC_WEP_NO_AUTOSWITCHEMPTY	(1<<20) // Don't switch to another weapon when out of ammo
-#define FL_WC_WEP_NO_AUTORELOAD			(1<<21) // Don't reload the weapon automatically
-#define FL_WC_WEP_SELECTONEMPTY			(1<<22) // allow selecting the weapon when empty
-#define FL_WC_WEP_EXHAUSITBLE			(1<<23) // Remove the weapon when out of ammo
-#define FL_WC_WEP_IRON_SIGHTS_ZOOM		(1<<24) // zooming uses iron sights
-#define FL_WC_WEP_HAS_STATE_SPRITE		(1<<25) // weapon has a HUD sprite indicating weapon state
+#define FL_WC_WEP_SHOTGUN_SMOOTH_CANCEL	(1<<5)	// interrupting a shotgun reload plays the finish animation instead of shooting immediately like the HL shotgun
+#define FL_WC_WEP_UNLINK_COOLDOWNS		(1<<6)	// primary and secondary attacks cooldown independently
+#define FL_WC_WEP_AKIMBO				(1<<7)	// weapon has an akimbo mode
+#define FL_WC_WEP_LINK_CHARGEUPS		(1<<8)	// primary and secondary chargeup state and events are shared (minigun behavior)
+#define FL_WC_WEP_PRIMARY_PRIORITY		(1<<10)	// primary fire has priority over secondary when both attack buttons are pressed
+#define FL_WC_WEP_EXCLUSIVE_HOLD		(1<<11)	// weapon must be dropped before switching to other weapons
+#define FL_WC_WEP_USE_ONLY				(1<<12)	// weapon is collected with the use key, not by touching
+#define FL_WC_WEP_HAS_LASER				(1<<13)
+#define FL_WC_WEP_DYNAMIC_ACCURACY		(1<<14) // crosshair widens with movement and shrinks when crouched
+#define FL_WC_WEP_ZOOM_SPR_STRETCH		(1<<15) // zoom crosshair stretches to fit the screen
+#define FL_WC_WEP_ZOOM_SPR_ASPECT		(1<<16) // zoom crosshair keeps its aspect ratio when stretched to fit the screen, and borders are filled black
+#define FL_WC_WEP_NO_PREDICTION			(1<<17) // Disable client-side prediction entirely
+#define FL_WC_WEP_HIDE_SECONDARY_AMMO	(1<<18) // Hide secondary ammo on HUD
+#define FL_WC_WEP_FORCE_ZOOM_SPRITE		(1<<19) // Force use of zoom crosshair sprite when using dynamic crosshairs
+#define FL_WC_WEP_HAND_MODELS			(1<<20) // Default model supports alternate hand models (op4/bshift)
+#define FL_WC_WEP_ALLOW_HL				(1<<21) // Allow the weapon to be used by vanilla HL clients without prediction
+#define FL_WC_WEP_NO_AUTOSWITCHEMPTY	(1<<22) // Don't switch to another weapon when out of ammo
+#define FL_WC_WEP_NO_AUTORELOAD			(1<<23) // Don't reload the weapon automatically
+#define FL_WC_WEP_SELECTONEMPTY			(1<<24) // allow selecting the weapon when empty
+#define FL_WC_WEP_EXHAUSITBLE			(1<<25) // Remove the weapon when out of ammo
+#define FL_WC_WEP_IRON_SIGHTS_ZOOM		(1<<26) // zooming uses iron sights
+#define FL_WC_WEP_HAS_STATE_SPRITE		(1<<27) // weapon has a HUD sprite indicating weapon state
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
@@ -108,6 +109,16 @@ enum WeaponCustomHasCooldownIndex {
 	WC_COOLDOWN_TYPES,
 };
 
+enum WeaponCustomReloadState {
+	WC_RELOAD_STAGE_START,			// start of a simple or shotgun reload
+	WC_RELOAD_STAGE_START_EMPTY,	// start of a simple or shotgun reload (empty clip)
+	WC_RELOAD_STAGE_SHELL,			// shotgun shell insert
+	WC_RELOAD_STAGE_PUMP,			// finish shotgun reload
+	WC_RELOAD_STAGE_SECONDARY,		// start of a secondary reload
+	WC_RELOAD_STAGE_AKIMBO,			// start of an akimbo reload. Triggers for each hand individually.
+	WC_RELOAD_STAGES,
+};
+
 #pragma pack(push,1)
 
 struct MeleeOpts {
@@ -169,10 +180,13 @@ struct CustomWeaponShootOpts {
 struct WeaponCustomReload {
 	uint8_t anim;
 	uint16_t time; // milliseconds
+	
+	// clip is loaded at this time instead of when the stage is complete.
+	// A bullet will be loaded for stages that don't normally load the clip.
+	uint16_t loadTime;
 };
 
 struct WeaponCustomAkimbo {
-	WeaponCustomReload reload;
 	uint8_t deployAnim;			// deploy anim for a single weapon (used for reloading and toggling akimbo mode)
 	uint16_t deployTime;
 	uint8_t holsterAnim;		// for reloading a single weapon
@@ -233,12 +247,7 @@ struct CustomWeaponParams {
 	uint16_t zoomMoveSpeedMult; // movement speed multiplier while zoomed (1-65535) (65535 = 100%) (0 = don't change)
 	int jumpPower;			// -1 = disabled, 0 = default velocity (800), 1+ = custom velocity
 
-	// stage 0 and 1 usage depends on weapon flags:
-	// 0 = simple reload animation OR starting animation for shotgun reload mode
-	// 1 = simple reload animation (empty clip) OR shotgun reload middle animation (shell insertion)
-	// 2 = shotgun reload finish animation (cocking)
-	// 3 = simple secondary reload
-	WeaponCustomReload reloadStage[4];
+	WeaponCustomReload reloadStage[WC_RELOAD_STAGES];
 
 	CustomWeaponShootOpts shootOpts[4]; // primary, secondary, tertiary, and alt primary fire
 	WeaponCustomAkimbo akimbo;

@@ -302,17 +302,18 @@ void SendWeaponData(edict_t* target, CWeaponCustom* wep) {
 		wc_send_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
 	}
 
-	for (int k = 0; k < 4; k++) {
-		if (k == 2 && !(params.flags & FL_WC_WEP_SHOTGUN_RELOAD))
+	for (int k = 0; k < WC_RELOAD_STAGES; k++) {
+		if ((k == WC_RELOAD_STAGE_SHELL || k == WC_RELOAD_STAGE_PUMP) && !(params.flags & FL_WC_WEP_SHOTGUN_RELOAD))
 			continue;
-		if (k == 3 && params.ammoInfo[1].maxClip == 0)
+		if (k == WC_RELOAD_STAGE_SECONDARY && params.ammoInfo[1].maxClip == 0)
+			continue;
+		if (k == WC_RELOAD_STAGE_AKIMBO && !(params.flags & FL_WC_WEP_AKIMBO))
 			continue;
 
 		wc_send_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload) * k);
 	}
 
 	if (params.flags & FL_WC_WEP_AKIMBO) {
-		wc_send_netmsg_struct(g_wc_desc_akimbo_reload, dat);
 		wc_send_netmsg_struct(g_wc_desc_akimbo, dat);
 	}
 
@@ -467,17 +468,18 @@ int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pb
 		wc_read_netmsg_struct(g_wc_desc_ammo, dat + sizeof(WeaponCustomAmmoInfo) * k);
 	}
 
-	for (int k = 0; k < 4; k++) {
-		if (k == 2 && !(parms.flags & FL_WC_WEP_SHOTGUN_RELOAD))
+	for (int k = 0; k < WC_RELOAD_STAGES; k++) {
+		if ((k == WC_RELOAD_STAGE_SHELL || k == WC_RELOAD_STAGE_PUMP) && !(parms.flags & FL_WC_WEP_SHOTGUN_RELOAD))
 			continue;
-		if (k == 3 && parms.ammoInfo[1].maxClip == 0)
+		if (k == WC_RELOAD_STAGE_SECONDARY && parms.ammoInfo[1].maxClip == 0)
+			continue;
+		if (k == WC_RELOAD_STAGE_AKIMBO && !(parms.flags & FL_WC_WEP_AKIMBO))
 			continue;
 
 		wc_read_netmsg_struct(g_wc_desc_reload, dat + sizeof(WeaponCustomReload)*k);
 	}
 
 	if (parms.flags & FL_WC_WEP_AKIMBO) {
-		wc_read_netmsg_struct(g_wc_desc_akimbo_reload, dat);
 		wc_read_netmsg_struct(g_wc_desc_akimbo, dat);
 	}
 
