@@ -16,6 +16,7 @@ unordered_map<string_t, string> g_migrateSoundMap;
 unordered_map<string_t, string> g_migrateModelMap;
 unordered_map<string_t, string> g_migrateStringMap;
 unordered_map<string_t, string> g_migrateCvarMap;
+unordered_map<float, string> g_migrateFloatVals; // original float values that were dumped
 bool g_migrationDumpMode = false; // if true, use the mappings when writing sounds/models/strings
 bool g_dumpingAmmoConfig = false; // adjusts config padding if true
 
@@ -28,6 +29,7 @@ void clear_weapon_custom_cache() {
 	g_migrateModelMap.clear();
 	g_migrateStringMap.clear();
 	g_migrateCvarMap.clear();
+	g_migrateFloatVals.clear();
 }
 
 //
@@ -37,6 +39,9 @@ void clear_weapon_custom_cache() {
 
 int wc_get_int(const char* val);
 float wc_get_float(const char* val);
+void fprintf_float(FILE* f, const char* fmt, float val);
+void fprintf_2floats(FILE* f, const char* fmt, float v1, float v2);
+void fprintf_vec3(FILE* f, const char* fmt, float v1, float v2, float v3);
 
 void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const char* name, const char* val,
 	int ptype, field_desc_t* field) {
@@ -86,8 +91,8 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		cur[2] = FLOAT_TO_SFP_6_10(v.z);
 		break;
 	}
-	case WC_PARAM_UINT16_FP_4_12: *(uint16_t*)dat = FLOAT_TO_FP_4_12(atof(val)); break;
-	case WC_PARAM_UINT16_FP_8_8: *(uint16_t*)dat = FLOAT_TO_FP_8_8(atof(val)); break;
+	case WC_PARAM_UINT16_FP_4_12: *(uint16_t*)dat = FLOAT_TO_FP_4_12(wc_get_float(val)); break;
+	case WC_PARAM_UINT16_FP_8_8: *(uint16_t*)dat = FLOAT_TO_FP_8_8(wc_get_float(val)); break;
 	case WC_PARAM_UINT8_ARRAY_8: {
 		WepEvtArr8* arr = (WepEvtArr8*)dat;
 		vector<string> parts = splitString(val, " ");
@@ -191,16 +196,16 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		break;
 	}
 	case WC_PARAM_ACCURACY_UINT16: {
-		((uint16_t*)dat)[1] = FLOAT_TO_SPREAD(UTIL_ConeFromDegrees(atof(val)).x);
+		((uint16_t*)dat)[1] = FLOAT_TO_SPREAD(UTIL_ConeFromDegrees(wc_get_float(val)).x);
 		break;
 	}
 	case WC_PARAM_ACCURACY_UINT16_2X: {
 		vector<string> parts = splitString(val, " ");
 		if (parts.size() > 0)
-			((uint16_t*)dat)[0] = FLOAT_TO_SPREAD(UTIL_ConeFromDegrees(atof(parts[0].c_str())).x);
+			((uint16_t*)dat)[0] = FLOAT_TO_SPREAD(UTIL_ConeFromDegrees(wc_get_float(parts[0].c_str())).x);
 
 		if (parts.size() > 1)
-			((uint16_t*)dat)[1] = FLOAT_TO_SPREAD(UTIL_ConeFromDegrees(atof(parts[1].c_str())).x);
+			((uint16_t*)dat)[1] = FLOAT_TO_SPREAD(UTIL_ConeFromDegrees(wc_get_float(parts[1].c_str())).x);
 		else
 			((uint16_t*)dat)[1] = ((uint16_t*)dat)[0];
 		break;
@@ -208,15 +213,15 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 	case WC_PARAM_ACCURACY_100_2X: {
 		vector<string> parts = splitString(val, " ");
 		if (parts.size() > 0)
-			((uint16_t*)dat)[0] = atof(parts[0].c_str()) * 100;
+			((uint16_t*)dat)[0] = wc_get_float(parts[0].c_str()) * 100;
 
 		if (parts.size() > 1)
-			((uint16_t*)dat)[1] = atof(parts[1].c_str()) * 100;
+			((uint16_t*)dat)[1] = wc_get_float(parts[1].c_str()) * 100;
 		else
 			((uint16_t*)dat)[1] = ((uint16_t*)dat)[0];
 		break;
 	}
-	case WC_PARAM_UINT16_PERCENT:	*(uint16_t*)dat = atof(val) ? FLOAT_TO_MOVESPEED_MULT(atof(val)) : 0; break;
+	case WC_PARAM_UINT16_PERCENT:	*(uint16_t*)dat = atof(val) ? FLOAT_TO_MOVESPEED_MULT(wc_get_float(val)) : 0; break;
 	case WC_PARAM_STRING:			*(string_t*)dat = val && val[0] ? ALLOC_STRING(val) : 0; break;
 	default:
 		ALERT(at_error, "%s (line %d): Unknown param type %d for key '%s' in group '%s'\n",
@@ -230,9 +235,18 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 
 	switch (ptype) {
 	case WC_PARAM_UINT8:	fprintf(f, "%u\n", (uint32_t)(*(uint8_t*)dat)); break;
-	case WC_PARAM_UINT8_PERCENT:	fprintf(f, "%.2f\n", (*(uint8_t*)dat) / 255.0f); break;
-	case WC_PARAM_7BIT_PERCENT:	fprintf(f, "%.2f\n", (*(uint8_t*)dat) / 127.0f); break;
-	case WC_PARAM_UINT8_FP_2_6:	fprintf(f, "%.2f\n", ((*(uint8_t*)dat) / 64.0f) + (0.5f / 64.0f)); break;
+	case WC_PARAM_UINT8_PERCENT:
+		fprintf_float(f, "%.2f", (*(uint8_t*)dat) / 255.0f);
+		fprintf(f, "\n");
+		break;
+	case WC_PARAM_7BIT_PERCENT:
+		fprintf_float(f, "%.2f", (*(uint8_t*)dat) / 127.0f);
+		fprintf(f, "\n");
+		break;
+	case WC_PARAM_UINT8_FP_2_6:
+		fprintf_float(f, "%.2f", ((*(uint8_t*)dat) / 64.0f) + (0.5f / 64.0f) );
+		fprintf(f, "\n");
+		break;
 	case WC_PARAM_UINT16: {
 		uint16_t val = *(uint16_t*)dat;
 		if (g_migrationDumpMode && g_migrateCvarMap.find(val) != g_migrateCvarMap.end()) {
@@ -247,7 +261,10 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 	case WC_PARAM_INT8:		fprintf(f, "%d\n", (int32_t)(*(int8_t*)dat)); break;
 	case WC_PARAM_INT16:	fprintf(f, "%d\n", (int32_t)(*(int16_t*)dat)); break;
 	case WC_PARAM_INT32:	fprintf(f, "%d\n", (int32_t)(*(int32_t*)dat)); break;
-	case WC_PARAM_FLOAT:	fprintf(f, "%.2f\n", *(float*)dat); break;
+	case WC_PARAM_FLOAT:
+		fprintf_float(f, "%.2f", *(float*)dat);
+		fprintf(f, "\n");
+		break;
 	case WC_PARAM_UINT32_FLAGS:
 	case WC_PARAM_UINT16_FLAGS:
 	case WC_PARAM_UINT8_FLAGS: {
@@ -282,7 +299,8 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 	}
 	case WC_PARAM_VECTOR: {
 		Vector& v = *(Vector*)dat;
-		fprintf(f, "%.2f %.2f %.2f\n", v.x, v.y, v.z);
+		fprintf_vec3(f, "%.2f", v.x, v.y, v.z);
+		fprintf(f, "\n");
 		break;
 	}
 	case WC_PARAM_VECTOR_INT8: {
@@ -292,25 +310,30 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 	}
 	case WC_PARAM_VECTOR_SFP_10_6: {
 		int16_t* v = (int16_t*)dat;
-		fprintf(f, "%.2f %.2f %.2f\n", SFP_10_6_TO_FLOAT(v[0]), SFP_10_6_TO_FLOAT(v[1]), SFP_10_6_TO_FLOAT(v[2]));
+		fprintf_vec3(f, "%.2f", SFP_10_6_TO_FLOAT(v[0]), SFP_10_6_TO_FLOAT(v[1]), SFP_10_6_TO_FLOAT(v[2]));
+		fprintf(f, "\n");
 		break;
 	}
 	case WC_PARAM_VECTOR_SFP_9_7: {
 		int16_t* v = (int16_t*)dat;
-		fprintf(f, "%.2f %.2f %.2f\n", SFP_9_7_TO_FLOAT(v[0]), SFP_9_7_TO_FLOAT(v[1]), SFP_9_7_TO_FLOAT(v[2]));
+		fprintf_vec3(f, "%.2f", SFP_9_7_TO_FLOAT(v[0]), SFP_9_7_TO_FLOAT(v[1]), SFP_9_7_TO_FLOAT(v[2]));
+		fprintf(f, "\n");
 		break;
 	}
 	case WC_PARAM_VECTOR_SFP_6_10: {
 		int16_t* v = (int16_t*)dat;
-		fprintf(f, "%.3f %.3f %.3f\n", SFP_6_10_TO_FLOAT(v[0]), SFP_6_10_TO_FLOAT(v[1]), SFP_6_10_TO_FLOAT(v[2]));
+		fprintf_vec3(f, "%.2f", SFP_6_10_TO_FLOAT(v[0]), SFP_6_10_TO_FLOAT(v[1]), SFP_6_10_TO_FLOAT(v[2]));
+		fprintf(f, "\n");
 		break;
 	}
 	case WC_PARAM_UINT16_FP_4_12: {
-		fprintf(f, "%.4f\n", FP_4_12_TO_FLOAT(*(int16_t*)dat));
+		fprintf_float(f, "%.2f", FP_4_12_TO_FLOAT(*(int16_t*)dat));
+		fprintf(f, "\n");
 		break;
 	}
 	case WC_PARAM_UINT16_FP_8_8: {
-		fprintf(f, "%.3f\n", FP_8_8_TO_FLOAT(*(int16_t*)dat));
+		fprintf_float(f, "%.2f", FP_8_8_TO_FLOAT(*(int16_t*)dat));
+		fprintf(f, "\n");
 		break;
 	}
 	case WC_PARAM_UINT8_ARRAY_8: {
@@ -358,21 +381,32 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 	case WC_PARAM_ACCURACY_UINT16:	fprintf(f, "%.2f\n", DEGREES_FROM_SPREAD(*(uint16_t*)dat)); break;
 	case WC_PARAM_ACCURACY_UINT16_2X: {
 		uint16_t* acc = (uint16_t*)dat;
-		if (acc[0] == acc[1])
-			fprintf(f, "%.2f\n", DEGREES_FROM_SPREAD(acc[0]));
-		else
-			fprintf(f, "%.2f %.2f\n", DEGREES_FROM_SPREAD(acc[0]), DEGREES_FROM_SPREAD(acc[1]));
+		if (acc[0] == acc[1]) {
+			fprintf_float(f, "%.2f", DEGREES_FROM_SPREAD(acc[0]));
+			fprintf(f, "\n");
+		}
+		else {
+			fprintf_2floats(f, "%.2f", DEGREES_FROM_SPREAD(acc[0]), DEGREES_FROM_SPREAD(acc[1]));
+			fprintf(f, "\n");
+		}
 		break;
 	}
 	case WC_PARAM_ACCURACY_100_2X: {
 		uint16_t* acc = (uint16_t*)dat;
-		if (acc[0] == acc[1])
-			fprintf(f, "%.2f\n", acc[0] / 100.0f);
-		else
-			fprintf(f, "%.2f %.2f\n", acc[0] / 100.0f, acc[1] / 100.0f);
+		if (acc[0] == acc[1]) {
+			fprintf_float(f, "%.2f", acc[0] / 100.0f);
+			fprintf(f, "\n");
+		}
+		else {
+			fprintf_2floats(f, "%.2f", acc[0] / 100.0f, acc[1] / 100.0f);
+			fprintf(f, "\n");
+		}
 		break;
 	}
-	case WC_PARAM_UINT16_PERCENT:	fprintf(f, "%.2f\n", MOVESPEED_MULT_TO_FLOAT(*(uint16_t*)dat)); break;
+	case WC_PARAM_UINT16_PERCENT:
+		fprintf_float(f, "%.2f", MOVESPEED_MULT_TO_FLOAT(*(uint16_t*)dat));
+		fprintf(f, "\n");
+		break;
 	case WC_PARAM_STRING:
 		if (g_migrationDumpMode) {
 			fprintf(f, "%s\n", g_migrateStringMap[*(string_t*)dat].c_str());
@@ -398,7 +432,115 @@ float wc_get_float(const char* val) {
 		return (*skillVal)->cvar.value;
 	}
 #endif
-	return atof(val);
+	float ret = atof(val);
+
+	if (g_migrationDumpMode) {
+		if (val && val[0] && ret != 0) {
+			string sval = val;
+			g_migrateFloatVals[ret] = val;
+		}
+	}
+
+	return ret;
+}
+
+#define MIGRATE_FLOAT_EPSILON 0.005f // 1/128 for FP_9_7
+
+string get_closest_float_str(const char* fmt, float val) {
+	float bestDist = FLT_MAX;
+	string bestStr = "";
+
+	for (auto item : g_migrateFloatVals) {
+		float dist = fabs(item.first - val);
+		if (dist < bestDist) {
+			bestDist = dist;
+			bestStr = item.second;
+		}
+	}
+
+	if (bestDist <= MIGRATE_FLOAT_EPSILON) {
+		string altString = UTIL_VarArgs(fmt, val);
+
+		// values are the same, just different precision?
+		if (bestStr + "0" == altString || bestStr + "00" == altString) {
+			return "";
+		}
+		
+		return bestStr;
+	}
+
+	return "";
+}
+
+void fprintf_float(FILE* f, const char* fmt, float val) {
+	if (g_migrationDumpMode) {
+		char temp[64];
+		snprintf(temp, 64, fmt, val);
+
+		// Try to use one of these if a value is close enough to prevent changes due to low precision.
+		string sval = get_closest_float_str(fmt, val);
+		if (sval.size()) {
+			fprintf(f, "%s", sval.c_str());
+			return;
+		}
+	}
+
+	fprintf(f, fmt, val);
+}
+
+void fprintf_2floats(FILE* f, const char* fmt, float v1, float v2) {
+	string v1_str;
+	string v2_str;
+
+	if (g_migrationDumpMode) {
+		// Try to use one of these if a value is close enough to prevent changes due to low precision.
+		v1_str = get_closest_float_str(fmt, v1);
+		v2_str = get_closest_float_str(fmt, v2);
+	}
+
+	if (v1_str.size())
+		fprintf(f, "%s", v1_str.c_str());
+	else
+		fprintf(f, fmt, v1);
+
+	fprintf(f, " ");
+
+	if (v2_str.size())
+		fprintf(f, "%s", v2_str.c_str());
+	else
+		fprintf(f, fmt, v2);
+}
+
+void fprintf_vec3(FILE* f, const char* fmt, float v1, float v2, float v3) {
+	string v1_str;
+	string v2_str;
+	string v3_str;
+
+	if (g_migrationDumpMode) {
+		// Try to use one of these if a value is close enough to prevent changes due to low precision.
+		v1_str = get_closest_float_str(fmt, v1);
+		v2_str = get_closest_float_str(fmt, v2);
+		v3_str = get_closest_float_str(fmt, v3);
+	}
+
+	if (v1_str.size())
+		fprintf(f, "%s", v1_str.c_str());
+	else
+		fprintf(f, fmt, v1);
+
+	fprintf(f, " ");
+
+	if (v2_str.size())
+		fprintf(f, "%s", v2_str.c_str());
+	else
+		fprintf(f, fmt, v2);
+	
+	fprintf(f, " ");
+
+	if (v3_str.size())
+		fprintf(f, "%s", v3_str.c_str());
+	else
+		fprintf(f, fmt, v3);
 }
 
 int wc_get_int(const char* val) {
@@ -1363,6 +1505,8 @@ void MigrateWeaponsBegin() {
 		return;
 	}
 
+	g_migrationDumpMode = true;
+
 	// set unique values in cvars so they can be looked up when dumping later
 	string cvarsListPath = migratePath + "/_cvars.txt";
 	FILE* cvarList = fopen(cvarsListPath.c_str(), "w");
@@ -1492,6 +1636,8 @@ void MigrateWeaponsBegin() {
 	else {
 		ALERT(at_error, "Failed to open model list file: %s\n", stringsListPath.c_str());
 	}
+
+	g_migrationDumpMode = false;
 #endif
 }
 

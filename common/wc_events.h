@@ -4,7 +4,7 @@
 #define SFP_10_6_TO_FLOAT(val) (val / 64.0f)
 
 #define FLOAT_TO_SFP_9_7(val) (clamp((int)((val) * 128), INT16_MIN, INT16_MAX))
-#define SFP_9_7_TO_FLOAT(val) (val / 128.0f)
+#define SFP_9_7_TO_FLOAT(val) ((val / 128.0f))
 
 #define FLOAT_TO_SFP_6_10(val) (clamp((int)((val) * 1024), INT16_MIN, INT16_MAX))
 #define SFP_6_10_TO_FLOAT(val) (val / 1024.0f)
