@@ -303,6 +303,12 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname, const char* configPath)
 			std::string akimboAlias = std::string(szClassname) + "_akimbo";
 			UTIL_RegisterWeaponCustomAlias(szClassname, akimboAlias.c_str());
 		}
+
+		for (int i = 0; i < WC_AMMO_TYPES; i++) {
+			if (params.ammoInfo[i].config) {
+				UTIL_RegisterAmmo(UTIL_VarArgs("%s.txt", STRING(params.ammoInfo[i].config)));
+			}
+		}
 	}
 
 	pent = CREATE_NAMED_ENTITY( MAKE_STRING( szClassname ) );

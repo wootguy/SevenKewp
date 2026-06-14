@@ -45,7 +45,8 @@ struct playersim_t {
 	vec3_t v_angles;		// player view angles
 	vec3_t v_cl_angles;
 	vec3_t v_lastAngles;
-	vec3_t ev_punchangle;	// client-side punch angle predicted in weapons code
+	vec3_t ev_punchangle;	// client-side punch angle predicted in weapon events (recoil)
+	vec3_t sv_punchangle;	// server-side punch angle (flinching from attacks)
 	vec3_t v_punchangle;	// final combined client and server punch angle
 	vec3_t cam_ofs;			// thirdperson camera pitch, yaw, dist
 	int cam_thirdperson;	// 1 = third person camera active

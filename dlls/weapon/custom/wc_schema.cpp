@@ -141,6 +141,7 @@ void init_weapon_struct_fields() {
 	}
 
 	WEP_STRUCT_DESC(g_wc_desc_ammo, "ammo_unnamed",
+		WEP_FIELD("config", "", ammoInfo[0].config, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 		WEP_FIELD("type", "", ammoInfo[0].type, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 		WEP_FIELD("clip_size", "0", ammoInfo[0].maxClip, 0, WC_PARAM_UINT16),
 		WEP_FIELD("default_give", "0", ammoInfo[0].defaultGive, 0, WC_PARAM_UINT16, NULL, 0, FL_FIELD_NO_NETWORK),

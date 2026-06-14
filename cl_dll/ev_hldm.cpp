@@ -2006,7 +2006,7 @@ pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int t
 
 	Vector vecSrc = origin + view_ofs;
 	Vector forward, right, up;
-	Vector angles = gPlayerSim.v_angles + gPlayerSim.ev_punchangle;
+	Vector angles = gPlayerSim.v_angles + gPlayerSim.sv_punchangle;
 	AngleVectors(angles, forward, right, up);
 
 	Vector vecDir = forward + spreadX * right + spreadY * up;

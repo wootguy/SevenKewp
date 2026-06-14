@@ -122,6 +122,12 @@ enum WeaponCustomReloadState {
 	WC_RELOAD_STAGES,
 };
 
+enum WeaponCustomAmmoIndex {
+	WC_AMMO_PRIMARY,
+	WC_AMMO_SECONDARY,
+	WC_AMMO_TYPES
+};
+
 #pragma pack(push,1)
 
 struct MeleeOpts {
@@ -207,6 +213,7 @@ struct WeaponCustomLaser {
 };
 
 struct WeaponCustomAmmoInfo {
+	string_t config;		// path to an ammo config for loading
 	string_t type;			// ammo inventory name
 	uint16_t maxClip;		// 0 = no reloading
 	uint16_t defaultGive;	// ammo loaded given when picked up for the first time. 0 = use maxClip

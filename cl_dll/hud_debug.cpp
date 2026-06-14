@@ -55,7 +55,7 @@ int CHudDebug::Init(void)
 
 #define PRINT_VEC_VARF(vec) \
 	DrawConsoleString(5, yOffset, #vec, varColor); \
-	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %.2f %.2f %.2f", vec.x, vec.y, vec.z), valColor); \
+	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" % .2f % .2f % .2f", vec.x, vec.y, vec.z), valColor); \
 	yOffset += line_height
 
 #define PRINT_VEC_VARD(vec) \
@@ -114,10 +114,13 @@ int CHudDebug::Draw(float flTime)
 	PRINT_WEP_STATE_VARF(fuser4);
 	
 	yOffset += line_height;
-	PRINT_VEC_VARD(gPlayerSim.v_sim_org);
 	PRINT_VEC_VARD(gPlayerSim.v_angles);
-	PRINT_VEC_VARD(gPlayerSim.ev_punchangle);
-	PRINT_VEC_VARD(gPlayerSim.v_punchangle);
+	PRINT_VEC_VARF(gPlayerSim.ev_punchangle);
+	PRINT_VEC_VARF(gPlayerSim.sv_punchangle);
+	PRINT_VEC_VARF(gPlayerSim.v_punchangle);
+
+	yOffset += line_height;
+	PRINT_VEC_VARD(gPlayerSim.v_sim_org);
 	PRINT_VEC_VARD(gPlayerSim.v_sim_vel);
 
 	yOffset += line_height;

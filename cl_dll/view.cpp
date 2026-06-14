@@ -702,6 +702,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 
 	V_DropPunchAngle ( pparams->frametime, (float *)&gPlayerSim.ev_punchangle );
 
+	gPlayerSim.sv_punchangle = pparams->punchangle;
 	gPlayerSim.v_punchangle = gPlayerSim.ev_punchangle;
 	VectorAdd(gPlayerSim.v_punchangle, pparams->punchangle, gPlayerSim.v_punchangle);
 
