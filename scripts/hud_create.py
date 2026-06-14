@@ -255,8 +255,13 @@ def compile_weapon_hud():
 	else:
 		print("zoom.bmp does not exist. zoom entries will not be added to the HUD text file.")
 
-	wep_name = os.path.splitext(os.path.basename(hud_path))[0]
-	spr_path = os.path.dirname(hud_path).replace("\\", "/").replace("sprites/", "") + "/" + wep_name
+	if hud_path:
+		wep_name = os.path.splitext(os.path.basename(hud_path))[0]
+		spr_path = os.path.dirname(hud_path).replace("\\", "/").replace("sprites/", "") + "/" + wep_name
+	else:
+		wep_name = 'weapon_new'
+		spr_path = 'weapon_new'
+	
 
 	# save the new image and sprite
 	save_img_alphatest(new_img, wep_name)
@@ -851,6 +856,8 @@ if len(sys.argv) < 1 or (not compile_mode):
 if len(sys.argv) > 2 and sys.argv[2] and compile_mode != 'custom':
 	hud_path = sys.argv[2]
 	process_definition_file(hud_path)
+else:
+	hud_path = ''
 
 if compile_mode == "weapon":
 	compile_weapon_hud()
