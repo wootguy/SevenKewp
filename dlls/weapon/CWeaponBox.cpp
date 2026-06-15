@@ -386,7 +386,7 @@ bool CWeaponBox::IsUseOnlyWeapon() {
 			{
 				CWeaponCustom* cwep = pItem ? pItem->MyWeaponCustomPtr() : NULL;
 
-				if (cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY)) {
+				if (cwep && (cwep->GetFlag(FL_WC_WEP_USE_ONLY))) {
 					if (foundUseOnlyWeapon)
 						return false;
 					foundUseOnlyWeapon = true;

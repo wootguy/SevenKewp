@@ -19,6 +19,7 @@ unordered_map<string_t, string> g_migrateCvarMap;
 unordered_map<float, string> g_migrateFloatVals; // original float values that were dumped
 bool g_migrationDumpMode = false; // if true, use the mappings when writing sounds/models/strings
 bool g_dumpingAmmoConfig = false; // adjusts config padding if true
+bool g_parsingAltConfig = false;
 
 void clear_weapon_custom_cache() {
 	g_customWeaponCache.clear();
@@ -889,7 +890,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 	}
 }
 
-bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) {
+bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params, bool altParams) {
 	const char* relPath = path;
 	string searchPath = string("weapons/") + path;
 	string fpath = getGameFilePath(searchPath.c_str(), false);
@@ -989,6 +990,10 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 		}
 	}
 
+	if (params.altParams) {
+		params.flags |= FL_WC_WEP_HAS_ALT_PARAMS;
+	}
+
 	if (params.flags & FL_WC_WEP_HAS_STATE_SPRITE) {
 		WeaponCustomStateIcon& icon = params.stateIcon;
 		const char* hud_path = UTIL_VarArgs("sprites/%s/%s.txt",
@@ -1025,6 +1030,14 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params) 
 	newCache.fileModifiedTime = lastModified;
 	newCache.params = params;
 	g_customWeaponCache.put(relPath, newCache);
+
+	// cache alternate params but don't link them yet
+	if (!altParams && params.altParams) {
+		CustomWeaponParams altParams;
+		std::string path = UTIL_VarArgs("%s.txt", STRING(params.altParams));
+		UTIL_ParseCustomWeaponConfig(path.c_str(), altParams, true);
+	}
+	
 
 	return true;
 }
@@ -1246,6 +1259,14 @@ void AutoReloadConfigs() {
 			}
 		}
 	}
+
+	StringSet::iterator_t iter2;
+	while (g_customWeaponConfigsAlt.iterate(iter2)) {
+		if (UTIL_IsWeaponConfigUpdated(iter2.key)) {
+			UTIL_ReloadWeaponConfigs();
+			return;
+		}
+	}
 }
 
 void UTIL_ReloadWeaponConfigs() {
@@ -1268,6 +1289,7 @@ void UTIL_ReloadWeaponConfigs() {
 			}
 		}
 	}
+	g_customWeaponConfigsAlt.clear();
 
 	iter.reset();
 	while (reloadConfigs.iterate(iter)) {
@@ -1432,7 +1454,7 @@ void wc_compare_params(CustomWeaponParams& a, CustomWeaponParams& b) {
 }
 
 void UTIL_TestConfig(CWeaponCustom* wep) {
-	CustomWeaponParams& wepParams = wep->params;
+	CustomWeaponParams& wepParams = wep->defaultParams;
 	UTIL_DumpCustomWeaponConfig(UTIL_VarArgs("test/%s.txt", STRING(wep->pev->classname)), wepParams, false);
 
 	CustomWeaponParams cfgParams;

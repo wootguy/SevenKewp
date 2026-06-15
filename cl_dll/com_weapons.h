@@ -46,7 +46,7 @@ struct WEAPON;
 class CBasePlayerWeapon;
 
 bool IsPredictionWeaponZoomed();
-CustomWeaponParams* GetCustomWeaponParams(int id);
+CustomWeaponParams* GetCustomWeaponParams(int id, int which); // which: 0 = active, 1 = default, 2 = alternate
 CustomWeaponParams* GetCurrentCustomWeaponParams();
 void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
 	float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy);

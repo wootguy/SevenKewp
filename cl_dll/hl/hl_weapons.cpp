@@ -109,16 +109,24 @@ bool IsPredictionWeaponZoomed() {
 	return player.pev->fov != 0 && player.pev->fov < 90;
 }
 
-CustomWeaponParams* GetCustomWeaponParams(int id) {
-	if (id >= 0 && id < MAX_WEAPONS)
-		return &g_customWeapon[id].params;
+CustomWeaponParams* GetCustomWeaponParams(int id, int which) {
+	if (id >= 0 && id < MAX_WEAPONS) {
+		switch (which) {
+		default:
+			return &g_customWeapon[id].GetActiveParams();
+		case WC_PARAMS_DEFAULT:
+			return &g_customWeapon[id].defaultParams;
+		case WC_PARAMS_ALTERNATE:
+			return &g_customWeapon[id].alternateParams;
+		}
+	}
 
 	gEngfuncs.Con_Printf("Invalid custom weapon ID %d\n", id);
 	return NULL;
 }
 
 CustomWeaponParams* GetCurrentCustomWeaponParams() {
-	return g_activeWeaponCustom ? &g_activeWeaponCustom->params : NULL;
+	return g_activeWeaponCustom ? &g_activeWeaponCustom->GetActiveParams() : NULL;
 }
 
 void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
@@ -128,7 +136,7 @@ void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
 
 		if (custom->m_hasPredictionData) {
 			custom->events.GetCurrentAccuracy(accuracyX, accuracyY, accuracyX2, accuracyY2);
-			dynamicAccuracy = custom->params.flags & FL_WC_WEP_DYNAMIC_ACCURACY;
+			dynamicAccuracy = custom->GetFlag(FL_WC_WEP_DYNAMIC_ACCURACY);
 		}
 	}
 }
@@ -186,7 +194,7 @@ bool IsWeaponIronSightsActive() {
 }
 
 int GetCustomWeaponStateIconIdx() {
-	if (g_activeWeaponCustom && (g_activeWeaponCustom->params.flags & FL_WC_WEP_HAS_STATE_SPRITE)) {
+	if (g_activeWeaponCustom && (g_activeWeaponCustom->GetFlag(FL_WC_WEP_HAS_STATE_SPRITE))) {
 		return g_activeWeaponCustom->m_stateIconIdx;
 	}
 	return -1;
@@ -212,7 +220,7 @@ int GetCustomWeaponBody(int id) {
 }
 
 bool IsExclusiveWeapon(int id) {
-	CustomWeaponParams* params = GetCustomWeaponParams(id);
+	CustomWeaponParams* params = GetCustomWeaponParams(id, WC_PARAMS_AUTO);
 	return params && (params->flags & FL_WC_WEP_EXCLUSIVE_HOLD);
 }
 

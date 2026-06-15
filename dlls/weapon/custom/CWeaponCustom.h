@@ -39,10 +39,12 @@ enum WcAttackState {
 #define FL_WC_STATE_RELOAD_CLIP_DONE	(1<<10)	// loaded ammo into the clip, but the reload stage isn't finished yet
 #define FL_WC_STATE_SEMI_AUTO			(1<<11)	// disable auto-fire for primary/secondary attack
 #define FL_WC_STATE_CHAMBER_NEEDED		(1<<12)	// remember that a bullet must be chambered on the next deployment if the current action is aborted
+#define FL_WC_STATE_ALT_PARAMS			(1<<13)	// using the alternate set of weapon parameters
 
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:
-	CustomWeaponParams params;
+	CustomWeaponParams defaultParams;
+	CustomWeaponParams alternateParams;
 
 	float m_lastBeamUpdate;
 	float m_laserOnTime; // turn laser on after this time
@@ -93,9 +95,9 @@ public:
 	void PrecacheEvents() override;
 	void AddEvent(WepEvt evt);
 	BOOL UseDecrement(void) override { return TRUE; }
-	BOOL IsSevenKewpWeapon() { return !(params.flags & FL_WC_WEP_NO_PREDICTION); }
+	BOOL IsSevenKewpWeapon() { return !(defaultParams.flags & FL_WC_WEP_NO_PREDICTION); }
 	BOOL IsWeaponCustom() { return TRUE; }
-	BOOL IsAkimboWeapon() override { return params.flags & FL_WC_WEP_AKIMBO; }
+	BOOL IsAkimboWeapon() override { return defaultParams.flags & FL_WC_WEP_AKIMBO; }
 	int SecondaryAmmoIndex(void) { return m_iSecondaryAmmoType; }
 	CWeaponCustom* MyWeaponCustomPtr(void) { return this; }
 	int AddToPlayer(CBasePlayer* pPlayer) override;
@@ -148,8 +150,8 @@ public:
 	virtual void MeleeHitWall(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a hard surface
 	virtual void AttackTrace(CBasePlayer* plr, int attackIdx, Vector vecSrc, TraceResult& tr, bool isRicochet) {} // called after every attack trace
 	virtual void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
-	virtual const char* DisplayName() override { return STRING(params.displayName); }
-	virtual const char* GetDeathNoticeWeapon() { return STRING(params.killFeedIcon); }
+	virtual const char* DisplayName() override { return STRING(GetActiveParams().displayName); }
+	virtual const char* GetDeathNoticeWeapon() { return STRING(GetActiveParams().killFeedIcon); }
 	virtual int MergedModelBody() { return m_mergedModelBody; }
 	virtual int GetItemInfo(ItemInfo* p);
 
@@ -181,7 +183,7 @@ public:
 	BOOL CanAkimbo() { return GetState(FL_WC_STATE_CAN_AKIMBO); }
 	void SetCanAkimbo(bool canAkimbo);
 	BOOL IsAkimbo() { return GetState(FL_WC_STATE_IS_AKIMBO); }
-	bool IsIronSights() { return GetZoom() != 0 && (params.flags & FL_WC_WEP_IRON_SIGHTS_ZOOM); }
+	bool IsIronSights() { return GetZoom() != 0 && GetFlag(FL_WC_WEP_IRON_SIGHTS_ZOOM); }
 	void QueueStateToggles(int attackIdx);
 	void PlayDelayedStateToggles();
 	void DoStateToggles(int attackIdx);
@@ -200,10 +202,13 @@ public:
 	void SetLaser(bool enable);
 	void UpdateLaser();
 	bool IsPrimaryAltActive();
+
+	CustomWeaponParams& GetActiveParams();	// get active weapon parameters
+	bool GetFlag(int flagBit);			// test flag bit for active parameters
 	CustomWeaponShootOpts& GetShootOpts(int attackIdx);
 
 	int AddDuplicate(CBasePlayerItem* pOriginal) override;
-	inline bool IsExclusiveHold() { return params.flags & FL_WC_WEP_EXCLUSIVE_HOLD; }
+	inline bool IsExclusiveHold() { return GetFlag(FL_WC_WEP_EXCLUSIVE_HOLD); }
 };
 
 extern "C" EXPORT void weapon_custom_ini(entvars_t* pev);

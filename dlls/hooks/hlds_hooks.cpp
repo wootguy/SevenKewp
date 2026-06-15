@@ -602,6 +602,7 @@ void ServerDeactivate( void )
 	g_ammoCapacities.clear();
 	g_ammoCapacitiesInitial.clear();
 	g_customWeaponConfigs.clear();
+	g_customWeaponConfigsAlt.clear();
 	g_customAmmoConfigs.clear();
 	g_mapCfgWeaponRegistrations.clear();
 	g_mapCfgCustomWeaponAliases.clear();

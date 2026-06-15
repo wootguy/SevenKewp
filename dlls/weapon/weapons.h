@@ -142,6 +142,7 @@ extern const char* g_waterSplashSounds[3];
 
 extern StringMap g_defaultSpriteDirs;
 extern StringMap g_customWeaponConfigs; // maps a classname to its config file
+extern StringSet g_customWeaponConfigsAlt; // linked configs
 extern StringMap g_customAmmoConfigs; // maps a classname to its config file
 extern StringSet g_registeredHlWeaponAmmo; // ammo types that are used by currently registered weapons that HL players can pick up
 extern HashMap<int> g_ammoCapacities;

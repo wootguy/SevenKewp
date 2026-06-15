@@ -70,6 +70,7 @@ StringSet g_weaponNames;
 HashMap<int> g_weaponClassIds;
 StringMap g_defaultSpriteDirs;
 StringMap g_customWeaponConfigs;
+StringSet g_customWeaponConfigsAlt; // alternate configs
 StringMap g_customAmmoConfigs;
 StringSet g_registeredHlWeaponAmmo;
 
@@ -298,6 +299,11 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname, const char* configPath)
 		}
 		
 		g_customWeaponConfigs.put(szClassname, configPath);
+
+		if (params.flags & FL_WC_WEP_HAS_ALT_PARAMS) {
+			std::string altPath = UTIL_VarArgs("%s.txt", STRING(params.altParams));
+			g_customWeaponConfigsAlt.put(altPath.c_str());
+		}
 
 		if (params.flags & FL_WC_WEP_AKIMBO) {
 			std::string akimboAlias = std::string(szClassname) + "_akimbo";

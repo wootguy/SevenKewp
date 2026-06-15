@@ -33,6 +33,7 @@ struct WcBeamTrace {
 };
 
 struct WcDelayEvent {
+	int paramsIdx;
 	int eventIdx;
 	float fireTime;
 	bool leftHand;
@@ -103,8 +104,8 @@ public:
 	CWeaponEvents() {}
 
 	// returs true if any events were fired
-	bool ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft = 0, WcTrace* tr = NULL);
-	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire, WcTrace* tr);
+	bool ProcessEvents(int trigger, int triggerArg, bool leftHand = false, bool akimboFire = false, int clipLeft = 0, WcTrace* tr = NULL, int forceParams = WC_PARAMS_AUTO);
+	void QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire, WcTrace* tr, int paramsIdx);
 	void PlayDelayedEvents();
 	void CancelDelayedEvents(int trigger);
 
@@ -136,7 +137,7 @@ public:
 	void PlayEvent_StreakSplash(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_BeamCircle(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
-	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTrace* tr);
+	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTrace* tr, int forceParams);
 
 	float GetCurrentAccuracyMultiplier(int attackIdx);
 	void GetCurrentAccuracy(float& accuracyX, float& accuracyY, float& accuracyX2, float& accuracyY2);

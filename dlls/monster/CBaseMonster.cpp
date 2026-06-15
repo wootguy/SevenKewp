@@ -8080,8 +8080,8 @@ void CBaseMonster::ApplyEffects() {
 
 	if (plr) {
 		CWeaponCustom* wc = plr->m_pActiveItem ? plr->m_pActiveItem->MyWeaponCustomPtr() : NULL;
-		if (wc && wc->params.moveSpeedMult) {
-			float baseMult = MOVESPEED_MULT_TO_FLOAT(wc->params.moveSpeedMult);
+		if (wc && wc->GetActiveParams().moveSpeedMult) {
+			float baseMult = MOVESPEED_MULT_TO_FLOAT(wc->GetActiveParams().moveSpeedMult);
 			if (!total_speed) {
 				total_speed = baseMult;
 			}

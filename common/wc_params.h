@@ -39,6 +39,7 @@
 #define FL_WC_WEP_EXHAUSITBLE			(1<<25) // Remove the weapon when out of ammo
 #define FL_WC_WEP_IRON_SIGHTS_ZOOM		(1<<26) // zooming uses iron sights
 #define FL_WC_WEP_HAS_STATE_SPRITE		(1<<27) // weapon has a HUD sprite indicating weapon state
+#define FL_WC_WEP_HAS_ALT_PARAMS		(1<<28) // weapon has an alternate set of weapon params that can be toggled
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
@@ -126,6 +127,21 @@ enum WeaponCustomAmmoIndex {
 	WC_AMMO_PRIMARY,
 	WC_AMMO_SECONDARY,
 	WC_AMMO_TYPES
+};
+
+enum WeaponCustomAttackIndex {
+	WC_ATTACK_PRIMARY,
+	WC_ATTACK_SECONDARY,
+	WC_ATTACK_TERTIARY,
+	WC_ATTACK_PRIMARY_ALT,
+	WC_ATTACK_TYPES,
+};
+
+enum WeaponCustomParamsIndex {
+	WC_PARAMS_AUTO,
+	WC_PARAMS_DEFAULT,
+	WC_PARAMS_ALTERNATE,
+	WC_PARAMS_TYPES,
 };
 
 #pragma pack(push,1)
@@ -260,7 +276,7 @@ struct CustomWeaponParams {
 
 	WeaponCustomReload reloadStage[WC_RELOAD_STAGES];
 
-	CustomWeaponShootOpts shootOpts[4]; // primary, secondary, tertiary, and alt primary fire
+	CustomWeaponShootOpts shootOpts[WC_ATTACK_TYPES];
 	WeaponCustomAkimbo akimbo;
 	WeaponCustomLaser laser;
 	WeaponCustomStateIcon stateIcon;
@@ -280,6 +296,7 @@ struct CustomWeaponParams {
 	string_t hudFolder;			// path to the folder containing the HUD config
 	string_t displayName;		// name displayed in text messages describing this weapon
 	string_t killFeedIcon;		// icon displayed in the kill feed (classname of a stock weapon)
+	string_t altParams;			// path to an alternate set of parameters
 	int8_t slot;				// weapon selection bucket
 	int8_t slotPosition;		// position in weapon selection buucket (-1 = auto)
 	int32_t weight;				// importance for auto weapon selection

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <malloc.h> // _alloca
 #include "com_weapons.h"
+#include "wc_params.h"
 
 extern local_state_t g_prediction_debug_state;
 
@@ -82,7 +83,7 @@ int CHudDebug::Draw(float flTime)
 	RGB valColor(0, 255, 0);
 	RGB varColor(255, 255, 255);
 
-	CustomWeaponParams* params = GetCustomWeaponParams(state.client.m_iId);
+	CustomWeaponParams* params = GetCustomWeaponParams(state.client.m_iId, WC_PARAMS_AUTO);
 	const char* WcState = GetCustomWeaponStateString();
 
 	PRINT_WEP_STATE_VARD(m_iId);

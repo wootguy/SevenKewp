@@ -1859,9 +1859,7 @@ int EV_TFC_IsAllyTeam( int iTeam1, int iTeam2 )
 	return 0;
 }
 
-CustomWeaponParams* GetCustomWeaponParams(int id);
 extern int g_irunninggausspred;
-int GetCustomWeaponBody(int id);
 
 void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags, Vector* sndOri) {
 	const char* soundPath = GetSoundByIndex(sndIdx);

@@ -107,7 +107,8 @@ bool WcSprite::IsAlive() {
 
 
 
-bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bool akimboFire, int clipLeft, WcTrace* tr) {
+bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bool akimboFire,
+	int clipLeft, WcTrace* tr, int forceParams) {
 #ifdef CLIENT_DLL
 	if (!g_runfuncs)
 		return false;
@@ -117,10 +118,22 @@ bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 	if (!m_pPlayer)
 		return false;
 
+	CustomWeaponParams* params = &m_weapon->GetActiveParams();
+
+	// new params are already loaded by now, so force use of the old ones
+	if (forceParams == WC_PARAMS_DEFAULT) {
+		params = &m_weapon->defaultParams;
+	}
+	else if (forceParams == WC_PARAMS_ALTERNATE) {
+		params = &m_weapon->alternateParams;
+	}
+
+	int paramsIdx = params == &m_weapon->defaultParams ? WC_PARAMS_DEFAULT : WC_PARAMS_ALTERNATE;
+
 	bool anyTriggered = false;
 
-	for (int i = 0; i < m_weapon->params.numEvents; i++) {
-		WepEvt& evt = m_weapon->params.events[i];
+	for (int i = 0; i < params->numEvents; i++) {
+		WepEvt& evt = params->events[i];
 
 		if (evt.trigger != trigger)
 			continue;
@@ -177,7 +190,7 @@ bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 		anyTriggered = true;
 
 		if (evt.delay == 0) {
-			PlayEvent(i, leftHand, akimboFire, tr);
+			PlayEvent(i, leftHand, akimboFire, tr, paramsIdx);
 
 			if (evt.evtType == WC_EVT_BULLETS && evt.bullets.burstDelay) {
 				float burstDelay = 0;
@@ -186,19 +199,20 @@ bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 					additionalBullets += clipLeft;
 				for (int k = 0; k < additionalBullets; k++) {
 					burstDelay += evt.bullets.burstDelay * 0.001f;
-					QueueDelayedEvent(i, m_weapon->WallTime() + burstDelay, leftHand, akimboFire, tr);
+					QueueDelayedEvent(i, m_weapon->WallTime() + burstDelay, leftHand, akimboFire, tr, paramsIdx);
 				}
 			}
 		}
 		else {
-			QueueDelayedEvent(i, m_weapon->WallTime() + evt.delay * 0.001f, leftHand, akimboFire, tr);
+			QueueDelayedEvent(i, m_weapon->WallTime() + evt.delay * 0.001f, leftHand, akimboFire, tr, paramsIdx);
 		}
 	}
 
 	return anyTriggered;
 }
 
-void CWeaponEvents::QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire, WcTrace* tr) {
+void CWeaponEvents::QueueDelayedEvent(int eventIdx, float fireTime, bool leftHand, bool akimboFire,
+	WcTrace* tr, int paramsIdx) {
 	for (int i = 0; i < WC_SERVER_EVENT_QUEUE_SZ; i++) {
 		WcDelayEvent& qevt = eventQueue[i];
 
@@ -208,6 +222,7 @@ void CWeaponEvents::QueueDelayedEvent(int eventIdx, float fireTime, bool leftHan
 			qevt.fireTime = fireTime;
 			qevt.leftHand = leftHand;
 			qevt.akimboFire = akimboFire;
+			qevt.paramsIdx = paramsIdx;
 
 			if (tr) {
 				qevt.tr = *tr;
@@ -1550,13 +1565,18 @@ void CWeaponEvents::PlayEvent_BeamCircle(WepEvt& evt, CBasePlayer* m_pPlayer, Wc
 #endif
 }
 
-void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTrace* tr) {
+void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTrace* tr, int paramsIdx) {
 	CBasePlayer* m_pPlayer = m_weapon->GetPlayer();
 	if (!m_pPlayer)
 		return;
 
+	CustomWeaponParams* params = &m_weapon->defaultParams;
+
+	if (paramsIdx == WC_PARAMS_ALTERNATE)
+		params = &m_weapon->alternateParams;
+
 	Vector vecDir;
-	WepEvt& evt = m_weapon->params.events[eventIdx];
+	WepEvt& evt = params->events[eventIdx];
 
 #ifdef CLIENT_DLL
 	if (VerboseDebugEnabled())
@@ -1677,20 +1697,39 @@ void CWeaponEvents::PlayDelayedEvents() {
 		if (!qevt.fireTime || qevt.fireTime > m_weapon->WallTime())
 			continue;
 
-		PlayEvent(qevt.eventIdx, qevt.leftHand, qevt.akimboFire, qevt.hasTrace ? &qevt.tr : NULL);
+		PlayEvent(qevt.eventIdx, qevt.leftHand, qevt.akimboFire, qevt.hasTrace ? &qevt.tr : NULL,
+			qevt.paramsIdx);
 		qevt.fireTime = 0; // free the slot
 	}
 }
 
 void CWeaponEvents::CancelDelayedEvents(int trigger) {
-	if (!g_runfuncs && trigger != -1)
+	if (trigger == -1) {
+		ALERT(at_aiconsole, "Cancel ALL events %d\n", trigger);
+
+		// clear out everything
+		for (int i = 0; i < WC_SERVER_EVENT_QUEUE_SZ; i++) {
+			WcDelayEvent& qevt = eventQueue[i];
+			qevt.fireTime = 0;
+		}
+
+		return;
+	}
+
+	if (!g_runfuncs)
 		return;
 
 	for (int i = 0; i < WC_SERVER_EVENT_QUEUE_SZ; i++) {
 		WcDelayEvent& qevt = eventQueue[i];
-		WepEvt& evt = m_weapon->params.events[qevt.eventIdx];
 
-		if (evt.trigger == trigger || trigger == -1) {
+		CustomWeaponParams* params = &m_weapon->defaultParams;
+
+		if (qevt.paramsIdx == WC_PARAMS_ALTERNATE)
+			params = &m_weapon->alternateParams;
+
+		WepEvt& evt = params->events[qevt.eventIdx];
+		if (evt.trigger == trigger) {
+			ALERT(at_aiconsole, "Cancel event %s\n", describe_event(evt));
 			qevt.fireTime = 0;
 		}
 	}
@@ -1702,15 +1741,16 @@ float CWeaponEvents::GetCurrentAccuracyMultiplier(int attackIdx) {
 	if (!m_pPlayer)
 		return 1.0f;
 
+	CustomWeaponParams& params = m_weapon->GetActiveParams();
 
 	if (attackIdx == 1) {
-		bool hasSecondary = !(m_weapon->params.flags & FL_WC_WEP_HAS_SECONDARY);
-		bool notAnAttack = m_weapon->params.shootOpts[1].flags & FL_WC_SHOOT_NO_ATTACK;
+		bool hasSecondary = !(params.flags & FL_WC_WEP_HAS_SECONDARY);
+		bool notAnAttack = params.shootOpts[1].flags & FL_WC_SHOOT_NO_ATTACK;
 		if (!hasSecondary || !notAnAttack)
 			attackIdx = 0;
 	}
 
-	CustomWeaponShootOpts& opts = m_weapon->params.shootOpts[attackIdx];
+	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
 
 	float multiplier = 1.0f;
 
@@ -1762,7 +1802,7 @@ void CWeaponEvents::GetCurrentAccuracy(float& accuracyX, float& accuracyY, float
 	if (!m_pPlayer)
 		return;
 
-	CustomWeaponParams& params = m_weapon->params;
+	CustomWeaponParams& params = m_weapon->GetActiveParams();
 
 	if (m_weapon->IsPrimaryAltActive()) {
 		accuracyX = params.shootOpts[3].accuracy[0] * 0.01f;
@@ -1823,8 +1863,10 @@ int CWeaponEvents::GetImpactArg(int attackIdx, bool impactMonster, bool impactWo
 }
 
 float CWeaponEvents::GetChargeMult(WepEvt& evt, int flagMask) {
+	CustomWeaponParams& params = m_weapon->GetActiveParams();
+
 	int attackIdx = m_weapon->GetAttackIdx(evt);
-	if (m_weapon->params.flags & FL_WC_WEP_LINK_CHARGEUPS) {
+	if (params.flags & FL_WC_WEP_LINK_CHARGEUPS) {
 		attackIdx = 0;
 	}
 	CustomWeaponShootOpts& opts = m_weapon->GetShootOpts(attackIdx);

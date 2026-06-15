@@ -33,7 +33,7 @@ EXPORT extern bool g_autoConfigReload;
 // call on map change
 EXPORT void clear_weapon_custom_cache();
 
-EXPORT bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params);
+EXPORT bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params, bool altParams=false);
 
 EXPORT bool UTIL_ParseCustomAmmoConfig(const char* path, CustomAmmoParams& params);
 

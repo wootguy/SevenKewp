@@ -127,6 +127,7 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("w_model", NULL, defaultModelW, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("w_model_akimbo", NULL, wmodelAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("hud_folder", "", hudFolder, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("alternate_config", "", altParams, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("slot", "0", slot, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK | FL_FIELD_ALWAYS_WRITE_CFG),
 			WEP_FIELD("slot_position", "-1", slotPosition, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK | FL_FIELD_ALWAYS_WRITE_CFG),
 			WEP_FIELD("weight", "0", weight, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -905,6 +906,7 @@ void init_weapon_custom_config_parser() {
 	g_toggle_state_names[BitIndex(FL_WC_STATE_CAN_AKIMBO)] = "can_akimbo";
 	g_toggle_state_names[BitIndex(FL_WC_STATE_ZOOM)] = "zoom";
 	g_toggle_state_names[BitIndex(FL_WC_STATE_SEMI_AUTO)] = "semi_auto";
+	g_toggle_state_names[BitIndex(FL_WC_STATE_ALT_PARAMS)] = "weapon_alt";
 
 	init_weapon_struct_fields();
 	init_event_fields();
@@ -1003,7 +1005,10 @@ void init_weapon_custom_config_parser() {
 	trigger_arg_state_names[WC_TRIG_ARG_STATE_SEMI_AUTO] = "semi_auto_mode";
 	trigger_arg_state_names[WC_TRIG_ARG_STATE_SEMI_AUTO_OFF] = "semi_auto_off";
 	trigger_arg_state_names[WC_TRIG_ARG_STATE_SEMI_AUTO_ON] = "semi_auto_on";
-
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ALT_PARAMS] = "weapon_alt_mode";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ALT_PARAMS_OFF] = "weapon_alt_off";
+	trigger_arg_state_names[WC_TRIG_ARG_STATE_ALT_PARAMS_ON] = "weapon_alt_on";
+	
 	static const char* trigger_arg_bullet_fired_names[16];
 	trigger_arg_bullet_fired_names[WC_TRIG_ARG_BULLET_FIRED_DEFAULT] = "";
 	trigger_arg_bullet_fired_names[WC_TRIG_ARG_BULLET_FIRED_ZOOMED] = "_zoomed";

@@ -115,7 +115,7 @@ void CBasePlayerItem::Materialize(void)
 	UTIL_SetOrigin(pev, pev->origin);// link into world.
 
 	CWeaponCustom* cwep = MyWeaponCustomPtr();
-	bool useOnlyWep = cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY);
+	bool useOnlyWep = cwep && (cwep->GetFlag(FL_WC_WEP_USE_ONLY));
 
 	if (useOnlyWep) {
 		SetTouch(NULL);
@@ -346,7 +346,7 @@ void CBasePlayerItem::DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, 
 
 		CWeaponCustom* cwep = MyWeaponCustomPtr();
 		if (cwep && cwep->IsSevenKewpWeapon() && !plr->UseSevenKewpGuns()) {
-			if (plr->HasNamedPlayerItem(STRING(cwep->params.wrongClientWeapon))) {
+			if (plr->HasNamedPlayerItem(STRING(cwep->GetActiveParams().wrongClientWeapon))) {
 				plr->SendSevenKewpClientNotice(DisplayName());
 				return;
 			}

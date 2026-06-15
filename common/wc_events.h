@@ -129,6 +129,9 @@ enum WeaponCustomEventStateChangedArg {
 	WC_TRIG_ARG_STATE_SEMI_AUTO,		// fire when semi-auto mode is toggled
 	WC_TRIG_ARG_STATE_SEMI_AUTO_OFF,	// fire when semi-auto mode is disabled
 	WC_TRIG_ARG_STATE_SEMI_AUTO_ON,		// fire when semi-auto mode is enabled
+	WC_TRIG_ARG_STATE_ALT_PARAMS,		// fire when alternate weapon params are toggled
+	WC_TRIG_ARG_STATE_ALT_PARAMS_OFF,	// fire when alternate weapon params ar disabled
+	WC_TRIG_ARG_STATE_ALT_PARAMS_ON,	// fire when alternate weapon params ar enabled
 };
 
 enum WeaponCustomEventTriggers {

@@ -26,15 +26,15 @@ int g_runfuncs = 1;
 void CWeaponCustom::Spawn() {
 	Precache();
 
-	m_iDefaultAmmo = params.ammoInfo[0].maxClip ? params.ammoInfo[0].maxClip : params.ammoInfo[0].defaultGive;
+	m_iDefaultAmmo = defaultParams.ammoInfo[0].maxClip ? defaultParams.ammoInfo[0].maxClip : defaultParams.ammoInfo[0].defaultGive;
 
 	ItemInfo info;
 	info.iId = 0;
 	if (GetItemInfo(&info))
 		m_iId = info.iId;
 
-	if (params.classname)
-		pev->classname = params.classname;
+	if (defaultParams.classname)
+		pev->classname = defaultParams.classname;
 
 	if (m_iId <= 0) {
 		ALERT(at_error, "Custom weapon '%s' was not registered! Removing it from the world.\n",
@@ -46,7 +46,7 @@ void CWeaponCustom::Spawn() {
 	SetWeaponModelW();
 	FallInit();// get ready to fall down.
 
-	if (params.flags & FL_WC_WEP_USE_ONLY) {
+	if (defaultParams.flags & FL_WC_WEP_USE_ONLY) {
 		SetTouch(&CBaseEntity::ItemBounceTouch);
 	}
 }
@@ -57,33 +57,33 @@ void CWeaponCustom::Precache() {
 #ifndef CLIENT_DLL
 	CBasePlayerWeapon::Precache();
 
-	if (params.pmodelAkimbo) {
-		PRECACHE_MODEL(STRING(params.pmodelAkimbo));
+	if (defaultParams.pmodelAkimbo) {
+		PRECACHE_MODEL(STRING(defaultParams.pmodelAkimbo));
 	}
-	if (params.wmodelAkimbo) {
+	if (defaultParams.wmodelAkimbo) {
 		bool hasMergeBody = mp_mergemodels.value && MergedModelBodyAkimbo() != -1;
-		if (!hasMergeBody || UTIL_MapReplacesModel(STRING(params.wmodelAkimbo))) {
-			PRECACHE_MODEL(STRING(params.wmodelAkimbo));
+		if (!hasMergeBody || UTIL_MapReplacesModel(STRING(defaultParams.wmodelAkimbo))) {
+			PRECACHE_MODEL(STRING(defaultParams.wmodelAkimbo));
 		}
 	}
 
-	if (params.wrongClientWeapon) {
-		UTIL_PrecacheOther(STRING(params.wrongClientWeapon));
+	if (defaultParams.wrongClientWeapon) {
+		UTIL_PrecacheOther(STRING(defaultParams.wrongClientWeapon));
 	}
 
-	for (int i = 0; i < params.numEvents; i++) {
-		WepEvt& evt = params.events[i];
+	for (int i = 0; i < defaultParams.numEvents; i++) {
+		WepEvt& evt = defaultParams.events[i];
 		if (evt.evtType == WC_EVT_PROJECTILE && evt.proj.entity_class) {
 			UTIL_PrecacheOther(STRING(evt.proj.entity_class));
 		}
 	}
 
 	for (int i = 0; i < 2; i++) {
-		if (params.ammoInfo[i].dropEnt)
-			UTIL_PrecacheOther(STRING(params.ammoInfo[i].dropEnt));
+		if (defaultParams.ammoInfo[i].dropEnt)
+			UTIL_PrecacheOther(STRING(defaultParams.ammoInfo[i].dropEnt));
 	}
 
-	params.vmodel = MODEL_INDEX(GetModelV());
+	defaultParams.vmodel = MODEL_INDEX(GetModelV());
 #endif
 }
 
@@ -94,10 +94,17 @@ void CWeaponCustom::PrecacheEvents() {
 	m_configPath = g_customWeaponConfigs.get(STRING(pev->classname));
 
 	if (m_configPath) {
-		UTIL_ParseCustomWeaponConfig(m_configPath, params);
+		UTIL_ParseCustomWeaponConfig(m_configPath, defaultParams);
 
-		if (strcmp(STRING(pev->classname), STRING(params.classname))) {
-			if (params.flags & FL_WC_WEP_AKIMBO) {
+		if (defaultParams.flags & FL_WC_WEP_HAS_ALT_PARAMS) {
+			std::string altPath = UTIL_VarArgs("%s.txt", STRING(defaultParams.altParams));
+			if (UTIL_ParseCustomWeaponConfig(altPath.c_str(), alternateParams, true)) {
+				g_customWeaponConfigsAlt.put(altPath.c_str());
+			}
+		}
+
+		if (strcmp(STRING(pev->classname), STRING(defaultParams.classname))) {
+			if (defaultParams.flags & FL_WC_WEP_AKIMBO) {
 				// enable akimbo mode and world model if an "akimbo" alias is used
 				if (strstr(STRING(pev->classname), "akimbo")) {
 					SetCanAkimbo(true);
@@ -105,7 +112,7 @@ void CWeaponCustom::PrecacheEvents() {
 				}
 			}
 
-			pev->classname = params.classname; // undo alias
+			pev->classname = defaultParams.classname; // undo alias
 		}
 
 		if (m_iId <= 0) {
@@ -113,31 +120,31 @@ void CWeaponCustom::PrecacheEvents() {
 			m_iId = id ? *id : 0;
 		}
 
-		m_defaultModelV = STRING(params.defaultModelV);
-		m_defaultModelP = STRING(params.defaultModelP);
-		m_defaultModelW = STRING(params.defaultModelW);
+		m_defaultModelV = STRING(defaultParams.defaultModelV);
+		m_defaultModelP = STRING(defaultParams.defaultModelP);
+		m_defaultModelW = STRING(defaultParams.defaultModelW);
 
 		int* mergedBody = g_merged_models.get(m_defaultModelW);
 		m_mergedModelBody = mergedBody ? *mergedBody : -1;
 
-		m_hasHandModels = params.flags & FL_WC_WEP_HAND_MODELS;
+		m_hasHandModels = defaultParams.flags & FL_WC_WEP_HAND_MODELS;
 	}
 	else {
 		m_mergedModelBody = -1;
 
 		if (m_defaultModelV) {
-			params.defaultModelV = ALLOC_STRING(m_defaultModelV);
+			defaultParams.defaultModelV = ALLOC_STRING(m_defaultModelV);
 		}
 		if (m_defaultModelP)
-			params.defaultModelP = ALLOC_STRING(m_defaultModelP);
+			defaultParams.defaultModelP = ALLOC_STRING(m_defaultModelP);
 		if (m_defaultModelW)
-			params.defaultModelW = ALLOC_STRING(m_defaultModelW);
+			defaultParams.defaultModelW = ALLOC_STRING(m_defaultModelW);
 	}
 
-	params.classname = pev->classname;
+	defaultParams.classname = pev->classname;
 
-	if (params.hudFolder) {
-		m_hudPath = ALLOC_STRING(UTIL_VarArgs("%s/%s", STRING(params.hudFolder), STRING(pev->classname)));
+	if (defaultParams.hudFolder) {
+		m_hudPath = ALLOC_STRING(UTIL_VarArgs("%s/%s", STRING(defaultParams.hudFolder), STRING(pev->classname)));
 		
 		// TODO: do this once
 		PRECACHE_HUD_FILES(UTIL_VarArgs("sprites/%s.txt", STRING(m_hudPath)));
@@ -174,27 +181,27 @@ void CWeaponCustom::PrecacheEvents() {
 }
 
 void CWeaponCustom::AddEvent(WepEvt evt) {
-	if (params.numEvents >= MAX_WC_EVENTS) {
+	if (defaultParams.numEvents >= MAX_WC_EVENTS) {
 		ALERT(at_error, "Exceeded max custom weapon events for %s\n", STRING(pev->classname));
 		return;
 	}
 
-	params.events[params.numEvents++] = evt;
+	defaultParams.events[defaultParams.numEvents++] = evt;
 }
 
 int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 #ifndef CLIENT_DLL
-	if (!pPlayer->UseSevenKewpGuns() && params.wrongClientWeapon) {
-		if (pPlayer->HasNamedPlayerItem(STRING(params.wrongClientWeapon))) {
+	if (!pPlayer->UseSevenKewpGuns() && defaultParams.wrongClientWeapon) {
+		if (pPlayer->HasNamedPlayerItem(STRING(defaultParams.wrongClientWeapon))) {
 			return 0;
 		}
 
-		pPlayer->GiveNamedItem(STRING(params.wrongClientWeapon));
+		pPlayer->GiveNamedItem(STRING(defaultParams.wrongClientWeapon));
 		m_pickupPlayers |= PLRBIT(pPlayer->edict());
 		return 0;
 	}
 
-	if (params.flags & FL_WC_WEP_AKIMBO)
+	if (defaultParams.flags & FL_WC_WEP_AKIMBO)
 		SetAkimboClip(m_iDefaultAmmo);
 
 	if (pPlayer->IsSevenKewpClient())
@@ -202,7 +209,7 @@ int CWeaponCustom::AddToPlayer(CBasePlayer* pPlayer) {
 #endif
 	
 	if (CBasePlayerWeapon::AddToPlayer(pPlayer)) {
-		if (params.flags & FL_WC_WEP_EXCLUSIVE_HOLD) {
+		if (defaultParams.flags & FL_WC_WEP_EXCLUSIVE_HOLD) {
 			pPlayer->SwitchWeapon(this);
 		}
 		return 1;
@@ -215,6 +222,8 @@ const char* CWeaponCustom::GetAnimSet() {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return NULL;
+
+	CustomWeaponParams& params = GetActiveParams();
 
 #ifndef CLIENT_DLL
 	const char* validAnimExt = STRING(params.animExt);
@@ -261,6 +270,8 @@ BOOL CWeaponCustom::Deploy()
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return FALSE;
+
+	CustomWeaponParams& params = GetActiveParams();
 
 	m_chargeStartCmdTime = 0;
 	m_chargeStopCmdTime = 0;
@@ -369,6 +380,8 @@ bool CWeaponCustom::CanReload(int attackIdx) {
 	if (!m_pPlayer)
 		return false;
 
+	CustomWeaponParams& params = GetActiveParams();
+
 	if (m_fInReload)
 		return false;
 
@@ -406,6 +419,8 @@ void CWeaponCustom::LoadClip(int maxAmount, bool secondary) {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
+	
+	CustomWeaponParams& params = GetActiveParams();
 
 	int& clip = secondary ? m_iClip2 : (m_bInAkimboReload ? m_chargeReady : m_iClip);
 	int ammoType = secondary ? m_iSecondaryAmmoType : m_iPrimaryAmmoType;
@@ -429,6 +444,8 @@ void CWeaponCustom::Reload() {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
+
+	CustomWeaponParams& params = GetActiveParams();
 
 	if (!CanReload(GetState(FL_WC_STATE_SECONDARY_RELOAD) ? 1 : 0)) {
 		return;
@@ -635,6 +652,8 @@ void CWeaponCustom::ItemPostFrame() {
 	if (!m_pPlayer)
 		return;
 
+	CustomWeaponParams& params = GetActiveParams();
+
 	if (m_nextMeleeDecal && m_nextMeleeDecal < gpGlobals->time) {
 		m_nextMeleeDecal = 0;
 		DecalGunshot(&m_meleeDecalPos, BULLET_PLAYER_CROWBAR);
@@ -756,14 +775,14 @@ void CWeaponCustom::ItemPostFrame() {
 }
 
 const char* CWeaponCustom::GetModelP() {
-	return params.pmodelAkimbo && IsAkimbo() ? STRING(params.pmodelAkimbo) : CBasePlayerWeapon::GetModelP();
+	return defaultParams.pmodelAkimbo && IsAkimbo() ? STRING(defaultParams.pmodelAkimbo) : CBasePlayerWeapon::GetModelP();
 }
 
 const char* CWeaponCustom::GetModelW() {
 #ifndef CLIENT_DLL
-	if (params.wmodelAkimbo && CanAkimbo()) {
+	if (defaultParams.wmodelAkimbo && CanAkimbo()) {
 		bool hasMergeBody = mp_mergemodels.value && MergedModelBodyAkimbo() != -1;
-		return hasMergeBody && !UTIL_MapReplacesModel(STRING(params.wmodelAkimbo)) ? MERGED_ITEMS_MODEL : STRING(params.wmodelAkimbo);
+		return hasMergeBody && !UTIL_MapReplacesModel(STRING(defaultParams.wmodelAkimbo)) ? MERGED_ITEMS_MODEL : STRING(defaultParams.wmodelAkimbo);
 	}
 #endif
 
@@ -775,7 +794,8 @@ int* CWeaponCustom::GetAttackClip(int attackIdx) {
 	if (!m_pPlayer)
 		return &m_iClip;
 
-	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+	CustomWeaponParams& params = GetActiveParams();
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 
 	static int nullclip;
 	int* clip = &nullclip;
@@ -821,12 +841,12 @@ void CWeaponCustom::PrimaryAttack() {
 
 	m_primaryCalled = true;
 	m_primaryFired = false;
-	CustomWeaponShootOpts& opts = params.shootOpts[0];
+	CustomWeaponShootOpts& opts = GetShootOpts(0);
 
 	if ((opts.flags & FL_WC_SHOOT_NEED_AKIMBO) && !CanAkimbo())
 		return;
 
-	if (params.flags & FL_WC_WEP_HAS_PRIMARY) {
+	if (GetFlag(FL_WC_WEP_HAS_PRIMARY)) {
 		int* clip = GetAttackClip(0);
 		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
@@ -857,12 +877,12 @@ void CWeaponCustom::SecondaryAttack() {
 	if (!m_pPlayer)
 		return;
 
-	if ((params.flags & FL_WC_WEP_PRIMARY_PRIORITY) && (m_pPlayer->pev->button & IN_ATTACK)) {
+	if (GetFlag(FL_WC_WEP_PRIMARY_PRIORITY) && (m_pPlayer->pev->button & IN_ATTACK)) {
 		PrimaryAttack();
 		return;
 	}
 
-	if (!(params.flags & (FL_WC_WEP_HAS_SECONDARY | FL_WC_WEP_AKIMBO))) {
+	if (!GetFlag(FL_WC_WEP_HAS_SECONDARY | FL_WC_WEP_AKIMBO)) {
 		if (m_pPlayer->pev->button & IN_ATTACK) {
 			PrimaryAttack();
 		}
@@ -877,7 +897,8 @@ void CWeaponCustom::SecondaryAttack() {
 	m_secondaryCalled = true;
 	m_secondaryFired = false;
 
-	CustomWeaponShootOpts& opts = params.shootOpts[1];
+	CustomWeaponParams& params = GetActiveParams();
+	CustomWeaponShootOpts& opts = GetShootOpts(1);
 
 	if ((opts.flags & FL_WC_SHOOT_NEED_AKIMBO) && !CanAkimbo())
 		return;
@@ -937,6 +958,7 @@ void CWeaponCustom::TertiaryAttack() {
 	if (!m_pPlayer)
 		return;
 
+	CustomWeaponParams& params = GetActiveParams();
 	CustomWeaponShootOpts& opts = params.shootOpts[2];
 
 	if ((opts.flags & FL_WC_SHOOT_NEED_AKIMBO) && !CanAkimbo())
@@ -1096,52 +1118,58 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 }
 
 void CWeaponCustom::Cooldown(int attackIdx, int overrideMillis) {
-	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+	int millis = overrideMillis;
 
-	int millis = opts.cooldown;
+	if (attackIdx != -1 && overrideMillis == -1) {
+		CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 
-	if (opts.cooldownOverride[WC_COOLDOWN_WATER]) {
-		CBasePlayer* m_pPlayer = GetPlayer();
-		if (m_pPlayer && m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD) {
-			millis = opts.cooldownOverride[WC_COOLDOWN_WATER];
+		millis = opts.cooldown;
+
+		if (opts.cooldownOverride[WC_COOLDOWN_WATER]) {
+			CBasePlayer* m_pPlayer = GetPlayer();
+			if (m_pPlayer && m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD) {
+				millis = opts.cooldownOverride[WC_COOLDOWN_WATER];
+			}
 		}
-	}
 
-	if (overrideMillis != -1)
-		millis = overrideMillis;
+		if (opts.dischargedCooldown) {
+			uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
+			float t = V_min(chargeMillis / (float)opts.chargeTime, 1.0f);
 
-	if (opts.dischargedCooldown) {
-		uint32_t chargeMillis = CmdTime() - m_chargeStartCmdTime;
-		float t = V_min(chargeMillis / (float)opts.chargeTime, 1.0f);
-
-		int startCooldown = opts.dischargedCooldown;
-		int endCooldown = opts.cooldown;
-		millis = startCooldown + (endCooldown - startCooldown) * t;
+			int startCooldown = opts.dischargedCooldown;
+			int endCooldown = opts.cooldown;
+			millis = startCooldown + (endCooldown - startCooldown) * t;
+		}
 	}
 
 	float nextAttack = UTIL_WeaponTimeBase() + millis * 0.001f;
-	
-	bool noAttack = (opts.flags & FL_WC_SHOOT_NO_ATTACK);
-	bool alwaysIdleCooldown = opts.flags & FL_WC_SHOOT_COOLDOWN_IDLE;
 
-	if (alwaysIdleCooldown || !noAttack)
+	if (GetFlag(FL_WC_WEP_UNLINK_COOLDOWNS)) {
+		if (attackIdx == 0) {
+			m_flNextPrimaryAttack = nextAttack;
+		}
+		else if (attackIdx == 1) {
+			m_flNextSecondaryAttack = nextAttack;
+		}
+		else {
+			m_flNextTertiaryAttack = nextAttack;
+		}
+	}
+	else {
+		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = nextAttack;
+	}
+
+	if (overrideMillis != -1)
 		m_flTimeWeaponIdle = nextAttack + 1.0f;
 
 	if (attackIdx != -1) {
-		if (params.flags & FL_WC_WEP_UNLINK_COOLDOWNS) {
-			if (attackIdx == 0) {
-				m_flNextPrimaryAttack = nextAttack;
-			}
-			else if (attackIdx == 1) {
-				m_flNextSecondaryAttack = nextAttack;
-			}
-			else {
-				m_flNextTertiaryAttack = nextAttack;
-			}
-		}
-		else {
-			m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = nextAttack;
-		}
+		CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+
+		bool noAttack = (opts.flags & FL_WC_SHOOT_NO_ATTACK);
+		bool alwaysIdleCooldown = opts.flags & FL_WC_SHOOT_COOLDOWN_IDLE;
+
+		if (alwaysIdleCooldown || !noAttack)
+			m_flTimeWeaponIdle = nextAttack + 1.0f;
 
 		// default override cooldowns
 		if (overrideMillis == -1) {
@@ -1167,6 +1195,7 @@ float CWeaponCustom::GetChargeProgress(float chargeTime) {
 }
 
 void CWeaponCustom::PlayChargeSound(float t) {
+	CustomWeaponParams& params = GetActiveParams();
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
@@ -1198,6 +1227,7 @@ void CWeaponCustom::PlayChargeSound(float t) {
 }
 
 bool CWeaponCustom::Chargeup(int attackIdx, int* clip, bool leftHand, bool akimboFire) {
+	CustomWeaponParams& params = GetActiveParams();
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 	
 	if (GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING && opts.chargeMode != WC_CHARGEUP_CONSTANT)
@@ -1323,6 +1353,8 @@ void CWeaponCustom::Chargedown(int attackIdx) {
 }
 
 void CWeaponCustom::FinishAttack(int attackIdx) {
+	CustomWeaponParams& params = GetActiveParams();
+
 	if (params.flags & FL_WC_WEP_LINK_CHARGEUPS) {
 		attackIdx = 0;
 	}
@@ -1446,6 +1478,7 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bo
 	if (!m_pPlayer)
 		return;
 
+	CustomWeaponParams& params = GetActiveParams();
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 
 	if (ammoClick) {
@@ -1650,6 +1683,8 @@ void CWeaponCustom::ToggleLaser(bool enable) {
 
 void CWeaponCustom::HideLaser(bool hideNotUnhide) {
 #ifdef CLIENT_DLL
+	CustomWeaponParams& params = GetActiveParams();
+
 	if (hideNotUnhide) {
 		EV_LaserOff();
 	}
@@ -1666,7 +1701,7 @@ bool CWeaponCustom::IsPredicted() {
 	if (!m_pPlayer)
 		return false;
 
-	return !(params.flags & FL_WC_WEP_NO_PREDICTION) && m_pPlayer->IsSevenKewpClient();
+	return !(defaultParams.flags & FL_WC_WEP_NO_PREDICTION) && m_pPlayer->IsSevenKewpClient();
 }
 
 int CWeaponCustom::GetAttackIdx(WepEvt& evt) {
@@ -1703,6 +1738,7 @@ float CWeaponCustom::GetActiveMovespeedMult() {
 	// greater than that timestamp. That broke a lot of other predictions but gives a clue on how it
 	// can work. PM_Move() is constantly repeating a small section of time and maxspeed changes affect
 	// all steps of that time window instead of just after the point it changed.
+	CustomWeaponParams& params = GetActiveParams();
 
 	if (GetChargedState(0) != WC_CHARGE_STATE_NONE) {
 		return MOVESPEED_MULT_TO_FLOAT(params.shootOpts[0].chargeMoveSpeedMult);
@@ -1720,19 +1756,20 @@ float CWeaponCustom::GetActiveMovespeedMult() {
 std::string CWeaponCustom::GetStateString() {
 	std::string state;
 
-	if (GetState(FL_WC_STATE_PRIMARY_ALT)) state += "Primary Alt + ";
+	if (GetState(FL_WC_STATE_PRIMARY_ALT)) state += "Primary alt + ";
 	if (GetState(FL_WC_STATE_LASER)) state += "Laser + ";
 	if (GetState(FL_WC_STATE_ZOOM)) state += "Zoom + ";
-	if (GetState(FL_WC_STATE_ZOOM_FURTHER)) state += "Zoom Further + ";
-	if (GetState(FL_WC_STATE_IS_AKIMBO)) state += "IS Akimbo + ";
-	if (GetState(FL_WC_STATE_CAN_AKIMBO)) state += "CAN Akimbo + ";
-	if (GetState(FL_WC_STATE_FIRST_DEPLOYED)) state += "First Deployed + ";
-	if (GetState(FL_WC_STATE_SECONDARY_RELOAD)) state += "Secondary Reload + ";
-	if (GetState(FL_WC_STATE_WANT_RELOAD)) state += "Want Reload + ";
-	if (GetState(FL_WC_STATE_ABORT_RELOAD)) state += "Abort Reload + ";
-	if (GetState(FL_WC_STATE_RELOAD_CLIP_DONE)) state += "Reload Clip Done + ";
-	if (GetState(FL_WC_STATE_SEMI_AUTO)) state += "Semi Auto + ";
-	if (GetState(FL_WC_STATE_CHAMBER_NEEDED)) state += "Chamber Needed + ";
+	if (GetState(FL_WC_STATE_ZOOM_FURTHER)) state += "Zoom further + ";
+	if (GetState(FL_WC_STATE_CAN_AKIMBO)) state += "Can akimbo + ";
+	if (GetState(FL_WC_STATE_IS_AKIMBO)) state += "Is akimbo + ";
+	if (GetState(FL_WC_STATE_FIRST_DEPLOYED)) state += "First deployed + ";
+	if (GetState(FL_WC_STATE_SECONDARY_RELOAD)) state += "Secondary reload + ";
+	if (GetState(FL_WC_STATE_WANT_RELOAD)) state += "Want reload + ";
+	if (GetState(FL_WC_STATE_ABORT_RELOAD)) state += "Abort reload + ";
+	if (GetState(FL_WC_STATE_RELOAD_CLIP_DONE)) state += "Reload clip done + ";
+	if (GetState(FL_WC_STATE_SEMI_AUTO)) state += "Semiauto + ";
+	if (GetState(FL_WC_STATE_CHAMBER_NEEDED)) state += "Chamber needed + ";
+	if (GetState(FL_WC_STATE_ALT_PARAMS)) state += "Alt params + ";
 
 	if (state.size())
 		state = state.substr(0, state.size() - 3);
@@ -1802,7 +1839,8 @@ int CWeaponCustom::CycleZoom(int attackIdx, bool forceCancelZoom) {
 	if (!m_pPlayer)
 		return 0;
 
-	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+	CustomWeaponParams& params = GetActiveParams();
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 
 	int zoomLevel = forceCancelZoom ? 0 : (GetZoom() + 1) % (opts.zoomLevels + 1);
 	SetState(FL_WC_STATE_ZOOM, zoomLevel & 1);
@@ -1847,6 +1885,8 @@ void CWeaponCustom::UpdateLaser() {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
 		return;
+
+	CustomWeaponParams& params = GetActiveParams();
 
 	if (!IsLaserOn() || m_laserOnTime > 0) {
 		UTIL_Remove(m_hLaserSpot);
@@ -1934,14 +1974,31 @@ void CWeaponCustom::UpdateLaser() {
 }
 
 bool CWeaponCustom::IsPrimaryAltActive() {
-	if (!(params.flags & FL_WC_WEP_HAS_ALT_PRIMARY)) {
+	if (!GetFlag(FL_WC_WEP_HAS_ALT_PRIMARY)) {
 		return false;
 	}
 	
 	return GetState(FL_WC_STATE_PRIMARY_ALT);
 }
 
+CustomWeaponParams& CWeaponCustom::GetActiveParams() {
+	return GetState(FL_WC_STATE_ALT_PARAMS) ? alternateParams : defaultParams;
+}
+
+bool CWeaponCustom::GetFlag(int flagBit) {
+	CustomWeaponParams& params = GetActiveParams();
+	return params.flags & flagBit;
+}
+
 CustomWeaponShootOpts& CWeaponCustom::GetShootOpts(int attackIdx) {
+	CustomWeaponParams& params = GetActiveParams();
+
+	if (attackIdx < 0 || attackIdx >= WC_ATTACK_TYPES) {
+		PRINTF("Invalid attack index %d\n", attackIdx);
+		ALERT(at_error, "Invalid attack index %d\n", attackIdx);
+		return params.shootOpts[0];
+	}
+	
 	if (attackIdx == 0 && IsPrimaryAltActive()) {
 		return params.shootOpts[3];
 	}
@@ -1954,7 +2011,7 @@ int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
 	if (!pPlayer)
 		return 0;
 
-	if (!pPlayer->UseSevenKewpGuns() && params.wrongClientWeapon) {
+	if (!pPlayer->UseSevenKewpGuns() && defaultParams.wrongClientWeapon) {
 		return 0;
 	}
 
@@ -2001,6 +2058,8 @@ void CWeaponCustom::SetChargedState(int attackIdx, WcAttackState newState) {
 }
 
 void CWeaponCustom::GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount) {
+	CustomWeaponParams& params = GetActiveParams();
+	
 	if (secondary) {
 		if (params.ammoInfo[1].dropEnt) {
 			ammoEntName = STRING(params.ammoInfo[1].dropEnt);
@@ -2016,6 +2075,8 @@ void CWeaponCustom::GetAmmoDropInfo(bool secondary, const char*& ammoEntName, in
 }
 
 int CWeaponCustom::GetItemInfo(ItemInfo* p) {
+	CustomWeaponParams& params = GetActiveParams();
+
 	bool hideAmmo2 = params.flags & FL_WC_WEP_HIDE_SECONDARY_AMMO;
 	int zoomFlag = (params.flags & FL_WC_WEP_FORCE_ZOOM_SPRITE) ? WEP_FLAG_USE_ZOOM_CROSSHAIR : 0;
 	zoomFlag |= (params.flags & FL_WC_WEP_IRON_SIGHTS_ZOOM) ? WEP_FLAG_NO_ZOOM_CROSSHAIR : 0;
@@ -2056,7 +2117,7 @@ int CWeaponCustom::GetItemInfo(ItemInfo* p) {
 
 studiohdr_t* CWeaponCustom::GetViewModelHeader() {
 #ifdef CLIENT_DLL
-	model_s* mdl = gEngfuncs.hudGetModelByIndex(params.vmodel);
+	model_s* mdl = gEngfuncs.hudGetModelByIndex(defaultParams.vmodel);
 	return (studiohdr_t*)(mdl ? mdl->cache.data : NULL);
 #else
 	return GET_MODEL_PTR(MODEL_INDEX(GetModelV()));
@@ -2064,7 +2125,7 @@ studiohdr_t* CWeaponCustom::GetViewModelHeader() {
 }
 
 void CWeaponCustom::QueueStateToggles(int attackIdx) {
-	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 	if (!opts.toggleStateBits)
 		return;
 
@@ -2082,7 +2143,7 @@ void CWeaponCustom::PlayDelayedStateToggles() {
 		return; // no states queued for toggling
 	
 	int attackIdx = delayIdx - 1;
-	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 	if (!opts.toggleStateBits)
 		return;
 
@@ -2109,7 +2170,8 @@ void CWeaponCustom::PlayDelayedStateToggles() {
 }
 
 void CWeaponCustom::DoStateToggles(int attackIdx) {
-	CustomWeaponShootOpts& opts = params.shootOpts[attackIdx];
+	CustomWeaponParams& params = GetActiveParams();
+	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 	if (!opts.toggleStateBits)
 		return;
 
@@ -2159,6 +2221,13 @@ void CWeaponCustom::DoStateToggles(int attackIdx) {
 		events.ProcessEvents(trig, WC_TRIG_ARG_STATE_SEMI_AUTO, 0);
 		// TODO: prevent infinite loop if triggering a similar state change
 	}
+
+	if (toggleBits & FL_WC_STATE_ALT_PARAMS) {
+		int arg = GetState(FL_WC_STATE_ALT_PARAMS) ? WC_TRIG_ARG_STATE_ALT_PARAMS_ON : WC_TRIG_ARG_STATE_ALT_PARAMS_OFF;
+		int forceParams = GetState(FL_WC_STATE_ALT_PARAMS) ? WC_PARAMS_DEFAULT : WC_PARAMS_ALTERNATE;
+		events.ProcessEvents(trig, arg, false, false, 0, NULL, forceParams);
+		events.ProcessEvents(trig, WC_TRIG_ARG_STATE_ALT_PARAMS, false, false, 0, NULL, forceParams);
+	}
 }
 
 void CWeaponCustom::SetState(uint16_t stateBits, bool state) {
@@ -2173,6 +2242,8 @@ bool CWeaponCustom::GetState(int stateBits) {
 }
 
 void CWeaponCustom::UpdateStateHudSprite() {
+	CustomWeaponParams& params = GetActiveParams();
+
 	if (!(params.flags & FL_WC_WEP_HAS_STATE_SPRITE))
 		return;
 

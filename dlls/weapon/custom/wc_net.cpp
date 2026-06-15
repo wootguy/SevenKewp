@@ -7,7 +7,7 @@
 #include "../cl_dll/hud.h"
 #include "parsemsg.h"
 void InitCustomWeapon(int id);
-CustomWeaponParams* GetCustomWeaponParams(int id);
+CustomWeaponParams* GetCustomWeaponParams(int id, int which);
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 #endif
@@ -288,13 +288,14 @@ void wc_read_netmsg_struct(struct_desc_t& desc, void* dat, bool isEvent=false) {
 #endif
 }
 
-void SendWeaponData(edict_t* target, CWeaponCustom* wep) {
+int SendWeaponData(edict_t* target, CustomWeaponParams& params, int wepId, bool isAltParams) {
 #ifndef CLIENT_DLL
-	CustomWeaponParams& params = wep->params;
 	uint8_t* dat = (uint8_t*)&params;
 
 	MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeapon, NULL, target);
-	WRITE_BYTE(wep->m_iId);
+
+	uint8_t altBit = isAltParams ? 1 : 0;
+	WRITE_BYTE((altBit << 7) | wepId);
 
 	wc_send_netmsg_struct(g_wc_desc_general, dat);
 
@@ -338,15 +339,19 @@ void SendWeaponData(edict_t* target, CWeaponCustom* wep) {
 		wc_send_netmsg_struct(g_wc_desc_shoot_opts, dat + sizeof(CustomWeaponShootOpts) * k);
 	}
 	MESSAGE_END();
+
+	return LastMsgSize();
+#else
+	return 0;
 #endif
 }
 
-int SendEventData(edict_t* target, CWeaponCustom* wep) {
+int SendEventData(edict_t* target, CustomWeaponParams& params, int wepId, bool isAltParams) {
 	int evBytes = 0;
 
 #ifndef CLIENT_DLL
-	CustomWeaponParams& params = wep->params;
 
+	uint8_t altBit = isAltParams ? 1 : 0;
 	int chunks = ceilf(params.numEvents / (float)g_evt_data_chunk_size);
 
 	for (int c = 0; c < chunks; c++) {
@@ -355,7 +360,7 @@ int SendEventData(edict_t* target, CWeaponCustom* wep) {
 			break;
 
 		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
-		WRITE_BYTE(wep->m_iId);
+		WRITE_BYTE((altBit << 7) | wepId);
 
 		int sendEvents = 0; // TODO: skipping events will complicate live updates due to mismatched indexes
 		for (int k = evtOffset; k < params.numEvents && k - evtOffset < g_evt_data_chunk_size; k++) {
@@ -413,7 +418,8 @@ int SendEventData(edict_t* target, CWeaponCustom* wep) {
 
 void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, PredictionDataSendMode sendMode) {
 #ifndef CLIENT_DLL
-	CustomWeaponParams& params = wep->params;
+	CustomWeaponParams& params = wep->defaultParams;
+	CustomWeaponParams& altParams = wep->alternateParams;
 
 	if (params.flags & FL_WC_WEP_NO_PREDICTION) {
 		return;
@@ -424,16 +430,23 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 		return;
 	}
 
-	if (sendMode != WC_PRED_SEND_EVT) {
-		SendWeaponData(target, wep);
-	}
-
-	int mainBytes = LastMsgSize();
-
+	int mainBytes = 0;
 	int evBytes = 0;
 
+	if (sendMode != WC_PRED_SEND_EVT) {
+		mainBytes += SendWeaponData(target, params, wep->m_iId, false);
+
+		if (params.flags & FL_WC_WEP_HAS_ALT_PARAMS) {
+			mainBytes += SendWeaponData(target, altParams, wep->m_iId, true);
+		}
+	}
+
 	if (sendMode != WC_PRED_SEND_WEP) {
-		evBytes += SendEventData(target, wep);
+		evBytes += SendEventData(target, params, wep->m_iId, false);
+
+		if (params.flags & FL_WC_WEP_HAS_ALT_PARAMS) {
+			evBytes += SendEventData(target, altParams, wep->m_iId, true);
+		}
 	}
 
 	ALERT(at_console, "Sent %d prediction bytes for %s (%d + %d evt)\n",
@@ -451,14 +464,16 @@ int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pb
 #ifdef CLIENT_DLL
 	BEGIN_READ(pbuf, iSize);
 
-	int weaponId = READ_BYTE();
+	uint8_t packed = READ_BYTE();
+	bool isAltParams = (packed >> 7) != 0;
+	int weaponId = packed & 0x7f;
 
 	if (weaponId < 0 || weaponId >= MAX_WEAPONS)
 		return 0;
 
-
 	InitCustomWeapon(weaponId);
-	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId);
+	int paramsIdx = isAltParams ? WC_PARAMS_ALTERNATE : WC_PARAMS_DEFAULT;
+	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId, paramsIdx);
 	memset(&parms, 0, sizeof(CustomWeaponParams));
 	uint8_t* dat = (uint8_t*)&parms;
 
@@ -512,12 +527,15 @@ int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, voi
 #ifdef CLIENT_DLL
 	BEGIN_READ(pbuf, iSize);
 
-	int weaponId = READ_BYTE();
+	uint8_t packed = READ_BYTE();
+	bool isAltParams = (packed >> 7) != 0;
+	int weaponId = packed & 0x7f;
 
 	if (weaponId < 0 || weaponId >= MAX_WEAPONS)
 		return 0;
 
-	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId);
+	int paramsIdx = isAltParams ? WC_PARAMS_ALTERNATE : WC_PARAMS_DEFAULT;
+	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId, paramsIdx);
 
 	uint8_t packetHeader = READ_BYTE();
 	int evtIdxOffset = (packetHeader >> 4) * g_evt_data_chunk_size;

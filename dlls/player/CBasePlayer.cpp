@@ -801,7 +801,7 @@ void CBasePlayer::PackDeadPlayerItems( void )
 	pWeaponBox->pev->nextthink = gpGlobals->time + item_despawn_time.value;
 
 	CWeaponCustom* cwep = firstWep ? firstWep->MyWeaponCustomPtr() : NULL;
-	if (cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY)) {
+	if (cwep && (cwep->GetFlag(FL_WC_WEP_USE_ONLY))) {
 		pWeaponBox->SetTouch(&CBaseEntity::ItemBounceTouch);
 	}
 
@@ -4704,8 +4704,8 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 	}
 	else {
 		CWeaponCustom* cwep = pItem ? pItem->MyWeaponCustomPtr() : NULL;
-		if (cwep && cwep->params.wrongClientWeapon)
-			altName = STRING(cwep->params.wrongClientWeapon);
+		if (cwep && cwep->GetActiveParams().wrongClientWeapon)
+			altName = STRING(cwep->GetActiveParams().wrongClientWeapon);
 	}
 
 	for (int i = 0; i < MAX_ITEM_TYPES; i++)
@@ -6030,7 +6030,7 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 			pWeaponBox->SetThink(&CWeaponBox::Kill);
 			pWeaponBox->pev->nextthink = gpGlobals->time + item_despawn_time.value;
 
-			if (cwep && (cwep->params.flags & FL_WC_WEP_USE_ONLY)) {
+			if (cwep && (cwep->GetFlag(FL_WC_WEP_USE_ONLY))) {
 				pWeaponBox->SetTouch(&CBaseEntity::ItemBounceTouch);
 			}
 
