@@ -277,6 +277,7 @@ struct HudIconItem {
 struct CustomWeaponParams {
 	uint32_t flags; // FL_WC_WEP_*
 	uint16_t vmodel;
+	uint16_t vmodel_zoom;		// view model displayed while zoomed in
 	uint16_t moveSpeedMult;		// move speed multiplier (1-65535) (65535 = 100%) (0 = don't change)
 	uint16_t zoomMoveSpeedMult; // movement speed multiplier while zoomed (1-65535) (65535 = 100%) (0 = don't change)
 	int jumpPower;			// -1 = disabled, 0 = default velocity (800), 1+ = custom velocity
@@ -294,6 +295,7 @@ struct CustomWeaponParams {
 	// data for file parsing (not networked)
 	WeaponCustomAmmoInfo ammoInfo[2];
 	string_t defaultModelV;
+	string_t defaultModelV_zoom;
 	string_t defaultModelP;
 	string_t defaultModelW;
 	string_t pmodelAkimbo;		// thirdperson model used in akimbo mode

@@ -29,6 +29,7 @@
 #include "Exports.h"
 
 #include "wc_params.h"
+#include "com_weapons.h"	
 
 //
 // Override the StudioModelRender virtual member functions here to implement custom bone
@@ -65,9 +66,6 @@ int R_StudioDrawPlayer( int flags, entity_state_t *pplayer )
 	return g_StudioRenderer.StudioDrawPlayer( flags, pplayer );
 }
 
-bool IsViewModelAkimbo();
-CustomWeaponParams* GetCurrentCustomWeaponParams();
-
 /*
 ====================
 R_StudioDrawModel
@@ -76,13 +74,37 @@ R_StudioDrawModel
 */
 int R_StudioDrawModel( int flags )
 {
-	if (IEngineStudio.GetCurrentEntity() == gEngfuncs.GetViewModel()) {
+	cl_entity_t* gunModel = gEngfuncs.GetViewModel();
+
+	if (IEngineStudio.GetCurrentEntity() == gunModel) {
 		bool isZoomed = gHUD.m_Ammo.IsWeaponZoomed();
 		WEAPON* pw = gHUD.m_Ammo.m_pWeapon;
 
 		if (pw && pw->hZoomedCrosshair && isZoomed && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR)) {
 			if (flags & STUDIO_RENDER)
 				return 0; // only handle events, don't render the model
+		}
+		
+		int modelIdx = GetActiveCustomWeaponViewModel();
+		if (modelIdx > 0 && modelIdx != gunModel->curstate.modelindex != modelIdx) {
+			static int fovTime = 0;
+			static int lastFovFrame = 0;
+			if (gHUD.m_frameCount != lastFovFrame) {
+				lastFovFrame = gHUD.m_frameCount;
+
+				if (g_lastFOV) {
+					fovTime++;
+				}
+				else {
+					fovTime = 0;
+				}
+			}
+
+			// wait a frame after FOV changes so that you don't see one frame of default FOV scope
+			if (fovTime > 1) {
+				gunModel->model = IEngineStudio.GetModelByIndex(modelIdx);
+				gunModel->curstate.modelindex = modelIdx;
+			}
 		}
 
 		if (IsViewModelAkimbo()) {

@@ -7,6 +7,7 @@
 #include "customentity.h"
 #include "CWeaponCustom.h"
 #include "user_messages.h"
+#include "shake.h"
 
 #ifdef CLIENT_DLL
 #include "../cl_dll/hud_iface.h"
@@ -17,6 +18,7 @@
 #include "../cl_dll/ev_hldm.h"
 #include "../cl_dll/com_weapons.h"
 #include "../cl_dll/eventscripts.h"
+#include "screenfade.h"
 bool VerboseDebugEnabled();
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
@@ -142,13 +144,12 @@ bool CWeaponEvents::ProcessEvents(int trigger, int triggerArg, bool leftHand, bo
 		switch (trigger) {
 
 		case WC_TRIG_PRIMARY:
+		case WC_TRIG_PRIMARY_ALT:
 		case WC_TRIG_SECONDARY:
 		case WC_TRIG_TERTIARY:
 		case WC_TRIG_RELOAD:
 		case WC_TRIG_RELOAD_EMPTY:
 		case WC_TRIG_RELOAD_NOT_EMPTY:
-			argMatch = evt.triggerArg == WC_TRIG_SHOOT_ARG_ALWAYS || triggerArg == evt.triggerArg;
-			break;
 		case WC_TRIG_PRIMARY_CLIPSIZE:
 		case WC_TRIG_PRIMARY_ALT_CLIPSIZE:
 		case WC_TRIG_IMPACT:
@@ -1103,13 +1104,18 @@ void CWeaponEvents::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 	// never allow animations to be interrupted by idles
 	studiohdr_t* hdr = m_weapon->GetViewModelHeader();
-	if (hdr) {		
+	if (hdr) {
 		float animTime = GetSequenceDuration(hdr, anim);
 		m_weapon->m_idleTime = evt.anim.cooldown ? V_max(m_weapon->m_idleTime, animTime) : animTime;
 	}
 
 	// don't spam idle events for weapons with idles that are a single frame of no movement
 	m_weapon->m_idleTime = V_max(m_weapon->m_idleTime, 0.2f);
+
+	// TODO: This shouldn't be here. Timers can't be updated by events in prediction code, which is why 
+	// idleTime is used normally (and idleTime also shouldn't be used. Converting idle anims to events
+	// was a mistake). However, this is working for the current weapons.
+	m_weapon->m_flTimeWeaponIdle = V_max(m_weapon->m_flTimeWeaponIdle, m_weapon->m_idleTime);
 
 #ifdef CLIENT_DLL
 	cl_entity_t* vmodel = gEngfuncs.GetViewModel();
@@ -1486,6 +1492,39 @@ void CWeaponEvents::PlayEvent_StreakSplash(WepEvt& evt, CBasePlayer* m_pPlayer, 
 #endif
 }
 
+void CWeaponEvents::PlayEvent_Fade(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+#ifdef CLIENT_DLL
+	float fadeDur = evt.fade.duration * 0.001f;
+
+	screenfade_t fade;
+	fade.fader = evt.fade.color.r;
+	fade.fadeg = evt.fade.color.g;
+	fade.fadeb = evt.fade.color.b;
+	fade.fadealpha = evt.fade.color.a;
+	fade.fadeFlags = evt.fade.flags;
+	fade.fadeEnd = gEngfuncs.GetClientTime() + fadeDur;
+	fade.fadeReset = gEngfuncs.GetClientTime() + (evt.fade.holdTime + evt.fade.duration) * 0.001f;
+	fade.fadeSpeed = fadeDur ? fade.fadealpha / fadeDur : 0;
+	fade.fadeTotalEnd = 0;
+
+	if (evt.fade.flags & FFADE_OUT) {
+		fade.fadeSpeed *= -1;
+		fade.fadeTotalEnd = fade.fadeEnd;
+	}
+
+	gEngfuncs.pfnSetScreenFade(&fade);
+#else
+	if (!m_weapon->IsPredicted()) {
+		UTIL_ScreenFade(m_pPlayer, evt.fade.color.ToVector(), evt.fade.duration * 0.001f,
+			evt.fade.holdTime * 0.001f, evt.fade.color.a, evt.fade.flags, false);
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_PlayerAnim(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	m_pPlayer->SetAnimation((PLAYER_ANIM)evt.player_anim.action, evt.player_anim.duration * 0.001f);
+}
+
 void CWeaponEvents::PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
 #ifndef CLIENT_DLL
 	Vector pos = GetEventPos(evt, m_pPlayer, tr);
@@ -1678,6 +1717,12 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 		break;
 	case WC_EVT_STREAK_SPLASH:
 		PlayEvent_StreakSplash(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_FADE:
+		PlayEvent_Fade(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_PLR_ANIM:
+		PlayEvent_PlayerAnim(evt, m_pPlayer, tr);
 		break;
 	case WC_EVT_SHAKE:
 		PlayEvent_Shake(evt, m_pPlayer, tr);
@@ -2025,6 +2070,17 @@ void CWeaponEvents::FireAmmoEvents(int ammoPool, int attackIdx) {
 	case WC_AMMOPOOL_SECONDARY_RESERVE: break;
 	default: break;
 	}
+}
+
+void CWeaponEvents::FireShootEvents(int trigger, bool leftHand, int* clip, bool akimboFire) {
+	int akimboArg = m_weapon->IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
+	int zoomArg = m_weapon->GetZoom() ? WC_TRIG_SHOOT_ARG_ZOOMED : WC_TRIG_SHOOT_ARG_NOT_ZOOMED;
+	static int nullClip = 0;
+	int* clipArg = clip ? clip : &nullClip;
+
+	ProcessEvents(trigger, akimboArg, leftHand, akimboFire, *clipArg);
+	ProcessEvents(trigger, zoomArg, leftHand, akimboFire, *clipArg);
+	ProcessEvents(trigger, WC_TRIG_SHOOT_ARG_ALWAYS, m_weapon->IsAkimbo(), akimboFire, *clipArg);
 }
 
 WcBeam* CWeaponEvents::AllocBeam() {

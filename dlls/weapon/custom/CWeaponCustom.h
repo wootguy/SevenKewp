@@ -198,6 +198,7 @@ public:
 	void SetChargedState(int attackIdx, WcAttackState newState);
 	inline void ClearChargedStates() { m_fInAttack = 0; }
 	inline bool AreAnyAttacksCharging() { return m_fInAttack != 0; }
+	int GetActiveViewModelIdx();
 
 	BOOL IsLaserOn() { return GetState(FL_WC_STATE_LASER); }
 	int GetZoom(); // returns current zoom level

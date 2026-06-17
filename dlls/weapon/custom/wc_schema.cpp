@@ -5,6 +5,7 @@
 #include "StringPool.h"
 #include "CWeaponCustom.h"
 #include "CProjectileCustom.h"
+#include "shake.h"
 
 #define WEP_FIELD(name, default_val, struct_field, bits, field_type, ...) \
 	{ name, default_val, offsetof(CustomWeaponParams, struct_field), bits, field_type, ##__VA_ARGS__}
@@ -126,7 +127,9 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("display_name", "", displayName, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FLAGS32("flags", "0", flags, 0, wep_flags),
 			WEP_FIELD("vmodel", NULL, vmodel, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("vmodel_zoom", NULL, vmodel_zoom, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_CFG),
 
+			WEP_FIELD("v_model_zoom", NULL, defaultModelV_zoom, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("v_model", NULL, defaultModelV, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("p_model", NULL, defaultModelP, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("p_model_akimbo", NULL, pmodelAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -874,6 +877,46 @@ void init_event_fields() {
 		EVT_FIELD("duration", "0", shake.duration, 0, WC_PARAM_TIME),
 		EVT_FIELD("frequency", "0", shake.amplitude, 0, WC_PARAM_UINT16_FP_8_8),
 	);
+
+	{
+		static const char* flags[32];
+		//flags[BitIndex(FFADE_IN)] = "fade_in";
+		flags[BitIndex(FFADE_OUT)] = "fade_out";
+		flags[BitIndex(FFADE_MODULATE)] = "modulate";
+		flags[BitIndex(FFADE_STAYOUT)] = "stay_out"; // bug recipe
+
+		EVT_DESC(WC_EVT_FADE, "fade",
+			EVT_FIELD("fade_time", "0", fade.duration, 0, WC_PARAM_TIME),
+			EVT_FIELD("hold_time", "0", fade.holdTime, 0, WC_PARAM_TIME),
+			EVT_FIELD("color", "0", fade.color, 0, WC_PARAM_RGBA),
+			EVT_FLAGS("flags", "0", fade.flags, 0, flags),
+		);
+	}
+
+	{
+		static const char* values[32];
+		values[PLAYER_IDLE] = "idle";
+		values[PLAYER_WALK] = "walk";
+		values[PLAYER_SUPERJUMP] = "longjump";
+		values[PLAYER_DIE] = "die";
+		values[PLAYER_ATTACK1] = "attack";
+		values[PLAYER_ATTACK2] = "attack2";
+		values[PLAYER_ATTACK_GL] = "attack_gl";
+		values[PLAYER_RELOAD] = "reload";
+		values[PLAYER_RELOAD2] = "reload_left";
+		values[PLAYER_RELOAD3] = "reload_right";
+		values[PLAYER_DROP_ITEM] = "drop_item";
+		values[PLAYER_USE] = "use";
+		values[PLAYER_DEPLOY_WEAPON] = "deploy";
+		values[PLAYER_COCK_WEAPON] = "chargeup";
+		values[PLAYER_BARNACLE_HIT] = "barnacle_hit";
+		values[PLAYER_BARNACLE_CRUNCH] = "barnacle_chew";
+
+		EVT_DESC(WC_EVT_PLR_ANIM, "player_anim",
+			EVT__ENUM("action", "0", player_anim.action, 0, values),
+			EVT_FIELD("duration", "0", player_anim.duration, 0, WC_PARAM_TIME),
+		);
+	}
 }
 
 void init_custom_ammo_fields() {
@@ -974,6 +1017,8 @@ void init_weapon_custom_config_parser() {
 	g_wc_evt_trigger_arg_primary_names[WC_TRIG_SHOOT_ARG_ALWAYS] = "";
 	g_wc_evt_trigger_arg_primary_names[WC_TRIG_SHOOT_ARG_AKIMBO] = "_akimbo";
 	g_wc_evt_trigger_arg_primary_names[WC_TRIG_SHOOT_ARG_NOT_AKIMBO] = "_not_akimbo";
+	g_wc_evt_trigger_arg_primary_names[WC_TRIG_SHOOT_ARG_ZOOMED] = "_zoomed";
+	g_wc_evt_trigger_arg_primary_names[WC_TRIG_SHOOT_ARG_NOT_ZOOMED] = "_not_zoomed";
 
 	g_wc_evt_trigger_clip_sp_names[WC_TRIG_CLIP_ARG_ODD] = "odd";
 	g_wc_evt_trigger_clip_sp_names[WC_TRIG_CLIP_ARG_EVEN] = "even";
@@ -1049,6 +1094,7 @@ void init_weapon_custom_config_parser() {
 
 		switch (i) {
 		case WC_TRIG_PRIMARY:
+		case WC_TRIG_SECONDARY:
 		case WC_TRIG_TERTIARY:
 		case WC_TRIG_RELOAD_SECONDARY:
 		case WC_TRIG_RELOAD:
@@ -1376,6 +1422,7 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 
 bool is_server_side_event(int evtId) {
 	switch (evtId) {
+	case WC_EVT_PLR_ANIM:
 	case WC_EVT_PROJECTILE:
 	case WC_EVT_RADIUS_DAMAGE:
 	case WC_EVT_SHAKE:

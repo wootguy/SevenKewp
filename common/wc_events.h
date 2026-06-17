@@ -55,6 +55,8 @@ enum WeaponCustomEventTriggerShootArg {
 	WC_TRIG_SHOOT_ARG_ALWAYS,		// always fire the shoot event
 	WC_TRIG_SHOOT_ARG_AKIMBO,		// only fire the event when in akimbo mode
 	WC_TRIG_SHOOT_ARG_NOT_AKIMBO,	// only fire the event when not in akimbo mode
+	WC_TRIG_SHOOT_ARG_ZOOMED,		// only fire the event when zoomed
+	WC_TRIG_SHOOT_ARG_NOT_ZOOMED,	// only fire the event when not zoomed
 };
 
 // special clip size conditions
@@ -177,8 +179,9 @@ enum WeaponCustomEventType {
 	WC_EVT_EJECT_SHELL,
 	WC_EVT_RECOIL,			// recoil with logic shared for all angles
 	WC_EVT_RECOIL_ADV,		// recoil with unique logic per angle
-	WC_EVT_SET_BODY,
-	WC_EVT_WEP_ANIM,
+	WC_EVT_SET_BODY,		// weapon model bodygroup
+	WC_EVT_WEP_ANIM,		// weapon model animation
+	WC_EVT_PLR_ANIM,		// player model animation
 	WC_EVT_BULLETS,
 	WC_EVT_BEAM,
 	WC_EVT_PROJECTILE,		// for slow-moving projectiles that aren't predicted on the client
@@ -189,6 +192,7 @@ enum WeaponCustomEventType {
 	WC_EVT_DLIGHT,			// dynamic light
 	WC_EVT_SERVER,			// custom server-side logic.
 	WC_EVT_MUZZLEFLASH,
+	WC_EVT_FADE,			// screen fade
 
 	// impact events
 	WC_EVT_SPRITETRAIL,		// TE_SPRITETRAIL
@@ -593,9 +597,21 @@ struct WepEvt {
 			uint8_t noise;		// distortion for cylinder type
 		} beam_circle;
 
+		struct {
+			uint16_t duration;
+			uint16_t holdTime;
+			RGBA color;
+			uint8_t flags;
+		} fade;
+
 		//
 		// Server-side events
 		//
+
+		struct {
+			uint8_t action;
+			uint16_t duration; // custom duration if not 0
+		} player_anim;
 
 		struct {
 			uint16_t radius;

@@ -237,6 +237,13 @@ int GetCustomWeaponBody(int id) {
 	return 0;
 }
 
+int GetActiveCustomWeaponViewModel() {
+	if (g_activeWeaponCustom) {
+		return g_activeWeaponCustom->GetActiveViewModelIdx();
+	}
+	return -1;
+}
+
 bool IsExclusiveWeapon(int id) {
 	CustomWeaponParams* params = GetCustomWeaponParams(id, WC_PARAMS_AUTO);
 	return params && (params->flags & FL_WC_WEP_EXCLUSIVE_HOLD);

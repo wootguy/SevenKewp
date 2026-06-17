@@ -14,6 +14,7 @@
 ****/
 #ifndef SHAKE_H
 #define SHAKE_H
+#include <stdint.h>
 
 // Screen / View effects
 
@@ -49,7 +50,7 @@ typedef struct
 	unsigned short 	duration;		// FIXED 4.12 seconds duration
 	unsigned short 	holdTime;		// FIXED 4.12 seconds duration until reset (fade & hold)
 	short			fadeFlags;		// flags
-	byte			r, g, b, a;		// fade to color ( max alpha )
+	uint8_t			r, g, b, a;		// fade to color ( max alpha )
 } ScreenFade;
 
 #endif		// SHAKE_H

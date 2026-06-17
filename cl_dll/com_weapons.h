@@ -61,6 +61,7 @@ int GetCustomWeaponStateIconIdx(); // -1 for no icon
 const char* GetCustomWeaponStateString();
 const char* GetCustomWeaponChargeStatesString();
 int GetCustomWeaponBody(int id);
+int GetActiveCustomWeaponViewModel(); // -1 if not a custom weapon
 bool IsExclusiveWeapon(int id);
 void InitCustomWeapon(int id);
 void ResetCustomWeaponStates();

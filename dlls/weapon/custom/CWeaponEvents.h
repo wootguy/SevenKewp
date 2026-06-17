@@ -135,6 +135,8 @@ public:
 	void PlayEvent_Implosion(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_SpriteSpray(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_StreakSplash(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_Fade(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_PlayerAnim(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_BeamCircle(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTrace* tr, int forceParams);
@@ -145,6 +147,7 @@ public:
 	float GetChargeMult(WepEvt& evt, int flagMask);
 	WcBeamTrace BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer);
 	void FireAmmoEvents(int ammoPool, int attackIdx);
+	void FireShootEvents(int trigger, bool leftHand, int* clip, bool akimboFire);
 	WcBeam* AllocBeam();
 	void UpdateBeams();
 	bool KillBeams(int attackIdx=-1); // set attack idx to only kill constant beams attached to an attack button. True if any beams killed

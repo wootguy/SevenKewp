@@ -86,6 +86,7 @@ typedef enum
 	PLAYER_ATTACK1,
 	PLAYER_ATTACK2, // left hand fire
 	PLAYER_ATTACK3, // right hand fire
+	PLAYER_ATTACK_GL, // m16 grenade launcher
 	PLAYER_RELOAD,
 	PLAYER_RELOAD2, // left hand reload
 	PLAYER_RELOAD3, // right hand reload

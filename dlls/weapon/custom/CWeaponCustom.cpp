@@ -94,7 +94,15 @@ void CWeaponCustom::Precache() {
 			UTIL_PrecacheOther(STRING(defaultParams.ammoInfo[i].dropEnt));
 	}
 
+	if (defaultParams.defaultModelV_zoom)
+		defaultParams.vmodel_zoom = PRECACHE_MODEL(STRING(defaultParams.defaultModelV_zoom));
+	if (alternateParams.defaultModelV_zoom)
+		alternateParams.vmodel_zoom = PRECACHE_MODEL(STRING(alternateParams.defaultModelV_zoom));
+
 	defaultParams.vmodel = MODEL_INDEX(GetModelV());
+
+	if (alternateParams.defaultModelV)
+		alternateParams.vmodel = PRECACHE_MODEL(STRING(alternateParams.defaultModelV));
 #endif
 }
 
@@ -404,7 +412,7 @@ bool CWeaponCustom::CanReload(int attackIdx) {
 	if (m_flNextPrimaryAttack > 0)
 		return false;
 
-	if (attackIdx == 1 || (attackIdx == 0 && GetFlag(FL_WC_WEP_RELOAD2_IS_DEFAULT)) && !IsAkimbo()) {
+	if ((attackIdx == 1 || (attackIdx == 0 && GetFlag(FL_WC_WEP_RELOAD2_IS_DEFAULT))) && !IsAkimbo()) {
 		if (m_iClip2 == -1)
 			return false;
 		if (m_pPlayer->m_rgAmmo[m_iSecondaryAmmoType] <= 0)
@@ -477,7 +485,7 @@ void CWeaponCustom::Reload() {
 
 		int* clip = GetAttackClip(1);
 		if (CommonAttack(1, clip, false, false)) { // TODO: configure this
-			events.ProcessEvents(WC_TRIG_SECONDARY, 0, *clip);
+			events.FireShootEvents(WC_TRIG_SECONDARY, false, clip, false);
 			QueueStateToggles(1);
 		}
 		return;
@@ -563,8 +571,6 @@ void CWeaponCustom::Reload() {
 		events.m_bulletFireCount2 = 0;
 	}
 	else {
-		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
-
 		bool doReloadStart = true;
 
 		if (IsAkimbo()) {
@@ -574,9 +580,9 @@ void CWeaponCustom::Reload() {
 			doReloadStart = false;
 
 			if (m_fInSpecialReload == WC_RELOAD_STAGE_SHELL)
-				events.ProcessEvents(WC_TRIG_RELOAD_SHELL, akimboArg);
+				events.FireShootEvents(WC_TRIG_RELOAD_SHELL, false, NULL, false);
 			else if (m_fInSpecialReload == WC_RELOAD_STAGE_PUMP) {
-				events.ProcessEvents(WC_TRIG_RELOAD_FINISH, akimboArg);
+				events.FireShootEvents(WC_TRIG_RELOAD_FINISH, false, NULL, false);
 			}
 			else {
 				doReloadStart = true;
@@ -584,13 +590,13 @@ void CWeaponCustom::Reload() {
 		}
 
 		if (doReloadStart) {
-			events.ProcessEvents(WC_TRIG_RELOAD, akimboArg);
+			events.FireShootEvents(WC_TRIG_RELOAD, false, NULL, false);
 
 			if (m_iClip == 0) {
-				events.ProcessEvents(WC_TRIG_RELOAD_EMPTY, akimboArg);
+				events.FireShootEvents(WC_TRIG_RELOAD_EMPTY, false, NULL, false);
 			}
 			else {
-				events.ProcessEvents(WC_TRIG_RELOAD_NOT_EMPTY, akimboArg);
+				events.FireShootEvents(WC_TRIG_RELOAD_NOT_EMPTY, false, NULL, false);
 			}
 		}
 
@@ -882,7 +888,6 @@ void CWeaponCustom::PrimaryAttack() {
 
 	if (GetFlag(FL_WC_WEP_HAS_PRIMARY)) {
 		int* clip = GetAttackClip(0);
-		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
 		if (CommonAttack(0, clip, IsAkimbo(), false)) {
 			m_primaryFired = true;
@@ -893,7 +898,7 @@ void CWeaponCustom::PrimaryAttack() {
 				events.ProcessEvents(WC_TRIG_PRIMARY_START, 0);
 				m_attackStartCmdTime = CmdTime();
 			}
-			events.ProcessEvents(trig, akimboArg, IsAkimbo(), false, *clip);
+			events.FireShootEvents(trig, IsAkimbo(), clip, false);
 			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_PRIMARY_CLIP, attackIdx);
 
 			if (*clip < 0)
@@ -950,6 +955,7 @@ void CWeaponCustom::SecondaryAttack() {
 				m_attackStartCmdTime = CmdTime();
 			}
 			events.ProcessEvents(primaryTrig, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth, *clip);
+			events.ProcessEvents(primaryTrig, WC_TRIG_SHOOT_ARG_ALWAYS, false, fireBoth, *clip);
 			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_PRIMARY_CLIP, 0);
 
 			if (*clip < 0)
@@ -963,6 +969,7 @@ void CWeaponCustom::SecondaryAttack() {
 			if (isAttackStart)
 				events.ProcessEvents(WC_TRIG_SECONDARY_START, WC_TRIG_SHOOT_ARG_AKIMBO, true, fireBoth, *clip);
 			events.ProcessEvents(primaryTrig, WC_TRIG_SHOOT_ARG_AKIMBO, true, fireBoth, *clip);
+			events.ProcessEvents(primaryTrig, WC_TRIG_SHOOT_ARG_ALWAYS, true, fireBoth, *clip);
 
 			if (m_chargeReady < 0)
 				m_chargeReady = 0;
@@ -970,14 +977,13 @@ void CWeaponCustom::SecondaryAttack() {
 	}
 	else if (params.flags & FL_WC_WEP_HAS_SECONDARY) {
 		int* clip = GetAttackClip(1);
-		int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
 
 		if (CommonAttack(1, clip, false, false)) {
 			m_secondaryFired = true;
 
 			if (isAttackStart)
 				events.ProcessEvents(WC_TRIG_SECONDARY_START, 0);
-			events.ProcessEvents(WC_TRIG_SECONDARY, akimboArg, *clip);
+			events.FireShootEvents(WC_TRIG_SECONDARY, false, clip, false);
 			events.FireAmmoEvents(opts.ammoPool ? opts.ammoPool : (int)WC_AMMOPOOL_SECONDARY_CLIP, 1);
 		
 			QueueStateToggles(1);
@@ -1002,9 +1008,7 @@ void CWeaponCustom::TertiaryAttack() {
 		int* clip = GetAttackClip(2);
 
 		if (CommonAttack(2, clip, false, false)) {
-			int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;
-
-			events.ProcessEvents(WC_TRIG_TERTIARY, akimboArg, false, false, *clip);
+			events.FireShootEvents(WC_TRIG_TERTIARY, false, clip, false);
 			events.FireAmmoEvents(opts.ammoPool, 2);
 
 			if (*clip < 0)
@@ -2180,10 +2184,10 @@ int CWeaponCustom::GetItemInfo(ItemInfo* p) {
 
 studiohdr_t* CWeaponCustom::GetViewModelHeader() {
 #ifdef CLIENT_DLL
-	model_s* mdl = gEngfuncs.hudGetModelByIndex(defaultParams.vmodel);
+	model_s* mdl = gEngfuncs.hudGetModelByIndex(GetActiveViewModelIdx());
 	return (studiohdr_t*)(mdl ? mdl->cache.data : NULL);
 #else
-	return GET_MODEL_PTR(MODEL_INDEX(GetModelV()));
+	return GET_MODEL_PTR(GetActiveViewModelIdx());
 #endif
 }
 
@@ -2249,6 +2253,10 @@ void CWeaponCustom::PlayDelayedStateToggles() {
 }
 
 void CWeaponCustom::DoStateToggles(int attackIdx) {
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
+		return;
+
 	CustomWeaponParams& params = GetActiveParams();
 	WeaponCustomToggle& toggle = GetActiveToggle(attackIdx);
 
@@ -2262,6 +2270,11 @@ void CWeaponCustom::DoStateToggles(int attackIdx) {
 	if (toggleBits & FL_WC_STATE_ZOOM) {
 		int zoomLevel = CycleZoom(toggle.zoomLevels);
 		toggleBits &= ~FL_WC_STATE_ZOOM;
+
+		if (params.vmodel_zoom) {
+			string_t vmodel = zoomLevel ? params.defaultModelV_zoom : params.defaultModelV;
+			m_pPlayer->pev->viewmodel = MAKE_STRING(GET_MODEL(STRING(vmodel)));
+		}
 	}
 
 	switch (toggle.mode) {
@@ -2307,6 +2320,7 @@ void CWeaponCustom::DoStateToggles(int attackIdx) {
 		int forceParams = GetState(FL_WC_STATE_ALT_PARAMS) ? WC_PARAMS_DEFAULT : WC_PARAMS_ALTERNATE;
 		events.ProcessEvents(trig, arg, false, false, 0, NULL, forceParams);
 		events.ProcessEvents(trig, WC_TRIG_ARG_STATE_ALT_PARAMS, false, false, 0, NULL, forceParams);
+		UpdateAnimSet();
 	}
 }
 
@@ -2336,6 +2350,11 @@ void CWeaponCustom::UpdateStateHudSprite() {
 	else {
 		m_stateIconIdx = params.stateIcon.defaultIconIdx;
 	}	
+}
+
+int CWeaponCustom::GetActiveViewModelIdx() {
+	CustomWeaponParams& params = GetActiveParams();	
+	return params.vmodel_zoom && GetZoom() ? params.vmodel_zoom : params.vmodel;
 }
 
 LINK_ENTITY_TO_CLASS(weapon_custom_ini, CWeaponCustom)

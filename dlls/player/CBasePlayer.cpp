@@ -1058,6 +1058,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 
 	switch (m_Activity) {
 	case ACT_RANGE_ATTACK1:
+	case ACT_RANGE_ATTACK2:
 	case ACT_SPECIAL_ATTACK1:
 	case ACT_SPECIAL_ATTACK2:
 	case ACT_RELOAD:
@@ -1100,6 +1101,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 	case PLAYER_ATTACK1:
 	case PLAYER_ATTACK2:
 	case PLAYER_ATTACK3:
+	case PLAYER_ATTACK_GL:
 	case PLAYER_USE:
 	case PLAYER_DROP_ITEM:
 	case PLAYER_DEPLOY_WEAPON:
@@ -1125,8 +1127,11 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 			else if (playerAnim == PLAYER_ATTACK2) {
 				m_IdealActivity = ACT_SPECIAL_ATTACK1;
 			}
-			else if (playerAnim == PLAYER_ATTACK3) {
-				m_IdealActivity = ACT_SPECIAL_ATTACK2;
+			else if (playerAnim == PLAYER_ATTACK2) {
+				m_IdealActivity = ACT_SPECIAL_ATTACK1;
+			}
+			else if (playerAnim == PLAYER_ATTACK_GL) {
+				m_IdealActivity = ACT_RANGE_ATTACK2;
 			}
 			else if (playerAnim == PLAYER_DROP_ITEM) {
 				m_IdealActivity = ACT_DISARM;
@@ -1215,6 +1220,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 		return;
 	}
 	case ACT_RANGE_ATTACK1:
+	case ACT_RANGE_ATTACK2:
 	case ACT_SPECIAL_ATTACK1:
 	case ACT_SPECIAL_ATTACK2:
 	{
@@ -1229,7 +1235,12 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim, float duration)
 		else
 			strcpy_safe(szAnim, "ref_shoot_", 64);
 
-		strcat_safe(szAnim, m_szAnimExtention, 64);
+		const char* ext = m_szAnimExtention;
+		if (m_IdealActivity == ACT_RANGE_ATTACK2) {
+			ext = hasNewAnims ? "m203" : "gauss";
+		}
+
+		strcat_safe(szAnim, ext, 64);
 
 		if (hasNewAnims && !strcmp(m_szAnimExtention, "shotgun")) {
 			strcat_safe(szAnim, "2", 64); // the second anim includes cocking
