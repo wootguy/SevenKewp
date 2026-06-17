@@ -215,6 +215,7 @@ void CL_DLLEXPORT HUD_TxferPredictionData ( struct entity_state_s *ps, const str
 
 	pcd->fuser2					= ppcd->fuser2;
 	pcd->fuser3					= ppcd->fuser3;
+	pcd->fuser4					= ppcd->fuser4;
 
 	VectorCopy( ppcd->vuser1, pcd->vuser1 );
 	VectorCopy( ppcd->vuser2, pcd->vuser2 );

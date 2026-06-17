@@ -326,6 +326,24 @@ int SendWeaponData(edict_t* target, CustomWeaponParams& params, int wepId, bool 
 		wc_send_netmsg_struct(g_wc_desc_state_sprite, dat);
 	}
 
+	if (params.flags & FL_WC_WEP_HAS_E_R_TOGGLE) {
+		wc_send_netmsg_struct(g_wc_desc_er_toggle, dat);
+	}
+	MESSAGE_END();
+
+	return LastMsgSize();
+#else
+	return 0;
+#endif
+}
+
+int SendAttackData(edict_t* target, CustomWeaponParams& params, int wepId, bool isAltParams) {
+#ifndef CLIENT_DLL
+	uint8_t* dat = (uint8_t*)&params;
+	uint8_t altBit = isAltParams ? 1 : 0;
+
+	int akBytes = 0;
+
 	for (int k = 0; k < 4; k++) {
 		if (!(params.flags & FL_WC_WEP_HAS_PRIMARY) && k == 0)
 			continue;
@@ -336,15 +354,22 @@ int SendWeaponData(edict_t* target, CustomWeaponParams& params, int wepId, bool 
 		if (!(params.flags & FL_WC_WEP_HAS_ALT_PRIMARY) && k == 3)
 			continue;
 
+		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponAttack, NULL, target);
+		WRITE_BYTE((altBit << 7) | wepId);
+		WRITE_BYTE(k);
 		wc_send_netmsg_struct(g_wc_desc_shoot_opts, dat + sizeof(CustomWeaponShootOpts) * k);
-	}
-	MESSAGE_END();
+		MESSAGE_END();
 
-	return LastMsgSize();
+		akBytes += LastMsgSize();
+	}
+
+	return akBytes;
 #else
 	return 0;
 #endif
 }
+
+
 
 int SendEventData(edict_t* target, CustomWeaponParams& params, int wepId, bool isAltParams) {
 	int evBytes = 0;
@@ -435,9 +460,11 @@ void UTIL_SendCustomWeaponPredictionData(edict_t* target, CWeaponCustom* wep, Pr
 
 	if (sendMode != WC_PRED_SEND_EVT) {
 		mainBytes += SendWeaponData(target, params, wep->m_iId, false);
+		mainBytes += SendAttackData(target, params, wep->m_iId, false);
 
 		if (params.flags & FL_WC_WEP_HAS_ALT_PARAMS) {
 			mainBytes += SendWeaponData(target, altParams, wep->m_iId, true);
+			mainBytes += SendAttackData(target, altParams, wep->m_iId, true);
 		}
 	}
 
@@ -506,22 +533,41 @@ int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pb
 		wc_read_netmsg_struct(g_wc_desc_state_sprite, dat);
 	}
 
-	for (int i = 0; i < 4; i++) {
-		if (!(parms.flags & FL_WC_WEP_HAS_PRIMARY) && i == 0)
-			continue;
-		if (!(parms.flags & FL_WC_WEP_HAS_SECONDARY) && i == 1)
-			continue;
-		if (!(parms.flags & FL_WC_WEP_HAS_TERTIARY) && i == 2)
-			continue;
-		if (!(parms.flags & FL_WC_WEP_HAS_ALT_PRIMARY) && i == 3)
-			continue;
-
-		wc_read_netmsg_struct(g_wc_desc_shoot_opts, dat + sizeof(CustomWeaponShootOpts) * i);
+	if (parms.flags & FL_WC_WEP_HAS_E_R_TOGGLE) {
+		wc_read_netmsg_struct(g_wc_desc_er_toggle, dat);
 	}
 
 #endif
 	return 1;
 }
+
+int UTIL_ReadCustomWeaponPredictionAttackData(const char* pszName, int iSize, void* pbuf) {
+#ifdef CLIENT_DLL
+	BEGIN_READ(pbuf, iSize);
+
+	uint8_t packed = READ_BYTE();
+	bool isAltParams = (packed >> 7) != 0;
+	int weaponId = packed & 0x7f;
+
+	if (weaponId < 0 || weaponId >= MAX_WEAPONS)
+		return 0;
+
+	int paramsIdx = isAltParams ? WC_PARAMS_ALTERNATE : WC_PARAMS_DEFAULT;
+	CustomWeaponParams& parms = *GetCustomWeaponParams(weaponId, paramsIdx);
+	uint8_t* dat = (uint8_t*)&parms;
+
+	int attackIdx = READ_BYTE();
+	if (attackIdx >= WC_ATTACK_TYPES) {
+		PRINTF("Invalid attack index in custom weapon data %d\n", attackIdx);
+		return 0;
+	}
+
+	wc_read_netmsg_struct(g_wc_desc_shoot_opts, dat + sizeof(CustomWeaponShootOpts) * attackIdx);
+
+#endif
+	return 1;
+}
+
 
 int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, void* pbuf) {
 #ifdef CLIENT_DLL

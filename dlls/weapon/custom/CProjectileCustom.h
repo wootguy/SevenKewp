@@ -41,7 +41,7 @@ public:
 
 	void Remove();
 
-	void DamageTarget(CBaseEntity* ent);
+	virtual void DamageTarget(CBaseEntity* ent);
 
 	void Touch(CBaseEntity* pOther);
 	

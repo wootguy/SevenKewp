@@ -846,6 +846,11 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 		wc_fwrite_struct_fields(cfg, &params, g_wc_desc_state_sprite);
 	}
 
+	if (params.flags & FL_WC_WEP_HAS_E_R_TOGGLE) {
+		fprintf(cfg, "\n[%s]\n", g_wc_desc_er_toggle.name);
+		wc_fwrite_struct_fields(cfg, &params, g_wc_desc_er_toggle);
+	}
+
 	static int attackOrder[4] = { 0, 3, 1, 2 };
 	static int optBits[4] = { FL_WC_WEP_HAS_PRIMARY, FL_WC_WEP_HAS_SECONDARY, FL_WC_WEP_HAS_TERTIARY, FL_WC_WEP_HAS_ALT_PRIMARY };
 	static const char* optNames[4] = { "primary_attack", "secondary_attack", "tertiary_attack", "primary_alt_attack" };
@@ -992,6 +997,10 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params, 
 			params.flags |= FL_WC_WEP_HAS_STATE_SPRITE;
 			wc_read_struct(path, group, &params, g_wc_desc_state_sprite);
 		}
+		else if (group.name == "e_r_toggle") {
+			params.flags |= FL_WC_WEP_HAS_E_R_TOGGLE;
+			wc_read_struct(path, group, &params, g_wc_desc_er_toggle);
+		}
 		else if (group.name.find("event.") == 0) {
 			wc_parse_event(path, params, group);
 		}
@@ -999,6 +1008,11 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params, 
 
 	if (params.altParams) {
 		params.flags |= FL_WC_WEP_HAS_ALT_PARAMS;
+	}
+
+	if (params.erToggle.stateBits) {
+		params.erToggle.hasToggleInfo = params.erToggle.stateBits != 0;
+		params.erToggle.hasZoomInfo = params.erToggle.zoomLevels != 0;
 	}
 
 	if (params.flags & FL_WC_WEP_HAS_STATE_SPRITE) {
@@ -1417,6 +1431,7 @@ void wc_compare_params(CustomWeaponParams& a, CustomWeaponParams& b) {
 	wc_compare_struct_fields(g_wc_desc_akimbo, dat1, dat2, 0);
 	wc_compare_struct_fields(g_wc_desc_laser, dat1, dat2, 0);
 	wc_compare_struct_fields(g_wc_desc_state_sprite, dat1, dat2, 0);
+	wc_compare_struct_fields(g_wc_desc_er_toggle, dat1, dat2, 0);
 
 	for (int i = 0; i < WC_RELOAD_STAGES; i++) {
 		int offset = sizeof(WeaponCustomReload) * i;

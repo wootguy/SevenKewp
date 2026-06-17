@@ -41,6 +41,7 @@
 #define FL_WC_WEP_HAS_STATE_SPRITE		(1<<27) // weapon has a HUD sprite indicating weapon state
 #define FL_WC_WEP_HAS_ALT_PARAMS		(1<<28) // weapon has an alternate set of weapon params that can be toggled
 #define FL_WC_WEP_RELOAD2_IS_DEFAULT	(1<<29) // reload the secondary clip by default
+#define FL_WC_WEP_HAS_E_R_TOGGLE		(1<<30) // state is toggled by pressing +use and +reload together
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
@@ -160,6 +161,19 @@ struct MeleeOpts {
 	uint16_t missSounds[4];
 };
 
+// options for toggling weapon state
+struct WeaponCustomToggle {
+	uint8_t hasToggleInfo;	// 1 bit condition for networking
+	uint8_t hasZoomInfo;	// 1 bit condition for networking
+
+	uint16_t stateBits;		// FL_WC_STATE_*
+	uint8_t mode;			// WeaponCustomToggleStateMode
+	uint16_t onDelay;		// time before toggling states on
+	uint16_t offDelay;		// time before toggling states off
+	uint8_t zoomLevels;		// 2 bits - maximum levels of zoom
+	uint8_t zoomFov[3];		// zoom fov for each level
+};
+
 // Configure predicted control logic here, not in events. If an effect changes which code paths
 // are executed (alters predicted state variables like m_flNextAttack), then the effect belongs here.
 struct CustomWeaponShootOpts {
@@ -189,15 +203,7 @@ struct CustomWeaponShootOpts {
 	uint8_t hasAccMult[WC_ACCURACY_MULT_TYPES];		// 1 bit conditions for networking
 	uint16_t accuracyMult[WC_ACCURACY_MULT_TYPES];	// accuracy multipliers for player movement (4.12 fixed point)
 
-	uint8_t hasToggleInfo;		// 1 bit condition for networking
-	uint8_t hasZoomInfo;		// 1 bit condition for networking
-
-	uint16_t toggleStateBits;	// FL_WC_STATE_*
-	uint8_t toggleStateMode;	// WeaponCustomToggleStateMode
-	uint16_t toggleOnDelay;		// time before toggling states on
-	uint16_t toggleOffDelay;	// time before toggling states off
-	uint8_t zoomLevels;			// 2 bits - maximum levels of zoom
-	uint8_t zoomFov[3];			// zoom fov for each level
+	WeaponCustomToggle toggle;
 
 	// server side settings (not networked)
 	MeleeOpts melee;
@@ -233,7 +239,7 @@ struct WeaponCustomAmmoInfo {
 	string_t config;		// path to an ammo config for loading
 	string_t type;			// ammo inventory name
 	uint16_t maxClip;		// 0 = no reloading
-	uint16_t defaultGive;	// ammo loaded given when picked up for the first time. 0 = use maxClip
+	uint16_t defaultGive;	// ammo loaded when picked up for the first time. 0 = use maxClip (unless this is secondary ammo, in which case 0 = 0 starting clip)
 	string_t dropEnt;		// entity to spawn when dropping ammo
 	uint32_t dropAmt;		// amount of ammo to drop
 };
@@ -281,6 +287,9 @@ struct CustomWeaponParams {
 	WeaponCustomAkimbo akimbo;
 	WeaponCustomLaser laser;
 	WeaponCustomStateIcon stateIcon;
+
+	WeaponCustomToggle erToggle; // toggle action for pressing +use and +reload keys together
+	uint16_t erToggleCooldown;
 
 	// data for file parsing (not networked)
 	WeaponCustomAmmoInfo ammoInfo[2];

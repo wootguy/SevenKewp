@@ -488,6 +488,7 @@ void CProjectileCustom::Spawn() {}
 void CProjectileCustom::Precache() {}
 void CProjectileCustom::CustomMove() {}
 void CProjectileCustom::Touch(CBaseEntity* ent) {}
+void CProjectileCustom::DamageTarget(CBaseEntity* ent) {}
 void CProjectileCustom::CustomTouch(CBaseEntity* ent) {}
 void CProjectileCustom::Bounce(CBaseEntity* ent) {}
 void CProjectileCustom::Attach(CBaseEntity* ent) {}

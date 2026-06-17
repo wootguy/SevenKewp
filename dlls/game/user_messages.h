@@ -45,6 +45,7 @@ EXPORT extern int gmsgStatusText;
 EXPORT extern int gmsgStatusValue;
 
 EXPORT extern int gmsgCustomWeapon; // custom weapon prediction parameters
+EXPORT extern int gmsgCustomWeaponAttack; // custom weapon prediction parameters for a single attack
 EXPORT extern int gmsgCustomWeaponEvents; // custom weapon prediction parameters (events)
 EXPORT extern int gmsgNextMap; // next map name
 EXPORT extern int gmsgTimeLeft; // seconds left before map ends (0 = infinite)

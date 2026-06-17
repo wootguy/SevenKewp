@@ -628,6 +628,12 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	case WC_PROJECTILE_CUSTOM: {
 		const char* clazz = evt.proj.entity_class ? STRING(evt.proj.entity_class) : "custom_projectile";
 		shootEnt = CBaseEntity::Create(clazz, projectile_ori, projectile_dir_angles, false);
+
+		if (!shootEnt) {
+			ALERT(at_error, "Failed to create entity %s\n", clazz);
+			return;
+		}
+		
 		shootEnt->pev->velocity = projectile_velocity;
 		shootEnt->pev->owner = m_pPlayer->edict();
 

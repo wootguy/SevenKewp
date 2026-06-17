@@ -45,6 +45,7 @@
     } while (0)
 
 struct_desc_t g_wc_desc_general;
+struct_desc_t g_wc_desc_er_toggle;
 struct_desc_t g_wc_desc_ammo;
 struct_desc_t g_wc_desc_reload;
 struct_desc_t g_wc_desc_akimbo;
@@ -146,6 +147,23 @@ void init_weapon_struct_fields() {
 		);
 	}
 
+	WEP_STRUCT_DESC(g_wc_desc_er_toggle, "e_r_toggle",
+		WEP_FIELD("has_toggle", "0", erToggle.hasToggleInfo, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+		WEP_FIELD("has_zoom", "0", erToggle.hasZoomInfo, 7, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+
+		WEP_FIELD("cooldown", "0", erToggleCooldown, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(erToggle.hasToggleInfo)),
+		
+		WEP_FIELD("toggle_on_delay", "0", erToggle.onDelay, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(erToggle.hasToggleInfo)),
+		WEP_FIELD("toggle_off_delay", "0", erToggle.offDelay, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(erToggle.hasToggleInfo)),
+		WEP_FLAGS16("toggled_states", "0", erToggle.stateBits, 0, g_toggle_state_names, 0, WEP_COND_BYTE(erToggle.hasToggleInfo)),
+		WEP__ENUM("toggle_mode", "toggle", erToggle.mode, 0, g_toggle_mode_names, 0, WEP_COND_BYTE(erToggle.hasToggleInfo)),
+
+		WEP_FIELD("zoom_levels", "0", erToggle.zoomLevels, 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(erToggle.hasZoomInfo)),
+		WEP_FIELD("zoom_fov", "0", erToggle.zoomFov[0], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(erToggle.hasZoomInfo)),
+		WEP_FIELD("zoom_fov2", "0", erToggle.zoomFov[1], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(erToggle.hasZoomInfo)),
+		WEP_FIELD("zoom_fov3", "0", erToggle.zoomFov[2], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(erToggle.hasZoomInfo)),
+	);
+
 	WEP_STRUCT_DESC(g_wc_desc_ammo, "ammo_unnamed",
 		WEP_FIELD("config", "", ammoInfo[0].config, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 		WEP_FIELD("type", "", ammoInfo[0].type, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -231,18 +249,18 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("cooldown_water", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_WATER], 0, WC_PARAM_TIME,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_WATER])),
 			
-			WEP_FIELD("has_toggle", "0", shootOpts[0].hasToggleInfo, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
-			WEP_FIELD("has_zoom", "0", shootOpts[0].hasZoomInfo, 7, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("has_toggle", "0", shootOpts[0].toggle.hasToggleInfo, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("has_zoom", "0", shootOpts[0].toggle.hasZoomInfo, 7, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 
-			WEP_FIELD("toggle_on_delay", "0", shootOpts[0].toggleOnDelay, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasToggleInfo)),
-			WEP_FIELD("toggle_off_delay", "0", shootOpts[0].toggleOffDelay, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasToggleInfo)),
-			WEP_FLAGS16("toggled_states", "0", shootOpts[0].toggleStateBits, 0, g_toggle_state_names, 0, WEP_COND_BYTE(shootOpts[0].hasToggleInfo)),
-			WEP__ENUM("toggle_mode", "toggle", shootOpts[0].toggleStateMode, 0, g_toggle_mode_names, 0, WEP_COND_BYTE(shootOpts[0].hasToggleInfo)),
+			WEP_FIELD("toggle_on_delay", "0", shootOpts[0].toggle.onDelay, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].toggle.hasToggleInfo)),
+			WEP_FIELD("toggle_off_delay", "0", shootOpts[0].toggle.offDelay, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].toggle.hasToggleInfo)),
+			WEP_FLAGS16("toggled_states", "0", shootOpts[0].toggle.stateBits, 0, g_toggle_state_names, 0, WEP_COND_BYTE(shootOpts[0].toggle.hasToggleInfo)),
+			WEP__ENUM("toggle_mode", "toggle", shootOpts[0].toggle.mode, 0, g_toggle_mode_names, 0, WEP_COND_BYTE(shootOpts[0].toggle.hasToggleInfo)),
 			
-			WEP_FIELD("zoom_levels", "0", shootOpts[0].zoomLevels, 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasZoomInfo)),
-			WEP_FIELD("zoom_fov", "0", shootOpts[0].zoomFov[0], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasZoomInfo)),
-			WEP_FIELD("zoom_fov2", "0", shootOpts[0].zoomFov[1], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasZoomInfo)),
-			WEP_FIELD("zoom_fov3", "0", shootOpts[0].zoomFov[2], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasZoomInfo)),
+			WEP_FIELD("zoom_levels", "0", shootOpts[0].toggle.zoomLevels, 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].toggle.hasZoomInfo)),
+			WEP_FIELD("zoom_fov", "0", shootOpts[0].toggle.zoomFov[0], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].toggle.hasZoomInfo)),
+			WEP_FIELD("zoom_fov2", "0", shootOpts[0].toggle.zoomFov[1], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].toggle.hasZoomInfo)),
+			WEP_FIELD("zoom_fov3", "0", shootOpts[0].toggle.zoomFov[2], 0, WC_PARAM_UINT8, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].toggle.hasZoomInfo)),
 
 			WEP__ENUM("charge_mode", "0", shootOpts[0].chargeMode, 4, chargeModes),
 			WEP__ENUM("charge_ammo_mode", "0", shootOpts[0].chargeAmmoMode, 2, chargeAmmoModes),
@@ -1443,8 +1461,8 @@ void wc_post_parse_struct(void* dat, struct_desc_t& desc) {
 			opts.hasAccMult[i] = opts.accuracyMult[i] != 0;
 		}
 
-		opts.hasToggleInfo = opts.toggleStateBits != 0;
-		opts.hasZoomInfo = opts.zoomLevels != 0;
+		opts.toggle.hasToggleInfo = opts.toggle.stateBits != 0;
+		opts.toggle.hasZoomInfo = opts.toggle.zoomLevels != 0;
 	}
 }
 

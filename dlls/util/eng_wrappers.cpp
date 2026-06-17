@@ -729,6 +729,11 @@ studiohdr_t* GET_MODEL_PTR(int modelIdx) {
 void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed) {
 	CALL_HOOKS_VOID(pfnMessageBegin, msg_dest, msg_type, pOrigin, ed);
 
+	if (msg_type == 0) {
+		ALERT(at_error, "Tried to send unregistered user message\m");
+		return;
+	}
+
 	TextMenuMessageBeginHook(msg_dest, msg_type, pOrigin, ed);
 
 	if (mp_debugmsg.value) {

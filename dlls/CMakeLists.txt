@@ -421,6 +421,7 @@ set(PATH_SRC
 set(WEAPON_HDR
 	weapon/CBasePlayerItem.h
 	weapon/CBasePlayerWeapon.h
+	weapon/CGrenade.h
 	weapon/CWeaponBox.h
 	weapon/CWeaponInventory.h
 	weapon/CKnife.h
@@ -429,6 +430,8 @@ set(WEAPON_HDR
 set(WEAPON_SRC
 	weapon/CBasePlayerItem.cpp
 	weapon/CBasePlayerWeapon.cpp
+	weapon/CGrenade.cpp
+	weapon/CMortar.cpp
 	weapon/CWeaponBox.cpp
 	weapon/CWeaponInventory.cpp
 	weapon/weapons.cpp
@@ -466,12 +469,10 @@ set(DEFAULT_WEAPON_SRC
 	weapon/CCrowbar.cpp
 	weapon/CEgon.cpp
 	weapon/CGauss.cpp
-	weapon/CGrenade.cpp
 	weapon/CGrapple.cpp
 	weapon/CGrappleTip.cpp
 	weapon/CHandGrenade.cpp
 	weapon/CHgun.cpp
-	weapon/CMortar.cpp
 	weapon/CMP5.cpp
 	weapon/CPython.cpp
 	weapon/CMedkit.cpp

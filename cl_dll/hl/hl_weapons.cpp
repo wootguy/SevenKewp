@@ -1060,6 +1060,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pCurrent->m_fInSpecialReload	= pfrom->m_fInSpecialReload;
 //		pCurrent->m_flPumpTime			= pfrom->m_flPumpTime;
 		pCurrent->m_iClip				= pfrom->m_iClip;
+		pCurrent->m_iClip2				= pfrom->iuser4;
 		pCurrent->m_flNextPrimaryAttack	= pfrom->m_flNextPrimaryAttack;
 		pCurrent->m_flNextSecondaryAttack = pfrom->m_flNextSecondaryAttack;
 		pCurrent->m_flNextTertiaryAttack = pfrom->fuser4;
@@ -1272,6 +1273,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pto->iuser1						= pCurrent->m_chargeReady;
 		pto->iuser2						= pCurrent->m_fInAttack;
 		pto->iuser3						= pCurrent->m_fireState;
+		pto->iuser4						= pCurrent->m_iClip2;
 
 		// Decrement weapon counters, server does this at same time ( during post think, after doing everything else )
 		pto->m_flNextReload				-= cmd->msec / 1000.0;

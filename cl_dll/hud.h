@@ -120,6 +120,7 @@ public:
 	int MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_WeaponListX(const char *pszName, int iSize, void *pbuf);
 	int MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf);
+	int MsgFunc_CustomWepAk(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_CustomHud(const char* pszName, int iSize, void* pbuf);
 	int MsgFunc_PmodelAnim(const char* pszName, int iSize, void* pbuf);

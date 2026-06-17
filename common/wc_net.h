@@ -17,4 +17,5 @@ EXPORT bool UTIL_HasCustomWeaponPredictionData(edict_t* target, CWeaponCustom* w
 
 // client utils
 int UTIL_ReadCustomWeaponPredictionData(const char* pszName, int iSize, void* pbuf);
+int UTIL_ReadCustomWeaponPredictionAttackData(const char* pszName, int iSize, void* pbuf);
 int UTIL_ReadCustomWeaponPredictionEventData(const char* pszName, int iSize, void* pbuf);

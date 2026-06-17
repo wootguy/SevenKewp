@@ -28,6 +28,10 @@ void CWeaponCustom::Spawn() {
 
 	m_iDefaultAmmo = defaultParams.ammoInfo[0].maxClip ? defaultParams.ammoInfo[0].maxClip : defaultParams.ammoInfo[0].defaultGive;
 
+	if (defaultParams.ammoInfo[1].maxClip > 0) {
+		m_iClip2 = V_min(defaultParams.ammoInfo[1].maxClip, defaultParams.ammoInfo[1].defaultGive);
+	}
+
 	ItemInfo info;
 	info.iId = 0;
 	if (GetItemInfo(&info))
@@ -73,6 +77,13 @@ void CWeaponCustom::Precache() {
 
 	for (int i = 0; i < defaultParams.numEvents; i++) {
 		WepEvt& evt = defaultParams.events[i];
+		if (evt.evtType == WC_EVT_PROJECTILE && evt.proj.entity_class) {
+			UTIL_PrecacheOther(STRING(evt.proj.entity_class));
+		}
+	}
+
+	for (int i = 0; i < alternateParams.numEvents; i++) {
+		WepEvt& evt = alternateParams.events[i];
 		if (evt.evtType == WC_EVT_PROJECTILE && evt.proj.entity_class) {
 			UTIL_PrecacheOther(STRING(evt.proj.entity_class));
 		}
@@ -446,6 +457,13 @@ void CWeaponCustom::Reload() {
 		return;
 
 	CustomWeaponParams& params = GetActiveParams();
+
+	if (GetFlag(FL_WC_WEP_HAS_E_R_TOGGLE) && (m_pPlayer->pev->button & IN_USE)) {
+		if (m_flNextPrimaryAttack <= 0 && QueueStateToggles(4)) {
+			Cooldown(-1, params.erToggleCooldown);
+		}
+		return;
+	}
 
 	if (!CanReload(GetState(FL_WC_STATE_SECONDARY_RELOAD) ? 1 : 0)) {
 		return;
@@ -1006,7 +1024,9 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 
 	int clipLeft = *clip;
 
-	if ((opts.flags & FL_WC_SHOOT_NO_AUTOFIRE) || GetState(FL_WC_STATE_SEMI_AUTO) || clipLeft < opts.ammoCost) {
+	bool semiAutoAttack = !(opts.flags & FL_WC_SHOOT_NO_ATTACK) && GetState(FL_WC_STATE_SEMI_AUTO);
+
+	if ((opts.flags & FL_WC_SHOOT_NO_AUTOFIRE) || semiAutoAttack || clipLeft < opts.ammoCost) {
 		if (GetState(FL_WC_STATE_WANT_RELOAD)) {
 			// exiting iron-sights for a reload. Allow the "attack"
 		}
@@ -1885,11 +1905,11 @@ int CWeaponCustom::CycleZoom(int attackIdx, bool forceCancelZoom) {
 	CustomWeaponParams& params = GetActiveParams();
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
 
-	int zoomLevel = forceCancelZoom ? 0 : (GetZoom() + 1) % (opts.zoomLevels + 1);
+	int zoomLevel = forceCancelZoom ? 0 : (GetZoom() + 1) % (opts.toggle.zoomLevels + 1);
 	SetState(FL_WC_STATE_ZOOM, zoomLevel & 1);
 	SetState(FL_WC_STATE_ZOOM_FURTHER, zoomLevel & 2);
 
-	int zoomFov = zoomLevel ? opts.zoomFov[zoomLevel - 1] : 0;
+	int zoomFov = zoomLevel ? opts.toggle.zoomFov[zoomLevel - 1] : 0;
 	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = zoomFov;
 
 #ifdef CLIENT_DLL
@@ -2167,17 +2187,30 @@ studiohdr_t* CWeaponCustom::GetViewModelHeader() {
 #endif
 }
 
-void CWeaponCustom::QueueStateToggles(int attackIdx) {
-	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
-	if (!opts.toggleStateBits)
-		return;
+WeaponCustomToggle& CWeaponCustom::GetActiveToggle(int toggleIdx) {
+	if (toggleIdx != 4) {
+		CustomWeaponShootOpts& opts = GetShootOpts(toggleIdx);
+		return opts.toggle;
+	}
 
-	uint32_t packed = (attackIdx+1) & 0x3;
+	CustomWeaponParams& params = GetActiveParams();
+
+	return params.erToggle;
+}
+
+bool CWeaponCustom::QueueStateToggles(int toggleIdx) {
+	WeaponCustomToggle& toggle = GetActiveToggle(toggleIdx);
+	if (!toggle.stateBits)
+		return false;
+
+	uint32_t packed = (toggleIdx+1) & 0x7;
 	m_fireState = (packed << 16) | ((uint32_t)m_fireState & 0xffff);
 
 	if (g_runfuncs) {
 		m_stateChangeCmdTime = CmdTime();
 	}
+
+	return true;
 }
 
 void CWeaponCustom::PlayDelayedStateToggles() {
@@ -2185,13 +2218,16 @@ void CWeaponCustom::PlayDelayedStateToggles() {
 	if (!delayIdx)
 		return; // no states queued for toggling
 	
+	CustomWeaponParams& params = GetActiveParams();
+
 	int attackIdx = delayIdx - 1;
-	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
-	if (!opts.toggleStateBits)
+	WeaponCustomToggle& toggle = GetActiveToggle(attackIdx);
+
+	if (!toggle.stateBits)
 		return;
 
 	bool togglingOn = false;
-	switch (opts.toggleStateMode) {
+	switch (toggle.mode) {
 	case WC_TOGGLE_STATE_OFF:
 		togglingOn = false;
 		break;
@@ -2199,11 +2235,11 @@ void CWeaponCustom::PlayDelayedStateToggles() {
 		togglingOn = true;
 		break;
 	case WC_TOGGLE_STATE_TOGGLE:
-		togglingOn = !(m_fireState & opts.toggleStateBits);
+		togglingOn = !(m_fireState & toggle.stateBits);
 		break;
 	}
 
-	int delay = togglingOn ? opts.toggleOnDelay : opts.toggleOffDelay;
+	int delay = togglingOn ? toggle.onDelay : toggle.offDelay;
 	uint32_t toggleTime = m_stateChangeCmdTime + delay;
 
 	if (CmdTime() - m_stateChangeCmdTime >= delay) {
@@ -2214,20 +2250,21 @@ void CWeaponCustom::PlayDelayedStateToggles() {
 
 void CWeaponCustom::DoStateToggles(int attackIdx) {
 	CustomWeaponParams& params = GetActiveParams();
-	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
-	if (!opts.toggleStateBits)
+	WeaponCustomToggle& toggle = GetActiveToggle(attackIdx);
+
+	if (!toggle.stateBits)
 		return;
 
-	uint32_t toggleBits = opts.toggleStateBits;
+	uint32_t toggleBits = toggle.stateBits;
 
 	int trig = GetZoom() ? WC_TRIG_STATE_ZOOMED : WC_TRIG_STATE;
 
 	if (toggleBits & FL_WC_STATE_ZOOM) {
-		int zoomLevel = CycleZoom(opts.zoomLevels);
+		int zoomLevel = CycleZoom(toggle.zoomLevels);
 		toggleBits &= ~FL_WC_STATE_ZOOM;
 	}
 
-	switch (opts.toggleStateMode) {
+	switch (toggle.mode) {
 	case WC_TOGGLE_STATE_OFF:
 		SetState(toggleBits, false);
 		break;

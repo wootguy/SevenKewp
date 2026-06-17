@@ -324,7 +324,8 @@ DECLARE_MESSAGE(m_Ammo, CurWeaponX );	// Current weapon and clip (large clip)
 DECLARE_MESSAGE(m_Ammo, WeaponList);	// new weapon type
 DECLARE_MESSAGE(m_Ammo, WeaponListX);	// new weapon type (extra parameters)
 DECLARE_MESSAGE(m_Ammo, CustomWep);		// custom weapon parameters
-DECLARE_MESSAGE(m_Ammo, CustomWepEv);	// custom weapon parameters
+DECLARE_MESSAGE(m_Ammo, CustomWepAk);	// custom weapon attack parameters
+DECLARE_MESSAGE(m_Ammo, CustomWepEv);	// custom weapon event parameters
 DECLARE_MESSAGE(m_Ammo, CustomHud);		// custom hud file for weapon
 DECLARE_MESSAGE(m_Ammo, PmodelAnim);	// player model anim
 DECLARE_MESSAGE(m_Ammo, WeaponBits);	// currently held weapons
@@ -372,6 +373,7 @@ int CHudAmmo::Init(void)
 	HOOK_MESSAGE(WeaponList);
 	HOOK_MESSAGE(WeaponListX);
 	HOOK_MESSAGE(CustomWep);
+	HOOK_MESSAGE(CustomWepAk);
 	HOOK_MESSAGE(CustomWepEv);
 	HOOK_MESSAGE(CustomHud);
 	HOOK_MESSAGE(PmodelAnim);
@@ -927,6 +929,11 @@ int CHudAmmo::MsgFunc_WeaponListX(const char* pszName, int iSize, void* pbuf)
 int CHudAmmo::MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf)
 {
 	return UTIL_ReadCustomWeaponPredictionData(pszName, iSize, pbuf);
+}
+
+int CHudAmmo::MsgFunc_CustomWepAk(const char* pszName, int iSize, void* pbuf)
+{
+	return UTIL_ReadCustomWeaponPredictionAttackData(pszName, iSize, pbuf);
 }
 
 int CHudAmmo::MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf)

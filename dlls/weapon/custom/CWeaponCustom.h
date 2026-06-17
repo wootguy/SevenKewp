@@ -175,7 +175,7 @@ public:
 
 	// repurposing these weapon vars so I don't have to network something new to the client:
 	// m_fireState bit packing (high to low):
-	//		2 bits - attack index (+1) to do a delayed state change for
+	//		3 bits - attack index (+1) to do a delayed state change for (index 3 = E+R toggle)
 	//		16 bits - current state flags (FL_WC_STATE_*)
 	// m_fInAttack bit packing:
 	//		4 bits - primary alt charge state (WcAttackState)
@@ -186,7 +186,8 @@ public:
 	void SetCanAkimbo(bool canAkimbo);
 	BOOL IsAkimbo() { return GetState(FL_WC_STATE_IS_AKIMBO); }
 	bool IsIronSights() { return GetZoom() != 0 && GetFlag(FL_WC_WEP_IRON_SIGHTS_ZOOM); }
-	void QueueStateToggles(int attackIdx);
+	WeaponCustomToggle& GetActiveToggle(int toggleIdx); // toggleIdx = attackIdx except index 4 is E+R toggle, not alt primary
+	bool QueueStateToggles(int toggleIdx); // Returns true if anything queued. toggleIdx = attackIdx except index 4 is E+R toggle, not alt primary.
 	void PlayDelayedStateToggles();
 	void DoStateToggles(int attackIdx);
 	void SetState(uint16_t stateBits, bool state); // set flags that are safe to use in predicted logic

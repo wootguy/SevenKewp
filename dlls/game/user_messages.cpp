@@ -49,6 +49,7 @@ int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
 int gmsgCustomWeapon = 0;
+int gmsgCustomWeaponAttack = 0;
 int gmsgCustomWeaponEvents = 0;
 int gmsgNextMap = 0;
 int gmsgTimeLeft = 0;
@@ -78,6 +79,11 @@ std::vector<UserMessage> g_userMessages;
 
 int REG_USER_MSG(const char* name, int size) {
 	CALL_HOOKS(int, pfnRegUserMsg, name, size);
+
+	if (strlen(name) > 11) {
+		ALERT(at_error, "User message name %s is too long (11 chars max)\n", name);
+		return 0;
+	}
 
 	UserMessage msg;
 	msg.name = name;
@@ -168,6 +174,7 @@ void LinkUserMessages(void)
 	gmsgStatusValue = REG_USER_MSG("StatusValue", 3);
 
 	gmsgCustomWeapon = REG_USER_MSG("CustomWep", -1);
+	gmsgCustomWeaponAttack = REG_USER_MSG("CustomWepAk", -1);
 	gmsgCustomWeaponEvents = REG_USER_MSG("CustomWepEv", -1);
 	gmsgNextMap = REG_USER_MSG("NextMap", -1);
 	gmsgTimeLeft = REG_USER_MSG("TimeLeft", 4);
