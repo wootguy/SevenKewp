@@ -5,10 +5,7 @@
 #include "string_deltas.h"
 
 #define DEGREES_FROM_CONE(cone_value) (2.0f * asinf(cone_value) * 180.0f / (float)M_PI)
-#define DEGREES_FROM_SPREAD(spread) (2.0f * asinf(SPREAD_TO_FLOAT(spread)) * 180.0f / (float)M_PI)
-
-#define FLOAT_TO_MOVESPEED_MULT(val) clamp(((val) * 65535.0f), 1, 65535)
-#define MOVESPEED_MULT_TO_FLOAT(val) ((val) ? (val) / 65535.0f : 1.0f)
+#define DEGREES_FROM_SPREAD(spread) (2.0f * asinf(D100_TO_FLOAT(spread)) * 180.0f / (float)M_PI)
 
 #define MAX_WC_EVENTS 64
 
@@ -152,7 +149,7 @@ struct MeleeOpts {
 	int damage;
 	int damageBits;
 	int range;
-	Vector attackOffset;	// in forward, up, right unitsd
+	int32_t attackOffset[3];// in forward, up, right units
 	uint16_t missCooldown;	// cooldown millis for missing an attack
 	uint16_t hitCooldown;	// cooldown millis for hitting something
 	uint16_t decalDelay;	// how long to wait after hitting a wall to apply the decal
@@ -198,10 +195,10 @@ struct CustomWeaponShootOpts {
 	uint16_t overchargeTime;	// how long an attack can be charged before triggering an overcharge event and cancelling the chargeup
 	uint16_t dischargedCooldown;// cooldown when beginning a charge, increasing to 'cooldown' at full charge
 	uint16_t chargeCancelTime;	// minimum time before a charge can be cancelled (milliseconds)
-	uint16_t chargeMoveSpeedMult; // movement speed multiplier while charging (1-65535) (65535 = 100%) (0 = don't change)
+	uint16_t chargeMoveSpeedMult; // movement speed multiplier while charging (0 = don't change)
 	
 	uint8_t hasAccMult[WC_ACCURACY_MULT_TYPES];		// 1 bit conditions for networking
-	uint16_t accuracyMult[WC_ACCURACY_MULT_TYPES];	// accuracy multipliers for player movement (4.12 fixed point)
+	uint16_t accuracyMult[WC_ACCURACY_MULT_TYPES];	// accuracy multipliers for player movement
 
 	WeaponCustomToggle toggle;
 
@@ -278,9 +275,9 @@ struct CustomWeaponParams {
 	uint32_t flags; // FL_WC_WEP_*
 	uint16_t vmodel;
 	uint16_t vmodel_zoom;		// view model displayed while zoomed in
-	uint16_t moveSpeedMult;		// move speed multiplier (1-65535) (65535 = 100%) (0 = don't change)
-	uint16_t zoomMoveSpeedMult; // movement speed multiplier while zoomed (1-65535) (65535 = 100%) (0 = don't change)
-	int jumpPower;			// -1 = disabled, 0 = default velocity (800), 1+ = custom velocity
+	uint16_t moveSpeedMult;		// move speed multiplier (0 = don't change)
+	uint16_t zoomMoveSpeedMult; // movement speed multiplier while zoomed (0 = don't change)
+	int jumpPower;				// -1 = disabled, 0 = default velocity (800), 1+ = custom velocity
 
 	WeaponCustomReload reloadStage[WC_RELOAD_STAGES];
 

@@ -1,22 +1,15 @@
 #pragma once
 
-#define FLOAT_TO_SFP_10_6(val) (clamp((int)((val) * 64), INT16_MIN, INT16_MAX))
-#define SFP_10_6_TO_FLOAT(val) (val / 64.0f)
+#define FLOAT_TO_D100(val) (clamp(val * 100, 0, UINT16_MAX))
+#define FLOAT_TO_SD100(val) (clamp(val * 100, INT16_MIN, INT16_MAX))
+#define FLOAT_TO_SD1000_32BIT(val) (clamp(val * 1000, INT32_MIN, INT32_MAX))
+#define D100_TO_FLOAT(val) ((val) * 0.01f)
 
-#define FLOAT_TO_SFP_9_7(val) (clamp((int)((val) * 128), INT16_MIN, INT16_MAX))
-#define SFP_9_7_TO_FLOAT(val) ((val / 128.0f))
+#define FLOAT_TO_D1000(val) (clamp(val * 1000, 0, UINT16_MAX))
+#define FLOAT_TO_SD1000(val) (clamp(val * 1000, INT16_MIN, INT16_MAX))
+#define D1000_TO_FLOAT(val) ((val) * 0.001f)
 
-#define FLOAT_TO_SFP_6_10(val) (clamp((int)((val) * 1024), INT16_MIN, INT16_MAX))
-#define SFP_6_10_TO_FLOAT(val) (val / 1024.0f)
-
-#define FLOAT_TO_FP_4_12(val) (clamp((int)((val) * 4096), 0, UINT16_MAX))
-#define FP_4_12_TO_FLOAT(val) (val / 4096.0f)
-
-#define FLOAT_TO_FP_8_8(val) (clamp((int)((val) * 256), 0, UINT16_MAX))
-#define FP_8_8_TO_FLOAT(val) (val / 256.0f)
-
-#define FLOAT_TO_SPREAD(val) (clamp((int)((val) * 65535), 0, UINT16_MAX))
-#define SPREAD_TO_FLOAT(val) (val / 65535.0f)
+#define INT32_VEC3_TO_VECTOR(v) Vector(v[0] * 0.001f, v[1] * 0.001f, v[2] * 0.001f)
 
 #define MAX_WC_RANDOM_SELECTION 8
 
@@ -435,7 +428,7 @@ struct WepEvt {
 		struct {
 			uint8_t count;			// how many bullets are shot at once
 			uint16_t damage;		// damage per bullet
-			uint16_t accuracy[2];	// X/Y accuracy. 0 = perfect, 1 = 180 degrees. 65535 = 1.0f
+			uint16_t accuracy[2];	// X/Y accuracy. 0 = perfect.
 			uint8_t tracerFreq;		// 4 bits. how often to display a tracer (0 = never, 1 = always, 2 = every other shot)
 			uint8_t tracerColor;	// 4 bits. WeaponCustomTracerColor
 			uint8_t flashSz;		// 4 bits. WeaponCustomFlashSz
@@ -459,13 +452,13 @@ struct WepEvt {
 			uint16_t sprite;		// 9 bits
 
 			uint8_t ricoBeams;		// max number of ricochet beams
-			uint16_t ricoAngle;		// 0 = perfect, 1 = 180 degrees. 65535 = 1.0f
+			uint16_t ricoAngle;		// 0 = perfect, 1 = 180 degrees.
 
 			uint8_t id;				// 4 bits. ID used to update the beam in future events, for constant beams. 0 = always create a new beam
 			uint8_t altMode;		// 3 bits. WeaponCustomBeamAnimation
 			uint8_t hasImpactSprite;// 1 bit
 			uint16_t life;			// how long to keep the beam active (millis). 0 = forever (egon)
-			uint16_t accuracy[2];	// X/Y accuracy. 0 = perfect, 1 = 180 degrees. 65535 = 1.0f
+			uint16_t accuracy[2];	// X/Y accuracy. 0 = perfect, 1 = 180 degrees.
 			uint16_t damage;		// damage per beam
 			uint16_t distance;		// max beam distance
 			uint16_t freq;			// how often to apply damage (millis). 0 = once per attack.
@@ -627,8 +620,8 @@ struct WepEvt {
 		} radiusDamage;
 
 		struct {
-			int flags; // FL_WC_PROJ_*
-			uint16_t accuracy[2]; // X/Y accuracy. 0 = perfect, 1 = 180 degrees. 65535 = 1.0f
+			int flags;				// FL_WC_PROJ_*
+			uint16_t accuracy[2];	// X/Y accuracy. 0 = perfect, 1 = 180 degrees.
 			bool hasAvel;
 
 			uint8_t type;
@@ -636,22 +629,22 @@ struct WepEvt {
 			WeaponCustomProjectileAction monster_event;
 			int speed;				// speed = initial speed of the projectile
 			uint16_t life;
-			float elasticity;		// percentage of reflected velocity
-			float gravity;			// percentage of normal gravity
-			float air_friction;
-			float water_friction;
-			float size;				// hull size (all dimensions)
-			float dir[3];			// dir = Direction of the projectile, relative to the aim direction.
-			//       Coordinates are given as Right, Up, and Forward units.
-			//       Usually you want to set this to straight forward (0 0 1).
+			int32_t elasticity;		// percentage of reflected velocity
+			int32_t gravity;		// percentage of normal gravity
+			int32_t air_friction;
+			int32_t water_friction;
+			int32_t size;			// hull size (all dimensions)
+			int32_t dir[3];			// dir = Direction of the projectile, relative to the aim direction.
+									//       Coordinates are given as Right, Up, and Forward units.
+									//       Usually you want to set this to straight forward (0 0 1).
 			string_t entity_class;	// custom projectile entity
 			
 			uint16_t model;
 			uint8_t renderMode;
 			uint8_t renderAmt;
 			uint8_t renderFx;
-			float scale; // sprites only
-			float framerate;
+			int32_t scale; // sprites only
+			int32_t framerate;
 
 			string_t move_snd;
 			uint16_t damage;
@@ -659,17 +652,17 @@ struct WepEvt {
 
 			string_t sprite;
 			RGBA sprite_color;
-			float sprite_scale;
+			int32_t sprite_scale;
 
-			float angles[3];
-			float avel[3];
-			float position[3];			// offset from view position given in: right, forward, up
-			float player_vel_inf[3];
+			int32_t angles[3];
+			int32_t avel[3];
+			int32_t position[3];			// offset from view position given in: right, forward, up
+			int32_t player_vel_inf[3];
 
 			uint8_t follow_mode;
-			float follow_radius;
-			float follow_angle;
-			float follow_time[3];
+			int32_t follow_radius;
+			int32_t follow_angle;
+			int32_t follow_time[3];
 
 			uint16_t trail_spr;
 			uint16_t trail_life;
@@ -685,14 +678,14 @@ struct WepEvt {
 			int iuser2;
 			int iuser3;
 			int iuser4;
-			float fuser1;
-			float fuser2;
-			float fuser3;
-			float fuser4;
-			float vuser1[3];
-			float vuser2[3];
-			float vuser3[3];
-			float vuser4[3];
+			int32_t fuser1;
+			int32_t fuser2;
+			int32_t fuser3;
+			int32_t fuser4;
+			int32_t vuser1[3];
+			int32_t vuser2[3];
+			int32_t vuser3[3];
+			int32_t vuser4[3];
 			string_t suser1;
 			string_t suser2;
 			string_t suser3;

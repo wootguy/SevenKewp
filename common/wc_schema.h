@@ -5,40 +5,33 @@
 
 enum WC_PARAM_TYPE {
 	WC_PARAM_UINT8,
-	WC_PARAM_UINT8_PERCENT, // percentage stored as a uint8_t
-	WC_PARAM_7BIT_PERCENT,	// percentage stored as a uint8_t, using only 7 bits
-	WC_PARAM_UINT8_FP_2_6,	// float value stored as a fixed point integer (6 bits for decimal)
+	WC_PARAM_UINT8_D100,	// percentage stored as a uint8_t
 	WC_PARAM_UINT8_FLAGS,	// flags stored in an 8-bit int, written to config on a single line
 	WC_PARAM_UINT8_ENUM,	// enum value stored in an 8-bit int
 	WC_PARAM_UINT8_ARRAY_8,	// array of up to 8 uint8_t
 	WC_PARAM_UINT16,
 	WC_PARAM_UINT16_FLAGS,
-	WC_PARAM_UINT16_FP_4_12,// unsigned 4.12 fixed point (accurate to 0.0003)
-	WC_PARAM_UINT16_FP_8_8,	// unsigned 8.8 fixed point (accurate to 0.005)
-	WC_PARAM_UINT16_PERCENT, // percentage stored as a uint16_t
+	WC_PARAM_UINT16_D100,	// unsigned 100ths of an int (+/-327 accurate to 0.01)
+	WC_PARAM_UINT16_D1000,	// unsigned 100ths of an int (+/-32 accurate to 0.001)
 	WC_PARAM_UINT32,
 	WC_PARAM_UINT32_FLAGS,
 	WC_PARAM_INT8,
 	WC_PARAM_INT16,
-	WC_PARAM_INT16_FP_6_10,	// signed 6.10 fixed point
 	WC_PARAM_INT32,
+	WC_PARAM_INT32_SD1000,	// signed 1000ths of an int (+/-2.1mil accurate to 0.001) 
 	WC_PARAM_RGB,
 	WC_PARAM_RGBA,
-	WC_PARAM_FLOAT,
-	WC_PARAM_VECTOR,
+	WC_PARAM_INT32_VEC3_SD1000,			// vector as an array of signed 1000ths. (+/-2,147,483 accurate to 0.001) 
 	WC_PARAM_VECTOR_INT8,			// vector as an array of int8_t. No decimals.
-	WC_PARAM_VECTOR_SFP_10_6,		// vector as an array of signed 10.6 fixed point ints. (+/-512 accurate to 0.02)
-	WC_PARAM_VECTOR_SFP_9_7,		// vector as an array of signed 9.7 fixed point ints. (+/-256 accurate to 0.01)
-	WC_PARAM_VECTOR_SFP_6_10,		// vector as an array of signed 6.10 fixed point ints. (+/-32 accurate to 0.001)
+	WC_PARAM_VEC2_SD100,			// vector as an array of signed 100ths. (+/-327 accurate to 0.01)
+	WC_PARAM_VEC3_SD100,			// vector as an array of signed 1000ths. (+/-32 accurate to 0.001)
+	WC_PARAM_VEC3_SD1000,			// vector as an array of signed 1000ths. (+/-32 accurate to 0.001)
 	WC_PARAM_SOUND_INDEX,			// sound file path stored as an index
 	WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2,// array of up to 8 sound indexes, one sound per config line, with key naming starting at index 2
 	WC_PARAM_MODEL_INDEX,			// model file path stored as an index
 	WC_PARAM_DECAL_INDEX,			// texture name stored as a decal index
 	WC_PARAM_STRING_DELTA,			// string stored as a delta index for the string delta networking system
 	WC_PARAM_TIME,					// time value stored as uint16_t
-	WC_PARAM_ACCURACY_UINT16_2X,	// degrees of accuracy (0-1 = 0-180) scaled to uint16_t (X + Y)
-	WC_PARAM_ACCURACY_UINT16,		// just X or Y
-	WC_PARAM_ACCURACY_100_2X,		// degrees of accuracy (0-1 = 0-180) scaled to uint16_t (X + Y)
 	WC_PARAM_STRING,
 };
 

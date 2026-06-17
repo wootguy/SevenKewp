@@ -1601,9 +1601,10 @@ void CWeaponCustom::MeleeAttack(int attackIdx) {
 
 	UTIL_MakeVectors(m_pPlayer->pev->v_angle);
 
-	Vector offset = opts.melee.attackOffset.x * gpGlobals->v_forward
-		+ opts.melee.attackOffset.y * gpGlobals->v_up
-		+ opts.melee.attackOffset.z * gpGlobals->v_right;
+	Vector offset = INT32_VEC3_TO_VECTOR(opts.melee.attackOffset);
+	offset = offset.x * gpGlobals->v_forward
+		+ offset.y * gpGlobals->v_up
+		+ offset.z * gpGlobals->v_right;
 
 	Vector vecSrc = m_pPlayer->GetGunPosition() + offset;
 	Vector vecEnd = vecSrc + gpGlobals->v_forward * opts.melee.range;
@@ -1781,13 +1782,13 @@ float CWeaponCustom::GetActiveMovespeedMult() {
 	CustomWeaponParams& params = GetActiveParams();
 
 	if (GetChargedState(0) != WC_CHARGE_STATE_NONE) {
-		return MOVESPEED_MULT_TO_FLOAT(params.shootOpts[0].chargeMoveSpeedMult);
+		return D100_TO_FLOAT(params.shootOpts[0].chargeMoveSpeedMult);
 	}
 	if (GetChargedState(1) != WC_CHARGE_STATE_NONE) {
-		return MOVESPEED_MULT_TO_FLOAT(params.shootOpts[1].chargeMoveSpeedMult);
+		return D100_TO_FLOAT(params.shootOpts[1].chargeMoveSpeedMult);
 	}
 	if (GetZoom()) {
-		return MOVESPEED_MULT_TO_FLOAT(params.zoomMoveSpeedMult);
+		return D100_TO_FLOAT(params.zoomMoveSpeedMult);
 	}
 
 	return 1.0f;

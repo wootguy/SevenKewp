@@ -1013,6 +1013,12 @@ Vector UTIL_ConeFromDegrees(float degrees) {
 	return Vector(s, s, s);
 }
 
+Vector UTIL_ConeFromDegrees(float degreesX, float degreesY) {
+	float sx = sinf((degreesX * 0.5f) * (float)M_PI / 180.0f);
+	float sy = sinf((degreesY * 0.5f) * (float)M_PI / 180.0f);
+	return Vector(sx, sy, 0);
+}
+
 FILE* UTIL_OpenFile(const char* path, const char* mode) {
 	static char gpath[MAX_PATH];
 	gpath[0] = 0;

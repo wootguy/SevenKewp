@@ -144,8 +144,8 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("thirdperson_anims", "", animExt, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("thirdperson_anims_zoom", "", animExtZoom, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("thirdperson_anims_akimbo", "", animExtAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("move_speed", "0", moveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("zoom_move_speed", "0", zoomMoveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("move_speed", "0", moveSpeedMult, 0, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("zoom_move_speed", "0", zoomMoveSpeedMult, 0, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("jump_power", "0", jumpPower, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
 		);
 	}
@@ -277,9 +277,9 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("charge_cancel_time", "0", shootOpts[0].chargeCancelTime, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 			WEP_FIELD("discharged_cooldown", "0", shootOpts[0].dischargedCooldown, 0, WC_PARAM_TIME, NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].chargeMode)),
 
-			WEP_FIELD("charge_move_speed", "0", shootOpts[0].chargeMoveSpeedMult, 0, WC_PARAM_UINT16_PERCENT, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("charge_move_speed", "0", shootOpts[0].chargeMoveSpeedMult, 0, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_NETWORK),
 			
-			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_ACCURACY_100_2X),
+			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_VEC2_SD100),
 
 			WEP_FIELD("hasac0", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_FLY], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("hasac1", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_SWIM], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
@@ -289,27 +289,27 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("hasac5", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_CRAWL], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("hasac6", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_DUCK], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("hasac7", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_ZOOM], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
-			WEP_FIELD("accuracy_mult_fly", "3.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_FLY], 0, WC_PARAM_UINT16_FP_4_12,
+			WEP_FIELD("accuracy_mult_fly", "3.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_FLY], 0, WC_PARAM_UINT16_D100,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_FLY])),
-			WEP_FIELD("accuracy_mult_swim", "3.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_SWIM], 0, WC_PARAM_UINT16_FP_4_12,
+			WEP_FIELD("accuracy_mult_swim", "3.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_SWIM], 0, WC_PARAM_UINT16_D100,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_SWIM])),
-			WEP_FIELD("accuracy_mult_float", "2.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_FLOAT], 0, WC_PARAM_UINT16_FP_4_12,
+			WEP_FIELD("accuracy_mult_float", "2.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_FLOAT], 0, WC_PARAM_UINT16_D100,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_FLOAT])),
-			WEP_FIELD("accuracy_mult_run", "2.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_RUN], 0, WC_PARAM_UINT16_FP_4_12,
+			WEP_FIELD("accuracy_mult_run", "2.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_RUN], 0, WC_PARAM_UINT16_D100,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_RUN])),
-			WEP_FIELD("accuracy_mult_walk", "1.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_WALK], 0, WC_PARAM_UINT16_FP_4_12,
+			WEP_FIELD("accuracy_mult_walk", "1.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_WALK], 0, WC_PARAM_UINT16_D100,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_WALK])),
-			WEP_FIELD("accuracy_mult_crawl", "0.5", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_CRAWL], 0, WC_PARAM_UINT16_FP_4_12,
+			WEP_FIELD("accuracy_mult_crawl", "0.5", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_CRAWL], 0, WC_PARAM_UINT16_D100,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_CRAWL])),
-			WEP_FIELD("accuracy_mult_duck", "0.5", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_DUCK], 0, WC_PARAM_UINT16_FP_4_12,
+			WEP_FIELD("accuracy_mult_duck", "0.5", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_DUCK], 0, WC_PARAM_UINT16_D100,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_DUCK])),
-			WEP_FIELD("accuracy_mult_zoom", "1.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_ZOOM], 0, WC_PARAM_UINT16_FP_4_12,
+			WEP_FIELD("accuracy_mult_zoom", "1.0", shootOpts[0].accuracyMult[WC_ACCURACY_MULT_ZOOM], 0, WC_PARAM_UINT16_D100,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasAccMult[WC_ACCURACY_MULT_ZOOM])),
 
 			WEP_FIELD("melee_damage", "0", shootOpts[0].melee.damage, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FLAGS32("melee_damage_type", "0", shootOpts[0].melee.damageBits, 0, g_wc_dmgFlags, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_range", "0", shootOpts[0].melee.range, 0, WC_PARAM_INT32, NULL, 0, FL_FIELD_NO_NETWORK),
-			WEP_FIELD("melee_attack_offset", "0 0 0", shootOpts[0].melee.attackOffset, 0, WC_PARAM_VECTOR, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("melee_attack_offset", "0 0 0", shootOpts[0].melee.attackOffset, 0, WC_PARAM_INT32_VEC3_SD1000, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_miss_cooldown", "0", shootOpts[0].melee.missCooldown, 0, WC_PARAM_TIME, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_hit_cooldown", "0", shootOpts[0].melee.hitCooldown, 0, WC_PARAM_TIME, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("melee_decal_delay", "0", shootOpts[0].melee.decalDelay, 0, WC_PARAM_TIME, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -333,7 +333,7 @@ void init_weapon_struct_fields() {
 		WEP_FIELD("deploy_time", "0", akimbo.deployTime, 0, WC_PARAM_TIME),
 		WEP_FIELD("holster_anim", "0", akimbo.holsterAnim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 		WEP_FIELD("holster_time", "0", akimbo.holsterTime, 0, WC_PARAM_TIME),
-		WEP_FIELD("accuracy", "0", akimbo.accuracy, 0, WC_PARAM_ACCURACY_100_2X),
+		WEP_FIELD("accuracy", "0", akimbo.accuracy, 0, WC_PARAM_VEC2_SD100),
 	);
 
 	WEP_STRUCT_DESC(g_wc_desc_laser, "laser",
@@ -363,7 +363,7 @@ void init_event_fields() {
 	flash_size_names[WC_FLASH_BRIGHT] = "bright";
 
 	EVT_DESC(WC_EVT_IDLE_SOUND, "idle_sound",
-		EVT_FIELD("volume", "1.0", idleSound.volume, 7, WC_PARAM_7BIT_PERCENT),
+		EVT_FIELD("volume", "1.0", idleSound.volume, 7, WC_PARAM_UINT8_D100),
 		EVT_FIELD("sound", NULL, idleSound.sound, 9, WC_PARAM_SOUND_INDEX),
 	);
 	g_wc_evt_type_names[WC_EVT_IDLE_SOUND] = "sound"; // written to config as "sound"
@@ -398,8 +398,8 @@ void init_event_fields() {
 			EVT__ENUM("volume_for_ai", "silent", playSound.aiVol, 2, aivol_names),
 			EVT__ENUM("channel", "static", playSound.channel, 3, channel_names),
 			EVT_FIELD("sound", NULL, playSound.sound, 9, WC_PARAM_SOUND_INDEX),
-			EVT_FIELD("volume", "1.0", playSound.volume, 0, WC_PARAM_UINT8_PERCENT),
-			EVT_FIELD("attenuation", "2.0", playSound.attn, 0, WC_PARAM_UINT8_FP_2_6), // default = ATTN_IDLE
+			EVT_FIELD("volume", "1.0", playSound.volume, 0, WC_PARAM_UINT8_D100),
+			EVT_FIELD("attenuation", "2.0", playSound.attn, 0, WC_PARAM_UINT8_D100), // default = ATTN_IDLE
 			EVT_FIELD("pitch_min", "100", playSound.pitchMin, 0, WC_PARAM_UINT8),
 			EVT_FIELD("pitch_max", "100", playSound.pitchMax, 0, WC_PARAM_UINT8),
 			EVT_FIELD("sound", NULL, playSound.additionalSounds, 0, WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2),
@@ -450,9 +450,9 @@ void init_event_fields() {
 			EVT__ENUM("view_mode", "punch", recoil.viewOp, 2, viewOps),
 			EVT_FLAGS("flags", "0", recoil.flags, 2, flags),
 			EVT_FIELD("has_max_angles", "0", recoil.hasMaxAngles, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
-			EVT_FIELD("angles", "0 0 0", recoil.angles, 0, WC_PARAM_VECTOR_SFP_9_7),
+			EVT_FIELD("angles", "0 0 0", recoil.angles, 0, WC_PARAM_VEC3_SD100),
 			EVT_FIELD("max_angles_time", "0", recoil.maxAngleTime, 0, WC_PARAM_TIME),
-			EVT_FIELD("max_angles", "0 0 0", recoil.maxAngles, 0, WC_PARAM_VECTOR_SFP_9_7, NULL, 0, 0, EVT_COND_BYTE(recoil.hasMaxAngles)),
+			EVT_FIELD("max_angles", "0 0 0", recoil.maxAngles, 0, WC_PARAM_VEC3_SD100, NULL, 0, 0, EVT_COND_BYTE(recoil.hasMaxAngles)),
 		);
 
 		EVT_DESC(WC_EVT_RECOIL_ADV, "recoil_advanced",
@@ -467,8 +467,8 @@ void init_event_fields() {
 			EVT_FIELD("bitpacked_y", "0", recoilAdv.ops[1], 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT_FIELD("bitpacked_z", "0", recoilAdv.ops[2], 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT_FLAGS("flags", "0", recoilAdv.flags, 0, flags),
-			EVT_FIELD("min", "0 0 0", recoilAdv.min, 0, WC_PARAM_VECTOR_SFP_9_7),
-			EVT_FIELD("max", "0 0 0", recoilAdv.max, 0, WC_PARAM_VECTOR_SFP_9_7),
+			EVT_FIELD("min", "0 0 0", recoilAdv.min, 0, WC_PARAM_VEC3_SD100),
+			EVT_FIELD("max", "0 0 0", recoilAdv.max, 0, WC_PARAM_VEC3_SD100),
 			EVT_FIELD("max_angles_time", "0", recoilAdv.maxAngleTime, 0, WC_PARAM_TIME),
 		);
 	}
@@ -522,7 +522,7 @@ void init_event_fields() {
 
 		EVT_DESC(WC_EVT_BULLETS, "bullets",
 			EVT_FIELD("count", "0", bullets.count, 0, WC_PARAM_UINT8),
-			EVT_FIELD("accuracy", "0", bullets.accuracy, 0, WC_PARAM_ACCURACY_UINT16_2X),
+			EVT_FIELD("accuracy", "0", bullets.accuracy, 0, WC_PARAM_VEC2_SD100),
 
 			EVT_FIELD("has_range", "0", bullets.hasRange, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT_FIELD("has_water_damage", "0", bullets.hasWaterDamage, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
@@ -563,10 +563,10 @@ void init_event_fields() {
 			EVT_FIELD("sprite", NULL, beam.sprite, 12, WC_PARAM_MODEL_INDEX),
 
 			EVT_FIELD("richochet_limit", "0", beam.ricoBeams, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(beam.hasRicoBeams)),
-			EVT_FIELD("richochet_angle", "0", beam.ricoAngle, 0, WC_PARAM_ACCURACY_UINT16, NULL, 0, 0, EVT_COND_BYTE(beam.hasRicoBeams)),
+			EVT_FIELD("richochet_angle", "0", beam.ricoAngle, 0, WC_PARAM_UINT16_D100, NULL, 0, 0, EVT_COND_BYTE(beam.hasRicoBeams)),
 
 			EVT_FIELD("life", "0", beam.life, 0, WC_PARAM_TIME),
-			EVT_FIELD("accuracy", "0", beam.accuracy, 0, WC_PARAM_ACCURACY_UINT16_2X),
+			EVT_FIELD("accuracy", "0", beam.accuracy, 0, WC_PARAM_VEC2_SD100),
 			EVT_FIELD("damage", "0", beam.damage, 0, WC_PARAM_UINT16),
 			EVT_FIELD("distance", "0", beam.distance, 0, WC_PARAM_UINT16),
 			EVT_FIELD("frequency", "0", beam.freq, 0, WC_PARAM_TIME),
@@ -654,35 +654,35 @@ void init_event_fields() {
 			EVT__ENUM("type", "0", proj.type, 0, proj_type_names),
 			EVT_FIELD("entity_class", "", proj.entity_class, 0, WC_PARAM_STRING),
 			EVT_FLAGS("flags", "0", proj.flags, 0, flags),
-			EVT_FIELD("accuracy", "0", proj.accuracy, 0, WC_PARAM_ACCURACY_UINT16_2X),
+			EVT_FIELD("accuracy", "0", proj.accuracy, 0, WC_PARAM_VEC2_SD100),
 			EVT__ENUM("hit_world_action", "impact", proj.world_event, 0, proj_action_names),
 			EVT__ENUM("hit_monster_action", "impact", proj.monster_event, 0, proj_action_names),
 			EVT_FIELD("speed", "0", proj.speed, 0, WC_PARAM_INT32),
 			EVT_FIELD("life", "0", proj.life, 0, WC_PARAM_TIME),
-			EVT_FIELD("elasticity", "0", proj.elasticity, 0, WC_PARAM_FLOAT),
-			EVT_FIELD("gravity", "0", proj.gravity, 0, WC_PARAM_FLOAT),
-			EVT_FIELD("air_friction", "0", proj.air_friction, 0, WC_PARAM_FLOAT),
-			EVT_FIELD("water_friction", "0", proj.water_friction, 0, WC_PARAM_FLOAT),
-			EVT_FIELD("hull_size", "0", proj.size, 0, WC_PARAM_FLOAT),
-			EVT_FIELD("direction", "0 0 1", proj.dir, 0, WC_PARAM_VECTOR),
+			EVT_FIELD("elasticity", "0", proj.elasticity, 0, WC_PARAM_INT32_SD1000),
+			EVT_FIELD("gravity", "0", proj.gravity, 0, WC_PARAM_INT32_SD1000),
+			EVT_FIELD("air_friction", "0", proj.air_friction, 0, WC_PARAM_INT32_SD1000),
+			EVT_FIELD("water_friction", "0", proj.water_friction, 0, WC_PARAM_INT32_SD1000),
+			EVT_FIELD("hull_size", "0", proj.size, 0, WC_PARAM_INT32_SD1000),
+			EVT_FIELD("direction", "0 0 1", proj.dir, 0, WC_PARAM_INT32_VEC3_SD1000),
 			EVT_FIELD("model", NULL, proj.model, 0, WC_PARAM_MODEL_INDEX),
 			EVT__ENUM("rendermode", "normal", proj.renderMode, 0, render_modes),
 			EVT_FIELD("renderamt", "0", proj.renderAmt, 0, WC_PARAM_UINT8),
 			EVT__ENUM("renderfx", "none", proj.renderFx, 0, render_fx),
-			EVT_FIELD("scale", "0", proj.scale, 0, WC_PARAM_FLOAT),
-			EVT_FIELD("framerate", "0", proj.framerate, 0, WC_PARAM_FLOAT),
+			EVT_FIELD("scale", "0", proj.scale, 0, WC_PARAM_INT32_SD1000),
+			EVT_FIELD("framerate", "0", proj.framerate, 0, WC_PARAM_INT32_SD1000),
 			EVT_FIELD("move_sound", "", proj.move_snd, 0, WC_PARAM_STRING),
 			EVT_FIELD("damage", "0", proj.damage, 0, WC_PARAM_UINT16),
 			EVT_FLAGS("damage_type", "0", proj.damageBits, 0, g_wc_dmgFlags),
 			EVT_FIELD("sprite", "", proj.sprite, 0, WC_PARAM_STRING),
 			EVT_FIELD("sprite_color", "0 0 0 0", proj.sprite_color, 0, WC_PARAM_RGBA),
-			EVT_FIELD("angles", "0 0 0", proj.angles, 0, WC_PARAM_VECTOR),
-			EVT_FIELD("angular_velocity", "0 0 0", proj.avel, 0, WC_PARAM_VECTOR),
-			EVT_FIELD("position", "0 0 0", proj.position, 0, WC_PARAM_VECTOR),
-			EVT_FIELD("player_vel_inf", "0 0 0", proj.player_vel_inf, 0, WC_PARAM_VECTOR),
+			EVT_FIELD("angles", "0 0 0", proj.angles, 0, WC_PARAM_INT32_VEC3_SD1000),
+			EVT_FIELD("angular_velocity", "0 0 0", proj.avel, 0, WC_PARAM_INT32_VEC3_SD1000),
+			EVT_FIELD("position", "0 0 0", proj.position, 0, WC_PARAM_INT32_VEC3_SD1000),
+			EVT_FIELD("player_vel_inf", "0 0 0", proj.player_vel_inf, 0, WC_PARAM_INT32_VEC3_SD1000),
 			EVT_FIELD("follow_mode", "0", proj.follow_mode, 0, WC_PARAM_UINT8),
-			EVT_FIELD("follow_radius", "0", proj.follow_radius, 0, WC_PARAM_FLOAT),
-			EVT_FIELD("follow_time", "0 0 0", proj.follow_time, 0, WC_PARAM_VECTOR),
+			EVT_FIELD("follow_radius", "0", proj.follow_radius, 0, WC_PARAM_INT32_SD1000),
+			EVT_FIELD("follow_time", "0 0 0", proj.follow_time, 0, WC_PARAM_INT32_VEC3_SD1000),
 			EVT_FIELD("trail_sprite", NULL, proj.trail_spr, 0, WC_PARAM_MODEL_INDEX),
 			EVT_FIELD("trail_life", "0", proj.trail_life, 0, WC_PARAM_TIME),
 			EVT_FIELD("trail_width", "0", proj.trail_width, 0, WC_PARAM_UINT8),
@@ -732,14 +732,14 @@ void init_event_fields() {
 		EVT_FIELD("iuser2", "0", server.iuser2, 0, WC_PARAM_INT32),
 		EVT_FIELD("iuser3", "0", server.iuser3, 0, WC_PARAM_INT32),
 		EVT_FIELD("iuser4", "0", server.iuser4, 0, WC_PARAM_INT32),
-		EVT_FIELD("fuser1", "0", server.fuser1, 0, WC_PARAM_FLOAT),
-		EVT_FIELD("fuser2", "0", server.fuser2, 0, WC_PARAM_FLOAT),
-		EVT_FIELD("fuser3", "0", server.fuser3, 0, WC_PARAM_FLOAT),
-		EVT_FIELD("fuser4", "0", server.fuser4, 0, WC_PARAM_FLOAT),
-		EVT_FIELD("vuser1", "0 0 0", server.vuser1, 0, WC_PARAM_VECTOR),
-		EVT_FIELD("vuser2", "0 0 0", server.vuser2, 0, WC_PARAM_VECTOR),
-		EVT_FIELD("vuser3", "0 0 0", server.vuser3, 0, WC_PARAM_VECTOR),
-		EVT_FIELD("vuser4", "0 0 0", server.vuser4, 0, WC_PARAM_VECTOR),
+		EVT_FIELD("fuser1", "0", server.fuser1, 0, WC_PARAM_INT32_SD1000),
+		EVT_FIELD("fuser2", "0", server.fuser2, 0, WC_PARAM_INT32_SD1000),
+		EVT_FIELD("fuser3", "0", server.fuser3, 0, WC_PARAM_INT32_SD1000),
+		EVT_FIELD("fuser4", "0", server.fuser4, 0, WC_PARAM_INT32_SD1000),
+		EVT_FIELD("vuser1", "0 0 0", server.vuser1, 0, WC_PARAM_INT32_VEC3_SD1000),
+		EVT_FIELD("vuser2", "0 0 0", server.vuser2, 0, WC_PARAM_INT32_VEC3_SD1000),
+		EVT_FIELD("vuser3", "0 0 0", server.vuser3, 0, WC_PARAM_INT32_VEC3_SD1000),
+		EVT_FIELD("vuser4", "0 0 0", server.vuser4, 0, WC_PARAM_INT32_VEC3_SD1000),
 		EVT_FIELD("suser1", "", server.suser1, 0, WC_PARAM_STRING),
 		EVT_FIELD("suser2", "", server.suser2, 0, WC_PARAM_STRING),
 		EVT_FIELD("suser3", "", server.suser3, 0, WC_PARAM_STRING),
@@ -873,9 +873,9 @@ void init_event_fields() {
 
 	EVT_DESC(WC_EVT_SHAKE, "shake",
 		EVT_FIELD("radius", "0", shake.radius, 0, WC_PARAM_UINT16),
-		EVT_FIELD("amplitude", "0", shake.amplitude, 0, WC_PARAM_UINT16_FP_4_12),
+		EVT_FIELD("amplitude", "0", shake.amplitude, 0, WC_PARAM_UINT16_D1000),
 		EVT_FIELD("duration", "0", shake.duration, 0, WC_PARAM_TIME),
-		EVT_FIELD("frequency", "0", shake.amplitude, 0, WC_PARAM_UINT16_FP_8_8),
+		EVT_FIELD("frequency", "0", shake.amplitude, 0, WC_PARAM_UINT16_D100),
 	);
 
 	{
@@ -924,8 +924,8 @@ void init_custom_ammo_fields() {
 		AMMO_FIELD("classname", "", classname, 0, WC_PARAM_STRING),
 		AMMO_FIELD("model", "", model, 0, WC_PARAM_STRING),
 		AMMO_FIELD("model_body", "0", modelBody, 0, WC_PARAM_UINT16),
-		AMMO_FIELD("hull_min", "0 0 0", hullSizeMin, 0, WC_PARAM_VECTOR),
-		AMMO_FIELD("hull_max", "0 0 0", hullSizeMax, 0, WC_PARAM_VECTOR),
+		AMMO_FIELD("hull_min", "0 0 0", hullSizeMin, 0, WC_PARAM_INT32_VEC3_SD1000),
+		AMMO_FIELD("hull_max", "0 0 0", hullSizeMax, 0, WC_PARAM_INT32_VEC3_SD1000),
 		AMMO_FIELD("pickup_sound", "items/9mmclip1.wav", pickupSound, 0, WC_PARAM_STRING),
 		AMMO_FIELD("ammo_type", "", ammoType, 0, WC_PARAM_STRING),
 		AMMO_FIELD("ammo_type_hl", "", ammoTypeHl, 0, WC_PARAM_STRING),
@@ -1288,9 +1288,7 @@ void set_valid_fields(struct_desc_t& desc) {
 int wc_get_field_bytes(field_desc_t& field) {
 	switch (field.type) {
 	case WC_PARAM_UINT8:
-	case WC_PARAM_UINT8_PERCENT:
-	case WC_PARAM_7BIT_PERCENT:
-	case WC_PARAM_UINT8_FP_2_6:
+	case WC_PARAM_UINT8_D100:
 	case WC_PARAM_INT8:
 	case WC_PARAM_UINT8_FLAGS:
 	case WC_PARAM_UINT8_ENUM:
@@ -1302,10 +1300,8 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_SOUND_INDEX:
 	case WC_PARAM_MODEL_INDEX:
 	case WC_PARAM_TIME:
-	case WC_PARAM_UINT16_PERCENT:
-	case WC_PARAM_ACCURACY_UINT16:
-	case WC_PARAM_UINT16_FP_4_12:
-	case WC_PARAM_UINT16_FP_8_8:
+	case WC_PARAM_UINT16_D1000:
+	case WC_PARAM_UINT16_D100:
 	case WC_PARAM_STRING_DELTA:
 		return 2;
 	case WC_PARAM_VECTOR_INT8:
@@ -1314,19 +1310,17 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_UINT32:
 	case WC_PARAM_UINT32_FLAGS:
 	case WC_PARAM_INT32:
-	case WC_PARAM_FLOAT:
+	case WC_PARAM_INT32_SD1000:
 	case WC_PARAM_RGBA:
-	case WC_PARAM_ACCURACY_UINT16_2X:
-	case WC_PARAM_ACCURACY_100_2X:
+	case WC_PARAM_VEC2_SD100:
 	case WC_PARAM_STRING:
 		return 4;
-	case WC_PARAM_VECTOR_SFP_10_6:
-	case WC_PARAM_VECTOR_SFP_6_10:
-	case WC_PARAM_VECTOR_SFP_9_7:
+	case WC_PARAM_VEC3_SD1000:
+	case WC_PARAM_VEC3_SD100:
 		return 6;
 	case WC_PARAM_UINT8_ARRAY_8:
 		return 9;
-	case WC_PARAM_VECTOR:
+	case WC_PARAM_INT32_VEC3_SD1000:
 		return 12;
 	case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2:
 		return 17;
@@ -1339,25 +1333,20 @@ int wc_get_field_bytes(field_desc_t& field) {
 std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 	switch (field.type) {
 	case WC_PARAM_UINT8:
-	case WC_PARAM_UINT8_PERCENT:
-	case WC_PARAM_7BIT_PERCENT:
+	case WC_PARAM_UINT8_D100:
 	case WC_PARAM_INT8:
 	case WC_PARAM_UINT8_FLAGS:
 	case WC_PARAM_UINT8_ENUM:
 	case WC_PARAM_DECAL_INDEX:
 		return UTIL_VarArgs("%d", (int)(*dat));
-	case WC_PARAM_UINT8_FP_2_6:
-		return UTIL_VarArgs("%.2f", SFP_10_6_TO_FLOAT(*dat));
 	case WC_PARAM_UINT16:
 	case WC_PARAM_UINT16_FLAGS:
 	case WC_PARAM_INT16:
 	case WC_PARAM_SOUND_INDEX:
 	case WC_PARAM_MODEL_INDEX:
-	case WC_PARAM_ACCURACY_UINT16:
 	case WC_PARAM_TIME:
-	case WC_PARAM_UINT16_PERCENT:
-	case WC_PARAM_UINT16_FP_4_12:
-	case WC_PARAM_UINT16_FP_8_8:
+	case WC_PARAM_UINT16_D1000:
+	case WC_PARAM_UINT16_D100:
 		return UTIL_VarArgs("%d", (int)(*(uint16_t*)dat));
 	case WC_PARAM_VECTOR_INT8:
 		return UTIL_VarArgs("(%d %d %d)", (int)((int8_t*)dat)[0], (int)((int8_t*)dat)[1], (int)((int8_t*)dat)[2]);
@@ -1368,29 +1357,23 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 		return UTIL_VarArgs("%u", *(uint32_t*)dat);
 	case WC_PARAM_INT32:
 		return UTIL_VarArgs("%d", *(int*)dat);
-	case WC_PARAM_FLOAT:
-		return UTIL_VarArgs("%f", *(float*)dat);
+	case WC_PARAM_INT32_SD1000:
+		return UTIL_VarArgs("%f", *(int32_t*)dat * 0.001f);
 	case WC_PARAM_RGBA:
 		return UTIL_VarArgs("(%d %d %d %d)", (int)dat[0], (int)dat[1], (int)dat[2], (int)dat[3]);
-	case WC_PARAM_ACCURACY_UINT16_2X:
-	case WC_PARAM_ACCURACY_100_2X:
+	case WC_PARAM_VEC2_SD100:
 		return UTIL_VarArgs("(%d %d)", (int)((uint16_t*)dat)[0], (int)((uint16_t*)dat)[1]);
-	case WC_PARAM_VECTOR_SFP_6_10: {
+	case WC_PARAM_VEC3_SD1000: {
 		int16_t* v = (int16_t*)dat;
 		return UTIL_VarArgs("(%.3f %.3f %.3f)",
-			SFP_10_6_TO_FLOAT(v[0]), SFP_10_6_TO_FLOAT(v[1]), SFP_10_6_TO_FLOAT(v[2]));
+			D1000_TO_FLOAT(v[0]), D1000_TO_FLOAT(v[1]), D1000_TO_FLOAT(v[2]));
 	}
-	case WC_PARAM_VECTOR_SFP_10_6: {
+	case WC_PARAM_VEC3_SD100: {
 		int16_t* v = (int16_t*)dat;
 		return UTIL_VarArgs("(%.2f %.2f %.2f)",
-			SFP_6_10_TO_FLOAT(v[0]), SFP_6_10_TO_FLOAT(v[1]), SFP_6_10_TO_FLOAT(v[2]));
-	}
-	case WC_PARAM_VECTOR_SFP_9_7: {
-		int16_t* v = (int16_t*)dat;
-		return UTIL_VarArgs("(%.2f %.2f %.2f)",
-			SFP_9_7_TO_FLOAT(v[0]), SFP_9_7_TO_FLOAT(v[1]), SFP_9_7_TO_FLOAT(v[2]));
+			D100_TO_FLOAT(v[0]), D100_TO_FLOAT(v[1]), D100_TO_FLOAT(v[2]));
 	}						 
-	case WC_PARAM_VECTOR: {
+	case WC_PARAM_INT32_VEC3_SD1000: {
 		float* v1 = (float*)dat;
 		return UTIL_VarArgs("(%f %f %f)", v1[0], v1[1], v1[2]);
 	}
@@ -1522,10 +1505,10 @@ void wc_post_parse_event(WepEvt& evt) {
 			&& evt.playSound.flags == 0 && evt.playSound.additionalSounds.arrSz == 0)
 		{
 			uint16_t soundIdx = evt.playSound.sound;
-			uint8_t newVol = evt.playSound.volume / 2;
+			uint8_t vol = evt.playSound.volume;
 			memset(&evt.playSound, 0, sizeof(evt.playSound));
 			evt.idleSound.sound = soundIdx;
-			evt.idleSound.volume = newVol;
+			evt.idleSound.volume = vol;
 			evt.evtType = WC_EVT_IDLE_SOUND;
 		}
 

@@ -16,7 +16,6 @@ unordered_map<string_t, string> g_migrateSoundMap;
 unordered_map<string_t, string> g_migrateModelMap;
 unordered_map<string_t, string> g_migrateStringMap;
 unordered_map<string_t, string> g_migrateCvarMap;
-unordered_map<float, string> g_migrateFloatVals; // original float values that were dumped
 bool g_migrationDumpMode = false; // if true, use the mappings when writing sounds/models/strings
 bool g_dumpingAmmoConfig = false; // adjusts config padding if true
 bool g_parsingAltConfig = false;
@@ -30,7 +29,6 @@ void clear_weapon_custom_cache() {
 	g_migrateModelMap.clear();
 	g_migrateStringMap.clear();
 	g_migrateCvarMap.clear();
-	g_migrateFloatVals.clear();
 }
 
 //
@@ -40,26 +38,69 @@ void clear_weapon_custom_cache() {
 
 int wc_get_int(const char* val);
 float wc_get_float(const char* val);
-void fprintf_float(FILE* f, const char* fmt, float val);
-void fprintf_2floats(FILE* f, const char* fmt, float v1, float v2);
-void fprintf_vec3(FILE* f, const char* fmt, float v1, float v2, float v3);
+void fprintf_float(FILE* f, int decimals, int val);
+void fprintf_vec2(FILE* f, int decimals, int v1, int v2);
+void fprintf_vec3(FILE* f, int decimals, int v1, int v2, int v3);
+
+struct ivec3 {
+	int v[3];
+};
+
+ivec3 UTIL_ParseVectorD(const char* pString, int decimals)
+{
+	ivec3 ivec;
+	memset(&ivec, 0, sizeof(ivec3));
+
+	vector<string> parts = splitString(pString, " \t");
+
+	for (int i = 0; i < 3 && i < parts.size(); i++) {
+		string& str = parts[i];
+
+		int dot = str.find_first_of(".");
+		if (dot) {
+			string whole = str.substr(0, dot);
+			string decimal = str.substr(dot+1);
+			
+			switch (decimals) {
+			case 1000:	while (decimal.size() < 3) { decimal += "0"; } break;
+			case 100:	while (decimal.size() < 2) { decimal += "0"; } break;
+			default:
+				ALERT(at_error, "Unhandled decimals for parser: %d\n", decimals);
+				break;
+			}
+
+			int iwhole = atoi(whole.c_str());
+			int idecimal = atoi(decimal.c_str());
+
+			if (str.find_first_of("-") != -1) {
+				ivec.v[i] = -(-iwhole * decimals + idecimal);
+			}
+			else {
+				ivec.v[i] = iwhole * decimals + idecimal;
+			}
+		}
+		else {
+			ivec.v[i] = atoi(str.c_str()) * decimals;
+		}
+	}
+
+	return ivec;
+}
+
 
 void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const char* name, const char* val,
 	int ptype, field_desc_t* field) {
 	switch (ptype) {
 	case WC_PARAM_UINT8:			*(uint8_t*)dat = wc_get_int(val); break;
-	case WC_PARAM_UINT8_PERCENT:	*(uint8_t*)dat = atof(val) * 255 + 0.5f; break;
-	case WC_PARAM_7BIT_PERCENT:		*(uint8_t*)dat = atof(val) * 127 + 0.5f; break;
-	case WC_PARAM_UINT8_FP_2_6:		*(uint8_t*)dat = atof(val) * 64; break;
+	case WC_PARAM_UINT8_D100:		*(uint8_t*)dat = atof(val) * 100; break;
 	case WC_PARAM_UINT16:			*(uint16_t*)dat = wc_get_int(val); break;
 	case WC_PARAM_UINT32:			*(uint32_t*)dat = wc_get_int(val); break;
 	case WC_PARAM_INT8:				*(int8_t*)dat = wc_get_int(val); break;
 	case WC_PARAM_INT16:			*(int16_t*)dat = wc_get_int(val); break;
 	case WC_PARAM_INT32:			*(int32_t*)dat = wc_get_int(val); break;
-	case WC_PARAM_FLOAT:			*(float*)dat = wc_get_float(val); break;
+	case WC_PARAM_INT32_SD1000:		*(int32_t*)dat = FLOAT_TO_SD1000_32BIT(wc_get_float(val)); break;
 	case WC_PARAM_RGBA:				*(RGBA*)dat = UTIL_ParseRGBA(val); break;
 	case WC_PARAM_RGB:				*(RGB*)dat = UTIL_ParseRGB(val); break;
-	case WC_PARAM_VECTOR:			*(Vector*)dat = UTIL_ParseVector(val); break;
 	case WC_PARAM_VECTOR_INT8: {
 		Vector v = UTIL_ParseVector(val);
 		int8_t* cur = (int8_t*)dat;
@@ -68,32 +109,32 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		cur[2] = v.z;
 		break;
 	}
-	case WC_PARAM_VECTOR_SFP_10_6: {
-		Vector v = UTIL_ParseVector(val);
+	case WC_PARAM_VEC3_SD100: {
+		ivec3 v = UTIL_ParseVectorD(val, 100);
 		int16_t* cur = (int16_t*)dat;
-		cur[0] = FLOAT_TO_SFP_10_6(v.x);
-		cur[1] = FLOAT_TO_SFP_10_6(v.y);
-		cur[2] = FLOAT_TO_SFP_10_6(v.z);
+		cur[0] = v.v[0];
+		cur[1] = v.v[1];
+		cur[2] = v.v[2];
 		break;
 	}
-	case WC_PARAM_VECTOR_SFP_9_7: {
-		Vector v = UTIL_ParseVector(val);
+	case WC_PARAM_VEC3_SD1000: {
+		ivec3 v = UTIL_ParseVectorD(val, 1000);
 		int16_t* cur = (int16_t*)dat;
-		cur[0] = FLOAT_TO_SFP_9_7(v.x);
-		cur[1] = FLOAT_TO_SFP_9_7(v.y);
-		cur[2] = FLOAT_TO_SFP_9_7(v.z);
+		cur[0] = v.v[0];
+		cur[1] = v.v[1];
+		cur[2] = v.v[2];
 		break;
 	}
-	case WC_PARAM_VECTOR_SFP_6_10: {
-		Vector v = UTIL_ParseVector(val);
-		int16_t* cur = (int16_t*)dat;
-		cur[0] = FLOAT_TO_SFP_6_10(v.x);
-		cur[1] = FLOAT_TO_SFP_6_10(v.y);
-		cur[2] = FLOAT_TO_SFP_6_10(v.z);
+	case WC_PARAM_INT32_VEC3_SD1000: {
+		ivec3 v = UTIL_ParseVectorD(val, 1000);
+		int32_t* cur = (int32_t*)dat;
+		cur[0] = v.v[0];
+		cur[1] = v.v[1];
+		cur[2] = v.v[2];
 		break;
 	}
-	case WC_PARAM_UINT16_FP_4_12: *(uint16_t*)dat = FLOAT_TO_FP_4_12(wc_get_float(val)); break;
-	case WC_PARAM_UINT16_FP_8_8: *(uint16_t*)dat = FLOAT_TO_FP_8_8(wc_get_float(val)); break;
+	case WC_PARAM_UINT16_D1000: *(uint16_t*)dat = FLOAT_TO_D1000(wc_get_float(val)); break;
+	case WC_PARAM_UINT16_D100: *(uint16_t*)dat = FLOAT_TO_D100(wc_get_float(val)); break;
 	case WC_PARAM_UINT8_ARRAY_8: {
 		WepEvtArr8* arr = (WepEvtArr8*)dat;
 		vector<string> parts = splitString(val, " ");
@@ -196,22 +237,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		}
 		break;
 	}
-	case WC_PARAM_ACCURACY_UINT16: {
-		((uint16_t*)dat)[1] = FLOAT_TO_SPREAD(UTIL_ConeFromDegrees(wc_get_float(val)).x);
-		break;
-	}
-	case WC_PARAM_ACCURACY_UINT16_2X: {
-		vector<string> parts = splitString(val, " ");
-		if (parts.size() > 0)
-			((uint16_t*)dat)[0] = FLOAT_TO_SPREAD(UTIL_ConeFromDegrees(wc_get_float(parts[0].c_str())).x);
-
-		if (parts.size() > 1)
-			((uint16_t*)dat)[1] = FLOAT_TO_SPREAD(UTIL_ConeFromDegrees(wc_get_float(parts[1].c_str())).x);
-		else
-			((uint16_t*)dat)[1] = ((uint16_t*)dat)[0];
-		break;
-	}
-	case WC_PARAM_ACCURACY_100_2X: {
+	case WC_PARAM_VEC2_SD100: {
 		vector<string> parts = splitString(val, " ");
 		if (parts.size() > 0)
 			((uint16_t*)dat)[0] = wc_get_float(parts[0].c_str()) * 100;
@@ -222,7 +248,6 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 			((uint16_t*)dat)[1] = ((uint16_t*)dat)[0];
 		break;
 	}
-	case WC_PARAM_UINT16_PERCENT:	*(uint16_t*)dat = atof(val) ? FLOAT_TO_MOVESPEED_MULT(wc_get_float(val)) : 0; break;
 	case WC_PARAM_STRING:			*(string_t*)dat = val && val[0] ? ALLOC_STRING(val) : 0; break;
 	default:
 		ALERT(at_error, "%s (line %d): Unknown param type %d for key '%s' in group '%s'\n",
@@ -236,16 +261,8 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 
 	switch (ptype) {
 	case WC_PARAM_UINT8:	fprintf(f, "%u\n", (uint32_t)(*(uint8_t*)dat)); break;
-	case WC_PARAM_UINT8_PERCENT:
-		fprintf_float(f, "%.2f", (*(uint8_t*)dat) / 255.0f);
-		fprintf(f, "\n");
-		break;
-	case WC_PARAM_7BIT_PERCENT:
-		fprintf_float(f, "%.2f", (*(uint8_t*)dat) / 127.0f);
-		fprintf(f, "\n");
-		break;
-	case WC_PARAM_UINT8_FP_2_6:
-		fprintf_float(f, "%.2f", ((*(uint8_t*)dat) / 64.0f) + (0.5f / 64.0f) );
+	case WC_PARAM_UINT8_D100:
+		fprintf_float(f, 100, *(uint8_t*)dat);
 		fprintf(f, "\n");
 		break;
 	case WC_PARAM_UINT16: {
@@ -262,10 +279,6 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 	case WC_PARAM_INT8:		fprintf(f, "%d\n", (int32_t)(*(int8_t*)dat)); break;
 	case WC_PARAM_INT16:	fprintf(f, "%d\n", (int32_t)(*(int16_t*)dat)); break;
 	case WC_PARAM_INT32:	fprintf(f, "%d\n", (int32_t)(*(int32_t*)dat)); break;
-	case WC_PARAM_FLOAT:
-		fprintf_float(f, "%.2f", *(float*)dat);
-		fprintf(f, "\n");
-		break;
 	case WC_PARAM_UINT32_FLAGS:
 	case WC_PARAM_UINT16_FLAGS:
 	case WC_PARAM_UINT8_FLAGS: {
@@ -298,9 +311,37 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 		fprintf(f, "%u %u %u %u\n", (uint32_t)c.r, (uint32_t)c.g, (uint32_t)c.b, (uint32_t)c.a);
 		break;
 	}
-	case WC_PARAM_VECTOR: {
-		Vector& v = *(Vector*)dat;
-		fprintf_vec3(f, "%.2f", v.x, v.y, v.z);
+	case WC_PARAM_INT32_SD1000: {
+		int32_t v = *(int32_t*)dat;
+		if (v < 0) {
+			fprintf(f, "-");
+			v = -v;
+		}
+		if (v % 10 == 0) {
+			fprintf(f, "%u.%02u\n", v / 1000, (v / 10) % 100); // remove trailing 1000th zero
+		}
+		else {
+			fprintf(f, "%u.%03u\n", v / 1000, v % 1000);
+		}
+		break;
+	}
+	case WC_PARAM_INT32_VEC3_SD1000: {
+		int32_t* arr = (int32_t*)dat;
+		for (int i = 0; i < 3; i++) {
+			int32_t v = arr[i];
+			if (i != 0)
+				fprintf(f, " ");
+			if (v < 0) {
+				fprintf(f, "-");
+				v = -v;
+			}
+			if (v % 10 == 0) {
+				fprintf(f, "%u.%02u", v / 1000, (v / 10) % 100); // remove trailing 1000th zero
+			}
+			else {
+				fprintf(f, "%u.%03u", v / 1000, v % 1000);
+			}
+		}
 		fprintf(f, "\n");
 		break;
 	}
@@ -309,31 +350,25 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 		fprintf(f, "%d %d %d\n", (int)v[0], (int)v[1], (int)v[2]);
 		break;
 	}
-	case WC_PARAM_VECTOR_SFP_10_6: {
+	case WC_PARAM_VEC3_SD100: {
 		int16_t* v = (int16_t*)dat;
-		fprintf_vec3(f, "%.2f", SFP_10_6_TO_FLOAT(v[0]), SFP_10_6_TO_FLOAT(v[1]), SFP_10_6_TO_FLOAT(v[2]));
+		fprintf_vec3(f, 100, v[0], v[1], v[2]);
 		fprintf(f, "\n");
 		break;
 	}
-	case WC_PARAM_VECTOR_SFP_9_7: {
+	case WC_PARAM_VEC3_SD1000: {
 		int16_t* v = (int16_t*)dat;
-		fprintf_vec3(f, "%.2f", SFP_9_7_TO_FLOAT(v[0]), SFP_9_7_TO_FLOAT(v[1]), SFP_9_7_TO_FLOAT(v[2]));
+		fprintf_vec3(f, 1000, v[0], v[1], v[2]);
 		fprintf(f, "\n");
 		break;
 	}
-	case WC_PARAM_VECTOR_SFP_6_10: {
-		int16_t* v = (int16_t*)dat;
-		fprintf_vec3(f, "%.2f", SFP_6_10_TO_FLOAT(v[0]), SFP_6_10_TO_FLOAT(v[1]), SFP_6_10_TO_FLOAT(v[2]));
+	case WC_PARAM_UINT16_D1000: {
+		fprintf_float(f, 1000, *(int16_t*)dat);
 		fprintf(f, "\n");
 		break;
 	}
-	case WC_PARAM_UINT16_FP_4_12: {
-		fprintf_float(f, "%.2f", FP_4_12_TO_FLOAT(*(int16_t*)dat));
-		fprintf(f, "\n");
-		break;
-	}
-	case WC_PARAM_UINT16_FP_8_8: {
-		fprintf_float(f, "%.2f", FP_8_8_TO_FLOAT(*(int16_t*)dat));
+	case WC_PARAM_UINT16_D100: {
+		fprintf_float(f, 100, *(int16_t*)dat);
 		fprintf(f, "\n");
 		break;
 	}
@@ -379,35 +414,18 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 	case WC_PARAM_DECAL_INDEX:		fprintf(f, "%s\n", get_decal_name(*(uint8_t*)dat)); break;
 	case WC_PARAM_STRING_DELTA:		fprintf(f, "%s\n", GetDeltaString(*(dstring_t*)dat)); break;
 	case WC_PARAM_TIME:				fprintf(f, "%ums\n", (uint32_t)(*(uint16_t*)dat)); break;
-	case WC_PARAM_ACCURACY_UINT16:	fprintf(f, "%.2f\n", DEGREES_FROM_SPREAD(*(uint16_t*)dat)); break;
-	case WC_PARAM_ACCURACY_UINT16_2X: {
+	case WC_PARAM_VEC2_SD100: {
 		uint16_t* acc = (uint16_t*)dat;
 		if (acc[0] == acc[1]) {
-			fprintf_float(f, "%.2f", DEGREES_FROM_SPREAD(acc[0]));
+			fprintf_float(f, 100, acc[0]);
 			fprintf(f, "\n");
 		}
 		else {
-			fprintf_2floats(f, "%.2f", DEGREES_FROM_SPREAD(acc[0]), DEGREES_FROM_SPREAD(acc[1]));
+			fprintf_vec2(f, 100, acc[0], acc[1]);
 			fprintf(f, "\n");
 		}
 		break;
 	}
-	case WC_PARAM_ACCURACY_100_2X: {
-		uint16_t* acc = (uint16_t*)dat;
-		if (acc[0] == acc[1]) {
-			fprintf_float(f, "%.2f", acc[0] / 100.0f);
-			fprintf(f, "\n");
-		}
-		else {
-			fprintf_2floats(f, "%.2f", acc[0] / 100.0f, acc[1] / 100.0f);
-			fprintf(f, "\n");
-		}
-		break;
-	}
-	case WC_PARAM_UINT16_PERCENT:
-		fprintf_float(f, "%.2f", MOVESPEED_MULT_TO_FLOAT(*(uint16_t*)dat));
-		fprintf(f, "\n");
-		break;
 	case WC_PARAM_STRING:
 		if (g_migrationDumpMode) {
 			fprintf(f, "%s\n", g_migrateStringMap[*(string_t*)dat].c_str());
@@ -435,113 +453,39 @@ float wc_get_float(const char* val) {
 #endif
 	float ret = atof(val);
 
-	if (g_migrationDumpMode) {
-		if (val && val[0] && ret != 0) {
-			string sval = val;
-			g_migrateFloatVals[ret] = val;
-		}
-	}
-
 	return ret;
 }
 
-#define MIGRATE_FLOAT_EPSILON 0.005f // 1/128 for FP_9_7
-
-string get_closest_float_str(const char* fmt, float val) {
-	float bestDist = FLT_MAX;
-	string bestStr = "";
-
-	for (auto item : g_migrateFloatVals) {
-		float dist = fabs(item.first - val);
-		if (dist < bestDist) {
-			bestDist = dist;
-			bestStr = item.second;
-		}
+void fprintf_float(FILE* f, int decimals, int val) {	
+	const char* fmt = "";
+	switch (decimals) {
+	case 100: fmt = "%u.%02u"; break;
+	case 1000: fmt = "%u.%02u"; break;
+	default:
+		ALERT(at_error, "Unimplemented decimal count for floats: %d\n", decimals);
+		return;
 	}
-
-	if (bestDist <= MIGRATE_FLOAT_EPSILON) {
-		string altString = UTIL_VarArgs(fmt, val);
-
-		// values are the same, just different precision?
-		if (bestStr + "0" == altString || bestStr + "00" == altString) {
-			return "";
-		}
-		
-		return bestStr;
-	}
-
-	return "";
-}
-
-void fprintf_float(FILE* f, const char* fmt, float val) {
-	if (g_migrationDumpMode) {
-		char temp[64];
-		snprintf(temp, 64, fmt, val);
-
-		// Try to use one of these if a value is close enough to prevent changes due to low precision.
-		string sval = get_closest_float_str(fmt, val);
-		if (sval.size()) {
-			fprintf(f, "%s", sval.c_str());
-			return;
-		}
-	}
-
-	fprintf(f, fmt, val);
-}
-
-void fprintf_2floats(FILE* f, const char* fmt, float v1, float v2) {
-	string v1_str;
-	string v2_str;
-
-	if (g_migrationDumpMode) {
-		// Try to use one of these if a value is close enough to prevent changes due to low precision.
-		v1_str = get_closest_float_str(fmt, v1);
-		v2_str = get_closest_float_str(fmt, v2);
-	}
-
-	if (v1_str.size())
-		fprintf(f, "%s", v1_str.c_str());
-	else
-		fprintf(f, fmt, v1);
-
-	fprintf(f, " ");
-
-	if (v2_str.size())
-		fprintf(f, "%s", v2_str.c_str());
-	else
-		fprintf(f, fmt, v2);
-}
-
-void fprintf_vec3(FILE* f, const char* fmt, float v1, float v2, float v3) {
-	string v1_str;
-	string v2_str;
-	string v3_str;
-
-	if (g_migrationDumpMode) {
-		// Try to use one of these if a value is close enough to prevent changes due to low precision.
-		v1_str = get_closest_float_str(fmt, v1);
-		v2_str = get_closest_float_str(fmt, v2);
-		v3_str = get_closest_float_str(fmt, v3);
-	}
-
-	if (v1_str.size())
-		fprintf(f, "%s", v1_str.c_str());
-	else
-		fprintf(f, fmt, v1);
-
-	fprintf(f, " ");
-
-	if (v2_str.size())
-		fprintf(f, "%s", v2_str.c_str());
-	else
-		fprintf(f, fmt, v2);
 	
-	fprintf(f, " ");
+	if (val < 0) {
+		fprintf(f, "-");
+		val = -val;
+	}
 
-	if (v3_str.size())
-		fprintf(f, "%s", v3_str.c_str());
-	else
-		fprintf(f, fmt, v3);
+	fprintf(f, fmt, val / decimals, val % decimals);
+}
+
+void fprintf_vec2(FILE* f, int decimals, int v1, int v2) {
+	fprintf_float(f, decimals, v1);
+	fprintf(f, " ");
+	fprintf_float(f, decimals, v2);
+}
+
+void fprintf_vec3(FILE* f, int decimals, int v1, int v2, int v3) {
+	fprintf_float(f, decimals, v1);
+	fprintf(f, " ");
+	fprintf_float(f, decimals, v2);
+	fprintf(f, " ");
+	fprintf_float(f, decimals, v3);
 }
 
 int wc_get_int(const char* val) {
