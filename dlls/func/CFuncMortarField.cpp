@@ -154,7 +154,9 @@ void CFuncMortarField::FieldUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 		vecSpot.y += RANDOM_FLOAT(-m_flSpread, m_flSpread);
 
 		edict_t* pentOwner = NULL;
-		if (pActivator)	pentOwner = pActivator->edict();
+		
+		// allow friendly fire with mortars
+		//if (pActivator)	pentOwner = pActivator->edict();
 
 		CBaseEntity* pMortar = ShootMortar(pentOwner, vecSpot, Vector(0, 0, 0));
 		
