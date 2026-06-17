@@ -684,7 +684,6 @@ void wc_fwrite_struct_fields(FILE* f, void* dat, struct_desc_t& desc) {
 }
 
 void wc_read_struct(const char* fname, SettingsGroup& group, void* dat, struct_desc_t& desc) {
-
 	for (int i = 0; i < desc.numFields; i++) {
 		field_desc_t& field = desc.fields[i];
 		uint8_t* fieldDat = ((uint8_t*)dat) + field.offset;
@@ -708,6 +707,14 @@ void wc_read_struct(const char* fname, SettingsGroup& group, void* dat, struct_d
 	}
 
 	wc_post_parse_struct(dat, desc);
+
+	StringMap::iterator_t iter;
+	while (group.keys.iterate(iter)) {
+		if (!desc.validFields.hasKey(iter.key)) {
+			ALERT(at_error, "%s (line %d): Invalid field '%s' in group '%s'.\n",
+				fname, group.lineno, iter.key, group.name.c_str());
+		}
+	}
 }
 
 void wc_fwrite_events(FILE* f, CustomWeaponParams& params, int category) {

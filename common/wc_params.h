@@ -40,6 +40,7 @@
 #define FL_WC_WEP_IRON_SIGHTS_ZOOM		(1<<26) // zooming uses iron sights
 #define FL_WC_WEP_HAS_STATE_SPRITE		(1<<27) // weapon has a HUD sprite indicating weapon state
 #define FL_WC_WEP_HAS_ALT_PARAMS		(1<<28) // weapon has an alternate set of weapon params that can be toggled
+#define FL_WC_WEP_RELOAD2_IS_DEFAULT	(1<<29) // reload the secondary clip by default
 
 #define FL_WC_SHOOT_UNDERWATER 1
 #define FL_WC_SHOOT_NO_ATTACK 2			// don't run standard weapon attack logic (shoot animations, clicking)
@@ -120,7 +121,7 @@ enum WeaponCustomReloadState {
 	WC_RELOAD_STAGE_PUMP,			// finish shotgun reload
 	WC_RELOAD_STAGE_SECONDARY,		// start of a secondary reload
 	WC_RELOAD_STAGE_AKIMBO,			// start of an akimbo reload. Triggers for each hand individually.
-	WC_RELOAD_STAGES,
+	WC_RELOAD_STAGES,				// Note: m_fInSpecialReload is 3 bits in delta.lst
 };
 
 enum WeaponCustomAmmoIndex {

@@ -35,11 +35,13 @@
 		g_wc_evt_type_names[id] = cfgName; \
         static field_desc_t fields[] = { __VA_ARGS__ }; \
         g_wc_desc_evt[id] = { cfgName, fields, ARRAY_SZ(fields) }; \
+		set_valid_fields(g_wc_desc_evt[id]); \
     } while (0)
 
 #define WEP_STRUCT_DESC(var, cfgName, ...) do { \
         static field_desc_t fields[] = { __VA_ARGS__ }; \
         var = { cfgName, fields, ARRAY_SZ(fields) }; \
+		set_valid_fields(var); \
     } while (0)
 
 struct_desc_t g_wc_desc_general;
@@ -72,6 +74,8 @@ mod_string_t g_wc_trigger_to_name[WC_MAX_TRIGGER_VALUES];
 HashMap<uint16_t> g_wc_name_to_trigger; // maps a group name to an event trigger + argument value
 HashMap<uint8_t> g_wc_name_to_action; // maps an action key value to its event number
 StringPool g_wc_trigger_string_pool;
+
+StringSet g_wc_default_section_fields = { "delay", "offset" };
 
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
@@ -112,6 +116,7 @@ void init_weapon_struct_fields() {
 		wep_flags[BitIndex(FL_WC_WEP_EXHAUSITBLE)] = "exhaustible";
 		wep_flags[BitIndex(FL_WC_WEP_IRON_SIGHTS_ZOOM)] = "iron_sights";
 		wep_flags[BitIndex(FL_WC_WEP_SHOTGUN_SMOOTH_CANCEL)] = "smooth_shotgun_interrupt";
+		wep_flags[BitIndex(FL_WC_WEP_RELOAD2_IS_DEFAULT)] = "reload_secondary_default";
 
 		WEP_STRUCT_DESC(g_wc_desc_general, "general",
 			WEP_FIELD("classname", "", classname, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -379,6 +384,8 @@ void init_event_fields() {
 			EVT_FIELD("sound", NULL, playSound.additionalSounds, 0, WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2),
 			EVT__ENUM("distant_sound", "none", playSound.distantSound, 0, distant_sound_names, FL_FIELD_NO_NETWORK),
 		);
+
+		g_wc_desc_evt[WC_EVT_IDLE_SOUND].validFields.putAll(g_wc_desc_evt[WC_EVT_PLAY_SOUND].validFields);
 	}
 
 	{
@@ -1193,6 +1200,24 @@ const char* describe_event(WepEvt& evt) {
 	return temp;
 }
 
+void set_valid_fields(struct_desc_t& desc) {
+#ifndef CLIENT_DLL
+	desc.validFields.putAll(g_wc_default_section_fields);
+
+	for (int i = 0; i < desc.numFields; i++) {
+		desc.validFields.put(desc.fields[i].name);
+
+		if (desc.fields[i].type == WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2) {
+			static char temp[64];
+
+			for (int k = 0; k < 8; k++) {
+				snprintf(temp, sizeof(temp), "%s%d", desc.fields[i].name, k+2);
+				desc.validFields.put(temp);
+			}
+		}
+	}
+#endif
+}
 
 // Paramter type info funcs
 

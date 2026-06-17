@@ -110,13 +110,6 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define SATCHEL_WEIGHT			-10
 #define TRIPMINE_WEIGHT			-10
 
-#define ITEM_FLAG_SELECTONEMPTY		1
-#define ITEM_FLAG_NOAUTORELOAD		2
-#define ITEM_FLAG_NOAUTOSWITCHEMPTY	4
-#define ITEM_FLAG_LIMITINWORLD		8
-#define ITEM_FLAG_EXHAUSTIBLE		16 // A player can totally exhaust their ammo supply and lose this weapon
-#define ITEM_FLAG_NOAUTOSWITCHTO	32
-
 #define WEAPON_IS_ONTARGET 0x40
 
 EXPORT extern DLL_GLOBAL	short	g_sModelIndexLaser;// holds the index for the laser beam

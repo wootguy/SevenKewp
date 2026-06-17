@@ -17,6 +17,13 @@
 // In case this ever changes
 #define M_PI			3.14159265358979323846
 
+#define ITEM_FLAG_SELECTONEMPTY		1
+#define ITEM_FLAG_NOAUTORELOAD		2
+#define ITEM_FLAG_NOAUTOSWITCHEMPTY	4
+#define ITEM_FLAG_LIMITINWORLD		8
+#define ITEM_FLAG_EXHAUSTIBLE		16 // A player can totally exhaust their ammo supply and lose this weapon
+#define ITEM_FLAG_NOAUTOSWITCHTO	32
+
 #define WEP_FLAG_DYNAMIC_ACCURACY	1	// weapon accuracy changes when moving/crouching
 #define WEP_FLAG_SECONDARY_ACCURACY	2	// weapon has a separate accuracy value for secondary fire
 #define WEP_FLAG_VERTICAL_ACCURACY	4	// weapon has a separate accuracy value(s) for the vertical axis

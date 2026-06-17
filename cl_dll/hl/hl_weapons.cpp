@@ -129,6 +129,13 @@ CustomWeaponParams* GetCurrentCustomWeaponParams() {
 	return g_activeWeaponCustom ? &g_activeWeaponCustom->GetActiveParams() : NULL;
 }
 
+bool IsCustomWeapon(int id) {
+	if (id >= 0 && id < MAX_WEAPONS) {
+		return g_customWeapon[id].m_hasPredictionData;
+	}
+	return false;
+}
+
 void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
 	float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy) {	
 	if (id >= 0 && id < MAX_WEAPONS) {
@@ -205,6 +212,17 @@ const char* GetCustomWeaponStateString() {
 
 	if (g_activeWeaponCustom) {
 		stateStr = g_activeWeaponCustom->GetStateString();
+		return stateStr.c_str();
+	}
+
+	return "";
+}
+
+const char* GetCustomWeaponChargeStatesString() {
+	static std::string stateStr;
+
+	if (g_activeWeaponCustom) {
+		stateStr = g_activeWeaponCustom->GetChargeStatesString();
 		return stateStr.c_str();
 	}
 

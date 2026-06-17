@@ -9,6 +9,7 @@
 #include <malloc.h> // _alloca
 #include "com_weapons.h"
 #include "wc_params.h"
+#include "ammohistory.h"
 
 extern local_state_t g_prediction_debug_state;
 
@@ -28,42 +29,42 @@ int CHudDebug::Init(void)
 
 	m_iFlags |= HUD_INTERMISSION | HUD_ACTIVE; // is always drawn during an intermission
 
-	GetConsoleStringSize("m_flNextSecondaryAttack  ", &var_width, &line_height);
+	GetConsoleStringSize("m_fInSpecialReload  ", &var_width, &line_height);
 	GetConsoleStringSize("-32768  ", &num_width, &line_height);
 
 	return 1;
 }
 
-#define PRINT_WEP_STATE_VARF(var) \
-	DrawConsoleString(5, yOffset, #var, varColor); \
-	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %f", wep.var), valColor); \
+#define PRINT_VARF(name, var) \
+	DrawConsoleString(5, yOffset, name, varColor); \
+	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" % .2f", var), valColor); \
 	yOffset += line_height
 
-#define PRINT_WEP_STATE_VARD(var) \
-	DrawConsoleString(5, yOffset, #var, varColor); \
-	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %d", wep.var), valColor); \
-	yOffset += line_height
-
-#define PRINT_VARD(var) \
-	DrawConsoleString(5, yOffset, #var, varColor); \
+#define PRINT_VARD(name, var) \
+	DrawConsoleString(5, yOffset, name, varColor); \
 	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %d", var), valColor); \
 	yOffset += line_height
 
-#define PRINT_VARSTR(var) \
-	DrawConsoleString(5, yOffset, #var, varColor); \
+#define PRINT_VARSTR(name, var) \
+	DrawConsoleString(5, yOffset, name, varColor); \
 	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %s", var), valColor); \
 	yOffset += line_height
 
-#define PRINT_VEC_VARF(vec) \
-	DrawConsoleString(5, yOffset, #vec, varColor); \
+#define PRINT_VARDSTR(name, var, num) \
+	DrawConsoleString(5, yOffset, name, varColor); \
+	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" %s (%d)", var, num), valColor); \
+	yOffset += line_height
+
+#define PRINT_VEC_VARF(name, vec) \
+	DrawConsoleString(5, yOffset, name, varColor); \
 	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs(" % .2f % .2f % .2f", vec.x, vec.y, vec.z), valColor); \
 	yOffset += line_height
 
-#define PRINT_VEC_VARD(vec) \
-	DrawConsoleString(5, yOffset, #vec, varColor); \
-	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs("%d", (int)vec.x), valColor); \
-	DrawConsoleString(5+var_width+num_width, yOffset, UTIL_VarArgs("%d", (int)vec.y), valColor); \
-	DrawConsoleString(5+var_width+num_width*2, yOffset, UTIL_VarArgs("%d", (int)vec.z), valColor); \
+#define PRINT_VEC_VARD(name, vec) \
+	DrawConsoleString(5, yOffset, name, varColor); \
+	DrawConsoleString(5+var_width, yOffset, UTIL_VarArgs("% d", (int)vec.x), valColor); \
+	DrawConsoleString(5+var_width+num_width, yOffset, UTIL_VarArgs("% d", (int)vec.y), valColor); \
+	DrawConsoleString(5+var_width+num_width*2, yOffset, UTIL_VarArgs("% d", (int)vec.z), valColor); \
 	yOffset += line_height
 
 int CHudDebug::Draw(float flTime)
@@ -71,7 +72,7 @@ int CHudDebug::Draw(float flTime)
 	if (m_HUD_debug->value <= 0 || !gHUD.IsSevenKewpServer())
 		return 0;
 
-	int yOffset = line_height*2;
+	int yOffset = line_height * 2;
 
 	local_state_t& state = g_prediction_debug_state;
 
@@ -84,50 +85,136 @@ int CHudDebug::Draw(float flTime)
 	RGB varColor(255, 255, 255);
 
 	CustomWeaponParams* params = GetCustomWeaponParams(state.client.m_iId, WC_PARAMS_AUTO);
-	const char* WcState = GetCustomWeaponStateString();
+	bool isCustomWeapon = IsCustomWeapon(state.client.m_iId);
 
-	PRINT_WEP_STATE_VARD(m_iId);
-	PRINT_WEP_STATE_VARD(m_iClip);
+	int ammoType1 = (int)state.client.vuser4[0];
+	int ammoAmt1 = (int)state.client.vuser4[1];
+	int ammoType2 = (int)state.client.vuser3[2];
+	int ammoAmt2 = (int)state.client.vuser4[2];
+
+	std::string ammo1 = UTIL_VarArgs("%-4d| %-4d (Type %d)", wep.m_iClip, ammoAmt1, ammoType1);
+	std::string ammo2 = UTIL_VarArgs("%-4d| %-4d (Type %d)", wep.iuser4, ammoAmt2, ammoType2);
+	Vector nextAttacks(wep.m_flNextPrimaryAttack, wep.m_flNextSecondaryAttack, wep.fuser4);
+
+	WEAPON* pw = gWR.GetWeapon(wep.m_iId);
+	std::string hudWepInfo = UTIL_VarArgs("%s (ID %d)", pw->szName, wep.m_iId);
+
+	float accuracyX = pw->accuracyX;
+	float accuracyY = pw->accuracyY;
+	float accuracyX2 = pw->accuracyX2;
+	float accuracyY2 = pw->accuracyY2;
+	bool dynamicAccuracy = pw->iFlagsEx & WEP_FLAG_DYNAMIC_ACCURACY;
+	GetCurrentCustomWeaponAccuracy(pw->iId, accuracyX, accuracyY, accuracyX2, accuracyY2, dynamicAccuracy);
+	std::string accuracy1 = UTIL_VarArgs("% .2f  % .2f", accuracyX, accuracyY);
+	std::string accuracy2 = UTIL_VarArgs("% .2f  % .2f", accuracyX2, accuracyY2);
+
+	std::string flagStr;
+	if (pw->iFlags & ITEM_FLAG_SELECTONEMPTY) flagStr += "Empty select + ";
+	if (pw->iFlags & ITEM_FLAG_NOAUTORELOAD) flagStr += "No auto reload + ";
+	if (pw->iFlags & ITEM_FLAG_NOAUTOSWITCHEMPTY) flagStr += "No switch empty + ";
+	if (pw->iFlags & ITEM_FLAG_LIMITINWORLD) flagStr += "Limit in world + ";
+	if (pw->iFlags & ITEM_FLAG_EXHAUSTIBLE) flagStr += "Exhaustible + ";
+	if (pw->iFlags & ITEM_FLAG_NOAUTOSWITCHTO) flagStr += "No switch to + ";
+	if (pw->iFlagsEx & WEP_FLAG_DYNAMIC_ACCURACY) flagStr += "Dyn. acc + ";
+	if (pw->iFlagsEx & WEP_FLAG_SECONDARY_ACCURACY) flagStr += "2nd acc + ";
+	if (pw->iFlagsEx & WEP_FLAG_VERTICAL_ACCURACY) flagStr += "Vert. acc + ";
+	if (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR) flagStr += "Zoom xhair + ";
+	if (pw->iFlagsEx & WEP_FLAG_NO_ZOOM_CROSSHAIR) flagStr += "No zoom xhair + ";
+	flagStr = flagStr.substr(0, flagStr.size() - 3);
+
+	PRINT_VARSTR("Weapon", hudWepInfo.c_str());
+	PRINT_VARSTR("Weapon Flags", flagStr.c_str());
 	yOffset += line_height;
-	PRINT_WEP_STATE_VARF(m_flNextPrimaryAttack);
-	PRINT_WEP_STATE_VARF(m_flNextSecondaryAttack);
-	PRINT_WEP_STATE_VARF(m_flTimeWeaponIdle);
+	PRINT_VARSTR("Primary Accuracy", accuracy1.c_str());
+	PRINT_VARSTR("Secondary Accuracy", accuracy2.c_str());
 	yOffset += line_height;
-	PRINT_WEP_STATE_VARD(m_fInReload);
-	PRINT_WEP_STATE_VARD(m_fInSpecialReload);
-	PRINT_WEP_STATE_VARF(m_flNextReload);
-	PRINT_WEP_STATE_VARF(m_flPumpTime);
-	PRINT_WEP_STATE_VARF(m_fReloadTime);
+	PRINT_VARSTR("Primary Ammo", ammo1.c_str());
+	PRINT_VARSTR("Secondary Ammo", ammo2.c_str());
+	if (isCustomWeapon) {
+		PRINT_VARD("Akimbo Clip", wep.iuser1);
+	}
 	yOffset += line_height;
-	PRINT_WEP_STATE_VARF(m_fReloadTime);
-	PRINT_WEP_STATE_VARF(m_fNextAimBonus);
-	PRINT_WEP_STATE_VARD(m_fInZoom);
-	PRINT_WEP_STATE_VARD(m_iWeaponState);
-	PRINT_VARSTR(WcState);
+	PRINT_VEC_VARF("Attack Cooldowns", nextAttacks);
+	PRINT_VARF("Idle Cooldown", wep.m_flTimeWeaponIdle);
+
 	yOffset += line_height;
-	PRINT_WEP_STATE_VARD(iuser1);
-	PRINT_WEP_STATE_VARD(iuser2);
-	PRINT_WEP_STATE_VARD(iuser3);
-	PRINT_WEP_STATE_VARD(iuser4);
-	PRINT_WEP_STATE_VARF(fuser1);
-	PRINT_WEP_STATE_VARF(fuser2);
-	PRINT_WEP_STATE_VARF(fuser3);
-	PRINT_WEP_STATE_VARF(fuser4);
+	
+	if (isCustomWeapon) {
+		const char* m_fInSpecialReload = "???";
+		switch (wep.m_fInSpecialReload) {
+		case WC_RELOAD_STAGE_START: m_fInSpecialReload = "Start"; break;
+		case WC_RELOAD_STAGE_START_EMPTY: m_fInSpecialReload = "Start (empty)"; break;
+		case WC_RELOAD_STAGE_SHELL: m_fInSpecialReload = "Shell"; break;
+		case WC_RELOAD_STAGE_PUMP: m_fInSpecialReload = "Pump"; break;
+		case WC_RELOAD_STAGE_SECONDARY: m_fInSpecialReload = "Secondary"; break;
+		case WC_RELOAD_STAGE_AKIMBO: m_fInSpecialReload = "Akimbo"; break;
+		}
+
+		PRINT_VARDSTR("Reloading", wep.m_fInReload ? "Yes" : "No", wep.m_fInReload);
+		PRINT_VARDSTR("Reload Stage", m_fInSpecialReload, wep.m_fInSpecialReload);
+	}
+	else {
+		PRINT_VARD("m_fInReload", wep.m_fInReload);
+		PRINT_VARD("m_fInSpecialReload", wep.m_fInSpecialReload);
+		PRINT_VARF("m_flNextReload", wep.m_flNextReload);
+		PRINT_VARF("m_flPumpTime", wep.m_flPumpTime);
+		PRINT_VARF("m_fReloadTime", wep.m_fReloadTime);
+	}
+
+	yOffset += line_height;
+	if (isCustomWeapon) {
+		const char* iuser3 = GetCustomWeaponStateString();
+		PRINT_VARDSTR("Weapon State", iuser3, wep.iuser3);
+		PRINT_VARSTR("Charge States", GetCustomWeaponChargeStatesString());
+	}
+	else {
+		PRINT_VARF("m_fNextAimBonus", wep.m_fNextAimBonus);
+		PRINT_VARD("m_fInZoom", wep.m_fInZoom);
+		PRINT_VARD("m_iWeaponState", wep.m_iWeaponState);
+		PRINT_VARD("m_fireState", wep.iuser3);
+		PRINT_VARF("m_flStartThrow", wep.fuser2);
+		PRINT_VARF("m_flReleaseThrow", wep.fuser3);
+		PRINT_VARD("m_fInAttack", wep.iuser2);
+		PRINT_VARD("m_chargeReady", wep.iuser1);
+		PRINT_VARF("fuser1", wep.fuser1);
+	}
 	
 	yOffset += line_height;
-	PRINT_VEC_VARD(gPlayerSim.v_angles);
-	PRINT_VEC_VARF(gPlayerSim.ev_punchangle);
-	PRINT_VEC_VARF(gPlayerSim.sv_punchangle);
-	PRINT_VEC_VARF(gPlayerSim.v_punchangle);
+	PRINT_VEC_VARD("Angles", gPlayerSim.v_angles);
+	PRINT_VEC_VARF("Client Punch", gPlayerSim.ev_punchangle);
+	PRINT_VEC_VARF("Server Punch", gPlayerSim.sv_punchangle);
 
 	yOffset += line_height;
-	PRINT_VEC_VARD(gPlayerSim.v_sim_org);
-	PRINT_VEC_VARD(gPlayerSim.v_sim_vel);
+	PRINT_VEC_VARD("Origin", gPlayerSim.v_sim_org);
+	PRINT_VEC_VARD("Velocity", gPlayerSim.v_sim_vel);
 
 	yOffset += line_height;
 	int real_contents;
 	int contents = gEngfuncs.PM_PointContents(gPlayerSim.v_sim_org, &real_contents);
-	PRINT_VARD(contents);
+
+	const char* contentsName = "???";
+	switch (contents) {
+	case CONTENTS_EMPTY: contentsName = "EMPTY"; break;
+	case CONTENTS_SOLID: contentsName = "SOLID"; break;
+	case CONTENTS_WATER: contentsName = "WATER"; break;
+	case CONTENTS_SLIME: contentsName = "SLIME"; break;
+	case CONTENTS_LAVA: contentsName = "LAVA"; break;
+	case CONTENTS_SKY: contentsName = "SKY"; break;
+	case CONTENTS_ORIGIN: contentsName = "ORIGIN"; break;
+	case CONTENTS_CLIP: contentsName = "CLIP"; break;
+	case CONTENTS_CURRENT_0: contentsName = "CURRENT_0"; break;
+	case CONTENTS_CURRENT_90: contentsName = "CURRENT_90"; break;
+	case CONTENTS_CURRENT_180: contentsName = "CURRENT_180"; break;
+	case CONTENTS_CURRENT_270: contentsName = "CURRENT_270"; break;
+	case CONTENTS_CURRENT_UP: contentsName = "CURRENT_UP"; break;
+	case CONTENTS_CURRENT_DOWN: contentsName = "CURRENT_DOWN"; break;
+	case CONTENTS_TRANSLUCENT: contentsName = "TRANSLUCENT"; break;
+	case CONTENTS_LADDER: contentsName = "LADDER"; break;
+	case CONTENTS_FLYFIELD: contentsName = "FLYFIELD"; break;
+	case CONTENTS_GRAVITY_FLYFIELD: contentsName = "GRAVITY_FLYFIELD"; break;
+	case CONTENTS_FOG: contentsName = "FOG"; break;
+	}
+	PRINT_VARDSTR("Contents", contentsName, contents);
 
 	if (m_HUD_debug->value >= 2) {
 		static int numPhysEnts = 0;
@@ -181,8 +268,7 @@ int CHudDebug::Draw(float flTime)
 
 			drawCount++;
 		}
-		yOffset += line_height;
-		PRINT_VARD(numPhysEnts);
+		PRINT_VARD("Phys Ents", numPhysEnts);
 	}
 
 

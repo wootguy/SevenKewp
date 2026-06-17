@@ -77,6 +77,7 @@ struct struct_desc_t {
 	const char* name;			// for config file
 	field_desc_t* fields;
 	int numFields;
+	StringSet validFields;
 };
 
 extern struct_desc_t g_wc_desc_general;
@@ -109,6 +110,7 @@ void init_weapon_custom_config_parser();
 
 struct_desc_t* get_evt_desc(int idx);
 EXPORT const char* describe_event(WepEvt& evt);
+void set_valid_fields(struct_desc_t& desc);
 
 int wc_get_field_bytes(field_desc_t& field);
 std::string wc_get_field_str(field_desc_t& field, uint8_t* dat);

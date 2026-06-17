@@ -48,6 +48,7 @@ class CBasePlayerWeapon;
 bool IsPredictionWeaponZoomed();
 CustomWeaponParams* GetCustomWeaponParams(int id, int which); // which: 0 = active, 1 = default, 2 = alternate
 CustomWeaponParams* GetCurrentCustomWeaponParams();
+bool IsCustomWeapon(int id);
 void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
 	float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy);
 void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, float** m_lastEventFrame);
@@ -58,6 +59,7 @@ bool IsViewModelAkimbo();
 bool IsWeaponIronSightsActive();
 int GetCustomWeaponStateIconIdx(); // -1 for no icon
 const char* GetCustomWeaponStateString();
+const char* GetCustomWeaponChargeStatesString();
 int GetCustomWeaponBody(int id);
 bool IsExclusiveWeapon(int id);
 void InitCustomWeapon(int id);

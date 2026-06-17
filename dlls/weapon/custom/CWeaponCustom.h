@@ -108,6 +108,7 @@ public:
 	bool CanReload(int attackIdx);
 	void LoadClip(int maxAmount, bool secondary); // load ammo from reserve into clip
 	void Reload() override;
+	void ReloadThink();
 	void WeaponIdle() override;
 	void ItemPostFrame() override;
 	const char* GetModelP() override;
@@ -163,6 +164,7 @@ public:
 	studiohdr_t* GetViewModelHeader();
 	float GetActiveMovespeedMult();
 	std::string GetStateString();
+	std::string GetChargeStatesString();
 	float WallTime();
 
 	// Time accumulated in user commands. Synced between the client and server for each user cmd.
