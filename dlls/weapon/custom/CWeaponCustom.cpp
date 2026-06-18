@@ -304,6 +304,7 @@ BOOL CWeaponCustom::Deploy()
 	m_iShotsFired = 0;
 	m_bDelayFire = false;
 	m_active_cs_recoil_evt = -1;
+	m_attackChamberCmdTime = 0;
 	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
 	ClearChargedStates();
 	int ret = TRUE;
@@ -544,10 +545,6 @@ void CWeaponCustom::Reload() {
 	if (m_fInSpecialReload == WC_RELOAD_STAGE_PUMP && !(params.flags & FL_WC_WEP_SHOTGUN_SMOOTH_CANCEL))
 		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flNextTertiaryAttack = 0;
 
-	if (reloadStage->flags & FL_WC_RELOAD_CHAMBERED) {
-		SetState(FL_WC_STATE_CHAMBER_NEEDED, true);
-	}
-
 	if (IsAkimbo()) {
 		m_bInAkimboReload = IsAkimbo() && GetAkimboClip() < m_iClip;
 
@@ -626,12 +623,17 @@ void CWeaponCustom::ReloadThink() {
 	CustomWeaponParams& params = GetActiveParams();
 	WeaponCustomReload& reloadStage = params.reloadStage[m_fInSpecialReload];
 
-	if (m_fInReload && reloadStage.loadTime && !GetState(FL_WC_STATE_RELOAD_CLIP_DONE)) {
+	if (m_fInReload && reloadStage.loadTime) {
 		uint32_t timePassed = CmdTime() - m_reloadStageCmdTime[m_fInSpecialReload];
-		if (timePassed > reloadStage.loadTime) {
+		if (!GetState(FL_WC_STATE_RELOAD_CLIP_DONE) && timePassed > reloadStage.loadTime) {
 			int loadAmount = (params.flags & FL_WC_WEP_SHOTGUN_RELOAD) ? 1 : -1;
 			LoadClip(loadAmount, GetState(FL_WC_STATE_SECONDARY_RELOAD));
 			SetState(FL_WC_STATE_RELOAD_CLIP_DONE, true);
+		}
+
+		if (reloadStage.chamberTime && GetState(FL_WC_STATE_RELOAD_CLIP_DONE)) {
+			bool chambered = timePassed < reloadStage.chamberTime;
+			SetState(FL_WC_STATE_CHAMBER_NEEDED, chambered);
 		}
 	}
 
@@ -803,8 +805,14 @@ void CWeaponCustom::ItemPostFrame() {
 	UpdateStateHudSprite();
 	ReloadThink();
 
-	if (m_pPlayer->m_flNextAttack <= 0 && m_flNextPrimaryAttack <= 0 && m_flNextSecondaryAttack <= 0 && m_flNextTertiaryAttack <= 0) {
-		SetState(FL_WC_STATE_CHAMBER_NEEDED, false);
+	if (GetState(FL_WC_STATE_CHAMBER_NEEDED)) {
+		if (m_attackChamberCmdTime && CmdTime() > m_attackChamberCmdTime) {
+			SetState(FL_WC_STATE_CHAMBER_NEEDED, false);
+			m_attackChamberCmdTime = 0;
+		}
+		if (m_pPlayer->m_flNextAttack <= 0 && m_flNextPrimaryAttack <= 0 && m_flNextSecondaryAttack <= 0 && m_flNextTertiaryAttack <= 0) {
+			SetState(FL_WC_STATE_CHAMBER_NEEDED, false);
+		}
 	}
 
 	// cs recoil cooldown
@@ -1159,7 +1167,10 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 			m_pPlayer->SetSuitUpdate("!HEV_AMO0", SUIT_REPEAT_OK, 0);
 		}
 
-		SetState(FL_WC_STATE_CHAMBER_NEEDED, (opts.flags& FL_WC_SHOOT_CHAMBERED) != 0);
+		if (opts.chamberTime && *clip > 0) {
+			m_attackChamberCmdTime = CmdTime() + opts.chamberTime;
+			SetState(FL_WC_STATE_CHAMBER_NEEDED, true);
+		}
 
 		// for cs recoil
 		// Using an event index will break prediction during the transition to a new index.

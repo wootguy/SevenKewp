@@ -68,6 +68,7 @@ public:
 	uint32_t m_chargeStopCmdTime; // CMD time that a discharge began
 	uint32_t m_attackStartCmdTime; // CMD time that an attack began
 	uint32_t m_stateChangeCmdTime; // CMD time that a state change was queued
+	uint32_t m_attackChamberCmdTime; // CMD time that attack will finish chambering
 	uint32_t m_reloadStageCmdTime[WC_RELOAD_STAGES]; // CMD time that a reload stage began
 	float m_lastCharge; // last charge progress calculated for chargeup/chargedown
 	int m_chargeStartClip; // ammo started with when chargeup began

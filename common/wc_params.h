@@ -47,12 +47,9 @@
 #define FL_WC_SHOOT_NEED_FULL_COST 16	// don't allow attack if clip is less than ammo cost
 #define FL_WC_SHOOT_NO_AUTOFIRE 32		// one shot per click
 #define FL_WC_SHOOT_IS_MELEE 64			// use server-side crowbar attack logic
-#define FL_WC_SHOOT_CHAMBERED 128		// chambering required after this attack
 
 #define FL_WC_CHARGE_DAMAGE		1		// attack charge progress scales damage events
 #define FL_WC_CHARGE_KICKBACK	2		// attack charge progress scales kickback events
-
-#define FL_WC_RELOAD_CHAMBERED 1		// reload stage requires chambering to complete
 
 enum WeaponCustomAmmoPool
 {
@@ -181,6 +178,7 @@ struct CustomWeaponShootOpts {
 	uint16_t emptySound;		// custom empty click sound
 	uint16_t cooldown;			// time between attacks (milliseconds)
 	uint16_t accuracy[2];		// horizontal+vertical accuracy for crosshair (degrees * 100)
+	uint16_t chamberTime;		// if set, chambering is required if the weapon is switched before waiting this long after the attack
 
 	uint8_t hasCooldownOverride[WC_COOLDOWN_TYPES];		// 1 bit conditions for networking
 	uint16_t cooldownOverride[WC_COOLDOWN_TYPES];	// cooldown overrides for various actions
@@ -209,11 +207,14 @@ struct CustomWeaponShootOpts {
 struct WeaponCustomReload {
 	uint8_t anim;
 	uint16_t time; // milliseconds
-	uint8_t flags;
 
 	// clip is loaded at this time instead of when the stage is complete.
 	// A bullet will be loaded for stages that don't normally load the clip.
 	uint16_t loadTime;
+
+	// if set, the gun will require chambering if the reload is aborted after the loadTime
+	// and before the chamberTime
+	uint16_t chamberTime;
 };
 
 struct WeaponCustomAkimbo {

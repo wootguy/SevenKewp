@@ -177,14 +177,11 @@ void init_weapon_struct_fields() {
 	);
 
 	{
-		static const char* flags[32];
-		flags[BitIndex(FL_WC_RELOAD_CHAMBERED)] = "chambered";
-
 		WEP_STRUCT_DESC(g_wc_desc_reload, "reload_unnamed",
 			WEP_FIELD("anim", "0", reloadStage[0].anim, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 			WEP_FIELD("time", "0", reloadStage[0].time, 0, WC_PARAM_TIME),
-			WEP_FLAGS("flags", "0", reloadStage[0].flags, 0, flags),
 			WEP_FIELD("load_time", "0", reloadStage[0].loadTime, 0, WC_PARAM_TIME),
+			WEP_FIELD("chamber_time", "0", reloadStage[0].chamberTime, 0, WC_PARAM_TIME),
 		);
 	}
 
@@ -196,7 +193,6 @@ void init_weapon_struct_fields() {
 		flags[BitIndex(FL_WC_SHOOT_NEED_AKIMBO)] = "akimbo_only";
 		flags[BitIndex(FL_WC_SHOOT_NEED_FULL_COST)] = "need_full_cost";
 		flags[BitIndex(FL_WC_SHOOT_NO_AUTOFIRE)] = "no_autofire";
-		flags[BitIndex(FL_WC_SHOOT_CHAMBERED)] = "chambered";
 		//flags[BitIndex(FL_WC_SHOOT_IS_MELEE)] = "is_melee";
 
 		static const char* ammoPools[32];
@@ -232,6 +228,7 @@ void init_weapon_struct_fields() {
 			WEP__ENUM("ammo_pool", "0", shootOpts[0].ammoPool, 0, ammoPools),
 			WEP_FIELD("cooldown", "0", shootOpts[0].cooldown, 0, WC_PARAM_TIME),
 			WEP_FIELD("empty_sound", NULL, shootOpts[0].emptySound, 0, WC_PARAM_SOUND_INDEX),
+			WEP_FIELD("chamber_time", "0", shootOpts[0].chamberTime, 0, WC_PARAM_TIME),
 			
 			WEP_FIELD("hascd0", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_PRIMARY], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("hascd1", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_SECONDARY], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
