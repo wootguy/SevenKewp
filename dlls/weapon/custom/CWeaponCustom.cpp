@@ -301,6 +301,9 @@ BOOL CWeaponCustom::Deploy()
 	m_fInSpecialReload = 0;
 	m_chargeSoundEvt = 0;
 	events.animCount = 0;
+	m_iShotsFired = 0;
+	m_bDelayFire = false;
+	m_active_cs_recoil_evt = -1;
 	m_pPlayer->pev->fov = m_pPlayer->m_iFOV = 0;
 	ClearChargedStates();
 	int ret = TRUE;
@@ -530,6 +533,8 @@ void CWeaponCustom::Reload() {
 	//CLALERT("Start Reload %d %d\n", m_iClip, m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]);
 
 	m_fInReload = TRUE;
+	m_iShotsFired = 0;
+	m_bDelayFire = false;
 
 	int totalReloadTime = reloadStage->time;
 	float nextAttack = totalReloadTime * 0.001f;
@@ -800,6 +805,28 @@ void CWeaponCustom::ItemPostFrame() {
 
 	if (m_pPlayer->m_flNextAttack <= 0 && m_flNextPrimaryAttack <= 0 && m_flNextSecondaryAttack <= 0 && m_flNextTertiaryAttack <= 0) {
 		SetState(FL_WC_STATE_CHAMBER_NEEDED, false);
+	}
+
+	// cs recoil cooldown
+	if (!(m_pPlayer->pev->button & (IN_ATTACK | IN_ATTACK2 | IN_ATTACK3))) {
+		if (m_bDelayFire) {
+			m_bDelayFire = false;
+
+			m_flNextShotsFiredDec = 0.4f;
+		}
+
+		//if (IsSecondaryWeapon(m_iId)) {
+		if (false) {
+			m_iShotsFired = 0;
+		}
+		else
+		{
+			if (m_iShotsFired > 0 && m_flNextShotsFiredDec <= 0)
+			{
+				m_flNextShotsFiredDec = 0.0225f;
+				m_iShotsFired--;
+			}
+		}
 	}
 
 	m_pPlayer->m_flNextAttack = 1; // prevent reload logic triggering
@@ -1133,6 +1160,24 @@ bool CWeaponCustom::CommonAttack(int attackIdx, int* clip, bool leftHand, bool a
 		}
 
 		SetState(FL_WC_STATE_CHAMBER_NEEDED, (opts.flags& FL_WC_SHOOT_CHAMBERED) != 0);
+
+		// for cs recoil
+		// Using an event index will break prediction during the transition to a new index.
+		// CS weapons only use one recoil set, and weapon mode toggles usually take 200ms
+		// or so, so it should be fine.
+		m_bDelayFire = true;
+		m_iShotsFired++;
+		if (m_iShotsFired > 15) {
+			m_iShotsFired = 15;
+		}
+
+		if (m_active_cs_recoil_evt >= 0) {
+			WepEvt& recoilEvt = defaultParams.events[m_active_cs_recoil_evt];
+			int direction_change = events.GetActiveCstrikeRecoil(recoilEvt, m_pPlayer)[6];
+			if (direction_change > 0 && !UTIL_SharedRandomLong(m_pPlayer->random_seed, 0, direction_change)) {
+				m_iDirection = m_iDirection ? 0 : 1; // pull gun left/right
+			}
+		}
 	}
 
 	Cooldown(attackIdx);

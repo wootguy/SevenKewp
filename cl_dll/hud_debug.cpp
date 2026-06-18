@@ -166,6 +166,14 @@ int CHudDebug::Draw(float flTime)
 		const char* iuser3 = GetCustomWeaponStateString();
 		PRINT_VARDSTR("Weapon State", iuser3, wep.iuser3);
 		PRINT_VARSTR("Charge States", GetCustomWeaponChargeStatesString());
+
+		int shotsFired = wep.m_fInZoom & 0xf;
+		int iDirection = (wep.m_fInZoom >> 4) & 1;
+		int delayFire = (wep.m_fInZoom >> 5) & 1;
+		float nextDec = wep.m_fNextAimBonus;
+		std::string str = UTIL_VarArgs("%d %.2f %s %s (%d)", shotsFired, nextDec,
+			iDirection ? "<" : ">", delayFire ? "D" : "", wep.m_fInZoom);
+		PRINT_VARSTR("Shots Fired", str.c_str());
 	}
 	else {
 		PRINT_VARF("m_fNextAimBonus", wep.m_fNextAimBonus);

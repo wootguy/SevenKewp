@@ -1051,6 +1051,56 @@ void CWeaponEvents::PlayEvent_RecoilShared(CBasePlayer* m_pPlayer, int flags, in
 #endif
 }
 
+void CWeaponEvents::PlayEvent_RecoilCstrike(WepEvt& evt, CBasePlayer* m_pPlayer) {
+	uint16_t* values = GetActiveCstrikeRecoil(evt, m_pPlayer);
+	float up_base = D100_TO_FLOAT(values[0]);
+	float lateral_base = D100_TO_FLOAT(values[1]);
+	float up_modifier = D100_TO_FLOAT(values[2]);
+	float lateral_modifier = D100_TO_FLOAT(values[3]);
+	float up_max = D100_TO_FLOAT(values[4]);
+	float lateral_max = D100_TO_FLOAT(values[5]);
+	int direction_change = values[6];
+
+	//PRINTF("CCOIL: %.2f %.2f %.2f %.2f %.2f %.2f %d\n",
+	//	up_base, lateral_base, up_modifier, lateral_modifier, up_max, lateral_max, direction_change);
+
+	// logic from ReGameDLL with the special cases for 0 values
+	float flKickUp = up_base;
+	float flKickLateral = lateral_base;
+
+#ifdef CLIENT_DLL
+	Vector& recoil = WC_EV_GetRecoil();
+#else
+	Vector& recoil = m_pPlayer->m_weaponRecoil;
+#endif
+
+	if (m_weapon->m_iShotsFired > 1) // consider == 0 case
+	{
+		flKickUp += m_weapon->m_iShotsFired * up_modifier;
+		flKickLateral += m_weapon->m_iShotsFired * lateral_modifier;
+	}
+
+	if (up_max == 0.0f) // boundaryless vertical kick
+	{
+		recoil.x -= flKickUp;
+	}
+	else if (recoil.x > -up_max) // do not kick when already out of boundaries
+	{
+		recoil.x = V_max(recoil.x - flKickUp, -up_max);
+	}
+
+	if (lateral_max == 0.0f) // boundaryless horizontal kick
+	{
+		recoil.y += flKickLateral * (m_weapon->m_iDirection * 2 - 1);
+	}
+	else if (fabs(recoil.y) < lateral_max) // do not kick when already out of boundaries
+	{
+		recoil.y = (m_weapon->m_iDirection == 1) ?
+			V_min(recoil.y + flKickLateral, lateral_max) :
+			V_max(recoil.y - flKickLateral, -lateral_max);
+	}
+}
+
 void CWeaponEvents::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand) {
 	if (!evt.anim.anims.arrSz)
 		return;
@@ -1659,6 +1709,10 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 		break;
 	case WC_EVT_RECOIL_ADV:
 		PlayEvent_RecoilAdv(evt, m_pPlayer);
+		break;
+	case WC_EVT_RECOIL_CSTRIKE:
+		PlayEvent_RecoilCstrike(evt, m_pPlayer);
+		m_weapon->m_active_cs_recoil_evt = eventIdx;
 		break;
 	case WC_EVT_IDLE_SOUND:
 		PlayEvent_Sound(evt, m_pPlayer, leftHand, akimboFire, tr);
@@ -2314,4 +2368,23 @@ Vector CWeaponEvents::GetEventPos(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* 
 	}
 	
 	return m_pPlayer->GetGunPosition() + m_pPlayer->GetAutoaimVector(AUTOAIM_5DEGREES) * evt.offset;
+}
+
+uint16_t* CWeaponEvents::GetActiveCstrikeRecoil(WepEvt& evt, CBasePlayer* m_pPlayer) {
+	Vector flatVelocity = m_pPlayer->pev->velocity;
+	flatVelocity.z = 0;
+
+	uint16_t* values = evt.recoil_cstrike.standing;
+
+	if (!(m_pPlayer->pev->flags & FL_ONGROUND)) {
+		values = evt.recoil_cstrike.flying;
+	}
+	else if (flatVelocity.Length() > 0) {
+		values = evt.recoil_cstrike.moving;
+	}
+	else if (m_pPlayer->pev->flags & FL_DUCKING) {
+		values = evt.recoil_cstrike.ducking;
+	}
+
+	return values;
 }

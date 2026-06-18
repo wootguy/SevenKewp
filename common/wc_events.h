@@ -172,6 +172,7 @@ enum WeaponCustomEventType {
 	WC_EVT_EJECT_SHELL,
 	WC_EVT_RECOIL,			// recoil with logic shared for all angles
 	WC_EVT_RECOIL_ADV,		// recoil with unique logic per angle
+	WC_EVT_RECOIL_CSTRIKE,	// recoil specific to counter-strike
 	WC_EVT_SET_BODY,		// weapon model bodygroup
 	WC_EVT_WEP_ANIM,		// weapon model animation
 	WC_EVT_PLR_ANIM,		// player model animation
@@ -413,6 +414,21 @@ struct WepEvt {
 			int16_t max[3];			// 9.7 fixed point int
 			uint16_t maxAngleTime;	// time to reach maxAngles amount of recoil for a sustained attack
 		} recoilAdv;
+
+		struct {
+			// fields for weapon config
+			WepEvtArr16 flyingCfg;
+			WepEvtArr16 movingCfg;
+			WepEvtArr16 standingCfg;
+			WepEvtArr16 duckingCfg;
+
+			// bit packed fields for networking
+			// [7] = up_base, lateral_base, up_modifier, lateral_modifier, up_max, lateral_max, direction_change
+			uint16_t flying[7];
+			uint16_t moving[7];
+			uint16_t standing[7];
+			uint16_t ducking[7];
+		} recoil_cstrike;
 
 		struct {
 			uint8_t flags;			// 3 bits - FL_WC_ANIM_*

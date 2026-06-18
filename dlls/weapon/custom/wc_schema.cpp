@@ -471,6 +471,45 @@ void init_event_fields() {
 			EVT_FIELD("max", "0 0 0", recoilAdv.max, 0, WC_PARAM_VEC3_SD100),
 			EVT_FIELD("max_angles_time", "0", recoilAdv.maxAngleTime, 0, WC_PARAM_TIME),
 		);
+
+		EVT_DESC(WC_EVT_RECOIL_CSTRIKE, "recoil_cstrike",
+			EVT_FIELD("recoil_flying", "0", recoil_cstrike.flyingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_8, NULL, 0, FL_FIELD_NO_NETWORK),
+			EVT_FIELD("recoil_moving", "0", recoil_cstrike.movingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_8, NULL, 0, FL_FIELD_NO_NETWORK),
+			EVT_FIELD("recoil_standing", "0", recoil_cstrike.standingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_8, NULL, 0, FL_FIELD_NO_NETWORK),
+			EVT_FIELD("recoil_ducking", "0", recoil_cstrike.duckingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_8, NULL, 0, FL_FIELD_NO_NETWORK),
+
+			EVT_FIELD("flying_0", "0", recoil_cstrike.flying[0], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("flying_1", "0", recoil_cstrike.flying[1], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("flying_2", "0", recoil_cstrike.flying[2], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("flying_3", "0", recoil_cstrike.flying[3], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("flying_4", "0", recoil_cstrike.flying[4], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("flying_5", "0", recoil_cstrike.flying[5], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("flying_6", "0", recoil_cstrike.flying[6], 4, WC_PARAM_UINT16, NULL, 0, FL_FIELD_NO_CFG),
+
+			EVT_FIELD("moving_0", "0", recoil_cstrike.moving[0], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("moving_1", "0", recoil_cstrike.moving[1], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("moving_2", "0", recoil_cstrike.moving[2], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("moving_3", "0", recoil_cstrike.moving[3], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("moving_4", "0", recoil_cstrike.moving[4], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("moving_5", "0", recoil_cstrike.moving[5], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("moving_6", "0", recoil_cstrike.moving[6], 4, WC_PARAM_UINT16, NULL, 0, FL_FIELD_NO_CFG),
+
+			EVT_FIELD("standing_0", "0", recoil_cstrike.standing[0], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("standing_1", "0", recoil_cstrike.standing[1], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("standing_2", "0", recoil_cstrike.standing[2], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("standing_3", "0", recoil_cstrike.standing[3], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("standing_4", "0", recoil_cstrike.standing[4], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("standing_5", "0", recoil_cstrike.standing[5], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("standing_6", "0", recoil_cstrike.standing[6], 4, WC_PARAM_UINT16, NULL, 0, FL_FIELD_NO_CFG),
+
+			EVT_FIELD("ducking_0", "0", recoil_cstrike.ducking[0], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("ducking_1", "0", recoil_cstrike.ducking[1], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("ducking_2", "0", recoil_cstrike.ducking[2], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("ducking_3", "0", recoil_cstrike.ducking[3], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("ducking_4", "0", recoil_cstrike.ducking[4], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("ducking_5", "0", recoil_cstrike.ducking[5], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("ducking_6", "0", recoil_cstrike.ducking[6], 4, WC_PARAM_UINT16, NULL, 0, FL_FIELD_NO_CFG),
+		);
 	}
 
 	EVT_DESC(WC_EVT_SET_BODY, "set_weapon_body",
@@ -1323,6 +1362,7 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_INT32_VEC3_SD1000:
 		return 12;
 	case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2:
+	case WC_PARAM_UINT16_D100_ARRAY_8:
 		return 17;
 	default:
 		ALERT(at_error, "Unknown field type size for %d\n", field.type);
@@ -1384,6 +1424,7 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 			(int)arr->arr[0], (int)arr->arr[1], (int)arr->arr[2], (int)arr->arr[3],
 			(int)arr->arr[0], (int)arr->arr[1], (int)arr->arr[2], (int)arr->arr[3]);
 	}
+	case WC_PARAM_UINT16_D100_ARRAY_8:
 	case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2: {
 		WepEvtArr16* arr = (WepEvtArr16*)dat;
 		return UTIL_VarArgs("(%d sz: %d %d %d %d %d %d %d %d)",
@@ -1549,5 +1590,18 @@ void wc_post_parse_event(WepEvt& evt) {
 	case WC_EVT_QUAKE_EFFECT:
 		evt.quake_effect.isParticleBurst = evt.quake_effect.type == WC_QUAKE_EFFECT_PARTICLE_BURST;
 		break;
+	case WC_EVT_RECOIL_CSTRIKE: {
+		for (int i = 0; i < 6; i++) {
+			evt.recoil_cstrike.flying[i] = evt.recoil_cstrike.flyingCfg.arr[i];
+			evt.recoil_cstrike.moving[i] = evt.recoil_cstrike.movingCfg.arr[i];
+			evt.recoil_cstrike.standing[i] = evt.recoil_cstrike.standingCfg.arr[i];
+			evt.recoil_cstrike.ducking[i] = evt.recoil_cstrike.duckingCfg.arr[i];
+		}
+		evt.recoil_cstrike.flying[6] = evt.recoil_cstrike.flyingCfg.arr[6] / 100;
+		evt.recoil_cstrike.moving[6] = evt.recoil_cstrike.movingCfg.arr[6] / 100;
+		evt.recoil_cstrike.standing[6] = evt.recoil_cstrike.standingCfg.arr[6] / 100;
+		evt.recoil_cstrike.ducking[6] = evt.recoil_cstrike.duckingCfg.arr[6] / 100;
+		break;
+	}
 	}
 }

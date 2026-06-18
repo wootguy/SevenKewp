@@ -46,6 +46,35 @@ struct ivec3 {
 	int v[3];
 };
 
+int wc_parse_dx_int(string str, int decimals) {
+	int dot = str.find_first_of(".");
+	if (dot != -1) {
+		string whole = str.substr(0, dot);
+		string decimal = str.substr(dot + 1);
+
+		switch (decimals) {
+		case 1000:	while (decimal.size() < 3) { decimal += "0"; } break;
+		case 100:	while (decimal.size() < 2) { decimal += "0"; } break;
+		default:
+			ALERT(at_error, "Unhandled decimals for parser: %d\n", decimals);
+			break;
+		}
+
+		int iwhole = atoi(whole.c_str());
+		int idecimal = atoi(decimal.c_str());
+
+		if (str.find_first_of("-") != -1) {
+			return -(-iwhole * decimals + idecimal);
+		}
+		else {
+			return iwhole * decimals + idecimal;
+		}
+	}
+	else {
+		return atoi(str.c_str()) * decimals;
+	}
+}
+
 ivec3 UTIL_ParseVectorD(const char* pString, int decimals)
 {
 	ivec3 ivec;
@@ -54,38 +83,12 @@ ivec3 UTIL_ParseVectorD(const char* pString, int decimals)
 	vector<string> parts = splitString(pString, " \t");
 
 	for (int i = 0; i < 3 && i < parts.size(); i++) {
-		string& str = parts[i];
-
-		int dot = str.find_first_of(".");
-		if (dot) {
-			string whole = str.substr(0, dot);
-			string decimal = str.substr(dot+1);
-			
-			switch (decimals) {
-			case 1000:	while (decimal.size() < 3) { decimal += "0"; } break;
-			case 100:	while (decimal.size() < 2) { decimal += "0"; } break;
-			default:
-				ALERT(at_error, "Unhandled decimals for parser: %d\n", decimals);
-				break;
-			}
-
-			int iwhole = atoi(whole.c_str());
-			int idecimal = atoi(decimal.c_str());
-
-			if (str.find_first_of("-") != -1) {
-				ivec.v[i] = -(-iwhole * decimals + idecimal);
-			}
-			else {
-				ivec.v[i] = iwhole * decimals + idecimal;
-			}
-		}
-		else {
-			ivec.v[i] = atoi(str.c_str()) * decimals;
-		}
+		ivec.v[i] = wc_parse_dx_int(parts[i], decimals);
 	}
 
 	return ivec;
 }
+
 
 
 void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const char* name, const char* val,
@@ -145,12 +148,31 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 				continue;
 
 			if (i >= MAX_WC_RANDOM_SELECTION) {
-				ALERT(at_error, "%s (line %d): Too many animations in key '%s' for group '%s'.\n",
+				ALERT(at_error, "%s (line %d): Too many values in key '%s' for group '%s'.\n",
 					fname, group.lineno, name, group.name.c_str());
 				break;
 			}
 
 			arr->arr[arr->arrSz++] = atoi(parts[i].c_str());
+		}
+		break;
+	}
+	case WC_PARAM_UINT16_D100_ARRAY_8: {
+		WepEvtArr16* arr = (WepEvtArr16*)dat;
+		vector<string> parts = splitString(val, " ");
+		memset(arr->arr, 0, sizeof(arr->arr));
+		arr->arrSz = 0;
+		for (int i = 0; i < (int)parts.size(); i++) {
+			if (parts[i].empty())
+				continue;
+
+			if (i >= MAX_WC_RANDOM_SELECTION) {
+				ALERT(at_error, "%s (line %d): Too many values in key '%s' for group '%s'.\n",
+					fname, group.lineno, name, group.name.c_str());
+				break;
+			}
+
+			arr->arr[arr->arrSz++] = wc_parse_dx_int(parts[i], 100);
 		}
 		break;
 	}
@@ -378,6 +400,16 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 			if (i != 0)
 				fprintf(f, " ");
 			fprintf(f, "%d", arr->arr[i]);
+		}
+		fprintf(f, "\n");
+		break;
+	}
+	case WC_PARAM_UINT16_D100_ARRAY_8: {
+		WepEvtArr16* arr = (WepEvtArr16*)dat;
+		for (int i = 0; i < MAX_WC_RANDOM_SELECTION && i < arr->arrSz; i++) {
+			if (i != 0)
+				fprintf(f, " ");
+			fprintf_float(f, 100, arr->arr[i]);
 		}
 		fprintf(f, "\n");
 		break;

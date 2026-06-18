@@ -80,6 +80,7 @@ public:
 	int m_lastAnim;			// last animation set by an event
 	float m_idleTime;		// idle time for the last played event
 	int m_stateIconIdx;
+	int m_active_cs_recoil_evt; // last used recoil event for this weapon. Won't work for weapons that can rapidly switch between cs recoils
 
 	int m_akimboAnim;
 	float m_akimboAnimTime;

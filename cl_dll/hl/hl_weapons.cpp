@@ -287,6 +287,7 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_chargeSoundEvt = 0;
 		g_customWeapon[i].m_chargeStartClip = 0;
 		g_customWeapon[i].m_stateIconIdx = 0;
+		g_customWeapon[i].m_active_cs_recoil_evt = 0;
 		memset(g_customWeapon[i].m_reloadStageCmdTime, 0, sizeof(uint32_t) * WC_RELOAD_STAGES);
 		memset(g_customWeapon[i].events.m_beams, 0, sizeof(WcBeam) * MAX_WC_BEAMS);
 		memset(&g_customWeapon[i].events.m_beamImpactSprite, 0, sizeof(WcSprite));
@@ -1078,6 +1079,10 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pCurrent->m_chargeReady			= pfrom->iuser1;
 		pCurrent->m_fInAttack			= pfrom->iuser2;
 		pCurrent->m_fireState			= pfrom->iuser3;
+		pCurrent->m_iShotsFired			= pfrom->m_fInZoom & 0xf;
+		pCurrent->m_iDirection			= (pfrom->m_fInZoom >> 4) & 1;
+		pCurrent->m_bDelayFire			= (pfrom->m_fInZoom >> 5) & 1;
+		pCurrent->m_flNextShotsFiredDec = pfrom->m_fNextAimBonus;
 
 		pCurrent->m_iSecondaryAmmoType		= (int)from->client.vuser3[ 2 ];
 		pCurrent->m_iPrimaryAmmoType		= (int)from->client.vuser4[ 0 ];
@@ -1281,6 +1286,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		pto->iuser2						= pCurrent->m_fInAttack;
 		pto->iuser3						= pCurrent->m_fireState;
 		pto->iuser4						= pCurrent->m_iClip2;
+		pto->m_fInZoom					= (pCurrent->m_bDelayFire << 5) | (pCurrent->m_iDirection << 4) | (pCurrent->m_iShotsFired & 0xf);
+		pto->m_fNextAimBonus			= pCurrent->m_flNextShotsFiredDec;
 
 		// Decrement weapon counters, server does this at same time ( during post think, after doing everything else )
 		pto->m_flNextReload				-= cmd->msec / 1000.0;

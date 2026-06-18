@@ -3659,6 +3659,7 @@ pt_end:
 					gun->m_flNextPrimaryAttack		= V_max( gun->m_flNextPrimaryAttack - gpGlobals->frametime, -1.0f );
 					gun->m_flNextSecondaryAttack	= V_max( gun->m_flNextSecondaryAttack - gpGlobals->frametime, -0.001f );
 					gun->m_flNextTertiaryAttack		= V_max( gun->m_flNextTertiaryAttack - gpGlobals->frametime, -0.001f );
+					gun->m_flNextShotsFiredDec		= V_max( gun->m_flNextShotsFiredDec - gpGlobals->frametime, -0.001f );
 
 					if ( gun->m_flTimeWeaponIdle != 1000 )
 					{

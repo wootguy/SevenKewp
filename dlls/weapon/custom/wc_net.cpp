@@ -41,7 +41,7 @@ int wc_send_netmsg_struct(struct_desc_t& desc, void* dat) {
 	int byteCount = 0;
 
 #ifndef CLIENT_DLL
-	uint32_t packedFields = 0;
+	uint64_t packedFields = 0;
 	int packedBitCount = 0;
 	ALERT(at_aiconsole, "Send net struct '%s' (%d fields)\n", desc.name, desc.numFields);
 
@@ -76,7 +76,7 @@ int wc_send_netmsg_struct(struct_desc_t& desc, void* dat) {
 		}
 
 		if (isBitPacked) {
-			uint32_t appendVal = wc_get_bits(fieldDat, field.bits);
+			uint64_t appendVal = wc_get_bits(fieldDat, field.bits);
 			packedFields |= appendVal << packedBitCount;
 			packedBitCount += field.bits;
 
@@ -106,6 +106,7 @@ int wc_send_netmsg_struct(struct_desc_t& desc, void* dat) {
 			byteCount += 1 + arr->arrSz;
 			break;
 		}
+		case WC_PARAM_UINT16_D100_ARRAY_8:
 		case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2: {
 			WepEvtArr16* arr = (WepEvtArr16*)fieldDat;
 			WRITE_BYTE(arr->arrSz);
@@ -198,20 +199,14 @@ void wc_read_netmsg_struct(struct_desc_t& desc, void* dat, bool isEvent=false) {
 		
 		if (packedBitCount) {
 			if (packedBitCount % 8 == 0) {
-				uint32_t packedFields = 0;
-				if (packedBitCount == 32) {
-					packedFields = (uint32_t)READ_LONG();
-					byteCount += 4;
+				uint64_t packedFields = 0;
+				int packedByteCount = packedBitCount / 8;
+				byteCount += packedByteCount;
+				packedFields = 0;
+				for (int k = 0; k < packedByteCount; k++) {
+					packedFields |= (uint64_t)READ_BYTE() << k*8;
 				}
-				else if (packedBitCount == 16) {
-					packedFields = (uint32_t)READ_SHORT();
-					byteCount += 2;
-				}
-				else if (packedBitCount == 8) {
-					packedFields = (uint32_t)READ_BYTE();
-					byteCount += 1;
-				}
-				else {
+				if (packedByteCount > 8) {
 					PRINTF("Invalid bit byte alignment %d\n", packedBitCount);
 					return;
 				}
@@ -223,9 +218,11 @@ void wc_read_netmsg_struct(struct_desc_t& desc, void* dat, bool isEvent=false) {
 					// read bit packed data out of the buffer
 					uint64_t val = packedFields & ((1ULL << packedField.bits) - 1ULL);
 
-					if (field.bits > 16)
+					int storageBytes = wc_get_field_bytes(field);
+
+					if (storageBytes >= 4)
 						*(uint32_t*)packedFieldDat = (uint32_t)val;
-					else if (field.bits > 8)
+					else if (storageBytes >= 2)
 						*(uint16_t*)packedFieldDat = (uint16_t)val;
 					else
 						*(uint8_t*)packedFieldDat = (uint8_t)val;
@@ -264,6 +261,7 @@ void wc_read_netmsg_struct(struct_desc_t& desc, void* dat, bool isEvent=false) {
 			byteCount += 1 + sz;
 			break;
 		}
+		case WC_PARAM_UINT16_D100_ARRAY_8:
 		case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2: {
 			uint8_t sz = READ_BYTE();
 			*fieldDat = sz;

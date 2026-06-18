@@ -119,6 +119,7 @@ public:
 	void PlayEvent_Recoil(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_RecoilAdv(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_RecoilShared(CBasePlayer* m_pPlayer, int flags, int maxAngleTime, Vector min, Vector max, int angleOps[3], int viewOps[3]);
+	void PlayEvent_RecoilCstrike(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool leftHand);
 	void PlayEvent_Cooldown(WepEvt& evt, CBasePlayer* m_pPlayer);
 	void PlayEvent_HideLaser(WepEvt& evt, CBasePlayer* m_pPlayer);
@@ -155,4 +156,5 @@ public:
 	void QuakeMuzzleFlash(CBasePlayer* plr);
 	Vector GetEventDir(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	Vector GetEventPos(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	uint16_t* GetActiveCstrikeRecoil(WepEvt& evt, CBasePlayer* m_pPlayer);
 };

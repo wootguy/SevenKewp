@@ -106,6 +106,10 @@ public:
 	int		m_iClientClip;										// the last version of m_iClip sent to hud dll
 	int		m_iClientWeaponState;								// the last version of the weapon state sent to hud dll (is current weapon, is on target)
 	int		m_fInReload;										// Are we in the middle of a reload;
+	int		m_iShotsFired;										// increases recoil
+	int		m_iDirection;										// recoil direction
+	int		m_bDelayFire;										// recoil cooldown logic
+	float	m_flNextShotsFiredDec;								// time to decrease shots fired
 
 	int		m_iDefaultAmmo;// how much ammo you get when you pick up this weapon as placed by a level designer.
 	

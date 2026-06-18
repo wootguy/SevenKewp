@@ -1950,6 +1950,10 @@ void WC_EV_EjectShell(WepEvt& evt, bool leftHand) {
 	EV_EjectBrass(ShellOrigin, ShellVelocity, angles[YAW], evt.ejectShell.model, evt.ejectShell.sound);
 }
 
+Vector& WC_EV_GetRecoil() {
+	return gPlayerSim.ev_punchangle;
+}
+
 void WC_EV_Recoil(Vector recoil, int ops[3]) {
 	Vector viewAngles;
 	gEngfuncs.GetViewAngles(viewAngles);
