@@ -289,6 +289,7 @@ struct ViewModelSprite {
 	float moveScale; // bobbing intensity
 	float lastUpdate;
 	RGBA color;
+	float brighten; // increase light level temporarily
 };
 
 struct CustomWeaponParams {

@@ -549,6 +549,7 @@ struct WepEvt {
 
 		struct {
 			uint8_t brightness; // WeaponCustomFlashSz
+			uint8_t v_sprite_brighten;
 		} muzzleFlash;
 
 		struct {

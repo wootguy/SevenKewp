@@ -1204,6 +1204,11 @@ int CStudioModelRenderer::StudioDrawModel( int flags, bool mirrored, CustomWeapo
 	IEngineStudio.GetViewInfo( m_vRenderOrigin, m_vUp, m_vRight, m_vNormal );
 	IEngineStudio.GetAliasScale( &m_fSoftwareXScale, &m_fSoftwareYScale );
 
+	cl_entity_t* localPlayer = GetLocalPlayer();
+	if (m_pCurrentEntity->index == localPlayer->index) {
+		UpdateLocalPlayerLightLevel();
+	}
+
 	if (m_pCurrentEntity->curstate.renderfx == kRenderFxDeadPlayer)
 	{
 		entity_state_t deadplayer;
@@ -1574,6 +1579,11 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 	IEngineStudio.GetViewInfo( m_vRenderOrigin, m_vUp, m_vRight, m_vNormal );
 	IEngineStudio.GetAliasScale( &m_fSoftwareXScale, &m_fSoftwareYScale );
 
+	cl_entity_t* localPlayer = GetLocalPlayer();
+	if (pplayer->number == localPlayer->index) {
+		UpdateLocalPlayerLightLevel();
+	}
+
 	m_nPlayerIndex = pplayer->number - 1;
 
 	if (m_nPlayerIndex < 0 || m_nPlayerIndex >= gEngfuncs.GetMaxClients())
@@ -1936,4 +1946,14 @@ void CStudioModelRenderer::StudioRenderFinal(bool mirrored)
 	IEngineStudio.RestoreRenderer();
 }
 
+void CStudioModelRenderer::UpdateLocalPlayerLightLevel() {
+	IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &m_currentLighting);
+	IEngineStudio.StudioEntityLight(&m_currentLighting);
+	IEngineStudio.StudioSetupLighting(&m_currentLighting);
+
+	gPlayerSim.light_level = m_currentLighting.ambientlight + m_currentLighting.shadelight;
+	gPlayerSim.light_color.r = gPlayerSim.light_level * m_currentLighting.color.x;
+	gPlayerSim.light_color.g = gPlayerSim.light_level * m_currentLighting.color.y;
+	gPlayerSim.light_color.b = gPlayerSim.light_level * m_currentLighting.color.z;
+}
 

@@ -34,6 +34,7 @@ typedef float vec_t;
 typedef int (*pfnUserMsgHook)(const char *pszName, int iSize, void *pbuf);
 
 #include "vector.h"
+#include "rgb.h"
 
 #include "../engine/cdll_int.h"
 #include "../game_shared/cdll_dll.h"
@@ -49,6 +50,8 @@ struct playersim_t {
 	vec3_t sv_punchangle;	// server-side punch angle (flinching from attacks)
 	vec3_t v_punchangle;	// final combined client and server punch angle
 	vec3_t cam_ofs;			// thirdperson camera pitch, yaw, dist
+	uint8_t light_level;	// monochrome light brightness for self
+	RGB light_color;		// colored lighting for self
 	int cam_thirdperson;	// 1 = third person camera active
 	bool b_viewing_cam;		// true if player's view is attached to another entity such as a camera
 	float v_frametime;		// view simulation frametime

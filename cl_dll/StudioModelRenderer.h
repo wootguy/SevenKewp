@@ -102,6 +102,8 @@ public:
 	// true if all meshes in this submodel use fullbright textures
 	virtual bool IsFullBrightSubModel(mstudiomodel_t* m_pSubModel, int skin);
 
+	virtual void UpdateLocalPlayerLightLevel();
+
 public:
 
 	// Client clock

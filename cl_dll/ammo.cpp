@@ -1713,7 +1713,7 @@ void CHudAmmo::DrawSpriteWeapon() {
 	int maxY = minY + rc.bottom;
 
 	if (is_software_renderer) {
-		SPR_Set(spr.hSprite, 255, 255, 255);
+		SPR_Set(spr.hSprite, spr.color.r, spr.color.g, spr.color.b);
 		SPR_DrawHoles(spr.frame, minX, minY, &rc);
 	}
 	else {
@@ -1724,6 +1724,10 @@ void CHudAmmo::DrawSpriteWeapon() {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+
+		gEngfuncs.pTriAPI->Color4f(
+			spr.color.r / 255.0f, spr.color.g / 255.0f, spr.color.b / 255.0f, spr.color.a / 255.0f
+		);
 
 		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
 		gEngfuncs.pTriAPI->Vertex3f(minX, minY, 0);

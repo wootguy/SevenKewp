@@ -1256,6 +1256,8 @@ void CWeaponEvents::PlayEvent_MuzzleFlash(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	default:
 		break;
 	}
+
+	m_weapon->m_viewModelSpr.brighten = evt.muzzleFlash.v_sprite_brighten;
 }
 
 void CWeaponEvents::PlayEvent_SpriteTrail(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {

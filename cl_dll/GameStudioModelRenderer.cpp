@@ -84,6 +84,12 @@ int R_StudioDrawModel( int flags )
 			if (flags & STUDIO_RENDER)
 				return 0; // only handle events, don't render the model
 		}
+
+		ViewModelSprite* spr = GetSpriteWeaponState();
+		if (spr && spr->hSprite) {
+			// don't render the model, just run enough logic to update lighting for the sprite
+			flags &= ~(STUDIO_RENDER | STUDIO_EVENTS);
+		}
 		
 		int modelIdx = GetActiveCustomWeaponViewModel();
 		if (modelIdx > 0 && modelIdx != gunModel->curstate.modelindex != modelIdx) {

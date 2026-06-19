@@ -10,6 +10,7 @@
 #include "../cl_dll/hud_iface.h"
 #include "../cl_dll/ev_hldm.h"
 #include "../cl_dll/com_weapons.h"
+#include "../cl_dll/cl_dll.h"
 #include "../common/com_model.h"
 #include "../game_shared/prediction_files.h"
 extern bool g_cmd_debug_mode;
@@ -2474,6 +2475,23 @@ void CWeaponCustom::UpdateStateHudSprite() {
 		if (deployTime < 0.5f) {
 			deployY = (0.5f - deployTime) * spr.h;
 		}
+
+		spr.color = gPlayerSim.light_color;
+
+		if (spr.brighten > 0) {
+			spr.brighten -= timeScale;
+			int v = spr.brighten * 64;
+
+			spr.color.r = V_min(255, spr.color.r + v);
+			spr.color.g = V_min(255, spr.color.g + v);
+			spr.color.b = V_min(255, spr.color.b + v);
+		}
+
+		// add gamma
+		float gamma = 1.0f / 2.2f;
+		spr.color.r = V_min(255, powf(spr.color.r / 255.0f, gamma) * 255.0f);
+		spr.color.g = V_min(255, powf(spr.color.g / 255.0f, gamma) * 255.0f);
+		spr.color.b = V_min(255, powf(spr.color.b / 255.0f, gamma) * 255.0f);
 
 		float animTime = (CmdTime() - spr.animTime) * 0.001f;
 		float fps = spr.fps * 0.01f;

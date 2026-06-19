@@ -799,6 +799,7 @@ void init_event_fields() {
 
 	EVT_DESC(WC_EVT_MUZZLEFLASH, "muzzle_flash",
 		EVT__ENUM("flash_size", "0", muzzleFlash.brightness, 0, flash_size_names),
+		EVT_FIELD("v_sprite_brighten", "0", muzzleFlash.v_sprite_brighten, 0, WC_PARAM_UINT8),
 	);
 
 	EVT_DESC(WC_EVT_SPRITETRAIL, "sprite_trail",
