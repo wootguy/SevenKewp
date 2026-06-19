@@ -35,6 +35,9 @@
 #include "triangleapi.h"
 #include "HashMap.h"
 #include "com_weapons.h"
+#include "wc_params.h"
+
+#include "GL/gl.h"
 
 int LoadCustomMaterials(const char* fpath);
 
@@ -1177,6 +1180,7 @@ int CHudAmmo::Draw(float flTime)
 {
 	int a, x, y, r, g, b;
 
+	DrawSpriteWeapon();
 	DrawDynamicCrosshair();
 
 	// re-enable static crosshair without having to switch weapons
@@ -1679,6 +1683,64 @@ void CHudAmmo::DrawDynamicCrosshair() {
 	DrawCrossHair(accuracyX, accuracyY, len, width, border, r, g, b, drawDot, drawTee);
 }
 
+void CHudAmmo::DrawSpriteWeapon() {
+	if (gPlayerSim.cam_thirdperson)
+		return;
+
+	ViewModelSprite* pSpr = GetSpriteWeaponState();
+	if (!pSpr || pSpr->hSprite <= 0)
+		return;
+	ViewModelSprite& spr = *pSpr;
+
+	wrect_t rc;
+	rc.top = 0;
+	rc.left = 0;
+	rc.right = spr.w;
+	rc.bottom = spr.h;
+
+	float scale = (ScreenHeight * 0.001f) * spr.scale;
+	if (is_software_renderer)
+		scale = 1;
+
+	rc.right *= scale;
+	rc.bottom *= scale;
+	spr.x *= scale;
+	spr.y *= scale;
+
+	int minX = spr.x + (ScreenWidth - rc.right) / 2;
+	int minY = spr.y + (ScreenHeight - rc.bottom);
+	int maxX = minX + rc.right;
+	int maxY = minY + rc.bottom;
+
+	if (is_software_renderer) {
+		SPR_Set(spr.hSprite, 255, 255, 255);
+		SPR_DrawHoles(spr.frame, minX, minY, &rc);
+	}
+	else {
+		gEngfuncs.pTriAPI->RenderMode(kRenderTransTexture);
+		gEngfuncs.pTriAPI->SpriteTexture((model_t*)gEngfuncs.GetSpritePointer(spr.hSprite), spr.frame);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+
+		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+		gEngfuncs.pTriAPI->Vertex3f(minX, minY, 0);
+
+		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 1.0f);
+		gEngfuncs.pTriAPI->Vertex3f(minX, maxY, 0);
+
+		gEngfuncs.pTriAPI->TexCoord2f(1.0f, 1.0f);
+		gEngfuncs.pTriAPI->Vertex3f(maxX, maxY, 0);
+
+		gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
+		gEngfuncs.pTriAPI->Vertex3f(maxX, minY, 0);
+
+		gEngfuncs.pTriAPI->End();
+		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
+	}
+}
 
 //
 // Draws the ammo bar on the hud

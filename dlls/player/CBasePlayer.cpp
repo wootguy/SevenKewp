@@ -63,6 +63,7 @@
 #include "CEnvWeather.h"
 #include "prediction_files.h"
 #include "CWorld.h"
+#include "CAmmoCustom.h"
 
 // #define DUCKFIX
 
@@ -6032,6 +6033,20 @@ void CBasePlayer::DropPlayerItem ( const char *pszItemName )
 					pWeaponBox->pev->body = 3;
 					pWeaponBox->pev->sequence = TRIPMINE_GROUND;
 				}
+
+				if (UTIL_ModelIsSprite(pWeaponBox->pev->modelindex)) {
+					pWeaponBox->pev->body = 0;
+					pWeaponBox->pev->frame = cwep ? cwep->defaultParams.wsprite_frame : 0;
+					pWeaponBox->pev->scale = 1;
+					UTIL_SetSize(pWeaponBox->pev, g_vecZero, g_vecZero); // sprites have a huge bbox by default, for some reason
+				}
+
+				if (cwep) {
+					Vector mins = INT32_VEC3_TO_VECTOR(cwep->defaultParams.hull_min);
+					Vector maxs = INT32_VEC3_TO_VECTOR(cwep->defaultParams.hull_max);
+					if (mins != g_vecZero || maxs != g_vecZero)
+						UTIL_SetSize(pWeaponBox->pev, mins, maxs);
+				}
 			}
 
 			// prevent players dropping at pickup points to get more ammo
@@ -6167,6 +6182,27 @@ void CBasePlayer::DropAmmo(bool secondary) {
 			pWeaponBox->pev->body = 3;
 			pWeaponBox->pev->sequence = TRIPMINE_GROUND;
 		}
+	}
+
+	bool isCustomAmmo = false;
+	CustomAmmoParams cammo_params;
+	const char* cammo_cfg = g_customAmmoConfigs.get(ammoEntName);
+	if (cammo_cfg) {
+		isCustomAmmo = UTIL_ParseCustomAmmoConfig(cammo_cfg, cammo_params);
+	}
+
+	if (UTIL_ModelIsSprite(pWeaponBox->pev->modelindex)) {
+		pWeaponBox->pev->body = 0;
+		pWeaponBox->pev->frame = isCustomAmmo ? cammo_params.modelBody : 0;
+		pWeaponBox->pev->scale = 1;
+
+		Vector mins = isCustomAmmo ? INT32_VEC3_TO_VECTOR(cammo_params.hullSizeMin) : g_vecZero;
+		Vector maxs = isCustomAmmo ? INT32_VEC3_TO_VECTOR(cammo_params.hullSizeMax) : g_vecZero;
+		UTIL_SetSize(pWeaponBox->pev, mins, maxs);
+	}
+
+	if (isCustomAmmo) {
+		pWeaponBox->m_pickupSound = cammo_params.pickupSound;
 	}
 
 	pWeaponBox->SetThink(&CWeaponBox::Kill);

@@ -46,7 +46,8 @@ WcTrace ConvertTrace(pmtrace_t tr, Vector startPos) {
 	out.flPlaneDist = tr.plane.dist;
 	out.vecPlaneNormal = tr.plane.normal;
 	out.iHitgroup = tr.hitgroup;
-	out.pHit = gEngfuncs.pEventAPI->EV_IndexFromTrace(&tr);
+	out.pHitPhysEnt = tr.ent;
+	out.pHitEnt = gEngfuncs.pEventAPI->EV_IndexFromTrace(&tr);
 
 	return out;
 }
@@ -64,7 +65,8 @@ WcTrace ConvertTrace(TraceResult tr, Vector startPos) {
 	out.flPlaneDist = tr.flPlaneDist;
 	out.vecPlaneNormal = tr.vecPlaneNormal;
 	out.iHitgroup = tr.iHitgroup;
-	out.pHit = tr.pHit ? ENTINDEX(tr.pHit) : 0;
+	out.pHitPhysEnt = 0;
+	out.pHitEnt = tr.pHit ? ENTINDEX(tr.pHit) : 0;
 
 	return out;
 }
@@ -300,6 +302,7 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 #ifdef CLIENT_DLL
 	bool decal = !(evt.bullets.flags & FL_WC_BULLETS_NO_DECAL);
+	bool particles = !(evt.bullets.flags & FL_WC_BULLETS_NO_PARTICLES);
 	bool texSound = !(evt.bullets.flags & FL_WC_BULLETS_NO_SOUND);
 
 	for (ULONG iShot = 1; iShot <= count; iShot++)
@@ -313,10 +316,10 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 		bool playTexSound = texSound && iShot < 6; // don't stack too many sounds
 		pmtrace_t tr = WC_EV_FireBullets(x * spread.x, y * spread.y, showTracer, evt.bullets.tracerColor,
-			decal, playTexSound, iShot, evt.bullets.damage, maxRange);
+			decal, playTexSound, particles, iShot, evt.bullets.damage, maxRange);
 
 		WcTrace evTrace = ConvertTrace(tr, vecSrc);
-		ProcessEvents(WC_TRIG_IMPACT, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
+		FireImpactEvents(WC_TRIG_IMPACT, attackIdx, &evTrace);
 	}
 
 	if (evt.bullets.flashSz)
@@ -325,7 +328,7 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 	for (int i = 0; i < count; i++) {
 		WcTrace evTrace = ConvertTrace(g_traces[i], vecSrc);
-		ProcessEvents(WC_TRIG_IMPACT, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
+		FireImpactEvents(WC_TRIG_IMPACT, attackIdx, &evTrace);
 		m_weapon->AttackTrace(m_pPlayer, attackIdx, vecSrc, g_traces[i], false);
 	}
 
@@ -1289,14 +1292,14 @@ void CWeaponEvents::PlayEvent_Decal(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace
 
 #ifdef CLIENT_DLL
 	if (evt.decal.flags & FL_WC_DECAL_PARTICLES) {
-		EV_HLDM_GunshotDecalEffects(pos, true);
+		EV_HLDM_GunshotDecalEffects(pos, true, true);
 	}
 
 	gEngfuncs.pEfxAPI->R_DecalShoot(gEngfuncs.pEfxAPI->Draw_DecalIndex(evt.decal.decalIdx),
-		tr ? tr->pHit : 0, 0, pos, 0);
+		tr ? tr->pHitEnt : 0, 0, pos, 0);
 #else
 	bool isPredicted = m_weapon->IsPredicted();
-	edict_t* ed = tr ? INDEXENT(tr->pHit) : NULL;
+	edict_t* ed = tr ? INDEXENT(tr->pHitEnt) : NULL;
 
 	for (int i = 1; i < gpGlobals->time; i++) {
 		CBasePlayer* listener = UTIL_PlayerByIndex(i);
@@ -1578,6 +1581,14 @@ void CWeaponEvents::PlayEvent_PlayerAnim(WepEvt& evt, CBasePlayer* m_pPlayer, Wc
 	m_pPlayer->SetAnimation((PLAYER_ANIM)evt.player_anim.action, evt.player_anim.duration * 0.001f);
 }
 
+void CWeaponEvents::PlayEvent_WeaponSpriteAnim(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+	memcpy(&m_weapon->m_viewModelSpr.anim, &evt.wep_sprite_anim.frames, sizeof(m_weapon->m_viewModelSpr.anim));
+	memcpy(&m_weapon->m_viewModelSpr.animOfsX, &evt.wep_sprite_anim.frameOffsetX, sizeof(m_weapon->m_viewModelSpr.animOfsX));
+	memcpy(&m_weapon->m_viewModelSpr.animOfsY, &evt.wep_sprite_anim.frameOffsetY, sizeof(m_weapon->m_viewModelSpr.animOfsY));
+	m_weapon->m_viewModelSpr.fps = evt.wep_sprite_anim.fps;
+	m_weapon->m_viewModelSpr.animTime = m_weapon->CmdTime();
+}
+
 void CWeaponEvents::PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
 #ifndef CLIENT_DLL
 	Vector pos = GetEventPos(evt, m_pPlayer, tr);
@@ -1783,6 +1794,9 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 	case WC_EVT_PLR_ANIM:
 		PlayEvent_PlayerAnim(evt, m_pPlayer, tr);
 		break;
+	case WC_EVT_WEP_SPR_ANIM:
+		PlayEvent_WeaponSpriteAnim(evt, m_pPlayer, tr);
+		break;
 	case WC_EVT_SHAKE:
 		PlayEvent_Shake(evt, m_pPlayer, tr);
 		break;
@@ -1950,28 +1964,6 @@ void CWeaponEvents::GetCurrentAccuracy(float& accuracyX, float& accuracyY, float
 	}
 }
 
-int CWeaponEvents::GetImpactArg(int attackIdx, bool impactMonster, bool impactWorld) {
-	switch (attackIdx) {
-	default:
-	case 0:
-		if (impactMonster && impactWorld)	return WC_TRIG_IMPACT_PRIMARY_ANY;
-		if (impactMonster)					return WC_TRIG_IMPACT_PRIMARY_MONSTER;
-		return WC_TRIG_IMPACT_PRIMARY_WORLD;
-	case 1:
-		if (impactMonster && impactWorld)	return WC_TRIG_IMPACT_SECONDARY_ANY;
-		if (impactMonster)					return WC_TRIG_IMPACT_SECONDARY_MONSTER;
-		return WC_TRIG_IMPACT_SECONDARY_WORLD;
-	case 2:
-		if (impactMonster && impactWorld)	return WC_TRIG_IMPACT_TERTIARY_ANY;
-		if (impactMonster)					return WC_TRIG_IMPACT_TERTIARY_MONSTER;
-		return WC_TRIG_IMPACT_TERTIARY_WORLD;
-	case 3:
-		if (impactMonster && impactWorld)	return WC_TRIG_IMPACT_PRIMARY_ALT_ANY;
-		if (impactMonster)					return WC_TRIG_IMPACT_PRIMARY_ALT_MONSTER;
-		return WC_TRIG_IMPACT_PRIMARY_ALT_WORLD;
-	}
-}
-
 float CWeaponEvents::GetChargeMult(WepEvt& evt, int flagMask) {
 	CustomWeaponParams& params = m_weapon->GetActiveParams();
 
@@ -2071,14 +2063,14 @@ WcBeamTrace CWeaponEvents::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 		if (isLastRico) {
 #ifndef CLIENT_DLL
 			// apply damage at final beam
-			CBaseEntity* pHit = CBaseEntity::Instance(INDEXENT(evTrace.pHit));
+			CBaseEntity* pHit = CBaseEntity::Instance(INDEXENT(evTrace.pHitEnt));
 			if (pHit) {
 				pHit->TraceAttack(m_pPlayer->pev, damage, vecDir, &g_traces[0], DMG_BULLET | ((damage > 16) ? 0 : DMG_NEVERGIB));
 			}
 #endif
 			if (triggerEvents) {
 				if (isImpact) {
-					ProcessEvents(WC_TRIG_IMPACT, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
+					FireImpactEvents(WC_TRIG_IMPACT, attackIdx, &evTrace);
 				}
 				m_weapon->AttackTrace(m_pPlayer, attackIdx, vecSrc, g_traces[0], false);
 			}
@@ -2086,7 +2078,7 @@ WcBeamTrace CWeaponEvents::BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer) {
 		}
 		else if (triggerEvents) {
 			if (isImpact) {
-				ProcessEvents(WC_TRIG_RICOCHET, GetImpactArg(attackIdx, true, true), false, false, 0, &evTrace);
+				FireImpactEvents(WC_TRIG_RICOCHET, attackIdx, &evTrace);
 			}
 			m_weapon->AttackTrace(m_pPlayer, attackIdx, vecSrc, g_traces[0], true);
 		}
@@ -2143,6 +2135,52 @@ void CWeaponEvents::FireShootEvents(int trigger, bool leftHand, int* clip, bool 
 	ProcessEvents(trigger, akimboArg, leftHand, akimboFire, *clipArg);
 	ProcessEvents(trigger, zoomArg, leftHand, akimboFire, *clipArg);
 	ProcessEvents(trigger, WC_TRIG_SHOOT_ARG_ALWAYS, m_weapon->IsAkimbo(), akimboFire, *clipArg);
+}
+
+void CWeaponEvents::FireImpactEvents(int trigger, int attackIdx, WcTrace* evTrace) {
+#ifdef CLIENT_DLL
+	physent_s* pe = gEngfuncs.pEventAPI->EV_GetPhysent(evTrace->pHitPhysEnt);
+	bool hitMonster = pe && !(pe->solid == SOLID_BSP || pe->movetype == MOVETYPE_PUSHSTEP);
+#else
+	edict_t* ed = INDEXENT(evTrace->pHitEnt);
+	bool hitMonster = ed && ed->v.flags & FL_MONSTER;
+#endif
+	
+	bool hitWorld = !hitMonster && evTrace->flFraction < 1.0f;
+
+	int anyTrig = -1;
+	int specialTrig = -1;
+
+	switch (attackIdx) {
+	default:
+	case WC_ATTACK_PRIMARY:
+		anyTrig = WC_TRIG_IMPACT_PRIMARY_ANY;
+		if (hitMonster) specialTrig = WC_TRIG_IMPACT_PRIMARY_MONSTER;
+		else if (hitWorld) specialTrig = WC_TRIG_IMPACT_PRIMARY_WORLD;
+		break;
+	case WC_ATTACK_SECONDARY:
+		anyTrig = WC_TRIG_IMPACT_SECONDARY_ANY;
+		if (hitMonster) specialTrig = WC_TRIG_IMPACT_SECONDARY_MONSTER;
+		else if (hitWorld) specialTrig = WC_TRIG_IMPACT_SECONDARY_WORLD;
+		break;
+	case WC_ATTACK_TERTIARY:
+		anyTrig = WC_TRIG_IMPACT_TERTIARY_ANY;
+		if (hitMonster) specialTrig = WC_TRIG_IMPACT_TERTIARY_MONSTER;
+		else if (hitWorld) specialTrig = WC_TRIG_IMPACT_TERTIARY_WORLD;
+		break;
+	case WC_ATTACK_PRIMARY_ALT:
+		anyTrig = WC_TRIG_IMPACT_PRIMARY_ALT_ANY;
+		if (hitMonster) specialTrig = WC_TRIG_IMPACT_PRIMARY_ALT_MONSTER;
+		else if (hitWorld) specialTrig = WC_TRIG_IMPACT_PRIMARY_ALT_WORLD;
+		break;
+	}
+
+	if (anyTrig != -1) {
+		ProcessEvents(trigger, anyTrig, false, false, 0, evTrace);
+	}
+	if (specialTrig != -1) {
+		ProcessEvents(trigger, specialTrig, false, false, 0, evTrace);
+	}
 }
 
 WcBeam* CWeaponEvents::AllocBeam() {

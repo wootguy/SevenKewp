@@ -74,12 +74,12 @@ enum gauss_e {
 	GAUSS_DRAW
 };
 
-void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName, bool playSound );
-void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType, bool playSound );
+void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName, bool applyDecal, bool playSound, bool particles );
+void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType, bool applyDecal, bool playSound, bool particles );
 int EV_HLDM_CheckTracer( int idx, float *vecSrc, float *end, float *forward, float *right, int iBulletType, int iTracerFreq, int *tracerCount );
 void EV_HLDM_FireBullets( int idx, float *forward, float *right, float *up, int cShots, float *vecSrc, float *vecDirShooting, float flDistance, int iBulletType, int iTracerFreq, int *tracerCount, float flSpreadX, float flSpreadY );
 void EV_EgonFlareCallback(struct tempent_s* ent, float frametime, float currenttime);
-void EV_HLDM_GunshotDecalEffects(Vector pos, bool playSound);
+void EV_HLDM_GunshotDecalEffects(Vector pos, bool playSound, bool particles);
 void EV_LaserOn(int dotSprite, float dotSz, int beamSprite, float beamWidth, int beamAttachment);
 void EV_LaserOff();
 
@@ -90,7 +90,7 @@ void WC_EV_Recoil(Vector recoil, int ops[3]);
 Vector& WC_EV_GetRecoil();
 void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx);
 void WC_EV_Dlight(WepEvt& evt, Vector pos);
-pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int tracerColor, bool gunshotDecal, bool textureSound, int iShot, int iDamage, float maxRange);
+pmtrace_t WC_EV_FireBullets(float spreadX, float spreadY, bool showTracer, int tracerColor, bool gunshotDecal, bool textureSound, bool particles, int iShot, int iDamage, float maxRange);
 cl_entity_t* WC_GetPlayer();
 Vector WC_GetGunPosition();
 Vector WC_GetAim(float spreadX, float spreadY);

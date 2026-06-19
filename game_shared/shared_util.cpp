@@ -1059,3 +1059,13 @@ float GetSequenceDuration(studiohdr_t* pstudiohdr, int iseq) {
 	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + iseq;
 	return (pseqdesc->numframes - 1) / pseqdesc->fps;
 }
+
+bool UTIL_ModelIsSprite(int modelidx) {
+#ifdef CLIENT_DLL
+	model_s* mdl = gEngfuncs.hudGetModelByIndex(modelidx);
+	return mdl && mdl->type == mod_sprite;
+#else
+	const char* mdlName = INDEX_MODEL(modelidx);
+	return mdlName && strstr(mdlName, ".spr");
+#endif
+}

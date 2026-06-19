@@ -272,6 +272,25 @@ struct HudIconItem {
 	uint8_t resolution : 4;
 };
 
+// weapon state
+struct ViewModelSprite {
+	int hSprite;
+	int loadFailed;
+	int frame;
+	int x, y;
+	int w, h;
+	float scale; // sprite scale
+	WepEvtArr8 anim;
+	WepEvtArr8 animOfsX;
+	WepEvtArr8 animOfsY;
+	uint16_t fps;
+	uint32_t animTime;
+	float bobTime; // view bobbing progress
+	float moveScale; // bobbing intensity
+	float lastUpdate;
+	RGBA color;
+};
+
 struct CustomWeaponParams {
 	uint32_t flags; // FL_WC_WEP_*
 	uint16_t vmodel;
@@ -290,9 +309,13 @@ struct CustomWeaponParams {
 	WeaponCustomToggle erToggle; // toggle action for pressing +use and +reload keys together
 	uint16_t erToggleCooldown;
 
+	dstring_t vsprite_path; // path a to a sprite that only the client needs to load
+	uint16_t vsprite_base_scale; // base scaling applied to view HUD sprite. HL25 scaling applied in addition
+
 	// data for file parsing (not networked)
 	WeaponCustomAmmoInfo ammoInfo[2];
 	string_t defaultModelV;
+	string_t defaultSpriteV;		// for doom style weapon sprites
 	string_t defaultModelV_zoom;
 	string_t defaultModelP;
 	string_t defaultModelW;
@@ -310,6 +333,9 @@ struct CustomWeaponParams {
 	int8_t slot;				// weapon selection bucket
 	int8_t slotPosition;		// position in weapon selection buucket (-1 = auto)
 	int32_t weight;				// importance for auto weapon selection
+	uint8_t wsprite_frame;		// frame to display when the dropped weapon model is a sprite
+	int32_t hull_min[3];		// min hull size for droppd weapon
+	int32_t hull_max[3];		// max hull size for droppd weapon
 
 	uint8_t numEvents;
 	WepEvt events[MAX_WC_EVENTS];
@@ -324,8 +350,8 @@ struct CustomAmmoParams {
 	string_t pickupSound;
 	uint16_t ammoGiven;
 	uint16_t maxAmmo; // for custom ammo types
-	float hullSizeMin[3];
-	float hullSizeMax[3];
+	int32_t hullSizeMin[3];
+	int32_t hullSizeMax[3];
 };
 
 #pragma pack(pop)

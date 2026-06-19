@@ -77,12 +77,16 @@ void CBasePlayerWeapon::KeyValue(KeyValueData* pkvd)
 }
 
 void CBasePlayerWeapon::Precache() {
-	if (GetModelV())
-		PRECACHE_MODEL(GetModelV());
-	if (GetModelW())
-		PRECACHE_MODEL(GetModelW());
-	if (GetModelP())
-		PRECACHE_MODEL(GetModelP());
+	const char* vmodel = GetModelV();
+	const char* pmodel = GetModelP();
+	const char* wmodel = GetModelW();
+
+	if (vmodel && vmodel[0])
+		PRECACHE_MODEL(vmodel);
+	if (wmodel && wmodel[0])
+		PRECACHE_MODEL(wmodel);
+	if (pmodel && pmodel[0])
+		PRECACHE_MODEL(pmodel);
 
 	if (m_customSpriteDir) {
 		const char* hudPath = UTIL_VarArgs("sprites/%s/%s.txt", STRING(m_customSpriteDir), STRING(pev->classname));
@@ -571,8 +575,8 @@ BOOL CBasePlayerWeapon::DefaultDeploy(const char* szViewModel, const char* szWea
 		return FALSE;
 
 	m_pPlayer->TabulateAmmo();
-	m_pPlayer->pev->viewmodel = MAKE_STRING(GET_MODEL(szViewModel));
-	m_pPlayer->pev->weaponmodel = MAKE_STRING(GET_MODEL(szWeaponModel));
+	m_pPlayer->pev->viewmodel = szViewModel[0] ? MAKE_STRING(GET_MODEL(szViewModel)) : 0;
+	m_pPlayer->pev->weaponmodel = szWeaponModel[0] ? MAKE_STRING(GET_MODEL(szWeaponModel)) : 0;
 	strcpy_safe(m_pPlayer->m_szAnimExtention, szAnimExt, 32);
 	strcpy_safe(m_pPlayer->m_szAnimAction, "aim", 32);
 	SendWeaponAnim(iAnim, skiplocal, body);

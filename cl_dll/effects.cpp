@@ -10,8 +10,7 @@
 #include <cfloat>
 #include "pm_defs.h"
 #include "eventscripts.h"
-
-void EV_HLDM_GunshotDecalEffects(Vector pos, bool playSound);
+#include "ev_hldm.h"
 
 #define MAX_ADV_SPRITES 512
 
@@ -507,7 +506,7 @@ int __MsgFunc_TempFx(const char* pszName, int iSize, void* pbuf) {
 		gEngfuncs.pEfxAPI->R_DecalShoot(gEngfuncs.pEfxAPI->Draw_DecalIndex(decalIdx), entityIdx, 0, pos, 0);
 
 		if (type == TE_GUNSHOTDECAL) {
-			EV_HLDM_GunshotDecalEffects(pos, true);
+			EV_HLDM_GunshotDecalEffects(pos, true, true);
 		}
 		break;
 	}

@@ -171,3 +171,5 @@ EXPORT FILE* UTIL_OpenFile(const char* path, const char* mode);
 EXPORT int BitIndex(uint32_t mask);
 
 EXPORT float GetSequenceDuration(studiohdr_t* pstudiohdr, int iseq); // animation time in seconds
+
+EXPORT bool UTIL_ModelIsSprite(int modelidx);

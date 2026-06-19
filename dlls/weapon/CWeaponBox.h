@@ -41,4 +41,5 @@ public:
 	float m_spawnTime;
 	bool m_noDefaultModel; // don't precache and use the default weaponbox model (error spam suppression)
 	string_t m_barnacleWeapon; // weapon settings to use for barnacle
+	string_t m_pickupSound;
 };

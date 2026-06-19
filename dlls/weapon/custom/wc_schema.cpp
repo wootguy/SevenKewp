@@ -128,13 +128,19 @@ void init_weapon_struct_fields() {
 			WEP_FLAGS32("flags", "0", flags, 0, wep_flags),
 			WEP_FIELD("vmodel", NULL, vmodel, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("vmodel_zoom", NULL, vmodel_zoom, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("vsprite_path", "0", vsprite_path, 0, WC_PARAM_STRING_DELTA, NULL, 0, FL_FIELD_NO_CFG),
 
 			WEP_FIELD("v_model_zoom", NULL, defaultModelV_zoom, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("v_model", NULL, defaultModelV, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("v_sprite", NULL, defaultSpriteV, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("v_sprite_scale", "0", vsprite_base_scale, 0, WC_PARAM_UINT16_D100),
 			WEP_FIELD("p_model", NULL, defaultModelP, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("p_model_akimbo", NULL, pmodelAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("w_model", NULL, defaultModelW, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("w_model_akimbo", NULL, wmodelAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("w_sprite_frame", "0", wsprite_frame, 0, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("hull_min", "0", hull_min, 0, WC_PARAM_INT32_VEC3_SD1000, NULL, 0, FL_FIELD_NO_NETWORK),
+			WEP_FIELD("hull_max", "0", hull_max, 0, WC_PARAM_INT32_VEC3_SD1000, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("hud_folder", "", hudFolder, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("alternate_config", "", altParams, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("slot", "0", slot, 0, WC_PARAM_INT8, NULL, 0, FL_FIELD_NO_NETWORK | FL_FIELD_ALWAYS_WRITE_CFG),
@@ -530,8 +536,8 @@ void init_event_fields() {
 			EVT_FIELD("has_cooldown", "0", anim.hasCooldown, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT_FIELD("has_weights", "0", anim.hasWeights, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT__ENUM("hand", "both", anim.akimbo, 3, hand_names),
-			EVT_FIELD("anims", "0", anim.anims, 0, WC_PARAM_UINT8_ARRAY_8, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-			EVT_FIELD("weights", "0", anim.weights, 0, WC_PARAM_UINT8_ARRAY_8, NULL, 0, 0, EVT_COND_BYTE(anim.hasWeights)),
+			EVT_FIELD("anims", "0", anim.anims, 0, WC_PARAM_UINT8_ARRAY_32, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
+			EVT_FIELD("weights", "0", anim.weights, 0, WC_PARAM_UINT8_ARRAY_32, NULL, 0, 0, EVT_COND_BYTE(anim.hasWeights)),
 			EVT_FIELD("cooldown", "0", anim.cooldown, 0, WC_PARAM_TIME, NULL, 0, 0, EVT_COND_BYTE(anim.hasCooldown)),
 		);
 	}
@@ -541,6 +547,7 @@ void init_event_fields() {
 		flags[BitIndex(FL_WC_BULLETS_DYNAMIC_SPREAD)] = "dynamic_spread";
 		flags[BitIndex(FL_WC_BULLETS_NO_DECAL)] = "no_decal";
 		flags[BitIndex(FL_WC_BULLETS_NO_SOUND)] = "no_sound";
+		flags[BitIndex(FL_WC_BULLETS_NO_PARTICLES)] = "no_particles";
 
 		static const char* bullet_color_names[32];
 		bullet_color_names[WC_TRACER_COLOR_WHITE] = "white";
@@ -828,8 +835,8 @@ void init_event_fields() {
 		EVT_DESC(WC_EVT_EXPLOSION, "te_explosion",
 			EVT_FIELD("sprite", NULL, te_explosion.sprite, 9, WC_PARAM_MODEL_INDEX),
 			EVT_FLAGS("flags", "0", te_explosion.flags, 7, teExpFlags),
-			EVT_FIELD("scale", "0", te_explosion.scale, 0, WC_PARAM_UINT8),
-			EVT_FIELD("fps", "0", te_explosion.fps, 0, WC_PARAM_UINT8),
+			EVT_FIELD("scale", "1", te_explosion.scale, 0, WC_PARAM_UINT8),
+			EVT_FIELD("fps", "10", te_explosion.fps, 0, WC_PARAM_UINT8),
 		);
 	}
 
@@ -953,6 +960,13 @@ void init_event_fields() {
 			EVT_FIELD("duration", "0", player_anim.duration, 0, WC_PARAM_TIME),
 		);
 	}
+
+	EVT_DESC(WC_EVT_WEP_SPR_ANIM, "weapon_sprite_anim",
+		EVT_FIELD("frames", "0", wep_sprite_anim.frames, 0, WC_PARAM_UINT8_ARRAY_32, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
+		EVT_FIELD("offset_x", "0", wep_sprite_anim.frameOffsetX, 0, WC_PARAM_INT8_ARRAY_32),
+		EVT_FIELD("offset_y", "0", wep_sprite_anim.frameOffsetY, 0, WC_PARAM_INT8_ARRAY_32),
+		EVT_FIELD("fps", "100", wep_sprite_anim.fps, 0, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
+	);
 }
 
 void init_custom_ammo_fields() {
@@ -1208,7 +1222,7 @@ void init_weapon_custom_config_parser() {
 		case WC_TRIG_IMPACT:
 		case WC_TRIG_RICOCHET:
 			for (int k = 0; k < ARRAY_SZ(g_wc_evt_trigger_impact_names); k++) {
-				const char* key = UTIL_VarArgs("%s_%s%%", tname, g_wc_evt_trigger_impact_names[k]);
+				const char* key = UTIL_VarArgs("%s_%s", tname, g_wc_evt_trigger_impact_names[k]);
 				uint16_t val = (k << EVT_TYPE_BITS) | i;
 				g_wc_name_to_trigger.put(key, val);
 				g_wc_trigger_to_name[val] = g_wc_trigger_string_pool.alloc(key);
@@ -1354,13 +1368,14 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_VEC3_SD1000:
 	case WC_PARAM_VEC3_SD100:
 		return 6;
-	case WC_PARAM_UINT8_ARRAY_8:
-		return 9;
 	case WC_PARAM_INT32_VEC3_SD1000:
 		return 12;
 	case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2:
 	case WC_PARAM_UINT16_D100_ARRAY_8:
 		return 17;
+	case WC_PARAM_INT8_ARRAY_32:
+	case WC_PARAM_UINT8_ARRAY_32:
+		return 33;
 	default:
 		ALERT(at_error, "Unknown field type size for %d\n", field.type);
 		return 0;
@@ -1414,12 +1429,23 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 		float* v1 = (float*)dat;
 		return UTIL_VarArgs("(%f %f %f)", v1[0], v1[1], v1[2]);
 	}
-	case WC_PARAM_UINT8_ARRAY_8: {
+	case WC_PARAM_INT8_ARRAY_32:
+	case WC_PARAM_UINT8_ARRAY_32: {
 		WepEvtArr8* arr = (WepEvtArr8*)dat;
-		return UTIL_VarArgs("(%d sz: %d %d %d %d %d %d %d %d)",
-			(int)arr->arrSz,
-			(int)arr->arr[0], (int)arr->arr[1], (int)arr->arr[2], (int)arr->arr[3],
-			(int)arr->arr[0], (int)arr->arr[1], (int)arr->arr[2], (int)arr->arr[3]);
+		static std::string ret;
+		ret = UTIL_VarArgs("(%d sz: ", arr->arrSz);
+		for (int i = 0; i < arr->arrSz; i++) {
+			if (i != 0)
+				ret += " ";
+			if (field.type == WC_PARAM_INT8_ARRAY_32) {
+				ret += UTIL_VarArgs("%d", (int8_t)arr->arr[i]);
+			}
+			else {
+				ret += UTIL_VarArgs("%d", (uint8_t)arr->arr[i]);
+			}
+		}
+
+		return ret.c_str();
 	}
 	case WC_PARAM_UINT16_D100_ARRAY_8:
 	case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2: {

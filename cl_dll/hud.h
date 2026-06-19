@@ -107,6 +107,7 @@ public:
 	int Draw(float flTime);
 	void DrawAmmoInfo(int& x, int& y, int iClip, int iAmmo, HSPRITE hAmmo, wrect_t rcAmmo, int minDigits);
 	void DrawDynamicCrosshair();
+	void DrawSpriteWeapon();
 	void Think(void);
 	void Reset(void);
 	virtual const char* HudName() { return "CHudAmmo"; }

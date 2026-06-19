@@ -12,10 +12,12 @@
 #define INT32_VEC3_TO_VECTOR(v) Vector(v[0] * 0.001f, v[1] * 0.001f, v[2] * 0.001f)
 
 #define MAX_WC_RANDOM_SELECTION 8
+#define MAX_WC_ARR_LEN 32
 
 #define FL_WC_BULLETS_DYNAMIC_SPREAD 1	// spread widens while moving and tightens while crouching
 #define FL_WC_BULLETS_NO_DECAL 2		// don't show gunshot particles and decal at impact point
 #define FL_WC_BULLETS_NO_SOUND 4		// don't play texture sound at impact point
+#define FL_WC_BULLETS_NO_PARTICLES 8	// don't spawn particles and tracers at the impact point
 
 #define FL_WC_COOLDOWN_PRIMARY 1
 #define FL_WC_COOLDOWN_SECONDARY 2
@@ -176,6 +178,7 @@ enum WeaponCustomEventType {
 	WC_EVT_SET_BODY,		// weapon model bodygroup
 	WC_EVT_WEP_ANIM,		// weapon model animation
 	WC_EVT_PLR_ANIM,		// player model animation
+	WC_EVT_WEP_SPR_ANIM,	// weapon HUD sprite animation (doom weapons)
 	WC_EVT_BULLETS,
 	WC_EVT_BEAM,
 	WC_EVT_PROJECTILE,		// for slow-moving projectiles that aren't predicted on the client
@@ -317,10 +320,10 @@ enum WeaponCustomRecoilApplyMode {
 
 struct WepEvtArr8 {
 	uint8_t arrSz;
-	uint8_t arr[MAX_WC_RANDOM_SELECTION];
+	uint8_t arr[MAX_WC_ARR_LEN];
 
 	void add(uint8_t val) {
-		if (arrSz < MAX_WC_RANDOM_SELECTION) {
+		if (arrSz < MAX_WC_ARR_LEN) {
 			arr[arrSz++] = val;
 		}
 	}
@@ -440,6 +443,13 @@ struct WepEvt {
 			uint16_t cooldown;		// block attacks for this long.
 			WepEvtArr8 weights;		// weights for each anim, for random selection
 		} anim;
+
+		struct {
+			WepEvtArr8 frames;
+			WepEvtArr8 frameOffsetX;
+			WepEvtArr8 frameOffsetY;
+			uint16_t fps;
+		} wep_sprite_anim;
 
 		struct {
 			uint8_t count;			// how many bullets are shot at once

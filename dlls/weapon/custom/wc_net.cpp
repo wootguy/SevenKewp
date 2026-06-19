@@ -99,7 +99,8 @@ int wc_send_netmsg_struct(struct_desc_t& desc, void* dat) {
 			WRITE_STRING(STRING(*(string_t*)dat));
 			byteCount += 1 + strlen(STRING(*(string_t*)dat));
 			break;
-		case WC_PARAM_UINT8_ARRAY_8: {
+		case WC_PARAM_INT8_ARRAY_32:
+		case WC_PARAM_UINT8_ARRAY_32: {
 			WepEvtArr8* arr = (WepEvtArr8*)fieldDat;
 			WRITE_BYTE(arr->arrSz);
 			WRITE_BYTES(arr->arr, arr->arrSz);
@@ -254,7 +255,8 @@ void wc_read_netmsg_struct(struct_desc_t& desc, void* dat, bool isEvent=false) {
 			PRINTF("String parsing not implemented\n");
 			break;
 		}
-		case WC_PARAM_UINT8_ARRAY_8: {
+		case WC_PARAM_INT8_ARRAY_32:
+		case WC_PARAM_UINT8_ARRAY_32: {
 			uint8_t sz = READ_BYTE();
 			*fieldDat = sz;
 			READ_BYTES(fieldDat + 1, sz);

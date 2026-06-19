@@ -196,6 +196,13 @@ bool IsViewModelAkimbo() {
 	return g_activeWeaponCustom && g_activeWeaponCustom->IsAkimbo();
 }
 
+ViewModelSprite* GetSpriteWeaponState() {
+	if (g_activeWeaponCustom && g_activeWeaponCustom->GetActiveParams().vsprite_path) {
+		return &g_activeWeaponCustom->m_viewModelSpr;
+	}
+	return NULL;
+}
+
 bool IsWeaponIronSightsActive() {
 	return g_activeWeaponCustom && g_activeWeaponCustom->IsIronSights();
 }
@@ -289,6 +296,7 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_stateIconIdx = 0;
 		g_customWeapon[i].m_attackChamberCmdTime = 0;
 		g_customWeapon[i].m_active_cs_recoil_evt = 0;
+		memset(&g_customWeapon[i].m_viewModelSpr, 0, sizeof(g_customWeapon[i].m_viewModelSpr));
 		memset(g_customWeapon[i].m_reloadStageCmdTime, 0, sizeof(uint32_t) * WC_RELOAD_STAGES);
 		memset(g_customWeapon[i].events.m_beams, 0, sizeof(WcBeam) * MAX_WC_BEAMS);
 		memset(&g_customWeapon[i].events.m_beamImpactSprite, 0, sizeof(WcSprite));
@@ -1146,8 +1154,9 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		
 	// Don't go firing anything if we have died or are spectating
 	// Or if we don't have a weapon model deployed
+	bool weaponDeployed = player.pev->viewmodel || wc->GetActiveParams().vsprite_path;
 	if ( ( player.pev->deadflag != ( DEAD_DISCARDBODY + 1 ) ) && 
-		 !CL_IsDead() && player.pev->viewmodel && !g_iUser1 )
+		 !CL_IsDead() && weaponDeployed && !g_iUser1)
 	{
 		if ( player.m_flNextAttack <= 0 )
 		{

@@ -43,6 +43,7 @@ uint32_t GetTimeAtCmd(uint32_t cmdId);
 
 struct CustomWeaponParams;
 struct WEAPON;
+struct ViewModelSprite;
 class CBasePlayerWeapon;
 
 bool IsPredictionWeaponZoomed();
@@ -66,6 +67,7 @@ bool IsExclusiveWeapon(int id);
 void InitCustomWeapon(int id);
 void ResetCustomWeaponStates();
 void SetItemInfo(WEAPON* wep);
+ViewModelSprite* GetSpriteWeaponState(); // return NULL if not a sprite or not loaded yet
 
 extern cvar_t *cl_lw;
 

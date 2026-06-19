@@ -152,6 +152,8 @@ void CWorld::Precache(void)
 
 	CVAR_SET_STRING("room_type", "0");// clear DSP
 
+	InitStringDeltas();
+
 	g_footstepVariety = 2;
 
 	mapcycle_t oldCycle;

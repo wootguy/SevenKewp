@@ -138,7 +138,8 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 	}
 	case WC_PARAM_UINT16_D1000: *(uint16_t*)dat = FLOAT_TO_D1000(wc_get_float(val)); break;
 	case WC_PARAM_UINT16_D100: *(uint16_t*)dat = FLOAT_TO_D100(wc_get_float(val)); break;
-	case WC_PARAM_UINT8_ARRAY_8: {
+	case WC_PARAM_INT8_ARRAY_32:
+	case WC_PARAM_UINT8_ARRAY_32: {
 		WepEvtArr8* arr = (WepEvtArr8*)dat;
 		vector<string> parts = splitString(val, " ");
 		memset(arr->arr, 0, sizeof(arr->arr));
@@ -147,7 +148,7 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 			if (parts[i].empty())
 				continue;
 
-			if (i >= MAX_WC_RANDOM_SELECTION) {
+			if (i >= MAX_WC_ARR_LEN) {
 				ALERT(at_error, "%s (line %d): Too many values in key '%s' for group '%s'.\n",
 					fname, group.lineno, name, group.name.c_str());
 				break;
@@ -394,12 +395,16 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 		fprintf(f, "\n");
 		break;
 	}
-	case WC_PARAM_UINT8_ARRAY_8: {
+	case WC_PARAM_INT8_ARRAY_32:
+	case WC_PARAM_UINT8_ARRAY_32: {
 		WepEvtArr8* arr = (WepEvtArr8*)dat;
-		for (int i = 0; i < MAX_WC_RANDOM_SELECTION && i < arr->arrSz; i++) {
+		for (int i = 0; i < MAX_WC_ARR_LEN && i < arr->arrSz; i++) {
 			if (i != 0)
 				fprintf(f, " ");
-			fprintf(f, "%d", arr->arr[i]);
+			if (ptype == WC_PARAM_INT8_ARRAY_32)
+				fprintf(f, "%d", (int8_t)arr->arr[i]);
+			else
+				fprintf(f, "%u", (uint8_t)arr->arr[i]);
 		}
 		fprintf(f, "\n");
 		break;
@@ -984,6 +989,12 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params, 
 
 	if (params.altParams) {
 		params.flags |= FL_WC_WEP_HAS_ALT_PARAMS;
+	}
+
+	if (params.defaultSpriteV) {
+		std::string shortened = STRING(params.defaultSpriteV);
+		shortened = shortened.substr(8, shortened.size() - (8 + 4));
+		params.vsprite_path = QueueDeltaString(ALLOC_STRING(shortened.c_str()));
 	}
 
 	if (params.erToggle.stateBits) {

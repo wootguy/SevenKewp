@@ -180,7 +180,11 @@ void CWeaponBox::DefaultTouch(CBaseEntity* pOther)
 		}
 	}
 
-	EMIT_SOUND(pOther->edict(), CHAN_ITEM, hadWeapon ? "items/gunpickup2.wav" : "items/9mmclip1.wav", 1, ATTN_NORM);
+	const char* pickupSound = hadWeapon ? "items/gunpickup2.wav" : "items/9mmclip1.wav";
+	if (m_pickupSound)
+		pickupSound = STRING(m_pickupSound);
+
+	EMIT_SOUND(pOther->edict(), CHAN_ITEM, pickupSound, 1, ATTN_NORM);
 	SetTouch(NULL);
 	SetUse(NULL);
 	UTIL_Remove(this);

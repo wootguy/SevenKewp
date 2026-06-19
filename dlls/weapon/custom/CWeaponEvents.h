@@ -23,7 +23,8 @@ struct WcTrace {
 	Vector	vecEndPos;			// final position
 	float	flPlaneDist;
 	Vector	vecPlaneNormal;		// surface normal at impact
-	int		pHit;				// entity the surface is on
+	int		pHitPhysEnt;		// entity the surface is on (physent index, not server entity index. Client-side use only.)
+	int		pHitEnt;			// entity the surface is on (server entity index)
 	int		iHitgroup;			// 0 == generic, non zero is specific body part
 };
 
@@ -138,17 +139,18 @@ public:
 	void PlayEvent_StreakSplash(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_Fade(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_PlayerAnim(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_WeaponSpriteAnim(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_BeamCircle(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTrace* tr, int forceParams);
 
 	float GetCurrentAccuracyMultiplier(int attackIdx);
 	void GetCurrentAccuracy(float& accuracyX, float& accuracyY, float& accuracyX2, float& accuracyY2);
-	int GetImpactArg(int attackIdx, bool impactMonster, bool impactWorld);
 	float GetChargeMult(WepEvt& evt, int flagMask);
 	WcBeamTrace BeamAttack(WcBeam& beam, CBasePlayer* m_pPlayer);
 	void FireAmmoEvents(int ammoPool, int attackIdx);
 	void FireShootEvents(int trigger, bool leftHand, int* clip, bool akimboFire);
+	void FireImpactEvents(int trigger, int attackIdx, WcTrace* evTrace);
 	WcBeam* AllocBeam();
 	void UpdateBeams();
 	bool KillBeams(int attackIdx=-1); // set attack idx to only kill constant beams attached to an attack button. True if any beams killed

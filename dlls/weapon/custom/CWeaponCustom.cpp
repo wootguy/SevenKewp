@@ -332,8 +332,10 @@ BOOL CWeaponCustom::Deploy()
 
 	const char* vmodel = GetModelV();
 
-	studiohdr_t* mdl = GET_MODEL_PTR(PRECACHE_MODEL(vmodel));
-	m_hasLaserAttachment = mdl && mdl->numattachments > params.laser.attachment;
+	if (!params.vsprite_path && vmodel[0]) {
+		studiohdr_t* mdl = GET_MODEL_PTR(PRECACHE_MODEL(vmodel));
+		m_hasLaserAttachment = mdl && mdl->numattachments > params.laser.attachment;
+	}
 
 	ret = DefaultDeploy(vmodel, GetModelP(), 0, animSet, 1);
 #endif
@@ -802,7 +804,6 @@ void CWeaponCustom::ItemPostFrame() {
 	events.UpdateBeams();
 
 	PlayDelayedStateToggles();
-	UpdateStateHudSprite();
 	ReloadThink();
 
 	if (GetState(FL_WC_STATE_CHAMBER_NEEDED)) {
@@ -845,6 +846,7 @@ void CWeaponCustom::ItemPostFrame() {
 		return;
 	}
 
+	UpdateStateHudSprite();
 	events.PlayDelayedEvents();
 	UpdateLaser();
 }
@@ -1710,7 +1712,8 @@ void CWeaponCustom::MeleeAttack(int attackIdx) {
 		// play thwack, smack, or dong sound
 		float flVol = 1.0;
 
-		events.ProcessEvents(WC_TRIG_IMPACT, events.GetImpactArg(attackIdx, true, true));
+		WcTrace evTrace = ConvertTrace(tr, vecSrc);
+		events.FireImpactEvents(WC_TRIG_IMPACT, attackIdx, &evTrace);
 		AttackTrace(m_pPlayer, attackIdx, vecSrc, tr, true);
 
 		if (MeleeIsFlesh(pEntity)) {
@@ -2224,7 +2227,7 @@ int CWeaponCustom::GetItemInfo(ItemInfo* p) {
 	p->pszAmmo1 = params.ammoInfo[0].type ? STRING(params.ammoInfo[0].type) : NULL;
 	p->pszAmmo2 = !hideAmmo2 && params.ammoInfo[1].type ? STRING(params.ammoInfo[1].type) : NULL;
 	p->pszName = STRING(m_hudPath);
-	p->iMaxClip = params.ammoInfo[0].maxClip;
+	p->iMaxClip = params.ammoInfo[0].maxClip ? params.ammoInfo[0].maxClip : -1;
 	p->iMaxClip2 = params.ammoInfo[1].maxClip;
 	p->iId = m_iId;
 	p->iFlags = flags;
@@ -2240,6 +2243,11 @@ int CWeaponCustom::GetItemInfo(ItemInfo* p) {
 }
 
 studiohdr_t* CWeaponCustom::GetViewModelHeader() {
+	CustomWeaponParams& params = GetActiveParams();
+	
+	if (params.vsprite_path)
+		return NULL;
+
 #ifdef CLIENT_DLL
 	model_s* mdl = gEngfuncs.hudGetModelByIndex(GetActiveViewModelIdx());
 	return (studiohdr_t*)(mdl ? mdl->cache.data : NULL);
@@ -2393,20 +2401,92 @@ bool CWeaponCustom::GetState(int stateBits) {
 }
 
 void CWeaponCustom::UpdateStateHudSprite() {
-	CustomWeaponParams& params = GetActiveParams();
-
-	if (!(params.flags & FL_WC_WEP_HAS_STATE_SPRITE))
+#ifdef CLIENT_DLL
+	CBasePlayer* m_pPlayer = GetPlayer();
+	if (!m_pPlayer)
 		return;
 
-	if (GetState(FL_WC_STATE_SEMI_AUTO)) {
-		m_stateIconIdx = params.stateIcon.semiAutoIconIdx;
+	CustomWeaponParams& params = GetActiveParams();
+
+	if (params.flags & FL_WC_WEP_HAS_STATE_SPRITE) {
+		if (GetState(FL_WC_STATE_SEMI_AUTO)) {
+			m_stateIconIdx = params.stateIcon.semiAutoIconIdx;
+		}
+		else if (GetState(FL_WC_STATE_PRIMARY_ALT)) {
+			m_stateIconIdx = params.stateIcon.primaryAltIconIdx;
+		}
+		else {
+			m_stateIconIdx = params.stateIcon.defaultIconIdx;
+		}
 	}
-	else if (GetState(FL_WC_STATE_PRIMARY_ALT)) {
-		m_stateIconIdx = params.stateIcon.primaryAltIconIdx;
+
+	if (params.vsprite_path) {
+		ViewModelSprite& spr = m_viewModelSpr;
+
+		if (!spr.hSprite && !spr.loadFailed) {
+			const char* sprPath = GetDeltaString(params.vsprite_path);
+			if (sprPath && sprPath[0]) {
+				const char* loadPath = UTIL_VarArgs("sprites/%s.spr", sprPath);
+				spr.hSprite = SPR_Load(loadPath);
+
+				if (!spr.hSprite) {
+					PRINTD("Failed to load HUD sprite %s\n", loadPath);
+					spr.loadFailed = true;
+					return;
+				}
+			}
+		}
+
+		float timeScale = (WallTime() - spr.lastUpdate) / 0.025f;
+		spr.lastUpdate = WallTime();
+
+		float bobX = cosf(spr.bobTime) * 16;
+		float bobY = fabs(sinf(spr.bobTime) * 16);
+
+		bool wantMove = m_pPlayer->pev->button & (IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT);
+		bool moving = m_pPlayer->pev->velocity.Length() >= 10;
+		bool shooting = m_flNextPrimaryAttack > 0;
+
+		//PRINTF("BOB: %.2f %.2f\n", spr.bobTime, spr.moveScale);
+
+		if (shooting) {
+			spr.moveScale = 0;
+		}
+		else if (!wantMove || !moving)
+		{
+			spr.moveScale -= 0.1f * timeScale;
+			if (spr.moveScale < 0)
+				spr.moveScale = 0;
+		}
+		else
+		{
+			spr.bobTime += 0.1f * timeScale;
+			spr.moveScale += 0.1f * timeScale;
+			if (spr.moveScale > 1.0f)
+				spr.moveScale = 1.0f;
+		}
+
+		bobX *= spr.moveScale;
+		bobY *= spr.moveScale;
+
+		float deployTime = WallTime() - m_lastDeploy;
+		float deployY = 0;
+		if (deployTime < 0.5f) {
+			deployY = (0.5f - deployTime) * spr.h;
+		}
+
+		float animTime = (CmdTime() - spr.animTime) * 0.001f;
+		float fps = spr.fps * 0.01f;
+		int frameIdx = clampi(animTime * fps, 0, spr.anim.arrSz - 1);
+		spr.frame = spr.anim.arr[frameIdx];
+		spr.x = (int8_t)spr.animOfsX.arr[frameIdx] + bobX;
+		spr.y = (int8_t)spr.animOfsY.arr[frameIdx] + bobY + deployY;
+		spr.w = gEngfuncs.pfnSPR_Width(spr.hSprite, spr.frame);
+		spr.h = gEngfuncs.pfnSPR_Height(spr.hSprite, spr.frame);
+		spr.scale = D100_TO_FLOAT(params.vsprite_base_scale);
+		//PRINTF("T %.2f, FPS %.1f, FRAME %d, OFS: %d %d\n", animTime, fps, frameIdx, spr.x, spr.y);
 	}
-	else {
-		m_stateIconIdx = params.stateIcon.defaultIconIdx;
-	}	
+#endif
 }
 
 int CWeaponCustom::GetActiveViewModelIdx() {

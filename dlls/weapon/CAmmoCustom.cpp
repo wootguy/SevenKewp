@@ -6,13 +6,19 @@
 void CAmmoCustom::Spawn(void) {
 	CBasePlayerAmmo::Spawn();
 
-	Vector mins = *(Vector*)params.hullSizeMin;
-	Vector maxs = *(Vector*)params.hullSizeMax;
+	Vector mins = INT32_VEC3_TO_VECTOR(params.hullSizeMin);
+	Vector maxs = INT32_VEC3_TO_VECTOR(params.hullSizeMax);
 	if (mins != g_vecZero || maxs != g_vecZero)
 		UTIL_SetSize(pev, mins, maxs);
 
-	if (params.modelBody) {
-		pev->body = params.modelBody;
+	if (UTIL_ModelIsSprite(pev->modelindex)) {
+		pev->scale = 1;
+		pev->frame = params.modelBody;
+	}
+	else {
+		if (params.modelBody) {
+			pev->body = params.modelBody;
+		}
 	}
 }
 

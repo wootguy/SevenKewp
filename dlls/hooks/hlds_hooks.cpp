@@ -987,8 +987,6 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	GeneratePredicionData();
 
-	InitStringDeltas();
-
 	uint64_t hookStartTime = getEpochMillis();
 	CALL_HOOKS_VOID(pfnServerActivate);
 	g_levelChangePluginTime += getEpochMillis() - hookStartTime;

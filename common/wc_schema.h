@@ -8,7 +8,8 @@ enum WC_PARAM_TYPE {
 	WC_PARAM_UINT8_D100,	// percentage stored as a uint8_t
 	WC_PARAM_UINT8_FLAGS,	// flags stored in an 8-bit int, written to config on a single line
 	WC_PARAM_UINT8_ENUM,	// enum value stored in an 8-bit int
-	WC_PARAM_UINT8_ARRAY_8,	// array of up to 8 uint8_t
+	WC_PARAM_UINT8_ARRAY_32,// array of up to 32 uint8_t
+	WC_PARAM_INT8_ARRAY_32, // array of up to 32 int8_t
 	WC_PARAM_UINT16,
 	WC_PARAM_UINT16_FLAGS,
 	WC_PARAM_UINT16_D100,	// unsigned 100ths of an int (+/-327 accurate to 0.01)
