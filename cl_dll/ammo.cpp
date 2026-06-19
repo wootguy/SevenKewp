@@ -1713,11 +1713,38 @@ void CHudAmmo::DrawSpriteWeapon() {
 	int maxY = minY + rc.bottom;
 
 	if (is_software_renderer) {
-		SPR_Set(spr.hSprite, spr.color.r, spr.color.g, spr.color.b);
-		SPR_DrawHoles(spr.frame, minX, minY, &rc);
+		if (spr.color.a < 255) {
+			float alpha = spr.color.a / 255.0f;
+			int r = alpha * spr.color.r;
+			int g = alpha * spr.color.g;
+			int b = alpha * spr.color.b;
+			SPR_Set(spr.hSprite, spr.color.r, spr.color.g, spr.color.b);
+			SPR_DrawAdditive(spr.frame, minX, minY, &rc);
+		}
+		else {
+			SPR_Set(spr.hSprite, spr.color.r, spr.color.g, spr.color.b);
+			SPR_DrawHoles(spr.frame, minX, minY, &rc);
+		}
 	}
 	else {
-		gEngfuncs.pTriAPI->RenderMode(kRenderTransTexture);
+		int triRenderMode = spr.rendermode;
+		RGBA c = spr.color;
+
+		switch (spr.rendermode) {
+		case kRenderNormal:
+			triRenderMode = kRenderTransTexture;
+			break;
+		case kRenderTransTexture:
+		case kRenderTransAlpha:
+		case kRenderTransColor:
+			triRenderMode = kRenderTransAlpha;
+			break;
+		case kRenderGlow:
+			triRenderMode = kRenderTransAdd;
+			break;
+		}
+
+		gEngfuncs.pTriAPI->RenderMode(triRenderMode);
 		gEngfuncs.pTriAPI->SpriteTexture((model_t*)gEngfuncs.GetSpritePointer(spr.hSprite), spr.frame);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -1726,7 +1753,7 @@ void CHudAmmo::DrawSpriteWeapon() {
 		gEngfuncs.pTriAPI->Begin(TRI_QUADS);
 
 		gEngfuncs.pTriAPI->Color4f(
-			spr.color.r / 255.0f, spr.color.g / 255.0f, spr.color.b / 255.0f, spr.color.a / 255.0f
+			c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f
 		);
 
 		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
@@ -1743,6 +1770,40 @@ void CHudAmmo::DrawSpriteWeapon() {
 
 		gEngfuncs.pTriAPI->End();
 		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
+
+		if (spr.renderfx == kRenderFxGlowShell) {
+			// Poor man's glow effect. Looks more like motion blur, but it's cheap.
+			c = spr.glowShellColor;
+			gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
+			gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+
+			gEngfuncs.pTriAPI->Color4f(
+				c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, 0.5f
+			);
+
+			float t = gHUD.m_flTime * 16;
+			for (int i = 0; i < 2; i++) {
+				float a = i == 0 ? t : -t * 0.5f;
+				float r = i == 0 ? 1.0f : 1.5f;
+				float dx = cosf(a) * scale * r;
+				float dy = sinf(a) * scale * r;
+
+				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				gEngfuncs.pTriAPI->Vertex3f(minX + dx, minY + dy, 0);
+
+				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 1.0f);
+				gEngfuncs.pTriAPI->Vertex3f(minX + dx, maxY + dy, 0);
+
+				gEngfuncs.pTriAPI->TexCoord2f(1.0f, 1.0f);
+				gEngfuncs.pTriAPI->Vertex3f(maxX + dx, maxY + dy, 0);
+
+				gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
+				gEngfuncs.pTriAPI->Vertex3f(maxX + dx, minY + dy, 0);
+			}
+
+			gEngfuncs.pTriAPI->End();
+			gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
+		}
 	}
 }
 

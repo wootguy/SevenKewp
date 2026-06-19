@@ -192,6 +192,8 @@ public:
 	float			(*m_plighttransform)[ MAXSTUDIOBONES ][ 3 ][ 4 ];
 
 	alight_t m_currentLighting;
+
+	bool			m_drawingViewModel;
 };
 
 #endif // STUDIOMODELRENDERER_H

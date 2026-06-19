@@ -15,6 +15,7 @@
 #include "../game_shared/prediction_files.h"
 extern bool g_cmd_debug_mode;
 HSPRITE SPR_Load(const char* path);
+cl_entity_t* GetLocalPlayer();
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 #else
@@ -2423,6 +2424,7 @@ void CWeaponCustom::UpdateStateHudSprite() {
 
 	if (params.vsprite_path) {
 		ViewModelSprite& spr = m_viewModelSpr;
+		cl_entity_t* localPlayer = GetLocalPlayer();
 
 		if (!spr.hSprite && !spr.loadFailed) {
 			const char* sprPath = GetDeltaString(params.vsprite_path);
@@ -2441,58 +2443,99 @@ void CWeaponCustom::UpdateStateHudSprite() {
 		float timeScale = (WallTime() - spr.lastUpdate) / 0.025f;
 		spr.lastUpdate = WallTime();
 
-		float bobX = cosf(spr.bobTime) * 16;
-		float bobY = fabs(sinf(spr.bobTime) * 16);
-
-		bool wantMove = m_pPlayer->pev->button & (IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT);
-		bool moving = m_pPlayer->pev->velocity.Length() >= 10;
-		bool shooting = m_flNextPrimaryAttack > 0;
-
-		//PRINTF("BOB: %.2f %.2f\n", spr.bobTime, spr.moveScale);
-
-		if (shooting) {
-			spr.moveScale = 0;
-		}
-		else if (!wantMove || !moving)
+		// update view bobbing
+		float bobX, bobY;
 		{
-			spr.moveScale -= 0.1f * timeScale;
-			if (spr.moveScale < 0)
+			bobX = cosf(spr.bobTime) * 16;
+			bobY = fabs(sinf(spr.bobTime) * 16);
+
+			bool wantMove = m_pPlayer->pev->button & (IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT);
+			bool moving = m_pPlayer->pev->velocity.Length() >= 10;
+			bool shooting = m_flNextPrimaryAttack > 0;
+
+			//PRINTF("BOB: %.2f %.2f\n", spr.bobTime, spr.moveScale);
+
+			if (shooting) {
 				spr.moveScale = 0;
-		}
-		else
-		{
-			spr.bobTime += 0.1f * timeScale;
-			spr.moveScale += 0.1f * timeScale;
-			if (spr.moveScale > 1.0f)
-				spr.moveScale = 1.0f;
+			}
+			else if (!wantMove || !moving)
+			{
+				spr.moveScale -= 0.1f * timeScale;
+				if (spr.moveScale < 0)
+					spr.moveScale = 0;
+			}
+			else
+			{
+				spr.bobTime += 0.1f * timeScale;
+				spr.moveScale += 0.1f * timeScale;
+				if (spr.moveScale > 1.0f)
+					spr.moveScale = 1.0f;
+			}
+
+			bobX *= spr.moveScale;
+			bobY *= spr.moveScale;
 		}
 
-		bobX *= spr.moveScale;
-		bobY *= spr.moveScale;
-
+		// deploy rising/falling
 		float deployTime = WallTime() - m_lastDeploy;
 		float deployY = 0;
 		if (deployTime < 0.5f) {
 			deployY = (0.5f - deployTime) * spr.h;
 		}
+		
+		// update render color
+		{
+			spr.color = gPlayerSim.light_color;
+			spr.color.a = 255;
+			spr.rendermode = localPlayer->curstate.rendermode;
+			spr.renderfx = localPlayer->curstate.renderfx;
 
-		spr.color = gPlayerSim.light_color;
+			if (spr.renderfx == kRenderFxGlowShell) {
+				spr.glowShellColor.r = localPlayer->curstate.rendercolor.r;
+				spr.glowShellColor.g = localPlayer->curstate.rendercolor.g;
+				spr.glowShellColor.b = localPlayer->curstate.rendercolor.b;
+			}
+			if (spr.rendermode == kRenderTransColor) {
+				float illum = gPlayerSim.light_level / 255.0f;
+				spr.color.r = localPlayer->curstate.rendercolor.r * illum;
+				spr.color.g = localPlayer->curstate.rendercolor.g * illum;
+				spr.color.b = localPlayer->curstate.rendercolor.b * illum;
+			}
+			if (spr.rendermode != kRenderNormal) {
+				spr.color.a = localPlayer->curstate.renderamt;
+				if (spr.renderfx != kRenderFxNone) {
+					float t = gEngfuncs.GetClientTime();
+					spr.color.a = UTIL_GetRenderFxOpacity(spr.renderfx, spr.color.a, t);
+				}
+			}
 
-		if (spr.brighten > 0) {
-			spr.brighten -= timeScale;
-			int v = spr.brighten * 64;
+			if (spr.brighten > 0) {
+				spr.brighten -= timeScale;
+				int v = spr.brighten * 64;
 
-			spr.color.r = V_min(255, spr.color.r + v);
-			spr.color.g = V_min(255, spr.color.g + v);
-			spr.color.b = V_min(255, spr.color.b + v);
+				if (spr.rendermode == kRenderTransColor) {
+					int maxChannel V_max(V_max(spr.color.r, spr.color.g), spr.color.b);
+					float scaleUp = 255.0f / maxChannel;
+					int smaller_v = v / 16; // allow some whitening in case already full bright on one channel
+					spr.color.r = V_min(255, spr.color.r * scaleUp + smaller_v);
+					spr.color.g = V_min(255, spr.color.g * scaleUp + smaller_v);
+					spr.color.b = V_min(255, spr.color.b * scaleUp + smaller_v);
+				}
+				else {
+					spr.color.r = V_min(255, spr.color.r + v);
+					spr.color.g = V_min(255, spr.color.g + v);
+					spr.color.b = V_min(255, spr.color.b + v);
+				}
+			}
+
+			// add gamma
+			float gamma = 1.0f / 2.2f;
+			spr.color.r = V_min(255, powf(spr.color.r / 255.0f, gamma) * 255.0f);
+			spr.color.g = V_min(255, powf(spr.color.g / 255.0f, gamma) * 255.0f);
+			spr.color.b = V_min(255, powf(spr.color.b / 255.0f, gamma) * 255.0f);
 		}
 
-		// add gamma
-		float gamma = 1.0f / 2.2f;
-		spr.color.r = V_min(255, powf(spr.color.r / 255.0f, gamma) * 255.0f);
-		spr.color.g = V_min(255, powf(spr.color.g / 255.0f, gamma) * 255.0f);
-		spr.color.b = V_min(255, powf(spr.color.b / 255.0f, gamma) * 255.0f);
-
+		// update animation and positioning
 		float animTime = (CmdTime() - spr.animTime) * 0.001f;
 		float fps = spr.fps * 0.01f;
 		int frameIdx = clampi(animTime * fps, 0, spr.anim.arrSz - 1);

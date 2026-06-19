@@ -114,11 +114,7 @@ inline void SetCrosshair(HSPRITE hspr, wrect_t rc, int r, int g, int b) {
 	g_crosshair_active = rc.bottom != 0 || rc.left != 0 || rc.right != 0 || rc.top != 0;
 }
 
-// prevent crashes when map is not loaded
-inline cl_entity_t* GetLocalPlayer() {
-	static cl_entity_t dummyPlayer;
-	return gHUD.m_is_map_loaded ? gEngfuncs.GetLocalPlayer() : &dummyPlayer;
-}
+cl_entity_t* GetLocalPlayer();
 
 extern engine_studio_api_t IEngineStudio;
 

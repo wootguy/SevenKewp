@@ -1069,3 +1069,97 @@ bool UTIL_ModelIsSprite(int modelidx) {
 	return mdlName && strstr(mdlName, ".spr");
 #endif
 }
+
+int UTIL_GetRenderFxOpacity(int renderfx, int renderamt, float t) {
+	// RE from CL_FxBlend
+	int blend = renderamt;
+	int offset = 0;
+
+	switch (renderfx) {
+	case kRenderFxPulseSlow:
+		blend += sinf(t * 2.0f) * 16.0f;
+		break;
+	case kRenderFxPulseFast:
+		blend += sinf(t * 8.0f) * 16.0f;
+		break;
+	case kRenderFxPulseSlowWide:
+		blend += sinf(t * 2.0f) * 64.0f;
+		break;
+	case kRenderFxPulseFastWide:
+		blend += sinf(t * 8.0f) * 64.0f;
+		break;
+	case kRenderFxFadeSlow:
+		if (--renderamt < 0)
+			renderamt = 0;
+		blend = renderamt;
+		break;
+	case kRenderFxFadeFast:
+		renderamt -= 4;
+		if (renderamt < 0)
+			renderamt = 0;
+		blend = renderamt;
+		break;
+	case kRenderFxSolidSlow:
+		if (++renderamt > 255)
+			renderamt = 255;
+		blend = renderamt;
+		break;
+	case kRenderFxSolidFast:
+		renderamt += 4;
+		if (renderamt > 255)
+			renderamt = 255;
+		blend = renderamt;
+		break;
+	case kRenderFxStrobeSlow:
+		if (sinf(t * 4.0f) * 20.0f < 0)
+			return 0;
+		break;
+	case kRenderFxStrobeFast:
+		if (sinf(t * 16.0f) * 20.0f < 0)
+			return 0;
+		break;
+	case kRenderFxStrobeFaster:
+		if (sinf(t * 36.0f) * 20.0f < 0)
+			return 0;
+		break;
+	case kRenderFxFlickerSlow: {
+		float s = sinf(t * 2.0f) + sinf(t * 17.0f);
+		if (s * 20.0f < 0)
+			return 0;
+		break;
+	}
+	case kRenderFxFlickerFast: {
+		float s = sinf(t * 16.0f) + sinf(t * 23.0f);
+		if (s * 20.0f < 0)
+			return 0;
+		break;
+	}
+	case kRenderFxHologram:
+	case kRenderFxDistort: {
+		//float dist = DotProduct(ent->origin - r_origin, vpn);
+		float dist = 1; // TODO: this only works for the view model
+
+		if (renderfx == kRenderFxHologram)
+			renderamt = 180;
+
+		if (dist <= 0)
+			return 0;
+
+		if (dist <= 100)
+			blend = 180;
+		else
+			blend = (1.0f - (dist - 100.0f) / 400.0f) * 180.0f;
+
+#ifdef CLIENT_DLL
+		blend += gEngfuncs.pfnRandomLong(-32, 31);
+#else
+		blend += RANDOM_LONG(-32, 31);
+#endif
+		break;
+	}
+	default:
+		break;
+	}
+
+	return clampi(blend, 0, 255);
+}

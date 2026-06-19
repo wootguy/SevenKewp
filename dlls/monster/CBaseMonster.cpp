@@ -7706,20 +7706,22 @@ void CBaseMonster::AddShockEffect(float r, float g, float b, float size, float f
 		}
 		else
 		{
-			m_iOldRenderMode = pev->rendermode;
 			m_iOldRenderFX = pev->renderfx;
 			m_OldRenderColor.x = pev->rendercolor.x;
 			m_OldRenderColor.y = pev->rendercolor.y;
 			m_OldRenderColor.z = pev->rendercolor.z;
 			m_flOldRenderAmt = pev->renderamt;
 
-			pev->rendermode = kRenderNormal;
-
 			pev->renderfx = kRenderFxGlowShell;
 			pev->rendercolor.x = r;
 			pev->rendercolor.y = g;
 			pev->rendercolor.z = b;
-			pev->renderamt = size;
+
+			if (pev->rendermode == kRenderNormal) {
+				// don't change opacity for transparent rendermodes
+				// the custom client will fixup the shell thickness
+				pev->renderamt = size;
+			}
 
 			m_fShockEffect = true;
 			m_flShockDuration = flShockDuration;
@@ -7732,12 +7734,13 @@ void CBaseMonster::UpdateShockEffect()
 {
 	if (m_fShockEffect && (gpGlobals->time - m_flShockTime > m_flShockDuration))
 	{
-		pev->rendermode = m_iOldRenderMode;
 		pev->renderfx = m_iOldRenderFX;
 		pev->rendercolor.x = m_OldRenderColor.x;
 		pev->rendercolor.y = m_OldRenderColor.y;
 		pev->rendercolor.z = m_OldRenderColor.z;
-		pev->renderamt = m_flOldRenderAmt;
+		if (pev->rendermode == kRenderNormal) {
+			pev->renderamt = m_flOldRenderAmt; // don't make ent invisible if render mode changed during effect
+		}
 		m_flShockDuration = 0;
 		m_fShockEffect = false;
 	}
@@ -7747,12 +7750,13 @@ void CBaseMonster::ClearShockEffect()
 {
 	if (m_fShockEffect)
 	{
-		pev->rendermode = m_iOldRenderMode;
 		pev->renderfx = m_iOldRenderFX;
 		pev->rendercolor.x = m_OldRenderColor.x;
 		pev->rendercolor.y = m_OldRenderColor.y;
 		pev->rendercolor.z = m_OldRenderColor.z;
-		pev->renderamt = m_flOldRenderAmt;
+		if (pev->rendermode == kRenderNormal) {
+			pev->renderamt = m_flOldRenderAmt; // don't make ent invisible if render mode changed during effect
+		}
 		m_flShockDuration = 0;
 		m_fShockEffect = false;
 	}
@@ -8113,10 +8117,11 @@ void CBaseMonster::ApplyEffects() {
 		pev->rendercolor.z = V_min(255, total_glow.z);
 		pev->renderamt = 1;
 	}
-	else {
+	else if (pev->renderfx == kRenderFxGlowShell) {
 		pev->renderfx = kRenderFxNone;
 		pev->rendercolor = g_vecZero;
-		pev->renderamt = 0;
+		if (pev->rendermode == kRenderNormal)
+			pev->renderamt = 0;
 	}
 
 	pev->takedamage = total_invulnerable ? DAMAGE_NO : DAMAGE_YES;
@@ -8183,15 +8188,14 @@ void CBaseMonster::SetRevivalVars() {
 	m_deathHealthMax = pev->max_health;
 	m_deathBody = pev->body;
 	m_deathMovetype = pev->movetype;
+	m_deathRenderMode = pev->rendermode;
 
 	if (m_fShockEffect) {
-		m_deathRenderMode = m_iOldRenderMode;
 		m_deathRenderAmt = m_flOldRenderAmt;
 		m_deathRenderFx = m_iOldRenderFX;
 		m_deathRenderColor = m_OldRenderColor;
 	}
 	else {
-		m_deathRenderMode = pev->rendermode;
 		m_deathRenderAmt = pev->renderamt;
 		m_deathRenderFx = pev->renderfx;
 		m_deathRenderColor = pev->rendercolor;

@@ -289,6 +289,9 @@ struct ViewModelSprite {
 	float moveScale; // bobbing intensity
 	float lastUpdate;
 	RGBA color;
+	int rendermode;
+	int renderfx;
+	RGB glowShellColor;
 	float brighten; // increase light level temporarily
 };
 

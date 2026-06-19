@@ -1204,8 +1204,30 @@ int CStudioModelRenderer::StudioDrawModel( int flags, bool mirrored, CustomWeapo
 	IEngineStudio.GetViewInfo( m_vRenderOrigin, m_vUp, m_vRight, m_vNormal );
 	IEngineStudio.GetAliasScale( &m_fSoftwareXScale, &m_fSoftwareYScale );
 
-	cl_entity_t* localPlayer = GetLocalPlayer();
-	if (m_pCurrentEntity->index == localPlayer->index) {
+	if (m_drawingViewModel) {
+		cl_entity_t* localPlayer = GetLocalPlayer();
+
+		// apply player render mode to held weapon.
+		// TODO: this doesn't work for anything except glow shells and additive mode.
+		// The engine seems to apply and persist OpenGL state before the studio api is called,
+		// and it can't be updated even right before DrawPoints. The view model doesn't use curstate
+		// like all other entities, so unless you can find the blend mode variables in the engine dll,
+		// you'll have to reimplement view model rendering using a new server ent. Setting entity
+		// state before the studio API is called also didn't work.
+		m_pCurrentEntity->curstate.rendermode = localPlayer->curstate.rendermode;
+		m_pCurrentEntity->curstate.renderamt = localPlayer->curstate.renderamt;
+		m_pCurrentEntity->curstate.renderfx = localPlayer->curstate.renderfx;
+		m_pCurrentEntity->curstate.rendercolor = localPlayer->curstate.rendercolor;
+
+		if (m_pCurrentEntity->curstate.renderfx == kRenderFxGlowShell) {
+			// the glow effect is annoying at high thicknes
+			m_pCurrentEntity->curstate.renderamt = V_min(m_pCurrentEntity->curstate.renderamt, 1);
+		}
+		if (m_pCurrentEntity->curstate.rendermode != kRenderNormal) {
+			// additive mode is the only transparent mode that works. Better than nothing.
+			m_pCurrentEntity->curstate.rendermode = kRenderTransAdd;
+		}
+
 		UpdateLocalPlayerLightLevel();
 	}
 
@@ -1852,6 +1874,11 @@ void CStudioModelRenderer::StudioRenderModel(bool mirrored)
 	if ( m_pCurrentEntity->curstate.renderfx == kRenderFxGlowShell )
 	{
 		m_pCurrentEntity->curstate.renderfx = kRenderFxNone;
+
+		if (m_pCurrentEntity->curstate.rendermode != kRenderNormal && m_drawingViewModel) {
+			IEngineStudio.SetForceFaceFlags(STUDIO_NF_ADDITIVE); // the only transparent mode that works for the view model
+		}
+
 		StudioRenderFinal(mirrored);
 		
 		if ( !IEngineStudio.IsHardware() )
@@ -1864,7 +1891,19 @@ void CStudioModelRenderer::StudioRenderModel(bool mirrored)
 		gEngfuncs.pTriAPI->SpriteTexture( m_pChromeSprite, 0 );
 		m_pCurrentEntity->curstate.renderfx = kRenderFxGlowShell;
 
-		StudioRenderFinal(mirrored);
+		if (m_pCurrentEntity->curstate.rendermode != kRenderNormal) {
+			// force small thickness if renderamt is already being used by the rendermode
+			// otherwise glow effects look uninentionally huge if set on a transparent entity
+			int oldAmount = m_pCurrentEntity->curstate.renderamt;
+			m_pCurrentEntity->curstate.renderamt = 1;
+			StudioRenderFinal(mirrored);
+			m_pCurrentEntity->curstate.renderamt = oldAmount;
+		}
+		else {
+			StudioRenderFinal(mirrored);
+		}
+
+		
 		if ( !IEngineStudio.IsHardware() )
 		{
 			gEngfuncs.pTriAPI->RenderMode( kRenderNormal );

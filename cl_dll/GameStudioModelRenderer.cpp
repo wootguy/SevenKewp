@@ -63,6 +63,7 @@ R_StudioDrawPlayer
 */
 int R_StudioDrawPlayer( int flags, entity_state_t *pplayer )
 {
+	g_StudioRenderer.m_drawingViewModel = false;
 	return g_StudioRenderer.StudioDrawPlayer( flags, pplayer );
 }
 
@@ -75,8 +76,9 @@ R_StudioDrawModel
 int R_StudioDrawModel( int flags )
 {
 	cl_entity_t* gunModel = gEngfuncs.GetViewModel();
+	g_StudioRenderer.m_drawingViewModel = IEngineStudio.GetCurrentEntity() == gunModel;
 
-	if (IEngineStudio.GetCurrentEntity() == gunModel) {
+	if (g_StudioRenderer.m_drawingViewModel) {
 		bool isZoomed = gHUD.m_Ammo.IsWeaponZoomed();
 		WEAPON* pw = gHUD.m_Ammo.m_pWeapon;
 

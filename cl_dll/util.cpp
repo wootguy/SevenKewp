@@ -142,3 +142,8 @@ HSPRITE SPR_Load(const char* path) {
 	}
 	return spr;
 }
+
+cl_entity_t* GetLocalPlayer() {
+	static cl_entity_t dummyPlayer; // prevent crashes when map is not loaded
+	return gHUD.m_is_map_loaded ? gEngfuncs.GetLocalPlayer() : &dummyPlayer;
+}

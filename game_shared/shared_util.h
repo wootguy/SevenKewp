@@ -173,3 +173,5 @@ EXPORT int BitIndex(uint32_t mask);
 EXPORT float GetSequenceDuration(studiohdr_t* pstudiohdr, int iseq); // animation time in seconds
 
 EXPORT bool UTIL_ModelIsSprite(int modelidx);
+
+EXPORT int UTIL_GetRenderFxOpacity(int renderfx, int renderamt, float t);
