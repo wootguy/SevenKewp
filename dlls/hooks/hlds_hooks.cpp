@@ -836,6 +836,7 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	}
 	g_clearInventoriesNextMap = true; // set to false by trigger_changelevel
 
+	BuildMovePredData();
 	AddMapPluginEquipment();
 	SetPluginCvars();
 

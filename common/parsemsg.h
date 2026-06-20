@@ -21,11 +21,14 @@
 #ifndef PARSEMSG_H
 #define PARSEMSG_H
 
+#include <stdint.h>
+
 #define ASSERT( x )
 //--------------------------------------------------------------------------------------------------------------
 void BEGIN_READ( void *buf, int size );
 int READ_CHAR( void );
 int READ_BYTE( void );
+void READ_BYTES(uint8_t* bytes, int count);
 int READ_SHORT( void );
 int READ_WORD( void );
 int READ_LONG( void );

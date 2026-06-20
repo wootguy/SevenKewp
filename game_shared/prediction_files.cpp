@@ -1,5 +1,7 @@
 #include "prediction_files.h"
 
+MovePredVars g_movecfg;
+
 // Add any hard-coded file paths used by the client here so that the server can replace them
 const char* g_prediction_files[] = {
 	// footstep sounds
@@ -218,9 +220,16 @@ int __MsgFunc_PredCvars(const char* pszName, int iSize, void* pbuf) {
 	return 1;
 }
 
+int __MsgFunc_PredMove(const char* pszName, int iSize, void* pbuf) {
+	BEGIN_READ(pbuf, iSize);
+	READ_BYTES((uint8_t*)&g_movecfg, sizeof(g_movecfg));
+	return 1;
+}
+
 void HookPredictionMessages() {
 	HOOK_MESSAGE(PredFiles);
 	HOOK_MESSAGE(PredCvars);
+	HOOK_MESSAGE(PredMove);
 }
 
 const char* RemapFile(const char* path) {
@@ -281,4 +290,43 @@ void GeneratePredicionData() {
 	ALERT(buf.eom() ? at_error : at_console, "Prediction file replacement data is %d bytes%s\n", g_predMsgLen + 1, suff);
 }
 
+void BuildMovePredData() {
+	ResetMovePredData();
+
+	g_movecfg.bob.speed = mp_bob_speed.value * 100;
+	g_movecfg.bob.mag = mp_bob_mag.value * 100;
+	g_movecfg.bob.hmin = mp_bob_min.value;
+	g_movecfg.bob.hmax = mp_bob_max.value;
+	g_movecfg.bob.offset = mp_bob_offset.value;
+	g_movecfg.bob.cycle_factor = mp_bob_cycle_factor.value * 100;
+	g_movecfg.bob.airtime_factor = mp_bob_airtime_factor.value * 100;
+
+	g_movecfg.step_size = sv_stepsize->value;
+	g_movecfg.step_speed = mp_step_speed.value;
+	g_movecfg.fall_sound_speed = mp_fall_sound_speed.value;
+	g_movecfg.fall_tilt_speed = mp_fall_tilt_speed.value;
+	g_movecfg.jump_power = mp_jump_power.value;
+
+	if (mp_jump_sound.string[0] && mp_jump_sound.string[0] != '0')
+		g_movecfg.jump_sound = SOUND_INDEX(mp_jump_sound.string);
+}
+
 #endif
+
+void ResetMovePredData() {
+	memset(&g_movecfg, 0, sizeof(g_movecfg));
+
+	g_movecfg.bob.speed = 100;
+	g_movecfg.bob.mag = 100;
+	g_movecfg.bob.hmin = -7;
+	g_movecfg.bob.hmax = 4;
+	g_movecfg.bob.offset = 0;
+	g_movecfg.bob.cycle_factor = 70;
+	g_movecfg.bob.airtime_factor = 0;
+
+	g_movecfg.jump_power = 800;
+	g_movecfg.step_size = 18;
+	g_movecfg.step_speed = 150;
+	g_movecfg.fall_sound_speed = 580;
+	g_movecfg.fall_tilt_speed = 350;
+}

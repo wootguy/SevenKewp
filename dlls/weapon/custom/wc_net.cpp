@@ -133,25 +133,6 @@ int wc_send_netmsg_struct(struct_desc_t& desc, void* dat) {
 	return byteCount;
 }
 
-void READ_BYTES(uint8_t* bytes, int count) {
-#ifdef CLIENT_DLL
-	int longCount = count / 4;
-	int byteCount = count % 4;
-
-	int32_t* longPtr = (int32_t*)bytes;
-	for (int i = 0; i < longCount; i++) {
-		*longPtr = READ_LONG();
-		longPtr++;
-	}
-
-	uint8_t* bytePtr = bytes + longCount * 4;
-	for (int i = 0; i < byteCount; i++) {
-		*bytePtr = READ_BYTE();
-		bytePtr++;
-	}
-#endif
-}
-
 void wc_read_netmsg_struct(struct_desc_t& desc, void* dat, bool isEvent=false) {
 #ifdef CLIENT_DLL
 	int packedBitCount = 0;

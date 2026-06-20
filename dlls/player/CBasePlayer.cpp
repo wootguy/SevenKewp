@@ -6979,6 +6979,10 @@ void CBasePlayer::QueryClientTypeFinished() {
 		WRITE_BYTES(g_predMsgData, g_predMsgLen);
 		MESSAGE_END();
 
+		MESSAGE_BEGIN(MSG_ONE, gmsgPredMove, NULL, pev);
+		WRITE_BYTES((uint8_t*)&g_movecfg, sizeof(g_movecfg));
+		MESSAGE_END();
+
 		UTIL_SendPredictionCvars(this);
 
 		// send replacement file paths (client HUD won't initialize without this)

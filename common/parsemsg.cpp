@@ -73,6 +73,23 @@ int READ_BYTE( void )
 	return c;
 }
 
+void READ_BYTES(uint8_t* bytes, int count) {
+	int longCount = count / 4;
+	int byteCount = count % 4;
+
+	int32_t* longPtr = (int32_t*)bytes;
+	for (int i = 0; i < longCount; i++) {
+		*longPtr = READ_LONG();
+		longPtr++;
+	}
+
+	uint8_t* bytePtr = bytes + longCount * 4;
+	for (int i = 0; i < byteCount; i++) {
+		*bytePtr = READ_BYTE();
+		bytePtr++;
+	}
+}
+
 int READ_SHORT( void )
 {
 	int     c;

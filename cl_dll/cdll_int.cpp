@@ -200,6 +200,8 @@ int CL_DLLEXPORT HUD_VidInit( void )
 
 	VGui_Startup();
 
+	ResetMovePredData();
+
 	is_steam_legacy_engine = CVAR_GET_PTR("sv_allow_shaders") == NULL;
 	is_software_renderer = CVAR_GET_PTR("gl_fog") == NULL;
 

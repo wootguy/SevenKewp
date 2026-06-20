@@ -168,20 +168,24 @@ float V_CalcBob ( struct ref_params_s *pparams )
 	float	cycle;
 	static float	lasttime;
 	vec3_t	vel;
-	
+
+	if (gPlayerSim.cam_thirdperson) {
+		return 0;
+	}
 
 	if ( pparams->onground == -1 ||
 		 pparams->time == lasttime )
 	{
 		// just use old value
-		return bob;	
+		return bob;
 	}
 
 	lasttime = pparams->time;
 
 	bobtime += pparams->frametime;
-	cycle = bobtime - (int)( bobtime / cl_bobcycle->value ) * cl_bobcycle->value;
-	cycle /= cl_bobcycle->value;
+	float bobcycle_dur = cl_bobcycle->value * g_movecfg.bob.speed * 0.01f;
+	cycle = bobtime - (int)( bobtime / bobcycle_dur) * bobcycle_dur;
+	cycle /= bobcycle_dur;
 	
 	if ( cycle < cl_bobup->value )
 	{
@@ -197,10 +201,25 @@ float V_CalcBob ( struct ref_params_s *pparams )
 	VectorCopy( pparams->simvel, vel );
 	vel[2] = 0;
 
-	bob = sqrt( vel[0] * vel[0] + vel[1] * vel[1] ) * cl_bob->value;
-	bob = bob * 0.3 + bob * 0.7 * sin(cycle);
-	bob = V_min( bob, 4.0f );
-	bob = V_max( bob, -7.0f );
+	static float airtime;
+
+	if (!pparams->onground) {
+		airtime = V_min(1.0f, airtime + pparams->frametime * 8); // don't bob while flying
+	}
+	else {
+		airtime = V_max(0.0f, airtime - pparams->frametime * 8);
+	}
+
+	float cycleFactor = V_min(1.0f, g_movecfg.bob.cycle_factor * 0.01f);
+	float speedFactor = 1.0f - cycleFactor;
+	float bobMag = cl_bob->value * g_movecfg.bob.mag * 0.01f;
+	airtime *= g_movecfg.bob.airtime_factor * 0.01f;
+
+	bob = sqrt(vel[0] * vel[0] + vel[1] * vel[1]) * bobMag * (1.0f - airtime);
+	bob = (bob * speedFactor) + (bob * cycleFactor * sin(cycle));
+	bob = V_min(bob, g_movecfg.bob.hmax);
+	bob = V_max(bob, g_movecfg.bob.hmin);
+
 	return bob;
 	
 }
@@ -717,11 +736,11 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	//FIXME		I_Error ("steptime < 0");
 			steptime = 0;
 
-		oldz += steptime * 150;
+		oldz += steptime * g_movecfg.step_speed;
 		if (oldz > pparams->simorg[2])
 			oldz = pparams->simorg[2];
-		if (pparams->simorg[2] - oldz > 18)
-			oldz = pparams->simorg[2]- 18;
+		if (pparams->simorg[2] - oldz > g_movecfg.step_size)
+			oldz = pparams->simorg[2] - g_movecfg.step_size;
 		pparams->vieworg[2] += oldz - pparams->simorg[2];
 		view->origin[2] += oldz - pparams->simorg[2];
 	}

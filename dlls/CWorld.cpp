@@ -223,6 +223,9 @@ void CWorld::Precache(void)
 
 	ClientPrecache();
 
+	if (mp_jump_sound.string[0] && mp_jump_sound.string[0] != '0')
+		PRECACHE_SOUND_NULLENT(mp_jump_sound.string);
+
 	const char* skyname = CVAR_GET_STRING("sv_skyname");
 
 	if (strlen(skyname)) {

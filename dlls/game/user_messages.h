@@ -59,6 +59,7 @@ EXPORT extern int gmsgSpriteAdv; // chumtoad attack
 EXPORT extern int gmsgWaterSplash; // chumtoad attack
 EXPORT extern int gmsgPredFiles; // prediction related file indexes
 EXPORT extern int gmsgPredCvars; // prediction related cvar values
+EXPORT extern int gmsgPredMove; // prediction related movement values
 EXPORT extern int gmsgMatsPath; // path to a custom materials file
 EXPORT extern int gmsgCustomHud; // custom hud dir to load for a weapon
 EXPORT extern int gmsgHudColor; // Set default HUD color

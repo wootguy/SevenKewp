@@ -1,4 +1,29 @@
+#pragma once
 #include <stdint.h>
+
+#pragma pack(push,1)
+struct BobPredVars {
+	uint16_t speed;			// scale factor applied to bob cl_bobcycle (100ths)
+	uint16_t mag;			// scale factor applied to bob cl_bob (100ths)
+	int8_t hmin;			// min bob height
+	int8_t hmax;			// max bob height
+	int8_t offset;			// offset bob center
+	uint8_t cycle_factor;	// how much the bob cycle contributes to the bob value (0-100)
+	uint8_t airtime_factor;	// how much to reduce bobbing while jumping/falling (0-100)
+};
+
+struct MovePredVars {
+	BobPredVars bob;
+	uint8_t step_size;			// sv_stepsize
+	uint16_t step_speed;		// how fast view adjusts upward when climbing a stair (UPS)
+	uint16_t jump_sound;		// sound index to play when jumping
+	uint16_t fall_sound_speed;	// how fast the player needs to be moving to trigger the falling pain sound
+	uint16_t fall_tilt_speed;	// how fast the player needs to be moving to trigger the view tilt effect
+	uint16_t jump_power;		// how much upward velocity is given by jumping.
+};
+#pragma pack(pop)
+
+extern MovePredVars g_movecfg;
 
 extern const char* g_prediction_files[];
 extern const int g_prediction_files_sz;
@@ -18,3 +43,7 @@ const char* RemapFile(const char* path);
 
 // called by the client
 void HookPredictionMessages();
+
+void BuildMovePredData();
+
+void ResetMovePredData();

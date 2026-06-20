@@ -709,14 +709,14 @@ void CL_DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int ac
 			cmd->upmove *= cl_movespeedkey->value;
 		}
 
-		// clip to maxspeed
+		// normalize to maxspeed
 		spd = gEngfuncs.GetClientMaxspeed();
-		if ( spd != 0.0 )
+		if (spd != 0.0 )
 		{
-			// scale the 3 speeds so that the total velocity is not > cl.maxspeed
+			// scale the 3 speeds so that the total velocity matches cl.maxspeed
 			float fmov = sqrt( (cmd->forwardmove*cmd->forwardmove) + (cmd->sidemove*cmd->sidemove) + (cmd->upmove*cmd->upmove) );
-
-			if ( fmov > spd )
+			
+			if (fmov != 0)
 			{
 				float fratio = spd / fmov;
 				cmd->forwardmove *= fratio;
@@ -1016,7 +1016,7 @@ void InitInput (void)
 	cl_upspeed			= gEngfuncs.pfnRegisterVariable ( "cl_upspeed", "320", 0 );
 	cl_forwardspeed		= gEngfuncs.pfnRegisterVariable ( "cl_forwardspeed", "400", FCVAR_ARCHIVE );
 	cl_backspeed		= gEngfuncs.pfnRegisterVariable ( "cl_backspeed", "400", FCVAR_ARCHIVE );
-	cl_sidespeed		= gEngfuncs.pfnRegisterVariable ( "cl_sidespeed", "400", 0 );
+	cl_sidespeed		= gEngfuncs.pfnRegisterVariable ( "cl_sidespeed", "400", FCVAR_ARCHIVE);
 	cl_movespeedkey		= gEngfuncs.pfnRegisterVariable ( "cl_movespeedkey", "0.3", 0 );
 	cl_pitchup			= gEngfuncs.pfnRegisterVariable ( "cl_pitchup", "89", 0 );
 	cl_pitchdown		= gEngfuncs.pfnRegisterVariable ( "cl_pitchdown", "89", 0 );

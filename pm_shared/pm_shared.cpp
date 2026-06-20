@@ -94,12 +94,15 @@ inline uint32_t PLRBIT(int eidx) { return 1 << (eidx & 31); }
 char* strcpy_safe(char* dest, const char* src, size_t size);
 
 #ifdef CLIENT_DLL
+#include "../cl_dll/engine_pv.h"
 #define PLAY_MOVEMENT_SOUND(channel, sample, volume, attenuation, fFlags, pitch) \
 	pmove->PM_PlaySound(channel, sample, volume, attenuation, fFlags, pitch);
+#define INDEX_SOUND(soundIdx) GetSoundByIndex(soundIdx)
 #else
 #define PLAY_MOVEMENT_SOUND(channel, sample, volume, attenuation, fFlags, pitch) \
 	StartSound(pmove->player_index+1, channel, sample, volume, attenuation, fFlags | SND_FL_PREDICTED, \
 		pitch, shared_vec3_origin, 0xffffffff & ~PLRBIT(pmove->player_index+1));
+const char* INDEX_SOUND(int soundIdx);
 #endif
 
 typedef enum
@@ -2706,12 +2709,17 @@ void PM_Jump (void)
 		return; // jumping disabled
 	}
 	if (jumpPower == 0)
-		jumpPower = 800; // default velocity
+		jumpPower = g_movecfg.jump_power; // default velocity
 
 	// In the air now.
     pmove->onground = -1;
 
 	//PM_PreventMegaBunnyJumping();
+
+	if (g_movecfg.jump_sound) {
+		const char* fpath = INDEX_SOUND(g_movecfg.jump_sound);
+		PLAY_MOVEMENT_SOUND(CHAN_VOICE, fpath, 0.5, ATTN_NORM, 0, PITCH_NORM);
+	}
 
 	if ( tfc )
 	{
@@ -2834,16 +2842,14 @@ void PM_CheckWaterJump (void)
 
 void PM_CheckFalling( void )
 {
-	if ( pmove->onground != -1 &&
-		 !pmove->dead &&
-		 pmove->flFallVelocity >= PLAYER_FALL_PUNCH_THRESHHOLD )
+	if ( pmove->onground != -1 && !pmove->dead )
 	{
 		float fvol = 0.5;
 
 		if ( pmove->waterlevel > 0 )
 		{
 		}
-		else if ( pmove->flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED )
+		else if ( pmove->flFallVelocity > g_movecfg.fall_sound_speed )
 		{
 			// NOTE:  In the original game dll , there were no breaks after these cases, causing the first one to 
 			// cascade into the second
@@ -2882,12 +2888,8 @@ void PM_CheckFalling( void )
 
 			fvol = 0.85;
 		}
-		else if ( pmove->flFallVelocity < PLAYER_MIN_BOUNCE_SPEED )
-		{
-			fvol = 0;
-		}
 
-		if ( fvol > 0.0 )
+		if (pmove->flFallVelocity >= g_movecfg.fall_tilt_speed && fvol > 0.0 )
 		{
 			// Play landing step right away
 			pmove->flTimeStepSound = 0;

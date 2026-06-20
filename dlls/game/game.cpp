@@ -116,6 +116,19 @@ cvar_t  mp_survival_supported = { "mp_survival_supported", "0", FCVAR_SERVER, 0,
 cvar_t  mp_survival_starton = { "mp_survival_starton", "0", FCVAR_SERVER, 0, 0 };
 cvar_t  mp_survival_restart = { "mp_survival_restart", "0", FCVAR_SERVER, 0, 0 };
 
+cvar_t mp_bob_speed = { "mp_bob_speed", "1", FCVAR_SERVER, 0, 0 };
+cvar_t mp_bob_mag = { "mp_bob_mag", "1", FCVAR_SERVER, 0, 0 };
+cvar_t mp_bob_min = { "mp_bob_min", "-7", FCVAR_SERVER, 0, 0 };
+cvar_t mp_bob_max = { "mp_bob_max", "4", FCVAR_SERVER, 0, 0 };
+cvar_t mp_bob_offset = { "mp_bob_offset", "0", FCVAR_SERVER, 0, 0 };
+cvar_t mp_bob_cycle_factor = { "mp_bob_cycle_factor", "0.7", FCVAR_SERVER, 0, 0 };
+cvar_t mp_bob_airtime_factor = { "mp_bob_airtime_factor", "0", FCVAR_SERVER, 0, 0 };
+cvar_t mp_step_speed = { "mp_step_speed", "150", FCVAR_SERVER, 0, 0 };
+cvar_t mp_jump_sound = { "mp_jump_sound", "", FCVAR_SERVER, 0, 0 };
+cvar_t mp_fall_sound_speed = { "mp_fall_sound_speed", "580", FCVAR_SERVER, 0, 0 };
+cvar_t mp_fall_tilt_speed = { "mp_fall_tilt_speed", "350", FCVAR_SERVER, 0, 0 };
+cvar_t mp_jump_power = { "mp_jump_power", "800", FCVAR_SERVER, 0, 0 };
+
 // Engine Cvars
 cvar_t 	*g_psv_gravity = NULL;
 cvar_t	*g_psv_aim = NULL;
@@ -599,6 +612,19 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_survival_supported);
 	CVAR_REGISTER (&mp_survival_starton);
 	CVAR_REGISTER (&mp_survival_restart);
+
+	CVAR_REGISTER (&mp_bob_speed);
+	CVAR_REGISTER (&mp_bob_mag);
+	CVAR_REGISTER (&mp_bob_min);
+	CVAR_REGISTER (&mp_bob_max);
+	CVAR_REGISTER (&mp_bob_offset);
+	CVAR_REGISTER (&mp_bob_cycle_factor);
+	CVAR_REGISTER (&mp_bob_airtime_factor);
+	CVAR_REGISTER (&mp_step_speed);
+	CVAR_REGISTER (&mp_jump_sound);
+	CVAR_REGISTER (&mp_fall_sound_speed);
+	CVAR_REGISTER (&mp_fall_tilt_speed);
+	CVAR_REGISTER (&mp_jump_power);
 
 	RegisterSkillCvars();
 

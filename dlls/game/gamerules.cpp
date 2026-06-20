@@ -129,6 +129,7 @@ StringSet timeCriticalCvars = {
 	"mp_bigmap",
 	"mp_default_medkit",
 	"mp_weaponhands",
+	"mp_jump_sound",
 
 	// to decide if the map skill file should be skipped
 	"mp_skill_allow",
@@ -243,6 +244,18 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"mp_one_pickup_per_player",
 		"mp_keep_inventory",
 		"mp_use_only_pickups",
+		"mp_bob_speed",
+		"mp_bob_mag",
+		"mp_bob_min",
+		"mp_bob_max",
+		"mp_bob_offset",
+		"mp_bob_cycle_factor",
+		"mp_bob_airtime_factor",
+		"mp_step_speed",
+		"mp_jump_sound",
+		"mp_fall_sound_speed",
+		"mp_fall_tilt_speed",
+		"mp_jump_power",
 	};
 
 	static StringSet itemNames = {
@@ -477,7 +490,11 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 
 			// must know this value now to know what to precache during this frame
 			if (timeCriticalCvars.hasKey(name.c_str())) {
-				if (name == "mp_weaponhands") {
+				static StringSet cvarStrs = {
+					"mp_weaponhands", "mp_jump_sound"
+				};
+
+				if (cvarStrs.hasKey(name.c_str())) {
 					CVAR_SET_STRING(name.c_str(), value.c_str());
 				}
 				else {

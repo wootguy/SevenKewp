@@ -103,6 +103,19 @@ EXPORT extern cvar_t	mp_keep_inventory; // 1 = players add their previous map in
 EXPORT extern cvar_t	mp_use_only_pickups; // 1 = all pickups will be forced into use-only mode
 EXPORT extern cvar_t	mp_barnacle_paralyze; // 1 = can't use weapons while being barnacled
 
+EXPORT extern cvar_t mp_bob_speed;			// scales cl_bobcycle
+EXPORT extern cvar_t mp_bob_mag;			// scales cl_bob
+EXPORT extern cvar_t mp_bob_min;			// min bob height
+EXPORT extern cvar_t mp_bob_max;			// max bob height
+EXPORT extern cvar_t mp_bob_offset;			// bob center adjustment
+EXPORT extern cvar_t mp_bob_cycle_factor;	// how much bob cycle contributes to bob value (0-1)
+EXPORT extern cvar_t mp_bob_airtime_factor;	// how much airtime reduces bob magnitude (0-1)
+EXPORT extern cvar_t mp_step_speed;			// how fast view rises when climbing stairs
+EXPORT extern cvar_t mp_jump_sound;			// sound to play when jumping
+EXPORT extern cvar_t mp_fall_sound_speed;	// how fast the player needs to be falling to trigger the land sound
+EXPORT extern cvar_t mp_fall_tilt_speed;	// how fast the player needs to be falling to trigger the view tilt effect
+EXPORT extern cvar_t mp_jump_power;			// how high players can jump (SevenKewp clients only)
+
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.
 EXPORT extern cvar_t	mp_objectboost;
