@@ -10,6 +10,7 @@ enum WC_PARAM_TYPE {
 	WC_PARAM_UINT8_ENUM,	// enum value stored in an 8-bit int
 	WC_PARAM_UINT8_ARRAY_32,// array of up to 32 uint8_t
 	WC_PARAM_INT8_ARRAY_32, // array of up to 32 int8_t
+	WC_PARAM_INT16_ARRAY_32, // array of up to 32 int16_t
 	WC_PARAM_UINT16,
 	WC_PARAM_UINT16_FLAGS,
 	WC_PARAM_UINT16_D100,	// unsigned 100ths of an int (+/-327 accurate to 0.01)
@@ -29,7 +30,7 @@ enum WC_PARAM_TYPE {
 	WC_PARAM_VEC3_SD1000,			// vector as an array of signed 1000ths. (+/-32 accurate to 0.001)
 	WC_PARAM_SOUND_INDEX,			// sound file path stored as an index
 	WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2,// array of up to 8 sound indexes, one sound per config line, with key naming starting at index 2
-	WC_PARAM_UINT16_D100_ARRAY_8,	// array of up to 8 D100 ints
+	WC_PARAM_UINT16_D100_ARRAY_32,	// array of up to 32 D100 ints
 	WC_PARAM_MODEL_INDEX,			// model file path stored as an index
 	WC_PARAM_DECAL_INDEX,			// texture name stored as a decal index
 	WC_PARAM_STRING_DELTA,			// string stored as a delta index for the string delta networking system

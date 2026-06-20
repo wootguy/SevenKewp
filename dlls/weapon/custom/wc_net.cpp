@@ -107,7 +107,8 @@ int wc_send_netmsg_struct(struct_desc_t& desc, void* dat) {
 			byteCount += 1 + arr->arrSz;
 			break;
 		}
-		case WC_PARAM_UINT16_D100_ARRAY_8:
+		case WC_PARAM_INT16_ARRAY_32:
+		case WC_PARAM_UINT16_D100_ARRAY_32:
 		case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2: {
 			WepEvtArr16* arr = (WepEvtArr16*)fieldDat;
 			WRITE_BYTE(arr->arrSz);
@@ -263,7 +264,8 @@ void wc_read_netmsg_struct(struct_desc_t& desc, void* dat, bool isEvent=false) {
 			byteCount += 1 + sz;
 			break;
 		}
-		case WC_PARAM_UINT16_D100_ARRAY_8:
+		case WC_PARAM_INT16_ARRAY_32:
+		case WC_PARAM_UINT16_D100_ARRAY_32:
 		case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2: {
 			uint8_t sz = READ_BYTE();
 			*fieldDat = sz;

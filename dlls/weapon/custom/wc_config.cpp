@@ -158,7 +158,8 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 		}
 		break;
 	}
-	case WC_PARAM_UINT16_D100_ARRAY_8: {
+	case WC_PARAM_INT16_ARRAY_32:
+	case WC_PARAM_UINT16_D100_ARRAY_32: {
 		WepEvtArr16* arr = (WepEvtArr16*)dat;
 		vector<string> parts = splitString(val, " ");
 		memset(arr->arr, 0, sizeof(arr->arr));
@@ -167,13 +168,16 @@ void wc_read_field(const char* fname, SettingsGroup& group, void* dat, const cha
 			if (parts[i].empty())
 				continue;
 
-			if (i >= MAX_WC_RANDOM_SELECTION) {
+			if (i >= MAX_WC_ARR_LEN) {
 				ALERT(at_error, "%s (line %d): Too many values in key '%s' for group '%s'.\n",
 					fname, group.lineno, name, group.name.c_str());
 				break;
 			}
 
-			arr->arr[arr->arrSz++] = wc_parse_dx_int(parts[i], 100);
+			if (ptype == WC_PARAM_INT16_ARRAY_32) 
+				arr->arr[arr->arrSz++] = wc_get_int(parts[i].c_str());
+			else
+				arr->arr[arr->arrSz++] = wc_parse_dx_int(parts[i], 100);
 		}
 		break;
 	}
@@ -409,12 +413,16 @@ void wc_fwrite_field(FILE* f, void* dat, const char* name, int ptype, field_desc
 		fprintf(f, "\n");
 		break;
 	}
-	case WC_PARAM_UINT16_D100_ARRAY_8: {
+	case WC_PARAM_INT16_ARRAY_32:
+	case WC_PARAM_UINT16_D100_ARRAY_32: {
 		WepEvtArr16* arr = (WepEvtArr16*)dat;
-		for (int i = 0; i < MAX_WC_RANDOM_SELECTION && i < arr->arrSz; i++) {
+		for (int i = 0; i < MAX_WC_ARR_LEN && i < arr->arrSz; i++) {
 			if (i != 0)
 				fprintf(f, " ");
-			fprintf_float(f, 100, arr->arr[i]);
+			if (ptype == WC_PARAM_INT16_ARRAY_32)
+				fprintf(f, "%d", (int16_t)arr->arr[i]);
+			else
+				fprintf_float(f, 100, arr->arr[i]);
 		}
 		fprintf(f, "\n");
 		break;
@@ -1000,6 +1008,10 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params, 
 	if (params.erToggle.stateBits) {
 		params.erToggle.hasToggleInfo = params.erToggle.stateBits != 0;
 		params.erToggle.hasZoomInfo = params.erToggle.zoomLevels != 0;
+	}
+
+	if (!params.displayName) {
+		ALERT(at_error, "Display name missing in config: %s\n", path);
 	}
 
 	if (params.flags & FL_WC_WEP_HAS_STATE_SPRITE) {

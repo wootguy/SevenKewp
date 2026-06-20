@@ -31,6 +31,7 @@ EXPORT void UTIL_PlayRicochetSound(edict_t* ent);
 EXPORT void UTIL_PrecacheLargeWorldEffects();
 
 EXPORT void	UTIL_BloodStream(const Vector& origin, const Vector& direction, int color, int amount);
+EXPORT void	UTIL_BloodSprite(const Vector& origin, int spriteIdx1, int spriteIdx2, int color, int scale);
 EXPORT void	UTIL_BloodDrips(const Vector& origin, const Vector& direction, int color, int amount);
 EXPORT void	UTIL_Bubbles(Vector mins, Vector maxs, int count, int height=0, int sprIdx=0, int speed=8);
 EXPORT void	UTIL_BubbleTrail(Vector from, Vector to, int count);

@@ -830,39 +830,15 @@ void UTIL_BloodStream(const Vector& origin, const Vector& direction, int color, 
 	MESSAGE_END();
 }
 
-void UTIL_BloodDrips(const Vector& origin, const Vector& direction, int color, int amount)
-{
-	if (!UTIL_ShouldShowBlood(color))
-		return;
-
-	if (color == DONT_BLEED || amount == 0)
-		return;
-
-	if (g_Language == LANGUAGE_GERMAN && color == BloodColorHuman())
-		color = 0;
-
-	if (g_pGameRules->IsMultiplayer())
-	{
-		// scale up blood effect in multiplayer for better visibility
-		amount *= 2;
-	}
-
-	amount *= mp_blood_scale.value;
-	int max = clampi(255 * mp_blood_scale.value, 0, 255);
-
-	if (amount > max)
-		amount = max;
-
-	int scale = V_min(V_max(3, amount / 10), 16);
-
+void UTIL_BloodSprite(const Vector& origin, int spriteIdx1, int spriteIdx2, int color, int scale) {
 	if (UTIL_IsValidTempEntOrigin(origin)) {
 		MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, origin);
 		WRITE_BYTE(TE_BLOODSPRITE);
 		WRITE_COORD(origin.x);								// pos
 		WRITE_COORD(origin.y);
 		WRITE_COORD(origin.z);
-		WRITE_SHORT(g_sModelIndexBloodSpray);				// initial sprite model
-		WRITE_SHORT(g_sModelIndexBloodDrop);				// droplet sprite models
+		WRITE_SHORT(spriteIdx1);				// initial sprite model
+		WRITE_SHORT(spriteIdx2);				// droplet sprite models
 		WRITE_BYTE(color);								// color index into host_basepal
 		WRITE_BYTE(scale);		// size
 		MESSAGE_END();
@@ -881,8 +857,8 @@ void UTIL_BloodDrips(const Vector& origin, const Vector& direction, int color, i
 				if (UTIL_TestPVS(origin, plr->edict())) {
 					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgBloodSprite2, origin, plr->edict());
 					WRITE_FAR_VECTOR(origin);
-					WRITE_SHORT(g_sModelIndexBloodSpray);
-					WRITE_SHORT(g_sModelIndexBloodDrop);
+					WRITE_SHORT(spriteIdx1);
+					WRITE_SHORT(spriteIdx2);
 					WRITE_BYTE(color);
 					WRITE_BYTE(scale);
 					MESSAGE_END();
@@ -912,6 +888,34 @@ void UTIL_BloodDrips(const Vector& origin, const Vector& direction, int color, i
 			tent->h_ent = drip;
 		}
 	}
+}
+
+void UTIL_BloodDrips(const Vector& origin, const Vector& direction, int color, int amount)
+{
+	if (!UTIL_ShouldShowBlood(color))
+		return;
+
+	if (color == DONT_BLEED || amount == 0)
+		return;
+
+	if (g_Language == LANGUAGE_GERMAN && color == BloodColorHuman())
+		color = 0;
+
+	if (g_pGameRules->IsMultiplayer())
+	{
+		// scale up blood effect in multiplayer for better visibility
+		amount *= 2;
+	}
+
+	amount *= mp_blood_scale.value;
+	int max = clampi(255 * mp_blood_scale.value, 0, 255);
+
+	if (amount > max)
+		amount = max;
+
+	int scale = V_min(V_max(3, amount / 10), 16);
+
+	UTIL_BloodSprite(origin, g_sModelIndexBloodSpray, g_sModelIndexBloodDrop, color, scale);
 }
 
 void UTIL_BloodDecalTrace(TraceResult* pTrace, int bloodColor)

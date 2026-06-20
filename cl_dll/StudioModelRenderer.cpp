@@ -1204,33 +1204,6 @@ int CStudioModelRenderer::StudioDrawModel( int flags, bool mirrored, CustomWeapo
 	IEngineStudio.GetViewInfo( m_vRenderOrigin, m_vUp, m_vRight, m_vNormal );
 	IEngineStudio.GetAliasScale( &m_fSoftwareXScale, &m_fSoftwareYScale );
 
-	if (m_drawingViewModel) {
-		cl_entity_t* localPlayer = GetLocalPlayer();
-
-		// apply player render mode to held weapon.
-		// TODO: this doesn't work for anything except glow shells and additive mode.
-		// The engine seems to apply and persist OpenGL state before the studio api is called,
-		// and it can't be updated even right before DrawPoints. The view model doesn't use curstate
-		// like all other entities, so unless you can find the blend mode variables in the engine dll,
-		// you'll have to reimplement view model rendering using a new server ent. Setting entity
-		// state before the studio API is called also didn't work.
-		m_pCurrentEntity->curstate.rendermode = localPlayer->curstate.rendermode;
-		m_pCurrentEntity->curstate.renderamt = localPlayer->curstate.renderamt;
-		m_pCurrentEntity->curstate.renderfx = localPlayer->curstate.renderfx;
-		m_pCurrentEntity->curstate.rendercolor = localPlayer->curstate.rendercolor;
-
-		if (m_pCurrentEntity->curstate.renderfx == kRenderFxGlowShell) {
-			// the glow effect is annoying at high thicknes
-			m_pCurrentEntity->curstate.renderamt = V_min(m_pCurrentEntity->curstate.renderamt, 1);
-		}
-		if (m_pCurrentEntity->curstate.rendermode != kRenderNormal) {
-			// additive mode is the only transparent mode that works. Better than nothing.
-			m_pCurrentEntity->curstate.rendermode = kRenderTransAdd;
-		}
-
-		UpdateLocalPlayerLightLevel();
-	}
-
 	if (m_pCurrentEntity->curstate.renderfx == kRenderFxDeadPlayer)
 	{
 		entity_state_t deadplayer;
@@ -1317,6 +1290,31 @@ int CStudioModelRenderer::StudioDrawModel( int flags, bool mirrored, CustomWeapo
 
 	if (flags & STUDIO_RENDER)
 	{
+		if (m_drawingViewModel) {
+			cl_entity_t* localPlayer = GetLocalPlayer();
+
+			// apply player render mode to held weapon.
+			// TODO: this doesn't work for anything except glow shells and additive mode.
+			// The engine seems to apply and persist OpenGL state before the studio api is called,
+			// and it can't be updated even right before DrawPoints. The view model doesn't use curstate
+			// like all other entities, so unless you can find the blend mode variables in the engine dll,
+			// you'll have to reimplement view model rendering using a new server ent. Setting entity
+			// state before the studio API is called also didn't work.
+			m_pCurrentEntity->curstate.rendermode = localPlayer->curstate.rendermode;
+			m_pCurrentEntity->curstate.renderamt = localPlayer->curstate.renderamt;
+			m_pCurrentEntity->curstate.renderfx = localPlayer->curstate.renderfx;
+			m_pCurrentEntity->curstate.rendercolor = localPlayer->curstate.rendercolor;
+
+			if (m_pCurrentEntity->curstate.renderfx == kRenderFxGlowShell) {
+				// the glow effect is annoying at high thicknes
+				m_pCurrentEntity->curstate.renderamt = V_min(m_pCurrentEntity->curstate.renderamt, 1);
+			}
+			if (m_pCurrentEntity->curstate.rendermode != kRenderNormal) {
+				// additive mode is the only transparent mode that works. Better than nothing.
+				m_pCurrentEntity->curstate.rendermode = kRenderTransAdd;
+			}
+		}
+
 		m_currentLighting.plightvec = dir;
 		IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &m_currentLighting);
 
@@ -1324,6 +1322,13 @@ int CStudioModelRenderer::StudioDrawModel( int flags, bool mirrored, CustomWeapo
 
 		// model and frame independant
 		IEngineStudio.StudioSetupLighting (&m_currentLighting);
+
+		if (m_drawingViewModel) {
+			UpdateLocalPlayerLightLevel(m_currentLighting);
+		}
+		if (flags & STUDIO_LIGHTING_ONLY) {
+			return 0;
+		}
 
 		// get remap colors
 #if defined( _TFC )
@@ -1601,11 +1606,6 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 	IEngineStudio.GetViewInfo( m_vRenderOrigin, m_vUp, m_vRight, m_vNormal );
 	IEngineStudio.GetAliasScale( &m_fSoftwareXScale, &m_fSoftwareYScale );
 
-	cl_entity_t* localPlayer = GetLocalPlayer();
-	if (pplayer->number == localPlayer->index) {
-		UpdateLocalPlayerLightLevel();
-	}
-
 	m_nPlayerIndex = pplayer->number - 1;
 
 	if (m_nPlayerIndex < 0 || m_nPlayerIndex >= gEngfuncs.GetMaxClients())
@@ -1728,6 +1728,11 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 
 		// model and frame independant
 		IEngineStudio.StudioSetupLighting (&m_currentLighting);
+
+		cl_entity_t* localPlayer = GetLocalPlayer();
+		if (pplayer->number == localPlayer->index && gPlayerSim.cam_thirdperson) {
+			UpdateLocalPlayerLightLevel(m_currentLighting);
+		}
 
 		m_pPlayerInfo = IEngineStudio.PlayerInfo( m_nPlayerIndex );
 
@@ -1985,14 +1990,10 @@ void CStudioModelRenderer::StudioRenderFinal(bool mirrored)
 	IEngineStudio.RestoreRenderer();
 }
 
-void CStudioModelRenderer::UpdateLocalPlayerLightLevel() {
-	IEngineStudio.StudioDynamicLight(m_pCurrentEntity, &m_currentLighting);
-	IEngineStudio.StudioEntityLight(&m_currentLighting);
-	IEngineStudio.StudioSetupLighting(&m_currentLighting);
-
-	gPlayerSim.light_level = m_currentLighting.ambientlight + m_currentLighting.shadelight;
-	gPlayerSim.light_color.r = gPlayerSim.light_level * m_currentLighting.color.x;
-	gPlayerSim.light_color.g = gPlayerSim.light_level * m_currentLighting.color.y;
-	gPlayerSim.light_color.b = gPlayerSim.light_level * m_currentLighting.color.z;
+void CStudioModelRenderer::UpdateLocalPlayerLightLevel(alight_t& alight) {
+	gPlayerSim.light_level = alight.ambientlight + alight.shadelight;
+	gPlayerSim.light_color.r = gPlayerSim.light_level * alight.color.x;
+	gPlayerSim.light_color.g = gPlayerSim.light_level * alight.color.y;
+	gPlayerSim.light_color.b = gPlayerSim.light_level * alight.color.z;
 }
 

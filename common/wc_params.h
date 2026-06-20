@@ -47,6 +47,7 @@
 #define FL_WC_SHOOT_NEED_FULL_COST 16	// don't allow attack if clip is less than ammo cost
 #define FL_WC_SHOOT_NO_AUTOFIRE 32		// one shot per click
 #define FL_WC_SHOOT_IS_MELEE 64			// use server-side crowbar attack logic
+#define FL_WC_SHOOT_FIRST_SHOT_ACCURACY 128	// use first shot accuracy values for first attack
 
 #define FL_WC_CHARGE_DAMAGE		1		// attack charge progress scales damage events
 #define FL_WC_CHARGE_KICKBACK	2		// attack charge progress scales kickback events
@@ -178,6 +179,7 @@ struct CustomWeaponShootOpts {
 	uint16_t emptySound;		// custom empty click sound
 	uint16_t cooldown;			// time between attacks (milliseconds)
 	uint16_t accuracy[2];		// horizontal+vertical accuracy for crosshair (degrees * 100)
+	uint16_t accuracyFirst[2];  // accuracy for the first shot fired
 	uint16_t chamberTime;		// if set, chambering is required if the weapon is switched before waiting this long after the attack
 
 	uint8_t hasCooldownOverride[WC_COOLDOWN_TYPES];		// 1 bit conditions for networking
@@ -281,8 +283,8 @@ struct ViewModelSprite {
 	int w, h;
 	float scale; // sprite scale
 	WepEvtArr8 anim;
-	WepEvtArr8 animOfsX;
-	WepEvtArr8 animOfsY;
+	WepEvtArr16 animOfsX;
+	WepEvtArr16 animOfsY;
 	uint16_t fps;
 	uint32_t animTime;
 	float bobTime; // view bobbing progress
@@ -315,6 +317,8 @@ struct CustomWeaponParams {
 
 	dstring_t vsprite_path; // path a to a sprite that only the client needs to load
 	uint16_t vsprite_base_scale; // base scaling applied to view HUD sprite. HL25 scaling applied in addition
+	int8_t vsprite_offset_x;
+	int8_t vsprite_offset_y;
 
 	// data for file parsing (not networked)
 	WeaponCustomAmmoInfo ammoInfo[2];

@@ -90,7 +90,12 @@ int R_StudioDrawModel( int flags )
 		ViewModelSprite* spr = GetSpriteWeaponState();
 		if (spr && spr->hSprite) {
 			// don't render the model, just run enough logic to update lighting for the sprite
-			flags &= ~(STUDIO_RENDER | STUDIO_EVENTS);
+			if (flags & STUDIO_RENDER) {
+				flags |= STUDIO_LIGHTING_ONLY;
+			}
+			else {
+				return 0;
+			}
 		}
 		
 		int modelIdx = GetActiveCustomWeaponViewModel();

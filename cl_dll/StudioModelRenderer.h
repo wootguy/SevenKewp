@@ -11,6 +11,8 @@
 #pragma once
 #endif
 
+#define STUDIO_LIGHTING_ONLY 256 // calculate lighting for render, but don't draw the model
+
 struct CustomWeaponParams;
 
 /*
@@ -102,7 +104,7 @@ public:
 	// true if all meshes in this submodel use fullbright textures
 	virtual bool IsFullBrightSubModel(mstudiomodel_t* m_pSubModel, int skin);
 
-	virtual void UpdateLocalPlayerLightLevel();
+	virtual void UpdateLocalPlayerLightLevel(alight_t& alight);
 
 public:
 

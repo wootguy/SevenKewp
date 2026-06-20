@@ -134,6 +134,8 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("v_model", NULL, defaultModelV, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("v_sprite", NULL, defaultSpriteV, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("v_sprite_scale", "0", vsprite_base_scale, 0, WC_PARAM_UINT16_D100),
+			WEP_FIELD("v_sprite_offset_x", "0", vsprite_offset_x, 0, WC_PARAM_INT8),
+			WEP_FIELD("v_sprite_offset_y", "0", vsprite_offset_y, 0, WC_PARAM_INT8),
 			WEP_FIELD("p_model", NULL, defaultModelP, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("p_model_akimbo", NULL, pmodelAkimbo, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("w_model", NULL, defaultModelW, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
@@ -199,6 +201,7 @@ void init_weapon_struct_fields() {
 		flags[BitIndex(FL_WC_SHOOT_NEED_AKIMBO)] = "akimbo_only";
 		flags[BitIndex(FL_WC_SHOOT_NEED_FULL_COST)] = "need_full_cost";
 		flags[BitIndex(FL_WC_SHOOT_NO_AUTOFIRE)] = "no_autofire";
+		flags[BitIndex(FL_WC_SHOOT_FIRST_SHOT_ACCURACY)] = "first_shot_accuracy";
 		//flags[BitIndex(FL_WC_SHOOT_IS_MELEE)] = "is_melee";
 
 		static const char* ammoPools[32];
@@ -283,6 +286,7 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("charge_move_speed", "0", shootOpts[0].chargeMoveSpeedMult, 0, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_NETWORK),
 			
 			WEP_FIELD("accuracy", "0", shootOpts[0].accuracy, 0, WC_PARAM_VEC2_SD100),
+			WEP_FIELD("first_shot_accuracy", "0", shootOpts[0].accuracyFirst, 0, WC_PARAM_VEC2_SD100),
 
 			WEP_FIELD("hasac0", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_FLY], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("hasac1", "0", shootOpts[0].hasAccMult[WC_ACCURACY_MULT_SWIM], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
@@ -381,6 +385,7 @@ void init_event_fields() {
 
 		static const char* flags[32];
 		flags[BitIndex(FL_WC_SOUND_CHARGE_PITCH)] = "chargeup_pitch";
+		flags[BitIndex(FL_WC_SOUND_USER_ORIGIN)] = "user_origin";
 
 		static const char* channel_names[8];
 		channel_names[CHAN_AUTO] = "auto";
@@ -476,10 +481,10 @@ void init_event_fields() {
 		);
 
 		EVT_DESC(WC_EVT_RECOIL_CSTRIKE, "recoil_cstrike",
-			EVT_FIELD("recoil_flying", "0", recoil_cstrike.flyingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_8, NULL, 0, FL_FIELD_NO_NETWORK),
-			EVT_FIELD("recoil_moving", "0", recoil_cstrike.movingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_8, NULL, 0, FL_FIELD_NO_NETWORK),
-			EVT_FIELD("recoil_standing", "0", recoil_cstrike.standingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_8, NULL, 0, FL_FIELD_NO_NETWORK),
-			EVT_FIELD("recoil_ducking", "0", recoil_cstrike.duckingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_8, NULL, 0, FL_FIELD_NO_NETWORK),
+			EVT_FIELD("recoil_flying", "0", recoil_cstrike.flyingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_32, NULL, 0, FL_FIELD_NO_NETWORK),
+			EVT_FIELD("recoil_moving", "0", recoil_cstrike.movingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_32, NULL, 0, FL_FIELD_NO_NETWORK),
+			EVT_FIELD("recoil_standing", "0", recoil_cstrike.standingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_32, NULL, 0, FL_FIELD_NO_NETWORK),
+			EVT_FIELD("recoil_ducking", "0", recoil_cstrike.duckingCfg, 0, WC_PARAM_UINT16_D100_ARRAY_32, NULL, 0, FL_FIELD_NO_NETWORK),
 
 			EVT_FIELD("flying_0", "0", recoil_cstrike.flying[0], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
 			EVT_FIELD("flying_1", "0", recoil_cstrike.flying[1], 10, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_NO_CFG),
@@ -545,6 +550,7 @@ void init_event_fields() {
 	{
 		static const char* flags[8];
 		flags[BitIndex(FL_WC_BULLETS_DYNAMIC_SPREAD)] = "dynamic_spread";
+		flags[BitIndex(FL_WC_BULLETS_FIRST_SHOT_ACCURACY)] = "first_shot_accuracy";
 		flags[BitIndex(FL_WC_BULLETS_NO_DECAL)] = "no_decal";
 		flags[BitIndex(FL_WC_BULLETS_NO_SOUND)] = "no_sound";
 		flags[BitIndex(FL_WC_BULLETS_NO_PARTICLES)] = "no_particles";
@@ -570,16 +576,18 @@ void init_event_fields() {
 			EVT_FIELD("has_range", "0", bullets.hasRange, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT_FIELD("has_water_damage", "0", bullets.hasWaterDamage, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			EVT_FIELD("has_water_range", "0", bullets.hasWaterRange, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
-			EVT_FIELD("has_burst_delay", "0", bullets.hasBurstDelay, 5, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("has_damage_rand", "0", bullets.hasBurstDelay, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			EVT_FIELD("has_burst_delay", "0", bullets.hasDamageRand, 4, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			
 			EVT_FIELD("damage", "0", bullets.damage, 0, WC_PARAM_UINT16),
+			EVT_FIELD("damage_randomness", "0", bullets.damageRand, 0, WC_PARAM_UINT8, NULL, 0, 0, EVT_COND_BYTE(bullets.hasDamageRand)),
 			EVT_FIELD("damage_water", "0", bullets.damageWater, 0, WC_PARAM_UINT16, NULL, 0, 0, EVT_COND_BYTE(bullets.hasWaterDamage)),
 			EVT_FIELD("max_range", "0", bullets.maxRange, 0, WC_PARAM_UINT16, NULL, 0, 0, EVT_COND_BYTE(bullets.hasRange)),
 			EVT_FIELD("max_range_water", "0", bullets.maxRangeWater, 0, WC_PARAM_UINT16, NULL, 0, 0, EVT_COND_BYTE(bullets.hasWaterDamage)),
 			EVT_FIELD("burst_delay", "0", bullets.burstDelay, 0, WC_PARAM_TIME, NULL, 0, 0, EVT_COND_BYTE(bullets.hasBurstDelay)),
 		
-			EVT_FLAGS("flags", "0", bullets.flags, 4, flags),
-			EVT__ENUM("flash_size", "normal", bullets.flashSz, 4, flash_size_names),
+			EVT_FLAGS("flags", "0", bullets.flags, 6, flags),
+			EVT__ENUM("flash_size", "normal", bullets.flashSz, 2, flash_size_names),
 			EVT__ENUM("tracer_color", "default", bullets.tracerColor, 4, bullet_color_names),
 			EVT_FIELD("tracer_frequency", "0", bullets.tracerFreq, 4, WC_PARAM_UINT8),
 		);
@@ -964,8 +972,8 @@ void init_event_fields() {
 
 	EVT_DESC(WC_EVT_WEP_SPR_ANIM, "weapon_sprite_anim",
 		EVT_FIELD("frames", "0", wep_sprite_anim.frames, 0, WC_PARAM_UINT8_ARRAY_32, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
-		EVT_FIELD("offset_x", "0", wep_sprite_anim.frameOffsetX, 0, WC_PARAM_INT8_ARRAY_32),
-		EVT_FIELD("offset_y", "0", wep_sprite_anim.frameOffsetY, 0, WC_PARAM_INT8_ARRAY_32),
+		EVT_FIELD("offset_x", "0", wep_sprite_anim.frameOffsetX, 0, WC_PARAM_INT16_ARRAY_32),
+		EVT_FIELD("offset_y", "0", wep_sprite_anim.frameOffsetY, 0, WC_PARAM_INT16_ARRAY_32),
 		EVT_FIELD("fps", "100", wep_sprite_anim.fps, 0, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 	);
 }
@@ -1372,11 +1380,13 @@ int wc_get_field_bytes(field_desc_t& field) {
 	case WC_PARAM_INT32_VEC3_SD1000:
 		return 12;
 	case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2:
-	case WC_PARAM_UINT16_D100_ARRAY_8:
 		return 17;
 	case WC_PARAM_INT8_ARRAY_32:
 	case WC_PARAM_UINT8_ARRAY_32:
 		return 33;
+	case WC_PARAM_UINT16_D100_ARRAY_32:
+	case WC_PARAM_INT16_ARRAY_32:
+		return 65;
 	default:
 		ALERT(at_error, "Unknown field type size for %d\n", field.type);
 		return 0;
@@ -1448,7 +1458,7 @@ std::string wc_get_field_str(field_desc_t& field, uint8_t* dat) {
 
 		return ret.c_str();
 	}
-	case WC_PARAM_UINT16_D100_ARRAY_8:
+	case WC_PARAM_UINT16_D100_ARRAY_32:
 	case WC_PARAM_SOUND_INDEX_ARRAY_8_IDX2: {
 		WepEvtArr16* arr = (WepEvtArr16*)dat;
 		return UTIL_VarArgs("(%d sz: %d %d %d %d %d %d %d %d)",

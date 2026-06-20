@@ -252,6 +252,14 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 		D100_TO_FLOAT(evt.bullets.accuracy[1])
 	);
 
+	if ((evt.bullets.flags & FL_WC_BULLETS_FIRST_SHOT_ACCURACY) && m_weapon->m_iShotsFired == 1) {
+		CustomWeaponShootOpts& opts = m_weapon->GetShootOpts(evt.attackIdx);
+		spread = UTIL_ConeFromDegrees(
+			D100_TO_FLOAT(opts.accuracyFirst[0]),
+			D100_TO_FLOAT(opts.accuracyFirst[1])
+		);
+	}
+
 	if (evt.bullets.flags & FL_WC_BULLETS_DYNAMIC_SPREAD) {
 		spread = spread * GetCurrentAccuracyMultiplier(evt.attackIdx);
 	}
@@ -270,11 +278,12 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 	bool inWater = m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD;
 
+	int rand = UTIL_SharedRandomLong(m_pPlayer->random_seed, -evt.bullets.damageRand, evt.bullets.damageRand);
 	int baseDamage = evt.bullets.damage;
 	if (evt.bullets.damageWater && inWater) {
 		baseDamage = evt.bullets.damageWater;
 	}
-	float damage = baseDamage * GetChargeMult(evt, FL_WC_CHARGE_DAMAGE);
+	float damage = (baseDamage + rand) * GetChargeMult(evt, FL_WC_CHARGE_DAMAGE);
 
 	int count = evt.bullets.burstDelay ? 1 : evt.bullets.count;
 
@@ -299,6 +308,16 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 #endif
 
 	bool showTracer = CheckTracer(eidx, vecSrc, vecDir, gpGlobals->v_right, evt.bullets.tracerFreq);
+
+	bool handled =
+		(m_weapon->IsAkimbo() && !akimboFire && leftHand && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_LEFT_HAND)) ||
+		(m_weapon->IsAkimbo() && !akimboFire && !leftHand && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_RIGHT_HAND)) ||
+		(m_weapon->IsLaserOn() && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_DEPLOY_ARG_LASER)) ||
+		(m_weapon->GetZoom() && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_ZOOMED));
+
+	if (!handled) {
+		ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_DEFAULT);
+	}
 
 #ifdef CLIENT_DLL
 	bool decal = !(evt.bullets.flags & FL_WC_BULLETS_NO_DECAL);
@@ -348,16 +367,6 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 		}
 	}
 #endif
-
-	bool handled =
-		(m_weapon->IsAkimbo() && !akimboFire && leftHand && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_LEFT_HAND)) ||
-		(m_weapon->IsAkimbo() && !akimboFire && !leftHand && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_RIGHT_HAND)) ||
-		(m_weapon->IsLaserOn() && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_DEPLOY_ARG_LASER)) ||
-		(m_weapon->GetZoom() && ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_ZOOMED));
-
-	if (!handled) {
-		ProcessEvents(WC_TRIG_BULLET_FIRED, WC_TRIG_ARG_BULLET_FIRED_DEFAULT);
-	}
 }
 
 void CWeaponEvents::PlayEvent_Beam(WepEvt& evt, CBasePlayer* m_pPlayer) {
@@ -544,10 +553,11 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		vForward * DotProduct(vForward, pvel) * inf.z;
 
 	Vector dir = INT32_VEC3_TO_VECTOR(evt.proj.dir);
+	float speed = V_max(evt.proj.speed, 1); // min speed needed for orienting the projectile
 	Vector projectile_velocity = pvel +
-		dir.x * evt.proj.speed * vRight +
-		dir.y * evt.proj.speed * Vector(0, 0, 1) +
-		dir.z * evt.proj.speed * vecDir;
+		dir.x * speed * vRight +
+		dir.y * speed * Vector(0, 0, 1) +
+		dir.z * speed * vecDir;
 
 	Vector offsetOpts = INT32_VEC3_TO_VECTOR(evt.proj.position);
 	Vector ofs = vRight * offsetOpts.x + vForward * offsetOpts.y + vUp * offsetOpts.z;
@@ -671,6 +681,10 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 	}
 	case WC_PROJECTILE_OTHER: {
 		shootEnt = CBaseEntity::Create(STRING(evt.proj.entity_class), projectile_ori, projectile_dir_angles, false);
+		if (!shootEnt) {
+			ALERT(at_error, "Failed to create entity %s\n", STRING(evt.proj.entity_class));
+			return;
+		}
 		shootEnt->pev->velocity = projectile_velocity;
 		shootEnt->pev->owner = m_pPlayer->edict();
 		edict_t* ed = shootEnt->edict();
@@ -702,7 +716,8 @@ void CWeaponEvents::PlayEvent_Projectile(WepEvt& evt, CBasePlayer* m_pPlayer) {
 		}
 
 		float size = D1000_TO_FLOAT(evt.proj.size);
-		UTIL_SetSize(shootEnt->pev, Vector(-size, -size, -size), Vector(size, size, size));
+		if (size)
+			UTIL_SetSize(shootEnt->pev, Vector(-size, -size, -size), Vector(size, size, size));
 
 		if (evt.proj.renderMode)
 			shootEnt->pev->rendermode = evt.proj.renderMode;
@@ -825,6 +840,7 @@ void CWeaponEvents::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 	float volume = D100_TO_FLOAT(evt.idleSound.volume);
 	float attn = ATTN_IDLE;
 	int idx = evt.idleSound.sound;
+	bool forceUserOrigin = false;
 
 	if (evt.evtType == WC_EVT_PLAY_SOUND) {
 		idx = evt.playSound.sound;
@@ -839,6 +855,7 @@ void CWeaponEvents::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 		pitch = UTIL_SharedRandomLong(m_pPlayer->random_seed, evt.playSound.pitchMin, evt.playSound.pitchMax);
 		volume = D100_TO_FLOAT(evt.playSound.volume);
 		attn = D100_TO_FLOAT(evt.playSound.attn);
+		forceUserOrigin = (evt.playSound.flags & FL_WC_SOUND_USER_ORIGIN) != 0;
 
 		if (evt.playSound.flags & FL_WC_SOUND_CHARGE_PITCH)
 			pitch = evt.playSound.pitchMin;
@@ -858,17 +875,19 @@ void CWeaponEvents::PlayEvent_Sound(WepEvt& evt, CBasePlayer* m_pPlayer, bool le
 		}
 	}
 
+	bool playAtOrigin = tr && !forceUserOrigin;
+
 #ifdef CLIENT_DLL
 	int panning = 0;
 	if (akimboFire)
 		panning = leftHand ? 1 : 2; // signal the event player to pan the audio
 
-	Vector* origin = tr ? &tr->vecEndPos : NULL;
+	Vector* origin = playAtOrigin ? &tr->vecEndPos : NULL;
 	WC_EV_LocalSound(idx, channel, pitch, volume, attn, panning, 0, origin);
 #else
-	edict_t* soundEnt = tr ? ENT(0) : m_pPlayer->edict();
-	Vector origin = tr ? tr->vecEndPos : m_pPlayer->pev->origin;
-	int chan = tr ? CHAN_STATIC : channel;
+	edict_t* soundEnt = playAtOrigin ? ENT(0) : m_pPlayer->edict();
+	Vector origin = playAtOrigin ? tr->vecEndPos : m_pPlayer->pev->origin;
+	int chan = playAtOrigin ? CHAN_STATIC : channel;
 
 	if (m_weapon->IsPredicted()) {
 		uint32_t messageTargets = 0xffffffff & ~PLRBIT(m_pPlayer->edict());
@@ -1929,26 +1948,48 @@ void CWeaponEvents::GetCurrentAccuracy(float& accuracyX, float& accuracyY, float
 		return;
 
 	CustomWeaponParams& params = m_weapon->GetActiveParams();
-
+	bool isFirstShot = m_weapon->m_iShotsFired == 0;
+	
 	if (m_weapon->IsPrimaryAltActive()) {
-		accuracyX = params.shootOpts[3].accuracy[0] * 0.01f;
-		accuracyY = params.shootOpts[3].accuracy[1] * 0.01f;
+		CustomWeaponShootOpts& opts = params.shootOpts[3];
+		if (isFirstShot && (opts.flags & FL_WC_SHOOT_FIRST_SHOT_ACCURACY)) {
+			accuracyX = params.shootOpts[3].accuracyFirst[0] * 0.01f;
+			accuracyY = params.shootOpts[3].accuracyFirst[1] * 0.01f;
+		}
+		else {
+			accuracyX = params.shootOpts[3].accuracy[0] * 0.01f;
+			accuracyY = params.shootOpts[3].accuracy[1] * 0.01f;
+		}
 	}
 	else if (m_weapon->IsAkimbo()) {
 		accuracyX = params.akimbo.accuracy[0] * 0.01f;
 		accuracyY = params.akimbo.accuracy[1] * 0.01f;
 	}
 	else {
-		accuracyX = params.shootOpts[0].accuracy[0] * 0.01f;
-		accuracyY = params.shootOpts[0].accuracy[1] * 0.01f;
+		CustomWeaponShootOpts& opts = params.shootOpts[0];
+		if (isFirstShot && (opts.flags & FL_WC_SHOOT_FIRST_SHOT_ACCURACY)) {
+			accuracyX = params.shootOpts[0].accuracyFirst[0] * 0.01f;
+			accuracyY = params.shootOpts[0].accuracyFirst[1] * 0.01f;
+		}
+		else {
+			accuracyX = params.shootOpts[0].accuracy[0] * 0.01f;
+			accuracyY = params.shootOpts[0].accuracy[1] * 0.01f;
+		}
 	}
 
 	bool hasSecondary = params.flags & FL_WC_WEP_HAS_SECONDARY;
 	bool secondaryShoots = !(params.shootOpts[1].flags & FL_WC_SHOOT_NO_ATTACK);
 
 	if (hasSecondary && secondaryShoots) {
-		accuracyX2 = params.shootOpts[1].accuracy[0] * 0.01f;
-		accuracyY2 = params.shootOpts[1].accuracy[1] * 0.01f;
+		CustomWeaponShootOpts& opts = params.shootOpts[1];
+		if (isFirstShot && (opts.flags & FL_WC_SHOOT_FIRST_SHOT_ACCURACY)) {
+			accuracyX2 = params.shootOpts[1].accuracyFirst[0] * 0.01f;
+			accuracyY2 = params.shootOpts[1].accuracyFirst[1] * 0.01f;
+		}
+		else {
+			accuracyX2 = params.shootOpts[1].accuracy[0] * 0.01f;
+			accuracyY2 = params.shootOpts[1].accuracy[1] * 0.01f;
+		}
 	}
 	else {
 		accuracyX2 = accuracyX;
@@ -2177,11 +2218,13 @@ void CWeaponEvents::FireImpactEvents(int trigger, int attackIdx, WcTrace* evTrac
 		break;
 	}
 
-	if (anyTrig != -1) {
-		ProcessEvents(trigger, anyTrig, false, false, 0, evTrace);
-	}
-	if (specialTrig != -1) {
-		ProcessEvents(trigger, specialTrig, false, false, 0, evTrace);
+	if (hitWorld || hitMonster) {
+		if (anyTrig != -1) {
+			ProcessEvents(trigger, anyTrig, false, false, 0, evTrace);
+		}
+		if (specialTrig != -1) {
+			ProcessEvents(trigger, specialTrig, false, false, 0, evTrace);
+		}
 	}
 }
 

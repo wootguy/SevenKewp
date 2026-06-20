@@ -14,10 +14,11 @@
 #define MAX_WC_RANDOM_SELECTION 8
 #define MAX_WC_ARR_LEN 32
 
-#define FL_WC_BULLETS_DYNAMIC_SPREAD 1	// spread widens while moving and tightens while crouching
-#define FL_WC_BULLETS_NO_DECAL 2		// don't show gunshot particles and decal at impact point
-#define FL_WC_BULLETS_NO_SOUND 4		// don't play texture sound at impact point
-#define FL_WC_BULLETS_NO_PARTICLES 8	// don't spawn particles and tracers at the impact point
+#define FL_WC_BULLETS_DYNAMIC_SPREAD		1	// spread widens while moving and tightens while crouching
+#define FL_WC_BULLETS_FIRST_SHOT_ACCURACY	2	// use first-shot accuracy values from the attack params
+#define FL_WC_BULLETS_NO_DECAL				4	// don't show gunshot particles and decal at impact point
+#define FL_WC_BULLETS_NO_SOUND				8	// don't play texture sound at impact point
+#define FL_WC_BULLETS_NO_PARTICLES			16	// don't spawn particles and tracers at the impact point
 
 #define FL_WC_COOLDOWN_PRIMARY 1
 #define FL_WC_COOLDOWN_SECONDARY 2
@@ -37,7 +38,8 @@
 #define FL_WC_BEAM_SHADEOUT	8		// fade the end of the beam
 #define FL_WC_BEAM_NO_EVTS	16		// don't trigger impact events or call attack trace logic
 
-#define FL_WC_SOUND_CHARGE_PITCH 1	// Sound pitch increases with chargeup progress
+#define FL_WC_SOUND_CHARGE_PITCH	1	// Sound pitch increases with chargeup progress
+#define FL_WC_SOUND_USER_ORIGIN		2	// force sound to play at the user's origin, even in impact events
 
 #define FL_WC_DECAL_PARTICLES	1	// create gunshot particles
 
@@ -331,10 +333,10 @@ struct WepEvtArr8 {
 
 struct WepEvtArr16 {
 	uint8_t arrSz;
-	uint16_t arr[MAX_WC_RANDOM_SELECTION];
+	uint16_t arr[MAX_WC_ARR_LEN];
 
 	void add(uint16_t val) {
-		if (arrSz < MAX_WC_RANDOM_SELECTION) {
+		if (arrSz < MAX_WC_ARR_LEN) {
 			arr[arrSz++] = val;
 		}
 	}
@@ -446,24 +448,26 @@ struct WepEvt {
 
 		struct {
 			WepEvtArr8 frames;
-			WepEvtArr8 frameOffsetX;
-			WepEvtArr8 frameOffsetY;
+			WepEvtArr16 frameOffsetX;
+			WepEvtArr16 frameOffsetY;
 			uint16_t fps;
 		} wep_sprite_anim;
 
 		struct {
 			uint8_t count;			// how many bullets are shot at once
 			uint16_t damage;		// damage per bullet
+			uint8_t damageRand;		// amount to randomize damage (+/-this value)
 			uint16_t accuracy[2];	// X/Y accuracy. 0 = perfect.
 			uint8_t tracerFreq;		// 4 bits. how often to display a tracer (0 = never, 1 = always, 2 = every other shot)
 			uint8_t tracerColor;	// 4 bits. WeaponCustomTracerColor
-			uint8_t flashSz;		// 4 bits. WeaponCustomFlashSz
-			uint8_t flags;			// 4 bits. FL_WC_BULLETS_*
+			uint8_t flashSz;		// 2 bits. WeaponCustomFlashSz
+			uint8_t flags;			// 6 bits. FL_WC_BULLETS_*
 
 			uint8_t hasRange;	// 1 bit
 			uint8_t hasWaterDamage;	// 1 bit
 			uint8_t hasWaterRange;	// 1 bit
 			uint8_t hasBurstDelay;	// 1 bit
+			uint8_t hasDamageRand;	// 1 bit
 			uint16_t maxRange;		// max range in air
 			uint16_t damageWater;	// damage per bullet when fired underwater
 			uint16_t maxRangeWater;	// damage per bullet when fired underwater

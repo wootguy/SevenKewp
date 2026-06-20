@@ -52,6 +52,18 @@ void CWeaponCustom::Spawn() {
 	SetWeaponModelW();
 	FallInit();// get ready to fall down.
 
+	if (UTIL_ModelIsSprite(pev->modelindex)) {
+		pev->frame = defaultParams.wsprite_frame;
+		pev->scale = 1;
+		pev->body = 0;
+		UTIL_SetSize(pev, g_vecZero, g_vecZero); // sprites have a huge hull by default
+	}
+
+	Vector mins = INT32_VEC3_TO_VECTOR(defaultParams.hull_min);
+	Vector maxs = INT32_VEC3_TO_VECTOR(defaultParams.hull_max);
+	if (mins != g_vecZero || maxs != g_vecZero)
+		UTIL_SetSize(pev, mins, maxs);
+
 	if (defaultParams.flags & FL_WC_WEP_USE_ONLY) {
 		SetTouch(&CBaseEntity::ItemBounceTouch);
 	}
@@ -2540,8 +2552,8 @@ void CWeaponCustom::UpdateStateHudSprite() {
 		float fps = spr.fps * 0.01f;
 		int frameIdx = clampi(animTime * fps, 0, spr.anim.arrSz - 1);
 		spr.frame = spr.anim.arr[frameIdx];
-		spr.x = (int8_t)spr.animOfsX.arr[frameIdx] + bobX;
-		spr.y = (int8_t)spr.animOfsY.arr[frameIdx] + bobY + deployY;
+		spr.x = (int16_t)spr.animOfsX.arr[frameIdx] + bobX + params.vsprite_offset_x;
+		spr.y = (int16_t)spr.animOfsY.arr[frameIdx] + bobY + deployY + params.vsprite_offset_y;
 		spr.w = gEngfuncs.pfnSPR_Width(spr.hSprite, spr.frame);
 		spr.h = gEngfuncs.pfnSPR_Height(spr.hSprite, spr.frame);
 		spr.scale = D100_TO_FLOAT(params.vsprite_base_scale);
