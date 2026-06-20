@@ -446,8 +446,8 @@ void UTIL_Decal(int entindex, Vector origin, int decalIdx, int msgMode, const fl
 
 void UTIL_Tracer(Vector start, Vector end, int color, int msgMode, edict_t* targetEnt) {
 	CBaseEntity* pent = CBaseEntity::Instance(targetEnt);
-	CBasePlayer* plr = pent ? pent->MyPlayerPointer() : NULL;
-	if (plr && plr->IsSevenKewpClient()) {
+	CBasePlayer* targPlr = pent ? pent->MyPlayerPointer() : NULL;
+	if (targPlr && targPlr->IsSevenKewpClient()) {
 		MESSAGE_BEGIN(msgMode, gmsgTracer2, start, targetEnt);
 		WRITE_FAR_VECTOR(start);
 		WRITE_FAR_VECTOR(end);

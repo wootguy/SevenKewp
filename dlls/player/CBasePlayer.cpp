@@ -3491,6 +3491,7 @@ void CBasePlayer :: UpdatePlayerSound ( void )
 		pSound->m_vecOrigin = pev->origin;
 		pSound->m_iType |= ( bits_SOUND_PLAYER | m_iExtraSoundTypes );
 		pSound->m_iVolume = iVolume;
+		pSound->m_hOwner = EHANDLE(edict());
 	}
 
 	// keep track of virtual muzzle flash
@@ -3610,7 +3611,7 @@ void CBasePlayer::PostThink()
 	{		
 		if (m_flFallVelocity > 64 && !g_pGameRules->IsMultiplayer())
 		{
-			CSoundEnt::InsertSound ( bits_SOUND_PLAYER, pev->origin, m_flFallVelocity, 0.2 );
+			CSoundEnt::InsertSound ( bits_SOUND_PLAYER, pev->origin, m_flFallVelocity, 0.2, this);
 			// ALERT( at_console, "fall %f\n", m_flFallVelocity );
 		}
 		m_flFallVelocity = 0;

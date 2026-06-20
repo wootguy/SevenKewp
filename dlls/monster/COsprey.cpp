@@ -212,7 +212,7 @@ void COsprey :: DeployThink( void )
 
 	TraceResult tr;
 	UTIL_TraceLine( pev->origin, pev->origin + Vector( 0, 0, -4096.0), ignore_monsters, ENT(pev), &tr);
-	CSoundEnt::InsertSound ( bits_SOUND_DANGER, tr.vecEndPos, 400, 0.3 );
+	CSoundEnt::InsertSound ( bits_SOUND_DANGER, tr.vecEndPos, 400, 0.3 , this);
 
 	vecSrc = pev->origin + vecForward *  32 + vecRight *  100 + vecUp * -96;
 	m_hRepel[0] = MakeGrunt( vecSrc );

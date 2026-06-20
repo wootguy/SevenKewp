@@ -118,10 +118,6 @@ void CHornet :: Spawn( void )
 	SetTouch( &CHornet::TrackTouch);
 	SetThink( &CHornet::StartTrack );
 
-	edict_t *pSoundEnt = pev->owner;
-	if ( !pSoundEnt )
-		pSoundEnt = edict();
-
 	if ( !FNullEnt(pev->owner) && (pev->owner->v.flags & FL_CLIENT) )
 	{
 		pev->dmg = GetDamage(gSkillData.sk_plr_hornet);

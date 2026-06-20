@@ -185,7 +185,7 @@ void CController :: IdleSound( void )
 void CController :: AttackSound( void )
 {
 	EMIT_SOUND_ARRAY_DYN( CHAN_VOICE, pAttackSounds ); 
-	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3, this);
 }
 
 void CController :: DeathSound( void )

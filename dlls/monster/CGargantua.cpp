@@ -299,7 +299,7 @@ void CGargantua :: FlameCreate( void )
 			flame->SetScrollRate( 20 );
 			// attachment is 1 based in SetEndAttachment
 			flame->SetEndAttachment( attach + 2 );
-			CSoundEnt::InsertSound( bits_SOUND_COMBAT, posGun, 384, 0.3 );
+			CSoundEnt::InsertSound( bits_SOUND_COMBAT, posGun, 384, 0.3, this);
 		}
 	}
 

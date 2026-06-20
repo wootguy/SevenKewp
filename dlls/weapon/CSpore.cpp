@@ -137,7 +137,7 @@ void CSpore::IgniteThink()
 		m_hSprite = nullptr;
 	}
 
-	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3, this);
 	EMIT_SOUND(edict(), CHAN_WEAPON, "weapons/splauncher_impact.wav", VOL_NORM, ATTN_NORM);
 
 	const auto vecDir = pev->velocity.Normalize();
@@ -222,7 +222,7 @@ void CSpore::MyBounceTouch( CBaseEntity* pOther )
 		{
 			if( gpGlobals->time > m_flSoundDelay )
 			{
-				CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin, static_cast<int>( pev->dmg / 0.4 ), 0.3 );
+				CSoundEnt::InsertSound( bits_SOUND_DANGER, pev->origin, static_cast<int>( pev->dmg / 0.4 ), 0.3, this);
 
 				m_flSoundDelay = gpGlobals->time + 1.0;
 			}

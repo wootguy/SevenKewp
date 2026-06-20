@@ -145,7 +145,7 @@ void CRoach :: Killed( entvars_t *pevAttacker, int iGib )
 		EMIT_SOUND_DYN(ENT(pev), CHAN_BODY, "roach/rch_smash.wav", 0.7, ATTN_NORM, 0, 80 + RANDOM_LONG(0,39) );
 	}
 	
-	CSoundEnt::InsertSound ( bits_SOUND_WORLD, pev->origin, 128, 1 );
+	CSoundEnt::InsertSound ( bits_SOUND_WORLD, pev->origin, 128, 1, this);
 
 	CBaseEntity *pOwner = CBaseEntity::Instance(pev->owner);
 	if (pOwner && !m_deathNoticeSent) {

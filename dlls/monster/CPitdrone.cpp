@@ -443,7 +443,7 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				UTIL_SpriteSpray(vecSpitOffset, vecSpitDir, iPitdroneSpitSprite, count, 110, 25);
 
 				CPitdroneSpike::Shoot( pev, vecSpitOffset, vecSpitDir * 900, UTIL_VecToAngles( vecSpitDir ) );
-				CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+				CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3, this);
 
 				if (m_hasAmmoGroup) {
 					auto ammoSubModel = GetBodygroup(PitdroneBodygroup::Weapons);
@@ -469,7 +469,7 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			// SOUND HERE!
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_pitdrone_dmg_bite, DMG_SLASH );
-			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3, this);
 			
 			if (pHurt && pHurt->CanKnockback())
 			{
@@ -484,7 +484,7 @@ void CPitdrone :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		case PITDRONE_AE_TAILWHIP:
 		{
 			CBaseEntity *pHurt = CheckTraceHullAttack( 70, gSkillData.sk_pitdrone_dmg_whip, DMG_CLUB | DMG_ALWAYSGIB );
-			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3, this);
 			
 			if (pHurt && pHurt->CanKnockback())
 			{

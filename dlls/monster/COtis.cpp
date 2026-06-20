@@ -458,7 +458,7 @@ void COtis :: OtisFirePistol ( void )
 		pitchShift -= 5;
 	EMIT_SOUND_DYN( ENT(pev), CHAN_WEAPON, "weapons/de_shot1.wav", 1, ATTN_NORM, 0, 100 + pitchShift );
 
-	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 384, 0.3 );
+	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 384, 0.3, this);
 
 	// UNDONE: Reload?
 	m_cAmmoLoaded--;// take away a bullet!

@@ -681,7 +681,7 @@ void CBaseGrunt::Shoot(bool firstRound)
 	m_flLastShot = gpGlobals->time;
 
 	if (firstRound) {
-		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
+		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3, this);
 	}
 }
 
@@ -867,7 +867,7 @@ void CBaseGrunt::ShootRPG(Vector& vecShootOrigin, Vector& vecShootDir) {
 			ResetSequenceInfo();
 
 			pev->effects |= EF_MUZZLEFLASH;
-			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3, this);
 			m_cAmmoLoaded--;
 		}
 	}

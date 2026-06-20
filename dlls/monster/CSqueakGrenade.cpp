@@ -135,7 +135,7 @@ void CSqueakGrenade :: Killed( entvars_t *pevAttacker, int iGib )
 	// play squeek blast
 	EMIT_SOUND_DYN(ENT(pev), CHAN_ITEM, "squeek/sqk_blast1.wav", 1, 0.5, 0, PITCH_NORM);	
 
-	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, SMALL_EXPLOSION_VOLUME, 3.0 );
+	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, SMALL_EXPLOSION_VOLUME, 3.0, this);
 
 	UTIL_BloodDrips( pev->origin, g_vecZero, BloodColor(), 80 );
 
@@ -222,7 +222,7 @@ void CSqueakGrenade::HuntThink( void )
 	if ((m_flDie - gpGlobals->time <= 0.5) && (m_flDie - gpGlobals->time >= 0.3))
 	{
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "squeek/sqk_die1.wav", 1, ATTN_NORM, 0, 100 + RANDOM_LONG(0,0x3F));
-		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 256, 0.25 );
+		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 256, 0.25, this);
 	}
 
 	// higher pitch as squeeker gets closer to detonation time
@@ -354,12 +354,12 @@ void CSqueakGrenade::SuperBounceTouch( CBaseEntity *pOther )
 	{
 		// bounce sound
 		EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pHuntSounds), 1, ATTN_NORM, 0, (int)flpitch);
-		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 256, 0.25 );
+		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 256, 0.25, this);
 	}
 	else
 	{
 		// skittering sound
-		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 100, 0.1 );
+		CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, 100, 0.1, this);
 	}
 
 	m_flNextBounceSoundTime = gpGlobals->time + 0.5;// half second.

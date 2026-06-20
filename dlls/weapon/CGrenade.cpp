@@ -85,7 +85,7 @@ void CGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 		UTIL_WaterSplash(pev->origin, true, true);
 	}
 
-	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
+	CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0, this);
 	entvars_t *pevOwner;
 	if ( pev->owner )
 		pevOwner = VARS( pev->owner );
@@ -182,7 +182,7 @@ void CGrenade::DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_T
 
 void CGrenade::PreDetonate( void )
 {
-	CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin, 400, 0.3 );
+	CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin, 400, 0.3, this);
 
 	SetThink( &CGrenade::Detonate );
 	pev->nextthink = gpGlobals->time + 1;
@@ -234,7 +234,7 @@ void CGrenade::DangerSoundThink( void )
 		return;
 	}
 
-	CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin + pev->velocity * 0.5, pev->velocity.Length( ), 0.2 );
+	CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin + pev->velocity * 0.5, pev->velocity.Length( ), 0.2, this);
 	pev->nextthink = gpGlobals->time + 0.2;
 
 	if (pev->waterlevel != 0)
@@ -281,7 +281,7 @@ void CGrenade::BounceTouch( CBaseEntity *pOther )
 		// go ahead and emit the danger sound.
 		
 		// register a radius louder than the explosion, so we make sure everyone gets out of the way
-		CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin, pev->dmg / 0.4, 0.3 );
+		CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin, pev->dmg / 0.4, 0.3, this);
 		m_fRegisteredSound = TRUE;
 	}
 
@@ -351,7 +351,7 @@ void CGrenade :: TumbleThink( void )
 
 	if (pev->dmgtime - 1 < gpGlobals->time)
 	{
-		CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin + pev->velocity * (pev->dmgtime - gpGlobals->time), 400, 0.1 );
+		CSoundEnt::InsertSound ( bits_SOUND_DANGER, pev->origin + pev->velocity * (pev->dmgtime - gpGlobals->time), 400, 0.1, this);
 	}
 
 	if (pev->dmgtime <= gpGlobals->time)

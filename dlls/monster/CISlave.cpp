@@ -306,7 +306,7 @@ void CISlave :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			if (m_iTaskStatus == TASKSTATUS_COMPLETE)
 				break;
 
-			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 3.0);
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 3.0, this);
 
 			pev->framerate = gSkillData.sk_islave_speed_zap;
 

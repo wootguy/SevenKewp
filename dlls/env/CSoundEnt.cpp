@@ -195,7 +195,7 @@ int CSoundEnt :: IAllocSound( void )
 // InsertSound - Allocates a free sound and fills it with 
 // sound info.
 //=========================================================
-void CSoundEnt :: InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration )
+void CSoundEnt :: InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration, CBaseEntity* owner)
 {
 	int	iThisSound;
 
@@ -217,6 +217,7 @@ void CSoundEnt :: InsertSound ( int iType, const Vector &vecOrigin, int iVolume,
 	pSoundEnt->m_SoundPool[ iThisSound ].m_iType = iType;
 	pSoundEnt->m_SoundPool[ iThisSound ].m_iVolume = iVolume;
 	pSoundEnt->m_SoundPool[ iThisSound ].m_flExpireTime = gpGlobals->time + flDuration;
+	pSoundEnt->m_SoundPool[ iThisSound ].m_hOwner = owner;
 }
 
 //=========================================================

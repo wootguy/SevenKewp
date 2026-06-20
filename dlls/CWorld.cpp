@@ -15,7 +15,6 @@
 #include "sentences.h"
 
 extern CGraph WorldGraph;
-extern CSoundEnt* pSoundEnt;
 extern DLL_GLOBAL	int			gDisplayTitle;
 extern uint64_t g_levelChangePluginTime;
 extern bool g_checkExplSounds;

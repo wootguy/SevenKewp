@@ -125,7 +125,7 @@ void CMortarShell::MortarExplodeTouch(CBaseEntity* pOther)
 	int spr = contents != CONTENTS_WATER ? g_sModelIndexFireball : g_sModelIndexWExplosion;
 	UTIL_Explosion(pev->origin, spr, static_cast<int>((pev->dmg - 50.0) * 5.0), 10, TE_EXPLFLAG_NONE);
 
-	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 1024, 3.0);
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 1024, 3.0, this);
 
 	auto pOwner = VARS(pev->owner);
 	pev->owner = nullptr;

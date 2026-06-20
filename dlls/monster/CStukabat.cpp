@@ -200,7 +200,7 @@ void CStukabat:: IdleSound( void )
 void CStukabat:: AttackSound( void )
 {
 	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, pAttackSounds[RANDOM_SOUND_ARRAY_IDX(pAttackSounds)], 1.0, ATTN_NORM, 0, RANDOM_LONG(150, 160));
-	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3, this);
 }
 
 void CStukabat:: DeathSound( void )

@@ -545,7 +545,7 @@ void CKingpin::LaserEyesThink() {
 				}
 
 				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, KINGPIN_BEAM_SOUND, 1.0, ATTN_NORM, 0, RANDOM_LONG(95, 105));
-				CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+				CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3, this);
 
 				RGBA color = RGBA(m_beamColor.x, m_beamColor.y, m_beamColor.z, 150);
 				UTIL_BeamEntPoint(entindex(), eye.iAttachment + 1, target->Center(), kingBeamSpriteIdx,

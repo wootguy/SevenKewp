@@ -477,7 +477,7 @@ void CBullsquid :: HandleAnimEvent( MonsterEvent_t *pEvent )
 			UTIL_SpriteSpray(vecSpitOffset, vecSpitDir, iSquidSpitSprite, count, 210, 25);
 
 			CSquidSpit::Shoot( pev, vecSpitOffset, vecSpitDir * 900 );
-			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3, this);
 		}
 		break;
 
@@ -1053,7 +1053,7 @@ void CBullsquid :: StartTask ( Task_t *pTask )
 	case TASK_MELEE_ATTACK2:
 		{
 			EMIT_SOUND(ENT(pev), CHAN_VOICE, RANDOM_SOUND_ARRAY(pGrowlSounds), 1, ATTN_NORM);
-			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+			CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3, this);
 
 			CBaseMonster :: StartTask ( pTask );
 			break;

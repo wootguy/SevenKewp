@@ -164,6 +164,6 @@ void CFuncMortarField::FieldUse(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 		t += RANDOM_FLOAT(0.2, 0.5);
 
 		if (i == 0)
-			CSoundEnt::InsertSound(bits_SOUND_DANGER, pMortar->pev->origin, 400, 0.3);
+			CSoundEnt::InsertSound(bits_SOUND_DANGER, pMortar->pev->origin, 400, 0.3, this);
 	}
 }

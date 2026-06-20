@@ -57,6 +57,7 @@ public:
 	float	m_flExpireTime;	// when the sound should be purged from the list
 	int		m_iNext;		// index of next sound in this list ( Active or Free )
 	int		m_iNextAudible;	// temporary link that monsters use to build a list of audible sounds
+	EHANDLE m_hOwner;		// entity that created the sound
 
 	BOOL	FIsSound( void );
 	BOOL	FIsScent( void );
@@ -76,7 +77,7 @@ public:
 	void Think( void );
 	void Initialize ( void );
 	
-	static void		InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration );
+	static void		InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration, CBaseEntity* owner );
 	static void		FreeSound ( int iSound, int iPrevious );
 	static int		ActiveList( void );// return the head of the active list
 	static int		FreeList( void );// return the head of the free list
@@ -96,3 +97,5 @@ public:
 private:
 	CSound		m_SoundPool[ MAX_WORLD_SOUNDS ];
 };
+
+extern CSoundEnt* pSoundEnt; // don't use this, call the static methods

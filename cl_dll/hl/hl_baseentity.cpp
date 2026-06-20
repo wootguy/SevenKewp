@@ -449,7 +449,7 @@ void CBasePlayerAmmo::Precache() { }
 void CGrenade::SetGrenadeModel() { }
 BOOL CGrenade::BarnacleVictimCaught(void) { return 0; }
 void CGrenade::BarnacleVictimReleased(void) {}
-void CSoundEnt::InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration ) {}
+void CSoundEnt::InsertSound ( int iType, const Vector &vecOrigin, int iVolume, float flDuration, CBaseEntity* owner) {}
 void CSoundEnt::Precache() {}
 void CSoundEnt::Spawn() {}
 void CSoundEnt::Think() {}

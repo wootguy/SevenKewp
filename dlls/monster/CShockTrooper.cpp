@@ -773,7 +773,7 @@ void CShockTrooper::Shoot()
 	shootAngles.x = -shootAngles.x;
 
 	auto pBeam = CShockBeam::CreateShockBeam(vecShootOrigin, shootAngles, this);
-	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3);
+	CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, NORMAL_GUN_VOLUME, 0.3, this);
 
 	pBeam->pev->velocity = vecShootDir * 2000;
 	pBeam->pev->speed = 2000;
@@ -856,7 +856,7 @@ void CShockTrooper::HandleAnimEvent(MonsterEvent_t* pEvent)
 
 		EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_fire.wav", 1, ATTN_NORM);
 
-		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3);
+		CSoundEnt::InsertSound(bits_SOUND_COMBAT, pev->origin, 384, 0.3, this);
 	}
 	break;
 
