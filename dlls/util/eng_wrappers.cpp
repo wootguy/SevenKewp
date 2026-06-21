@@ -22,6 +22,7 @@ StringSet g_precachedMdl;
 
 string_t g_indexModels[MAX_MODELS_REHLDS]; // maps an index to a model name
 string_t g_indexSounds[MAX_PRECACHE]; // maps an index to a model name
+string_t g_lightStyles[MAX_LIGHTSTYLE_PATTERNS];
 
 HashMap<string_t> g_allocedStrings;
 
@@ -920,7 +921,38 @@ edict_t* FIND_ENTITY_BY_TARGETNAME(edict_t* entStart, const char* pszName) {
 	return FIND_ENTITY_BY_STRING(entStart, "targetname", pszName);
 }
 
-EXPORT bool Voice_GetClientListening(int receiver, int sender) {
+bool Voice_GetClientListening(int receiver, int sender) {
 	CALL_HOOKS(bool, pfnVoice_GetClientListening, receiver, sender);
 	return g_engfuncs.pfnVoice_GetClientListening(receiver, sender);
+}
+
+void LIGHT_STYLE(int style, const char* val) {
+	// engine has no getter for this, so keep track of what was set.
+	style = clampi(style, 0, MAX_LIGHTSTYLE_PATTERNS-1);
+	g_lightStyles[style] = ALLOC_STRING(toLowerCase(val).c_str());
+
+	g_engfuncs.pfnLightStyle(style, val);
+}
+
+float GET_LIGHT_STYLE(int style) {
+	style = clampi(style, 0, MAX_LIGHTSTYLE_PATTERNS - 1);
+
+	if (!g_lightStyles[style]) {
+		return 0;
+	}
+
+	const float full_bright = 'm' - 'a'; // m is default/100% brightness. z is 200%. a is black;
+	const char* pattern = STRING(g_lightStyles[style]);
+	int len = strlen(pattern);
+
+	char c = 'a';
+	if (len > 1) {
+		int patternIdx = (int)(gpGlobals->time * 10) % len;
+		c = pattern[patternIdx];
+	}
+	else if (len == 1) {
+		c = pattern[0];
+	}
+	
+	return (c - 'a') / full_bright;
 }

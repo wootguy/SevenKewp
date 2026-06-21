@@ -23,6 +23,7 @@ EXPORT extern StringSet g_tryPrecacheGeneric;
 EXPORT extern StringSet g_tryPrecacheEvents;
 extern string_t g_indexModels[MAX_MODELS_REHLDS]; // use INDEX_MODEL to get model name for index
 extern string_t g_indexSounds[MAX_PRECACHE]; // use INDEX_SOUND to get sound name for index
+extern string_t g_lightStyles[MAX_LIGHTSTYLE_PATTERNS]; // active light style patterns
 
 // find an already alloc'd string by its contents (used by ALLOC_STRING)
 extern HashMap<string_t> g_allocedStrings;
@@ -57,6 +58,7 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 #define CHANGE_LEVEL	(*g_engfuncs.pfnChangeLevel)
 #define PLAYBACK_EVENT_FULL		(*g_engfuncs.pfnPlaybackEvent)
 #define ALLOC_STRING	(*g_engfuncs.pfnAllocString)
+#define LIGHT_STYLE		(*g_engfuncs.pfnLightStyle)
 #else
 // engine wrappers which handle model/sound replacement logic
 EXPORT int PRECACHE_GENERIC(const char* path);
@@ -112,4 +114,6 @@ EXPORT string_t ALLOC_STRING(const char*);
 EXPORT edict_t* FIND_ENTITY_BY_TARGETNAME(edict_t* entStart, const char* pszName);
 EXPORT bool Voice_GetClientListening(int receiver, int sender);
 EXPORT void LoadBsp();
+EXPORT void LIGHT_STYLE(int style, const char* val);
+EXPORT float GET_LIGHT_STYLE(int style); // get current light style brightness
 #endif

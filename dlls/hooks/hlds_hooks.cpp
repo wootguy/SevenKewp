@@ -624,6 +624,7 @@ void ServerDeactivate( void )
 	memset(&g_textureStats, 0, sizeof(TextureTypeStats));
 	memset(g_indexModels, 0, sizeof(g_indexModels));
 	memset(g_indexSounds, 0, sizeof(g_indexSounds));
+	memset(g_lightStyles, 0, sizeof(g_lightStyles));
 	memset(g_hudMsgHistory, 0, sizeof(g_hudMsgHistory));
 	memset(g_breakableSpawnRemap, 0, sizeof(g_breakableSpawnRemap));
 	memset(g_wcPredDataSent, 0, sizeof(g_wcPredDataSent));
