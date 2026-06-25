@@ -105,6 +105,11 @@ terms = [
 	('g_FileSystem.OpenFile', 'UTIL_OpenFile'),
 	('OpenFile::READ', '"r"'),
 	('OpenFile::WRITE', '"w"'),
+	('Math.max', 'V_max'),
+	('Math.min', 'V_min'),
+	('g_PlayerFuncs.ScreenFade', 'UTIL_ScreenFade'),
+	('g_PlayerFuncs.PrintKeyBindingStringAll(', 'UTIL_ClientPrintAll(print_center, '),
+	('.IsPlayer()', '->IsPlayer()'),
 ]
 
 def convert_script(fpath):
