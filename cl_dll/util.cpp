@@ -147,3 +147,26 @@ cl_entity_t* GetLocalPlayer() {
 	static cl_entity_t dummyPlayer; // prevent crashes when map is not loaded
 	return gHUD.m_is_map_loaded ? gEngfuncs.GetLocalPlayer() : &dummyPlayer;
 }
+
+extern bool g_studio_init;
+
+RGB GetEntityLighting(cl_entity_t* ent) {
+	if (!g_studio_init) {
+		// crash if called before the first model is rendered on join
+		return RGB(255, 255, 255);
+	}
+
+	static alight_t light;
+	static Vector lightVec;
+	
+	memset(&light, 0, sizeof(light));
+	memset(&lightVec, 0, sizeof(lightVec));
+	light.plightvec = &lightVec[0];
+
+	IEngineStudio.StudioDynamicLight(ent, &light);
+	IEngineStudio.StudioEntityLight(&light);
+	IEngineStudio.StudioSetupLighting(&light);
+
+	int illum = light.ambientlight + light.shadelight;
+	return RGB(illum * light.color.x, illum * light.color.y, illum * light.color.z);
+}

@@ -11,6 +11,7 @@
 #include "pm_defs.h"
 #include "eventscripts.h"
 #include "ev_hldm.h"
+#include "mstream.h"
 
 #define MAX_ADV_SPRITES 512
 
@@ -44,25 +45,23 @@ void LinkSpriteAdv(tempent_s* temp, SpriteAdv& state) {
 	if (!args.renderamt) {
 		args.renderamt = 200;
 	}
-	if (!args.r && !args.g && !args.b) {
-		args.r = args.g = args.b = 255;
+	if (!args.color.r && !args.color.g && !args.color.b) {
+		args.color.r = args.color.g = args.color.b = 255;
 	}
 
 	temp->entity.curstate.scale = args.scale * 0.1f;
 	temp->entity.curstate.renderamt = args.renderamt;
 	temp->entity.curstate.rendermode = args.renderMode;
-	temp->entity.curstate.rendercolor.r = args.r;
-	temp->entity.curstate.rendercolor.g = args.g;
-	temp->entity.curstate.rendercolor.b = args.b;
+	temp->entity.curstate.rendercolor.r = args.color.r;
+	temp->entity.curstate.rendercolor.g = args.color.g;
+	temp->entity.curstate.rendercolor.b = args.color.b;
 	temp->entity.angles.x = args.rx;
 	temp->entity.angles.y = args.ry;
 	temp->entity.angles.z = args.rz;
 	temp->entity.curstate.frame = args.startFrame;
 	temp->entity.curstate.framerate = args.framerate;
 
-	temp->entity.curstate.velocity.x = args.velX;
-	temp->entity.curstate.velocity.y = args.velY;
-	temp->entity.curstate.velocity.z = args.velZ;
+	temp->entity.curstate.velocity = args.vel;
 
 	float lifetime = args.maxLife * 0.1f;
 
@@ -88,14 +87,45 @@ void SpriteAdvCallback(tempent_s* tempent, float frametime, float curtime) {
 	tempent->entity.angles.y += args.spinY * 10.0f * frametime;
 	tempent->entity.angles.z += args.spinZ * 10.0f * frametime;
 
-	tempent->entity.curstate.velocity.x += args.accelX * frametime;
-	tempent->entity.curstate.velocity.y += args.accelY * frametime;
-	tempent->entity.curstate.velocity.z += args.accelZ * frametime;
+	tempent->entity.curstate.velocity = tempent->entity.curstate.velocity + args.acc * frametime;
 
-	tempent->entity.origin = tempent->entity.origin + tempent->entity.curstate.velocity * frametime;
+	Vector newOri = tempent->entity.origin + tempent->entity.curstate.velocity * frametime;
+
+	if (args.collideBsp || args.collideEnt) {
+		int flags = args.collideEnt ? PM_NORMAL : PM_STUDIO_IGNORE;
+
+		pmtrace_t pmtrace;
+		gEngfuncs.pEventAPI->EV_SetTraceHull(2);
+		gEngfuncs.pEventAPI->EV_PlayerTrace(tempent->entity.origin, newOri, flags, -1, &pmtrace);
+
+		// ignore players when not flagged to collide with entities.
+		if (pmtrace.fraction != 1 && !args.collideEnt) {
+			physent_t* pe = gEngfuncs.pEventAPI->EV_GetPhysent(pmtrace.ent);
+			if (pe && pe->info >= 1 && pe->info <= gEngfuncs.GetMaxClients()) {
+				// no easy way to set all players as non-solid(?), so running the trace again here
+				// with the collided player ignored.
+				gEngfuncs.pEventAPI->EV_PlayerTrace(tempent->entity.origin, newOri, flags, pmtrace.ent, &pmtrace);
+			}
+		}
+
+		if (pmtrace.fraction != 1)
+		{
+			newOri = pmtrace.endpos;
+			tempent->entity.curstate.velocity = -tempent->entity.curstate.velocity * args.elasticity * 0.01f;
+		}
+	}
+
+	tempent->entity.origin = newOri;
+
+	if (args.useLightmap) {
+		RGB light = GetEntityLighting(&tempent->entity).ApplyGamma();
+		tempent->entity.curstate.rendercolor.r = light.r;
+		tempent->entity.curstate.rendercolor.g = light.g;
+		tempent->entity.curstate.rendercolor.b = light.b;
+	}
 
 	tempent->entity.curstate.frame += tempent->entity.curstate.framerate * frametime;
-	if (!args.maxLife && tempent->entity.curstate.frame >= tempent->entity.model->numframes) {
+	if (!args.loopAnim && tempent->entity.curstate.frame >= tempent->entity.model->numframes) {
 		tempent->entity.curstate.frame = tempent->entity.model->numframes - 1;
 	}
 
@@ -199,75 +229,82 @@ int __MsgFunc_SpriteAdv(const char* pszName, int iSize, void* pbuf) {
 	SpriteAdvArgs& args = spriteAdv.args;
 
 	float origin[3];
-	origin[0] = args.x = READ_SHORT();
-	origin[1] = args.y = READ_SHORT();
-	origin[2] = args.z = READ_SHORT();
-	int modelIdx = READ_SHORT();
-	args.scale = READ_BYTE();
-	args.framerate = READ_BYTE() * 0.1f;
-	args.renderamt = READ_BYTE();
-	uint8_t flags = READ_BYTE();
+	origin[0] = args.x = READ_BITS(16);
+	origin[1] = args.y = READ_BITS(16);
+	origin[2] = args.z = READ_BITS(16);
+	int modelIdx = READ_BITS(9);
 
 	args.renderMode = kRenderTransAdd;
 	args.sprMode = SPR_VP_PARALLEL;
-	args.r = args.g = args.b = 255;
+	args.color.r = args.color.g = args.color.b = 255;
+	args.scale = 10;
+	args.loopAnim = READ_BIT();
 
-	if (flags & FL_SPRITEADV_LOOP) {
-		args.maxLife = READ_BYTE();
+	if (READ_BIT()) {
+		args.scale = READ_BITS(8);
 	}
-	if (flags & FL_SPRITEADV_FRAME) {
-		args.startFrame = READ_BYTE();
-		args.endFrame = READ_BYTE();
+	if (READ_BIT()) {
+		args.framerate = READ_BITS(8) * 0.1f;
 	}
-	if (flags & FL_SPRITEADV_FADE) {
-		args.fadeMode = READ_BYTE();
-		args.fadeTime = READ_BYTE();
+	if (READ_BIT()) {
+		args.maxLife = READ_BITS(8);
 	}
-	if (flags & FL_SPRITEADV_MODE) {
-		uint8_t mode = READ_BYTE();
-		args.renderMode = (mode >> 4) & 0xf;
-		args.sprMode = mode & 0xf;
+	if (READ_BIT()) {
+		args.startFrame = READ_BITS(8);
+	}
+	if (READ_BIT()) {
+		args.endFrame = READ_BITS(8);
+	}
+	if (READ_BIT()) {
+		args.fadeMode = READ_BITS(8);
+
+		if (READ_BIT()) {
+			args.fadeTime = READ_BITS(8);
+		}
+	}
+	if (READ_BIT()) {
+		args.useLightmap = READ_BIT();
+		args.renderMode = READ_BITS(3);
+
+		if (args.renderMode != kRenderNormal) {
+			args.renderamt = READ_BITS(8);
+		}
+	}
+	if (READ_BIT()) {
+		args.sprMode = READ_BITS(3);
 
 		if (args.sprMode == SPR_ORIENTED || args.sprMode == SPR_VP_PARALLEL_ORIENTED) {
-			args.rx = READ_ANGLE();
-			args.ry = READ_ANGLE();
-			args.rz = READ_ANGLE();
+			args.rx = READ_BITS(12) * 0.1f;
+			args.ry = READ_BITS(12) * 0.1f;
+			args.rz = READ_BITS(12) * 0.1f;
 		}
 	}
-	if (flags & FL_SPRITEADV_EXPAND) {
-		args.expandSpeed = READ_SHORT();
-		args.expandMax = READ_BYTE();
-	}
-	if (flags & FL_SPRITEADV_COLOR) {
-		args.r = READ_BYTE();
-		args.g = READ_BYTE();
-		args.b = READ_BYTE();
-	}
-	if (flags & FL_SPRITEADV_SPIN) {
-		args.spinX = (int8_t)READ_BYTE();
-		args.spinY = (int8_t)READ_BYTE();
-		args.spinZ = (int8_t)READ_BYTE();
-	}
-	if (flags & FL_SPRITEADV_MOVE) {
-		uint8_t moveFlags = READ_BYTE();
+	if (READ_BIT()) {
+		args.expandSpeed = READ_BITS(16);
 
-		if (moveFlags & FL_SPRITEADV_MOVE_VEL_X) {
-			args.velX = (int16_t)READ_SHORT();
+		if (READ_BIT()) {
+			args.expandMax = READ_BITS(10);
 		}
-		if (moveFlags & FL_SPRITEADV_MOVE_VEL_Y) {
-			args.velY = (int16_t)READ_SHORT();
-		}
-		if (moveFlags & FL_SPRITEADV_MOVE_VEL_Z) {
-			args.velZ = (int16_t)READ_SHORT();
-		}
-		if (moveFlags & FL_SPRITEADV_MOVE_ACCEL_X) {
-			args.accelX = (int16_t)READ_SHORT();
-		}
-		if (moveFlags & FL_SPRITEADV_MOVE_ACCEL_Y) {
-			args.accelY = (int16_t)READ_SHORT();
-		}
-		if (moveFlags & FL_SPRITEADV_MOVE_ACCEL_Z) {
-			args.accelZ = (int16_t)READ_SHORT();
+	}
+	if (READ_BIT()) {
+		args.color.r = READ_BITS(8);
+		args.color.g = READ_BITS(8);
+		args.color.b = READ_BITS(8);
+	}
+	if (READ_BIT()) {
+		args.spinX = (int8_t)READ_BITS(8);
+		args.spinY = (int8_t)READ_BITS(8);
+		args.spinZ = (int8_t)READ_BITS(8);
+	}
+	if (READ_BIT()) {
+		args.vel = READ_VECTOR_LOWP(10);
+		args.acc = READ_VECTOR_LOWP(10);
+
+		args.collideBsp = READ_BIT();
+		args.collideEnt = READ_BIT();
+
+		if (READ_BIT()) {
+			args.elasticity = READ_BITS(7);
 		}
 	}
 

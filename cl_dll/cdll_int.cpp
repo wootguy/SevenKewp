@@ -63,6 +63,7 @@ bool is_software_renderer;
 
 int g_connection_phase;
 int g_loadedSprites = 0;
+extern bool g_studio_init;
 extern uint32_t g_latest_cmd_id;
 extern uint32_t g_cmd_timer;
 extern SDL_Window* g_sdl_window;
@@ -209,6 +210,7 @@ int CL_DLLEXPORT HUD_VidInit( void )
 
 	g_latest_cmd_id = 0;
 	g_cmd_timer = 0;
+	g_studio_init = false;
 
 	return 1;
 }

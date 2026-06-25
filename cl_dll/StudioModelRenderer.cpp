@@ -50,6 +50,9 @@ alight_t g_fullbright_alight = {
 	g_fullbright_dir
 };
 
+// prevents crash calling studio functions before the renderer is ready
+bool g_studio_init;
+
 void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, float** m_lastEventTime);
 
 /////////////////////
@@ -1991,6 +1994,7 @@ void CStudioModelRenderer::StudioRenderFinal(bool mirrored)
 }
 
 void CStudioModelRenderer::UpdateLocalPlayerLightLevel(alight_t& alight) {
+	g_studio_init = true;
 	gPlayerSim.light_level = alight.ambientlight + alight.shadelight;
 	gPlayerSim.light_color.r = gPlayerSim.light_level * alight.color.x;
 	gPlayerSim.light_color.g = gPlayerSim.light_level * alight.color.y;

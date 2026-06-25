@@ -11,23 +11,6 @@ struct custom_muzzle_flash_t {
 	int modelIdx; // client only
 };
 
-// SpriteAdv network message parser flags
-#define FL_SPRITEADV_LOOP 1 // loop the animation + effect has life parameter
-#define FL_SPRITEADV_FRAME 2 // effect has an start/end frame parameters
-#define FL_SPRITEADV_FADE 4 // effect has fade parameters
-#define FL_SPRITEADV_MODE 8 // sprite has render mode parameters
-#define FL_SPRITEADV_EXPAND 16 // effect has expand/shrink parameters
-#define FL_SPRITEADV_COLOR 32 // effect has color parameters
-#define FL_SPRITEADV_SPIN 64 // effect has spin parameters
-#define FL_SPRITEADV_MOVE 128 // effect has movement parameters
-
-#define FL_SPRITEADV_MOVE_VEL_X 1 // effect has X velocity parameter
-#define FL_SPRITEADV_MOVE_VEL_Y 2 // effect has Y velocity parameter
-#define FL_SPRITEADV_MOVE_VEL_Z 4 // effect has Z velocity parameter
-#define FL_SPRITEADV_MOVE_ACCEL_X 8 // effect has X velocity parameter
-#define FL_SPRITEADV_MOVE_ACCEL_Y 16 // effect has Y velocity parameter
-#define FL_SPRITEADV_MOVE_ACCEL_Z 32 // effect has Z velocity parameter
-
 #define FL_HUDCON_MSG_PERCENT 1			// message contains offset percentage parameters
 #define FL_HUDCON_MSG_PIXELS 2			// message contains offset pixel parameters
 #define FL_HUDCON_MSG_EM 4				// message contains offset em parameters
@@ -61,10 +44,11 @@ struct SpriteAdvArgs {
 	int16_t x, y, z;
 	int16_t modelIdx;
 	uint8_t scale;
-	uint8_t framerate;
+	uint8_t framerate; // FPS * 10 (max of 25.5 FPS)
 	uint8_t startFrame;
 	uint8_t endFrame; // 0 = automatic
 	uint8_t renderamt;
+	bool loopAnim;		// loop animation
 
 	// Loop
 	uint8_t maxLife; // seconds*0.1 to live (implies looping the animation)
@@ -77,13 +61,14 @@ struct SpriteAdvArgs {
 	uint8_t renderMode;
 	uint8_t sprMode; // parallel, oriented...
 	float rx, ry, rz; // oriented mode rotation
+	bool useLightmap; // if true, color the sprite using lightmaps
 
 	// Expand
 	int16_t expandSpeed;
-	uint8_t expandMax; // stop expanding once hitting this scale (0 = no limit)
+	uint16_t expandMax; // stop expanding once hitting this scale * 0.1 (0 = no limit)
 
 	// Color
-	uint8_t r, g, b;
+	RGB color;
 
 	// Attachment
 	uint16_t attachEntIdx;
@@ -92,9 +77,14 @@ struct SpriteAdvArgs {
 	// Spin
 	int8_t spinX, spinY, spinZ; // angular velocity
 
-	// Velocity
-	int16_t velX, velY, velZ;
-	int16_t accelX, accelY, accelZ;
+	// Movement
+	Vector vel; // velocity
+	Vector acc; // acceleration
+
+	// collision
+	bool collideBsp;
+	bool collideEnt;
+	uint8_t elasticity;		// how much velocity is kept on bounce (0-100)
 };
 
 // hud element network message parser flags

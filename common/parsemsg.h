@@ -22,6 +22,7 @@
 #define PARSEMSG_H
 
 #include <stdint.h>
+#include "vector.h"
 
 #define ASSERT( x )
 //--------------------------------------------------------------------------------------------------------------
@@ -29,6 +30,10 @@ void BEGIN_READ( void *buf, int size );
 int READ_CHAR( void );
 int READ_BYTE( void );
 void READ_BYTES(uint8_t* bytes, int count);
+bool READ_BIT();
+uint64_t READ_BITS(int numBits); // if using this, don't ever use any non-bit READ_ funcs
+float READ_FLOAT_LOWP(int numBits);
+Vector READ_VECTOR_LOWP(int numBits);
 int READ_SHORT( void );
 int READ_WORD( void );
 int READ_LONG( void );

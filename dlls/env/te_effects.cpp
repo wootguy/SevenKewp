@@ -1993,96 +1993,128 @@ void EjectBrass(const Vector& vecOrigin, const Vector& vecVelocity, float rotati
 #include "debug.h"
 
 void UTIL_SpriteAdv(Vector pos, const SpriteAdvArgs& args, int msgMode, const float* msgOrigin, edict_t* targetEnt) {
-	uint8_t moveFlags = 0;
-
-	if (args.velX) moveFlags |= FL_SPRITEADV_MOVE_VEL_X;
-	if (args.velY) moveFlags |= FL_SPRITEADV_MOVE_VEL_Y;
-	if (args.velZ) moveFlags |= FL_SPRITEADV_MOVE_VEL_Z;
-	if (args.accelX) moveFlags |= FL_SPRITEADV_MOVE_ACCEL_X;
-	if (args.accelY) moveFlags |= FL_SPRITEADV_MOVE_ACCEL_Y;
-	if (args.accelZ) moveFlags |= FL_SPRITEADV_MOVE_ACCEL_Z;
-	
-	uint8_t flags = 0;
-
-	if (args.maxLife) {
-		flags |= FL_SPRITEADV_LOOP;
-	}
-	if (args.endFrame || args.startFrame) {
-		flags |= FL_SPRITEADV_FRAME;
-	}
-	if (args.fadeMode) {
-		flags |= FL_SPRITEADV_FADE;
-	}
-	if (args.renderMode != kRenderTransAdd || args.sprMode != SPR_VP_PARALLEL) {
-		flags |= FL_SPRITEADV_MODE;
-	}
-	if (args.expandSpeed) {
-		flags |= FL_SPRITEADV_EXPAND;
-	}
-	if (args.r || args.g || args.b) {
-		flags |= FL_SPRITEADV_COLOR;
-	}
-	if (args.spinX || args.spinY || args.spinZ) {
-		flags |= FL_SPRITEADV_SPIN;
-	}
-	if (moveFlags) {
-		flags |= FL_SPRITEADV_MOVE;
-	}
+	static uint8_t buffer[64];
+	mstream writer((char*)buffer, sizeof(buffer));
 
 	MESSAGE_BEGIN(msgMode, gmsgSpriteAdv, msgOrigin, targetEnt);
-	WRITE_SHORT(pos.x);
-	WRITE_SHORT(pos.y);
-	WRITE_SHORT(pos.z);
-	WRITE_SHORT(args.modelIdx);
-	WRITE_BYTE(args.scale);
-	WRITE_BYTE(args.framerate);
-	WRITE_BYTE(args.renderamt);
-	WRITE_BYTE(flags);
 
-	if (flags & FL_SPRITEADV_LOOP) {
-		WRITE_BYTE(args.maxLife);
-	}
-	if (flags & FL_SPRITEADV_FRAME) {
-		WRITE_BYTE(args.startFrame);
-		WRITE_BYTE(args.endFrame);
-	}
-	if (flags & FL_SPRITEADV_FADE) {
-		WRITE_BYTE(args.fadeMode);
-		WRITE_BYTE(args.fadeTime);
-	}
-	if (flags & FL_SPRITEADV_MODE) {
-		uint8_t mode = ((args.renderMode & 0xf) << 4) | (args.sprMode & 0xf);
-		WRITE_BYTE(mode);
+	writer.writeBits(pos.x, 16);
+	writer.writeBits(pos.y, 16);
+	writer.writeBits(pos.z, 16);
+	writer.writeBits(args.modelIdx, 9);
 
-		if (args.sprMode == SPR_ORIENTED || args.sprMode == SPR_VP_PARALLEL_ORIENTED) {
-			WRITE_ANGLE(args.rx);
-			WRITE_ANGLE(args.ry);
-			WRITE_ANGLE(args.rz);
+	writer.writeBit(args.loopAnim);
+
+	writer.writeBit(args.scale != 10);
+	if (args.scale != 10) {
+		writer.writeBits(args.scale, 8);
+	}
+
+	writer.writeBit(args.framerate != 0);
+	if (args.framerate != 0) {
+		writer.writeBits(args.framerate, 8);
+	}
+
+	writer.writeBit(args.maxLife != 0);
+	if (args.maxLife != 0) {
+		writer.writeBits(args.maxLife, 8);
+	}
+
+	writer.writeBit(args.startFrame != 0);
+	if (args.startFrame != 0) {
+		writer.writeBits(args.startFrame, 8);
+	}
+
+	writer.writeBit(args.endFrame != 0);
+	if (args.endFrame != 0) {
+		writer.writeBits(args.endFrame, 8);
+	}
+
+	writer.writeBit(args.fadeMode != 0);
+	if (args.fadeMode != 0) {
+		writer.writeBits(args.fadeMode, 2);
+
+		writer.writeBit(args.fadeTime != 0);
+		if (args.fadeTime != 0) {
+			writer.writeBits(args.fadeTime, 8);
 		}
 	}
-	if (flags & FL_SPRITEADV_EXPAND) {
-		WRITE_SHORT(args.expandSpeed);
-		WRITE_BYTE(args.expandMax);
-	}
-	if (flags & FL_SPRITEADV_COLOR) {
-		WRITE_BYTE(args.r);
-		WRITE_BYTE(args.g);
-		WRITE_BYTE(args.b);
-	}
-	if (flags & FL_SPRITEADV_SPIN) {
-		WRITE_BYTE(args.spinX);
-		WRITE_BYTE(args.spinY);
-		WRITE_BYTE(args.spinZ);
-	}
-	if (flags & FL_SPRITEADV_MOVE) {
-		WRITE_BYTE(moveFlags);
 
-		if (moveFlags & FL_SPRITEADV_MOVE_VEL_X) WRITE_SHORT(args.velX);
-		if (moveFlags & FL_SPRITEADV_MOVE_VEL_Y) WRITE_SHORT(args.velY);
-		if (moveFlags & FL_SPRITEADV_MOVE_VEL_Z) WRITE_SHORT(args.velZ);
-		if (moveFlags & FL_SPRITEADV_MOVE_ACCEL_X) WRITE_SHORT(args.accelX);
-		if (moveFlags & FL_SPRITEADV_MOVE_ACCEL_Y) WRITE_SHORT(args.accelY);
-		if (moveFlags & FL_SPRITEADV_MOVE_ACCEL_Z) WRITE_SHORT(args.accelZ);
+	bool hasRender = args.renderMode != 0 || args.useLightmap;
+	writer.writeBit(hasRender);
+	if (hasRender) {
+		writer.writeBit(args.useLightmap != 0);
+		writer.writeBits(args.renderMode, 3);
+
+		if (args.renderMode != kRenderNormal)
+			writer.writeBits(args.renderamt, 8);
+	}
+
+	writer.writeBit(args.sprMode != 0);
+	if (args.sprMode != 0) {
+		writer.writeBits(args.sprMode, 3);
+
+		if (args.sprMode == SPR_ORIENTED || args.sprMode == SPR_VP_PARALLEL_ORIENTED) {
+			float rx = args.rx < 0 ? args.rx + 180 : args.rx;
+			float ry = args.ry < 0 ? args.ry + 180 : args.rx;
+			float rz = args.rz < 0 ? args.rz + 180 : args.rz;
+			writer.writeBits(args.rx * 10, 12);
+			writer.writeBits(args.ry * 10, 12);
+			writer.writeBits(args.rz * 10, 12);
+		}
+	}
+
+	writer.writeBit(args.expandSpeed != 0);
+	if (args.expandSpeed != 0) {
+		writer.writeBits(args.expandSpeed, 16);
+
+		writer.writeBit(args.expandMax != 0);
+		if (args.expandMax != 0) {
+			writer.writeBits(args.expandMax, 10);
+		}
+	}
+
+	bool hasColor = args.color.r || args.color.g || args.color.b;
+	writer.writeBit(hasColor);
+	if (hasColor) {
+		writer.writeBits(args.color.r, 8);
+		writer.writeBits(args.color.g, 8);
+		writer.writeBits(args.color.b, 8);
+	}
+
+	bool hasSpin = args.spinX || args.spinY || args.spinZ;
+	writer.writeBit(hasSpin);
+	if (hasSpin) {
+		writer.writeBits(args.spinX, 8);
+		writer.writeBits(args.spinY, 8);
+		writer.writeBits(args.spinZ, 8);
+	}
+
+	bool hasVelX = fabs(args.vel.x) >= 0.1f;
+	bool hasVelY = fabs(args.vel.y) >= 0.1f;
+	bool hasVelZ = fabs(args.vel.z) >= 0.1f;
+	bool hasAccX = fabs(args.acc.x) >= 0.1f;
+	bool hasAccY = fabs(args.acc.y) >= 0.1f;
+	bool hasAccZ = fabs(args.acc.z) >= 0.1f;
+	bool hasMove = hasVelX || hasVelY || hasVelZ || hasAccX || hasAccY || hasAccZ;
+	writer.writeBit(hasMove);
+	if (hasMove) {
+		writer.writeBitVectorLowPrec(args.vel, 10);
+		writer.writeBitVectorLowPrec(args.acc, 10);
+
+		writer.writeBit(args.collideBsp);
+		writer.writeBit(args.collideEnt);
+		writer.writeBit(args.elasticity != 0);
+		if (args.elasticity != 0) {
+			writer.writeBits(args.elasticity, 7);
+		}
+	}
+
+	writer.endBitWriting();
+	WRITE_BYTES(buffer, writer.tell());
+
+	if (writer.eom()) {
+		ALERT(at_error, "Overflowed SpriteAdv message\n");
 	}
 
 	MESSAGE_END();

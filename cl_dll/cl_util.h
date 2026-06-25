@@ -254,3 +254,6 @@ Vector WorldToScreen(const Vector& P, const Vector& viewerOrigin, const Vector& 
 
 // convert a world space point to screen space for the local player
 Vector WorldToScreen(const Vector& P);
+
+// Get lightmap color underneath entity
+RGB GetEntityLighting(cl_entity_t* ent);

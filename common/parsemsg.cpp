@@ -18,6 +18,7 @@
 //--------------------------------------------------------------------------------------------------------------
 #include "parsemsg.h"
 #include <port.h>
+#include "mstream.h"
 
 typedef unsigned char byte;
 #define true 1
@@ -26,6 +27,8 @@ static byte *gpBuf;
 static int giSize;
 static int giRead;
 static int giBadRead;
+
+mstream g_msg_bit_reader;
 
 int READ_OK( void )
 {
@@ -38,6 +41,7 @@ void BEGIN_READ( void *buf, int size )
 	giBadRead = 0;
 	giSize = size;
 	gpBuf = (byte*)buf;
+	g_msg_bit_reader = mstream((char*)buf, size);
 }
 
 
@@ -87,6 +91,54 @@ void READ_BYTES(uint8_t* bytes, int count) {
 	for (int i = 0; i < byteCount; i++) {
 		*bytePtr = READ_BYTE();
 		bytePtr++;
+	}
+}
+
+uint64_t READ_BITS(int numBits) {
+	return g_msg_bit_reader.readBits(numBits);
+}
+
+bool READ_BIT() {
+	return g_msg_bit_reader.readBit();
+}
+
+float READ_FLOAT_LOWP(int numBits) {
+	if (numBits == 10) {
+		int sign = READ_BIT() ? -1 : 1;
+		int power = READ_BITS(2);
+		int mantissa = READ_BITS(7);
+
+		switch (power) {
+		default:
+		case 0: return mantissa * sign * 0.1f;
+		case 1: return mantissa * sign;
+		case 2: return mantissa * sign * 10;
+		case 3: return mantissa * sign * 100;
+		}
+	}
+	else {
+		return 0;
+	}
+}
+
+Vector READ_VECTOR_LOWP(int numBits) {
+	if (numBits == 10) {
+		Vector vec;
+		
+		if (READ_BIT()) {
+			vec.x = READ_FLOAT_LOWP(numBits);
+		}
+		if (READ_BIT()) {
+			vec.y = READ_FLOAT_LOWP(numBits);
+		}
+		if (READ_BIT()) {
+			vec.z = READ_FLOAT_LOWP(numBits);
+		}
+
+		return vec;
+	}
+	else {
+		return Vector(0,0,0);
 	}
 }
 

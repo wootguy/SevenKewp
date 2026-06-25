@@ -1,10 +1,6 @@
 #pragma once
 #include "Platform.h"
-
-#ifndef CLIENT_DLL
 #include "vector.h"
-#endif
-
 #include <stdint.h>
 
 class EXPORT mstream
@@ -32,9 +28,7 @@ public:
 
 	uint64_t readBits(uint8_t bitCount);
 
-#ifndef CLIENT_DLL
 	Vector readBitVec3Coord();
-#endif
 
 	float readBitCoord();
 
@@ -51,6 +45,14 @@ public:
 	// write bitCount bits from value. Returns bits written
 	// the buffer must have at least 8 bytes more space than you need due to optimization
 	uint8_t writeBits(uint64_t value, uint8_t bitCount);
+
+	// writes a low precision float value. 
+	// numBits = 10 only for now - Max range of +/-12,700 with precision up to 0.1
+	uint8_t writeBitFloatLowPrec(float fl, int numBits);
+
+	// conditionally writes components that are non-zero
+	// numBits = must be 10. Total Vector size is 3-33 bits
+	uint8_t writeBitVectorLowPrec(Vector v, int numBits);
 
 	// write zeroes into the remaining bits at the current byte, then increment the position to the next byte
 	// true if position was incremented

@@ -81,13 +81,12 @@ uint64_t mstream::readBits(uint8_t bitCount)
 	return val;
 }
 
-#ifndef CLIENT_DLL
 Vector mstream::readBitVec3Coord() {
 	bool xflag = readBit();
 	bool yflag = readBit();
 	bool zflag = readBit();
 
-	Vector vout = g_vecZero;
+	Vector vout = Vector(0,0,0);
 
 	if (xflag)
 		vout[0] = readBitCoord();
@@ -98,7 +97,6 @@ Vector mstream::readBitVec3Coord() {
 
 	return vout;
 }
-#endif
 
 float mstream::readBitCoord() {
 	bool hasIntVal = readBit();
@@ -218,6 +216,68 @@ bool mstream::endBitWriting() {
 	}
 
 	return true;
+}
+
+uint8_t mstream::writeBitFloatLowPrec(float f, int numBits) {
+	if (numBits == 10) {
+		if (f < 0) {
+			writeBit(1);
+			f = fabs(f);
+		}
+		else {
+			writeBit(0);
+		}
+
+		if (f >= 1000) {
+			writeBits(3, 2);
+			writeBits(f / 100, 7);
+		}
+		else if (f >= 100) {
+			writeBits(2, 2);
+			writeBits(f / 10, 7);
+		}
+		else if (f >= 10) {
+			writeBits(1, 2);
+			writeBits(f, 7);
+		}
+		else {
+			writeBits(0, 2);
+			writeBits(f * 10, 7);
+		}
+
+		return 10;
+	}
+
+	return 0;
+}
+
+uint8_t mstream::writeBitVectorLowPrec(Vector v, int numBits) {
+	if (numBits == 10) {
+		bool hasX = fabs(v.x) >= 0.1f;
+		bool hasY = fabs(v.y) >= 0.1f;
+		bool hasZ = fabs(v.z) >= 0.1f;
+		uint8_t bitsWritten = 3;
+
+		writeBit(hasX);
+		if (hasX) {
+			bitsWritten += writeBitFloatLowPrec(v.x, 10);
+		}
+
+		writeBit(hasY);
+		if (hasY) {
+			bitsWritten += writeBitFloatLowPrec(v.y, 10);
+		}
+
+		writeBit(hasZ);
+		if (hasZ) {
+			bitsWritten += writeBitFloatLowPrec(v.z, 10);
+		}
+
+		return bitsWritten;
+	}
+	else {
+		return 0;
+	}
 }
 
 bool mstream::writeBitCoord(const float f) {
