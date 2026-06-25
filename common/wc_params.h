@@ -106,6 +106,7 @@ enum WeaponCustomHasCooldownIndex {
 	WC_COOLDOWN_TERTIARY,	// override cooldown for tertiary fire
 	WC_COOLDOWN_IDLE,		// override cooldown for idle
 	WC_COOLDOWN_FAIL,		// cooldown after a failed attack (out of ammo, underwater)
+	WC_COOLDOWN_FINISH,		// cooldown after finishing an attack
 	WC_COOLDOWN_WATER,		// cooldown while in water (0 = use default cooldown)
 	WC_COOLDOWN_TYPES,
 };

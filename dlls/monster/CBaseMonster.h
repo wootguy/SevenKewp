@@ -213,7 +213,7 @@ public:
 
 	HurtTime m_lastHurtTriggers[MAX_MONSTER_HURT_TRIGGERS];
 
-	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | FCAP_IMPULSE_USE; }
+	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | (IsAlive() ? FCAP_IMPULSE_USE : 0); }
 	virtual int		Save( CSave &save ); 
 	virtual int		Restore( CRestore &restore );
 	virtual BOOL	HasTarget(string_t targetname);
@@ -421,8 +421,8 @@ public:
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 	virtual void GibMonster( void );
 	virtual void MakeGibs( void );
-	BOOL		 ShouldGibMonster( int iGib );
-	void		 CallGibMonster( void );
+	virtual BOOL	ShouldGibMonster( int iGib );
+	virtual void	CallGibMonster( void );
 	virtual BOOL	HasHumanGibs( void );
 	virtual BOOL	HasAlienGibs( void );
 	virtual BOOL	IsMachine( void );

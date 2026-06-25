@@ -102,9 +102,11 @@ EXPORT extern cvar_t	mp_one_pickup_per_player; // items don't respawn, but each 
 EXPORT extern cvar_t	mp_keep_inventory; // 1 = players add their previous map inventory to the next map's default loadout. 2 = players keep their inventory exactly as it was in the previous map. If they die and respawn, or join for the first time, they get the map default inventory.
 EXPORT extern cvar_t	mp_use_only_pickups; // 1 = all pickups will be forced into use-only mode
 EXPORT extern cvar_t	mp_barnacle_paralyze; // 1 = can't use weapons while being barnacled
+EXPORT extern cvar_t	mp_multi_damage_mode; // 0 = HL behavior. Shotgun pellets stack to create a big damage value. 1 = Apply damage for each bullet individually. This results in smaller damage values, which means less flinching and gibbing from shotguns. However, if a map plugin sets non-solid state immediately after death, then a shotgun can take down many monsters in a row.
 
 EXPORT extern cvar_t mp_bob_speed;			// scales cl_bobcycle
 EXPORT extern cvar_t mp_bob_mag;			// scales cl_bob
+EXPORT extern cvar_t mp_bob_mag_weapon;		// scales cl_bob for the view model, combined with mp_bob_mag
 EXPORT extern cvar_t mp_bob_min;			// min bob height
 EXPORT extern cvar_t mp_bob_max;			// max bob height
 EXPORT extern cvar_t mp_bob_offset;			// bob center adjustment

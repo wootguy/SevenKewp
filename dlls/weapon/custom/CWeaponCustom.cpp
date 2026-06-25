@@ -57,6 +57,9 @@ void CWeaponCustom::Spawn() {
 		pev->scale = 1;
 		pev->body = 0;
 		UTIL_SetSize(pev, g_vecZero, g_vecZero); // sprites have a huge hull by default
+#ifndef CLIENT_DLL
+		pev->rendercolor = g_bsp.get_lighting(pev->origin).ApplyGamma().ToVector();
+#endif
 	}
 
 	Vector mins = INT32_VEC3_TO_VECTOR(defaultParams.hull_min);
@@ -755,10 +758,8 @@ void CWeaponCustom::WeaponIdle() {
 	FinishAttack(0);
 	FinishAttack(1);
 
-	m_primaryCalled = false;
-	m_secondaryCalled = false;
-	m_primaryFired = false;
-	m_secondaryFired = false;
+	SetState(FL_WC_STATE_PRIMARY_FIRED | FL_WC_STATE_SECONDARY_FIRED, false);
+	SetState(FL_WC_STATE_PRIMARY_CALLED | FL_WC_STATE_SECONDARY_CALLED, false);
 
 	m_lastCanAkimbo = CanAkimbo();
 
@@ -928,10 +929,10 @@ void CWeaponCustom::PrimaryAttack() {
 	if (!m_pPlayer)
 		return;
 
-	bool isAttackStart = !m_primaryCalled;
+	bool isAttackStart = !GetState(FL_WC_STATE_PRIMARY_CALLED);
 
-	m_primaryCalled = true;
-	m_primaryFired = false;
+	SetState(FL_WC_STATE_PRIMARY_CALLED, true);
+	SetState(FL_WC_STATE_PRIMARY_FIRED, false);
 	CustomWeaponShootOpts& opts = GetShootOpts(0);
 
 	if ((opts.flags & FL_WC_SHOOT_NEED_AKIMBO) && !CanAkimbo())
@@ -941,7 +942,7 @@ void CWeaponCustom::PrimaryAttack() {
 		int* clip = GetAttackClip(0);
 
 		if (CommonAttack(0, clip, IsAkimbo(), false)) {
-			m_primaryFired = true;
+			SetState(FL_WC_STATE_PRIMARY_FIRED, true);
 			int trig = IsPrimaryAltActive() ? WC_TRIG_PRIMARY_ALT : WC_TRIG_PRIMARY;
 			int attackIdx = IsPrimaryAltActive() ? 3 : 0;
 
@@ -982,10 +983,10 @@ void CWeaponCustom::SecondaryAttack() {
 		return;
 	}
 
-	bool isAttackStart = !m_secondaryCalled;
+	bool isAttackStart = !GetState(FL_WC_STATE_SECONDARY_CALLED);
 
-	m_secondaryCalled = true;
-	m_secondaryFired = false;
+	SetState(FL_WC_STATE_SECONDARY_CALLED, true);
+	SetState(FL_WC_STATE_SECONDARY_FIRED, false);
 
 	CustomWeaponParams& params = GetActiveParams();
 	CustomWeaponShootOpts& opts = GetShootOpts(1);
@@ -999,7 +1000,7 @@ void CWeaponCustom::SecondaryAttack() {
 		int primaryTrig = IsPrimaryAltActive() ? WC_TRIG_PRIMARY_ALT : WC_TRIG_PRIMARY;
 
 		if (CommonAttack(0, &m_iClip, false, fireBoth)) {
-			m_secondaryFired = true;
+			SetState(FL_WC_STATE_SECONDARY_FIRED, true);
 
 			if (isAttackStart) {
 				events.ProcessEvents(WC_TRIG_SECONDARY_START, WC_TRIG_SHOOT_ARG_AKIMBO, false, fireBoth, *clip);
@@ -1015,7 +1016,7 @@ void CWeaponCustom::SecondaryAttack() {
 		
 		m_pPlayer->random_seed++; // so bullets don't hit the same spot (seed only updates once per cmd)
 		if (fireBoth && CommonAttack(0, &m_chargeReady, true, fireBoth)) {
-			m_secondaryFired = true;
+			SetState(FL_WC_STATE_SECONDARY_FIRED, true);
 
 			if (isAttackStart)
 				events.ProcessEvents(WC_TRIG_SECONDARY_START, WC_TRIG_SHOOT_ARG_AKIMBO, true, fireBoth, *clip);
@@ -1030,7 +1031,7 @@ void CWeaponCustom::SecondaryAttack() {
 		int* clip = GetAttackClip(1);
 
 		if (CommonAttack(1, clip, false, false)) {
-			m_secondaryFired = true;
+			SetState(FL_WC_STATE_SECONDARY_FIRED, true);
 
 			if (isAttackStart)
 				events.ProcessEvents(WC_TRIG_SECONDARY_START, 0);
@@ -1475,14 +1476,19 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 	if (!m_pPlayer)
 		return;
 
-	//bool attackCalled = attackIdx == 0 ? m_primaryCalled : m_secondaryCalled;
-	bool attackFired = attackIdx == 0 ? m_primaryFired : m_secondaryFired;
+	bool attackFired = attackIdx == 0 ? GetState(FL_WC_STATE_PRIMARY_FIRED) : GetState(FL_WC_STATE_SECONDARY_FIRED);
 
 	if (attackFired && g_runfuncs) {
 		events.KillBeams(attackIdx);
 	}
 
 	CustomWeaponShootOpts& opts = GetShootOpts(attackIdx);
+
+	if (attackFired && opts.cooldownOverride[WC_COOLDOWN_FINISH]) {
+		Cooldown(attackIdx, opts.cooldownOverride[WC_COOLDOWN_FINISH]);
+		if (opts.cooldownOverride[WC_COOLDOWN_IDLE]) // TODO: don't add 1s to idles by default? This is for doom plasma gun
+			m_flTimeWeaponIdle = opts.cooldownOverride[WC_COOLDOWN_IDLE] * 0.001f;
+	}
 
 	if (attackIdx == 0) {
 		if (opts.chargeDownTime && GetChargedState(attackIdx) == WC_CHARGE_STATE_DISCHARGING) {
@@ -1884,11 +1890,16 @@ std::string CWeaponCustom::GetStateString() {
 	if (GetState(FL_WC_STATE_ABORT_RELOAD)) state += "Abort reload + ";
 	if (GetState(FL_WC_STATE_RELOAD_CLIP_DONE)) state += "Reload clip done + ";
 	if (GetState(FL_WC_STATE_CHAMBER_NEEDED)) state += "Chamber needed + ";
+	if (GetState(FL_WC_STATE_PRIMARY_CALLED)) state += "Attack1 + ";
+	if (GetState(FL_WC_STATE_PRIMARY_FIRED)) state += "Fired1 + ";
+	if (GetState(FL_WC_STATE_SECONDARY_CALLED)) state += "Attack2 + ";
+	if (GetState(FL_WC_STATE_SECONDARY_FIRED)) state += "Fired2 + ";
+
 
 	if (state.size())
 		state = state.substr(0, state.size() - 3);
 
-	int queuedState = m_fireState >> 16;
+	int queuedState = m_fireState >> 20;
 	if (queuedState) {
 		state += " (Queued attack " + std::to_string(queuedState) + " states)\n";
 	}
@@ -2287,7 +2298,7 @@ bool CWeaponCustom::QueueStateToggles(int toggleIdx) {
 		return false;
 
 	uint32_t packed = (toggleIdx+1) & 0x7;
-	m_fireState = (packed << 16) | ((uint32_t)m_fireState & 0xffff);
+	m_fireState = (packed << 20) | ((uint32_t)m_fireState & 0xfffff);
 
 	if (g_runfuncs) {
 		m_stateChangeCmdTime = CmdTime();
@@ -2297,7 +2308,7 @@ bool CWeaponCustom::QueueStateToggles(int toggleIdx) {
 }
 
 void CWeaponCustom::PlayDelayedStateToggles() {
-	int delayIdx = m_fireState >> 16;
+	int delayIdx = m_fireState >> 20;
 	if (!delayIdx)
 		return; // no states queued for toggling
 	
@@ -2327,7 +2338,7 @@ void CWeaponCustom::PlayDelayedStateToggles() {
 
 	if (CmdTime() - m_stateChangeCmdTime >= delay) {
 		DoStateToggles(attackIdx);
-		m_fireState &= 0xffff; // clear queue
+		m_fireState &= 0xfffff; // clear queue
 	}
 }
 
@@ -2403,7 +2414,7 @@ void CWeaponCustom::DoStateToggles(int attackIdx) {
 	}
 }
 
-void CWeaponCustom::SetState(uint16_t stateBits, bool state) {
+void CWeaponCustom::SetState(uint32_t stateBits, bool state) {
 	if (state)
 		m_fireState |= stateBits;
 	else
@@ -2541,10 +2552,7 @@ void CWeaponCustom::UpdateStateHudSprite() {
 			}
 
 			// add gamma
-			float gamma = 1.0f / 2.2f;
-			spr.color.r = V_min(255, powf(spr.color.r / 255.0f, gamma) * 255.0f);
-			spr.color.g = V_min(255, powf(spr.color.g / 255.0f, gamma) * 255.0f);
-			spr.color.b = V_min(255, powf(spr.color.b / 255.0f, gamma) * 255.0f);
+			spr.color.ApplyGamma();
 		}
 
 		// update animation and positioning

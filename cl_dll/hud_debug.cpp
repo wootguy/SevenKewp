@@ -188,13 +188,18 @@ int CHudDebug::Draw(float flTime)
 	}
 	
 	yOffset += line_height;
-	PRINT_VEC_VARD("Angles", gPlayerSim.v_angles);
+	Vector camAngles = Vector(gPlayerSim.cam_ofs[0], gPlayerSim.cam_ofs[1], 0);
+	camAngles = gPlayerSim.cam_thirdperson ? camAngles : gPlayerSim.v_angles;
+	PRINT_VEC_VARD("Player Angles", gPlayerSim.v_angles);
+	PRINT_VEC_VARD("Camera Angles", camAngles);
 	PRINT_VEC_VARF("Client Punch", gPlayerSim.ev_punchangle);
 	PRINT_VEC_VARF("Server Punch", gPlayerSim.sv_punchangle);
 
 	yOffset += line_height;
-	PRINT_VEC_VARD("Origin", gPlayerSim.v_sim_org);
-	PRINT_VEC_VARD("Velocity", gPlayerSim.v_sim_vel);
+	Vector speeds = Vector(gPlayerSim.v_sim_vel.Length(), gPlayerSim.v_sim_vel.Length2D(), gPlayerSim.v_sim_vel.z);
+	PRINT_VEC_VARD("Player Origin", gPlayerSim.v_sim_org);
+	PRINT_VEC_VARD("Camera Origin", gPlayerSim.v_origin);
+	PRINT_VEC_VARD("Speed (3D/2D/UP)", speeds);	
 
 	yOffset += line_height;
 	int real_contents;

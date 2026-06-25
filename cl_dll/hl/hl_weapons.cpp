@@ -277,10 +277,6 @@ void ResetCustomWeaponStates() {
 		g_customWeapon[i].m_idleTime = 0;
 		g_customWeapon[i].m_runningKickbackPred = 0;
 		g_customWeapon[i].m_kickbackPredVel = Vector(0,0,0);
-		g_customWeapon[i].m_primaryCalled = 0;
-		g_customWeapon[i].m_secondaryCalled = 0;
-		g_customWeapon[i].m_primaryFired = 0;
-		g_customWeapon[i].m_secondaryFired = 0;
 		g_customWeapon[i].events.m_bulletFireCount = 0;
 		g_customWeapon[i].events.m_bulletFireCount2 = 0;
 		g_customWeapon[i].m_akimboAnim = 0;
@@ -545,7 +541,10 @@ CBaseEntity::FireBulletsPlayer
 Only produces random numbers to match the server ones.
 =====================
 */
-Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand, TraceResult* vecEndOut, BULLET_PREDICTION predicted)
+Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting,
+	Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage,
+	entvars_t *pevAttacker, int shared_rand, TraceResult* vecEndOut, BULLET_PREDICTION predicted,
+	bool playSound)
 {
 	float x = 0, y = 0, z = 0;
 	Vector spread;
@@ -1154,7 +1153,7 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		
 	// Don't go firing anything if we have died or are spectating
 	// Or if we don't have a weapon model deployed
-	bool weaponDeployed = player.pev->viewmodel || wc->GetActiveParams().vsprite_path;
+	bool weaponDeployed = player.pev->viewmodel || (wc && wc->GetActiveParams().vsprite_path);
 	if ( ( player.pev->deadflag != ( DEAD_DISCARDBODY + 1 ) ) && 
 		 !CL_IsDead() && weaponDeployed && !g_iUser1)
 	{

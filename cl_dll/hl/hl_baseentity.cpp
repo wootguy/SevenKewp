@@ -92,9 +92,13 @@ void CBaseEntity::BreakableDie(CBaseEntity* pActivator) { }
 void CBaseEntity::BreakableDamageSound() { }
 bool CBaseEntity::IsDelaySpawned() { return 0; }
 void CBaseEntity::ItemBounceTouch(CBaseEntity* pOther) {}
+int CBaseEntity::Illumination() { return 0; }
+
+RGB CBaseEntity::GetLighting() { return RGB(); }
 int CBaseEntity::IRelationship(int, int) { return 0; }
 Vector CBaseEntity::GetLookDirection() { return g_vecZero; }
 Vector CBasePlayer::GetLookDirection() { return g_vecZero; }
+
 
 // CBaseDelay Stubs
 void CBaseDelay :: KeyValue( struct KeyValueData_s * ) { }
@@ -217,6 +221,8 @@ int CBaseMonster::TaskIsRunning( void ) { return 0; }
 void CBaseMonster::ScheduleChange( void ) { }
 void CBaseMonster::SetClassify( int ) { }
 void CBaseMonster::Revive( void ) { }
+void CBaseMonster::CallGibMonster( void ) { }
+BOOL CBaseMonster::ShouldGibMonster(int iGib) { return 0; }
 void CBaseMonster::Provoke(CBaseEntity* attacker) {}
 void CBaseMonster::OnKillProvoker(CBaseEntity* provoker) {}
 void CBaseMonster::Unprovoke(bool friendsToo) {}

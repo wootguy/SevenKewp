@@ -150,7 +150,7 @@ void AddMultiDamage( entvars_t *pevInflictor, CBaseEntity *pEntity, float flDama
 	
 	gMultiDamage.type |= bitsDamageType;
 
-	if ( pEntity != gMultiDamage.pEntity )
+	if ( pEntity != gMultiDamage.pEntity || mp_multi_damage_mode.value == 1)
 	{
 		ApplyMultiDamage(pevInflictor,pevInflictor); // UNDONE: wrong attacker!
 		gMultiDamage.pEntity	= pEntity;

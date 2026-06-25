@@ -233,6 +233,7 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"mp_default_medkit",
 		"mp_weaponhands",
 		"mp_hevsuit_voice",
+		"suitvolume",
 		"mp_hud_color",
 		"mp_flashlight_drain",
 		"mp_flashlight_charge",
@@ -246,6 +247,7 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"mp_use_only_pickups",
 		"mp_bob_speed",
 		"mp_bob_mag",
+		"mp_bob_mag_weapon",
 		"mp_bob_min",
 		"mp_bob_max",
 		"mp_bob_offset",
@@ -256,6 +258,7 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 		"mp_fall_sound_speed",
 		"mp_fall_tilt_speed",
 		"mp_jump_power",
+		"mp_multi_damage_mode",
 	};
 
 	static StringSet itemNames = {

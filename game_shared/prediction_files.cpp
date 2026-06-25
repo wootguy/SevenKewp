@@ -295,6 +295,7 @@ void BuildMovePredData() {
 
 	g_movecfg.bob.speed = mp_bob_speed.value * 100;
 	g_movecfg.bob.mag = mp_bob_mag.value * 100;
+	g_movecfg.bob.mag_weapon = mp_bob_mag_weapon.value * 100;
 	g_movecfg.bob.hmin = mp_bob_min.value;
 	g_movecfg.bob.hmax = mp_bob_max.value;
 	g_movecfg.bob.offset = mp_bob_offset.value;
@@ -318,6 +319,7 @@ void ResetMovePredData() {
 
 	g_movecfg.bob.speed = 100;
 	g_movecfg.bob.mag = 100;
+	g_movecfg.bob.mag_weapon = 100;
 	g_movecfg.bob.hmin = -7;
 	g_movecfg.bob.hmax = 4;
 	g_movecfg.bob.offset = 0;

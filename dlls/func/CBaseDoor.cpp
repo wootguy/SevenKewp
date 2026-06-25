@@ -569,7 +569,7 @@ int CBaseDoor::DoorActivate(USE_TYPE useType)
 		return 0;
 
 	bool doorOpening = m_toggle_state == TS_GOING_UP || m_toggle_state == TS_AT_TOP;
-	bool shouldClose = (doorOpening && useType == USE_TOGGLE) || useType == USE_OFF;
+	bool shouldClose = (doorOpening && (useType == USE_TOGGLE || useType == USE_SET)) || useType == USE_OFF;
 
 	// TODO: this makes sense to do, logically, but sven doesn't do this
 	/*

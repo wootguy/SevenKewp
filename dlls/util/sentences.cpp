@@ -212,7 +212,7 @@ CustomSentence ParseSentence(StringPool& stringPool, std::string sentenceLine) {
 			globalVol = part.volume;
 		}
 		else {
-			part.file = stringPool.alloc((folder + "/" + word + ".wav").c_str());
+			part.file = stringPool.alloc(toLowerCase(folder + "/" + word + ".wav").c_str());
 			sent.words[sent.numWords++] = part;
 		}
 

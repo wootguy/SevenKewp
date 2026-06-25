@@ -23,6 +23,7 @@
 #include "CGib.h"
 #include "CWeaponCustom.h"
 #include "animation.h"
+#include "PluginManager.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -4743,6 +4744,8 @@ GLOBALS ASSUMED SET:  g_iSkillLevel
 */
 int CBaseMonster::TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType)
 {
+	CALL_HOOKS(int, pfnMonsterTakeDamage, this, pevInflictor, pevAttacker, flDamage, bitsDamageType);
+
 	float	flTake;
 	Vector	vecDir;
 

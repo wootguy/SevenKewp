@@ -70,7 +70,16 @@ void CItem::DropThink() {
 		ALERT(at_warning, "Item %s spawned inside solid at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
 	}
 
-	SetThink(NULL);
+	SetThink(&CItem::Think);
+}
+
+void CItem::Think() {
+	if (m_materializeTime > 0 && m_materializeTime <= gpGlobals->time) {
+		m_materializeTime = 0;
+		Materialize();
+	}
+
+	ItemThink();
 }
 
 void CItem::KeyValue(KeyValueData* pkvd) {
@@ -198,8 +207,7 @@ CBaseEntity* CItem::Respawn(void)
 		Materialize();
 	}
 	else {
-		SetThink(&CItem::Materialize);
-		pev->nextthink = g_pGameRules->FlItemRespawnTime(this);
+		pev->nextthink = m_materializeTime = g_pGameRules->FlItemRespawnTime(this);
 	}
 
 	

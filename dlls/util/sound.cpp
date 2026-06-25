@@ -25,6 +25,7 @@
 #include "PluginManager.h"
 #include "te_effects.h"
 #include "CWeaponCustom.h"
+#include "sentences.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -594,11 +595,19 @@ void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volu
 	
 	if (sample && *sample == '!')
 	{
-		char name[32];
-		if (SENTENCEG_Lookup(sample, name, 32) >= 0)
+		CustomSentence* sent = GetCustomSentence(sample + 1);
+		CBaseToggle* btog = CBaseEntity::Instance(entity)->MyTogglePointer();
+
+		if (sent && btog) {
+			AddCustomSentencePlayer(btog, sent, volume, attenuation);
+		}
+		else {
+			char name[32];
+			if (SENTENCEG_Lookup(sample, name, 32) >= 0)
 				EMIT_SOUND_DYN2(entity, channel, name, volume, attenuation, flags, pitch);
-		else
-			ALERT( at_aiconsole, "Unable to find %s in sentences.txt\n", sample );
+			else
+				ALERT(at_aiconsole, "Unable to find %s in sentences.txt\n", sample);
+		}
 	}
 	else {
 		CBaseEntity* bent = CBaseEntity::Instance(entity);

@@ -124,9 +124,6 @@ extern CGraph	WorldGraph;
 #define DOT_20DEGREE  0.9396926207859
 #define DOT_25DEGREE  0.9063077870367
 
-#define ARMOR_RATIO	 0.2	// Armor Takes 80% of the damage
-#define ARMOR_BONUS  0.5	// Each Point of Armor is work 1/x points of health
-
 #define GEIGERDELAY 0.25
 #define SUITUPDATETIME	3.5
 #define AIRTIME	12		// lung full of air lasts this many seconds
@@ -369,10 +366,17 @@ void CBasePlayer :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector 
 			break;
 		case HITGROUP_HEAD:
 			if (bitsDamageType & (DMG_BULLET | DMG_CLUB)) {
-				flDamage *= gSkillData.sk_player_head;
-				EMIT_SOUND_DYN(edict(), CHAN_BODY, "player/bhit_helmet-1.wav", 1.0f, ATTN_STATIC, 0, RANDOM_LONG(90, 110));
-				m_headshot = IsAlive(); // don't play effect while dying
-				m_headshotDir = Vector(vecDir.x, vecDir.y, 0).Normalize();
+				// Only play headshot effect if the head multiplier is higher than the body.
+				// The point of this feature is to make it clear why you took more damage than normal.
+				bool shouldPlayHeadShotEffect = gSkillData.sk_player_head > gSkillData.sk_player_chest
+					|| gSkillData.sk_player_head > gSkillData.sk_player_stomach;
+
+				if (shouldPlayHeadShotEffect) {
+					flDamage *= gSkillData.sk_player_head;
+					EMIT_SOUND_DYN(edict(), CHAN_BODY, "player/bhit_helmet-1.wav", 1.0f, ATTN_STATIC, 0, RANDOM_LONG(90, 110));
+					m_headshot = IsAlive(); // don't play effect while dying
+					m_headshotDir = Vector(vecDir.x, vecDir.y, 0).Normalize();
+				}
 			}
 			else {
 				// don't take headshot damage for things other than bullets and some melee attacks
@@ -414,6 +418,8 @@ void CBasePlayer :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector 
 */
 int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	CALL_HOOKS(int, pfnPlayerTakeDamage, this, pevInflictor, pevAttacker, flDamage, bitsDamageType);
+
 	// have suit diagnose the problem - ie: report damage type
 	int bitsDamage = bitsDamageType;
 	int ffound = TRUE;
@@ -425,8 +431,8 @@ int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 	float flBonus;
 	float flHealthPrev = pev->health;
 
-	flBonus = ARMOR_BONUS;
-	flRatio = ARMOR_RATIO;
+	flBonus = gSkillData.sk_player_armor_bonus;
+	flRatio = gSkillData.sk_player_armor_ratio;
 
 	if ( ( bitsDamageType & DMG_BLAST ) && g_pGameRules->IsMultiplayer() )
 	{
@@ -454,12 +460,8 @@ int CBasePlayer :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, 
 	// Armor. 
 	if (pev->armorvalue && !(bitsDamageType & (DMG_FALL | DMG_DROWN)) )// armor doesn't protect against fall or drown damage!
 	{
-		float flNew = flDamage * flRatio;
-
-		float flArmor;
-
-		flArmor = (flDamage - flNew) * flBonus;
-		
+		float flNew = flDamage * flRatio;				// reduced damage applied to health
+		float flArmor = (flDamage - flNew) * flBonus;	// armor cost for absorbing damage
 		float oldArmor = pev->armorvalue;
 
 		// Does this use more armor than we have?
@@ -2282,8 +2284,12 @@ void CBasePlayer::PlayerUse ( void )
 			if ( caps & FCAP_CONTINUOUS_USE )
 				m_afPhysicsFlags |= PFLAG_USING;
 
-			FireTarget(pObject, this, this, USE_SET, 1);
-
+			if (isContinuousUse) {
+				FireTarget(pObject, this, this, USE_SET, 1);
+			}
+			else {
+				FireTarget(pObject, this, this, USE_TOGGLE, 0);
+			}
 			return;
 		}
 	}

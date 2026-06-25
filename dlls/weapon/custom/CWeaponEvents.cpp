@@ -275,8 +275,8 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 
 	bool isPredicted = m_weapon->IsPredicted();
 	BULLET_PREDICTION predFlag = isPredicted ? BULLETPRED_EVENTLESS : BULLETPRED_NONE;
-
 	bool inWater = m_pPlayer->pev->waterlevel == WATERLEVEL_HEAD;
+	bool playTexSound = !(evt.bullets.flags & FL_WC_BULLETS_NO_SOUND);
 
 	int rand = UTIL_SharedRandomLong(m_pPlayer->random_seed, -evt.bullets.damageRand, evt.bullets.damageRand);
 	int baseDamage = evt.bullets.damage;
@@ -296,7 +296,7 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	lagcomp_begin(m_pPlayer);
 	Vector vecDir = m_pPlayer->FireBulletsPlayer(count, vecSrc, vecAiming, spread, maxRange,
 		BULLET_PLAYER_9MM, evt.bullets.tracerFreq, damage, m_pPlayer->pev,
-		m_pPlayer->random_seed, g_traces, predFlag);
+		m_pPlayer->random_seed, g_traces, predFlag, playTexSound);
 	lagcomp_end();
 
 	int attackIdx = m_weapon->GetAttackIdx(evt);

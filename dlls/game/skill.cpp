@@ -273,6 +273,8 @@ skill_cvar_t skill_cvars[] = {
 	DECL_SKILL_CVAR(sk_player_stomach, CVAR_TYPE_HITGROUP),
 	DECL_SKILL_CVAR(sk_player_arm, CVAR_TYPE_HITGROUP),
 	DECL_SKILL_CVAR(sk_player_leg, CVAR_TYPE_HITGROUP),
+	DECL_SKILL_CVAR(sk_player_armor_bonus, CVAR_TYPE_HITGROUP),
+	DECL_SKILL_CVAR(sk_player_armor_ratio, CVAR_TYPE_HITGROUP),
 
 	// Mosnter turn speed multiplier
 	DECL_SKILL_CVAR(sk_yawspeed_mult, CVAR_TYPE_AI),

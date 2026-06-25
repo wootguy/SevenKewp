@@ -76,6 +76,9 @@ void CBaseButton::Precache(void)
 
 	default: m_ls.sUnlockedSentence = 0; break;
 	}
+
+	if (pev->noise)
+		PRECACHE_SOUND(STRING(pev->noise));
 }
 
 //
@@ -180,9 +183,10 @@ void CBaseButton::Spawn()
 	//determine sounds for buttons
 	//a sound of 0 should not make a sound
 	//----------------------------------------------------
-	pszSound = ButtonSound(m_sounds);
-	PRECACHE_SOUND(pszSound);
-	pev->noise = ALLOC_STRING(pszSound);
+	if (!pev->noise) {
+		pszSound = ButtonSound(m_sounds);
+		pev->noise = ALLOC_STRING(pszSound);
+	}
 
 	Precache();
 

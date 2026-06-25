@@ -4,6 +4,7 @@
 #include "hlds_hooks.h"
 #include "shared_util.h"
 #include "CBaseTurret.h"
+#include "PluginManager.h"
 
 bool g_checkExplSounds;
 
@@ -1900,6 +1901,7 @@ void UTIL_TempSound(Vector pos, const char* sample, float volume, float attenuat
 
 void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage)
 {
+	CALL_HOOKS_VOID(pfnSpawnBlood, vecSpot, bloodColor, flDamage);
 	UTIL_BloodDrips(vecSpot, g_vecAttackDir, bloodColor, (int)flDamage);
 }
 

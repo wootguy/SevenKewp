@@ -7,6 +7,7 @@
 
 class CBaseEntity;
 class CBasePlayer;
+class CBaseMonster;
 
 struct HOOK_RETURN_DATA {
 	uint32_t code; // what to do after processing this hook
@@ -16,9 +17,16 @@ struct HOOK_RETURN_DATA {
 #define HOOKBIT_HANDLED		1 // If set, forbid later plugins from processing the hook
 #define HOOKBIT_OVERRIDE	2 // If set, do not call the game function and return the given value
 
+// allow the original function and other hooks to run
 #define HOOK_CONTINUE					{0, 0}
-#define HOOK_CONTINUE_OVERRIDE(data)	{HOOKBIT_OVERRIDE, (void*)(data)}
+
+// abort the original function and return the given value, unless another hook in the chain also overrides
+#define HOOK_CONTINUE_OVERRIDE(data)	{HOOKBIT_OVERRIDE, (void*)(data)} 
+
+// allow the original function to run, but abort other hook calls
 #define HOOK_HANDLED					{HOOKBIT_HANDLED, 0}
+
+// abort the original function and do not call any other hooks
 #define HOOK_HANDLED_OVERRIDE(data)		{(HOOKBIT_HANDLED | HOOKBIT_OVERRIDE), (void*)(data)}
 
 #define FL_CMD_SERVER			1	// command can be sent from server console
@@ -231,6 +239,15 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// player is about to have their view taken or given back by a trigger_camera.
 	HOOK_RETURN_DATA(*pfnCameraToggle)(CBasePlayer* plr, CBaseEntity* cam, bool onNotOff);
+
+	// player is about to be damaged
+	HOOK_RETURN_DATA(*pfnPlayerTakeDamage)(CBasePlayer* plr, entvars_t* pevInflictor, entvars_t* pevAttacker, float& flDamage, int& bitsDamageType);
+	
+	// monster is about to be damaged
+	HOOK_RETURN_DATA(*pfnMonsterTakeDamage)(CBaseMonster* mon, entvars_t* pevInflictor, entvars_t* pevAttacker, float& flDamage, int& bitsDamageType);
+
+	// a blood effect is about to be spawned
+	HOOK_RETURN_DATA(*pfnSpawnBlood)(Vector& pos, int& bloodColor, float& damage);
 };
 
 // do not call directly, use RegisterPlugin instead

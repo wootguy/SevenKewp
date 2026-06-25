@@ -101,6 +101,7 @@ cvar_t	mp_one_pickup_per_player = { "mp_one_pickup_per_player","0", FCVAR_SERVER
 cvar_t	mp_keep_inventory = { "mp_keep_inventory","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_use_only_pickups = { "mp_use_only_pickups","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_barnacle_paralyze = { "mp_barnacle_paralyze","1", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_multi_damage_mode = { "mp_multi_damage_mode","0", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
@@ -118,6 +119,7 @@ cvar_t  mp_survival_restart = { "mp_survival_restart", "0", FCVAR_SERVER, 0, 0 }
 
 cvar_t mp_bob_speed = { "mp_bob_speed", "1", FCVAR_SERVER, 0, 0 };
 cvar_t mp_bob_mag = { "mp_bob_mag", "1", FCVAR_SERVER, 0, 0 };
+cvar_t mp_bob_mag_weapon = { "mp_bob_mag_weapon", "1", FCVAR_SERVER, 0, 0 };
 cvar_t mp_bob_min = { "mp_bob_min", "-7", FCVAR_SERVER, 0, 0 };
 cvar_t mp_bob_max = { "mp_bob_max", "4", FCVAR_SERVER, 0, 0 };
 cvar_t mp_bob_offset = { "mp_bob_offset", "0", FCVAR_SERVER, 0, 0 };
@@ -606,6 +608,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_keep_inventory);
 	CVAR_REGISTER (&mp_use_only_pickups);
 	CVAR_REGISTER (&mp_barnacle_paralyze);
+	CVAR_REGISTER (&mp_multi_damage_mode);
 
 	CVAR_REGISTER (&mp_chattime);
 
@@ -615,6 +618,7 @@ void GameDLLInit( void )
 
 	CVAR_REGISTER (&mp_bob_speed);
 	CVAR_REGISTER (&mp_bob_mag);
+	CVAR_REGISTER (&mp_bob_mag_weapon);
 	CVAR_REGISTER (&mp_bob_min);
 	CVAR_REGISTER (&mp_bob_max);
 	CVAR_REGISTER (&mp_bob_offset);

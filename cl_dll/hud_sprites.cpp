@@ -208,6 +208,22 @@ void GetHudElementPosition(HudSprite& spr, int& x, int& y) {
 	y = hud.y * sh + hud.yPixels * pixelScale;
 	float alpha = 1.0f;
 
+	int actualSprWidth = spr.hrect.right - spr.hrect.left;
+	int actualSprHeight = spr.hrect.bottom - spr.hrect.top;
+
+	if (x <= actualSprWidth) {
+		x += ScreenWidth;
+	}
+	else if (x >= ScreenWidth) {
+		x -= ScreenWidth;
+	}
+	if (y <= actualSprHeight) {
+		y += ScreenHeight;
+	}
+	else if (y >= ScreenHeight) {
+		y -= ScreenHeight;
+	}
+
 	if (hud.flags & HUD_ELEM_NO_BORDER) {
 		//PRINTD("HUD_ELEM_NO_BORDER not implemented\n");
 	}

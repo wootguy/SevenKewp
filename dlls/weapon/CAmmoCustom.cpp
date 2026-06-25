@@ -14,6 +14,7 @@ void CAmmoCustom::Spawn(void) {
 	if (UTIL_ModelIsSprite(pev->modelindex)) {
 		pev->scale = 1;
 		pev->frame = params.modelBody;
+		pev->rendercolor = g_bsp.get_lighting(pev->origin).ApplyGamma().ToVector();
 	}
 	else {
 		if (params.modelBody) {

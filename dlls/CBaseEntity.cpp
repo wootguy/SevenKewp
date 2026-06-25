@@ -1022,7 +1022,8 @@ EHANDLE g_debugCycler;
 
 Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDirShooting,
 	Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage,
-	entvars_t* pevAttacker, int shared_rand, TraceResult* traces, BULLET_PREDICTION prediction)
+	entvars_t* pevAttacker, int shared_rand, TraceResult* traces, BULLET_PREDICTION prediction,
+	bool playTextureSound)
 {
 	TraceResult tr;
 	Vector vecRight = gpGlobals->v_right;
@@ -1124,12 +1125,12 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			if (iBulletType != BULLET_BEAM) {
 				if (prediction != BULLETPRED_EVENT) {
 					bool attackerPredictsDecals = prediction == BULLETPRED_EVENTLESS;
-					DecalGunshot(&tr, iBulletType, true, vecSrc, vecEnd, attackerPredictsDecals ? edict() : NULL);
+					DecalGunshot(&tr, iBulletType, playTextureSound, vecSrc, vecEnd, attackerPredictsDecals ? edict() : NULL);
 				}
 				else {
 					// clients will simulate decals when they get the event message, but body impacts
 					// need to be confirmed and sent server-side
-					if (tr.pHit->v.flags & (FL_MONSTER | FL_CLIENT))
+					if (playTextureSound && (tr.pHit->v.flags & (FL_MONSTER | FL_CLIENT)))
 						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType, tr.pHit);
 				}
 			}
@@ -1176,7 +1177,8 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 			case BULLET_NONE: // FIX 
 				if (pEntity)
 					pEntity->TraceAttack(pevAttacker, GetDamage(50), vecDir, &tr, DMG_CLUB);
-				TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+				if (playTextureSound)
+					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
 				// only decal glass
 				if (!FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
 				{
@@ -2093,4 +2095,17 @@ CBaseEntity* CBaseEntity::FindLogicEntity(CBaseEntity* start, string_t targetnam
 	}
 
 	return UTIL_FindEntityByTargetname(start, STRING(targetname));
+}
+
+int CBaseEntity::Illumination() {
+	// this API does nothing
+	//return GETENTITYILLUM(ENT(pev));
+
+	// TODO: scale color channels based on human perception? Nothing needs illumination yet.
+	RGB light = GetLighting();
+	return V_max( V_max(light.r, light.b), light.b);
+}
+
+RGB CBaseEntity::GetLighting() {
+	return g_bsp.get_lighting(pev->origin);
 }

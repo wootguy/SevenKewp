@@ -25,7 +25,7 @@ enum WcAttackState {
 	WC_CHARGE_STATE_OVERCHARGED,
 };
 
-// m_fireState flags (16 bits)
+// m_fireState flags (20 bits)
 #define FL_WC_STATE_PRIMARY_ALT			(1<<0)	// using alternate primary fire settings
 #define FL_WC_STATE_LASER				(1<<1)	// laser is enabled
 #define FL_WC_STATE_ZOOM				(1<<2)	// weapon is zoomed in
@@ -40,6 +40,10 @@ enum WcAttackState {
 #define FL_WC_STATE_SEMI_AUTO			(1<<11)	// disable auto-fire for primary/secondary attack
 #define FL_WC_STATE_CHAMBER_NEEDED		(1<<12)	// remember that a bullet must be chambered on the next deployment if the current action is aborted
 #define FL_WC_STATE_ALT_PARAMS			(1<<13)	// using the alternate set of weapon parameters
+#define FL_WC_STATE_PRIMARY_FIRED		(1<<14)	// primary attack was fired in the last think
+#define FL_WC_STATE_SECONDARY_FIRED		(1<<15)	// secondary attack was fired in the last think
+#define FL_WC_STATE_PRIMARY_CALLED		(1<<16)	// primary attack was called in the last think
+#define FL_WC_STATE_SECONDARY_CALLED	(1<<17)	// secondary attack was called in the last think
 
 class EXPORT CWeaponCustom : public CBasePlayerWeapon {
 public:
@@ -72,10 +76,6 @@ public:
 	uint32_t m_reloadStageCmdTime[WC_RELOAD_STAGES]; // CMD time that a reload stage began
 	float m_lastCharge; // last charge progress calculated for chargeup/chargedown
 	int m_chargeStartClip; // ammo started with when chargeup began
-	bool m_primaryCalled;
-	bool m_secondaryCalled;
-	bool m_primaryFired;
-	bool m_secondaryFired;
 	bool m_hasPredictionData; // was the client sent a prediction message for this weapon?
 	int m_chargeSoundEvt; // event index to load charge sound details from
 	int m_lastAnim;			// last animation set by an event
@@ -180,7 +180,7 @@ public:
 	// repurposing these weapon vars so I don't have to network something new to the client:
 	// m_fireState bit packing (high to low):
 	//		3 bits - attack index (+1) to do a delayed state change for (index 3 = E+R toggle)
-	//		16 bits - current state flags (FL_WC_STATE_*)
+	//		20 bits - current state flags (FL_WC_STATE_*)
 	// m_fInAttack bit packing:
 	//		4 bits - primary alt charge state (WcAttackState)
 	//		4 bits - tertiary charge state
@@ -194,7 +194,7 @@ public:
 	bool QueueStateToggles(int toggleIdx); // Returns true if anything queued. toggleIdx = attackIdx except index 4 is E+R toggle, not alt primary.
 	void PlayDelayedStateToggles();
 	void DoStateToggles(int attackIdx);
-	void SetState(uint16_t stateBits, bool state); // set flags that are safe to use in predicted logic
+	void SetState(uint32_t stateBits, bool state); // set flags that are safe to use in predicted logic
 	bool GetState(int stateBits);
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);

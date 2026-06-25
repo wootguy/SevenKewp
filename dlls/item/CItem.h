@@ -42,12 +42,16 @@ public:
 	void SetItemModel();
 	virtual int MergedModelBody() { return -1; }
 	virtual int	ObjectCaps(void);
+	void Think();
+	virtual void ItemThink() {}
 	void DropThink();
 	void SetupTouchAndUse();
 	int AddToFullPack(struct entity_state_s* state, CBasePlayer* player);
 
 	const char* m_defaultModel;
 	string_t m_sequence_name;
+
+	float m_materializeTime;
 
 	Vector m_minHullSize;
 	Vector m_maxHullSize;

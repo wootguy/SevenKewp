@@ -244,7 +244,8 @@ void init_weapon_struct_fields() {
 			WEP_FIELD("hascd2", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_TERTIARY], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("hascd3", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_IDLE], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("hascd4", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_FAIL], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
-			WEP_FIELD("hascd5", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_WATER], 3, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hascd4", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_FINISH], 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("hascd5", "0", shootOpts[0].hasCooldownOverride[WC_COOLDOWN_WATER], 2, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("cooldown_primary", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_PRIMARY], 0, WC_PARAM_TIME,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_PRIMARY])),
 			WEP_FIELD("cooldown_secondary", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_SECONDARY], 0, WC_PARAM_TIME,
@@ -257,6 +258,8 @@ void init_weapon_struct_fields() {
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_FAIL])),
 			WEP_FIELD("cooldown_water", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_WATER], 0, WC_PARAM_TIME,
 				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_WATER])),
+			WEP_FIELD("cooldown_finish", "0", shootOpts[0].cooldownOverride[WC_COOLDOWN_FINISH], 0, WC_PARAM_TIME,
+				NULL, 0, 0, WEP_COND_BYTE(shootOpts[0].hasCooldownOverride[WC_COOLDOWN_FINISH])),			
 			
 			WEP_FIELD("has_toggle", "0", shootOpts[0].toggle.hasToggleInfo, 1, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("has_zoom", "0", shootOpts[0].toggle.hasZoomInfo, 7, WC_PARAM_UINT8, NULL, 0, FL_FIELD_NO_CFG),

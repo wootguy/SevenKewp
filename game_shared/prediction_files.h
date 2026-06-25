@@ -5,6 +5,7 @@
 struct BobPredVars {
 	uint16_t speed;			// scale factor applied to bob cl_bobcycle (100ths)
 	uint16_t mag;			// scale factor applied to bob cl_bob (100ths)
+	uint16_t mag_weapon;	// scale factor applied to bob cl_bob (100ths)
 	int8_t hmin;			// min bob height
 	int8_t hmax;			// max bob height
 	int8_t offset;			// offset bob center

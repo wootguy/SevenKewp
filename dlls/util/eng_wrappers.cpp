@@ -928,7 +928,7 @@ bool Voice_GetClientListening(int receiver, int sender) {
 
 void LIGHT_STYLE(int style, const char* val) {
 	// engine has no getter for this, so keep track of what was set.
-	style = clampi(style, 0, MAX_LIGHTSTYLE_PATTERNS-1);
+	style = clampi(style, 0, 32 + MAX_LIGHTSTYLE_PATTERNS-1);
 	g_lightStyles[style] = ALLOC_STRING(toLowerCase(val).c_str());
 
 	g_engfuncs.pfnLightStyle(style, val);

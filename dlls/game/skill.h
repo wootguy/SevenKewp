@@ -267,6 +267,8 @@ struct skilldata_t
 	float sk_player_stomach;
 	float sk_player_arm;
 	float sk_player_leg;
+	float sk_player_armor_bonus;
+	float sk_player_armor_ratio;
 
 	// Mosnter turn speed multiplier
 	float sk_yawspeed_mult;

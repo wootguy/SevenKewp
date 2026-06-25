@@ -375,7 +375,7 @@ public:
 	Vector		FireBulletsPlayer(ULONG	cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread,
 		float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0,
 		entvars_t* pevAttacker = NULL, int shared_rand = 0, TraceResult* traces = NULL,
-		BULLET_PREDICTION prediction=BULLETPRED_NONE);
+		BULLET_PREDICTION prediction=BULLETPRED_NONE, bool playTextureSound=true);
 
 	virtual CBaseEntity* Respawn(void) { return NULL; }
 
@@ -472,7 +472,9 @@ public:
 	virtual Vector EarPosition() { return pev->origin + pev->view_ofs; };			// position of ears
 	virtual Vector BodyTarget(const Vector& posSrc) { return Center(); };		// position to shoot at
 
-	virtual int Illumination() { return GETENTITYILLUM(ENT(pev)); };
+	virtual int Illumination();
+
+	virtual RGB GetLighting();
 
 	virtual	BOOL FVisible(CBaseEntity* pEntity, bool fIgnoreGlass=true);
 	virtual	BOOL FVisible(const Vector& vecOrigin, bool fIgnoreGlass=true);
