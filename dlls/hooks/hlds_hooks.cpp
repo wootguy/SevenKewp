@@ -256,6 +256,7 @@ void ClientDisconnect( edict_t *pEntity )
 	uint32_t plrbit = PLRBIT(pEntity);
 
 	plr->m_clientCheckFinished = false;
+	plr->m_newPacketEnts = 0;
 
 	// remove visibility flags for all entities
 	for (int i = 1; i < gpGlobals->maxEntities; i++)
@@ -1332,7 +1333,7 @@ void SpectatorThink( edict_t *pEntity )
 
 int g_numEdictOverflows[32];
 int g_numPacketEntities[32];
-int g_newPacketEnts;
+int g_newPacketEnts[32];
 bool g_sevenkewpPackUpdate;
 uint32_t* g_edictVis;
 
@@ -1385,6 +1386,13 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 		plr->m_lastPas = *pas;
 		plr->m_lastPvs = *pvs;
 		plr->m_lastPacketEnts = g_numPacketEntities[g_packClientIdx];
+		
+		if (plr->m_newPacketEnts > 0) {
+			float delta = g_engfuncs.pfnTime() - plr->m_lastDeltaUpdate;
+			plr->m_newPacketEnts = V_max(0, plr->m_newPacketEnts - delta * 130);
+		}
+		plr->m_newPacketEnts += g_newPacketEnts[g_packClientIdx];
+		plr->m_lastDeltaUpdate = g_engfuncs.pfnTime();
 	}
 
 	if (g_numEdictOverflows[g_packClientIdx] > 0) {
@@ -1394,7 +1402,7 @@ void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pv
 
 	g_numEdictOverflows[g_packClientIdx] = 0;
 	g_numPacketEntities[g_packClientIdx] = 0;
-	g_newPacketEnts = 0;
+	g_newPacketEnts[g_packClientIdx] = 0;
 	g_sevenkewpPackUpdate = plr->IsSevenKewpClient();
 }
 
@@ -1734,12 +1742,15 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	}
 
 	if (isNewlyVisible) {
-		if (g_newPacketEnts > MAX_NEW_PACKET_ENTITIES) {
+		// quickly reduced the new entity cap in cases where hundreds of new ents are made visible.
+		int maxNewEntsThisUpdate = V_max(MIN_NEW_PACKET_ENTITIES, MAX_NEW_PACKET_ENTITIES_BURST - plr->m_newPacketEnts);
+
+		if (g_newPacketEnts[g_packClientIdx] > maxNewEntsThisUpdate) {
 			// don't send too many new entities at once or else the client freezes with "datagram overflow"
 			return 0;
 		}
 
-		g_newPacketEnts++;
+		g_newPacketEnts[g_packClientIdx]++;
 	}
 
 	baseent->m_netPlayers |= plrbit;

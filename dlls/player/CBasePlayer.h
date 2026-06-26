@@ -121,10 +121,13 @@ enum sbar_data
 // unlike HL25, temporary effects don't start disappearing near the packet entity limit
 #define MAX_LEGACY_PACKET_ENTITIES 256
 
-// max number of new entities per packet
-// more than ~128 new ents ar once makes clients freeze with "datagram overflow" which is not
-// always recoverable. 64 fills up MAX_PACKET_ENTITIES very fast even at cl_updaterate 10
-#define MAX_NEW_PACKET_ENTITIES 64
+// max number of new entities sent at once when entering a new area.
+// too many new entities makes clients freeze with "datagram overflow" which is not
+// always recoverable.
+#define MAX_NEW_PACKET_ENTITIES_BURST 40
+
+// minimum number of new packet entities per update
+#define MIN_NEW_PACKET_ENTITIES 8
 
 enum HL_CLIENT_SYSTEM {
 	CLIENT_SYSTEM_NOT_CHECKED, // player hasn't responded to cvar queries yet
@@ -334,6 +337,8 @@ public:
 	bool m_usingMomentary; // player activated a momentary button any time during this key press
 
 	int m_lastPacketEnts; // number of packet entities sent in the previous frame
+	float m_newPacketEnts; // number of newly visible packet entities sent recently. Decremented over time.
+	float m_lastDeltaUpdate; // last time entity deltas were sent
 
 	string_t m_playerModelName;
 	studiohdr_t* m_playerModel; // raw player model data (NULL if not installed on the server)
