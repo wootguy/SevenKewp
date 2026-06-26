@@ -39,11 +39,17 @@ float HUD_GetFOV( void );
 
 extern float IN_GetMouseSensitivity();
 
+extern bool is_software_renderer;
+
 // Think
 void CHud::Think(void)
 {
 	m_scrinfo.iSize = sizeof(m_scrinfo);
 	GetScreenInfo(&m_scrinfo);
+
+	if (is_software_renderer) {
+		m_scrinfo.iHeight -= SOFTWARE_MODE_BLACK_BAR_HEIGHT; // compensate for black bar at the bottom
+	}
 
 	int newfov;
 	HUDLIST *pList = m_pHudList;

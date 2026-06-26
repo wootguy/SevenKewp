@@ -1180,7 +1180,8 @@ int CHudAmmo::Draw(float flTime)
 {
 	int a, x, y, r, g, b;
 
-	DrawSpriteWeapon();
+	if (!is_software_renderer)
+		DrawSpriteWeapon();
 	DrawDynamicCrosshair();
 
 	// re-enable static crosshair without having to switch weapons
@@ -1683,6 +1684,77 @@ void CHudAmmo::DrawDynamicCrosshair() {
 	DrawCrossHair(accuracyX, accuracyY, len, width, border, r, g, b, drawDot, drawTee);
 }
 
+Vector Unproject(float sx, float sy, Vector& forward, Vector& right, Vector& up, float fovXDeg) {
+	int sw = ScreenWidth;
+	int sh = ScreenHeight;
+
+	const float dist = 10.0f; // closest a quad can be before getting clipped
+	float aspect = sw / (float)sh;
+
+	float fovXRad = fovXDeg * (M_PI / 180.0f);
+	float fovX = 2.0f * atanf(tanf(fovXRad * 0.5f));
+	float tanHalfFov = tanf(fovX * 0.5f);
+
+	float ndcX = (sx / sw) * 2.0f - 1.0f;
+	float ndcY = 1.0f - (sy / sh) * 2.0f;
+
+	Vector dir = forward +
+		right * (ndcX * aspect * tanHalfFov) +
+		up * (ndcY * tanHalfFov);
+
+	return gPlayerSim.v_origin + dir.Normalize() * dist;
+}
+
+void DrawFakeHudQuad(float minX, float minY, float maxX, float maxY) {
+	{
+		// No idea why this happens, but the sprite needs shifting vertically depending on resolution.
+		// There doesn't seem to be a formula to calculate this either. It's some combination of 
+		// screen height and aspect ratio that affects this.
+		int sw = ScreenWidth;
+		int sh = ScreenHeight + SOFTWARE_MODE_BLACK_BAR_HEIGHT;
+		int shift = 80;
+		if (sw == 720 && sh == 480)	shift = 56;
+		else if (sw == 720 && sh == 576)	shift = 64;
+		else if (sw == 1176 && sh == 576)	shift = 79;
+		else if (sw == 1280 && sh == 720)	shift = 86;
+		else if (sw == 1280 && sh == 768)	shift = 92;
+		else if (sw == 1360 && sh == 768)	shift = 92;
+		else if (sw == 1366 && sh == 768)	shift = 92;
+		else if (sw == 1280 && sh == 800)	shift = 96;
+		else if (sw == 1280 && sh == 1024)	shift = 108;
+		else if (sw == 1440 && sh == 900)	shift = 109;
+		else if (sw == 640 && sh == 480)	shift = 59;
+		else if (sw == 800 && sh == 600)	shift = 80;
+		else if (sw == 1024 && sh == 768)	shift = 101;
+		else if (sw == 1152 && sh == 864)	shift = 113;
+		else if (sw == 1280 && sh == 960)	shift = 125;
+		else if (sw == 1440 && sh == 1080)	shift = 140;
+
+		if (gPlayerSim.waterlevel == WATERLEVEL_HEAD) {
+			// the shift here should be different per resolution too, but idc
+			shift -= 4;
+		}
+
+		minY -= shift;
+		maxY -= shift;
+	}
+
+	Vector forward, right, up;
+	AngleVectors(gPlayerSim.v_angles, forward, right, up);
+
+	float fovXDeg = g_lastFOV ? g_lastFOV : gHUD.default_fov->value;
+
+	Vector ul = Unproject(minX, minY, forward, right, up, fovXDeg);
+	Vector ur = Unproject(maxX, minY, forward, right, up, fovXDeg);
+	Vector ll = Unproject(minX, maxY, forward, right, up, fovXDeg);
+	Vector lr = Unproject(maxX, maxY, forward, right, up, fovXDeg);
+
+	gEngfuncs.pTriAPI->TexCoord2f(0, 0); gEngfuncs.pTriAPI->Vertex3fv(ul);
+	gEngfuncs.pTriAPI->TexCoord2f(1, 0); gEngfuncs.pTriAPI->Vertex3fv(ur);
+	gEngfuncs.pTriAPI->TexCoord2f(1, 1); gEngfuncs.pTriAPI->Vertex3fv(lr);
+	gEngfuncs.pTriAPI->TexCoord2f(0, 1); gEngfuncs.pTriAPI->Vertex3fv(ll);
+}
+
 void CHudAmmo::DrawSpriteWeapon() {
 	if (gPlayerSim.cam_thirdperson)
 		return;
@@ -1700,7 +1772,7 @@ void CHudAmmo::DrawSpriteWeapon() {
 
 	float scale = (ScreenHeight * 0.001f) * spr.scale;
 	if (is_software_renderer)
-		scale = 1;
+		scale *= 0.70f;
 
 	rc.right *= scale;
 	rc.bottom *= scale;
@@ -1712,49 +1784,35 @@ void CHudAmmo::DrawSpriteWeapon() {
 	int maxX = minX + rc.right;
 	int maxY = minY + rc.bottom;
 
+	int triRenderMode = spr.rendermode;
+	RGBA c = spr.color;
+
+	switch (spr.rendermode) {
+	case kRenderNormal:
+	case kRenderTransTexture:
+	case kRenderTransAlpha:
+	case kRenderTransColor:
+		triRenderMode = kRenderTransAlpha;
+		break;
+	case kRenderGlow:
+	case kRenderTransAdd:
+		triRenderMode = kRenderTransAdd;
+		break;
+	}
+
+	gEngfuncs.pTriAPI->RenderMode(triRenderMode);
+	gEngfuncs.pTriAPI->SpriteTexture((model_t*)gEngfuncs.GetSpritePointer(spr.hSprite), spr.frame);
+	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+	gEngfuncs.pTriAPI->Color4f(
+		c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f
+	);
+		
 	if (is_software_renderer) {
-		if (spr.color.a < 255) {
-			float alpha = spr.color.a / 255.0f;
-			int r = alpha * spr.color.r;
-			int g = alpha * spr.color.g;
-			int b = alpha * spr.color.b;
-			SPR_Set(spr.hSprite, spr.color.r, spr.color.g, spr.color.b);
-			SPR_DrawAdditive(spr.frame, minX, minY, &rc);
-		}
-		else {
-			SPR_Set(spr.hSprite, spr.color.r, spr.color.g, spr.color.b);
-			SPR_DrawHoles(spr.frame, minX, minY, &rc);
-		}
+		DrawFakeHudQuad(minX, minY, maxX, maxY);
 	}
 	else {
-		int triRenderMode = spr.rendermode;
-		RGBA c = spr.color;
-
-		switch (spr.rendermode) {
-		case kRenderNormal:
-			triRenderMode = kRenderTransTexture;
-			break;
-		case kRenderTransTexture:
-		case kRenderTransAlpha:
-		case kRenderTransColor:
-			triRenderMode = kRenderTransAlpha;
-			break;
-		case kRenderGlow:
-			triRenderMode = kRenderTransAdd;
-			break;
-		}
-
-		gEngfuncs.pTriAPI->RenderMode(triRenderMode);
-		gEngfuncs.pTriAPI->SpriteTexture((model_t*)gEngfuncs.GetSpritePointer(spr.hSprite), spr.frame);
-
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-		gEngfuncs.pTriAPI->Begin(TRI_QUADS);
-
-		gEngfuncs.pTriAPI->Color4f(
-			c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f
-		);
 
 		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
 		gEngfuncs.pTriAPI->Vertex3f(minX, minY, 0);
@@ -1767,27 +1825,32 @@ void CHudAmmo::DrawSpriteWeapon() {
 
 		gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
 		gEngfuncs.pTriAPI->Vertex3f(maxX, minY, 0);
+	}
 
-		gEngfuncs.pTriAPI->End();
-		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
+	gEngfuncs.pTriAPI->End();
+	gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
 
-		if (spr.renderfx == kRenderFxGlowShell) {
-			// Poor man's glow effect. Looks more like motion blur, but it's cheap.
-			c = spr.glowShellColor;
-			gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
-			gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+	if (spr.renderfx == kRenderFxGlowShell) {
+		// Poor man's glow effect. Looks more like motion blur, but it's cheap.
+		c = spr.glowShellColor;
+		gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
+		gEngfuncs.pTriAPI->Begin(TRI_QUADS);
 
-			gEngfuncs.pTriAPI->Color4f(
-				c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, 0.5f
-			);
+		gEngfuncs.pTriAPI->Color4f(
+			c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, 0.5f
+		);
 
-			float t = gHUD.m_flTime * 16;
-			for (int i = 0; i < 2; i++) {
-				float a = i == 0 ? t : -t * 0.5f;
-				float r = i == 0 ? 1.0f : 1.5f;
-				float dx = cosf(a) * scale * r;
-				float dy = sinf(a) * scale * r;
+		float t = gHUD.m_flTime * 16;
+		for (int i = 0; i < 2; i++) {
+			float a = i == 0 ? t : -t * 0.5f;
+			float r = i == 0 ? 1.0f : 1.5f;
+			float dx = cosf(a) * scale * r;
+			float dy = sinf(a) * scale * r;
 
+			if (is_software_renderer) {
+				DrawFakeHudQuad(minX + dx, minY + dy, maxX + dx, maxY + dy);
+			}
+			else {
 				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
 				gEngfuncs.pTriAPI->Vertex3f(minX + dx, minY + dy, 0);
 
@@ -1800,10 +1863,10 @@ void CHudAmmo::DrawSpriteWeapon() {
 				gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
 				gEngfuncs.pTriAPI->Vertex3f(maxX + dx, minY + dy, 0);
 			}
-
-			gEngfuncs.pTriAPI->End();
-			gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
 		}
+
+		gEngfuncs.pTriAPI->End();
+		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
 	}
 }
 

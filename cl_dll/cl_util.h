@@ -88,6 +88,9 @@ HSPRITE SPR_Load(const char* path);
 // ScreenWidth returns the width of the screen, in pixels
 #define ScreenWidth (gHUD.m_scrinfo.iWidth)
 
+// software mode has a black bar at the bottom of the screen which changes the viewport resolution
+#define SOFTWARE_MODE_BLACK_BAR_HEIGHT 24
+
 #define BASE_XRES 640.f
 
 // use this to project world coordinates to screen coordinates

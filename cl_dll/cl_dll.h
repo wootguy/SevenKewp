@@ -55,6 +55,7 @@ struct playersim_t {
 	int cam_thirdperson;	// 1 = third person camera active
 	bool b_viewing_cam;		// true if player's view is attached to another entity such as a camera
 	float v_frametime;		// view simulation frametime
+	int waterlevel;			// WATERLEVEL_*
 };
 
 extern cl_enginefunc_t gEngfuncs;

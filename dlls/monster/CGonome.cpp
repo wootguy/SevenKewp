@@ -244,7 +244,7 @@ void CGonome::Spawn()
 
 	CSprite* handBlood = CSprite::SpriteCreate(GONOME_SPIT_SPRITE, pev->origin, TRUE);
 	handBlood->SetScale(0.3f);
-	handBlood->SetTransparency(kRenderTransAlpha, 255, 255, 255, 255, 0);
+	handBlood->SetTransparency(kRenderTransTexture, 255, 255, 255, 255, 0);
 	handBlood->SetAttachment(edict(), 1);
 	handBlood->TurnOff();
 	m_hHandBlood = handBlood;

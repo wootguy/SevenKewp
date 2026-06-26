@@ -620,7 +620,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 			waterOffset = (point[2] - waterDist) - pparams->vieworg[2];
 		}
 	}
-
+	gPlayerSim.waterlevel = pparams->waterlevel;
 	pparams->vieworg[2] += waterOffset;
 	
 	V_CalcViewRoll ( pparams );

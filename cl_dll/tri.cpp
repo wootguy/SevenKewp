@@ -21,6 +21,7 @@
 #include "particleman.h"
 #include "tri.h"
 extern IParticleMan *g_pParticleMan;
+extern bool is_software_renderer;
 
 /*
 =================
@@ -51,4 +52,8 @@ void CL_DLLEXPORT HUD_DrawTransparentTriangles( void )
 
 	if ( g_pParticleMan )
 		 g_pParticleMan->Update();
+
+	if (is_software_renderer) {
+		gHUD.m_Ammo.DrawSpriteWeapon();
+	}
 }
