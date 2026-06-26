@@ -251,12 +251,3 @@ bool fileExists(const char* path);
 // searches game directories in priority order
 // returns NULL if file is not found
 const char* FindGameFile(const char* path);
-
-// convert a world space point to screen space
-Vector WorldToScreen(const Vector& P, const Vector& viewerOrigin, const Vector& viewerAngles, float fovXDeg);
-
-// convert a world space point to screen space for the local player
-Vector WorldToScreen(const Vector& P);
-
-// Get lightmap color underneath entity
-RGB GetEntityLighting(cl_entity_t* ent);

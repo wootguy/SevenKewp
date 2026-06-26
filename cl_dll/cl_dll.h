@@ -38,6 +38,7 @@ typedef int (*pfnUserMsgHook)(const char *pszName, int iSize, void *pbuf);
 
 #include "../engine/cdll_int.h"
 #include "../game_shared/cdll_dll.h"
+#include "screenfade.h"
 
 struct playersim_t {
 	vec3_t v_origin;		// camera view origin
@@ -56,6 +57,16 @@ struct playersim_t {
 	bool b_viewing_cam;		// true if player's view is attached to another entity such as a camera
 	float v_frametime;		// view simulation frametime
 	int waterlevel;			// WATERLEVEL_*
+
+	Vector cam_forward;		// camera forward direction
+	Vector cam_right;		// camera right direction
+	Vector cam_up;			// camera up direction
+
+	Vector forward;			// player forward direction
+	Vector right;			// player right direction
+	Vector up;				// player up direction
+
+	screenfade_t fade;		// current screen fade state
 };
 
 extern cl_enginefunc_t gEngfuncs;

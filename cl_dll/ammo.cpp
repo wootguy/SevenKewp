@@ -36,6 +36,7 @@
 #include "HashMap.h"
 #include "com_weapons.h"
 #include "wc_params.h"
+#include "gfx_util.h"
 
 #include "GL/gl.h"
 
@@ -1684,77 +1685,6 @@ void CHudAmmo::DrawDynamicCrosshair() {
 	DrawCrossHair(accuracyX, accuracyY, len, width, border, r, g, b, drawDot, drawTee);
 }
 
-Vector Unproject(float sx, float sy, Vector& forward, Vector& right, Vector& up, float fovXDeg) {
-	int sw = ScreenWidth;
-	int sh = ScreenHeight;
-
-	const float dist = 10.0f; // closest a quad can be before getting clipped
-	float aspect = sw / (float)sh;
-
-	float fovXRad = fovXDeg * (M_PI / 180.0f);
-	float fovX = 2.0f * atanf(tanf(fovXRad * 0.5f));
-	float tanHalfFov = tanf(fovX * 0.5f);
-
-	float ndcX = (sx / sw) * 2.0f - 1.0f;
-	float ndcY = 1.0f - (sy / sh) * 2.0f;
-
-	Vector dir = forward +
-		right * (ndcX * aspect * tanHalfFov) +
-		up * (ndcY * tanHalfFov);
-
-	return gPlayerSim.v_origin + dir.Normalize() * dist;
-}
-
-void DrawFakeHudQuad(float minX, float minY, float maxX, float maxY) {
-	{
-		// No idea why this happens, but the sprite needs shifting vertically depending on resolution.
-		// There doesn't seem to be a formula to calculate this either. It's some combination of 
-		// screen height and aspect ratio that affects this.
-		int sw = ScreenWidth;
-		int sh = ScreenHeight + SOFTWARE_MODE_BLACK_BAR_HEIGHT;
-		int shift = 80;
-		if (sw == 720 && sh == 480)	shift = 56;
-		else if (sw == 720 && sh == 576)	shift = 64;
-		else if (sw == 1176 && sh == 576)	shift = 79;
-		else if (sw == 1280 && sh == 720)	shift = 86;
-		else if (sw == 1280 && sh == 768)	shift = 92;
-		else if (sw == 1360 && sh == 768)	shift = 92;
-		else if (sw == 1366 && sh == 768)	shift = 92;
-		else if (sw == 1280 && sh == 800)	shift = 96;
-		else if (sw == 1280 && sh == 1024)	shift = 108;
-		else if (sw == 1440 && sh == 900)	shift = 109;
-		else if (sw == 640 && sh == 480)	shift = 59;
-		else if (sw == 800 && sh == 600)	shift = 80;
-		else if (sw == 1024 && sh == 768)	shift = 101;
-		else if (sw == 1152 && sh == 864)	shift = 113;
-		else if (sw == 1280 && sh == 960)	shift = 125;
-		else if (sw == 1440 && sh == 1080)	shift = 140;
-
-		if (gPlayerSim.waterlevel == WATERLEVEL_HEAD) {
-			// the shift here should be different per resolution too, but idc
-			shift -= 4;
-		}
-
-		minY -= shift;
-		maxY -= shift;
-	}
-
-	Vector forward, right, up;
-	AngleVectors(gPlayerSim.v_angles, forward, right, up);
-
-	float fovXDeg = g_lastFOV ? g_lastFOV : gHUD.default_fov->value;
-
-	Vector ul = Unproject(minX, minY, forward, right, up, fovXDeg);
-	Vector ur = Unproject(maxX, minY, forward, right, up, fovXDeg);
-	Vector ll = Unproject(minX, maxY, forward, right, up, fovXDeg);
-	Vector lr = Unproject(maxX, maxY, forward, right, up, fovXDeg);
-
-	gEngfuncs.pTriAPI->TexCoord2f(0, 0); gEngfuncs.pTriAPI->Vertex3fv(ul);
-	gEngfuncs.pTriAPI->TexCoord2f(1, 0); gEngfuncs.pTriAPI->Vertex3fv(ur);
-	gEngfuncs.pTriAPI->TexCoord2f(1, 1); gEngfuncs.pTriAPI->Vertex3fv(lr);
-	gEngfuncs.pTriAPI->TexCoord2f(0, 1); gEngfuncs.pTriAPI->Vertex3fv(ll);
-}
-
 void CHudAmmo::DrawSpriteWeapon() {
 	if (gPlayerSim.cam_thirdperson)
 		return;
@@ -1808,7 +1738,7 @@ void CHudAmmo::DrawSpriteWeapon() {
 	);
 		
 	if (is_software_renderer) {
-		DrawFakeHudQuad(minX, minY, maxX, maxY);
+		gfx_draw_fake_hud_quad(minX, minY, maxX, maxY);
 	}
 	else {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -1848,7 +1778,7 @@ void CHudAmmo::DrawSpriteWeapon() {
 			float dy = sinf(a) * scale * r;
 
 			if (is_software_renderer) {
-				DrawFakeHudQuad(minX + dx, minY + dy, maxX + dx, maxY + dy);
+				gfx_draw_fake_hud_quad(minX + dx, minY + dy, maxX + dx, maxY + dy);
 			}
 			else {
 				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);

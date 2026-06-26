@@ -9,6 +9,7 @@
 #include "event_api.h"
 #include "pm_defs.h"
 #include "pm_shared.h"
+#include "gfx_util.h"
 
 extern int g_plr_look_index;
 

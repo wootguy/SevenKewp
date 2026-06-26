@@ -12,6 +12,7 @@
 #include "eventscripts.h"
 #include "ev_hldm.h"
 #include "mstream.h"
+#include "gfx_util.h"
 
 #define MAX_ADV_SPRITES 512
 

@@ -93,48 +93,6 @@ const char* FindGameFile(const char* path) {
 	return NULL;
 }
 
-Vector WorldToScreen(const Vector& P, const Vector& viewerOrigin, const Vector& viewerAngles, float fovXDeg) {
-	Vector forward, right, up;
-	AngleVectors(viewerAngles, forward, right, up);
-
-	Vector rel = P - viewerOrigin;
-
-	float x = DotProduct(rel, right);
-	float y = DotProduct(rel, up);
-	float z = DotProduct(rel, forward);
-
-	int screenW = ScreenWidth;
-	int screenH = ScreenHeight;
-	float aspect = (float)screenW / (float)screenH;
-
-	// convert to actual horizontal FOV for this aspect
-	float baseAspect = 4.0f / 3.0f;
-	float fovXRad43 = fovXDeg * (M_PI / 180.0f);
-	float fovXRad = 2.0f * atan(tan(fovXRad43 * 0.5f) * (aspect / baseAspect));
-	float fovYRad = 2.0f * atan(tan(fovXRad * 0.5f) / aspect);
-	float f = 1.0f / tan(fovYRad * 0.5f);
-
-	float ndcX = (x * f / aspect) / z;
-	float ndcY = (y * f) / z;
-
-	float screenX = (ndcX + 1.0f) * 0.5f * screenW;
-	float screenY = (1.0f - ndcY) * 0.5f * screenH;
-
-	return { screenX, screenY, z };
-}
-
-Vector WorldToScreen(const Vector& P) {
-	Vector angles = gPlayerSim.v_angles;
-
-	if (gPlayerSim.cam_thirdperson && !gPlayerSim.b_viewing_cam) {
-		angles.x = gPlayerSim.cam_ofs.x;
-		angles.y = gPlayerSim.cam_ofs.y;
-		angles.z = 0; // tilt isn't applied in thirdperson
-	}
-
-	return WorldToScreen(P, gPlayerSim.v_origin, angles, gHUD.m_iFOV);
-}
-
 HSPRITE SPR_Load(const char* path) {
 	HSPRITE spr = gEngfuncs.pfnSPR_Load(path);
 	if (spr && spr > g_loadedSprites) {
@@ -146,27 +104,4 @@ HSPRITE SPR_Load(const char* path) {
 cl_entity_t* GetLocalPlayer() {
 	static cl_entity_t dummyPlayer; // prevent crashes when map is not loaded
 	return gHUD.m_is_map_loaded ? gEngfuncs.GetLocalPlayer() : &dummyPlayer;
-}
-
-extern bool g_studio_init;
-
-RGB GetEntityLighting(cl_entity_t* ent) {
-	if (!g_studio_init) {
-		// crash if called before the first model is rendered on join
-		return RGB(255, 255, 255);
-	}
-
-	static alight_t light;
-	static Vector lightVec;
-	
-	memset(&light, 0, sizeof(light));
-	memset(&lightVec, 0, sizeof(lightVec));
-	light.plightvec = &lightVec[0];
-
-	IEngineStudio.StudioDynamicLight(ent, &light);
-	IEngineStudio.StudioEntityLight(&light);
-	IEngineStudio.StudioSetupLighting(&light);
-
-	int illum = light.ambientlight + light.shadelight;
-	return RGB(illum * light.color.x, illum * light.color.y, illum * light.color.z);
 }

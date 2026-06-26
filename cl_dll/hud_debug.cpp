@@ -10,6 +10,9 @@
 #include "com_weapons.h"
 #include "wc_params.h"
 #include "ammohistory.h"
+#include "triangleapi.h"
+#include "gfx_util.h"
+#include "GL/gl.h"
 
 extern local_state_t g_prediction_debug_state;
 
@@ -86,6 +89,8 @@ int CHudDebug::Draw(float flTime)
 
 	CustomWeaponParams* params = GetCustomWeaponParams(state.client.m_iId, WC_PARAMS_AUTO);
 	bool isCustomWeapon = IsCustomWeapon(state.client.m_iId);
+
+	cl_entity_t* localPlayer = GetLocalPlayer();
 
 	int ammoType1 = (int)state.client.vuser4[0];
 	int ammoAmt1 = (int)state.client.vuser4[1];
@@ -229,61 +234,62 @@ int CHudDebug::Draw(float flTime)
 	}
 	PRINT_VARDSTR("Contents", contentsName, contents);
 
-	if (m_HUD_debug->value >= 2) {
-		static int numPhysEnts = 0;
-		static int drawCount = 0;
-		static float lastDraw = 0;
-		if (gEngfuncs.GetClientTime() - lastDraw > 0.055f || lastDraw > gEngfuncs.GetClientTime()) {
-			lastDraw = gEngfuncs.GetClientTime();
-			numPhysEnts = 0;
+	yOffset += line_height;
 
-			const int maxBoxes = 15; // more than this many boxes per frame and boxes won't be drawn
-			int drawMin = (drawCount % 8) * maxBoxes;
-			int drawMax = (drawCount % 8) * maxBoxes + maxBoxes;
-
-			for (int i = 1; i < MAX_PHYSENTS; i++) {
-				physent_t* test = gEngfuncs.pEventAPI->EV_GetPhysent(i);
-				if (!test)
-					continue;
-
-				Vector min = test->mins + test->origin;
-				Vector max = test->maxs + test->origin;
-				Vector ori = test->origin + min + (max - min) * 0.5f;
-
-				if (numPhysEnts >= drawMin && numPhysEnts < drawMax) {
-					RGB color;
-
-					switch (test->solid) {
-					default:
-					case SOLID_NOT:
-						color = RGB(255, 0, 255); // should never happen?
-						break;
-					case SOLID_TRIGGER:
-						color = RGB(128, 0, 255);
-						break;
-					case SOLID_BBOX:
-						color = RGB(255, 128, 0);
-						break;
-					case SOLID_SLIDEBOX:
-						color = RGB(0, 255, 0);
-						break;
-					case SOLID_BSP:
-						color = RGB(255, 0, 0);
-						break;
-					}
-
-					te_debug_box(min, max, 0.5f, color);
-					//te_debug_beam(gPlayerSim.v_sim_org, ori, 1, RGB(255, 255, 0));
-				}
-
-				numPhysEnts++;
-			}
-
-			drawCount++;
-		}
-		PRINT_VARD("Phys Ents", numPhysEnts);
+	int numPhysEnts = 0;
+	int numVisEnts = 0;
+	for (int i = 1; i < MAX_PHYSENTS; i++) {
+		if (gEngfuncs.pEventAPI->EV_GetPhysent(i))
+			numPhysEnts++;
 	}
-
+	for (int i = 1; i < 2048; i++) {
+		cl_entity_t* ent = gEngfuncs.GetEntityByIndex(i);
+		if (ent && ent->curstate.messagenum >= localPlayer->curstate.messagenum)
+			numVisEnts++;
+	}
+	PRINT_VARD("Visible Ents", numVisEnts);
+	PRINT_VARD("Phys Ents", numPhysEnts);
 
 	return 1;
+}
+
+void CHudDebug::DrawBoundingBoxes() {
+	if (m_HUD_debug->value < 2) {
+		return;
+	}
+
+	for (int i = 1; i < MAX_PHYSENTS; i++) {
+		physent_t* test = gEngfuncs.pEventAPI->EV_GetPhysent(i);
+		if (!test)
+			continue;
+
+		Vector mins = test->mins + test->origin;
+		Vector maxs = test->maxs + test->origin;
+
+		RGB color;
+
+		switch (test->solid) {
+		default:
+		case SOLID_NOT:
+			color = RGB(255, 0, 255); // should never happen?
+			break;
+		case SOLID_TRIGGER:
+			color = RGB(128, 0, 255);
+			break;
+		case SOLID_BBOX:
+			color = RGB(255, 128, 0);
+			break;
+		case SOLID_SLIDEBOX:
+			color = RGB(0, 255, 0);
+			break;
+		case SOLID_BSP:
+			color = RGB(255, 0, 0);
+			break;
+		}
+
+		gfx_draw_cube(mins, maxs, RGBA(color, 80));
+		gfx_draw_cube_outline(mins, maxs, RGB(0, 0, 0), 0.5f);
+	}
+
+	gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
 }

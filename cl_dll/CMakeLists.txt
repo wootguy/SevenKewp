@@ -126,6 +126,7 @@ set(UTIL_HDR
 	cl_util.h
 	interpolation.h
 	engine_pv.h
+	gfx_util.h
 	../game_shared/prediction_files.h
 	../common/parsemsg.h
 	../pm_shared/pm_debug.h
@@ -145,6 +146,7 @@ set(UTIL_SRC
 	interpolation.cpp
 	engine_pv.cpp
 	util.cpp
+	gfx_util.cpp
 	../dlls/util/HashMap.cpp
 	../dlls/util/StringPool.cpp
 	../common/parsemsg.cpp

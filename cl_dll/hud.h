@@ -63,6 +63,8 @@ typedef struct cvar_s cvar_t;
 
 #define	MAX_MOTD_LENGTH				1536
 
+#define WHITE_SPRITE "sprites/hlcoop/white.spr"
+
 //
 //-----------------------------------------------------
 //
@@ -448,6 +450,7 @@ public:
 	int Init(void);
 	int VidInit(void) { return 1; }
 	int Draw(float flTime);
+	void DrawBoundingBoxes();
 	virtual const char* HudName() { return "CHudDebug"; }
 
 	cvar_t* m_HUD_debug;
@@ -730,6 +733,7 @@ private:
 public:
 
 	HSPRITE						m_hsprCursor;
+	HSPRITE	m_hWhiteSprite;
 	float m_flTime;	   // the current client time
 	float m_fOldTime;  // the time at which the HUD was last redrawn
 	double m_flTimeDelta; // the difference between flTime and fOldTime

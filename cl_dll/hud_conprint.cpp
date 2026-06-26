@@ -10,6 +10,7 @@
 #include "pmtrace.h"
 #include "pm_defs.h"
 #include "event_api.h"
+#include "gfx_util.h"
 
 DECLARE_MESSAGE(m_HudConPrint, HudConPrint);
 

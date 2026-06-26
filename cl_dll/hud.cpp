@@ -614,6 +614,11 @@ void CHud::LoadHudSprites(void) {
 			p++;
 		}
 	}
+
+	m_hWhiteSprite = SPR_Load(WHITE_SPRITE); // used for solid color rendering with the TriApi in software mode
+	if (!m_hWhiteSprite) {
+		PRINTF("Failed to load '%s'. Solid color rendering will be broken\n", WHITE_SPRITE);
+	}
 }
 
 void CHud::ReplaceHudSprites(const char* fpath) {

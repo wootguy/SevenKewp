@@ -53,6 +53,8 @@ void CL_DLLEXPORT HUD_DrawTransparentTriangles( void )
 	if ( g_pParticleMan )
 		 g_pParticleMan->Update();
 
+	gHUD.m_Debug.DrawBoundingBoxes();
+
 	if (is_software_renderer) {
 		gHUD.m_Ammo.DrawSpriteWeapon();
 	}

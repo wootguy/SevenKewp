@@ -631,6 +631,9 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	VectorCopy( pparams->cl_viewangles, angles );
 
 	AngleVectors ( angles, pparams->forward, pparams->right, pparams->up );
+	gPlayerSim.forward = pparams->forward;
+	gPlayerSim.right = pparams->right;
+	gPlayerSim.up = pparams->up;
 
 	// don't allow cheats in multiplayer
 	if ( pparams->maxclients <= 1 )
@@ -654,11 +657,19 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 		camAngles[ ROLL ]	= 0;
 
 		AngleVectors( camAngles, camForward, camRight, camUp );
+		gPlayerSim.cam_forward = camForward;
+		gPlayerSim.cam_right = camRight;
+		gPlayerSim.cam_up = camUp;
 
 		for ( i = 0; i < 3; i++ )
 		{
 			pparams->vieworg[ i ] += -ofs[2] * camForward[ i ];
 		}
+	}
+	else {
+		gPlayerSim.cam_forward = gPlayerSim.forward;
+		gPlayerSim.cam_right = gPlayerSim.right;
+		gPlayerSim.cam_up = gPlayerSim.up;
 	}
 	
 	// Give gun our viewangles
@@ -859,6 +870,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	lasttime = pparams->time;
 
 	gPlayerSim.v_origin = pparams->vieworg;
+	gEngfuncs.pfnGetScreenFade(&gPlayerSim.fade);
 }
 
 void V_SmoothInterpolateAngles( float * startAngle, float * endAngle, float * finalAngle, float degreesPerSec )
