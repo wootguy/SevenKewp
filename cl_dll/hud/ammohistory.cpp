@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "hud_ammohistory.h"
+#include "ammohistory.h"
 
 HistoryResource gHR;
 

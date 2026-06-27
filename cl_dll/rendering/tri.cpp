@@ -17,11 +17,11 @@
 #include "cl_entity.h"
 #include "triangleapi.h"
 #include "Exports.h"
+#include "gfx_util.h"
 
 #include "particleman.h"
 #include "tri.h"
 extern IParticleMan *g_pParticleMan;
-extern bool is_software_renderer;
 
 /*
 =================
@@ -56,6 +56,6 @@ void CL_DLLEXPORT HUD_DrawTransparentTriangles( void )
 	gHUD.m_Debug.DrawBoundingBoxes();
 
 	if (is_software_renderer) {
-		gHUD.m_Ammo.DrawSpriteWeapon();
+		gfx_draw_sprite_weapon();
 	}
 }

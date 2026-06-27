@@ -35,8 +35,8 @@
 
 #include "wrect.h"
 #include "cl_dll.h"
-#include "hud_ammo.h"
 #include "rgb.h"
+#include "weapon_res.h"
 
 #define DHN_DRAWZERO 1
 #define DHN_2DIGITS  2
@@ -105,60 +105,79 @@ class CHudAmmo: public CHudBase
 {
 public:
 	int Init( void );
-	int VidInit( void );
 	int Draw(float flTime);
 	void DrawAmmoInfo(int& x, int& y, int iClip, int iAmmo, HSPRITE hAmmo, wrect_t rcAmmo, int minDigits);
-	void DrawDynamicCrosshair();
-	void DrawSpriteWeapon();
-	void Think(void);
 	void Reset(void);
 	virtual const char* HudName() { return "CHudAmmo"; }
-	int DrawWList(float flTime);
-	void UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget);
-	bool IsWeaponZoomed();
-
-	int CurWeapon(int iState, int iId, int iClip);
-	int MsgFunc_CurWeapon(const char *pszName, int iSize, void *pbuf);
-	int MsgFunc_CurWeaponX(const char *pszName, int iSize, void *pbuf);
-	int MsgFunc_WeaponList(const char *pszName, int iSize, void *pbuf);
-	int MsgFunc_WeaponListX(const char *pszName, int iSize, void *pbuf);
-	int MsgFunc_CustomWep(const char* pszName, int iSize, void* pbuf);
-	int MsgFunc_CustomWepAk(const char* pszName, int iSize, void* pbuf);
-	int MsgFunc_CustomWepEv(const char* pszName, int iSize, void* pbuf);
-	int MsgFunc_CustomHud(const char* pszName, int iSize, void* pbuf);
-	int MsgFunc_PmodelAnim(const char* pszName, int iSize, void* pbuf);
-	int MsgFunc_WeaponBits(const char* pszName, int iSize, void* pbuf);
-	int MsgFunc_MatsPath(const char* pszName, int iSize, void* pbuf);
-	int MsgFunc_SoundIdx(const char* pszName, int iSize, void* pbuf);
-	int MsgFunc_AmmoX(const char *pszName, int iSize, void *pbuf);
-	int MsgFunc_AmmoXX(const char *pszName, int iSize, void *pbuf);
-	int MsgFunc_AmmoPickup( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_WeapPickup( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_ItemPickup( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf );
-
-	void SlotInput( int iSlot );
-	void _cdecl UserCmd_Slot1( void );
-	void _cdecl UserCmd_Slot2( void );
-	void _cdecl UserCmd_Slot3( void );
-	void _cdecl UserCmd_Slot4( void );
-	void _cdecl UserCmd_Slot5( void );
-	void _cdecl UserCmd_Slot6( void );
-	void _cdecl UserCmd_Slot7( void );
-	void _cdecl UserCmd_Slot8( void );
-	void _cdecl UserCmd_Slot9( void );
-	void _cdecl UserCmd_Slot10( void );
-	void _cdecl UserCmd_Close( void );
-	void _cdecl UserCmd_NextWeapon( void );
-	void _cdecl UserCmd_PrevWeapon( void );
-
-	WEAPON* m_pWeapon;
 
 private:
 	float m_fFade;
-	RGBA  m_rgba;	
+	RGBA  m_rgba;
+};
+
+//
+//-----------------------------------------------------
+//
+class CHudWeaponList : public CHudBase
+{
+public:
+	WEAPON* m_pActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
+							// this points to the active weapon menu item
+	WEAPON* m_pLastSel;		// Last weapon menu selection
+	int m_weaponselect;
+
+	int Init(void);
+	int VidInit(void);
+	int Draw(float flTime);
+	void Think(void);
+	void Reset(void);
+	virtual const char* HudName() { return "CHudWeaponList"; }
+	int DrawWList(float flTime);
+	void SelectSlot(int iSlot, int fAdvance, int iDirection);
+
+	void SlotInput(int iSlot);
+	void _cdecl UserCmd_Slot1(void);
+	void _cdecl UserCmd_Slot2(void);
+	void _cdecl UserCmd_Slot3(void);
+	void _cdecl UserCmd_Slot4(void);
+	void _cdecl UserCmd_Slot5(void);
+	void _cdecl UserCmd_Slot6(void);
+	void _cdecl UserCmd_Slot7(void);
+	void _cdecl UserCmd_Slot8(void);
+	void _cdecl UserCmd_Slot9(void);
+	void _cdecl UserCmd_Slot10(void);
+	void _cdecl UserCmd_Close(void);
+	void _cdecl UserCmd_NextWeapon(void);
+	void _cdecl UserCmd_PrevWeapon(void);
+
+private:
+	int DrawBar(int x, int y, int width, int height, float f);
+	void DrawAmmoBars(WEAPON* p, int x, int y, int width, int height); // green bar on the weapon icon
+
 	int	m_HUD_bucket0;
 	int m_HUD_selection;
+};
+
+//
+//-----------------------------------------------------
+//
+
+class CHudCrosshair : public CHudBase
+{
+public:
+	int Init(void);
+	int Draw(float flTime);
+	void DrawDynamicCrosshair();
+	void Reset(void);
+	virtual const char* HudName() { return "CHudCrosshair"; }
+	void UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget);
+	bool IsWeaponZoomed();
+
+private:
+	void DrawStretchedZoomCrosshair(HSPRITE spr, wrect_t rect, bool aspectCorrection);
+	int CrosshairGapPixels(float accuracyDeg, bool isVertical);
+	void DrawCrossHair(float accuracyX, float accuracyY, int len, int thick, int border,
+		int r, int g, int b, bool drawDot, bool drawTee);
 
 	cvar_t* m_hud_crosshair_mode;
 	cvar_t* m_hud_crosshair_length;
@@ -805,6 +824,8 @@ public:
 	int GetSpriteIndex( const char *SpriteName );	// gets a sprite index, for use in the m_rghSprites[] array
 
 	CHudAmmo		m_Ammo;
+	CHudWeaponList	m_WeaponList;
+	CHudCrosshair	m_Crosshair;
 	CHudHealth		m_Health;
 	CHudSpectator	m_Spectator;
 	CHudGeiger		m_Geiger;

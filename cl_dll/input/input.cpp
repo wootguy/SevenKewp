@@ -732,8 +732,8 @@ void CL_DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int ac
 	cmd->impulse = in_impulse;
 	in_impulse = 0;
 
-	cmd->weaponselect = g_weaponselect;
-	g_weaponselect = 0;
+	cmd->weaponselect = gHUD.m_WeaponList.m_weaponselect;
+	gHUD.m_WeaponList.m_weaponselect = 0;
 	//
 	// set button and flag bits
 	//

@@ -9,7 +9,7 @@
 #include <malloc.h> // _alloca
 #include "com_weapons.h"
 #include "wc_params.h"
-#include "hud_ammohistory.h"
+#include "ammohistory.h"
 #include "triangleapi.h"
 #include "gfx_util.h"
 #include "GL/gl.h"

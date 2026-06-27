@@ -10,6 +10,9 @@ void gfx_draw_cube_outline(const Vector& mins, const Vector& maxs, const RGBA& c
 // Allows scaling HUD sprites in software mode
 void gfx_draw_fake_hud_quad(float minX, float minY, float maxX, float maxY);
 
+// draw view model sprite
+void gfx_draw_sprite_weapon();
+
 // convert a screen space coordinate to world space
 Vector ScreenToWorld(const Vector& screen);
 

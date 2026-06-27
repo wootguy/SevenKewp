@@ -35,6 +35,7 @@
 #include "prediction_files.h"
 
 extern bool g_crosshair_active; // true after calling SetCrosshair with a valid crosshair
+extern bool is_software_renderer;
 
 // Macros to hook function calls into the HUD object
 #define HOOK_MESSAGE(x) gEngfuncs.pfnHookUserMsg(#x, __MsgFunc_##x );

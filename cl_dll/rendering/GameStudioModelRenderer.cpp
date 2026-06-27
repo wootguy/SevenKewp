@@ -79,8 +79,8 @@ int R_StudioDrawModel( int flags )
 	g_StudioRenderer.m_drawingViewModel = IEngineStudio.GetCurrentEntity() == gunModel;
 
 	if (g_StudioRenderer.m_drawingViewModel) {
-		bool isZoomed = gHUD.m_Ammo.IsWeaponZoomed();
-		WEAPON* pw = gHUD.m_Ammo.m_pWeapon;
+		bool isZoomed = gHUD.m_Crosshair.IsWeaponZoomed();
+		WEAPON* pw = g_pActiveWeapon;
 
 		if (pw && pw->hZoomedCrosshair && isZoomed && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR)) {
 			if (flags & STUDIO_RENDER)

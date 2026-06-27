@@ -4,6 +4,7 @@
 #include "com_model.h"
 #include "triangleapi.h"
 #include "com_weapons.h"
+#include "wc_params.h"
 #include "GL/gl.h"
 
 void gfx_start_colored_rendering(int polyMode, const RGBA& color) {
@@ -180,6 +181,121 @@ void gfx_draw_fake_hud_quad(float minX, float minY, float maxX, float maxY) {
 	gEngfuncs.pTriAPI->TexCoord2f(1, 0); gEngfuncs.pTriAPI->Vertex3fv(ur);
 	gEngfuncs.pTriAPI->TexCoord2f(1, 1); gEngfuncs.pTriAPI->Vertex3fv(lr);
 	gEngfuncs.pTriAPI->TexCoord2f(0, 1); gEngfuncs.pTriAPI->Vertex3fv(ll);
+}
+
+void gfx_draw_sprite_weapon() {
+	if (gPlayerSim.cam_thirdperson)
+		return;
+
+	ViewModelSprite* pSpr = GetSpriteWeaponState();
+	if (!pSpr || pSpr->hSprite <= 0)
+		return;
+	ViewModelSprite& spr = *pSpr;
+
+	wrect_t rc;
+	rc.top = 0;
+	rc.left = 0;
+	rc.right = spr.w;
+	rc.bottom = spr.h;
+
+	float scale = (ScreenHeight * 0.001f) * spr.scale;
+	if (is_software_renderer)
+		scale *= 0.70f;
+
+	rc.right *= scale;
+	rc.bottom *= scale;
+	spr.x *= scale;
+	spr.y *= scale;
+
+	int minX = spr.x + (ScreenWidth - rc.right) / 2;
+	int minY = spr.y + (ScreenHeight - rc.bottom);
+	int maxX = minX + rc.right;
+	int maxY = minY + rc.bottom;
+
+	int triRenderMode = spr.rendermode;
+	RGBA c = spr.color;
+
+	switch (spr.rendermode) {
+	case kRenderNormal:
+	case kRenderTransTexture:
+	case kRenderTransAlpha:
+	case kRenderTransColor:
+		triRenderMode = kRenderTransAlpha;
+		break;
+	case kRenderGlow:
+	case kRenderTransAdd:
+		triRenderMode = kRenderTransAdd;
+		break;
+	}
+
+	gEngfuncs.pTriAPI->RenderMode(triRenderMode);
+	gEngfuncs.pTriAPI->SpriteTexture((model_t*)gEngfuncs.GetSpritePointer(spr.hSprite), spr.frame);
+	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+	gEngfuncs.pTriAPI->Color4f(
+		c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f
+	);
+
+	if (is_software_renderer) {
+		gfx_draw_fake_hud_quad(minX, minY, maxX, maxY);
+	}
+	else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+		gEngfuncs.pTriAPI->Vertex3f(minX, minY, 0);
+
+		gEngfuncs.pTriAPI->TexCoord2f(0.0f, 1.0f);
+		gEngfuncs.pTriAPI->Vertex3f(minX, maxY, 0);
+
+		gEngfuncs.pTriAPI->TexCoord2f(1.0f, 1.0f);
+		gEngfuncs.pTriAPI->Vertex3f(maxX, maxY, 0);
+
+		gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
+		gEngfuncs.pTriAPI->Vertex3f(maxX, minY, 0);
+	}
+
+	gEngfuncs.pTriAPI->End();
+	gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
+
+	if (spr.renderfx == kRenderFxGlowShell) {
+		// Poor man's glow effect. Looks more like motion blur, but it's cheap.
+		c = spr.glowShellColor;
+		gEngfuncs.pTriAPI->RenderMode(kRenderTransAdd);
+		gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+
+		gEngfuncs.pTriAPI->Color4f(
+			c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, 0.5f
+		);
+
+		float t = gHUD.m_flTime * 16;
+		for (int i = 0; i < 2; i++) {
+			float a = i == 0 ? t : -t * 0.5f;
+			float r = i == 0 ? 1.0f : 1.5f;
+			float dx = cosf(a) * scale * r;
+			float dy = sinf(a) * scale * r;
+
+			if (is_software_renderer) {
+				gfx_draw_fake_hud_quad(minX + dx, minY + dy, maxX + dx, maxY + dy);
+			}
+			else {
+				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 0.0f);
+				gEngfuncs.pTriAPI->Vertex3f(minX + dx, minY + dy, 0);
+
+				gEngfuncs.pTriAPI->TexCoord2f(0.0f, 1.0f);
+				gEngfuncs.pTriAPI->Vertex3f(minX + dx, maxY + dy, 0);
+
+				gEngfuncs.pTriAPI->TexCoord2f(1.0f, 1.0f);
+				gEngfuncs.pTriAPI->Vertex3f(maxX + dx, maxY + dy, 0);
+
+				gEngfuncs.pTriAPI->TexCoord2f(1.0f, 0.0f);
+				gEngfuncs.pTriAPI->Vertex3f(maxX + dx, minY + dy, 0);
+			}
+		}
+
+		gEngfuncs.pTriAPI->End();
+		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
+	}
 }
 
 Vector WorldToScreen(const Vector& P) {

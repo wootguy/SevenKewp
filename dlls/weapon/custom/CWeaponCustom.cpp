@@ -4,6 +4,7 @@
 #ifdef CLIENT_DLL
 #include "hud_iface.h"
 #include "ev_hldm.h"
+#include "ev_custom.h"
 #include "com_weapons.h"
 #include "cl_dll.h"
 #include "../common/com_model.h"

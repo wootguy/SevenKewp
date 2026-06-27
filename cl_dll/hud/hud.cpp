@@ -367,6 +367,7 @@ void CHud :: Init( void )
 
 	HookEffectMessages();
 	HookPredictionMessages();
+	HookWeaponMessages();
 
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
@@ -408,6 +409,8 @@ void CHud :: Init( void )
 	m_flTime = 1.0;
 
 	m_Ammo.Init();
+	m_WeaponList.Init();
+	m_Crosshair.Init();
 	m_Health.Init();
 	m_SayText.Init();
 	m_Spectator.Init();
@@ -740,7 +743,7 @@ void CHud::WorldInit(void) {
 
 	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
 
-	m_Ammo.VidInit();
+	m_WeaponList.VidInit();
 	m_Health.VidInit();
 	m_Spectator.VidInit();
 	m_Train.VidInit();

@@ -9,7 +9,6 @@
 char dummyData[16];
 EnginePv g_enginepv;
 extern bool is_steam_legacy_engine;
-extern bool is_software_renderer;
 
 char** g_sound_precache; // list of precached sounds (for mapping an index to a file path)
 

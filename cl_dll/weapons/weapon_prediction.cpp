@@ -44,7 +44,7 @@
 #include "../dlls/weapon/CSqueak.h"
 #include "../dlls/weapon/custom/CWeaponCustom.h"
 #include "prediction_files.h"
-#include "hud_ammo.h"
+#include "weapon_res.h"
 
 #include "studio.h"
 

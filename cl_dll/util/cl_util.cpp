@@ -26,6 +26,7 @@
 #include "cl_util.h"
 #include "shared_util.h"
 #include <string.h>
+#include "ModPlayerState.h"
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
@@ -104,4 +105,9 @@ HSPRITE SPR_Load(const char* path) {
 cl_entity_t* GetLocalPlayer() {
 	static cl_entity_t dummyPlayer; // prevent crashes when map is not loaded
 	return gHUD.m_is_map_loaded ? gEngfuncs.GetLocalPlayer() : &dummyPlayer;
+}
+
+ModPlayerState& GetLocalPlayerState() {
+	int idx = GetLocalPlayer()->index;
+	return g_modPlayerStates[idx];
 }

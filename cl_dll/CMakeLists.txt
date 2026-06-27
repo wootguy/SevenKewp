@@ -1,9 +1,7 @@
 project(${CLIENT_DLL_NAME})
 
 set(WEAPON_HDR
-	weapons/com_weapons.h
-	weapons/ev_hldm.h
-	weapons/eventscripts.h
+	weapons/weapon_res.h
 )
 set(SHARED_WEAPON_SRC
 	../dlls/weapon/CGlock.cpp
@@ -28,14 +26,28 @@ set(CUSTOM_WEAPON_SRC
 	../dlls/weapon/custom/wc_schema.cpp
 )
 set(CLIENT_WEAPON_SRC
-	weapons/com_weapons.cpp
+	weapons/weapon_res.cpp
+	weapons/weapon_msg.cpp
+)
+set(WEAPON_EVENTS_HDR
+	weapons/ev_hldm.h
+	weapons/ev_custom.h
+	weapons/eventscripts.h
+)
+set(WEAPON_EVENTS_SRC
 	weapons/ev_hldm.cpp
+	weapons/ev_custom.cpp
 	weapons/ev_common.cpp
 	weapons/events.cpp
-	weapons/hl_events.cpp
+)
+set(WEAPON_PREDICTION_HDR
+	weapons/com_weapons.h
+)
+set(WEAPON_PREDICTION_SRC
+	weapons/com_weapons.cpp
 	weapons/hl_objects.cpp
 	weapons/hl_baseentity.cpp
-	weapons/hl_weapons.cpp
+	weapons/weapon_prediction.cpp
 )
 
 set(HUD_HDR
@@ -46,6 +58,7 @@ set(HUD_HDR
 	hud/wrect.h
 	hud/player_info.h
 	hud/global_consts.h
+	hud/ammohistory.h
 	../game_shared/voice_banmgr.h
 	../game_shared/voice_status.h
 )
@@ -57,19 +70,18 @@ set(HUD_SRC
 	hud/servers.cpp
 	hud/hud_update.cpp
 	hud/voice_status.cpp
+	hud/ammohistory.cpp
 	../game_shared/voice_banmgr.cpp
 )
 set(HUD_COMPONENTS_HDR
-	hud/components/hud_ammo.h
-	hud/components/hud_ammohistory.h
 	hud/components/hud_health.h
 	hud/components/hud_spectator.h
 )
 set(HUD_COMPONENTS_SRC
 	hud/components/hud_ammo.cpp
 	hud/components/hud_ammo_secondary.cpp
-	hud/components/hud_ammohistory.cpp
 	hud/components/hud_battery.cpp
+	hud/components/hud_crosshair.cpp
 	hud/components/hud_death.cpp
 	hud/components/hud_flashlight.cpp
 	hud/components/hud_health.cpp
@@ -87,6 +99,7 @@ set(HUD_COMPONENTS_SRC
 	hud/components/hud_statusbar.cpp
 	hud/components/hud_text_message.cpp
 	hud/components/hud_train.cpp
+	hud/components/hud_weaponlist.cpp
 	hud/components/hud_web_updater.cpp
 )
 
@@ -246,7 +259,10 @@ set_source_files_properties(${SHARED_WEAPON_SRC} PROPERTIES HEADER_FILE_ONLY TRU
 
 set(ALL_SRC	
 	${MISC_HDR}
-	${SHARED_WEAPON_SRC} ${CLIENT_WEAPON_SRC} ${CUSTOM_WEAPON_SRC} ${WEAPON_HDR}
+	${SHARED_WEAPON_SRC} ${CLIENT_WEAPON_SRC}
+	${CUSTOM_WEAPON_SRC} ${WEAPON_HDR}
+	${WEAPON_EVENTS_SRC} ${WEAPON_EVENTS_HDR}
+	${WEAPON_PREDICTION_SRC} ${WEAPON_PREDICTION_HDR}
 	${MOVEMENT_SRC} ${MOVEMENT_HDR}
 	${HUD_SRC} ${HUD_HDR}
 	${HUD_COMPONENTS_SRC} ${HUD_COMPONENTS_HDR}
@@ -354,6 +370,8 @@ elseif(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W0 /we4715") 
 
 	source_group("Header Files\\Weapons" FILES ${WEAPON_HDR})	
+	source_group("Header Files\\Weapons\\Events" FILES ${WEAPON_EVENTS_HDR})
+	source_group("Header Files\\Weapons\\Prediction" FILES ${WEAPON_PREDICTION_HDR})
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})	
 	source_group("Header Files\\HUD" FILES ${HUD_HDR})	
 	source_group("Header Files\\HUD\\VGUI" FILES ${VGUI_HDR})	
@@ -363,8 +381,10 @@ elseif(MSVC)
 	source_group("Header Files\\Hooks" FILES ${HOOKS_HDR})
 	source_group("Header Files\\Effects" FILES ${EFFECTS_HDR})
 	
-	source_group("Source Files\\Weapons\\Default" FILES ${SHARED_WEAPON_SRC} ${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp)	
+	source_group("Source Files\\Weapons\\Default" FILES ${SHARED_WEAPON_SRC} ${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp)
 	source_group("Source Files\\Weapons\\Custom" FILES ${CUSTOM_WEAPON_SRC})	
+	source_group("Source Files\\Weapons\\Events" FILES ${WEAPON_EVENTS_SRC})	
+	source_group("Source Files\\Weapons\\Prediction" FILES ${WEAPON_PREDICTION_SRC})	
 	source_group("Source Files\\Weapons" FILES ${CLIENT_WEAPON_SRC})	
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})	
 	source_group("Source Files\\Game" FILES ${GAME_SRC})	

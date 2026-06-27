@@ -19,9 +19,9 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "bench.h"
-
 #include "vgui_TeamFortressViewport.h"
 #include "engine_pv.h"
+#include "gfx_util.h"
 
 #define MAX_LOGO_FRAMES 56
 
@@ -38,8 +38,6 @@ extern int g_iVisibleMouse;
 float HUD_GetFOV( void );
 
 extern float IN_GetMouseSensitivity();
-
-extern bool is_software_renderer;
 
 // Think
 void CHud::Think(void)
@@ -196,6 +194,9 @@ int CHud :: Redraw( float flTime, int intermission )
 			pList = pList->pNext;
 		}
 	}
+
+	if (!is_software_renderer)
+		gfx_draw_sprite_weapon();
 
 	// are we in demo mode? do we need to draw the logo in the top corner?
 	if (m_iLogo)
