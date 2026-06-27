@@ -94,7 +94,7 @@ inline uint32_t PLRBIT(int eidx) { return 1 << (eidx & 31); }
 char* strcpy_safe(char* dest, const char* src, size_t size);
 
 #ifdef CLIENT_DLL
-#include "../cl_dll/engine_pv.h"
+#include "engine_pv.h"
 #define PLAY_MOVEMENT_SOUND(channel, sample, volume, attenuation, fFlags, pitch) \
 	pmove->PM_PlaySound(channel, sample, volume, attenuation, fFlags, pitch);
 #define INDEX_SOUND(soundIdx) GetSoundByIndex(soundIdx)

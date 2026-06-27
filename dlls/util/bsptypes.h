@@ -1,6 +1,6 @@
 #pragma once
-#include "extdll.h"
 #include "bsplimits.h"
+#include "vector.h"
 #include <vector>
 #include <cstdint>
 

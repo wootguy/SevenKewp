@@ -1,5 +1,5 @@
 #pragma once
-#include "CBaseMonster.h"
+#include "../dlls/monster/CBaseMonster.h"
 
 // Contact Grenade / Timed grenade / Satchel Charge
 class EXPORT CGrenade : public CBaseMonster

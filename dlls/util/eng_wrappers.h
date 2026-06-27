@@ -2,6 +2,7 @@
 
 #pragma once
 #include "Bsp.h"
+#include "../dlls/enginecallback.h"
 
 class CBaseEntity;
 

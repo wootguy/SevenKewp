@@ -13,13 +13,11 @@
 *
 ****/
 
-#include "extdll.h"
-#include "util.h"
-#include "weapon/weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
-#include "weapon/CGlock.h"
-#include "skill.h"
+#include "../dlls/extdll.h"
+#include "shared_util.h"
+#include "../dlls/weapon/weapons.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/weapon/CGlock.h"
 
 enum glock_e {
 	GLOCK_IDLE1 = 0,

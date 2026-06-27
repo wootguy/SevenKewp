@@ -1,6 +1,6 @@
 #pragma once
 #include "wc_params.h"
-#include "CBaseAnimating.h"
+#include "../dlls/CBaseAnimating.h"
 
 #define FL_WC_PROJ_NO_BUBBLES		1
 #define FL_WC_PROJ_NO_ORIENT		2 // don't orient projectile to movement direction

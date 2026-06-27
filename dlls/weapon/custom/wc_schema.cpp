@@ -1,10 +1,17 @@
+#ifdef CLIENT_DLL
+#include "vector.h"
+#define vec3_t Vector
+#include "eiface.h"
+#include "Platform.h"
+#else
 #include "extdll.h"
 #include "util.h"
+#endif
+
 #include "wc_params.h"
 #include "wc_schema.h"
 #include "StringPool.h"
 #include "CWeaponCustom.h"
-#include "CProjectileCustom.h"
 #include "shake.h"
 
 #define WEP_FIELD(name, default_val, struct_field, bits, field_type, ...) \

@@ -1,6 +1,5 @@
 #pragma once
 #include <stdint.h>
-#include <EHandle.h>
 #include "wc_events.h"
 #include "string_deltas.h"
 

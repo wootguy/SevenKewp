@@ -21,28 +21,25 @@ This file contains "stubs" of class member implementations so that we can predic
  add in the functionality you need.
 ==========================
 */
-#include	"extdll.h"
-#include	"util.h"
-#include	"CWorld.h"
-#include	"CBasePlayer.h"
-#include	"CMultiSource.h"
-#include	"weapon/weapons.h"
-#include	"nodes.h"
-#include	"env/CSoundEnt.h"
-#include	"skill.h"
-#include	"weapon/CBasePlayerAmmo.h"
-#include	"weapon/CBasePlayerItem.h"
-#include	"weapon/CBasePlayerWeapon.h"
-#include	"weapon/CGrenade.h"
-#include	"CWeaponCustom.h"
-#include	"env/effects.h"
+#include	"../dlls/extdll.h"
+#include	"../dlls/CWorld.h"
+#include	"../dlls/player/CBasePlayer.h"
+#include	"../dlls/triggers/CMultiSource.h"
+#include	"../dlls/weapon/weapons.h"
+#include	"../dlls/monster/nodes.h"
+#include	"../dlls/env/CSoundEnt.h"
+#include	"../dlls/weapon/CBasePlayerAmmo.h"
+#include	"../dlls/weapon/CBasePlayerItem.h"
+#include	"../dlls/weapon/CBasePlayerWeapon.h"
+#include	"../dlls/weapon/CGrenade.h"
+#include	"../dlls/weapon/custom/CWeaponCustom.h"
+#include	"../dlls/env/effects.h"
 
 // Globals used by game logic
 const Vector g_vecZero = Vector( 0, 0, 0 );
 int gmsgWeapPickup = 0;
 enginefuncs_t g_engfuncs;
 globalvars_t  *gpGlobals;
-HashMap<SpawnFunc> g_entityRemap;
 
 ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 
@@ -57,11 +54,9 @@ Vector CBasePlayer::GetAutoaimVector(float flDelta) {
 	return WC_GetAim(0, 0);
 }
 
-void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch) { }
 void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char* msg) {}
 void AddPrecacheWeapon(std::string wepName) {}
 bool UTIL_MapReplacesModel(const char* path) { return false; }
-void AddWaterPhysicsEnt(CBaseEntity* ent, float waterFriction, float buoyancy, float splashSz) {}
 const char* UTIL_GetReplacementSound(edict_t* ent, const char* sound) { return NULL; }
 globalentity_t* CGlobalState::Find(string_t globalname) { return NULL; };
 
@@ -93,7 +88,17 @@ void CBaseEntity::BreakableDamageSound() { }
 bool CBaseEntity::IsDelaySpawned() { return 0; }
 void CBaseEntity::ItemBounceTouch(CBaseEntity* pOther) {}
 int CBaseEntity::Illumination() { return 0; }
-
+BOOL CBaseEntity::HasTarget(string_t targetname) { return FALSE; }
+Vector CBaseEntity::Center() { return g_vecZero; }
+Vector CBaseEntity::EyePosition() { return g_vecZero; }
+Vector CBaseEntity::EarPosition() { return g_vecZero; }
+Vector CBaseEntity::GetTargetOrigin() { return g_vecZero; }
+int CBaseEntity::IsMoving(void) { return 0; }
+BOOL CBaseEntity::IsAlive(void) { return FALSE; }
+float CBaseEntity::GetDamage(float defaultDamage) { return 0; }
+const char* CBaseEntity::GetDeathNoticeWeapon() { return NULL; }
+BOOL CBaseEntity::IsBSPModel(void) { return FALSE; }
+BOOL CBaseEntity::ReflectGauss(void) { return FALSE; }
 RGB CBaseEntity::GetLighting() { return RGB(); }
 int CBaseEntity::IRelationship(int, int) { return 0; }
 Vector CBaseEntity::GetLookDirection() { return g_vecZero; }
@@ -114,18 +119,7 @@ edict_t *DBG_EntOfVars( const entvars_t *pev ) { return NULL; }
 void DBG_AssertFunction(BOOL fExpr,	const char*	szExpr,	const char*	szFile,	int szLine,	const char*	szMessage) { }
 
 // UTIL_* Stubs
-void UTIL_PrecacheOther( const char *szClassname ) { }
-void UTIL_PrecacheOther( const char *szClassname, const StringMap& keys ) { }
-void UTIL_BloodDrips( const Vector &origin, const Vector &direction, int color, int amount ) { }
-edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber) { return NULL; }
-edict_t* UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber ) { return NULL; }
-void UTIL_MakeVectors( const Vector &vecAngles ) { }
-BOOL UTIL_IsValidEntity( edict_t *pent ) { return TRUE; }
-void UTIL_SetOrigin( entvars_t *, const Vector &org ) { }
-BOOL UTIL_GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon ) { return TRUE; }
-void UTIL_LogPrintf(char *,...) { }
-void UTIL_ClientPrintAll( int,char const *,char const *,char const *,char const *,char const *) { }
-void ClientPrint( entvars_t *client, int msg_dest, const char *msg_name, const char *param1, const char *param2, const char *param3, const char *param4 ) { }
+void* GET_PRIVATE(const edict_t* pent) { return 0; }
 
 // CBaseToggle Stubs
 int CBaseToggle::Restore( class CRestore & ) { return 1; }
@@ -145,10 +139,6 @@ CGrenade * CGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector v
 CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity ){ return 0; }
 void CGrenade::DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ){ }
 
-void UTIL_Remove( CBaseEntity *pEntity ){ }
-struct skilldata_t  gSkillData;
-void UTIL_SetSize( entvars_t *pev, const Vector &vecMin, const Vector &vecMax ){ }
-CBaseEntity *UTIL_FindEntityInSphere( CBaseEntity *pStartEntity, const Vector &vecCenter, float flRadius ){ return 0;}
 CBaseEntity *UTIL_FindEntityByClassname(CBaseEntity* pStartEntity, const char* szName){ return 0;}
 
 Vector UTIL_VecToAngles( const Vector &vec ){ return 0; }
@@ -267,6 +257,7 @@ BOOL CBaseMonster :: FGetNodeRoute ( Vector vecDest ) { return TRUE; }
 int CBaseMonster :: FindHintNode ( void ) { return NO_NODE; }
 void CBaseMonster::ReportAIState( void ) { }
 void CBaseMonster :: KeyValue( KeyValueData *pkvd ) { }
+BOOL CBaseMonster::IsAlive(void) { return FALSE; }
 BOOL CBaseMonster :: FCheckAITrigger ( void ) { return FALSE; }
 int CBaseMonster :: CanPlaySequence( BOOL fDisregardMonsterState, int interruptLevel ) { return FALSE; }
 BOOL CBaseMonster :: FindLateralCover ( const Vector &vecThreat, const Vector &vecViewOffset ) { return FALSE; }
@@ -394,6 +385,9 @@ void CBasePlayer::SetThirdPersonWeaponAnim(int anim, float fps) { }
 void CBasePlayer::SetJumpPower(int power) {}
 void CBasePlayer::ApplyEffects() {}
 bool CBasePlayer::UseSevenKewpGuns() { return false; }
+void CBasePlayer::StartSneaking(void) {}
+void CBasePlayer::StopSneaking(void) {}
+BOOL CBasePlayer::IsSneaking(void) { return FALSE; }
 
 void ClearMultiDamage(void) { }
 void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker ) { }
@@ -499,10 +493,6 @@ void CProjectileCustom::CustomTouch(CBaseEntity* ent) {}
 void CProjectileCustom::Bounce(CBaseEntity* ent) {}
 void CProjectileCustom::Attach(CBaseEntity* ent) {}
 void CProjectileCustom::Impact(CBaseEntity* ent) {}
-
-void lagcomp_begin(CBasePlayer* plr) {}
-void lagcomp_end() {}
-void PLAY_DISTANT_SOUND(edict_t* emitter, int soundType, Vector soundOri) {}
 
 CBaseEntity* RelocateEntIdx(CBaseEntity* pEntity) { return 0; }
 void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {}

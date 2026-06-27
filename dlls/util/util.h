@@ -47,8 +47,6 @@
 
 class CBasePlayer;
 
-extern EXPORT globalvars_t				*gpGlobals;
-
 extern StringSet g_weaponNames; // names given by weapons (may have a prefix: "hlcoop/weapon_grapple")
 extern HashMap<int> g_weaponClassIds; // valid weapon classnames. Maps a class to an ID
 extern uint64_t g_weaponSlotMasks[MAX_WEAPONS]; // for handling slot conflict. maps an ID to a bitfield representing all IDs that share the weapon slot
@@ -85,66 +83,6 @@ enum AdminLevel {
 	ADMIN_NO,
 	ADMIN_YES,
 	ADMIN_OWNER
-};
-
-enum distant_sound_types {
-	DISTANT_NONE,
-	DISTANT_9MM, // light tapping noise
-	DISTANT_357, // deeper tap
-	DISTANT_556, // deep tap / small explosion
-	DISTANT_BOOM // big explosion
-};
-
-enum merged_item_bodies {
-	MERGE_MDL_CAMERA,
-	MERGE_MDL_GRENADE,
-	MERGE_MDL_HVR,
-	MERGE_MDL_RPGROCKET,
-	MERGE_MDL_SHOCK_EFFECT,
-	MERGE_MDL_SPORE,
-	MERGE_MDL_W_2UZIS,
-	MERGE_MDL_W_357,
-	MERGE_MDL_W_357AMMOBOX,
-	MERGE_MDL_W_9MMAR,
-	MERGE_MDL_W_9MMARCLIP,
-	MERGE_MDL_W_9MMCLIP,
-	MERGE_MDL_W_9MMHANDGUN,
-	MERGE_MDL_W_ARGRENADE,
-	MERGE_MDL_W_BATTERY,
-	MERGE_MDL_W_BGRAP,
-	MERGE_MDL_W_CHAINAMMO,
-	MERGE_MDL_W_CROSSBOW,
-	MERGE_MDL_W_CROSSBOW_CLIP,
-	MERGE_MDL_W_CROWBAR,
-	MERGE_MDL_W_DESERT_EAGLE,
-	MERGE_MDL_W_DISPLACER,
-	MERGE_MDL_W_EGON,
-	MERGE_MDL_W_GAUSS,
-	MERGE_MDL_W_GAUSSAMMO,
-	MERGE_MDL_W_GRENADE,
-	MERGE_MDL_W_HGUN,
-	MERGE_MDL_W_KNIFE,
-	MERGE_MDL_W_LONGJUMP,
-	MERGE_MDL_W_M16,
-	MERGE_MDL_W_M40A1,
-	MERGE_MDL_W_M40A1_CLIP,
-	MERGE_MDL_W_MEDKIT,
-	MERGE_MDL_W_MINIGUN,
-	MERGE_MDL_W_PIPE_WRENCH,
-	MERGE_MDL_W_PMEDKIT,
-	MERGE_MDL_W_RPG,
-	MERGE_MDL_W_RPGAMMO,
-	MERGE_MDL_W_SATCHEL,
-	MERGE_MDL_W_SAW,
-	MERGE_MDL_W_SAW_CLIP,
-	MERGE_MDL_W_SECURITY,
-	MERGE_MDL_W_SHOTBOX,
-	MERGE_MDL_W_SHOTGUN,
-	MERGE_MDL_W_SHOTSHELL,
-	MERGE_MDL_W_SUIT,
-	MERGE_MDL_W_UZI,
-	MERGE_MDL_W_UZI_CLIP,
-	MERGE_MDL_W_WEAPONBOX,
 };
 
 // maps a model path to its merged model body number
@@ -213,19 +151,8 @@ inline edict_t *FIND_ENTITY_BY_TARGET(edict_t *entStart, const char *pszName)
 #define ClearBits(flBitVector, bits)	((flBitVector) = (int)(flBitVector) & ~(bits))
 #define FBitSet(flBitVector, bit)		((int)(flBitVector) & (bit))
 
-// Makes these more explicit, and easier to find
-#define FILE_GLOBAL static
-#define DLL_GLOBAL
-
-// Until we figure out why "const" gives the compiler problems, we'll just have to use
-// this bogus "empty" define to mark things as constant.
-#define CONSTANT
-
 // More explicit than "int"
 typedef int EOFFSET;
-
-// In case it's not alread defined
-typedef int BOOL;
 
 // Keeps clutter down a bit, when declaring external entity/global method prototypes
 #define DECLARE_GLOBAL_METHOD(MethodName)  extern void DLLEXPORT MethodName( void )
@@ -330,26 +257,8 @@ inline BOOL FStringNull(int iString)			{ return iString == iStringNull; }
 #define	VIEW_FIELD_NARROW	(float)0.7 // +-45 degrees, more narrow check used to set up ranged attacks
 #define	VIEW_FIELD_ULTRA_NARROW	(float)0.9 // +-25 degrees, more narrow check used to set up ranged attacks
 
-// All monsters need this data
-#define		DONT_BLEED			-1
-
-inline uint8_t BloodColorHuman() { return mp_blood_color_human.value; }
-inline uint8_t BloodColorAlien() { return mp_blood_color_alien.value; }
-
-typedef enum 
-{
-
-	MONSTERSTATE_NONE = 0,
-	MONSTERSTATE_IDLE,
-	MONSTERSTATE_COMBAT,
-	MONSTERSTATE_ALERT,
-	MONSTERSTATE_HUNT,
-	MONSTERSTATE_PRONE,
-	MONSTERSTATE_SCRIPT,
-	MONSTERSTATE_PLAYDEAD,
-	MONSTERSTATE_DEAD
-
-} MONSTERSTATE;
+EXPORT uint8_t BloodColorHuman();
+EXPORT uint8_t BloodColorAlien();
 
 // Misc useful
 inline BOOL FStrEq(const char*sz1, const char*sz2)
@@ -427,7 +336,6 @@ EXPORT void UTIL_PlayGlobalMp3(const char* path, bool loop, edict_t* target=NULL
 // leave target NULL to stop music for all players
 EXPORT void UTIL_StopGlobalMp3(edict_t* target=NULL);
 
-typedef enum { ignore_monsters=1, dont_ignore_monsters=0, missile=2 } IGNORE_MONSTERS;
 typedef enum { ignore_glass=1, dont_ignore_glass=0 } IGNORE_GLASS;
 EXPORT void			UTIL_TraceLine			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, edict_t *pentIgnore, TraceResult *ptr);
 EXPORT void			UTIL_TraceLine			(const Vector &vecStart, const Vector &vecEnd, IGNORE_MONSTERS igmon, IGNORE_GLASS ignoreGlass, edict_t *pentIgnore, TraceResult *ptr);
@@ -538,7 +446,6 @@ EXPORT void SetMovedir(entvars_t* pev);
 EXPORT Vector VecBModelOrigin( entvars_t* pevBModel );
 EXPORT int BuildChangeList( LEVELLIST *pLevelList, int maxList );
 
-EXPORT extern const Vector g_vecZero;
 EXPORT extern string_t g_debug_target;
 
 //
@@ -810,7 +717,6 @@ EXPORT void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 #define RANDOM_SOUND_ARRAY( array ) (array) [ RANDOM_SOUND_ARRAY_IDX(array) ]
 
 // randomize sounds in array, so that the same sounds aren't played on every map when mp_soundvariety is low
-#define ARRAY_SZ(array) (int)(sizeof(array) / sizeof(array[0]))
 #define SHUFFLE_SOUND_ARRAY(array) UTIL_ShuffleSoundArray(array, ARRAY_SZ(array));
 EXPORT void UTIL_ShuffleSoundArray(const char** arr, size_t n);
 
@@ -826,9 +732,6 @@ extern const char* g_stepSoundsSlosh[4];
 extern const char* g_stepSoundsWade[4];
 extern const char* g_stepSoundsLadder[4];
 extern const char* g_swimSounds[4];
-
-#define PLAYBACK_EVENT( flags, who, index ) PLAYBACK_EVENT_FULL( flags, who, index, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
-#define PLAYBACK_EVENT_DELAY( flags, who, index, delay ) PLAYBACK_EVENT_FULL( flags, who, index, delay, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
 
 #define GROUP_OP_AND	0
 #define GROUP_OP_NAND	1
@@ -851,8 +754,6 @@ EXPORT void UTIL_UnsetGroupTrace( void );
 
 EXPORT int UTIL_SharedRandomLong( unsigned int seed, int low, int high );
 EXPORT float UTIL_SharedRandomFloat( unsigned int seed, float low, float high );
-
-EXPORT float UTIL_WeaponTimeBase( void );
 
 EXPORT void InitEdictRelocations();
 EXPORT void PrintEntindexStats(bool showCounts=false);

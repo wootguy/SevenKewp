@@ -14,16 +14,13 @@
 ****/
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 
-#include "extdll.h"
-#include "util.h"
-#include "monster/monsters.h"
+#include "../dlls/extdll.h"
+#include "../dlls/monster/monsters.h"
 #include "weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
-#include "env/CSoundEnt.h"
-#include "gamerules.h"
-#include "weapon/CSqueak.h"
-#include "weapon/CGrenade.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/env/CSoundEnt.h"
+#include "../dlls/weapon/CSqueak.h"
+#include "../dlls/weapon/CGrenade.h"
 
 enum squeak_e {
 	SQUEAK_IDLE1 = 0,
@@ -67,11 +64,13 @@ void CSqueak::Precache( void )
 	m_defaultModelW = "models/w_sqknest.mdl";
 	CBasePlayerWeapon::Precache();
 
+#ifndef CLIENT_DLL
 	PRECACHE_SOUND_ARRAY(pHuntSounds);
 	UTIL_PrecacheOther("monster_snark");
 
 	// for barnacles breaking weapon
 	PRECACHE_SOUND("debris/bustflesh1.wav");
+#endif
 
 	PrecacheEvents();
 }
@@ -146,6 +145,7 @@ void CSqueak::PrimaryAttack()
 		TraceResult tr;
 		Vector trace_origin;
 
+#ifndef CLIENT_DLL
 		// HACK HACK:  Ugly hacks to handle change in origin based on new physics code for players
 		// Move origin up if crouched and start trace a bit outside of body ( 20 units instead of 16 )
 		trace_origin = m_pPlayer->pev->origin;
@@ -153,6 +153,7 @@ void CSqueak::PrimaryAttack()
 		{
 			trace_origin = trace_origin - ( VEC_HULL_MIN - VEC_DUCK_HULL_MIN );
 		}
+#endif
 
 		// find place to toss monster
 		UTIL_TraceLine( trace_origin + gpGlobals->v_forward * 20, trace_origin + gpGlobals->v_forward * 64, dont_ignore_monsters, NULL, &tr );

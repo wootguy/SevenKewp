@@ -1,5 +1,5 @@
 #pragma once
-#include "CPointEntity.h"
+#include "../dlls/CPointEntity.h"
 
 class EXPORT CMultiSource : public CPointEntity
 {

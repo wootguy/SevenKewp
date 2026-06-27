@@ -1,5 +1,5 @@
 #pragma once
-#include "CBaseEntity.h"
+#include "../dlls/CBaseEntity.h"
 
 /***
 *

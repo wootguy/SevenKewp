@@ -1,5 +1,4 @@
 #pragma once
-#include "extdll.h"
 #include "vector.h"
 #include "bsplimits.h"
 #include <string.h>
@@ -44,13 +43,13 @@ struct FaceExtents {
 class EXPORT Bsp
 {
 public:
-	std::string path;
 	BSPHEADER header = BSPHEADER();
 	uint8_t* lumps[HEADER_LUMPS];
 	bool valid;
 	bool loaded;
 
-	std::vector<StringMap> ents;
+	StringMap* ents;
+	int numEnts;
 
 	BSPPLANE* planes;
 	BSPTEXTUREINFO* texinfos;

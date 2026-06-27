@@ -66,15 +66,6 @@ using namespace std::chrono;
 #include <sys/statvfs.h>
 #endif
 
-float UTIL_WeaponTimeBase( void )
-{
-#if defined( CLIENT_WEAPONS )
-	return 0.0;
-#else
-	return gpGlobals->time;
-#endif
-}
-
 static unsigned int glSeed = 0; 
 
 unsigned int seed_table[ 256 ] =
@@ -3963,4 +3954,12 @@ Vector UTIL_RandomPointOnSphere() {
 	float r = sqrtf(1.0f - z * z);
 
 	return Vector(r * cosf(theta), r * sinf(theta), z);
+}
+
+uint8_t BloodColorHuman() {
+	return mp_blood_color_human.value;
+}
+
+uint8_t BloodColorAlien() {
+	return mp_blood_color_alien.value;
 }

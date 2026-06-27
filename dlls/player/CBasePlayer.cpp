@@ -64,6 +64,7 @@
 #include "prediction_files.h"
 #include "CWorld.h"
 #include "CAmmoCustom.h"
+#include "animation.h"
 
 // #define DUCKFIX
 
@@ -1040,6 +1041,18 @@ Vector CBasePlayer::BodyTarget(const Vector& posSrc) {
 	Vector headHeight = (pev->flags & FL_DUCKING) ? pev->view_ofs*2.0f : pev->view_ofs;
 
 	return Center() + headHeight * (bias*0.5f + 0.5f);
+}
+
+void CBasePlayer::StartSneaking(void) {
+	m_tSneaking = gpGlobals->time - 1;
+}
+
+void CBasePlayer::StopSneaking(void) {
+	m_tSneaking = gpGlobals->time + 30;
+}
+
+BOOL CBasePlayer::IsSneaking(void) {
+	return m_tSneaking <= gpGlobals->time;
 }
 
 // Set the activity based on an event or current state
@@ -6526,6 +6539,10 @@ void CBasePlayer::Observer_CheckProperties()
 	}
 }
 
+BOOL CBasePlayer::IsBot() {
+	return pev->flags & FL_FAKECLIENT;
+}
+
 // Attempt to change the observer mode
 void CBasePlayer::Observer_SetMode(int iMode)
 {
@@ -7299,6 +7316,10 @@ void CBasePlayer::Revive() {
 
 float CBasePlayer::GetDamage(float defaultDamage) {
 	return m_pActiveItem ? m_pActiveItem->GetDamage(defaultDamage) : CBaseMonster::GetDamage(defaultDamage);
+}
+
+Vector CBasePlayer::GetViewPosition() {
+	return m_hViewEntity && !IsFirstPerson() ? m_hViewEntity->pev->origin : GetGunPosition();
 }
 
 void CBasePlayer::PenalizeDeath() {

@@ -1,15 +1,20 @@
-#include "extdll.h"
-#include "util.h"
-#include "user_messages.h"
-#include "CWeaponCustom.h"
-
 #ifdef CLIENT_DLL
-#include "../cl_dll/hud.h"
+#include "vector.h"
+#define vec3_t Vector
+#include "eiface.h"
+#include "Platform.h"
+#include "hud.h"
 #include "parsemsg.h"
+#include "CWeaponCustom.h"
 void InitCustomWeapon(int id);
 CustomWeaponParams* GetCustomWeaponParams(int id, int which);
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
+#else
+#include "extdll.h"
+#include "util.h"
+#include "user_messages.h"
+#include "CWeaponCustom.h"
 #endif
 
 #define MAX_NET_MESSAGE_SIZE 192

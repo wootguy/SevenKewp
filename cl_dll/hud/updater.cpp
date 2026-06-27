@@ -15,7 +15,7 @@
 #include "vgui_TeamFortressViewport.h"
 
 #define EXT_FUNC
-#include "interface.h"
+#include "../rehlds/rehlds/public/interface.h"
 
 #define UPDATE_URL "https://api.github.com/repos/wootguy/SevenKewp/releases/latest"
 #define MANUAL_UPDATE_URL "https://github.com/wootguy/SevenKewp/releases/latest"

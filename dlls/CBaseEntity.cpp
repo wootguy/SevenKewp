@@ -104,6 +104,28 @@ const char* CBaseEntity::pBustSoundsGlass[] =
 	"debris/bustglass2.wav",
 };
 
+void* GET_PRIVATE(const edict_t* pent)
+{
+	if (pent) {
+		CBaseEntity* bent = (CBaseEntity*)pent->pvPrivateData;
+
+		if (bent && bent->pev != &pent->v) {
+			// TODO: pev was linked wrong somehow. mem corruption?
+			uint8_t* edicts = (uint8_t*)ENT(0);
+			uint8_t* endEdicts = edicts + sizeof(edict_t) * gpGlobals->maxEntities;
+			bool validBasePev = (uint8_t*)bent->pev >= edicts && (uint8_t*)bent->pev < endEdicts;
+
+			ALERT(at_error, "Entity pev not linked to edict %d pev (%s != %s)\n",
+				ENTINDEX(pent), STRING(pent->v.classname), validBasePev ? STRING(bent->pev->classname) : "<BAT PTR>");
+			bent->pev = (entvars_t*)&pent->v;
+			return NULL;
+		}
+
+		return bent;
+	}
+	return NULL;
+}
+
 
 // give health
 int CBaseEntity::TakeHealth(float flHealth, int bitsDamageType, float healthcap)
@@ -574,6 +596,10 @@ int CBaseEntity::Restore(CRestore& restore)
 	return status;
 }
 
+Vector CBaseEntity::GetTargetOrigin() {
+	return pev->origin;
+}
+
 void CBaseEntity::SetObjectCollisionBox(void)
 {
 	::SetObjectCollisionBox(pev);
@@ -612,6 +638,10 @@ int CBaseEntity::IsDormant(void)
 	return FBitSet(pev->flags, FL_DORMANT);
 }
 
+BOOL CBaseEntity::HasTarget(string_t targetname) {
+	return FStrEq(STRING(targetname), STRING(pev->target));
+}
+
 BOOL CBaseEntity::IsInWorld(void)
 {
 	// position 
@@ -632,6 +662,11 @@ BOOL CBaseEntity::IsInWorld(void)
 	return TRUE;
 }
 
+BOOL CBaseEntity::CanKnockback() {
+	// can this entity be pushed around by attacks?
+	return pev->movetype != MOVETYPE_PUSH && pev->movetype != MOVETYPE_NONE;
+}
+
 int CBaseEntity::ShouldToggle(USE_TYPE useType, BOOL currentState)
 {
 	if (useType != USE_TOGGLE && useType != USE_SET)
@@ -640,6 +675,10 @@ int CBaseEntity::ShouldToggle(USE_TYPE useType, BOOL currentState)
 			return 0;
 	}
 	return 1;
+}
+
+int CBaseEntity::IsMoving(void) {
+	return pev->velocity != g_vecZero;
 }
 
 int	CBaseEntity::DamageDecal(int bitsDamageType)
@@ -659,6 +698,18 @@ int	CBaseEntity::DamageDecal(int bitsDamageType)
 		return DECAL_BPROOF1;
 
 	return DECAL_GUNSHOT1 + RANDOM_LONG(0, 4);
+}
+
+BOOL CBaseEntity::IsAlive(void) {
+	return (pev->deadflag == DEAD_NO) && pev->health > 0;
+}
+
+BOOL CBaseEntity::IsBSPModel(void) {
+	return pev->solid == SOLID_BSP || pev->movetype == MOVETYPE_PUSHSTEP;
+}
+
+BOOL CBaseEntity::ReflectGauss(void) {
+	return (IsBSPModel() && !pev->takedamage);
 }
 
 // NOTE: szName must be a pointer to constant memory, e.g. "monster_class" because the entity
@@ -1603,6 +1654,10 @@ bool CBaseEntity::RunInventoryRules(CBaseEntity* ent) {
 	return true;
 }
 
+float CBaseEntity::GetDamage(float defaultDamage) {
+	return (pev->dmg ? pev->dmg : defaultDamage) * GetDamageModifier();
+}
+
 void CBaseEntity::ParametricInterpolation(float flInterval) {
 
 	// A trace is done so that the client doesn't predict a projectile sliding across a wall
@@ -2029,6 +2084,10 @@ const char* CBaseEntity::DisplayHint() {
 	return hint;
 }
 
+const char* CBaseEntity::GetDeathNoticeWeapon() {
+	return STRING(pev->classname);
+}
+
 bool CBaseEntity::IsDelaySpawned() {
 	return !sv_precache_bspmodels->value && !g_can_set_bsp_models && pev->model && STRING(pev->model)[0] == '*';
 }
@@ -2095,6 +2154,18 @@ CBaseEntity* CBaseEntity::FindLogicEntity(CBaseEntity* start, string_t targetnam
 	}
 
 	return UTIL_FindEntityByTargetname(start, STRING(targetname));
+}
+
+Vector CBaseEntity::Center() {
+	return (pev->absmax + pev->absmin) * 0.5;
+}
+
+Vector CBaseEntity::EyePosition() {
+	return pev->origin + pev->view_ofs;
+}
+
+Vector CBaseEntity::EarPosition() {
+	return pev->origin + pev->view_ofs;
 }
 
 int CBaseEntity::Illumination() {

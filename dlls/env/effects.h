@@ -18,8 +18,8 @@
 #define SF_MESSAGE_ONCE			0x0001		// Fade in, not out
 #define SF_MESSAGE_ALL			0x0002		// Send to all clients
 
-#include "env/CSprite.h"
-#include "env/CBeam.h"
-#include "env/CLaser.h"
+#include "../dlls/env/CSprite.h"
+#include "../dlls/env/CBeam.h"
+#include "../dlls/env/CLaser.h"
 
 #endif		//EFFECTS_H

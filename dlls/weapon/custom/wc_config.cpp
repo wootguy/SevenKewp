@@ -657,8 +657,8 @@ void wc_fwrite_struct_fields(FILE* f, void* dat, struct_desc_t& desc) {
 			else if (field.type == WC_PARAM_UINT16_FLAGS)	flags = *(uint16_t*)fieldDat;
 			else if (field.type == WC_PARAM_UINT8_FLAGS)	flags = *fieldDat;
 
-			for (int i = 0; i < field.valNamesSz; i++) {
-				if ((flags & (1 << i)) && field.valNames[i] && field.valNames[i][0]) {
+			for (int k = 0; k < field.valNamesSz; k++) {
+				if ((flags & (1 << k)) && field.valNames[k] && field.valNames[k][0]) {
 					anyFlagsToWrite = true;
 					break;
 				}
@@ -891,7 +891,7 @@ void wc_fwrite_weapon_settings(FILE* cfg, CustomWeaponParams& params, bool prett
 	}
 }
 
-bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params, bool altParams) {
+bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params, bool isAltParams) {
 	const char* relPath = path;
 	string searchPath = string("weapons/") + path;
 	string fpath = getGameFilePath(searchPath.c_str(), false);
@@ -1052,10 +1052,10 @@ bool UTIL_ParseCustomWeaponConfig(const char* path, CustomWeaponParams& params, 
 	g_customWeaponCache.put(relPath, newCache);
 
 	// cache alternate params but don't link them yet
-	if (!altParams && params.altParams) {
+	if (!isAltParams && params.altParams) {
 		CustomWeaponParams altParams;
-		std::string path = UTIL_VarArgs("%s.txt", STRING(params.altParams));
-		UTIL_ParseCustomWeaponConfig(path.c_str(), altParams, true);
+		std::string cpath = UTIL_VarArgs("%s.txt", STRING(params.altParams));
+		UTIL_ParseCustomWeaponConfig(cpath.c_str(), altParams, true);
 	}
 	
 

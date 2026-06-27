@@ -14,16 +14,18 @@
 ****/
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 
-#include "extdll.h"
-#include "util.h"
-#include "CBasePlayer.h"
-#include "skill.h"
+#include "../dlls/extdll.h"
+#include "../dlls/player/CBasePlayer.h"
 #include "weapons.h"
-#include "nodes.h"
 #include "effects.h"
 #include "customentity.h"
-#include "gamerules.h"
-#include "weapon/CEgon.h"
+#include "../dlls/weapon/CEgon.h"
+
+#ifndef CLIENT_DLL
+#include "CBeam.h"
+#else
+class CBeam;
+#endif
 
 #define	EGON_PRIMARY_VOLUME		450
 #define EGON_BEAM_SPRITE		"sprites/xbeam1.spr"
@@ -397,10 +399,10 @@ void CEgon::Fire( const Vector &vecOrigSrc, const Vector &vecDir )
 						ori.z = ent->pev->absmin.z + 8;
 						Vector dir = ori - tr.vecEndPos;
 						float distScale = 1.0f - ((ori - tr.vecEndPos).Length() / radius);
-						TraceResult tr;
-						UTIL_TraceLine(tr.vecEndPos, ori, ignore_monsters, NULL, &tr);
+						TraceResult tr2;
+						UTIL_TraceLine(tr2.vecEndPos, ori, ignore_monsters, NULL, &tr2);
 						ClearMultiDamage();
-						ent->TraceAttack(m_pPlayer->pev, 80*distScale, dir, &tr, DMG_CLUB | DMG_ALWAYSGIB);
+						ent->TraceAttack(m_pPlayer->pev, 80*distScale, dir, &tr2, DMG_CLUB | DMG_ALWAYSGIB);
 						ApplyMultiDamage(pev, m_pPlayer->pev);
 					}
 				}

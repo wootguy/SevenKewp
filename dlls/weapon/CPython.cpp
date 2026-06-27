@@ -14,12 +14,10 @@
 ****/
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 
-#include "extdll.h"
-#include "util.h"
+#include "../dlls/extdll.h"
 #include "weapons.h"
-#include "CBasePlayer.h"
-#include "gamerules.h"
-#include "weapon/CPython.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/weapon/CPython.h"
 
 enum python_e {
 	PYTHON_IDLE1 = 0,

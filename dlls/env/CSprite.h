@@ -1,6 +1,6 @@
 #ifndef CSPRITE_H
 #define CSPRITE_H
-#include "CPointEntity.h"
+#include "../dlls/CPointEntity.h"
 
 #define SF_SPRITE_STARTON		0x0001
 #define SF_SPRITE_ONCE			0x0002

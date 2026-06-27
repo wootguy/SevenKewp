@@ -102,6 +102,8 @@ typedef struct
 
 #include "../common/crc.h"
 
+typedef struct entvars_s entvars_t;
+
 // Engine hands this to DLLs for functionality callbacks
 typedef struct enginefuncs_s
 {

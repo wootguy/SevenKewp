@@ -1,6 +1,5 @@
 #pragma once
-#include "CBasePlayerWeapon.h"
-#include "CProjectileCustom.h"
+#include "../dlls/weapon/CBasePlayerWeapon.h"
 #include "wc_params.h"
 #include "wc_schema.h"
 #include "wc_config.h"
@@ -8,6 +7,7 @@
 #include "event_args.h"
 #include "shared_util.h"
 #include "CWeaponEvents.h"
+#include "CProjectileCustom.h"
 
 // number of seconds to delay replaying of events while the prediction code waits for a new state
 // from the server

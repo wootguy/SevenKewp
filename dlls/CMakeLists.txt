@@ -533,17 +533,17 @@ set(UTIL_HDR
 	util/saverestore.h
 	util/util.h
 	util/lagcomp.h
-	util/vector.h
 	util/Scheduler.h
 	util/sentences.h
 	util/TextMenu.h
 	util/ThreadSafeInt.h
 	util/ThreadSafeQueue.h
 	util/wav.h
-	util/HashMap.h
-	util/StringPool.h
 	util/water.h
-	util/string_deltas.h
+	../game_shared/vector.h
+	../game_shared/HashMap.h
+	../game_shared/StringPool.h
+	../game_shared/string_deltas.h
 	../game_shared/prediction_files.h
 	../game_shared/mstream.h
 	../game_shared/shared_effects.h
@@ -570,10 +570,10 @@ set(UTIL_SRC
 	util/ThreadSafeInt.cpp
 	util/ThreadSafeQueue.cpp
 	util/wav.cpp
-	util/HashMap.cpp
-	util/StringPool.cpp
 	util/water.cpp
-	util/string_deltas.cpp
+	../game_shared/HashMap.cpp
+	../game_shared/StringPool.cpp
+	../game_shared/string_deltas.cpp
 	../game_shared/prediction_files.cpp
 	../game_shared/mstream.cpp
 	../game_shared/shared_util.cpp
@@ -589,6 +589,7 @@ set(PLAYER_HDR
 	../pm_shared/pm_shared.h
 	player/CBasePlayer.h
 	player/CBaseSpectator.h
+	player/player_const.h
 )
 set(PLAYER_SRC
 	../pm_shared/pm_shared.cpp
@@ -771,6 +772,24 @@ add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
 target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
 target_include_directories(${SERVER_DLL_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/curl/include/)
+
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/env)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/func)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/triggers)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/monster)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/item)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/path)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/weapon)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/weapon/custom)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/net)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/hooks)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/util)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/game)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/player)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/rehlds)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/rehlds/rehlds/public)
+target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/rehlds/rehlds/common)
 
 target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS -D_CRT_SECURE_NO_DEPRECATE -DCURL_STATICLIB)
 

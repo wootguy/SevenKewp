@@ -16,8 +16,9 @@
 #ifndef BASEMONSTER_H
 #define BASEMONSTER_H
 
-#include "CBaseToggle.h"
+#include "../dlls/CBaseToggle.h"
 #include "schedule.h"
+#include "activity.h"
 
 class CSound;
 
@@ -39,6 +40,21 @@ struct HurtTime {
 #define MAX_MONSTER_HURT_TRIGGERS 16
 
 #define FL_DONT_DROP_WEAPONS 256	// weapons pev flag
+
+typedef enum
+{
+
+	MONSTERSTATE_NONE = 0,
+	MONSTERSTATE_IDLE,
+	MONSTERSTATE_COMBAT,
+	MONSTERSTATE_ALERT,
+	MONSTERSTATE_HUNT,
+	MONSTERSTATE_PRONE,
+	MONSTERSTATE_SCRIPT,
+	MONSTERSTATE_PLAYDEAD,
+	MONSTERSTATE_DEAD
+
+} MONSTERSTATE;
 
 //
 // generic Monster
@@ -235,7 +251,7 @@ public:
 	virtual void RunAI ( void );// core ai function!	
 	void Listen ( void );
 
-	virtual BOOL	IsAlive( void ) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
+	virtual BOOL	IsAlive(void);
 	virtual	BOOL	IsMonster(void) { return TRUE; }
 	virtual	BOOL	IsNormalMonster(void) { return m_startDead ? FALSE : TRUE; }
 	virtual BOOL	ShouldFadeOnDeath( void );
@@ -285,7 +301,7 @@ public:
 		virtual void Stop( void ) { m_IdealActivity = GetStoppedActivity(); }
 
 		// This will stop animation until you call ResetSequenceInfo() at some point in the future
-		inline void StopAnimation( void ) { pev->framerate = 0; }
+		void StopAnimation(void);
 
 		// these functions will survey conditions and set appropriate conditions bits for attack types.
 		virtual BOOL CheckRangeAttack1( float flDot, float flDist );

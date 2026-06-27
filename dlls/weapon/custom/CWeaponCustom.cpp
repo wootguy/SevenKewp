@@ -1,16 +1,11 @@
-#include "extdll.h"
-#include "util.h"
+#include "../dlls/extdll.h"
 #include "CWeaponCustom.h"
-#include "hlds_hooks.h"
-#include "te_effects.h"
-#include "CCrowbar.h"
-#include "CRpg.h"
 
 #ifdef CLIENT_DLL
-#include "../cl_dll/hud_iface.h"
-#include "../cl_dll/ev_hldm.h"
-#include "../cl_dll/com_weapons.h"
-#include "../cl_dll/cl_dll.h"
+#include "hud_iface.h"
+#include "ev_hldm.h"
+#include "com_weapons.h"
+#include "cl_dll.h"
 #include "../common/com_model.h"
 #include "../game_shared/prediction_files.h"
 extern bool g_cmd_debug_mode;
@@ -19,6 +14,11 @@ cl_entity_t* GetLocalPlayer();
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 #else
+#include "util.h"
+#include "hlds_hooks.h"
+#include "te_effects.h"
+#include "CCrowbar.h"
+#include "CRpg.h"
 int g_runfuncs = 1;
 #define PRINTF(fmt, ...)
 #define PRINTD(fmt, ...)
@@ -810,10 +810,12 @@ void CWeaponCustom::ItemPostFrame() {
 	if (!m_pPlayer)
 		return;
 
+#ifndef CLIENT_DLL
 	if (m_nextMeleeDecal && m_nextMeleeDecal < gpGlobals->time) {
 		m_nextMeleeDecal = 0;
 		DecalGunshot(&m_meleeDecalPos, BULLET_PLAYER_CROWBAR);
 	}
+#endif
 	events.UpdateBeams();
 
 	PlayDelayedStateToggles();
@@ -2181,11 +2183,13 @@ int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
 			wep->SetAkimboClip(m_iDefaultAmmo);
 		}
 		
+#ifndef CLIENT_DLL
 		EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
 
 		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
 		WRITE_BYTE(m_iId);
 		MESSAGE_END();
+#endif
 		return 1;
 	}
 
@@ -2309,8 +2313,6 @@ void CWeaponCustom::PlayDelayedStateToggles() {
 	int delayIdx = m_fireState >> 20;
 	if (!delayIdx)
 		return; // no states queued for toggling
-	
-	CustomWeaponParams& params = GetActiveParams();
 
 	int attackIdx = delayIdx - 1;
 	WeaponCustomToggle& toggle = GetActiveToggle(attackIdx);
@@ -2331,7 +2333,7 @@ void CWeaponCustom::PlayDelayedStateToggles() {
 		break;
 	}
 
-	int delay = togglingOn ? toggle.onDelay : toggle.offDelay;
+	uint32_t delay = togglingOn ? toggle.onDelay : toggle.offDelay;
 
 	if (CmdTime() - m_stateChangeCmdTime >= delay) {
 		DoStateToggles(attackIdx);
@@ -2572,4 +2574,6 @@ int CWeaponCustom::GetActiveViewModelIdx() {
 	return params.vmodel_zoom && GetZoom() ? params.vmodel_zoom : params.vmodel;
 }
 
+#ifndef CLIENT_DLL
 LINK_ENTITY_TO_CLASS(weapon_custom_ini, CWeaponCustom)
+#endif

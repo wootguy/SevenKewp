@@ -14,15 +14,11 @@
 ****/
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 
-#include "extdll.h"
-#include "util.h"
-#include "skill.h"
+#include "../dlls/extdll.h"
 #include "weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
-#include "monster/CHornet.h"
-#include "gamerules.h"
-#include "weapon/CHgun.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/monster/CHornet.h"
+#include "../dlls/weapon/CHgun.h"
 
 static float GetRechargeTime()
 {

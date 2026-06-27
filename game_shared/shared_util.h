@@ -13,6 +13,10 @@
 #include "const.h"
 #include "studio.h"
 #include "HashMap.h"
+#include "progdefs.h"
+
+#undef min
+#undef max
 
 // In case this ever changes
 #define M_PI			3.14159265358979323846
@@ -29,6 +33,28 @@
 #define WEP_FLAG_VERTICAL_ACCURACY	4	// weapon has a separate accuracy value(s) for the vertical axis
 #define WEP_FLAG_USE_ZOOM_CROSSHAIR	8	// use the sprite-based crosshair while zoomed
 #define WEP_FLAG_NO_ZOOM_CROSSHAIR	16	// remove the crosshair while zoomed (for iron sights)
+
+// Makes these more explicit, and easier to find
+#define FILE_GLOBAL static
+#define DLL_GLOBAL
+
+// In case it's not alread defined
+typedef int BOOL;
+
+typedef enum { ignore_monsters = 1, dont_ignore_monsters = 0, missile = 2 } IGNORE_MONSTERS;
+
+#define ARRAY_SZ(array) (int)(sizeof(array) / sizeof(array[0]))
+
+enum distant_sound_types {
+	DISTANT_NONE,
+	DISTANT_9MM, // light tapping noise
+	DISTANT_357, // deeper tap
+	DISTANT_556, // deep tap / small explosion
+	DISTANT_BOOM // big explosion
+};
+
+EXPORT extern const Vector g_vecZero;
+EXPORT extern globalvars_t* gpGlobals;
 
 EXPORT extern const std::vector<std::string> g_emptyCurlHeaders;
 EXPORT extern const std::string g_emptyCurlPostData;
@@ -175,3 +201,5 @@ EXPORT float GetSequenceDuration(studiohdr_t* pstudiohdr, int iseq); // animatio
 EXPORT bool UTIL_ModelIsSprite(int modelidx);
 
 EXPORT int UTIL_GetRenderFxOpacity(int renderfx, int renderamt, float t);
+
+EXPORT float UTIL_WeaponTimeBase(void);

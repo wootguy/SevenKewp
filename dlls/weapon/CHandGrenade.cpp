@@ -12,14 +12,11 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#include "extdll.h"
-#include "util.h"
-#include "skill.h"
+#include "../dlls/extdll.h"
 #include "weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
-#include "weapon/CHandGrenade.h"
-#include "weapon/CGrenade.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/weapon/CHandGrenade.h"
+#include "../dlls/weapon/CGrenade.h"
 
 #define	HANDGRENADE_PRIMARY_VOLUME		450
 

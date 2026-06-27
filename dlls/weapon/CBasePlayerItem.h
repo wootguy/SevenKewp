@@ -1,6 +1,6 @@
 #pragma once
-#include "CBaseEntity.h"
-#include "CBasePlayer.h"
+#include "../dlls/CBaseEntity.h"
+#include "../dlls/player/CBasePlayer.h"
 #include "weapons.h"
 
 // Items that the player has in their inventory that they can use

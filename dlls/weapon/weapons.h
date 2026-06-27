@@ -15,9 +15,41 @@
 #ifndef WEAPONS_H
 #define WEAPONS_H
 
+#include "Platform.h"
 #include "ammo.h"
-#include "../common/bullet.h"
+#include "bullet.h"
+#include "shared_util.h"
 
+#ifdef CLIENT_DLL
+#include "com_weapons.h"
+#include "../dlls/util/eng_wrappers.h"
+void UTIL_TraceLine(const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTERS igmon, edict_t* pentIgnore, TraceResult* ptr);
+#define LINK_ENTITY_TO_CLASS(...)
+#define MAKE_STRING(...) 0
+#define UTIL_PrecacheOther(...)
+#define UTIL_SetSize(...)
+#define UTIL_MakeVectors(...)
+#define UTIL_Remove(...)
+#define UTIL_SetOrigin(...)
+#define lagcomp_begin(...)
+#define lagcomp_end(...)
+#define PLAY_DISTANT_SOUND(...)
+#define EMIT_SOUND(...)
+#define EMIT_SOUND_DYN(...)
+#define AddWaterPhysicsEnt(...)
+#else
+#include "util.h"
+#include "skill.h"
+#include "gamerules.h"
+#include "game.h"
+#include "eng_wrappers.h"
+#include "lagcomp.h"
+#endif
+
+#define PLAYBACK_EVENT( flags, who, index ) PLAYBACK_EVENT_FULL( flags, who, index, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
+#define PLAYBACK_EVENT_DELAY( flags, who, index, delay ) PLAYBACK_EVENT_FULL( flags, who, index, delay, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
+
+class CBaseEntity;
 class CBasePlayer;
 EXPORT extern int gmsgWeapPickup;
 
@@ -111,6 +143,58 @@ EXPORT void FindHullIntersection(const Vector& vecSrc, TraceResult& tr, float* m
 #define TRIPMINE_WEIGHT			-10
 
 #define WEAPON_IS_ONTARGET 0x40
+
+enum merged_item_bodies {
+	MERGE_MDL_CAMERA,
+	MERGE_MDL_GRENADE,
+	MERGE_MDL_HVR,
+	MERGE_MDL_RPGROCKET,
+	MERGE_MDL_SHOCK_EFFECT,
+	MERGE_MDL_SPORE,
+	MERGE_MDL_W_2UZIS,
+	MERGE_MDL_W_357,
+	MERGE_MDL_W_357AMMOBOX,
+	MERGE_MDL_W_9MMAR,
+	MERGE_MDL_W_9MMARCLIP,
+	MERGE_MDL_W_9MMCLIP,
+	MERGE_MDL_W_9MMHANDGUN,
+	MERGE_MDL_W_ARGRENADE,
+	MERGE_MDL_W_BATTERY,
+	MERGE_MDL_W_BGRAP,
+	MERGE_MDL_W_CHAINAMMO,
+	MERGE_MDL_W_CROSSBOW,
+	MERGE_MDL_W_CROSSBOW_CLIP,
+	MERGE_MDL_W_CROWBAR,
+	MERGE_MDL_W_DESERT_EAGLE,
+	MERGE_MDL_W_DISPLACER,
+	MERGE_MDL_W_EGON,
+	MERGE_MDL_W_GAUSS,
+	MERGE_MDL_W_GAUSSAMMO,
+	MERGE_MDL_W_GRENADE,
+	MERGE_MDL_W_HGUN,
+	MERGE_MDL_W_KNIFE,
+	MERGE_MDL_W_LONGJUMP,
+	MERGE_MDL_W_M16,
+	MERGE_MDL_W_M40A1,
+	MERGE_MDL_W_M40A1_CLIP,
+	MERGE_MDL_W_MEDKIT,
+	MERGE_MDL_W_MINIGUN,
+	MERGE_MDL_W_PIPE_WRENCH,
+	MERGE_MDL_W_PMEDKIT,
+	MERGE_MDL_W_RPG,
+	MERGE_MDL_W_RPGAMMO,
+	MERGE_MDL_W_SATCHEL,
+	MERGE_MDL_W_SAW,
+	MERGE_MDL_W_SAW_CLIP,
+	MERGE_MDL_W_SECURITY,
+	MERGE_MDL_W_SHOTBOX,
+	MERGE_MDL_W_SHOTGUN,
+	MERGE_MDL_W_SHOTSHELL,
+	MERGE_MDL_W_SUIT,
+	MERGE_MDL_W_UZI,
+	MERGE_MDL_W_UZI_CLIP,
+	MERGE_MDL_W_WEAPONBOX,
+};
 
 EXPORT extern DLL_GLOBAL	short	g_sModelIndexLaser;// holds the index for the laser beam
 EXPORT extern DLL_GLOBAL	const char *g_pModelNameLaser;

@@ -1,4 +1,7 @@
 #pragma once
+#include "rgb.h"
+
+typedef unsigned int string_t;
 
 #define FLOAT_TO_D100(val) (clamp(val * 100, 0, UINT16_MAX))
 #define FLOAT_TO_SD100(val) (clamp(val * 100, INT16_MIN, INT16_MAX))
@@ -759,8 +762,8 @@ struct WepEvt {
 		return dup;
 	}
 
-	WepEvt Type(int evtType) {
-		this->evtType = evtType;
+	WepEvt Type(int eType) {
+		this->evtType = eType;
 		return *this;
 	}
 

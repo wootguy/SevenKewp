@@ -1,8 +1,17 @@
-#include "extdll.h"
-#include "util.h"
 #include "HashMap.h"
 #include <string.h>
 #include <unordered_set>
+
+#ifdef CLIENT_DLL
+#include "vector.h"
+#define vec3_t Vector
+#include "eiface.h"
+#include "Platform.h"
+#define ALERT
+#else
+#include "extdll.h"
+#include "util.h"
+#endif
 
 #define HMAP_DEFAULT_STRING_POOL_SZ 64
 #define HMAP_MAX_STRING_POOL_SZ (1024*1024*16)

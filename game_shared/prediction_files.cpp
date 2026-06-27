@@ -156,9 +156,9 @@ int g_soundvariety;
 int g_flashlight_size;
 
 #ifdef CLIENT_DLL
-#include "../cl_dll/hud.h"
-#include "../cl_dll/cl_util.h"
-#include "../cl_dll/engine_pv.h"
+#include "hud.h"
+#include "cl_util.h"
+#include "engine_pv.h"
 #include "parsemsg.h"
 #include "mstream.h"
 #include "HashMap.h"

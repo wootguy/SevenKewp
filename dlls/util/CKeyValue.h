@@ -1,6 +1,8 @@
 #pragma once
-#include "extdll.h"
 #include <cstdint>
+
+typedef unsigned int string_t;
+
 enum keyvalue_types {
 	KEY_TYPE_NONE, // indicates value failed to load
 	KEY_TYPE_INT,

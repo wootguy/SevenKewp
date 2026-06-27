@@ -14,17 +14,13 @@
 ****/
 #if !defined( OEM_BUILD )
 
-#include "extdll.h"
-#include "util.h"
-#include "skill.h"
+#include "../dlls/extdll.h"
 #include "weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
-#include "gamerules.h"
-#include "weapon/CRpg.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/weapon/CRpg.h"
 
 #ifdef CLIENT_DLL
-#include "../cl_dll/hud_iface.h"
+#include "hud_iface.h"
 #include "../common/event_api.h"
 
 void EV_LaserOn(int dotSprite, float dotSz, int beamSprite, float beamWidth, int beamAttachment);

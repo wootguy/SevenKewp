@@ -8,7 +8,7 @@
 #if !defined ( EV_HLDMH )
 #define EV_HLDMH
 #include "wc_events.h"
-#include "../common/bullet.h"
+#include "bullet.h"
 
 enum glock_e {
 	GLOCK_IDLE1 = 0,

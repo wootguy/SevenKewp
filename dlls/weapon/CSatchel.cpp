@@ -14,14 +14,11 @@
 ****/
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 
-#include "extdll.h"
-#include "util.h"
-#include "skill.h"
+#include "../dlls/extdll.h"
 #include "weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
-#include "gamerules.h"
-#include "weapon/CSatchel.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/weapon/CSatchel.h"
+#include <float.h>
 
 enum satchel_e {
 	SATCHEL_IDLE1 = 0,
@@ -82,7 +79,9 @@ void CSatchelCharge :: Spawn( void )
 	pev->gravity = SATCHEL_GRAVITY;
 	pev->friction = 0.8;
 
+#ifndef CLIENT_DLL
 	pev->dmg = GetDamage(gSkillData.sk_plr_satchel);
+#endif
 	// ResetSequenceInfo( );
 	pev->sequence = 1;
 
@@ -194,6 +193,7 @@ int CSatchel::AddDuplicate( CBasePlayerItem *pOriginal )
 		int nNumSatchels = 0;
 		CBaseEntity* pLiveSatchel = NULL;
 
+#ifndef CLIENT_DLL
 		while ((pLiveSatchel = UTIL_FindEntityInSphere(pLiveSatchel, originalPlayer->pev->origin, 4096)) != NULL)
 		{
 			if (FClassnameIs(pLiveSatchel->pev, "monster_satchel"))
@@ -204,12 +204,12 @@ int CSatchel::AddDuplicate( CBasePlayerItem *pOriginal )
 				}
 			}
 		}
-
 		if (pSatchel->m_chargeReady != 0 && (nSatchelsInPocket + nNumSatchels) >= gSkillData.sk_ammo_max_satchels)
 		{
 			// player has some satchels deployed. Refuse to add more.
 			return FALSE;
 		}
+#endif
 	}
 
 	return CBasePlayerWeapon::AddDuplicate ( pOriginal );
@@ -387,6 +387,7 @@ void CSatchel::SecondaryAttack( void )
 
 		CBaseEntity* pSatchel = NULL;
 
+#ifndef CLIENT_DLL
 		while ((pSatchel = UTIL_FindEntityInSphere(pSatchel, m_pPlayer->pev->origin, 4096)) != NULL)
 		{
 			if (FClassnameIs(pSatchel->pev, "monster_satchel"))
@@ -398,6 +399,7 @@ void CSatchel::SecondaryAttack( void )
 				}
 			}
 		}
+#endif
 
 		m_chargeReady = 2;
 		m_flNextPrimaryAttack = GetNextAttackDelay(0.5);
@@ -503,6 +505,7 @@ void CSatchel::WeaponIdle( void )
 //=========================================================
 void DeactivateSatchels(CBasePlayer* pOwner)
 {
+#ifndef CLIENT_DLL
 	CBaseEntity* pFind;
 
 	pFind = UTIL_FindEntityByClassname(NULL, "monster_satchel");
@@ -521,6 +524,7 @@ void DeactivateSatchels(CBasePlayer* pOwner)
 
 		pFind = UTIL_FindEntityByClassname(pFind, "monster_satchel");
 	}
+#endif
 }
 
 #endif

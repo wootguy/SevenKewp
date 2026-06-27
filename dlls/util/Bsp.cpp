@@ -1,5 +1,6 @@
-#include "Bsp.h"
+#include "extdll.h"
 #include "util.h"
+#include "Bsp.h"
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -39,6 +40,8 @@ void Bsp::delete_lumps() {
 		delete[] faceExtents;
 		faceExtents = NULL;
 	}
+
+	ents = NULL;
 }
 
 bool Bsp::load_lumps(string fpath)
@@ -98,16 +101,24 @@ bool Bsp::load_lumps(string fpath)
 
 	update_lump_pointers();
 
-	parseEntities((char*)lumps[LUMP_ENTITIES], header.lump[LUMP_ENTITIES].nLength, ents);
+	static std::vector<StringMap> tempEnts; // suppress dll linkage warning
+	parseEntities((char*)lumps[LUMP_ENTITIES], header.lump[LUMP_ENTITIES].nLength, tempEnts);
 
 	StringSet unique_bsp_models;
-	for (int i = 0; i < (int)ents.size(); i++) {
-		const char* model = ents[i].get("model");
+	for (int i = 0; i < (int)tempEnts.size(); i++) {
+		const char* model = tempEnts[i].get("model");
 
 		if (model && model[0] == '*') {
 			unique_bsp_models.put(model);
 		}
 	}
+
+	ents = &tempEnts[0];
+	numEnts = tempEnts.size();
+
+	memcpy(ents, &tempEnts[0], sizeof(StringMap) * tempEnts.size());
+	numEnts = tempEnts.size();
+
 	entityBspModelCount = unique_bsp_models.size();
 
 	precalculate_face_extents();
@@ -614,9 +625,9 @@ void Bsp::parseEntities(const char* data, int dataLen, std::vector<StringMap>& o
 		}
 		else if (lastBracket == 0) // currently defining an entity
 		{
-			string key, value;
-			parse_keyvalue(line, key, value);
-			ent.put(key.c_str(), value.c_str());
+			string tkey, tvalue;
+			parse_keyvalue(line, tkey, tvalue);
+			ent.put(tkey.c_str(), tvalue.c_str());
 		}
 	}
 }

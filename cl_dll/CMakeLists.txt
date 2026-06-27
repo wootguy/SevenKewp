@@ -158,8 +158,8 @@ set(UTIL_HDR
 set(UTIL_SRC
 	util/interpolation.cpp
 	util/cl_util.cpp
-	../dlls/util/HashMap.cpp
-	../dlls/util/StringPool.cpp
+	../game_shared/HashMap.cpp
+	../game_shared/StringPool.cpp
 	../common/parsemsg.cpp
 	../public/interface.cpp
 	../game_shared/shared_util.cpp

@@ -44,7 +44,7 @@ Studio models are position independent, so the cache manager can move them.
 #define MAXSTUDIOPIVOTS		256
 #define MAXSTUDIOCONTROLLERS 8
 
-typedef struct 
+struct studiohdr_t
 {
 	int					id;
 	int					version;
@@ -97,7 +97,7 @@ typedef struct
 
 	int					numtransitions;		// animation node to animation node transition graph
 	int					transitionindex;
-} studiohdr_t;
+};
 
 // header for demand loaded sequence group data
 typedef struct 

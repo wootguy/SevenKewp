@@ -1,6 +1,5 @@
 #pragma once
 #include "CBasePlayerItem.h"
-#include "lagcomp.h"
 
 class EXPORT CBasePlayerWeapon : public CBasePlayerItem
 {

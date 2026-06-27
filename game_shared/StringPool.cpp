@@ -1,7 +1,16 @@
-#include "extdll.h"
-#include "util.h"
 #include "StringPool.h"
 #include <string.h>
+
+#ifdef CLIENT_DLL
+#include "vector.h"
+#define vec3_t Vector
+#include "eiface.h"
+#include "Platform.h"
+#define ALERT
+#else
+#include "extdll.h"
+#include "util.h"
+#endif
 
 #define DEFAULT_STRING_POOL_SIZE 64
 #define MAX_STRING_POOL_SIZE 1024*1024*8 // prevent insane size growth/leaks

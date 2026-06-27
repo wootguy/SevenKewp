@@ -14,18 +14,14 @@
 ****/
 #if !defined( OEM_BUILD ) && !defined( HLDEMO_BUILD )
 
-#include "extdll.h"
-#include "util.h"
+#include "../dlls/extdll.h"
 #include "weapons.h"
-#include "nodes.h"
-#include "skill.h"
-#include "CBasePlayer.h"
-#include "gamerules.h"
-#include "weapon/CCrossbow.h"
-#include "te_effects.h"
-#include "CSoundEnt.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/weapon/CCrossbow.h"
 
 #ifndef CLIENT_DLL
+#include "te_effects.h"
+#include "CSoundEnt.h"
 
 LINK_ENTITY_TO_CLASS( crossbow_bolt, CCrossbowBolt )
 
@@ -355,6 +351,7 @@ void CCrossbow::FireSniperBolt()
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 	
+#ifndef CLIENT_DLL
 	Vector anglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
 	UTIL_MakeVectors( anglesAim );
 	Vector vecSrc = m_pPlayer->GetGunPosition( ) - gpGlobals->v_up * 2;
@@ -364,7 +361,6 @@ void CCrossbow::FireSniperBolt()
 	UTIL_TraceLine(vecSrc, vecSrc + vecDir * 8192, dont_ignore_monsters, m_pPlayer->edict(), &tr);
 	lagcomp_end();
 
-#ifndef CLIENT_DLL
 	edict_t* skipEnt = m_pPlayer->IsSevenKewpClient() ? m_pPlayer->edict() : NULL;
 	UTIL_WaterSplashTrace(vecSrc, tr.vecEndPos, 0.3f, 1, skipEnt);
 
@@ -410,6 +406,7 @@ void CCrossbow::FireBolt()
 	// player "shoot" animation
 	m_pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
+#ifndef CLIENT_DLL
 	Vector anglesAim = m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle;
 	UTIL_MakeVectors( anglesAim );
 	
@@ -417,7 +414,6 @@ void CCrossbow::FireBolt()
 	Vector vecSrc	 = m_pPlayer->GetGunPosition( ) - gpGlobals->v_up * 2;
 	Vector vecDir	 = gpGlobals->v_forward;
 
-#ifndef CLIENT_DLL
 	CCrossbowBolt *pBolt = CCrossbowBolt::BoltCreate();
 	pBolt->pev->origin = vecSrc;
 	pBolt->pev->angles = anglesAim;

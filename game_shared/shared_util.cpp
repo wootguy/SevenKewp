@@ -13,10 +13,10 @@
 #endif
 
 #ifdef CLIENT_DLL
-#include "../cl_dll/hud.h"
-#include "../cl_dll/cl_util.h"
+#include "hud.h"
+#include "cl_util.h"
 #include "../common/event_api.h"
-#include "../cl_dll/effects.h"
+#include "effects.h"
 #define PRINTERR(fmt, ...) PRINTF(fmt, ##__VA_ARGS__) 
 #else
 #include "extdll.h"
@@ -1161,3 +1161,14 @@ int UTIL_GetRenderFxOpacity(int renderfx, int renderamt, float t) {
 
 	return clampi(blend, 0, 255);
 }
+
+#ifndef CLIENT_DLL
+float UTIL_WeaponTimeBase(void)
+{
+#if defined( CLIENT_WEAPONS )
+	return 0.0;
+#else
+	return gpGlobals->time;
+#endif
+}
+#endif

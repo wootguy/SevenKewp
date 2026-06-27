@@ -1,12 +1,33 @@
 #pragma once
 #include "EHandle.h"
-#include "saverestore.h"
 #include <stdint.h>
 #include <unordered_set>
 #include "string_deltas.h"
+#include "HashMap.h"
+#include "rgb.h"
+#include "vector.h"
+#include "enginecallback.h"
+
+// More explicit than "int"
+typedef int EOFFSET;
+
+#include "../dlls/util/saverestore.h"
+#include "../dlls/util/CKeyValue.h"
+
+typedef struct entvars_s entvars_t;
+
+#ifdef CLIENT_DLL
+#define STRING(...) ((const char*)NULL)
+#define ENT(...) 0
+#define OFFSET(...) 0
+#define ENTINDEX(...) 0
+#define PLRBIT(...) 0
+EXPORT extern const Vector g_vecZero;
+#endif
 
 class CBaseEntity;
 class CBaseMonster;
+class CBasePlayerItem;
 class CBasePlayerWeapon;
 class CBasePlayerAmmo;
 class CItem;
@@ -25,7 +46,7 @@ class CWeaponBox;
 class CCineMonster;
 class CPathWaypoint;
 
-void* GET_PRIVATE(const edict_t* pent);
+EXPORT void* GET_PRIVATE(const edict_t* pent);
 
 enum entindex_priority {
 	// entity is likely to be sent to clients (monsters, sprites, doors, etc.)
@@ -41,6 +62,9 @@ enum BULLET_PREDICTION {
 	BULLETPRED_EVENT,		// bullets are predicted by the attacker and simulated by other players using client-side event code (weapons with event-based prediction)
 	BULLETPRED_EVENTLESS,	// bullets are predicted by the attacker but not simulated by other clients (weapons with eventless prediction)
 };
+
+// All monsters need this data
+#define		DONT_BLEED			-1
 
 typedef void (CBaseEntity::* BASEPTR)(void);
 typedef void (CBaseEntity::* ENTITYFUNCPTR)(CBaseEntity* pOther);
@@ -66,6 +90,7 @@ typedef void (CBaseEntity::* USEPTR)(CBaseEntity* pActivator, CBaseEntity* pCall
 
 #endif
 
+#ifndef CLIENT_DLL
 //
 // Converts a entvars_t * to a class pointer
 // It will allocate the class and entity if necessary
@@ -92,6 +117,7 @@ template <class T> T* GetClassPtr(T* a)
 	// only relocate if a new entity was allocated, else EHANDLEs will break
 	return allocate ? (T*)RelocateEntIdx(a) : a;
 }
+#endif
 
 struct InventoryRules {
 	string_t	item_name_required; 			// Inventory : Require these item(s)
@@ -241,7 +267,7 @@ public:
 	virtual int		ObjectCaps(void) { return FCAP_ACROSS_TRANSITION; }
 	virtual void	Activate(void) {}
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
-	virtual Vector	GetTargetOrigin() { return pev->origin; } // origin used for monster pathing and targetting
+	virtual Vector	GetTargetOrigin(); // origin used for monster pathing and targetting
 
 	// Setup the object->object collision box (pev->mins / pev->maxs is the object->world collision box)
 	virtual void	SetObjectCollisionBox(void);
@@ -288,7 +314,7 @@ public:
 	virtual BOOL	RemovePlayerItem(CBasePlayerItem* pItem) { return 0; }
 	virtual int 	GiveAmmo(int iAmount, const char* szName) { return -1; };
 	virtual float	GetDelay(void) { return 0; }
-	virtual int		IsMoving(void) { return pev->velocity != g_vecZero; }
+	virtual int		IsMoving(void);
 	virtual void	OverrideReset(void) {}
 	virtual int		DamageDecal(int bitsDamageType);
 	// This is ONLY used by the node graph to test movement through a door
@@ -297,10 +323,10 @@ public:
 	virtual void    StopSneaking(void) {}
 	virtual BOOL	OnControls(entvars_t* otherPev) { return FALSE; }
 	virtual BOOL    IsSneaking(void) { return FALSE; }
-	virtual BOOL	IsAlive(void) { return (pev->deadflag == DEAD_NO) && pev->health > 0; }
-	virtual BOOL	IsBSPModel(void) { return pev->solid == SOLID_BSP || pev->movetype == MOVETYPE_PUSHSTEP; }
-	virtual BOOL	ReflectGauss(void) { return (IsBSPModel() && !pev->takedamage); }
-	virtual BOOL	HasTarget(string_t targetname) { return FStrEq(STRING(targetname), STRING(pev->target)); }
+	virtual BOOL	IsAlive(void);
+	virtual BOOL	IsBSPModel(void);
+	virtual BOOL	ReflectGauss(void);
+	virtual BOOL	HasTarget(string_t targetname);
 	virtual BOOL    IsInWorld(void);
 	virtual	BOOL	IsMonster(void) { return FALSE; }
 	virtual	BOOL	IsNormalMonster(void) { return FALSE; } // is this what you'd expect to be a monster? (not a monstermaker/grenade/etc.)
@@ -325,14 +351,11 @@ public:
 		return (IsMachine() && IRelationship(CLASS_PLAYER, Classify()) == R_AL)
 			|| (IsBreakable() && (m_breakFlags & FL_BREAK_REPAIRABLE));
 	}
-	inline BOOL CanKnockback() {
-		// can this entity be pushed around by attacks?
-		return pev->movetype != MOVETYPE_PUSH && pev->movetype != MOVETYPE_NONE;
-	}
+	BOOL CanKnockback(); // can this entity be pushed around by attacks?
 	virtual const char* TeamID(void) { return ""; }
 	virtual const char* DisplayName();
 	virtual const char* DisplayHint(); // extra text to show in status bar
-	virtual const char* GetDeathNoticeWeapon() { return STRING(pev->classname); };
+	virtual const char* GetDeathNoticeWeapon();
 
 
 	//	virtual void	SetActivator( CBaseEntity *pActivator ) {}
@@ -355,10 +378,13 @@ public:
 
 	// don't use this.
 #if _MSC_VER >= 1200 // only build this code if MSVC++ 6.0 or higher
+#ifndef CLIENT_DLL
 	void operator delete(void* pMem, entvars_t* pev)
 	{
+
 		pev->flags |= FL_KILLME;
 	};
+#endif
 #endif
 
 	virtual void UpdateOnRemove(void);
@@ -467,10 +493,10 @@ public:
 	int	  entindex() { return ENTINDEX(edict()); };
 	virtual const char* desc() { return UTIL_VarArgs("%s (%s)", STRING(pev->targetname), STRING(pev->classname)); };
 
-	virtual Vector Center() { return (pev->absmax + pev->absmin) * 0.5; }; // center point of entity
-	virtual Vector EyePosition() { return pev->origin + pev->view_ofs; };			// position of eyes
-	virtual Vector EarPosition() { return pev->origin + pev->view_ofs; };			// position of ears
-	virtual Vector BodyTarget(const Vector& posSrc) { return Center(); };		// position to shoot at
+	virtual Vector Center();		// center point of entity
+	virtual Vector EyePosition();	// position of eyes
+	virtual Vector EarPosition();	// position of ears
+	virtual Vector BodyTarget(const Vector& posSrc) { return Center(); }		// position to shoot at
 
 	virtual int Illumination();
 
@@ -512,7 +538,7 @@ public:
 
 	virtual float GetDamageModifier() { return 1.0f; }
 
-	virtual float GetDamage(float defaultDamage) { return (pev->dmg ? pev->dmg : defaultDamage) * GetDamageModifier(); }
+	virtual float GetDamage(float defaultDamage);
 
 	// Smooths the movement of projectile models or sprites that use one of the following movetypes:
 	//		NONE, STEP, WALK, FLY.
@@ -567,25 +593,3 @@ protected:
 
 	bool TestInventoryRules(CBaseMonster* mon, std::unordered_set<CItemInventory*>& usedItems, const char** errorMsg);
 };
-
-inline void* GET_PRIVATE(const edict_t* pent)
-{
-	if (pent) {
-		CBaseEntity* bent = (CBaseEntity*)pent->pvPrivateData;
-
-		if (bent && bent->pev != &pent->v) {
-			// TODO: pev was linked wrong somehow. mem corruption?
-			uint8_t* edicts = (uint8_t*)ENT(0);
-			uint8_t* endEdicts = edicts + sizeof(edict_t) * gpGlobals->maxEntities;
-			bool validBasePev = (uint8_t*)bent->pev >= edicts && (uint8_t*)bent->pev < endEdicts;
-
-			ALERT(at_error, "Entity pev not linked to edict %d pev (%s != %s)\n",
-				ENTINDEX(pent), STRING(pent->v.classname), validBasePev ? STRING(bent->pev->classname) : "<BAT PTR>");
-			bent->pev = (entvars_t*)&pent->v;
-			return NULL;
-		}
-
-		return bent;
-	}
-	return NULL;
-}

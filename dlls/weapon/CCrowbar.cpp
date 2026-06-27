@@ -13,14 +13,10 @@
 *
 ****/
 
-#include "extdll.h"
-#include "util.h"
-#include "skill.h"
+#include "../dlls/extdll.h"
 #include "weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
-#include "gamerules.h"
-#include "weapon/CCrowbar.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/weapon/CCrowbar.h"
 
 LINK_ENTITY_TO_CLASS( weapon_crowbar, CCrowbar )
 
@@ -116,7 +112,9 @@ void CCrowbar::PrimaryAttack()
 
 void CCrowbar::Smack( )
 {
+#ifndef CLIENT_DLL
 	DecalGunshot( &m_trHit, BULLET_PLAYER_CROWBAR );
+#endif
 }
 
 

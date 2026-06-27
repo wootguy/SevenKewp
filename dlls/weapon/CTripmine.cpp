@@ -12,17 +12,12 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#include "extdll.h"
-#include "util.h"
-#include "skill.h"
+#include "../dlls/extdll.h"
 #include "weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
+#include "../dlls/player/CBasePlayer.h"
 #include "effects.h"
-#include "gamerules.h"
-#include "game.h"
-#include "weapon/CTripmine.h"
-#include "weapon/CGrenade.h"
+#include "../dlls/weapon/CTripmine.h"
+#include "../dlls/weapon/CGrenade.h"
 
 #define	TRIPMINE_PRIMARY_VOLUME		450
 
@@ -461,10 +456,12 @@ void CTripmine::PrimaryAttack( void )
 		CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 		if ( pEntity && !(pEntity->pev->flags & FL_CONVEYOR) )
 		{
+#ifndef CLIENT_DLL
 			Vector angles = UTIL_VecToAngles( tr.vecPlaneNormal );
 
 			CBaseEntity *pEnt = CBaseEntity::Create( "monster_tripmine", tr.vecEndPos + tr.vecPlaneNormal * 8, angles, true, m_pPlayer->edict() );
 			SET_MODEL(pEnt->edict(), GetModelW());
+#endif
 
 			m_pPlayer->m_rgAmmo[m_iPrimaryAmmoType]--;
 

@@ -19,6 +19,7 @@
 #include "nodes.h"
 #include "CWeaponCustom.h"
 #include "wc_config.h"
+#include "CBaseEntity.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
 extern int gmsgSayText;

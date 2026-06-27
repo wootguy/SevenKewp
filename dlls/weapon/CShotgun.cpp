@@ -13,13 +13,10 @@
 *
 ****/
 
-#include "extdll.h"
-#include "util.h"
+#include "../dlls/extdll.h"
 #include "weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
-#include "gamerules.h"
-#include "weapon/CShotgun.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/weapon/CShotgun.h"
 
 // special deathmatch shotgun spreads
 #define VECTOR_CONE_DM_SHOTGUN	Vector( 0.08716, 0.04362, 0.00  )// 10 degrees by 5 degrees

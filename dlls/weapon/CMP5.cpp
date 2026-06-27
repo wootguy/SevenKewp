@@ -13,16 +13,12 @@
 *
 ****/
 
-#include "extdll.h"
-#include "util.h"
-#include "skill.h"
+#include "../dlls/extdll.h"
 #include "weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
-#include "env/CSoundEnt.h"
-#include "gamerules.h"
-#include "weapon/CMP5.h"
-#include "weapon/CGrenade.h"
+#include "../dlls/player/CBasePlayer.h"
+#include "../dlls/env/CSoundEnt.h"
+#include "../dlls/weapon/CMP5.h"
+#include "../dlls/weapon/CGrenade.h"
 
 enum mp5_e
 {

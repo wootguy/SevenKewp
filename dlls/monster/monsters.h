@@ -13,10 +13,13 @@
 *
 ****/
 #ifndef MONSTERS_H
-#include "skill.h"
 #define MONSTERS_H
 
-#include "monster/CBaseMonster.h"
+#ifndef CLIENT_DLL
+#include "skill.h"
+#endif
+
+#include "../dlls/monster/CBaseMonster.h"
 
 /*
 
@@ -70,6 +73,10 @@
 // MoveToOrigin stuff
 #define		MOVE_NORMAL				0// normal move in the direction monster is facing
 #define		MOVE_STRAFE				1// moves in direction specified, no matter which way monster is facing
+
+// Until we figure out why "const" gives the compiler problems, we'll just have to use
+// this bogus "empty" define to mark things as constant.
+#define CONSTANT
 
 // spawn flags 256 and above are already taken by the engine
 EXPORT void UTIL_MoveToOrigin( edict_t* pent, const Vector &vecGoal, float flDist, int iMoveType );

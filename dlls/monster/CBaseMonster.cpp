@@ -274,6 +274,10 @@ void CBaseMonster::Listen(void)
 	}
 }
 
+BOOL CBaseMonster::IsAlive(void) {
+	return (pev->deadflag == DEAD_NO) && pev->health > 0;
+}
+
 //=========================================================
 // FLSoundVolume - subtracts the volume of the given sound
 // from the distance the sound source is from the caller, 
@@ -2191,6 +2195,10 @@ Vector CBaseMonster::GetInterpolatedOrigin() {
 	float t = 1.0f - (pev->nextthink - gpGlobals->time) / 0.1f;
 	return m_lastInterpOrigin + (pev->origin - m_lastInterpOrigin)*t;
 
+}
+
+void CBaseMonster::StopAnimation(void) {
+	pev->framerate = 0;
 }
 
 void CBaseMonster::Precache(void) {

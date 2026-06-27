@@ -12,11 +12,10 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#include "extdll.h"
-#include "util.h"
-#include "weapon/weapons.h"
-#include "nodes.h"
-#include "CBasePlayer.h"
+#include "../dlls/extdll.h"
+#include "shared_util.h"
+#include "../dlls/weapon/weapons.h"
+#include "../dlls/player/CBasePlayer.h"
 
 #include "usercmd.h"
 #include "entity_state.h"
@@ -25,35 +24,34 @@
 #include "event_api.h"
 #include "r_efx.h"
 
-#include "../hud_iface.h"
-#include "../com_weapons.h"
-#include "../demo.h"
+#include "hud_iface.h"
+#include "com_weapons.h"
+#include "demo.h"
 
-#include "weapon/CGlock.h"
-#include "weapon/CCrowbar.h"
-#include "weapon/CPython.h"
-#include "weapon/CMP5.h"
-#include "weapon/CCrossbow.h"
-#include "weapon/CShotgun.h"
-#include "weapon/CRpg.h"
-#include "weapon/CGauss.h"
-#include "weapon/CEgon.h"
-#include "weapon/CHgun.h"
-#include "weapon/CHandGrenade.h"
-#include "weapon/CSatchel.h"
-#include "weapon/CTripmine.h"
-#include "weapon/CSqueak.h"
-#include "weapon/custom/CWeaponCustom.h"
+#include "../dlls/weapon/CGlock.h"
+#include "../dlls/weapon/CCrowbar.h"
+#include "../dlls/weapon/CPython.h"
+#include "../dlls/weapon/CMP5.h"
+#include "../dlls/weapon/CCrossbow.h"
+#include "../dlls/weapon/CShotgun.h"
+#include "../dlls/weapon/CRpg.h"
+#include "../dlls/weapon/CGauss.h"
+#include "../dlls/weapon/CEgon.h"
+#include "../dlls/weapon/CHgun.h"
+#include "../dlls/weapon/CHandGrenade.h"
+#include "../dlls/weapon/CSatchel.h"
+#include "../dlls/weapon/CTripmine.h"
+#include "../dlls/weapon/CSqueak.h"
+#include "../dlls/weapon/custom/CWeaponCustom.h"
 #include "prediction_files.h"
 #include "ammo.h"
 
 #include "studio.h"
 
-#include "../ModPlayerState.h"
+#include "ModPlayerState.h"
 
 #include "hud_iface.h"
 #include "cl_dll.h"
-#include "eng_wrappers.h"
 #define PRINTF(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
 
 extern globalvars_t *gpGlobals;
