@@ -23,7 +23,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "parsemsg.h"
-#include "hud_servers.h"
+#include "servers.h"
 #include "vgui_int.h"
 #include "vgui_TeamFortressViewport.h"
 #include "effects.h"

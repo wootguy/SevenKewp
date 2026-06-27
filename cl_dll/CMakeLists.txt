@@ -39,14 +39,10 @@ set(CLIENT_WEAPON_SRC
 )
 
 set(HUD_HDR
-	hud/ammo.h
-	hud/ammohistory.h
 	hud/bench.h
-	hud/health.h
 	hud/hud.h
-	hud/hud_servers.h
-	hud/hud_servers_priv.h
-	hud/hud_spectator.h
+	hud/servers.h
+	hud/servers_priv.h
 	hud/wrect.h
 	hud/player_info.h
 	hud/global_consts.h
@@ -54,36 +50,44 @@ set(HUD_HDR
 	../game_shared/voice_status.h
 )
 set(HUD_SRC
-	hud/ammo.cpp
-	hud/ammo_secondary.cpp
-	hud/ammohistory.cpp
-	hud/battery.cpp
-	hud/death.cpp
-	hud/flashlight.cpp
-	hud/health.cpp
+	hud/benchtrace.cpp
 	hud/hud.cpp
-	hud/hud_conprint.cpp
-	hud/hud_bench.cpp
-	hud/hud_benchtrace.cpp
 	hud/hud_msg.cpp
 	hud/hud_redraw.cpp
-	hud/hud_servers.cpp
-	hud/hud_spectator.cpp
+	hud/servers.cpp
 	hud/hud_update.cpp
-	hud/hud_nametags.cpp
-	hud/hud_debug.cpp
-	hud/hud_entstatus.cpp
-	hud/hud_sprites.cpp
-	hud/menu.cpp
-	hud/message.cpp
-	hud/saytext.cpp
-	hud/clientstats.cpp
-	hud/statusbar.cpp
-	hud/text_message.cpp
-	hud/train.cpp
-	hud/updater.cpp
 	hud/voice_status.cpp
 	../game_shared/voice_banmgr.cpp
+)
+set(HUD_COMPONENTS_HDR
+	hud/components/hud_ammo.h
+	hud/components/hud_ammohistory.h
+	hud/components/hud_health.h
+	hud/components/hud_spectator.h
+)
+set(HUD_COMPONENTS_SRC
+	hud/components/hud_ammo.cpp
+	hud/components/hud_ammo_secondary.cpp
+	hud/components/hud_ammohistory.cpp
+	hud/components/hud_battery.cpp
+	hud/components/hud_death.cpp
+	hud/components/hud_flashlight.cpp
+	hud/components/hud_health.cpp
+	hud/components/hud_conprint.cpp
+	hud/components/hud_bench.cpp
+	hud/components/hud_spectator.cpp
+	hud/components/hud_menu.cpp
+	hud/components/hud_nametags.cpp
+	hud/components/hud_debug.cpp
+	hud/components/hud_entstatus.cpp
+	hud/components/hud_sprites.cpp
+	hud/components/hud_message.cpp
+	hud/components/hud_saytext.cpp
+	hud/components/hud_clientstats.cpp
+	hud/components/hud_statusbar.cpp
+	hud/components/hud_text_message.cpp
+	hud/components/hud_train.cpp
+	hud/components/hud_web_updater.cpp
 )
 
 set(EFFECTS_HDR
@@ -97,28 +101,28 @@ set(EFFECTS_SRC
 )
 
 set(VGUI_HDR
-	vgui/vgui_ControlConfigPanel.h
-	vgui/vgui_int.h
-	vgui/vgui_SchemeManager.h
-	vgui/vgui_ScorePanel.h
-	vgui/vgui_ServerBrowser.h
-	vgui/vgui_SpectatorPanel.h
+	hud/vgui/vgui_ControlConfigPanel.h
+	hud/vgui/vgui_int.h
+	hud/vgui/vgui_SchemeManager.h
+	hud/vgui/vgui_ScorePanel.h
+	hud/vgui/vgui_ServerBrowser.h
+	hud/vgui/vgui_SpectatorPanel.h
 	../game_shared/vgui_scrollbar2.h
 	../game_shared/vgui_slider2.h
 )
 set(VGUI_SRC
-	vgui/vgui_ClassMenu.cpp
-	vgui/vgui_ConsolePanel.cpp
-	vgui/vgui_ControlConfigPanel.cpp
-	vgui/vgui_CustomObjects.cpp
-	vgui/vgui_int.cpp
-	vgui/vgui_MOTDWindow.cpp
-	vgui/vgui_SchemeManager.cpp
-	vgui/vgui_ScorePanel.cpp
-	vgui/vgui_ServerBrowser.cpp
-	vgui/vgui_SpectatorPanel.cpp
-	vgui/vgui_TeamFortressViewport.cpp
-	vgui/vgui_teammenu.cpp
+	hud/vgui/vgui_ClassMenu.cpp
+	hud/vgui/vgui_ConsolePanel.cpp
+	hud/vgui/vgui_ControlConfigPanel.cpp
+	hud/vgui/vgui_CustomObjects.cpp
+	hud/vgui/vgui_int.cpp
+	hud/vgui/vgui_MOTDWindow.cpp
+	hud/vgui/vgui_SchemeManager.cpp
+	hud/vgui/vgui_ScorePanel.cpp
+	hud/vgui/vgui_ServerBrowser.cpp
+	hud/vgui/vgui_SpectatorPanel.cpp
+	hud/vgui/vgui_TeamFortressViewport.cpp
+	hud/vgui/vgui_teammenu.cpp
 	
 	../game_shared/vgui_checkbutton2.cpp
 	../game_shared/vgui_grid.cpp
@@ -245,6 +249,7 @@ set(ALL_SRC
 	${SHARED_WEAPON_SRC} ${CLIENT_WEAPON_SRC} ${CUSTOM_WEAPON_SRC} ${WEAPON_HDR}
 	${MOVEMENT_SRC} ${MOVEMENT_HDR}
 	${HUD_SRC} ${HUD_HDR}
+	${HUD_COMPONENTS_SRC} ${HUD_COMPONENTS_HDR}
 	${EFFECTS_SRC} ${EFFECTS_HDR}
 	${VGUI_SRC} ${VGUI_HDR}
 	${INPUT_SRC} ${INPUT_HDR}
@@ -269,8 +274,9 @@ add_library(${CLIENT_DLL_NAME} SHARED ${ALL_SRC})
 target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DCLIENT_DLL -DCLIENT_WEAPONS -DHL_DLL -DCURL_STATICLIB)
 
 target_include_directories(${CLIENT_DLL_NAME} PRIVATE .)
-target_include_directories(${CLIENT_DLL_NAME} PRIVATE vgui)
 target_include_directories(${CLIENT_DLL_NAME} PRIVATE hud)
+target_include_directories(${CLIENT_DLL_NAME} PRIVATE hud/components)
+target_include_directories(${CLIENT_DLL_NAME} PRIVATE hud/vgui)
 target_include_directories(${CLIENT_DLL_NAME} PRIVATE weapons)
 target_include_directories(${CLIENT_DLL_NAME} PRIVATE rendering)
 target_include_directories(${CLIENT_DLL_NAME} PRIVATE effects)
@@ -351,17 +357,19 @@ elseif(MSVC)
 	source_group("Header Files\\Util" FILES ${UTIL_HDR})	
 	source_group("Header Files\\HUD" FILES ${HUD_HDR})	
 	source_group("Header Files\\HUD\\VGUI" FILES ${VGUI_HDR})	
+	source_group("Header Files\\HUD\\Components" FILES ${HUD_COMPONENTS_HDR})	
 	source_group("Header Files\\Input" FILES ${INPUT_HDR})	
 	source_group("Header Files\\Rendering" FILES ${RENDER_HDR})
 	source_group("Header Files\\Hooks" FILES ${HOOKS_HDR})
 	source_group("Header Files\\Effects" FILES ${EFFECTS_HDR})
 	
-	source_group("Source Files\\Weapons\\Shared" FILES ${SHARED_WEAPON_SRC} ${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp)	
+	source_group("Source Files\\Weapons\\Default" FILES ${SHARED_WEAPON_SRC} ${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp)	
 	source_group("Source Files\\Weapons\\Custom" FILES ${CUSTOM_WEAPON_SRC})	
 	source_group("Source Files\\Weapons" FILES ${CLIENT_WEAPON_SRC})	
 	source_group("Source Files\\Util" FILES ${UTIL_SRC})	
 	source_group("Source Files\\Game" FILES ${GAME_SRC})	
 	source_group("Source Files\\HUD" FILES ${HUD_SRC})	
+	source_group("Source Files\\HUD\\Components" FILES ${HUD_COMPONENTS_SRC})	
 	source_group("Source Files\\HUD\\VGUI" FILES ${VGUI_SRC})	
 	source_group("Source Files\\Input" FILES ${INPUT_SRC})	
 	source_group("Source Files\\Rendering" FILES ${RENDER_SRC})	

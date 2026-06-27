@@ -28,7 +28,7 @@
 #include "pm_shared.h"
 
 #include <string.h>
-#include "hud_servers.h"
+#include "servers.h"
 #include "vgui_int.h"
 #include "interface_hlsdk.h"
 

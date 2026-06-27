@@ -21,7 +21,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "parsemsg.h"
-#include "hud_servers.h"
+#include "servers.h"
 #include "demo.h"
 #include "demo_api.h"
 #include "voice_status.h"

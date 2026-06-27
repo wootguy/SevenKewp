@@ -22,7 +22,7 @@
 #include "con_nprint.h"
 
 #include "netadr.h"
-#include "hud_benchtrace.h"
+#include "benchtrace.h"
 
 #include "net_api.h"
 

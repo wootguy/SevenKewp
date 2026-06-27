@@ -8,8 +8,8 @@
 // hud_servers.cpp
 #include "hud.h"
 #include "cl_util.h"
-#include "hud_servers_priv.h"
-#include "hud_servers.h"
+#include "servers_priv.h"
+#include "servers.h"
 #include "net_api.h"
 #include <string.h>
 #ifdef _WIN32

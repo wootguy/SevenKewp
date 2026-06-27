@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "ammohistory.h"
+#include "hud_ammohistory.h"
 #include "vgui_TeamFortressViewport.h"
 #include "wc_params.h"
 #include "wc_net.h"

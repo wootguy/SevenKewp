@@ -35,7 +35,7 @@
 
 #include "wrect.h"
 #include "cl_dll.h"
-#include "ammo.h"
+#include "hud_ammo.h"
 #include "rgb.h"
 
 #define DHN_DRAWZERO 1
@@ -195,7 +195,7 @@ private:
 };
 
 
-#include "health.h"
+#include "hud_health.h"
 
 
 #define FADE_TIME 100
