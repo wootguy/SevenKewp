@@ -11,9 +11,9 @@ public:
 	int			m_iszKillTarget;
 
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_LOW; }
-	virtual void	KeyValue(KeyValueData* pkvd);
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
+	virtual void	KeyValue(KeyValueData* pkvd) STUB_VOID;
+	virtual int		Save(CSave& save) STUB_INT;
+	virtual int		Restore(CRestore& restore) STUB_INT;
 	virtual CBaseDelay* MyDelayPointer(void) { return this; }
 
 	static	TYPEDESCRIPTION m_SaveData[];

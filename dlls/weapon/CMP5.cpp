@@ -18,7 +18,6 @@
 #include "../dlls/player/CBasePlayer.h"
 #include "../dlls/env/CSoundEnt.h"
 #include "../dlls/weapon/CMP5.h"
-#include "../dlls/weapon/CGrenade.h"
 
 enum mp5_e
 {
@@ -247,10 +246,12 @@ void CMP5::SecondaryAttack( void )
 
  	UTIL_MakeVectors( m_pPlayer->pev->v_angle + m_pPlayer->pev->punchangle );
 
+#ifndef CLIENT_DLL
 	// we don't add in player velocity anymore.
 	CGrenade::ShootContact( m_pPlayer->pev, 
 							m_pPlayer->pev->origin + m_pPlayer->pev->view_ofs + gpGlobals->v_forward * 16, 
 							gpGlobals->v_forward * 800 );
+#endif
 
 	int flags;
 #if defined( CLIENT_WEAPONS )

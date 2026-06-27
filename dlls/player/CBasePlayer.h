@@ -225,29 +225,29 @@ public:
 	virtual void Spawn( void );
 
 //	virtual void Think( void );
-	virtual void Jump( void );
-	virtual void Duck( void );
-	virtual void PreThink( void );
-	virtual void PostThink( void );
+	virtual void Jump( void ) STUB_VOID;
+	virtual void Duck( void ) STUB_VOID;
+	virtual void PreThink( void ) STUB_VOID;
+	virtual void PostThink( void ) STUB_VOID;
 	virtual Vector GetGunPosition( void );
-	virtual int TakeHealth( float flHealth, int bitsDamageType, float healthcap=0);
-	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
-	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	virtual int TakeHealth( float flHealth, int bitsDamageType, float healthcap=0) STUB_INT;
+	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) STUB_VOID;
+	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) STUB_INT;
 	virtual void	Killed( entvars_t *pevAttacker, int iGib );
-	virtual Vector BodyTarget(const Vector& posSrc);
-	virtual void StartSneaking(void);
-	virtual void StopSneaking(void);
-	virtual BOOL IsSneaking(void);
+	virtual Vector BodyTarget(const Vector& posSrc) STUB_VEC;
+	virtual void StartSneaking(void) STUB_VOID;
+	virtual void StopSneaking(void) STUB_VOID;
+	virtual BOOL IsSneaking(void) STUB_INT;
 	virtual BOOL ShouldFadeOnDeath( void ) { return FALSE; }
 	virtual	BOOL IsPlayer( void ) { return TRUE; }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
 	virtual CBasePlayer* MyPlayerPointer(void) { return this; };
 
 	virtual BOOL IsNetClient( void ) { return TRUE; }		// Bots should return FALSE for this, they can't receive NET messages
 															// Spectators should return TRUE for this
-	virtual const char *TeamID( void );
+	virtual const char *TeamID( void ) STUB_INT;
 	virtual const char* DisplayName() { return STRING(pev->netname); }
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save( CSave &save ) STUB_INT;
+	virtual int		Restore( CRestore &restore ) STUB_INT;
 	void RenewItems(void);
 	void PackDeadPlayerItems( void );
 	void HideAllItems(bool hideSuit);
@@ -255,10 +255,10 @@ public:
 	// if removeItemsOnly=true, then remove items server-side, but don't update the client hud
 	// (fixes race condition during player spawn)
 	void RemoveAllItems( BOOL removeSuit, BOOL removeItemsOnly=false );
-	BOOL SwitchWeapon( CBasePlayerItem *pWeapon );
+	BOOL SwitchWeapon( CBasePlayerItem *pWeapon ) STUB_INT;
 
 	// JOHN:  sends custom messages if player HUD data has changed  (eg health, ammo)
-	virtual void UpdateClientData( void );
+	virtual void UpdateClientData( void ) STUB_VOID;
 
 	void SendWeaponList();
 
@@ -278,33 +278,33 @@ public:
 
 	// Player is moved across the transition by other means
 	virtual int		ObjectCaps( void ) { return CBaseMonster :: ObjectCaps() & ~(FCAP_IMPULSE_USE | FCAP_ACROSS_TRANSITION); }
-	virtual void	Precache( void );
+	virtual void	Precache( void ) STUB_VOID;
 	BOOL			IsOnLadder( void );
 	BOOL			FlashlightIsOn( void );
 	void			FlashlightTurnOn( void );
 	void			FlashlightTurnOff( void );
 	
 	void UpdatePlayerSound ( void );
-	void DeathSound ( void );
+	void DeathSound ( void ) STUB_VOID;
 
-	int Classify ( void );
-	void SetAnimation( PLAYER_ANIM playerAnim, float duration=0 );
+	int Classify ( void ) STUB_INT;
+	void SetAnimation( PLAYER_ANIM playerAnim, float duration=0 ) STUB_VOID;
 	void SetWeaponAnimType( const char *szExtention );
 	char m_szAnimExtention[32];
 	char m_szAnimAction[32]; // "aim" or "hold"
 
 	// custom player functions
-	virtual void ImpulseCommands( void );
+	virtual void ImpulseCommands( void ) STUB_VOID;
 	void CheatImpulseCommands( int iImpulse );
 
 	void StartDeathCam( void );
 	void StartObserver( Vector vecPosition, Vector vecViewAngle );
 	void LeaveObserver(bool respawn=true);
 
-	void AddPoints( int score, BOOL bAllowNegativeScore );
-	void AddPointsToTeam( int score, BOOL bAllowNegativeScore );
-	BOOL AddPlayerItem( CBasePlayerItem *pItem );
-	BOOL RemovePlayerItem( CBasePlayerItem *pItem );
+	void AddPoints( int score, BOOL bAllowNegativeScore ) STUB_VOID;
+	void AddPointsToTeam( int score, BOOL bAllowNegativeScore ) STUB_VOID;
+	BOOL AddPlayerItem( CBasePlayerItem *pItem ) STUB_INT;
+	BOOL RemovePlayerItem( CBasePlayerItem *pItem ) STUB_INT;
 	void DropPlayerItem ( const char *pszItemName );
 	void DropAmmo(bool secondary);
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
@@ -322,7 +322,7 @@ public:
 	void EnableControl(BOOL fControl);
 	void DisableWeapons(bool disable);
 
-	int  GiveAmmo( int iAmount, const char *szName );
+	int  GiveAmmo( int iAmount, const char *szName ) STUB_INT;
 	void SendAmmoUpdate(void);
 
 	void WaterMove( void );
@@ -330,21 +330,21 @@ public:
 	void PlayerUse( void );
 
 	void CheckSuitUpdate();
-	void SetSuitUpdate(const char *name, int fgroup, int iNoRepeat);
+	void SetSuitUpdate(const char *name, int fgroup, int iNoRepeat) STUB_VOID;
 	void UpdateGeigerCounter( void );
 	void CheckTimeBasedDamage( void );
 
-	BOOL BarnacleVictimCaught( void );
-	void BarnacleVictimBitten ( entvars_t *pevBarnacle );
-	void BarnacleVictimReleased ( void );
+	BOOL BarnacleVictimCaught( void ) STUB_INT;
+	void BarnacleVictimBitten ( entvars_t *pevBarnacle ) STUB_VOID;
+	void BarnacleVictimReleased ( void ) STUB_VOID;
 	static int GetAmmoIndex(const char *psz);
 	int AmmoInventory( int iAmmoIndex );
-	int Illumination( void );
+	int Illumination( void ) STUB_INT;
 
 	void ResetAutoaim( void );
 	Vector GetAutoaimVector( float flDelta  );
 	Vector AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  );
-	virtual Vector GetLookDirection();
+	virtual Vector GetLookDirection() STUB_VEC;
 
 	void ForceClientDllUpdate( void );  // Forces all client .dll specific data to be resent to client.
 
@@ -355,8 +355,8 @@ public:
 
 	void CleanupWeaponboxes(void);
 
-	void TabulateWeapons( void ); // initializes weapons hud for client
-	void TabulateAmmo( void );
+	void TabulateWeapons( void ) STUB_VOID; // initializes weapons hud for client
+	void TabulateAmmo( void ) STUB_VOID;
 	int rgAmmo(int ammoIdx);
 	void rgAmmo(int ammoIdx, int newCount);
 
@@ -445,9 +445,9 @@ public:
 
 	const char* GetClientVersionString();
 
-	bool IsSevenKewpClient();
+	bool IsSevenKewpClient() STUB_INT;
 
-	bool UseSevenKewpGuns(); // true if the player wants sevenkewp guns and is using the client
+	bool UseSevenKewpGuns() STUB_INT; // true if the player wants sevenkewp guns and is using the client
 
 	// gets legacy steam id (e.g. STEAM_0:0:12345679)
 	const char* GetSteamID();
@@ -468,9 +468,9 @@ public:
 	// returns false if not all inventory items were dropped due to restrictions
 	bool DropAllInventoryItems(bool deathDrop = false, bool respawnDrop = false, bool forceDrop = false);
 
-	virtual void Revive();
+	virtual void Revive() STUB_VOID;
 
-	float GetDamage(float defaultDamage);
+	float GetDamage(float defaultDamage) STUB_INT;
 
 	// accounts for active cameras and view offset
 	Vector GetViewPosition();
@@ -525,13 +525,13 @@ public:
 	// queryWepId can be any weapon that fills the slot in question
 	int GetCurrentIdForConflictedSlot(int queryWepId);
 
-	const char* GetDeathNoticeWeapon();
+	const char* GetDeathNoticeWeapon() STUB_INT;
 
 	void NightvisionUpdate();
 
 	virtual void SetClassification(int newClass) override { CBaseEntity::SetClassification(newClass); }
 	
-	void ResetSequenceInfo() override;
+	void ResetSequenceInfo() override STUB_VOID;
 
 	// syncs upper and lower body animations for a custom model
 	// gaitSpeed = 2D movement speed
@@ -546,12 +546,12 @@ public:
 
 	void DebugThink();
 
-	void SetThirdPersonWeaponAnim(int sequence, float fps=1.0f);
+	void SetThirdPersonWeaponAnim(int sequence, float fps=1.0f) STUB_VOID;
 
 	// 0 = default velocity (800)
 	// -1 = jumping disabled
 	// 1+ = custom velocity
-	void SetJumpPower(int power);
+	void SetJumpPower(int power) STUB_VOID;
 
 	void SyncWeaponBits();
 
@@ -560,7 +560,7 @@ public:
 	// make splashes from player actions (call MakeVectors before this)
 	void WaterSplashTrace(Vector vecSrc, float dist, int hull, float scale);
 
-	void ApplyEffects();
+	void ApplyEffects() STUB_VOID;
 
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

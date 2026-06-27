@@ -45,8 +45,7 @@ set(WEAPON_PREDICTION_HDR
 )
 set(WEAPON_PREDICTION_SRC
 	weapons/com_weapons.cpp
-	weapons/hl_objects.cpp
-	weapons/hl_baseentity.cpp
+	weapons/weapon_tents.cpp
 	weapons/weapon_prediction.cpp
 )
 
@@ -378,6 +377,7 @@ elseif(MSVC)
 	source_group("Header Files\\HUD\\Components" FILES ${HUD_COMPONENTS_HDR})	
 	source_group("Header Files\\Input" FILES ${INPUT_HDR})	
 	source_group("Header Files\\Rendering" FILES ${RENDER_HDR})
+	source_group("Header Files\\Movement" FILES ${MOVEMENT_HDR})
 	source_group("Header Files\\Hooks" FILES ${HOOKS_HDR})
 	source_group("Header Files\\Effects" FILES ${EFFECTS_HDR})
 	

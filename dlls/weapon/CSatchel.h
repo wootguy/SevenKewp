@@ -1,6 +1,5 @@
 #pragma once
 #include "CBasePlayerWeapon.h"
-#include "CGrenade.h"
 
 #define SATCHEL_DEFAULT_GIVE		1
 
@@ -43,6 +42,7 @@ public:
 	}
 };
 
+#ifndef CLIENT_DLL
 class CSatchelCharge : public CGrenade
 {
 	void Spawn(void);
@@ -61,3 +61,4 @@ public:
 };
 
 void DeactivateSatchels(CBasePlayer* pOwner);
+#endif

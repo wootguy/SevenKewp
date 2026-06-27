@@ -7,7 +7,10 @@
 #include "event_args.h"
 #include "shared_util.h"
 #include "CWeaponEvents.h"
+
+#ifndef CLIENT_DLL
 #include "CProjectileCustom.h"
+#endif
 
 // number of seconds to delay replaying of events while the prediction code waits for a new state
 // from the server

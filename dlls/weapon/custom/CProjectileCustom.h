@@ -2,10 +2,6 @@
 #include "wc_params.h"
 #include "../dlls/CBaseAnimating.h"
 
-#define FL_WC_PROJ_NO_BUBBLES		1
-#define FL_WC_PROJ_NO_ORIENT		2 // don't orient projectile to movement direction
-#define FL_WC_PROJ_IS_HOOK			4 // projectile is a hook attached to the player
-
 class EXPORT CProjectileCustom : public CBaseAnimating
 {
 public:

@@ -17,7 +17,6 @@
 #include "../dlls/extdll.h"
 #include "weapons.h"
 #include "../dlls/player/CBasePlayer.h"
-#include "../dlls/env/CSoundEnt.h"
 #include "shake.h"
 #include "../dlls/weapon/CGauss.h"
 
@@ -37,6 +36,8 @@ enum gauss_e {
 };
 
 #ifndef CLIENT_DLL
+#include "CSoundEnt.h"
+
 TYPEDESCRIPTION	CGauss::m_SaveData[] =
 {
 	DEFINE_FIELD(CGauss, m_fInAttack, FIELD_INTEGER),

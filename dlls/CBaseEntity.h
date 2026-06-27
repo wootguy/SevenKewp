@@ -1,5 +1,4 @@
 #pragma once
-#include "EHandle.h"
 #include <stdint.h>
 #include <unordered_set>
 #include "string_deltas.h"
@@ -23,7 +22,26 @@ typedef struct entvars_s entvars_t;
 #define ENTINDEX(...) 0
 #define PLRBIT(...) 0
 EXPORT extern const Vector g_vecZero;
+
+// Add these to virtual methods so the client can compile server code for weapon prediction.
+// The entire hierarchy for CBasePlayer and CBasePlayerWeapon needs stubbing.
+#define STUB_VOID {}
+#define STUB_INT { return 0; } // stub a int method for the client
+#define STUB_TYPE(t) { return (t)0; } // stub a typed int method for the client
+#define STUB_VEC { return g_vecZero; } // stub a pointer method for the client
+#define STUB_KV { return CKeyValue(); } // stub a keyvalue method for the client
+#define STUB_RGB { return RGB(0,0,0); } // stub an RGB method for the client
+#else
+#define STUB_VOID
+#define STUB_INT
+#define STUB_TYPE(t)
+#define STUB_INT
+#define STUB_VEC
+#define STUB_KV
+#define STUB_RGB
 #endif
+
+#include "EHandle.h"
 
 class CBaseEntity;
 class CBaseMonster;
@@ -256,21 +274,21 @@ public:
 	void (CBaseEntity ::* m_pfnBlocked)(CBaseEntity* pOther);
 
 	// initialization functions
-	virtual void	Spawn(void);
-	virtual void	Precache(void);
-	virtual void	KeyValue(KeyValueData* pkvd);
-	virtual CKeyValue GetKeyValue(const char* keyName);
+	virtual void	Spawn(void) STUB_VOID;
+	virtual void	Precache(void) STUB_VOID;
+	virtual void	KeyValue(KeyValueData* pkvd) STUB_VOID;
+	virtual CKeyValue GetKeyValue(const char* keyName) STUB_KV;
 	CKeyValue GetCustomKeyValue(const char* keyName);
 	HashMap<CKeyValue>* GetCustomKeyValues();
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
+	virtual int		Save(CSave& save) STUB_INT;
+	virtual int		Restore(CRestore& restore) STUB_INT;
 	virtual int		ObjectCaps(void) { return FCAP_ACROSS_TRANSITION; }
 	virtual void	Activate(void) {}
 	virtual int		GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
-	virtual Vector	GetTargetOrigin(); // origin used for monster pathing and targetting
+	virtual Vector	GetTargetOrigin() STUB_VEC; // origin used for monster pathing and targetting
 
 	// Setup the object->object collision box (pev->mins / pev->maxs is the object->world collision box)
-	virtual void	SetObjectCollisionBox(void);
+	virtual void	SetObjectCollisionBox(void) STUB_VOID;
 
 	// Classify - returns the type of group (i.e, "houndeye", or "human military" so that monsters with different classnames
 	// still realize that they are teammates. (overridden for monsters that form groups)
@@ -281,12 +299,12 @@ public:
 
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	virtual void	TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
-	virtual int		TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
-	virtual int		TakeHealth(float flHealth, int bitsDamageType, float healthcap = 0);
+	virtual void	TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) STUB_VOID;
+	virtual int		TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) STUB_INT;
+	virtual int		TakeHealth(float flHealth, int bitsDamageType, float healthcap = 0) STUB_INT;
 	virtual void	Killed(entvars_t* pevAttacker, int iGib);
 	virtual int		BloodColor(void) { return DONT_BLEED; }
-	virtual void	TraceBleed(float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
+	virtual void	TraceBleed(float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) STUB_VOID;
 	virtual BOOL    IsTriggered(CBaseEntity* pActivator) { return TRUE; }
 	virtual CBaseMonster* MyMonsterPointer(void) { return NULL; }
 	virtual CBasePlayer* MyPlayerPointer(void) { return NULL; }
@@ -314,20 +332,20 @@ public:
 	virtual BOOL	RemovePlayerItem(CBasePlayerItem* pItem) { return 0; }
 	virtual int 	GiveAmmo(int iAmount, const char* szName) { return -1; };
 	virtual float	GetDelay(void) { return 0; }
-	virtual int		IsMoving(void);
+	virtual int		IsMoving(void) STUB_INT;
 	virtual void	OverrideReset(void) {}
-	virtual int		DamageDecal(int bitsDamageType);
+	virtual int		DamageDecal(int bitsDamageType) STUB_INT;
 	// This is ONLY used by the node graph to test movement through a door
 	virtual void	SetToggleState(int state) {}
 	virtual void    StartSneaking(void) {}
 	virtual void    StopSneaking(void) {}
 	virtual BOOL	OnControls(entvars_t* otherPev) { return FALSE; }
 	virtual BOOL    IsSneaking(void) { return FALSE; }
-	virtual BOOL	IsAlive(void);
-	virtual BOOL	IsBSPModel(void);
-	virtual BOOL	ReflectGauss(void);
-	virtual BOOL	HasTarget(string_t targetname);
-	virtual BOOL    IsInWorld(void);
+	virtual BOOL	IsAlive(void) STUB_INT;
+	virtual BOOL	IsBSPModel(void) STUB_INT;
+	virtual BOOL	ReflectGauss(void) STUB_INT;
+	virtual BOOL	HasTarget(string_t targetname) STUB_INT;
+	virtual BOOL    IsInWorld(void) STUB_INT;
 	virtual	BOOL	IsMonster(void) { return FALSE; }
 	virtual	BOOL	IsNormalMonster(void) { return FALSE; } // is this what you'd expect to be a monster? (not a monstermaker/grenade/etc.)
 	virtual	BOOL	IsPlayer(void) { return FALSE; }
@@ -351,15 +369,15 @@ public:
 		return (IsMachine() && IRelationship(CLASS_PLAYER, Classify()) == R_AL)
 			|| (IsBreakable() && (m_breakFlags & FL_BREAK_REPAIRABLE));
 	}
-	BOOL CanKnockback(); // can this entity be pushed around by attacks?
+	BOOL CanKnockback() STUB_INT; // can this entity be pushed around by attacks?
 	virtual const char* TeamID(void) { return ""; }
-	virtual const char* DisplayName();
-	virtual const char* DisplayHint(); // extra text to show in status bar
-	virtual const char* GetDeathNoticeWeapon();
+	virtual const char* DisplayName() STUB_INT;
+	virtual const char* DisplayHint() STUB_INT; // extra text to show in status bar
+	virtual const char* GetDeathNoticeWeapon() STUB_INT;
 
 
 	//	virtual void	SetActivator( CBaseEntity *pActivator ) {}
-	virtual CBaseEntity* GetNextTarget(void);
+	virtual CBaseEntity* GetNextTarget(void) STUB_INT;
 
 	virtual void Think(void) { if (m_pfnThink) (this->*m_pfnThink)(); };
 	virtual void Touch(CBaseEntity* pOther) { if (m_pfnTouch) (this->*m_pfnTouch)(pOther); };
@@ -387,7 +405,7 @@ public:
 #endif
 #endif
 
-	virtual void UpdateOnRemove(void);
+	virtual void UpdateOnRemove(void) STUB_VOID;
 
 	// common member functions
 	void SUB_Remove(void);
@@ -493,21 +511,21 @@ public:
 	int	  entindex() { return ENTINDEX(edict()); };
 	virtual const char* desc() { return UTIL_VarArgs("%s (%s)", STRING(pev->targetname), STRING(pev->classname)); };
 
-	virtual Vector Center();		// center point of entity
-	virtual Vector EyePosition();	// position of eyes
-	virtual Vector EarPosition();	// position of ears
+	virtual Vector Center() STUB_VEC;		// center point of entity
+	virtual Vector EyePosition() STUB_VEC;	// position of eyes
+	virtual Vector EarPosition() STUB_VEC;	// position of ears
 	virtual Vector BodyTarget(const Vector& posSrc) { return Center(); }		// position to shoot at
 
-	virtual int Illumination();
+	virtual int Illumination() STUB_INT;
 
-	virtual RGB GetLighting();
+	virtual RGB GetLighting() STUB_RGB;
 
-	virtual	BOOL FVisible(CBaseEntity* pEntity, bool fIgnoreGlass=true);
-	virtual	BOOL FVisible(const Vector& vecOrigin, bool fIgnoreGlass=true);
+	virtual	BOOL FVisible(CBaseEntity* pEntity, bool fIgnoreGlass=true) STUB_INT;
+	virtual	BOOL FVisible(const Vector& vecOrigin, bool fIgnoreGlass=true) STUB_INT;
 
-	virtual void SetClassify(int iNewClassify);
-	virtual int IRelationship(CBaseEntity* pTarget);
-	static int IRelationship(int attackerClass, int victimClass);
+	virtual void SetClassify(int iNewClassify) STUB_VOID;
+	virtual int IRelationship(CBaseEntity* pTarget) STUB_INT;
+	static int IRelationship(int attackerClass, int victimClass) STUB_INT;
 	bool ShouldBlockFriendlyFire(entvars_t* attacker);
 
 	// can the player using this entity physically touch the ent with their hand?
@@ -538,7 +556,7 @@ public:
 
 	virtual float GetDamageModifier() { return 1.0f; }
 
-	virtual float GetDamage(float defaultDamage);
+	virtual float GetDamage(float defaultDamage) STUB_INT;
 
 	// Smooths the movement of projectile models or sprites that use one of the following movetypes:
 	//		NONE, STEP, WALK, FLY.
@@ -555,20 +573,20 @@ public:
 	// used to override state sent to player
 	virtual int AddToFullPack(struct entity_state_s* state, CBasePlayer* player) { return 1; }
 
-	virtual Vector GetLookDirection();
+	virtual Vector GetLookDirection() STUB_VEC;
 
 	// award attackers with points for damage dealt. Call this before updating monster health.
 	void GiveScorePoints(entvars_t* pevAttacker, float damageDealt);
 
 	// do breakable effects and triggers, if the entity is breakable
-	virtual void BreakableDie(CBaseEntity* pActivator);
-	virtual bool BreakableUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	virtual void BreakableDamageSound();
+	virtual void BreakableDie(CBaseEntity* pActivator) STUB_VOID;
+	virtual bool BreakableUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) STUB_INT;
+	virtual void BreakableDamageSound() STUB_VOID;
 
 	// will this entity Spawn() again after all other entities have precached?
 	bool IsDelaySpawned();
 
-	void ItemBounceTouch(CBaseEntity* pOther);
+	void ItemBounceTouch(CBaseEntity* pOther) STUB_VOID;
 
 	// finds the first entity with the given targetname, or worldspawn if one doesn't exist
 	// supports !activator and !caller

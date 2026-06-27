@@ -7,43 +7,42 @@
 class EXPORT CBasePlayerItem : public CBaseAnimating
 {
 public:
-	virtual void SetObjectCollisionBox( void );
-	void KeyValue(KeyValueData* pkvd);
+	virtual void SetObjectCollisionBox( void ) STUB_VOID;
+	void KeyValue(KeyValueData* pkvd) STUB_VOID;
 
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save( CSave &save ) STUB_INT;
+	virtual int		Restore( CRestore &restore ) STUB_INT;
 
-	virtual int	ObjectCaps(void);
+	virtual int	ObjectCaps(void) STUB_INT;
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	virtual int AddToPlayer( CBasePlayer *pPlayer );	// return TRUE if the item you want the item added to the player inventory
+	virtual int AddToPlayer( CBasePlayer *pPlayer ) STUB_INT;	// return TRUE if the item you want the item added to the player inventory
 	virtual int AddDuplicate( CBasePlayerItem *pItem ) { return FALSE; }	// return TRUE if you want your duplicate removed from world
-	void DestroyItem( void );
+	void DestroyItem( void ) STUB_VOID;
 	void DefaultTouch( CBaseEntity *pOther );	// default weapon touch
 	void DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void FallThink ( void );// when an item is first spawned, this think is run to determine when the object has hit the ground.
-	virtual void Materialize( void );// make a weapon visible and tangible
+	virtual void Materialize( void ) STUB_VOID;// make a weapon visible and tangible
 	void AttemptToMaterialize( void );  // the weapon desires to become visible and tangible, if the game rules allow for it
-	virtual CBaseEntity* Respawn ( void );// copy a weapon
-	void FallInit( void );
+	virtual CBaseEntity* Respawn ( void ) STUB_INT;// copy a weapon
+	void FallInit( void ) STUB_VOID;
 	void CheckRespawn( void );
 	virtual int GetItemInfo(ItemInfo *p) { return 0; };	// returns 0 if struct not filled out
 	virtual BOOL CanDeploy( void ) { return TRUE; };
-	virtual BOOL Deploy( )								// returns is deploy was successful
-		 { return TRUE; };
-	virtual BOOL	IsItem() { return TRUE; }
+	virtual BOOL Deploy( ) { return TRUE; };			// returns is deploy was successful
+	virtual BOOL IsItem() { return TRUE; }
 
 	virtual BOOL CanHolster( void ) { return TRUE; };// can this weapon be put away right now?
-	virtual void Holster( int skiplocal = 0 );
+	virtual void Holster( int skiplocal = 0 ) STUB_VOID;
 	virtual void UpdateItemInfo( void ) { return; };
 
 	virtual void ItemPreFrame( void )	{ return; }		// called each frame by the player PreThink
 	virtual void ItemPostFrame( void ) { return; }		// called each frame by the player PostThink
 
-	virtual void Drop( void );
-	virtual void Kill( void );
-	virtual void AttachToPlayer ( CBasePlayer *pPlayer );
+	virtual void Drop( void ) STUB_VOID;
+	virtual void Kill( void ) STUB_VOID;
+	virtual void AttachToPlayer ( CBasePlayer *pPlayer ) STUB_VOID;
 
 	virtual int PrimaryAmmoIndex() { return -1; };
 	virtual int SecondaryAmmoIndex() { return -1; };

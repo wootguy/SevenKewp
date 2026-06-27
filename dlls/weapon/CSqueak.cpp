@@ -20,7 +20,6 @@
 #include "../dlls/player/CBasePlayer.h"
 #include "../dlls/env/CSoundEnt.h"
 #include "../dlls/weapon/CSqueak.h"
-#include "../dlls/weapon/CGrenade.h"
 
 enum squeak_e {
 	SQUEAK_IDLE1 = 0,

@@ -138,6 +138,8 @@ struct globalentity_s
 	globalentity_t	*pNext;
 };
 
+#ifndef CLIENT_DLL
+
 class EXPORT CGlobalState
 {
 public:
@@ -166,5 +168,7 @@ private:
 };
 
 EXPORT extern CGlobalState gGlobalState;
+
+#endif
 
 #endif		//SAVERESTORE_H

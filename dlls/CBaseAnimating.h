@@ -6,8 +6,8 @@ class EXPORT CBaseAnimating : public CBaseDelay
 {
 public:
 	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
+	virtual int		Save(CSave& save) STUB_INT;
+	virtual int		Restore(CRestore& restore) STUB_INT;
 	virtual CBaseAnimating* MyAnimatingPointer(void) { return this; }
 
 	static	TYPEDESCRIPTION m_SaveData[];
@@ -15,10 +15,10 @@ public:
 	// Basic Monster Animation functions
 	float StudioFrameAdvance(float flInterval = 0.0); // accumulate animation frame time from last time called until now
 	int	 GetSequenceFlags(void);
-	virtual int  LookupActivity(int activity);
+	virtual int  LookupActivity(int activity) STUB_INT;
 	int  LookupActivityHeaviest(int activity);
-	int  LookupSequence(const char* label);
-	virtual void ResetSequenceInfo();
+	int  LookupSequence(const char* label) STUB_INT;
+	virtual void ResetSequenceInfo() STUB_VOID;
 	void DispatchAnimEvents(float flFutureInterval = 0.1); // Handle events that have happend since last time called up until X seconds into the future
 	virtual void HandleAnimEvent(MonsterEvent_t* pEvent) { return; };
 	float SetBoneController(int iController, float flValue);

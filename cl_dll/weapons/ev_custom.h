@@ -1,6 +1,10 @@
 #pragma once
+#include "wc_events.h"
+#include "pm_defs.h"
 
 // custom weapon events
+
+typedef struct cl_entity_s cl_entity_t;
 
 void WC_EV_LocalSound(int sndIdx, int chan, int pitch, float vol, float attn, int panning, int flags, Vector* sndOri);
 void WC_EV_EjectShell(WepEvt& evt, bool leftHand);

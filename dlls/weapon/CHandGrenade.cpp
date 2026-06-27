@@ -16,7 +16,6 @@
 #include "weapons.h"
 #include "../dlls/player/CBasePlayer.h"
 #include "../dlls/weapon/CHandGrenade.h"
-#include "../dlls/weapon/CGrenade.h"
 
 #define	HANDGRENADE_PRIMARY_VOLUME		450
 
@@ -188,7 +187,9 @@ void CHandGrenade::WeaponIdle( void )
 		if (time < 0)
 			time = 0;
 
+#ifndef CLIENT_DLL
 		CGrenade::ShootTimed( m_pPlayer->pev, vecSrc, vecThrow, time, GetModelW() );
+#endif
 
 		if ( flVel < 500 )
 		{

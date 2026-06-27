@@ -1,6 +1,5 @@
 #pragma once
 #include "CBasePlayerWeapon.h"
-#include "CGrenade.h"
 
 #define RPG_MAX_CLIP			1
 #define RPG_DEFAULT_GIVE		1
@@ -78,6 +77,7 @@ private:
 
 };
 
+#ifndef CLIENT_DLL
 class CRpgRocket : public CGrenade
 {
 public:
@@ -101,3 +101,4 @@ public:
 	float m_flIgniteTime;
 	EHANDLE m_hLauncher;// pointer back to the launcher that fired me. 
 };
+#endif

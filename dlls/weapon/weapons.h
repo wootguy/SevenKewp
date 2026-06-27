@@ -44,6 +44,7 @@ void UTIL_TraceLine(const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTER
 #include "game.h"
 #include "eng_wrappers.h"
 #include "lagcomp.h"
+#include "CGrenade.h"
 #endif
 
 #define PLAYBACK_EVENT( flags, who, index ) PLAYBACK_EVENT_FULL( flags, who, index, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );

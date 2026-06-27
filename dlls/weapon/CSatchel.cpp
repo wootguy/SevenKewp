@@ -41,7 +41,6 @@ TYPEDESCRIPTION	CSatchel::m_SaveData[] =
 	DEFINE_FIELD(CSatchel, m_chargeReady, FIELD_INTEGER),
 };
 IMPLEMENT_SAVERESTORE(CSatchel, CBasePlayerWeapon)
-#endif
 
 LINK_ENTITY_TO_CLASS(weapon_satchel, CSatchel)
 LINK_ENTITY_TO_CLASS(monster_satchel, CSatchelCharge)
@@ -169,6 +168,7 @@ void CSatchelCharge :: BounceSound( void )
 	}
 }
 
+#endif
 
 //=========================================================
 // CALLED THROUGH the newly-touched weapon's instance. The existing player weapon is pOriginal

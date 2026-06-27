@@ -4,20 +4,20 @@
 class EXPORT CBasePlayerWeapon : public CBasePlayerItem
 {
 public:
-	virtual void KeyValue(KeyValueData* pkvd);
-	void Precache(); // custom weapons call this
+	virtual void KeyValue(KeyValueData* pkvd) STUB_VOID;
+	void Precache() STUB_VOID; // custom weapons call this
 	virtual void PrecacheEvents() {} // server must always call this for weapons which the client loads by default
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save( CSave &save ) STUB_INT;
+	virtual int		Restore( CRestore &restore ) STUB_INT;
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	// generic weapon versions of CBasePlayerItem calls
-	virtual int AddToPlayer( CBasePlayer *pPlayer );
-	virtual int AddDuplicate( CBasePlayerItem *pItem );
+	virtual int AddToPlayer( CBasePlayer *pPlayer ) STUB_INT;
+	virtual int AddDuplicate( CBasePlayerItem *pItem ) STUB_INT;
 
-	virtual int ExtractAmmo( CBasePlayerWeapon *pWeapon ); //{ return TRUE; };			// Return TRUE if you can add ammo to yourself when picked up
-	virtual int ExtractClipAmmo( CBasePlayerWeapon *pWeapon );// { return TRUE; };			// Return TRUE if you can add ammo to yourself when picked up
+	virtual int ExtractAmmo( CBasePlayerWeapon *pWeapon ) STUB_INT; //{ return TRUE; };			// Return TRUE if you can add ammo to yourself when picked up
+	virtual int ExtractClipAmmo( CBasePlayerWeapon *pWeapon ) STUB_INT;// { return TRUE; };			// Return TRUE if you can add ammo to yourself when picked up
 
 	virtual int AddWeapon( void ) { ExtractAmmo( this ); return TRUE; };	// Return TRUE if you want to add yourself to the player
 
@@ -31,23 +31,23 @@ public:
 	virtual void ResetEmptySound( void );
 
 	virtual void SendWeaponAnim( int iAnim, int skiplocal = 1, int body = 0 );  // skiplocal is 1 if client is predicting weapon animations
-	virtual void SendWeaponAnimSpec(int iAnim); // send a weapon anim to spectators, and the owner if it isn't a SevenKewp client that can predict this anim
+	virtual void SendWeaponAnimSpec(int iAnim) STUB_VOID; // send a weapon anim to spectators, and the owner if it isn't a SevenKewp client that can predict this anim
 
 	virtual BOOL CanDeploy( void );
-	virtual BOOL IsUseable( void );
+	virtual BOOL IsUseable( void ) STUB_INT;
 	BOOL DefaultDeploy(const char *szViewModel, const char *szWeaponModel, int iAnim, const char *szAnimExt, int skiplocal = 0, int body = 0 );
 	int DefaultReload( int iClipSize, int iAnim, float fDelay, int body = 0 );
 	
-	virtual void GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount);
+	virtual void GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount) STUB_VOID;
 	virtual void ItemPostFrame( void );	// called each frame by the player PostThink
 	// called by CBasePlayerWeapons ItemPostFrame()
-	virtual void PrimaryAttack( void ) { return; }				// do "+ATTACK"
-	virtual void SecondaryAttack( void ) { return; }			// do "+ATTACK2"
-	virtual void TertiaryAttack( void ) { return; }
-	virtual void Reload( void ) { return; }						// do "+RELOAD"
-	virtual void WeaponIdle( void ) { return; }					// called when no buttons pressed
-	virtual int UpdateClientData( CBasePlayer *pPlayer );		// sends hud info to client dll, if things have changed
-	virtual void RetireWeapon( void );
+	virtual void PrimaryAttack( void ) {}				// do "+ATTACK"
+	virtual void SecondaryAttack( void ) {}			// do "+ATTACK2"
+	virtual void TertiaryAttack( void ) {}
+	virtual void Reload( void ) {}						// do "+RELOAD"
+	virtual void WeaponIdle( void ) {}					// called when no buttons pressed
+	virtual int UpdateClientData( CBasePlayer *pPlayer ) STUB_INT;		// sends hud info to client dll, if things have changed
+	virtual void RetireWeapon( void ) STUB_VOID;
 	virtual BOOL ShouldWeaponIdle( void ) {return FALSE; };
 	virtual void Holster( int skiplocal = 0 );
 	virtual BOOL UseDecrement( void ) { return FALSE; };
@@ -59,21 +59,21 @@ public:
 	inline int GetAkimboClip() { return IsAkimbo() ? m_chargeReady : -1; }
 	inline void SetAkimboClip(int clip) { m_chargeReady = clip; }
 	
-	int	PrimaryAmmoIndex(); 
-	int	SecondaryAmmoIndex(); 
+	int	PrimaryAmmoIndex() STUB_INT;
+	int	SecondaryAmmoIndex() STUB_INT;
 
 	void PrintState( void );
 
 	virtual CBasePlayerWeapon*GetWeaponPtr( void ) { return this; };
-	virtual CBaseEntity* Respawn(void);// copy a weapon
-	float GetNextAttackDelay( float delay );
+	virtual CBaseEntity* Respawn(void) STUB_INT;// copy a weapon
+	float GetNextAttackDelay( float delay ) STUB_INT;
 
-	virtual const char* GetModelV(const char* defaultModel=NULL);
-	virtual const char* GetModelP();
-	virtual const char* GetModelW();
+	virtual const char* GetModelV(const char* defaultModel=NULL) STUB_INT;
+	virtual const char* GetModelP() STUB_INT;
+	virtual const char* GetModelW() STUB_INT;
 	virtual int MergedModelBody() { return -1; } // body index to use in the merged items model (-1 = don't use merged model)
 	virtual int MergedModelBodyAkimbo() { return -1; } // body index to use in the merged items model (-1 = don't use merged model)
-	void SetWeaponModelW(); // accounts for merged models
+	void SetWeaponModelW() STUB_VOID; // accounts for merged models
 
 	// hack to allow corpse gibbing of non-solid corpses
 	void SolidifyNearbyCorpses(bool solidState);
@@ -83,7 +83,7 @@ public:
 		return plr ? plr->GetDamageModifier() : 1.0f;
 	}
 
-	virtual int AddToFullPack(struct entity_state_s* state, CBasePlayer* player) override;
+	virtual int AddToFullPack(struct entity_state_s* state, CBasePlayer* player) override STUB_INT;
 
 	// get the class name from a weapon name like "hloop/weapon_eagle" (a hack used for custom huds)
 	static const char* GetClassFromInfoName(const char* name);

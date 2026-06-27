@@ -11,7 +11,7 @@ struct CustomSentence;
 class EXPORT CBaseToggle : public CBaseAnimating
 {
 public:
-	void				KeyValue(KeyValueData* pkvd);
+	void				KeyValue(KeyValueData* pkvd) STUB_VOID;
 
 	TOGGLE_STATE		m_toggle_state;
 	float				m_flActivateFinished;//like attack_finished, but for doors
@@ -62,8 +62,8 @@ public:
 	// the button will be allowed to operate. Otherwise, it will be
 	// deactivated.
 
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
+	virtual int		Save(CSave& save) STUB_INT;
+	virtual int		Restore(CRestore& restore) STUB_INT;
 
 	static	TYPEDESCRIPTION m_SaveData[];
 
@@ -80,14 +80,14 @@ public:
 	virtual CBaseToggle* MyTogglePointer(void) { return this; }
 
 	// monsters use this, but so could buttons for instance
-	virtual void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation);
-	virtual void PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity* pListener);
-	virtual void SentenceStop(void);
+	virtual void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation) STUB_VOID;
+	virtual void PlayScriptedSentence(const char* pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity* pListener) STUB_VOID;
+	virtual void SentenceStop(void) STUB_VOID;
 	virtual BOOL IsAllowedToSpeak() { return FALSE; }
 
 	// call when toggle state changes to handle open/close triggers
 	void FireStateTriggers();
-	virtual void InitStateTriggers();
+	virtual void InitStateTriggers() STUB_VOID;
 
 	static float		AxisValue(int flags, const Vector& angles);
 	static void			AxisDir(entvars_t* pev);

@@ -45,6 +45,7 @@
 #include "../dlls/weapon/custom/CWeaponCustom.h"
 #include "prediction_files.h"
 #include "weapon_res.h"
+#include "ev_custom.h"
 
 #include "studio.h"
 
@@ -67,7 +68,14 @@ static CBasePlayer	player;
 // Local version of game .dll global variables ( time, etc. )
 static globalvars_t	Globals; 
 
+// Globals used by game logic
+EXPORT const Vector g_vecZero = Vector(0, 0, 0);
+enginefuncs_t g_engfuncs;
+globalvars_t* gpGlobals;
+
 static CBasePlayerWeapon *g_pWpns[ MAX_WEAPONS ];
+
+ItemInfo CBasePlayerItem::ItemInfoArray[MAX_WEAPONS];
 
 float g_flApplyVel = 0.0;
 Vector g_vApplyVel;
@@ -759,6 +767,13 @@ void CBasePlayer::Spawn( void )
 	g_irunninggausspred = false;
 }
 
+Vector CBasePlayer::GetGunPosition(void) {
+	return WC_GetGunPosition();
+}
+Vector CBasePlayer::GetAutoaimVector(float flDelta) {
+	return WC_GetAim(0, 0);
+}
+
 /*
 =====================
 UTIL_TraceLine
@@ -845,6 +860,14 @@ void UTIL_ParticleLine( CBasePlayer *player, float *start, float *end, float lif
 {
 	gEngfuncs.pEfxAPI->R_ParticleLine( start, end, r, g, b, life );
 }
+
+void ClearMultiDamage(void) {}
+
+void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker) {}
+
+void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {}
+
+void* GET_PRIVATE(const edict_t* pent) { return 0; }
 
 /*
 =====================

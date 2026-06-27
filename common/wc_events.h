@@ -51,6 +51,10 @@ typedef unsigned int string_t;
 #define FL_WC_TE_EXPLOSION_NO_SOUND		4	// Don't play the default explosion sound
 #define FL_WC_TE_EXPLOSION_NO_PARTICLES	8	// Don't draw particles
 
+#define FL_WC_PROJ_NO_BUBBLES		1
+#define FL_WC_PROJ_NO_ORIENT		2 // don't orient projectile to movement direction
+#define FL_WC_PROJ_IS_HOOK			4 // projectile is a hook attached to the player
+
 enum WeaponCustomEventTriggerShootArg {
 	WC_TRIG_SHOOT_ARG_ALWAYS,		// always fire the shoot event
 	WC_TRIG_SHOOT_ARG_AKIMBO,		// only fire the event when in akimbo mode

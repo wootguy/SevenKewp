@@ -41,6 +41,8 @@
 
 #define	SOUND_NEVER_EXPIRE	-1 // with this set as a sound's ExpireTime, the sound will never expire.
 
+#ifndef CLIENT_DLL
+
 //=========================================================
 // CSound - an instance of a sound in the world.
 //=========================================================
@@ -99,3 +101,5 @@ private:
 };
 
 extern CSoundEnt* pSoundEnt; // don't use this, call the static methods
+
+#endif

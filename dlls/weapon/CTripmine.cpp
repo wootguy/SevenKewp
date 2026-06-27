@@ -17,7 +17,6 @@
 #include "../dlls/player/CBasePlayer.h"
 #include "effects.h"
 #include "../dlls/weapon/CTripmine.h"
-#include "../dlls/weapon/CGrenade.h"
 
 #define	TRIPMINE_PRIMARY_VOLUME		450
 
