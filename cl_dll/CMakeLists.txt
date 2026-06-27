@@ -106,10 +106,10 @@ set(EFFECTS_HDR
 	effects/effects.h
 )
 set(EFFECTS_SRC
-	effects/fog.cpp
 	effects/geiger.cpp
 	effects/status_icons.cpp
 	effects/effects.cpp
+	effects/effects_msg.cpp
 )
 
 set(VGUI_HDR
@@ -135,6 +135,7 @@ set(VGUI_SRC
 	hud/vgui/vgui_SpectatorPanel.cpp
 	hud/vgui/vgui_TeamFortressViewport.cpp
 	hud/vgui/vgui_teammenu.cpp
+	hud/vgui/vgui_tfc_msg.cpp
 	
 	../game_shared/vgui_checkbutton2.cpp
 	../game_shared/vgui_grid.cpp
@@ -146,6 +147,7 @@ set(VGUI_SRC
 )
 
 set(INPUT_HDR
+	input/input.h
 	input/camera.h
 	input/in_defs.h
 	input/kbutton.h

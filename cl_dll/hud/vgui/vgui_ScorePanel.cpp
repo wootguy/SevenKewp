@@ -310,7 +310,7 @@ void ScorePanel::Update()
 	if (strlen(mappath) > 5) {
 		mappath = mappath + 5; // skip "maps/"
 	}
-	safe_sprintf(mapname, MAX_MAPNAME, "Current map: %s", mappath);
+	sprintf_safe(mapname, MAX_MAPNAME, "Current map: %s", mappath);
 	mapname[strlen(mapname) - 4] = 0; // remove ".bsp"
 
 	m_CurrentMapLabel.setText(mapname);
@@ -322,7 +322,7 @@ void ScorePanel::Update()
 			static char timeleft[64];
 			int secondsLeft = gViewPort->m_timeLeft;
 			int minutesLeft = secondsLeft / 60;
-			safe_sprintf(timeleft, 64, "Time left: %d:%02d", minutesLeft, secondsLeft % 60);
+			sprintf_safe(timeleft, 64, "Time left: %d:%02d", minutesLeft, secondsLeft % 60);
 
 			m_TimeleftLabel.setText(timeleft);
 		}

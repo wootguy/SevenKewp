@@ -111,3 +111,54 @@ ModPlayerState& GetLocalPlayerState() {
 	int idx = GetLocalPlayer()->index;
 	return g_modPlayerStates[idx];
 }
+
+void COM_FileBase(const char* in, char* out)
+{
+	int len, start, end;
+
+	len = strlen(in);
+
+	// scan backward for '.'
+	end = len - 1;
+	while (end && in[end] != '.' && in[end] != '/' && in[end] != '\\')
+		end--;
+
+	if (in[end] != '.')		// no '.', copy to end
+		end = len - 1;
+	else
+		end--;					// Found ',', copy to left of '.'
+
+
+	// Scan backward for '/'
+	start = len - 1;
+	while (start >= 0 && in[start] != '/' && in[start] != '\\')
+		start--;
+
+	if (in[start] != '/' && in[start] != '\\')
+		start = 0;
+	else
+		start++;
+
+	// Length of new sting
+	len = end - start + 1;
+
+	// Copy partial string
+	strncpy(out, &in[start], len);
+	// Terminate it
+	out[len] = 0;
+}
+
+int IsGame(const char* game)
+{
+	const char* gamedir;
+	char gd[1024];
+
+	gamedir = gEngfuncs.pfnGetGameDirectory();
+	if (gamedir && gamedir[0])
+	{
+		COM_FileBase(gamedir, gd);
+		if (!stricmp(gd, game))
+			return 1;
+	}
+	return 0;
+}

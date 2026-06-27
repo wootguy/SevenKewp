@@ -35,8 +35,6 @@ int grgLogoFrame[MAX_LOGO_FRAMES] =
 
 extern int g_iVisibleMouse;
 
-float HUD_GetFOV( void );
-
 extern float IN_GetMouseSensitivity();
 
 // Think
@@ -59,7 +57,7 @@ void CHud::Think(void)
 		pList = pList->pNext;
 	}
 
-	newfov = HUD_GetFOV();
+	newfov = GetFOV();
 	if ( newfov == 0 )
 	{
 		m_iFOV = default_fov->value;

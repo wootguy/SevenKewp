@@ -715,22 +715,6 @@ private:
 	int 	m_nCompositeScore;
 };
 
-class CFog : public CHudBase
-{
-public:
-	int Init(void);
-	int VidInit(void);
-	int MsgFunc_Fog(const char* pszName, int iSize, void* pbuf);
-	void SetupFog();
-	virtual const char* HudName() { return "CFog"; }
-
-private:
-	bool enabled;
-	Vector color;
-	float startDist;
-	float endDist;
-};
-
 //
 //-----------------------------------------------------
 //
@@ -842,7 +826,6 @@ public:
 	CHudStatusIcons m_StatusIcons;
 	CHudBenchmark	m_Benchmark;
 	CHudClientStats	m_ClientStats;
-	CFog			m_Fog;
 	CHudClientUpdater	m_ClientUpdater;
 	CHudNametags	m_Nametags;
 	CHudDebug		m_Debug;
@@ -859,22 +842,25 @@ public:
 	void Think(void);
 	int Redraw( float flTime, int intermission );
 	int UpdateClientData( client_data_t *cdata, float time );
+	float GetFOV(); // Returns last FOV
 
 	CHud() : m_iSpriteCount(0), m_pHudList(NULL) {}  
 	~CHud();			// destructor, frees allocated memory
 
 	// user messages
-	int _cdecl MsgFunc_Damage(const char *pszName, int iSize, void *pbuf );
-	int _cdecl MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf );
-	int _cdecl MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf);
-	int _cdecl MsgFunc_ResetHUD(const char *pszName,  int iSize, void *pbuf);
-	void _cdecl MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf );
-	void _cdecl MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
-	int _cdecl MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf);
-	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_Damage(const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_GameMode(const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf);
+	int MsgFunc_ResetHUD(const char *pszName,  int iSize, void *pbuf);
+	int MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf);
+	int MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_TagInfo( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_PlayerPos( const char *pszName, int iSize, void *pbuf );
+	int MsgFunc_HudColor( const char *pszName, int iSize, void *pbuf );
 
-	int  _cdecl MsgFunc_NextMap( const char *pszName, int iSize, void *pbuf );
-	int  _cdecl MsgFunc_TimeLeft( const char *pszName, int iSize, void *pbuf );
+	void HookHudMessages();
 
 	// Screen information
 	SCREENINFO	m_scrinfo;

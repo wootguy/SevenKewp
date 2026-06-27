@@ -16,10 +16,10 @@ uintptr_t GetModuleBase(const char* moduleName) {
 	static char fullModuleName[MAX_PATH];
 
 #ifdef WIN32
-	safe_sprintf(fullModuleName, MAX_PATH, "%s.dll", moduleName);
+	sprintf_safe(fullModuleName, MAX_PATH, "%s.dll", moduleName);
 	return (uintptr_t)GetModuleHandleA(fullModuleName);
 #else
-	safe_sprintf(fullModuleName, MAX_PATH, "%s.so", moduleName);
+	sprintf_safe(fullModuleName, MAX_PATH, "%s.so", moduleName);
 	FILE* fp = fopen("/proc/self/maps", "r");
 	if (!fp) return 0;
 

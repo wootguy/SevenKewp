@@ -81,6 +81,7 @@ float g_flApplyVel = 0.0;
 Vector g_vApplyVel;
 int   g_irunninggausspred = 0;
 int   g_runningKickbackPred = 0;
+float g_lastFOV = 0.0;
 
 vec3_t previousorigin;
 

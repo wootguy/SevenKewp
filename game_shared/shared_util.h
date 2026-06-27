@@ -66,6 +66,9 @@ EXPORT char* strcpy_safe(char* dest, const char* src, size_t size);
 // same as strncat except it ensures the destination is null terminated, even if the buffer is too small
 EXPORT char* strcat_safe(char* dest, const char* src, size_t size);
 
+// same as sprintf except it ensures the destination is null terminated, even if the buffer is too small
+EXPORT int sprintf_safe(char* dst, int len_dst, const char* format, ...);
+
 // hash client data files for auto-updates in bulk
 const char* UTIL_HashClientDataFiles(bool& overrideDetected);
 
@@ -203,3 +206,40 @@ EXPORT bool UTIL_ModelIsSprite(int modelidx);
 EXPORT int UTIL_GetRenderFxOpacity(int renderfx, int renderamt, float t);
 
 EXPORT float UTIL_WeaponTimeBase(void);
+
+// Convert floats to/from signed fixed-point integers.
+// Use this when the number of bits needed in the fixed-point representation is less than a standard type.
+// For example, if you want 24 bits instead of 32 (part of int32), or 12 instead of 16 (part of int16).
+// Simpler conversion logic can be used otherwise.
+// result will be sign-extended to fit an int32_t.
+// values that don't fit in the specified number of bits will be clamped.
+inline int32_t FLOAT_TO_FIXED(float x, int whole_bits, int frac_bits) {
+	int32_t maxVal = ((1 << (whole_bits + frac_bits - 1)) - 1);
+	int32_t minVal = -(maxVal + 1);
+	int32_t r = clampf(x, minVal, maxVal) * (1 << frac_bits);
+	return r;
+}
+// sign extend a fixed point value that was stored in an unsigned integer, which may have 0 in its higher bits
+inline int32_t SIGN_EXTEND_FIXED(uint32_t x, int total_bits) {
+	uint32_t b = total_bits;
+	int m = 1U << (b - 1); // sign bit mask
+	x = x & ((1U << b) - 1); // remove sign bit
+	return (x ^ m) - m; // sign extended version of x
+}
+// x should not be sign extended to fit the int32_t it was stored in. That will be done in this function
+inline float FIXED_TO_FLOAT(int x, int whole_bits, int frac_bits) {
+	// https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
+	uint32_t b = whole_bits + frac_bits;
+	int m = 1U << (b - 1); // sign bit mask
+
+	x = x & ((1U << b) - 1); // remove sign bit
+	int r = (x ^ m) - m; // sign extended version of x
+
+	return r / (float)(1 << frac_bits);
+}
+
+// compares two fixed point integers for equality, where each may or may not be sign extended
+inline bool FIXED_EQUALS(int x, int y, int totalBits) {
+	int m = (1 << totalBits) - 1; // mask of value without extended sign
+	return (x & m) == (y & m);
+}

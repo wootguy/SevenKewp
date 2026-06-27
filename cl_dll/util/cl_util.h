@@ -16,6 +16,7 @@
 // cl_util.h
 //
 
+#pragma once
 #include "cvardef.h"
 
 #ifndef TRUE
@@ -23,9 +24,6 @@
 #define FALSE 0
 #endif
 
-#include <stdio.h> // for safe_sprintf()
-#include <stdarg.h>  // "
-#include <string.h> // for strncpy()
 #include "rgb.h"
 #include "shared_util.h"
 #include "version.h"
@@ -177,40 +175,6 @@ inline void CenterPrint( const char *string )
 	gEngfuncs.pfnCenterPrint( string );
 }
 
-
-inline char *safe_strcpy( char *dst, const char *src, int len_dst)
-{
-	if( len_dst <= 0 )
-	{
-		return NULL; // this is bad
-	}
-
-	strncpy(dst,src,len_dst);
-	dst[ len_dst - 1 ] = '\0';
-
-	return dst;
-}
-
-inline int safe_sprintf( char *dst, int len_dst, const char *format, ...)
-{
-	if( len_dst <= 0 )
-	{
-		return -1; // this is bad
-	}
-
-	va_list v;
-
-    va_start(v, format);
-
-	_vsnprintf(dst,len_dst,format,v);
-
-	va_end(v);
-
-	dst[ len_dst - 1 ] = '\0';
-
-	return 0;
-}
-
 // sound functions
 inline void PlaySound( const char *szSound, float vol ) { gEngfuncs.pfnPlaySoundByName( szSound, vol ); }
 inline void PlaySound( int iSound, float vol ) { gEngfuncs.pfnPlaySoundByIndex( iSound, vol ); }
@@ -252,3 +216,9 @@ bool fileExists(const char* path);
 // searches game directories in priority order
 // returns NULL if file is not found
 const char* FindGameFile(const char* path);
+
+// Extracts the base name of a file (no path, no extension, assumes '/' as path separator)
+void COM_FileBase(const char* in, char* out);
+
+// true if the given gamedir is active
+int IsGame(const char* game);

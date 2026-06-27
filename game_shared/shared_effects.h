@@ -1,4 +1,5 @@
 #pragma once
+#include "rgb.h"
 
 struct custom_muzzle_flash_t {
 	char sprite[64];

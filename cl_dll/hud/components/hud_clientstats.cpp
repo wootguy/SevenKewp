@@ -56,10 +56,10 @@ int CHudClientStats::Draw(float flTime)
 	static char szMs[32]; int msLen;
 	static char szWpoly[32]; int wpolyLen;
 	static char szEpoly[32]; int epolyLen;
-	safe_sprintf(szFps, 32, "%4d fps", fps);
-	safe_sprintf(szMs, 32, "%2.1f ms", ms);
-	safe_sprintf(szWpoly, 32, "%d wpoly", *g_enginepv.r_wpoly);
-	safe_sprintf(szEpoly, 32, "%d epoly", *g_enginepv.r_epoly);
+	sprintf_safe(szFps, 32, "%4d fps", fps);
+	sprintf_safe(szMs, 32, "%2.1f ms", ms);
+	sprintf_safe(szWpoly, 32, "%d wpoly", *g_enginepv.r_wpoly);
+	sprintf_safe(szEpoly, 32, "%d epoly", *g_enginepv.r_epoly);
 	
 	gEngfuncs.pfnDrawConsoleStringLen(szMs, &msLen, &height);
 	gEngfuncs.pfnDrawConsoleStringLen(szWpoly, &wpolyLen, &height);

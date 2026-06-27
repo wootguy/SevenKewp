@@ -72,12 +72,12 @@ ViewModelSprite* GetSpriteWeaponState(); // return NULL if not a sprite or not l
 extern cvar_t *cl_lw;
 
 extern int g_runfuncs;
-extern float g_lastFOV;
 extern struct local_state_s *g_finalstate;
 extern int g_runningKickbackPred;
 extern int g_last_attack_mode;
 extern int g_irunninggausspred;
 extern float g_last_attack_time;
+extern float g_lastFOV;
 extern int g_last_attack_mode;
 extern Vector g_vApplyVel;
 

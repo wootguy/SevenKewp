@@ -18,6 +18,7 @@
 #include "triangleapi.h"
 #include "Exports.h"
 #include "gfx_util.h"
+#include "effects.h"
 
 #include "particleman.h"
 #include "tri.h"
@@ -36,7 +37,7 @@ void CL_DLLEXPORT HUD_DrawNormalTriangles( void )
 
 	gHUD.m_Spectator.DrawOverview();
 
-	gHUD.m_Fog.SetupFog();
+	SetupFog();
 }
 
 /*

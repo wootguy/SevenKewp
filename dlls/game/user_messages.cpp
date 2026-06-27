@@ -133,7 +133,7 @@ void LinkUserMessages(void)
 		return;
 	}
 
-	gmsgSelAmmo = REG_USER_MSG("SelAmmo", sizeof(SelAmmo));
+	gmsgSelAmmo = REG_USER_MSG("SelAmmo", sizeof(SelAmmo)); // unused
 	gmsgCurWeapon = REG_USER_MSG("CurWeapon", 3);
 	gmsgCurWeaponX = REG_USER_MSG("CurWeaponX", 4);
 	gmsgGeigerRange = REG_USER_MSG("Geiger", 1);

@@ -114,6 +114,26 @@ char* strcat_safe(char* dest, const char* src, size_t size) {
 	return dest;
 }
 
+int sprintf_safe(char* dst, int len_dst, const char* format, ...)
+{
+	if (len_dst <= 0)
+	{
+		return -1; // this is bad
+	}
+
+	va_list v;
+
+	va_start(v, format);
+
+	_vsnprintf(dst, len_dst, format, v);
+
+	va_end(v);
+
+	dst[len_dst - 1] = '\0';
+
+	return 0;
+}
+
 uint8_t* UTIL_AppendFileData(const char* fpath, uint8_t* existingData, int& len, bool& overrideDetected) {
 	int appendLen;
 

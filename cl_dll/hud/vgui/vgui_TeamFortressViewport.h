@@ -24,6 +24,7 @@
 
 // custom scheme handling
 #include "vgui_SchemeManager.h"
+#include "cl_util.h"
 
 #define TF_DEFS_ONLY
 #ifdef _TFC
@@ -63,6 +64,7 @@ class TeamFortressViewport;
 char* GetVGUITGAName(const char *pszName);
 BitmapTGA *LoadTGAForRes(const char* pImageName);
 void ScaleColors( int &r, int &g, int &b, int a );
+void HookTfcViewportMessages();
 extern int iTeamColors[5][3];
 extern int iNumberOfTeamColors;
 extern TeamFortressViewport *gViewPort;
@@ -631,8 +633,6 @@ public:
 	int MsgFunc_NextMap( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TimeLeft( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_ScoreInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_TagInfo( const char *pszName, int iSize, void *pbuf );
-	int MsgFunc_PlayerPos( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamScore( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_TeamInfo( const char *pszName, int iSize, void *pbuf );
 	int MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf );

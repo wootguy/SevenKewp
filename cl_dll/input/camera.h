@@ -17,5 +17,6 @@ extern int iMouseInUse;
 
 void CAM_Init( void );
 void CAM_MouseWheeled(bool mouseWheelUpNotDown);
+void CAM_ToFirstPerson(void);
 
 #endif		// _CAMERA_H_
