@@ -45,14 +45,14 @@
 #include "weapon/CSqueak.h"
 #include "weapon/custom/CWeaponCustom.h"
 #include "prediction_files.h"
-#include "../cl_dll/ammo.h"
+#include "ammo.h"
 
 #include "studio.h"
 
 #include "../ModPlayerState.h"
 
-#include "../cl_dll/hud_iface.h"
-#include "../cl_dll/cl_dll.h"
+#include "hud_iface.h"
+#include "cl_dll.h"
 #include "eng_wrappers.h"
 #define PRINTF(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
 
