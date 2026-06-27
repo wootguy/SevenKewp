@@ -2058,9 +2058,9 @@ void UTIL_SpriteAdv(Vector pos, const SpriteAdvArgs& args, int msgMode, const fl
 			float rx = args.rx < 0 ? args.rx + 180 : args.rx;
 			float ry = args.ry < 0 ? args.ry + 180 : args.rx;
 			float rz = args.rz < 0 ? args.rz + 180 : args.rz;
-			writer.writeBits(args.rx * 10, 12);
-			writer.writeBits(args.ry * 10, 12);
-			writer.writeBits(args.rz * 10, 12);
+			writer.writeBits(rx * 10, 12);
+			writer.writeBits(ry * 10, 12);
+			writer.writeBits(rz * 10, 12);
 		}
 	}
 

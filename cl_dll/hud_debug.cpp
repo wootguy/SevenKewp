@@ -239,7 +239,8 @@ int CHudDebug::Draw(float flTime)
 	int numPhysEnts = 0;
 	int numVisEnts = 0;
 	for (int i = 1; i < MAX_PHYSENTS; i++) {
-		if (gEngfuncs.pEventAPI->EV_GetPhysent(i))
+		physent_t* pe = gEngfuncs.pEventAPI->EV_GetPhysent(i);
+		if (pe)
 			numPhysEnts++;
 	}
 	for (int i = 1; i < 2048; i++) {

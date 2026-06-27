@@ -22,6 +22,7 @@ StringSet g_precachedMdl;
 
 string_t g_indexModels[MAX_MODELS_REHLDS]; // maps an index to a model name
 string_t g_indexSounds[MAX_PRECACHE]; // maps an index to a model name
+string_t g_spriteIndexes[MAX_PRECACHE];
 string_t g_lightStyles[MAX_LIGHTSTYLE_PATTERNS];
 
 HashMap<string_t> g_allocedStrings;
@@ -504,6 +505,7 @@ int PRECACHE_MODEL_ENT(CBaseEntity* ent, const char* path) {
 		}
 		if (pathstr.size() && pathstr.find(".spr") == pathstr.size() - 4) {
 			g_precachedSpr.put(path);
+			g_spriteIndexes[modelIdx] = spath;
 		}
 
 		CALL_HOOKS(int, pfnPrecacheModelPost, path);
@@ -731,7 +733,7 @@ void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed
 	CALL_HOOKS_VOID(pfnMessageBegin, msg_dest, msg_type, pOrigin, ed);
 
 	if (msg_type == 0) {
-		ALERT(at_error, "Tried to send unregistered user message\m");
+		ALERT(at_error, "Tried to send unregistered user message\n");
 		return;
 	}
 

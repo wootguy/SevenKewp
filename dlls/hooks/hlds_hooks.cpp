@@ -631,6 +631,7 @@ void ServerDeactivate( void )
 	memset(g_wcPredDataSent, 0, sizeof(g_wcPredDataSent));
 	memset(g_activeTempEnts, 0, sizeof(FakeTempEnt)*MAX_FAKE_TE);
 	memset(g_edictVis, 0, sizeof(uint32_t) * gpGlobals->maxEntities);
+	memset(g_spriteIndexes, 0, sizeof(g_spriteIndexes));
 
 	// in case the next map doesn't configure a sky or light_environment
 	CVAR_SET_STRING("sv_skyname", "");
@@ -1694,6 +1695,11 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 
 			g_visibleEntNames[e] = true;
 		}
+	}
+
+	if (state->rendermode == kRenderTransAlpha && g_spriteIndexes[state->modelindex]) {
+		// The "Solid" rendermode breaks the software renderer and looks the same as "Texture" mode.
+		state->rendermode = kRenderTransTexture;
 	}
 
 	/*

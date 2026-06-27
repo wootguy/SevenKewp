@@ -810,8 +810,6 @@ void CWeaponCustom::ItemPostFrame() {
 	if (!m_pPlayer)
 		return;
 
-	CustomWeaponParams& params = GetActiveParams();
-
 	if (m_nextMeleeDecal && m_nextMeleeDecal < gpGlobals->time) {
 		m_nextMeleeDecal = 0;
 		DecalGunshot(&m_meleeDecalPos, BULLET_PLAYER_CROWBAR);
@@ -2334,7 +2332,6 @@ void CWeaponCustom::PlayDelayedStateToggles() {
 	}
 
 	int delay = togglingOn ? toggle.onDelay : toggle.offDelay;
-	uint32_t toggleTime = m_stateChangeCmdTime + delay;
 
 	if (CmdTime() - m_stateChangeCmdTime >= delay) {
 		DoStateToggles(attackIdx);

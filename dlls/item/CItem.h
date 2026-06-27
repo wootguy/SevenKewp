@@ -42,7 +42,7 @@ public:
 	void SetItemModel();
 	virtual int MergedModelBody() { return -1; }
 	virtual int	ObjectCaps(void);
-	void Think();
+	void DefaultThink();
 	virtual void ItemThink() {}
 	void DropThink();
 	void SetupTouchAndUse();

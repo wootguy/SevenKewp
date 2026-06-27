@@ -141,6 +141,7 @@ public:
 	void PlayEvent_PlayerAnim(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_WeaponSpriteAnim(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
+	void PlayEvent_Trigger(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent_BeamCircle(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr);
 	void PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTrace* tr, int forceParams);
 

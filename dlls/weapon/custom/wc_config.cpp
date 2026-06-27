@@ -63,7 +63,7 @@ int wc_parse_dx_int(string str, int decimals) {
 		int iwhole = atoi(whole.c_str());
 		int idecimal = atoi(decimal.c_str());
 
-		if (str.find_first_of("-") != -1) {
+		if (str.find_first_of("-") != string::npos) {
 			return -(-iwhole * decimals + idecimal);
 		}
 		else {
@@ -82,7 +82,7 @@ ivec3 UTIL_ParseVectorD(const char* pString, int decimals)
 
 	vector<string> parts = splitString(pString, " \t");
 
-	for (int i = 0; i < 3 && i < parts.size(); i++) {
+	for (int i = 0; i < 3 && i < (int)parts.size(); i++) {
 		ivec.v[i] = wc_parse_dx_int(parts[i], decimals);
 	}
 
@@ -1680,12 +1680,13 @@ void MigrateWeaponsBegin() {
 
 // make any adjustments to the data before dumping the config
 void MigratePreDump(CustomWeaponParams& params) {
-
+	/*
 	if (false) {
 		for (int i = 0; i < params.numEvents; i++) {
 			WepEvt& evt = params.events[i];
 		}
 	}
+	*/
 }
 
 void MigrateWeaponsEnd() {

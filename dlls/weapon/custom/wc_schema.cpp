@@ -979,6 +979,11 @@ void init_event_fields() {
 		EVT_FIELD("offset_y", "0", wep_sprite_anim.frameOffsetY, 0, WC_PARAM_INT16_ARRAY_32),
 		EVT_FIELD("fps", "100", wep_sprite_anim.fps, 0, WC_PARAM_UINT16_D100, NULL, 0, FL_FIELD_ALWAYS_WRITE_CFG),
 	);
+
+	EVT_DESC(WC_EVT_TRIGGER, "trigger",
+		EVT_FIELD("target", "0", entTrigger.target, 0, WC_PARAM_STRING),
+		EVT_FIELD("callback", "0", entTrigger.callback, 0, WC_PARAM_STRING),
+	);
 }
 
 void init_custom_ammo_fields() {
@@ -1487,6 +1492,7 @@ bool is_server_side_event(int evtId) {
 	case WC_EVT_PROJECTILE:
 	case WC_EVT_RADIUS_DAMAGE:
 	case WC_EVT_SHAKE:
+	case WC_EVT_TRIGGER:
 	case WC_EVT_SERVER:
 		return true;
 	}

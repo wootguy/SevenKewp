@@ -23,6 +23,7 @@ bool VerboseDebugEnabled();
 #define PRINTF(msg, ...) gEngfuncs.Con_Printf(msg, ##__VA_ARGS__)
 #define PRINTD(msg, ...) gEngfuncs.Con_DPrintf(msg, ##__VA_ARGS__)
 #else
+#include "PluginManager.h"
 #define PRINTD(fmt, ...)
 #define PRINTF(fmt, ...)
 #endif
@@ -1081,7 +1082,7 @@ void CWeaponEvents::PlayEvent_RecoilCstrike(WepEvt& evt, CBasePlayer* m_pPlayer)
 	float lateral_modifier = D100_TO_FLOAT(values[3]);
 	float up_max = D100_TO_FLOAT(values[4]);
 	float lateral_max = D100_TO_FLOAT(values[5]);
-	int direction_change = values[6];
+	//int direction_change = values[6]; // used in attack logic instead
 
 	//PRINTF("CCOIL: %.2f %.2f %.2f %.2f %.2f %.2f %d\n",
 	//	up_base, lateral_base, up_modifier, lateral_modifier, up_max, lateral_max, direction_change);
@@ -1620,7 +1621,7 @@ void CWeaponEvents::PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace
 	if (!tr) {
 		if ((m_pPlayer->pev->origin - pos).Length() < evt.shake.radius) {
 			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgShake, NULL, m_pPlayer->edict());
-			WRITE_SHORT(evt.shake.amplitude);	// shake amount
+			WRITE_SHORT(amplitude);	// shake amount
 			WRITE_SHORT(duration);				// shake lasts this long
 			WRITE_SHORT(frequency);	// shake noise frequency
 			MESSAGE_END();
@@ -1634,11 +1635,28 @@ void CWeaponEvents::PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace
 		if (listener) {
 			if (evt.shake.radius == 0 || (listener->pev->origin - pos).Length() < evt.shake.radius) {
 				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgShake, NULL, listener->edict());
-				WRITE_SHORT(evt.shake.amplitude);	// shake amount
+				WRITE_SHORT(amplitude);	// shake amount
 				WRITE_SHORT(duration);				// shake lasts this long
 				WRITE_SHORT(frequency);	// shake noise frequency
 				MESSAGE_END();
 			}
+		}
+	}
+#endif
+}
+
+void CWeaponEvents::PlayEvent_Trigger(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace* tr) {
+#ifndef CLIENT_DLL
+	if (evt.entTrigger.target) {
+		FireTargets(STRING(evt.entTrigger.target), m_pPlayer, m_pPlayer, USE_TOGGLE, 0.0f, 0.0f);
+	}
+
+	if (evt.entTrigger.callback) {
+		if (!evt.cached_callback)
+			evt.cached_callback = (void*)g_pluginManager.GetEntityCallback(STRING(evt.entTrigger.callback));
+
+		if (evt.cached_callback) {
+			((plugin_ent_callback)evt.cached_callback)(m_pPlayer, m_pPlayer, USE_TOGGLE, 0.0f);
 		}
 	}
 #endif
@@ -1820,6 +1838,9 @@ void CWeaponEvents::PlayEvent(int eventIdx, bool leftHand, bool akimboFire, WcTr
 		break;
 	case WC_EVT_SHAKE:
 		PlayEvent_Shake(evt, m_pPlayer, tr);
+		break;
+	case WC_EVT_TRIGGER:
+		PlayEvent_Trigger(evt, m_pPlayer, tr);
 		break;
 	case WC_EVT_SERVER:
 		m_weapon->CustomServerEvent(evt, m_pPlayer);

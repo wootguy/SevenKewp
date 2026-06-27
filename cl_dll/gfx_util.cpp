@@ -237,8 +237,7 @@ Vector ScreenToWorld(const Vector& screen)
 	s.z = screen.z; // depth
 
 	Vector world;
-	//gEngfuncs.pTriAPI->ScreenToWorld((float*)&s[0], world);
-	gEngfuncs.pTriAPI->ScreenToWorld((float*)&screen[0], world);
+	gEngfuncs.pTriAPI->ScreenToWorld((float*)&s[0], world);
 	return world;
 }
 

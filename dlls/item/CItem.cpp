@@ -38,6 +38,9 @@ void CItem::Spawn(void)
 	ResetSequenceInfo();
 
 	AddWaterPhysicsEnt(this, 0.95f, 0);
+
+	m_minHullSize = pev->mins;
+	m_maxHullSize = pev->maxs;
 }
 
 void CItem::SetupTouchAndUse() {
@@ -62,21 +65,33 @@ void CItem::DropThink() {
 
 	if (dropResult == 0)
 	{
-		ALERT(at_warning, "Item %s fell out of level at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
-		UTIL_Remove(this);
-		return;
+		// Too high up. Drop using gravity instead
+		pev->flags &= ~FL_ONGROUND;
+		pev->velocity.z = -FLT_MIN;
 	}
 	else if (dropResult == -1) {
 		ALERT(at_warning, "Item %s spawned inside solid at %f,%f,%f\n", STRING(pev->classname), pev->origin.x, pev->origin.y, pev->origin.z);
 	}
 
-	SetThink(&CItem::Think);
+	SetThink(&CItem::DefaultThink);
+	pev->nextthink = gpGlobals->time;
 }
 
-void CItem::Think() {
+void CItem::DefaultThink() {
 	if (m_materializeTime > 0 && m_materializeTime <= gpGlobals->time) {
 		m_materializeTime = 0;
 		Materialize();
+	}
+
+	if (pev->mins.x == 0 && m_minHullSize.x != 0) {
+		// When blocked on elevators, items are assigned tiny hull sizes by the engine. Undo that.
+		// Otherwise items will sink into the elevator and can't be collectd.
+		SetSize(m_minHullSize, m_maxHullSize);
+	}
+
+	pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.1f, 0.3f);
+	if (m_materializeTime) {
+		pev->nextthink = V_min(m_materializeTime, pev->nextthink);
 	}
 
 	ItemThink();

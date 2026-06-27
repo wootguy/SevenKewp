@@ -229,7 +229,7 @@ bool Bsp::recursiveHullCheck(int hull, int num, float p1f, float p2f, Vector p1,
 		return true;
 	}
 
-	if (hull == 0 && num >= nodeCount || hull != 0 && num >= clipnodeCount) {
+	if ((hull == 0 && num >= nodeCount) || (hull != 0 && num >= clipnodeCount)) {
 		ALERT(at_warning, "%s: bad node number\n", __func__);
 		return false;
 	}

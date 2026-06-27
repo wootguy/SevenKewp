@@ -190,6 +190,7 @@ enum WeaponCustomEventType {
 	WC_EVT_SET_GRAVITY,		// change player gravity
 	WC_EVT_DLIGHT,			// dynamic light
 	WC_EVT_SERVER,			// custom server-side logic.
+	WC_EVT_TRIGGER,			// trigger an entity callback function in a plugin
 	WC_EVT_MUZZLEFLASH,
 	WC_EVT_FADE,			// screen fade
 
@@ -359,6 +360,7 @@ struct WepEvt {
 	int16_t offset;				// offset from impact position
 
 	int attackIdx; // attack index which triggered this event (not transferred to clients) (TODO: move to runtime class data)
+	void* cached_callback; // for calling plugin functions
 
 	// event arguments selected by evtType
 	union {
@@ -631,6 +633,11 @@ struct WepEvt {
 		//
 		// Server-side events
 		//
+
+		struct {
+			string_t callback;	// entity callback to run
+			string_t target;	// targetnames to trigger
+		} entTrigger;
 
 		struct {
 			uint8_t action;

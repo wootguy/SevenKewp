@@ -1065,15 +1065,13 @@ bool UTIL_ModelIsSprite(int modelidx) {
 	model_s* mdl = gEngfuncs.hudGetModelByIndex(modelidx);
 	return mdl && mdl->type == mod_sprite;
 #else
-	const char* mdlName = INDEX_MODEL(modelidx);
-	return mdlName && strstr(mdlName, ".spr");
+	return g_spriteIndexes[modelidx] != 0;
 #endif
 }
 
 int UTIL_GetRenderFxOpacity(int renderfx, int renderamt, float t) {
 	// RE from CL_FxBlend
 	int blend = renderamt;
-	int offset = 0;
 
 	switch (renderfx) {
 	case kRenderFxPulseSlow:

@@ -312,6 +312,7 @@ void CWorld::Precache(void)
 	PRECACHE_GENERIC("sprites/" MOD_SPRITE_FOLDER "hud.txt");
 	PRECACHE_GENERIC("sprites/" MOD_SPRITE_FOLDER "weapon_buckets.spr");
 	PRECACHE_GENERIC("commandmenu_sk.txt");
+	PRECACHE_GENERIC("sprites/" MOD_SPRITE_FOLDER "white.spr"); // for solid color TriAPI rendering
 
 	if (mp_bigmap.value)
 		UTIL_PrecacheLargeWorldEffects();
