@@ -742,7 +742,7 @@ void CItemInventory::Attach(CBaseMonster* mon) {
 		}
 		else {
 			// always play pickup effect so player knows they got something
-			MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
+			MESSAGE_BEGIN(MSG_ONE, g_umsg.WeapPickup, NULL, pPlayer->pev);
 			WRITE_BYTE(WEAPON_INVENTORY);
 			MESSAGE_END();
 

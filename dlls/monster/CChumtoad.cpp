@@ -149,7 +149,7 @@ void CChumtoad::PrescheduleThink() {
 			// when monster is on the border of the PVS. Maybe sven sends these messages globally to prevent
 			// glitches.
 			/*
-			MESSAGE_BEGIN(MSG_PVS, gmsgToxicCloud, pev->origin);
+			MESSAGE_BEGIN(MSG_PVS, g_umsg.ToxicCloud, pev->origin);
 				WRITE_SHORT(entindex()); // entity to spawn the effect from
 				WRITE_BYTE(RANDOM_LONG(0, 255)); // seed for random velocity calculated on the client
 				WRITE_BYTE(smokeColor); // color brightness

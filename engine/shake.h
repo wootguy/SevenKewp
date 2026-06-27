@@ -18,9 +18,6 @@
 
 // Screen / View effects
 
-// screen shake
-EXPORT extern int gmsgShake;
-
 // This structure is sent over the net to describe a screen shake event
 typedef struct
 {
@@ -33,9 +30,6 @@ extern void V_ApplyShake( float *origin, float *angles, float factor );
 extern void V_CalcShake( void );
 extern int V_ScreenShake( const char *pszName, int iSize, void *pbuf );
 extern int V_ScreenFade( const char *pszName, int iSize, void *pbuf );
-
-// Fade in/out
-EXPORT extern int gmsgFade;
 
 #define FFADE_IN			0x0000		// Just here so we don't pass 0 into the function
 #define FFADE_OUT			0x0001		// Fade out (not in)

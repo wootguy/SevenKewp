@@ -156,3 +156,10 @@ enum PLAYER_MODEL_ANIM_SET {
 	PMODEL_ANIMS_HALF_LIFE_COOP,	// sven co-op 5.x model ported to this mod (preserves HL anim order)
 	PMODEL_ANIMS_SVEN_COOP_5,		// standard sven co-op 5.x player model animations
 };
+
+#define AUTOAIM_2DEGREES  0.0348994967025
+#define AUTOAIM_5DEGREES  0.08715574274766
+#define AUTOAIM_8DEGREES  0.1391731009601
+#define AUTOAIM_10DEGREES 0.1736481776669
+
+EXPORT extern BOOL gInitHUD; // TODO: Why is this global used for every player. Won't they miss hud updates?

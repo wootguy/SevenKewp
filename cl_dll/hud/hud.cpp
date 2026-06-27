@@ -163,9 +163,9 @@ void CHud :: Init( void )
 	m_HudConPrint.Init();
 	m_HudEntStatus.Init();
 	m_HudSprites.Init();
-	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
-
 	m_Menu.Init();
+
+	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
 	
 	ServersInit();
 

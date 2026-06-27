@@ -2187,7 +2187,7 @@ int CWeaponCustom::AddDuplicate(CBasePlayerItem* pOriginal) {
 #ifndef CLIENT_DLL
 		EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
+		MESSAGE_BEGIN(MSG_ONE, g_umsg.WeapPickup, NULL, pPlayer->pev);
 		WRITE_BYTE(m_iId);
 		MESSAGE_END();
 #endif

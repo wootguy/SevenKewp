@@ -13,7 +13,7 @@ int g_exitOptionNum = 5;
 
 // listen for any other functions/plugins opening menus, so that TextMenu knows if it's the active menu
 void TextMenuMessageBeginHook(int msg_dest, int msg_type, const float* pOrigin, edict_t* ed) {
-	if (msg_type != gmsgShowMenu) {
+	if (msg_type != g_umsg.ShowMenu) {
 		return;
 	}
 
@@ -275,7 +275,7 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 		menuText = menuText.substr(0, 187);
 
 	if (player) {
-		MESSAGE_BEGIN(MSG_ONE, gmsgShowMenu, NULL, player->edict());
+		MESSAGE_BEGIN(MSG_ONE, g_umsg.ShowMenu, NULL, player->edict());
 		WRITE_SHORT(validSlots);
 		WRITE_CHAR(duration);
 		WRITE_BYTE(FALSE); // "need more" (?)
@@ -286,7 +286,7 @@ void TextMenu::Open(uint8_t duration, uint8_t page, CBasePlayer* player) {
 	}
 	else {
 		ALERT(at_console, "WARNING: pagination is broken for menus that don't have a destination player\n");
-		MESSAGE_BEGIN(MSG_ALL, gmsgShowMenu);
+		MESSAGE_BEGIN(MSG_ALL, g_umsg.ShowMenu);
 		WRITE_SHORT(validSlots);
 		WRITE_CHAR(duration);
 		WRITE_BYTE(FALSE); // "need more" (?)

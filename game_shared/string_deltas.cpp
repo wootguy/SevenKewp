@@ -137,7 +137,7 @@ void BroadcastEntNames() {
 			static char buffer[max_name_len];
 			strcpy_safe(buffer, STRING(namet), max_name_len);
 
-			MESSAGE_BEGIN(MSG_ONE, gmsgStringIdx, NULL, plr->pev);
+			MESSAGE_BEGIN(MSG_ONE, g_umsg.StringIdx, NULL, plr->pev);
 			WRITE_SHORT(dstr);
 			WRITE_STRING(buffer);
 			MESSAGE_END();

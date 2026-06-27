@@ -52,7 +52,6 @@ void UTIL_TraceLine(const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTER
 
 class CBaseEntity;
 class CBasePlayer;
-EXPORT extern int gmsgWeapPickup;
 
 typedef struct
 {

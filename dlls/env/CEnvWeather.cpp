@@ -783,7 +783,7 @@ void CEnvWeather::SetFogColor(RGB color) {
 }
 
 void CEnvWeather::SendFogMessage(CBasePlayer* plr) {
-	MESSAGE_BEGIN(MSG_ONE, gmsgFog, 0, plr->edict());
+	MESSAGE_BEGIN(MSG_ONE, g_umsg.Fog, 0, plr->edict());
 	WRITE_BYTE(m_isActive);
 	WRITE_BYTE(m_fogColor.x);
 	WRITE_BYTE(m_fogColor.y);

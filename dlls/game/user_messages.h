@@ -1,76 +1,86 @@
 #pragma once
 #include <stdint.h>
 
-EXPORT extern int giPrecacheGrunt;
-EXPORT extern int gmsgShake;
-EXPORT extern int gmsgFade;
-EXPORT extern int gmsgSelAmmo;
-EXPORT extern int gmsgFlashlight;
-EXPORT extern int gmsgFlashBattery;
-EXPORT extern int gmsgResetHUD;
-EXPORT extern int gmsgInitHUD;
-EXPORT extern int gmsgShowGameTitle;
-EXPORT extern int gmsgCurWeapon;
-EXPORT extern int gmsgCurWeaponX; // Larger clip size
-EXPORT extern int gmsgHealth;
-EXPORT extern int gmsgDamage;
-EXPORT extern int gmsgBattery;
-EXPORT extern int gmsgTrain;
-EXPORT extern int gmsgLogo;
-EXPORT extern int gmsgWeaponList;
-EXPORT extern int gmsgWeaponListX; // more parameters
-EXPORT extern int gmsgAmmoX;
-EXPORT extern int gmsgAmmoXX; // Extra-Extra-Large ammo count <:)
-EXPORT extern int gmsgHudText;
-EXPORT extern int gmsgDeathMsg;
-EXPORT extern int gmsgScoreInfo;
-EXPORT extern int gmsgTeamInfo;
-EXPORT extern int gmsgTeamScore;
-EXPORT extern int gmsgGameMode;
-EXPORT extern int gmsgMOTD;
-EXPORT extern int gmsgServerName;
-EXPORT extern int gmsgAmmoPickup;
-EXPORT extern int gmsgWeapPickup;
-EXPORT extern int gmsgItemPickup;
-EXPORT extern int gmsgHideWeapon;
-EXPORT extern int gmsgSetCurWeap;
-EXPORT extern int gmsgSayText;
-EXPORT extern int gmsgTextMsg;
-EXPORT extern int gmsgSetFOV;
-EXPORT extern int gmsgShowMenu;
-EXPORT extern int gmsgGeigerRange;
-EXPORT extern int gmsgTeamNames;
+#define INIT_USER_MSG(name, size) \
+	g_umsg.name = REG_USER_MSG(#name, size)
 
-EXPORT extern int gmsgStatusText;
-EXPORT extern int gmsgStatusValue;
+// Custom user messages.
+// Field names match the hook functions names in the client code.
+// 11 characters max.
+struct UserMessageIds {
+	// HLDM messages:
+	int ScreenShake;
+	int ScreenFade;
+	int SelAmmo;		// unused
+	int Flashlight;
+	int FlashBat;
+	int ResetHUD;		// called every respawn
+	int InitHUD;		// called every time a new player joins the server
+	int GameTitle;
+	int CurWeapon;
+	int CurWeaponX;		// Larger clip size
+	int Health;
+	int Damage;
+	int Battery;
+	int Train;
+	int WeaponList;
+	int WeaponListX;	// more parameters
+	int AmmoX;
+	int AmmoXX;			// Extra-Extra-Large ammo count <:)
+	int HudText;		// we don't use the message but 3rd party addons may!
+	int DeathMsg;
+	int ScoreInfo;
+	int TeamInfo;		// sets the name of a player's team
+	int TeamScore;		// sets the score of a team on the scoreboard
+	int GameMode;
+	int MOTD;
+	int ServerName;
+	int AmmoPickup;
+	int WeapPickup;
+	int ItemPickup;
+	int HideWeapon;
+	int SetCurWeap;
+	int SayText;
+	int TextMsg;
+	int SetFOV;
+	int ShowMenu;
+	int Geiger;
+	int TeamNames;
+	int Logo;			// initialized later
+	int StatusText;
+	int StatusValue;
 
-EXPORT extern int gmsgCustomWeapon; // custom weapon prediction parameters
-EXPORT extern int gmsgCustomWeaponAttack; // custom weapon prediction parameters for a single attack
-EXPORT extern int gmsgCustomWeaponEvents; // custom weapon prediction parameters (events)
-EXPORT extern int gmsgNextMap; // next map name
-EXPORT extern int gmsgTimeLeft; // seconds left before map ends (0 = infinite)
-EXPORT extern int gmsgFog; // fog rendering parameters
-EXPORT extern int gmsgPmodelAnim; // third person weapon animation
-EXPORT extern int gmsgWeaponBits; // which weapons does this client have (for weapon IDs >= 32)
-EXPORT extern int gmsgTagInfo; // data for name tags
-EXPORT extern int gmsgPlayerPos; // tag positions for players outside of the PVS
-EXPORT extern int gmsgToxicCloud; // chumtoad attack
-EXPORT extern int gmsgSpriteAdv; // chumtoad attack
-EXPORT extern int gmsgWaterSplash; // chumtoad attack
-EXPORT extern int gmsgPredFiles; // prediction related file indexes
-EXPORT extern int gmsgPredCvars; // prediction related cvar values
-EXPORT extern int gmsgPredMove; // prediction related movement values
-EXPORT extern int gmsgMatsPath; // path to a custom materials file
-EXPORT extern int gmsgCustomHud; // custom hud dir to load for a weapon
-EXPORT extern int gmsgHudColor; // Set default HUD color
-EXPORT extern int gmsgHudConPrint; // Dispaly text using the console/chat font
-EXPORT extern int gmsgStringIdx; // send a string_t to the client so it can look it up by index
-EXPORT extern int gmsgHudSprite; // Display a sprite on the client HUD
-EXPORT extern int gmsgHudSprTogl; // Toggle HUD sprite visibility
-EXPORT extern int gmsgHudUpdNum; // Update HUD numeric display value
-EXPORT extern int gmsgTracer2; // Tracer with increased range (+/-32k) and a customizable color
-EXPORT extern int gmsgBloodSprite2; // Blood sprite effect with increased range (+/-32k)
-EXPORT extern int gmsgTempFx; // Temporary entity effect with increased range (+/-32k)
+	// SevenKewp messages:
+	int CustomWep;		// custom weapon prediction parameters
+	int CustomWepAk;	// custom weapon prediction parameters for a single attack
+	int CustomWepEv;	// custom weapon prediction parameters (events)
+	int NextMap;		// next map name
+	int TimeLeft;		// seconds left before map ends (0 = infinite)
+	int Fog;			// fog rendering parameters
+	int PmodelAnim;		// third person weapon animation
+	int WeaponBits;		// which weapons does this client have (for weapon IDs >= 32)
+	int TagInfo;		// data for name tags
+	int PlayerPos;		// tag positions for players outside of the PVS
+	int ToxicCloud;		// chumtoad attack
+	int SpriteAdv;		// chumtoad attack
+	int WaterSplash;	// chumtoad attack
+	int PredFiles;		// prediction related file indexes
+	int PredCvars;		// prediction related cvar values
+	int PredMove;		// prediction related movement values
+	int MatsPath;		// path to a custom materials file
+	int CustomHud;		// custom hud dir to load for a weapon
+	int HudColor;		// Set default HUD color
+	int HudConPrint;	// Dispaly text using the console/chat font
+	int StringIdx;		// send a string_t to the client so it can look it up by index
+	int HudSprite;		// Display a sprite on the client HUD
+	int HudSprTogl;		// Toggle HUD sprite visibility
+	int HudUpdNum;		// Update HUD numeric display value
+	int Tracer2;		// Tracer with increased range (+/-4k -> +/-32k) and a customizable color
+	int BloodSpr2;		// Blood sprite effect with increased range (+/-4k -> +/-32k)
+	int TempFx;			// SVC_TEMPENTITY effect with increased range (+/-4k -> +/-32k)
+};
+
+EXPORT extern UserMessageIds g_umsg;
 
 // Note: also update msgTypeStr() in util.cpp when adding new messages
 
@@ -100,5 +110,7 @@ EXPORT int REG_USER_MSG(const char* name, int size);
 // msgname, and return remaining info about it (msgid, size). -metamod
 EXPORT int GetUserMsgInfo(const char* msgname, int* size);
 EXPORT int GetUserMsgInfo(int id, int* size);
+
+EXPORT UserMessage* GetUserMsg(int id); // returns NULL if not found
 
 void LinkUserMessages(void);

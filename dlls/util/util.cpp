@@ -1190,7 +1190,7 @@ void UTIL_ScreenShake( const Vector &center, float amplitude, float frequency, f
 		{
 			shake.amplitude = FixedUnsigned16( localAmplitude, 1<<12 );		// 4.12 fixed
 			
-			MESSAGE_BEGIN( MSG_ONE, gmsgShake, NULL, pPlayer->edict() );		// use the magic #1 for "one client"
+			MESSAGE_BEGIN( MSG_ONE, g_umsg.ScreenShake, NULL, pPlayer->edict() );		// use the magic #1 for "one client"
 				
 				WRITE_SHORT( shake.amplitude );				// shake amount
 				WRITE_SHORT( shake.duration );				// shake lasts this long
@@ -1207,7 +1207,7 @@ void UTIL_ScreenShake(CBasePlayer* plr, float amplitude, float frequency, float 
 	shake.duration = FixedUnsigned16(duration, 1 << 12);		// 4.12 fixed
 	shake.frequency = FixedUnsigned16(frequency, 1 << 8);	// 8.8 fixed
 
-	MESSAGE_BEGIN(MSG_ONE, gmsgShake, NULL, plr->edict());
+	MESSAGE_BEGIN(MSG_ONE, g_umsg.ScreenShake, NULL, plr->edict());
 	WRITE_SHORT(shake.amplitude);				// shake amount
 	WRITE_SHORT(shake.duration);				// shake lasts this long
 	WRITE_SHORT(shake.frequency);				// shake noise frequency
@@ -1238,7 +1238,7 @@ void UTIL_ScreenFadeWrite( const ScreenFade &fade, CBaseEntity *pEntity, bool re
 	if ( !pEntity || !pEntity->IsNetClient() )
 		return;
 
-	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgFade, NULL, pEntity->edict() );		// use the magic #1 for "one client"
+	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, g_umsg.ScreenFade, NULL, pEntity->edict() );		// use the magic #1 for "one client"
 		
 		WRITE_SHORT( fade.duration );		// fade lasts this long
 		WRITE_SHORT( fade.holdTime );		// fade lasts this long
@@ -1447,13 +1447,11 @@ void UTIL_HudMessageAll(const hudtextparms_t& textparms, const char* pMessage, i
 {
 	UTIL_HudMessage(NULL, textparms, pMessage, MSG_ALL);
 }
-
 					 
-extern int gmsgTextMsg, gmsgSayText;
 void UTIL_ClientPrintAll(PRINT_TYPE print_type, const char *msg )
 {
 	if (print_type == print_chat) {
-		MESSAGE_BEGIN(MSG_ALL, gmsgSayText, NULL);
+		MESSAGE_BEGIN(MSG_ALL, g_umsg.SayText, NULL);
 		WRITE_BYTE(0);
 		WRITE_STRING(msg);
 		MESSAGE_END();
@@ -1482,7 +1480,7 @@ void UTIL_ClientPrint(CBaseEntity* client, PRINT_TYPE print_type, const char * m
 	}
 
 	if (print_type == print_chat) {
-		MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, client->edict());
+		MESSAGE_BEGIN(MSG_ONE, g_umsg.SayText, NULL, client->edict());
 		WRITE_BYTE(0);
 		WRITE_STRING(msg);
 		MESSAGE_END();
@@ -1528,7 +1526,7 @@ void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix
 
 	if (target) {
 		if (!(mutes & PLRBIT(target))) {
-			MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, target);
+			MESSAGE_BEGIN(MSG_ONE, g_umsg.SayText, NULL, target);
 			WRITE_BYTE(plr->entindex());
 			WRITE_STRING(msg.c_str());
 			MESSAGE_END();
@@ -1540,7 +1538,7 @@ void UTIL_ClientSay(CBasePlayer* plr, const char* text, const char* customPrefix
 			if (!reader || (mutes & PLRBIT(reader->entindex())))
 				continue;
 
-			MESSAGE_BEGIN(MSG_ONE, gmsgSayText, NULL, reader->edict());
+			MESSAGE_BEGIN(MSG_ONE, g_umsg.SayText, NULL, reader->edict());
 			WRITE_BYTE(plr->entindex());
 			WRITE_STRING(msg.c_str());
 			MESSAGE_END();
@@ -1578,7 +1576,7 @@ void UTIL_ClientHudConPrint(CBaseEntity* client, const hudconparms_t& params, co
 	if (params.flags & FL_HUDCON_WORLD)
 		msgfl |= FL_HUDCON_MSG_WORLD;
 
-	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgHudConPrint, NULL, client->pev);
+	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, g_umsg.HudConPrint, NULL, client->pev);
 	
 	WRITE_BYTE(msgfl);
 
@@ -1696,7 +1694,7 @@ void SendHudSpriteMessage(CBasePlayer* client, const HUDSpriteParams& hparams, c
 	if (params.frame || params.framerate || params.numframes)
 		msgfl |= HUD_SPR_MSG_ANIM;
 
-	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgHudSprite, NULL, client->pev);
+	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, g_umsg.HudSprite, NULL, client->pev);
 	WriteHudElementParams(client, hparams.hud, sprite, false);
 
 	WRITE_BYTE(msgfl);
@@ -1734,7 +1732,7 @@ void UTIL_HudCustomSprite(CBasePlayer* client, const HUDSpriteParams& params, co
 }
 
 void SendHudNumericMessage(CBasePlayer* client, const HUDNumDisplayParams& hparams, const char* sprite, bool reliable) {
-	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgHudSprite, NULL, client->pev);
+	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, g_umsg.HudSprite, NULL, client->pev);
 	WriteHudElementParams(client, hparams.hud, sprite, true);
 
 	const hudnumparams_t& params = hparams.num;
@@ -1747,7 +1745,7 @@ void SendHudNumericMessage(CBasePlayer* client, const HUDNumDisplayParams& hpara
 }
 
 void SendUpdateNumMessage(CBasePlayer* client, uint8_t channel, float newVal, bool reliable) {
-	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, gmsgHudUpdNum, NULL, client->pev);
+	MESSAGE_BEGIN(reliable ? MSG_ONE : MSG_ONE_UNRELIABLE, g_umsg.HudUpdNum, NULL, client->pev);
 	WRITE_BYTE(channel);
 	WRITE_LONG(newVal);
 	MESSAGE_END();
@@ -1791,7 +1789,7 @@ void UTIL_HudToggleElement(CBasePlayer* plr, uint8_t channel, bool visible) {
 	if (!plr || !plr->IsSevenKewpClient())
 		return;
 
-	MESSAGE_BEGIN(MSG_ONE, gmsgHudSprTogl, NULL, plr->pev);
+	MESSAGE_BEGIN(MSG_ONE, g_umsg.HudSprTogl, NULL, plr->pev);
 	WRITE_BYTE((channel & 0xf) | (visible << 4));
 	MESSAGE_END();
 }
@@ -1829,7 +1827,7 @@ void UTIL_ShowMessage( const char *pString, CBaseEntity *pEntity )
 	if ( !pEntity || !pEntity->IsNetClient() )
 		return;
 
-	MESSAGE_BEGIN( MSG_ONE, gmsgHudText, NULL, pEntity->edict() );
+	MESSAGE_BEGIN( MSG_ONE, g_umsg.HudText, NULL, pEntity->edict() );
 	WRITE_STRING( BreakupLongLines(pString) );
 	MESSAGE_END();
 }
@@ -3832,7 +3830,7 @@ void UTIL_SendPredictionCvars(CBasePlayer* target) {
 		if (!plr || (target && target != plr) || !plr->IsSevenKewpClient())
 			continue;
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgPredCvars, NULL, plr->pev);
+		MESSAGE_BEGIN(MSG_ONE, g_umsg.PredCvars, NULL, plr->pev);
 		WRITE_BYTE(soundvariety.value);
 		WRITE_BYTE(mp_flashlight_size.value);
 		MESSAGE_END();
@@ -3860,14 +3858,14 @@ void UTIL_UpdateWeaponState(CBasePlayer* plr, int state, int wepId, int clip) {
 			ammoVal = 990 + (clip % 10);
 		}
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgCurWeaponX, NULL, plr->pev);
+		MESSAGE_BEGIN(MSG_ONE, g_umsg.CurWeaponX, NULL, plr->pev);
 		WRITE_BYTE(state);
 		WRITE_BYTE(wepId);
 		WRITE_SHORT(ammoVal);
 		MESSAGE_END();
 	}
 	else {
-		MESSAGE_BEGIN(MSG_ONE, gmsgCurWeapon, NULL, plr->pev);
+		MESSAGE_BEGIN(MSG_ONE, g_umsg.CurWeapon, NULL, plr->pev);
 		WRITE_BYTE(state);
 		WRITE_BYTE(wepId);
 		WRITE_BYTE(clip);

@@ -22,7 +22,6 @@
 #include "CBaseEntity.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
-extern int gmsgSayText;
 extern cvar_t allow_spectators;
 extern int g_teamplay;
 extern float g_flWeaponCheat;

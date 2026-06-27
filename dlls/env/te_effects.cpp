@@ -449,7 +449,7 @@ void UTIL_Tracer(Vector start, Vector end, int color, int msgMode, edict_t* targ
 	CBaseEntity* pent = CBaseEntity::Instance(targetEnt);
 	CBasePlayer* targPlr = pent ? pent->MyPlayerPointer() : NULL;
 	if (targPlr && targPlr->IsSevenKewpClient()) {
-		MESSAGE_BEGIN(msgMode, gmsgTracer2, start, targetEnt);
+		MESSAGE_BEGIN(msgMode, g_umsg.Tracer2, start, targetEnt);
 		WRITE_FAR_VECTOR(start);
 		WRITE_FAR_VECTOR(end);
 		WRITE_BYTE(color);
@@ -498,7 +498,7 @@ void UTIL_Tracer(Vector start, Vector end, int color, int msgMode, edict_t* targ
 				hidePlayers |= PLRBIT(plr->edict());
 
 				if (UTIL_TestPVS(start, plr->edict()) || UTIL_TestPVS(end, plr->edict())) {
-					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTracer2, 0, plr->edict());
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.Tracer2, 0, plr->edict());
 					WRITE_FAR_VECTOR(start);
 					WRITE_FAR_VECTOR(end);
 					WRITE_BYTE(color);
@@ -588,7 +588,7 @@ void UTIL_Explosion(Vector origin, int sprIndex, uint8_t scale, uint8_t framerat
 		}
 		else {
 			if (plr->IsSevenKewpClient()) {
-				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, NULL, plr->edict());
+				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.TempFx, NULL, plr->edict());
 				WRITE_BYTE(TE_EXPLOSION);
 				WRITE_FAR_VECTOR(origin);
 				WRITE_SHORT(sprIndex);
@@ -661,7 +661,7 @@ void UTIL_Smoke(Vector origin, int sprIndex, uint8_t scale, uint8_t framerate) {
 				hidePlayers |= PLRBIT(plr->edict());
 
 				if (UTIL_TestPVS(origin, plr->edict())) {
-					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.TempFx, 0, plr->edict());
 					WRITE_BYTE(TE_SMOKE);
 					WRITE_FAR_VECTOR(origin);
 					WRITE_SHORT(sprIndex);
@@ -856,7 +856,7 @@ void UTIL_BloodSprite(const Vector& origin, int spriteIdx1, int spriteIdx2, int 
 				hidePlayers |= PLRBIT(plr->edict());
 
 				if (UTIL_TestPVS(origin, plr->edict())) {
-					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgBloodSprite2, origin, plr->edict());
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.BloodSpr2, origin, plr->edict());
 					WRITE_FAR_VECTOR(origin);
 					WRITE_SHORT(spriteIdx1);
 					WRITE_SHORT(spriteIdx2);
@@ -980,7 +980,7 @@ edict_t* UTIL_DecalTrace(TraceResult* pTrace, int decalNumber, int msgMode, edic
 				hidePlayers |= PLRBIT(plr->edict());
 
 				if (UTIL_isSafeEntIndex(plr->edict(), entityIndex, "gmsgDecal2")) {
-					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.TempFx, 0, plr->edict());
 					WRITE_BYTE(TE_DECAL);
 					WRITE_FAR_VECTOR(pTrace->vecEndPos);
 					WRITE_SHORT(index);
@@ -1073,7 +1073,7 @@ edict_t* UTIL_GunshotDecalTrace(TraceResult* pTrace, int decalNumber, edict_t* e
 				hidePlayers |= PLRBIT(plr->edict());
 
 				if (UTIL_isSafeEntIndex(plr->edict(), entityIndex, "gmsgDecal2") && plr->edict() != emitter) {
-					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.TempFx, 0, plr->edict());
 					WRITE_BYTE(TE_GUNSHOTDECAL);
 					WRITE_FAR_VECTOR(pTrace->vecEndPos);
 					WRITE_SHORT(index);
@@ -1156,7 +1156,7 @@ void UTIL_Sparks(const Vector& position, int msgMode, edict_t* targetEnt)
 				hidePlayers |= PLRBIT(plr->edict());
 
 				if (UTIL_TestPVS(position, plr->edict())) {
-					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.TempFx, 0, plr->edict());
 					WRITE_BYTE(TE_SPARKS);
 					WRITE_FAR_VECTOR(position);
 					MESSAGE_END();
@@ -1288,7 +1288,7 @@ void UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector& veloci
 				hidePlayers |= PLRBIT(plr->edict());
 
 				if (UTIL_TestPVS(pos, plr->edict())) {
-					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.TempFx, 0, plr->edict());
 					WRITE_BYTE(TE_BREAKMODEL);
 					WRITE_FAR_VECTOR(pos);
 					WRITE_COORD_VECTOR(size);
@@ -1619,7 +1619,7 @@ void UTIL_DLight(Vector pos, uint8_t radius, RGB color, uint8_t time, uint8_t de
 				hidePlayers |= PLRBIT(plr->edict());
 
 				if (UTIL_TestPVS(pos, plr->edict())) {
-					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.TempFx, 0, plr->edict());
 					WRITE_BYTE(TE_DLIGHT);
 					WRITE_FAR_VECTOR(pos);
 					WRITE_BYTE(radius);
@@ -1858,7 +1858,7 @@ void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint
 				hidePlayers |= PLRBIT(plr->edict());
 
 				if (UTIL_TestPVS(pos, plr->edict())) {
-					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgTempFx, 0, plr->edict());
+					MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.TempFx, 0, plr->edict());
 					WRITE_BYTE(TE_STREAK_SPLASH);
 					WRITE_FAR_VECTOR(pos);
 					WRITE_COORD_VECTOR(dir);
@@ -1996,7 +1996,7 @@ void UTIL_SpriteAdv(Vector pos, const SpriteAdvArgs& args, int msgMode, const fl
 	static uint8_t buffer[64];
 	mstream writer((char*)buffer, sizeof(buffer));
 
-	MESSAGE_BEGIN(msgMode, gmsgSpriteAdv, msgOrigin, targetEnt);
+	MESSAGE_BEGIN(msgMode, g_umsg.SpriteAdv, msgOrigin, targetEnt);
 
 	writer.writeBits(pos.x, 16);
 	writer.writeBits(pos.y, 16);
@@ -2139,7 +2139,7 @@ void UTIL_WaterSplashMsg(Vector pos, float scale, int playSound, edict_t* skipEn
 			continue;
 
 		if (plr->GetClientInfo().mod_version == CLIENT_MOD_SEVENKEWP) {
-			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgWaterSplash, NULL, plr->edict());
+			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.WaterSplash, NULL, plr->edict());
 			WRITE_SHORT(pos.x);
 			WRITE_SHORT(pos.y);
 			WRITE_SHORT(pos.z);

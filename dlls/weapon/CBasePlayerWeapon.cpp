@@ -306,13 +306,13 @@ int CBasePlayerWeapon::AddToPlayer(CBasePlayer* pPlayer)
 			STRING(m_customSpriteDir) : g_defaultSpriteDirs.get(lowerCname.c_str());
 
 		if (pPlayer->IsSevenKewpClient()) {
-			MESSAGE_BEGIN(MSG_ONE, gmsgCustomHud, NULL, pPlayer->pev);
+			MESSAGE_BEGIN(MSG_ONE, g_umsg.CustomHud, NULL, pPlayer->pev);
 			WRITE_BYTE(m_iId);
 			WRITE_STRING(customSpriteDir ? customSpriteDir : "");
 			MESSAGE_END();
 		}
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgWeapPickup, NULL, pPlayer->pev);
+		MESSAGE_BEGIN(MSG_ONE, g_umsg.WeapPickup, NULL, pPlayer->pev);
 		WRITE_BYTE(m_iId);
 		MESSAGE_END();
 

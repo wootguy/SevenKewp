@@ -32,6 +32,7 @@
 #include "CSatchel.h"
 #include "monsters.h"
 #include "PluginManager.h"
+#include "user_messages.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -39,14 +40,8 @@
 
 extern DLL_GLOBAL CGameRules	*g_pGameRules;
 extern DLL_GLOBAL BOOL	g_fGameOver;
-extern int gmsgDeathMsg;	// client dll messages
-extern int gmsgScoreInfo;
-extern int gmsgMOTD;
-extern int gmsgServerName;
 
 extern int g_teamplay;
-extern int gmsgTeamNames;
-extern int gmsgTeamInfo;
 
 #define ITEM_RESPAWN_TIME	30
 #define WEAPON_RESPAWN_TIME	20
@@ -384,12 +379,9 @@ BOOL CHalfLifeMultiplay :: ClientConnected( edict_t *pEntity, const char *pszNam
 	return TRUE;
 }
 
-extern int gmsgSayText;
-extern int gmsgGameMode;
-
 void CHalfLifeMultiplay :: UpdateGameMode( CBasePlayer *pPlayer )
 {
-	MESSAGE_BEGIN( MSG_ONE, gmsgGameMode, NULL, pPlayer->edict() );
+	MESSAGE_BEGIN( MSG_ONE, g_umsg.GameMode, NULL, pPlayer->edict() );
 		//WRITE_BYTE( 0 );  // game mode none
 		WRITE_BYTE( 1 );  // team game
 	MESSAGE_END();
@@ -410,7 +402,7 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 	);
 
 	// Send down the team names
-	MESSAGE_BEGIN(MSG_ONE, gmsgTeamNames, NULL, pl->edict());
+	MESSAGE_BEGIN(MSG_ONE, g_umsg.TeamNames, NULL, pl->edict());
 	WRITE_BYTE(4);
 	WRITE_STRING(DEFAULT_TEAM_NAME);
 	WRITE_STRING(ENEMY_TEAM_NAME);
@@ -434,7 +426,7 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 
 		if ( plr && plr != pl )
 		{
-			MESSAGE_BEGIN( MSG_ONE, gmsgScoreInfo, NULL, pl->edict() );
+			MESSAGE_BEGIN( MSG_ONE, g_umsg.ScoreInfo, NULL, pl->edict() );
 				WRITE_BYTE( i );	// client number
 				WRITE_SHORT( plr->pev->frags );
 				WRITE_SHORT( plr->m_iDeaths );
@@ -443,7 +435,7 @@ void CHalfLifeMultiplay :: InitHUD( CBasePlayer *pl )
 				//WRITE_SHORT(DEFAULT_TEAM_COLOR);
 			MESSAGE_END();
 
-			MESSAGE_BEGIN(MSG_ONE, gmsgTeamInfo, NULL, pl->edict());
+			MESSAGE_BEGIN(MSG_ONE, g_umsg.TeamInfo, NULL, pl->edict());
 			WRITE_BYTE(i);
 			WRITE_STRING(plr->IsObserver() ? "" : DEFAULT_TEAM_NAME);
 			//WRITE_STRING(DEFAULT_TEAM_NAME);
@@ -985,7 +977,7 @@ void CHalfLifeMultiplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller,
 	static char shortened_killer_name[30]; // client only has 32 char buffer which prepends "d_"
 	strcpy_safe(shortened_killer_name, killer_weapon_name, 30);
 
-	MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
+	MESSAGE_BEGIN( MSG_ALL, g_umsg.DeathMsg );
 		WRITE_BYTE( killer_index );				// the killer
 		WRITE_BYTE(victim_index);				// the victim
 		WRITE_STRING(shortened_killer_name);	// what they were killed by (should this be a string?)
@@ -1431,7 +1423,7 @@ void CHalfLifeMultiplay :: GoToIntermission(INTERMISSION_REASON reason)
 					seriesCount = map->seriesIdx + 1;
 				}
 
-				MESSAGE_BEGIN(MSG_BROADCAST, gmsgSayText);
+				MESSAGE_BEGIN(MSG_BROADCAST, g_umsg.SayText);
 				WRITE_BYTE(0); // not a player
 				WRITE_STRING(UTIL_VarArgs("Loading map %s (%d of %d)...\n", nextmapname, seriesIdx, seriesCount));
 				MESSAGE_END();
@@ -1938,7 +1930,7 @@ void CHalfLifeMultiplay :: SendMOTDToClient( edict_t *client )
 	char *aFileList = pFileList = (char*)LOAD_FILE_FOR_ME( (char *)CVAR_GET_STRING( "motdfile" ), &length );
 
 	// send the server name
-	MESSAGE_BEGIN( MSG_ONE, gmsgServerName, NULL, client );
+	MESSAGE_BEGIN( MSG_ONE, g_umsg.ServerName, NULL, client );
 		WRITE_STRING( CVAR_GET_STRING("hostname") );
 	MESSAGE_END();
 
@@ -1965,7 +1957,7 @@ void CHalfLifeMultiplay :: SendMOTDToClient( edict_t *client )
 		else
 			*pFileList = 0;
 
-		MESSAGE_BEGIN( MSG_ONE, gmsgMOTD, NULL, client );
+		MESSAGE_BEGIN( MSG_ONE, g_umsg.MOTD, NULL, client );
 			WRITE_BYTE( *pFileList ? FALSE : TRUE );	// FALSE means there is still more message to come
 			WRITE_STRING( chunk );
 		MESSAGE_END();

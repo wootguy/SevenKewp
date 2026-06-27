@@ -1621,7 +1621,7 @@ void CWeaponEvents::PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace
 
 	if (!tr) {
 		if ((m_pPlayer->pev->origin - pos).Length() < evt.shake.radius) {
-			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgShake, NULL, m_pPlayer->edict());
+			MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.ScreenShake, NULL, m_pPlayer->edict());
 			WRITE_SHORT(amplitude);	// shake amount
 			WRITE_SHORT(duration);				// shake lasts this long
 			WRITE_SHORT(frequency);	// shake noise frequency
@@ -1635,7 +1635,7 @@ void CWeaponEvents::PlayEvent_Shake(WepEvt& evt, CBasePlayer* m_pPlayer, WcTrace
 
 		if (listener) {
 			if (evt.shake.radius == 0 || (listener->pev->origin - pos).Length() < evt.shake.radius) {
-				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, gmsgShake, NULL, listener->edict());
+				MESSAGE_BEGIN(MSG_ONE_UNRELIABLE, g_umsg.ScreenShake, NULL, listener->edict());
 				WRITE_SHORT(amplitude);	// shake amount
 				WRITE_SHORT(duration);				// shake lasts this long
 				WRITE_SHORT(frequency);	// shake noise frequency

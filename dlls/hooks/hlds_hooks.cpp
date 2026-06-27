@@ -78,7 +78,6 @@ extern Vector VecBModelOrigin(entvars_t* pevBModel);
 extern void AddMapPluginEquipment();
 extern void SetPluginCvars();
 extern int giPrecacheGrunt;
-extern int gmsgSayText;
 extern int g_teamplay;
 extern bool g_weather_init_done;
 
@@ -93,6 +92,7 @@ extern int g_fog_end_dist;
 void EnvWeatherServerDeactivate();
 
 extern int g_migrate_weapons;
+extern int giPrecacheGrunt;
 
 DLL_FUNCTIONS dllFuncs = {
 	GameDLLInit,				//pfnGameInit
@@ -236,7 +236,7 @@ void ClientDisconnect( edict_t *pEntity )
 	if ( pEntity->v.netname )
 		_snprintf( text, sizeof(text), "- %s has left the game\n", STRING(pEntity->v.netname) );
 	text[ sizeof(text) - 1 ] = 0;
-	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
+	MESSAGE_BEGIN( MSG_ALL, g_umsg.SayText, NULL );
 		WRITE_BYTE( ENTINDEX(pEntity) );
 		WRITE_STRING( text );
 	MESSAGE_END();
@@ -505,7 +505,7 @@ void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
 			char text[256];
 			snprintf( text, 256, "* %s %s to %s\n", STRING(pEntity->v.netname), reason,
 				g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ));
-			MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
+			MESSAGE_BEGIN( MSG_ALL, g_umsg.SayText, NULL );
 				WRITE_BYTE( ENTINDEX(pEntity) );
 				WRITE_STRING( text );
 			MESSAGE_END();

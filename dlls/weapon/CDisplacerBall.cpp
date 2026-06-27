@@ -145,7 +145,7 @@ void CDisplacerBall::BallTouch(CBaseEntity* pOther)
 			{
 				if (pOwner->m_iTeamNum != pPlayer->m_iTeamNum)
 				{
-					MESSAGE_BEGIN(MSG_ALL, gmsgCTFScore);
+					MESSAGE_BEGIN(MSG_ALL, g_umsg.CTFScore);
 					WRITE_BYTE(pPlayer->entindex());
 					WRITE_BYTE(pPlayer->m_iCTFScore);
 					MESSAGE_END();

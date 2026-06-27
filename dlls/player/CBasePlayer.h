@@ -569,13 +569,4 @@ public:
 	//char m_lastMonsterInfoText[128];
 };
 
-#define AUTOAIM_2DEGREES  0.0348994967025
-#define AUTOAIM_5DEGREES  0.08715574274766
-#define AUTOAIM_8DEGREES  0.1391731009601
-#define AUTOAIM_10DEGREES 0.1736481776669
-
-
-EXPORT extern int	gmsgHudText;
-EXPORT extern BOOL gInitHUD;
-
 #endif // PLAYER_H

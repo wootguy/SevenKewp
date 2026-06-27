@@ -280,7 +280,7 @@ int SendWeaponData(edict_t* target, CustomWeaponParams& params, int wepId, bool 
 #ifndef CLIENT_DLL
 	uint8_t* dat = (uint8_t*)&params;
 
-	MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeapon, NULL, target);
+	MESSAGE_BEGIN(MSG_ONE, g_umsg.CustomWep, NULL, target);
 
 	uint8_t altBit = isAltParams ? 1 : 0;
 	WRITE_BYTE((altBit << 7) | wepId);
@@ -342,7 +342,7 @@ int SendAttackData(edict_t* target, CustomWeaponParams& params, int wepId, bool 
 		if (!(params.flags & FL_WC_WEP_HAS_ALT_PRIMARY) && k == 3)
 			continue;
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponAttack, NULL, target);
+		MESSAGE_BEGIN(MSG_ONE, g_umsg.CustomWepAk, NULL, target);
 		WRITE_BYTE((altBit << 7) | wepId);
 		WRITE_BYTE(k);
 		wc_send_netmsg_struct(g_wc_desc_shoot_opts, dat + sizeof(CustomWeaponShootOpts) * k);
@@ -372,7 +372,7 @@ int SendEventData(edict_t* target, CustomWeaponParams& params, int wepId, bool i
 		if (evtOffset >= params.numEvents)
 			break;
 
-		MESSAGE_BEGIN(MSG_ONE, gmsgCustomWeaponEvents, NULL, target);
+		MESSAGE_BEGIN(MSG_ONE, g_umsg.CustomWepEv, NULL, target);
 		WRITE_BYTE((altBit << 7) | wepId);
 
 		int sendEvents = 0; // TODO: skipping events will complicate live updates due to mismatched indexes

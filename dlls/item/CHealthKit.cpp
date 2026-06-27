@@ -19,8 +19,7 @@
 #include "CBasePlayer.h"
 #include "CItem.h"
 #include "gamerules.h"
-
-extern int gmsgItemPickup;
+#include "user_messages.h"
 
 class CHealthKit : public CItem
 {
@@ -94,7 +93,7 @@ BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 
 	if ( pPlayer->TakeHealth(giveHealth, DMG_GENERIC, m_healthcap ) )
 	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+		MESSAGE_BEGIN( MSG_ONE, g_umsg.ItemPickup, NULL, pPlayer->pev );
 			WRITE_STRING( STRING(pev->classname) );
 		MESSAGE_END();
 
