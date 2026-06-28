@@ -95,19 +95,13 @@ int CHudAmmo::Draw(float flTime)
 
 	a = (int)V_max(MIN_ALPHA, m_fFade);
 
-	int iClip = 0;
-	int iClip2 = -1;
-	int primaryAmmo = 0;
-	int secondaryAmmo = 0;
-	int iAkimboClip = 0;
-	int stateIconIdx = GetCustomWeaponStateIconIdx();
-	if (!GetPredictedAmmoCount(pw->iId, iClip, iClip2, primaryAmmo, secondaryAmmo, iAkimboClip)) {
-		iClip = pw->iClip;
-		primaryAmmo = gWR.CountAmmo(pw->iAmmoType);
-		secondaryAmmo = gWR.CountAmmo(pw->iAmmo2Type);
-		iAkimboClip = -1;
-		iClip2 = -1;
-	}
+	bool isCustom = g_prediction.weapon.isCustom;
+	int iClip = isCustom ? g_prediction.weapon.clip1 : pw->iClip;
+	int iClip2 = isCustom ? g_prediction.weapon.clip2 : -1;
+	int primaryAmmo = isCustom ? g_prediction.weapon.ammo1 : gWR.CountAmmo(pw->iAmmoType);
+	int secondaryAmmo = isCustom ? g_prediction.weapon.ammo2 : gWR.CountAmmo(pw->iAmmo2Type);
+	int iAkimboClip = isCustom ? g_prediction.weapon.akimboClip : -1;
+	int stateIconIdx = g_prediction.weapon.stateSpriteIdx;
 
 	// brighten up the hud when ammo info changes
 	static int lastClip, lastClip2, lastPrimaryAmmo, lastSecondaryAmmo, lastAkimboClip, lastStateIcon;

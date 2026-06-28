@@ -46,39 +46,58 @@ struct WEAPON;
 struct ViewModelSprite;
 class CBasePlayerWeapon;
 
-bool IsPredictionWeaponZoomed();
+struct PredictionWeaponState {
+	bool isCustom;
+	bool ironSights;			// true if iron sights are active
+	int body;
+	float accuracyX[2];		// 0 = primary, 1 = secondary
+	float accuracyY[2];		// 0 = primary, 1 = secondary
+	bool dynamicAccuracy;	// true if the current weapon accuracy is dynamic
+
+	bool canAkimbo;			// can this weapon activate akimbo mode?
+	int akimboSeq;
+	float akimboAnimTime;
+	float* akimboLastEventFrame;
+	bool isAkimbo;
+
+	int clip1;					// ammo in primary clip
+	int clip2;					// ammo in secondary clip
+	int akimboClip;				// ammo in left hand clip in akimbo mode
+	int ammo1;					// ammo in primary reserve
+	int ammo2;					// ammo in secondary reserve
+
+	CustomWeaponParams* params;	// current custom weapon params
+	ViewModelSprite* v_sprite;	// non-null if current weapon is using a sprite for the view model, and that sprite is loaded
+	int v_model;				// active view model index
+	int stateSpriteIdx;			// frame of the state sprite to display. -1 = don't display.
+};
+
+struct PredictionState {
+	local_state_t local;			// raw prediction data
+	PredictionWeaponState weapon;	// active weapon
+	float fov;
+	int last_attack_mode;			// was the last attack a primary or secondary fire? (0 = primary, 1 = secondary)
+	float last_attack_time;			// time of the last attack
+
+	inline bool IsZoomed() { return fov != 0 && fov < 90; };
+	const char* GetCustomWeaponStateString();
+	const char* GetCustomWeaponChargeStatesString();
+};
+
+extern PredictionState g_prediction;
+
 CustomWeaponParams* GetCustomWeaponParams(int id, int which); // which: 0 = active, 1 = default, 2 = alternate
-CustomWeaponParams* GetCurrentCustomWeaponParams();
-bool IsCustomWeapon(int id);
-void GetCurrentCustomWeaponAccuracy(int id, float& accuracyX, float& accuracyY,
-	float& accuracyX2, float& accuracyY2, bool& dynamicAccuracy);
-void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, float** m_lastEventFrame);
-bool CanWeaponAkimbo(int id);
-bool GetPredictedAmmoCount(int id, int& clip, int& clip2, int& priamaryAmmo, int& secondaryAmmo, int& akimboClip); // false if weapon isn't predicted
-CBasePlayerWeapon* GetPredictedWeapon(int id);
-bool IsViewModelAkimbo();
-bool IsWeaponIronSightsActive();
-int GetCustomWeaponStateIconIdx(); // -1 for no icon
-const char* GetCustomWeaponStateString();
-const char* GetCustomWeaponChargeStatesString();
-int GetCustomWeaponBody(int id);
-int GetActiveCustomWeaponViewModel(); // -1 if not a custom weapon
 bool IsExclusiveWeapon(int id);
 void InitCustomWeapon(int id);
 void ResetCustomWeaponStates();
 void SetItemInfo(WEAPON* wep);
-ViewModelSprite* GetSpriteWeaponState(); // return NULL if not a sprite or not loaded yet
 
 extern cvar_t *cl_lw;
 
 extern int g_runfuncs;
 extern struct local_state_s *g_finalstate;
 extern int g_runningKickbackPred;
-extern int g_last_attack_mode;
 extern int g_irunninggausspred;
-extern float g_last_attack_time;
-extern float g_lastFOV;
-extern int g_last_attack_mode;
 extern Vector g_vApplyVel;
 
 #endif

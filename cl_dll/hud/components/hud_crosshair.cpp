@@ -36,7 +36,7 @@ void CHudCrosshair::Reset(void)
 }
 
 bool CHudCrosshair::IsWeaponZoomed() {
-	return gHUD.m_iFOV < 90 || (gHUD.m_is_map_loaded && IsPredictionWeaponZoomed());
+	return gHUD.m_iFOV < 90 || (gHUD.m_is_map_loaded && g_prediction.IsZoomed());
 }
 
 void CHudCrosshair::UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget) {
@@ -245,7 +245,7 @@ void CHudCrosshair::DrawDynamicCrosshair() {
 		CustomWeaponParams* wcparams = GetCustomWeaponParams(pw->iId, WC_PARAMS_AUTO);
 		bool shouldDrawZoomCrosshair = pw->hZoomedCrosshair && IsWeaponZoomed() && (pw->iFlagsEx & WEP_FLAG_USE_ZOOM_CROSSHAIR);
 		bool shouldStretchZoom = wcparams && (wcparams->flags & FL_WC_WEP_ZOOM_SPR_STRETCH);
-		bool useIronSights = (gHUD.m_is_map_loaded && IsPredictionWeaponZoomed()) && (pw->iFlagsEx & WEP_FLAG_NO_ZOOM_CROSSHAIR);
+		bool useIronSights = (gHUD.m_is_map_loaded && g_prediction.IsZoomed()) && (pw->iFlagsEx & WEP_FLAG_NO_ZOOM_CROSSHAIR);
 
 		if (useIronSights) {
 			if (g_crosshair_active) {
@@ -321,22 +321,21 @@ void CHudCrosshair::DrawDynamicCrosshair() {
 		SetCrosshair(0, nullrc, 0, 0, 0);
 	}
 
-	float accuracyX = pw->accuracyX;
-	float accuracyY = pw->accuracyY;
-	float accuracyX2 = pw->accuracyX2;
-	float accuracyY2 = pw->accuracyY2;
-	bool dynamicAccuracy = pw->iFlagsEx & WEP_FLAG_DYNAMIC_ACCURACY;
-
-	GetCurrentCustomWeaponAccuracy(pw->iId, accuracyX, accuracyY, accuracyX2, accuracyY2, dynamicAccuracy);
+	bool isCustom = g_prediction.weapon.isCustom;
+	float accuracyX = isCustom ? g_prediction.weapon.accuracyX[0] : pw->accuracyX;
+	float accuracyY = isCustom ? g_prediction.weapon.accuracyY[0] : pw->accuracyY;
+	float accuracyX2 = isCustom ? g_prediction.weapon.accuracyX[1] : pw->accuracyX2;
+	float accuracyY2 = isCustom ? g_prediction.weapon.accuracyY[1] : pw->accuracyY2;
+	bool dynamicAccuracy = isCustom ? g_prediction.weapon.dynamicAccuracy : (pw->iFlagsEx & WEP_FLAG_DYNAMIC_ACCURACY);
 
 	float now = gEngfuncs.GetClientTime();
-	if (g_last_attack_mode == 2 && (now - g_last_attack_time) < 2.0f) {
+	if (g_prediction.last_attack_mode == 2 && (now - g_prediction.last_attack_time) < 2.0f) {
 		accuracyX = accuracyX2;
 		accuracyY = accuracyY2;
 	}
 
-	if (g_last_attack_time > now) {
-		g_last_attack_time = 0; // level changed
+	if (g_prediction.last_attack_time > now) {
+		g_prediction.last_attack_time = 0; // level changed
 	}
 
 	// lerp between accuracy changes

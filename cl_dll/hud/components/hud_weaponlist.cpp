@@ -482,7 +482,7 @@ int CHudWeaponList::DrawWList(float flTime)
 				if (!p || !p->iId)
 					continue;
 
-				bool akimbo = CanWeaponAkimbo(p->iId);
+				bool akimbo = g_prediction.weapon.canAkimbo;
 				HSPRITE activeSpr = akimbo ? p->hAkimboActive : p->hActive;
 				HSPRITE inactiveSpr = akimbo ? p->hAkimboInactive : p->hInactive;
 				wrect_t rcActive = akimbo ? p->rcAkimboActive : p->rcActive;

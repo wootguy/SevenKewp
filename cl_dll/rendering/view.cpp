@@ -557,7 +557,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	// FIXME, we send origin at 1/128 now, change this?
 	// the server protocol only specifies to 1/16 pixel, so add 1/32 in each axis
 	
-	if (!IsWeaponIronSightsActive()) {
+	if (!g_prediction.weapon.ironSights) {
 		pparams->vieworg[0] += 1.0 / 32;
 		pparams->vieworg[1] += 1.0 / 32;
 		pparams->vieworg[2] += 1.0 / 32;
@@ -692,7 +692,7 @@ void V_CalcNormalRefdef ( struct ref_params_s *pparams )
 	}
 	view->origin[2] += bob;
 
-	if (!IsWeaponIronSightsActive()) {
+	if (!g_prediction.weapon.ironSights) {
 		// throw in a little tilt.
 		view->angles[YAW] -= weaponBob * 0.5;
 		view->angles[ROLL] -= weaponBob * 1;

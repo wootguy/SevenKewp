@@ -59,14 +59,14 @@ public:
 	inline int GetAkimboClip() { return IsAkimbo() ? m_chargeReady : -1; }
 	inline void SetAkimboClip(int clip) { m_chargeReady = clip; }
 	
-	int	PrimaryAmmoIndex() STUB_INT;
-	int	SecondaryAmmoIndex() STUB_INT;
+	int	PrimaryAmmoIndex();
+	int	SecondaryAmmoIndex();
 
 	void PrintState( void );
 
 	virtual CBasePlayerWeapon*GetWeaponPtr( void ) { return this; };
 	virtual CBaseEntity* Respawn(void) STUB_INT;// copy a weapon
-	float GetNextAttackDelay( float delay ) STUB_INT;
+	float GetNextAttackDelay( float delay );
 
 	virtual const char* GetModelV(const char* defaultModel=NULL) STUB_INT;
 	virtual const char* GetModelP() STUB_INT;

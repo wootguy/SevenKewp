@@ -230,7 +230,7 @@ int CHud::MsgFunc_SetFOV(const char* pszName, int iSize, void* pbuf)
 	if (cl_lw && cl_lw->value)
 		return 1;
 
-	g_lastFOV = newfov;
+	g_prediction.fov = newfov;
 
 	if (newfov == 0)
 	{

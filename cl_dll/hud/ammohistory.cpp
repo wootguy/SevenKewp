@@ -25,6 +25,7 @@
 #include <stdio.h>
 
 #include "ammohistory.h"
+#include "com_weapons.h"
 
 HistoryResource gHR;
 
@@ -33,8 +34,6 @@ HistoryResource gHR;
 
 #define MAX_ITEM_NAME	32
 int HISTORY_DRAW_TIME = 5;
-
-bool CanWeaponAkimbo(int id);
 
 // keep a list of items
 struct ITEM_INFO
@@ -157,7 +156,7 @@ int HistoryResource :: DrawAmmoHistory( float flTime )
 				float scale = (rgAmmoHistory[i].DisplayTime - flTime) * 80;
 				ScaleColors(r, g, b, V_min(scale, 255) );
 
-				bool akimbo = CanWeaponAkimbo(weap->iId);
+				bool akimbo = g_prediction.weapon.canAkimbo;
 				HSPRITE inactiveSpr = akimbo ? weap->hAkimboInactive : weap->hInactive;
 				wrect_t rcInactive = akimbo ? weap->rcAkimboInactive : weap->rcInactive;
 

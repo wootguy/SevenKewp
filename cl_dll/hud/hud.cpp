@@ -503,7 +503,7 @@ float CHud::GetFOV( void )
 		unsigned char buf[ 100 ];
 
 		// Active
-		*( float * )&buf[ i ] = g_lastFOV;
+		*( float * )&buf[ i ] = g_prediction.fov;
 		i += sizeof( float );
 
 		Demo_WriteBuffer( TYPE_ZOOM, i, buf );
@@ -511,9 +511,9 @@ float CHud::GetFOV( void )
 
 	if ( gEngfuncs.pDemoAPI->IsPlayingback() )
 	{
-		g_lastFOV = g_demozoom;
+		g_prediction.fov = g_demozoom;
 	}
-	return g_lastFOV;
+	return g_prediction.fov;
 }
 
 void CHud::AddHudElem(CHudBase *phudelem)

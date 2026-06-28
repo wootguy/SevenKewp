@@ -10,6 +10,7 @@
 #include "cl_entity.h"
 #include "dlight.h"
 #include "triangleapi.h"
+#include "com_weapons.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -52,8 +53,6 @@ alight_t g_fullbright_alight = {
 
 // prevents crash calling studio functions before the renderer is ready
 bool g_studio_init;
-
-void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, float** m_lastEventTime);
 
 /////////////////////
 // Implementation of CStudioModelRenderer.h
@@ -824,7 +823,8 @@ void CStudioModelRenderer::StudioSetupBones (CustomWeaponParams* wcParams)
 	float animTime = m_pCurrentEntity->curstate.animtime;
 
 	if (wcParams) {
-		GetAkimboViewModelState(m_pStudioHeader, currentSeq, animTime, NULL);
+		currentSeq = g_prediction.weapon.akimboSeq;
+		animTime = g_prediction.weapon.akimboAnimTime;
 	}
 
 	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + currentSeq;
@@ -1130,11 +1130,16 @@ void CStudioModelRenderer::StudioMergeBones ( model_t *m_pSubModel )
 }
 
 void CStudioModelRenderer::StudioPlayAkimboEvents() {
-	int seq;
-	float animTime;
-	float* lastEventFrame;
+	int seq = g_prediction.weapon.akimboSeq;
+	float animTime = g_prediction.weapon.akimboAnimTime;
+	float* lastEventFrame = g_prediction.weapon.akimboLastEventFrame;
+	
+	static float dummy;
+	if (!lastEventFrame)
+		lastEventFrame = &dummy;
 
-	GetAkimboViewModelState(m_pStudioHeader, seq, animTime, &lastEventFrame);
+	// in case a state for the wrong model is selected
+	seq = clamp(seq, 0, m_pStudioHeader->numseq - 1);
 
 	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)m_pStudioHeader + m_pStudioHeader->seqindex) + seq;
 

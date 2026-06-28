@@ -343,7 +343,7 @@ BOOL CWeaponCustom::Deploy()
 	g_irunninggausspred = false;
 	m_pPlayer->m_flNextAttack = 0.5;
 	m_flTimeWeaponIdle = 1.0;
-	g_last_attack_mode = 1;
+	g_prediction.last_attack_mode = 1;
 
 #else
 	const char* animSet = GetAnimSet();
@@ -1874,33 +1874,33 @@ float CWeaponCustom::GetActiveMovespeedMult() {
 	return 1.0f;
 }
 
-std::string CWeaponCustom::GetStateString() {
+std::string CWeaponCustom::GetStateString(int flags) {
 	std::string state;
 
-	if (GetState(FL_WC_STATE_FIRST_DEPLOYED)) state += "First deployed + ";
-	if (GetState(FL_WC_STATE_ALT_PARAMS)) state += "Alt params + ";
-	if (GetState(FL_WC_STATE_PRIMARY_ALT)) state += "Primary alt + ";
-	if (GetState(FL_WC_STATE_SEMI_AUTO)) state += "Semiauto + ";
-	if (GetState(FL_WC_STATE_CAN_AKIMBO)) state += "Can akimbo + ";
-	if (GetState(FL_WC_STATE_IS_AKIMBO)) state += "Is akimbo + ";
-	if (GetState(FL_WC_STATE_LASER)) state += "Laser + ";
-	if (GetState(FL_WC_STATE_ZOOM)) state += "Zoom + ";
-	if (GetState(FL_WC_STATE_ZOOM_FURTHER)) state += "Zoom further + ";
-	if (GetState(FL_WC_STATE_SECONDARY_RELOAD)) state += "Secondary reload + ";
-	if (GetState(FL_WC_STATE_WANT_RELOAD)) state += "Want reload + ";
-	if (GetState(FL_WC_STATE_ABORT_RELOAD)) state += "Abort reload + ";
-	if (GetState(FL_WC_STATE_RELOAD_CLIP_DONE)) state += "Reload clip done + ";
-	if (GetState(FL_WC_STATE_CHAMBER_NEEDED)) state += "Chamber needed + ";
-	if (GetState(FL_WC_STATE_PRIMARY_CALLED)) state += "Attack1 + ";
-	if (GetState(FL_WC_STATE_PRIMARY_FIRED)) state += "Fired1 + ";
-	if (GetState(FL_WC_STATE_SECONDARY_CALLED)) state += "Attack2 + ";
-	if (GetState(FL_WC_STATE_SECONDARY_FIRED)) state += "Fired2 + ";
+	if (flags & (FL_WC_STATE_FIRST_DEPLOYED)) state += "First deployed + ";
+	if (flags & (FL_WC_STATE_ALT_PARAMS)) state += "Alt params + ";
+	if (flags & (FL_WC_STATE_PRIMARY_ALT)) state += "Primary alt + ";
+	if (flags & (FL_WC_STATE_SEMI_AUTO)) state += "Semiauto + ";
+	if (flags & (FL_WC_STATE_CAN_AKIMBO)) state += "Can akimbo + ";
+	if (flags & (FL_WC_STATE_IS_AKIMBO)) state += "Is akimbo + ";
+	if (flags & (FL_WC_STATE_LASER)) state += "Laser + ";
+	if (flags & (FL_WC_STATE_ZOOM)) state += "Zoom + ";
+	if (flags & (FL_WC_STATE_ZOOM_FURTHER)) state += "Zoom further + ";
+	if (flags & (FL_WC_STATE_SECONDARY_RELOAD)) state += "Secondary reload + ";
+	if (flags & (FL_WC_STATE_WANT_RELOAD)) state += "Want reload + ";
+	if (flags & (FL_WC_STATE_ABORT_RELOAD)) state += "Abort reload + ";
+	if (flags & (FL_WC_STATE_RELOAD_CLIP_DONE)) state += "Reload clip done + ";
+	if (flags & (FL_WC_STATE_CHAMBER_NEEDED)) state += "Chamber needed + ";
+	if (flags & (FL_WC_STATE_PRIMARY_CALLED)) state += "Attack1 + ";
+	if (flags & (FL_WC_STATE_PRIMARY_FIRED)) state += "Fired1 + ";
+	if (flags & (FL_WC_STATE_SECONDARY_CALLED)) state += "Attack2 + ";
+	if (flags & (FL_WC_STATE_SECONDARY_FIRED)) state += "Fired2 + ";
 
 
 	if (state.size())
 		state = state.substr(0, state.size() - 3);
 
-	int queuedState = m_fireState >> 20;
+	int queuedState = flags >> 20;
 	if (queuedState) {
 		state += " (Queued attack " + std::to_string(queuedState) + " states)\n";
 	}
@@ -1908,12 +1908,12 @@ std::string CWeaponCustom::GetStateString() {
 	return state;
 }
 
-std::string CWeaponCustom::GetChargeStatesString() {
+std::string CWeaponCustom::GetChargeStatesString(int state) {
 	std::string states;
 
 	static std::string names[WC_ATTACK_TYPES] = { "Primary", "Secondary", "Tertiary", "Primary Alt"};
 	for (int i = 0; i < WC_ATTACK_TYPES; i++) {
-		int istate = GetChargedState(i);
+		int istate = GetChargedState(state, i);
 		switch (istate) {
 		case WC_CHARGE_STATE_NONE: states += ""; break;
 		case WC_CHARGE_STATE_CHARGING: states += names[i] + " charging + "; break;
@@ -2202,7 +2202,11 @@ void CWeaponCustom::SetCanAkimbo(bool canAkimbo) {
 }
 
 WcAttackState CWeaponCustom::GetChargedState(int attackIdx) {
-	return (WcAttackState)((m_fInAttack >> (attackIdx * 4)) & 0xf);
+	return GetChargedState(m_fInAttack, attackIdx);
+}
+
+WcAttackState CWeaponCustom::GetChargedState(int state, int attackIdx) {
+	return (WcAttackState)((state >> (attackIdx * 4)) & 0xf);
 }
 
 void CWeaponCustom::SetChargedState(int attackIdx, WcAttackState newState) {

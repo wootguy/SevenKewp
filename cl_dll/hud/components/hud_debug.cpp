@@ -14,8 +14,6 @@
 #include "gfx_util.h"
 #include "GL/gl.h"
 
-extern local_state_t g_prediction_debug_state;
-
 static int line_height = 0;
 static int var_width = 0;
 static int num_width = 0;
@@ -77,7 +75,7 @@ int CHudDebug::Draw(float flTime)
 
 	int yOffset = line_height * 2;
 
-	local_state_t& state = g_prediction_debug_state;
+	local_state_t& state = g_prediction.local;
 
 	if (state.client.m_iId < 0 || state.client.m_iId > MAX_WEAPONS) {
 		return 0;
@@ -88,7 +86,7 @@ int CHudDebug::Draw(float flTime)
 	RGB varColor(255, 255, 255);
 
 	CustomWeaponParams* params = GetCustomWeaponParams(state.client.m_iId, WC_PARAMS_AUTO);
-	bool isCustomWeapon = IsCustomWeapon(state.client.m_iId);
+	bool isCustomWeapon = g_prediction.weapon.isCustom;
 
 	cl_entity_t* localPlayer = GetLocalPlayer();
 
@@ -104,12 +102,11 @@ int CHudDebug::Draw(float flTime)
 	WEAPON* pw = gWR.GetWeapon(wep.m_iId);
 	std::string hudWepInfo = UTIL_VarArgs("%s (ID %d)", pw->szName, wep.m_iId);
 
-	float accuracyX = pw->accuracyX;
-	float accuracyY = pw->accuracyY;
-	float accuracyX2 = pw->accuracyX2;
-	float accuracyY2 = pw->accuracyY2;
-	bool dynamicAccuracy = pw->iFlagsEx & WEP_FLAG_DYNAMIC_ACCURACY;
-	GetCurrentCustomWeaponAccuracy(pw->iId, accuracyX, accuracyY, accuracyX2, accuracyY2, dynamicAccuracy);
+	float accuracyX = isCustomWeapon ? g_prediction.weapon.accuracyX[0] : pw->accuracyX;
+	float accuracyY = isCustomWeapon ? g_prediction.weapon.accuracyY[0] : pw->accuracyY;
+	float accuracyX2 = isCustomWeapon ? g_prediction.weapon.accuracyX[1] : pw->accuracyX2;
+	float accuracyY2 = isCustomWeapon ? g_prediction.weapon.accuracyY[1] : pw->accuracyY2;
+	bool dynamicAccuracy = isCustomWeapon ? g_prediction.weapon.dynamicAccuracy : (pw->iFlagsEx & WEP_FLAG_DYNAMIC_ACCURACY);
 	std::string accuracy1 = UTIL_VarArgs("% .2f  % .2f", accuracyX, accuracyY);
 	std::string accuracy2 = UTIL_VarArgs("% .2f  % .2f", accuracyX2, accuracyY2);
 
@@ -168,9 +165,9 @@ int CHudDebug::Draw(float flTime)
 
 	yOffset += line_height;
 	if (isCustomWeapon) {
-		const char* iuser3 = GetCustomWeaponStateString();
+		const char* iuser3 = g_prediction.GetCustomWeaponStateString();
 		PRINT_VARDSTR("Weapon State", iuser3, wep.iuser3);
-		PRINT_VARSTR("Charge States", GetCustomWeaponChargeStatesString());
+		PRINT_VARSTR("Charge States", g_prediction.GetCustomWeaponChargeStatesString());
 
 		int shotsFired = wep.m_fInZoom & 0xf;
 		int iDirection = (wep.m_fInZoom >> 4) & 1;

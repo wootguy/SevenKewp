@@ -470,7 +470,7 @@ public:
 
 	virtual void Revive() STUB_VOID;
 
-	float GetDamage(float defaultDamage) STUB_INT;
+	float GetDamage(float defaultDamage);
 
 	// accounts for active cameras and view offset
 	Vector GetViewPosition();

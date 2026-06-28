@@ -170,8 +170,8 @@ public:
 	int GetAttackIdx(WepEvt& evt); // TODO: store this info in the event
 	studiohdr_t* GetViewModelHeader();
 	float GetActiveMovespeedMult();
-	std::string GetStateString();
-	std::string GetChargeStatesString();
+	static std::string GetStateString(int flags);
+	static std::string GetChargeStatesString(int state);
 	float WallTime();
 
 	// Time accumulated in user commands. Synced between the client and server for each user cmd.
@@ -202,6 +202,7 @@ public:
 	void SetAkimbo(bool akimbo);
 	void SendAkimboAnim(int iAnim);
 	WcAttackState GetChargedState(int attackIdx);
+	static WcAttackState GetChargedState(int state, int attackIdx);
 	void SetChargedState(int attackIdx, WcAttackState newState);
 	inline void ClearChargedStates() { m_fInAttack = 0; }
 	inline bool AreAnyAttacksCharging() { return m_fInAttack != 0; }

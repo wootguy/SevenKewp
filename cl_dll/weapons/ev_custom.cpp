@@ -129,8 +129,8 @@ void WC_EV_Recoil(Vector recoil, int ops[3]) {
 		gEngfuncs.SetViewAngles(viewAngles);
 }
 
-void WC_EV_WepAnim(WepEvt& evt, int wepid, int animIdx) {
-	gEngfuncs.pEventAPI->EV_WeaponAnimation(animIdx, GetCustomWeaponBody(wepid));
+void WC_EV_WepAnim(WepEvt& evt, int animIdx) {
+	gEngfuncs.pEventAPI->EV_WeaponAnimation(animIdx, g_prediction.weapon.body);
 }
 
 void WC_EV_Dlight(WepEvt& evt, Vector pos) {

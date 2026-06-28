@@ -1201,7 +1201,7 @@ void CWeaponEvents::PlayEvent_WepAnim(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 		return;
 	}
 
-	WC_EV_WepAnim(evt, m_weapon->m_iId, anim);
+	WC_EV_WepAnim(evt, anim);
 #else
 	m_weapon->SendWeaponAnimSpec(anim);
 #endif

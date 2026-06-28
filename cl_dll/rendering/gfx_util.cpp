@@ -170,7 +170,7 @@ void gfx_draw_fake_hud_quad(float minX, float minY, float maxX, float maxY) {
 	Vector forward, right, up;
 	AngleVectors(gPlayerSim.v_angles, forward, right, up);
 
-	float fovXDeg = g_lastFOV ? g_lastFOV : gHUD.default_fov->value;
+	float fovXDeg = g_prediction.fov ? g_prediction.fov : gHUD.default_fov->value;
 
 	Vector ul = Unproject(minX, minY, forward, right, up, fovXDeg);
 	Vector ur = Unproject(maxX, minY, forward, right, up, fovXDeg);
@@ -187,7 +187,7 @@ void gfx_draw_sprite_weapon() {
 	if (gPlayerSim.cam_thirdperson)
 		return;
 
-	ViewModelSprite* pSpr = GetSpriteWeaponState();
+	ViewModelSprite* pSpr = g_prediction.weapon.v_sprite;
 	if (!pSpr || pSpr->hSprite <= 0)
 		return;
 	ViewModelSprite& spr = *pSpr;

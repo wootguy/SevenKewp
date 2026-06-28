@@ -37,6 +37,11 @@ void UTIL_TraceLine(const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTER
 #define EMIT_SOUND(...)
 #define EMIT_SOUND_DYN(...)
 #define AddWaterPhysicsEnt(...)
+
+inline void ClearMultiDamage(void) {}
+inline void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker) {}
+inline void AddMultiDamage(entvars_t* pevInflictor, CBaseEntity* pEntity, float flDamage, int bitsDamageType) {}
+inline void RadiusDamage(Vector vecSrc, entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType) {}
 #else
 #include "util.h"
 #include "skill.h"
@@ -45,6 +50,11 @@ void UTIL_TraceLine(const Vector& vecStart, const Vector& vecEnd, IGNORE_MONSTER
 #include "eng_wrappers.h"
 #include "lagcomp.h"
 #include "CGrenade.h"
+
+EXPORT void ClearMultiDamage(void);
+EXPORT void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker);
+EXPORT void AddMultiDamage(entvars_t* pevInflictor, CBaseEntity* pEntity, float flDamage, int bitsDamageType);
+EXPORT void RadiusDamage(Vector vecSrc, entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType);
 #endif
 
 #define PLAYBACK_EVENT( flags, who, index ) PLAYBACK_EVENT_FULL( flags, who, index, 0, (float *)&g_vecZero, (float *)&g_vecZero, 0.0, 0.0, 0, 0, 0, 0 );
@@ -225,11 +235,6 @@ extern StringSet g_registeredHlWeaponAmmo; // ammo types that are used by curren
 extern HashMap<int> g_ammoCapacities;
 extern HashMap<int> g_ammoCapacitiesInitial; // first ammo capacity that was set
 extern const char* g_filledWeaponSlots[MAX_WEAPON_SLOTS][MAX_WEAPON_POSITIONS];
-
-EXPORT void ClearMultiDamage(void);
-EXPORT void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker );
-EXPORT void AddMultiDamage( entvars_t *pevInflictor, CBaseEntity *pEntity, float flDamage, int bitsDamageType);
-EXPORT void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType );
 
 EXPORT CBaseEntity* ShootMortar(edict_t* pentOwner, Vector vecStart, Vector vecVelocity);
 EXPORT void GetCircularGaussianSpread(float& x, float& y);

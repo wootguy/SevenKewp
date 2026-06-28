@@ -87,7 +87,7 @@ int R_StudioDrawModel( int flags )
 				return 0; // only handle events, don't render the model
 		}
 
-		ViewModelSprite* spr = GetSpriteWeaponState();
+		ViewModelSprite* spr = g_prediction.weapon.v_sprite;
 		if (spr && spr->hSprite) {
 			// don't render the model, just run enough logic to update lighting for the sprite
 			if (flags & STUDIO_RENDER) {
@@ -98,14 +98,14 @@ int R_StudioDrawModel( int flags )
 			}
 		}
 		
-		int modelIdx = GetActiveCustomWeaponViewModel();
+		int modelIdx = g_prediction.weapon.v_model;
 		if (modelIdx > 0 && modelIdx != gunModel->curstate.modelindex != modelIdx) {
 			static int fovTime = 0;
 			static int lastFovFrame = 0;
 			if (gHUD.m_frameCount != lastFovFrame) {
 				lastFovFrame = gHUD.m_frameCount;
 
-				if (g_lastFOV) {
+				if (g_prediction.fov) {
 					fovTime++;
 				}
 				else {
@@ -120,10 +120,9 @@ int R_StudioDrawModel( int flags )
 			}
 		}
 
-		if (IsViewModelAkimbo()) {
-			CustomWeaponParams* params = GetCurrentCustomWeaponParams();
+		if (g_prediction.weapon.isAkimbo) {
 			g_StudioRenderer.StudioDrawModel(flags, false, NULL);
-			return g_StudioRenderer.StudioDrawModel(flags, true, params);
+			return g_StudioRenderer.StudioDrawModel(flags, true, g_prediction.weapon.params);
 		}
 	}
 

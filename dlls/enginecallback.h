@@ -90,7 +90,13 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 #define CVAR_SET_STRING	(*g_engfuncs.pfnCVarSetString)
 #define CVAR_GET_POINTER (*g_engfuncs.pfnCVarGetPointer)
 
+#ifdef CLIENT_DLL
+inline void DEBUG_MSG(ALERT_TYPE target, const char* format, ...) {}
+#else
 EXPORT void DEBUG_MSG(ALERT_TYPE target, const char* format, ...);
+#endif
+
+
 EXPORT extern bool g_plugin_print;
 
 #if defined(PLUGIN_BUILD) && defined(PLUGIN_NAME)

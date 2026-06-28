@@ -64,8 +64,6 @@ class CWeaponBox;
 class CCineMonster;
 class CPathWaypoint;
 
-EXPORT void* GET_PRIVATE(const edict_t* pent);
-
 enum entindex_priority {
 	// entity is likely to be sent to clients (monsters, sprites, doors, etc.)
 	ENTIDX_PRIORITY_NORMAL,
@@ -106,6 +104,13 @@ typedef void (CBaseEntity::* USEPTR)(CBaseEntity* pActivator, CBaseEntity* pCall
 #define SetUse( a ) m_pfnUse = static_cast <void (CBaseEntity::*)( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )> (a)
 #define SetBlocked( a ) m_pfnBlocked = static_cast <void (CBaseEntity::*)(CBaseEntity *)> (a)
 
+#endif
+
+
+#ifndef CLIENT_DLL
+EXPORT void* GET_PRIVATE(const edict_t* pent);
+#else
+inline void* GET_PRIVATE(const edict_t* pent) { return NULL; };
 #endif
 
 #ifndef CLIENT_DLL

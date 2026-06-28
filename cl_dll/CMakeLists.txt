@@ -47,6 +47,7 @@ set(WEAPON_PREDICTION_SRC
 	weapons/com_weapons.cpp
 	weapons/weapon_tents.cpp
 	weapons/weapon_prediction.cpp
+	weapons/cl_baseentity.cpp
 )
 
 set(HUD_HDR
