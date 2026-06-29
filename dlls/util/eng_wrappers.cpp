@@ -701,7 +701,7 @@ const char* INDEX_SOUND(int soundIdx) {
 
 
 studiohdr_t* GET_MODEL_PTR(edict_t* edict) {
-	if (edict->v.model && g_precachedSpr.hasKey(STRING(edict->v.model))) {
+	if (UTIL_ModelIsSprite(edict->v.modelindex)) {
 		return NULL; // engine crash if getting model ptr for a sprite
 	}
 

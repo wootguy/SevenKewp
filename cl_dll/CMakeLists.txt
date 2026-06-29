@@ -173,6 +173,7 @@ set(UTIL_HDR
 	../game_shared/rgb.h
 	../game_shared/md5.h
 	../game_shared/mstream.h
+	../game_shared/sprites.h
 )
 set(UTIL_SRC
 	util/interpolation.cpp

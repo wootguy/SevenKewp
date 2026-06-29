@@ -269,6 +269,12 @@ public:
 
 	Vector m_barnacleOffset; // x = horizontal distance from tongue, y = vertical distance
 
+	// model index of a doom-style sprite that changes its frame based on your perspective.
+	// This sprite is rendered in addition to the entity model, at the same position.
+	// Offsets in the sprite frames determine relative offset.
+	int m_angleSpriteIndex;
+	AngleSpriteMode m_angleSpriteMode; // how to render the angled sprite
+
 	EHANDLE m_hActivator;
 	EHANDLE m_hCaller;
 

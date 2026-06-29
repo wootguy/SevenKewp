@@ -11,6 +11,7 @@
 #include "eventscripts.h"
 #include "ev_hldm.h"
 #include "mstream.h"
+#include "sprites.h"
 
 int __MsgFunc_ToxicCloud(const char* pszName, int iSize, void* pbuf) {
 	BEGIN_READ(pbuf, iSize);
@@ -76,7 +77,7 @@ int __MsgFunc_SpriteAdv(const char* pszName, int iSize, void* pbuf) {
 	int modelIdx = READ_BITS(9);
 
 	args.renderMode = kRenderTransAdd;
-	args.sprMode = SPR_VP_PARALLEL;
+	args.sprMode = SPR_MODE_PARALLEL;
 	args.color.r = args.color.g = args.color.b = 255;
 	args.scale = 10;
 	args.loopAnim = READ_BIT();
@@ -114,7 +115,7 @@ int __MsgFunc_SpriteAdv(const char* pszName, int iSize, void* pbuf) {
 	if (READ_BIT()) {
 		args.sprMode = READ_BITS(3);
 
-		if (args.sprMode == SPR_ORIENTED || args.sprMode == SPR_VP_PARALLEL_ORIENTED) {
+		if (args.sprMode == SPR_MODE_ORIENTED || args.sprMode == SPR_MODE_PARALLEL_ORIENTED) {
 			args.rx = READ_BITS(12) * 0.1f;
 			args.ry = READ_BITS(12) * 0.1f;
 			args.rz = READ_BITS(12) * 0.1f;

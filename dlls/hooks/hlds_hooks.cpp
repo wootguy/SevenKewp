@@ -1634,6 +1634,11 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 			}
 		}
 	}
+	else {
+		// special stuff for normal entities
+		if (baseent->m_angleSpriteIndex)
+			state->weaponmodel = (baseent->m_angleSpriteMode << 9) | (baseent->m_angleSpriteIndex & 0x1ff);
+	}
 
 	if (baseent->Classify() != CLASS_NONE && !baseent->IsMachine())
 		state->eflags |= EFLAG_FLESH_SOUND;

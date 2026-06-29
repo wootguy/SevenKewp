@@ -180,15 +180,6 @@ struct HUDNumDisplayParams {
 	hudnumparams_t num;
 };
 
-enum sprite_modes
-{
-	SPR_VP_PARALLEL_UPRIGHT,
-	SPR_FACING_UPRIGHT,
-	SPR_VP_PARALLEL,
-	SPR_ORIENTED,
-	SPR_VP_PARALLEL_ORIENTED
-};
-
 enum SpriteAdvFadeMode {
 	SPRADV_FADE_NONE,
 	SPRADV_FADE_OUT,

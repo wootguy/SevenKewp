@@ -796,8 +796,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 	load_prediction_state(from, cmd, random_seed);
 
 	bool weaponModelDeployed = player.pev->viewmodel || (wc && wc->GetActiveParams().vsprite_path);
-	bool isDead = player.pev->deadflag == (DEAD_DISCARDBODY + 1) || CL_IsDead();
-	if (!isDead && weaponModelDeployed && !g_iUser1 && player.m_flNextAttack <= 0)
+	bool isDead = player.pev->deadflag == (DEAD_DISCARDBODY + 1) || CL_IsDead() || g_iUser1;
+	if (!isDead && weaponModelDeployed && player.m_flNextAttack <= 0)
 	{
 		pWeapon->ItemPostFrame(); // Run shared weapon code
 	}
@@ -825,8 +825,8 @@ void update_shared_prediction_state(struct local_state_s* to) {
 	if (!g_runfuncs)
 		return;
 
-	memcpy(&g_prediction.local, to, sizeof(local_state_s));
-	memset(&g_prediction.weapon, 0, sizeof(g_prediction.weapon));
+	memcpy(&g_prediction.local, to, sizeof(g_prediction.local));
+	memset(&g_prediction.weapon, 0, sizeof(PredictionWeaponState));
 
 	g_prediction.fov = to->client.fov;
 
@@ -859,7 +859,7 @@ void update_shared_prediction_state(struct local_state_s* to) {
 	wstate.ammo2 = wc.m_iSecondaryAmmoType >= 0 ? player.m_rgAmmo[wc.m_iSecondaryAmmoType] : 0;
 	wstate.akimboClip = g_customWeapon[id].GetAkimboClip();
 
-	wstate.v_sprite = &wc.m_viewModelSpr;
+	wstate.v_sprite = wc.m_viewModelSpr.hSprite ? &wc.m_viewModelSpr : NULL;
 	wstate.v_model = wc.GetActiveViewModelIdx();
 	wstate.stateSpriteIdx = wc.GetFlag(FL_WC_WEP_HAS_STATE_SPRITE) ? wc.m_stateIconIdx : -1;
 	wstate.params = &wc.GetActiveParams();

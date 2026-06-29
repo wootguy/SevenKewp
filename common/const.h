@@ -931,6 +931,12 @@ enum
 	kRenderFxLightMultiplier,   //CTM !!!CZERO added to tell the studiorender that the value in iuser2 is a lightmultiplier
 };
 
+enum AngleSpriteMode {
+	ANGLE_SPRITE_NONE,	// not an angled sprite
+	ANGLE_SPRITE_8WAY,	// angled sprite with 8 rotations
+	ANGLE_SPRITE_16WAY, // angled sprite with 16 rotations
+};
+
 
 typedef unsigned int	func_t;
 typedef unsigned int	string_t;

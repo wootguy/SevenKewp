@@ -1884,13 +1884,13 @@ void CStudioModelRenderer::StudioRenderModel(bool mirrored)
 	IEngineStudio.SetChromeOrigin();
 	IEngineStudio.SetForceFaceFlags( 0 );
 
+	if (m_pCurrentEntity->curstate.rendermode != kRenderNormal && m_drawingViewModel) {
+		IEngineStudio.SetForceFaceFlags(STUDIO_NF_ADDITIVE); // the only transparent mode that works for the view model
+	}
+
 	if ( m_pCurrentEntity->curstate.renderfx == kRenderFxGlowShell )
 	{
 		m_pCurrentEntity->curstate.renderfx = kRenderFxNone;
-
-		if (m_pCurrentEntity->curstate.rendermode != kRenderNormal && m_drawingViewModel) {
-			IEngineStudio.SetForceFaceFlags(STUDIO_NF_ADDITIVE); // the only transparent mode that works for the view model
-		}
 
 		StudioRenderFinal(mirrored);
 		
@@ -1915,7 +1915,6 @@ void CStudioModelRenderer::StudioRenderModel(bool mirrored)
 		else {
 			StudioRenderFinal(mirrored);
 		}
-
 		
 		if ( !IEngineStudio.IsHardware() )
 		{

@@ -38,6 +38,7 @@
 #include "studio.h"
 #include "debug.h"
 #include "eng_wrappers.h"
+#include "eng_util.h"
 #include "wav.h"
 #include "ThreadSafeQueue.h"
 #include <thread>

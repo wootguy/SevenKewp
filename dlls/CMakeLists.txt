@@ -529,6 +529,7 @@ set(UTIL_HDR
 	util/CommandArgs.h
 	util/debug.h
 	util/eng_wrappers.h
+	util/eng_util.h
 	util/plane.h
 	util/saverestore.h
 	util/util.h
@@ -550,6 +551,7 @@ set(UTIL_HDR
 	../game_shared/shared_util.h
 	../game_shared/rgb.h
 	../game_shared/md5.h
+	../game_shared/sprites.h
 )
 set(UTIL_SRC
 	util/animation.cpp
@@ -558,6 +560,7 @@ set(UTIL_SRC
 	util/CommandArgs.cpp
 	util/debug.cpp
 	util/eng_wrappers.cpp
+	util/eng_util.cpp
 	util/plane.cpp
 	util/sound.cpp
 	util/util.cpp
@@ -770,7 +773,6 @@ set_source_files_properties(${ENT_SRC} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 add_library(${SERVER_DLL_NAME} SHARED ${ALL_SRC})
 
-target_include_directories(${SERVER_DLL_NAME} PRIVATE monster)
 target_include_directories(${SERVER_DLL_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/external/curl/include/)
 
 target_include_directories(${SERVER_DLL_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dlls/env)

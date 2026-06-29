@@ -183,7 +183,7 @@ void EF_WaterSplash(Vector origin, int splashSprIdx, int wakeSprIdx, const char*
 
 	SpriteAdv& wakeAdv = AllocSpriteAdv();
 	wakeAdv.args.maxLife = 10;
-	wakeAdv.args.sprMode = SPR_ORIENTED;
+	wakeAdv.args.sprMode = SPR_MODE_ORIENTED;
 	wakeAdv.args.rx = 90;
 	wakeAdv.args.rz = gEngfuncs.pfnRandomLong(0, 359);
 	wakeAdv.args.spinZ = gEngfuncs.pfnRandomLong(0, 1) ? 1 : -1;

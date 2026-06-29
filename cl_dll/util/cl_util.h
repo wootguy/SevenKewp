@@ -34,6 +34,7 @@
 
 extern bool g_crosshair_active; // true after calling SetCrosshair with a valid crosshair
 extern bool is_software_renderer;
+extern bool g_studio_init; // don't call studio functions before this is true
 
 // Macros to hook function calls into the HUD object
 #define HOOK_MESSAGE(x) gEngfuncs.pfnHookUserMsg(#x, __MsgFunc_##x );

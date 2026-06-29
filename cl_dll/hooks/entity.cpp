@@ -14,6 +14,7 @@
 #include "pm_shared.h"
 #include "bench.h"
 #include "Exports.h"
+#include "gfx_util.h"
 
 #include "particleman.h"
 extern IParticleMan *g_pParticleMan;
@@ -44,6 +45,14 @@ int CL_DLLEXPORT HUD_AddEntity( int type, struct cl_entity_s *ent, const char *m
 	default:
 		break;
 	}
+
+	if (ent->curstate.weaponmodel && !ent->player) {
+		// weaponmodel is used to render angled sprites on top of the existing model.
+		// The entity can't only use a sprite or else a physent won't be created for it,
+		// which breaks collision for movement, weapons, and status text.
+		queue_sprite_render_ent(ent->index);
+	}
+
 	// each frame every entity passes this function, so the overview hooks it to filter the overview entities
 	// in spectator mode:
 	// each frame every entity passes this function, so the overview hooks 

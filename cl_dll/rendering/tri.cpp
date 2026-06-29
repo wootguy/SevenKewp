@@ -56,6 +56,8 @@ void CL_DLLEXPORT HUD_DrawTransparentTriangles( void )
 
 	gHUD.m_Debug.DrawBoundingBoxes();
 
+	render_sprite_queue();	
+
 	if (is_software_renderer) {
 		gfx_draw_sprite_weapon();
 	}

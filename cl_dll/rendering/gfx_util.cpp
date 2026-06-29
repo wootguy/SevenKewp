@@ -5,10 +5,18 @@
 #include "triangleapi.h"
 #include "com_weapons.h"
 #include "wc_params.h"
+#include "shared_effects.h"
 #include "GL/gl.h"
+#include "sprites.h"
+
+// entities that should have sprites rendered in their place are added here
+// then drawn at transparent triangle render time
+#define MAX_SPRITE_RENDER_QUEUE_SZ 512
+uint16_t g_spriteRenderQueue[MAX_SPRITE_RENDER_QUEUE_SZ];
+int g_spriteRenderQueueSz;
 
 void gfx_start_colored_rendering(int polyMode, const RGBA& color) {
-	gEngfuncs.pTriAPI->RenderMode(kRenderTransTexture);
+	gEngfuncs.pTriAPI->RenderMode(is_software_renderer ? kRenderTransTexture : kRenderTransAlpha);
 
 	if (gHUD.m_hWhiteSprite) {
 		gEngfuncs.pTriAPI->SpriteTexture((model_t*)gEngfuncs.GetSpritePointer(gHUD.m_hWhiteSprite), 0);
@@ -228,6 +236,9 @@ void gfx_draw_sprite_weapon() {
 		break;
 	}
 
+	if (is_software_renderer && c.a < 255)
+		triRenderMode = kRenderTransAdd; // the only working transparency mode
+
 	gEngfuncs.pTriAPI->RenderMode(triRenderMode);
 	gEngfuncs.pTriAPI->SpriteTexture((model_t*)gEngfuncs.GetSpritePointer(spr.hSprite), spr.frame);
 	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
@@ -296,6 +307,182 @@ void gfx_draw_sprite_weapon() {
 		gEngfuncs.pTriAPI->End();
 		gEngfuncs.pTriAPI->RenderMode(kRenderNormal);
 	}
+}
+
+int GetSpriteAngleFrame(Vector spritePos, Vector spriteForward, Vector spriteRight, Vector lookPos)
+{
+	Vector delta = spritePos - lookPos;
+	delta.z = 0;
+	delta = delta.Normalize();
+
+	float dotR = DotProduct(delta, spriteRight);
+	float dot = DotProduct(delta, spriteForward);
+
+	const float COS22 = 0.92387953f;
+	const float COS67 = 0.38268343f;
+
+	if (dot < -COS22)
+		return 0;
+	else if (dot < -COS67)
+		return dotR > 0 ? 1 : 7;
+	else if (dot < COS67)
+		return dotR > 0 ? 2 : 6;
+	else if (dot < COS22)
+		return dotR > 0 ? 3 : 5;
+	else
+		return 4;
+}
+
+void gfx_draw_sprite(Vector origin, Vector angles, int modelIdx, int frame, SpriteMode sprMode, float scale, RGBA color, AngleSpriteMode angleMode) {
+	model_t* model = gEngfuncs.hudGetModelByIndex(modelIdx);
+
+	if (!g_studio_init)
+		return;
+
+	if (!model || model->type != mod_sprite) {
+		PRINTF("Tried to draw invalid sprite index %d\n", modelIdx);
+		return;
+	}
+
+	msprite_cl_t* header = (msprite_cl_t*)IEngineStudio.Mod_Extradata(model);
+	
+	Vector right;
+	Vector up;
+
+	if (sprMode == SPR_MODE_AUTO) {
+		sprMode = (SpriteMode)header->type;
+	}
+
+	switch (sprMode) {
+	default:
+	case SPR_MODE_PARALLEL:
+	case SPR_MODE_PARALLEL_ORIENTED:
+		up = gPlayerSim.cam_up;
+		right = gPlayerSim.cam_right;
+		break;
+	case SPR_MODE_PARALLEL_UPRIGHT:
+	case SPR_MODE_FACING_UPRIGHT: // it's broken in-game, but it sort of looks like parallel_upright
+		up = Vector(0, 0, 1);
+		right = gPlayerSim.cam_right;
+		break;
+	case SPR_MODE_ORIENTED:
+		break; // not implemented - needs lots of testing
+	}
+
+	up = up * scale;
+	right = right * scale;
+
+	if (angleMode == ANGLE_SPRITE_8WAY) {
+		Vector sprForward, sprRight, sprUp;
+		AngleVectors(angles, sprForward, sprRight, sprUp);
+		int angle = GetSpriteAngleFrame(origin, sprForward, sprRight, gPlayerSim.v_origin);
+		frame = frame * 8 + angle;
+	}
+
+	frame = clamp(frame, 0, header->numframes-1);
+
+	float fleft, fright, fup, fdown;
+	if (is_software_renderer) {
+		mspriteframe_sw_t* fr = header->frames[frame].frameptr_sw;
+		fleft = fr->left;
+		fright = fr->right;
+		fup = fr->up;
+		fdown = fr->down;
+	}
+	else {
+		mspriteframe_hw_t* fr = header->frames[frame].frameptr_hw;
+		fleft = fr->left;
+		fright = fr->right;
+		fup = fr->up;
+		fdown = fr->down;
+	}
+
+	Vector tl = origin + fleft * right + fup * up;
+	Vector tr = origin + fright * right + fup * up;
+	Vector br = origin + fright * right + fdown * up;
+	Vector bl = origin + fleft * right + fdown * up;
+
+	int rmode = kRenderTransTexture;
+	if (is_software_renderer) {
+		rmode = color.a < 255 ? kRenderTransAdd : kRenderTransAlpha;
+	}
+
+	gEngfuncs.pTriAPI->RenderMode(rmode);
+	gEngfuncs.pTriAPI->SpriteTexture(model, frame);
+	gEngfuncs.pTriAPI->Begin(TRI_QUADS);
+	gEngfuncs.pTriAPI->Color4f(color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, color.a / 255.0f);
+
+	gEngfuncs.pTriAPI->TexCoord2f(0, 0); gEngfuncs.pTriAPI->Vertex3fv(tl);
+	gEngfuncs.pTriAPI->TexCoord2f(1, 0); gEngfuncs.pTriAPI->Vertex3fv(tr);
+	gEngfuncs.pTriAPI->TexCoord2f(1, 1); gEngfuncs.pTriAPI->Vertex3fv(br);
+	gEngfuncs.pTriAPI->TexCoord2f(0, 1); gEngfuncs.pTriAPI->Vertex3fv(bl);
+
+	gEngfuncs.pTriAPI->End();
+}
+
+void queue_sprite_render_ent(int entindex) {
+	if (g_spriteRenderQueueSz < MAX_SPRITE_RENDER_QUEUE_SZ) {
+		g_spriteRenderQueue[g_spriteRenderQueueSz++] = entindex;
+	}
+	else {
+		PRINTF("Sprite queue overflowed\n");
+	}
+}
+
+void render_sprite_ent(cl_entity_t* ent) {
+	entity_state_t& state = ent->curstate;
+	int sprIdx = state.weaponmodel & 0x1ff;
+	AngleSpriteMode sprMode = (AngleSpriteMode)(state.weaponmodel >> 9);
+	RGBA color(state.rendercolor.r, state.rendercolor.g, state.rendercolor.b, state.renderamt);
+	if (state.rendermode == kRenderNormal)
+		color.a = 255;
+
+	gfx_draw_sprite(state.origin, state.angles, sprIdx, state.frame, SPR_MODE_AUTO, state.scale, color, sprMode);
+}
+
+void render_sprite_queue() {
+	if (!is_software_renderer) {
+		for (int i = 0; i < g_spriteRenderQueueSz; i++) {
+			cl_entity_t* ent = gEngfuncs.GetEntityByIndex(g_spriteRenderQueue[i]);
+			if (!ent || !ent->curstate.weaponmodel) {
+				continue;
+			}
+
+			render_sprite_ent(ent);
+		}
+	}
+	else {
+		// software mode doesn't sort our custom triangles, which means transparent pixels sometimes
+		// overwrite sprites in the background. Sort sprites back to front to fix that.
+		struct SortEnt {
+			float dist;
+			cl_entity_t* ent;
+		};
+		static SortEnt sortTemp[MAX_SPRITE_RENDER_QUEUE_SZ];
+		int numSort = 0;
+
+		for (int i = 0; i < g_spriteRenderQueueSz; i++) {
+			cl_entity_t* ent = gEngfuncs.GetEntityByIndex(g_spriteRenderQueue[i]);
+			if (!ent || !ent->curstate.weaponmodel) {
+				continue;
+			}
+
+			SortEnt& sortItem = sortTemp[numSort++];
+			sortItem.dist = (ent->curstate.origin - gPlayerSim.v_origin).Length();
+			sortItem.ent = ent;
+		}
+
+		std::sort(std::begin(sortTemp), std::begin(sortTemp) + numSort,
+			[](const SortEnt& a, const SortEnt& b) {
+				return a.dist > b.dist;
+			});
+
+		for (int i = 0; i < numSort; i++) {
+			render_sprite_ent(sortTemp[i].ent);
+		}
+	}
+	
+	g_spriteRenderQueueSz = 0;
 }
 
 Vector WorldToScreen(const Vector& P) {

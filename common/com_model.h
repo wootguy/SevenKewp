@@ -346,6 +346,75 @@ typedef struct player_info_s
 	customization_t customdata;
 } player_info_t;
 
+// OpenGL frame data
+struct mspriteframe_hw_t
+{
+	int		width;
+	int		height;
+	float	up, down, left, right;
+	int		gl_texturenum;
+};
+
+// software mode frame data
+struct mspriteframe_sw_t
+{
+	int		width;
+	int		height;
+	int		mystery_data; // what could it be???
+	float	up, down, left, right;
+};
+
+// server frame data
+struct mspriteframe_sv_t
+{
+	int		width;
+	int		height;
+	void*	pcachespot;
+	float	up, down, left, right;
+	byte	pixels[4];
+};
+
+typedef enum { SPR_SINGLE = 0, SPR_GROUP, SPR_ANGLED } spriteframetype_t;
+
+struct mspriteframedesc_t
+{
+	spriteframetype_t type;
+
+	union {
+		mspriteframe_hw_t* frameptr_hw;	// OpenGL mode client struct
+		mspriteframe_sw_t* frameptr_sw; // software mode client struct
+		mspriteframe_sv_t* frameptr_sv; // server mode struct
+	};
+};
+
+// server sprite data
+struct msprite_sv_t
+{
+	short	type;
+	short	texFormat;
+	int		maxwidth;
+	int		maxheight;
+	int		numframes;
+	int		paloffset;
+	float	beamlength;
+	void* cachespot;
+	mspriteframedesc_t	frames[1];
+};
+
+// client sprite data
+struct msprite_cl_t
+{
+	short	type;
+	short	texFormat;
+	int		maxwidth;
+	int		maxheight;
+	int		numframes;
+	int		radius;
+	int		facecull;
+	int		synctype;
+	mspriteframedesc_t	frames[1];
+};
+
 #endif
 
 #endif // #define COM_MODEL_H

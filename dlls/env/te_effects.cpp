@@ -5,6 +5,7 @@
 #include "shared_util.h"
 #include "CBaseTurret.h"
 #include "PluginManager.h"
+#include "sprites.h"
 
 bool g_checkExplSounds;
 
@@ -2054,7 +2055,7 @@ void UTIL_SpriteAdv(Vector pos, const SpriteAdvArgs& args, int msgMode, const fl
 	if (args.sprMode != 0) {
 		writer.writeBits(args.sprMode, 3);
 
-		if (args.sprMode == SPR_ORIENTED || args.sprMode == SPR_VP_PARALLEL_ORIENTED) {
+		if (args.sprMode == SPR_MODE_ORIENTED || args.sprMode == SPR_MODE_PARALLEL_ORIENTED) {
 			float rx = args.rx < 0 ? args.rx + 180 : args.rx;
 			float ry = args.ry < 0 ? args.ry + 180 : args.rx;
 			float rz = args.rz < 0 ? args.rz + 180 : args.rz;

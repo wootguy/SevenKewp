@@ -30,6 +30,7 @@
 
 #include "wc_params.h"
 #include "com_weapons.h"	
+#include "gfx_util.h"
 
 //
 // Override the StudioModelRender virtual member functions here to implement custom bone
@@ -76,7 +77,8 @@ R_StudioDrawModel
 int R_StudioDrawModel( int flags )
 {
 	cl_entity_t* gunModel = gEngfuncs.GetViewModel();
-	g_StudioRenderer.m_drawingViewModel = IEngineStudio.GetCurrentEntity() == gunModel;
+	cl_entity_t* currentEntity = IEngineStudio.GetCurrentEntity();
+	g_StudioRenderer.m_drawingViewModel = currentEntity == gunModel;
 
 	if (g_StudioRenderer.m_drawingViewModel) {
 		bool isZoomed = gHUD.m_Crosshair.IsWeaponZoomed();
