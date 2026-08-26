@@ -14,7 +14,15 @@ If you're a player, you don't need to install this. Vanilla Half-Life clients ar
 
 Executables distributed outside of Steam are subject to Valve Anti-Cheat (VAC) detection. Running this client may trigger VAC protections and result in a permanent VAC ban on your Steam account.
 
-That said, I have observed players using the [HLBugfixed](https://github.com/tmp64/BugfixedHL-Rebased) and [Adrenaline Gamer](https://openag.pro/) clients for one year on my secure server without them being VAC banned. According to my understanding of the [VAC documentation](https://partner.steamgames.com/doc/features/anticheat), executables need to be manually reported as a cheat to Valve for its signature to be detected. I have not added cheats to this client.
+That said, I haven't seen anyone banned for using the HLBugfixed and Adrenaline Gamer
+clients for the ~3 years VAC was enabled on my server. According to my understanding of the
+VAC documentation, executables need to be manually reported as cheats to Valve for their
+signatures to be detected. I have not added cheats to this client. Any features that could
+give you an advantage in PvP are disabled in servers that don't have SevenKewp server mods.
+
+As of 2026/08/26, I disabled VAC on my server to allow in players who were banned for
+experimenting with mods like ReShade in co-op servers. No one was banned for using the 
+SevenKewp client since its release last year.
 
 
 # Server Download
