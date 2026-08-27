@@ -1,3 +1,6 @@
+:: this script automatically updates plugins to their latest version
+:: this will break builds that are not on the latest commit
+
 @echo off
 cls
 

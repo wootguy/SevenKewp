@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# this script automatically updates plugins to their latest version
+# this will break builds that are not on the latest commit
+
 # run from the location of this script
 (
 	cd "$(dirname "$0")"
