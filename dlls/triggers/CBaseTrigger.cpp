@@ -152,7 +152,7 @@ void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator, bool isUntouch)
 	m_hActivator = pActivator;
 	SUB_UseTargets(m_hActivator, USE_TOGGLE, 0);
 
-	if (pev->message && pActivator->IsPlayer())
+	if (pev->message && pActivator && pActivator->IsPlayer())
 	{
 		UTIL_ShowMessage(STRING(pev->message), pActivator);
 		//		CLIENT_PRINTF( ENT( pActivator->pev ), print_center, STRING(pev->message) );
