@@ -135,6 +135,7 @@ enum HL_CLIENT_ENGINE_VERSION {
 	CLIENT_ENGINE_NOT_CHECKED,	// player hasn't responded to cvar queries yet
 	CLIENT_ENGINE_HL_LATEST,	// the latest version of the HL client from steam
 	CLIENT_ENGINE_HL_LEGACY,	// the legacy version of HL from steam
+	CLIENT_ENGINE_HL_XASH,		// Xash3D
 	CLIENT_ENGINE_BOT,			// bots don't use a client
 };
 
@@ -563,6 +564,7 @@ public:
 	HL_CLIENT_RENDERER m_clientRenderer;
 	HL_CLIENT_SYSTEM m_clientSystem;
 	string_t m_clientModVersionString; // version string for the client mod
+	string_t m_clientEngineVersionString; // version string for the client engine
 	int m_sevenkewpVersion; // version number for this mod's client
 	bool m_sentClientWarning; // has this client been warned about their client incompatability?
 	bool m_sentSevenKewpNotice; // has this client been told about the sevenkewp client?

@@ -76,12 +76,17 @@ extern float g_flWeaponCheat;
 // how long the use key can be held before cancelling the use for antiblock or momentary buttons
 #define MAX_USE_HOLD_TIME 0.3f
 
-#define CVAR_REQ_SEVENKEWP			0	// SevenKewp test
-#define CVAR_REQ_BUGFIXEDHL			1	// BugfixedHL test
-#define CVAR_REQ_ADRENALINE_GAMER	2	// Adrenaline Gamer test
-#define CVAR_REQ_HL25				3	// HL25 test
-#define CVAR_REQ_OPENGL				4	// OpenGL test
-#define CVAR_REQ_LINUX				5	// Linux test
+enum CVAR_QUERIES {
+	CVAR_REQ_SEVENKEWP,			// SevenKewp test
+	CVAR_REQ_BUGFIXEDHL,		// BugfixedHL test
+	CVAR_REQ_ADRENALINE_GAMER,	// Adrenaline Gamer test
+	CVAR_REQ_HL25,				// HL25 test
+	CVAR_REQ_XASH,				// Xash3D test
+	CVAR_REQ_OPENGL,			// OpenGL test
+	CVAR_REQ_LINUX,				// Linux test
+	CVAR_REQ_TYPES,
+};
+
 
 BOOL gInitHUD = TRUE;
 
@@ -6852,22 +6857,23 @@ void CBasePlayer::QueryClientType() {
 	}
 
 	m_sevenkewpVersion = 0;
-	memset(m_queryResults, 0, sizeof(string_t) * 6);
+	memset(m_queryResults, 0, sizeof(string_t) * CVAR_REQ_TYPES);
 
 	g_engfuncs.pfnQueryClientCvarValue2(edict(), "hlcoop_version", CVAR_REQ_SEVENKEWP);
 	g_engfuncs.pfnQueryClientCvarValue2(edict(), "aghl_version", CVAR_REQ_BUGFIXEDHL);
-	g_engfuncs.pfnQueryClientCvarValue2(edict(), "cl_autorecord", CVAR_REQ_ADRENALINE_GAMER);
+	g_engfuncs.pfnQueryClientCvarValue2(edict(), "cl_viewmodel_disable_idle", CVAR_REQ_ADRENALINE_GAMER);
+	g_engfuncs.pfnQueryClientCvarValue2(edict(), "host_ver", CVAR_REQ_XASH);
 	g_engfuncs.pfnQueryClientCvarValue2(edict(), "sv_allow_shaders", CVAR_REQ_HL25);
 	g_engfuncs.pfnQueryClientCvarValue2(edict(), "gl_fog", CVAR_REQ_OPENGL);
 	g_engfuncs.pfnQueryClientCvarValue2(edict(), "m_mousethread_sleep", CVAR_REQ_LINUX);
 }
 
 void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarName, const char* pszValue) {
-	if (requestID >= 0 && requestID < 6) {
+	if (requestID >= 0 && requestID < CVAR_REQ_TYPES) {
 		m_queryResults[requestID] = ALLOC_STRING(pszValue);
 
-		bool hasCvar[6];
-		for (int i = 0; i < 6; i++) {
+		bool hasCvar[CVAR_REQ_TYPES];
+		for (int i = 0; i < CVAR_REQ_TYPES; i++) {
 			if (!m_queryResults[i]) {
 				return;
 			}
@@ -6879,7 +6885,7 @@ void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarNam
 		if (hasCvar[CVAR_REQ_SEVENKEWP] + hasCvar[CVAR_REQ_BUGFIXEDHL] + hasCvar[CVAR_REQ_ADRENALINE_GAMER] > 1) {
 			std::string clientStr;
 			if (hasCvar[CVAR_REQ_SEVENKEWP])
-				clientStr += "SevenKewp. ";
+				clientStr += "SevenKewp, ";
 			if (hasCvar[CVAR_REQ_BUGFIXEDHL])
 				clientStr += "BHL, ";
 			if (hasCvar[CVAR_REQ_ADRENALINE_GAMER])
@@ -6906,7 +6912,28 @@ void CBasePlayer::HandleClientCvarResponse(int requestID, const char* pszCvarNam
 			m_clientModVersionString = MAKE_STRING("Half-Life");
 		}
 
-		m_clientEngineVersion = hasCvar[CVAR_REQ_HL25] ? CLIENT_ENGINE_HL_LATEST : CLIENT_ENGINE_HL_LEGACY;
+		if (hasCvar[CVAR_REQ_HL25] + hasCvar[CVAR_REQ_XASH] > 1) {
+			std::string engineStr;
+			if (hasCvar[CVAR_REQ_HL25])
+				engineStr += "HL25, ";
+			if (hasCvar[CVAR_REQ_XASH])
+				engineStr += "Xash3D, ";
+			engineStr = engineStr.substr(0, engineStr.size() - 2);
+			ALERT(at_error, "Client detection error. Client has cvars from multiple engines: %s\n", engineStr.c_str());
+		}
+		else if (hasCvar[CVAR_REQ_HL25]) {
+			m_clientEngineVersion = CLIENT_ENGINE_HL_LATEST;
+			m_clientEngineVersionString = MAKE_STRING("Steam");
+		}
+		else if (hasCvar[CVAR_REQ_XASH]) {
+			m_clientEngineVersion = CLIENT_ENGINE_HL_XASH;
+			m_clientEngineVersionString = ALLOC_STRING(UTIL_VarArgs("Xash3D %s", STRING(m_queryResults[CVAR_REQ_XASH])));
+		}
+		else {
+			m_clientEngineVersion = CLIENT_ENGINE_HL_LEGACY;
+			m_clientEngineVersionString = MAKE_STRING("steam_legacy");
+		}
+
 		m_clientRenderer = hasCvar[CVAR_REQ_OPENGL] ? CLIENT_RENDERER_OPENGL : CLIENT_RENDERER_SOFTWARE;
 		m_clientSystem = hasCvar[CVAR_REQ_LINUX] ? CLIENT_SYSTEM_WINDOWS : CLIENT_SYSTEM_LINUX;
 		
@@ -7066,6 +7093,11 @@ const char* CBasePlayer::GetClientVersionString() {
 
 	if (m_clientEngineVersion == CLIENT_ENGINE_HL_LEGACY)
 		engineVersion = " (steam_legacy)";
+	else if (m_clientEngineVersion == CLIENT_ENGINE_HL_XASH) {
+		static std::string temp;
+		temp = UTIL_VarArgs(" (%s)", STRING(m_clientEngineVersionString));
+		engineVersion = temp.c_str();
+	}
 
 	if (m_clientRenderer == CLIENT_RENDERER_OPENGL)
 		renderer = " (OpenGL)";
