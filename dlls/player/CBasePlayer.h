@@ -418,6 +418,7 @@ public:
 	HL_CLIENT_RENDERER m_clientRenderer;
 	HL_CLIENT_SYSTEM m_clientSystem;
 	string_t m_clientModVersionString; // version string for the client mod
+	string_t m_clientEngineVersionString; // version string for the client engine
 	int m_sevenkewpVersion; // version number for this mod's client
 	bool m_sentClientWarning; // has this client been warned about their client incompatability?
 	bool m_sentSevenKewpNotice; // has this client been told about the sevenkewp client?

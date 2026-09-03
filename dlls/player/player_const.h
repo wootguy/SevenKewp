@@ -117,6 +117,7 @@ enum HL_CLIENT_ENGINE_VERSION {
 	CLIENT_ENGINE_NOT_CHECKED,	// player hasn't responded to cvar queries yet
 	CLIENT_ENGINE_HL_LATEST,	// the latest version of the HL client from steam
 	CLIENT_ENGINE_HL_LEGACY,	// the legacy version of HL from steam
+	CLIENT_ENGINE_HL_XASH,		// Xash3D
 	CLIENT_ENGINE_BOT,			// bots don't use a client
 };
 
