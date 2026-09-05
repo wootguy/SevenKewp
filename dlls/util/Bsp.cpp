@@ -86,7 +86,23 @@ bool Bsp::load_lumps(string fpath)
 
 	update_lump_pointers();
 
-	parseEntities((char*)lumps[LUMP_ENTITIES], header.lump[LUMP_ENTITIES].nLength, ents);
+	static std::vector<StringMap> tempEnts; // suppress dll linkage warning
+
+	if (CVAR_GET_FLOAT("sv_use_entity_file") > 0) {
+		const char* entFile = UTIL_VarArgs("maps/%s.ent", STRING(gpGlobals->mapname));
+		int len = 0;
+		uint8_t* entData = UTIL_LoadFile(entFile, &len);
+		if (entData) {
+			parseEntities((char*)entData, len, ents);
+		}
+		else {
+			ALERT(at_warning, "Falling back to map entities. Failed to open: %s\n", entFile);
+			parseEntities((char*)lumps[LUMP_ENTITIES], header.lump[LUMP_ENTITIES].nLength, ents);
+		}
+	}
+	else {
+		parseEntities((char*)lumps[LUMP_ENTITIES], header.lump[LUMP_ENTITIES].nLength, ents);
+	}
 
 	StringSet unique_bsp_models;
 	for (int i = 0; i < (int)ents.size(); i++) {
