@@ -22,11 +22,11 @@ struct Plugin {
 
 typedef void(*ENTITYINIT)(struct entvars_s*);
 
-#define CALL_HOOKS_VOID(...) \
-	if (g_pluginManager.CallHooks(&HLCOOP_PLUGIN_HOOKS::__VA_ARGS__).code & HOOKBIT_OVERRIDE) { return; }
+#define CALL_HOOKS_VOID(hookName, ...) \
+	if (g_pluginManager.CallHooks(&HLCOOP_PLUGIN_HOOKS::hookName, #hookName, ##__VA_ARGS__).code & HOOKBIT_OVERRIDE) { return; }
 
-#define CALL_HOOKS(type, ...) { \
-	HOOK_RETURN_DATA ret = g_pluginManager.CallHooks(&HLCOOP_PLUGIN_HOOKS::__VA_ARGS__); \
+#define CALL_HOOKS(type, hookName, ...) { \
+	HOOK_RETURN_DATA ret = g_pluginManager.CallHooks(&HLCOOP_PLUGIN_HOOKS::hookName, #hookName, ##__VA_ARGS__); \
 	if (ret.code & HOOKBIT_OVERRIDE) { \
 		return (type)ret.data; \
 	} \
@@ -84,16 +84,26 @@ public:
 	void ListPluginCvars(const char* pluginName);
 
 	template<typename Func, typename... Args>
-	HOOK_RETURN_DATA CallHooks(Func hookFunction, Args&&... args) {
+	HOOK_RETURN_DATA CallHooks(Func hookFunction, const char* hookName, Args&&... args) {
 		HOOK_RETURN_DATA totalRet = {0, 0};
+		int perfLevel = mp_perf.value;
 
 		for (const Plugin& plugin : plugins) {
 			if (!(plugin.hooks.*hookFunction)) {
 				continue;
 			}
 
+			uint64_t start = perfLevel ? getEpochMillis() : 0;
+
 			HOOK_RETURN_DATA ret = (*(plugin.hooks.*hookFunction))(std::forward<Args>(args)...);
 			
+			if (perfLevel > 0) {
+				int millis = getEpochMillis() - start;
+				if (millis >= perfLevel) {
+					ALERT(at_warning, "[%s] %s took %d ms\n", plugin.name, hookName, millis);
+				}
+			}
+
 			if (ret.code & HOOKBIT_OVERRIDE) {
 				if (totalRet.code & HOOKBIT_OVERRIDE) {
 					DEBUG_MSG(at_console, "%s", "Multiple plugins want to override a function return value\n");
