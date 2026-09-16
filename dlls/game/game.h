@@ -244,6 +244,12 @@ struct player_score_t {
 EXPORT extern std::unordered_map<uint64_t, player_score_t> g_playerScores;
 EXPORT extern std::unordered_map<uint64_t, player_score_t> g_oldPlayerScores; // state on level load, used in case of map restarts
 
+// map briefing
+EXPORT extern std::string g_sv_motd; // server MOTD (server_motd.txt)
+EXPORT extern std::string g_map_motd; // map mission briefing (maps/mapname_motd.txt)
+EXPORT extern bool g_map_has_readme; // maps/mapname.txt exists
+EXPORT extern bool g_map_has_readme2; // mapsmapname_readme.txt exists
+
 struct player_inventory_t {
 	StringSet weapons;
 	int weaponClips[MAX_WEAPONS];

@@ -34,6 +34,7 @@ struct UserMessageIds {
 	int TeamScore;		// sets the score of a team on the scoreboard
 	int GameMode;
 	int MOTD;
+	int VGUIMenu;
 	int ServerName;
 	int AmmoPickup;
 	int WeapPickup;

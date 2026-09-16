@@ -99,6 +99,7 @@ void LinkUserMessages(void)
 	INIT_USER_MSG(TeamScore, -1);
 	INIT_USER_MSG(GameMode, 1);
 	INIT_USER_MSG(MOTD, -1);
+	INIT_USER_MSG(VGUIMenu, -1);
 	INIT_USER_MSG(ServerName, -1);
 	INIT_USER_MSG(AmmoPickup, 2);
 	INIT_USER_MSG(WeapPickup, 1);

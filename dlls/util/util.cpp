@@ -3964,3 +3964,30 @@ uint8_t BloodColorHuman() {
 uint8_t BloodColorAlien() {
 	return mp_blood_color_alien.value;
 }
+
+void UTIL_SendMotd(CBasePlayer* plr, const char* text) {
+	if (!plr)
+		return;
+
+	const int max_length = 1536;
+	const int chunk_size = 60;
+	int char_count = 0;
+	const char* pText = text;
+
+	while (pText && *pText && char_count < max_length)
+	{
+		static char chunk[chunk_size + 1];
+		strcpy_safe(chunk, pText, chunk_size+1);
+
+		char_count += strlen(chunk);
+		if (char_count < max_length)
+			pText = text + char_count;
+		else
+			pText = NULL;
+
+		MESSAGE_BEGIN(MSG_ONE, g_umsg.MOTD, NULL, plr->edict());
+		WRITE_BYTE(pText && *pText ? FALSE : TRUE);	// FALSE means there is still more message to come
+		WRITE_STRING(chunk);
+		MESSAGE_END();
+	}
+}

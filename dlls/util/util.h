@@ -905,3 +905,5 @@ enum GetEntitySpawnFuncSearchMode {
 EXPORT SpawnFunc UTIL_GetEntitySpawnFunc(const char* classname, GetEntitySpawnFuncSearchMode searchMode= SPAWNFUNC_SEARCH_ALL);
 
 EXPORT Vector UTIL_RandomPointOnSphere();
+
+EXPORT void UTIL_SendMotd(CBasePlayer* plr, const char* text);
