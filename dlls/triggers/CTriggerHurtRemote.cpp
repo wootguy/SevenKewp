@@ -67,9 +67,11 @@ void CTriggerHurtRemote::Spawn() {
 }
 
 void CTriggerHurtRemote::HurtTarget(CBaseEntity* loser) {
+
 	if (pev->spawnflags & SF_RHURT_INSTANT_KILL) {
 		if (pev->dmg >= 0) {
-			loser->Killed(pev, GIB_NORMAL);
+			if (loser->IsAlive())
+				loser->Killed(pev, GIB_NORMAL);
 		}
 		else {
 			// a bug that became a feature?
