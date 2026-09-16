@@ -1348,7 +1348,10 @@ void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, con
 
 	pMessage = BreakupLongLines(pMessage);
 
-	if (textparms.channel == -1) {
+	// 0 channel works as an alias to channel 4 which is confusing. Never allow it.
+	int channel = textparms.channel ? textparms.channel : 1;
+
+	if (channel == -1) {
 		int sz = 7 * sizeof(long) + 3 + strlen(pMessage);
 		uint32_t color = (textparms.r1 << 16) | (textparms.g1 << 8) | textparms.b1;
 
@@ -1367,7 +1370,7 @@ void UTIL_HudMessage( CBaseEntity *pEntity, const hudtextparms_t &textparms, con
 		MESSAGE_END();
 	}
 	else {
-		int chan = textparms.channel % MAX_TEXT_CHANNELS;
+		int chan = channel % MAX_TEXT_CHANNELS;
 		uint16_t y = FixedSigned16(textparms.y, 1 << 13);
 		float holdTime = textparms.holdTime;
 
