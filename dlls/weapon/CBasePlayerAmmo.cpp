@@ -48,6 +48,8 @@ void CBasePlayerAmmo::KeyValue(KeyValueData* pkvd)
 	if (FStrEq(pkvd->szKeyName, "m_flCustomRespawnTime"))
 	{
 		m_flCustomRespawnTime = atof(pkvd->szValue);
+		if (m_flCustomRespawnTime == 0)
+			m_flCustomRespawnTime = FLT_MIN;
 		pkvd->fHandled = TRUE;
 	}
 	else
