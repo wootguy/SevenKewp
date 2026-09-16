@@ -7538,7 +7538,7 @@ bool CBasePlayer::LoadInventory() {
 				GiveNamedItem(itemName);
 				CBasePlayerItem* item = GetNamedPlayerItem(itemName);
 				CBasePlayerWeapon* wep = item ? item->GetWeaponPtr() : NULL;
-				if (wep) {
+				if (mp_keep_inventory.value >= 2 && wep) {
 					wep->m_iClip = inv.weaponClips[wep->m_iId];
 				}
 			}

@@ -33,8 +33,12 @@ BOOL CAmmoCustom::AddAmmo(CBaseEntity* pOther) {
 
 	int bResult = pOther->GiveAmmo(params.ammoGiven, STRING(ammoType)) != -1;
 
-	if (bResult && params.pickupSound)
-		EMIT_SOUND(ENT(pev), CHAN_ITEM, STRING(params.pickupSound), 1, ATTN_NORM);
+	if (bResult && params.pickupSound) {
+		// not attaching to the entity because sounds won't play on entities perfectly aligned to the floor
+		//EMIT_SOUND(ENT(pev), CHAN_ITEM, STRING(params.pickupSound), 1, ATTN_NORM);
+
+		EMIT_AMBIENT_SOUND(edict(), pev->origin, STRING(params.pickupSound), 1.0f, ATTN_NORM, 0, 100);
+	}
 
 	return bResult;
 }
