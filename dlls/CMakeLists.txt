@@ -280,6 +280,7 @@ set(TRIGGER_POINT_SRC
 	triggers/CGamePlayerHurt.cpp
 	triggers/CGameScore.cpp
 	triggers/CGameText.cpp
+	triggers/CGameMotd.cpp
 	triggers/CGlobalLightControl.cpp
 	triggers/CInfoLandmark.cpp
 	triggers/CMultiManager.cpp
