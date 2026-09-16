@@ -72,6 +72,9 @@ void CGamePlayerEquip::KeyValue(KeyValueData* pkvd)
 
 void CGamePlayerEquip::Touch(CBaseEntity* pOther)
 {
+	if (UseOnly())
+		return;
+
 	Equip(pOther, false);
 }
 
@@ -111,7 +114,7 @@ bool CGamePlayerEquip::Equip(CBaseEntity* pActivator, bool isSpawningPlayer) {
 	if (!CanFireForActivator(pActivator))
 		return false;
 
-	if (UseOnly())
+	if (isSpawningPlayer && UseOnly())
 		return false;
 
 	if (m_equipMode == GPEQUIP_CFG) {
