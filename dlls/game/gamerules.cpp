@@ -147,6 +147,16 @@ void AddMapEquipment(std::string name, std::string value) {
 		return;
 	}
 
+	for (int i = 0; i < MAX_EQUIP; i++) {
+		EquipItem& item = g_mapEquipment[i];
+
+		if (!strcmp(STRING(item.itemName), name.c_str())) {
+			// already added an item of this type. Increase count.
+			item.count += value.size() ? atoi(value.c_str()) : 1;
+			return;
+		}
+	}
+
 	g_mapEquipment[g_mapEquipIdx].itemName = ALLOC_STRING(name.c_str());
 	g_mapEquipment[g_mapEquipIdx].count = value.size() ? atoi(value.c_str()) : 1;
 

@@ -35,6 +35,17 @@ void CGamePlayerEquip::KeyValue(KeyValueData* pkvd)
 {
 	CRulePointEntity::KeyValue(pkvd);
 
+	if (FStrEq(pkvd->szKeyName, "equipmode"))
+	{
+		m_equipMode = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "inventorymode"))
+	{
+		m_inventoryMode = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+
 	if (!pkvd->fHandled)
 	{
 		for (int i = 0; i < MAX_EQUIP; i++)
@@ -60,13 +71,7 @@ void CGamePlayerEquip::KeyValue(KeyValueData* pkvd)
 
 void CGamePlayerEquip::Touch(CBaseEntity* pOther)
 {
-	if (!CanFireForActivator(pOther))
-		return;
-
-	if (UseOnly())
-		return;
-
-	EquipPlayer(pOther);
+	Equip(pOther, false);
 }
 
 void CGamePlayerEquip::EquipPlayer(CBaseEntity* pEntity)
@@ -98,7 +103,105 @@ void CGamePlayerEquip::EquipPlayer(CBaseEntity* pEntity)
 
 void CGamePlayerEquip::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value)
 {
+	Equip(pActivator, false);
+}
+
+bool CGamePlayerEquip::Equip(CBaseEntity* pActivator, bool isSpawningPlayer) {
+	if (!CanFireForActivator(pActivator))
+		return false;
+
+	if (UseOnly())
+		return false;
+
+	if (m_equipMode == GPEQUIP_CFG) {
+		if (isSpawningPlayer)
+			return false;
+
+		for (int i = 0; i < MAX_EQUIP; i++) {
+			if (!m_weaponNames[i])
+				break;
+
+			std::string itemName = toLowerCase(STRING(m_weaponNames[i]));
+
+			const char* remap = g_itemNameRemap.get(itemName.c_str());
+			if (remap) {
+				itemName = remap;
+			}
+
+			if (itemName == "<keyvalue>") {
+				continue;
+			}
+
+			bool handled = false;
+			int freeSlot = -1;
+
+			for (int k = 0; k < MAX_EQUIP; k++) {
+				EquipItem& item = g_mapEquipment[k];
+
+				if (!item.itemName && freeSlot < 0)
+					freeSlot = k;
+
+				if (strcmp(itemName.c_str(), STRING(item.itemName)))
+					continue;
+
+				// TODO: ammo can have multiple names (9mmbox/9mmclip/...)
+				// map inventory should work with ammo types and not entity classnames.
+
+				switch (m_inventoryMode) {
+				case GPEQUIP_MODE_SET:
+					item.count = m_weaponCount[i];
+					break;
+				case GPEQUIP_MODE_ADD:
+					item.count += m_weaponCount[i];
+					break;
+				case GPEQUIP_MODE_SUBTRACT:
+					item.count = V_max(0, item.count - m_weaponCount[i]);
+					break;
+				case GPEQUIP_MODE_REMOVE:
+					item.count = 0;
+					break;
+				case GPEQUIP_MODE_RESTOCK:
+					item.count = V_max(item.count, m_weaponCount[i]);
+					break;
+				case GPEQUIP_MODE_LIMIT:
+					item.count = V_min(item.count, m_weaponCount[i]);
+					break;
+				}
+
+				if (item.count <= 0) {
+					item.itemName = 0; // free the slot
+					item.count = 0;
+				}
+
+				handled = true;
+				break;
+			}
+
+			if (handled)
+				continue;
+
+			if (freeSlot < 0) {
+				EALERT(at_error, "Exceeded max CFG equipment\n");
+				continue;
+			}
+
+			// no matching item in existing inventory
+			switch (m_inventoryMode) {
+			case GPEQUIP_MODE_SET:
+			case GPEQUIP_MODE_ADD:
+			case GPEQUIP_MODE_RESTOCK:
+				EquipItem& newItem = g_mapEquipment[freeSlot];
+				newItem.itemName = m_weaponNames[i];
+				newItem.count = m_weaponCount[i];
+				break;
+			}
+		}
+
+		return false;
+	}
+
 	EquipPlayer(pActivator);
+	return true;
 }
 
 void equipPlayerWithItem(CBasePlayer* pPlayer, const char* itemName, int count) {
