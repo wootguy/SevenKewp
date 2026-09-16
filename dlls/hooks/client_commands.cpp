@@ -18,6 +18,8 @@
 #include "te_effects.h"
 #include "nodes.h"
 #include "CWeaponCustom.h"
+#include "user_messages.h"
+#include "shared_util.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
 extern int gmsgSayText;
@@ -627,6 +629,55 @@ void ClientCommand(edict_t* pEntity)
 		else {
 			UTIL_ClientPrint(pPlayer, print_chat, "Admins only.\n");
 		}
+	}
+	else if (FStrEq(pcmd, "svmotd"))
+	{
+		MESSAGE_BEGIN(MSG_ONE, gmsgServerName, NULL, pPlayer->edict());
+		WRITE_STRING(CVAR_GET_STRING("hostname"));
+		MESSAGE_END();
+		
+		if (g_sv_motd.size()) {
+			UTIL_SendMotd(pPlayer, g_sv_motd.c_str());
+		}
+		else {
+			std::string version = UTIL_SevenKewpClientString(SEVENKEWP_VERSION, true);
+			UTIL_SendMotd(pPlayer, UTIL_VarArgs("This server is running %s", version.c_str()));
+		}
+	}
+	else if (FStrEq(pcmd, "brief"))
+	{
+		const char* mapName = STRING(gpGlobals->mapname);
+
+		if (g_map_motd.size()) {
+			MESSAGE_BEGIN(MSG_ONE, gmsgServerName, NULL, pPlayer->edict());
+			WRITE_STRING(mapName);
+			MESSAGE_END();
+
+			UTIL_SendMotd(pPlayer, g_map_motd.c_str());
+		}
+		else if (g_map_has_readme) {
+			MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pPlayer->edict());
+			WRITE_BYTE(4);
+			WRITE_STRING(mapName);
+			MESSAGE_END();
+		}
+		else if (g_map_has_readme2) {
+			MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pPlayer->edict());
+			WRITE_BYTE(4);
+			WRITE_STRING(UTIL_VarArgs("%s_readme", mapName));
+			MESSAGE_END();
+		}
+		else {
+			MESSAGE_BEGIN(MSG_ONE, gmsgServerName, NULL, pPlayer->edict());
+			WRITE_STRING(mapName);
+			MESSAGE_END();
+
+			UTIL_SendMotd(pPlayer, "This map has no briefing.");
+		}
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgServerName, NULL, pPlayer->edict());
+		WRITE_STRING(CVAR_GET_STRING("hostname"));
+		MESSAGE_END();
 	}
 	else
 	{

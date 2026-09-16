@@ -173,6 +173,38 @@ void CWorld::Precache(void)
 	loadReplacementFiles();
 	loadSentenceFiles();
 
+	const char* mapName = STRING(gpGlobals->mapname);
+
+	{
+		g_map_motd = "";
+		int motdSz = 0;
+		uint8_t* motdDat = UTIL_LoadFile(UTIL_VarArgs("maps/%s_motd.txt", mapName), &motdSz);
+		if (motdDat) {
+			g_map_motd = std::string((char*)motdDat, motdSz);
+			delete[] motdDat;
+		}
+	}
+	{
+		g_sv_motd = "";
+		int motdSz = 0;
+		uint8_t* motdDat = UTIL_LoadFile(UTIL_VarArgs("server_motd.txt", mapName), &motdSz);
+		if (motdDat) {
+			g_sv_motd = std::string((char*)motdDat, motdSz);
+			delete[] motdDat;
+		}
+	}
+
+	// readme files loaded client-side
+	const char* readmePath = UTIL_VarArgs("maps/%s.txt", mapName);
+	g_map_has_readme = getGameFilePath(readmePath, false).size();
+	if (g_map_has_readme)
+		PRECACHE_GENERIC(readmePath);
+
+	readmePath = UTIL_VarArgs("maps/%s_readme.txt", mapName);
+	g_map_has_readme2 = getGameFilePath(readmePath, false).size();
+	if (g_map_has_readme2)
+		PRECACHE_GENERIC(readmePath);
+
 	// init here so sprites can be replaced
 	g_VoiceGameMgr.Init(&g_GameMgrHelper, gpGlobals->maxClients);
 

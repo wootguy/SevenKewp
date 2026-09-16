@@ -28,6 +28,7 @@ EXPORT extern int gmsgTeamInfo;
 EXPORT extern int gmsgTeamScore;
 EXPORT extern int gmsgGameMode;
 EXPORT extern int gmsgMOTD;
+EXPORT extern int gmsgVGUIMenu;
 EXPORT extern int gmsgServerName;
 EXPORT extern int gmsgAmmoPickup;
 EXPORT extern int gmsgWeapPickup;

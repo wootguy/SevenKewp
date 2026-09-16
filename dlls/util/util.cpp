@@ -3853,3 +3853,30 @@ SpawnFunc UTIL_GetEntitySpawnFunc(const char* classname, GetEntitySpawnFuncSearc
 
 	return NULL;
 }
+
+void UTIL_SendMotd(CBasePlayer* plr, const char* text) {
+	if (!plr)
+		return;
+
+	const int max_length = 1536;
+	const int chunk_size = 60;
+	int char_count = 0;
+	const char* pText = text;
+
+	while (pText && *pText && char_count < max_length)
+	{
+		static char chunk[chunk_size + 1];
+		strcpy_safe(chunk, pText, chunk_size+1);
+
+		char_count += strlen(chunk);
+		if (char_count < max_length)
+			pText = text + char_count;
+		else
+			pText = NULL;
+
+		MESSAGE_BEGIN(MSG_ONE, gmsgMOTD, NULL, plr->edict());
+		WRITE_BYTE(pText && *pText ? FALSE : TRUE);	// FALSE means there is still more message to come
+		WRITE_STRING(chunk);
+		MESSAGE_END();
+	}
+}

@@ -149,6 +149,11 @@ std::unordered_map<uint64_t, player_inventory_t> g_playerInventory;
 std::unordered_map<uint64_t, float> g_playerIdleTimes; // amount of idle time carried over from the previous map
 bool g_clearInventoriesNextMap = true;
 
+std::string g_sv_motd;
+std::string g_map_motd;
+bool g_map_has_readme; // maps/mapname.txt exists
+bool g_map_has_readme2;
+
 StringMap g_itemNameRemap = {
 	{"weapon_9mmar", "weapon_9mmAR"},
 	{"weapon_mp5", "weapon_9mmAR"},
