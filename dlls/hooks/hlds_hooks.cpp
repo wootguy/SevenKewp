@@ -1604,6 +1604,9 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	{
 		state->playerclass  = ent->v.playerclass;
 	}
+	else {
+		state->playerclass = 1; // prevents chats being suppressed when viewing menus
+	}
 
 	// Special stuff for players only
 	if ( player )
