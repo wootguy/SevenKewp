@@ -120,13 +120,13 @@ void CGameMotd::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 			}
 		}
 		else {
-			MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pPlayer->edict());
+			MESSAGE_BEGIN(MSG_ONE, gmsgServerName, NULL, pPlayer->edict());
 			WRITE_STRING(title);
 			MESSAGE_END();
 
 			UTIL_SendMotd(pPlayer, motd_text);
 
-			MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pPlayer->edict());
+			MESSAGE_BEGIN(MSG_ONE, gmsgServerName, NULL, pPlayer->edict());
 			WRITE_STRING(CVAR_GET_STRING("hostname"));
 			MESSAGE_END();
 		}
