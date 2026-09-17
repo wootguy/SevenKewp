@@ -101,9 +101,16 @@ bool PluginManager::LoadPlugin(Plugin& plugin) {
 	if (apiFunc) {
 		g_initPlugin = &plugin;
 
+		uint64_t start = getEpochMillis();
+
 		if (apiFunc()) {
 			// success
 			g_initPlugin = NULL;
+
+			int millis = getEpochMillis() - start;
+			if (millis >= mp_perf.value) {
+				ALERT(at_warning, "[%s] PluginInit took %d ms\n", plugin.name, millis);
+			}
 		}
 		else {
 			ALERT(at_error, "PluginInit call failed in plugin '%s'.\n", plugin.fpath.c_str());
