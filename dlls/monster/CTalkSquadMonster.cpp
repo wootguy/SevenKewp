@@ -1286,6 +1286,11 @@ void CTalkSquadMonster::Precache( void )
 			if (g_customSentencesMap.groups.get(m_szGrp[i])) {
 				PrecacheCustomSentence(this, m_szGrp[i]);
 			}
+
+			if (m_szGrp[i][0] == '+') {
+				// path to a sound file, not a sentence
+				PRECACHE_SOUND(m_szGrp[i] + 1);
+			}
 		}
 	}
 }
