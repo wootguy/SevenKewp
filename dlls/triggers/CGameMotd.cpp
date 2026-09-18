@@ -1,23 +1,6 @@
 #include "extdll.h"
 #include "util.h"
-#include "CRuleEntity.h"
-#include "PluginManager.h"
-
-#define SF_MOTD_ALL_PLAYERS 1	// open MOTD window for all players
-#define SF_MOTD_LONG_MODE	2	// precache the file for clients to load from disk to increase max text length
-
-#define MAX_MOTD_LENGTH 1536
-
-class EXPORT CGameMotd : public CRulePointEntity
-{
-public:
-	void	Spawn();
-	void	Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	void	KeyValue(KeyValueData* pkvd);
-
-	string_t m_title;
-	string_t m_file;
-};
+#include "CGameMotd.h"
 
 LINK_ENTITY_TO_CLASS(game_motd, CGameMotd)
 
@@ -64,7 +47,7 @@ void CGameMotd::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 			}
 
 			static char buffer[MAX_MOTD_LENGTH];
-			strcpy_safe(buffer, motd_data, V_min(sz, MAX_MOTD_LENGTH));
+			strcpy_safe(buffer, motd_data, V_min(sz+1, MAX_MOTD_LENGTH));
 			delete[] motd_data;
 			motd_text = buffer;
 
@@ -100,23 +83,39 @@ void CGameMotd::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useT
 		}
 
 		if (longMode) {
+			bool isBhlClient = pPlayer->GetClientInfo().mod_version == CLIENT_MOD_HLBUGFIXED;
+
 			if (m_file) {
-				MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pPlayer->edict());
-				WRITE_BYTE(4);
-				WRITE_STRING(STRING(m_file));
-				MESSAGE_END();
+				if (isBhlClient) {
+					if (UTIL_SendMotdFromFile(pPlayer, mapName, UTIL_VarArgs("maps/%s.txt", STRING(m_file))) > MAX_MOTD_LENGTH) {
+						UTIL_ClientPrint(pPlayer, print_chat, "BugFixedHL can't display long custom readme files. Some of this briefing is cut off.\n");
+					}
+				}
+				else {
+					MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pPlayer->edict());
+					WRITE_BYTE(4);
+					WRITE_STRING(STRING(m_file));
+					MESSAGE_END();
+				}
 			}
 			else if (g_map_has_readme) {
 				MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pPlayer->edict());
-				WRITE_BYTE(4);
+				WRITE_BYTE(isBhlClient ? 2 : 4);
 				WRITE_STRING(STRING(gpGlobals->mapname));
 				MESSAGE_END();
 			}
 			else if (g_map_has_readme2) {
-				MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pPlayer->edict());
-				WRITE_BYTE(4);
-				WRITE_STRING(UTIL_VarArgs("%s_readme", mapName));
-				MESSAGE_END();
+				if (isBhlClient) {
+					if (UTIL_SendMotdFromFile(pPlayer, mapName, UTIL_VarArgs("maps/%s_readme.txt", mapName)) > MAX_MOTD_LENGTH) {
+						UTIL_ClientPrint(pPlayer, print_chat, "BugFixedHL can't display long custom readme files. Some of this briefing is cut off.\n");
+					}
+				}
+				else {
+					MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pPlayer->edict());
+					WRITE_BYTE(4);
+					WRITE_STRING(UTIL_VarArgs("%s_readme", mapName));
+					MESSAGE_END();
+				}
 			}
 		}
 		else {

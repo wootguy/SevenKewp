@@ -996,3 +996,6 @@ enum GetEntitySpawnFuncSearchMode {
 
 EXPORT SpawnFunc UTIL_GetEntitySpawnFunc(const char* classname, GetEntitySpawnFuncSearchMode searchMode= SPAWNFUNC_SEARCH_ALL);
 EXPORT void UTIL_SendMotd(CBasePlayer* plr, const char* text);
+
+// returns size of the file data
+EXPORT int UTIL_SendMotdFromFile(CBasePlayer* plr, const char* title, const char* fpath);

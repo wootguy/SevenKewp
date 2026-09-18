@@ -251,6 +251,7 @@ set(ITEM_SRC
 set(TRIGGER_HDR
 	triggers/CBaseLogic.h
 	triggers/CBaseTrigger.h
+	triggers/CGameMotd.h
 	triggers/CGamePlayerEquip.h
 	triggers/CFireAndDie.h
 	triggers/CMultiSource.h
