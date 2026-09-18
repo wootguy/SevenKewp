@@ -44,6 +44,7 @@
 #include "te_effects.h"
 #include "string_deltas.h"
 #include "module_funcs.h"
+#include "CGameMotd.h"
 
 #include <fstream>
 #include <sys/types.h>
@@ -3969,18 +3970,17 @@ void UTIL_SendMotd(CBasePlayer* plr, const char* text) {
 	if (!plr)
 		return;
 
-	const int max_length = 1536;
 	const int chunk_size = 60;
 	int char_count = 0;
 	const char* pText = text;
 
-	while (pText && *pText && char_count < max_length)
+	while (pText && *pText && char_count < MAX_MOTD_LENGTH)
 	{
 		static char chunk[chunk_size + 1];
 		strcpy_safe(chunk, pText, chunk_size+1);
 
 		char_count += strlen(chunk);
-		if (char_count < max_length)
+		if (char_count < MAX_MOTD_LENGTH)
 			pText = text + char_count;
 		else
 			pText = NULL;
@@ -3990,4 +3990,28 @@ void UTIL_SendMotd(CBasePlayer* plr, const char* text) {
 		WRITE_STRING(chunk);
 		MESSAGE_END();
 	}
+}
+
+int UTIL_SendMotdFromFile(CBasePlayer* plr, const char* title, const char* fpath) {
+	int sz;
+	char* motd_data = (char*)UTIL_LoadFile(fpath, &sz);
+	if (!motd_data) {
+		return -1;
+	}
+
+	static char buffer[MAX_MOTD_LENGTH];
+	strcpy_safe(buffer, motd_data, V_min(sz+1, MAX_MOTD_LENGTH));
+	delete[] motd_data;
+
+	MESSAGE_BEGIN(MSG_ONE, g_umsg.ServerName, NULL, plr->edict());
+	WRITE_STRING(title);
+	MESSAGE_END();
+
+	UTIL_SendMotd(plr, buffer);
+
+	MESSAGE_BEGIN(MSG_ONE, g_umsg.ServerName, NULL, plr->edict());
+	WRITE_STRING(CVAR_GET_STRING("hostname"));
+	MESSAGE_END();
+
+	return sz;
 }

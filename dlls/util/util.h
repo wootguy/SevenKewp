@@ -907,3 +907,6 @@ EXPORT SpawnFunc UTIL_GetEntitySpawnFunc(const char* classname, GetEntitySpawnFu
 EXPORT Vector UTIL_RandomPointOnSphere();
 
 EXPORT void UTIL_SendMotd(CBasePlayer* plr, const char* text);
+
+// returns size of the file data
+EXPORT int UTIL_SendMotdFromFile(CBasePlayer* plr, const char* title, const char* fpath);

@@ -22,6 +22,7 @@
 #include "CBaseEntity.h"
 #include "user_messages.h"
 #include "shared_util.h"
+#include "CGameMotd.h"
 
 extern CVoiceGameMgr g_VoiceGameMgr;
 extern cvar_t allow_spectators;
@@ -648,6 +649,7 @@ void ClientCommand(edict_t* pEntity)
 	else if (FStrEq(pcmd, "brief"))
 	{
 		const char* mapName = STRING(gpGlobals->mapname);
+		bool isBhlClient = pPlayer->GetClientInfo().mod_version == CLIENT_MOD_HLBUGFIXED;
 
 		if (g_map_motd.size()) {
 			MESSAGE_BEGIN(MSG_ONE, g_umsg.ServerName, NULL, pPlayer->edict());
@@ -658,11 +660,18 @@ void ClientCommand(edict_t* pEntity)
 		}
 		else if (g_map_has_readme) {
 			MESSAGE_BEGIN(MSG_ONE, g_umsg.VGUIMenu, NULL, pPlayer->edict());
-			WRITE_BYTE(4);
+			WRITE_BYTE(isBhlClient ? 2 : 4);
 			WRITE_STRING(mapName);
 			MESSAGE_END();
 		}
 		else if (g_map_has_readme2) {
+			if (isBhlClient) {
+				if (UTIL_SendMotdFromFile(pPlayer, mapName, UTIL_VarArgs("maps/%s_readme.txt", mapName)) > MAX_MOTD_LENGTH) {
+					UTIL_ClientPrint(pPlayer, print_chat, "BugFixedHL can't display long custom readme files. Some of this briefing is cut off.\n");
+				}
+				return;
+			}
+
 			MESSAGE_BEGIN(MSG_ONE, g_umsg.VGUIMenu, NULL, pPlayer->edict());
 			WRITE_BYTE(4);
 			WRITE_STRING(UTIL_VarArgs("%s_readme", mapName));
