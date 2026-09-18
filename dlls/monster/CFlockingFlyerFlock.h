@@ -67,8 +67,8 @@ public:
 	void SquadAdd( CFlockingFlyer *pAdd );
 	void SquadDisband( void );
 
-	CFlockingFlyer *m_pSquadLeader;
-	CFlockingFlyer *m_pSquadNext;
+	EHANDLE m_pSquadLeader;
+	EHANDLE m_pSquadNext;
 	BOOL	m_fTurning;// is this boid turning?
 	BOOL	m_fCourseAdjust;// followers set this flag TRUE to override flocking while they avoid something
 	BOOL	m_fPathBlocked;// TRUE if there is an obstacle ahead

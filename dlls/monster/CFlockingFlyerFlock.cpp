@@ -190,20 +190,19 @@ void CFlockingFlyer :: MakeSound( void )
 //=========================================================
 //=========================================================
 void CFlockingFlyer :: Killed( entvars_t *pevAttacker, int iGib )
-{
-	CFlockingFlyer *pSquad;
-	
-	pSquad = (CFlockingFlyer *)m_pSquadLeader;
+{	
+	CFlockingFlyer* pSquad = (CFlockingFlyer *)m_pSquadLeader.GetEntity();
 
 	while ( pSquad )
 	{
 		pSquad->m_flAlertTime = gpGlobals->time + 15;
-		pSquad = (CFlockingFlyer *)pSquad->m_pSquadNext;
+		pSquad = (CFlockingFlyer *)pSquad->m_pSquadNext.GetEntity();
 	}
 
-	if ( m_pSquadLeader )
+	CFlockingFlyer* pLeader = (CFlockingFlyer*)m_pSquadLeader.GetEntity();
+	if (pLeader)
 	{
-		m_pSquadLeader->SquadRemove( this );
+		pLeader->SquadRemove( this );
 	}
 
 	pev->deadflag = DEAD_DEAD;
@@ -377,7 +376,7 @@ void CFlockingFlyer :: SpreadFlock( )
 	Vector		vecDir;
 	float		flSpeed;// holds vector magnitude while we fiddle with the direction
 	
-	CFlockingFlyer *pList = m_pSquadLeader;
+	CFlockingFlyer* pList = (CFlockingFlyer*)m_pSquadLeader.GetEntity();
 	while ( pList )
 	{
 		if ( pList != this && ( pev->origin - pList->pev->origin ).Length() <= AFLOCK_TOO_CLOSE )
@@ -394,7 +393,7 @@ void CFlockingFlyer :: SpreadFlock( )
 			pList->pev->velocity = pList->pev->velocity * flSpeed;
 		}
 
-		pList = pList->m_pSquadNext;
+		pList = (CFlockingFlyer*)pList->m_pSquadNext.GetEntity();
 	}
 }
 
@@ -407,7 +406,7 @@ void CFlockingFlyer :: SpreadFlock2 ( )
 {
 	Vector		vecDir;
 	
-	CFlockingFlyer *pList = m_pSquadLeader;
+	CFlockingFlyer *pList = (CFlockingFlyer*)m_pSquadLeader.GetEntity();
 	while ( pList )
 	{
 		if ( pList != this && ( pev->origin - pList->pev->origin ).Length() <= AFLOCK_TOO_CLOSE )
@@ -418,7 +417,7 @@ void CFlockingFlyer :: SpreadFlock2 ( )
 			pev->velocity = (pev->velocity + vecDir);
 		}
 
-		pList = pList->m_pSquadNext;
+		pList = (CFlockingFlyer*)pList->m_pSquadNext.GetEntity();
 	}
 }
 
@@ -756,7 +755,7 @@ void CFlockingFlyer :: SquadRemove( CFlockingFlyer *pRemove )
 		// Removing the leader, promote m_pSquadNext to leader
 		if ( pRemove == this )
 		{
-			CFlockingFlyer *pLeader = m_pSquadNext;
+			CFlockingFlyer *pLeader = (CFlockingFlyer*)m_pSquadNext.GetEntity();
 			
 			// copy the enemy LKP to the new leader
 			pLeader->m_vecEnemyLKP = m_vecEnemyLKP;
@@ -768,7 +767,7 @@ void CFlockingFlyer :: SquadRemove( CFlockingFlyer *pRemove )
 				while ( pList )
 				{
 					pList->m_pSquadLeader = pLeader;
-					pList = pList->m_pSquadNext;
+					pList = (CFlockingFlyer*)pList->m_pSquadNext.GetEntity();
 				}
 
 			}
@@ -783,7 +782,7 @@ void CFlockingFlyer :: SquadRemove( CFlockingFlyer *pRemove )
 			{
 				// assert to test valid list construction
 				ASSERT( pList->m_pSquadNext != NULL );
-				pList = pList->m_pSquadNext;
+				pList = (CFlockingFlyer*)pList->m_pSquadNext.GetEntity();
 			}
 			// List validity
 			ASSERT( pList->m_pSquadNext == pRemove );
@@ -806,12 +805,12 @@ void CFlockingFlyer :: SquadRemove( CFlockingFlyer *pRemove )
 //=========================================================
 int CFlockingFlyer :: SquadCount( void )
 {
-	CFlockingFlyer *pList = m_pSquadLeader;
+	CFlockingFlyer *pList = (CFlockingFlyer*)m_pSquadLeader.GetEntity();
 	int squadCount = 0;
 	while ( pList )
 	{
 		squadCount++;
-		pList = pList->m_pSquadNext;
+		pList = (CFlockingFlyer*)pList->m_pSquadNext.GetEntity();
 	}
 
 	return squadCount;
@@ -824,12 +823,12 @@ int CFlockingFlyer :: SquadCount( void )
 //=========================================================
 void CFlockingFlyer :: SquadDisband( void )
 {
-	CFlockingFlyer *pList = m_pSquadLeader;
+	CFlockingFlyer *pList = (CFlockingFlyer*)m_pSquadLeader.GetEntity();
 	CFlockingFlyer *pNext;
 
 	while ( pList )
 	{
-		pNext = pList->m_pSquadNext;
+		pNext = (CFlockingFlyer*)pList->m_pSquadNext.GetEntity();
 		pList->SquadUnlink();
 		pList = pNext;
 	}
