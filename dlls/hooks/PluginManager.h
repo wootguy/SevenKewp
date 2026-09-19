@@ -3,6 +3,7 @@
 #include <functional>
 #include <vector>
 #include "const.h"
+#include "perf.h"
 
 typedef int(*PLUGIN_INIT_FUNCTION)(void);
 typedef void(*PLUGIN_EXIT_FUNCTION)(void);
@@ -86,23 +87,19 @@ public:
 	template<typename Func, typename... Args>
 	HOOK_RETURN_DATA CallHooks(Func hookFunction, const char* hookName, Args&&... args) {
 		HOOK_RETURN_DATA totalRet = {0, 0};
-		int perfLevel = mp_perf.value;
+
+		uint64_t hooksStart = getEpochMillis();
 
 		for (const Plugin& plugin : plugins) {
 			if (!(plugin.hooks.*hookFunction)) {
 				continue;
 			}
 
-			uint64_t start = perfLevel ? getEpochMillis() : 0;
+			uint64_t start = getEpochMillis();
 
 			HOOK_RETURN_DATA ret = (*(plugin.hooks.*hookFunction))(std::forward<Args>(args)...);
 			
-			if (perfLevel > 0) {
-				int millis = getEpochMillis() - start;
-				if (millis >= perfLevel) {
-					ALERT(at_warning, "[%s] %s took %d ms\n", plugin.name, hookName, millis);
-				}
-			}
+			perf_log_plugin_hook_timing(plugin.name, hookName, getEpochMillis() - start);
 
 			if (ret.code & HOOKBIT_OVERRIDE) {
 				if (totalRet.code & HOOKBIT_OVERRIDE) {
@@ -116,6 +113,8 @@ public:
 				break;
 			}
 		}
+
+		g_perf_metrics.pluginFuncs += getEpochMillis() - hooksStart;
 
 		return totalRet;
 	}

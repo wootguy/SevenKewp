@@ -543,6 +543,7 @@ set(UTIL_HDR
 	util/ThreadSafeQueue.h
 	util/wav.h
 	util/water.h
+	util/perf.h
 	../game_shared/vector.h
 	../game_shared/HashMap.h
 	../game_shared/StringPool.h
@@ -576,6 +577,7 @@ set(UTIL_SRC
 	util/ThreadSafeQueue.cpp
 	util/wav.cpp
 	util/water.cpp
+	util/perf.cpp
 	../game_shared/HashMap.cpp
 	../game_shared/StringPool.cpp
 	../game_shared/string_deltas.cpp

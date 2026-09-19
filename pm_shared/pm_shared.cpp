@@ -24,6 +24,7 @@
 #include "pm_shared.h"
 #include "pm_movevars.h"
 #include "pm_debug.h"
+#include "../dlls/util/perf.h"
 #include <stdio.h>  // NULL
 #include <math.h>   // sqrt
 #include <string.h> // strcpy
@@ -92,6 +93,8 @@ void UTIL_WaterSplashFootstep(int player_index);
 inline uint32_t PLRBIT(int eidx) { return 1 << (eidx & 31); }
 
 char* strcpy_safe(char* dest, const char* src, size_t size);
+
+extern uint64_t getEpochMillis();
 
 #ifdef CLIENT_DLL
 #include "engine_pv.h"
@@ -3517,6 +3520,10 @@ void PM_Move ( struct playermove_s *ppmove, int server )
 {
 	assert( pm_shared_initialized );
 
+#ifndef CLIENT_DLL
+	uint64_t start = getEpochMillis();
+#endif
+
 	pmove = ppmove;
 	
 	PM_PlayerMove( ( server != 0 ) ? true : false );
@@ -3535,6 +3542,10 @@ void PM_Move ( struct playermove_s *ppmove, int server )
 	{
 		//pmove->friction = 1.0f;
 	}
+
+#ifndef CLIENT_DLL
+	g_perf_metrics.playerMove += getEpochMillis() - start;
+#endif
 }
 
 int PM_GetVisEntInfo( int ent )

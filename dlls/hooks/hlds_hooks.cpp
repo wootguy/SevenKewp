@@ -61,6 +61,7 @@
 #include "user_messages.h"
 #include "CBreakable.h"
 #include "wc_config.h"
+#include "perf.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
@@ -1013,10 +1014,13 @@ Called every frame before physics are run
 */
 void PlayerPreThink( edict_t *pEntity )
 {
+	uint64_t start = getEpochMillis();
 	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE(pEntity);
 
 	if (pPlayer)
 		pPlayer->PreThink( );
+
+	g_perf_metrics.playerPreThink += getEpochMillis() - start;
 }
 
 /*
@@ -1028,10 +1032,13 @@ Called every frame after physics are run
 */
 void PlayerPostThink( edict_t *pEntity )
 {
+	uint64_t start = getEpochMillis();
 	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE(pEntity);
 
 	if (pPlayer)
 		pPlayer->PostThink( );
+
+	g_perf_metrics.playerPostThink += getEpochMillis() - start;
 }
 
 
@@ -1104,7 +1111,11 @@ void NerfMonsters() {
 //
 void StartFrame( void )
 {
+	perf_finalize();
+
 	CALL_HOOKS_VOID(pfnStartFrame);
+
+	perf_init();
 
 	if ( g_pGameRules )
 		g_pGameRules->Think();
@@ -1124,7 +1135,9 @@ void StartFrame( void )
 
 	BroadcastEntNames();
 
+	uint64_t thinksStart = getEpochMillis();
 	g_Scheduler.Think();
+	g_perf_metrics.pluginFuncs += getEpochMillis() - thinksStart;
 
 	PlayCustomSentences();
 
@@ -2685,7 +2698,9 @@ void DispatchThink(edict_t* pent)
 		if (FBitSet(pEntity->pev->flags, FL_DORMANT))
 			ALERT(at_console, "Dormant entity %s is thinking!!\n", STRING(pEntity->pev->classname));
 
+		uint64_t now = getEpochMillis();
 		pEntity->Think();
+		perf_log_ent_timing(pEntity, getEpochMillis() - now);
 	}
 }
 
