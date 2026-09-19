@@ -29,7 +29,8 @@ void Scheduler::Think() {
         // wait to call function in case it adds/removes schedules and messes up this loop
         NamedFunc namedFunc;
         namedFunc.func = func.func;
-        namedFunc.name = func.owner;
+        namedFunc.name = func.funcName;
+        namedFunc.plugin = func.owner;
         funcsToCall.push_back(namedFunc);
         
         func.lastCall = now;

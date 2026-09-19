@@ -61,6 +61,7 @@
 #include "user_messages.h"
 #include "CBreakable.h"
 #include "perf.h"
+#include "perf.h"
 
 #if !defined ( _WIN32 )
 #include <ctype.h>
