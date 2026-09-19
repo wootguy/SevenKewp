@@ -6,6 +6,7 @@
 
 struct ScheduledFunction_internal {
     std::function<void()> func;
+    const char* funcName;
     const char* owner;
     float delay;
     int callCount;
@@ -27,6 +28,10 @@ public:
 
 EXPORT extern unsigned int g_schedule_id; // don't touch this
 
+#define SetTimeout(func, delay, ...) \
+    SetTimeout_internal(func, #func, delay, ##__VA_ARGS__)
+#define SetInterval(func, delay, ...) \
+    SetInterval_internal(func, #func, delay, ##__VA_ARGS__)
 
 // there should only be one instance of this in the game (g_Scheduler)
 class Scheduler {
@@ -36,9 +41,10 @@ public:
     std::vector<ScheduledFunction_internal> functions;
 
     template <typename F, typename... Args>
-    ScheduledFunction SetTimeout(F&& func, float delay, Args&&... args) {
+    ScheduledFunction SetTimeout_internal(F&& func, const char* funcName, float delay, Args&&... args) {
         ScheduledFunction_internal f = {
             std::bind(std::forward<F>(func), std::forward<Args>(args)...),
+            funcName,
 #ifdef PLUGIN_NAME
             PLUGIN_NAME,
 #else
@@ -55,9 +61,10 @@ public:
     }
 
     template <typename F, typename... Args>
-    ScheduledFunction SetInterval(F&& func, float delay, int maxCalls, Args&&... args) {
+    ScheduledFunction SetInterval_internal(F&& func, const char* funcName, float delay, int maxCalls, Args&&... args) {
         ScheduledFunction_internal f = {
             std::bind(std::forward<F>(func), std::forward<Args>(args)...),
+            funcName,
 #ifdef PLUGIN_NAME
             PLUGIN_NAME,
 #else

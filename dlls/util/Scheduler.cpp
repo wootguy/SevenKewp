@@ -1,5 +1,6 @@
 #include "Scheduler.h"
 #include "util.h"
+#include "perf.h"
 #include <type_traits>
 
 using namespace std;
@@ -10,7 +11,13 @@ unsigned int g_schedule_id = 1;
 void Scheduler::Think() {
     float now = g_engfuncs.pfnTime();
 
-    vector<function<void()>> funcsToCall;
+    struct NamedFunc {
+        function<void()> func;
+        string plugin;
+        string name;
+    };
+
+    vector<NamedFunc> funcsToCall;
 
     for (int i = 0; i < (int)functions.size(); i++) {
         ScheduledFunction_internal& func = functions[i];
@@ -20,7 +27,10 @@ void Scheduler::Think() {
         }
 
         // wait to call function in case it adds/removes schedules and messes up this loop
-        funcsToCall.push_back(func.func);
+        NamedFunc namedFunc;
+        namedFunc.func = func.func;
+        namedFunc.name = func.owner;
+        funcsToCall.push_back(namedFunc);
         
         func.lastCall = now;
         func.callCount++;
@@ -32,7 +42,12 @@ void Scheduler::Think() {
     }
 
     for (int i = 0; i < (int)funcsToCall.size(); i++) {
-        funcsToCall[i]();
+        NamedFunc& func = funcsToCall[i];
+        uint64_t now = getEpochMillis();
+
+        func.func();
+
+        perf_log_plugin_hook_timing(func.plugin.c_str(), func.name.c_str(), getEpochMillis() - now);
     }
 }
 

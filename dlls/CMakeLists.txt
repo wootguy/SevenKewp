@@ -529,6 +529,7 @@ set(UTIL_HDR
 	util/StringPool.h
 	util/water.h
 	util/string_deltas.h
+	util/perf.h
 	../game_shared/prediction_files.h
 	../game_shared/mstream.h
 	../game_shared/shared_effects.h
@@ -559,6 +560,7 @@ set(UTIL_SRC
 	util/StringPool.cpp
 	util/water.cpp
 	util/string_deltas.cpp
+	util/perf.cpp
 	../game_shared/prediction_files.cpp
 	../game_shared/mstream.cpp
 	../game_shared/shared_util.cpp
