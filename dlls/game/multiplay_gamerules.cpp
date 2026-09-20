@@ -1592,6 +1592,8 @@ Parses mapcycle.txt file into mapcycle_t structure
 */
 int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 {
+	uint64_t start = getEpochMillis();
+
 	const int MAX_MAP_NAME_LEN = 32;
 	char szMap[MAX_MAP_NAME_LEN];
 	int length;
@@ -1629,10 +1631,11 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 			strncpy(szMap, com_token, MAX_MAP_NAME_LEN);
 			szMap[MAX_MAP_NAME_LEN - 1] = 0;
 
-			if (!IS_MAP_VALID(szMap)) {
-				ALERT(at_console, "Skipping %s from mapcycle, not a valid map\n", szMap);
-				continue;
-			}
+			// too expensive to do this on large cycles. Can take several seconds to check every map.
+			//if (!IS_MAP_VALID(szMap)) {
+			//	ALERT(at_console, "Skipping %s from mapcycle, not a valid map\n", szMap);
+			//	continue;
+			//}
 
 			// Create entry
 			item = new mapcycle_item_t;
@@ -1672,6 +1675,8 @@ int ReloadMapCycleFile( char *filename, mapcycle_t *cycle )
 		item = item->next;
 	}
 	item->next = cycle->items;
+
+	ALERT(at_logged, "Loaded map cycle in %d ms.\n", (int)(getEpochMillis() - start));
 
 	return 1;
 }
@@ -1847,16 +1852,8 @@ mapcycle_item_t* CHalfLifeMultiplay::GetMapCyleMap(const char* current_map) {
 	return NULL;
 }
 
-/*
-==============
-ChangeLevel
-
-Server is changing to a new level, check mapcycle.txt for map name and setup info
-==============
-*/
-void CHalfLifeMultiplay :: ChangeLevel( void )
-{
-	static char szPreviousMapCycleFile[ 256 ];
+bool CHalfLifeMultiplay::LoadMapCycle() {
+	static char szPreviousMapCycleFile[256];
 	static uint64_t lastMapCycleModifyTime = 0;
 
 	BOOL do_cycle = TRUE;
@@ -1876,7 +1873,7 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 	uint64_t modifyTime = getFileModifiedTime(getGameFilePath(mapcfile).c_str());
 	if (modifyTime && modifyTime != lastMapCycleModifyTime) {
 		if (lastMapCycleModifyTime) {
-			ALERT(at_console, "Map cycle '%s' modified. Reloading.\n", mapcfile);
+			ALERT(at_logged, "Map cycle '%s' modified. Reloading.\n", mapcfile);
 		}
 		lastMapCycleModifyTime = modifyTime;
 		shouldReloadMapCycle = true;
@@ -1887,10 +1884,24 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 
 		if (!ReloadMapCycleFile(mapcfile, &mapcycle) || (!mapcycle.items))
 		{
-			ALERT(at_console, "Unable to load map cycle file %s\n", mapcfile);
+			ALERT(at_error, "Unable to load map cycle file %s\n", mapcfile);
 			do_cycle = FALSE;
 		}
 	}
+
+	return do_cycle;
+}
+
+/*
+==============
+ChangeLevel
+
+Server is changing to a new level, check mapcycle.txt for map name and setup info
+==============
+*/
+void CHalfLifeMultiplay :: ChangeLevel( void )
+{
+	bool do_cycle = LoadMapCycle();
 
 	// restart map if no cycle defined
 	const char* current_map = STRING(gpGlobals->mapname);
@@ -1917,7 +1928,7 @@ void CHalfLifeMultiplay :: ChangeLevel( void )
 		}
 		else {
 			next_map = mapcycle.items->mapname;
-			ALERT(at_console, "Invalid map '%s' in map cycle file. Restarting the map cycle.\n", current_map);
+			ALERT(at_error, "Invalid map '%s' in map cycle file. Restarting the map cycle.\n", current_map);
 		}
 	}
 

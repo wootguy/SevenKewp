@@ -429,6 +429,8 @@ void CWorld::Precache(void)
 		CVAR_SET_FLOAT("mp_defaultteam", 0);
 	}
 
+	g_pGameRules->LoadMapCycle();
+
 	const char* current_map = STRING(gpGlobals->mapname);
 	mapcycle_item_t* cycleMap = g_pGameRules->GetMapCyleMap(current_map);
 	mapcycle_item_t* lastCycleMap = g_pGameRules->GetMapCyleMap(g_lastMapName.c_str());
