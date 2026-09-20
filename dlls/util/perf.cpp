@@ -14,6 +14,14 @@ deque<PerfWarning> g_perf_warnings;
 PerfWarning::PerfWarning(std::string source, std::string func, uint32_t millis)
 	: source(source), func(func), millis(millis), logTime(getEpochMillis()) {}
 
+void perf_add_warning(std::string source, std::string func, uint32_t millis) {
+	g_perf_warnings.push_front(PerfWarning(source, func, millis));
+
+	if (g_perf_warnings.size() > 100) {
+		g_perf_warnings.pop_back();
+	}
+}
+
 void perf_init() {
 	if (!mp_perf.value)
 		return;
@@ -60,14 +68,6 @@ void perf_finalize() {
 		perf_add_warning("GAME", "SV_SendClientMessages", g_perf_metrics.sendClientMessages);
 	if (g_perf_metrics.addToFullPack >= mp_perf.value)
 		perf_add_warning("GAME", "AddToFullPack", g_perf_metrics.addToFullPack);
-}
-
-void perf_add_warning(std::string source, std::string func, uint32_t millis) {
-	g_perf_warnings.push_front(PerfWarning(source, func, millis));
-
-	if (g_perf_warnings.size() > 100) {
-		g_perf_warnings.pop_back();
-	}
 }
 
 void perf_log_ent_timing(CBaseEntity* ent, uint32_t millis) {
