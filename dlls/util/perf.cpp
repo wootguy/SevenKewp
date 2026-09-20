@@ -41,11 +41,24 @@ void perf_finalize() {
 
 	g_perf_metrics.playerThink = g_perf_metrics.playerPostThink + g_perf_metrics.playerPreThink;
 
-	if (g_perf_metrics.entityPhysics > mp_perf.value)
+	if (g_perf_metrics.entityPhysics >= mp_perf.value)
 		perf_log_plugin_hook_timing("GAME", "EntityPhysics", g_perf_metrics.entityPhysics);
-	if (g_perf_metrics.entityThinks > mp_perf.value)
+	if (g_perf_metrics.entityThinks >= mp_perf.value)
 		perf_log_plugin_hook_timing("GAME", "EntityThinks", g_perf_metrics.entityThinks);
-	if (g_perf_metrics.addToFullPack > mp_perf.value)
+
+	if (g_perf_metrics.playerThink >= mp_perf.value)
+		perf_log_plugin_hook_timing("GAME", "PlayerThinks", g_perf_metrics.playerThink);
+	if (g_perf_metrics.playerPreThink >= mp_perf.value)
+		perf_log_plugin_hook_timing("GAME", "PlayerPreThinks", g_perf_metrics.playerPreThink);
+	if (g_perf_metrics.playerPostThink >= mp_perf.value)
+		perf_log_plugin_hook_timing("GAME", "PlayerPostThinks", g_perf_metrics.playerPostThink);
+
+	if (g_perf_metrics.readPackets >= mp_perf.value)
+		perf_log_plugin_hook_timing("GAME", "SV_ReadPackets", g_perf_metrics.readPackets);
+
+	if (g_perf_metrics.sendClientMessages >= mp_perf.value)
+		perf_log_plugin_hook_timing("GAME", "SV_SendClientMessages", g_perf_metrics.sendClientMessages);
+	if (g_perf_metrics.addToFullPack >= mp_perf.value)
 		perf_log_plugin_hook_timing("GAME", "AddToFullPack", g_perf_metrics.addToFullPack);
 }
 

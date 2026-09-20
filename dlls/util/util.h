@@ -999,3 +999,9 @@ EXPORT void UTIL_SendMotd(CBasePlayer* plr, const char* text);
 
 // returns size of the file data
 EXPORT int UTIL_SendMotdFromFile(CBasePlayer* plr, const char* title, const char* fpath);
+
+// Negative steps = Lower priority.
+// Positive steps = Higher priority. Linux doesn't allow setting higher than the process unless root.
+// In Windows this single step in priority.
+// In Linux this is 5 "nice" steps for higher priorities and 10 steps for lower.
+EXPORT void UTIL_AdjustThreadPriority(int steps);
