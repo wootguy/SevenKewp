@@ -102,6 +102,7 @@ EXPORT extern cvar_t	mp_one_pickup_per_player; // items don't respawn, but each 
 EXPORT extern cvar_t	mp_keep_inventory; // 1 = players add their previous map inventory to the next map's default loadout. 2 = players keep their inventory exactly as it was in the previous map. If they die and respawn, or join for the first time, they get the map default inventory.
 EXPORT extern cvar_t	mp_use_only_pickups; // 1 = all pickups will be forced into use-only mode
 EXPORT extern cvar_t	mp_barnacle_paralyze; // 1 = can't use weapons while being barnacled
+EXPORT extern cvar_t	mp_timelimit_messages; // 0 = Don't display messages for time remaining
 
 // Enables classic func_pushable physics (which is horribly broken, but fun)
 // The higher your FPS, the faster you can boost pushables. You also get boosted.

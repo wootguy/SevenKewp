@@ -165,21 +165,23 @@ void CHalfLifeMultiplay :: Think ( void )
 
 	if ( flTimeLimit != 0 )
 	{
-		if (!m_sentTime600Message && timelimit.value > 10 && gpGlobals->time >= flTimeLimit - 60*10) {
-			m_sentTime600Message = true;
-			UTIL_ClientPrintAll(print_chat, "10 minutes remaining...\n");
-		}
-		if (!m_sentTime300Message && timelimit.value > 5 && gpGlobals->time >= flTimeLimit - 60*5) {
-			m_sentTime300Message = true;
-			UTIL_ClientPrintAll(print_chat, "5 minutes remaining...\n");
-		}
-		if (!m_sentTime60Message && timelimit.value > 1 && gpGlobals->time >= flTimeLimit - 60) {
-			m_sentTime60Message = true;
-			UTIL_ClientPrintAll(print_chat, "1 minute remaining...\n");
-		}
-		if (!m_sentTimeupMessage && gpGlobals->time >= flTimeLimit - 1.0f) {
-			m_sentTimeupMessage = true;
-			UTIL_ClientPrintAll(print_chat, "Time's up!\n");
+		if (mp_timelimit_messages.value) {
+			if (!m_sentTime600Message && timelimit.value > 10 && gpGlobals->time >= flTimeLimit - 60 * 10) {
+				m_sentTime600Message = true;
+				UTIL_ClientPrintAll(print_chat, "10 minutes remaining...\n");
+			}
+			if (!m_sentTime300Message && timelimit.value > 5 && gpGlobals->time >= flTimeLimit - 60 * 5) {
+				m_sentTime300Message = true;
+				UTIL_ClientPrintAll(print_chat, "5 minutes remaining...\n");
+			}
+			if (!m_sentTime60Message && timelimit.value > 1 && gpGlobals->time >= flTimeLimit - 60) {
+				m_sentTime60Message = true;
+				UTIL_ClientPrintAll(print_chat, "1 minute remaining...\n");
+			}
+			if (!m_sentTimeupMessage && gpGlobals->time >= flTimeLimit - 1.0f) {
+				m_sentTimeupMessage = true;
+				UTIL_ClientPrintAll(print_chat, "Time's up!\n");
+			}
 		}
 
 		if (gpGlobals->time >= flTimeLimit) {
