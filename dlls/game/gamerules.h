@@ -186,6 +186,8 @@ public:
 	virtual void EndMultiplayerGame(INTERMISSION_REASON reason) {}
 
 	virtual mapcycle_item_t* GetMapCyleMap(const char* map) { return NULL;  }
+
+	virtual bool LoadMapCycle() { return false; }
 };
 
 extern CGameRules *InstallGameRules( void );
@@ -387,6 +389,8 @@ public:
 
 	// finds the map cycle item for the given map name
 	virtual mapcycle_item_t* GetMapCyleMap(const char* map);
+
+	virtual bool LoadMapCycle();
 
 	virtual int GetTeamIndex(const char* pTeamName);
 
