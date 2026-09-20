@@ -14,6 +14,14 @@ deque<PerfWarning> g_perf_warnings;
 PerfWarning::PerfWarning(std::string source, std::string func, uint32_t millis)
 	: source(source), func(func), millis(millis), logTime(getEpochMillis()) {}
 
+void perf_add_warning(std::string source, std::string func, uint32_t millis) {
+	g_perf_warnings.push_front(PerfWarning(source, func, millis));
+
+	if (g_perf_warnings.size() > 100) {
+		g_perf_warnings.pop_back();
+	}
+}
+
 void perf_init() {
 	if (!mp_perf.value)
 		return;
@@ -42,32 +50,24 @@ void perf_finalize() {
 	g_perf_metrics.playerThink = g_perf_metrics.playerPostThink + g_perf_metrics.playerPreThink;
 
 	if (g_perf_metrics.entityPhysics >= mp_perf.value)
-		perf_log_plugin_hook_timing("GAME", "EntityPhysics", g_perf_metrics.entityPhysics);
+		perf_add_warning("GAME", "EntityPhysics", g_perf_metrics.entityPhysics);
 	if (g_perf_metrics.entityThinks >= mp_perf.value)
-		perf_log_plugin_hook_timing("GAME", "EntityThinks", g_perf_metrics.entityThinks);
+		perf_add_warning("GAME", "EntityThinks", g_perf_metrics.entityThinks);
 
 	if (g_perf_metrics.playerThink >= mp_perf.value)
-		perf_log_plugin_hook_timing("GAME", "PlayerThinks", g_perf_metrics.playerThink);
+		perf_add_warning("GAME", "PlayerThinks", g_perf_metrics.playerThink);
 	if (g_perf_metrics.playerPreThink >= mp_perf.value)
-		perf_log_plugin_hook_timing("GAME", "PlayerPreThinks", g_perf_metrics.playerPreThink);
+		perf_add_warning("GAME", "PlayerPreThinks", g_perf_metrics.playerPreThink);
 	if (g_perf_metrics.playerPostThink >= mp_perf.value)
-		perf_log_plugin_hook_timing("GAME", "PlayerPostThinks", g_perf_metrics.playerPostThink);
+		perf_add_warning("GAME", "PlayerPostThinks", g_perf_metrics.playerPostThink);
 
 	if (g_perf_metrics.readPackets >= mp_perf.value)
-		perf_log_plugin_hook_timing("GAME", "SV_ReadPackets", g_perf_metrics.readPackets);
+		perf_add_warning("GAME", "SV_ReadPackets", g_perf_metrics.readPackets);
 
 	if (g_perf_metrics.sendClientMessages >= mp_perf.value)
-		perf_log_plugin_hook_timing("GAME", "SV_SendClientMessages", g_perf_metrics.sendClientMessages);
+		perf_add_warning("GAME", "SV_SendClientMessages", g_perf_metrics.sendClientMessages);
 	if (g_perf_metrics.addToFullPack >= mp_perf.value)
-		perf_log_plugin_hook_timing("GAME", "AddToFullPack", g_perf_metrics.addToFullPack);
-}
-
-void perf_add_warning(std::string source, std::string func, uint32_t millis) {
-	g_perf_warnings.push_front(PerfWarning(source, func, millis));
-
-	if (g_perf_warnings.size() > 100) {
-		g_perf_warnings.pop_back();
-	}
+		perf_add_warning("GAME", "AddToFullPack", g_perf_metrics.addToFullPack);
 }
 
 void perf_log_ent_timing(CBaseEntity* ent, uint32_t millis) {
@@ -93,5 +93,4 @@ void perf_log_plugin_hook_timing(const char* plugin, const char* hook, uint32_t 
 	}
 
 	g_plugin_hook_timings[string(plugin) + hook] += millis;
-	g_perf_metrics.pluginFuncs += millis;
 }
