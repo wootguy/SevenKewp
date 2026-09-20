@@ -65,6 +65,10 @@ using namespace std::chrono;
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/statvfs.h>
+#include <pthread.h>
+#include <sched.h>
+#include <sys/resource.h>
+#include <errno.h>
 #endif
 
 static unsigned int glSeed = 0; 
@@ -4014,4 +4018,93 @@ int UTIL_SendMotdFromFile(CBasePlayer* plr, const char* title, const char* fpath
 	MESSAGE_END();
 
 	return sz;
+}
+
+int getProcessPriority() {
+#ifdef _WIN32
+	switch (GetPriorityClass(GetCurrentProcess())) {
+	case IDLE_PRIORITY_CLASS: return THREAD_PRIORITY_LOWEST;
+	case BELOW_NORMAL_PRIORITY_CLASS: return THREAD_PRIORITY_BELOW_NORMAL;
+	case NORMAL_PRIORITY_CLASS: return THREAD_PRIORITY_NORMAL;
+	case ABOVE_NORMAL_PRIORITY_CLASS: return THREAD_PRIORITY_ABOVE_NORMAL;
+	case HIGH_PRIORITY_CLASS: return THREAD_PRIORITY_HIGHEST;
+	case REALTIME_PRIORITY_CLASS: return THREAD_PRIORITY_HIGHEST;
+	default:
+		return THREAD_PRIORITY_NORMAL;
+	}
+#else
+	errno = 0;
+	int priority = getpriority(PRIO_PROCESS, 0);
+
+	if (priority == -1 && errno != 0)
+		return -1;
+
+	return priority;
+#endif
+}
+
+// For windows this is a single step in priority.
+// For linux this is 5 "nice" steps for higher, 10 steps for lower
+int adjustPriority(int priority, int steps) {
+	if (steps == 0)
+		return priority;
+
+#ifdef _WIN32
+	const int total_steps = 5;
+	int win_prio_steps[total_steps] = {
+		THREAD_PRIORITY_LOWEST,
+		THREAD_PRIORITY_BELOW_NORMAL,
+		THREAD_PRIORITY_NORMAL,
+		THREAD_PRIORITY_ABOVE_NORMAL,
+		THREAD_PRIORITY_HIGHEST,
+	};
+
+	int cur_step = -1;
+	for (int i = 0; i < total_steps; i++) {
+		if (priority == win_prio_steps[i]) {
+			cur_step = i;
+			break;
+		}
+	}
+
+	if (cur_step == -1) {
+		ALERT(at_error, "Unknown process priority %d. Can't adjust.\n", priority);
+		return priority;
+	}
+
+	return win_prio_steps[clampi(cur_step + steps, 0, total_steps - 1)];
+#else
+	// positive steps are stronger than negative ones (+10 is very high, -10 is below normal)
+	steps *= steps > 0 ? 5 : 10;
+
+	return clampi(priority - steps, -15, 19);
+#endif
+}
+
+void setThreadPriority(int prio) {
+#ifdef _WIN32
+	if (!SetThreadPriority(GetCurrentThread(), prio)) {
+		ALERT(at_error, "Failed to set thread priority %d. Error code %d\n", prio, GetLastError());
+	}
+#else
+	pthread_t thread = pthread_self();
+
+	sched_param param;
+	param.sched_priority = 0;
+
+	// set nice value
+	if (setpriority(PRIO_PROCESS, 0, prio) == -1) {
+		ALERT(at_error, "Failed to set thread priority %d. %s\n", prio, strerror(errno));
+	}
+#endif
+}
+
+void UTIL_AdjustThreadPriority(int steps)
+{
+	if (!steps)
+		return;
+
+	int processPrio = getProcessPriority();
+	int newPrio = adjustPriority(processPrio, steps);
+	setThreadPriority(newPrio);
 }
