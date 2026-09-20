@@ -103,6 +103,7 @@ EXPORT extern cvar_t	mp_keep_inventory; // 1 = players add their previous map in
 EXPORT extern cvar_t	mp_use_only_pickups; // 1 = all pickups will be forced into use-only mode
 EXPORT extern cvar_t	mp_barnacle_paralyze; // 1 = can't use weapons while being barnacled
 EXPORT extern cvar_t	mp_multi_damage_mode; // 0 = HL behavior. Shotgun pellets stack to create a big damage value. 1 = Apply damage for each bullet individually. This results in smaller damage values, which means less flinching and gibbing from shotguns. However, if a map plugin sets non-solid state immediately after death, then a shotgun can take down many monsters in a row.
+EXPORT extern cvar_t	mp_timelimit_messages; // 0 = Don't display messages for time remaining
 
 EXPORT extern cvar_t mp_bob_speed;			// scales cl_bobcycle
 EXPORT extern cvar_t mp_bob_mag;			// scales cl_bob

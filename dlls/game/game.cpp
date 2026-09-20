@@ -102,6 +102,7 @@ cvar_t	mp_keep_inventory = { "mp_keep_inventory","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_use_only_pickups = { "mp_use_only_pickups","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_barnacle_paralyze = { "mp_barnacle_paralyze","1", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_multi_damage_mode = { "mp_multi_damage_mode","0", FCVAR_SERVER, 0, 0 };
+cvar_t	mp_timelimit_messages = { "mp_timelimit_messages","1", FCVAR_SERVER, 0, 0 };
 
 cvar_t	soundvariety={"mp_soundvariety","0", FCVAR_SERVER, 0, 0 };
 cvar_t	mp_npcidletalk={"mp_npcidletalk","1", FCVAR_SERVER, 0, 0 };
@@ -614,6 +615,7 @@ void GameDLLInit( void )
 	CVAR_REGISTER (&mp_use_only_pickups);
 	CVAR_REGISTER (&mp_barnacle_paralyze);
 	CVAR_REGISTER (&mp_multi_damage_mode);
+	CVAR_REGISTER (&mp_timelimit_messages);
 
 	CVAR_REGISTER (&mp_chattime);
 
