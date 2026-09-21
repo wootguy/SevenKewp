@@ -103,6 +103,9 @@ void SV_ParseVoiceData_hlcoop(IGameClient* cl) {
 		return;
 
 	int sender = cl->GetId();
+
+	CALL_HOOKS_VOID(pfnParseVoiceData, sender + 1, chReceived, nDataLength);
+	
 	for (int i = 1; i <= gpGlobals->maxClients; i++)
 	{
 		CBasePlayer* plr = UTIL_PlayerByIndex(i);
