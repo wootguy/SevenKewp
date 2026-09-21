@@ -33,6 +33,10 @@ DLL_GLOBAL	BOOL	g_fDrawLines = FALSE;
 
 std::vector<EHANDLE> g_trigger_pushes;
 
+uint32_t g_npcFrameThinks;
+uint32_t g_npcFrameThinksLast; 
+uint32_t g_npcFrameThinkShifts; 
+
 //=========================================================
 // 
 // AI UTILITY FUNCTIONS

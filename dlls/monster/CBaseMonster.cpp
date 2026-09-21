@@ -530,6 +530,11 @@ void CBaseMonster::MonsterThink(void)
 {
 	pev->nextthink = gpGlobals->time + 0.1;// keep monster thinking.
 
+	if (++g_npcFrameThinks > g_npcFrameThinksLast + 1 && g_npcFrameThinkShifts == 0) {
+		// more npcs thinking this frame than the previous. Try to balance work across frames.
+		pev->nextthink -= 0.01f;
+		g_npcFrameThinkShifts = 1;
+	}
 
 	RunAI();
 
@@ -1399,7 +1404,7 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 	float pushDistance = pev->size.x * 3; // how close the end pos can be to a trigger_push
 	Vector pushBboxExpand = Vector(pushDistance, pushDistance, pushDistance);
 
-	for (int i = 0; i < g_trigger_pushes.size(); i++) {
+	for (int i = 0; i < (int)g_trigger_pushes.size(); i++) {
 		CBaseEntity* pObject = g_trigger_pushes[i];
 		if (!pObject)
 			continue;

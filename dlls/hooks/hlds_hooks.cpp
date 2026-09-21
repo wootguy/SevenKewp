@@ -1142,6 +1142,10 @@ void StartFrame( void )
 	UTIL_SyncPredictionCvars();
 
 	g_frameCount++;
+
+	g_npcFrameThinksLast = g_npcFrameThinks;
+	g_npcFrameThinks = 0;
+	g_npcFrameThinkShifts = 0;
 }
 
 
