@@ -91,6 +91,14 @@ EXPORT extern DLL_GLOBAL CONSTANT float g_flLongRange;
 EXPORT BOOL FBoxVisible ( entvars_t *pevLooker, entvars_t *pevTarget );
 EXPORT BOOL FBoxVisible ( entvars_t *pevLooker, entvars_t *pevTarget, Vector &vecTargetOrigin, float flSize = 0.0 );
 
+EXPORT extern std::vector<EHANDLE> g_trigger_pushes;
+EXPORT void UpdateAiData();
+
+// For balancing Think schedules across frames
+EXPORT extern uint32_t g_npcFrameThinks;      // number of NPCs thinks this frame
+EXPORT extern uint32_t g_npcFrameThinksLast;  // number of NPCs thinks last frame
+EXPORT extern uint32_t g_npcFrameThinkShifts; // number of npcs that had their think schedule shifted back a frame
+
 EXPORT BOOL IsFacing(entvars_t* pevTest, const Vector& reference);
 
 // these bits represent the monster's memory

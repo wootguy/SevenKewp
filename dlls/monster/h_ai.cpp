@@ -31,6 +31,12 @@
 
 DLL_GLOBAL	BOOL	g_fDrawLines = FALSE;
 
+std::vector<EHANDLE> g_trigger_pushes;
+
+uint32_t g_npcFrameThinks;
+uint32_t g_npcFrameThinksLast; 
+uint32_t g_npcFrameThinkShifts; 
+
 //=========================================================
 // 
 // AI UTILITY FUNCTIONS
@@ -195,4 +201,20 @@ Vector VecCheckThrow ( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, 
 	return vecGrenadeVel;
 }
 
+void UpdateAiData() {
+	static float lastUpdate;
 
+	if (gpGlobals->time - lastUpdate < 0.1f) {
+		return;
+	}
+
+	lastUpdate = gpGlobals->time;
+
+	CBaseEntity* pObject = NULL;
+
+	g_trigger_pushes.clear();
+
+	while ((pObject = UTIL_FindEntityByClassname(pObject, "trigger_push")) != NULL) {
+		g_trigger_pushes.push_back(EHANDLE(pObject->edict()));
+	}
+}

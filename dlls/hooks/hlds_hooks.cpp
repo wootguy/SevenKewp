@@ -610,6 +610,7 @@ void ServerDeactivate( void )
 	g_mapCfgCustomWeaponAliases.clear();
 	g_mapCfgCustomAmmoAliases.clear();
 	g_registeredHlWeaponAmmo.clear();
+	g_trigger_pushes.clear();
 	ClearPlayerModelCache();
 	clearNetworkMessageHistory();
 	clear_weapon_custom_cache();
@@ -1153,6 +1154,10 @@ void StartFrame( void )
 	UTIL_SyncPredictionCvars();
 
 	g_frameCount++;
+
+	g_npcFrameThinksLast = g_npcFrameThinks;
+	g_npcFrameThinks = 0;
+	g_npcFrameThinkShifts = 0;
 }
 
 
