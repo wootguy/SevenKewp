@@ -1392,44 +1392,51 @@ int CBaseMonster::CheckLocalMove(const Vector& vecStart, const Vector& vecEnd, C
 
 	// solidify nearby trigger_push fields that the monster won't be able to move into
 	// TODO: Test each step. Not just the destination.
-	CBaseEntity* pObject = NULL;
-	std::vector<CBaseEntity*> nearbyPushes;
 	Vector testDirection = (vecEnd - vecStart).Normalize();
-	while ((pObject = UTIL_FindEntityInSphere(pObject, pev->origin, flDist)) != NULL) {
-		if (pObject->pev->solid != SOLID_TRIGGER || pObject->pev->movetype != MOVETYPE_NONE || !FClassnameIs(pObject->pev, "trigger_push")) {
+
+	Vector pushTestPoint = vecEnd + Vector(0, 0, pev->maxs.z * 0.5f);
+
+	float pushDistance = pev->size.x * 3; // how close the end pos can be to a trigger_push
+	Vector pushBboxExpand = Vector(pushDistance, pushDistance, pushDistance);
+
+	for (int i = 0; i < g_trigger_pushes.size(); i++) {
+		CBaseEntity* pObject = g_trigger_pushes[i];
+		if (!pObject)
 			continue;
+
+		// get point inside this trigger closest to the target position
+		
+		if (!UTIL_PointInBox(vecEnd, pObject->pev->absmin - pushBboxExpand, pObject->pev->absmax + pushBboxExpand)) {
+			continue; // too far to care about
 		}
 
 		if (DotProduct(pObject->pev->movedir.Normalize(), testDirection) > 0.1f) {
 			continue; // ok to move into field that push the same direction we're moving
 		}
 
-		nearbyPushes.push_back(pObject);
+		bool abortMoveIntoPush = false;
+
 		pObject->pev->solid = SOLID_BSP;
 		pObject->pev->movetype = MOVETYPE_PUSH;
 		UTIL_SetOrigin(pObject->pev, pObject->pev->origin);
-	}
 
-	bool abortMoveIntoPush = false;
-	{
+		// TODO: check entire path against the trigger, not just the end point
 		TraceResult tr;
-		TRACE_MONSTER_HULL(edict(), vecEnd, vecEnd, ignore_monsters, edict(), &tr);
-		if (tr.fStartSolid && !strcmp(STRING(tr.pHit->v.classname), "trigger_push")) {
+		UTIL_TraceLine(pushTestPoint, pushTestPoint, ignore_monsters, edict(), &tr);
+
+		if (tr.fStartSolid && tr.pHit == pObject->edict()) {
 			abortMoveIntoPush = true;
+			//te_debug_beam(pushTestPoint, pushTestPoint + Vector(0, 0, 64), 10, RGBA(255, 0, 0, 255));
 		}
-	}
 
-	// unsolidify push fields
-	for (int i = 0; i < (int)nearbyPushes.size(); i++) {
-		nearbyPushes[i]->pev->solid = SOLID_TRIGGER;
-		nearbyPushes[i]->pev->movetype = MOVETYPE_NONE;
-		UTIL_SetOrigin(nearbyPushes[i]->pev, nearbyPushes[i]->pev->origin);
-	}
+		pObject->pev->solid = SOLID_TRIGGER;
+		pObject->pev->movetype = MOVETYPE_NONE;
+		UTIL_SetOrigin(pObject->pev, pObject->pev->origin);
 
-	if (abortMoveIntoPush) {
-		//te_debug_beam(vecStart, vecEnd, 10, RGBA(255, 128, 0, 255));
-		UTIL_SetOrigin(pev, vecStartPos);
-		return LOCALMOVE_INVALID;
+		if (abortMoveIntoPush) {
+			UTIL_SetOrigin(pev, vecStartPos);
+			return LOCALMOVE_INVALID;
+		}
 	}
 
 	UnblockScriptedMove(true);
@@ -2281,6 +2288,8 @@ void CBaseMonster::MonsterInit(void)
 	UnstuckSpawnPosition();
 
 	AddWaterPhysicsEnt(this, 1, 0);
+
+	UpdateAiData();
 }
 
 void CBaseMonster::UnstuckSpawnPosition() {
