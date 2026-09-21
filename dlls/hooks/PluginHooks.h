@@ -248,6 +248,10 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// a blood effect is about to be spawned
 	HOOK_RETURN_DATA(*pfnSpawnBlood)(Vector& pos, int& bloodColor, float& damage);
+
+	// AI node graph finished generating
+	// genTime = milliseconds taken to generate the graph
+	HOOK_RETURN_DATA(*pfnNodeGraphDone)(uint64_t genTime);
 };
 
 // do not call directly, use RegisterPlugin instead

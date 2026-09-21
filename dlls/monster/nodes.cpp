@@ -22,6 +22,7 @@
 #include	"animation.h"
 #include	"CBaseDoor.h"
 #include "monster/CBaseMonster.h"
+#include "PluginManager.h"
 
 #if !defined ( _WIN32 )
 #include <sys/stat.h>
@@ -1649,6 +1650,9 @@ void CTestHull :: BuildNodeGraph( void )
 		return;
 	}
 
+	g_engfuncs.pfnServerPrint("Node graph generating...\n");
+
+	uint64_t genStart = getEpochMillis();
 
 	// make sure directories have been made
 	GET_GAME_DIR( szNrpFilename );
@@ -2070,7 +2074,12 @@ void CTestHull :: BuildNodeGraph( void )
 
 // save the node graph for this level	
 	WorldGraph.FSaveGraph( (char *)STRING( gpGlobals->mapname ) );
-	ALERT( at_console, "Done.\n");
+
+	uint64_t genTime = getEpochMillis() - genStart;
+	float seconds = TimeDifference(genStart, getEpochMillis());
+	ALERT(at_logged, "Generated node graph in %.1f seconds\n", seconds);
+
+	CALL_HOOKS_VOID(pfnNodeGraphDone, genTime);
 }
 
 
