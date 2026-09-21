@@ -231,6 +231,10 @@ struct HLCOOP_PLUGIN_HOOKS {
 
 	// player is about to have their view taken or given back by a trigger_camera.
 	HOOK_RETURN_DATA(*pfnCameraToggle)(CBasePlayer* plr, CBaseEntity* cam, bool onNotOff);
+
+	// AI node graph finished generating
+	// genTime = milliseconds taken to generate the graph
+	HOOK_RETURN_DATA(*pfnNodeGraphDone)(uint64_t genTime);
 };
 
 // do not call directly, use RegisterPlugin instead
