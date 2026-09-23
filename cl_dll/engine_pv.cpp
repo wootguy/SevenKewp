@@ -1,6 +1,7 @@
 #include "engine_pv.h"
 #include "hud.h"
 #include "cl_util.h"
+#include "event_api.h"
 
 #ifdef WIN32
 #include "windows.h"
@@ -10,6 +11,7 @@ char dummyData[16];
 EnginePv g_enginepv;
 extern bool is_steam_legacy_engine;
 extern bool is_software_renderer;
+extern bool is_xash3d_engine;
 
 char** g_sound_precache; // list of precached sounds (for mapping an index to a file path)
 
@@ -88,6 +90,10 @@ void InitEnginePv() {
 // the entire sound list over again so the client can play by index. Adding string arguments
 // to the network messages that need custom sound playback would be even worse.
 const char* GetSoundByIndex(int idx) {	
+	if (is_xash3d_engine) {
+		return gEngfuncs.pEventAPI->CL_SoundFromIndex(idx); // TY XASH!!!
+	}
+
 	if (!g_sound_precache) {
 		PRINTF("EnginePv sound list not initialized!\n");
 		return "";

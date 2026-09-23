@@ -703,8 +703,15 @@ void CHudAmmo::UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget) {
 	{ // normal crosshairs
 		if (autoaimOnTarget && m_pWeapon->hAutoaim)
 			SetCrosshair(m_pWeapon->hAutoaim, m_pWeapon->rcAutoaim, 255, 255, 255);
-		else
-			SetCrosshair(m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255);
+		else {
+			if (m_hud_crosshair_mode->value > 0) {
+				static wrect_t nullrc;
+				SetCrosshair(0, nullrc, 0, 0, 0);
+			}
+			else {
+				SetCrosshair(m_pWeapon->hCrosshair, m_pWeapon->rcCrosshair, 255, 255, 255);
+			}
+		}
 	}
 	else
 	{ // zoomed crosshairs

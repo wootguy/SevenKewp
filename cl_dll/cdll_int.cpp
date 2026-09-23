@@ -60,6 +60,7 @@ IParticleMan *g_pParticleMan = NULL;
 
 bool is_steam_legacy_engine;
 bool is_software_renderer;
+bool is_xash3d_engine;
 
 int g_connection_phase;
 int g_loadedSprites = 0;
@@ -176,6 +177,8 @@ int CL_DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 	g_sdl_window = SDL_GetWindowFromID(1);
 
 	init_weapon_custom_config_parser();
+
+	is_xash3d_engine = CVAR_GET_PTR("cl_advertise_engine_in_name") != NULL;
 
 	// get tracker interface, if any
 	return 1;
@@ -319,10 +322,9 @@ void CL_DLLEXPORT HUD_Frame( double time )
 	// using the world entity state to detect when all resources have downloaded and the player is
 	// preparing to spawn. A good time to load other resources that depend on downloaded files.
 	if (g_connection_phase == 0) {
-		cl_entity_t* world = gEngfuncs.GetEntityByIndex(0);
+		bool serverInfoReady = *gEngfuncs.ServerInfo_ValueForKey("*gamedir") != '\0';
 
-		if (world) {
-			world->curstate.scale = 1337;
+		if (serverInfoReady) {
 			gHUD.ParseServerInfo();
 			g_connection_phase = 1;
 		}

@@ -40,6 +40,7 @@ hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info from the e
 extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player info sent directly to the client dll
 
 extern int mouse_uncenter_phase;
+extern bool is_xash3d_engine;
 
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
 {
@@ -384,7 +385,7 @@ void CHud :: Init( void )
 	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
 	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
 	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
-	m_pCvarHudScale = CVAR_CREATE( "hud_scale", "-1", FCVAR_ARCHIVE );
+	m_pCvarHudScale = CVAR_CREATE(is_xash3d_engine ? "hud_scale_sk" : "hud_scale", "-1", FCVAR_ARCHIVE );
 	m_hud_color = CVAR_CREATE("hud_color", "0", FCVAR_ARCHIVE);
 	m_hud_allow_sv_hud_color = CVAR_CREATE("cl_allow_sv_hud_color", "1", FCVAR_ARCHIVE);
 	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
