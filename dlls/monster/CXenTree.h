@@ -33,5 +33,5 @@ public:
 	static const char* pAttackMissSounds[];
 
 private:
-	CXenTreeTrigger* m_pTrigger;
+	EHANDLE m_hTrigger;
 };

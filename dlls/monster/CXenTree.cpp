@@ -33,7 +33,7 @@ LINK_ENTITY_TO_CLASS(xen_tree, CXenTree)
 
 TYPEDESCRIPTION	CXenTree::m_SaveData[] =
 {
-	DEFINE_FIELD(CXenTree, m_pTrigger, FIELD_CLASSPTR),
+	DEFINE_FIELD(CXenTree, m_hTrigger, FIELD_EHANDLE),
 };
 
 IMPLEMENT_SAVERESTORE(CXenTree, CActAnimating)
@@ -63,9 +63,9 @@ void CXenTree::Spawn(void)
 	UTIL_MakeVectorsPrivate(pev->angles, triggerPosition, NULL, NULL);
 	triggerPosition = pev->origin + (triggerPosition * 64);
 	// Create the trigger
-	m_pTrigger = CXenTreeTrigger::TriggerCreate(edict(), triggerPosition);
-	if (m_pTrigger)
-		UTIL_SetSize(m_pTrigger->pev, Vector(-24, -24, 0), Vector(24, 24, 128));
+	m_hTrigger = CXenTreeTrigger::TriggerCreate(edict(), triggerPosition);
+	if (m_hTrigger)
+		UTIL_SetSize(m_hTrigger->pev, Vector(-24, -24, 0), Vector(24, 24, 128));
 }
 
 const char* CXenTree::pAttackHitSounds[] =
@@ -117,7 +117,9 @@ void CXenTree::HandleAnimEvent(MonsterEvent_t* pEvent)
 	{
 		CBaseEntity* pList[8];
 		BOOL sound = FALSE;
-		int count = UTIL_EntitiesInBox(pList, 8, m_pTrigger->pev->absmin, m_pTrigger->pev->absmax, FL_MONSTER | FL_CLIENT, false);
+		int count = 0;
+		if (m_hTrigger)
+			UTIL_EntitiesInBox(pList, 8, m_hTrigger->pev->absmin, m_hTrigger->pev->absmax, FL_MONSTER | FL_CLIENT, false);
 		Vector forward;
 
 		UTIL_MakeVectorsPrivate(pev->angles, forward, NULL, NULL);
