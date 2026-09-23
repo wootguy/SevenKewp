@@ -56,6 +56,7 @@ const std::string g_emptyCurlPostData;
 HashMap<custom_muzzle_flash_t> g_customMuzzleFlashes;
 
 extern const char* g_stepSoundsSlosh[4];
+extern bool is_xash3d_engine;
 
 const char* g_waterSplashSounds[3] = { // ordered for mp_soundvariety
 	"water/splash.wav",

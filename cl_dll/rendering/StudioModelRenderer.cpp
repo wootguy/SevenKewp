@@ -30,6 +30,7 @@
 extern cvar_t *tfc_newmodels;
 
 extern extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];
+extern bool is_xash3d_engine;
 
 // team colors for old TFC models
 #define TEAM1_COLOR		150
@@ -1174,6 +1175,9 @@ void CStudioModelRenderer::StudioPlayAkimboEvents() {
 bool CStudioModelRenderer::IsFullBrightSubModel(mstudiomodel_t* m_pSubModel, int skin) {
 	byte* head = (byte*)m_pStudioHeader;
 
+	if (is_xash3d_engine)
+		return false; // crash otherwise
+
 	if (m_pStudioHeader->numtextures == 0)
 		return false; // external textures not supported
 
@@ -1963,8 +1967,12 @@ void CStudioModelRenderer::StudioRenderFinal(bool mirrored)
 				// interpolation messes up bounding boxes.
 				m_pCurrentEntity->trivial_accept = 0;
 			}
-			if (mirrored)
+			if (mirrored) {
 				glDisable(GL_CULL_FACE);
+
+				if (is_xash3d_engine)
+					gEngfuncs.pTriAPI->CullFace(TRI_NONE);
+			}
 
 			bool fullbright = IsFullBrightSubModel(*m_pSubModel, m_pCurrentEntity->curstate.skin);
 

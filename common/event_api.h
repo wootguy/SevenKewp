@@ -20,6 +20,9 @@
 
 #define EVENT_API_VERSION 1
 
+typedef struct pmtrace_s pmtrace_t;
+typedef struct physent_s physent_t;
+
 typedef struct event_api_s
 {
 	/**
@@ -187,6 +190,12 @@ typedef struct event_api_s
 	*	@param pszEventName Event name.
 	*/
 	void    ( *EV_KillEvents ) ( int entnum, const char *eventname );
+
+	//
+	// Below functions are for Xash3D ONLY
+	//
+	const char (*CL_PlayerTraceExt)(float* start, float* end, int traceFlags, int (*pfnIgnore)(physent_t* pe), pmtrace_t* tr);
+	const char* (*CL_SoundFromIndex)(int index);
 } event_api_t;
 
 extern event_api_t eventapi;

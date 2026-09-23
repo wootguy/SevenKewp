@@ -52,8 +52,15 @@ void CHudCrosshair::UpdateZoomCrosshair(int id, bool zoom, bool autoaimOnTarget)
 	{ // normal crosshairs
 		if (autoaimOnTarget && pWeapon->hAutoaim)
 			SetCrosshair(pWeapon->hAutoaim, pWeapon->rcAutoaim, 255, 255, 255);
-		else
-			SetCrosshair(pWeapon->hCrosshair, pWeapon->rcCrosshair, 255, 255, 255);
+		else {
+			if (m_hud_crosshair_mode->value > 0) {
+				static wrect_t nullrc;
+				SetCrosshair(0, nullrc, 0, 0, 0);
+			}
+			else {
+				SetCrosshair(pWeapon->hCrosshair, pWeapon->rcCrosshair, 255, 255, 255);
+			}
+		}
 	}
 	else
 	{ // zoomed crosshairs
