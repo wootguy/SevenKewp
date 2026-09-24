@@ -349,7 +349,10 @@ void CMedkit::SecondaryAttack()
 				progress += " ";
 			}
 			else {
-				progress += "|";
+				if (m_pPlayer->m_clientEngineVersion == CLIENT_ENGINE_HL_XASH)
+					progress += "0";
+				else
+					progress += "|";
 			}
 		}
 		progress += "]";

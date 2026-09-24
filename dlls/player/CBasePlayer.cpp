@@ -3918,7 +3918,8 @@ void CBasePlayer::Spawn( void )
 	SetSuitUpdate(NULL, FALSE, 0);
 
 	// for when mic audio breaks due to teleports or something else I don't understand yet
-	UTIL_ResetVoiceChannel(this);
+	if (m_clientEngineVersion != CLIENT_ENGINE_HL_XASH)
+		UTIL_ResetVoiceChannel(this);
 
 	CALL_HOOKS_VOID(pfnPlayerSpawn, this);
 }
