@@ -1121,8 +1121,8 @@ void StartFrame( void )
 	if ( g_pGameRules )
 		g_pGameRules->Think();
 
-	if ( g_fGameOver )
-		return;
+	//if ( g_fGameOver )
+		//return;
 
 	gpGlobals->teamplay = teamplay.value;
 	g_ulFrameCount++;
