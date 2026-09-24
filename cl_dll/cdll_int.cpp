@@ -43,6 +43,7 @@
 #include "vgui_TeamFortressViewport.h"
 #include "../public/interface_hlsdk.h"
 #include "effects.h"
+#include "net_api.h"
 
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_mouse.h>
@@ -128,6 +129,19 @@ int	CL_DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, cons
 	// Zero it out since we aren't going to respond.
 	// If we wanted to response, we'd write data into response_buffer
 	*response_buffer_size = 0;
+
+	if (*args == 'Z') {
+		// server requesting a reconnect after it crashed
+		net_status_t netstatus;
+		gEngfuncs.pNetAPI->Status(&netstatus);
+
+		if (!memcmp(net_from->ip, netstatus.remote_address.ip, 4) && net_from->port == netstatus.remote_address.port) {
+			// received from the same server that we think we're still connected to
+			PRINTF("The server asked to reconnect.\n");
+			gEngfuncs.pfnClientCmd("retry\n");
+		}
+	}
+	
 
 	// Since we don't listen for anything here, just respond that it's a bogus message
 	// If we didn't reject the message, we'd return 1 for success instead.
