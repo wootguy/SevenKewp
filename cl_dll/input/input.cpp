@@ -30,6 +30,7 @@ extern int g_iAlive;
 
 extern int g_weaponselect;
 extern cl_enginefunc_t gEngfuncs;
+extern int mouseactive;
 
 // Defined in pm_math.c
 float anglemod( float a );
@@ -775,11 +776,11 @@ void CL_DLLEXPORT CL_CreateMove ( float frametime, struct usercmd_s *cmd, int ac
 	if (!gHUD.m_fullyLoaded) {
 		status = PLAYER_STATUS_LOAD;
 	}
-	else if (gHUD.m_last_hud_draw_frame != gHUD.m_frameCount || !gHUD.m_windowFocused) {
-		status = PLAYER_STATUS_CONSOLE;
-	}
-	else if (gHUD.m_last_chat_input_frame == gHUD.m_frameCount) {
+	else if (gHUD.m_windowFocused && gHUD.m_last_chat_input_frame == gHUD.m_frameCount) {
 		status = PLAYER_STATUS_CHAT;
+	}
+	else if (!gHUD.m_windowFocused || !mouseactive) {
+		status = PLAYER_STATUS_CONSOLE;
 	}
 	else {
 		status = PLAYER_STATUS_NONE;

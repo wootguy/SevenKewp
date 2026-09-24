@@ -45,7 +45,7 @@ public:
 	virtual BOOL IsNormalMonster() { return FALSE; }
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	void IgniteTrail( void );
+	void IgniteTrail( bool xashWorkaround );
 	void EXPORT StartTrack ( void );
 	void EXPORT StartDart ( void );
 	void EXPORT TrackTarget ( void );
@@ -62,6 +62,7 @@ public:
 	float			m_flStopAttack;
 	float			m_flStartTrack;
 	float			m_flNextTrack;
+	float			m_flNextTrail;
 	int				m_iHornetType;
 	float			m_flFlySpeed;
 	Vector			m_lastPos;

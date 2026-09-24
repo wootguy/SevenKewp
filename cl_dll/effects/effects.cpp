@@ -18,6 +18,8 @@ SpriteAdv g_sprAdvArgs[MAX_ADV_SPRITES];
 int g_advSpriteArgIdx;
 Fog g_fog;
 
+extern bool is_xash3d_engine;
+
 SpriteAdv& AllocSpriteAdv() {
 	int idx = g_advSpriteArgIdx++ % MAX_ADV_SPRITES;
 
@@ -333,8 +335,10 @@ void SetupFog() {
 	glFogf(GL_FOG_START, g_fog.startDist);
 	glFogf(GL_FOG_END, g_fog.endDist);
 
+	Vector engineColor = is_xash3d_engine ? g_fog.color * 255 : g_fog.color;
+
 	// Tell the engine too
-	gEngfuncs.pTriAPI->Fog(g_fog.color, g_fog.startDist, g_fog.endDist, TRUE);
+	gEngfuncs.pTriAPI->Fog(engineColor, g_fog.startDist, g_fog.endDist, TRUE);
 }
 
 void EffectsInit() {
