@@ -212,6 +212,7 @@ int CHudEntStatus::Draw(float flTime)
 		}
 
 		DrawConsoleString(0, 0, ""); // fix first console string being colored by HUD text
+		GetConsoleStringSize("A", &em_width, &em_height);
 
 		if (shouldCenter) {
 			GetConsoleStringSize(name, &w, &h);

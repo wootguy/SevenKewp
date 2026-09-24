@@ -110,6 +110,7 @@ enum sbar_data
 
 #define MAX_CLIENT_ENTS 1665 // default for the latest HL client from steam
 #define MAX_LEGACY_CLIENT_ENTS 1365 // default when using the steam_legacy beta
+#define MAX_XASH_ENTS 1665 // default if copying from valve/ folder from Steam. If set too high, xash prints a warning but doesn't crash
 
 // This was increased to 1024 for HL25 but client limits make most of those new slots useless.
 // Sending more than ~800 crashes the client
@@ -119,6 +120,8 @@ enum sbar_data
 
 // unlike HL25, temporary effects don't start disappearing near the packet entity limit
 #define MAX_LEGACY_PACKET_ENTITIES 256
+
+#define MAX_XASH_PACKET_ENTITIES 1024
 
 // max number of new entities per packet
 // more than ~128 new ents ar once makes clients freeze with "datagram overflow" which is not

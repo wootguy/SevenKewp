@@ -7025,6 +7025,10 @@ client_info_t CBasePlayer::GetClientInfo() {
 		info.max_edicts = MAX_CLIENT_ENTS;
 		info.max_packet_entities = MAX_PACKET_ENTITIES;
 		break;
+	case CLIENT_ENGINE_HL_XASH:
+		info.max_edicts = MAX_XASH_ENTS;
+		info.max_packet_entities = MAX_XASH_PACKET_ENTITIES;
+		break;
 	case CLIENT_ENGINE_HL_LEGACY:
 	default: // better safe than sorry
 		info.max_edicts = MAX_LEGACY_CLIENT_ENTS;
