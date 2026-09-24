@@ -105,7 +105,7 @@ float g_last_attack_time;
 local_state_t g_prediction_debug_state;
 
 bool IsPredictionWeaponZoomed() {
-	return player.pev->fov != 0 && player.pev->fov < 90;
+	return player.pev && player.pev->fov != 0 && player.pev->fov < 90;
 }
 
 CustomWeaponParams* GetCustomWeaponParams(int id) {
