@@ -93,7 +93,7 @@ float		mouse_x, mouse_y;
 
 static int	restore_spi;
 static int	originalmouseparms[3], newmouseparms[3] = {0, 0, 1};
-static int	mouseactive = 0;
+int			mouseactive = 0;
 int			mouseinitialized;
 static int	mouseparmsvalid;
 static int	mouseshowtoggle = 1;

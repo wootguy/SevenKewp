@@ -205,7 +205,8 @@ const char* CHornet::DisplayName() {
 //=========================================================
 void CHornet :: StartTrack ( void )
 {
-	IgniteTrail();
+	IgniteTrail(false);
+	m_flNextTrail = gpGlobals->time + 0.25f;
 
 	SetTouch( &CHornet::TrackTouch );
 	SetThink( &CHornet::TrackTarget );
@@ -218,7 +219,8 @@ void CHornet :: StartTrack ( void )
 //=========================================================
 void CHornet :: StartDart ( void )
 {
-	IgniteTrail();
+	IgniteTrail(false);
+	m_flNextTrail = gpGlobals->time + 0.25f;
 
 	SetTouch( &CHornet::DartTouch );
 
@@ -226,8 +228,12 @@ void CHornet :: StartDart ( void )
 	pev->nextthink = gpGlobals->time;
 }
 
-void CHornet::IgniteTrail( void )
+void CHornet::IgniteTrail(bool xashWorkaround)
 {
+	if (xashWorkaround && (!m_flNextTrail || gpGlobals->time < m_flNextTrail)) {
+		return;
+	}
+	m_flNextTrail = 0;
 /*
 
   ted's suggested trail colors:
@@ -281,7 +287,14 @@ old colors
 		break;
 	}
 
-	UTIL_BeamFollow(entindex(), iHornetTrail, 10, 2, color);
+	// Xash clients need the bees to exist on their side before trails can be attached.
+	// With higher ping they still won't see the trails.
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* plr = UTIL_PlayerByIndex(i);
+		if (plr && xashWorkaround == (plr->m_clientEngineVersion == CLIENT_ENGINE_HL_XASH)) {
+			UTIL_BeamFollow(entindex(), iHornetTrail, 10, 2, color, MSG_ONE_UNRELIABLE, 0, plr->edict());
+		}
+	}
 }
 
 //=========================================================
@@ -389,6 +402,9 @@ void CHornet :: TrackTarget ( void )
 			m_flStopAttack = gpGlobals->time;
 		}
 	}
+
+	// for xash3d clients
+	IgniteTrail(true);
 }
 
 void CHornet::DartThink(void) {
@@ -404,6 +420,9 @@ void CHornet::DartThink(void) {
 	// or player due getting stuck inside things and then coming back into view.
 	pev->movetype = MOVETYPE_FLY;
 	ParametricInterpolation(0.01f);
+
+	// for xash3d clients
+	IgniteTrail(true);
 }
 
 //=========================================================

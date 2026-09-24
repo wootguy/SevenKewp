@@ -8,6 +8,8 @@
 
 DECLARE_MESSAGE(m_Fog, Fog);
 
+extern bool is_xash3d_engine;
+
 int CFog::Init(void)
 {
 	HOOK_MESSAGE(Fog);
@@ -48,6 +50,8 @@ void CFog::SetupFog() {
 	glFogf(GL_FOG_START, startDist);
 	glFogf(GL_FOG_END, endDist);
 
+	Vector engineColor = is_xash3d_engine ? color * 255 : color;
+
 	// Tell the engine too
-	gEngfuncs.pTriAPI->Fog(color, startDist, endDist, TRUE);
+	gEngfuncs.pTriAPI->Fog(engineColor, startDist, endDist, TRUE);
 }
