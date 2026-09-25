@@ -22,6 +22,8 @@
 #define DOWNLOAD_FOLDER "sevenkewp_updater_temp" // relative to gamedir_addon
 #define RESTART_DELAY 3.0f // time before restarting the game after an update
 
+extern bool is_xash3d_engine;
+
 enum UPDATE_THREAD_STATUS {
 	CUPDATE_STATUS_RUNNING = -2,
 	CUPDATE_STATUS_ERROR = -1,
@@ -189,10 +191,44 @@ bool IsLanIP(uint8_t* ip) {
 	return false;
 }
 
+std::string GetWorkDirRoot() {
+	if (is_xash3d_engine) {
+		return UTIL_VarArgs("%s", gEngfuncs.pfnGetGameDirectory());
+	}
+	else {
+		return UTIL_VarArgs("%s_addon", gEngfuncs.pfnGetGameDirectory());
+	}
+}
+
+bool CreateWorkDir() {
+	std::string dir = GetWorkDirRoot();
+	bool success = true;
+
+	if (!createDir(dir)) {
+		PRINTF("Failed to create folder: %s\n", dir.c_str());
+		success = false;
+	}
+	if (!createDir(dir + "/" + DOWNLOAD_FOLDER)) {
+		PRINTF("Failed to create folder: %s\n", dir.c_str());
+		success = false;
+	}
+
+	// in case the player installed to valve/ instead of valve_addon/
+	if (!createDir(dir + "/cl_dlls")) {
+		PRINTF("Failed to create folder: %s\n", dir.c_str());
+		success = false;
+	}
+
+	return success;
+}
+
+std::string GetWorkDir() {
+	return GetWorkDirRoot() + "/" + DOWNLOAD_FOLDER;
+}
+
 std::string GetReconnectFilePath() {
 	// using the .cfg extension so servers can't inject this file
-	return UTIL_VarArgs("%s_addon/%s/reconnect_ip.cfg",
-		gEngfuncs.pfnGetGameDirectory(), DOWNLOAD_FOLDER);
+	return GetWorkDir() + "/reconnect_ip.cfg";
 }
 
 void RestartGame() {
@@ -205,17 +241,29 @@ void RestartGame() {
 
 	std::string restartCmd;
 
-	restartCmd = UTIL_VarArgs("steam://rungameid/%d", gEngfuncs.pfnGetAppID());
+	if (is_xash3d_engine) {
+#ifdef WIN32
+		restartCmd = UTIL_VarArgs("xash3d.exe -console -novid");
+#else
+		restartCmd = UTIL_VarArgs("./xash3d -console -novid");
+#endif
+	}
+	else {
+		restartCmd = UTIL_VarArgs("steam://rungameid/%d", gEngfuncs.pfnGetAppID());
+	}
 
 	if (netstatus.connected) {
-		std::string reconnectIp = UTIL_VarArgs("%d.%d.%d.%d:%d",
+		std::string reconnectIp = UTIL_VarArgs("%d.%d.%d.%d:%d\n",
 			(int)ip[0], (int)ip[1], (int)ip[2], (int)ip[3], (int)port);
 
 		std::string reconnectFpath = GetReconnectFilePath();
+		CreateWorkDir();
 
 		FILE* f = fopen(reconnectFpath.c_str(), "w");
 		if (f) {
-			fwrite(reconnectIp.c_str(), reconnectFpath.size(), 1, f);
+			const char* password = CVAR_GET_STRING("password");
+			fwrite(reconnectIp.c_str(), reconnectIp.size(), 1, f);
+			fwrite(password, strlen(password)+1, 1, f);
 			fclose(f);
 		}
 		else {
@@ -259,13 +307,25 @@ void ReconnectAfterUpdate() {
 
 	FILE* f = fopen(reconnectFpath.c_str(), "r");
 	if (f) {
-		static char ipaddr[24];
-		fread(ipaddr, 1, 22, f);
+		static char ipaddr[64];
+		static char password[64];
+		fgets(ipaddr, sizeof(ipaddr), f);
+		fgets(password, sizeof(password), f);
+
+		if (strlen(ipaddr))
+			ipaddr[strlen(ipaddr) - 1] = 0; // strip newline
 
 		PRINTF("Got reconnect IP: '%s'\n", ipaddr);
 
+		if (strlen("password")) {
+			PRINTF("Set reconnect password\n");
+			gEngfuncs.Cvar_Set("password", password);
+		}
+
 		fclose(f);
 		remove(reconnectFpath.c_str());
+
+		PRINTF("Deleted reconnect data: %s\n", reconnectFpath.c_str());
 
 		EngineClientCmd(UTIL_VarArgs("connect %s\n", ipaddr));
 	}
@@ -389,7 +449,7 @@ void CheckForUpdate() {
 }
 
 void DownloadUpdateFile() {
-	if (!createDir(g_update_dir)) {
+	if (!CreateWorkDir()) {
 		g_updateThreadError = "ERROR: Failed to create update folder: " + g_update_dir + "\n";
 		g_updateThreadStatus = CUPDATE_STATUS_ERROR;
 		return;
@@ -432,7 +492,8 @@ bool ApplyUpdate() {
 	}
 
 	// replace the library
-	std::string addonDllDir = UTIL_VarArgs("%s_addon/cl_dlls", gEngfuncs.pfnGetGameDirectory());
+	std::string workRoot = GetWorkDirRoot();
+	std::string addonDllDir = UTIL_VarArgs("%s/cl_dlls", workRoot.c_str());
 	std::string currentLib = UTIL_VarArgs("%s/%s", addonDllDir.c_str(), libName);
 	std::string backupLibName = UTIL_VarArgs("%s/%s.backup", addonDllDir.c_str(), libName);
 
@@ -468,7 +529,7 @@ void UpdateClientCommand() {
 
 	PRINTF("\n-------------------------\nBeginning client update\n-------------------------\n");
 
-	g_update_dir = UTIL_VarArgs("%s_addon/%s", gEngfuncs.pfnGetGameDirectory(), DOWNLOAD_FOLDER);
+	g_update_dir = GetWorkDir();
 
 	PRINTF("Checking update url:\n%s\n", UPDATE_URL);
 	gHUD.m_ClientUpdater.m_updateState = CUPDATE_CHECK;

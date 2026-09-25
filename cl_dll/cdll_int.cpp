@@ -186,13 +186,13 @@ int CL_DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 	EV_HookEvents();
 	CL_LoadParticleMan();
 
-	ReconnectAfterUpdate();
-
 	g_sdl_window = SDL_GetWindowFromID(1);
 
 	init_weapon_custom_config_parser();
 
 	is_xash3d_engine = CVAR_GET_PTR("cl_advertise_engine_in_name") != NULL;
+
+	ReconnectAfterUpdate();
 
 	// get tracker interface, if any
 	return 1;
