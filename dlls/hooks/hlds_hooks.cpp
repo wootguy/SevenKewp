@@ -570,7 +570,6 @@ void ServerDeactivate( void )
 	g_edictsinit = 0;
 	g_can_set_bsp_models = false;
 
-	g_Scheduler.functions.clear();
 	g_pluginManager.RemovePlugins(true);
 	g_pluginManager.ClearEntityCallbacks();
 
