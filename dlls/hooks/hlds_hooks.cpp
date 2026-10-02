@@ -525,6 +525,7 @@ int g_edictsinit = 0;
 bool g_monstersNerfed = false;
 uint64_t g_levelChangeTime = 0; // time level change started
 uint64_t g_levelChangePluginTime = 0; // time spent in level change plugin hooks
+int g_client_precached_bsp_models;
 
 void ServerDeactivate( void )
 {
@@ -616,6 +617,7 @@ void ServerDeactivate( void )
 	g_weather_init_done = false;
 	g_fog_enabled = false;
 	g_debug_target = 0;
+	g_client_precached_bsp_models = 0;
 
 	g_active_camera = NULL;
 
@@ -861,10 +863,10 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	PrecacheTextureSounds();
 
 	g_can_set_bsp_models = true;
-	int precachedBspModels = g_bsp.entityBspModelCount;
+	g_client_precached_bsp_models = g_bsp.entityBspModelCount;
 	int serverSideBspModels = 0;
 	if (!sv_precache_bspmodels->value) {
-		precachedBspModels = PrecacheBspModels(false);
+		g_client_precached_bsp_models = PrecacheBspModels(false);
 		serverSideBspModels = PrecacheBspModels(true);
 	}
 
@@ -925,14 +927,14 @@ void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	PrintEntindexStats();
 
 	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Precache stats: %d cl models (%d MDL/SPR, %d BSP), %d sv models (cl+%d BSP), %d sounds, %d generic, %d events\n",
-		g_tryPrecacheModels.size() + precachedBspModels,
-		g_tryPrecacheModels.size(), precachedBspModels,
-		g_tryPrecacheModels.size() + precachedBspModels + serverSideBspModels, serverSideBspModels,
+		g_tryPrecacheModels.size() + g_client_precached_bsp_models,
+		g_tryPrecacheModels.size(), g_client_precached_bsp_models,
+		g_tryPrecacheModels.size() + g_client_precached_bsp_models + serverSideBspModels, serverSideBspModels,
 		g_tryPrecacheSounds.size(), g_tryPrecacheGeneric.size(), g_tryPrecacheEvents.size()));
 	
-	if (g_tryPrecacheModels.size() + precachedBspModels > MAX_PRECACHE_MODEL) {
+	if (g_tryPrecacheModels.size() + g_client_precached_bsp_models > MAX_PRECACHE_MODEL) {
 		ALERT(at_error, "Model precache overflow (%d / %d). The following models were not precached:\n",
-			g_tryPrecacheModels.size() + precachedBspModels, MAX_PRECACHE_MODEL);
+			g_tryPrecacheModels.size() + g_client_precached_bsp_models, MAX_PRECACHE_MODEL);
 
 		StringSet::iterator_t iter;
 		while (g_tryPrecacheModels.iterate(iter)) {

@@ -59,9 +59,10 @@ extern uint64_t g_unusedWeaponIdMask; // marks weapon bits that are unused in th
 // This also applies to weapons dropped by NPCs or created with CreateEntity()
 EXPORT extern StringMap g_weaponRemapHL;
 
-extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
-extern bool g_can_set_bsp_models; // false if bsp models aren't precached yet (skip SET_MODEL calls)
-extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
+EXPORT extern int g_serveractive; // 1 if ServerActivate was called (no longer safe to precache)
+EXPORT extern bool g_can_set_bsp_models; // false if bsp models aren't precached yet (skip SET_MODEL calls)
+EXPORT extern int g_edictsinit; // 1 if all edicts were allocated so that relocations can begin
+EXPORT extern int g_client_precached_bsp_models; // number of BSP models that were precached for clients. Valid after MapInit()
 
 extern HashMap<int> g_admins;
 
