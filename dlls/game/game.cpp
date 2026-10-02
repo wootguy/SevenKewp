@@ -267,11 +267,17 @@ void dump_missing_files() {
 
 	std::ofstream resfile;
 	const char* suffix = dumpMissing ? ".miss" : ".res";
-	std::string fname = std::string("res/") + STRING(gpGlobals->mapname) + suffix;
+	std::string folder = dumpMissing ? "res_miss/" : "res/";
+
+	if (!UTIL_FolderExists(folder)) {
+		UTIL_CreateFolder(folder);
+	}
+
+	std::string fname = folder + STRING(gpGlobals->mapname) + suffix;
 	resfile.open(fname, std::ios_base::trunc);
 
 	if (!resfile.is_open()) {
-		g_engfuncs.pfnServerPrint("Failed to open file in res/ folder (does it exist?)\n");
+		g_engfuncs.pfnServerPrint(UTIL_VarArgs("Failed to open file: %s\n", fname.c_str()));
 		return;
 	}
 
