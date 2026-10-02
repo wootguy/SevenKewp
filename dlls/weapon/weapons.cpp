@@ -285,6 +285,8 @@ ItemInfo UTIL_RegisterWeapon( const char *szClassname, const char* configPath)
 			return info;
 		}
 
+		g_mapConfigs.put(toLowerCase(std::string("weapons/") + configPath).c_str());
+
 		sevenkewpOnly = (params.flags & (FL_WC_WEP_ALLOW_HL | FL_WC_WEP_NO_PREDICTION)) == 0;
 
 		if (!szClassname) {
@@ -416,6 +418,8 @@ void UTIL_RegisterAmmo(const char* configPath) {
 	if (!UTIL_ParseCustomAmmoConfig(configPath, params)) {
 		return;
 	}
+
+	g_mapConfigs.put(toLowerCase(std::string("weapons/") + configPath).c_str());
 
 	if (!params.classname) {
 		ALERT(at_error, "custom_ammo config missing classname key: %s\n", configPath);

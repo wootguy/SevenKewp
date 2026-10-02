@@ -7,8 +7,14 @@ LINK_ENTITY_TO_CLASS(game_motd, CGameMotd)
 
 void CGameMotd::Spawn()
 {
-	if (pev->spawnflags & SF_MOTD_LONG_MODE) {
-		PRECACHE_GENERIC(UTIL_VarArgs("maps/%s.txt", STRING(m_file)));
+	if (m_file) {
+		const char* motdPath = UTIL_VarArgs("maps/%s.txt", STRING(m_file));
+		if (pev->spawnflags & SF_MOTD_LONG_MODE) {
+			PRECACHE_GENERIC(motdPath);
+		}
+		else {
+			g_mapConfigs.put(motdPath);
+		}
 	}
 }
 

@@ -175,11 +175,15 @@ void CWorld::Precache(void)
 
 	const char* mapName = STRING(gpGlobals->mapname);
 
+	g_mapConfigs.put(toLowerCase(UTIL_VarArgs("maps/%s.bsp", mapName)).c_str());
+
 	{
 		g_map_motd = "";
 		int motdSz = 0;
-		uint8_t* motdDat = UTIL_LoadFile(UTIL_VarArgs("maps/%s_motd.txt", mapName), &motdSz);
+		const char* motd_path = UTIL_VarArgs("maps/%s_motd.txt", mapName);
+		uint8_t* motdDat = UTIL_LoadFile(motd_path, &motdSz);
 		if (motdDat) {
+			g_mapConfigs.put(toLowerCase(motd_path).c_str());
 			g_map_motd = std::string((char*)motdDat, motdSz);
 			delete[] motdDat;
 		}
@@ -197,13 +201,17 @@ void CWorld::Precache(void)
 	// readme files loaded client-side
 	const char* readmePath = UTIL_VarArgs("maps/%s.txt", mapName);
 	g_map_has_readme = getGameFilePath(readmePath, false).size();
-	if (g_map_has_readme)
+	if (g_map_has_readme) {
 		PRECACHE_GENERIC(readmePath);
+		g_mapConfigs.put(toLowerCase(readmePath).c_str());
+	}
 
 	readmePath = UTIL_VarArgs("maps/%s_readme.txt", mapName);
 	g_map_has_readme2 = getGameFilePath(readmePath, false).size();
-	if (g_map_has_readme2)
+	if (g_map_has_readme2) {
 		PRECACHE_GENERIC(readmePath);
+		g_mapConfigs.put(toLowerCase(readmePath).c_str());
+	}
 
 	// init here so sprites can be replaced
 	g_VoiceGameMgr.Init(&g_GameMgrHelper, gpGlobals->maxClients);
@@ -235,6 +243,7 @@ void CWorld::Precache(void)
 			PRECACHE_GENERIC(STRING(m_materialsFile));
 			int loaded = LoadCustomMaterials(materials_abs_file.c_str());
 			ALERT(at_console, "Loaded %d custom materials\n", loaded);
+			g_mapConfigs.put(toLowerCase(STRING(m_materialsFile)).c_str());
 		}
 	}
 

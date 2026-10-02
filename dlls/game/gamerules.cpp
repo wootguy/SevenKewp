@@ -351,7 +351,9 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 	std::stringstream data_stream(cfgFile);
 	string line;
 
-	openedCfgs.put(toLowerCase(normalize_path(cfgPath)).c_str());
+	string normalCfgPath = toLowerCase(normalize_path(cfgPath));
+	openedCfgs.put(normalCfgPath.c_str());
+	g_mapConfigs.put(normalCfgPath.c_str());
 
 	while (std::getline(data_stream, line)) {
 		vector<string> parts = splitString(line, " \t");
@@ -499,6 +501,7 @@ void execMapCfg(const char* cfgPath, StringSet& openedCfgs) {
 			// map plugins need to be loaded now in case they define custom entities used in the bsp data
 			if (name == "map_plugin") {
 				g_pluginManager.AddPlugin(value.c_str(), true);
+				g_mapConfigs.put(toLowerCase("plugins/maps/" + value + PLUGIN_EXT).c_str());
 				continue;
 			}
 
@@ -598,6 +601,8 @@ void execSkillCfg(const char* fname, bool isMapSkill) {
 
 	std::stringstream data_stream(cfgFile);
 	string line;
+
+	g_mapConfigs.put(toLowerCase(fname).c_str());
 
 	int numChanges = 0;
 
