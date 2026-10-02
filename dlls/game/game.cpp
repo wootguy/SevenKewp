@@ -227,6 +227,7 @@ bool g_cfgsExecuted;
 
 void dump_missing_files() {
 	bool dumpMissing = !strcmp(CMD_ARGV(0), "dmiss");
+	bool dumpAllMapFiles = !strcmp(CMD_ARGV(0), "dfiles");
 
 	std::vector<std::string> resList;
 
@@ -235,6 +236,10 @@ void dump_missing_files() {
 	allPrecacheFiles.putAll(g_missingModels);
 	allPrecacheFiles.putAll(g_tryPrecacheGeneric);
 	allPrecacheFiles.putAll(g_tryPrecacheEvents);
+
+	if (dumpAllMapFiles) {
+		allPrecacheFiles.putAll(g_mapConfigs);
+	}
 
 	StringSet::iterator_t iter;
 	while (g_tryPrecacheSounds.iterate(iter)) {
@@ -259,7 +264,7 @@ void dump_missing_files() {
 	}
 
 	if (resList.empty()) {
-		g_engfuncs.pfnServerPrint(dumpMissing ? "No missing files\n" : "No precached files\n");
+		g_engfuncs.pfnServerPrint(dumpAllMapFiles ? "No map files\n" : (dumpMissing ? "No missing files\n" : "No precached files\n"));
 		return;
 	}
 
@@ -267,7 +272,7 @@ void dump_missing_files() {
 
 	std::ofstream resfile;
 	const char* suffix = dumpMissing ? ".miss" : ".res";
-	std::string folder = dumpMissing ? "res_miss/" : "res/";
+	std::string folder = dumpAllMapFiles ? "res_all/" : (dumpMissing ? "res_miss/" : "res/");
 
 	if (!UTIL_FolderExists(folder)) {
 		UTIL_CreateFolder(folder);
@@ -296,8 +301,9 @@ void dump_missing_files() {
 
 	resfile.close();
 
+	const char* ftype = dumpAllMapFiles ? "map" : (dumpMissing ? "missing" : "precached");
 	g_engfuncs.pfnServerPrint(UTIL_VarArgs("Wrote %d %s files to %s\n",
-		(int)resList.size(), dumpMissing ? "missing" : "precached", fname.c_str()));
+		(int)resList.size(), ftype, fname.c_str()));
 }
 
 void reload_plugins() {
@@ -507,6 +513,7 @@ void GameDLLInit( void )
 	g_engfuncs.pfnAddServerCommand("test", test_command);
 	g_engfuncs.pfnAddServerCommand("dcache", dump_missing_files);
 	g_engfuncs.pfnAddServerCommand("dmiss", dump_missing_files);
+	g_engfuncs.pfnAddServerCommand("dfiles", dump_missing_files);
 	g_engfuncs.pfnAddServerCommand("cfg_exec_finished", cfg_exec_finished);
 	g_engfuncs.pfnAddServerCommand("edicts", PrintEdictStatsCmd);
 	g_engfuncs.pfnAddServerCommand("edictstats", PrintEdictStatsCmd2);

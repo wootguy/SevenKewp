@@ -16,6 +16,7 @@ EXPORT extern StringSet g_precachedGeneric;
 EXPORT extern StringSet g_precachedSpr; // subset of g_precachedModels
 EXPORT extern StringSet g_precachedMdl; // subset of g_precachedModels
 EXPORT extern HashMap<int> g_precachedEvents;
+EXPORT extern StringSet g_mapConfigs; // server-side map configuration files that were loaded
 
 // resources that attempted to precache but may have been replaced with a failure model
 EXPORT extern StringSet g_tryPrecacheModels;

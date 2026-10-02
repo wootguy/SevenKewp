@@ -2533,6 +2533,8 @@ bool loadReplacementFile(const char* path, StringMap& replacements) {
 		return false;
 	}
 
+	g_mapConfigs.put(toLowerCase(path).c_str());
+
 	int lineNum = 0;
 	std::string line;
 	while (std::getline(infile, line))

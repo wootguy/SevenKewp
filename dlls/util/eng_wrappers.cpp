@@ -19,6 +19,7 @@ StringSet g_tryPrecacheGeneric;
 StringSet g_tryPrecacheEvents;
 StringSet g_precachedSpr;
 StringSet g_precachedMdl;
+StringSet g_mapConfigs;
 
 string_t g_indexModels[MAX_MODELS_REHLDS]; // maps an index to a model name
 string_t g_indexSounds[MAX_PRECACHE]; // maps an index to a model name

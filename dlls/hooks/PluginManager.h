@@ -33,6 +33,12 @@ typedef void(*ENTITYINIT)(struct entvars_s*);
 	} \
 }
 
+#ifdef _WIN32
+#define PLUGIN_EXT ".dll"
+#else
+#define PLUGIN_EXT ".so"
+#endif
+
 class PluginManager {
 public:
 	std::vector<Plugin> plugins;

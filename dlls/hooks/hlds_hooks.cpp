@@ -587,6 +587,7 @@ void ServerDeactivate( void )
 	g_precachedEvents.clear();
 	g_precachedSpr.clear();
 	g_precachedMdl.clear();
+	g_mapConfigs.clear();
 	g_tryPrecacheGeneric.clear();
 	g_tryPrecacheModels.clear();
 	g_tryPrecacheSounds.clear();
