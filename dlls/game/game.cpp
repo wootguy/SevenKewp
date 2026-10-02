@@ -272,8 +272,10 @@ void dump_missing_files() {
 	for (int i = 0; i < (int)resList.size(); i++) {
 		std::string& item = resList[i];
 
-		if (i < 10)
-			g_engfuncs.pfnServerPrint(UTIL_VarArgs("Missing: %s\n", item.c_str()));
+		if (i < 10) {
+			const char* pre = dumpAllMapFiles ? "Loaded" : (dumpMissing ? "Missing" : "Precached");
+			g_engfuncs.pfnServerPrint(UTIL_VarArgs("%s: %s\n", pre, item.c_str()));
+		}
 
 		resfile << item + "\n";
 	}
