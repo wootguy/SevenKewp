@@ -1650,7 +1650,8 @@ void CTestHull :: BuildNodeGraph( void )
 		return;
 	}
 
-	g_engfuncs.pfnServerPrint("Node graph generating...\n");
+	if (WorldGraph.m_cNodes)
+		g_engfuncs.pfnServerPrint("Node graph generating...\n");
 
 	uint64_t genStart = getEpochMillis();
 

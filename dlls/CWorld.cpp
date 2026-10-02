@@ -492,7 +492,9 @@ void CWorld::KeyValue(KeyValueData* pkvd)
 	}
 	else if (FStrEq(pkvd->szKeyName, "wad"))
 	{
-		m_wadlist = ALLOC_STRING(pkvd->szValue);
+		// replace slashes to prevent anything being treated as an escape sequence by the engine
+		// string allocator, thus breaking paths like "\valve\normandy.wad" (\\n replaced with \n)
+		m_wadlist = ALLOC_STRING(replaceString(pkvd->szValue, "\\", "/").c_str());
 		pkvd->fHandled = TRUE;
 	}
 	else if (FStrEq(pkvd->szKeyName, "sounds"))

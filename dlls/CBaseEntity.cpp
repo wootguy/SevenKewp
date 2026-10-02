@@ -1496,7 +1496,7 @@ bool CBaseEntity::TestInventoryRules(CBaseMonster* mon, std::unordered_set<CItem
 		for (const std::string& name : names) {
 			CItemInventory* item = mon->GetInventoryItem(name.c_str());
 			if (!item) {
-				*errorMsg = "You lack a required item.";
+				*errorMsg = "You lack an item.";
 				return false;
 			}
 			usedItems.insert(item);
@@ -1513,9 +1513,9 @@ bool CBaseEntity::TestInventoryRules(CBaseMonster* mon, std::unordered_set<CItem
 
 		if ((int)items.size() < requireCount) {
 			if (requireCount == 1)
-				*errorMsg = "You lack a required item.";
+				*errorMsg = "You lack an item.";
 			else
-				*errorMsg = "You lack required items.";
+				*errorMsg = "You lack items.";
 			return false;
 		}
 	}
