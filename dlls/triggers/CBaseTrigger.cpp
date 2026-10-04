@@ -132,8 +132,12 @@ void CBaseTrigger::ActivateMultiTrigger(CBaseEntity* pActivator, bool isUntouch)
 		return;         // still waiting for reset time
 	}
 	
-	if (!UTIL_IsMasterTriggered(m_sMaster, pActivator))
+	if (!UTIL_IsMasterTriggered(m_sMaster, pActivator)) {
+		// String searches are expensive and this function runs on every client cmd.
+		// Add a delay so this can only run once per frame, not 1000+ times
+		m_nextTouch = gpGlobals->time + 0.0001f;
 		return;
+	}
 
 	if (FClassnameIs(pev, "trigger_secret"))
 	{
