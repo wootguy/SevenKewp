@@ -70,6 +70,10 @@ extern uint32_t g_latest_cmd_id;
 extern uint32_t g_cmd_timer;
 extern SDL_Window* g_sdl_window;
 
+extern local_state_s* g_latest_predicted_state;
+extern double g_latest_predicted_time;
+extern bool g_transferred_latest_state;
+
 void CL_LoadParticleMan( void );
 void CL_UnloadParticleMan( void );
 
@@ -228,6 +232,10 @@ int CL_DLLEXPORT HUD_VidInit( void )
 	g_latest_cmd_id = 0;
 	g_cmd_timer = 0;
 	g_studio_init = false;
+
+	g_latest_predicted_state = NULL;
+	g_latest_predicted_time = 0;
+	g_transferred_latest_state = false;
 
 	return 1;
 }

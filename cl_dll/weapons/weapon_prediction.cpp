@@ -931,6 +931,11 @@ void handle_instant_velocity_change(struct local_state_s* to) {
 	}
 }
 
+bool g_debugit = false;
+local_state_s* g_latest_predicted_state;
+double g_latest_predicted_time;
+bool g_transferred_latest_state;
+
 /*
 =====================
 HUD_PostRunCmd
@@ -962,4 +967,10 @@ void CL_DLLEXPORT HUD_PostRunCmd(struct local_state_s* from, struct local_state_
 
 	handle_instant_velocity_change(to);
 	update_shared_prediction_state(to);
+
+	if (time > g_latest_predicted_time) {
+		g_latest_predicted_state = to;
+		g_latest_predicted_time = time;
+		g_transferred_latest_state = false;
+	}
 }

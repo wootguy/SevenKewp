@@ -22,6 +22,9 @@ extern IParticleMan *g_pParticleMan;
 void Game_AddObjects( void );
 
 int g_iAlive = 1;
+extern local_state_s* g_latest_predicted_state;
+extern double g_latest_predicted_time;
+extern bool g_transferred_latest_state;
 
 /*
 ========================
@@ -186,6 +189,44 @@ Because we can predict an arbitrary number of frames before the server responds 
 void CL_DLLEXPORT HUD_TxferPredictionData ( struct entity_state_s *ps, const struct entity_state_s *pps, struct clientdata_s *pcd, const struct clientdata_s *ppcd, struct weapon_data_s *wd, const struct weapon_data_s *pwd )
 {
 //	RecClTxferPredictionData(ps, pps, pcd, ppcd, wd, pwd);
+
+	g_latest_predicted_time = 0;
+
+	if (g_transferred_latest_state && g_latest_predicted_state) {
+		// The requested state has stale data in it, so transfer the latest predicted state instead.
+		// The issue can be reproduced with fps_max 20, joining a server, breakpointing in
+		// UTIL_ReadCustomWeaponPredictionEventData, waiting a second or so before continuing.
+		// Things like a -1 clip set on join won't survive the lag spike and a 0 clip will be set
+		// instead, breaking the weapon until its dropped and picked up again. The functions to debug
+		// in Xash are CL_PredictMovement and CL_ParseClientData. You might see something like the ring
+		// buffer below, for each run of CL_PredictMovement.
+		// 1 = correctly predicted data.
+		// 0 = uninitialized/stale data.
+		// 
+		// 0011100000000 - Current acked and predicted state index is 2.
+		//   ^             Indexes 3-4 are predicted correctly.
+		// 0011110000000 - Current index is 3. Indexes 4-5 are predicted correctly.
+		//    ^
+		// 0011110000000 - New ack from the server after a client freeze. Current index jumps to 8.
+		//         ^       States from 2-8 were Txfered. 7-8 were not predicted yet. Uninitialized
+		//                 data is now being used as the source of truth to predict future frames!
+		//                 Indexes 9-10 are predicted wrong. All future indexes will also be wrong
+		//                 until new deltas are received for the bad fields.
+		//
+		// After this fix:
+		// 0011111111100 - Current index jumps to 8 as before. States from 2-8 were Txfered.
+		//         ^       The last predicted state (index 5) was used to fill indexes 7-8.
+		//                 Indexes 9-10 are predicted correctly.
+		pps = &g_latest_predicted_state->playerstate;
+		pcd = &g_latest_predicted_state->client;
+		pwd = g_latest_predicted_state->weapondata;
+	}
+
+	if (g_latest_predicted_state && pwd == g_latest_predicted_state->weapondata) {
+		// the engine requests predicted states in sequential order, so any more calls to this function
+		// before prediction runs again will be for a state that hasn't been predicted yet (invalid/stale data).
+		g_transferred_latest_state = true;
+	}
 
 	ps->oldbuttons				= pps->oldbuttons;
 	ps->flFallVelocity			= pps->flFallVelocity;

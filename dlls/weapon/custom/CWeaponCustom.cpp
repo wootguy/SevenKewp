@@ -466,6 +466,10 @@ void CWeaponCustom::LoadClip(int maxAmount, bool secondary) {
 	CustomWeaponParams& params = GetActiveParams();
 
 	int& clip = secondary ? m_iClip2 : (m_bInAkimboReload ? m_chargeReady : m_iClip);
+
+	if (clip < 0)
+		return; // -1 = no clip
+
 	int ammoType = secondary ? m_iSecondaryAmmoType : m_iPrimaryAmmoType;
 	int ammoIdx = secondary ? 1 : 0;
 
