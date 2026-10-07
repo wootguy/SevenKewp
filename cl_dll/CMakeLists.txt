@@ -319,7 +319,7 @@ if(UNIX)
 	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -static-libgcc -static-libstdc++ -Wl,--gc-sections")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 	
-	if (ENABLE_CURL)
+	if (BUILD_CURL)
 		target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DENABLE_CURL)
 		target_link_libraries(${CLIENT_DLL_NAME} 
 			${CMAKE_SOURCE_DIR}/external/curl/build/lib/libcurl.a
@@ -354,7 +354,7 @@ elseif(MSVC)
 		${CMAKE_SOURCE_DIR}/lib/public/sdl2.lib
 	)
 	
-	if (ENABLE_CURL)
+	if (BUILD_CURL)
 		set(LIB_BUILD_PATH "build")
 		if (STATIC_MSVC_RUNTIME)
 			set(LIB_BUILD_PATH "build_static")
@@ -367,61 +367,59 @@ elseif(MSVC)
 	endif()
 
 	set_target_properties(${CLIENT_DLL_NAME} PROPERTIES
-		VS_DEBUGGER_COMMAND "${CLIENT_WORK_DIR}/${CLIENT_EXE}"
-		VS_DEBUGGER_WORKING_DIRECTORY "${CLIENT_WORK_DIR}"
+		VS_DEBUGGER_COMMAND "$<$<CONFIG:Debug>:hl.exe>$<$<CONFIG:DebugXash>:xash3d.exe>"
+		VS_DEBUGGER_WORKING_DIRECTORY "$<$<CONFIG:Debug>:${CLIENT_WORK_DIR}>$<$<CONFIG:DebugXash>:${CLIENT_WORK_DIR_XASH}>"
 		VS_DEBUGGER_COMMAND_ARGUMENTS "${CLIENT_ARGS}"
 	)
 	
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W0 /we4715") 
 
-	source_group("Header Files\\Weapons" FILES ${WEAPON_HDR})	
+	source_group("Header Files\\Weapons" FILES ${WEAPON_HDR})
 	source_group("Header Files\\Weapons\\Events" FILES ${WEAPON_EVENTS_HDR})
 	source_group("Header Files\\Weapons\\Prediction" FILES ${WEAPON_PREDICTION_HDR})
-	source_group("Header Files\\Util" FILES ${UTIL_HDR})	
-	source_group("Header Files\\HUD" FILES ${HUD_HDR})	
-	source_group("Header Files\\HUD\\VGUI" FILES ${VGUI_HDR})	
-	source_group("Header Files\\HUD\\Components" FILES ${HUD_COMPONENTS_HDR})	
-	source_group("Header Files\\Input" FILES ${INPUT_HDR})	
+	source_group("Header Files\\Util" FILES ${UTIL_HDR})
+	source_group("Header Files\\HUD" FILES ${HUD_HDR})
+	source_group("Header Files\\HUD\\VGUI" FILES ${VGUI_HDR})
+	source_group("Header Files\\HUD\\Components" FILES ${HUD_COMPONENTS_HDR})
+	source_group("Header Files\\Input" FILES ${INPUT_HDR})
 	source_group("Header Files\\Rendering" FILES ${RENDER_HDR})
 	source_group("Header Files\\Movement" FILES ${MOVEMENT_HDR})
 	source_group("Header Files\\Hooks" FILES ${HOOKS_HDR})
 	source_group("Header Files\\Effects" FILES ${EFFECTS_HDR})
 	
 	source_group("Source Files\\Weapons\\Default" FILES ${SHARED_WEAPON_SRC} ${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp)
-	source_group("Source Files\\Weapons\\Custom" FILES ${CUSTOM_WEAPON_SRC})	
-	source_group("Source Files\\Weapons\\Events" FILES ${WEAPON_EVENTS_SRC})	
-	source_group("Source Files\\Weapons\\Prediction" FILES ${WEAPON_PREDICTION_SRC})	
-	source_group("Source Files\\Weapons" FILES ${CLIENT_WEAPON_SRC})	
-	source_group("Source Files\\Util" FILES ${UTIL_SRC})	
-	source_group("Source Files\\Game" FILES ${GAME_SRC})	
-	source_group("Source Files\\HUD" FILES ${HUD_SRC})	
-	source_group("Source Files\\HUD\\Components" FILES ${HUD_COMPONENTS_SRC})	
-	source_group("Source Files\\HUD\\VGUI" FILES ${VGUI_SRC})	
-	source_group("Source Files\\Input" FILES ${INPUT_SRC})	
-	source_group("Source Files\\Rendering" FILES ${RENDER_SRC})	
-	source_group("Source Files\\Movement" FILES ${MOVEMENT_SRC})	
-	source_group("Source Files\\Hooks" FILES ${HOOKS_SRC})	
-	source_group("Source Files\\Effects" FILES ${EFFECTS_SRC})	
+	source_group("Source Files\\Weapons\\Custom" FILES ${CUSTOM_WEAPON_SRC})
+	source_group("Source Files\\Weapons\\Events" FILES ${WEAPON_EVENTS_SRC})
+	source_group("Source Files\\Weapons\\Prediction" FILES ${WEAPON_PREDICTION_SRC})
+	source_group("Source Files\\Weapons" FILES ${CLIENT_WEAPON_SRC})
+	source_group("Source Files\\Util" FILES ${UTIL_SRC})
+	source_group("Source Files\\Game" FILES ${GAME_SRC})
+	source_group("Source Files\\HUD" FILES ${HUD_SRC})
+	source_group("Source Files\\HUD\\Components" FILES ${HUD_COMPONENTS_SRC})
+	source_group("Source Files\\HUD\\VGUI" FILES ${VGUI_SRC})
+	source_group("Source Files\\Input" FILES ${INPUT_SRC})
+	source_group("Source Files\\Rendering" FILES ${RENDER_SRC})
+	source_group("Source Files\\Movement" FILES ${MOVEMENT_SRC})
+	source_group("Source Files\\Hooks" FILES ${HOOKS_SRC})
+	source_group("Source Files\\Effects" FILES ${EFFECTS_SRC})
 
 else()
 	message(FATAL_ERROR "TODO: Mac support")
 endif()
 
-if (SETUP_IDE)
-	set(MOD_OUTPUT_PATH "${CLIENT_WORK_DIR}/valve_addon/cl_dlls")
+if (INSTALL_BINARIES)
+	set(STEAM_OUTPUT_PATH "${CLIENT_WORK_DIR}/valve_addon/cl_dlls")
+	set(XASH_OUTPUT_PATH "${CLIENT_WORK_DIR_XASH}/valve/cl_dlls")
 else()
-	set(MOD_OUTPUT_PATH "${CMAKE_BINARY_DIR}/output/cl_dlls")
+	set(STEAM_OUTPUT_PATH "${CMAKE_BINARY_DIR}/output/cl_dlls")
+	set(XASH_OUTPUT_PATH "${CMAKE_BINARY_DIR}/output/cl_dlls")
 endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-	RUNTIME_OUTPUT_DIRECTORY ${MOD_OUTPUT_PATH}
-	RUNTIME_OUTPUT_DIRECTORY_DEBUG ${MOD_OUTPUT_PATH}
-	RUNTIME_OUTPUT_DIRECTORY_RELEASE ${MOD_OUTPUT_PATH}
+	RUNTIME_OUTPUT_DIRECTORY "$<$<CONFIG:DebugXash>:${XASH_OUTPUT_PATH}>$<$<NOT:$<CONFIG:DebugXash>>:${STEAM_OUTPUT_PATH}>"
 )
 if(UNIX)
 	set_target_properties(${PROJECT_NAME} PROPERTIES
-		LIBRARY_OUTPUT_DIRECTORY ${MOD_OUTPUT_PATH}
-		LIBRARY_OUTPUT_DIRECTORY_DEBUG ${MOD_OUTPUT_PATH}
-		LIBRARY_OUTPUT_DIRECTORY_RELEASE ${MOD_OUTPUT_PATH}
+		LIBRARY_OUTPUT_DIRECTORY "$<$<CONFIG:DebugXash>:${XASH_OUTPUT_PATH}>$<$<NOT:$<CONFIG:DebugXash>>:${STEAM_OUTPUT_PATH}>"
 	)
 endif()

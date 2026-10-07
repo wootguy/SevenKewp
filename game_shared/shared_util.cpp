@@ -298,7 +298,7 @@ std::string UTIL_UrlEncode(const std::string& decoded)
 	curl_free(encoded_value);
 	return result;
 #else
-	PRINTERR("UTIL_UrlEncode requires ENABLE_CURL build flag in cmake\n");
+	PRINTERR("UTIL_UrlEncode requires the BUILD_CURL flag in CMake\n");
 	return "";
 #endif
 }
@@ -438,7 +438,7 @@ int UTIL_CurlRequest_internal(std::string url, void* writeData, bool isString,
 		return response_code;
 	}
 #else
-	PRINTERR("UTIL_Curl* requires ENABLE_CURL build flag in cmake\n");
+	PRINTERR("UTIL_Curl* requires the BUILD_CURL flag in CMake\n");
 #endif
 	return 0;
 }
