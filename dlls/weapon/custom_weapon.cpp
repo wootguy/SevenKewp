@@ -2738,7 +2738,6 @@ void UTIL_ReloadWeaponConfigs() {
 
 		EHANDLE h_plr = EHANDLE(plr->edict());
 
-		int givenItems = 0;
 		CBaseEntity* pPendingItem = NULL;
 		for (int k = 0; k < MAX_ITEM_TYPES; k++) {
 			CBaseEntity* ent = plr->m_rgpPlayerItems[k].GetEntity();

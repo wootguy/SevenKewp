@@ -6,6 +6,7 @@
 #include "CBasePlayer.h"
 #include "CTriggerScript.h"
 #include "module_funcs.h"
+#include <algorithm>
 
 PluginManager g_pluginManager;
 

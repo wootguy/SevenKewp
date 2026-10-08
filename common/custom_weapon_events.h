@@ -992,7 +992,7 @@ struct WepEvt {
 		return *this;
 	}
 
-	WepEvt DLight(uint8_t radius = 20, RGB c = RGB(255, 255, 255), uint8_t life = 0.1f, uint8_t decayRate = 0) {
+	WepEvt DLight(uint8_t radius = 20, RGB c = RGB(255, 255, 255), uint8_t life = 1, uint8_t decayRate = 0) {
 		evtType = WC_EVT_DLIGHT;
 		dlight.radius = radius;
 		dlight.color = c;
