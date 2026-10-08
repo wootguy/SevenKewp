@@ -3,13 +3,13 @@
 
 typedef unsigned int string_t;
 
-#define FLOAT_TO_D100(val) (clamp(val * 100, 0, UINT16_MAX))
-#define FLOAT_TO_SD100(val) (clamp(val * 100, INT16_MIN, INT16_MAX))
-#define FLOAT_TO_SD1000_32BIT(val) (clamp(val * 1000, INT32_MIN, INT32_MAX))
+#define FLOAT_TO_D100(val) (V_clamp(val * 100, 0, UINT16_MAX))
+#define FLOAT_TO_SD100(val) (V_clamp(val * 100, INT16_MIN, INT16_MAX))
+#define FLOAT_TO_SD1000_32BIT(val) (V_clamp(val * 1000, INT32_MIN, INT32_MAX))
 #define D100_TO_FLOAT(val) ((val) * 0.01f)
 
-#define FLOAT_TO_D1000(val) (clamp(val * 1000, 0, UINT16_MAX))
-#define FLOAT_TO_SD1000(val) (clamp(val * 1000, INT16_MIN, INT16_MAX))
+#define FLOAT_TO_D1000(val) (V_clamp(val * 1000, 0, UINT16_MAX))
+#define FLOAT_TO_SD1000(val) (V_clamp(val * 1000, INT16_MIN, INT16_MAX))
 #define D1000_TO_FLOAT(val) ((val) * 0.001f)
 
 #define INT32_VEC3_TO_VECTOR(v) Vector(v[0] * 0.001f, v[1] * 0.001f, v[2] * 0.001f)

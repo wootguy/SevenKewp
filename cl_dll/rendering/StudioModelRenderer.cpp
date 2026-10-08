@@ -1140,7 +1140,7 @@ void CStudioModelRenderer::StudioPlayAkimboEvents() {
 		lastEventFrame = &dummy;
 
 	// in case a state for the wrong model is selected
-	seq = clamp(seq, 0, m_pStudioHeader->numseq - 1);
+	seq = V_clamp(seq, 0, m_pStudioHeader->numseq - 1);
 
 	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)m_pStudioHeader + m_pStudioHeader->seqindex) + seq;
 
@@ -1185,11 +1185,11 @@ bool CStudioModelRenderer::IsFullBrightSubModel(mstudiomodel_t* m_pSubModel, int
 	mstudiomesh_t* meshes = (mstudiomesh_t*)(head + m_pSubModel->meshindex);
 	mstudiotexture_t* textures = (mstudiotexture_t*)(head + m_pStudioHeader->textureindex);
 
-	skin = clamp(skin, 0, m_pStudioHeader->numskinfamilies - 1);
+	skin = V_clamp(skin, 0, m_pStudioHeader->numskinfamilies - 1);
 
 	for (int k = 0; k < m_pSubModel->nummesh; k++) {		
 		short remappedSkin = skins[skin * m_pStudioHeader->numskinref + meshes[k].skinref];
-		clamp(remappedSkin, 0, m_pStudioHeader->numtextures - 1);
+		V_clamp(remappedSkin, 0, m_pStudioHeader->numtextures - 1);
 
 		if (!(textures[remappedSkin].flags & STUDIO_NF_FULLBRIGHT)) {
 			return false;
@@ -1832,7 +1832,7 @@ int CStudioModelRenderer::StudioDrawPlayer( int flags, entity_state_t *pplayer )
 			IEngineStudio.StudioSetHeader( m_pStudioHeader );
 			
 			// p model animation
-			int eidx = clamp(m_pCurrentEntity->index - 1, 0, 31);
+			int eidx = V_clamp(m_pCurrentEntity->index - 1, 0, 31);
 			ModPlayerState& pstate = g_modPlayerStates[eidx];
 			m_pCurrentEntity->curstate.sequence = g_modPlayerStates[eidx].pmodelanim;
 			m_pCurrentEntity->curstate.animtime = pstate.pmodelAnimTime;

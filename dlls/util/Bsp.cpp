@@ -303,7 +303,7 @@ bool Bsp::recursiveHullCheck(int hull, int num, float p1f, float p2f, Vector p1,
 	else {
 		frac = (t1 - BSP_EPSILON) / (t1 - t2);
 	}
-	frac = clamp(frac, 0.0f, 1.0f);
+	frac = V_clamp(frac, 0.0f, 1.0f);
 
 	if (frac != frac) {
 		return false; // NaN

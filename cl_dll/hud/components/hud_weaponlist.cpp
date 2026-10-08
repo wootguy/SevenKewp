@@ -266,7 +266,7 @@ int CHudWeaponList::VidInit(void)
 			nScale = 2;
 
 	if (gHUD.m_pCvarHudScale->value > 0) {
-		nScale = clamp(gHUD.m_pCvarHudScale->value, 1, 4);
+		nScale = V_clamp(gHUD.m_pCvarHudScale->value, 1, 4);
 	}
 
 	giABWidth = 10 * nScale;

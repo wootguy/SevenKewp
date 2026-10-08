@@ -8,6 +8,7 @@
 #include "shared_effects.h"
 #include "GL/gl.h"
 #include "sprites.h"
+#include <algorithm>
 
 // entities that should have sprites rendered in their place are added here
 // then drawn at transparent triangle render time
@@ -398,7 +399,7 @@ void gfx_draw_sprite(Vector origin, Vector angles, int modelIdx, int frame, Spri
 		frame = frame * 8 + angle;
 	}
 
-	frame = clamp(frame, 0, header->numframes-1);
+	frame = V_clamp(frame, 0, header->numframes-1);
 
 	float fleft, fright, fup, fdown;
 	if (is_software_renderer) {

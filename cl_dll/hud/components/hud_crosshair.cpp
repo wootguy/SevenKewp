@@ -280,9 +280,9 @@ void CHudCrosshair::DrawDynamicCrosshair() {
 	if (m_hud_crosshair_mode->value <= 0 || !gHUD.IsCompatibleSevenKewpServer())
 		return; // drawing sprite crosshair
 
-	int len = clamp(m_hud_crosshair_length->value, 1, 1000);
-	int width = clamp(m_hud_crosshair_width->value, 1, 1000);
-	int border = clamp(m_hud_crosshair_border->value, 0, 1000);
+	int len = V_clamp(m_hud_crosshair_length->value, 1, 1000);
+	int width = V_clamp(m_hud_crosshair_width->value, 1, 1000);
+	int border = V_clamp(m_hud_crosshair_border->value, 0, 1000);
 	bool drawDot = m_hud_crosshair_dot->value > 0;
 	bool drawTee = m_hud_crosshair_tee->value > 0;
 

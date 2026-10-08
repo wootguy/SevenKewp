@@ -14,12 +14,8 @@
 
 #include "extdll.h"
 #include "util.h"
-#undef min
-#undef max
 #include <list>
 #include "GameEvent.h" // Game event enum used by career mode, tutor system, and bots
-
-#include "minmax.h"
 
 class CNavArea;
 

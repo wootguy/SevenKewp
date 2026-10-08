@@ -440,7 +440,7 @@ void GetSequenceInfo( void *pmodel, entvars_t *pev, float *pflFrameRate, float *
 }
 
 float GetSequenceFrameOffset(studiohdr_t* pstudiohdr, int iseq, float frame) {
-	iseq = clamp(iseq, 0, pstudiohdr->numseq);
+	iseq = V_clamp(iseq, 0, pstudiohdr->numseq);
 	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + iseq;
 	return (frame / (float)pseqdesc->numframes) * 255;
 }

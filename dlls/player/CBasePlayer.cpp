@@ -5524,7 +5524,7 @@ void CBasePlayer::SetPrefsFromUserinfo(char* infobuffer)
 	const char* classKey = g_engfuncs.pfnInfoKeyValue(infobuffer, "cl_class");
 	int newClass = FStrEq(classKey, "") ? 0 : atoi(classKey);
 
-	newClass = clamp(newClass, PCLASS_DEFAULT, PCLASS_HL);
+	newClass = V_clamp(newClass, PCLASS_DEFAULT, PCLASS_HL);
 	if (newClass != m_iWantClassSelection) {
 		m_iWantClassSelection = newClass;
 
@@ -6806,9 +6806,9 @@ void CBasePlayer::UpdateTagPos() {
 			continue;
 		}
 			
-		int16_t x = clamp((int)(plr->pev->origin.x / 8), INT16_MIN, INT16_MAX);
-		int16_t y = clamp((int)(plr->pev->origin.y / 8), INT16_MIN, INT16_MAX);
-		int16_t z = clamp((int)(plr->pev->origin.z / 8), INT16_MIN, INT16_MAX);
+		int16_t x = V_clamp((int)(plr->pev->origin.x / 8), INT16_MIN, INT16_MAX);
+		int16_t y = V_clamp((int)(plr->pev->origin.y / 8), INT16_MIN, INT16_MAX);
+		int16_t z = V_clamp((int)(plr->pev->origin.z / 8), INT16_MIN, INT16_MAX);
 
 		int k = i - 1;
 		if (m_lastTagPos[k][0] == x && m_lastTagPos[k][1] == y && m_lastTagPos[k][2] == z) {

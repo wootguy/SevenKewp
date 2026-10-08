@@ -31,7 +31,6 @@ extern "C" {
 #include "ref_params.h"
 #include "r_efx.h"
 #include "studio_event.h"
-#include "minmax.h"
 #include "wrect.h"
 
 #ifdef _WIN32

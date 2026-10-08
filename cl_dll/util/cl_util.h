@@ -104,8 +104,8 @@ HSPRITE SPR_Load(const char* path);
 
 #define XRES(x)					((x)  * ((float)ScreenWidth / 640))
 #define YRES(y)					((y)  * ((float)ScreenHeight / 480))
-#define XRES_HD(x)				((x)  * max(1.f, (float)ScreenWidth / 1280.f))
-#define YRES_HD(y)				((y)  * max(1.f, (float)ScreenHeight / 720.f))
+#define XRES_HD(x)				((x)  * V_max(1.f, (float)ScreenWidth / 1280.f))
+#define YRES_HD(y)				((y)  * V_max(1.f, (float)ScreenHeight / 720.f))
 
 #define GetScreenInfo (*gEngfuncs.pfnGetScreenInfo)
 #define ServerCmd (*gEngfuncs.pfnServerCmd)

@@ -12,7 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#include "rehlds.h"
+#include "rehlds_util.h"
 #include "extdll.h"
 #include "eiface.h"
 #include "util.h"
@@ -661,8 +661,7 @@ void GameDLLInit( void )
 	SERVER_COMMAND( "exec skill.cfg\n" );
 
 	if (IS_DEDICATED_SERVER()) {
-		RehldsApi_Init();
-		RegisterRehldsHooks();
+		rehlds_init();
 	}
 }
 

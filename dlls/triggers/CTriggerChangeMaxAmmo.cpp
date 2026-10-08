@@ -73,8 +73,8 @@ void CTriggerChangeMaxAmmo::Use(CBaseEntity* pActivator, CBaseEntity* pCaller, U
 	default:
 	case MAXAMMO_SET: newMax = m_iMaxAmmo; break;
 	case MAXAMMO_RESET: newMax = initial; break;
-	case MAXAMMO_ADD: newMax = clamp(0, (uint64_t)current + m_iMaxAmmo, INT_MAX); break;
-	case MAXAMMO_SUBTRACT: newMax = clamp(0, (uint64_t)current - m_iMaxAmmo, INT_MAX); break;
+	case MAXAMMO_ADD: newMax = V_clamp(0, (uint64_t)current + m_iMaxAmmo, INT_MAX); break;
+	case MAXAMMO_SUBTRACT: newMax = V_clamp(0, (uint64_t)current - m_iMaxAmmo, INT_MAX); break;
 	}
 
 	UTIL_RegisterAmmoCapacity(ammoType, newMax);

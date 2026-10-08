@@ -1553,7 +1553,7 @@ void CWeaponEvents::PlayEvent_StreakSplash(WepEvt& evt, CBasePlayer* m_pPlayer, 
 	Vector dir = GetEventDir(evt, m_pPlayer, tr);
 
 #ifdef CLIENT_DLL
-	gEngfuncs.pEfxAPI->R_StreakSplash(pos, dir, clamp(evt.streak_splash.color, 0, 11),
+	gEngfuncs.pEfxAPI->R_StreakSplash(pos, dir, V_clamp(evt.streak_splash.color, 0, 11),
 		evt.streak_splash.count, evt.streak_splash.speed, -evt.streak_splash.randomness,
 		evt.streak_splash.randomness);
 #else

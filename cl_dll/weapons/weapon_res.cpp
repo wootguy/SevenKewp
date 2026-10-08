@@ -78,7 +78,7 @@ void WeaponsResource::LoadWeaponSprites(WEAPON* pWeapon)
 #endif
 
 	if (gHUD.m_pCvarHudScale->value > 0) {
-		int nScale = clamp(gHUD.m_pCvarHudScale->value, 1, 4);
+		int nScale = V_clamp(gHUD.m_pCvarHudScale->value, 1, 4);
 	}
 
 	if (!pWeapon)

@@ -55,7 +55,6 @@
 using namespace std::chrono;
 
 #ifdef WIN32
-#include <windows.h>
 #include <direct.h>
 #define mkdir(path, perms) _mkdir(path)
 #define stat _stat
@@ -2910,7 +2909,6 @@ bool fileExists(const char* path) {
 std::string lastMapName;
 
 #ifdef WIN32
-#include <windows.h>
 #include <iostream>
 
 WORD original;

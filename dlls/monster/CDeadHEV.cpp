@@ -37,7 +37,7 @@ void CDeadHEV::Spawn(void)
 	pev->body = 1;
 	SetBloodColor(BloodColorHuman());
 
-	pev->sequence = LookupSequence(m_szPoses[clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)]);
+	pev->sequence = LookupSequence(m_szPoses[V_clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)]);
 
 	if (pev->sequence == -1)
 	{

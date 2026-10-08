@@ -545,6 +545,7 @@ set(UTIL_HDR
 	util/wav.h
 	util/water.h
 	util/perf.h
+	util/rehlds_util.h
 	../game_shared/vector.h
 	../game_shared/HashMap.h
 	../game_shared/StringPool.h
@@ -586,7 +587,6 @@ set(UTIL_SRC
 	../game_shared/mstream.cpp
 	../game_shared/shared_util.cpp
 	../game_shared/md5.cpp
-	../game_shared/miniz.c
 )
 set(PLAYER_HDR
 	../pm_shared/pm_debug.h
@@ -621,7 +621,6 @@ set(HOOKS_SRC
 	hooks/hlds_hooks.cpp
 	hooks/PluginManager.cpp
 	hooks/rehlds.cpp
-	hooks/rehlds_hooks.cpp
 	../common/rehlds_interface.cpp
 )
 
@@ -771,6 +770,7 @@ set(ALL_SRC
 	${HOOKS_SRC} ${HOOKS_HDR}
 	${MISC_HDR}
 	env/fog_colors.c
+	pch.h
 )
 
 # don't compile individual entity files
@@ -833,6 +833,17 @@ if(UNIX)
 	)
 	
 elseif(MSVC)
+	# PCH roughly doubles compile speed on windows, but makes linux compilation slower
+	target_precompile_headers(${SERVER_DLL_NAME} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:pch.h>")
+
+	set_source_files_properties(
+		hooks/rehlds.cpp
+		../pm_shared/pm_math.cpp
+		../pm_shared/pm_debug.cpp
+		../pm_shared/pm_shared.cpp
+		PROPERTIES SKIP_PRECOMPILE_HEADERS ON
+	)
+
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4 /we4715")
 	
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES

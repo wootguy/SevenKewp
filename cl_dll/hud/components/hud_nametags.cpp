@@ -50,7 +50,7 @@ int CHudNametags::Draw(float flTime)
 
     float now = gEngfuncs.GetClientTime();
 
-    float frameTime = clamp(now - lastFrame, 0, 0.5f);
+    float frameTime = V_clamp(now - lastFrame, 0, 0.5f);
     lastFrame = now;
 
     bool xray = m_HUD_nametags->value >= 2;

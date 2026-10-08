@@ -437,7 +437,7 @@ void CL_DLLEXPORT HUD_StudioEvent( const struct mstudioevent_s *event, const str
 			Vector origin, angles;
 
 			if (flash.attachment != (uint8_t)-1) {
-				origin = entity->attachment[clamp(flash.attachment, 0, 3)];
+				origin = entity->attachment[V_clamp(flash.attachment, 0, 3)];
 				//origin = entity->attachment[1];
 			}
 			else if (flash.bone != (uint8_t)-1) {

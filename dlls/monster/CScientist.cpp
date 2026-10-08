@@ -1070,7 +1070,7 @@ void CDeadScientist :: Spawn( )
 	else
 		pev->skin = m_skinBase;
 
-	pev->sequence = LookupSequence( m_szPoses[clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses)-1)]);
+	pev->sequence = LookupSequence( m_szPoses[V_clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses)-1)]);
 	if (pev->sequence == -1)
 	{
 		ALERT ( at_console, "Dead scientist with bad pose\n" );

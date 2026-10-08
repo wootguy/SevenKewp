@@ -560,7 +560,7 @@ int CHud::GetDesiredSpriteRes() {
 			320, 640, 1280, 2560
 		};
 
-		int nScale = clamp(m_pCvarHudScale->value, 1, 4);
+		int nScale = V_clamp(m_pCvarHudScale->value, 1, 4);
 		iRes = resScales[nScale - 1];
 	}
 	else {

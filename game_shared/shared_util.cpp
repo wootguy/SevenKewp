@@ -6,6 +6,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <chrono>
 #include <fstream>
+#include <algorithm>
 #include "HashMap.h"
 
 #ifdef ENABLE_CURL
@@ -26,7 +27,6 @@
 #endif
 
 #if defined(WIN32) || defined(_WIN32)
-#include <windows.h>
 #include <direct.h>
 #include <sys/stat.h>
 #define GetCurrentDir _getcwd
@@ -1076,7 +1076,7 @@ int BitIndex(uint32_t mask) {
 }
 
 float GetSequenceDuration(studiohdr_t* pstudiohdr, int iseq) {
-	iseq = clamp(iseq, 0, pstudiohdr->numseq);
+	iseq = V_clamp(iseq, 0, pstudiohdr->numseq);
 	mstudioseqdesc_t* pseqdesc = (mstudioseqdesc_t*)((byte*)pstudiohdr + pstudiohdr->seqindex) + iseq;
 	return (pseqdesc->numframes - 1) / pseqdesc->fps;
 }
