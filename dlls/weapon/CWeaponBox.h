@@ -13,7 +13,7 @@ public:
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	void KeyValue( KeyValueData *pkvd );
 	BOOL IsEmpty( void );
-	int  GiveAmmo( int iCount, const char *szName, int iMax, int *pIndex = NULL );
+	int  AddAmmo( int iCount, const char *szName, int iMax, int *pIndex = NULL );
 	void SetObjectCollisionBox( void );
 	virtual int	ObjectCaps(void) { return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE; }
 	virtual CWeaponBox* MyWeaponBoxPtr(void) { return this; }

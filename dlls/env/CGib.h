@@ -45,7 +45,7 @@ EXPORT extern GibInfo g_gibInfo[MERGE_MDL_GIB_MODELS];
 class EXPORT CGib : public CBaseEntity
 {
 public:
-	void Spawn(const char* szGibModel);
+	void SpawnGib(const char* szGibModel);
 	void BounceGibTouch(CBaseEntity* pOther);
 	void StickyGibTouch(CBaseEntity* pOther);
 	void SprayTouch(CBaseEntity* pOther);

@@ -871,7 +871,7 @@ void CEnvWeather::UpdateFog() {
 }
 
 void CEnvWeather::WeatherEntsThink() {
-	int totalVis = 0;
+	//int totalVis = 0;
 
 	for (int k = 0; k < (int)g_weatherEnts.size(); k++) {
 		weather_ent_t& weather = g_weatherEnts[k];
@@ -941,7 +941,7 @@ void CEnvWeather::WeatherEntsThink() {
 				}
 			}
 
-			totalVis++;
+			//totalVis++;
 		}
 	}
 

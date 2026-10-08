@@ -628,7 +628,7 @@ void CMonsterMaker :: DeathNotice ( entvars_t *pevChild )
 // return number of triggers that would be removed if all monstermakers were nerfed
 int CountMonsterTriggerNerfs(string_t targetname) {
 	edict_t* edicts = ENT(0);
-	int triggerCount = 0;
+	//int triggerCount = 0;
 	int nerfCount = 0;
 
 	int maxNerfedSpawnCount = mp_maxmonsterrespawns.value + 1.5f;
@@ -656,7 +656,7 @@ int CountMonsterTriggerNerfs(string_t targetname) {
 		if (!strcmp(cname, "monstermaker")) {
 			CMonsterMaker* maker = (CMonsterMaker*)pent;
 
-			triggerCount += maker->m_cNumMonsters;
+			//triggerCount += maker->m_cNumMonsters;
 			if (maker->m_cNumMonsters < 0) {
 				return -1;
 			}
@@ -665,7 +665,7 @@ int CountMonsterTriggerNerfs(string_t targetname) {
 			}
 		}
 		else if (strstr(cname, "monster_") == cname) {
-			triggerCount++;
+			//triggerCount++;
 		}
 		else {
 			ALERT(at_console, "Unknown monster trigger classname: %s\n", STRING(ent->v.classname));

@@ -608,11 +608,9 @@ custom_muzzle_flash_t loadCustomMuzzleFlash(const char* path) {
 		return flash;
 	}
 
-	int lineNum = 0;
 	std::string line;
 	while (std::getline(infile, line))
 	{
-		lineNum++;
 		std::string paths[2];
 
 		int comments = line.find("//");

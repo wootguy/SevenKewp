@@ -1400,7 +1400,7 @@ void CWeaponEvents::UpdateBeams() {
 			switch (beam.evt.beam.altMode)
 			{
 			case WC_BEAM_ANIM_LINEAR:
-			case WC_BEAM_ANIM_LINEAR_TOGGLE: p = p; break;
+			case WC_BEAM_ANIM_LINEAR_TOGGLE: break;
 			case WC_BEAM_ANIM_TOGGLE: p = (p < 0.5) ? 0 : 1; break;
 			case WC_BEAM_ANIM_EASE_IN_OUT:   p = p * p * p / (p * p * p + q * q * q); break;
 			}

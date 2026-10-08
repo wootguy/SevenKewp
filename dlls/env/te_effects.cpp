@@ -1302,7 +1302,7 @@ void UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector& veloci
 			CGib* pGib = GetClassPtr((CGib*)NULL);
 
 			pGib->m_hidePlayers = hidePlayers;
-			pGib->Spawn(mdl);
+			pGib->SpawnGib(mdl);
 			pGib->m_cBloodDecals = 0;
 			pGib->m_slideFriction = 0.5f;
 			pGib->m_material = material;
@@ -1362,7 +1362,7 @@ void UTIL_SpriteSpray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint
 
 			float randSpeed = speed * 2.0f * RANDOM_FLOAT(0.8f, 1.2f);
 
-			pGib->Spawn(mdl);
+			pGib->SpawnGib(mdl);
 			pGib->m_cBloodDecals = 0;
 			pGib->m_lifeTime = gpGlobals->time + 0.5f;
 			pGib->m_slideFriction = 0.5f;
@@ -1602,7 +1602,7 @@ void UTIL_SpriteTrail(Vector start, Vector end, int spriteIdx, int count, int li
 			float randSpeed = speed * 2.0f * RANDOM_FLOAT(0.8f, 1.2f);
 			Vector randPos = start + delta * RANDOM_FLOAT(0, 1);
 
-			pGib->Spawn(mdl);
+			pGib->SpawnGib(mdl);
 			pGib->m_cBloodDecals = 0;
 			pGib->m_lifeTime = gpGlobals->time + 0.5f;
 			pGib->m_slideFriction = 0.5f;

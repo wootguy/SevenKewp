@@ -428,7 +428,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 	edict_t		*pentIgnore;
 	TraceResult tr, beam_tr;
 	float flMaxFrac = 1.0;
-	int	nTotal = 0;
+	//int	nTotal = 0;
 	int fHasPunched = 0;
 	int fFirstBeam = 1;
 	int	nMaxHits = 10;
@@ -483,7 +483,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 			m_pPlayer->pev->effects |= EF_MUZZLEFLASH;
 			fFirstBeam = 0;
 	
-			nTotal += 26;
+			//nTotal += 26;
 		}
 		
 		if (pEntity->pev->takedamage)
@@ -523,7 +523,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 				// explode a bit
 				m_pPlayer->RadiusDamage( tr.vecEndPos, pev, m_pPlayer->pev, flDamage * n, CLASS_NONE, DMG_BLAST );
 
-				nTotal += 34;
+				//nTotal += 34;
 				
 				// lose energy
 				if (n == 0) n = 0.1;
@@ -531,7 +531,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 			}
 			else
 			{
-				nTotal += 13;
+				//nTotal += 13;
 
 				// limit it to one hole punch
 				if (fHasPunched)
@@ -555,7 +555,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 							flDamage -= n;
 
 							// ALERT( at_console, "punch %f\n", n );
-							nTotal += 21;
+							//nTotal += 21;
 
 							// exit blast damage
 							//m_pPlayer->RadiusDamage( beam_tr.vecEndPos + vecDir * 8, pev, m_pPlayer->pev, flDamage, CLASS_NONE, DMG_BLAST );
@@ -575,7 +575,7 @@ void CGauss::Fire( Vector vecOrigSrc, Vector vecDir, float flDamage )
 
 							CSoundEnt::InsertSound ( bits_SOUND_COMBAT, pev->origin, NORMAL_EXPLOSION_VOLUME, 3.0 );
 
-							nTotal += 53;
+							//nTotal += 53;
 
 							vecSrc = beam_tr.vecEndPos + vecDir;
 						}

@@ -285,7 +285,7 @@ void PM_ViewEntity( void )
 	int i;
 	pmtrace_t trace;
 	int pcolor = 77;
-	float fup;
+	//float fup;
 
 #if 0
 	if ( !pm_showclip.value )
@@ -296,9 +296,9 @@ void PM_ViewEntity( void )
 
 	VectorCopy( pmove->origin, origin);
 
-	fup = 0.5*( pmove->player_mins[pmove->usehull][2] + pmove->player_maxs[pmove->usehull][2] );
-	fup += pmove->view_ofs[2];
-	fup -= 4;
+	//fup = 0.5*( pmove->player_mins[pmove->usehull][2] + pmove->player_maxs[pmove->usehull][2] );
+	//fup += pmove->view_ofs[2];
+	//fup -= 4;
 
 	for (i = 0; i < 3; i++)
 	{

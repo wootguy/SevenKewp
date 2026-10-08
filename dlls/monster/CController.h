@@ -98,7 +98,6 @@ class EXPORT CControllerHeadBall : public CBaseMonster
 	void Crawl( void );
 	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
 	virtual BOOL IsNormalMonster() { return FALSE; }
-	int m_iTrail;
 	int m_flNextAttack;
 	Vector m_vecIdeal;
 	EHANDLE m_hOwner;

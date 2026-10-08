@@ -75,7 +75,7 @@ CGib *CEnvShooter::CreateGib( float lifeTime )
 	if (!pGib)
 		return NULL;
 
-	pGib->Spawn(STRING(pev->model));
+	pGib->SpawnGib(STRING(pev->model));
 	pGib->m_lifeTime = lifeTime;
 
 	if (FBitSet(pev->spawnflags, SF_ENVSHOOTER_DONT_WAIT_TILL_LAND))

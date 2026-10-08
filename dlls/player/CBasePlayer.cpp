@@ -2509,7 +2509,7 @@ void CBasePlayer::UpdateStatusBar()
 
 			strcpy_safe(sbuf1, UTIL_VarArgs("1 %%p1%s", desc.c_str()), SBAR_STRING_SIZE);
 
-			if ((pEntity->pev->flags & FL_GODMODE) || (pEntity->pev->takedamage == DAMAGE_NO) || pEntity->pev->health > 2147483647) {
+			if ((pEntity->pev->flags & FL_GODMODE) || (pEntity->pev->takedamage == DAMAGE_NO) || pEntity->pev->health > 2147483520.0f) {
 				strcpy_safe(sbuf0, "2 Health: Invincible", SBAR_STRING_SIZE);
 				hp = 1; // client won't show health text if this is an insane value
 			}
@@ -4465,7 +4465,7 @@ void CBasePlayer::ImpulseCommands( )
 		{// line hit something, so paint a decal
 			m_flNextDecalTime = gpGlobals->time + decalfrequency.value;
 			CSprayCan *pCan = GetClassPtr((CSprayCan *)NULL);
-			pCan->Spawn( pev );
+			pCan->SpawnSpray( pev );
 		}
 
 		break;
@@ -4679,7 +4679,7 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		if (tr.flFraction != 1.0)
 		{// line hit something, so paint a decal
 			CBloodSplat* pBlood = GetClassPtr((CBloodSplat*)NULL);
-			pBlood->Spawn(pev);
+			pBlood->SpawnBlood(pev);
 		}
 		break;
 	}
@@ -6663,9 +6663,10 @@ void CBasePlayer::UpdateTag(CBasePlayer* dst) {
 	if (!dst && g_engfuncs.pfnTime() - m_lastTagUpdate < 0.05f)
 		return;
 
-	uint16_t hp = UTIL_CompressUint(clampf(pev->health, 0, UINT_MAX));
-	uint16_t maxHp = UTIL_CompressUint(clampf(pev->max_health, 0, UINT_MAX));
-	uint16_t armor = UTIL_CompressUint(clampf(pev->armorvalue, 0, UINT_MAX));
+	const float UINT_MAX_FLOAT = 4294967040.0f;
+	uint16_t hp = UTIL_CompressUint(clampf(pev->health, 0, UINT_MAX_FLOAT));
+	uint16_t maxHp = UTIL_CompressUint(clampf(pev->max_health, 0, UINT_MAX_FLOAT));
+	uint16_t armor = UTIL_CompressUint(clampf(pev->armorvalue, 0, UINT_MAX_FLOAT));
 	uint8_t observer = ((pev->iuser2-1) << 3) | (pev->iuser1 & 0x7);
 	bool statusChanged = hp != m_lastTagHp || maxHp != m_lastTagMaxHp || armor != m_lastTagArmor
 		|| observer != m_lastTagObserver;

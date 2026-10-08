@@ -77,7 +77,6 @@ private:
 	EntityTextMenuCallback entCallback = NULL;
 	TextMenuCallback anonCallback = NULL;
 	EHANDLE h_ent; // entity which started the vote
-	float openTime = 0; // time when the menu was opened
 	uint32_t viewers; // bitfield indicating who can see the menu
 	TextMenuItem_internal options[MAX_MENU_OPTIONS];
 	int numOptions = 0;
@@ -87,11 +86,8 @@ private:
 	mod_string_t title;
 	mod_string_t backText;
 	mod_string_t moreText;
-	mod_string_t optionColor;
 	mod_string_t extraText;
 	StringPool m_strings;
-
-	bool isActive = false;
 
 	bool isPaginated();
 };

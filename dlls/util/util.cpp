@@ -3976,11 +3976,6 @@ void setThreadPriority(int prio) {
 		ALERT(at_error, "Failed to set thread priority %d. Error code %d\n", prio, GetLastError());
 	}
 #else
-	pthread_t thread = pthread_self();
-
-	sched_param param;
-	param.sched_priority = 0;
-
 	// set nice value
 	if (setpriority(PRIO_PROCESS, 0, prio) == -1) {
 		ALERT(at_error, "Failed to set thread priority %d. %s\n", prio, strerror(errno));

@@ -7,7 +7,7 @@
 #include "CSprayCan.h"
 #include "PluginManager.h"
 
-void CSprayCan::Spawn(entvars_t* pevOwner)
+void CSprayCan::SpawnSpray(entvars_t* pevOwner)
 {
 	pev->origin = pevOwner->origin + Vector(0, 0, 32);
 	pev->angles = pevOwner->v_angle;
