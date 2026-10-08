@@ -2,10 +2,7 @@
 #include "hud.h"
 #include "cl_util.h"
 #include "event_api.h"
-
-#ifdef WIN32
-#include "windows.h"
-#endif
+#include "Platform.h"
 
 char dummyData[16];
 EnginePv g_enginepv;

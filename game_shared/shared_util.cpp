@@ -6,6 +6,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <chrono>
 #include <fstream>
+#include <algorithm>
 #include "HashMap.h"
 
 #ifdef ENABLE_CURL

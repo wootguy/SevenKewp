@@ -88,6 +88,7 @@ typedef int BOOL;
 
 #define V_min(a,b)  (((a) < (b)) ? (a) : (b))
 #define V_max(a,b)  (((a) > (b)) ? (a) : (b))
+#define V_clamp(val, min, max) (((val) > (max)) ? (max) : (((val) < (min)) ? (min) : (val)))
 
 #ifdef PLUGIN_BUILD
 #define EXPORT DLLIMPORT

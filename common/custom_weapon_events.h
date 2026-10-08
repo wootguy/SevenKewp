@@ -1,9 +1,9 @@
 #pragma once
 
-#define FLOAT_TO_FP_10_6(val) (clamp((int)((val) * 64), INT16_MIN, INT16_MAX))
+#define FLOAT_TO_FP_10_6(val) (V_clamp((int)((val) * 64), INT16_MIN, INT16_MAX))
 #define FP_10_6_TO_FLOAT(val) (val / 64.0f)
 
-#define FLOAT_TO_SPREAD(val) (clamp((int)((val) * 65535), 0, UINT16_MAX))
+#define FLOAT_TO_SPREAD(val) (V_clamp((int)((val) * 65535), 0, UINT16_MAX))
 #define SPREAD_TO_FLOAT(val) (val / 65535.0f)
 
 #define MAX_WC_RANDOM_SELECTION 8
@@ -940,10 +940,10 @@ struct WepEvt {
 	WepEvt Kickback(int16_t pushForce, int8_t back = 100, int8_t right = 0, int8_t up = 0, int8_t globalUp = 0) {
 		evtType = WC_EVT_KICKBACK;
 		kickback.pushForce = pushForce;
-		kickback.back = clamp(back, -100, 100);
-		kickback.right = clamp(right, -100, 100);
-		kickback.up = clamp(up, -100, 100);
-		kickback.globalUp = clamp(globalUp, -100, 100);
+		kickback.back = V_clamp(back, -100, 100);
+		kickback.right = V_clamp(right, -100, 100);
+		kickback.up = V_clamp(up, -100, 100);
+		kickback.globalUp = V_clamp(globalUp, -100, 100);
 		return *this;
 	}
 

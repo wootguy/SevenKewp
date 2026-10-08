@@ -13,12 +13,18 @@
 *
 ****/
 
-#include "Platform.h"
+#define EXPORT
+#define V_min(a,b)  (((a) < (b)) ? (a) : (b))
+#define V_max(a,b)  (((a) > (b)) ? (a) : (b))
+
+#ifndef _WIN32
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+#endif
 
 #include <assert.h>
 #include "mathlib.h"
 #include "const.h"
-#include "minmax.h"
 #include "usercmd.h"
 #include "pm_defs.h"
 #include "pm_shared.h"

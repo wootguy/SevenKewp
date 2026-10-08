@@ -20,6 +20,4 @@
 typedef long unsigned int ulong;
 #endif
 
-#include "minmax.h"
-
 #endif // ARCHTYPES_H

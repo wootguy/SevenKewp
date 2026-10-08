@@ -1,4 +1,5 @@
-#include "rehlds.h"
+#include "extdll.h"
+#include "rehlds_util.h"
 #include "util.h"
 #include "perf.h"
 #include "CBaseEntity.h"
@@ -35,17 +36,7 @@ void perf_finalize() {
 	if (!mp_perf.value)
 		return;
 
-	perftimings_t* timings = g_RehldsData->GetPerfTimings();
-	if (timings) {
-		g_perf_metrics.frame = timings->frame;
-		g_perf_metrics.frameInt = timings->frameInt;
-		g_perf_metrics.entityPhysics = g_perf_metrics.entityThinks < timings->physics ? 
-			(timings->physics - g_perf_metrics.entityThinks) : 0;
-		g_perf_metrics.readPackets = timings->readPackets;
-		g_perf_metrics.addToFullPack = timings->addToFullPack;
-		g_perf_metrics.sendClientMessages = timings->addToFullPack < timings->sendClientMessages ? 
-			(timings->sendClientMessages - timings->addToFullPack) : 0;
-	}
+	rehlds_set_perf_timings(&g_perf_metrics);
 
 	g_perf_metrics.playerThink = g_perf_metrics.playerPostThink + g_perf_metrics.playerPreThink;
 

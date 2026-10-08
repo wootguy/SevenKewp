@@ -788,8 +788,8 @@ void CEnvWeather::SendFogMessage(CBasePlayer* plr) {
 	WRITE_BYTE(m_fogColor.x);
 	WRITE_BYTE(m_fogColor.y);
 	WRITE_BYTE(m_fogColor.z);
-	WRITE_SHORT(clamp(g_fog_start_dist, 0, 65535));
-	WRITE_SHORT(clamp(g_fog_end_dist, 0, 65535));
+	WRITE_SHORT(V_clamp(g_fog_start_dist, 0, 65535));
+	WRITE_SHORT(V_clamp(g_fog_end_dist, 0, 65535));
 	MESSAGE_END();
 }
 

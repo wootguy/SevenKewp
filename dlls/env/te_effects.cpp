@@ -1739,7 +1739,7 @@ void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint
 		WRITE_BYTE(TE_STREAK_SPLASH);
 		WRITE_COORD_VECTOR(pos);
 		WRITE_COORD_VECTOR(dir);
-		WRITE_BYTE(clamp(color, 0, 11));
+		WRITE_BYTE(V_clamp(color, 0, 11));
 		WRITE_SHORT(count);
 		WRITE_SHORT(speed);
 		WRITE_SHORT(speedNoise);
@@ -1761,7 +1761,7 @@ void UTIL_StreakSplash(const Vector& pos, const Vector& dir, uint8_t color, uint
 					WRITE_BYTE(TE_STREAK_SPLASH);
 					WRITE_FAR_VECTOR(pos);
 					WRITE_COORD_VECTOR(dir);
-					WRITE_BYTE(clamp(color, 0, 11));
+					WRITE_BYTE(V_clamp(color, 0, 11));
 					WRITE_SHORT(count);
 					WRITE_SHORT(speed);
 					WRITE_SHORT(speedNoise);

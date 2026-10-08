@@ -153,7 +153,7 @@ int CHudMenu :: Draw( float flTime )
 			nlc++;
 	}
 
-	int nFontHeight = max(12, screenInfo.iCharHeight);
+	int nFontHeight = V_max(12, screenInfo.iCharHeight);
 
 	// center it
 	int y = (ScreenHeight/2) - ((nlc/2)* nFontHeight) - (3 * nFontHeight + nFontHeight / 3); // make sure it is above the say text

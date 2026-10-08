@@ -6,7 +6,7 @@
 #define DEGREES_FROM_CONE(cone_value) (2.0f * asinf(cone_value) * 180.0f / (float)M_PI)
 #define DEGREES_FROM_SPREAD(spread) (2.0f * asinf(SPREAD_TO_FLOAT(spread)) * 180.0f / (float)M_PI)
 
-#define FLOAT_TO_MOVESPEED_MULT(val) clamp(((val) * 65535.0f), 1, 65535)
+#define FLOAT_TO_MOVESPEED_MULT(val) V_clamp(((val) * 65535.0f), 1, 65535)
 #define MOVESPEED_MULT_TO_FLOAT(val) ((val) ? (val) / 65535.0f : 1.0f)
 
 #define MAX_WC_EVENTS 64

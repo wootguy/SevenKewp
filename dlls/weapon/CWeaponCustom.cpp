@@ -1020,7 +1020,7 @@ bool CWeaponCustom::Chargeup(int attackIdx, int* clip, bool leftHand, bool akimb
 	}
 
 	if (m_chargeSoundEvt) {
-		WepEvt& evt = params.events[clamp(m_chargeSoundEvt, 0, MAX_WC_EVENTS-1)];
+		WepEvt& evt = params.events[V_clamp(m_chargeSoundEvt, 0, MAX_WC_EVENTS-1)];
 		int channel = evt.playSound.channel;
 		int soundIdx = evt.playSound.sound;
 		
@@ -1209,7 +1209,7 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bo
 	}
 
 	if (m_chargeSoundEvt) {
-		WepEvt& evt = params.events[clamp(m_chargeSoundEvt, 0, MAX_WC_EVENTS - 1)];
+		WepEvt& evt = params.events[V_clamp(m_chargeSoundEvt, 0, MAX_WC_EVENTS - 1)];
 		int channel = evt.playSound.channel;
 		int soundIdx = evt.playSound.sound;
 
