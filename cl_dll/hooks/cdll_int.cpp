@@ -32,10 +32,6 @@
 #include "vgui_int.h"
 #include "interface_hlsdk.h"
 
-#ifdef _WIN32
-#include "winsani_in.h"
-#include "winsani_out.h"
-#endif
 #include "Exports.h"
 #
 #include "tri.h"

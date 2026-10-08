@@ -51,9 +51,8 @@
 #define NOSERVICE
 #define NOMCX
 #define NOIME
-#include "winsani_in.h"
 #include <windows.h>
-#include "winsani_out.h"
+#undef ARRAYSIZE
 
 //Avoid the ISO conformant warning
 #define stricmp _stricmp

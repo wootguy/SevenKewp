@@ -3423,13 +3423,13 @@ bool UTIL_DeleteFolderRecursive(std::string path) {
 	});
 
 	for (std::string folder : folders) {
-		if (_rmdir(folder.c_str())) {
+		if (rmdir(folder.c_str())) {
 			ALERT(at_error, "Failed to delete folder %s (error %d)\n", folder.c_str(), errno);
 			err = true;
 		}
 	}
 
-	if (_rmdir(path.c_str())) {
+	if (rmdir(path.c_str())) {
 		ALERT(at_error, "Failed to delete folder %s (error %d)\n", path.c_str(), errno);
 		err = true;
 	}

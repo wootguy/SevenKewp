@@ -67,6 +67,9 @@ inline void CVAR_SET_FLOAT( const char *x, float val ) { gEngfuncs.Cvar_SetValue
 inline char* CVAR_GET_STRING( const char *x ) {	return gEngfuncs.pfnGetCvarString( (char*)x ); }
 inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int flags ) {	return gEngfuncs.pfnRegisterVariable( (char*)cv, (char*)val, flags ); }
 
+typedef int HANDLE_SPRITE;	// handle to a graphic
+#define HSPRITE HANDLE_SPRITE
+
 extern int g_loadedSprites;
 HSPRITE SPR_Load(const char* path);
 #define SPR_Set (*gEngfuncs.pfnSPR_Set)
