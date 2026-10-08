@@ -109,7 +109,6 @@ public:
 	CUSTOM_SCHEDULES;
 
 private:
-	float m_nextBeam; // next time a single beam will be fired
 	float m_nextOrb;
 	float m_nextTele;
 	Vector m_beamColor;
@@ -121,7 +120,6 @@ private:
 	int m_teleportPhase;
 
 	kingpin_eye_t m_eyes[4];
-	float m_lastBeam;
 
 	int m_iSpitSprite;
 	int m_numAttachments;

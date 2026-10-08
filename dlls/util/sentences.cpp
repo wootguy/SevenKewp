@@ -24,11 +24,9 @@ void LoadSentenceFile(const char* path, CustomSentences& sentences)
 
 	g_mapConfigs.put(toLowerCase(path).c_str());
 
-	int lineNum = 0;
 	std::string line;
 	while (std::getline(infile, line))
 	{
-		lineNum++;
 		std::string paths[2];
 
 		int comments = line.find("//");

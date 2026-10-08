@@ -5,7 +5,7 @@ typedef unsigned int string_t;
 
 #define FLOAT_TO_D100(val) (V_clamp(val * 100, 0, UINT16_MAX))
 #define FLOAT_TO_SD100(val) (V_clamp(val * 100, INT16_MIN, INT16_MAX))
-#define FLOAT_TO_SD1000_32BIT(val) (V_clamp(val * 1000, INT32_MIN, INT32_MAX))
+#define FLOAT_TO_SD1000_32BIT(val) (V_clamp(val * 1000, -2147483648.0f, 2147483520.0f))
 #define D100_TO_FLOAT(val) ((val) * 0.01f)
 
 #define FLOAT_TO_D1000(val) (V_clamp(val * 1000, 0, UINT16_MAX))

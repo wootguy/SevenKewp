@@ -1565,7 +1565,7 @@ void CWeaponCustom::FinishAttack(int attackIdx) {
 	}
 }
 
-void CWeaponCustom::PlayEmptySound(int attackIdx)
+void CWeaponCustom::PlayEmptySoundAtk(int attackIdx)
 {
 	CBasePlayer* m_pPlayer = GetPlayer();
 	if (!m_pPlayer)
@@ -1607,7 +1607,7 @@ void CWeaponCustom::FailAttack(int attackIdx, bool leftHand, bool akimboFire, bo
 	if (ammoClick) {
 		Cooldown(-1, 150);
 		if (!(opts.flags & FL_WC_SHOOT_IS_MELEE))
-			PlayEmptySound(attackIdx);
+			PlayEmptySoundAtk(attackIdx);
 	}
 
 	int akimboArg = IsAkimbo() ? WC_TRIG_SHOOT_ARG_AKIMBO : WC_TRIG_SHOOT_ARG_NOT_AKIMBO;

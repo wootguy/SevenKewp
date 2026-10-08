@@ -7,7 +7,7 @@
 class CSprayCan : public CBaseEntity
 {
 public:
-	void	Spawn(entvars_t* pevOwner);
+	void	SpawnSpray(entvars_t* pevOwner);
 	void	Think(void);
 
 	virtual int	ObjectCaps(void) { return FCAP_DONT_SAVE; }

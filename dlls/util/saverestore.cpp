@@ -165,8 +165,8 @@ unsigned short CSaveRestoreBuffer::TokenHash(const char* pszToken)
 	unsigned short	hash = (unsigned short)(HashString(pszToken) % (unsigned)m_pdata->tokenCount);
 
 #if _DEBUG
-	static int tokensparsed = 0;
-	tokensparsed++;
+	//static int tokensparsed = 0;
+	//tokensparsed++;
 	if (!m_pdata->tokenCount || !m_pdata->pTokens)
 		ALERT(at_error, "No token table array in TokenHash()!");
 #endif

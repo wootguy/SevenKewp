@@ -78,8 +78,6 @@ private:
 	int m_iSpriteTexture;
 	int m_waterExplodeSpr;
 
-	unsigned short m_usShockRifle;
-
 	float m_flRechargeTime;
 	float m_flSoundDelay;
 	float m_lastAttack;

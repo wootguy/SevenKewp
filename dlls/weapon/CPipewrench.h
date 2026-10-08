@@ -80,7 +80,4 @@ public:
 	int m_iSwingMode = SWING_NONE;
 	int m_iSwing;
 	TraceResult m_trHit;
-
-private:
-	unsigned short m_usPipewrench;
 };

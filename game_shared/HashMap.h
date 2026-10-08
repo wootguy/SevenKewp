@@ -30,7 +30,7 @@ public:
 
 	EXPORT BaseHashMap(int valueSz);
 	EXPORT BaseHashMap(int valueSz, int maxEntries, uint32_t stringPoolSz);
-	EXPORT ~BaseHashMap();
+	EXPORT virtual ~BaseHashMap();
 	EXPORT BaseHashMap(const BaseHashMap& other);
 	EXPORT BaseHashMap& operator=(const BaseHashMap& other);
 

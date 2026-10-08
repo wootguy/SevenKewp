@@ -5,7 +5,7 @@
 #include "decals.h"
 #include "CBloodSplat.h"
 
-void CBloodSplat::Spawn(entvars_t* pevOwner)
+void CBloodSplat::SpawnBlood(entvars_t* pevOwner)
 {
 	pev->origin = pevOwner->origin + Vector(0, 0, 32);
 	pev->angles = pevOwner->v_angle;

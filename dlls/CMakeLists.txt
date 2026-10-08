@@ -808,14 +808,6 @@ if (BUILD_CURL)
 	target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DENABLE_CURL)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	target_compile_options(${SERVER_DLL_NAME} PRIVATE
-		/clang:-Wno-invalid-offsetof
-		/clang:-Wno-overloaded-virtual
-		/clang:-Wno-unused-but-set-variable
-		/clang:-Wno-unused-private-field
-	)
-endif()
 
 if(UNIX)
 	set(OPT_FLAG "-O2")
@@ -835,13 +827,34 @@ if(UNIX)
 		)
 	endif()
 
+	set(UNIX_COMPILE_FLAGS "-m32 -g -fno-strict-aliasing -Wall -Wextra -Wpedantic -Werror=return-type -Wno-invalid-offsetof -Wno-unused-parameter -fno-omit-frame-pointer ${OPT_FLAG} ${ASAN_CFLAGS}")
+	
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		set(UNIX_COMPILE_FLAGS "${UNIX_COMPILE_FLAGS} -Wno-class-memaccess")
+	endif()
+	
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		set(UNIX_COMPILE_FLAGS "${UNIX_COMPILE_FLAGS} -Wno-overloaded-virtual -Wno-unused-but-set-variable -Wno-unused-private-field -Wno-inconsistent-missing-override -Wno-nested-anon-types -Wno-gnu-zero-variadic-macro-arguments")
+	endif()
+
 	set_target_properties(${SERVER_DLL_NAME} PROPERTIES
 		PREFIX ""
-		COMPILE_FLAGS "-m32 -g -fno-strict-aliasing -Wall -Wextra -Wpedantic -Werror=return-type -Wno-invalid-offsetof -Wno-class-memaccess -Wno-unused-parameter -fno-omit-frame-pointer ${OPT_FLAG} ${ASAN_CFLAGS}"
+		COMPILE_FLAGS "${UNIX_COMPILE_FLAGS}"
 		LINK_FLAGS "-m32 -g ${ASAN_LFLAGS}"
 	)
 	
 elseif(MSVC)
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		target_compile_options(${SERVER_DLL_NAME} PRIVATE
+			/clang:-Wno-invalid-offsetof
+			/clang:-Wno-nontrivial-memcall
+			/clang:-Wno-microsoft-cast
+			/clang:-Wno-deprecated-declarations
+			/clang:-Wno-unused-parameter
+			/clang:-Wno-microsoft-include
+		)
+	endif()
+	
 	# PCH roughly doubles compile speed on windows, but makes linux compilation slower
 	target_precompile_headers(${SERVER_DLL_NAME} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:pch.h>")
 

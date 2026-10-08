@@ -100,8 +100,6 @@ private:
 	int m_iImplodeCounter;
 	int m_iSoundState;
 
-	unsigned short m_usFireDisplacer;
-
 	float m_lastAttack;
 	EHANDLE h_beams[2];
 

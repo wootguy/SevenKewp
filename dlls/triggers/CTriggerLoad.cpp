@@ -37,11 +37,9 @@ StringMap UTIL_LoadMapSaveKeys(const char* path) {
 		return mapKeys;
 	}
 
-	int lineNum = 0;
 	std::string line;
 	while (std::getline(infile, line))
 	{
-		lineNum++;
 		std::string paths[2];
 
 		line = trimSpaces(line);

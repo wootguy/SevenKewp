@@ -1,3 +1,4 @@
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "extdll.h"
 #include "util.h"
 #include "Socket.h"
@@ -40,7 +41,7 @@ SocketData * Socket::createSocket(const char * addr, const char * port)
 	if (ret != 0)
 	{
 		ALERT(at_console, "Socket creation failed at getaddrinfo(): %d\n", WSAGetLastError());
-		delete skt;
+		delete (SocketData*)skt;
 		return NULL;
 	}
 
@@ -51,7 +52,7 @@ SocketData * Socket::createSocket(const char * addr, const char * port)
 	{
 		ALERT(at_console, "Socket creation failed at socket(): %d\n", WSAGetLastError());
 		freeaddrinfo(sdat->addr);
-		delete skt;
+		delete (SocketData*)skt;
 		return NULL;
 	}
 
@@ -64,7 +65,7 @@ SocketData * Socket::createSocket(const char * addr, const char * port)
 		{
 			ALERT(at_console, "Failed to set socket to non-blocking: %d\n", WSAGetLastError());
 			freeaddrinfo(sdat->addr);
-			delete skt;
+			delete (SocketData*)skt;
 			return NULL;
 		}
 	}

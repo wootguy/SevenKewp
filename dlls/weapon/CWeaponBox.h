@@ -13,7 +13,7 @@ public:
 	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
 	void KeyValue( KeyValueData *pkvd ) override;
 	BOOL IsEmpty( void );
-	int  GiveAmmo( int iCount, const char *szName, int iMax, int *pIndex = NULL );
+	int  AddAmmo( int iCount, const char *szName, int iMax, int *pIndex = NULL );
 	void SetObjectCollisionBox( void ) override;
 	virtual int	ObjectCaps(void) override { return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE; }
 	virtual CWeaponBox* MyWeaponBoxPtr(void) override { return this; }

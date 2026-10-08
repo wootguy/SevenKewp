@@ -72,7 +72,4 @@ public:
 
 	// GOOSEMAN
 	void Restart();
-
-private:
-	unsigned short m_usAdjustPitch;
 };

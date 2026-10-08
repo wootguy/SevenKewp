@@ -1438,7 +1438,7 @@ class CTestHull : public CBaseMonster
 {
 
 public:
-	void Spawn( entvars_t *pevMasterNode );
+	void SpawnHull( entvars_t *pevMasterNode );
 	virtual int	ObjectCaps( void ) { return CBaseMonster :: ObjectCaps() & ~(FCAP_IMPULSE_USE | FCAP_ACROSS_TRANSITION); }
 	
 	void EXPORT CallBuildNodeGraph ( void );
@@ -1455,7 +1455,7 @@ LINK_ENTITY_TO_CLASS( testhull, CTestHull )
 //=========================================================
 // CTestHull::Spawn
 //=========================================================
-void CTestHull :: Spawn( entvars_t *pevMasterNode )
+void CTestHull :: SpawnHull( entvars_t *pevMasterNode )
 {
 	SET_MODEL(ENT(pev), "models/player.mdl");
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
@@ -1535,7 +1535,7 @@ void CNodeEnt :: Spawn( void )
 	if ( WorldGraph.m_cNodes == 0 )
 	{// this is the first node to spawn, spawn the test hull entity that builds and walks the node tree
 		CTestHull *pHull = GetClassPtr((CTestHull *)NULL);
-		pHull->Spawn( pev );
+		pHull->SpawnHull( pev );
 	}
 
 	if ( WorldGraph.m_cNodes >= MAX_NODES )

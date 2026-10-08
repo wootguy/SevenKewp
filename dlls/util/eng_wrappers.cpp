@@ -146,11 +146,9 @@ bool PRECACHE_HUD_FILES(const char* hudConfigPath) {
 
 	bool hasZoomSprite = false;
 
-	int lineNum = 0;
 	std::string line;
 	while (std::getline(infile, line))
 	{
-		lineNum++;
 		std::string paths[2];
 
 		line = trimSpaces(line);

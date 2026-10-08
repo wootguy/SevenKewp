@@ -65,7 +65,7 @@ void CGib::SpawnStickyGibs(entvars_t* pevVictim, Vector vecOrigin, int cGibs)
 	{
 		CGib* pGib = GetClassPtr((CGib*)NULL);
 
-		pGib->Spawn("models/stickygib.mdl");
+		pGib->SpawnGib("models/stickygib.mdl");
 		pGib->pev->body = RANDOM_LONG(0, 2);
 
 		if (pevVictim)
@@ -126,17 +126,17 @@ void CGib::SpawnHeadGib(entvars_t* pevVictim)
 
 	if (g_Language == LANGUAGE_GERMAN)
 	{
-		pGib->Spawn("models/germangibs.mdl");// throw one head
+		pGib->SpawnGib("models/germangibs.mdl");// throw one head
 		pGib->pev->body = 0;
 	}
 	else
 	{
 		if (mp_mergemodels.value) {
-			pGib->Spawn(MERGED_GIBS_MODEL);// throw one head
+			pGib->SpawnGib(MERGED_GIBS_MODEL);// throw one head
 			pGib->pev->body = g_gibInfo[MERGE_MDL_HGIBS].mergeOffset;
 		}
 		else {
-			pGib->Spawn("models/hgibs.mdl");// throw one head
+			pGib->SpawnGib("models/hgibs.mdl");// throw one head
 			pGib->pev->body = 0;
 		}
 	}
@@ -195,7 +195,7 @@ void CGib::SpawnRandomGibs(entvars_t* pevVictim, int cGibs, const char* gibModel
 	{
 		CGib* pGib = GetClassPtr((CGib*)NULL);
 
-		pGib->Spawn(gibModel);
+		pGib->SpawnGib(gibModel);
 		pGib->pev->body = RANDOM_LONG(bodyOffset + bodyGroupSkip, bodyOffset + gibModelBodyGroups - 1);
 
 		if (pevVictim)
@@ -432,7 +432,7 @@ void CGib::SprayTouch(CBaseEntity* pOther) {
 //
 // Throw a chunk
 //
-void CGib::Spawn(const char* szGibModel)
+void CGib::SpawnGib(const char* szGibModel)
 {
 	pev->movetype = MOVETYPE_BOUNCE;
 	pev->friction = 0.55; // deading the bounce a bit

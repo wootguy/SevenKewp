@@ -3423,13 +3423,13 @@ bool UTIL_DeleteFolderRecursive(std::string path) {
 	});
 
 	for (std::string folder : folders) {
-		if (rmdir(folder.c_str())) {
+		if (_rmdir(folder.c_str())) {
 			ALERT(at_error, "Failed to delete folder %s (error %d)\n", folder.c_str(), errno);
 			err = true;
 		}
 	}
 
-	if (rmdir(path.c_str())) {
+	if (_rmdir(path.c_str())) {
 		ALERT(at_error, "Failed to delete folder %s (error %d)\n", path.c_str(), errno);
 		err = true;
 	}
@@ -4087,11 +4087,6 @@ void setThreadPriority(int prio) {
 		ALERT(at_error, "Failed to set thread priority %d. Error code %d\n", prio, GetLastError());
 	}
 #else
-	pthread_t thread = pthread_self();
-
-	sched_param param;
-	param.sched_priority = 0;
-
 	// set nice value
 	if (setpriority(PRIO_PROCESS, 0, prio) == -1) {
 		ALERT(at_error, "Failed to set thread priority %d. %s\n", prio, strerror(errno));

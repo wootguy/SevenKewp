@@ -1326,7 +1326,7 @@ void UTIL_BreakModel(const Vector& pos, const Vector& size, const Vector& veloci
 			CGib* pGib = GetClassPtr((CGib*)NULL);
 
 			pGib->m_hidePlayers = hidePlayers;
-			pGib->Spawn(mdl);
+			pGib->SpawnGib(mdl);
 			pGib->m_cBloodDecals = 0;
 			pGib->m_slideFriction = 0.5f;
 			pGib->m_material = material;
@@ -1389,7 +1389,7 @@ void UTIL_SpriteSpray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint
 
 			float randSpeed = speed * 2.0f * RANDOM_FLOAT(0.8f, 1.2f);
 
-			pGib->Spawn(mdl);
+			pGib->SpawnGib(mdl);
 			pGib->m_cBloodDecals = 0;
 			pGib->m_lifeTime = gpGlobals->time + 0.5f;
 			pGib->m_slideFriction = 0.5f;
@@ -1444,7 +1444,7 @@ void UTIL_Spray(Vector pos, Vector dir, int spriteIdx, uint8_t count, uint8_t sp
 
 			float randSpeed = speed * 2.0f * RANDOM_FLOAT(0.8f, 1.2f);
 
-			pGib->Spawn(mdl);
+			pGib->SpawnGib(mdl);
 			pGib->m_cBloodDecals = 0;
 			pGib->m_lifeTime = gpGlobals->time + 0.5f;
 			pGib->m_slideFriction = 0.5f;
@@ -1641,6 +1641,7 @@ void UTIL_DLight(Vector pos, uint8_t radius, RGB color, uint8_t time, uint8_t de
 
 			CBaseEntity* ent = CBaseEntity::Create("te_target", pos, g_vecZero, true);
 			ent->pev->effects = radius > 100 ? EF_BRIGHTLIGHT : EF_DIMLIGHT;
+			ent->m_hidePlayers = hidePlayers;
 
 			time -= decay * 0.5f;
 
@@ -1687,7 +1688,7 @@ void UTIL_SpriteTrail(Vector start, Vector end, int spriteIdx, int count, int li
 			float randSpeed = speed * 2.0f * RANDOM_FLOAT(0.8f, 1.2f);
 			Vector randPos = start + delta * RANDOM_FLOAT(0, 1);
 
-			pGib->Spawn(mdl);
+			pGib->SpawnGib(mdl);
 			pGib->m_cBloodDecals = 0;
 			pGib->m_lifeTime = gpGlobals->time + 0.5f;
 			pGib->m_slideFriction = 0.5f;

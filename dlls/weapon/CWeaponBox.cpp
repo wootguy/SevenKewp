@@ -272,7 +272,7 @@ BOOL CWeaponBox::PackAmmo(int iszName, int iCount)
 	if (iMaxCarry != -1 && iCount > 0)
 	{
 		//ALERT ( at_console, "Packed %d rounds of %s\n", iCount, STRING(iszName) );
-		GiveAmmo(iCount, STRING(iszName), iMaxCarry);
+		AddAmmo(iCount, STRING(iszName), iMaxCarry);
 		return TRUE;
 	}
 
@@ -282,7 +282,7 @@ BOOL CWeaponBox::PackAmmo(int iszName, int iCount)
 //=========================================================
 // CWeaponBox - GiveAmmo
 //=========================================================
-int CWeaponBox::GiveAmmo(int iCount, const char* szName, int iMax, int* pIndex/* = NULL*/)
+int CWeaponBox::AddAmmo(int iCount, const char* szName, int iMax, int* pIndex/* = NULL*/)
 {
 	int i;
 

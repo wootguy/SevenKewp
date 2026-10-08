@@ -131,9 +131,6 @@ bool Bsp::load_lumps(string fpath)
 	ents = &tempEnts[0];
 	numEnts = tempEnts.size();
 
-	memcpy(ents, &tempEnts[0], sizeof(StringMap) * tempEnts.size());
-	numEnts = tempEnts.size();
-
 	entityBspModelCount = unique_bsp_models.size();
 
 	precalculate_face_extents();
