@@ -140,7 +140,7 @@ void GetAkimboViewModelState(studiohdr_t* header, int& seq, float& animtime, flo
 			*m_lastEventFrame = &g_activeWeaponCustom->m_akimboLastEventFrame;
 
 		// in case a state for the wrong model is selected
-		seq = clamp(seq, 0, header->numseq - 1);
+		seq = V_clamp(seq, 0, header->numseq - 1);
 	}
 	else {
 		static float dummyData;

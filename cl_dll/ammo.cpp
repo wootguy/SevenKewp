@@ -114,7 +114,7 @@ void WeaponsResource :: LoadWeaponSprites( WEAPON *pWeapon )
 #endif
 
 	if (gHUD.m_pCvarHudScale->value > 0) {
-		int nScale = clamp(gHUD.m_pCvarHudScale->value, 1, 4);
+		int nScale = V_clamp(gHUD.m_pCvarHudScale->value, 1, 4);
 	}
 
 	if ( !pWeapon )
@@ -438,7 +438,7 @@ int CHudAmmo::VidInit(void)
 		nScale = 2;
 
 	if (gHUD.m_pCvarHudScale->value > 0) {
-		nScale = clamp(gHUD.m_pCvarHudScale->value, 1, 4);
+		nScale = V_clamp(gHUD.m_pCvarHudScale->value, 1, 4);
 	}
 
 	giABWidth = 10 * nScale;
@@ -1461,9 +1461,9 @@ void CHudAmmo::DrawDynamicCrosshair() {
 	if (m_hud_crosshair_mode->value <= 0 || !gHUD.IsCompatibleSevenKewpServer())
 		return; // drawing sprite crosshair
 
-	int len = clamp(m_hud_crosshair_length->value, 1, 1000);
-	int width = clamp(m_hud_crosshair_width->value, 1, 1000);
-	int border = clamp(m_hud_crosshair_border->value, 0, 1000);
+	int len = V_clamp(m_hud_crosshair_length->value, 1, 1000);
+	int width = V_clamp(m_hud_crosshair_width->value, 1, 1000);
+	int border = V_clamp(m_hud_crosshair_border->value, 0, 1000);
 	bool drawDot = m_hud_crosshair_dot->value > 0;
 	bool drawTee = m_hud_crosshair_tee->value > 0;
 
