@@ -238,6 +238,7 @@ set(ALL_SRC
 	${RENDER_SRC} ${RENDER_HDR}
 	${ENTITY_SRC} ${ENTITY_HDR}
 	${CMAKE_CURRENT_BINARY_DIR}/weapons_shared.cpp
+	pch.h
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/utils/vgui/include)
@@ -253,6 +254,18 @@ endif()
 add_library(${CLIENT_DLL_NAME} SHARED ${ALL_SRC})
 
 target_compile_definitions(${CLIENT_DLL_NAME} PRIVATE -DCLIENT_DLL -DCLIENT_WEAPONS -DHL_DLL -DCURL_STATICLIB)
+
+# PCH roughly doubles compile speed on windows and clang, but slows down gcc
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR MSVC)
+	target_precompile_headers(${CLIENT_DLL_NAME} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:pch.h>")
+
+	set_source_files_properties(
+		../pm_shared/pm_math.cpp
+		../pm_shared/pm_debug.cpp
+		../pm_shared/pm_shared.cpp
+		PROPERTIES SKIP_PRECOMPILE_HEADERS ON
+	)
+endif()
 
 if(UNIX)
 	add_definitions(-DLINUX)
