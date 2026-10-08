@@ -13,25 +13,25 @@ int CountAllItemsInGroups(const char* groupNames);
 class EXPORT CItemInventory : public CItem
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	void KeyValue(KeyValueData* pkvd);
+	void Spawn(void) override;
+	void Precache(void) override;
+	void KeyValue(KeyValueData* pkvd) override;
 	virtual void ItemUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
 	bool CanCollect(CBaseMonster* pPlayer, const char** errorMsg);
 	virtual void ItemTouch(CBaseEntity* pOther) override;
-	virtual BOOL ShouldRespawn() { return FALSE; } // can only have one instance of itself in the world
-	virtual int	ObjectCaps(void);
-	virtual CItemInventory* MyInventoryPointer(void) { return this; }
+	virtual BOOL ShouldRespawn() override { return FALSE; } // can only have one instance of itself in the world
+	virtual int	ObjectCaps(void) override;
+	virtual CItemInventory* MyInventoryPointer(void) override { return this; }
 	bool StringInList(string_t str, string_t list);
-	virtual const char* DisplayName() { return m_display_name ? STRING(m_display_name) : "item_inventory"; }
+	virtual const char* DisplayName() override { return m_display_name ? STRING(m_display_name) : "item_inventory"; }
 	int ActivateItem();
 	void ApplyModelProperties(bool carriedNotDropped);
-	void ItemThink();
+	void ItemThink() override;
 	void ReturnToSpawnPosition();
 	void Attach(CBaseMonster* mon);
 	void Detach(bool fireDropTrigger); // detach from the holding player
 	void FireInvTargets(CBaseEntity* activator, InvTriggerTargets target);
-	void UpdateOnRemove(void);
+	void UpdateOnRemove(void) override;
 
 	string_t m_item_name;	// name referred to by inventory rule keys, not a targetname
 	string_t m_item_group;	// name referred to by inventory rule keys, not a targetname

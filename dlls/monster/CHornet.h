@@ -34,15 +34,15 @@ extern int iHornetPuff;
 class CHornet : public CBaseMonster
 {
 public:
-	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
-	void Spawn( void );
-	void Precache( void );
-	int	 Classify ( void );
-	const char* DisplayName();
-	int  IRelationship ( CBaseEntity *pTarget );
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
-	virtual BOOL IsNormalMonster() { return FALSE; }
+	virtual int	ObjectCaps(void) override { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	int	 Classify ( void ) override;
+	const char* DisplayName() override;
+	int  IRelationship ( CBaseEntity *pTarget ) override;
+	virtual int		Save( CSave &save ) override;
+	virtual int		Restore( CRestore &restore ) override;
+	virtual BOOL IsNormalMonster() override { return FALSE; }
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	void IgniteTrail( bool xashWorkaround );
@@ -54,9 +54,9 @@ public:
 	void EXPORT DartTouch( CBaseEntity *pOther );
 	void EXPORT DieTouch ( CBaseEntity *pOther );
 	
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) override;
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
-	void BarnacleVictimBitten(entvars_t* pevBarnacle);
+	void BarnacleVictimBitten(entvars_t* pevBarnacle) override;
 	BOOL BarnacleVictimCaught(void) override;
 
 	float			m_flStopAttack;

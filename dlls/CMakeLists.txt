@@ -808,6 +808,15 @@ if (BUILD_CURL)
 	target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DENABLE_CURL)
 endif()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	target_compile_options(${SERVER_DLL_NAME} PRIVATE
+		/clang:-Wno-invalid-offsetof
+		/clang:-Wno-overloaded-virtual
+		/clang:-Wno-unused-but-set-variable
+		/clang:-Wno-unused-private-field
+	)
+endif()
+
 if(UNIX)
 	set(OPT_FLAG "-O2")
 	if (ASAN)

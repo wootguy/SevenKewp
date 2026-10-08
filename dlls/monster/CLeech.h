@@ -26,13 +26,13 @@
 class EXPORT CLeech : public CBaseMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	virtual	BOOL IsNormalMonster(void) { return FALSE; }
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	virtual	BOOL IsNormalMonster(void) override { return FALSE; }
 
 	void SwimThink( void );
 	void DeadThink( void );
-	void Touch( CBaseEntity *pOther )
+	void Touch( CBaseEntity *pOther ) override
 	{
 		if ( pOther->IsPlayer() )
 		{
@@ -45,14 +45,14 @@ public:
 		}
 	}
 
-	void SetObjectCollisionBox( void )
+	void SetObjectCollisionBox( void ) override
 	{
 		pev->absmin = pev->origin + Vector(-8,-8,0);
 		pev->absmax = pev->origin + Vector(8,8,2);
 	}
 
 	void AttackSound( void );
-	void AlertSound( void );
+	void AlertSound( void ) override;
 	void UpdateMotion( void );
 	float ObstacleDistance( CBaseEntity *pTarget );
 	void MakeVectors( void );
@@ -60,21 +60,21 @@ public:
 	void SwitchLeechState( void );
 	
 	// Base entity functions
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	int	BloodColor( void ) { return DONT_BLEED; }
-	void Killed( entvars_t *pevAttacker, int iGib );
-	void Activate( void );
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	int	Classify( void ) { return CBaseMonster::Classify(CLASS_INSECT); }
-	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Leech"; }
-	int IRelationship( CBaseEntity *pTarget );
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	int	BloodColor( void ) override { return DONT_BLEED; }
+	void Killed( entvars_t *pevAttacker, int iGib ) override;
+	void Activate( void ) override;
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) override;
+	int	Classify( void ) override { return CBaseMonster::Classify(CLASS_INSECT); }
+	const char* DisplayName() override { return m_displayName ? CBaseMonster::DisplayName() : "Leech"; }
+	int IRelationship( CBaseEntity *pTarget ) override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 	void BarnacleVictimBitten(entvars_t* pevBarnacle) override;
 	BOOL BarnacleVictimCaught(void) override;
 
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save( CSave &save ) override;
+	virtual int		Restore( CRestore &restore ) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	static const char *pAttackSounds[];

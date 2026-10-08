@@ -43,8 +43,8 @@ public:
 
 	int ObjectCaps() override { return 0; }
 
-	int	Classify(void);
-	BOOL IsMachine() { return 1; } // ignore classification overrides
+	int	Classify(void) override;
+	BOOL IsMachine() override { return 1; } // ignore classification overrides
 
 	void MortarThink();
 	void DropInit();

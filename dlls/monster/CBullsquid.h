@@ -61,38 +61,38 @@ public:
 class EXPORT CBullsquid : public CBaseMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int  ISoundMask( void );
-	int  Classify ( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	void IdleSound( void );
-	void PainSound( void );
-	void DeathSound( void );
-	void AlertSound ( void );
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void SetYawSpeed( void ) override;
+	int  ISoundMask( void ) override;
+	int  Classify ( void ) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	void IdleSound( void ) override;
+	void PainSound( void ) override;
+	void DeathSound( void ) override;
+	void AlertSound ( void ) override;
 	void AttackSound( void );
-	void StartTask ( Task_t *pTask );
-	void RunTask ( Task_t *pTask );
-	BOOL CheckMeleeAttack1 ( float flDot, float flDist );
-	BOOL CheckMeleeAttack2 ( float flDot, float flDist );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );
-	void RunAI( void );
-	BOOL FValidateHintType ( short sHint );
-	Schedule_t *GetSchedule( void );
-	Schedule_t *GetScheduleOfType ( int Type );
-	const char* GetTaskName(int taskIdx);
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	int IRelationship ( CBaseEntity *pTarget );
-	int IgnoreConditions ( void );
-	MONSTERSTATE GetIdealState ( void );
+	void StartTask ( Task_t *pTask ) override;
+	void RunTask ( Task_t *pTask ) override;
+	BOOL CheckMeleeAttack1 ( float flDot, float flDist ) override;
+	BOOL CheckMeleeAttack2 ( float flDot, float flDist ) override;
+	BOOL CheckRangeAttack1 ( float flDot, float flDist ) override;
+	void RunAI( void ) override;
+	BOOL FValidateHintType ( short sHint ) override;
+	Schedule_t *GetSchedule( void ) override;
+	Schedule_t *GetScheduleOfType ( int Type ) override;
+	const char* GetTaskName(int taskIdx) override;
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) override;
+	int IRelationship ( CBaseEntity *pTarget ) override;
+	int IgnoreConditions ( void ) override;
+	MONSTERSTATE GetIdealState ( void ) override;
 
-	int	Save( CSave &save ); 
-	int Restore( CRestore &restore );
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	int	Save( CSave &save ) override;
+	int Restore( CRestore &restore ) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 
 	CUSTOM_SCHEDULES;
 	static TYPEDESCRIPTION m_SaveData[];

@@ -9,25 +9,25 @@
 class CMP5 : public CBasePlayerWeapon
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void PrecacheEvents();
-	int iItemSlot( void ) { return 3; }
-	int GetItemInfo(ItemInfo *p);
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void PrecacheEvents() override;
+	int iItemSlot( void ) override { return 3; }
+	int GetItemInfo(ItemInfo *p) override;
 
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	int SecondaryAmmoIndex( void );
-	BOOL Deploy( void );
-	void Reload( void );
-	void WeaponIdle( void );
+	void PrimaryAttack( void ) override;
+	void SecondaryAttack( void ) override;
+	int SecondaryAmmoIndex( void ) override;
+	BOOL Deploy( void ) override;
+	void Reload( void ) override;
+	void WeaponIdle( void ) override;
 	float m_flNextAnimTime;
 	int m_iShell;
 	const char* DisplayName() override { return "MP5"; }
 
-	virtual int MergedModelBody() { return MERGE_MDL_W_9MMAR; }
+	virtual int MergedModelBody() override { return MERGE_MDL_W_9MMAR; }
 
-	virtual BOOL UseDecrement( void )
+	virtual BOOL UseDecrement( void ) override
 	{ 
 #if defined( CLIENT_WEAPONS )
 		return TRUE;

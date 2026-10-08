@@ -42,7 +42,7 @@ public:
 
 	static CDisplacerBall* CreateDisplacerBall(const Vector& vecOrigin, const Vector& vecAngles, CBaseEntity* pOwner);
 
-	virtual const char* GetDeathNoticeWeapon() { return "weapon_egon"; }
+	virtual const char* GetDeathNoticeWeapon() override { return "weapon_egon"; }
 
 private:
 	int m_iTrail;

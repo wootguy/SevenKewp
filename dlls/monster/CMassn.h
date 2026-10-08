@@ -52,17 +52,17 @@ enum MAssassinWeaponFlag
 class EXPORT CMassn : public CBaseGrunt
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Male Assassin"; }
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	int GetActivitySequence(Activity NewActivity);
-	void DeathSound( void );
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	const char* DisplayName() override { return m_displayName ? CBaseMonster::DisplayName() : "Male Assassin"; }
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	int GetActivitySequence(Activity NewActivity) override;
+	void DeathSound( void ) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) override;
 
 	void KeyValue( KeyValueData* pkvd ) override;
 
@@ -78,15 +78,15 @@ private:
 class CMassnRepel : public CBaseRepel
 {
 public:
-	const char* GetMonsterType() { return "monster_male_assassin"; };
+	const char* GetMonsterType() override { return "monster_male_assassin"; };
 };
 
 class CDeadMassn : public CBaseDead
 {
 public:
-	void Spawn(void);
-	int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
-	int GetPoseSequence() { return LookupSequence(m_szPoses[V_clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)]); }
+	void Spawn(void) override;
+	int	Classify(void) override { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
+	int GetPoseSequence() override { return LookupSequence(m_szPoses[V_clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)]); }
 
 	static const char* m_szPoses[3];
 };

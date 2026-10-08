@@ -40,40 +40,40 @@ int slamSpriteIdx = 0;
 class EXPORT CTor : public CBaseMonster
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	void SetYawSpeed(void);
-	int Classify(void);
-	const char* DisplayName();
-	void HandleAnimEvent(MonsterEvent_t* pEvent);
-	Schedule_t* GetSchedule(void);
-	Schedule_t* GetScheduleOfType(int Type);
-	void StartTask(Task_t* pTask);
+	void Spawn(void) override;
+	void Precache(void) override;
+	void SetYawSpeed(void) override;
+	int Classify(void) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
+	Schedule_t* GetSchedule(void) override;
+	Schedule_t* GetScheduleOfType(int Type) override;
+	void StartTask(Task_t* pTask) override;
 
-	void MonsterThink(void);
-	BOOL CheckRangeAttack1(float flDot, float flDist);
-	BOOL CheckRangeAttack2(float flDot, float flDist);
-	BOOL CheckMeleeAttack1(float flDot, float flDist);
-	BOOL CheckMeleeAttack2(float flDot, float flDist);
-	int LookupActivity(int activity);
-	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
-	void DeathNotice(entvars_t* pevChild);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	void MonsterThink(void) override;
+	BOOL CheckRangeAttack1(float flDot, float flDist) override;
+	BOOL CheckRangeAttack2(float flDot, float flDist) override;
+	BOOL CheckMeleeAttack1(float flDot, float flDist) override;
+	BOOL CheckMeleeAttack2(float flDot, float flDist) override;
+	int LookupActivity(int activity) override;
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) override;
+	void DeathNotice(entvars_t* pevChild) override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
-	void SetObjectCollisionBox(void)
+	void SetObjectCollisionBox(void) override
 	{
 		pev->absmin = pev->origin + Vector(-24, -24, 0);
 		pev->absmax = pev->origin + Vector(24, 24, 88);
 	}
 
-	void PainSound(void);
-	void AlertSound(void);
-	void IdleSound(void);
+	void PainSound(void) override;
+	void AlertSound(void) override;
+	void IdleSound(void) override;
 	void AttackSound(void);
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 
 	CUSTOM_SCHEDULES;
 

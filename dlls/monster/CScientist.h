@@ -42,24 +42,24 @@ enum
 class EXPORT CScientist : public CTalkSquadMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
+	void Spawn( void ) override;
+	void Precache( void ) override;
 
-	void SetYawSpeed( void );
-	int  Classify ( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	void RunTask( Task_t *pTask );
-	void StartTask( Task_t *pTask );
-	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
-	virtual int FriendNumber( int arrayNumber );
-	void SetActivity ( Activity newActivity );
-	Activity GetStoppedActivity( void );
-	int ISoundMask( void );
-	void DeclineFollowing( void );
+	void SetYawSpeed( void ) override;
+	int  Classify ( void ) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	void RunTask( Task_t *pTask ) override;
+	void StartTask( Task_t *pTask ) override;
+	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
+	virtual int FriendNumber( int arrayNumber ) override;
+	void SetActivity ( Activity newActivity ) override;
+	Activity GetStoppedActivity( void ) override;
+	int ISoundMask( void ) override;
+	void DeclineFollowing( void ) override;
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
-	float	CoverRadius( void ) { return 1200; }		// Need more room for cover because scientists want to get far away!
+	float	CoverRadius( void ) override { return 1200; }		// Need more room for cover because scientists want to get far away!
 	BOOL	DisregardEnemy( CBaseEntity *pEnemy ) { return !pEnemy->IsAlive() || (gpGlobals->time - m_fearTime) > 15; }
 
 	BOOL	CanHeal( void );
@@ -67,20 +67,20 @@ public:
 	void	Scream( void );
 
 	// Override these to set behavior
-	Schedule_t *GetScheduleOfType ( int Type );
-	Schedule_t *GetSchedule ( void );
-	const char* GetTaskName(int taskIdx);
-	MONSTERSTATE GetIdealState ( void );
+	Schedule_t *GetScheduleOfType ( int Type ) override;
+	Schedule_t *GetSchedule ( void ) override;
+	const char* GetTaskName(int taskIdx) override;
+	MONSTERSTATE GetIdealState ( void ) override;
 
-	void DeathSound( void );
-	void PainSound( void );
+	void DeathSound( void ) override;
+	void PainSound( void ) override;
 	
 	void TalkInit( void );
 
-	void			Killed( entvars_t *pevAttacker, int iGib );
+	void			Killed( entvars_t *pevAttacker, int iGib ) override;
 	
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save( CSave &save ) override;
+	virtual int		Restore( CRestore &restore ) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	CUSTOM_SCHEDULES;
@@ -101,11 +101,11 @@ private:
 class EXPORT CDeadScientist : public CBaseMonster
 {
 public:
-	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
-	void Spawn( void );
-	int	Classify ( void ) { return	CLASS_HUMAN_PASSIVE; }
+	virtual int	ObjectCaps(void) override { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
+	void Spawn( void ) override;
+	int	Classify ( void ) override { return	CLASS_HUMAN_PASSIVE; }
 
-	void KeyValue( KeyValueData *pkvd );
+	void KeyValue( KeyValueData *pkvd ) override;
 	int	m_iPose;// which sequence to display
 	static const char *m_szPoses[7];
 };
@@ -118,18 +118,18 @@ public:
 class EXPORT CSittingScientist : public CScientist // kdb: changed from public CBaseMonster so he can speak
 {
 public:
-	void Spawn( void );
-	void Precache( void );
+	void Spawn( void ) override;
+	void Precache( void ) override;
 
 	void DropThink( void );
 	void SittingThink( void );
-	int	Classify ( void );
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	int	Classify ( void ) override;
+	virtual int		Save( CSave &save ) override;
+	virtual int		Restore( CRestore &restore ) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	virtual void SetAnswerQuestion( CTalkSquadMonster *pSpeaker );
-	int FriendNumber( int arrayNumber );
+	virtual void SetAnswerQuestion( CTalkSquadMonster *pSpeaker ) override;
+	int FriendNumber( int arrayNumber ) override;
 
 	int FIdleSpeak ( void );
 	int		m_baseSequence;	

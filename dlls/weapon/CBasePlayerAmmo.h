@@ -4,16 +4,16 @@
 class EXPORT CBasePlayerAmmo : public CBaseEntity
 {
 public:
-	virtual void Precache( void );
-	virtual void Spawn( void );
-	void KeyValue(KeyValueData* pkvd);
+	virtual void Precache( void ) override;
+	virtual void Spawn( void ) override;
+	void KeyValue(KeyValueData* pkvd) override;
 	void DefaultTouch( CBaseEntity *pOther ); // default weapon touch
 	void DefaultUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual BOOL AddAmmo( CBaseEntity *pOther ) { return TRUE; };
-	virtual CBasePlayerAmmo* MyAmmoPtr(void) { return this; };
-	virtual int	ObjectCaps(void);
+	virtual CBasePlayerAmmo* MyAmmoPtr(void) override { return this; };
+	virtual int	ObjectCaps(void) override;
 
-	CBaseEntity* Respawn( void );
+	CBaseEntity* Respawn( void ) override;
 	void Materialize( void );
 	virtual int AddToFullPack(struct entity_state_s* state, CBasePlayer* player) override;
 

@@ -44,8 +44,8 @@ button or trigger field activates the door.
 class CRotDoor : public CBaseDoor
 {
 public:
-	void Spawn(void);
-	virtual void SetToggleState(int state);
+	void Spawn(void) override;
+	virtual void SetToggleState(int state) override;
 	void Blocked(CBaseEntity* pOther) override;
 	void DoorHitTop(void) override;
 

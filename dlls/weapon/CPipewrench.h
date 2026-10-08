@@ -61,7 +61,7 @@ public:
 
 	int GetItemInfo(ItemInfo* p) override;
 
-	virtual int MergedModelBody() { return MERGE_MDL_W_PIPE_WRENCH; }
+	virtual int MergedModelBody() override { return MERGE_MDL_W_PIPE_WRENCH; }
 
 	BOOL UseDecrement() override
 	{
@@ -72,9 +72,9 @@ public:
 #endif
 	}
 
-	BOOL IsClientWeapon() { return FALSE; }
+	BOOL IsClientWeapon() override { return FALSE; }
 
-	virtual const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	virtual const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 
 	float m_flBigSwingStart;
 	int m_iSwingMode = SWING_NONE;

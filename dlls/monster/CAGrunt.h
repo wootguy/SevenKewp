@@ -44,43 +44,43 @@ enum
 class EXPORT CAGrunt : public CTalkSquadMonster
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	void SetYawSpeed(void);
-	int  Classify(void);
-	const char* DisplayName();
-	int  ISoundMask(void);
-	void HandleAnimEvent(MonsterEvent_t* pEvent);
-	void SetObjectCollisionBox(void)
+	void Spawn(void) override;
+	void Precache(void) override;
+	void SetYawSpeed(void) override;
+	int  Classify(void) override;
+	const char* DisplayName() override;
+	int  ISoundMask(void) override;
+	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
+	void SetObjectCollisionBox(void) override
 	{
 		pev->absmin = pev->origin + Vector(-32, -32, 0);
 		pev->absmax = pev->origin + Vector(32, 32, 85);
 	}
-	const char* GetDeathNoticeWeapon() { return "hornet"; }
+	const char* GetDeathNoticeWeapon() override { return "hornet"; }
 
-	Schedule_t* GetSchedule(void);
-	Schedule_t* GetScheduleOfType(int Type);
-	const char* GetTaskName(int taskIdx);
-	BOOL FCanCheckAttacks(void);
-	BOOL CheckMeleeAttack1(float flDot, float flDist);
-	BOOL CheckRangeAttack1(float flDot, float flDist);
-	void StartTask(Task_t* pTask);
-	void AlertSound(void);
-	void DeathSound(void);
-	void PainSound(void);
+	Schedule_t* GetSchedule(void) override;
+	Schedule_t* GetScheduleOfType(int Type) override;
+	const char* GetTaskName(int taskIdx) override;
+	BOOL FCanCheckAttacks(void) override;
+	BOOL CheckMeleeAttack1(float flDot, float flDist) override;
+	BOOL CheckRangeAttack1(float flDot, float flDist) override;
+	void StartTask(Task_t* pTask) override;
+	void AlertSound(void) override;
+	void DeathSound(void) override;
+	void PainSound(void) override;
 	void AttackSound(void);
-	void PrescheduleThink(void);
-	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
-	int IRelationship(CBaseEntity* pTarget);
+	void PrescheduleThink(void) override;
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) override;
+	int IRelationship(CBaseEntity* pTarget) override;
 	void StopTalking(void);
 	BOOL ShouldSpeak(void);
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 	CUSTOM_SCHEDULES;
 
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
+	virtual int		Save(CSave& save) override;
+	virtual int		Restore(CRestore& restore) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	static const char* pAttackHitSounds[];

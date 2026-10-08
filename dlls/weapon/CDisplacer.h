@@ -74,7 +74,7 @@ public:
 
 	int GetItemInfo(ItemInfo* p) override;
 
-	virtual int MergedModelBody() { return MERGE_MDL_W_DISPLACER; }
+	virtual int MergedModelBody() override { return MERGE_MDL_W_DISPLACER; }
 
 	BOOL UseDecrement() override
 	{
@@ -85,7 +85,7 @@ public:
 #endif
 	}
 
-	BOOL IsClientWeapon() { return FALSE; }
+	BOOL IsClientWeapon() override { return FALSE; }
 
 	void UpdateOnRemove(void) override;
 

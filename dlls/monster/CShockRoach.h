@@ -29,40 +29,40 @@
 class EXPORT COFShockRoach : public CBaseMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void RunTask ( Task_t *pTask );
-	void StartTask ( Task_t *pTask );
-	void SetYawSpeed ( void );
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void RunTask ( Task_t *pTask ) override;
+	void StartTask ( Task_t *pTask ) override;
+	void SetYawSpeed ( void ) override;
 	void LeapTouch ( CBaseEntity *pOther );
-	Vector Center( void );
-	Vector BodyTarget( const Vector &posSrc );
-	void PainSound( void );
-	void DeathSound( void );
-	void IdleSound( void );
-	void AlertSound( void );
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
-	void PrescheduleThink( void );
-	int  Classify ( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );
-	BOOL CheckRangeAttack2 ( float flDot, float flDist );
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	Vector Center( void ) override;
+	Vector BodyTarget( const Vector &posSrc ) override;
+	void PainSound( void ) override;
+	void DeathSound( void ) override;
+	void IdleSound( void ) override;
+	void AlertSound( void ) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
+	void PrescheduleThink( void ) override;
+	int  Classify ( void ) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	BOOL CheckRangeAttack1 ( float flDot, float flDist ) override;
+	BOOL CheckRangeAttack2 ( float flDot, float flDist ) override;
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) override;
 	void RifleUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 
 	virtual float GetDamageAmount( void ) { return gSkillData.sk_shockroach_dmg_bite; }
 	virtual int GetVoicePitch( void ) { return 100; }
 	virtual float GetSoundVolue( void ) { return 1.0; }
-	Schedule_t* GetScheduleOfType ( int Type );
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	Schedule_t* GetScheduleOfType ( int Type ) override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	void MonsterThink() override;
 
-	virtual void Revive();
+	virtual void Revive() override;
 
 	int Save( CSave &save ) override;
 	int Restore( CRestore &restore ) override;

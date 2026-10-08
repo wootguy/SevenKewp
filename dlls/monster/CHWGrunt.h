@@ -38,27 +38,27 @@ enum
 class EXPORT CHWGrunt : public CBaseGrunt
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	int  Classify(void);
-	const char* DisplayName();
-	void InitAiFlags();
-	void PainSound(void);
-	void DeathSound(void);
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
-	void Killed(entvars_t* pevAttacker, int iGib);
-	void PlaySentenceSound(int sentenceType);
-	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
-	Schedule_t* GetScheduleOfType(int Type);
-	const char* GetTaskName(int taskIdx);
-	int GetActivitySequence(Activity NewActivity);
-	void HandleAnimEvent(MonsterEvent_t* pEvent);
-	int LookupActivity(int activity);
-	Schedule_t* GetMonsterStateSchedule(void);
-	void StartTask(Task_t* pTask);
-	void RunTask(Task_t* pTask);
+	void Spawn(void) override;
+	void Precache(void) override;
+	int  Classify(void) override;
+	const char* DisplayName() override;
+	void InitAiFlags() override;
+	void PainSound(void) override;
+	void DeathSound(void) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
+	void Killed(entvars_t* pevAttacker, int iGib) override;
+	void PlaySentenceSound(int sentenceType) override;
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) override;
+	Schedule_t* GetScheduleOfType(int Type) override;
+	const char* GetTaskName(int taskIdx) override;
+	int GetActivitySequence(Activity NewActivity) override;
+	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
+	int LookupActivity(int activity) override;
+	Schedule_t* GetMonsterStateSchedule(void) override;
+	void StartTask(Task_t* pTask) override;
+	void RunTask(Task_t* pTask) override;
 	CBaseEntity* PBestMinigun(void);
 	void DropMinigun(Vector vecDir);
 	void PickupMinigun();
@@ -78,5 +78,5 @@ private:
 class CHWGruntRepel : public CBaseRepel
 {
 public:
-	const char* GetMonsterType() { return "monster_hwgrunt"; };
+	const char* GetMonsterType() override { return "monster_hwgrunt"; };
 };

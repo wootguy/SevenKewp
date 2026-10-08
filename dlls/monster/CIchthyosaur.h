@@ -25,48 +25,48 @@ extern CGraph WorldGraph;
 class EXPORT CIchthyosaur : public CFlyingMonster
 {
 public:
-	void  Spawn( void );
-	void  Precache( void );
-	void  SetYawSpeed( void );
-	int   Classify( void );
-	const char* DisplayName();
-	void  HandleAnimEvent( MonsterEvent_t *pEvent );
+	void  Spawn( void ) override;
+	void  Precache( void ) override;
+	void  SetYawSpeed( void ) override;
+	int   Classify( void ) override;
+	const char* DisplayName() override;
+	void  HandleAnimEvent( MonsterEvent_t *pEvent ) override;
 	CUSTOM_SCHEDULES;
 
-	int	Save( CSave &save ); 
-	int Restore( CRestore &restore );
+	int	Save( CSave &save ) override;
+	int Restore( CRestore &restore ) override;
 	static TYPEDESCRIPTION m_SaveData[];
 
-	Schedule_t *GetSchedule( void );
-	Schedule_t *GetScheduleOfType ( int Type );
-	const char* GetTaskName(int taskIdx);
+	Schedule_t *GetSchedule( void ) override;
+	Schedule_t *GetScheduleOfType ( int Type ) override;
+	const char* GetTaskName(int taskIdx) override;
 
-	void Killed( entvars_t *pevAttacker, int iGib );
-	void BecomeDead( void );
+	void Killed( entvars_t *pevAttacker, int iGib ) override;
+	void BecomeDead( void ) override;
 
 	void CombatUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void BiteTouch( CBaseEntity *pOther );
 
-	void  StartTask( Task_t *pTask );
-	void  RunTask( Task_t *pTask );
+	void  StartTask( Task_t *pTask ) override;
+	void  RunTask( Task_t *pTask ) override;
 
-	BOOL  CheckMeleeAttack1 ( float flDot, float flDist );
-	BOOL  CheckRangeAttack1 ( float flDot, float flDist );
+	BOOL  CheckMeleeAttack1 ( float flDot, float flDist ) override;
+	BOOL  CheckRangeAttack1 ( float flDot, float flDist ) override;
 
-	float ChangeYaw( int yawSpeed);
-	Activity GetStoppedActivity( void );
+	float ChangeYaw( int yawSpeed) override;
+	Activity GetStoppedActivity( void ) override;
 
-	void  Move( float flInterval );
-	void  MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval );
-	void  MonsterThink( void );
-	void  Stop( void );
+	void  Move( float flInterval ) override;
+	void  MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval ) override;
+	void  MonsterThink( void ) override;
+	void  Stop( void ) override;
 	void  Swim( void );
 	Vector DoProbe(const Vector &Probe);
 
 	float VectorToPitch( const Vector &vec);
 	float FlPitchDiff( void );
 	float ChangePitch( int yawSpeed);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 
 	Vector m_SaveVelocity;
 	float m_idealDist;
@@ -92,13 +92,13 @@ public:
 	static const char *pDieSounds[];
 	static const char *pPainSounds[];
 
-	void IdleSound( void );
-	void AlertSound( void );
+	void IdleSound( void ) override;
+	void AlertSound( void ) override;
 	void AttackSound( void );
 	void BiteSound( void );
-	void DeathSound( void );
-	void PainSound( void );
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void DeathSound( void ) override;
+	void PainSound( void ) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 };

@@ -17,24 +17,24 @@ enum w_squeak_e {
 
 class EXPORT CSqueakGrenade : public CGrenade
 {
-	void Spawn( void );
-	void Precache( void );
-	int  Classify( void );
-	int IRelationship(CBaseEntity* pTarget);
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	int  Classify( void ) override;
+	int IRelationship(CBaseEntity* pTarget) override;
 	void SuperBounceTouch( CBaseEntity *pOther );
 	void HuntThink( void );
-	int  BloodColor( void ) { return BloodColorAlien(); }
-	void Killed( entvars_t *pevAttacker, int iGib );
-	void GibMonster( void );
-	const char* DisplayName() { return m_displayName ? CBaseMonster::DisplayName() : "Snark"; }
-	virtual const char* GetDeathNoticeWeapon() { return "snark"; };
+	int  BloodColor( void ) override { return BloodColorAlien(); }
+	void Killed( entvars_t *pevAttacker, int iGib ) override;
+	void GibMonster( void ) override;
+	const char* DisplayName() override { return m_displayName ? CBaseMonster::DisplayName() : "Snark"; }
+	virtual const char* GetDeathNoticeWeapon() override { return "snark"; };
 
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 	void BarnacleVictimBitten(entvars_t* pevBarnacle) override;
 	BOOL BarnacleVictimCaught() override;
 
-	virtual int		Save( CSave &save ); 
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save( CSave &save ) override;
+	virtual int		Restore( CRestore &restore ) override;
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 

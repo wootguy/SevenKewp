@@ -40,11 +40,11 @@ public:
 
 	static CShockBeam* CreateShockBeam( const Vector& vecOrigin, const Vector& vecAngles, CBaseEntity* pOwner );
 
-	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
+	const char* GetDeathNoticeWeapon() override { return "weapon_9mmAR"; }
 
-	virtual int MergedModelBody() { return MERGE_MDL_SHOCK_EFFECT; }
+	virtual int MergedModelBody() override { return MERGE_MDL_SHOCK_EFFECT; }
 	
-	virtual	BOOL IsBarnacleFood(void) { return FALSE; }
+	virtual	BOOL IsBarnacleFood(void) override { return FALSE; }
 
 #ifndef CLIENT_DLL
 	int Save(CSave& save) override;

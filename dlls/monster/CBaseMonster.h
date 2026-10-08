@@ -229,14 +229,14 @@ public:
 
 	HurtTime m_lastHurtTriggers[MAX_MONSTER_HURT_TRIGGERS];
 
-	virtual int		ObjectCaps(void) { return CBaseEntity::ObjectCaps() | (IsAlive() ? FCAP_IMPULSE_USE : 0); }
-	virtual int		Save( CSave &save ) STUB_INT; 
-	virtual int		Restore( CRestore &restore ) STUB_INT;
-	virtual BOOL	HasTarget(string_t targetname) STUB_INT;
+	virtual int		ObjectCaps(void) override { return CBaseEntity::ObjectCaps() | (IsAlive() ? FCAP_IMPULSE_USE : 0); }
+	virtual int		Save( CSave &save ) override STUB_INT;
+	virtual int		Restore( CRestore &restore ) override STUB_INT;
+	virtual BOOL	HasTarget(string_t targetname) override STUB_INT;
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	virtual void KeyValue( KeyValueData *pkvd ) STUB_VOID;
+	virtual void KeyValue( KeyValueData *pkvd ) override STUB_VOID;
 
 // monster use function
 	void MonsterUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
@@ -244,16 +244,16 @@ public:
 
 // overrideable Monster member functions
 	
-	virtual int	 BloodColor( void ) { return m_bloodColor; }
+	virtual int	 BloodColor( void ) override { return m_bloodColor; }
 
-	virtual CBaseMonster *MyMonsterPointer( void ) { return this; }
+	virtual CBaseMonster *MyMonsterPointer( void ) override { return this; }
 	virtual void Look ( int iDistance ) STUB_VOID;// basic sight function for monsters
 	virtual void RunAI ( void ) STUB_VOID;// core ai function!	
 	void Listen ( void );
 
-	virtual BOOL	IsAlive(void) STUB_INT;
-	virtual	BOOL	IsMonster(void) { return TRUE; }
-	virtual	BOOL	IsNormalMonster(void) { return m_startDead ? FALSE : TRUE; }
+	virtual BOOL	IsAlive(void) override STUB_INT;
+	virtual	BOOL	IsMonster(void) override { return TRUE; }
+	virtual	BOOL	IsNormalMonster(void) override { return m_startDead ? FALSE : TRUE; }
 	virtual BOOL	ShouldFadeOnDeath( void ) STUB_INT;
 	virtual bool	ShouldRoam( void ) STUB_INT;
 
@@ -267,12 +267,12 @@ public:
 // stuff written for new state machine
 		virtual void MonsterThink( void ) STUB_VOID;
 		void CallMonsterThink( void ) { this->MonsterThink(); }
-		virtual int Classify ( void ) STUB_INT;
+		virtual int Classify ( void ) override STUB_INT;
 		// returns classification accounting for override keys
 		int Classify ( int defaultClassify );
-		virtual void SetClassify ( int iNewClassify ) STUB_VOID;
+		virtual void SetClassify ( int iNewClassify ) override STUB_VOID;
 		static int DefaultClassify(const char* monstertype);
-		virtual void Precache ( void ) STUB_VOID; // handles replacement file logic
+		virtual void Precache ( void ) override STUB_VOID; // handles replacement file logic
 		virtual void MonsterInit ( void ) STUB_VOID;
 		virtual void UnstuckSpawnPosition ( void ) STUB_VOID; // move into the world if spawned stuck in the floor/ceiling
 		virtual void MonsterInitDead( void ) STUB_VOID;	// Call after animation/pose is set up
@@ -284,7 +284,7 @@ public:
 		virtual CBaseEntity* BestVisibleEnemy ( void ) STUB_INT;// finds best visible enemy for attack
 		virtual BOOL FInViewCone ( CBaseEntity *pEntity ) STUB_INT;// see if pEntity is in monster's view cone
 		virtual BOOL FInViewCone ( Vector *pOrigin ) STUB_INT;// see if given location is in monster's view cone
-		virtual void HandleAnimEvent( MonsterEvent_t *pEvent ) STUB_VOID;
+		virtual void HandleAnimEvent( MonsterEvent_t *pEvent ) override STUB_VOID;
 
 		virtual int CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist ) STUB_INT;// check validity of a straight move through space
 		virtual void Move( float flInterval = 0.1 ) STUB_VOID;
@@ -334,7 +334,7 @@ public:
 		// virtual int CanPlaySequence( void ) { return ((m_pCine == NULL) && (m_MonsterState == MONSTERSTATE_NONE || m_MonsterState == MONSTERSTATE_IDLE || m_IdealMonsterState == MONSTERSTATE_IDLE)); }
 		virtual int CanPlaySequence( BOOL fDisregardState, int interruptLevel ) STUB_INT;
 		virtual int CanPlaySentence( BOOL fDisregardState ) { return IsAllowedToSpeak(); }
-		virtual BOOL IsAllowedToSpeak() { return IsAlive(); }
+		virtual BOOL IsAllowedToSpeak() override { return IsAlive(); }
 
 		Task_t *GetTask ( void );
 		virtual MONSTERSTATE GetIdealState ( void ) STUB_TYPE(MONSTERSTATE);
@@ -406,9 +406,9 @@ public:
 		virtual CSound* PBestScent ( void ) STUB_INT;
 		virtual float HearingSensitivity( void ) { return 1.0; };
 
-		BOOL BarnacleVictimCaught ( void ) STUB_INT;
-		virtual void BarnacleVictimBitten( entvars_t *pevBarnacle ) STUB_VOID;
-		virtual void BarnacleVictimReleased( void ) STUB_VOID;
+		BOOL BarnacleVictimCaught ( void ) override STUB_INT;
+		virtual void BarnacleVictimBitten( entvars_t *pevBarnacle ) override STUB_VOID;
+		virtual void BarnacleVictimReleased( void ) override STUB_VOID;
 
 		void SetEyePosition ( void );
 
@@ -428,34 +428,34 @@ public:
 
 		BOOL GetEnemy ( void );
 		void MakeDamageBloodDecal ( int cCount, float flNoise, TraceResult *ptr, const Vector &vecDir );
-		void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) STUB_VOID;
+		void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) override STUB_VOID;
 
 	// combat functions
 	float UpdateTarget ( entvars_t *pevTarget );
 	virtual Activity GetDeathActivity ( void ) STUB_TYPE(Activity);
 	Activity GetSmallFlinchActivity( void );
-	virtual void Killed( entvars_t *pevAttacker, int iGib ) STUB_VOID;
+	virtual void Killed( entvars_t *pevAttacker, int iGib ) override STUB_VOID;
 	virtual void GibMonster( void ) STUB_VOID;
 	virtual void MakeGibs( void ) STUB_VOID;
 	virtual BOOL	ShouldGibMonster( int iGib ) STUB_INT;
 	virtual void	CallGibMonster( void ) STUB_VOID;
 	virtual BOOL	HasHumanGibs( void ) STUB_INT;
 	virtual BOOL	HasAlienGibs( void ) STUB_INT;
-	virtual BOOL	IsMachine( void ) STUB_INT;
+	virtual BOOL	IsMachine( void ) override STUB_INT;
 	virtual void	FadeMonster( void ) STUB_VOID;	// Called instead of GibMonster() when gibs are disabled
 
 	Vector ShootAtEnemy( const Vector &shootOrigin );
-	virtual Vector BodyTarget( const Vector &posSrc ) { return Center( ) * 0.75 + EyePosition() * 0.25; };		// position to shoot at
+	virtual Vector BodyTarget( const Vector &posSrc ) override { return Center( ) * 0.75 + EyePosition() * 0.25; };		// position to shoot at
 
 	virtual	Vector  GetGunPosition( void ) STUB_VEC;
 
-	virtual int TakeHealth( float flHealth, int bitsDamageType, float healthcap=0) STUB_INT;
-	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) STUB_INT;
+	virtual int TakeHealth( float flHealth, int bitsDamageType, float healthcap=0) override STUB_INT;
+	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override STUB_INT;
 	int			DeadTakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
 	void RadiusDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int iClassIgnore, int bitsDamageType );
 	void RadiusDamage(Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int iClassIgnore, int bitsDamageType );
-	virtual int		IsMoving( void ) { return m_movementGoal != MOVEGOAL_NONE; }
+	virtual int		IsMoving( void ) override { return m_movementGoal != MOVEGOAL_NONE; }
 
 	void RouteClear( void );
 	void RouteNew( void );
@@ -496,12 +496,12 @@ public:
 	// returns a custom model if set, otherwise the default model
 	const char* GetModel();
 
-	virtual const char* DisplayName() STUB_INT;
+	virtual const char* DisplayName() override STUB_INT;
 
 	// handles mp_npckill/killnpc cvars and takedamage key
 	bool IsImmune(entvars_t* attacker, float damage);
 
-	virtual BOOL IsTurret() { return 0; } // sentry/turret/miniturret
+	virtual BOOL IsTurret() override { return 0; } // sentry/turret/miniturret
 
 	void SetSize(Vector defaultMins, Vector defaultMaxs);
 	void SetHealth();
@@ -528,7 +528,7 @@ public:
 
 	virtual float GetDamageModifier() override STUB_INT;
 
-	virtual float GetDamage(float defaultDamage) STUB_INT;
+	virtual float GetDamage(float defaultDamage) override STUB_INT;
 
 	virtual void Provoke(CBaseEntity* attacker) STUB_VOID;
 	virtual void OnKillProvoker(CBaseEntity* provoker) STUB_VOID;

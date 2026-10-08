@@ -69,7 +69,7 @@ public:
 #endif
 	}
 
-	BOOL IsClientWeapon() { return FALSE; }
+	BOOL IsClientWeapon() override { return FALSE; }
 
 	//void GetWeaponData(weapon_data_t& data) override;
 

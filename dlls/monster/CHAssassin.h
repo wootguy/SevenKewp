@@ -44,35 +44,35 @@ enum
 class EXPORT CHAssassin : public CBaseMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed ( void );
-	int  Classify ( void );
-	const char* DisplayName();
-	int  ISoundMask ( void);
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void SetYawSpeed ( void ) override;
+	int  Classify ( void ) override;
+	const char* DisplayName() override;
+	int  ISoundMask ( void) override;
 	void Shoot( void );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	Schedule_t* GetSchedule ( void );
-	Schedule_t* GetScheduleOfType ( int Type );
-	const char* GetTaskName(int taskIdx);
-	BOOL CheckMeleeAttack1 ( float flDot, float flDist );	// jump
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	Schedule_t* GetSchedule ( void ) override;
+	Schedule_t* GetScheduleOfType ( int Type ) override;
+	const char* GetTaskName(int taskIdx) override;
+	BOOL CheckMeleeAttack1 ( float flDot, float flDist ) override;	// jump
 	// BOOL CheckMeleeAttack2 ( float flDot, float flDist );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );	// shoot
-	BOOL CheckRangeAttack2 ( float flDot, float flDist );	// throw grenade
-	void StartTask ( Task_t *pTask );
-	void RunAI( void );
-	void RunTask ( Task_t *pTask );
-	void DeathSound ( void );
-	void IdleSound ( void );
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
-	const char* GetDeathNoticeWeapon() { return "weapon_9mmhandgun"; }
+	BOOL CheckRangeAttack1 ( float flDot, float flDist ) override;	// shoot
+	BOOL CheckRangeAttack2 ( float flDot, float flDist ) override;	// throw grenade
+	void StartTask ( Task_t *pTask ) override;
+	void RunAI( void ) override;
+	void RunTask ( Task_t *pTask ) override;
+	void DeathSound ( void ) override;
+	void IdleSound ( void ) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_9mmhandgun"; }
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 	CUSTOM_SCHEDULES;
 
-	int	Save( CSave &save ); 
-	int Restore( CRestore &restore );
+	int	Save( CSave &save ) override;
+	int Restore( CRestore &restore ) override;
 	static TYPEDESCRIPTION m_SaveData[];
 
 	float m_flLastShot;

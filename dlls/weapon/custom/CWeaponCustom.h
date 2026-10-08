@@ -102,11 +102,11 @@ public:
 	void PrecacheEvents() override;
 	void AddEvent(WepEvt evt);
 	BOOL UseDecrement(void) override { return TRUE; }
-	BOOL IsSevenKewpWeapon() { return !(defaultParams.flags & FL_WC_WEP_NO_PREDICTION); }
-	BOOL IsWeaponCustom() { return TRUE; }
+	BOOL IsSevenKewpWeapon() override { return !(defaultParams.flags & FL_WC_WEP_NO_PREDICTION); }
+	BOOL IsWeaponCustom() override { return TRUE; }
 	BOOL IsAkimboWeapon() override { return defaultParams.flags & FL_WC_WEP_AKIMBO; }
-	int SecondaryAmmoIndex(void) { return m_iSecondaryAmmoType; }
-	CWeaponCustom* MyWeaponCustomPtr(void) { return this; }
+	int SecondaryAmmoIndex(void) override { return m_iSecondaryAmmoType; }
+	CWeaponCustom* MyWeaponCustomPtr(void) override { return this; }
 	int AddToPlayer(CBasePlayer* pPlayer) override;
 	const char* GetAnimSet();
 	void UpdateAnimSet();
@@ -140,7 +140,7 @@ public:
 	//  Override the methods below to add custom server-side logic to your weapon
 	//
 	virtual void CustomServerEvent(WepEvt& evt, CBasePlayer* m_pPlayer) {}
-	virtual BOOL IsClientWeapon() {
+	virtual BOOL IsClientWeapon() override {
 		CBasePlayer* m_pPlayer = GetPlayer();
 		return m_pPlayer && m_pPlayer->IsSevenKewpClient();
 	}
@@ -157,11 +157,11 @@ public:
 	virtual void MeleeHitFlesh(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a flesh entity
 	virtual void MeleeHitWall(CBasePlayer* plr, CBaseEntity* target) {} // called when a melee attack hits a hard surface
 	virtual void AttackTrace(CBasePlayer* plr, int attackIdx, Vector vecSrc, TraceResult& tr, bool isRicochet) {} // called after every attack trace
-	virtual void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
+	virtual void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount) override;
 	virtual const char* DisplayName() override { return STRING(GetActiveParams().displayName); }
-	virtual const char* GetDeathNoticeWeapon() { return STRING(GetActiveParams().killFeedIcon); }
-	virtual int MergedModelBody() { return m_mergedModelBody; }
-	virtual int GetItemInfo(ItemInfo* p);
+	virtual const char* GetDeathNoticeWeapon() override { return STRING(GetActiveParams().killFeedIcon); }
+	virtual int MergedModelBody() override { return m_mergedModelBody; }
+	virtual int GetItemInfo(ItemInfo* p) override;
 
 	void KickbackPrediction();
 	void ToggleLaser(bool enable);
@@ -189,9 +189,9 @@ public:
 	//		4 bits - tertiary charge state
 	//		4 bits - secondary charge state
 	//		4 bits - primary charge state
-	BOOL CanAkimbo() { return GetState(FL_WC_STATE_CAN_AKIMBO); }
+	BOOL CanAkimbo() override { return GetState(FL_WC_STATE_CAN_AKIMBO); }
 	void SetCanAkimbo(bool canAkimbo);
-	BOOL IsAkimbo() { return GetState(FL_WC_STATE_IS_AKIMBO); }
+	BOOL IsAkimbo() override { return GetState(FL_WC_STATE_IS_AKIMBO); }
 	bool IsIronSights() { return GetZoom() != 0 && GetFlag(FL_WC_WEP_IRON_SIGHTS_ZOOM); }
 	WeaponCustomToggle& GetActiveToggle(int toggleIdx); // toggleIdx = attackIdx except index 4 is E+R toggle, not alt primary
 	bool QueueStateToggles(int toggleIdx); // Returns true if anything queued. toggleIdx = attackIdx except index 4 is E+R toggle, not alt primary.

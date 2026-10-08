@@ -27,13 +27,13 @@
 class EXPORT CRat : public CBaseMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int  Classify ( void );
-	const char* DisplayName();
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void SetYawSpeed( void ) override;
+	int  Classify ( void ) override;
+	const char* DisplayName() override;
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
-	void StartTask(Task_t* pTask);
-	void BarnacleVictimBitten(entvars_t* pevBarnacle);
-	BOOL BarnacleVictimCaught(void);
+	void StartTask(Task_t* pTask) override;
+	void BarnacleVictimBitten(entvars_t* pevBarnacle) override;
+	BOOL BarnacleVictimCaught(void) override;
 };

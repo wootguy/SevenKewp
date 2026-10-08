@@ -146,21 +146,21 @@ public:
 	void BaseSpawn();
 	void BasePrecache();
 	void PrecacheEquipment(int equipment);
-	void SetYawSpeed(void);
-	int  Classify(void);
-	virtual int ISoundMask(void);
-	void HandleAnimEvent(MonsterEvent_t* pEvent);
-	BOOL FCanCheckAttacks(void);
-	virtual BOOL CheckMeleeAttack1(float flDot, float flDist);
-	virtual BOOL CheckRangeAttack1(float flDot, float flDist);
-	virtual BOOL CheckRangeAttack2(float flDot, float flDist);
-	virtual void CheckAmmo(void);
-	virtual void SetActivity(Activity NewActivity);
+	void SetYawSpeed(void) override;
+	int  Classify(void) override;
+	virtual int ISoundMask(void) override;
+	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
+	BOOL FCanCheckAttacks(void) override;
+	virtual BOOL CheckMeleeAttack1(float flDot, float flDist) override;
+	virtual BOOL CheckRangeAttack1(float flDot, float flDist) override;
+	virtual BOOL CheckRangeAttack2(float flDot, float flDist) override;
+	virtual void CheckAmmo(void) override;
+	virtual void SetActivity(Activity NewActivity) override;
 	virtual int GetActivitySequence(Activity NewActivity);
-	virtual void StartTask(Task_t* pTask);
+	virtual void StartTask(Task_t* pTask) override;
 	virtual void RunTask(Task_t* pTask) override;
-	virtual const char* GetTaskName(int taskIdx);
-	Vector GetGunPosition(void);
+	virtual const char* GetTaskName(int taskIdx) override;
+	Vector GetGunPosition(void) override;
 	bool HasEquipment(int equipItems);
 	void Shoot(bool firstRound);
 	void ShootMp5(Vector& vecShootOrigin, Vector& vecShootDir);
@@ -175,18 +175,18 @@ public:
 	void ShootRPG(Vector& vecShootOrigin, Vector& vecShootDir);
 	void Reload();
 	void PointAtEnemy();
-	virtual void PrescheduleThink(void);
-	virtual void GibMonster(void);
-	virtual void Killed(entvars_t* pevAttacker, int iGib);
+	virtual void PrescheduleThink(void) override;
+	virtual void GibMonster(void) override;
+	virtual void Killed(entvars_t* pevAttacker, int iGib) override;
 	virtual bool DropEquipment(int attachmentIdx, bool randomToss);
 	virtual bool DropEquipment(int attachmentIdx, int equipMask, Vector velocity, Vector aVelocity);
-	virtual const char* GetDeathNoticeWeapon(); // for player death notice icons
+	virtual const char* GetDeathNoticeWeapon() override; // for player death notice icons
 	void SpeakSentence(void);
 	virtual void PlaySentenceSound(int sentenceType) {}
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
-	int	Save(CSave& save);
-	int Restore(CRestore& restore);
+	int	Save(CSave& save) override;
+	int Restore(CRestore& restore) override;
 
 	CBaseEntity* Kick(void);
 	virtual Schedule_t* GetMonsterStateSchedule(void);
@@ -194,20 +194,20 @@ public:
 	Schedule_t* GetShootSchedule(void);
 	Schedule_t* GetLightDamageSchedule(void);
 	Schedule_t* GetEnemyOccludedSchedule(void);
-	virtual Schedule_t* GetSchedule(void);
-	virtual Schedule_t* GetScheduleOfType(int Type);
-	virtual void ScheduleChange(void);
-	virtual void UpdateOnRemove(void);
+	virtual Schedule_t* GetSchedule(void) override;
+	virtual Schedule_t* GetScheduleOfType(int Type) override;
+	virtual void ScheduleChange(void) override;
+	virtual void UpdateOnRemove(void) override;
 	void RemoveRpgLaser(void);
-	virtual void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
-	virtual int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	virtual void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) override;
+	virtual int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
 
-	int IRelationship(CBaseEntity* pTarget);
+	int IRelationship(CBaseEntity* pTarget) override;
 
 	BOOL FOkToSpeak(void);
 	void JustSpoke(void);
 
-	virtual void Revive();
+	virtual void Revive() override;
 
 	CUSTOM_SCHEDULES;
 	static TYPEDESCRIPTION m_SaveData[];
@@ -273,12 +273,12 @@ private:
 
 class EXPORT CBaseRepel : public CBaseMonster {
 public:
-	void Spawn(void);
-	void Precache(void);
-	void KeyValue(KeyValueData* pkvd);
+	void Spawn(void) override;
+	void Precache(void) override;
+	void KeyValue(KeyValueData* pkvd) override;
 	void RepelUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 	virtual const char* GetMonsterType() { return "monster_human_grunt"; }
-	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
+	virtual int	ObjectCaps(void) override { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 
 	const char* monsterType;
 	int m_iSpriteTexture;	// Don't save, precache
@@ -290,11 +290,11 @@ public:
 class EXPORT CBaseDead : public CBaseMonster {
 public:
 	void BaseSpawn(const char* model);
-	virtual int	Classify(void) { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
-	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
+	virtual int	Classify(void) override { return	CBaseMonster::Classify(CLASS_HUMAN_MILITARY); }
+	virtual int	ObjectCaps(void) override { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 	virtual int GetPoseSequence() { return -1; }
 
-	void KeyValue(KeyValueData* pkvd);
+	void KeyValue(KeyValueData* pkvd) override;
 
 	int	m_iPose;// which sequence to display	-- temporary, don't need to save
 	int m_iGruntHead;

@@ -23,33 +23,33 @@
 class EXPORT CBodyGuard: public CBaseGrunt
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	void InitAiFlags();
-	void HandleAnimEvent(MonsterEvent_t* pEvent);
-	void GibMonster(void);
-	void Killed(entvars_t* pevAttacker, int iGib);
+	void Spawn(void) override;
+	void Precache(void) override;
+	void InitAiFlags() override;
+	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
+	void GibMonster(void) override;
+	void Killed(entvars_t* pevAttacker, int iGib) override;
 	void ShuffleSoundArrays();
 
-	int GetActivitySequence(Activity NewActivity);
-	Schedule_t* GetScheduleOfType(int Type);
+	int GetActivitySequence(Activity NewActivity) override;
+	Schedule_t* GetScheduleOfType(int Type) override;
 
 	CUSTOM_SCHEDULES;
 
-	void PlaySentenceSound(int sentenceType);
-	void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation);
-	int	Classify(void);
-	const char* DisplayName();
-	int ISoundMask(void);
-	BOOL NoFriendlyFire(void) { return TRUE; } // friendly fire is allowed
-	void AlertSound();
-	void PainSound(void);
-	void DeathSound(void);
-	void DeclineFollowing();
+	void PlaySentenceSound(int sentenceType) override;
+	void PlaySentence(const char* pszSentence, float duration, float volume, float attenuation) override;
+	int	Classify(void) override;
+	const char* DisplayName() override;
+	int ISoundMask(void) override;
+	BOOL NoFriendlyFire(void) override { return TRUE; } // friendly fire is allowed
+	void AlertSound() override;
+	void PainSound(void) override;
+	void DeathSound(void) override;
+	void DeclineFollowing() override;
 	void TalkInit();
-	void OnTaskComplete(Task_t task);
+	void OnTaskComplete(Task_t task) override;
 
-	MONSTERSTATE GetIdealState()
+	MONSTERSTATE GetIdealState() override
 	{
 		return CTalkSquadMonster::GetIdealState();
 	}

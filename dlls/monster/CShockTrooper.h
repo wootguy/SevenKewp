@@ -55,7 +55,7 @@ public:
 	void Precache() override;
 	void SetYawSpeed() override;
 	int Classify() override;
-	const char* DisplayName();
+	const char* DisplayName() override;
 	int ISoundMask() override;
 	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
 	BOOL FCanCheckAttacks() override;
@@ -68,9 +68,9 @@ public:
 	void RunTask(Task_t* pTask) override;
 	void PainSound() override;
 	void IdleSound() override;
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 	Vector GetGunPosition() override;
 	void Shoot();
 	void PrescheduleThink() override;
@@ -78,7 +78,7 @@ public:
 	void SpeakSentence();
 	//virtual BOOL IsBarnacleFood(void) override { return TRUE; } // looks bad, too much clipping, too big
 
-	void SetObjectCollisionBox(void)
+	void SetObjectCollisionBox(void) override
 	{
 		pev->absmin = pev->origin + Vector(-24, -24, 0);
 		pev->absmax = pev->origin + Vector(24, 24, 88);

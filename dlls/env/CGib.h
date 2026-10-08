@@ -55,7 +55,7 @@ public:
 	void BreakThink();
 	void SprayThink();
 
-	virtual int	ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE; }
+	virtual int	ObjectCaps(void) override { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE; }
 	static	void SpawnHeadGib(entvars_t* pevVictim);
 	static	void SpawnMonsterGibs(entvars_t* pevVictim, int cGibs, int human);
 	static	void SpawnRandomGibs(entvars_t* pevVictim, int cGibs, const char* gibModel,

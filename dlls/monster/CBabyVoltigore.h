@@ -13,25 +13,25 @@
 class EXPORT CBabyVoltigore : public CBaseMonster
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	void SetYawSpeed(void);
-	int Classify(void);
-	const char* DisplayName();
-	void HandleAnimEvent(MonsterEvent_t* pEvent);
-	Schedule_t* GetScheduleOfType(int Type);
-	void StartTask(Task_t* pTask);
-	int IgnoreConditions(void);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	void Spawn(void) override;
+	void Precache(void) override;
+	void SetYawSpeed(void) override;
+	int Classify(void) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
+	Schedule_t* GetScheduleOfType(int Type) override;
+	void StartTask(Task_t* pTask) override;
+	int IgnoreConditions(void) override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
-	void PainSound(void);
-	void AlertSound(void);
-	void IdleSound(void);
+	void PainSound(void) override;
+	void AlertSound(void) override;
+	void IdleSound(void) override;
 	void AttackSound(void);
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 
 private:
 	static const char* pAttackHitSounds[];

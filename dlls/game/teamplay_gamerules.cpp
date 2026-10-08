@@ -349,12 +349,12 @@ void CHalfLifeTeamplay::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infob
 //=========================================================
 // Deathnotice. 
 //=========================================================
-void CHalfLifeTeamplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
+void CHalfLifeTeamplay::DeathNotice( CBaseMonster *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
 {
 	if ( m_DisableDeathMessages )
 		return;
 	
-	if ( pVictim && pKiller && pKiller->flags & FL_CLIENT )
+	if ( pVictim && pKiller && (pKiller->flags & FL_CLIENT) )
 	{
 		CBasePlayer *pk = (CBasePlayer*) CBaseEntity::Instance( pKiller );
 

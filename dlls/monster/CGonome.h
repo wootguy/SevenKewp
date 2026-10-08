@@ -28,34 +28,34 @@
 class EXPORT CGonome : public CBaseMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int Classify ( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	BOOL CheckMeleeAttack1(float flDot, float flDist);
-	BOOL CheckRangeAttack1(float flDot, float flDist);
-	int LookupActivity(int activity);
-	void Killed(entvars_t* pevAttacker, int iGib);
-	Schedule_t* GetScheduleOfType(int Type);
-	void StartTask(Task_t* pTask);
-	void MonsterThink(void);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void SetYawSpeed( void ) override;
+	int Classify ( void ) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	BOOL CheckMeleeAttack1(float flDot, float flDist) override;
+	BOOL CheckRangeAttack1(float flDot, float flDist) override;
+	int LookupActivity(int activity) override;
+	void Killed(entvars_t* pevAttacker, int iGib) override;
+	Schedule_t* GetScheduleOfType(int Type) override;
+	void StartTask(Task_t* pTask) override;
+	void MonsterThink(void) override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
-	void SetObjectCollisionBox(void)
+	void SetObjectCollisionBox(void) override
 	{
 		pev->absmin = pev->origin + Vector(-24, -24, 0);
 		pev->absmax = pev->origin + Vector(24, 24, 88);
 	}
 
-	void PainSound(void);
-	void AlertSound(void);
-	void IdleSound(void);
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void PainSound(void) override;
+	void AlertSound(void) override;
+	void IdleSound(void) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 
 	CUSTOM_SCHEDULES;
 
@@ -77,12 +77,12 @@ private:
 class EXPORT CGonomeSpit : public CBaseEntity
 {
 public:
-	void Spawn(void);
+	void Spawn(void) override;
 
 	static void Shoot(entvars_t* pevOwner, Vector vecStart, Vector vecVelocity);
-	void Touch(CBaseEntity* pOther);
+	void Touch(CBaseEntity* pOther) override;
 	void Animate(void);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 
 	int  m_maxFrame;
 };

@@ -63,20 +63,20 @@ enum
 class EXPORT CHGruntOp4Medic : public CBaseGruntOp4
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	void StartTask ( Task_t *pTask );
-	void RunTask ( Task_t *pTask );
-	void GibMonster( void );
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	void StartTask ( Task_t *pTask ) override;
+	void RunTask ( Task_t *pTask ) override;
+	void GibMonster( void ) override;
 
-	int	Save( CSave &save ); 
-	int Restore( CRestore &restore );
+	int	Save( CSave &save ) override;
+	int Restore( CRestore &restore ) override;
 	
-	int GetActivitySequence(Activity NewActivity);
-	Schedule_t	*GetSchedule( void );
-	Schedule_t  *GetScheduleOfType ( int Type );
+	int GetActivitySequence(Activity NewActivity) override;
+	Schedule_t	*GetSchedule( void ) override;
+	Schedule_t  *GetScheduleOfType ( int Type ) override;
 	
 	int ObjectCaps() override;
 
@@ -94,7 +94,7 @@ public:
 
 	void HealerActivate( CBaseMonster* pTarget );
 
-	MONSTERSTATE GetIdealState()
+	MONSTERSTATE GetIdealState() override
 	{
 		return CTalkSquadMonster::GetIdealState();
 	}
@@ -131,5 +131,5 @@ public:
 class CHGruntOp4MedicRepel : public CBaseRepel
 {
 public:
-	const char* GetMonsterType() { return "monster_human_medic_ally"; };
+	const char* GetMonsterType() override { return "monster_human_medic_ally"; };
 };

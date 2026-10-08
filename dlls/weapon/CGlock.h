@@ -7,23 +7,23 @@
 class CGlock : public CBasePlayerWeapon
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void PrecacheEvents();
-	int iItemSlot( void ) { return 2; }
-	int GetItemInfo(ItemInfo *p);
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void PrecacheEvents() override;
+	int iItemSlot( void ) override { return 2; }
+	int GetItemInfo(ItemInfo *p) override;
 
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
+	void PrimaryAttack( void ) override;
+	void SecondaryAttack( void ) override;
 	void GlockFire( float flSpread, float flCycleTime, BOOL fUseAutoAim );
-	BOOL Deploy( void );
-	void Reload( void );
-	void WeaponIdle( void );
+	BOOL Deploy( void ) override;
+	void Reload( void ) override;
+	void WeaponIdle( void ) override;
 	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount) override;
 
-	virtual int MergedModelBody() { return MERGE_MDL_W_9MMHANDGUN; }
+	virtual int MergedModelBody() override { return MERGE_MDL_W_9MMHANDGUN; }
 
-	virtual BOOL UseDecrement( void )
+	virtual BOOL UseDecrement( void ) override
 	{ 
 #if defined( CLIENT_WEAPONS )
 		return TRUE;

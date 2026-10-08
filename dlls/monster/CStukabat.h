@@ -10,46 +10,46 @@
 class EXPORT CStukabat : public CBaseMonster
 {
 public:
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save( CSave &save ) override;
+	virtual int		Restore( CRestore &restore ) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int  Classify ( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void SetYawSpeed( void ) override;
+	int  Classify ( void ) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
 
-	void RunAI( void );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );	// balls
-	BOOL CheckRangeAttack2 ( float flDot, float flDist );	// head
-	BOOL CheckMeleeAttack1 ( float flDot, float flDist );	// block, throw
-	Schedule_t* GetSchedule ( void );
-	Schedule_t* GetScheduleOfType ( int Type );
-	const char* GetTaskName(int taskIdx);
-	void StartTask ( Task_t *pTask );
-	void RunTask ( Task_t *pTask );
+	void RunAI( void ) override;
+	BOOL CheckRangeAttack1 ( float flDot, float flDist ) override;	// balls
+	BOOL CheckRangeAttack2 ( float flDot, float flDist ) override;	// head
+	BOOL CheckMeleeAttack1 ( float flDot, float flDist ) override;	// block, throw
+	Schedule_t* GetSchedule ( void ) override;
+	Schedule_t* GetScheduleOfType ( int Type ) override;
+	const char* GetTaskName(int taskIdx) override;
+	void StartTask ( Task_t *pTask ) override;
+	void RunTask ( Task_t *pTask ) override;
 	void DiveTouch(CBaseEntity* pOther);
 	CUSTOM_SCHEDULES;
 
-	void Stop( void );
-	void Move ( float flInterval );
-	int  CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );
-	void MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval );
-	void SetActivity ( Activity NewActivity );
-	int LookupActivity(int activity);
-	BOOL ShouldAdvanceRoute( float flWaypointDist );
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	void Stop( void ) override;
+	void Move ( float flInterval ) override;
+	int  CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist ) override;
+	void MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval ) override;
+	void SetActivity ( Activity NewActivity ) override;
+	int LookupActivity(int activity) override;
+	BOOL ShouldAdvanceRoute( float flWaypointDist ) override;
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
 
-	void PainSound( void );
-	void AlertSound( void );
-	void IdleSound( void );
+	void PainSound( void ) override;
+	void AlertSound( void ) override;
+	void IdleSound( void ) override;
 	void AttackSound( void );
-	void DeathSound( void );
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void DeathSound( void ) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 
 	static const char *pAttackSounds[];
 	static const char *pIdleSounds[];
@@ -59,7 +59,7 @@ public:
 	static const char *pAttackHitSounds[];
 	static const char *pFlapSounds[];
 
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	Vector m_retreatPos; // position flying to to prepare for a dive attack

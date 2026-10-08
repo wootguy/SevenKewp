@@ -22,27 +22,27 @@ enum
 class EXPORT CChumtoad : public CBaseMonster
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	int Classify(void);
-	const char* DisplayName();
-	void SetYawSpeed(void);
-	void HandleAnimEvent(MonsterEvent_t* pEvent);
-	void PrescheduleThink();
-	void StartTask(Task_t* pTask);
-	Schedule_t* GetScheduleOfType(int Type);
-	const char* GetTaskName(int taskIdx);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	void Spawn(void) override;
+	void Precache(void) override;
+	int Classify(void) override;
+	const char* DisplayName() override;
+	void SetYawSpeed(void) override;
+	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
+	void PrescheduleThink() override;
+	void StartTask(Task_t* pTask) override;
+	Schedule_t* GetScheduleOfType(int Type) override;
+	const char* GetTaskName(int taskIdx) override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 
-	BOOL CheckRangeAttack1(float flDot, float flDist) { return FALSE; }
-	BOOL CheckRangeAttack2(float flDot, float flDist) { return FALSE; }
-	BOOL CheckMeleeAttack1(float flDot, float flDist);
+	BOOL CheckRangeAttack1(float flDot, float flDist) override { return FALSE; }
+	BOOL CheckRangeAttack2(float flDot, float flDist) override { return FALSE; }
+	BOOL CheckMeleeAttack1(float flDot, float flDist) override;
 
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
 
 	CUSTOM_SCHEDULES;
 

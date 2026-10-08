@@ -29,10 +29,10 @@ enum WaypointState {
 class CPathWaypoint : public CCineMonster
 {
 public:
-	void Spawn();
-	void KeyValue(KeyValueData* pkvd);
-	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	CPathWaypoint* MyPathWaypointPointer(void) { return this; }
+	void Spawn() override;
+	void KeyValue(KeyValueData* pkvd) override;
+	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
+	CPathWaypoint* MyPathWaypointPointer(void) override { return this; }
 
 	Schedule_t* GetScriptSchedule() override;
 	void DoScript(CBaseMonster* pTarget) override;

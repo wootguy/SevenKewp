@@ -54,7 +54,7 @@ public:
 
 	void ToggleChargeBeams(bool enabled);
 
-	int AddToPlayer(CBasePlayer* pPlayer);
+	int AddToPlayer(CBasePlayer* pPlayer) override;
 
 	int GetItemInfo(ItemInfo* p) override;
 
@@ -67,7 +67,7 @@ public:
 #endif
 	}
 
-	BOOL IsClientWeapon() { return FALSE; }
+	BOOL IsClientWeapon() override { return FALSE; }
 
 	void UpdateOnRemove(void) override;
 

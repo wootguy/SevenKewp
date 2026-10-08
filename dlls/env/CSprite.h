@@ -10,12 +10,12 @@
 class CSprite : public CPointEntity
 {
 public:
-	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
-	void Spawn(void);
-	void Precache(void);
-	void KeyValue(KeyValueData* pkvd);
+	virtual int	GetEntindexPriority() override { return ENTIDX_PRIORITY_NORMAL; }
+	void Spawn(void) override;
+	void Precache(void) override;
+	void KeyValue(KeyValueData* pkvd) override;
 
-	int		ObjectCaps(void)
+	int		ObjectCaps(void) override
 	{
 		int flags = 0;
 		if (pev->spawnflags & SF_SPRITE_TEMPORARY)
@@ -24,7 +24,7 @@ public:
 	}
 	void EXPORT AnimateThink(void);
 	void EXPORT ExpandThink(void);
-	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
 	void Animate(float frames);
 	void Expand(float scaleSpeed, float fadeSpeed);
 	void SpriteInit(const char* pSpriteName, const Vector& origin);
@@ -67,8 +67,8 @@ public:
 
 	void EXPORT AnimateUntilDead(void);
 
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
+	virtual int		Save(CSave& save) override;
+	virtual int		Restore(CRestore& restore) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 	static EXPORT CSprite* SpriteCreate(const char* pSpriteName, const Vector& origin, BOOL animate);
 

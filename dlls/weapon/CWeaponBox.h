@@ -7,25 +7,25 @@
 class CWeaponBox : public CBaseEntity
 {
 public:
-	void Precache( void );
-	void Spawn( void );
+	void Precache( void ) override;
+	void Spawn( void ) override;
 	void DefaultTouch( CBaseEntity *pOther );
-	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
-	void KeyValue( KeyValueData *pkvd );
+	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
+	void KeyValue( KeyValueData *pkvd ) override;
 	BOOL IsEmpty( void );
 	int  GiveAmmo( int iCount, const char *szName, int iMax, int *pIndex = NULL );
-	void SetObjectCollisionBox( void );
-	virtual int	ObjectCaps(void) { return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE; }
-	virtual CWeaponBox* MyWeaponBoxPtr(void) { return this; }
+	void SetObjectCollisionBox( void ) override;
+	virtual int	ObjectCaps(void) override { return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE; }
+	virtual CWeaponBox* MyWeaponBoxPtr(void) override { return this; }
 	bool IsUseOnlyWeapon(); // true if this weaponbox contains a single use-only weapon
-	virtual BOOL	IsItem() { return TRUE; }
-	virtual	BOOL IsBarnacleFood(void) { return TRUE; }
+	virtual BOOL	IsItem() override { return TRUE; }
+	virtual	BOOL IsBarnacleFood(void) override { return TRUE; }
 	virtual BOOL BarnacleVictimCaught(void) override;
 	virtual void BarnacleVictimReleased(void) override;
 
 	void EXPORT Kill ( void );
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
+	int		Save( CSave &save ) override;
+	int		Restore( CRestore &restore ) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	BOOL HasWeapon( CBasePlayerItem *pCheckItem );

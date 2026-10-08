@@ -10,13 +10,13 @@ class CFrictionModifier : public CBaseEntity
 public:
 
 	virtual int	GetEntindexPriority() override { return ENTIDX_PRIORITY_NORMAL; }
-	void		Spawn(void);
-	void		KeyValue(KeyValueData* pkvd);
+	void		Spawn(void) override;
+	void		KeyValue(KeyValueData* pkvd) override;
 	void EXPORT	ChangeFriction(CBaseEntity* pOther);
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
+	virtual int		Save(CSave& save) override;
+	virtual int		Restore(CRestore& restore) override;
 
-	virtual int	ObjectCaps(void) { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	virtual int	ObjectCaps(void) override { return CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
 
 	static	TYPEDESCRIPTION m_SaveData[];
 

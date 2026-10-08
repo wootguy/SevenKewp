@@ -54,38 +54,38 @@ enum
 class EXPORT CHoundeye : public CTalkSquadMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	int  Classify ( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	void SetYawSpeed ( void );
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	int  Classify ( void ) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	void SetYawSpeed ( void ) override;
 	void WarmUpSound ( void );
-	void AlertSound( void );
-	void DeathSound( void );
+	void AlertSound( void ) override;
+	void DeathSound( void ) override;
 	void WarnSound( void );
-	void PainSound( void );
-	void IdleSound( void );
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
-	void StartTask( Task_t *pTask );
-	void RunTask ( Task_t *pTask );
+	void PainSound( void ) override;
+	void IdleSound( void ) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
+	void StartTask( Task_t *pTask ) override;
+	void RunTask ( Task_t *pTask ) override;
 	void SonicAttack( void );
-	void PrescheduleThink( void );
-	void SetActivity ( Activity NewActivity );
+	void PrescheduleThink( void ) override;
+	void SetActivity ( Activity NewActivity ) override;
 	RGB GetBeamColor ( void );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );
-	BOOL FValidateHintType ( short sHint );
-	BOOL FCanActiveIdle ( void );
-	Schedule_t *GetScheduleOfType ( int Type );
-	Schedule_t *GetSchedule( void );
-	const char* GetTaskName(int taskIdx);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	BOOL CheckRangeAttack1 ( float flDot, float flDist ) override;
+	BOOL FValidateHintType ( short sHint ) override;
+	BOOL FCanActiveIdle ( void ) override;
+	Schedule_t *GetScheduleOfType ( int Type ) override;
+	Schedule_t *GetSchedule( void ) override;
+	const char* GetTaskName(int taskIdx) override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
-	int	Save( CSave &save ); 
-	int Restore( CRestore &restore );
+	int	Save( CSave &save ) override;
+	int Restore( CRestore &restore ) override;
 
 	CUSTOM_SCHEDULES;
 	static TYPEDESCRIPTION m_SaveData[];

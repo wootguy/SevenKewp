@@ -4,17 +4,17 @@
 class EXPORT CBasePlayerWeapon : public CBasePlayerItem
 {
 public:
-	virtual void KeyValue(KeyValueData* pkvd) STUB_VOID;
-	void Precache() STUB_VOID; // custom weapons call this
+	virtual void KeyValue(KeyValueData* pkvd) override STUB_VOID;
+	void Precache() override STUB_VOID; // custom weapons call this
 	virtual void PrecacheEvents() {} // server must always call this for weapons which the client loads by default
-	virtual int		Save( CSave &save ) STUB_INT;
-	virtual int		Restore( CRestore &restore ) STUB_INT;
+	virtual int		Save( CSave &save ) override STUB_INT;
+	virtual int		Restore( CRestore &restore ) override STUB_INT;
 	
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	// generic weapon versions of CBasePlayerItem calls
-	virtual int AddToPlayer( CBasePlayer *pPlayer ) STUB_INT;
-	virtual int AddDuplicate( CBasePlayerItem *pItem ) STUB_INT;
+	virtual int AddToPlayer( CBasePlayer *pPlayer ) override STUB_INT;
+	virtual int AddDuplicate( CBasePlayerItem *pItem ) override STUB_INT;
 
 	virtual int ExtractAmmo( CBasePlayerWeapon *pWeapon ) STUB_INT; //{ return TRUE; };			// Return TRUE if you can add ammo to yourself when picked up
 	virtual int ExtractClipAmmo( CBasePlayerWeapon *pWeapon ) STUB_INT;// { return TRUE; };			// Return TRUE if you can add ammo to yourself when picked up
@@ -25,7 +25,7 @@ public:
 	BOOL AddPrimaryAmmo( int iCount, char *szName, int iMaxClip );
 	BOOL AddSecondaryAmmo( int iCount, char *szName );
 
-	virtual void UpdateItemInfo( void ) {};	// updates HUD state
+	virtual void UpdateItemInfo( void ) override {};	// updates HUD state
 
 	virtual BOOL PlayEmptySound( void );
 	virtual void ResetEmptySound( void );
@@ -33,23 +33,23 @@ public:
 	virtual void SendWeaponAnim( int iAnim, int skiplocal = 1, int body = 0 );  // skiplocal is 1 if client is predicting weapon animations
 	virtual void SendWeaponAnimSpec(int iAnim) STUB_VOID; // send a weapon anim to spectators, and the owner if it isn't a SevenKewp client that can predict this anim
 
-	virtual BOOL CanDeploy( void );
+	virtual BOOL CanDeploy( void ) override;
 	virtual BOOL IsUseable( void ) STUB_INT;
 	BOOL DefaultDeploy(const char *szViewModel, const char *szWeaponModel, int iAnim, const char *szAnimExt, int skiplocal = 0, int body = 0 );
 	int DefaultReload( int iClipSize, int iAnim, float fDelay, int body = 0 );
 	
 	virtual void GetAmmoDropInfo(bool isSecondary, const char*& ammoEntName, int& dropAmount) STUB_VOID;
-	virtual void ItemPostFrame( void );	// called each frame by the player PostThink
+	virtual void ItemPostFrame( void ) override;	// called each frame by the player PostThink
 	// called by CBasePlayerWeapons ItemPostFrame()
 	virtual void PrimaryAttack( void ) {}				// do "+ATTACK"
 	virtual void SecondaryAttack( void ) {}			// do "+ATTACK2"
 	virtual void TertiaryAttack( void ) {}
 	virtual void Reload( void ) {}						// do "+RELOAD"
 	virtual void WeaponIdle( void ) {}					// called when no buttons pressed
-	virtual int UpdateClientData( CBasePlayer *pPlayer ) STUB_INT;		// sends hud info to client dll, if things have changed
+	virtual int UpdateClientData( CBasePlayer *pPlayer ) override STUB_INT;		// sends hud info to client dll, if things have changed
 	virtual void RetireWeapon( void ) STUB_VOID;
 	virtual BOOL ShouldWeaponIdle( void ) {return FALSE; };
-	virtual void Holster( int skiplocal = 0 );
+	virtual void Holster( int skiplocal = 0 ) override;
 	virtual BOOL UseDecrement( void ) { return FALSE; };
 	virtual BOOL IsClientWeapon() { return TRUE; }; // true if the client DLL predicts this weapon
 	virtual BOOL IsSevenKewpWeapon() { return FALSE; } // true if HL players can't use this
@@ -59,13 +59,13 @@ public:
 	inline int GetAkimboClip() { return IsAkimbo() ? m_chargeReady : -1; }
 	inline void SetAkimboClip(int clip) { m_chargeReady = clip; }
 	
-	int	PrimaryAmmoIndex();
-	int	SecondaryAmmoIndex();
+	int	PrimaryAmmoIndex() override;
+	int	SecondaryAmmoIndex() override;
 
 	void PrintState( void );
 
-	virtual CBasePlayerWeapon*GetWeaponPtr( void ) { return this; };
-	virtual CBaseEntity* Respawn(void) STUB_INT;// copy a weapon
+	virtual CBasePlayerWeapon* GetWeaponPtr( void ) override { return this; };
+	virtual CBaseEntity* Respawn(void) override STUB_INT;// copy a weapon
 	float GetNextAttackDelay( float delay );
 
 	virtual const char* GetModelV(const char* defaultModel=NULL) STUB_INT;
@@ -78,7 +78,7 @@ public:
 	// hack to allow corpse gibbing of non-solid corpses
 	void SolidifyNearbyCorpses(bool solidState);
 
-	virtual float GetDamageModifier() {
+	virtual float GetDamageModifier() override {
 		CBasePlayer* plr = GetPlayer();
 		return plr ? plr->GetDamageModifier() : 1.0f;
 	}

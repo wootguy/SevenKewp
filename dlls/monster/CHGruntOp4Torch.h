@@ -44,24 +44,24 @@ enum TorchAllyWeaponFlag
 class EXPORT COFTorchAlly : public CBaseGruntOp4
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	int GetActivitySequence(Activity NewActivity);
-	void GibMonster( void );
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	int GetActivitySequence(Activity NewActivity) override;
+	void GibMonster( void ) override;
 
-	int	Save( CSave &save ); 
-	int Restore( CRestore &restore );
+	int	Save( CSave &save ) override;
+	int Restore( CRestore &restore ) override;
 	
-	Schedule_t  *GetScheduleOfType ( int Type );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	Schedule_t  *GetScheduleOfType ( int Type ) override;
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) override;
 
 	void Killed( entvars_t* pevAttacker, int iGib ) override;
 
 	void MonsterThink() override;
 
-	MONSTERSTATE GetIdealState()
+	MONSTERSTATE GetIdealState() override
 	{
 		return CTalkSquadMonster::GetIdealState();
 	}
@@ -89,5 +89,5 @@ public:
 class COFTorchAllyRepel : public CBaseRepel
 {
 public:
-	const char* GetMonsterType() { return "monster_human_torch_ally"; };
+	const char* GetMonsterType() override { return "monster_human_torch_ally"; };
 };

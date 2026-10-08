@@ -46,8 +46,8 @@ public:
 	int		IsObserver() { return m_isObserver; };
 	BOOL	IsFirstPerson() { return !m_hViewEntity || m_hViewEntity.GetEdict() == edict(); }
 	BOOL	IsBot();
-	virtual	BOOL IsNormalMonster(void) { return FALSE; }
-	virtual	BOOL IsBarnacleFood(void) { return TRUE; }
+	virtual	BOOL IsNormalMonster(void) override { return FALSE; }
+	virtual	BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	int					random_seed;    // See that is shared between client & server for shared weapons code
 
@@ -222,32 +222,32 @@ public:
 
 	string_t m_playerModelOverride; // player model forced by the map
 
-	virtual void Spawn( void );
+	virtual void Spawn( void ) override;
 
 //	virtual void Think( void );
 	virtual void Jump( void ) STUB_VOID;
 	virtual void Duck( void ) STUB_VOID;
 	virtual void PreThink( void ) STUB_VOID;
 	virtual void PostThink( void ) STUB_VOID;
-	virtual Vector GetGunPosition( void );
-	virtual int TakeHealth( float flHealth, int bitsDamageType, float healthcap=0) STUB_INT;
-	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) STUB_VOID;
-	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) STUB_INT;
-	virtual void	Killed( entvars_t *pevAttacker, int iGib );
-	virtual Vector BodyTarget(const Vector& posSrc) STUB_VEC;
-	virtual void StartSneaking(void) STUB_VOID;
-	virtual void StopSneaking(void) STUB_VOID;
-	virtual BOOL IsSneaking(void) STUB_INT;
-	virtual BOOL ShouldFadeOnDeath( void ) { return FALSE; }
-	virtual	BOOL IsPlayer( void ) { return TRUE; }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
-	virtual CBasePlayer* MyPlayerPointer(void) { return this; };
+	virtual Vector GetGunPosition( void ) override;
+	virtual int TakeHealth( float flHealth, int bitsDamageType, float healthcap=0) override STUB_INT;
+	virtual void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) override STUB_VOID;
+	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override STUB_INT;
+	virtual void	Killed( entvars_t *pevAttacker, int iGib ) override;
+	virtual Vector BodyTarget(const Vector& posSrc) override STUB_VEC;
+	virtual void StartSneaking(void) override STUB_VOID;
+	virtual void StopSneaking(void) override STUB_VOID;
+	virtual BOOL IsSneaking(void) override STUB_INT;
+	virtual BOOL ShouldFadeOnDeath( void ) override { return FALSE; }
+	virtual	BOOL IsPlayer( void ) override { return TRUE; }			// Spectators should return FALSE for this, they aren't "players" as far as game logic is concerned
+	virtual CBasePlayer* MyPlayerPointer(void) override { return this; };
 
-	virtual BOOL IsNetClient( void ) { return TRUE; }		// Bots should return FALSE for this, they can't receive NET messages
+	virtual BOOL IsNetClient( void ) override { return TRUE; }		// Bots should return FALSE for this, they can't receive NET messages
 															// Spectators should return TRUE for this
-	virtual const char *TeamID( void ) STUB_INT;
-	virtual const char* DisplayName() { return STRING(pev->netname); }
-	virtual int		Save( CSave &save ) STUB_INT;
-	virtual int		Restore( CRestore &restore ) STUB_INT;
+	virtual const char *TeamID( void ) override STUB_INT;
+	virtual const char* DisplayName() override { return STRING(pev->netname); }
+	virtual int		Save( CSave &save ) override STUB_INT;
+	virtual int		Restore( CRestore &restore ) override STUB_INT;
 	void RenewItems(void);
 	void PackDeadPlayerItems( void );
 	void HideAllItems(bool hideSuit);
@@ -277,17 +277,17 @@ public:
 	static	TYPEDESCRIPTION m_playerSaveData[];
 
 	// Player is moved across the transition by other means
-	virtual int		ObjectCaps( void ) { return CBaseMonster :: ObjectCaps() & ~(FCAP_IMPULSE_USE | FCAP_ACROSS_TRANSITION); }
-	virtual void	Precache( void ) STUB_VOID;
+	virtual int		ObjectCaps( void ) override { return CBaseMonster :: ObjectCaps() & ~(FCAP_IMPULSE_USE | FCAP_ACROSS_TRANSITION); }
+	virtual void	Precache( void ) override STUB_VOID;
 	BOOL			IsOnLadder( void );
 	BOOL			FlashlightIsOn( void );
 	void			FlashlightTurnOn( void );
 	void			FlashlightTurnOff( void );
 	
 	void UpdatePlayerSound ( void );
-	void DeathSound ( void ) STUB_VOID;
+	void DeathSound ( void ) override STUB_VOID;
 
-	int Classify ( void ) STUB_INT;
+	int Classify ( void ) override STUB_INT;
 	void SetAnimation( PLAYER_ANIM playerAnim, float duration=0 ) STUB_VOID;
 	void SetWeaponAnimType( const char *szExtention );
 	char m_szAnimExtention[32];
@@ -301,10 +301,10 @@ public:
 	void StartObserver( Vector vecPosition, Vector vecViewAngle );
 	void LeaveObserver(bool respawn=true);
 
-	void AddPoints( int score, BOOL bAllowNegativeScore ) STUB_VOID;
-	void AddPointsToTeam( int score, BOOL bAllowNegativeScore ) STUB_VOID;
-	BOOL AddPlayerItem( CBasePlayerItem *pItem ) STUB_INT;
-	BOOL RemovePlayerItem( CBasePlayerItem *pItem ) STUB_INT;
+	void AddPoints( int score, BOOL bAllowNegativeScore ) override STUB_VOID;
+	void AddPointsToTeam( int score, BOOL bAllowNegativeScore ) override STUB_VOID;
+	BOOL AddPlayerItem( CBasePlayerItem *pItem ) override STUB_INT;
+	BOOL RemovePlayerItem( CBasePlayerItem *pItem ) override STUB_INT;
 	void DropPlayerItem ( const char *pszItemName );
 	void DropAmmo(bool secondary);
 	BOOL HasPlayerItem( CBasePlayerItem *pCheckItem );
@@ -322,7 +322,7 @@ public:
 	void EnableControl(BOOL fControl);
 	void DisableWeapons(bool disable);
 
-	int  GiveAmmo( int iAmount, const char *szName ) STUB_INT;
+	int  GiveAmmo( int iAmount, const char *szName ) override STUB_INT;
 	void SendAmmoUpdate(void);
 
 	void WaterMove( void );
@@ -334,17 +334,17 @@ public:
 	void UpdateGeigerCounter( void );
 	void CheckTimeBasedDamage( void );
 
-	BOOL BarnacleVictimCaught( void ) STUB_INT;
-	void BarnacleVictimBitten ( entvars_t *pevBarnacle ) STUB_VOID;
-	void BarnacleVictimReleased ( void ) STUB_VOID;
+	BOOL BarnacleVictimCaught( void ) override STUB_INT;
+	void BarnacleVictimBitten ( entvars_t *pevBarnacle ) override STUB_VOID;
+	void BarnacleVictimReleased ( void ) override STUB_VOID;
 	static int GetAmmoIndex(const char *psz);
 	int AmmoInventory( int iAmmoIndex );
-	int Illumination( void ) STUB_INT;
+	int Illumination( void ) override STUB_INT;
 
 	void ResetAutoaim( void );
 	Vector GetAutoaimVector( float flDelta  );
 	Vector AutoaimDeflection( Vector &vecSrc, float flDist, float flDelta  );
-	virtual Vector GetLookDirection() STUB_VEC;
+	virtual Vector GetLookDirection() override STUB_VEC;
 
 	void ForceClientDllUpdate( void );  // Forces all client .dll specific data to be resent to client.
 
@@ -469,9 +469,9 @@ public:
 	// returns false if not all inventory items were dropped due to restrictions
 	bool DropAllInventoryItems(bool deathDrop = false, bool respawnDrop = false, bool forceDrop = false);
 
-	virtual void Revive() STUB_VOID;
+	virtual void Revive() override STUB_VOID;
 
-	float GetDamage(float defaultDamage);
+	float GetDamage(float defaultDamage) override;
 
 	// accounts for active cameras and view offset
 	Vector GetViewPosition();
@@ -526,7 +526,7 @@ public:
 	// queryWepId can be any weapon that fills the slot in question
 	int GetCurrentIdForConflictedSlot(int queryWepId);
 
-	const char* GetDeathNoticeWeapon() STUB_INT;
+	const char* GetDeathNoticeWeapon() override STUB_INT;
 
 	void NightvisionUpdate();
 
@@ -561,7 +561,7 @@ public:
 	// make splashes from player actions (call MakeVectors before this)
 	void WaterSplashTrace(Vector vecSrc, float dist, int hull, float scale);
 
-	void ApplyEffects() STUB_VOID;
+	void ApplyEffects() override STUB_VOID;
 
 	// for sven-style monster info
 	//void UpdateMonsterInfo();

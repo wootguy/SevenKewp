@@ -121,22 +121,22 @@ public:
 	void			StopTalking( void ) { SentenceStop(); }
 	
 	// Base Monster functions
-	virtual void	Precache( void );
-	virtual int		TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
-	virtual void	Killed( entvars_t *pevAttacker, int iGib );
-	virtual int		CanPlaySentence( BOOL fDisregardState );
-	virtual void	PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
-	virtual void	PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
-	virtual void	KeyValue( KeyValueData *pkvd );
+	virtual void	Precache( void ) override;
+	virtual int		TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType) override;
+	virtual void	Killed( entvars_t *pevAttacker, int iGib ) override;
+	virtual int		CanPlaySentence( BOOL fDisregardState ) override;
+	virtual void	PlaySentence( const char *pszSentence, float duration, float volume, float attenuation ) override;
+	virtual void	PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener ) override;
+	virtual void	KeyValue( KeyValueData *pkvd ) override;
 
 	// AI functions
-	virtual void	SetActivity ( Activity newActivity );
-	virtual Schedule_t	*GetScheduleOfType ( int Type );
+	virtual void	SetActivity ( Activity newActivity ) override;
+	virtual Schedule_t	*GetScheduleOfType ( int Type ) override;
 	virtual void	StartTask( Task_t *pTask ) override;
 	virtual void	RunTask( Task_t *pTask ) override;
-	virtual const char* GetTaskName(int taskIdx);
-	virtual void	HandleAnimEvent( MonsterEvent_t *pEvent );
-	virtual void	PrescheduleThink( void );
+	virtual const char* GetTaskName(int taskIdx) override;
+	virtual void	HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	virtual void	PrescheduleThink( void ) override;
 	
 
 	// Conversations / communication
@@ -150,21 +150,21 @@ public:
 	void			TrySmellTalk( void );
 	CBaseEntity		*EnumFriends( CBaseEntity *pentPrevious, int listNumber, BOOL bTrace );
 	void			AlertFriends( CBaseEntity* attacker);
-	virtual void	UnprovokeFriends( void ); // calms an npc and friends down that was provoked by a player's friendly fire
+	virtual void	UnprovokeFriends( void ) override; // calms an npc and friends down that was provoked by a player's friendly fire
 	void			ShutUpFriends( void );
 	BOOL			IsTalking( void );
 	void			Talk( float flDuration );	
 
 	// following
-	virtual void StopFollowing(BOOL clearSchedule);
-	virtual void StartFollowing(CBaseEntity* pLeader);
-	virtual bool CanBePushed();
+	virtual void StopFollowing(BOOL clearSchedule) override;
+	virtual void StartFollowing(CBaseEntity* pLeader) override;
+	virtual bool CanBePushed() override;
 	
 	virtual void	SetAnswerQuestion(CTalkSquadMonster* pSpeaker );
 	virtual int		FriendNumber( int arrayNumber )	{ return arrayNumber; }
 
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save( CSave &save ) override;
+	virtual int		Restore( CRestore &restore ) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	
@@ -200,12 +200,12 @@ public:
 	// squad member info
 	int		m_iMySlot;// this is the behaviour slot that the monster currently holds in the squad. 
 
-	virtual int  CheckEnemy(CBaseEntity* pEnemy);
-	virtual void StartMonster(void);
+	virtual int  CheckEnemy(CBaseEntity* pEnemy) override;
+	virtual void StartMonster(void) override;
 	virtual void VacateSlot(void);
-	virtual void ScheduleChange(void);
+	virtual void ScheduleChange(void) override;
 	virtual BOOL OccupySlot(int iDesiredSlot);
-	virtual BOOL NoFriendlyFire(void);
+	virtual BOOL NoFriendlyFire(void) override;
 
 	// squad functions still left in base class
 	CTalkSquadMonster* MySquadLeader()
@@ -238,11 +238,11 @@ public:
 	BOOL SquadEnemySplit(void);
 	BOOL SquadMemberInRange(const Vector& vecLocation, float flDist);
 
-	virtual CTalkSquadMonster* MyTalkSquadMonsterPointer(void) { return this; }
+	virtual CTalkSquadMonster* MyTalkSquadMonsterPointer(void) override { return this; }
 
-	BOOL FValidateCover(const Vector& vecCoverLocation);
+	BOOL FValidateCover(const Vector& vecCoverLocation) override;
 
-	virtual MONSTERSTATE GetIdealState(void);
+	virtual MONSTERSTATE GetIdealState(void) override;
 
 	//
 	// opposing force

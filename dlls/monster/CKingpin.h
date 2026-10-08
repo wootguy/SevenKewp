@@ -32,16 +32,16 @@
 class EXPORT CKingpinBall : public CBaseMonster
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	int	Classify(void);
+	void Spawn(void) override;
+	void Precache(void) override;
+	int	Classify(void) override;
 	void HuntThink(void);
 	void ExplodeTouch(CBaseEntity* pOther);
 	void MovetoTarget(Vector vecTarget);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
-	virtual BOOL IsNormalMonster() { return FALSE; }
-	void Activate();
-	void UpdateOnRemove(void);
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
+	virtual BOOL IsNormalMonster() override { return FALSE; }
+	void Activate() override;
+	void UpdateOnRemove(void) override;
 	int m_iTrail;
 	EHANDLE m_hOwner;
 	Vector m_lastDir;
@@ -66,45 +66,45 @@ struct kingpin_eye_t {
 class EXPORT CKingpin : public CBaseMonster
 {
 public:
-	void Spawn(void);
-	void Precache(void);
-	void SetYawSpeed(void);
-	int Classify(void);
-	const char* DisplayName();
-	const char* GetTaskName(int taskIdx);
-	void HandleAnimEvent(MonsterEvent_t* pEvent);
-	Schedule_t* GetSchedule(void);
-	Schedule_t* GetScheduleOfType(int Type);
-	void ScheduleChange(void);
-	void UpdateOnRemove(void);
+	void Spawn(void) override;
+	void Precache(void) override;
+	void SetYawSpeed(void) override;
+	int Classify(void) override;
+	const char* DisplayName() override;
+	const char* GetTaskName(int taskIdx) override;
+	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
+	Schedule_t* GetSchedule(void) override;
+	Schedule_t* GetScheduleOfType(int Type) override;
+	void ScheduleChange(void) override;
+	void UpdateOnRemove(void) override;
 	void CancelOrb();
-	void GibMonster();
+	void GibMonster() override;
 	void LaserEyesThink();
 	void ProjectileDeflectThink();
-	void MonsterThink(void);
-	void StartTask(Task_t* pTask);
-	void RunTask(Task_t* pTask);
-	BOOL CheckRangeAttack1(float flDot, float flDist);
-	BOOL CheckRangeAttack2(float flDot, float flDist);
-	BOOL CheckMeleeAttack1(float flDot, float flDist);
-	BOOL CheckMeleeAttack2(float flDot, float flDist);
-	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	void MonsterThink(void) override;
+	void StartTask(Task_t* pTask) override;
+	void RunTask(Task_t* pTask) override;
+	BOOL CheckRangeAttack1(float flDot, float flDist) override;
+	BOOL CheckRangeAttack2(float flDot, float flDist) override;
+	BOOL CheckMeleeAttack1(float flDot, float flDist) override;
+	BOOL CheckMeleeAttack2(float flDot, float flDist) override;
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 
-	void SetObjectCollisionBox(void)
+	void SetObjectCollisionBox(void) override
 	{
 		pev->absmin = pev->origin + Vector(-56, -56, 0);
 		pev->absmax = pev->origin + Vector(56, 56, 116);
 	}
 
-	void PainSound(void);
-	void DeathSound(void);
-	void AlertSound(void);
-	void IdleSound(void);
+	void PainSound(void) override;
+	void DeathSound(void) override;
+	void AlertSound(void) override;
+	void IdleSound(void) override;
 	void AttackSound(void);
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 
 	CUSTOM_SCHEDULES;
 

@@ -40,9 +40,9 @@ EXPORT void SpawnExplosion(Vector center, float randomRange, float time, int mag
 class EXPORT CSpiral : public CBaseEntity
 {
 public:
-	void Spawn(void);
-	void Think(void);
-	int ObjectCaps(void) { return FCAP_DONT_SAVE; }
+	void Spawn(void) override;
+	void Think(void) override;
+	int ObjectCaps(void) override { return FCAP_DONT_SAVE; }
 	static CSpiral* Create(const Vector& origin, float height, float radius, float duration);
 };
 
@@ -50,10 +50,10 @@ public:
 class EXPORT CStomp : public CBaseEntity
 {
 public:
-	void Spawn(void);
-	void Think(void);
+	void Spawn(void) override;
+	void Think(void) override;
 	static CStomp* StompCreate(const Vector& origin, const Vector& end, edict_t* owner, float speed, float damage);
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 
 private:
 	// UNDONE: re-use this sprite list instead of creating new ones all the time
@@ -64,41 +64,41 @@ private:
 class EXPORT CSmoker : public CBaseEntity
 {
 public:
-	void Spawn(void);
-	void Think(void);
+	void Spawn(void) override;
+	void Think(void) override;
 };
 
 
 class EXPORT CGargantua : public CBaseMonster
 {
 public:
-	virtual void Spawn(void);
-	virtual void Precache(void);
+	virtual void Spawn(void) override;
+	virtual void Precache(void) override;
 	void PrecacheCommon(void);
-	void SetYawSpeed(void);
-	virtual int  Classify(void);
-	virtual const char* DisplayName();
-	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
-	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
-	void HandleAnimEvent(MonsterEvent_t* pEvent);
+	void SetYawSpeed(void) override;
+	virtual int  Classify(void) override;
+	virtual const char* DisplayName() override;
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
+	void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) override;
+	void HandleAnimEvent(MonsterEvent_t* pEvent) override;
 
-	BOOL CheckMeleeAttack1(float flDot, float flDist);		// Swipe
-	BOOL CheckMeleeAttack2(float flDot, float flDist);		// Flames
-	BOOL CheckRangeAttack1(float flDot, float flDist);		// Stomp attack
-	virtual void SetObjectCollisionBox(void)
+	BOOL CheckMeleeAttack1(float flDot, float flDist) override;		// Swipe
+	BOOL CheckMeleeAttack2(float flDot, float flDist) override;		// Flames
+	BOOL CheckRangeAttack1(float flDot, float flDist) override;		// Stomp attack
+	virtual void SetObjectCollisionBox(void) override
 	{
 		pev->absmin = pev->origin + Vector(-80, -80, 0);
 		pev->absmax = pev->origin + Vector(80, 80, 214);
 	}
 
-	Schedule_t* GetScheduleOfType(int Type);
-	const char* GetTaskName(int taskIdx);
-	void StartTask(Task_t* pTask);
-	void RunTask(Task_t* pTask);
+	Schedule_t* GetScheduleOfType(int Type) override;
+	const char* GetTaskName(int taskIdx) override;
+	void StartTask(Task_t* pTask) override;
+	void RunTask(Task_t* pTask) override;
 
-	void PrescheduleThink(void);
+	void PrescheduleThink(void) override;
 
-	void Killed(entvars_t* pevAttacker, int iGib);
+	void Killed(entvars_t* pevAttacker, int iGib) override;
 	void DeathEffect(void);
 
 	void EyeOff(void);
@@ -116,21 +116,21 @@ public:
 
 	//virtual void IdleSound();
 	//virtual void AlertSound();
-	virtual void PainSound();
+	virtual void PainSound() override;
 	virtual void AttackSound();
 	virtual void BeamSound(int idx);
 	virtual void FootSound();
 	virtual void StompSound();
 	virtual void BreatheSound();
-	virtual void StartFollowingSound();
-	virtual void StopFollowingSound();
-	virtual void CantFollowSound();
+	virtual void StartFollowingSound() override;
+	virtual void StopFollowingSound() override;
+	virtual void CantFollowSound() override;
 
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 	
 
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
+	virtual int		Save(CSave& save) override;
+	virtual int		Restore(CRestore& restore) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 
 	CUSTOM_SCHEDULES;

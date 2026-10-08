@@ -147,11 +147,11 @@ enum
 */
 
 #define CUSTOM_SCHEDULES\
-		virtual Schedule_t *ScheduleFromName( const char *pName );\
-		virtual Schedule_t* ScheduleFromTableIdx(uint32_t idx); \
-		virtual int GetScheduleTableSize(); \
-		virtual int GetScheduleTableIdx(); \
-		virtual void GetAllSchedules( std::unordered_set<Schedule_t*>& schedulesOut ); \
+		virtual Schedule_t *ScheduleFromName( const char *pName ) override;\
+		virtual Schedule_t* ScheduleFromTableIdx(uint32_t idx) override; \
+		virtual int GetScheduleTableSize() override; \
+		virtual int GetScheduleTableIdx() override; \
+		virtual void GetAllSchedules( std::unordered_set<Schedule_t*>& schedulesOut ) override; \
 		static Schedule_t *m_scheduleList[]
 
 #define DEFINE_CUSTOM_SCHEDULES(derivedClass)\

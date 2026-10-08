@@ -5,9 +5,9 @@
 class EXPORT CGrenade : public CBaseMonster
 {
 public:
-	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
+	virtual int	ObjectCaps(void) override { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
 
-	void Spawn( void );
+	void Spawn( void ) override;
 
 	typedef enum { SATCHEL_DETONATE = 0, SATCHEL_RELEASE } SATCHELCODE;
 
@@ -30,19 +30,19 @@ public:
 	void TumbleThink( void );
 
 	virtual void BounceSound( void );
-	virtual int	BloodColor( void ) { return DONT_BLEED; }
-	virtual void Killed( entvars_t *pevAttacker, int iGib );
-	virtual const char* DisplayName() { return "Grenade"; }
-	virtual const char* GetDeathNoticeWeapon() { return "monster_grenade"; }
-	virtual	BOOL IsBarnacleFood(void) { return TRUE; }
+	virtual int	BloodColor( void ) override { return DONT_BLEED; }
+	virtual void Killed( entvars_t *pevAttacker, int iGib ) override;
+	virtual const char* DisplayName() override { return "Grenade"; }
+	virtual const char* GetDeathNoticeWeapon() override { return "monster_grenade"; }
+	virtual	BOOL IsBarnacleFood(void) override { return TRUE; }
 	virtual BOOL BarnacleVictimCaught(void) override;
 	virtual void BarnacleVictimReleased(void) override;
 
 	const char* GetModel();
 	void SetGrenadeModel();
 	virtual int MergedModelBody() { return -1; }
-	virtual	BOOL IsNormalMonster(void) { return FALSE; }
-	virtual	BOOL IsGrenade(void) { return TRUE; }
+	virtual	BOOL IsNormalMonster(void) override { return FALSE; }
+	virtual	BOOL IsGrenade(void) override { return TRUE; }
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 	Vector m_effectOrigin; // where to play the explosion effects (offset from real origin so sprites look nice)

@@ -71,21 +71,21 @@ enum HGruntAllyWeapon
 class EXPORT CHGruntOp4 : public CBaseGruntOp4
 {
 public:
-	void Spawn( void );
-	virtual void Precache( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	void GibMonster( void );
+	void Spawn( void ) override;
+	virtual void Precache( void ) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	void GibMonster( void ) override;
 
-	int	Save( CSave &save ); 
-	int Restore( CRestore &restore );
+	int	Save( CSave &save ) override;
+	int Restore( CRestore &restore ) override;
 	
-	int GetActivitySequence(Activity NewActivity);
-	Schedule_t  *GetScheduleOfType ( int Type );
+	int GetActivitySequence(Activity NewActivity) override;
+	Schedule_t  *GetScheduleOfType ( int Type ) override;
 
 	void KeyValue( KeyValueData* pkvd ) override;
 
-	MONSTERSTATE GetIdealState()
+	MONSTERSTATE GetIdealState() override
 	{
 		return CTalkSquadMonster::GetIdealState();
 	}
@@ -100,15 +100,15 @@ public:
 class CHGruntOp4Repel : public CBaseRepel
 {
 public:
-	const char* GetMonsterType() { return "monster_human_grunt_ally"; };
+	const char* GetMonsterType() override { return "monster_human_grunt_ally"; };
 };
 
 class CDeadHGruntAlly : public CBaseDead
 {
 public:
-	void Spawn(void);
-	int	Classify(void) { return	CBaseMonster::Classify(CLASS_PLAYER_ALLY); }
-	int GetPoseSequence() { return LookupSequence(m_szPoses[V_clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)]); }
+	void Spawn(void) override;
+	int	Classify(void) override { return	CBaseMonster::Classify(CLASS_PLAYER_ALLY); }
+	int GetPoseSequence() override { return LookupSequence(m_szPoses[V_clamp(m_iPose, 0, (int)ARRAY_SZ(m_szPoses) - 1)]); }
 
 	static const char* m_szPoses[7];
 };

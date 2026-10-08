@@ -4,23 +4,23 @@
 class CMedkit : public CBasePlayerWeapon
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	int iItemSlot( void ) { return 1; }
-	int GetItemInfo(ItemInfo *p);
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	int iItemSlot( void ) override { return 1; }
+	int GetItemInfo(ItemInfo *p) override;
 
-	void PrimaryAttack( void );
-	void SecondaryAttack( void );
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
-	void WeaponIdle();
+	void PrimaryAttack( void ) override;
+	void SecondaryAttack( void ) override;
+	BOOL Deploy( void ) override;
+	void Holster( int skiplocal = 0 ) override;
+	void WeaponIdle() override;
 	virtual void ItemPostFrame(void) override;
-	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount);
-	virtual int AddToPlayer(CBasePlayer* pPlayer);
+	void GetAmmoDropInfo(bool secondary, const char*& ammoEntName, int& dropAmount) override;
+	virtual int AddToPlayer(CBasePlayer* pPlayer) override;
 
-	virtual int MergedModelBody() { return MERGE_MDL_W_PMEDKIT; }
+	virtual int MergedModelBody() override { return MERGE_MDL_W_PMEDKIT; }
 
-	BOOL IsClientWeapon() { return FALSE; }
+	BOOL IsClientWeapon() override { return FALSE; }
 
 	bool CanHealTarget(CBaseEntity* ent);
 
@@ -35,7 +35,7 @@ public:
 	EHANDLE h_reviveTarget;
 	int m_reviveSpriteIdx;
 
-	virtual BOOL UseDecrement( void )
+	virtual BOOL UseDecrement( void ) override
 	{ 
 #if defined( CLIENT_WEAPONS )
 		return TRUE;

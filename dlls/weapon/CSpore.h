@@ -61,7 +61,7 @@ public:
 		const Vector& vecOrigin, const Vector& vecAngles, CBaseEntity* pOwner,
 		SporeType sporeType, bool bIsAI, bool bPuked );
 
-	virtual int MergedModelBody() { return MERGE_MDL_SPORE; }
+	virtual int MergedModelBody() override { return MERGE_MDL_SPORE; }
 
 public:
 	int m_iBlow;

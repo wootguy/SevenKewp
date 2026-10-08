@@ -17,38 +17,38 @@
 class EXPORT CISlave : public CTalkSquadMonster
 {
 public:
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int	 ISoundMask( void );
-	int  Classify ( void );
-	const char* DisplayName();
-	int  IRelationship( CBaseEntity *pTarget );
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );
-	BOOL CheckRangeAttack2 ( float flDot, float flDist );
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void SetYawSpeed( void ) override;
+	int	 ISoundMask( void ) override;
+	int  Classify ( void ) override;
+	const char* DisplayName() override;
+	int  IRelationship( CBaseEntity *pTarget ) override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
+	BOOL CheckRangeAttack1 ( float flDot, float flDist ) override;
+	BOOL CheckRangeAttack2 ( float flDot, float flDist ) override;
 	void CallForHelp( const char *szClassname, float flDist, EHANDLE hEnemy, Vector &vecLocation );
-	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
-	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) override;
+	int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
 
-	void DeathSound( void );
-	void PainSound( void );
-	void AlertSound( void );
-	void IdleSound( void );
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void DeathSound( void ) override;
+	void PainSound( void ) override;
+	void AlertSound( void ) override;
+	void IdleSound( void ) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 
-	void Killed( entvars_t *pevAttacker, int iGib );
+	void Killed( entvars_t *pevAttacker, int iGib ) override;
 
-    void StartTask ( Task_t *pTask );
-	void RunTask(Task_t* pTask);
-	Schedule_t *GetSchedule( void );
-	Schedule_t *GetScheduleOfType ( int Type );
+    void StartTask ( Task_t *pTask ) override;
+	void RunTask(Task_t* pTask) override;
+	Schedule_t *GetSchedule( void ) override;
+	Schedule_t *GetScheduleOfType ( int Type ) override;
 	CUSTOM_SCHEDULES;
 
-	int	Save( CSave &save ); 
-	int Restore( CRestore &restore );
+	int	Save( CSave &save ) override;
+	int Restore( CRestore &restore ) override;
 	static TYPEDESCRIPTION m_SaveData[];
 
 	void ClearBeams( );
@@ -57,7 +57,7 @@ public:
 	void ZapBeam( int side, bool randomDir = false );
 	void BeamGlow( void );
 
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	int m_iBravery;
@@ -90,7 +90,7 @@ class EXPORT CDeadISlave : public CBaseMonster
 {
 public:
 	void Spawn() override;
-	int	Classify(void) {
+	int	Classify(void) override {
 		return	CBaseMonster::Classify(CLASS_ALIEN_PASSIVE);
 	}
 	void KeyValue(KeyValueData* pkvd) override;

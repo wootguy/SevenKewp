@@ -7,19 +7,19 @@ class CEgon : public CBasePlayerWeapon
 {
 public:
 #ifndef CLIENT_DLL
-	int		Save( CSave &save );
-	int		Restore( CRestore &restore );
+	int		Save( CSave &save ) override;
+	int		Restore( CRestore &restore ) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 #endif
 
-	void Spawn( void );
-	void Precache( void );
-	void PrecacheEvents();
-	int iItemSlot( void ) { return 4; }
-	int GetItemInfo(ItemInfo *p);
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void PrecacheEvents() override;
+	int iItemSlot( void ) override { return 4; }
+	int GetItemInfo(ItemInfo *p) override;
 
-	BOOL Deploy( void );
-	void Holster( int skiplocal = 0 );
+	BOOL Deploy( void ) override;
+	void Holster( int skiplocal = 0 ) override;
 
 	void UpdateEffect( const Vector &startPoint, const Vector &endPoint, float timeBlend );
 
@@ -28,9 +28,9 @@ public:
 
 	void EndAttack( void );
 	void Attack( void );
-	void PrimaryAttack( void );
+	void PrimaryAttack( void ) override;
 	BOOL ShouldWeaponIdle() override { return TRUE; }
-	void WeaponIdle( void );
+	void WeaponIdle( void ) override;
 
 	float m_flAmmoUseTime;// since we use < 1 point of ammo per update, we subtract ammo on a timer.
 
@@ -50,9 +50,9 @@ public:
 	EHANDLE m_hSprite;
 	float m_lastBubble;
 
-	virtual int MergedModelBody() { return MERGE_MDL_W_EGON; }
+	virtual int MergedModelBody() override { return MERGE_MDL_W_EGON; }
 
-	virtual BOOL UseDecrement( void )
+	virtual BOOL UseDecrement( void ) override
 	{ 
 #if defined( CLIENT_WEAPONS )
 		return TRUE;

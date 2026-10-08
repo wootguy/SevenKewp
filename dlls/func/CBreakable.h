@@ -11,18 +11,18 @@ class CBreakable : public CBaseDelay
 {
 public:
 	// basic functions
-	virtual int	GetEntindexPriority() { return ENTIDX_PRIORITY_NORMAL; }
-	void Spawn(void);
-	void Precache(void);
-	void KeyValue(KeyValueData* pkvd);
+	virtual int	GetEntindexPriority() override { return ENTIDX_PRIORITY_NORMAL; }
+	void Spawn(void) override;
+	void Precache(void) override;
+	void KeyValue(KeyValueData* pkvd) override;
 	void EXPORT BreakTouch(CBaseEntity* pOther);
-	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
+	void Use(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value) override;
 	virtual Vector GetTargetOrigin() override { return Center(); }
 
 	virtual void BreakableDie(CBaseEntity* pActivator) override;
-	virtual int		ObjectCaps(void) { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
+	virtual int		ObjectCaps(void) override { return (CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION); }
+	virtual int		Save(CSave& save) override;
+	virtual int		Restore(CRestore& restore) override;
 
 	static const char* pSpawnObjects[];
 

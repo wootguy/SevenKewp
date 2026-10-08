@@ -17,33 +17,33 @@
 class EXPORT CController : public CTalkSquadMonster
 {
 public:
-	virtual int		Save( CSave &save );
-	virtual int		Restore( CRestore &restore );
+	virtual int		Save( CSave &save ) override;
+	virtual int		Restore( CRestore &restore ) override;
 	static	TYPEDESCRIPTION m_SaveData[];
 
-	void Spawn( void );
-	void Precache( void );
-	void SetYawSpeed( void );
-	int  Classify ( void );
-	const char* DisplayName();
-	void HandleAnimEvent( MonsterEvent_t *pEvent );
+	void Spawn( void ) override;
+	void Precache( void ) override;
+	void SetYawSpeed( void ) override;
+	int  Classify ( void ) override;
+	const char* DisplayName() override;
+	void HandleAnimEvent( MonsterEvent_t *pEvent ) override;
 
-	void RunAI( void );
-	BOOL CheckRangeAttack1 ( float flDot, float flDist );	// balls
-	BOOL CheckRangeAttack2 ( float flDot, float flDist );	// head
-	BOOL CheckMeleeAttack1 ( float flDot, float flDist );	// block, throw
-	Schedule_t* GetSchedule ( void );
-	Schedule_t* GetScheduleOfType ( int Type );
-	void StartTask ( Task_t *pTask );
-	void RunTask ( Task_t *pTask );
+	void RunAI( void ) override;
+	BOOL CheckRangeAttack1 ( float flDot, float flDist ) override;	// balls
+	BOOL CheckRangeAttack2 ( float flDot, float flDist ) override;	// head
+	BOOL CheckMeleeAttack1 ( float flDot, float flDist ) override;	// block, throw
+	Schedule_t* GetSchedule ( void ) override;
+	Schedule_t* GetScheduleOfType ( int Type ) override;
+	void StartTask ( Task_t *pTask ) override;
+	void RunTask ( Task_t *pTask ) override;
 	CUSTOM_SCHEDULES;
 
-	void Stop( void );
-	void Move ( float flInterval );
-	int  CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );
-	void MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval );
-	void SetActivity ( Activity NewActivity );
-	BOOL ShouldAdvanceRoute( float flWaypointDist );
+	void Stop( void ) override;
+	void Move ( float flInterval ) override;
+	int  CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist ) override;
+	void MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval ) override;
+	void SetActivity ( Activity NewActivity ) override;
+	BOOL ShouldAdvanceRoute( float flWaypointDist ) override;
 	int LookupFloat( );
 
 	float m_flNextFlinch;
@@ -51,14 +51,14 @@ public:
 	float m_flShootTime;
 	float m_flShootEnd;
 
-	void PainSound( void );
-	void AlertSound( void );
-	void IdleSound( void );
+	void PainSound( void ) override;
+	void AlertSound( void ) override;
+	void IdleSound( void ) override;
 	void AttackSound( void );
-	void DeathSound( void );
-	void StartFollowingSound();
-	void StopFollowingSound();
-	void CantFollowSound();
+	void DeathSound( void ) override;
+	void StartFollowingSound() override;
+	void StopFollowingSound() override;
+	void CantFollowSound() override;
 
 	static const char *pAttackSounds[];
 	static const char *pIdleSounds[];
@@ -66,10 +66,10 @@ public:
 	static const char *pPainSounds[];
 	static const char *pDeathSounds[];
 
-	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
-	void Killed( entvars_t *pevAttacker, int iGib );
-	void GibMonster( void );
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType ) override;
+	void Killed( entvars_t *pevAttacker, int iGib ) override;
+	void GibMonster( void ) override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
 	virtual BOOL IsBarnacleFood(void) override { return TRUE; }
 
 	EHANDLE m_hBall[2];	// hand balls
@@ -89,15 +89,15 @@ public:
 //=========================================================
 class EXPORT CControllerHeadBall : public CBaseMonster
 {
-	void Spawn( void );
-	void Precache( void );
+	void Spawn( void ) override;
+	void Precache( void ) override;
 	void HuntThink( void );
 	void DieThink( void );
 	void BounceTouch( CBaseEntity *pOther );
 	void MovetoTarget( Vector vecTarget );
 	void Crawl( void );
-	const char* GetDeathNoticeWeapon() { return "weapon_crowbar"; }
-	virtual BOOL IsNormalMonster() { return FALSE; }
+	const char* GetDeathNoticeWeapon() override { return "weapon_crowbar"; }
+	virtual BOOL IsNormalMonster() override { return FALSE; }
 	int m_iTrail;
 	int m_flNextAttack;
 	Vector m_vecIdeal;
@@ -107,11 +107,11 @@ class EXPORT CControllerHeadBall : public CBaseMonster
 
 class EXPORT CControllerZapBall : public CBaseMonster
 {
-	void Spawn( void );
-	void Precache( void );
+	void Spawn( void ) override;
+	void Precache( void ) override;
 	void AnimateThink( void );
 	void ExplodeTouch( CBaseEntity *pOther );
-	virtual BOOL IsNormalMonster() { return FALSE; }
+	virtual BOOL IsNormalMonster() override { return FALSE; }
 
 	EHANDLE m_hOwner;
 };

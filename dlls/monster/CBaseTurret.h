@@ -22,23 +22,23 @@ typedef enum
 class EXPORT CBaseTurret : public CBaseMonster
 {
 public:
-	virtual int	ObjectCaps(void) { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
-	void Spawn(void);
-	virtual void Precache(void);
-	void KeyValue(KeyValueData* pkvd);
+	virtual int	ObjectCaps(void) override { return CBaseMonster::ObjectCaps() & ~FCAP_IMPULSE_USE; }
+	void Spawn(void) override;
+	virtual void Precache(void) override;
+	void KeyValue(KeyValueData* pkvd) override;
 	void TurretUse(CBaseEntity* pActivator, CBaseEntity* pCaller, USE_TYPE useType, float value);
 
-	virtual void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType);
-	virtual int	 TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
-	virtual int	 Classify(void);
-	const char* GetDeathNoticeWeapon() { return "weapon_9mmAR"; }
+	virtual void TraceAttack(entvars_t* pevAttacker, float flDamage, Vector vecDir, TraceResult* ptr, int bitsDamageType) override;
+	virtual int	 TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType) override;
+	virtual int	 Classify(void) override;
+	const char* GetDeathNoticeWeapon() override { return "weapon_9mmAR"; }
 	BOOL IsMachine() override { return 1; } // ignore classification overrides
 	BOOL IsTurret() override { return 1; }
-	BOOL IsNormalMonster(void) { return FALSE; }
-	void DeathSound();
+	BOOL IsNormalMonster(void) override { return FALSE; }
+	void DeathSound() override;
 
-	int BloodColor(void) { return DONT_BLEED; }
-	void GibMonster(void) {}	// UNDONE: Throw turret gibs?
+	int BloodColor(void) override { return DONT_BLEED; }
+	void GibMonster(void) override {}	// UNDONE: Throw turret gibs?
 
 	// Think functions
 
@@ -66,8 +66,8 @@ public:
 	virtual void EyeOn(void);
 	virtual void EyeOff(void);
 
-	virtual int		Save(CSave& save);
-	virtual int		Restore(CRestore& restore);
+	virtual int		Save(CSave& save) override;
+	virtual int		Restore(CRestore& restore) override;
 
 	static	TYPEDESCRIPTION m_SaveData[];
 

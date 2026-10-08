@@ -29,9 +29,9 @@ public:
 	float bubbleDelay;
 	int m_maxFrame;
 
-	void Spawn();
+	void Spawn() override;
 
-	void Precache();
+	void Precache() override;
 
 	void MoveThink();
 
@@ -39,7 +39,7 @@ public:
 
 	virtual void DamageTarget(CBaseEntity* ent);
 
-	void Touch(CBaseEntity* pOther);
+	void Touch(CBaseEntity* pOther) override;
 	
 	void PlayMoveSound();
 	void StopMoveSound();
