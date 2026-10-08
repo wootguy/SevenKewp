@@ -761,6 +761,20 @@ if (ENABLE_CURL)
 	target_compile_definitions(${SERVER_DLL_NAME} PRIVATE -DENABLE_CURL)
 endif()
 
+
+# PCH roughly doubles compile speed on windows and clang, but slows down gcc
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR MSVC)
+	target_precompile_headers(${SERVER_DLL_NAME} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:pch.h>")
+
+	set_source_files_properties(
+		hooks/rehlds.cpp
+		../pm_shared/pm_math.cpp
+		../pm_shared/pm_debug.cpp
+		../pm_shared/pm_shared.cpp
+		PROPERTIES SKIP_PRECOMPILE_HEADERS ON
+	)
+endif()
+
 if(UNIX)
 	set(OPT_FLAG "-O2")
 	if (ASAN)
@@ -783,7 +797,9 @@ if(UNIX)
 	
 	if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 		set(UNIX_COMPILE_FLAGS "${UNIX_COMPILE_FLAGS} -Wno-class-memaccess")
-	else()
+	endif()
+	
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		set(UNIX_COMPILE_FLAGS "${UNIX_COMPILE_FLAGS} -Wno-overloaded-virtual -Wno-unused-but-set-variable -Wno-unused-private-field -Wno-inconsistent-missing-override -Wno-nested-anon-types -Wno-gnu-zero-variadic-macro-arguments")
 	endif()
 
@@ -805,17 +821,6 @@ elseif(MSVC)
 			/clang:-Wno-gnu-zero-variadic-macro-arguments
 		)
 	endif()
-
-	# PCH roughly doubles compile speed on windows, but makes linux compilation slower
-	target_precompile_headers(${SERVER_DLL_NAME} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:pch.h>")
-
-	set_source_files_properties(
-		hooks/rehlds.cpp
-		../pm_shared/pm_math.cpp
-		../pm_shared/pm_debug.cpp
-		../pm_shared/pm_shared.cpp
-		PROPERTIES SKIP_PRECOMPILE_HEADERS ON
-	)
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /W4 /we4715")
 	
