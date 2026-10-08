@@ -942,7 +942,7 @@ entvars_t *g_pevLastInflictor;  // Set in combat.cpp.  Used to pass the damage i
 
 void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 {
-	CSound *pSound;
+	CALL_HOOKS_VOID(pfnPlayerKilled, this, pevAttacker, iGib);
 
 	if (m_deathMessageSent) {
 		return; // don't repeat kill messages when gibbed
@@ -964,7 +964,7 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 	ReleaseControlledObjects();
 
 	// this client isn't going to be thinking for a while, so reset the sound until they respawn
-	pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( edict() ) );
+	CSound* pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( edict() ) );
 	{
 		if ( pSound )
 		{

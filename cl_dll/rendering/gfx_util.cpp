@@ -15,6 +15,8 @@
 cl_entity_t* g_spriteRenderQueue[MAX_SPRITE_RENDER_QUEUE_SZ];
 int g_spriteRenderQueueSz;
 
+extern bool is_xash3d_engine;
+
 void gfx_start_colored_rendering(int polyMode, const RGBA& color) {
 	gEngfuncs.pTriAPI->RenderMode(is_software_renderer ? kRenderTransTexture : kRenderTransAlpha);
 
@@ -341,11 +343,23 @@ void gfx_draw_sprite(Vector origin, Vector angles, int modelIdx, int frame, Spri
 
 	if (!model || model->type != mod_sprite) {
 		PRINTF("Tried to draw invalid sprite index %d\n", modelIdx);
+		return; 
+	}
+
+	msprite_cl_t* header;
+
+	if (is_xash3d_engine) {
+		header = (msprite_cl_t*)(model->cache.data);
+	}
+	else {
+		header = (msprite_cl_t*)IEngineStudio.Mod_Extradata(model);
+	}
+	
+	if (!header) {
+		PRINTF("Tried to draw invalid sprite %d\n", modelIdx);
 		return;
 	}
 
-	msprite_cl_t* header = (msprite_cl_t*)IEngineStudio.Mod_Extradata(model);
-	
 	Vector right;
 	Vector up;
 
@@ -456,7 +470,7 @@ void render_sprite_ent(cl_entity_t* ent) {
 }
 
 void render_sprite_queue() {
-	if (!is_software_renderer) {
+	if (!is_software_renderer && !is_xash3d_engine) {
 		for (int i = 0; i < g_spriteRenderQueueSz; i++) {
 			cl_entity_t* ent = g_spriteRenderQueue[i];
 			if (!ent) {

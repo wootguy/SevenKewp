@@ -2560,7 +2560,7 @@ void CWeaponCustom::UpdateStateHudSprite() {
 			}
 
 			// add gamma
-			spr.color.ApplyGamma();
+			spr.color = spr.color.ApplyGamma();
 		}
 
 		// update animation and positioning

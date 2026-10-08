@@ -246,6 +246,9 @@ struct HLCOOP_PLUGIN_HOOKS {
 	// player is about to be damaged
 	HOOK_RETURN_DATA(*pfnPlayerTakeDamage)(CBasePlayer* plr, entvars_t* pevInflictor, entvars_t* pevAttacker, float& flDamage, int& bitsDamageType);
 	
+	// player is about to be killed
+	HOOK_RETURN_DATA(*pfnPlayerKilled)(CBasePlayer* plr, entvars_t* pevAttacker, int& iGib);
+
 	// monster is about to be damaged
 	HOOK_RETURN_DATA(*pfnMonsterTakeDamage)(CBaseMonster* mon, entvars_t* pevInflictor, entvars_t* pevAttacker, float& flDamage, int& bitsDamageType);
 
