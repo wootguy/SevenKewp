@@ -326,7 +326,7 @@ void CWeaponEvents::PlayEvent_Bullets(WepEvt& evt, CBasePlayer* m_pPlayer, bool 
 	bool particles = !(evt.bullets.flags & FL_WC_BULLETS_NO_PARTICLES);
 	bool texSound = !(evt.bullets.flags & FL_WC_BULLETS_NO_SOUND);
 
-	for (ULONG iShot = 1; iShot <= count; iShot++)
+	for (uint32_t iShot = 1; iShot <= count; iShot++)
 	{
 		//Use player's random seed.
 		// get circular gaussian spread

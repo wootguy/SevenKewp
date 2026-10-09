@@ -411,7 +411,7 @@ void CHoundeye::CantFollowSound() {
 //=========================================================
 RGB CHoundeye :: GetBeamColor( void )
 {
-	BYTE	bRed, bGreen, bBlue;
+	uint8_t	bRed, bGreen, bBlue;
 
 	if ( InSquad() )
 	{

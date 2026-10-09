@@ -319,7 +319,7 @@ EXPORT void			UTIL_MakeInvVectors		( const Vector &vec, globalvars_t *pgv );
 
 EXPORT void			UTIL_SetOrigin			( entvars_t* pev, const Vector &vecOrigin ); // Needs to be called any time an entity changes origin, mins, maxs, or solid
 EXPORT void			UTIL_EmitAmbientSound	( edict_t *entity, const float* vecOrigin, const char *samp, float vol, float attenuation, int fFlags, int pitch, edict_t* dest=NULL);
-EXPORT void			UTIL_ParticleEffect		( const Vector &vecOrigin, const Vector &vecDirection, ULONG ulColor, ULONG ulCount );
+EXPORT void			UTIL_ParticleEffect		( const Vector &vecOrigin, const Vector &vecDirection, uint32_t ulColor, uint32_t ulCount );
 EXPORT void			UTIL_ScreenShake		( const Vector &center, float amplitude, float frequency, float duration, float radius );
 EXPORT void			UTIL_ScreenShake		( CBasePlayer* plr, float amplitude, float frequency, float duration );
 EXPORT void			UTIL_ScreenShakeAll		( const Vector &center, float amplitude, float frequency, float duration );

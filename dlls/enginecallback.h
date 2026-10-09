@@ -62,7 +62,7 @@ extern EXPORT enginefuncs_t g_engfuncs;
 #define POINT_CONTENTS	(*g_engfuncs.pfnPointContents)
 #define CRC32_INIT           (*g_engfuncs.pfnCRC32_Init)
 #define CRC32_PROCESS_BUFFER (*g_engfuncs.pfnCRC32_ProcessBuffer)
-#define CRC32_PROCESS_BYTE   (*g_engfuncs.pfnCRC32_ProcessByte)
+#define CRC32_PROCESS_uint8_t   (*g_engfuncs.pfnCRC32_ProcessByte)
 #define CRC32_FINAL          (*g_engfuncs.pfnCRC32_Final)
 #define RANDOM_LONG		(*g_engfuncs.pfnRandomLong)
 #define RANDOM_FLOAT	(*g_engfuncs.pfnRandomFloat)
@@ -74,7 +74,7 @@ inline void MESSAGE_BEGIN( int msg_dest, int msg_type, const float *pOrigin = NU
 	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ed);
 }
 #define MESSAGE_END		(*g_engfuncs.pfnMessageEnd)
-#define WRITE_BYTE		(*g_engfuncs.pfnWriteByte)
+#define WRITE_uint8_t		(*g_engfuncs.pfnWriteByte)
 #define WRITE_CHAR		(*g_engfuncs.pfnWriteChar)
 #define WRITE_SHORT		(*g_engfuncs.pfnWriteShort)
 #define WRITE_LONG		(*g_engfuncs.pfnWriteLong)

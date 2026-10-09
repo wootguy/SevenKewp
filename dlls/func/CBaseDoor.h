@@ -29,8 +29,8 @@ typedef struct locksounds			// sounds that doors and buttons make when locked/un
 
 	float	flwaitSound;			// time delay between playing consecutive 'locked/unlocked' sounds
 	float	flwaitSentence;			// time delay between playing consecutive sentences
-	BYTE	bEOFLocked;				// true if hit end of list of locked sentences
-	BYTE	bEOFUnlocked;			// true if hit end of list of unlocked sentences
+	uint8_t	bEOFLocked;				// true if hit end of list of locked sentences
+	uint8_t	bEOFUnlocked;			// true if hit end of list of unlocked sentences
 } locksound_t;
 
 enum ObeyTriggerMode {
@@ -79,17 +79,17 @@ public:
 
 	bool TouchActivates();
 
-	BYTE	m_bHealthValue;// some doors are medi-kit doors, they give players health
+	uint8_t	m_bHealthValue;// some doors are medi-kit doors, they give players health
 
-	BYTE	m_bMoveSnd;			// sound a door makes while moving
-	BYTE	m_bStopSnd;			// sound a door makes when it stops
+	uint8_t	m_bMoveSnd;			// sound a door makes while moving
+	uint8_t	m_bStopSnd;			// sound a door makes when it stops
 
 	locksound_t m_ls;			// door lock sounds
 
-	BYTE	m_bLockedSound;		// ordinals from entity selection
-	BYTE	m_bLockedSentence;
-	BYTE	m_bUnlockedSound;
-	BYTE	m_bUnlockedSentence;
+	uint8_t	m_bLockedSound;		// ordinals from entity selection
+	uint8_t	m_bLockedSentence;
+	uint8_t	m_bUnlockedSound;
+	uint8_t	m_bUnlockedSentence;
 
 	string_t m_locked_sound_override;
 	string_t m_unlocked_sound_override;

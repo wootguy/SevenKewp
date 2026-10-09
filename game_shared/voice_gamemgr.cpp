@@ -13,7 +13,7 @@
 #include "util.h"
 #include "CBasePlayer.h"
 #include "user_messages.h"
-
+#include <cstdarg>
 
 
 #define UPDATE_INTERVAL	0.3

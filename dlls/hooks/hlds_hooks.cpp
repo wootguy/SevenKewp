@@ -67,9 +67,9 @@
 #include <ctype.h>
 #endif
 
-extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
+extern DLL_GLOBAL uint32_t	g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL		g_fGameOver;
-extern DLL_GLOBAL ULONG		g_ulFrameCount;
+extern DLL_GLOBAL uint32_t	g_ulFrameCount;
 
 void EntvarsKeyvalue(entvars_t* pev, KeyValueData* pkvd);
 void PM_Move(struct playermove_s* ppmove, int server);

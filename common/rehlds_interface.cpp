@@ -31,7 +31,8 @@
 #include "rehlds/public/interface.h"
 
 #ifdef _WIN32
-	#include "Platform.h"
+	#define WIN32_LEAN_AND_MEAN
+	#include "windows.h"
 #else
 	#include <dlfcn.h>
 	#include <unistd.h> // getcwd

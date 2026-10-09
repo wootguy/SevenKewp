@@ -9,3 +9,11 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_set>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef min
+#undef max
+#undef RGB
+#endif

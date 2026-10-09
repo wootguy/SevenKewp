@@ -27,9 +27,9 @@
 #include "util.h"
 #include "env/CSoundEnt.h"
 
-DLL_GLOBAL ULONG		g_ulFrameCount;
-DLL_GLOBAL ULONG		g_ulModelIndexEyes;
-DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
+DLL_GLOBAL uint32_t		g_ulFrameCount;
+DLL_GLOBAL uint32_t		g_ulModelIndexEyes;
+DLL_GLOBAL uint32_t		g_ulModelIndexPlayer;
 DLL_GLOBAL Vector		g_vecAttackDir;
 DLL_GLOBAL int			g_iSkillLevel;
 DLL_GLOBAL int			gDisplayTitle;

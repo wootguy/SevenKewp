@@ -43,7 +43,7 @@ inline void MESSAGE_BEGIN(int msg_dest, int msg_type, const float* pOrigin = NUL
 	(*g_engfuncs.pfnMessageBegin)(msg_dest, msg_type, pOrigin, ed);
 }
 #define MESSAGE_END		(*g_engfuncs.pfnMessageEnd)
-#define WRITE_BYTE		(*g_engfuncs.pfnWriteByte)
+#define WRITE_uint8_t		(*g_engfuncs.pfnWriteByte)
 #define WRITE_CHAR		(*g_engfuncs.pfnWriteChar)
 #define WRITE_SHORT		(*g_engfuncs.pfnWriteShort)
 #define WRITE_LONG		(*g_engfuncs.pfnWriteLong)
