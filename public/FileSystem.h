@@ -17,6 +17,7 @@
 //-----------------------------------------------------------------------------
 // Forward declarations
 //-----------------------------------------------------------------------------
+#ifndef REHLDS_INCLUDE
 typedef void * FileHandle_t;
 typedef int FileFindHandle_t;
 typedef int WaitForResourcesHandle_t;
@@ -185,6 +186,7 @@ public:
 
 	virtual long			GetFileModificationTime(const char* pFileName) = 0;
 };
+#endif
 
 // Steam3/Src compat
 #define IBaseFileSystem IFileSystem
