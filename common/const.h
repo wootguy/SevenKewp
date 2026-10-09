@@ -879,8 +879,8 @@
 
 #define MAX_ENT_COORD 32768 // keep this in sync with delta.lst
 
-// max number of patterns usable with LIGHT_STYLE()
-#define MAX_LIGHTSTYLE_PATTERNS 32
+// max number of patterns usable with LIGHT_STYLE(). 32 engine styles + 32 light entity styles
+#define MAX_LIGHTSTYLE_PATTERNS 64
 
 // USE_KILL is unimplemented
 typedef enum { USE_OFF = 0, USE_ON = 1, USE_SET = 2, USE_TOGGLE = 3, USE_KILL = 4 } USE_TYPE;

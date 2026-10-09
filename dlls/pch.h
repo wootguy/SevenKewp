@@ -16,4 +16,5 @@
 #undef min
 #undef max
 #undef RGB
+#undef GetMessage
 #endif
