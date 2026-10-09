@@ -135,7 +135,7 @@ void init_weapon_struct_fields() {
 			WEP_FLAGS32("flags", "0", flags, 0, wep_flags),
 			WEP_FIELD("vmodel", NULL, vmodel, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_CFG),
 			WEP_FIELD("vmodel_zoom", NULL, vmodel_zoom, 0, WC_PARAM_MODEL_INDEX, NULL, 0, FL_FIELD_NO_CFG),
-			WEP_FIELD("vsprite_path", "0", vsprite_path, 0, WC_PARAM_STRING_DELTA, NULL, 0, FL_FIELD_NO_CFG),
+			WEP_FIELD("vsprite_path", NULL, vsprite_path, 0, WC_PARAM_STRING_DELTA, NULL, 0, FL_FIELD_NO_CFG),
 
 			WEP_FIELD("v_model_zoom", NULL, defaultModelV_zoom, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),
 			WEP_FIELD("v_model", NULL, defaultModelV, 0, WC_PARAM_STRING, NULL, 0, FL_FIELD_NO_NETWORK),

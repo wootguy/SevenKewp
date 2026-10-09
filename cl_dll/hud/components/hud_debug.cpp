@@ -78,6 +78,9 @@ int CHudDebug::Draw(float flTime)
 	if (m_HUD_debug->value <= 0 || !gHUD.IsSevenKewpServer())
 		return 0;
 
+	GetConsoleStringSize("m_fInSpecialReload  ", &var_width, &line_height);
+	GetConsoleStringSize("-32768  ", &num_width, &line_height);
+
 	int yOffset = line_height * 2;
 
 	local_state_t& state = g_prediction.local;
