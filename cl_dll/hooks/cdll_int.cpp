@@ -40,6 +40,7 @@
 #include "effects.h"
 #include "net_api.h"
 
+#undef HSPRITE
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_gamecontroller.h>

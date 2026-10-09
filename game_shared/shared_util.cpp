@@ -10,6 +10,7 @@
 #include "HashMap.h"
 
 #ifdef ENABLE_CURL
+#undef HSPRITE
 #include <curl/curl.h>
 #endif
 

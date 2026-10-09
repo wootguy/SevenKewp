@@ -3,7 +3,9 @@
 //  variable
 
 #ifdef _WIN32
-//#include <winsock2.h>
+#undef HSPRITE
+#define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
 #else
 #include "port.h"
 #include <dlfcn.h>

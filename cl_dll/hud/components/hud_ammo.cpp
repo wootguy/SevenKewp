@@ -32,6 +32,11 @@
 #include "HashMap.h"
 #include "com_weapons.h"
 #include "gfx_util.h"
+
+#ifdef _WIN32
+#define WINGDIAPI __declspec(dllimport)
+#define APIENTRY __stdcall
+#endif
 #include "GL/gl.h"
 
 // width of ammo fonts

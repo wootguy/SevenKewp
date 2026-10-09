@@ -12,6 +12,11 @@
 #include "ammohistory.h"
 #include "triangleapi.h"
 #include "gfx_util.h"
+
+#ifdef _WIN32
+#define WINGDIAPI __declspec(dllimport)
+#define APIENTRY __stdcall
+#endif
 #include "GL/gl.h"
 
 static int line_height = 0;

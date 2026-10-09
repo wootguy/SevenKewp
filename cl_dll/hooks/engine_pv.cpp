@@ -4,6 +4,12 @@
 #include "event_api.h"
 #include "Platform.h"
 
+#ifdef _WIN32
+#undef HSPRITE
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 char dummyData[16];
 EnginePv g_enginepv;
 extern bool is_steam_legacy_engine;

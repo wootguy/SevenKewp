@@ -53,6 +53,7 @@
 
 #include "hud_iface.h"
 #include "cl_dll.h"
+#include <stdarg.h>
 #define PRINTF(fmt, ...) gEngfuncs.Con_Printf(fmt, __VA_ARGS__)
 
 extern int g_iUser1;

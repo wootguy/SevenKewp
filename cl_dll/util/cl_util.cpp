@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <stdarg.h>
 
 #include "hud.h"
 #include "cl_util.h"

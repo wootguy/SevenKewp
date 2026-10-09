@@ -13,6 +13,8 @@
 #include "net_api.h"
 #include <string.h>
 #ifdef _WIN32
+#undef HSPRITE
+#define WIN32_LEAN_AND_MEAN
 #include <winsock.h>
 #else
 #define __cdecl

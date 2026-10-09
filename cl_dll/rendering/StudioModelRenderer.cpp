@@ -23,7 +23,12 @@
 #include "StudioModelRenderer.h"
 #include "GameStudioModelRenderer.h"
 
+#ifdef _WIN32
+#define WINGDIAPI __declspec(dllimport)
+#define APIENTRY __stdcall
+#endif
 #include <GL/gl.h>
+
 #include "wc_params.h"
 #include "ModPlayerState.h"
 

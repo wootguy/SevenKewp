@@ -9,7 +9,13 @@
 #include "pm_defs.h"
 #include "gfx_util.h"
 #include "triangleapi.h"
+
+#ifdef _WIN32
+#define WINGDIAPI __declspec(dllimport)
+#define APIENTRY __stdcall
+#endif
 #include "GL/gl.h"
+
 #include "cl_eng_wrappers.h"
 
 #define MAX_ADV_SPRITES 512

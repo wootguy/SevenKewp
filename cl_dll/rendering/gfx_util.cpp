@@ -6,9 +6,15 @@
 #include "com_weapons.h"
 #include "wc_params.h"
 #include "shared_effects.h"
-#include "GL/gl.h"
 #include "sprites.h"
 #include <algorithm>
+
+
+#ifdef _WIN32
+#define WINGDIAPI __declspec(dllimport)
+#define APIENTRY __stdcall
+#endif
+#include "GL/gl.h"
 
 // entities that should have sprites rendered in their place are added here
 // then drawn at transparent triangle render time

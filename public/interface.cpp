@@ -111,8 +111,9 @@ static IBaseInterface *CreateInterfaceLocal( const char *pName, int *pReturnCode
 #endif // 0
 
 #ifdef _WIN32
+#undef HSPRITE
 #define WIN32_LEAN_AND_MEAN
-#include "windows.h"
+#include <Windows.h>
 #endif
 
 //-----------------------------------------------------------------------------
