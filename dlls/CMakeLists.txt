@@ -771,6 +771,7 @@ set(ALL_SRC
 	${MISC_HDR}
 	env/fog_colors.c
 	pch.h
+	pch_plugin.h
 )
 
 # don't compile individual entity files
@@ -813,7 +814,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR MSVC)
 	target_precompile_headers(${SERVER_DLL_NAME} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:pch.h>")
 
 	set_source_files_properties(
-		hooks/rehlds.cpp
 		../pm_shared/pm_math.cpp
 		../pm_shared/pm_debug.cpp
 		../pm_shared/pm_shared.cpp

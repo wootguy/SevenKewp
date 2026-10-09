@@ -1,4 +1,7 @@
 #include "rehlds.h"
+#include "rehlds/common_rehlds.h"
+#include "rehlds/maintypes.h"
+#include "rehlds/public/interface.h"
 #include "util.h"
 #include "PluginManager.h"
 

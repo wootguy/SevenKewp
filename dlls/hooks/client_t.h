@@ -1,4 +1,5 @@
 #include "../common/event_args.h"
+#include "rehlds/common_rehlds.h"
 
 typedef struct packet_entities_s
 {
@@ -192,7 +193,7 @@ typedef struct netchan_s
 const int MAX_DATAGRAM = 4000;
 
 // Key + value + 2 x slash + NULL
-const int MAX_INFO_STRING = 256;
+#define	MAX_INFO_STRING	256
 
 typedef struct event_state_s event_state_t;
 
