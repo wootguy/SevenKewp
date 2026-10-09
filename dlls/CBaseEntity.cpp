@@ -879,7 +879,7 @@ Go to the trouble of combining multiple pellets into a single damage call.
 This version is used by Monsters.
 ================
 */
-void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t* pevAttacker)
+void CBaseEntity::FireBullets(uint32_t cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t* pevAttacker)
 {
 	static int tracerCount;
 	int tracer;
@@ -894,7 +894,7 @@ void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting
 	gMultiDamage.type = DMG_BULLET | DMG_NEVERGIB;
 	float splashSize = 0.2f;
 
-	for (ULONG iShot = 1; iShot <= cShots; iShot++)
+	for (uint32_t iShot = 1; iShot <= cShots; iShot++)
 	{
 		// get circular gaussian spread
 		float x, y;
@@ -1016,7 +1016,7 @@ EHANDLE g_debugCycler;
 #include "basemonster.h"
 */
 
-Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDirShooting,
+Vector CBaseEntity::FireBulletsPlayer(uint32_t cShots, Vector vecSrc, Vector vecDirShooting,
 	Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage,
 	entvars_t* pevAttacker, int shared_rand, TraceResult* traces, BULLET_PREDICTION prediction)
 {
@@ -1034,7 +1034,7 @@ Vector CBaseEntity::FireBulletsPlayer(ULONG cShots, Vector vecSrc, Vector vecDir
 	iDamage = GetDamage(iDamage);
 	float splashSize = 0.3f;
 
-	for (ULONG iShot = 1; iShot <= cShots; iShot++)
+	for (uint32_t iShot = 1; iShot <= cShots; iShot++)
 	{
 		//Use player's random seed.
 		// get circular gaussian spread

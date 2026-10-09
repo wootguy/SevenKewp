@@ -783,7 +783,7 @@ int CGraph :: FindShortestPath ( int *piPath, int iStart, int iDest, int iHull, 
 	return iNumPathNodes;
 }
 
-inline ULONG Hash(void *p, int len)
+inline uint32_t Hash(void *p, int len)
 {
 	CRC32_t ulCrc;
 	CRC32_INIT(&ulCrc);
@@ -882,7 +882,7 @@ int	CGraph :: FindNearestNode ( const Vector &vecOrigin,  int afNodeTypes )
 
 	// Check with the cache
 	//
-	ULONG iHash = (NODE_CACHE_SIZE-1) & Hash((void *)(const float *)vecOrigin, sizeof(vecOrigin));
+	uint32_t iHash = (NODE_CACHE_SIZE-1) & Hash((void *)(const float *)vecOrigin, sizeof(vecOrigin));
 	if (m_Cache[iHash].v == vecOrigin)
 	{
 		//ALERT(at_aiconsole, "Cache Hit.\n");
@@ -1658,9 +1658,9 @@ void CTestHull :: BuildNodeGraph( void )
 	// make sure directories have been made
 	GET_GAME_DIR( szNrpFilename );
 	strcat_safe( szNrpFilename, "/maps", MAX_PATH);
-	CreateDirectory( szNrpFilename, NULL );
+	createFolder( szNrpFilename );
 	strcat_safe( szNrpFilename, "/graphs", MAX_PATH );
-	CreateDirectory( szNrpFilename, NULL );
+	createFolder( szNrpFilename );
 
 	strcat_safe( szNrpFilename, "/", MAX_PATH);
 	strcat_safe( szNrpFilename, STRING( gpGlobals->mapname ), MAX_PATH);
@@ -2349,9 +2349,9 @@ int CGraph :: FLoadGraph ( char *szMapName )
 	char	szDirName[MAX_PATH];
 	GET_GAME_DIR( szDirName );
 	strcat_safe( szDirName, "/maps", MAX_PATH);
-	CreateDirectory( szDirName, NULL );
+	createFolder( szDirName );
 	strcat_safe( szDirName, "/graphs", MAX_PATH);
-	CreateDirectory( szDirName, NULL );
+	createFolder( szDirName );
 
 	strcpy_safe( szFilename, "maps/graphs/", MAX_PATH);
 	strcat_safe( szFilename, szMapName, MAX_PATH);
@@ -2527,9 +2527,9 @@ int CGraph :: FSaveGraph ( char *szMapName )
 	// make sure directories have been made
 	GET_GAME_DIR( szFilename );
 	strcat_safe( szFilename, "/maps", MAX_PATH);
-	CreateDirectory( szFilename, NULL );
+	createFolder( szFilename );
 	strcat_safe( szFilename, "/graphs", MAX_PATH);
-	CreateDirectory( szFilename, NULL );
+	createFolder( szFilename );
 
 	strcat_safe( szFilename, "/", MAX_PATH);
 	strcat_safe( szFilename, szMapName, MAX_PATH);

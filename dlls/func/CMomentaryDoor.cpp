@@ -19,7 +19,7 @@ public:
 
 	void EXPORT DoorMoveDone(void);
 
-	BYTE	m_bMoveSnd;			// sound a door makes while moving	
+	uint8_t	m_bMoveSnd;			// sound a door makes while moving	
 };
 
 LINK_ENTITY_TO_CLASS(momentary_door, CMomentaryDoor)

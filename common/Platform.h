@@ -46,12 +46,6 @@
 
 // Prevent tons of unused windows definitions
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#define NOWINRES
-#define NOSERVICE
-#define NOMCX
-#define NOIME
-#include <windows.h>
 
 //Avoid the ISO conformant warning
 #define stricmp _stricmp
@@ -61,18 +55,16 @@
 
 #define DLLEXPORT __declspec(dllexport)
 #define DLLIMPORT __declspec(dllimport)
+
+#define MAX_PATH 260
+
 #else // _WIN32
-#define FALSE 0
-typedef uint32 ULONG;
-typedef unsigned char BYTE;
-typedef int BOOL;
-#ifndef REHLDS_INCLUDE
-	#define MAX_PATH PATH_MAX
-	#define TRUE (!FALSE)
-#endif
+
 #include <limits.h>
 #include <stdarg.h>
 #define _vsnprintf(a,b,c,d) vsnprintf(a,b,c,d)
+
+#define MAX_PATH PATH_MAX
 
 #define stricmp strcasecmp
 #define _strnicmp strncasecmp
@@ -92,6 +84,15 @@ typedef int BOOL;
 #define EXPORT DLLIMPORT
 #else
 #define EXPORT DLLEXPORT
+#endif
+
+typedef int BOOL;
+
+#ifndef REHLDS_INCLUDE
+#ifndef TRUE
+#define FALSE 0
+#define TRUE (!FALSE)
+#endif
 #endif
 
 #endif //PLATFORM_H

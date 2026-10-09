@@ -75,10 +75,10 @@ EXPORT extern int gmsgTempFx; // Temporary entity effect with increased range (+
 
 typedef struct _SelAmmo
 {
-	BYTE	Ammo1Type;
-	BYTE	Ammo1;
-	BYTE	Ammo2Type;
-	BYTE	Ammo2;
+	uint8_t	Ammo1Type;
+	uint8_t	Ammo1;
+	uint8_t	Ammo2Type;
+	uint8_t	Ammo2;
 } SelAmmo;
 
 struct UserMessage {

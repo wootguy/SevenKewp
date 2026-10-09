@@ -29,8 +29,11 @@ globalvars_t  *gpGlobals;
 
 #undef DLLEXPORT
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include "windows.h"
 #define DLLEXPORT __stdcall
 #else
+#include "Platform.h"
 #define DLLEXPORT __attribute__ ((visibility("default")))
 #endif
 

@@ -10,6 +10,7 @@
 #define PRECACHE_MODEL_NULLENT(...) 0
 #define INDEX_MODEL(...) NULL
 #define get_decal_name(...) NULL
+#undef RGB
 RGB UTIL_ParseRGB(const char* pString) { return RGB(); }
 RGBA UTIL_ParseRGBA(const char* pString) { return RGBA(); }
 Vector UTIL_ParseVector(const char* pString) { return Vector(); }

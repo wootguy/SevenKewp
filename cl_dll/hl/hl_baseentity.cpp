@@ -243,7 +243,7 @@ int CBaseAnimating :: GetBodygroup( int iGroup ) { return 0; }
 int CBaseAnimating :: GetBodygroups( ) { return 0; }
 Vector CBaseMonster :: GetGunPosition( void ) { return g_vecZero; }
 void CBaseEntity::TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType) { }
-void CBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker ) { }
+void CBaseEntity::FireBullets(uint32_t cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker ) { }
 void CBaseEntity :: TraceBleed( float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType ) { }
 void CBaseMonster :: MakeDamageBloodDecal ( int cCount, float flNoise, TraceResult *ptr, const Vector &vecDir ) { }
 BOOL CBaseMonster :: FGetNodeRoute ( Vector vecDest ) { return TRUE; }
