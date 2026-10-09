@@ -38,8 +38,6 @@ int CHudEntStatus::Init(void)
 
 	m_iFlags |= HUD_INTERMISSION | HUD_ACTIVE; // is always drawn during an intermission
 
-	GetConsoleStringSize("A", &em_width, &em_height);
-
 	return 1;
 }
 
@@ -174,6 +172,8 @@ int CHudEntStatus::Draw(float flTime)
 	}
 
 	if (viewEnt && (viewEnt > 32 || !mergeTags)) {
+		GetConsoleStringSize("A", &em_width, &em_height);
+
 		pEnt = gEngfuncs.GetEntityByIndex(viewEnt);
 
 		const char* name = NULL;
