@@ -1,29 +1,7 @@
 #pragma once
-
-// handle conflicts between rehlds and hlsdk headers
-#ifndef CACHE_USER
-
-using cvar_callback_t = void (*)(const char* pszNewValue);
-
-typedef struct cache_user_s
-{
-	void* data;
-} cache_user_t;
-
-#include "rehlds/public/rehlds/osconfig.h"
-
-#define CACHE_USER
-#define SYNCTYPE_T
-#define DID_VEC3_T_DEFINE
-#define EIFACE_H
-#define REHLDS_INCLUDE
-#endif
-
 #include "extdll.h"
-#include "rehlds/public/rehlds/maintypes.h"
-#include "rehlds/public/rehlds/custom.h"
-#include "rehlds/public/interface.h"
-#include "rehlds/public/FileSystem.h"
+
+#define REHLDS_LEAN_AND_MEAN // handle conflicts between rehlds and hlsdk headers
 #include "rehlds/public/rehlds/rehlds_api.h"
 
 bool RehldsApi_Init();

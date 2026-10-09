@@ -42,6 +42,10 @@ function(hlcoop_setup_plugin OUTPUT_PATH)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE -DQUIVER -DVOXEL -DQUAKE2 -DVALVE_DLL -DCLIENT_WEAPONS -D_CRT_SECURE_NO_DEPRECATE)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE -DPLUGIN_BUILD -DHLCOOP_BUILD PLUGIN_NAME="${PROJECT_NAME}")
 	
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR MSVC)
+		target_precompile_headers(${PROJECT_NAME} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_SOURCE_DIR}/dlls/pch_plugin.h>")
+	endif()
+	
 	target_link_libraries(${PROJECT_NAME} PRIVATE ${SERVER_DLL_NAME})
 	
 	if (SETUP_IDE)
