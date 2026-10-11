@@ -823,6 +823,9 @@ void CStudioModelRenderer::StudioSetupBones (CustomWeaponParams* wcParams)
 
 	if (wcParams) {
 		GetAkimboViewModelState(m_pStudioHeader, currentSeq, animTime, NULL);
+
+		// in case a state for the wrong model is selected
+		currentSeq = V_clamp(currentSeq, 0, m_pStudioHeader->numseq - 1);
 	}
 
 	pseqdesc = (mstudioseqdesc_t *)((byte *)m_pStudioHeader + m_pStudioHeader->seqindex) + currentSeq;
