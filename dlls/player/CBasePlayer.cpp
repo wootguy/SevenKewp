@@ -76,17 +76,6 @@ extern float g_flWeaponCheat;
 // how long the use key can be held before cancelling the use for antiblock or momentary buttons
 #define MAX_USE_HOLD_TIME 0.3f
 
-enum CVAR_QUERIES {
-	CVAR_REQ_SEVENKEWP,			// SevenKewp test
-	CVAR_REQ_BUGFIXEDHL,		// BugfixedHL test
-	CVAR_REQ_ADRENALINE_GAMER,	// Adrenaline Gamer test
-	CVAR_REQ_HL25,				// HL25 test
-	CVAR_REQ_XASH,				// Xash3D test
-	CVAR_REQ_OPENGL,			// OpenGL test
-	CVAR_REQ_LINUX,				// Linux test
-	CVAR_REQ_TYPES,
-};
-
 
 BOOL gInitHUD = TRUE;
 
