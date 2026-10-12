@@ -424,7 +424,7 @@ public:
 	bool m_sentSevenKewpNotice; // has this client been told about the sevenkewp client?
 	bool m_clientCheckFinished;
 
-	string_t m_queryResults[6]; // one for each request in QueryClientType
+	string_t m_queryResults[CVAR_REQ_TYPES]; // one for each request in QueryClientType
 
 	int GetNameColor();
 

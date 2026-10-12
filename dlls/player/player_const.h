@@ -144,6 +144,17 @@ struct client_info_t {
 	int max_packet_entities;
 };
 
+enum CVAR_QUERIES {
+	CVAR_REQ_SEVENKEWP,			// SevenKewp test
+	CVAR_REQ_BUGFIXEDHL,		// BugfixedHL test
+	CVAR_REQ_ADRENALINE_GAMER,	// Adrenaline Gamer test
+	CVAR_REQ_HL25,				// HL25 test
+	CVAR_REQ_XASH,				// Xash3D test
+	CVAR_REQ_OPENGL,			// OpenGL test
+	CVAR_REQ_LINUX,				// Linux test
+	CVAR_REQ_TYPES,
+};
+
 enum PLAYER_CLASS {
 	PCLASS_DEFAULT, // give player the default weapons for their client
 	PCLASS_HL,		// give player vanilla HL weapons when possible
