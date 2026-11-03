@@ -91,6 +91,7 @@ extern bool g_fog_enabled;
 extern int g_fog_start_dist;
 extern int g_fog_end_dist;
 void EnvWeatherServerDeactivate();
+void UpdateBotVisibility();
 
 extern int g_migrate_weapons;
 extern int giPrecacheGrunt;
@@ -1156,6 +1157,8 @@ void StartFrame( void )
 
 	UTIL_SyncPredictionCvars();
 
+	UpdateBotVisibility();
+
 	g_frameCount++;
 
 	g_npcFrameThinksLast = g_npcFrameThinks;
@@ -1794,6 +1797,62 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	g_numPacketEntities[g_packClientIdx]++;
 
 	return 1;
+}
+
+
+// AddToFullPack isn't called for bots, so they become invisible to entities that rely on m_pvsPlayers,
+// a field which only updates in AddtoFullPack. The logic for updating the field is duplicated here.
+void UpdateBotVisibility() {
+	edict_t* edicts = ENT(0);
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++) {
+		CBasePlayer* bot = UTIL_PlayerByIndex(i);
+		if (!bot || !bot->IsBot())
+			continue;
+
+		uint32_t plrbit = PLRBIT(bot->edict());
+
+		for (int e = gpGlobals->maxClients + 1; e < gpGlobals->maxEntities; e++) {
+			edict_t* ent = &edicts[e];
+
+			if (ent->free || !ent->v.modelindex || (ent->v.effects & EF_NODRAW)) {
+				continue;
+			}
+
+			// TODO: using private data is expensive. Use global arrays to be more cache friendly.
+			CBaseEntity* baseent = (CBaseEntity*)GET_PRIVATE(ent);
+			if (!baseent)
+				continue; // should never happen?
+			
+			bool isNewlyVisible = !(baseent->m_netPlayers & plrbit);
+			baseent->m_pvsPlayers &= ~plrbit;
+			baseent->m_pasPlayers &= ~plrbit;
+			baseent->m_netPlayers &= ~plrbit;
+			g_edictVis[e] &= ~plrbit;
+
+			// don't send if flagged for NODRAW and it's not the host getting the message
+			// Ignore ents without valid / visible models
+			// Don't send spectators to other players
+			bool invisible = (ent->v.effects & EF_NODRAW) ||
+				(!ent->v.modelindex || !STRING(ent->v.model)) ||
+				(ent->v.flags & FL_SPECTATOR);
+
+			// solid entities should always be sent to clients for collision prediction
+			bool solid = ent->v.solid >= SOLID_BBOX && ent->v.modelindex;
+
+			if (invisible && !solid) {
+				continue; // TODO: this will break vis checks for these types of entities
+			}
+
+			if (baseent->m_visibleEverywhere || ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, bot->m_lastPas)) {
+				baseent->m_pasPlayers |= plrbit;
+			}
+
+			if (baseent->m_visibleEverywhere || ENGINE_CHECK_VISIBILITY((const struct edict_s*)ent, bot->m_lastPvs)) {
+				baseent->m_pvsPlayers |= plrbit;
+			}
+		}
+	}
 }
 
 // defaults for clientinfo messages
