@@ -24,7 +24,7 @@ EXPORT extern StringSet g_tryPrecacheGeneric;
 EXPORT extern StringSet g_tryPrecacheEvents;
 extern string_t g_indexModels[MAX_MODELS_REHLDS]; // use INDEX_MODEL to get model name for index
 extern string_t g_indexSounds[MAX_PRECACHE]; // use INDEX_SOUND to get sound name for index
-extern string_t g_lightStyles[MAX_LIGHTSTYLE_PATTERNS]; // active light style patterns
+EXPORT extern string_t g_lightStyles[MAX_LIGHTSTYLE_PATTERNS]; // active light style patterns
 
 // find an already alloc'd string by its contents (used by ALLOC_STRING)
 extern HashMap<string_t> g_allocedStrings;

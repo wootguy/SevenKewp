@@ -926,6 +926,13 @@ void LIGHT_STYLE(int style, const char* val) {
 	g_lightStyles[style] = ALLOC_STRING(toLowerCase(val).c_str());
 
 	g_engfuncs.pfnLightStyle(style, val);
+
+	// the engine adds this message directly to the reliable channel of each player, which skips plugin hooks.
+	// MSG_SPEC duplicates the message for HLTV spectators but not players. I don't care about the built in HLTV.
+	MESSAGE_BEGIN(MSG_SPEC, SVC_LIGHTSTYLE);
+	WRITE_BYTE(style);
+	WRITE_STRING(val);
+	MESSAGE_END();
 }
 
 float GET_LIGHT_STYLE(int style) {
