@@ -2144,14 +2144,6 @@ int TeamFortressViewport::MsgFunc_TagInfo(const char* pszName, int iSize, void* 
 	return 1;
 }
 
-// sign extend a fixed point value that was stored in an unsigned integer, which may have 0 in its higher bits
-inline int32_t SIGN_EXTEND_FIXED(uint32_t x, int total_bits) {
-	uint32_t b = total_bits;
-	int m = 1U << (b - 1); // sign bit mask
-	x = x & ((1U << b) - 1); // remove sign bit
-	return (x ^ m) - m; // sign extended version of x
-}
-
 int TeamFortressViewport::MsgFunc_PlayerPos(const char* pszName, int iSize, void* pbuf)
 {
 	BEGIN_READ(pbuf, iSize);

@@ -928,6 +928,10 @@ EXPORT bool createFolder(const std::string& path);
 
 EXPORT bool folderExists(const std::string& path);
 
+// names used on the master branch
+EXPORT bool UTIL_CreateFolder(const std::string& path);
+EXPORT bool UTIL_FolderExists(const std::string& path);
+
 EXPORT uint64_t getFreeSpace(const std::string& path);
 
 EXPORT int count_bits_set(uint64_t v);

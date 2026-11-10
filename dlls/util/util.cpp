@@ -3368,6 +3368,14 @@ bool folderExists(const std::string& path) {
 	return (info.st_mode & S_IFDIR) != 0;
 }
 
+bool UTIL_CreateFolder(const std::string& path) {
+	return createFolder(path);
+}
+
+bool UTIL_FolderExists(const std::string& path) {
+	return folderExists(path);
+}
+
 
 uint64_t getFreeSpace(const std::string& path) {
 #if defined(_WIN32)

@@ -119,6 +119,8 @@ int GetUserMsgInfo(int id, int* size) {
 	return 0;
 }
 
+UserMessageIds g_umsg;
+
 void LinkUserMessages(void)
 {
 	// Already taken care of?
@@ -194,4 +196,11 @@ void LinkUserMessages(void)
 	gmsgTracer2 = REG_USER_MSG("Tracer2", 13);
 	gmsgBloodSprite2 = REG_USER_MSG("BloodSpr2", 12);
 	gmsgTempFx = REG_USER_MSG("TempFx", -1);
+
+	g_umsg.SayText = gmsgSayText;
+	g_umsg.ScoreInfo = gmsgScoreInfo;
+	g_umsg.TeamInfo = gmsgTeamInfo;
+	g_umsg.DeathMsg = gmsgDeathMsg;
+	g_umsg.StatusText = gmsgStatusText;
+	g_umsg.StatusValue = gmsgStatusValue;
 }

@@ -101,3 +101,17 @@ EXPORT int GetUserMsgInfo(const char* msgname, int* size);
 EXPORT int GetUserMsgInfo(int id, int* size);
 
 void LinkUserMessages(void);
+
+// A subset of the g_umsg struct from the master branch, so that plugins written for master's
+// user message API also build on stable. The gmsg* variables above are still the main API here.
+// Field names match the message names.
+struct UserMessageIds {
+	int SayText;
+	int ScoreInfo;
+	int TeamInfo;
+	int DeathMsg;
+	int StatusText;
+	int StatusValue;
+};
+
+EXPORT extern UserMessageIds g_umsg;
