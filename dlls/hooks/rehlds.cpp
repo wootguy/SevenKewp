@@ -136,6 +136,10 @@ void rehlds_SendBigMessage(int msgMode, int msgType, void* data, int sz, int pla
 
 	CALL_HOOKS_VOID(pfnSendBigMessage, msgMode, msgType, data, sz, playerindex);
 
+	if (msgMode == MSG_SPEC) {
+		return; // for HLTV spectators only, which the HLTV plugin records in its hook. No player gets it.
+	}
+
 	bool pluginWantsMute = false;
 
 	if (msgMode != MSG_BROADCAST) {
